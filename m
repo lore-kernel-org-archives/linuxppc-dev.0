@@ -1,17 +1,16 @@
-Return-Path: <rs@carriercomm.com>
-Received: from ccomm-ex1.ccomm.com (unknown [207.158.3.3])
-	by ozlabs.org (Postfix) with ESMTP id 93804DE008
+Return-Path: <DWatkins@tranzeo.com>
+Received: from mail.tranzeo.com (unknown [64.114.87.10])
+	by ozlabs.org (Postfix) with ESMTP id 64972DDF46
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  1 Apr 2008 03:23:55 +1000 (EST)
+	Tue,  1 Apr 2008 06:47:49 +1000 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="us-ascii"
-Subject: RE: JFFS2 root-fs
-Date: Mon, 31 Mar 2008 10:23:53 -0700
-Message-ID: <EE63F03D9E04774997AEBCD21FC77F251E9878@ccomm-ex1.ccomm.com>
-From: "Sugathan, Rupesh" <rs@carriercomm.com>
-To: "Georg Schardt" <g.schardt@fz-juelich.de>
-Cc: linuxppc-embedded@ozlabs.org
+Subject: Ethernet Jumbo Frames
+Date: Mon, 31 Mar 2008 13:47:46 -0700
+Message-ID: <D61182AC8012EA4EBC531B3AF23BE109582F00@tranzeo-mail2.12stewart.tranzeo.com>
+From: "Darcy Watkins" <DWatkins@tranzeo.com>
+To: "LinuxPPC-Embedded" <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,19 +21,18 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-=20
-It seems to me, that the kernel does not find ANY file. because the
-/dev/console file is in the image, but the initial console is not found
-too
+Has anyone on this list ever been given a requirement to implement
+support for ethernet frames larger than the standard MTU of 1500?  ...
 
-1) You should probably unpack and mount the jffs2 image on your host
-directory to ensure that you see all files in place.=20
-2) Check to see if your designated flash partition can hold all of your
-jffs2 image.
+... for normal 10/100 Ethernet?   ... not gigabit.
 
-Were you able to use the 'same' rootfs in any other way (nfs mount or
-ramdisk) on the target?
+The application is to support certain encapsulation protocols without
+imposing smaller than 1500 byte MTU restrictions on the innermost
+protocol.
 
-Thanks
---
-Rupesh Sugathan
+I have been tasked to investigate this for a system based on PPC405EP.
+Can it be done using the IBM EMAC, Linux drivers, etc?
+
+Regards,
+
+Darcy
