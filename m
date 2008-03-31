@@ -1,17 +1,17 @@
-Return-Path: <dwilson@dslextreme.com>
-Received: from mail9.dslextreme.com (mail9.dslextreme.com [66.51.199.94])
-	by ozlabs.org (Postfix) with SMTP id C7382DE7BE
+Return-Path: <rs@carriercomm.com>
+Received: from ccomm-ex1.ccomm.com (unknown [207.158.3.3])
+	by ozlabs.org (Postfix) with ESMTP id 93804DE008
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  1 Apr 2008 03:03:33 +1000 (EST)
-Message-ID: <47F117CA.3020901@dslextreme.com>
-Date: Mon, 31 Mar 2008 09:56:42 -0700
-From: Dan Wilson <dwilson@dslextreme.com>
+	Tue,  1 Apr 2008 03:23:55 +1000 (EST)
 MIME-Version: 1.0
-CC: linuxppc-embedded@ozlabs.org
-Subject: Re: 8543 console baud rate change problem
-References: <47EEFB5B.3050700@fulcrummicro.com>
-In-Reply-To: <47EEFB5B.3050700@fulcrummicro.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: JFFS2 root-fs
+Date: Mon, 31 Mar 2008 10:23:53 -0700
+Message-ID: <EE63F03D9E04774997AEBCD21FC77F251E9878@ccomm-ex1.ccomm.com>
+From: "Sugathan, Rupesh" <rs@carriercomm.com>
+To: "Georg Schardt" <g.schardt@fz-juelich.de>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,41 +22,19 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Dan Wilson wrote:
-> We are using ELDK 4.1, linux kernel 2.6.22 on an 8543 board with a 
-> Layer 2 switch on it (i.e., the actual packet switching is done in an 
-> external chip, not by the 8543 itself).  One of our customers has 
-> encountered a strange issue with system console baud rate changes.  
-> The system console is connected to a UART port on the 8543.
->
->
-> Here is the sequence of events:
->
-> + powercycle unit at 115200
->
-> + have ping session going
-> + establish telnet session
-> + have L2 traffic traversing the switch
->
-> + switch baud rate to any other baud rate beside 38400
-> + hit a few returns
-> + switch baud rate back to 115200 and no problem
->
-> + switch baud rate to 38400
-> + type a few char
-> + switch baud rate back to 115200
-> + console is not responsive
->
-> + existing ping session is still going
-> + L2 traffic is still OK
-> + telnet session disconnected and can not reconnect;
->  telnet session is being served by linux ip stack
->
-> + Had to power cycle to get everything back
->
-Just to follow up on this.  We were able to determine that our customer 
-had shut off the normal telnet daemon and was using their own program to 
-handle telnet sessions.  In addition, they weren't using agetty.  We got 
-them to use agetty, and now things seem to be working for them.
+=20
+It seems to me, that the kernel does not find ANY file. because the
+/dev/console file is in the image, but the initial console is not found
+too
 
-Dan.
+1) You should probably unpack and mount the jffs2 image on your host
+directory to ensure that you see all files in place.=20
+2) Check to see if your designated flash partition can hold all of your
+jffs2 image.
+
+Were you able to use the 'same' rootfs in any other way (nfs mount or
+ramdisk) on the target?
+
+Thanks
+--
+Rupesh Sugathan
