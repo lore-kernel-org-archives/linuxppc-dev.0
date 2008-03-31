@@ -1,20 +1,21 @@
-Return-Path: <dan.j.williams@gmail.com>
-Received: from ti-out-0910.google.com (ti-out-0910.google.com [209.85.142.188])
-	by ozlabs.org (Postfix) with ESMTP id 82E17DE255
-	for <linuxppc-dev@ozlabs.org>; Tue,  1 Apr 2008 02:37:43 +1000 (EST)
-Received: by ti-out-0910.google.com with SMTP id y6so577074tia.13
-	for <linuxppc-dev@ozlabs.org>; Mon, 31 Mar 2008 09:37:41 -0700 (PDT)
-Message-ID: <e9c3a7c20803310937l52fdc82ejc493abbac347d427@mail.gmail.com>
-Date: Mon, 31 Mar 2008 09:37:39 -0700
-From: "Dan Williams" <dan.j.williams@intel.com>
-Sender: dan.j.williams@gmail.com
-To: "Kumar Gala" <galak@kernel.crashing.org>
-Subject: Re: [PATCH] [POWERPC] fsldma: Use compatiable binding as spec
-In-Reply-To: <Pine.LNX.4.64.0803311115540.5470@blarg.am.freescale.net>
+Return-Path: <dale@farnsworth.org>
+Received: from xyzzy.farnsworth.org (xyzzy.farnsworth.org [65.39.95.219])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 3F7A0DE223
+	for <linuxppc-dev@ozlabs.org>; Tue,  1 Apr 2008 02:43:11 +1000 (EST)
+Date: Mon, 31 Mar 2008 09:43:02 -0700
+From: Dale Farnsworth <dale@farnsworth.org>
+To: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org, paulus@samba.org
+Message-ID: <20080331164302.GC13750@farnsworth.org>
+References: <20080328233954.GA29499@farnsworth.org>
+	<20080328234900.GF30214@farnsworth.org>
+	<20080329215942.GB27226@lixom.net>
+	<20080330101128.GA20077@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <Pine.LNX.4.64.0803311115540.5470@blarg.am.freescale.net>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20080330101128.GA20077@localhost.localdomain>
+Subject: Re: [PATCH 6/9] [POWERPC] prpmc2800: clean up dts properties
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,17 +25,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Mar 31, 2008 at 9:17 AM, Kumar Gala <galak@kernel.crashing.org> wrote:
-> Documentation/powerpc/booting-without-of.txt specifies the
->  compatiables we should bind to for this driver (elo, eloplus).
->  Use these instead of the extremely specific 'mpc8540' and 'mpc8349'
->  compatiables.
->
->  Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
->  ---
->
->  Dan, if you don't have any issue with this I'll sent it via the powerpc
->  tree (since its not really about functionality).
->
+On Sun, Mar 30, 2008 at 09:11:28PM +1100, David Gibson wrote:
+> On Sat, Mar 29, 2008 at 04:59:42PM -0500, Olof Johansson wrote:
+> > On Fri, Mar 28, 2008 at 04:49:00PM -0700, Dale Farnsworth wrote:
+> > > From: Mark A. Greer <mgreer@mvista.com>
+> > > 
+> > > Remove several unused (or software config only) properties.
+> > > Rename marvel node to "soc".  Technically, it's not an SOC,
+> > > but its organization is the same as an SOC.  Also, rename the
+> > > "block-index" property to "cell-index" to conform to current
+> > > practice.
+> > 
+> > I see this rename as purely misleading. It isn't an soc, so it shouldn't
+> > be named as such. Call it system-controller or something. Pretty much
+> > any other name is better. :-)
+> 
+> I agree.  system-controller, host-bridge, north-bridge, maybe, but not
+> soc.  With current conventions, the node name is primarily for the
+> benefit of human readers, so if it misleads it has failed entirely in
+> its purpose.
 
-Acked-by: Dan Williams <dan.j.williams@intel.com>
+I'm convinced.  I'll change it to system-controller.
+
+However, I can't resist pointing out that in the existing devtrees
+with a "soc" node, the name is also misleading.  That node doesn't
+refer to the SOC itself, but to the part of the SOC containing the
+peripherals.  Whether the system is implemented on one or two chips
+is an implementation detail irrelevant to the drivers or device tree.
+
+-Dale
