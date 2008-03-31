@@ -1,34 +1,31 @@
 Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 7B157DE1FD
-	for <linuxppc-dev@ozlabs.org>; Tue,  1 Apr 2008 03:52:11 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e31.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m2VHq86p011404
-	for <linuxppc-dev@ozlabs.org>; Mon, 31 Mar 2008 13:52:08 -0400
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m2VHpx9U158640
-	for <linuxppc-dev@ozlabs.org>; Mon, 31 Mar 2008 11:51:59 -0600
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m2VHpw3F016997
-	for <linuxppc-dev@ozlabs.org>; Mon, 31 Mar 2008 11:51:59 -0600
-Date: Mon, 31 Mar 2008 12:48:14 -0500
+	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 7A370DE139
+	for <linuxppc-dev@ozlabs.org>; Tue,  1 Apr 2008 04:09:05 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e6.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m2VIB442025883
+	for <linuxppc-dev@ozlabs.org>; Mon, 31 Mar 2008 14:11:04 -0400
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m2VI90tN223988
+	for <linuxppc-dev@ozlabs.org>; Mon, 31 Mar 2008 14:09:00 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m2VI908g007535
+	for <linuxppc-dev@ozlabs.org>; Mon, 31 Mar 2008 14:09:00 -0400
+Date: Mon, 31 Mar 2008 13:05:18 -0500
 From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: jyoung5@us.ibm.com
-Subject: Re: [kvm-ppc-devel] [PATCH] Add idle power save for ppc 4xx
-Message-ID: <20080331124814.4ebfc405@zod.rchland.ibm.com>
-In-Reply-To: <1206982322.9165.7.camel@thinkpadL>
+To: Josh Boyer <jwboyer@gmail.com>
+Subject: Re: [PATCH] Add idle power save for ppc 4xx
+Message-ID: <20080331130518.2a6b0264@zod.rchland.ibm.com>
+In-Reply-To: <1206983237.12155.60.camel@vader.jdub.homelinux.org>
 References: <10aea37177130bbe5de7.1206969157@thinkpadL>
-	<1206980871.5919.5.camel@basalt>
-	<1206982322.9165.7.camel@thinkpadL>
+	<1206983237.12155.60.camel@vader.jdub.homelinux.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: kvm-ppc-devel@lists.sourceforge.net, linuxppc-dev@ozlabs.org,
-	Hollis Blanchard <hollisb@us.ibm.com>
+Cc: kvm-ppc-devel@lists.sourceforge.net, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,26 +35,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 31 Mar 2008 11:52:02 -0500
-Jerone Young <jyoung5@us.ibm.com> wrote:
+On Mon, 31 Mar 2008 12:07:17 -0500
+Josh Boyer <jwboyer@gmail.com> wrote:
 
-> > void ppc4xx_idle(void)
+> On Mon, 2008-03-31 at 08:12 -0500, Jerone Young wrote:
+> > # HG changeset patch
+> > # User Jerone Young <jyoung5@us.ibm.com>
+> > # Date 1206969060 18000
+> > # Node ID 10aea37177130bbe5de7bee6ec06d9010bc5da1f
+> > # Parent  1506aa38ddabb0bf73fff3ac3f3db5f9ef6458cc
+> > Add idle power save for ppc 4xx
 > > 
-> > > +{
-> > > +	unsigned long msr_save;
-> > > +
-> > > +	/* set wait state MSR */
-> > > +	local_irq_enable();
-> > > +	msr_save = mfmsr();
-> > > +	mtmsr(msr_save|MSR_WE);
+> > This patch sets the wait state MSR when power_save is called in cpu_idle loop for ppc4xx. This is mainly to help out virtualization solutions such as KVM. This way the virtualization soultions are able to tell if the guest kernel is idle.
 > > 
-> > Why don't you |MSR_WE|MSR_EE at the same time?
+> > I have tested this on hardware & KVM virtual guest.
 > 
-> You technically can do this. But the question is do all 4xx cpus use
-> MSR_EE to enable interrupts? I can assume they do (from what I know),
+> I'm not overly thrilled with adding this to all of 4xx.  It doesn't
+> actually save much power at all (1% on a project that actually measured
+> it with an amp meter recently) and there's really no other benefit to
+> doing it outside of the virtual guest case.
+> 
+> I'm assuming you pass a dtb to the virtual guest when you start it up.
+> Could you define a property in the CPU node there that can be parsed to
+> use the power_save function instead of always making it the default?
 
-They do for enabling external interrupts of normal priority.  MSR_CE
-might also be used/needed if someone has the watchdog enabled or has an
-external device with the UIC pin mapped as a CE.
+Actually, you probably don't want this as a property in the device
+tree.  It doesn't describe hardware.  A Kconfig option might be
+warranted though.
 
 josh
