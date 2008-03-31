@@ -1,23 +1,21 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id E5B35DE6C6
-	for <linuxppc-dev@ozlabs.org>; Tue,  1 Apr 2008 05:10:52 +1000 (EST)
-Message-ID: <47F13735.40207@freescale.com>
-Date: Mon, 31 Mar 2008 14:10:45 -0500
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Laurent Pinchart <laurentp@cse-semaphore.com>
-Subject: Re: [PATCHv3 2/4] cpm-serial: Relocate CPM buffer descriptors and
-	SMC parameter ram.
-References: <200803311834.42327.laurentp@cse-semaphore.com>
-	<200803311836.08142.laurentp@cse-semaphore.com>
-In-Reply-To: <200803311836.08142.laurentp@cse-semaphore.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <jwboyer@gmail.com>
+Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.179])
+	by ozlabs.org (Postfix) with ESMTP id 52EE4DE9C3
+	for <linuxppc-dev@ozlabs.org>; Tue,  1 Apr 2008 05:11:24 +1000 (EST)
+Received: by py-out-1112.google.com with SMTP id z59so1803421pyg.27
+	for <linuxppc-dev@ozlabs.org>; Mon, 31 Mar 2008 12:11:21 -0700 (PDT)
+Subject: Re: [PATCH] Add idle power save for ppc 4xx
+From: Josh Boyer <jwboyer@gmail.com>
+To: jyoung5@us.ibm.com
+In-Reply-To: <1206987826.9165.15.camel@thinkpadL>
+References: <10aea37177130bbe5de7.1206969157@thinkpadL>
+	<1206983237.12155.60.camel@vader.jdub.homelinux.org>
+	<1206987826.9165.15.camel@thinkpadL>
+Content-Type: text/plain
+Date: Mon, 31 Mar 2008 14:11:14 -0500
+Message-Id: <1206990674.12155.64.camel@vader.jdub.homelinux.org>
+Mime-Version: 1.0
+Cc: kvm-ppc-devel@lists.sourceforge.net, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,115 +25,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Laurent Pinchart wrote:
-> This patch relocates the buffer descriptors and the SMC parameter RAM at the
-> end of the first CPM muram chunk, as described in the device tree. This allows
-> device trees to stop excluding SMC parameter ram allocated by the boot loader
-> from the CPM muram node.
+On Mon, 2008-03-31 at 13:23 -0500, Jerone Young wrote:
+> > > diff --git a/arch/powerpc/kernel/idle_4xx.c b/arch/powerpc/kernel/idle_4xx.c
+> > > new file mode 100644
+> > > --- /dev/null
+> > > +++ b/arch/powerpc/kernel/idle_4xx.c
+> > 
+> > Can this be added to sysdev/ppc4xx_soc.c instead?
+> 
+> Probably. Though the other platforms have there power_save code in
+> idle_<platform>.S files, as they are in assembly.
 
-It's usually a good idea to state that something is untested if that's 
-the case. :-)
+No, just two of them do.  Cell, pseries, and pasemi all have them under
+the platform directory.
 
-This patch cannot work as is.
+> Also I don't appear to have ppc4xx_soc.c in my source (using
+> 2.6.25-rc6).
 
-> +static int cpm_get_virtual_address(void *devp, void **addr, int ncells)
-> +{
-> +	unsigned long xaddr;
-> +	int n;
-> +
-> +	n = getprop(devp, "virtual-reg", addr, ncells * sizeof *addr);
-> +	if (n < ncells * sizeof *addr) {
+You're working against a very old tree, relatively speaking.  Use either
+my for-2.6.26 branch in my git tree, or the linux-next tree.
 
-You must cast the sizeof to a signed int; otherwise, a negative return 
-from getprop will be "bigger" than the unsigned size, and you'll return 
-garbage as the address.
-
-> +		for (n = 0; n < ncells; n++) {
-> +			if (!dt_xlate_reg(devp, n, &xaddr, NULL))
-> +				return -1;
-> +
-> +			addr[n] = (void*)xaddr;
-
-(void *)
-
-> +		}
-> +	}
-> +
-> +	return ncells;
-> +}
-
-This could be a generic bootwrapper function.  It should return the 
-number of resources (ncells is a misnomer) actually found, though, 
-rather than failing if there are fewer than asked for.  Let the caller 
-decide if it's fatal.
-
-> @@ -202,63 +243,62 @@ int cpm_console_init(void *devp, struct serial_console_data *scdp)
->  	else
->  		do_cmd = cpm1_cmd;
->  
-> -	n = getprop(devp, "fsl,cpm-command", &cpm_cmd, 4);
-> -	if (n < 4)
-> +	if (getprop(devp, "fsl,cpm-command", &cpm_cmd, 4) < sizeof cpm_cmd)
->  		return -1;
-
-Standard kernel style is sizeof(foo), not sizeof foo.
-
-Plus, if you're going to replace 4 with sizeof(cpm_cmd), do it both 
-places.  I don't really see the need, though; a cell is always 4 bytes.
-
-> -	n = getprop(parent, "virtual-reg", reg_virt, sizeof(reg_virt));
-> -	if (n < (int)sizeof(reg_virt)) {
-> -		if (!dt_xlate_reg(parent, 0, &reg_phys, NULL))
-> -			return -1;
-> -
-> -		reg_virt[0] = (void *)reg_phys;
-> -	}
-> -
-> -	cpcr = reg_virt[0];
-> +	if (cpm_get_virtual_address(devp, &cpcr, 1) < 0)
-> +		return -1;
-
-s/devp/parent/
-
->  	muram = finddevice("/soc/cpm/muram/data");
->  	if (!muram)
->  		return -1;
->  
->  	/* For bootwrapper-compatible device trees, we assume that the first
-> -	 * entry has at least 18 bytes, and that #address-cells/#data-cells
-> +	 * entry has at least 128 bytes, and that #address-cells/#data-cells
->  	 * is one for both parent and child.
->  	 */
->  
-> -	n = getprop(muram, "virtual-reg", reg_virt, sizeof(reg_virt));
-> -	if (n < (int)sizeof(reg_virt)) {
-> -		if (!dt_xlate_reg(muram, 0, &reg_phys, NULL))
-> -			return -1;
-> +	if (cpm_get_virtual_address(devp, &muram_addr, 1) < 0)
-> +		return -1;
-
-s/devp/muram/
-
-> +	
-> +	if (getprop(muram, "reg", reg, sizeof reg) < sizeof reg)
-> +		return -1;
-
-Should read into array of u32, not void *.
-
-> +	if (is_cpm2 && is_smc) {
-> +		u16 *smc_base = (u16*)param;
-
-(u16 *)
-
-> +		u16 pram_offset;
->  
-> -	muram_start = reg_virt[0];
-> +		pram_offset = cbd_offset - 64;
-> +		pram_offset = _ALIGN_DOWN(pram_offset, 64);
-> +		*smc_base = pram_offset;
-
-Use out_be16().
-
-The SMC should be stopped before you do this.
-
--Scott
+josh
