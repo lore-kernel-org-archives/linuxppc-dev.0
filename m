@@ -1,17 +1,25 @@
-Return-Path: <michael@ellerman.id.au>
-Received: from [127.0.0.1] (localhost [127.0.0.1])
-	by ozlabs.org (Postfix) with ESMTP id 5B88CDDEDD
-	for <linuxppc-dev@ozlabs.org>; Mon, 31 Mar 2008 11:07:43 +1000 (EST)
-Subject: Fwd: [PATCH] Fix missed hardware breakpoints across multiple threads
-From: Michael Ellerman <michael@ellerman.id.au>
-To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-sciABiLzwTGBvkTMfrD8"
-Date: Mon, 31 Mar 2008 11:07:43 +1000
-Message-Id: <1206925663.7441.4.camel@concordia.ozlabs.ibm.com>
-Mime-Version: 1.0
-Reply-To: michael@ellerman.id.au
+Return-Path: <segher@kernel.crashing.org>
+In-Reply-To: <b393df3f814388b5cd5ae2f3b2b7fd66@kernel.crashing.org>
+References: <200803101606.39184.laurentp@cse-semaphore.com>
+	<200803251914.24021.laurentp@cse-semaphore.com>
+	<47EA4741.2050402@ru.mvista.com>
+	<200803271013.32612.laurentp@cse-semaphore.com>
+	<20080327100304.GC10397@localhost.localdomain>
+	<7c44646510c3b98075de9aa57cad0bce@kernel.crashing.org>
+	<18416.813.635397.559197@cargo.ozlabs.ibm.com>
+	<56851566f85e117c42b078dd2d6a2028@kernel.crashing.org>
+	<18416.13196.812280.794832@cargo.ozlabs.ibm.com>
+	<b393df3f814388b5cd5ae2f3b2b7fd66@kernel.crashing.org>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <48caaa39ff4d6552a5bf994a2c306d59@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: OF compatible MTD platform RAM driver ?
+Date: Mon, 31 Mar 2008 03:24:29 +0200
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Cc: ben@simtec.co.uk, "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>,
+	David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,99 +29,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+[Removed linux-mtd from cc:]
 
---=-sciABiLzwTGBvkTMfrD8
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+>>> [*] It seems to me the longtrail workaround code in prom_init.c is
+>>> incorrect though: it will match any node with name "memory" that
+>>> doesn't have a device_type?
+>>
+>> It only matches on children of the root node,
+>
+> Oh okay, I misread that then.
 
-From: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH] Fix missed hardware breakpoints across multiple threads
+...No, I did not.  prom_next_node() does a depth-first tree traversal.
 
-There is a bug in the powerpc DABR (data access breakpoint) handling,
-which can result in us missing breakpoints if several threads are trying
-to break on the same address.
+>> Actually we could probably remove the longtrail stuff
+>> now; I think mine has stopped working, and I only know of 2 others in
+>> existence. :)
+>
+> I'll prepare a patch.
 
-The circumstances are that do_page_fault() calls do_dabr(), this clears
-the DABR (sets it to 0) and sets up the signal which will report to
-userspace that the DABR was hit. The do_signal() code will restore the DABR
-value on the way out to userspace.
-
-If we reschedule before calling do_signal(), __switch_to() will check the
-cached DABR value and compare it to the new thread's value, if they match
-we don't set the DABR in hardware.
-
-So if two threads have the same DABR value, and we schedule from one to
-the other after taking the interrupt for the first thread hitting the DABR,
-the second thread will run without the DABR set in hardware.
-
-The cleanest fix is to move the cache update into set_dabr(), that way we
-can't forget to do it.
-
-Reported-by: Jan Kratochvil <jan.kratochvil@redhat.com>
-Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
----
- arch/powerpc/kernel/process.c |   10 +++++-----
- 1 files changed, 5 insertions(+), 5 deletions(-)
+...Actually, that's a lot of code to rip out, and I can't test this at 
+all,
+so I'll have to pass on this.
 
 
-Sorry all, I forgot to CC this to the list in my rush to get out of the
-office on Friday night, sorry! :)
-
-
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index 59311ec..4ec6055 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -241,8 +241,12 @@ void discard_lazy_cpu_state(void)
- }
- #endif /* CONFIG_SMP */
-=20
-+static DEFINE_PER_CPU(unsigned long, current_dabr);
-+
- int set_dabr(unsigned long dabr)
- {
-+	__get_cpu_var(current_dabr) =3D dabr;
-+
- #ifdef CONFIG_PPC_MERGE		/* XXX for now */
- 	if (ppc_md.set_dabr)
- 		return ppc_md.set_dabr(dabr);
-@@ -259,8 +263,6 @@ int set_dabr(unsigned long dabr)
- DEFINE_PER_CPU(struct cpu_usage, cpu_usage_array);
- #endif
-=20
--static DEFINE_PER_CPU(unsigned long, current_dabr);
--
- struct task_struct *__switch_to(struct task_struct *prev,
- 	struct task_struct *new)
- {
-@@ -325,10 +327,8 @@ struct task_struct *__switch_to(struct task_struct *pr=
-ev,
-=20
- #endif /* CONFIG_SMP */
-=20
--	if (unlikely(__get_cpu_var(current_dabr) !=3D new->thread.dabr)) {
-+	if (unlikely(__get_cpu_var(current_dabr) !=3D new->thread.dabr))
- 		set_dabr(new->thread.dabr);
--		__get_cpu_var(current_dabr) =3D new->thread.dabr;
--	}
-=20
- 	new_thread =3D &new->thread;
- 	old_thread =3D &current->thread;
---=20
-1.5.2.rc1.1884.g59b20
-
-
-
---=-sciABiLzwTGBvkTMfrD8
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBH8DlfdSjSd0sB4dIRAoxHAJ41q+IdON8CmojXVAs7T1gP3enxbwCcD1dS
-VNPxcbW0Wks+bwoNhaQOoi4=
-=nuvm
------END PGP SIGNATURE-----
-
---=-sciABiLzwTGBvkTMfrD8--
+Segher
