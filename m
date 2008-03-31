@@ -1,22 +1,34 @@
-Return-Path: <runet@innovsys.com>
-Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
-	by ozlabs.org (Postfix) with ESMTP id BB808DDF4C
-	for <linuxppc-dev@ozlabs.org>; Tue,  1 Apr 2008 03:45:33 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCHv2 2/3] ep8248e: Reference SMC parameter RAM base in
-	thedevice tree.
-Date: Mon, 31 Mar 2008 12:45:27 -0500
-Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B043011DF@ismail.innsys.innovsys.com>
-In-Reply-To: <47F12287.5030503@freescale.com>
-References: <200803261217.46671.laurentp@cse-semaphore.com><200803281854.28595.laurentp@cse-semaphore.com><47ED33FC.3020107@freescale.com><200803311109.02422.laurentp@cse-semaphore.com>
-	<20080331153301.GA23806@ld0162-tx32.am.freescale.net>
-	<DCEAAC0833DD314AB0B58112AD99B93B043011C7@ismail.innsys.innovsys.com>
-	<47F12287.5030503@freescale.com>
-From: "Rune Torgersen" <runet@innovsys.com>
-To: "Scott Wood" <scottwood@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 7B157DE1FD
+	for <linuxppc-dev@ozlabs.org>; Tue,  1 Apr 2008 03:52:11 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e31.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m2VHq86p011404
+	for <linuxppc-dev@ozlabs.org>; Mon, 31 Mar 2008 13:52:08 -0400
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m2VHpx9U158640
+	for <linuxppc-dev@ozlabs.org>; Mon, 31 Mar 2008 11:51:59 -0600
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m2VHpw3F016997
+	for <linuxppc-dev@ozlabs.org>; Mon, 31 Mar 2008 11:51:59 -0600
+Date: Mon, 31 Mar 2008 12:48:14 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: jyoung5@us.ibm.com
+Subject: Re: [kvm-ppc-devel] [PATCH] Add idle power save for ppc 4xx
+Message-ID: <20080331124814.4ebfc405@zod.rchland.ibm.com>
+In-Reply-To: <1206982322.9165.7.camel@thinkpadL>
+References: <10aea37177130bbe5de7.1206969157@thinkpadL>
+	<1206980871.5919.5.camel@basalt>
+	<1206982322.9165.7.camel@thinkpadL>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: kvm-ppc-devel@lists.sourceforge.net, linuxppc-dev@ozlabs.org,
+	Hollis Blanchard <hollisb@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,20 +38,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Scott Wood wrote:
-> Rune Torgersen wrote:
->> Scott Wood wrote:
->>> 0x2000 minus sizeof(...) would be a good default for CPM1 and CPM2
->>> (8280 has its first chunk go up to 0x4000, but for some reason that
->>> didn't get reflected in the dts for the one 8280 board in-tree).
->>=20
->> Except that last time I tested it, it is not from 0 - 0x4000, but the
->> extra 0x2000 is added from offset 0x9000.....
->> So 8280 has available muram from 0 - 0x2000 and 0x9000 - 0xb000
->=20
-> According to the docs, it has 0 - 0x4000 and 0x9000 - 0xc000.
+On Mon, 31 Mar 2008 11:52:02 -0500
+Jerone Young <jyoung5@us.ibm.com> wrote:
 
-I tried it on out 8280 board inhouse, and any addresses from 0x2000 to
-0x3fff does not work with at least the MCC's.
-(running ss7 with the extended ss7 microcode)
-If I only used 0-0x2000 and 0x9000 to 0xB000 then it is happy.
+> > void ppc4xx_idle(void)
+> > 
+> > > +{
+> > > +	unsigned long msr_save;
+> > > +
+> > > +	/* set wait state MSR */
+> > > +	local_irq_enable();
+> > > +	msr_save = mfmsr();
+> > > +	mtmsr(msr_save|MSR_WE);
+> > 
+> > Why don't you |MSR_WE|MSR_EE at the same time?
+> 
+> You technically can do this. But the question is do all 4xx cpus use
+> MSR_EE to enable interrupts? I can assume they do (from what I know),
+
+They do for enabling external interrupts of normal priority.  MSR_CE
+might also be used/needed if someone has the watchdog enabled or has an
+external device with the UIC pin mapped as a CE.
+
+josh
