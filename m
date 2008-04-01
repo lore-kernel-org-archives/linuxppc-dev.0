@@ -1,21 +1,16 @@
-Return-Path: <laurentp@cse-semaphore.com>
-Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
-	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id EA7E3DDE28
-	for <linuxppc-dev@ozlabs.org>; Tue,  1 Apr 2008 19:47:47 +1100 (EST)
-From: Laurent Pinchart <laurentp@cse-semaphore.com>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Subject: Re: [PATCHv2] powerpc: Describe memory-mapped RAM&ROM chips OF
-	bindings
-Date: Tue, 1 Apr 2008 10:47:42 +0200
-References: <200803311839.10519.laurentp@cse-semaphore.com>
-	<47F11A19.4050305@ru.mvista.com>
-In-Reply-To: <47F11A19.4050305@ru.mvista.com>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200804011047.42971.laurentp@cse-semaphore.com>
-Cc: ben@simtec.co.uk, linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
-	David Gibson <david@gibson.dropbear.id.au>
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18418.2460.594352.712502@cargo.ozlabs.ibm.com>
+Date: Tue, 1 Apr 2008 21:08:28 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 01/11] [POWERPC] bootwrapper: Allow specifying of image
+	physical offset
+In-Reply-To: <1207015715-31496-2-git-send-email-galak@kernel.crashing.org>
+References: <1207015715-31496-1-git-send-email-galak@kernel.crashing.org>
+	<1207015715-31496-2-git-send-email-galak@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,44 +20,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Monday 31 March 2008 19:06, Sergei Shtylyov wrote:
-> Hello.
->=20
-> Laurent Pinchart wrote:
->=20
-> > Signed-off-by: Laurent Pinchart <laurentp@cse-semaphore.com>
-> > ---
-> >  Documentation/powerpc/booting-without-of.txt |   13 ++++++++++++-
-> >  1 files changed, 12 insertions(+), 1 deletions(-)
-> >=20
-> > diff --git a/Documentation/powerpc/booting-without-of.txt=20
-b/Documentation/powerpc/booting-without-of.txt
-> > index 7b4e8a7..3e1963b 100644
-> > --- a/Documentation/powerpc/booting-without-of.txt
-> > +++ b/Documentation/powerpc/booting-without-of.txt
-> > @@ -57,7 +57,8 @@ Table of Contents
-> >        n) 4xx/Axon EMAC ethernet nodes
-> >        o) Xilinx IP cores
-> >        p) Freescale Synchronous Serial Interface
-> > -	  q) USB EHCI controllers
-> > +      q) USB EHCI controllers
-> > +      r) Memory-mapped RAM & ROM
->=20
->     Memory-mapped RA/RO Memory again? Should better drop this. :-)
+Kumar Gala writes:
 
-You're quite picky, aren't you ? :-)
+> Normally we assume kernel images will be loaded at offset 0. However
+> there are situations, like when the kernel itself is running at a non-zero
+> physical address, that we don't want to load it at 0.
+> 
+> Allow the wrapper to take an offset.  We use this when building u-boot images.
 
-I suppose "Memory-mapped RA & RO" won't be accepted, so what about "Auxilia=
-ry=20
-RAM & ROM" ?
+This makes it a bit harder to build a kernel and then wrap it later
+on, since one would have to know what -m value to give.  Would it
+possible for either the wrapper script or mkimage to peek in the ELF
+header of the vmlinux to work out what physical address to use?
 
-=2D-=20
-Laurent Pinchart
-CSE Semaphore Belgium
-
-Chauss=E9e de Bruxelles, 732A
-B-1410 Waterloo
-Belgium
-
-T +32 (2) 387 42 59
-=46 +32 (2) 387 42 75
+Paul.
