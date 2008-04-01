@@ -1,19 +1,23 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 0E008DDF32
-	for <linuxppc-dev@ozlabs.org>; Tue,  1 Apr 2008 17:54:47 +1100 (EST)
-Date: Tue, 1 Apr 2008 17:54:42 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH] Make #include <sysdev/foo.h> work for 64-bit powerpc
-Message-Id: <20080401175442.bf0d0c34.sfr@canb.auug.org.au>
-In-Reply-To: <be85035fa2cb015a8020e63b40c6d5375aaff866.1207031915.git.michael@ellerman.id.au>
-References: <be85035fa2cb015a8020e63b40c6d5375aaff866.1207031915.git.michael@ellerman.id.au>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Tue__1_Apr_2008_17_54_42_+1100_.LGvYN91SQ_Nr9Og"
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <dargaud@lpsc.in2p3.fr>
+Received: from lpsc-mail.in2p3.fr (lpsc-mail.in2p3.fr [134.158.40.8])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 88B5CDDF33
+	for <linuxppc-dev@ozlabs.org>; Tue,  1 Apr 2008 18:24:50 +1100 (EST)
+Received: from LPSC0173W (lpscvpn9.in2p3.fr [134.158.47.245])
+	by lpsc-mail.in2p3.fr (8.13.1/8.13.1/In2p3) with SMTP id m317Oitq021702
+	for <linuxppc-dev@ozlabs.org>; Tue, 1 Apr 2008 09:24:45 +0200
+Message-ID: <093b01c893c9$758b1d60$f52f9e86@LPSC0173W>
+From: "Guillaume Dargaud" <dargaud@lpsc.in2p3.fr>
+To: <linuxppc-dev@ozlabs.org>
+References: <052801c88f37$3b51f7e0$ad289e86@LPSC0173W><fa686aa40803260601j6e7f507fpe4d31c7c462fce5e@mail.gmail.com><066b01c890c0$17d9a800$ad289e86@LPSC0173W><068401c890d0$294e3e10$ad289e86@LPSC0173W>
+	<20080328160614.6018DF68050@mail116-sin.bigfish.com>
+Subject: Re: Patch: FW:Xilinx: BSP: Updated ML405 to
+	matchhardwareusedfortesting
+Date: Tue, 1 Apr 2008 09:24:37 +0200
+MIME-Version: 1.0
+Content-Type: text/plain; format=flowed; charset="iso-8859-1";
+	reply-type=original
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,35 +27,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Tue__1_Apr_2008_17_54_42_+1100_.LGvYN91SQ_Nr9Og
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi Michael,
-
-On Tue,  1 Apr 2008 17:39:11 +1100 (EST) Michael Ellerman <michael@ellerman=
-.id.au> wrote:
+>> I should add that I've tried several things:
+>> - compile the Xilinx kernel as indicated in my previous message.
+>> - compile it with just the xparameters_ml*.h files added
 >
-> We currently have inconsistent settings between 32 & 64-bit which means
-> 32-bit code can #include <sysdev/foo.h> but 64-bit code can't.
+> This should work.
 
-Kumar sent a very similar (if not identical) patch earlier today.
+It doesn't... Which makes me wonder if my problem may be with the boot
+itself.
+Once I have my zImage properly (?) compiled, I create an ACE file thus:
+$ xmd -tcl genace.tcl -jprog -board ml405 -target ppc_hw -hw system.bit -elf 
+zImage -ace Kernel26.ace
+But then nothing happens when I boot with it.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+[...]
+>> .config:773:warning: trying to assign nonexistent symbol XILINX_ML40x
+>
+> Did you check out the head of the tree?
 
---Signature=_Tue__1_Apr_2008_17_54_42_+1100_.LGvYN91SQ_Nr9Og
-Content-Type: application/pgp-signature
+You mean svn head ? Yes.
+Something escapes me here. I pull the complete kernel git tree from Xilinx 
+and
+when I menuconfig it, it removes the Xilinx additions ('nonexistent symbol 
+')...
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+I'm not very knowledgeable of the kernel organization, so I don't know what
+this means, but I imagine there's a relation between 'XILINX_ML40x=y' in
+.config, Kconfig which holds the help text and the .h/.c driver files
+themselves. How can I check that the whole package is sane ?
 
-iD8DBQFH8dw2TgG2atn1QN8RAraoAJ93846m+/AN4J3/SpZJY+UNTox5ugCeOHhR
-phuIVf2OG4MGoEoUouYLysM=
-=CjwH
------END PGP SIGNATURE-----
+>> Two more things:
+>>
+>> $ make ARCH=ppc ml405_defconfig
+>> cp  .config
+>> cp: missing destination file operand after `.config'
+>> Try `cp --help' for more information.
+>> make: *** [ml405_defconfig] Error 1
+>
+> I'd suggest starting over with a fresh tree.
+> 1) Copy the xparameters file, overwriting the appropriate xparameters
+> file in the git tree.
+> 2) make ARCH=ppc ml405_defconfig
+> 3) make ARCH=ppc all
 
---Signature=_Tue__1_Apr_2008_17_54_42_+1100_.LGvYN91SQ_Nr9Og--
+One detail, I'm not doing 'make' from the kernel directory, but from the
+buildroot directory, this way I'm sure it's compiled with the appropriate
+cross-compiler and environment. Maybe targets such as ml405_defconfig are 
+not transmitted properly from one make to the other. Anyone who knows 
+buildroot care to
+comment on that ?
+
+-- 
+Guillaume Dargaud
+http://www.gdargaud.net/
