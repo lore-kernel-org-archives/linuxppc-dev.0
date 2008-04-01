@@ -1,40 +1,22 @@
-Return-Path: <John.Linn@xilinx.com>
-Received: from outbound6-sin-R.bigfish.com (outbound-sin.frontbridge.com
-	[207.46.51.80])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 30D86DDED4
+Return-Path: <rwoodworth@securics.com>
+Received: from securics.com (mail.securics.com [128.198.58.14])
+	by ozlabs.org (Postfix) with ESMTP id 03E62DDF4C
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  2 Apr 2008 10:41:45 +1100 (EST)
-Received: from outbound6-sin.bigfish.com (localhost.localdomain [127.0.0.1])
-	by outbound6-sin-R.bigfish.com (Postfix) with ESMTP id 104B3A398C4
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  1 Apr 2008 23:41:43 +0000 (UTC)
-Received: from mail111-sin-R.bigfish.com (unknown [10.3.40.3])
-	by outbound6-sin.bigfish.com (Postfix) with ESMTP id EFA8FC7804C
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  1 Apr 2008 23:41:42 +0000 (UTC)
-Received: from mail111-sin (localhost.localdomain [127.0.0.1])
-	by mail111-sin-R.bigfish.com (Postfix) with ESMTP id E3B3C1700396
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  1 Apr 2008 23:41:42 +0000 (UTC)
-Received: from xsj-gw1 (unknown [149.199.60.83])
-	by mail111-sin.bigfish.com (Postfix) with ESMTP id 41B13191804A
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  1 Apr 2008 23:41:42 +0000 (UTC)
-Received: from unknown-38-66.xilinx.com ([149.199.38.66]
-	helo=xsj-smtp1.xilinx.com) by xsj-gw1 with esmtp (Exim 4.63)
-	(envelope-from <John.Linn@xilinx.com>) id 1Jgq6n-0005RM-Iq
-	for linuxppc-embedded@ozlabs.org; Tue, 01 Apr 2008 16:41:41 -0700
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C89451.EF42829E"
-Subject: Virtex V5FX PPC 440 Support In Xilinx Git Tree
-Date: Tue, 1 Apr 2008 17:41:40 -0600
-From: "John Linn" <John.Linn@xilinx.com>
-To: <linuxppc-embedded@ozlabs.org>
-Message-Id: <20080401234142.41B13191804A@mail111-sin.bigfish.com>
-Cc: git <git@xilinx.com>
+	Wed,  2 Apr 2008 10:43:49 +1100 (EST)
+Subject: RE: xilinx Ml405 NFS mount problem
+From: Robert Woodworth <rwoodworth@securics.com>
+To: John Linn <John.Linn@xilinx.com>
+In-Reply-To: <20080401165329.D31E3AA008E@mail29-dub.bigfish.com>
+References: <BAY138-W7044A57F2CF37F5DB50F6B2F50@phx.gbl>
+	<20080401142910.5BFD038005F@mail141-dub.bigfish.com>
+	<BAY138-W40E4E945BA6E40EABEE811B2F50@phx.gbl>
+	<1207068618.4830.60.camel@PisteOff>
+	<20080401165329.D31E3AA008E@mail29-dub.bigfish.com>
+Content-Type: text/plain; charset=utf-8
+Date: Tue, 01 Apr 2008 17:43:48 -0600
+Message-Id: <1207093428.4830.79.camel@PisteOff>
+Mime-Version: 1.0
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -45,323 +27,387 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
-
-------_=_NextPart_001_01C89451.EF42829E
-Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: quoted-printable
-
-I pushed PowerPC 440 support to the Xilinx Git server with support for
-ppc arch and with powerpc arch support coming in the near future.=20
-
-=20
-
-A default kernel configuration file, ml507_defconfig, is provided in the
-kernel tree to support the Xilinx ML507 board with the PowerPC 440.
-
-=20
-
-Thanks,
-
-John
-
-=20
-
-=20
+Can you test your packet loss with your setup??
+GigE or 100T??
+Do you have hardware checksum turned on in your bitfile?
 
 
-------_=_NextPart_001_01C89451.EF42829E
-Content-Type: text/html;
-	charset="US-ASCII"
-Content-Transfer-Encoding: quoted-printable
+I strongly believe that there is a timing problem in the MPMC3/LL_TEMAC.
+I think the smaller FX12 does not suffer as much as the larger FX60.  My
+FX12 is fairly good, my FX60 is very bad.  Guessing. The FX20 in the
+ML405 is somewhere between.
 
-<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
-xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
-xmlns=3D"http://www.w3.org/TR/REC-html40">
+When I make small changes to my bit file (I'm currently working on an
+image processing HDL module) the quality of my LL_TEMAC changes
+dramatically.   If I take out one of my custom modules and re-synthesize
+the LL_TEMAC packet loss goes way up. Add another module, re-synthesize
+and packet loss is down.
 
-<head>
-<meta http-equiv=3DContent-Type content=3D"text/html; =
-charset=3Dus-ascii">
-<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
-<style>
-<!--
- /* Style Definitions */
- p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{margin:0in;
-	margin-bottom:.0001pt;
-	font-size:12.0pt;
-	font-family:Arial;}
-h1
-	{margin-top:12.0pt;
-	margin-right:0in;
-	margin-bottom:3.0pt;
-	margin-left:.3in;
-	text-indent:-.3in;
-	page-break-after:avoid;
-	mso-list:l0 level1 lfo8;
-	font-size:16.0pt;
-	font-family:Arial;}
-h2
-	{margin-top:0in;
-	margin-right:0in;
-	margin-bottom:12.0pt;
-	margin-left:.4in;
-	text-indent:-.4in;
-	page-break-after:avoid;
-	mso-list:l0 level2 lfo8;
-	font-size:14.0pt;
-	font-family:Arial;}
-h3
-	{margin-top:12.0pt;
-	margin-right:0in;
-	margin-bottom:3.0pt;
-	margin-left:.5in;
-	text-indent:-.5in;
-	page-break-after:avoid;
-	mso-list:l1 level3 lfo10;
-	font-size:13.0pt;
-	font-family:Arial;}
-a:link, span.MsoHyperlink
-	{color:blue;
-	text-decoration:underline;}
-a:visited, span.MsoHyperlinkFollowed
-	{color:purple;
-	text-decoration:underline;}
-span.EmailStyle17
-	{mso-style-type:personal-compose;
-	font-family:Arial;
-	color:windowtext;}
-@page Section1
-	{size:8.5in 11.0in;
-	margin:.5in .5in .5in .5in;}
-div.Section1
-	{page:Section1;}
- /* List Definitions */
- @list l0
-	{mso-list-id:1143350910;
-	mso-list-template-ids:1338282562;}
-@list l0:level1
-	{mso-level-style-link:"Heading 1";
-	mso-level-text:%1;
-	mso-level-tab-stop:.3in;
-	mso-level-number-position:left;
-	margin-left:.3in;
-	text-indent:-.3in;}
-@list l0:level2
-	{mso-level-style-link:"Heading 2";
-	mso-level-text:"%1\.%2";
-	mso-level-tab-stop:.4in;
-	mso-level-number-position:left;
-	margin-left:.4in;
-	text-indent:-.4in;}
-@list l0:level3
-	{mso-level-text:"%1\.%2\.%3";
-	mso-level-tab-stop:.5in;
-	mso-level-number-position:left;
-	margin-left:.5in;
-	text-indent:-.5in;}
-@list l0:level4
-	{mso-level-text:"%1\.%2\.%3\.%4";
-	mso-level-tab-stop:.6in;
-	mso-level-number-position:left;
-	margin-left:.6in;
-	text-indent:-.6in;}
-@list l0:level5
-	{mso-level-text:"%1\.%2\.%3\.%4\.%5";
-	mso-level-tab-stop:.7in;
-	mso-level-number-position:left;
-	margin-left:.7in;
-	text-indent:-.7in;}
-@list l0:level6
-	{mso-level-text:"%1\.%2\.%3\.%4\.%5\.%6";
-	mso-level-tab-stop:.8in;
-	mso-level-number-position:left;
-	margin-left:.8in;
-	text-indent:-.8in;}
-@list l0:level7
-	{mso-level-text:"%1\.%2\.%3\.%4\.%5\.%6\.%7";
-	mso-level-tab-stop:.9in;
-	mso-level-number-position:left;
-	margin-left:.9in;
-	text-indent:-.9in;}
-@list l0:level8
-	{mso-level-text:"%1\.%2\.%3\.%4\.%5\.%6\.%7\.%8";
-	mso-level-tab-stop:1.0in;
-	mso-level-number-position:left;
-	margin-left:1.0in;
-	text-indent:-1.0in;}
-@list l0:level9
-	{mso-level-text:"%1\.%2\.%3\.%4\.%5\.%6\.%7\.%8\.%9";
-	mso-level-tab-stop:1.1in;
-	mso-level-number-position:left;
-	margin-left:1.1in;
-	text-indent:-1.1in;}
-@list l1
-	{mso-list-id:1860200171;
-	mso-list-template-ids:1400561736;}
-@list l1:level1
-	{mso-level-text:%1;
-	mso-level-tab-stop:.3in;
-	mso-level-number-position:left;
-	margin-left:.3in;
-	text-indent:-.3in;}
-@list l1:level2
-	{mso-level-text:"%1\.%2";
-	mso-level-tab-stop:.4in;
-	mso-level-number-position:left;
-	margin-left:.4in;
-	text-indent:-.4in;}
-@list l1:level3
-	{mso-level-reset-level:level2;
-	mso-level-style-link:"Heading 3";
-	mso-level-text:"%1\.%2\.%3";
-	mso-level-tab-stop:.5in;
-	mso-level-number-position:left;
-	margin-left:.5in;
-	text-indent:-.5in;}
-@list l1:level4
-	{mso-level-text:"%1\.%2\.%3\.%4";
-	mso-level-tab-stop:.6in;
-	mso-level-number-position:left;
-	margin-left:.6in;
-	text-indent:-.6in;}
-@list l1:level5
-	{mso-level-text:"%1\.%2\.%3\.%4\.%5";
-	mso-level-tab-stop:.7in;
-	mso-level-number-position:left;
-	margin-left:.7in;
-	text-indent:-.7in;}
-@list l1:level6
-	{mso-level-text:"%1\.%2\.%3\.%4\.%5\.%6";
-	mso-level-tab-stop:.8in;
-	mso-level-number-position:left;
-	margin-left:.8in;
-	text-indent:-.8in;}
-@list l1:level7
-	{mso-level-text:"%1\.%2\.%3\.%4\.%5\.%6\.%7";
-	mso-level-tab-stop:.9in;
-	mso-level-number-position:left;
-	margin-left:.9in;
-	text-indent:-.9in;}
-@list l1:level8
-	{mso-level-text:"%1\.%2\.%3\.%4\.%5\.%6\.%7\.%8";
-	mso-level-tab-stop:1.0in;
-	mso-level-number-position:left;
-	margin-left:1.0in;
-	text-indent:-1.0in;}
-@list l1:level9
-	{mso-level-text:"%1\.%2\.%3\.%4\.%5\.%6\.%7\.%8\.%9";
-	mso-level-tab-stop:1.1in;
-	mso-level-number-position:left;
-	margin-left:1.1in;
-	text-indent:-1.1in;}
-@list l2
-	{mso-list-id:2077240681;
-	mso-list-template-ids:-762429638;}
-@list l2:level1
-	{mso-level-text:%1;
-	mso-level-tab-stop:.3in;
-	mso-level-number-position:left;
-	margin-left:.3in;
-	text-indent:-.3in;}
-@list l2:level2
-	{mso-level-text:"%1\.%2";
-	mso-level-tab-stop:.4in;
-	mso-level-number-position:left;
-	margin-left:.4in;
-	text-indent:-.4in;}
-@list l2:level3
-	{mso-level-text:"%1\.%2\.%3";
-	mso-level-tab-stop:.5in;
-	mso-level-number-position:left;
-	margin-left:.5in;
-	text-indent:-.5in;}
-@list l2:level4
-	{mso-level-text:"%1\.%2\.%3\.%4";
-	mso-level-tab-stop:.6in;
-	mso-level-number-position:left;
-	margin-left:.6in;
-	text-indent:-.6in;}
-@list l2:level5
-	{mso-level-text:"%1\.%2\.%3\.%4\.%5";
-	mso-level-tab-stop:.7in;
-	mso-level-number-position:left;
-	margin-left:.7in;
-	text-indent:-.7in;}
-@list l2:level6
-	{mso-level-text:"%1\.%2\.%3\.%4\.%5\.%6";
-	mso-level-tab-stop:.8in;
-	mso-level-number-position:left;
-	margin-left:.8in;
-	text-indent:-.8in;}
-@list l2:level7
-	{mso-level-text:"%1\.%2\.%3\.%4\.%5\.%6\.%7";
-	mso-level-tab-stop:.9in;
-	mso-level-number-position:left;
-	margin-left:.9in;
-	text-indent:-.9in;}
-@list l2:level8
-	{mso-level-text:"%1\.%2\.%3\.%4\.%5\.%6\.%7\.%8";
-	mso-level-tab-stop:1.0in;
-	mso-level-number-position:left;
-	margin-left:1.0in;
-	text-indent:-1.0in;}
-@list l2:level9
-	{mso-level-text:"%1\.%2\.%3\.%4\.%5\.%6\.%7\.%8\.%9";
-	mso-level-tab-stop:1.1in;
-	mso-level-number-position:left;
-	margin-left:1.1in;
-	text-indent:-1.1in;}
-ol
-	{margin-bottom:0in;}
-ul
-	{margin-bottom:0in;}
--->
-</style>
 
-</head>
+I would *really* like a Xilinx EDK expert give me some advise on this
+issue.
 
-<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
 
-<div class=3DSection1>
 
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt'>I pushed
-PowerPC 440 support to the Xilinx Git server with support for ppc arch =
-and with
-powerpc arch support coming in the near future. =
-<o:p></o:p></span></font></p>
+Rob.
 
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt'><o:p>&nbsp;</o:p></span></font></p>
 
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt'>A
-default kernel configuration file, ml507_defconfig, is provided in the =
-kernel
-tree to support the Xilinx ML507 board with the PowerPC =
-440.<o:p></o:p></span></font></p>
 
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt'><o:p>&nbsp;</o:p></span></font></p>
 
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt'>Thanks,<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt'>John<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt'><o:p>&nbsp;</o:p></span></font></p>
-
-</div>
-
-</body>
-
-</html>
-
-------_=_NextPart_001_01C89451.EF42829E--
+On Tue, 2008-04-01 at 10:53 -0600, John Linn wrote:
+> Now that you say that, I have been running TCP with my NFS mount as I'm mounting across a corporate network.
+> 
+> I am also using the latest LL TEMAC with EDK 10.1.
+> 
+> Thanks,
+> John
+> 
+> -----Original Message-----
+> From: Robert Woodworth [mailto:rwoodworth@securics.com] 
+> Sent: Tuesday, April 01, 2008 10:50 AM
+> To: MingLiu
+> Cc: John Linn; linuxppc-embedded@ozlabs.org
+> Subject: RE: xilinx Ml405 NFS mount problem
+> 
+> I think you may be suffering from the latest LL_TEMAC packet loss
+> problem.  (NFS/UDP really does not like packet loss)
+> 
+> 
+> Let me guess.  
+> You are using a base system from "Base System Builder Wizard"?
+> EDK 9.2i. Default syntheses/P&R options.
+> 
+> I have seen a massive packet loss problems on my ML403 and two other
+> boards I have with an FX60.
+> 
+> This is probably a hardware problem.
+> Xilinx has acknowledged an LL_TEMAC problem to me but has not provided a
+> fix.  I have heard that things are better with EDK/ISE-10.1 but I have
+> not tested it.
+> 
+> 
+> The vendor of one of my boards (Pico) has fixed the problem on the FX60
+> by highly constraining the timing of the LL_TEMAC in map/PR.  On my
+> ML403 I used similar constraints and it fixed the problem, but only if
+> the device is plugged into a GigE switch.  The problem is still there
+> with the same .bit file on a 100-T switch. 
+> 
+> 
+> Are you on a GigE switch?
+> 
+> 
+> 
+> Rob.
+> 
+> 
+> 
+> 
+> 
+> 
+> On Tue, 2008-04-01 at 16:15 +0000, MingLiu wrote:
+> > Dear John,
+> >  
+> > Thank you for your replying. 
+> > 
+> > >It’s not obvious to me what the problem is as I don’t see any driver
+> > failures. Have you >tried using a ramdisk and then seeing if the
+> > network is working before using NFS root?  
+> >  
+> > Not yet. I will try it soon. However from the information on the
+> > LL_TEMAC, it seems everything is fine and it should work. 
+> >  
+> > 
+> > 
+> > >And I’m assuming you have used the NFS root before so you know that
+> > it’s good for sure.
+> > 
+> >  
+> > 
+> > >I test on the ML405 with NFS root and haven’t seen this problem, but
+> > my setup is a little different.  I use DHCP rather than >a static IP,
+> > but other than that it’s similar.
+> > 
+> >  
+> > 
+> > Yes. I used NFS before. I can make sure my NFS server works well. Also
+> > in principle, static IP should get a same result as DHCP, I think. 
+> > 
+> >  
+> > 
+> > >How long has it been since you pulled from the Xilinx Git tree?
+> > 
+> >  
+> > 
+> > I just pulled the Xilinx tree quite recently. I am using a latest
+> > kernel.
+> > 
+> >  
+> > 
+> > BR 
+> > 
+> > Ming
+> > 
+> >  
+> > 
+> >          
+> >         
+> >         And I’m assuming you have used the NFS root before so you know
+> >         that it’s good for sure.
+> >         
+> >          
+> >         
+> >         I test on the ML405 with NFS root and haven’t seen this
+> >         problem, but my setup is a little different.  I use DHCP
+> >         rather than a static IP, but other than that it’s similar.
+> >         
+> >          
+> >         
+> >         I’m assuming that you accidentally got 2 different powerup
+> >         outputs in the message below as the 1st stops and a 2nd starts
+> >         in the middle.
+> >         
+> >          
+> >         
+> >         How long has it been since you pulled from the Xilinx Git
+> >         tree?
+> >         
+> >          
+> >         
+> >         Thanks,
+> >         
+> >         John
+> >         
+> >          
+> >         
+> >                                        
+> >         ______________________________________________________________
+> >         From: linuxppc-embedded-bounces
+> >         +john.linn=xilinx.com@ozlabs.org
+> >         [mailto:linuxppc-embedded-bounces
+> >         +john.linn=xilinx.com@ozlabs.org] On Behalf Of MingLiu
+> >         Sent: Tuesday, April 01, 2008 8:12 AM
+> >         To: linuxppc-embedded@ozlabs.org
+> >         Subject: xilinx Ml405 NFS mount problem
+> >         
+> >         
+> >          
+> >         
+> >         Dear friends,
+> >         
+> >         I am bringing up my kernel from Xilinx git tree. Unfortunately I met some
+> >         problem when mounting the root file system. Here is the information
+> >         listed. I will appreciate a lot if someone can help me out of the trouble. 
+> >         Thanks a lot!
+> >          
+> >          
+> >         loaded at:     00400000 0059F19C
+> >         board data at: 0059D120 0059D19C
+> >         relocated to:  004050C8 00405144
+> >         zimage at:     00405F3F 0059C025
+> >         avail ram:     005A0000 08000000
+> >          
+> >         Linux/PPC load: root=/dev/nfs
+> >         ip=192.168.0.4:192.168.0.3:192.168.0.3:255.255.255.0 rw
+> >         nfsroot=192.168.0.3:/home/mingliu/ml403_rootfs console=ttyUL0,38400
+> >         mem=32M
+> >         Uncompressing Linux...done.
+> >         Now booting the kernel
+> >         Linux version 2.6.24-rc8-xlnx-g1db182b8-dirty (mingliu@cca01) (gcc version
+> >         3.4.1) #7 Tue Apr 1 14:55:25 CEST 2008
+> >         Xilinx Generic PowerPC board support package (Xilinx ML405) (Virtex-4 FX)
+> >         Zone PFN ranges:
+> >           DMA             0 ->     8192
+> >         
+> >           Normal       8192 ->     8192
+> >         
+> >           HighMem      8192 ->     8192
+> >         Movable zone start PFN for each node
+> >         early_node_map[1] active PFN ranges
+> >             0:        0 ->     8192
+> >         Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 8128
+> >         Kernel command line: root=/de v/nfs
+> >         ip=192.168.0.4:192.168.0.3:192.168.0.3:255.255.255.0 rw
+> >         nfsroot=192.168.0.3:/home/mingliu/ml403_rootfs console=ttyUL0,38400
+> >         mem=32M
+> >         Xilinx INTC #0 at 0x81800000 mapped to 0xFDFFF000
+> >         PID hash table entries: 128 (order: 7, 512 bytes)
+> >         Console: colour dummy device 80x25
+> >         Dentry cache hash table entries: 4096 (order: 2, 16384 bytes)
+> >         Inode-cache hash table entries: 2048 (order: 1, 8192 bytes)
+> >         Memory: 28884k available (2552k kernel code, 944k data, 84k init, 0k highmem)
+> >         SLUB: Genslabs=11, HWalign=32, Order=0-1, MinObjects=4, CPUs=1, Nodes=1
+> >         Mount-cache hash table entries: 512
+> >         net_namespace: 64 bytes
+> >         NET: Registered protocol family 16
+> >         Registering device uartlite:0
+> >         Fixup MAC address for xilinx_lltemac:0
+> >         Regis tering device xilinx_lltemac:0
+> >         NET: Registered protocol family 2
+> >         IP route cache hash table entries: 1024 (order: 0, 4096 bytes)
+> >         TCP established hash table entries: 1024 (order: 1, 8192 bytes)
+> >         TCP bind hash table entries: 1024 (order: 0, 4096 bytes)
+> >         TCP: Hash tables configured (established 1024 bind 1024)
+> >         TCP reno registered
+> >         sysctl table check failed: /kernel/l2cr .1.31 Missing strategy
+> >         Call Trace:
+> >         [c1c0fe50] [c0008b70] show_stack+0x40/0x194 (unreliable)
+> >         [c1c0fe90] [c003aed4] set_fail+0x68/0x80
+> >         [c1c0feb0] [c003b4ec] sysctl_check_table+0x600/0x77c
+> >         [c1c0fef0] [c003b4d4] sysctl_check_table+0x5e8/0x77c
+> >         [c1c0ff30] [c002605c] register_sysctl_table+0x64/0xb4
+> >         [c1c0ff50] [c034579c] register_ppc_htab_sysctl+0x18/0x2c
+> >         [c1c0ff60] [c034482c] kernel_init+0x94/0x2bc
+> >         [c1c0fff0] [c0004d58] kernel_thread+0x44/0x60
+> >         Installing knfsd (copyright (C) 1996 okir@monad.swb.de).
+> >         fuse init (API version 7.9)
+> >         io scheduler noop registered
+> >         io scheduler anticipatory registered
+> >         io scheduler deadline registered
+> >         io scheduler cfq registered (default)
+> >         uartlite.0: ttyUL0 at MM IO 0x84000003 (irq = 3) is a uartlite
+> >         console [ttyUL0] enabled
+> >         loop: module loaded
+> >         nbd: registered device at major 43
+> >         xilinx_lltemac xilinx_lltemac.0: MAC address is now  0: a:35: 1: 2: 3
+> >         xilinx_lltemac xilinx_lltemac.0: XLlTemac: using DMA mode.
+> >         XLlTemac: Dma base address: phy: 0x84600100, virt: 0xc3008100
+> >         XLlTemac: buffer descriptor size: 32768 (0x8000)
+> >         XLlTemac: Allocating DMA descriptors with kmalloc<6>XLlTemac:
+> >         (buffer_descriptor_init) phy: 0x1d18000, virt: 0xc1d18000, size: 0x8000
+> >         XTemac: PHY detected at address 7.
+> >         xilinx_lltemac xilinx_lltemac.0: eth0: Xilinx TEMAC at 0x81C00000 mapped
+> >         to 0xC3004000, irq=2
+> >         console [netcon0] enabled
+> >         Linux version 2.6.24-rc8-xlnx-g1db182b8-dirty (mingliu@cca01) (gcc version
+> >         3.4.1) #7 Tue Apr 1 14:55:25 CEST 2008
+> >         
+> >         Xilinx Generic PowerPC board support package (Xilinx ML405)
+> >         (Virtex-4 FX)
+> >         
+> >         Zone PFN ranges:
+> >           DMA             0 ->     8192
+> >           Normal       8192 ->     8192
+> >           HighMem      8192 ->     8192
+> >         Movable zone start PFN for each node
+> >         early_node_map[1] active PFN range
+> >          s
+> >             0:        0 ->     8192
+> >         Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 8128
+> >         Kernel command line: root=/dev/nfs
+> >         ip=192.168.0.4:192.168.0.3:192.168.0.3:255.255.255.0 rw
+> >         nfsroot=192.168.0.3:/home/mingliu/ml403_rootfs console=ttyUL0,38400
+> >         mem=32M
+> >         Xilinx INTC #0 at 0x81800000 mapped to 0xFDFFF000
+> >         PID hash table entries: 128 (order: 7, 512 bytes)
+> >         Console: colour dummy device 80x25
+> >         Dentry cache hash table entries: 4096 (order: 2, 16384 bytes)
+> >         Inode-cache hash table entries: 2048 (order: 1, 8192 bytes)
+> >         Memory: 28884k available (2552k kernel code, 944k data, 84k init, 0k highmem)
+> >         SLUB: Genslabs=11, HWalign=32, Order=0-1, MinObjects=4, CPUs=1, Nodes=1
+> >         Mount-cache hash table entries: 512
+> >         n
+> >          et_namespace: 64 bytes
+> >         NET: Registered protocol family 16
+> >         Registering device uartlite:0
+> >         Fixup MAC address for xilinx_lltemac:0
+> >         Registering device xilinx_lltemac:0
+> >         NET: Registered protocol family 2
+> >         IP route cache hash table entries: 1024 (order: 0, 4096 bytes)
+> >         TCP established hash table entries: 1024 (order: 1, 8192 bytes)
+> >         TCP bind hash table entries: 1024
+> >           (order: 0, 4096 bytes)
+> >         TCP: Hash tables configured (established 1024 bind 1024)
+> >         TCP reno registered
+> >         sysctl table check failed: /kernel/l2cr .1.31 Missing strategy
+> >         Call Trace:
+> >         [c1c0fe50] [c0008b70] show_stack+0x40/0x194 (unreliable)
+> >         [c1c0fe90] [c003aed4] set_fail+0x68/0x80
+> >         [c1c0feb0] [c003b4ec] sysctl_check_table+0x600/0x77c
+> >         [c1c0fef0] [c003b4d4] sysctl_c
+> >          heck_table+0x5e8/0x77c
+> >         [c1c0ff30] [c002605c] register_sysctl_table+0x64/0xb4
+> >         [c1c0ff50] [c034579c] register_ppc_htab_sysctl+0x18/0x2c
+> >         [c1c0ff60] [c034482c] kernel_init+0x94/0x2bc
+> >         [c1c0fff0] [c0004d58] kernel_thread+0x44/0x60
+> >         Installing knfsd (copyright (C) 1996 okir@monad.swb.de).
+> >         fuse init (API version 7.9)
+> >         io scheduler noop registered<
+> >          /SPAN>
+> >         io scheduler anticipatory registered
+> >         io scheduler deadline registered
+> >         io scheduler cfq registered (default)
+> >         uartlite.0: ttyUL0 at MMIO 0x84000003 (irq = 3) is a uartlite
+> >         console [ttyUL0] enabled
+> >         loop: module loaded
+> >         nbd: registered device at major 43
+> >         xilinx_lltemac xilinx_lltemac.0: MAC address is now  0: a:35: 1: 2: 3
+> >         xilinx_lltemac xilinx_lltemac.0: XLlTemac: using DMA mode.
+> >         XLlTemac: Dma base address: phy: 0x84600100, virt: 0xc3008100
+> >         XLlTemac: buffer descriptor size: 32768 (0x8000)
+> >         XLlTemac: Allocating DMA descriptors with kmalloc<6>XLlTemac:
+> >         (buffer_descriptor_init) phy: 0x1d18000, virt: 0xc1d18000, size: 0x8000
+> >         XTemac: PHY detected at address 7.
+> >         xilinx_lltemac xilinx_lltemac.0: eth0: Xilinx TEMAC at 0x81C00000 mapped
+> >         <
+> >          SPAN style="FONT-SIZE: 12pt">to 0xC3004000, irq=2
+> >         console [netcon0] enabled
+> >         netconsole: network logging started
+> >         Generic platform RAM MTD, (c) 2004 Simtec Electronics
+> >         mice: PS/2 mouse device common for all mice
+> >         TCP cubic registered
+> >         NET: Registered protocol family 1
+> >         NET: Registered protocol family 17
+> >         RPC: Registered udp transport module.
+> >         RPC: Registered tcp transport module.
+> >         eth0: XLlTemac: Options: 0x3fa
+> >         eth0: XLlTemac: allocating interrupt 0 for dma mode tx.
+> >         eth0: XLlTemac: allocating interrupt 1 for dma mode rx.
+> >         eth0: XLlTemac: speed set to 1000Mb/s
+> >         eth0: XLlTemac: Send Threshold = 24, Receive Threshold = 4
+> >         eth0: XLlTemac: Send Wait bound = 254, Receive Wait bound = 254
+> >         IP-Config: Complete:
+> >          
+> >               device=eth0, addr=192.168.0.4, mask=255.255.255.0, gw=192.168.0.3,
+> >              host=192.168.0.4, domain=, nis-domain=(none),
+> >              bootserver=192.168.0.3, rootserver=192.168.0.3, rootpath=
+> >         Looking up port of RPC 100003/2 on 192.168.0.3
+> >         rpcbind: server 192.168.0.3 not responding, timed out
+> >         Root-NFS: Unable to get nfsd port number from server, using default
+> >         Looking up port of RPC 10000
+> >          5/1 on 192.168.0.3
+> >         rpcbind: server 192.168.0.3 not responding, timed out
+> >         Root-NFS: Unable to get mountd port number from server, using default
+> >         mount: server 192.168.0.3 not responding, timed out
+> >         Root-NFS: Server returned error -5 while mounting /home/mingliu/ml403_rootfs
+> >         VFS: Unable to mount root fs via NFS, trying floppy.
+> >         VFS: Cannot open root device "nfs" or unknown-block(2,0)
+> >         Please append a correct "root=" boot option; here are 
+> >          the available
+> >         partitions:
+> >         Kernel panic - not syncing: VFS: Unable to mount root fs on
+> >         unknown-block(2,0)
+> >         Rebooting in 180 seconds..
+> >          
+> >          
+> >         BR
+> >         Ming
+> >         
+> >          
+> >         
+> >                                        
+> >         ______________________________________________________________
+> >         Windows Live Writer，支持离线撰写博客内容，随时随地想写就写。
+> >         立即使用！
+> >         
+> >         
+> > 
+> > 
+> > ______________________________________________________________________
+> > 使用新一代 Windows Live Messenger 轻松交流和共享！ 立即体验！ 
+> > _______________________________________________
+> > Linuxppc-embedded mailing list
+> > Linuxppc-embedded@ozlabs.org
+> > https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> 
+> 
+> 
