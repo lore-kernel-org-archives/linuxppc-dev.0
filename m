@@ -1,19 +1,21 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.179])
-	by ozlabs.org (Postfix) with ESMTP id D01A6DE0A3
-	for <linuxppc-dev@ozlabs.org>; Tue,  1 Apr 2008 23:05:50 +1100 (EST)
-Received: by py-out-1112.google.com with SMTP id z59so2169473pyg.27
-	for <linuxppc-dev@ozlabs.org>; Tue, 01 Apr 2008 05:05:48 -0700 (PDT)
-Subject: Re: Commits added to powerpc.git master/powerpc-next branches
-From: Josh Boyer <jwboyer@gmail.com>
-To: Paul Mackerras <paulus@samba.org>
-In-Reply-To: <18418.5519.903340.966932@cargo.ozlabs.ibm.com>
-References: <18418.5519.903340.966932@cargo.ozlabs.ibm.com>
-Content-Type: text/plain
-Date: Tue, 01 Apr 2008 07:05:43 -0500
-Message-Id: <1207051543.12155.91.camel@vader.jdub.homelinux.org>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id 2CEADDDF2A
+	for <linuxppc-dev@ozlabs.org>; Tue,  1 Apr 2008 23:14:31 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: kvm-ppc-devel@lists.sourceforge.net,
+ jyoung5@us.ibm.com
+Subject: Re: [kvm-ppc-devel] [PATCH] Add idle power save for ppc 4xx
+Date: Tue, 1 Apr 2008 14:14:07 +0200
+References: <10aea37177130bbe5de7.1206969157@thinkpadL>
+	<1206980871.5919.5.camel@basalt>
+	<1206982322.9165.7.camel@thinkpadL>
+In-Reply-To: <1206982322.9165.7.camel@thinkpadL>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200804011414.07549.arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org, Hollis Blanchard <hollisb@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,16 +25,59 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2008-04-01 at 21:59 +1100, Paul Mackerras wrote:
-> I have updated the master and powerpc-next branches of the powerpc.git
-> repository with the following commits, including some pulled from Josh
-> Boyer and Kumar Gala.
+On Monday 31 March 2008, Jerone Young wrote:
+> >=20
+> > > +{
+> > > +=A0=A0=A0unsigned long msr_save;
+> > > +
+> > > +=A0=A0=A0/* set wait state MSR */
+> > > +=A0=A0=A0local_irq_enable();
+> > > +=A0=A0=A0msr_save =3D mfmsr();
+> > > +=A0=A0=A0mtmsr(msr_save|MSR_WE);
+> >=20
+> > Why don't you |MSR_WE|MSR_EE at the same time?
+>=20
+> You technically can do this. But the question is do all 4xx cpus use
+> MSR_EE to enable interrupts? I can assume they do (from what I know),
+> but figured it would be safer to make the local_irq_enable() call.
+> I can change it to just set the MSR_EE bit though, since all 4xx cpus
+> (as far as I know) use it.
 
-Is there something still wrong with version 3 of this patch?
+=46or correctness reasons, you actually have to set both EE and WE
+simultaneously. Otherwise, an interrupt can come in between the two
+mtmsr(), mark some thread as runnable and then go to sleep here
+without ever checking need_resched() until the next interrupt,
+which may take an indefinite time.
 
-http://patchwork.ozlabs.org/linuxppc/patch?filter=incoming&id=17516
+> >=20
+> > > +=A0=A0=A0local_irq_disable();
+> > > +}
+> >=20
+> > None of the other power_save() implementations need this. In fact many
+> > of them don't even seem to return; they just loop around mtmsr.
+>=20
+> Sure it can be removed. Though with the comment in the mach_dep
+> structure about power_save. It specifically says that interrupts are off
+> when it is called. So I was following it here mainly. But I can remove
+> the disabling of interrupts, since mtmsr is the only used under
+> power_save.
 
-It would be nice to get that in .26, and Nathan has a patch or two that
-depends on it that do some cleanup.
+With the current code, it shouldn't matter, because cpu_idle enables
+the interrupts right after calling ppc_md->power_save(), but it would
+be reasonable to disable the interrupts here anyway, if only to make
+the function return with the same state that it was entered.
 
-josh
+IMHO, the function should be
+
+void ppc4xx_idle()
+{
+        unsigned long msr_save;
+
+        msr_save =3D mfmsr();
+	/* enter idle mode */
+        mtmsr(msr_save|MSR_WE|MSR_EE);
+	/* disable interrupts again */
+        mtmsr(msr_save);
+}
+
+	Arnd <><
