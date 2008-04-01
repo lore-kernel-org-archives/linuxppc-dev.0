@@ -1,18 +1,22 @@
-Return-Path: <sam@ravnborg.org>
-Received: from pasmtpA.tele.dk (pasmtpa.tele.dk [80.160.77.114])
-	by ozlabs.org (Postfix) with ESMTP id 7EEF2DDE02
-	for <linuxppc-dev@ozlabs.org>; Wed,  2 Apr 2008 05:01:32 +1100 (EST)
-Date: Tue, 1 Apr 2008 20:01:56 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Roel Kluin <12o3l@tiscali.nl>
-Subject: Re: [PATCH 2/8] powerpc: replace `__attribute' by `__attribute__'
-Message-ID: <20080401180156.GA14553@uranus.ravnborg.org>
-References: <47F26FF6.8070300@tiscali.nl> <47F27155.1000103@tiscali.nl>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <47F27155.1000103@tiscali.nl>
-Cc: trivial@kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org,
-	lkml <linux-kernel@vger.kernel.org>
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 80158DDFE3
+	for <linuxppc-dev@ozlabs.org>; Wed,  2 Apr 2008 06:19:10 +1100 (EST)
+Message-ID: <47F28AA6.7040903@freescale.com>
+Date: Tue, 01 Apr 2008 14:19:02 -0500
+From: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
+To: Laurent Pinchart <laurentp@cse-semaphore.com>
+Subject: Re: [PATCHv4 0/5] cpm2: Reset the CPM at startup and fix the cpm_uart
+	driver accordingly.
+References: <200804011433.29841.laurentp@cse-semaphore.com>
+In-Reply-To: <200804011433.29841.laurentp@cse-semaphore.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,32 +26,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Apr 01, 2008 at 07:31:01PM +0200, Roel Kluin wrote:
-> replace `__attribute' by `__attribute__'
+Laurent Pinchart wrote:
+> Hi everybody,
 > 
-> Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
-> ---
-> diff --git a/arch/powerpc/platforms/iseries/main_store.h b/arch/powerpc/platforms/iseries/main_store.h
-> index 1a7a3f5..976b23e 100644
-> --- a/arch/powerpc/platforms/iseries/main_store.h
-> +++ b/arch/powerpc/platforms/iseries/main_store.h
-> @@ -61,7 +61,7 @@ struct IoHriMainStoreSegment4 {
->  };
->  
->  /* Main Store VPD for Power4 */
-> -struct __attribute((packed)) IoHriMainStoreChipInfo1 {
-> +struct __attribute__((packed)) IoHriMainStoreChipInfo1 {
->  	u32	chipMfgID;
->  	char	chipECLevel[4];
->  };
+> these 5 patches reset the CPM in cpm2_reset() and fix the cpm_uart driver to 
+> initialise SMC ports correctly without relying on any initialisation 
+> performed by the boot loader/wrapper. They update the boot wrapper code and
+> the EP8248E device tree to match the new SMC registers description.
+> 
+> Patches 2/5, 3/5 and 4/5 (boot wrapper and EP8248E device tree updates) 
+> haven't been tested due to lack of hardware.
 
-Please introduce __packed if you touch this.
-See include/linux/compiler-gcc.h
+Tested OK on ep8248e.
+ACK 1-5
 
-This comment is relevant for all your patches.
-We have __used and other similar variants.
-
-So take a good look at include/linux/compiler* and
-use the proper shortcuts where available.
-
-	Sam
+-Scott
