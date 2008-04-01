@@ -2,14 +2,14 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 2B7CCDDF31
-	for <linuxppc-dev@ozlabs.org>; Tue,  1 Apr 2008 12:12:45 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 7204CDDF40
+	for <linuxppc-dev@ozlabs.org>; Tue,  1 Apr 2008 12:12:47 +1000 (EST)
 From: Kumar Gala <galak@kernel.crashing.org>
 To: paulus@samba.org
-Subject: [PATCH 09/11] [POWERPC] Clean up some linker and symbol usage
-Date: Mon, 31 Mar 2008 21:08:33 -0500
-Message-Id: <1207015715-31496-10-git-send-email-galak@kernel.crashing.org>
-In-Reply-To: <1207015715-31496-9-git-send-email-galak@kernel.crashing.org>
+Subject: [PATCH 10/11] [POWERPC] Move phys_addr_t definition into asm/types.h
+Date: Mon, 31 Mar 2008 21:08:34 -0500
+Message-Id: <1207015715-31496-11-git-send-email-galak@kernel.crashing.org>
+In-Reply-To: <1207015715-31496-10-git-send-email-galak@kernel.crashing.org>
 References: <1207015715-31496-1-git-send-email-galak@kernel.crashing.org>
 	<1207015715-31496-2-git-send-email-galak@kernel.crashing.org>
 	<1207015715-31496-3-git-send-email-galak@kernel.crashing.org>
@@ -19,6 +19,7 @@ References: <1207015715-31496-1-git-send-email-galak@kernel.crashing.org>
 	<1207015715-31496-7-git-send-email-galak@kernel.crashing.org>
 	<1207015715-31496-8-git-send-email-galak@kernel.crashing.org>
 	<1207015715-31496-9-git-send-email-galak@kernel.crashing.org>
+	<1207015715-31496-10-git-send-email-galak@kernel.crashing.org>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -29,77 +30,124 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-* use _stext and _end sybmols when reserving kernel text in the lmb.  Use
-  of these symbols is a bit more robust way to determine the physical start
-  and size of the kernel text.
-* PAGE_OFFSET is not always the start of code, use _stext instead.
-* grab PAGE_SIZE and KERNELBASE from asm/page.h like ppc64 does.  Makes the
-  code a bit more common and provide a single place to manipulate the
-  defines for things like kdump.
+Moved phys_addr_t out of mmu-*.h and into asm/types.h so we can use it in
+places that before would have caused recursive includes.
+
+For example to use phys_addr_t in <asm/page.h> we would have included
+<asm/mmu.h> which would have possibly included <asm/mmu-hash64.h> which
+includes <asm/page.h>.  Wheeee recursive include.
 
 Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 ---
- arch/powerpc/kernel/prom.c        |    2 +-
- arch/powerpc/kernel/setup_32.c    |    2 +-
- arch/powerpc/kernel/setup_64.c    |    2 +-
- arch/powerpc/kernel/vmlinux.lds.S |    4 +---
- 4 files changed, 4 insertions(+), 6 deletions(-)
+ include/asm-powerpc/mmu-40x.h       |    2 --
+ include/asm-powerpc/mmu-44x.h       |    2 --
+ include/asm-powerpc/mmu-8xx.h       |    2 --
+ include/asm-powerpc/mmu-fsl-booke.h |    6 ------
+ include/asm-powerpc/mmu-hash32.h    |    2 --
+ include/asm-powerpc/mmu-hash64.h    |    3 ---
+ include/asm-powerpc/types.h         |    7 +++++++
+ 7 files changed, 7 insertions(+), 17 deletions(-)
 
-diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-index 9330920..60ef7d1 100644
---- a/arch/powerpc/kernel/prom.c
-+++ b/arch/powerpc/kernel/prom.c
-@@ -1124,7 +1124,7 @@ void __init early_init_devtree(void *params)
- 	parse_early_param();
+diff --git a/include/asm-powerpc/mmu-40x.h b/include/asm-powerpc/mmu-40x.h
+index 7d37f77..3d10867 100644
+--- a/include/asm-powerpc/mmu-40x.h
++++ b/include/asm-powerpc/mmu-40x.h
+@@ -53,8 +53,6 @@
  
- 	/* Reserve LMB regions used by kernel, initrd, dt, etc... */
--	lmb_reserve(PHYSICAL_START, __pa(klimit) - PHYSICAL_START);
-+	lmb_reserve(__pa(_stext), _end - _stext);
- 	reserve_kdump_trampoline();
- 	reserve_crashkernel();
- 	early_reserve_mem();
-diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
-index cd870a8..b0989ca 100644
---- a/arch/powerpc/kernel/setup_32.c
-+++ b/arch/powerpc/kernel/setup_32.c
-@@ -277,7 +277,7 @@ void __init setup_arch(char **cmdline_p)
- 	if (ppc_md.panic)
- 		setup_panic();
+ #ifndef __ASSEMBLY__
  
--	init_mm.start_code = PAGE_OFFSET;
-+	init_mm.start_code = (unsigned long)_stext;
- 	init_mm.end_code = (unsigned long) _etext;
- 	init_mm.end_data = (unsigned long) _edata;
- 	init_mm.brk = klimit;
-diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index 2c2d831..0205d40 100644
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -510,7 +510,7 @@ void __init setup_arch(char **cmdline_p)
- 	if (ppc_md.panic)
- 		setup_panic();
+-typedef unsigned long phys_addr_t;
+-
+ typedef struct {
+ 	unsigned long id;
+ 	unsigned long vdso_base;
+diff --git a/include/asm-powerpc/mmu-44x.h b/include/asm-powerpc/mmu-44x.h
+index 62772ae..c8b02d9 100644
+--- a/include/asm-powerpc/mmu-44x.h
++++ b/include/asm-powerpc/mmu-44x.h
+@@ -53,8 +53,6 @@
  
--	init_mm.start_code = PAGE_OFFSET;
-+	init_mm.start_code = (unsigned long)_stext;
- 	init_mm.end_code = (unsigned long) _etext;
- 	init_mm.end_data = (unsigned long) _edata;
- 	init_mm.brk = klimit;
-diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
-index 0afb9e3..b5a76bc 100644
---- a/arch/powerpc/kernel/vmlinux.lds.S
-+++ b/arch/powerpc/kernel/vmlinux.lds.S
-@@ -1,11 +1,9 @@
- #ifdef CONFIG_PPC64
--#include <asm/page.h>
- #define PROVIDE32(x)	PROVIDE(__unused__##x)
- #else
--#define PAGE_SIZE	4096
--#define KERNELBASE	CONFIG_KERNEL_START
- #define PROVIDE32(x)	PROVIDE(x)
- #endif
-+#include <asm/page.h>
- #include <asm-generic/vmlinux.lds.h>
- #include <asm/cache.h>
+ #ifndef __ASSEMBLY__
  
+-typedef unsigned long long phys_addr_t;
+-
+ typedef struct {
+ 	unsigned long id;
+ 	unsigned long vdso_base;
+diff --git a/include/asm-powerpc/mmu-8xx.h b/include/asm-powerpc/mmu-8xx.h
+index 952bd88..9db877e 100644
+--- a/include/asm-powerpc/mmu-8xx.h
++++ b/include/asm-powerpc/mmu-8xx.h
+@@ -136,8 +136,6 @@
+ #define SPRN_M_TW	799
+ 
+ #ifndef __ASSEMBLY__
+-typedef unsigned long phys_addr_t;
+-
+ typedef struct {
+ 	unsigned long id;
+ 	unsigned long vdso_base;
+diff --git a/include/asm-powerpc/mmu-fsl-booke.h b/include/asm-powerpc/mmu-fsl-booke.h
+index 3758000..925d93c 100644
+--- a/include/asm-powerpc/mmu-fsl-booke.h
++++ b/include/asm-powerpc/mmu-fsl-booke.h
+@@ -73,12 +73,6 @@
+ 
+ #ifndef __ASSEMBLY__
+ 
+-#ifndef CONFIG_PHYS_64BIT
+-typedef unsigned long phys_addr_t;
+-#else
+-typedef unsigned long long phys_addr_t;
+-#endif
+-
+ typedef struct {
+ 	unsigned long id;
+ 	unsigned long vdso_base;
+diff --git a/include/asm-powerpc/mmu-hash32.h b/include/asm-powerpc/mmu-hash32.h
+index 4bd735b..6e21ca6 100644
+--- a/include/asm-powerpc/mmu-hash32.h
++++ b/include/asm-powerpc/mmu-hash32.h
+@@ -84,8 +84,6 @@ typedef struct {
+ 	unsigned long vdso_base;
+ } mm_context_t;
+ 
+-typedef unsigned long phys_addr_t;
+-
+ #endif /* !__ASSEMBLY__ */
+ 
+ #endif /* _ASM_POWERPC_MMU_HASH32_H_ */
+diff --git a/include/asm-powerpc/mmu-hash64.h b/include/asm-powerpc/mmu-hash64.h
+index 2864fa3..0dff767 100644
+--- a/include/asm-powerpc/mmu-hash64.h
++++ b/include/asm-powerpc/mmu-hash64.h
+@@ -469,9 +469,6 @@ static inline unsigned long get_vsid(unsigned long context, unsigned long ea,
+ 				 VSID_MODULUS_256M)
+ #define KERNEL_VSID(ea)		VSID_SCRAMBLE(GET_ESID(ea))
+ 
+-/* Physical address used by some IO functions */
+-typedef unsigned long phys_addr_t;
+-
+ #endif /* __ASSEMBLY__ */
+ 
+ #endif /* _ASM_POWERPC_MMU_HASH64_H_ */
+diff --git a/include/asm-powerpc/types.h b/include/asm-powerpc/types.h
+index 903fd19..020db52 100644
+--- a/include/asm-powerpc/types.h
++++ b/include/asm-powerpc/types.h
+@@ -50,6 +50,13 @@ typedef struct {
+ 	__u32 u[4];
+ } __attribute__((aligned(16))) __vector128;
+ 
++/* Physical address used by some IO functions */
++#ifndef CONFIG_PHYS_64BIT
++typedef unsigned long phys_addr_t;
++#else
++typedef unsigned long long phys_addr_t;
++#endif
++
+ #endif /* __ASSEMBLY__ */
+ 
+ #ifdef __KERNEL__
 -- 
 1.5.4.1
