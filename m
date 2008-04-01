@@ -1,13 +1,22 @@
-Return-Path: <jens@de.ibm.com>
-From: Jens Osterkamp <jens@de.ibm.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] RTAS - adapt procfs interface
-Date: Tue, 1 Apr 2008 15:12:20 +0200
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.243])
+	by ozlabs.org (Postfix) with ESMTP id 62C89DE242
+	for <linuxppc-dev@ozlabs.org>; Wed,  2 Apr 2008 00:16:07 +1100 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so522231anc.78
+	for <linuxppc-dev@ozlabs.org>; Tue, 01 Apr 2008 06:16:01 -0700 (PDT)
+Message-ID: <fa686aa40804010616v4d6a2c8at5d3be8c32f316494@mail.gmail.com>
+Date: Tue, 1 Apr 2008 07:16:01 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Laurent Pinchart" <laurentp@cse-semaphore.com>
+Subject: Re: [PATCHv2] powerpc: Describe memory-mapped RAM&ROM chips OF
+	bindings
+In-Reply-To: <200803311839.10519.laurentp@cse-semaphore.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200804011512.20834.jens@de.ibm.com>
-Cc: maxim@de.ibm.com, linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
+References: <200803311839.10519.laurentp@cse-semaphore.com>
+Cc: ben@simtec.co.uk, linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
+	David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,37 +26,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Mon, Mar 31, 2008 at 10:39 AM, Laurent Pinchart
+<laurentp@cse-semaphore.com> wrote:
+>
+>  Signed-off-by: Laurent Pinchart <laurentp@cse-semaphore.com>
+>  ---
+>   Documentation/powerpc/booting-without-of.txt |   13 ++++++++++++-
+>   1 files changed, 12 insertions(+), 1 deletions(-)
+>
+>  diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
+>  index 7b4e8a7..3e1963b 100644
+>  --- a/Documentation/powerpc/booting-without-of.txt
+>  +++ b/Documentation/powerpc/booting-without-of.txt
+>  @@ -57,7 +57,8 @@ Table of Contents
+>        n) 4xx/Axon EMAC ethernet nodes
+>        o) Xilinx IP cores
+>        p) Freescale Synchronous Serial Interface
+>  -         q) USB EHCI controllers
+>  +      q) USB EHCI controllers
+>  +      r) Memory-mapped RAM & ROM
+>
+>    VII - Specifying interrupt information for devices
+>      1) interrupts property
+>  @@ -2816,6 +2817,16 @@ platforms are moved over to use the flattened-device-tree model.
+>                    big-endian;
+>            };
+>
+>  +   r) Memory-mapped RAM & ROM
+>  +
+>  +    Dedicated RAM and ROM chips are often used as storage for temporary or
+>  +    permanent data in embedded devices. Possible usage include non-volatile
+>  +    storage in battery-backed SRAM, semi-permanent storage in dedicated SRAM
+>  +    to preserve data accross reboots and firmware storage in dedicated ROM.
+>  +
+>  +     - name : should be either "ram" or "rom"
+>  +     - reg : Address range of the RAM/ROM chip
+>  +
 
-Hi,
+No compatible prop?  How does the OS know what the node is to be used for?
 
-rtas_flash was broken since 2.6.24-rc5. This patch fixes it.
-I think this is a good bugfix candidate for 2.6.25.
+Cheers,
+g.
 
-Jens
-
----
-
-From: Maxim Shchetynin <maxim@de.ibm.com>
-
-Handling of the proc_dir_entry->count has being changed in 2.6.24-rc5.
-After this change the default value for pde->count is 1 and not 0 as it
-was in earlier kernels. Therefore, if we want to check wether our procfs
-file is already opened (already in use), we have to check if pde->count
-is not greater than 2 but not 1.
-
-Signed-off-by: Maxim Shchetynin <maxim@de.ibm.com>
-Signed-off-by: Jens Osterkamp <jens@de.ibm.com>
-
-Index: linux-2.6/arch/powerpc/kernel/rtas_flash.c
-===================================================================
---- linux-2.6.orig/arch/powerpc/kernel/rtas_flash.c
-+++ linux-2.6/arch/powerpc/kernel/rtas_flash.c
-@@ -356,7 +356,7 @@ static int rtas_excl_open(struct inode *
- 
- 	/* Enforce exclusive open with use count of PDE */
- 	spin_lock(&flash_file_open_lock);
--	if (atomic_read(&dp->count) > 1) {
-+	if (atomic_read(&dp->count) > 2) {
- 		spin_unlock(&flash_file_open_lock);
- 		return -EBUSY;
- 	}
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
