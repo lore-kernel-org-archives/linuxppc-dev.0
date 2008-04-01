@@ -1,19 +1,17 @@
-Return-Path: <12o3l@tiscali.nl>
-Received: from smtp-out2.tiscali.nl (smtp-out2.tiscali.nl [195.241.79.177])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 6B72EDE05B
-	for <linuxppc-dev@ozlabs.org>; Wed,  2 Apr 2008 04:31:19 +1100 (EST)
-Message-ID: <47F27155.1000103@tiscali.nl>
-Date: Tue, 01 Apr 2008 19:31:01 +0200
-From: Roel Kluin <12o3l@tiscali.nl>
-MIME-Version: 1.0
-To: paulus@samba.org
-Subject: [PATCH 2/8] powerpc: replace `__attribute' by `__attribute__'
-References: <47F26FF6.8070300@tiscali.nl>
-In-Reply-To: <47F26FF6.8070300@tiscali.nl>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, trivial@kernel.org,
+Return-Path: <sam@ravnborg.org>
+Received: from pasmtpA.tele.dk (pasmtpa.tele.dk [80.160.77.114])
+	by ozlabs.org (Postfix) with ESMTP id 7EEF2DDE02
+	for <linuxppc-dev@ozlabs.org>; Wed,  2 Apr 2008 05:01:32 +1100 (EST)
+Date: Tue, 1 Apr 2008 20:01:56 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Roel Kluin <12o3l@tiscali.nl>
+Subject: Re: [PATCH 2/8] powerpc: replace `__attribute' by `__attribute__'
+Message-ID: <20080401180156.GA14553@uranus.ravnborg.org>
+References: <47F26FF6.8070300@tiscali.nl> <47F27155.1000103@tiscali.nl>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <47F27155.1000103@tiscali.nl>
+Cc: trivial@kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org,
 	lkml <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -24,46 +22,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-replace `__attribute' by `__attribute__'
+On Tue, Apr 01, 2008 at 07:31:01PM +0200, Roel Kluin wrote:
+> replace `__attribute' by `__attribute__'
+> 
+> Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+> ---
+> diff --git a/arch/powerpc/platforms/iseries/main_store.h b/arch/powerpc/platforms/iseries/main_store.h
+> index 1a7a3f5..976b23e 100644
+> --- a/arch/powerpc/platforms/iseries/main_store.h
+> +++ b/arch/powerpc/platforms/iseries/main_store.h
+> @@ -61,7 +61,7 @@ struct IoHriMainStoreSegment4 {
+>  };
+>  
+>  /* Main Store VPD for Power4 */
+> -struct __attribute((packed)) IoHriMainStoreChipInfo1 {
+> +struct __attribute__((packed)) IoHriMainStoreChipInfo1 {
+>  	u32	chipMfgID;
+>  	char	chipECLevel[4];
+>  };
 
-Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
----
-diff --git a/arch/powerpc/platforms/iseries/main_store.h b/arch/powerpc/platforms/iseries/main_store.h
-index 1a7a3f5..976b23e 100644
---- a/arch/powerpc/platforms/iseries/main_store.h
-+++ b/arch/powerpc/platforms/iseries/main_store.h
-@@ -61,7 +61,7 @@ struct IoHriMainStoreSegment4 {
- };
- 
- /* Main Store VPD for Power4 */
--struct __attribute((packed)) IoHriMainStoreChipInfo1 {
-+struct __attribute__((packed)) IoHriMainStoreChipInfo1 {
- 	u32	chipMfgID;
- 	char	chipECLevel[4];
- };
-@@ -73,14 +73,14 @@ struct IoHriMainStoreVpdIdData {
- 	char	serialNumber[12];
- };
- 
--struct	__attribute((packed)) IoHriMainStoreVpdFruData {
-+struct	__attribute__((packed)) IoHriMainStoreVpdFruData {
- 	char	fruLabel[8];
- 	u8	numberOfSlots;
- 	u8	pluggingType;
- 	u16	slotMapIndex;
- };
- 
--struct  __attribute((packed)) IoHriMainStoreAdrRangeBlock {
-+struct  __attribute__((packed)) IoHriMainStoreAdrRangeBlock {
- 	void	*blockStart;
- 	void	*blockEnd;
- 	u32	blockProcChipId;
-@@ -88,7 +88,7 @@ struct  __attribute((packed)) IoHriMainStoreAdrRangeBlock {
- 
- #define MaxAreaAdrRangeBlocks 4
- 
--struct __attribute((packed)) IoHriMainStoreArea4 {
-+struct __attribute__((packed)) IoHriMainStoreArea4 {
- 	u32	msVpdFormat;
- 	u8	containedVpdType;
- 	u8	reserved1;
+Please introduce __packed if you touch this.
+See include/linux/compiler-gcc.h
+
+This comment is relevant for all your patches.
+We have __used and other similar variants.
+
+So take a good look at include/linux/compiler* and
+use the proper shortcuts where available.
+
+	Sam
