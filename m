@@ -2,15 +2,14 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 0324ADDF74
-	for <linuxppc-dev@ozlabs.org>; Tue,  1 Apr 2008 12:12:44 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 2B7CCDDF31
+	for <linuxppc-dev@ozlabs.org>; Tue,  1 Apr 2008 12:12:45 +1000 (EST)
 From: Kumar Gala <galak@kernel.crashing.org>
 To: paulus@samba.org
-Subject: [PATCH 08/11 v2] [POWERPC] Rename __initial_memory_limit to
-	__initial_memory_limit_addr
-Date: Mon, 31 Mar 2008 21:08:32 -0500
-Message-Id: <1207015715-31496-9-git-send-email-galak@kernel.crashing.org>
-In-Reply-To: <1207015715-31496-8-git-send-email-galak@kernel.crashing.org>
+Subject: [PATCH 09/11] [POWERPC] Clean up some linker and symbol usage
+Date: Mon, 31 Mar 2008 21:08:33 -0500
+Message-Id: <1207015715-31496-10-git-send-email-galak@kernel.crashing.org>
+In-Reply-To: <1207015715-31496-9-git-send-email-galak@kernel.crashing.org>
 References: <1207015715-31496-1-git-send-email-galak@kernel.crashing.org>
 	<1207015715-31496-2-git-send-email-galak@kernel.crashing.org>
 	<1207015715-31496-3-git-send-email-galak@kernel.crashing.org>
@@ -19,6 +18,7 @@ References: <1207015715-31496-1-git-send-email-galak@kernel.crashing.org>
 	<1207015715-31496-6-git-send-email-galak@kernel.crashing.org>
 	<1207015715-31496-7-git-send-email-galak@kernel.crashing.org>
 	<1207015715-31496-8-git-send-email-galak@kernel.crashing.org>
+	<1207015715-31496-9-git-send-email-galak@kernel.crashing.org>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -29,96 +29,77 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-We always use __initial_memory_limit as an address so rename it
-to be clear.
+* use _stext and _end sybmols when reserving kernel text in the lmb.  Use
+  of these symbols is a bit more robust way to determine the physical start
+  and size of the kernel text.
+* PAGE_OFFSET is not always the start of code, use _stext instead.
+* grab PAGE_SIZE and KERNELBASE from asm/page.h like ppc64 does.  Makes the
+  code a bit more common and provide a single place to manipulate the
+  defines for things like kdump.
 
 Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 ---
+ arch/powerpc/kernel/prom.c        |    2 +-
+ arch/powerpc/kernel/setup_32.c    |    2 +-
+ arch/powerpc/kernel/setup_64.c    |    2 +-
+ arch/powerpc/kernel/vmlinux.lds.S |    4 +---
+ 4 files changed, 4 insertions(+), 6 deletions(-)
 
-Fixed a build breakage issue on ebony due to phys_addr_t not being the type
-of __initial_memory_limit_addr.
-
- arch/powerpc/mm/fsl_booke_mmu.c |    2 +-
- arch/powerpc/mm/init_32.c       |   10 +++++-----
- arch/powerpc/mm/mmu_decl.h      |    2 +-
- arch/powerpc/mm/ppc_mmu_32.c    |    2 +-
- 4 files changed, 8 insertions(+), 8 deletions(-)
-
-diff --git a/arch/powerpc/mm/fsl_booke_mmu.c b/arch/powerpc/mm/fsl_booke_mmu.c
-index 59f6649..ada249b 100644
---- a/arch/powerpc/mm/fsl_booke_mmu.c
-+++ b/arch/powerpc/mm/fsl_booke_mmu.c
-@@ -227,5 +227,5 @@ adjust_total_lowmem(void)
- 			__cam0 >> 20, __cam1 >> 20, __cam2 >> 20,
- 			(total_lowmem - __cam0 - __cam1 - __cam2) >> 20);
- 	__max_low_memory = __cam0 + __cam1 + __cam2;
--	__initial_memory_limit = memstart_addr + __max_low_memory;
-+	__initial_memory_limit_addr = memstart_addr + __max_low_memory;
- }
-diff --git a/arch/powerpc/mm/init_32.c b/arch/powerpc/mm/init_32.c
-index 345a275..2c72c39 100644
---- a/arch/powerpc/mm/init_32.c
-+++ b/arch/powerpc/mm/init_32.c
-@@ -96,10 +96,10 @@ int __map_without_ltlbs;
- unsigned long __max_low_memory = MAX_LOW_MEM;
+diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+index 9330920..60ef7d1 100644
+--- a/arch/powerpc/kernel/prom.c
++++ b/arch/powerpc/kernel/prom.c
+@@ -1124,7 +1124,7 @@ void __init early_init_devtree(void *params)
+ 	parse_early_param();
  
- /*
-- * limit of what is accessible with initial MMU setup -
-+ * address of the limit of what is accessible with initial MMU setup -
-  * 256MB usually, but only 16MB on 601.
-  */
--unsigned long __initial_memory_limit = 0x10000000;
-+phys_addr_t __initial_memory_limit_addr = (phys_addr_t)0x10000000;
+ 	/* Reserve LMB regions used by kernel, initrd, dt, etc... */
+-	lmb_reserve(PHYSICAL_START, __pa(klimit) - PHYSICAL_START);
++	lmb_reserve(__pa(_stext), _end - _stext);
+ 	reserve_kdump_trampoline();
+ 	reserve_crashkernel();
+ 	early_reserve_mem();
+diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
+index cd870a8..b0989ca 100644
+--- a/arch/powerpc/kernel/setup_32.c
++++ b/arch/powerpc/kernel/setup_32.c
+@@ -277,7 +277,7 @@ void __init setup_arch(char **cmdline_p)
+ 	if (ppc_md.panic)
+ 		setup_panic();
  
- /*
-  * Check for command-line options that affect what MMU_init will do.
-@@ -132,10 +132,10 @@ void __init MMU_init(void)
+-	init_mm.start_code = PAGE_OFFSET;
++	init_mm.start_code = (unsigned long)_stext;
+ 	init_mm.end_code = (unsigned long) _etext;
+ 	init_mm.end_data = (unsigned long) _edata;
+ 	init_mm.brk = klimit;
+diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+index 2c2d831..0205d40 100644
+--- a/arch/powerpc/kernel/setup_64.c
++++ b/arch/powerpc/kernel/setup_64.c
+@@ -510,7 +510,7 @@ void __init setup_arch(char **cmdline_p)
+ 	if (ppc_md.panic)
+ 		setup_panic();
  
- 	/* 601 can only access 16MB at the moment */
- 	if (PVR_VER(mfspr(SPRN_PVR)) == 1)
--		__initial_memory_limit = 0x01000000;
-+		__initial_memory_limit_addr = 0x01000000;
- 	/* 8xx can only access 8MB at the moment */
- 	if (PVR_VER(mfspr(SPRN_PVR)) == 0x50)
--		__initial_memory_limit = 0x00800000;
-+		__initial_memory_limit_addr = 0x00800000;
- 
- 	/* parse args from command line */
- 	MMU_setup();
-@@ -210,7 +210,7 @@ void __init *early_get_page(void)
- 		p = alloc_bootmem_pages(PAGE_SIZE);
- 	} else {
- 		p = __va(lmb_alloc_base(PAGE_SIZE, PAGE_SIZE,
--					__initial_memory_limit));
-+					__initial_memory_limit_addr));
- 	}
- 	return p;
- }
-diff --git a/arch/powerpc/mm/mmu_decl.h b/arch/powerpc/mm/mmu_decl.h
-index 67477e7..0480225 100644
---- a/arch/powerpc/mm/mmu_decl.h
-+++ b/arch/powerpc/mm/mmu_decl.h
-@@ -48,7 +48,7 @@ extern unsigned int num_tlbcam_entries;
- 
- extern unsigned long ioremap_bot;
- extern unsigned long __max_low_memory;
--extern unsigned long __initial_memory_limit;
-+extern phys_addr_t __initial_memory_limit_addr;
- extern unsigned long total_memory;
- extern unsigned long total_lowmem;
- extern phys_addr_t memstart_addr;
-diff --git a/arch/powerpc/mm/ppc_mmu_32.c b/arch/powerpc/mm/ppc_mmu_32.c
-index 65f915c..cef9f15 100644
---- a/arch/powerpc/mm/ppc_mmu_32.c
-+++ b/arch/powerpc/mm/ppc_mmu_32.c
-@@ -233,7 +233,7 @@ void __init MMU_init_hw(void)
- 	 */
- 	if ( ppc_md.progress ) ppc_md.progress("hash:find piece", 0x322);
- 	Hash = __va(lmb_alloc_base(Hash_size, Hash_size,
--				   __initial_memory_limit));
-+				   __initial_memory_limit_addr));
- 	cacheable_memzero(Hash, Hash_size);
- 	_SDR1 = __pa(Hash) | SDR1_LOW_BITS;
+-	init_mm.start_code = PAGE_OFFSET;
++	init_mm.start_code = (unsigned long)_stext;
+ 	init_mm.end_code = (unsigned long) _etext;
+ 	init_mm.end_data = (unsigned long) _edata;
+ 	init_mm.brk = klimit;
+diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
+index 0afb9e3..b5a76bc 100644
+--- a/arch/powerpc/kernel/vmlinux.lds.S
++++ b/arch/powerpc/kernel/vmlinux.lds.S
+@@ -1,11 +1,9 @@
+ #ifdef CONFIG_PPC64
+-#include <asm/page.h>
+ #define PROVIDE32(x)	PROVIDE(__unused__##x)
+ #else
+-#define PAGE_SIZE	4096
+-#define KERNELBASE	CONFIG_KERNEL_START
+ #define PROVIDE32(x)	PROVIDE(x)
+ #endif
++#include <asm/page.h>
+ #include <asm-generic/vmlinux.lds.h>
+ #include <asm/cache.h>
  
 -- 
 1.5.4.1
