@@ -1,21 +1,18 @@
-Return-Path: <timur@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 80F7EDE30A
-	for <linuxppc-dev@ozlabs.org>; Wed,  2 Apr 2008 02:31:11 +1100 (EST)
-Message-ID: <47F25518.8070408@freescale.com>
-Date: Tue, 01 Apr 2008 10:30:32 -0500
-From: Timur Tabi <timur@freescale.com>
+Return-Path: <ntl@pobox.com>
+Received: from sasl.smtp.pobox.com (a-sasl-fastnet.sasl.smtp.pobox.com
+	[207.106.133.19]) by ozlabs.org (Postfix) with ESMTP id 1D52BDE2FF
+	for <linuxppc-dev@ozlabs.org>; Wed,  2 Apr 2008 03:35:38 +1100 (EST)
+Date: Tue, 1 Apr 2008 11:35:04 -0500
+From: Nathan Lynch <ntl@pobox.com>
+To: Jens Osterkamp <jens@de.ibm.com>
+Subject: Re: [PATCH] RTAS - adapt procfs interface
+Message-ID: <20080401163504.GP7137@localdomain>
+References: <200804011512.20834.jens@de.ibm.com>
 MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: Commits added to powerpc.git master/powerpc-next branches
-References: <18418.5519.903340.966932@cargo.ozlabs.ibm.com>
-In-Reply-To: <18418.5519.903340.966932@cargo.ozlabs.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200804011512.20834.jens@de.ibm.com>
+Cc: maxim@de.ibm.com, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,16 +22,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Paul Mackerras wrote:
-> I have updated the master and powerpc-next branches of the powerpc.git
-> repository with the following commits, including some pulled from Josh
-> Boyer and Kumar Gala.
+Jens Osterkamp wrote:
+> 
+> Handling of the proc_dir_entry->count has being changed in 2.6.24-rc5.
 
-How about this patch?
-
-	Enable CONFIG_FORCE_MAX_ZONEORDER for all PowerPC, and make selectable
+Do you know which commit caused the change?
 
 
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+> After this change the default value for pde->count is 1 and not 0 as it
+> was in earlier kernels. Therefore, if we want to check wether our procfs
+> file is already opened (already in use), we have to check if pde->count
+> is not greater than 2 but not 1.
+> 
+> Signed-off-by: Maxim Shchetynin <maxim@de.ibm.com>
+> Signed-off-by: Jens Osterkamp <jens@de.ibm.com>
+> 
+> Index: linux-2.6/arch/powerpc/kernel/rtas_flash.c
+> ===================================================================
+> --- linux-2.6.orig/arch/powerpc/kernel/rtas_flash.c
+> +++ linux-2.6/arch/powerpc/kernel/rtas_flash.c
+> @@ -356,7 +356,7 @@ static int rtas_excl_open(struct inode *
+>  
+>  	/* Enforce exclusive open with use count of PDE */
+>  	spin_lock(&flash_file_open_lock);
+> -	if (atomic_read(&dp->count) > 1) {
+> +	if (atomic_read(&dp->count) > 2) {
+>  		spin_unlock(&flash_file_open_lock);
+>  		return -EBUSY;
+>  	}
+
+One could argue that the real problem is using the proc_dir_entry's
+reference count to enforce exclusive open.
