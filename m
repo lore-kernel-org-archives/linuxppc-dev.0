@@ -1,22 +1,16 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 80158DDFE3
-	for <linuxppc-dev@ozlabs.org>; Wed,  2 Apr 2008 06:19:10 +1100 (EST)
-Message-ID: <47F28AA6.7040903@freescale.com>
-Date: Tue, 01 Apr 2008 14:19:02 -0500
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <ntl@pobox.com>
+Date: Tue, 1 Apr 2008 15:04:04 -0500
+From: Nathan Lynch <ntl@pobox.com>
+To: Jens Osterkamp <jens@de.ibm.com>
+Subject: Re: [PATCH] RTAS - adapt procfs interface
+Message-ID: <20080401200404.GS7137@localdomain>
+References: <200804011512.20834.jens@de.ibm.com>
+	<20080401163504.GP7137@localdomain>
 MIME-Version: 1.0
-To: Laurent Pinchart <laurentp@cse-semaphore.com>
-Subject: Re: [PATCHv4 0/5] cpm2: Reset the CPM at startup and fix the cpm_uart
-	driver accordingly.
-References: <200804011433.29841.laurentp@cse-semaphore.com>
-In-Reply-To: <200804011433.29841.laurentp@cse-semaphore.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080401163504.GP7137@localdomain>
+Cc: maxim@de.ibm.com, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,18 +20,75 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Laurent Pinchart wrote:
-> Hi everybody,
+Nathan Lynch wrote:
 > 
-> these 5 patches reset the CPM in cpm2_reset() and fix the cpm_uart driver to 
-> initialise SMC ports correctly without relying on any initialisation 
-> performed by the boot loader/wrapper. They update the boot wrapper code and
-> the EP8248E device tree to match the new SMC registers description.
-> 
-> Patches 2/5, 3/5 and 4/5 (boot wrapper and EP8248E device tree updates) 
-> haven't been tested due to lack of hardware.
+> One could argue that the real problem is using the proc_dir_entry's
+> reference count to enforce exclusive open.
 
-Tested OK on ep8248e.
-ACK 1-5
 
--Scott
+I think this is better... the way these files are used is lame, but
+this should preserve the existing behavior.  I haven't yet tested
+this, can you?
+
+
+diff --git a/arch/powerpc/kernel/rtas_flash.c b/arch/powerpc/kernel/rtas_flash.c
+index f227659..00bc308 100644
+--- a/arch/powerpc/kernel/rtas_flash.c
++++ b/arch/powerpc/kernel/rtas_flash.c
+@@ -139,7 +139,7 @@ struct rtas_validate_flash_t
+ 	unsigned int update_results;	/* Update results token */
+ };
+ 
+-static DEFINE_SPINLOCK(flash_file_open_lock);
++static atomic_t open_count = ATOMIC_INIT(0);
+ static struct proc_dir_entry *firmware_flash_pde;
+ static struct proc_dir_entry *firmware_update_pde;
+ static struct proc_dir_entry *validate_pde;
+@@ -216,7 +216,7 @@ static int rtas_flash_release(struct inode *inode, struct file *file)
+ 		uf->flist = NULL;
+ 	}
+ 
+-	atomic_dec(&dp->count);
++	atomic_dec(&open_count);
+ 	return 0;
+ }
+ 
+@@ -352,26 +352,17 @@ static ssize_t rtas_flash_write(struct file *file, const char __user *buffer,
+ 
+ static int rtas_excl_open(struct inode *inode, struct file *file)
+ {
+-	struct proc_dir_entry *dp = PDE(inode);
+-
+-	/* Enforce exclusive open with use count of PDE */
+-	spin_lock(&flash_file_open_lock);
+-	if (atomic_read(&dp->count) > 1) {
+-		spin_unlock(&flash_file_open_lock);
++	if (atomic_inc_return(&open_count) > 1) {
++		atomic_dec(&open_count);
+ 		return -EBUSY;
+ 	}
+ 
+-	atomic_inc(&dp->count);
+-	spin_unlock(&flash_file_open_lock);
+-	
+ 	return 0;
+ }
+ 
+ static int rtas_excl_release(struct inode *inode, struct file *file)
+ {
+-	struct proc_dir_entry *dp = PDE(inode);
+-
+-	atomic_dec(&dp->count);
++	atomic_dec(&open_count);
+ 
+ 	return 0;
+ }
+@@ -580,7 +571,7 @@ static int validate_flash_release(struct inode *inode, struct file *file)
+ 	}
+ 
+ 	/* The matching atomic_inc was in rtas_excl_open() */
+-	atomic_dec(&dp->count);
++	atomic_dec(&open_count);
+ 
+ 	return 0;
+ }
