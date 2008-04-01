@@ -1,15 +1,18 @@
 Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <18418.2460.594352.712502@cargo.ozlabs.ibm.com>
-Date: Tue, 1 Apr 2008 21:08:28 +1100
+Message-ID: <18418.4984.671485.346817@cargo.ozlabs.ibm.com>
+Date: Tue, 1 Apr 2008 21:50:32 +1100
 From: Paul Mackerras <paulus@samba.org>
 To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 01/11] [POWERPC] bootwrapper: Allow specifying of image
-	physical offset
-In-Reply-To: <1207015715-31496-2-git-send-email-galak@kernel.crashing.org>
+Subject: Re: [PATCH 04/11 v2] [POWERPC] Remove and replace uses of
+	PPC_MEMSTART with memstart_addr
+In-Reply-To: <1207015715-31496-5-git-send-email-galak@kernel.crashing.org>
 References: <1207015715-31496-1-git-send-email-galak@kernel.crashing.org>
 	<1207015715-31496-2-git-send-email-galak@kernel.crashing.org>
+	<1207015715-31496-3-git-send-email-galak@kernel.crashing.org>
+	<1207015715-31496-4-git-send-email-galak@kernel.crashing.org>
+	<1207015715-31496-5-git-send-email-galak@kernel.crashing.org>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -22,15 +25,14 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Kumar Gala writes:
 
-> Normally we assume kernel images will be loaded at offset 0. However
-> there are situations, like when the kernel itself is running at a non-zero
-> physical address, that we don't want to load it at 0.
-> 
-> Allow the wrapper to take an offset.  We use this when building u-boot images.
+> For the sub-arches that support relocatable interrupt vectors (book-e) its
+> reasonable to have memory start at a non-zero physical address.  For those
+> cases use the variable memstart_addr instead of the #define PPC_MEMSTART
+> since the only uses of PPC_MEMSTART are for initialization and in the
+> future we can set memstart_addr at runtime to have a relocatable kernel.
 
-This makes it a bit harder to build a kernel and then wrap it later
-on, since one would have to know what -m value to give.  Would it
-possible for either the wrapper script or mkimage to peek in the ELF
-header of the vmlinux to work out what physical address to use?
+In those cases, is it still true that the kernel sits at the start of
+the usable memory, or might there be usable memory before _stext?
+In other words, is PAGE_OFFSET == KERNELBASE still true or not?
 
 Paul.
