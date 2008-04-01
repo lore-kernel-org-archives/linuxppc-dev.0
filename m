@@ -1,18 +1,25 @@
-Return-Path: <bigeasy@linutronix.de>
-Received: from Chamillionaire.breakpoint.cc (Chamillionaire.breakpoint.cc
-	[85.10.199.196])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 649B4DE401
-	for <linuxppc-dev@ozlabs.org>; Wed,  2 Apr 2008 06:52:18 +1100 (EST)
-Message-Id: <20080401195342.059470799@linutronix.de>
-References: <20080401195158.657955430@linutronix.de>
-From: Sebastian Siewior <bigeasy@linutronix.de>
-To: Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH / RFC 2/2] ISP1760: bus glue code
-Date: Tue, 01 Apr 2008 21:52:11 +0200
-Cc: linuxppc-dev@ozlabs.org, Thomas Gleixner <tglx@linutronix.de>,
-	linux-usb@vger.kernel.org
+	by ozlabs.org (Postfix) with ESMTPS id F1938DE063
+	for <linuxppc-dev@ozlabs.org>; Wed,  2 Apr 2008 08:49:09 +1100 (EST)
+Message-Id: <F27CE1B6-E59B-458B-A98B-22D262EA1F00@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Paul Mackerras <paulus@samba.org>
+In-Reply-To: <18418.4984.671485.346817@cargo.ozlabs.ibm.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v919.2)
+Subject: Re: [PATCH 04/11 v2] [POWERPC] Remove and replace uses of
+	PPC_MEMSTART with memstart_addr
+Date: Tue, 1 Apr 2008 16:49:00 -0500
+References: <1207015715-31496-1-git-send-email-galak@kernel.crashing.org>
+	<1207015715-31496-2-git-send-email-galak@kernel.crashing.org>
+	<1207015715-31496-3-git-send-email-galak@kernel.crashing.org>
+	<1207015715-31496-4-git-send-email-galak@kernel.crashing.org>
+	<1207015715-31496-5-git-send-email-galak@kernel.crashing.org>
+	<18418.4984.671485.346817@cargo.ozlabs.ibm.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,358 +29,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch contains the entry for the build system and glue code for the
-platform bus. Currently OpenFirmware and PCI is supported.
 
-Signed-off-by: Sebastian Siewior <bigeasy@linutronix.de>
---- a/drivers/usb/host/Kconfig
-+++ b/drivers/usb/host/Kconfig
-@@ -95,6 +95,32 @@ config USB_ISP116X_HCD
- 	  To compile this driver as a module, choose M here: the
- 	  module will be called isp116x-hcd.
- 
-+config USB_ISP1760_HCD
-+	tristate "ISP 1760 HCD support"
-+	depends on USB && EXPERIMENTAL
-+	---help---
-+	  The ISP1760 chip is a USB 2.0 host controller.
-+
-+	  This driver does not support isochronous transfers or OTG.
-+
-+	  To compile this driver as a module, choose M here: the
-+	  module will be called isp1760-hcd.
-+
-+config USB_ISP1760_PCI
-+	bool "Support for the PCI bus"
-+	depends on USB_ISP1760_HCD && PCI
-+	---help---
-+	  Enables support for the device present on the PCI bus.
-+	  This should only be required if you happen to have the eval kit from
-+	  NXP and you are going to test it.
-+
-+config USB_ISP1760_OF
-+	bool "Support for the OF platform bus"
-+	depends on USB_ISP1760_HCD && OF
-+	---help---
-+	  Enables support for the device present on the PowerPC
-+	  OpenFirmware platform bus.
-+
- config USB_OHCI_HCD
- 	tristate "OHCI HCD support"
- 	depends on USB && USB_ARCH_HAS_OHCI
---- a/drivers/usb/host/Makefile
-+++ b/drivers/usb/host/Makefile
-@@ -6,6 +6,8 @@ ifeq ($(CONFIG_USB_DEBUG),y)
- 	EXTRA_CFLAGS		+= -DDEBUG
- endif
- 
-+isp1760-objs := isp1760-hcd.o isp1760-if.o
-+
- obj-$(CONFIG_PCI)		+= pci-quirks.o
- 
- obj-$(CONFIG_USB_EHCI_HCD)	+= ehci-hcd.o
-@@ -16,4 +18,4 @@ obj-$(CONFIG_USB_SL811_HCD)	+= sl811-hcd
- obj-$(CONFIG_USB_SL811_CS)	+= sl811_cs.o
- obj-$(CONFIG_USB_U132_HCD)	+= u132-hcd.o
- obj-$(CONFIG_USB_R8A66597_HCD)	+= r8a66597-hcd.o
--
-+obj-$(CONFIG_USB_ISP1760_HCD)	+= isp1760.o
---- /dev/null
-+++ b/drivers/usb/host/isp1760-if.c
-@@ -0,0 +1,294 @@
-+/*
-+ * Glue code for the ISP1760 driver and bus
-+ * Currently there is support for
-+ * - OpenFirmware
-+ * - PCI
-+ *
-+ * (c) 2007 Sebastian Siewior <bigeasy@linutronix.de>
-+ *
-+ */
-+
-+#include <linux/usb.h>
-+#include <linux/io.h>
-+
-+#include "../core/hcd.h"
-+#include "isp1760-hcd.h"
-+
-+#ifdef CONFIG_USB_ISP1760_OF
-+#include <linux/of.h>
-+#include <linux/of_platform.h>
-+#endif
-+
-+#ifdef CONFIG_USB_ISP1760_PCI
-+#include <linux/pci.h>
-+#endif
-+
-+#ifdef CONFIG_USB_ISP1760_OF
-+static int of_isp1760_probe(struct of_device *dev,
-+		const struct of_device_id *match)
-+{
-+	struct usb_hcd *hcd;
-+	struct device_node *dp = dev->node;
-+	struct resource *res;
-+	struct resource memory;
-+	struct of_irq oirq;
-+	int virq;
-+	u64 res_len;
-+	int ret;
-+
-+	ret = of_address_to_resource(dp, 0, &memory);
-+	if (ret)
-+		return -ENXIO;
-+
-+	res = request_mem_region(memory.start, memory.end - memory.start + 1,
-+			dev->dev.bus_id);
-+	if (!res)
-+		return -EBUSY;
-+
-+	res_len = memory.end - memory.start + 1;
-+
-+	if (of_irq_map_one(dp, 0, &oirq)) {
-+		ret = -ENODEV;
-+		goto release_reg;
-+	}
-+
-+	virq = irq_create_of_mapping(oirq.controller, oirq.specifier,
-+			oirq.size);
-+
-+	hcd = isp1760_register(memory.start, res_len, virq,
-+		IRQF_SHARED | IRQF_DISABLED, &dev->dev, dev->dev.bus_id);
-+	if (IS_ERR(hcd)) {
-+		ret = PTR_ERR(hcd);
-+		goto release_reg;
-+	}
-+
-+	dev_set_drvdata(&dev->dev, hcd);
-+	return ret;
-+
-+release_reg:
-+	release_mem_region(memory.start, memory.end - memory.start + 1);
-+	return ret;
-+}
-+
-+static int of_isp1760_remove(struct of_device *dev)
-+{
-+	struct usb_hcd *hcd = dev_get_drvdata(&dev->dev);
-+
-+	dev_set_drvdata(&dev->dev, NULL);
-+
-+	usb_remove_hcd(hcd);
-+	iounmap(hcd->regs);
-+	release_mem_region(hcd->rsrc_start, hcd->rsrc_len);
-+	usb_put_hcd(hcd);
-+	return 0;
-+}
-+
-+static struct of_device_id of_isp1760_match[] = {
-+	{
-+		.compatible = "nxp,usb-isp1760",
-+	},
-+	{ },
-+};
-+MODULE_DEVICE_TABLE(of, of_isp1760_match);
-+
-+static struct of_platform_driver isp1760_of_driver = {
-+	.name           = "nxp-isp1760",
-+	.match_table    = of_isp1760_match,
-+	.probe          = of_isp1760_probe,
-+	.remove         = of_isp1760_remove,
-+};
-+#endif
-+
-+#ifdef CONFIG_USB_ISP1760_PCI
-+static u32 nxp_pci_io_base;
-+static u32 iolength;
-+static u32 pci_mem_phy0;
-+static u32 length;
-+static u8 *chip_addr;
-+static u8 *iobase;
-+
-+static int __devinit isp1761_pci_probe(struct pci_dev *dev,
-+		const struct pci_device_id *id)
-+{
-+	u8 latency, limit;
-+	__u32 reg_data;
-+	int retry_count;
-+	int length;
-+	int status = 1;
-+	struct usb_hcd *hcd;
-+
-+	if (usb_disabled())
-+		return -ENODEV;
-+
-+	if (pci_enable_device(dev) < 0)
-+		return -ENODEV;
-+
-+	if (!dev->irq)
-+		return -ENODEV;
-+
-+	/* Grab the PLX PCI mem maped port start address we need  */
-+	nxp_pci_io_base = pci_resource_start(dev, 0);
-+	iolength = pci_resource_len(dev, 0);
-+
-+	if (!request_mem_region(nxp_pci_io_base, iolength, "ISP1761 IO MEM")) {
-+		printk(KERN_ERR "request region #1\n");
-+		return -EBUSY;
-+	}
-+
-+	iobase = ioremap_nocache(nxp_pci_io_base, iolength);
-+	if (!iobase) {
-+		printk(KERN_ERR "ioremap #1\n");
-+		release_mem_region(nxp_pci_io_base, iolength);
-+		return -ENOMEM;
-+	}
-+	/* Grab the PLX PCI shared memory of the ISP 1761 we need  */
-+	pci_mem_phy0 = pci_resource_start(dev, 3);
-+	length = pci_resource_len(dev, 3);
-+
-+	if (length < 0xffff) {
-+		printk(KERN_ERR "memory length for this resource is less than "
-+				"required\n");
-+		release_mem_region(nxp_pci_io_base, iolength);
-+		iounmap(iobase);
-+		return  -ENOMEM;
-+	}
-+
-+	if (!request_mem_region(pci_mem_phy0, length, "ISP-PCI")) {
-+		printk(KERN_ERR "host controller already in use\n");
-+		release_mem_region(nxp_pci_io_base, iolength);
-+		iounmap(iobase);
-+		return -EBUSY;
-+	}
-+
-+	/* bad pci latencies can contribute to overruns */
-+	pci_read_config_byte(dev, PCI_LATENCY_TIMER, &latency);
-+	if (latency) {
-+		pci_read_config_byte(dev, PCI_MAX_LAT, &limit);
-+		if (limit && limit < latency)
-+			pci_write_config_byte(dev, PCI_LATENCY_TIMER, limit);
-+	}
-+
-+	/* Try to check whether we can access Scratch Register of
-+	 * Host Controller or not. The initial PCI access is retried until
-+	 * local init for the PCI bridge is completed
-+	 */
-+	retry_count = 20;
-+	reg_data = 0;
-+	while ((reg_data != 0xFACE) && retry_count) {
-+		/*by default host is in 16bit mode, so
-+		 * io operations at this stage must be 16 bit
-+		 * */
-+		writel(0xface, chip_addr + HC_SCRATCH_REG);
-+		udelay(100);
-+		reg_data = readl(chip_addr + HC_SCRATCH_REG);
-+		retry_count--;
-+	}
-+
-+	/* Host Controller presence is detected by writing to scratch register
-+	 * and reading back and checking the contents are same or not
-+	 */
-+	if (reg_data != 0xFACE) {
-+		err("scratch register mismatch %x", reg_data);
-+		goto clean;
-+	}
-+
-+	pci_set_master(dev);
-+
-+	status = readl(iobase + 0x68);
-+	status |= 0x900;
-+	writel(status, iobase + 0x68);
-+
-+	dev->dev.dma_mask = NULL;
-+	hcd = isp1760_register(pci_mem_phy0, length, dev->irq,
-+		IRQF_SHARED | IRQF_DISABLED, &dev->dev, dev->dev.bus_id);
-+	pci_set_drvdata(dev, hcd);
-+	if (!hcd)
-+		return 0;
-+clean:
-+	status = -ENODEV;
-+	iounmap(iobase);
-+	release_mem_region(pci_mem_phy0, length);
-+	release_mem_region(nxp_pci_io_base, iolength);
-+	return status;
-+}
-+static void isp1761_pci_remove(struct pci_dev *dev)
-+{
-+	struct usb_hcd *hcd;
-+
-+	hcd = pci_get_drvdata(dev);
-+
-+	usb_remove_hcd(hcd);
-+	iounmap(hcd->regs);
-+	release_mem_region(hcd->rsrc_start, hcd->rsrc_len);
-+	usb_put_hcd(hcd);
-+
-+	pci_disable_device(dev);
-+
-+	iounmap(iobase);
-+	iounmap(chip_addr);
-+
-+	release_mem_region(nxp_pci_io_base, iolength);
-+	release_mem_region(pci_mem_phy0, length);
-+}
-+
-+static void ips1761_pci_shutdown(struct pci_dev *dev)
-+{
-+	printk(KERN_ERR "ips1761_pci_shutdown\n");
-+}
-+
-+static const struct pci_device_id ips1760_plx [] = { {
-+	/* handle any USB 2.0 EHCI controller */
-+	PCI_DEVICE_CLASS(((PCI_CLASS_BRIDGE_OTHER << 8) | (0x06 << 16)), ~0),
-+		.driver_data = 0,
-+},
-+{ /* end: all zeroes */ }
-+};
-+MODULE_DEVICE_TABLE(pci, ips1760_plx);
-+
-+static struct pci_driver isp1761_pci_driver = {
-+	.name =         "isp1760",
-+	.id_table =     ips1760_plx,
-+	.probe =        isp1761_pci_probe,
-+	.remove =       isp1761_pci_remove,
-+	.shutdown =     ips1761_pci_shutdown,
-+};
-+#endif
-+
-+static int __init isp1760_init(void)
-+{
-+	int ret;
-+
-+	init_kmem_once();
-+
-+#ifdef CONFIG_USB_ISP1760_OF
-+	ret = of_register_platform_driver(&isp1760_of_driver);
-+	if (ret) {
-+		deinit_kmem_cache();
-+		return ret;
-+	}
-+#endif
-+
-+#ifdef CONFIG_USB_ISP1760_PCI
-+	ret = pci_register_driver(&isp1761_pci_driver);
-+	if (ret) {
-+#ifdef CONFIG_USB_ISP1760_OF
-+	    of_unregister_platform_driver(&isp1760_of_driver);
-+#endif
-+	    deinit_kmem_cache();
-+	}
-+#endif
-+	return ret;
-+}
-+module_init(isp1760_init);
-+
-+static void __exit isp1760_exit(void)
-+{
-+#ifdef CONFIG_USB_ISP1760_OF
-+	of_unregister_platform_driver(&isp1760_of_driver);
-+#endif
-+#ifdef CONFIG_USB_ISP1760_PCI
-+	pci_unregister_driver(&isp1761_pci_driver);
-+#endif
-+	deinit_kmem_cache();
-+}
-+module_exit(isp1760_exit);
+On Apr 1, 2008, at 5:50 AM, Paul Mackerras wrote:
+> Kumar Gala writes:
+>
+>> For the sub-arches that support relocatable interrupt vectors (book- 
+>> e) its
+>> reasonable to have memory start at a non-zero physical address.   
+>> For those
+>> cases use the variable memstart_addr instead of the #define  
+>> PPC_MEMSTART
+>> since the only uses of PPC_MEMSTART are for initialization and in the
+>> future we can set memstart_addr at runtime to have a relocatable  
+>> kernel.
+>
+> In those cases, is it still true that the kernel sits at the start of
+> the usable memory, or might there be usable memory before _stext?
+> In other words, is PAGE_OFFSET == KERNELBASE still true or not?
 
--- 
+Both cases are possible.
+
+Here are the four cases I see:
+* Normal kernel (kernel at physical 0)
+* kexec kernel (kernel at physical 32M, but still has access to memory  
+from physical 0 to 32M)
+
+* cAMP kernel (kernel at non-zero offset) [eg. 256M offset]
+* kexec cAMP kernel (kernel at 256M+32M, but has access to 256M + size)
+
+- k
