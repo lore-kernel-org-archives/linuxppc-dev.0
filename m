@@ -1,9 +1,10 @@
 Return-Path: <michael@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
-Message-Id: <be85035fa2cb015a8020e63b40c6d5375aaff866.1207031915.git.michael@ellerman.id.au>
+Message-Id: <6840627eab063b5246ec661968986a4ae2d7be61.1207032121.git.michael@ellerman.id.au>
 From: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH] Make #include <sysdev/foo.h> work for 64-bit powerpc
-Date: Tue,  1 Apr 2008 17:39:11 +1100 (EST)
+Subject: [RFC/PATCH 1/4] Move xics_setup_8259_cascade() into
+	platforms/pseries/setup.c
+Date: Tue,  1 Apr 2008 17:42:25 +1100 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -13,42 +14,172 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-We currently have inconsistent settings between 32 & 64-bit which means
-32-bit code can #include <sysdev/foo.h> but 64-bit code can't.
-
-So make the (C|A|CPP)FLAGS settings to allow this common. Doing so makes
-the CPPFLAGS-y and AFLAGS-y variables unnecessary, so just fold them into
-KBUILD_CPPFLAGS and KBUILD_AFLAGS respectively.
+The code in xics.c to setup the i8259 cascaded irq handler is not really
+xics specific, so move it into setup.c - we will clean this up further in
+a subsequent patch.
 
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
- arch/powerpc/Makefile |   10 ++++------
- 1 files changed, 4 insertions(+), 6 deletions(-)
+ arch/powerpc/platforms/pseries/setup.c |   53 +++++++++++++++++++++++++++++++-
+ arch/powerpc/platforms/pseries/xics.c  |   48 -----------------------------
+ arch/powerpc/platforms/pseries/xics.h  |    3 --
+ 3 files changed, 52 insertions(+), 52 deletions(-)
 
-
-This is 26 material.
-
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index 1c6ce35..aa9829a 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -71,13 +71,11 @@ endif
+diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
+index fdb9b1c..43e4801 100644
+--- a/arch/powerpc/platforms/pseries/setup.c
++++ b/arch/powerpc/platforms/pseries/setup.c
+@@ -127,6 +127,51 @@ void pseries_8259_cascade(unsigned int irq, struct irq_desc *desc)
+ 	desc->chip->eoi(irq);
+ }
  
- LDFLAGS_vmlinux	:= -Bstatic
++static void __init xics_setup_8259_cascade(void)
++{
++	struct device_node *np, *old, *found = NULL;
++	int cascade, naddr;
++	const u32 *addrp;
++	unsigned long intack = 0;
++
++	for_each_node_by_type(np, "interrupt-controller")
++		if (of_device_is_compatible(np, "chrp,iic")) {
++			found = np;
++			break;
++		}
++	if (found == NULL) {
++		printk(KERN_DEBUG "xics: no ISA interrupt controller\n");
++		return;
++	}
++	cascade = irq_of_parse_and_map(found, 0);
++	if (cascade == NO_IRQ) {
++		printk(KERN_ERR "xics: failed to map cascade interrupt");
++		return;
++	}
++	pr_debug("xics: cascade mapped to irq %d\n", cascade);
++
++	for (old = of_node_get(found); old != NULL ; old = np) {
++		np = of_get_parent(old);
++		of_node_put(old);
++		if (np == NULL)
++			break;
++		if (strcmp(np->name, "pci") != 0)
++			continue;
++		addrp = of_get_property(np, "8259-interrupt-acknowledge", NULL);
++		if (addrp == NULL)
++			continue;
++		naddr = of_n_addr_cells(np);
++		intack = addrp[naddr-1];
++		if (naddr > 1)
++			intack |= ((unsigned long)addrp[naddr-2]) << 32;
++	}
++	if (intack)
++		printk(KERN_DEBUG "xics: PCI 8259 intack at 0x%016lx\n", intack);
++	i8259_init(found, intack);
++	of_node_put(found);
++	set_irq_chained_handler(cascade, pseries_8259_cascade);
++}
++
+ static void __init pseries_mpic_init_IRQ(void)
+ {
+ 	struct device_node *np, *old, *cascade = NULL;
+@@ -206,6 +251,12 @@ static void __init pseries_mpic_init_IRQ(void)
+ 	set_irq_chained_handler(cascade_irq, pseries_8259_cascade);
+ }
  
--CPPFLAGS-$(CONFIG_PPC32) := -Iarch/$(ARCH)
--AFLAGS-$(CONFIG_PPC32)	:= -Iarch/$(ARCH)
- CFLAGS-$(CONFIG_PPC64)	:= -mminimal-toc -mtraceback=none  -mcall-aixdesc
--CFLAGS-$(CONFIG_PPC32)	:= -Iarch/$(ARCH) -ffixed-r2 -mmultiple
--KBUILD_CPPFLAGS	+= $(CPPFLAGS-y)
--KBUILD_AFLAGS	+= $(AFLAGS-y)
--KBUILD_CFLAGS	+= -msoft-float -pipe $(CFLAGS-y)
-+CFLAGS-$(CONFIG_PPC32)	:= -ffixed-r2 -mmultiple
-+KBUILD_CPPFLAGS	+= -Iarch/$(ARCH)
-+KBUILD_AFLAGS	+= -Iarch/$(ARCH)
-+KBUILD_CFLAGS	+= -msoft-float -pipe -Iarch/$(ARCH) $(CFLAGS-y)
- CPP		= $(CC) -E $(KBUILD_CFLAGS)
++static void __init pseries_xics_init_IRQ(void)
++{
++	xics_init_IRQ();
++	xics_setup_8259_cascade();
++}
++
+ static void pseries_lpar_enable_pmcs(void)
+ {
+ 	unsigned long set, reset;
+@@ -235,7 +286,7 @@ static void __init pseries_discover_pic(void)
+ 			smp_init_pseries_mpic();
+ 			return;
+ 		} else if (strstr(typep, "ppc-xicp")) {
+-			ppc_md.init_IRQ       = xics_init_IRQ;
++			ppc_md.init_IRQ       = pseries_xics_init_IRQ;
+ 			setup_kexec_cpu_down_xics();
+ 			smp_init_pseries_xics();
+ 			return;
+diff --git a/arch/powerpc/platforms/pseries/xics.c b/arch/powerpc/platforms/pseries/xics.c
+index ca52b58..5a72f27 100644
+--- a/arch/powerpc/platforms/pseries/xics.c
++++ b/arch/powerpc/platforms/pseries/xics.c
+@@ -655,52 +655,6 @@ static void __init xics_init_one_node(struct device_node *np,
+ 	}
+ }
  
- CHECKFLAGS	+= -m$(CONFIG_WORD_SIZE) -D__powerpc__ -D__powerpc$(CONFIG_WORD_SIZE)__
+-
+-static void __init xics_setup_8259_cascade(void)
+-{
+-	struct device_node *np, *old, *found = NULL;
+-	int cascade, naddr;
+-	const u32 *addrp;
+-	unsigned long intack = 0;
+-
+-	for_each_node_by_type(np, "interrupt-controller")
+-		if (of_device_is_compatible(np, "chrp,iic")) {
+-			found = np;
+-			break;
+-		}
+-	if (found == NULL) {
+-		printk(KERN_DEBUG "xics: no ISA interrupt controller\n");
+-		return;
+-	}
+-	cascade = irq_of_parse_and_map(found, 0);
+-	if (cascade == NO_IRQ) {
+-		printk(KERN_ERR "xics: failed to map cascade interrupt");
+-		return;
+-	}
+-	pr_debug("xics: cascade mapped to irq %d\n", cascade);
+-
+-	for (old = of_node_get(found); old != NULL ; old = np) {
+-		np = of_get_parent(old);
+-		of_node_put(old);
+-		if (np == NULL)
+-			break;
+-		if (strcmp(np->name, "pci") != 0)
+-			continue;
+-		addrp = of_get_property(np, "8259-interrupt-acknowledge", NULL);
+-		if (addrp == NULL)
+-			continue;
+-		naddr = of_n_addr_cells(np);
+-		intack = addrp[naddr-1];
+-		if (naddr > 1)
+-			intack |= ((unsigned long)addrp[naddr-2]) << 32;
+-	}
+-	if (intack)
+-		printk(KERN_DEBUG "xics: PCI 8259 intack at 0x%016lx\n", intack);
+-	i8259_init(found, intack);
+-	of_node_put(found);
+-	set_irq_chained_handler(cascade, pseries_8259_cascade);
+-}
+-
+ void __init xics_init_IRQ(void)
+ {
+ 	struct device_node *np;
+@@ -733,8 +687,6 @@ void __init xics_init_IRQ(void)
+ 
+ 	xics_setup_cpu();
+ 
+-	xics_setup_8259_cascade();
+-
+ 	ppc64_boot_msg(0x21, "XICS Done");
+ }
+ 
+diff --git a/arch/powerpc/platforms/pseries/xics.h b/arch/powerpc/platforms/pseries/xics.h
+index c26bcff..1c5321a 100644
+--- a/arch/powerpc/platforms/pseries/xics.h
++++ b/arch/powerpc/platforms/pseries/xics.h
+@@ -28,7 +28,4 @@ struct xics_ipi_struct {
+ 
+ extern struct xics_ipi_struct xics_ipi_message[NR_CPUS] __cacheline_aligned;
+ 
+-struct irq_desc;
+-extern void pseries_8259_cascade(unsigned int irq, struct irq_desc *desc);
+-
+ #endif /* _POWERPC_KERNEL_XICS_H */
 -- 
 1.5.2.rc1.1884.g59b20
