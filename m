@@ -2,13 +2,16 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 3A330DDE19
-	for <linuxppc-dev@ozlabs.org>; Tue,  1 Apr 2008 12:12:36 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id D1229DDEFB
+	for <linuxppc-dev@ozlabs.org>; Tue,  1 Apr 2008 12:12:37 +1000 (EST)
 From: Kumar Gala <galak@kernel.crashing.org>
 To: paulus@samba.org
-Subject: [PATCH 00/11] ppc32 mm init clean and 85xx kernel reloc
-Date: Mon, 31 Mar 2008 21:08:24 -0500
-Message-Id: <1207015715-31496-1-git-send-email-galak@kernel.crashing.org>
+Subject: [PATCH 01/11] [POWERPC] bootwrapper: Allow specifying of image
+	physical offset
+Date: Mon, 31 Mar 2008 21:08:25 -0500
+Message-Id: <1207015715-31496-2-git-send-email-galak@kernel.crashing.org>
+In-Reply-To: <1207015715-31496-1-git-send-email-galak@kernel.crashing.org>
+References: <1207015715-31496-1-git-send-email-galak@kernel.crashing.org>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -19,12 +22,80 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This set of patches cleans up the initialization of various mmu bits on
-ppc32 (and a small bit on ppc64 to maintain common code) towards the
-goal of having an 85xx (book-e) kernel able to run at non-zero offsets.
+Normally we assume kernel images will be loaded at offset 0. However
+there are situations, like when the kernel itself is running at a non-zero
+physical address, that we don't want to load it at 0.
 
-These patches exist in my master and ppc32_mm_init branch.  I've dropped
-them from the powerpc-next as paulus wants them to go via his tree
-directly since they touch common code.
+Allow the wrapper to take an offset.  We use this when building u-boot images.
 
-- k
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
+ arch/powerpc/boot/Makefile |    7 +++++++
+ arch/powerpc/boot/wrapper  |   12 ++++++++++--
+ 2 files changed, 17 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+index a5528ab..3c80858 100644
+--- a/arch/powerpc/boot/Makefile
++++ b/arch/powerpc/boot/Makefile
+@@ -35,6 +35,12 @@ endif
+ 
+ BOOTCFLAGS	+= -I$(obj) -I$(srctree)/$(obj) -I$(srctree)/$(src)/libfdt
+ 
++ifdef CONFIG_MEMORY_START
++MEMBASE=$(CONFIG_MEMORY_START)
++else
++MEMBASE=0x00000000
++endif
++
+ $(obj)/4xx.o: BOOTCFLAGS += -mcpu=405
+ $(obj)/ebony.o: BOOTCFLAGS += -mcpu=405
+ $(obj)/cuboot-taishan.o: BOOTCFLAGS += -mcpu=405
+@@ -181,6 +187,7 @@ endif
+ # args (to if_changed): 1 = (this rule), 2 = platform, 3 = dts 4=dtb 5=initrd
+ quiet_cmd_wrap	= WRAP    $@
+       cmd_wrap	=$(CONFIG_SHELL) $(wrapper) -c -o $@ -p $2 $(CROSSWRAP) \
++		-m $(MEMBASE) \
+ 		$(if $3, -s $3)$(if $4, -d $4)$(if $5, -i $5) vmlinux
+ 
+ image-$(CONFIG_PPC_PSERIES)		+= zImage.pseries
+diff --git a/arch/powerpc/boot/wrapper b/arch/powerpc/boot/wrapper
+index 03b474b..011d148 100755
+--- a/arch/powerpc/boot/wrapper
++++ b/arch/powerpc/boot/wrapper
+@@ -50,8 +50,11 @@ objbin=$object
+ # directory for working files
+ tmpdir=.
+ 
++# physical offset of kernel image
++membase=0x00000000
++
+ usage() {
+-    echo 'Usage: wrapper [-o output] [-p platform] [-i initrd]' >&2
++    echo 'Usage: wrapper [-o output] [-p platform] [-i initrd] [-m membase]' >&2
+     echo '       [-d devtree] [-s tree.dts] [-c] [-C cross-prefix]' >&2
+     echo '       [-D datadir] [-W workingdir] [--no-gzip] [vmlinux]' >&2
+     exit 1
+@@ -84,6 +87,11 @@ while [ "$#" -gt 0 ]; do
+ 	[ "$#" -gt 0 ] || usage
+ 	dts="$1"
+ 	;;
++    -m)
++	shift
++	[ "$#" -gt 0 ] || usage
++	membase="$1"
++	;;
+     -c)
+ 	cacheit=y
+ 	;;
+@@ -229,7 +237,7 @@ fi
+ case "$platform" in
+ uboot)
+     rm -f "$ofile"
+-    mkimage -A ppc -O linux -T kernel -C gzip -a 00000000 -e 00000000 \
++    mkimage -A ppc -O linux -T kernel -C gzip -a $membase -e $membase \
+ 	$uboot_version -d "$vmz" "$ofile"
+     if [ -z "$cacheit" ]; then
+ 	rm -f "$vmz"
+-- 
+1.5.4.1
