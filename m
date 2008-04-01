@@ -1,23 +1,19 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 4950BDDEFD
-	for <linuxppc-dev@ozlabs.org>; Tue,  1 Apr 2008 11:18:24 +1000 (EST)
-In-Reply-To: <20080331164302.GC13750@farnsworth.org>
-References: <20080328233954.GA29499@farnsworth.org>
-	<20080328234900.GF30214@farnsworth.org>
-	<20080329215942.GB27226@lixom.net>
-	<20080330101128.GA20077@localhost.localdomain>
-	<20080331164302.GC13750@farnsworth.org>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <0f87ab96ae7a7d4cc0b0337c60ee2ab6@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 6/9] [POWERPC] prpmc2800: clean up dts properties
-Date: Tue, 1 Apr 2008 03:17:52 +0200
+Return-Path: <dgibson@ozlabs.org>
+Date: Tue, 1 Apr 2008 12:53:42 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
 To: Dale Farnsworth <dale@farnsworth.org>
-Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org, paulus@samba.org
+Subject: Re: [PATCH 1/9] [POWERPC] mv64x60: change FDT compatible prefix to
+	mrvl
+Message-ID: <20080401015342.GB32615@localhost.localdomain>
+References: <20080328233954.GA29499@farnsworth.org>
+	<20080328234241.GA30214@farnsworth.org>
+	<fa686aa40803281647y4ccc4605n1507f9c1868d4c0f@mail.gmail.com>
+	<20080330234420.GA24402@localhost.localdomain>
+	<20080331165605.GD13750@farnsworth.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080331165605.GD13750@farnsworth.org>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,26 +23,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> However, I can't resist pointing out that in the existing devtrees
-> with a "soc" node, the name is also misleading.  That node doesn't
-> refer to the SOC itself, but to the part of the SOC containing the
-> peripherals.  Whether the system is implemented on one or two chips
-> is an implementation detail irrelevant to the drivers or device tree.
+On Mon, Mar 31, 2008 at 09:56:05AM -0700, Dale Farnsworth wrote:
+> On Mon, Mar 31, 2008 at 10:44:20AM +1100, David Gibson wrote:
+> > On Fri, Mar 28, 2008 at 05:47:25PM -0600, Grant Likely wrote:
+> > > On Fri, Mar 28, 2008 at 5:42 PM, Dale Farnsworth <dale@farnsworth.org> wrote:
+> > > > From: Dale Farnsworth <dale@farnsworth.org>
+> > > >
+> > > >  Follow the convention that compatible names are prefixed by the
+> > > >  vendor's stock ticker symbol.  For Marvell Technology Group Ltd.,
+> > > >  that's MRVL.
+> > > >
+> > > >  Signed-off-by: Dale Farnsworth <dale@farnsworth.org>
+> > > >  Acked-by: Mark A. Greer <mgreer@mvista.com>
+> > > 
+> > > Are there any boards "in the wild" using the old string?  If so are
+> > > does changing this string risk complicating upgrades to a new kernel
+> > > version?
+> > 
+> > In particular are there any pre-flattened-tree real-OF systems in the
+> > wild using "marvell" as the vendor prefix (there might be Apple or IBM
+> > systems out there with Marvell PHYs for example).
+> 
+> It's difficult to prove a negative.  However, I've seen no evidence of
+> such systems.  When Mark invented the "marvell," prefix, it wasn't based
+> on existing practice.
+> 
+> However, I believe that the Genesi Pegasos board uses OF and has a
+> Marvell bridge chip.  They may have copied the "marvell," prefix.
+> 
+> Matt, can you check whether any of the Genesi boards contain device node
+> descriptions for the Marvel 64[34]60, and let us know what prefix is used
+> in their compatible properties?
 
-It's not ideal to call it "the-perhaps-virtual-bus-on-the-soc-that-
-contains-all-of-the-register-blocks-for-all-the-devices-on-the-soc-
-except-some" either.  A better name is welcome of course.
+Ok, fair enough.  As long as you've been duly diligent about checking
+for existing practice I'm happy.
 
-Maybe it's best to name this node with the name _of_ the SoC (or host
-bridge, or what ever you want to call it), if that name is not too
-unwieldy.
-
-In general, "name" should be as generic as is useful, but not more
-generic than that, because it wouldn't be useful anymore.
-
-In any case, it's just "name", it should normally only be looked at
-by humans.  Use whatever you like best here, and don't use it in the
-kernel code.
-
-
-Segher
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
