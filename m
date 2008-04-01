@@ -1,14 +1,16 @@
 Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <18417.44855.137234.450478@cargo.ozlabs.ibm.com>
-Date: Tue, 1 Apr 2008 14:42:47 +1100
+Message-ID: <18417.45926.65587.820132@cargo.ozlabs.ibm.com>
+Date: Tue, 1 Apr 2008 15:00:38 +1100
 From: Paul Mackerras <paulus@samba.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] [POWERPC] Move phys_addr_t definition into asm/types.h
-In-Reply-To: <Pine.LNX.4.64.0803281338360.15109@blarg.am.freescale.net>
-References: <Pine.LNX.4.64.0803281338360.15109@blarg.am.freescale.net>
-Cc: linuxppc-dev@ozlabs.org
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Subject: Re: [PATCH] Add idle power save for ppc 4xx
+In-Reply-To: <20080331130518.2a6b0264@zod.rchland.ibm.com>
+References: <10aea37177130bbe5de7.1206969157@thinkpadL>
+	<1206983237.12155.60.camel@vader.jdub.homelinux.org>
+	<20080331130518.2a6b0264@zod.rchland.ibm.com>
+Cc: kvm-ppc-devel@lists.sourceforge.net, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,20 +20,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala writes:
+Josh Boyer writes:
 
-> Moved phys_addr_t out of mmu-*.h and into asm/types.h so we can use it in
-> places that before would have caused recursive includes.
-> 
-> For example to use phys_addr_t in <asm/page.h> we would have included
-> <asm/mmu.h> which would have possibly included <asm/mmu-hash64.h> which
-> includes <asm/page.h>.  Wheeee recursive include.
+> Actually, you probably don't want this as a property in the device
+> tree.  It doesn't describe hardware.  A Kconfig option might be
+> warranted though.
 
-In general this looks fine.  I wonder if you should use u64 rather
-than unsigned long long.  Since CONFIG_PHYS_64BIT=n on 64-bit machines
-(which is itself somewhat counterintuitive) we will actually use
-unsigned long on 64-bit machines, so it matters less than I originally
-thought, but it would be worth explaining that in a comment and/or the
-commit message.
+In general it is valid to have properties in the device tree that
+describe the hypervisor or the kernel's interface to it, since they
+are aspects of the platform, i.e. the virtual "hardware" that the
+kernel is running on.
 
 Paul.
