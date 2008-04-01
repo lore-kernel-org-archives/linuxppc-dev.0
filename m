@@ -1,18 +1,18 @@
 Return-Path: <laurentp@cse-semaphore.com>
 Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
-	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id 6D91DDDEEC
+	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id 6D9ECDDF02
 	for <linuxppc-dev@ozlabs.org>; Tue,  1 Apr 2008 23:38:08 +1100 (EST)
 From: Laurent Pinchart <laurentp@cse-semaphore.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCHv4 1/5] cpm_uart: Allocate DPRAM memory for SMC ports on
-	CPM2-based platforms.
-Date: Tue, 1 Apr 2008 14:34:00 +0200
+Subject: [PATCHv4 2/5] powerpc: Add bootwrapper function to get virtual reg
+	from the device tree.
+Date: Tue, 1 Apr 2008 14:34:28 +0200
 References: <200804011433.29841.laurentp@cse-semaphore.com>
 In-Reply-To: <200804011433.29841.laurentp@cse-semaphore.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1761771.nofEpyWbDK";
+Content-Type: multipart/signed; boundary="nextPart2927427.tSTcWtHk2E";
 	protocol="application/pgp-signature"; micalg=pgp-sha1
-Message-Id: <200804011434.01104.laurentp@cse-semaphore.com>
+Message-Id: <200804011434.28690.laurentp@cse-semaphore.com>
 Cc: Scott Wood <scottwood@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -23,190 +23,184 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---nextPart1761771.nofEpyWbDK
+--nextPart2927427.tSTcWtHk2E
 Content-Type: text/plain;
   charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
-This patch allocates parameter RAM for SMC serial ports without relying on
-previous initialisation by a boot loader or a wrapper layer.
+This patch adds a new generic device tree processing function that retrieves
+virtual reg addresses from the device tree to the bootwrapper code. It also
+updates the bootwrapper code to use the new function.
 
-SMC parameter RAM on CPM2-based platforms can be allocated anywhere in the
-general-purpose areas of the dual-port RAM. The current code relies on the
-boot loader to allocate a section of general-purpose CPM RAM and gets the
-section address from the device tree.
-
-This patch modifies the device tree address usage to reference the SMC
-parameter RAM base pointer instead of a pre-allocated RAM section and
-allocates memory from the CPM dual-port RAM when initialising the SMC port.
-CPM1-based platforms are not affected.
+dt_get_virtual_reg() retrieves the virtual reg addresses from the
+"virtual-reg" property. If the property can't be found, it uses the "reg"
+property and walks the tree to translate it to absolute addresses.
 
 Signed-off-by: Laurent Pinchart <laurentp@cse-semaphore.com>
 =2D--
- drivers/serial/cpm_uart/cpm_uart.h      |    3 ++
- drivers/serial/cpm_uart/cpm_uart_core.c |   19 +++++------
- drivers/serial/cpm_uart/cpm_uart_cpm1.c |   12 +++++++
- drivers/serial/cpm_uart/cpm_uart_cpm2.c |   52 +++++++++++++++++++++++++++=
-++++
- 4 files changed, 76 insertions(+), 10 deletions(-)
+ arch/powerpc/boot/cpm-serial.c  |   34 ++++++----------------------------
+ arch/powerpc/boot/devtree.c     |   20 ++++++++++++++++++++
+ arch/powerpc/boot/mpc52xx-psc.c |    9 ++-------
+ arch/powerpc/boot/ns16550.c     |   10 ++--------
+ arch/powerpc/boot/ops.h         |    1 +
+ 5 files changed, 31 insertions(+), 43 deletions(-)
 
-diff --git a/drivers/serial/cpm_uart/cpm_uart.h b/drivers/serial/cpm_uart/c=
-pm_uart.h
-index 80a7d60..5334653 100644
-=2D-- a/drivers/serial/cpm_uart/cpm_uart.h
-+++ b/drivers/serial/cpm_uart/cpm_uart.h
-@@ -93,6 +93,9 @@ extern struct uart_cpm_port cpm_uart_ports[UART_NR];
+diff --git a/arch/powerpc/boot/cpm-serial.c b/arch/powerpc/boot/cpm-serial.c
+index 28296fa..1f6225a 100644
+=2D-- a/arch/powerpc/boot/cpm-serial.c
++++ b/arch/powerpc/boot/cpm-serial.c
+@@ -177,7 +177,6 @@ int cpm_console_init(void *devp, struct serial_console_=
+data *scdp)
+ {
+ 	void *reg_virt[2];
+ 	int is_smc =3D 0, is_cpm2 =3D 0, n;
+=2D	unsigned long reg_phys;
+ 	void *parent, *muram;
 =20
- /* these are located in their respective files */
- void cpm_line_cr_cmd(struct uart_cpm_port *port, int cmd);
-+void __iomem *cpm_uart_map_pram(struct uart_cpm_port *port,
-+				struct device_node *np);
-+void cpm_uart_unmap_pram(struct uart_cpm_port *port, void __iomem *pram);
- int cpm_uart_init_portdesc(void);
- int cpm_uart_allocbuf(struct uart_cpm_port *pinfo, unsigned int is_con);
- void cpm_uart_freebuf(struct uart_cpm_port *pinfo);
-diff --git a/drivers/serial/cpm_uart/cpm_uart_core.c b/drivers/serial/cpm_u=
-art/cpm_uart_core.c
-index 1ea123c..3a44a3f 100644
-=2D-- a/drivers/serial/cpm_uart/cpm_uart_core.c
-+++ b/drivers/serial/cpm_uart/cpm_uart_core.c
-@@ -997,24 +997,23 @@ static int cpm_uart_init_port(struct device_node *np,
- 	if (!mem)
- 		return -ENOMEM;
+ 	if (dt_is_compatible(devp, "fsl,cpm1-smc-uart")) {
+@@ -206,15 +205,8 @@ int cpm_console_init(void *devp, struct serial_console=
+_data *scdp)
+ 	if (n < 4)
+ 		return -1;
 =20
-=2D	pram =3D of_iomap(np, 1);
-=2D	if (!pram) {
-=2D		ret =3D -ENOMEM;
-=2D		goto out_mem;
+=2D	n =3D getprop(devp, "virtual-reg", reg_virt, sizeof(reg_virt));
+=2D	if (n < (int)sizeof(reg_virt)) {
+=2D		for (n =3D 0; n < 2; n++) {
+=2D			if (!dt_xlate_reg(devp, n, &reg_phys, NULL))
+=2D				return -1;
+=2D
+=2D			reg_virt[n] =3D (void *)reg_phys;
+=2D		}
+=2D	}
++	if (dt_get_virtual_reg(devp, reg_virt, 2) < 2)
++		return -1;
+=20
+ 	if (is_smc)
+ 		smc =3D reg_virt[0];
+@@ -227,15 +219,8 @@ int cpm_console_init(void *devp, struct serial_console=
+_data *scdp)
+ 	if (!parent)
+ 		return -1;
+=20
+=2D	n =3D getprop(parent, "virtual-reg", reg_virt, sizeof(reg_virt));
+=2D	if (n < (int)sizeof(reg_virt)) {
+=2D		if (!dt_xlate_reg(parent, 0, &reg_phys, NULL))
+=2D			return -1;
+=2D
+=2D		reg_virt[0] =3D (void *)reg_phys;
 =2D	}
 =2D
- 	if (of_device_is_compatible(np, "fsl,cpm1-scc-uart") ||
- 	    of_device_is_compatible(np, "fsl,cpm2-scc-uart")) {
- 		pinfo->sccp =3D mem;
-=2D		pinfo->sccup =3D pram;
-+		pinfo->sccup =3D pram =3D cpm_uart_map_pram(pinfo, np);
- 	} else if (of_device_is_compatible(np, "fsl,cpm1-smc-uart") ||
- 	           of_device_is_compatible(np, "fsl,cpm2-smc-uart")) {
- 		pinfo->flags |=3D FLAG_SMC;
- 		pinfo->smcp =3D mem;
-=2D		pinfo->smcup =3D pram;
-+		pinfo->smcup =3D pram =3D cpm_uart_map_pram(pinfo, np);
- 	} else {
- 		ret =3D -ENODEV;
-=2D		goto out_pram;
-+		goto out_mem;
-+	}
-+
-+	if (!pram) {
-+		ret =3D -ENOMEM;
-+		goto out_mem;
- 	}
+=2D	cpcr =3D reg_virt[0];
++	if (dt_get_virtual_reg(parent, &cpcr, 1) < 1)
++		return -1;
 =20
- 	pinfo->tx_nrfifos =3D TX_NUM_FIFO;
-@@ -1038,7 +1037,7 @@ static int cpm_uart_init_port(struct device_node *np,
- 	return cpm_uart_request_port(&pinfo->port);
+ 	muram =3D finddevice("/soc/cpm/muram/data");
+ 	if (!muram)
+@@ -246,15 +231,8 @@ int cpm_console_init(void *devp, struct serial_console=
+_data *scdp)
+ 	 * is one for both parent and child.
+ 	 */
 =20
- out_pram:
-=2D	iounmap(pram);
-+	cpm_uart_unmap_pram(pinfo, pram);
- out_mem:
- 	iounmap(mem);
- 	return ret;
-diff --git a/drivers/serial/cpm_uart/cpm_uart_cpm1.c b/drivers/serial/cpm_u=
-art/cpm_uart_cpm1.c
-index 6ea0366..e692593 100644
-=2D-- a/drivers/serial/cpm_uart/cpm_uart_cpm1.c
-+++ b/drivers/serial/cpm_uart/cpm_uart_cpm1.c
-@@ -54,6 +54,18 @@ void cpm_line_cr_cmd(struct uart_cpm_port *port, int cmd)
- {
- 	cpm_command(port->command, cmd);
+=2D	n =3D getprop(muram, "virtual-reg", reg_virt, sizeof(reg_virt));
+=2D	if (n < (int)sizeof(reg_virt)) {
+=2D		if (!dt_xlate_reg(muram, 0, &reg_phys, NULL))
+=2D			return -1;
+=2D
+=2D		reg_virt[0] =3D (void *)reg_phys;
+=2D	}
+=2D
+=2D	muram_start =3D reg_virt[0];
++	if (dt_get_virtual_reg(muram, (void **)&muram_start, 1) < 1)
++		return -1;
+=20
+ 	n =3D getprop(muram, "reg", &muram_offset, 4);
+ 	if (n < 4)
+diff --git a/arch/powerpc/boot/devtree.c b/arch/powerpc/boot/devtree.c
+index 60f561e..5d12336 100644
+=2D-- a/arch/powerpc/boot/devtree.c
++++ b/arch/powerpc/boot/devtree.c
+@@ -350,3 +350,23 @@ int dt_is_compatible(void *node, const char *compat)
+=20
+ 	return 0;
  }
 +
-+void __iomem *cpm_uart_map_pram(struct uart_cpm_port *port,
-+				struct device_node *np)
++int dt_get_virtual_reg(void *node, void **addr, int nres)
 +{
-+	return of_iomap(np, 1);
-+}
++	unsigned long xaddr;
++	int n;
 +
-+void cpm_uart_unmap_pram(struct uart_cpm_port *port, void __iomem *pram)
-+{
-+	iounmap(pram);
-+}
++	n =3D getprop(node, "virtual-reg", addr, nres * 4);
++	if (n > 0)
++		return n / 4;
 +
- #else
- void cpm_line_cr_cmd(struct uart_cpm_port *port, int cmd)
- {
-diff --git a/drivers/serial/cpm_uart/cpm_uart_cpm2.c b/drivers/serial/cpm_u=
-art/cpm_uart_cpm2.c
-index 6291094..a4cfb0b 100644
-=2D-- a/drivers/serial/cpm_uart/cpm_uart_cpm2.c
-+++ b/drivers/serial/cpm_uart/cpm_uart_cpm2.c
-@@ -41,6 +41,9 @@
- #include <asm/io.h>
- #include <asm/irq.h>
- #include <asm/fs_pd.h>
-+#ifdef CONFIG_PPC_CPM_NEW_BINDING
-+#include <asm/prom.h>
-+#endif
-=20
- #include <linux/serial_core.h>
- #include <linux/kernel.h>
-@@ -54,6 +57,55 @@ void cpm_line_cr_cmd(struct uart_cpm_port *port, int cmd)
- {
- 	cpm_command(port->command, cmd);
- }
++	for (n =3D 0; n < nres; n++) {
++		if (!dt_xlate_reg(node, n, &xaddr, NULL))
++			break;
 +
-+void __iomem *cpm_uart_map_pram(struct uart_cpm_port *port,
-+				struct device_node *np)
-+{
-+	void __iomem *pram;
-+	unsigned long offset;
-+	struct resource res;
-+	unsigned long len;
-+
-+	/* Don't remap parameter RAM if it has already been initialized
-+	 * during console setup.
-+	 */
-+	if (IS_SMC(port) && port->smcup)
-+		return port->smcup;
-+	else if (!IS_SMC(port) && port->sccup)
-+		return port->sccup;
-+
-+	if (of_address_to_resource(np, 1, &res))
-+		return NULL;
-+
-+	len =3D 1 + res.end - res.start;
-+	pram =3D ioremap(res.start, len);
-+	if (!pram)
-+		return NULL;
-+
-+	if (!IS_SMC(port))
-+		return pram;
-+
-+	if (len !=3D 2) {
-+		printk(KERN_WARNING "cpm_uart[%d]: device tree references "
-+			"SMC pram, using boot loader/wrapper pram mapping. "
-+			"Please fix your device tree to reference the pram "
-+			"base register instead.\n",
-+			port->port.line);
-+		return pram;
++		addr[n] =3D (void *)xaddr;
 +	}
 +
-+	offset =3D cpm_dpalloc(PROFF_SMC_SIZE, 64);
-+	out_be16(pram, offset);
-+	iounmap(pram);
-+	return cpm_muram_addr(offset);
++	return n;
 +}
 +
-+void cpm_uart_unmap_pram(struct uart_cpm_port *port, void __iomem *pram)
-+{
-+	if (!IS_SMC(port))
-+		iounmap(pram);
-+}
-+
- #else
- void cpm_line_cr_cmd(struct uart_cpm_port *port, int cmd)
+diff --git a/arch/powerpc/boot/mpc52xx-psc.c b/arch/powerpc/boot/mpc52xx-ps=
+c.c
+index 1074626..d4cb4e4 100644
+=2D-- a/arch/powerpc/boot/mpc52xx-psc.c
++++ b/arch/powerpc/boot/mpc52xx-psc.c
+@@ -51,14 +51,9 @@ static unsigned char psc_getc(void)
+=20
+ int mpc5200_psc_console_init(void *devp, struct serial_console_data *scdp)
+ {
+=2D	int n;
+=2D
+ 	/* Get the base address of the psc registers */
+=2D	n =3D getprop(devp, "virtual-reg", &psc, sizeof(psc));
+=2D	if (n !=3D sizeof(psc)) {
+=2D		if (!dt_xlate_reg(devp, 0, (void *)&psc, NULL))
+=2D			return -1;
+=2D	}
++	if (dt_get_virtual_reg(devp, &psc, 1) < 1)
++		return -1;
+=20
+ 	scdp->open =3D psc_open;
+ 	scdp->putc =3D psc_putc;
+diff --git a/arch/powerpc/boot/ns16550.c b/arch/powerpc/boot/ns16550.c
+index f8f1b2f..aef3bdc 100644
+=2D-- a/arch/powerpc/boot/ns16550.c
++++ b/arch/powerpc/boot/ns16550.c
+@@ -55,15 +55,9 @@ static u8 ns16550_tstc(void)
+ int ns16550_console_init(void *devp, struct serial_console_data *scdp)
+ {
+ 	int n;
+=2D	unsigned long reg_phys;
+=20
+=2D	n =3D getprop(devp, "virtual-reg", &reg_base, sizeof(reg_base));
+=2D	if (n !=3D sizeof(reg_base)) {
+=2D		if (!dt_xlate_reg(devp, 0, &reg_phys, NULL))
+=2D			return -1;
+=2D
+=2D		reg_base =3D (void *)reg_phys;
+=2D	}
++	if (dt_get_virtual_reg(devp, (void **)&reg_base, 1) < 1)
++		return -1;
+=20
+ 	n =3D getprop(devp, "reg-shift", &reg_shift, sizeof(reg_shift));
+ 	if (n !=3D sizeof(reg_shift))
+diff --git a/arch/powerpc/boot/ops.h b/arch/powerpc/boot/ops.h
+index 4b0544b..321e2f5 100644
+=2D-- a/arch/powerpc/boot/ops.h
++++ b/arch/powerpc/boot/ops.h
+@@ -95,6 +95,7 @@ int dt_xlate_reg(void *node, int res, unsigned long *addr=
+, unsigned long *size);
+ int dt_xlate_addr(void *node, u32 *buf, int buflen, unsigned long *xlated_=
+addr);
+ int dt_is_compatible(void *node, const char *compat);
+ void dt_get_reg_format(void *node, u32 *naddr, u32 *nsize);
++int dt_get_virtual_reg(void *node, void **addr, int nres);
+=20
+ static inline void *finddevice(const char *name)
  {
 =2D-=20
 1.5.0
@@ -223,15 +217,15 @@ Belgium
 T +32 (2) 387 42 59
 =46 +32 (2) 387 42 75
 
---nextPart1761771.nofEpyWbDK
+--nextPart2927427.tSTcWtHk2E
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.5 (GNU/Linux)
 
-iD8DBQBH8iu58y9gWxC9vpcRAunPAJ0WQ56D2sfGb6ZszEC0wc43tUk84ACdHfpD
-FSxtYhWkut8Phr2UFxnhek0=
-=xW1u
+iD8DBQBH8ivU8y9gWxC9vpcRApE5AKCQF7n+tVB2ddwfqeJ3pay3hHyJSQCgirIi
+KGz+hxX8In9F7oKIxz3f/8M=
+=snJ5
 -----END PGP SIGNATURE-----
 
---nextPart1761771.nofEpyWbDK--
+--nextPart2927427.tSTcWtHk2E--
