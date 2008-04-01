@@ -1,16 +1,24 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <timur@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 53303DDF4A
+	for <linuxppc-dev@ozlabs.org>; Wed,  2 Apr 2008 08:37:23 +1100 (EST)
+Message-ID: <47F2AADF.1070705@freescale.com>
+Date: Tue, 01 Apr 2008 16:36:31 -0500
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18418.43731.795438.795485@cargo.ozlabs.ibm.com>
-Date: Wed, 2 Apr 2008 08:36:19 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Roel Kluin <12o3l@tiscali.nl>
-Subject: Re: [PATCH 2/8] powerpc: replace `__attribute' by `__attribute__'
-In-Reply-To: <47F27155.1000103@tiscali.nl>
-References: <47F26FF6.8070300@tiscali.nl>
-	<47F27155.1000103@tiscali.nl>
-Cc: linuxppc-dev@ozlabs.org, trivial@kernel.org,
-	lkml <linux-kernel@vger.kernel.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 2/2 v5] Add DIU platform code for MPC8610HPCD
+References: <12069806051060-git-send-email-yorksun@freescale.com>	<1206980605689-git-send-email-yorksun@freescale.com>	<12069806051291-git-send-email-yorksun@freescale.com>
+	<20080401140029.be918d87.akpm@linux-foundation.org>
+In-Reply-To: <20080401140029.be918d87.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linux-fbdev-devel@lists.sourceforge.net, a.p.zijlstra@chello.nl,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	scottwood@freescale.com, York Sun <yorksun@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,10 +28,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Roel Kluin writes:
+Andrew Morton wrote:
 
-> replace `__attribute' by `__attribute__'
+> The defconfig change gets almost 100% rejects and probably isn't
+> appropriate here and isn't very important.
 
-Why?  Your commit message doesn't give any motivation.
+It's weird that you get rejects, but otherwise you're correct.  defconfigs are
+just a convenience, anyway.
 
-Paul.
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
