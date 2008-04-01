@@ -1,21 +1,17 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id 2CEADDDF2A
-	for <linuxppc-dev@ozlabs.org>; Tue,  1 Apr 2008 23:14:31 +1100 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: kvm-ppc-devel@lists.sourceforge.net,
- jyoung5@us.ibm.com
-Subject: Re: [kvm-ppc-devel] [PATCH] Add idle power save for ppc 4xx
-Date: Tue, 1 Apr 2008 14:14:07 +0200
-References: <10aea37177130bbe5de7.1206969157@thinkpadL>
-	<1206980871.5919.5.camel@basalt>
-	<1206982322.9165.7.camel@thinkpadL>
-In-Reply-To: <1206982322.9165.7.camel@thinkpadL>
+Return-Path: <laurentp@cse-semaphore.com>
+Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
+	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id 97969DDEEC
+	for <linuxppc-dev@ozlabs.org>; Tue,  1 Apr 2008 23:38:07 +1100 (EST)
+From: Laurent Pinchart <laurentp@cse-semaphore.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCHv4 0/5] cpm2: Reset the CPM at startup and fix the cpm_uart
+	driver accordingly.
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200804011414.07549.arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, Hollis Blanchard <hollisb@us.ibm.com>
+Date: Tue, 1 Apr 2008 14:33:23 +0200
+Content-Type: multipart/signed; boundary="nextPart7232643.Kbsr3ZBWrv";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
+Message-Id: <200804011433.29841.laurentp@cse-semaphore.com>
+Cc: Scott Wood <scottwood@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,59 +21,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Monday 31 March 2008, Jerone Young wrote:
-> >=20
-> > > +{
-> > > +=A0=A0=A0unsigned long msr_save;
-> > > +
-> > > +=A0=A0=A0/* set wait state MSR */
-> > > +=A0=A0=A0local_irq_enable();
-> > > +=A0=A0=A0msr_save =3D mfmsr();
-> > > +=A0=A0=A0mtmsr(msr_save|MSR_WE);
-> >=20
-> > Why don't you |MSR_WE|MSR_EE at the same time?
->=20
-> You technically can do this. But the question is do all 4xx cpus use
-> MSR_EE to enable interrupts? I can assume they do (from what I know),
-> but figured it would be safer to make the local_irq_enable() call.
-> I can change it to just set the MSR_EE bit though, since all 4xx cpus
-> (as far as I know) use it.
+--nextPart7232643.Kbsr3ZBWrv
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-=46or correctness reasons, you actually have to set both EE and WE
-simultaneously. Otherwise, an interrupt can come in between the two
-mtmsr(), mark some thread as runnable and then go to sleep here
-without ever checking need_resched() until the next interrupt,
-which may take an indefinite time.
+Hi everybody,
 
-> >=20
-> > > +=A0=A0=A0local_irq_disable();
-> > > +}
-> >=20
-> > None of the other power_save() implementations need this. In fact many
-> > of them don't even seem to return; they just loop around mtmsr.
->=20
-> Sure it can be removed. Though with the comment in the mach_dep
-> structure about power_save. It specifically says that interrupts are off
-> when it is called. So I was following it here mainly. But I can remove
-> the disabling of interrupts, since mtmsr is the only used under
-> power_save.
+these 5 patches reset the CPM in cpm2_reset() and fix the cpm_uart driver t=
+o=20
+initialise SMC ports correctly without relying on any initialisation=20
+performed by the boot loader/wrapper. They update the boot wrapper code and
+the EP8248E device tree to match the new SMC registers description.
 
-With the current code, it shouldn't matter, because cpu_idle enables
-the interrupts right after calling ppc_md->power_save(), but it would
-be reasonable to disable the interrupts here anyway, if only to make
-the function return with the same state that it was entered.
+Patches 2/5, 3/5 and 4/5 (boot wrapper and EP8248E device tree updates)=20
+haven't been tested due to lack of hardware.
 
-IMHO, the function should be
+=2D-=20
+Laurent Pinchart
+CSE Semaphore Belgium
 
-void ppc4xx_idle()
-{
-        unsigned long msr_save;
+Chauss=E9e de Bruxelles, 732A
+B-1410 Waterloo
+Belgium
 
-        msr_save =3D mfmsr();
-	/* enter idle mode */
-        mtmsr(msr_save|MSR_WE|MSR_EE);
-	/* disable interrupts again */
-        mtmsr(msr_save);
-}
+T +32 (2) 387 42 59
+=46 +32 (2) 387 42 75
 
-	Arnd <><
+--nextPart7232643.Kbsr3ZBWrv
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
+
+iD8DBQBH8iuZ8y9gWxC9vpcRAhcEAKDWv9XzCpeUnvq+anJn2F5N9H9R8wCfV86L
+cDijfWezj3u7uvKKsa2/rVU=
+=sEXW
+-----END PGP SIGNATURE-----
+
+--nextPart7232643.Kbsr3ZBWrv--
