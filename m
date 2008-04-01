@@ -1,23 +1,25 @@
-Return-Path: <Rick.Moleres@xilinx.com>
-Received: from outbound4-dub-R.bigfish.com (outbound-dub.frontbridge.com
-	[213.199.154.16])
+Return-Path: <John.Linn@xilinx.com>
+Received: from outbound8-sin-R.bigfish.com (outbound-sin.frontbridge.com
+	[207.46.51.80])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 28FB7DDF66
+	by ozlabs.org (Postfix) with ESMTPS id 4841ADDF6F
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  2 Apr 2008 10:54:11 +1100 (EST)
+	Wed,  2 Apr 2008 10:55:31 +1100 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="gb2312"
 Subject: RE: xilinx Ml405 NFS mount problem
-Date: Tue, 1 Apr 2008 17:54:03 -0600
+Date: Tue, 1 Apr 2008 17:55:25 -0600
 In-Reply-To: <1207093428.4830.79.camel@PisteOff>
-References: <BAY138-W7044A57F2CF37F5DB50F6B2F50@phx.gbl><20080401142910.5BFD038005F@mail141-dub.bigfish.com><BAY138-W40E4E945BA6E40EABEE811B2F50@phx.gbl><1207068618.4830.60.camel@PisteOff><20080401165329.D31E3AA008E@mail29-dub.bigfish.com>
-	<1207093428.4830.79.camel@PisteOff>
-From: "Rick Moleres" <Rick.Moleres@xilinx.com>
-To: "Robert Woodworth" <rwoodworth@securics.com>,
-	"John Linn" <linnj@xilinx.com>
-Message-Id: <20080401235406.2CCE6EC0064@mail64-dub.bigfish.com>
+References: <BAY138-W7044A57F2CF37F5DB50F6B2F50@phx.gbl>
+	<20080401142910.5BFD038005F@mail141-dub.bigfish.com>
+	<BAY138-W40E4E945BA6E40EABEE811B2F50@phx.gbl>
+	<1207068618.4830.60.camel@PisteOff>
+	<20080401165329.D31E3AA008E@mail29-dub.bigfish.com> <1207093428
+From: "John Linn" <John.Linn@xilinx.com>
+To: "Robert Woodworth" <rwoodworth@securics.com>
+Message-Id: <20080401235527.E8BAB1A90052@mail31-sin.bigfish.com>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -29,36 +31,21 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hi Rob,
 
-Robert,
+I am using GigE and no checksum offload.
 
-I saw an earlier email regarding v1.00b of xps_ll_temac.  Besides the =
-checksum offload issue in this version of the core, there is also an =
-issue when receiving multicast packets where we've seen some ping =
-packets lost around receipt of a multicast packets.  So for example, we =
-saw this issue when attached to a switch/router that sends out STP =
-packets.  When attached directly between target and host the issue =
-disappeared.  I believe this issue is fixed in v1.01a of the core being =
-released in EDK 10.1.  I also think there's an answer record on how to =
-work around this issue, but I don't have that AR number handy (search =
-the Xilinx website and let me know if you don't find it - if you think =
-this applies to you at all).
+I don't have a quick way to test packet loss.
 
-The issue you describe below doesn't appear to match the multicast =
-issue, as you should see that regardless of which part you're in.  You =
-may want to talk to your FAE as to possible hw timing issues.
+EDK 10.1 may help your problem.
 
-Thanks,
-Rick
-
+-- John
 
 -----Original Message-----
-From: linuxppc-embedded-bounces+moleres=3Dxilinx.com@ozlabs.org =
-[mailto:linuxppc-embedded-bounces+moleres=3Dxilinx.com@ozlabs.org] On =
-Behalf Of Robert Woodworth
+From: Robert Woodworth [mailto:rwoodworth@securics.com]=20
 Sent: Tuesday, April 01, 2008 5:44 PM
 To: John Linn
-Cc: linuxppc-embedded@ozlabs.org
+Cc: MingLiu; linuxppc-embedded@ozlabs.org
 Subject: RE: xilinx Ml405 NFS mount problem
 
 Can you test your packet loss with your setup??
@@ -506,8 +493,3 @@ ______________________________________________________________________
 >=20
 >=20
 >=20
-
-_______________________________________________
-Linuxppc-embedded mailing list
-Linuxppc-embedded@ozlabs.org
-https://ozlabs.org/mailman/listinfo/linuxppc-embedded
