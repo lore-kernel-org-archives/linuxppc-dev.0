@@ -1,22 +1,17 @@
-Return-Path: <eemingliu@hotmail.com>
-Received: from bay0-omc1-s29.bay0.hotmail.com (bay0-omc1-s29.bay0.hotmail.com
-	[65.54.246.101]) by ozlabs.org (Postfix) with ESMTP id 9E56ADE1BD
+Return-Path: <Leonid@a-k-a.net>
+Received: from mis011-1.exch011.intermedia.net
+	(mis011-1.exch011.intermedia.net [64.78.21.128])
+	by ozlabs.org (Postfix) with ESMTP id 436D5DDF40
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  2 Apr 2008 07:42:59 +1100 (EST)
-Message-ID: <BAY138-W42DB784B2F4EFD7A5A40BCB2F50@phx.gbl>
-Content-Type: multipart/alternative;
-	boundary="_7f593b91-b331-4f5d-bc74-a1a57b3364d2_"
-From: MingLiu <eemingliu@hotmail.com>
-To: Robert Woodworth <rwoodworth@securics.com>
-Subject: RE: xilinx Ml405 NFS mount problem
-Date: Tue, 1 Apr 2008 20:42:57 +0000
-In-Reply-To: <1207068618.4830.60.camel@PisteOff>
-References: <BAY138-W7044A57F2CF37F5DB50F6B2F50@phx.gbl>
-	<20080401142910.5BFD038005F@mail141-dub.bigfish.com>
-	<BAY138-W40E4E945BA6E40EABEE811B2F50@phx.gbl>
-	<1207068618.4830.60.camel@PisteOff>
+	Wed,  2 Apr 2008 08:24:30 +1100 (EST)
 MIME-Version: 1.0
-Cc: John Linn <john.linn@xilinx.com>, linuxppc-embedded@ozlabs.org
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: Access physical memory via mmap() on ppc440epx.
+Date: Tue, 1 Apr 2008 14:12:19 -0700
+Message-ID: <406A31B117F2734987636D6CCC93EE3C033A981B@ehost011-3.exch011.intermedia.net>
+From: "Leonid" <Leonid@a-k-a.net>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -27,55 +22,142 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---_7f593b91-b331-4f5d-bc74-a1a57b3364d2_
-Content-Type: text/plain; charset="gb2312"
-Content-Transfer-Encoding: 8bit
+Hi:
 
+I am trying to read from NOR flash, located on address 0xfc000000, on my
+ppc440epx board (similar to Sequoia) from user space. Mmap call returns
+fine, but actual access fails - here is GDB output:
 
-Dear Robert and all friends,
- 
-A little more progress on my problem. I just found that if I disable the hardware check-sum offloading options, the root file system could be mounted then. In combination with the previous information of "UDP bad checksum" I mentioned, it seems that you are absolutely right! The problem is on the hardware checksum logic!
- 
-For this problem, maybe it will be better if xilinx could solve it. I am not pretty sure if we can rely on a stricter timing constraint. After all, we are not the original designer of the LL_TEMAC control logic. 
- 
-Any other idea or suggestion? Thanks in advance.
- 
-BR
-Ming
-> Subject: RE: xilinx Ml405 NFS mount problem> From: rwoodworth@securics.com> To: eemingliu@hotmail.com> CC: john.linn@xilinx.com; linuxppc-embedded@ozlabs.org> Date: Tue, 1 Apr 2008 10:50:18 -0600> > I think you may be suffering from the latest LL_TEMAC packet loss> problem. (NFS/UDP really does not like packet loss)> > > Let me guess. > You are using a base system from "Base System Builder Wizard"?> EDK 9.2i. Default syntheses/P&R options.> > I have seen a massive packet loss problems on my ML403 and two other> boards I have with an FX60.> > This is probably a hardware problem.> Xilinx has acknowledged an LL_TEMAC problem to me but has not provided a> fix. I have heard that things are better with EDK/ISE-10.1 but I have> not tested it.> > > The vendor of one of my boards (Pico) has fixed the problem on the FX60> by highly constraining the timing of the LL_TEMAC in map/PR. On my> ML403 I used similar constraints and it fixed the problem, but only if> the device is plugged into a GigE switch. The problem is still there> with the same .bit file on a 100-T switch. > > > Are you on a GigE switch?> > > > Rob.> > > > > > > On Tue, 2008-04-01 at 16:15 +0000, MingLiu wrote:> > Dear John,> > > > Thank you for your replying. > > > > >It’s not obvious to me what the problem is as I don’t see any driver> > failures. Have you >tried using a ramdisk and then seeing if the> > network is working before using NFS root? > > > > Not yet. I will try it soon. However from the information on the> > LL_TEMAC, it seems everything is fine and it should work. > > > > > > > > >And I’m assuming you have used the NFS root before so you know that> > it’s good for sure.> > > > > > > > >I test on the ML405 with NFS root and haven’t seen this problem, but> > my setup is a little different. I use DHCP rather than >a static IP,> > but other than that it’s similar.> > > > > > > > Yes. I used NFS before. I can make sure my NFS server works well. Also> > in principle, static IP should get a same result as DHCP, I think. > > > > > > > > >How long has it been since you pulled from the Xilinx Git tree?> > > > > > > > I just pulled the Xilinx tree quite recently. I am using a latest> > kernel.> > > > > > > > BR > > > > Ming> > > > > > > > > > > > And I’m assuming you have used the NFS root before so you know> > that it’s good for sure.> > > > > > > > I test on the ML405 with NFS root and haven’t seen this> > problem, but my setup is a little different. I use DHCP> > rather than a static IP, but other than that it’s similar.> > > > > > > > I’m assuming that you accidentally got 2 different powerup> > outputs in the message below as the 1st stops and a 2nd starts> > in the middle.> > > > > > > > How long has it been since you pulled from the Xilinx Git> > tree?> > > > > > > > Thanks,> > > > John> > > > > > > > > > ______________________________________________________________> > From: linuxppc-embedded-bounces> > +john.linn=xilinx.com@ozlabs.org> > [mailto:linuxppc-embedded-bounces> > +john.linn=xilinx.com@ozlabs.org] On Behalf Of MingLiu> > Sent: Tuesday, April 01, 2008 8:12 AM> > To: linuxppc-embedded@ozlabs.org> > Subject: xilinx Ml405 NFS mount problem> > > > > > > > > > Dear friends,> > > > I am bringing up my kernel from Xilinx git tree. Unfortunately I met some> > problem when mounting the root file system. Here is the information> > listed. I will appreciate a lot if someone can help me out of the trouble. > > Thanks a lot!> > > > > > loaded at: 00400000 0059F19C> > board data at: 0059D120 0059D19C> > relocated to: 004050C8 00405144> > zimage at: 00405F3F 0059C025> > avail ram: 005A0000 08000000> > > > Linux/PPC load: root=/dev/nfs> > ip=192.168.0.4:192.168.0.3:192.168.0.3:255.255.255.0 rw> > nfsroot=192.168.0.3:/home/mingliu/ml403_rootfs console=ttyUL0,38400> > mem=32M> > Uncompressing Linux...done.> > Now booting the kernel> > Linux version 2.6.24-rc8-xlnx-g1db182b8-dirty (mingliu@cca01) (gcc version> > 3.4.1) #7 Tue Apr 1 14:55:25 CEST 2008> > Xilinx Generic PowerPC board support package (Xilinx ML405) (Virtex-4 FX)> > Zone PFN ranges:> > DMA 0 -> 8192> > > > Normal 8192 -> 8192> > > > HighMem 8192 -> 8192> > Movable zone start PFN for each node> > early_node_map[1] active PFN ranges> > 0: 0 -> 8192> > Built 1 zonelists in Zone order, mobility grouping on. Total pages: 8128> > Kernel command line: root=/de v/nfs> > ip=192.168.0.4:192.168.0.3:192.168.0.3:255.255.255.0 rw> > nfsroot=192.168.0.3:/home/mingliu/ml403_rootfs console=ttyUL0,38400> > mem=32M> > Xilinx INTC #0 at 0x81800000 mapped to 0xFDFFF000> > PID hash table entries: 128 (order: 7, 512 bytes)> > Console: colour dummy device 80x25> > Dentry cache hash table entries: 4096 (order: 2, 16384 bytes)> > Inode-cache hash table entries: 2048 (order: 1, 8192 bytes)> > Memory: 28884k available (2552k kernel code, 944k data, 84k init, 0k highmem)> > SLUB: Genslabs=11, HWalign=32, Order=0-1, MinObjects=4, CPUs=1, Nodes=1> > Mount-cache hash table entries: 512> > net_namespace: 64 bytes> > NET: Registered protocol family 16> > Registering device uartlite:0> > Fixup MAC address for xilinx_lltemac:0> > Regis tering device xilinx_lltemac:0> > NET: Registered protocol family 2> > IP route cache hash table entries: 1024 (order: 0, 4096 bytes)> > TCP established hash table entries: 1024 (order: 1, 8192 bytes)> > TCP bind hash table entries: 1024 (order: 0, 4096 bytes)> > TCP: Hash tables configured (established 1024 bind 1024)> > TCP reno registered> > sysctl table check failed: /kernel/l2cr .1.31 Missing strategy> > Call Trace:> > [c1c0fe50] [c0008b70] show_stack+0x40/0x194 (unreliable)> > [c1c0fe90] [c003aed4] set_fail+0x68/0x80> > [c1c0feb0] [c003b4ec] sysctl_check_table+0x600/0x77c> > [c1c0fef0] [c003b4d4] sysctl_check_table+0x5e8/0x77c> > [c1c0ff30] [c002605c] register_sysctl_table+0x64/0xb4> > [c1c0ff50] [c034579c] register_ppc_htab_sysctl+0x18/0x2c> > [c1c0ff60] [c034482c] kernel_init+0x94/0x2bc> > [c1c0fff0] [c0004d58] kernel_thread+0x44/0x60> > Installing knfsd (copyright (C) 1996 okir@monad.swb.de).> > fuse init (API version 7.9)> > io scheduler noop registered> > io scheduler anticipatory registered> > io scheduler deadline registered> > io scheduler cfq registered (default)> > uartlite.0: ttyUL0 at MM IO 0x84000003 (irq = 3) is a uartlite> > console [ttyUL0] enabled> > loop: module loaded> > nbd: registered device at major 43> > xilinx_lltemac xilinx_lltemac.0: MAC address is now 0: a:35: 1: 2: 3> > xilinx_lltemac xilinx_lltemac.0: XLlTemac: using DMA mode.> > XLlTemac: Dma base address: phy: 0x84600100, virt: 0xc3008100> > XLlTemac: buffer descriptor size: 32768 (0x8000)> > XLlTemac: Allocating DMA descriptors with kmalloc<6>XLlTemac:> > (buffer_descriptor_init) phy: 0x1d18000, virt: 0xc1d18000, size: 0x8000> > XTemac: PHY detected at address 7.> > xilinx_lltemac xilinx_lltemac.0: eth0: Xilinx TEMAC at 0x81C00000 mapped> > to 0xC3004000, irq=2> > console [netcon0] enabled> > Linux version 2.6.24-rc8-xlnx-g1db182b8-dirty (mingliu@cca01) (gcc version> > 3.4.1) #7 Tue Apr 1 14:55:25 CEST 2008> > > > Xilinx Generic PowerPC board support package (Xilinx ML405)> > (Virtex-4 FX)> > > > Zone PFN ranges:> > DMA 0 -> 8192> > Normal 8192 -> 8192> > HighMem 8192 -> 8192> > Movable zone start PFN for each node> > early_node_map[1] active PFN range> > s> > 0: 0 -> 8192> > Built 1 zonelists in Zone order, mobility grouping on. Total pages: 8128> > Kernel command line: root=/dev/nfs> > ip=192.168.0.4:192.168.0.3:192.168.0.3:255.255.255.0 rw> > nfsroot=192.168.0.3:/home/mingliu/ml403_rootfs console=ttyUL0,38400> > mem=32M> > Xilinx INTC #0 at 0x81800000 mapped to 0xFDFFF000> > PID hash table entries: 128 (order: 7, 512 bytes)> > Console: colour dummy device 80x25> > Dentry cache hash table entries: 4096 (order: 2, 16384 bytes)> > Inode-cache hash table entries: 2048 (order: 1, 8192 bytes)> > Memory: 28884k available (2552k kernel code, 944k data, 84k init, 0k highmem)> > SLUB: Genslabs=11, HWalign=32, Order=0-1, MinObjects=4, CPUs=1, Nodes=1> > Mount-cache hash table entries: 512> > n> > et_namespace: 64 bytes> > NET: Registered protocol family 16> > Registering device uartlite:0> > Fixup MAC address for xilinx_lltemac:0> > Registering device xilinx_lltemac:0> > NET: Registered protocol family 2> > IP route cache hash table entries: 1024 (order: 0, 4096 bytes)> > TCP established hash table entries: 1024 (order: 1, 8192 bytes)> > TCP bind hash table entries: 1024> > (order: 0, 4096 bytes)> > TCP: Hash tables configured (established 1024 bind 1024)> > TCP reno registered> > sysctl table check failed: /kernel/l2cr .1.31 Missing strategy> > Call Trace:> > [c1c0fe50] [c0008b70] show_stack+0x40/0x194 (unreliable)> > [c1c0fe90] [c003aed4] set_fail+0x68/0x80> > [c1c0feb0] [c003b4ec] sysctl_check_table+0x600/0x77c> > [c1c0fef0] [c003b4d4] sysctl_c> > heck_table+0x5e8/0x77c> > [c1c0ff30] [c002605c] register_sysctl_table+0x64/0xb4> > [c1c0ff50] [c034579c] register_ppc_htab_sysctl+0x18/0x2c> > [c1c0ff60] [c034482c] kernel_init+0x94/0x2bc> > [c1c0fff0] [c0004d58] kernel_thread+0x44/0x60> > Installing knfsd (copyright (C) 1996 okir@monad.swb.de).> > fuse init (API version 7.9)> > io scheduler noop registered<> > /SPAN>> > io scheduler anticipatory registered> > io scheduler deadline registered> > io scheduler cfq registered (default)> > uartlite.0: ttyUL0 at MMIO 0x84000003 (irq = 3) is a uartlite> > console [ttyUL0] enabled> > loop: module loaded> > nbd: registered device at major 43> > xilinx_lltemac xilinx_lltemac.0: MAC address is now 0: a:35: 1: 2: 3> > xilinx_lltemac xilinx_lltemac.0: XLlTemac: using DMA mode.> > XLlTemac: Dma base address: phy: 0x84600100, virt: 0xc3008100> > XLlTemac: buffer descriptor size: 32768 (0x8000)> > XLlTemac: Allocating DMA descriptors with kmalloc<6>XLlTemac:> > (buffer_descriptor_init) phy: 0x1d18000, virt: 0xc1d18000, size: 0x8000> > XTemac: PHY detected at address 7.> > xilinx_lltemac xilinx_lltemac.0: eth0: Xilinx TEMAC at 0x81C00000 mapped> > <> > SPAN style="FONT-SIZE: 12pt">to 0xC3004000, irq=2> > console [netcon0] enabled> > netconsole: network logging started> > Generic platform RAM MTD, (c) 2004 Simtec Electronics> > mice: PS/2 mouse device common for all mice> > TCP cubic registered> > NET: Registered protocol family 1> > NET: Registered protocol family 17> > RPC: Registered udp transport module.> > RPC: Registered tcp transport module.> > eth0: XLlTemac: Options: 0x3fa> > eth0: XLlTemac: allocating interrupt 0 for dma mode tx.> > eth0: XLlTemac: allocating interrupt 1 for dma mode rx.> > eth0: XLlTemac: speed set to 1000Mb/s> > eth0: XLlTemac: Send Threshold = 24, Receive Threshold = 4> > eth0: XLlTemac: Send Wait bound = 254, Receive Wait bound = 254> > IP-Config: Complete:> > > > device=eth0, addr=192.168.0.4, mask=255.255.255.0, gw=192.168.0.3,> > host=192.168.0.4, domain=, nis-domain=(none),> > bootserver=192.168.0.3, rootserver=192.168.0.3, rootpath=> > Looking up port of RPC 100003/2 on 192.168.0.3> > rpcbind: server 192.168.0.3 not responding, timed out> > Root-NFS: Unable to get nfsd port number from server, using default> > Looking up port of RPC 10000> > 5/1 on 192.168.0.3> > rpcbind: server 192.168.0.3 not responding, timed out> > Root-NFS: Unable to get mountd port number from server, using default> > mount: server 192.168.0.3 not responding, timed out> > Root-NFS: Server returned error -5 while mounting /home/mingliu/ml403_rootfs> > VFS: Unable to mount root fs via NFS, trying floppy.> > VFS: Cannot open root device "nfs" or unknown-block(2,0)> > Please append a correct "root=" boot option; here are > > the available> > partitions:> > Kernel panic - not syncing: VFS: Unable to mount root fs on> > unknown-block(2,0)> > Rebooting in 180 seconds..> > > > > > BR> > Ming> > > > > > > > > > ______________________________________________________________> > Windows Live Writer，支持离线撰写博客内容，随时随地想写就写。> > 立即使用！> > > > > > > > > > ______________________________________________________________________> > 使用新一代 Windows Live Messenger 轻松交流和共享！ 立即体验！ > > _______________________________________________> > Linuxppc-embedded mailing list> > Linuxppc-embedded@ozlabs.org> > https://ozlabs.org/mailman/listinfo/linuxppc-embedded> 
-_________________________________________________________________
-MSN 中文网，最新时尚生活资讯，白领聚集门户。
-http://cn.msn.com
---_7f593b91-b331-4f5d-bc74-a1a57b3364d2_
-Content-Type: text/html; charset="gb2312"
-Content-Transfer-Encoding: 8bit
+Breakpoint 1, f_EVLOG_GetSectorInfo (sector=3D18, si=3D0x1004a398)
+    at
+/home/leonid/LM300/software/u-boot/apps/diags/common/event_log.c:1580
+1580
+/home/leonid/LM300/software/u-boot/apps/diags/common/event_log.c: No
+such file or di.
+        in
+/home/leonid/LM300/software/u-boot/apps/diags/common/event_log.c
+(gdb) p sector
+$1 =3D 18
+(gdb) p/x buf
+$2 =3D 0x30028000
+(gdb) x/10 0x30028000
+0x30028000:     Cannot access memory at address 0x30028000
+(gdb) x/10 0x30028200
+0x30028200:     Cannot access memory at address 0x30028200
+(gdb)
 
-<html>
-<head>
-<style>
-.hmmessage P
-{
-margin:0px;
-padding:0px
-}
-body.hmmessage
-{
-FONT-SIZE: 9pt;
-FONT-FAMILY:Tahoma
-}
-</style>
-</head>
-<body class='hmmessage'>
-Dear Robert and all friends,<BR>
-&nbsp;<BR>
-A little more progress on my problem. I just found that if I disable the hardware check-sum offloading options, the root file system could be mounted then. In combination with the previous information of "UDP bad checksum" I mentioned, it seems that you are absolutely right! The problem is on the hardware checksum logic!<BR>
-&nbsp;<BR>
-For this problem, maybe it will be better if xilinx could solve it. I am not pretty sure if we can rely on a stricter timing constraint. After all, we are not the original designer of the LL_TEMAC control logic. <BR>
-&nbsp;<BR>
-Any other idea or suggestion? Thanks in advance.<BR>
-&nbsp;<BR>
-BR<BR>
-Ming<BR>
-<BR><BR>&gt; Subject: RE: xilinx Ml405 NFS mount problem<BR>&gt; From: rwoodworth@securics.com<BR>&gt; To: eemingliu@hotmail.com<BR>&gt; CC: john.linn@xilinx.com; linuxppc-embedded@ozlabs.org<BR>&gt; Date: Tue, 1 Apr 2008 10:50:18 -0600<BR>&gt; <BR>&gt; I think you may be suffering from the latest LL_TEMAC packet loss<BR>&gt; problem. (NFS/UDP really does not like packet loss)<BR>&gt; <BR>&gt; <BR>&gt; Let me guess. <BR>&gt; You are using a base system from "Base System Builder Wizard"?<BR>&gt; EDK 9.2i. Default syntheses/P&amp;R options.<BR>&gt; <BR>&gt; I have seen a massive packet loss problems on my ML403 and two other<BR>&gt; boards I have with an FX60.<BR>&gt; <BR>&gt; This is probably a hardware problem.<BR>&gt; Xilinx has acknowledged an LL_TEMAC problem to me but has not provided a<BR>&gt; fix. I have heard that things are better with EDK/ISE-10.1 but I have<BR>&gt; not tested it.<BR>&gt; <BR>&gt; <BR>&gt; The vendor of one of my boards (Pico) has fixed the problem on the FX60<BR>&gt; by highly constraining the timing of the LL_TEMAC in map/PR. On my<BR>&gt; ML403 I used similar constraints and it fixed the problem, but only if<BR>&gt; the device is plugged into a GigE switch. The problem is still there<BR>&gt; with the same .bit file on a 100-T switch. <BR>&gt; <BR>&gt; <BR>&gt; Are you on a GigE switch?<BR>&gt; <BR>&gt; <BR>&gt; <BR>&gt; Rob.<BR>&gt; <BR>&gt; <BR>&gt; <BR>&gt; <BR>&gt; <BR>&gt; <BR>&gt; On Tue, 2008-04-01 at 16:15 +0000, MingLiu wrote:<BR>&gt; &gt; Dear John,<BR>&gt; &gt; <BR>&gt; &gt; Thank you for your replying. <BR>&gt; &gt; <BR>&gt; &gt; &gt;It’s not obvious to me what the problem is as I don’t see any driver<BR>&gt; &gt; failures. Have you &gt;tried using a ramdisk and then seeing if the<BR>&gt; &gt; network is working before using NFS root? <BR>&gt; &gt; <BR>&gt; &gt; Not yet. I will try it soon. However from the information on the<BR>&gt; &gt; LL_TEMAC, it seems everything is fine and it should work. <BR>&gt; &gt; <BR>&gt; &gt; <BR>&gt; &gt; <BR>&gt; &gt; &gt;And I’m assuming you have used the NFS root before so you know that<BR>&gt; &gt; it’s good for sure.<BR>&gt; &gt; <BR>&gt; &gt; <BR>&gt; &gt; <BR>&gt; &gt; &gt;I test on the ML405 with NFS root and haven’t seen this problem, but<BR>&gt; &gt; my setup is a little different. I use DHCP rather than &gt;a static IP,<BR>&gt; &gt; but other than that it’s similar.<BR>&gt; &gt; <BR>&gt; &gt; <BR>&gt; &gt; <BR>&gt; &gt; Yes. I used NFS before. I can make sure my NFS server works well. Also<BR>&gt; &gt; in principle, static IP should get a same result as DHCP, I think. <BR>&gt; &gt; <BR>&gt; &gt; <BR>&gt; &gt; <BR>&gt; &gt; &gt;How long has it been since you pulled from the Xilinx Git tree?<BR>&gt; &gt; <BR>&gt; &gt; <BR>&gt; &gt; <BR>&gt; &gt; I just pulled the Xilinx tree quite recently. I am using a latest<BR>&gt; &gt; kernel.<BR>&gt; &gt; <BR>&gt; &gt; <BR>&gt; &gt; <BR>&gt; &gt; BR <BR>&gt; &gt; <BR>&gt; &gt; Ming<BR>&gt; &gt; <BR>&gt; &gt; <BR>&gt; &gt; <BR>&gt; &gt; <BR>&gt; &gt; <BR>&gt; &gt; And I’m assuming you have used the NFS root before so you know<BR>&gt; &gt; that it’s good for sure.<BR>&gt; &gt; <BR>&gt; &gt; <BR>&gt; &gt; <BR>&gt; &gt; I test on the ML405 with NFS root and haven’t seen this<BR>&gt; &gt; problem, but my setup is a little different. I use DHCP<BR>&gt; &gt; rather than a static IP, but other than that it’s similar.<BR>&gt; &gt; <BR>&gt; &gt; <BR>&gt; &gt; <BR>&gt; &gt; I’m assuming that you accidentally got 2 different powerup<BR>&gt; &gt; outputs in the message below as the 1st stops and a 2nd starts<BR>&gt; &gt; in the middle.<BR>&gt; &gt; <BR>&gt; &gt; <BR>&gt; &gt; <BR>&gt; &gt; How long has it been since you pulled from the Xilinx Git<BR>&gt; &gt; tree?<BR>&gt; &gt; <BR>&gt; &gt; <BR>&gt; &gt; <BR>&gt; &gt; Thanks,<BR>&gt; &gt; <BR>&gt; &gt; John<BR>&gt; &gt; <BR>&gt; &gt; <BR>&gt; &gt; <BR>&gt; &gt; <BR>&gt; &gt; ______________________________________________________________<BR>&gt; &gt; From: linuxppc-embedded-bounces<BR>&gt; &gt; +john.linn=xilinx.com@ozlabs.org<BR>&gt; &gt; [mailto:linuxppc-embedded-bounces<BR>&gt; &gt; +john.linn=xilinx.com@ozlabs.org] On Behalf Of MingLiu<BR>&gt; &gt; Sent: Tuesday, April 01, 2008 8:12 AM<BR>&gt; &gt; To: linuxppc-embedded@ozlabs.org<BR>&gt; &gt; Subject: xilinx Ml405 NFS mount problem<BR>&gt; &gt; <BR>&gt; &gt; <BR>&gt; &gt; <BR>&gt; &gt; <BR>&gt; &gt; Dear friends,<BR>&gt; &gt; <BR>&gt; &gt; I am bringing up my kernel from Xilinx git tree. Unfortunately I met some<BR>&gt; &gt; problem when mounting the root file system. Here is the information<BR>&gt; &gt; listed. I will appreciate a lot if someone can help me out of the trouble. <BR>&gt; &gt; Thanks a lot!<BR>&gt; &gt; <BR>&gt; &gt; <BR>&gt; &gt; loaded at: 00400000 0059F19C<BR>&gt; &gt; board data at: 0059D120 0059D19C<BR>&gt; &gt; relocated to: 004050C8 00405144<BR>&gt; &gt; zimage at: 00405F3F 0059C025<BR>&gt; &gt; avail ram: 005A0000 08000000<BR>&gt; &gt; <BR>&gt; &gt; Linux/PPC load: root=/dev/nfs<BR>&gt; &gt; ip=192.168.0.4:192.168.0.3:192.168.0.3:255.255.255.0 rw<BR>&gt; &gt; nfsroot=192.168.0.3:/home/mingliu/ml403_rootfs console=ttyUL0,38400<BR>&gt; &gt; mem=32M<BR>&gt; &gt; Uncompressing Linux...done.<BR>&gt; &gt; Now booting the kernel<BR>&gt; &gt; Linux version 2.6.24-rc8-xlnx-g1db182b8-dirty (mingliu@cca01) (gcc version<BR>&gt; &gt; 3.4.1) #7 Tue Apr 1 14:55:25 CEST 2008<BR>&gt; &gt; Xilinx Generic PowerPC board support package (Xilinx ML405) (Virtex-4 FX)<BR>&gt; &gt; Zone PFN ranges:<BR>&gt; &gt; DMA 0 -&gt; 8192<BR>&gt; &gt; <BR>&gt; &gt; Normal 8192 -&gt; 8192<BR>&gt; &gt; <BR>&gt; &gt; HighMem 8192 -&gt; 8192<BR>&gt; &gt; Movable zone start PFN for each node<BR>&gt; &gt; early_node_map[1] active PFN ranges<BR>&gt; &gt; 0: 0 -&gt; 8192<BR>&gt; &gt; Built 1 zonelists in Zone order, mobility grouping on. Total pages: 8128<BR>&gt; &gt; Kernel command line: root=/de v/nfs<BR>&gt; &gt; ip=192.168.0.4:192.168.0.3:192.168.0.3:255.255.255.0 rw<BR>&gt; &gt; nfsroot=192.168.0.3:/home/mingliu/ml403_rootfs console=ttyUL0,38400<BR>&gt; &gt; mem=32M<BR>&gt; &gt; Xilinx INTC #0 at 0x81800000 mapped to 0xFDFFF000<BR>&gt; &gt; PID hash table entries: 128 (order: 7, 512 bytes)<BR>&gt; &gt; Console: colour dummy device 80x25<BR>&gt; &gt; Dentry cache hash table entries: 4096 (order: 2, 16384 bytes)<BR>&gt; &gt; Inode-cache hash table entries: 2048 (order: 1, 8192 bytes)<BR>&gt; &gt; Memory: 28884k available (2552k kernel code, 944k data, 84k init, 0k highmem)<BR>&gt; &gt; SLUB: Genslabs=11, HWalign=32, Order=0-1, MinObjects=4, CPUs=1, Nodes=1<BR>&gt; &gt; Mount-cache hash table entries: 512<BR>&gt; &gt; net_namespace: 64 bytes<BR>&gt; &gt; NET: Registered protocol family 16<BR>&gt; &gt; Registering device uartlite:0<BR>&gt; &gt; Fixup MAC address for xilinx_lltemac:0<BR>&gt; &gt; Regis tering device xilinx_lltemac:0<BR>&gt; &gt; NET: Registered protocol family 2<BR>&gt; &gt; IP route cache hash table entries: 1024 (order: 0, 4096 bytes)<BR>&gt; &gt; TCP established hash table entries: 1024 (order: 1, 8192 bytes)<BR>&gt; &gt; TCP bind hash table entries: 1024 (order: 0, 4096 bytes)<BR>&gt; &gt; TCP: Hash tables configured (established 1024 bind 1024)<BR>&gt; &gt; TCP reno registered<BR>&gt; &gt; sysctl table check failed: /kernel/l2cr .1.31 Missing strategy<BR>&gt; &gt; Call Trace:<BR>&gt; &gt; [c1c0fe50] [c0008b70] show_stack+0x40/0x194 (unreliable)<BR>&gt; &gt; [c1c0fe90] [c003aed4] set_fail+0x68/0x80<BR>&gt; &gt; [c1c0feb0] [c003b4ec] sysctl_check_table+0x600/0x77c<BR>&gt; &gt; [c1c0fef0] [c003b4d4] sysctl_check_table+0x5e8/0x77c<BR>&gt; &gt; [c1c0ff30] [c002605c] register_sysctl_table+0x64/0xb4<BR>&gt; &gt; [c1c0ff50] [c034579c] register_ppc_htab_sysctl+0x18/0x2c<BR>&gt; &gt; [c1c0ff60] [c034482c] kernel_init+0x94/0x2bc<BR>&gt; &gt; [c1c0fff0] [c0004d58] kernel_thread+0x44/0x60<BR>&gt; &gt; Installing knfsd (copyright (C) 1996 okir@monad.swb.de).<BR>&gt; &gt; fuse init (API version 7.9)<BR>&gt; &gt; io scheduler noop registered<BR>&gt; &gt; io scheduler anticipatory registered<BR>&gt; &gt; io scheduler deadline registered<BR>&gt; &gt; io scheduler cfq registered (default)<BR>&gt; &gt; uartlite.0: ttyUL0 at MM IO 0x84000003 (irq = 3) is a uartlite<BR>&gt; &gt; console [ttyUL0] enabled<BR>&gt; &gt; loop: module loaded<BR>&gt; &gt; nbd: registered device at major 43<BR>&gt; &gt; xilinx_lltemac xilinx_lltemac.0: MAC address is now 0: a:35: 1: 2: 3<BR>&gt; &gt; xilinx_lltemac xilinx_lltemac.0: XLlTemac: using DMA mode.<BR>&gt; &gt; XLlTemac: Dma base address: phy: 0x84600100, virt: 0xc3008100<BR>&gt; &gt; XLlTemac: buffer descriptor size: 32768 (0x8000)<BR>&gt; &gt; XLlTemac: Allocating DMA descriptors with kmalloc&lt;6&gt;XLlTemac:<BR>&gt; &gt; (buffer_descriptor_init) phy: 0x1d18000, virt: 0xc1d18000, size: 0x8000<BR>&gt; &gt; XTemac: PHY detected at address 7.<BR>&gt; &gt; xilinx_lltemac xilinx_lltemac.0: eth0: Xilinx TEMAC at 0x81C00000 mapped<BR>&gt; &gt; to 0xC3004000, irq=2<BR>&gt; &gt; console [netcon0] enabled<BR>&gt; &gt; Linux version 2.6.24-rc8-xlnx-g1db182b8-dirty (mingliu@cca01) (gcc version<BR>&gt; &gt; 3.4.1) #7 Tue Apr 1 14:55:25 CEST 2008<BR>&gt; &gt; <BR>&gt; &gt; Xilinx Generic PowerPC board support package (Xilinx ML405)<BR>&gt; &gt; (Virtex-4 FX)<BR>&gt; &gt; <BR>&gt; &gt; Zone PFN ranges:<BR>&gt; &gt; DMA 0 -&gt; 8192<BR>&gt; &gt; Normal 8192 -&gt; 8192<BR>&gt; &gt; HighMem 8192 -&gt; 8192<BR>&gt; &gt; Movable zone start PFN for each node<BR>&gt; &gt; early_node_map[1] active PFN range<BR>&gt; &gt; s<BR>&gt; &gt; 0: 0 -&gt; 8192<BR>&gt; &gt; Built 1 zonelists in Zone order, mobility grouping on. Total pages: 8128<BR>&gt; &gt; Kernel command line: root=/dev/nfs<BR>&gt; &gt; ip=192.168.0.4:192.168.0.3:192.168.0.3:255.255.255.0 rw<BR>&gt; &gt; nfsroot=192.168.0.3:/home/mingliu/ml403_rootfs console=ttyUL0,38400<BR>&gt; &gt; mem=32M<BR>&gt; &gt; Xilinx INTC #0 at 0x81800000 mapped to 0xFDFFF000<BR>&gt; &gt; PID hash table entries: 128 (order: 7, 512 bytes)<BR>&gt; &gt; Console: colour dummy device 80x25<BR>&gt; &gt; Dentry cache hash table entries: 4096 (order: 2, 16384 bytes)<BR>&gt; &gt; Inode-cache hash table entries: 2048 (order: 1, 8192 bytes)<BR>&gt; &gt; Memory: 28884k available (2552k kernel code, 944k data, 84k init, 0k highmem)<BR>&gt; &gt; SLUB: Genslabs=11, HWalign=32, Order=0-1, MinObjects=4, CPUs=1, Nodes=1<BR>&gt; &gt; Mount-cache hash table entries: 512<BR>&gt; &gt; n<BR>&gt; &gt; et_namespace: 64 bytes<BR>&gt; &gt; NET: Registered protocol family 16<BR>&gt; &gt; Registering device uartlite:0<BR>&gt; &gt; Fixup MAC address for xilinx_lltemac:0<BR>&gt; &gt; Registering device xilinx_lltemac:0<BR>&gt; &gt; NET: Registered protocol family 2<BR>&gt; &gt; IP route cache hash table entries: 1024 (order: 0, 4096 bytes)<BR>&gt; &gt; TCP established hash table entries: 1024 (order: 1, 8192 bytes)<BR>&gt; &gt; TCP bind hash table entries: 1024<BR>&gt; &gt; (order: 0, 4096 bytes)<BR>&gt; &gt; TCP: Hash tables configured (established 1024 bind 1024)<BR>&gt; &gt; TCP reno registered<BR>&gt; &gt; sysctl table check failed: /kernel/l2cr .1.31 Missing strategy<BR>&gt; &gt; Call Trace:<BR>&gt; &gt; [c1c0fe50] [c0008b70] show_stack+0x40/0x194 (unreliable)<BR>&gt; &gt; [c1c0fe90] [c003aed4] set_fail+0x68/0x80<BR>&gt; &gt; [c1c0feb0] [c003b4ec] sysctl_check_table+0x600/0x77c<BR>&gt; &gt; [c1c0fef0] [c003b4d4] sysctl_c<BR>&gt; &gt; heck_table+0x5e8/0x77c<BR>&gt; &gt; [c1c0ff30] [c002605c] register_sysctl_table+0x64/0xb4<BR>&gt; &gt; [c1c0ff50] [c034579c] register_ppc_htab_sysctl+0x18/0x2c<BR>&gt; &gt; [c1c0ff60] [c034482c] kernel_init+0x94/0x2bc<BR>&gt; &gt; [c1c0fff0] [c0004d58] kernel_thread+0x44/0x60<BR>&gt; &gt; Installing knfsd (copyright (C) 1996 okir@monad.swb.de).<BR>&gt; &gt; fuse init (API version 7.9)<BR>&gt; &gt; io scheduler noop registered&lt;<BR>&gt; &gt; /SPAN&gt;<BR>&gt; &gt; io scheduler anticipatory registered<BR>&gt; &gt; io scheduler deadline registered<BR>&gt; &gt; io scheduler cfq registered (default)<BR>&gt; &gt; uartlite.0: ttyUL0 at MMIO 0x84000003 (irq = 3) is a uartlite<BR>&gt; &gt; console [ttyUL0] enabled<BR>&gt; &gt; loop: module loaded<BR>&gt; &gt; nbd: registered device at major 43<BR>&gt; &gt; xilinx_lltemac xilinx_lltemac.0: MAC address is now 0: a:35: 1: 2: 3<BR>&gt; &gt; xilinx_lltemac xilinx_lltemac.0: XLlTemac: using DMA mode.<BR>&gt; &gt; XLlTemac: Dma base address: phy: 0x84600100, virt: 0xc3008100<BR>&gt; &gt; XLlTemac: buffer descriptor size: 32768 (0x8000)<BR>&gt; &gt; XLlTemac: Allocating DMA descriptors with kmalloc&lt;6&gt;XLlTemac:<BR>&gt; &gt; (buffer_descriptor_init) phy: 0x1d18000, virt: 0xc1d18000, size: 0x8000<BR>&gt; &gt; XTemac: PHY detected at address 7.<BR>&gt; &gt; xilinx_lltemac xilinx_lltemac.0: eth0: Xilinx TEMAC at 0x81C00000 mapped<BR>&gt; &gt; &lt;<BR>&gt; &gt; SPAN style="FONT-SIZE: 12pt"&gt;to 0xC3004000, irq=2<BR>&gt; &gt; console [netcon0] enabled<BR>&gt; &gt; netconsole: network logging started<BR>&gt; &gt; Generic platform RAM MTD, (c) 2004 Simtec Electronics<BR>&gt; &gt; mice: PS/2 mouse device common for all mice<BR>&gt; &gt; TCP cubic registered<BR>&gt; &gt; NET: Registered protocol family 1<BR>&gt; &gt; NET: Registered protocol family 17<BR>&gt; &gt; RPC: Registered udp transport module.<BR>&gt; &gt; RPC: Registered tcp transport module.<BR>&gt; &gt; eth0: XLlTemac: Options: 0x3fa<BR>&gt; &gt; eth0: XLlTemac: allocating interrupt 0 for dma mode tx.<BR>&gt; &gt; eth0: XLlTemac: allocating interrupt 1 for dma mode rx.<BR>&gt; &gt; eth0: XLlTemac: speed set to 1000Mb/s<BR>&gt; &gt; eth0: XLlTemac: Send Threshold = 24, Receive Threshold = 4<BR>&gt; &gt; eth0: XLlTemac: Send Wait bound = 254, Receive Wait bound = 254<BR>&gt; &gt; IP-Config: Complete:<BR>&gt; &gt; <BR>&gt; &gt; device=eth0, addr=192.168.0.4, mask=255.255.255.0, gw=192.168.0.3,<BR>&gt; &gt; host=192.168.0.4, domain=, nis-domain=(none),<BR>&gt; &gt; bootserver=192.168.0.3, rootserver=192.168.0.3, rootpath=<BR>&gt; &gt; Looking up port of RPC 100003/2 on 192.168.0.3<BR>&gt; &gt; rpcbind: server 192.168.0.3 not responding, timed out<BR>&gt; &gt; Root-NFS: Unable to get nfsd port number from server, using default<BR>&gt; &gt; Looking up port of RPC 10000<BR>&gt; &gt; 5/1 on 192.168.0.3<BR>&gt; &gt; rpcbind: server 192.168.0.3 not responding, timed out<BR>&gt; &gt; Root-NFS: Unable to get mountd port number from server, using default<BR>&gt; &gt; mount: server 192.168.0.3 not responding, timed out<BR>&gt; &gt; Root-NFS: Server returned error -5 while mounting /home/mingliu/ml403_rootfs<BR>&gt; &gt; VFS: Unable to mount root fs via NFS, trying floppy.<BR>&gt; &gt; VFS: Cannot open root device "nfs" or unknown-block(2,0)<BR>&gt; &gt; Please append a correct "root=" boot option; here are <BR>&gt; &gt; the available<BR>&gt; &gt; partitions:<BR>&gt; &gt; Kernel panic - not syncing: VFS: Unable to mount root fs on<BR>&gt; &gt; unknown-block(2,0)<BR>&gt; &gt; Rebooting in 180 seconds..<BR>&gt; &gt; <BR>&gt; &gt; <BR>&gt; &gt; BR<BR>&gt; &gt; Ming<BR>&gt; &gt; <BR>&gt; &gt; <BR>&gt; &gt; <BR>&gt; &gt; <BR>&gt; &gt; ______________________________________________________________<BR>&gt; &gt; Windows Live Writer，支持离线撰写博客内容，随时随地想写就写。<BR>&gt; &gt; 立即使用！<BR>&gt; &gt; <BR>&gt; &gt; <BR>&gt; &gt; <BR>&gt; &gt; <BR>&gt; &gt; ______________________________________________________________________<BR>&gt; &gt; 使用新一代 Windows Live Messenger 轻松交流和共享！ 立即体验！ <BR>&gt; &gt; _______________________________________________<BR>&gt; &gt; Linuxppc-embedded mailing list<BR>&gt; &gt; Linuxppc-embedded@ozlabs.org<BR>&gt; &gt; https://ozlabs.org/mailman/listinfo/linuxppc-embedded<BR>&gt; <BR><BR><br /><hr />轻松把Hotmail下载到本地，试试 Windows Live Mail。 <a href='http://get.live.com/wl/all' target='_new'>立即尝试！</a></body>
-</html>
---_7f593b91-b331-4f5d-bc74-a1a57b3364d2_--
+0x30028200 is mmap() result, next step leads to crash:
+
+(gdb)
+Machine check in kernel mode.
+Data Read PLB Error
+OPB to PLB3: BSTAT=3D 0x00000000
+PLB3 to PLB4: BEAR=3D0x5c00819442310a80 BESR0=3D0x00000000 =
+BESR1=3D0x00000000
+PLB4 to PLB3: BEAR=3D0xa5876840c012269b BESR0=3D0x00000000 =
+BESR1=3D0x00000000
+PLB3 to OPB: BEAR=3D0xf0dffd99 BESR0=3D0x00000000 BESR1=3D0x00000000
+PLB3 arbiter: BEAR=3D0xc1fcef0c ACR=3D0x90000000 BESR=3D0x00000000
+PLB4 to OPB1: BEAR=3D0x0000000b9fbdfdb8 BESR0=3D0x00000000 =
+BESR1=3D0x00000000
+PLB40 Arbiter: BEAR=3D0x00000000fc240000 ACR=3D0xde000000 =
+BESR0=3D0x0f000000
+PLB41 Arbiter: BEAR=3D0xe7fb1dfdf3820fcb ACR=3D0xdf000000 =
+BESR0=3D0x00000000
+POB0: BEAR=3D0xc27e3194f0dffd99 BESR0=3D0x00000000 BESR1=3D0x00000000
+OPB0: BEAR=3D0x0000000000000000 BSTAT=3D0x00000000
+Oops: machine check, sig: 7 [#6]
+NIP: C0000DF8 LR: 10010474 CTR: 00000000
+REGS: c02acf50 TRAP: 0202   Not tainted  (2.6.19)
+MSR: 00001000 <ME>  CR: 40000044  XER: 20000000
+TASK =3D cfc00bf0[77] 'diags_server' THREAD: cf9de000
+GPR00: 00000000 CF9DFF40 3001F040 30028000 7FB5FA00 00000000 61736800
+FEFEFEFF
+GPR08: 00000000 0002D200 10010474 CF9DFF40 10010494 1004B074 10360000
+44004042
+GPR16: 10413BFC 7FAF1F5F 7FAF1F5F 00000000 00000001 10440000 00000000
+00000000
+GPR24: 1016B924 00000002 00000000 30026E5C 30027A18 10027B4C 0FFEA73C
+7FB5FA20
+NIP [C0000DF8] Debug+0x78/0x130
+LR [10010474] 0x10010474
+Call Trace:
+[CF9DFF40] [C00026EC] do_user_signal+0x74/0xc4 (unreliable)
+Instruction dump:
+7d4802a6 914b00a0 7d9d0aa6 918b00b4 7d3e0aa6 912b00b8 7d9a0aa6 902b0014
+7d3b0aa6 902b0000 7d615b78 55290398 <900b0010> 906b001c 908b0020
+90ab0024
+
+Program terminated with signal SIGBUS, Bus error.
+The program no longer exists.
+
+I suspect it has something to do with memory configiration. Note that
+Linux kernel is loaded by u-boot where all peripherals (NOR flash
+included) configured properly and work.
+
+I have BDI2000 connected and can (after stopping the board) see
+registers and TLB entries:
+
+440EPx>rd ebc0_b0cr
+ebc0_b0cr: 0xfc0da000  -66215936
+
+BUS configuration looks OK.
+
+TLB entries look strange though. That what it was on u-boot stage:
+
+440EPx>tlb 0 10
+IDX TID      EPN  SIZE VTS          RPN   USER WIMGE USRSVC
+ 0 : 00 40000000 256MB V0 -> 0_00000000 U:0000 -I-G- XWRXWR
+ 1 : 00 00000000 256MB V0 -> 0_00000000 U:0000 -I-G- XWRXWR
+ 2 : 00 c0000000 256MB V0 -> 1_c0000000 U:0000 -I-G- XWRXWR
+ 3 : 00 f0000000 256MB V0 -> 1_f0000000 U:0000 WI-G- XWRXWR
+ 4 : 00 80000000 256MB V0 -> 1_80000000 U:0000 -I-G- -WR-WR
+ 5 : 00 90000000 256MB V0 -> 1_90000000 U:0000 -I-G- -WR-WR
+ 6 : 00 a0000000 256MB V0 -> 1_a0000000 U:0000 -I-G- -WR-WR
+ 7 : 00 b0000000 256MB V0 -> 1_b0000000 U:0000 -I-G- -WR-WR
+ 8 : 00 d0000000   1KB V0 -> 1_d0000000 U:0000 -I-G- XWRXWR
+ 9 : 00 e0000000  16MB V0 -> 0_e0000000 U:0000 -I--- XWRXWR
+10 : 00 ea000000   1MB V0 -> 1_ea000000 U:0000 -I-G- XWRXWR
+
+On Linux stage it looks rather different:
+
+440EPx>tlb 0 40
+IDX TID      EPN  SIZE VTS          RPN   USER WIMGE USRSVC
+ 0 : 26 0ff9d000   4KB V0 -> 0_0fdc8000 U:0000 --MG- X-RX-R
+ 1 : 26 30017000   4KB V0 -> 0_0fe3e000 U:0000 --MG- --R-WR
+ 2 : 2a 10165000   4KB V0 -> 0_0028d000 U:0000 --MG- -WR-WR
+ 3 : 2a 100a4000   4KB V0 -> 0_00767000 U:0000 ---G- X-RX-R
+ 4 : 2a 1016b000   4KB V0 -> 0_00290000 U:0000 --MG- -WR-WR
+ 5 : 2a 10077000   4KB V0 -> 0_007ac000 U:0000 ---G- X-RX-R
+ 6 : 2a 10164000   4KB V0 -> 0_00295000 U:0000 --MG- --R-WR
+ 7 : 2a 1019c000   4KB V0 -> 0_00536000 U:0000 --MG- -WR-WR
+ 8 : 2a 100be000   4KB V0 -> 0_00774000 U:0000 ---G- X-RX-R
+ 9 : 2a 10114000   4KB V0 -> 0_007b7000 U:0000 ---G- --R--R
+10 : 2a 00000000   1KB -0 -> 0_007ef000 U:0000 ---G- --R--R
+11 : 2a 10057000   4KB V0 -> 0_007ef000 U:0000 ---G- X-RX-R
+12 : 2a 10117000   4KB V0 -> 0_007ba000 U:0000 ---G- --R--R
+13 : 2a 10097000   4KB V0 -> 0_00792000 U:0000 ---G- X-RX-R
+14 : 2a 10048000   4KB V0 -> 0_0fc27000 U:0000 ---G- X-RX-R
+15 : 2a 10087000   4KB V0 -> 0_007db000 U:0000 ---G- X-RX-R
+16 : 2a 10166000   4KB V0 -> 0_00299000 U:0000 --MG- -WR-WR
+17 : 2a 10086000   4KB V0 -> 0_007da000 U:0000 ---G- X-RX-R
+18 : 2a 1013c000   4KB V0 -> 0_00754000 U:0000 ---G- --R--R
+19 : 2a 1008e000   4KB V0 -> 0_007a9000 U:0000 ---G- X-RX-R
+20 : 2a 30000000   4KB V0 -> 0_00704000 U:0000 --MG- -WR-WR
+21 : 2a 7fa1c000   4KB V0 -> 0_0fe37000 U:0000 --MG- -WR-WR
+22 : 2a 1008d000   4KB V0 -> 0_007a8000 U:0000 ---G- X-RX-R
+23 : 2a 1008c000   4KB V0 -> 0_007a7000 U:0000 ---G- X-RX-R
+24 : 2a 100bd000   4KB V0 -> 0_00773000 U:0000 ---G- X-RX-R
+25 : 00 fdfec000   4KB V0 -> 1_ef600000 U:0000 -IMG- ----WR
+26 : 00 d1050000   4KB V0 -> 1_ef600000 U:0000 -IMG- ----WR
+27 : 00 d1054000   4KB V0 -> 1_ef600000 U:0000 -IMG- ----WR
+28 : 00 d1056000   4KB V0 -> 0_e0000000 U:0000 -IMG- ----WR
+29 : 00 ff100000   4KB V0 -> 0_006b0000 U:0000 -IMG- ---XWR
+30 : 26 10027000   4KB V0 -> 0_0fe80000 U:0000 --MG- --R-WR
+...........................
+
+Probably under MMU it should look this way? How to use mmap() then?
+
+Thanks,
+
+Leonid.
