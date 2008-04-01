@@ -1,22 +1,13 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id 62A10DE136
-	for <linuxppc-dev@ozlabs.org>; Wed,  2 Apr 2008 00:05:03 +1100 (EST)
-Message-ID: <47F232D2.9040200@ru.mvista.com>
-Date: Tue, 01 Apr 2008 17:04:18 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Return-Path: <jens@de.ibm.com>
+From: Jens Osterkamp <jens@de.ibm.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: [PATCH] RTAS - adapt procfs interface
+Date: Tue, 1 Apr 2008 15:12:20 +0200
 MIME-Version: 1.0
-To: Laurent Pinchart <laurentp@cse-semaphore.com>
-Subject: Re: [PATCHv2] powerpc: Describe memory-mapped RAM&ROM chips OF
-	bindings
-References: <200803311839.10519.laurentp@cse-semaphore.com>
-	<200804011047.42971.laurentp@cse-semaphore.com>
-	<Pine.LNX.4.64.0804010217470.3571@t2.domain.actdsltmp>
-	<200804011439.04905.laurentp@cse-semaphore.com>
-In-Reply-To: <200804011439.04905.laurentp@cse-semaphore.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev@ozlabs.org, MTD mailing list <linux-mtd@lists.infradead.org>,
-	Trent Piepho <xyzzy@speakeasy.org>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200804011512.20834.jens@de.ibm.com>
+Cc: maxim@de.ibm.com, linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,27 +17,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Laurent Pinchart wrote:
 
->>>On Monday 31 March 2008 19:06, Sergei Shtylyov wrote:
+Hi,
 
->>>>>       p) Freescale Synchronous Serial Interface
->>>>>-	  q) USB EHCI controllers
->>>>>+      q) USB EHCI controllers
->>>>>+      r) Memory-mapped RAM & ROM
+rtas_flash was broken since 2.6.24-rc5. This patch fixes it.
+I think this is a good bugfix candidate for 2.6.25.
 
->>>>    Memory-mapped RA/RO Memory again? Should better drop this. :-)
+Jens
 
->>>You're quite picky, aren't you ? :-)
+---
 
->>>I suppose "Memory-mapped RA & RO" won't be accepted, so what about "Auxiliary
->>>RAM & ROM" ?
+From: Maxim Shchetynin <maxim@de.ibm.com>
 
->>Direct-mapped?
+Handling of the proc_dir_entry->count has being changed in 2.6.24-rc5.
+After this change the default value for pde->count is 1 and not 0 as it
+was in earlier kernels. Therefore, if we want to check wether our procfs
+file is already opened (already in use), we have to check if pde->count
+is not greater than 2 but not 1.
 
-> Fine with me. Sergei ?
+Signed-off-by: Maxim Shchetynin <maxim@de.ibm.com>
+Signed-off-by: Jens Osterkamp <jens@de.ibm.com>
 
-    I agree. The only thing that somewhat worries me it that it will have no 
-"compatible" prop...
-
-WBR, Sergei
+Index: linux-2.6/arch/powerpc/kernel/rtas_flash.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/kernel/rtas_flash.c
++++ linux-2.6/arch/powerpc/kernel/rtas_flash.c
+@@ -356,7 +356,7 @@ static int rtas_excl_open(struct inode *
+ 
+ 	/* Enforce exclusive open with use count of PDE */
+ 	spin_lock(&flash_file_open_lock);
+-	if (atomic_read(&dp->count) > 1) {
++	if (atomic_read(&dp->count) > 2) {
+ 		spin_unlock(&flash_file_open_lock);
+ 		return -EBUSY;
+ 	}
