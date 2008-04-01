@@ -1,19 +1,9 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id CFFF7DDF51
-	for <linuxppc-dev@ozlabs.org>; Tue,  1 Apr 2008 15:21:22 +1000 (EST)
-Date: Mon, 31 Mar 2008 22:21:21 -0700 (PDT)
-Message-Id: <20080331.222121.264093711.davem@davemloft.net>
-To: paulus@samba.org
-Subject: Re: [patch 06/24] lmb: add lmb_alloc_nid()
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <18417.46834.753849.815163@cargo.ozlabs.ibm.com>
-References: <200803282121.m2SLLBso010683@imap1.linux-foundation.org>
-	<18417.46834.753849.815163@cargo.ozlabs.ibm.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org, tglx@linutronix.de,
-	mingo@elte.hu
+Return-Path: <michael@ozlabs.org>
+To: <linuxppc-dev@ozlabs.org>
+Message-Id: <be85035fa2cb015a8020e63b40c6d5375aaff866.1207031915.git.michael@ellerman.id.au>
+From: Michael Ellerman <michael@ellerman.id.au>
+Subject: [PATCH] Make #include <sysdev/foo.h> work for 64-bit powerpc
+Date: Tue,  1 Apr 2008 17:39:11 +1100 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,36 +13,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Paul Mackerras <paulus@samba.org>
-Date: Tue, 1 Apr 2008 15:15:46 +1100
+We currently have inconsistent settings between 32 & 64-bit which means
+32-bit code can #include <sysdev/foo.h> but 64-bit code can't.
 
-> akpm@linux-foundation.org writes:
-> 
-> > From: David Miller <davem@davemloft.net>
-> > 
-> > A variant of lmb_alloc() that tries to allocate memory on a specified NUMA
-> > node 'nid' but falls back to normal lmb_alloc() if that fails.
-> 
-> ...
-> 
-> > +static u64 __init lmb_alloc_nid_unreserved(u64 start, u64 end,
-> > +					   u64 size, u64 align)
-> > +{
-> > +	u64 base;
-> > +	long j;
-> > +
-> > +	base = lmb_align_down((end - size), align);
-> > +	while (start <= base &&
-> > +	       ((j = lmb_overlaps_region(&lmb.reserved, base, size)) >= 0))
-> > +		base = lmb_align_down(lmb.reserved.region[j].base - size,
-> > +				      align);
-> 
-> How do we know that lmb.reserved.region[j].base is >= size at this
-> point?  If it isn't, then base could end up as some extremely large
-> unsigned value, which would be a Bad Thing.
+So make the (C|A|CPP)FLAGS settings to allow this common. Doing so makes
+the CPPFLAGS-y and AFLAGS-y variables unnecessary, so just fold them into
+KBUILD_CPPFLAGS and KBUILD_AFLAGS respectively.
 
-The same exact issue exists in the existing code, from which this is
-derived, in __lmb_alloc_base().
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+---
+ arch/powerpc/Makefile |   10 ++++------
+ 1 files changed, 4 insertions(+), 6 deletions(-)
 
-This situation can occur any time a region is smaller than the 'size'
-argument, in both functions.
+
+This is 26 material.
+
+diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
+index 1c6ce35..aa9829a 100644
+--- a/arch/powerpc/Makefile
++++ b/arch/powerpc/Makefile
+@@ -71,13 +71,11 @@ endif
+ 
+ LDFLAGS_vmlinux	:= -Bstatic
+ 
+-CPPFLAGS-$(CONFIG_PPC32) := -Iarch/$(ARCH)
+-AFLAGS-$(CONFIG_PPC32)	:= -Iarch/$(ARCH)
+ CFLAGS-$(CONFIG_PPC64)	:= -mminimal-toc -mtraceback=none  -mcall-aixdesc
+-CFLAGS-$(CONFIG_PPC32)	:= -Iarch/$(ARCH) -ffixed-r2 -mmultiple
+-KBUILD_CPPFLAGS	+= $(CPPFLAGS-y)
+-KBUILD_AFLAGS	+= $(AFLAGS-y)
+-KBUILD_CFLAGS	+= -msoft-float -pipe $(CFLAGS-y)
++CFLAGS-$(CONFIG_PPC32)	:= -ffixed-r2 -mmultiple
++KBUILD_CPPFLAGS	+= -Iarch/$(ARCH)
++KBUILD_AFLAGS	+= -Iarch/$(ARCH)
++KBUILD_CFLAGS	+= -msoft-float -pipe -Iarch/$(ARCH) $(CFLAGS-y)
+ CPP		= $(CC) -E $(KBUILD_CFLAGS)
+ 
+ CHECKFLAGS	+= -m$(CONFIG_WORD_SIZE) -D__powerpc__ -D__powerpc$(CONFIG_WORD_SIZE)__
+-- 
+1.5.2.rc1.1884.g59b20
