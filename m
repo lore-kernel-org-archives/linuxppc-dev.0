@@ -1,19 +1,22 @@
-Return-Path: <sam.d.karp@gmail.com>
-Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.182])
-	by ozlabs.org (Postfix) with ESMTP id 3CB31DDDFF
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.245])
+	by ozlabs.org (Postfix) with ESMTP id E57CCDDE41
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  1 Apr 2008 11:48:52 +1000 (EST)
-Received: by py-out-1112.google.com with SMTP id z59so1956453pyg.27
+	Tue,  1 Apr 2008 12:03:43 +1000 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so467391anc.78
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 31 Mar 2008 18:48:50 -0700 (PDT)
-Message-ID: <800687fe0803311848l478f6445u77c20cd8c4f71797@mail.gmail.com>
-Date: Mon, 31 Mar 2008 19:48:50 -0600
-From: "Sam Karp" <sam.d.karp@gmail.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: SecretLab Git Server
+	Mon, 31 Mar 2008 19:02:25 -0700 (PDT)
+Message-ID: <fa686aa40803311902u4c47ceb9v6b743065b55bf3fa@mail.gmail.com>
+Date: Mon, 31 Mar 2008 20:02:23 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Sam Karp" <sam.d.karp@gmail.com>
+Subject: Re: SecretLab Git Server
+In-Reply-To: <800687fe0803311848l478f6445u77c20cd8c4f71797@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_19495_29947475.1207014530519"
+Content-Type: text/plain; charset=ISO-8859-1
+References: <800687fe0803311848l478f6445u77c20cd8c4f71797@mail.gmail.com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,33 +27,30 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-------=_Part_19495_29947475.1207014530519
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Mon, Mar 31, 2008 at 7:48 PM, Sam Karp <sam.d.karp@gmail.com> wrote:
+> Has anyone tried downloading the Linux 2.6 Kernel Git tree lately?
+>
+> I'm trying to run this: git-clone
+> git://git.secretlab.ca/git/linux-2.6-virtex.git
+>
+> and get an error saying that The remote end hung up unexpectedly.
 
-Has anyone tried downloading the Linux 2.6 Kernel Git tree lately?
+Sorry, my git server is down at the moment.  I recommend using
+Xilinx's git server
 
-I'm trying to run this: git-clone git://git.secretlab.ca/git/linux-
-2.6-virtex.git
+g.
 
-and get an error saying that The remote end hung up unexpectedly.
+>
+> Thanks
+> -Sam
+> _______________________________________________
+>  Linuxppc-embedded mailing list
+>  Linuxppc-embedded@ozlabs.org
+>  https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>
 
-Thanks
--Sam
 
-------=_Part_19495_29947475.1207014530519
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 
-<div>Has anyone tried downloading the Linux 2.6 Kernel Git tree lately?</div>
-<div>&nbsp;</div>
-<div>I&#39;m trying to run this: git-clone git://git.secretlab.ca/git/linux-2.6-virtex.git</div>
-<div>&nbsp;</div>
-<div>and get an error saying that The remote end hung up unexpectedly.</div>
-<div>&nbsp;</div>
-<div>Thanks</div>
-<div>-Sam</div>
-
-------=_Part_19495_29947475.1207014530519--
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
