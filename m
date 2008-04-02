@@ -1,17 +1,22 @@
-Return-Path: <sfr@canb.auug.org.au>
-Date: Wed, 2 Apr 2008 23:30:08 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Benjamin Herrenschmidt <benh@ozlabs.org>
-Subject: Re: [PATCH 1/4] [POWERPC] Initialize paca->current earlier
-Message-Id: <20080402233008.43dd2e10.sfr@canb.auug.org.au>
-In-Reply-To: <20080402075253.8726ADDEDD@ozlabs.org>
-References: <1207122728.672673.111194574046.qpush@grosgo>
-	<20080402075253.8726ADDEDD@ozlabs.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Wed__2_Apr_2008_23_30_08_+1100_2ELgX5WpvvOqAOez"
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 4C7FBDDDE9
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 Apr 2008 00:11:41 +1100 (EST)
+Message-Id: <D9009C0A-D147-49B8-BE9E-987A25FEB97C@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+In-Reply-To: <Pine.LNX.4.64.0804021352580.20994@vixen.sonytel.be>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v919.2)
+Subject: Re: [PATCH] [POWERPC] Move phys_addr_t definition into asm/types.h
+Date: Wed, 2 Apr 2008 08:11:25 -0500
+References: <Pine.LNX.4.64.0803281338360.15109@blarg.am.freescale.net>
+	<18417.44855.137234.450478@cargo.ozlabs.ibm.com>
+	<451ABD36-3763-4AF0-B24B-AF043393A72C@kernel.crashing.org>
+	<Pine.LNX.4.64.0804021352580.20994@vixen.sonytel.be>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,34 +26,59 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Wed__2_Apr_2008_23_30_08_+1100_2ELgX5WpvvOqAOez
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-On Wed, 02 Apr 2008 18:52:09 +1100 Benjamin Herrenschmidt <benh@ozlabs.org>=
- wrote:
+On Apr 2, 2008, at 6:53 AM, Geert Uytterhoeven wrote:
+> On Tue, 1 Apr 2008, Kumar Gala wrote:
+>> On Mar 31, 2008, at 10:42 PM, Paul Mackerras wrote:
+>>> Kumar Gala writes:
+>>>> Moved phys_addr_t out of mmu-*.h and into asm/types.h so we can  
+>>>> use it in
+>>>> places that before would have caused recursive includes.
+>>>>
+>>>> For example to use phys_addr_t in <asm/page.h> we would have  
+>>>> included
+>>>> <asm/mmu.h> which would have possibly included <asm/mmu-hash64.h>  
+>>>> which
+>>>> includes <asm/page.h>.  Wheeee recursive include.
+>>>
+>>> In general this looks fine.  I wonder if you should use u64 rather
+>>> than unsigned long long.  Since CONFIG_PHYS_64BIT=n on 64-bit  
+>>> machines
+>>> (which is itself somewhat counterintuitive) we will actually use
+>>> unsigned long on 64-bit machines, so it matters less than I  
+>>> originally
+>>> thought, but it would be worth explaining that in a comment and/or  
+>>> the
+>>> commit message.
+>>
+>> We could change it to be:
+>>
+>> /* Physical address used by some IO functions */
+>> #if defined(CONFIG_PPC64) || defined(CONFIG_PHYS_64BIT)
+>> typedef u64 phys_addr_t;
+>> #else
+>> typedef u32 phys_addr_t;
+>> #endif
+>>
+>> This seems a bit more self documenting which is always nice (and I  
+>> can add a
+>> comment in the commit message about CONFIG_PHYS_64BIT only making  
+>> sense on
+>> ppc32).
 >
-> This changes it so that all PACAs are statically initialized with
-> __current pointing to the init task. For non-0 CPUs, this is fixed
-> up before use.
+> If it's counterintuitive that CONFIG_PHYS_64BIT=n on 64-bit  
+> machines, why
+> not set it to =y in Kconfig?
 
-You might want to see how this impacts on Tony Breed's 1024 way patches.
+Its not that it =n, its that its not available.  The Kconfig looks like:
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+config PHYS_64BIT
+         bool 'Large physical address support' if E500
+         depends on 44x || E500
+         select RESOURCES_64BIT
+         default y if 44x
 
---Signature=_Wed__2_Apr_2008_23_30_08_+1100_2ELgX5WpvvOqAOez
-Content-Type: application/pgp-signature
+We could set it to y on PPC64 as there is no harm there, but Paul  
+would need to say he wants that done.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFH83xUTgG2atn1QN8RAh6XAKCIWtXMks3C2WK0DtUeLEg6P3wxxwCfdcNk
-lFRM9VkKw+GwPqNK/NEhMbg=
-=a+1N
------END PGP SIGNATURE-----
-
---Signature=_Wed__2_Apr_2008_23_30_08_+1100_2ELgX5WpvvOqAOez--
+- k
