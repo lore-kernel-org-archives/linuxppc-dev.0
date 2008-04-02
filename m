@@ -1,25 +1,16 @@
-Return-Path: <dcogley@uslinc.com>
-Received: from mta11.charter.net (mta11.charter.net [216.33.127.80])
-	by ozlabs.org (Postfix) with ESMTP id 35B9EDE1D3
+Return-Path: <ravi.rao@rflelect.com>
+Received: from rflnotes01.rflelect.com (72-164-21-98.dia.static.qwest.net
+	[72.164.21.98]) by ozlabs.org (Postfix) with ESMTP id 0CCC0DDF28
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  3 Apr 2008 05:03:41 +1100 (EST)
-Received: from aarprv04.charter.net ([10.20.200.74]) by mta11.charter.net
-	(InterMail vM.7.08.03.00 201-2186-126-20070710) with ESMTP
-	id <20080402180340.ZOFG5653.mta11.charter.net@aarprv04.charter.net>
-	for <linuxppc-embedded@ozlabs.org>; Wed, 2 Apr 2008 14:03:40 -0400
-Received: from DCOGLEYNEW ([71.93.35.174]) by aarprv04.charter.net with ESMTP
-	id <20080402180339.ZXKS17353.aarprv04.charter.net@DCOGLEYNEW>
-	for <linuxppc-embedded@ozlabs.org>; Wed, 2 Apr 2008 14:03:39 -0400
-From: "Dave Cogley" <dcogley@uslinc.com>
-To: <linuxppc-embedded@ozlabs.org>
-References: 
-Subject: RE: u-boot ppc440epx bootstrap configuration without eval board
-Date: Wed, 2 Apr 2008 11:03:37 -0700
-Message-ID: <000901c894eb$e0707170$2001a8c0@DCOGLEYNEW>
+	Thu,  3 Apr 2008 05:35:36 +1100 (EST)
+To: linuxppc-embedded@ozlabs.org
+Subject: ppc405ep and Ready enable in EBC0_BnAP register
 MIME-Version: 1.0
+Message-ID: <OF39A36E1A.054DB15D-ON8525741F.00650F27-8525741F.00663A93@slpower.com>
+From: ravi.rao@rflelect.com
+Date: Wed, 2 Apr 2008 14:35:25 -0400
 Content-Type: multipart/alternative;
-	boundary="----=_NextPart_000_000A_01C894B1.34119970"
-In-Reply-To: 
+	boundary="=_alternative 00663A8E8525741F_="
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -30,238 +21,135 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+This is a multipart message in MIME format.
+--=_alternative 00663A8E8525741F_=
+Content-Type: text/plain; charset="US-ASCII"
 
-------=_NextPart_000_000A_01C894B1.34119970
-Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-
-Disregard the boot strapping problem.  It appears we are hardwired strapped
-to use option "C" however my CPU is not being recognized as a 667MHz.  Which
-option should I be using for the 667MHz processor?
-
- 
-
- 
-
-  _____  
-
-From: Dave Cogley [mailto:dcogley@uslinc.com] 
-Sent: Wednesday, April 02, 2008 10:15 AM
-To: 'linuxppc-embedded@ozlabs.org'
-Subject: u-boot ppc440epx bootstrap configuration without eval board
-
- 
-
-Hello,
-
- 
-
-We are using the new AMCC ppc440epx 667MHz chip and I am trying to get
-u-boot to recognize the clock rate of the new chip (we were using the
-533MHz).  I notice in the cmd_sequoia.c module that there is an option to
-setup some sort of strapping in the configuration FPGA that was present on
-the evaluation card.  We do not have this configuration FPGA present in our
-production board.  Is there some sort of build flag I can specify to
-"hardwire" this bootstrap information?  Or at least some I can tell u-boot
-to startup with the 667MHz clock rate?  I believe we are using option 7 in
-the configuration array for the "bootstrap" command.
-
- 
-
+Hi All,
+    Our target is based on PPC405EP and we are using a TDMoIP chip on the 
+peripheral bus with chipselect 2. Since the access time to the chip is not 
+deterministic we are planning to use the Ready enable. By probing into 
+Chipselect and ready enable bits it looks like the chip select gets 
+extended untill the ready enable becomes 1 but the access crashes with a 
+Bus error.
+But If I just set the twt to a very high value say 20 with ready enable 
+set to 0  then it works. Any pointers to understand  what is happening 
+will be of great help.
+####################### Screen Dump #################################
+Data machine check in kernel mode.
+PLB0: BEAR= 0xf8000000 ACR=   0x00000000 BESR=  0x00000000
+PLB0 to OPB: BEAR= 0x01000000 BESR0= 0x00000000 BESR1= 0x00000000
+Oops: machine check, sig: 7 [#5]
+NIP: C90C69BC LR: C90C6AA4 CTR: 000003E0
+REGS: c023ef50 TRAP: 0202   Not tainted  (2.6.21)
+MSR: 00029030 <EE,ME,IR,DR>  CR: 84044408  XER: 00000007
+TASK = c3fab050[666] 'cat' THREAD: c2710000
+GPR00: 00000000 C2711650 C3FAB050 C2729000 C2711EAC 00000000 00000C00 
+C2711EA8
+GPR08: 00000000 00000040 FFFFFFFF C9400000 44044408 100A54C0 03FF9C00 
+00000001
+GPR16: 0000005E C01DA824 C02E7F78 C01E0C50 C2711EA8 C01E0C20 C2711EAC 
+C25DC320
+GPR24: C2729000 00000000 C2711F20 C90C7FF4 C2729000 C2711EA8 C2711658 
+C2729000
+Call Trace:
+[C2711E80] [C90C6AA4]
+[C2711EA0] [C009BA60]
+[C2711EF0] [C0063E6C]
+[C2711F10] [C00642C8]
+[C2711F40] [C0002CB4]
+Instruction dump:
+bf210814 3b697ff4 90010834 817b006c 7c7f1b78 a00b0000 39200002 b0010008
+380003ff 7c0903a6 3bc10008 7c0b4a2e <7c09f32e> 39290002 4200fff4 3c80c90c
+Bus error
 Thanks,
-
-Dave Cogley
-
-Software Engineer
-
-Ultra Stereo Labs, Inc.
-
-(805) 549-0161
-
-mailto:dcogley@uslinc.com
-
+Ravishankar Govindarao
+RFL Electronics Inc.
+E-mail : Ravi.Rao@rflelect.com
+Voice: 973.334.3100 Ext. 233
+Fax: 973.334.3863
  
+CONFIDENTIALITY NOTE
+This e-mail, including any attachments, may contain confidential and/or 
+legally privileged information.  The Information is intended only for the 
+use of the individual or entity named on this e-mail .  If you are not the 
+intended recipient, you are hereby notified that any disclosure, copying, 
+distribution, or the taking of any action in reliance on the contents of 
+this transmitted Information is strictly prohibited.  Further, if you are 
+not the intended recipient, please notify us by return e-mail and delete 
+the Information promptly.
+ 
+ 
+ 
+--=_alternative 00663A8E8525741F_=
+Content-Type: text/html; charset="US-ASCII"
 
 
-------=_NextPart_000_000A_01C894B1.34119970
-Content-Type: text/html;
-	charset="US-ASCII"
-Content-Transfer-Encoding: quoted-printable
-
-<html xmlns:v=3D"urn:schemas-microsoft-com:vml" =
-xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
-xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
-xmlns=3D"http://www.w3.org/TR/REC-html40">
-
-<head>
-<meta http-equiv=3DContent-Type content=3D"text/html; =
-charset=3Dus-ascii">
-<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
-<!--[if !mso]>
-<style>
-v\:* {behavior:url(#default#VML);}
-o\:* {behavior:url(#default#VML);}
-w\:* {behavior:url(#default#VML);}
-.shape {behavior:url(#default#VML);}
-</style>
-<![endif]-->
-<style>
-<!--
- /* Font Definitions */
- @font-face
-	{font-family:Tahoma;
-	panose-1:2 11 6 4 3 5 4 4 2 4;}
- /* Style Definitions */
- p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{margin:0in;
-	margin-bottom:.0001pt;
-	font-size:12.0pt;
-	font-family:"Times New Roman";}
-a:link, span.MsoHyperlink
-	{color:blue;
-	text-decoration:underline;}
-a:visited, span.MsoHyperlinkFollowed
-	{color:purple;
-	text-decoration:underline;}
-span.EmailStyle17
-	{mso-style-type:personal;
-	font-family:Arial;
-	color:windowtext;}
-span.EmailStyle18
-	{mso-style-type:personal-reply;
-	font-family:Arial;
-	color:navy;}
-@page Section1
-	{size:8.5in 11.0in;
-	margin:1.0in 1.25in 1.0in 1.25in;}
-div.Section1
-	{page:Section1;}
--->
-</style>
-
-</head>
-
-<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
-
-<div class=3DSection1>
-
-<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
-style=3D'font-size:
-10.0pt;font-family:Arial;color:navy'>Disregard the boot strapping
-problem.&nbsp; It appears we are hardwired strapped to use option =
-&#8220;C&#8221;
-however my CPU is not being recognized as a 667MHz.&nbsp; Which option =
-should I
-be using for the 667MHz processor?<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
-style=3D'font-size:
-10.0pt;font-family:Arial;color:navy'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
-style=3D'font-size:
-10.0pt;font-family:Arial;color:navy'><o:p>&nbsp;</o:p></span></font></p>
-
-<div>
-
-<div class=3DMsoNormal align=3Dcenter style=3D'text-align:center'><font =
-size=3D3
-face=3D"Times New Roman"><span style=3D'font-size:12.0pt'>
-
-<hr size=3D2 width=3D"100%" align=3Dcenter tabindex=3D-1>
-
-</span></font></div>
-
-<p class=3DMsoNormal><b><font size=3D2 face=3DTahoma><span =
-style=3D'font-size:10.0pt;
-font-family:Tahoma;font-weight:bold'>From:</span></font></b><font =
-size=3D2
-face=3DTahoma><span style=3D'font-size:10.0pt;font-family:Tahoma'> Dave =
-Cogley
-[mailto:dcogley@uslinc.com] <br>
-<b><span style=3D'font-weight:bold'>Sent:</span></b> Wednesday, April =
-02, 2008
-10:15 AM<br>
-<b><span style=3D'font-weight:bold'>To:</span></b> =
-'linuxppc-embedded@ozlabs.org'<br>
-<b><span style=3D'font-weight:bold'>Subject:</span></b> u-boot ppc440epx
-bootstrap configuration without eval board</span></font><o:p></o:p></p>
-
-</div>
-
-<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
-style=3D'font-size:
-12.0pt'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>Hello,<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>We are using the new AMCC ppc440epx 667MHz chip and I =
-am
-trying to get u-boot to recognize the clock rate of the new chip (we =
-were using
-the 533MHz).&nbsp; I notice in the cmd_sequoia.c module that there is an =
-option
-to setup some sort of strapping in the configuration FPGA that was =
-present on
-the evaluation card.&nbsp; We do not have this configuration FPGA =
-present in
-our production board.&nbsp; Is there some sort of build flag I can =
-specify to
-&#8220;hardwire&#8221; this bootstrap information?&nbsp; Or at least =
-some I can
-tell u-boot to startup with the 667MHz clock rate?&nbsp; I believe we =
-are using
-option 7 in the configuration array for the &#8220;bootstrap&#8221; =
-command.<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>Thanks,<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>Dave Cogley<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>Software Engineer<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>Ultra Stereo Labs, Inc.<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>(805) 549-0161<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><a =
-href=3D"mailto:dcogley@uslinc.com">mailto:dcogley@uslinc.com</a><o:p></o:=
-p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
-style=3D'font-size:
-12.0pt'><o:p>&nbsp;</o:p></span></font></p>
-
-</div>
-
-</body>
-
-</html>
-
-------=_NextPart_000_000A_01C894B1.34119970--
+<br><font size=2 face="sans-serif">Hi All,</font>
+<br><font size=2 face="sans-serif">&nbsp; &nbsp; Our target is based on
+PPC405EP and we are using a TDMoIP chip on the peripheral bus with chipselect
+2. Since the access time to the chip is not deterministic we are planning
+to use the Ready enable. By probing into Chipselect and ready enable bits
+it looks like the chip select gets extended untill the ready enable becomes
+1 but the access crashes with a Bus error.</font>
+<br><font size=2 face="sans-serif">But If I just set the twt to a very
+high value say 20 with ready enable set to 0 &nbsp;then it works. Any pointers
+to understand &nbsp;what is happening will be of great help.</font>
+<br><font size=2 face="sans-serif">####################### Screen Dump
+#################################</font>
+<br><font size=2 face="Courier New">Data machine check in kernel mode.</font>
+<br><font size=2 face="Courier New">PLB0: BEAR= 0xf8000000 ACR= &nbsp;
+0x00000000 BESR= &nbsp;0x00000000</font>
+<br><font size=2 face="Courier New">PLB0 to OPB: BEAR= 0x01000000 BESR0=
+0x00000000 BESR1= 0x00000000</font>
+<br><font size=2 face="Courier New">Oops: machine check, sig: 7 [#5]</font>
+<br><font size=2 face="Courier New">NIP: C90C69BC LR: C90C6AA4 CTR: 000003E0</font>
+<br><font size=2 face="Courier New">REGS: c023ef50 TRAP: 0202 &nbsp; Not
+tainted &nbsp;(2.6.21)</font>
+<br><font size=2 face="Courier New">MSR: 00029030 &lt;EE,ME,IR,DR&gt; &nbsp;CR:
+84044408 &nbsp;XER: 00000007</font>
+<br><font size=2 face="Courier New">TASK = c3fab050[666] 'cat' THREAD:
+c2710000</font>
+<br><font size=2 face="Courier New">GPR00: 00000000 C2711650 C3FAB050 C2729000
+C2711EAC 00000000 00000C00 C2711EA8</font>
+<br><font size=2 face="Courier New">GPR08: 00000000 00000040 FFFFFFFF C9400000
+44044408 100A54C0 03FF9C00 00000001</font>
+<br><font size=2 face="Courier New">GPR16: 0000005E C01DA824 C02E7F78 C01E0C50
+C2711EA8 C01E0C20 C2711EAC C25DC320</font>
+<br><font size=2 face="Courier New">GPR24: C2729000 00000000 C2711F20 C90C7FF4
+C2729000 C2711EA8 C2711658 C2729000</font>
+<br><font size=2 face="Courier New">Call Trace:</font>
+<br><font size=2 face="Courier New">[C2711E80] [C90C6AA4]</font>
+<br><font size=2 face="Courier New">[C2711EA0] [C009BA60]</font>
+<br><font size=2 face="Courier New">[C2711EF0] [C0063E6C]</font>
+<br><font size=2 face="Courier New">[C2711F10] [C00642C8]</font>
+<br><font size=2 face="Courier New">[C2711F40] [C0002CB4]</font>
+<br><font size=2 face="Courier New">Instruction dump:</font>
+<br><font size=2 face="Courier New">bf210814 3b697ff4 90010834 817b006c
+7c7f1b78 a00b0000 39200002 b0010008</font>
+<br><font size=2 face="Courier New">380003ff 7c0903a6 3bc10008 7c0b4a2e
+&lt;7c09f32e&gt; 39290002 4200fff4 3c80c90c</font>
+<br><font size=2 face="Courier New">Bus error</font>
+<br><font size=2 face="Courier New">Thanks,<br>
+</font><font size=2 face="Tms Rmn">Ravishankar Govindarao<br>
+RFL Electronics Inc.<br>
+E-mail</font><font size=1 face="Tms Rmn"> </font><font size=2 face="Tms Rmn">:
+</font><a href=mailto:Ravi.Rao@rflelect.com><font size=2 color=blue face="Tms Rmn"><u>Ravi.Rao@rflelect.com</u></font></a>
+<br><font size=2 face="Tms Rmn">Voice: 973.334.3100 Ext. 233<br>
+Fax: 973.334.3863</font>
+<p><font size=2 face="Tms Rmn">&nbsp;</font>
+<div align=center>
+<br><font size=2 color=blue face="Tms Rmn"><u>CONFIDENTIALITY NOTE</u></font></div>
+<br><font size=1 face="Tms Rmn">This e-mail, including any attachments,
+may contain confidential and/or legally privileged information.&nbsp; The
+Information is intended only for the use of the individual or entity named
+on this e-mail</font><font size=1 face="Tms Rmn"> </font><font size=1 face="Tms Rmn">.&nbsp;
+If you are not the intended recipient, you are hereby notified that any
+disclosure, copying, distribution, or the taking of any action in reliance
+on the contents of this transmitted Information is strictly prohibited.&nbsp;
+Further, if you are not the intended recipient, please notify us by return
+e-mail and delete the Information promptly.</font>
+<p><font size=2 face="Tms Rmn">&nbsp;</font>
+<p><font size=2 face="Tms Rmn">&nbsp;</font>
+<p><font size=3>&nbsp;</font>
+--=_alternative 00663A8E8525741F_=--
