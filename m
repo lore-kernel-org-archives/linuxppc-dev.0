@@ -1,11 +1,11 @@
 Return-Path: <yhlu.kernel@gmail.com>
-Received: from wr-out-0506.google.com (wr-out-0506.google.com [64.233.184.234])
-	by ozlabs.org (Postfix) with ESMTP id BD73FDDF48
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 Apr 2008 08:57:41 +1100 (EST)
-Received: by wr-out-0506.google.com with SMTP id 67so2442798wri.3
-	for <linuxppc-dev@ozlabs.org>; Wed, 02 Apr 2008 14:57:38 -0700 (PDT)
-Message-ID: <86802c440804021457y5a9e84f7o3d2d95efb7ba521@mail.gmail.com>
-Date: Wed, 2 Apr 2008 14:57:37 -0700
+Received: from rv-out-0910.google.com (rv-out-0910.google.com [209.85.198.190])
+	by ozlabs.org (Postfix) with ESMTP id 33C02DDEEC
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 Apr 2008 09:24:43 +1100 (EST)
+Received: by rv-out-0910.google.com with SMTP id c27so1647042rvf.9
+	for <linuxppc-dev@ozlabs.org>; Wed, 02 Apr 2008 15:24:42 -0700 (PDT)
+Message-ID: <86802c440804021524r3e930f4aoffe8e43a4c1bb9d0@mail.gmail.com>
+Date: Wed, 2 Apr 2008 15:24:41 -0700
 From: "Yinghai Lu" <yhlu.kernel@gmail.com>
 To: "Badari Pulavarty" <pbadari@us.ibm.com>
 Subject: Re: [BUG] 2.6.25-rc8-mm1 kernel panic while bootup on powerpc
@@ -141,6 +141,8 @@ On Wed, Apr 2, 2008 at 12:22 PM, Badari Pulavarty <pbadari@us.ibm.com> wrote:
 >  calls sparse_init_one_section() - which is not good :(
 >
 
-will send you patch workaround it...
+http://lkml.org/lkml/2008/4/2/592
+
+Thanks
 
 YH
