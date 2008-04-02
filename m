@@ -1,16 +1,20 @@
 Return-Path: <linnj@wolfgang-pc.public.xilinx.com>
-Received: from outbound2-dub-R.bigfish.com (outbound-dub.frontbridge.com
+Received: from outbound5-dub-R.bigfish.com (outbound-dub.frontbridge.com
 	[213.199.154.16])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id D1FA4DE0F6
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 Apr 2008 03:52:21 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 29347DE2BE
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 Apr 2008 03:52:31 +1100 (EST)
 From: John Linn <john.linn@xilinx.com>
 To: linuxppc-dev@ozlabs.org,
 	grant.likely@secretlab.ca
-Subject: [PATCH 1/3][POWERPC][V2] of_serial: Fix possible null dereference.
-Date: Wed,  2 Apr 2008 09:52:13 -0700
-Message-Id: <20080402165216.8FD2BC9807F@mail21-dub.bigfish.com>
+Subject: [PATCH 2/3][POWERPC][V2] Xilinx: of_serial support for Xilinx uart
+	16550.
+Date: Wed,  2 Apr 2008 09:52:15 -0700
+In-Reply-To: <12071551354058-git-send-email-john.linn@xilinx.com>
+References: <12071551351007-git-send-email-john.linn@xilinx.com>
+	<12071551354058-git-send-email-john.linn@xilinx.com>
+Message-Id: <20080402165222.2468414080A9@mail104-dub.bigfish.com>
 Cc: John Linn <john.linn@xilinx.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -21,34 +25,74 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
+The Xilinx 16550 uart core is not a standard 16550 because it uses
+word-based addressing rather than byte-based addressing. With
+additional properties it is compatible with the open firmware
+'ns16550' compatible binding.
 
-The of_serial driver queries the current-speed property and attempts
-to use it to register the custom_divisor property of the uart_port.
-However, if current-speed is not set, then this code will dereference
-a bad pointer.  The fix is to only set custom_divisor when a
-current-speed property appears in the device tree.
+This code updates the of_serial driver to handle the reg-offset
+and reg-shift properties to enable this core to be used.
 
-Signed-off-by: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
 Signed-off-by: John Linn <john.linn@xilinx.com>
 ---
- drivers/serial/of_serial.c |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
+ Documentation/powerpc/booting-without-of.txt |   11 +++++++++++
+ drivers/serial/of_serial.c                   |   15 +++++++++++++--
+ 2 files changed, 24 insertions(+), 2 deletions(-)
 
+diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
+index 87f4d84..af112d9 100644
+--- a/Documentation/powerpc/booting-without-of.txt
++++ b/Documentation/powerpc/booting-without-of.txt
+@@ -2539,6 +2539,17 @@ platforms are moved over to use the flattened-device-tree model.
+                       differ between different families.  May be
+                       'virtex2p', 'virtex4', or 'virtex5'.
+ 
++      iv) Xilinx Uart 16550
++
++      Xilinx UART 16550 devices are very similar to the NS16550 such that they
++      use the ns16550 binding with properties to specify register spacing and
++      an offset from the base address.
++
++      Requred properties:
++       - clock-frequency : Frequency of the clock input
++       - reg-offset : A value of 3 is required
++       - reg-shift : A value of 2 is required
++
+    More devices will be defined as this spec matures.
+ 
+ VII - Specifying interrupt information for devices
 diff --git a/drivers/serial/of_serial.c b/drivers/serial/of_serial.c
-index a64d858..2efb892 100644
+index 2efb892..af9ed48 100644
 --- a/drivers/serial/of_serial.c
 +++ b/drivers/serial/of_serial.c
-@@ -56,7 +56,9 @@ static int __devinit of_platform_serial_setup(struct of_device *ofdev,
- 	port->flags = UPF_SHARE_IRQ | UPF_BOOT_AUTOCONF | UPF_IOREMAP
- 		| UPF_FIXED_PORT;
- 	port->dev = &ofdev->dev;
--	port->custom_divisor = *clk / (16 * (*spd));
-+	/* If current-speed was set, then try not to change it. */
-+	if (spd)
-+		port->custom_divisor = *clk / (16 * (*spd));
+@@ -30,7 +30,7 @@ static int __devinit of_platform_serial_setup(struct of_device *ofdev,
+ {
+ 	struct resource resource;
+ 	struct device_node *np = ofdev->node;
+-	const unsigned int *clk, *spd;
++	const unsigned int *clk, *spd, *reg_offset, *reg_shift;
+ 	int ret;
  
- 	return 0;
- }
+ 	memset(port, 0, sizeof *port);
+@@ -48,7 +48,18 @@ static int __devinit of_platform_serial_setup(struct of_device *ofdev,
+ 	}
+ 
+ 	spin_lock_init(&port->lock);
+-	port->mapbase = resource.start;
++
++	reg_offset = of_get_property(np, "reg-offset", NULL);
++	reg_shift = of_get_property(np, "reg-shift", NULL);
++
++	if (!reg_offset) 
++		port->mapbase = resource.start;
++	else 		
++		port->mapbase = resource.start + *reg_offset;	
++
++	if (reg_shift)
++		port->regshift = *reg_shift;
++
+ 	port->irq = irq_of_parse_and_map(np, 0);
+ 	port->iotype = UPIO_MEM;
+ 	port->type = type;
 -- 
 1.5.2.1
