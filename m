@@ -1,19 +1,21 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from wx-out-0506.google.com (wx-out-0506.google.com [66.249.82.232])
-	by ozlabs.org (Postfix) with ESMTP id DDADADDE1B
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 Apr 2008 04:46:32 +1100 (EST)
-Received: by wx-out-0506.google.com with SMTP id h27so2669729wxd.15
-	for <linuxppc-dev@ozlabs.org>; Wed, 02 Apr 2008 10:46:30 -0700 (PDT)
-Message-ID: <fa686aa40804021046n1bc0626ay6a3f9f2a251331ef@mail.gmail.com>
-Date: Wed, 2 Apr 2008 11:46:30 -0600
+Received: from hs-out-0708.google.com (hs-out-0708.google.com [64.233.178.250])
+	by ozlabs.org (Postfix) with ESMTP id 92827DDF6E
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 Apr 2008 04:52:48 +1100 (EST)
+Received: by hs-out-0708.google.com with SMTP id z77so2543152hsz.9
+	for <linuxppc-dev@ozlabs.org>; Wed, 02 Apr 2008 10:52:46 -0700 (PDT)
+Message-ID: <fa686aa40804021052q31b89cafsb2b9bf5d88af8262@mail.gmail.com>
+Date: Wed, 2 Apr 2008 11:52:46 -0600
 From: "Grant Likely" <grant.likely@secretlab.ca>
 Sender: glikely@secretlab.ca
-To: "John Linn" <john.linn@xilinx.com>, "Paul Mackerras" <paulus@samba.org>
-Subject: Re: [PATCH 1/3][POWERPC][V2] of_serial: Fix possible null dereference.
-In-Reply-To: <20080402165216.8FD2BC9807F@mail21-dub.bigfish.com>
+To: "John Linn" <john.linn@xilinx.com>
+Subject: Re: [PATCH 3/3][POWERPC][V2] Xilinx: boot support for Xilinx uart
+	16550.
+In-Reply-To: <20080402165216.C835D1CF8088@mail12-sin.bigfish.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-References: <20080402165216.8FD2BC9807F@mail21-dub.bigfish.com>
+References: <12071551351007-git-send-email-john.linn@xilinx.com>
+	<20080402165216.C835D1CF8088@mail12-sin.bigfish.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -25,42 +27,46 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 On Wed, Apr 2, 2008 at 10:52 AM, John Linn <john.linn@xilinx.com> wrote:
-> From: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
+> The Xilinx 16550 uart core is not a standard 16550 because it uses
+>  word-based addressing rather than byte-based adressing. With
+>  additional properties it is compatible with the open firmware
+>  'ns16550' compatible binding.
 >
->  The of_serial driver queries the current-speed property and attempts
->  to use it to register the custom_divisor property of the uart_port.
->  However, if current-speed is not set, then this code will dereference
->  a bad pointer.  The fix is to only set custom_divisor when a
->  current-speed property appears in the device tree.
+>  This code updates the ns16550 driver to use the reg-offset property
+>  so that the Xilinx UART 16550 can be used with it. The reg-shift
+>  was already being handled.
 >
->  Signed-off-by: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
 >  Signed-off-by: John Linn <john.linn@xilinx.com>
+
 Acked-by: Grant Likely <grant.likely@secretlab.ca>
 
-Paul, can you please pick this one up for .25?  It is pure bug fix.
-
-Thanks,
-g.
-
 >  ---
->   drivers/serial/of_serial.c |    4 +++-
->   1 files changed, 3 insertions(+), 1 deletions(-)
+>   arch/powerpc/boot/ns16550.c |    5 +++++
+>   1 files changed, 5 insertions(+), 0 deletions(-)
 >
->  diff --git a/drivers/serial/of_serial.c b/drivers/serial/of_serial.c
->  index a64d858..2efb892 100644
->  --- a/drivers/serial/of_serial.c
->  +++ b/drivers/serial/of_serial.c
->  @@ -56,7 +56,9 @@ static int __devinit of_platform_serial_setup(struct of_device *ofdev,
->         port->flags = UPF_SHARE_IRQ | UPF_BOOT_AUTOCONF | UPF_IOREMAP
->                 | UPF_FIXED_PORT;
->         port->dev = &ofdev->dev;
->  -       port->custom_divisor = *clk / (16 * (*spd));
->  +       /* If current-speed was set, then try not to change it. */
->  +       if (spd)
->  +               port->custom_divisor = *clk / (16 * (*spd));
+>  diff --git a/arch/powerpc/boot/ns16550.c b/arch/powerpc/boot/ns16550.c
+>  index f8f1b2f..da9d2c2 100644
+>  --- a/arch/powerpc/boot/ns16550.c
+>  +++ b/arch/powerpc/boot/ns16550.c
+>  @@ -56,6 +56,7 @@ int ns16550_console_init(void *devp, struct serial_console_data *scdp)
+>   {
+>         int n;
+>         unsigned long reg_phys;
+>  +       u32 reg_offset;
 >
->         return 0;
->   }
+>         n = getprop(devp, "virtual-reg", &reg_base, sizeof(reg_base));
+>         if (n != sizeof(reg_base)) {
+>  @@ -65,6 +66,10 @@ int ns16550_console_init(void *devp, struct serial_console_data *scdp)
+>                 reg_base = (void *)reg_phys;
+>         }
+>
+>  +       n = getprop(devp, "reg-offset", &reg_offset, sizeof(reg_offset));
+>  +       if (n == sizeof(reg_offset))
+>  +               reg_base += reg_offset;
+>  +
+>         n = getprop(devp, "reg-shift", &reg_shift, sizeof(reg_shift));
+>         if (n != sizeof(reg_shift))
+>                 reg_shift = 0;
 >  --
 >  1.5.2.1
 >
