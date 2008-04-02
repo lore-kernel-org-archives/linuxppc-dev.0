@@ -1,18 +1,22 @@
-Return-Path: <sr@denx.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.179]) by ozlabs.org (Postfix) with ESMTP id B64E2DE061
+Return-Path: <Rick.Moleres@xilinx.com>
+Received: from outbound1-dub-R.bigfish.com (outbound-dub.frontbridge.com
+	[213.199.154.16])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 1971ADDF14
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  3 Apr 2008 06:00:47 +1100 (EST)
-From: Stefan Roese <sr@denx.de>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: u-boot ppc440epx bootstrap configuration without eval board
-Date: Wed, 2 Apr 2008 21:00:33 +0200
-References: <000901c894eb$e0707170$2001a8c0@DCOGLEYNEW>
-In-Reply-To: <000901c894eb$e0707170$2001a8c0@DCOGLEYNEW>
+	Thu,  3 Apr 2008 08:16:07 +1100 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-15"
-Message-Id: <200804022100.33364.sr@denx.de>
+	charset="US-ASCII"
+Subject: RE: Ethernet Jumbo Frames
+Date: Wed, 2 Apr 2008 15:15:51 -0600
+In-Reply-To: <D61182AC8012EA4EBC531B3AF23BE109582F00@tranzeo-mail2.12stewart.tranzeo.com>
+References: <D61182AC8012EA4EBC531B3AF23BE109582F00@tranzeo-mail2.12stewart.tranzeo.com>
+From: "Rick Moleres" <Rick.Moleres@xilinx.com>
+To: "Darcy Watkins" <DWatkins@tranzeo.com>,
+	"LinuxPPC-Embedded" <linuxppc-embedded@ozlabs.org>
+Message-Id: <20080402211552.729E82B007F@mail93-dub.bigfish.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -23,33 +27,38 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 02 April 2008, Dave Cogley wrote:
-> Disregard the boot strapping problem.  It appears we are hardwired strapped
-> to use option "C" however my CPU is not being recognized as a 667MHz. 
-> Which option should I be using for the 667MHz processor?
 
-First, this is the wrong mailing list for this discussion. Please post to the 
-U-Boot list instead.
+Sure, it can be done.  The Xilinx 10/100 Ethernet drivers have jumbo
+frame support in MontaVista/WindRiver Linux.  As long as both ends are
+talking jumbo frames, works just fine.
 
-But here some general comments:
+-Rick
 
-The bootstrap controller has multiple configuration options. Some of them 
-result in hardwired frequencies (CPU, PLB, OPB...), and some of them load the 
-PLL setup from an I2C EEPROM. Using this bootstrap EEPROM is the most 
-flexible solution. If you have only option "C", then you hardwired to 533MHz. 
-There is no way to "detect" which frequency this CPU is labeled.
+-----Original Message-----
+From: linuxppc-embedded-bounces+moleres=3Dxilinx.com@ozlabs.org
+[mailto:linuxppc-embedded-bounces+moleres=3Dxilinx.com@ozlabs.org] On
+Behalf Of Darcy Watkins
+Sent: Monday, March 31, 2008 2:48 PM
+To: LinuxPPC-Embedded
+Subject: Ethernet Jumbo Frames
 
-But it *is* possible to reconfigure the PLL from within U-Boot an reset the 
-PPC to run with this different PLL setup. I just recently added some code the 
-u-boot-ppc4xx custodian repository.
+Has anyone on this list ever been given a requirement to implement
+support for ethernet frames larger than the standard MTU of 1500?  ...
 
-Let's continue this thread on the U-Boot list.
+... for normal 10/100 Ethernet?   ... not gigabit.
 
-Best regards,
-Stefan
+The application is to support certain encapsulation protocols without
+imposing smaller than 1500 byte MTU restrictions on the innermost
+protocol.
 
-=====================================================================
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: +49-8142-66989-0 Fax: +49-8142-66989-80  Email: office@denx.de
-=====================================================================
+I have been tasked to investigate this for a system based on PPC405EP.
+Can it be done using the IBM EMAC, Linux drivers, etc?
+
+Regards,
+
+Darcy
+
+_______________________________________________
+Linuxppc-embedded mailing list
+Linuxppc-embedded@ozlabs.org
+https://ozlabs.org/mailman/listinfo/linuxppc-embedded
