@@ -1,19 +1,21 @@
-Return-Path: <DWatkins@tranzeo.com>
-Received: from mail.tranzeo.com (mail.tranzeo.com [64.114.87.10])
-	by ozlabs.org (Postfix) with ESMTP id 45543DDF1C
+Return-Path: <Leonid@a-k-a.net>
+Received: from mis011-2.exch011.intermedia.net
+	(mis011-2.exch011.intermedia.net [64.78.21.129])
+	by ozlabs.org (Postfix) with ESMTP id AADCDDE009
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  3 Apr 2008 08:32:27 +1100 (EST)
+	Thu,  3 Apr 2008 09:51:09 +1100 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="us-ascii"
-Subject: RE: Ethernet Jumbo Frames
-Date: Wed, 2 Apr 2008 14:32:21 -0700
-Message-ID: <D61182AC8012EA4EBC531B3AF23BE109582F86@tranzeo-mail2.12stewart.tranzeo.com>
-In-Reply-To: <20080402211552.729E82B007F@mail93-dub.bigfish.com>
-References: <D61182AC8012EA4EBC531B3AF23BE109582F00@tranzeo-mail2.12stewart.tranzeo.com>
-	<20080402211552.729E82B007F@mail93-dub.bigfish.com>
-From: "Darcy Watkins" <DWatkins@tranzeo.com>
-To: "LinuxPPC-Embedded" <linuxppc-embedded@ozlabs.org>
+Subject: RE: Access physical memory via mmap() on ppc440epx.
+Date: Wed, 2 Apr 2008 15:50:33 -0700
+Message-ID: <406A31B117F2734987636D6CCC93EE3C033A9D08@ehost011-3.exch011.intermedia.net>
+In-Reply-To: <406A31B117F2734987636D6CCC93EE3C025292E2@ehost011-3.exch011.intermedia.net>
+References: <406A31B117F2734987636D6CCC93EE3C033A981B@ehost011-3.exch011.intermedia.net><1207100665.12155.100.camel@vader.jdub.homelinux.org>
+	<406A31B117F2734987636D6CCC93EE3C025292E2@ehost011-3.exch011.intermedia.net>
+From: "Leonid" <Leonid@a-k-a.net>
+To: "Josh Boyer" <jwboyer@gmail.com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -24,39 +26,100 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Thanks for the comments...
+Hi, Josh:
 
-I have hacked the IBM EMAC driver (Xenomai-2.3.0 Real Time Linux
-2.6.19.2) and got jumbo frames to pass back and forth between two such
-embedded boards.  Checked it using ping, iperf and httpd / wget file
-transfer with md5sum check.
+I have resolved my kernel driver problem, it was my own bug, didn't have
+anything to do with memory remapping itself. Your suggestion to move to
+ioremap64() did resolve problem completely.
 
-Still have to clean things up a bit and do some more tests before I can
-share it as a patch.
+I still need investigate mmap() crash. Apparently switch to mmap64()
+didn't help, but it could be some another bug, I'll double check.
 
-Regards,
+Thanks,
 
-Darcy
-
-
+Leonid.=20
 
 -----Original Message-----
-Sure, it can be done.  The Xilinx 10/100 Ethernet drivers have jumbo
-frame support in MontaVista/WindRiver Linux.  As long as both ends are
-talking jumbo frames, works just fine.
+From: linuxppc-embedded-bounces+leonid=3Da-k-a.net@ozlabs.org
+[mailto:linuxppc-embedded-bounces+leonid=3Da-k-a.net@ozlabs.org] On =
+Behalf
+Of Leonid
+Sent: Tuesday, April 01, 2008 9:30 PM
+To: Josh Boyer
+Cc: linuxppc-embedded@ozlabs.org
+Subject: RE: Access physical memory via mmap() on ppc440epx.
 
--Rick
+Hi, Josh:
+
+Thank you for your suggestion. Somehow it didn't work with mmap (may be,
+my mistake, I'll double check), however it partially helped me with my
+another problem.
+
+I have kernel driver where I need read/write some HW device, connected
+on address 0xea000000, chip select 4. This chip select configured
+properly, here are EBC registers:
+
+440EPx>rd ebc0_b4cr
+ebc0_b4cr: 0xea01a000  -368992256
+440EPx>rd ebc0_b4ap
+ebc0_b4ap: 0x03037000  50556928
+
+>From u-boot I can read/write this address with no problem (I use md/mw
+commands).
+
+In my driver I tried to ioremap() this address and any attempt to access
+led to crash, same as with mmap().
+
+When, following your suggestion, I used address 0x1ea00000 and
+ioremap64(), crashes disappeared!
+
+I even can write, but when I read data back I see least significant byte
+of each 16 bits word only (bus is configured 16 bits width).=20
+
+What can it be?
+
+Thanks,
+
+Leonid.=20
 
 -----Original Message-----
-We've done it for our 2.4 based kernel that runs on a Freescale MPC8270.
-10/100/1000 doesn't really make any difference. For us the trick was to
-support receving jumbo frames in multiple RX BufDescriptors (because our
-MPC8270 FCC eth driver pre-allocates 2k buffers per RX BD).
-For transmitting hardly any changes were necessary.
+From: Josh Boyer [mailto:jwboyer@gmail.com]
+Sent: Tuesday, April 01, 2008 6:44 PM
+To: Leonid
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: Access physical memory via mmap() on ppc440epx.
 
- From linux (driver) standpoint there should be no problems,
-the question is whether your ethernet MAC (IBM EMAC) properly supports
-it.
+On Tue, 2008-04-01 at 14:12 -0700, Leonid wrote:
+> Hi:
+>=20
+> I am trying to read from NOR flash, located on address 0xfc000000, on
+my
 
-hth,
-N. van Bolhuis.
+It's at 0x1fc000000 IIRC.
+
+> TLB entries look strange though. That what it was on u-boot stage:
+>=20
+> 440EPx>tlb 0 10
+> IDX TID      EPN  SIZE VTS          RPN   USER WIMGE USRSVC
+>  0 : 00 40000000 256MB V0 -> 0_00000000 U:0000 -I-G- XWRXWR
+>  1 : 00 00000000 256MB V0 -> 0_00000000 U:0000 -I-G- XWRXWR
+>  2 : 00 c0000000 256MB V0 -> 1_c0000000 U:0000 -I-G- XWRXWR
+>  3 : 00 f0000000 256MB V0 -> 1_f0000000 U:0000 WI-G- XWRXWR
+
+See.  Virtual is 0xf0000000, physical is 0x1f0000000.
+
+> On Linux stage it looks rather different:
+
+I don't even see your entry in here.  Likely because the TLB is small
+and it's gone by the time you do the dump
+
+> Probably under MMU it should look this way? How to use mmap() then?
+
+Try mmap64 on the real physical address and see if that helps.
+
+josh
+
+_______________________________________________
+Linuxppc-embedded mailing list
+Linuxppc-embedded@ozlabs.org
+https://ozlabs.org/mailman/listinfo/linuxppc-embedded
