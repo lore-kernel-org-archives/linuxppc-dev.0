@@ -1,20 +1,22 @@
-Return-Path: <tur@semihalf.com>
-Received: from semihalf.com (semihalf.com [206.130.101.55])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id A9EDFDDEFF
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 Apr 2008 01:34:05 +1100 (EST)
-Message-ID: <47F39913.6090803@semihalf.com>
-Date: Wed, 02 Apr 2008 16:32:51 +0200
-From: Bartlomiej Sieka <tur@semihalf.com>
+Return-Path: <laurentp@cse-semaphore.com>
+Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
+	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id 1D4CEDDF19
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 Apr 2008 01:46:35 +1100 (EST)
+Received: from smtp.belgium.cse-semaphore.com (localhost [127.0.0.1])
+	by smtp.belgium.cse-semaphore.com (Postfix) with ESMTP id A0271AFA9
+	for <linuxppc-dev@ozlabs.org>; Wed,  2 Apr 2008 16:46:32 +0200 (CEST)
+Received: from pclaurent.belgium.cse-semaphore.com
+	(pclaurent.belgium.cse-semaphore.com [192.168.1.47])
+	by smtp.belgium.cse-semaphore.com (Postfix) with ESMTP id 88434ADBF
+	for <linuxppc-dev@ozlabs.org>; Wed,  2 Apr 2008 16:46:32 +0200 (CEST)
+From: Laurent Pinchart <laurentp@cse-semaphore.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc: Fix CPM2 SCC1 clock initialization.
 MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: Please pull powerpc.git merge branch
-References: <18412.58902.189124.391104@cargo.ozlabs.ibm.com>	<47ED6BE5.9060807@semihalf.com>
-	<18418.49494.457893.866627@cargo.ozlabs.ibm.com>
-In-Reply-To: <18418.49494.457893.866627@cargo.ozlabs.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Date: Wed, 2 Apr 2008 16:46:31 +0200
+Content-Type: multipart/signed; boundary="nextPart1642700.GHfaVG8Ep7";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
+Message-Id: <200804021646.31765.laurentp@cse-semaphore.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,26 +26,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Paul Mackerras wrote:
-> Bartlomiej Sieka writes:
-> 
->> What about http://patchwork.ozlabs.org/linuxppc/patch?id=17525 ? I don't
->> see it in the merge branch of your repository, and it would be nice to
->> get it upstream as it fixes boot problems on some MPC5200-based boards.
-> 
-> It needs a proper stand-alone commit message and an acked-by from
-> Grant.  The commit message should explain why you are making the
-> changes you are making rather than just saying "the bulk of this patch
-> is taken from http://...".
+--nextPart1642700.GHfaVG8Ep7
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Paul,
+A missing break statement in a switch caused cpm2_clk_setup() to initialize
+SCC2 instead of SCC1. This patch fixes the bug.
 
-Just re-sent the patch, please see 
-http://patchwork.ozlabs.org/linuxppc/patch?id=17678; hopefully 
-everything is OK now.
+Signed-off-by: Laurent Pinchart <laurentp@cse-semaphore.com>
+=2D--
+ arch/powerpc/sysdev/cpm2.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-(Note that I've dropped torvalds@linux-foundation.org, 
-akpm@linux-foundation.org and linux-kernel@vger.kernel.org from the CC:)
+diff --git a/arch/powerpc/sysdev/cpm2.c b/arch/powerpc/sysdev/cpm2.c
+index 57ed1a4..7478e81 100644
+=2D-- a/arch/powerpc/sysdev/cpm2.c
++++ b/arch/powerpc/sysdev/cpm2.c
+@@ -246,6 +246,7 @@ int cpm2_clk_setup(enum cpm_clk_target target, int cloc=
+k, int mode)
+ 	case CPM_CLK_SCC1:
+ 		reg =3D &im_cpmux->cmx_scr;
+ 		shift =3D 24;
++		break;
+ 	case CPM_CLK_SCC2:
+ 		reg =3D &im_cpmux->cmx_scr;
+ 		shift =3D 16;
+=2D-=20
+1.5.0
 
-Regards,
-Bartlomiej
+
+=2D-=20
+Laurent Pinchart
+CSE Semaphore Belgium
+
+Chauss=E9e de Bruxelles, 732A
+B-1410 Waterloo
+Belgium
+
+T +32 (2) 387 42 59
+=46 +32 (2) 387 42 75
+
+--nextPart1642700.GHfaVG8Ep7
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
+
+iD8DBQBH85xH8y9gWxC9vpcRAuktAKCAimIlYUS/1A761/7MTW8xSvxI0ACfUjOd
+c/3TERju5eh6dvUZq2MpycQ=
+=OO8O
+-----END PGP SIGNATURE-----
+
+--nextPart1642700.GHfaVG8Ep7--
