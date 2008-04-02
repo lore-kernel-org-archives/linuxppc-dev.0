@@ -1,19 +1,21 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id D5E83DE044
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 Apr 2008 06:20:38 +1100 (EST)
-Message-ID: <47F3DC59.20608@ru.mvista.com>
-Date: Wed, 02 Apr 2008 23:19:53 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-MIME-Version: 1.0
-To: John Linn <john.linn@xilinx.com>
-Subject: Re: [PATCH 2/3][POWERPC][V2] Xilinx: of_serial support for Xilinx
-	uart	16550.
-References: <12071551351007-git-send-email-john.linn@xilinx.com>	<12071551354058-git-send-email-john.linn@xilinx.com>
-	<20080402165222.2468414080A9@mail104-dub.bigfish.com>
-In-Reply-To: <20080402165222.2468414080A9@mail104-dub.bigfish.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <pterry@micromemory.com>
+Received: from mail.micromemory.com (mx30.micromemory.com [67.95.226.74])
+	(using TLSv1 with cipher RC4-MD5 (128/128 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 32ECDDE055
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 Apr 2008 06:23:42 +1100 (EST)
+Received: from [192.168.0.90] by micromemory.com (MDaemon PRO v9.6.5)
+	with ESMTP id md50000566380.msg
+	for <linuxppc-dev@ozlabs.org>; Wed, 02 Apr 2008 12:14:26 -0700
+Subject: Two MPC8641D's on a single JTAG chain with BDI2000/3000. Anyone
+	got it to work?
+From: Phil Terry <pterry@micromemory.com>
+To: linuxppc-dev@ozlabs.org
+Content-Type: text/plain
+Date: Wed, 02 Apr 2008 12:14:23 -0700
+Message-Id: <1207163663.2030.20.camel@pterry-fc6.micromemory.com>
+Mime-Version: 1.0
+Reply-To: pterry@vmetro.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,39 +25,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello.
+Hi Guys'n'Gals,
 
-John Linn wrote:
+We have a board with two Freescale MPC8641D chips (ie four cores, two in
+each chip) on a single jtag chain, nothing else on the chain. We are
+unable to get BDI and WindRiver jtag debuggers to work with both chips,
+only the second (last) chip works. With the BDI we can configure to work
+with both cores in the second chip, with windriver only one core in
+second chip configuration works.
 
-> The Xilinx 16550 uart core is not a standard 16550 because it uses
-> word-based addressing rather than byte-based addressing. With
-> additional properties it is compatible with the open firmware
-> 'ns16550' compatible binding.
+If we split the jtag chain in the lab we can work with each processor
+independently with no problems. We want both to work however.
 
-> This code updates the of_serial driver to handle the reg-offset
-> and reg-shift properties to enable this core to be used.
+On the BDI if we configure predecessor 1,8, successor 0,0 we can talk to
+the second chip as expected, but if we try predecessor 0,0 successor 1,8
+to talk to the first chip we get nothing.
 
-> Signed-off-by: John Linn <john.linn@xilinx.com>
+Is there something else we need to configure in either the BDM or the
+Freescale chip to get this to work? 
 
-> diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
-> index 87f4d84..af112d9 100644
-> --- a/Documentation/powerpc/booting-without-of.txt
-> +++ b/Documentation/powerpc/booting-without-of.txt
-> @@ -2539,6 +2539,17 @@ platforms are moved over to use the flattened-device-tree model.
->                        differ between different families.  May be
->                        'virtex2p', 'virtex4', or 'virtex5'.
->  
-> +      iv) Xilinx Uart 16550
-> +
-> +      Xilinx UART 16550 devices are very similar to the NS16550 such that they
-> +      use the ns16550 binding with properties to specify register spacing and
-> +      an offset from the base address.
-> +
-> +      Requred properties:
-> +       - clock-frequency : Frequency of the clock input
-> +       - reg-offset : A value of 3 is required
+Any suggestions or pointers to helpful resources welcome, either
+privately or to the list if this isn't too far off topic.
 
-    I'm proposing you to use the already existing "big-endian" property ISO 
-"reg-offset" (used in the  nodes describing OpenPIC, for example).
-
-WBR, Sergei
+Cheers
+Phil
