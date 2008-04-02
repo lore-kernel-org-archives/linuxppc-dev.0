@@ -1,16 +1,19 @@
-Return-Path: <cel@us.ibm.com>
-Subject: Re: [Cbe-oss-dev]  [PATCH] Cell OProfile: SPU mutex lock fix
-From: Carl Love <cel@us.ibm.com>
-To: Arnd Bergmann <arnd@arndb.de>
-In-Reply-To: <200804020721.15861.arnd@arndb.de>
-References: <1206460727.7132.232.camel@carll-linux-desktop>
-	<200804020721.15861.arnd@arndb.de>
-Content-Type: text/plain
-Date: Wed, 02 Apr 2008 09:42:47 -0700
-Message-Id: <1207154567.7132.396.camel@carll-linux-desktop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, cel <cel@linux.vnet.ibm.com>,
-	cbe-oss-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Return-Path: <John.Linn@xilinx.com>
+Received: from outbound1-dub-R.bigfish.com (outbound-dub.frontbridge.com
+	[213.199.154.16])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 0EB5ADE175
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 Apr 2008 03:50:43 +1100 (EST)
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C894E1.AA347DCC"
+Subject: [PATCH 0/3] [POWERPC] [V2][RFC] of_serial and boot patches
+	introduction
+Date: Wed, 2 Apr 2008 10:50:31 -0600
+From: "John Linn" <John.Linn@xilinx.com>
+To: <linuxppc-dev@ozlabs.org>
+Message-Id: <20080402165033.D2BA6CD008B@mail63-dub.bigfish.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,268 +23,385 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+This is a multi-part message in MIME format.
 
-On Wed, 2008-04-02 at 07:21 +0200, Arnd Bergmann wrote:
-> On Tuesday 25 March 2008, Carl Love wrote:
-> > This patch fixes a bug in the code that records the SPU data and
-> > context switches.  The buffer_mutex lock must be held when the
-> > kernel is adding data to the buffer between the kernel and the
-> > OProfile daemon.  The lock is not being held in the current code
-> > base.  This patch fixes the bug using work queues.  The data to 
-> > be passed to the daemon is caputured by the interrupt handler.  
-> > The workqueue function is invoked to grab the buffer_mutex lock
-> > and add the data to the buffer.  
-> 
-> So what was the exact bug you're fixing with this? There was no
-> buffer_mutex before, so why do you need it now? Can't this be a
-> spinlock so you can get it from interrupt context instead of
-> using a workqueue?
+------_=_NextPart_001_01C894E1.AA347DCC
+Content-Type: text/plain;
+	charset="US-ASCII"
+Content-Transfer-Encoding: quoted-printable
 
-The generic OProfile code defines a mutex lock, called buffer_mutex, to
-protect the kernel/daemon data buffer from being writen by the kernal
-and simultaneously read by the Daemon.  When adding a PPU sample the
-oprofile routine  oprofile_add_ext_sample(pc, regs, i, is_kernel) is
-called from the interrupt context to request the sample be stored.  The
-generic oprofile code takes care of passing the data to a non interrupt
-context where the mutex lock is held and the necessary sequence of data
-is written into the kernel/daemon data buffer.  However, OProfile does
-not have any built in functions for handling the SPU.  Hence, we have to
-implement the code to capture the data in the interrupt context, pass it
-to a non interrupt context and put it into the buffer.  This was not
-done correctly in the original implementation.  Specifically, the mutex
-lock was not being held.  
+I am sending V2 series of patches that fix the OF serial driver and add
+support to it and the boot for the Xilinx UART 16550.
 
-Writing data to the OProfile buffer consists of a sequence of items.
-For example when writing an SPU entry, first comes the escape code so
-the daemon knows this is a new entry.  The next item is the SPU context
-switch code which says the data which will follow is the information
-about a new context.  There is a different code to identify the data as
-an address sample.  Finally the data about the SPU context switch is
-entered into the buffer.  The issue is the OProfile daemon is read all
-of the entire sequence of items then process the data.  Without the
-mutex lock, the daemon may read part of the sequence try to process it
-before everything is written into the buffer.  When the daemon reads
-again, it doesn't see the escape code as the first item and isn't smart
-enough to realize it is part of a previous sequence.  The generic
-OProfile code defines the mutex lock and calls it buffer_mutex.  The
-OProfile kernel/daemon API uses the mutex lock. The mutex lock can only
-be held in a non interrupt context.  The current implementation uses a
-spin lock to make sure the kernel writes each sequence if items into the
-buffer but since the API does not use a spin lock we have no way to
-prevent the daemon from reading the buffer until the entire sequence of
-items has been written to the buffer.  Hence the need to hold the
-buffer_mutex lock which prevents the daemon from accessing the buffer.
+=20
 
-> 
-> > Index: linux-2.6.25-rc4/arch/powerpc/oprofile/cell/spu_profiler.c
-> > ===================================================================
-> > --- linux-2.6.25-rc4.orig/arch/powerpc/oprofile/cell/spu_profiler.c
-> > +++ linux-2.6.25-rc4/arch/powerpc/oprofile/cell/spu_profiler.c
-> > @@ -16,6 +16,7 @@
-> >  #include <linux/smp.h>
-> >  #include <linux/slab.h>
-> >  #include <asm/cell-pmu.h>
-> > +#include <linux/workqueue.h>
-> >  #include "pr_util.h"
-> >  
-> 
-> Please keep #include statements in alphabetical order, with all linux/ files
-> before the asm/ files.
-> 
-> >  #define TRACE_ARRAY_SIZE 1024
-> > @@ -32,9 +33,19 @@ static unsigned int profiling_interval;
-> >  
-> >  #define SPU_PC_MASK	     0xFFFF
-> >  
-> > +/* The generic OProfile code uses the buffer_mutex to protect the buffer
-> > + * between the kernel and the daemon.  The SPU code needs to use the buffer
-> > + * to ensure that the kernel SPU writes complete as a single block before
-> > + * being consumed by the daemon.
-> > + */
-> > +extern struct mutex buffer_mutex;
-> > +
-> >  static DEFINE_SPINLOCK(sample_array_lock);
-> >  unsigned long sample_array_lock_flags;
-> >  
-> > +struct work_struct spu_record_wq;
-> > +extern struct workqueue_struct *oprofile_spu_wq;
-> > +
-> >  void set_spu_profiling_frequency(unsigned int freq_khz, unsigned int cycles_reset)
-> >  {
-> >  	unsigned long ns_per_cyc;
-> 
-> Never put extern statements in the implementation, they describe the
-> interface between two parts of the code and should be inside of a
-> common header.
-> 
-> Why do you want to have your own workqueue instead of using the
-> global one?
-> 
-> > @@ -123,14 +134,14 @@ static int cell_spu_pc_collection(int cp
-> >  	return entry;
-> >  }
-> >  
-> > -
-> > -static enum hrtimer_restart profile_spus(struct hrtimer *timer)
-> > -{
-> > -	ktime_t kt;
-> > +static void profile_spus_record_samples (struct work_struct *ws) {
-> > +	/* This routine is called via schedule_work() to record the
-> > +	 * spu data.  It must be run in a normal kernel mode to
-> > +	 * grab the OProfile mutex lock.
-> > +	 */
-> >  	int cpu, node, k, num_samples, spu_num;
-> >  
-> > -	if (!spu_prof_running)
-> > -		goto stop;
-> > +	mutex_lock(&buffer_mutex);
-> >  
-> >  	for_each_online_cpu(cpu) {
-> >  		if (cbe_get_hw_thread_id(cpu))
-> > @@ -170,6 +181,20 @@ static enum hrtimer_restart profile_spus
-> >  	smp_wmb();	/* insure spu event buffer updates are written */
-> >  			/* don't want events intermingled... */
-> >  
-> > +	mutex_unlock(&buffer_mutex);
-> > +}
-> > +
-> > +static enum hrtimer_restart profile_spus(struct hrtimer *timer)
-> > +{
-> > +	ktime_t kt;
-> > +
-> > +
-> > +	if (!spu_prof_running)
-> > +		goto stop;
-> > +
-> > +	/* schedule the funtion to record the data */
-> > +	schedule_work(&spu_record_wq);
-> > +
-> >  	kt = ktime_set(0, profiling_interval);
-> >  	if (!spu_prof_running)
-> >  		goto stop;
-> 
-> This looks like you want to use a delayed_work rather than building your
-> own out of hrtimer and work. Is there any point why you want to use
-> an hrtimer?
+The ePAPR, although not a formal spec yet, proposes allowing reg-shift
+for ns16550. We believe this is a reasonable approach and have
+implemented it in this patch series.=20
 
-The current implementation uses the hrtimer to schedule when to read the
-trace buffer the next time.  This patch does not change how the
-scheduling of the buffer reads is done.  Yes, you could change the
-implementation to use workqueues instead.  If you feel that it is better
-to use the workqueue then we could make that change.  Not sure that
-making that change in this bug fix patch is appropriate.  I would need
-to create a second patch for that change.
-> 
-> > -static DEFINE_SPINLOCK(buffer_lock);
-> > +extern struct mutex buffer_mutex;
-> > +extern struct workqueue_struct *oprofile_spu_wq;
-> > +extern int calls_to_record_switch;
-> > +
-> 
-> Again, public interfaces need to go to a header file, and should
-> have a name that identifies the interface. "buffer_mutex" is
-> certainly not a suitable name for a kernel-wide global variable!
+=20
 
-As stated earlier, the generic OProfile code defines the variable
-"buffer_mutex".  Changing the name in the generic OProfile code is
-beyond the scope of this patch.
+We've tried to integrate the consensus from the previous comments also.
 
-> 
-> >  static DEFINE_SPINLOCK(cache_lock);
-> >  static int num_spu_nodes;
-> > +
-> >  int spu_prof_num_nodes;
-> >  int last_guard_val[MAX_NUMNODES * 8];
-> > +int cnt_swtch_processed_flag[MAX_NUMNODES * 8];
-> > +
-> > +struct spus_profiling_code_data_s {
-> > +	int num_spu_nodes;
-> > +	struct work_struct spu_prof_code_wq;
-> > +} spus_profiling_code_data;
-> > +
-> > +struct spu_context_switch_data_s {
-> > +	struct spu *spu;
-> > +	unsigned long spu_cookie;
-> > +	unsigned long app_dcookie;
-> > +	unsigned int offset;
-> > +	unsigned long objectId;
-> > +	int valid_entry;
-> > +} spu_context_switch_data;
-> 
-> I don't understand what these variables are really doing, but
-> having e.g. just one spu_context_switch_data for all the SPUs
-> doesn't seem to make much sense. What happens when two SPUs do
-> a context switch at the same time?
+=20
 
-This is the data same data that was being put into the event buffer
-directly from the interrupt context.  We need to store the data that is
-only available in the interrupt context so the same data can be put into
-the buffer by the work queue function in the non interrupt context.
-This is the declaration of the data needed per SPU.  Below in the
-spu_cntx_sw_data structure, we declare an array of entries so we can
-store the switch
-> 
-> > +int calls_to_record_switch = 0;
-> > +int record_spu_start_flag = 0;
-> > +
-> > +struct spus_cntxt_sw_data_s {
-> > +	int num_spu_nodes;
-> > +	struct spu_context_switch_data_s spu_data[MAX_NUMNODES * 8];
-> > +	struct work_struct spu_cntxt_work;
-> > +} spus_cntxt_sw_data;
-> 
-> Something is very wrong if you need so many global variables!
-> 
-> >  /* Container for caching information about an active SPU task. */
-> >  struct cached_info {
-> > @@ -44,6 +73,8 @@ struct cached_info {
-> >  	struct kref cache_ref;
-> >  };
-> >  
-> > +struct workqueue_struct *oprofile_spu_wq;
-> > +
-> >  static struct cached_info *spu_info[MAX_NUMNODES * 8];
-> 
-> While you're cleaning this up, I guess the cached_info should
-> be moved into a pointer from struct spu as well, instead of
-> having this global variable here.
-> 
-> > @@ -375,16 +457,30 @@ int spu_sync_start(void)
-> >  	int k;
-> >  	int ret = SKIP_GENERIC_SYNC;
-> >  	int register_ret;
-> > -	unsigned long flags = 0;
-> >  
-> >  	spu_prof_num_nodes = number_of_online_nodes();
-> >  	num_spu_nodes = spu_prof_num_nodes * 8;
-> >  
-> > -	spin_lock_irqsave(&buffer_lock, flags);
-> > -	add_event_entry(ESCAPE_CODE);
-> > -	add_event_entry(SPU_PROFILING_CODE);
-> > -	add_event_entry(num_spu_nodes);
-> > -	spin_unlock_irqrestore(&buffer_lock, flags);
-> > +	/* create private work queue, execution of work is time critical */
-> > +	oprofile_spu_wq = create_workqueue("spu_oprofile");
-> > +
-> > +	/* due to a race when the spu is already running stuff, need to
-> > +	 * set a flag to tell the spu context switch to record the start
-> > +	 * before recording the context switches.
-> > +	 */
-> > +	record_spu_start_flag = 1;
-> > +
-> > +	spus_profiling_code_data.num_spu_nodes = num_spu_nodes;
-> > +
-> > +	/* setup work queue functiion for recording context switch info */
-> > +	spus_cntxt_sw_data.num_spu_nodes = num_spu_nodes;
-> > +	for (k = 0; k<(MAX_NUMNODES * 8); k++) {
-> > +		spus_cntxt_sw_data.spu_data[k].valid_entry = 0;
-> > +		cnt_swtch_processed_flag[k] = 0;
-> > +	}
-> > +
-> > +	INIT_WORK(&spus_cntxt_sw_data.spu_cntxt_work,
-> > +		  record_spu_process_switch);
-> 
-> I would guess that you need one work struct per SPU instead of a global
-> one, if you want to pass the SPU pointer as an argument.
-> 
-> 	Arnd <><
+[v1]
+
+=20
+
+I am sending a series of patches that fix the OF serial driver and add
+support to it and the boot for the Xilinx UART 16550.
+
+=20
+
+I think we have tried to satisfy previous concerns about UARTs which are
+non-standard as the Xilinx 16550 is (register spacing and offset).
+
+=20
+
+We would like to have these pulled into 2.6.26.
+
+=20
+
+Thanks,
+
+John
+
+
+------_=_NextPart_001_01C894E1.AA347DCC
+Content-Type: text/html;
+	charset="US-ASCII"
+Content-Transfer-Encoding: quoted-printable
+
+<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
+xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
+xmlns=3D"http://www.w3.org/TR/REC-html40">
+
+<head>
+<meta http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Dus-ascii">
+<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
+<style>
+<!--
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0in;
+	margin-bottom:.0001pt;
+	font-size:12.0pt;
+	font-family:Arial;}
+h1
+	{margin-top:12.0pt;
+	margin-right:0in;
+	margin-bottom:3.0pt;
+	margin-left:.3in;
+	text-indent:-.3in;
+	page-break-after:avoid;
+	mso-list:l0 level1 lfo8;
+	font-size:16.0pt;
+	font-family:Arial;}
+h2
+	{margin-top:0in;
+	margin-right:0in;
+	margin-bottom:12.0pt;
+	margin-left:.4in;
+	text-indent:-.4in;
+	page-break-after:avoid;
+	mso-list:l0 level2 lfo8;
+	font-size:14.0pt;
+	font-family:Arial;}
+h3
+	{margin-top:12.0pt;
+	margin-right:0in;
+	margin-bottom:3.0pt;
+	margin-left:.5in;
+	text-indent:-.5in;
+	page-break-after:avoid;
+	mso-list:l1 level3 lfo10;
+	font-size:13.0pt;
+	font-family:Arial;}
+a:link, span.MsoHyperlink
+	{color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{color:purple;
+	text-decoration:underline;}
+span.EmailStyle17
+	{mso-style-type:personal-compose;
+	font-family:Arial;
+	color:windowtext;}
+@page Section1
+	{size:8.5in 11.0in;
+	margin:.5in .5in .5in .5in;}
+div.Section1
+	{page:Section1;}
+ /* List Definitions */
+ @list l0
+	{mso-list-id:1143350910;
+	mso-list-template-ids:1338282562;}
+@list l0:level1
+	{mso-level-style-link:"Heading 1";
+	mso-level-text:%1;
+	mso-level-tab-stop:.3in;
+	mso-level-number-position:left;
+	margin-left:.3in;
+	text-indent:-.3in;}
+@list l0:level2
+	{mso-level-style-link:"Heading 2";
+	mso-level-text:"%1\.%2";
+	mso-level-tab-stop:.4in;
+	mso-level-number-position:left;
+	margin-left:.4in;
+	text-indent:-.4in;}
+@list l0:level3
+	{mso-level-text:"%1\.%2\.%3";
+	mso-level-tab-stop:.5in;
+	mso-level-number-position:left;
+	margin-left:.5in;
+	text-indent:-.5in;}
+@list l0:level4
+	{mso-level-text:"%1\.%2\.%3\.%4";
+	mso-level-tab-stop:.6in;
+	mso-level-number-position:left;
+	margin-left:.6in;
+	text-indent:-.6in;}
+@list l0:level5
+	{mso-level-text:"%1\.%2\.%3\.%4\.%5";
+	mso-level-tab-stop:.7in;
+	mso-level-number-position:left;
+	margin-left:.7in;
+	text-indent:-.7in;}
+@list l0:level6
+	{mso-level-text:"%1\.%2\.%3\.%4\.%5\.%6";
+	mso-level-tab-stop:.8in;
+	mso-level-number-position:left;
+	margin-left:.8in;
+	text-indent:-.8in;}
+@list l0:level7
+	{mso-level-text:"%1\.%2\.%3\.%4\.%5\.%6\.%7";
+	mso-level-tab-stop:.9in;
+	mso-level-number-position:left;
+	margin-left:.9in;
+	text-indent:-.9in;}
+@list l0:level8
+	{mso-level-text:"%1\.%2\.%3\.%4\.%5\.%6\.%7\.%8";
+	mso-level-tab-stop:1.0in;
+	mso-level-number-position:left;
+	margin-left:1.0in;
+	text-indent:-1.0in;}
+@list l0:level9
+	{mso-level-text:"%1\.%2\.%3\.%4\.%5\.%6\.%7\.%8\.%9";
+	mso-level-tab-stop:1.1in;
+	mso-level-number-position:left;
+	margin-left:1.1in;
+	text-indent:-1.1in;}
+@list l1
+	{mso-list-id:1860200171;
+	mso-list-template-ids:1400561736;}
+@list l1:level1
+	{mso-level-text:%1;
+	mso-level-tab-stop:.3in;
+	mso-level-number-position:left;
+	margin-left:.3in;
+	text-indent:-.3in;}
+@list l1:level2
+	{mso-level-text:"%1\.%2";
+	mso-level-tab-stop:.4in;
+	mso-level-number-position:left;
+	margin-left:.4in;
+	text-indent:-.4in;}
+@list l1:level3
+	{mso-level-reset-level:level2;
+	mso-level-style-link:"Heading 3";
+	mso-level-text:"%1\.%2\.%3";
+	mso-level-tab-stop:.5in;
+	mso-level-number-position:left;
+	margin-left:.5in;
+	text-indent:-.5in;}
+@list l1:level4
+	{mso-level-text:"%1\.%2\.%3\.%4";
+	mso-level-tab-stop:.6in;
+	mso-level-number-position:left;
+	margin-left:.6in;
+	text-indent:-.6in;}
+@list l1:level5
+	{mso-level-text:"%1\.%2\.%3\.%4\.%5";
+	mso-level-tab-stop:.7in;
+	mso-level-number-position:left;
+	margin-left:.7in;
+	text-indent:-.7in;}
+@list l1:level6
+	{mso-level-text:"%1\.%2\.%3\.%4\.%5\.%6";
+	mso-level-tab-stop:.8in;
+	mso-level-number-position:left;
+	margin-left:.8in;
+	text-indent:-.8in;}
+@list l1:level7
+	{mso-level-text:"%1\.%2\.%3\.%4\.%5\.%6\.%7";
+	mso-level-tab-stop:.9in;
+	mso-level-number-position:left;
+	margin-left:.9in;
+	text-indent:-.9in;}
+@list l1:level8
+	{mso-level-text:"%1\.%2\.%3\.%4\.%5\.%6\.%7\.%8";
+	mso-level-tab-stop:1.0in;
+	mso-level-number-position:left;
+	margin-left:1.0in;
+	text-indent:-1.0in;}
+@list l1:level9
+	{mso-level-text:"%1\.%2\.%3\.%4\.%5\.%6\.%7\.%8\.%9";
+	mso-level-tab-stop:1.1in;
+	mso-level-number-position:left;
+	margin-left:1.1in;
+	text-indent:-1.1in;}
+@list l2
+	{mso-list-id:2077240681;
+	mso-list-template-ids:-762429638;}
+@list l2:level1
+	{mso-level-text:%1;
+	mso-level-tab-stop:.3in;
+	mso-level-number-position:left;
+	margin-left:.3in;
+	text-indent:-.3in;}
+@list l2:level2
+	{mso-level-text:"%1\.%2";
+	mso-level-tab-stop:.4in;
+	mso-level-number-position:left;
+	margin-left:.4in;
+	text-indent:-.4in;}
+@list l2:level3
+	{mso-level-text:"%1\.%2\.%3";
+	mso-level-tab-stop:.5in;
+	mso-level-number-position:left;
+	margin-left:.5in;
+	text-indent:-.5in;}
+@list l2:level4
+	{mso-level-text:"%1\.%2\.%3\.%4";
+	mso-level-tab-stop:.6in;
+	mso-level-number-position:left;
+	margin-left:.6in;
+	text-indent:-.6in;}
+@list l2:level5
+	{mso-level-text:"%1\.%2\.%3\.%4\.%5";
+	mso-level-tab-stop:.7in;
+	mso-level-number-position:left;
+	margin-left:.7in;
+	text-indent:-.7in;}
+@list l2:level6
+	{mso-level-text:"%1\.%2\.%3\.%4\.%5\.%6";
+	mso-level-tab-stop:.8in;
+	mso-level-number-position:left;
+	margin-left:.8in;
+	text-indent:-.8in;}
+@list l2:level7
+	{mso-level-text:"%1\.%2\.%3\.%4\.%5\.%6\.%7";
+	mso-level-tab-stop:.9in;
+	mso-level-number-position:left;
+	margin-left:.9in;
+	text-indent:-.9in;}
+@list l2:level8
+	{mso-level-text:"%1\.%2\.%3\.%4\.%5\.%6\.%7\.%8";
+	mso-level-tab-stop:1.0in;
+	mso-level-number-position:left;
+	margin-left:1.0in;
+	text-indent:-1.0in;}
+@list l2:level9
+	{mso-level-text:"%1\.%2\.%3\.%4\.%5\.%6\.%7\.%8\.%9";
+	mso-level-tab-stop:1.1in;
+	mso-level-number-position:left;
+	margin-left:1.1in;
+	text-indent:-1.1in;}
+ol
+	{margin-bottom:0in;}
+ul
+	{margin-bottom:0in;}
+-->
+</style>
+
+</head>
+
+<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
+
+<div class=3DSection1>
+
+<p class=3DMsoNormal style=3D'text-autospace:none'><font size=3D2 =
+face=3DArial><span
+style=3D'font-size:10.0pt'>I am sending V2 series of patches that fix =
+the OF
+serial driver and add support to it and the boot for the Xilinx UART =
+16550.<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'text-autospace:none'><font size=3D2 =
+face=3DArial><span
+style=3D'font-size:10.0pt'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'text-autospace:none'><font size=3D2 =
+face=3DArial><span
+style=3D'font-size:10.0pt'>The ePAPR, although not a formal spec yet, =
+proposes
+allowing reg-shift for ns16550. We believe this is a reasonable approach =
+and have
+implemented it in this patch series. <o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt'>We&#8217;ve
+tried to integrate the consensus from the previous comments =
+also.<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt'>[v1]<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'text-autospace:none'><font size=3D2 =
+face=3DArial><span
+style=3D'font-size:10.0pt'>I am sending a series of patches that fix the =
+OF
+serial driver and add support to it and the boot for the Xilinx UART =
+16550.<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'text-autospace:none'><font size=3D2 =
+face=3DArial><span
+style=3D'font-size:10.0pt'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'text-autospace:none'><font size=3D2 =
+face=3DArial><span
+style=3D'font-size:10.0pt'>I think we have tried to satisfy previous =
+concerns
+about UARTs which are non-standard as the Xilinx 16550 is (register =
+spacing and
+offset).<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'text-autospace:none'><font size=3D2 =
+face=3DArial><span
+style=3D'font-size:10.0pt'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'text-autospace:none'><font size=3D2 =
+face=3DArial><span
+style=3D'font-size:10.0pt'>We would like to have these pulled into =
+2.6.26.<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'text-autospace:none'><font size=3D2 =
+face=3DArial><span
+style=3D'font-size:10.0pt'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'text-autospace:none'><font size=3D2 =
+face=3DArial><span
+style=3D'font-size:10.0pt'>Thanks,<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt'>John<o:p></o:p></span></font></p>
+
+</div>
+
+</body>
+
+</html>
+
+------_=_NextPart_001_01C894E1.AA347DCC--
