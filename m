@@ -1,18 +1,15 @@
-Return-Path: <jens@de.ibm.com>
-From: Jens Osterkamp <jens@de.ibm.com>
-To: Nathan Lynch <ntl@pobox.com>
-Subject: Re: [PATCH] RTAS - adapt procfs interface
-Date: Wed, 2 Apr 2008 13:34:35 +0200
-References: <200804011512.20834.jens@de.ibm.com>
-	<20080401163504.GP7137@localdomain>
-	<20080401200404.GS7137@localdomain>
-In-Reply-To: <20080401200404.GS7137@localdomain>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200804021334.35331.jens@de.ibm.com>
-Cc: maxim@de.ibm.com, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>, cbe-oss-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18419.29305.168659.363143@cargo.ozlabs.ibm.com>
+Date: Wed, 2 Apr 2008 22:48:09 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: Please pull from 'for-2.6.25' branch
+In-Reply-To: <D9513606-E9BC-4D20-BB2E-7CCD3D9CEDAA@kernel.crashing.org>
+References: <Pine.LNX.4.64.0803311156160.4549@blarg.am.freescale.net>
+	<D9513606-E9BC-4D20-BB2E-7CCD3D9CEDAA@kernel.crashing.org>
+Cc: ppc-dev list <linuxppc-dev@ozlabs.org>, Linus Torvalds <torvalds@osdl.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,90 +19,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tuesday 01 April 2008, Nathan Lynch wrote:
-> Nathan Lynch wrote:
-> > 
-> > One could argue that the real problem is using the proc_dir_entry's
-> > reference count to enforce exclusive open.
-> 
-> 
-> I think this is better... the way these files are used is lame, but
-> this should preserve the existing behavior.  I haven't yet tested
-> this, can you?
+Kumar Gala writes:
 
-I did and it works for me...
+> Paul, any comments on sending this onto linus.  I was hoping to avoid  
+> 2.6.25 coming up not support the proper device bindings for DMA and  
+> SATA.
 
-> 
-> 
-> diff --git a/arch/powerpc/kernel/rtas_flash.c b/arch/powerpc/kernel/rtas_flash.c
-> index f227659..00bc308 100644
-> --- a/arch/powerpc/kernel/rtas_flash.c
-> +++ b/arch/powerpc/kernel/rtas_flash.c
-> @@ -139,7 +139,7 @@ struct rtas_validate_flash_t
->  	unsigned int update_results;	/* Update results token */
->  };
-> 
-> -static DEFINE_SPINLOCK(flash_file_open_lock);
-> +static atomic_t open_count = ATOMIC_INIT(0);
->  static struct proc_dir_entry *firmware_flash_pde;
->  static struct proc_dir_entry *firmware_update_pde;
->  static struct proc_dir_entry *validate_pde;
-> @@ -216,7 +216,7 @@ static int rtas_flash_release(struct inode *inode, struct file *file)
->  		uf->flist = NULL;
->  	}
-> 
-> -	atomic_dec(&dp->count);
-> +	atomic_dec(&open_count);
->  	return 0;
->  }
-> 
-> @@ -352,26 +352,17 @@ static ssize_t rtas_flash_write(struct file *file, const char __user *buffer,
-> 
->  static int rtas_excl_open(struct inode *inode, struct file *file)
->  {
-> -	struct proc_dir_entry *dp = PDE(inode);
-> -
-> -	/* Enforce exclusive open with use count of PDE */
-> -	spin_lock(&flash_file_open_lock);
-> -	if (atomic_read(&dp->count) > 1) {
-> -		spin_unlock(&flash_file_open_lock);
-> +	if (atomic_inc_return(&open_count) > 1) {
-> +		atomic_dec(&open_count);
->  		return -EBUSY;
->  	}
-> 
-> -	atomic_inc(&dp->count);
-> -	spin_unlock(&flash_file_open_lock);
-> -	
->  	return 0;
->  }
-> 
->  static int rtas_excl_release(struct inode *inode, struct file *file)
->  {
-> -	struct proc_dir_entry *dp = PDE(inode);
-> -
-> -	atomic_dec(&dp->count);
-> +	atomic_dec(&open_count);
-> 
->  	return 0;
->  }
-> @@ -580,7 +571,7 @@ static int validate_flash_release(struct inode *inode, struct file *file)
->  	}
-> 
->  	/* The matching atomic_inc was in rtas_excl_open() */
-> -	atomic_dec(&dp->count);
-> +	atomic_dec(&open_count);
-> 
->  	return 0;
->  }
-> 
+I've pulled it and I'll send it on later (or Linus can pull it
+directly if he wants).  There is the iSeries fix from Ben H plus two
+other patches (one from Bartlomiej Sieka and one from Nathan Lynch)
+where I'm waiting for proper patch descriptions and/or signed-off-by
+lines.  I was hoping to get those tomorrow and send the lot on to
+Linus.
 
-Gruß,
-
-Jens
-
-IBM Deutschland Entwicklung GmbH
-Vorsitzender des Aufsichtsrats: Martin Jetter
-Geschäftsführung: Herbert Kircher 
-Sitz der Gesellschaft: Böblingen
-Registergericht: Amtsgericht Stuttgart, HRB 243294
+Paul.
