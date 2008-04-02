@@ -1,9 +1,10 @@
 Return-Path: <benh@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
 From: Benjamin Herrenschmidt <benh@ozlabs.org>
-Date: Wed, 02 Apr 2008 18:52:08 +1100
-Subject: [PATCH 0/4] [POWERPC] lockdep support for ppc64
-Message-Id: <1207122728.672673.111194574046.qpush@grosgo>
+Date: Wed, 02 Apr 2008 18:52:09 +1100
+Subject: [PATCH 1/4] [POWERPC] Initialize paca->current earlier
+In-Reply-To: <1207122728.672673.111194574046.qpush@grosgo>
+Message-Id: <20080402075253.8726ADDEDD@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -13,25 +14,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-[Not to merge just yet ... almost]
+Currently, we initialize the "current" pointer in the PACA (which
+is used by the "current" macro in the kernel) before calling
+setup_system(). That means that early_setup() is called with
+current still "NULL" which is -not- a good idea. It happens to
+work so far but breaks with lockdep when early code calls printk.
 
-This serie of patches adds lockdep support for 64 bits
-powerpc. Dale's patch for 32 bits still need me to review
-and test it which I'll try to do asap.
+This changes it so that all PACAs are statically initialized with
+__current pointing to the init task. For non-0 CPUs, this is fixed
+up before use.
 
-It needs the iSeries hardirq enable fix that I posted
-earlier (which is probably 2.6.25 material).
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
 
-Note that we can already see potential problems exposed
-by it. So far on my list:
+ arch/powerpc/kernel/head_64.S |    4 ----
+ arch/powerpc/kernel/paca.c    |    3 ++-
+ 2 files changed, 2 insertions(+), 5 deletions(-)
 
- - something wrong with iseries veth. Haven't got to figure
-out what yet, could be a false positive
-
- - possible deadlock with the device-tree rwlock. The one that
-I caught with lockdep here is pSeries rtas_set_rtc_time() calls
-rtas_token() from softirq, which does on of_find_property(),
-which takes the read lock. Other things can call prom_add_propety()
-which can take the write lock, while softirqs are enabled -> boom.
-Maybe we should forbid OF device-tree access from IRQs and thus
-things that need to use rtas_token() will have to cache the token.
+--- linux-work.orig/arch/powerpc/kernel/head_64.S	2008-04-02 18:20:53.000000000 +1100
++++ linux-work/arch/powerpc/kernel/head_64.S	2008-04-02 18:24:45.000000000 +1100
+@@ -1505,10 +1505,6 @@ _INIT_GLOBAL(start_here_common)
+ 	li	r0,0
+ 	stdu	r0,-STACK_FRAME_OVERHEAD(r1)
+ 
+-	/* ptr to current */
+-	LOAD_REG_IMMEDIATE(r4, init_task)
+-	std	r4,PACACURRENT(r13)
+-
+ 	/* Load the TOC */
+ 	ld	r2,PACATOC(r13)
+ 	std	r1,PACAKSAVE(r13)
+Index: linux-work/arch/powerpc/kernel/paca.c
+===================================================================
+--- linux-work.orig/arch/powerpc/kernel/paca.c	2008-04-02 18:28:07.000000000 +1100
++++ linux-work/arch/powerpc/kernel/paca.c	2008-04-02 18:28:22.000000000 +1100
+@@ -72,7 +72,8 @@ struct slb_shadow slb_shadow[] __cacheli
+ 	.paca_index = (number),		/* Paca Index */		    \
+ 	.kernel_toc = (unsigned long)(&__toc_start) + 0x8000UL,		    \
+ 	.hw_cpu_id = 0xffff,						    \
+-	.slb_shadow_ptr = &slb_shadow[number],
++	.slb_shadow_ptr = &slb_shadow[number],				    \
++	.__current = &init_task,
+ 
+ #ifdef CONFIG_PPC_ISERIES
+ #define PACA_INIT_ISERIES(number)					    \
