@@ -1,23 +1,22 @@
-Return-Path: <jacmet@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.175])
-	by ozlabs.org (Postfix) with ESMTP id BE0FFDDED6
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from tmnt04.transmode.se (mail.transmode.se [83.241.175.147])
+	by ozlabs.org (Postfix) with ESMTP id 9D377DDF7C
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  2 Apr 2008 20:51:33 +1100 (EST)
-Received: by ug-out-1314.google.com with SMTP id q7so397011uge.0
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 02 Apr 2008 02:51:30 -0700 (PDT)
-To: "John Linn" <John.Linn@xilinx.com>
-Subject: Re: Virtex V5FX PPC 440 Support In Xilinx Git Tree
-References: <20080401234142.41B13191804A@mail111-sin.bigfish.com>
-From: Peter Korsgaard <jacmet@sunsite.dk>
-Date: Wed, 02 Apr 2008 11:51:27 +0200
-In-Reply-To: <20080401234142.41B13191804A@mail111-sin.bigfish.com> (John
-	Linn's message of "Tue\, 1 Apr 2008 17\:41\:40 -0600")
-Message-ID: <87lk3w8u00.fsf@macbook.be.48ers.dk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Sender: Peter Korsgaard <jacmet@gmail.com>
-Cc: git <git@xilinx.com>, linuxppc-embedded@ozlabs.org
+	Wed,  2 Apr 2008 23:15:54 +1100 (EST)
+Subject: RE: [PATCH] Add Fixed PHY support for ucc_geth
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+To: Li Yang <LeoLi@freescale.com>
+In-Reply-To: <989B956029373F45A0B8AF029708189001D1954D@zch01exm26.fsl.freescale.net>
+References: <>
+	<1205833615-15833-1-git-send-email-Joakim.Tjernlund@transmode.se>
+	<989B956029373F45A0B8AF029708189001D1954D@zch01exm26.fsl.freescale.net>
+Content-Type: text/plain
+Date: Wed, 02 Apr 2008 14:15:52 +0200
+Message-Id: <1207138552.9675.61.camel@gentoo-jocke.transmode.se>
+Mime-Version: 1.0
+Cc: Netdev <netdev@vger.kernel.org>, Jeff Garzik <jeff@garzik.org>,
+	"Linuxppc-Embedded@Ozlabs.Org" <linuxppc-embedded@ozlabs.org>
+Reply-To: joakim.tjernlund@transmode.se
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -28,15 +27,29 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
->>>>> "John" == John Linn <John.Linn@xilinx.com> writes:
 
- John> I pushed PowerPC 440 support to the Xilinx Git server with
- John> support for ppc arch and with powerpc arch support coming in
- John> the near future.
+On Fri, 2008-03-21 at 16:51 +0800, Li Yang wrote:
+> > -----Original Message-----
+> > From: Joakim Tjernlund [mailto:Joakim.Tjernlund@transmode.se] 
+> > Sent: Tuesday, March 18, 2008 5:47 PM
+> > To: Netdev; Li Yang; Linuxppc-Embedded@Ozlabs.Org
+> > Cc: Joakim Tjernlund
+> > Subject: [PATCH] Add Fixed PHY support for ucc_geth
+> > 
+> > The new Fixed PHY method, fixed-link property, isn't
+> > impl. for ucc_geth which makes fixed PHYs non functional.
+> > Add support for the new method to restore the Fixed PHY
+> > functionality.
+> > 
+> > Signed-off-by: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+> 
+> Signed-off-by: Li Yang <leoli@freescale.com>
+> 
+> ---
+> Ps: This patch depends on the patch "ucc_geth: use correct thread number
+> for 10/100Mbps link" to apply, which hasn't made to Linus' tree for now
+> but has already been in Jeff and David's trees.
 
-Neat, but why have you added arch/ppc support? It's supposed to go
-away pretty much by the time the hardware gets in the hand of
-developers.
+What happened to this patch? It is not in Linus tree.
 
--- 
-Bye, Peter Korsgaard
+ Jocke
