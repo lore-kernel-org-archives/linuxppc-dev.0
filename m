@@ -1,24 +1,22 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.248])
-	by ozlabs.org (Postfix) with ESMTP id 5300DDDFB0
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 Apr 2008 06:27:45 +1100 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so685906anc.78
-	for <linuxppc-dev@ozlabs.org>; Wed, 02 Apr 2008 12:27:39 -0700 (PDT)
-Message-ID: <fa686aa40804021227r2f2bb4beje303578d6ea964a7@mail.gmail.com>
-Date: Wed, 2 Apr 2008 13:27:38 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "John Linn" <John.Linn@xilinx.com>
-Subject: Re: [PATCH 2/3][POWERPC][V2] Xilinx: of_serial support for Xilinx
-	uart 16550.
-In-Reply-To: <20080402182023.8FA7318B808D@mail52-dub.bigfish.com>
+Return-Path: <stephen.neuendorffer@xilinx.com>
+Received: from outbound7-dub-R.bigfish.com (outbound-dub.frontbridge.com
+	[213.199.154.16])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id E28EBDDF11
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 Apr 2008 08:39:27 +1100 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <12071551351007-git-send-email-john.linn@xilinx.com>
-	<12071551354058-git-send-email-john.linn@xilinx.com>
-	<20080402165222.2468414080A9@mail104-dub.bigfish.com>
-	<fa686aa40804021100j13a7e223jde9d222df379b1f8@mail.gmail.com>
-	<20080402182023.8FA7318B808D@mail52-dub.bigfish.com>
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [PATCH 2/3][POWERPC][V2] Xilinx: of_serial support for Xilinx
+	uart	16550.
+Date: Wed, 2 Apr 2008 14:39:17 -0700
+In-Reply-To: <689CB232690D8D4E97DA6C76DA098E6C05FC4762@XCO-EXCHVS1.xlnx.xilinx.com>
+References: <689CB232690D8D4E97DA6C76DA098E6C05FC4762@XCO-EXCHVS1.xlnx.xilinx.com>
+From: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
+To: "John Linn" <linnj@xilinx.com>, "Grant Likely" <grant.likely@secretlab.ca>,
+	<sshtylyov@ru.mvista.com>
+Message-Id: <20080402213919.C261F5E007F@mail91-dub.bigfish.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -29,24 +27,62 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Apr 2, 2008 at 12:20 PM, John Linn <John.Linn@xilinx.com> wrote:
-> Sounds good, those are easy changes and make sense.
->
->  Since I'm a newbie, I don't know any better sometimes when I copy other
->  code that may not be as safe.
->
->  The same thing, of_get_property(np, "current-speed", NULL);, is done
->  right above my code I added.
->
->  Should the other code in the driver using the same method be fixed, or
->  just my patch?
 
-It would be good to fix the other code, but not in this patch.  Write
-another patch to fix that.
+I don't think big-endian has the same context as reg-shift/reg-offset.
+The OpenPOC is fundamentally a 32 bit device, but ns16550 is not...  If
+we were talking about a 32 bit device, then I'd probably agree with you,
+but in this case, the reg-shift (and to some extent) reg-offset have
+been used before and probably make more sense, I think.
 
-Cheers,
-g.
+Steve
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+> -----Original Message-----
+> From: Sergei Shtylyov [mailto:sshtylyov@ru.mvista.com]
+> Sent: Wednesday, April 02, 2008 1:20 PM
+> To: John Linn
+> Cc: linuxppc-dev@ozlabs.org; grant.likely@secretlab.ca
+> Subject: Re: [PATCH 2/3][POWERPC][V2] Xilinx: of_serial support for
+Xilinx uart 16550.
+>=20
+> Hello.
+>=20
+> John Linn wrote:
+>=20
+> > The Xilinx 16550 uart core is not a standard 16550 because it uses
+> > word-based addressing rather than byte-based addressing. With
+> > additional properties it is compatible with the open firmware
+> > 'ns16550' compatible binding.
+>=20
+> > This code updates the of_serial driver to handle the reg-offset
+> > and reg-shift properties to enable this core to be used.
+>=20
+> > Signed-off-by: John Linn <john.linn@xilinx.com>
+>=20
+> > diff --git a/Documentation/powerpc/booting-without-of.txt
+b/Documentation/powerpc/booting-without-
+> of.txt
+> > index 87f4d84..af112d9 100644
+> > --- a/Documentation/powerpc/booting-without-of.txt
+> > +++ b/Documentation/powerpc/booting-without-of.txt
+> > @@ -2539,6 +2539,17 @@ platforms are moved over to use the
+flattened-device-tree model.
+> >                        differ between different families.  May be
+> >                        'virtex2p', 'virtex4', or 'virtex5'.
+> >
+> > +      iv) Xilinx Uart 16550
+> > +
+> > +      Xilinx UART 16550 devices are very similar to the NS16550
+such that they
+> > +      use the ns16550 binding with properties to specify register
+spacing and
+> > +      an offset from the base address.
+> > +
+> > +      Requred properties:
+> > +       - clock-frequency : Frequency of the clock input
+> > +       - reg-offset : A value of 3 is required
+>=20
+>     I'm proposing you to use the already existing "big-endian"
+property ISO
+> "reg-offset" (used in the  nodes describing OpenPIC, for example).
+>=20
+> WBR, Sergei
