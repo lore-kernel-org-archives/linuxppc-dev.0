@@ -1,21 +1,17 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
-	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id F22E2DDFE2
-	for <linuxppc-dev@ozlabs.org>; Wed,  2 Apr 2008 22:53:49 +1100 (EST)
-Date: Wed, 2 Apr 2008 13:53:46 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] [POWERPC] Move phys_addr_t definition into asm/types.h
-In-Reply-To: <451ABD36-3763-4AF0-B24B-AF043393A72C@kernel.crashing.org>
-Message-ID: <Pine.LNX.4.64.0804021352580.20994@vixen.sonytel.be>
-References: <Pine.LNX.4.64.0803281338360.15109@blarg.am.freescale.net>
-	<18417.44855.137234.450478@cargo.ozlabs.ibm.com>
-	<451ABD36-3763-4AF0-B24B-AF043393A72C@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED;
-	BOUNDARY="-584349381-1752785050-1207137226=:20994"
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Return-Path: <sfr@canb.auug.org.au>
+Date: Wed, 2 Apr 2008 23:29:05 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Benjamin Herrenschmidt <benh@ozlabs.org>
+Subject: Re: [PATCH 2/4] [POWERPC] lockdep stacktrace support
+Message-Id: <20080402232905.f7ced10d.sfr@canb.auug.org.au>
+In-Reply-To: <20080402075254.24539DDEDD@ozlabs.org>
+References: <1207122728.672673.111194574046.qpush@grosgo>
+	<20080402075254.24539DDEDD@ozlabs.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Wed__2_Apr_2008_23_29_05_+1100_aLo=Znjin=BmCHqk"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,62 +21,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+--Signature=_Wed__2_Apr_2008_23_29_05_+1100_aLo=Znjin=BmCHqk
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
----584349381-1752785050-1207137226=:20994
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+On Wed, 02 Apr 2008 18:52:10 +1100 Benjamin Herrenschmidt <benh@ozlabs.org>=
+ wrote:
+>
+> +++ linux-work/arch/powerpc/kernel/stacktrace.c	2008-04-02 16:46:07.00000=
+0000 +1100
+> @@ -0,0 +1,52 @@
+> +
 
-On Tue, 1 Apr 2008, Kumar Gala wrote:
-> On Mar 31, 2008, at 10:42 PM, Paul Mackerras wrote:
-> >Kumar Gala writes:
-> > >Moved phys_addr_t out of mmu-*.h and into asm/types.h so we can use it in
-> > >places that before would have caused recursive includes.
-> > >
-> > >For example to use phys_addr_t in <asm/page.h> we would have included
-> > ><asm/mmu.h> which would have possibly included <asm/mmu-hash64.h> which
-> > >includes <asm/page.h>.  Wheeee recursive include.
-> >
-> >In general this looks fine.  I wonder if you should use u64 rather
-> >than unsigned long long.  Since CONFIG_PHYS_64BIT=n on 64-bit machines
-> >(which is itself somewhat counterintuitive) we will actually use
-> >unsigned long on 64-bit machines, so it matters less than I originally
-> >thought, but it would be worth explaining that in a comment and/or the
-> >commit message.
-> 
-> We could change it to be:
-> 
-> /* Physical address used by some IO functions */
-> #if defined(CONFIG_PPC64) || defined(CONFIG_PHYS_64BIT)
-> typedef u64 phys_addr_t;
-> #else
-> typedef u32 phys_addr_t;
-> #endif
-> 
-> This seems a bit more self documenting which is always nice (and I can add a
-> comment in the commit message about CONFIG_PHYS_64BIT only making sense on
-> ppc32).
+Copyight and license statement needed.
 
-If it's counterintuitive that CONFIG_PHYS_64BIT=n on 64-bit machines, why
-not set it to =y in Kconfig?
+> +#include <linux/sched.h>
+> +#include <linux/stacktrace.h>
 
-With kind regards,
+You should include <asm/ptrace.h> for STACK_FRAME_OVERHEAD and struct pt_re=
+gs.
 
-Geert Uytterhoeven
-Software Architect
+> +#ifdef CONFIG_PPC64
+> +#define MIN_STACK_FRAME 112     /* same as STACK_FRAME_OVERHEAD, in fact=
+ */
 
-Sony Network and Software Technology Center Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+So use STACK_FRAME_OVERHEAD?
 
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
+> +#define FRAME_LR_SAVE   2
+> +#define INT_FRAME_SIZE  (sizeof(struct pt_regs) + STACK_FRAME_OVERHEAD +=
+ 288)
+                                                     ^^^^^^^^^^^^^^^^^^^^
+Its used here already ...
 
-Sony Network and Software Technology Center Europe
-A division of Sony Service Centre (Europe) N.V.
-Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium
-VAT BE 0413.825.160 · RPR Brussels
-Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
----584349381-1752785050-1207137226=:20994--
+> +#define REGS_MARKER     0x7265677368657265ul
+
+Maybe we need to put REGS_MARKER into a header file as it already appears
+in two assembly files and two C files.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__2_Apr_2008_23_29_05_+1100_aLo=Znjin=BmCHqk
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFH83wWTgG2atn1QN8RApQPAJ92nOkqIOOiojlX616kQBMjmEPCwgCfVTYH
+SHmd7hQAbLo9jcG2I9PK1mY=
+=sAuo
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__2_Apr_2008_23_29_05_+1100_aLo=Znjin=BmCHqk--
