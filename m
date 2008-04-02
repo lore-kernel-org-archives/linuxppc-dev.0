@@ -1,21 +1,22 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.183])
-	by ozlabs.org (Postfix) with ESMTP id 86C14DDE1B
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.242])
+	by ozlabs.org (Postfix) with ESMTP id 1E3E7DDDFC
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  2 Apr 2008 12:44:38 +1100 (EST)
-Received: by py-out-1112.google.com with SMTP id z59so2509107pyg.27
+	Wed,  2 Apr 2008 15:09:36 +1100 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so603114anc.78
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 01 Apr 2008 18:44:30 -0700 (PDT)
-Subject: Re: Access physical memory via mmap() on ppc440epx.
-From: Josh Boyer <jwboyer@gmail.com>
-To: Leonid <Leonid@a-k-a.net>
-In-Reply-To: <406A31B117F2734987636D6CCC93EE3C033A981B@ehost011-3.exch011.intermedia.net>
-References: <406A31B117F2734987636D6CCC93EE3C033A981B@ehost011-3.exch011.intermedia.net>
-Content-Type: text/plain
-Date: Tue, 01 Apr 2008 20:44:25 -0500
-Message-Id: <1207100665.12155.100.camel@vader.jdub.homelinux.org>
-Mime-Version: 1.0
-Cc: linuxppc-embedded@ozlabs.org
+	Tue, 01 Apr 2008 21:09:27 -0700 (PDT)
+Message-ID: <fa686aa40804012109i75f7f6by84850314b182ef77@mail.gmail.com>
+Date: Tue, 1 Apr 2008 22:09:26 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "John Linn" <John.Linn@xilinx.com>
+Subject: Re: Virtex V5FX PPC 440 Support In Xilinx Git Tree
+In-Reply-To: <20080401234142.41B13191804A@mail111-sin.bigfish.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20080401234142.41B13191804A@mail111-sin.bigfish.com>
+Cc: git <git@xilinx.com>, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -26,31 +27,21 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2008-04-01 at 14:12 -0700, Leonid wrote:
-> Hi:
-> 
-> I am trying to read from NOR flash, located on address 0xfc000000, on my
+On Tue, Apr 1, 2008 at 5:41 PM, John Linn <John.Linn@xilinx.com> wrote:
+>
+>
+>
+>
+> I pushed PowerPC 440 support to the Xilinx Git server with support for ppc
+> arch and with powerpc arch support coming in the near future.
 
-It's at 0x1fc000000 IIRC.
+Cool, I look forward to playing with it...
 
-> TLB entries look strange though. That what it was on u-boot stage:
-> 
-> 440EPx>tlb 0 10
-> IDX TID      EPN  SIZE VTS          RPN   USER WIMGE USRSVC
->  0 : 00 40000000 256MB V0 -> 0_00000000 U:0000 -I-G- XWRXWR
->  1 : 00 00000000 256MB V0 -> 0_00000000 U:0000 -I-G- XWRXWR
->  2 : 00 c0000000 256MB V0 -> 1_c0000000 U:0000 -I-G- XWRXWR
->  3 : 00 f0000000 256MB V0 -> 1_f0000000 U:0000 WI-G- XWRXWR
+/me just needs to find a client who needs him to do V5 work.  :-)
 
-See.  Virtual is 0xf0000000, physical is 0x1f0000000.
+Cheers,
+g.
 
-> On Linux stage it looks rather different:
-
-I don't even see your entry in here.  Likely because the TLB is small
-and it's gone by the time you do the dump
-
-> Probably under MMU it should look this way? How to use mmap() then?
-
-Try mmap64 on the real physical address and see if that helps.
-
-josh
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
