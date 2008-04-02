@@ -1,21 +1,23 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.250])
-	by ozlabs.org (Postfix) with ESMTP id 1291BDDE0A
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.246])
+	by ozlabs.org (Postfix) with ESMTP id ABE3BDDE0E
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  2 Apr 2008 15:15:36 +1100 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so603712anc.78
+	Wed,  2 Apr 2008 15:18:00 +1100 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so603910anc.78
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 01 Apr 2008 21:15:35 -0700 (PDT)
-Message-ID: <fa686aa40804012115oe92ed1ald314b25cfaa5805@mail.gmail.com>
-Date: Tue, 1 Apr 2008 22:15:35 -0600
+	Tue, 01 Apr 2008 21:17:58 -0700 (PDT)
+Message-ID: <fa686aa40804012117s45d70c1by964d2e54fa097d1@mail.gmail.com>
+Date: Tue, 1 Apr 2008 22:17:58 -0600
 From: "Grant Likely" <grant.likely@secretlab.ca>
 Sender: glikely@secretlab.ca
-To: "Marcelo Dalmas" <m_dalmas@yahoo.com.br>
-Subject: Re: mpc52xx_mmap_ctl access
-In-Reply-To: <132281.10315.qm@web50302.mail.re2.yahoo.com>
+To: "Sam Karp" <sam.d.karp@gmail.com>
+Subject: Re: SecretLab Git Server
+In-Reply-To: <800687fe0803311912w6da7e8d0i6567a824b7065bdf@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-References: <132281.10315.qm@web50302.mail.re2.yahoo.com>
+References: <800687fe0803311848l478f6445u77c20cd8c4f71797@mail.gmail.com>
+	<fa686aa40803311902u4c47ceb9v6b743065b55bf3fa@mail.gmail.com>
+	<800687fe0803311912w6da7e8d0i6567a824b7065bdf@mail.gmail.com>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -27,28 +29,17 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, Apr 1, 2008 at 11:03 AM, Marcelo Dalmas <m_dalmas@yahoo.com.br> wrote:
-> Hi all!
->
->  I'm updating a device driver from linux 2.6.16 ppc
->  tree to linux 2.6.24 powerpc in a lite5200 based
->  board.
->
->  I need to access  mpc52xx_mmap_ctl and mpc52xx_cslpc.
->
->  In ppc tree I do:
->
->   mmap_ctl =
->  ioremap(MPC52xx_PA(MPC52xx_MMAP_CTL_OFFSET),
->                      MPC52xx_MMAP_CTL_SIZE)
->
->  How can I access it in powerpc tree?
+On Mon, Mar 31, 2008 at 8:12 PM, Sam Karp <sam.d.karp@gmail.com> wrote:
+> Any idea of other sources where else I could get either a kernel with the
+> USB driver or a standalone driver for the Xilinx ML403 board?
 
-1) In your device tree, add a new node for the local plus bus control
-registers with the correct base address.
-2) Use of_find_compatible_node() to get a pointer to the node in your
-platform init code.
-3) Use of_iomap() to map the registers into the kernel address space.
+Look on the powerpc mailing list archives for Peter Korsgaard's patch
+set for the c67x00.  (I believe v10 is the latest patch set).
+
+You need to use the mailing list archive instead of patchwork.  For
+some reason patchwork doesn't recognize Peter's patches.
+
+I'll try to get my git server up and running again ASAP.
 
 Cheers,
 g.
