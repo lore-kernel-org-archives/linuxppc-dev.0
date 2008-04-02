@@ -1,21 +1,22 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from hs-out-0708.google.com (hs-out-0708.google.com [64.233.178.250])
-	by ozlabs.org (Postfix) with ESMTP id 92827DDF6E
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 Apr 2008 04:52:48 +1100 (EST)
-Received: by hs-out-0708.google.com with SMTP id z77so2543152hsz.9
-	for <linuxppc-dev@ozlabs.org>; Wed, 02 Apr 2008 10:52:46 -0700 (PDT)
-Message-ID: <fa686aa40804021052q31b89cafsb2b9bf5d88af8262@mail.gmail.com>
-Date: Wed, 2 Apr 2008 11:52:46 -0600
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.243])
+	by ozlabs.org (Postfix) with ESMTP id 9737BDE262
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 Apr 2008 05:00:26 +1100 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so677262anc.78
+	for <linuxppc-dev@ozlabs.org>; Wed, 02 Apr 2008 11:00:24 -0700 (PDT)
+Message-ID: <fa686aa40804021100j13a7e223jde9d222df379b1f8@mail.gmail.com>
+Date: Wed, 2 Apr 2008 12:00:24 -0600
 From: "Grant Likely" <grant.likely@secretlab.ca>
 Sender: glikely@secretlab.ca
 To: "John Linn" <john.linn@xilinx.com>
-Subject: Re: [PATCH 3/3][POWERPC][V2] Xilinx: boot support for Xilinx uart
-	16550.
-In-Reply-To: <20080402165216.C835D1CF8088@mail12-sin.bigfish.com>
+Subject: Re: [PATCH 2/3][POWERPC][V2] Xilinx: of_serial support for Xilinx
+	uart 16550.
+In-Reply-To: <20080402165222.2468414080A9@mail104-dub.bigfish.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 References: <12071551351007-git-send-email-john.linn@xilinx.com>
-	<20080402165216.C835D1CF8088@mail12-sin.bigfish.com>
+	<12071551354058-git-send-email-john.linn@xilinx.com>
+	<20080402165222.2468414080A9@mail104-dub.bigfish.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -28,52 +29,97 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 On Wed, Apr 2, 2008 at 10:52 AM, John Linn <john.linn@xilinx.com> wrote:
 > The Xilinx 16550 uart core is not a standard 16550 because it uses
->  word-based addressing rather than byte-based adressing. With
+>  word-based addressing rather than byte-based addressing. With
 >  additional properties it is compatible with the open firmware
 >  'ns16550' compatible binding.
 >
->  This code updates the ns16550 driver to use the reg-offset property
->  so that the Xilinx UART 16550 can be used with it. The reg-shift
->  was already being handled.
+>  This code updates the of_serial driver to handle the reg-offset
+>  and reg-shift properties to enable this core to be used.
 >
 >  Signed-off-by: John Linn <john.linn@xilinx.com>
 
-Acked-by: Grant Likely <grant.likely@secretlab.ca>
+Comments below...
 
 >  ---
->   arch/powerpc/boot/ns16550.c |    5 +++++
->   1 files changed, 5 insertions(+), 0 deletions(-)
+>   Documentation/powerpc/booting-without-of.txt |   11 +++++++++++
+>   drivers/serial/of_serial.c                   |   15 +++++++++++++--
+>   2 files changed, 24 insertions(+), 2 deletions(-)
 >
->  diff --git a/arch/powerpc/boot/ns16550.c b/arch/powerpc/boot/ns16550.c
->  index f8f1b2f..da9d2c2 100644
->  --- a/arch/powerpc/boot/ns16550.c
->  +++ b/arch/powerpc/boot/ns16550.c
->  @@ -56,6 +56,7 @@ int ns16550_console_init(void *devp, struct serial_console_data *scdp)
+>  diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
+>  index 87f4d84..af112d9 100644
+>  --- a/Documentation/powerpc/booting-without-of.txt
+>  +++ b/Documentation/powerpc/booting-without-of.txt
+>  @@ -2539,6 +2539,17 @@ platforms are moved over to use the flattened-device-tree model.
+>                        differ between different families.  May be
+>                        'virtex2p', 'virtex4', or 'virtex5'.
+>
+>  +      iv) Xilinx Uart 16550
+>  +
+>  +      Xilinx UART 16550 devices are very similar to the NS16550 such that they
+>  +      use the ns16550 binding with properties to specify register spacing and
+>  +      an offset from the base address.
+>  +
+>  +      Requred properties:
+>  +       - clock-frequency : Frequency of the clock input
+>  +       - reg-offset : A value of 3 is required
+>  +       - reg-shift : A value of 2 is required
+>  +
+>     More devices will be defined as this spec matures.
+>
+>   VII - Specifying interrupt information for devices
+>  diff --git a/drivers/serial/of_serial.c b/drivers/serial/of_serial.c
+>  index 2efb892..af9ed48 100644
+>  --- a/drivers/serial/of_serial.c
+>  +++ b/drivers/serial/of_serial.c
+>  @@ -30,7 +30,7 @@ static int __devinit of_platform_serial_setup(struct of_device *ofdev,
 >   {
->         int n;
->         unsigned long reg_phys;
->  +       u32 reg_offset;
+>         struct resource resource;
+>         struct device_node *np = ofdev->node;
+>  -       const unsigned int *clk, *spd;
+>  +       const unsigned int *clk, *spd, *reg_offset, *reg_shift;
+
+These should really be u32's I believe; on 64 bit architectures this
+will misbehave (not an immediate practical problem, but it's best to
+be explicit about these things).
+
+>         int ret;
 >
->         n = getprop(devp, "virtual-reg", &reg_base, sizeof(reg_base));
->         if (n != sizeof(reg_base)) {
->  @@ -65,6 +66,10 @@ int ns16550_console_init(void *devp, struct serial_console_data *scdp)
->                 reg_base = (void *)reg_phys;
+>         memset(port, 0, sizeof *port);
+>  @@ -48,7 +48,18 @@ static int __devinit of_platform_serial_setup(struct of_device *ofdev,
 >         }
 >
->  +       n = getprop(devp, "reg-offset", &reg_offset, sizeof(reg_offset));
->  +       if (n == sizeof(reg_offset))
->  +               reg_base += reg_offset;
+>         spin_lock_init(&port->lock);
+>  -       port->mapbase = resource.start;
 >  +
->         n = getprop(devp, "reg-shift", &reg_shift, sizeof(reg_shift));
->         if (n != sizeof(reg_shift))
->                 reg_shift = 0;
->  --
->  1.5.2.1
->
->
->
->
+>  +       reg_offset = of_get_property(np, "reg-offset", NULL);
+>  +       reg_shift = of_get_property(np, "reg-shift", NULL);
+>  +
+>  +       if (!reg_offset)
+>  +               port->mapbase = resource.start;
+>  +       else
+>  +               port->mapbase = resource.start + *reg_offset;
+>  +
+>  +       if (reg_shift)
+>  +               port->regshift = *reg_shift;
+>  +
 
+This is a little unsafe since it doesn't check the property size, I'd
+do the following instead:
+
+port->mapbase = resource.start
+
+/* Check for shifted address mapping */
+prop = of_get_property(np, "reg-offset", &prop_size);
+if (prop && (prop_size == sizeof(u32))
+        port->mapbase += *prop;
+
+/* Check for registers offset within the devices address range */
+prop = of_get_property(np, "reg-shift", &prop_size);
+if (prop && (prop_size == sizeof(u32)))
+        port->regshift = *prop;
+
+Cheers,
+g.
 
 
 -- 
