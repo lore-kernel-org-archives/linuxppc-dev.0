@@ -1,18 +1,18 @@
 Return-Path: <johannes@sipsolutions.net>
-Subject: Re: [PATCH 0/4] [POWERPC] lockdep support for ppc64
+Subject: Re: [RFC/PATCH] powerpc: Add irqtrace support to 32-bit powerpc
 From: Johannes Berg <johannes@sipsolutions.net>
-To: Benjamin Herrenschmidt <benh@ozlabs.org>
-In-Reply-To: <1207134128.10388.254.camel@pasglop>
-References: <1207122728.672673.111194574046.qpush@grosgo>
-	<1207129830.10910.25.camel@johannes.berg>
-	<1207134128.10388.254.camel@pasglop>
+To: Dale Farnsworth <dale@farnsworth.org>
+In-Reply-To: <20080201195040.GA8950@farnsworth.org>
+	(sfid-20080201_205114_032143_11799746)
+References: <20080201195040.GA8950@farnsworth.org>
+	(sfid-20080201_205114_032143_11799746)
 Content-Type: multipart/signed; micalg=pgp-sha1;
 	protocol="application/pgp-signature";
-	boundary="=-+mtpSbjXJq5fZxF+Z2OO"
-Date: Wed, 02 Apr 2008 15:20:56 +0200
-Message-Id: <1207142456.10910.42.camel@johannes.berg>
+	boundary="=-DlV6z0zXAH7DU/TcU3vi"
+Date: Wed, 02 Apr 2008 16:15:38 +0200
+Message-Id: <1207145738.3957.2.camel@johannes.berg>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, Benjamin Herrenschmidt <benh@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,44 +23,45 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-+mtpSbjXJq5fZxF+Z2OO
+--=-DlV6z0zXAH7DU/TcU3vi
 Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-
-> Haven't tested this version on G5 yet btw :-) (though I had a previous
-> one working internally). I tested on POWER6 pSeries and old iSeries
-> (spent a while fixing the later).
+On Fri, 2008-02-01 at 12:50 -0700, Dale Farnsworth wrote:
+> This adds the low level irq tracing hooks for 32-bit powerpc.
+> This patch applies on top of Benjamin Herrenschmidt's patch that
+> provides similar support for 64-bit powerpc.  See
+> <http://ozlabs.org/pipermail/linuxppc-dev/2007-October/044361.html>
 >=20
-> I'll run more tests tomorrow hopefully and add a few patch fixing
-> some of the issues that lockdep already starting showing.
+> It seems to work on my prpmc2800 board with a ppc7447.
 
-Works fine, and on my box I don't see lockdep showing issues.
-
-Thanks for picking this up from me and rewriting it :)
+At first it appears to work on my powerbook (with Ben's latest version
+of the 64-bit patch), but then it seems to cause random corruption, I've
+had a crash in the ext3 code and one in console_callback(), both of
+which I cannot otherwise explain.
 
 johannes
 
---=-+mtpSbjXJq5fZxF+Z2OO
+--=-DlV6z0zXAH7DU/TcU3vi
 Content-Type: application/pgp-signature; name=signature.asc
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Comment: Johannes Berg (powerbook)
 
-iQIVAwUAR/OINqVg1VMiehFYAQK7bQ/+Od4NKKVoG8lnoI3GWev1MOj0Cg8pLo31
-ikYGDJ/i03gtWBff9qGiXotD7EdFFQURVXsjM0nAqp1iuOocou/zrUUyUrhIAhvu
-l2imvNAuaDbZrBV4awSr9SxK2bxJkYb5iczuHHOav2F4wbihajNe6RTHV4K3vAhi
-vd/7gD/06xRLpDwEAF71B9+0rE8XSnK7bAcOpZk3qUrgEXONUEKWHd+Yj1V5bq7j
-3viB1e8VNSkM+CB5CdRofGIzew7UEYm8IV3lhbwYBegnsfq90iXAM1YXIRh3B1GW
-1vJ0V+SZo6YS6YpO+R5wX1CqOX+kjU0cFmC8x+BShQmX+hswfvjQOwhfnLUl4Q6O
-gcCCiHrUxXjPGXjG9N78Fm6iAypMhjeOY4DwRx0S218Ml8Vr5GwL4Li7EyQ4DNw/
-PFgPJr2Zcpop4llxmkBQQXAPV3IctXs22UkouEhQAumaNLvRnNG0jj2eyIHAyd/o
-lDlsy4ZnCjFccgTGV7SqU/K100RRtnSqr+FOsMuzPyoM/VGfLCpgfAXHSGx2xslP
-frIcZPHLP32+R/+4vLAsui1pd3EpofaRXce1WaGh0QchxsGXFKpNFLE01bNrmt77
-482D3mH7XKMXnQWyF/rhibP0IbtcvAbU/JTUSFJoXDH0CP6B6TtxDjsnRJhcgtKi
-Uo0O6veOaWo=
-=Cout
+iQIVAwUAR/OVCaVg1VMiehFYAQJFNg//blchECtd6WRWhXs52EHP2JRzuu5IfvFJ
+Wp31jaWFVg06Mz3wPo44CfwEF2fkmv4lcHQgEz1CrFbW6m6O0nBM/lvusjwFbbsr
+942zENQ7yUKFVFMilFD2t0+8ocxjubcCed3+k3JX4Ag2ZiayafUoMYthIlCRGguK
+KPU0rClNWUwh4aTaxhwBFVGmv6t/bIhaiFaclkjWEkvjTDgBxj8RVJ7W7WvOQKy4
+FYTJcKzoH1ElMbtEcgiw22PX1nFimVe9KlI/Jmm7/vAstMqfqLAtbARZQ9/5Rbnd
+P3/iyPpo86MOyxAPsD4XrY4JihslTEaYoQIB5co7mv738mha1ne50j3ctEavANHA
+w38QcBBi1Zcw7EyD9qjjYaY3VtS5NDV3YeJRGlG7QUX0qzJS6hXMOEKExzVSsIT6
+qmjjFKVv0EMbowiKtrSD1SW9Ki7bNdxQRyoGDnuOEfEsSoDshL4eKg8wp8ixdQuF
+YpuRyXi+s0eSvG13nAYV0gDkFfIaLs2bxFFeZSp78+tB+DCCHsIeNrhibC7FANTQ
+AY4pSaLfheIMIgK4lIBUiY7qYWlXkRaSb8yAoYUFQr/wVw05XmvsgX7O1WEug6r4
++1o94tYG6FQ9H2UBgs1YDGwAt0KVq/5vvLx3lO0ti1+SNfT6gxcBWN+PjUrpg430
+Oxjm3vDHnH0=
+=7gme
 -----END PGP SIGNATURE-----
 
---=-+mtpSbjXJq5fZxF+Z2OO--
+--=-DlV6z0zXAH7DU/TcU3vi--
