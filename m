@@ -1,20 +1,15 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 33D3ADDEDD
-	for <linuxppc-dev@ozlabs.org>; Wed,  2 Apr 2008 22:01:25 +1100 (EST)
-Subject: Re: [PATCH 2/11] cell: generalize io-workarounds code
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
-In-Reply-To: <20080402.195215.-1300526901.kouish@swc.toshiba.co.jp>
-References: <20080402.195215.-1300526901.kouish@swc.toshiba.co.jp>
+Return-Path: <benh@ozlabs.org>
+Subject: Re: [PATCH 0/4] [POWERPC] lockdep support for ppc64
+From: Benjamin Herrenschmidt <benh@ozlabs.org>
+To: Johannes Berg <johannes@sipsolutions.net>
+In-Reply-To: <1207129830.10910.25.camel@johannes.berg>
+References: <1207122728.672673.111194574046.qpush@grosgo>
+	<1207129830.10910.25.camel@johannes.berg>
 Content-Type: text/plain
-Date: Wed, 02 Apr 2008 22:00:52 +1100
-Message-Id: <1207134052.10388.251.camel@pasglop>
+Date: Wed, 02 Apr 2008 22:02:07 +1100
+Message-Id: <1207134128.10388.254.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
-Reply-To: benh@kernel.crashing.org
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,33 +20,19 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Wed, 2008-04-02 at 19:52 +0900, Ishizaki Kou wrote:
-> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-> > > As you said, if read/write/in/out functions take device parameter,
-> > > taking I/O function pointers into the dev_archdata structure should be
-> > > the best solution. But they don't take device parameter, and they must
-> > > search I/O function pointers with address parameter. I think it's
-> > > better they search pointers from bus bridges, because access mothod
-> > > for a device on its parent bus bridge, not device itself.
-> > 
-> > What I meant is that if the pointers are in dev_archdata, we can
-> > populate with a different set of pointers for PCI vs. PCI-E.
+On Wed, 2008-04-02 at 11:50 +0200, Johannes Berg wrote:
+> > This serie of patches adds lockdep support for 64 bits
+> > powerpc. Dale's patch for 32 bits still need me to review
+> > and test it which I'll try to do asap.
 > 
-> I'm afraid I misunderstood your opinion.
-> 
-> My concern is how to find a device by address when I/O function
-> pointers are in dev_archdata.
-> 
-> You must select the appropriate device with an address, because all
-> I/O functions, read/write/in/out don't have device parameter. If the
-> address is in MMIO space, you can set 'token' to the address to select
-> the device. But in IO space, you can't set 'token' to the I/O port
-> address. Thefore you must scan all devices to select the device.
-> 
-> Do you have any better solution?
+> Yay. I'll give it another try later today.
 
-No, you are right. The EEH code has a way to go back to the device but
-it has significant overhead. Let's stick to your current approach.
+Haven't tested this version on G5 yet btw :-) (though I had a previous
+one working internally). I tested on POWER6 pSeries and old iSeries
+(spent a while fixing the later).
+
+I'll run more tests tomorrow hopefully and add a few patch fixing
+some of the issues that lockdep already starting showing.
 
 Cheers,
 Ben.
