@@ -1,27 +1,23 @@
-Return-Path: <yhlu.kernel@gmail.com>
-Received: from rv-out-0910.google.com (rv-out-0910.google.com [209.85.198.190])
-	by ozlabs.org (Postfix) with ESMTP id 33C02DDEEC
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 Apr 2008 09:24:43 +1100 (EST)
-Received: by rv-out-0910.google.com with SMTP id c27so1647042rvf.9
-	for <linuxppc-dev@ozlabs.org>; Wed, 02 Apr 2008 15:24:42 -0700 (PDT)
-Message-ID: <86802c440804021524r3e930f4aoffe8e43a4c1bb9d0@mail.gmail.com>
-Date: Wed, 2 Apr 2008 15:24:41 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Badari Pulavarty" <pbadari@us.ibm.com>
-Subject: Re: [BUG] 2.6.25-rc8-mm1 kernel panic while bootup on powerpc
-In-Reply-To: <1207164127.30407.36.camel@dyn9047017100.beaverton.ibm.com>
+Return-Path: <yhlu.kernel.send@gmail.com>
+Received: from wf-out-1314.google.com (wf-out-1314.google.com [209.85.200.169])
+	by ozlabs.org (Postfix) with ESMTP id 1E4F1DDE16
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 Apr 2008 09:22:45 +1100 (EST)
+Received: by wf-out-1314.google.com with SMTP id 25so2807931wfa.15
+	for <linuxppc-dev@ozlabs.org>; Wed, 02 Apr 2008 15:22:43 -0700 (PDT)
+To: Andrew Morton <akpm@linux-foundation.org>,
+ Ingo Molnar <mingo@elte.hu>
+Subject: [PATCH] mm: allocate usemap at first instead of mem_map in sparse_init
+Date: Wed, 2 Apr 2008 15:25:48 -0700
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20080401213214.8fbb6d6b.akpm@linux-foundation.org>
-	<47F326E0.3010604@linux.vnet.ibm.com>
-	<20080401233909.23220623.akpm@linux-foundation.org>
-	<47F330FF.3050806@linux.vnet.ibm.com>
-	<1207120676.7349.11.camel@concordia.ozlabs.ibm.com>
-	<1207164127.30407.36.camel@dyn9047017100.beaverton.ibm.com>
-Cc: lkml <linux-kernel@vger.kernel.org>,
-	Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org,
-	Andrew Morton <akpm@linux-foundation.org>,
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200804021525.48799.yhlu.kernel@gmail.com>
+From: Yinghai Lu <yhlu.kernel.send@gmail.com>
+Cc: kernel list <linux-kernel@vger.kernel.org>,
+	Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+	linuxppc-dev@ozlabs.org, Badari Pulavarty <pbadari@us.ibm.com>,
 	Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: yhlu.kernel@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,8 +27,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+[PATCH] mm: allocate usemap at first instead of mem_map in sparse_init
+
+on powerpc,
+
 On Wed, Apr 2, 2008 at 12:22 PM, Badari Pulavarty <pbadari@us.ibm.com> wrote:
->
+> 
 > On Wed, 2008-04-02 at 18:17 +1100, Michael Ellerman wrote:
 >  > On Wed, 2008-04-02 at 12:38 +0530, Kamalesh Babulal wrote:
 >  > > Andrew Morton wrote:
@@ -74,75 +74,81 @@ On Wed, Apr 2, 2008 at 12:22 PM, Badari Pulavarty <pbadari@us.ibm.com> wrote:
 >  > > >> [    0.000000] e8eb0002 4bc575cd 60000000 78630fe0 <0b030000> 7ffff214 7fbfe840 7fe3fb78
 >  > > >> [    0.000000] ---[ end trace 31fd0ba7d8756001 ]---
 >  > > >> [    0.000000] Kernel panic - not syncing: Attempted to kill the idle task!
->  > > >>
->  > > >
->  > > > int __meminit vmemmap_populate(struct page *start_page,
->  > > >                                   unsigned long nr_pages, int node)
->  > > > {
->  > > >   unsigned long mode_rw;
->  > > >   unsigned long start = (unsigned long)start_page;
->  > > >   unsigned long end = (unsigned long)(start_page + nr_pages);
->  > > >   unsigned long page_size = 1 << mmu_psize_defs[mmu_linear_psize].shift;
->  > > >
->  > > >   mode_rw = _PAGE_ACCESSED | _PAGE_DIRTY | _PAGE_COHERENT | PP_RWXX;
->  > > >
->  > > >   /* Align to the page size of the linear mapping. */
->  > > >   start = _ALIGN_DOWN(start, page_size);
->  > > >
->  > > >   for (; start < end; start += page_size) {
->  > > >           int mapped;
->  > > >           void *p;
->  > > >
->  > > >           if (vmemmap_populated(start, page_size))
->  > > >                   continue;
->  > > >
->  > > >           p = vmemmap_alloc_block(page_size, node);
->  > > >           if (!p)
->  > > >                   return -ENOMEM;
->  > > >
->  > > >           pr_debug("vmemmap %08lx allocated at %p, physical %08lx.\n",
->  > > >                   start, p, __pa(p));
->  > > >
->  > > >           mapped = htab_bolt_mapping(start, start + page_size,
->  > > >                                   __pa(p), mode_rw, mmu_linear_psize,
->  > > >                                   mmu_kernel_ssize);
->  > > > =====>            BUG_ON(mapped < 0);
->  > > >   }
->  > > >
->  > > >   return 0;
->  > > > }
->  > > >
->  > > > Beats me.  pseries?  Badari has been diddling with the bolted memory code
->  > > > in git-powerpc...
->  > >
->  > > One of the machines is the Power5 and another is PowerMac G5, on which the
->  > > same kernel panic is seen.
->  >
->  > Can you enable DEBUG_LOW in arch/powerpc/platforms/pseries/lpar.c, that
->  > should show what's happening in hpte_insert().
->  >
->  > cheers
->  >
->
->  Okay. Found it.
->
->  Root cause is:
 >
 >  mm-make-mem_map-allocation-continuous.patch
 >  and its friends in -mm.
->
+>  
 >  You have to call sparse_init_one_section() on each pmap and usemap
 >  as we allocate - since valid_section() depends on it (which is needed
 >  by vmemmap_populate() to check if the section is populated or not).
 >  On ppc, we need to call htab_bolted_mapping() on each section and
 >  we need to skip existing sections.
->
+>  
 >  These patches tried to group all allocations together and then later
 >  calls sparse_init_one_section() - which is not good :(
->
 
-http://lkml.org/lkml/2008/4/2/592
+so try to allocate usemap at first altogether.
 
-Thanks
+Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 
-YH
+diff --git a/mm/sparse.c b/mm/sparse.c
+index d3cb085..782ebe5 100644
+--- a/mm/sparse.c
++++ b/mm/sparse.c
+@@ -294,7 +294,7 @@ void __init sparse_init(void)
+ 	unsigned long pnum;
+ 	struct page *map;
+ 	unsigned long *usemap;
+-	struct page **section_map;
++	unsigned long **usemap_map;
+ 	int size;
+ 	int node;
+ 
+@@ -305,27 +305,31 @@ void __init sparse_init(void)
+ 	 * make next 2M slip to one more 2M later.
+ 	 * then in big system, the memmory will have a lot hole...
+ 	 * here try to allocate 2M pages continously.
++	 *
++	 * powerpc hope to sparse_init_one_section right after each
++	 * sparse_early_mem_map_alloc, so allocate usemap_map
++	 * at first.
+ 	 */
+-	size = sizeof(struct page *) * NR_MEM_SECTIONS;
+-	section_map = alloc_bootmem(size);
+-	if (!section_map)
+-		panic("can not allocate section_map\n");
++	size = sizeof(unsigned long *) * NR_MEM_SECTIONS;
++	usemap_map = alloc_bootmem(size);
++	if (!usemap_map)
++		panic("can not allocate usemap_map\n");
+ 
+ 	for (pnum = 0; pnum < NR_MEM_SECTIONS; pnum++) {
+ 		if (!present_section_nr(pnum))
+ 			continue;
+-		section_map[pnum] = sparse_early_mem_map_alloc(pnum);
++		usemap_map[pnum] = sparse_early_usemap_alloc(pnum);
+ 	}
+ 
+ 	for (pnum = 0; pnum < NR_MEM_SECTIONS; pnum++) {
+ 		if (!present_section_nr(pnum))
+ 			continue;
+ 
+-		map = section_map[pnum];
++		map = sparse_early_mem_map_alloc(pnum);
+ 		if (!map)
+ 			 continue;
+ 
+-		usemap = sparse_early_usemap_alloc(pnum);
++		usemap = usemap_map[pnum];
+ 		if (!usemap)
+ 			continue;
+ 
+@@ -333,7 +337,7 @@ void __init sparse_init(void)
+ 								usemap);
+ 	}
+ 
+-	free_bootmem(__pa(section_map), size);
++	free_bootmem(__pa(usemap_map), size);
+ }
+ 
+ #ifdef CONFIG_MEMORY_HOTPLUG
