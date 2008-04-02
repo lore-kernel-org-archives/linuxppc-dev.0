@@ -1,25 +1,38 @@
-Return-Path: <John.Linn@xilinx.com>
-Received: from outbound3-dub-R.bigfish.com (outbound-dub.frontbridge.com
-	[213.199.154.16])
+Return-Path: <pbadari@us.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id C837EDE19F
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 Apr 2008 05:20:36 +1100 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Subject: RE: [PATCH 2/3][POWERPC][V2] Xilinx: of_serial support for Xilinx
-	uart 16550.
-Date: Wed, 2 Apr 2008 12:20:20 -0600
-In-Reply-To: <fa686aa40804021100j13a7e223jde9d222df379b1f8@mail.gmail.com>
-References: <12071551351007-git-send-email-john.linn@xilinx.com>
-	<12071551354058-git-send-email-john.linn@xilinx.com>
-	<20080402165222.2468414080A9@mail104-dub.bigfish.com>
-	<fa686aa40804021100j13a7e223jde9d222df379b1f8@mail.gmail.com>
-From: "John Linn" <John.Linn@xilinx.com>
-To: "Grant Likely" <grant.likely@secretlab.ca>
-Message-Id: <20080402182023.8FA7318B808D@mail52-dub.bigfish.com>
-Cc: linuxppc-dev@ozlabs.org
+	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 05D79DDE0C
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 Apr 2008 05:21:40 +1100 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e36.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m32ILbtG021794
+	for <linuxppc-dev@ozlabs.org>; Wed, 2 Apr 2008 14:21:37 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m32ILbfi116290
+	for <linuxppc-dev@ozlabs.org>; Wed, 2 Apr 2008 12:21:37 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m32ILaKt032381
+	for <linuxppc-dev@ozlabs.org>; Wed, 2 Apr 2008 12:21:37 -0600
+Subject: Re: [BUG] 2.6.25-rc8-mm1 kernel panic while bootup on powerpc
+From: Badari Pulavarty <pbadari@us.ibm.com>
+To: michael@ellerman.id.au, yhlu.kernel@gmail.com
+In-Reply-To: <1207120676.7349.11.camel@concordia.ozlabs.ibm.com>
+References: <20080401213214.8fbb6d6b.akpm@linux-foundation.org>
+	<47F326E0.3010604@linux.vnet.ibm.com>
+	<20080401233909.23220623.akpm@linux-foundation.org>
+	<47F330FF.3050806@linux.vnet.ibm.com>
+	<1207120676.7349.11.camel@concordia.ozlabs.ibm.com>
+Content-Type: text/plain
+Date: Wed, 02 Apr 2008 11:22:07 -0800
+Message-Id: <1207164127.30407.36.camel@dyn9047017100.beaverton.ibm.com>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
+	Balbir Singh <balbir@linux.vnet.ibm.com>,
+	lkml <linux-kernel@vger.kernel.org>,
+	Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,130 +42,115 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Sounds good, those are easy changes and make sense.
+On Wed, 2008-04-02 at 18:17 +1100, Michael Ellerman wrote:
+> On Wed, 2008-04-02 at 12:38 +0530, Kamalesh Babulal wrote:
+> > Andrew Morton wrote:
+> > > On Wed, 02 Apr 2008 11:55:36 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
+> > > 
+> > >> Hi Andrew,
+> > >>
+> > >> The 2.6.25-rc8-mm1 kernel panic's while bootup on the power machine(s).
+> > >>
+> > >> [    0.000000] ------------[ cut here ]------------
+> > >> [    0.000000] kernel BUG at arch/powerpc/mm/init_64.c:240!
+> > >> [    0.000000] Oops: Exception in kernel mode, sig: 5 [#1]
+> > >> [    0.000000] SMP NR_CPUS=32 NUMA PowerMac
+> > >> [    0.000000] Modules linked in:
+> > >> [    0.000000] NIP: c0000000003d1dcc LR: c0000000003d1dc4 CTR: c00000000002b6ac
+> > >> [    0.000000] REGS: c00000000049b960 TRAP: 0700   Not tainted  (2.6.25-rc8-mm1-autokern1)
+> > >> [    0.000000] MSR: 9000000000021032 <ME,IR,DR>  CR: 44000088  XER: 20000000
+> > >> [    0.000000] TASK = c0000000003f9c90[0] 'swapper' THREAD: c000000000498000 CPU: 0
+> > >> [    0.000000] GPR00: c0000000003d1dc4 c00000000049bbe0 c0000000004989d0 0000000000000001 
+> > >> [    0.000000] GPR04: d59aca40f0000000 000000000b000000 0000000000000010 0000000000000000 
+> > >> [    0.000000] GPR08: 0000000000000004 0000000000000001 c00000027e520800 c0000000004bf0f0 
+> > >> [    0.000000] GPR12: c0000000004bf020 c0000000003fa900 0000000000000000 0000000000000000 
+> > >> [    0.000000] GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000 
+> > >> [    0.000000] GPR20: 0000000000000000 0000000000000000 0000000000000000 4000000001400000 
+> > >> [    0.000000] GPR24: 00000000017d64b0 c0000000003d6250 0000000000000000 c000000000504000 
+> > >> [    0.000000] GPR28: 0000000000000000 cf000000001f8000 0000000001000000 cf00000000000000 
+> > >> [    0.000000] NIP [c0000000003d1dcc] .vmemmap_populate+0xb8/0xf4
+> > >> [    0.000000] LR [c0000000003d1dc4] .vmemmap_populate+0xb0/0xf4
+> > >> [    0.000000] Call Trace:
+> > >> [    0.000000] [c00000000049bbe0] [c0000000003d1dc4] .vmemmap_populate+0xb0/0xf4 (unreliable)
+> > >> [    0.000000] [c00000000049bc70] [c0000000003d2ee8] .sparse_mem_map_populate+0x38/0x60
+> > >> [    0.000000] [c00000000049bd00] [c0000000003c242c] .sparse_early_mem_map_alloc+0x54/0x94
+> > >> [    0.000000] [c00000000049bd90] [c0000000003c250c] .sparse_init+0xa0/0x20c
+> > >> [    0.000000] [c00000000049be50] [c0000000003ab7d0] .setup_arch+0x1ac/0x218
+> > >> [    0.000000] [c00000000049bee0] [c0000000003a36ac] .start_kernel+0xe0/0x3fc
+> > >> [    0.000000] [c00000000049bf90] [c000000000008594] .start_here_common+0x54/0xc0
+> > >> [    0.000000] Instruction dump:
+> > >> [    0.000000] 7fe3fb78 7ca02a14 4082000c 3860fff4 4800003c e92289c8 e96289c0 e9090002 
+> > >> [    0.000000] e8eb0002 4bc575cd 60000000 78630fe0 <0b030000> 7ffff214 7fbfe840 7fe3fb78 
+> > >> [    0.000000] ---[ end trace 31fd0ba7d8756001 ]---
+> > >> [    0.000000] Kernel panic - not syncing: Attempted to kill the idle task!
+> > >>
+> > > 
+> > > int __meminit vmemmap_populate(struct page *start_page,
+> > > 					unsigned long nr_pages, int node)
+> > > {
+> > > 	unsigned long mode_rw;
+> > > 	unsigned long start = (unsigned long)start_page;
+> > > 	unsigned long end = (unsigned long)(start_page + nr_pages);
+> > > 	unsigned long page_size = 1 << mmu_psize_defs[mmu_linear_psize].shift;
+> > > 
+> > > 	mode_rw = _PAGE_ACCESSED | _PAGE_DIRTY | _PAGE_COHERENT | PP_RWXX;
+> > > 
+> > > 	/* Align to the page size of the linear mapping. */
+> > > 	start = _ALIGN_DOWN(start, page_size);
+> > > 
+> > > 	for (; start < end; start += page_size) {
+> > > 		int mapped;
+> > > 		void *p;
+> > > 
+> > > 		if (vmemmap_populated(start, page_size))
+> > > 			continue;
+> > > 
+> > > 		p = vmemmap_alloc_block(page_size, node);
+> > > 		if (!p)
+> > > 			return -ENOMEM;
+> > > 
+> > > 		pr_debug("vmemmap %08lx allocated at %p, physical %08lx.\n",
+> > > 			start, p, __pa(p));
+> > > 
+> > > 		mapped = htab_bolt_mapping(start, start + page_size,
+> > > 					__pa(p), mode_rw, mmu_linear_psize,
+> > > 					mmu_kernel_ssize);
+> > > =====>		BUG_ON(mapped < 0);
+> > > 	}
+> > > 
+> > > 	return 0;
+> > > }
+> > > 
+> > > Beats me.  pseries?  Badari has been diddling with the bolted memory code
+> > > in git-powerpc...
+> > 
+> > One of the machines is the Power5 and another is PowerMac G5, on which the 
+> > same kernel panic is seen.
+> 
+> Can you enable DEBUG_LOW in arch/powerpc/platforms/pseries/lpar.c, that
+> should show what's happening in hpte_insert().
+> 
+> cheers
+> 
 
-Since I'm a newbie, I don't know any better sometimes when I copy other
-code that may not be as safe. =20
+Okay. Found it.
 
-The same thing, of_get_property(np, "current-speed", NULL);, is done
-right above my code I added. =20
+Root cause is:
 
-Should the other code in the driver using the same method be fixed, or
-just my patch?
+mm-make-mem_map-allocation-continuous.patch
+and its friends in -mm.
 
-Thanks for your patience,
-John
+You have to call sparse_init_one_section() on each pmap and usemap
+as we allocate - since valid_section() depends on it (which is needed
+by vmemmap_populate() to check if the section is populated or not).
+On ppc, we need to call htab_bolted_mapping() on each section and
+we need to skip existing sections.
 
------Original Message-----
-From: glikely@secretlab.ca [mailto:glikely@secretlab.ca] On Behalf Of
-Grant Likely
-Sent: Wednesday, April 02, 2008 12:00 PM
-To: John Linn
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 2/3][POWERPC][V2] Xilinx: of_serial support for
-Xilinx uart 16550.
+These patches tried to group all allocations together and then later
+calls sparse_init_one_section() - which is not good :(
 
-On Wed, Apr 2, 2008 at 10:52 AM, John Linn <john.linn@xilinx.com> wrote:
-> The Xilinx 16550 uart core is not a standard 16550 because it uses
->  word-based addressing rather than byte-based addressing. With
->  additional properties it is compatible with the open firmware
->  'ns16550' compatible binding.
->
->  This code updates the of_serial driver to handle the reg-offset
->  and reg-shift properties to enable this core to be used.
->
->  Signed-off-by: John Linn <john.linn@xilinx.com>
+Please let me know, if its doesn't make sense - I will try to explain
+better :)
 
-Comments below...
-
->  ---
->   Documentation/powerpc/booting-without-of.txt |   11 +++++++++++
->   drivers/serial/of_serial.c                   |   15 +++++++++++++--
->   2 files changed, 24 insertions(+), 2 deletions(-)
->
->  diff --git a/Documentation/powerpc/booting-without-of.txt
-b/Documentation/powerpc/booting-without-of.txt
->  index 87f4d84..af112d9 100644
->  --- a/Documentation/powerpc/booting-without-of.txt
->  +++ b/Documentation/powerpc/booting-without-of.txt
->  @@ -2539,6 +2539,17 @@ platforms are moved over to use the
-flattened-device-tree model.
->                        differ between different families.  May be
->                        'virtex2p', 'virtex4', or 'virtex5'.
->
->  +      iv) Xilinx Uart 16550
->  +
->  +      Xilinx UART 16550 devices are very similar to the NS16550 such
-that they
->  +      use the ns16550 binding with properties to specify register
-spacing and
->  +      an offset from the base address.
->  +
->  +      Requred properties:
->  +       - clock-frequency : Frequency of the clock input
->  +       - reg-offset : A value of 3 is required
->  +       - reg-shift : A value of 2 is required
->  +
->     More devices will be defined as this spec matures.
->
->   VII - Specifying interrupt information for devices
->  diff --git a/drivers/serial/of_serial.c b/drivers/serial/of_serial.c
->  index 2efb892..af9ed48 100644
->  --- a/drivers/serial/of_serial.c
->  +++ b/drivers/serial/of_serial.c
->  @@ -30,7 +30,7 @@ static int __devinit
-of_platform_serial_setup(struct of_device *ofdev,
->   {
->         struct resource resource;
->         struct device_node *np =3D ofdev->node;
->  -       const unsigned int *clk, *spd;
->  +       const unsigned int *clk, *spd, *reg_offset, *reg_shift;
-
-These should really be u32's I believe; on 64 bit architectures this
-will misbehave (not an immediate practical problem, but it's best to
-be explicit about these things).
-
->         int ret;
->
->         memset(port, 0, sizeof *port);
->  @@ -48,7 +48,18 @@ static int __devinit
-of_platform_serial_setup(struct of_device *ofdev,
->         }
->
->         spin_lock_init(&port->lock);
->  -       port->mapbase =3D resource.start;
->  +
->  +       reg_offset =3D of_get_property(np, "reg-offset", NULL);
->  +       reg_shift =3D of_get_property(np, "reg-shift", NULL);
->  +
->  +       if (!reg_offset)
->  +               port->mapbase =3D resource.start;
->  +       else
->  +               port->mapbase =3D resource.start + *reg_offset;
->  +
->  +       if (reg_shift)
->  +               port->regshift =3D *reg_shift;
->  +
-
-This is a little unsafe since it doesn't check the property size, I'd
-do the following instead:
-
-port->mapbase =3D resource.start
-
-/* Check for shifted address mapping */
-prop =3D of_get_property(np, "reg-offset", &prop_size);
-if (prop && (prop_size =3D=3D sizeof(u32))
-        port->mapbase +=3D *prop;
-
-/* Check for registers offset within the devices address range */
-prop =3D of_get_property(np, "reg-shift", &prop_size);
-if (prop && (prop_size =3D=3D sizeof(u32)))
-        port->regshift =3D *prop;
-
-Cheers,
-g.
-
-
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Thanks,
+Badari
