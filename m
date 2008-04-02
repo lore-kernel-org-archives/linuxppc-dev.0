@@ -1,16 +1,31 @@
-Return-Path: <arnd@arndb.de>
-From: Arnd Bergmann <arnd@arndb.de>
-To: cbe-oss-dev@ozlabs.org
-Subject: Re: [Cbe-oss-dev]  [PATCH] Cell OProfile: SPU mutex lock fix
-Date: Wed, 2 Apr 2008 07:21:15 +0200
-References: <1206460727.7132.232.camel@carll-linux-desktop>
-In-Reply-To: <1206460727.7132.232.camel@carll-linux-desktop>
+Return-Path: <kamalesh@linux.vnet.ibm.com>
+Received: from e23smtp02.au.ibm.com (E23SMTP02.au.ibm.com [202.81.18.163])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e23smtp02.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 95959DDDF9
+	for <linuxppc-dev@ozlabs.org>; Wed,  2 Apr 2008 17:26:55 +1100 (EST)
+Received: from sd0109e.au.ibm.com (d23rh905.au.ibm.com [202.81.18.225])
+	by e23smtp02.au.ibm.com (8.13.1/8.13.1) with ESMTP id m326QxCq006807
+	for <linuxppc-dev@ozlabs.org>; Wed, 2 Apr 2008 17:26:59 +1100
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+	by sd0109e.au.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m326TSOf283612
+	for <linuxppc-dev@ozlabs.org>; Wed, 2 Apr 2008 17:29:28 +1100
+Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
+	by d23av03.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m326PkpD014232
+	for <linuxppc-dev@ozlabs.org>; Wed, 2 Apr 2008 16:25:46 +1000
+Message-ID: <47F326E0.3010604@linux.vnet.ibm.com>
+Date: Wed, 02 Apr 2008 11:55:36 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200804020721.15861.arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, cel <cel@linux.vnet.ibm.com>,
-	linux-kernel@vger.kernel.org, Carl Love <cel@us.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [BUG] 2.6.25-rc8-mm1 kernel panic while bootup on powerpc
+References: <20080401213214.8fbb6d6b.akpm@linux-foundation.org>
+In-Reply-To: <20080401213214.8fbb6d6b.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Balbir Singh <balbir@linux.vnet.ibm.com>,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,209 +35,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tuesday 25 March 2008, Carl Love wrote:
-> This patch fixes a bug in the code that records the SPU data and
-> context switches.  The buffer_mutex lock must be held when the
-> kernel is adding data to the buffer between the kernel and the
-> OProfile daemon.  The lock is not being held in the current code
-> base.  This patch fixes the bug using work queues.  The data to 
-> be passed to the daemon is caputured by the interrupt handler.  
-> The workqueue function is invoked to grab the buffer_mutex lock
-> and add the data to the buffer.  
+Hi Andrew,
 
-So what was the exact bug you're fixing with this? There was no
-buffer_mutex before, so why do you need it now? Can't this be a
-spinlock so you can get it from interrupt context instead of
-using a workqueue?
+The 2.6.25-rc8-mm1 kernel panic's while bootup on the power machine(s).
 
-> Index: linux-2.6.25-rc4/arch/powerpc/oprofile/cell/spu_profiler.c
-> ===================================================================
-> --- linux-2.6.25-rc4.orig/arch/powerpc/oprofile/cell/spu_profiler.c
-> +++ linux-2.6.25-rc4/arch/powerpc/oprofile/cell/spu_profiler.c
-> @@ -16,6 +16,7 @@
->  #include <linux/smp.h>
->  #include <linux/slab.h>
->  #include <asm/cell-pmu.h>
-> +#include <linux/workqueue.h>
->  #include "pr_util.h"
->  
+[    0.000000] ------------[ cut here ]------------
+[    0.000000] kernel BUG at arch/powerpc/mm/init_64.c:240!
+[    0.000000] Oops: Exception in kernel mode, sig: 5 [#1]
+[    0.000000] SMP NR_CPUS=32 NUMA PowerMac
+[    0.000000] Modules linked in:
+[    0.000000] NIP: c0000000003d1dcc LR: c0000000003d1dc4 CTR: c00000000002b6ac
+[    0.000000] REGS: c00000000049b960 TRAP: 0700   Not tainted  (2.6.25-rc8-mm1-autokern1)
+[    0.000000] MSR: 9000000000021032 <ME,IR,DR>  CR: 44000088  XER: 20000000
+[    0.000000] TASK = c0000000003f9c90[0] 'swapper' THREAD: c000000000498000 CPU: 0
+[    0.000000] GPR00: c0000000003d1dc4 c00000000049bbe0 c0000000004989d0 0000000000000001 
+[    0.000000] GPR04: d59aca40f0000000 000000000b000000 0000000000000010 0000000000000000 
+[    0.000000] GPR08: 0000000000000004 0000000000000001 c00000027e520800 c0000000004bf0f0 
+[    0.000000] GPR12: c0000000004bf020 c0000000003fa900 0000000000000000 0000000000000000 
+[    0.000000] GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000 
+[    0.000000] GPR20: 0000000000000000 0000000000000000 0000000000000000 4000000001400000 
+[    0.000000] GPR24: 00000000017d64b0 c0000000003d6250 0000000000000000 c000000000504000 
+[    0.000000] GPR28: 0000000000000000 cf000000001f8000 0000000001000000 cf00000000000000 
+[    0.000000] NIP [c0000000003d1dcc] .vmemmap_populate+0xb8/0xf4
+[    0.000000] LR [c0000000003d1dc4] .vmemmap_populate+0xb0/0xf4
+[    0.000000] Call Trace:
+[    0.000000] [c00000000049bbe0] [c0000000003d1dc4] .vmemmap_populate+0xb0/0xf4 (unreliable)
+[    0.000000] [c00000000049bc70] [c0000000003d2ee8] .sparse_mem_map_populate+0x38/0x60
+[    0.000000] [c00000000049bd00] [c0000000003c242c] .sparse_early_mem_map_alloc+0x54/0x94
+[    0.000000] [c00000000049bd90] [c0000000003c250c] .sparse_init+0xa0/0x20c
+[    0.000000] [c00000000049be50] [c0000000003ab7d0] .setup_arch+0x1ac/0x218
+[    0.000000] [c00000000049bee0] [c0000000003a36ac] .start_kernel+0xe0/0x3fc
+[    0.000000] [c00000000049bf90] [c000000000008594] .start_here_common+0x54/0xc0
+[    0.000000] Instruction dump:
+[    0.000000] 7fe3fb78 7ca02a14 4082000c 3860fff4 4800003c e92289c8 e96289c0 e9090002 
+[    0.000000] e8eb0002 4bc575cd 60000000 78630fe0 <0b030000> 7ffff214 7fbfe840 7fe3fb78 
+[    0.000000] ---[ end trace 31fd0ba7d8756001 ]---
+[    0.000000] Kernel panic - not syncing: Attempted to kill the idle task!
 
-Please keep #include statements in alphabetical order, with all linux/ files
-before the asm/ files.
-
->  #define TRACE_ARRAY_SIZE 1024
-> @@ -32,9 +33,19 @@ static unsigned int profiling_interval;
->  
->  #define SPU_PC_MASK	     0xFFFF
->  
-> +/* The generic OProfile code uses the buffer_mutex to protect the buffer
-> + * between the kernel and the daemon.  The SPU code needs to use the buffer
-> + * to ensure that the kernel SPU writes complete as a single block before
-> + * being consumed by the daemon.
-> + */
-> +extern struct mutex buffer_mutex;
-> +
->  static DEFINE_SPINLOCK(sample_array_lock);
->  unsigned long sample_array_lock_flags;
->  
-> +struct work_struct spu_record_wq;
-> +extern struct workqueue_struct *oprofile_spu_wq;
-> +
->  void set_spu_profiling_frequency(unsigned int freq_khz, unsigned int cycles_reset)
->  {
->  	unsigned long ns_per_cyc;
-
-Never put extern statements in the implementation, they describe the
-interface between two parts of the code and should be inside of a
-common header.
-
-Why do you want to have your own workqueue instead of using the
-global one?
-
-> @@ -123,14 +134,14 @@ static int cell_spu_pc_collection(int cp
->  	return entry;
->  }
->  
-> -
-> -static enum hrtimer_restart profile_spus(struct hrtimer *timer)
-> -{
-> -	ktime_t kt;
-> +static void profile_spus_record_samples (struct work_struct *ws) {
-> +	/* This routine is called via schedule_work() to record the
-> +	 * spu data.  It must be run in a normal kernel mode to
-> +	 * grab the OProfile mutex lock.
-> +	 */
->  	int cpu, node, k, num_samples, spu_num;
->  
-> -	if (!spu_prof_running)
-> -		goto stop;
-> +	mutex_lock(&buffer_mutex);
->  
->  	for_each_online_cpu(cpu) {
->  		if (cbe_get_hw_thread_id(cpu))
-> @@ -170,6 +181,20 @@ static enum hrtimer_restart profile_spus
->  	smp_wmb();	/* insure spu event buffer updates are written */
->  			/* don't want events intermingled... */
->  
-> +	mutex_unlock(&buffer_mutex);
-> +}
-> +
-> +static enum hrtimer_restart profile_spus(struct hrtimer *timer)
-> +{
-> +	ktime_t kt;
-> +
-> +
-> +	if (!spu_prof_running)
-> +		goto stop;
-> +
-> +	/* schedule the funtion to record the data */
-> +	schedule_work(&spu_record_wq);
-> +
->  	kt = ktime_set(0, profiling_interval);
->  	if (!spu_prof_running)
->  		goto stop;
-
-This looks like you want to use a delayed_work rather than building your
-own out of hrtimer and work. Is there any point why you want to use
-an hrtimer?
-
-> -static DEFINE_SPINLOCK(buffer_lock);
-> +extern struct mutex buffer_mutex;
-> +extern struct workqueue_struct *oprofile_spu_wq;
-> +extern int calls_to_record_switch;
-> +
-
-Again, public interfaces need to go to a header file, and should
-have a name that identifies the interface. "buffer_mutex" is
-certainly not a suitable name for a kernel-wide global variable!
-
->  static DEFINE_SPINLOCK(cache_lock);
->  static int num_spu_nodes;
-> +
->  int spu_prof_num_nodes;
->  int last_guard_val[MAX_NUMNODES * 8];
-> +int cnt_swtch_processed_flag[MAX_NUMNODES * 8];
-> +
-> +struct spus_profiling_code_data_s {
-> +	int num_spu_nodes;
-> +	struct work_struct spu_prof_code_wq;
-> +} spus_profiling_code_data;
-> +
-> +struct spu_context_switch_data_s {
-> +	struct spu *spu;
-> +	unsigned long spu_cookie;
-> +	unsigned long app_dcookie;
-> +	unsigned int offset;
-> +	unsigned long objectId;
-> +	int valid_entry;
-> +} spu_context_switch_data;
-
-I don't understand what these variables are really doing, but
-having e.g. just one spu_context_switch_data for all the SPUs
-doesn't seem to make much sense. What happens when two SPUs do
-a context switch at the same time?
-
-> +int calls_to_record_switch = 0;
-> +int record_spu_start_flag = 0;
-> +
-> +struct spus_cntxt_sw_data_s {
-> +	int num_spu_nodes;
-> +	struct spu_context_switch_data_s spu_data[MAX_NUMNODES * 8];
-> +	struct work_struct spu_cntxt_work;
-> +} spus_cntxt_sw_data;
-
-Something is very wrong if you need so many global variables!
-
->  /* Container for caching information about an active SPU task. */
->  struct cached_info {
-> @@ -44,6 +73,8 @@ struct cached_info {
->  	struct kref cache_ref;
->  };
->  
-> +struct workqueue_struct *oprofile_spu_wq;
-> +
->  static struct cached_info *spu_info[MAX_NUMNODES * 8];
-
-While you're cleaning this up, I guess the cached_info should
-be moved into a pointer from struct spu as well, instead of
-having this global variable here.
-
-> @@ -375,16 +457,30 @@ int spu_sync_start(void)
->  	int k;
->  	int ret = SKIP_GENERIC_SYNC;
->  	int register_ret;
-> -	unsigned long flags = 0;
->  
->  	spu_prof_num_nodes = number_of_online_nodes();
->  	num_spu_nodes = spu_prof_num_nodes * 8;
->  
-> -	spin_lock_irqsave(&buffer_lock, flags);
-> -	add_event_entry(ESCAPE_CODE);
-> -	add_event_entry(SPU_PROFILING_CODE);
-> -	add_event_entry(num_spu_nodes);
-> -	spin_unlock_irqrestore(&buffer_lock, flags);
-> +	/* create private work queue, execution of work is time critical */
-> +	oprofile_spu_wq = create_workqueue("spu_oprofile");
-> +
-> +	/* due to a race when the spu is already running stuff, need to
-> +	 * set a flag to tell the spu context switch to record the start
-> +	 * before recording the context switches.
-> +	 */
-> +	record_spu_start_flag = 1;
-> +
-> +	spus_profiling_code_data.num_spu_nodes = num_spu_nodes;
-> +
-> +	/* setup work queue functiion for recording context switch info */
-> +	spus_cntxt_sw_data.num_spu_nodes = num_spu_nodes;
-> +	for (k = 0; k<(MAX_NUMNODES * 8); k++) {
-> +		spus_cntxt_sw_data.spu_data[k].valid_entry = 0;
-> +		cnt_swtch_processed_flag[k] = 0;
-> +	}
-> +
-> +	INIT_WORK(&spus_cntxt_sw_data.spu_cntxt_work,
-> +		  record_spu_process_switch);
-
-I would guess that you need one work struct per SPU instead of a global
-one, if you want to pass the SPU pointer as an argument.
-
-	Arnd <><
+-- 
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
