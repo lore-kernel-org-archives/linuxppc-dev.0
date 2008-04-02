@@ -1,22 +1,23 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from tmnt04.transmode.se (mail.transmode.se [83.241.175.147])
-	by ozlabs.org (Postfix) with ESMTP id 9D377DDF7C
+Return-Path: <John.Linn@xilinx.com>
+Received: from outbound5-dub-R.bigfish.com (outbound-dub.frontbridge.com
+	[213.199.154.16])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id BD736DDF01
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  2 Apr 2008 23:15:54 +1100 (EST)
-Subject: RE: [PATCH] Add Fixed PHY support for ucc_geth
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-To: Li Yang <LeoLi@freescale.com>
-In-Reply-To: <989B956029373F45A0B8AF029708189001D1954D@zch01exm26.fsl.freescale.net>
-References: <>
-	<1205833615-15833-1-git-send-email-Joakim.Tjernlund@transmode.se>
-	<989B956029373F45A0B8AF029708189001D1954D@zch01exm26.fsl.freescale.net>
-Content-Type: text/plain
-Date: Wed, 02 Apr 2008 14:15:52 +0200
-Message-Id: <1207138552.9675.61.camel@gentoo-jocke.transmode.se>
-Mime-Version: 1.0
-Cc: Netdev <netdev@vger.kernel.org>, Jeff Garzik <jeff@garzik.org>,
-	"Linuxppc-Embedded@Ozlabs.Org" <linuxppc-embedded@ozlabs.org>
-Reply-To: joakim.tjernlund@transmode.se
+	Thu,  3 Apr 2008 02:23:43 +1100 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="US-ASCII"
+Subject: RE: Virtex V5FX PPC 440 Support In Xilinx Git Tree
+Date: Wed, 2 Apr 2008 09:23:30 -0600
+In-Reply-To: <87lk3w8u00.fsf@macbook.be.48ers.dk>
+References: <20080401234142.41B13191804A@mail111-sin.bigfish.com>
+	<87lk3w8u00.fsf@macbook.be.48ers.dk>
+From: "John Linn" <John.Linn@xilinx.com>
+To: "Peter Korsgaard" <jacmet@sunsite.dk>
+Message-Id: <20080402152332.0AF84F08087@mail88-dub.bigfish.com>
+Cc: git <git@xilinx.com>, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -27,29 +28,36 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hi Peter,
 
-On Fri, 2008-03-21 at 16:51 +0800, Li Yang wrote:
-> > -----Original Message-----
-> > From: Joakim Tjernlund [mailto:Joakim.Tjernlund@transmode.se] 
-> > Sent: Tuesday, March 18, 2008 5:47 PM
-> > To: Netdev; Li Yang; Linuxppc-Embedded@Ozlabs.Org
-> > Cc: Joakim Tjernlund
-> > Subject: [PATCH] Add Fixed PHY support for ucc_geth
-> > 
-> > The new Fixed PHY method, fixed-link property, isn't
-> > impl. for ucc_geth which makes fixed PHYs non functional.
-> > Add support for the new method to restore the Fixed PHY
-> > functionality.
-> > 
-> > Signed-off-by: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
-> 
-> Signed-off-by: Li Yang <leoli@freescale.com>
-> 
-> ---
-> Ps: This patch depends on the patch "ucc_geth: use correct thread number
-> for 10/100Mbps link" to apply, which hasn't made to Linus' tree for now
-> but has already been in Jeff and David's trees.
+We added arch/ppc support because it was the easiest path for us.  We
+realize it's going away soon in the mainline.
 
-What happened to this patch? It is not in Linus tree.
+We are working on getting arch/powerpc more mature for both the 405 and
+the 440 as we do believe this is the future for powerpc.
 
- Jocke
+Thanks,
+John
+
+
+
+-----Original Message-----
+From: Peter Korsgaard [mailto:jacmet@gmail.com] On Behalf Of Peter
+Korsgaard
+Sent: Wednesday, April 02, 2008 3:51 AM
+To: John Linn
+Cc: linuxppc-embedded@ozlabs.org; git
+Subject: Re: Virtex V5FX PPC 440 Support In Xilinx Git Tree
+
+>>>>> "John" =3D=3D John Linn <John.Linn@xilinx.com> writes:
+
+ John> I pushed PowerPC 440 support to the Xilinx Git server with
+ John> support for ppc arch and with powerpc arch support coming in
+ John> the near future.
+
+Neat, but why have you added arch/ppc support? It's supposed to go
+away pretty much by the time the hardware gets in the hand of
+developers.
+
+--=20
+Bye, Peter Korsgaard
