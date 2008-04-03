@@ -1,17 +1,18 @@
-Return-Path: <lmejjad@gmail.com>
-Received: from rv-out-0910.google.com (rv-out-0910.google.com [209.85.198.188])
-	by ozlabs.org (Postfix) with ESMTP id 33D68DDEF0
-	for <linuxppc-dev@ozlabs.org>; Fri,  4 Apr 2008 00:09:05 +1100 (EST)
-Received: by rv-out-0910.google.com with SMTP id c27so1805726rvf.9
-	for <linuxppc-dev@ozlabs.org>; Thu, 03 Apr 2008 06:09:04 -0700 (PDT)
-Message-ID: <9b4863980804030609s3ff05c33g462ffc1769546010@mail.gmail.com>
-Date: Thu, 3 Apr 2008 09:09:04 -0400
-From: "mejjad lahcen" <lmejjad@gmail.com>
+Return-Path: <laurentp@cse-semaphore.com>
+Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
+	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id A8012DE152
+	for <linuxppc-dev@ozlabs.org>; Fri,  4 Apr 2008 00:45:55 +1100 (EST)
+From: Laurent Pinchart <laurentp@cse-semaphore.com>
 To: linuxppc-dev@ozlabs.org
-Subject: interrupt latency spi
+Subject: Re: [PATCH] Freescale QUICC Engine USB Host Controller
+Date: Thu, 3 Apr 2008 15:45:47 +0200
+References: <20080311191744.GA10518@localhost.localdomain>
+In-Reply-To: <20080311191744.GA10518@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_665_31372743.1207228144622"
+Content-Type: multipart/signed; boundary="nextPart2215824.2O4lS3eFIN";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
+Message-Id: <200804031545.51834.laurentp@cse-semaphore.com>
+Cc: linux-usb@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,33 +22,70 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-------=_Part_665_31372743.1207228144622
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+--nextPart2215824.2O4lS3eFIN
+Content-Type: text/plain;
+  charset="ansi_x3.4-1968"
+Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
- hi all of you ,
-I am wndering if someone has already done test for interrupt latency on
-linx 2.6.23 mpc5200b.
-I am working on writing a driver which is get SPi involved on design, and I
-know that the  spi interrupt will occurs at every 2 us ( speed 4 MHz
-interupt occurs when It recieves on bytes) so  I am worring about interrupt
-latency.
- I dont know if someone has any suggestions or a litle advice.
-cheers
+Hi Anton,
 
-------=_Part_665_31372743.1207228144622
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Tuesday 11 March 2008 20:17, Anton Vorontsov wrote:
+> This is patch adds support for the FHCI USB controller, as found
+> in the Freescale MPC836x and MPC832x processors. It can support
+> Full or Low speed modes.
+>=20
+> Quite a lot hardware is doing by itself (SOF generation, CRC generation
+> and checking), though scheduling and retransmission is on the software
+> shoulders.
+>=20
+> This controller does not integrate the root hub, so this driver also
+> fakes an one-port hub. External hub is required to support more than
+> one device.
 
-<div>&nbsp;hi all of you ,</div>
-<div>I am wndering if someone has already done test for interrupt latency on&nbsp; linx 2.6.23 mpc5200b.</div>
-<div>I am working on writing a driver which is get SPi involved on design, and I know that the&nbsp; spi interrupt will occurs at every 2 us ( speed 4 MHz interupt occurs when It recieves on bytes) so&nbsp; I am worring about interrupt latency.</div>
+Would it be possible to use the driver for CPM2-based devices ? The only=20
+difference I found between the CPM2 and QE USB controllers is the SOF=20
+handling. The QE USB controller increments the frame number itself, while t=
+he=20
+CPM USB controller requires the host to increment the frame number.
 
-<div>&nbsp;I dont know if someone has any suggestions&nbsp;or a litle advice.</div>
-<div>cheers</div>
-<div>&nbsp;</div>
-<div>&nbsp;</div>
+At first sight the driver depends on qe_lib for:
 
-------=_Part_665_31372743.1207228144622--
+=2D muram allocation (qe_muram_alloc/free, qe_muram_offset/addr)
+=2D GPIO access (qe_gpio_set_dedicated)
+=2D clock routing (qe_clock_source, qe_usb_clock_set)
+=2D QE commands execution (qe_issue_cmd)
+
+It shouldn't be too difficult to abstract those operation in a fashion simi=
+lar=20
+to the cpm_uart driver.
+
+Have you already worked on CPM2 support, or thought about any particular is=
+sue=20
+I should pay attention to ?
+
+Best regards,
+
+=2D-=20
+Laurent Pinchart
+CSE Semaphore Belgium
+
+Chaussee de Bruxelles, 732A
+B-1410 Waterloo
+Belgium
+
+T +32 (2) 387 42 59
+=46 +32 (2) 387 42 75
+
+--nextPart2215824.2O4lS3eFIN
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
+
+iD8DBQBH9N+P8y9gWxC9vpcRAoyhAJsGk3vkbfdQ3mDae5u2HUfxSNhlSQCfS0Vf
+IPLqpiJkbM8NWuep3QKiXKE=
+=NyX4
+-----END PGP SIGNATURE-----
+
+--nextPart2215824.2O4lS3eFIN--
