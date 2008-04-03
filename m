@@ -1,21 +1,12 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 8E979DE119
-	for <linuxppc-dev@ozlabs.org>; Fri,  4 Apr 2008 01:30:47 +1100 (EST)
-Date: Thu, 3 Apr 2008 18:30:52 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Laurent Pinchart <laurentp@cse-semaphore.com>
-Subject: Re: [PATCH] Freescale QUICC Engine USB Host Controller
-Message-ID: <20080403143052.GA5955@polina.dev.rtsoft.ru>
-References: <20080311191744.GA10518@localhost.localdomain>
-	<200804031545.51834.laurentp@cse-semaphore.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <200804031545.51834.laurentp@cse-semaphore.com>
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
-	linux-usb@vger.kernel.org, David Brownell <david-b@pacbell.net>,
-	Timur Tabi <timur@freescale.com>
-Reply-To: avorontsov@ru.mvista.com
+Return-Path: <sr@denx.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id 9D3A8DDF7C
+	for <linuxppc-dev@ozlabs.org>; Fri,  4 Apr 2008 01:38:21 +1100 (EST)
+From: Stefan Roese <sr@denx.de>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] [POWERPC] 4xx: Change dts files to support jumbo frames
+Date: Thu,  3 Apr 2008 16:38:11 +0200
+Message-Id: <1207233491-22371-1-git-send-email-sr@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,73 +16,156 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Apr 03, 2008 at 03:45:47PM +0200, Laurent Pinchart wrote:
-> Hi Anton,
-> 
-> On Tuesday 11 March 2008 20:17, Anton Vorontsov wrote:
-> > This is patch adds support for the FHCI USB controller, as found
-> > in the Freescale MPC836x and MPC832x processors. It can support
-> > Full or Low speed modes.
-> > 
-> > Quite a lot hardware is doing by itself (SOF generation, CRC generation
-> > and checking), though scheduling and retransmission is on the software
-> > shoulders.
-> > 
-> > This controller does not integrate the root hub, so this driver also
-> > fakes an one-port hub. External hub is required to support more than
-> > one device.
-> 
-> Would it be possible to use the driver for CPM2-based devices ?
+This patch changes the "max-frame-size" property to 9000 for all gbit
+enabled 4xx boards. All those ports generally support jumbo frames, so
+let's give the user a chance to enable it.
 
-Probably. But no one had tried this yet.
+Signed-off-by: Stefan Roese <sr@denx.de>
+---
+ arch/powerpc/boot/dts/haleakala.dts |    2 +-
+ arch/powerpc/boot/dts/katmai.dts    |    2 +-
+ arch/powerpc/boot/dts/kilauea.dts   |    4 ++--
+ arch/powerpc/boot/dts/makalu.dts    |    4 ++--
+ arch/powerpc/boot/dts/rainier.dts   |    4 ++--
+ arch/powerpc/boot/dts/sequoia.dts   |    4 ++--
+ arch/powerpc/boot/dts/taishan.dts   |    4 ++--
+ 7 files changed, 12 insertions(+), 12 deletions(-)
 
-> The only 
-> difference I found between the CPM2 and QE USB controllers is the SOF 
-> handling. The QE USB controller increments the frame number itself, while the 
-> CPM USB controller requires the host to increment the frame number.
-> 
-> At first sight the driver depends on qe_lib for:
-> 
-> - muram allocation (qe_muram_alloc/free, qe_muram_offset/addr)
-
-Yeah, I already posted a patch to deal with it, see
-http://ozlabs.org/pipermail/linuxppc-dev/2008-March/053249.html
-(btw... Scott, Timur did you have a chance to look into this?)
-
-> - GPIO access (qe_gpio_set_dedicated)
-
-This is because of David Brownell. ;-) Specifically, unwillingness to
-accept that set_dedicated is portable for some scope of GPIO controllers,
-as well as GPIO users.
-
-> - clock routing (qe_clock_source, qe_usb_clock_set)
-
-Well, there is Linux CLK API (somewhat similar to GPIO API), but PowerPC
-doesn't use it yet. Neither I can tell if CLK API is suitable for our
-needs, or if it needs to be extended. Quick&dirty workarounds are
-still possible though, but clk api is the right way to go.
-
-> - QE commands execution (qe_issue_cmd)
-
-No proper solution yet.
-
-> It shouldn't be too difficult to abstract those operation in a fashion similar 
-> to the cpm_uart driver.
-
-Yup, but we still have ucc_serial (QE) and cpm_uart (CPM1/2) drivers as
-separate matters though. ;-) I didn't look for the reasons of this split
-but I assume there are and they're strong enough.
-
-> Have you already worked on CPM2 support,
-
-Nope, I don't have CPM2 board to work on.
-
-> or thought about any particular issue 
-> I should pay attention to ?
-
-Nope, sorry.
-
+diff --git a/arch/powerpc/boot/dts/haleakala.dts b/arch/powerpc/boot/dts/haleakala.dts
+index 02e4ba3..b5d95ac 100644
+--- a/arch/powerpc/boot/dts/haleakala.dts
++++ b/arch/powerpc/boot/dts/haleakala.dts
+@@ -218,7 +218,7 @@
+ 				mal-tx-channel = <0>;
+ 				mal-rx-channel = <0>;
+ 				cell-index = <0>;
+-				max-frame-size = <5dc>;
++				max-frame-size = <2328>;
+ 				rx-fifo-size = <1000>;
+ 				tx-fifo-size = <800>;
+ 				phy-mode = "rgmii";
+diff --git a/arch/powerpc/boot/dts/katmai.dts b/arch/powerpc/boot/dts/katmai.dts
+index fc86e5a..cc2873a 100644
+--- a/arch/powerpc/boot/dts/katmai.dts
++++ b/arch/powerpc/boot/dts/katmai.dts
+@@ -212,7 +212,7 @@
+ 				mal-tx-channel = <0>;
+ 				mal-rx-channel = <0>;
+ 				cell-index = <0>;
+-				max-frame-size = <5dc>;
++				max-frame-size = <2328>;
+ 				rx-fifo-size = <1000>;
+ 				tx-fifo-size = <800>;
+ 				phy-mode = "gmii";
+diff --git a/arch/powerpc/boot/dts/kilauea.dts b/arch/powerpc/boot/dts/kilauea.dts
+index 8baef61..48c9a6e 100644
+--- a/arch/powerpc/boot/dts/kilauea.dts
++++ b/arch/powerpc/boot/dts/kilauea.dts
+@@ -219,7 +219,7 @@
+ 				mal-tx-channel = <0>;
+ 				mal-rx-channel = <0>;
+ 				cell-index = <0>;
+-				max-frame-size = <5dc>;
++				max-frame-size = <2328>;
+ 				rx-fifo-size = <1000>;
+ 				tx-fifo-size = <800>;
+ 				phy-mode = "rgmii";
+@@ -247,7 +247,7 @@
+ 				mal-tx-channel = <1>;
+ 				mal-rx-channel = <1>;
+ 				cell-index = <1>;
+-				max-frame-size = <5dc>;
++				max-frame-size = <2328>;
+ 				rx-fifo-size = <1000>;
+ 				tx-fifo-size = <800>;
+ 				phy-mode = "rgmii";
+diff --git a/arch/powerpc/boot/dts/makalu.dts b/arch/powerpc/boot/dts/makalu.dts
+index 710c011..84cc5e7 100644
+--- a/arch/powerpc/boot/dts/makalu.dts
++++ b/arch/powerpc/boot/dts/makalu.dts
+@@ -219,7 +219,7 @@
+ 				mal-tx-channel = <0>;
+ 				mal-rx-channel = <0>;
+ 				cell-index = <0>;
+-				max-frame-size = <5dc>;
++				max-frame-size = <2328>;
+ 				rx-fifo-size = <1000>;
+ 				tx-fifo-size = <800>;
+ 				phy-mode = "rgmii";
+@@ -247,7 +247,7 @@
+ 				mal-tx-channel = <1>;
+ 				mal-rx-channel = <1>;
+ 				cell-index = <1>;
+-				max-frame-size = <5dc>;
++				max-frame-size = <2328>;
+ 				rx-fifo-size = <1000>;
+ 				tx-fifo-size = <800>;
+ 				phy-mode = "rgmii";
+diff --git a/arch/powerpc/boot/dts/rainier.dts b/arch/powerpc/boot/dts/rainier.dts
+index 9f6f58b..6a8fa70 100644
+--- a/arch/powerpc/boot/dts/rainier.dts
++++ b/arch/powerpc/boot/dts/rainier.dts
+@@ -269,7 +269,7 @@
+ 				mal-tx-channel = <0>;
+ 				mal-rx-channel = <0>;
+ 				cell-index = <0>;
+-				max-frame-size = <5dc>;
++				max-frame-size = <2328>;
+ 				rx-fifo-size = <1000>;
+ 				tx-fifo-size = <800>;
+ 				phy-mode = "rgmii";
+@@ -298,7 +298,7 @@
+ 				mal-tx-channel = <1>;
+ 				mal-rx-channel = <1>;
+ 				cell-index = <1>;
+-				max-frame-size = <5dc>;
++				max-frame-size = <2328>;
+ 				rx-fifo-size = <1000>;
+ 				tx-fifo-size = <800>;
+ 				phy-mode = "rgmii";
+diff --git a/arch/powerpc/boot/dts/sequoia.dts b/arch/powerpc/boot/dts/sequoia.dts
+index 675026b..a1ae4d6 100644
+--- a/arch/powerpc/boot/dts/sequoia.dts
++++ b/arch/powerpc/boot/dts/sequoia.dts
+@@ -284,7 +284,7 @@
+ 				mal-tx-channel = <0>;
+ 				mal-rx-channel = <0>;
+ 				cell-index = <0>;
+-				max-frame-size = <5dc>;
++				max-frame-size = <2328>;
+ 				rx-fifo-size = <1000>;
+ 				tx-fifo-size = <800>;
+ 				phy-mode = "rgmii";
+@@ -313,7 +313,7 @@
+ 				mal-tx-channel = <1>;
+ 				mal-rx-channel = <1>;
+ 				cell-index = <1>;
+-				max-frame-size = <5dc>;
++				max-frame-size = <2328>;
+ 				rx-fifo-size = <1000>;
+ 				tx-fifo-size = <800>;
+ 				phy-mode = "rgmii";
+diff --git a/arch/powerpc/boot/dts/taishan.dts b/arch/powerpc/boot/dts/taishan.dts
+index 96d033d..e808e1c 100644
+--- a/arch/powerpc/boot/dts/taishan.dts
++++ b/arch/powerpc/boot/dts/taishan.dts
+@@ -304,7 +304,7 @@
+ 				mal-tx-channel = <2>;
+ 				mal-rx-channel = <2>;
+ 				cell-index = <2>;
+-				max-frame-size = <5dc>;
++				max-frame-size = <2328>;
+ 				rx-fifo-size = <1000>;
+ 				tx-fifo-size = <800>;
+ 				phy-mode = "rgmii";
+@@ -328,7 +328,7 @@
+ 				mal-tx-channel = <3>;
+ 				mal-rx-channel = <3>;
+ 				cell-index = <3>;
+-				max-frame-size = <5dc>;
++				max-frame-size = <2328>;
+ 				rx-fifo-size = <1000>;
+ 				tx-fifo-size = <800>;
+ 				phy-mode = "rgmii";
 -- 
-Anton Vorontsov
-email: cboumailru@gmail.com
-irc://irc.freenode.net/bd2
+1.5.4.5
