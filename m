@@ -1,15 +1,38 @@
-Return-Path: <benh@ozlabs.org>
-Subject: Re: printk time confusion?
-From: Benjamin Herrenschmidt <benh@ozlabs.org>
-To: Johannes Berg <johannes@sipsolutions.net>
-In-Reply-To: <1207146186.3957.11.camel@johannes.berg>
-References: <1207146186.3957.11.camel@johannes.berg>
-Content-Type: text/plain
-Date: Thu, 03 Apr 2008 21:48:44 +1100
-Message-Id: <1207219724.10388.319.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Arnd Bergmann <arndb@de.ibm.com>
+Return-Path: <kamalesh@linux.vnet.ibm.com>
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [59.145.155.5])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e28smtp05.in.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 69CBDDDEE2
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 Apr 2008 21:49:36 +1100 (EST)
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+	by e28smtp05.in.ibm.com (8.13.1/8.13.1) with ESMTP id m33AnDLn027091
+	for <linuxppc-dev@ozlabs.org>; Thu, 3 Apr 2008 16:19:13 +0530
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+	by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m33AnCI11019922
+	for <linuxppc-dev@ozlabs.org>; Thu, 3 Apr 2008 16:19:12 +0530
+Received: from d28av05.in.ibm.com (loopback [127.0.0.1])
+	by d28av05.in.ibm.com (8.13.1/8.13.3) with ESMTP id m33AnCdI026600
+	for <linuxppc-dev@ozlabs.org>; Thu, 3 Apr 2008 10:49:13 GMT
+Message-ID: <47F4B625.7030007@linux.vnet.ibm.com>
+Date: Thu, 03 Apr 2008 16:19:09 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: Re: [PATCH] mm: make mem_map allocation continuous v2.
+References: <200804021525.48799.yhlu.kernel@gmail.com>
+	<20080402155247.5e746be7.akpm@linux-foundation.org>
+	<86802c440804021744m7c6e3d94vcb6af3ebcaa71b5b@mail.gmail.com>
+	<200804021830.24563.yhlu.kernel@gmail.com>
+	<20080402192223.5e8754a0.akpm@linux-foundation.org>
+	<86802c440804022116j2a8fb745pf734f61542a8e287@mail.gmail.com>
+In-Reply-To: <86802c440804022116j2a8fb745pf734f61542a8e287@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: kernel list <linux-kernel@vger.kernel.org>,
+	Yinghai Lu <yhlu.kernel.send@gmail.com>, linuxppc-dev@ozlabs.org,
+	Badari Pulavarty <pbadari@us.ibm.com>,
+	Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+	Balbir Singh <balbir@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,40 +42,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Wed, 2008-04-02 at 16:23 +0200, Johannes Berg wrote:
-> Hi,
+Yinghai Lu wrote:
+> On Wed, Apr 2, 2008 at 7:22 PM, Andrew Morton <akpm@linux-foundation.org> wrote:
+>> On Wed, 2 Apr 2008 18:30:24 -0700 Yinghai Lu <yhlu.kernel.send@gmail.com> wrote:
+>>
+>>  > v2 replace:
+>>  >       [PATCH] mm: make mem_map allocation continuous.
+>>  >       [PATCH] mm: allocate section_map for sparse_init
+>>  >       [PATCH] mm: allocate usemap at first instead of mem_map in sparse_init
+>>  >
+>>
+>>  err, no.
+>>
+>>
+>>  >
+>>  > diff --git a/mm/sparse.c b/mm/sparse.c
+>>  > index f6a43c0..2881222 100644
+>>  > --- a/mm/sparse.c
+>>  > +++ b/mm/sparse.c
+>>
+>>  Sorry, but I'd rather not do it this way.  We presently have this:
+>>
 > 
-> Not sure whether the lockdep patches or something else is causing this
-> as I haven't checked w/o the patches yet, but I seem to be having some
-> confusion of printk timestamps:
-
-Tried reverting the patches ?
-
-> [...]
-> [  176.440255] iwl4965: No space for Tx
-> [...]
-> [  147.983705] ioctl32(gnome-terminal:6361): Unknown cmd fd(25) cmd(0000530b){t:'S';sz:0} arg(0fd7bbe0) on /dev/pts/2
-> [...]
-> [  173.589209] BUG kmalloc-2048: Poison overwritten
-> [...]
-> [  208.385226] ioctl32(gnome-terminal:6498): Unknown cmd fd(29) cmd(0000530b){t:'S';sz:0} arg(0fd7bbe0) on /dev/pts/6
-> [...]
-> [  139.026724] ioctl32(gnome-terminal:6521): Unknown cmd fd(30) cmd(0000530b){t:'S';sz:0} arg(0fd7bbe8) on /dev/pts/7
-> [...]
-> [  155.982345] ioctl32(gnome-terminal:6543): Unknown cmd fd(31) cmd(0000530b){t:'S';sz:0} arg(0fd7bbe0) on /dev/pts/8
-> [...]
-> [  218.918388] tg3: eth0: Link is down.
-> [...]
+> it replaces
 > 
-> Yes, these entries really were printed in that order. Btw, what's with
-> the unknown ioctls?
-
-Proably ioctl's that lack a 32 bits conversion, you'll have to dig in
-the pty stuff to find out which ones it is and if it can be a problem...
-
-> Kernel version is 2.6.25-rc8-wl-04519-g6648ff7-dirty where -wl/-dirty
-> refers to wireless patches and the lockdep patches and otherwise it's
-> just -rc8.
+>>  mm-make-mem_map-allocation-continuous.patch
+>>  mm-make-mem_map-allocation-continuous-checkpatch-fixes.patch
+>>  mm-allocate-section_map-for-sparse_init.patch
+>>  mm-allocate-section_map-for-sparse_init-update.patch
+>>  mm-allocate-section_map-for-sparse_init-update-fix.patch
+>>  mm-allocate-section_map-for-sparse_init-powerpc-fix.patch
 > 
-> johannes
+> others still needed
+> 
+> so mm-make-mem-map-allocation-continuous.patch will not break powerpc and ia64
+> 
+> YH
+Hi,
+
+Thanks, the patch fixes the issue. I am able to bootup without the kernel panic.
+
+Tested-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> 
+
+-- 
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
