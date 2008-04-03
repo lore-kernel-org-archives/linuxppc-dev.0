@@ -1,34 +1,23 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 9B3ADDDDE9
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 Apr 2008 11:56:29 +1100 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e36.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m330uQPc011537
-	for <linuxppc-dev@ozlabs.org>; Wed, 2 Apr 2008 20:56:26 -0400
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m330uQZa192250
-	for <linuxppc-dev@ozlabs.org>; Wed, 2 Apr 2008 18:56:26 -0600
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m330uQtD026528
-	for <linuxppc-dev@ozlabs.org>; Wed, 2 Apr 2008 18:56:26 -0600
-Date: Wed, 2 Apr 2008 19:56:00 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH 1/3][POWERPC][V2] of_serial: Fix possible null dereference.
-Message-ID: <20080402195600.67b2eaf2@zod.rchland.ibm.com>
-In-Reply-To: <200804030139.05497.arnd@arndb.de>
-References: <20080402165216.8FD2BC9807F@mail21-dub.bigfish.com>
-	<fa686aa40804021046n1bc0626ay6a3f9f2a251331ef@mail.gmail.com>
-	<200804030139.05497.arnd@arndb.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	John Linn <john.linn@xilinx.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.249])
+	by ozlabs.org (Postfix) with ESMTP id 2A034DDDEA
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 Apr 2008 12:16:30 +1100 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so716578anc.78
+	for <linuxppc-dev@ozlabs.org>; Wed, 02 Apr 2008 18:16:29 -0700 (PDT)
+Message-ID: <fa686aa40804021816k1b109319r62ca6a6ce6a3a65@mail.gmail.com>
+Date: Wed, 2 Apr 2008 19:16:29 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "John Linn" <john.linn@xilinx.com>, linuxppc-dev@ozlabs.org,
+	grant.likely@secretlab.ca
+Subject: Re: [PATCH 3/3][POWERPC][V2] Xilinx: boot support for Xilinx uart
+	16550.
+In-Reply-To: <20080403000229.GA6663@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <12071551351007-git-send-email-john.linn@xilinx.com>
+	<20080402165216.C835D1CF8088@mail12-sin.bigfish.com>
+	<20080403000229.GA6663@localhost.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,31 +27,54 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 3 Apr 2008 01:39:04 +0200
-Arnd Bergmann <arnd@arndb.de> wrote:
+On Wed, Apr 2, 2008 at 6:02 PM, David Gibson
+<david@gibson.dropbear.id.au> wrote:
+>
+> On Wed, Apr 02, 2008 at 09:52:14AM -0700, John Linn wrote:
+>  > The Xilinx 16550 uart core is not a standard 16550 because it uses
+>  > word-based addressing rather than byte-based adressing. With
+>  > additional properties it is compatible with the open firmware
+>  > 'ns16550' compatible binding.
+>  >
+>  > This code updates the ns16550 driver to use the reg-offset property
+>  > so that the Xilinx UART 16550 can be used with it. The reg-shift
+>  > was already being handled.
+>  >
+>  > Signed-off-by: John Linn <john.linn@xilinx.com>
+>  > ---
+>  >  arch/powerpc/boot/ns16550.c |    5 +++++
+>  >  1 files changed, 5 insertions(+), 0 deletions(-)
+>  >
+>  > diff --git a/arch/powerpc/boot/ns16550.c b/arch/powerpc/boot/ns16550.c
+>  > index f8f1b2f..da9d2c2 100644
+>  > --- a/arch/powerpc/boot/ns16550.c
+>  > +++ b/arch/powerpc/boot/ns16550.c
+>  > @@ -56,6 +56,7 @@ int ns16550_console_init(void *devp, struct serial_console_data *scdp)
+>  >  {
+>  >       int n;
+>  >       unsigned long reg_phys;
+>  > +     u32 reg_offset;
+>  >
+>  >       n = getprop(devp, "virtual-reg", &reg_base, sizeof(reg_base));
+>  >       if (n != sizeof(reg_base)) {
+>  > @@ -65,6 +66,10 @@ int ns16550_console_init(void *devp, struct serial_console_data *scdp)
+>  >               reg_base = (void *)reg_phys;
+>  >       }
+>  >
+>  > +     n = getprop(devp, "reg-offset", &reg_offset, sizeof(reg_offset));
+>  > +     if (n == sizeof(reg_offset))
+>  > +             reg_base += reg_offset;
+>
+>  Uh... how does the behaviour of reg-offset differ from just bumping
+>  the address in "reg"?
 
-> On Wednesday 02 April 2008, Grant Likely wrote:
-> > On Wed, Apr 2, 2008 at 10:52 AM, John Linn <john.linn@xilinx.com> wrote:
-> > > From: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
-> > >
-> > > =C2=A0The of_serial driver queries the current-speed property and att=
-empts
-> > > =C2=A0to use it to register the custom_divisor property of the uart_p=
-ort.
-> > > =C2=A0However, if current-speed is not set, then this code will deref=
-erence
-> > > =C2=A0a bad pointer. =C2=A0The fix is to only set custom_divisor when=
- a
-> > > =C2=A0current-speed property appears in the device tree.
-> > >
-> > > =C2=A0Signed-off-by: Stephen Neuendorffer <stephen.neuendorffer@xilin=
-x.com>
-> > > =C2=A0Signed-off-by: John Linn <john.linn@xilinx.com>
-> > Acked-by: Grant Likely <grant.likely@secretlab.ca>
->=20
-> Acked-by: Arnd Bergmann <arnd@arndb.de>
+Mostly because the registers are actually 32 bit registers that can be
+accessed with 32bit reads at offset 0.  Using this property keeps the
+reg property describing the real address range.
 
-This is the second time all three of us have Acked this.  I'm pulling
-it in my tree.
+Cheers,
+g.
 
-josh
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
