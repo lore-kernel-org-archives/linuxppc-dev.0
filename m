@@ -1,21 +1,15 @@
-Return-Path: <laurentp@cse-semaphore.com>
-Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
-	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id D201BDDEE4
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 Apr 2008 21:15:34 +1100 (EST)
-From: Laurent Pinchart <laurentp@cse-semaphore.com>
-To: "Grant Likely" <grant.likely@secretlab.ca>
-Subject: Re: [PATCHv2] powerpc: Describe memory-mapped RAM&ROM chips OF
-	bindings
-Date: Thu, 3 Apr 2008 12:15:29 +0200
-References: <200803311839.10519.laurentp@cse-semaphore.com>
-	<fa686aa40804010616v4d6a2c8at5d3be8c32f316494@mail.gmail.com>
-In-Reply-To: <fa686aa40804010616v4d6a2c8at5d3be8c32f316494@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200804031215.30314.laurentp@cse-semaphore.com>
-Cc: ben@simtec.co.uk, linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
-	David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <benh@ozlabs.org>
+Subject: Re: printk time confusion?
+From: Benjamin Herrenschmidt <benh@ozlabs.org>
+To: Johannes Berg <johannes@sipsolutions.net>
+In-Reply-To: <1207146186.3957.11.camel@johannes.berg>
+References: <1207146186.3957.11.camel@johannes.berg>
+Content-Type: text/plain
+Date: Thu, 03 Apr 2008 21:48:44 +1100
+Message-Id: <1207219724.10388.319.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Arnd Bergmann <arndb@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,70 +19,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tuesday 01 April 2008 15:16, Grant Likely wrote:
-> On Mon, Mar 31, 2008 at 10:39 AM, Laurent Pinchart
-> <laurentp@cse-semaphore.com> wrote:
-> >
-> >  Signed-off-by: Laurent Pinchart <laurentp@cse-semaphore.com>
-> >  ---
-> >   Documentation/powerpc/booting-without-of.txt |   13 ++++++++++++-
-> >   1 files changed, 12 insertions(+), 1 deletions(-)
-> >
-> >  diff --git a/Documentation/powerpc/booting-without-of.txt=20
-> >  b/Documentation/powerpc/booting-without-of.txt=20
-> >  index 7b4e8a7..3e1963b 100644
-> >  --- a/Documentation/powerpc/booting-without-of.txt
-> >  +++ b/Documentation/powerpc/booting-without-of.txt
-> >  @@ -57,7 +57,8 @@ Table of Contents
-> >        n) 4xx/Axon EMAC ethernet nodes
-> >        o) Xilinx IP cores
-> >        p) Freescale Synchronous Serial Interface
-> >  -         q) USB EHCI controllers
-> >  +      q) USB EHCI controllers
-> >  +      r) Memory-mapped RAM & ROM
-> >
-> >    VII - Specifying interrupt information for devices
-> >      1) interrupts property
-> >  @@ -2816,6 +2817,16 @@ platforms are moved over to use the
-> >  flattened-device-tree model.=20
-> >                    big-endian;
-> >            };
-> >
-> >  +   r) Memory-mapped RAM & ROM
-> >  +
-> >  +    Dedicated RAM and ROM chips are often used as storage for tempora=
-ry
-> >  or=20
-> >  +    permanent data in embedded devices. Possible usage include
-> >  non-volatile=20
-> >  +    storage in battery-backed SRAM, semi-permanent storage in dedicat=
-ed
-> >  SRAM=20
-> >  +    to preserve data accross reboots and firmware storage in dedicated
-> >  ROM.=20
-> >  +
-> >  +     - name : should be either "ram" or "rom"
-> >  +     - reg : Address range of the RAM/ROM chip
-> >  +
->=20
-> No compatible prop?  How does the OS know what the node is to be used for?
 
-If I understood Sergei's arguments properly, the device tree should describ=
-e=20
-device properties and not their intended usage. With generic devices such a=
-s=20
-RAM chips, platform code is responsible for binding the device to the=20
-appropriate driver (mtd-ram for instance).
+On Wed, 2008-04-02 at 16:23 +0200, Johannes Berg wrote:
+> Hi,
+> 
+> Not sure whether the lockdep patches or something else is causing this
+> as I haven't checked w/o the patches yet, but I seem to be having some
+> confusion of printk timestamps:
 
-Cheers,
+Tried reverting the patches ?
 
-=2D-=20
-Laurent Pinchart
-CSE Semaphore Belgium
+> [...]
+> [  176.440255] iwl4965: No space for Tx
+> [...]
+> [  147.983705] ioctl32(gnome-terminal:6361): Unknown cmd fd(25) cmd(0000530b){t:'S';sz:0} arg(0fd7bbe0) on /dev/pts/2
+> [...]
+> [  173.589209] BUG kmalloc-2048: Poison overwritten
+> [...]
+> [  208.385226] ioctl32(gnome-terminal:6498): Unknown cmd fd(29) cmd(0000530b){t:'S';sz:0} arg(0fd7bbe0) on /dev/pts/6
+> [...]
+> [  139.026724] ioctl32(gnome-terminal:6521): Unknown cmd fd(30) cmd(0000530b){t:'S';sz:0} arg(0fd7bbe8) on /dev/pts/7
+> [...]
+> [  155.982345] ioctl32(gnome-terminal:6543): Unknown cmd fd(31) cmd(0000530b){t:'S';sz:0} arg(0fd7bbe0) on /dev/pts/8
+> [...]
+> [  218.918388] tg3: eth0: Link is down.
+> [...]
+> 
+> Yes, these entries really were printed in that order. Btw, what's with
+> the unknown ioctls?
 
-Chauss=E9e de Bruxelles, 732A
-B-1410 Waterloo
-Belgium
+Proably ioctl's that lack a 32 bits conversion, you'll have to dig in
+the pty stuff to find out which ones it is and if it can be a problem...
 
-T +32 (2) 387 42 59
-=46 +32 (2) 387 42 75
+> Kernel version is 2.6.25-rc8-wl-04519-g6648ff7-dirty where -wl/-dirty
+> refers to wireless patches and the lockdep patches and otherwise it's
+> just -rc8.
+> 
+> johannes
