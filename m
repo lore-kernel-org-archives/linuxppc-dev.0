@@ -1,17 +1,21 @@
-Return-Path: <paubert@iram.es>
-Received: from gra-lx1.iram.es (gra-lx1.iram.es [150.214.224.41])
-	by ozlabs.org (Postfix) with ESMTP id C546ADDD04
-	for <linuxppc-dev@ozlabs.org>; Fri,  4 Apr 2008 04:41:29 +1100 (EST)
-From: Gabriel Paubert <paubert@iram.es>
-Date: Thu, 3 Apr 2008 19:41:23 +0200
-To: mejjad lahcen <lmejjad@gmail.com>
-Subject: Re: interrupt latency spi
-Message-ID: <20080403174123.GA25888@iram.es>
-References: <9b4863980804030609s3ff05c33g462ffc1769546010@mail.gmail.com>
+Return-Path: <david-b@pacbell.net>
+Received: from smtp102.sbc.mail.mud.yahoo.com (smtp102.sbc.mail.mud.yahoo.com
+	[68.142.198.201]) by ozlabs.org (Postfix) with SMTP id 7D8CADE0C5
+	for <linuxppc-dev@ozlabs.org>; Fri,  4 Apr 2008 05:29:06 +1100 (EST)
+From: David Brownell <david-b@pacbell.net>
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: [PATCH] Freescale QUICC Engine USB Host Controller
+Date: Thu, 3 Apr 2008 11:22:23 -0700
+References: <20080311191744.GA10518@localhost.localdomain>
+	<20080403143052.GA5955@polina.dev.rtsoft.ru>
+	<47F4F8B0.4090708@freescale.com>
+In-Reply-To: <47F4F8B0.4090708@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <9b4863980804030609s3ff05c33g462ffc1769546010@mail.gmail.com>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200804031122.24442.david-b@pacbell.net>
+Cc: Scott Wood <scottwood@freescale.com>, linux-usb@vger.kernel.org,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,18 +25,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Apr 03, 2008 at 09:09:04AM -0400, mejjad lahcen wrote:
->  hi all of you ,
-> I am wndering if someone has already done test for interrupt latency on
-> linx 2.6.23 mpc5200b.
-> I am working on writing a driver which is get SPi involved on design, and I
-> know that the  spi interrupt will occurs at every 2 us ( speed 4 MHz
-> interupt occurs when It recieves on bytes) so  I am worring about interrupt
-> latency.
+On Thursday 03 April 2008, Timur Tabi wrote:
+> > Well, there is Linux CLK API (somewhat similar to GPIO API), but PowerPC
+> > doesn't use it yet.
+> 
+> Yeah, I noticed that too.  I'll add it to my to-do list, but I suspect that
+> someone else will get around to it before I do.
 
-Expecting to be able to handle an interrupt every 2 microseconds is
-simply crazy. Your hardware should at least have some FIFO to buffer
-the data, hey, that's what UART started doing even at much lower bit
-rates...
+Note that there's some work afoot to provide a generic
+implementation framework for the clk_*() calls.  It was
+last posted on the ARM list ... I'd hope it would make
+it easier for at least some PowerPC platforms to support
+that interface.
 
-	Gabriel
+- Dave
