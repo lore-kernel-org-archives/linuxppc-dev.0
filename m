@@ -1,17 +1,21 @@
-Return-Path: <matteo.vit@dave.eu>
-Received: from mx.dave-tech.it (mx.dave-tech.it [88.37.112.223])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "localhost", Issuer "www.qmailtoaster.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id C44DADDD0C
+Return-Path: <g.schardt@fz-juelich.de>
+Received: from zam837.fz-juelich.de (zam837.fz-juelich.de [134.94.100.69])
+	by ozlabs.org (Postfix) with ESMTP id 2AF5ADDE03
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  3 Apr 2008 20:17:03 +1100 (EST)
-Message-ID: <47F49EF7.6010709@dave.eu>
-Date: Thu, 03 Apr 2008 11:10:15 +0200
-From: Matteo Vit <matteo.vit@dave.eu>
+	Thu,  3 Apr 2008 21:02:57 +1100 (EST)
+Received: from [134.94.232.103] (zel201.zel.kfa-juelich.de
+	[134.94.232.103])by zam837.fz-juelich.de (Postfix) with ESMTP id
+	5472410009AEfor <linuxppc-embedded@ozlabs.org>;
+	Thu,  3 Apr 2008 12:02:55 +0200 (CEST)
+Message-ID: <47F4AB4B.1060504@fz-juelich.de>
+Date: Thu, 03 Apr 2008 12:02:51 +0200
+From: Georg Schardt <g.schardt@fz-juelich.de>
 MIME-Version: 1.0
 To: linuxppc-embedded@ozlabs.org
-Subject: linux 2.6 and xps_ethernetlite 
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Subject: Problems with busybox or filesystem ...
+Content-Type: text/plain;
+	charset=ISO-8859-15;
+	format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -22,23 +26,53 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
-I'm planning to use the xps_ethernetlite with linux 2.6 kernel (xilinx 
-git for example). Is there support for it ? Can I use the 
-opb_ethernetlite driver ?
+Hi again,
 
-Does anybody use it with the ML403 or Avnet FX12 MM boards ? what are 
-the performance (for example with netperf) ?
 
-Best regards,
--- 
-Matteo VIT
-R&D engineer
 
-DAVE Srl - Electronics System House
-via Forniz 2/1 33080 Porcia (PN) - Italy
-Telephone: +39.0434.921215
-Telefax: +39.0434.1994030
-web: www.dave.eu
-e-mail: matteo.vit@dave.eu
-how to reach us: http://mail.map24.com/dave
+its strange, now i have a filesystem with busybox 1.7.0 working if  i 
+boot from systemace - module.
+if i create a jffs2 image with the same filesystem, put it into flash 
+and try to boot from flash busybox hangs after a few bytes of output. 
+using kernel 2.6 from git.xilinx.com on a virtex4fx12 minimodul:
+
+Output from kernel, and a few Bytes from busybox:
+
+[    2.219956] VFS: Mounted root (jffs2 filesystem).
+[    2.224084] Freeing unused kernel memory: 100k init
+init
+2.6. Lin
+
+and then nothing :)
+
+i tried a few other things:
+- put the rootfs in a ramdisk -> same problem, but sometimes a few bytes 
+more output :)
+- change busybox version -> same problem
+- change to secretlab kernel -> same problem
+- use another gcc glibc version on crosscompiler -> same version
+
+
+Whats wrong ? Its just a device missing ? Does the kernel unmounts the 
+rootfs after starting init or something like this ? i this a problem 
+with the console/serial device ?  i have no idea what i can try next.
+
+
+its very frustrating  :)
+thanks
+georg
+
+
+-------------------------------------------------------------------
+-------------------------------------------------------------------
+Forschungszentrum Jülich GmbH
+52425 Jülich
+
+Sitz der Gesellschaft: Jülich
+Eingetragen im Handelsregister des Amtsgerichts Düren Nr. HR B 3498
+Vorsitzende des Aufsichtsrats: MinDir'in Bärbel Brumme-Bothe
+Geschäftsführung: Prof. Dr. Achim Bachem (Vorsitzender),
+Dr. Ulrich Krafft (stellv. Vorsitzender), Prof. Dr. Harald Bolt,
+Dr. Sebastian M. Schmidt
+-------------------------------------------------------------------
+-------------------------------------------------------------------
