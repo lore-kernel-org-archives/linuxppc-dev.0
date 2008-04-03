@@ -1,22 +1,22 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.248])
-	by ozlabs.org (Postfix) with ESMTP id 9B596DDE1E
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 Apr 2008 13:43:56 +1100 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so723084anc.78
-	for <linuxppc-dev@ozlabs.org>; Wed, 02 Apr 2008 19:43:55 -0700 (PDT)
-Message-ID: <fa686aa40804021943m208c2ff0va6c6b629a747439f@mail.gmail.com>
-Date: Wed, 2 Apr 2008 20:43:54 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Arnd Bergmann" <arnd@arndb.de>
-Subject: Re: [PATCH 2/3] [POWERPC][V3] Xilinx: of_serial support for Xilinx
-	uart 16550.
-In-Reply-To: <200804030134.11437.arnd@arndb.de>
+Return-Path: <y-goto@jp.fujitsu.com>
+Received: from fgwmail6.fujitsu.co.jp (fgwmail6.fujitsu.co.jp [192.51.44.36])
+	by ozlabs.org (Postfix) with ESMTP id 33C85DDDFD
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 Apr 2008 14:25:36 +1100 (EST)
+Date: Thu, 03 Apr 2008 12:22:18 +0900
+From: Yasunori Goto <y-goto@jp.fujitsu.com>
+To: yhlu.kernel@gmail.com
+Subject: Re: [PATCH] mm: make mem_map allocation continuous v2.
+In-Reply-To: <200804021830.24563.yhlu.kernel@gmail.com>
+References: <86802c440804021744m7c6e3d94vcb6af3ebcaa71b5b@mail.gmail.com>
+	<200804021830.24563.yhlu.kernel@gmail.com>
+Message-Id: <20080403122051.D1EC.E1E9C6FF@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20080402232213.5D87515B8067@mail37-sin.bigfish.com>
-	<200804030134.11437.arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, John Linn <john.linn@xilinx.com>
+Content-Type: text/plain; charset="US-ASCII"
+Cc: kernel list <linux-kernel@vger.kernel.org>,
+	Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+	linuxppc-dev@ozlabs.org, Badari Pulavarty <pbadari@us.ibm.com>,
+	Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+	Balbir Singh <balbir@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,68 +26,125 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Apr 2, 2008 at 5:34 PM, Arnd Bergmann <arnd@arndb.de> wrote:
-> On Thursday 03 April 2008, John Linn wrote:
->  > The Xilinx 16550 uart core is not a standard 16550 because it uses
->  > word-based addressing rather than byte-based addressing. With
->  > additional properties it is compatible with the open firmware
->  > 'ns16550' compatible binding.
->  >
->  > This code updates the of_serial driver to handle the reg-offset
->  > and reg-shift properties to enable this core to be used.
->  >
->  > Signed-off-by: John Linn <john.linn@xilinx.com>
->
->  I may not be the best driver maintainer, but please keep the illusion
->  alive for me and Cc me on patches to drivers I wrote ;-)
->
->
->  > diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
->  > index 87f4d84..4066ec8 100644
->  > --- a/Documentation/powerpc/booting-without-of.txt
->  > +++ b/Documentation/powerpc/booting-without-of.txt
->  > @@ -2539,6 +2539,16 @@ platforms are moved over to use the flattened-device-tree model.
->  >                        differ between different families.  May be
->  >                        'virtex2p', 'virtex4', or 'virtex5'.
->  >
->  > +      iv) Xilinx Uart 16550
->  > +
->  > +      Xilinx UART 16550 devices are very similar to the NS16550 but with
->  > +      different register spacing and an offset from the base address.
->  > +
->  > +      Requred properties:
->  > +       - clock-frequency : Frequency of the clock input
->  > +       - reg-offset : A value of 3 is required
->  > +       - reg-shift : A value of 2 is required
->  > +
->  >     More devices will be defined as this spec matures.
->
->  Since it is not really compatible with ns16550, shouldn't you at least specify
->  a different "compatible" property? That way, the driver won't do incorrect
->  accesses when you try to use an old driver with a device tree that specifies
->  one of these.
 
-Heh; we've gone back and forth on this issue.  The problem is that we
-have a common case of ns16550 like devices that require a little bit
-of register address tweaking that spans a whole range of vendors (so
-adding a compatible match with each of those vendor's prefixes is
-probably non-scalable).  So, if "ns16550" is not a good idea, then
-what should be used?  "sparse16550" has been suggested more than once.
+Looks good to me. And ia64 boots up with this patch too.
+Thanks.
 
-On the other side of the coin; the draft ePAPR spec already redefines
-the meaning of "ns16550" to add an optional "reg-shift" property.
-Also, in this particular case the problem is most likely more
-theoretical than actual.  The likely hood of a platform needing these
-new properties being handed a kernel which does not support the
-"reg-*" properties is very slim.
+Acked-by: Yasunori Goto <y-goto@jp.fujitsu.com>
 
-Anyway, all that just to say that I prefer "ns16550", but I'll put my
-vote and support behind "sparse16550" (or any other string) if other
-people express consensus with it.
 
-Cheers,
-g.
+> 
+> vmemmap allocation current got
+>  [ffffe20000000000-ffffe200001fffff] PMD ->ffff810001400000 on node 0
+>  [ffffe20000200000-ffffe200003fffff] PMD ->ffff810001800000 on node 0
+>  [ffffe20000400000-ffffe200005fffff] PMD ->ffff810001c00000 on node 0
+>  [ffffe20000600000-ffffe200007fffff] PMD ->ffff810002000000 on node 0
+>  [ffffe20000800000-ffffe200009fffff] PMD ->ffff810002400000 on node 0
+> ...
+> 
+> there is 2M hole between them.
+> 
+> the rootcause is that usemap (24 bytes) will be allocated after every 2M
+> mem_map. and it will push next vmemmap (2M) to next align (2M).
+> 
+> solution:
+> try to allocate mem_map continously.
+> 
+> after patch, will get
+>  [ffffe20000000000-ffffe200001fffff] PMD ->ffff810001400000 on node 0
+>  [ffffe20000200000-ffffe200003fffff] PMD ->ffff810001600000 on node 0
+>  [ffffe20000400000-ffffe200005fffff] PMD ->ffff810001800000 on node 0
+>  [ffffe20000600000-ffffe200007fffff] PMD ->ffff810001a00000 on node 0
+>  [ffffe20000800000-ffffe200009fffff] PMD ->ffff810001c00000 on node 0
+> ...
+> and usemap will share in page because of they are allocated continuously too.
+> sparse_early_usemap_alloc: usemap = ffff810024e00000 size = 24
+> sparse_early_usemap_alloc: usemap = ffff810024e00080 size = 24
+> sparse_early_usemap_alloc: usemap = ffff810024e00100 size = 24
+> sparse_early_usemap_alloc: usemap = ffff810024e00180 size = 24
+> ...
+> 
+> so we make the bootmem allocation more compact and use less memory for usemap.
+> 
+> for power pc
+> Badari Pulavarty <pbadari@us.ibm.com> wrote:
+> 
+> >  You have to call sparse_init_one_section() on each pmap and usemap
+> >  as we allocate - since valid_section() depends on it (which is needed
+> >  by vmemmap_populate() to check if the section is populated or not).
+> >  On ppc, we need to call htab_bolted_mapping() on each section and
+> >  we need to skip existing sections.
+> 
+> so try to allocate usemap at first altogether.
+> 
+> v2 replace:
+> 	[PATCH] mm: make mem_map allocation continuous.
+> 	[PATCH] mm: allocate section_map for sparse_init
+> 	[PATCH] mm: allocate usemap at first instead of mem_map in sparse_init
+> 
+> Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+> 
+> diff --git a/mm/sparse.c b/mm/sparse.c
+> index f6a43c0..2881222 100644
+> --- a/mm/sparse.c
+> +++ b/mm/sparse.c
+> @@ -294,22 +294,48 @@ void __init sparse_init(void)
+>  	unsigned long pnum;
+>  	struct page *map;
+>  	unsigned long *usemap;
+> +	unsigned long **usemap_map;
+> +	int size;
+> +
+> +	/*
+> +	 * map is using big page (aka 2M in x86 64 bit)
+> +	 * usemap is less one page (aka 24 bytes)
+> +	 * so alloc 2M (with 2M align) and 24 bytes in turn will
+> +	 * make next 2M slip to one more 2M later.
+> +	 * then in big system, the memory will have a lot of holes...
+> +	 * here try to allocate 2M pages continously.
+> +	 *
+> +	 * powerpc need to call sparse_init_one_section right after each
+> +	 * sparse_early_mem_map_alloc, so allocate usemap_map at first.
+> +	 */
+> +	size = sizeof(unsigned long *) * NR_MEM_SECTIONS;
+> +	usemap_map = alloc_bootmem(size);
+> +	if (!usemap_map)
+> +		panic("can not allocate usemap_map\n");
+>  
+>  	for (pnum = 0; pnum < NR_MEM_SECTIONS; pnum++) {
+>  		if (!present_section_nr(pnum))
+>  			continue;
+> +		usemap_map[pnum] = sparse_early_usemap_alloc(pnum);
+> +	}
+>  
+> -		map = sparse_early_mem_map_alloc(pnum);
+> -		if (!map)
+> +	for (pnum = 0; pnum < NR_MEM_SECTIONS; pnum++) {
+> +		if (!present_section_nr(pnum))
+>  			continue;
+>  
+> -		usemap = sparse_early_usemap_alloc(pnum);
+> +		usemap = usemap_map[pnum];
+>  		if (!usemap)
+>  			continue;
+>  
+> +		map = sparse_early_mem_map_alloc(pnum);
+> +		if (!map)
+> +			continue;
+> +
+>  		sparse_init_one_section(__nr_to_section(pnum), pnum, map,
+>  								usemap);
+>  	}
+> +
+> +	free_bootmem(__pa(usemap_map), size);
+>  }
+>  
+>  #ifdef CONFIG_MEMORY_HOTPLUG
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
 -- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Yasunori Goto 
