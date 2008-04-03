@@ -1,18 +1,14 @@
-Return-Path: <schwab@suse.de>
-From: Andreas Schwab <schwab@suse.de>
-To: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: printk time confusion?
-References: <1207146186.3957.11.camel@johannes.berg>
-	<1207219724.10388.319.camel@pasglop> <jehcejqjpj.fsf@sykes.suse.de>
-	<1207221159.3636.44.camel@johannes.berg>
-Date: Thu, 03 Apr 2008 13:24:39 +0200
-In-Reply-To: <1207221159.3636.44.camel@johannes.berg> (Johannes Berg's message
-	of "Thu\, 03 Apr 2008 13\:12\:39 +0200")
-Message-ID: <je3aq3qiyw.fsf@sykes.suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Arnd Bergmann <arndb@de.ibm.com>, Benjamin Herrenschmidt <benh@ozlabs.org>
+Return-Path: <sr@denx.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.183]) by ozlabs.org (Postfix) with ESMTP id 3E826DE018
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 Apr 2008 22:45:30 +1100 (EST)
+From: Stefan Roese <sr@denx.de>
+To: netdev@vger.kernel.org,
+	linuxppc-dev@ozlabs.org
+Subject: [PATCH] ibm_newemac: Add support for 460EX/GT-type MAL rx-channel
+	handling
+Date: Thu,  3 Apr 2008 13:45:10 +0200
+Message-Id: <1207223110-27281-1-git-send-email-sr@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,29 +18,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Johannes Berg <johannes@sipsolutions.net> writes:
+On some 4xx PPC's (e.g. 460EX/GT), the rx channel number is a multiple
+of 8 (e.g. 8 for EMAC1, 16 for EMAC2), but enabling in MAL_RXCASR needs
+the divided by 8 value for the bitmask.
 
->> >> [  155.982345] ioctl32(gnome-terminal:6543): Unknown cmd fd(31) cmd(0000530b){t:'S';sz:0} arg(0fd7bbe0) on /dev/pts/8
->
->> > Proably ioctl's that lack a 32 bits conversion, you'll have to dig in
->> > the pty stuff to find out which ones it is and if it can be a problem...
->> 
->> 0x53xx is claimed by cdrom.h, and 0x530b is CDROMSUBCHNL.  Of course, a
->> tty does not implement cdrom ioctls.
->
-> Humm ok, then the first question is why gnome-terminal tries that
+Signed-off-by: Stefan Roese <sr@denx.de>
+---
+ drivers/net/ibm_newemac/mal.c |   16 ++++++++++++++++
+ 1 files changed, 16 insertions(+), 0 deletions(-)
 
-Perhaps some misconfiguration, I can't reproduce that here (with
-2.18.2).
-
-> and the second why it would printk something?
-
-To ease finding missing compat ioctl handlers.
-
-Andreas.
-
+diff --git a/drivers/net/ibm_newemac/mal.c b/drivers/net/ibm_newemac/mal.c
+index 6869f08..fb9c9eb 100644
+--- a/drivers/net/ibm_newemac/mal.c
++++ b/drivers/net/ibm_newemac/mal.c
+@@ -136,6 +136,14 @@ void mal_enable_rx_channel(struct mal_instance *mal, int channel)
+ {
+ 	unsigned long flags;
+ 
++	/*
++	 * On some 4xx PPC's (e.g. 460EX/GT), the rx channel is a multiple
++	 * of 8, but enabling in MAL_RXCASR needs the divided by 8 value
++	 * for the bitmask
++	 */
++	if (!(channel % 8))
++		channel >>= 3;
++
+ 	spin_lock_irqsave(&mal->lock, flags);
+ 
+ 	MAL_DBG(mal, "enable_rx(%d)" NL, channel);
+@@ -148,6 +156,14 @@ void mal_enable_rx_channel(struct mal_instance *mal, int channel)
+ 
+ void mal_disable_rx_channel(struct mal_instance *mal, int channel)
+ {
++	/*
++	 * On some 4xx PPC's (e.g. 460EX/GT), the rx channel is a multiple
++	 * of 8, but enabling in MAL_RXCASR needs the divided by 8 value
++	 * for the bitmask
++	 */
++	if (!(channel % 8))
++		channel >>= 3;
++
+ 	set_mal_dcrn(mal, MAL_RXCARR, MAL_CHAN_MASK(channel));
+ 
+ 	MAL_DBG(mal, "disable_rx(%d)" NL, channel);
 -- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+1.5.4.5
