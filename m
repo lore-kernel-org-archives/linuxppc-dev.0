@@ -1,17 +1,32 @@
-Return-Path: <tony@bakeyournoodle.com>
-Received: from pythia.bakeyournoodle.com (pythia.bakeyournoodle.com
-	[203.82.209.197]) by ozlabs.org (Postfix) with ESMTP id DCC49DDF2A
-	for <linuxppc-dev@ozlabs.org>; Fri,  4 Apr 2008 10:03:58 +1100 (EST)
-Date: Fri, 4 Apr 2008 10:03:56 +1100
+Return-Path: <hollisb@us.ibm.com>
+Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id D0FADDDF24
+	for <linuxppc-dev@ozlabs.org>; Fri,  4 Apr 2008 10:14:08 +1100 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e6.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m33NG9P6015033
+	for <linuxppc-dev@ozlabs.org>; Thu, 3 Apr 2008 19:16:09 -0400
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m33NE5pu456392
+	for <linuxppc-dev@ozlabs.org>; Thu, 3 Apr 2008 19:14:05 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m33NE4JS010618
+	for <linuxppc-dev@ozlabs.org>; Thu, 3 Apr 2008 19:14:05 -0400
+From: Hollis Blanchard <hollisb@us.ibm.com>
 To: Jerone Young <jyoung5@us.ibm.com>
-Subject: Re: [PATCH] Add idle wait support for 44x platforms
-Message-ID: <20080403230356.GJ20457@bakeyournoodle.com>
+Subject: Re: [kvm-ppc-devel] [PATCH] Add idle wait support for 44x platforms
+Date: Thu, 3 Apr 2008 18:13:59 -0500
 References: <7226bef216680748a503.1207262582@thinkpadL>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
 In-Reply-To: <7226bef216680748a503.1207262582@thinkpadL>
-From: tony@bakeyournoodle.com (Tony Breeds)
-Cc: kvm-ppc-devel@lists.sourceforge.net, linuxppc-dev@ozlabs.org
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200804031813.59297.hollisb@us.ibm.com>
+Cc: kvm-ppc-devel@lists.sourceforge.net, linuxppc-dev@ozlabs.org,
+	Stuart Yoder <stuart.yoder@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,53 +36,84 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Apr 03, 2008 at 05:43:02PM -0500, Jerone Young wrote:
-
-Hi Jerone,
-	A few minor nits.
+On Thursday 03 April 2008 17:43:02 Jerone Young wrote:
+> # HG changeset patch
+> # User Jerone Young <jyoung5@us.ibm.com>
+> # Date 1207262487 18000
+> # Node ID 7226bef216680748a50327900572c2fbc3e762b0
+> # Parent  a5b2aebbc6ebd2439c655f1c047ed7e3c1991ec1
 > Add idle wait support for 44x platforms
-> 
-> This patch adds the ability for the CPU to go into wait state while in cpu_idle loop. This helps virtulization solutions know when the guest Linux kernel is in an idle state. There are two ways to do it.
-> 
+>
+> This patch adds the ability for the CPU to go into wait state while in
+> cpu_idle loop. This helps virtulization solutions know when the guest Linux
+> kernel is in an idle state. There are two ways to do it.
+>
 > 1) Command line
 > 	idle=spin <-- CPU will spin (this is the default)
 > 	idle=wait <-- set CPU into wait state when idle
-> 
+>
 > 2) The device tree will be checked for the "/hypervisor" node
 >    If this node is seen it will use "wait" for idle, so that
 >    the hypervisor can know when guest Linux kernel it is in
 >    an idle state.
-> 
+>
 > This patch, unlike the last, isolates the code to 44x platforms.
-> 
+>
 > Signed-off-by: Jerone Young <jyoung5@us.ibm.com>
 
-Can you include a diffstat in here?
- 
-> +static int current_mode = 0;
+Very nice.
 
-Leave this as: static int current_mode;, so it'll end up in the bss
-
+> +static void ppc44x_idle(void)
+> +{
+> +	unsigned long msr_save;
+> +
+> +	msr_save = mfmsr();
+> +	/* set wait state MSR */
+> +	mtmsr(msr_save|MSR_WE|MSR_EE|MSR_CE);
+> +	/* return to initial state */
+> +	mtmsr(msr_save);
+> +}
+> +
 > +int __init ppc44x_idle_init(void)
 > +{
 > +	if(of_find_node_by_path("/hypervisor") != NULL) {
-          ^ space
 > +		/* if we find /hypervisor node is in device tree,
 > +		   set idle mode to wait */
 > +		current_mode = 1; /* wait mode */
 > +	}
-
-You don't really need the braces {} here.
-
-> +static int __init idle_param(char *p)
-> +{ 
-> +	int i;
 > +
-> +	for (i = 0; i < sizeof(modes)/sizeof(struct sleep_mode); i++) {
+> +	ppc_md.power_save = modes[current_mode].entry;
+> +	return 0;
+> +}
 
-ARRAY_SIZE(modes)
+By the way, watch that space in "if(". Also, you need to call of_node_put().
 
-Yours Tony
+The one thing I don't like is the hardcoded assumption that 1 means "wait". 
+Instead, you could do something like this (not even compile-tested):
 
-  linux.conf.au    http://www.marchsouth.org/
-  Jan 19 - 24 2009 The Australian Linux Technical Conference!
+int __init ppc44x_idle_init(void)
+{
+	void *func = modes[current_mode].entry;
+	struct device_node *node;
+
+	node = of_find_node_by_path("/hypervisor") 
+	if (node) {
+		/* if we find /hypervisor node is in device tree,
+		 * set idle mode to wait */
+		func = &ppc44x_idle;
+		of_node_put(node);
+	}
+
+	ppc_md.power_save = func;
+	return 0;
+}
+
+Stuart, we're getting into ePAPR territory. Do you think we need to worry 
+about a hypervisor not handling mtmsr(MSR_WE)? In that case, we'd need to be 
+more specific than just testing for "/hypervisor". IMHO every hypervisor 
+should implement it... but maybe /hypervisor/idle = "wait" would be more 
+explicit and therefore better?
+
+-- 
+Hollis Blanchard
+IBM Linux Technology Center
