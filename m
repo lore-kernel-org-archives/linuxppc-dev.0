@@ -1,19 +1,20 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id 9F316DDF62
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 Apr 2008 23:00:18 +1100 (EST)
-Message-ID: <47F4C6A4.2020307@ru.mvista.com>
-Date: Thu, 03 Apr 2008 15:59:32 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 7B0CBDE0C6
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 Apr 2008 23:18:44 +1100 (EST)
+Date: Thu, 3 Apr 2008 16:18:48 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Laurent Pinchart <laurentp@cse-semaphore.com>
+Subject: Re: [PATCH 2/4] [POWERPC] Implement support for the GPIO LIB API
+Message-ID: <20080403121848.GA16186@polina.dev.rtsoft.ru>
+References: <20080311184012.GA28466@localhost.localdomain>
+	<20080311184220.GB32164@localhost.localdomain>
+	<200804031305.53469.laurentp@cse-semaphore.com>
 MIME-Version: 1.0
-To: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
-Subject: Re: [PATCH 2/3][POWERPC][V2] Xilinx: of_serial support for Xilinx
-	uart	16550.
-References: <689CB232690D8D4E97DA6C76DA098E6C05FC4762@XCO-EXCHVS1.xlnx.xilinx.com>
-	<20080402213919.C261F5E007F@mail91-dub.bigfish.com>
-In-Reply-To: <20080402213919.C261F5E007F@mail91-dub.bigfish.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: John Linn <linnj@xilinx.com>, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <200804031305.53469.laurentp@cse-semaphore.com>
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,35 +24,86 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello.
+On Thu, Apr 03, 2008 at 01:05:51PM +0200, Laurent Pinchart wrote:
+> Hi Anton,
+> 
+> On Tuesday 11 March 2008 19:42, Anton Vorontsov wrote:
+> > This patch implements support for the GPIO LIB API. Two calls
+> > unimplemented though: irq_to_gpio and gpio_to_irq.
+> > 
+> > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> > ---
+> >  Documentation/powerpc/booting-without-of.txt |   52 ++++++++++++++++++++++++
+> >  arch/powerpc/Kconfig                         |    5 ++
+> >  include/asm-powerpc/gpio.h                   |   55 ++++++++++++++++++++++++++
+> >  3 files changed, 112 insertions(+), 0 deletions(-)
+> >  create mode 100644 include/asm-powerpc/gpio.h
+> 
+> [snip]
+> 
+> > diff --git a/include/asm-powerpc/gpio.h b/include/asm-powerpc/gpio.h
+> > new file mode 100644
+> > index 0000000..057840d
+> > --- /dev/null
+> > +++ b/include/asm-powerpc/gpio.h
+> > @@ -0,0 +1,55 @@
+> > +/*
+> > + * Generic GPIO API implementation for PowerPC.
+> > + *
+> > + * Copyright (c) 2007-2008  MontaVista Software, Inc.
+> > + *
+> > + * Author: Anton Vorontsov <avorontsov@ru.mvista.com>
+> > + *
+> > + * This program is free software; you can redistribute it and/or modify
+> > + * it under the terms of the GNU General Public License as published by
+> > + * the Free Software Foundation; either version 2 of the License, or
+> > + * (at your option) any later version.
+> > + */
+> > +
+> > +#ifndef __ASM_POWERPC_GPIO_H
+> > +#define __ASM_POWERPC_GPIO_H
+> > +
+> > +#include <asm-generic/gpio.h>
+> > +
+> > +#ifdef CONFIG_HAVE_GPIO_LIB
+> > +
+> > +/*
+> > + * We don't (yet) implement inlined/rapid versions for on-chip gpios.
+> > + * Just call gpiolib.
+> > + */
+> > +static inline int gpio_get_value(unsigned int gpio)
+> > +{
+> > +	return __gpio_get_value(gpio);
+> > +}
+> > +
+> > +static inline void gpio_set_value(unsigned int gpio, int value)
+> > +{
+> > +	__gpio_set_value(gpio, value);
+> > +}
+> > +
+> > +static inline int gpio_cansleep(unsigned int gpio)
+> > +{
+> > +	return __gpio_cansleep(gpio);
+> > +}
+> > +
+> > +/*
+> > + * Not implemented, yet.
+> > + */
+> > +static inline int gpio_to_irq(unsigned int gpio)
+> > +{
+> > +	return -ENOSYS;
+> > +}
+> > +
+> > +static inline int irq_to_gpio(unsigned int irq)
+> > +{
+> > +	return -EINVAL;
+> > +}
+> 
+> You should include <linux/errno.h>.
 
-Stephen Neuendorffer wrote:
+Yeah, much thanks for catching this!
 
-> I don't think big-endian has the same context as reg-shift/reg-offset.
-
-    The "big-endian" is about how the byte addresses are laid out, so the 
-context is the same -- in this case, it would determine where each UART 
-register is located within the address stride specified by "reg-shift".
-It'll alwaay be at offset 0 or (2 << reg-shift) - 1 (unless some vendor goes 
-and implements something with "middle-endian" layout of course :-)
-
-> The OpenPOC is fundamentally a 32 bit device, but ns16550 is not...  If
-
-    So what?
-
-> we were talking about a 32 bit device, then I'd probably agree with you,
-
-    There are 16550 clones that *are* 32-bit.
-
-> but in this case, the reg-shift
-
-    I'm not arguing about "reg-shift" already -- look like it's been spec'ed. :-)
-
-> (and to some extent) reg-offset have
-> been used before and probably make more sense, I think.
-
-    The "reg-offset" has been used before? Where?
-
-> Steve
-
-WBR, Sergei
+-- 
+Anton Vorontsov
+email: cboumailru@gmail.com
+irc://irc.freenode.net/bd2
