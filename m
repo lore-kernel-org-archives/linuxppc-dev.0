@@ -1,21 +1,19 @@
-Return-Path: <g.schardt@fz-juelich.de>
-Received: from zam837.fz-juelich.de (zam837.fz-juelich.de [134.94.100.69])
-	by ozlabs.org (Postfix) with ESMTP id 2AF5ADDE03
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  3 Apr 2008 21:02:57 +1100 (EST)
-Received: from [134.94.232.103] (zel201.zel.kfa-juelich.de
-	[134.94.232.103])by zam837.fz-juelich.de (Postfix) with ESMTP id
-	5472410009AEfor <linuxppc-embedded@ozlabs.org>;
-	Thu,  3 Apr 2008 12:02:55 +0200 (CEST)
-Message-ID: <47F4AB4B.1060504@fz-juelich.de>
-Date: Thu, 03 Apr 2008 12:02:51 +0200
-From: Georg Schardt <g.schardt@fz-juelich.de>
+Return-Path: <lmejjad@gmail.com>
+Received: from mu-out-0910.google.com (mu-out-0910.google.com [209.85.134.189])
+	by ozlabs.org (Postfix) with ESMTP id A3161DE0E7
+	for <linuxppc-embedded@ozlabs.org.>;
+	Fri,  4 Apr 2008 01:04:16 +1100 (EST)
+Received: by mu-out-0910.google.com with SMTP id w8so4902775mue.1
+	for <linuxppc-embedded@ozlabs.org.>;
+	Thu, 03 Apr 2008 07:04:13 -0700 (PDT)
+Message-ID: <9b4863980804030704t4f6c7d54xe2085a132a20ee73@mail.gmail.com>
+Date: Thu, 3 Apr 2008 10:04:12 -0400
+From: "mejjad lahcen" <lmejjad@gmail.com>
+To: linuxppc-embedded@ozlabs.org.
+Subject: interrupt latency spi
 MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Subject: Problems with busybox or filesystem ...
-Content-Type: text/plain;
-	charset=ISO-8859-15;
-	format=flowed
+Content-Type: multipart/alternative;
+	boundary="----=_Part_909_10772471.1207231452327"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -26,53 +24,30 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi again,
+------=_Part_909_10772471.1207231452327
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
+hi all of you , I am wndering if someone has already done test for interrupt
+latency on  linx 2.6.23 mpc5200b.
+I am working on writing a driver which is get SPi involved on design, and I
+know that the  spi interrupt will occurs at every 2 us ( speed 4 MHz
+interupt occurs when It recieves on bytes) so  I am worring about interrupt
+latency.
+ I dont know if someone has any suggestions or a litle advice.
+cheers
 
+------=_Part_909_10772471.1207231452327
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-its strange, now i have a filesystem with busybox 1.7.0 working if  i 
-boot from systemace - module.
-if i create a jffs2 image with the same filesystem, put it into flash 
-and try to boot from flash busybox hangs after a few bytes of output. 
-using kernel 2.6 from git.xilinx.com on a virtex4fx12 minimodul:
+hi all of you , 
+<div>I am wndering if someone has already done test for interrupt latency on&nbsp; linx 2.6.23 mpc5200b.</div>
+<div>I am working on writing a driver which is get SPi involved on design, and I know that the&nbsp; spi interrupt will occurs at every 2 us ( speed 4 MHz interupt occurs when It recieves on bytes) so&nbsp; I am worring about interrupt latency.</div>
 
-Output from kernel, and a few Bytes from busybox:
+<div>&nbsp;I dont know if someone has any suggestions&nbsp;or a litle advice.</div>
+<div>cheers</div>
 
-[    2.219956] VFS: Mounted root (jffs2 filesystem).
-[    2.224084] Freeing unused kernel memory: 100k init
-init
-2.6. Lin
-
-and then nothing :)
-
-i tried a few other things:
-- put the rootfs in a ramdisk -> same problem, but sometimes a few bytes 
-more output :)
-- change busybox version -> same problem
-- change to secretlab kernel -> same problem
-- use another gcc glibc version on crosscompiler -> same version
-
-
-Whats wrong ? Its just a device missing ? Does the kernel unmounts the 
-rootfs after starting init or something like this ? i this a problem 
-with the console/serial device ?  i have no idea what i can try next.
-
-
-its very frustrating  :)
-thanks
-georg
-
-
--------------------------------------------------------------------
--------------------------------------------------------------------
-Forschungszentrum Jülich GmbH
-52425 Jülich
-
-Sitz der Gesellschaft: Jülich
-Eingetragen im Handelsregister des Amtsgerichts Düren Nr. HR B 3498
-Vorsitzende des Aufsichtsrats: MinDir'in Bärbel Brumme-Bothe
-Geschäftsführung: Prof. Dr. Achim Bachem (Vorsitzender),
-Dr. Ulrich Krafft (stellv. Vorsitzender), Prof. Dr. Harald Bolt,
-Dr. Sebastian M. Schmidt
--------------------------------------------------------------------
--------------------------------------------------------------------
+------=_Part_909_10772471.1207231452327--
