@@ -1,13 +1,17 @@
-Return-Path: <sr@denx.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id 4B31BDDFA1
-	for <linuxppc-dev@ozlabs.org>; Fri,  4 Apr 2008 00:41:13 +1100 (EST)
-From: Stefan Roese <sr@denx.de>
+Return-Path: <lmejjad@gmail.com>
+Received: from rv-out-0910.google.com (rv-out-0910.google.com [209.85.198.188])
+	by ozlabs.org (Postfix) with ESMTP id 33D68DDEF0
+	for <linuxppc-dev@ozlabs.org>; Fri,  4 Apr 2008 00:09:05 +1100 (EST)
+Received: by rv-out-0910.google.com with SMTP id c27so1805726rvf.9
+	for <linuxppc-dev@ozlabs.org>; Thu, 03 Apr 2008 06:09:04 -0700 (PDT)
+Message-ID: <9b4863980804030609s3ff05c33g462ffc1769546010@mail.gmail.com>
+Date: Thu, 3 Apr 2008 09:09:04 -0400
+From: "mejjad lahcen" <lmejjad@gmail.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] [POWERPC] 4xx: Some EMAC related changes in Canyonlands &
-	Glacier dts files
-Date: Thu,  3 Apr 2008 15:35:06 +0200
-Message-Id: <1207229706-5588-1-git-send-email-sr@denx.de>
+Subject: interrupt latency spi
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_Part_665_31372743.1207228144622"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,100 +21,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch fixes some problems in the Canyonlands 460EX and Glacier 460GT
-dts files:
+------=_Part_665_31372743.1207228144622
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-- Add "mdio-device = <&EMAC0>" to all all EMAC's except for EMAC0 itself
-  (the 460EX/GT only can access the PHY via the EMAC0 instance)
-- Add TAH support to Canyonlands dts
+ hi all of you ,
+I am wndering if someone has already done test for interrupt latency on
+linx 2.6.23 mpc5200b.
+I am working on writing a driver which is get SPi involved on design, and I
+know that the  spi interrupt will occurs at every 2 us ( speed 4 MHz
+interupt occurs when It recieves on bytes) so  I am worring about interrupt
+latency.
+ I dont know if someone has any suggestions or a litle advice.
+cheers
 
-Signed-off-by: Stefan Roese <sr@denx.de>
----
- arch/powerpc/boot/dts/canyonlands.dts |   19 +++++++++++++++----
- arch/powerpc/boot/dts/glacier.dts     |    5 ++++-
- 2 files changed, 19 insertions(+), 5 deletions(-)
+------=_Part_665_31372743.1207228144622
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-diff --git a/arch/powerpc/boot/dts/canyonlands.dts b/arch/powerpc/boot/dts/canyonlands.dts
-index 657f2b4..6f3d38a 100644
---- a/arch/powerpc/boot/dts/canyonlands.dts
-+++ b/arch/powerpc/boot/dts/canyonlands.dts
-@@ -215,6 +215,16 @@
- 				has-mdio;
- 			};
- 
-+			TAH0: emac-tah@ef601350 {
-+				compatible = "ibm,tah-460ex", "ibm,tah";
-+				reg = <ef601350 30>;
-+			};
-+
-+			TAH1: emac-tah@ef601450 {
-+				compatible = "ibm,tah-460ex", "ibm,tah";
-+				reg = <ef601450 30>;
-+			};
-+
- 			EMAC0: ethernet@ef600e00 {
- 				device_type = "network";
- 				compatible = "ibm,emac-460ex", "ibm,emac4";
-@@ -236,10 +246,10 @@
- 				tx-fifo-size = <800>;
- 				phy-mode = "rgmii";
- 				phy-map = <00000000>;
--				zmii-device = <&ZMII0>;
--				zmii-channel = <0>;
- 				rgmii-device = <&RGMII0>;
- 				rgmii-channel = <0>;
-+				tah-device = <&TAH0>;
-+				tah-channel = <0>;
- 				has-inverted-stacr-oc;
- 				has-new-stacr-staopc;
- 			};
-@@ -265,12 +275,13 @@
- 				tx-fifo-size = <800>;
- 				phy-mode = "rgmii";
- 				phy-map = <00000000>;
--				zmii-device = <&ZMII0>;
--				zmii-channel = <1>;
- 				rgmii-device = <&RGMII0>;
- 				rgmii-channel = <1>;
-+				tah-device = <&TAH1>;
-+				tah-channel = <1>;
- 				has-inverted-stacr-oc;
- 				has-new-stacr-staopc;
-+				mdio-device = <&EMAC0>;
- 			};
- 		};
- 
-diff --git a/arch/powerpc/boot/dts/glacier.dts b/arch/powerpc/boot/dts/glacier.dts
-index 7a7c9bf..958a5ca 100644
---- a/arch/powerpc/boot/dts/glacier.dts
-+++ b/arch/powerpc/boot/dts/glacier.dts
-@@ -287,9 +287,10 @@
- 				rgmii-device = <&RGMII0>;
- 				rgmii-channel = <1>;
- 				tah-device = <&TAH1>;
--				tah-channel = <0>;
-+				tah-channel = <1>;
- 				has-inverted-stacr-oc;
- 				has-new-stacr-staopc;
-+				mdio-device = <&EMAC0>;
- 			};
- 
- 			EMAC2: ethernet@ef601100 {
-@@ -317,6 +318,7 @@
- 				rgmii-channel = <0>;
- 				has-inverted-stacr-oc;
- 				has-new-stacr-staopc;
-+				mdio-device = <&EMAC0>;
- 			};
- 
- 			EMAC3: ethernet@ef601200 {
-@@ -344,6 +346,7 @@
- 				rgmii-channel = <1>;
- 				has-inverted-stacr-oc;
- 				has-new-stacr-staopc;
-+				mdio-device = <&EMAC0>;
- 			};
- 		};
- 
--- 
-1.5.4.5
+<div>&nbsp;hi all of you ,</div>
+<div>I am wndering if someone has already done test for interrupt latency on&nbsp; linx 2.6.23 mpc5200b.</div>
+<div>I am working on writing a driver which is get SPi involved on design, and I know that the&nbsp; spi interrupt will occurs at every 2 us ( speed 4 MHz interupt occurs when It recieves on bytes) so&nbsp; I am worring about interrupt latency.</div>
+
+<div>&nbsp;I dont know if someone has any suggestions&nbsp;or a litle advice.</div>
+<div>cheers</div>
+<div>&nbsp;</div>
+<div>&nbsp;</div>
+
+------=_Part_665_31372743.1207228144622--
