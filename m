@@ -1,18 +1,17 @@
-Return-Path: <laurentp@cse-semaphore.com>
-Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
-	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id EE55BDDF50
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 Apr 2008 22:05:56 +1100 (EST)
-From: Laurent Pinchart <laurentp@cse-semaphore.com>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 2/4] [POWERPC] Implement support for the GPIO LIB API
-Date: Thu, 3 Apr 2008 13:05:51 +0200
-References: <20080311184012.GA28466@localhost.localdomain>
-	<20080311184220.GB32164@localhost.localdomain>
-In-Reply-To: <20080311184220.GB32164@localhost.localdomain>
+Return-Path: <schwab@suse.de>
+From: Andreas Schwab <schwab@suse.de>
+To: Benjamin Herrenschmidt <benh@ozlabs.org>
+Subject: Re: printk time confusion?
+References: <1207146186.3957.11.camel@johannes.berg>
+	<1207219724.10388.319.camel@pasglop>
+Date: Thu, 03 Apr 2008 13:08:40 +0200
+In-Reply-To: <1207219724.10388.319.camel@pasglop> (Benjamin Herrenschmidt's
+	message of "Thu\, 03 Apr 2008 21\:48\:44 +1100")
+Message-ID: <jehcejqjpj.fsf@sykes.suse.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart6426166.rSWoAMKIng";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Message-Id: <200804031305.53469.laurentp@cse-semaphore.com>
+Content-Type: text/plain; charset=iso-8859-1
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Johannes Berg <johannes@sipsolutions.net>, Arnd Bergmann <arndb@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,116 +21,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---nextPart6426166.rSWoAMKIng
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Benjamin Herrenschmidt <benh@ozlabs.org> writes:
 
-Hi Anton,
+> On Wed, 2008-04-02 at 16:23 +0200, Johannes Berg wrote:
+>> [...]
+>> [  176.440255] iwl4965: No space for Tx
+>> [...]
+>> [  147.983705] ioctl32(gnome-terminal:6361): Unknown cmd fd(25) cmd(0000530b){t:'S';sz:0} arg(0fd7bbe0) on /dev/pts/2
+>> [...]
+>> [  173.589209] BUG kmalloc-2048: Poison overwritten
+>> [...]
+>> [  208.385226] ioctl32(gnome-terminal:6498): Unknown cmd fd(29) cmd(0000530b){t:'S';sz:0} arg(0fd7bbe0) on /dev/pts/6
+>> [...]
+>> [  139.026724] ioctl32(gnome-terminal:6521): Unknown cmd fd(30) cmd(0000530b){t:'S';sz:0} arg(0fd7bbe8) on /dev/pts/7
+>> [...]
+>> [  155.982345] ioctl32(gnome-terminal:6543): Unknown cmd fd(31) cmd(0000530b){t:'S';sz:0} arg(0fd7bbe0) on /dev/pts/8
+>> [...]
+>> [  218.918388] tg3: eth0: Link is down.
+>> [...]
+>> 
+>> Yes, these entries really were printed in that order. Btw, what's with
+>> the unknown ioctls?
+>
+> Proably ioctl's that lack a 32 bits conversion, you'll have to dig in
+> the pty stuff to find out which ones it is and if it can be a problem...
 
-On Tuesday 11 March 2008 19:42, Anton Vorontsov wrote:
-> This patch implements support for the GPIO LIB API. Two calls
-> unimplemented though: irq_to_gpio and gpio_to_irq.
->=20
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> ---
->  Documentation/powerpc/booting-without-of.txt |   52 ++++++++++++++++++++=
-++++
->  arch/powerpc/Kconfig                         |    5 ++
->  include/asm-powerpc/gpio.h                   |   55 ++++++++++++++++++++=
-++++++
->  3 files changed, 112 insertions(+), 0 deletions(-)
->  create mode 100644 include/asm-powerpc/gpio.h
+0x53xx is claimed by cdrom.h, and 0x530b is CDROMSUBCHNL.  Of course, a
+tty does not implement cdrom ioctls.
 
-[snip]
+Andreas.
 
-> diff --git a/include/asm-powerpc/gpio.h b/include/asm-powerpc/gpio.h
-> new file mode 100644
-> index 0000000..057840d
-> --- /dev/null
-> +++ b/include/asm-powerpc/gpio.h
-> @@ -0,0 +1,55 @@
-> +/*
-> + * Generic GPIO API implementation for PowerPC.
-> + *
-> + * Copyright (c) 2007-2008  MontaVista Software, Inc.
-> + *
-> + * Author: Anton Vorontsov <avorontsov@ru.mvista.com>
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License as published by
-> + * the Free Software Foundation; either version 2 of the License, or
-> + * (at your option) any later version.
-> + */
-> +
-> +#ifndef __ASM_POWERPC_GPIO_H
-> +#define __ASM_POWERPC_GPIO_H
-> +
-> +#include <asm-generic/gpio.h>
-> +
-> +#ifdef CONFIG_HAVE_GPIO_LIB
-> +
-> +/*
-> + * We don't (yet) implement inlined/rapid versions for on-chip gpios.
-> + * Just call gpiolib.
-> + */
-> +static inline int gpio_get_value(unsigned int gpio)
-> +{
-> +	return __gpio_get_value(gpio);
-> +}
-> +
-> +static inline void gpio_set_value(unsigned int gpio, int value)
-> +{
-> +	__gpio_set_value(gpio, value);
-> +}
-> +
-> +static inline int gpio_cansleep(unsigned int gpio)
-> +{
-> +	return __gpio_cansleep(gpio);
-> +}
-> +
-> +/*
-> + * Not implemented, yet.
-> + */
-> +static inline int gpio_to_irq(unsigned int gpio)
-> +{
-> +	return -ENOSYS;
-> +}
-> +
-> +static inline int irq_to_gpio(unsigned int irq)
-> +{
-> +	return -EINVAL;
-> +}
-
-You should include <linux/errno.h>.
-
-> +#endif /* CONFIG_HAVE_GPIO_LIB */
-> +
-> +#endif /* __ASM_POWERPC_GPIO_H */
-
-Best regards,
-
-=2D-=20
-Laurent Pinchart
-CSE Semaphore Belgium
-
-Chauss=E9e de Bruxelles, 732A
-B-1410 Waterloo
-Belgium
-
-T +32 (2) 387 42 59
-=46 +32 (2) 387 42 75
-
---nextPart6426166.rSWoAMKIng
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
-
-iD8DBQBH9LoR8y9gWxC9vpcRAstXAKDKPjpQyvctjtnGRomEsHhPmhHnTQCfc46I
-31ZxKB/HkacMPNXQiPbHvJk=
-=6pNo
------END PGP SIGNATURE-----
-
---nextPart6426166.rSWoAMKIng--
+-- 
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
