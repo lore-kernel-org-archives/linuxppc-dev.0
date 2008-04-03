@@ -1,24 +1,34 @@
-Return-Path: <yhlu.kernel@gmail.com>
-Received: from rv-out-0910.google.com (rv-out-0910.google.com [209.85.198.191])
-	by ozlabs.org (Postfix) with ESMTP id 2B129DDE45
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 Apr 2008 11:47:22 +1100 (EST)
-Received: by rv-out-0910.google.com with SMTP id c27so1673815rvf.9
-	for <linuxppc-dev@ozlabs.org>; Wed, 02 Apr 2008 17:47:21 -0700 (PDT)
-Message-ID: <86802c440804021747j2e82a30ew8568e4339e272e36@mail.gmail.com>
-Date: Wed, 2 Apr 2008 17:47:21 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Badari Pulavarty" <pbadari@us.ibm.com>
-Subject: Re: [PATCH] mm: allocate usemap at first instead of mem_map in
-	sparse_init
-In-Reply-To: <1207180285.30407.45.camel@dyn9047017100.beaverton.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <200804021525.48799.yhlu.kernel@gmail.com>
-	<1207180285.30407.45.camel@dyn9047017100.beaverton.ibm.com>
-Cc: kernel list <linux-kernel@vger.kernel.org>,
-	Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org,
-	Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-	Balbir Singh <balbir@linux.vnet.ibm.com>
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 9B3ADDDDE9
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 Apr 2008 11:56:29 +1100 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e36.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m330uQPc011537
+	for <linuxppc-dev@ozlabs.org>; Wed, 2 Apr 2008 20:56:26 -0400
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m330uQZa192250
+	for <linuxppc-dev@ozlabs.org>; Wed, 2 Apr 2008 18:56:26 -0600
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m330uQtD026528
+	for <linuxppc-dev@ozlabs.org>; Wed, 2 Apr 2008 18:56:26 -0600
+Date: Wed, 2 Apr 2008 19:56:00 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH 1/3][POWERPC][V2] of_serial: Fix possible null dereference.
+Message-ID: <20080402195600.67b2eaf2@zod.rchland.ibm.com>
+In-Reply-To: <200804030139.05497.arnd@arndb.de>
+References: <20080402165216.8FD2BC9807F@mail21-dub.bigfish.com>
+	<fa686aa40804021046n1bc0626ay6a3f9f2a251331ef@mail.gmail.com>
+	<200804030139.05497.arnd@arndb.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	John Linn <john.linn@xilinx.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,76 +38,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Apr 2, 2008 at 4:51 PM, Badari Pulavarty <pbadari@us.ibm.com> wrote:
-> On Wed, 2008-04-02 at 15:25 -0700, Yinghai Lu wrote:
->  > [PATCH] mm: allocate usemap at first instead of mem_map in sparse_init
->
-> > so try to allocate usemap at first altogether.
->  >
->  > Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
->  >
->  > diff --git a/mm/sparse.c b/mm/sparse.c
->  > index d3cb085..782ebe5 100644
->  > --- a/mm/sparse.c
->  > +++ b/mm/sparse.c
->  > @@ -294,7 +294,7 @@ void __init sparse_init(void)
->  >       unsigned long pnum;
->  >       struct page *map;
->  >       unsigned long *usemap;
->  > -     struct page **section_map;
->  > +     unsigned long **usemap_map;
->  >       int size;
->  >       int node;
->  >
->  > @@ -305,27 +305,31 @@ void __init sparse_init(void)
->  >        * make next 2M slip to one more 2M later.
->  >        * then in big system, the memmory will have a lot hole...
->  >        * here try to allocate 2M pages continously.
->
->  Comments are x86-64 specific. On ppc its 16MB chunks :(
->
->
->
->  > +      *
->  > +      * powerpc hope to sparse_init_one_section right after each
->  > +      * sparse_early_mem_map_alloc, so allocate usemap_map
->  > +      * at first.
->  >        */
->  > -     size = sizeof(struct page *) * NR_MEM_SECTIONS;
->  > -     section_map = alloc_bootmem(size);
->  > -     if (!section_map)
->  > -             panic("can not allocate section_map\n");
->  > +     size = sizeof(unsigned long *) * NR_MEM_SECTIONS;
->  > +     usemap_map = alloc_bootmem(size);
->  > +     if (!usemap_map)
->  > +             panic("can not allocate usemap_map\n");
->  >
->  >       for (pnum = 0; pnum < NR_MEM_SECTIONS; pnum++) {
->  >               if (!present_section_nr(pnum))
->  >                       continue;
->  > -             section_map[pnum] = sparse_early_mem_map_alloc(pnum);
->  > +             usemap_map[pnum] = sparse_early_usemap_alloc(pnum);
->  >       }
->  >
->  >       for (pnum = 0; pnum < NR_MEM_SECTIONS; pnum++) {
->  >               if (!present_section_nr(pnum))
->  >                       continue;
->  >
->  > -             map = section_map[pnum];
->  > +             map = sparse_early_mem_map_alloc(pnum);
->  >               if (!map)
->  >                        continue;
->  >
->  > -             usemap = sparse_early_usemap_alloc(pnum);
->  > +             usemap = usemap_map[pnum];
->  >               if (!usemap)
->  >                       continue;
->
->  You may want to move this check before doing sparse_early_mem_map_alloc
->  (). We are also not handling errors properly (freeing up the unused
->  map or usemap) if we "continue". I know the original code is this way,
->  but you touched it last :)
+On Thu, 3 Apr 2008 01:39:04 +0200
+Arnd Bergmann <arnd@arndb.de> wrote:
 
-Yes. could avoid some leak...
+> On Wednesday 02 April 2008, Grant Likely wrote:
+> > On Wed, Apr 2, 2008 at 10:52 AM, John Linn <john.linn@xilinx.com> wrote:
+> > > From: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
+> > >
+> > > =C2=A0The of_serial driver queries the current-speed property and att=
+empts
+> > > =C2=A0to use it to register the custom_divisor property of the uart_p=
+ort.
+> > > =C2=A0However, if current-speed is not set, then this code will deref=
+erence
+> > > =C2=A0a bad pointer. =C2=A0The fix is to only set custom_divisor when=
+ a
+> > > =C2=A0current-speed property appears in the device tree.
+> > >
+> > > =C2=A0Signed-off-by: Stephen Neuendorffer <stephen.neuendorffer@xilin=
+x.com>
+> > > =C2=A0Signed-off-by: John Linn <john.linn@xilinx.com>
+> > Acked-by: Grant Likely <grant.likely@secretlab.ca>
+>=20
+> Acked-by: Arnd Bergmann <arnd@arndb.de>
 
-YH
+This is the second time all three of us have Acked this.  I'm pulling
+it in my tree.
+
+josh
