@@ -1,20 +1,14 @@
-Return-Path: <sr@denx.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.174]) by ozlabs.org (Postfix) with ESMTP id EA6EBDDE09
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 Apr 2008 16:06:17 +1100 (EST)
-From: Stefan Roese <sr@denx.de>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Subject: Re: [PATCH] [POWERPC] 4xx: Create common ppc4xx_reset_system() in
-	ppc4xx_soc.c
-Date: Thu, 3 Apr 2008 07:02:55 +0200
-References: <1206629011-28821-1-git-send-email-sr@denx.de>
-	<20080402202546.24ac1a95@zod.rchland.ibm.com>
-In-Reply-To: <20080402202546.24ac1a95@zod.rchland.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200804030702.57945.sr@denx.de>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <galak@kernel.crashing.org>
+Message-Id: <D2F6D36A-305A-4380-B2AE-1308D0147472@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Emil Medve <Emilian.Medve@Freescale.com>
+In-Reply-To: <1207177533-30598-1-git-send-email-Emilian.Medve@Freescale.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v919.2)
+Subject: Re: [PATCH] [POWERPC] Fix a mm compile error
+Date: Thu, 3 Apr 2008 01:20:25 -0500
+References: <1207177533-30598-1-git-send-email-Emilian.Medve@Freescale.com>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,33 +18,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thursday 03 April 2008, Josh Boyer wrote:
-> On Thu, 27 Mar 2008 15:43:31 +0100
->
-> Stefan Roese <sr@denx.de> wrote:
-> > diff --git a/arch/powerpc/platforms/44x/sequoia.c
-> > b/arch/powerpc/platforms/44x/sequoia.c index d279db4..1782d41 100644
-> > --- a/arch/powerpc/platforms/44x/sequoia.c
-> > +++ b/arch/powerpc/platforms/44x/sequoia.c
-> > @@ -23,8 +23,6 @@
-> >  #include <asm/uic.h>
-> >  #include <asm/pci-bridge.h>
-> >
-> > -#include "44x.h"
-> > -
->
-> Almost a perfect patch.  Alas, missing a #include <asm/ppc4xx.h> which
-> breaks the sequoia build.
->
-> I'll fix it up locally :).
 
-Thanks Josh. I missed that one.
+On Apr 2, 2008, at 6:05 PM, Emil Medve wrote:
+> arch/powerpc/mm/init_32.c:102: error: conflicting types for  
+> '__initial_memory_limit_addr'
+> arch/powerpc/mm/mmu_decl.h:51: error: previous declaration of  
+> '__initial_memory_limit_addr' was here
+>
+> Signed-off-by: Emil Medve <Emilian.Medve@Freescale.com>
+> ---
+> arch/powerpc/mm/init_32.c |    2 +-
+> 1 files changed, 1 insertions(+), 1 deletions(-)
+>
+> diff --git a/arch/powerpc/mm/init_32.c b/arch/powerpc/mm/init_32.c
+> index 555bb7e..63c5e3d 100644
+> --- a/arch/powerpc/mm/init_32.c
+> +++ b/arch/powerpc/mm/init_32.c
+> @@ -99,7 +99,7 @@ unsigned long __max_low_memory = MAX_LOW_MEM;
+>  * address of the limit of what is accessible with initial MMU setup -
+>  * 256MB usually, but only 16MB on 601.
+>  */
+> -unsigned long __initial_memory_limit_addr = 0x10000000;
+> +phys_addr_t __initial_memory_limit_addr = 0x10000000;
 
-Best regards,
-Stefan
+I should have fixed this in my tree, if there are still issues let me  
+know.
 
-=====================================================================
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: +49-8142-66989-0 Fax: +49-8142-66989-80  Email: office@denx.de
-=====================================================================
+- k
