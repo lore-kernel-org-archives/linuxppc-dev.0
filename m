@@ -2,25 +2,16 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E8FEEDDECA
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 Apr 2008 17:47:36 +1100 (EST)
-Message-Id: <C91EF39E-9776-4D7C-883E-F560A671E221@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id 4BD3BDDE26
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 Apr 2008 17:57:01 +1100 (EST)
+Date: Thu, 3 Apr 2008 01:52:36 -0500 (CDT)
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Paul Mackerras <paulus@samba.org>
-In-Reply-To: <18420.31327.633359.619200@cargo.ozlabs.ibm.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: [PATCH 01/11] [POWERPC] bootwrapper: Allow specifying of image
-	physical offset
-Date: Thu, 3 Apr 2008 01:47:31 -0500
-References: <1207015715-31496-1-git-send-email-galak@kernel.crashing.org>
-	<1207015715-31496-2-git-send-email-galak@kernel.crashing.org>
-	<18418.2460.594352.712502@cargo.ozlabs.ibm.com>
-	<5DBEA342-7674-414B-A666-B8FBEED34814@kernel.crashing.org>
-	<18418.55835.338209.611273@cargo.ozlabs.ibm.com>
-	<0F53B076-0A94-4A2D-8D9A-ED507B53ABE6@kernel.crashing.org>
-	<18420.31327.633359.619200@cargo.ozlabs.ibm.com>
-Cc: linuxppc-dev@ozlabs.org
+To: linuxppc-dev@ozlabs.org
+Subject: [RFC][PATCH] initial port of fixmap over from x86 for ppc32
+Message-ID: <Pine.LNX.4.64.0804030144460.15974@blarg.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: hollisb@us.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,66 +21,196 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Wanted to get any feedback on this initial port of the fixmap support over
+from x86.  There are a few TODOs:
 
-On Apr 3, 2008, at 1:34 AM, Paul Mackerras wrote:
-> Kumar Gala writes:
->
->>> For a kdump kernel, at least for 64-bit, the physical address has to
->>> be 32MB.  There is no other choice, so there is no possibility of
->>> confusion.
->>
->> But how do you know a vmlinux image is for kdump or not?
->
-> By looking at the ELF headers -- either the first PT_LOAD segment or
-> the .text section -- and seeing whether the start address is
-> 0xc000000002000000 or not.
+* change HIGHMEM support to use fixmap
+* fixup up VMALLOC config to respect fixmap
 
-fair point.
+(after initial powerpc patch is in tree/accepted):
+* rework a few bits of fixmap.h into an asm-generic/fixmap.h
 
->>> For 85xx, would it be possible to have the kernel figure out what
->>> physical address it has been loaded at, and use that as the base
->>> address, rather than having the base address set at compile time?
->>
->> Yes, that is what CONFIG_RELOCATABLE is all about.
->
-> Is there any reason to have that as an option, rather than just always
-> doing that?
+The reason for introducing fixmap into ppc32 is it provides us with a
+clean way of getting fixed compile time virtual addresses for things.
 
-Concerned about runtime performance of __va() and __pa().
+Beyond the HIGHMEM usage.  Ben and I have discussed cleaning up the PCIe
+44x config code (and 83xx PCIe cfg) to use it.  Also, Dale's kexec/kdump
+support on ppc32 can take advantage of it.  I'm also told this is useful
+for hypervisor interactions.
 
->>> That would solve my objection since it would mean that there would  
->>> no
->>> longer be two things that had to be kept in sync.  You could pass  
->>> any
->>> value to wrapper/mkimage (subject to constraints such as it has to  
->>> be
->>> a multiple of 256M) and it would work.  That value could even come
->>> from a config option in the case where wrapper is invoked as part of
->>> the kernel build, but that config option shouldn't affect anything  
->>> at
->>> all in the vmlinux.
->>
->> Ok, but I still think the issues exists when we config PHYSICAL_START
->> to non-zero and CONFIG_RELOCATABLE=n.  Ideally we get set the phys
->> address the PHDR, but I'm not sure how to get the linker to do that.
->
-> If we can do that then the wrapper script can dig it out and pass it
-> to mkimage, which would solve the problem.
-
-Ok, so on Segher's recommendation I looked at 'AT' and posted a patch  
-that uses that so now regardless of the kernel the PT_LOAD PHDR will  
-have the physical address set properly.
-
-So now we can look at the vmlinux and determine the physical offset.   
-The question is how best to do that.  Here are the options I see:
-* readelf, grep and parse output
-* objdump grep and parse output
-* simple C program that read's the elf and reports back
-
-[looking for suggestion on what direction you want to take]
-
-The other questions is if we'd ever have a vmlinux with more than one  
-PT_LOAD PHDR.  If so which one do we use (the one with the lowest  
-physical address)?
+One question for the guys looking at hypervisor.  The x86 code also has a
+function called reserve_top_address (see arch/x86/mm/pgtable_32.c).  Is
+this functionality something useful on ppc?  If so for what?
 
 - k
+
+---
+ arch/powerpc/mm/pgtable_32.c |   18 ++++++
+ include/asm-powerpc/fixmap.h |  123 ++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 141 insertions(+), 0 deletions(-)
+ create mode 100644 include/asm-powerpc/fixmap.h
+
+diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
+index 64c44bc..fa0e48e 100644
+--- a/arch/powerpc/mm/pgtable_32.c
++++ b/arch/powerpc/mm/pgtable_32.c
+@@ -29,6 +29,7 @@
+
+ #include <asm/pgtable.h>
+ #include <asm/pgalloc.h>
++#include <asm/fixmap.h>
+ #include <asm/io.h>
+
+ #include "mmu_decl.h"
+@@ -387,3 +388,20 @@ void kernel_map_pages(struct page *page, int numpages, int enable)
+ 	change_page_attr(page, numpages, enable ? PAGE_KERNEL : __pgprot(0));
+ }
+ #endif /* CONFIG_DEBUG_PAGEALLOC */
++
++static int fixmaps;
++unsigned long __FIXADDR_TOP = 0xfffff000;
++EXPORT_SYMBOL(__FIXADDR_TOP);
++
++void __set_fixmap (enum fixed_addresses idx, phys_addr_t phys, pgprot_t flags)
++{
++	unsigned long address = __fix_to_virt(idx);
++
++	if (idx >= __end_of_fixed_addresses) {
++		BUG();
++		return;
++	}
++
++	map_page(address, phys, flags);
++	fixmaps++;
++}
+diff --git a/include/asm-powerpc/fixmap.h b/include/asm-powerpc/fixmap.h
+new file mode 100644
+index 0000000..7b570e5
+--- /dev/null
++++ b/include/asm-powerpc/fixmap.h
+@@ -0,0 +1,123 @@
++/*
++ * fixmap.h: compile-time virtual memory allocation
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License.  See the file "COPYING" in the main directory of this archive
++ * for more details.
++ *
++ * Copyright (C) 1998 Ingo Molnar
++ *
++ * Support of BIGMEM added by Gerhard Wichert, Siemens AG, July 1999
++ *
++ * Copyright 2008 Freescale Semiconductor Inc.
++ *   Port to powerpc added by Kumar Gala
++ */
++
++#ifndef _ASM_FIXMAP_H
++#define _ASM_FIXMAP_H
++
++
++/* used by vmalloc.c, vsyscall.lds.S.
++ *
++ * Leave one empty page between vmalloc'ed areas and
++ * the start of the fixmap.
++ */
++extern unsigned long __FIXADDR_TOP;
++#define FIXADDR_USER_START     __fix_to_virt(FIX_VDSO)
++#define FIXADDR_USER_END       __fix_to_virt(FIX_VDSO - 1)
++
++#ifndef __ASSEMBLY__
++#include <linux/kernel.h>
++#include <asm/page.h>
++#ifdef CONFIG_HIGHMEM
++#include <linux/threads.h>
++#include <asm/kmap_types.h>
++#endif
++
++/*
++ * Here we define all the compile-time 'special' virtual
++ * addresses. The point is to have a constant address at
++ * compile time, but to set the physical address only
++ * in the boot process. We allocate these special addresses
++ * from the end of virtual memory (0xfffff000) backwards.
++ * Also this lets us do fail-safe vmalloc(), we
++ * can guarantee that these special addresses and
++ * vmalloc()-ed addresses never overlap.
++ *
++ * these 'compile-time allocated' memory buffers are
++ * fixed-size 4k pages. (or larger if used with an increment
++ * highger than 1) use fixmap_set(idx,phys) to associate
++ * physical memory with fixmap indices.
++ *
++ * TLB entries of such buffers will not be flushed across
++ * task switches.
++ */
++enum fixed_addresses {
++	FIX_HOLE,
++	FIX_VDSO,
++#ifdef CONFIG_HIGHMEM
++	FIX_KMAP_BEGIN,	/* reserved pte's for temporary kernel mappings */
++	FIX_KMAP_END = FIX_KMAP_BEGIN+(KM_TYPE_NR*NR_CPUS)-1,
++#endif
++#ifdef CONFIG_PCI_MMCONFIG
++	FIX_PCIE_MCFG,
++#endif
++	__end_of_fixed_addresses
++};
++
++extern void __set_fixmap (enum fixed_addresses idx,
++					phys_addr_t phys, pgprot_t flags);
++
++#define set_fixmap(idx, phys) \
++		__set_fixmap(idx, phys, PAGE_KERNEL)
++/*
++ * Some hardware wants to get fixmapped without caching.
++ */
++#define set_fixmap_nocache(idx, phys) \
++		__set_fixmap(idx, phys, PAGE_KERNEL_NOCACHE)
++
++#define clear_fixmap(idx) \
++		__set_fixmap(idx, 0, __pgprot(0))
++
++#define FIXADDR_TOP	((unsigned long)__FIXADDR_TOP)
++
++#define __FIXADDR_SIZE	(__end_of_fixed_addresses << PAGE_SHIFT)
++#define __FIXADDR_BOOT_SIZE	(__end_of_fixed_addresses << PAGE_SHIFT)
++#define FIXADDR_START		(FIXADDR_TOP - __FIXADDR_SIZE)
++#define FIXADDR_BOOT_START	(FIXADDR_TOP - __FIXADDR_BOOT_SIZE)
++
++#define __fix_to_virt(x)	(FIXADDR_TOP - ((x) << PAGE_SHIFT))
++#define __virt_to_fix(x)	((FIXADDR_TOP - ((x)&PAGE_MASK)) >> PAGE_SHIFT)
++
++extern void __this_fixmap_does_not_exist(void);
++
++/*
++ * 'index to address' translation. If anyone tries to use the idx
++ * directly without tranlation, we catch the bug with a NULL-deference
++ * kernel oops. Illegal ranges of incoming indices are caught too.
++ */
++static __always_inline unsigned long fix_to_virt(const unsigned int idx)
++{
++	/*
++	 * this branch gets completely eliminated after inlining,
++	 * except when someone tries to use fixaddr indices in an
++	 * illegal way. (such as mixing up address types or using
++	 * out-of-range indices).
++	 *
++	 * If it doesn't get removed, the linker will complain
++	 * loudly with a reasonably clear error message..
++	 */
++	if (idx >= __end_of_fixed_addresses)
++		__this_fixmap_does_not_exist();
++
++        return __fix_to_virt(idx);
++}
++
++static inline unsigned long virt_to_fix(const unsigned long vaddr)
++{
++	BUG_ON(vaddr >= FIXADDR_TOP || vaddr < FIXADDR_START);
++	return __virt_to_fix(vaddr);
++}
++
++#endif /* !__ASSEMBLY__ */
++#endif
+-- 
+1.5.4.1
