@@ -1,21 +1,20 @@
-Return-Path: <arnd@arndb.de>
+Return-Path: <sr@denx.de>
 Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id 4F17DDDE04
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 Apr 2008 15:16:29 +1100 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 2/3] [POWERPC][V3] Xilinx: of_serial support for Xilinx
-	uart 16550.
-Date: Thu, 3 Apr 2008 06:16:08 +0200
-References: <20080402232213.5D87515B8067@mail37-sin.bigfish.com>
-	<200804030134.11437.arnd@arndb.de>
-	<fa686aa40804021943m208c2ff0va6c6b629a747439f@mail.gmail.com>
-In-Reply-To: <fa686aa40804021943m208c2ff0va6c6b629a747439f@mail.gmail.com>
+	[212.227.126.174]) by ozlabs.org (Postfix) with ESMTP id EA6EBDDE09
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 Apr 2008 16:06:17 +1100 (EST)
+From: Stefan Roese <sr@denx.de>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Subject: Re: [PATCH] [POWERPC] 4xx: Create common ppc4xx_reset_system() in
+	ppc4xx_soc.c
+Date: Thu, 3 Apr 2008 07:02:55 +0200
+References: <1206629011-28821-1-git-send-email-sr@denx.de>
+	<20080402202546.24ac1a95@zod.rchland.ibm.com>
+In-Reply-To: <20080402202546.24ac1a95@zod.rchland.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
-Message-Id: <200804030616.09825.arnd@arndb.de>
-Cc: John Linn <john.linn@xilinx.com>
+Message-Id: <200804030702.57945.sr@denx.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,33 +24,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thursday 03 April 2008, Grant Likely wrote:
+On Thursday 03 April 2008, Josh Boyer wrote:
+> On Thu, 27 Mar 2008 15:43:31 +0100
+>
+> Stefan Roese <sr@denx.de> wrote:
+> > diff --git a/arch/powerpc/platforms/44x/sequoia.c
+> > b/arch/powerpc/platforms/44x/sequoia.c index d279db4..1782d41 100644
+> > --- a/arch/powerpc/platforms/44x/sequoia.c
+> > +++ b/arch/powerpc/platforms/44x/sequoia.c
+> > @@ -23,8 +23,6 @@
+> >  #include <asm/uic.h>
+> >  #include <asm/pci-bridge.h>
 > >
-> > =A0Since it is not really compatible with ns16550, shouldn't you at lea=
-st specify
-> > =A0a different "compatible" property? That way, the driver won't do inc=
-orrect
-> > =A0accesses when you try to use an old driver with a device tree that s=
-pecifies
-> > =A0one of these.
->=20
-> Heh; we've gone back and forth on this issue. =A0The problem is that we
-> have a common case of ns16550 like devices that require a little bit
-> of register address tweaking that spans a whole range of vendors (so
-> adding a compatible match with each of those vendor's prefixes is
-> probably non-scalable). =A0So, if "ns16550" is not a good idea, then
-> what should be used? =A0"sparse16550" has been suggested more than once.
+> > -#include "44x.h"
+> > -
+>
+> Almost a perfect patch.  Alas, missing a #include <asm/ppc4xx.h> which
+> breaks the sequoia build.
+>
+> I'll fix it up locally :).
 
-After another IRC discussion between Grant, Segher and myself, we concluded
-that we don't need to invent a new "compatible" value, as only new device
-trees with old kernels will have a problem with this, and they don't work
-in the first place.
+Thanks Josh. I missed that one.
 
-The devices will still have their specific "compatible" value, e.g.
-"xlnx,plb-uart16550-1.00.c", followed by "ns16550", and possibly
-"ns16450" and "i8250", although the last two do not have an effect
-on Linux.
+Best regards,
+Stefan
 
-Josh, can you please forward all three patches in their latest version?
-
-Acked-by: Arnd Bergmann <arnd@arndb.de>
+=====================================================================
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: +49-8142-66989-0 Fax: +49-8142-66989-80  Email: office@denx.de
+=====================================================================
