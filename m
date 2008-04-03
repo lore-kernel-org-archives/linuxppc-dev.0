@@ -1,27 +1,21 @@
-Return-Path: <yhlu.kernel@gmail.com>
-Received: from wx-out-0506.google.com (wx-out-0506.google.com [66.249.82.236])
-	by ozlabs.org (Postfix) with ESMTP id F3279DDE1D
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 Apr 2008 15:16:07 +1100 (EST)
-Received: by wx-out-0506.google.com with SMTP id h27so2910199wxd.15
-	for <linuxppc-dev@ozlabs.org>; Wed, 02 Apr 2008 21:16:06 -0700 (PDT)
-Message-ID: <86802c440804022116j2a8fb745pf734f61542a8e287@mail.gmail.com>
-Date: Wed, 2 Apr 2008 21:16:05 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [PATCH] mm: make mem_map allocation continuous v2.
-In-Reply-To: <20080402192223.5e8754a0.akpm@linux-foundation.org>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id 4F17DDDE04
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 Apr 2008 15:16:29 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 2/3] [POWERPC][V3] Xilinx: of_serial support for Xilinx
+	uart 16550.
+Date: Thu, 3 Apr 2008 06:16:08 +0200
+References: <20080402232213.5D87515B8067@mail37-sin.bigfish.com>
+	<200804030134.11437.arnd@arndb.de>
+	<fa686aa40804021943m208c2ff0va6c6b629a747439f@mail.gmail.com>
+In-Reply-To: <fa686aa40804021943m208c2ff0va6c6b629a747439f@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <200804021525.48799.yhlu.kernel@gmail.com>
-	<20080402155247.5e746be7.akpm@linux-foundation.org>
-	<86802c440804021744m7c6e3d94vcb6af3ebcaa71b5b@mail.gmail.com>
-	<200804021830.24563.yhlu.kernel@gmail.com>
-	<20080402192223.5e8754a0.akpm@linux-foundation.org>
-Cc: kernel list <linux-kernel@vger.kernel.org>,
-	Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-	Yinghai Lu <yhlu.kernel.send@gmail.com>, linuxppc-dev@ozlabs.org,
-	Badari Pulavarty <pbadari@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-	Balbir Singh <balbir@linux.vnet.ibm.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200804030616.09825.arnd@arndb.de>
+Cc: John Linn <john.linn@xilinx.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,38 +25,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Apr 2, 2008 at 7:22 PM, Andrew Morton <akpm@linux-foundation.org> wrote:
-> On Wed, 2 Apr 2008 18:30:24 -0700 Yinghai Lu <yhlu.kernel.send@gmail.com> wrote:
->
->  > v2 replace:
->  >       [PATCH] mm: make mem_map allocation continuous.
->  >       [PATCH] mm: allocate section_map for sparse_init
->  >       [PATCH] mm: allocate usemap at first instead of mem_map in sparse_init
->  >
->
->  err, no.
->
->
->  >
->  > diff --git a/mm/sparse.c b/mm/sparse.c
->  > index f6a43c0..2881222 100644
->  > --- a/mm/sparse.c
->  > +++ b/mm/sparse.c
->
->  Sorry, but I'd rather not do it this way.  We presently have this:
->
+On Thursday 03 April 2008, Grant Likely wrote:
+> >
+> > =A0Since it is not really compatible with ns16550, shouldn't you at lea=
+st specify
+> > =A0a different "compatible" property? That way, the driver won't do inc=
+orrect
+> > =A0accesses when you try to use an old driver with a device tree that s=
+pecifies
+> > =A0one of these.
+>=20
+> Heh; we've gone back and forth on this issue. =A0The problem is that we
+> have a common case of ns16550 like devices that require a little bit
+> of register address tweaking that spans a whole range of vendors (so
+> adding a compatible match with each of those vendor's prefixes is
+> probably non-scalable). =A0So, if "ns16550" is not a good idea, then
+> what should be used? =A0"sparse16550" has been suggested more than once.
 
-it replaces
+After another IRC discussion between Grant, Segher and myself, we concluded
+that we don't need to invent a new "compatible" value, as only new device
+trees with old kernels will have a problem with this, and they don't work
+in the first place.
 
->  mm-make-mem_map-allocation-continuous.patch
->  mm-make-mem_map-allocation-continuous-checkpatch-fixes.patch
->  mm-allocate-section_map-for-sparse_init.patch
->  mm-allocate-section_map-for-sparse_init-update.patch
->  mm-allocate-section_map-for-sparse_init-update-fix.patch
->  mm-allocate-section_map-for-sparse_init-powerpc-fix.patch
+The devices will still have their specific "compatible" value, e.g.
+"xlnx,plb-uart16550-1.00.c", followed by "ns16550", and possibly
+"ns16450" and "i8250", although the last two do not have an effect
+on Linux.
 
-others still needed
+Josh, can you please forward all three patches in their latest version?
 
-so mm-make-mem-map-allocation-continuous.patch will not break powerpc and ia64
-
-YH
+Acked-by: Arnd Bergmann <arnd@arndb.de>
