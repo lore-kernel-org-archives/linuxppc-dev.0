@@ -1,18 +1,17 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 30137DDE02
-	for <linuxppc-dev@ozlabs.org>; Fri,  4 Apr 2008 16:20:09 +1100 (EST)
-Date: Fri, 4 Apr 2008 00:29:55 -0500
-From: Olof Johansson <olof@lixom.net>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] PowerPC: MPIC ack interrupts at mpic_teardown_this_cpu()
-Message-ID: <20080404052955.GC11799@lixom.net>
-References: <20080403190943.GA16446@ru.mvista.com>
-	<1207259436.10388.337.camel@pasglop>
+Return-Path: <arnd@arndb.de>
+From: Arnd Bergmann <arnd@arndb.de>
+To: cbe-oss-dev@ozlabs.org
+Subject: Re: [Cbe-oss-dev] [PATCH] RTAS - adapt procfs interface
+Date: Fri, 4 Apr 2008 07:39:29 +0200
+References: <200804011512.20834.jens@de.ibm.com>
+	<20080404001242.GA19506@lst.de>
+In-Reply-To: <20080404001242.GA19506@lst.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1207259436.10388.337.camel@pasglop>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200804040739.30139.arnd@arndb.de>
+Cc: Nathan Lynch <ntl@pobox.com>, Christoph Hellwig <hch@lst.de>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,25 +21,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Apr 04, 2008 at 08:50:36AM +1100, Benjamin Herrenschmidt wrote:
-> 
-> On Thu, 2008-04-03 at 23:09 +0400, Valentine Barshak wrote:
-> > We really need to ack interrupts at mpic_teardown, since
-> > not all platforms reset mpic at kernel start-up. For example,
-> > kexec'ed kernel hangs on P.A. Semi if mpic_eoi() isn't called.
-> > 
-> > Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
-> > ---
-> 
-> Would be interesting to find out why it hangs tho... it shouldn't .
+On Friday 04 April 2008, Christoph Hellwig wrote:
+> On Tue, Apr 01, 2008 at 03:12:20PM +0200, Jens Osterkamp wrote:
+> >=20
+> > Hi,
+> >=20
+> > rtas_flash was broken since 2.6.24-rc5. This patch fixes it.
+> > I think this is a good bugfix candidate for 2.6.25.
+>=20
+> NACK. =A0driver should not poke into the internal count member. =A0Just
+> provide your own inclusion with a new counter or set/test_bit.
 
-I haven't reproduced the problem and looked at hardware state yet, but I
-would expect it to be because the openpic won't send another interrupt
-until the previous is EOI'd, and the IPI is never EOI'd as far as I
-can tell.
+Well we still have the regression against 2.6.23 and I'd like to
+get that fixed in 2.6.25 if it's not already release by the time
+we get there.
 
-The XICS code does it explicitly already. I'm surprised it doesn't break
-on the 970-based platforms actually...
+Would you prefer using Nathan's proper patch for 2.6.25, or do
+that for 2.6.26 instead, perhaps using Jens' patch as a quick
+fix, as Nathan suggested?
 
-
--Olof
+	Arnd <><
