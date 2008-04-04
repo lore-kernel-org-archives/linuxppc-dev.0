@@ -1,20 +1,33 @@
-Return-Path: <tur@semihalf.com>
-Received: from semihalf.com (semihalf.com [206.130.101.55])
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 9F291DDE0A
-	for <linuxppc-dev@ozlabs.org>; Fri,  4 Apr 2008 22:14:47 +1100 (EST)
-Message-ID: <47F60D5D.5090402@semihalf.com>
-Date: Fri, 04 Apr 2008 13:13:33 +0200
-From: Bartlomiej Sieka <tur@semihalf.com>
-MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: Please pull linux-2.6-mpc52xx.git
-References: <fa686aa40803171443q7a53f0balbb49740116c6552@mail.gmail.com>		<20080317222836.AFA66241A2@gemini.denx.de>		<fa686aa40803171643y7db21cadsc454a713ba6c4342@mail.gmail.com>		<47E938A8.9000103@semihalf.com>	<fa686aa40803251151p457a2295w449222654be4d0d1@mail.gmail.com>
-	<47F22C9A.4050501@semihalf.com>
-In-Reply-To: <47F22C9A.4050501@semihalf.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 178FBDDEF7
+	for <linuxppc-dev@ozlabs.org>; Fri,  4 Apr 2008 22:48:30 +1100 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e32.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m34BkbhD019205
+	for <linuxppc-dev@ozlabs.org>; Fri, 4 Apr 2008 07:46:37 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m34BmQwa114598
+	for <linuxppc-dev@ozlabs.org>; Fri, 4 Apr 2008 05:48:26 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m34BmQrL009294
+	for <linuxppc-dev@ozlabs.org>; Fri, 4 Apr 2008 05:48:26 -0600
+Date: Fri, 4 Apr 2008 06:47:41 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: jyoung5@us.ibm.com
+Subject: Re: [PATCH] Add idle wait support for 44x platforms
+Message-ID: <20080404064741.69f8669b@zod.rchland.ibm.com>
+In-Reply-To: <1207289558.6971.15.camel@thinkpadL>
+References: <7226bef216680748a503.1207262582@thinkpadL>
+	<20080403230356.GJ20457@bakeyournoodle.com>
+	<1207289558.6971.15.camel@thinkpadL>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: kvm-ppc-devel@lists.sourceforge.net, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,59 +37,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Bartlomiej Sieka wrote:
-> Hi Grant,
+On Fri, 04 Apr 2008 01:12:38 -0500
+Jerone Young <jyoung5@us.ibm.com> wrote: 
+> > 
+> > > +static int current_mode = 0;
+> > 
+> > Leave this as: static int current_mode;, so it'll end up in the bss
 > 
-> Grant Likely wrote:
->> On Tue, Mar 25, 2008 at 11:38 AM, Bartlomiej Sieka <tur@semihalf.com> 
->> wrote:
->>> Grant Likely wrote:
->>>  > The one part that I have a really strong opinion on is that there
->>>  > should be a full featured mpc5200 defconfig for build testing.  
->>> Beyond
->>>  > that (and if ojn can also be appeased) I can probably be 
->>> convinced.  :-)
->>>
->>>  Hi Grant,
->>>
->>>  How to deal with a situation where I need a particular PHY driver from
->>>  libphy compiled in the kernel for one of the MPC5200 boards? Adding it
->>>  to mpc5200_defconfig doesn't seem like a right thing to do.
->>
->> Why not?  mpc5200_defconfig is all about compile and runtime testing
->> on many platforms to make sure drivers play well together.  I have no
->> problem adding more drivers to the mpc5200 defconfig.  (In fact, I
->> encourage it).
->>
->>>  How to
->>>  convince you (and appease ojn) to accept a patch that adds a
->>>  board-specific defconfig that only slightly differs from
->>>  mpc5200_defconfig? :)
->>
->> I'm thinking 'optimized' defconfigs should go into a subdirectory.
-> 
-> This requires a change to the top-level Makefile and shepherding this
-> change upstream. Could we perhaps try to avoid this by having optimized
-> defconfigs in the form of, for example:
-> 
-> arch/powerpc/configs/tqm5200_opt_defconfig
-> arch/powerpc/configs/motionpro_opt_defconfig
-> 
-> Or, to signify what is the base defconfig:
-> 
-> arch/powerpc/configs/mpc5200_tqm5200_defconfig
-> arch/powerpc/configs/mpc5200_motionpro_defconfig
-> 
-> or even:
-> 
-> arch/powerpc/configs/mpc5200_opt_tqm5200_defconfig
-> arch/powerpc/configs/mpc5200_opt_motionpro_defconfig
-> 
-> Would patch adding an optimized _defconfig along these lines be accepted?
+> The problem here is that this defines the default case. Is there really
+> a benefit having this in bss ?
 
-Grant,
+It's still defined to 0 if it's in the BSS, as that is all initialized
+to 0.
 
-Any thoughts on the above?
-
-Regards,
-Bartlomiej
+josh
