@@ -1,35 +1,27 @@
-Return-Path: <osstklei@de.ibm.com>
-Received: from mtagate8.uk.ibm.com (mtagate8.uk.ibm.com [195.212.29.141])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate8.uk.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 946F2DDF9E
-	for <linuxppc-dev@ozlabs.org>; Sat,  5 Apr 2008 00:05:00 +1100 (EST)
-Received: from d06nrmr1407.portsmouth.uk.ibm.com
-	(d06nrmr1407.portsmouth.uk.ibm.com [9.149.38.185])
-	by mtagate8.uk.ibm.com (8.13.8/8.13.8) with ESMTP id m34D4t6S114504
-	for <linuxppc-dev@ozlabs.org>; Fri, 4 Apr 2008 13:04:55 GMT
-Received: from d06av02.portsmouth.uk.ibm.com (d06av02.portsmouth.uk.ibm.com
-	[9.149.37.228])
-	by d06nrmr1407.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v8.7) with
-	ESMTP id m34D4t6L2289746
-	for <linuxppc-dev@ozlabs.org>; Fri, 4 Apr 2008 14:04:55 +0100
-Received: from d06av02.portsmouth.uk.ibm.com (loopback [127.0.0.1])
-	by d06av02.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id m34D4sTO009360
-	for <linuxppc-dev@ozlabs.org>; Fri, 4 Apr 2008 13:04:55 GMT
-From: Thomas Klein <osstklei@de.ibm.com>
-To: Jeff Garzik <jeff@garzik.org>
-Subject: [PATCH] ehea: Fix DLPAR memory add support
-Date: Fri, 4 Apr 2008 15:04:53 +0200
+Return-Path: <andre.schwarz@matrix-vision.de>
+Received: from p15137414.pureserver.info (matrixvision.de [217.160.213.229])
+	by ozlabs.org (Postfix) with ESMTP id DCB80DDFA3
+	for <linuxppc-dev@ozlabs.org>; Sat,  5 Apr 2008 00:06:49 +1100 (EST)
+Received: from pandora.intern.matrix-vision.de (g1.matrix-vision.com
+	[217.7.222.190])
+	by p15137414.pureserver.info (Postfix) with ESMTP id 584523CC7BE
+	for <linuxppc-dev@ozlabs.org>; Fri,  4 Apr 2008 15:06:46 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+	by pandora.intern.matrix-vision.de (Postfix) with ESMTP id 8C1B9E762F
+	for <linuxppc-dev@ozlabs.org>; Fri,  4 Apr 2008 15:06:17 +0200 (CEST)
+Received: from hegemone (hegemone.intern.matrix-vision.de [192.168.5.77])
+	by pandora.intern.matrix-vision.de (Postfix) with ESMTP id 0F2D3E762F
+	for <linuxppc-dev@ozlabs.org>; Fri,  4 Apr 2008 15:06:17 +0200 (CEST)
+Received: from [192.168.65.5] (unknown [192.168.65.5])
+	by hegemone (Postfix) with ESMTP id 0FD3853E
+	for <linuxppc-dev@ozlabs.org>; Fri,  4 Apr 2008 15:06:15 +0200 (CEST)
+Message-ID: <47F627E6.90304@matrix-vision.de>
+Date: Fri, 04 Apr 2008 15:06:46 +0200
+From: Andre Schwarz <andre.schwarz@matrix-vision.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200804041504.54130.osstklei@de.ibm.com>
-Cc: Jan-Bernd Themann <themann@de.ibm.com>, netdev <netdev@vger.kernel.org>,
-	Hannes Hering <hering2@de.ibm.com>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	linux-ppc <linuxppc-dev@ozlabs.org>, Christoph Raisch <raisch@de.ibm.com>,
-	Stefan Roscher <stefan.roscher@de.ibm.com>
+To: linux-ppc list <linuxppc-dev@ozlabs.org>
+Subject: Oops MPC8343 @ 2.6.25-rc7
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,84 +31,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch fixes two weaknesses in send/receive packet handling which may
-lead to kernel panics during DLPAR memory add operations.
+All,
 
-Signed-off-by: Thomas Klein <tklein@de.ibm.com>
+I'm having trouble booting a MPC8343 into a recent 2.6.25-rc7 kernel.
 
----
-diff -Nurp -X dontdiff linux-2.6.25-rc8/drivers/net/ehea/ehea.h patched_kernel/drivers/net/ehea/ehea.h
---- linux-2.6.25-rc8/drivers/net/ehea/ehea.h	2008-04-01 21:44:26.000000000 +0200
-+++ patched_kernel/drivers/net/ehea/ehea.h	2008-04-03 15:36:36.000000000 +0200
-@@ -40,7 +40,7 @@
- #include <asm/io.h>
- 
- #define DRV_NAME	"ehea"
--#define DRV_VERSION	"EHEA_0089"
-+#define DRV_VERSION	"EHEA_0090"
- 
- /* eHEA capability flags */
- #define DLPAR_PORT_ADD_REM 1
-@@ -371,6 +371,7 @@ struct ehea_port_res {
- 	struct ehea_q_skb_arr rq2_skba;
- 	struct ehea_q_skb_arr rq3_skba;
- 	struct ehea_q_skb_arr sq_skba;
-+	int sq_skba_size;
- 	spinlock_t netif_queue;
- 	int queue_stopped;
- 	int swqe_refill_th;
-diff -Nurp -X dontdiff linux-2.6.25-rc8/drivers/net/ehea/ehea_main.c patched_kernel/drivers/net/ehea/ehea_main.c
---- linux-2.6.25-rc8/drivers/net/ehea/ehea_main.c	2008-04-01 21:44:26.000000000 +0200
-+++ patched_kernel/drivers/net/ehea/ehea_main.c	2008-04-03 15:36:36.000000000 +0200
-@@ -349,7 +349,8 @@ static void ehea_refill_rq1(struct ehea_
- 	pr->rq1_skba.os_skbs = 0;
- 
- 	if (unlikely(test_bit(__EHEA_STOP_XFER, &ehea_driver_flags))) {
--		pr->rq1_skba.index = index;
-+		if (nr_of_wqes > 0)
-+			pr->rq1_skba.index = index;
- 		pr->rq1_skba.os_skbs = fill_wqes;
- 		return;
- 	}
-@@ -1464,7 +1465,9 @@ static int ehea_init_port_res(struct ehe
- 			  init_attr->act_nr_rwqes_rq2,
- 			  init_attr->act_nr_rwqes_rq3);
- 
--	ret = ehea_init_q_skba(&pr->sq_skba, init_attr->act_nr_send_wqes + 1);
-+	pr->sq_skba_size = init_attr->act_nr_send_wqes + 1;
-+
-+	ret = ehea_init_q_skba(&pr->sq_skba, pr->sq_skba_size);
- 	ret |= ehea_init_q_skba(&pr->rq1_skba, init_attr->act_nr_rwqes_rq1 + 1);
- 	ret |= ehea_init_q_skba(&pr->rq2_skba, init_attr->act_nr_rwqes_rq2 + 1);
- 	ret |= ehea_init_q_skba(&pr->rq3_skba, init_attr->act_nr_rwqes_rq3 + 1);
-@@ -2621,6 +2624,22 @@ void ehea_purge_sq(struct ehea_qp *orig_
- 	}
- }
- 
-+void ehea_flush_sq(struct ehea_port *port)
-+{
-+	int i;
-+
-+	for (i = 0; i < port->num_def_qps + port->num_add_tx_qps; i++) {
-+		struct ehea_port_res *pr = &port->port_res[i];
-+		int swqe_max = pr->sq_skba_size - 2 - pr->swqe_ll_count;
-+		int k = 0;
-+		while (atomic_read(&pr->swqe_avail) < swqe_max) {
-+			msleep(5);
-+			if (++k == 20)
-+				break;
-+		}
-+	}
-+}
-+
- int ehea_stop_qps(struct net_device *dev)
- {
- 	struct ehea_port *port = netdev_priv(dev);
-@@ -2845,6 +2864,7 @@ static void ehea_rereg_mrs(struct work_s
- 					if (dev->flags & IFF_UP) {
- 						down(&port->port_lock);
- 						netif_stop_queue(dev);
-+						ehea_flush_sq(port);
- 						ret = ehea_stop_qps(dev);
- 						if (ret) {
- 							up(&port->port_lock);
+
+Kernel config has been reduced to a minimum : no PCI, no netwoking, i2c, 
+spi ...
+dts has been reduced to the CPU, soc and ipic nodes.
+
+U-Boot fills out dtb correctly - as far as I can see.
+
+Kernel crashes on various "of_" functions regarding to call trace.
+
+There's also strange messages :
+WARNING: Estimating decrementer frequency (not found)
+WARNING: Estimating processor frequency (not found)
+
+They're coming from "generic_calibrate_decr()" in kernel/time.c.
+
+Looks like there something basically wrong with my dtb 
+location/processing, since the "timebase-frequency" is present and valid :
+
+        cpus {
+                #address-cells = <0x00000001>;
+                #size-cells = <0x00000000>;
+                PowerPC,8343@0 {
+                        device_type = "cpu";
+                        reg = <0x00000000>;
+                        d-cache-line-size = <0x00000020>;
+                        i-cache-line-size = <0x00000020>;
+                        d-cache-size = <0x00008000>;
+                        i-cache-size = <0x00008000>;
+                        timebase-frequency = <0x03f940aa>;
+                        bus-frequency = <0x0fe502a8>;
+                        clock-frequency = <0x17d783fc>;
+                };
+        };
+
+
+Any hints ?
+
+
+regards,
+Andre Schwarz
+Matrix Vision
+
+
+MATRIX VISION GmbH, Talstraße 16, DE-71570 Oppenweiler  - Registergericht: Amtsgericht Stuttgart, HRB 271090
+Geschäftsführer: Gerhard Thullner, Werner Armingeon, Uwe Furtner
