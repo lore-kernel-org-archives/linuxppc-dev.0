@@ -1,22 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 6243CDDECF
-	for <linuxppc-dev@ozlabs.org>; Sat,  5 Apr 2008 09:47:04 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 28041DDFE1
+	for <linuxppc-dev@ozlabs.org>; Sat,  5 Apr 2008 10:31:21 +1100 (EST)
 Subject: Re: [PATCH v2] powerpc: Add irqtrace support for 32-bit powerpc
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+From: Johannes Berg <johannes@sipsolutions.net>
 To: Dale Farnsworth <dale@farnsworth.org>
-In-Reply-To: <20080404223522.GA16958@farnsworth.org>
+In-Reply-To: <20080404213932.GA15847@farnsworth.org>
 References: <20080404213932.GA15847@farnsworth.org>
-	<1207346851.10388.427.camel@pasglop>
-	<20080404223522.GA16958@farnsworth.org>
-Content-Type: text/plain
-Date: Sat, 05 Apr 2008 09:46:24 +1100
-Message-Id: <1207349184.10388.438.camel@pasglop>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-PxKmZ597Ry4yeEtaVsfc"
+Date: Sat, 05 Apr 2008 01:31:09 +0200
+Message-Id: <1207351869.6675.0.camel@johannes.berg>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Johannes Berg <johannes@sipsolutions.net>
-Reply-To: benh@kernel.crashing.org
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,35 +26,42 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-> Right, it's not needed on 4xx/BookE, but I didn't think it worth
-> optimizing at this point, since it will split the code into 4xx/BookE
-> and classic versions. Let's get it working solid first.
+--=-PxKmZ597Ry4yeEtaVsfc
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Yup, it's just that I spotted it while reading the code.
 
-> That's what I originally thought and had in my first version.
-> However, in the BookE case, we must save at least r3, r4, and r5.
-> (See data_access: in head_fsl_booke.S.)  It isn't clear what the
-> rules are, and I didn't want to set a trap for when a handler is
-> added that uses a fourth argument.
+> This version takes care to save and restore *all* the volatile registers
+> around the call to trace_hardirqs_off in transfer_to_handler, and should
+> fix the anomalies seen by Johannes Berg.  I've tested on 7447- and 8548-
+> based boards.
 
-Ok, this definitely is worth some rework around the edges. For now, I
-suppose keeping it stable will do.
+Still has problems on my machine. Maybe to do with non-maskable PMU
+interrupts? (saw a patch about something like that float by, don't
+really have any idea whether it's related to this work or not)
 
-> If you think it's worth it, I could test a version that saves
-> r3, r4, and r5 and restores the others from ptregs.
+johannes
 
-Don't bother for now. I'll see if we can do things differently later.
+--=-PxKmZ597Ry4yeEtaVsfc
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
-> > Also, only the system call really cares about -restoring- them. Maybe
-> > you could stick that in an ifdef CONFIG_TRACE_IRQFLAGS section in
-> > DoSyscall pulling them back off the ptregs in the stackframe. 
-> 
-> Another optimization that I'm not convinced is worth the trouble
-> for this tracing code.  I'll try to take a look at it though.
-> As you say below, it's scary code.
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
 
-Yup. The RESTOREALL case doesn't write the result to the PT_REGS but I'm
-not yet sure if that's a big issue to do it regardless or not.
+iQIVAwUAR/a6PKVg1VMiehFYAQJRbA//UTCP5k+0ZMQZjlR4IBM4ZuOXBW+YSK55
+vmOSXDovdCoxkceG+OD0599swYgnWl3NjdGeWAPQIOGpa78W50Z5OThd16mpWRp6
+foHyAmD33ZgAuE3bsJEahTdQJp9uXRY/AzqpNCwGhHpdB1xuXy3umwc9mMsj77u8
+NeMRvHpQsvAoRUJKno2oOdLOQzw5mtmN4M6U/bzOyOIiF5X16Cpv+zRmB7yfM62a
+AylgaxD+Rv3OL5G8b8kbeBPfLikALbnL0M+gmoPoQL6ZDhaiTeiX4el0GRVxrS+z
+zQ7DdQNEimA+e6RLE9KGZ/GUx7fRMm/ZVvSl/IRs8qL8Q2E/xQwt/7A26yKtHOgg
+aGfSHuolAcXJFXQpb/IwObGorbwJaRoDEqMA/8lQ9XFPSLXEH+8IYJAzgf4YRLeg
+qZ7WO3aN9HwGlgF/Klmnlo8SvKkWDqIbOR2rEkKCmX3L3PTxBZIJAsDhjjTD26jO
+HcNDtlbcABRF9/kR20522KRFY9XtrfU0MR/kAWxUJ+ym6T6lZdvNKeeKlIg/B+5Y
+b3odQzjcu4eYjjRZuZ0PIQj40JMVh9SIMzD5n8h244t3Gj1mhdBtDTqRYfRaYJCE
+0D/ZrYeSR36MTxhNBn9e7ZgdpNS9+eChhZt+RVBRRqif4s636hFXSpg2PH8MyhZl
+lSbyuaJdkVo=
+=m5vs
+-----END PGP SIGNATURE-----
 
-Ben.
+--=-PxKmZ597Ry4yeEtaVsfc--
