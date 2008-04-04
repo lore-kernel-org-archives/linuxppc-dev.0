@@ -1,22 +1,18 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 84DAADE1F8
-	for <linuxppc-dev@ozlabs.org>; Sat,  5 Apr 2008 06:29:50 +1100 (EST)
-Date: Fri, 4 Apr 2008 14:39:42 -0500
-From: Olof Johansson <olof@lixom.net>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] PowerPC: MPIC ack interrupts at mpic_teardown_this_cpu()
-Message-ID: <20080404193942.GA27748@lixom.net>
-References: <20080403190943.GA16446@ru.mvista.com>
-	<1207259436.10388.337.camel@pasglop>
-	<20080404052955.GC11799@lixom.net>
-	<9d19fecb0ef172995b7ce3a317ee3c0d@kernel.crashing.org>
-	<20080404180333.GB26693@lixom.net>
-	<63defd942bd57ca87cb17334832b615c@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <63defd942bd57ca87cb17334832b615c@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <johannes@sipsolutions.net>
+Subject: Re: [RFC/PATCH] powerpc: Add irqtrace support to 32-bit powerpc
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Dale Farnsworth <dale@farnsworth.org>
+In-Reply-To: <1207145738.3957.2.camel@johannes.berg>
+References: <20080201195040.GA8950@farnsworth.org>
+	(sfid-20080201_205114_032143_11799746)
+	<1207145738.3957.2.camel@johannes.berg>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-JUG55B9XuV8jvafzD3W7"
+Date: Fri, 04 Apr 2008 21:33:18 +0200
+Message-Id: <1207337598.19189.77.camel@johannes.berg>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Benjamin Herrenschmidt <benh@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,33 +22,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Apr 04, 2008 at 08:55:01PM +0200, Segher Boessenkool wrote:
->>> platforms/maple/setup.c and platforms/powermac/pic.c use
->>> MPIC_WANTS_RESET.
->>> Is there a reason why we don't do that on every MPIC?  If there is  
->>> such
->>> a reason, the default should be to reset, only pseries and chrp and  
->>> cell
->>> and now pasemi do not use it.  It's the only sane way to get an MPIC
->>> into
->>> a sane known state starting from <whatever> state.
->>
->> I used to have the reset there on pasemi but due to some other issues I
->> ended up taking it out.
->>
->> It's not like doing a final EOI is a big deal, I really don't see why
->> there's hassle about this patch.
->
-> The patch is fine, don't get me wrong.  I'm just saying MPIC_WANTS_RESET
-> should be the default since pretty much everything wants it.  The few
-> platforms that don't can document why; with the current code, we cannot
-> see if you just forgot it or not.
 
-It was documented in the changeset, see de0c74e7f98d8a06b784e120103eb388da8194f6.
-
-But yeah, that's hard to tell at some point later in time, a short
-comment by the call could be useful. I'll add one next time I touch that
-code.
+--=-JUG55B9XuV8jvafzD3W7
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
 
--Olof
+On Wed, 2008-04-02 at 16:15 +0200, Johannes Berg wrote:
+> On Fri, 2008-02-01 at 12:50 -0700, Dale Farnsworth wrote:
+> > This adds the low level irq tracing hooks for 32-bit powerpc.
+> > This patch applies on top of Benjamin Herrenschmidt's patch that
+> > provides similar support for 64-bit powerpc.  See
+> > <http://ozlabs.org/pipermail/linuxppc-dev/2007-October/044361.html>
+> >=20
+> > It seems to work on my prpmc2800 board with a ppc7447.
+>=20
+> At first it appears to work on my powerbook (with Ben's latest version
+> of the 64-bit patch), but then it seems to cause random corruption, I've
+> had a crash in the ext3 code and one in console_callback(), both of
+> which I cannot otherwise explain.
+
+FWIW, same kernel without the patch works fine.
+
+johannes
+
+--=-JUG55B9XuV8jvafzD3W7
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iQIVAwUAR/aCfaVg1VMiehFYAQJByw//VhypFA/GiqANdUC4APuc3m5O+oHE0Efg
+w2FREVYBRq2lHWcsJKcsszatZqNt5yFMM0MIP+8wdzKftp7w+25hNL+00wx84elH
+4dRSSpnempItyOIxFFL0IGff2HwzEiSXAFtMPbScVwllA19EpGAoDTvEjNH/4Wl+
+c65dWsrSL49apQDNfaUB8otjmz9cpegiCZiRJ4hw+R559A8fwRwlMaj+umeZDtBn
+pDKIG5V82dTlhtkgzJIZYl8Kcdg5Ez8nCDlZQoQwnOPhGmrv29C4Ay8PATkSoOeN
+5aLnVkTAkMTWOevUDkSyio1qSReRM7Yk1yG9yfbBGmdJIRbQiYFu9gRmuYE5S72S
+rEwPwNnAhW2s5vRRn8SqzvSMJchJMI4yQit+8Z7xTFolIBTDAaNkd+njXr9iYk9F
+Uxce/H+HuoU5iDm+Q0awW8j41ozU5nDZZU2zu4EmqCYGwQNRJJ6rEzzOeSGozeFs
+j4RFZlj+WyiHASDeiIDmFJG0VjOYEk6BOHuG8FeDiRtONLtFqnUCMls3UwLeyd13
+tNp9lBVsyjb3/cEw+7t3d1S86+K2aZgCqZc6oK9IzZ3O8kkEqme3fQLpE+X6ktJo
+sThyvZS9EwlHKzwuvIv1vWHy0vBBq1LYsF6y72OeAs6Vpqqp5HKE9yy18m8vqM8q
+boJxZChZM0A=
+=AdDz
+-----END PGP SIGNATURE-----
+
+--=-JUG55B9XuV8jvafzD3W7--
