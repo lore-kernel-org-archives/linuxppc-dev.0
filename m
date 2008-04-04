@@ -1,19 +1,34 @@
-Return-Path: <johannes@sipsolutions.net>
-Subject: cpu_clock confusion (was: printk time confusion?)
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Benjamin Herrenschmidt <benh@ozlabs.org>
-In-Reply-To: <1207219724.10388.319.camel@pasglop>
-References: <1207146186.3957.11.camel@johannes.berg>
-	<1207219724.10388.319.camel@pasglop>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-cVHlm+Z9SnEgTxO7aMHo"
-Date: Thu, 03 Apr 2008 18:34:10 +0200
-Message-Id: <1207240450.3797.22.camel@johannes.berg>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, Ingo Molnar <mingo@elte.hu>,
-	Arnd Bergmann <arndb@de.ibm.com>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>
+Return-Path: <hollisb@us.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 55029DE012
+	for <linuxppc-dev@ozlabs.org>; Sat,  5 Apr 2008 01:33:23 +1100 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m34EVUxk002227
+	for <linuxppc-dev@ozlabs.org>; Fri, 4 Apr 2008 10:31:30 -0400
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m34EXFvZ187186
+	for <linuxppc-dev@ozlabs.org>; Fri, 4 Apr 2008 08:33:15 -0600
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m34EXEnI020668
+	for <linuxppc-dev@ozlabs.org>; Fri, 4 Apr 2008 08:33:15 -0600
+From: Hollis Blanchard <hollisb@us.ibm.com>
+To: jyoung5@us.ibm.com
+Subject: Re: [kvm-ppc-devel] [PATCH] Add idle wait support for 44x platforms
+Date: Fri, 4 Apr 2008 09:33:13 -0500
+References: <7226bef216680748a503.1207262582@thinkpadL>
+	<20080403210027.05339204@zod.rchland.ibm.com>
+	<1207288799.6971.11.camel@thinkpadL>
+In-Reply-To: <1207288799.6971.11.camel@thinkpadL>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200804040933.13936.hollisb@us.ibm.com>
+Cc: kvm-ppc-devel@lists.sourceforge.net, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,74 +38,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Friday 04 April 2008 00:59:59 Jerone Young wrote:
+> On Thu, 2008-04-03 at 21:00 -0500, Josh Boyer wrote:
+> > On Thu, 03 Apr 2008 17:43:02 -0500
+> >
+> > Jerone Young <jyoung5@us.ibm.com> wrote:
+> > > # HG changeset patch
+> > > # User Jerone Young <jyoung5@us.ibm.com>
+> > > # Date 1207262487 18000
+> > > # Node ID 7226bef216680748a50327900572c2fbc3e762b0
+> > > # Parent =A0a5b2aebbc6ebd2439c655f1c047ed7e3c1991ec1
+> >
+> > As a complete and unrelated side note to the actual patch, wtf is this
+> > hg stuff? =A0I can't really tell what tree you're even basing this off =
+of.
+>
+> hehe...I primary use hg as it's just much easier to deal with. Yes I do
+> go through the conversion. But it is worth it. The patches I send are in
+> git format.
 
---=-cVHlm+Z9SnEgTxO7aMHo
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+By the way, you can use "hg email --plain" to avoid confusing the=20
+unenlightened. ;) The Mercurial changeset data won't be useful here=20
+anyways...
 
-Hi,
+In reply to an earlier unrelated comment, there is also "hg email --diffsta=
+t".
 
-> > Not sure whether the lockdep patches or something else is causing this
-> > as I haven't checked w/o the patches yet, but I seem to be having some
-> > confusion of printk timestamps:
->=20
-> Tried reverting the patches ?
-
-That didn't help, so it's not the lockdep patches causing it. I'm still
-seeing printk timestamps like this:
-
-[    2.764009 (3/3)]
-[    4.272241 (2/2)]
-[    4.272322 (2/2)]
-[    4.272375 (2/2)]
-[    2.948002 (3/3)]
-
-As you can see, I added printk_cpu and smp_processor_id() to the printk
-timestamp output and thus it is obvious that the different times come
-from different CPUs.
-
-I have to admit that I do not understand the cpu_clock() implementation,
-but I can only point out that the bug seems to be there since our
-sched_clock() uses the timebase which is certainly synchronized. For the
-fun of it, here's another output, with get_tb() thrown in:
-
-[   15.285317 (0/0,1734086151)]
-[   13.563845 (3/3,1757040324)]
-[   13.700157 (3/3,1773150788)]
-[   15.181275 (1/1,1829646200)]
-[   15.181343 (1/1,1829648488)]
-[   16.987944 (0/0,1829664311)]
-[   16.988485 (0/0,1829682407)]
-[   12.047482 (2/2,1829690681)]
-
-As expected, the timebase is perfectly fine, it's monotonously
-increasing over all the processors, but cpu_clock() doesn't seem to
-notice. Not sure what to make of it. It seems just using the timebase
-(in form of sched_clock()) ought to be perfectly fine and even have less
-overhead than all this cpu_clock() business.
-
-johannes
-
---=-cVHlm+Z9SnEgTxO7aMHo
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIVAwUAR/UHAaVg1VMiehFYAQIooBAAxGLMxo2IcXhp3bKZ7whnCaaaRgnWvcIy
-tyc1iRMiBuiw4+a5IZjRdJKr4IV642uqsb4duTCbpIrVzu7u+/J86ZiP9LvynsOi
-2eN57nAL9KosPkGVXAcQiVkc3dq+IiYlbsSRFjx5Uvf+Jaguv3k5g783ge4PwgBH
-6Z0z2HQRgJn9VSuaww2KrVzqlrpNkbfBuL0vfRgixrxlvVsiNMrh8XM1Ym0KBcBZ
-fL9l9fQUDjTzJW7JnDJUCcUfBp/q4nl8Zs8wJtsCfbJhoao+XkzufomWiBl1vfAY
-3AK1lUlpU2S67FUirfgddbxsX0GZqKCu3M4Aj5VrLwWgy/Q0rrCAq4AL05MFA2zf
-lrwhPS2SdzfJrTr9xjNJVLDoiLiBC5kLImZTJ4vpMxKLDyghfvJWwao3hgd9vPrj
-2w00wG9aFjS8W3gOJTzIIEJVafgr8ClG7F+GymD2QYtrY592Fwa7DRVg33aw7gj4
-eoLWG+h5IRd5PWa9LxsxK09xi4ifNXr7FMl7qSyZnRLFJWR3YsBaamHJGxyfpAlI
-b2UttnmADvmDqxWOhbXpGVAHugMcbMokre0n5itR9Sm0e+4P2ETrDkOzoZjzeUFe
-vL0RHxNvVuJly1tIbVnhS98RnUoEofEfe06ngYAkkBYpvVyEWPlVjBPWiSCUxZUs
-Mmw8ItahqBQ=
-=A38F
------END PGP SIGNATURE-----
-
---=-cVHlm+Z9SnEgTxO7aMHo--
+=2D-=20
+Hollis Blanchard
+IBM Linux Technology Center
