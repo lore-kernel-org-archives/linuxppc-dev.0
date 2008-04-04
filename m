@@ -1,23 +1,20 @@
-Return-Path: <apw@shadowen.org>
-Received: from hellhawk.shadowen.org (hellhawk.shadowen.org [80.68.90.175])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <tur@semihalf.com>
+Received: from semihalf.com (semihalf.com [206.130.101.55])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 39A85DDE3A
-	for <linuxppc-dev@ozlabs.org>; Fri,  4 Apr 2008 20:27:01 +1100 (EST)
-Date: Fri, 4 Apr 2008 10:24:22 +0100
-From: Andy Whitcroft <apw@shadowen.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [BUG] 2.6.25-rc8-mm1 kernel panic while bootup on powerpc
-Message-ID: <20080404092422.GB17993@shadowen.org>
-References: <20080401213214.8fbb6d6b.akpm@linux-foundation.org>
-	<47F326E0.3010604@linux.vnet.ibm.com>
-	<20080401233909.23220623.akpm@linux-foundation.org>
+	by ozlabs.org (Postfix) with ESMTPS id 9F291DDE0A
+	for <linuxppc-dev@ozlabs.org>; Fri,  4 Apr 2008 22:14:47 +1100 (EST)
+Message-ID: <47F60D5D.5090402@semihalf.com>
+Date: Fri, 04 Apr 2008 13:13:33 +0200
+From: Bartlomiej Sieka <tur@semihalf.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080401233909.23220623.akpm@linux-foundation.org>
-Cc: linuxppc-dev@ozlabs.org, Balbir Singh <balbir@linux.vnet.ibm.com>,
-	Badari Pulavarty <pbadari@us.ibm.com>, linux-kernel@vger.kernel.org,
-	Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: Please pull linux-2.6-mpc52xx.git
+References: <fa686aa40803171443q7a53f0balbb49740116c6552@mail.gmail.com>		<20080317222836.AFA66241A2@gemini.denx.de>		<fa686aa40803171643y7db21cadsc454a713ba6c4342@mail.gmail.com>		<47E938A8.9000103@semihalf.com>	<fa686aa40803251151p457a2295w449222654be4d0d1@mail.gmail.com>
+	<47F22C9A.4050501@semihalf.com>
+In-Reply-To: <47F22C9A.4050501@semihalf.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,92 +24,59 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Apr 01, 2008 at 11:39:09PM -0700, Andrew Morton wrote:
-> On Wed, 02 Apr 2008 11:55:36 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
+Bartlomiej Sieka wrote:
+> Hi Grant,
 > 
-> > Hi Andrew,
-> > 
-> > The 2.6.25-rc8-mm1 kernel panic's while bootup on the power machine(s).
-> > 
-> > [    0.000000] ------------[ cut here ]------------
-> > [    0.000000] kernel BUG at arch/powerpc/mm/init_64.c:240!
-> > [    0.000000] Oops: Exception in kernel mode, sig: 5 [#1]
-> > [    0.000000] SMP NR_CPUS=32 NUMA PowerMac
-> > [    0.000000] Modules linked in:
-> > [    0.000000] NIP: c0000000003d1dcc LR: c0000000003d1dc4 CTR: c00000000002b6ac
-> > [    0.000000] REGS: c00000000049b960 TRAP: 0700   Not tainted  (2.6.25-rc8-mm1-autokern1)
-> > [    0.000000] MSR: 9000000000021032 <ME,IR,DR>  CR: 44000088  XER: 20000000
-> > [    0.000000] TASK = c0000000003f9c90[0] 'swapper' THREAD: c000000000498000 CPU: 0
-> > [    0.000000] GPR00: c0000000003d1dc4 c00000000049bbe0 c0000000004989d0 0000000000000001 
-> > [    0.000000] GPR04: d59aca40f0000000 000000000b000000 0000000000000010 0000000000000000 
-> > [    0.000000] GPR08: 0000000000000004 0000000000000001 c00000027e520800 c0000000004bf0f0 
-> > [    0.000000] GPR12: c0000000004bf020 c0000000003fa900 0000000000000000 0000000000000000 
-> > [    0.000000] GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000 
-> > [    0.000000] GPR20: 0000000000000000 0000000000000000 0000000000000000 4000000001400000 
-> > [    0.000000] GPR24: 00000000017d64b0 c0000000003d6250 0000000000000000 c000000000504000 
-> > [    0.000000] GPR28: 0000000000000000 cf000000001f8000 0000000001000000 cf00000000000000 
-> > [    0.000000] NIP [c0000000003d1dcc] .vmemmap_populate+0xb8/0xf4
-> > [    0.000000] LR [c0000000003d1dc4] .vmemmap_populate+0xb0/0xf4
-> > [    0.000000] Call Trace:
-> > [    0.000000] [c00000000049bbe0] [c0000000003d1dc4] .vmemmap_populate+0xb0/0xf4 (unreliable)
-> > [    0.000000] [c00000000049bc70] [c0000000003d2ee8] .sparse_mem_map_populate+0x38/0x60
-> > [    0.000000] [c00000000049bd00] [c0000000003c242c] .sparse_early_mem_map_alloc+0x54/0x94
-> > [    0.000000] [c00000000049bd90] [c0000000003c250c] .sparse_init+0xa0/0x20c
-> > [    0.000000] [c00000000049be50] [c0000000003ab7d0] .setup_arch+0x1ac/0x218
-> > [    0.000000] [c00000000049bee0] [c0000000003a36ac] .start_kernel+0xe0/0x3fc
-> > [    0.000000] [c00000000049bf90] [c000000000008594] .start_here_common+0x54/0xc0
-> > [    0.000000] Instruction dump:
-> > [    0.000000] 7fe3fb78 7ca02a14 4082000c 3860fff4 4800003c e92289c8 e96289c0 e9090002 
-> > [    0.000000] e8eb0002 4bc575cd 60000000 78630fe0 <0b030000> 7ffff214 7fbfe840 7fe3fb78 
-> > [    0.000000] ---[ end trace 31fd0ba7d8756001 ]---
-> > [    0.000000] Kernel panic - not syncing: Attempted to kill the idle task!
-> > 
+> Grant Likely wrote:
+>> On Tue, Mar 25, 2008 at 11:38 AM, Bartlomiej Sieka <tur@semihalf.com> 
+>> wrote:
+>>> Grant Likely wrote:
+>>>  > The one part that I have a really strong opinion on is that there
+>>>  > should be a full featured mpc5200 defconfig for build testing.  
+>>> Beyond
+>>>  > that (and if ojn can also be appeased) I can probably be 
+>>> convinced.  :-)
+>>>
+>>>  Hi Grant,
+>>>
+>>>  How to deal with a situation where I need a particular PHY driver from
+>>>  libphy compiled in the kernel for one of the MPC5200 boards? Adding it
+>>>  to mpc5200_defconfig doesn't seem like a right thing to do.
+>>
+>> Why not?  mpc5200_defconfig is all about compile and runtime testing
+>> on many platforms to make sure drivers play well together.  I have no
+>> problem adding more drivers to the mpc5200 defconfig.  (In fact, I
+>> encourage it).
+>>
+>>>  How to
+>>>  convince you (and appease ojn) to accept a patch that adds a
+>>>  board-specific defconfig that only slightly differs from
+>>>  mpc5200_defconfig? :)
+>>
+>> I'm thinking 'optimized' defconfigs should go into a subdirectory.
 > 
-> int __meminit vmemmap_populate(struct page *start_page,
-> 					unsigned long nr_pages, int node)
-> {
-> 	unsigned long mode_rw;
-> 	unsigned long start = (unsigned long)start_page;
-> 	unsigned long end = (unsigned long)(start_page + nr_pages);
-> 	unsigned long page_size = 1 << mmu_psize_defs[mmu_linear_psize].shift;
+> This requires a change to the top-level Makefile and shepherding this
+> change upstream. Could we perhaps try to avoid this by having optimized
+> defconfigs in the form of, for example:
 > 
-> 	mode_rw = _PAGE_ACCESSED | _PAGE_DIRTY | _PAGE_COHERENT | PP_RWXX;
+> arch/powerpc/configs/tqm5200_opt_defconfig
+> arch/powerpc/configs/motionpro_opt_defconfig
 > 
-> 	/* Align to the page size of the linear mapping. */
-> 	start = _ALIGN_DOWN(start, page_size);
+> Or, to signify what is the base defconfig:
 > 
-> 	for (; start < end; start += page_size) {
-> 		int mapped;
-> 		void *p;
+> arch/powerpc/configs/mpc5200_tqm5200_defconfig
+> arch/powerpc/configs/mpc5200_motionpro_defconfig
 > 
-> 		if (vmemmap_populated(start, page_size))
-> 			continue;
+> or even:
 > 
-> 		p = vmemmap_alloc_block(page_size, node);
-> 		if (!p)
-> 			return -ENOMEM;
+> arch/powerpc/configs/mpc5200_opt_tqm5200_defconfig
+> arch/powerpc/configs/mpc5200_opt_motionpro_defconfig
 > 
-> 		pr_debug("vmemmap %08lx allocated at %p, physical %08lx.\n",
-> 			start, p, __pa(p));
-> 
-> 		mapped = htab_bolt_mapping(start, start + page_size,
-> 					__pa(p), mode_rw, mmu_linear_psize,
-> 					mmu_kernel_ssize);
-> =====>		BUG_ON(mapped < 0);
-> 	}
-> 
-> 	return 0;
-> }
-> 
-> Beats me.  pseries?  Badari has been diddling with the bolted memory code
-> in git-powerpc...
+> Would patch adding an optimized _defconfig along these lines be accepted?
 
-It does look like this is resolved with the patch below, if my testing
-is to be believed (results out on TKO):
+Grant,
 
-    [PATCH] mm: allocate usemap at first instead of mem_map in sparse_init
-    From: Yinghai Lu <yhlu.kernel@gmail.com>
+Any thoughts on the above?
 
-Andrew, I believe you just sucked that up into -mm.
-
--apw
+Regards,
+Bartlomiej
