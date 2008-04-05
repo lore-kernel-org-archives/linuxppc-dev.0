@@ -1,21 +1,32 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 28041DDFE1
-	for <linuxppc-dev@ozlabs.org>; Sat,  5 Apr 2008 10:31:21 +1100 (EST)
-Subject: Re: [PATCH v2] powerpc: Add irqtrace support for 32-bit powerpc
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Dale Farnsworth <dale@farnsworth.org>
-In-Reply-To: <20080404213932.GA15847@farnsworth.org>
-References: <20080404213932.GA15847@farnsworth.org>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-PxKmZ597Ry4yeEtaVsfc"
-Date: Sat, 05 Apr 2008 01:31:09 +0200
-Message-Id: <1207351869.6675.0.camel@johannes.berg>
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 1481BDDE24
+	for <linuxppc-dev@ozlabs.org>; Sat,  5 Apr 2008 12:20:28 +1100 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e32.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m351IYnA017742
+	for <linuxppc-dev@ozlabs.org>; Fri, 4 Apr 2008 21:18:34 -0400
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m351KOV1182076
+	for <linuxppc-dev@ozlabs.org>; Fri, 4 Apr 2008 19:20:24 -0600
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m351KO5V003594
+	for <linuxppc-dev@ozlabs.org>; Fri, 4 Apr 2008 19:20:24 -0600
+Date: Fri, 4 Apr 2008 20:19:32 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Jerone Young <jyoung5@us.ibm.com>
+Subject: Re: [PATCH] [v4] Add idle wait support for 44x platforms
+Message-ID: <20080404201932.45aa8862@zod.rchland.ibm.com>
+In-Reply-To: <bff8b51bd3e1c38518c3.1207326507@thinkpadL>
+References: <bff8b51bd3e1c38518c3.1207326507@thinkpadL>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=US-ASCII
+Cc: kvm-ppc-devel@lists.sourceforge.net, linuxppc-dev@ozlabs.org,
+	hollisb@us.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,43 +36,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Fri, 04 Apr 2008 11:28:27 -0500
+Jerone Young <jyoung5@us.ibm.com> wrote:
 
---=-PxKmZ597Ry4yeEtaVsfc
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> 2 files changed, 87 insertions(+), 1 deletion(-)
+> arch/powerpc/platforms/44x/Makefile |    2 
+> arch/powerpc/platforms/44x/idle.c   |   86 +++++++++++++++++++++++++++++++++++
+> 
+> 
+> - adds MSR_DE to MSRs to enable while in wait state
+> 
+> This patch adds the ability for the CPU to go into wait state while in cpu_idle loop. This helps virtulization solutions know when the guest Linux kernel is in an idle state. There are two ways to do it.
+> 
+> 1) Command line
+> 	idle=spin <-- CPU will spin (this is the default)
+> 	idle=wait <-- set CPU into wait state when idle
+> 
+> 2) The device tree will be checked for the "/hypervisor" node
+>    If this node is seen it will use "wait" for idle, so that
+>    the hypervisor can know when guest Linux kernel it is in
+>    an idle state.
+> 
+> This patch, unlike the last, isolates the code to 44x platforms.
+> 
+> Signed-off-by: Jerone Young <jyoung5@us.ibm.com>
 
+This one looks great to me.  Thanks for being persistent.
 
-> This version takes care to save and restore *all* the volatile registers
-> around the call to trace_hardirqs_off in transfer_to_handler, and should
-> fix the anomalies seen by Johannes Berg.  I've tested on 7447- and 8548-
-> based boards.
+I'll keep it queued up until early next week.  I've emailed the CPU
+engineers to see what exactly wait state does to the core and if they
+know of any issues with it.
 
-Still has problems on my machine. Maybe to do with non-maskable PMU
-interrupts? (saw a patch about something like that float by, don't
-really have any idea whether it's related to this work or not)
+If it comes back clean from them and we get good test results with it
+enabled, then we can likely reverse the default to use it and remove
+the check for the hypervisor node.
 
-johannes
-
---=-PxKmZ597Ry4yeEtaVsfc
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIVAwUAR/a6PKVg1VMiehFYAQJRbA//UTCP5k+0ZMQZjlR4IBM4ZuOXBW+YSK55
-vmOSXDovdCoxkceG+OD0599swYgnWl3NjdGeWAPQIOGpa78W50Z5OThd16mpWRp6
-foHyAmD33ZgAuE3bsJEahTdQJp9uXRY/AzqpNCwGhHpdB1xuXy3umwc9mMsj77u8
-NeMRvHpQsvAoRUJKno2oOdLOQzw5mtmN4M6U/bzOyOIiF5X16Cpv+zRmB7yfM62a
-AylgaxD+Rv3OL5G8b8kbeBPfLikALbnL0M+gmoPoQL6ZDhaiTeiX4el0GRVxrS+z
-zQ7DdQNEimA+e6RLE9KGZ/GUx7fRMm/ZVvSl/IRs8qL8Q2E/xQwt/7A26yKtHOgg
-aGfSHuolAcXJFXQpb/IwObGorbwJaRoDEqMA/8lQ9XFPSLXEH+8IYJAzgf4YRLeg
-qZ7WO3aN9HwGlgF/Klmnlo8SvKkWDqIbOR2rEkKCmX3L3PTxBZIJAsDhjjTD26jO
-HcNDtlbcABRF9/kR20522KRFY9XtrfU0MR/kAWxUJ+ym6T6lZdvNKeeKlIg/B+5Y
-b3odQzjcu4eYjjRZuZ0PIQj40JMVh9SIMzD5n8h244t3Gj1mhdBtDTqRYfRaYJCE
-0D/ZrYeSR36MTxhNBn9e7ZgdpNS9+eChhZt+RVBRRqif4s636hFXSpg2PH8MyhZl
-lSbyuaJdkVo=
-=m5vs
------END PGP SIGNATURE-----
-
---=-PxKmZ597Ry4yeEtaVsfc--
+josh
