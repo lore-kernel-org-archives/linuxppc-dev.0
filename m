@@ -1,32 +1,21 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 1481BDDE24
-	for <linuxppc-dev@ozlabs.org>; Sat,  5 Apr 2008 12:20:28 +1100 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e32.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m351IYnA017742
-	for <linuxppc-dev@ozlabs.org>; Fri, 4 Apr 2008 21:18:34 -0400
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m351KOV1182076
-	for <linuxppc-dev@ozlabs.org>; Fri, 4 Apr 2008 19:20:24 -0600
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m351KO5V003594
-	for <linuxppc-dev@ozlabs.org>; Fri, 4 Apr 2008 19:20:24 -0600
-Date: Fri, 4 Apr 2008 20:19:32 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Jerone Young <jyoung5@us.ibm.com>
-Subject: Re: [PATCH] [v4] Add idle wait support for 44x platforms
-Message-ID: <20080404201932.45aa8862@zod.rchland.ibm.com>
-In-Reply-To: <bff8b51bd3e1c38518c3.1207326507@thinkpadL>
-References: <bff8b51bd3e1c38518c3.1207326507@thinkpadL>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id EF2DEDDDF3
+	for <linuxppc-dev@ozlabs.org>; Sat,  5 Apr 2008 16:15:36 +1100 (EST)
+Subject: Re: [PATCH v2] powerpc: Add irqtrace support for 32-bit powerpc
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Johannes Berg <johannes@sipsolutions.net>
+In-Reply-To: <1207351869.6675.0.camel@johannes.berg>
+References: <20080404213932.GA15847@farnsworth.org>
+	<1207351869.6675.0.camel@johannes.berg>
+Content-Type: text/plain
+Date: Sat, 05 Apr 2008 16:14:56 +1100
+Message-Id: <1207372496.10388.441.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: kvm-ppc-devel@lists.sourceforge.net, linuxppc-dev@ozlabs.org,
-	hollisb@us.ibm.com
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,39 +25,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 04 Apr 2008 11:28:27 -0500
-Jerone Young <jyoung5@us.ibm.com> wrote:
 
-> 2 files changed, 87 insertions(+), 1 deletion(-)
-> arch/powerpc/platforms/44x/Makefile |    2 
-> arch/powerpc/platforms/44x/idle.c   |   86 +++++++++++++++++++++++++++++++++++
+On Sat, 2008-04-05 at 01:31 +0200, Johannes Berg wrote:
+> > This version takes care to save and restore *all* the volatile registers
+> > around the call to trace_hardirqs_off in transfer_to_handler, and should
+> > fix the anomalies seen by Johannes Berg.  I've tested on 7447- and 8548-
+> > based boards.
 > 
-> 
-> - adds MSR_DE to MSRs to enable while in wait state
-> 
-> This patch adds the ability for the CPU to go into wait state while in cpu_idle loop. This helps virtulization solutions know when the guest Linux kernel is in an idle state. There are two ways to do it.
-> 
-> 1) Command line
-> 	idle=spin <-- CPU will spin (this is the default)
-> 	idle=wait <-- set CPU into wait state when idle
-> 
-> 2) The device tree will be checked for the "/hypervisor" node
->    If this node is seen it will use "wait" for idle, so that
->    the hypervisor can know when guest Linux kernel it is in
->    an idle state.
-> 
-> This patch, unlike the last, isolates the code to 44x platforms.
-> 
-> Signed-off-by: Jerone Young <jyoung5@us.ibm.com>
+> Still has problems on my machine. Maybe to do with non-maskable PMU
+> interrupts? (saw a patch about something like that float by, don't
+> really have any idea whether it's related to this work or not)
 
-This one looks great to me.  Thanks for being persistent.
+Or more likely he missed some clobber somewhere, it took me a while to
+get that right on ppc64 (well... hopefully it -is- right by now :-)
 
-I'll keep it queued up until early next week.  I've emailed the CPU
-engineers to see what exactly wait state does to the core and if they
-know of any issues with it.
-
-If it comes back clean from them and we get good test results with it
-enabled, then we can likely reverse the default to use it and remove
-the check for the hypervisor node.
-
-josh
+Ben.
