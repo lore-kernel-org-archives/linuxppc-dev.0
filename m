@@ -1,25 +1,28 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id A6668DE233
+Return-Path: <dgaur@cdotd.ernet.in>
+Received: from sandesh.cdotd.ernet.in (sandesh.cdotd.ernet.in [196.1.105.47])
+	by ozlabs.org (Postfix) with ESMTP id 32C99DDDE9
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  5 Apr 2008 01:47:10 +1100 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1JhnC6-0003sn-Cd
-	for linuxppc-embedded@ozlabs.org; Fri, 04 Apr 2008 07:47:06 -0700
-Message-ID: <16491756.post@talk.nabble.com>
-Date: Fri, 4 Apr 2008 07:47:06 -0700 (PDT)
-From: Amarendra_Reddy <amar1567@yahoo.com>
+	Sat,  5 Apr 2008 17:49:36 +1100 (EST)
+Received: from sandesh.cdotd.ernet.in (localhost [127.0.0.1])
+	by localhost.cdotd.ernet.in (Postfix) with ESMTP id 84C32CFD1B
+	for <linuxppc-embedded@ozlabs.org>;
+	Sat,  5 Apr 2008 12:18:47 +0530 (IST)
+Received: from mail1.cdotd.ernet.in (mail1.cdotd.ernet.in [196.1.105.196])by
+	sandesh.cdotd.ernet.in (Postfix) with ESMTP id 5EF2CCFD09for
+	<linuxppc-embedded@ozlabs.org>; Sat,  5 Apr 2008 12:18:47 +0530 (IST)
+Received: from cdotd.ernet.in (localhost.localdomain [127.0.0.1])by
+	mail1.cdotd.ernet.in (8.12.5/8.12.5) with ESMTP id m356u99Q023637for
+	<linuxppc-embedded@ozlabs.org>; Sat, 5 Apr 2008 12:26:09 +0530
+From: "Deepak Gaur" <dgaur@cdotd.ernet.in>
 To: linuxppc-embedded@ozlabs.org
-Subject: Re: Help required on MPC82XX USB Host controller Development using
-	m82xx-hcd.
-In-Reply-To: <200803270956.12203.laurentp@cse-semaphore.com>
+Subject: Re: Booting Linux Kernel on MPC8560
+Date: Sat, 5 Apr 2008 13:26:09 +0630
+Message-Id: <20080405065431.M12771@cdotd.ernet.in>
+In-Reply-To: <20080405063151.M54613@cdotd.ernet.in>
+References: <20080405063151.M54613@cdotd.ernet.in>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-References: <16304553.post@talk.nabble.com>
-	<200803270956.12203.laurentp@cse-semaphore.com>
+Content-Type: text/plain;
+	charset=iso-8859-1
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -30,192 +33,214 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Errata
+----------------
+Memory Locations
+0x1fff0040  nop
+...
+...
+            rfi
+0x1fff1A40  li r6,0
 
-Hi Laurent,
+---------- Forwarded Message -----------
+From: "Deepak Gaur" <dgaur@cdotd.ernet.in>
+To: linuxppc-embedded@ozlabs.org
+Sent: Sat, 5 Apr 2008 13:19:41 +0630
+Subject: Booting Linux Kernel on MPC8560
 
-Thanks for your reply.
+Hi all,
 
-Most of the modules of the new product(based on Kernrel 2.6.10) are
-completed, except for the USB module. Hence we have to work with the kernre=
-l
-2.6.10 even for USB module.
+I have a task to boot Mvista kernel on MPC8560 based board. The bootloader in U-boot.
+After decompression my final image is located at address 0x1fff0040 in SDRAM (starts
+from 0) CCSRBAR register value is 0x000A0000 Bd_t is located at 0x7FFEA0 cmd line :
+cmd_start 0x7FFF00 cmd_end 0x800D01 in SDRAM. After the u-boot transfers the control to
+kernel it starts executing head_fsl_booke.S file . The execution get struck after
+executing a few lines ... on a rfi instruction 
+---------------------------------------------------------------------------
+head_fsl_booke.S  First instruction("nop") at 0x1FFF0040 (SDRAM)
+---------------------------------------------------------------------------
+#include <linux/config.h>
+#include <linux/threads.h>
+#include <asm/processor.h>
+#include <asm/page.h>
+#include <asm/mmu.h>
+#include <asm/pgtable.h>
+#include <asm/cputable.h>
+#include <asm/thread_info.h>
+#include <asm/ppc_asm.h>
+#include <asm/offsets.h>
+#include "head_booke.h"
 
-We integrated cmp2usb project into Kernel 2.6.10, and with some
-modifications and compiled the kernel successfully.
+/* As with the other PowerPC ports, it is expected that when code
+ * execution begins here, the following registers contain valid, yet
+ * optional, information:
+ *
+ *   r3 - Board info structure pointer (DRAM, frequency, MAC address, etc.)
+ *   r4 - Starting address of the init RAM disk
+ *   r5 - Ending address of the init RAM disk
+ *   r6 - Start of kernel command line string (e.g. "mem=128")
+ *   r7 - End of kernel command line string
+ *
+ */
+        .text
+_GLOBAL(_stext)
+_GLOBAL(_start)
+        /*
+         * Reserve a word at a fixed location to store the address
+         * of abatron_pteptrs
+         */
+SD:0x1fff0040:        nop
+/*
+ * Save parameters we are passed
+ */
+        mr      r31,r3
+        mr      r30,r4
+        mr      r29,r5
+        mr      r28,r6
+        mr      r27,r7
 
-When pendrive is inserted into the USB port we are facing the below
-mentioned problems.
-(sorry for a lengthy posting)
+                           li      r24,0           /* CPU number */
 
-We would be thankful if you / anyone could suggest us with some solution or
-idea or an alternative approach.
+/* We try to not make any assumptions about how the boot loader
+ * setup or used the TLBs.  We invalidate all mappings from the
+ * boot loader and load a single entry in TLB1[0] to map the
+ * first 16M of kernel memory.  Any boot info passed from the
+ * bootloader needs to live in this first 16M.
+ *
+ * Requirement on bootloader:
+ *  - The page we're executing in needs to reside in TLB1 and
+ *    have IPROT=1.  If not an invalidate broadcast could
+ *    evict the entry we're currently executing in.
+ *
+ *  r3 = Index of TLB1 were executing in
+ *  r4 = Current MSR[IS]
+ *  r5 = Index of TLB1 temp mapping
+ *
+ * Later in mapin_ram we will correctly map lowmem, and resize TLB1[0]
+ * if needed
+ */
 
-Given below is the Console Output=20
-CASE 1: When pendrive is inserted "Directly to USB port of the 8272ADS
-board".
-CASE 2: When pendrive is inserted on an "External hub which is conntected t=
-o
-USB port of 8272ADS board".
+/* 1. Find the index of the entry we're executing in */
+        bl      invstr                          /* Find our address */
+invstr: mflr    r6                              /* Make it accessible */
+        mfmsr   r7
+        rlwinm  r4,r7,27,31,31                  /* extract MSR[IS] */
+        mfspr   r7, SPRN_PID0
+        slwi    r7,r7,16
+        or      r7,r7,r4
+        mtspr   SPRN_MAS6,r7
+        tlbsx   0,r6                            /* search MSR[IS], SPID=PID0 */
+#ifndef CONFIG_E200
+ mfspr   r7,SPRN_MAS1
+        andis.  r7,r7,MAS1_VALID@h
+        bne     match_TLB
+        mfspr   r7,SPRN_PID1
+        slwi    r7,r7,16
+        or      r7,r7,r4
+        mtspr   SPRN_MAS6,r7
+        tlbsx   0,r6                            /* search MSR[IS], SPID=PID1 */
+        mfspr   r7,SPRN_MAS1
+        andis.  r7,r7,MAS1_VALID@h
+        bne     match_TLB
+        mfspr   r7, SPRN_PID2
+        slwi    r7,r7,16
+        or      r7,r7,r4
+        mtspr   SPRN_MAS6,r7
+        tlbsx   0,r6                            /* Fall through, we had to match */
+#endif
+match_TLB:
+        mfspr   r7,SPRN_MAS0
+        rlwinm  r3,r7,16,20,31                  /* Extract MAS0(Entry) */
 
-Output from console:
+        mfspr   r7,SPRN_MAS1                    /* Insure IPROT set */
+        oris    r7,r7,MAS1_IPROT@h
+        mtspr   SPRN_MAS1,r7
+        tlbwe
 
-CASE 1: Pendrive Directly connected to uSB port of the 8272ADS board
+/* 2. Invalidate all entries except the entry we're executing in */
+        mfspr   r9,SPRN_TLB1CFG
+        andi.   r9,r9,0xfff
+        li      r6,0                            /* Set Entry counter to 0 */
+1:      lis     r7,0x1000                       /* Set MAS0(TLBSEL) = 1 */
+        rlwimi  r7,r6,16,4,15                   /* Setup MAS0 = TLBSEL | ESEL(r6) */
+        mtspr   SPRN_MAS0,r7
+        tlbre
+        mfspr   r7,SPRN_MAS1
+        rlwinm  r7,r7,0,2,31                    /* Clear MAS1 Valid and IPROT */
+        cmpw    r3,r6
+        beq     skpinv                          /* Dont update the current execution TLB */
+        mtspr   SPRN_MAS1,r7
+  tlbwe
+        isync
+skpinv: addi    r6,r6,1                         /* Increment */
+        cmpw    r6,r9                           /* Are we done? */
+        bne     1b                              /* If not, repeat */
 
-USB Universal Host Controller Interface driver v2.2
-Registering platform device 'mpc82xx-hcd.3'. Parent at platform
-=3D> driver mpc82xx-hcd, 2005
-mpc82xx-hcd mpc82xx-hcd.3: PQ2 intergrated USB controller v0.1
-mpc82xx-hcd mpc82xx-hcd.3: new USB bus registered, assigned bus number 1
-usb usb1: Product: PQ2 intergrated USB controller v0.1
-usb usb1: Manufacturer: Linux 2.6.10_mvl401-8272ads mpc82xx-hcd
-usb usb1: SerialNumber: mpc82xx-hcd.3
-hub 1-0:1.0: USB hub found
-hub 1-0:1.0: 1 port detected
-PQ2USB: debug file creation
+        /* Invalidate TLB0 */
+        li      r6,0x04
+        tlbivax 0,r6
+#ifdef CONFIG_SMP
+        tlbsync
+#endif
+        /* Invalidate TLB1 */
+        li      r6,0x0c
+        tlbivax 0,r6
+#ifdef CONFIG_SMP
+        tlbsync
+#endif
+        msync
 
-........after SANDISK pendrive inserted.........
+/* 3. Setup a temp mapping and jump to it */
+        andi.   r5, r3, 0x1     /* Find an entry not used and is non-zero */
+        addi    r5, r5, 0x1
+        lis     r7,0x1000       /* Set MAS0(TLBSEL) = 1 */
+        rlwimi  r7,r3,16,4,15   /* Setup MAS0 = TLBSEL | ESEL(r3) */
+        mtspr   SPRN_MAS0,r7
+        tlbre
 
-usb 1-1: new full speed USB device using mpc82xx-hcd and address 2
-usb 1-1: Product: U3 Cruzer Micro
-usb 1-1: Manufacturer: SanDisk Corporation
-Oops: Exception in kernel mode, sig: 4 [#1]
+        /* Just modify the entry ID and EPN for the temp mapping */
+        lis     r7,0x1000       /* Set MAS0(TLBSEL) = 1 */
+        rlwimi  r7,r5,16,4,15   /* Setup MAS0 = TLBSEL | ESEL(r5) */
+        mtspr   SPRN_MAS0,r7
+        xori    r6,r4,1         /* Setup TMP mapping in the other Address space */
+        slwi    r6,r6,12
+        oris    r6,r6,(MAS1_VALID|MAS1_IPROT)@h
+        ori     r6,r6,(MAS1_TSIZE(BOOKE_PAGESZ_4K))@l
+        mtspr   SPRN_MAS1,r6
+        mfspr   r6,SPRN_MAS2
+        li      r7,0            /* temp EPN = 0 */
+    rlwimi  r7,r6,0,20,31
+        mtspr   SPRN_MAS2,r7
+        tlbwe
 
-........after unknown/generic manufacturer's pendrive inserted.......
+        xori    r6,r4,1
+        slwi    r6,r6,5         /* setup new context with other address space */
+        bl      1f              /* Find our address */
+1:      mflr    r9
+        rlwimi  r7,r9,0,20,31
+        addi    r7,r7,24
+        mtspr   SRR0,r7     <------------------------ SRR0 1A40
+        mtspr   SRR1,r6     <------------------------ SRR1 20
+        rfi                 <------------------------ It goes to LOCATION 0x00001A40
 
-usb 1-1: new full speed USB device using mpc82xx-hcd and address 2
-usb 1-1: device descriptor read/64, error -110
-usb 1-1: device descriptor read/64, error -110
-usb 1-1: new full speed USB device using mpc82xx-hcd and address 3
-usb 1-1: device descriptor read/64, error -110
-usb 1-1: device descriptor read/64, error -110
-usb 1-1: new full speed USB device using mpc82xx-hcd and address 4
-usb 1-1: device not accepting address 4, error -110
-usb 1-1: new full speed USB device using mpc82xx-hcd and address 5
-usb 1-1: device not accepting address 5, error -110
+/* 4. Clear out PIDs & Search info */
+SD: 0x1fff01A40        li      r6,0
+                       mtspr   SPRN_PID0,r6
 
+SD memory locattion as reported by ICE
 
-CASE 2: Pendrive is inserted on an "External hub which is conntected to USB
-port of 8272ADS board".
+The SRR0 contains 0x00001A40 address for rfi. The memory location of next instruction
+happens to be similar to contents of SRR0 . It is 0x1fff01a40. It is that the SRR0
+should have contained 0x1fff01A40 or 0x00001A40 is correct. Actually on 0x00001A40 there
+ no instruction is defined (as reported by ICE it is "undef")
 
-USB Universal Host Controller Interface driver v2.2
-sl811: driver sl811-hcd, 19 May 2005
-Registering platform device 'mpc82xx-hcd.3'. Parent at platform
-=3D> driver mpc82xx-hcd, 2005
-mpc82xx-hcd mpc82xx-hcd.3: PQ2 intergrated USB controller v0.1
-mpc82xx-hcd mpc82xx-hcd.3: new USB bus registered, assigned bus number 1
-usb usb1: Product: PQ2 intergrated USB controller v0.1
-usb usb1: Manufacturer: Linux 2.6.10_mvl401-8272ads mpc82xx-hcd
-usb usb1: SerialNumber: mpc82xx-hcd.3
-hub 1-0:1.0: USB hub found
-hub 1-0:1.0: 1 port detected
-PQ2USB: debug file creation
-Initializing USB Mass Storage driver...
-usbcore: registered new driver usb-storage
-USB Mass Storage support registered.
+Please help me in understanding this behaviour and more specifically need of "rfi"
+instruction in this file.
 
+Thanks
 
-.......after SANDISK pendrive inserted........
-
-usb 1-1.3: new full speed USB device using mpc82xx-hcd and address 3
-usb 1-1.3: Product: U3 Cruzer Micro
-usb 1-1.3: Manufacturer: SanDisk Corporation
-usb 1-1.3: can't set config #1, error -110
-hub 1-1:1.0: cannot disable port 3 (err =3D -110)
-hub 1-1:1.0: cannot reset port 3 (err =3D -110)
-hub 1-1:1.0: cannot reset port 3 (err =3D -110)
-hub 1-1:1.0: cannot reset port 3 (err =3D -110)
-hub 1-1:1.0: cannot reset port 3 (err =3D -110)
-hub 1-1:1.0: cannot reset port 3 (err =3D -110)
-hub 1-1:1.0: Cannot enable port 3.  Maybe the USB cable is bad?
-hub 1-1:1.0: cannot disable port 3 (err =3D -110)
-hub 1-1:1.0: cannot reset port 3 (err =3D -110)
-hub 1-1:1.0: cannot reset port 3 (err =3D -110)
-hub 1-1:1.0: cannot reset port 3 (err =3D -110)
-hub 1-1:1.0: cannot reset port 3 (err =3D -110)
-hub 1-1:1.0: cannot reset port 3 (err =3D -110)
-hub 1-1:1.0: Cannot enable port 3.  Maybe the USB cable is bad?
-hub 1-1:1.0: cannot disable port 3 (err =3D -110)
-hub 1-1:1.0: cannot reset port 3 (err =3D -110)
-hub 1-1:1.0: cannot reset port 3 (err =3D -110)
-hub 1-1:1.0: cannot reset port 3 (err =3D -110)
-hub 1-1:1.0: cannot reset port 3 (err =3D -110)
-hub 1-1:1.0: cannot reset port 3 (err =3D -110)
-hub 1-1:1.0: Cannot enable port 3.  Maybe the USB cable is bad?
-hub 1-1:1.0: cannot disable port 3 (err =3D -110)
-hub 1-1:1.0: cannot disable port 3 (err =3D -110)
-hub 1-1:1.0: hub_port_status failed (err =3D -110)
-
-........after unknown manufacturer's pendrive inserted...........
-
-usb 1-1.1: new full speed USB device using mpc82xx-hcd and address 7
-usb 1-1.1: Product: Mass Storage Device
-usb 1-1.1: Manufacturer: Generic
-usb 1-1.1: SerialNumber: 6EOG5LAF
-scsi0 : SCSI emulation for USB Mass Storage devices
-floating point used in kernel (task=3Dc0306050, pc=3Dc022a5f8)
-Oops: Exception in kernel mode, sig: 4 [#1]
+Deepak Gaur
+------- End of Forwarded Message -------
 
 
-
-Thanks & Regards
-Amarendra Reddy
-
---------------------------------------------------------
-
-Laurent Pinchart-4 wrote:
->=20
-> Hi Amarendra,
->=20
-> On Wednesday 26 March 2008 17:11, Amarendra_Reddy wrote:
->>=20
->> Hi all,
->>=20
->> We are working on implementation of the USB host controller driver for
->> the
->> MPC8272ADS (eval board).=20
->>=20
->> The USB Host controller on MPC8272 chip is neither UHCI nor OHCI
->> compliant.=20
->>=20
->> We downloaded the project cpm2usb and the patches created by Mr.Mike
->> Rapoport from http://cpm2usb.sourceforge.net
->>=20
->> We integrated the 'm82xx-hcd' into the 2.6.10 source with few changes to
->> usb
->> data structures (usb_hcd,usb_device,usb_host_endpoint) and to struct
->> hc_driver. Also updated the function ''tx_err' present in m82xx-hcd.c.
->=20
-> The cpm2usb project isn't maintained. If possible you should upgrade to a
-> more=20
-> recent kernel and switch to the powerpc architecture where a new USB
-> driver=20
-> called fhci is available.
->=20
-> The MPC872ADS is supported in recent kernels so switching shouldn't be to=
-o=20
-> difficult.
->=20
-> Best regards,
->=20
-> --=20
-> Laurent Pinchart
-> CSE Semaphore Belgium
->=20
-> Chauss=C3=A9e de Bruxelles, 732A
-> B-1410 Waterloo
-> Belgium
->=20
-> T +32 (2) 387 42 59
-> F +32 (2) 387 42 75
->=20
-> =20
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->=20
-
---=20
-View this message in context: http://www.nabble.com/Help-on-MPC82XX-USB-Hos=
-t-controller-Development-using-m82xx-hcd.-tp16304553p16491756.html
-Sent from the linuxppc-embedded mailing list archive at Nabble.com.
+Deepak Gaur
