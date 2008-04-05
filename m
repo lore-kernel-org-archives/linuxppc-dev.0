@@ -1,24 +1,17 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.180])
-	by ozlabs.org (Postfix) with ESMTP id 4E4D5DDE00
-	for <linuxppc-dev@ozlabs.org>; Sun,  6 Apr 2008 01:46:05 +1100 (EST)
-Received: by py-out-1112.google.com with SMTP id z59so598720pyg.27
-	for <linuxppc-dev@ozlabs.org>; Sat, 05 Apr 2008 07:46:04 -0700 (PDT)
-Subject: Re: [PATCH 2/3] [POWERPC][V3] Xilinx: of_serial support for Xilinx
-	uart 16550.
-From: Josh Boyer <jwboyer@gmail.com>
-To: Arnd Bergmann <arnd@arndb.de>
-In-Reply-To: <200804030616.09825.arnd@arndb.de>
-References: <20080402232213.5D87515B8067@mail37-sin.bigfish.com>
-	<200804030134.11437.arnd@arndb.de>
-	<fa686aa40804021943m208c2ff0va6c6b629a747439f@mail.gmail.com>
-	<200804030616.09825.arnd@arndb.de>
-Content-Type: text/plain
-Date: Sat, 05 Apr 2008 09:45:56 -0500
-Message-Id: <1207406756.6809.2.camel@vader.jdub.homelinux.org>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, John Linn <john.linn@xilinx.com>,
-	david@gibson.dropbear.id.au
+Return-Path: <sshtylyov@ru.mvista.com>
+Received: from imap.sh.mvista.com (unknown [63.81.120.155])
+	by ozlabs.org (Postfix) with ESMTP id 94759DDDFF
+	for <linuxppc-dev@ozlabs.org>; Sun,  6 Apr 2008 02:31:31 +1000 (EST)
+Message-ID: <47F7A935.3080803@ru.mvista.com>
+Date: Sat, 05 Apr 2008 20:30:45 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+MIME-Version: 1.0
+To: Valentine Barshak <vbarshak@ru.mvista.com>
+Subject: Re: [PATCH 3/4] PowerPC: Add PCI entry to 440EPx Sequoia DTS.
+References: <20071221162601.GA1700@ru.mvista.com>
+In-Reply-To: <20071221162601.GA1700@ru.mvista.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,37 +21,55 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2008-04-03 at 06:16 +0200, Arnd Bergmann wrote:
-> On Thursday 03 April 2008, Grant Likely wrote:
-> > >
-> > >  Since it is not really compatible with ns16550, shouldn't you at least specify
-> > >  a different "compatible" property? That way, the driver won't do incorrect
-> > >  accesses when you try to use an old driver with a device tree that specifies
-> > >  one of these.
-> > 
-> > Heh; we've gone back and forth on this issue.  The problem is that we
-> > have a common case of ns16550 like devices that require a little bit
-> > of register address tweaking that spans a whole range of vendors (so
-> > adding a compatible match with each of those vendor's prefixes is
-> > probably non-scalable).  So, if "ns16550" is not a good idea, then
-> > what should be used?  "sparse16550" has been suggested more than once.
-> 
-> After another IRC discussion between Grant, Segher and myself, we concluded
-> that we don't need to invent a new "compatible" value, as only new device
-> trees with old kernels will have a problem with this, and they don't work
-> in the first place.
-> 
-> The devices will still have their specific "compatible" value, e.g.
-> "xlnx,plb-uart16550-1.00.c", followed by "ns16550", and possibly
-> "ns16450" and "i8250", although the last two do not have an effect
-> on Linux.
-> 
-> Josh, can you please forward all three patches in their latest version?
-> 
-> Acked-by: Arnd Bergmann <arnd@arndb.de>
+Valentine Barshak wrote:
 
-So is the discussion on reg-offset settled then?  It seemed Paul and
-David had some issues with that, and I'd like to make sure everyone is
-agreed on that before I bring in patches 2 and 3.
+> This adds PCI entry to PowerPC 440EPx Sequoia DTS.
 
-josh
+> Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
+
+> --- linux-2.6.orig/arch/powerpc/boot/dts/sequoia.dts	2007-12-21 17:14:17.000000000 +0300
+> +++ linux-2.6/arch/powerpc/boot/dts/sequoia.dts	2007-12-21 17:18:32.000000000 +0300
+> @@ -324,6 +324,33 @@
+>  				has-new-stacr-staopc;
+>  			};
+>  		};
+> +
+> +		PCI0: pci@1ec000000 {
+> +			device_type = "pci";
+> +			#interrupt-cells = <1>;
+> +			#size-cells = <2>;
+> +			#address-cells = <3>;
+> +			compatible = "ibm,plb440epx-pci", "ibm,plb-pci";
+> +			primary;
+> +			reg = <1 eec00000 8	/* Config space access */
+> +			       1 eed00000 4	/* IACK */
+> +			       1 eed00000 4	/* Special cycle */
+> +			       1 ef400000 40>;	/* Internal registers */
+> +
+> +			/* Outbound ranges, one memory and one IO,
+> +			 * later cannot be changed. Chip supports a second
+> +			 * IO range but we don't use it for now
+> +			 */
+> +			ranges = <02000000 0 80000000 1 80000000 0 10000000
+
+    I wonder why the AMCC's Sequoia/Rainier manual has PCI memory mapped at 
+0x80000000-0xbfffffff? The 0x80000000-0x8fffffff mapping was assumed by 
+arch/ppc/ code.  What/why changed here?
+    As we now both know, having PCI memory space mapped beyound 4 GB makes 
+some drivers misbehave as they use 'unsigned long' to store the result of 
+pci_resource_start() and later ioremap() this truncated value -- which is 
+64-bit on Sequoia due to CONFIG_RESOURCE_64BIT=y that is needed to store the 
+beyond-4GB addresses.
+
+> +				01000000 0 00000000 1 e8000000 0 00100000>;
+> +
+> +			/* Inbound 2GB range starting at 0 */
+> +			dma-ranges = <42000000 0 0 0 0 0 80000000>;
+> +
+> +			/* All PCI interrupts are routed to IRQ 67 */
+> +			interrupt-map-mask = <0000 0 0 0>;
+> +			interrupt-map = < 0000 0 0 0 &UIC2 3 8 >;
+> +		};
+>  	};
+
+WBR, Sergei
