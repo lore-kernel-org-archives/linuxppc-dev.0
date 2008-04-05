@@ -1,25 +1,23 @@
 Return-Path: <dgaur@cdotd.ernet.in>
 Received: from sandesh.cdotd.ernet.in (sandesh.cdotd.ernet.in [196.1.105.47])
-	by ozlabs.org (Postfix) with ESMTP id 32C99DDDE9
+	by ozlabs.org (Postfix) with ESMTP id 6C757DDDF7
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  5 Apr 2008 17:49:36 +1100 (EST)
+	Sat,  5 Apr 2008 18:10:21 +1100 (EST)
 Received: from sandesh.cdotd.ernet.in (localhost [127.0.0.1])
-	by localhost.cdotd.ernet.in (Postfix) with ESMTP id 84C32CFD1B
+	by localhost.cdotd.ernet.in (Postfix) with ESMTP id 5ED51CFCFD
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  5 Apr 2008 12:18:47 +0530 (IST)
+	Sat,  5 Apr 2008 12:12:19 +0530 (IST)
 Received: from mail1.cdotd.ernet.in (mail1.cdotd.ernet.in [196.1.105.196])by
-	sandesh.cdotd.ernet.in (Postfix) with ESMTP id 5EF2CCFD09for
-	<linuxppc-embedded@ozlabs.org>; Sat,  5 Apr 2008 12:18:47 +0530 (IST)
+	sandesh.cdotd.ernet.in (Postfix) with ESMTP id 3BECDCFAFDfor
+	<linuxppc-embedded@ozlabs.org>; Sat,  5 Apr 2008 12:12:19 +0530 (IST)
 Received: from cdotd.ernet.in (localhost.localdomain [127.0.0.1])by
-	mail1.cdotd.ernet.in (8.12.5/8.12.5) with ESMTP id m356u99Q023637for
-	<linuxppc-embedded@ozlabs.org>; Sat, 5 Apr 2008 12:26:09 +0530
+	mail1.cdotd.ernet.in (8.12.5/8.12.5) with ESMTP id m356nf9Q021432for
+	<linuxppc-embedded@ozlabs.org>; Sat, 5 Apr 2008 12:19:41 +0530
 From: "Deepak Gaur" <dgaur@cdotd.ernet.in>
 To: linuxppc-embedded@ozlabs.org
-Subject: Re: Booting Linux Kernel on MPC8560
-Date: Sat, 5 Apr 2008 13:26:09 +0630
-Message-Id: <20080405065431.M12771@cdotd.ernet.in>
-In-Reply-To: <20080405063151.M54613@cdotd.ernet.in>
-References: <20080405063151.M54613@cdotd.ernet.in>
+Subject: Booting Linux Kernel on MPC8560
+Date: Sat, 5 Apr 2008 13:19:41 +0630
+Message-Id: <20080405063151.M54613@cdotd.ernet.in>
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset=iso-8859-1
@@ -32,21 +30,6 @@ List-Post: <mailto:linuxppc-embedded@ozlabs.org>
 List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
-
-Errata
-----------------
-Memory Locations
-0x1fff0040  nop
-...
-...
-            rfi
-0x1fff1A40  li r6,0
-
----------- Forwarded Message -----------
-From: "Deepak Gaur" <dgaur@cdotd.ernet.in>
-To: linuxppc-embedded@ozlabs.org
-Sent: Sat, 5 Apr 2008 13:19:41 +0630
-Subject: Booting Linux Kernel on MPC8560
 
 Hi all,
 
@@ -98,7 +81,7 @@ SD:0x1fff0040:        nop
         mr      r29,r5
         mr      r28,r6
         mr      r27,r7
-
+                                                                                       
                            li      r24,0           /* CPU number */
 
 /* We try to not make any assumptions about how the boot loader
@@ -238,9 +221,5 @@ Please help me in understanding this behaviour and more specifically need of "rf
 instruction in this file.
 
 Thanks
-
-Deepak Gaur
-------- End of Forwarded Message -------
-
 
 Deepak Gaur
