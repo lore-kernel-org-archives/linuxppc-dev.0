@@ -1,19 +1,24 @@
-Return-Path: <bounce@taggedmail.com>
-Received: from sfo-mta-47.taggedmail.com (sfo-mta-47.taggedmail.com
-	[64.125.115.47]) by ozlabs.org (Postfix) with ESMTP id 30B13DDDE9
-	for <linuxppc-dev@ozlabs.org>; Sat,  5 Apr 2008 20:55:28 +1100 (EST)
-Received: from taggedmail.com (10.15.10.21) by sfo-mta-47.taggedmail.com
-	(PowerMTA(TM) v3.2r21) id hut6920d9jog for <linuxppc-dev@ozlabs.org>;
-	Sat, 5 Apr 2008 02:36:22 -0700 (envelope-from <bounce@taggedmail.com>)
-From: Rameshmrm Mrm <rameshmrm@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Subject: Rameshmrm  sent you a friend request on Tagged :)
-MIME-Version: 1.0
-Sender: Rameshmrm Mrm <tagged@taggedmail.com>
-Content-Type: text/html; charset="iso-8859-1"
-Message-Id: <20080405095529.30B13DDDE9@ozlabs.org>
-Date: Sat,  5 Apr 2008 20:55:28 +1100 (EST)
-Reply-To: Rameshmrm Mrm <rameshmrm@gmail.com>
+Return-Path: <jwboyer@gmail.com>
+Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.180])
+	by ozlabs.org (Postfix) with ESMTP id 4E4D5DDE00
+	for <linuxppc-dev@ozlabs.org>; Sun,  6 Apr 2008 01:46:05 +1100 (EST)
+Received: by py-out-1112.google.com with SMTP id z59so598720pyg.27
+	for <linuxppc-dev@ozlabs.org>; Sat, 05 Apr 2008 07:46:04 -0700 (PDT)
+Subject: Re: [PATCH 2/3] [POWERPC][V3] Xilinx: of_serial support for Xilinx
+	uart 16550.
+From: Josh Boyer <jwboyer@gmail.com>
+To: Arnd Bergmann <arnd@arndb.de>
+In-Reply-To: <200804030616.09825.arnd@arndb.de>
+References: <20080402232213.5D87515B8067@mail37-sin.bigfish.com>
+	<200804030134.11437.arnd@arndb.de>
+	<fa686aa40804021943m208c2ff0va6c6b629a747439f@mail.gmail.com>
+	<200804030616.09825.arnd@arndb.de>
+Content-Type: text/plain
+Date: Sat, 05 Apr 2008 09:45:56 -0500
+Message-Id: <1207406756.6809.2.camel@vader.jdub.homelinux.org>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, John Linn <john.linn@xilinx.com>,
+	david@gibson.dropbear.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,31 +28,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-<div style="margin:0; padding: 10px 0 15px 0; text-align:center; width:539px;  font-family: Arial, Helvetica, sans-serif; font-size:12px;"><a href="http://www.taggedmail.com/welcome.html?conn=24j9n9hm2&ect=cgt9i1c&tId=140031&fid=9b2c7fca61282414" style="color:#0000FF; text-decoration:underline;">If you can't see this email please click here</a></div>
-<table border="0" cellspacing="0" cellpadding="0" width="700">
-  <tr>
-    <td background="https://secure-static.tagged.com//images/emailbg1.gif" height="216" valign="top" style="font-size: 30px; color: #000000; text-align:center; font-family:Arial, Helvetica, sans-serif; font-weight:bold;">
-      <div style="float:left; padding:15px 0 0 15px; text-align: left; width:120px;">
-        <div style="padding:10px;"><img src="http://www.taggedmail.com/imgsrv.php?uid=5394768727&ect=cgt9i1c" /></div>
-        <div style="font-size: 12px; color: #000000; padding:5px 0 0 0;">Rameshmrm Mrm</div>
-      </div>
-      <div style="float:left;">
-        <div style="font-size: 16px; padding:20px 0 5px 0; text-align:center; width:400px; float:left;">Rameshmrm Mrm has added you as a friend<br/></div>
-	<div style="font-size: 20px; width:400px; text-align:center; float:left;">Is Rameshmrm your friend?</div>
-	<div>
-          <table style="float:left; width:523px;" border="0" cellspacing="0" cellpadding="0"><tr>
-          <td width="310"><div style="padding:10px 10px 0 0; text-align:right;"><a href="http://www.taggedmail.com/welcome.html?conn=24j9n9hm2&ect=cgt9i1c&tId=140031&fid=9b2c7fca61282414&bn=1"><img src="https://secure-static.tagged.com//images/btn-Yes-large.gif" alt="" border="0" style="padding:10px 0 0 0;"></a><a href="http://www.taggedmail.com/welcome.html?conn=24j9n9hm2&ect=cgt9i1c&tId=140031&fid=9b2c7fca61282414&bn=2"><img src="https://secure-static.tagged.com//images/btn-No-large.gif" alt="" border="0" style="padding:10px 0 0 10px; margin:10px 0 0 10px;"></a></div></td>
-          <td background="https://secure-static.tagged.com//images/tooltip_210-60.gif"  width="210" height="50" valign="top"><div style="margin:0; padding:5px 5px 0 25px; text-align:left; font-size:11px; font-weight:bold; color:#FFFFFF; font-family:Geneva, Arial, Helvetica, sans-serif ">Click Yes if Rameshmrm is your friend, otherwise click No.<br/>But you have to click!</div></td>
-          </tr></table>
-        </div>
-        <div style="font-size: 12px; width:400px; padding:10px 0 0 0; float:left;">Please respond or Rameshmrm may think you said no :(</div>
-      </div>
-     </td>
-    </tr>
-    <tr>
-      <td>
-        <div style="font-size:12px; color:#000000; font-family:Arial, Helvetica, sans-serif; padding:10px 0 0 0; text-align:center; width:539px;"><a style="color:#000000; text-decoration:underline;" href="http://www.taggedmail.com/no_more.html?unsem=linuxppc-dev%40ozlabs.org&tId=140031&fid=9b2c7fca61282414">Click here</a> to block all emails from Tagged, P.O. Box 193152 San Francisco, CA 94119-3152</div>
-      </td>
-  </tr>
-</table><img src="http://www.tagged.com/tracking/pixel.php?ect=cgt9i1c" alt="" width="1" height="1">
-<!-- zjln8 -->
+On Thu, 2008-04-03 at 06:16 +0200, Arnd Bergmann wrote:
+> On Thursday 03 April 2008, Grant Likely wrote:
+> > >
+> > >  Since it is not really compatible with ns16550, shouldn't you at least specify
+> > >  a different "compatible" property? That way, the driver won't do incorrect
+> > >  accesses when you try to use an old driver with a device tree that specifies
+> > >  one of these.
+> > 
+> > Heh; we've gone back and forth on this issue.  The problem is that we
+> > have a common case of ns16550 like devices that require a little bit
+> > of register address tweaking that spans a whole range of vendors (so
+> > adding a compatible match with each of those vendor's prefixes is
+> > probably non-scalable).  So, if "ns16550" is not a good idea, then
+> > what should be used?  "sparse16550" has been suggested more than once.
+> 
+> After another IRC discussion between Grant, Segher and myself, we concluded
+> that we don't need to invent a new "compatible" value, as only new device
+> trees with old kernels will have a problem with this, and they don't work
+> in the first place.
+> 
+> The devices will still have their specific "compatible" value, e.g.
+> "xlnx,plb-uart16550-1.00.c", followed by "ns16550", and possibly
+> "ns16450" and "i8250", although the last two do not have an effect
+> on Linux.
+> 
+> Josh, can you please forward all three patches in their latest version?
+> 
+> Acked-by: Arnd Bergmann <arnd@arndb.de>
+
+So is the discussion on reg-offset settled then?  It seemed Paul and
+David had some issues with that, and I'd like to make sure everyone is
+agreed on that before I bring in patches 2 and 3.
+
+josh
