@@ -1,18 +1,18 @@
 Return-Path: <jwboyer@gmail.com>
-Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.180])
-	by ozlabs.org (Postfix) with ESMTP id 79330DDDF5
-	for <linuxppc-dev@ozlabs.org>; Sun,  6 Apr 2008 22:42:03 +1000 (EST)
-Received: by py-out-1112.google.com with SMTP id z59so999583pyg.27
-	for <linuxppc-dev@ozlabs.org>; Sun, 06 Apr 2008 05:42:02 -0700 (PDT)
-Subject: Please pull 'for-2.6.26' branch of 4xx tree
+Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.183])
+	by ozlabs.org (Postfix) with ESMTP id 82DA4DDED3
+	for <linuxppc-dev@ozlabs.org>; Sun,  6 Apr 2008 23:06:29 +1000 (EST)
+Received: by py-out-1112.google.com with SMTP id z59so1007532pyg.27
+	for <linuxppc-dev@ozlabs.org>; Sun, 06 Apr 2008 06:06:28 -0700 (PDT)
+Subject: 4xx defconfig reorg
 From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: paulus@samba.org
+To: linuxppc-dev@ozlabs.org
 Content-Type: text/plain
-Date: Sun, 06 Apr 2008 07:41:59 -0500
-Message-Id: <1207485719.6809.16.camel@vader.jdub.homelinux.org>
+Date: Sun, 06 Apr 2008 08:06:21 -0500
+Message-Id: <1207487181.6809.18.camel@vader.jdub.homelinux.org>
 Mime-Version: 1.0
 Sender: Josh Boyer <jwboyer@gmail.com>
-Cc: linuxppc-dev@ozlabs.org
+Cc: paulus@samba.org
 Reply-To: jwboyer@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -23,74 +23,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Paul,
+Hi All,
 
-Please pull from:
-
- master.kernel.org:/pub/scm/linux/kernel/git/jwboyer/powerpc-4xx.git for-2.6.26
-
-to pick up a handful of additional commits for 2.6.26.  Most of these
-are bug fixes.  Grant adds a helpful make target for building dtb files,
-which is quite useful for some newer 4xx boards as well as other
-platforms in general.
+Unless someone screams loudly and has reasons why this shouldn't go in,
+the following commit should hit the 4xx next branch in the next day or
+so.
 
 josh
 
-Grant Likely (2):
-      [POWERPC] add target for building .dtb files
-      [POWERPC] bootwrapper: Add a firmware-independent simpleboot target.
+commit eaf997b847be3c351eb9d0107e0562035dc58095
+Author: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Date:   Sun Apr 6 08:01:21 2008 -0500
 
-Josh Boyer (1):
-      [POWERPC] 4xx: Add Canyonlands and Yosemite to multi-board defconfig
+    [POWERPC] 4xx: Reorganize 4xx defconfigs
+    
+    Board specific defconfigs are useful, however with the ability to do
+    multi-board defconfigs they aren't needed in the top level configs directory
+    
+    Move the 4xx board specific defconfigs to individual directories under
+    arch/powerpc/configs.
+    
+    Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 
-Stefan Roese (5):
-      [POWERPC] 4xx: Only reset PCIe PHY on 405EX systems when no link is detect
-      [POWERPC] 4xx: Fix PESDRn_UTLSET1 register setup on 460EX/GT
-      [POWERPC] 4xx: Create common ppc4xx_reset_system() in ppc4xx_soc.c
-      [POWERPC] 4xx: Some EMAC related changes in Canyonlands & Glacier dts file
-      [POWERPC] 4xx: Change dts files to support jumbo frames
-
-Stephen Neuendorffer (1):
-      [POWERPC] of_serial: Fix possible null dereference.
-
-Valentine Barshak (1):
-      [POWERPC] 4xx: Use machine_device_initcall() for warp_nand
-
- arch/powerpc/Makefile                    |    2 +-
- arch/powerpc/boot/Makefile               |   36 +++++++++----
- arch/powerpc/boot/dts/canyonlands.dts    |   19 +++++--
- arch/powerpc/boot/dts/glacier.dts        |    5 ++-
- arch/powerpc/boot/dts/haleakala.dts      |    2 +-
- arch/powerpc/boot/dts/katmai.dts         |    2 +-
- arch/powerpc/boot/dts/kilauea.dts        |    4 +-
- arch/powerpc/boot/dts/makalu.dts         |    4 +-
- arch/powerpc/boot/dts/rainier.dts        |    4 +-
- arch/powerpc/boot/dts/sequoia.dts        |    4 +-
- arch/powerpc/boot/dts/taishan.dts        |    4 +-
- arch/powerpc/boot/simpleboot.c           |   84 ++++++++++++++++++++++++++++++
- arch/powerpc/boot/virtex405-head.S       |   30 +++++++++++
- arch/powerpc/boot/wrapper                |    4 ++
- arch/powerpc/configs/ppc44x_defconfig    |   14 ++++--
- arch/powerpc/platforms/40x/ep405.c       |    2 +
- arch/powerpc/platforms/40x/kilauea.c     |    4 +-
- arch/powerpc/platforms/40x/makalu.c      |    2 +
- arch/powerpc/platforms/40x/virtex.c      |    2 +
- arch/powerpc/platforms/40x/walnut.c      |    4 +-
- arch/powerpc/platforms/44x/44x.h         |    1 -
- arch/powerpc/platforms/44x/Kconfig       |    1 -
- arch/powerpc/platforms/44x/bamboo.c      |   15 +++---
- arch/powerpc/platforms/44x/canyonlands.c |    5 +-
- arch/powerpc/platforms/44x/ebony.c       |    5 +-
- arch/powerpc/platforms/44x/katmai.c      |    5 +-
- arch/powerpc/platforms/44x/misc_44x.S    |   11 ----
- arch/powerpc/platforms/44x/rainier.c     |    4 +-
- arch/powerpc/platforms/44x/sequoia.c     |    4 +-
- arch/powerpc/platforms/44x/taishan.c     |    5 +-
- arch/powerpc/platforms/44x/warp-nand.c   |    3 +-
- arch/powerpc/platforms/44x/warp.c        |    6 +--
- arch/powerpc/platforms/Kconfig.cputype   |    2 +
- arch/powerpc/sysdev/ppc4xx_pci.c         |   18 ++-----
- arch/powerpc/sysdev/ppc4xx_soc.c         |   11 ++++
- drivers/serial/of_serial.c               |    4 +-
- include/asm-powerpc/ppc4xx.h             |   18 ++++++
- 37 files changed, 257 insertions(+), 93 deletions(-)
+ arch/powerpc/configs/{ => 40x}/ep405_defconfig     |    0 
+ arch/powerpc/configs/{ => 40x}/kilauea_defconfig   |    0 
+ arch/powerpc/configs/{ => 40x}/makalu_defconfig    |    0 
+ arch/powerpc/configs/{ => 40x}/walnut_defconfig    |    0 
+ arch/powerpc/configs/{ => 44x}/bamboo_defconfig    |    0 
+ .../configs/{ => 44x}/canyonlands_defconfig        |    0 
+ arch/powerpc/configs/{ => 44x}/ebony_defconfig     |    0 
+ arch/powerpc/configs/{ => 44x}/katmai_defconfig    |    0 
+ arch/powerpc/configs/{ => 44x}/rainier_defconfig   |    0 
+ arch/powerpc/configs/{ => 44x}/sequoia_defconfig   |    0 
+ arch/powerpc/configs/{ => 44x}/taishan_defconfig   |    0 
+ arch/powerpc/configs/{ => 44x}/warp_defconfig      |    0 
+ 12 files changed, 0 insertions(+), 0 deletions(-)
