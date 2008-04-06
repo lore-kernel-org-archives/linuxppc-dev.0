@@ -1,23 +1,19 @@
-Return-Path: <wg@grandegger.com>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 7B141DDD04
-	for <linuxppc-dev@ozlabs.org>; Sun,  6 Apr 2008 22:30:27 +1000 (EST)
-Received: from mail01.m-online.net (mail.m-online.net [192.168.3.149])
-	by mail-out.m-online.net (Postfix) with ESMTP id F3DA521D7AC
-	for <linuxppc-dev@ozlabs.org>; Sun,  6 Apr 2008 14:30:24 +0200 (CEST)
-Received: from [10.0.30.2] (p4FE6671E.dip.t-dialin.net [79.230.103.30])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(No client certificate requested)
-	by smtp-auth.mnet-online.de (Postfix) with ESMTP id 8607C90017
-	for <linuxppc-dev@ozlabs.org>; Sun,  6 Apr 2008 14:30:24 +0200 (CEST)
-Resent-Message-Id: <47F8C260.2060403@grandegger.com>
-Message-ID: <47F8C230.4090607@grandegger.com>
-Date: Sun, 06 Apr 2008 14:29:36 +0200
-From: Wolfgang Grandegger <wg@grandegger.com>
-MIME-Version: 1.0
-To: wg@grandegger.com
-Subject: [PATCH RFC] tqm8560.dts: add local bus devices
-Content-Type: text/plain; charset=ISO-8859-1
+Return-Path: <jwboyer@gmail.com>
+Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.180])
+	by ozlabs.org (Postfix) with ESMTP id 79330DDDF5
+	for <linuxppc-dev@ozlabs.org>; Sun,  6 Apr 2008 22:42:03 +1000 (EST)
+Received: by py-out-1112.google.com with SMTP id z59so999583pyg.27
+	for <linuxppc-dev@ozlabs.org>; Sun, 06 Apr 2008 05:42:02 -0700 (PDT)
+Subject: Please pull 'for-2.6.26' branch of 4xx tree
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: paulus@samba.org
+Content-Type: text/plain
+Date: Sun, 06 Apr 2008 07:41:59 -0500
+Message-Id: <1207485719.6809.16.camel@vader.jdub.homelinux.org>
+Mime-Version: 1.0
+Sender: Josh Boyer <jwboyer@gmail.com>
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: jwboyer@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,101 +23,74 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello,
+Hi Paul,
 
-this is my first attempt to add local bus nodes to the DTS file 
-of the TQM8560 for the following devices:
+Please pull from:
 
-  CS1: 128 MB NOR FLASH at 0xf8000000
-  CS2: Two Intel 82527 CAN controller at 0xe3000000
-  CS3: 128 MB NAND FLASH at 0xe3010000
+ master.kernel.org:/pub/scm/linux/kernel/git/jwboyer/powerpc-4xx.git for-2.6.26
 
-Index: linux-2.6-denx/arch/powerpc/boot/dts/tqm8560.dts
-===================================================================
---- linux-2.6-denx.orig/arch/powerpc/boot/dts/tqm8560.dts
-+++ linux-2.6-denx/arch/powerpc/boot/dts/tqm8560.dts
-@@ -221,6 +221,77 @@
- 		};
- 	};
- 
-+	localbus@e0005000 {
-+		compatible = "fsl,mpc8560-localbus";
-+		#address-cells = <2>;
-+		#size-cells = <1>;
-+		reg = <0xe0005000 0x100>;	// BRx, ORx, etc.
-+
-+		ranges = <
-+			0x0 0x0 0xfc000000 0x04000000	// NOR FLASH bank 1
-+			0x1 0x0 0xf8000000 0x08000000	// NOR FLASH bank 0
-+			0x2 0x0 0xe3000000 0x00008000	// CAN (2 x i82527)
-+			0x3 0x0 0xe3010000 0x00008000	// NAND FLASH
-+		>;
-+
-+		flash@1,0 {
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			compatible = "cfi-flash";
-+			reg = <0x1 0x0 0x8000000>;
-+			bank-width = <4>;
-+			device-width = <1>;
-+
-+			partition@0 {
-+                                label = "kernel";
-+                                reg = <0x00000000 0x00300000>;
-+                        };
-+                        partition@300000 {
-+                                label = "fs";
-+                                reg = <0x00300000 0x07c00000>;
-+                        };
-+                        partition@7700000 {
-+                                label = "firmware";
-+                                reg = <0x07700000 0x00100000>;
-+                                read-only;
-+                        };
-+
-+		};
-+
-+		can@2,0 {
-+			device_type = "can";
-+			compatible = "i82527";	// Intel 82527 or Bosch CC770
-+			reg = <0x2 0x0 0x100>;
-+			interrupts = <0x9 0x2>;
-+			interrupt-parent = <&mpic>;
-+		}
-+
-+		can@2,100 {
-+			device_type = "can";
-+			compatible = "i82527";	// Intel 82527 or Bosch CC770
-+			reg = <0x2 0x100 0x100>;
-+			interrupts = <0x9 0x2>;
-+			interrupt-parent = <&mpic>;
-+		}
-+
-+		nand@3,0 {
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			compatible = "fsl,mpc8560-fcm-nand",
-+			             "fsl,elbc-fcm-nand";
-+			reg = <0x3 0x0 0x8000>;
-+
-+			kernel@0 {
-+                                label = "kernel";
-+				reg = <0x000000 0x0300000>;
-+			};
-+			fs@300000 {
-+                                label = "fs";
-+				reg = <0x300000 0x7d00000>;
-+			};
-+		};
-+	};
-+
- 	pci0: pci@e0008000 {
- 		cell-index = <0>;
- 		#interrupt-cells = <1>;
+to pick up a handful of additional commits for 2.6.26.  Most of these
+are bug fixes.  Grant adds a helpful make target for building dtb files,
+which is quite useful for some newer 4xx boards as well as other
+platforms in general.
 
+josh
 
-Do these entries make sense?
+Grant Likely (2):
+      [POWERPC] add target for building .dtb files
+      [POWERPC] bootwrapper: Add a firmware-independent simpleboot target.
 
-TIA.
+Josh Boyer (1):
+      [POWERPC] 4xx: Add Canyonlands and Yosemite to multi-board defconfig
 
-Wolfgang.
+Stefan Roese (5):
+      [POWERPC] 4xx: Only reset PCIe PHY on 405EX systems when no link is detect
+      [POWERPC] 4xx: Fix PESDRn_UTLSET1 register setup on 460EX/GT
+      [POWERPC] 4xx: Create common ppc4xx_reset_system() in ppc4xx_soc.c
+      [POWERPC] 4xx: Some EMAC related changes in Canyonlands & Glacier dts file
+      [POWERPC] 4xx: Change dts files to support jumbo frames
+
+Stephen Neuendorffer (1):
+      [POWERPC] of_serial: Fix possible null dereference.
+
+Valentine Barshak (1):
+      [POWERPC] 4xx: Use machine_device_initcall() for warp_nand
+
+ arch/powerpc/Makefile                    |    2 +-
+ arch/powerpc/boot/Makefile               |   36 +++++++++----
+ arch/powerpc/boot/dts/canyonlands.dts    |   19 +++++--
+ arch/powerpc/boot/dts/glacier.dts        |    5 ++-
+ arch/powerpc/boot/dts/haleakala.dts      |    2 +-
+ arch/powerpc/boot/dts/katmai.dts         |    2 +-
+ arch/powerpc/boot/dts/kilauea.dts        |    4 +-
+ arch/powerpc/boot/dts/makalu.dts         |    4 +-
+ arch/powerpc/boot/dts/rainier.dts        |    4 +-
+ arch/powerpc/boot/dts/sequoia.dts        |    4 +-
+ arch/powerpc/boot/dts/taishan.dts        |    4 +-
+ arch/powerpc/boot/simpleboot.c           |   84 ++++++++++++++++++++++++++++++
+ arch/powerpc/boot/virtex405-head.S       |   30 +++++++++++
+ arch/powerpc/boot/wrapper                |    4 ++
+ arch/powerpc/configs/ppc44x_defconfig    |   14 ++++--
+ arch/powerpc/platforms/40x/ep405.c       |    2 +
+ arch/powerpc/platforms/40x/kilauea.c     |    4 +-
+ arch/powerpc/platforms/40x/makalu.c      |    2 +
+ arch/powerpc/platforms/40x/virtex.c      |    2 +
+ arch/powerpc/platforms/40x/walnut.c      |    4 +-
+ arch/powerpc/platforms/44x/44x.h         |    1 -
+ arch/powerpc/platforms/44x/Kconfig       |    1 -
+ arch/powerpc/platforms/44x/bamboo.c      |   15 +++---
+ arch/powerpc/platforms/44x/canyonlands.c |    5 +-
+ arch/powerpc/platforms/44x/ebony.c       |    5 +-
+ arch/powerpc/platforms/44x/katmai.c      |    5 +-
+ arch/powerpc/platforms/44x/misc_44x.S    |   11 ----
+ arch/powerpc/platforms/44x/rainier.c     |    4 +-
+ arch/powerpc/platforms/44x/sequoia.c     |    4 +-
+ arch/powerpc/platforms/44x/taishan.c     |    5 +-
+ arch/powerpc/platforms/44x/warp-nand.c   |    3 +-
+ arch/powerpc/platforms/44x/warp.c        |    6 +--
+ arch/powerpc/platforms/Kconfig.cputype   |    2 +
+ arch/powerpc/sysdev/ppc4xx_pci.c         |   18 ++-----
+ arch/powerpc/sysdev/ppc4xx_soc.c         |   11 ++++
+ drivers/serial/of_serial.c               |    4 +-
+ include/asm-powerpc/ppc4xx.h             |   18 ++++++
+ 37 files changed, 257 insertions(+), 93 deletions(-)
