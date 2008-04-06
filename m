@@ -1,15 +1,14 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 8D351DDE01
-	for <linuxppc-dev@ozlabs.org>; Mon,  7 Apr 2008 06:23:32 +1000 (EST)
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH] make help: Show defconfig subdirs
-Date: Sun,  6 Apr 2008 22:16:07 +0200
-Message-Id: <f70d44df351c88b7754e2ca93c6075f9660d3a40.1207512931.git.segher@kernel.crashing.org>
-Cc: Sam Ravnborg <sam@ravnborg.org>
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18425.24938.332852.315571@cargo.ozlabs.ibm.com>
+Date: Mon, 7 Apr 2008 09:48:58 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [RFC][PATCH] initial port of fixmap over from x86 for ppc32
+In-Reply-To: <Pine.LNX.4.64.0804030144460.15974@blarg.am.freescale.net>
+References: <Pine.LNX.4.64.0804030144460.15974@blarg.am.freescale.net>
+Cc: linuxppc-dev@ozlabs.org, hollisb@us.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,71 +18,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-PowerPC will start moving board defconfigs into subarch-specific
-subdirs soon.  "make help" currently does not look in subdirs to
-find the defconfigs to show.  This is partially a good thing,
-since there are way too many defconfigs for one list.
+Kumar Gala writes:
 
-This patch makes the main "make help" display something like
+> Wanted to get any feedback on this initial port of the fixmap support over
+> from x86.  There are a few TODOs:
 
-  help-40x         - Show 40x-specific targets
-  help-44x         - Show 44x-specific targets
-  help-boards      - Show all of the above
+I have no objection in principle, but your patch below imports a few
+things that aren't (and won't be) needed on powerpc AFAICS -- for
+example, we don't need FIX_VDSO, since our VDSO is mapped into user
+space at the 1MB point (by default).
 
-and wires up stuff so those new help-* commands actually work.
+You have FIX_PCIE_MCFG in there too (keyed off CONFIG_PCI_MMCONFIG
+which we don't have and don't want to have).  If you need to map in
+PCIe config space, what's wrong with just using ioremap?  Why do you
+need to have a fixed virtual address for it?
 
-Cc: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Cc: Sam Ravnborg <sam@ravnborg.org>
-Signed-off-by: Segher Boessenkool <segher@kernel.crashing.org>
----
- Makefile |   21 +++++++++++++++++++++
- 1 files changed, 21 insertions(+), 0 deletions(-)
+More generally, I think we need to take an overall look at what things
+we are using fixed virtual addresses for, and why they need to be
+fixed.  If there are indeed several such things then we can introduce
+the fixmap stuff.
 
-diff --git a/Makefile b/Makefile
-index fec2a12..05d9fda 100644
---- a/Makefile
-+++ b/Makefile
-@@ -1172,6 +1172,8 @@ rpm: include/config/kernel.release FORCE
- 
- boards := $(wildcard $(srctree)/arch/$(ARCH)/configs/*_defconfig)
- boards := $(notdir $(boards))
-+board-dirs := $(dir $(wildcard $(srctree)/arch/$(ARCH)/configs/*/*_defconfig))
-+board-dirs := $(sort $(notdir $(board-dirs:/=)))
- 
- help:
- 	@echo  'Cleaning targets:'
-@@ -1225,6 +1227,11 @@ help:
- 		$(foreach b, $(boards), \
- 		printf "  %-24s - Build for %s\\n" $(b) $(subst _defconfig,,$(b));) \
- 		echo '')
-+	@$(if $(board-dirs), \
-+		$(foreach b, $(board-dirs), \
-+		printf "  %-16s - Show %s-specific targets\\n" help-$(b) $(b);) \
-+		printf "  %-16s - Show all of the above\\n" help-boards; \
-+		echo '')
- 
- 	@echo  '  make V=0|1 [targets] 0 => quiet build (default), 1 => verbose build'
- 	@echo  '  make V=2   [targets] 2 => give reason for rebuild of target'
-@@ -1236,6 +1243,20 @@ help:
- 	@echo  'For further info see the ./README file'
- 
- 
-+help-board-dirs := $(addprefix help-,$(board-dirs))
-+
-+help-boards: $(help-board-dirs)
-+
-+boards-per-dir = $(notdir $(wildcard $(srctree)/arch/$(ARCH)/configs/$*/*_defconfig))
-+
-+$(help-board-dirs): help-%:
-+	@echo  'Architecture specific targets ($(ARCH) $*):'
-+	@$(if $(boards-per-dir), \
-+		$(foreach b, $(boards-per-dir), \
-+		printf "  %-24s - Build for %s\\n" $*/$(b) $(subst _defconfig,,$(b));) \
-+		echo '')
-+
-+
- # Documentation targets
- # ---------------------------------------------------------------------------
- %docs: scripts_basic FORCE
--- 
-1.5.3.4.208.g805a
+Paul.
