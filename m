@@ -1,17 +1,23 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id 94759DDDFF
-	for <linuxppc-dev@ozlabs.org>; Sun,  6 Apr 2008 02:31:31 +1000 (EST)
-Message-ID: <47F7A935.3080803@ru.mvista.com>
-Date: Sat, 05 Apr 2008 20:30:45 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Return-Path: <wg@grandegger.com>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 7B141DDD04
+	for <linuxppc-dev@ozlabs.org>; Sun,  6 Apr 2008 22:30:27 +1000 (EST)
+Received: from mail01.m-online.net (mail.m-online.net [192.168.3.149])
+	by mail-out.m-online.net (Postfix) with ESMTP id F3DA521D7AC
+	for <linuxppc-dev@ozlabs.org>; Sun,  6 Apr 2008 14:30:24 +0200 (CEST)
+Received: from [10.0.30.2] (p4FE6671E.dip.t-dialin.net [79.230.103.30])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(No client certificate requested)
+	by smtp-auth.mnet-online.de (Postfix) with ESMTP id 8607C90017
+	for <linuxppc-dev@ozlabs.org>; Sun,  6 Apr 2008 14:30:24 +0200 (CEST)
+Resent-Message-Id: <47F8C260.2060403@grandegger.com>
+Message-ID: <47F8C230.4090607@grandegger.com>
+Date: Sun, 06 Apr 2008 14:29:36 +0200
+From: Wolfgang Grandegger <wg@grandegger.com>
 MIME-Version: 1.0
-To: Valentine Barshak <vbarshak@ru.mvista.com>
-Subject: Re: [PATCH 3/4] PowerPC: Add PCI entry to 440EPx Sequoia DTS.
-References: <20071221162601.GA1700@ru.mvista.com>
-In-Reply-To: <20071221162601.GA1700@ru.mvista.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+To: wg@grandegger.com
+Subject: [PATCH RFC] tqm8560.dts: add local bus devices
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,55 +27,101 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Valentine Barshak wrote:
+Hello,
 
-> This adds PCI entry to PowerPC 440EPx Sequoia DTS.
+this is my first attempt to add local bus nodes to the DTS file 
+of the TQM8560 for the following devices:
 
-> Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
+  CS1: 128 MB NOR FLASH at 0xf8000000
+  CS2: Two Intel 82527 CAN controller at 0xe3000000
+  CS3: 128 MB NAND FLASH at 0xe3010000
 
-> --- linux-2.6.orig/arch/powerpc/boot/dts/sequoia.dts	2007-12-21 17:14:17.000000000 +0300
-> +++ linux-2.6/arch/powerpc/boot/dts/sequoia.dts	2007-12-21 17:18:32.000000000 +0300
-> @@ -324,6 +324,33 @@
->  				has-new-stacr-staopc;
->  			};
->  		};
-> +
-> +		PCI0: pci@1ec000000 {
-> +			device_type = "pci";
-> +			#interrupt-cells = <1>;
-> +			#size-cells = <2>;
-> +			#address-cells = <3>;
-> +			compatible = "ibm,plb440epx-pci", "ibm,plb-pci";
-> +			primary;
-> +			reg = <1 eec00000 8	/* Config space access */
-> +			       1 eed00000 4	/* IACK */
-> +			       1 eed00000 4	/* Special cycle */
-> +			       1 ef400000 40>;	/* Internal registers */
-> +
-> +			/* Outbound ranges, one memory and one IO,
-> +			 * later cannot be changed. Chip supports a second
-> +			 * IO range but we don't use it for now
-> +			 */
-> +			ranges = <02000000 0 80000000 1 80000000 0 10000000
+Index: linux-2.6-denx/arch/powerpc/boot/dts/tqm8560.dts
+===================================================================
+--- linux-2.6-denx.orig/arch/powerpc/boot/dts/tqm8560.dts
++++ linux-2.6-denx/arch/powerpc/boot/dts/tqm8560.dts
+@@ -221,6 +221,77 @@
+ 		};
+ 	};
+ 
++	localbus@e0005000 {
++		compatible = "fsl,mpc8560-localbus";
++		#address-cells = <2>;
++		#size-cells = <1>;
++		reg = <0xe0005000 0x100>;	// BRx, ORx, etc.
++
++		ranges = <
++			0x0 0x0 0xfc000000 0x04000000	// NOR FLASH bank 1
++			0x1 0x0 0xf8000000 0x08000000	// NOR FLASH bank 0
++			0x2 0x0 0xe3000000 0x00008000	// CAN (2 x i82527)
++			0x3 0x0 0xe3010000 0x00008000	// NAND FLASH
++		>;
++
++		flash@1,0 {
++			#address-cells = <1>;
++			#size-cells = <1>;
++			compatible = "cfi-flash";
++			reg = <0x1 0x0 0x8000000>;
++			bank-width = <4>;
++			device-width = <1>;
++
++			partition@0 {
++                                label = "kernel";
++                                reg = <0x00000000 0x00300000>;
++                        };
++                        partition@300000 {
++                                label = "fs";
++                                reg = <0x00300000 0x07c00000>;
++                        };
++                        partition@7700000 {
++                                label = "firmware";
++                                reg = <0x07700000 0x00100000>;
++                                read-only;
++                        };
++
++		};
++
++		can@2,0 {
++			device_type = "can";
++			compatible = "i82527";	// Intel 82527 or Bosch CC770
++			reg = <0x2 0x0 0x100>;
++			interrupts = <0x9 0x2>;
++			interrupt-parent = <&mpic>;
++		}
++
++		can@2,100 {
++			device_type = "can";
++			compatible = "i82527";	// Intel 82527 or Bosch CC770
++			reg = <0x2 0x100 0x100>;
++			interrupts = <0x9 0x2>;
++			interrupt-parent = <&mpic>;
++		}
++
++		nand@3,0 {
++			#address-cells = <1>;
++			#size-cells = <1>;
++			compatible = "fsl,mpc8560-fcm-nand",
++			             "fsl,elbc-fcm-nand";
++			reg = <0x3 0x0 0x8000>;
++
++			kernel@0 {
++                                label = "kernel";
++				reg = <0x000000 0x0300000>;
++			};
++			fs@300000 {
++                                label = "fs";
++				reg = <0x300000 0x7d00000>;
++			};
++		};
++	};
++
+ 	pci0: pci@e0008000 {
+ 		cell-index = <0>;
+ 		#interrupt-cells = <1>;
 
-    I wonder why the AMCC's Sequoia/Rainier manual has PCI memory mapped at 
-0x80000000-0xbfffffff? The 0x80000000-0x8fffffff mapping was assumed by 
-arch/ppc/ code.  What/why changed here?
-    As we now both know, having PCI memory space mapped beyound 4 GB makes 
-some drivers misbehave as they use 'unsigned long' to store the result of 
-pci_resource_start() and later ioremap() this truncated value -- which is 
-64-bit on Sequoia due to CONFIG_RESOURCE_64BIT=y that is needed to store the 
-beyond-4GB addresses.
 
-> +				01000000 0 00000000 1 e8000000 0 00100000>;
-> +
-> +			/* Inbound 2GB range starting at 0 */
-> +			dma-ranges = <42000000 0 0 0 0 0 80000000>;
-> +
-> +			/* All PCI interrupts are routed to IRQ 67 */
-> +			interrupt-map-mask = <0000 0 0 0>;
-> +			interrupt-map = < 0000 0 0 0 &UIC2 3 8 >;
-> +		};
->  	};
+Do these entries make sense?
 
-WBR, Sergei
+TIA.
+
+Wolfgang.
