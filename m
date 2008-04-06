@@ -1,19 +1,18 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 99338DDDE9
-	for <linuxppc-dev@ozlabs.org>; Mon,  7 Apr 2008 01:33:42 +1000 (EST)
-In-Reply-To: <1207487181.6809.18.camel@vader.jdub.homelinux.org>
-References: <1207487181.6809.18.camel@vader.jdub.homelinux.org>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <1d71203db510d706edf4acf1a6aa52bd@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: 4xx defconfig reorg
-Date: Sun, 6 Apr 2008 17:32:42 +0200
-To: jwboyer@linux.vnet.ibm.com
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Return-Path: <wg@grandegger.com>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id EF3C3DDE0E
+	for <linuxppc-dev@ozlabs.org>; Mon,  7 Apr 2008 03:42:51 +1000 (EST)
+Message-ID: <47F90B97.4080904@grandegger.com>
+Date: Sun, 06 Apr 2008 19:42:47 +0200
+From: Wolfgang Grandegger <wg@grandegger.com>
+MIME-Version: 1.0
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH RFC] tqm8560.dts: add local bus devices
+References: <47F8C230.4090607@grandegger.com>
+	<0d57d42da9d29cc240be9d38de29ed96@kernel.crashing.org>
+In-Reply-To: <0d57d42da9d29cc240be9d38de29ed96@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,11 +22,60 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> Unless someone screams loudly and has reasons why this shouldn't go in,
+Segher Boessenkool wrote:
+>> +                        partition@300000 {
+>> +                                label = "fs";
+>> +                                reg = <0x00300000 0x07c00000>;
+>> +                        };
+>> +                        partition@7700000 {
+>> +                                label = "firmware";
+>> +                                reg = <0x07700000 0x00100000>;
+> 
+> These two overlap; should the latter be @7f00000?
 
-These configs won't show up for "make help" anymore, which of course is
-nice because that list was too long, but we need a way to get that back
-since it was useful.  I'll see what I can do.
+Yes, of course.
 
+> 
+>> +        can@2,0 {
+>> +            device_type = "can";
+> 
+> No device_type please.
 
-Segher
+OK, but then I better use a more descriptive name for the compatible
+property, e.g.:
+
+	compatible = "can-i82527";	// Intel 82527 or Bosch CC770
+
+> 
+>> +        nand@3,0 {
+>> +            #address-cells = <1>;
+>> +            #size-cells = <1>;
+>> +            compatible = "fsl,mpc8560-fcm-nand",
+>> +                         "fsl,elbc-fcm-nand";
+>> +            reg = <0x3 0x0 0x8000>;
+>> +
+>> +            kernel@0 {
+>> +                                label = "kernel";
+>> +                reg = <0x000000 0x0300000>;
+>> +            };
+>> +            fs@300000 {
+>> +                                label = "fs";
+>> +                reg = <0x300000 0x7d00000>;
+>> +            };
+>> +        };
+>> +    };
+> 
+> There should be a node that describes the nand chip between the nand
+> controller node and the partition nodes.
+
+I took the mpc8378_*.dts files of 2.6.25-rc8 as example and there is no
+such node. Could you point me please to a more appropriate example.
+
+> 
+>> Do these entries make sense?
+> 
+> Looks good otherwise :-)
+
+Thanks.
+
+Wolfgang.
