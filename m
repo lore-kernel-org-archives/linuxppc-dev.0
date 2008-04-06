@@ -1,17 +1,15 @@
-Return-Path: <wg@grandegger.com>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 78245DDE0A
-	for <linuxppc-dev@ozlabs.org>; Mon,  7 Apr 2008 04:45:36 +1000 (EST)
-Message-ID: <47F91A4C.6030109@grandegger.com>
-Date: Sun, 06 Apr 2008 20:45:32 +0200
-From: Wolfgang Grandegger <wg@grandegger.com>
-MIME-Version: 1.0
-Subject: Re: [PATCH RFC] tqm8560.dts: add local bus devices
-References: <47F8C230.4090607@grandegger.com>	<0d57d42da9d29cc240be9d38de29ed96@kernel.crashing.org>
-	<47F90B97.4080904@grandegger.com>
-In-Reply-To: <47F90B97.4080904@grandegger.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 8D351DDE01
+	for <linuxppc-dev@ozlabs.org>; Mon,  7 Apr 2008 06:23:32 +1000 (EST)
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Subject: [PATCH] make help: Show defconfig subdirs
+Date: Sun,  6 Apr 2008 22:16:07 +0200
+Message-Id: <f70d44df351c88b7754e2ca93c6075f9660d3a40.1207512931.git.segher@kernel.crashing.org>
+Cc: Sam Ravnborg <sam@ravnborg.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,57 +19,71 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Wolfgang Grandegger wrote:
-> Segher Boessenkool wrote:
->>> +                        partition@300000 {
->>> +                                label = "fs";
->>> +                                reg = <0x00300000 0x07c00000>;
->>> +                        };
->>> +                        partition@7700000 {
->>> +                                label = "firmware";
->>> +                                reg = <0x07700000 0x00100000>;
->> These two overlap; should the latter be @7f00000?
-> 
-> Yes, of course.
-> 
->>> +        can@2,0 {
->>> +            device_type = "can";
->> No device_type please.
-> 
-> OK, but then I better use a more descriptive name for the compatible
-> property, e.g.:
-> 
-> 	compatible = "can-i82527";	// Intel 82527 or Bosch CC770
-> 
->>> +        nand@3,0 {
->>> +            #address-cells = <1>;
->>> +            #size-cells = <1>;
->>> +            compatible = "fsl,mpc8560-fcm-nand",
->>> +                         "fsl,elbc-fcm-nand";
->>> +            reg = <0x3 0x0 0x8000>;
->>> +
->>> +            kernel@0 {
->>> +                                label = "kernel";
->>> +                reg = <0x000000 0x0300000>;
->>> +            };
->>> +            fs@300000 {
->>> +                                label = "fs";
->>> +                reg = <0x300000 0x7d00000>;
->>> +            };
->>> +        };
->>> +    };
->> There should be a node that describes the nand chip between the nand
->> controller node and the partition nodes.
-> 
-> I took the mpc8378_*.dts files of 2.6.25-rc8 as example and there is no
-> such node. Could you point me please to a more appropriate example.
+PowerPC will start moving board defconfigs into subarch-specific
+subdirs soon.  "make help" currently does not look in subdirs to
+find the defconfigs to show.  This is partially a good thing,
+since there are way too many defconfigs for one list.
 
-In the meantime I realized, that the upcoming FSL UPM driver seems to be
-appropriate for that board:
+This patch makes the main "make help" display something like
 
-  http://ozlabs.org/pipermail/linuxppc-dev/2008-March/052890.html
+  help-40x         - Show 40x-specific targets
+  help-44x         - Show 44x-specific targets
+  help-boards      - Show all of the above
 
-What is the status of this driver? Are there already some boards using
-it (including DTS file)?
+and wires up stuff so those new help-* commands actually work.
 
-Wolfgang.
+Cc: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Cc: Sam Ravnborg <sam@ravnborg.org>
+Signed-off-by: Segher Boessenkool <segher@kernel.crashing.org>
+---
+ Makefile |   21 +++++++++++++++++++++
+ 1 files changed, 21 insertions(+), 0 deletions(-)
+
+diff --git a/Makefile b/Makefile
+index fec2a12..05d9fda 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1172,6 +1172,8 @@ rpm: include/config/kernel.release FORCE
+ 
+ boards := $(wildcard $(srctree)/arch/$(ARCH)/configs/*_defconfig)
+ boards := $(notdir $(boards))
++board-dirs := $(dir $(wildcard $(srctree)/arch/$(ARCH)/configs/*/*_defconfig))
++board-dirs := $(sort $(notdir $(board-dirs:/=)))
+ 
+ help:
+ 	@echo  'Cleaning targets:'
+@@ -1225,6 +1227,11 @@ help:
+ 		$(foreach b, $(boards), \
+ 		printf "  %-24s - Build for %s\\n" $(b) $(subst _defconfig,,$(b));) \
+ 		echo '')
++	@$(if $(board-dirs), \
++		$(foreach b, $(board-dirs), \
++		printf "  %-16s - Show %s-specific targets\\n" help-$(b) $(b);) \
++		printf "  %-16s - Show all of the above\\n" help-boards; \
++		echo '')
+ 
+ 	@echo  '  make V=0|1 [targets] 0 => quiet build (default), 1 => verbose build'
+ 	@echo  '  make V=2   [targets] 2 => give reason for rebuild of target'
+@@ -1236,6 +1243,20 @@ help:
+ 	@echo  'For further info see the ./README file'
+ 
+ 
++help-board-dirs := $(addprefix help-,$(board-dirs))
++
++help-boards: $(help-board-dirs)
++
++boards-per-dir = $(notdir $(wildcard $(srctree)/arch/$(ARCH)/configs/$*/*_defconfig))
++
++$(help-board-dirs): help-%:
++	@echo  'Architecture specific targets ($(ARCH) $*):'
++	@$(if $(boards-per-dir), \
++		$(foreach b, $(boards-per-dir), \
++		printf "  %-24s - Build for %s\\n" $*/$(b) $(subst _defconfig,,$(b));) \
++		echo '')
++
++
+ # Documentation targets
+ # ---------------------------------------------------------------------------
+ %docs: scripts_basic FORCE
+-- 
+1.5.3.4.208.g805a
