@@ -2,17 +2,16 @@ Return-Path: <dale@farnsworth.org>
 Received: from xyzzy.farnsworth.org (xyzzy.farnsworth.org [65.39.95.219])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 8D94EDDF4F
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Apr 2008 08:10:05 +1000 (EST)
-Date: Mon, 7 Apr 2008 15:09:51 -0700
+	by ozlabs.org (Postfix) with ESMTPS id 2522BDDF34
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 Apr 2008 08:10:47 +1000 (EST)
+Date: Mon, 7 Apr 2008 15:10:34 -0700
 From: Dale Farnsworth <dale@farnsworth.org>
 To: paulus@samba.org
-Message-ID: <20080407220951.GD24979@farnsworth.org>
+Message-ID: <20080407221034.GE24979@farnsworth.org>
 References: <20080407220027.GA24510@farnsworth.org>
 MIME-Version: 1.0
 In-Reply-To: <20080407220027.GA24510@farnsworth.org>
-Subject: [PATCH 4/8 v3] [POWERPC] mv64x60: remove device tree absolute path
-	references
+Subject: [PATCH 5/8 v3] [POWERPC] prpmc2800: clean up dts properties
 Content-Type: text/plain; charset=us-ascii
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -24,115 +23,197 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Dale Farnsworth <dale@farnsworth.org>
+From: Mark A. Greer <mgreer@mvista.com>
 
-Replace several device node absolute path lookups in the mv64x60
-bootwrapper code with lookups by compatible or device_type
-properties.
+Remove several unused (or software config only) properties.
+Rename marvel node to "system-controller".  Also, rename the
+"block-index" property to "cell-index" to conform to current
+practice.
 
+Signed-off-by: Mark A. Greer <mgreer@mvista.com>
 Signed-off-by: Dale Farnsworth <dale@farnsworth.org>
-Acked-by: Mark A. Greer <mgreer@mvista.com>
 
 ---
- arch/powerpc/boot/mv64x60.c     |    4 ++--
- arch/powerpc/boot/mv64x60_i2c.c |    2 +-
- arch/powerpc/boot/prpmc2800.c   |   23 ++++++++++++-----------
- 3 files changed, 15 insertions(+), 14 deletions(-)
+ arch/powerpc/boot/dts/prpmc2800.dts |   27 ++------------------------
+ arch/powerpc/boot/mpsc.c            |    2 -
+ arch/powerpc/sysdev/mv64x60_dev.c   |   18 ++++++-----------
+ 3 files changed, 11 insertions(+), 36 deletions(-)
 
---- a/arch/powerpc/boot/mv64x60.c
-+++ b/arch/powerpc/boot/mv64x60.c
-@@ -535,7 +535,7 @@ u8 *mv64x60_get_bridge_pbase(void)
- 	u32 v[2];
- 	void *devp;
+Index: linux-2.6/arch/powerpc/boot/dts/prpmc2800.dts
+===================================================================
+--- linux-2.6.orig/arch/powerpc/boot/dts/prpmc2800.dts
++++ linux-2.6/arch/powerpc/boot/dts/prpmc2800.dts
+@@ -42,7 +42,7 @@
+ 		reg = <0x0 0x20000000>;			/* Default (512MB) */
+ 	};
  
--	devp = finddevice("/mv64x60");
-+	devp = find_node_by_compatible(NULL, "marvell,mv64360");
- 	if (devp == NULL)
+-	mv64x60@f1000000 { /* Marvell Discovery */
++	system-controller@f1000000 { /* Marvell Discovery mv64360 */
+ 		#address-cells = <1>;
+ 		#size-cells = <1>;
+ 		model = "mv64360";			/* Default */
+@@ -114,21 +114,17 @@
+ 		};
+ 
+ 		SDMA0: sdma@4000 {
+-			device_type = "dma";
+ 			compatible = "marvell,mv64360-sdma";
+ 			reg = <0x4000 0xc18>;
+ 			virtual-reg = <0xf1004000>;
+-			interrupt-base = <0>;
+ 			interrupts = <36>;
+ 			interrupt-parent = <&PIC>;
+ 		};
+ 
+ 		SDMA1: sdma@6000 {
+-			device_type = "dma";
+ 			compatible = "marvell,mv64360-sdma";
+ 			reg = <0x6000 0xc18>;
+ 			virtual-reg = <0xf1006000>;
+-			interrupt-base = <0>;
+ 			interrupts = <38>;
+ 			interrupt-parent = <&PIC>;
+ 		};
+@@ -139,7 +135,6 @@
+ 			clock-src = <8>;
+ 			clock-frequency = <133333333>;
+ 			current-speed = <9600>;
+-			bcr = <0>;
+ 		};
+ 
+ 		BRG1: brg@b208 {
+@@ -148,7 +143,6 @@
+ 			clock-src = <8>;
+ 			clock-frequency = <133333333>;
+ 			current-speed = <9600>;
+-			bcr = <0>;
+ 		};
+ 
+ 		CUNIT: cunit@f200 {
+@@ -174,12 +168,7 @@
+ 			cunit = <&CUNIT>;
+ 			mpscrouting = <&MPSCROUTING>;
+ 			mpscintr = <&MPSCINTR>;
+-			block-index = <0>;
+-			max_idle = <40>;
+-			chr_1 = <0>;
+-			chr_2 = <0>;
+-			chr_10 = <3>;
+-			mpcr = <0>;
++			cell-index = <0>;
+ 			interrupts = <40>;
+ 			interrupt-parent = <&PIC>;
+ 		};
+@@ -194,12 +183,7 @@
+ 			cunit = <&CUNIT>;
+ 			mpscrouting = <&MPSCROUTING>;
+ 			mpscintr = <&MPSCINTR>;
+-			block-index = <1>;
+-			max_idle = <40>;
+-			chr_1 = <0>;
+-			chr_2 = <0>;
+-			chr_10 = <3>;
+-			mpcr = <0>;
++			cell-index = <1>;
+ 			interrupts = <42>;
+ 			interrupt-parent = <&PIC>;
+ 		};
+@@ -207,7 +191,6 @@
+ 		wdt@b410 {			/* watchdog timer */
+ 			compatible = "marvell,mv64360-wdt";
+ 			reg = <0xb410 0x8>;
+-			timeout = <10>;		/* wdt timeout in seconds */
+ 		};
+ 
+ 		i2c@c000 {
+@@ -215,10 +198,6 @@
+ 			compatible = "marvell,mv64360-i2c";
+ 			reg = <0xc000 0x20>;
+ 			virtual-reg = <0xf100c000>;
+-			freq_m = <8>;
+-			freq_n = <3>;
+-			timeout = <1000>;		/* 1000 = 1 second */
+-			retries = <1>;
+ 			interrupts = <37>;
+ 			interrupt-parent = <&PIC>;
+ 		};
+Index: linux-2.6/arch/powerpc/boot/mpsc.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/boot/mpsc.c
++++ linux-2.6/arch/powerpc/boot/mpsc.c
+@@ -141,7 +141,7 @@ int mpsc_console_init(void *devp, struct
+ 	if (mpscintr_base == NULL)
  		goto err_out;
- 	if (getprop(devp, "reg", v, sizeof(v)) != sizeof(v))
-@@ -553,7 +553,7 @@ u8 *mv64x60_get_bridge_base(void)
- 	u32 v;
- 	void *devp;
  
--	devp = finddevice("/mv64x60");
-+	devp = find_node_by_compatible(NULL, "marvell,mv64360");
- 	if (devp == NULL)
+-	n = getprop(devp, "block-index", &v, sizeof(v));
++	n = getprop(devp, "cell-index", &v, sizeof(v));
+ 	if (n != sizeof(v))
  		goto err_out;
- 	if (getprop(devp, "virtual-reg", &v, sizeof(v)) != sizeof(v))
-diff --git a/arch/powerpc/boot/mv64x60_i2c.c b/arch/powerpc/boot/mv64x60_i2c.c
-index d085377..a69cd7a 100644
---- a/arch/powerpc/boot/mv64x60_i2c.c
-+++ b/arch/powerpc/boot/mv64x60_i2c.c
-@@ -185,7 +185,7 @@ int mv64x60_i2c_open(void)
- 	u32 v;
- 	void *devp;
+ 	reg_set = (int)v;
+Index: linux-2.6/arch/powerpc/sysdev/mv64x60_dev.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/sysdev/mv64x60_dev.c
++++ linux-2.6/arch/powerpc/sysdev/mv64x60_dev.c
+@@ -127,7 +127,7 @@ static int __init mv64x60_mpsc_device_se
+ 	if (err)
+ 		return err;
  
--	devp = finddevice("/mv64x60/i2c");
-+	devp = find_node_by_compatible(NULL, "marvell,mv64360-i2c");
- 	if (devp == NULL)
- 		goto err_out;
- 	if (getprop(devp, "virtual-reg", &v, sizeof(v)) != sizeof(v))
-diff --git a/arch/powerpc/boot/prpmc2800.c b/arch/powerpc/boot/prpmc2800.c
-index 05c3245..f74b2cf 100644
---- a/arch/powerpc/boot/prpmc2800.c
-+++ b/arch/powerpc/boot/prpmc2800.c
-@@ -344,20 +344,20 @@ static void prpmc2800_bridge_setup(u32 mem_size)
- 			acc_bits);
+-	prop = of_get_property(np, "block-index", NULL);
++	prop = of_get_property(np, "cell-index", NULL);
+ 	if (!prop)
+ 		return -ENODEV;
+ 	port_number = *(int *)prop;
+@@ -136,6 +136,7 @@ static int __init mv64x60_mpsc_device_se
  
- 	/* Get the cpu -> pci i/o & mem mappings from the device tree */
--	devp = finddevice("/mv64x60/pci@80000000");
-+	devp = find_node_by_compatible(NULL, "marvell,mv64360-pci");
- 	if (devp == NULL)
--		fatal("Error: Missing /mv64x60/pci@80000000"
-+		fatal("Error: Missing marvell,mv64360-pci"
- 				" device tree node\n\r");
+ 	pdata.cache_mgmt = 1; /* All current revs need this set */
  
- 	rc = getprop(devp, "ranges", v, sizeof(v));
- 	if (rc != sizeof(v))
--		fatal("Error: Can't find /mv64x60/pci@80000000/ranges"
-+		fatal("Error: Can't find marvell,mv64360-pci ranges"
- 				" property\n\r");
++	pdata.max_idle = 40; /* default */
+ 	prop = of_get_property(np, "max_idle", NULL);
+ 	if (prop)
+ 		pdata.max_idle = *prop;
+@@ -345,21 +346,19 @@ static int __init mv64x60_i2c_device_set
  
- 	/* Get the cpu -> pci i/o & mem mappings from the device tree */
--	devp = finddevice("/mv64x60");
-+	devp = find_node_by_compatible(NULL, "marvell,mv64360");
- 	if (devp == NULL)
--		fatal("Error: Missing /mv64x60 device tree node\n\r");
-+		fatal("Error: Missing marvell,mv64360 device tree node\n\r");
+ 	memset(&pdata, 0, sizeof(pdata));
  
- 	enables = in_le32((u32 *)(bridge_base + MV64x60_CPU_BAR_ENABLE));
- 	enables |= 0x0007fe00; /* Disable all cpu->pci windows */
-@@ -429,9 +429,9 @@ static void prpmc2800_fixups(void)
- 	setprop(devp, "model", model, l);
++	pdata.freq_m = 8;	/* default */
+ 	prop = of_get_property(np, "freq_m", NULL);
+ 	if (!prop)
+ 		return -ENODEV;
+ 	pdata.freq_m = *prop;
  
- 	/* Set /cpus/PowerPC,7447/clock-frequency */
--	devp = finddevice("/cpus/PowerPC,7447");
-+	devp = find_node_by_prop_value_str(NULL, "device_type", "cpu");
- 	if (devp == NULL)
--		fatal("Error: Missing proper /cpus device tree node\n\r");
-+		fatal("Error: Missing proper cpu device tree node\n\r");
- 	v[0] = bip->core_speed;
- 	setprop(devp, "clock-frequency", &v[0], sizeof(v[0]));
++	pdata.freq_m = 3;	/* default */
+ 	prop = of_get_property(np, "freq_n", NULL);
+ 	if (!prop)
+ 		return -ENODEV;
+ 	pdata.freq_n = *prop;
  
-@@ -443,16 +443,17 @@ static void prpmc2800_fixups(void)
- 	v[1] = bip->mem_size;
- 	setprop(devp, "reg", v, sizeof(v));
+-	prop = of_get_property(np, "timeout", NULL);
+-	if (prop)
+-		pdata.timeout = *prop;
+-	else
+-		pdata.timeout = 1000;	/* 1 second */
++	pdata.timeout = 1000;				/* default: 1 second */
  
--	/* Update /mv64x60/model, if this is a mv64362 */
-+	/* Update model, if this is a mv64362 */
- 	if (bip->bridge_type == BRIDGE_TYPE_MV64362) {
--		devp = finddevice("/mv64x60");
-+		devp = find_node_by_compatible(NULL, "marvell,mv64360");
- 		if (devp == NULL)
--			fatal("Error: Missing /mv64x60 device tree node\n\r");
-+			fatal("Error: Missing marvell,mv64360"
-+					" device tree node\n\r");
- 		setprop(devp, "model", "mv64362", strlen("mv64362") + 1);
- 	}
+ 	pdev = platform_device_alloc(MV64XXX_I2C_CTLR_NAME, id);
+ 	if (!pdev)
+@@ -401,10 +400,7 @@ static int __init mv64x60_wdt_device_set
  
- 	/* Set User FLASH size */
--	devp = finddevice("/mv64x60/flash@a0000000");
-+	devp = find_node_by_compatible(NULL, "direct-mapped");
- 	if (devp == NULL)
- 		fatal("Error: Missing User FLASH device tree node\n\r");
- 	rc = getprop(devp, "reg", v, sizeof(v));
+ 	memset(&pdata, 0, sizeof(pdata));
+ 
+-	prop = of_get_property(np, "timeout", NULL);
+-	if (!prop)
+-		return -ENODEV;
+-	pdata.timeout = *prop;
++	pdata.timeout = 10;			/* Default: 10 seconds */
+ 
+ 	np = of_get_parent(np);
+ 	if (!np)
+@@ -492,7 +488,7 @@ static int __init mv64x60_add_mpsc_conso
+ 	if (!of_device_is_compatible(np, "marvell,mv64360-mpsc"))
+ 		goto not_mpsc;
+ 
+-	prop = of_get_property(np, "block-index", NULL);
++	prop = of_get_property(np, "cell-index", NULL);
+ 	if (!prop)
+ 		goto not_mpsc;
+ 
