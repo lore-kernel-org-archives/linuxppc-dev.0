@@ -1,16 +1,14 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id C05F2DDD04
-	for <linuxppc-dev@ozlabs.org>; Mon,  7 Apr 2008 16:22:21 +1000 (EST)
-Date: Sun, 06 Apr 2008 23:22:20 -0700 (PDT)
-Message-Id: <20080406.232220.69225114.davem@davemloft.net>
-To: paulus@samba.org
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18426.4779.937007.883268@cargo.ozlabs.ibm.com>
+Date: Mon, 7 Apr 2008 22:25:15 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: David Miller <davem@davemloft.net>
 Subject: Re: Patches added to powerpc.git powerpc-next and master branches
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <18425.46732.651483.504040@cargo.ozlabs.ibm.com>
+In-Reply-To: <20080406.232220.69225114.davem@davemloft.net>
 References: <18425.46732.651483.504040@cargo.ozlabs.ibm.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	<20080406.232220.69225114.davem@davemloft.net>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -21,17 +19,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Paul Mackerras <paulus@samba.org>
-Date: Mon, 7 Apr 2008 15:52:12 +1000
+David Miller writes:
 
-> The following patches have been added to the master and powerpc-next
-> branches of the powerpc.git repository.  There is a bunch that I
-> pulled from Josh Boyer's tree plus others that I have committed.
+> Please let me know if you're going to require that I fix a bug that
+> already exists in the LMB code just to get my NUMA node LMB allocation
+> support patch in.
 
-Please let me know if you're going to require that I fix a bug that
-already exists in the LMB code just to get my NUMA node LMB allocation
-support patch in.
+My thought was to put your patch in as-is with another patch to fix
+the existing bug either immediately before it or immediately after
+it.  I started reading through lmb.c again today but got distracted by
+some other things.  It looks like lmb.c could use a bit of a coding
+style cleanup, if nothing else.
 
-Please be straightforward and don't just drop the patch quietly in
-situations like this, let me know what you want to happen in order to
-add the change.
+> Please be straightforward and don't just drop the patch quietly in
+> situations like this, let me know what you want to happen in order to
+> add the change.
+
+I haven't dropped it, it's just that I haven't got through all of the
+patches for .26 yet.
+
+Paul.
