@@ -1,22 +1,21 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <stephen.neuendorffer@xilinx.com>
+Received: from outbound9-sin-R.bigfish.com (outbound-sin.frontbridge.com
+	[207.46.51.80])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 29F36DDF21
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Apr 2008 02:37:42 +1000 (EST)
-Date: Mon, 7 Apr 2008 11:38:02 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: =?utf-8?B?5petIOe9lw==?= <luoxu_gun@yahoo.com.cn>
-Subject: Re: a question about use dtb to bootting linux kernel on MPC83xx
-	platform
-Message-ID: <20080407163802.GC2688@loki.buserror.net>
-References: <959437.18740.qm@web15907.mail.cnb.yahoo.com>
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 96626DE146
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 Apr 2008 02:45:11 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <959437.18740.qm@web15907.mail.cnb.yahoo.com>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: Booting a Xilinx board
+Date: Mon, 7 Apr 2008 09:44:19 -0700
+In-Reply-To: <10a101c898c4$c183ee40$f52f9e86@LPSC0173W>
+References: <10a101c898c4$c183ee40$f52f9e86@LPSC0173W>
+From: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
+To: "Guillaume Dargaud" <dargaud@lpsc.in2p3.fr>,
+	<linuxppc-dev@ozlabs.org>
+Message-Id: <20080407164421.44D46CC0050@mail102-sin.bigfish.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,27 +25,71 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Apr 07, 2008 at 09:35:17AM +0800, 旭 罗 wrote:
->     I am Linux software engineer. These days I was debugging a MPC8313 system. In  the debugging process, some source code in the kernel makes me puzzled. So I  have find your email address in the source code. I think you can give me some  advises to solve the problem.
->   
->         My version is  linux-2.6.23.9 and I use the device tree(dtb) to  booting the kernel. In my bootloader I use the following code to jump to the  kernel.
->  (*image)((bd_t *)dtb_entry,  (unsigned int)image, 0, 0, 0); 
->   
->  The dtb_entry is the address of dtb  file which in the SDRAM, the image
-> is the kernel entry point. I flashed some LEDs in my board. So I can make
-> sure the program run to the machine_init() which is defined in the
-> /arch/powerpc/kernel/setup_32.c In order to trace the problem I search the
-> source code. I can find that these information is printed by the start
-> function which is defined in the /arch/powerpc/boot/main.c.
->  Fourth more I have found that the  kernel call the platform_init which is
->  defined in the /arch/powerpc/boot/cuboot-83xx.c. looking the file head I
->  have known you are the author for this file. Could you told me how the
->  kernel call the platform_init function and I hope you can show me the
->  booting process of the MPC83xx linux or you could give me some document
->  about it.
 
-As I said when you e-mailed me privately a few days ago, cuImage is for
-older u-boots that pass in a bd_t, not a device tree. You should be booting
-uImage instead.
+Generally, speaking the easiest way to debug such errors is to examine
+__log_buf using XMD.
 
--Scott
+Steve
+
+> -----Original Message-----
+> From: =
+linuxppc-dev-bounces+stephen.neuendorffer=3Dxilinx.com@ozlabs.org
+[mailto:linuxppc-dev-
+> bounces+stephen.neuendorffer=3Dxilinx.com@ozlabs.org] On Behalf Of
+Guillaume Dargaud
+> Sent: Monday, April 07, 2008 8:34 AM
+> To: linuxppc-dev@ozlabs.org
+> Subject: Booting a Xilinx board
+>=20
+> Hello all,
+> sorry if this is an elementary question for most of you, but could you
+tell
+> me where I'm going wrong in trying to boot a kernel 2.6.24 on a Xilinx
+ml405
+> board ?
+>=20
+> - I generate an ext2 partition with buildroot, cointaining busybox and
+> uclibc.
+>=20
+> - I copy it to my CF card:
+> sudo dd if=3Dbinaries/genepy/rootfs.test.ext2 of=3D/dev/sdc2
+>=20
+> - I compile the git Xilinx kernel, with proper xparameters file from
+the BSP
+> and proper .config options to match the design, using the cross
+compiler
+> created by buildroot.
+>=20
+> - I generate a sysace file from that kernel and put it on the 1st
+partition:
+> xmd -tcl genace.tcl -jprog -board ml405 -target ppc_hw -hw
+> implementation/system.bit -elf
+> ~/kernels/linux-2.6.24/arch/ppc/boot/images/zImage.elf -ace
+Kernel26.ace
+>=20
+> When I boot I get the following:
+>=20
+> loaded at:     00400000 0050719C
+> board data at: 00505120 0050519C
+> relocated to:  00404054 004040D0
+> zimage at:     00404E40 0050484E
+> avail ram:     00508000 08000000
+>=20
+> Linux/PPC load: console=3DttyS0,9600 ip=3Don =
+root=3D/dev/sysace/disc0/part2
+rw
+> Uncompressing Linux...done.
+> Now booting the kernel
+>=20
+> And then it stops.
+> I'm sure I've overlooked something obvious...
+> Thanks
+> --
+> Guillaume Dargaud
+> http://www.gdargaud.net/
+>=20
+>=20
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
