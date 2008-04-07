@@ -1,20 +1,11 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 2D851DDDF7
-	for <linuxppc-dev@ozlabs.org>; Mon,  7 Apr 2008 14:50:43 +1000 (EST)
-Subject: Re: [PATCH v2] powerpc: Add irqtrace support for 32-bit powerpc
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Dale Farnsworth <dale@farnsworth.org>
-In-Reply-To: <20080404213932.GA15847@farnsworth.org>
-References: <20080404213932.GA15847@farnsworth.org>
-Content-Type: text/plain
-Date: Mon, 07 Apr 2008 14:49:51 +1000
-Message-Id: <1207543791.10388.468.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Johannes Berg <johannes@sipsolutions.net>
-Reply-To: benh@kernel.crashing.org
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18425.46732.651483.504040@cargo.ozlabs.ibm.com>
+Date: Mon, 7 Apr 2008 15:52:12 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: linuxppc-dev@ozlabs.org
+Subject: Patches added to powerpc.git powerpc-next and master branches
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,47 +15,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I think I found one:
+The following patches have been added to the master and powerpc-next
+branches of the powerpc.git repository.  There is a bunch that I
+pulled from Josh Boyer's tree plus others that I have committed.
 
- .../...
+Paul.
 
-> -	mr	r6,r3
->  	rlwinm	r12,r1,0,0,(31-THREAD_SHIFT)	/* current_thread_info() */
->  	/* disable interrupts so current_thread_info()->flags can't change */
->  	LOAD_MSR_KERNEL(r10,MSR_KERNEL)	/* doesn't include MSR_EE */
->  	SYNC
->  	MTMSRD(r10)
-> +#ifdef CONFIG_TRACE_IRQFLAGS
-> +	stwu	r1,-16(r1)
-> +	stw	r3,12(r1)
-> +	bl      trace_hardirqs_off
-> +	lwz	r3,12(r1)
-> +	addi	r1,r1,16
-> +	LOAD_MSR_KERNEL(r10,MSR_KERNEL)
-> +#endif
+Grant Likely (2):
+      [POWERPC] add target for building .dtb files
+      [POWERPC] bootwrapper: Add a firmware-independent simpleboot target.
 
-Here, r12 is clobbered, though it's used two lines later:
+Ionut Nicu (1):
+      [POWERPC] Fix kernel panic in arch_arm_kprobe
 
-> +	mr	r6,r3
->  	lwz	r9,TI_FLAGS(r12)
+Josh Boyer (2):
+      [POWERPC] 4xx: Add Canyonlands and Yosemite to multi-board defconfig
+      [POWERPC] Add of_device_is_available function
 
-Here.
+Nathan Lynch (1):
+      [POWERPC] Convert pci and eeh code to of_device_is_available
 
-You can probably just move the rlwinm down as you moved the mr.
+Robert P. J. Day (1):
+      [POWERPC] Use __SPIN_LOCK_UNLOCKED macro in mpc52xx_set_psc_clkdiv
 
-Note that I've been wondering wether we should attempt to trace all
-those IRQ state change internally to the exception code. I've looked at
-not doing it, which simplifies things a bit.
+Roel Kluin (1):
+      [POWERPC] Replace logical-AND by bit-AND in pci_process_ISA_OF_ranges()
 
-Unfortunately, that will make us occasionally trace redundant
-enable/disable (which isn't a big problem per-se, just counters).
+Stefan Roese (5):
+      [POWERPC] 4xx: Only reset PCIe PHY on 405EX systems when no link is detected
+      [POWERPC] 4xx: Fix PESDRn_UTLSET1 register setup on 460EX/GT
+      [POWERPC] 4xx: Create common ppc4xx_reset_system() in ppc4xx_soc.c
+      [POWERPC] 4xx: Some EMAC related changes in Canyonlands & Glacier dts files
+      [POWERPC] 4xx: Change dts files to support jumbo frames
 
-The idea is that I only kept the trace of disable in transfer_to_handler
-and I modified the enable tracing in restore: moved it lower down, and
-made it test for _MSR(r1):MSR_EE. I added a trace_irq_off just before
-the preempt_schedule_irq() as well.
+Stephen Neuendorffer (1):
+      [POWERPC] of_serial: Fix possible null dereference.
 
-Anyway, let me know what you think.
+Stephen Rothwell (2):
+      [POWERPC] htab_remove_mapping is only used by MEMORY_HOTPLUG
+      [POWERPC] Remove CONFIG_PCI_LEGACY from some configs
 
-Cheers,
-Ben.
+Steven Rostedt (1):
+      [POWERPC] Add hand-coded assembly strcmp
+
+Timur Tabi (1):
+      [POWERPC] Enable CONFIG_FORCE_MAX_ZONEORDER for all PowerPC, and make selectable
+
+Valentine Barshak (1):
+      [POWERPC] 4xx: Use machine_device_initcall() for warp_nand
