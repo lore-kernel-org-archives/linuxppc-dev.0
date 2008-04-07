@@ -1,19 +1,18 @@
-Return-Path: <dale@farnsworth.org>
-Received: from xyzzy.farnsworth.org (xyzzy.farnsworth.org [65.39.95.219])
+Return-Path: <12o3l@tiscali.nl>
+Received: from smtp-out1.tiscali.nl (smtp-out1.tiscali.nl [195.241.79.176])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 6A729DDF64
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Apr 2008 08:13:28 +1000 (EST)
-Date: Mon, 7 Apr 2008 15:13:10 -0700
-From: Dale Farnsworth <dale@farnsworth.org>
-To: paulus@samba.org
-Message-ID: <20080407221310.GH24979@farnsworth.org>
-References: <20080407220027.GA24510@farnsworth.org>
+	by ozlabs.org (Postfix) with ESMTPS id 2CEA1DDF66
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 Apr 2008 08:26:56 +1000 (EST)
+Message-ID: <47FA9FA6.8090201@tiscali.nl>
+Date: Tue, 08 Apr 2008 00:26:46 +0200
+From: Roel Kluin <12o3l@tiscali.nl>
 MIME-Version: 1.0
-In-Reply-To: <20080407220027.GA24510@farnsworth.org>
-Subject: [PATCH 8/8 v3] [POWERPC] prpmc2800 needs a dtbImage
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org
+To: jwboyer@linux.vnet.ibm.com
+Subject: [PATCH 1/1 resend][PPC] replace logical by bitand in
+	pci_process_ISA_OF_ranges(), arch/powerpc/kernel/isa-bridge.c
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, lkml <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,28 +22,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Dale Farnsworth <dale@farnsworth.org>
+in arch/powerpc/kernel/isa-bridge.c:
+41:#define ISA_SPACE_MASK 0x1
+42:#define ISA_SPACE_IO 0x1
+...
 
-The prpmc2800 platform requires a zImage formatted file with an
-embedded dtb file.  Rename the requested boot image file to
-dtbImage.prpmc2800.
+83:    if ((range->isa_addr.a_hi && ISA_SPACE_MASK) != ISA_SPACE_IO) {
+...
+89:    if ((range->isa_addr.a_hi && ISA_SPACE_MASK) != ISA_SPACE_IO)
 
-Signed-off-by: Dale Farnsworth <dale@farnsworth.org>
-Acked-by: Mark A. Greer <mgreer@mvista.com>
-Acked-by: Grant Likely <grant.likely@secretlab.ca>
+I think these should be single &'s, I can't test it (no hardware)
+please consider the patch below.
+--
+replace logical by bit and for ISA_SPACE_MASK
 
+Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
 ---
- arch/powerpc/boot/Makefile |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
---- a/arch/powerpc/boot/Makefile
-+++ b/arch/powerpc/boot/Makefile
-@@ -192,7 +192,7 @@ image-$(CONFIG_PPC_CHRP)		+= zImage.chrp
- image-$(CONFIG_PPC_EFIKA)		+= zImage.chrp
- image-$(CONFIG_PPC_PMAC)		+= zImage.pmac
- image-$(CONFIG_PPC_HOLLY)		+= zImage.holly
--image-$(CONFIG_PPC_PRPMC2800)		+= zImage.prpmc2800
-+image-$(CONFIG_PPC_PRPMC2800)		+= dtbImage.prpmc2800
- image-$(CONFIG_PPC_ISERIES)		+= zImage.iseries
- image-$(CONFIG_DEFAULT_UIMAGE)		+= uImage
+diff --git a/arch/powerpc/kernel/isa-bridge.c b/arch/powerpc/kernel/isa-bridge.c
+index f0f49d1..406a9e6 100644
+--- a/arch/powerpc/kernel/isa-bridge.c
++++ b/arch/powerpc/kernel/isa-bridge.c
+@@ -80,13 +80,13 @@ static void __devinit pci_process_ISA_OF_ranges(struct device_node *isa_node,
+ 	 *			(size depending on dev->n_addr_cells)
+ 	 *   cell 5:		the size of the range
+ 	 */
+-	if ((range->isa_addr.a_hi && ISA_SPACE_MASK) != ISA_SPACE_IO) {
++	if ((range->isa_addr.a_hi & ISA_SPACE_MASK) != ISA_SPACE_IO) {
+ 		range++;
+ 		rlen -= sizeof(struct isa_range);
+ 		if (rlen < sizeof(struct isa_range))
+ 			goto inval_range;
+ 	}
+-	if ((range->isa_addr.a_hi && ISA_SPACE_MASK) != ISA_SPACE_IO)
++	if ((range->isa_addr.a_hi & ISA_SPACE_MASK) != ISA_SPACE_IO)
+ 		goto inval_range;
  
+ 	isa_addr = range->isa_addr.a_lo;
