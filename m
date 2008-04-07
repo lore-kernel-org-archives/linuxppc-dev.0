@@ -1,20 +1,21 @@
-Return-Path: <dargaud@lpsc.in2p3.fr>
-Received: from lpsc-mail.in2p3.fr (lpsc-mail.in2p3.fr [134.158.40.8])
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id A0297DDFC8
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Apr 2008 01:33:45 +1000 (EST)
-Received: from LPSC0173W (lpsc0173w.in2p3.fr [134.158.40.173])
-	by lpsc-mail.in2p3.fr (8.13.1/8.13.1/In2p3) with SMTP id m37FXeKJ029917
-	for <linuxppc-dev@ozlabs.org>; Mon, 7 Apr 2008 17:33:41 +0200
-Message-ID: <10a101c898c4$c183ee40$f52f9e86@LPSC0173W>
-From: "Guillaume Dargaud" <dargaud@lpsc.in2p3.fr>
-To: <linuxppc-dev@ozlabs.org>
-Subject: Booting a Xilinx board
-Date: Mon, 7 Apr 2008 17:33:34 +0200
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id DDA68DDEFE
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 Apr 2008 02:10:21 +1000 (EST)
+Date: Mon, 7 Apr 2008 11:10:36 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: =?iso-8859-1?Q?Andr=E9?= Schwarz <Andre.Schwarz@matrix-vision.de>
+Subject: Re: MPC8343 - "unable to handle paging request @ 0"
+Message-ID: <20080407161036.GA2688@loki.buserror.net>
+References: <47F73625.9040903@matrix-vision.de>
 MIME-Version: 1.0
-Content-Type: text/plain; format=flowed; charset="iso-8859-1";
-	reply-type=original
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <47F73625.9040903@matrix-vision.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,41 +25,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello all,
-sorry if this is an elementary question for most of you, but could you tell 
-me where I'm going wrong in trying to boot a kernel 2.6.24 on a Xilinx ml405 
-board ?
+On Sat, Apr 05, 2008 at 10:19:49AM +0200, André Schwarz wrote:
+> Kernel starts and crashes with "unable to handle kernel paging request @  
+> 00000000".
+>
+> After turning debug on in some files I can see that the initrd memory  
+> gets reserved and the dtb is parsed correctly.
+> PCI memory/io spaces are set up fine.
+>
+> At first I thought this is a problem with the device tree since the call  
+> trace always points to "of_"-functions and "strcmp".
 
-- I generate an ext2 partition with buildroot, cointaining busybox and 
-uclibc.
+Could you provide this call trace?
 
-- I copy it to my CF card:
-sudo dd if=binaries/genepy/rootfs.test.ext2 of=/dev/sdc2
-
-- I compile the git Xilinx kernel, with proper xparameters file from the BSP 
-and proper .config options to match the design, using the cross compiler 
-created by buildroot.
-
-- I generate a sysace file from that kernel and put it on the 1st partition:
-xmd -tcl genace.tcl -jprog -board ml405 -target ppc_hw -hw 
-implementation/system.bit -elf 
-~/kernels/linux-2.6.24/arch/ppc/boot/images/zImage.elf -ace Kernel26.ace
-
-When I boot I get the following:
-
-loaded at:     00400000 0050719C
-board data at: 00505120 0050519C
-relocated to:  00404054 004040D0
-zimage at:     00404E40 0050484E
-avail ram:     00508000 08000000
-
-Linux/PPC load: console=ttyS0,9600 ip=on root=/dev/sysace/disc0/part2 rw
-Uncompressing Linux...done.
-Now booting the kernel
-
-And then it stops.
-I'm sure I've overlooked something obvious...
-Thanks
--- 
-Guillaume Dargaud
-http://www.gdargaud.net/
+-Scott
