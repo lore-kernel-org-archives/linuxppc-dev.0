@@ -1,18 +1,20 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <dale@farnsworth.org>
+Received: from xyzzy.farnsworth.org (xyzzy.farnsworth.org [65.39.95.219])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 66982DDE2A
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Apr 2008 07:37:40 +1000 (EST)
-Message-Id: <73BD1263-F09B-4E08-AA77-BEBD67D91C58@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: jwboyer@linux.vnet.ibm.com
-In-Reply-To: <1207487181.6809.18.camel@vader.jdub.homelinux.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: 4xx defconfig reorg
-Date: Mon, 7 Apr 2008 16:36:48 -0500
-References: <1207487181.6809.18.camel@vader.jdub.homelinux.org>
+	by ozlabs.org (Postfix) with ESMTPS id E3FE7DDE19
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 Apr 2008 07:53:22 +1000 (EST)
+Date: Mon, 7 Apr 2008 14:53:00 -0700
+From: Dale Farnsworth <dale@farnsworth.org>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Message-ID: <20080407215300.GA23434@farnsworth.org>
+References: <20080407183228.GA7438@farnsworth.org>
+	<20080407183817.GB7438@farnsworth.org>
+	<7b4fa46820f05cd088680ed3eb521ad6@kernel.crashing.org>
+MIME-Version: 1.0
+In-Reply-To: <7b4fa46820f05cd088680ed3eb521ad6@kernel.crashing.org>
+Subject: Re: [PATCH 1/9 v2] powerpc: change FDT compatible prefix to mrvl
+Content-Type: text/plain; charset=us-ascii
 Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -23,54 +25,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Mon, Apr 07, 2008 at 10:49:40PM +0200, Segher Boessenkool wrote:
+>> Follow the convention that compatible names are prefixed by the
+>> vendor's stock ticker symbol.  For Marvell Technology Group Ltd.,
+>> that's MRVL.
+>
+>> -		compatible = "marvell,mv64x60";
+>> +		compatible = "mrvl,mv64x60";
+>
+> NAK.
+>
+> Either use the stock ticker, in UPPER CASE, or use a nice
+> descriptive name.  The lower case space is "free for all",
+> using shortened names (like "mrvl") there only increases
+> the chances of collisions.
 
-On Apr 6, 2008, at 8:06 AM, Josh Boyer wrote:
-> Hi All,
->
-> Unless someone screams loudly and has reasons why this shouldn't go  
-> in,
-> the following commit should hit the 4xx next branch in the next day or
-> so.
->
-> josh
+[Oops, I forgot to copy the list on my reply to Segher.
+Segher, sorry for the repeat.]
 
-If this is acceptable to people, I'll make similar defconfig movements  
-for the Freescale parts.
+Frankly Segher, it doesn't matter to me.  However, NONE of the
+existing DTS files use upper-case stock ticker.  I see no reason
+to deviate from the existing convention (even if that convention
+doesn't follow the previous convention of using upper-case).
 
-- k
+Since it seems that the convention for compatible property
+prefixes hasn't been decided yet, maybe it would be best for
+me to back out this patch and redo those that follow.
 
-> commit eaf997b847be3c351eb9d0107e0562035dc58095
-> Author: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-> Date:   Sun Apr 6 08:01:21 2008 -0500
->
->   [POWERPC] 4xx: Reorganize 4xx defconfigs
->
->   Board specific defconfigs are useful, however with the ability to do
->   multi-board defconfigs they aren't needed in the top level configs  
-> directory
->
->   Move the 4xx board specific defconfigs to individual directories  
-> under
->   arch/powerpc/configs.
->
->   Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
->
-> arch/powerpc/configs/{ => 40x}/ep405_defconfig     |    0
-> arch/powerpc/configs/{ => 40x}/kilauea_defconfig   |    0
-> arch/powerpc/configs/{ => 40x}/makalu_defconfig    |    0
-> arch/powerpc/configs/{ => 40x}/walnut_defconfig    |    0
-> arch/powerpc/configs/{ => 44x}/bamboo_defconfig    |    0
-> .../configs/{ => 44x}/canyonlands_defconfig        |    0
-> arch/powerpc/configs/{ => 44x}/ebony_defconfig     |    0
-> arch/powerpc/configs/{ => 44x}/katmai_defconfig    |    0
-> arch/powerpc/configs/{ => 44x}/rainier_defconfig   |    0
-> arch/powerpc/configs/{ => 44x}/sequoia_defconfig   |    0
-> arch/powerpc/configs/{ => 44x}/taishan_defconfig   |    0
-> arch/powerpc/configs/{ => 44x}/warp_defconfig      |    0
-> 12 files changed, 0 insertions(+), 0 deletions(-)
->
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+I'll do that and repost the series.
+
+-Dale
