@@ -1,22 +1,20 @@
-Return-Path: <laurentp@cse-semaphore.com>
-Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
-	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id A424DDDF82
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Apr 2008 02:11:24 +1000 (EST)
-From: Laurent Pinchart <laurentp@cse-semaphore.com>
-To: avorontsov@ru.mvista.com
-Subject: Re: [PATCH] Freescale QUICC Engine USB Host Controller
-Date: Mon, 7 Apr 2008 18:11:15 +0200
-References: <20080311191744.GA10518@localhost.localdomain>
-	<200804031545.51834.laurentp@cse-semaphore.com>
-	<20080403143052.GA5955@polina.dev.rtsoft.ru>
-In-Reply-To: <20080403143052.GA5955@polina.dev.rtsoft.ru>
+Return-Path: <dale@farnsworth.org>
+Received: from xyzzy.farnsworth.org (xyzzy.farnsworth.org [65.39.95.219])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 8136EDDF73
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 Apr 2008 02:17:06 +1000 (EST)
+Date: Mon, 7 Apr 2008 09:16:39 -0700
+From: Dale Farnsworth <dale@farnsworth.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Message-ID: <20080407161639.GB9912@farnsworth.org>
+References: <20080404213932.GA15847@farnsworth.org>
+	<1207543791.10388.468.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1859770.p1ORIJgooO";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Message-Id: <200804071811.19671.laurentp@cse-semaphore.com>
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
-	linux-usb@vger.kernel.org, David Brownell <david-b@pacbell.net>,
-	Timur Tabi <timur@freescale.com>
+In-Reply-To: <1207543791.10388.468.camel@pasglop>
+Subject: Re: [PATCH v2] powerpc: Add irqtrace support for 32-bit powerpc
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, Johannes Berg <johannes@sipsolutions.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,143 +24,63 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---nextPart1859770.p1ORIJgooO
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Mon, Apr 07, 2008 at 02:49:51PM +1000, Benjamin Herrenschmidt wrote:
+> I think I found one:
+> 
+>  .../...
+> 
+> > -	mr	r6,r3
+> >  	rlwinm	r12,r1,0,0,(31-THREAD_SHIFT)	/* current_thread_info() */
+> >  	/* disable interrupts so current_thread_info()->flags can't change */
+> >  	LOAD_MSR_KERNEL(r10,MSR_KERNEL)	/* doesn't include MSR_EE */
+> >  	SYNC
+> >  	MTMSRD(r10)
+> > +#ifdef CONFIG_TRACE_IRQFLAGS
+> > +	stwu	r1,-16(r1)
+> > +	stw	r3,12(r1)
+> > +	bl      trace_hardirqs_off
+> > +	lwz	r3,12(r1)
+> > +	addi	r1,r1,16
+> > +	LOAD_MSR_KERNEL(r10,MSR_KERNEL)
+> > +#endif
+> 
+> Here, r12 is clobbered, though it's used two lines later:
 
-Hi Anton,
+Ah yes. r12 is volatile, isn't it.  :-)  Good catch.
 
-On Thursday 03 April 2008 16:30, Anton Vorontsov wrote:
-> On Thu, Apr 03, 2008 at 03:45:47PM +0200, Laurent Pinchart wrote:
-> > Hi Anton,
-> >=20
-> > On Tuesday 11 March 2008 20:17, Anton Vorontsov wrote:
-> > > This is patch adds support for the FHCI USB controller, as found in t=
-he
-> > > Freescale MPC836x and MPC832x processors. It can support Full or Low
-> > > speed modes.=20
-> > >=20
-> > > Quite a lot hardware is doing by itself (SOF generation, CRC generati=
-on
-> > > and checking), though scheduling and retransmission is on the software
-> > > shoulders.
-> > >=20
-> > > This controller does not integrate the root hub, so this driver also
-> > > fakes an one-port hub. External hub is required to support more than
-> > > one device.
-> >=20
-> > Would it be possible to use the driver for CPM2-based devices ?
->=20
-> Probably. But no one had tried this yet.
->=20
-> > The only difference I found between the CPM2 and QE USB controllers is =
-the
-> > SOF handling. The QE USB controller increments the frame number itself,
-> > while the CPM USB controller requires the host to increment the frame
-> > number.=20
-> >=20
-> > At first sight the driver depends on qe_lib for:
-> >=20
-> > - muram allocation (qe_muram_alloc/free, qe_muram_offset/addr)
->=20
-> Yeah, I already posted a patch to deal with it, see
-> http://ozlabs.org/pipermail/linuxppc-dev/2008-March/053249.html
-> (btw... Scott, Timur did you have a chance to look into this?)
+> > +	mr	r6,r3
+> >  	lwz	r9,TI_FLAGS(r12)
+> 
+> Here.
+> 
+> You can probably just move the rlwinm down as you moved the mr.
 
-Hope this will get into 2.6.26. I replaced all occurences of qe_muram_* by=
-=20
-cpm_muram_* in the driver for now.
+I'll follow up with a revised patch that does exactly that.
 
-> > - GPIO access (qe_gpio_set_dedicated)
->=20
-> This is because of David Brownell. ;-) Specifically, unwillingness to
-> accept that set_dedicated is portable for some scope of GPIO controllers,
-> as well as GPIO users.
+> Note that I've been wondering wether we should attempt to trace all
+> those IRQ state change internally to the exception code. I've looked at
+> not doing it, which simplifies things a bit.
+> 
+> Unfortunately, that will make us occasionally trace redundant
+> enable/disable (which isn't a big problem per-se, just counters).
+> 
+> The idea is that I only kept the trace of disable in transfer_to_handler
+> and I modified the enable tracing in restore: moved it lower down, and
+> made it test for _MSR(r1):MSR_EE. I added a trace_irq_off just before
+> the preempt_schedule_irq() as well.
+> 
+> Anyway, let me know what you think.
 
-Both sides have their arguments. As the FHCI driver is tied to CPM2/QE=20
-platforms anyway, a quick-and-dirty workaround is possible. I currently use=
-=20
-hardcoded cpm2_set_pin calls.
+The main purpose I did this code was to measure
+interrupt-disabled intervals.  There, the redundant trace calls aren't
+really an issue.
 
-> > - clock routing (qe_clock_source, qe_usb_clock_set)
->=20
-> Well, there is Linux CLK API (somewhat similar to GPIO API), but PowerPC
-> doesn't use it yet. Neither I can tell if CLK API is suitable for our
-> needs, or if it needs to be extended. Quick&dirty workarounds are
-> still possible though, but clk api is the right way to go.
+It all depends on how important you view the counters.  I think that
+if we're going to go to the trouble to maintain counters, we should
+make them accurate.  I admit that it took me quite a while to get the
+counts correct. :-)  I think having an accurate measure of the redundant
+interrupt disable/enables is useful.  And, after doing the code, I'd
+prefer to see it stay.  :-)
 
-The current clock API doesn't seem to handle clock routing, so I'm not sure=
-=20
-what the best way to handle that is.
-
-> > - QE commands execution (qe_issue_cmd)
->=20
-> No proper solution yet.
->=20
-> > It shouldn't be too difficult to abstract those operation in a fashion
-> > similar to the cpm_uart driver.
->=20
-> Yup, but we still have ucc_serial (QE) and cpm_uart (CPM1/2) drivers as
-> separate matters though. ;-) I didn't look for the reasons of this split
-> but I assume there are and they're strong enough.
->=20
-> > Have you already worked on CPM2 support,
->=20
-> Nope, I don't have CPM2 board to work on.
-
-I had a first go at hacking the FHCI driver to make it run on a CPM2 platfo=
-rm.=20
-Results so far are quite good. After getting rid of qe-specific APIs as=20
-explained above, and adding SOF token generation support, I've been able to=
-=20
-access a mass storage device. The driver hasn't been stress-tested yet=20
-though.
-
-I ran into an issue with IDLE and RESET interrupts. When the device is firs=
-t=20
-plugged into the USB port, the idle interrupt kicks in and the driver detec=
-ts=20
-the device properly. When the device is then removed, the reset interrupt i=
-s=20
-generated and the driver handles device removal properly. Right after the=20
-reset interrupt, idle interrupts are generated every milliseconds for aroun=
-d=20
-175ms. The status register always reports a non-idle condition when read in=
-=20
-the interrupt handler. The flow of idle interrupts then stops, and no idle=
-=20
-interrupt is generated when I replug the device. I've checked the interrupt=
-s=20
-mask register to make sure idle interrupts were enabled.
-
-Have you noticed a similar behaviour when you tested the driver on your=20
-QE-based platform ? I suspected a debouncing issue, but I should then get=20
-idle conditions once every other time when reading the status register.
-
-Best regards,
-
-=2D-=20
-Laurent Pinchart
-CSE Semaphore Belgium
-
-Chaussee de Bruxelles, 732A
-B-1410 Waterloo
-Belgium
-
-T +32 (2) 387 42 59
-=46 +32 (2) 387 42 75
-
---nextPart1859770.p1ORIJgooO
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
-
-iD8DBQBH+ken8y9gWxC9vpcRArihAJ47n41Y8VWtV/RVMqTqvCTQZZqz4QCfWTS7
-aN3M1v1Df1HUCnBECimc/+w=
-=Dv+k
------END PGP SIGNATURE-----
-
---nextPart1859770.p1ORIJgooO--
+Thanks,
+-Dale
