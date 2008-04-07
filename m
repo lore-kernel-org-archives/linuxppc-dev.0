@@ -1,21 +1,18 @@
-Return-Path: <neko@genesi-usa.com>
-Received: from fg-out-1718.google.com (fg-out-1718.google.com [72.14.220.156])
-	by ozlabs.org (Postfix) with ESMTP id 58DAFDDF70
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Apr 2008 08:31:09 +1000 (EST)
-Received: by fg-out-1718.google.com with SMTP id 16so1256308fgg.39
-	for <linuxppc-dev@ozlabs.org>; Mon, 07 Apr 2008 15:31:07 -0700 (PDT)
-Message-ID: <47FAA0A8.7050602@genesi-usa.com>
-Date: Mon, 07 Apr 2008 23:31:04 +0100
-From: Matt Sealey <matt@genesi-usa.com>
+Return-Path: <ntl@pobox.com>
+Received: from sasl.smtp.pobox.com (a-sasl-fastnet.sasl.smtp.pobox.com
+	[207.106.133.19]) by ozlabs.org (Postfix) with ESMTP id E8B5DDDE26
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 Apr 2008 09:00:16 +1000 (EST)
+Date: Mon, 7 Apr 2008 17:59:49 -0500
+From: Nathan Lynch <ntl@pobox.com>
+To: Roel Kluin <12o3l@tiscali.nl>
+Subject: Re: [PATCH 1/1 resend][PPC] replace logical by bitand in
+	pci_process_ISA_OF_ranges(), arch/powerpc/kernel/isa-bridge.c
+Message-ID: <20080407225949.GW7137@localdomain>
+References: <47FA9FA6.8090201@tiscali.nl>
 MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: Question on mpc52xx_common.c
-References: <m21w5map5f.fsf@ohwell.denx.de> <m2wsne9a4c.fsf@ohwell.denx.de>
-	<fa686aa40804031200n4cd7aeb4g330ab3e2620680e@mail.gmail.com>
-In-Reply-To: <fa686aa40804031200n4cd7aeb4g330ab3e2620680e@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Sender: Matt Sealey <neko@genesi-usa.com>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Detlev Zundel <dzu@denx.de>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <47FA9FA6.8090201@tiscali.nl>
+Cc: linuxppc-dev@ozlabs.org, lkml <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,25 +22,9 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Roel Kluin wrote:
+> replace logical by bit and for ISA_SPACE_MASK
 
-Grant Likely wrote:
-> (cc'ing the mailing list in my reply)
-> 
-> On Thu, Apr 3, 2008 at 10:27 AM, Detlev Zundel <dzu@denx.de> wrote:
->> I wrote,
->>
->>  > debugging a lite5200b kernel (linux-2.6-denx equivalent of 2.6.25-rc8) I
->>  > noticed that in mpc52xx_map_common_devices (mpc52xx_common.c:161) the
->>  > cdm module is tentatively mapped.  It seems strange to me that there is no
->>  > error checking here.  Is a FDT without an cdm entry usable at all?
-> 
-> Sure, why not?  If the firmware has already set it up correctly and no
-> devices using it are in use, then the kernel should be okay.  :-)
-> That said, I can't imagine choosing to not put the cdm node into the
-> device tree.
+I think Paul has picked this up now:
 
-*ahem* Efika.
-
--- 
-Matt Sealey <matt@genesi-usa.com>
-Genesi, Manager, Developer Relations
+http://ozlabs.org/pipermail/linuxppc-dev/2008-April/054103.html
