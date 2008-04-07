@@ -1,15 +1,20 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id D7CEADDF5E
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Apr 2008 01:22:50 +1000 (EST)
-Date: Mon, 7 Apr 2008 10:33:07 -0500
-From: Olof Johansson <olof@lixom.net>
-To: paulus@samba.org
-Subject: [PATCH] [POWERPC] Remove unused __max_memory variable
-Message-ID: <20080407153307.GA21671@lixom.net>
+Return-Path: <dargaud@lpsc.in2p3.fr>
+Received: from lpsc-mail.in2p3.fr (lpsc-mail.in2p3.fr [134.158.40.8])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id A0297DDFC8
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 Apr 2008 01:33:45 +1000 (EST)
+Received: from LPSC0173W (lpsc0173w.in2p3.fr [134.158.40.173])
+	by lpsc-mail.in2p3.fr (8.13.1/8.13.1/In2p3) with SMTP id m37FXeKJ029917
+	for <linuxppc-dev@ozlabs.org>; Mon, 7 Apr 2008 17:33:41 +0200
+Message-ID: <10a101c898c4$c183ee40$f52f9e86@LPSC0173W>
+From: "Guillaume Dargaud" <dargaud@lpsc.in2p3.fr>
+To: <linuxppc-dev@ozlabs.org>
+Subject: Booting a Xilinx board
+Date: Mon, 7 Apr 2008 17:33:34 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; format=flowed; charset="iso-8859-1";
+	reply-type=original
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,23 +24,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Remove the __max_memory variable, it is not referenced anywhere
-in the tree besides some code in arch/ppc.
+Hello all,
+sorry if this is an elementary question for most of you, but could you tell 
+me where I'm going wrong in trying to boot a kernel 2.6.24 on a Xilinx ml405 
+board ?
 
+- I generate an ext2 partition with buildroot, cointaining busybox and 
+uclibc.
 
-Signed-off-by: Olof Johansson <olof@lixom.net>
+- I copy it to my CF card:
+sudo dd if=binaries/genepy/rootfs.test.ext2 of=/dev/sdc2
 
-diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
-index 5f55399..82edd63 100644
---- a/arch/powerpc/mm/init_64.c
-+++ b/arch/powerpc/mm/init_64.c
-@@ -72,9 +72,6 @@
- #warning TASK_SIZE is smaller than it needs to be.
- #endif
- 
--/* max amount of RAM to use */
--unsigned long __max_memory;
--
- void free_initmem(void)
- {
- 	unsigned long addr;
+- I compile the git Xilinx kernel, with proper xparameters file from the BSP 
+and proper .config options to match the design, using the cross compiler 
+created by buildroot.
+
+- I generate a sysace file from that kernel and put it on the 1st partition:
+xmd -tcl genace.tcl -jprog -board ml405 -target ppc_hw -hw 
+implementation/system.bit -elf 
+~/kernels/linux-2.6.24/arch/ppc/boot/images/zImage.elf -ace Kernel26.ace
+
+When I boot I get the following:
+
+loaded at:     00400000 0050719C
+board data at: 00505120 0050519C
+relocated to:  00404054 004040D0
+zimage at:     00404E40 0050484E
+avail ram:     00508000 08000000
+
+Linux/PPC load: console=ttyS0,9600 ip=on root=/dev/sysace/disc0/part2 rw
+Uncompressing Linux...done.
+Now booting the kernel
+
+And then it stops.
+I'm sure I've overlooked something obvious...
+Thanks
+-- 
+Guillaume Dargaud
+http://www.gdargaud.net/
