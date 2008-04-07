@@ -1,23 +1,23 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 66A30DDF64
+Return-Path: <dhbaird@gmail.com>
+Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.176])
+	by ozlabs.org (Postfix) with ESMTP id 8FA0ADE094
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  8 Apr 2008 02:04:03 +1000 (EST)
-Message-ID: <47FA4601.1080707@freescale.com>
-Date: Mon, 07 Apr 2008 11:04:17 -0500
-From: Scott Wood <scottwood@freescale.com>
+	Tue,  8 Apr 2008 05:50:06 +1000 (EST)
+Received: by wa-out-1112.google.com with SMTP id m28so1382063wag.13
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 07 Apr 2008 12:50:04 -0700 (PDT)
+Message-ID: <440abda90804071250v60bd970fh938e9690836ab61@mail.gmail.com>
+Date: Mon, 7 Apr 2008 13:50:04 -0600
+From: "David Baird" <dhbaird@gmail.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: MVL Linux on MPC8560 Booting goes into infinite loop in
+	early_init memset_io ( )
+In-Reply-To: <47FA4601.1080707@freescale.com>
 MIME-Version: 1.0
-To: Deepak Gaur <dgaur@cdotd.ernet.in>
-Subject: Re: MVL Linux on MPC8560 Booting goes into infinite loop in early_init
-	memset_io ( )
+Content-Type: text/plain; charset=ISO-8859-1
 References: <20080407064547.M56295@cdotd.ernet.in>
-In-Reply-To: <20080407064547.M56295@cdotd.ernet.in>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+	<47FA4601.1080707@freescale.com>
+Cc: Deepak Gaur <dgaur@cdotd.ernet.in>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -28,46 +28,29 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Deepak Gaur wrote:
-> Hi all,
-> 
-> While booting MVL linux
+On Mon, Apr 7, 2008 at 10:04 AM, Scott Wood <scottwood@freescale.com> wrote:
+>  BTW, it's generally bad form to post the same question repeatedly.  If you
+> have new information regarding your problem, just post a followup in the
+> same thread containing the new information.
 
-Have you talked to MV support?  For community support, it's best to use 
-the latest upstream sources (and arch/powerpc, not arch/ppc).
+Agreed!  I was about to respond to your new post, and then I
+discovered this nearly identical slightly older post.
 
-BTW, it's generally bad form to post the same question repeatedly.  If 
-you have new information regarding your problem, just post a followup in 
-the same thread containing the new information.
+On Mon, Apr 7, 2008 at 12:37 AM, Deepak Gaur <gaur.deepak@gmail.com> wrote:
+> While booting MVL linux on MPC8560 based board the kernel goes into a
+> infinite loop in setup.c
 
-> arch/ppc/kernel/setup.c
-> ----------------------------------------
-> unsigned long
-> early_init(int r3, int r4, int r5)
-> {
->         unsigned long phys;
->         unsigned long offset = reloc_offset();
-> 
->         /* Default */
->         phys = offset + KERNELBASE;
-> 
->         /* First zero the BSS -- use memset, some arches don't have
->          * caches on yet */
->        
->         memset_io(PTRRELOC(&__bss_start), 0, _end - __bss_start);
-> 
->         __bss_start is 0xc039b00 and __bss_stop = _end =c03c7d90  _end
-> 
-> 
->         Please anyone give me some pointers to understand this i.e use of PTRRELOC
+Someone please correct me if I am wrong, but those symbols inside the
+BSS should only be variables (not functions....) which are initialized
+to zero.  The whole reason for BSS is to initialize variables to a
+0/null value.
 
-The kernel hasn't been remapped yet, so the pointer is adjusted manually.
+Now, about the infinite loop.  Can you check to see if perhaps you are
+getting an exception?
 
-> and REASON BEHIND clearing area from __bss_start to _end - __bss_start even though lot of
-> symbols and functions are defined here(as per System.map)
-
-That's what the BSS is for -- symbols that are cleared at runtime so as 
-to eliminate the need to store them in the image.  There should be no 
-functions in there.
-
--Scott
+I have no experience with the MPC8560, but I've seen a couple problems
+that occur involving memset_io.  What happens is that a TLB miss
+exception occurs when the CPU gets inside of memset_io.  Do you have
+the ability to check that with a debugger (by setting breakpoints at
+exceptions, such as the data and instruction TLB miss exceptions) to
+see if you are getting exceptions?
