@@ -1,25 +1,20 @@
-Return-Path: <wg@grandegger.com>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 78472DDED1
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  8 Apr 2008 23:50:27 +1000 (EST)
-Received: from mail01.m-online.net (mail.m-online.net [192.168.3.149])
-	by mail-out.m-online.net (Postfix) with ESMTP id 3BB722276DF
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  8 Apr 2008 15:40:18 +0200 (CEST)
-Received: from [10.0.30.2] (p5497C5C8.dip.t-dialin.net [84.151.197.200])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(No client certificate requested)
-	by smtp-auth.mnet-online.de (Postfix) with ESMTP id 2E5E09004D
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 67286DDEDC
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  8 Apr 2008 15:40:15 +0200 (CEST)
-Message-ID: <47FB75BC.10400@grandegger.com>
-Date: Tue, 08 Apr 2008 15:40:12 +0200
-From: Wolfgang Grandegger <wg@grandegger.com>
-MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Subject: TSEC3/4 broken on MPC8548?
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed,  9 Apr 2008 00:17:27 +1000 (EST)
+Message-Id: <3DF1D578-6650-4FA9-B154-EF4666E81F52@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Wolfgang Grandegger <wg@grandegger.com>
+In-Reply-To: <47FB75BC.10400@grandegger.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v919.2)
+Subject: Re: TSEC3/4 broken on MPC8548?
+Date: Tue, 8 Apr 2008 09:17:14 -0500
+References: <47FB75BC.10400@grandegger.com>
+Cc: LinuxPPC-Embedded <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -30,16 +25,20 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello,
 
-in the dts file for the MPC8548CDS the nodes for TSEC3/4 are commented
-out because they seem to be broken:
+On Apr 8, 2008, at 8:40 AM, Wolfgang Grandegger wrote:
+> Hello,
+>
+> in the dts file for the MPC8548CDS the nodes for TSEC3/4 are commented
+> out because they seem to be broken:
+>
+>  $ grep broken arch/powerpc/boot/dts/*
+>  arch/powerpc/boot/dts/mpc8548cds.dts:/* eTSEC 3/4 are currently  
+> broken
+>
+> Is it still true?
 
-  $ grep broken arch/powerpc/boot/dts/*
-  arch/powerpc/boot/dts/mpc8548cds.dts:/* eTSEC 3/4 are currently broken
+This was a board issue and not a chip issue.  However I'm not sure if  
+the board issues have been resolved.  Hopefully Andy will know.
 
-Is it still true?
-
-TIA.
-
-Wolfgang.
+- k
