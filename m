@@ -1,27 +1,23 @@
 Return-Path: <scottwood@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
+	(Client CN "az33egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 0879EDDE1D
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 Apr 2008 02:23:56 +1000 (EST)
-Date: Tue, 8 Apr 2008 11:24:13 -0500
+	by ozlabs.org (Postfix) with ESMTPS id 4456CDDE07
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 Apr 2008 02:42:50 +1000 (EST)
+Date: Tue, 8 Apr 2008 11:43:04 -0500
 From: Scott Wood <scottwood@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [RFC][PATCH] initial port of fixmap over from x86 for ppc32
-Message-ID: <20080408162413.GA2552@loki.buserror.net>
-References: <Pine.LNX.4.64.0804030144460.15974@blarg.am.freescale.net>
-	<18425.24938.332852.315571@cargo.ozlabs.ibm.com>
-	<279F1861-9605-46FD-A917-DF5B95B8C4F6@kernel.crashing.org>
-	<20080407162053.GB2688@loki.buserror.net>
-	<1207612292.10388.494.camel@pasglop>
-	<8C415339-5DB0-42B3-A942-17296DE68267@kernel.crashing.org>
+To: Andre Schwarz <andre.schwarz@matrix-vision.de>
+Subject: Re: MPC8343 - "unable to handle paging request @ 0"
+Message-ID: <20080408164304.GG2552@loki.buserror.net>
+References: <47F73625.9040903@matrix-vision.de>
+	<20080407161036.GA2688@loki.buserror.net>
+	<47FB3206.7080406@matrix-vision.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <8C415339-5DB0-42B3-A942-17296DE68267@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>, hollisb@us.ibm.com,
-	linuxppc-dev@ozlabs.org
+In-Reply-To: <47FB3206.7080406@matrix-vision.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,22 +27,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Apr 08, 2008 at 09:28:12AM -0500, Kumar Gala wrote:
-> On Apr 7, 2008, at 6:51 PM, Benjamin Herrenschmidt wrote:
->> As far as the above is concerned, I'm not too fan of fixed virtual
->> addresses. I'd rather dynamically assign it. But we can do it.
->
-> I'm in agreement with Ben here.  On Freescale parts that could mean  
-> using up to 16M of virtual address space while in reality we may only  
-> need a handful of 4k pages to cover SoC registers that we are truly  
-> accessing at runtime.
+On Tue, Apr 08, 2008 at 10:51:18AM +0200, Andre Schwarz wrote:
+> Call Trace:
+> [c01f9ef0] [c001c190]  (unreliable)
+> [c01f9f10] [c0140c84]
+> [c01f9f20] [c0140ccc]
+> [c01f9f40] [c014145c]
+> [c01f9f60] [c0014014]
+> [c01f9fa0] [c01d1a40]
+> [c01f9fb0] [c01ce64c]
+> [c01f9fc0] [c01c55ac]
+> [c01f9ff0] [00003438]
 
-So make it configurable, and turn it off if you're low on address space. 
-
-Most of the time, I'd think saving TLB0 entries would be more beneficial,
-especially with heavy I/O workloads where registers get banged on a lot.
-
-It's the early debugging that I'm really concerned with, though.  It gets
-old hacking an early mapping in each time.
+Please turn kallsyms on, which will produce an annotated call trace.  Not
+all these addresses were in the System.map fragment.
 
 -Scott
