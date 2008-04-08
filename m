@@ -1,22 +1,25 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <Bernhard.Weirich@riedel.net>
+Received: from dhuumrelay3.dtm.ops.eu.uu.net (dhuumrelay3.dtm.ops.eu.uu.net
+	[194.139.33.96])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 3A602DDDDB
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Apr 2008 16:35:11 +1000 (EST)
-In-Reply-To: <20080407210314.GA21993@farnsworth.org>
-References: <20080407183228.GA7438@farnsworth.org>
-	<20080407183817.GB7438@farnsworth.org>
-	<7b4fa46820f05cd088680ed3eb521ad6@kernel.crashing.org>
-	<20080407210314.GA21993@farnsworth.org>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <a2c5f83a973abaf04e40cd659e516dba@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 1/9 v2] powerpc: change FDT compatible prefix to mrvl
-Date: Tue, 8 Apr 2008 08:34:47 +0200
-To: Dale Farnsworth <dale@farnsworth.org>
-Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>
+	by ozlabs.org (Postfix) with ESMTPS id 70596DDD0C
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 Apr 2008 17:37:03 +1000 (EST)
+Received: from 213.70.193.150 ([213.70.193.150])
+	by dhuumrelay3.dtm.ops.eu.uu.net (8.14.1/8.14.1) with ESMTP id
+	m387awLu003035
+	for <linuxppc-dev@ozlabs.org>; Tue, 8 Apr 2008 07:36:59 GMT
+Subject: Re: Kilauea: kernel hangs when using ARCH=powerpc
+From: Bernhard Weirich <bernhard.weirich@riedel.net>
+To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+In-Reply-To: <1207574594.6809.23.camel@vader.jdub.homelinux.org>
+References: <1207562631.6678.10.camel@hactar>
+	<1207574594.6809.23.camel@vader.jdub.homelinux.org>
+Content-Type: multipart/alternative; boundary="=-XsonImFbBugpeOJhgVwG"
+Date: Tue, 8 Apr 2008 09:36:56 +0200
+Message-ID: <1207640216.9615.1.camel@hactar>
+MIME-Version: 1.0
+Reply-To: bernhard.weirich@riedel.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,31 +29,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> Either use the stock ticker, in UPPER CASE, or use a nice
->> descriptive name.  The lower case space is "free for all",
->> using shortened names (like "mrvl") there only increases
->> the chances of collisions.
->
-> Frankly Segher, it doesn't matter to me.  However, NONE of the
-> existing DTS files use upper-case stock ticker.  I see no reason
-> to deviate from the existing convention
-
-It's not an existing convention, it's a mistake some people made ;-)
-
-> (even if that convention
-> doesn't follow the previously defined upper-case stock ticker
-> convention.)
-
-That's not a "previously defined convention", it's the defined
-rules in the OF standard.  Conventions are examples that are nice
-to follow if there's no real reason to choose either way; standards
-are things that if you break them, people shout out you.
-
-Let me say this again: it is *fine* if you use some lower-case name.
-In that case though, "marvell" is slightly better than "mrvl", and
-you had the former already, so just keep it :-)
-
-Agreed?  Ca we move on now?  :-)
+--=-XsonImFbBugpeOJhgVwG
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
 
-Segher
+
+> You need to be sure to load the device tree blob in U-Boot, ...
+> 
+> josh
+> 
+
+
+Thank you very much. This was just the missing piece of info I needed.
+
+Bernhard
+
+--=-XsonImFbBugpeOJhgVwG
+Content-Type: text/html; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 TRANSITIONAL//EN">
+<HTML>
+<HEAD>
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; CHARSET=UTF-8">
+  <META NAME="GENERATOR" CONTENT="GtkHTML/3.16.1">
+</HEAD>
+<BODY>
+<BR>
+<BLOCKQUOTE TYPE=CITE>
+<PRE>
+<FONT COLOR="#000000">You need to be sure to load the device tree blob in U-Boot, </FONT>...
+
+<FONT COLOR="#000000">josh</FONT>
+
+</PRE>
+</BLOCKQUOTE>
+<BR>
+Thank you very much. This was just the missing piece of info I needed.<BR>
+<BR>
+Bernhard
+</BODY>
+</HTML>
+
+--=-XsonImFbBugpeOJhgVwG--
