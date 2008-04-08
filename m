@@ -1,18 +1,22 @@
-Return-Path: <smaclennan@pikatech.com>
-Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
-	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 9184BDDE20
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Apr 2008 14:21:06 +1000 (EST)
-Date: Tue, 8 Apr 2008 00:21:03 -0400
-From: Sean MacLennan <smaclennan@pikatech.com>
-To: "Valentine Barshak" <vbarshak@ru.mvista.com>
-Subject: Re: [PATCH] PowerPC 44x: use machine_device_initcall() instead
-	ofdevice_initcall() for warp_nand
-Message-ID: <20080408002103.1b66aeea@lappy.seanm.ca>
-In-Reply-To: <20080404182437.GA18185@ru.mvista.com>
-References: <20080404182437.GA18185@ru.mvista.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id B3B72DDDFB
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 Apr 2008 15:10:28 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: kvm-ppc-devel@lists.sourceforge.net
+Subject: Re: [kvm-ppc-devel] [PATCH 3 of 3] [KVM POWERPC] PowerPC 440 KVM
+	implementation
+Date: Tue, 8 Apr 2008 07:09:31 +0200
+References: <b07f3049f16483f80322.1207601614@localhost.localdomain>
+	<200804080458.17783.arnd@arndb.de>
+	<200804072319.11677.hollisb@us.ibm.com>
+In-Reply-To: <200804072319.11677.hollisb@us.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200804080709.32022.arnd@arndb.de>
+Cc: kvm-devel@lists.sourceforge.net, linuxppc-dev@ozlabs.org,
+	Hollis Blanchard <hollisb@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,18 +26,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 4 Apr 2008 22:24:37 +0400
-"Valentine Barshak" <vbarshak@ru.mvista.com> wrote:
+On Tuesday 08 April 2008, Hollis Blanchard wrote:
+> If there is one thing I have learned in my various porting efforts, it's that 
+> using a variable-sized type in an interface is just begging for trouble.
+> 
+> x86 uses fixed 64-bit variables here (even with x86-32), so that might be the 
+> right solution here.
 
-> With a multiplatform kernel, once built we always have
-> warp_setup_nand_flash() called and NDFC probed, no matter what
-> machine we actually run on. This potentially can cause problems (such
-> as kernel crash), since NDFC is probed at a warp-predefined address.
-> Using machine_device_initcall() NAND devices are registered if we run
-> on a warp only.
+Right, I think there was even a conference presentation about this topic
+done by one of us, right?
 
-Thanks for catching that. I have gotten *way* behind on my email and am
-only reading this now.
-
-Cheers,
-  Sean
+	Arnd <><
