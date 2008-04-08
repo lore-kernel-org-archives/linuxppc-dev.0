@@ -1,35 +1,20 @@
-Return-Path: <hollisb@us.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id E38A4DDDF6
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Apr 2008 13:25:40 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m383Ni2p025097
-	for <linuxppc-dev@ozlabs.org>; Mon, 7 Apr 2008 23:23:44 -0400
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m383Pa99194422
-	for <linuxppc-dev@ozlabs.org>; Mon, 7 Apr 2008 21:25:36 -0600
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m383PaAp026695
-	for <linuxppc-dev@ozlabs.org>; Mon, 7 Apr 2008 21:25:36 -0600
-From: Hollis Blanchard <hollisb@us.ibm.com>
-To: David Gibson <dwg@au1.ibm.com>
-Subject: Re: [PATCH 2 of 3] [KVM] Add DCR access information to struct kvm_run
-Date: Mon, 7 Apr 2008 22:25:32 -0500
-References: <patchbomb.1207601611@localhost.localdomain>
-	<474b35009da7b7bdb58c.1207601613@localhost.localdomain>
-	<20080408011128.GA13454@localhost.localdomain>
-In-Reply-To: <20080408011128.GA13454@localhost.localdomain>
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.250])
+	by ozlabs.org (Postfix) with ESMTP id 1C5A1DDDF6
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 Apr 2008 13:55:13 +1000 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so398767anc.78
+	for <linuxppc-dev@ozlabs.org>; Mon, 07 Apr 2008 20:55:12 -0700 (PDT)
+Message-ID: <fa686aa40804072055i1f7036afn4d453e968cc625d6@mail.gmail.com>
+Date: Mon, 7 Apr 2008 21:55:12 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Guillaume Dargaud" <dargaud@lpsc.in2p3.fr>
+Subject: Re: Booting a Xilinx board
+In-Reply-To: <10a101c898c4$c183ee40$f52f9e86@LPSC0173W>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200804072225.33040.hollisb@us.ibm.com>
-Cc: kvm-devel@lists.sourceforge.net, linuxppc-dev@ozlabs.org,
-	kvm-ppc-devel@lists.sourceforge.net
+Content-Type: text/plain; charset=ISO-8859-1
+References: <10a101c898c4$c183ee40$f52f9e86@LPSC0173W>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,27 +24,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Monday 07 April 2008 20:11:28 David Gibson wrote:
-> On Mon, Apr 07, 2008 at 03:53:33PM -0500, Hollis Blanchard wrote:
-> > 1 file changed, 7 insertions(+)
-> > include/linux/kvm.h |    7 +++++++
-> >
-> >
-> > Device Control Registers are essentially another address space found on
-> > PowerPC 4xx processors, analogous to PIO on x86. DCRs are always 32 bits,
-> > and are identified by a 32-bit number.
+On Mon, Apr 7, 2008 at 9:33 AM, Guillaume Dargaud <dargaud@lpsc.in2p3.fr> wrote:
 >
-> Well... 10-bit, actually.
+>  Linux/PPC load: console=ttyS0,9600 ip=on root=/dev/sysace/disc0/part2 rw
+>  Uncompressing Linux...done.
+>  Now booting the kernel
+>
+>  And then it stops.
+>  I'm sure I've overlooked something obvious...
 
-The mtdcrux description in the ppc440x6 user manual says the following:
+Are you using uartlite?  Try console=ttyUL0.
 
-	Let the contents of register RA denote a Device Control Register.
-	The contents of GPR[RS] are placed into the designated Device Control 
-Register.
+But Stephen is right, the first thing you should do is look at
+__log_buf.  You can find its address in the System.map file.
 
-I take that to mean that we must worry about 32 bits worth of DCR numbers. 
-Perhaps I should say "no more than" rather than "always".
+Cheers,
+g.
+g.
 
 -- 
-Hollis Blanchard
-IBM Linux Technology Center
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
