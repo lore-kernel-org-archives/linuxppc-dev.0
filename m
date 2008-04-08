@@ -1,16 +1,20 @@
-Return-Path: <glikely@secretlab.ca>
-Message-ID: <fa686aa40804081615n284aa750n12ceb0bf1d1bcce1@mail.gmail.com>
-Date: Tue, 8 Apr 2008 17:15:44 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: benh@kernel.crashing.org
-Subject: Re: ppc440 caches - change proposal [RFC]
-In-Reply-To: <1207695415.14711.11.camel@pasglop>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20080408225329.5EC171A8007D@mail11-dub.bigfish.com>
-	<1207695415.14711.11.camel@pasglop>
-Cc: John Bonesio <john.bonesio@xilinx.com>, Linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18427.65299.403151.344959@cargo.ozlabs.ibm.com>
+Date: Wed, 9 Apr 2008 09:26:11 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Subject: Re: [BUG] 2.6.25-rc2-git4 - Regression Kernel oops  while running
+	kernbench and tbench on powerpc
+In-Reply-To: <47FB5C5A.5020104@linux.vnet.ibm.com>
+References: <47BC40BC.3040405@linux.vnet.ibm.com>
+	<18427.11023.8067.795279@cargo.ozlabs.ibm.com>
+	<47FB5C5A.5020104@linux.vnet.ibm.com>
+Cc: kernel list <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
+	linux-next@vger.kernel.org, nacc@us.ibm.com,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Balbir Singh <balbir@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,31 +24,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Apr 8, 2008 at 4:56 PM, Benjamin Herrenschmidt
-<benh@kernel.crashing.org> wrote:
->
->  On Tue, 2008-04-08 at 15:53 -0700, John Bonesio wrote:
->  > I was thinking it might be good to have the kernel initialize these
->  > cache control registers in it's own start up code. Or perhaps this
->  > could be done in the kernel's simple bootloader. We could probably put
->  > this change in a Xilinx specific startup file, but this change doesn't
->  > seem specific to Xilinx FPGA boards.
->
->  The kernel's wrapper would be a good place to put that I suspect. That's
->  the kind of thing that should be provided as a "library" function to be
->  optionally called by platform code. Either in the wrapper or the main
->  kernel platform code.
+Kamalesh Babulal writes:
 
-Code is already queued up for 2.6.26 to do exactly this on ppc405
-virtex platforms.  We can do the same thing for 440.  Look at
-virtex405-head.S in the following patch:
+> The kernel oops after applying the patch. Some time it takes more than
+> one run to reproduce it, it was reproducible in the second run this
+> time.
+> 
+>  Unrecoverable exception 4100 at c000000000008c8c
+> Oops: Unrecoverable exception, sig: 6 [#1]
+> SMP NR_CPUS=128 NUMA pSeries
+> Modules linked in:
+> NIP: c000000000008c8c LR: 000000000ff0135c CTR: 000000000ff012f0
+> REGS: c000000772343bb0 TRAP: 4100   Not tainted  (2.6.25-rc8-autotest)
+> MSR: 8000000000001030 <ME,IR,DR>  CR: 44044228  XER: 00000000
+> TASK = c00000077cfa0900[13437] 'cc1' THREAD: c000000772340000 CPU: 2
+> GPR00: 0000000000004000 c000000772343e30 00000000000000bb 000000000000d032 
+> GPR04: 00000000000000bb 0000000000000400 000000000000000a 0000000000000002 
+> GPR08: 0000000000000000 0000000000000000 0000000000000000 0000000000000000 
+> GPR12: 0000000000000000 c000000000734000 0000000000000064 00000000ffe6df08 
+> GPR16: 00000000105b0000 00000000105b0000 0000000010440000 00000000105b0000 
+> GPR20: 00000000ffe6e008 00000000105b0000 00000000105b0000 000000000000000a 
+> GPR24: 000000000ffec408 0000000000000001 00000000ffe6ddca 0000000000000400 
+> GPR28: 000000000ffec408 00000000f7ff8000 000000000ffebff4 0000000000000400 
+> NIP [c000000000008c8c] restore+0x8c/0xc0
+> LR [000000000ff0135c] 0xff0135c
+> Call Trace:
+> [c000000772343e30] [c000000000008cd4] do_work+0x14/0x2c (unreliable)
+> Instruction dump:
+> 7c840078 7c810164 70604000 41820028 60000000 7c4c42e6 e88d01f0 f84d01f0 
+> 7c841050 e84d01e8 7c422214 f84d01e8 <e9a100d8> 7c7b03a6 e84101a0 7c4ff120 
 
-http://patchwork.ozlabs.org/linuxppc/patch?person=486&id=17410
+That looks like the bug that was supposed to be fixed by commit
+44387e9ff25267c78a99229aca55ed750e9174c7, which is in 2.6.25-rc7 and
+later.  
 
-Cheers,
-g.
+What was the SHA1 ID of the head commit for the kernel source that
+gave you this oops?  Did you have any other patches besides the one I
+sent you applied?
 
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Paul.
