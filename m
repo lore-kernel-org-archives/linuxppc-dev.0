@@ -1,27 +1,23 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.247])
-	by ozlabs.org (Postfix) with ESMTP id 1C4E3DDF08
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 Apr 2008 07:26:15 +1000 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so500380anc.78
-	for <linuxppc-dev@ozlabs.org>; Tue, 08 Apr 2008 14:26:12 -0700 (PDT)
-Message-ID: <fa686aa40804081426u2c2a530ej8ecb6ce9f8fb49a0@mail.gmail.com>
-Date: Tue, 8 Apr 2008 15:26:11 -0600
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.244])
+	by ozlabs.org (Postfix) with ESMTP id D7F0FDDFC0
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 Apr 2008 07:32:27 +1000 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so500952anc.78
+	for <linuxppc-dev@ozlabs.org>; Tue, 08 Apr 2008 14:32:26 -0700 (PDT)
+Message-ID: <fa686aa40804081432k6b126485w289669a214cadeb9@mail.gmail.com>
+Date: Tue, 8 Apr 2008 15:32:26 -0600
 From: "Grant Likely" <grant.likely@secretlab.ca>
 Sender: glikely@secretlab.ca
-To: "Robert Schwebel" <r.schwebel@pengutronix.de>
-Subject: Re: Question on mpc52xx_common.c
-In-Reply-To: <20080408194517.GX13814@pengutronix.de>
+To: "Guillaume Dargaud" <dargaud@lpsc.in2p3.fr>
+Subject: Re: Booting a Xilinx board
+In-Reply-To: <10fd01c89974$57a0c830$f52f9e86@LPSC0173W>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-References: <m21w5map5f.fsf@ohwell.denx.de>
-	<fa686aa40804031200n4cd7aeb4g330ab3e2620680e@mail.gmail.com>
-	<47FAA0A8.7050602@genesi-usa.com> <200804080414.42867.arnd@arndb.de>
-	<fa686aa40804071925v6c7d28edna529e6122fdc9cf7@mail.gmail.com>
-	<23d2e4300804071926n57746a3cj551ef38bf10486c7@mail.gmail.com>
-	<47FB3CD6.2090706@genesi-usa.com>
-	<fa686aa40804080752g595196det8f576df1884bac5d@mail.gmail.com>
-	<20080408194517.GX13814@pengutronix.de>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+References: <10a101c898c4$c183ee40$f52f9e86@LPSC0173W>
+	<fa686aa40804072055i1f7036afn4d453e968cc625d6@mail.gmail.com>
+	<10d401c8995a$1a63beb0$f52f9e86@LPSC0173W>
+	<10fd01c89974$57a0c830$f52f9e86@LPSC0173W>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,53 +27,62 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Apr 8, 2008 at 1:45 PM, Robert Schwebel
-<r.schwebel@pengutronix.de> wrote:
-> On Tue, Apr 08, 2008 at 08:52:55AM -0600, Grant Likely wrote:
->  > It may be ideal, but I don't think it is realistic.  I'm now of the
->  > firm opinion that device trees and firmware are *never* perfect.
->  > Especially when the definition of perfect is a moving target.
+On Tue, Apr 8, 2008 at 6:30 AM, Guillaume Dargaud <dargaud@lpsc.in2p3.fr> wrote:
+> I'm making progress, thanks in no small part to this list, but I still need
+> coaching, if you don't mind. The current boot is currently going as such:
 >
->  Well observed; isn't this the prove of the assumption that the whole
->  device tree idea is not working? It is *always* inconsistent and it is
->  *maintenance hell* because out-of-tree ports do *always* breakt because
->  of string inconsistencies. We have just ported a 8260 board from 2.6.22
->  to 2.6.25 and it is almost 100% oftree porting. And you do not even have
->  a single point of a parser, because all this string parsing is
->  completely scattered all over the tree.
+>
+>  loaded at:     00400000 005A819C
+>  board data at: 005A6120 005A619C
+<snip>
+>  [    4.897987] RPC: Registered udp transport module.
+>  [    4.953147] RPC: Registered tcp transport module.
+>  [    5.011138] RAMDISK: Compressed image found at block 0
+>  [    5.905538] VFS: Mounted root (ext2 filesystem).
+>  [    5.945703] Freeing unused kernel memormdev: /etc/mdev.conf: No such
+> file
+>  or directory
+>  mdev: /etc/mdev.conf: No such file or directory
+<snip>
+>  mdev: /etc/mdev.conf: No such file or directory
+>  mdev: /etc/mdev.conf: No such file or directory
+>  mount: mounting configfs on /config failed: No such device
+>  Initializing random number generator... done.
+>  Starting network...
+>  ip: RTNETLINK answers: File exists
+>
+>
+>  And then it stops, although I still have echo when I type.
+>  Now there's no /etc/mdev.conf file in my root fylesystem and I understand I
+> need to create the devices.
+>  I've been reading docs/mdev.txt and
+> http://www.lfs-matrix.org/clfs/view/clfs-embedded/mips/bootscripts/mdev.html
+> and I'm a bit confused.
 
-I disagree and that is not my point.  My point is that perfection is
-neither obtainable or necessary.  Many of the recently established
-embedded guidelines are not "perfect" because they are counter to a
-few of the OF recommended practices.  However, they are consistent
-within themselves, they work, and once established they are not going
-to change.  imperfect != bad.  I brought up a new 5200 board this week
-which required zero kernel changes.  All I needed was a new dt to
-describe the board.
+Congratulations, your kernel is in good shape.  Now you're dealing
+with userspace issues.  You can try bypassing most of the init process
+to see if you can get a prompt.  Add init=/bin/sh to the kernel
+command line.
 
-Now, if out-of-tree ports continue to break then we've got a problem
-that needs to be fixed.  Once a binding is established (which usually
-takes a few kernel releases) it should be very stable and even if the
-definition of ideal is changed, backwards compatibility must be
-maintained.
+>
+>  - do the devices need to be created in the FS before building the ramdisk
+> and subsequent ACE file ?
 
->  The ARM method of using just a device number is so much easier ...
+Yes, you can statically create the device files.  MAKEDEV will do this
+for you.  You can even just copy them from a working Linux system (any
+arch).
 
-Only if the assumption is made that very little data needs to be
-shared between the kernel and the firmware.  The moment you try to do
-something more complex you either have the nightmare of bd_info or you
-use a structured data format (like the device tree)
+>  - are they created dynamically by /bin/mdev on boot based on a manually
+> written /etc/mdev.conf table as the error messages seem to imply ?
 
-On another node, there are platforms where a device number is
-unworkable.  For example, for Linux on an FPGA like the Xilinx Virtex,
-there would need to be a new platform number every time the FPGA
-bitstream was updated because it is effectively an entirely different
-platform.
+That depends on your rootfs.  Where did you get your rootfs image?
 
-Finally, using a device number means you need to encode into the
-kernel the exact layout of every platform it supports.  That adds up
-to a lot of code in a real hurry; even if most of it is just
-boilerplate instantiations.
+>  - can they be generated automagically by a MAKEDEV script ?
+>
+>  In the second case, how do I know which devices and what names I'm supposed
+> to define ?
+
+Easiest way: copy from the /dev tree in a running Linux machine.
 
 Cheers,
 g.
