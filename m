@@ -1,22 +1,22 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.248])
-	by ozlabs.org (Postfix) with ESMTP id 3B901DDE0E
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Apr 2008 12:25:07 +1000 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so391435anc.78
-	for <linuxppc-dev@ozlabs.org>; Mon, 07 Apr 2008 19:25:05 -0700 (PDT)
-Message-ID: <fa686aa40804071925v6c7d28edna529e6122fdc9cf7@mail.gmail.com>
-Date: Mon, 7 Apr 2008 20:25:05 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Arnd Bergmann" <arnd@arndb.de>
-Subject: Re: Question on mpc52xx_common.c
-In-Reply-To: <200804080414.42867.arnd@arndb.de>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.174]) by ozlabs.org (Postfix) with ESMTP id E28E3DDECF
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 Apr 2008 12:27:32 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org,
+ jyoung5@us.ibm.com
+Subject: Re: [kvm-ppc-devel] [PATCH] [v2] Add idle wait support for 44x
+	platforms
+Date: Tue, 8 Apr 2008 04:21:44 +0200
+References: <afed3e5de82ab6c0ac8d.1207292794@thinkpadL>
+	<835D8B13-CF90-4013-A172-8243BF93DE52@pobox.com>
+	<1207323761.6634.6.camel@thinkpadL>
+In-Reply-To: <1207323761.6634.6.camel@thinkpadL>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <m21w5map5f.fsf@ohwell.denx.de>
-	<fa686aa40804031200n4cd7aeb4g330ab3e2620680e@mail.gmail.com>
-	<47FAA0A8.7050602@genesi-usa.com> <200804080414.42867.arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, Detlev Zundel <dzu@denx.de>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200804080421.45447.arnd@arndb.de>
+Cc: kvm-ppc-devel@lists.sourceforge.net, Jimi Xenidis <jimix@pobox.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,29 +26,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Apr 7, 2008 at 8:14 PM, Arnd Bergmann <arnd@arndb.de> wrote:
-> On Tuesday 08 April 2008, Matt Sealey wrote:
->
-> > Grant Likely wrote:
->  > >
->  > > Sure, why not?  If the firmware has already set it up correctly and no
->  > > devices using it are in use, then the kernel should be okay.  :-)
->  > > That said, I can't imagine choosing to not put the cdm node into the
->  > > device tree.
->  >
->  > *ahem* Efika.
->
->  Maybe we should just give up on making the efika boot with its regular
->  device tree and instead add a boot wrapper that either fixes up the
->  data provided by its firmware or just adds a proper dt blob?
+On Friday 04 April 2008, Jerone Young wrote:
+> > > +int __init ppc44x_idle_init(void)
+> > > +{
+> > > +=A0=A0=A0void *func =3D modes[current_mode].entry;
+> > > +=A0=A0=A0struct device_node *node;
+> > > +
+> > > +=A0=A0=A0node =3D of_find_node_by_path("/hypervisor");
+> > > +=A0=A0=A0if (node) {
+> > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0/* if we find /hypervisor node is i=
+n device tree,
+> > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 =A0 set idle mode to wait */
+> > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0func =3D &ppc44x_idle; /* wait */
+> > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0of_node_put(node);
+> > > +=A0=A0=A0}
+> > > +
+> > > +=A0=A0=A0ppc_md.power_save =3D func;
+> > > +=A0=A0=A0return 0;
+> > > +}
+> > > +
+> > > +arch_initcall(ppc44x_idle_init);
+> >=20
+> > IIRC, this would over-ride the idle_param() below, is that the =A0
+> > intended behavior?
+>=20
+> Yes. At the moment if it detects a hypervisor in the kernel tree it
+> overrides what the command line says.
+>=20
 
-Current kernels boot the Efika without any firmware scripts.
-prom_init.c is able to handle the few fixups that the kernel really
-wants to see.  (So life is mostly happy in Efika land now.  :-)
+This is unusual behavior. Normally, we try to come up with reasonable
+defaults and give the user the chance to override it.
 
-Cheers,
-g.
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+	Arnd <><
