@@ -1,34 +1,20 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id C0682DDED8
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Apr 2008 12:45:52 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e36.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m382jm5l010288
-	for <linuxppc-dev@ozlabs.org>; Mon, 7 Apr 2008 22:45:48 -0400
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m382jmEH194306
-	for <linuxppc-dev@ozlabs.org>; Mon, 7 Apr 2008 20:45:48 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m382jmIP001716
-	for <linuxppc-dev@ozlabs.org>; Mon, 7 Apr 2008 20:45:48 -0600
-Date: Mon, 7 Apr 2008 21:44:15 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH] Add idle wait support for 44x platforms
-Message-ID: <20080407214415.371a8edc@zod.rchland.ibm.com>
-In-Reply-To: <200804080441.28739.arnd@arndb.de>
-References: <7226bef216680748a503.1207262582@thinkpadL>
-	<200804080417.37272.arnd@arndb.de>
-	<20080407213127.7bb9a769@zod.rchland.ibm.com>
-	<200804080441.28739.arnd@arndb.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Cc: kvm-ppc-devel@lists.sourceforge.net, linuxppc-dev@ozlabs.org
+Return-Path: <dgibson@ozlabs.org>
+Date: Tue, 8 Apr 2008 12:44:40 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Josh Boyer <jwboyer@gmail.com>
+Subject: Re: [PATCH 2/3] [POWERPC][V3] Xilinx: of_serial support for Xilinx
+	uart 16550.
+Message-ID: <20080408024440.GB17820@localhost.localdomain>
+References: <20080402232213.5D87515B8067@mail37-sin.bigfish.com>
+	<200804030134.11437.arnd@arndb.de>
+	<fa686aa40804021943m208c2ff0va6c6b629a747439f@mail.gmail.com>
+	<200804030616.09825.arnd@arndb.de>
+	<1207406756.6809.2.camel@vader.jdub.homelinux.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1207406756.6809.2.camel@vader.jdub.homelinux.org>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, John Linn <john.linn@xilinx.com>,
+	Arnd Bergmann <arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,26 +24,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 8 Apr 2008 04:41:28 +0200
-Arnd Bergmann <arnd@arndb.de> wrote:
+On Sat, Apr 05, 2008 at 09:45:56AM -0500, Josh Boyer wrote:
+> On Thu, 2008-04-03 at 06:16 +0200, Arnd Bergmann wrote:
+> > On Thursday 03 April 2008, Grant Likely wrote:
+> > > >
+> > > >  Since it is not really compatible with ns16550, shouldn't you at least specify
+> > > >  a different "compatible" property? That way, the driver won't do incorrect
+> > > >  accesses when you try to use an old driver with a device tree that specifies
+> > > >  one of these.
+> > > 
+> > > Heh; we've gone back and forth on this issue.  The problem is that we
+> > > have a common case of ns16550 like devices that require a little bit
+> > > of register address tweaking that spans a whole range of vendors (so
+> > > adding a compatible match with each of those vendor's prefixes is
+> > > probably non-scalable).  So, if "ns16550" is not a good idea, then
+> > > what should be used?  "sparse16550" has been suggested more than once.
+> > 
+> > After another IRC discussion between Grant, Segher and myself, we concluded
+> > that we don't need to invent a new "compatible" value, as only new device
+> > trees with old kernels will have a problem with this, and they don't work
+> > in the first place.
+> > 
+> > The devices will still have their specific "compatible" value, e.g.
+> > "xlnx,plb-uart16550-1.00.c", followed by "ns16550", and possibly
+> > "ns16450" and "i8250", although the last two do not have an effect
+> > on Linux.
+> > 
+> > Josh, can you please forward all three patches in their latest version?
+> > 
+> > Acked-by: Arnd Bergmann <arnd@arndb.de>
+> 
+> So is the discussion on reg-offset settled then?  It seemed Paul and
+> David had some issues with that, and I'd like to make sure everyone is
+> agreed on that before I bring in patches 2 and 3.
 
-> On Tuesday 08 April 2008, Josh Boyer wrote:
-> > >=20
-> > > Actually, a static assignment to 0 has not caused the symbol to end up
-> > > in .data for many gcc versions, it always goes into .bss now unless y=
-ou
-> > > assign it a value other than 0 or use explicit section attributes.
-> >=20
-> > IIRC, gcc 3.2 is still supported and it didn't do that. =C2=A0Old toolc=
-hains
-> > still exist.
->=20
-> Ok, I thought it was before 3.2. The oldest version I had around was
-> gcc-3.3 and that had the new behaviour.
+I didn't like it very much, but I don't really care enough to argue
+about it.
 
-http://www.gnu.org/software/gcc/gcc-3.3/changes.html
-
-gcc 3.3.1 it seems.  I thought I included that in the original reply,
-but it's late and I suck :).
-
-josh
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
