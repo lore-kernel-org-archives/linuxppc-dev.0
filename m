@@ -1,20 +1,23 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <dgibson@ozlabs.org>
+Date: Wed, 9 Apr 2008 09:51:50 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: Question on mpc52xx_common.c
+Message-ID: <20080408235150.GA8092@localhost.localdomain>
+References: <m21w5map5f.fsf@ohwell.denx.de>
+	<fa686aa40804031200n4cd7aeb4g330ab3e2620680e@mail.gmail.com>
+	<47FAA0A8.7050602@genesi-usa.com>
+	<200804080414.42867.arnd@arndb.de>
+	<fa686aa40804071925v6c7d28edna529e6122fdc9cf7@mail.gmail.com>
+	<23d2e4300804071926n57746a3cj551ef38bf10486c7@mail.gmail.com>
+	<47FB3CD6.2090706@genesi-usa.com>
+	<fa686aa40804080752g595196det8f576df1884bac5d@mail.gmail.com>
+	<20080408194517.GX13814@pengutronix.de>
+	<47FBD09E.80504@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <18427.65299.403151.344959@cargo.ozlabs.ibm.com>
-Date: Wed, 9 Apr 2008 09:26:11 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Subject: Re: [BUG] 2.6.25-rc2-git4 - Regression Kernel oops  while running
-	kernbench and tbench on powerpc
-In-Reply-To: <47FB5C5A.5020104@linux.vnet.ibm.com>
-References: <47BC40BC.3040405@linux.vnet.ibm.com>
-	<18427.11023.8067.795279@cargo.ozlabs.ibm.com>
-	<47FB5C5A.5020104@linux.vnet.ibm.com>
-Cc: kernel list <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
-	linux-next@vger.kernel.org, nacc@us.ibm.com,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Balbir Singh <balbir@linux.vnet.ibm.com>
+In-Reply-To: <47FBD09E.80504@freescale.com>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,42 +27,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kamalesh Babulal writes:
+On Tue, Apr 08, 2008 at 03:07:58PM -0500, Scott Wood wrote:
+> Robert Schwebel wrote:
+>> Well observed; isn't this the prove of the assumption that the whole
+>> device tree idea is not working? It is *always* inconsistent and it is
+>> *maintenance hell* because out-of-tree ports do *always* breakt because
+>> of string inconsistencies. We have just ported a 8260 board from 2.6.22
+>> to 2.6.25 and it is almost 100% oftree porting.
+>
+> There's going to be more churn in the initial stages than down the road.  
+> 82xx had barely been added to arch/powerpc in 2.6.22, and there was little 
+> review of the initial device tree bindings.
+>
+>> The ARM method of using just a device number is so much easier ...
+>
+> Yeah, it's so much fun to have to allocate a globally unique number for 
+> every minor tweak of a board, and to have to maintain a mapping from said 
+> numbers to information that is semantically equivalent to a device tree but 
+> in less maintainable form in the kernel source.
 
-> The kernel oops after applying the patch. Some time it takes more than
-> one run to reproduce it, it was reproducible in the second run this
-> time.
-> 
->  Unrecoverable exception 4100 at c000000000008c8c
-> Oops: Unrecoverable exception, sig: 6 [#1]
-> SMP NR_CPUS=128 NUMA pSeries
-> Modules linked in:
-> NIP: c000000000008c8c LR: 000000000ff0135c CTR: 000000000ff012f0
-> REGS: c000000772343bb0 TRAP: 4100   Not tainted  (2.6.25-rc8-autotest)
-> MSR: 8000000000001030 <ME,IR,DR>  CR: 44044228  XER: 00000000
-> TASK = c00000077cfa0900[13437] 'cc1' THREAD: c000000772340000 CPU: 2
-> GPR00: 0000000000004000 c000000772343e30 00000000000000bb 000000000000d032 
-> GPR04: 00000000000000bb 0000000000000400 000000000000000a 0000000000000002 
-> GPR08: 0000000000000000 0000000000000000 0000000000000000 0000000000000000 
-> GPR12: 0000000000000000 c000000000734000 0000000000000064 00000000ffe6df08 
-> GPR16: 00000000105b0000 00000000105b0000 0000000010440000 00000000105b0000 
-> GPR20: 00000000ffe6e008 00000000105b0000 00000000105b0000 000000000000000a 
-> GPR24: 000000000ffec408 0000000000000001 00000000ffe6ddca 0000000000000400 
-> GPR28: 000000000ffec408 00000000f7ff8000 000000000ffebff4 0000000000000400 
-> NIP [c000000000008c8c] restore+0x8c/0xc0
-> LR [000000000ff0135c] 0xff0135c
-> Call Trace:
-> [c000000772343e30] [c000000000008cd4] do_work+0x14/0x2c (unreliable)
-> Instruction dump:
-> 7c840078 7c810164 70604000 41820028 60000000 7c4c42e6 e88d01f0 f84d01f0 
-> 7c841050 e84d01e8 7c422214 f84d01e8 <e9a100d8> 7c7b03a6 e84101a0 7c4ff120 
+And we can already do device numbers if we really want.  A bootwrapper
+that identifies the board and supplies a device tree essentially does
+that, and that way the device tree is maintained in sync with the
+kernel.
 
-That looks like the bug that was supposed to be fixed by commit
-44387e9ff25267c78a99229aca55ed750e9174c7, which is in 2.6.25-rc7 and
-later.  
+This is why I've always had mixed feelings about merging device trees
+into u-boot, rather than having them supplied by the wrapper.
 
-What was the SHA1 ID of the head commit for the kernel source that
-gave you this oops?  Did you have any other patches besides the one I
-sent you applied?
-
-Paul.
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
