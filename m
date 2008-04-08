@@ -1,22 +1,27 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 84CFADDE21
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 Apr 2008 02:04:15 +1000 (EST)
-Subject: Re: [PATCH v3] powerpc: Add irqtrace support for 32-bit powerpc
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Dale Farnsworth <dale@farnsworth.org>
-In-Reply-To: <20080407171428.GA14900@farnsworth.org>
-References: <20080404213932.GA15847@farnsworth.org>
-	<20080407171428.GA14900@farnsworth.org>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-EEZ9fBvHG1fnjpnE+F8c"
-Date: Tue, 08 Apr 2008 18:04:03 +0200
-Message-Id: <1207670643.5550.11.camel@johannes.berg>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 0879EDDE1D
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 Apr 2008 02:23:56 +1000 (EST)
+Date: Tue, 8 Apr 2008 11:24:13 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [RFC][PATCH] initial port of fixmap over from x86 for ppc32
+Message-ID: <20080408162413.GA2552@loki.buserror.net>
+References: <Pine.LNX.4.64.0804030144460.15974@blarg.am.freescale.net>
+	<18425.24938.332852.315571@cargo.ozlabs.ibm.com>
+	<279F1861-9605-46FD-A917-DF5B95B8C4F6@kernel.crashing.org>
+	<20080407162053.GB2688@loki.buserror.net>
+	<1207612292.10388.494.camel@pasglop>
+	<8C415339-5DB0-42B3-A942-17296DE68267@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <8C415339-5DB0-42B3-A942-17296DE68267@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>, hollisb@us.ibm.com,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,50 +31,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Tue, Apr 08, 2008 at 09:28:12AM -0500, Kumar Gala wrote:
+> On Apr 7, 2008, at 6:51 PM, Benjamin Herrenschmidt wrote:
+>> As far as the above is concerned, I'm not too fan of fixed virtual
+>> addresses. I'd rather dynamically assign it. But we can do it.
+>
+> I'm in agreement with Ben here.  On Freescale parts that could mean  
+> using up to 16M of virtual address space while in reality we may only  
+> need a handful of 4k pages to cover SoC registers that we are truly  
+> accessing at runtime.
 
---=-EEZ9fBvHG1fnjpnE+F8c
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+So make it configurable, and turn it off if you're low on address space. 
 
+Most of the time, I'd think saving TLB0 entries would be more beneficial,
+especially with heavy I/O workloads where registers get banged on a lot.
 
-On Mon, 2008-04-07 at 10:14 -0700, Dale Farnsworth wrote:
-> Add the low level irq tracing hooks for 32-bit powerpc needed
-> to enable full lockdep functionality.
->=20
-> Dale Farnsworth <dale@farnsworth.org>
-> ---
-> This version fixes the clobbering of r12 by the call to
-> trace_hardirqs_off() that was pointed out by BenH.
->=20
-> Johannes, I'd appreciate your trying this version if/when
-> you get the chance.
+It's the early debugging that I'm really concerned with, though.  It gets
+old hacking an early mapping in each time.
 
-Thanks Dale, this version seems to work. I'll stress it a bit more
-later, but so far it has survived *much* longer than both previous
-versions.
-
-johannes
-
---=-EEZ9fBvHG1fnjpnE+F8c
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIVAwUAR/uXcqVg1VMiehFYAQL+vg//U9Jvj22bjt7006uc98lKEjMBbUrhlMHt
-lIKuxkv28/BjYAiqq3dyMwIiXaTQ8Xv2nk8akcj7zjqvUzVk1DmCDGGV6JtDTqXF
-uRr2U7i/S+UVdA8EpAsMQ5apzDyeCMuiDfVVC3BJkxBFQN2nlbbWtOZ/PVEW8T1w
-RfI1Cu0Ei7+76cbKXiNKPHLvlIT3NM0Pgs2FYoz/a702pYuG7qfVr7KM1gvbWUCz
-fuTQEk2tyKUGJY5Y6O+r/tHRLrr3KiX1ELvyjX15ZXe/oYve/zw0UnYXe6CgrS4B
-ux1JAySk8FzwuXnV7XUYHdq2RcIZP1b9D06i5X+zCpgft8u79nFdZvcXeMQ4yUUC
-9uefNFVWvcOqb7F3YOmhws2NeTKiBnjsthcMrOutApR5OOs4MGxIuwPCkXIObKOo
-QtCJ49EwEWK+kmu/O7CBuu0DKQCXQh+6IV2R5wXI+krz0HLuL7OueW+Ef4s4UFvk
-OHIQbA4J7DGvyt2/Z8Ag4WZAiMEo0kNyMWAd1qv6GndBud9sP6FtSWOBdxsxomyy
-SgwSpRUE8L7HMfpLR9D4Vs9r/cFO60VyjEutrPnwzQEtW1nfDYMMO5+zGe6Ja2m0
-CX2ai3LCvIN5TG5/474OOwtldRkxJJUmMOWSMUOp/Ys6P4Lm+NAq9AvFidso9Svb
-GsLgrXlpnHU=
-=3aTn
------END PGP SIGNATURE-----
-
---=-EEZ9fBvHG1fnjpnE+F8c--
+-Scott
