@@ -1,20 +1,18 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <sshtylyov@ru.mvista.com>
+Received: from imap.sh.mvista.com (unknown [63.81.120.155])
+	by ozlabs.org (Postfix) with ESMTP id 9B598DDE3A
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 Apr 2008 23:10:38 +1000 (EST)
+Message-ID: <47FB6EA5.4070606@ru.mvista.com>
+Date: Tue, 08 Apr 2008 17:09:57 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18427.27360.30297.84859@cargo.ozlabs.ibm.com>
-Date: Tue, 8 Apr 2008 22:53:52 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Subject: Re: [BUG] 2.6.25-rc2-git4 - Regression Kernel oops  while running
-	kernbench and tbench on powerpc
-In-Reply-To: <47FB5C5A.5020104@linux.vnet.ibm.com>
-References: <47BC40BC.3040405@linux.vnet.ibm.com>
-	<18427.11023.8067.795279@cargo.ozlabs.ibm.com>
-	<47FB5C5A.5020104@linux.vnet.ibm.com>
-Cc: kernel list <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
-	linux-next@vger.kernel.org, nacc@us.ibm.com,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: Re: [PATCH] siimage: fix kernel oops on PPC 44x
+References: <200804080005.03683.sshtylyov@ru.mvista.com>
+	<200804072330.00610.bzolnier@gmail.com>
+In-Reply-To: <200804072330.00610.bzolnier@gmail.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linux-ide@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,55 +22,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kamalesh Babulal writes:
+Bartlomiej Zolnierkiewicz wrote:
 
-> The kernel oops after applying the patch. Some time it takes more than
-> one run to reproduce it, it was reproducible in the second run this
-> time.
-> 
->  Unrecoverable exception 4100 at c000000000008c8c
-> Oops: Unrecoverable exception, sig: 6 [#1]
-> SMP NR_CPUS=128 NUMA pSeries
-> Modules linked in:
-> NIP: c000000000008c8c LR: 000000000ff0135c CTR: 000000000ff012f0
-> REGS: c000000772343bb0 TRAP: 4100   Not tainted  (2.6.25-rc8-autotest)
-> MSR: 8000000000001030 <ME,IR,DR>  CR: 44044228  XER: 00000000
-> TASK = c00000077cfa0900[13437] 'cc1' THREAD: c000000772340000 CPU: 2
-> GPR00: 0000000000004000 c000000772343e30 00000000000000bb 000000000000d032 
-> GPR04: 00000000000000bb 0000000000000400 000000000000000a 0000000000000002 
-> GPR08: 0000000000000000 0000000000000000 0000000000000000 0000000000000000 
-> GPR12: 0000000000000000 c000000000734000 0000000000000064 00000000ffe6df08 
-> GPR16: 00000000105b0000 00000000105b0000 0000000010440000 00000000105b0000 
-> GPR20: 00000000ffe6e008 00000000105b0000 00000000105b0000 000000000000000a 
-> GPR24: 000000000ffec408 0000000000000001 00000000ffe6ddca 0000000000000400 
-> GPR28: 000000000ffec408 00000000f7ff8000 000000000ffebff4 0000000000000400 
-> NIP [c000000000008c8c] restore+0x8c/0xc0
-> LR [000000000ff0135c] 0xff0135c
-> Call Trace:
-> [c000000772343e30] [c000000000008cd4] do_work+0x14/0x2c (unreliable)
-> Instruction dump:
-> 7c840078 7c810164 70604000 41820028 60000000 7c4c42e6 e88d01f0 f84d01f0 
-> 7c841050 e84d01e8 7c422214 f84d01e8 <e9a100d8> 7c7b03a6 e84101a0 7c4ff120 
-> 
-> (gdb) l *0xc000000000008cdc
-> 0xc000000000008cdc is at arch/powerpc/kernel/entry_64.S:608.
-> 603             mtmsrd  r10,1
-> 604
-> 605             andi.   r0,r4,_TIF_NEED_RESCHED
-> 606             beq     1f
-> 607             bl      .schedule
-> 608             b       .ret_from_except_lite
-> 609
-> 610     1:      bl      .save_nvgprs
-> 611             li      r3,0
-> 612             addi    r4,r1,STACK_FRAME_OVERHEAD
+>>Fix kernel oops due to machine check occuring in init_chipset_siimage() on PPC
+>>44x platforms.  These 32-bit CPUs have 36-bit physical address and PCI I/O and
+>>memory spaces are mapped beyond 4 GB; arch/ppc/ code has a fixup in ioremap()
+>>that creates an illusion of the PCI I/O and memory resources being mapped below
+>>4 GB, while arch/powerpc/ code got rid of this fixup with PPC 44x having instead
+>>CONFIG_RESOURCES_64BIT=y -- this causes the resources to be truncated to 32-bit
+>>'unsigned long' type in this driver, and so non-existant memory being ioremap'ed
+>>and then accessed...
 
-The exception happened at c...8c8c but you looked at c...8cdc with
-gdb.  What's at c...8c8c?
+>>Thanks to Valentine Barshak for providing an initial patch and explanations.
 
-> please let me know if you need more information.
+>>Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 
-The .config would be useful, but don't spam everyone on cc with it,
-just send it to me privately.
+> applied and pushed to Linus, thanks!
 
-Paul.
+> I guess that it would be worth to audit the rest of IDE code for
+
+    Already done. Some drivers, like sgiioc4, scc_pata, and pmac are prone to
+that at least in theory.  Although I doubt that they ever get used in such
+environments as PPC 44x platform kernels, i.e. 32-bit kernel and PCI mapped 
+beyond 4 GB.
+
+> pci_resource_{start,end}() vs 'unsigned long' occurences and fix them.
+
+    There are quite a lot of those overall but they only pose danger if the 
+resource in question is in memory space since the I/O space always uses 
+'unsigned long' addresses. So, IDE core and drivers using only I/O resources 
+should not be prone to that kind of issue.
+
+> [ Even if they work at the moment they are just bugs waiting to happened
+>   when we add support for some new platforms or rewrite the code... ]
+
+WBR, Sergei
