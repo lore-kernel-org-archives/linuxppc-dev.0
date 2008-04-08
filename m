@@ -1,25 +1,20 @@
-Return-Path: <Bernhard.Weirich@riedel.net>
-Received: from dhuumrelay3.dtm.ops.eu.uu.net (dhuumrelay3.dtm.ops.eu.uu.net
-	[194.139.33.96])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 70596DDD0C
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Apr 2008 17:37:03 +1000 (EST)
-Received: from 213.70.193.150 ([213.70.193.150])
-	by dhuumrelay3.dtm.ops.eu.uu.net (8.14.1/8.14.1) with ESMTP id
-	m387awLu003035
-	for <linuxppc-dev@ozlabs.org>; Tue, 8 Apr 2008 07:36:59 GMT
-Subject: Re: Kilauea: kernel hangs when using ARCH=powerpc
-From: Bernhard Weirich <bernhard.weirich@riedel.net>
-To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
-In-Reply-To: <1207574594.6809.23.camel@vader.jdub.homelinux.org>
-References: <1207562631.6678.10.camel@hactar>
-	<1207574594.6809.23.camel@vader.jdub.homelinux.org>
-Content-Type: multipart/alternative; boundary="=-XsonImFbBugpeOJhgVwG"
-Date: Tue, 8 Apr 2008 09:36:56 +0200
-Message-ID: <1207640216.9615.1.camel@hactar>
+Return-Path: <sven@powerlinux.fr>
+Received: from archon.plz.fr (archon.plz.fr [194.50.78.210])
+	by ozlabs.org (Postfix) with ESMTP id BB8EEDDE10
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 Apr 2008 17:56:45 +1000 (EST)
+Date: Tue, 8 Apr 2008 09:56:42 +0200
+From: Sven Luther <sven@genesi-usa.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: Question on mpc52xx_common.c
+Message-ID: <20080408075642.GA24770@powerlinux.fr>
+References: <m21w5map5f.fsf@ohwell.denx.de>
+	<fa686aa40804031200n4cd7aeb4g330ab3e2620680e@mail.gmail.com>
+	<47FAA0A8.7050602@genesi-usa.com>
+	<200804080414.42867.arnd@arndb.de>
 MIME-Version: 1.0
-Reply-To: bernhard.weirich@riedel.net
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <200804080414.42867.arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org, Detlev Zundel <dzu@denx.de>, sven@genesi-usa.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,47 +24,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---=-XsonImFbBugpeOJhgVwG
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-
-
-
-> You need to be sure to load the device tree blob in U-Boot, ...
+On Tue, Apr 08, 2008 at 04:14:42AM +0200, Arnd Bergmann wrote:
+> On Tuesday 08 April 2008, Matt Sealey wrote:
+> > Grant Likely wrote:
+> > > 
+> > > Sure, why not?  If the firmware has already set it up correctly and no
+> > > devices using it are in use, then the kernel should be okay.  :-)
+> > > That said, I can't imagine choosing to not put the cdm node into the
+> > > device tree.
+> > 
+> > *ahem* Efika.
 > 
-> josh
-> 
+> Maybe we should just give up on making the efika boot with its regular
+> device tree and instead add a boot wrapper that either fixes up the
+> data provided by its firmware or just adds a proper dt blob?
 
+for 2.6.24, device-tree fixups where added to the linux kernel, since we
+don't have a possibility to modify the efika dt, or at least not in a
+foreseable future, we should just add more fixups so we can handle
+various other problems in it.
 
-Thank you very much. This was just the missing piece of info I needed.
+Friendly,
 
-Bernhard
-
---=-XsonImFbBugpeOJhgVwG
-Content-Type: text/html; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 TRANSITIONAL//EN">
-<HTML>
-<HEAD>
-  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; CHARSET=UTF-8">
-  <META NAME="GENERATOR" CONTENT="GtkHTML/3.16.1">
-</HEAD>
-<BODY>
-<BR>
-<BLOCKQUOTE TYPE=CITE>
-<PRE>
-<FONT COLOR="#000000">You need to be sure to load the device tree blob in U-Boot, </FONT>...
-
-<FONT COLOR="#000000">josh</FONT>
-
-</PRE>
-</BLOCKQUOTE>
-<BR>
-Thank you very much. This was just the missing piece of info I needed.<BR>
-<BR>
-Bernhard
-</BODY>
-</HTML>
-
---=-XsonImFbBugpeOJhgVwG--
+Sven Luther
