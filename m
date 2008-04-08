@@ -1,34 +1,18 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 2EEF6DDDDB
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Apr 2008 12:33:04 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m382V8TP016961
-	for <linuxppc-dev@ozlabs.org>; Mon, 7 Apr 2008 22:31:08 -0400
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m382X1XE205438
-	for <linuxppc-dev@ozlabs.org>; Mon, 7 Apr 2008 20:33:01 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m382X0wL019319
-	for <linuxppc-dev@ozlabs.org>; Mon, 7 Apr 2008 20:33:00 -0600
-Date: Mon, 7 Apr 2008 21:31:27 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH] Add idle wait support for 44x platforms
-Message-ID: <20080407213127.7bb9a769@zod.rchland.ibm.com>
-In-Reply-To: <200804080417.37272.arnd@arndb.de>
-References: <7226bef216680748a503.1207262582@thinkpadL>
-	<1207289558.6971.15.camel@thinkpadL>
-	<20080404064741.69f8669b@zod.rchland.ibm.com>
-	<200804080417.37272.arnd@arndb.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: kvm-ppc-devel@lists.sourceforge.net, linuxppc-dev@ozlabs.org
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id CA2DDDDDFD
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 Apr 2008 12:33:31 +1000 (EST)
+Date: Mon, 7 Apr 2008 21:43:53 -0500
+From: Olof Johansson <olof@lixom.net>
+To: Manish Ahuja <ahuja@austin.ibm.com>
+Subject: Re: [PATCH] pseries: phyp dump: Variable size reserve space.
+Message-ID: <20080408024352.GA32761@lixom.net>
+References: <47FAB221.7050406@austin.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <47FAB221.7050406@austin.ibm.com>
+Cc: mahuja@us.ibm.com, linuxppc-dev@ozlabs.org, linasvepstas@gmail.com,
+	paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,33 +22,65 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 8 Apr 2008 04:17:36 +0200
-Arnd Bergmann <arnd@arndb.de> wrote:
+Hi,
 
-> On Friday 04 April 2008, Josh Boyer wrote:
-> > On Fri, 04 Apr 2008 01:12:38 -0500
-> > Jerone Young <jyoung5@us.ibm.com> wrote: 
-> > > > 
-> > > > > +static int current_mode = 0;
-> > > > 
-> > > > Leave this as: static int current_mode;, so it'll end up in the bss
-> > > 
-> > > The problem here is that this defines the default case. Is there really
-> > > a benefit having this in bss ?
-> > 
-> > It's still defined to 0 if it's in the BSS, as that is all initialized
-> > to 0.
+Just a few nitpicks, no comments on the functional parts:
+
+On Mon, Apr 07, 2008 at 06:45:37PM -0500, Manish Ahuja wrote:
+> A small proposed change in the amount of reserve space we allocate during boot.
+> Currently we reserve 256MB only. 
+> The proposed change does one of the 3 things.
 > 
-> Actually, a static assignment to 0 has not caused the symbol to end up
-> in .data for many gcc versions, it always goes into .bss now unless you
-> assign it a value other than 0 or use explicit section attributes.
+> A. It checks to see if there is cmdline variable set and if found sets the
+>    value to it. OR
+> B. It computes 5% of total ram and rounds it down to multiples of 256MB. AND
+> C. Compares the rounded down value and returns larger of two values, the new
+>    computed value or 256MB.
 
-IIRC, gcc 3.2 is still supported and it didn't do that.  Old toolchains
-still exist.
+...
 
-> Whether or not you write the "= 0" is purely stylistic sugar and does
-> not have any impact the generated binary.
+> +/* Look for phyp_dump_reserve_size= cmdline option */
+> +static int __init early_phyp_dump_reserve_size(char *p)
+> +{
+> +        if (p)
+> +		phyp_dump_info->phyp_dump_reserve_bootvar = memparse(p, &p);
+[...]
+> @@ -24,8 +24,10 @@ struct phyp_dump {
+>  	/* Memory that is reserved during very early boot. */
+>  	unsigned long init_reserve_start;
+>  	unsigned long init_reserve_size;
+> -	/* Check status during boot if dump supported, active & present*/
+> +	/* cmd line options during boot */
+> +	unsigned long phyp_dump_reserve_bootvar;
+>  	unsigned long phyp_dump_at_boot;
+> +	/* Check status during boot if dump supported, active & present*/
+>  	unsigned long phyp_dump_configured;
+>  	unsigned long phyp_dump_is_active;
+>  	/* store cpu & hpte size */
 
-Only if you're using a newer gcc version...
+These make for some really long variable names and lines. I know from
+experience, since I've picked unneccessary long driver names in the past
+myself. :)
 
-josh
+How about just naming the new variables reserve_bootvar, etc? The name
+of the struct they're in makes it obvious what they're for.
+
+
+> +static inline unsigned long phyp_dump_calculate_reserve_size(void)
+> +{
+> +	unsigned long tmp;
+> +
+> +	if (phyp_dump_info->phyp_dump_reserve_bootvar)
+> +		return phyp_dump_info->phyp_dump_reserve_bootvar;
+> +
+> +	/* divide by 20 to get 5% of value */
+> +	tmp = lmb_end_of_DRAM();
+> +	do_div(tmp, 20);
+> +
+> +	/* round it down in multiples of 256 */
+> +	tmp = tmp & ~0x000000001FFFFFFF;
+
+That's 512MB, isn't it?
+
+
+-Olof
