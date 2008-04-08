@@ -1,20 +1,34 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.250])
-	by ozlabs.org (Postfix) with ESMTP id 1C5A1DDDF6
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Apr 2008 13:55:13 +1000 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so398767anc.78
-	for <linuxppc-dev@ozlabs.org>; Mon, 07 Apr 2008 20:55:12 -0700 (PDT)
-Message-ID: <fa686aa40804072055i1f7036afn4d453e968cc625d6@mail.gmail.com>
-Date: Mon, 7 Apr 2008 21:55:12 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Guillaume Dargaud" <dargaud@lpsc.in2p3.fr>
-Subject: Re: Booting a Xilinx board
-In-Reply-To: <10a101c898c4$c183ee40$f52f9e86@LPSC0173W>
+Return-Path: <dwg@au1.ibm.com>
+Received: from e23smtp02.au.ibm.com (E23SMTP02.au.ibm.com [202.81.18.163])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e23smtp02.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 3BB2CDDE16
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 Apr 2008 13:57:21 +1000 (EST)
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.18.234])
+	by e23smtp02.au.ibm.com (8.13.1/8.13.1) with ESMTP id m383vKPC016996
+	for <linuxppc-dev@ozlabs.org>; Tue, 8 Apr 2008 13:57:20 +1000
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m383sj7H4456592
+	for <linuxppc-dev@ozlabs.org>; Tue, 8 Apr 2008 13:54:45 +1000
+Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
+	by d23av03.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m383ssub016189
+	for <linuxppc-dev@ozlabs.org>; Tue, 8 Apr 2008 13:54:54 +1000
+Date: Tue, 8 Apr 2008 13:54:41 +1000
+From: David Gibson <dwg@au1.ibm.com>
+To: Hollis Blanchard <hollisb@us.ibm.com>
+Subject: Re: [PATCH 2 of 3] [KVM] Add DCR access information to struct kvm_run
+Message-ID: <20080408035441.GA18501@localhost.localdomain>
+References: <patchbomb.1207601611@localhost.localdomain>
+	<474b35009da7b7bdb58c.1207601613@localhost.localdomain>
+	<20080408011128.GA13454@localhost.localdomain>
+	<200804072225.33040.hollisb@us.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <10a101c898c4$c183ee40$f52f9e86@LPSC0173W>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200804072225.33040.hollisb@us.ibm.com>
+Cc: kvm-devel@lists.sourceforge.net, linuxppc-dev@ozlabs.org,
+	kvm-ppc-devel@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,24 +38,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Apr 7, 2008 at 9:33 AM, Guillaume Dargaud <dargaud@lpsc.in2p3.fr> wrote:
->
->  Linux/PPC load: console=ttyS0,9600 ip=on root=/dev/sysace/disc0/part2 rw
->  Uncompressing Linux...done.
->  Now booting the kernel
->
->  And then it stops.
->  I'm sure I've overlooked something obvious...
+On Mon, Apr 07, 2008 at 10:25:32PM -0500, Hollis Blanchard wrote:
+> On Monday 07 April 2008 20:11:28 David Gibson wrote:
+> > On Mon, Apr 07, 2008 at 03:53:33PM -0500, Hollis Blanchard wrote:
+> > > 1 file changed, 7 insertions(+)
+> > > include/linux/kvm.h |    7 +++++++
+> > >
+> > >
+> > > Device Control Registers are essentially another address space found on
+> > > PowerPC 4xx processors, analogous to PIO on x86. DCRs are always 32 bits,
+> > > and are identified by a 32-bit number.
+> >
+> > Well... 10-bit, actually.
+> 
+> The mtdcrux description in the ppc440x6 user manual says the following:
+> 
+> 	Let the contents of register RA denote a Device Control Register.
+> 	The contents of GPR[RS] are placed into the designated Device Control 
+> Register.
+> 
+> I take that to mean that we must worry about 32 bits worth of DCR numbers. 
+> Perhaps I should say "no more than" rather than "always".
 
-Are you using uartlite?  Try console=ttyUL0.
-
-But Stephen is right, the first thing you should do is look at
-__log_buf.  You can find its address in the System.map file.
-
-Cheers,
-g.
-g.
+I think that's less misleading.  mtdcrux is very new, anything which
+only has the mtdcr instruction certainly can't take DCR numbers above
+10 bits, and I would expect that even on chips with mtdcrux the DCR
+bus is probably still only 10-bits, although it could be extended.
 
 -- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
