@@ -1,22 +1,22 @@
-Return-Path: <htejun@gmail.com>
-Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.30])
-	by ozlabs.org (Postfix) with ESMTP id 1B573DDE2A
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 Apr 2008 01:03:55 +1000 (EST)
-Received: by yw-out-2324.google.com with SMTP id 3so360131ywj.39
-	for <linuxppc-dev@ozlabs.org>; Tue, 08 Apr 2008 08:03:44 -0700 (PDT)
-Message-ID: <47FB8948.9090302@gmail.com>
-Date: Wed, 09 Apr 2008 00:03:36 +0900
-From: Tejun Heo <htejun@gmail.com>
-MIME-Version: 1.0
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Subject: Re: [PATCH 6/13] devres: implement managed iomap interface
-References: <11684073371547-git-send-email-htejun@gmail.com>
-	<47FA4FD2.8060808@ru.mvista.com> <47FB85CB.2070506@gmail.com>
-	<47FB8751.3040301@ru.mvista.com>
-In-Reply-To: <47FB8751.3040301@ru.mvista.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, gregkh@suse.de, linux-kernel@vger.kernel.org,
-	linux-ide@vger.kernel.org, jgarzik@pobox.com, alan@lxorguk.ukuu.org.uk
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 84CFADDE21
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 Apr 2008 02:04:15 +1000 (EST)
+Subject: Re: [PATCH v3] powerpc: Add irqtrace support for 32-bit powerpc
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Dale Farnsworth <dale@farnsworth.org>
+In-Reply-To: <20080407171428.GA14900@farnsworth.org>
+References: <20080404213932.GA15847@farnsworth.org>
+	<20080407171428.GA14900@farnsworth.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-EEZ9fBvHG1fnjpnE+F8c"
+Date: Tue, 08 Apr 2008 18:04:03 +0200
+Message-Id: <1207670643.5550.11.camel@johannes.berg>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,18 +26,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Sergei Shtylyov wrote:
->> Yeah, right please go ahead.  But I wonder whether any BIOS was 
->> actually crazy enough to map mmio region above 4G on 32bit machine.
-> 
->    This is a *hardware* mapping on some non-x86 platforms (like PPC 44x 
-> or MIPS Alchemy). The arch/ppc/ and arch/mips/ kernels have special 
-> hooks called from ioremap() which help create an illusion that the PCI 
-> memory space on such platforms (not only it) is mapped below 4 GB; 
-> arch/powerpc/ kernel doesn't do this anymore -- hence this newly 
-> encountered issue.
 
-Ah... I see.  Thanks for the clarification.
+--=-EEZ9fBvHG1fnjpnE+F8c
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
--- 
-tejun
+
+On Mon, 2008-04-07 at 10:14 -0700, Dale Farnsworth wrote:
+> Add the low level irq tracing hooks for 32-bit powerpc needed
+> to enable full lockdep functionality.
+>=20
+> Dale Farnsworth <dale@farnsworth.org>
+> ---
+> This version fixes the clobbering of r12 by the call to
+> trace_hardirqs_off() that was pointed out by BenH.
+>=20
+> Johannes, I'd appreciate your trying this version if/when
+> you get the chance.
+
+Thanks Dale, this version seems to work. I'll stress it a bit more
+later, but so far it has survived *much* longer than both previous
+versions.
+
+johannes
+
+--=-EEZ9fBvHG1fnjpnE+F8c
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iQIVAwUAR/uXcqVg1VMiehFYAQL+vg//U9Jvj22bjt7006uc98lKEjMBbUrhlMHt
+lIKuxkv28/BjYAiqq3dyMwIiXaTQ8Xv2nk8akcj7zjqvUzVk1DmCDGGV6JtDTqXF
+uRr2U7i/S+UVdA8EpAsMQ5apzDyeCMuiDfVVC3BJkxBFQN2nlbbWtOZ/PVEW8T1w
+RfI1Cu0Ei7+76cbKXiNKPHLvlIT3NM0Pgs2FYoz/a702pYuG7qfVr7KM1gvbWUCz
+fuTQEk2tyKUGJY5Y6O+r/tHRLrr3KiX1ELvyjX15ZXe/oYve/zw0UnYXe6CgrS4B
+ux1JAySk8FzwuXnV7XUYHdq2RcIZP1b9D06i5X+zCpgft8u79nFdZvcXeMQ4yUUC
+9uefNFVWvcOqb7F3YOmhws2NeTKiBnjsthcMrOutApR5OOs4MGxIuwPCkXIObKOo
+QtCJ49EwEWK+kmu/O7CBuu0DKQCXQh+6IV2R5wXI+krz0HLuL7OueW+Ef4s4UFvk
+OHIQbA4J7DGvyt2/Z8Ag4WZAiMEo0kNyMWAd1qv6GndBud9sP6FtSWOBdxsxomyy
+SgwSpRUE8L7HMfpLR9D4Vs9r/cFO60VyjEutrPnwzQEtW1nfDYMMO5+zGe6Ja2m0
+CX2ai3LCvIN5TG5/474OOwtldRkxJJUmMOWSMUOp/Ys6P4Lm+NAq9AvFidso9Svb
+GsLgrXlpnHU=
+=3aTn
+-----END PGP SIGNATURE-----
+
+--=-EEZ9fBvHG1fnjpnE+F8c--
