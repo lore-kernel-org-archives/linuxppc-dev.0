@@ -1,21 +1,26 @@
-Return-Path: <Andre.Schwarz@matrix-vision.de>
-Received: from p15137414.pureserver.info (matrixvision.de [217.160.213.229])
-	by ozlabs.org (Postfix) with ESMTP id B3C08DE08D
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 Apr 2008 05:59:25 +1000 (EST)
-Message-ID: <47FBCE99.8050108@matrix-vision.de>
-Date: Tue, 08 Apr 2008 21:59:21 +0200
-From: =?ISO-8859-1?Q?Andr=E9_Schwarz?= <Andre.Schwarz@matrix-vision.de>
+Return-Path: <rsc@pengutronix.de>
+Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
+	[83.236.181.26]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id D5F9ADDDED
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 Apr 2008 06:03:27 +1000 (EST)
+Date: Tue, 8 Apr 2008 21:45:17 +0200
+From: Robert Schwebel <r.schwebel@pengutronix.de>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: Question on mpc52xx_common.c
+Message-ID: <20080408194517.GX13814@pengutronix.de>
+References: <m21w5map5f.fsf@ohwell.denx.de>
+	<fa686aa40804031200n4cd7aeb4g330ab3e2620680e@mail.gmail.com>
+	<47FAA0A8.7050602@genesi-usa.com>
+	<200804080414.42867.arnd@arndb.de>
+	<fa686aa40804071925v6c7d28edna529e6122fdc9cf7@mail.gmail.com>
+	<23d2e4300804071926n57746a3cj551ef38bf10486c7@mail.gmail.com>
+	<47FB3CD6.2090706@genesi-usa.com>
+	<fa686aa40804080752g595196det8f576df1884bac5d@mail.gmail.com>
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: MPC8343 - "unable to handle paging request @ 0"
-References: <47F73625.9040903@matrix-vision.de>
-	<20080407161036.GA2688@loki.buserror.net>
-	<47FB7822.6090401@matrix-vision.de>
-	<20080408164853.GH2552@loki.buserror.net>
-In-Reply-To: <20080408164853.GH2552@loki.buserror.net>
-Content-Type: multipart/alternative;
-	boundary="------------030706020002060401000602"
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=iso-8859-15
+In-Reply-To: <fa686aa40804080752g595196det8f576df1884bac5d@mail.gmail.com>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,181 +30,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------030706020002060401000602
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: quoted-printable
+On Tue, Apr 08, 2008 at 08:52:55AM -0600, Grant Likely wrote:
+> It may be ideal, but I don't think it is realistic.  I'm now of the
+> firm opinion that device trees and firmware are *never* perfect.
+> Especially when the definition of perfect is a moving target.
 
-Scott Wood wrote:
-> On Tue, Apr 08, 2008 at 03:50:26PM +0200, Andre Schwarz wrote:
->  =20
->> after building a debug kernel and attaching the bdi2000 it looks like =
-=20
->> the crash occurs during "console_init()" ...
->>    =20
->
-> Does your device tree have a /chosen node after u-boot is done with it?=
-=20
-> find_legacy_serial_ports() can crash otherwise (we really should fix th=
-at).
->
->  =20
-latest u-boot does add the chosen node.
-As far as I know it's for initrd setup ... don't know if it's complete.
->> Since we're using a dtb I omit the "console=3D..." argument for the =20
->> kernel. Is this correct ?
->>    =20
->
-> It's OK if you have /chosen/linux,stdout-path.
->
->  =20
-that sounds promising ! Haven't seen this and will have a closer look.
->> If "console=3D/dev/ttyS0,115200N8" argument is given the serial consol=
-e =20
->> stops working after console_init....
->>
->>
->> On other PowerPC system I could see something like this during boot :
->>
->> -> find_legacy_serial_port()
->> stdout is /soc8568@e0000000/serial@4600
->> legacy_serial_console =3D 1
->> default console speed =3D 115340
->> <- find_legacy_serial_port()
->>
->>
->> Should I see this message also ?
->>    =20
->
-> Only if you enable debug messages in legacy_serial.c.
->
->  =20
-ok.
->> Have I misconfigured anything ?
->>    =20
->
-> One thing that sticks out from the above is that you ask for ttyS0, but=
- the
-> stdout you list from the other system corresponds to ttyS1.  Is this ju=
-st a
-> difference between the two systems?
->
->  =20
-Yes - the log from the MPC8568 is a copy&paste from another posting.=20
-It's not my system.
-I want ttyS0.
-> -Scott
->  =20
-I appreciate your help !
+Well observed; isn't this the prove of the assumption that the whole
+device tree idea is not working? It is *always* inconsistent and it is
+*maintenance hell* because out-of-tree ports do *always* breakt because
+of string inconsistencies. We have just ported a 8260 board from 2.6.22
+to 2.6.25 and it is almost 100% oftree porting. And you do not even have
+a single point of a parser, because all this string parsing is
+completely scattered all over the tree.
 
-Thanks,
-Andr=E9
+The ARM method of using just a device number is so much easier ...
 
-
-MATRIX VISION GmbH, Talstra=DFe 16, DE-71570 Oppenweiler  - Registergeric=
-ht: Amtsgericht Stuttgart, HRB 271090
-Gesch=E4ftsf=FChrer: Gerhard Thullner, Werner Armingeon, Uwe Furtner
-
---------------030706020002060401000602
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-<head>
-  <meta content="text/html;charset=ISO-8859-1" http-equiv="Content-Type">
-</head>
-<body bgcolor="#ffffff" text="#000000">
-Scott Wood wrote:
-<blockquote cite="mid:20080408164853.GH2552@loki.buserror.net"
- type="cite">
-  <pre wrap="">On Tue, Apr 08, 2008 at 03:50:26PM +0200, Andre Schwarz wrote:
-  </pre>
-  <blockquote type="cite">
-    <pre wrap="">after building a debug kernel and attaching the bdi2000 it looks like  
-the crash occurs during "console_init()" ...
-    </pre>
-  </blockquote>
-  <pre wrap=""><!---->
-Does your device tree have a /chosen node after u-boot is done with it? 
-find_legacy_serial_ports() can crash otherwise (we really should fix that).
-
-  </pre>
-</blockquote>
-latest u-boot does add the chosen node.<br>
-As far as I know it's for initrd setup ... don't know if it's complete.<br>
-<blockquote cite="mid:20080408164853.GH2552@loki.buserror.net"
- type="cite">
-  <pre wrap=""></pre>
-  <blockquote type="cite">
-    <pre wrap="">Since we're using a dtb I omit the "console=..." argument for the  
-kernel. Is this correct ?
-    </pre>
-  </blockquote>
-  <pre wrap=""><!---->
-It's OK if you have /chosen/linux,stdout-path.
-
-  </pre>
-</blockquote>
-that sounds promising ! Haven't seen this and will have a closer look.<br>
-<blockquote cite="mid:20080408164853.GH2552@loki.buserror.net"
- type="cite">
-  <pre wrap=""></pre>
-  <blockquote type="cite">
-    <pre wrap="">If "console=/dev/ttyS0,115200N8" argument is given the serial console  
-stops working after console_init....
-
-
-On other PowerPC system I could see something like this during boot :
-
--&gt; find_legacy_serial_port()
-stdout is /soc8568@e0000000/serial@4600
-legacy_serial_console = 1
-default console speed = 115340
-&lt;- find_legacy_serial_port()
-
-
-Should I see this message also ?
-    </pre>
-  </blockquote>
-  <pre wrap=""><!---->
-Only if you enable debug messages in legacy_serial.c.
-
-  </pre>
-</blockquote>
-ok.<br>
-<blockquote cite="mid:20080408164853.GH2552@loki.buserror.net"
- type="cite">
-  <pre wrap=""></pre>
-  <blockquote type="cite">
-    <pre wrap="">Have I misconfigured anything ?
-    </pre>
-  </blockquote>
-  <pre wrap=""><!---->
-One thing that sticks out from the above is that you ask for ttyS0, but the
-stdout you list from the other system corresponds to ttyS1.  Is this just a
-difference between the two systems?
-
-  </pre>
-</blockquote>
-Yes - the log from the MPC8568 is a copy&amp;paste from another
-posting. It's not my system.<br>
-I want ttyS0.<br>
-<blockquote cite="mid:20080408164853.GH2552@loki.buserror.net"
- type="cite">
-  <pre wrap="">-Scott
-  </pre>
-</blockquote>
-I appreciate your help !<br>
-<br>
-Thanks,<br>
-Andr&eacute;<br>
-<BR>
-
-MATRIX VISION GmbH, Talstraße 16, DE-71570 Oppenweiler  - Registergericht: Amtsgericht Stuttgart, HRB 271090
-Geschäftsführer: Gerhard Thullner, Werner Armingeon, Uwe Furtner
-<BR>
-</body>
-</html>
-
---------------030706020002060401000602--
+Robert
+-- 
+ Dipl.-Ing. Robert Schwebel | http://www.pengutronix.de
+ Pengutronix - Linux Solutions for Science and Industry
+   Handelsregister:  Amtsgericht Hildesheim, HRA 2686
+     Hannoversche Str. 2, 31134 Hildesheim, Germany
+   Phone: +49-5121-206917-0 |  Fax: +49-5121-206917-9
