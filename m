@@ -1,23 +1,29 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
+Return-Path: <jyoung5@us.ibm.com>
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id EC79BDDEF9
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 Apr 2008 02:48:35 +1000 (EST)
-Date: Tue, 8 Apr 2008 11:48:53 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Andre Schwarz <andre.schwarz@matrix-vision.de>
-Subject: Re: MPC8343 - "unable to handle paging request @ 0"
-Message-ID: <20080408164853.GH2552@loki.buserror.net>
-References: <47F73625.9040903@matrix-vision.de>
-	<20080407161036.GA2688@loki.buserror.net>
-	<47FB7822.6090401@matrix-vision.de>
+	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id B9B3CDDF50
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 Apr 2008 02:49:23 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e32.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m38GlLOK010446
+	for <linuxppc-dev@ozlabs.org>; Tue, 8 Apr 2008 12:47:21 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m38GnKBK194456
+	for <linuxppc-dev@ozlabs.org>; Tue, 8 Apr 2008 10:49:20 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m38GnJrL030655
+	for <linuxppc-dev@ozlabs.org>; Tue, 8 Apr 2008 10:49:19 -0600
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <47FB7822.6090401@matrix-vision.de>
-Cc: linuxppc-dev@ozlabs.org
+Subject: [PATCH] [v5] Add idle wait support for 44x platforms
+Message-Id: <df0f79b7b4ab628887c2.1207673354@thinkpadL>
+Date: Tue, 08 Apr 2008 11:49:14 -0500
+From: Jerone Young <jyoung5@us.ibm.com>
+To: linuxppc-dev@ozlabs.org
+Cc: kvm-ppc-devel@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,39 +33,111 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Apr 08, 2008 at 03:50:26PM +0200, Andre Schwarz wrote:
-> after building a debug kernel and attaching the bdi2000 it looks like  
-> the crash occurs during "console_init()" ...
+2 files changed, 77 insertions(+), 1 deletion(-)
+arch/powerpc/platforms/44x/Makefile |    2 
+arch/powerpc/platforms/44x/idle.c   |   76 +++++++++++++++++++++++++++++++++++
 
-Does your device tree have a /chosen node after u-boot is done with it? 
-find_legacy_serial_ports() can crash otherwise (we really should fix that).
 
-> Since we're using a dtb I omit the "console=..." argument for the  
-> kernel. Is this correct ?
+Updates: Now setting MSR_WE is now default
+         Tested on hardware platforms bamboo & sequioa and appears
+         things are working fine on actually hardware!
 
-It's OK if you have /chosen/linux,stdout-path.
+This patch adds the ability for the CPU to go into wait state while in cpu_idle loop. This helps virtulization solutions know when the guest Linux kernel is in an idle state. There are two ways to do it.
 
-> If "console=/dev/ttyS0,115200N8" argument is given the serial console  
-> stops working after console_init....
->
->
-> On other PowerPC system I could see something like this during boot :
->
-> -> find_legacy_serial_port()
-> stdout is /soc8568@e0000000/serial@4600
-> legacy_serial_console = 1
-> default console speed = 115340
-> <- find_legacy_serial_port()
->
->
-> Should I see this message also ?
+Command line
+	idle=spin <-- CPU will spin
+	idle=wait <-- set CPU into wait state when idle (default)
 
-Only if you enable debug messages in legacy_serial.c.
 
-> Have I misconfigured anything ?
+Signed-off-by: Jerone Young <jyoung5@us.ibm.com>
 
-One thing that sticks out from the above is that you ask for ttyS0, but the
-stdout you list from the other system corresponds to ttyS1.  Is this just a
-difference between the two systems?
-
--Scott
+diff --git a/arch/powerpc/platforms/44x/Makefile b/arch/powerpc/platforms/44x/Makefile
+--- a/arch/powerpc/platforms/44x/Makefile
++++ b/arch/powerpc/platforms/44x/Makefile
+@@ -1,4 +1,4 @@ obj-$(CONFIG_44x)	:= misc_44x.o
+-obj-$(CONFIG_44x)	:= misc_44x.o
++obj-$(CONFIG_44x)	:= misc_44x.o idle.o
+ obj-$(CONFIG_EBONY)	+= ebony.o
+ obj-$(CONFIG_TAISHAN)	+= taishan.o
+ obj-$(CONFIG_BAMBOO)	+= bamboo.o
+diff --git a/arch/powerpc/platforms/44x/idle.c b/arch/powerpc/platforms/44x/idle.c
+new file mode 100644
+--- /dev/null
++++ b/arch/powerpc/platforms/44x/idle.c
+@@ -0,0 +1,76 @@
++/*
++ * Copyright 2008 IBM Corp. 
++ *
++ * Based on arch/powerpc/platforms/pasemi/idle.c: 
++ * Copyright (C) 2006-2007 PA Semi, Inc
++ *
++ * Added by: Jerone Young <jyoung5@us.ibm.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
++ *
++ */
++
++#include <linux/of.h>
++#include <linux/kernel.h>
++#include <asm/machdep.h>
++
++static int current_mode;
++
++struct sleep_mode {
++	char *name;
++	void (*entry)(void);
++};
++
++static void ppc44x_idle(void)
++{
++	unsigned long msr_save;
++
++	msr_save = mfmsr();
++	/* set wait state MSR */
++	mtmsr(msr_save|MSR_WE|MSR_EE|MSR_CE|MSR_DE);
++	isync();
++	/* return to initial state */
++	mtmsr(msr_save);
++	isync();
++}
++
++static struct sleep_mode modes[] = {
++	{ .name = "wait", .entry = &ppc44x_idle },
++	{ .name = "spin", .entry = NULL },
++};
++
++int __init ppc44x_idle_init(void)
++{
++	void *func = modes[current_mode].entry;
++	ppc_md.power_save = func;
++	return 0;
++}
++
++arch_initcall(ppc44x_idle_init);
++
++static int __init idle_param(char *p)
++{ 
++	int i;
++
++	for (i = 0; i < ARRAY_SIZE(modes); i++) {
++		if (!strcmp(modes[i].name, p)) {
++			current_mode = i;
++			break;
++		}
++	}
++
++	return 0;
++}
++
++early_param("idle", idle_param);
