@@ -1,20 +1,17 @@
-Return-Path: <sven@powerlinux.fr>
-Received: from archon.plz.fr (archon.plz.fr [194.50.78.210])
-	by ozlabs.org (Postfix) with ESMTP id BB8EEDDE10
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Apr 2008 17:56:45 +1000 (EST)
-Date: Tue, 8 Apr 2008 09:56:42 +0200
-From: Sven Luther <sven@genesi-usa.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: Question on mpc52xx_common.c
-Message-ID: <20080408075642.GA24770@powerlinux.fr>
-References: <m21w5map5f.fsf@ohwell.denx.de>
-	<fa686aa40804031200n4cd7aeb4g330ab3e2620680e@mail.gmail.com>
-	<47FAA0A8.7050602@genesi-usa.com>
-	<200804080414.42867.arnd@arndb.de>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <200804080414.42867.arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, Detlev Zundel <dzu@denx.de>, sven@genesi-usa.com
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18427.11023.8067.795279@cargo.ozlabs.ibm.com>
+Date: Tue, 8 Apr 2008 18:21:35 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Subject: Re: [BUG] 2.6.25-rc2-git4 - Regression Kernel oops while running
+	kernbench and tbench on powerpc
+In-Reply-To: <47BC40BC.3040405@linux.vnet.ibm.com>
+References: <47BC40BC.3040405@linux.vnet.ibm.com>
+Cc: kernel list <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
+	linux-next@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+	Balbir Singh <balbir@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,26 +21,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Apr 08, 2008 at 04:14:42AM +0200, Arnd Bergmann wrote:
-> On Tuesday 08 April 2008, Matt Sealey wrote:
-> > Grant Likely wrote:
-> > > 
-> > > Sure, why not?  If the firmware has already set it up correctly and no
-> > > devices using it are in use, then the kernel should be okay.  :-)
-> > > That said, I can't imagine choosing to not put the cdm node into the
-> > > device tree.
-> > 
-> > *ahem* Efika.
+Kamalesh Babulal writes:
+
+> The Kernel oopses is seen while running the kernbench followed by tbench with 2.6.25-rc2-git4 
+> kernel on powerpc, this oops was reported for the 2.6.24-rc8-mm1 kernel (http://lkml.org/lkml/2008/1/18/71)
+> and is visible with almost all of the main line ,rc(s) and their git(s) release from then.
 > 
-> Maybe we should just give up on making the efika boot with its regular
-> device tree and instead add a boot wrapper that either fixes up the
-> data provided by its firmware or just adds a proper dt blob?
+> This oops is visible in the linux-next-20080220 kernel also.The machine is power4+ box with four cpus and 
+> has 30 GB RAM.
 
-for 2.6.24, device-tree fixups where added to the linux kernel, since we
-don't have a possibility to modify the efika dt, or at least not in a
-foreseable future, we should just add more fixups so we can handle
-various other problems in it.
+Please try to replicate the oops with the patch below applied.  It
+doesn't solve the cause of the oops but it should mean the kernel
+prints out more useful information about the cause of the oops.
 
-Friendly,
+I assume you can replicate the oops easily on this machine - is that
+right?
 
-Sven Luther
+Paul.
+
+diff --git a/arch/powerpc/kernel/head_64.S b/arch/powerpc/kernel/head_64.S
+index 11b4f6d..a3ac72a 100644
+--- a/arch/powerpc/kernel/head_64.S
++++ b/arch/powerpc/kernel/head_64.S
+@@ -621,7 +621,7 @@ END_FW_FTR_SECTION_IFSET(FW_FEATURE_ISERIES)
+ 	mtlr	r10
+ 
+ 	andi.	r10,r12,MSR_RI	/* check for unrecoverable exception */
+-	beq-	unrecov_slb
++	beq-	2f
+ 
+ .machine	push
+ .machine	"power4"
+@@ -643,6 +643,22 @@ END_FW_FTR_SECTION_IFSET(FW_FEATURE_ISERIES)
+ 	rfid
+ 	b	.	/* prevent speculative execution */
+ 
++2:
++#ifdef CONFIG_PPC_ISERIES
++BEGIN_FW_FTR_SECTION
++	b	unrecov_slb
++END_FW_FTR_SECTION_IFSET(FW_FEATURE_ISERIES)
++#endif /* CONFIG_PPC_ISERIES */
++	mfspr	r11,SPRN_SRR0
++	clrrdi	r10,r13,32
++	LOAD_HANDLER(r10,unrecov_slb)
++	mtspr	SPRN_SRR0,r10
++	mfmsr	r10
++	ori	r10,r10,MSR_IR|MSR_DR|MSR_RI
++	mtspr	SPRN_SRR1,r10
++	rfid
++	b	.
++
+ unrecov_slb:
+ 	EXCEPTION_PROLOG_COMMON(0x4100, PACA_EXSLB)
+ 	DISABLE_INTS
