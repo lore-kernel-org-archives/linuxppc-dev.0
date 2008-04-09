@@ -1,14 +1,19 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id F0395DDE07
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 Apr 2008 23:59:03 +1000 (EST)
-Date: Wed, 9 Apr 2008 17:59:25 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 87D46DDFB9
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Apr 2008 01:22:26 +1000 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id m39FMInj009887
+	for <linuxppc-dev@ozlabs.org>; Wed, 9 Apr 2008 10:22:20 -0500
+Date: Wed, 9 Apr 2008 10:18:06 -0500 (CDT)
+From: Kumar Gala <galak@kernel.crashing.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] [POWERPC] mpc8315: fix USB UTMI Host setup
-Message-ID: <20080409135925.GA6905@polina.dev.rtsoft.ru>
+Subject: [PATCH] [POWERPC] 83xx/85xx: Reorganize defconfigs
+Message-ID: <Pine.LNX.4.64.0804091017440.18753@blarg.am.freescale.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,87 +23,165 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Currently USB Host isn't functional on the MPC8315E boards, for two
-reasons as described below.
+Board specific defconfigs are useful, however with the ability to do
+multi-board defconfigs they aren't needed in the top level configs directory
 
-MPC8315 Reference Manual says:
-"The USB DR unit must have the same clock ratio as the encryption core
-unit, unless one of them has its clock disabled."
+Move the 83xx/85xx board specific defconfigs to individual directories under
+arch/powerpc/configs.
 
-The encryption core also drives I2C clock, so it is enabled and is equal
-to 01. That means USBDRCM should be 01 here.
-
-Plus, according to MPC8315E-RDB schematics, USB unit consumes CLK_IN
-clock from the 24.00MHz oscillator, which means we must adjust REFSEL
-bits as well.
-
-p.s.
-Idially we should rework whole 83xx/usb.c code, in two steps:
-1. Move SCCR code to the U-Boot;
-2. Implement fsl,usb-clock property in the device tree, so usb.c could
-   decide what clock exactly to use on per-board basis.
-
-Though, today we're not in a hurry since there is just one 8315e board
-out there.
-
-Cc: Kumar Gala <galak@kernel.crashing.org>
-Cc: Kim Phillips <kim.phillips@freescale.com>
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 ---
+ .../configs/{ => 83xx}/mpc8313_rdb_defconfig       |    0
+ .../configs/{ => 83xx}/mpc8315_rdb_defconfig       |    0
+ .../configs/{ => 83xx}/mpc832x_mds_defconfig       |    0
+ .../configs/{ => 83xx}/mpc832x_rdb_defconfig       |    0
+ .../configs/{ => 83xx}/mpc834x_itx_defconfig       |    0
+ .../configs/{ => 83xx}/mpc834x_itxgp_defconfig     |    0
+ .../configs/{ => 83xx}/mpc834x_mds_defconfig       |    0
+ .../configs/{ => 83xx}/mpc836x_mds_defconfig       |    0
+ .../configs/{ => 83xx}/mpc837x_mds_defconfig       |    0
+ .../configs/{ => 83xx}/mpc837x_rdb_defconfig       |    0
+ arch/powerpc/configs/{ => 83xx}/sbc834x_defconfig  |    0
+ arch/powerpc/configs/{ => 85xx}/ksi8560_defconfig  |    0
+ .../configs/{ => 85xx}/mpc8540_ads_defconfig       |    0
+ .../configs/{ => 85xx}/mpc8544_ds_defconfig        |    0
+ .../configs/{ => 85xx}/mpc8560_ads_defconfig       |    0
+ .../configs/{ => 85xx}/mpc8568mds_defconfig        |    0
+ .../configs/{ => 85xx}/mpc8572_ds_defconfig        |    0
+ .../configs/{ => 85xx}/mpc85xx_cds_defconfig       |    0
+ arch/powerpc/configs/{ => 85xx}/sbc8548_defconfig  |    0
+ arch/powerpc/configs/{ => 85xx}/sbc8560_defconfig  |    0
+ arch/powerpc/configs/{ => 85xx}/stx_gp3_defconfig  |    0
+ arch/powerpc/configs/{ => 85xx}/tqm8540_defconfig  |    0
+ arch/powerpc/configs/{ => 85xx}/tqm8541_defconfig  |    0
+ arch/powerpc/configs/{ => 85xx}/tqm8555_defconfig  |    0
+ arch/powerpc/configs/{ => 85xx}/tqm8560_defconfig  |    0
+ 25 files changed, 0 insertions(+), 0 deletions(-)
+ rename arch/powerpc/configs/{ => 83xx}/mpc8313_rdb_defconfig (100%)
+ rename arch/powerpc/configs/{ => 83xx}/mpc8315_rdb_defconfig (100%)
+ rename arch/powerpc/configs/{ => 83xx}/mpc832x_mds_defconfig (100%)
+ rename arch/powerpc/configs/{ => 83xx}/mpc832x_rdb_defconfig (100%)
+ rename arch/powerpc/configs/{ => 83xx}/mpc834x_itx_defconfig (100%)
+ rename arch/powerpc/configs/{ => 83xx}/mpc834x_itxgp_defconfig (100%)
+ rename arch/powerpc/configs/{ => 83xx}/mpc834x_mds_defconfig (100%)
+ rename arch/powerpc/configs/{ => 83xx}/mpc836x_mds_defconfig (100%)
+ rename arch/powerpc/configs/{ => 83xx}/mpc837x_mds_defconfig (100%)
+ rename arch/powerpc/configs/{ => 83xx}/mpc837x_rdb_defconfig (100%)
+ rename arch/powerpc/configs/{ => 83xx}/sbc834x_defconfig (100%)
+ rename arch/powerpc/configs/{ => 85xx}/ksi8560_defconfig (100%)
+ rename arch/powerpc/configs/{ => 85xx}/mpc8540_ads_defconfig (100%)
+ rename arch/powerpc/configs/{ => 85xx}/mpc8544_ds_defconfig (100%)
+ rename arch/powerpc/configs/{ => 85xx}/mpc8560_ads_defconfig (100%)
+ rename arch/powerpc/configs/{ => 85xx}/mpc8568mds_defconfig (100%)
+ rename arch/powerpc/configs/{ => 85xx}/mpc8572_ds_defconfig (100%)
+ rename arch/powerpc/configs/{ => 85xx}/mpc85xx_cds_defconfig (100%)
+ rename arch/powerpc/configs/{ => 85xx}/sbc8548_defconfig (100%)
+ rename arch/powerpc/configs/{ => 85xx}/sbc8560_defconfig (100%)
+ rename arch/powerpc/configs/{ => 85xx}/stx_gp3_defconfig (100%)
+ rename arch/powerpc/configs/{ => 85xx}/tqm8540_defconfig (100%)
+ rename arch/powerpc/configs/{ => 85xx}/tqm8541_defconfig (100%)
+ rename arch/powerpc/configs/{ => 85xx}/tqm8555_defconfig (100%)
+ rename arch/powerpc/configs/{ => 85xx}/tqm8560_defconfig (100%)
 
- arch/powerpc/platforms/83xx/mpc83xx.h |    2 ++
- arch/powerpc/platforms/83xx/usb.c     |   12 +++++++++---
- 2 files changed, 11 insertions(+), 3 deletions(-)
-
-
-diff --git a/arch/powerpc/platforms/83xx/mpc83xx.h b/arch/powerpc/platforms/83xx/mpc83xx.h
-index 68065e6..88a3b5c 100644
---- a/arch/powerpc/platforms/83xx/mpc83xx.h
-+++ b/arch/powerpc/platforms/83xx/mpc83xx.h
-@@ -16,6 +16,7 @@
- #define MPC83XX_SCCR_USB_DRCM_10   0x00200000
- #define MPC8315_SCCR_USB_MASK      0x00c00000
- #define MPC8315_SCCR_USB_DRCM_11   0x00c00000
-+#define MPC8315_SCCR_USB_DRCM_01   0x00400000
- #define MPC837X_SCCR_USB_DRCM_11   0x00c00000
- 
- /* system i/o configuration register low */
-@@ -37,6 +38,7 @@
- /* USB Control Register */
- #define FSL_USB2_CONTROL_OFFS      0x500
- #define CONTROL_UTMI_PHY_EN        0x00000200
-+#define CONTROL_REFSEL_24MHZ       0x00000040
- #define CONTROL_REFSEL_48MHZ       0x00000080
- #define CONTROL_PHY_CLK_SEL_ULPI   0x00000400
- #define CONTROL_OTG_PORT           0x00000020
-diff --git a/arch/powerpc/platforms/83xx/usb.c b/arch/powerpc/platforms/83xx/usb.c
-index 471fdd8..64bcf0a 100644
---- a/arch/powerpc/platforms/83xx/usb.c
-+++ b/arch/powerpc/platforms/83xx/usb.c
-@@ -129,7 +129,7 @@ int mpc831x_usb_cfg(void)
- 	if (immr_node && of_device_is_compatible(immr_node, "fsl,mpc8315-immr"))
- 		clrsetbits_be32(immap + MPC83XX_SCCR_OFFS,
- 		                MPC8315_SCCR_USB_MASK,
--		                MPC8315_SCCR_USB_DRCM_11);
-+		                MPC8315_SCCR_USB_DRCM_01);
- 	else
- 		clrsetbits_be32(immap + MPC83XX_SCCR_OFFS,
- 		                MPC83XX_SCCR_USB_MASK,
-@@ -164,9 +164,15 @@ int mpc831x_usb_cfg(void)
- 	/* Using on-chip PHY */
- 	if (prop && (!strcmp(prop, "utmi_wide") ||
- 		     !strcmp(prop, "utmi"))) {
--		/* Set UTMI_PHY_EN, REFSEL to 48MHZ */
-+		u32 refsel;
-+
-+		if (of_device_is_compatible(immr_node, "fsl,mpc8315-immr"))
-+			refsel = CONTROL_REFSEL_24MHZ;
-+		else
-+			refsel = CONTROL_REFSEL_48MHZ;
-+		/* Set UTMI_PHY_EN and REFSEL */
- 		out_be32(usb_regs + FSL_USB2_CONTROL_OFFS,
--				CONTROL_UTMI_PHY_EN | CONTROL_REFSEL_48MHZ);
-+				CONTROL_UTMI_PHY_EN | refsel);
- 	/* Using external UPLI PHY */
- 	} else if (prop && !strcmp(prop, "ulpi")) {
- 		/* Set PHY_CLK_SEL to ULPI */
+diff --git a/arch/powerpc/configs/mpc8313_rdb_defconfig b/arch/powerpc/configs/83xx/mpc8313_rdb_defconfig
+similarity index 100%
+rename from arch/powerpc/configs/mpc8313_rdb_defconfig
+rename to arch/powerpc/configs/83xx/mpc8313_rdb_defconfig
+diff --git a/arch/powerpc/configs/mpc8315_rdb_defconfig b/arch/powerpc/configs/83xx/mpc8315_rdb_defconfig
+similarity index 100%
+rename from arch/powerpc/configs/mpc8315_rdb_defconfig
+rename to arch/powerpc/configs/83xx/mpc8315_rdb_defconfig
+diff --git a/arch/powerpc/configs/mpc832x_mds_defconfig b/arch/powerpc/configs/83xx/mpc832x_mds_defconfig
+similarity index 100%
+rename from arch/powerpc/configs/mpc832x_mds_defconfig
+rename to arch/powerpc/configs/83xx/mpc832x_mds_defconfig
+diff --git a/arch/powerpc/configs/mpc832x_rdb_defconfig b/arch/powerpc/configs/83xx/mpc832x_rdb_defconfig
+similarity index 100%
+rename from arch/powerpc/configs/mpc832x_rdb_defconfig
+rename to arch/powerpc/configs/83xx/mpc832x_rdb_defconfig
+diff --git a/arch/powerpc/configs/mpc834x_itx_defconfig b/arch/powerpc/configs/83xx/mpc834x_itx_defconfig
+similarity index 100%
+rename from arch/powerpc/configs/mpc834x_itx_defconfig
+rename to arch/powerpc/configs/83xx/mpc834x_itx_defconfig
+diff --git a/arch/powerpc/configs/mpc834x_itxgp_defconfig b/arch/powerpc/configs/83xx/mpc834x_itxgp_defconfig
+similarity index 100%
+rename from arch/powerpc/configs/mpc834x_itxgp_defconfig
+rename to arch/powerpc/configs/83xx/mpc834x_itxgp_defconfig
+diff --git a/arch/powerpc/configs/mpc834x_mds_defconfig b/arch/powerpc/configs/83xx/mpc834x_mds_defconfig
+similarity index 100%
+rename from arch/powerpc/configs/mpc834x_mds_defconfig
+rename to arch/powerpc/configs/83xx/mpc834x_mds_defconfig
+diff --git a/arch/powerpc/configs/mpc836x_mds_defconfig b/arch/powerpc/configs/83xx/mpc836x_mds_defconfig
+similarity index 100%
+rename from arch/powerpc/configs/mpc836x_mds_defconfig
+rename to arch/powerpc/configs/83xx/mpc836x_mds_defconfig
+diff --git a/arch/powerpc/configs/mpc837x_mds_defconfig b/arch/powerpc/configs/83xx/mpc837x_mds_defconfig
+similarity index 100%
+rename from arch/powerpc/configs/mpc837x_mds_defconfig
+rename to arch/powerpc/configs/83xx/mpc837x_mds_defconfig
+diff --git a/arch/powerpc/configs/mpc837x_rdb_defconfig b/arch/powerpc/configs/83xx/mpc837x_rdb_defconfig
+similarity index 100%
+rename from arch/powerpc/configs/mpc837x_rdb_defconfig
+rename to arch/powerpc/configs/83xx/mpc837x_rdb_defconfig
+diff --git a/arch/powerpc/configs/sbc834x_defconfig b/arch/powerpc/configs/83xx/sbc834x_defconfig
+similarity index 100%
+rename from arch/powerpc/configs/sbc834x_defconfig
+rename to arch/powerpc/configs/83xx/sbc834x_defconfig
+diff --git a/arch/powerpc/configs/ksi8560_defconfig b/arch/powerpc/configs/85xx/ksi8560_defconfig
+similarity index 100%
+rename from arch/powerpc/configs/ksi8560_defconfig
+rename to arch/powerpc/configs/85xx/ksi8560_defconfig
+diff --git a/arch/powerpc/configs/mpc8540_ads_defconfig b/arch/powerpc/configs/85xx/mpc8540_ads_defconfig
+similarity index 100%
+rename from arch/powerpc/configs/mpc8540_ads_defconfig
+rename to arch/powerpc/configs/85xx/mpc8540_ads_defconfig
+diff --git a/arch/powerpc/configs/mpc8544_ds_defconfig b/arch/powerpc/configs/85xx/mpc8544_ds_defconfig
+similarity index 100%
+rename from arch/powerpc/configs/mpc8544_ds_defconfig
+rename to arch/powerpc/configs/85xx/mpc8544_ds_defconfig
+diff --git a/arch/powerpc/configs/mpc8560_ads_defconfig b/arch/powerpc/configs/85xx/mpc8560_ads_defconfig
+similarity index 100%
+rename from arch/powerpc/configs/mpc8560_ads_defconfig
+rename to arch/powerpc/configs/85xx/mpc8560_ads_defconfig
+diff --git a/arch/powerpc/configs/mpc8568mds_defconfig b/arch/powerpc/configs/85xx/mpc8568mds_defconfig
+similarity index 100%
+rename from arch/powerpc/configs/mpc8568mds_defconfig
+rename to arch/powerpc/configs/85xx/mpc8568mds_defconfig
+diff --git a/arch/powerpc/configs/mpc8572_ds_defconfig b/arch/powerpc/configs/85xx/mpc8572_ds_defconfig
+similarity index 100%
+rename from arch/powerpc/configs/mpc8572_ds_defconfig
+rename to arch/powerpc/configs/85xx/mpc8572_ds_defconfig
+diff --git a/arch/powerpc/configs/mpc85xx_cds_defconfig b/arch/powerpc/configs/85xx/mpc85xx_cds_defconfig
+similarity index 100%
+rename from arch/powerpc/configs/mpc85xx_cds_defconfig
+rename to arch/powerpc/configs/85xx/mpc85xx_cds_defconfig
+diff --git a/arch/powerpc/configs/sbc8548_defconfig b/arch/powerpc/configs/85xx/sbc8548_defconfig
+similarity index 100%
+rename from arch/powerpc/configs/sbc8548_defconfig
+rename to arch/powerpc/configs/85xx/sbc8548_defconfig
+diff --git a/arch/powerpc/configs/sbc8560_defconfig b/arch/powerpc/configs/85xx/sbc8560_defconfig
+similarity index 100%
+rename from arch/powerpc/configs/sbc8560_defconfig
+rename to arch/powerpc/configs/85xx/sbc8560_defconfig
+diff --git a/arch/powerpc/configs/stx_gp3_defconfig b/arch/powerpc/configs/85xx/stx_gp3_defconfig
+similarity index 100%
+rename from arch/powerpc/configs/stx_gp3_defconfig
+rename to arch/powerpc/configs/85xx/stx_gp3_defconfig
+diff --git a/arch/powerpc/configs/tqm8540_defconfig b/arch/powerpc/configs/85xx/tqm8540_defconfig
+similarity index 100%
+rename from arch/powerpc/configs/tqm8540_defconfig
+rename to arch/powerpc/configs/85xx/tqm8540_defconfig
+diff --git a/arch/powerpc/configs/tqm8541_defconfig b/arch/powerpc/configs/85xx/tqm8541_defconfig
+similarity index 100%
+rename from arch/powerpc/configs/tqm8541_defconfig
+rename to arch/powerpc/configs/85xx/tqm8541_defconfig
+diff --git a/arch/powerpc/configs/tqm8555_defconfig b/arch/powerpc/configs/85xx/tqm8555_defconfig
+similarity index 100%
+rename from arch/powerpc/configs/tqm8555_defconfig
+rename to arch/powerpc/configs/85xx/tqm8555_defconfig
+diff --git a/arch/powerpc/configs/tqm8560_defconfig b/arch/powerpc/configs/85xx/tqm8560_defconfig
+similarity index 100%
+rename from arch/powerpc/configs/tqm8560_defconfig
+rename to arch/powerpc/configs/85xx/tqm8560_defconfig
+-- 
+1.5.4.1
