@@ -1,18 +1,19 @@
-Return-Path: <glikely@secretlab.ca>
-Message-ID: <fa686aa40804091250u1f532cddj9e3897969a98349c@mail.gmail.com>
-Date: Wed, 9 Apr 2008 13:50:43 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "John Bonesio" <john.bonesio@xilinx.com>
-Subject: Re: ppc440 caches - change proposal [RFC]
-In-Reply-To: <20080409180042.511531370055@mail134-sin.bigfish.com>
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Received: from outbound4-wa4-R.bigfish.com (outbound-wa4.frontbridge.com
+	[216.32.181.16])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 61C38DE0A0
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Apr 2008 07:02:42 +1000 (EST)
+Message-ID: <47FD2EC1.8030600@am.sony.com>
+Date: Wed, 09 Apr 2008 14:01:53 -0700
+From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
+To: Paul Mackerras <paulus@samba.org>
+Subject: [patch] PS3: Fix gelic net module dependency
 Content-Type: text/plain; charset=ISO-8859-1
-References: <20080408225329.5EC171A8007D@mail11-dub.bigfish.com>
-	<1207695415.14711.11.camel@pasglop>
-	<fa686aa40804081615n284aa750n12ceb0bf1d1bcce1@mail.gmail.com>
-	<20080409180042.511531370055@mail134-sin.bigfish.com>
-Cc: Linuxppc-dev@ozlabs.org
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Jeff Garzik <jgarzik@pobox.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,44 +23,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Apr 9, 2008 at 12:00 PM, John Bonesio <john.bonesio@xilinx.com> wrote:
-> Hi Grant,
->
->  I have a question about your patch. It appears as if the cache setup code is
-> in a file that would be used only on Xilinx FPGA devices.
+The PS3 gelic network driver depends on the wake-on-lan support
+provided by the PS3 sys manager driver.  Add that dependency
+to the GELIC_NET Kconfig option.
 
-That is correct.
+Prevents these build errors:
 
->
->  I understand that many people are using a bootloader that already sets up the
-> cache for the kernel, but I'm wondering if Xilinx boards are really a special
-> case, or if there may be other non-Xilinx related systems that would also not
-> be using a bootloader.
+  ps3_gelic_net.c:1277: undefined reference to `.ps3_sys_manager_get_wol'
+  ps3_gelic_net.c:1337: undefined reference to `.ps3_sys_manager_set_wol'
 
-I think there are very few cases of platforms not using some form of firmware.
+CC: Masakazu Mokuno <mokuno@sm.sony.co.jp>
+CC: Jeff Garzik <jgarzik@pobox.com>
+Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
+---
+Hi Paul,
 
->
->  I also understand the desire to avoid code that does the same work more than
-> once, but I wonder if in this case, it's creating too strong a dependence on
-> the specific behavior of a certain bootloader.
->  I also wonder if arch/powerpc is being made more complex by trying to split
->  out this code change into a Xilinx specific area, when the change could just
-> be rolled into head_40x.S and we could do away with virtex405-head.S.
+This fixes an error introduced in my 2.6.26 WOL patches now
+queued in your powerpc tree.  Please apply.
 
-In general, I think that the wrapper does not want to touch the cache
-settings.  In the common case where firmware exists and sets up the
-cache then to turn off the cache again would throw away what firmware
-already had in cache and slow down the boot.
+-Geoff
 
-That being said, I'm not the bootwrapper expert.  If other think that
-it belongs in head_40x.S then I have no objections.
+ drivers/net/Kconfig |    1 +
+ 1 file changed, 1 insertion(+)
 
-Josh, any thoughts?
-
-Cheers,
-g.
-
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+--- a/drivers/net/Kconfig
++++ b/drivers/net/Kconfig
+@@ -2358,6 +2358,7 @@ config TSI108_ETH
+ config GELIC_NET
+ 	tristate "PS3 Gigabit Ethernet driver"
+ 	depends on PPC_PS3
++	select PS3_SYS_MANAGER
+ 	help
+ 	  This driver supports the network device on the PS3 game
+ 	  console.  This driver has built-in support for Ethernet.
