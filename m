@@ -1,21 +1,25 @@
-Return-Path: <laurentp@cse-semaphore.com>
-Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
-	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id 4E40BDDF1F
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 Apr 2008 22:20:46 +1000 (EST)
-From: Laurent Pinchart <laurentp@cse-semaphore.com>
-To: "Pandita, Vikram" <vikram.pandita@ti.com>
-Subject: Re: [PATCH] Freescale QUICC Engine USB Host Controller
-Date: Wed, 9 Apr 2008 14:20:42 +0200
-References: <20080311191744.GA10518@localhost.localdomain>
-	<200804091413.46592.laurentp@cse-semaphore.com>
-	<5DF83221BE20114E9C331F665ACBC080048F8760@dbde01.ent.ti.com>
-In-Reply-To: <5DF83221BE20114E9C331F665ACBC080048F8760@dbde01.ent.ti.com>
+Return-Path: <vikram.pandita@ti.com>
+Received: from arroyo.ext.ti.com (arroyo.ext.ti.com [192.94.94.40])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mailhost.ti.com",
+	Issuer "VeriSign Class 3 Secure Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id CC1DADDE24
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 Apr 2008 22:28:58 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2873551.qkfKzcLzB6";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Message-Id: <200804091420.43053.laurentp@cse-semaphore.com>
-Cc: linux-usb@vger.kernel.org, David Brownell <david-b@pacbell.net>,
-	linuxppc-dev@ozlabs.org, Scott Wood <scottwood@freescale.com>,
+Content-Type: text/plain;
+	charset="UTF-8"
+Subject: RE: [PATCH] Freescale QUICC Engine USB Host Controller
+Date: Wed, 9 Apr 2008 17:46:36 +0530
+Message-ID: <5DF83221BE20114E9C331F665ACBC080048F8760@dbde01.ent.ti.com>
+In-Reply-To: <200804091413.46592.laurentp@cse-semaphore.com>
+References: <20080311191744.GA10518@localhost.localdomain>
+	<200804071811.19671.laurentp@cse-semaphore.com>
+	<20080408121630.GB26716@polina.dev.rtsoft.ru>
+	<200804091413.46592.laurentp@cse-semaphore.com>
+From: "Pandita, Vikram" <vikram.pandita@ti.com>
+To: "Laurent Pinchart" <laurentp@cse-semaphore.com>, <avorontsov@ru.mvista.com>
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
+	linux-usb@vger.kernel.org, David Brownell <david-b@pacbell.net>,
 	Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -26,43 +30,63 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---nextPart2873551.qkfKzcLzB6
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-On Wednesday 09 April 2008 14:16, Pandita, Vikram wrote:
-> What does QUICC stand for?=20
-
-QUICC stands for QUad Integrated Communications Controller.
-
-http://en.wikipedia.org/wiki/PowerQUICC
-
-> Am getting confused with SmartCard UICC. Is it anyway related?=20
-
-They are not related.
-
-=2D-=20
-Laurent Pinchart
-CSE Semaphore Belgium
-
-Chaussee de Bruxelles, 732A
-B-1410 Waterloo
-Belgium
-
-T +32 (2) 387 42 59
-=46 +32 (2) 387 42 75
-
---nextPart2873551.qkfKzcLzB6
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
-
-iD8DBQBH/LSa8y9gWxC9vpcRAl6lAJ9WjB05ojWZbS0c06b9PYuT6rhX+gCfbFF1
-ZtPuyc91iXFiOQLF47Csu50=
-=uvL+
------END PGP SIGNATURE-----
-
---nextPart2873551.qkfKzcLzB6--
+V2hhdCBkb2VzIFFVSUNDIHN0YW5kIGZvcj8gDQpBbSBnZXR0aW5nIGNvbmZ1c2VkIHdpdGggU21h
+cnRDYXJkIFVJQ0MuIElzIGl0IGFueXdheSByZWxhdGVkPyANCg0KPi0tLS0tT3JpZ2luYWwgTWVz
+c2FnZS0tLS0tDQo+RnJvbTogbGludXgtdXNiLW93bmVyQHZnZXIua2VybmVsLm9yZyBbbWFpbHRv
+OmxpbnV4LXVzYi1vd25lckB2Z2VyLmtlcm5lbC5vcmddIE9uIEJlaGFsZiBPZiBMYXVyZW50DQo+
+UGluY2hhcnQNCj5TZW50OiBXZWRuZXNkYXksIEFwcmlsIDA5LCAyMDA4IDU6NDQgUE0NCj5Ubzog
+YXZvcm9udHNvdkBydS5tdmlzdGEuY29tDQo+Q2M6IGxpbnV4cHBjLWRldkBvemxhYnMub3JnOyBs
+aW51eC11c2JAdmdlci5rZXJuZWwub3JnOyBUaW11ciBUYWJpOyBTY290dCBXb29kOyBEYXZpZCBC
+cm93bmVsbA0KPlN1YmplY3Q6IFJlOiBbUEFUQ0hdIEZyZWVzY2FsZSBRVUlDQyBFbmdpbmUgVVNC
+IEhvc3QgQ29udHJvbGxlcg0KPg0KPk9uIFR1ZXNkYXkgMDggQXByaWwgMjAwOCAxNDoxNiwgQW50
+b24gVm9yb250c292IHdyb3RlOg0KPj4gT24gTW9uLCBBcHIgMDcsIDIwMDggYXQgMDY6MTE6MTVQ
+TSArMDIwMCwgTGF1cmVudCBQaW5jaGFydCB3cm90ZToNCj4+IFsuLi5dDQo+PiA+IEkgaGFkIGEg
+Zmlyc3QgZ28gYXQgaGFja2luZyB0aGUgRkhDSSBkcml2ZXIgdG8gbWFrZSBpdCBydW4gb24gYSBD
+UE0yDQo+PiA+IHBsYXRmb3JtLiBSZXN1bHRzIHNvIGZhciBhcmUgcXVpdGUgZ29vZC4gQWZ0ZXIg
+Z2V0dGluZyByaWQgb2YgcWUtc3BlY2lmaWMNCj4+ID4gQVBJcyBhcyBleHBsYWluZWQgYWJvdmUs
+IGFuZCBhZGRpbmcgU09GIHRva2VuIGdlbmVyYXRpb24gc3VwcG9ydCwgSSd2ZQ0KPj4gPiBiZWVu
+IGFibGUgdG8gYWNjZXNzIGEgbWFzcyBzdG9yYWdlIGRldmljZS4gVGhlIGRyaXZlciBoYXNuJ3Qg
+YmVlbg0KPj4gPiBzdHJlc3MtdGVzdGVkIHlldCB0aG91Z2guDQo+Pg0KPj4gV293LCBhd2Vzb21l
+ISBUaGF0J3MgZ3JlYXQgbmV3cywgcmVhbGx5LiBMb29raW5nIGZvcndhcmQgZm9yIHRoZSBwYXRj
+aC4gOi0pDQo+DQo+VGhlIGN1cnJlbnQgdmVyc2lvbiBvZiB0aGUgY29kZSBpcyBDUE0yLXNwZWNp
+ZmljIGFuZCB3b24ndCB3b3JrIG9uIFFFLWJhc2VkDQo+cGxhdGZvcm1zLiBTaG91bGQgSSBzdGls
+bCBwb3N0IGl0ID8NCj4NCj4+ID4gSSByYW4gaW50byBhbiBpc3N1ZSB3aXRoIElETEUgYW5kIFJF
+U0VUIGludGVycnVwdHMuIFdoZW4gdGhlIGRldmljZSBpcw0KPj4gPiBmaXJzdCBwbHVnZ2VkIGlu
+dG8gdGhlIFVTQiBwb3J0LCB0aGUgaWRsZSBpbnRlcnJ1cHQga2lja3MgaW4gYW5kIHRoZQ0KPj4g
+PiBkcml2ZXIgZGV0ZWN0cyB0aGUgZGV2aWNlIHByb3Blcmx5LiBXaGVuIHRoZSBkZXZpY2UgaXMg
+dGhlbiByZW1vdmVkLCB0aGUNCj4+ID4gcmVzZXQgaW50ZXJydXB0IGlzIGdlbmVyYXRlZCBhbmQg
+dGhlIGRyaXZlciBoYW5kbGVzIGRldmljZSByZW1vdmFsDQo+PiA+IHByb3Blcmx5LiBSaWdodCBh
+ZnRlciB0aGUgcmVzZXQgaW50ZXJydXB0LCBpZGxlIGludGVycnVwdHMgYXJlIGdlbmVyYXRlZA0K
+Pj4gPiBldmVyeSBtaWxsaXNlY29uZHMgZm9yIGFyb3VuZCAxNzVtcy4gVGhlIHN0YXR1cyByZWdp
+c3RlciBhbHdheXMgcmVwb3J0cyBhDQo+PiA+IG5vbi1pZGxlIGNvbmRpdGlvbiB3aGVuIHJlYWQg
+aW4gdGhlIGludGVycnVwdCBoYW5kbGVyLiBUaGUgZmxvdyBvZiBpZGxlDQo+PiA+IGludGVycnVw
+dHMgdGhlbiBzdG9wcywgYW5kIG5vIGlkbGUgaW50ZXJydXB0IGlzIGdlbmVyYXRlZCB3aGVuIEkg
+cmVwbHVnDQo+PiA+IHRoZSBkZXZpY2UuIEkndmUgY2hlY2tlZCB0aGUgaW50ZXJydXB0cyBtYXNr
+IHJlZ2lzdGVyIHRvIG1ha2Ugc3VyZSBpZGxlDQo+PiA+IGludGVycnVwdHMgd2VyZSBlbmFibGVk
+Lg0KPj4gPg0KPj4gPiBIYXZlIHlvdSBub3RpY2VkIGEgc2ltaWxhciBiZWhhdmlvdXIgd2hlbiB5
+b3UgdGVzdGVkIHRoZSBkcml2ZXIgb24geW91cg0KPj4gPiBRRS1iYXNlZCBwbGF0Zm9ybSA/IEkg
+c3VzcGVjdGVkIGEgZGVib3VuY2luZyBpc3N1ZSwgYnV0IEkgc2hvdWxkIHRoZW4gZ2V0DQo+PiA+
+IGlkbGUgY29uZGl0aW9ucyBvbmNlIGV2ZXJ5IG90aGVyIHRpbWUgd2hlbiByZWFkaW5nIHRoZSBz
+dGF0dXMgcmVnaXN0ZXIuDQo+Pg0KPj4gSG0uLiBub3BlLCBJIGRpZG4ndCBzZWUgYW55dGhpbmcg
+bGlrZSB0aGF0LCBhdCBsZWFzdCBub3Qgc29tZXRoaW5nIHRoYXQNCj4+IGlzIGFmZmVjdGluZyB0
+aGUgZHJpdmVyIGZ1bmN0aW9uYWxpdHkuIERpZCBvdXRfYmUxNih0bXItPmd0ZXZyLCAweEZGRkYp
+Ow0KPj4gaGVscCB0aGVyZT8gT3IgaXQncyBkaWZmZXJlbnQgcHJvYmxlbT8NCj4NCj5ObyBpdCBk
+aWRuJ3QsIGl0J3MgYSBjb21wbGV0ZWx5IGRpZmZlcmVudCBwcm9ibGVtLg0KPg0KPlRoZSBJRExF
+IGludGVycnVwdHMgSSBzZWUgZXZlcnkgbWlsbGlzZWNvbmQgZm9yIGFyb3VuZCAxNzVtcyBhZnRl
+cg0KPmRpc2Nvbm5lY3RpbmcgdGhlIGRldmljZSBhcmUgcHJvYmFibHkgZHVlIHRvIHRoZSBTT0Yg
+dG9rZW5zIHNlbnQgYmV0d2Vlbg0KPmRldmljZSBkaXNjb25uZWN0aW9uIGFuZCB0aGUgZmhjaV9z
+dG9wX3NvZl90aW1lcigpIGNhbGwuIENhbGxpbmcNCj5maGNpX3N0b3Bfc29mX3RpbWVyKCkgaW4g
+ZGV2aWNlX2Rpc2Nvbm5lY3RlZF9pbnRlcnJ1cHQoKSBwcmV2ZW50cyBzcHVyaW91cw0KPmlkbGUg
+aW50ZXJydXB0cyBmcm9tIGJlaW5nIGdlbmVyYXRlZC4NCj4NCj5BZnRlciBmdXJ0aGVyIGludmVz
+dGlnYXRpb24gSSBmb3VuZCBvdXQgd2h5IG5vIGlkbGUgaW50ZXJydXB0IHdlcmUgZ2VuZXJhdGVk
+DQo+d2hlbiByZXBsdWdnaW5nIHRoZSBkZXZpY2UuIFVwb24gZGlzY29ubmVjdGlvbiB0aGUgRkhD
+SSBkcml2ZXIgdHVybnMgYnVzDQo+cG93ZXIgb2ZmIGJ5IHNldHRpbmcgdGhlIHN1c3BlbmQgR1BJ
+TyBwaW4gaGlnaC4gQXMgdGhlIHNpZ25hbCBpcyBjb25uZWN0ZWQgdG8NCj50aGUgc3VzcGVuZCBp
+bnB1dCBvZiB0aGUgVVNCIHBoeSBvbiBteSBoYXJkd2FyZSwgc2V0dGluZyB0aGUgc2lnbmFsIGhp
+Z2gNCj50dXJuZWQgdGhlIHBoeSBvZmYsIGRpc2Nvbm5lY3RpbmcgdGhlIFJQIGFuZCBSTiBzaWdu
+YWxzIGNvbXBsZXRlbHkuDQo+DQo+SSBzb2x2ZWQgdGhlIGlzc3VlIGJ5IHJlZmVyZW5jaW5nIHRo
+ZSBidXMgcG93ZXIgY29udHJvbCBHUElPIGluc3RlYWQgb2YgdGhlDQo+c3VzcGVuZCBHUElPIGlu
+IHRoZSBkZXZpY2UgdHJlZS4gR1BJT19TVVNQTiBzaG91bGQgcmVhbGx5IGJlIHJlbmFtZWQNCj5H
+UElPX1BPV0VSLg0KPg0KPi0tDQo+TGF1cmVudCBQaW5jaGFydA0KPkNTRSBTZW1hcGhvcmUgQmVs
+Z2l1bQ0KPg0KPkNoYXVzc2VlIGRlIEJydXhlbGxlcywgNzMyQQ0KPkItMTQxMCBXYXRlcmxvbw0K
+PkJlbGdpdW0NCj4NCj5UICszMiAoMikgMzg3IDQyIDU5DQo+RiArMzIgKDIpIDM4NyA0MiA3NQ0K
