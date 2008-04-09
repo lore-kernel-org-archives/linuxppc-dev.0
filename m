@@ -1,19 +1,16 @@
-Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from outbound4-wa4-R.bigfish.com (outbound-wa4.frontbridge.com
-	[216.32.181.16])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 61C38DE0A0
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Apr 2008 07:02:42 +1000 (EST)
-Message-ID: <47FD2EC1.8030600@am.sony.com>
-Date: Wed, 09 Apr 2008 14:01:53 -0700
-From: Geoff Levand <geoffrey.levand@am.sony.com>
-MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-Subject: [patch] PS3: Fix gelic net module dependency
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Jeff Garzik <jgarzik@pobox.com>
+Return-Path: <benh@ozlabs.org>
+Subject: Re: [PATCH 5/6] [POWERPC] properly declare onstack completion in
+	iseries veth
+From: Benjamin Herrenschmidt <benh@ozlabs.org>
+To: Christoph Hellwig <hch@lst.de>
+In-Reply-To: <20080409083616.GA24712@lst.de>
+References: <20080409072230.C861EDDED0@ozlabs.org>
+	<20080409083616.GA24712@lst.de>
+Content-Type: text/plain
+Date: Thu, 10 Apr 2008 07:03:22 +1000
+Message-Id: <1207775002.9079.25.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,36 +20,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The PS3 gelic network driver depends on the wake-on-lan support
-provided by the PS3 sys manager driver.  Add that dependency
-to the GELIC_NET Kconfig option.
 
-Prevents these build errors:
+On Wed, 2008-04-09 at 10:36 +0200, Christoph Hellwig wrote:
+> On Wed, Apr 09, 2008 at 05:21:34PM +1000, Benjamin Herrenschmidt wrote:
+> > The iSeries veth driver uses an on-stack struct completion that
+> > it initializes using the COMPLETION_INITIALIZER instead of
+> > COMPLETION_INITIALIZER_ONSTACK macro, causing problems with
+> > lockdep.
+> 
+> should probably go in ASAP independent of the lockdep series.
 
-  ps3_gelic_net.c:1277: undefined reference to `.ps3_sys_manager_get_wol'
-  ps3_gelic_net.c:1337: undefined reference to `.ps3_sys_manager_set_wol'
+I don't think there's any difference between the _ONSTACK variant
+and the normal one without lockdep, is there ?
 
-CC: Masakazu Mokuno <mokuno@sm.sony.co.jp>
-CC: Jeff Garzik <jgarzik@pobox.com>
-Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
----
-Hi Paul,
-
-This fixes an error introduced in my 2.6.26 WOL patches now
-queued in your powerpc tree.  Please apply.
-
--Geoff
-
- drivers/net/Kconfig |    1 +
- 1 file changed, 1 insertion(+)
-
---- a/drivers/net/Kconfig
-+++ b/drivers/net/Kconfig
-@@ -2358,6 +2358,7 @@ config TSI108_ETH
- config GELIC_NET
- 	tristate "PS3 Gigabit Ethernet driver"
- 	depends on PPC_PS3
-+	select PS3_SYS_MANAGER
- 	help
- 	  This driver supports the network device on the PS3 game
- 	  console.  This driver has built-in support for Ethernet.
+Cheers,
+Ben.
