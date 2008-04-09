@@ -1,17 +1,15 @@
-Return-Path: <john.bonesio@xilinx.com>
-From: John Bonesio <john.bonesio@xilinx.com>
-To: "Grant Likely" <grant.likely@secretlab.ca>
-Subject: Re: ppc440 caches - change proposal [RFC]
-Date: Wed, 9 Apr 2008 11:00:40 -0700
-References: <20080408225329.5EC171A8007D@mail11-dub.bigfish.com>
-	<1207695415.14711.11.camel@pasglop>
-	<fa686aa40804081615n284aa750n12ceb0bf1d1bcce1@mail.gmail.com>
-In-Reply-To: <fa686aa40804081615n284aa750n12ceb0bf1d1bcce1@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <20080409180042.511531370055@mail134-sin.bigfish.com>
-Cc: Linuxppc-dev@ozlabs.org
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from tmnt04.transmode.se (mail.transmode.se [83.241.175.147])
+	by ozlabs.org (Postfix) with ESMTP id 18F6DDE164
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Apr 2008 04:16:23 +1000 (EST)
+Subject: Signal backtrace function
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+To: 'linuxppc-dev Development' <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain
+Date: Wed, 09 Apr 2008 20:16:20 +0200
+Message-Id: <1207764980.5826.77.camel@gentoo-jocke.transmode.se>
+Mime-Version: 1.0
+Reply-To: joakim.tjernlund@transmode.se
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,47 +19,154 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Grant,
+Hi
 
-I have a question about your patch. It appears as if the cache setup code is in a file that would be used only on Xilinx FPGA devices.
+I made my own backtrace function for printing
+a trace from within a signal handler. Maybe it
+can be useful for the kernel too? General
+comments welcome.
 
-I understand that many people are using a bootloader that already sets up the cache for the kernel, but I'm wondering if Xilinx boards are really a special case, or if there may be other non-Xilinx related systems that would also not be using a bootloader.
 
-I also understand the desire to avoid code that does the same work more than once, but I wonder if in this case, it's creating too strong a dependence on the specific behavior of a certain bootloader.
-I also wonder if arch/powerpc is being made more complex by trying to split out this code change into a Xilinx specific area, when the change could just be rolled into head_40x.S and we could do away with virtex405-head.S.
+   Jocke
 
-Just some thoughts,
+#include <stdio.h>
+#include <signal.h>
+#include <execinfo.h>
+#include <unistd.h>
 
-- John
+#define __USE_GNU
+#include <ucontext.h>
 
-On Tuesday 08 April 2008 16:15, you wrote:
-> On Tue, Apr 8, 2008 at 4:56 PM, Benjamin Herrenschmidt
-> <benh@kernel.crashing.org> wrote:
-> >
-> >  On Tue, 2008-04-08 at 15:53 -0700, John Bonesio wrote:
-> >  > I was thinking it might be good to have the kernel initialize these
-> >  > cache control registers in it's own start up code. Or perhaps this
-> >  > could be done in the kernel's simple bootloader. We could probably put
-> >  > this change in a Xilinx specific startup file, but this change doesn't
-> >  > seem specific to Xilinx FPGA boards.
-> >
-> >  The kernel's wrapper would be a good place to put that I suspect. That's
-> >  the kind of thing that should be provided as a "library" function to be
-> >  optionally called by platform code. Either in the wrapper or the main
-> >  kernel platform code.
-> 
-> Code is already queued up for 2.6.26 to do exactly this on ppc405
-> virtex platforms.  We can do the same thing for 440.  Look at
-> virtex405-head.S in the following patch:
-> 
-> http://patchwork.ozlabs.org/linuxppc/patch?person=486&id=17410
-> 
-> Cheers,
-> g.
-> 
-> 
-> -- 
-> Grant Likely, B.Sc., P.Eng.
-> Secret Lab Technologies Ltd.
-> 
-> 
+/* This is the stack layout we see with every stack frame.
+   Note that every routine is required by the ABI to lay out the stack
+   like this.
+
+            +----------------+        +-----------------+
+    %r1  -> | %r1 last frame--------> | %r1 last frame--->...  --> NULL
+            |                |        |                 |
+            | (unused)       |        | return address  |
+            +----------------+        +-----------------+
+*/
+
+
+/* Prints a backtrace when invoked from a signal handler */
+int
+sigbacktrace (void **array, int size, void *sp,
+	     void *lr, void *exec_addr)
+{
+	int count=1, loop;
+	void *ret_addr;
+	struct layout {
+		struct layout * next;
+		void * return_address;
+	} *current;
+	
+	if (!size)
+		return size;
+	current = sp;
+	array[0] = exec_addr;
+
+	for (loop = 0;
+	     current != NULL && count < size;
+	     current = current->next, loop++) {
+		ret_addr = current->return_address;
+#if DEBUG
+		printf("next:%p, ret:%p, LR:%p\n", current->next, ret_addr, lr);
+#endif
+		if (lr == ret_addr) /* false frame ? */
+			continue;
+		if (!loop)
+			if (lr != ret_addr) /*  Leaf function ? */
+				ret_addr = lr;
+			else
+				continue;
+		array[count++] = ret_addr;
+	}
+
+	/* It's possible the second-last stack frame can't return in which
+	   case the CRT startup code will have set its LR to 'NULL'.  */
+	if (count > 0 && array[count-1] == NULL)
+		count--;
+
+	return count;
+}
+
+#define EXEC_ADDR (*regs)[32]
+#define STK_PTR (*regs)[1]
+#define LINK (*regs)[36]
+void bt_sighandler(int sig, siginfo_t *info,
+		   void *secret)
+{
+
+  void *trace[16];
+  char **messages = (char **)NULL;
+  int i, trace_size = 0;
+  ucontext_t *uc = (ucontext_t *)secret;
+  gregset_t *regs = &uc->uc_mcontext.uc_regs->gregs;
+
+  /* Do something useful with siginfo_t */
+  if (sig == SIGSEGV || sig == SIGBUS)
+	printf("Got signal %d, faulty address is %p, "
+		   "from %p\n", sig, info->si_addr,
+	       EXEC_ADDR);
+  else
+	printf("Got signal %d\n", sig);
+  trace_size = sigbacktrace(trace, 16, (void*) STK_PTR,
+			    (void*) LINK, (void*) EXEC_ADDR);
+  messages = backtrace_symbols(trace, trace_size);
+  printf("[bt] Execution path:\n");
+  for (i=0; i<trace_size; ++i)
+	printf("[bt] %s\n", messages[i]);
+
+  if (sig != SIGUSR1)
+	  exit(0);
+}
+
+void dummy(void)
+{
+  unsigned long *current;
+  asm volatile ("" : "=l"(current));
+}
+
+int func_a(int a, char b) {
+
+  char *p = (char *)0xdeadbeef;
+  //dummy(); /* Test with and without this call */
+  a = a + b;
+  *p = 10;	/* CRASH here!! */
+  dummy(); /* Test with and without this call */
+
+  return 2*a;
+}
+
+
+int func_b() {
+  
+  int res, a = 5;
+
+  res = 5 + func_a(a, 't');
+
+  return res;
+}
+
+
+int main() {
+
+  /* Install our signal handler */
+  struct sigaction sa;
+
+  sa.sa_sigaction = (void *)bt_sighandler;
+  sigemptyset (&sa.sa_mask);
+  sa.sa_flags = SA_RESTART | SA_SIGINFO;
+
+  sigaction(SIGSEGV, &sa, NULL);
+  sigaction(SIGBUS, &sa, NULL);
+  sigaction(SIGUSR1, &sa, NULL);
+  /* ... add any other signal here */
+
+  /* Do something */
+  printf("%d\n", func_b());
+
+}
+
+ 
