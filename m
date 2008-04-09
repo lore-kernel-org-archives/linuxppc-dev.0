@@ -1,16 +1,22 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 1CEDFDDD0C
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 Apr 2008 21:37:25 +1000 (EST)
-Date: Wed, 9 Apr 2008 06:25:57 -0500 (CDT)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] [POWERPC] Rework Book-E debug exception handling
-Message-ID: <Pine.LNX.4.64.0804090624480.4465@blarg.am.freescale.net>
+Return-Path: <laurentp@cse-semaphore.com>
+Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
+	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id 6590ADDDF3
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 Apr 2008 22:13:50 +1000 (EST)
+From: Laurent Pinchart <laurentp@cse-semaphore.com>
+To: avorontsov@ru.mvista.com
+Subject: Re: [PATCH] Freescale QUICC Engine USB Host Controller
+Date: Wed, 9 Apr 2008 14:13:44 +0200
+References: <20080311191744.GA10518@localhost.localdomain>
+	<200804071811.19671.laurentp@cse-semaphore.com>
+	<20080408121630.GB26716@polina.dev.rtsoft.ru>
+In-Reply-To: <20080408121630.GB26716@polina.dev.rtsoft.ru>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: multipart/signed; boundary="nextPart3951675.EkJ9kaEU2q";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
+Message-Id: <200804091413.46592.laurentp@cse-semaphore.com>
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
+	linux-usb@vger.kernel.org, David Brownell <david-b@pacbell.net>,
+	Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,170 +26,93 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The architecture allows for "Book-E" style debug interrupts to either go
-to critial interrupts of their own debug interrupt level.  To allow for
-a dynamic kernel to support machines of either type we want to be able to
-compile in the interrupt handling code for both exception levels.
+--nextPart3951675.EkJ9kaEU2q
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Towards this goal we renamed the debug handling macros to specify the
-interrupt level in their name (DEBUG_CRIT_EXCEPTION/DebugCrit and
-DEBUG_DEBUG_EXCEPTION/DebugDebug).
+On Tuesday 08 April 2008 14:16, Anton Vorontsov wrote:
+> On Mon, Apr 07, 2008 at 06:11:15PM +0200, Laurent Pinchart wrote:
+> [...]
+> > I had a first go at hacking the FHCI driver to make it run on a CPM2
+> > platform. Results so far are quite good. After getting rid of qe-specif=
+ic
+> > APIs as explained above, and adding SOF token generation support, I've
+> > been able to access a mass storage device. The driver hasn't been
+> > stress-tested yet though.
+>=20
+> Wow, awesome! That's great news, really. Looking forward for the patch. :=
+=2D)
 
-Additionally, on the Freescale Book-e parts we expanded the exception
-stacks to cover the maximum case of needing three exception stacks (normal,
-machine check and debug).
+The current version of the code is CPM2-specific and won't work on QE-based=
+=20
+platforms. Should I still post it ?
 
-There is some kernel text space optimization to be gained if a kernel is
-configured for a specific Freescale implementation but we aren't handling
-that now to allow for the single kernel image support.
+> > I ran into an issue with IDLE and RESET interrupts. When the device is
+> > first plugged into the USB port, the idle interrupt kicks in and the
+> > driver detects the device properly. When the device is then removed, the
+> > reset interrupt is generated and the driver handles device removal
+> > properly. Right after the reset interrupt, idle interrupts are generated
+> > every milliseconds for around 175ms. The status register always reports=
+ a
+> > non-idle condition when read in the interrupt handler. The flow of idle
+> > interrupts then stops, and no idle interrupt is generated when I replug
+> > the device. I've checked the interrupts mask register to make sure idle
+> > interrupts were enabled.=20
+> >=20
+> > Have you noticed a similar behaviour when you tested the driver on your=
+=20
+> > QE-based platform ? I suspected a debouncing issue, but I should then g=
+et=20
+> > idle conditions once every other time when reading the status register.
+>=20
+> Hm.. nope, I didn't see anything like that, at least not something that
+> is affecting the driver functionality. Did out_be16(tmr->gtevr, 0xFFFF);
+> help there? Or it's different problem?
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
----
+No it didn't, it's a completely different problem.
 
-Josh, can you test on 44x.  I don't expect any harm since its just
-renaming a few things.
+The IDLE interrupts I see every millisecond for around 175ms after=20
+disconnecting the device are probably due to the SOF tokens sent between=20
+device disconnection and the fhci_stop_sof_timer() call. Calling=20
+fhci_stop_sof_timer() in device_disconnected_interrupt() prevents spurious=
+=20
+idle interrupts from being generated.
 
- arch/powerpc/kernel/head_44x.S       |    4 ++--
- arch/powerpc/kernel/head_booke.h     |   33 ++++++++++++++++++++-------------
- arch/powerpc/kernel/head_fsl_booke.S |   10 ++++++++--
- 3 files changed, 30 insertions(+), 17 deletions(-)
+After further investigation I found out why no idle interrupt were generate=
+d=20
+when replugging the device. Upon disconnection the FHCI driver turns bus=20
+power off by setting the suspend GPIO pin high. As the signal is connected =
+to=20
+the suspend input of the USB phy on my hardware, setting the signal high=20
+turned the phy off, disconnecting the RP and RN signals completely.
 
-diff --git a/arch/powerpc/kernel/head_44x.S b/arch/powerpc/kernel/head_44x.S
-index ad071a1..b84ec6a 100644
---- a/arch/powerpc/kernel/head_44x.S
-+++ b/arch/powerpc/kernel/head_44x.S
-@@ -211,7 +211,7 @@ skpinv:	addi	r4,r4,1				/* Increment */
- 	SET_IVOR(12, WatchdogTimer);
- 	SET_IVOR(13, DataTLBError);
- 	SET_IVOR(14, InstructionTLBError);
--	SET_IVOR(15, Debug);
-+	SET_IVOR(15, DebugCrit);
+I solved the issue by referencing the bus power control GPIO instead of the=
+=20
+suspend GPIO in the device tree. GPIO_SUSPN should really be renamed=20
+GPIO_POWER.
 
- 	/* Establish the interrupt vector base */
- 	lis	r4,interrupt_base@h	/* IVPR only uses the high 16-bits */
-@@ -578,7 +578,7 @@ interrupt_base:
- 	b	InstructionStorage
+=2D-=20
+Laurent Pinchart
+CSE Semaphore Belgium
 
- 	/* Debug Interrupt */
--	DEBUG_EXCEPTION
-+	DEBUG_CRIT_EXCEPTION
+Chaussee de Bruxelles, 732A
+B-1410 Waterloo
+Belgium
 
- /*
-  * Local functions
-diff --git a/arch/powerpc/kernel/head_booke.h b/arch/powerpc/kernel/head_booke.h
-index ba9393f..aefafc6 100644
---- a/arch/powerpc/kernel/head_booke.h
-+++ b/arch/powerpc/kernel/head_booke.h
-@@ -56,8 +56,17 @@
-  * is necessary since the MMU is always on, for Book-E parts, and the stacks
-  * are offset from KERNELBASE.
-  *
-+ * There is some space optimization to be had here if desired.  However
-+ * to allow for a common kernel with support for debug exceptions either
-+ * going to critical or their own debug level we aren't currently
-+ * providing configurations that micro-optimize space usage.
-  */
--#define BOOKE_EXCEPTION_STACK_SIZE	(8192)
-+#ifdef CONFIG_44x
-+#define NUM_EXCEPTION_LVLS	2
-+#else
-+#define NUM_EXCEPTION_LVLS	3
-+#endif
-+#define BOOKE_EXCEPTION_STACK_SIZE	(4096 * NUM_EXCEPTION_LVLS)
+T +32 (2) 387 42 59
+=46 +32 (2) 387 42 75
 
- /* CRIT_SPRG only used in critical exception handling */
- #define CRIT_SPRG	SPRN_SPRG2
-@@ -68,7 +77,7 @@
- #define CRIT_STACK_TOP		(exception_stack_top)
+--nextPart3951675.EkJ9kaEU2q
+Content-Type: application/pgp-signature
 
- /* only on e200 for now */
--#define DEBUG_STACK_TOP		(exception_stack_top - 4096)
-+#define DEBUG_STACK_TOP		(exception_stack_top - 8192)
- #define DEBUG_SPRG		SPRN_SPRG6W
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
 
- #ifdef CONFIG_SMP
-@@ -212,9 +221,8 @@ label:
-  * save (and later restore) the MSR via SPRN_CSRR1, which will still have
-  * the MSR_DE bit set.
-  */
--#ifdef CONFIG_E200
--#define DEBUG_EXCEPTION							      \
--	START_EXCEPTION(Debug);						      \
-+#define DEBUG_DEBUG_EXCEPTION						      \
-+	START_EXCEPTION(DebugDebug);					      \
- 	DEBUG_EXCEPTION_PROLOG;						      \
- 									      \
- 	/*								      \
-@@ -234,8 +242,8 @@ label:
- 	cmplw	r12,r10;						      \
- 	blt+	2f;			/* addr below exception vectors */    \
- 									      \
--	lis	r10,Debug@h;						      \
--	ori	r10,r10,Debug@l;					      \
-+	lis	r10,DebugDebug@h;					      \
-+	ori	r10,r10,DebugDebug@l;					      \
- 	cmplw	r12,r10;						      \
- 	bgt+	2f;			/* addr above exception vectors */    \
- 									      \
-@@ -265,9 +273,9 @@ label:
- 2:	mfspr	r4,SPRN_DBSR;						      \
- 	addi	r3,r1,STACK_FRAME_OVERHEAD;				      \
- 	EXC_XFER_TEMPLATE(DebugException, 0x2002, (MSR_KERNEL & ~(MSR_ME|MSR_DE|MSR_CE)), NOCOPY, debug_transfer_to_handler, ret_from_debug_exc)
--#else
--#define DEBUG_EXCEPTION							      \
--	START_EXCEPTION(Debug);						      \
-+
-+#define DEBUG_CRIT_EXCEPTION						      \
-+	START_EXCEPTION(DebugCrit);					      \
- 	CRITICAL_EXCEPTION_PROLOG;					      \
- 									      \
- 	/*								      \
-@@ -287,8 +295,8 @@ label:
- 	cmplw	r12,r10;						      \
- 	blt+	2f;			/* addr below exception vectors */    \
- 									      \
--	lis	r10,Debug@h;						      \
--	ori	r10,r10,Debug@l;					      \
-+	lis	r10,DebugCrit@h;						      \
-+	ori	r10,r10,DebugCrit@l;					      \
- 	cmplw	r12,r10;						      \
- 	bgt+	2f;			/* addr above exception vectors */    \
- 									      \
-@@ -318,7 +326,6 @@ label:
- 2:	mfspr	r4,SPRN_DBSR;						      \
- 	addi	r3,r1,STACK_FRAME_OVERHEAD;				      \
- 	EXC_XFER_TEMPLATE(DebugException, 0x2002, (MSR_KERNEL & ~(MSR_ME|MSR_DE|MSR_CE)), NOCOPY, crit_transfer_to_handler, ret_from_crit_exc)
--#endif
+iD8DBQBH/LL68y9gWxC9vpcRAjHMAJwKql1tZCe5bAlfoHzKy1UU+LkipwCffuhH
+DgAiT10wPANi9WU8suB9898=
+=DRjY
+-----END PGP SIGNATURE-----
 
- #define INSTRUCTION_STORAGE_EXCEPTION					      \
- 	START_EXCEPTION(InstructionStorage)				      \
-diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
-index d9cc2c2..92bf2cc 100644
---- a/arch/powerpc/kernel/head_fsl_booke.S
-+++ b/arch/powerpc/kernel/head_fsl_booke.S
-@@ -283,7 +283,10 @@ skpinv:	addi	r6,r6,1				/* Increment */
- 	SET_IVOR(12, WatchdogTimer);
- 	SET_IVOR(13, DataTLBError);
- 	SET_IVOR(14, InstructionTLBError);
--	SET_IVOR(15, Debug);
-+	SET_IVOR(15, DebugDebug);
-+#if defined(CONFIG_E500)
-+	SET_IVOR(15, DebugCrit);
-+#endif
- 	SET_IVOR(32, SPEUnavailable);
- 	SET_IVOR(33, SPEFloatingPointData);
- 	SET_IVOR(34, SPEFloatingPointRound);
-@@ -718,7 +721,10 @@ interrupt_base:
-
-
- 	/* Debug Interrupt */
--	DEBUG_EXCEPTION
-+	DEBUG_DEBUG_EXCEPTION
-+#if defined(CONFIG_E500)
-+	DEBUG_CRIT_EXCEPTION
-+#endif
-
- /*
-  * Local functions
--- 
-1.5.4.1
+--nextPart3951675.EkJ9kaEU2q--
