@@ -1,18 +1,19 @@
 Return-Path: <bzolnier@gmail.com>
-Received: from fk-out-0910.google.com (fk-out-0910.google.com [209.85.128.190])
-	by ozlabs.org (Postfix) with ESMTP id 38A4EDDF72
+Received: from mu-out-0910.google.com (mu-out-0910.google.com [209.85.134.186])
+	by ozlabs.org (Postfix) with ESMTP id ACE42DDF97
 	for <linuxppc-dev@ozlabs.org>; Thu, 10 Apr 2008 04:38:27 +1000 (EST)
-Received: by fk-out-0910.google.com with SMTP id z22so3902277fkz.9
-	for <linuxppc-dev@ozlabs.org>; Wed, 09 Apr 2008 11:38:24 -0700 (PDT)
+Received: by mu-out-0910.google.com with SMTP id w8so3584773mue.1
+	for <linuxppc-dev@ozlabs.org>; Wed, 09 Apr 2008 11:38:23 -0700 (PDT)
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Subject: Re: [PATCH] ide: make ide_pci_check_iomem() actually work
-Date: Wed, 9 Apr 2008 20:34:31 +0200
-References: <200804072027.17520.sshtylyov@ru.mvista.com>
-	<47FB5ADF.20608@ru.mvista.com> <47FB6747.2050301@ru.mvista.com>
-In-Reply-To: <47FB6747.2050301@ru.mvista.com>
+Subject: Re: [PATCH] siimage: fix kernel oops on PPC 44x
+Date: Wed, 9 Apr 2008 20:14:01 +0200
+References: <200804080005.03683.sshtylyov@ru.mvista.com>
+	<200804072330.00610.bzolnier@gmail.com>
+	<47FB6EA5.4070606@ru.mvista.com>
+In-Reply-To: <47FB6EA5.4070606@ru.mvista.com>
 MIME-Version: 1.0
-Message-Id: <200804092034.32063.bzolnier@gmail.com>
+Message-Id: <200804092014.01643.bzolnier@gmail.com>
 Content-Type: text/plain;
   charset="iso-8859-1"
 Cc: linux-ide@vger.kernel.org, linuxppc-dev@ozlabs.org
@@ -25,58 +26,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-[ added Akira & Kou to cc: ]
-
 On Tuesday 08 April 2008, Sergei Shtylyov wrote:
-> Hi, I just wrote:
+> Bartlomiej Zolnierkiewicz wrote:
 > 
-> >>> This function didn't actually check if a given BAR is in I/O space 
-> >>> because of
-> >>> using the bogus PCI_BASE_ADDRESS_IO_MASK (which equals ~3) to test 
-> >>> the resource
-> >>> flags instead of IORESOURCE_IO -- fix this, make ide_hwif_configure() 
-> >>> check the
-> >>> results failing if necessary, and move the printk() call to the 
-> >>> failure path.
+> >>Fix kernel oops due to machine check occuring in init_chipset_siimage() on PPC
+> >>44x platforms.  These 32-bit CPUs have 36-bit physical address and PCI I/O and
+> >>memory spaces are mapped beyond 4 GB; arch/ppc/ code has a fixup in ioremap()
+> >>that creates an illusion of the PCI I/O and memory resources being mapped below
+> >>4 GB, while arch/powerpc/ code got rid of this fixup with PPC 44x having instead
+> >>CONFIG_RESOURCES_64BIT=y -- this causes the resources to be truncated to 32-bit
+> >>'unsigned long' type in this driver, and so non-existant memory being ioremap'ed
+> >>and then accessed...
 > 
-> >> This change is OK in itself but I worry that ide_pci_check_iomem() may 
-> >> now
-> >> return "false" errors (bogus PCI_BASE_ADDRESS_IO_MASK check resulted 
-> >> in MEM
-> >> resources always surviving ide_pci_check_iomem() calls before the fix) 
-> >> for
-> >> some host drivers (siimage, scc_pata...) resulting in failed 
-> >> initialization.
+> >>Thanks to Valentine Barshak for providing an initial patch and explanations.
 > 
-> >    The SiI chips do have normal I/O resources at BAR0..BAR3. As for 
-> > scc_pata, the control should not even get there because BAR0..BAR3 are 
-> > *not* IDE command/control block bases on this chip (BAR0/1 are 
-> > control/DMA bases if you look into setup_mmio_scc()) but they are 
-> > treated as such by the code immediately following ide_pci_check_iomem() 
-> > calls in ide_hwif_configure(), i.e. we might have an error here. The 
-> > same can be said about the PowerMAC driver which has all its MMIO 
-> > registers at BAR0.
+> >>Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 > 
-> >> How's about removing this dead/broken function instead for now?
+> > applied and pushed to Linus, thanks!
 > 
-> >    If we indeed have a MMIO problem here, it's not in this function but 
-> > in its callers.
+> > I guess that it would be worth to audit the rest of IDE code for
 > 
->      Looks like we actually have this problem with scc_pata -- it calls 
-> ide_setup_pci_device() which should lead to calling ide_hwif_configure(). But 
-> this is broken since this call chain expects a normal PCI IDE controller with 
-> BAR0..BAR3 either non-existant or being primary/secondary port bases in I/O space.
+>     Already done. Some drivers, like sgiioc4, scc_pata, and pmac are prone to
+> that at least in theory.  Although I doubt that they ever get used in such
+> environments as PPC 44x platform kernels, i.e. 32-bit kernel and PCI mapped 
+> beyond 4 GB.
+> 
+> > pci_resource_{start,end}() vs 'unsigned long' occurences and fix them.
+> 
+>     There are quite a lot of those overall but they only pose danger if the 
+> resource in question is in memory space since the I/O space always uses 
+> 'unsigned long' addresses. So, IDE core and drivers using only I/O resources 
+> should not be prone to that kind of issue.
 
-Yep, scc_pata needs fixing before your patch can be applied.
+Thanks for taking a look (good to hear that we are fine for now).
 
-Looks like it just needs to do all the needed setup itself in init_setup_scc()
-instead of calling ide_setup_pci_device() [ similarly to how cs5520 host driver
-handles this in cs5520.c::cs5520_init_one() ].
+> > [ Even if they work at the moment they are just bugs waiting to happened
+> >   when we add support for some new platforms or rewrite the code... ]
 
-PS it would be also nice to call pci_enable_device() before setup_mmio_scc()
-   (which accesses PCI BARs, calls pci_set_master() etc.) while we are at it
-   (driver seems to work fine without it ATM but it may break in future).
+I still think that it is worth to switch to always using resource_size_t
+with pci_resource{start,end}() - increase of the code size should be minimal
+and negligable (also it would happen only for CONFIG_RESOURCES_64BIT=y)
+but in the return we will keep the code consistent and hint people who're
+writing new code (and are looking at the existing code as a base).
+
+[ this is kernel-wide comment, w.r.t. to IDE - I'll try updating it when
+  I have some time (unless of course somebody sends me a patch earlier :) ]
 
 Thanks,
 Bart
