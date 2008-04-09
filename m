@@ -1,33 +1,16 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 02FABDDE22
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 Apr 2008 20:57:53 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e1.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m39AvneQ020131
-	for <linuxppc-dev@ozlabs.org>; Wed, 9 Apr 2008 06:57:49 -0400
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m39Avncf298594
-	for <linuxppc-dev@ozlabs.org>; Wed, 9 Apr 2008 06:57:49 -0400
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
-	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m39AvnQs027799
-	for <linuxppc-dev@ozlabs.org>; Wed, 9 Apr 2008 06:57:49 -0400
-Date: Wed, 9 Apr 2008 05:56:01 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: 4xx defconfig reorg
-Message-ID: <20080409055601.1c82afb2@zod.rchland.ibm.com>
-In-Reply-To: <18428.24729.933714.665889@cargo.ozlabs.ibm.com>
-References: <1207487181.6809.18.camel@vader.jdub.homelinux.org>
-	<73BD1263-F09B-4E08-AA77-BEBD67D91C58@kernel.crashing.org>
-	<1207709608.3996.0.camel@vader.jdub.homelinux.org>
-	<18428.24729.933714.665889@cargo.ozlabs.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 1CEDFDDD0C
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 Apr 2008 21:37:25 +1000 (EST)
+Date: Wed, 9 Apr 2008 06:25:57 -0500 (CDT)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] [POWERPC] Rework Book-E debug exception handling
+Message-ID: <Pine.LNX.4.64.0804090624480.4465@blarg.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,21 +20,170 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 9 Apr 2008 16:22:17 +1000
-Paul Mackerras <paulus@samba.org> wrote:
+The architecture allows for "Book-E" style debug interrupts to either go
+to critial interrupts of their own debug interrupt level.  To allow for
+a dynamic kernel to support machines of either type we want to be able to
+compile in the interrupt handling code for both exception levels.
 
-> Josh Boyer writes:
-> 
-> > I've not heard any objections.  I'll be pushing my commit to my next
-> > branch tomorrow morning.
-> 
-> I don't have any objections.  I wonder if Sam Ravnborg responded to
-> Segher's patch to extend make help?
+Towards this goal we renamed the debug handling macros to specify the
+interrupt level in their name (DEBUG_CRIT_EXCEPTION/DebugCrit and
+DEBUG_DEBUG_EXCEPTION/DebugDebug).
 
-I haven't seen any commentary on that at all.  Sam is quite busy from
-what I gather.
+Additionally, on the Freescale Book-e parts we expanded the exception
+stacks to cover the maximum case of needing three exception stacks (normal,
+machine check and debug).
 
-I'll try to poke at things today a bit and see if we can get an Ack
-from him either way.
+There is some kernel text space optimization to be gained if a kernel is
+configured for a specific Freescale implementation but we aren't handling
+that now to allow for the single kernel image support.
 
-josh
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
+
+Josh, can you test on 44x.  I don't expect any harm since its just
+renaming a few things.
+
+ arch/powerpc/kernel/head_44x.S       |    4 ++--
+ arch/powerpc/kernel/head_booke.h     |   33 ++++++++++++++++++++-------------
+ arch/powerpc/kernel/head_fsl_booke.S |   10 ++++++++--
+ 3 files changed, 30 insertions(+), 17 deletions(-)
+
+diff --git a/arch/powerpc/kernel/head_44x.S b/arch/powerpc/kernel/head_44x.S
+index ad071a1..b84ec6a 100644
+--- a/arch/powerpc/kernel/head_44x.S
++++ b/arch/powerpc/kernel/head_44x.S
+@@ -211,7 +211,7 @@ skpinv:	addi	r4,r4,1				/* Increment */
+ 	SET_IVOR(12, WatchdogTimer);
+ 	SET_IVOR(13, DataTLBError);
+ 	SET_IVOR(14, InstructionTLBError);
+-	SET_IVOR(15, Debug);
++	SET_IVOR(15, DebugCrit);
+
+ 	/* Establish the interrupt vector base */
+ 	lis	r4,interrupt_base@h	/* IVPR only uses the high 16-bits */
+@@ -578,7 +578,7 @@ interrupt_base:
+ 	b	InstructionStorage
+
+ 	/* Debug Interrupt */
+-	DEBUG_EXCEPTION
++	DEBUG_CRIT_EXCEPTION
+
+ /*
+  * Local functions
+diff --git a/arch/powerpc/kernel/head_booke.h b/arch/powerpc/kernel/head_booke.h
+index ba9393f..aefafc6 100644
+--- a/arch/powerpc/kernel/head_booke.h
++++ b/arch/powerpc/kernel/head_booke.h
+@@ -56,8 +56,17 @@
+  * is necessary since the MMU is always on, for Book-E parts, and the stacks
+  * are offset from KERNELBASE.
+  *
++ * There is some space optimization to be had here if desired.  However
++ * to allow for a common kernel with support for debug exceptions either
++ * going to critical or their own debug level we aren't currently
++ * providing configurations that micro-optimize space usage.
+  */
+-#define BOOKE_EXCEPTION_STACK_SIZE	(8192)
++#ifdef CONFIG_44x
++#define NUM_EXCEPTION_LVLS	2
++#else
++#define NUM_EXCEPTION_LVLS	3
++#endif
++#define BOOKE_EXCEPTION_STACK_SIZE	(4096 * NUM_EXCEPTION_LVLS)
+
+ /* CRIT_SPRG only used in critical exception handling */
+ #define CRIT_SPRG	SPRN_SPRG2
+@@ -68,7 +77,7 @@
+ #define CRIT_STACK_TOP		(exception_stack_top)
+
+ /* only on e200 for now */
+-#define DEBUG_STACK_TOP		(exception_stack_top - 4096)
++#define DEBUG_STACK_TOP		(exception_stack_top - 8192)
+ #define DEBUG_SPRG		SPRN_SPRG6W
+
+ #ifdef CONFIG_SMP
+@@ -212,9 +221,8 @@ label:
+  * save (and later restore) the MSR via SPRN_CSRR1, which will still have
+  * the MSR_DE bit set.
+  */
+-#ifdef CONFIG_E200
+-#define DEBUG_EXCEPTION							      \
+-	START_EXCEPTION(Debug);						      \
++#define DEBUG_DEBUG_EXCEPTION						      \
++	START_EXCEPTION(DebugDebug);					      \
+ 	DEBUG_EXCEPTION_PROLOG;						      \
+ 									      \
+ 	/*								      \
+@@ -234,8 +242,8 @@ label:
+ 	cmplw	r12,r10;						      \
+ 	blt+	2f;			/* addr below exception vectors */    \
+ 									      \
+-	lis	r10,Debug@h;						      \
+-	ori	r10,r10,Debug@l;					      \
++	lis	r10,DebugDebug@h;					      \
++	ori	r10,r10,DebugDebug@l;					      \
+ 	cmplw	r12,r10;						      \
+ 	bgt+	2f;			/* addr above exception vectors */    \
+ 									      \
+@@ -265,9 +273,9 @@ label:
+ 2:	mfspr	r4,SPRN_DBSR;						      \
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD;				      \
+ 	EXC_XFER_TEMPLATE(DebugException, 0x2002, (MSR_KERNEL & ~(MSR_ME|MSR_DE|MSR_CE)), NOCOPY, debug_transfer_to_handler, ret_from_debug_exc)
+-#else
+-#define DEBUG_EXCEPTION							      \
+-	START_EXCEPTION(Debug);						      \
++
++#define DEBUG_CRIT_EXCEPTION						      \
++	START_EXCEPTION(DebugCrit);					      \
+ 	CRITICAL_EXCEPTION_PROLOG;					      \
+ 									      \
+ 	/*								      \
+@@ -287,8 +295,8 @@ label:
+ 	cmplw	r12,r10;						      \
+ 	blt+	2f;			/* addr below exception vectors */    \
+ 									      \
+-	lis	r10,Debug@h;						      \
+-	ori	r10,r10,Debug@l;					      \
++	lis	r10,DebugCrit@h;						      \
++	ori	r10,r10,DebugCrit@l;					      \
+ 	cmplw	r12,r10;						      \
+ 	bgt+	2f;			/* addr above exception vectors */    \
+ 									      \
+@@ -318,7 +326,6 @@ label:
+ 2:	mfspr	r4,SPRN_DBSR;						      \
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD;				      \
+ 	EXC_XFER_TEMPLATE(DebugException, 0x2002, (MSR_KERNEL & ~(MSR_ME|MSR_DE|MSR_CE)), NOCOPY, crit_transfer_to_handler, ret_from_crit_exc)
+-#endif
+
+ #define INSTRUCTION_STORAGE_EXCEPTION					      \
+ 	START_EXCEPTION(InstructionStorage)				      \
+diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
+index d9cc2c2..92bf2cc 100644
+--- a/arch/powerpc/kernel/head_fsl_booke.S
++++ b/arch/powerpc/kernel/head_fsl_booke.S
+@@ -283,7 +283,10 @@ skpinv:	addi	r6,r6,1				/* Increment */
+ 	SET_IVOR(12, WatchdogTimer);
+ 	SET_IVOR(13, DataTLBError);
+ 	SET_IVOR(14, InstructionTLBError);
+-	SET_IVOR(15, Debug);
++	SET_IVOR(15, DebugDebug);
++#if defined(CONFIG_E500)
++	SET_IVOR(15, DebugCrit);
++#endif
+ 	SET_IVOR(32, SPEUnavailable);
+ 	SET_IVOR(33, SPEFloatingPointData);
+ 	SET_IVOR(34, SPEFloatingPointRound);
+@@ -718,7 +721,10 @@ interrupt_base:
+
+
+ 	/* Debug Interrupt */
+-	DEBUG_EXCEPTION
++	DEBUG_DEBUG_EXCEPTION
++#if defined(CONFIG_E500)
++	DEBUG_CRIT_EXCEPTION
++#endif
+
+ /*
+  * Local functions
+-- 
+1.5.4.1
