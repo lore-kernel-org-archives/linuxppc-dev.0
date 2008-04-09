@@ -1,20 +1,26 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 2E90CDDF5C
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Apr 2008 08:31:02 +1000 (EST)
-Subject: Re: [PATCH 2/6] [POWERPC] lockdep stacktrace support
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Paul Mackerras <paulus@samba.org>
-In-Reply-To: <20080409072223.7DE7BDDE20@ozlabs.org>
-References: <20080409072223.7DE7BDDE20@ozlabs.org>
-Content-Type: text/plain
-Date: Thu, 10 Apr 2008 08:30:57 +1000
-Message-Id: <1207780257.9079.61.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: benh@kernel.crashing.org
+Return-Path: <phdm@macqel.be>
+Received: from mail.macqel.be (mail.macqel.be [194.78.208.39])
+	by ozlabs.org (Postfix) with ESMTP id 43620DDF52
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Apr 2008 08:42:17 +1000 (EST)
+Received: from localhost (localhost [127.0.0.1])
+	by mail.macqel.be (Postfix) with ESMTP id 6ED31130D7E
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Apr 2008 00:42:16 +0200 (CEST)
+Received: from mail.macqel.be ([127.0.0.1])
+	by localhost (mail.macqel.be [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id 90EVQXK-noQB for <linuxppc-dev@ozlabs.org>;
+	Thu, 10 Apr 2008 00:42:14 +0200 (CEST)
+Received: from frolo.macqel.be (frolo.macqel [10.1.40.73])
+	by mail.macqel.be (Postfix) with ESMTP id 8B0A2130CFD
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Apr 2008 00:42:14 +0200 (CEST)
+Date: Thu, 10 Apr 2008 00:42:14 +0200
+From: Philippe De Muyter <phdm@macqel.be>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] fsl_soc : add support for m41t81 rtc chip
+Message-ID: <20080409224214.GA1456@frolo.macqel>
+References: <20080409222252.GA1006@frolo.macqel>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080409222252.GA1006@frolo.macqel>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,114 +30,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hello everybody,
 
-On Wed, 2008-04-09 at 17:21 +1000, Benjamin Herrenschmidt wrote:
-> From: Christoph Hellwig <hch@lst.de>
-> 
-> I recently tried to work on lockdep for powerpc.  I have preliminary
-> version of the stacktrace code, but had to give up on trace irqflags
-> support because I'm not that knowledgeable on lowlevel ppc details.
-> 
-> Maybe someone more faimilar with the code wants to give it another try?
-> 
-> My stacktrace code is below:
-it's
-BTW. I know this patch is still missing (c) boilerplate on the new file
-and catch up with some other comments I got last week... I was busy
-making the stuff actually work :-) I'll fix that up today.
+Here is small patch allowing to use a m41t81 rtc chip on a FSL_SOC based
+board.
 
-> Signed-off-by: Christoph Hellwig <hch@lst.de>
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> 
-> ---
->  arch/powerpc/Kconfig             |    4 +++
->  arch/powerpc/kernel/Makefile     |    1 
->  arch/powerpc/kernel/stacktrace.c |   52 +++++++++++++++++++++++++++++++++++++++
->  3 files changed, 57 insertions(+)
-> 
-> --- linux-work.orig/arch/powerpc/Kconfig	2008-04-02 15:46:07.000000000 +1100
-> +++ linux-work/arch/powerpc/Kconfig	2008-04-02 16:47:46.000000000 +1100
-> @@ -49,6 +49,10 @@ config IRQ_PER_CPU
->  	bool
->  	default y
->  
-> +config STACKTRACE_SUPPORT
-> +	bool
-> +	default y
-> +
->  config RWSEM_GENERIC_SPINLOCK
->  	bool
->  
-> Index: linux-work/arch/powerpc/kernel/Makefile
-> ===================================================================
-> --- linux-work.orig/arch/powerpc/kernel/Makefile	2008-04-02 15:46:07.000000000 +1100
-> +++ linux-work/arch/powerpc/kernel/Makefile	2008-04-02 16:46:07.000000000 +1100
-> @@ -67,6 +67,7 @@ obj-$(CONFIG_BOOTX_TEXT)	+= btext.o
->  obj-$(CONFIG_SMP)		+= smp.o
->  obj-$(CONFIG_KPROBES)		+= kprobes.o
->  obj-$(CONFIG_PPC_UDBG_16550)	+= legacy_serial.o udbg_16550.o
-> +obj-$(CONFIG_STACKTRACE)	+= stacktrace.o
->  
->  pci64-$(CONFIG_PPC64)		+= pci_dn.o isa-bridge.o
->  obj-$(CONFIG_PCI)		+= pci_$(CONFIG_WORD_SIZE).o $(pci64-y) \
-> Index: linux-work/arch/powerpc/kernel/stacktrace.c
-> ===================================================================
-> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-> +++ linux-work/arch/powerpc/kernel/stacktrace.c	2008-04-02 16:46:07.000000000 +1100
-> @@ -0,0 +1,52 @@
-> +
-> +#include <linux/sched.h>
-> +#include <linux/stacktrace.h>
-> +
-> +
-> +#ifdef CONFIG_PPC64
-> +#define MIN_STACK_FRAME 112     /* same as STACK_FRAME_OVERHEAD, in fact */
-> +#define FRAME_LR_SAVE   2
-> +#define INT_FRAME_SIZE  (sizeof(struct pt_regs) + STACK_FRAME_OVERHEAD + 288)
-> +#define REGS_MARKER     0x7265677368657265ul
-> +#define FRAME_MARKER    12
-> +#else
-> +#define MIN_STACK_FRAME 16
-> +#define FRAME_LR_SAVE   1
-> +#define INT_FRAME_SIZE  (sizeof(struct pt_regs) + STACK_FRAME_OVERHEAD)
-> +#define REGS_MARKER     0x72656773ul
-> +#define FRAME_MARKER    2
-> +#endif
-> +
-> +
-> +/*
-> + * Save stack-backtrace addresses into a stack_trace buffer.
-> + * If all_contexts is set, all contexts (hardirq, softirq and process)
-> + * are saved. If not set then only the current context is saved.
-> + */
-> +void save_stack_trace(struct stack_trace *trace)
-> +{
-> +	unsigned long sp;
-> +
-> +	asm("mr %0,1" : "=r" (sp));
-> +
-> +	for (;;) {
-> +		unsigned long *stack = (unsigned long *) sp;
-> +		unsigned long newsp, ip;
-> +
-> +		if (!validate_sp(sp, current, MIN_STACK_FRAME))
-> +			return;
-> +
-> +		newsp = stack[0];
-> +		ip = stack[FRAME_LR_SAVE];
-> +
-> +		if (!trace->skip)
-> +			trace->entries[trace->nr_entries++] = ip;
-> +		else
-> +			trace->skip--;
-> +
-> +		if (trace->nr_entries >= trace->max_entries)
-> +			return;
-> +
-> +		sp = newsp;
-> +	}
-> +}
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+Signed-off-by: Philippe De Muyter <phdm@macqel.be>
+
+--
+
+I have removed the ifdef as pointed by Olof
+
+--- a/arch/powerpc/sysdev/fsl_soc.c	2008-03-21 14:53:41.000000000 +0000
++++ b/arch/powerpc/sysdev/fsl_soc.c	2008-03-26 12:08:25.000000000 +0000
+@@ -405,7 +405,8 @@
+ 	{"dallas,ds1339",  "rtc-ds1307",  "ds1339",},
+ 	{"dallas,ds1340",  "rtc-ds1307",  "ds1340",},
+ 	{"stm,m41t00",     "rtc-ds1307",  "m41t00"},
++	{"stm,m41t81",     "rtc-m41t80",  "m41t81"},
+ 	{"dallas,ds1374",  "rtc-ds1374",  "rtc-ds1374",},
+ };
+ 
+ static int __init of_find_i2c_driver(struct device_node *node,
