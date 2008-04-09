@@ -1,20 +1,21 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 5D638DDE10
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Apr 2008 04:19:56 +1000 (EST)
-Date: Wed, 9 Apr 2008 13:30:32 -0500
-From: Olof Johansson <olof@lixom.net>
-To: Manish Ahuja <ahuja@austin.ibm.com>
-Subject: Re: [PATCH] pseries: phyp dump: Variable size reserve space.
-Message-ID: <20080409183032.GA2360@lixom.net>
-References: <47FAB221.7050406@austin.ibm.com>
-	<20080408024352.GA32761@lixom.net>
-	<47FCFEEF.6020607@austin.ibm.com>
+Return-Path: <bzolnier@gmail.com>
+Received: from fk-out-0910.google.com (fk-out-0910.google.com [209.85.128.190])
+	by ozlabs.org (Postfix) with ESMTP id 38A4EDDF72
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Apr 2008 04:38:27 +1000 (EST)
+Received: by fk-out-0910.google.com with SMTP id z22so3902277fkz.9
+	for <linuxppc-dev@ozlabs.org>; Wed, 09 Apr 2008 11:38:24 -0700 (PDT)
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Subject: Re: [PATCH] ide: make ide_pci_check_iomem() actually work
+Date: Wed, 9 Apr 2008 20:34:31 +0200
+References: <200804072027.17520.sshtylyov@ru.mvista.com>
+	<47FB5ADF.20608@ru.mvista.com> <47FB6747.2050301@ru.mvista.com>
+In-Reply-To: <47FB6747.2050301@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <47FCFEEF.6020607@austin.ibm.com>
-Cc: mahuja@us.ibm.com, linuxppc-dev@ozlabs.org, linasvepstas@gmail.com,
-	paulus@samba.org
+Message-Id: <200804092034.32063.bzolnier@gmail.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Cc: linux-ide@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,32 +25,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Apr 09, 2008 at 12:37:51PM -0500, Manish Ahuja wrote:
-> Olof Johansson wrote:
-> >> +static inline unsigned long phyp_dump_calculate_reserve_size(void)
-> >> +{
-> >> +	unsigned long tmp;
-> >> +
-> >> +	if (phyp_dump_info->phyp_dump_reserve_bootvar)
-> >> +		return phyp_dump_info->phyp_dump_reserve_bootvar;
-> >> +
-> >> +	/* divide by 20 to get 5% of value */
-> >> +	tmp = lmb_end_of_DRAM();
-> >> +	do_div(tmp, 20);
-> >> +
-> >> +	/* round it down in multiples of 256 */
-> >> +	tmp = tmp & ~0x000000001FFFFFFF;
-> > 
-> > That's 512MB, isn't it?
-> 
-> My calculations in the example I gave in the last email were wrong.
-> 
-> In mentally did 10% instead of 5%. But the premise is same.
-> 
-> So assuming 5% of some memory is 400 MB, it rounds it down to 256MB etc.
 
-But 0x1fffffff is 512MB, not 256MB. So you're rounding it down to a
-multiple of 512MB.
+[ added Akira & Kou to cc: ]
 
+On Tuesday 08 April 2008, Sergei Shtylyov wrote:
+> Hi, I just wrote:
+> 
+> >>> This function didn't actually check if a given BAR is in I/O space 
+> >>> because of
+> >>> using the bogus PCI_BASE_ADDRESS_IO_MASK (which equals ~3) to test 
+> >>> the resource
+> >>> flags instead of IORESOURCE_IO -- fix this, make ide_hwif_configure() 
+> >>> check the
+> >>> results failing if necessary, and move the printk() call to the 
+> >>> failure path.
+> 
+> >> This change is OK in itself but I worry that ide_pci_check_iomem() may 
+> >> now
+> >> return "false" errors (bogus PCI_BASE_ADDRESS_IO_MASK check resulted 
+> >> in MEM
+> >> resources always surviving ide_pci_check_iomem() calls before the fix) 
+> >> for
+> >> some host drivers (siimage, scc_pata...) resulting in failed 
+> >> initialization.
+> 
+> >    The SiI chips do have normal I/O resources at BAR0..BAR3. As for 
+> > scc_pata, the control should not even get there because BAR0..BAR3 are 
+> > *not* IDE command/control block bases on this chip (BAR0/1 are 
+> > control/DMA bases if you look into setup_mmio_scc()) but they are 
+> > treated as such by the code immediately following ide_pci_check_iomem() 
+> > calls in ide_hwif_configure(), i.e. we might have an error here. The 
+> > same can be said about the PowerMAC driver which has all its MMIO 
+> > registers at BAR0.
+> 
+> >> How's about removing this dead/broken function instead for now?
+> 
+> >    If we indeed have a MMIO problem here, it's not in this function but 
+> > in its callers.
+> 
+>      Looks like we actually have this problem with scc_pata -- it calls 
+> ide_setup_pci_device() which should lead to calling ide_hwif_configure(). But 
+> this is broken since this call chain expects a normal PCI IDE controller with 
+> BAR0..BAR3 either non-existant or being primary/secondary port bases in I/O space.
 
--Olof
+Yep, scc_pata needs fixing before your patch can be applied.
+
+Looks like it just needs to do all the needed setup itself in init_setup_scc()
+instead of calling ide_setup_pci_device() [ similarly to how cs5520 host driver
+handles this in cs5520.c::cs5520_init_one() ].
+
+PS it would be also nice to call pci_enable_device() before setup_mmio_scc()
+   (which accesses PCI BARs, calls pci_set_master() etc.) while we are at it
+   (driver seems to work fine without it ATM but it may break in future).
+
+Thanks,
+Bart
