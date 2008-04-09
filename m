@@ -1,26 +1,21 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 5AD50DE040
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Apr 2008 05:15:28 +1000 (EST)
-Message-ID: <47FD15E2.2050907@freescale.com>
-Date: Wed, 09 Apr 2008 14:15:46 -0500
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Andre Schwarz <andre.schwarz@matrix-vision.de>
-Subject: Re: MPC8343 - "unable to handle paging request @ 0"
-References: <47F73625.9040903@matrix-vision.de>
-	<20080407161036.GA2688@loki.buserror.net>
-	<47FB7822.6090401@matrix-vision.de>
-	<20080408164853.GH2552@loki.buserror.net>
-	<47FCBC73.40703@matrix-vision.de> <47FD118F.8050407@freescale.com>
-	<47FD1485.6070209@matrix-vision.de>
-In-Reply-To: <47FD1485.6070209@matrix-vision.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id BD718DDF46
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Apr 2008 05:45:36 +1000 (EST)
+In-Reply-To: <47FCFDA4.10709@austin.ibm.com>
+References: <47FAB221.7050406@austin.ibm.com>
+	<20080408024352.GA32761@lixom.net> <47FCFDA4.10709@austin.ibm.com>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <76b6f0069fd6d80f69620e39c8528e9d@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] pseries: phyp dump: Variable size reserve space.
+Date: Wed, 9 Apr 2008 21:39:59 +0200
+To: Manish Ahuja <ahuja@austin.ibm.com>
+Cc: Olof Johansson <olof@lixom.net>, mahuja@us.ibm.com, linasvepstas@gmail.com,
+	paulus@samba.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,42 +25,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Andre Schwarz wrote:
-> Scott Wood schrieb:
->> Andre Schwarz wrote:
->>>  -> find_legacy_serial_port()
->>> stdout is /soc8343@e0000000/serial@4500
->>
->> It looks like you have some memory corruption between here...
->>
->>> clocksource: timebase mult[3c00001] shift[22] registered
->>>
->>> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
->>>  -> check_legacy_serial_console()
->>>  can't find stdout package /soc8343@e0000000/serial@4500 !
->>> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
->>
->> ...and here.
->>
->> -Scott
-> 
-> Scott,
-> 
-> are you talking about a possible hardware problem or misbehaving code ?
+>>> +	tmp = tmp & ~0x000000001FFFFFFF;
 
-Either.  The same OF call is done in both places with the same argument, 
-but is getting different results.
+Note that this only works as you expect because the constant is
+signed here -- the extra zeroes do not magically make it a 64-bit
+number.  So it goes 32-bit 0x1fffffff -> 32-bit -0x20000000 ->
+64-bit -0x20000000.
 
-> Does it look like something gets overwritten during initrd 
-> extraction/movement ?
+Please consider writing it with an "L" suffix, or "UL" even, to
+reduce trickiness and surprises if ever that number is changed.
 
-Don't know.
 
-> The system has 512MB RAM which means that we need 2 BAT regs to map the 
-> memory. I've found comments in Freescale u-boot header files that 
-> currently a max of 256MB is supported. I never understood why ? Could 
-> this problem be related to this ?
-
-Kim's probably be the best one to answer u-boot questions.
-
--Scott
+Segher
