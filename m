@@ -1,17 +1,20 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <jgarzik@pobox.com>
+Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E64AEDE102
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Apr 2008 07:26:30 +1000 (EST)
-Date: Wed, 9 Apr 2008 16:22:11 -0500 (CDT)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] [POWERPC] Make Book-E debug handling SMP safe
-Message-ID: <Pine.LNX.4.64.0804091621140.24556@blarg.am.freescale.net>
+	by ozlabs.org (Postfix) with ESMTPS id 6398DDE048
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Apr 2008 07:42:39 +1000 (EST)
+Message-ID: <47FD383A.7040604@pobox.com>
+Date: Wed, 09 Apr 2008 17:42:18 -0400
+From: Jeff Garzik <jgarzik@pobox.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+To: Geoff Levand <geoffrey.levand@am.sony.com>
+Subject: Re: [patch] PS3: Fix gelic net module dependency
+References: <47FD2EC1.8030600@am.sony.com>
+In-Reply-To: <47FD2EC1.8030600@am.sony.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,102 +24,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-global_dbcr0 needs to be a per cpu set of save areas instead of a single
-global on all processors.
+Geoff Levand wrote:
+> The PS3 gelic network driver depends on the wake-on-lan support
+> provided by the PS3 sys manager driver.  Add that dependency
+> to the GELIC_NET Kconfig option.
+> 
+> Prevents these build errors:
+> 
+>   ps3_gelic_net.c:1277: undefined reference to `.ps3_sys_manager_get_wol'
+>   ps3_gelic_net.c:1337: undefined reference to `.ps3_sys_manager_set_wol'
+> 
+> CC: Masakazu Mokuno <mokuno@sm.sony.co.jp>
+> CC: Jeff Garzik <jgarzik@pobox.com>
+> Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
+> ---
+> Hi Paul,
+> 
+> This fixes an error introduced in my 2.6.26 WOL patches now
+> queued in your powerpc tree.  Please apply.
+> 
+> -Geoff
+> 
+>  drivers/net/Kconfig |    1 +
+>  1 file changed, 1 insertion(+)
+> 
+> --- a/drivers/net/Kconfig
+> +++ b/drivers/net/Kconfig
+> @@ -2358,6 +2358,7 @@ config TSI108_ETH
+>  config GELIC_NET
+>  	tristate "PS3 Gigabit Ethernet driver"
+>  	depends on PPC_PS3
+> +	select PS3_SYS_MANAGER
+>  	help
+>  	  This driver supports the network device on the PS3 game
+>  	  console.  This driver has built-in support for Ethernet.
 
-Also, we switch to using DBCR0_IDM to determine if the user space app is
-being debugged as its a more consistent way.  In the future we should
-support features like hardware breakpoint and watchpoints which will
-have DBCR0_IDM set but not necessarily DBCR0_IC (single step).
-
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
----
-
-Paul, you wrote the original code here so please take a look at this.
-
-- k
-
- arch/powerpc/kernel/entry_32.S |   30 +++++++++++++++++++++---------
- 1 files changed, 21 insertions(+), 9 deletions(-)
-
-diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
-index 69a91bd..84c8686 100644
---- a/arch/powerpc/kernel/entry_32.S
-+++ b/arch/powerpc/kernel/entry_32.S
-@@ -110,9 +110,9 @@ transfer_to_handler:
- 	stw	r11,PT_REGS(r12)
- #if defined(CONFIG_40x) || defined(CONFIG_BOOKE)
- 	/* Check to see if the dbcr0 register is set up to debug.  Use the
--	   single-step bit to do this. */
-+	   internal debug mode bit to do this. */
- 	lwz	r12,THREAD_DBCR0(r12)
--	andis.	r12,r12,DBCR0_IC@h
-+	andis.	r12,r12,DBCR0_IDM@h
- 	beq+	3f
- 	/* From user and task is ptraced - load up global dbcr0 */
- 	li	r12,-1			/* clear all pending debug events */
-@@ -120,6 +120,12 @@ transfer_to_handler:
- 	lis	r11,global_dbcr0@ha
- 	tophys(r11,r11)
- 	addi	r11,r11,global_dbcr0@l
-+#ifdef CONFIG_SMP
-+	rlwinm	r9,r1,0,0,(31-THREAD_SHIFT)
-+	lwz	r9,TI_CPU(r9)
-+	slwi	r9,r9,3
-+	add	r11,r11,r9
-+#endif
- 	lwz	r12,0(r11)
- 	mtspr	SPRN_DBCR0,r12
- 	lwz	r12,4(r11)
-@@ -238,10 +244,10 @@ ret_from_syscall:
- 	stw	r11,_CCR(r1)
- syscall_exit_cont:
- #if defined(CONFIG_4xx) || defined(CONFIG_BOOKE)
--	/* If the process has its own DBCR0 value, load it up.  The single
--	   step bit tells us that dbcr0 should be loaded. */
-+	/* If the process has its own DBCR0 value, load it up.  The internal
-+	   debug mode bit tells us that dbcr0 should be loaded. */
- 	lwz	r0,THREAD+THREAD_DBCR0(r2)
--	andis.	r10,r0,DBCR0_IC@h
-+	andis.	r10,r0,DBCR0_IDM@h
- 	bnel-	load_dbcr0
- #endif
- #ifdef CONFIG_44x
-@@ -666,10 +672,10 @@ user_exc_return:		/* r10 contains MSR_KERNEL here */
-
- restore_user:
- #if defined(CONFIG_4xx) || defined(CONFIG_BOOKE)
--	/* Check whether this process has its own DBCR0 value.  The single
--	   step bit tells us that dbcr0 should be loaded. */
-+	/* Check whether this process has its own DBCR0 value.  The internal
-+	   debug mode bit tells us that dbcr0 should be loaded. */
- 	lwz	r0,THREAD+THREAD_DBCR0(r2)
--	andis.	r10,r0,DBCR0_IC@h
-+	andis.	r10,r0,DBCR0_IDM@h
- 	bnel-	load_dbcr0
- #endif
-
-@@ -879,6 +885,12 @@ load_dbcr0:
- 	mfspr	r10,SPRN_DBCR0
- 	lis	r11,global_dbcr0@ha
- 	addi	r11,r11,global_dbcr0@l
-+#ifdef CONFIG_SMP
-+	rlwinm	r9,r1,0,0,(31-THREAD_SHIFT)
-+	lwz	r9,TI_CPU(r9)
-+	slwi	r9,r9,3
-+	add	r11,r11,r9
-+#endif
- 	stw	r10,0(r11)
- 	mtspr	SPRN_DBCR0,r0
- 	lwz	r10,4(r11)
-@@ -891,7 +903,7 @@ load_dbcr0:
- 	.section .bss
- 	.align	4
- global_dbcr0:
--	.space	8
-+	.space	8*NR_CPUS
- 	.previous
- #endif /* !(CONFIG_4xx || CONFIG_BOOKE) */
-
--- 
-1.5.4.1
+looks sane to me, but I do not have enough knowledge to ACK.  Thanks for 
+the CC :)
