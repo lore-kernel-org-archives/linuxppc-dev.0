@@ -1,23 +1,16 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Wed, 9 Apr 2008 09:51:50 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: Question on mpc52xx_common.c
-Message-ID: <20080408235150.GA8092@localhost.localdomain>
-References: <m21w5map5f.fsf@ohwell.denx.de>
-	<fa686aa40804031200n4cd7aeb4g330ab3e2620680e@mail.gmail.com>
-	<47FAA0A8.7050602@genesi-usa.com>
-	<200804080414.42867.arnd@arndb.de>
-	<fa686aa40804071925v6c7d28edna529e6122fdc9cf7@mail.gmail.com>
-	<23d2e4300804071926n57746a3cj551ef38bf10486c7@mail.gmail.com>
-	<47FB3CD6.2090706@genesi-usa.com>
-	<fa686aa40804080752g595196det8f576df1884bac5d@mail.gmail.com>
-	<20080408194517.GX13814@pengutronix.de>
-	<47FBD09E.80504@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <47FBD09E.80504@freescale.com>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Date: Tue, 8 Apr 2008 19:47:37 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: "Grant Likely" <grant.likely@secretlab.ca>
+Subject: Re: ppc440 caches - change proposal [RFC]
+Message-ID: <20080408194737.5a76af47@zod.rchland.ibm.com>
+In-Reply-To: <fa686aa40804081615n284aa750n12ceb0bf1d1bcce1@mail.gmail.com>
+References: <20080408225329.5EC171A8007D@mail11-dub.bigfish.com>
+	<1207695415.14711.11.camel@pasglop>
+	<fa686aa40804081615n284aa750n12ceb0bf1d1bcce1@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: John Bonesio <john.bonesio@xilinx.com>, Linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,35 +20,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Apr 08, 2008 at 03:07:58PM -0500, Scott Wood wrote:
-> Robert Schwebel wrote:
->> Well observed; isn't this the prove of the assumption that the whole
->> device tree idea is not working? It is *always* inconsistent and it is
->> *maintenance hell* because out-of-tree ports do *always* breakt because
->> of string inconsistencies. We have just ported a 8260 board from 2.6.22
->> to 2.6.25 and it is almost 100% oftree porting.
->
-> There's going to be more churn in the initial stages than down the road.  
-> 82xx had barely been added to arch/powerpc in 2.6.22, and there was little 
-> review of the initial device tree bindings.
->
->> The ARM method of using just a device number is so much easier ...
->
-> Yeah, it's so much fun to have to allocate a globally unique number for 
-> every minor tweak of a board, and to have to maintain a mapping from said 
-> numbers to information that is semantically equivalent to a device tree but 
-> in less maintainable form in the kernel source.
+On Tue, 8 Apr 2008 17:15:44 -0600
+"Grant Likely" <grant.likely@secretlab.ca> wrote:
 
-And we can already do device numbers if we really want.  A bootwrapper
-that identifies the board and supplies a device tree essentially does
-that, and that way the device tree is maintained in sync with the
-kernel.
+> On Tue, Apr 8, 2008 at 4:56 PM, Benjamin Herrenschmidt
+> <benh@kernel.crashing.org> wrote:
+> >
+> >  On Tue, 2008-04-08 at 15:53 -0700, John Bonesio wrote:
+> >  > I was thinking it might be good to have the kernel initialize these
+> >  > cache control registers in it's own start up code. Or perhaps this
+> >  > could be done in the kernel's simple bootloader. We could probably put
+> >  > this change in a Xilinx specific startup file, but this change doesn't
+> >  > seem specific to Xilinx FPGA boards.
+> >
+> >  The kernel's wrapper would be a good place to put that I suspect. That's
+> >  the kind of thing that should be provided as a "library" function to be
+> >  optionally called by platform code. Either in the wrapper or the main
+> >  kernel platform code.
+> 
+> Code is already queued up for 2.6.26 to do exactly this on ppc405
+> virtex platforms.  We can do the same thing for 440.  Look at
+> virtex405-head.S in the following patch:
+> 
+> http://patchwork.ozlabs.org/linuxppc/patch?person=486&id=17410
 
-This is why I've always had mixed feelings about merging device trees
-into u-boot, rather than having them supplied by the wrapper.
+That patch is already in Paul's tree btw.
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+As for 440, yes it might be good to init the cache registers in the
+wrapper.
+
+josh
