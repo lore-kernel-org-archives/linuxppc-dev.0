@@ -1,21 +1,18 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id BD718DDF46
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Apr 2008 05:45:36 +1000 (EST)
-In-Reply-To: <47FCFDA4.10709@austin.ibm.com>
-References: <47FAB221.7050406@austin.ibm.com>
-	<20080408024352.GA32761@lixom.net> <47FCFDA4.10709@austin.ibm.com>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <76b6f0069fd6d80f69620e39c8528e9d@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] pseries: phyp dump: Variable size reserve space.
-Date: Wed, 9 Apr 2008 21:39:59 +0200
-To: Manish Ahuja <ahuja@austin.ibm.com>
-Cc: Olof Johansson <olof@lixom.net>, mahuja@us.ibm.com, linasvepstas@gmail.com,
-	paulus@samba.org, linuxppc-dev@ozlabs.org
+Return-Path: <glikely@secretlab.ca>
+Message-ID: <fa686aa40804091250u1f532cddj9e3897969a98349c@mail.gmail.com>
+Date: Wed, 9 Apr 2008 13:50:43 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "John Bonesio" <john.bonesio@xilinx.com>
+Subject: Re: ppc440 caches - change proposal [RFC]
+In-Reply-To: <20080409180042.511531370055@mail134-sin.bigfish.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20080408225329.5EC171A8007D@mail11-dub.bigfish.com>
+	<1207695415.14711.11.camel@pasglop>
+	<fa686aa40804081615n284aa750n12ceb0bf1d1bcce1@mail.gmail.com>
+	<20080409180042.511531370055@mail134-sin.bigfish.com>
+Cc: Linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,15 +22,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>> +	tmp = tmp & ~0x000000001FFFFFFF;
+On Wed, Apr 9, 2008 at 12:00 PM, John Bonesio <john.bonesio@xilinx.com> wrote:
+> Hi Grant,
+>
+>  I have a question about your patch. It appears as if the cache setup code is
+> in a file that would be used only on Xilinx FPGA devices.
 
-Note that this only works as you expect because the constant is
-signed here -- the extra zeroes do not magically make it a 64-bit
-number.  So it goes 32-bit 0x1fffffff -> 32-bit -0x20000000 ->
-64-bit -0x20000000.
+That is correct.
 
-Please consider writing it with an "L" suffix, or "UL" even, to
-reduce trickiness and surprises if ever that number is changed.
+>
+>  I understand that many people are using a bootloader that already sets up the
+> cache for the kernel, but I'm wondering if Xilinx boards are really a special
+> case, or if there may be other non-Xilinx related systems that would also not
+> be using a bootloader.
+
+I think there are very few cases of platforms not using some form of firmware.
+
+>
+>  I also understand the desire to avoid code that does the same work more than
+> once, but I wonder if in this case, it's creating too strong a dependence on
+> the specific behavior of a certain bootloader.
+>  I also wonder if arch/powerpc is being made more complex by trying to split
+>  out this code change into a Xilinx specific area, when the change could just
+> be rolled into head_40x.S and we could do away with virtex405-head.S.
+
+In general, I think that the wrapper does not want to touch the cache
+settings.  In the common case where firmware exists and sets up the
+cache then to turn off the cache again would throw away what firmware
+already had in cache and slow down the boot.
+
+That being said, I'm not the bootwrapper expert.  If other think that
+it belongs in head_40x.S then I have no objections.
+
+Josh, any thoughts?
+
+Cheers,
+g.
 
 
-Segher
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
