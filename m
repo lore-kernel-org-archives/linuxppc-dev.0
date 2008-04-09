@@ -1,20 +1,32 @@
-Return-Path: <sha@pengutronix.de>
-Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
-	[83.236.181.26]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C25B4DE1C9
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Apr 2008 02:51:53 +1000 (EST)
-Date: Wed, 9 Apr 2008 18:53:24 +0200
-From: Sascha Hauer <s.hauer@pengutronix.de>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH] FCC: fix confused base / offset
-Message-ID: <20080409165324.GF10465@pengutronix.de>
-References: <20080409130610.GE10465@pengutronix.de>
-	<20080409161110.GA5296@ld0162-tx32.am.freescale.net>
+Return-Path: <ahuja@austin.ibm.com>
+Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 92934DDF9B
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Apr 2008 03:32:32 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e3.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m39HWPQR026057
+	for <linuxppc-dev@ozlabs.org>; Wed, 9 Apr 2008 13:32:25 -0400
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m39HWOt1237332
+	for <linuxppc-dev@ozlabs.org>; Wed, 9 Apr 2008 13:32:24 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m39HWO1a020886
+	for <linuxppc-dev@ozlabs.org>; Wed, 9 Apr 2008 13:32:24 -0400
+Message-ID: <47FCFDA4.10709@austin.ibm.com>
+Date: Wed, 09 Apr 2008 12:32:20 -0500
+From: Manish Ahuja <ahuja@austin.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080409161110.GA5296@ld0162-tx32.am.freescale.net>
-Cc: linuxppc-dev@ozlabs.org
+To: Olof Johansson <olof@lixom.net>
+Subject: Re: [PATCH] pseries: phyp dump: Variable size reserve space.
+References: <47FAB221.7050406@austin.ibm.com>
+	<20080408024352.GA32761@lixom.net>
+In-Reply-To: <20080408024352.GA32761@lixom.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: mahuja@us.ibm.com, linuxppc-dev@ozlabs.org, linasvepstas@gmail.com,
+	paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,39 +36,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Apr 09, 2008 at 11:11:10AM -0500, Scott Wood wrote:
-> On Wed, Apr 09, 2008 at 03:06:10PM +0200, Sascha Hauer wrote:
-> > This patch fixes a mixup in struct fs_platform_info. The struct has a field
-> > dpram_offset which really is no offset but an io pointer to the dpram
-> > (casted to u32).
+Olof Johansson wrote:
+> These make for some really long variable names and lines. I know from
+> experience, since I've picked unneccessary long driver names in the past
+> myself. :)
 > 
-> Right, I didn't want to touch that as the old-binding code should be
-> going away soon anyway.
+> How about just naming the new variables reserve_bootvar, etc? The name
+> of the struct they're in makes it obvious what they're for.
+> 
 
-Right, so it's probably not worth the effort. I stumbled on this while
-porting my board to the new binding code. I was quite confused when
-seeing this so I made this fix to understand what's going on here.
+Yeah, I guess thats a good suggestion. Will truncate it.
 
-BTW have you tested the FCC driver with the new binding code? I do not
-manage to get it working. Everything seems to be fine but
-fs_enet_start_xmit does not send a packet and no interrupts are
-arriving.
+> 
+>> +static inline unsigned long phyp_dump_calculate_reserve_size(void)
+>> +{
+>> +	unsigned long tmp;
+>> +
+>> +	if (phyp_dump_info->phyp_dump_reserve_bootvar)
+>> +		return phyp_dump_info->phyp_dump_reserve_bootvar;
+>> +
+>> +	/* divide by 20 to get 5% of value */
+>> +	tmp = lmb_end_of_DRAM();
+>> +	do_div(tmp, 20);
+>> +
+>> +	/* round it down in multiples of 256 */
+>> +	tmp = tmp & ~0x000000001FFFFFFF;
+> 
+> That's 512MB, isn't it?
+> 
 
+No, its 5 % of memory and then rounded down to 256 MB multiples.
+so if you 4GB its 256MB.
+if you have 8 GB its 512 MB etc.
 
-
-> Does this break arch/ppc, BTW?
-
-Yes. arch=ppc is out of my scope, so I forget about it regularly, sorry.
-It breaks arch/ppc/platforms/mpc8272ads_setup.c which can be easily
-fixed though. But as the mpc8272ads is supported with arch=powerpc,
-shouldn't it go away anyway?
-
-Sascha
-
-
-
--- 
-Pengutronix e.K. - Linux Solutions for Science and Industry
------------------------------------------------------------
-Kontakt-Informationen finden Sie im Header dieser Mail oder
-auf der Webseite -> http://www.pengutronix.de/impressum/ <-
+> 
+> -Olof
