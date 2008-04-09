@@ -1,23 +1,17 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 88B06DDF06
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Apr 2008 03:39:30 +1000 (EST)
-Message-ID: <47FCFF64.9050109@freescale.com>
-Date: Wed, 09 Apr 2008 12:39:48 -0500
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <john.bonesio@xilinx.com>
+From: John Bonesio <john.bonesio@xilinx.com>
+To: "Grant Likely" <grant.likely@secretlab.ca>
+Subject: Re: ppc440 caches - change proposal [RFC]
+Date: Wed, 9 Apr 2008 11:00:40 -0700
+References: <20080408225329.5EC171A8007D@mail11-dub.bigfish.com>
+	<1207695415.14711.11.camel@pasglop>
+	<fa686aa40804081615n284aa750n12ceb0bf1d1bcce1@mail.gmail.com>
+In-Reply-To: <fa686aa40804081615n284aa750n12ceb0bf1d1bcce1@mail.gmail.com>
 MIME-Version: 1.0
-To: Sascha Hauer <s.hauer@pengutronix.de>
-Subject: Re: [PATCH] FCC: fix confused base / offset
-References: <20080409130610.GE10465@pengutronix.de>
-	<20080409161110.GA5296@ld0162-tx32.am.freescale.net>
-	<20080409165324.GF10465@pengutronix.de>
-In-Reply-To: <20080409165324.GF10465@pengutronix.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <20080409180042.511531370055@mail134-sin.bigfish.com>
+Cc: Linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,33 +21,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Sascha Hauer wrote:
-> Right, so it's probably not worth the effort. I stumbled on this while
-> porting my board to the new binding code. I was quite confused when
-> seeing this so I made this fix to understand what's going on here.
+Hi Grant,
+
+I have a question about your patch. It appears as if the cache setup code is in a file that would be used only on Xilinx FPGA devices.
+
+I understand that many people are using a bootloader that already sets up the cache for the kernel, but I'm wondering if Xilinx boards are really a special case, or if there may be other non-Xilinx related systems that would also not be using a bootloader.
+
+I also understand the desire to avoid code that does the same work more than once, but I wonder if in this case, it's creating too strong a dependence on the specific behavior of a certain bootloader.
+I also wonder if arch/powerpc is being made more complex by trying to split out this code change into a Xilinx specific area, when the change could just be rolled into head_40x.S and we could do away with virtex405-head.S.
+
+Just some thoughts,
+
+- John
+
+On Tuesday 08 April 2008 16:15, you wrote:
+> On Tue, Apr 8, 2008 at 4:56 PM, Benjamin Herrenschmidt
+> <benh@kernel.crashing.org> wrote:
+> >
+> >  On Tue, 2008-04-08 at 15:53 -0700, John Bonesio wrote:
+> >  > I was thinking it might be good to have the kernel initialize these
+> >  > cache control registers in it's own start up code. Or perhaps this
+> >  > could be done in the kernel's simple bootloader. We could probably put
+> >  > this change in a Xilinx specific startup file, but this change doesn't
+> >  > seem specific to Xilinx FPGA boards.
+> >
+> >  The kernel's wrapper would be a good place to put that I suspect. That's
+> >  the kind of thing that should be provided as a "library" function to be
+> >  optionally called by platform code. Either in the wrapper or the main
+> >  kernel platform code.
 > 
-> BTW have you tested the FCC driver with the new binding code?
-
-Yes.
-
-> I do not
-> manage to get it working. Everything seems to be fine but
-> fs_enet_start_xmit does not send a packet and no interrupts are
-> arriving.
-
-What does your device tree look like?  Are all the pins and clocks set 
-up properly?  Does the PHY negotiate OK?  Is any error reported in the 
-descriptor?
-
->> Does this break arch/ppc, BTW?
+> Code is already queued up for 2.6.26 to do exactly this on ppc405
+> virtex platforms.  We can do the same thing for 440.  Look at
+> virtex405-head.S in the following patch:
 > 
-> Yes. arch=ppc is out of my scope, so I forget about it regularly, sorry.
-> It breaks arch/ppc/platforms/mpc8272ads_setup.c which can be easily
-> fixed though. But as the mpc8272ads is supported with arch=powerpc,
-> shouldn't it go away anyway?
-
-arch/ppc is going away entirely in June or so.  !CONFIG_PPC_NEW_BINDING 
-in arch/powerpc is going away as soon as I can unlazy myself enough to 
-send a patch. :-)
-
--Scott
+> http://patchwork.ozlabs.org/linuxppc/patch?person=486&id=17410
+> 
+> Cheers,
+> g.
+> 
+> 
+> -- 
+> Grant Likely, B.Sc., P.Eng.
+> Secret Lab Technologies Ltd.
+> 
+> 
