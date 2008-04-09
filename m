@@ -1,23 +1,14 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 020E1DDEDD
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 Apr 2008 23:42:21 +1000 (EST)
-Subject: Re: [PATCH v3] powerpc: Add irqtrace support for 32-bit powerpc
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Dale Farnsworth <dale@farnsworth.org>
-In-Reply-To: <1207670643.5550.11.camel@johannes.berg>
-References: <20080404213932.GA15847@farnsworth.org>
-	<20080407171428.GA14900@farnsworth.org>
-	<1207670643.5550.11.camel@johannes.berg>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-PBOCrc4OfCsZf4+c5UJx"
-Date: Tue, 08 Apr 2008 23:36:14 +0200
-Message-Id: <1207690574.7442.4.camel@johannes.berg>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id F0395DDE07
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 Apr 2008 23:59:03 +1000 (EST)
+Date: Wed, 9 Apr 2008 17:59:25 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] [POWERPC] mpc8315: fix USB UTMI Host setup
+Message-ID: <20080409135925.GA6905@polina.dev.rtsoft.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,48 +18,87 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Currently USB Host isn't functional on the MPC8315E boards, for two
+reasons as described below.
 
---=-PBOCrc4OfCsZf4+c5UJx
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+MPC8315 Reference Manual says:
+"The USB DR unit must have the same clock ratio as the encryption core
+unit, unless one of them has its clock disabled."
+
+The encryption core also drives I2C clock, so it is enabled and is equal
+to 01. That means USBDRCM should be 01 here.
+
+Plus, according to MPC8315E-RDB schematics, USB unit consumes CLK_IN
+clock from the 24.00MHz oscillator, which means we must adjust REFSEL
+bits as well.
+
+p.s.
+Idially we should rework whole 83xx/usb.c code, in two steps:
+1. Move SCCR code to the U-Boot;
+2. Implement fsl,usb-clock property in the device tree, so usb.c could
+   decide what clock exactly to use on per-board basis.
+
+Though, today we're not in a hurry since there is just one 8315e board
+out there.
+
+Cc: Kumar Gala <galak@kernel.crashing.org>
+Cc: Kim Phillips <kim.phillips@freescale.com>
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
+
+ arch/powerpc/platforms/83xx/mpc83xx.h |    2 ++
+ arch/powerpc/platforms/83xx/usb.c     |   12 +++++++++---
+ 2 files changed, 11 insertions(+), 3 deletions(-)
 
 
-> > This version fixes the clobbering of r12 by the call to
-> > trace_hardirqs_off() that was pointed out by BenH.
-> >=20
-> > Johannes, I'd appreciate your trying this version if/when
-> > you get the chance.
->=20
-> Thanks Dale, this version seems to work. I'll stress it a bit more
-> later, but so far it has survived *much* longer than both previous
-> versions.
-
-Hmm. Bad news. I got a crash in console_callback() again where
-apparently r28 had a bogus value. That, however, doesn't make sense, so
-maybe that register value was calculated from another register.
-
-johannes
-
---=-PBOCrc4OfCsZf4+c5UJx
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIVAwUAR/vlTaVg1VMiehFYAQIUzg/+I01l8m4LxaLWFSw7ejUIoUt9NSGiGIjn
-vFWR4cLbPIjKKQ2W+wKaODm5pVGYvE96Rw/tnsccWb0kbZ87A7eUX2RnIZAJH2Ca
-WQjDZsEQTQsNfKqNT5/23YLttvlUy9QE4nMGHcmc0kub66Teyq7P8ERIzoVXekkI
-BsqdQ88QBukf+GyJ+640qM6TAyl1dVFxbTng2R+wWDamnfR6nv1NOhbxg5dHoYN2
-QLWjuDYyTFppJBBQmmlACenB478lCvB9WEwV1uLYDi2QhvQSpL5QB8KYwT9B0VRH
-zvYLTw3N+/pTUQmuMPR3v6Hr7SkGUUHQYWISs+Y6hMfqOR/NKIE4KtSP1pjP5Kvf
-L9g29klS2JiTikeOb+1kLrzHTpd6Xj/EbzYtKNE4o5V7yANQnff8AYLQXG+4RtkN
-FD40RwpJ0DKBBjBgGUmtT6v3iGHah2ckIRnKgl2JkvQgfL6DFJ1yw/b93xyx39IW
-fO0wUFifFtnhwd3NlrJx/POBj/TsuTqvmxbMJQySK7gj0Z8q1jbcL+UmTibqwOEJ
-tHaJ6xnjnRNsS7fOp79Lsp/S8c8LME0JgryFRDv1AeL5k+j+pySZjnvkWNHL0t53
-MtfkR1EhsH5m3dpezMkNIkkBiP0MWnVvLM8ZvV/nFEStoKQCJ55kXBay3QrVd+UY
-Q9yqJqvsvvg=
-=94MH
------END PGP SIGNATURE-----
-
---=-PBOCrc4OfCsZf4+c5UJx--
+diff --git a/arch/powerpc/platforms/83xx/mpc83xx.h b/arch/powerpc/platforms/83xx/mpc83xx.h
+index 68065e6..88a3b5c 100644
+--- a/arch/powerpc/platforms/83xx/mpc83xx.h
++++ b/arch/powerpc/platforms/83xx/mpc83xx.h
+@@ -16,6 +16,7 @@
+ #define MPC83XX_SCCR_USB_DRCM_10   0x00200000
+ #define MPC8315_SCCR_USB_MASK      0x00c00000
+ #define MPC8315_SCCR_USB_DRCM_11   0x00c00000
++#define MPC8315_SCCR_USB_DRCM_01   0x00400000
+ #define MPC837X_SCCR_USB_DRCM_11   0x00c00000
+ 
+ /* system i/o configuration register low */
+@@ -37,6 +38,7 @@
+ /* USB Control Register */
+ #define FSL_USB2_CONTROL_OFFS      0x500
+ #define CONTROL_UTMI_PHY_EN        0x00000200
++#define CONTROL_REFSEL_24MHZ       0x00000040
+ #define CONTROL_REFSEL_48MHZ       0x00000080
+ #define CONTROL_PHY_CLK_SEL_ULPI   0x00000400
+ #define CONTROL_OTG_PORT           0x00000020
+diff --git a/arch/powerpc/platforms/83xx/usb.c b/arch/powerpc/platforms/83xx/usb.c
+index 471fdd8..64bcf0a 100644
+--- a/arch/powerpc/platforms/83xx/usb.c
++++ b/arch/powerpc/platforms/83xx/usb.c
+@@ -129,7 +129,7 @@ int mpc831x_usb_cfg(void)
+ 	if (immr_node && of_device_is_compatible(immr_node, "fsl,mpc8315-immr"))
+ 		clrsetbits_be32(immap + MPC83XX_SCCR_OFFS,
+ 		                MPC8315_SCCR_USB_MASK,
+-		                MPC8315_SCCR_USB_DRCM_11);
++		                MPC8315_SCCR_USB_DRCM_01);
+ 	else
+ 		clrsetbits_be32(immap + MPC83XX_SCCR_OFFS,
+ 		                MPC83XX_SCCR_USB_MASK,
+@@ -164,9 +164,15 @@ int mpc831x_usb_cfg(void)
+ 	/* Using on-chip PHY */
+ 	if (prop && (!strcmp(prop, "utmi_wide") ||
+ 		     !strcmp(prop, "utmi"))) {
+-		/* Set UTMI_PHY_EN, REFSEL to 48MHZ */
++		u32 refsel;
++
++		if (of_device_is_compatible(immr_node, "fsl,mpc8315-immr"))
++			refsel = CONTROL_REFSEL_24MHZ;
++		else
++			refsel = CONTROL_REFSEL_48MHZ;
++		/* Set UTMI_PHY_EN and REFSEL */
+ 		out_be32(usb_regs + FSL_USB2_CONTROL_OFFS,
+-				CONTROL_UTMI_PHY_EN | CONTROL_REFSEL_48MHZ);
++				CONTROL_UTMI_PHY_EN | refsel);
+ 	/* Using external UPLI PHY */
+ 	} else if (prop && !strcmp(prop, "ulpi")) {
+ 		/* Set PHY_CLK_SEL to ULPI */
