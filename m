@@ -1,26 +1,19 @@
-Return-Path: <phdm@macqel.be>
-Received: from mail.macqel.be (mail.macqel.be [194.78.208.39])
-	by ozlabs.org (Postfix) with ESMTP id 43620DDF52
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Apr 2008 08:42:17 +1000 (EST)
-Received: from localhost (localhost [127.0.0.1])
-	by mail.macqel.be (Postfix) with ESMTP id 6ED31130D7E
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Apr 2008 00:42:16 +0200 (CEST)
-Received: from mail.macqel.be ([127.0.0.1])
-	by localhost (mail.macqel.be [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 90EVQXK-noQB for <linuxppc-dev@ozlabs.org>;
-	Thu, 10 Apr 2008 00:42:14 +0200 (CEST)
-Received: from frolo.macqel.be (frolo.macqel [10.1.40.73])
-	by mail.macqel.be (Postfix) with ESMTP id 8B0A2130CFD
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Apr 2008 00:42:14 +0200 (CEST)
-Date: Thu, 10 Apr 2008 00:42:14 +0200
-From: Philippe De Muyter <phdm@macqel.be>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] fsl_soc : add support for m41t81 rtc chip
-Message-ID: <20080409224214.GA1456@frolo.macqel>
-References: <20080409222252.GA1006@frolo.macqel>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080409222252.GA1006@frolo.macqel>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 0249CDDF1E
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Apr 2008 08:51:47 +1000 (EST)
+Message-Id: <64B092F9-7790-4655-AA12-B9010D87D0A4@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Philippe De Muyter <phdm@macqel.be>
+In-Reply-To: <20080409221256.GA927@frolo.macqel>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v919.2)
+Subject: Re: [PATCH] mpc8540 : Fix restart
+Date: Wed, 9 Apr 2008 17:51:40 -0500
+References: <20080409221256.GA927@frolo.macqel>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,25 +23,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello everybody,
 
-Here is small patch allowing to use a m41t81 rtc chip on a FSL_SOC based
-board.
+On Apr 9, 2008, at 5:12 PM, Philippe De Muyter wrote:
+> Hi everybody,
+>
+> 	Previously, with the arch/ppc tree, mpc8540 boards could reboot.
+> 	Now with the arch/powerpc tree, they can not anymore.
+> 	Fix that.
+>
+> Signed-off-by: Philippe De Muyter <phdm@macqel.be>
+>
+> --- a/arch/powerpc/sysdev/fsl_soc.c	2008-03-21 14:53:41.000000000  
+> +0000
+> +++ b/arch/powerpc/sysdev/fsl_soc.c	2008-03-26 12:08:25.000000000  
+> +0000
+> @@ -1428,13 +1433,17 @@
+>
+> arch_initcall(setup_rstcr);
+>
+> +extern void abort(void);
+> +
+> void fsl_rstcr_restart(char *cmd)
+> {
+> 	local_irq_disable();
+> 	if (rstcr)
+> 		/* set reset control register */
+> 		out_be32(rstcr, 0x2);	/* HRESET_REQ */
+> -
+> +	else
+> +		abort();
+> 	while (1) ;
+> +
+> }
 
-Signed-off-by: Philippe De Muyter <phdm@macqel.be>
+This was on purpose.  abort() doesn't really do a restart and thus I  
+didn't want it to be used that way.
 
---
-
-I have removed the ifdef as pointed by Olof
-
---- a/arch/powerpc/sysdev/fsl_soc.c	2008-03-21 14:53:41.000000000 +0000
-+++ b/arch/powerpc/sysdev/fsl_soc.c	2008-03-26 12:08:25.000000000 +0000
-@@ -405,7 +405,8 @@
- 	{"dallas,ds1339",  "rtc-ds1307",  "ds1339",},
- 	{"dallas,ds1340",  "rtc-ds1307",  "ds1340",},
- 	{"stm,m41t00",     "rtc-ds1307",  "m41t00"},
-+	{"stm,m41t81",     "rtc-m41t80",  "m41t81"},
- 	{"dallas,ds1374",  "rtc-ds1374",  "rtc-ds1374",},
- };
- 
- static int __init of_find_i2c_driver(struct device_node *node,
+- k
