@@ -1,25 +1,36 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 911B0DE525
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Apr 2008 02:37:41 +1000 (EST)
-Message-ID: <47FE4268.2000504@freescale.com>
-Date: Thu, 10 Apr 2008 11:38:00 -0500
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Sascha Hauer <s.hauer@pengutronix.de>
-Subject: Re: [PATCH] FCC: fix confused base / offset
-References: <20080409130610.GE10465@pengutronix.de>
-	<20080409161110.GA5296@ld0162-tx32.am.freescale.net>
-	<20080409165324.GF10465@pengutronix.de>
-	<47FCFF64.9050109@freescale.com>
-	<20080410104655.GH10465@pengutronix.de>
-In-Reply-To: <20080410104655.GH10465@pengutronix.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 7820ADE30D
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Apr 2008 02:49:46 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e33.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m3AGngGK005321
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Apr 2008 12:49:42 -0400
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m3AGng4R214542
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Apr 2008 10:49:42 -0600
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m3AGne4A024530
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Apr 2008 10:49:42 -0600
+Date: Thu, 10 Apr 2008 11:47:34 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: David Gibson <dwg@au1.ibm.com>
+Subject: Re: [PATCH 2 of 3] [KVM] Add DCR access information to struct kvm_run
+Message-ID: <20080410114734.4b702caa@zod.rchland.ibm.com>
+In-Reply-To: <20080408035441.GA18501@localhost.localdomain>
+References: <patchbomb.1207601611@localhost.localdomain>
+	<474b35009da7b7bdb58c.1207601613@localhost.localdomain>
+	<20080408011128.GA13454@localhost.localdomain>
+	<200804072225.33040.hollisb@us.ibm.com>
+	<20080408035441.GA18501@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: kvm-devel@lists.sourceforge.net, linuxppc-dev@ozlabs.org,
+	kvm-ppc-devel@lists.sourceforge.net, Hollis Blanchard <hollisb@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,67 +40,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Sascha Hauer wrote:
-> See bottom of this mail. The board really is a 8260 based board. Our
-> bootloader does not fill in the clock values, so they are hardcoded. I'm
-> not very sure about the muram entries because the dpram is organized
-> slightly different on the 8260. It has some dedicated FCC space and I
-> don't know how to properly encode this in the device tree.
+On Tue, 8 Apr 2008 13:54:41 +1000
+David Gibson <dwg@au1.ibm.com> wrote:
 
-I think the FCC space should just be left out.
-
->> Does the PHY negotiate OK?
+> On Mon, Apr 07, 2008 at 10:25:32PM -0500, Hollis Blanchard wrote:
+> > On Monday 07 April 2008 20:11:28 David Gibson wrote:
+> > > On Mon, Apr 07, 2008 at 03:53:33PM -0500, Hollis Blanchard wrote:
+> > > > 1 file changed, 7 insertions(+)
+> > > > include/linux/kvm.h |    7 +++++++
+> > > >
+> > > >
+> > > > Device Control Registers are essentially another address space found on
+> > > > PowerPC 4xx processors, analogous to PIO on x86. DCRs are always 32 bits,
+> > > > and are identified by a 32-bit number.
+> > >
+> > > Well... 10-bit, actually.
+> > 
+> > The mtdcrux description in the ppc440x6 user manual says the following:
+> > 
+> > 	Let the contents of register RA denote a Device Control Register.
+> > 	The contents of GPR[RS] are placed into the designated Device Control 
+> > Register.
+> > 
+> > I take that to mean that we must worry about 32 bits worth of DCR numbers. 
+> > Perhaps I should say "no more than" rather than "always".
 > 
-> Well I put some printks into the phy_read/write functions so I can say
-> that it at least properly talks to the phy.
+> I think that's less misleading.  mtdcrux is very new, anything which
+> only has the mtdcr instruction certainly can't take DCR numbers above
+> 10 bits, and I would expect that even on chips with mtdcrux the DCR
+> bus is probably still only 10-bits, although it could be extended.
 
-Do you get a console message indicating that the link came up?
+http://www-01.ibm.com/chips/techlib/techlib.nsf/techdocs/C94B06BE313211B887257110006EFFBD/$file/460migrate.pdf
 
-> 	soc@f0000000 {
-> 		#address-cells = <1>;
-> 		#size-cells = <1>;
-> 		device_type = "soc";
-> 		compatible = "fsl,mpc8272", "fsl,pq2-soc";
+page 4.  "DCR Address Space Increased to 32 bits".
 
-Change the 8272 references to 8260.
+I realize that the above is for 460 cores, but I would not be surprised
+at all if that shows up in a future 440 core.  440x6 already seems to
+be a conglomeration of some of the features 460 has.
 
-> 		// Temporary -- will go away once kernel uses ranges for get_immrbase().
-> 		reg = <f0000000 00053000>;
-
-This can go away now.
-
-> 		cpm@119c0 {
-> 			#address-cells = <1>;
-> 			#size-cells = <1>;
-> 			compatible = "fsl,mpc8272-cpm", "fsl,cpm2";
-> 			reg = <119c0 30>;
-> 			ranges;
-> 
-> 			muram@0 {
-> 				#address-cells = <1>;
-> 				#size-cells = <1>;
-> 				ranges = <0 0 10000>;
-> 
-> 				data@0 {
-> 					compatible = "fsl,cpm-muram-data";
-> 					reg = <0 2000 8000 800>;
-
-reg should be <0 4000>.  Don't include parameter RAM here.
-
-> 			ethernet@11300 {
-
-ethernet@11320
-
-> 				device_type = "network";
-> 				compatible = "fsl,mpc8272-fcc-enet",
-> 				             "fsl,cpm2-fcc-enet";
-> 				reg = <11320 20 8500 100 113b0 30>;
-
-reg = <11320 20 8500 100 113b0 1>;
-
-> 				local-mac-address = [ 80 10 20 30 40 50 ];
-> 				interrupts = <21 2>;
-
-interrupts = <21 8>;
-
--Scott
+josh
