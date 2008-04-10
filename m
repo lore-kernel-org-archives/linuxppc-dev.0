@@ -1,20 +1,19 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 94B7ADE123
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Apr 2008 00:11:45 +1000 (EST)
-Message-Id: <EA6AD0FF-DBB4-4835-A77B-EE337BAB53E2@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Paul Mackerras <paulus@samba.org>
-In-Reply-To: <18430.2296.189338.485646@cargo.ozlabs.ibm.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v919.2)
+Return-Path: <laurentp@cse-semaphore.com>
+Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
+	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id 31D0CDE4C8
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Apr 2008 00:21:05 +1000 (EST)
+From: Laurent Pinchart <laurentp@cse-semaphore.com>
+To: Kumar Gala <galak@kernel.crashing.org>
 Subject: Re: Patches added to powerpc.git powerpc-next and master branches
-Date: Thu, 10 Apr 2008 09:11:39 -0500
+Date: Thu, 10 Apr 2008 16:20:48 +0200
 References: <200804101346.32376.laurentp@cse-semaphore.com>
-	<18430.2296.189338.485646@cargo.ozlabs.ibm.com>
-Cc: linuxppc-dev@ozlabs.org
+	<649E760F-1A32-46C3-AB61-8F5249BD1290@kernel.crashing.org>
+In-Reply-To: <649E760F-1A32-46C3-AB61-8F5249BD1290@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart1444417.tgTT9i5KY4";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
+Message-Id: <200804101620.58133.laurentp@cse-semaphore.com>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,17 +23,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+--nextPart1444417.tgTT9i5KY4
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-On Apr 10, 2008, at 7:32 AM, Paul Mackerras wrote:
-> Laurent Pinchart writes:
->
->> could you please add the following patches ?
->
-> Sure, if Kumar acks them, since they are all 8xxx-related as far as I
-> can see (with the exception of the part of 2/5 that adds the new
-> dt_get_virtual_reg function).  Or Kumar can put them in his tree.
+Hi Kumar,
 
-I'll deal with them.  There are a larger number of CPM/8xxx related  
-patches that I need to go through.
+On Thursday 10 April 2008 16:10, Kumar Gala wrote:
+> Laurent,
+>=20
+> The cpm/82xx ones should go via me.
 
-- k
+Sorry, I didn't know that. I'll e-mail you directly next time.
+
+Best regards,
+
+=2D-=20
+Laurent Pinchart
+CSE Semaphore Belgium
+
+Chaussee de Bruxelles, 732A
+B-1410 Waterloo
+Belgium
+
+T +32 (2) 387 42 59
+=46 +32 (2) 387 42 75
+
+--nextPart1444417.tgTT9i5KY4
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
+
+iD8DBQBH/iJK8y9gWxC9vpcRAi51AJ9Q68d34Kj5mPwl3eGJPQf+7Jx1VwCfehvf
+YkS8jRdkWsYkxcniF0/T55E=
+=hMZV
+-----END PGP SIGNATURE-----
+
+--nextPart1444417.tgTT9i5KY4--
