@@ -1,17 +1,22 @@
 Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <18429.28416.578860.961632@cargo.ozlabs.ibm.com>
-Date: Thu, 10 Apr 2008 11:36:00 +1000
+Message-ID: <18429.31390.141903.1442@cargo.ozlabs.ibm.com>
+Date: Thu, 10 Apr 2008 12:25:34 +1000
 From: Paul Mackerras <paulus@samba.org>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] pseries: phyp dump: Variable size reserve space.
-In-Reply-To: <76b6f0069fd6d80f69620e39c8528e9d@kernel.crashing.org>
-References: <47FAB221.7050406@austin.ibm.com>
-	<20080408024352.GA32761@lixom.net> <47FCFDA4.10709@austin.ibm.com>
-	<76b6f0069fd6d80f69620e39c8528e9d@kernel.crashing.org>
-Cc: Olof Johansson <olof@lixom.net>, mahuja@us.ibm.com, linasvepstas@gmail.com,
-	linuxppc-dev@ozlabs.org
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 01/11] [POWERPC] bootwrapper: Allow specifying of image
+	physical offset
+In-Reply-To: <C91EF39E-9776-4D7C-883E-F560A671E221@kernel.crashing.org>
+References: <1207015715-31496-1-git-send-email-galak@kernel.crashing.org>
+	<1207015715-31496-2-git-send-email-galak@kernel.crashing.org>
+	<18418.2460.594352.712502@cargo.ozlabs.ibm.com>
+	<5DBEA342-7674-414B-A666-B8FBEED34814@kernel.crashing.org>
+	<18418.55835.338209.611273@cargo.ozlabs.ibm.com>
+	<0F53B076-0A94-4A2D-8D9A-ED507B53ABE6@kernel.crashing.org>
+	<18420.31327.633359.619200@cargo.ozlabs.ibm.com>
+	<C91EF39E-9776-4D7C-883E-F560A671E221@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,18 +26,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Segher Boessenkool writes:
+Kumar Gala writes:
 
-> >>> +	tmp = tmp & ~0x000000001FFFFFFF;
-> 
-> Note that this only works as you expect because the constant is
-> signed here -- the extra zeroes do not magically make it a 64-bit
-> number.  So it goes 32-bit 0x1fffffff -> 32-bit -0x20000000 ->
-> 64-bit -0x20000000.
+> So now we can look at the vmlinux and determine the physical offset.   
+> The question is how best to do that.  Here are the options I see:
+> * readelf, grep and parse output
+> * objdump grep and parse output
+> * simple C program that read's the elf and reports back
 
-Huh?  It's not big enough to be negative when considered as a 32-bit
-number...
+Either readelf or objdump for now, and if that proves to be fragile we
+can look at a C program.  You could do:
 
-But yes, adding a UL would be a good idea.
+readelf -l $vmlinux | grep -m 1 LOAD | awk '{print $4}'
+
+or
+
+objdump -p $vmlinux | grep -m 1 LOAD | awk '{print $7}'
+
+There's not a lot of difference.  Since the wrapper already uses
+objdump, I think we should use objdump rather than making the wrapper
+depend on an additional program (readelf).
+
+> The other questions is if we'd ever have a vmlinux with more than one  
+> PT_LOAD PHDR.  If so which one do we use (the one with the lowest  
+> physical address)?
+
+I think we would take the first one.
 
 Paul.
