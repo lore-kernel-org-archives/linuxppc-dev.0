@@ -1,17 +1,16 @@
 Return-Path: <paul.gortmaker@windriver.com>
 Received: from mail.wrs.com (mail.windriver.com [147.11.1.11])
-	by ozlabs.org (Postfix) with ESMTP id A815ADE2CD
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Apr 2008 09:29:34 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 29932DE32A
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Apr 2008 09:29:35 +1000 (EST)
 From: Paul Gortmaker <paul.gortmaker@windriver.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 4/5] gianfar: dont hog the mii_bus->priv with just the regs.
-Date: Thu, 10 Apr 2008 13:52:01 -0400
-Message-Id: <9a0d21c220e831ce5673f150ebc8df78b083ab5b.1207846542.git.paul.gortmaker@windriver.com>
-In-Reply-To: <51ed2b5a385f698c6358bc0240abaf5216b82a66.1207846542.git.paul.gortmaker@windriver.com>
+Subject: [PATCH 3/5] gianfar: limit scope of gfar_local_mdio functions
+Date: Thu, 10 Apr 2008 13:52:00 -0400
+Message-Id: <51ed2b5a385f698c6358bc0240abaf5216b82a66.1207846542.git.paul.gortmaker@windriver.com>
+In-Reply-To: <d0000263c8e632d0bc29242782cdb2e3158e7e41.1207846542.git.paul.gortmaker@windriver.com>
 References: <1207849922-2436-1-git-send-email-paul.gortmaker@windriver.com>
 	<4764055962e0a42ce083783bbb897a62090ad90b.1207846542.git.paul.gortmaker@windriver.com>
 	<d0000263c8e632d0bc29242782cdb2e3158e7e41.1207846542.git.paul.gortmaker@windriver.com>
-	<51ed2b5a385f698c6358bc0240abaf5216b82a66.1207846542.git.paul.gortmaker@windriver.com>
 In-Reply-To: <4764055962e0a42ce083783bbb897a62090ad90b.1207846542.git.paul.gortmaker@windriver.com>
 References: <4764055962e0a42ce083783bbb897a62090ad90b.1207846542.git.paul.gortmaker@windriver.com>
 Cc: scottwood@freescale.com, linux-net@vger.kernel.org,
@@ -25,96 +24,99 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The gfar was previously using the mii_bus->priv to directly
-store the gfar_mii regs, which leaves no room/flexibility to
-store anything else there.  I believe it makes more sense to
-have mii_bus->priv point at a struct gianfar_mdio_data and
-then have the regs stored as a field within that.  It makes
-the code easier to read too.
-
-This isn't in a hot path, so there should be no performance
-penalty associated with this.
+The gfar_local_mdio_read/write functions were brought in via
+extern since they go right at the regs vs. going via the normal
+gfar_mdio_read/write functions.  With the priv->mii_bus properly
+set, we can get rid of the externs, the casts etc. and use the
+normal gfar_mdio_read/write. We just need to move the call to the
+gfar_configure_serdes down slightly to after where priv->mii_bus
+is set to a sane value.
 
 Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
 ---
- drivers/net/gianfar_mii.c   |   17 ++++++++++-------
- include/linux/fsl_devices.h |    1 +
- 2 files changed, 11 insertions(+), 7 deletions(-)
+ drivers/net/gianfar.c     |   17 +++++++----------
+ drivers/net/gianfar_mii.c |    4 ++--
+ 2 files changed, 9 insertions(+), 12 deletions(-)
 
+diff --git a/drivers/net/gianfar.c b/drivers/net/gianfar.c
+index 0ad74c1..9173784 100644
+--- a/drivers/net/gianfar.c
++++ b/drivers/net/gianfar.c
+@@ -130,8 +130,6 @@ static void free_skb_resources(struct gfar_private *priv);
+ static void gfar_set_multi(struct net_device *dev);
+ static void gfar_set_hash_for_addr(struct net_device *dev, u8 *addr);
+ static void gfar_configure_serdes(struct net_device *dev);
+-extern int gfar_local_mdio_write(struct gfar_mii __iomem *regs, int mii_id, int regnum, u16 value);
+-extern int gfar_local_mdio_read(struct gfar_mii __iomem *regs, int mii_id, int regnum);
+ #ifdef CONFIG_GFAR_NAPI
+ static int gfar_poll(struct napi_struct *napi, int budget);
+ #endif
+@@ -459,9 +457,6 @@ static int init_phy(struct net_device *dev)
+ 
+ 	phydev = phy_connect(dev, phy_id, &adjust_link, 0, interface);
+ 
+-	if (interface == PHY_INTERFACE_MODE_SGMII)
+-		gfar_configure_serdes(dev);
+-
+ 	if (IS_ERR(phydev)) {
+ 		printk(KERN_ERR "%s: Could not attach to PHY\n", dev->name);
+ 		return PTR_ERR(phydev);
+@@ -474,27 +469,29 @@ static int init_phy(struct net_device *dev)
+ 	priv->mii_bus = phydev->bus;
+ 	priv->phydev = phydev;
+ 
++	if (interface == PHY_INTERFACE_MODE_SGMII)
++		gfar_configure_serdes(dev);
++
+ 	return 0;
+ }
+ 
+ static void gfar_configure_serdes(struct net_device *dev)
+ {
+ 	struct gfar_private *priv = netdev_priv(dev);
+-	struct gfar_mii __iomem *regs =
+-			(void __iomem *)&priv->regs->gfar_mii_regs;
++	struct mii_bus *bus = priv->mii_bus;
+ 
+ 	/* Initialise TBI i/f to communicate with serdes (lynx phy) */
+ 
+ 	/* Single clk mode, mii mode off(for aerdes communication) */
+-	gfar_local_mdio_write(regs, TBIPA_VALUE, MII_TBICON, TBICON_CLK_SELECT);
++	gfar_mdio_write(bus, TBIPA_VALUE, MII_TBICON, TBICON_CLK_SELECT);
+ 
+ 	/* Supported pause and full-duplex, no half-duplex */
+-	gfar_local_mdio_write(regs, TBIPA_VALUE, MII_ADVERTISE,
++	gfar_mdio_write(bus, TBIPA_VALUE, MII_ADVERTISE,
+ 			ADVERTISE_1000XFULL | ADVERTISE_1000XPAUSE |
+ 			ADVERTISE_1000XPSE_ASYM);
+ 
+ 	/* ANEG enable, restart ANEG, full duplex mode, speed[1] set */
+-	gfar_local_mdio_write(regs, TBIPA_VALUE, MII_BMCR, BMCR_ANENABLE |
++	gfar_mdio_write(bus, TBIPA_VALUE, MII_BMCR, BMCR_ANENABLE |
+ 			BMCR_ANRESTART | BMCR_FULLDPLX | BMCR_SPEED1000);
+ }
+ 
 diff --git a/drivers/net/gianfar_mii.c b/drivers/net/gianfar_mii.c
-index d5efa9c..806df3f 100644
+index 2432762..d5efa9c 100644
 --- a/drivers/net/gianfar_mii.c
 +++ b/drivers/net/gianfar_mii.c
-@@ -104,10 +104,10 @@ static int gfar_local_mdio_read(struct gfar_mii __iomem *regs, int mii_id, int r
-  * All PHY configuration is done through the TSEC1 MIIM regs */
- int gfar_mdio_write(struct mii_bus *bus, int mii_id, int regnum, u16 value)
+@@ -51,7 +51,7 @@
+  * the local mdio pins, which may not be the same as system mdio bus, used for
+  * controlling the external PHYs, for example.
+  */
+-int gfar_local_mdio_write(struct gfar_mii __iomem *regs, int mii_id,
++static int gfar_local_mdio_write(struct gfar_mii __iomem *regs, int mii_id,
+ 			  int regnum, u16 value)
  {
--	struct gfar_mii __iomem *regs = (void __iomem *)bus->priv;
-+	struct gianfar_mdio_data *mdata = (struct gianfar_mdio_data *)bus->priv;
+ 	/* Set the PHY address and the register address we want to write */
+@@ -77,7 +77,7 @@ int gfar_local_mdio_write(struct gfar_mii __iomem *regs, int mii_id,
+  * and are always tied to the local mdio pins, which may not be the
+  * same as system mdio bus, used for controlling the external PHYs, for eg.
+  */
+-int gfar_local_mdio_read(struct gfar_mii __iomem *regs, int mii_id, int regnum)
++static int gfar_local_mdio_read(struct gfar_mii __iomem *regs, int mii_id, int regnum)
  
- 	/* Write to the local MII regs */
--	return(gfar_local_mdio_write(regs, mii_id, regnum, value));
-+	return(gfar_local_mdio_write(mdata->regs, mii_id, regnum, value));
- }
- 
- /* Read the bus for PHY at addr mii_id, register regnum, and
-@@ -115,16 +115,17 @@ int gfar_mdio_write(struct mii_bus *bus, int mii_id, int regnum, u16 value)
-  * configuration has to be done through the TSEC1 MIIM regs */
- int gfar_mdio_read(struct mii_bus *bus, int mii_id, int regnum)
  {
--	struct gfar_mii __iomem *regs = (void __iomem *)bus->priv;
-+	struct gianfar_mdio_data *mdata = (struct gianfar_mdio_data *)bus->priv;
- 
- 	/* Read the local MII regs */
--	return(gfar_local_mdio_read(regs, mii_id, regnum));
-+	return(gfar_local_mdio_read(mdata->regs, mii_id, regnum));
- }
- 
- /* Reset the MIIM registers, and wait for the bus to free */
- int gfar_mdio_reset(struct mii_bus *bus)
- {
--	struct gfar_mii __iomem *regs = (void __iomem *)bus->priv;
-+	struct gianfar_mdio_data *mdata = (struct gianfar_mdio_data *)bus->priv;
-+	struct gfar_mii __iomem *regs = mdata->regs;
- 	unsigned int timeout = PHY_INIT_TIMEOUT;
- 
- 	mutex_lock(&bus->mdio_lock);
-@@ -192,7 +193,8 @@ int gfar_mdio_probe(struct device *dev)
- 		goto reg_map_fail;
- 	}
- 
--	new_bus->priv = (void __force *)regs;
-+	new_bus->priv = pdata;
-+	pdata->regs = (void __force *)regs;
- 
- 	new_bus->irq = pdata->irq;
- 
-@@ -221,12 +223,13 @@ reg_map_fail:
- int gfar_mdio_remove(struct device *dev)
- {
- 	struct mii_bus *bus = dev_get_drvdata(dev);
-+	struct gianfar_mdio_data *mdata = (struct gianfar_mdio_data *)bus->priv;
- 
- 	mdiobus_unregister(bus);
- 
- 	dev_set_drvdata(dev, NULL);
- 
--	iounmap((void __iomem *)bus->priv);
-+	iounmap(mdata->regs);
- 	bus->priv = NULL;
- 	kfree(bus);
- 
-diff --git a/include/linux/fsl_devices.h b/include/linux/fsl_devices.h
-index 1831b19..4b304b6 100644
---- a/include/linux/fsl_devices.h
-+++ b/include/linux/fsl_devices.h
-@@ -58,6 +58,7 @@ struct gianfar_platform_data {
- 
- struct gianfar_mdio_data {
- 	/* board specific information */
-+	struct	gfar_mii __iomem *regs;
- 	int	irq[32];
- };
- 
+ 	u16 value;
 -- 
 1.5.4.3
