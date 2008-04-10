@@ -1,12 +1,21 @@
-Return-Path: <benh@ozlabs.org>
-To: <linux-kernel@vger.kernel.org>
-From: Benjamin Herrenschmidt <benh@ozlabs.org>
-Date: Thu, 10 Apr 2008 13:22:56 +1000
-Subject: [PATCH 1/2] Add thread_info_cache_init() to all archs
-Message-Id: <20080410032354.90CB1DDF0F@ozlabs.org>
-Cc: Linux-Arch <linux-arch@vger.kernel.org>, linuxppc-dev@ozlabs.org,
-	takata@linux-m32r.org, linux-m32r@ml.linux-m32r.org,
-	Paul Mackerras <paulus@samba.org>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 8E1ADDDEDA
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Apr 2008 14:24:44 +1000 (EST)
+Date: Thu, 10 Apr 2008 14:24:30 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] [POWERPC] 83xx/85xx: Reorganize defconfigs
+Message-Id: <20080410142430.256fd23e.sfr@canb.auug.org.au>
+In-Reply-To: <6BE67DBD-325A-4628-8480-7EA0FE79DBE5@kernel.crashing.org>
+References: <Pine.LNX.4.64.0804091017440.18753@blarg.am.freescale.net>
+	<20080410103131.f0dcf730.sfr@canb.auug.org.au>
+	<6BE67DBD-325A-4628-8480-7EA0FE79DBE5@kernel.crashing.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Thu__10_Apr_2008_14_24_30_+1000_GQPqN6q5gKUD/sme"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,58 +25,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Some architecture need to maintain a kmem cache for thread info
-structures. (next patch adds that to powerpc to fix an alignment
-problem).
+--Signature=_Thu__10_Apr_2008_14_24_30_+1000_GQPqN6q5gKUD/sme
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-There is no good arch callback to use to initialize that cache
-that I can find, so this adds a new one and adds an empty macro
-for when it's not implemented.
+On Wed, 9 Apr 2008 22:11:38 -0500 Kumar Gala <galak@kernel.crashing.org> wr=
+ote:
+>
+> Yeah the are mpc85xx_defconfig and mpc83xx_defconfig.
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
+So should we add mpc83xx_defconfig to the kisskb builds and remove
+mpc885_ads_defconfig (we already do a mpc85xx_defconfig build)?
 
-So we have the choice here between:
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
- - the ifdef on the func name that I did, consistent with what
-I did before for iomap, which iirc Linus liked
+--Signature=_Thu__10_Apr_2008_14_24_30_+1000_GQPqN6q5gKUD/sme
+Content-Type: application/pgp-signature
 
- - add some more ARCH_HAS_* or HAVE_* (yuck)
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
- - add an empty definition to all archs .h (pain in the neck but I
-can do it, though it will be an annoying patch to keep around)
+iD8DBQFH/ZaDTgG2atn1QN8RAqjxAJ4j9lSeapMdYA1xTiBDMXep6dWOgwCeLg9R
+AJYlkHZofFmb4O1g5jZrxlQ=
+=GRcS
+-----END PGP SIGNATURE-----
 
- - do a weak function (will slightly bloat everybody for no good reason)
-
-So unless there is strong complaints, I'd like to stick to my
-current approach.
-
- include/linux/sched.h |    4 ++++
- init/main.c           |    1 +
- 2 files changed, 5 insertions(+)
-
---- linux-work.orig/init/main.c	2008-04-10 13:11:06.000000000 +1000
-+++ linux-work/init/main.c	2008-04-10 13:11:19.000000000 +1000
-@@ -623,6 +623,7 @@ asmlinkage void __init start_kernel(void
- 	if (efi_enabled)
- 		efi_enter_virtual_mode();
- #endif
-+	thread_info_cache_init();
- 	fork_init(num_physpages);
- 	proc_caches_init();
- 	buffer_init();
-Index: linux-work/include/linux/sched.h
-===================================================================
---- linux-work.orig/include/linux/sched.h	2008-04-10 13:11:44.000000000 +1000
-+++ linux-work/include/linux/sched.h	2008-04-10 13:12:05.000000000 +1000
-@@ -1893,6 +1893,10 @@ static inline unsigned long *end_of_stac
- 
- #endif
- 
-+#ifndef thread_info_cache_init
-+#define thread_info_cache_init	do { } while(0)
-+#endif
-+
- /* set thread flags in other task's structures
-  * - see asm/thread_info.h for TIF_xxxx flags available
-  */
+--Signature=_Thu__10_Apr_2008_14_24_30_+1000_GQPqN6q5gKUD/sme--
