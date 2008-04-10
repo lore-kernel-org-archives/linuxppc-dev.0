@@ -1,14 +1,19 @@
 Return-Path: <paul.gortmaker@windriver.com>
 Received: from mail.wrs.com (mail.windriver.com [147.11.1.11])
-	by ozlabs.org (Postfix) with ESMTP id 6DA27DE2A4
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Apr 2008 09:29:32 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id A815ADE2CD
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Apr 2008 09:29:34 +1000 (EST)
 From: Paul Gortmaker <paul.gortmaker@windriver.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 1/5] phylib: don't create a phydev for ID-less PHYs.
-Date: Thu, 10 Apr 2008 13:51:58 -0400
-Message-Id: <4764055962e0a42ce083783bbb897a62090ad90b.1207846542.git.paul.gortmaker@windriver.com>
-In-Reply-To: <1207849922-2436-1-git-send-email-paul.gortmaker@windriver.com>
+Subject: [PATCH 4/5] gianfar: dont hog the mii_bus->priv with just the regs.
+Date: Thu, 10 Apr 2008 13:52:01 -0400
+Message-Id: <9a0d21c220e831ce5673f150ebc8df78b083ab5b.1207846542.git.paul.gortmaker@windriver.com>
+In-Reply-To: <51ed2b5a385f698c6358bc0240abaf5216b82a66.1207846542.git.paul.gortmaker@windriver.com>
 References: <1207849922-2436-1-git-send-email-paul.gortmaker@windriver.com>
+	<4764055962e0a42ce083783bbb897a62090ad90b.1207846542.git.paul.gortmaker@windriver.com>
+	<d0000263c8e632d0bc29242782cdb2e3158e7e41.1207846542.git.paul.gortmaker@windriver.com>
+	<51ed2b5a385f698c6358bc0240abaf5216b82a66.1207846542.git.paul.gortmaker@windriver.com>
+In-Reply-To: <4764055962e0a42ce083783bbb897a62090ad90b.1207846542.git.paul.gortmaker@windriver.com>
+References: <4764055962e0a42ce083783bbb897a62090ad90b.1207846542.git.paul.gortmaker@windriver.com>
 Cc: scottwood@freescale.com, linux-net@vger.kernel.org,
 	Paul Gortmaker <paul.gortmaker@windriver.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -20,63 +25,96 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I've tested on 8360, 8540 and 8641D and in all cases, the PHY
-ID returned for bus addr 0x1f is all zeros, and not all 0xf.
-This means we've been allocating a phydev for this "ghost".
+The gfar was previously using the mii_bus->priv to directly
+store the gfar_mii regs, which leaves no room/flexibility to
+store anything else there.  I believe it makes more sense to
+have mii_bus->priv point at a struct gianfar_mdio_data and
+then have the regs stored as a field within that.  It makes
+the code easier to read too.
 
-In addition to marking 0x0 as an invalid PHY ID, I've also
-changed the existing somewhat useless printk to actually
-list the bus IDs where it found a PHY so we get a basic
-bus summary.
+This isn't in a hot path, so there should be no performance
+penalty associated with this.
 
 Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
 ---
- drivers/net/phy/mdio_bus.c   |    4 +++-
- drivers/net/phy/phy_device.c |    5 +++--
- 2 files changed, 6 insertions(+), 3 deletions(-)
+ drivers/net/gianfar_mii.c   |   17 ++++++++++-------
+ include/linux/fsl_devices.h |    1 +
+ 2 files changed, 11 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/net/phy/mdio_bus.c b/drivers/net/phy/mdio_bus.c
-index 963630c..e33a119 100644
---- a/drivers/net/phy/mdio_bus.c
-+++ b/drivers/net/phy/mdio_bus.c
-@@ -59,6 +59,7 @@ int mdiobus_register(struct mii_bus *bus)
- 	if (bus->reset)
- 		bus->reset(bus);
+diff --git a/drivers/net/gianfar_mii.c b/drivers/net/gianfar_mii.c
+index d5efa9c..806df3f 100644
+--- a/drivers/net/gianfar_mii.c
++++ b/drivers/net/gianfar_mii.c
+@@ -104,10 +104,10 @@ static int gfar_local_mdio_read(struct gfar_mii __iomem *regs, int mii_id, int r
+  * All PHY configuration is done through the TSEC1 MIIM regs */
+ int gfar_mdio_write(struct mii_bus *bus, int mii_id, int regnum, u16 value)
+ {
+-	struct gfar_mii __iomem *regs = (void __iomem *)bus->priv;
++	struct gianfar_mdio_data *mdata = (struct gianfar_mdio_data *)bus->priv;
  
-+	pr_info("%s: PHY(s) at:", bus->name);
- 	for (i = 0; i < PHY_MAX_ADDR; i++) {
- 		struct phy_device *phydev;
+ 	/* Write to the local MII regs */
+-	return(gfar_local_mdio_write(regs, mii_id, regnum, value));
++	return(gfar_local_mdio_write(mdata->regs, mii_id, regnum, value));
+ }
  
-@@ -97,12 +98,13 @@ int mdiobus_register(struct mii_bus *bus)
- 				phy_device_free(phydev);
- 				phydev = NULL;
- 			}
-+			printk(" 0x%x", i);
- 		}
+ /* Read the bus for PHY at addr mii_id, register regnum, and
+@@ -115,16 +115,17 @@ int gfar_mdio_write(struct mii_bus *bus, int mii_id, int regnum, u16 value)
+  * configuration has to be done through the TSEC1 MIIM regs */
+ int gfar_mdio_read(struct mii_bus *bus, int mii_id, int regnum)
+ {
+-	struct gfar_mii __iomem *regs = (void __iomem *)bus->priv;
++	struct gianfar_mdio_data *mdata = (struct gianfar_mdio_data *)bus->priv;
  
- 		bus->phy_map[i] = phydev;
+ 	/* Read the local MII regs */
+-	return(gfar_local_mdio_read(regs, mii_id, regnum));
++	return(gfar_local_mdio_read(mdata->regs, mii_id, regnum));
+ }
+ 
+ /* Reset the MIIM registers, and wait for the bus to free */
+ int gfar_mdio_reset(struct mii_bus *bus)
+ {
+-	struct gfar_mii __iomem *regs = (void __iomem *)bus->priv;
++	struct gianfar_mdio_data *mdata = (struct gianfar_mdio_data *)bus->priv;
++	struct gfar_mii __iomem *regs = mdata->regs;
+ 	unsigned int timeout = PHY_INIT_TIMEOUT;
+ 
+ 	mutex_lock(&bus->mdio_lock);
+@@ -192,7 +193,8 @@ int gfar_mdio_probe(struct device *dev)
+ 		goto reg_map_fail;
  	}
  
--	pr_info("%s: probed\n", bus->name);
-+	printk("\n");
+-	new_bus->priv = (void __force *)regs;
++	new_bus->priv = pdata;
++	pdata->regs = (void __force *)regs;
  
- 	return err;
- }
-diff --git a/drivers/net/phy/phy_device.c b/drivers/net/phy/phy_device.c
-index f4c4fd8..740dd2e 100644
---- a/drivers/net/phy/phy_device.c
-+++ b/drivers/net/phy/phy_device.c
-@@ -116,8 +116,9 @@ struct phy_device * get_phy_device(struct mii_bus *bus, int addr)
+ 	new_bus->irq = pdata->irq;
  
- 	phy_id |= (phy_reg & 0xffff);
+@@ -221,12 +223,13 @@ reg_map_fail:
+ int gfar_mdio_remove(struct device *dev)
+ {
+ 	struct mii_bus *bus = dev_get_drvdata(dev);
++	struct gianfar_mdio_data *mdata = (struct gianfar_mdio_data *)bus->priv;
  
--	/* If the phy_id is all Fs, there is no device there */
--	if (0xffffffff == phy_id)
-+	/* If the phy_id is all Fs, there is no device there. Similarly
-+ 	   it seems common to get an ID of zero at addr 0x1f */
-+	if (0xffffffff == phy_id || 0 == phy_id)
- 		return NULL;
+ 	mdiobus_unregister(bus);
  
- 	dev = phy_device_create(bus, addr, phy_id);
+ 	dev_set_drvdata(dev, NULL);
+ 
+-	iounmap((void __iomem *)bus->priv);
++	iounmap(mdata->regs);
+ 	bus->priv = NULL;
+ 	kfree(bus);
+ 
+diff --git a/include/linux/fsl_devices.h b/include/linux/fsl_devices.h
+index 1831b19..4b304b6 100644
+--- a/include/linux/fsl_devices.h
++++ b/include/linux/fsl_devices.h
+@@ -58,6 +58,7 @@ struct gianfar_platform_data {
+ 
+ struct gianfar_mdio_data {
+ 	/* board specific information */
++	struct	gfar_mii __iomem *regs;
+ 	int	irq[32];
+ };
+ 
 -- 
 1.5.4.3
