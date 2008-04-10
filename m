@@ -1,21 +1,25 @@
-Return-Path: <afleming@freescale.com>
+Return-Path: <afleming@ld0175-tx32.am.freescale.net>
 Received: from az33egw02.freescale.net (az33egw02.freescale.net
 	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "az33egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 55912DE317
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Apr 2008 09:30:51 +1000 (EST)
-Message-Id: <3F8109F5-F512-48CD-AD93-2C6B4164E5AA@freescale.com>
+	by ozlabs.org (Postfix) with ESMTPS id 059F3DDF4A
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Apr 2008 09:34:38 +1000 (EST)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
+	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
+	m3ANYXG5001422
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Apr 2008 16:34:34 -0700 (MST)
+Received: from ld0175-tx32.am.freescale.net (ld0175-tx32.am.freescale.net
+	[10.82.19.125])
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id m3ANYW4Q018949
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Apr 2008 18:34:32 -0500 (CDT)
 From: Andy Fleming <afleming@freescale.com>
-To: Paul Gortmaker <paul.gortmaker@windriver.com>
-In-Reply-To: <1207849922-2436-1-git-send-email-paul.gortmaker@windriver.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: [PATCH 0/5] dynamic detection of gianfar TPIPA
-Date: Thu, 10 Apr 2008 18:30:37 -0500
-References: <1207849922-2436-1-git-send-email-paul.gortmaker@windriver.com>
-Cc: scottwood@freescale.com, linuxppc-dev@ozlabs.org, linux-net@vger.kernel.org
+To: netdev@vger.kernel.org
+Subject: [PATCH v2.6.26] gianfar: Determine TBIPA value dynamically
+Date: Thu, 10 Apr 2008 18:34:31 -0500
+Message-Id: <1207870471-3601-1-git-send-email-afleming@freescale.com>
+Cc: paul.gortmaker@windriver.com, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,64 +29,183 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+TBIPA needs to be set to a value (on connected MDIO buses) that doesn't
+conflict with PHYs on the bus.  By hardcoding it to 0x1f, we were preventing
+boards with PHYs at 0x1f from working properly.  Instead, scan the bus when
+it comes up, and find an address that doesn't have a PHY on it.  The TBI PHY
+configuration code then trusts that the value in TBIPA is either safe, or
+doesn't matter (ie - it's not an active bus with other PHYs).
 
-On Apr 10, 2008, at 12:51, Paul Gortmaker wrote:
+Signed-off-by: Andy Fleming <afleming@freescale.com>
+---
 
->
-> This patch series consists of some minor cleanups that eventually
-> allow us to implement a dynamic assignment of the gianfar TBIPA.
-> This was the implementation that Andy and Scott indicated was
-> the most desireable solution at the bottom of this discussion:
->
-> http://patchwork.ozlabs.org/linuxppc-embedded/patch?id=12902
->
-> The lead up patches are as follows:
->
-> -dont allocate a phydev for the "ghost" phy that seems to appear
->  on ID 0x1f of all the MDIO bus scans.
->
-> -add in the missing assignment to priv->mii_bus when we assign a
->  phy to the device.
->
-> -cleanup of unnecessary externs that the above change allows us.
->
-> -make the mii_bus->priv point to struct gianfar_mdio_data
->
-> At this point, we can then actually use the phy_map of the mii_bus
-> to tell us which MDIO ID we can use for the TBIPA, instead of just
-> hard coding 0x1f.
+I think this should go in, but I'd like to see some testing first.  I don't
+have hardware which is affected by this.  I've only confirmed that it doesn't
+break current hardware.
 
+ drivers/net/gianfar.c     |   25 +++++++++++++----------
+ drivers/net/gianfar_mii.c |   47 ++++++++++++++++++++++++++++++++++++++++----
+ drivers/net/gianfar_mii.h |    3 ++
+ 3 files changed, 59 insertions(+), 16 deletions(-)
 
-I may be missing something, but I don't think this quite right.
-
-If you have a PHY at 0x1f, this patchset will cause no PHY device to  
-be allocated for that address, and you'll actually end up assigning  
-TBIPA to be 0x1f again, since there's no PHY there.  Right?  Were you  
-able to use this code with a PHY at 0x1f?
-
-I like the idea of passing around priv->mii_bus instead of regs, but I  
-think it won't work without becoming unnecessarily unwieldy.  The  
-problem is that the TBI PHY is not necessarily accessed through the  
-same bus as the PHY.  Each controller has its own TBI PHY, and that  
-PHY can only be accessed from *that* controller's MDIO bus.  So if you  
-want to configure TSEC2's TBI PHY, you use TSEC2's MDIO regs.  That's  
-what gfar_local_mdio_* allowed; they write the *local* controller's  
-MDIO regs.  It looks like this code sets up priv->mii_bus to point at  
-the bus which holds the PHY, but only TSEC0's bus (on most SoCs) is  
-connected to actual PHYs.  So you will only ever be able to configure  
-the TBI PHY on TSEC0, which will not allow any of the other TSECs to  
-use an SGMII PHY.  Were you able to use other TSECs to connect to an  
-SGMII PHY?
-
-We could still pass around an mii_bus reference, but this would  
-require creating an mii_bus instance for every single TSEC, which is a  
-little heavyweight when we just want to configure the TBI PHY once on  
-startup.
-
-After some thinking, I went ahead and implemented a patch which isn't  
-ideal, but should solve the problems your patches set out to solve.   
-I've sent it in a separate message.  If you have some systems with  
-SGMII and/or a PHY at 0x1f, please test this patch on them.  I don't  
-currently have either.
-
-Andy
+diff --git a/drivers/net/gianfar.c b/drivers/net/gianfar.c
+index c8c3df7..6661015 100644
+--- a/drivers/net/gianfar.c
++++ b/drivers/net/gianfar.c
+@@ -476,24 +476,30 @@ static int init_phy(struct net_device *dev)
+ 	return 0;
+ }
+ 
++/*
++ * Initialize TBI PHY interface for communicating with the
++ * SERDES lynx PHY on the chip.  We communicate with this PHY
++ * through the MDIO bus on each controller, treating it as a
++ * "normal" PHY at the address found in the TBIPA register.  We assume
++ * that the TBIPA register is valid.  Either the MDIO bus code will set
++ * it to a value that doesn't conflict with other PHYs on the bus, or the
++ * value doesn't matter, as there are no other PHYs on the bus.
++ */
+ static void gfar_configure_serdes(struct net_device *dev)
+ {
+ 	struct gfar_private *priv = netdev_priv(dev);
+ 	struct gfar_mii __iomem *regs =
+ 			(void __iomem *)&priv->regs->gfar_mii_regs;
++	int tbipa = gfar_read(&priv->regs->tbipa);
+ 
+-	/* Initialise TBI i/f to communicate with serdes (lynx phy) */
++	/* Single clk mode, mii mode off(for serdes communication) */
++	gfar_local_mdio_write(regs, tbipa, MII_TBICON, TBICON_CLK_SELECT);
+ 
+-	/* Single clk mode, mii mode off(for aerdes communication) */
+-	gfar_local_mdio_write(regs, TBIPA_VALUE, MII_TBICON, TBICON_CLK_SELECT);
+-
+-	/* Supported pause and full-duplex, no half-duplex */
+-	gfar_local_mdio_write(regs, TBIPA_VALUE, MII_ADVERTISE,
++	gfar_local_mdio_write(regs, tbipa, MII_ADVERTISE,
+ 			ADVERTISE_1000XFULL | ADVERTISE_1000XPAUSE |
+ 			ADVERTISE_1000XPSE_ASYM);
+ 
+-	/* ANEG enable, restart ANEG, full duplex mode, speed[1] set */
+-	gfar_local_mdio_write(regs, TBIPA_VALUE, MII_BMCR, BMCR_ANENABLE |
++	gfar_local_mdio_write(regs, tbipa, MII_BMCR, BMCR_ANENABLE |
+ 			BMCR_ANRESTART | BMCR_FULLDPLX | BMCR_SPEED1000);
+ }
+ 
+@@ -540,9 +546,6 @@ static void init_registers(struct net_device *dev)
+ 
+ 	/* Initialize the Minimum Frame Length Register */
+ 	gfar_write(&priv->regs->minflr, MINFLR_INIT_SETTINGS);
+-
+-	/* Assign the TBI an address which won't conflict with the PHYs */
+-	gfar_write(&priv->regs->tbipa, TBIPA_VALUE);
+ }
+ 
+ 
+diff --git a/drivers/net/gianfar_mii.c b/drivers/net/gianfar_mii.c
+index b889892..e061738 100644
+--- a/drivers/net/gianfar_mii.c
++++ b/drivers/net/gianfar_mii.c
+@@ -78,7 +78,6 @@ int gfar_local_mdio_write(struct gfar_mii __iomem *regs, int mii_id,
+  * same as system mdio bus, used for controlling the external PHYs, for eg.
+  */
+ int gfar_local_mdio_read(struct gfar_mii __iomem *regs, int mii_id, int regnum)
+-
+ {
+ 	u16 value;
+ 
+@@ -122,7 +121,7 @@ int gfar_mdio_read(struct mii_bus *bus, int mii_id, int regnum)
+ }
+ 
+ /* Reset the MIIM registers, and wait for the bus to free */
+-int gfar_mdio_reset(struct mii_bus *bus)
++static int gfar_mdio_reset(struct mii_bus *bus)
+ {
+ 	struct gfar_mii __iomem *regs = (void __iomem *)bus->priv;
+ 	unsigned int timeout = PHY_INIT_TIMEOUT;
+@@ -152,14 +151,15 @@ int gfar_mdio_reset(struct mii_bus *bus)
+ }
+ 
+ 
+-int gfar_mdio_probe(struct device *dev)
++static int gfar_mdio_probe(struct device *dev)
+ {
+ 	struct platform_device *pdev = to_platform_device(dev);
+ 	struct gianfar_mdio_data *pdata;
+ 	struct gfar_mii __iomem *regs;
++	struct gfar __iomem *enet_regs;
+ 	struct mii_bus *new_bus;
+ 	struct resource *r;
+-	int err = 0;
++	int i, err = 0;
+ 
+ 	if (NULL == dev)
+ 		return -EINVAL;
+@@ -199,6 +199,43 @@ int gfar_mdio_probe(struct device *dev)
+ 	new_bus->dev = dev;
+ 	dev_set_drvdata(dev, new_bus);
+ 
++	/*
++	 * This is mildly evil, but so is our hardware for doing this.
++	 * Also, we have to cast back to struct gfar_mii because of
++	 * definition weirdness done in gianfar.h.
++	 */
++	enet_regs = (struct gfar __iomem *)
++		((char *)regs - offsetof(struct gfar, gfar_mii_regs));
++
++	/* Scan the bus, looking for an empty spot for TBIPA */
++	gfar_write(&enet_regs->tbipa, 0);
++	for (i = PHY_MAX_ADDR; i > 0; i--) {
++		int physid1;
++		int physid2;
++		u32 phy_id;
++
++		physid1 = gfar_mdio_read(new_bus, i, MII_PHYSID1);
++
++		if (physid1 < 0)
++			return physid1;
++
++		physid2 = gfar_mdio_read(new_bus, i, MII_PHYSID2);
++
++		if (physid2 < 0)
++			return physid2;
++
++		phy_id = ((physid1 & 0xffff) << 16) | (physid2 & 0xffff);
++
++		if (phy_id == 0xffffffff)
++			break;
++	}
++
++	/* The bus is full.  We don't support using 31 PHYs, sorry */
++	if (i < 0)
++		return -EBUSY;
++
++	gfar_write(&enet_regs->tbipa, i);
++
+ 	err = mdiobus_register(new_bus);
+ 
+ 	if (0 != err) {
+@@ -218,7 +255,7 @@ reg_map_fail:
+ }
+ 
+ 
+-int gfar_mdio_remove(struct device *dev)
++static int gfar_mdio_remove(struct device *dev)
+ {
+ 	struct mii_bus *bus = dev_get_drvdata(dev);
+ 
+diff --git a/drivers/net/gianfar_mii.h b/drivers/net/gianfar_mii.h
+index b373091..2af28b1 100644
+--- a/drivers/net/gianfar_mii.h
++++ b/drivers/net/gianfar_mii.h
+@@ -41,6 +41,9 @@ struct gfar_mii {
+ 
+ int gfar_mdio_read(struct mii_bus *bus, int mii_id, int regnum);
+ int gfar_mdio_write(struct mii_bus *bus, int mii_id, int regnum, u16 value);
++int gfar_local_mdio_write(struct gfar_mii __iomem *regs, int mii_id,
++			  int regnum, u16 value);
++int gfar_local_mdio_read(struct gfar_mii __iomem *regs, int mii_id, int regnum);
+ int __init gfar_mdio_init(void);
+ void gfar_mdio_exit(void);
+ #endif /* GIANFAR_PHY_H */
+-- 
+1.5.4.GIT
