@@ -1,23 +1,20 @@
-Return-Path: <andre.schwarz@matrix-vision.de>
-Received: from p15137414.pureserver.info (matrixvision.de [217.160.213.229])
-	by ozlabs.org (Postfix) with ESMTP id AA16BDDF86
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Apr 2008 19:00:47 +1000 (EST)
-Message-ID: <47FDD73C.8020501@matrix-vision.de>
-Date: Thu, 10 Apr 2008 11:00:44 +0200
-From: Andre Schwarz <andre.schwarz@matrix-vision.de>
+Return-Path: <laurentp@cse-semaphore.com>
+Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
+	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id 60B96DDF6A
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Apr 2008 19:14:21 +1000 (EST)
+From: Laurent Pinchart <laurentp@cse-semaphore.com>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 19 5/5] Convert pfc8563 i2c driver from old style to new
+	style
+Date: Thu, 10 Apr 2008 11:14:15 +0200
+References: <20080112024737.7023.61680.stgit@terra.home>
+	<20080112024748.7023.90680.stgit@terra.home>
+In-Reply-To: <20080112024748.7023.90680.stgit@terra.home>
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: MPC8343 - "unable to handle paging request @ 0"
-References: <47F73625.9040903@matrix-vision.de>
-	<20080407161036.GA2688@loki.buserror.net>
-	<47FB7822.6090401@matrix-vision.de>
-	<20080408164853.GH2552@loki.buserror.net>
-	<47FCBC73.40703@matrix-vision.de> <47FD118F.8050407@freescale.com>
-	<47FD1485.6070209@matrix-vision.de>
-	<47FD15E2.2050907@freescale.com>
-In-Reply-To: <47FD15E2.2050907@freescale.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: multipart/signed; boundary="nextPart1317648.bgjo6COaZL";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
+Message-Id: <200804101114.18325.laurentp@cse-semaphore.com>
+Cc: linux-kernel@vger.kernel.org, i2c@lm-sensors.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,263 +24,164 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Scott Wood schrieb:
-> Andre Schwarz wrote:
->> Scott Wood schrieb:
->>> Andre Schwarz wrote:
->>>>  -> find_legacy_serial_port()
->>>> stdout is /soc8343@e0000000/serial@4500
->>>
->>> It looks like you have some memory corruption between here...
->>>
->>>> clocksource: timebase mult[3c00001] shift[22] registered
->>>>
->>>> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
->>>>  -> check_legacy_serial_console()
->>>>  can't find stdout package /soc8343@e0000000/serial@4500 !
->>>> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
->>>
->>> ...and here.
->>>
->>> -Scott
->>
->> Scott,
->>
->> are you talking about a possible hardware problem or misbehaving code ?
->
-> Either.  The same OF call is done in both places with the same 
-> argument, but is getting different results.
->
->> Does it look like something gets overwritten during initrd 
->> extraction/movement ?
->
-> Don't know.
->
->> The system has 512MB RAM which means that we need 2 BAT regs to map 
->> the memory. I've found comments in Freescale u-boot header files that 
->> currently a max of 256MB is supported. I never understood why ? Could 
->> this problem be related to this ?
->
-> Kim's probably be the best one to answer u-boot questions.
->
-> -Scott
->
+--nextPart1317648.bgjo6COaZL
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Scott + Kim,
+Hi Jon,
 
-as mentioned before I have re-built u-boot with the following 
-modifications :
+On Saturday 12 January 2008 03:47, Jon Smirl wrote:
+> Convert pfc8563 i2c driver from old style to new style. The
+> driver is also modified to support device tree names via the
+> i2c mod alias mechanism.
 
-- Reduce Memsize from 512 to 256MB
-- Skipped 2nd BAT setup
+The patch breaks the pfc8563 driver.
 
-dtb looks the same but memory size set to 256MB.
+The old style driver allocated memory for a pcf8563 structure that
+encapsulated an i2c_client instance. Various functions use container_of
+on an i2c_client instance to get a pointer to the pcf8563 structure.
 
-System boots fine - this is weird !
+The new style driver gets rid of the pcf8563 structure allocation, as the
+i2c_client structure is now allocated by I2C code.
 
+Here is an incremental patch that fixes the issue.
 
-I'm not really familiar with the powerpc tree of the kernel and far out 
-of sync with the current development.
+=46rom 1eac5a8e10e085c3a77c6ba7ed9dac9a39024915 Mon Sep 17 00:00:00 2001
+=46rom: Laurent Pinchart <laurentp@cse-semaphore.com>
+Date: Thu, 10 Apr 2008 11:12:25 +0200
+Subject: [PATCH] Fix pcf8563 breakage introduced by the conversion from old=
+ style to new style
 
+The old style I2C driver used to allocate a pcf8563 instance that encapsula=
+ted
+an i2c_client instance. The i2c_client instance is now allocated by I2C cor=
+e.
 
-Could you have a look at this ?
+This patch fixes the driver by storing the pcf8563 instance in the I2C clie=
+nt
+data field.
 
-Any ideas right now ?
+Signed-off-by: Laurent Pinchart <laurentp@cse-semaphore.com>
+=2D--
+ drivers/rtc/rtc-pcf8563.c |   29 ++++++++++++++++++-----------
+ 1 files changed, 18 insertions(+), 11 deletions(-)
 
+diff --git a/drivers/rtc/rtc-pcf8563.c b/drivers/rtc/rtc-pcf8563.c
+index e1ea2a0..7aab24e 100644
+=2D-- a/drivers/rtc/rtc-pcf8563.c
++++ b/drivers/rtc/rtc-pcf8563.c
+@@ -50,7 +50,7 @@
+ #define PCF8563_MO_C		0x80 /* century */
+=20
+ struct pcf8563 {
+=2D	struct i2c_client client;
++	struct rtc_device *rtc;
+ 	/*
+ 	 * The meaning of MO_C bit varies by the chip type.
+ 	 * From PCF8563 datasheet: this bit is toggled when the years
+@@ -74,7 +74,7 @@ struct pcf8563 {
+  */
+ static int pcf8563_get_datetime(struct i2c_client *client, struct rtc_time=
+ *tm)
+ {
+=2D	struct pcf8563 *pcf8563 =3D container_of(client, struct pcf8563, client=
+);
++	struct pcf8563 *pcf8563 =3D i2c_get_clientdata(client);
+ 	unsigned char buf[13] =3D { PCF8563_REG_ST1 };
+=20
+ 	struct i2c_msg msgs[] =3D {
+@@ -131,7 +131,7 @@ static int pcf8563_get_datetime(struct i2c_client *clie=
+nt, struct rtc_time *tm)
+=20
+ static int pcf8563_set_datetime(struct i2c_client *client, struct rtc_time=
+ *tm)
+ {
+=2D	struct pcf8563 *pcf8563 =3D container_of(client, struct pcf8563, client=
+);
++	struct pcf8563 *pcf8563 =3D i2c_get_clientdata(client);
+ 	int i, err;
+ 	unsigned char buf[9];
+=20
+@@ -252,10 +252,10 @@ static const struct rtc_class_ops pcf8563_rtc_ops =3D=
+ {
+=20
+ static int pcf8563_remove(struct i2c_client *client)
+ {
+=2D	struct rtc_device *rtc =3D i2c_get_clientdata(client);
++	struct pcf8563 *pcf8563 =3D i2c_get_clientdata(client);
+=20
+=2D	if (rtc)
+=2D		rtc_device_unregister(rtc);
++	if (pcf8563->rtc)
++		rtc_device_unregister(pcf8563->rtc);
+=20
+ 	return 0;
+ }
+@@ -274,26 +274,33 @@ static struct i2c_driver pcf8563_driver =3D {
+ 		.name	=3D "rtc-pcf8563",
+ 	},
+ 	.id		=3D I2C_DRIVERID_PCF8563,
+=2D	.probe =3D &pcf8563_probe,
+=2D	.remove =3D &pcf8563_remove,
++	.probe		=3D &pcf8563_probe,
++	.remove		=3D &pcf8563_remove,
+ 	.id_table	=3D pcf8563_id,
+ };
+=20
+ static int pcf8563_probe(struct i2c_client *client, const struct i2c_devic=
+e_id *id)
+ {
+=2D	int result;
++	struct pcf8563 *pcf8563;
+ 	struct rtc_device *rtc;
++	int result;
+=20
+ 	result =3D pcf8563_validate_client(client);
+ 	if (result)
+ 		return result;
+=20
++	if ((pcf8563 =3D kzalloc(sizeof(*pcf8563), GFP_KERNEL)) =3D=3D NULL)
++		return -ENOMEM;
++
+ 	rtc =3D rtc_device_register(pcf8563_driver.driver.name, &client->dev,
+ 				&pcf8563_rtc_ops, THIS_MODULE);
+=2D	if (IS_ERR(rtc))
++	if (IS_ERR(rtc)) {
++		kfree(pcf8563);
+ 		return PTR_ERR(rtc);
++	}
+=20
+=2D	i2c_set_clientdata(client, rtc);
++	pcf8563->rtc =3D rtc;
++	i2c_set_clientdata(client, pcf8563);
+=20
+ 	return 0;
+ }
+=2D-=20
+1.5.0
 
-Thanks,
-Andre
+=2D-=20
+Laurent Pinchart
+CSE Semaphore Belgium
 
+Chaussee de Bruxelles, 732A
+B-1410 Waterloo
+Belgium
 
+T +32 (2) 387 42 59
+=46 +32 (2) 387 42 75
 
+--nextPart1317648.bgjo6COaZL
+Content-Type: application/pgp-signature
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
 
-## Booting kernel from Legacy Image at ff810000 ...
-   Image Name:   2.6.25 mvBL-M7 MPC8343 #12
-   Image Type:   PowerPC Linux Kernel Image (uncompressed)
-   Data Size:    2494236 Bytes =  2.4 MB
-   Load Address: 00000000
-   Entry Point:  00000000
-   Verifying Checksum ... OK
-   Loading Kernel Image ... OK
-OK
-## Flattened Device Tree blob at 00000000
-   Booting using the fdt blob at 0x600000
-## Loading init Ramdisk from Legacy Image at 01000000 ...
-   Image Name:   mvBC-1G uInitrd #1.1.03
-   Image Type:   PowerPC Linux RAMDisk Image (uncompressed)
-   Data Size:    2654208 Bytes =  2.5 MB
-   Load Address: 00000000
-   Entry Point:  00000000
-   Verifying Checksum ... OK
-   Loading Ramdisk to 0fcb7000, end 0ff3f000 ... OK
- -> early_init_devtree(c0600000)
-search "chosen", depth: 0, uname:
-search "chosen", depth: 1, uname: chosen
-Looking for initrd properties... <3>initrd_start=0xcfcb7000  
-initrd_end=0xcff3f000
-Command line is: root=/dev/ram ro rootfstype=squashfs
-dt_root_size_cells = 1
-dt_root_addr_cells = 1
-memory scan node memory, reg size 8, data: 0 10000000 2 1,
- - 0 ,  10000000
-reserving: fcb7000 -> 288001
-Phys. mem: 10000000
--> move_device_tree
-<- move_device_tree
-Scanning CPUs ...
-boot cpu: logical 0 physical 0
- <- early_init_devtree()
-Using mvBlueLYNX-M7 machine description
-Linux version 2.6.25-rc8-01197-g1de15bb-dirty (root@nova) (gcc version 
-4.0.0 (DENX ELDK 4.1 4.0.0)) #12 PREEMPT Wed Apr 9 14:40:48 CEST 2008
- -> unflatten_device_tree()
-  size is 192c, allocating...
-  unflattening cfffe6d0...
-fixed up name for  ->
-fixed up name for chosen -> chosen
-fixed up name for wdt@200 -> wdt
-fixed up name for ethernet-phy@0 -> ethernet-phy
-fixed up name for ethernet-phy@1 -> ethernet-phy
-fixed up name for ethernet@24000 -> ethernet
-fixed up name for ethernet@25000 -> ethernet
-fixed up name for serial@4500 -> serial
-fixed up name for serial@4600 -> serial
-fixed up name for pic@700 -> pic
-fixed up name for ppcboot_env@0 -> ppcboot_env
-fixed up name for ppcboot_env_red@0x2000 -> ppcboot_env_red
-fixed up name for u-boot_autoscript@0x4000 -> u-boot_autoscript
-fixed up name for u-boot_autoscript_red@0x4000 -> u-boot_autoscript_red
-fixed up name for dtb@0x8000 -> dtb
-fixed up name for dtb_red@0xa000 -> dtb_red
-fixed up name for kernel@0x10000 -> kernel
-fixed up name for rfs@0x400000 -> rfs
-fixed up name for u-boot@0x700000 -> u-boot
-fixed up name for fpga@0x780000 -> fpga
- <- unflatten_device_tree()
-Found initrd at 0xcfcb7000:0xcff3f000
- -> find_legacy_serial_port()
-stdout is /soc8343@e0000000/serial@4500
-legacy_serial_console = 0
-default console speed = 115740
- <- find_legacy_serial_port()
-console [udbg0] enabled
-setup_arch: bootmem
-mvblm7_setup_arch()
-Adding PCI host bridge /pci@e0008500
-Found MPC83xx PCI host bridge at 0x00000000e0008500. Firmware bus 
-number: 0->0
- ->Hose at 0xc0281000, cfg_addr=0xfdffd300,cfg_data=0xfdffd304
-PCI host bridge /pci@e0008500 (primary) ranges:
- MEM 0x0000000090000000..0x000000009fffffff -> 0x0000000090000000
- MEM 0x0000000080000000..0x000000008fffffff -> 0x0000000080000000 Prefetch
-  IO 0x00000000e2000000..0x00000000e20fffff -> 0x0000000000000000
-arch: exit
-Zone PFN ranges:
-  DMA             0 ->    65536
-  Normal      65536 ->    65536
-Movable zone start PFN for each node
-early_node_map[1] active PFN ranges
-    0:        0 ->    65536
-Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 65024
-Kernel command line: root=/dev/ram ro rootfstype=squashfs
-IPIC (128 IRQ sources) at fdefc700
-PID hash table entries: 1024 (order: 10, 4096 bytes)
-clocksource: timebase mult[3c00001] shift[22] registered
- -> check_legacy_serial_console()
-stdout is /soc8343@e0000000/serial@4500
-Found serial console at ttyS0
-Dentry cache hash table entries: 32768 (order: 5, 131072 bytes)
-Inode-cache hash table entries: 16384 (order: 4, 65536 bytes)
-Memory: 254396k/262144k available (2328k kernel code, 7428k reserved, 
-88k data, 126k bss, 140k init)
-SLUB: Genslabs=12, HWalign=32, Order=0-1, MinObjects=4, CPUs=1, Nodes=1
-Mount-cache hash table entries: 512
-net_namespace: 152 bytes
-NET: Registered protocol family 16
+iD8DBQBH/dpq8y9gWxC9vpcRAmsjAJ4g3CJ/+8xY/kocuw2EWrHYen902gCgti3Y
+EtYl7MvLc8nWqd8PskVQlTw=
+=7XiV
+-----END PGP SIGNATURE-----
 
-PCI: Probing PCI hardware
-Try to map irq for 0000:00:00.0...
-pci_busdev_to_OF_node(0,0x0)
- parent is /pci@e0008500
- result is <NULL>
-Try to map irq for 0000:00:0b.0...
-pci_busdev_to_OF_node(0,0x58)
- parent is /pci@e0008500
- result is <NULL>
- -> got one, spec 2 cells (0x00000030 0x00000008...) on 
-/soc8343@e0000000/pic@700
- -> mapped to linux irq 48
-PCI->OF bus map:
-0 -> 0
-PCI: PHB (bus 0) bridge rsrc 0: 0000000000000000-00000000000fffff 
-[0x100], parent c024a074 (PCI IO)
-PCI: PHB (bus 0) bridge rsrc 1: 0000000090000000-000000009fffffff 
-[0x200], parent c024a058 (PCI mem)
-PCI: PHB (bus 0) bridge rsrc 2: 0000000080000000-000000008fffffff 
-[0x1200], parent c024a058 (PCI mem)
-PCI: Allocating 0000:00:0b.0: Resource 0: 
-0000000090000000..0000000090007fff [200]
-PCI: Assigning unassigned resouces...
-usbcore: registered new interface driver usbfs
-usbcore: registered new interface driver hub
-usbcore: registered new device driver usb
-checking if image is initramfs...it isn't (bad gzip magic numbers); 
-looks like an initrd
-Freeing initrd memory: 2592k freed
-Fixing serial ports interrupts and IO ports ...
-fixup_port_irq(0)
-fixup_port_mmio(0)
-fixup_port_irq(1)
-fixup_port_mmio(1)
-Registering platform serial ports
-squashfs: version 3.3 (2007/10/31) Phillip Lougher
-io scheduler noop registered
-io scheduler anticipatory registered (default)
-io scheduler deadline registered
-io scheduler cfq registered
-Serial: 8250/16550 driver $Revision: 1.90 $ 2 ports, IRQ sharing disabled
-serial8250.0: ttyS0 at MMIO 0xe0004500 (irq = 18) is a 16550A
-                                                             console 
-handover: boot [udbg0] -> real [ttyS0]
-serial8250.0: ttyS1 at MMIO 0xe0004600 (irq = 19) is a 16550A
-brd: module loaded
-loop: module loaded
-fsl-ehci fsl-ehci.0: Freescale On-Chip EHCI Host Controller
-fsl-ehci fsl-ehci.0: new USB bus registered, assigned bus number 1
-fsl-ehci fsl-ehci.0: irq 39, io base 0xe0022000
-fsl-ehci fsl-ehci.0: USB 2.0 started, EHCI 1.00, driver 10 Dec 2004
-usb usb1: configuration #1 chosen from 1 choice
-hub 1-0:1.0: USB hub found
-hub 1-0:1.0: 2 ports detected
-usbcore: registered new interface driver libusual
-i2c /dev entries driver
-24c01a EEPROM driver initialized
-WDT driver for MPC83xx initialized. mode:reset timeout=65535 (16 seconds)
-RAMDISK: squashfs filesystem found at block 0
-RAMDISK: Loading 2591KiB [1 disk] into ram disk... done.
-VFS: Mounted root (squashfs filesystem) readonly.
-Freeing unused kernel memory: 140k init
-
-Mounting /proc
-Mounting /tmp
-MATRIX VISION mvBlueCOUGAR-1G gcc 4.0.0 Version: 15.05.2007
-
-*************************************************
-         MATRIX VISION mvBlueCOUGAR-1G
-*************************************************
-
-executing /mnt/user/autostart ...
-login[242]: root login on 'console'
-
-
-BusyBox v1.4.2 (2007-05-15 09:04:24 CEST) Built-in shell (ash)
-Enter 'help' for a list of built-in commands.
-
--sh: can't access tty; job control turned off
-mvBC-1G:~ $
-mvBC-1G:~ $      
-
-
-MATRIX VISION GmbH, Talstraße 16, DE-71570 Oppenweiler  - Registergericht: Amtsgericht Stuttgart, HRB 271090
-Geschäftsführer: Gerhard Thullner, Werner Armingeon, Uwe Furtner
+--nextPart1317648.bgjo6COaZL--
