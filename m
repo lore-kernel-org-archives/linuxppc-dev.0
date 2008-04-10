@@ -1,20 +1,18 @@
-Return-Path: <rsc@pengutronix.de>
-Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
-	[83.236.181.26]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C067CDE498
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Apr 2008 23:50:23 +1000 (EST)
-Date: Thu, 10 Apr 2008 15:50:12 +0200
-From: Robert Schwebel <r.schwebel@pengutronix.de>
-To: Marian Balakowicz <m8@semihalf.com>
-Subject: Re: State of the MPC5200 PSC AC97 driver
-Message-ID: <20080410135012.GB13814@pengutronix.de>
-References: <47FDEF9B.5000506@semihalf.com>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.179]) by ozlabs.org (Postfix) with ESMTP id 386A3DE62B
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Apr 2008 23:50:25 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] [v5] Add idle wait support for 44x platforms
+Date: Thu, 10 Apr 2008 15:44:43 +0200
+References: <df0f79b7b4ab628887c2.1207673354@thinkpadL>
+In-Reply-To: <df0f79b7b4ab628887c2.1207673354@thinkpadL>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-In-Reply-To: <47FDEF9B.5000506@semihalf.com>
-Cc: linuxppc-dev@ozlabs.org, Sylvain Munaut <tnt@246tNt.com>,
-	spitzauer_77@gmx.de
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200804101544.44457.arnd@arndb.de>
+Cc: kvm-ppc-devel@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,38 +22,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Apr 10, 2008 at 12:44:43PM +0200, Marian Balakowicz wrote:
-> Last year you have posted a MPC5200 PSC AC97 driver patch
-> "[PATCH 9/9] sound: Add support for Freescale MPC5200 AC97 interface."
-> with the following comment:
->
-> > Not quite a clean driver, but it get things done (well, mostly).
-> > Only included to be able to test functionalityi/usage of
-> > the BestComm driver.
->
-> There are various FIXMEs and commented out code here and there.
-> Could you elaborate a bit on the overall state of the driver's
-> functionality,
-> which areas need improvement and attention?
->
-> Seems that you mainly tested BestComm with this driver, what was the
-> overall
-> BestComm performance, any issues here? Did you use any specific test setup
-> involving some dedicated application, etc.?
->
-> Did anyone else tried it and/or has a updated version or can share
-> experience?
+On Tuesday 08 April 2008, Jerone Young wrote:
+> +static struct sleep_mode modes[] =3D {
+> +=A0=A0=A0=A0=A0=A0=A0{ .name =3D "wait", .entry =3D &ppc44x_idle },
+> +=A0=A0=A0=A0=A0=A0=A0{ .name =3D "spin", .entry =3D NULL },
+> +};
+> +
+> +int __init ppc44x_idle_init(void)
+> +{
+> +=A0=A0=A0=A0=A0=A0=A0void *func =3D modes[current_mode].entry;
+> +=A0=A0=A0=A0=A0=A0=A0ppc_md.power_save =3D func;
+> +=A0=A0=A0=A0=A0=A0=A0return 0;
+> +}
+> +
+> +arch_initcall(ppc44x_idle_init);
+> +
+> +static int __init idle_param(char *p)
+> +{=20
+> +=A0=A0=A0=A0=A0=A0=A0int i;
+> +
+> +=A0=A0=A0=A0=A0=A0=A0for (i =3D 0; i < ARRAY_SIZE(modes); i++) {
+> +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0if (!strcmp(modes[i].name, =
+p)) {
+> +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0cur=
+rent_mode =3D i;
+> +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0bre=
+ak;
+> +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0}
+> +=A0=A0=A0=A0=A0=A0=A0}
+> +
+> +=A0=A0=A0=A0=A0=A0=A0return 0;
+> +}
+> +
+> +early_param("idle", idle_param);
 
-Sidenote: last time we tried (2.6.23.1), the AC97 driver didn't work,
-tested on the phyCORE-MPC5200B-tiny board. No sound, just a little bit
-noise which can be muted with the mixer. And music finishes about 7
-times as fast as it usually should. So we didn't manage to make it work
-yet.
+ok, sorry to steal the show again, now that everyone seems to be happy
+with the current code, but isn't this equivalent to the simpler
 
-Robert
--- 
- Dipl.-Ing. Robert Schwebel | http://www.pengutronix.de
- Pengutronix - Linux Solutions for Science and Industry
-   Handelsregister:  Amtsgericht Hildesheim, HRA 2686
-     Hannoversche Str. 2, 31134 Hildesheim, Germany
-   Phone: +49-5121-206917-0 |  Fax: +49-5121-206917-9
+static int __init idle_param(char *p)
+{
+	if (!strcmp(modes[i].name, "spin"))
+		ppc_md.power_save =3D NULL;
+}
+early_param("idle", idle_param);
+
+if you statically initialize the ppc_md.power_save function to ppc44x_idle
+in the platform setup files?
+
+	Arnd <><
