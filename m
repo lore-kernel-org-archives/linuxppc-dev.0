@@ -1,19 +1,14 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 947C3DDEF8
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Apr 2008 10:31:41 +1000 (EST)
-Date: Thu, 10 Apr 2008 10:31:31 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18429.33325.923972.430150@cargo.ozlabs.ibm.com>
+Date: Thu, 10 Apr 2008 12:57:49 +1000
+From: Paul Mackerras <paulus@samba.org>
 To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] [POWERPC] 83xx/85xx: Reorganize defconfigs
-Message-Id: <20080410103131.f0dcf730.sfr@canb.auug.org.au>
-In-Reply-To: <Pine.LNX.4.64.0804091017440.18753@blarg.am.freescale.net>
-References: <Pine.LNX.4.64.0804091017440.18753@blarg.am.freescale.net>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Thu__10_Apr_2008_10_31_31_+1000_4JJC3wIbEcMxyg0Y"
-Cc: linuxppc-dev@ozlabs.org
+Subject: Re: Status of patches (ppc32 mm init clean and 85xx kernel reloc)
+In-Reply-To: <88C63CCF-7ED6-486F-8E95-FABD6CEE92E0@kernel.crashing.org>
+References: <88C63CCF-7ED6-486F-8E95-FABD6CEE92E0@kernel.crashing.org>
+Cc: ppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,40 +18,103 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Thu__10_Apr_2008_10_31_31_+1000_4JJC3wIbEcMxyg0Y
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Kumar Gala writes:
 
-Hi Kumar,
+> [POWERPC] bootwrapper: Allow specifying of image physical offset
+> 
+> reworked to look at PHDR (needs linker script update patch).  Still  
+> open question on how best to do that (objdump, readelf, C program,  
+> suggestions)
 
-On Wed, 9 Apr 2008 10:18:06 -0500 (CDT) Kumar Gala <galak@kernel.crashing.o=
-rg> wrote:
->
-> Board specific defconfigs are useful, however with the ability to do
-> multi-board defconfigs they aren't needed in the top level configs direct=
-ory
->=20
-> Move the 83xx/85xx board specific defconfigs to individual directories un=
-der
-> arch/powerpc/configs.
+Just replied about that one.
 
-So do we have multi-board defconfigs for 83xx and/or 85xx?
+> [POWERPC] Remove Kconfig option BOOT_LOAD
+> 
+> should be acceptable.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Looks OK.
 
---Signature=_Thu__10_Apr_2008_10_31_31_+1000_4JJC3wIbEcMxyg0Y
-Content-Type: application/pgp-signature
+> [POWERPC] Provide access to arch/powerpc include path on ppc64
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+Looks OK.
 
-iD8DBQFH/V/pTgG2atn1QN8RAgv3AKCGiL6KptDQFefAawIhDOqAVlQvvQCfcKut
-fvkEU2jEGGiZq7DgDih6u3w=
-=q+M9
------END PGP SIGNATURE-----
+> [POWERPC] Remove and replace uses of PPC_MEMSTART with memstart_addr
+> 
+> You had some questions about _stext and the PAGE_OFFSET vs  
+> KERNELBASE.  Not sure if you are satisfied with the answers.
 
---Signature=_Thu__10_Apr_2008_10_31_31_+1000_4JJC3wIbEcMxyg0Y--
+The kdump guys don't seem to be concerned, so I guess it's OK.
+
+> [POWERPC] Introduce lowmem_end_addr to distiguish from total_lowmem
+
+OK.
+
+> [POWERPC] 85xx: Cleanup TLB initialization
+> 
+> Only effects 85xx and I don't have issues with it :)
+
+Cool :)
+
+> [POWERPC] Use lowmem_end_addr to limit lmb allocations on ppc32
+
+Looks fine.
+
+> [POWERPC] Rename __initial_memory_limit to __initial_memory_limit_addr
+
+Looks OK, though it seems a tad unnecessary.
+
+> [POWERPC] Clean up some linker and symbol usage
+> 
+> No comments.  Straight forward patch.
+
+Well, it is changing behaviour.  In particular, klimit is not
+necessarily the same as _end.  It starts out initialized to &_end but
+then gets advanced by some allocations very early in the boot IIRC.
+It might be true by now that nothing reserves memory by advancing
+klimit any more, but if that is true then the patch description needs
+to mention that klimit is no longer used and this patch makes it no
+longer usable.  In fact in that case you should remove all mention of
+klimit.
+
+Also, this patch means that the region from PHYSICAL_START to
+__pa(stext) is no longer reserved, which is another behaviour change
+that deserves to be mentioned.
+
+> [POWERPC] Move phys_addr_t definition into asm/types.h
+> 
+> I had an open question if the Kconfig for PHYS_64BIT should get set on  
+> PPC64 as well (has not effect).
+> 
+> I reworked the asm/types.h bits to look like:
+> +#if defined(CONFIG_PPC64) || defined(CONFIG_PHYS_64BIT)
+> +typedef __u64 phys_addr_t;
+> +#else
+> +typedef __u32 phys_addr_t;
+> +#endif
+
+That looks OK.
+
+> [POWERPC] 85xx: Add support for relocatble kernel (and booting at non- 
+> zero
+> 
+> Should probably get a bit more review.
+> 
+> [POWERPC] Update linker script to properly set physical addresses
+> 
+> You felt LOAD_OFFSET should be (CONFIG_PAGE_OFFSET -  
+> CONFIG_PHYSICAL_START).  I disagreed.  We need to resolve.
+
+I think you're right, actually, now, assuming that
+CONFIG_PHYSICAL_START is the physical address of the start of the
+kernel (actually, why don't you use that instead of __pa(stext) in
+your patch [9/11]?).
+
+> I think we should be able to quickly resolve and get into powerpc-next  
+> all but the '85xx: Add support for relocatable kernel' and  
+> 'bootwrapper: Allow specifying of image..' patches.  If we can close  
+> on the phys_addr_t and linker script patches that would be great.
+
+I'll put in the ones that look OK, and wait for you to resend the
+others.
+
+Paul.
