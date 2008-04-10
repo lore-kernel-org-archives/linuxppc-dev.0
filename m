@@ -1,12 +1,13 @@
-Return-Path: <benh@ozlabs.org>
-To: <linux-kernel@vger.kernel.org>
-From: Benjamin Herrenschmidt <benh@ozlabs.org>
-Date: Fri, 11 Apr 2008 09:36:40 +1000
-Subject: [PATCH 2/2] [POWERPC] Fix kernel stack allocation alignment
-Message-Id: <20080410233741.A50A5DE39A@ozlabs.org>
-Cc: Linux-Arch <linux-arch@vger.kernel.org>, linuxppc-dev@ozlabs.org,
-	takata@linux-m32r.org, linux-m32r@ml.linux-m32r.org,
-	Paul Mackerras <paulus@samba.org>
+Return-Path: <paul.gortmaker@windriver.com>
+Received: from mail.wrs.com (mail.windriver.com [147.11.1.11])
+	by ozlabs.org (Postfix) with ESMTP id 128F8DE191
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Apr 2008 09:42:43 +1000 (EST)
+From: Paul Gortmaker <paul.gortmaker@windriver.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 0/5] dynamic detection of gianfar TPIPA
+Date: Thu, 10 Apr 2008 13:51:57 -0400
+Message-Id: <1207849922-2436-1-git-send-email-paul.gortmaker@windriver.com>
+Cc: scottwood@freescale.com, linux-net@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,84 +17,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The powerpc kernel stacks need to be naturally aligned, as they
-contain the thread info at the bottom, which is obtained by
-clearing the low bits of the stack pointer.
 
-However, when using 64K pages (the stack is smaller than a page),
-we use kmalloc to allocate it, which doesn't provide that guarantee.
+This patch series consists of some minor cleanups that eventually
+allow us to implement a dynamic assignment of the gianfar TBIPA.
+This was the implementation that Andy and Scott indicated was
+the most desireable solution at the bottom of this discussion:
 
-It appeared to work so far... until one enables SLUB debugging
-which then returns unaligned pointers. Ooops...
+http://patchwork.ozlabs.org/linuxppc-embedded/patch?id=12902
 
-This patch fixes it by using a slab cache with enforced alignment
-for those. It replies on my previous patch that adds a
-thread_info_cache_init() callback.
+The lead up patches are as follows:
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+ -dont allocate a phydev for the "ghost" phy that seems to appear
+  on ID 0x1f of all the MDIO bus scans.
 
----
-Note that m32r seems to also have this problem.
+ -add in the missing assignment to priv->mii_bus when we assign a
+  phy to the device.
 
- arch/powerpc/kernel/process.c     |   31 +++++++++++++++++++++++++++++++
- include/asm-powerpc/thread_info.h |   10 ++++------
- 2 files changed, 35 insertions(+), 6 deletions(-)
+ -cleanup of unnecessary externs that the above change allows us.
 
---- linux-work.orig/arch/powerpc/kernel/process.c	2008-04-10 13:11:05.000000000 +1000
-+++ linux-work/arch/powerpc/kernel/process.c	2008-04-10 13:14:29.000000000 +1000
-@@ -1052,3 +1052,34 @@ void ppc64_runlatch_off(void)
- 	}
- }
- #endif
-+
-+#if THREAD_SHIFT < PAGE_SHIFT
-+
-+static struct kmem_cache *thread_info_cache;
-+
-+struct thread_info *alloc_thread_info(struct task_struct *tsk)
-+{
-+	struct thread_info *ti;
-+
-+	ti = kmem_cache_alloc(thread_info_cache, GFP_KERNEL);
-+	if (unlikely(ti == NULL))
-+		return NULL;
-+#ifdef CONFIG_DEBUG_STACK_USAGE
-+	memset(ti, 0, THREAD_SIZE);
-+#endif
-+	return ti;
-+}
-+
-+void free_thread_info(struct thread_info *ti)
-+{
-+	kmem_cache_free(thread_info_cache, ti);
-+}
-+
-+void thread_info_cache_init(void)
-+{
-+	thread_info_cache = kmem_cache_create("thread_info", THREAD_SIZE,
-+					      THREAD_SIZE, 0, NULL);
-+	BUG_ON(thread_info_cache == NULL);
-+}
-+
-+#endif /* THREAD_SHIFT < PAGE_SHIFT */
-Index: linux-work/include/asm-powerpc/thread_info.h
-===================================================================
---- linux-work.orig/include/asm-powerpc/thread_info.h	2008-04-10 13:11:05.000000000 +1000
-+++ linux-work/include/asm-powerpc/thread_info.h	2008-04-10 13:14:47.000000000 +1000
-@@ -80,12 +80,10 @@ struct thread_info {
- 
- #else /* THREAD_SHIFT < PAGE_SHIFT */
- 
--#ifdef CONFIG_DEBUG_STACK_USAGE
--#define alloc_thread_info(tsk)	kzalloc(THREAD_SIZE, GFP_KERNEL)
--#else
--#define alloc_thread_info(tsk)	kmalloc(THREAD_SIZE, GFP_KERNEL)
--#endif
--#define free_thread_info(ti)	kfree(ti)
-+extern struct thread_info *alloc_thread_info(struct task_struct *tsk);
-+extern void free_thread_info(struct thread_info *ti);
-+extern void thread_info_cache_init(void);
-+#define thread_info_cache_init thread_info_cache_init
- 
- #endif /* THREAD_SHIFT < PAGE_SHIFT */
- 
+ -make the mii_bus->priv point to struct gianfar_mdio_data
+
+At this point, we can then actually use the phy_map of the mii_bus
+to tell us which MDIO ID we can use for the TBIPA, instead of just
+hard coding 0x1f.
+
+Paul.
