@@ -1,22 +1,20 @@
-Return-Path: <laurentp@cse-semaphore.com>
-Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
-	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id 56355DEC8A
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Apr 2008 01:51:04 +1000 (EST)
-Received: from smtp.belgium.cse-semaphore.com (localhost [127.0.0.1])
-	by smtp.belgium.cse-semaphore.com (Postfix) with ESMTP id 49E568914
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Apr 2008 17:51:01 +0200 (CEST)
-Received: from pclaurent.belgium.cse-semaphore.com
-	(pclaurent.belgium.cse-semaphore.com [192.168.1.47])
-	by smtp.belgium.cse-semaphore.com (Postfix) with ESMTP id 2A95C889D
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Apr 2008 17:51:01 +0200 (CEST)
-From: Laurent Pinchart <laurentp@cse-semaphore.com>
-To: linuxppc-dev@ozlabs.org
-Subject: How to pass information from the bootloader to the kernel ?
-Date: Thu, 10 Apr 2008 17:50:58 +0200
+Return-Path: <glikely@secretlab.ca>
+Received: from wx-out-0506.google.com (wx-out-0506.google.com [66.249.82.230])
+	by ozlabs.org (Postfix) with ESMTP id 4266FDE376
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Apr 2008 02:36:12 +1000 (EST)
+Received: by wx-out-0506.google.com with SMTP id h27so68421wxd.15
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Apr 2008 09:36:10 -0700 (PDT)
+Message-ID: <fa686aa40804100936r3ef0a69en5fb092e1129f867f@mail.gmail.com>
+Date: Thu, 10 Apr 2008 10:36:09 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Laurent Pinchart" <laurentp@cse-semaphore.com>
+Subject: Re: How to pass information from the bootloader to the kernel ?
+In-Reply-To: <200804101751.00618.laurentp@cse-semaphore.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart14076405.ItTkxmXivr";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Message-Id: <200804101751.00618.laurentp@cse-semaphore.com>
+Content-Type: text/plain; charset=ISO-8859-1
+References: <200804101751.00618.laurentp@cse-semaphore.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,51 +24,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---nextPart14076405.ItTkxmXivr
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Thu, Apr 10, 2008 at 9:50 AM, Laurent Pinchart
+<laurentp@cse-semaphore.com> wrote:
+> Hi everybody,
+>
+>  I need to pass a limited amount of information from the boot loader to the
+>  Linux kernel, such as the boot mode chosen by the user or the last boot
+>  reason (power up, reset, watchdog, ...).
+>
+>  What is the best way to pass that kind of information from the boot loader to
+>  the kernel ? Should I use the device tree ?
+>
+>  I thought about populating the chosen node with the data I need. This could
+>  make sense for the boot mode, but I feel like I would abuse the chosen node
+>  if I used it to pass other "non user chosen" information.
 
-Hi everybody,
+Using the chosen node should be fine.  Just prefix your new properties
+with your company name or something so that you don't get namespace
+collisions.  However, whatever you do; document it first and post your
+documentation to the mailing list for review.
 
-I need to pass a limited amount of information from the boot loader to the=
-=20
-Linux kernel, such as the boot mode chosen by the user or the last boot=20
-reason (power up, reset, watchdog, ...).
+Cheers,
+g.
 
-What is the best way to pass that kind of information from the boot loader =
-to=20
-the kernel ? Should I use the device tree ?
 
-I thought about populating the chosen node with the data I need. This could=
-=20
-make sense for the boot mode, but I feel like I would abuse the chosen node=
-=20
-if I used it to pass other "non user chosen" information.
+>
+>  Best regards,
+>
+>  --
+>  Laurent Pinchart
+>  CSE Semaphore Belgium
+>
+>  Chaussee de Bruxelles, 732A
+>  B-1410 Waterloo
+>  Belgium
+>
+>  T +32 (2) 387 42 59
+>  F +32 (2) 387 42 75
+>
+> _______________________________________________
+>  Linuxppc-dev mailing list
+>  Linuxppc-dev@ozlabs.org
+>  https://ozlabs.org/mailman/listinfo/linuxppc-dev
+>
 
-Best regards,
 
-=2D-=20
-Laurent Pinchart
-CSE Semaphore Belgium
 
-Chaussee de Bruxelles, 732A
-B-1410 Waterloo
-Belgium
-
-T +32 (2) 387 42 59
-=46 +32 (2) 387 42 75
-
---nextPart14076405.ItTkxmXivr
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
-
-iD8DBQBH/jdk8y9gWxC9vpcRAjIRAKCJM0++1wVWJjfby8SYX9w2TYnlEQCgvo/3
-68TK4JI+NRI7HJP5o4HOapI=
-=dSXc
------END PGP SIGNATURE-----
-
---nextPart14076405.ItTkxmXivr--
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
