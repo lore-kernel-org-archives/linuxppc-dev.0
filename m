@@ -2,18 +2,19 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 75F1DDDFCB
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Apr 2008 01:33:17 +1000 (EST)
-Message-Id: <AB49B020-E993-4107-A97B-E41FD0272BCA@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id A9958DE395
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Apr 2008 01:36:10 +1000 (EST)
+Message-Id: <9EE906F9-120F-4434-9CD2-92DBAB090855@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Randy Vinson <rvinson@mvista.com>
-In-Reply-To: <47F509CC.9010205@mvista.com>
+To: Laurent Pinchart <laurentp@cse-semaphore.com>
+In-Reply-To: <200804101720.36975.laurentp@cse-semaphore.com>
 Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: [PATCH v2] E500 Make steal_context SMP-safe.
-Date: Thu, 10 Apr 2008 10:31:08 -0500
-References: <47F509CC.9010205@mvista.com>
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Subject: Re: patches for 2.6.26
+Date: Thu, 10 Apr 2008 10:36:05 -0500
+References: <D9A4BB4A-970C-4E9E-9174-BA8C0191CCA2@kernel.crashing.org>
+	<200804101720.36975.laurentp@cse-semaphore.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,34 +25,22 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Apr 3, 2008, at 11:46 AM, Randy Vinson wrote:
-> When steal_context is used on SMP systems, it can steal a context in
-> use by one of the other processors. This patch adds context tracking  
-> to
-> prevent this as suggested by BenH.
-
-Can we be more descriptive in the problem/bug symptom in the  
-description.
-
-otherwise this looks ok to me.  I'd like BenH to ack as well since  
-he's been look at this code recently.
-
+On Apr 10, 2008, at 10:20 AM, Laurent Pinchart wrote:
+> On Thursday 10 April 2008 16:21, Kumar Gala wrote:
+>> Guy's
+>>
+>> if you have work you want in 2.6.26 related to Freescale PPC's let me
+>> know.  Ideally you can provide links to the patches in
+>> http://patchwork.ozlabs.org/linuxppc/
 >
-> Signed-off-by: Randy Vinson <rvinson@mvista.com>
-> ---
-> The previous version of this patch had some unnecessary code which  
-> has been
-> removed in this version.
+> Could you please add this one ?
 >
-> Note: This is a proof-of-concept patch. This isn't my area of  
-> expertise,
-> so I'd greatly appreciate any guidance I can get. I'm considering the
-> use of for_each_online_cpu() instead of for_each_possible_cpu() and
-> possibly putting the changes under a CONFIG_SMP switch to prevent  
-> unnecessary
-> overhead in the non-SMP case.
+> fs_enet: Don't call NAPI functions when NAPI is not used.
+> http://patchwork.ozlabs.org/linuxppc/patch?id=17055
 
-for_each_online_cpu() is probably better.  I'm guessing this optimizes  
-pretty well in the !CONFIG_SMP case.
+Jeff Garzik should ack this first.  (you'll want to send to netdev and  
+Jeff).
+
+(also ask him if he want it to go via netdev or ppc tree's).
 
 - k
