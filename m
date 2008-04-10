@@ -1,21 +1,19 @@
-Return-Path: <neko@genesi-usa.com>
-Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.187])
-	by ozlabs.org (Postfix) with ESMTP id DAC8DDE2D7
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Apr 2008 01:25:27 +1000 (EST)
-Received: by nf-out-0910.google.com with SMTP id g16so31436nfd.9
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Apr 2008 08:25:23 -0700 (PDT)
-Message-ID: <47FE3160.2060907@genesi-usa.com>
-Date: Thu, 10 Apr 2008 16:25:20 +0100
-From: Matt Sealey <matt@genesi-usa.com>
-MIME-Version: 1.0
-To: Marian Balakowicz <m8@semihalf.com>
-Subject: Re: State of the MPC5200 PSC AC97 driver
-References: <47FDEF9B.5000506@semihalf.com>
-In-Reply-To: <47FDEF9B.5000506@semihalf.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Sender: Matt Sealey <neko@genesi-usa.com>
-Cc: linuxppc-dev@ozlabs.org, Sylvain Munaut <tnt@246tNt.com>,
-	spitzauer_77@gmx.de
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 75F1DDDFCB
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Apr 2008 01:33:17 +1000 (EST)
+Message-Id: <AB49B020-E993-4107-A97B-E41FD0272BCA@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Randy Vinson <rvinson@mvista.com>
+In-Reply-To: <47F509CC.9010205@mvista.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v919.2)
+Subject: Re: [PATCH v2] E500 Make steal_context SMP-safe.
+Date: Thu, 10 Apr 2008 10:31:08 -0500
+References: <47F509CC.9010205@mvista.com>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,44 +23,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I have a copy of the driver I hacked to work with the new PSC framework
-but it doesn't "work" anymore - I have no idea why.
 
-Mail me privately if you want it, I have no time to make patches or
-look for a good reason for the breakages, but it compiles at least.
-The Efika hack should be gone now (irrelevant since we released a firmware
-that obseletes it) and the other fixmes should be by the wayside
-considering the fscking thing doesn't play sound anymore...
+On Apr 3, 2008, at 11:46 AM, Randy Vinson wrote:
+> When steal_context is used on SMP systems, it can steal a context in
+> use by one of the other processors. This patch adds context tracking  
+> to
+> prevent this as suggested by BenH.
 
--- 
-Matt Sealey <matt@genesi-usa.com>
-Genesi, Manager, Developer Relations
+Can we be more descriptive in the problem/bug symptom in the  
+description.
 
-Marian Balakowicz wrote:
-> Hi Sylvain,
-> 
-> Last year you have posted a MPC5200 PSC AC97 driver patch
-> "[PATCH 9/9] sound: Add support for Freescale MPC5200 AC97 interface."
-> with the following comment:
-> 
->> Not quite a clean driver, but it get things done (well, mostly).
->> Only included to be able to test functionalityi/usage of
->> the BestComm driver.
-> 
-> There are various FIXMEs and commented out code here and there.
-> Could you elaborate a bit on the overall state of the driver's
-> functionality,
-> which areas need improvement and attention?
-> 
-> Seems that you mainly tested BestComm with this driver, what was the
-> overall
-> BestComm performance, any issues here? Did you use any specific test setup
-> involving some dedicated application, etc.?
-> 
-> Did anyone else tried it and/or has a updated version or can share
-> experience?
-> 
-> Thanks in advance.
-> 
-> Cheers,
-> m.
+otherwise this looks ok to me.  I'd like BenH to ack as well since  
+he's been look at this code recently.
+
+>
+> Signed-off-by: Randy Vinson <rvinson@mvista.com>
+> ---
+> The previous version of this patch had some unnecessary code which  
+> has been
+> removed in this version.
+>
+> Note: This is a proof-of-concept patch. This isn't my area of  
+> expertise,
+> so I'd greatly appreciate any guidance I can get. I'm considering the
+> use of for_each_online_cpu() instead of for_each_possible_cpu() and
+> possibly putting the changes under a CONFIG_SMP switch to prevent  
+> unnecessary
+> overhead in the non-SMP case.
+
+for_each_online_cpu() is probably better.  I'm guessing this optimizes  
+pretty well in the !CONFIG_SMP case.
+
+- k
