@@ -1,25 +1,33 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <jyoung5@us.ibm.com>
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 7B029DE1B2
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Apr 2008 05:41:21 +1000 (EST)
-Message-Id: <A567023C-17FC-402D-9394-29DFFA816891@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-In-Reply-To: <47FE5B76.40409@ru.mvista.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: [PATCH 6/13] devres: implement managed iomap interface
-Date: Thu, 10 Apr 2008 14:40:52 -0500
-References: <11684073371547-git-send-email-htejun@gmail.com>	<47FA4FD2.8060808@ru.mvista.com>
-	<47FB85CB.2070506@gmail.com> <47FB8751.3040301@ru.mvista.com>
-	<47FE46AC.5000901@ru.mvista.com>
-	<59A939C7-75AF-4C0F-8199-4C31D174AEA9@kernel.crashing.org>
-	<47FE5B76.40409@ru.mvista.com>
-Cc: Tejun Heo <htejun@gmail.com>, linux-ide@vger.kernel.org, gregkh@suse.de,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	jgarzik@pobox.com, alan@lxorguk.ukuu.org.uk
+	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id D0028DE103
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Apr 2008 06:09:00 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e32.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m3AK6pU4015612
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Apr 2008 16:06:51 -0400
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m3AK8s3t214624
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Apr 2008 14:08:54 -0600
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m3AK8sdM020125
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Apr 2008 14:08:54 -0600
+Subject: Re: [PATCH] [v5] Add idle wait support for 44x platforms
+From: Jerone Young <jyoung5@us.ibm.com>
+To: Arnd Bergmann <arnd@arndb.de>
+In-Reply-To: <200804101544.44457.arnd@arndb.de>
+References: <df0f79b7b4ab628887c2.1207673354@thinkpadL>
+	<200804101544.44457.arnd@arndb.de>
+Content-Type: text/plain
+Date: Thu, 10 Apr 2008 15:08:51 -0500
+Message-Id: <1207858131.26428.4.camel@thinkpadL>
+Mime-Version: 1.0
+Cc: kvm-ppc-devel@lists.sourceforge.net, linuxppc-dev@ozlabs.org
+Reply-To: jyoung5@us.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,48 +37,63 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thu, 2008-04-10 at 15:44 +0200, Arnd Bergmann wrote:
+> On Tuesday 08 April 2008, Jerone Young wrote:
+> > +static struct sleep_mode modes[] = {
+> > +       { .name = "wait", .entry = &ppc44x_idle },
+> > +       { .name = "spin", .entry = NULL },
+> > +};
+> > +
+> > +int __init ppc44x_idle_init(void)
+> > +{
+> > +       void *func = modes[current_mode].entry;
+> > +       ppc_md.power_save = func;
+> > +       return 0;
+> > +}
+> > +
+> > +arch_initcall(ppc44x_idle_init);
+> > +
+> > +static int __init idle_param(char *p)
+> > +{ 
+> > +       int i;
+> > +
+> > +       for (i = 0; i < ARRAY_SIZE(modes); i++) {
+> > +               if (!strcmp(modes[i].name, p)) {
+> > +                       current_mode = i;
+> > +                       break;
+> > +               }
+> > +       }
+> > +
+> > +       return 0;
+> > +}
+> > +
+> > +early_param("idle", idle_param);
+> 
+> ok, sorry to steal the show again, now that everyone seems to be happy
+> with the current code, but isn't this equivalent to the simple
 
-On Apr 10, 2008, at 1:24 PM, Sergei Shtylyov wrote:
-> Kumar Gala wrote:
->
->>>>>>  Those functions are going to break on 32-bit platforms with   
->>>>>> extended physical address (well, that's starting with Pentiums   
->>>>>> which had 36-bit PAE :-) AND devices mapped beyond 4 GB (e.g.   
->>>>>> PowerPC 44x).  You should have used resource_size_t for the   
->>>>>> 'offset' parameter. As this most probably means that libata is   
->>>>>> broken on such platforms, I'm going to submit a patch...
->
->>>>  It's broken with drivers using MMIO, I meant to say.
->
->>>  Oops, I meant PCI drivers here, at least for the time being. And   
->>> it looks like that was a false alarm. :-]
->
->>>>> Yeah, right please go ahead.  But I wonder whether any BIOS was   
->>>>> actually crazy enough to map mmio region above 4G on 32bit  
->>>>> machine.
->
->>>>  This is a *hardware* mapping on some non-x86 platforms (like  
->>>> PPC  44x or MIPS Alchemy). The arch/ppc/ and arch/mips/ kernels  
->>>> have  special hooks called from ioremap() which help create an  
->>>> illusion  that the PCI memory space on such platforms (not only  
->>>> it) is mapped  below 4 GB; arch/powerpc/ kernel doesn't do this  
->>>> anymore -- hence  this newly encountered issue.
->
->>>  I thought that pcim_iomap() used devm_ioremap() or something --   
->>> which of course turned to be wrong. devm_ioremap() alone is yet  
->>> safe  since there are no users for it amongst PPC 44x platform  
->>> device  drivers...
->
->> but there is no reason not to make it work properly.  For example  
->> I  believe libata uses devm_* and the fsl SATA driver (non-PCI)  
->> will need  to work in cases similar to the 44x.
->
->   Well, as for sata_fsl, it calls of_iomap() which does The Right  
-> Thing.
+Well it could be this simple. But the current code leaves a lot more
+room to add different type waits or spins if need be (if they are ever
+needed ... though none off the top of my head at the moment)...but it
+does allow you to create another wait state for whatever reason a lot
+easier.
 
-Fair, but I don't see why we should introduce new APIs that are  
-already "broken".  We went through a lot of effort to clean up and  
-introduce resource_t (and clearly still have some bugs) for the >32- 
-bit physical address problem.
+So I really don't think this needs to change. Unless everyone really
+feels that it just has to be.
 
-- k
+> 
+> static int __init idle_param(char *p)
+> {
+> 	if (!strcmp(modes[i].name, "spin"))
+> 		ppc_md.power_save = NULL;
+> }
+> early_param("idle", idle_param);
+> 
+> if you statically initialize the ppc_md.power_save function to ppc44x_idle
+> in the platform setup files?
+
+The idea is to not statically initialize ppc_md.power_save to
+ppc44x_idle in each platform setup file.
+
+> 
+> 	Arnd <><
