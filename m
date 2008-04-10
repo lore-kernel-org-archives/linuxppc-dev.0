@@ -1,17 +1,22 @@
-Return-Path: <kou.ishizaki@toshiba.co.jp>
-Received: from imx2.toshiba.co.jp (inet-tsb5.toshiba.co.jp [202.33.96.24])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 1B5CDDDF6E
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Apr 2008 21:07:44 +1000 (EST)
-Date: Thu, 10 Apr 2008 20:07:30 +0900 (JST)
-Message-Id: <20080410.200730.-1300529759.kouish@swc.toshiba.co.jp>
-To: paulus@samba.org
-Subject: Re: Patches added to powerpc.git powerpc-next and master branches
-In-Reply-To: <18425.46732.651483.504040@cargo.ozlabs.ibm.com>
-From: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 2306CDE710
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Apr 2008 21:26:15 +1000 (EST)
+Date: Thu, 10 Apr 2008 21:26:05 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] [POWERPC] 83xx/85xx: Reorganize defconfigs
+Message-Id: <20080410212605.c1c20cc6.sfr@canb.auug.org.au>
+In-Reply-To: <6D34DE41-ED8D-455A-89F3-288C9445691E@kernel.crashing.org>
+References: <Pine.LNX.4.64.0804091017440.18753@blarg.am.freescale.net>
+	<20080410103131.f0dcf730.sfr@canb.auug.org.au>
+	<6BE67DBD-325A-4628-8480-7EA0FE79DBE5@kernel.crashing.org>
+	<20080410142430.256fd23e.sfr@canb.auug.org.au>
+	<6D34DE41-ED8D-455A-89F3-288C9445691E@kernel.crashing.org>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Thu__10_Apr_2008_21_26_05_+1000_4tMwTHvjSavwcuzR"
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -22,48 +27,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Paul Mackerras <paulus@samba.org> wrote:
-> The following patches have been added to the master and powerpc-next
-> branches of the powerpc.git repository.  There is a bunch that I
+--Signature=_Thu__10_Apr_2008_21_26_05_+1000_4tMwTHvjSavwcuzR
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Paul-san,
-Could you apply my "take 2" patchset?
+Hi Kumar,
 
-[PATCH 0/11] celleb: patchset for 2.6.26 (take 2)
- http://ozlabs.org/pipermail/linuxppc-dev/2008-March/052989.html
+On Thu, 10 Apr 2008 03:51:42 -0500 Kumar Gala <galak@kernel.crashing.org> w=
+rote:
+>
+> We should probably add mpc83xx_defconfig to kisskb.  However, =20
+> mpc885_ads_defconfig is an 8xx (extreme low end) and mpc85xx_defconfig =20
+> (higher end) cover two different processor families so we shouldn't =20
+> drop mpc885_ads_defconfig.
 
-[PATCH 1/11] celleb: coding style cleanup
- http://ozlabs.org/pipermail/linuxppc-dev/2008-March/052990.html
+Ah, ok.  I misread the name as one of those that was moved (which it
+obviously wasn't).
 
-[PATCH 2/11] cell: generalize io-workarounds code
- http://ozlabs.org/pipermail/linuxppc-dev/2008-March/052991.html
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-[PATCH 3/11] celleb: consolidate io-workarounds code
- http://ozlabs.org/pipermail/linuxppc-dev/2008-March/052992.html
+--Signature=_Thu__10_Apr_2008_21_26_05_+1000_4tMwTHvjSavwcuzR
+Content-Type: application/pgp-signature
 
-[PATCH 4/11] celleb: move the base part for celleb support
- http://ozlabs.org/pipermail/linuxppc-dev/2008-March/052993.html
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
-[PATCH 5/11] celleb: move the SCC related code for celleb
- http://ozlabs.org/pipermail/linuxppc-dev/2008-March/052994.html
+iD8DBQFH/flSTgG2atn1QN8RAqwTAJ9Rqbc1F3MaoBKg9bBpt8uSxkItRwCgh9iN
+G+XICfIJrrQi3BXyyBByhlI=
+=eSKa
+-----END PGP SIGNATURE-----
 
-[PATCH 6/11] celleb: move files for Beat hvcall interfaces
- http://ozlabs.org/pipermail/linuxppc-dev/2008-March/052995.html
-
-[PATCH 7/11] celleb: move files for Beat mmu and iommu
- http://ozlabs.org/pipermail/linuxppc-dev/2008-March/052996.html
-
-[PATCH 8/11] celleb: move a file for SPU on Beat
- http://ozlabs.org/pipermail/linuxppc-dev/2008-March/052997.html
-
-[PATCH 9/11] celleb: move miscellaneous files for Beat
- http://ozlabs.org/pipermail/linuxppc-dev/2008-March/052998.html
-
-[PATCH 10/11] celleb: add support for PCI Express
- http://ozlabs.org/pipermail/linuxppc-dev/2008-March/052999.html
-
-[PATCH 11/11] hvcbeat: fix buffer manipulation
- http://ozlabs.org/pipermail/linuxppc-dev/2008-March/053025.html
-
-Best regards,
-Kou Ishizaki
+--Signature=_Thu__10_Apr_2008_21_26_05_+1000_4tMwTHvjSavwcuzR--
