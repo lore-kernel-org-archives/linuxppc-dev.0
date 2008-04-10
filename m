@@ -1,22 +1,18 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 73F0ADDF4F
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Apr 2008 07:59:21 +1000 (EST)
-Subject: Re: [PATCH] [POWERPC] 4xx: Add endpoint support to 4xx PCIe driver
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Stefan Roese <sr@denx.de>
-In-Reply-To: <200804101537.27417.sr@denx.de>
-References: <1207149149-17107-1-git-send-email-sr@denx.de>
-	<200804101359.32095.sr@denx.de> <1207830182.6958.11.camel@pasglop>
-	<200804101537.27417.sr@denx.de>
-Content-Type: text/plain
-Date: Fri, 11 Apr 2008 07:58:48 +1000
-Message-Id: <1207864728.6958.22.camel@pasglop>
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net (unknown [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id 1172FDF004
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Apr 2008 08:16:18 +1000 (EST)
+Date: Thu, 10 Apr 2008 15:16:16 -0700 (PDT)
+Message-Id: <20080410.151616.204291886.davem@davemloft.net>
+To: laurentp@cse-semaphore.com
+Subject: Re: patches for 2.6.26
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <200804101720.36975.laurentp@cse-semaphore.com>
+References: <D9A4BB4A-970C-4E9E-9174-BA8C0191CCA2@kernel.crashing.org>
+	<200804101720.36975.laurentp@cse-semaphore.com>
 Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Cc: linuxppc-dev@ozlabs.org
-Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,17 +22,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+From: Laurent Pinchart <laurentp@cse-semaphore.com>
+Date: Thu, 10 Apr 2008 17:20:36 +0200
 
-On Thu, 2008-04-10 at 15:37 +0200, Stefan Roese wrote:
+> On Thursday 10 April 2008 16:21, Kumar Gala wrote:
+> > Guy's
+> > 
+> > if you have work you want in 2.6.26 related to Freescale PPC's let me  
+> > know.  Ideally you can provide links to the patches in
+> > http://patchwork.ozlabs.org/linuxppc/ 
 > 
-> Now I have to re-check to see what you really have in mind. Do you think about 
-> creating two different PCIe nodes, one for root-complex and one for endpoint 
-> functionality? Or is your idea to add a property to the existing PCIe 
-> device-tree node (like "mode = endpoint"), or perhaps change the device_type 
-> from "pci" to "pci-endpoint"? I would vote for the latter.
+> Could you please add this one ?
+> 
+> fs_enet: Don't call NAPI functions when NAPI is not used.
+> http://patchwork.ozlabs.org/linuxppc/patch?id=17055
 
-Make the name and type of the node different. The rest can mostly stay
-the same.
+I kindly request that PPC folks send networking driver patches through
+the normal channels so that the networking experts on netdev and
+people like Jeff Garzik can review such changes.
 
-Cheers,
-Ben.
+In fact this patch here is a bug fix and belongs in the tree right
+now, instead of waiting for 2.6.26
