@@ -1,20 +1,19 @@
-Return-Path: <super.firetwister@googlemail.com>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.246])
-	by ozlabs.org (Postfix) with ESMTP id 7C34BDE116
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Apr 2008 23:03:27 +1000 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so726224anc.78
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Apr 2008 06:03:18 -0700 (PDT)
-Message-ID: <6a6049b80804100603s335dedc2qfb213a899a0ebf39@mail.gmail.com>
-Date: Thu, 10 Apr 2008 15:03:18 +0200
-From: "M B" <super.firetwister@googlemail.com>
-To: "Josh Boyer" <jwboyer@linux.vnet.ibm.com>
-Subject: Re: ppc405ep emac driver loading problem
-In-Reply-To: <20080410065211.7befbfba@zod.rchland.ibm.com>
+Return-Path: <sr@denx.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.179]) by ozlabs.org (Postfix) with ESMTP id 83D58DE323
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Apr 2008 23:44:25 +1000 (EST)
+From: Stefan Roese <sr@denx.de>
+To: benh@kernel.crashing.org
+Subject: Re: [PATCH] [POWERPC] 4xx: Add endpoint support to 4xx PCIe driver
+Date: Thu, 10 Apr 2008 15:37:27 +0200
+References: <1207149149-17107-1-git-send-email-sr@denx.de>
+	<200804101359.32095.sr@denx.de> <1207830182.6958.11.camel@pasglop>
+In-Reply-To: <1207830182.6958.11.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <6a6049b80804100337m6ab33fd5wd3cf9524e7f6d721@mail.gmail.com>
-	<20080410065211.7befbfba@zod.rchland.ibm.com>
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>, Stefan Roese <sr@denx.de>
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Message-Id: <200804101537.27417.sr@denx.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,17 +23,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Apr 10, 2008 at 1:52 PM, Josh Boyer <jwboyer@linux.vnet.ibm.com> wrote:
-
->  You have to call of_platform_bus_probe with the various bus types for
->  your board.  See the top few functions of:
+On Thursday 10 April 2008, Benjamin Herrenschmidt wrote:
+> > Understood. But for this "dynamic" root-complex/endpoint configuration as
+> > implemented with the current version of the patch, I can't change the
+> > PCIe node in the dts from root-complex mode to endpoint mode, since I
+> > would loose root-complex functionality. Perhaps I'm missing something
+> > here.
 >
->  arch/powerpc/platforms/40x/walnut.c
+> Well, I would expect the firmware (ie. uboot) to provide the right
+> device-node type...
 
-Well I did this, but I made a typo (plb4 instead of plb3).
-So thanks a lot for making me recheck this section. I don't know how
-long I would have searched for this else.
+Now I have to re-check to see what you really have in mind. Do you think about 
+creating two different PCIe nodes, one for root-complex and one for endpoint 
+functionality? Or is your idea to add a property to the existing PCIe 
+device-tree node (like "mode = endpoint"), or perhaps change the device_type 
+from "pci" to "pci-endpoint"? I would vote for the latter.
 
-Regards
-
-Markus
+Best regards,
+Stefan
