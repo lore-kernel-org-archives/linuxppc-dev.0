@@ -1,17 +1,17 @@
-Return-Path: <hch@lst.de>
-Date: Thu, 10 Apr 2008 12:56:36 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: Benjamin Herrenschmidt <benh@ozlabs.org>
-Subject: Re: [PATCH 5/6] [POWERPC] properly declare onstack completion in
-	iseries veth
-Message-ID: <20080410105636.GA10048@lst.de>
-References: <20080409072230.C861EDDED0@ozlabs.org>
-	<20080409083616.GA24712@lst.de> <1207775002.9079.25.camel@pasglop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1207775002.9079.25.camel@pasglop>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Christoph Hellwig <hch@lst.de>
+Return-Path: <m8@semihalf.com>
+Received: from semihalf.com (semihalf.com [206.130.101.55])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 5CEF9DE274
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Apr 2008 21:00:09 +1000 (EST)
+Message-ID: <47FDEF9B.5000506@semihalf.com>
+Date: Thu, 10 Apr 2008 12:44:43 +0200
+From: Marian Balakowicz <m8@semihalf.com>
+MIME-Version: 1.0
+To: Sylvain Munaut <tnt@246tNt.com>
+Subject: State of the MPC5200 PSC AC97 driver
+Content-Type: text/plain; charset=ISO-8859-2
+Cc: spitzauer_77@gmx.de, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,8 +21,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Apr 10, 2008 at 07:03:22AM +1000, Benjamin Herrenschmidt wrote:
-> I don't think there's any difference between the _ONSTACK variant
-> and the normal one without lockdep, is there ?
+Hi Sylvain,
 
-No there's not.  Thus it's a guaranteed no-op and can easily go in.
+Last year you have posted a MPC5200 PSC AC97 driver patch
+"[PATCH 9/9] sound: Add support for Freescale MPC5200 AC97 interface."
+with the following comment:
+
+> Not quite a clean driver, but it get things done (well, mostly).
+> Only included to be able to test functionalityi/usage of
+> the BestComm driver.
+
+There are various FIXMEs and commented out code here and there.
+Could you elaborate a bit on the overall state of the driver's
+functionality,
+which areas need improvement and attention?
+
+Seems that you mainly tested BestComm with this driver, what was the
+overall
+BestComm performance, any issues here? Did you use any specific test setup
+involving some dedicated application, etc.?
+
+Did anyone else tried it and/or has a updated version or can share
+experience?
+
+Thanks in advance.
+
+Cheers,
+m.
