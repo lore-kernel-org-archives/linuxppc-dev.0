@@ -1,20 +1,22 @@
-Return-Path: <linuxppc-embedded@ml.breakpoint.cc>
-Received: from Chamillionaire.breakpoint.cc (Chamillionaire.breakpoint.cc
-	[85.10.199.196])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 71510DDF6D
+	by ozlabs.org (Postfix) with ESMTPS id 9C4D1DE5C3
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 10 Apr 2008 18:50:34 +1000 (EST)
-Date: Thu, 10 Apr 2008 10:50:30 +0200
-From: Sebastian Siewior <linuxppc-embedded@ml.breakpoint.cc>
-To: Sreen Tallam <tallam.sreen@gmail.com>
-Subject: Re: Kernel Panic - not syncing: Attempted to kill init!
-Message-ID: <20080410085030.GA27907@Chamillionaire.breakpoint.cc>
-References: <5b1d25eb0804091907n7b1d6faewf66b5d664e40c115@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-In-Reply-To: <5b1d25eb0804091907n7b1d6faewf66b5d664e40c115@mail.gmail.com>
+	Fri, 11 Apr 2008 00:46:44 +1000 (EST)
+Message-Id: <B4CD3ECE-5F98-4A7B-A811-A84EADA804CF@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Sebastian Siewior <bigeasy@tglx.de>
+In-Reply-To: <20080314230130.GA6812@www.tglx.de>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v919.2)
+Subject: Re: [PATCH v2] [POWER] mpc85xx_ds add DMA engine to the DT and parse
+	it.
+Date: Thu, 10 Apr 2008 09:46:39 -0500
+References: <20080311103906.GD9656@www.tglx.de>
+	<60A35F8F-FA66-4ADD-B192-6AC6A301DBA0@kernel.crashing.org>
+	<20080314230130.GA6812@www.tglx.de>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -26,29 +28,19 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-* Sreen Tallam | 2008-04-09 19:07:01 [-0700]:
 
->VFS: Mounted root (jffs2 filesystem) readonly.
->Freeing unused kernel memory: 156k init
->Warning: unable to open an initial console.
->init/main.c -- 819
->init/main.c -- 821
->init/main.c -- 844
->init/main.c -- 704 -- /sbin/tallam_init<0>Kernel panic - not syncing:
->Attempted to kill init!
->Call Trace:
->[C3FE7E60] [C0006D98]  (unreliable)
->[C3FE7EA0] [C001F150]
->[C3FE7EF0] [C0023630]
->[C3FE7F30] [C0023734]
->[C3FE7F40] [C000DBC0]
-> <0>Rebooting in 180 seconds..
+On Mar 14, 2008, at 6:01 PM, Sebastian Siewior wrote:
+> This is a modified entry I found in the documentation for the 8544.
 >
+> Signed-off-by: Sebastian Siewior <bigeasy@linutronix.de>
+> ---
+> arch/powerpc/boot/dts/mpc8544ds.dts      |   41 +++++++++++++++++++++ 
+> +++++++++
+> arch/powerpc/platforms/85xx/mpc85xx_ds.c |   13 +++++++++
+> 2 files changed, 54 insertions(+), 0 deletions(-)
 
-This looks like you are missing /dev/console and probably /dev/null. You
-need atleast those two nodes in your rootfs if you are using udev. You
-will need a static /dev if you don't use udev/mdev.
+applied.
 
->Thanks,
->Sreen
-Sebastian
+I also added updating the defconfig to enable the driver by default.
+
+- k
