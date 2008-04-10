@@ -1,23 +1,12 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 904D0DDF28
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Apr 2008 13:22:33 +1000 (EST)
-In-Reply-To: <18429.28416.578860.961632@cargo.ozlabs.ibm.com>
-References: <47FAB221.7050406@austin.ibm.com>
-	<20080408024352.GA32761@lixom.net> <47FCFDA4.10709@austin.ibm.com>
-	<76b6f0069fd6d80f69620e39c8528e9d@kernel.crashing.org>
-	<18429.28416.578860.961632@cargo.ozlabs.ibm.com>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <3ff8bdda029b9de8bb712012cec39ab3@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] pseries: phyp dump: Variable size reserve space.
-Date: Thu, 10 Apr 2008 05:10:59 +0200
-To: Paul Mackerras <paulus@samba.org>
-Cc: Olof Johansson <olof@lixom.net>, mahuja@us.ibm.com, linasvepstas@gmail.com,
-	linuxppc-dev@ozlabs.org
+Return-Path: <benh@ozlabs.org>
+To: <linux-kernel@vger.kernel.org>
+From: Benjamin Herrenschmidt <benh@ozlabs.org>
+Date: Thu, 10 Apr 2008 13:22:58 +1000
+Subject: [PATCH 2/2] [POWERPC] Fix kernel stack allocation alignment
+Message-Id: <20080410032356.5D810DDF12@ozlabs.org>
+Cc: Linux-Arch <linux-arch@vger.kernel.org>, linuxppc-dev@ozlabs.org,
+	takata@linux-m32r.org, linux-m32r@ml.linux-m32r.org,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,21 +16,84 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>>>> +	tmp = tmp & ~0x000000001FFFFFFF;
->>
->> Note that this only works as you expect because the constant is
->> signed here -- the extra zeroes do not magically make it a 64-bit
->> number.  So it goes 32-bit 0x1fffffff -> 32-bit -0x20000000 ->
->> 64-bit -0x20000000.
->
-> Huh?  It's not big enough to be negative when considered as a 32-bit
-> number...
+The powerpc kernel stacks need to be naturally aligned, as they
+contain the thread info at the bottom, which is obtained by
+clearing the low bits of the stack pointer.
 
-0x1fffffff isn't, right; and that makes it a signed int.  Applying
-the complement operator to it turns it negative.  And then the
-implicit cast (because tmp is 64-bit) makes it 64-bit, still the
-same negative value.  Which is the expected result, but via a way
-too tricky (and fragile) path :-)
+However, when using 64K pages (the stack is smaller than a page),
+we use kmalloc to allocate it, which doesn't provide that guarantee.
 
+It appeared to work so far... until one enables SLUB debugging
+which then returns unaligned pointers. Ooops...
 
-Segher
+This patch fixes it by using a slab cache with enforced alignment
+for those. It replies on my previous patch that adds a
+thread_info_cache_init() callback.
+
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+
+---
+Note that m32r seems to also have this problem.
+
+ arch/powerpc/kernel/process.c     |   31 +++++++++++++++++++++++++++++++
+ include/asm-powerpc/thread_info.h |   10 ++++------
+ 2 files changed, 35 insertions(+), 6 deletions(-)
+
+--- linux-work.orig/arch/powerpc/kernel/process.c	2008-04-10 13:11:05.000000000 +1000
++++ linux-work/arch/powerpc/kernel/process.c	2008-04-10 13:14:29.000000000 +1000
+@@ -1052,3 +1052,34 @@ void ppc64_runlatch_off(void)
+ 	}
+ }
+ #endif
++
++#if THREAD_SHIFT < PAGE_SHIFT
++
++static struct kmem_cache *thread_info_cache;
++
++struct thread_info *alloc_thread_info(struct task_struct *tsk)
++{
++	struct thread_info *ti;
++
++	ti = kmem_cache_alloc(thread_info_cache, GFP_KERNEL);
++	if (unlikely(ti == NULL))
++		return NULL;
++#ifdef CONFIG_DEBUG_STACK_USAGE
++	memset(ti, 0, THREAD_SIZE);
++#endif
++	return ti;
++}
++
++void free_thread_info(struct thread_info *ti)
++{
++	kmem_cache_free(thread_info_cache, ti);
++}
++
++void thread_info_cache_init(void)
++{
++	thread_info_cache = kmem_cache_create("thread_info", THREAD_SIZE,
++					      THREAD_SIZE, 0, NULL);
++	BUG_ON(thread_info_cache == NULL);
++}
++
++#endif /* THREAD_SHIFT < PAGE_SHIFT */
+Index: linux-work/include/asm-powerpc/thread_info.h
+===================================================================
+--- linux-work.orig/include/asm-powerpc/thread_info.h	2008-04-10 13:11:05.000000000 +1000
++++ linux-work/include/asm-powerpc/thread_info.h	2008-04-10 13:14:47.000000000 +1000
+@@ -80,12 +80,10 @@ struct thread_info {
+ 
+ #else /* THREAD_SHIFT < PAGE_SHIFT */
+ 
+-#ifdef CONFIG_DEBUG_STACK_USAGE
+-#define alloc_thread_info(tsk)	kzalloc(THREAD_SIZE, GFP_KERNEL)
+-#else
+-#define alloc_thread_info(tsk)	kmalloc(THREAD_SIZE, GFP_KERNEL)
+-#endif
+-#define free_thread_info(ti)	kfree(ti)
++extern struct thread_info *alloc_thread_info(struct task_struct *tsk);
++extern void free_thread_info(struct thread_info *ti);
++extern void thread_info_cache_init(void);
++#define thread_info_cache_init thread_info_cache_init
+ 
+ #endif /* THREAD_SHIFT < PAGE_SHIFT */
+ 
