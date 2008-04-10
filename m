@@ -1,23 +1,18 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id BCE76DE35D
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Apr 2008 03:44:28 +1000 (EST)
-Message-Id: <59A939C7-75AF-4C0F-8199-4C31D174AEA9@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-In-Reply-To: <47FE46AC.5000901@ru.mvista.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: [PATCH 6/13] devres: implement managed iomap interface
-Date: Thu, 10 Apr 2008 12:44:12 -0500
-References: <11684073371547-git-send-email-htejun@gmail.com>	<47FA4FD2.8060808@ru.mvista.com>
-	<47FB85CB.2070506@gmail.com> <47FB8751.3040301@ru.mvista.com>
-	<47FE46AC.5000901@ru.mvista.com>
-Cc: Tejun Heo <htejun@gmail.com>, linux-ide@vger.kernel.org, gregkh@suse.de,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	jgarzik@pobox.com, alan@lxorguk.ukuu.org.uk
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Date: Thu, 10 Apr 2008 13:03:29 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: "Grant Likely" <grant.likely@secretlab.ca>
+Subject: Re: ppc440 caches - change proposal [RFC]
+Message-ID: <20080410130329.560bd1cb@zod.rchland.ibm.com>
+In-Reply-To: <fa686aa40804091250u1f532cddj9e3897969a98349c@mail.gmail.com>
+References: <20080408225329.5EC171A8007D@mail11-dub.bigfish.com>
+	<1207695415.14711.11.camel@pasglop>
+	<fa686aa40804081615n284aa750n12ceb0bf1d1bcce1@mail.gmail.com>
+	<20080409180042.511531370055@mail134-sin.bigfish.com>
+	<fa686aa40804091250u1f532cddj9e3897969a98349c@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: John Bonesio <john.bonesio@xilinx.com>, Linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,39 +22,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Wed, 9 Apr 2008 13:50:43 -0600
+"Grant Likely" <grant.likely@secretlab.ca> wrote:
 
-On Apr 10, 2008, at 11:56 AM, Sergei Shtylyov wrote:
-> Hello, I wrote:
->
->>>>   Those functions are going to break on 32-bit platforms with  
->>>> extended physical address (well, that's starting with Pentiums  
->>>> which had 36-bit PAE :-) AND devices mapped beyond 4 GB (e.g.  
->>>> PowerPC 44x).  You should have used resource_size_t for the  
->>>> 'offset' parameter. As this most probably means that libata is  
->>>> broken on such platforms, I'm going to submit a patch...
->
->>   It's broken with drivers using MMIO, I meant to say.
->
->   Oops, I meant PCI drivers here, at least for the time being. And  
-> it looks like that was a false alarm. :-]
->
->>> Yeah, right please go ahead.  But I wonder whether any BIOS was  
->>> actually crazy enough to map mmio region above 4G on 32bit machine.
->
->>   This is a *hardware* mapping on some non-x86 platforms (like PPC  
->> 44x or MIPS Alchemy). The arch/ppc/ and arch/mips/ kernels have  
->> special hooks called from ioremap() which help create an illusion  
->> that the PCI memory space on such platforms (not only it) is mapped  
->> below 4 GB; arch/powerpc/ kernel doesn't do this anymore -- hence  
->> this newly encountered issue.
->
->   I thought that pcim_iomap() used devm_ioremap() or something --  
-> which of course turned to be wrong. devm_ioremap() alone is yet safe  
-> since there are no users for it amongst PPC 44x platform device  
-> drivers...
+> On Wed, Apr 9, 2008 at 12:00 PM, John Bonesio <john.bonesio@xilinx.com> wrote:
+> >  I understand that many people are using a bootloader that already sets up the
+> > cache for the kernel, but I'm wondering if Xilinx boards are really a special
+> > case, or if there may be other non-Xilinx related systems that would also not
+> > be using a bootloader.
+> 
+> I think there are very few cases of platforms not using some form of firmware.
 
-but there is no reason not to make it work properly.  For example I  
-believe libata uses devm_* and the fsl SATA driver (non-PCI) will need  
-to work in cases similar to the 44x.
+Indeed.
 
-- k
+> >  I also understand the desire to avoid code that does the same work more than
+> > once, but I wonder if in this case, it's creating too strong a dependence on
+> > the specific behavior of a certain bootloader.
+> >  I also wonder if arch/powerpc is being made more complex by trying to split
+> >  out this code change into a Xilinx specific area, when the change could just
+> > be rolled into head_40x.S and we could do away with virtex405-head.S.
+> 
+> In general, I think that the wrapper does not want to touch the cache
+> settings.  In the common case where firmware exists and sets up the
+> cache then to turn off the cache again would throw away what firmware
+> already had in cache and slow down the boot.
+> 
+> That being said, I'm not the bootwrapper expert.  If other think that
+> it belongs in head_40x.S then I have no objections.
+> 
+> Josh, any thoughts?
+
+This may or may not be OK.  In the general case, I think Grant is right
+in that the wrapper tends to avoid mucking with cache settings that
+were already setup by the firmware.
+
+For 405 specifically, it could go either way.  And we actually already
+ignore the cache settings for real mode anyway once it gets to
+MMU_init_hw, but I wouldn't be surprised if an assumption was made
+there as well.
+
+josh
