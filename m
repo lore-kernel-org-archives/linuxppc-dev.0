@@ -1,19 +1,22 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id D0FE2DDF13
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Apr 2008 16:44:37 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 87F83DDF13
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Apr 2008 16:44:38 +1000 (EST)
 Received: from ash.ozlabs.ibm.com (bh02i525f01.au.ibm.com [202.81.18.30])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by smtps.tip.net.au (Postfix) with ESMTP id 976B6368004
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Apr 2008 16:44:37 +1000 (EST)
-Date: Thu, 10 Apr 2008 16:39:18 +1000
+	by smtps.tip.net.au (Postfix) with ESMTP id 5E852368004
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Apr 2008 16:44:38 +1000 (EST)
+Date: Thu, 10 Apr 2008 16:43:47 +1000
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: ppc-dev <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 1/3] [POWERPC] iSeries: boot on a fake paca
-Message-Id: <20080410163918.257405e7.sfr@canb.auug.org.au>
+Subject: [PATCH 2/3] [POWERPC] iSeries: make iseries_reg_save private to
+	iSeries
+Message-Id: <20080410164347.2e3c4661.sfr@canb.auug.org.au>
+In-Reply-To: <20080410163918.257405e7.sfr@canb.auug.org.au>
+References: <20080410163918.257405e7.sfr@canb.auug.org.au>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,180 +26,346 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The iSeries HV only needs the first two fields of the paca statically
-initialised, so create an alternate paca that contains only those and
-switch to our real paca immediately after boot.
-
-This is in order to make the 1024 cpu patches easier since they will no
-longer have to statically initialise the pacas for iSeries.
+Now that we have the alpaca, the reg_save_ptr is no longer needed in the
+paca.  Eradicate all global uses of it and make it static in the iSeries
+lpardata.c
 
 Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
- arch/powerpc/kernel/asm-offsets.c          |    6 ++++
- arch/powerpc/platforms/iseries/exception.S |   12 +++++++-
- arch/powerpc/platforms/iseries/lpardata.c  |   39 ++++++++++++++++++++++++++-
- include/asm-powerpc/iseries/alpaca.h       |   31 ++++++++++++++++++++++
- 4 files changed, 84 insertions(+), 4 deletions(-)
- create mode 100644 include/asm-powerpc/iseries/alpaca.h
+ arch/powerpc/kernel/paca.c                   |   33 +++--------
+ arch/powerpc/platforms/iseries/lpardata.c    |   72 +++++++++++++++++++---
+ arch/powerpc/xmon/xmon.c                     |   11 ---
+ include/asm-powerpc/iseries/it_lp_reg_save.h |   85 --------------------------
+ include/asm-powerpc/paca.h                   |   12 +---
+ 5 files changed, 73 insertions(+), 140 deletions(-)
+ delete mode 100644 include/asm-powerpc/iseries/it_lp_reg_save.h
 
-diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
-index e932b43..292c6d8 100644
---- a/arch/powerpc/kernel/asm-offsets.c
-+++ b/arch/powerpc/kernel/asm-offsets.c
-@@ -44,6 +44,9 @@
+diff --git a/arch/powerpc/kernel/paca.c b/arch/powerpc/kernel/paca.c
+index 55f1a25..867b22d 100644
+--- a/arch/powerpc/kernel/paca.c
++++ b/arch/powerpc/kernel/paca.c
+@@ -15,7 +15,6 @@
+ #include <asm/ptrace.h>
+ #include <asm/page.h>
+ #include <asm/lppaca.h>
+-#include <asm/iseries/it_lp_reg_save.h>
+ #include <asm/paca.h>
  #include <asm/mmu.h>
- #include <asm/hvcall.h>
- #endif
-+#ifdef CONFIG_PPC_ISERIES
-+#include <asm/iseries/alpaca.h>
-+#endif
  
- #define DEFINE(sym, val) \
- 	asm volatile("\n->" #sym " %0 " #val : : "i" (val))
-@@ -321,6 +324,9 @@ int main(void)
- 	DEFINE(PAGE_OFFSET_VSID, KERNEL_VSID(PAGE_OFFSET));
- 	DEFINE(VMALLOC_START_ESID, GET_ESID(VMALLOC_START));
- 	DEFINE(VMALLOC_START_VSID, KERNEL_VSID(VMALLOC_START));
-+
-+	/* alpaca */
-+	DEFINE(ALPACA_SIZE, sizeof(struct alpaca));
- #endif
+@@ -25,13 +24,13 @@
+ extern unsigned long __toc_start;
  
- 	DEFINE(PGD_TABLE_SIZE, PGD_TABLE_SIZE);
-diff --git a/arch/powerpc/platforms/iseries/exception.S b/arch/powerpc/platforms/iseries/exception.S
-index 5381038..c775cd4 100644
---- a/arch/powerpc/platforms/iseries/exception.S
-+++ b/arch/powerpc/platforms/iseries/exception.S
-@@ -38,11 +38,19 @@
+ /*
+- * iSeries structure which the hypervisor knows about - this structure
++ * The structure which the hypervisor knows about - this structure
+  * should not cross a page boundary.  The vpa_init/register_vpa call
+  * is now known to fail if the lppaca structure crosses a page
+- * boundary.  The lppaca is also used on POWER5 pSeries boxes.  The
+- * lppaca is 640 bytes long, and cannot readily change since the
+- * hypervisor knows its layout, so a 1kB alignment will suffice to
+- * ensure that it doesn't cross a page boundary.
++ * boundary.  The lppaca is also used on legacy iSeries and POWER5
++ * pSeries boxes.  The lppaca is 640 bytes long, and cannot readily
++ * change since the hypervisor knows its layout, so a 1kB alignment
++ * will suffice to ensure that it doesn't cross a page boundary.
+  */
+ struct lppaca lppaca[] = {
+ 	[0 ... (NR_CPUS-1)] = {
+@@ -66,32 +65,16 @@ struct slb_shadow slb_shadow[] __cacheline_aligned = {
+  * processors.  The processor VPD array needs one entry per physical
+  * processor (not thread).
+  */
+-#define PACA_INIT_COMMON(number)					    \
++#define PACA_INIT(number)						    \
++{									    \
+ 	.lppaca_ptr = &lppaca[number],					    \
+ 	.lock_token = 0x8000,						    \
+ 	.paca_index = (number),		/* Paca Index */		    \
+ 	.kernel_toc = (unsigned long)(&__toc_start) + 0x8000UL,		    \
+ 	.hw_cpu_id = 0xffff,						    \
+-	.slb_shadow_ptr = &slb_shadow[number],
+-
+-#ifdef CONFIG_PPC_ISERIES
+-#define PACA_INIT_ISERIES(number)					    \
+-	.reg_save_ptr = &iseries_reg_save[number],
+-
+-#define PACA_INIT(number)						    \
+-{									    \
+-	PACA_INIT_COMMON(number)					    \
+-	PACA_INIT_ISERIES(number)					    \
++	.slb_shadow_ptr = &slb_shadow[number],				    \
+ }
  
- 	.globl system_reset_iSeries
- system_reset_iSeries:
--	mfspr	r13,SPRN_SPRG3		/* Get paca address */
-+	mfspr	r13,SPRN_SPRG3		/* Get alpaca address */
-+	LOAD_REG_IMMEDIATE(r23, alpaca)
-+	li	r0,ALPACA_SIZE
-+	sub	r23,r13,r23
-+	divdu	r23,r23,r0		/* r23 has cpu number */
-+	LOAD_REG_IMMEDIATE(r13, paca)
-+	mulli	r0,r23,PACA_SIZE
-+	add	r13,r13,r0
-+	mtspr	SPRN_SPRG3,r13		/* Save it away for the future */
- 	mfmsr	r24
- 	ori	r24,r24,MSR_RI
- 	mtmsrd	r24			/* RI on */
--	lhz	r24,PACAPACAINDEX(r13)	/* Get processor # */
-+	mr	r24,r23
- 	cmpwi	0,r24,0			/* Are we processor 0? */
- 	bne	1f
- 	b	.__start_initialization_iSeries	/* Start up the first processor */
+-#else
+-#define PACA_INIT(number)						    \
+-{									    \
+-	PACA_INIT_COMMON(number)					    \
+-}
+-
+-#endif
+-
+ struct paca_struct paca[] = {
+ 	PACA_INIT(0),
+ #if NR_CPUS > 1
 diff --git a/arch/powerpc/platforms/iseries/lpardata.c b/arch/powerpc/platforms/iseries/lpardata.c
-index 8162049..dc84708 100644
+index dc84708..2331d97 100644
 --- a/arch/powerpc/platforms/iseries/lpardata.c
 +++ b/arch/powerpc/platforms/iseries/lpardata.c
-@@ -18,6 +18,7 @@
+@@ -14,7 +14,6 @@
+ #include <asm/ptrace.h>
+ #include <asm/abs_addr.h>
+ #include <asm/lppaca.h>
+-#include <asm/iseries/it_lp_reg_save.h>
  #include <asm/paca.h>
  #include <asm/iseries/lpar_map.h>
  #include <asm/iseries/it_lp_queue.h>
-+#include <asm/iseries/alpaca.h>
+@@ -62,6 +61,63 @@ struct naca_struct naca = {
+ 	.xRamDiskSize = 0,
+ };
  
- #include "naca.h"
- #include "vpd_areas.h"
-@@ -159,6 +160,40 @@ struct SpCommArea xSpCommArea = {
++struct ItLpRegSave {
++	u32	xDesc;		// Eye catcher  "LpRS" ebcdic	000-003
++	u16	xSize;		// Size of this class		004-005
++	u8	xInUse;         // Area is live                 006-007
++	u8	xRsvd1[9];	// Reserved			007-00F
++
++	u8      xFixedRegSave[352]; // Fixed Register Save Area 010-16F
++	u32	xCTRL;		// Control Register		170-173
++	u32	xDEC;		// Decrementer			174-177
++	u32	xFPSCR;		// FP Status and Control Reg	178-17B
++	u32	xPVR;		// Processor Version Number	17C-17F
++
++	u64	xMMCR0;		// Monitor Mode Control Reg 0	180-187
++	u32	xPMC1;		// Perf Monitor Counter 1	188-18B
++	u32	xPMC2;		// Perf Monitor Counter 2	18C-18F
++	u32	xPMC3;		// Perf Monitor Counter 3	190-193
++	u32	xPMC4;		// Perf Monitor Counter 4	194-197
++	u32	xPIR;		// Processor ID Reg		198-19B
++
++	u32	xMMCR1;		// Monitor Mode Control Reg 1	19C-19F
++	u32	xMMCRA;		// Monitor Mode Control Reg A	1A0-1A3
++	u32	xPMC5;		// Perf Monitor Counter 5	1A4-1A7
++	u32	xPMC6;		// Perf Monitor Counter 6	1A8-1AB
++	u32	xPMC7;		// Perf Monitor Counter 7	1AC-1AF
++	u32	xPMC8;		// Perf Monitor Counter 8	1B0-1B3
++	u32	xTSC;		// Thread Switch Control	1B4-1B7
++	u32	xTST;		// Thread Switch Timeout	1B8-1BB
++	u32	xRsvd;          // Reserved                     1BC-1BF
++
++	u64	xACCR;		// Address Compare Control Reg	1C0-1C7
++	u64	xIMR;		// Instruction Match Register	1C8-1CF
++	u64	xSDR1;		// Storage Description Reg 1	1D0-1D7
++	u64	xSPRG0;		// Special Purpose Reg General0	1D8-1DF
++	u64	xSPRG1;		// Special Purpose Reg General1	1E0-1E7
++	u64	xSPRG2;		// Special Purpose Reg General2	1E8-1EF
++	u64	xSPRG3;		// Special Purpose Reg General3	1F0-1F7
++	u64	xTB;		// Time Base Register		1F8-1FF
++
++	u64	xFPR[32];	// Floating Point Registers	200-2FF
++
++	u64	xMSR;		// Machine State Register	300-307
++	u64	xNIA;		// Next Instruction Address	308-30F
++
++	u64	xDABR;		// Data Address Breakpoint Reg	310-317
++	u64	xIABR;		// Inst Address Breakpoint Reg	318-31F
++
++	u64	xHID0;		// HW Implementation Dependent0	320-327
++
++	u64	xHID4;		// HW Implementation Dependent4	328-32F
++	u64	xSCOMd;		// SCON Data Reg (SPRG4)	330-337
++	u64	xSCOMc;		// SCON Command Reg (SPRG5)	338-33F
++	u64	xSDAR;		// Sample Data Address Register	340-347
++	u64	xSIAR;		// Sample Inst Address Register	348-34F
++
++	u8	xRsvd3[176];	// Reserved			350-3FF
++};
++
+ extern void system_reset_iSeries(void);
+ extern void machine_check_iSeries(void);
+ extern void data_access_iSeries(void);
+@@ -160,6 +216,13 @@ struct SpCommArea xSpCommArea = {
  	.xFormat = 1,
  };
  
-+#define ALPACA_INIT(number)						\
-+{									\
-+	.lppaca_ptr = &lppaca[number],					\
-+	.reg_save_ptr = &iseries_reg_save[number],			\
-+}
-+
-+struct alpaca alpaca[] = {
-+	ALPACA_INIT( 0),
-+#if NR_CPUS > 1
-+	ALPACA_INIT( 1), ALPACA_INIT( 2), ALPACA_INIT( 3),
-+#if NR_CPUS > 4
-+	ALPACA_INIT( 4), ALPACA_INIT( 5), ALPACA_INIT( 6), ALPACA_INIT( 7),
-+#if NR_CPUS > 8
-+	ALPACA_INIT( 8), ALPACA_INIT( 9), ALPACA_INIT(10), ALPACA_INIT(11),
-+	ALPACA_INIT(12), ALPACA_INIT(13), ALPACA_INIT(14), ALPACA_INIT(15),
-+	ALPACA_INIT(16), ALPACA_INIT(17), ALPACA_INIT(18), ALPACA_INIT(19),
-+	ALPACA_INIT(20), ALPACA_INIT(21), ALPACA_INIT(22), ALPACA_INIT(23),
-+	ALPACA_INIT(24), ALPACA_INIT(25), ALPACA_INIT(26), ALPACA_INIT(27),
-+	ALPACA_INIT(28), ALPACA_INIT(29), ALPACA_INIT(30), ALPACA_INIT(31),
-+#if NR_CPUS > 32
-+	ALPACA_INIT(32), ALPACA_INIT(33), ALPACA_INIT(34), ALPACA_INIT(35),
-+	ALPACA_INIT(36), ALPACA_INIT(37), ALPACA_INIT(38), ALPACA_INIT(39),
-+	ALPACA_INIT(40), ALPACA_INIT(41), ALPACA_INIT(42), ALPACA_INIT(43),
-+	ALPACA_INIT(44), ALPACA_INIT(45), ALPACA_INIT(46), ALPACA_INIT(47),
-+	ALPACA_INIT(48), ALPACA_INIT(49), ALPACA_INIT(50), ALPACA_INIT(51),
-+	ALPACA_INIT(52), ALPACA_INIT(53), ALPACA_INIT(54), ALPACA_INIT(55),
-+	ALPACA_INIT(56), ALPACA_INIT(57), ALPACA_INIT(58), ALPACA_INIT(59),
-+	ALPACA_INIT(60), ALPACA_INIT(61), ALPACA_INIT(62), ALPACA_INIT(63),
-+#endif
-+#endif
-+#endif
-+#endif
++static struct ItLpRegSave iseries_reg_save[] = {
++	[0 ... (NR_CPUS-1)] = {
++		.xDesc = 0xd397d9e2,	/* "LpRS" */
++		.xSize = sizeof(struct ItLpRegSave),
++	},
 +};
 +
- /* The LparMap data is now located at offset 0x6000 in head.S
-  * It was put there so that the HvReleaseData could address it
-  * with a 32-bit offset as required by the iSeries hypervisor
-@@ -185,7 +220,7 @@ struct ItVpdAreas itVpdAreas = {
- 	.xSlicVpdLens = {			/* VPD lengths */
- 	        0,0,0,		        /*  0 - 2 */
- 		sizeof(xItExtVpdPanel), /*       3 Extended VPD   */
--		sizeof(struct paca_struct),	/*       4 length of Paca  */
-+		sizeof(struct alpaca),	/*       4 length of (fake) Paca  */
- 		0,			/*       5 */
- 		sizeof(struct ItIplParmsReal),/* 6 length of IPL parms */
- 		26992,			/*	 7 length of MS VPD */
-@@ -203,7 +238,7 @@ struct ItVpdAreas itVpdAreas = {
- 	.xSlicVpdAdrs = {			/* VPD addresses */
- 		0,0,0,			/*	 0 -  2 */
- 		&xItExtVpdPanel,        /*       3 Extended VPD */
--		&paca[0],		/*       4 first Paca */
-+		&alpaca[0],		/*       4 first (fake) Paca */
- 		0,			/*       5 */
- 		&xItIplParmsReal,	/*	 6 IPL parms */
- 		&xMsVpd,		/*	 7 MS Vpd */
-diff --git a/include/asm-powerpc/iseries/alpaca.h b/include/asm-powerpc/iseries/alpaca.h
-new file mode 100644
-index 0000000..26fc081
---- /dev/null
-+++ b/include/asm-powerpc/iseries/alpaca.h
-@@ -0,0 +1,31 @@
-+/*
-+ * Copyright © 2008  Stephen Rothwell IBM Corporation
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
-+ */
-+#ifndef _ASM_POWERPC_ISERIES_ALPACA_H
-+#define _ASM_POWERPC_ISERIES_ALPACA_H
-+
-+/*
-+ * This is the part of the paca that the iSeries hypervisor
-+ * needs to be statically initialised. Immediately after boot
-+ * we switch to the normal Linux paca.
-+ */
-+struct alpaca {
-+	struct lppaca *lppaca_ptr;	/* Pointer to LpPaca for PLIC */
-+	void *reg_save_ptr;		/* Pointer to LpRegSave for PLIC */
-+};
-+
-+#endif /* _ASM_POWERPC_ISERIES_ALPACA_H */
+ #define ALPACA_INIT(number)						\
+ {									\
+ 	.lppaca_ptr = &lppaca[number],					\
+@@ -254,10 +317,3 @@ struct ItVpdAreas itVpdAreas = {
+ 		0,0
+ 	}
+ };
+-
+-struct ItLpRegSave iseries_reg_save[] = {
+-	[0 ... (NR_CPUS-1)] = {
+-		.xDesc = 0xd397d9e2,	/* "LpRS" */
+-		.xSize = sizeof(struct ItLpRegSave),
+-	},
+-};
+diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
+index a34172d..00fd764 100644
+--- a/arch/powerpc/xmon/xmon.c
++++ b/arch/powerpc/xmon/xmon.c
+@@ -45,7 +45,6 @@
+ #ifdef CONFIG_PPC64
+ #include <asm/hvcall.h>
+ #include <asm/paca.h>
+-#include <asm/iseries/it_lp_reg_save.h>
+ #endif
+ 
+ #include "nonstdio.h"
+@@ -1598,7 +1597,6 @@ void super_regs(void)
+ 		if (firmware_has_feature(FW_FEATURE_ISERIES)) {
+ 			struct paca_struct *ptrPaca;
+ 			struct lppaca *ptrLpPaca;
+-			struct ItLpRegSave *ptrLpRegSave;
+ 
+ 			/* Dump out relevant Paca data areas. */
+ 			printf("Paca: \n");
+@@ -1611,15 +1609,6 @@ void super_regs(void)
+ 			printf("    Saved Gpr3=%.16lx  Saved Gpr4=%.16lx \n",
+ 			       ptrLpPaca->saved_gpr3, ptrLpPaca->saved_gpr4);
+ 			printf("    Saved Gpr5=%.16lx \n", ptrLpPaca->saved_gpr5);
+-
+-			printf("  Local Processor Register Save Area (LpRegSave): \n");
+-			ptrLpRegSave = ptrPaca->reg_save_ptr;
+-			printf("    Saved Sprg0=%.16lx  Saved Sprg1=%.16lx \n",
+-			       ptrLpRegSave->xSPRG0, ptrLpRegSave->xSPRG0);
+-			printf("    Saved Sprg2=%.16lx  Saved Sprg3=%.16lx \n",
+-			       ptrLpRegSave->xSPRG2, ptrLpRegSave->xSPRG3);
+-			printf("    Saved Msr  =%.16lx  Saved Nia  =%.16lx \n",
+-			       ptrLpRegSave->xMSR, ptrLpRegSave->xNIA);
+ 		}
+ #endif
+ 
+diff --git a/include/asm-powerpc/iseries/it_lp_reg_save.h b/include/asm-powerpc/iseries/it_lp_reg_save.h
+deleted file mode 100644
+index 5403b75..0000000
+--- a/include/asm-powerpc/iseries/it_lp_reg_save.h
++++ /dev/null
+@@ -1,85 +0,0 @@
+-/*
+- * Copyright (C) 2001  Mike Corrigan IBM Corporation
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License as published by
+- * the Free Software Foundation; either version 2 of the License, or
+- * (at your option) any later version.
+- *
+- * This program is distributed in the hope that it will be useful,
+- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- * GNU General Public License for more details.
+- *
+- * You should have received a copy of the GNU General Public License
+- * along with this program; if not, write to the Free Software
+- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+- */
+-#ifndef _ASM_POWERPC_ISERIES_IT_LP_REG_SAVE_H
+-#define _ASM_POWERPC_ISERIES_IT_LP_REG_SAVE_H
+-
+-/*
+- * This control block contains the data that is shared between PLIC
+- * and the OS
+- */
+-
+-struct ItLpRegSave {
+-	u32	xDesc;		// Eye catcher  "LpRS" ebcdic	000-003
+-	u16	xSize;		// Size of this class		004-005
+-	u8	xInUse;         // Area is live                 006-007
+-	u8	xRsvd1[9];	// Reserved			007-00F
+-
+-	u8      xFixedRegSave[352]; // Fixed Register Save Area 010-16F
+-	u32	xCTRL;		// Control Register		170-173
+-	u32	xDEC;		// Decrementer			174-177
+-	u32	xFPSCR;		// FP Status and Control Reg	178-17B
+-	u32	xPVR;		// Processor Version Number	17C-17F
+-
+-	u64	xMMCR0;		// Monitor Mode Control Reg 0	180-187
+-	u32	xPMC1;		// Perf Monitor Counter 1	188-18B
+-	u32	xPMC2;		// Perf Monitor Counter 2	18C-18F
+-	u32	xPMC3;		// Perf Monitor Counter 3	190-193
+-	u32	xPMC4;		// Perf Monitor Counter 4	194-197
+-	u32	xPIR;		// Processor ID Reg		198-19B
+-
+-	u32	xMMCR1;		// Monitor Mode Control Reg 1	19C-19F
+-	u32	xMMCRA;		// Monitor Mode Control Reg A	1A0-1A3
+-	u32	xPMC5;		// Perf Monitor Counter 5	1A4-1A7
+-	u32	xPMC6;		// Perf Monitor Counter 6	1A8-1AB
+-	u32	xPMC7;		// Perf Monitor Counter 7	1AC-1AF
+-	u32	xPMC8;		// Perf Monitor Counter 8	1B0-1B3
+-	u32	xTSC;		// Thread Switch Control	1B4-1B7
+-	u32	xTST;		// Thread Switch Timeout	1B8-1BB
+-	u32	xRsvd;          // Reserved                     1BC-1BF
+-
+-	u64	xACCR;		// Address Compare Control Reg	1C0-1C7
+-	u64	xIMR;		// Instruction Match Register	1C8-1CF
+-	u64	xSDR1;		// Storage Description Reg 1	1D0-1D7
+-	u64	xSPRG0;		// Special Purpose Reg General0	1D8-1DF
+-	u64	xSPRG1;		// Special Purpose Reg General1	1E0-1E7
+-	u64	xSPRG2;		// Special Purpose Reg General2	1E8-1EF
+-	u64	xSPRG3;		// Special Purpose Reg General3	1F0-1F7
+-	u64	xTB;		// Time Base Register		1F8-1FF
+-
+-	u64	xFPR[32];	// Floating Point Registers	200-2FF
+-
+-	u64	xMSR;		// Machine State Register	300-307
+-	u64	xNIA;		// Next Instruction Address	308-30F
+-
+-	u64	xDABR;		// Data Address Breakpoint Reg	310-317
+-	u64	xIABR;		// Inst Address Breakpoint Reg	318-31F
+-
+-	u64	xHID0;		// HW Implementation Dependent0	320-327
+-
+-	u64	xHID4;		// HW Implementation Dependent4	328-32F
+-	u64	xSCOMd;		// SCON Data Reg (SPRG4)	330-337
+-	u64	xSCOMc;		// SCON Command Reg (SPRG5)	338-33F
+-	u64	xSDAR;		// Sample Data Address Register	340-347
+-	u64	xSIAR;		// Sample Inst Address Register	348-34F
+-
+-	u8	xRsvd3[176];	// Reserved			350-3FF
+-};
+-
+-extern struct ItLpRegSave iseries_reg_save[];
+-
+-#endif /* _ASM_POWERPC_ISERIES_IT_LP_REG_SAVE_H */
+diff --git a/include/asm-powerpc/paca.h b/include/asm-powerpc/paca.h
+index 748b35a..eb61b9c 100644
+--- a/include/asm-powerpc/paca.h
++++ b/include/asm-powerpc/paca.h
+@@ -42,10 +42,7 @@ struct task_struct;
+  * Defines the layout of the paca.
+  *
+  * This structure is not directly accessed by firmware or the service
+- * processor except for the first two pointers that point to the
+- * lppaca area and the ItLpRegSave area for this CPU.  The lppaca
+- * object is currently contained within the PACA but it doesn't need
+- * to be.
++ * processor.
+  */
+ struct paca_struct {
+ 	/*
+@@ -55,14 +52,7 @@ struct paca_struct {
+ 	 * avoid cacheline bouncing.
+ 	 */
+ 
+-	/*
+-	 * MAGIC: These first two pointers can't be moved - they're
+-	 * accessed by the firmware
+-	 */
+ 	struct lppaca *lppaca_ptr;	/* Pointer to LpPaca for PLIC */
+-#ifdef CONFIG_PPC_ISERIES
+-	void *reg_save_ptr; /* Pointer to LpRegSave for PLIC */
+-#endif /* CONFIG_PPC_ISERIES */
+ 
+ 	/*
+ 	 * MAGIC: the spinlock functions in arch/powerpc/lib/locks.c 
 -- 
 1.5.4.5
 
