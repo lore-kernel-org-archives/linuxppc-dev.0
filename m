@@ -1,19 +1,19 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id 7632DDE431
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Apr 2008 02:56:57 +1000 (EST)
-Message-ID: <47FE46AC.5000901@ru.mvista.com>
-Date: Thu, 10 Apr 2008 20:56:12 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-MIME-Version: 1.0
-To: Tejun Heo <htejun@gmail.com>
-Subject: Re: [PATCH 6/13] devres: implement managed iomap interface
-References: <11684073371547-git-send-email-htejun@gmail.com>	<47FA4FD2.8060808@ru.mvista.com>
-	<47FB85CB.2070506@gmail.com> <47FB8751.3040301@ru.mvista.com>
-In-Reply-To: <47FB8751.3040301@ru.mvista.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linux-ide@vger.kernel.org, gregkh@suse.de, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, jgarzik@pobox.com, alan@lxorguk.ukuu.org.uk
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 922D7DE324
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Apr 2008 03:41:47 +1000 (EST)
+Message-Id: <035F3758-5399-4482-9874-30D737B9B44E@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Laurent Pinchart <laurentp@cse-semaphore.com>
+In-Reply-To: <200804101751.00618.laurentp@cse-semaphore.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v919.2)
+Subject: Re: How to pass information from the bootloader to the kernel ?
+Date: Thu, 10 Apr 2008 12:41:29 -0500
+References: <200804101751.00618.laurentp@cse-semaphore.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,32 +23,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello, I wrote:
 
->>>    Those functions are going to break on 32-bit platforms with 
->>> extended physical address (well, that's starting with Pentiums which 
->>> had 36-bit PAE :-) AND devices mapped beyond 4 GB (e.g. PowerPC 
->>> 44x).  You should have used resource_size_t for the 'offset' 
->>> parameter. As this most probably means that libata is broken on such 
->>> platforms, I'm going to submit a patch...
+On Apr 10, 2008, at 10:50 AM, Laurent Pinchart wrote:
+> Hi everybody,
+>
+> I need to pass a limited amount of information from the boot loader  
+> to the
+> Linux kernel, such as the boot mode chosen by the user or the last  
+> boot
+> reason (power up, reset, watchdog, ...).
+>
+> What is the best way to pass that kind of information from the boot  
+> loader to
+> the kernel ? Should I use the device tree ?
+>
+> I thought about populating the chosen node with the data I need.  
+> This could
+> make sense for the boot mode, but I feel like I would abuse the  
+> chosen node
+> if I used it to pass other "non user chosen" information.
 
->    It's broken with drivers using MMIO, I meant to say.
+using chosen is fine, just remember to prefix properties with some  
+vendor prefix.
 
-    Oops, I meant PCI drivers here, at least for the time being. And it looks 
-like that was a false alarm. :-]
-
->> Yeah, right please go ahead.  But I wonder whether any BIOS was 
->> actually crazy enough to map mmio region above 4G on 32bit machine.
-
->    This is a *hardware* mapping on some non-x86 platforms (like PPC 44x 
-> or MIPS Alchemy). The arch/ppc/ and arch/mips/ kernels have special 
-> hooks called from ioremap() which help create an illusion that the PCI 
-> memory space on such platforms (not only it) is mapped below 4 GB; 
-> arch/powerpc/ kernel doesn't do this anymore -- hence this newly 
-> encountered issue.
-
-    I thought that pcim_iomap() used devm_ioremap() or something -- which of 
-course turned to be wrong. devm_ioremap() alone is yet safe since there are no 
-users for it amongst PPC 44x platform device drivers...
-
-MBR, Sergei
+- k
