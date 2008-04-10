@@ -1,32 +1,19 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 46517DE859
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Apr 2008 21:57:24 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e32.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m3ABtJCH014603
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Apr 2008 07:55:19 -0400
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m3ABvLUi207518
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Apr 2008 05:57:21 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m3ABvLiK013433
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Apr 2008 05:57:21 -0600
-Date: Thu, 10 Apr 2008 06:55:18 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Hollis Blanchard <hollisb@us.ibm.com>
-Subject: Re: [PATCH 0 of 3] KVM for PowerPC 440
-Message-ID: <20080410065518.46979767@zod.rchland.ibm.com>
-In-Reply-To: <patchbomb.1207601611@localhost.localdomain>
-References: <patchbomb.1207601611@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: kvm-devel@lists.sourceforge.net, linuxppc-dev@ozlabs.org,
-	kvm-ppc-devel@lists.sourceforge.net
+Return-Path: <sr@denx.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.183]) by ozlabs.org (Postfix) with ESMTP id 37AAEDDFAA
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Apr 2008 21:59:48 +1000 (EST)
+From: Stefan Roese <sr@denx.de>
+To: benh@kernel.crashing.org
+Subject: Re: [PATCH] [POWERPC] 4xx: Add endpoint support to 4xx PCIe driver
+Date: Thu, 10 Apr 2008 13:59:31 +0200
+References: <1207149149-17107-1-git-send-email-sr@denx.de>
+	<200804101221.43154.sr@denx.de> <1207823735.6958.7.camel@pasglop>
+In-Reply-To: <1207823735.6958.7.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Message-Id: <200804101359.32095.sr@denx.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,17 +23,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 07 Apr 2008 15:53:31 -0500
-Hollis Blanchard <hollisb@us.ibm.com> wrote:
+On Thursday 10 April 2008, Benjamin Herrenschmidt wrote:
+> On Thu, 2008-04-10 at 12:21 +0200, Stefan Roese wrote:
+> > Sure, this would be optimal. But frankly, I currently have no need for
+> > this
+> > non U-Boot mode, and therefore I didn't implement it. This can be
+> > added later
+> > when really needed don't you think?
+>
+> It can... but on the other hand, it's not hard :-)
 
-> Implement initial support for KVM for PowerPC 440. There are just two small
-> prerequisite patches, and then the bulk of the code can't be split easily.
-> 
-> Please review; I would like to submit these for 2.6.26. There is plenty of work
-> to do, both functional and optimization, but this code is sufficient to run
-> unmodified 440 Linux guests on a 440 Linux host. What's your favorite bike shed
-> color?
+But it takes time. And time is as always short. :)
 
-Who's tree are you looking to get this patch set into?
+> > Good. But again, I would really prefer to first include this U-Boot
+> > style
+> > endpoint support and later add this independent device tree endpoint
+> > configuration when really needed.
+>
+> Well, you are the one with a use case... but I do think we should
+> differenciate a PCI in host mode vs. endpoint mode right away. We don't
+> want the PCI stack from kicking in at all in endpoint mode, we don't
+> want to bother with creating the PCI infrastructure and config space
+> accessors etc...
 
-josh
+Understood. But for this "dynamic" root-complex/endpoint configuration as 
+implemented with the current version of the patch, I can't change the PCIe 
+node in the dts from root-complex mode to endpoint mode, since I would loose 
+root-complex functionality. Perhaps I'm missing something here.
+
+Best regards,
+Stefan
