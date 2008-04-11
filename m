@@ -1,18 +1,20 @@
-Return-Path: <paul.gortmaker@windriver.com>
-Received: from yow-pgortmak-d1.corp.ad.wrs.com (unknown [128.224.252.2])
-	by ozlabs.org (Postfix) with ESMTP id 9E28BDE181
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Apr 2008 13:34:22 +1000 (EST)
-Date: Thu, 10 Apr 2008 23:34:27 -0400
-From: Paul Gortmaker <paul.gortmaker@windriver.com>
-To: Andy Fleming <afleming@freescale.com>
-Subject: Re: [PATCH 0/5] dynamic detection of gianfar TPIPA
-Message-ID: <20080411033427.GA28413@windriver.com>
-References: <1207849922-2436-1-git-send-email-paul.gortmaker@windriver.com>
-	<3F8109F5-F512-48CD-AD93-2C6B4164E5AA@freescale.com>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 687E7DE089
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Apr 2008 15:20:47 +1000 (EST)
+Date: Fri, 11 Apr 2008 00:31:36 -0500
+From: Olof Johansson <olof@lixom.net>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH] [v5] Add idle wait support for 44x platforms
+Message-ID: <20080411053136.GB31810@lixom.net>
+References: <df0f79b7b4ab628887c2.1207673354@thinkpadL>
+	<200804101544.44457.arnd@arndb.de>
+	<1207858131.26428.4.camel@thinkpadL>
+	<200804110218.23912.arnd@arndb.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3F8109F5-F512-48CD-AD93-2C6B4164E5AA@freescale.com>
-Cc: scottwood@freescale.com, linuxppc-dev@ozlabs.org, netdev@vger.kernel.org
+In-Reply-To: <200804110218.23912.arnd@arndb.de>
+Cc: kvm-ppc-devel@lists.sourceforge.net, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,68 +24,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-In message: Re: [PATCH 0/5] dynamic detection of gianfar TPIPA
-on 10/04/2008 Andy Fleming wrote:
+On Fri, Apr 11, 2008 at 02:18:22AM +0200, Arnd Bergmann wrote:
+> On Thursday 10 April 2008, Jerone Young wrote:
+> > Well it could be this simple. But the current code leaves a lot more
+> > room to add different type waits or spins if need be (if they are ever
+> > needed ... though none off the top of my head at the moment)...but it
+> > does allow you to create another wait state for whatever reason a lot
+> > easier.
+> > 
+> > So I really don't think this needs to change. Unless everyone really
+> > feels that it just has to be.
+> 
+> No, it doesn't need to change, the current patch is entirely correct,
+> just a little bit more complicated than it needs to be, and I try
+> not to have code in anticipation of something getting more complicated
+> in the future, you can always add the complexity at the point where you
+> need it.
 
->
-> I may be missing something, but I don't think this quite right.
->
-> If you have a PHY at 0x1f, this patchset will cause no PHY device to be 
-> allocated for that address, and you'll actually end up assigning TBIPA to 
-> be 0x1f again, since there's no PHY there.  Right?  Were you able to use 
-> this code with a PHY at 0x1f?
-
-I tested on several "normal" boards and on a board with the PHY @ 0x1f,
-and it did what I expected it to do.  It was when I was testing on the
-normal boards (8540MDS, 8360MDS, HPCN) that I observed we were showing
-a PHY ID of 0x0 at 0x1f during the routine PHY scan, because the
-autodetect code was skipping 0x1f even on those boards.  I backed out
-all my patches and the situation was the same, hence why I decided to
-skip IDs of either 0xffff or 0x0.
+That piece of code came across from the platforms/pasemi version,
+where we for a while had more than two kinds of idle loops
+(doze/nap/sleep/rvwinkle). Turns out doze does well enough that the
+others weren't really needed so I never submitted support for the deeper
+sleep modes.
 
 
-> I like the idea of passing around priv->mii_bus instead of regs, but I  
-> think it won't work without becoming unnecessarily unwieldy.  The  
-> problem is that the TBI PHY is not necessarily accessed through the same 
-> bus as the PHY.  Each controller has its own TBI PHY, and that PHY can 
-> only be accessed from *that* controller's MDIO bus.  So if you want to 
-> configure TSEC2's TBI PHY, you use TSEC2's MDIO regs.  That's what 
-> gfar_local_mdio_* allowed; they write the *local* controller's MDIO regs. 
->  It looks like this code sets up priv->mii_bus to point at the bus which 
-> holds the PHY, but only TSEC0's bus (on most SoCs) is connected to actual 
-> PHYs.  So you will only ever be able to configure the TBI PHY on TSEC0, 
-> which will not allow any of the other TSECs to use an SGMII PHY.  Were 
-> you able to use other TSECs to connect to an SGMII PHY?
-
-Okay -- that explanation helps me understand the role of the *_local_*
-variants -- it wasn't obvious to me that they were being used to jump
-the device --> bus association and go right at MDIO bus of tsec0.  I
-think this can still be handled sanely though -- we'd have to simply
-say that if you wanted the bus of the TBI of the controller, you would
-go at dev->priv->mii_bus, and if you wanted the bus of the PHY of the
-controller, you'd go at dev->priv->phydev->bus.  I'd have to think a bit
-to see if that would afford the same or similar cleanups, but the
-distinction at least seems clearer to me now.
-
-> We could still pass around an mii_bus reference, but this would require 
-> creating an mii_bus instance for every single TSEC, which is a little 
-> heavyweight when we just want to configure the TBI PHY once on startup.
-
-Yep.  Is there any boards out there with more than 4 tsec?  I'd have
-to go look at the size of mii_bus to see what the per bus cost is.
-
->
-> After some thinking, I went ahead and implemented a patch which isn't  
-> ideal, but should solve the problems your patches set out to solve.   
-> I've sent it in a separate message.  If you have some systems with SGMII 
-> and/or a PHY at 0x1f, please test this patch on them.  I don't currently 
-> have either.
-
-I'll go have a look.  I've only got the SBC8641D with the PHY @ 0x1f to
-be the oddball guniea pig.
-
-Paul.
-
->
-> Andy
->
+-Olof
