@@ -1,20 +1,21 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 6D05FDE737
-	for <linuxppc-dev@ozlabs.org>; Sat, 12 Apr 2008 01:58:50 +1000 (EST)
-Message-Id: <0597EDA4-D948-42A5-890B-34F8585BC2DF@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Scott Wood <scottwood@freescale.com>
-In-Reply-To: <20080411144620.GA2534@loki.buserror.net>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: [PATCH] CPM: Always use new binding.
-Date: Fri, 11 Apr 2008 10:58:13 -0500
-References: <20080410204502.GB20197@loki.buserror.net>
-	<E26DEDA5-96A7-40C1-A06A-5D8503453715@kernel.crashing.org>
-	<20080411144620.GA2534@loki.buserror.net>
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.246])
+	by ozlabs.org (Postfix) with ESMTP id 9A517DE39A
+	for <linuxppc-dev@ozlabs.org>; Sat, 12 Apr 2008 02:04:26 +1000 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so160038anc.78
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Apr 2008 09:04:21 -0700 (PDT)
+Message-ID: <fa686aa40804110904y1a35d4aem329439eb6e765e68@mail.gmail.com>
+Date: Fri, 11 Apr 2008 10:04:20 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Guillaume Dargaud" <dargaud@lpsc.in2p3.fr>
+Subject: Re: zImage.embedded
+In-Reply-To: <016801c89beb$fbff6de0$ad289e86@LPSC0173W>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <014701c89bda$09380060$ad289e86@LPSC0173W>
+	<fa686aa40804110655x48120e84tde01a52d8bb39a3@mail.gmail.com>
+	<016801c89beb$fbff6de0$ad289e86@LPSC0173W>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -25,28 +26,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Apr 11, 2008, at 9:46 AM, Scott Wood wrote:
-> On Thu, Apr 10, 2008 at 06:44:24PM -0500, Kumar Gala wrote:
->>
->> On Apr 10, 2008, at 3:45 PM, Scott Wood wrote:
->>> The kconfig entry can go away once arch/ppc and references to the
->>> config in
->>> drivers are removed.
->>
->> just to be clear.  arch/powerpc will always just use the new  
->> binding and
->> arch/ppc uses the old (or has the option)?
+On Fri, Apr 11, 2008 at 9:51 AM, Guillaume Dargaud
+<dargaud@lpsc.in2p3.fr> wrote:
 >
-> Yes, CONFIG_PPC_NEW_BINDING is effectively an alias for  
-> CONFIG_PPC_MERGE
-> after this patch (but I figure there's no point changing the drivers  
-> to use
-> the latter, just to make another change in a couple months when arch/ 
-> ppc
-> dies).
+> >
+> > >  is the file zImage.elf my proper network image ?
+> > >
+> >
+> > What bootloader is on your board?  zImage.elf *might* be the proper
+> > image.  If you're using u-boot, then you want to build a uImage
+> > instead.
+> >
+>
+>  I... ahem... what would you recommand for a ML405 ?
+>  Builroot gives to options of U-Boot or Yaboot. Haven't tried either yet.
+> Will do on tuesday.
+>
+>  I don't know if Xilinx has another solution (I remember seeing some boot
+> function in the API, usable from a standalone elf file).
 
-Ok (just wanted to make sure I was clear) and agreed on not wanting to  
-change the drivers.
+zImage.elf is what you want.  If you *do* get u-boot building on your
+board, then you'll want a uImage; but zImage.elf will work for you
+now.
 
-- k
+Cheers,
+g.
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
