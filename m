@@ -1,20 +1,22 @@
-Return-Path: <sven@powerlinux.fr>
-Received: from archon.plz.fr (archon.plz.fr [194.50.78.210])
-	by ozlabs.org (Postfix) with ESMTP id 71441DE024
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Apr 2008 17:34:53 +1000 (EST)
-Date: Fri, 11 Apr 2008 09:34:50 +0200
-From: Sven Luther <sven@genesi-usa.com>
-To: Robert Schwebel <r.schwebel@pengutronix.de>
-Subject: Re: State of the MPC5200 PSC AC97 driver
-Message-ID: <20080411073450.GA1818@powerlinux.fr>
-References: <47FDEF9B.5000506@semihalf.com> <47FE3160.2060907@genesi-usa.com>
-	<20080411065100.GQ13814@pengutronix.de>
+Return-Path: <sr@denx.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.174]) by ozlabs.org (Postfix) with ESMTP id 7C0EFDE1D5
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Apr 2008 18:06:55 +1000 (EST)
+From: Stefan Roese <sr@denx.de>
+To: linuxppc-dev@ozlabs.org,
+ joakim.tjernlund@transmode.se
+Subject: Re: [PATCH 1/5] phylib: don't create a phydev for ID-less PHYs.
+Date: Fri, 11 Apr 2008 10:06:04 +0200
+References: <1207849922-2436-1-git-send-email-paul.gortmaker@windriver.com>
+	<4764055962e0a42ce083783bbb897a62090ad90b.1207846542.git.paul.gortmaker@windriver.com>
+	<1207897589.9544.13.camel@gentoo-jocke.transmode.se>
+In-Reply-To: <1207897589.9544.13.camel@gentoo-jocke.transmode.se>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080411065100.GQ13814@pengutronix.de>
-Cc: Sylvain Munaut <tnt@246tNt.com>, linuxppc-dev@ozlabs.org,
-	spitzauer_77@gmx.de, sven@genesi-usa.com,
-	Marian Balakowicz <m8@semihalf.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200804111006.04708.sr@denx.de>
+Cc: scottwood@freescale.com, Paul Gortmaker <paul.gortmaker@windriver.com>,
+	linux-net@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,30 +26,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Apr 11, 2008 at 08:51:00AM +0200, Robert Schwebel wrote:
-> Hi Matt,
-> 
-> On Thu, Apr 10, 2008 at 04:25:20PM +0100, Matt Sealey wrote:
-> > I have a copy of the driver I hacked to work with the new PSC
-> > framework but it doesn't "work" anymore - I have no idea why.
-> >
-> > Mail me privately if you want it, I have no time to make patches or
-> > look for a good reason for the breakages, but it compiles at least.
-> > The Efika hack should be gone now (irrelevant since we released a
-> > firmware that obseletes it) and the other fixmes should be by the
-> > wayside considering the fscking thing doesn't play sound anymore...
-> 
-> I'd be interested as well; do I read your mail right that you have
-> already managed to hear sound coming out of the MPC5200B PSC AC97
-> interface? You would be the first one I've heared of, so it would
-> definitely be interesting to see your code. 
+On Friday 11 April 2008, Joakim Tjernlund wrote:
+> On Thu, 2008-04-10 at 13:51 -0400, Paul Gortmaker wrote:
+> > In addition to marking 0x0 as an invalid PHY ID, I've also
+> > changed the existing somewhat useless printk to actually
+> > list the bus IDs where it found a PHY so we get a basic
+> > bus summary.
+>
+> PHY ID 0x0 isn't an invalid id, I got a Broadcom PHY that has
+> PHY ID=0. Maybe I am misunderstanding something?
 
-Indeed, sound was known to work on the efika plateform, altough it is
-the last patch which not merged upstream, and needs some work.
+IIRC, address 0 is the PHY broadcast address, but can be used without problem 
+with some PHY's. I remember some designs were we had the PHY at address 0.
 
-I leave matt send it to you, as he has been more in touch with this
-lately.
-
-Friendly,
-
-Sven Luther
+Best regards,
+Stefan
