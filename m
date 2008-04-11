@@ -1,21 +1,25 @@
 Return-Path: <glikely@secretlab.ca>
 Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.241])
-	by ozlabs.org (Postfix) with ESMTP id 5FB2FDE0E7
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Apr 2008 23:50:38 +1000 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so147260anc.78
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Apr 2008 06:50:36 -0700 (PDT)
-Message-ID: <fa686aa40804110650h2a215290h5269ce74ff6e33c5@mail.gmail.com>
-Date: Fri, 11 Apr 2008 07:50:36 -0600
+	by ozlabs.org (Postfix) with ESMTP id 39A79DE1CC
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Apr 2008 23:54:10 +1000 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so147562anc.78
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Apr 2008 06:54:04 -0700 (PDT)
+Message-ID: <fa686aa40804110654k13e823c4v1d87d6a7cfd7034f@mail.gmail.com>
+Date: Fri, 11 Apr 2008 07:54:03 -0600
 From: "Grant Likely" <grant.likely@secretlab.ca>
 Sender: glikely@secretlab.ca
-To: "Marian Balakowicz" <m8@semihalf.com>
-Subject: Re: State of the MPC5200 PSC AC97 driver
-In-Reply-To: <47FF2DFA.2060003@semihalf.com>
+To: joakim.tjernlund@transmode.se
+Subject: Re: [PATCH 1/5] phylib: don't create a phydev for ID-less PHYs.
+In-Reply-To: <1207910826.9544.26.camel@gentoo-jocke.transmode.se>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-References: <47FDEF9B.5000506@semihalf.com> <47FF2DFA.2060003@semihalf.com>
-Cc: Sven Luther <sven@genesi-usa.com>, spitzauer_77@gmx.de,
-	linuxppc-dev@ozlabs.org
+References: <1207849922-2436-1-git-send-email-paul.gortmaker@windriver.com>
+	<4764055962e0a42ce083783bbb897a62090ad90b.1207846542.git.paul.gortmaker@windriver.com>
+	<1207897589.9544.13.camel@gentoo-jocke.transmode.se>
+	<200804111006.04708.sr@denx.de>
+	<1207910826.9544.26.camel@gentoo-jocke.transmode.se>
+Cc: scottwood@freescale.com, linuxppc-dev@ozlabs.org, Stefan Roese <sr@denx.de>,
+	Paul Gortmaker <paul.gortmaker@windriver.com>, linux-net@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,21 +29,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Apr 11, 2008 at 3:23 AM, Marian Balakowicz <m8@semihalf.com> wrote:
+On Fri, Apr 11, 2008 at 4:47 AM, Joakim Tjernlund
+<joakim.tjernlund@transmode.se> wrote:
 >
->  All,
+>  On Fri, 2008-04-11 at 10:06 +0200, Stefan Roese wrote:
+>  > On Friday 11 April 2008, Joakim Tjernlund wrote:
+>  > > PHY ID 0x0 isn't an invalid id, I got a Broadcom PHY that has
+>  > > PHY ID=0. Maybe I am misunderstanding something?
+>  >
+>  > IIRC, address 0 is the PHY broadcast address, but can be used without problem
+>  > with some PHY's. I remember some designs were we had the PHY at address 0.
 >
->  Thanks for the input and comments.
->
->  I am also having a look at the I2S driver. There were attempts some
->  time ago and I found few pieces of code floating on net but couldn't
->  find anything cleaned up. Did anyone tried to put the results of those
->  attempts together?
+>  Ouh, if that is so, I guess we need a CONFIG option or a new mdio bus
+>  property to select if PHY ID 0 is valid id or not.
 
-I'm actually working on the I2S driver now and I'll probably have
-something to post about a month from now.  This is funded development,
-so I'll actually have lots of time to spend on it when I get back from
-ELC.
+Or, don't probe for phys by default.  Rather, use the data in the
+device tree to determine what PHY ids are valid.
 
 Cheers,
 g.
