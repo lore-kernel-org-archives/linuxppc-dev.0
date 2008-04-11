@@ -1,18 +1,16 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id B8C1ADE083
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Apr 2008 21:45:42 +1000 (EST)
-Date: Fri, 11 Apr 2008 15:45:38 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: patches for 2.6.26
-Message-ID: <20080411114538.GA17447@polina.dev.rtsoft.ru>
-References: <D9A4BB4A-970C-4E9E-9174-BA8C0191CCA2@kernel.crashing.org>
+Return-Path: <laurentp@cse-semaphore.com>
+Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
+	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id B4B92DE13C
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Apr 2008 22:05:56 +1000 (EST)
+From: Laurent Pinchart <laurentp@cse-semaphore.com>
+To: netdev@vger.kernel.org
+Subject: [PATCH] fs_enet: Don't call NAPI functions when NAPI is not used.
+Date: Fri, 11 Apr 2008 14:05:50 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <D9A4BB4A-970C-4E9E-9174-BA8C0191CCA2@kernel.crashing.org>
-Cc: ppc-dev list <linuxppc-dev@ozlabs.org>
-Reply-To: avorontsov@ru.mvista.com
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200804111405.50896.laurentp@cse-semaphore.com>
+Cc: linuxppc-dev@ozlabs.org, Jeff Garzik <jgarzik@pobox.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,46 +20,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello Kumar,
+fs_enet_close() calls napi_disable() unconditionally. This patch skips the
+call when use_napi isn't set.
 
-On Thu, Apr 10, 2008 at 09:21:34AM -0500, Kumar Gala wrote:
-> Guy's
->
-> if you have work you want in 2.6.26 related to Freescale PPC's let me  
-> know.  Ideally you can provide links to the patches in 
-> http://patchwork.ozlabs.org/linuxppc/
+Signed-off-by: Laurent Pinchart <laurentp@cse-semaphore.com>
+---
+ drivers/net/fs_enet/fs_enet-main.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-Please take a look at these:
+diff --git a/drivers/net/fs_enet/fs_enet-main.c b/drivers/net/fs_enet/fs_enet-main.c
+index c83bd65..1801ce3 100644
+--- a/drivers/net/fs_enet/fs_enet-main.c
++++ b/drivers/net/fs_enet/fs_enet-main.c
+@@ -835,7 +835,8 @@ static int fs_enet_close(struct net_device *dev)
+ 
+ 	netif_stop_queue(dev);
+ 	netif_carrier_off(dev);
+-	napi_disable(&fep->napi);
++	if (fep->fpi->use_napi)
++		napi_disable(&fep->napi);
+ 	phy_stop(fep->phydev);
+ 
+ 	spin_lock_irqsave(&fep->lock, flags);
+-- 
+1.5.0
 
-[POWERPC] mpc8315: fix USB UTMI Host setup
-http://patchwork.ozlabs.org/linuxppc/patch?id=17782
-
-[POWERPC] qe_lib and ucc_geth: switch to the cpm_muram implementation
-http://patchwork.ozlabs.org/linuxppc/patch?id=17441
-^ Scott and Timur say that patch looks fine.
-
-[POWERPC] 83xx: mpc837x_rdb: add simple-bus compatible matching
-http://patchwork.ozlabs.org/linuxppc/patch?id=17405
-
-[POWERPC] 83xx: MPC837xRDB's VSC7385 ethernet switch isn't on the MDIO bus
-http://patchwork.ozlabs.org/linuxppc/patch?id=17389
-
-[POWERPC] fsl_soc: add support for "fsl, soc" compatible matching
-http://patchwork.ozlabs.org/linuxppc/patch?id=17289
-
-[POWERPC] UCC nodes cleanup
-http://patchwork.ozlabs.org/linuxppc/patch?id=17290
-
-UPM Patches
-http://patchwork.ozlabs.org/linuxppc/patch?id=17291
-http://patchwork.ozlabs.org/linuxppc/patch?id=17292
-^ Needed to be in-tree so I can ask to merge FSL UPM NAND driver just after
-OF GPIO API merge.
-
-
-Thanks,
+This is a bugfix and should probably go in 2.6.25.
 
 -- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+Laurent Pinchart
+CSE Semaphore Belgium
+
+Chaussee de Bruxelles, 732A
+B-1410 Waterloo
+Belgium
+
+T +32 (2) 387 42 59
+F +32 (2) 387 42 75
