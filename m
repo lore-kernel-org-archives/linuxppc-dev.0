@@ -1,23 +1,20 @@
 Return-Path: <timur@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
+	(Client CN "az33egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 1DE8EDEE5A
-	for <linuxppc-dev@ozlabs.org>; Sat, 12 Apr 2008 03:08:26 +1000 (EST)
-Message-ID: <47FF9B01.7010207@freescale.com>
-Date: Fri, 11 Apr 2008 12:08:17 -0500
+	by ozlabs.org (Postfix) with ESMTPS id 197A5DDF93
+	for <linuxppc-dev@ozlabs.org>; Sat, 12 Apr 2008 03:08:58 +1000 (EST)
+Message-ID: <47FF9B20.70207@freescale.com>
+Date: Fri, 11 Apr 2008 12:08:48 -0500
 From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
 To: avorontsov@ru.mvista.com
 Subject: Re: [PATCH 2/2] [POWERPC] UCC nodes cleanup
-References: <20080311171045.GB4684@localhost.localdomain>
-	<82E8E38A-C159-4C23-BDE8-086D4429F366@kernel.crashing.org>
+References: <20080311171045.GB4684@localhost.localdomain>	<82E8E38A-C159-4C23-BDE8-086D4429F366@kernel.crashing.org>
 	<20080411160654.GA25506@polina.dev.rtsoft.ru>
-	<47FF9665.7020403@freescale.com>
-	<20080411170657.GA15270@polina.dev.rtsoft.ru>
-In-Reply-To: <20080411170657.GA15270@polina.dev.rtsoft.ru>
+In-Reply-To: <20080411160654.GA25506@polina.dev.rtsoft.ru>
 Content-Type: text/plain; charset=ISO-8859-1
 Cc: linuxppc-dev@ozlabs.org, Jeff Garzik <jgarzik@pobox.com>,
 	linux-serial@vger.kernel.org, netdev@vger.kernel.org
@@ -32,17 +29,18 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Anton Vorontsov wrote:
 
->> Do we want the first UCC to have a cell-index of 1?  Maybe we should fix this
->> off-by-one error once and for all, and number all UCCs from 0?
+> From: Anton Vorontsov <avorontsov@ru.mvista.com>
+> Subject: [POWERPC] UCC nodes cleanup
 > 
-> Isn't documentation numbers UCC from 1? 
+> - get rid of `model = "UCC"' in the ucc nodes
+>   It isn't used anywhere, so remove it. If we'll ever need something
+>   like this, we'll use compatible property instead.
+> - replace last occurrences of device-id with cell-index.
+>   Drivers are modified for backward compatibility's sake.
+> 
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 
-Yes.
-
-> Then I believe we should stick
-> with it for device tree, since off by one is Linux implementation details.
-
-Fair enough.
+Acked-by: Timur Tabi <timur@freescale.com>
 
 -- 
 Timur Tabi
