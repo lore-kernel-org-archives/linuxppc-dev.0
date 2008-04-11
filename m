@@ -1,15 +1,19 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 3B56EDE1A6
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Apr 2008 11:11:59 +1000 (EST)
-Date: Fri, 11 Apr 2008 11:11:56 +1000
+	by ozlabs.org (Postfix) with ESMTP id C618CDE0E7
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Apr 2008 11:15:22 +1000 (EST)
+Date: Fri, 11 Apr 2008 11:15:14 +1000
 From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: paulus@samba.org
-Subject: [PATCH] [POWERPC] Fix MAX_ORDER config problem
-Message-Id: <20080411111156.8861e269.sfr@canb.auug.org.au>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: ppc64 build issue
+Message-Id: <20080411111514.2dab8aff.sfr@canb.auug.org.au>
+In-Reply-To: <221074DB-2297-4263-8325-BAB964DCCEF1@kernel.crashing.org>
+References: <221074DB-2297-4263-8325-BAB964DCCEF1@kernel.crashing.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Fri__11_Apr_2008_11_15_14_+1000_ze1J3/haS5S8N1Zj"
+Cc: ppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,91 +23,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The allyesconfig (among others) build was giving this:
+--Signature=_Fri__11_Apr_2008_11_15_14_+1000_ze1J3/haS5S8N1Zj
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-In file included from include/linux/gfp.h:4,
-                 from include/linux/slab.h:14,
-                 from include/linux/percpu.h:5,
-                 from include2/asm/time.h:18,
-                 from include2/asm/cputime.h:26,
-                 from include/linux/sched.h:67,
-                 from
-arch/powerpc/kernel/asm-offsets.c:17:
-include/linux/mmzone.h:791:2: error: #error Allocator MAX_ORDER exceeds SECTION_SIZE
+Hi Kumar,
 
-Kconfig options are order depenendent, so move the setting of
-FORCE_MAX_ZONEORDER to after the setting of PPC_64K_PAGES. Also add an
-explicit !PPC_64K_PAGES.
+On Thu, 10 Apr 2008 10:01:27 -0500 Kumar Gala <galak@kernel.crashing.org> w=
+rote:
+>
+> anyone looking into this?
+>=20
+> http://kisskb.ellerman.id.au/kisskb/buildresult/23299/
+>=20
+> Its really a Kconfig issue.
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- arch/powerpc/Kconfig |   40 ++++++++++++++++++++--------------------
- 1 files changed, 20 insertions(+), 20 deletions(-)
+Just posted a patch.
 
-Paul, this is a bug in the powerpc next tree.
-
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 625342e..1d4d19f 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -211,26 +211,6 @@ source kernel/Kconfig.hz
- source kernel/Kconfig.preempt
- source "fs/Kconfig.binfmt"
- 
--config FORCE_MAX_ZONEORDER
--	int "Maximum zone order"
--	default "9" if PPC_64K_PAGES
--	default "13" if PPC64
--	default "11"
--	help
--	  The kernel memory allocator divides physically contiguous memory
--	  blocks into "zones", where each zone is a power of two number of
--	  pages.  This option selects the largest power of two that the kernel
--	  keeps in the memory allocator.  If you need to allocate very large
--	  blocks of physically contiguous memory, then you may need to
--	  increase this value.
--
--	  This config option is actually maximum order plus one. For example,
--	  a value of 11 means that the largest free memory block is 2^10 pages.
--
--	  The page size is not necessarily 4KB.  For example, on 64-bit
--	  systems, 64KB pages can be enabled via CONFIG_PPC_64K_PAGES.  Keep
--	  this in mind when choosing a value for this option.
--
- config HUGETLB_PAGE_SIZE_VARIABLE
- 	bool
- 	depends on HUGETLB_PAGE
-@@ -403,6 +383,26 @@ config PPC_64K_PAGES
- 	  while on hardware with such support, it will be used to map
- 	  normal application pages.
- 
-+config FORCE_MAX_ZONEORDER
-+	int "Maximum zone order"
-+	default "9" if PPC_64K_PAGES
-+	default "13" if PPC64 && !PPC_64K_PAGES
-+	default "11"
-+	help
-+	  The kernel memory allocator divides physically contiguous memory
-+	  blocks into "zones", where each zone is a power of two number of
-+	  pages.  This option selects the largest power of two that the kernel
-+	  keeps in the memory allocator.  If you need to allocate very large
-+	  blocks of physically contiguous memory, then you may need to
-+	  increase this value.
-+
-+	  This config option is actually maximum order plus one. For example,
-+	  a value of 11 means that the largest free memory block is 2^10 pages.
-+
-+	  The page size is not necessarily 4KB.  For example, on 64-bit
-+	  systems, 64KB pages can be enabled via CONFIG_PPC_64K_PAGES.  Keep
-+	  this in mind when choosing a value for this option.
-+
- config PPC_SUBPAGE_PROT
- 	bool "Support setting protections for 4k subpages"
- 	depends on PPC_64K_PAGES
--- 
-1.5.4.5
-
--- 
+--=20
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Fri__11_Apr_2008_11_15_14_+1000_ze1J3/haS5S8N1Zj
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFH/rumTgG2atn1QN8RAuYFAJ9KNdldzCP2Go9W2mc0uqS7StSGAgCfVCdk
+d7+Mk8eomDJq7U4XVQmQXgw=
+=Li5+
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__11_Apr_2008_11_15_14_+1000_ze1J3/haS5S8N1Zj--
