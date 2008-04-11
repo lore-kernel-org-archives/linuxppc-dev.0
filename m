@@ -1,20 +1,21 @@
-Return-Path: <dargaud@lpsc.in2p3.fr>
-Received: from lpsc-mail.in2p3.fr (lpsc-mail.in2p3.fr [134.158.40.8])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B6A5BDDED2
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Apr 2008 23:43:40 +1000 (EST)
-Received: from LPSC0173W (lpsc0173w.in2p3.fr [134.158.40.173])
-	by lpsc-mail.in2p3.fr (8.13.1/8.13.1/In2p3) with SMTP id m3BDhYUK015119
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Apr 2008 15:43:34 +0200
-Message-ID: <014701c89bda$09380060$ad289e86@LPSC0173W>
-From: "Guillaume Dargaud" <dargaud@lpsc.in2p3.fr>
-To: <linuxppc-dev@ozlabs.org>
-Subject: zImage.embedded
-Date: Fri, 11 Apr 2008 15:43:25 +0200
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.241])
+	by ozlabs.org (Postfix) with ESMTP id 5FB2FDE0E7
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Apr 2008 23:50:38 +1000 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so147260anc.78
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Apr 2008 06:50:36 -0700 (PDT)
+Message-ID: <fa686aa40804110650h2a215290h5269ce74ff6e33c5@mail.gmail.com>
+Date: Fri, 11 Apr 2008 07:50:36 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Marian Balakowicz" <m8@semihalf.com>
+Subject: Re: State of the MPC5200 PSC AC97 driver
+In-Reply-To: <47FF2DFA.2060003@semihalf.com>
 MIME-Version: 1.0
-Content-Type: text/plain; format=flowed; charset="iso-8859-1";
-	reply-type=original
+Content-Type: text/plain; charset=ISO-8859-1
+References: <47FDEF9B.5000506@semihalf.com> <47FF2DFA.2060003@semihalf.com>
+Cc: Sven Luther <sven@genesi-usa.com>, spitzauer_77@gmx.de,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,27 +25,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello all,
+On Fri, Apr 11, 2008 at 3:23 AM, Marian Balakowicz <m8@semihalf.com> wrote:
+>
+>  All,
+>
+>  Thanks for the input and comments.
+>
+>  I am also having a look at the I2S driver. There were attempts some
+>  time ago and I found few pieces of code floating on net but couldn't
+>  find anything cleaned up. Did anyone tried to put the results of those
+>  attempts together?
 
-I'm not sure what kind of error this is. I'm trying to generate a kernel 
-image suitable for network boot and it seems to fail at the very end (wrong 
-target ?)
+I'm actually working on the I2S driver now and I'll probably have
+something to post about a month from now.  This is funded development,
+so I'll actually have lots of time to spend on it when I get back from
+ELC.
 
-$ make ARCH=ppc CROSS_COMPILE=powerpc-linux-uclibc-  znetboot
+Cheers,
+g.
 
-powerpc-linux-uclibc-objcopy -O elf32-powerpc arch/ppc/boot/simple/zvmlinux 
-arch/ppc/boot/simple/zvmlinux -R .comment -R .stab \
-                -R .stabstr -R .ramdisk
-cp -f arch/ppc/boot/simple/zvmlinux arch/ppc/boot/images/zImage.elf
-rm -f arch/ppc/boot/simple/zvmlinux
-cp arch/ppc/boot/images/zImage.embedded /tftpboot/zImage.embedded
-cp: cannot stat `arch/ppc/boot/images/zImage.embedded': No such file or 
-directory
-make[2]: *** [znetboot] Error 1
-make[1]: *** [simple] Error 2
-make: *** [znetboot] Error 2
-
-is the file zImage.elf my proper network image ?
 -- 
-Guillaume Dargaud
-http://www.gdargaud.net/
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
