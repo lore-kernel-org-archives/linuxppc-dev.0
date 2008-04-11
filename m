@@ -1,27 +1,18 @@
-Return-Path: <andre.schwarz@matrix-vision.de>
-Received: from p15137414.pureserver.info (matrixvision.de [217.160.213.229])
-	by ozlabs.org (Postfix) with ESMTP id B0C95DE567
-	for <linuxppc-dev@ozlabs.org>; Sat, 12 Apr 2008 01:13:50 +1000 (EST)
-Received: from pandora.intern.matrix-vision.de (g1.matrix-vision.com
-	[217.7.222.190])
-	by p15137414.pureserver.info (Postfix) with ESMTP id 136993CC02C
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Apr 2008 17:13:47 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
-	by pandora.intern.matrix-vision.de (Postfix) with ESMTP id 37DEBE3C09
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Apr 2008 17:12:45 +0200 (CEST)
-Received: from hegemone (hegemone.intern.matrix-vision.de [192.168.5.77])
-	by pandora.intern.matrix-vision.de (Postfix) with ESMTP id 1D2CBE3C09
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Apr 2008 17:12:45 +0200 (CEST)
-Received: from [192.168.65.5] (unknown [192.168.65.5])
-	by hegemone (Postfix) with ESMTP id 869CF53D
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Apr 2008 17:12:41 +0200 (CEST)
-Message-ID: <47FF802B.5020708@matrix-vision.de>
-Date: Fri, 11 Apr 2008 17:13:47 +0200
-From: Andre Schwarz <andre.schwarz@matrix-vision.de>
+Return-Path: <laurentp@cse-semaphore.com>
+Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
+	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id DDC11DE8FF
+	for <linuxppc-dev@ozlabs.org>; Sat, 12 Apr 2008 01:21:03 +1000 (EST)
+From: Laurent Pinchart <laurentp@cse-semaphore.com>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: Flash on LocalBus @ MPC8343
+Date: Fri, 11 Apr 2008 17:20:54 +0200
+References: <47FF802B.5020708@matrix-vision.de>
+In-Reply-To: <47FF802B.5020708@matrix-vision.de>
 MIME-Version: 1.0
-To: linux-ppc list <linuxppc-dev@ozlabs.org>
-Subject: Flash on LocalBus @ MPC8343
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Type: multipart/signed; boundary="nextPart1562682.AkC8xHgeqR";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
+Message-Id: <200804111720.57095.laurentp@cse-semaphore.com>
+Cc: Andre Schwarz <andre.schwarz@matrix-vision.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,59 +22,88 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi all,
+--nextPart1562682.AkC8xHgeqR
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-I've been trying hard to make the mtd-partitions available via device 
-tree on my MPC8343 local bus.
-No success so far ...
+On Friday 11 April 2008 17:13, Andre Schwarz wrote:
+> Hi all,
+>=20
+> I've been trying hard to make the mtd-partitions available via device=20
+> tree on my MPC8343 local bus.
+> No success so far ...
+>=20
+> Everything works fine on my MPC5200B based system - flash layout=20
+> definition is quite simple ....
+>=20
+> To me it looks like there's a problem regarding the local bus in general.
+>=20
+> Am I missing a "compatible" or anything else ? "reg" or "ranges" ?
+>=20
+> The other boards use static map files or provide partition over command=20
+> line args .... so suitable dts available.
+>=20
+> Flash is 8MB size in 16-Bit configuration and should reside on=20
+> 0xFF800000 at cs0.
+>=20
+>=20
+> Any hints ?
+>=20
+>=20
+> regards,
+> Andre Schwarz
+> Matrix Vision
+>=20
+>=20
+> dts syntax :
+>=20
+> <snip>
+>=20
+>         localbus@e0005000 {
+>                 #address-cells =3D <2>;
+>                 #size-cells =3D <1>;
+>                 compatible =3D "fsl,mpc8343-localbus", "fsl,pq2pro-localb=
+us";
+>=20
+>                 ranges =3D <0x0 0x0 0xff800000 0x00800000>;
+>=20
+>                 flash@0,0 {
+>                         compatible =3D "amd,s29gl64", "cfi-flash";
+>                         reg =3D <0 0 800000>;
 
-Everything works fine on my MPC5200B based system - flash layout 
-definition is quite simple ....
+reg should be <0 0 0x800000>.
 
-To me it looks like there's a problem regarding the local bus in general.
+>                         #address-cells =3D <1>;
+>                         #size-cells =3D <1>;
+>                         bank-width =3D <2>;
+>                         device-width =3D <2>;
+>=20
+>                         ppcboot_env@0 {
+>                                 reg =3D <0x0 0x2000>;
+>                         };
 
-Am I missing a "compatible" or anything else ? "reg" or "ranges" ?
+=2D-=20
+Laurent Pinchart
+CSE Semaphore Belgium
 
-The other boards use static map files or provide partition over command 
-line args .... so suitable dts available.
+Chaussee de Bruxelles, 732A
+B-1410 Waterloo
+Belgium
 
-Flash is 8MB size in 16-Bit configuration and should reside on 
-0xFF800000 at cs0.
+T +32 (2) 387 42 59
+=46 +32 (2) 387 42 75
 
+--nextPart1562682.AkC8xHgeqR
+Content-Type: application/pgp-signature
 
-Any hints ?
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
 
+iD8DBQBH/4HZ8y9gWxC9vpcRAlosAKCq+HRwdpGJ5WJC0HoBp8HVRrorIwCgsA3X
+NqnndaZeZJQoW2KK8N1IFLQ=
+=eQpM
+-----END PGP SIGNATURE-----
 
-regards,
-Andre Schwarz
-Matrix Vision
-
-
-dts syntax :
-
-<snip>
-
-        localbus@e0005000 {
-                #address-cells = <2>;
-                #size-cells = <1>;
-                compatible = "fsl,mpc8343-localbus", "fsl,pq2pro-localbus";
-
-                ranges = <0x0 0x0 0xff800000 0x00800000>;
-
-                flash@0,0 {
-                        compatible = "amd,s29gl64", "cfi-flash";
-                        reg = <0 0 800000>;
-                        #address-cells = <1>;
-                        #size-cells = <1>;
-                        bank-width = <2>;
-                        device-width = <2>;
-
-                        ppcboot_env@0 {
-                                reg = <0x0 0x2000>;
-                        };
-
-<snip>
-
-
-MATRIX VISION GmbH, Talstraße 16, DE-71570 Oppenweiler  - Registergericht: Amtsgericht Stuttgart, HRB 271090
-Geschäftsführer: Gerhard Thullner, Werner Armingeon, Uwe Furtner
+--nextPart1562682.AkC8xHgeqR--
