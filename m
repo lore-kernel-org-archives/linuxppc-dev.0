@@ -1,22 +1,20 @@
-Return-Path: <sr@denx.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.174]) by ozlabs.org (Postfix) with ESMTP id 7C0EFDE1D5
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Apr 2008 18:06:55 +1000 (EST)
-From: Stefan Roese <sr@denx.de>
-To: linuxppc-dev@ozlabs.org,
- joakim.tjernlund@transmode.se
-Subject: Re: [PATCH 1/5] phylib: don't create a phydev for ID-less PHYs.
-Date: Fri, 11 Apr 2008 10:06:04 +0200
-References: <1207849922-2436-1-git-send-email-paul.gortmaker@windriver.com>
-	<4764055962e0a42ce083783bbb897a62090ad90b.1207846542.git.paul.gortmaker@windriver.com>
-	<1207897589.9544.13.camel@gentoo-jocke.transmode.se>
-In-Reply-To: <1207897589.9544.13.camel@gentoo-jocke.transmode.se>
+Return-Path: <m8@semihalf.com>
+Received: from semihalf.com (semihalf.com [206.130.101.55])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 36B5ADE089
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Apr 2008 19:22:43 +1000 (EST)
+Message-ID: <47FF2DFA.2060003@semihalf.com>
+Date: Fri, 11 Apr 2008 11:23:06 +0200
+From: Marian Balakowicz <m8@semihalf.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200804111006.04708.sr@denx.de>
-Cc: scottwood@freescale.com, Paul Gortmaker <paul.gortmaker@windriver.com>,
-	linux-net@vger.kernel.org
+To: Sylvain Munaut <tnt@246tNt.com>
+Subject: Re: State of the MPC5200 PSC AC97 driver
+References: <47FDEF9B.5000506@semihalf.com>
+In-Reply-To: <47FDEF9B.5000506@semihalf.com>
+Content-Type: text/plain; charset=ISO-8859-2
+Cc: Sven Luther <sven@genesi-usa.com>, spitzauer_77@gmx.de,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,18 +24,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Friday 11 April 2008, Joakim Tjernlund wrote:
-> On Thu, 2008-04-10 at 13:51 -0400, Paul Gortmaker wrote:
-> > In addition to marking 0x0 as an invalid PHY ID, I've also
-> > changed the existing somewhat useless printk to actually
-> > list the bus IDs where it found a PHY so we get a basic
-> > bus summary.
->
-> PHY ID 0x0 isn't an invalid id, I got a Broadcom PHY that has
-> PHY ID=0. Maybe I am misunderstanding something?
 
-IIRC, address 0 is the PHY broadcast address, but can be used without problem 
-with some PHY's. I remember some designs were we had the PHY at address 0.
+All,
 
-Best regards,
-Stefan
+Thanks for the input and comments.
+
+I am also having a look at the I2S driver. There were attempts some
+time ago and I found few pieces of code floating on net but couldn't
+find anything cleaned up. Did anyone tried to put the results of those
+attempts together?
+
+Cheers,
+m.
