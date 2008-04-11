@@ -1,22 +1,20 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <jochen@scram.de>
+Received: from mail.scram.de (mail0.scram.de [78.47.204.202])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id BA324DE4B6
-	for <linuxppc-dev@ozlabs.org>; Sat, 12 Apr 2008 00:07:21 +1000 (EST)
-Message-Id: <C55A03A1-DDB4-4652-9758-2E78E38343B4@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: David Woodhouse <dwmw2@infradead.org>
-In-Reply-To: <20080311172328.GA7727@localhost.localdomain>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: [PATCH 1/8] [POWERPC] fsl_elbc_nand: factor out localbus defines
-Date: Fri, 11 Apr 2008 09:06:28 -0500
-References: <20080311172106.GA4766@localhost.localdomain>
-	<20080311172328.GA7727@localhost.localdomain>
-Cc: Scott Wood <scottwood@freescale.com>,
-	"linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>,
-	linux-mtd@lists.infradead.org
+	(Client CN "mail.scram.de", Issuer "scram e.V. CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 831A4DE7C8
+	for <linuxppc-dev@ozlabs.org>; Sat, 12 Apr 2008 00:07:52 +1000 (EST)
+Message-ID: <47FF70A7.5070002@scram.de>
+Date: Fri, 11 Apr 2008 16:07:35 +0200
+From: Jochen Friedrich <jochen@scram.de>
+MIME-Version: 1.0
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: [PATCH1/7] i2c: Add support for device alias names
+Content-Type: text/plain; charset=ISO-8859-15
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, "Kernel,
+	Linux" <linux-kernel@vger.kernel.org>,
+	Scott Wood <scottwood@freescale.com>, Jean Delvare <khali@linux-fr.org>,
+	Linux I2C <i2c@lm-sensors.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,608 +24,711 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Based on earlier work by Jon Smirl and Jean Delvare.
 
-On Mar 11, 2008, at 12:23 PM, Anton Vorontsov wrote:
-> This is needed to support other localbus peripherals, such as
-> NAND on FSL UPM.
->
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> ---
->
-> Would be great if someone from the MTD community will ack this patch
-> to go through powerpc trees.
->
-> Thanks,
+This patch allows new-style i2c chip drivers to have alias names using
+the official kernel aliasing system and MODULE_DEVICE_TABLE(). At this
+point, the old i2c driver binding scheme (driver_name/type) is still
+supported.
 
-David, can you ack this.  It looks good to me but want a MTD  
-maintainer ack before having it go through the powerpc tree.
+Signed-off-by: Jochen Friedrich <jochen@scram.de>
+Cc: Jean Delvare <khali@linux-fr.org>
+Cc: Jon Smirl <jonsmirl@gmail.com>
+---
+ drivers/hwmon/f75375s.c                    |   21 ++++++++----
+ drivers/i2c/chips/ds1682.c                 |    3 +-
+ drivers/i2c/chips/menelaus.c               |    3 +-
+ drivers/i2c/chips/tps65010.c               |    3 +-
+ drivers/i2c/chips/tsl2550.c                |    3 +-
+ drivers/i2c/i2c-core.c                     |   51 +++++++++++++++++++++++-----
+ drivers/media/video/cs5345.c               |    3 +-
+ drivers/media/video/cs53l32a.c             |    3 +-
+ drivers/media/video/cx25840/cx25840-core.c |    3 +-
+ drivers/media/video/ivtv/ivtv-i2c.c        |    2 +-
+ drivers/media/video/m52790.c               |    3 +-
+ drivers/media/video/msp3400-driver.c       |    3 +-
+ drivers/media/video/saa7115.c              |    3 +-
+ drivers/media/video/saa7127.c              |    3 +-
+ drivers/media/video/tlv320aic23b.c         |    3 +-
+ drivers/media/video/tuner-core.c           |    3 +-
+ drivers/media/video/tvaudio.c              |    3 +-
+ drivers/media/video/upd64031a.c            |    3 +-
+ drivers/media/video/upd64083.c             |    3 +-
+ drivers/media/video/v4l2-common.c          |    5 ++-
+ drivers/media/video/vp27smpx.c             |    3 +-
+ drivers/media/video/wm8739.c               |    3 +-
+ drivers/media/video/wm8775.c               |    3 +-
+ drivers/rtc/rtc-ds1307.c                   |    3 +-
+ drivers/rtc/rtc-ds1374.c                   |    3 +-
+ drivers/rtc/rtc-m41t80.c                   |    3 +-
+ drivers/rtc/rtc-rs5c372.c                  |    3 +-
+ include/linux/i2c.h                        |    5 +--
+ include/linux/mod_devicetable.h            |   13 +++++++
+ include/media/v4l2-common.h                |    4 ++-
+ include/media/v4l2-i2c-drv-legacy.h        |    2 +-
+ include/media/v4l2-i2c-drv.h               |    2 +-
+ scripts/mod/file2alias.c                   |   13 +++++++
+ 33 files changed, 139 insertions(+), 48 deletions(-)
 
-- k
-
->
->
-> drivers/mtd/nand/fsl_elbc_nand.c |  219 + 
-> +-----------------------------------
-> include/asm-powerpc/fsl_lbc.h    |  223 +++++++++++++++++++++++++++++ 
-> +++++++++
-> 2 files changed, 235 insertions(+), 207 deletions(-)
-> create mode 100644 include/asm-powerpc/fsl_lbc.h
->
-> diff --git a/drivers/mtd/nand/fsl_elbc_nand.c b/drivers/mtd/nand/ 
-> fsl_elbc_nand.c
-> index b025dfe..378b7aa 100644
-> --- a/drivers/mtd/nand/fsl_elbc_nand.c
-> +++ b/drivers/mtd/nand/fsl_elbc_nand.c
-> @@ -36,207 +36,12 @@
-> #include <linux/mtd/partitions.h>
->
-> #include <asm/io.h>
-> -
-> +#include <asm/fsl_lbc.h>
->
-> #define MAX_BANKS 8
-> #define ERR_BYTE 0xFF /* Value returned for read bytes when read  
-> failed */
-> #define FCM_TIMEOUT_MSECS 500 /* Maximum number of mSecs to wait for  
-> FCM */
->
-> -struct elbc_bank {
-> -	__be32 br;             /**< Base Register  */
-> -#define BR_BA           0xFFFF8000
-> -#define BR_BA_SHIFT             15
-> -#define BR_PS           0x00001800
-> -#define BR_PS_SHIFT             11
-> -#define BR_PS_8         0x00000800  /* Port Size 8 bit */
-> -#define BR_PS_16        0x00001000  /* Port Size 16 bit */
-> -#define BR_PS_32        0x00001800  /* Port Size 32 bit */
-> -#define BR_DECC         0x00000600
-> -#define BR_DECC_SHIFT            9
-> -#define BR_DECC_OFF     0x00000000  /* HW ECC checking and  
-> generation off */
-> -#define BR_DECC_CHK     0x00000200  /* HW ECC checking on,  
-> generation off */
-> -#define BR_DECC_CHK_GEN 0x00000400  /* HW ECC checking and  
-> generation on */
-> -#define BR_WP           0x00000100
-> -#define BR_WP_SHIFT              8
-> -#define BR_MSEL         0x000000E0
-> -#define BR_MSEL_SHIFT            5
-> -#define BR_MS_GPCM      0x00000000  /* GPCM */
-> -#define BR_MS_FCM       0x00000020  /* FCM */
-> -#define BR_MS_SDRAM     0x00000060  /* SDRAM */
-> -#define BR_MS_UPMA      0x00000080  /* UPMA */
-> -#define BR_MS_UPMB      0x000000A0  /* UPMB */
-> -#define BR_MS_UPMC      0x000000C0  /* UPMC */
-> -#define BR_V            0x00000001
-> -#define BR_V_SHIFT               0
-> -#define BR_RES          ~(BR_BA|BR_PS|BR_DECC|BR_WP|BR_MSEL|BR_V)
-> -
-> -	__be32 or;             /**< Base Register  */
-> -#define OR0 0x5004
-> -#define OR1 0x500C
-> -#define OR2 0x5014
-> -#define OR3 0x501C
-> -#define OR4 0x5024
-> -#define OR5 0x502C
-> -#define OR6 0x5034
-> -#define OR7 0x503C
-> -
-> -#define OR_FCM_AM               0xFFFF8000
-> -#define OR_FCM_AM_SHIFT                 15
-> -#define OR_FCM_BCTLD            0x00001000
-> -#define OR_FCM_BCTLD_SHIFT              12
-> -#define OR_FCM_PGS              0x00000400
-> -#define OR_FCM_PGS_SHIFT                10
-> -#define OR_FCM_CSCT             0x00000200
-> -#define OR_FCM_CSCT_SHIFT                9
-> -#define OR_FCM_CST              0x00000100
-> -#define OR_FCM_CST_SHIFT                 8
-> -#define OR_FCM_CHT              0x00000080
-> -#define OR_FCM_CHT_SHIFT                 7
-> -#define OR_FCM_SCY              0x00000070
-> -#define OR_FCM_SCY_SHIFT                 4
-> -#define OR_FCM_SCY_1            0x00000010
-> -#define OR_FCM_SCY_2            0x00000020
-> -#define OR_FCM_SCY_3            0x00000030
-> -#define OR_FCM_SCY_4            0x00000040
-> -#define OR_FCM_SCY_5            0x00000050
-> -#define OR_FCM_SCY_6            0x00000060
-> -#define OR_FCM_SCY_7            0x00000070
-> -#define OR_FCM_RST              0x00000008
-> -#define OR_FCM_RST_SHIFT                 3
-> -#define OR_FCM_TRLX             0x00000004
-> -#define OR_FCM_TRLX_SHIFT                2
-> -#define OR_FCM_EHTR             0x00000002
-> -#define OR_FCM_EHTR_SHIFT                1
-> -};
-> -
-> -struct elbc_regs {
-> -	struct elbc_bank bank[8];
-> -	u8 res0[0x28];
-> -	__be32 mar;             /**< UPM Address Register */
-> -	u8 res1[0x4];
-> -	__be32 mamr;            /**< UPMA Mode Register */
-> -	__be32 mbmr;            /**< UPMB Mode Register */
-> -	__be32 mcmr;            /**< UPMC Mode Register */
-> -	u8 res2[0x8];
-> -	__be32 mrtpr;           /**< Memory Refresh Timer Prescaler  
-> Register */
-> -	__be32 mdr;             /**< UPM Data Register */
-> -	u8 res3[0x4];
-> -	__be32 lsor;            /**< Special Operation Initiation Register  
-> */
-> -	__be32 lsdmr;           /**< SDRAM Mode Register */
-> -	u8 res4[0x8];
-> -	__be32 lurt;            /**< UPM Refresh Timer */
-> -	__be32 lsrt;            /**< SDRAM Refresh Timer */
-> -	u8 res5[0x8];
-> -	__be32 ltesr;           /**< Transfer Error Status Register */
-> -#define LTESR_BM   0x80000000
-> -#define LTESR_FCT  0x40000000
-> -#define LTESR_PAR  0x20000000
-> -#define LTESR_WP   0x04000000
-> -#define LTESR_ATMW 0x00800000
-> -#define LTESR_ATMR 0x00400000
-> -#define LTESR_CS   0x00080000
-> -#define LTESR_CC   0x00000001
-> -#define LTESR_NAND_MASK (LTESR_FCT | LTESR_PAR | LTESR_CC)
-> -	__be32 ltedr;           /**< Transfer Error Disable Register */
-> -	__be32 lteir;           /**< Transfer Error Interrupt Register */
-> -	__be32 lteatr;          /**< Transfer Error Attributes Register */
-> -	__be32 ltear;           /**< Transfer Error Address Register */
-> -	u8 res6[0xC];
-> -	__be32 lbcr;            /**< Configuration Register */
-> -#define LBCR_LDIS  0x80000000
-> -#define LBCR_LDIS_SHIFT    31
-> -#define LBCR_BCTLC 0x00C00000
-> -#define LBCR_BCTLC_SHIFT   22
-> -#define LBCR_AHD   0x00200000
-> -#define LBCR_LPBSE 0x00020000
-> -#define LBCR_LPBSE_SHIFT   17
-> -#define LBCR_EPAR  0x00010000
-> -#define LBCR_EPAR_SHIFT    16
-> -#define LBCR_BMT   0x0000FF00
-> -#define LBCR_BMT_SHIFT      8
-> -#define LBCR_INIT  0x00040000
-> -	__be32 lcrr;            /**< Clock Ratio Register */
-> -#define LCRR_DBYP    0x80000000
-> -#define LCRR_DBYP_SHIFT      31
-> -#define LCRR_BUFCMDC 0x30000000
-> -#define LCRR_BUFCMDC_SHIFT   28
-> -#define LCRR_ECL     0x03000000
-> -#define LCRR_ECL_SHIFT       24
-> -#define LCRR_EADC    0x00030000
-> -#define LCRR_EADC_SHIFT      16
-> -#define LCRR_CLKDIV  0x0000000F
-> -#define LCRR_CLKDIV_SHIFT     0
-> -	u8 res7[0x8];
-> -	__be32 fmr;             /**< Flash Mode Register */
-> -#define FMR_CWTO     0x0000F000
-> -#define FMR_CWTO_SHIFT       12
-> -#define FMR_BOOT     0x00000800
-> -#define FMR_ECCM     0x00000100
-> -#define FMR_AL       0x00000030
-> -#define FMR_AL_SHIFT          4
-> -#define FMR_OP       0x00000003
-> -#define FMR_OP_SHIFT          0
-> -	__be32 fir;             /**< Flash Instruction Register */
-> -#define FIR_OP0      0xF0000000
-> -#define FIR_OP0_SHIFT        28
-> -#define FIR_OP1      0x0F000000
-> -#define FIR_OP1_SHIFT        24
-> -#define FIR_OP2      0x00F00000
-> -#define FIR_OP2_SHIFT        20
-> -#define FIR_OP3      0x000F0000
-> -#define FIR_OP3_SHIFT        16
-> -#define FIR_OP4      0x0000F000
-> -#define FIR_OP4_SHIFT        12
-> -#define FIR_OP5      0x00000F00
-> -#define FIR_OP5_SHIFT         8
-> -#define FIR_OP6      0x000000F0
-> -#define FIR_OP6_SHIFT         4
-> -#define FIR_OP7      0x0000000F
-> -#define FIR_OP7_SHIFT         0
-> -#define FIR_OP_NOP   0x0	/* No operation and end of sequence */
-> -#define FIR_OP_CA    0x1        /* Issue current column address */
-> -#define FIR_OP_PA    0x2        /* Issue current block+page address  
-> */
-> -#define FIR_OP_UA    0x3        /* Issue user defined address */
-> -#define FIR_OP_CM0   0x4        /* Issue command from FCR[CMD0] */
-> -#define FIR_OP_CM1   0x5        /* Issue command from FCR[CMD1] */
-> -#define FIR_OP_CM2   0x6        /* Issue command from FCR[CMD2] */
-> -#define FIR_OP_CM3   0x7        /* Issue command from FCR[CMD3] */
-> -#define FIR_OP_WB    0x8        /* Write FBCR bytes from FCM buffer  
-> */
-> -#define FIR_OP_WS    0x9        /* Write 1 or 2 bytes from MDR[AS] */
-> -#define FIR_OP_RB    0xA        /* Read FBCR bytes to FCM buffer */
-> -#define FIR_OP_RS    0xB        /* Read 1 or 2 bytes to MDR[AS] */
-> -#define FIR_OP_CW0   0xC        /* Wait then issue FCR[CMD0] */
-> -#define FIR_OP_CW1   0xD        /* Wait then issue FCR[CMD1] */
-> -#define FIR_OP_RBW   0xE        /* Wait then read FBCR bytes */
-> -#define FIR_OP_RSW   0xE        /* Wait then read 1 or 2 bytes */
-> -	__be32 fcr;             /**< Flash Command Register */
-> -#define FCR_CMD0     0xFF000000
-> -#define FCR_CMD0_SHIFT       24
-> -#define FCR_CMD1     0x00FF0000
-> -#define FCR_CMD1_SHIFT       16
-> -#define FCR_CMD2     0x0000FF00
-> -#define FCR_CMD2_SHIFT        8
-> -#define FCR_CMD3     0x000000FF
-> -#define FCR_CMD3_SHIFT        0
-> -	__be32 fbar;            /**< Flash Block Address Register */
-> -#define FBAR_BLK     0x00FFFFFF
-> -	__be32 fpar;            /**< Flash Page Address Register */
-> -#define FPAR_SP_PI   0x00007C00
-> -#define FPAR_SP_PI_SHIFT     10
-> -#define FPAR_SP_MS   0x00000200
-> -#define FPAR_SP_CI   0x000001FF
-> -#define FPAR_SP_CI_SHIFT      0
-> -#define FPAR_LP_PI   0x0003F000
-> -#define FPAR_LP_PI_SHIFT     12
-> -#define FPAR_LP_MS   0x00000800
-> -#define FPAR_LP_CI   0x000007FF
-> -#define FPAR_LP_CI_SHIFT      0
-> -	__be32 fbcr;            /**< Flash Byte Count Register */
-> -#define FBCR_BC      0x00000FFF
-> -	u8 res11[0x8];
-> -	u8 res8[0xF00];
-> -};
-> -
-> struct fsl_elbc_ctrl;
->
-> /* mtd information per set */
-> @@ -261,7 +66,7 @@ struct fsl_elbc_ctrl {
->
-> 	/* device info */
-> 	struct device *dev;
-> -	struct elbc_regs __iomem *regs;
-> +	struct fsl_lbc_regs __iomem *regs;
-> 	int irq;
-> 	wait_queue_head_t irq_wait;
-> 	unsigned int irq_status; /* status read from LTESR by irq handler */
-> @@ -322,7 +127,7 @@ static void set_addr(struct mtd_info *mtd, int  
-> column, int page_addr, int oob)
-> 	struct nand_chip *chip = mtd->priv;
-> 	struct fsl_elbc_mtd *priv = chip->priv;
-> 	struct fsl_elbc_ctrl *ctrl = priv->ctrl;
-> -	struct elbc_regs __iomem *lbc = ctrl->regs;
-> +	struct fsl_lbc_regs __iomem *lbc = ctrl->regs;
-> 	int buf_num;
->
-> 	ctrl->page = page_addr;
-> @@ -363,7 +168,7 @@ static int fsl_elbc_run_command(struct mtd_info  
-> *mtd)
-> 	struct nand_chip *chip = mtd->priv;
-> 	struct fsl_elbc_mtd *priv = chip->priv;
-> 	struct fsl_elbc_ctrl *ctrl = priv->ctrl;
-> -	struct elbc_regs __iomem *lbc = ctrl->regs;
-> +	struct fsl_lbc_regs __iomem *lbc = ctrl->regs;
->
-> 	/* Setup the FMR[OP] to execute without write protection */
-> 	out_be32(&lbc->fmr, priv->fmr | 3);
-> @@ -406,7 +211,7 @@ static void fsl_elbc_do_read(struct nand_chip  
-> *chip, int oob)
-> {
-> 	struct fsl_elbc_mtd *priv = chip->priv;
-> 	struct fsl_elbc_ctrl *ctrl = priv->ctrl;
-> -	struct elbc_regs __iomem *lbc = ctrl->regs;
-> +	struct fsl_lbc_regs __iomem *lbc = ctrl->regs;
->
-> 	if (priv->page_size) {
-> 		out_be32(&lbc->fir,
-> @@ -439,7 +244,7 @@ static void fsl_elbc_cmdfunc(struct mtd_info  
-> *mtd, unsigned int command,
-> 	struct nand_chip *chip = mtd->priv;
-> 	struct fsl_elbc_mtd *priv = chip->priv;
-> 	struct fsl_elbc_ctrl *ctrl = priv->ctrl;
-> -	struct elbc_regs __iomem *lbc = ctrl->regs;
-> +	struct fsl_lbc_regs __iomem *lbc = ctrl->regs;
->
-> 	ctrl->use_mdr = 0;
->
-> @@ -775,7 +580,7 @@ static int fsl_elbc_wait(struct mtd_info *mtd,  
-> struct nand_chip *chip)
-> {
-> 	struct fsl_elbc_mtd *priv = chip->priv;
-> 	struct fsl_elbc_ctrl *ctrl = priv->ctrl;
-> -	struct elbc_regs __iomem *lbc = ctrl->regs;
-> +	struct fsl_lbc_regs __iomem *lbc = ctrl->regs;
->
-> 	if (ctrl->status != LTESR_CC)
-> 		return NAND_STATUS_FAIL;
-> @@ -807,7 +612,7 @@ static int fsl_elbc_chip_init_tail(struct  
-> mtd_info *mtd)
-> 	struct nand_chip *chip = mtd->priv;
-> 	struct fsl_elbc_mtd *priv = chip->priv;
-> 	struct fsl_elbc_ctrl *ctrl = priv->ctrl;
-> -	struct elbc_regs __iomem *lbc = ctrl->regs;
-> +	struct fsl_lbc_regs __iomem *lbc = ctrl->regs;
-> 	unsigned int al;
->
-> 	/* calculate FMR Address Length field */
-> @@ -922,7 +727,7 @@ static void fsl_elbc_write_page(struct mtd_info  
-> *mtd,
-> static int fsl_elbc_chip_init(struct fsl_elbc_mtd *priv)
-> {
-> 	struct fsl_elbc_ctrl *ctrl = priv->ctrl;
-> -	struct elbc_regs __iomem *lbc = ctrl->regs;
-> +	struct fsl_lbc_regs __iomem *lbc = ctrl->regs;
-> 	struct nand_chip *chip = &priv->chip;
->
-> 	dev_dbg(priv->dev, "eLBC Set Information for bank %d\n", priv->bank);
-> @@ -986,7 +791,7 @@ static int fsl_elbc_chip_remove(struct  
-> fsl_elbc_mtd *priv)
-> static int fsl_elbc_chip_probe(struct fsl_elbc_ctrl *ctrl,
->                                struct device_node *node)
-> {
-> -	struct elbc_regs __iomem *lbc = ctrl->regs;
-> +	struct fsl_lbc_regs __iomem *lbc = ctrl->regs;
-> 	struct fsl_elbc_mtd *priv;
-> 	struct resource res;
-> #ifdef CONFIG_MTD_PARTITIONS
-> @@ -1083,7 +888,7 @@ err:
->
-> static int __devinit fsl_elbc_ctrl_init(struct fsl_elbc_ctrl *ctrl)
-> {
-> -	struct elbc_regs __iomem *lbc = ctrl->regs;
-> +	struct fsl_lbc_regs __iomem *lbc = ctrl->regs;
->
-> 	/* clear event registers */
-> 	setbits32(&lbc->ltesr, LTESR_NAND_MASK);
-> @@ -1128,7 +933,7 @@ static int __devexit  
-> fsl_elbc_ctrl_remove(struct of_device *ofdev)
-> static irqreturn_t fsl_elbc_ctrl_irq(int irqno, void *data)
-> {
-> 	struct fsl_elbc_ctrl *ctrl = data;
-> -	struct elbc_regs __iomem *lbc = ctrl->regs;
-> +	struct fsl_lbc_regs __iomem *lbc = ctrl->regs;
-> 	__be32 status = in_be32(&lbc->ltesr) & LTESR_NAND_MASK;
->
-> 	if (status) {
-> diff --git a/include/asm-powerpc/fsl_lbc.h b/include/asm-powerpc/ 
-> fsl_lbc.h
-> new file mode 100644
-> index 0000000..13a3c28
-> --- /dev/null
-> +++ b/include/asm-powerpc/fsl_lbc.h
-> @@ -0,0 +1,223 @@
-> +/* Freescale Local Bus Controller
-> + *
-> + * Copyright (c) 2006-2007 Freescale Semiconductor
-> + *
-> + * Authors: Nick Spence <nick.spence@freescale.com>,
-> + *          Scott Wood <scottwood@freescale.com>
-> + *
-> + * This program is free software; you can redistribute it and/or  
-> modify
-> + * it under the terms of the GNU General Public License as  
-> published by
-> + * the Free Software Foundation; either version 2 of the License, or
-> + * (at your option) any later version.
-> + *
-> + * This program is distributed in the hope that it will be useful,
-> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> + * GNU General Public License for more details.
-> + *
-> + * You should have received a copy of the GNU General Public License
-> + * along with this program; if not, write to the Free Software
-> + * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA   
-> 02111-1307  USA
-> + */
-> +
-> +#ifndef __ASM_FSL_LBC_H
-> +#define __ASM_FSL_LBC_H
-> +
-> +#include <linux/types.h>
-> +
-> +struct fsl_lbc_bank {
-> +	__be32 br;             /**< Base Register  */
-> +#define BR_BA           0xFFFF8000
-> +#define BR_BA_SHIFT             15
-> +#define BR_PS           0x00001800
-> +#define BR_PS_SHIFT             11
-> +#define BR_PS_8         0x00000800  /* Port Size 8 bit */
-> +#define BR_PS_16        0x00001000  /* Port Size 16 bit */
-> +#define BR_PS_32        0x00001800  /* Port Size 32 bit */
-> +#define BR_DECC         0x00000600
-> +#define BR_DECC_SHIFT            9
-> +#define BR_DECC_OFF     0x00000000  /* HW ECC checking and  
-> generation off */
-> +#define BR_DECC_CHK     0x00000200  /* HW ECC checking on,  
-> generation off */
-> +#define BR_DECC_CHK_GEN 0x00000400  /* HW ECC checking and  
-> generation on */
-> +#define BR_WP           0x00000100
-> +#define BR_WP_SHIFT              8
-> +#define BR_MSEL         0x000000E0
-> +#define BR_MSEL_SHIFT            5
-> +#define BR_MS_GPCM      0x00000000  /* GPCM */
-> +#define BR_MS_FCM       0x00000020  /* FCM */
-> +#define BR_MS_SDRAM     0x00000060  /* SDRAM */
-> +#define BR_MS_UPMA      0x00000080  /* UPMA */
-> +#define BR_MS_UPMB      0x000000A0  /* UPMB */
-> +#define BR_MS_UPMC      0x000000C0  /* UPMC */
-> +#define BR_V            0x00000001
-> +#define BR_V_SHIFT               0
-> +#define BR_RES          ~(BR_BA|BR_PS|BR_DECC|BR_WP|BR_MSEL|BR_V)
-> +
-> +	__be32 or;             /**< Base Register  */
-> +#define OR0 0x5004
-> +#define OR1 0x500C
-> +#define OR2 0x5014
-> +#define OR3 0x501C
-> +#define OR4 0x5024
-> +#define OR5 0x502C
-> +#define OR6 0x5034
-> +#define OR7 0x503C
-> +
-> +#define OR_FCM_AM               0xFFFF8000
-> +#define OR_FCM_AM_SHIFT                 15
-> +#define OR_FCM_BCTLD            0x00001000
-> +#define OR_FCM_BCTLD_SHIFT              12
-> +#define OR_FCM_PGS              0x00000400
-> +#define OR_FCM_PGS_SHIFT                10
-> +#define OR_FCM_CSCT             0x00000200
-> +#define OR_FCM_CSCT_SHIFT                9
-> +#define OR_FCM_CST              0x00000100
-> +#define OR_FCM_CST_SHIFT                 8
-> +#define OR_FCM_CHT              0x00000080
-> +#define OR_FCM_CHT_SHIFT                 7
-> +#define OR_FCM_SCY              0x00000070
-> +#define OR_FCM_SCY_SHIFT                 4
-> +#define OR_FCM_SCY_1            0x00000010
-> +#define OR_FCM_SCY_2            0x00000020
-> +#define OR_FCM_SCY_3            0x00000030
-> +#define OR_FCM_SCY_4            0x00000040
-> +#define OR_FCM_SCY_5            0x00000050
-> +#define OR_FCM_SCY_6            0x00000060
-> +#define OR_FCM_SCY_7            0x00000070
-> +#define OR_FCM_RST              0x00000008
-> +#define OR_FCM_RST_SHIFT                 3
-> +#define OR_FCM_TRLX             0x00000004
-> +#define OR_FCM_TRLX_SHIFT                2
-> +#define OR_FCM_EHTR             0x00000002
-> +#define OR_FCM_EHTR_SHIFT                1
-> +};
-> +
-> +struct fsl_lbc_regs {
-> +	struct fsl_lbc_bank bank[8];
-> +	u8 res0[0x28];
-> +	__be32 mar;             /**< UPM Address Register */
-> +	u8 res1[0x4];
-> +	__be32 mamr;            /**< UPMA Mode Register */
-> +	__be32 mbmr;            /**< UPMB Mode Register */
-> +	__be32 mcmr;            /**< UPMC Mode Register */
-> +	u8 res2[0x8];
-> +	__be32 mrtpr;           /**< Memory Refresh Timer Prescaler  
-> Register */
-> +	__be32 mdr;             /**< UPM Data Register */
-> +	u8 res3[0x4];
-> +	__be32 lsor;            /**< Special Operation Initiation Register  
-> */
-> +	__be32 lsdmr;           /**< SDRAM Mode Register */
-> +	u8 res4[0x8];
-> +	__be32 lurt;            /**< UPM Refresh Timer */
-> +	__be32 lsrt;            /**< SDRAM Refresh Timer */
-> +	u8 res5[0x8];
-> +	__be32 ltesr;           /**< Transfer Error Status Register */
-> +#define LTESR_BM   0x80000000
-> +#define LTESR_FCT  0x40000000
-> +#define LTESR_PAR  0x20000000
-> +#define LTESR_WP   0x04000000
-> +#define LTESR_ATMW 0x00800000
-> +#define LTESR_ATMR 0x00400000
-> +#define LTESR_CS   0x00080000
-> +#define LTESR_CC   0x00000001
-> +#define LTESR_NAND_MASK (LTESR_FCT | LTESR_PAR | LTESR_CC)
-> +	__be32 ltedr;           /**< Transfer Error Disable Register */
-> +	__be32 lteir;           /**< Transfer Error Interrupt Register */
-> +	__be32 lteatr;          /**< Transfer Error Attributes Register */
-> +	__be32 ltear;           /**< Transfer Error Address Register */
-> +	u8 res6[0xC];
-> +	__be32 lbcr;            /**< Configuration Register */
-> +#define LBCR_LDIS  0x80000000
-> +#define LBCR_LDIS_SHIFT    31
-> +#define LBCR_BCTLC 0x00C00000
-> +#define LBCR_BCTLC_SHIFT   22
-> +#define LBCR_AHD   0x00200000
-> +#define LBCR_LPBSE 0x00020000
-> +#define LBCR_LPBSE_SHIFT   17
-> +#define LBCR_EPAR  0x00010000
-> +#define LBCR_EPAR_SHIFT    16
-> +#define LBCR_BMT   0x0000FF00
-> +#define LBCR_BMT_SHIFT      8
-> +#define LBCR_INIT  0x00040000
-> +	__be32 lcrr;            /**< Clock Ratio Register */
-> +#define LCRR_DBYP    0x80000000
-> +#define LCRR_DBYP_SHIFT      31
-> +#define LCRR_BUFCMDC 0x30000000
-> +#define LCRR_BUFCMDC_SHIFT   28
-> +#define LCRR_ECL     0x03000000
-> +#define LCRR_ECL_SHIFT       24
-> +#define LCRR_EADC    0x00030000
-> +#define LCRR_EADC_SHIFT      16
-> +#define LCRR_CLKDIV  0x0000000F
-> +#define LCRR_CLKDIV_SHIFT     0
-> +	u8 res7[0x8];
-> +	__be32 fmr;             /**< Flash Mode Register */
-> +#define FMR_CWTO     0x0000F000
-> +#define FMR_CWTO_SHIFT       12
-> +#define FMR_BOOT     0x00000800
-> +#define FMR_ECCM     0x00000100
-> +#define FMR_AL       0x00000030
-> +#define FMR_AL_SHIFT          4
-> +#define FMR_OP       0x00000003
-> +#define FMR_OP_SHIFT          0
-> +	__be32 fir;             /**< Flash Instruction Register */
-> +#define FIR_OP0      0xF0000000
-> +#define FIR_OP0_SHIFT        28
-> +#define FIR_OP1      0x0F000000
-> +#define FIR_OP1_SHIFT        24
-> +#define FIR_OP2      0x00F00000
-> +#define FIR_OP2_SHIFT        20
-> +#define FIR_OP3      0x000F0000
-> +#define FIR_OP3_SHIFT        16
-> +#define FIR_OP4      0x0000F000
-> +#define FIR_OP4_SHIFT        12
-> +#define FIR_OP5      0x00000F00
-> +#define FIR_OP5_SHIFT         8
-> +#define FIR_OP6      0x000000F0
-> +#define FIR_OP6_SHIFT         4
-> +#define FIR_OP7      0x0000000F
-> +#define FIR_OP7_SHIFT         0
-> +#define FIR_OP_NOP   0x0	/* No operation and end of sequence */
-> +#define FIR_OP_CA    0x1        /* Issue current column address */
-> +#define FIR_OP_PA    0x2        /* Issue current block+page address  
-> */
-> +#define FIR_OP_UA    0x3        /* Issue user defined address */
-> +#define FIR_OP_CM0   0x4        /* Issue command from FCR[CMD0] */
-> +#define FIR_OP_CM1   0x5        /* Issue command from FCR[CMD1] */
-> +#define FIR_OP_CM2   0x6        /* Issue command from FCR[CMD2] */
-> +#define FIR_OP_CM3   0x7        /* Issue command from FCR[CMD3] */
-> +#define FIR_OP_WB    0x8        /* Write FBCR bytes from FCM buffer  
-> */
-> +#define FIR_OP_WS    0x9        /* Write 1 or 2 bytes from MDR[AS] */
-> +#define FIR_OP_RB    0xA        /* Read FBCR bytes to FCM buffer */
-> +#define FIR_OP_RS    0xB        /* Read 1 or 2 bytes to MDR[AS] */
-> +#define FIR_OP_CW0   0xC        /* Wait then issue FCR[CMD0] */
-> +#define FIR_OP_CW1   0xD        /* Wait then issue FCR[CMD1] */
-> +#define FIR_OP_RBW   0xE        /* Wait then read FBCR bytes */
-> +#define FIR_OP_RSW   0xE        /* Wait then read 1 or 2 bytes */
-> +	__be32 fcr;             /**< Flash Command Register */
-> +#define FCR_CMD0     0xFF000000
-> +#define FCR_CMD0_SHIFT       24
-> +#define FCR_CMD1     0x00FF0000
-> +#define FCR_CMD1_SHIFT       16
-> +#define FCR_CMD2     0x0000FF00
-> +#define FCR_CMD2_SHIFT        8
-> +#define FCR_CMD3     0x000000FF
-> +#define FCR_CMD3_SHIFT        0
-> +	__be32 fbar;            /**< Flash Block Address Register */
-> +#define FBAR_BLK     0x00FFFFFF
-> +	__be32 fpar;            /**< Flash Page Address Register */
-> +#define FPAR_SP_PI   0x00007C00
-> +#define FPAR_SP_PI_SHIFT     10
-> +#define FPAR_SP_MS   0x00000200
-> +#define FPAR_SP_CI   0x000001FF
-> +#define FPAR_SP_CI_SHIFT      0
-> +#define FPAR_LP_PI   0x0003F000
-> +#define FPAR_LP_PI_SHIFT     12
-> +#define FPAR_LP_MS   0x00000800
-> +#define FPAR_LP_CI   0x000007FF
-> +#define FPAR_LP_CI_SHIFT      0
-> +	__be32 fbcr;            /**< Flash Byte Count Register */
-> +#define FBCR_BC      0x00000FFF
-> +	u8 res11[0x8];
-> +	u8 res8[0xF00];
-> +};
-> +
-> +#endif /* __ASM_FSL_LBC_H */
-> -- 
-> 1.5.2.2
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+diff --git a/drivers/hwmon/f75375s.c b/drivers/hwmon/f75375s.c
+index 1464338..3ec9123 100644
+--- a/drivers/hwmon/f75375s.c
++++ b/drivers/hwmon/f75375s.c
+@@ -117,7 +117,8 @@ struct f75375_data {
+ static int f75375_attach_adapter(struct i2c_adapter *adapter);
+ static int f75375_detect(struct i2c_adapter *adapter, int address, int kind);
+ static int f75375_detach_client(struct i2c_client *client);
+-static int f75375_probe(struct i2c_client *client);
++static int f75375_probe(struct i2c_client *client,
++			const struct i2c_device_id *id);
+ static int f75375_remove(struct i2c_client *client);
+ 
+ static struct i2c_driver f75375_legacy_driver = {
+@@ -628,7 +629,8 @@ static void f75375_init(struct i2c_client *client, struct f75375_data *data,
+ 
+ }
+ 
+-static int f75375_probe(struct i2c_client *client)
++static int f75375_probe(struct i2c_client *client,
++		const struct i2c_device_id *id)
+ {
+ 	struct f75375_data *data = i2c_get_clientdata(client);
+ 	struct f75375s_platform_data *f75375s_pdata = client->dev.platform_data;
+@@ -637,7 +639,8 @@ static int f75375_probe(struct i2c_client *client)
+ 	if (!i2c_check_functionality(client->adapter,
+ 				I2C_FUNC_SMBUS_BYTE_DATA))
+ 		return -EIO;
+-	if (!(data = kzalloc(sizeof(struct f75375_data), GFP_KERNEL)))
++	data = kzalloc(sizeof(struct f75375_data), GFP_KERNEL);
++	if (!data)
+ 		return -ENOMEM;
+ 
+ 	i2c_set_clientdata(client, data);
+@@ -653,7 +656,8 @@ static int f75375_probe(struct i2c_client *client)
+ 		return -ENODEV;
+ 	}
+ 
+-	if ((err = sysfs_create_group(&client->dev.kobj, &f75375_group)))
++	err = sysfs_create_group(&client->dev.kobj, &f75375_group);
++	if (err)
+ 		goto exit_free;
+ 
+ 	if (data->kind == f75375) {
+@@ -713,7 +717,8 @@ static int f75375_detect(struct i2c_adapter *adapter, int address, int kind)
+ 	int err = 0;
+ 	const char *name = "";
+ 
+-	if (!(client = kzalloc(sizeof(*client), GFP_KERNEL))) {
++	client = kzalloc(sizeof(*client), GFP_KERNEL);
++	if (!client) {
+ 		err = -ENOMEM;
+ 		goto exit;
+ 	}
+@@ -745,10 +750,12 @@ static int f75375_detect(struct i2c_adapter *adapter, int address, int kind)
+ 	dev_info(&adapter->dev, "found %s version: %02X\n", name, version);
+ 	strlcpy(client->name, name, I2C_NAME_SIZE);
+ 
+-	if ((err = i2c_attach_client(client)))
++	err = i2c_attach_client(client);
++	if (err)
+ 		goto exit_free;
+ 
+-	if ((err = f75375_probe(client)) < 0)
++	err = f75375_probe(client, NULL);
++	if (err < 0)
+ 		goto exit_detach;
+ 
+ 	return 0;
+diff --git a/drivers/i2c/chips/ds1682.c b/drivers/i2c/chips/ds1682.c
+index 9e94542..3070821 100644
+--- a/drivers/i2c/chips/ds1682.c
++++ b/drivers/i2c/chips/ds1682.c
+@@ -200,7 +200,8 @@ static struct bin_attribute ds1682_eeprom_attr = {
+ /*
+  * Called when a ds1682 device is matched with this driver
+  */
+-static int ds1682_probe(struct i2c_client *client)
++static int ds1682_probe(struct i2c_client *client,
++			const struct i2c_device_id *id)
+ {
+ 	int rc;
+ 
+diff --git a/drivers/i2c/chips/menelaus.c b/drivers/i2c/chips/menelaus.c
+index 2dea012..3b8ba7e 100644
+--- a/drivers/i2c/chips/menelaus.c
++++ b/drivers/i2c/chips/menelaus.c
+@@ -1149,7 +1149,8 @@ static inline void menelaus_rtc_init(struct menelaus_chip *m)
+ 
+ static struct i2c_driver menelaus_i2c_driver;
+ 
+-static int menelaus_probe(struct i2c_client *client)
++static int menelaus_probe(struct i2c_client *client,
++			  const struct i2c_device_id *id)
+ {
+ 	struct menelaus_chip	*menelaus;
+ 	int			rev = 0, val;
+diff --git a/drivers/i2c/chips/tps65010.c b/drivers/i2c/chips/tps65010.c
+index 4154a91..3ce43f8 100644
+--- a/drivers/i2c/chips/tps65010.c
++++ b/drivers/i2c/chips/tps65010.c
+@@ -465,7 +465,8 @@ static int __exit tps65010_remove(struct i2c_client *client)
+ 	return 0;
+ }
+ 
+-static int tps65010_probe(struct i2c_client *client)
++static int tps65010_probe(struct i2c_client *client,
++			  const struct i2c_device_id *id)
+ {
+ 	struct tps65010		*tps;
+ 	int			status;
+diff --git a/drivers/i2c/chips/tsl2550.c b/drivers/i2c/chips/tsl2550.c
+index a10fd27..59c2c66 100644
+--- a/drivers/i2c/chips/tsl2550.c
++++ b/drivers/i2c/chips/tsl2550.c
+@@ -364,7 +364,8 @@ static int tsl2550_init_client(struct i2c_client *client)
+  */
+ 
+ static struct i2c_driver tsl2550_driver;
+-static int __devinit tsl2550_probe(struct i2c_client *client)
++static int __devinit tsl2550_probe(struct i2c_client *client,
++				   const struct i2c_device_id *id)
+ {
+ 	struct i2c_adapter *adapter = to_i2c_adapter(client->dev.parent);
+ 	struct tsl2550_data *data;
+diff --git a/drivers/i2c/i2c-core.c b/drivers/i2c/i2c-core.c
+index 8b645c6..8879acb 100644
+--- a/drivers/i2c/i2c-core.c
++++ b/drivers/i2c/i2c-core.c
+@@ -48,6 +48,17 @@ static DEFINE_IDR(i2c_adapter_idr);
+ 
+ /* ------------------------------------------------------------------------- */
+ 
++static const struct i2c_device_id *i2c_match_id(const struct i2c_device_id *id,
++						const struct i2c_client *client)
++{
++	while (id->name[0]) {
++		if (strcmp(client->name, id->name) == 0)
++			return id;
++		id++;
++	}
++	return NULL;
++}
++
+ static int i2c_device_match(struct device *dev, struct device_driver *drv)
+ {
+ 	struct i2c_client	*client = to_i2c_client(dev);
+@@ -59,6 +70,10 @@ static int i2c_device_match(struct device *dev, struct device_driver *drv)
+ 	if (!is_newstyle_driver(driver))
+ 		return 0;
+ 
++	/* match on an id table if there is one */
++	if (driver->id_table)
++		return i2c_match_id(driver->id_table, client) != NULL;
++
+ 	/* new style drivers use the same kind of driver matching policy
+ 	 * as platform devices or SPI:  compare device and driver IDs.
+ 	 */
+@@ -73,11 +88,17 @@ static int i2c_device_uevent(struct device *dev, struct kobj_uevent_env *env)
+ 	struct i2c_client	*client = to_i2c_client(dev);
+ 
+ 	/* by definition, legacy drivers can't hotplug */
+-	if (dev->driver || !client->driver_name)
++	if (dev->driver)
+ 		return 0;
+ 
+-	if (add_uevent_var(env, "MODALIAS=%s", client->driver_name))
+-		return -ENOMEM;
++	if (client->driver_name[0]) {
++		if (add_uevent_var(env, "MODALIAS=%s", client->driver_name))
++			return -ENOMEM;
++	} else {
++		if (add_uevent_var(env, "MODALIAS=%s%s",
++				   I2C_MODULE_PREFIX, client->name))
++			return -ENOMEM;
++	}
+ 	dev_dbg(dev, "uevent\n");
+ 	return 0;
+ }
+@@ -91,12 +112,18 @@ static int i2c_device_probe(struct device *dev)
+ 	struct i2c_client	*client = to_i2c_client(dev);
+ 	struct i2c_driver	*driver = to_i2c_driver(dev->driver);
+ 	int status;
++	const struct i2c_device_id *id;
+ 
+ 	if (!driver->probe)
+ 		return -ENODEV;
+ 	client->driver = driver;
+ 	dev_dbg(dev, "probe\n");
+-	status = driver->probe(client);
++
++	if (driver->id_table)
++		id = i2c_match_id(driver->id_table, client);
++	else
++		id = NULL;
++	status = driver->probe(client, id);
+ 	if (status)
+ 		client->driver = NULL;
+ 	return status;
+@@ -179,9 +206,9 @@ static ssize_t show_client_name(struct device *dev, struct device_attribute *att
+ static ssize_t show_modalias(struct device *dev, struct device_attribute *attr, char *buf)
+ {
+ 	struct i2c_client *client = to_i2c_client(dev);
+-	return client->driver_name
++	return client->driver_name[0]
+ 		? sprintf(buf, "%s\n", client->driver_name)
+-		: 0;
++		: sprintf(buf, "%s%s\n", I2C_MODULE_PREFIX, client->name);
+ }
+ 
+ static struct device_attribute i2c_dev_attrs[] = {
+@@ -300,15 +327,21 @@ void i2c_unregister_device(struct i2c_client *client)
+ EXPORT_SYMBOL_GPL(i2c_unregister_device);
+ 
+ 
+-static int dummy_nop(struct i2c_client *client)
++static int dummy_probe(struct i2c_client *client,
++		       const struct i2c_device_id *id)
++{
++	return 0;
++}
++
++static int dummy_remove(struct i2c_client *client)
+ {
+ 	return 0;
+ }
+ 
+ static struct i2c_driver dummy_driver = {
+ 	.driver.name	= "dummy",
+-	.probe		= dummy_nop,
+-	.remove		= dummy_nop,
++	.probe		= dummy_probe,
++	.remove		= dummy_remove,
+ };
+ 
+ /**
+diff --git a/drivers/media/video/cs5345.c b/drivers/media/video/cs5345.c
+index fae469c..2a429f9 100644
+--- a/drivers/media/video/cs5345.c
++++ b/drivers/media/video/cs5345.c
+@@ -142,7 +142,8 @@ static int cs5345_command(struct i2c_client *client, unsigned cmd, void *arg)
+ 
+ /* ----------------------------------------------------------------------- */
+ 
+-static int cs5345_probe(struct i2c_client *client)
++static int cs5345_probe(struct i2c_client *client,
++			const struct i2c_device_id *id)
+ {
+ 	/* Check if the adapter supports the needed features */
+ 	if (!i2c_check_functionality(client->adapter, I2C_FUNC_SMBUS_BYTE_DATA))
+diff --git a/drivers/media/video/cs53l32a.c b/drivers/media/video/cs53l32a.c
+index f41bfde..2dfd0af 100644
+--- a/drivers/media/video/cs53l32a.c
++++ b/drivers/media/video/cs53l32a.c
+@@ -135,7 +135,8 @@ static int cs53l32a_command(struct i2c_client *client, unsigned cmd, void *arg)
+  * concerning the addresses: i2c wants 7 bit (without the r/w bit), so '>>1'
+  */
+ 
+-static int cs53l32a_probe(struct i2c_client *client)
++static int cs53l32a_probe(struct i2c_client *client,
++			  const struct i2c_device_id *id)
+ {
+ 	int i;
+ 
+diff --git a/drivers/media/video/cx25840/cx25840-core.c b/drivers/media/video/cx25840/cx25840-core.c
+index 756a1ee..6f16186 100644
+--- a/drivers/media/video/cx25840/cx25840-core.c
++++ b/drivers/media/video/cx25840/cx25840-core.c
+@@ -1232,7 +1232,8 @@ static int cx25840_command(struct i2c_client *client, unsigned int cmd,
+ 
+ /* ----------------------------------------------------------------------- */
+ 
+-static int cx25840_probe(struct i2c_client *client)
++static int cx25840_probe(struct i2c_client *client,
++			 const struct i2c_device_id *did)
+ {
+ 	struct cx25840_state *state;
+ 	u32 id;
+diff --git a/drivers/media/video/ivtv/ivtv-i2c.c b/drivers/media/video/ivtv/ivtv-i2c.c
+index fa5ab1e..37b0fd6 100644
+--- a/drivers/media/video/ivtv/ivtv-i2c.c
++++ b/drivers/media/video/ivtv/ivtv-i2c.c
+@@ -167,7 +167,7 @@ int ivtv_i2c_register(struct ivtv *itv, unsigned idx)
+ 		return -1;
+ 	id = hw_driverids[idx];
+ 	memset(&info, 0, sizeof(info));
+-	strcpy(info.driver_name, hw_drivernames[idx]);
++	strcpy(info.type, hw_drivernames[idx]);
+ 	info.addr = hw_addrs[idx];
+ 	for (i = 0; itv->i2c_clients[i] && i < I2C_CLIENTS_MAX; i++) {}
+ 
+diff --git a/drivers/media/video/m52790.c b/drivers/media/video/m52790.c
+index d4bf14c..5b9dfa2 100644
+--- a/drivers/media/video/m52790.c
++++ b/drivers/media/video/m52790.c
+@@ -126,7 +126,8 @@ static int m52790_command(struct i2c_client *client, unsigned int cmd,
+ 
+ /* i2c implementation */
+ 
+-static int m52790_probe(struct i2c_client *client)
++static int m52790_probe(struct i2c_client *client,
++			const struct i2c_device_id *id)
+ {
+ 	struct m52790_state *state;
+ 
+diff --git a/drivers/media/video/msp3400-driver.c b/drivers/media/video/msp3400-driver.c
+index 7a11f31..3f97737 100644
+--- a/drivers/media/video/msp3400-driver.c
++++ b/drivers/media/video/msp3400-driver.c
+@@ -805,7 +805,8 @@ static int msp_resume(struct i2c_client *client)
+ 
+ /* ----------------------------------------------------------------------- */
+ 
+-static int msp_probe(struct i2c_client *client)
++static int msp_probe(struct i2c_client *client,
++		     const struct i2c_device_id *id)
+ {
+ 	struct msp_state *state;
+ 	int (*thread_func)(void *data) = NULL;
+diff --git a/drivers/media/video/saa7115.c b/drivers/media/video/saa7115.c
+index 41e5e51..7882e29 100644
+--- a/drivers/media/video/saa7115.c
++++ b/drivers/media/video/saa7115.c
+@@ -1450,7 +1450,8 @@ static int saa7115_command(struct i2c_client *client, unsigned int cmd, void *ar
+ 
+ /* ----------------------------------------------------------------------- */
+ 
+-static int saa7115_probe(struct i2c_client *client)
++static int saa7115_probe(struct i2c_client *client,
++			 const struct i2c_device_id *id)
+ {
+ 	struct saa711x_state *state;
+ 	int	i;
+diff --git a/drivers/media/video/saa7127.c b/drivers/media/video/saa7127.c
+index 06c88db..e750cd6 100644
+--- a/drivers/media/video/saa7127.c
++++ b/drivers/media/video/saa7127.c
+@@ -661,7 +661,8 @@ static int saa7127_command(struct i2c_client *client,
+ 
+ /* ----------------------------------------------------------------------- */
+ 
+-static int saa7127_probe(struct i2c_client *client)
++static int saa7127_probe(struct i2c_client *client,
++			 const struct i2c_device_id *id)
+ {
+ 	struct saa7127_state *state;
+ 	struct v4l2_sliced_vbi_data vbi = { 0, 0, 0, 0 };  /* set to disabled */
+diff --git a/drivers/media/video/tlv320aic23b.c b/drivers/media/video/tlv320aic23b.c
+index dc7b9c2..f1db542 100644
+--- a/drivers/media/video/tlv320aic23b.c
++++ b/drivers/media/video/tlv320aic23b.c
+@@ -125,7 +125,8 @@ static int tlv320aic23b_command(struct i2c_client *client,
+  * concerning the addresses: i2c wants 7 bit (without the r/w bit), so '>>1'
+  */
+ 
+-static int tlv320aic23b_probe(struct i2c_client *client)
++static int tlv320aic23b_probe(struct i2c_client *client,
++			      const struct i2c_device_id *id)
+ {
+ 	struct tlv320aic23b_state *state;
+ 
+diff --git a/drivers/media/video/tuner-core.c b/drivers/media/video/tuner-core.c
+index 78a09a2..edd451e 100644
+--- a/drivers/media/video/tuner-core.c
++++ b/drivers/media/video/tuner-core.c
+@@ -1074,7 +1074,8 @@ static void tuner_lookup(struct i2c_adapter *adap,
+ /* During client attach, set_type is called by adapter's attach_inform callback.
+    set_type must then be completed by tuner_probe.
+  */
+-static int tuner_probe(struct i2c_client *client)
++static int tuner_probe(struct i2c_client *client,
++		       const struct i2c_device_id *id)
+ {
+ 	struct tuner *t;
+ 	struct tuner *radio;
+diff --git a/drivers/media/video/tvaudio.c b/drivers/media/video/tvaudio.c
+index 01ebcec..1fa1552 100644
+--- a/drivers/media/video/tvaudio.c
++++ b/drivers/media/video/tvaudio.c
+@@ -1461,7 +1461,8 @@ static struct CHIPDESC chiplist[] = {
+ /* ---------------------------------------------------------------------- */
+ /* i2c registration                                                       */
+ 
+-static int chip_probe(struct i2c_client *client)
++static int chip_probe(struct i2c_client *client,
++		      const struct i2c_device_id *id)
+ {
+ 	struct CHIPSTATE *chip;
+ 	struct CHIPDESC  *desc;
+diff --git a/drivers/media/video/upd64031a.c b/drivers/media/video/upd64031a.c
+index bd20139..93bfd19 100644
+--- a/drivers/media/video/upd64031a.c
++++ b/drivers/media/video/upd64031a.c
+@@ -195,7 +195,8 @@ static int upd64031a_command(struct i2c_client *client, unsigned cmd, void *arg)
+ 
+ /* i2c implementation */
+ 
+-static int upd64031a_probe(struct i2c_client *client)
++static int upd64031a_probe(struct i2c_client *client,
++			   const struct i2c_device_id *id)
+ {
+ 	struct upd64031a_state *state;
+ 	int i;
+diff --git a/drivers/media/video/upd64083.c b/drivers/media/video/upd64083.c
+index 2d9a88f..9ab712a 100644
+--- a/drivers/media/video/upd64083.c
++++ b/drivers/media/video/upd64083.c
+@@ -172,7 +172,8 @@ static int upd64083_command(struct i2c_client *client, unsigned cmd, void *arg)
+ 
+ /* i2c implementation */
+ 
+-static int upd64083_probe(struct i2c_client *client)
++static int upd64083_probe(struct i2c_client *client,
++			  const struct i2c_device_id *id)
+ {
+ 	struct upd64083_state *state;
+ 	int i;
+diff --git a/drivers/media/video/v4l2-common.c b/drivers/media/video/v4l2-common.c
+index 34deb68..afacf75 100644
+--- a/drivers/media/video/v4l2-common.c
++++ b/drivers/media/video/v4l2-common.c
+@@ -710,7 +710,8 @@ EXPORT_SYMBOL(v4l2_chip_ident_i2c_client);
+ /* Helper function for I2C legacy drivers */
+ 
+ int v4l2_i2c_attach(struct i2c_adapter *adapter, int address, struct i2c_driver *driver,
+-		const char *name, int (*probe)(struct i2c_client *))
++		const char *name, int (*probe)(struct i2c_client *,
++					       const struct i2c_device_id *id))
+ {
+ 	struct i2c_client *client;
+ 	int err;
+@@ -724,7 +725,7 @@ int v4l2_i2c_attach(struct i2c_adapter *adapter, int address, struct i2c_driver
+ 	client->driver = driver;
+ 	strlcpy(client->name, name, sizeof(client->name));
+ 
+-	err = probe(client);
++	err = probe(client, NULL);
+ 	if (err == 0) {
+ 		i2c_attach_client(client);
+ 	} else {
+diff --git a/drivers/media/video/vp27smpx.c b/drivers/media/video/vp27smpx.c
+index 282c814..fac0deb 100644
+--- a/drivers/media/video/vp27smpx.c
++++ b/drivers/media/video/vp27smpx.c
+@@ -121,7 +121,8 @@ static int vp27smpx_command(struct i2c_client *client, unsigned cmd, void *arg)
+  * concerning the addresses: i2c wants 7 bit (without the r/w bit), so '>>1'
+  */
+ 
+-static int vp27smpx_probe(struct i2c_client *client)
++static int vp27smpx_probe(struct i2c_client *client,
++			  const struct i2c_device_id *id)
+ {
+ 	struct vp27smpx_state *state;
+ 
+diff --git a/drivers/media/video/wm8739.c b/drivers/media/video/wm8739.c
+index 31795b4..0f8ed84 100644
+--- a/drivers/media/video/wm8739.c
++++ b/drivers/media/video/wm8739.c
+@@ -261,7 +261,8 @@ static int wm8739_command(struct i2c_client *client, unsigned cmd, void *arg)
+ 
+ /* i2c implementation */
+ 
+-static int wm8739_probe(struct i2c_client *client)
++static int wm8739_probe(struct i2c_client *client,
++			const struct i2c_device_id *id)
+ {
+ 	struct wm8739_state *state;
+ 
+diff --git a/drivers/media/video/wm8775.c b/drivers/media/video/wm8775.c
+index 869f9e7..67a409e 100644
+--- a/drivers/media/video/wm8775.c
++++ b/drivers/media/video/wm8775.c
+@@ -159,7 +159,8 @@ static int wm8775_command(struct i2c_client *client, unsigned cmd, void *arg)
+  * concerning the addresses: i2c wants 7 bit (without the r/w bit), so '>>1'
+  */
+ 
+-static int wm8775_probe(struct i2c_client *client)
++static int wm8775_probe(struct i2c_client *client,
++			const struct i2c_device_id *id)
+ {
+ 	struct wm8775_state *state;
+ 
+diff --git a/drivers/rtc/rtc-ds1307.c b/drivers/rtc/rtc-ds1307.c
+index f389a28..67ba8ae 100644
+--- a/drivers/rtc/rtc-ds1307.c
++++ b/drivers/rtc/rtc-ds1307.c
+@@ -326,7 +326,8 @@ static struct bin_attribute nvram = {
+ 
+ static struct i2c_driver ds1307_driver;
+ 
+-static int __devinit ds1307_probe(struct i2c_client *client)
++static int __devinit ds1307_probe(struct i2c_client *client,
++				  const struct i2c_device_id *id)
+ {
+ 	struct ds1307		*ds1307;
+ 	int			err = -ENODEV;
+diff --git a/drivers/rtc/rtc-ds1374.c b/drivers/rtc/rtc-ds1374.c
+index 45bda18..104dcfd 100644
+--- a/drivers/rtc/rtc-ds1374.c
++++ b/drivers/rtc/rtc-ds1374.c
+@@ -355,7 +355,8 @@ static const struct rtc_class_ops ds1374_rtc_ops = {
+ 	.ioctl = ds1374_ioctl,
+ };
+ 
+-static int ds1374_probe(struct i2c_client *client)
++static int ds1374_probe(struct i2c_client *client,
++			const struct i2c_device_id *id)
+ {
+ 	struct ds1374 *ds1374;
+ 	int ret;
+diff --git a/drivers/rtc/rtc-m41t80.c b/drivers/rtc/rtc-m41t80.c
+index 1cb33ca..2ee0d07 100644
+--- a/drivers/rtc/rtc-m41t80.c
++++ b/drivers/rtc/rtc-m41t80.c
+@@ -756,7 +756,8 @@ static struct notifier_block wdt_notifier = {
+  *
+  *****************************************************************************
+  */
+-static int m41t80_probe(struct i2c_client *client)
++static int m41t80_probe(struct i2c_client *client,
++			const struct i2c_device_id *id)
+ {
+ 	int i, rc = 0;
+ 	struct rtc_device *rtc = NULL;
+diff --git a/drivers/rtc/rtc-rs5c372.c b/drivers/rtc/rtc-rs5c372.c
+index 6b67b50..ebdbad9 100644
+--- a/drivers/rtc/rtc-rs5c372.c
++++ b/drivers/rtc/rtc-rs5c372.c
+@@ -494,7 +494,8 @@ static void rs5c_sysfs_unregister(struct device *dev)
+ 
+ static struct i2c_driver rs5c372_driver;
+ 
+-static int rs5c372_probe(struct i2c_client *client)
++static int rs5c372_probe(struct i2c_client *client,
++			 const struct i2c_device_id *id)
+ {
+ 	int err = 0;
+ 	struct rs5c372 *rs5c372;
+diff --git a/include/linux/i2c.h b/include/linux/i2c.h
+index 365e0df..92c8ecf 100644
+--- a/include/linux/i2c.h
++++ b/include/linux/i2c.h
+@@ -126,7 +126,7 @@ struct i2c_driver {
+ 	 * With the driver model, device enumeration is NEVER done by drivers;
+ 	 * it's done by infrastructure.  (NEW STYLE DRIVERS ONLY)
+ 	 */
+-	int (*probe)(struct i2c_client *);
++	int (*probe)(struct i2c_client *, const struct i2c_device_id *id);
+ 	int (*remove)(struct i2c_client *);
+ 
+ 	/* driver model interfaces that don't relate to enumeration  */
+@@ -140,11 +140,10 @@ struct i2c_driver {
+ 	int (*command)(struct i2c_client *client,unsigned int cmd, void *arg);
+ 
+ 	struct device_driver driver;
++	const struct i2c_device_id *id_table;
+ };
+ #define to_i2c_driver(d) container_of(d, struct i2c_driver, driver)
+ 
+-#define I2C_NAME_SIZE	20
+-
+ /**
+  * struct i2c_client - represent an I2C slave device
+  * @flags: I2C_CLIENT_TEN indicates the device uses a ten bit chip address;
+diff --git a/include/linux/mod_devicetable.h b/include/linux/mod_devicetable.h
+index 139d49d..696c07b 100644
+--- a/include/linux/mod_devicetable.h
++++ b/include/linux/mod_devicetable.h
+@@ -368,4 +368,17 @@ struct virtio_device_id {
+ };
+ #define VIRTIO_DEV_ANY_ID	0xffffffff
+ 
++/* i2c */
++
++/* These defines are used to separate PowerPC open firmware
++ * drivers into their own namespace */
++#define I2C_NAME_SIZE	20
++#define I2C_MODULE_PREFIX "i2c:"
++
++struct i2c_device_id {
++	char name[I2C_NAME_SIZE];
++	kernel_ulong_t driver_data;	/* Data private to the driver */
++};
++
++
+ #endif /* LINUX_MOD_DEVICETABLE_H */
+diff --git a/include/media/v4l2-common.h b/include/media/v4l2-common.h
+index 316a584..9c4b906 100644
+--- a/include/media/v4l2-common.h
++++ b/include/media/v4l2-common.h
+@@ -107,9 +107,11 @@ int v4l2_chip_match_host(u32 id_type, u32 chip_id);
+ struct i2c_driver;
+ struct i2c_adapter;
+ struct i2c_client;
++struct i2c_device_id;
+ 
+ int v4l2_i2c_attach(struct i2c_adapter *adapter, int address, struct i2c_driver *driver,
+-		const char *name, int (*probe)(struct i2c_client *));
++		const char *name, int (*probe)(struct i2c_client *,
++					       const struct i2c_device_id *id));
+ 
+ /* ------------------------------------------------------------------------- */
+ 
+diff --git a/include/media/v4l2-i2c-drv-legacy.h b/include/media/v4l2-i2c-drv-legacy.h
+index e764557..347b6f8 100644
+--- a/include/media/v4l2-i2c-drv-legacy.h
++++ b/include/media/v4l2-i2c-drv-legacy.h
+@@ -25,7 +25,7 @@ struct v4l2_i2c_driver_data {
+ 	const char * const name;
+ 	int driverid;
+ 	int (*command)(struct i2c_client *client, unsigned int cmd, void *arg);
+-	int (*probe)(struct i2c_client *client);
++	int (*probe)(struct i2c_client *client, const struct i2c_device_id *id);
+ 	int (*remove)(struct i2c_client *client);
+ 	int (*suspend)(struct i2c_client *client, pm_message_t state);
+ 	int (*resume)(struct i2c_client *client);
+diff --git a/include/media/v4l2-i2c-drv.h b/include/media/v4l2-i2c-drv.h
+index 9e4bab2..7b6f06b 100644
+--- a/include/media/v4l2-i2c-drv.h
++++ b/include/media/v4l2-i2c-drv.h
+@@ -30,7 +30,7 @@ struct v4l2_i2c_driver_data {
+ 	const char * const name;
+ 	int driverid;
+ 	int (*command)(struct i2c_client *client, unsigned int cmd, void *arg);
+-	int (*probe)(struct i2c_client *client);
++	int (*probe)(struct i2c_client *client, const struct i2c_device_id *id);
+ 	int (*remove)(struct i2c_client *client);
+ 	int (*suspend)(struct i2c_client *client, pm_message_t state);
+ 	int (*resume)(struct i2c_client *client);
+diff --git a/scripts/mod/file2alias.c b/scripts/mod/file2alias.c
+index 348d868..0d9e179 100644
+--- a/scripts/mod/file2alias.c
++++ b/scripts/mod/file2alias.c
+@@ -543,6 +543,15 @@ static int do_virtio_entry(const char *filename, struct virtio_device_id *id,
+ 	return 1;
+ }
+ 
++/* Looks like: i2c:S */
++static int do_i2c_entry(const char *filename, struct i2c_device_id *id,
++			char *alias)
++{
++	sprintf(alias, I2C_MODULE_PREFIX "%s", id->name);
++
++	return 1;
++}
++
+ /* Ignore any prefix, eg. v850 prepends _ */
+ static inline int sym_is(const char *symbol, const char *name)
+ {
+@@ -673,6 +682,10 @@ void handle_moddevtable(struct module *mod, struct elf_info *info,
+ 		do_table(symval, sym->st_size,
+ 			 sizeof(struct virtio_device_id), "virtio",
+ 			 do_virtio_entry, mod);
++	else if (sym_is(symname, "__mod_i2c_device_table"))
++		do_table(symval, sym->st_size,
++			 sizeof(struct i2c_device_id), "i2c",
++			 do_i2c_entry, mod);
+ 	free(zeros);
+ }
+ 
+-- 
+1.5.4.5
