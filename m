@@ -1,21 +1,20 @@
-Return-Path: <roland@redhat.com>
-Received: from QMTA03.westchester.pa.mail.comcast.net
-	(qmta03.westchester.pa.mail.comcast.net [76.96.62.32])
-	by ozlabs.org (Postfix) with ESMTP id 474AFDDF79
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Apr 2008 11:37:09 +1000 (EST)
+Return-Path: <dale@farnsworth.org>
+Received: from xyzzy.farnsworth.org (xyzzy.farnsworth.org [65.39.95.219])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id AED07DE0F2
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Apr 2008 11:37:57 +1000 (EST)
+Date: Thu, 10 Apr 2008 18:37:46 -0700
+From: Dale Farnsworth <dale@farnsworth.org>
+To: Paul Gortmaker <paul.gortmaker@windriver.com>
+Message-ID: <20080411013745.GA28655@farnsworth.org>
+References: <1207869739-19892-1-git-send-email-paul.gortmaker@windriver.com>
+	<0006b107cbf99a968352d9369a8e26304d4bf13a.1207868891.git.paul.gortmaker@windriver.com>
 MIME-Version: 1.0
+In-Reply-To: <0006b107cbf99a968352d9369a8e26304d4bf13a.1207868891.git.paul.gortmaker@windriver.com>
+Subject: Re: [PATCH 1/3] powerpc: Add support for Wind River SBC8641D board
 Content-Type: text/plain; charset=us-ascii
-From: Roland McGrath <roland@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] powerpc TLF_RESTORE_SIGMASK
-In-Reply-To: Andrew Morton's message of  Wednesday, 9 April 2008 23:51:56 -0700
-	<20080409235156.33ee33f2.akpm@linux-foundation.org>
-References: <20080403210842.6C88C26F98D@magilla.localdomain>
-	<20080409235156.33ee33f2.akpm@linux-foundation.org>
-Message-Id: <20080411013635.1F4B126F992@magilla.localdomain>
-Date: Thu, 10 Apr 2008 18:36:35 -0700 (PDT)
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,33 +24,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> This crashes my powerpc mac g5.
+On Thu, Apr 10, 2008 at 07:22:17PM -0400, Paul Gortmaker wrote:
+> This adds support for the Wind River SBC8641D board, based
+> largely on the mpc86xx_hpcn support.  The biggest difference is
+> the lack of the Uli and the i8259 cascade, which simplifies things.
 
-It worked fine on mine.
+Hi Paul,
 
-> It happens after the boot, during the first login-over-ssh.
+A couple issues.  (These should be fixed in the mpc86xx_hpcn.c as well.)
 
-Mine did lots of stuff fine.
+> +void __init
+> +sbc8641_init_irq(void)
 
-> This is with most of the rest of the -mm poopile applied.  i386 and x86_64
-> seem OK.
+Make this function static.
 
-I had only tested with Linus's tree plus the small handful of post-2.6.25
-cleanup patches I've posted in the last few weeks.  To be precise it was
-9597362d354f8655ece324b01d0c640a0e99c077 plus several of my cleanup patches
-(that are probably all in -mm, but I'm not sure off hand).
+> +void
+> +sbc8641_show_cpuinfo(struct seq_file *m)
 
-I'd rebased my tree today to 783e391b7b5b273cd20856d8f6f4878da8ec31b3
-anyway.  I just tried the new kernel with the sigmask cleanups and only 
-a few other patches, and have no problems.
+This one too.
 
-The details of your crash make it look pretty unrelated to this code.
-Off hand I would guess that it's some other bug from other -mm patches
-that just happens only to bite you on powerpc.  If the crash is not
-intermittent and you bisected it to this one change, then I am at a
-loss to see what might be happening.  I'd have to leave it to Paul et
-al to figure out if there is some strange powerpc juju going on.
+> +static int __init sbc8641_probe(void)
+> +{
+> +	unsigned long root = of_get_flat_dt_root();
+> +
+> +	if (of_flat_dt_is_compatible(root, "mpc86xx"))
 
+"mpc86xx" is too generic.  You should make the compatible field
+in your devtree something like "WIND,sbc8641d", to differentiate
+it from the mpc86xx_hpcn.
 
-Thanks,
-Roland
+> +long __init
+> +mpc86xx_time_init(void)
+
+Another static function.
+
+Regards,
+-Dale
