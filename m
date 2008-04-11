@@ -1,23 +1,15 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.177])
-	by ozlabs.org (Postfix) with ESMTP id C653BDE18C
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Apr 2008 11:02:30 +1000 (EST)
-Received: by py-out-1112.google.com with SMTP id z59so283167pyg.27
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Apr 2008 18:02:27 -0700 (PDT)
-Subject: Re: [PATCH] [v5] Add idle wait support for 44x platforms
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Arnd Bergmann <arnd@arndb.de>
-In-Reply-To: <200804110218.23912.arnd@arndb.de>
-References: <df0f79b7b4ab628887c2.1207673354@thinkpadL>
-	<200804101544.44457.arnd@arndb.de> <1207858131.26428.4.camel@thinkpadL>
-	<200804110218.23912.arnd@arndb.de>
-Content-Type: text/plain
-Date: Thu, 10 Apr 2008 20:02:16 -0500
-Message-Id: <1207875736.3996.52.camel@vader.jdub.homelinux.org>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 3B56EDE1A6
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Apr 2008 11:11:59 +1000 (EST)
+Date: Fri, 11 Apr 2008 11:11:56 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: paulus@samba.org
+Subject: [PATCH] [POWERPC] Fix MAX_ORDER config problem
+Message-Id: <20080411111156.8861e269.sfr@canb.auug.org.au>
 Mime-Version: 1.0
-Sender: Josh Boyer <jwboyer@gmail.com>
-Cc: kvm-ppc-devel@lists.sourceforge.net, linuxppc-dev@ozlabs.org
-Reply-To: jwboyer@linux.vnet.ibm.com
+Content-Type: text/plain; charset=US-ASCII
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,34 +19,91 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2008-04-11 at 02:18 +0200, Arnd Bergmann wrote:
-> > > static int __init idle_param(char *p)
-> > > {
-> > >       if (!strcmp(modes[i].name, "spin"))
-> > >               ppc_md.power_save = NULL;
-> > > }
-> > > early_param("idle", idle_param);
-> > > 
-> > > if you statically initialize the ppc_md.power_save function to ppc44x_idle
-> > > in the platform setup files?
-> > 
-> > The idea is to not statically initialize ppc_md.power_save to
-> > ppc44x_idle in each platform setup file.
-> > 
-> 
-> Why not? Unlike the platform_initcall, it wouldn't cost anything and your
-> current code has the same effect in the end, but in a less obvious way.
+The allyesconfig (among others) build was giving this:
 
-This is likely something that has evolved from the original patch which
-added a machine_late_initcall(<machine>, ppc44x_idle_init) to every
-platform.c file.  It made the original patch overly complicated as
-opposed to adding a single arch_initcall in a common file.  That was
-also before we decided to make "wait" the default, which made things
-much easier to deal with.
+In file included from include/linux/gfp.h:4,
+                 from include/linux/slab.h:14,
+                 from include/linux/percpu.h:5,
+                 from include2/asm/time.h:18,
+                 from include2/asm/cputime.h:26,
+                 from include/linux/sched.h:67,
+                 from
+arch/powerpc/kernel/asm-offsets.c:17:
+include/linux/mmzone.h:791:2: error: #error Allocator MAX_ORDER exceeds SECTION_SIZE
 
-I'll take the blame for the way the minorly suboptimal state the patch
-is, as Jerone had to jump through several hoops already at my request.
-I agree it's cleaner to do as you suggest in the long run, and may well
-make some changes along those lines myself.
+Kconfig options are order depenendent, so move the setting of
+FORCE_MAX_ZONEORDER to after the setting of PPC_64K_PAGES. Also add an
+explicit !PPC_64K_PAGES.
 
-josh
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ arch/powerpc/Kconfig |   40 ++++++++++++++++++++--------------------
+ 1 files changed, 20 insertions(+), 20 deletions(-)
+
+Paul, this is a bug in the powerpc next tree.
+
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 625342e..1d4d19f 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -211,26 +211,6 @@ source kernel/Kconfig.hz
+ source kernel/Kconfig.preempt
+ source "fs/Kconfig.binfmt"
+ 
+-config FORCE_MAX_ZONEORDER
+-	int "Maximum zone order"
+-	default "9" if PPC_64K_PAGES
+-	default "13" if PPC64
+-	default "11"
+-	help
+-	  The kernel memory allocator divides physically contiguous memory
+-	  blocks into "zones", where each zone is a power of two number of
+-	  pages.  This option selects the largest power of two that the kernel
+-	  keeps in the memory allocator.  If you need to allocate very large
+-	  blocks of physically contiguous memory, then you may need to
+-	  increase this value.
+-
+-	  This config option is actually maximum order plus one. For example,
+-	  a value of 11 means that the largest free memory block is 2^10 pages.
+-
+-	  The page size is not necessarily 4KB.  For example, on 64-bit
+-	  systems, 64KB pages can be enabled via CONFIG_PPC_64K_PAGES.  Keep
+-	  this in mind when choosing a value for this option.
+-
+ config HUGETLB_PAGE_SIZE_VARIABLE
+ 	bool
+ 	depends on HUGETLB_PAGE
+@@ -403,6 +383,26 @@ config PPC_64K_PAGES
+ 	  while on hardware with such support, it will be used to map
+ 	  normal application pages.
+ 
++config FORCE_MAX_ZONEORDER
++	int "Maximum zone order"
++	default "9" if PPC_64K_PAGES
++	default "13" if PPC64 && !PPC_64K_PAGES
++	default "11"
++	help
++	  The kernel memory allocator divides physically contiguous memory
++	  blocks into "zones", where each zone is a power of two number of
++	  pages.  This option selects the largest power of two that the kernel
++	  keeps in the memory allocator.  If you need to allocate very large
++	  blocks of physically contiguous memory, then you may need to
++	  increase this value.
++
++	  This config option is actually maximum order plus one. For example,
++	  a value of 11 means that the largest free memory block is 2^10 pages.
++
++	  The page size is not necessarily 4KB.  For example, on 64-bit
++	  systems, 64KB pages can be enabled via CONFIG_PPC_64K_PAGES.  Keep
++	  this in mind when choosing a value for this option.
++
+ config PPC_SUBPAGE_PROT
+ 	bool "Support setting protections for 4k subpages"
+ 	depends on PPC_64K_PAGES
+-- 
+1.5.4.5
+
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
