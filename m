@@ -1,18 +1,19 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 9C645DE691
-	for <linuxppc-dev@ozlabs.org>; Sat, 12 Apr 2008 03:43:07 +1000 (EST)
-Date: Fri, 11 Apr 2008 10:43:06 -0700 (PDT)
-Message-Id: <20080411.104306.93639801.davem@davemloft.net>
-To: jochen@scram.de
-Subject: Re: [PATCH3/7] i2c: OF helpers for the i2c API
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <47FF710D.2040208@scram.de>
-References: <47FF710D.2040208@scram.de>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-	scottwood@freescale.com, i2c@lm-sensors.org, khali@linux-fr.org
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id D8A68DDF1F
+	for <linuxppc-dev@ozlabs.org>; Sat, 12 Apr 2008 04:28:45 +1000 (EST)
+In-Reply-To: <1207933186-20555-1-git-send-email-paul.gortmaker@windriver.com>
+References: <1207933186-20555-1-git-send-email-paul.gortmaker@windriver.com>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <6cff5e9f9428c55ad36966c47e9afbcd@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] 86xx: mark functions static, other minor cleanups
+Date: Fri, 11 Apr 2008 20:28:22 +0200
+To: Paul Gortmaker <paul.gortmaker@windriver.com>
+Cc: linuxppc-dev@ozlabs.org, sfr@canb.auug.org.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,19 +23,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Jochen Friedrich <jochen@scram.de>
-Date: Fri, 11 Apr 2008 16:09:17 +0200
+> add vendor prefix to the compat node check for uniqueness,
 
-> +
-> +config OF_I2C
-> +	def_bool y
-> +	depends on OF && PPC_OF && I2C
-> +	help
-> +	  OpenFirmware I2C accessors
+> -	compatible = "mpc86xx";
+> +	compatible = "wrs,sbc8641";
 
-I wouldn't mind trying to use this infrastructure on
-sparc64, and I don't see any powerpc specific interfaces
-being invoked, so if you could remove the PPC_OF
-requirement I'd appreciate it.
+Either use the ticker thing (uppercase, "WIND,xxxx"), or, if you
+prefer a lowercase name without that little extra namespace protection,
+please use something more descriptive -- there are only so many
+three-letter acronyms: "windriver,xxxx"?
 
-Thanks.
+
+Segher
