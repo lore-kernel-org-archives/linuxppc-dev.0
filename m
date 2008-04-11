@@ -1,22 +1,18 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from tmnt04.transmode.se (mail.transmode.se [83.241.175.147])
-	by ozlabs.org (Postfix) with ESMTP id 5CD73DE137
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Apr 2008 20:47:08 +1000 (EST)
-Subject: Re: [PATCH 1/5] phylib: don't create a phydev for ID-less PHYs.
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-To: Stefan Roese <sr@denx.de>
-In-Reply-To: <200804111006.04708.sr@denx.de>
-References: <1207849922-2436-1-git-send-email-paul.gortmaker@windriver.com>
-	<4764055962e0a42ce083783bbb897a62090ad90b.1207846542.git.paul.gortmaker@windriver.com>
-	<1207897589.9544.13.camel@gentoo-jocke.transmode.se>
-	<200804111006.04708.sr@denx.de>
-Content-Type: text/plain
-Date: Fri, 11 Apr 2008 12:47:06 +0200
-Message-Id: <1207910826.9544.26.camel@gentoo-jocke.transmode.se>
-Mime-Version: 1.0
-Cc: scottwood@freescale.com, linuxppc-dev@ozlabs.org, linux-net@vger.kernel.org,
-	Paul Gortmaker <paul.gortmaker@windriver.com>
-Reply-To: joakim.tjernlund@transmode.se
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id B8C1ADE083
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Apr 2008 21:45:42 +1000 (EST)
+Date: Fri, 11 Apr 2008 15:45:38 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: patches for 2.6.26
+Message-ID: <20080411114538.GA17447@polina.dev.rtsoft.ru>
+References: <D9A4BB4A-970C-4E9E-9174-BA8C0191CCA2@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <D9A4BB4A-970C-4E9E-9174-BA8C0191CCA2@kernel.crashing.org>
+Cc: ppc-dev list <linuxppc-dev@ozlabs.org>
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,22 +22,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hello Kumar,
 
-On Fri, 2008-04-11 at 10:06 +0200, Stefan Roese wrote:
-> On Friday 11 April 2008, Joakim Tjernlund wrote:
-> > On Thu, 2008-04-10 at 13:51 -0400, Paul Gortmaker wrote:
-> > > In addition to marking 0x0 as an invalid PHY ID, I've also
-> > > changed the existing somewhat useless printk to actually
-> > > list the bus IDs where it found a PHY so we get a basic
-> > > bus summary.
-> >
-> > PHY ID 0x0 isn't an invalid id, I got a Broadcom PHY that has
-> > PHY ID=0. Maybe I am misunderstanding something?
-> 
-> IIRC, address 0 is the PHY broadcast address, but can be used without problem 
-> with some PHY's. I remember some designs were we had the PHY at address 0.
+On Thu, Apr 10, 2008 at 09:21:34AM -0500, Kumar Gala wrote:
+> Guy's
+>
+> if you have work you want in 2.6.26 related to Freescale PPC's let me  
+> know.  Ideally you can provide links to the patches in 
+> http://patchwork.ozlabs.org/linuxppc/
 
-Ouh, if that is so, I guess we need a CONFIG option or a new mdio bus
-property to select if PHY ID 0 is valid id or not.
+Please take a look at these:
 
- Jocke
+[POWERPC] mpc8315: fix USB UTMI Host setup
+http://patchwork.ozlabs.org/linuxppc/patch?id=17782
+
+[POWERPC] qe_lib and ucc_geth: switch to the cpm_muram implementation
+http://patchwork.ozlabs.org/linuxppc/patch?id=17441
+^ Scott and Timur say that patch looks fine.
+
+[POWERPC] 83xx: mpc837x_rdb: add simple-bus compatible matching
+http://patchwork.ozlabs.org/linuxppc/patch?id=17405
+
+[POWERPC] 83xx: MPC837xRDB's VSC7385 ethernet switch isn't on the MDIO bus
+http://patchwork.ozlabs.org/linuxppc/patch?id=17389
+
+[POWERPC] fsl_soc: add support for "fsl, soc" compatible matching
+http://patchwork.ozlabs.org/linuxppc/patch?id=17289
+
+[POWERPC] UCC nodes cleanup
+http://patchwork.ozlabs.org/linuxppc/patch?id=17290
+
+UPM Patches
+http://patchwork.ozlabs.org/linuxppc/patch?id=17291
+http://patchwork.ozlabs.org/linuxppc/patch?id=17292
+^ Needed to be in-tree so I can ask to merge FSL UPM NAND driver just after
+OF GPIO API merge.
+
+
+Thanks,
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
