@@ -1,22 +1,31 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from wr-out-0506.google.com (wr-out-0506.google.com [64.233.184.228])
-	by ozlabs.org (Postfix) with ESMTP id B4DABDE0BC
-	for <linuxppc-dev@ozlabs.org>; Sat, 12 Apr 2008 00:16:03 +1000 (EST)
-Received: by wr-out-0506.google.com with SMTP id 67so738560wri.3
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Apr 2008 07:16:02 -0700 (PDT)
-Message-ID: <fa686aa40804110716g5e8918br5c7ecd729f40f9ea@mail.gmail.com>
-Date: Fri, 11 Apr 2008 08:16:02 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Anton Vorontsov" <avorontsov@ru.mvista.com>
-Subject: Re: [PATCH 2/2] [POWERPC] Implement support for the GPIO LIB API
-In-Reply-To: <20080411130636.GA12655@polina.dev.rtsoft.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20080411130537.GA10608@polina.dev.rtsoft.ru>
-	<20080411130636.GA12655@polina.dev.rtsoft.ru>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	David Miller <davem@davemloft.net>
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 12B3DDE37D
+	for <linuxppc-dev@ozlabs.org>; Sat, 12 Apr 2008 00:26:44 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e36.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m3BEQZD3024309
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Apr 2008 10:26:35 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m3BEQZTD162640
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Apr 2008 08:26:35 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m3BEQYuZ020068
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Apr 2008 08:26:34 -0600
+Date: Fri, 11 Apr 2008 09:24:17 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Jeff Garzik <jeff@garzik.org>
+Subject: Re: [PATCH 1/2] ibm_newemac: PowerPC 440GX EMAC PHY clock workaround
+Message-ID: <20080411092417.57825115@zod.rchland.ibm.com>
+In-Reply-To: <47EDA6F1.9080206@garzik.org>
+References: <20080327144044.GA8831@ru.mvista.com> <47EDA6F1.9080206@garzik.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,182 +35,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Apr 11, 2008 at 7:06 AM, Anton Vorontsov
-<avorontsov@ru.mvista.com> wrote:
-> This patch implements support for the GPIO LIB API. Two calls
->  unimplemented though: irq_to_gpio and gpio_to_irq.
->
->  Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+On Fri, 28 Mar 2008 22:18:25 -0400
+Jeff Garzik <jeff@garzik.org> wrote:
 
-I like it
+> Valentine Barshak wrote:
+> > The PowerPC 440GX Taishan board fails to reset EMAC3 (reset timeout error)
+> > if there's no link. Because of that it fails to find PHY chip. The older ibm_emac
+> > driver had a workaround for that: the EMAC_CLK_INTERNAL/EMAC_CLK_EXTERNAL macros,
+> > which toggle the Ethernet Clock Select bit in the SDR0_MFR register. This patch
+> > does the same for "ibm,emac-440gx" compatible chips. The workaround forces
+> > clock on -all- EMACs, so we select clock under global emac_phy_map_lock.
+> > 
+> > Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
+> > ---
+> >  drivers/net/ibm_newemac/core.c |   16 +++++++++++++++-
+> >  drivers/net/ibm_newemac/core.h |    8 ++++++--
+> >  2 files changed, 21 insertions(+), 3 deletions(-)
+> 
+> is this for 2.6.25-rc?
 
-Acked-by: Grant Likely <grant.likely@secretlab.ca>
+Jeff, can I get an ack from you on this patch, and patch 2 in this
+set?  They depend on a patch in my tree and I'd like to include them in
+my next push to Paul for 2.6.26.
 
->  ---
->   Documentation/powerpc/booting-without-of.txt |   52 ++++++++++++++++++++++++
->   arch/powerpc/Kconfig                         |    5 ++
->   include/asm-powerpc/gpio.h                   |   56 ++++++++++++++++++++++++++
->   3 files changed, 113 insertions(+), 0 deletions(-)
->   create mode 100644 include/asm-powerpc/gpio.h
->
->  diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
->  index b506245..e9e0c2f 100644
->  --- a/Documentation/powerpc/booting-without-of.txt
->  +++ b/Documentation/powerpc/booting-without-of.txt
->  @@ -66,6 +66,10 @@ Table of Contents
->      3) OpenPIC Interrupt Controllers
->      4) ISA Interrupt Controllers
->
->  +  VIII - Specifying GPIO information for devices
->  +    1) gpios property
->  +    2) gpio-controller nodes
->  +
->    Appendix A - Sample SOC node for MPC8540
->
->
->  @@ -2925,6 +2929,54 @@ encodings listed below:
->         2 =  high to low edge sensitive type enabled
->         3 =  low to high edge sensitive type enabled
->
->  +VIII - Specifying GPIO information for devices
->  +==============================================
->  +
->  +1) gpios property
->  +-----------------
->  +
->  +Nodes that makes use of GPIOs should define them using `gpios' property,
->  +format of which is: <&gpio-controller1-phandle gpio1-specifier
->  +                    &gpio-controller2-phandle gpio2-specifier
->  +                    0 /* holes are permitted, means no GPIO 3 */
->  +                    &gpio-controller4-phandle gpio4-specifier
->  +                    ...>;
->  +
->  +Note that gpio-specifier length is controller dependent.
->  +
->  +gpio-specifier may encode: bank, pin position inside the bank,
->  +whether pin is open-drain and whether pin is logically inverted.
->  +
->  +Example of the node using GPIOs:
->  +
->  +       node {
->  +               gpios = <&qe_pio_e 18 0>;
->  +       };
->  +
->  +In this example gpio-specifier is "18 0" and encodes GPIO pin number,
->  +and empty GPIO flags as accepted by the "qe_pio_e" gpio-controller.
->  +
->  +2) gpio-controller nodes
->  +------------------------
->  +
->  +Every GPIO controller node must have #gpio-cells property defined,
->  +this information will be used to translate gpio-specifiers.
->  +
->  +Example of two SOC GPIO banks defined as gpio-controller nodes:
->  +
->  +       qe_pio_a: gpio-controller@1400 {
->  +               #gpio-cells = <2>;
->  +               compatible = "fsl,qe-pario-bank-a", "fsl,qe-pario-bank";
->  +               reg = <0x1400 0x18>;
->  +               gpio-controller;
->  +       };
->  +
->  +       qe_pio_e: gpio-controller@1460 {
->  +               #gpio-cells = <2>;
->  +               compatible = "fsl,qe-pario-bank-e", "fsl,qe-pario-bank";
->  +               reg = <0x1460 0x18>;
->  +               gpio-controller;
->  +       };
->
->   Appendix A - Sample SOC node for MPC8540
->   ========================================
->  diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
->  index 0b27cbd..f328509 100644
->  --- a/arch/powerpc/Kconfig
->  +++ b/arch/powerpc/Kconfig
->  @@ -81,6 +81,11 @@ config GENERIC_FIND_NEXT_BIT
->         bool
->         default y
->
->  +config GENERIC_GPIO
->  +       bool
->  +       help
->  +         Generic GPIO API support
->  +
->   config ARCH_NO_VIRT_TO_BUS
->         def_bool PPC64
->
->  diff --git a/include/asm-powerpc/gpio.h b/include/asm-powerpc/gpio.h
->  new file mode 100644
->  index 0000000..77ad3a8
->  --- /dev/null
->  +++ b/include/asm-powerpc/gpio.h
->  @@ -0,0 +1,56 @@
->  +/*
->  + * Generic GPIO API implementation for PowerPC.
->  + *
->  + * Copyright (c) 2007-2008  MontaVista Software, Inc.
->  + *
->  + * Author: Anton Vorontsov <avorontsov@ru.mvista.com>
->  + *
->  + * This program is free software; you can redistribute it and/or modify
->  + * it under the terms of the GNU General Public License as published by
->  + * the Free Software Foundation; either version 2 of the License, or
->  + * (at your option) any later version.
->  + */
->  +
->  +#ifndef __ASM_POWERPC_GPIO_H
->  +#define __ASM_POWERPC_GPIO_H
->  +
->  +#include <linux/errno.h>
->  +#include <asm-generic/gpio.h>
->  +
->  +#ifdef CONFIG_HAVE_GPIO_LIB
->  +
->  +/*
->  + * We don't (yet) implement inlined/rapid versions for on-chip gpios.
->  + * Just call gpiolib.
->  + */
->  +static inline int gpio_get_value(unsigned int gpio)
->  +{
->  +       return __gpio_get_value(gpio);
->  +}
->  +
->  +static inline void gpio_set_value(unsigned int gpio, int value)
->  +{
->  +       __gpio_set_value(gpio, value);
->  +}
->  +
->  +static inline int gpio_cansleep(unsigned int gpio)
->  +{
->  +       return __gpio_cansleep(gpio);
->  +}
->  +
->  +/*
->  + * Not implemented, yet.
->  + */
->  +static inline int gpio_to_irq(unsigned int gpio)
->  +{
->  +       return -ENOSYS;
->  +}
->  +
->  +static inline int irq_to_gpio(unsigned int irq)
->  +{
->  +       return -EINVAL;
->  +}
->  +
->  +#endif /* CONFIG_HAVE_GPIO_LIB */
->  +
->  +#endif /* __ASM_POWERPC_GPIO_H */
->  --
->  1.5.4.5
->  _______________________________________________
->  Linuxppc-dev mailing list
->  Linuxppc-dev@ozlabs.org
->  https://ozlabs.org/mailman/listinfo/linuxppc-dev
->
-
-
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+josh
