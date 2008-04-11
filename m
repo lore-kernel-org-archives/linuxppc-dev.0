@@ -1,21 +1,25 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 2A759DECA9
-	for <linuxppc-dev@ozlabs.org>; Sat, 12 Apr 2008 03:16:29 +1000 (EST)
-Date: Fri, 11 Apr 2008 12:16:28 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Paul Gortmaker <paul.gortmaker@windriver.com>
-Subject: Re: [PATCH] 86xx: mark functions static, other minor cleanups
-Message-ID: <20080411171628.GA3203@loki.buserror.net>
-References: <1207933186-20555-1-git-send-email-paul.gortmaker@windriver.com>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 29284DECD5
+	for <linuxppc-dev@ozlabs.org>; Sat, 12 Apr 2008 03:21:07 +1000 (EST)
+Date: Fri, 11 Apr 2008 21:21:06 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: [PATCH 2/2] [POWERPC] UCC nodes cleanup
+Message-ID: <20080411172106.GA17786@polina.dev.rtsoft.ru>
+References: <20080311171045.GB4684@localhost.localdomain>
+	<82E8E38A-C159-4C23-BDE8-086D4429F366@kernel.crashing.org>
+	<20080411160654.GA25506@polina.dev.rtsoft.ru>
+	<47FF9665.7020403@freescale.com>
+	<20080411170657.GA15270@polina.dev.rtsoft.ru>
+	<20080411171109.GA16119@polina.dev.rtsoft.ru>
+	<47FF9BFE.5000201@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1207933186-20555-1-git-send-email-paul.gortmaker@windriver.com>
-Cc: linuxppc-dev@ozlabs.org, sfr@canb.auug.org.au
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <47FF9BFE.5000201@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, Jeff Garzik <jgarzik@pobox.com>,
+	linux-serial@vger.kernel.org, netdev@vger.kernel.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,21 +29,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Apr 11, 2008 at 12:59:46PM -0400, Paul Gortmaker wrote:
-> diff --git a/arch/powerpc/boot/dts/mpc8641_hpcn.dts b/arch/powerpc/boot/dts/mpc8641_hpcn.dts
-> index 79385bc..d5c2da4 100644
-> --- a/arch/powerpc/boot/dts/mpc8641_hpcn.dts
-> +++ b/arch/powerpc/boot/dts/mpc8641_hpcn.dts
-> @@ -13,7 +13,7 @@
->  
->  / {
->  	model = "MPC8641HPCN";
-> -	compatible = "mpc86xx";
-> +	compatible = "fsl,mpc86xx";
->  	#address-cells = <1>;
->  	#size-cells = <1>;
+On Fri, Apr 11, 2008 at 12:12:30PM -0500, Timur Tabi wrote:
+> Anton Vorontsov wrote:
+> 
+> > Or maybe I'm thinking here in terms of "fsl,ucc"... and cell-index is
+> > indeed should be -1... don't know. Please decide. ;-)
+> 
+> Well, that's what I was thinking.  cell-index is zero-based, so UCC1 should have
+> cell-index = <0>.
+> 
+> Of course, this means all the code needs to change, since I think device-id is
+> one-based.
 
-If we're changing the compatible, change it to something proper (e.g.
-fsl,mpc8641hpcn).
+Yup. You raised a really good question, because we're _introducing_
+cell-index for UCC nodes, and if we'll choice wrong numbering scheme
+now, then there will be no way back w/o breaking backward compatibility.
 
--Scott
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
