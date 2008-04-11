@@ -1,19 +1,20 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 959C7DED58
-	for <linuxppc-dev@ozlabs.org>; Sat, 12 Apr 2008 02:06:57 +1000 (EST)
-Date: Fri, 11 Apr 2008 20:06:54 +0400
+	by ozlabs.org (Postfix) with ESMTP id 1C7F7DEB4A
+	for <linuxppc-dev@ozlabs.org>; Sat, 12 Apr 2008 02:13:12 +1000 (EST)
+Date: Fri, 11 Apr 2008 20:13:11 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 2/2] [POWERPC] UCC nodes cleanup
-Message-ID: <20080411160654.GA25506@polina.dev.rtsoft.ru>
-References: <20080311171045.GB4684@localhost.localdomain>
-	<82E8E38A-C159-4C23-BDE8-086D4429F366@kernel.crashing.org>
+Subject: Re: [PATCH 2/8] [POWERPC] fsl_lbc: implement few routines to
+	manage FSL UPMs
+Message-ID: <20080411161311.GA28067@polina.dev.rtsoft.ru>
+References: <20080311172106.GA4766@localhost.localdomain>
+	<20080311172408.GB7727@localhost.localdomain>
+	<EE642BFC-4262-44E8-BD48-E76E5418C276@kernel.crashing.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf8
-In-Reply-To: <82E8E38A-C159-4C23-BDE8-086D4429F366@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, Jeff Garzik <jgarzik@pobox.com>,
-	linux-serial@vger.kernel.org, netdev@vger.kernel.org
+In-Reply-To: <EE642BFC-4262-44E8-BD48-E76E5418C276@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org
 Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -24,240 +25,300 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Apr 11, 2008 at 09:13:36AM -0500, Kumar Gala wrote:
+On Fri, Apr 11, 2008 at 09:09:57AM -0500, Kumar Gala wrote:
 >
-> On Mar 11, 2008, at 12:10 PM, Anton Vorontsov wrote:
->> - get rid of `model = "UCC"' in the ucc nodes
->>  It isn't used anywhere, so remove it. If we'll ever need something
->>  like this, we'll use compatible property instead.
->> - replace cell-index and device-id properties by fsl,ucc.
->>
->> Drivers are modified for backward compatibility's sake.
+> On Mar 11, 2008, at 12:24 PM, Anton Vorontsov wrote:
+>> These will be used by the FSL UPM NAND driver.
 >
-> I'd prefer we use cell-index and not introduce "fsl,ucc".  I'm ok with  
-> dropping device-id and model (its implied in the compatiable).
+> can this be a bit more descriptive.  What exactly are these functions  
+> trying to accomplish.
 
-Ok. Here it is. netdev and linux-serial Cc'ed.
+Yeah, sorry about that. Here is updated patch, with a bit more descriptive
+comment, and highly kernel-doc'ed functions.
+
+>> +int fsl_upm_find(u32 base, struct fsl_upm *upm)
+>
+> what is base?
+
+Address base, as in LBC Base address register. Fixed down below.
+
+Thanks for looking into this.
 
 - - - -
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: [POWERPC] UCC nodes cleanup
+Subject: [POWERPC] fsl_lbc: implement few UPM routines
 
-- get rid of `model = "UCC"' in the ucc nodes
-  It isn't used anywhere, so remove it. If we'll ever need something
-  like this, we'll use compatible property instead.
-- replace last occurrences of device-id with cell-index.
-  Drivers are modified for backward compatibility's sake.
+Freescale UPM can be used to adjust localbus timings or to generate
+orbitrary, pre-programmed "patterns" on the external Localbus signals.
+This patch implements few routines so drivers could work with UPMs in
+safe and generic manner.
+
+So far there is just one user of these routines: Freescale UPM NAND
+driver.
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- Documentation/powerpc/booting-without-of.txt |    6 ++----
- arch/powerpc/boot/dts/mpc832x_mds.dts        |    7 +------
- arch/powerpc/boot/dts/mpc832x_rdb.dts        |    4 ----
- arch/powerpc/boot/dts/mpc836x_mds.dts        |    4 ----
- arch/powerpc/boot/dts/mpc8568mds.dts         |    4 ----
- drivers/net/ucc_geth.c                       |    8 +++++++-
- drivers/net/ucc_geth_mii.c                   |   11 ++++++++---
- drivers/serial/ucc_uart.c                    |   16 ++++++++++++----
- 8 files changed, 30 insertions(+), 30 deletions(-)
+ arch/powerpc/Kconfig          |    5 ++
+ arch/powerpc/sysdev/Makefile  |    1 +
+ arch/powerpc/sysdev/fsl_lbc.c |  111 +++++++++++++++++++++++++++++++++++++++++
+ include/asm-powerpc/fsl_lbc.h |   87 ++++++++++++++++++++++++++++++++
+ 4 files changed, 204 insertions(+), 0 deletions(-)
+ create mode 100644 arch/powerpc/sysdev/fsl_lbc.c
 
-diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
-index be41a5c..f0a99aa 100644
---- a/Documentation/powerpc/booting-without-of.txt
-+++ b/Documentation/powerpc/booting-without-of.txt
-@@ -1619,8 +1619,7 @@ platforms are moved over to use the flattened-device-tree model.
-    - device_type : should be "network", "hldc", "uart", "transparent"
-      "bisync", "atm", or "serial".
-    - compatible : could be "ucc_geth" or "fsl_atm" and so on.
--   - model : should be "UCC".
--   - device-id : the ucc number(1-8), corresponding to UCCx in UM.
-+   - cell-index : the ucc number(1-8), corresponding to UCCx in UM.
-    - reg : Offset and length of the register set for the device
-    - interrupts : <a b> where a is the interrupt number and b is a
-      field that represents an encoding of the sense and level
-@@ -1677,8 +1676,7 @@ platforms are moved over to use the flattened-device-tree model.
- 	ucc@2000 {
- 		device_type = "network";
- 		compatible = "ucc_geth";
--		model = "UCC";
--		device-id = <1>;
-+		cell-index = <1>;
- 		reg = <2000 200>;
- 		interrupts = <a0 0>;
- 		interrupt-parent = <700>;
-diff --git a/arch/powerpc/boot/dts/mpc832x_mds.dts b/arch/powerpc/boot/dts/mpc832x_mds.dts
-index 9bb4083..539e02f 100644
---- a/arch/powerpc/boot/dts/mpc832x_mds.dts
-+++ b/arch/powerpc/boot/dts/mpc832x_mds.dts
-@@ -255,9 +255,7 @@
- 		enet0: ucc@2200 {
- 			device_type = "network";
- 			compatible = "ucc_geth";
--			model = "UCC";
- 			cell-index = <3>;
--			device-id = <3>;
- 			reg = <0x2200 0x200>;
- 			interrupts = <34>;
- 			interrupt-parent = <&qeic>;
-@@ -271,9 +269,7 @@
- 		enet1: ucc@3200 {
- 			device_type = "network";
- 			compatible = "ucc_geth";
--			model = "UCC";
- 			cell-index = <4>;
--			device-id = <4>;
- 			reg = <0x3200 0x200>;
- 			interrupts = <35>;
- 			interrupt-parent = <&qeic>;
-@@ -287,8 +283,7 @@
- 		ucc@2400 {
- 			device_type = "serial";
- 			compatible = "ucc_uart";
--			model = "UCC";
--			device-id = <5>;	/* The UCC number, 1-7*/
-+			cell-index = <5>;	/* The UCC number, 1-7*/
- 			port-number = <0>;	/* Which ttyQEx device */
- 			soft-uart;		/* We need Soft-UART */
- 			reg = <0x2400 0x200>;
-diff --git a/arch/powerpc/boot/dts/mpc832x_rdb.dts b/arch/powerpc/boot/dts/mpc832x_rdb.dts
-index 94f93d2..179c81c 100644
---- a/arch/powerpc/boot/dts/mpc832x_rdb.dts
-+++ b/arch/powerpc/boot/dts/mpc832x_rdb.dts
-@@ -208,9 +208,7 @@
- 		enet0: ucc@3000 {
- 			device_type = "network";
- 			compatible = "ucc_geth";
--			model = "UCC";
- 			cell-index = <2>;
--			device-id = <2>;
- 			reg = <0x3000 0x200>;
- 			interrupts = <33>;
- 			interrupt-parent = <&qeic>;
-@@ -224,9 +222,7 @@
- 		enet1: ucc@2200 {
- 			device_type = "network";
- 			compatible = "ucc_geth";
--			model = "UCC";
- 			cell-index = <3>;
--			device-id = <3>;
- 			reg = <0x2200 0x200>;
- 			interrupts = <34>;
- 			interrupt-parent = <&qeic>;
-diff --git a/arch/powerpc/boot/dts/mpc836x_mds.dts b/arch/powerpc/boot/dts/mpc836x_mds.dts
-index 55f03e8..8160ff2 100644
---- a/arch/powerpc/boot/dts/mpc836x_mds.dts
-+++ b/arch/powerpc/boot/dts/mpc836x_mds.dts
-@@ -257,9 +257,7 @@
- 		enet0: ucc@2000 {
- 			device_type = "network";
- 			compatible = "ucc_geth";
--			model = "UCC";
- 			cell-index = <1>;
--			device-id = <1>;
- 			reg = <0x2000 0x200>;
- 			interrupts = <32>;
- 			interrupt-parent = <&qeic>;
-@@ -274,9 +272,7 @@
- 		enet1: ucc@3000 {
- 			device_type = "network";
- 			compatible = "ucc_geth";
--			model = "UCC";
- 			cell-index = <2>;
--			device-id = <2>;
- 			reg = <0x3000 0x200>;
- 			interrupts = <33>;
- 			interrupt-parent = <&qeic>;
-diff --git a/arch/powerpc/boot/dts/mpc8568mds.dts b/arch/powerpc/boot/dts/mpc8568mds.dts
-index 97bc048..df4b5e8 100644
---- a/arch/powerpc/boot/dts/mpc8568mds.dts
-+++ b/arch/powerpc/boot/dts/mpc8568mds.dts
-@@ -324,9 +324,7 @@
- 		enet2: ucc@2000 {
- 			device_type = "network";
- 			compatible = "ucc_geth";
--			model = "UCC";
- 			cell-index = <1>;
--			device-id = <1>;
- 			reg = <2000 200>;
- 			interrupts = <20>;
- 			interrupt-parent = <&qeic>;
-@@ -341,9 +339,7 @@
- 		enet3: ucc@3000 {
- 			device_type = "network";
- 			compatible = "ucc_geth";
--			model = "UCC";
- 			cell-index = <2>;
--			device-id = <2>;
- 			reg = <3000 200>;
- 			interrupts = <21>;
- 			interrupt-parent = <&qeic>;
-diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
-index fba0811..3a68b94 100644
---- a/drivers/net/ucc_geth.c
-+++ b/drivers/net/ucc_geth.c
-@@ -3852,7 +3852,13 @@ static int ucc_geth_probe(struct of_device* ofdev, const struct of_device_id *ma
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index ef12db0..9c68592 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -491,6 +491,11 @@ config FSL_PCI
+  	bool
+ 	select PPC_INDIRECT_PCI
  
- 	ugeth_vdbg("%s: IN", __FUNCTION__);
- 
--	prop = of_get_property(np, "device-id", NULL);
-+	prop = of_get_property(np, "cell-index", NULL);
-+	if (!prop) {
-+		prop = of_get_property(np, "device-id", NULL);
-+		if (!prop)
-+			return -ENODEV;
++config FSL_LBC
++	bool
++	help
++	  Freescale Localbus support
++
+ # Yes MCA RS/6000s exist but Linux-PPC does not currently support any
+ config MCA
+ 	bool
+diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile
+index 15f3e85..62b6ef0 100644
+--- a/arch/powerpc/sysdev/Makefile
++++ b/arch/powerpc/sysdev/Makefile
+@@ -12,6 +12,7 @@ obj-$(CONFIG_U3_DART)		+= dart_iommu.o
+ obj-$(CONFIG_MMIO_NVRAM)	+= mmio_nvram.o
+ obj-$(CONFIG_FSL_SOC)		+= fsl_soc.o
+ obj-$(CONFIG_FSL_PCI)		+= fsl_pci.o
++obj-$(CONFIG_FSL_LBC)		+= fsl_lbc.o
+ obj-$(CONFIG_RAPIDIO)		+= fsl_rio.o
+ obj-$(CONFIG_TSI108_BRIDGE)	+= tsi108_pci.o tsi108_dev.o
+ obj-$(CONFIG_QUICC_ENGINE)	+= qe_lib/
+diff --git a/arch/powerpc/sysdev/fsl_lbc.c b/arch/powerpc/sysdev/fsl_lbc.c
+new file mode 100644
+index 0000000..147e4e0
+--- /dev/null
++++ b/arch/powerpc/sysdev/fsl_lbc.c
+@@ -0,0 +1,111 @@
++/*
++ * Freescale LBC and UPM routines.
++ *
++ * Copyright (c) 2007-2008  MontaVista Software, Inc.
++ *
++ * Author: Anton Vorontsov <avorontsov@ru.mvista.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ */
++
++#include <linux/kernel.h>
++#include <linux/of.h>
++#include <asm/fsl_lbc.h>
++
++spinlock_t fsl_lbc_lock = __SPIN_LOCK_UNLOCKED(fsl_lbc_lock);
++
++struct fsl_lbc_regs __iomem *fsl_lbc_regs;
++EXPORT_SYMBOL(fsl_lbc_regs);
++
++static char __initdata *compat_lbc[] = {
++	"fsl,pq2-localbus",
++	"fsl,pq2pro-localbus",
++	"fsl,pq3-localbus",
++	"fsl,elbc",
++};
++
++static int __init fsl_lbc_init(void)
++{
++	struct device_node *lbus;
++	int i;
++
++	for (i = 0; i < ARRAY_SIZE(compat_lbc); i++) {
++		lbus = of_find_compatible_node(NULL, NULL, compat_lbc[i]);
++		if (lbus)
++			goto found;
++	}
++	return -ENODEV;
++
++found:
++	fsl_lbc_regs = of_iomap(lbus, 0);
++	of_node_put(lbus);
++	if (!fsl_lbc_regs)
++		return -ENOMEM;
++	return 0;
++}
++arch_initcall(fsl_lbc_init);
++
++/**
++ * fsl_upm_find - find pre-programmed UPM via base address
++ * @addr_base:	base address of the memory bank controlled by the UPM
++ * @upm:	pointer to the allocated fsl_upm structure
++ *
++ * This function walks UPMs comparing "Base address" field of the BR registers
++ * with the supplied addr_base argument. When bases are match, this function
++ * fills fsl_upm structure so you can use it with the rest of UPM API. On
++ * success this function returns 0, otherwise it returns appropriate errno
++ * value.
++ */
++int fsl_upm_find(u32 addr_base, struct fsl_upm *upm)
++{
++	int i;
++	__be32 br;
++	__be32 or;
++
++	if (!fsl_lbc_regs)
++		return -ENODEV;
++
++	for (i = 0; i < ARRAY_SIZE(fsl_lbc_regs->bank); i++) {
++		br = in_be32(&fsl_lbc_regs->bank[i].br);
++		or = in_be32(&fsl_lbc_regs->bank[i].or);
++
++		if (br & BR_V && (br & or & BR_BA) == addr_base)
++			goto found;
 +	}
 +
- 	ucc_num = *prop - 1;
- 	if ((ucc_num < 0) || (ucc_num > 7))
- 		return -ENODEV;
-diff --git a/drivers/net/ucc_geth_mii.c b/drivers/net/ucc_geth_mii.c
-index c69e654..8a48ddb 100644
---- a/drivers/net/ucc_geth_mii.c
-+++ b/drivers/net/ucc_geth_mii.c
-@@ -203,9 +203,14 @@ static int uec_mdio_probe(struct of_device *ofdev, const struct of_device_id *ma
- 		if ((res.start >= tempres.start) &&
- 		    (res.end <= tempres.end)) {
- 			/* set this UCC to be the MII master */
--			const u32 *id = of_get_property(tempnp, "device-id", NULL);
--			if (id == NULL)
--				goto bus_register_fail;
-+			const u32 *id;
-+
-+			id = of_get_property(tempnp, "cell-index", NULL);
-+			if (!id) {
-+				id = of_get_property(tempnp, "device-id", NULL);
-+				if (!id)
-+					goto bus_register_fail;
-+			}
- 
- 			ucc_set_qe_mux_mii_mng(*id - 1);
- 
-diff --git a/drivers/serial/ucc_uart.c b/drivers/serial/ucc_uart.c
-index e0994f0..5e4310c 100644
---- a/drivers/serial/ucc_uart.c
-+++ b/drivers/serial/ucc_uart.c
-@@ -1270,10 +1270,18 @@ static int ucc_uart_probe(struct of_device *ofdev,
- 
- 	/* Get the UCC number (device ID) */
- 	/* UCCs are numbered 1-7 */
--	iprop = of_get_property(np, "device-id", NULL);
--	if (!iprop || (*iprop < 1) || (*iprop > UCC_MAX_NUM)) {
--		dev_err(&ofdev->dev,
--			"missing or invalid UCC specified in device tree\n");
-+	iprop = of_get_property(np, "cell-index", NULL);
-+	if (!iprop) {
-+		iprop = of_get_property(np, "device-id", NULL);
-+		if (!iprop) {
-+			dev_err(&ofdev->dev, "UCC is unspecified in "
-+				"device tree\n");
-+			return -EINVAL;
-+		}
++	return -ENOENT;
++found:
++	switch (br & BR_MSEL) {
++	case BR_MS_UPMA:
++		upm->mxmr = &fsl_lbc_regs->mamr;
++		break;
++	case BR_MS_UPMB:
++		upm->mxmr = &fsl_lbc_regs->mbmr;
++		break;
++	case BR_MS_UPMC:
++		upm->mxmr = &fsl_lbc_regs->mcmr;
++		break;
++	default:
++		return -EINVAL;
 +	}
 +
-+	if ((*iprop < 1) || (*iprop > UCC_MAX_NUM)) {
-+		dev_err(&ofdev->dev, "no support for UCC%u\n", *iprop);
- 		kfree(qe_port);
- 		return -ENODEV;
- 	}
++	switch (br & BR_PS) {
++	case BR_PS_8:
++		upm->width = 8;
++		break;
++	case BR_PS_16:
++		upm->width = 16;
++		break;
++	case BR_PS_32:
++		upm->width = 32;
++		break;
++	default:
++		return -EINVAL;
++	}
++
++	return 0;
++}
++EXPORT_SYMBOL(fsl_upm_find);
+diff --git a/include/asm-powerpc/fsl_lbc.h b/include/asm-powerpc/fsl_lbc.h
+index 13a3c28..960f781 100644
+--- a/include/asm-powerpc/fsl_lbc.h
++++ b/include/asm-powerpc/fsl_lbc.h
+@@ -24,6 +24,8 @@
+ #define __ASM_FSL_LBC_H
+ 
+ #include <linux/types.h>
++#include <linux/spinlock.h>
++#include <asm/io.h>
+ 
+ struct fsl_lbc_bank {
+ 	__be32 br;             /**< Base Register  */
+@@ -98,6 +100,11 @@ struct fsl_lbc_regs {
+ 	__be32 mar;             /**< UPM Address Register */
+ 	u8 res1[0x4];
+ 	__be32 mamr;            /**< UPMA Mode Register */
++#define MxMR_OP_NO	(0 << 28) /**< normal operation */
++#define MxMR_OP_WA	(1 << 28) /**< write array */
++#define MxMR_OP_RA	(2 << 28) /**< read array */
++#define MxMR_OP_RP	(3 << 28) /**< run pattern */
++#define MxMR_MAD	0x3f      /**< machine address */
+ 	__be32 mbmr;            /**< UPMB Mode Register */
+ 	__be32 mcmr;            /**< UPMC Mode Register */
+ 	u8 res2[0x8];
+@@ -220,4 +227,84 @@ struct fsl_lbc_regs {
+ 	u8 res8[0xF00];
+ };
+ 
++extern struct fsl_lbc_regs __iomem *fsl_lbc_regs;
++extern spinlock_t fsl_lbc_lock;
++
++/*
++ * FSL UPM routines
++ */
++struct fsl_upm {
++	__be32 __iomem *mxmr;
++	int width;
++};
++
++extern int fsl_upm_find(u32 addr_base, struct fsl_upm *upm);
++
++/**
++ * fsl_upm_start_pattern - start UPM patterns execution
++ * @upm:	pointer to the fsl_upm structure obtained via fsl_upm_find
++ * @pat_offset:	UPM pattern offset for the command to be executed
++ *
++ * This routine programmes UPM so the next memory access that hits an UPM
++ * will trigger pattern execution, starting at pat_offset.
++ */
++static inline void fsl_upm_start_pattern(struct fsl_upm *upm, u8 pat_offset)
++{
++	clrsetbits_be32(upm->mxmr, MxMR_MAD, MxMR_OP_RP | pat_offset);
++}
++
++/**
++ * fsl_upm_end_pattern - end UPM patterns execution
++ * @upm:	pointer to the fsl_upm structure obtained via fsl_upm_find
++ *
++ * This routine reverts UPM to normal operation mode.
++ */
++static inline void fsl_upm_end_pattern(struct fsl_upm *upm)
++{
++	clrbits32(upm->mxmr, MxMR_OP_RP);
++
++	while (in_be32(upm->mxmr) & MxMR_OP_RP)
++		cpu_relax();
++}
++
++/**
++ * fsl_upm_run_pattern - actually run an UPM pattern
++ * @upm:	pointer to the fsl_upm structure obtained via fsl_upm_find
++ * @io_base:	remapped pointer to where memory access should happen
++ * @mar:	MAR register content during pattern execution
++ *
++ * This function triggers dummy write to the memory specified by the io_base,
++ * thus UPM pattern actually executed. Note that mar usage depends on the
++ * pre-programmed AMX bits in the UPM RAM.
++ */
++static inline int fsl_upm_run_pattern(struct fsl_upm *upm,
++				      void __iomem *io_base, u32 mar)
++{
++	int ret = 0;
++	unsigned long flags;
++
++	spin_lock_irqsave(&fsl_lbc_lock, flags);
++
++	out_be32(&fsl_lbc_regs->mar, mar << (32 - upm->width));
++
++	switch (upm->width) {
++	case 8:
++		out_8(io_base, 0x0);
++		break;
++	case 16:
++		out_be16(io_base, 0x0);
++		break;
++	case 32:
++		out_be32(io_base, 0x0);
++		break;
++	default:
++		ret = -EINVAL;
++		break;
++	}
++
++	spin_unlock_irqrestore(&fsl_lbc_lock, flags);
++
++	return ret;
++}
++
+ #endif /* __ASM_FSL_LBC_H */
 -- 
 1.5.4.5
