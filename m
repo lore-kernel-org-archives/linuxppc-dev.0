@@ -1,16 +1,17 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 9B40FDE1A3
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Apr 2008 23:05:39 +1000 (EST)
-Date: Fri, 11 Apr 2008 17:05:37 +0400
+	by ozlabs.org (Postfix) with ESMTP id 86D3EDE1BC
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Apr 2008 23:06:38 +1000 (EST)
+Date: Fri, 11 Apr 2008 17:06:36 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 0/2] Notorious OF GPIO API support
-Message-ID: <20080411130537.GA10608@polina.dev.rtsoft.ru>
+Subject: [PATCH 2/2] [POWERPC] Implement support for the GPIO LIB API
+Message-ID: <20080411130636.GA12655@polina.dev.rtsoft.ru>
+References: <20080411130537.GA10608@polina.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf8
+In-Reply-To: <20080411130537.GA10608@polina.dev.rtsoft.ru>
 Cc: linuxppc-dev@ozlabs.org, David Miller <davem@davemloft.net>
-Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,30 +21,164 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello Paul,
+This patch implements support for the GPIO LIB API. Two calls
+unimplemented though: irq_to_gpio and gpio_to_irq.
 
-Please consider applying these patches for the 2.6.26. Pretty much of
-new drivers depend on this support, including some of my patches and
-patches from Jochen Friedrich and Laurent Pinchart.
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
+ Documentation/powerpc/booting-without-of.txt |   52 ++++++++++++++++++++++++
+ arch/powerpc/Kconfig                         |    5 ++
+ include/asm-powerpc/gpio.h                   |   56 ++++++++++++++++++++++++++
+ 3 files changed, 113 insertions(+), 0 deletions(-)
+ create mode 100644 include/asm-powerpc/gpio.h
 
-My plan is to submit MPC83xx/MPC85xx specific parts to Kumar after these
-two applied. Then I'll submit pending USB/I2C/MTD/... drivers to the
-appropriate subsystem maintainers.
-
-For those who didn't follow these patches, here is recall of the
-previous discussions:
-http://ozlabs.org/pipermail/linuxppc-dev/2007-December/047948.html
-http://ozlabs.org/pipermail/linuxppc-dev/2007-December/048788.html
-http://ozlabs.org/pipermail/linuxppc-dev/2008-January/049414.html
-http://ozlabs.org/pipermail/linuxppc-dev/2008-March/052881.html
-
-Since January I resent these patches about two or three times just with
-some cosmetic changes because of no further comments on the design, so I
-believe that interested parties are more or less satisfied with it now.
-
-Thanks,
-
+diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
+index b506245..e9e0c2f 100644
+--- a/Documentation/powerpc/booting-without-of.txt
++++ b/Documentation/powerpc/booting-without-of.txt
+@@ -66,6 +66,10 @@ Table of Contents
+     3) OpenPIC Interrupt Controllers
+     4) ISA Interrupt Controllers
+ 
++  VIII - Specifying GPIO information for devices
++    1) gpios property
++    2) gpio-controller nodes
++
+   Appendix A - Sample SOC node for MPC8540
+ 
+ 
+@@ -2925,6 +2929,54 @@ encodings listed below:
+ 	2 =  high to low edge sensitive type enabled
+ 	3 =  low to high edge sensitive type enabled
+ 
++VIII - Specifying GPIO information for devices
++==============================================
++
++1) gpios property
++-----------------
++
++Nodes that makes use of GPIOs should define them using `gpios' property,
++format of which is: <&gpio-controller1-phandle gpio1-specifier
++		     &gpio-controller2-phandle gpio2-specifier
++		     0 /* holes are permitted, means no GPIO 3 */
++		     &gpio-controller4-phandle gpio4-specifier
++		     ...>;
++
++Note that gpio-specifier length is controller dependent.
++
++gpio-specifier may encode: bank, pin position inside the bank,
++whether pin is open-drain and whether pin is logically inverted.
++
++Example of the node using GPIOs:
++
++	node {
++		gpios = <&qe_pio_e 18 0>;
++	};
++
++In this example gpio-specifier is "18 0" and encodes GPIO pin number,
++and empty GPIO flags as accepted by the "qe_pio_e" gpio-controller.
++
++2) gpio-controller nodes
++------------------------
++
++Every GPIO controller node must have #gpio-cells property defined,
++this information will be used to translate gpio-specifiers.
++
++Example of two SOC GPIO banks defined as gpio-controller nodes:
++
++	qe_pio_a: gpio-controller@1400 {
++		#gpio-cells = <2>;
++		compatible = "fsl,qe-pario-bank-a", "fsl,qe-pario-bank";
++		reg = <0x1400 0x18>;
++		gpio-controller;
++	};
++
++	qe_pio_e: gpio-controller@1460 {
++		#gpio-cells = <2>;
++		compatible = "fsl,qe-pario-bank-e", "fsl,qe-pario-bank";
++		reg = <0x1460 0x18>;
++		gpio-controller;
++	};
+ 
+ Appendix A - Sample SOC node for MPC8540
+ ========================================
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 0b27cbd..f328509 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -81,6 +81,11 @@ config GENERIC_FIND_NEXT_BIT
+ 	bool
+ 	default y
+ 
++config GENERIC_GPIO
++	bool
++	help
++	  Generic GPIO API support
++
+ config ARCH_NO_VIRT_TO_BUS
+ 	def_bool PPC64
+ 
+diff --git a/include/asm-powerpc/gpio.h b/include/asm-powerpc/gpio.h
+new file mode 100644
+index 0000000..77ad3a8
+--- /dev/null
++++ b/include/asm-powerpc/gpio.h
+@@ -0,0 +1,56 @@
++/*
++ * Generic GPIO API implementation for PowerPC.
++ *
++ * Copyright (c) 2007-2008  MontaVista Software, Inc.
++ *
++ * Author: Anton Vorontsov <avorontsov@ru.mvista.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ */
++
++#ifndef __ASM_POWERPC_GPIO_H
++#define __ASM_POWERPC_GPIO_H
++
++#include <linux/errno.h>
++#include <asm-generic/gpio.h>
++
++#ifdef CONFIG_HAVE_GPIO_LIB
++
++/*
++ * We don't (yet) implement inlined/rapid versions for on-chip gpios.
++ * Just call gpiolib.
++ */
++static inline int gpio_get_value(unsigned int gpio)
++{
++	return __gpio_get_value(gpio);
++}
++
++static inline void gpio_set_value(unsigned int gpio, int value)
++{
++	__gpio_set_value(gpio, value);
++}
++
++static inline int gpio_cansleep(unsigned int gpio)
++{
++	return __gpio_cansleep(gpio);
++}
++
++/*
++ * Not implemented, yet.
++ */
++static inline int gpio_to_irq(unsigned int gpio)
++{
++	return -ENOSYS;
++}
++
++static inline int irq_to_gpio(unsigned int irq)
++{
++	return -EINVAL;
++}
++
++#endif /* CONFIG_HAVE_GPIO_LIB */
++
++#endif /* __ASM_POWERPC_GPIO_H */
 -- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+1.5.4.5
