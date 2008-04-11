@@ -1,19 +1,23 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH 1/3] powerpc: Add support for Wind River SBC8641D board
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-In-Reply-To: <20080411100541.e45b92f4.sfr@canb.auug.org.au>
-References: <1207869739-19892-1-git-send-email-paul.gortmaker@windriver.com>
-	<0006b107cbf99a968352d9369a8e26304d4bf13a.1207868891.git.paul.gortmaker@windriver.com>
-	<20080411100541.e45b92f4.sfr@canb.auug.org.au>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-1LhjtOuxhtSHyJn/uh49"
-Date: Fri, 11 Apr 2008 10:38:43 +1000
-Message-Id: <1207874323.7477.1.camel@concordia.ozlabs.ibm.com>
+Return-Path: <jwboyer@gmail.com>
+Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.177])
+	by ozlabs.org (Postfix) with ESMTP id C653BDE18C
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Apr 2008 11:02:30 +1000 (EST)
+Received: by py-out-1112.google.com with SMTP id z59so283167pyg.27
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Apr 2008 18:02:27 -0700 (PDT)
+Subject: Re: [PATCH] [v5] Add idle wait support for 44x platforms
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Arnd Bergmann <arnd@arndb.de>
+In-Reply-To: <200804110218.23912.arnd@arndb.de>
+References: <df0f79b7b4ab628887c2.1207673354@thinkpadL>
+	<200804101544.44457.arnd@arndb.de> <1207858131.26428.4.camel@thinkpadL>
+	<200804110218.23912.arnd@arndb.de>
+Content-Type: text/plain
+Date: Thu, 10 Apr 2008 20:02:16 -0500
+Message-Id: <1207875736.3996.52.camel@vader.jdub.homelinux.org>
 Mime-Version: 1.0
-Cc: Paul Gortmaker <paul.gortmaker@windriver.com>, linuxppc-dev@ozlabs.org
-Reply-To: michael@ellerman.id.au
+Sender: Josh Boyer <jwboyer@gmail.com>
+Cc: kvm-ppc-devel@lists.sourceforge.net, linuxppc-dev@ozlabs.org
+Reply-To: jwboyer@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,54 +27,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Fri, 2008-04-11 at 02:18 +0200, Arnd Bergmann wrote:
+> > > static int __init idle_param(char *p)
+> > > {
+> > >       if (!strcmp(modes[i].name, "spin"))
+> > >               ppc_md.power_save = NULL;
+> > > }
+> > > early_param("idle", idle_param);
+> > > 
+> > > if you statically initialize the ppc_md.power_save function to ppc44x_idle
+> > > in the platform setup files?
+> > 
+> > The idea is to not statically initialize ppc_md.power_save to
+> > ppc44x_idle in each platform setup file.
+> > 
+> 
+> Why not? Unlike the platform_initcall, it wouldn't cost anything and your
+> current code has the same effect in the end, but in a less obvious way.
 
---=-1LhjtOuxhtSHyJn/uh49
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+This is likely something that has evolved from the original patch which
+added a machine_late_initcall(<machine>, ppc44x_idle_init) to every
+platform.c file.  It made the original patch overly complicated as
+opposed to adding a single arch_initcall in a common file.  That was
+also before we decided to make "wait" the default, which made things
+much easier to deal with.
 
-On Fri, 2008-04-11 at 10:05 +1000, Stephen Rothwell wrote:
-> Hi Paul,
->=20
-> Just a couple of comments.
->=20
-> On Thu, 10 Apr 2008 19:22:17 -0400 Paul Gortmaker <paul.gortmaker@windriv=
-er.com> wrote:
-> >
-> > +++ b/arch/powerpc/platforms/86xx/sbc8641d.c
-> > +#undef DEBUG
-> > +
-> > +#ifdef DEBUG
-> > +#define DBG(fmt...) do { printk(KERN_ERR fmt); } while(0)
->                                    ^^^^^^^^
-> Not KERN_DEBUG?  Also, if you include linux/kernel.h you can use pr_debug=
-() instead.
+I'll take the blame for the way the minorly suboptimal state the patch
+is, as Jerone had to jump through several hoops already at my request.
+I agree it's cleaner to do as you suggest in the long run, and may well
+make some changes along those lines myself.
 
-s/Also, if you include/Please include/
-
-We don't need more hand-rolled debug macros :)
-
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-1LhjtOuxhtSHyJn/uh49
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBH/rMTdSjSd0sB4dIRAo9kAKCBw48Kb1geNTaNCYgCwag5cYzSXACbBzo/
-EKw/8SG2bSbGqIJ6gyqfJyE=
-=yAr5
------END PGP SIGNATURE-----
-
---=-1LhjtOuxhtSHyJn/uh49--
+josh
