@@ -1,21 +1,21 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <jochen@scram.de>
+Received: from mail.scram.de (mail0.scram.de [78.47.204.202])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 2B4D1DDFE3
-	for <linuxppc-dev@ozlabs.org>; Sat, 12 Apr 2008 00:10:02 +1000 (EST)
-Message-Id: <EE642BFC-4262-44E8-BD48-E76E5418C276@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-In-Reply-To: <20080311172408.GB7727@localhost.localdomain>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: [PATCH 2/8] [POWERPC] fsl_lbc: implement few routines to manage
-	FSL UPMs
-Date: Fri, 11 Apr 2008 09:09:57 -0500
-References: <20080311172106.GA4766@localhost.localdomain>
-	<20080311172408.GB7727@localhost.localdomain>
-Cc: linuxppc-dev@ozlabs.org
+	(Client CN "mail.scram.de", Issuer "scram e.V. CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 34C88DE534
+	for <linuxppc-dev@ozlabs.org>; Sat, 12 Apr 2008 00:10:30 +1000 (EST)
+Message-ID: <47FF7149.1080301@scram.de>
+Date: Fri, 11 Apr 2008 16:10:17 +0200
+From: Jochen Friedrich <jochen@scram.de>
+MIME-Version: 1.0
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: [PATCH4/7] i2c: Convert PowerPC MPC i2c to of_platform_driver from
+	platform_driver
+Content-Type: text/plain; charset=ISO-8859-15
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, "Kernel,
+	Linux" <linux-kernel@vger.kernel.org>,
+	Scott Wood <scottwood@freescale.com>, Jean Delvare <khali@linux-fr.org>,
+	Linux I2C <i2c@lm-sensors.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,163 +25,358 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Based on earlier work by Jon Smirl.
 
-On Mar 11, 2008, at 12:24 PM, Anton Vorontsov wrote:
-> These will be used by the FSL UPM NAND driver.
+Changed common name from powerpc_ to of_ per Olof's suggestion.
+Convert MPC i2c driver from a platform_driver to a of_platform_driver. Add the ability to dynamically load i2c drivers based on device tree names. Routine names were changed from fsl_ to mpc_ to make them match the file name. Common code moved to of-common.* Orginal ppc driver left intact for deletion when ppc arch is removed.
 
-can this be a bit more descriptive.  What exactly are these functions  
-trying to accomplish.
+Signed-off-by: Jochen Friedrich <jochen@scram.de>
+Cc: Jon Smirl <jonsmirl@gmail.com>
+---
+ arch/powerpc/sysdev/fsl_soc.c |  123 ---------------------------------
+ drivers/i2c/busses/i2c-mpc.c  |  150 +++++++++++++++++++++++++++++++++++++++--
+ 2 files changed, 144 insertions(+), 129 deletions(-)
 
->
->
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> ---
-> arch/powerpc/Kconfig          |    5 ++
-> arch/powerpc/sysdev/Makefile  |    1 +
-> arch/powerpc/sysdev/fsl_lbc.c |   99 ++++++++++++++++++++++++++++++++ 
-> +++++++++
-> include/asm-powerpc/fsl_lbc.h |   63 ++++++++++++++++++++++++++
-> 4 files changed, 168 insertions(+), 0 deletions(-)
-> create mode 100644 arch/powerpc/sysdev/fsl_lbc.c
->
-> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> index ef12db0..9c68592 100644
-> --- a/arch/powerpc/Kconfig
-> +++ b/arch/powerpc/Kconfig
-> @@ -491,6 +491,11 @@ config FSL_PCI
->  	bool
-> 	select PPC_INDIRECT_PCI
->
-> +config FSL_LBC
-> +	bool
-> +	help
-> +	  Freescale Localbus support
-> +
-> # Yes MCA RS/6000s exist but Linux-PPC does not currently support any
-> config MCA
-> 	bool
-> diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/ 
-> Makefile
-> index 15f3e85..62b6ef0 100644
-> --- a/arch/powerpc/sysdev/Makefile
-> +++ b/arch/powerpc/sysdev/Makefile
-> @@ -12,6 +12,7 @@ obj-$(CONFIG_U3_DART)		+= dart_iommu.o
-> obj-$(CONFIG_MMIO_NVRAM)	+= mmio_nvram.o
-> obj-$(CONFIG_FSL_SOC)		+= fsl_soc.o
-> obj-$(CONFIG_FSL_PCI)		+= fsl_pci.o
-> +obj-$(CONFIG_FSL_LBC)		+= fsl_lbc.o
-> obj-$(CONFIG_RAPIDIO)		+= fsl_rio.o
-> obj-$(CONFIG_TSI108_BRIDGE)	+= tsi108_pci.o tsi108_dev.o
-> obj-$(CONFIG_QUICC_ENGINE)	+= qe_lib/
-> diff --git a/arch/powerpc/sysdev/fsl_lbc.c b/arch/powerpc/sysdev/ 
-> fsl_lbc.c
-> new file mode 100644
-> index 0000000..b59f2f4
-> --- /dev/null
-> +++ b/arch/powerpc/sysdev/fsl_lbc.c
-> @@ -0,0 +1,99 @@
-> +/*
-> + * Freescale UPM routines.
-> + *
-> + * Copyright (c) 2007-2008  MontaVista Software, Inc.
-> + *
-> + * Author: Anton Vorontsov <avorontsov@ru.mvista.com>
-> + *
-> + * This program is free software; you can redistribute it and/or  
-> modify
-> + * it under the terms of the GNU General Public License as  
-> published by
-> + * the Free Software Foundation; either version 2 of the License, or
-> + * (at your option) any later version.
-> + */
-> +
-> +#include <linux/kernel.h>
-> +#include <linux/of.h>
-> +#include <asm/fsl_lbc.h>
-> +
-> +spinlock_t fsl_lbc_lock = __SPIN_LOCK_UNLOCKED(fsl_lbc_lock);
-> +
-> +struct fsl_lbc_regs __iomem *fsl_lbc_regs;
-> +EXPORT_SYMBOL(fsl_lbc_regs);
-> +
-> +static char __initdata *compat_lbc[] = {
-> +	"fsl,pq2-localbus",
-> +	"fsl,pq2pro-localbus",
-> +	"fsl,pq3-localbus",
-> +	"fsl,elbc",
-> +};
-> +
-> +static int __init fsl_lbc_init(void)
-> +{
-> +	struct device_node *lbus;
-> +	int i;
-> +
-> +	for (i = 0; i < ARRAY_SIZE(compat_lbc); i++) {
-> +		lbus = of_find_compatible_node(NULL, NULL, compat_lbc[i]);
-> +		if (lbus)
-> +			goto found;
-> +	}
-> +	return -ENODEV;
-> +
-> +found:
-> +	fsl_lbc_regs = of_iomap(lbus, 0);
-> +	of_node_put(lbus);
-> +	if (!fsl_lbc_regs)
-> +		return -ENOMEM;
-> +	return 0;
-> +}
-> +arch_initcall(fsl_lbc_init);
-> +
-> +int fsl_upm_find(u32 base, struct fsl_upm *upm)
-
-what is base?
-
->
-> +{
-> +	int i;
-> +	__be32 br;
-> +	__be32 or;
-> +
-> +	if (!fsl_lbc_regs)
-> +		return -ENODEV;
-> +
-> +	for (i = 0; i < ARRAY_SIZE(fsl_lbc_regs->bank); i++) {
-> +		br = in_be32(&fsl_lbc_regs->bank[i].br);
-> +		or = in_be32(&fsl_lbc_regs->bank[i].or);
-> +
-> +		if (br & BR_V && (br & or & BR_BA) == base)
-> +			goto found;
-> +	}
-> +
-> +	return -ENOENT;
-> +found:
-> +	switch (br & BR_MSEL) {
-> +	case BR_MS_UPMA:
-> +		upm->mxmr = &fsl_lbc_regs->mamr;
-> +		break;
-> +	case BR_MS_UPMB:
-> +		upm->mxmr = &fsl_lbc_regs->mbmr;
-> +		break;
-> +	case BR_MS_UPMC:
-> +		upm->mxmr = &fsl_lbc_regs->mcmr;
-> +		break;
-> +	default:
-> +		return -EINVAL;
-> +	}
-> +
-> +	switch (br & BR_PS) {
-> +	case BR_PS_8:
-> +		upm->width = 8;
-> +		break;
-> +	case BR_PS_16:
-> +		upm->width = 16;
-> +		break;
-> +	case BR_PS_32:
-> +		upm->width = 32;
-> +		break;
-> +	default:
-> +		return -EINVAL;
-> +	}
-> +
-> +	return 0;
-> +}
+diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
+index 2cd4ef9..6f68969 100644
+--- a/arch/powerpc/sysdev/fsl_soc.c
++++ b/arch/powerpc/sysdev/fsl_soc.c
+@@ -386,129 +386,6 @@ err:
+ 
+ arch_initcall(gfar_of_init);
+ 
+-#ifdef CONFIG_I2C_BOARDINFO
+-#include <linux/i2c.h>
+-struct i2c_driver_device {
+-	char	*of_device;
+-	char	*i2c_type;
+-};
+-
+-static struct i2c_driver_device i2c_devices[] __initdata = {
+-	{"ricoh,rs5c372a", "rs5c372a",},
+-	{"ricoh,rs5c372b", "rs5c372b",},
+-	{"ricoh,rv5c386",  "rv5c386",},
+-	{"ricoh,rv5c387a", "rv5c387a",},
+-	{"dallas,ds1307",  "ds1307",},
+-	{"dallas,ds1337",  "ds1337",},
+-	{"dallas,ds1338",  "ds1338",},
+-	{"dallas,ds1339",  "ds1339",},
+-	{"dallas,ds1340",  "ds1340",},
+-	{"stm,m41t00",     "m41t00"},
+-	{"dallas,ds1374",  "rtc-ds1374",},
+-};
+-
+-static int __init of_find_i2c_driver(struct device_node *node,
+-				     struct i2c_board_info *info)
+-{
+-	int i;
+-
+-	for (i = 0; i < ARRAY_SIZE(i2c_devices); i++) {
+-		if (!of_device_is_compatible(node, i2c_devices[i].of_device))
+-			continue;
+-		if (strlcpy(info->type, i2c_devices[i].i2c_type,
+-			    I2C_NAME_SIZE) >= I2C_NAME_SIZE)
+-			return -ENOMEM;
+-		return 0;
+-	}
+-	return -ENODEV;
+-}
+-
+-static void __init of_register_i2c_devices(struct device_node *adap_node,
+-					   int bus_num)
+-{
+-	struct device_node *node = NULL;
+-
+-	while ((node = of_get_next_child(adap_node, node))) {
+-		struct i2c_board_info info = {};
+-		const u32 *addr;
+-		int len;
+-
+-		addr = of_get_property(node, "reg", &len);
+-		if (!addr || len < sizeof(int) || *addr > (1 << 10) - 1) {
+-			printk(KERN_WARNING "fsl_soc.c: invalid i2c device entry\n");
+-			continue;
+-		}
+-
+-		info.irq = irq_of_parse_and_map(node, 0);
+-		if (info.irq == NO_IRQ)
+-			info.irq = -1;
+-
+-		if (of_find_i2c_driver(node, &info) < 0)
+-			continue;
+-
+-		info.addr = *addr;
+-
+-		i2c_register_board_info(bus_num, &info, 1);
+-	}
+-}
+-
+-static int __init fsl_i2c_of_init(void)
+-{
+-	struct device_node *np;
+-	unsigned int i = 0;
+-	struct platform_device *i2c_dev;
+-	int ret;
+-
+-	for_each_compatible_node(np, NULL, "fsl-i2c") {
+-		struct resource r[2];
+-		struct fsl_i2c_platform_data i2c_data;
+-		const unsigned char *flags = NULL;
+-
+-		memset(&r, 0, sizeof(r));
+-		memset(&i2c_data, 0, sizeof(i2c_data));
+-
+-		ret = of_address_to_resource(np, 0, &r[0]);
+-		if (ret)
+-			goto err;
+-
+-		of_irq_to_resource(np, 0, &r[1]);
+-
+-		i2c_dev = platform_device_register_simple("fsl-i2c", i, r, 2);
+-		if (IS_ERR(i2c_dev)) {
+-			ret = PTR_ERR(i2c_dev);
+-			goto err;
+-		}
+-
+-		i2c_data.device_flags = 0;
+-		flags = of_get_property(np, "dfsrr", NULL);
+-		if (flags)
+-			i2c_data.device_flags |= FSL_I2C_DEV_SEPARATE_DFSRR;
+-
+-		flags = of_get_property(np, "fsl5200-clocking", NULL);
+-		if (flags)
+-			i2c_data.device_flags |= FSL_I2C_DEV_CLOCK_5200;
+-
+-		ret =
+-		    platform_device_add_data(i2c_dev, &i2c_data,
+-					     sizeof(struct
+-						    fsl_i2c_platform_data));
+-		if (ret)
+-			goto unreg;
+-
+-		of_register_i2c_devices(np, i++);
+-	}
+-
+-	return 0;
+-
+-unreg:
+-	platform_device_unregister(i2c_dev);
+-err:
+-	return ret;
+-}
+-
+-arch_initcall(fsl_i2c_of_init);
+-#endif
+-
+ #ifdef CONFIG_PPC_83xx
+ static int __init mpc83xx_wdt_init(void)
+ {
+diff --git a/drivers/i2c/busses/i2c-mpc.c b/drivers/i2c/busses/i2c-mpc.c
+index bbe787b..fdc4f67 100644
+--- a/drivers/i2c/busses/i2c-mpc.c
++++ b/drivers/i2c/busses/i2c-mpc.c
+@@ -18,20 +18,24 @@
+ #include <linux/sched.h>
+ #include <linux/init.h>
+ #include <linux/platform_device.h>
+-
+ #include <asm/io.h>
+ #include <linux/fsl_devices.h>
+ #include <linux/i2c.h>
+ #include <linux/interrupt.h>
+ #include <linux/delay.h>
+ 
+-#define MPC_I2C_ADDR  0x00
++#ifdef CONFIG_PPC_MERGE
++#include <linux/of_platform.h>
++#include <linux/of_i2c.h"
++#endif
++
++#define DRV_NAME "mpc-i2c"
++
+ #define MPC_I2C_FDR 	0x04
+ #define MPC_I2C_CR	0x08
+ #define MPC_I2C_SR	0x0c
+ #define MPC_I2C_DR	0x10
+ #define MPC_I2C_DFSRR 0x14
+-#define MPC_I2C_REGION 0x20
+ 
+ #define CCR_MEN  0x80
+ #define CCR_MIEN 0x40
+@@ -57,7 +61,7 @@ struct mpc_i2c {
+ 	u32 flags;
+ };
+ 
+-static __inline__ void writeccr(struct mpc_i2c *i2c, u32 x)
++static inline void writeccr(struct mpc_i2c *i2c, u32 x)
+ {
+ 	writeb(x, i2c->base + MPC_I2C_CR);
+ }
+@@ -178,7 +182,7 @@ static void mpc_i2c_stop(struct mpc_i2c *i2c)
+ }
+ 
+ static int mpc_write(struct mpc_i2c *i2c, int target,
+-		     const u8 * data, int length, int restart)
++		     const u8 *data, int length, int restart)
+ {
+ 	int i, result;
+ 	unsigned timeout = i2c->adap.timeout;
+@@ -209,7 +213,7 @@ static int mpc_write(struct mpc_i2c *i2c, int target,
+ }
+ 
+ static int mpc_read(struct mpc_i2c *i2c, int target,
+-		    u8 * data, int length, int restart)
++		    u8 *data, int length, int restart)
+ {
+ 	unsigned timeout = i2c->adap.timeout;
+ 	int i, result;
+@@ -315,6 +319,138 @@ static struct i2c_adapter mpc_ops = {
+ 	.timeout = 1,
+ };
+ 
++#ifdef CONFIG_PPC_MERGE
++
++struct i2c_driver_device {
++	char	*of_device;
++	char	*i2c_driver;
++	char	*i2c_type;
++};
++
++static int mpc_i2c_probe(struct of_device *op, const struct of_device_id *match)
++{
++	int result = 0;
++	struct mpc_i2c *i2c;
++
++	i2c = kzalloc(sizeof(*i2c), GFP_KERNEL);
++	if (!i2c)
++		return -ENOMEM;
++
++	if (of_get_property(op->node, "dfsrr", NULL))
++		i2c->flags |= FSL_I2C_DEV_SEPARATE_DFSRR;
++
++	if (of_device_is_compatible(op->node, "mpc5200-i2c"))
++		i2c->flags |= FSL_I2C_DEV_CLOCK_5200;
++
++	init_waitqueue_head(&i2c->queue);
++
++	i2c->base = of_iomap(op->node, 0);
++	if (!i2c->base) {
++		printk(KERN_ERR "i2c-mpc - failed to map controller\n");
++		result = -ENOMEM;
++		goto fail_map;
++	}
++
++	i2c->irq = irq_of_parse_and_map(op->node, 0);
++	if (i2c->irq == NO_IRQ) {
++		result = -ENXIO;
++		goto fail_irq;
++	}
++
++	result = request_irq(i2c->irq, mpc_i2c_isr,
++						IRQF_SHARED, "i2c-mpc", i2c);
++	if (result < 0) {
++		printk(KERN_ERR "i2c-mpc - failed to attach interrupt\n");
++		goto fail_request;
++	}
++
++	mpc_i2c_setclock(i2c);
++
++	dev_set_drvdata(&op->dev, i2c);
++
++	i2c->adap = mpc_ops;
++	i2c_set_adapdata(&i2c->adap, i2c);
++	i2c->adap.dev.parent = &op->dev;
++
++	result = i2c_add_adapter(&i2c->adap);
++	if (result < 0) {
++		printk(KERN_ERR "i2c-mpc - failed to add adapter\n");
++		goto fail_add;
++	}
++
++	of_register_i2c_devices(&i2c->adap, op->node);
++
++	return result;
++
++ fail_add:
++	dev_set_drvdata(&op->dev, NULL);
++	free_irq(i2c->irq, i2c);
++ fail_request:
++	irq_dispose_mapping(i2c->irq);
++ fail_irq:
++	iounmap(i2c->base);
++ fail_map:
++	kfree(i2c);
++	return result;
++};
++
++static int mpc_i2c_remove(struct of_device *op)
++{
++	struct mpc_i2c *i2c = dev_get_drvdata(&op->dev);
++
++	i2c_del_adapter(&i2c->adap);
++	dev_set_drvdata(&op->dev, NULL);
++
++	if (i2c->irq != NO_IRQ)
++		free_irq(i2c->irq, i2c);
++
++	irq_dispose_mapping(i2c->irq);
++	iounmap(i2c->base);
++	kfree(i2c);
++	return 0;
++};
++
++static const struct of_device_id mpc_i2c_of_match[] = {
++	{
++		.compatible	= "fsl-i2c",
++	},
++	{},
++};
++MODULE_DEVICE_TABLE(of, mpc_i2c_of_match);
++
++
++/* Structure for a device driver */
++static struct of_platform_driver mpc_i2c_driver = {
++	.match_table	= mpc_i2c_of_match,
++	.probe		= mpc_i2c_probe,
++	.remove		= __devexit_p(mpc_i2c_remove),
++	.driver		= {
++		.owner	= THIS_MODULE,
++		.name	= DRV_NAME,
++	},
++};
++
++static int __init mpc_i2c_init(void)
++{
++	int rv;
++
++	rv = of_register_platform_driver(&mpc_i2c_driver);
++	if (rv)
++		printk(KERN_ERR DRV_NAME
++		       " of_register_platform_driver failed (%i)\n", rv);
++	return rv;
++}
++
++static void __exit mpc_i2c_exit(void)
++{
++	of_unregister_platform_driver(&mpc_i2c_driver);
++}
++
++module_init(mpc_i2c_init);
++module_exit(mpc_i2c_exit);
++
++#else
++
+ static int fsl_i2c_probe(struct platform_device *pdev)
+ {
+ 	int result = 0;
+@@ -415,6 +551,8 @@ static void __exit fsl_i2c_exit(void)
+ module_init(fsl_i2c_init);
+ module_exit(fsl_i2c_exit);
+ 
++#endif
++
+ MODULE_AUTHOR("Adrian Cox <adrian@humboldt.co.uk>");
+ MODULE_DESCRIPTION
+     ("I2C-Bus adapter for MPC107 bridge and MPC824x/85xx/52xx processors");
+-- 
+1.5.4.5
