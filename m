@@ -1,20 +1,20 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 687E7DE089
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Apr 2008 15:20:47 +1000 (EST)
-Date: Fri, 11 Apr 2008 00:31:36 -0500
-From: Olof Johansson <olof@lixom.net>
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH] [v5] Add idle wait support for 44x platforms
-Message-ID: <20080411053136.GB31810@lixom.net>
-References: <df0f79b7b4ab628887c2.1207673354@thinkpadL>
-	<200804101544.44457.arnd@arndb.de>
-	<1207858131.26428.4.camel@thinkpadL>
-	<200804110218.23912.arnd@arndb.de>
+Return-Path: <rsc@pengutronix.de>
+Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
+	[83.236.181.26]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 7EF7CDE0FE
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Apr 2008 16:51:12 +1000 (EST)
+Date: Fri, 11 Apr 2008 08:51:00 +0200
+From: Robert Schwebel <r.schwebel@pengutronix.de>
+To: Matt Sealey <matt@genesi-usa.com>
+Subject: Re: State of the MPC5200 PSC AC97 driver
+Message-ID: <20080411065100.GQ13814@pengutronix.de>
+References: <47FDEF9B.5000506@semihalf.com> <47FE3160.2060907@genesi-usa.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200804110218.23912.arnd@arndb.de>
-Cc: kvm-ppc-devel@lists.sourceforge.net, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=iso-8859-15
+In-Reply-To: <47FE3160.2060907@genesi-usa.com>
+Cc: linuxppc-dev@ozlabs.org, Sylvain Munaut <tnt@246tNt.com>,
+	spitzauer_77@gmx.de, Marian Balakowicz <m8@semihalf.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,28 +24,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Apr 11, 2008 at 02:18:22AM +0200, Arnd Bergmann wrote:
-> On Thursday 10 April 2008, Jerone Young wrote:
-> > Well it could be this simple. But the current code leaves a lot more
-> > room to add different type waits or spins if need be (if they are ever
-> > needed ... though none off the top of my head at the moment)...but it
-> > does allow you to create another wait state for whatever reason a lot
-> > easier.
-> > 
-> > So I really don't think this needs to change. Unless everyone really
-> > feels that it just has to be.
-> 
-> No, it doesn't need to change, the current patch is entirely correct,
-> just a little bit more complicated than it needs to be, and I try
-> not to have code in anticipation of something getting more complicated
-> in the future, you can always add the complexity at the point where you
-> need it.
+Hi Matt,
 
-That piece of code came across from the platforms/pasemi version,
-where we for a while had more than two kinds of idle loops
-(doze/nap/sleep/rvwinkle). Turns out doze does well enough that the
-others weren't really needed so I never submitted support for the deeper
-sleep modes.
+On Thu, Apr 10, 2008 at 04:25:20PM +0100, Matt Sealey wrote:
+> I have a copy of the driver I hacked to work with the new PSC
+> framework but it doesn't "work" anymore - I have no idea why.
+>
+> Mail me privately if you want it, I have no time to make patches or
+> look for a good reason for the breakages, but it compiles at least.
+> The Efika hack should be gone now (irrelevant since we released a
+> firmware that obseletes it) and the other fixmes should be by the
+> wayside considering the fscking thing doesn't play sound anymore...
 
+I'd be interested as well; do I read your mail right that you have
+already managed to hear sound coming out of the MPC5200B PSC AC97
+interface? You would be the first one I've heared of, so it would
+definitely be interesting to see your code. 
 
--Olof
+Robert
+-- 
+ Dipl.-Ing. Robert Schwebel | http://www.pengutronix.de
+ Pengutronix - Linux Solutions for Science and Industry
+   Handelsregister:  Amtsgericht Hildesheim, HRA 2686
+     Hannoversche Str. 2, 31134 Hildesheim, Germany
+   Phone: +49-5121-206917-0 |  Fax: +49-5121-206917-9
