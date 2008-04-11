@@ -1,20 +1,21 @@
-Return-Path: <jochen@scram.de>
-Received: from mail.scram.de (mail0.scram.de [78.47.204.202])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.scram.de", Issuer "scram e.V. CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id B5BCDDDEE7
-	for <linuxppc-dev@ozlabs.org>; Sat, 12 Apr 2008 00:09:33 +1000 (EST)
-Message-ID: <47FF710D.2040208@scram.de>
-Date: Fri, 11 Apr 2008 16:09:17 +0200
-From: Jochen Friedrich <jochen@scram.de>
-MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH3/7] i2c: OF helpers for the i2c API
-Content-Type: text/plain; charset=ISO-8859-15
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, "Kernel,
-	Linux" <linux-kernel@vger.kernel.org>,
-	Scott Wood <scottwood@freescale.com>, Jean Delvare <khali@linux-fr.org>,
-	Linux I2C <i2c@lm-sensors.org>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 2B4D1DDFE3
+	for <linuxppc-dev@ozlabs.org>; Sat, 12 Apr 2008 00:10:02 +1000 (EST)
+Message-Id: <EE642BFC-4262-44E8-BD48-E76E5418C276@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+In-Reply-To: <20080311172408.GB7727@localhost.localdomain>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v919.2)
+Subject: Re: [PATCH 2/8] [POWERPC] fsl_lbc: implement few routines to manage
+	FSL UPMs
+Date: Fri, 11 Apr 2008 09:09:57 -0500
+References: <20080311172106.GA4766@localhost.localdomain>
+	<20080311172408.GB7727@localhost.localdomain>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,191 +25,163 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch implements various helpers to support OF bindings for
-the i2c API.
 
-Signed-off-by: Jochen Friedrich <jochen@scram.de>
----
- drivers/of/Kconfig     |    6 +++
- drivers/of/Makefile    |    1 +
- drivers/of/i2c.c       |  115 ++++++++++++++++++++++++++++++++++++++++++++++++
- include/linux/of_i2c.h |   24 ++++++++++
- 4 files changed, 146 insertions(+), 0 deletions(-)
- create mode 100644 drivers/of/i2c.c
- create mode 100644 include/linux/of_i2c.h
+On Mar 11, 2008, at 12:24 PM, Anton Vorontsov wrote:
+> These will be used by the FSL UPM NAND driver.
 
-diff --git a/drivers/of/Kconfig b/drivers/of/Kconfig
-index c03072b..3cff449 100644
---- a/drivers/of/Kconfig
-+++ b/drivers/of/Kconfig
-@@ -1,3 +1,9 @@
- config OF_DEVICE
- 	def_bool y
- 	depends on OF && (SPARC || PPC_OF)
-+
-+config OF_I2C
-+	def_bool y
-+	depends on OF && PPC_OF && I2C
-+	help
-+	  OpenFirmware I2C accessors
-diff --git a/drivers/of/Makefile b/drivers/of/Makefile
-index ab9be5d..655b982 100644
---- a/drivers/of/Makefile
-+++ b/drivers/of/Makefile
-@@ -1,2 +1,3 @@
- obj-y = base.o
- obj-$(CONFIG_OF_DEVICE) += device.o platform.o
-+obj-$(CONFIG_OF_I2C)	+= i2c.o
-diff --git a/drivers/of/i2c.c b/drivers/of/i2c.c
-new file mode 100644
-index 0000000..6316891
---- /dev/null
-+++ b/drivers/of/i2c.c
-@@ -0,0 +1,115 @@
-+/*
-+ * OF helpers for the I2C API
-+ *
-+ * Copyright (c) 2008 Jochen Friedrich <jochen@scram.de>
-+ *
-+ * Based on a previous patch from Jon Smirl <jonsmirl@gmail.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ */
-+
-+#include <linux/i2c.h>
-+#include <linux/of.h>
-+
-+struct i2c_driver_device {
-+	char    *of_device;
-+	char    *i2c_type;
-+};
-+
-+static struct i2c_driver_device i2c_devices[] = {
-+	{ "dallas,ds1374", "rtc-ds1374" },
-+};
-+
-+static int of_find_i2c_driver(struct device_node *node,
-+			      struct i2c_board_info *info)
-+{
-+	int i, cplen;
-+	const char *compatible;
-+	const char *p;
-+
-+	/* 1. search for exception list entry */
-+	for (i = 0; i < ARRAY_SIZE(i2c_devices); i++) {
-+		if (!of_device_is_compatible(node, i2c_devices[i].of_device))
-+			continue;
-+		if (strlcpy(info->type, i2c_devices[i].i2c_type,
-+			    I2C_NAME_SIZE) >= I2C_NAME_SIZE)
-+			return -ENOMEM;
-+
-+		return 0;
-+	}
-+
-+	compatible = of_get_property(node, "compatible", &cplen);
-+	if (!compatible)
-+		return -ENODEV;
-+
-+	/* 2. search for linux,<i2c-type> entry */
-+	p = compatible;
-+	while (cplen > 0) {
-+		if (!strncmp(p, "linux,", 6)) {
-+			p += 6;
-+			if (strlcpy(info->type, p,
-+				    I2C_NAME_SIZE) >= I2C_NAME_SIZE)
-+				return -ENOMEM;
-+			return 0;
-+		}
-+
-+		i = strlen(p) + 1;
-+		p += i;
-+		cplen -= i;
-+	}
-+
-+	/* 3. take fist compatible entry and strip manufacturer */
-+	p = strchr(compatible, ',');
-+	if (!p)
-+		return -ENODEV;
-+	p++;
-+	if (strlcpy(info->type, p, I2C_NAME_SIZE) >= I2C_NAME_SIZE)
-+		return -ENOMEM;
-+	return 0;
-+}
-+
-+void of_register_i2c_devices(struct i2c_adapter *adap,
-+			     struct device_node *adap_node)
-+{
-+	void *result;
-+	struct device_node *node;
-+
-+	for_each_child_of_node(adap_node, node) {
-+		struct i2c_board_info info = {};
-+		const u32 *addr;
-+		int len;
-+
-+		addr = of_get_property(node, "reg", &len);
-+		if (!addr || len < sizeof(int) || *addr > (1 << 10) - 1) {
-+			printk(KERN_ERR
-+			       "of-i2c: invalid i2c device entry\n");
-+			continue;
-+		}
-+
-+		info.irq = irq_of_parse_and_map(node, 0);
-+		if (info.irq == NO_IRQ)
-+			info.irq = -1;
-+
-+		if (of_find_i2c_driver(node, &info) < 0) {
-+			irq_dispose_mapping(info.irq);
-+			continue;
-+		}
-+
-+		info.addr = *addr;
-+
-+		request_module(info.type);
-+
-+		result = i2c_new_device(adap, &info);
-+		if (result == NULL) {
-+			printk(KERN_ERR
-+			       "of-i2c: Failed to load driver for %s\n",
-+			       info.type);
-+			irq_dispose_mapping(info.irq);
-+			continue;
-+		}
-+	}
-+}
-+EXPORT_SYMBOL(of_register_i2c_devices);
-diff --git a/include/linux/of_i2c.h b/include/linux/of_i2c.h
-new file mode 100644
-index 0000000..2e5a967
---- /dev/null
-+++ b/include/linux/of_i2c.h
-@@ -0,0 +1,24 @@
-+/*
-+ * Generic I2C API implementation for PowerPC.
-+ *
-+ * Copyright (c) 2008 Jochen Friedrich <jochen@scram.de>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ */
-+
-+#ifndef __LINUX_OF_I2C_H
-+#define __LINUX_OF_I2C_H
-+
-+#include <linux/i2c.h>
-+
-+#ifdef CONFIG_OF_I2C
-+
-+void of_register_i2c_devices(struct i2c_adapter *adap,
-+			     struct device_node *adap_node);
-+
-+#endif /* CONFIG_OF_I2C */
-+
-+#endif /* __LINUX_OF_I2C_H */
--- 
-1.5.4.5
+can this be a bit more descriptive.  What exactly are these functions  
+trying to accomplish.
+
+>
+>
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> ---
+> arch/powerpc/Kconfig          |    5 ++
+> arch/powerpc/sysdev/Makefile  |    1 +
+> arch/powerpc/sysdev/fsl_lbc.c |   99 ++++++++++++++++++++++++++++++++ 
+> +++++++++
+> include/asm-powerpc/fsl_lbc.h |   63 ++++++++++++++++++++++++++
+> 4 files changed, 168 insertions(+), 0 deletions(-)
+> create mode 100644 arch/powerpc/sysdev/fsl_lbc.c
+>
+> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+> index ef12db0..9c68592 100644
+> --- a/arch/powerpc/Kconfig
+> +++ b/arch/powerpc/Kconfig
+> @@ -491,6 +491,11 @@ config FSL_PCI
+>  	bool
+> 	select PPC_INDIRECT_PCI
+>
+> +config FSL_LBC
+> +	bool
+> +	help
+> +	  Freescale Localbus support
+> +
+> # Yes MCA RS/6000s exist but Linux-PPC does not currently support any
+> config MCA
+> 	bool
+> diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/ 
+> Makefile
+> index 15f3e85..62b6ef0 100644
+> --- a/arch/powerpc/sysdev/Makefile
+> +++ b/arch/powerpc/sysdev/Makefile
+> @@ -12,6 +12,7 @@ obj-$(CONFIG_U3_DART)		+= dart_iommu.o
+> obj-$(CONFIG_MMIO_NVRAM)	+= mmio_nvram.o
+> obj-$(CONFIG_FSL_SOC)		+= fsl_soc.o
+> obj-$(CONFIG_FSL_PCI)		+= fsl_pci.o
+> +obj-$(CONFIG_FSL_LBC)		+= fsl_lbc.o
+> obj-$(CONFIG_RAPIDIO)		+= fsl_rio.o
+> obj-$(CONFIG_TSI108_BRIDGE)	+= tsi108_pci.o tsi108_dev.o
+> obj-$(CONFIG_QUICC_ENGINE)	+= qe_lib/
+> diff --git a/arch/powerpc/sysdev/fsl_lbc.c b/arch/powerpc/sysdev/ 
+> fsl_lbc.c
+> new file mode 100644
+> index 0000000..b59f2f4
+> --- /dev/null
+> +++ b/arch/powerpc/sysdev/fsl_lbc.c
+> @@ -0,0 +1,99 @@
+> +/*
+> + * Freescale UPM routines.
+> + *
+> + * Copyright (c) 2007-2008  MontaVista Software, Inc.
+> + *
+> + * Author: Anton Vorontsov <avorontsov@ru.mvista.com>
+> + *
+> + * This program is free software; you can redistribute it and/or  
+> modify
+> + * it under the terms of the GNU General Public License as  
+> published by
+> + * the Free Software Foundation; either version 2 of the License, or
+> + * (at your option) any later version.
+> + */
+> +
+> +#include <linux/kernel.h>
+> +#include <linux/of.h>
+> +#include <asm/fsl_lbc.h>
+> +
+> +spinlock_t fsl_lbc_lock = __SPIN_LOCK_UNLOCKED(fsl_lbc_lock);
+> +
+> +struct fsl_lbc_regs __iomem *fsl_lbc_regs;
+> +EXPORT_SYMBOL(fsl_lbc_regs);
+> +
+> +static char __initdata *compat_lbc[] = {
+> +	"fsl,pq2-localbus",
+> +	"fsl,pq2pro-localbus",
+> +	"fsl,pq3-localbus",
+> +	"fsl,elbc",
+> +};
+> +
+> +static int __init fsl_lbc_init(void)
+> +{
+> +	struct device_node *lbus;
+> +	int i;
+> +
+> +	for (i = 0; i < ARRAY_SIZE(compat_lbc); i++) {
+> +		lbus = of_find_compatible_node(NULL, NULL, compat_lbc[i]);
+> +		if (lbus)
+> +			goto found;
+> +	}
+> +	return -ENODEV;
+> +
+> +found:
+> +	fsl_lbc_regs = of_iomap(lbus, 0);
+> +	of_node_put(lbus);
+> +	if (!fsl_lbc_regs)
+> +		return -ENOMEM;
+> +	return 0;
+> +}
+> +arch_initcall(fsl_lbc_init);
+> +
+> +int fsl_upm_find(u32 base, struct fsl_upm *upm)
+
+what is base?
+
+>
+> +{
+> +	int i;
+> +	__be32 br;
+> +	__be32 or;
+> +
+> +	if (!fsl_lbc_regs)
+> +		return -ENODEV;
+> +
+> +	for (i = 0; i < ARRAY_SIZE(fsl_lbc_regs->bank); i++) {
+> +		br = in_be32(&fsl_lbc_regs->bank[i].br);
+> +		or = in_be32(&fsl_lbc_regs->bank[i].or);
+> +
+> +		if (br & BR_V && (br & or & BR_BA) == base)
+> +			goto found;
+> +	}
+> +
+> +	return -ENOENT;
+> +found:
+> +	switch (br & BR_MSEL) {
+> +	case BR_MS_UPMA:
+> +		upm->mxmr = &fsl_lbc_regs->mamr;
+> +		break;
+> +	case BR_MS_UPMB:
+> +		upm->mxmr = &fsl_lbc_regs->mbmr;
+> +		break;
+> +	case BR_MS_UPMC:
+> +		upm->mxmr = &fsl_lbc_regs->mcmr;
+> +		break;
+> +	default:
+> +		return -EINVAL;
+> +	}
+> +
+> +	switch (br & BR_PS) {
+> +	case BR_PS_8:
+> +		upm->width = 8;
+> +		break;
+> +	case BR_PS_16:
+> +		upm->width = 16;
+> +		break;
+> +	case BR_PS_32:
+> +		upm->width = 32;
+> +		break;
+> +	default:
+> +		return -EINVAL;
+> +	}
+> +
+> +	return 0;
+> +}
