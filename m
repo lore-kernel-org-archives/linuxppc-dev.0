@@ -1,21 +1,30 @@
-Return-Path: <jirislaby@gmail.com>
-Received: from fg-out-1718.google.com (fg-out-1718.google.com [72.14.220.152])
-	by ozlabs.org (Postfix) with ESMTP id 86C49DE36A
-	for <linuxppc-dev@ozlabs.org>; Sat, 12 Apr 2008 07:45:42 +1000 (EST)
-Received: by fg-out-1718.google.com with SMTP id 16so449865fgg.39
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Apr 2008 14:45:40 -0700 (PDT)
-Message-ID: <47FFDBFF.1030809@gmail.com>
-Date: Fri, 11 Apr 2008 23:45:35 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
+Return-Path: <ahuja@austin.ibm.com>
+Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id E7348DE1B4
+	for <linuxppc-dev@ozlabs.org>; Sat, 12 Apr 2008 09:32:00 +1000 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e2.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m3BNVt8A007777
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Apr 2008 19:31:55 -0400
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m3BNVtBQ261666
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Apr 2008 19:31:55 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m3BNVsLh007411
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Apr 2008 19:31:54 -0400
+Message-ID: <47FFF4E8.9010705@austin.ibm.com>
+Date: Fri, 11 Apr 2008 18:31:52 -0500
+From: Manish Ahuja <ahuja@austin.ibm.com>
 MIME-Version: 1.0
-Subject: Re: [PATCH 1/2] Driver for Freescale 8610 and 5121 DIU
-References: <12053582234100-git-send-email-yorksun@freescale.com>
-	<12053582231281-git-send-email-yorksun@freescale.com>
-	<47D8572C.8090501@gmail.com>
-In-Reply-To: <47D8572C.8090501@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
-	York Sun <yorksun@freescale.com>, linux-kernel@vger.kernel.org
+To: linuxppc-dev@ozlabs.org, paulus@samba.org
+Subject: [PATCH] pseries: phyp dump: Variable size reserve space.
+References: <47FAB221.7050406@austin.ibm.com>
+In-Reply-To: <47FAB221.7050406@austin.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: mahuja@us.ibm.com, linasvepstas@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,189 +34,134 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-ping.
+Reposting patch with following changes:
+1. Changed phyp_dump_reserve_bootvar to just reserve_bootvar.
+2. Changed 0x00000001fffffff to 0x0fffffffUL.
 
-Seeing this in -mm yet. Are those comments all wrong? Are you working on it?
+Paulus,
+If you think this is okay can you send this upstream ?
+Many thanks,
+Manish
 
-On 03/12/2008 11:20 PM, Jiri Slaby wrote:
-> On 03/12/2008 10:43 PM, York Sun wrote:
->> +static int fsl_diu_open(struct fb_info *info, int user)
->> +{
->> +    struct mfb_info *mfbi = info->par;
->> +    int res = 0;
->> +
->> +    spin_lock(&diu_lock);
->> +    mfbi->count++;
->> +    if (mfbi->count == 1) {
->> +        DPRINTK("open plane index %d\n", mfbi->index);
->> +        fsl_diu_check_var(&info->var, info);
->> +        fsl_diu_set_par(info);
-> 
-> Please retest your code (at least) with sleep-inside spinlock debug 
-> option. If I see correctly you call GFP_KERNEL allocation somewhere 
-> deeper in this function, which might sleep.
-> 
->> +        res = fsl_diu_enable_panel(info);
->> +        if (res < 0)
->> +            mfbi->count--;
->> +    }
->> +
->> +    spin_unlock(&diu_lock);
->> +    return res;
->> +}
-> 
->> +static void __exit uninstall_fb(struct fb_info *info)
->> +{
->> +    struct mfb_info *mfbi = info->par;
->> +
->> +    DPRINTK("Entered: uninstall_fb\n");
-> 
-> You don't need this stuff everywhere (kprobes).
-> 
->> +    if (!mfbi->registered)
->> +        return;
->> +
->> +    unregister_framebuffer(info);
->> +    unmap_video_memory(info);
->> +    if (&info->cmap)
->> +        fb_dealloc_cmap(&info->cmap);
->> +
->> +    mfbi->registered = 0;
->> +}
-> [...]
->> +static int fsl_diu_probe(struct platform_device *pdev)
->> +{
->> +    struct mfb_info *mfbi;
->> +    unsigned long dummy_ad_addr;
->> +    int ret, i, error = 0;
->> +
->> +    DPRINTK("Entered: fsl_diu_probe\n");
->> +
->> +    /* Area descriptor memory pool aligns to 64-bit boundary */
->> +    allocate_buf(&pool.ad, sizeof(struct diu_ad) * FSL_AOI_NUM, 8);
->> +
->> +    /* Get memory for Gamma Table  - 32-byte aligned memory */
->> +    allocate_buf(&pool.gamma, 768, 32);
->> +
->> +    /* For performance, cursor bitmap buffer aligns to 32-byte 
->> boundary */
->> +    allocate_buf(&pool.cursor, MAX_CURS * MAX_CURS * 2, 32);
->> +
->> +    i = sizeof(fsl_diu_info) / sizeof(struct fb_info);
->> +    dummy_ad = (struct diu_ad *)((u32)pool.ad.vaddr + pool.ad.offset) 
->> + i;
->> +    dummy_ad->paddr = pool.ad.paddr + i * sizeof(struct diu_ad);
->> +    dummy_aoi_virt = fsl_diu_alloc(64, &dummy_ad_addr);
->> +    dummy_ad->addr = cpu_to_le32(dummy_ad_addr);
->> +    dummy_ad->pix_fmt = 0x88882317;
->> +    dummy_ad->src_size_g_alpha = cpu_to_le32((4 << 12) | 4);
->> +    dummy_ad->aoi_size = cpu_to_le32((4 << 16) |  2);
->> +    dummy_ad->offset_xyi = 0;
->> +    dummy_ad->offset_xyd = 0;
->> +    dummy_ad->next_ad = 0;
->> +    memset(dummy_aoi_virt, 0x00, 64);
->> +    write_reg(&(dr.diu_reg->desc[0]), dummy_ad->paddr);
->> +    write_reg(&(dr.diu_reg->desc[1]), dummy_ad->paddr);
->> +    write_reg(&(dr.diu_reg->desc[2]), dummy_ad->paddr);
->> +
->> +    for (i = 0; i < sizeof(fsl_diu_info) / sizeof(struct fb_info); 
->> i++) {
->> +        fsl_diu_info[i].fix.smem_start = 0;
->> +        mfbi = fsl_diu_info[i].par;
->> +        mfbi->ad = (struct diu_ad *)((u32)pool.ad.vaddr
->> +                    + pool.ad.offset) + i;
->> +        mfbi->ad->paddr = pool.ad.paddr + i * sizeof(struct diu_ad);
->> +        ret = install_fb(&fsl_diu_info[i], pdev);
->> +        if (ret) {
->> +            printk(KERN_ERR "Failed to register framebuffer %d\n",
->> +                    i);
->> +            return ret;
-> 
-> some kind of free here
-> 
->> +        }
->> +    }
-> [...]
->> +int __init fsl_diu_init(void)
->> +{
->> +    struct device_node *np;
->> +    struct resource r;
->> +    int error;
->> +    DPRINTK("Entered: fsl_diu_init\n");
->> +    np = of_find_compatible_node(NULL, NULL, "fsl-diu");
->> +    if (!np) {
->> +        printk(KERN_ERR "Err: can't find device node 'fsl-diu'\n");
->> +        return -ENODEV;
->> +    }
->> +
->> +    of_address_to_resource(np, 0, &r);
->> +    of_node_put(np);
->> +
->> +    DPRINTK("%s, r.start: 0x%08x\n", __func__, r.start);
->> +
->> +    dr.diu_reg = ioremap(r.start, sizeof(struct diu));
-> 
-> The arch never fails with remapping?
-> 
->> +
->> +    write_reg(&(dr.diu_reg->diu_mode), 0);        /* disable DIU 
->> anyway*/
->> +
->> +    spin_lock_init(&dr.reg_lock);
->> +
->> +
->> +    /*
->> +     * For kernel boot options (in 'video=xxxfb:<options>' format)
->> +     */
->> +#ifndef MODULE
->> +    {
->> +        char *option;
->> +
->> +        if (fb_get_options("fslfb", &option))
->> +            return -ENODEV;
->> +        fsl_diu_setup(option);
->> +    }
->> +#endif
->> +    error = platform_driver_register(&fsl_diu_driver);
->> +
->> +    if (!error) {
->> +        error = platform_device_register(&fsl_diu_device);
->> +        if (error) {
->> +            printk(KERN_ERR "Err: "
->> +                    "can't register FB device driver!\n");
->> +            platform_driver_unregister(&fsl_diu_driver);
-> 
-> iounmap
-> 
->> +        }
->> +        printk(KERN_INFO "FSL_DIU_FB: registed FB device driver!\n");
->> +    }
-> 
-> else iounmap
-> 
->> +
->> +    return error;
->> +}
-> [...]
->> diff --git a/drivers/video/fsl-diu-fb.h b/drivers/video/fsl-diu-fb.h
->> new file mode 100644
->> index 0000000..294d0bf
->> --- /dev/null
->> +++ b/drivers/video/fsl-diu-fb.h
->> @@ -0,0 +1,388 @@
-> [...]
->> +#ifndef __FSL_DIU_FB_H__
->> +#define __FSL_DIU_FB_H__
->> +
->> +/* FIXME: This should be changed to dev_dbg this will be done as soon as
->> + * we can obtain dev through the dts setup
-> 
-> then use at least pr_debug() here:
-> 
->> + */
->> +#ifdef DEBUG
->> +#define DPRINTK(fmt, args...) printk(KERN_DEBUG "%s: " fmt, __func__, 
->> ## args)
->> +#else
->> +#define DPRINTK(fmt, args...)
->> +#endif
+A small proposed change in the amount of reserve space we allocate during boot.
+Currently we reserve 256MB only. 
+The proposed change does one of the 3 things.
+
+A. It checks to see if there is boot variable set and if found sets the
+   value to it.
+B. It computers 5% of total ram and rounds it down to multiples of 256MB.
+C. Compares the rounded down value and returns larger of 256MB or the new
+   computed value.
+
+Again this is for large systems who have excess memory. 
+
+Signed-off-by: Manish Ahuja <mahuja@us.ibm.com>
+
+---
+ arch/powerpc/kernel/prom.c                 |   35 +++++++++++++++++++++++++++--
+ arch/powerpc/platforms/pseries/phyp_dump.c |    9 +++++++
+ include/asm-powerpc/phyp_dump.h            |    4 ++-
+ 3 files changed, 45 insertions(+), 3 deletions(-)
+
+Index: 2.6.25-rc1/arch/powerpc/platforms/pseries/phyp_dump.c
+===================================================================
+--- 2.6.25-rc1.orig/arch/powerpc/platforms/pseries/phyp_dump.c	2008-04-02 23:36:51.000000000 -0500
++++ 2.6.25-rc1/arch/powerpc/platforms/pseries/phyp_dump.c	2008-04-11 23:54:34.000000000 -0500
+@@ -496,3 +496,12 @@ static int __init early_phyp_dump_enable
+ }
+ early_param("phyp_dump", early_phyp_dump_enabled);
+ 
++/* Look for phyp_dump_reserve_size= cmdline option */
++static int __init early_phyp_dump_reserve_size(char *p)
++{
++        if (p)
++		phyp_dump_info->reserve_bootvar = memparse(p, &p);
++
++        return 0;
++}
++early_param("phyp_dump_reserve_size", early_phyp_dump_reserve_size);
+Index: 2.6.25-rc1/include/asm-powerpc/phyp_dump.h
+===================================================================
+--- 2.6.25-rc1.orig/include/asm-powerpc/phyp_dump.h	2008-04-02 23:36:49.000000000 -0500
++++ 2.6.25-rc1/include/asm-powerpc/phyp_dump.h	2008-04-11 23:53:10.000000000 -0500
+@@ -24,8 +24,10 @@ struct phyp_dump {
+ 	/* Memory that is reserved during very early boot. */
+ 	unsigned long init_reserve_start;
+ 	unsigned long init_reserve_size;
+-	/* Check status during boot if dump supported, active & present*/
++	/* cmd line options during boot */
++	unsigned long reserve_bootvar;
+ 	unsigned long phyp_dump_at_boot;
++	/* Check status during boot if dump supported, active & present*/
+ 	unsigned long phyp_dump_configured;
+ 	unsigned long phyp_dump_is_active;
+ 	/* store cpu & hpte size */
+Index: 2.6.25-rc1/arch/powerpc/kernel/prom.c
+===================================================================
+--- 2.6.25-rc1.orig/arch/powerpc/kernel/prom.c	2008-04-02 23:36:49.000000000 -0500
++++ 2.6.25-rc1/arch/powerpc/kernel/prom.c	2008-04-11 23:53:48.000000000 -0500
+@@ -1042,6 +1042,33 @@ static void __init early_reserve_mem(voi
+ 
+ #ifdef CONFIG_PHYP_DUMP
+ /**
++ * phyp_dump_calculate_reserve_size() - reserve variable boot area 5% or arg
++ *
++ * Function to find the largest size we need to reserve
++ * during early boot process.
++ *
++ * It either looks for boot param and returns that OR
++ * returns larger of 256 or 5% rounded down to multiples of 256MB.
++ *
++ */
++static inline unsigned long phyp_dump_calculate_reserve_size(void)
++{
++	unsigned long tmp;
++
++	if (phyp_dump_info->reserve_bootvar)
++		return phyp_dump_info->reserve_bootvar;
++
++	/* divide by 20 to get 5% of value */
++	tmp = lmb_end_of_DRAM();
++	do_div(tmp, 20);
++
++	/* round it down in multiples of 256 */
++	tmp = tmp & ~0x0FFFFFFFUL;
++
++	return (tmp > PHYP_DUMP_RMR_END ? tmp : PHYP_DUMP_RMR_END);
++}
++
++/**
+  * phyp_dump_reserve_mem() - reserve all not-yet-dumped mmemory
+  *
+  * This routine may reserve memory regions in the kernel only
+@@ -1054,6 +1081,8 @@ static void __init early_reserve_mem(voi
+ static void __init phyp_dump_reserve_mem(void)
+ {
+ 	unsigned long base, size;
++	unsigned long variable_reserve_size;
++
+ 	if (!phyp_dump_info->phyp_dump_configured) {
+ 		printk(KERN_ERR "Phyp-dump not supported on this hardware\n");
+ 		return;
+@@ -1064,9 +1093,11 @@ static void __init phyp_dump_reserve_mem
+ 		return;
+ 	}
+ 
++	variable_reserve_size = phyp_dump_calculate_reserve_size();
++
+ 	if (phyp_dump_info->phyp_dump_is_active) {
+ 		/* Reserve *everything* above RMR.Area freed by userland tools*/
+-		base = PHYP_DUMP_RMR_END;
++		base = variable_reserve_size;
+ 		size = lmb_end_of_DRAM() - base;
+ 
+ 		/* XXX crashed_ram_end is wrong, since it may be beyond
+@@ -1078,7 +1109,7 @@ static void __init phyp_dump_reserve_mem
+ 	} else {
+ 		size = phyp_dump_info->cpu_state_size +
+ 			phyp_dump_info->hpte_region_size +
+-			PHYP_DUMP_RMR_END;
++			variable_reserve_size;
+ 		base = lmb_end_of_DRAM() - size;
+ 		lmb_reserve(base, size);
+ 		phyp_dump_info->init_reserve_start = base;
