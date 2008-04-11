@@ -1,21 +1,21 @@
-Return-Path: <tallam.sreen@gmail.com>
-Received: from wr-out-0506.google.com (wr-out-0506.google.com [64.233.184.237])
-	by ozlabs.org (Postfix) with ESMTP id 92891DE14B
+Return-Path: <afleming@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 3674FDEC00
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 11 Apr 2008 02:53:32 +1000 (EST)
-Received: by wr-out-0506.google.com with SMTP id 67so101629wri.3
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 10 Apr 2008 09:53:31 -0700 (PDT)
-Message-ID: <5b1d25eb0804100953u38f514dblaccbb3477c532b23@mail.gmail.com>
-Date: Thu, 10 Apr 2008 09:53:30 -0700
-From: "Sreen Tallam" <tallam.sreen@gmail.com>
-To: "Sebastian Siewior" <linuxppc-embedded@ml.breakpoint.cc>
-Subject: Re: Kernel Panic - not syncing: Attempted to kill init!
-In-Reply-To: <20080410085030.GA27907@Chamillionaire.breakpoint.cc>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-References: <5b1d25eb0804091907n7b1d6faewf66b5d664e40c115@mail.gmail.com>
-	<20080410085030.GA27907@Chamillionaire.breakpoint.cc>
+	Sat, 12 Apr 2008 04:43:35 +1000 (EST)
+Message-Id: <AE929D10-3467-4FA4-870A-65356DCDEAF6@freescale.com>
+From: Andy Fleming <afleming@freescale.com>
+To: Wolfgang Grandegger <wg@grandegger.com>
+In-Reply-To: <47FB75BC.10400@grandegger.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v919.2)
+Subject: Re: TSEC3/4 broken on MPC8548?
+Date: Fri, 11 Apr 2008 13:43:21 -0500
+References: <47FB75BC.10400@grandegger.com>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -27,43 +27,27 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Sebastian,
 
-Thank you for looking into this issue.
-But I am not using udev. And my /dev is empty, there is no devices in there.
+On Apr 8, 2008, at 08:40, Wolfgang Grandegger wrote:
 
-Any more hints on this. I would appreciate your follow up.
+> Hello,
+>
+> in the dts file for the MPC8548CDS the nodes for TSEC3/4 are commented
+> out because they seem to be broken:
+>
+>  $ grep broken arch/powerpc/boot/dts/*
+>  arch/powerpc/boot/dts/mpc8548cds.dts:/* eTSEC 3/4 are currently  
+> broken
 
-Thanks,
-Sreen
 
-On Thu, Apr 10, 2008 at 1:50 AM, Sebastian Siewior
-<linuxppc-embedded@ml.breakpoint.cc> wrote:
-> * Sreen Tallam | 2008-04-09 19:07:01 [-0700]:
->
->
->  >VFS: Mounted root (jffs2 filesystem) readonly.
->  >Freeing unused kernel memory: 156k init
->  >Warning: unable to open an initial console.
->  >init/main.c -- 819
->  >init/main.c -- 821
->  >init/main.c -- 844
->  >init/main.c -- 704 -- /sbin/tallam_init<0>Kernel panic - not syncing:
->  >Attempted to kill init!
->  >Call Trace:
->  >[C3FE7E60] [C0006D98]  (unreliable)
->  >[C3FE7EA0] [C001F150]
->  >[C3FE7EF0] [C0023630]
->  >[C3FE7F30] [C0023734]
->  >[C3FE7F40] [C000DBC0]
->  > <0>Rebooting in 180 seconds..
->  >
->
->  This looks like you are missing /dev/console and probably /dev/null. You
->  need atleast those two nodes in your rootfs if you are using udev. You
->  will need a static /dev if you don't use udev/mdev.
->
->  >Thanks,
->  >Sreen
->  Sebastian
->
+It's still true for the boards for which it was true.  :)
+
+Recent 8548 CDS systems (ones which have eTSEC3&4 exposed out the  
+side, rather than the back) should be fine.  If you remove the  
+comment, it should work.  Actually, I vaguely recall there might be a  
+bug in the dts there.  Should be an easy fix, though.  Something like  
+the wrong address for the regs, or the wrong interrupts numbers.
+
+I will roll up a patch.
+
+Andy
