@@ -1,12 +1,12 @@
 Return-Path: <smaclennan@pikatech.com>
 Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
-	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 2A091DE1ED
-	for <linuxppc-dev@ozlabs.org>; Sun, 13 Apr 2008 04:03:27 +1000 (EST)
-Date: Sat, 12 Apr 2008 14:03:25 -0400
+	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 85CAADE01E
+	for <linuxppc-dev@ozlabs.org>; Sun, 13 Apr 2008 04:09:25 +1000 (EST)
+Date: Sat, 12 Apr 2008 14:09:23 -0400
 From: Sean MacLennan <smaclennan@pikatech.com>
 To: <linuxppc-dev@ozlabs.org>
-Subject: PATCH 2/5] Platform code
-Message-ID: <20080412140325.69e1df3b@lappy.seanm.ca>
+Subject: [PATCH 3/5] Defconfig
+Message-ID: <20080412140923.4645e4b6@lappy.seanm.ca>
 In-Reply-To: <20080412134831.424480cf@lappy.seanm.ca>
 References: <20080412134831.424480cf@lappy.seanm.ca>
 Mime-Version: 1.0
@@ -22,409 +22,215 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Signed-off-by: Sean MacLennan <smaclennan@pikatech.com>
 
-diff --git a/arch/powerpc/platforms/44x/warp-nand.c b/arch/powerpc/platforms/44x/warp-nand.c
-index 9150318..f70019d 100644
---- a/arch/powerpc/platforms/44x/warp-nand.c
-+++ b/arch/powerpc/platforms/44x/warp-nand.c
-@@ -2,7 +2,7 @@
-  * PIKA Warp(tm) NAND flash specific routines
-  *
-  * Copyright (c) 2008 PIKA Technologies
-- *   Sean MacLennan <smaclennan@pikatech.com>
-+ *   Sean MacLennan <smaclennan at pikatech.com>
-  */
+diff --git a/arch/powerpc/configs/warp_defconfig b/arch/powerpc/configs/warp_defconfig
+index 2313c3e..91b9fb1 100644
+--- a/arch/powerpc/configs/warp_defconfig
++++ b/arch/powerpc/configs/warp_defconfig
+@@ -1,7 +1,7 @@
+ #
+ # Automatically generated make config: don't edit
+-# Linux kernel version: 2.6.25-rc2
+-# Fri Feb 15 21:54:43 2008
++# Linux kernel version: 2.6.25-rc6
++# Tue Apr  8 02:27:53 2008
+ #
+ # CONFIG_PPC64 is not set
  
- #include <linux/platform_device.h>
-@@ -11,8 +11,10 @@
- #include <linux/mtd/partitions.h>
- #include <linux/mtd/nand.h>
- #include <linux/mtd/ndfc.h>
-+#include <linux/of_platform.h>
- #include <asm/machdep.h>
+@@ -79,6 +79,7 @@ CONFIG_FAIR_GROUP_SCHED=y
+ CONFIG_USER_SCHED=y
+ # CONFIG_CGROUP_SCHED is not set
+ CONFIG_SYSFS_DEPRECATED=y
++CONFIG_SYSFS_DEPRECATED_V2=y
+ # CONFIG_RELAY is not set
+ # CONFIG_NAMESPACES is not set
+ CONFIG_BLK_DEV_INITRD=y
+@@ -112,6 +113,7 @@ CONFIG_SLAB=y
+ CONFIG_HAVE_OPROFILE=y
+ # CONFIG_KPROBES is not set
+ CONFIG_HAVE_KPROBES=y
++CONFIG_HAVE_KRETPROBES=y
+ CONFIG_PROC_PAGE_MONITOR=y
+ CONFIG_SLABINFO=y
+ CONFIG_RT_MUTEXES=y
+@@ -142,7 +144,6 @@ CONFIG_DEFAULT_AS=y
+ # CONFIG_DEFAULT_NOOP is not set
+ CONFIG_DEFAULT_IOSCHED="anticipatory"
+ CONFIG_CLASSIC_RCU=y
+-# CONFIG_PREEMPT_RCU is not set
  
-+
- #ifdef CONFIG_MTD_NAND_NDFC
+ #
+ # Platform support
+@@ -159,6 +160,8 @@ CONFIG_CLASSIC_RCU=y
+ # CONFIG_KATMAI is not set
+ # CONFIG_RAINIER is not set
+ CONFIG_WARP=y
++# CONFIG_CANYONLANDS is not set
++# CONFIG_YOSEMITE is not set
+ CONFIG_440EP=y
+ CONFIG_IBM440EP_ERR42=y
+ # CONFIG_IPIC is not set
+@@ -191,7 +194,6 @@ CONFIG_HZ=1000
+ CONFIG_PREEMPT_NONE=y
+ # CONFIG_PREEMPT_VOLUNTARY is not set
+ # CONFIG_PREEMPT is not set
+-CONFIG_RCU_TRACE=y
+ CONFIG_BINFMT_ELF=y
+ # CONFIG_BINFMT_MISC is not set
+ # CONFIG_MATH_EMULATION is not set
+@@ -224,6 +226,7 @@ CONFIG_ISA_DMA_API=y
+ # Bus options
+ #
+ CONFIG_ZONE_DMA=y
++CONFIG_4xx_SOC=y
+ # CONFIG_PCI is not set
+ # CONFIG_PCI_DOMAINS is not set
+ # CONFIG_PCI_SYSCALL is not set
+@@ -380,7 +383,7 @@ CONFIG_MTD_BLOCK=y
+ # CONFIG_INFTL is not set
+ # CONFIG_RFD_FTL is not set
+ # CONFIG_SSFDC is not set
+-CONFIG_MTD_OOPS=m
++# CONFIG_MTD_OOPS is not set
  
- #define CS_NAND_0	1	/* use chip select 1 for NAND device 0 */
-@@ -35,13 +37,23 @@ static struct mtd_partition nand_parts[] = {
- 	{
- 		.name   = "root",
- 		.offset = 0x0200000,
--		.size   = 0x3400000
-+		.size   = 0x3E00000
-+	},
-+	{
-+		.name   = "persistent",
-+		.offset = 0x4000000,
-+		.size   = 0x4000000
- 	},
- 	{
--		.name   = "user",
--		.offset = 0x3600000,
--		.size   = 0x0A00000
-+		.name   = "persistent1",
-+		.offset = 0x8000000,
-+		.size   = 0x4000000
- 	},
-+	{
-+		.name   = "persistent2",
-+		.offset = 0xC000000,
-+		.size   = 0x4000000
-+	}
- };
+ #
+ # RAM/ROM/Flash chip drivers
+@@ -434,6 +437,7 @@ CONFIG_MTD_NAND=y
+ CONFIG_MTD_NAND_ECC_SMC=y
+ # CONFIG_MTD_NAND_MUSEUM_IDS is not set
+ CONFIG_MTD_NAND_IDS=y
++CONFIG_MTD_NAND_NDFC=y
+ # CONFIG_MTD_NAND_DISKONCHIP is not set
+ # CONFIG_MTD_NAND_NANDSIM is not set
+ # CONFIG_MTD_NAND_PLATFORM is not set
+@@ -493,7 +497,7 @@ CONFIG_BLK_DEV_SD=y
+ # CONFIG_SCSI_CONSTANTS is not set
+ # CONFIG_SCSI_LOGGING is not set
+ # CONFIG_SCSI_SCAN_ASYNC is not set
+-CONFIG_SCSI_WAIT_SCAN=m
++# CONFIG_SCSI_WAIT_SCAN is not set
  
- struct ndfc_controller_settings warp_ndfc_settings = {
-@@ -67,19 +79,15 @@ static struct platform_device warp_ndfc_device = {
- 	.resource = &warp_ndfc,
- };
+ #
+ # SCSI Transports
+@@ -617,6 +621,7 @@ CONFIG_I2C_BOARDINFO=y
+ #
+ # I2C Hardware Bus support
+ #
++CONFIG_I2C_IBM_IIC=y
+ # CONFIG_I2C_MPC is not set
+ # CONFIG_I2C_OCORES is not set
+ # CONFIG_I2C_PARPORT_LIGHT is not set
+@@ -650,6 +655,7 @@ CONFIG_SENSORS_EEPROM=y
+ # CONFIG_POWER_SUPPLY is not set
+ CONFIG_HWMON=y
+ # CONFIG_HWMON_VID is not set
++CONFIG_SENSORS_AD7414=y
+ # CONFIG_SENSORS_AD7418 is not set
+ # CONFIG_SENSORS_ADM1021 is not set
+ # CONFIG_SENSORS_ADM1025 is not set
+@@ -658,6 +664,7 @@ CONFIG_HWMON=y
+ # CONFIG_SENSORS_ADM1031 is not set
+ # CONFIG_SENSORS_ADM9240 is not set
+ # CONFIG_SENSORS_ADT7470 is not set
++# CONFIG_SENSORS_ADT7473 is not set
+ # CONFIG_SENSORS_ATXP1 is not set
+ # CONFIG_SENSORS_DS1621 is not set
+ # CONFIG_SENSORS_F71805F is not set
+@@ -698,7 +705,20 @@ CONFIG_HWMON=y
+ # CONFIG_SENSORS_W83627EHF is not set
+ # CONFIG_HWMON_DEBUG_CHIP is not set
+ CONFIG_THERMAL=y
+-# CONFIG_WATCHDOG is not set
++CONFIG_WATCHDOG=y
++# CONFIG_WATCHDOG_NOWAYOUT is not set
++
++#
++# Watchdog Device Drivers
++#
++# CONFIG_SOFT_WATCHDOG is not set
++# CONFIG_BOOKE_WDT is not set
++CONFIG_PIKA_WDT=y
++
++#
++# USB-based Watchdog Cards
++#
++# CONFIG_USBPCWATCHDOG is not set
  
--static struct nand_ecclayout nand_oob_16 = {
--	.eccbytes = 3,
--	.eccpos = { 0, 1, 2, 3, 6, 7 },
--	.oobfree = { {.offset = 8, .length = 16} }
--};
--
-+/* Do NOT set the ecclayout: let it default so it is correct for both
-+ * 64M and 256M flash chips.
-+ */
- static struct platform_nand_chip warp_nand_chip0 = {
- 	.nr_chips = 1,
- 	.chip_offset = CS_NAND_0,
- 	.nr_partitions = ARRAY_SIZE(nand_parts),
- 	.partitions = nand_parts,
--	.chip_delay = 50,
--	.ecclayout = &nand_oob_16,
-+	.chip_delay = 20,
- 	.priv = &warp_chip0_settings,
- };
+ #
+ # Sonics Silicon Backplane
+@@ -826,14 +846,14 @@ CONFIG_USB_MON=y
+ # CONFIG_USB_TRANCEVIBRATOR is not set
+ # CONFIG_USB_IOWARRIOR is not set
+ # CONFIG_USB_GADGET is not set
+-CONFIG_MMC=m
++CONFIG_MMC=y
+ # CONFIG_MMC_DEBUG is not set
+ # CONFIG_MMC_UNSAFE_RESUME is not set
  
-@@ -96,6 +104,23 @@ static struct platform_device warp_nand_device = {
+ #
+ # MMC/SD Card Drivers
+ #
+-CONFIG_MMC_BLOCK=m
++CONFIG_MMC_BLOCK=y
+ CONFIG_MMC_BLOCK_BOUNCE=y
+ # CONFIG_SDIO_UART is not set
  
- static int warp_setup_nand_flash(void)
- {
-+	struct device_node *np;
+@@ -841,10 +861,23 @@ CONFIG_MMC_BLOCK_BOUNCE=y
+ # MMC/SD Host Controller Drivers
+ #
+ # CONFIG_MMC_WBSD is not set
++CONFIG_MMC_PIKASD=y
+ # CONFIG_MEMSTICK is not set
+-# CONFIG_NEW_LEDS is not set
++CONFIG_NEW_LEDS=y
++CONFIG_LEDS_CLASS=y
 +
-+	/* Try to detect a rev A based on NOR size. */
-+	np = of_find_compatible_node(NULL, NULL, "cfi-flash");
-+	if (np) {
-+		struct property *pp;
++#
++# LED drivers
++#
++CONFIG_LEDS_WARP=y
 +
-+		pp = of_find_property(np, "reg", NULL);
-+		if (pp && (pp->length == 12)) {
-+			u32 *v = pp->value;
-+			if (v[2] == 0x4000000)
-+				/* Rev A = 64M NAND */
-+				warp_nand_chip0.nr_partitions = 2;
-+		}
-+		of_node_put(np);
-+	}
-+
- 	platform_device_register(&warp_ndfc_device);
- 	platform_device_register(&warp_nand_device);
++#
++# LED Triggers
++#
++# CONFIG_LEDS_TRIGGERS is not set
+ # CONFIG_EDAC is not set
+ # CONFIG_RTC_CLASS is not set
++# CONFIG_DMADEVICES is not set
  
-diff --git a/arch/powerpc/platforms/44x/warp.c b/arch/powerpc/platforms/44x/warp.c
-index 39cf615..6deffad 100644
---- a/arch/powerpc/platforms/44x/warp.c
-+++ b/arch/powerpc/platforms/44x/warp.c
-@@ -2,7 +2,7 @@
-  * PIKA Warp(tm) board specific routines
-  *
-  * Copyright (c) 2008 PIKA Technologies
-- *   Sean MacLennan <smaclennan@pikatech.com>
-+ *   Sean MacLennan <smaclennan at pikatech.com>
-  *
-  * This program is free software; you can redistribute  it and/or modify it
-  * under  the terms of  the GNU General  Public License as published by the
-@@ -12,6 +12,9 @@
- #include <linux/init.h>
- #include <linux/of_platform.h>
- #include <linux/kthread.h>
-+#include <linux/i2c.h>
-+#include <linux/interrupt.h>
-+#include <linux/pika.h>
+ #
+ # Userspace I/O
+@@ -896,7 +929,8 @@ CONFIG_PROC_FS=y
+ CONFIG_PROC_KCORE=y
+ CONFIG_PROC_SYSCTL=y
+ CONFIG_SYSFS=y
+-# CONFIG_TMPFS is not set
++CONFIG_TMPFS=y
++# CONFIG_TMPFS_POSIX_ACL is not set
+ # CONFIG_HUGETLB_PAGE is not set
+ # CONFIG_CONFIGFS_FS is not set
  
- #include <asm/machdep.h>
- #include <asm/prom.h>
-@@ -27,6 +30,18 @@ static __initdata struct of_device_id warp_of_bus[] = {
- 	{},
- };
+@@ -1013,6 +1047,7 @@ CONFIG_PLIST=y
+ CONFIG_HAS_IOMEM=y
+ CONFIG_HAS_IOPORT=y
+ CONFIG_HAS_DMA=y
++CONFIG_HAVE_LMB=y
  
-+static __initdata struct i2c_board_info warp_i2c_info[] = {
-+	{ I2C_BOARD_INFO("ad7414", 0x4a) }
-+};
-+
-+static int __init warp_arch_init(void)
-+{
-+	/* This should go away once support is moved to the dts. */
-+	i2c_register_board_info(0, warp_i2c_info, ARRAY_SIZE(warp_i2c_info));
-+	return 0;
-+}
-+machine_arch_initcall(warp, warp_arch_init);
-+
- static int __init warp_device_probe(void)
- {
- 	of_platform_bus_probe(NULL, warp_of_bus, NULL);
-@@ -52,61 +67,183 @@ define_machine(warp) {
- };
+ #
+ # Kernel hacking
+@@ -1022,7 +1057,7 @@ CONFIG_ENABLE_WARN_DEPRECATED=y
+ CONFIG_ENABLE_MUST_CHECK=y
+ CONFIG_MAGIC_SYSRQ=y
+ # CONFIG_UNUSED_SYMBOLS is not set
+-CONFIG_DEBUG_FS=y
++# CONFIG_DEBUG_FS is not set
+ # CONFIG_HEADERS_CHECK is not set
+ CONFIG_DEBUG_KERNEL=y
+ # CONFIG_DEBUG_SHIRQ is not set
+@@ -1052,7 +1087,6 @@ CONFIG_DEBUG_INFO=y
+ # CONFIG_DEBUG_STACK_USAGE is not set
+ # CONFIG_DEBUG_PAGEALLOC is not set
+ # CONFIG_DEBUGGER is not set
+-# CONFIG_VIRQ_DEBUG is not set
+ CONFIG_BDI_SWITCH=y
+ # CONFIG_PPC_EARLY_DEBUG is not set
  
- 
--#define LED_GREEN (0x80000000 >> 0)
--#define LED_RED   (0x80000000 >> 1)
-+/* I am not sure this is the best place for this... */
-+static int __init warp_post_info(void)
-+{
-+	struct device_node *np;
-+	void __iomem *fpga;
-+	u32 post1, post2;
-+
-+	/* Sighhhh... POST information is in the sd area. */
-+	np = of_find_compatible_node(NULL, NULL, "pika,fpga-sd");
-+	if (np == NULL)
-+		return -ENOENT;
-+
-+	fpga = of_iomap(np, 0);
-+	of_node_put(np);
-+	if (fpga == NULL)
-+		return -ENOENT;
-+
-+	post1 = in_be32(fpga + 0x40);
-+	post2 = in_be32(fpga + 0x44);
-+
-+	iounmap(fpga);
-+
-+	if (post1 || post2)
-+		printk(KERN_INFO "Warp POST %08x %08x\n", post1, post2);
-+	else
-+		printk(KERN_INFO "Warp POST OK\n");
-+
-+	return 0;
-+}
-+machine_late_initcall(warp, warp_post_info);
-+
-+
-+#ifdef CONFIG_SENSORS_AD7414
-+
-+static LIST_HEAD(dtm_shutdown_list);
-+static void __iomem *dtm_fpga;
-+
-+struct dtm_shutdown {
-+	struct list_head list;
-+	void (*func)(void *arg);
-+	void *arg;
-+};
-+
-+
-+int dtm_register_shutdown(void (*func)(void *arg), void *arg)
-+{
-+	struct dtm_shutdown *shutdown;
-+
-+	shutdown = kmalloc(sizeof(struct dtm_shutdown), GFP_KERNEL);
-+	if (shutdown == NULL)
-+		return -ENOMEM;
-+
-+	shutdown->func = func;
-+	shutdown->arg = arg;
- 
-+	list_add(&shutdown->list, &dtm_shutdown_list);
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL(dtm_register_shutdown);
- 
--/* This is for the power LEDs 1 = on, 0 = off, -1 = leave alone */
--void warp_set_power_leds(int green, int red)
-+int dtm_unregister_shutdown(void (*func)(void *arg), void *arg)
- {
--	static void __iomem *gpio_base = NULL;
--	unsigned leds;
--
--	if (gpio_base == NULL) {
--		struct device_node *np;
--
--		/* Power LEDS are on the second GPIO controller */
--		np = of_find_compatible_node(NULL, NULL, "ibm,gpio-440EP");
--		if (np)
--			np = of_find_compatible_node(np, NULL, "ibm,gpio-440EP");
--		if (np == NULL) {
--			printk(KERN_ERR __FILE__ ": Unable to find gpio\n");
--			return;
--		}
-+	struct dtm_shutdown *shutdown;
- 
--		gpio_base = of_iomap(np, 0);
--		of_node_put(np);
--		if (gpio_base == NULL) {
--			printk(KERN_ERR __FILE__ ": Unable to map gpio");
--			return;
-+	list_for_each_entry(shutdown, &dtm_shutdown_list, list)
-+		if (shutdown->func == func && shutdown->arg == arg) {
-+			list_del(&shutdown->list);
-+			kfree(shutdown);
-+			return 0;
- 		}
-+
-+	return -EINVAL;
-+}
-+EXPORT_SYMBOL(dtm_unregister_shutdown);
-+
-+static long wdt_keepalive(long time)
-+{
-+	if (dtm_fpga) {
-+		unsigned reset = in_be32(dtm_fpga + 0x14);
-+		out_be32(dtm_fpga + 0x14, reset);
- 	}
- 
--	leds = in_be32(gpio_base);
-+	return 0;
-+}
-+
-+static irqreturn_t temp_isr(int irq, void *context)
-+{
-+	struct dtm_shutdown *shutdown;
-+
-+	/* Run through the shutdown list. */
-+	list_for_each_entry(shutdown, &dtm_shutdown_list, list)
-+		shutdown->func(shutdown->arg);
-+
-+	panic_timeout = 1800;
-+	panic_blink = wdt_keepalive;
-+	panic("Critical Temperature Shutdown");
-+	return IRQ_HANDLED;
-+}
-+
-+static void pika_setup_critical_temp(struct i2c_client *client)
-+{
-+	struct device_node *np;
-+	int irq, rc;
-+
-+	/* These registers are in 1 degree increments. */
-+	i2c_smbus_write_byte_data(client, 2, 55); /* Thigh */
-+	i2c_smbus_write_byte_data(client, 3, 50); /* Tlow */
- 
--	switch (green) {
--	case 0: leds &= ~LED_GREEN; break;
--	case 1: leds |=  LED_GREEN; break;
-+	np = of_find_compatible_node(NULL, NULL, "adi,ad7414");
-+	if (np == NULL) {
-+		printk(KERN_ERR __FILE__ ": Unable to find ad7414\n");
-+		return;
- 	}
--	switch (red) {
--	case 0: leds &= ~LED_RED; break;
--	case 1: leds |=  LED_RED; break;
-+
-+	irq = irq_of_parse_and_map(np, 0);
-+	of_node_put(np);
-+	if (irq  == NO_IRQ) {
-+		printk(KERN_ERR __FILE__ ": Unable to get ad7414 irq\n");
-+		return;
- 	}
- 
--	out_be32(gpio_base, leds);
-+	rc = request_irq(irq, temp_isr, 0, "ad7414", NULL);
-+	if (rc) {
-+		printk(KERN_ERR __FILE__
-+		       ": Unable to request ad7414 irq %d = %d\n", irq, rc);
-+		return;
-+	}
- }
--EXPORT_SYMBOL(warp_set_power_leds);
- 
-+static inline void pika_dtm_check_fan(void __iomem *fpga)
-+{
-+	static int fan_state;
-+	u32 fan = in_be32(fpga + 0x34) & (1 << 14);
-+
-+	if (fan_state != fan) {
-+		fan_state = fan;
-+		if (fan)
-+			printk(KERN_WARNING "Fan rotation error detected."
-+				   " Please check hardware.\n");
-+	}
-+}
- 
--#ifdef CONFIG_SENSORS_AD7414
- static int pika_dtm_thread(void __iomem *fpga)
- {
--	extern int ad7414_get_temp(int index);
-+	struct i2c_adapter *adap;
-+	struct i2c_client *client;
-+
-+	/* We loop in case either driver was compiled as a module and
-+	 * has not been insmoded yet.
-+	 */
-+	while (!(adap = i2c_get_adapter(0))) {
-+		set_current_state(TASK_INTERRUPTIBLE);
-+		schedule_timeout(HZ);
-+	}
-+
-+	while (1) {
-+		list_for_each_entry(client, &adap->clients, list)
-+			if (client->addr == 0x4a)
-+				goto found_it;
-+
-+		set_current_state(TASK_INTERRUPTIBLE);
-+		schedule_timeout(HZ);
-+	}
-+
-+found_it:
-+	i2c_put_adapter(adap);
-+
-+	pika_setup_critical_temp(client);
-+
-+	printk(KERN_INFO "PIKA DTM thread running.\n");
- 
- 	while (!kthread_should_stop()) {
--		int temp = ad7414_get_temp(0);
-+		u16 temp = swab16(i2c_smbus_read_word_data(client, 0));
-+		out_be32(fpga + 0x20, temp);
- 
--		out_be32(fpga, temp);
-+		pika_dtm_check_fan(fpga);
- 
- 		set_current_state(TASK_INTERRUPTIBLE);
- 		schedule_timeout(HZ);
-@@ -115,37 +252,28 @@ static int pika_dtm_thread(void __iomem *fpga)
- 	return 0;
- }
- 
-+
- static int __init pika_dtm_start(void)
- {
- 	struct task_struct *dtm_thread;
- 	struct device_node *np;
--	struct resource res;
--	void __iomem *fpga;
- 
- 	np = of_find_compatible_node(NULL, NULL, "pika,fpga");
- 	if (np == NULL)
- 		return -ENOENT;
- 
--	/* We do not call of_iomap here since it would map in the entire
--	 * fpga space, which is over 8k.
--	 */
--	if (of_address_to_resource(np, 0, &res)) {
--		of_node_put(np);
--		return -ENOENT;
--	}
-+	dtm_fpga = of_iomap(np, 0);
- 	of_node_put(np);
--
--	fpga = ioremap(res.start, 0x24);
--	if (fpga == NULL)
-+	if (dtm_fpga == NULL)
- 		return -ENOENT;
- 
--	dtm_thread = kthread_run(pika_dtm_thread, fpga + 0x20, "pika-dtm");
-+	dtm_thread = kthread_run(pika_dtm_thread, dtm_fpga, "pika-dtm");
- 	if (IS_ERR(dtm_thread)) {
--		iounmap(fpga);
-+		iounmap(dtm_fpga);
- 		return PTR_ERR(dtm_thread);
- 	}
- 
- 	return 0;
- }
--device_initcall(pika_dtm_start);
-+machine_late_initcall(warp, pika_dtm_start);
- #endif
