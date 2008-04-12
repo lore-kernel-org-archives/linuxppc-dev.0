@@ -1,21 +1,24 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 25AFFDE207
-	for <linuxppc-dev@ozlabs.org>; Sat, 12 Apr 2008 10:05:47 +1000 (EST)
-Date: Sat, 12 Apr 2008 10:05:36 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Jochen Friedrich <jochen@scram.de>
-Subject: Re: [PATCHv2 3/7] i2c: OF helpers for the i2c API
-Message-Id: <20080412100536.5f0589df.sfr@canb.auug.org.au>
-In-Reply-To: <47FFBA7B.8050900@scram.de>
-References: <47FFBA7B.8050900@scram.de>
+Return-Path: <akpm@linux-foundation.org>
+Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
+	[140.211.169.13])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "smtp.linux-foundation.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 9E2F5DDFB8
+	for <linuxppc-dev@ozlabs.org>; Sat, 12 Apr 2008 15:18:29 +1000 (EST)
+Date: Fri, 11 Apr 2008 22:18:17 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jiri Slaby <jirislaby@gmail.com>
+Subject: Re: [PATCH 1/2] Driver for Freescale 8610 and 5121 DIU
+Message-Id: <20080411221817.0b1eb414.akpm@linux-foundation.org>
+In-Reply-To: <47FFDBFF.1030809@gmail.com>
+References: <12053582234100-git-send-email-yorksun@freescale.com>
+	<12053582231281-git-send-email-yorksun@freescale.com>
+	<47D8572C.8090501@gmail.com> <47FFDBFF.1030809@gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Sat__12_Apr_2008_10_05_36_+1000_5VUSnM44M+3qOdk7"
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	i2c@lm-sensors.org, Scott Wood <scottwood@freescale.com>,
-	Jean Delvare <khali@linux-fr.org>, David Miller <davem@davemloft.net>
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, York Sun <yorksun@freescale.com>,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,34 +28,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Sat__12_Apr_2008_10_05_36_+1000_5VUSnM44M+3qOdk7
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Fri, 11 Apr 2008 23:45:35 +0200 Jiri Slaby <jirislaby@gmail.com> wrote:
 
-On Fri, 11 Apr 2008 21:22:35 +0200 Jochen Friedrich <jochen@scram.de> wrote:
+> On 03/12/2008 11:20 PM, Jiri Slaby wrote:
+> > On 03/12/2008 10:43 PM, York Sun wrote:
+> >> +static int fsl_diu_open(struct fb_info *info, int user)
+> >> +{
+> >> +    struct mfb_info *mfbi = info->par;
+> >> +    int res = 0;
+> >> +
+> >> +    spin_lock(&diu_lock);
+> >> +    mfbi->count++;
+> >> +    if (mfbi->count == 1) {
+> >> +        DPRINTK("open plane index %d\n", mfbi->index);
+> >> +        fsl_diu_check_var(&info->var, info);
+> >> +        fsl_diu_set_par(info);
+> > 
+> > Please retest your code (at least) with sleep-inside spinlock debug 
+> > option. If I see correctly you call GFP_KERNEL allocation somewhere 
+> > deeper in this function, which might sleep.
+> > 
 >
-> This patch implements various helpers to support OF bindings for
-> the i2c API.
->=20
-> Signed-off-by: Jochen Friedrich <jochen@scram.de>
+> ...
+>
+> ping.
+> 
+> Seeing this in -mm yet. Are those comments all wrong? Are you working on it?
+> 
 
-Acked-by: Stephen Rothwell <sfr@canb.auug.org.au>
+(top-posting repaired)
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Sat__12_Apr_2008_10_05_36_+1000_5VUSnM44M+3qOdk7
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFH//zUTgG2atn1QN8RAjRvAJ4kzEMylk8uOFwwMIbuEpawKlMMQgCfXvSH
-YKY0iFd/fDtauTTaR8vb6TA=
-=ZgwY
------END PGP SIGNATURE-----
-
---Signature=_Sat__12_Apr_2008_10_05_36_+1000_5VUSnM44M+3qOdk7--
+Thanks.  I've made a note that this patch has outstanding issues.  Usually
+this means that I'll defer merging it until they have been addressed:
+either by fixing them or by successfully arguing against the objections.  
