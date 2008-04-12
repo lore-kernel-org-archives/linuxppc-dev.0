@@ -1,16 +1,14 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 91851DE17F
-	for <linuxppc-dev@ozlabs.org>; Sun, 13 Apr 2008 03:02:04 +1000 (EST)
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-To: jgarzik@pobox.com
-Subject: [PATCH] tg3: fix MMIO for PPC 44x platforms
-Date: Sat, 12 Apr 2008 21:01:22 +0400
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200804122101.22438.sshtylyov@ru.mvista.com>
-Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
+Return-Path: <seanm@seanm.ca>
+Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
+	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 93798DE12A
+	for <linuxppc-dev@ozlabs.org>; Sun, 13 Apr 2008 03:55:14 +1000 (EST)
+Date: Sat, 12 Apr 2008 13:48:31 -0400
+From: Sean MacLennan <seanm@seanm.ca>
+To: <linuxppc-dev@ozlabs.org>
+Subject: Warp patches for 2.6.26
+Message-ID: <20080412134831.424480cf@lappy.seanm.ca>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,38 +18,63 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The driver stores the PCI resource addresses into 'unsigned long' variable
-before calling ioremap_nocache() on them. This warrants kernel oops when the
-registers are accessed on PPC 44x platforms which (being 32-bit) have PCI
-memory space mapped beyond 4 GB.
+I was going to hold off until the warp was officially released, but we
+might miss the merge window. So here they are. A lot of work has been
+done since 2.6.25 and I haven't been submitting patches to keep down on
+the churn.
 
-The arch/ppc/ kernel has a fixup in ioremap() that creates an illusion that
-the PCI memory resource is mapped below 4 GB, but arch/powerpc/ code got rid
-of this trick, having instead CONFIG_RESOURCES_64BIT enabled.
+We standardized on a 4M NOR flash and a 256M NAND flash. But there is
+still support for the original Rev A boards which where 64M NOR and 64M
+NAND. You will see fixups for the Rev A. The Rev A is considered
+obsolete and the fixups are only there for me to use good ol' Tigger.
 
-Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+ftp://ftp.seanm.ca/stuff/tigger.jpg
 
----
-Reposting the patch with the log and summary corrected.
-This is the same issue as the one that has been recently addressed by commits
-3c34ac36ac1084e571ef9b6fb1d6a5b10ccc1fd0 (e1000: Fix for 32 bits platforms with
-64 bits resources) and c976816b6e901341ec3c4653147316c15549a1c4 (siimage: fix
-kernel oops on PPC 44x).  The patch has only been compile tested though...
+Here is the full list of files that need to be patched for a warp,
+basically git diff --name-only origin/for-2.6.26:
 
- drivers/net/tg3.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletion(-)
+arch/powerpc/boot/cuboot-warp.c
+arch/powerpc/boot/dts/warp.dts
+arch/powerpc/configs/warp_defconfig
+arch/powerpc/platforms/44x/warp-nand.c
+arch/powerpc/platforms/44x/warp.c
 
-Index: linux-2.6/drivers/net/tg3.c
-===================================================================
---- linux-2.6.orig/drivers/net/tg3.c
-+++ linux-2.6/drivers/net/tg3.c
-@@ -12578,7 +12578,8 @@ static int __devinit tg3_init_one(struct
- 				  const struct pci_device_id *ent)
- {
- 	static int tg3_version_printed = 0;
--	unsigned long tg3reg_base, tg3reg_len;
-+	resource_size_t tg3reg_base;
-+	unsigned long tg3reg_len;
- 	struct net_device *dev;
- 	struct tg3 *tp;
- 	int err, pm_cap;
+drivers/hwmon/Kconfig
+drivers/hwmon/Makefile
+drivers/hwmon/ad7414.c
+
+drivers/i2c/busses/Kconfig
+drivers/i2c/busses/i2c-ibm_iic.c
+
+drivers/leds/Kconfig
+drivers/leds/Makefile
+drivers/leds/leds-warp.c
+
+drivers/mmc/core/sd.c
+drivers/mmc/host/Kconfig
+drivers/mmc/host/Makefile
+drivers/mmc/host/pikasd.c
+
+drivers/mtd/nand/Kconfig
+drivers/mtd/nand/ndfc.c
+
+drivers/net/ibm_newemac/mal.c
+drivers/net/ibm_newemac/zmii.c
+
+drivers/scsi/Kconfig
+
+drivers/watchdog/Kconfig
+drivers/watchdog/Makefile
+drivers/watchdog/pika_wdt.c
+
+include/linux/mmc/host.h
+include/linux/pika.h
+
+I will not include patches for all of them since many haven't changed
+and/or are waiting for submission to the kernel. So I have broken it up
+into five patches.
+
+I will submit any other patches people are interested in.
+
+Cheers,
+   Sean
