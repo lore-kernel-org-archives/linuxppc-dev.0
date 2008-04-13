@@ -1,20 +1,14 @@
-Return-Path: <seanm@seanm.ca>
-Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
-	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id CF19DDDFE3
-	for <linuxppc-dev@ozlabs.org>; Sun, 13 Apr 2008 12:38:34 +1000 (EST)
-Date: Sat, 12 Apr 2008 22:38:33 -0400
-From: Sean MacLennan <seanm@seanm.ca>
-To: "Grant Likely" <grant.likely@secretlab.ca>
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18433.24021.559365.915556@cargo.ozlabs.ibm.com>
+Date: Sun, 13 Apr 2008 11:11:49 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Sean MacLennan <seanm@seanm.ca>
 Subject: Re: Warp patches for 2.6.26
-Message-ID: <20080412223833.27ca5f23@lappy.seanm.ca>
-In-Reply-To: <fa686aa40804121909s4ee04731ua63afa76fe088828@mail.gmail.com>
+In-Reply-To: <20080412134831.424480cf@lappy.seanm.ca>
 References: <20080412134831.424480cf@lappy.seanm.ca>
-	<20080413104430.c98244d2.sfr@canb.auug.org.au>
-	<20080412215544.38fa2d0b@lappy.seanm.ca>
-	<fa686aa40804121909s4ee04731ua63afa76fe088828@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,22 +18,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
- 
-> A changelog of "updates a bunch of stuff" is pretty much irrelevant in
-> all situations I can think of.
+Sean MacLennan writes:
 
-Ok, I hope I got everything:
+> I was going to hold off until the warp was officially released, but we
+> might miss the merge window. So here they are. A lot of work has been
+> done since 2.6.25 and I haven't been submitting patches to keep down on
+> the churn.
 
-Changes to match new FPGA/HW functionality.
-* Switched from 64M NOR/64M NAND to 4M NOR/256M NAND.
-* Moved/resized partitions to match the flash changes.
-* Fixup code added for Rev A boards to handle flash changes.
-* Added DTM critical temperature.
-* Added DTM fan error - currently disable in FPGA.
-* Added POST information.
-* Removed LED function, moved to new LED driver.
-* Moved ad7414 to new style I2C initialization.
+<cracked record>
+Your patches don't have any description at all.  If they are to go in
+they need a decent description of what they do and why they do it they
+way they do.  Putting stuff in a patch 0/5 doesn't really help since
+that doesn't go into the git repository.
+</cracked record>
 
-
-Cheers,
-   Sean
+Paul.
