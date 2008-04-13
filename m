@@ -1,19 +1,22 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 12525DDF0E
-	for <linuxppc-dev@ozlabs.org>; Sun, 13 Apr 2008 10:44:37 +1000 (EST)
-Date: Sun, 13 Apr 2008 10:44:30 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Sean MacLennan <seanm@seanm.ca>
-Subject: Re: Warp patches for 2.6.26
-Message-Id: <20080413104430.c98244d2.sfr@canb.auug.org.au>
-In-Reply-To: <20080412134831.424480cf@lappy.seanm.ca>
+Return-Path: <jwboyer@gmail.com>
+Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.177])
+	by ozlabs.org (Postfix) with ESMTP id 9E2F0DE1E5
+	for <linuxppc-dev@ozlabs.org>; Sun, 13 Apr 2008 10:49:48 +1000 (EST)
+Received: by py-out-1112.google.com with SMTP id z59so1092664pyg.27
+	for <linuxppc-dev@ozlabs.org>; Sat, 12 Apr 2008 17:49:46 -0700 (PDT)
+Subject: Re: [PATCH 1/5] Boot code
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Sean MacLennan <smaclennan@pikatech.com>
+In-Reply-To: <20080412140140.6c75cee5@lappy.seanm.ca>
 References: <20080412134831.424480cf@lappy.seanm.ca>
+	<20080412140140.6c75cee5@lappy.seanm.ca>
+Content-Type: text/plain
+Date: Sat, 12 Apr 2008 19:49:43 -0500
+Message-Id: <1208047783.5869.35.camel@vader.jdub.homelinux.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Sun__13_Apr_2008_10_44_30_+1000_FReeUgHFvdXX5Nm="
+Sender: Josh Boyer <jwboyer@gmail.com>
 Cc: linuxppc-dev@ozlabs.org
+Reply-To: jwboyer@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,32 +26,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Sun__13_Apr_2008_10_44_30_+1000_FReeUgHFvdXX5Nm=
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Sat, 2008-04-12 at 14:01 -0400, Sean MacLennan wrote:
+> Signed-off-by: Sean MacLennan <smaclennan@pikatech.com>
+> 
 
-Hi Sean,
+This patch is word wrapped.
 
-First comment is that you need reasonable changelogs i.e. explain why you
-are making changes as well as what they do.  Also the first line of each
-changelog (which becomes the subject of any mail generated from git)
-should be a useful and relatively unique summary.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+> diff --git a/arch/powerpc/boot/cuboot-warp.c
+> b/arch/powerpc/boot/cuboot-warp.c index eb108a8..43d7ad9 100644
+> --- a/arch/powerpc/boot/cuboot-warp.c
+> +++ b/arch/powerpc/boot/cuboot-warp.c
+> @@ -10,6 +10,7 @@
+>  #include "ops.h"
+>  #include "4xx.h"
+>  #include "cuboot.h"
+> +#include "stdio.h"
+>  
+>  #define TARGET_4xx
+>  #define TARGET_44x
+> @@ -17,14 +18,54 @@
+>  
+>  static bd_t bd;
+>  
+> -static void warp_fixups(void)
+> +static void warp_fixup_one_nor(u32 from, u32 to)
+>  {
+> -	unsigned long sysclk = 66000000;
+> +	void *devp;
+> +	char name[40];
+> +	u32 v[2];
+> +
+> +	sprintf(name, "/plb/opb/ebc/nor_flash@0,0/partition@%x", from);
 
---Signature=_Sun__13_Apr_2008_10_44_30_+1000_FReeUgHFvdXX5Nm=
-Content-Type: application/pgp-signature
+Unless I can't count (which could very well be the case), you have a
+buffer overflow here.  The fixed string is 37 characters, and the values
+you are passing in for "from" will extend the string past the 40 bytes
+you have allocated for "name".
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFIAVdzTgG2atn1QN8RAolnAJ9wFDEa806GWUQ5YeTlKmtSlLB4MACfb0PE
-LiXUHnBk5nLLTvz9tjtjrjE=
-=NPW4
------END PGP SIGNATURE-----
-
---Signature=_Sun__13_Apr_2008_10_44_30_+1000_FReeUgHFvdXX5Nm=--
+josh
