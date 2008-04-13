@@ -1,16 +1,23 @@
-Return-Path: <SRS0+c221ceb7dfe241bf38c8+1694+infradead.org+dwmw2@bombadil.srs.infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org [18.85.46.34])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B9A1EDE23F
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 Apr 2008 02:52:45 +1000 (EST)
-Subject: [EFIKA] Really, don't pretend to be CHRP
-From: David Woodhouse <dwmw2@infradead.org>
-To: paulus@samba.org
-Content-Type: text/plain
-Date: Sun, 13 Apr 2008 17:52:38 +0100
-Message-Id: <1208105558.3026.137.camel@pmac.infradead.org>
-Mime-Version: 1.0
+Return-Path: <jacmet@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.172])
+	by ozlabs.org (Postfix) with ESMTP id 4276DDE154
+	for <linuxppc-dev@ozlabs.org>; Mon, 14 Apr 2008 03:34:43 +1000 (EST)
+Received: by ug-out-1314.google.com with SMTP id q7so313239uge.0
+	for <linuxppc-dev@ozlabs.org>; Sun, 13 Apr 2008 10:34:41 -0700 (PDT)
+To: Sean MacLennan <smaclennan@pikatech.com>
+Subject: Re: [PATCH 4/5] LED driver
+References: <20080412134831.424480cf@lappy.seanm.ca>
+	<20080412141039.25e14fae@lappy.seanm.ca>
+	<87r6daym53.fsf@macbook.be.48ers.dk>
+	<20080413125119.6bb54a29@lappy.seanm.ca>
+From: Peter Korsgaard <jacmet@sunsite.dk>
+Date: Sun, 13 Apr 2008 19:34:38 +0200
+In-Reply-To: <20080413125119.6bb54a29@lappy.seanm.ca> (Sean MacLennan's
+	message of "Sun\, 13 Apr 2008 12\:51\:19 -0400")
+Message-ID: <87hce5zmj5.fsf@macbook.be.48ers.dk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Sender: Peter Korsgaard <jacmet@gmail.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -21,40 +28,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Fedora 9 works on Efika without the separate 'device-tree supplement',
-thanks to the kernel's own fixups. With one exception -- because 'CHRP'
-still appears on the 'machine:' line in /proc/cpuinfo, the installer
-misdetects the platform and misconfigures yaboot, putting it into a PReP
-boot partition instead of in the /boot filesystem where the Efika's
-firmware could find it.
+>>>>> "Sean" == Sean MacLennan <smaclennan@pikatech.com> writes:
 
-The kernel's fixups for Efika already correct one instance of 'chrp', in
-the 'device_type' property. This fixes it in the 'CODEGEN,description'
-property too, since that's what's exposed to userspace in /proc/cpuinfo.
+ >> How about getting gpiolib working and use leds-gpio.c instead?
 
-Signed-off-by: David Woodhouse <dwmw2@infradead.org>
+ Sean> Actually, I was going to just ask about that... how close is leds-gpio
+ Sean> to being working, and will it be in 2.6.26?
 
-diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
-index 5ab4c84..723422e 100644
---- a/arch/powerpc/kernel/prom_init.c
-+++ b/arch/powerpc/kernel/prom_init.c
-@@ -2240,6 +2240,14 @@ static void __init fixup_device_tree_efika(void)
- 	if (rv != PROM_ERROR && (strcmp(prop, "chrp") == 0))
- 		prom_setprop(node, "/", "device_type", "efika", sizeof("efika"));
- 
-+	/* CODEGEN,description is exposed in /proc/cpuinfo so
-+	   fix that too */
-+	rv = prom_getprop(node, "CODEGEN,description", prop, sizeof(prop));
-+	if (rv != PROM_ERROR && (strstr(prop, "CHRP")))
-+		prom_setprop(node, "/", "CODEGEN,description",
-+			     "Efika 5200B PowerPC System",
-+			     sizeof("Efika 5200B PowerPC System"));
-+
- 	/* Fixup bestcomm interrupts property */
- 	node = call_prom("finddevice", 1, 1, ADDR("/builtin/bestcomm"));
- 	if (PHANDLE_VALID(node)) {
+I haven't actually used leds-gpio, but it looks so simple that I
+cannot imagine it not working. There also seems to be quite some
+platforms using it, E.G:
 
+% git grep '"leds-gpio"' arch|wc -l
+11
 
+Or are you referring to the status of gpiolib support on powerpc?
 
 -- 
-dwmw2
+Bye, Peter Korsgaard
