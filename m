@@ -1,15 +1,16 @@
-Return-Path: <seanm@seanm.ca>
+Return-Path: <smaclennan@pikatech.com>
 Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
-	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 0AB69DE1B8
-	for <linuxppc-dev@ozlabs.org>; Sun, 13 Apr 2008 11:55:46 +1000 (EST)
-Date: Sat, 12 Apr 2008 21:55:44 -0400
-From: Sean MacLennan <seanm@seanm.ca>
-To: "Stephen Rothwell" <sfr@canb.auug.org.au>
-Subject: Re: Warp patches for 2.6.26
-Message-ID: <20080412215544.38fa2d0b@lappy.seanm.ca>
-In-Reply-To: <20080413104430.c98244d2.sfr@canb.auug.org.au>
+	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 00F8FDE1ED
+	for <linuxppc-dev@ozlabs.org>; Sun, 13 Apr 2008 12:06:48 +1000 (EST)
+Date: Sat, 12 Apr 2008 22:06:46 -0400
+From: Sean MacLennan <smaclennan@pikatech.com>
+To: jwboyer@linux.vnet.ibm.com
+Subject: Re: [PATCH 1/5] Boot code
+Message-ID: <20080412220646.3d8ee450@lappy.seanm.ca>
+In-Reply-To: <1208047783.5869.35.camel@vader.jdub.homelinux.org>
 References: <20080412134831.424480cf@lappy.seanm.ca>
-	<20080413104430.c98244d2.sfr@canb.auug.org.au>
+	<20080412140140.6c75cee5@lappy.seanm.ca>
+	<1208047783.5869.35.camel@vader.jdub.homelinux.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-dev@ozlabs.org
@@ -22,33 +23,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, 13 Apr 2008 10:44:30 +1000
-"Stephen Rothwell" <sfr@canb.auug.org.au> wrote:
+On Sat, 12 Apr 2008 19:49:43 -0500
+Josh Boyer <jwboyer@linux.vnet.ibm.com> wrote:
 
-> Hi Sean,
+> On Sat, 2008-04-12 at 14:01 -0400, Sean MacLennan wrote:
+> > Signed-off-by: Sean MacLennan <smaclennan@pikatech.com>
+> > 
 > 
-> First comment is that you need reasonable changelogs i.e. explain why
-> you are making changes as well as what they do.  Also the first line
-> of each changelog (which becomes the subject of any mail generated
-> from git) should be a useful and relatively unique summary.
+> This patch is word wrapped.
+
+Yes, sorry about that. I have been trying out a new mail client and I
+pasted the text wrong :( I caught it in the other patches though,
+so they should be good.
+
+> > +	char name[40];
+> > +	u32 v[2];
+> > +
+> > +	sprintf(name, "/plb/opb/ebc/nor_flash@0,0/partition@%x",
+> > from);
 > 
+> Unless I can't count (which could very well be the case), you have a
+> buffer overflow here.  The fixed string is 37 characters, and the
+> values you are passing in for "from" will extend the string past the
+> 40 bytes you have allocated for "name".
 
-These patches are an amalgamation of a lot of commits. For
-example, warp.c was changed 15 times since I last sent a patch to
-linuxppc-dev. warp-nand.c was probably changed even more as we kept
-shifting the design.
-
-One of the advantages of an FPGA based design is you can work around a
-lot of hardware problems. A disadvantage is that it is easy to change,
-so it changes a lot. And the HW guys push the specs out to after they
-actually get the feature going. There is no SW input into the FPGA
-design.
-
-So these patches are basically following the changes to the FPGA and
-changes to the hardware. As new functionality was added, I updated the
-code.
-
-Is there a particular way I should word this to make it a changelog?
+No, you are right. Good catch. I will update that.
 
 Cheers,
    Sean
