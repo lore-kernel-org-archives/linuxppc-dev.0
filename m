@@ -1,20 +1,17 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.177])
-	by ozlabs.org (Postfix) with ESMTP id 4650CDE1F6
-	for <linuxppc-dev@ozlabs.org>; Sun, 13 Apr 2008 10:50:09 +1000 (EST)
-Received: by py-out-1112.google.com with SMTP id z59so1092664pyg.27
-	for <linuxppc-dev@ozlabs.org>; Sat, 12 Apr 2008 17:50:09 -0700 (PDT)
-Subject: Re: Warp patches for 2.6.26
-From: Josh Boyer <jwboyer@gmail.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-In-Reply-To: <20080413104430.c98244d2.sfr@canb.auug.org.au>
-References: <20080412134831.424480cf@lappy.seanm.ca>
-	<20080413104430.c98244d2.sfr@canb.auug.org.au>
-Content-Type: text/plain
-Date: Sat, 12 Apr 2008 19:50:05 -0500
-Message-Id: <1208047806.5869.37.camel@vader.jdub.homelinux.org>
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net (unknown [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id E1A4EDE115
+	for <linuxppc-dev@ozlabs.org>; Sun, 13 Apr 2008 11:31:20 +1000 (EST)
+Date: Sat, 12 Apr 2008 18:31:20 -0700 (PDT)
+Message-Id: <20080412.183120.265079925.davem@davemloft.net>
+To: sshtylyov@ru.mvista.com
+Subject: Re: [PATCH] tg3: fix MMIO for PPC 44x platforms
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <200804122101.22438.sshtylyov@ru.mvista.com>
+References: <200804122101.22438.sshtylyov@ru.mvista.com>
 Mime-Version: 1.0
-Cc: Sean MacLennan <seanm@seanm.ca>, linuxppc-dev@ozlabs.org
+Content-Type: Text/Plain; charset=us-ascii
+Cc: netdev@vger.kernel.org, jgarzik@pobox.com, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,14 +21,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, 2008-04-13 at 10:44 +1000, Stephen Rothwell wrote:
-> Hi Sean,
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Date: Sat, 12 Apr 2008 21:01:22 +0400
+
+> The driver stores the PCI resource addresses into 'unsigned long' variable
+> before calling ioremap_nocache() on them. This warrants kernel oops when the
+> registers are accessed on PPC 44x platforms which (being 32-bit) have PCI
+> memory space mapped beyond 4 GB.
 > 
-> First comment is that you need reasonable changelogs i.e. explain why you
-> are making changes as well as what they do.  Also the first line of each
-> changelog (which becomes the subject of any mail generated from git)
-> should be a useful and relatively unique summary.
+> The arch/ppc/ kernel has a fixup in ioremap() that creates an illusion that
+> the PCI memory resource is mapped below 4 GB, but arch/powerpc/ code got rid
+> of this trick, having instead CONFIG_RESOURCES_64BIT enabled.
+> 
+> Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 
-Yes, what Stephen said.
+Applied, thanks.
 
-josh
+I added a bump of the driver version and release date for
+the changeset.
