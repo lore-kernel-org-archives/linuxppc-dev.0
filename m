@@ -1,19 +1,32 @@
-Return-Path: <avorontsov@dev.rtsoft.ru>
-Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
-	by ozlabs.org (Postfix) with SMTP id 9E3DEDE876
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Apr 2008 02:38:29 +1000 (EST)
-Date: Mon, 14 Apr 2008 20:31:46 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] [POWERPC] mpc8315: fix USB UTMI Host setup
-Message-ID: <20080414163146.GA25082@polina.dev.rtsoft.ru>
-References: <20080409135925.GA6905@polina.dev.rtsoft.ru>
-	<5545B104-1D7C-4A35-B6AD-7C895CBE9A2F@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <5545B104-1D7C-4A35-B6AD-7C895CBE9A2F@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: avorontsov@ru.mvista.com
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id EFE12DEF5D
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Apr 2008 02:45:24 +1000 (EST)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
+	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
+	m3EGjJue026973
+	for <linuxppc-dev@ozlabs.org>; Mon, 14 Apr 2008 09:45:20 -0700 (MST)
+Received: from ld0162-tx32.am.freescale.net (ld0162-tx32.am.freescale.net
+	[10.82.19.112])
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id m3EGjJZG026412
+	for <linuxppc-dev@ozlabs.org>; Mon, 14 Apr 2008 11:45:19 -0500 (CDT)
+Date: Mon, 14 Apr 2008 11:45:18 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: =?iso-8859-1?Q?Andr=E9?= Schwarz <Andre.Schwarz@matrix-vision.de>
+Subject: Re: Flash on LocalBus @ MPC8343
+Message-ID: <20080414164518.GB7061@ld0162-tx32.am.freescale.net>
+References: <47FF802B.5020708@matrix-vision.de>
+	<20080411153849.GB2588@loki.buserror.net>
+	<47FFC2DE.80808@matrix-vision.de> <47FFC397.9040200@freescale.com>
+	<480079CA.5040000@matrix-vision.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <480079CA.5040000@matrix-vision.de>
+Cc: linux-ppc list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,33 +36,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Apr 14, 2008 at 10:22:46AM -0500, Kumar Gala wrote:
->
-> On Apr 9, 2008, at 8:59 AM, Anton Vorontsov wrote:
->> Currently USB Host isn't functional on the MPC8315E boards, for two
->> reasons as described below.
->>
->> MPC8315 Reference Manual says:
->> "The USB DR unit must have the same clock ratio as the encryption core
->> unit, unless one of them has its clock disabled."
->>
->> The encryption core also drives I2C clock, so it is enabled and is  
->> equal
->> to 01. That means USBDRCM should be 01 here.
->>
->> Plus, according to MPC8315E-RDB schematics, USB unit consumes CLK_IN
->> clock from the 24.00MHz oscillator, which means we must adjust REFSEL
->> bits as well.
->
-> Can you add a comment in the code about the fact that part of this fix  
-> is board specific.
+On Sat, Apr 12, 2008 at 10:58:50AM +0200, André Schwarz wrote:
+> thanks , but ... can't find "of_bus_ids[]" entry.
 
-Heh, the whole 83xx/usb.c file is board(s) specific, not this particular
-fix. :-/
+That means your platform likely isn't calling of_platform_bus_probe() at
+all.  Look at other platforms, such as mpc831x_rdb, for an example.
 
-So it doesn't need an explicit comment for this addition. It's just lucky
-coincedence that all previous boards were using same (or similar) setup.
-That is, it's perfectly possible that some custom MPC831XE board will use
-USB setup different from MPC8313E-RDB or MPC8315E-RDB, and the whole thing
-will break again. The same applies for MPC837X part of usb.c. There are
-board-specific settings all over the place.
+> I'm obviously out of sync. My last git-pull from denx is 3 days old, now 
+> - need to update on monday.
+
+For Denx-specific support, please contact Denx.
+
+This certainly isn't something that was added in the past 3 days.
+
+-Scott
