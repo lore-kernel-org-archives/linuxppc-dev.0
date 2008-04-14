@@ -1,18 +1,20 @@
-Return-Path: <akpm@linux-foundation.org>
-Date: Sun, 13 Apr 2008 19:13:38 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Benjamin Herrenschmidt <benh@ozlabs.org>
-Subject: Re: [PATCH 1/2] Add thread_info_cache_init() to all archs
-Message-Id: <20080413191338.9776ebd0.akpm@linux-foundation.org>
-In-Reply-To: <1208133506.6958.82.camel@pasglop>
-References: <20080410032354.90CB1DDF0F@ozlabs.org>
-	<20080413171953.bde5e9ac.akpm@linux-foundation.org>
-	<1208133506.6958.82.camel@pasglop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Linux-Arch <linux-arch@vger.kernel.org>, linux-m32r@ml.linux-m32r.org,
-	takata@linux-m32r.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Return-Path: <glikely@secretlab.ca>
+Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.31])
+	by ozlabs.org (Postfix) with ESMTP id 157E3DDF1C
+	for <linuxppc-dev@ozlabs.org>; Mon, 14 Apr 2008 12:54:09 +1000 (EST)
+Received: by yw-out-2324.google.com with SMTP id 3so703079ywj.39
+	for <linuxppc-dev@ozlabs.org>; Sun, 13 Apr 2008 19:54:08 -0700 (PDT)
+Message-ID: <fa686aa40804131954r3c941c3cicfc922a83281ddb5@mail.gmail.com>
+Date: Sun, 13 Apr 2008 20:54:08 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "David Woodhouse" <dwmw2@infradead.org>
+Subject: Re: [EFIKA] Really, don't pretend to be CHRP
+In-Reply-To: <1208105558.3026.137.camel@pmac.infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <1208105558.3026.137.camel@pmac.infradead.org>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,67 +24,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 14 Apr 2008 10:38:26 +1000 Benjamin Herrenschmidt <benh@ozlabs.org> wrote:
+On Sun, Apr 13, 2008 at 10:52 AM, David Woodhouse <dwmw2@infradead.org> wrote:
+> Fedora 9 works on Efika without the separate 'device-tree supplement',
+>  thanks to the kernel's own fixups. With one exception -- because 'CHRP'
+>  still appears on the 'machine:' line in /proc/cpuinfo, the installer
+>  misdetects the platform and misconfigures yaboot, putting it into a PReP
+>  boot partition instead of in the /boot filesystem where the Efika's
+>  firmware could find it.
+>
+>  The kernel's fixups for Efika already correct one instance of 'chrp', in
+>  the 'device_type' property. This fixes it in the 'CODEGEN,description'
+>  property too, since that's what's exposed to userspace in /proc/cpuinfo.
+>
+>  Signed-off-by: David Woodhouse <dwmw2@infradead.org>
 
-> > > +#ifndef thread_info_cache_init
-> > > +#define thread_info_cache_init	do { } while(0)
-> > > +#endif
-> > 
-> > This trick does cause a bit of a problem: it is undefined which arch header
-> > file is to provide the alternative definition of thread_info_cache_init.
-> 
-> I this case it's well defined: thread_info.h. Maybe I should add a
-> comment ?
-> 
-> > So we can (and have) ended up in the situation where the override appears
-> > in different files on different architectures and various screwups ensue.
-> 
-> Yup.
-> 
-> > So I'd suggest that we have a bigfatcomment telling implementors which file
-> > the override should be implemented in.  And make sure that this arch file is
-> > directly included from within sched.h.
-> 
-> Will do.
-> 
-> > I have a suspicion that we can still get in a mess if .c files include the
-> > per-arch file and don't include sched.h, but I forget where this happened
-> > and why it broke stuff.
-> 
-> In this case, there's only one call site and will only every be one, so
-> that shouldn't be a problem. I don't see init/main.c not including
-> sched.h
+Looks good to me.  I don't see any reason not to pick this up.
 
-As long as init.c directly includes sched.h, and as long as sched.h
-directly includes thread_info.h and as long as all architectures which
-provide the override put it in their thread_info.h, and as long as the same
-applies to all future .c users, we're good.  That's a lot of "as long as"'s ;)
+Acked-by: Grant Likely <grant.likely@secretlab.ca>
+>
+>  diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
+>  index 5ab4c84..723422e 100644
+>  --- a/arch/powerpc/kernel/prom_init.c
+>  +++ b/arch/powerpc/kernel/prom_init.c
+>  @@ -2240,6 +2240,14 @@ static void __init fixup_device_tree_efika(void)
+>         if (rv != PROM_ERROR && (strcmp(prop, "chrp") == 0))
+>                 prom_setprop(node, "/", "device_type", "efika", sizeof("efika"));
+>
+>  +       /* CODEGEN,description is exposed in /proc/cpuinfo so
+>  +          fix that too */
+>  +       rv = prom_getprop(node, "CODEGEN,description", prop, sizeof(prop));
+>  +       if (rv != PROM_ERROR && (strstr(prop, "CHRP")))
+>  +               prom_setprop(node, "/", "CODEGEN,description",
+>  +                            "Efika 5200B PowerPC System",
+>  +                            sizeof("Efika 5200B PowerPC System"));
+>  +
+>         /* Fixup bestcomm interrupts property */
+>         node = call_prom("finddevice", 1, 1, ADDR("/builtin/bestcomm"));
+>         if (PHANDLE_VALID(node)) {
+>
+>
+>
+>  --
+>  dwmw2
+>
+>
 
-> > Sigh.  A nice, coded-in-C implementation within each and every architecture
-> > remains the best implementation, and all the little tricks-to-save-typing
-> > have failure modes.
-> 
-> Well, I started doing it in all arch, and people around here told me
-> that was not a good idea , that it would be trouble if the prototype
-> ever had to change (adding an arg, etc... though very unlikely to happen
-> in that case, granted).
 
-Bah.  Use of grep and basic typing skills: not so hard.
 
-> > otoh, if only one .c file will ever call this function then I think that
-> > all problems are solved by
-> > 
-> > a) moving the above ifdeffery into the .c file
-> > b) adding a comment explaining which arch file must provide the override
-> > c) directly including that file from within the .c file.
-> 
-> I can definitely do that. I have no problem either way. I can add to all
-> archs too, it's just that whatever way I choose, some people won't be
-> happy with it :-)
-> 
-> Anyway, I'll move the ifdeferry to init/main.c then.
-
-Thanks ;)
-
-I'm still wounded by my recent encounter with set_softirq_pending()
-and or_softirq_pending().
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
