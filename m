@@ -1,15 +1,15 @@
 Return-Path: <john.bonesio@xilinx.com>
-Received: from outbound6-dub-R.bigfish.com (outbound-dub.frontbridge.com
+Received: from outbound7-dub-R.bigfish.com (outbound-dub.frontbridge.com
 	[213.199.154.16])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 60BB4DE4AE
+	by ozlabs.org (Postfix) with ESMTPS id 0309CDE01F
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 15 Apr 2008 07:56:39 +1000 (EST)
+	Tue, 15 Apr 2008 08:20:08 +1000 (EST)
 From: John Bonesio <john.bonesio@xilinx.com>
 To: Shanyuan Gao <sygao.research@gmail.com>
 Subject: Re: Problems of using APU/FPU under linux
-Date: Mon, 14 Apr 2008 14:56:32 -0700
+Date: Mon, 14 Apr 2008 15:20:01 -0700
 References: <287479FF-A7FC-4B48-BE1E-FDDCB97D55A9@gmail.com>
 	<20080414183255.F056C1C300A3@mail62-sin.bigfish.com>
 	<1B35E815-094F-40CB-AEDA-C04A6CBECC07@gmail.com>
@@ -17,7 +17,7 @@ In-Reply-To: <1B35E815-094F-40CB-AEDA-C04A6CBECC07@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="utf-8"
-Message-Id: <20080414215634.38B53C08063@mail189-dub.bigfish.com>
+Message-Id: <20080414222003.E500E11E0057@mail67-dub.bigfish.com>
 Cc: John Bonesio <john.bonesio@xilinx.com>,
 	Stephen Neuendorffer <stephenn@xilinx.com>, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -32,17 +32,10 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 
 Hi Shan,
 
-It's not clear exactly what you are experiencing. What do you see in your user application, "Illegal instruction" ?
-
-In arch/powerpc/kernel/head_booke.h, there's #define FP_UNAVAILABLE_EXCEPTION. This defines the FPU unavailable exception. Is the code getting there? You should see the call to load_up_fpu in there, which is defined in arch/powerpc/kernel/fpu.S
-
-What exception is being generated? It looks like you're getting SIGTRAP in your application which is the debug exception, which doesn't seem related to how the kernel sets up the fpu.
-
-I believe the 2 bits you mentioned just have to do with with how the fpu behaves. The kernel code doesn't use those for the fpu context switching. It uses the Floating-Point Available bit in the MSR.
-
-Definitely check the errata and other information about the FPU you are using. As Steve mentioned, you should use the Xilinx gcc tools with the Xilinx FPU.
+Someone here reminded me that the ppc405 is not BookE. One of your problems maybe in getting the kernel to set up an FPU unavilable handler.
 
 - John
+
 
 On Monday 14 April 2008 13:46, Shanyuan Gao wrote:
 > Thank you very much, Steve and John!
