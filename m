@@ -1,25 +1,20 @@
-Return-Path: <timur@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 3B929DE35F
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Apr 2008 00:13:35 +1000 (EST)
-Message-ID: <48036649.6000409@freescale.com>
-Date: Mon, 14 Apr 2008 09:12:25 -0500
-From: Timur Tabi <timur@freescale.com>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.183]) by ozlabs.org (Postfix) with ESMTP id 157ADDDDF6
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Apr 2008 00:18:43 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 2/2] Add DIU platform code for MPC8610HPCD
+Date: Mon, 14 Apr 2008 16:18:34 +0200
+References: <12053582234100-git-send-email-yorksun@freescale.com>
+	<12053582231281-git-send-email-yorksun@freescale.com>
+	<12053582232536-git-send-email-yorksun@freescale.com>
+In-Reply-To: <12053582232536-git-send-email-yorksun@freescale.com>
 MIME-Version: 1.0
-To: Jiri Slaby <jirislaby@gmail.com>
-Subject: Re: [PATCH 1/2] Driver for Freescale 8610 and 5121 DIU
-References: <12053582234100-git-send-email-yorksun@freescale.com>	<12053582231281-git-send-email-yorksun@freescale.com>	<47D8572C.8090501@gmail.com>	<47FFDBFF.1030809@gmail.com>
-	<20080411221817.0b1eb414.akpm@linux-foundation.org>
-	<48035E93.6070300@freescale.com> <48035F98.1020404@gmail.com>
-	<48036001.10905@freescale.com> <4803620C.6020905@gmail.com>
-In-Reply-To: <4803620C.6020905@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
-	York Sun <yorksun@freescale.com>, linux-kernel@vger.kernel.org
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200804141618.34641.arnd@arndb.de>
+Cc: York Sun <yorksun@freescale.com>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,31 +24,148 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Jiri Slaby wrote:
-> On 04/14/2008 03:45 PM, Timur Tabi wrote:
->> Jiri Slaby wrote:
->>
->>> See
->>> http://lkml.org/lkml/2008/3/12/375
->> That email is dated 3/12 and those comments are about v1 of the patch.  The most
->> recent posted version is v5 and it addresses all these issues.  See
->> http://lkml.org/lkml/2008/4/1/346
-> 
-> Ok, how is the sleep-inside-spinlock in fsl_diu_open resolved? rh_alloc might 
-> sleep if I still see correctly, do I?
+On Wednesday 12 March 2008, York Sun wrote:
 
-Hmmm... I thought I had an answer to this question, but I checked the patch
-again, and it looks like this particular issue hasn't been fixed.  rh_alloc can
-still sleep.  I know we worked on fixing this bug, so I'm not sure why it's
-still there.
+> +#include <linux/bootmem.h>
+> +#include <asm/rheap.h>
+> +
+> +#undef DEBUG
+> +#ifdef DEBUG
+> +#define DPRINTK(fmt, args...) printk(KERN_DEBUG "%s: " fmt, __func__, ## args)
+> +#else
+> +#define DPRINTK(fmt, args...)
+> +#endif
 
-However, we don't need to call rh_alloc().  The arch/powerpc code has been
-updated to remove the need for us to a use an rheap.
+Please don't define your own debug macros, but rather use pr_debug and related
+helpers from linux/kernel.h.
 
-Unfortunately, the author of the patch, York, is out this week, so I'll have to
-take care of this.  It'd be easier to modify rh_alloc() so that it doesn't
-sleep, so that's what I'm going to do.
+> +static unsigned char *pixis_bdcfg0, *pixis_arch;
+> +
 
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+These need to be __iomem, as far as I can see. Please run 'make C=1'
+to have this kind of problem checked by 'sparse' and clean up its
+findings.
+
+> @@ -161,12 +173,251 @@ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AL, 0x5229, quirk_uli5229);
+>  DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_AL, 0x5288, final_uli5288);
+>  #endif /* CONFIG_PCI */
+>  
+> +static u32 get_busfreq(void)
+> +{
+> +	struct device_node *node;
+> +
+> +	u32 fs_busfreq = 0;
+> +	node = of_find_node_by_type(NULL, "cpu");
+> +	if (node) {
+> +		unsigned int size;
+> +		const unsigned int *prop =
+> +			of_get_property(node, "bus-frequency", &size);
+> +		if (prop)
+> +			fs_busfreq = *prop;
+> +		of_node_put(node);
+> +	};
+> +	return fs_busfreq;
+> +}
+
+I guess this breaks for frequencies larger than 2^32 Ghz, right?
+IIRC, there is a method for encoding higher frequencies in the device
+tree, and you should probably support that, or even better, refer
+to some other function that is already interpreting it.
+
+> +#ifdef CONFIG_FB_FSL_DIU
+> +
+> +static rh_block_t diu_rh_block[16];
+> +static rh_info_t diu_rh_info;
+> +static unsigned long diu_size = 1280 * 1024 * 4; /* One 1280x1024 buffer */
+> +static void *diu_mem;
+
+diu_mem is probably __iomem as well, right?
+
+Also, it would be cleaner to have the variables in a data structure
+pointed to by your device->driver_data. It would only be strictly
+necessary if you expect to see a system with multiple DIU instances,
+which I think is unlikely, but still it is the way that people
+expect to see the code when they read it.
+
+> +unsigned int platform_get_pixel_format
+> +	(unsigned int bits_per_pixel, int monitor_port)
+> +{
+> +	static const unsigned long pixelformat[][3] = {
+> +		{0x88882317, 0x88083218, 0x65052119},
+> +		{0x88883316, 0x88082219, 0x65053118},
+> +	};
+> +	unsigned int pix_fmt, arch_monitor;
+> +
+> +	arch_monitor = ((*pixis_arch == 0x01) && (monitor_port == 0))? 0 : 1;
+> +		/* DVI port for board version 0x01 */
+> +
+> +	if (bits_per_pixel == 32)
+> +		pix_fmt = pixelformat[arch_monitor][0];
+> +	else if (bits_per_pixel == 24)
+> +		pix_fmt = pixelformat[arch_monitor][1];
+> +	else if (bits_per_pixel == 16)
+> +		pix_fmt = pixelformat[arch_monitor][2];
+> +	else
+> +		pix_fmt = pixelformat[1][0];
+> +
+> +	return pix_fmt;
+> +}
+> +EXPORT_SYMBOL(platform_get_pixel_format);
+
+Generally, when you create new functions that are going to be used
+just by your own code, they should be EXPORT_SYMBOL_GPL. It's your
+choice though, as you are the author.
+
+> +void platform_set_pixel_clock(unsigned int pixclock)
+> +{
+> +	u32 __iomem *clkdvdr;
+> +	u32 temp;
+> +	/* variables for pixel clock calcs */
+> +	ulong  bestval, bestfreq, speed_ccb, minpixclock, maxpixclock;
+> +	ulong pixval;
+> +	long err;
+> +	int i;
+> +
+> +	clkdvdr = ioremap(get_immrbase() + 0xe0800, sizeof(u32));
+
+Please don't use get_immrbase in new code. Instead, register an
+of_platform_driver for the device in the device tree, then 
+use of_iomap to map its register from the driver probe() callback.
+
+> +void *fsl_diu_alloc(unsigned long size, unsigned long *phys)
+> +{
+> +	 void *virt;
+> +
+> +	 DPRINTK("size=%lu\n", size);
+> +
+> +	 virt = dma_alloc_coherent(0, size, phys, GFP_DMA | GFP_KERNEL);
+> +
+> +	 if (virt) {
+> +		DPRINTK("dma virt=%p phys=%lx\n", virt, *phys);
+> +		return virt;
+> +	 }
+> +
+> +	 if (!diu_mem) {
+> +		printk(KERN_INFO "%s: no diu_mem\n", __func__);
+> +		return NULL;
+> +	 }
+> +
+> +	 virt = rh_alloc(&diu_rh_info, size, "DIU");
+> +	 if (virt)
+> +		*phys = virt_to_bus(virt);
+> +
+> +	 DPRINTK("rh virt=%p phys=%x\n", virt, *phys);
+> +
+> +	 return virt;
+> +}
+> +EXPORT_SYMBOL(fsl_diu_alloc);
+
+Don't use virt_to_bus in new code, it does not work with the DMA
+mapping API. Instead, use dma_map_single() to convert the kernel address
+into something that can be addressed by hardware.
+
+You probably don't need the dma_alloc_coherent path in that case,
+but always use dma_map_single on a newly allocated piece of kernel
+memory.
+
+	Arnd <><
