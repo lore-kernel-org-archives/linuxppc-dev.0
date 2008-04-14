@@ -1,21 +1,16 @@
-Return-Path: <smaclennan@pikatech.com>
-Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
-	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 3C8F3DE2E8
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 Apr 2008 03:51:20 +1000 (EST)
-Date: Sun, 13 Apr 2008 13:51:17 -0400
-From: Sean MacLennan <smaclennan@pikatech.com>
-To: Peter Korsgaard <jacmet@sunsite.dk>
-Subject: Re: [PATCH 4/5] LED driver
-Message-ID: <20080413135117.64a61b32@lappy.seanm.ca>
-In-Reply-To: <87hce5zmj5.fsf@macbook.be.48ers.dk>
-References: <20080412134831.424480cf@lappy.seanm.ca>
-	<20080412141039.25e14fae@lappy.seanm.ca>
-	<87r6daym53.fsf@macbook.be.48ers.dk>
-	<20080413125119.6bb54a29@lappy.seanm.ca>
-	<87hce5zmj5.fsf@macbook.be.48ers.dk>
+Return-Path: <akpm@linux-foundation.org>
+Date: Sun, 13 Apr 2008 17:19:53 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Benjamin Herrenschmidt <benh@ozlabs.org>
+Subject: Re: [PATCH 1/2] Add thread_info_cache_init() to all archs
+Message-Id: <20080413171953.bde5e9ac.akpm@linux-foundation.org>
+In-Reply-To: <20080410032354.90CB1DDF0F@ozlabs.org>
+References: <20080410032354.90CB1DDF0F@ozlabs.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Cc: Linux-Arch <linux-arch@vger.kernel.org>, linux-m32r@ml.linux-m32r.org,
+	takata@linux-m32r.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,21 +20,81 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, 13 Apr 2008 19:34:38 +0200
-Peter Korsgaard <jacmet@sunsite.dk> wrote:
+On Thu, 10 Apr 2008 13:22:56 +1000 Benjamin Herrenschmidt <benh@ozlabs.org> wrote:
 
-> I haven't actually used leds-gpio, but it looks so simple that I
-> cannot imagine it not working. There also seems to be quite some
-> platforms using it, E.G:
+> Some architecture need to maintain a kmem cache for thread info
+> structures. (next patch adds that to powerpc to fix an alignment
+> problem).
 > 
-> % git grep '"leds-gpio"' arch|wc -l
-> 11
+> There is no good arch callback to use to initialize that cache
+> that I can find, so this adds a new one and adds an empty macro
+> for when it's not implemented.
 > 
-> Or are you referring to the status of gpiolib support on powerpc?
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> ---
+> 
+> So we have the choice here between:
+> 
+>  - the ifdef on the func name that I did, consistent with what
+> I did before for iomap, which iirc Linus liked
+> 
+>  - add some more ARCH_HAS_* or HAVE_* (yuck)
+> 
+>  - add an empty definition to all archs .h (pain in the neck but I
+> can do it, though it will be an annoying patch to keep around)
+> 
+>  - do a weak function (will slightly bloat everybody for no good reason)
+> 
+> So unless there is strong complaints, I'd like to stick to my
+> current approach.
+> 
+>  include/linux/sched.h |    4 ++++
+>  init/main.c           |    1 +
+>  2 files changed, 5 insertions(+)
+> 
+> --- linux-work.orig/init/main.c	2008-04-10 13:11:06.000000000 +1000
+> +++ linux-work/init/main.c	2008-04-10 13:11:19.000000000 +1000
+> @@ -623,6 +623,7 @@ asmlinkage void __init start_kernel(void
+>  	if (efi_enabled)
+>  		efi_enter_virtual_mode();
+>  #endif
+> +	thread_info_cache_init();
+>  	fork_init(num_physpages);
+>  	proc_caches_init();
+>  	buffer_init();
+> Index: linux-work/include/linux/sched.h
+> ===================================================================
+> --- linux-work.orig/include/linux/sched.h	2008-04-10 13:11:44.000000000 +1000
+> +++ linux-work/include/linux/sched.h	2008-04-10 13:12:05.000000000 +1000
+> @@ -1893,6 +1893,10 @@ static inline unsigned long *end_of_stac
+>  
+>  #endif
+>  
+> +#ifndef thread_info_cache_init
+> +#define thread_info_cache_init	do { } while(0)
+> +#endif
 
-Correct. It looks like the gpiolib will go in for 2.6.26 but not ppc44x
-support. Which means I wouldn't be able to get warp support in for this
-release.
+This trick does cause a bit of a problem: it is undefined which arch header
+file is to provide the alternative definition of thread_info_cache_init.
 
-Cheers,
-   Sean
+So we can (and have) ended up in the situation where the override appears
+in different files on different architectures and various screwups ensue.
+
+So I'd suggest that we have a bigfatcomment telling implementors which file
+the override should be implemented in.  And make sure that this arch file is
+directly included from within sched.h.
+
+I have a suspicion that we can still get in a mess if .c files include the
+per-arch file and don't include sched.h, but I forget where this happened
+and why it broke stuff.
+
+Sigh.  A nice, coded-in-C implementation within each and every architecture
+remains the best implementation, and all the little tricks-to-save-typing
+have failure modes.
+
+otoh, if only one .c file will ever call this function then I think that
+all problems are solved by
+
+a) moving the above ifdeffery into the .c file
+b) adding a comment explaining which arch file must provide the override
+c) directly including that file from within the .c file.
