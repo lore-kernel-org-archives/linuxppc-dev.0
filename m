@@ -1,20 +1,19 @@
-Return-Path: <dargaud@lpsc.in2p3.fr>
-Received: from lpsc-mail.in2p3.fr (lpsc-mail.in2p3.fr [134.158.40.8])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 520AADF20C
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Apr 2008 02:17:27 +1000 (EST)
-Received: from LPSC0173W (lpsc0173w.in2p3.fr [134.158.40.173])
-	by lpsc-mail.in2p3.fr (8.13.1/8.13.1/In2p3) with SMTP id m3EGHNUl022098
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 Apr 2008 18:17:23 +0200
-Message-ID: <01f001c89e4b$05acddd0$ad289e86@LPSC0173W>
-From: "Guillaume Dargaud" <dargaud@lpsc.in2p3.fr>
-To: <linuxppc-dev@ozlabs.org>
-Subject: Manual kernel parameters are being ignored
-Date: Mon, 14 Apr 2008 18:17:16 +0200
-MIME-Version: 1.0
-Content-Type: text/plain; format=flowed; charset="iso-8859-1";
-	reply-type=original
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from tmnt04.transmode.se (mail.transmode.se [83.241.175.147])
+	by ozlabs.org (Postfix) with ESMTP id 3B910DE5C0
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Apr 2008 02:20:13 +1000 (EST)
+Subject: Re: Signal backtrace function
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+To: Detlev Zundel <dzu@denx.de>
+In-Reply-To: <m2skxoo1ur.fsf@ohwell.denx.de>
+References: <1207764980.5826.77.camel@gentoo-jocke.transmode.se>
+	<m2skxoo1ur.fsf@ohwell.denx.de>
+Content-Type: text/plain
+Date: Mon, 14 Apr 2008 18:20:09 +0200
+Message-Id: <1208190010.5911.15.camel@gentoo-jocke.transmode.se>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: joakim.tjernlund@transmode.se
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,16 +23,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Anyone care to tell me why the parameters I type manually for the kernel are 
-being ignored ?
 
-Linux/PPC load: console=ttyUL0,9600 root=/dev/xsa2 rw ip=off
-Uncompressing Linux...done.
-Now booting the kernel
-[...]
-[    0.000000] Kernel command line: console=ttyUL0,9600 root=/dev/nfs rw 
-ip=on nfsroot=192.168.1.185:/ht
+On Mon, 2008-04-14 at 18:09 +0200, Detlev Zundel wrote:
+> Hi Jocke,
+> 
+> > I made my own backtrace function for printing
+> > a trace from within a signal handler. Maybe it
+> > can be useful for the kernel too? General
+> > comments welcome.
+> 
+> Probably a dumb question, but doesn't backtrace(3) from glibc work
+> architecture independent already?   Why do you need to reimplement it?
 
--- 
-Guillaume Dargaud
-http://www.gdargaud.net/
+Nope, it doesn't give you a good backtrace from within a signal handler.
+On x86 you can use the normal backtrace function with a minor
+workaround, but as ppc doesn't save a FP in leaf functions, that
+workaround does not work well. You can read more about it
+at http://www.linuxjournal.com/article/6391
+
+ Jocke
