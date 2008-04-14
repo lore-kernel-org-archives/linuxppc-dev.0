@@ -1,24 +1,25 @@
-Return-Path: <sha@pengutronix.de>
-Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
-	[83.236.181.26]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 6E5B2DE037
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Apr 2008 00:45:36 +1000 (EST)
-Date: Mon, 14 Apr 2008 16:47:23 +0200
-From: Sascha Hauer <s.hauer@pengutronix.de>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH] FCC: fix confused base / offset
-Message-ID: <20080414144723.GD8704@pengutronix.de>
-References: <20080409130610.GE10465@pengutronix.de>
-	<20080409161110.GA5296@ld0162-tx32.am.freescale.net>
-	<20080409165324.GF10465@pengutronix.de>
-	<47FCFF64.9050109@freescale.com>
-	<20080410104655.GH10465@pengutronix.de>
-	<47FE4268.2000504@freescale.com>
+Return-Path: <timur@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id AFD9EDE1AB
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Apr 2008 00:49:53 +1000 (EST)
+Message-ID: <48036F00.6080200@freescale.com>
+Date: Mon, 14 Apr 2008 09:49:36 -0500
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <47FE4268.2000504@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+To: Jiri Slaby <jirislaby@gmail.com>
+Subject: Re: [PATCH 1/2] Driver for Freescale 8610 and 5121 DIU
+References: <12053582234100-git-send-email-yorksun@freescale.com>	<12053582231281-git-send-email-yorksun@freescale.com>	<47D8572C.8090501@gmail.com>	<47FFDBFF.1030809@gmail.com>	<20080411221817.0b1eb414.akpm@linux-foundation.org>	<48035E93.6070300@freescale.com>
+	<48035F98.1020404@gmail.com>	<48036001.10905@freescale.com>
+	<4803620C.6020905@gmail.com>	<48036649.6000409@freescale.com>
+	<4803690A.3080105@gmail.com>
+In-Reply-To: <4803690A.3080105@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
+	York Sun <yorksun@freescale.com>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,68 +29,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Apr 10, 2008 at 11:38:00AM -0500, Scott Wood wrote:
+Jiri Slaby wrote:
+> On 04/14/2008 04:12 PM, Timur Tabi wrote:
+>> Unfortunately, the author of the patch, York, is out this week, so I'll have to
+>> take care of this.  It'd be easier to modify rh_alloc() so that it doesn't
+>> sleep, so that's what I'm going to do.
+> 
+> Anyway, why do you need the spin lock there (and not mutex)? 
 
-Hi Scott,
+I don't know.  A spinlock just seemed obvious.  Why would I prefer a mutex?
 
-Thank you for your help so far
+We need a mutual exclusion device in order to prevent multiple threads from
+opening the DIU driver simultaneously.  When the driver is opened the first
+time, it needs to initialize the hardware.  The hardware can't be initialized
+unless we allocate a buffer first.
 
-> Sascha Hauer wrote:
->> See bottom of this mail. The board really is a 8260 based board. Our
->> bootloader does not fill in the clock values, so they are hardcoded. I'm
->> not very sure about the muram entries because the dpram is organized
->> slightly different on the 8260. It has some dedicated FCC space and I
->> don't know how to properly encode this in the device tree.
->
-> I think the FCC space should just be left out.
+Now, we could pre-allocate the buffer, but then this would be a permanent 5MB
+(8MB if we eliminate rh_alloc) allocation of physically contiguous memory.  I'm
+assuming that this would be a bad thing.  It wouldn't eliminate the spinlock,
+but at least we wouldn't be calling kmalloc().
 
-The old binding used the dpram offset 0xb080 for fcc2 while the new
-binding uses cpm_dpalloc which returns 0x80. When I use the old binding
-and change the hardcoded value from 0xb080 to 0x80 the fcc stopped
-working. I then hardcoded the value for the new binding to the same
-value as the old binding used, 0xb080, but no success.
-
->
->>> Does the PHY negotiate OK?
->>
->> Well I put some printks into the phy_read/write functions so I can say
->> that it at least properly talks to the phy.
->
-> Do you get a console message indicating that the link came up?
-
-No, but I didn't get a message for the old binding, too.
-
-I changed the device tree as you suggested, but still no success.
-
-BTW there is one thing I forgot to mention which could throw some light
-into this. This commit broke the FCC driver for me although it does the
-right thing:
-
-commit c6565331b7162a8348c70c37b4c33bedb6d4f02d
-Author: Scott Wood <scottwood@freescale.com>
-Date:   Mon Oct 1 14:20:50 2007 -0500
-
-    fs_enet: mac-fcc: Eliminate __fcc-* macros.
-
-    These macros accomplish nothing other than defeating type checking.
-
-    This patch also fixes one instance of the wrong register size being
-    used that was revealed by enabling type checking.
-
-    Signed-off-by: Scott Wood <scottwood@freescale.com>
-    Signed-off-by: Jeff Garzik <jeff@garzik.org>
-
-It fixes an access to the ftodr register in tx_kickstart(). After ftodr
-access the next console message is truncated and my bdi2000 shows me that
-the processor doesn't get out of cpm_uart_console_write(). Something
-strange is going on here...
-
-Sascha
-
-
+I open to suggestion for improvements.  I'm still going to post the rh_alloc
+atomic patch, because I think it makes sense anyway.  This should fix the
+sleep-within-spinlock problem, but it does not fix the kmalloc-5MB-in-spinlock
+problem.
 
 -- 
-Pengutronix e.K. - Linux Solutions for Science and Industry
------------------------------------------------------------
-Kontakt-Informationen finden Sie im Header dieser Mail oder
-auf der Webseite -> http://www.pengutronix.de/impressum/ <-
+Timur Tabi
+Linux kernel developer at Freescale
