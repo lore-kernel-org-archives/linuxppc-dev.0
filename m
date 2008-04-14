@@ -1,28 +1,20 @@
-Return-Path: <glppd-linuxppc64-dev@m.gmane.org>
-Received: from ciao.gmane.org (main.gmane.org [80.91.229.2])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <dargaud@lpsc.in2p3.fr>
+Received: from lpsc-mail.in2p3.fr (lpsc-mail.in2p3.fr [134.158.40.8])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 76272DE15E
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Apr 2008 02:09:56 +1000 (EST)
-Received: from list by ciao.gmane.org with local (Exim 4.43)
-	id 1JlRFe-0005uq-Pc
-	for linuxppc-dev@ozlabs.org; Mon, 14 Apr 2008 16:09:50 +0000
-Received: from p5497db12.dip.t-dialin.net ([84.151.219.18])
-	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
-	id 1AlnuQ-0007hv-00
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 Apr 2008 16:09:50 +0000
-Received: from dzu by p5497db12.dip.t-dialin.net with local (Gmexim 0.1
-	(Debian)) id 1AlnuQ-0007hv-00
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 Apr 2008 16:09:50 +0000
-To: linuxppc-dev@ozlabs.org
-From: Detlev Zundel <dzu@denx.de>
-Subject: Re: Signal backtrace function
-Date: Mon, 14 Apr 2008 18:09:00 +0200
-Message-ID: <m2skxoo1ur.fsf@ohwell.denx.de>
-References: <1207764980.5826.77.camel@gentoo-jocke.transmode.se>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Sender: news <news@ger.gmane.org>
+	by ozlabs.org (Postfix) with ESMTPS id 520AADF20C
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Apr 2008 02:17:27 +1000 (EST)
+Received: from LPSC0173W (lpsc0173w.in2p3.fr [134.158.40.173])
+	by lpsc-mail.in2p3.fr (8.13.1/8.13.1/In2p3) with SMTP id m3EGHNUl022098
+	for <linuxppc-dev@ozlabs.org>; Mon, 14 Apr 2008 18:17:23 +0200
+Message-ID: <01f001c89e4b$05acddd0$ad289e86@LPSC0173W>
+From: "Guillaume Dargaud" <dargaud@lpsc.in2p3.fr>
+To: <linuxppc-dev@ozlabs.org>
+Subject: Manual kernel parameters are being ignored
+Date: Mon, 14 Apr 2008 18:17:16 +0200
+MIME-Version: 1.0
+Content-Type: text/plain; format=flowed; charset="iso-8859-1";
+	reply-type=original
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,25 +24,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Jocke,
+Anyone care to tell me why the parameters I type manually for the kernel are 
+being ignored ?
 
-> I made my own backtrace function for printing
-> a trace from within a signal handler. Maybe it
-> can be useful for the kernel too? General
-> comments welcome.
-
-Probably a dumb question, but doesn't backtrace(3) from glibc work
-architecture independent already?   Why do you need to reimplement it?
-
-Thanks
-  Detlev
+Linux/PPC load: console=ttyUL0,9600 root=/dev/xsa2 rw ip=off
+Uncompressing Linux...done.
+Now booting the kernel
+[...]
+[    0.000000] Kernel command line: console=ttyUL0,9600 root=/dev/nfs rw 
+ip=on nfsroot=192.168.1.185:/ht
 
 -- 
-The management question  ...  is not  _whether_  to build a pilot system
-and throw it away.  You _will_ do that.  The only question is whether to
-plan  in advance  to build  a throwaway,  or  to promise  to deliver the
-throwaway to customers.          - Fred Brooks, "The Mythical Man Month"
---
-DENX Software Engineering GmbH,      MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich,  Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-40 Fax: (+49)-8142-66989-80 Email: dzu@denx.de
+Guillaume Dargaud
+http://www.gdargaud.net/
