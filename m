@@ -1,23 +1,22 @@
-Return-Path: <jbe@pengutronix.de>
-Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
-	[83.236.181.26]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <dargaud@lpsc.in2p3.fr>
+Received: from lpsc-mail.in2p3.fr (lpsc-mail.in2p3.fr [134.158.40.8])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id ABE82DE14D
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Apr 2008 18:23:33 +1000 (EST)
-Received: from themisto.extern.pengutronix.de ([83.236.181.29] helo=localhost)
-	by metis.extern.pengutronix.de with esmtp (Exim 4.63)
-	(envelope-from <jbe@pengutronix.de>) id 1Jlg8M-00045a-Lo
-	for linuxppc-dev@ozlabs.org; Tue, 15 Apr 2008 10:03:24 +0200
-From: Juergen Beisert <jbe@pengutronix.de>
-To: linuxppc-dev@ozlabs.org
-Date: Tue, 15 Apr 2008 10:03:17 +0200
-References: <47FDEF9B.5000506@semihalf.com> <47FF135E.2060003@246tnt.com>
-In-Reply-To: <47FF135E.2060003@246tnt.com>
+	by ozlabs.org (Postfix) with ESMTPS id 4F1AFDDFD2
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Apr 2008 18:46:47 +1000 (EST)
+Received: from LPSC0173W (lpsc0173w.in2p3.fr [134.158.40.173])
+	by lpsc-mail.in2p3.fr (8.13.1/8.13.1/In2p3) with SMTP id m3F8kfjN005159
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Apr 2008 10:46:42 +0200
+Message-ID: <02bb01c89ed5$39f48d10$ad289e86@LPSC0173W>
+From: "Guillaume Dargaud" <dargaud@lpsc.in2p3.fr>
+To: <linuxppc-dev@ozlabs.org>
+References: <01f001c89e4b$05acddd0$ad289e86@LPSC0173W>
+	<20080414155124.189d3465@zod.rchland.ibm.com>
+Subject: Re: Manual kernel parameters are being ignored
+Date: Tue, 15 Apr 2008 10:46:36 +0200
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200804151003.17865.jbe@pengutronix.de>
-Subject: Re: State of the MPC5200 PSC AC97 driver
+Content-Type: text/plain; format=flowed; charset="iso-8859-1";
+	reply-type=original
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,61 +26,222 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Friday 11 April 2008 09:29, Sylvain Munaut wrote:
-> > Last year you have posted a MPC5200 PSC AC97 driver patch
-> > "[PATCH 9/9] sound: Add support for Freescale MPC5200 AC97 interface."
-> >
-> > with the following comment:
-> >> Not quite a clean driver, but it get things done (well, mostly).
-> >> Only included to be able to test functionalityi/usage of
-> >> the BestComm driver.
+>> Anyone care to tell me why the parameters I type manually for the kernel 
+>> are
+>> being ignored ?
 >
-> Yes ... and it still applies.
->
-> > There are various FIXMEs and commented out code here and there.
-> > Could you elaborate a bit on the overall state of the driver's
-> > functionality,
-> > which areas need improvement and attention?
->
-> It's a minimum boiler plate.
-> I filled the function at the minimum to get some sound output and being
-> able to hear music coming out of it :)
-> I also completely skipped the 5200 (not B) support ...
->
-> At first there was no DMA at all (full software copy). I added some
-> simple DMA later just to prove it could work and how to use the API.
->
-> I just wrote it to get some sound, prove the interface could work under
-> linux and to show how to use DMA. I had hoped someone else would finish
-> it ... (yeah, I know ... big mistake).
->
-> > Seems that you mainly tested BestComm with this driver, what was the
-> > overall
-> > BestComm performance, any issues here? Did you use any specific test
-> > setup involving some dedicated application, etc.?
->
-> My test was listening to Gorrillaz "Feel Good inc" using mplayer ...
->
-> > Did anyone else tried it and/or has a updated version or can share
-> > experience?
->
-> At the time several other people tried it and it worked ... unless you
-> did lots of harddrive IO and then it crumbled ...
+> Care to tell us which kernel you are using and what your .config for it
+> looks like?
 
-Currently it fails to play anything with an external Wolfson WM9712 connect=
-ed=20
-to it. It seems the current AC97 reset sequence switches the WM9712 into=20
-testmode due to SDATA_OUT and Sync are not held low while the reset is=20
-active. Any idea to solve this? Switching both signals to GPIO and force th=
-em=20
-to low level while reset is active? How to cover PSC1 and PSC2 with differe=
-nt=20
-GPIOs for this case?
+Sure, sorry for not giving more details, I thought it was kind of a general 
+kernel question (and almost off topic here I must confess).
 
-Juergen
-=2D-=20
-Dipl.-Ing. Juergen Beisert | http://www.pengutronix.de
-=A0Pengutronix - Linux Solutions for Science and Industry
-=A0   Handelsregister: Amtsgericht Hildesheim, HRA 2686
-=A0 =A0 =A0    Vertretung Sued/Muenchen, Germany
-   Phone: +49-8766-939 228 |  Fax: +49-5121-206917-9
+Kernel 2.6.24 from the Xilinx git tree.
+Xilinx ml405 board, using UartLite console.
+
+If I don't select CMDLINE_BOOL I can type in whatever I want, but if I set a 
+CONFIG_CMDLINE then what I type is ignored.
+
+CONFIG_WORD_SIZE=32
+CONFIG_MMU=y
+CONFIG_GENERIC_HARDIRQS=y
+CONFIG_RWSEM_XCHGADD_ALGORITHM=y
+CONFIG_ARCH_HAS_ILOG2_U32=y
+CONFIG_GENERIC_HWEIGHT=y
+CONFIG_GENERIC_CALIBRATE_DELAY=y
+CONFIG_PPC=y
+CONFIG_PPC32=y
+CONFIG_GENERIC_NVRAM=y
+CONFIG_GENERIC_FIND_NEXT_BIT=y
+CONFIG_SCHED_NO_NO_OMIT_FRAME_POINTER=y
+CONFIG_ARCH_MAY_HAVE_PC_FDC=y
+CONFIG_GENERIC_BUG=y
+CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
+CONFIG_EXPERIMENTAL=y
+CONFIG_BROKEN_ON_SMP=y
+CONFIG_INIT_ENV_ARG_LIMIT=32
+CONFIG_LOCALVERSION=""
+CONFIG_BSD_PROCESS_ACCT=y
+CONFIG_BSD_PROCESS_ACCT_V3=y
+CONFIG_IKCONFIG=y
+CONFIG_IKCONFIG_PROC=y
+CONFIG_LOG_BUF_SHIFT=14
+CONFIG_BLK_DEV_INITRD=y
+CONFIG_INITRAMFS_SOURCE=""
+CONFIG_CC_OPTIMIZE_FOR_SIZE=y
+CONFIG_SYSCTL=y
+CONFIG_SYSCTL_SYSCALL=y
+CONFIG_KALLSYMS=y
+CONFIG_HOTPLUG=y
+CONFIG_PRINTK=y
+CONFIG_BUG=y
+CONFIG_ELF_CORE=y
+CONFIG_BASE_FULL=y
+CONFIG_FUTEX=y
+CONFIG_ANON_INODES=y
+CONFIG_EPOLL=y
+CONFIG_SIGNALFD=y
+CONFIG_EVENTFD=y
+CONFIG_SHMEM=y
+CONFIG_VM_EVENT_COUNTERS=y
+CONFIG_SLAB=y
+CONFIG_SLABINFO=y
+CONFIG_RT_MUTEXES=y
+CONFIG_BASE_SMALL=0
+CONFIG_MODULES=y
+CONFIG_KMOD=y
+CONFIG_BLOCK=y
+CONFIG_IOSCHED_NOOP=y
+CONFIG_IOSCHED_AS=y
+CONFIG_IOSCHED_DEADLINE=y
+CONFIG_IOSCHED_CFQ=y
+CONFIG_DEFAULT_AS=y
+CONFIG_DEFAULT_IOSCHED="anticipatory"
+CONFIG_40x=y
+CONFIG_PPC_DCR_NATIVE=y
+CONFIG_PPC_DCR=y
+CONFIG_4xx=y
+CONFIG_XILINX_ML405=y
+CONFIG_IBM405_ERR77=y
+CONFIG_IBM405_ERR51=y
+CONFIG_XILINX_MLxxx=y
+CONFIG_XILINX_VIRTEX_4_FX=y
+CONFIG_XILINX_VIRTEX=y
+CONFIG_XILINX_EMBED_CONFIG=y
+CONFIG_EMBEDDEDBOOT=y
+CONFIG_PPC_GEN550=y
+CONFIG_UART0_TTYS0=y
+CONFIG_NOT_COHERENT_CACHE=y
+CONFIG_ARCH_POPULATES_NODE_MAP=y
+CONFIG_HZ_250=y
+CONFIG_HZ=250
+CONFIG_PREEMPT_NONE=y
+CONFIG_SELECT_MEMORY_MODEL=y
+CONFIG_FLATMEM_MANUAL=y
+CONFIG_FLATMEM=y
+CONFIG_FLAT_NODE_MEM_MAP=y
+CONFIG_SPLIT_PTLOCK_CPUS=4
+CONFIG_ZONE_DMA_FLAG=1
+CONFIG_BOUNCE=y
+CONFIG_VIRT_TO_BUS=y
+CONFIG_BINFMT_ELF=y
+CONFIG_SECCOMP=y
+CONFIG_ISA_DMA_API=y
+CONFIG_ZONE_DMA=y
+CONFIG_HIGHMEM_START=0xfe000000
+CONFIG_LOWMEM_SIZE=0x30000000
+CONFIG_KERNEL_START=0xc0000000
+CONFIG_TASK_SIZE=0x80000000
+CONFIG_CONSISTENT_START=0xff100000
+CONFIG_CONSISTENT_SIZE=0x00200000
+CONFIG_BOOT_LOAD=0x00400000
+CONFIG_NET=y
+CONFIG_PACKET=y
+CONFIG_PACKET_MMAP=y
+CONFIG_UNIX=y
+CONFIG_INET=y
+CONFIG_IP_FIB_HASH=y
+CONFIG_IP_PNP=y
+CONFIG_IP_PNP_DHCP=y
+CONFIG_IP_PNP_BOOTP=y
+CONFIG_INET_DIAG=y
+CONFIG_INET_TCP_DIAG=y
+CONFIG_TCP_CONG_CUBIC=y
+CONFIG_DEFAULT_TCP_CONG="cubic"
+CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
+CONFIG_STANDALONE=y
+CONFIG_PREVENT_FIRMWARE_BUILD=y
+CONFIG_BLK_DEV=y
+CONFIG_BLK_DEV_LOOP=y
+CONFIG_BLK_DEV_RAM=y
+CONFIG_BLK_DEV_RAM_COUNT=16
+CONFIG_BLK_DEV_RAM_SIZE=8192
+CONFIG_BLK_DEV_RAM_BLOCKSIZE=1024
+CONFIG_XILINX_SYSACE=y
+CONFIG_XILINX_DRIVERS=y
+CONFIG_NEED_XILINX_IPIF=y
+CONFIG_NETDEVICES=y
+CONFIG_TUN=y
+CONFIG_NET_ETHERNET=y
+CONFIG_XILINX_EMACLITE=y
+CONFIG_INPUT=y
+CONFIG_INPUT_MOUSEDEV=y
+CONFIG_INPUT_MOUSEDEV_SCREEN_X=1024
+CONFIG_INPUT_MOUSEDEV_SCREEN_Y=768
+CONFIG_VT=y
+CONFIG_VT_CONSOLE=y
+CONFIG_HW_CONSOLE=y
+CONFIG_SERIAL_UARTLITE=y
+CONFIG_SERIAL_UARTLITE_CONSOLE=y
+CONFIG_SERIAL_CORE=y
+CONFIG_SERIAL_CORE_CONSOLE=y
+CONFIG_UNIX98_PTYS=y
+CONFIG_I2C=y
+CONFIG_I2C_BOARDINFO=y
+CONFIG_XILINX_IIC=y
+CONFIG_SSB_POSSIBLE=y
+CONFIG_DUMMY_CONSOLE=y
+CONFIG_XILINX_EDK=y
+CONFIG_EXT2_FS=y
+CONFIG_EXT3_FS=y
+CONFIG_EXT3_FS_XATTR=y
+CONFIG_JBD=y
+CONFIG_FS_MBCACHE=y
+CONFIG_INOTIFY=y
+CONFIG_INOTIFY_USER=y
+CONFIG_DNOTIFY=y
+CONFIG_AUTOFS4_FS=y
+CONFIG_FAT_FS=y
+CONFIG_MSDOS_FS=y
+CONFIG_VFAT_FS=y
+CONFIG_FAT_DEFAULT_CODEPAGE=437
+CONFIG_FAT_DEFAULT_IOCHARSET="iso8859-1"
+CONFIG_PROC_FS=y
+CONFIG_PROC_KCORE=y
+CONFIG_PROC_SYSCTL=y
+CONFIG_SYSFS=y
+CONFIG_TMPFS=y
+CONFIG_NETWORK_FILESYSTEMS=y
+CONFIG_NFS_FS=y
+CONFIG_NFS_V3=y
+CONFIG_ROOT_NFS=y
+CONFIG_LOCKD=y
+CONFIG_LOCKD_V4=y
+CONFIG_NFS_COMMON=y
+CONFIG_SUNRPC=y
+CONFIG_PARTITION_ADVANCED=y
+CONFIG_MSDOS_PARTITION=y
+CONFIG_NLS=y
+CONFIG_NLS_DEFAULT="iso8859-1"
+CONFIG_NLS_CODEPAGE_437=y
+CONFIG_NLS_ASCII=y
+CONFIG_NLS_ISO8859_1=y
+CONFIG_NLS_UTF8=y
+CONFIG_BITREVERSE=y
+CONFIG_CRC32=y
+CONFIG_PLIST=y
+CONFIG_HAS_IOMEM=y
+CONFIG_HAS_IOPORT=y
+CONFIG_HAS_DMA=y
+CONFIG_PRINTK_TIME=y
+CONFIG_ENABLE_WARN_DEPRECATED=y
+CONFIG_ENABLE_MUST_CHECK=y
+CONFIG_DEBUG_KERNEL=y
+CONFIG_DETECT_SOFTLOCKUP=y
+CONFIG_SCHED_DEBUG=y
+CONFIG_DEBUG_MUTEXES=y
+CONFIG_DEBUG_BUGVERBOSE=y
+CONFIG_DEBUG_INFO=y
+CONFIG_FORCED_INLINING=y
+CONFIG_SAMPLES=y
+CONFIG_CRYPTO=y
+CONFIG_CRYPTO_ALGAPI=y
+CONFIG_CRYPTO_BLKCIPHER=y
+CONFIG_CRYPTO_MANAGER=y
+CONFIG_CRYPTO_MD5=y
+CONFIG_CRYPTO_CBC=y
+CONFIG_CRYPTO_DES=y
+CONFIG_CRYPTO_HW=y
+-- 
+Guillaume Dargaud
+http://www.gdargaud.net/
