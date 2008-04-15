@@ -1,19 +1,34 @@
-Return-Path: <laurentp@cse-semaphore.com>
-Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
-	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id 2BF04DE70C
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Apr 2008 23:47:47 +1000 (EST)
-From: Laurent Pinchart <laurentp@cse-semaphore.com>
-To: avorontsov@ru.mvista.com
-Subject: Re: [RFC] GPIO-based flow control in the cpm_uart driver
-Date: Tue, 15 Apr 2008 15:47:41 +0200
-References: <200804151522.36884.laurentp@cse-semaphore.com>
-	<20080415134007.GA17096@polina.dev.rtsoft.ru>
-In-Reply-To: <20080415134007.GA17096@polina.dev.rtsoft.ru>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1426267.NO3xMiibEg";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Message-Id: <200804151547.44052.laurentp@cse-semaphore.com>
-Cc: David Brownell <david-b@pacbell.net>, linuxppc-dev@ozlabs.org
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 36A1BDE338
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Apr 2008 00:22:22 +1000 (EST)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
+	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	m3FEMH4k028276
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Apr 2008 07:22:17 -0700 (MST)
+Received: from ld0162-tx32.am.freescale.net (ld0162-tx32.am.freescale.net
+	[10.82.19.112])
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id m3FELxw9028391
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Apr 2008 09:22:02 -0500 (CDT)
+Date: Tue, 15 Apr 2008 09:21:59 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Andre Schwarz <andre.schwarz@matrix-vision.de>
+Subject: Re: Flash on LocalBus @ MPC8343
+Message-ID: <20080415142159.GA25682@ld0162-tx32.am.freescale.net>
+References: <47FF802B.5020708@matrix-vision.de>
+	<20080411153849.GB2588@loki.buserror.net>
+	<47FFC2DE.80808@matrix-vision.de> <47FFC397.9040200@freescale.com>
+	<480079CA.5040000@matrix-vision.de>
+	<20080414164518.GB7061@ld0162-tx32.am.freescale.net>
+	<48049754.8010008@matrix-vision.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <48049754.8010008@matrix-vision.de>
+Cc: linux-ppc list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,75 +38,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---nextPart1426267.NO3xMiibEg
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Tue, Apr 15, 2008 at 01:53:56PM +0200, Andre Schwarz wrote:
+> Scott,
+> 
+> there has been a "compatible=soc" in my of_bus_id[] ...
+> It was taken from mpc834x_mds some weeks ago.
+> 
+> I changed to :
+> 
+> static struct of_device_id __initdata of_bus_ids[] = {
+>        { .compatible = "fsl,pq2pro-localbus", },
+>        {},
+> };
 
-On Tuesday 15 April 2008 15:40, Anton Vorontsov wrote:
-> On Tue, Apr 15, 2008 at 03:22:33PM +0200, Laurent Pinchart wrote:
-> > Hi everybody,
-> >=20
-> > I'm implementing flow control and modem control lines support in the
-> > cpm_uart driver.
-> >=20
-> > The implementation is based on the GPIO lib. Modem control lines are
-> > described in the device tree as GPIO resources and accessed through the=
- OF
-> > GPIO bindings. The I/O ports have to be initialized as GPIOs in the=20
-> > platform-specific code.
-> >=20
-> > Reading and writing the modem control lines isn't an issue, but activat=
-ing=20
-> > hardware flow control is more complex. The driver needs to turn dedicat=
-ed=20
-> > functions on and off for the RTS and CTS signals, and the GPIO API does=
-n't=20
-> > provide a way to access the PPAR* registers (which does make sense -
-> > although arguably - as PPAR* control specific functions, not GPIOs).
-> >=20
-> > Hardcoding RTS and CTS lines control in the driver is not an option I w=
-ant
-> > to consider. Extending the GPIO API to handled special functions has be=
-en
-> > nacked in the past (see=20
-> > http://ozlabs.org/pipermail/linuxppc-dev/2008-February/051241.html). An=
-=20
-> > option would be to export gpio_to_chip from drivers/gpio/gpiolib.c and =
-use=20
-> > cpm1/2_set_pin in the cpm_uart driver.
->=20
-> Since you have successfuly ported QE USB controller onto CPM USB
-> hardware, now it's obvious that we will need generic gpio_set_dedicated()
-> function. So I would rather beg David to accept gpio_set_dedicated()
-> approach instead of exporting gpio_to_chip(). That way we'll kill two
-> birds with one stone.
+Don't get rid of the soc line, though -- both should be present.
 
-Or maybe some kind of gpio_set_option() with flags specific to the=20
-controller ? This could be used to enable open-drain outputs or internal=20
-pull-ups for instance.
-
-=2D-=20
-Laurent Pinchart
-CSE Semaphore Belgium
-
-Chaussee de Bruxelles, 732A
-B-1410 Waterloo
-Belgium
-
-T +32 (2) 387 42 59
-=46 +32 (2) 387 42 75
-
---nextPart1426267.NO3xMiibEg
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
-
-iD8DBQBIBLIA8y9gWxC9vpcRAty8AJsFTgW1Bz/XXsHeyjbNfsGgOTCWCQCgr/Nh
-mU3s+kIF8uf10BAvlubfYRY=
-=xlAf
------END PGP SIGNATURE-----
-
---nextPart1426267.NO3xMiibEg--
+-Scott
