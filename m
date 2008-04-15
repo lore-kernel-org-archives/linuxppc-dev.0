@@ -1,20 +1,21 @@
-Return-Path: <rsc@pengutronix.de>
-Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
-	[83.236.181.26]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 915E3DEAA2
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Apr 2008 01:32:39 +1000 (EST)
-Date: Tue, 15 Apr 2008 17:32:33 +0200
-From: Robert Schwebel <r.schwebel@pengutronix.de>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: fec_mpc5200: reset FEC on error
-Message-ID: <20080415153233.GY13814@pengutronix.de>
-References: <20080415152638.GW13814@pengutronix.de>
-	<F7AFD26F-39FE-4C1F-8918-F799F65F9559@kernel.crashing.org>
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 06B47DE92A
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Apr 2008 01:34:44 +1000 (EST)
+Message-ID: <4804CB12.1000308@freescale.com>
+Date: Tue, 15 Apr 2008 10:34:42 -0500
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-In-Reply-To: <F7AFD26F-39FE-4C1F-8918-F799F65F9559@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, Domen Puncer <domen@coderock.org>
+To: Laurent Pinchart <laurentp@cse-semaphore.com>
+Subject: Re: [RFC] Using two baud rate generators with the cpm_uart driver
+References: <200804151532.27057.laurentp@cse-semaphore.com>
+In-Reply-To: <200804151532.27057.laurentp@cse-semaphore.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,15 +25,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Apr 15, 2008 at 10:29:26AM -0500, Kumar Gala wrote:
-> You really need to also copy netdev and patches to drivers/net.
+Laurent Pinchart wrote:
+> thanks to a bad hardware design decision, I'm faced with a software issue with 
+> the cpm_uart driver.
+> 
+> My hardware uses either SCC4 or SMC2 (production-time option) as an RS485 port 
+> with an external transceiver. The transceiver's data direction is controlled 
+> by external logic that monitors the SCC4/SMC2 TxD signal.
+> 
+> The external logic needs an input clock at the baud rate frequency on the 
+> MPC8248 BRG5 output pin (although I could modify it to accept an input clock 
+> at 16x the baud rate frequency). This means the cpm_uart driver has to setup 
+> two baud rate generators instead of one.
+> 
+> The ppc architecture was easy to hack as it used a fs_uart_platform_info 
+> structure in which I added a set_brg function pointer provided by platform 
+> code. This isn't possible with the powerpc architecture anymore.
+ >
+> Is there a clean way to fix this issue ? Kicking the hardware designer won't 
+> help :-)
 
-Hm? Sorry, don't understand what you mean.
+Maybe not, but it'd be satisfying. :-)
 
-Robert
--- 
- Dipl.-Ing. Robert Schwebel | http://www.pengutronix.de
- Pengutronix - Linux Solutions for Science and Industry
-   Handelsregister:  Amtsgericht Hildesheim, HRA 2686
-     Hannoversche Str. 2, 31134 Hildesheim, Germany
-   Phone: +49-5121-206917-0 |  Fax: +49-5121-206917-9
+The clean solution would be to have an abstracted clock API, similar to 
+phylib, where the caller doesn't know details about BRGs and such. 
+Maybe the linux/clk.h API would be suitable; I haven't looked at it in 
+detail.
+
+-Scott
