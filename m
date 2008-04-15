@@ -1,19 +1,20 @@
-Return-Path: <rsc@pengutronix.de>
-Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
-	[83.236.181.26]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 6D66EDE875
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Apr 2008 01:44:45 +1000 (EST)
-Date: Tue, 15 Apr 2008 17:44:39 +0200
-From: Robert Schwebel <r.schwebel@pengutronix.de>
-To: netdev@vger.kernel.org
-Subject: fec_mpc5200: reset FEC on error
-Message-ID: <20080415154439.GZ13814@pengutronix.de>
-References: <20080415152638.GW13814@pengutronix.de>
+Return-Path: <dzu@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 6F54BDE8FB
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Apr 2008 01:51:29 +1000 (EST)
+From: Detlev Zundel <dzu@denx.de>
+To: joakim.tjernlund@transmode.se
+Subject: Re: Signal backtrace function
+References: <1207764980.5826.77.camel@gentoo-jocke.transmode.se>
+	<m2skxoo1ur.fsf@ohwell.denx.de>
+	<1208190010.5911.15.camel@gentoo-jocke.transmode.se>
+Date: Tue, 15 Apr 2008 17:50:45 +0200
+In-Reply-To: <1208190010.5911.15.camel@gentoo-jocke.transmode.se> (Joakim
+	Tjernlund's message of "Mon, 14 Apr 2008 18:20:09 +0200")
+Message-ID: <m2zlrvi0bu.fsf@ohwell.denx.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-In-Reply-To: <20080415152638.GW13814@pengutronix.de>
-Cc: linuxppc-dev@ozlabs.org, Domen Puncer <domen@coderock.org>
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,63 +24,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Sascha Hauer <s.hauer@pengutronix.de>
+Hi Jocke,
 
-The error handling for the mpc5200 fec interrupt is broken. The intended
-behaviour is like this:
+> On Mon, 2008-04-14 at 18:09 +0200, Detlev Zundel wrote:
+>> Hi Jocke,
+>> 
+>> > I made my own backtrace function for printing
+>> > a trace from within a signal handler. Maybe it
+>> > can be useful for the kernel too? General
+>> > comments welcome.
+>> 
+>> Probably a dumb question, but doesn't backtrace(3) from glibc work
+>> architecture independent already?   Why do you need to reimplement it?
+>
+> Nope, it doesn't give you a good backtrace from within a signal handler.
+> On x86 you can use the normal backtrace function with a minor
+> workaround, but as ppc doesn't save a FP in leaf functions, that
+> workaround does not work well. You can read more about it
+> at http://www.linuxjournal.com/article/6391
 
-* If one of FEC_IEVENT_RFIFO_ERROR and FEC_IEVENT_XFIFO_ERROR happens,
-  the datasheet says (MPC5200B User's Guide R1.2, p. 14-13): "When this
-  occurs, software must ensure both the FIFO Controller and BestComm are
-  soft-reset".
+Thanks for clearing that up.  I wasn't aware of that limitation.
 
-* On any other error (non-TFINT) interrupt, just issue a debug message.
+Cheers
+  Detlev
 
-v2 changed to -p1 and posted on linuxppc list (2008-04-15).
-
-v1 posted on linuxppc list (2008-04-15).
-
-Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
-
----
- drivers/net/fec_mpc52xx.c |   23 +++++++++++++----------
- 1 file changed, 13 insertions(+), 10 deletions(-)
-
-Index: drivers/net/fec_mpc52xx.c
-===================================================================
---- a/drivers/net/fec_mpc52xx.c.orig
-+++ b/drivers/net/fec_mpc52xx.c
-@@ -491,20 +491,23 @@
- 
- 	out_be32(&fec->ievent, ievent);		/* clear pending events */
- 
--	if (ievent & ~(FEC_IEVENT_RFIFO_ERROR | FEC_IEVENT_XFIFO_ERROR)) {
--		if (ievent & ~FEC_IEVENT_TFINT)
--			dev_dbg(&dev->dev, "ievent: %08x\n", ievent);
-+	/* on fifo error, soft-reset fec */
-+	if (ievent & (FEC_IEVENT_RFIFO_ERROR | FEC_IEVENT_XFIFO_ERROR)) {
-+
-+		if (net_ratelimit() && (ievent & FEC_IEVENT_RFIFO_ERROR))
-+			dev_warn(&dev->dev, "FEC_IEVENT_RFIFO_ERROR\n");
-+		if (net_ratelimit() && (ievent & FEC_IEVENT_XFIFO_ERROR))
-+			dev_warn(&dev->dev, "FEC_IEVENT_XFIFO_ERROR\n");
-+
-+		mpc52xx_fec_reset(dev);
-+
-+		netif_wake_queue(dev);
- 		return IRQ_HANDLED;
- 	}
- 
--	if (net_ratelimit() && (ievent & FEC_IEVENT_RFIFO_ERROR))
--		dev_warn(&dev->dev, "FEC_IEVENT_RFIFO_ERROR\n");
--	if (net_ratelimit() && (ievent & FEC_IEVENT_XFIFO_ERROR))
--		dev_warn(&dev->dev, "FEC_IEVENT_XFIFO_ERROR\n");
--
--	mpc52xx_fec_reset(dev);
-+	if (ievent & ~FEC_IEVENT_TFINT)
-+		dev_dbg(&dev->dev, "ievent: %08x\n", ievent);
- 
--	netif_wake_queue(dev);
- 	return IRQ_HANDLED;
- }
- 
+-- 
+In short: much of our country's [USA] counterterrorism security spending is
+not designed to protect us from the terrorists,  but instead to protect our
+public officials from criticism when another attack occurs.
+                                   -- Bruce Schneier
+--
+DENX Software Engineering GmbH,      MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich,  Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-40 Fax: (+49)-8142-66989-80 Email: dzu@denx.de
