@@ -1,15 +1,27 @@
-Return-Path: <robert.king@sevis.com>
-Received: from mailhost.dallashelpdesk.com (mailhost.dallashelpdesk.com
-	[65.99.204.132]) by ozlabs.org (Postfix) with ESMTP id 23FFEDEBAB
+Return-Path: <daniel.gutson@motorola.com>
+Received: from mail119.messagelabs.com (mail119.messagelabs.com
+	[216.82.241.179]) by ozlabs.org (Postfix) with SMTP id 2A233DECAF
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 16 Apr 2008 03:44:56 +1000 (EST)
+	Wed, 16 Apr 2008 02:25:21 +1000 (EST)
+Received: from az33exr02.mot.com (az33exr02.mot.com [10.64.251.232])
+	by motgate5.mot.com (8.12.11/Motorola) with ESMTP id m3FGPIS1013948
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 15 Apr 2008 09:25:18 -0700 (MST)
+Received: from az10vts04.mot.com (az10vts04.mot.com [10.64.251.245])
+	by az33exr02.mot.com (8.13.1/Vontu) with SMTP id m3FGPHXg025152
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 15 Apr 2008 11:25:18 -0500 (CDT)
+Received: from ct11exm66.ds.mot.com (ct11exm66.am.mot.com [10.177.8.54])
+	by az33exr02.mot.com (8.13.1/8.13.0) with ESMTP id m3FGPGZw025132
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 15 Apr 2008 11:25:17 -0500 (CDT)
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: RTC no longer being updated in 2.6.16...
-Date: Tue, 15 Apr 2008 12:29:51 -0500
-Message-ID: <9CD384C658DFA3499F06F2D2064FB96843B463@dcsevis03.sevis.com>
-From: "Robert King" <robert.king@sevis.com>
+	charset="US-ASCII"
+Subject: io_block_mapping & ioremap question
+Date: Tue, 15 Apr 2008 12:25:14 -0400
+Message-ID: <0539F2514A979C4B9386FF81809203FF016B6540@ct11exm66.ds.mot.com>
+From: "Gutson Daniel-ADG035" <daniel.gutson@motorola.com>
 To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -21,63 +33,39 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Disclaimer: I'm working on a new project here, so I'm not 100% up-to-date=
-=20on the system as a whole.
+Hi,
+	I'm doing some work on 2.6.10, and got this problem:
+- there are some io_block_mapping calls in the setup_io_mapping
+callback, that use the BATs, and passing same va and pa each one.
+Problem arises later when vmallocs gets a a pointer within the mapped
+ranges. In other words, seems like the VMM is not aware of the BATs
+mapping.
 
-I've been tasked to find out why our RTC clock is not being updated after=
-=20suynching with a NTP timesource.  In our previous release, the RTC see=
-med to be updated every 11 minutes via the timer_interrupt() ISR.  This n=
-o longer seems to be happening.  I have determined that timer_isr() is ru=
-nning, but ppc_md.set_rtc_time(xtime.tv_sec+1 + timezone_offset) doesn't =
-appear to ever get called.  There are five conditions that must be true f=
-or this to be called:
+So what I did is: called first ioremap and then io_block_mapping in the
+callback thus not hardcoding the va, something like:
+	va =3D ioremap(pa, size);
+	io_block_mapping(pa, va, size);
 
-=20  1 - ppc_md.set_rtc_time
+Questions:
+	1) Is it right?
+	2) Should I unmap that address sometime later? (i.e. after
+mem_init_done).
 
-this is true.
+Thanks!
+	Daniel.
 
-=20  2 - ntp_synced()
+=20
+Daniel F. Gutson
+Software Engineer
+Motorola GSG Argentina
+Tel =3D (54)-351-420-9218
+Fax =3D (54)-351-420-9202
+=20
+iProtect Classification
+[x] Public
+[ ] Internal
+[ ] Motorola Confidential Restricted
 
-this seems to become true as soon as I sync with my NTP timesource.
-
-=20  3 - xtime.tv_sec - last_rtc_update >=3D 659
-
-this seems to become true within a few secondws of syncing with my timeso=
-urce
-
-=20  4 - abs((xtime.tv_nsec / 1000) - (1000000-1000000/HZ)) < 500000/HZ
-
-this seems to be true fairly often
-
-=20  5 - jiffies - wall_jiffies =3D=3D 1
-
-This seems to be true fairly often.
-
-My checks for these conditions are pretty crude.  If one is true, I go in=
-to an infinite loop, which eventually kicks off the watchdog timer and th=
-e card reboots.  Quick & dirty.
-
-#1 #2, and #3 seem pretty obvious.  #1 checks for the presence of a time =
-sync function, #2 checks to see if we have synchronized with an NTP serve=
-r, and #3 checks to see of that sync was at least 11 minutes ago.
-
-#4 and #5 I don't understand so much.  I THINK #4 checks to see of we're =
-close to a second or half-second boundry (I'm assuming this is becxause o=
-f a hardware limitation on the RTC.)  #5 I have no clue about.  It seems =
-that wall_jiffies and jiffies are always the same.
-
-My goal is simply to sync the RTC with the system clock, either periodica=
-lly or at system shutdown (which is preferred.)  however, I don't have an=
-=20RTC driver.  Neither do I have hwclock on this system, so my first sho=
-t was getting the 11-minute update working.  If this is the wrong way to =
-go, I'm open to suggestions.
-
--- Robert King
-=20  Sevis Systems, Inc.
-#########################################################################=
-############
-This e-mail message has been scanned for Viruses and Content and cleared =
-
-by MailMarshal
-#########################################################################=
-############
+=20
+"we made a big mistake in coming down from the trees in the first place"
+- D. Adams
