@@ -1,25 +1,21 @@
-Return-Path: <sygao.research@gmail.com>
-Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.31])
-	by ozlabs.org (Postfix) with ESMTP id 9D5C2DE466
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id DEAE7DDF25
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 16 Apr 2008 05:26:32 +1000 (EST)
-Received: by yw-out-2324.google.com with SMTP id 3so1224809ywj.39
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 15 Apr 2008 12:26:29 -0700 (PDT)
-In-Reply-To: <20080415185919.45D16F8806C@mail189-sin.bigfish.com>
-References: <287479FF-A7FC-4B48-BE1E-FDDCB97D55A9@gmail.com>
-	<20080415183706.C694717D807B@mail80-dub.bigfish.com>
-	<8092B58B-4C3F-4F29-83A9-F53DA23F10F8@gmail.com>
-	<20080415185919.45D16F8806C@mail189-sin.bigfish.com>
-Mime-Version: 1.0 (Apple Message framework v753)
-Content-Type: text/plain; charset=UTF-8; delsp=yes; format=flowed
-Message-Id: <0400E623-0650-4F4C-9021-B73A5F581BAE@gmail.com>
-From: Shanyuan Gao <sygao.research@gmail.com>
-Subject: Re: Problems of using APU/FPU under linux
-Date: Tue, 15 Apr 2008 15:26:21 -0400
-To: John Bonesio <john.bonesio@xilinx.com>,
-	Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>,
-	linuxppc-embedded@ozlabs.org
+	Wed, 16 Apr 2008 07:33:43 +1000 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1JlsmY-0005in-MS
+	for linuxppc-embedded@ozlabs.org; Tue, 15 Apr 2008 14:33:38 -0700
+Message-ID: <16711066.post@talk.nabble.com>
+Date: Tue, 15 Apr 2008 14:33:38 -0700 (PDT)
+From: khollan <khollan@daktronics.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: XLlTemac  soft lockup BUG
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -30,287 +26,83 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Sorry I didn't make myself clear. I just want to use FPU as a normal =20
-co-processor under Linux. I mean different programs and maybe =20
-multiple users, well, for single precision. So I think the exception =20
-handler really helps!
 
-Thank you Steve and John, I added the exception handler. It solved =20
-the trap problem. However, I still got the answer 0 for 1.25f * =20
-3.75f. I am working on it :)
+Hi all,
 
+I am trying to switch my design from the PLB Temac to the local link temac,
+and i have a problem when trying to run ifconfig in my init script.  It
+gives me a BUG: soft lockup - CPU#0 stuck for 11s! [ifconfig:208]
+Here is the rest of the dump, thanks for your help in advance.
+[  233.114960] eth0: XLlTemac: Options: 0x3fa
 
-Shan
+[  233.118449] eth0: XLlTemac: allocating interrupt 8 for fifo mode.
 
+[  237.135029] eth0: XLlTemac: We renegotiated the speed to: 100
 
+[  237.150339] eth0: XLlTemac: speed set to 100Mb/s
 
-On Apr 15, 2008, at 2:59 PM, John Bonesio wrote:
+[  244.792140] BUG: soft lockup - CPU#0 stuck for 11s! [ifconfig:204]
 
-> Hi Shan,
->
-> It's not clear what you're trying to do. If you have only one =20
-> application using the FPU, and you're setting up the APU and FPU =20
-> from that user application, I'm not sure if you need the FPU =20
-> unavailable handler.
->
-> If you're going to have multiple applications use the FPU, then you =20=
+[  244.797813] NIP: c0188a5c LR: c012d3d0 CTR: c016c3f8
 
-> should use the FPU unavailable handler. In this case, you'll need =20
-> to look in head_44x.S to see how the FPU unavailable handler is set =20=
+[  244.803533] REGS: ceb1fbf0 TRAP: 1001   Not tainted  (2.6.24-rc8-xlnx)
 
-> up, and do something similar in head_4xx.S
->
-> If you're going to do all FPU from one user application, you just =20
-> need to make sure the kernel doesn't ever clear the FP Available =20
-> bit in the MSR.
->
-> Is this making sense?
->
-> model #1: One user app owns/uses FPU: Use Yoshio's suggesting on =20
-> getting access to the MSR to setup the fpu from the user =20
-> application. Don't use FPU unavailable handler, Don't use =20
-> load_up_fpu(). Check kernel code to make sure it doesn't clear FPU =20
-> available bit on a context switch.
-> model #2: Kernel owns FPU, user apps use FPU: Set up the MSR for =20
-> fpu access in kernel startup code. Set up FPU unavailable handler =20
-> in kernel. Use load_up_fpu(). Make sure the kernel clears the FPU =20
-> available bit in the MSR on context switches.
->
-> Hope this helps,
->
-> - John
->
-> On Tuesday 15 April 2008 11:47, Shanyuan Gao wrote:
->> No, actually I am using head_4xx.S and I cannot find FPU_UNAVAILABLE
->> in there. Do I need to set it?
->>
->> And I commented out the _GLOBAL(giveup_fpu) in head_4xx.S because it
->> has conflicts with fpu.S
->>
->>
->>
->> Shan
->>
->>
->> On Apr 15, 2008, at 2:37 PM, Stephen Neuendorffer wrote:
->>
->>> Shanyuan,
->>>
->>> Did you install the FPU_UNAVAILABLE trap in head_40x.S?
->>>
->>>
->>>> -----Original Message-----
->>>> From: Shanyuan Gao [mailto:sygao.research@gmail.com]
->>>> Sent: Tuesday, April 15, 2008 11:34 AM
->>>> To: Yoshio Kashiwagi; linuxppc-embedded@ozlabs.org
->>>> Cc: Stephen Neuendorffer; John Bonesio
->>>> Subject: Re: Problems of using APU/FPU under linux
->>>>
->>>> Thank you, Yoshio!!
->>>>
->>>> I just applied the change, seems it works! But it doesn't work
->>>> correctly. I mean it won't give me traps any more, but the =20
->>>> answer is
->>>> not correctly. I just tried to multiply two float numbers. But it
->>>> gives me 0.
->>>>
->>>> The first time I change the reg.h was to enable apu enable, apu
->>>> exception enable and fpu enable. It gives me answer 0.
->>>> The second try I did was enabling apu enable and apu exception,
->>>> because I notice that inside /arch/powerpc/kernel/fpu.S, it will
->>>> enable FPU in load_up_fpu. So I guess I cannot enable FPU all the
->>>> time. However, this time it gave me trap again, well, with a
->>>> different MSR.
->>>>
->>>> Now my guess is load_up_fpu is not working correctly. I am =20
->>>> working on
->>>> that.
->>>>
->>>>
->>>> Shan
->>>>
->>>>
->>>>
->>>> On Apr 15, 2008, at 2:20 PM, Yoshio Kashiwagi wrote:
->>>>
->>>>> Hi,
->>>>>
->>>>> The following modification is required if you use APU in user =20
->>>>> space.
->>>>>
->>>>> in include/asm-powerpc/reg.h
->>>>>
->>>>> -#define MSR_USER   (MSR_KERNEL|MSR_PR|MSR_EE)
->>>>> +#define MSR_USER   (MSR_KERNEL|MSR_PR|MSR_EE|MSR_VEC)
->>>>>
->>>>> Yoshio Kashiwagi - Nissin Systems
->>>>>
->>>>>> Thank you very much, Steve and John!
->>>>>>
->>>>>> My advisor and I discussed how Linux works with APU/FPU a few =20
->>>>>> days
->>>>>> ago.
->>>>>  And he had the same thoughts with John. My naive guess was it =20
->>>>> would
->>>>> automatically decode FP operations and mask the trap. Now it
->>>>> answers my
->>>>> second question. I will try it later.
->>>>>>
->>>>>> But for my first question, I searched all (almost all) the files,
->>>>>> such
->>>>> as head.S, entry.S, head_4xx.S, etc. And added following three =20
->>>>> lines
->>>>> before mtmsr or MTMSRD =EF=BF=BDare used
->>>>>>
->>>>>> ori =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BDr10, r10, 1<<13 =EF=BF=BD=
-/* enable fpu */
->>>>>> oris =EF=BF=BD =EF=BF=BD =EF=BF=BDr10, r10, 1<<9 =EF=BF=BD =EF=BF=BD=
-/* enable apu */
->>>>>> oris =EF=BF=BD =EF=BF=BD =EF=BF=BDr10, r10, 1<<3 =EF=BF=BD =EF=BF=BD=
-/* enable apu exception */
->>>>>>
->>>>>> However the MSR in trap prompts keeps the same (2d030) before and
->>>>> after I added those lines.=EF=BF=BD
->>>>>>
->>>>>> [=EF=BF=BD=EF=BF=BD 31.819079] Bad trap at PC: 10000458, MSR: =
-2d030,
->>>>>> vector=3D800=EF=BF=BD=EF=BF=BD=EF=BF=BD Not
->>>>> tainted
->>>>>> [=EF=BF=BD=EF=BF=BD 31.887027]=EF=BF=BD=EF=BF=BD Signal: 5
->>>>>> [=EF=BF=BD=EF=BF=BD 31.887042]=EF=BF=BD=EF=BF=BD Code:=EF=BF=BD=EF=BF=
-=BD 0
->>>>>> [=EF=BF=BD=EF=BF=BD 31.887058]=EF=BF=BD=EF=BF=BD Addr:=EF=BF=BD=EF=BF=
-=BD 0
->>>>>> Trace/breakpoint trap
->>>>>>
->>>>>> I guess there must be some places, like some interrupts that
->>>>>> changed
->>>>> the MSR that I didn't know. =EF=BF=BD
->>>>>>
->>>>>> And for FP exceptions, it has two bits (two modes) in MSR. I =20
->>>>>> think
->>>>> they are for such exceptions like divided by zero. Do I need to =20=
+[  244.811039] MSR: 00029030 <EE,ME,IR,DR>  CR: 22000444  XER: 20000000
 
->>>>> set
->>>>> them
->>>>> also?
->>>>>>
->>>>>> In my previous build, I also added PPC_FPU under config 40x in
->>>>>> arch/
->>>>> ppc/Kconfig. It compiled arch/powerpc/kernel/fpu.S in, but didn't
->>>>> help.
->>>>> I will try CONFIG_PPC_FPU later.
->>>>>>
->>>>>>
->>>>>> Shan
->>>>>>
->>>>>> On Apr 14, 2008, at 2:32 PM, John Bonesio wrote:
->>>>>>
->>>>>> Hi,
->>>>>>
->>>>>> The Linux kernel itself doesn't issue floating point instructions
->>>>> other than to save and restore the fpu state when necessary.
->>>>>>
->>>>>> In Linux, the way it saves and restores the fpu state is to make
->>>>>> use
->>>>> of the trap. When the trap (fpu unavailable) occurs, it loads the
->>>>> fpu
->>>>> state for the current task, sets up the MSR, and returns to re-
->>>>> try the
->>>>> instruction.
->>>>>>
->>>>>> So, getting the trap is normal. If the FPU is not being set up
->>>>> correctly, then there may be a problem with the restoring of the
->>>>> state.
->>>>>>
->>>>>> When you guild the Linux kernel, you need to have CONFIG_PPC_FPU
->>>>> enabled. Otherwise the kernel does not setup the fpu exception
->>>>> handling.
->>>>>>
->>>>>> - John
->>>>>>
->>>>>>
->>>>>> On Monday 14 April 2008 10:35, Stephen Neuendorffer wrote:
->>>>>>
->>>>>> I'm not sure exactly what's going on here.=EF=BF=BD Generally =
-speaking,
->>>>>> if you
->>>>>> have the FPU instantiated in the design and enable the APU in the
->>>>>> msr,
->>>>>> then the processor should decode FP instructions and send them
->>>>> directly
->>>>>> to the APU with no trap.=EF=BF=BD I haven't done this myself, or =
-I =20
->>>>>> could
->>>>>> probably give you some better help...
->>>>>>
->>>>>> One thing you should be aware of is that the there are gcc =20
->>>>>> compiler
->>>>>> patches which are necessary to get the FPU working properly.=EF=BF=BD=
+[  244.818363] TASK = cf82f7f0[204] 'ifconfig' THREAD: ceb1e000
 
->>>>>> However,
->>>>> I
->>>>>> don't think the failure mode that these patches workaround would
->>>>>> cause
->>>>> a
->>>>>> trap, so my guess is that there is still something else wrong.
->>>>>>
->>>>>> Steve
->>>>>>
->>>>>> -----Original Message-----
->>>>>> From: linuxppc-embedded-bounces
->>>>>> +stephen=3Dneuendorffer.name@ozlabs.org
->>>>>> [mailto:linuxppc-embedded-
->>>>>> bounces+stephen=3Dneuendorffer.name@ozlabs.org] On Behalf Of =20
->>>>>> Shanyuan
->>>>>> Gao
->>>>>> Sent: Monday, April 14, 2008 9:18 AM
->>>>>> To: linuxppc-embedded@ozlabs.org
->>>>>> Subject: Problems of using APU/FPU under linux
->>>>>>
->>>>>> Hi,
->>>>>>
->>>>>> Recently I was trying to make APU/FPU working under Linux on =20
->>>>>> Xilinx
->>>>>> ML410. The standalone programs work perfectly. However under =20
->>>>>> Linux,
->>>>>> when I try to use a floating point operation, like *fmuls*, it =20=
+[  244.824673] GPR00: cebca800 ceb1fca0 cf82f7f0 cebc84a0 cf86c000 00000010
+cebc8520 00000000 
 
->>>>>> will
->>>>>> give me a *trap*.
->>>>>>
->>>>>> By studying the user guide from Xilinx and dumping the object
->>>>>> files,
->>>>>> I know I need to change the corresponding bits (APU enable, FP
->>>>>> enable, maybe APU Exception enable) in Machine State Register. I
->>>>>> guess I need to enable the bits whenever before the kernel uses
->>>>>> *mtmsr*. However, it doesn't work. I got the same trap with the
->>>>>> same
->>>>>> MSR, as I had no APU/FPU before. I also tried to add the FPU.S
->>>>>> to ppc
->>>>>> tree, but it doesn't work either.
->>>>>>
->>>>>> The questions are
->>>>>> 1. I guess there might be some place that changed MSR after =20
->>>>>> all my
->>>>>> changes. But I don't know where. And can I write a kernel =20
->>>>>> module to
->>>>>> change the MSR after booting in Linux? (well, it's hard for me
->>>>>> though)
->>>>>>
->>>>>> 2. Does it have any exception/interrupt mechanism to direct FP
->>>>>> operation to APU/FPU? Or after enabling APU/FPU it will mask the
->>>>>> exception/interrupt and decode FP operation by itself?
->>>>>>
->>>>>>
->>>>>> Any ideas are appreciated. Thank you very much!
->>>>>>
->>>>>>
->>>>>> Shan
->>>>>
->>>>
->>>
->>
->>
->>
->
+[  244.834297] GPR08: 00000000 00000040 cebc84a0 00000001 c0248780 
+
+[  244.841416] NIP [c0188a5c] eth_type_trans+0x10/0x114
+
+[  244.847132] LR [c012d3d0] FifoRecvHandler+0x154/0x1dc
+
+[  244.852945] Call Trace:
+
+[  244.855758] [ceb1fca0] [c012d368] FifoRecvHandler+0xec/0x1dc (unreliable)
+
+[  244.863579] [ceb1fcc0] [c0023b4c] tasklet_action+0x88/0xe4
+
+[  244.869894] [ceb1fcd0] [c0023c20] __do_softirq+0x64/0xd4
+
+[  244.876010] [ceb1fcf0] [c00064f4] do_softirq+0x40/0x58
+
+[  244.881925] [ceb1fd00] [c0023a50] irq_exit+0x38/0x48
+
+[  244.887640] [ceb1fd10] [c000673c] do_IRQ+0x88/0xa4
+
+[  244.893154] [ceb1fd20] [c000325c] ret_from_except+0x0/0x18
+
+[  244.899470] [ceb1fde0] [c0130804] xenet_open+0x24c/0x41c
+
+[  244.905586] [ceb1fe10] [c017aa60] dev_open+0x88/0xf0
+
+[  244.911300] [ceb1fe20] [c017a904] dev_change_flags+0xcc/0x1a0
+
+[  244.917917] [ceb1fe40] [c01b9110] devinet_ioctl+0x298/0x6c0
+
+[  244.924334] [ceb1fea0] [c01b965c] inet_ioctl+0xd0/0x104
+
+[  244.930349] [ceb1feb0] [c016d12c] sock_ioctl+0x22c/0x268
+
+[  244.936465] [ceb1fed0] [c006eb78] do_ioctl+0x38/0x84
+
+[  244.942179] [ceb1fee0] [c006ef48] vfs_ioctl+0x384/0x3b8
+
+[  244.948195] [ceb1ff10] [c006efbc] sys_ioctl+0x40/0x70
+
+[  244.954010] [ceb1ff40] [c0002c10] ret_from_syscall+0x0/0x3c
+
+[  244.960423] Instruction dump:
+
+[  244.963832] 7d005379 3863012c 41820010 7d2534aa 7d2335aa 38c00000
+7cc33378 4e800020 
+
+[  244.972752] 81230054 80030090 2b89000d 7c6a1b78 <90030080> 90830018
+409d002c 80030058 
+-- 
+View this message in context: http://www.nabble.com/XLlTemac--soft-lockup-BUG-tp16711066p16711066.html
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
