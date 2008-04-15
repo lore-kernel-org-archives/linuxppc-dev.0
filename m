@@ -1,11 +1,16 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18436.41073.464457.384938@cargo.ozlabs.ibm.com>
-Date: Tue, 15 Apr 2008 22:32:49 +1000
-From: Paul Mackerras <paulus@samba.org>
+Return-Path: <laurentp@cse-semaphore.com>
+Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
+	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id 7E036DE4D2
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Apr 2008 23:22:41 +1000 (EST)
+From: Laurent Pinchart <laurentp@cse-semaphore.com>
 To: linuxppc-dev@ozlabs.org
-Subject: Patches pushed to powerpc.git master and powerpc-next branches
+Subject: [RFC] GPIO-based flow control in the cpm_uart driver
+Date: Tue, 15 Apr 2008 15:22:33 +0200
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart1250411.JUmcemZJOo";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
+Message-Id: <200804151522.36884.laurentp@cse-semaphore.com>
+Cc: David Brownell <david-b@pacbell.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,36 +20,67 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I have just pushed the following patches to the master and
-powerpc-next branches of the powerpc.git repository, and pulled in
-Linus' tree as of 2.6.25-rc9.
+--nextPart1250411.JUmcemZJOo
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Paul.
+Hi everybody,
 
-Dale Farnsworth (5):
-      [POWERPC] prpmc2800: Fix frequencies in prpmc2800.dts
-      [POWERPC] mv64x60: Remove device tree absolute path references
-      [POWERPC] mv643xx_eth: Prepare to support multiple silicon blocks
-      [POWERPC] Document the mv64x60 device tree bindings
-      [POWERPC] prpmc2800 needs a dtbImage
+I'm implementing flow control and modem control lines support in the cpm_ua=
+rt=20
+driver.
 
-David S. Miller (1):
-      [LMB] Add lmb_alloc_nid()
+The implementation is based on the GPIO lib. Modem control lines are descri=
+bed=20
+in the device tree as GPIO resources and accessed through the OF GPIO=20
+bindings. The I/O ports have to be initialized as GPIOs in the=20
+platform-specific code.
 
-Mark A. Greer (3):
-      [POWERPC] prpmc2800: Convert DTS to v1 and add labels
-      [POWERPC] mv64x60: Fix FDT compatible names: mv64x60 => mv64360
-      [POWERPC] prpmc2800: Clean up dts properties
+Reading and writing the modem control lines isn't an issue, but activating=
+=20
+hardware flow control is more complex. The driver needs to turn dedicated=20
+functions on and off for the RTS and CTS signals, and the GPIO API doesn't=
+=20
+provide a way to access the PPAR* registers (which does make sense - althou=
+gh=20
+arguably - as PPAR* control specific functions, not GPIOs).
 
-Paul Mackerras (3):
-      [POWERPC] Fix handling of unrecoverable SLB miss interrupts
-      [LMB] Fix some whitespace and other formatting issues, use pr_debug
-      [LMB] Restructure allocation loops to avoid unsigned underflow
+Hardcoding RTS and CTS lines control in the driver is not an option I want =
+to=20
+consider. Extending the GPIO API to handled special functions has been nack=
+ed=20
+in the past (see=20
+http://ozlabs.org/pipermail/linuxppc-dev/2008-February/051241.html). An=20
+option would be to export gpio_to_chip from drivers/gpio/gpiolib.c and use=
+=20
+cpm1/2_set_pin in the cpm_uart driver.
 
-Stephen Rothwell (6):
-      [POWERPC] Fix MAX_ORDER config problem
-      [POWERPC] iSeries: Use alternate paca structure for booting
-      [POWERPC] iSeries: Make iseries_reg_save private to iSeries
-      [POWERPC] iSeries: Localise and constify some iSeries data
-      [POWERPC] remove include of asm/of_device.h from pmi.h
-      [POWERPC] replace asm/of_device.h with linux/of_device.h in macio.h
+Can anyone think of a better solution ?
+
+Best regards,
+
+=2D-=20
+Laurent Pinchart
+CSE Semaphore Belgium
+
+Chaussee de Bruxelles, 732A
+B-1410 Waterloo
+Belgium
+
+T +32 (2) 387 42 59
+=46 +32 (2) 387 42 75
+
+--nextPart1250411.JUmcemZJOo
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
+
+iD8DBQBIBKwc8y9gWxC9vpcRAq8oAJ4sQbqf7hJ6YWPqOc4/c9l62iGzlQCg0sNN
+XcItBYxHIoy00AsnGtKyttE=
+=CJnX
+-----END PGP SIGNATURE-----
+
+--nextPart1250411.JUmcemZJOo--
