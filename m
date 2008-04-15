@@ -2,19 +2,19 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 116ECDE594
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Apr 2008 05:56:25 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id DD8D5DE731
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Apr 2008 05:56:26 +1000 (EST)
 From: Kumar Gala <galak@kernel.crashing.org>
 To: paulus@samba.org
-Subject: [PATCH 04/13] [POWERPC] Introduce lowmem_end_addr to distiguish from
-	total_lowmem
-Date: Tue, 15 Apr 2008 14:52:22 -0500
-Message-Id: <1208289151-2925-5-git-send-email-galak@kernel.crashing.org>
-In-Reply-To: <1208289151-2925-4-git-send-email-galak@kernel.crashing.org>
+Subject: [PATCH 05/13] [POWERPC] 85xx: Cleanup TLB initialization
+Date: Tue, 15 Apr 2008 14:52:23 -0500
+Message-Id: <1208289151-2925-6-git-send-email-galak@kernel.crashing.org>
+In-Reply-To: <1208289151-2925-5-git-send-email-galak@kernel.crashing.org>
 References: <1208289151-2925-1-git-send-email-galak@kernel.crashing.org>
 	<1208289151-2925-2-git-send-email-galak@kernel.crashing.org>
 	<1208289151-2925-3-git-send-email-galak@kernel.crashing.org>
 	<1208289151-2925-4-git-send-email-galak@kernel.crashing.org>
+	<1208289151-2925-5-git-send-email-galak@kernel.crashing.org>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -25,143 +25,165 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-total_lowmem represents the amount of low memory not the physical address
-that low memory ends at.  If the start of memory is at 0 it happends that
-total_lowmem can be used as both the size and the address that lowmem
-ends at. (technical its one byte beyond the end)
+* Determine the RPN we are running the kernel at runtime rather
+  than using compile time constant for initial TLB
 
-To make the code a bit more clear and deal with the case when the start of
-memory isn't at physical 0, we introduce lowmem_end_addr that represents
-one byte beyond the last physical address in the lowmem region.
+* Cleanup adjust_total_lowmem() to respect memstart_addr and
+  be a bit more clear on variables that are sizes vs addresses.
 
 Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 ---
- arch/powerpc/mm/44x_mmu.c  |    2 +-
- arch/powerpc/mm/init_32.c  |    4 +++-
- arch/powerpc/mm/init_64.c  |    2 ++
- arch/powerpc/mm/mem.c      |   16 +++++++++-------
- arch/powerpc/mm/mmu_decl.h |    1 +
- 5 files changed, 16 insertions(+), 9 deletions(-)
+ arch/powerpc/kernel/head_fsl_booke.S |   34 ++++++++++++++++++++++++------
+ arch/powerpc/mm/fsl_booke_mmu.c      |   37 ++++++++++++++-------------------
+ 2 files changed, 43 insertions(+), 28 deletions(-)
 
-diff --git a/arch/powerpc/mm/44x_mmu.c b/arch/powerpc/mm/44x_mmu.c
-index 04dc087..953fb91 100644
---- a/arch/powerpc/mm/44x_mmu.c
-+++ b/arch/powerpc/mm/44x_mmu.c
-@@ -67,7 +67,7 @@ unsigned long __init mmu_mapin_ram(void)
+diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
+index d9cc2c2..9f40b3e 100644
+--- a/arch/powerpc/kernel/head_fsl_booke.S
++++ b/arch/powerpc/kernel/head_fsl_booke.S
+@@ -68,7 +68,9 @@ _ENTRY(_start);
+ 	mr	r29,r5
+ 	mr	r28,r6
+ 	mr	r27,r7
++	li	r25,0		/* phys kernel start (low) */
+ 	li	r24,0		/* CPU number */
++	li	r23,0		/* phys kernel start (high) */
  
- 	/* Pin in enough TLBs to cover any lowmem not covered by the
- 	 * initial 256M mapping established in head_44x.S */
--	for (addr = PPC_PIN_SIZE; addr < total_lowmem;
-+	for (addr = PPC_PIN_SIZE; addr < lowmem_end_addr;
- 	     addr += PPC_PIN_SIZE)
- 		ppc44x_pin_tlb(addr + PAGE_OFFSET, addr);
+ /* We try to not make any assumptions about how the boot loader
+  * setup or used the TLBs.  We invalidate all mappings from the
+@@ -167,7 +169,28 @@ skpinv:	addi	r6,r6,1				/* Increment */
+ 	mtspr	SPRN_MAS0,r7
+ 	tlbre
  
-diff --git a/arch/powerpc/mm/init_32.c b/arch/powerpc/mm/init_32.c
-index 1d7e5b8..ba61d08 100644
---- a/arch/powerpc/mm/init_32.c
-+++ b/arch/powerpc/mm/init_32.c
-@@ -146,6 +146,7 @@ void __init MMU_init(void)
- 	}
- 
- 	total_lowmem = total_memory = lmb_end_of_DRAM() - memstart_addr;
-+	lowmem_end_addr = memstart_addr + total_lowmem;
- 
- #ifdef CONFIG_FSL_BOOKE
- 	/* Freescale Book-E parts expect lowmem to be mapped by fixed TLB
-@@ -156,9 +157,10 @@ void __init MMU_init(void)
- 
- 	if (total_lowmem > __max_low_memory) {
- 		total_lowmem = __max_low_memory;
-+		lowmem_end_addr = memstart_addr + total_lowmem;
- #ifndef CONFIG_HIGHMEM
- 		total_memory = total_lowmem;
--		lmb_enforce_memory_limit(total_lowmem);
-+		lmb_enforce_memory_limit(lowmem_end_addr);
- 		lmb_analyze();
- #endif /* CONFIG_HIGHMEM */
- 	}
-diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
-index 5f55399..9ea65d9 100644
---- a/arch/powerpc/mm/init_64.c
-+++ b/arch/powerpc/mm/init_64.c
-@@ -75,6 +75,8 @@
- /* max amount of RAM to use */
- unsigned long __max_memory;
- 
-+phys_addr_t memstart_addr;
+-	/* Just modify the entry ID, EPN and RPN for the temp mapping */
++	/* grab and fixup the RPN */
++	mfspr	r6,SPRN_MAS1	/* extract MAS1[SIZE] */
++	rlwinm	r6,r6,25,27,30
++	li	r8,-1
++	addi	r6,r6,10
++	slw	r6,r8,r6	/* convert to mask */
 +
- void free_initmem(void)
++	bl	1f		/* Find our address */
++1:	mflr	r7
++
++	mfspr	r8,SPRN_MAS3
++#ifdef CONFIG_PHYS_64BIT
++	mfspr	r23,SPRN_MAS7
++#endif
++	and	r8,r6,r8
++	subfic	r9,r6,-4096
++	and	r9,r9,r7
++
++	or	r25,r8,r9
++	ori	r8,r25,(MAS3_SX|MAS3_SW|MAS3_SR)
++
++	/* Just modify the entry ID and EPN for the temp mapping */
+ 	lis	r7,0x1000	/* Set MAS0(TLBSEL) = 1 */
+ 	rlwimi	r7,r5,16,4,15	/* Setup MAS0 = TLBSEL | ESEL(r5) */
+ 	mtspr	SPRN_MAS0,r7
+@@ -177,12 +200,10 @@ skpinv:	addi	r6,r6,1				/* Increment */
+ 	ori	r6,r6,(MAS1_TSIZE(BOOKE_PAGESZ_4K))@l
+ 	mtspr	SPRN_MAS1,r6
+ 	mfspr	r6,SPRN_MAS2
+-	lis	r7,PHYSICAL_START@h
++	li	r7,0		/* temp EPN = 0 */
+ 	rlwimi	r7,r6,0,20,31
+ 	mtspr	SPRN_MAS2,r7
+-	mfspr	r6,SPRN_MAS3
+-	rlwimi	r7,r6,0,20,31
+-	mtspr	SPRN_MAS3,r7
++	mtspr	SPRN_MAS3,r8
+ 	tlbwe
+ 
+ 	xori	r6,r4,1
+@@ -232,8 +253,7 @@ skpinv:	addi	r6,r6,1				/* Increment */
+ 	ori	r6,r6,PAGE_OFFSET@l
+ 	rlwimi	r6,r7,0,20,31
+ 	mtspr	SPRN_MAS2,r6
+-	li	r7,(MAS3_SX|MAS3_SW|MAS3_SR)
+-	mtspr	SPRN_MAS3,r7
++	mtspr	SPRN_MAS3,r8
+ 	tlbwe
+ 
+ /* 7. Jump to KERNELBASE mapping */
+diff --git a/arch/powerpc/mm/fsl_booke_mmu.c b/arch/powerpc/mm/fsl_booke_mmu.c
+index 3dd0c81..59f6649 100644
+--- a/arch/powerpc/mm/fsl_booke_mmu.c
++++ b/arch/powerpc/mm/fsl_booke_mmu.c
+@@ -49,7 +49,6 @@
+ #include <asm/mmu.h>
+ #include <asm/uaccess.h>
+ #include <asm/smp.h>
+-#include <asm/bootx.h>
+ #include <asm/machdep.h>
+ #include <asm/setup.h>
+ 
+@@ -59,7 +58,6 @@ extern void loadcam_entry(unsigned int index);
+ unsigned int tlbcam_index;
+ unsigned int num_tlbcam_entries;
+ static unsigned long __cam0, __cam1, __cam2;
+-#define MAX_LOW_MEM	CONFIG_LOWMEM_SIZE
+ 
+ #define NUM_TLBCAMS	(16)
+ 
+@@ -195,35 +193,32 @@ unsigned long __init mmu_mapin_ram(void)
+ void __init
+ adjust_total_lowmem(void)
  {
- 	unsigned long addr;
-diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-index e3349ea..16def4d 100644
---- a/arch/powerpc/mm/mem.c
-+++ b/arch/powerpc/mm/mem.c
-@@ -216,9 +216,11 @@ void __init do_init_bootmem(void)
- 	unsigned long total_pages;
- 	int boot_mapsize;
+-	unsigned long max_low_mem = MAX_LOW_MEM;
+-	unsigned long cam_max = 0x10000000;
+-	unsigned long ram;
++	phys_addr_t max_lowmem_size = __max_low_memory;
++	phys_addr_t cam_max_size = 0x10000000;
++	phys_addr_t ram;
  
--	max_pfn = total_pages = lmb_end_of_DRAM() >> PAGE_SHIFT;
-+	max_pfn = lmb_end_of_DRAM() >> PAGE_SHIFT;
-+	total_pages = (lmb_end_of_DRAM() - memstart_addr) >> PAGE_SHIFT;
- #ifdef CONFIG_HIGHMEM
- 	total_pages = total_lowmem >> PAGE_SHIFT;
-+	max_low_pfn = lowmem_end_addr >> PAGE_SHIFT;
- #endif
+-	/* adjust CAM size to max_low_mem */
+-	if (max_low_mem < cam_max)
+-		cam_max = max_low_mem;
++	/* adjust CAM size to max_lowmem_size */
++	if (max_lowmem_size < cam_max_size)
++		cam_max_size = max_lowmem_size;
  
- 	/*
-@@ -244,18 +246,18 @@ void __init do_init_bootmem(void)
- 	 * present.
- 	 */
- #ifdef CONFIG_HIGHMEM
--	free_bootmem_with_active_regions(0, total_lowmem >> PAGE_SHIFT);
-+	free_bootmem_with_active_regions(0, lowmem_end_addr >> PAGE_SHIFT);
+-	/* adjust lowmem size to max_low_mem */
+-	if (max_low_mem < total_lowmem)
+-		ram = max_low_mem;
+-	else
+-		ram = total_lowmem;
++	/* adjust lowmem size to max_lowmem_size */
++	ram = min(max_lowmem_size, total_lowmem);
  
- 	/* reserve the sections we're already using */
- 	for (i = 0; i < lmb.reserved.cnt; i++) {
- 		unsigned long addr = lmb.reserved.region[i].base +
- 				     lmb_size_bytes(&lmb.reserved, i) - 1;
--		if (addr < total_lowmem)
-+		if (addr < lowmem_end_addr)
- 			reserve_bootmem(lmb.reserved.region[i].base,
- 					lmb_size_bytes(&lmb.reserved, i),
- 					BOOTMEM_DEFAULT);
--		else if (lmb.reserved.region[i].base < total_lowmem) {
--			unsigned long adjusted_size = total_lowmem -
-+		else if (lmb.reserved.region[i].base < lowmem_end_addr) {
-+			unsigned long adjusted_size = lowmem_end_addr -
- 				      lmb.reserved.region[i].base;
- 			reserve_bootmem(lmb.reserved.region[i].base,
- 					adjusted_size, BOOTMEM_DEFAULT);
-@@ -325,7 +327,7 @@ void __init paging_init(void)
- 	       (top_of_ram - total_ram) >> 20);
- 	memset(max_zone_pfns, 0, sizeof(max_zone_pfns));
- #ifdef CONFIG_HIGHMEM
--	max_zone_pfns[ZONE_DMA] = total_lowmem >> PAGE_SHIFT;
-+	max_zone_pfns[ZONE_DMA] = lowmem_end_addr >> PAGE_SHIFT;
- 	max_zone_pfns[ZONE_HIGHMEM] = top_of_ram >> PAGE_SHIFT;
- #else
- 	max_zone_pfns[ZONE_DMA] = top_of_ram >> PAGE_SHIFT;
-@@ -380,7 +382,7 @@ void __init mem_init(void)
- 	{
- 		unsigned long pfn, highmem_mapnr;
+ 	/* Calculate CAM values */
+ 	__cam0 = 1UL << 2 * (__ilog2(ram) / 2);
+-	if (__cam0 > cam_max)
+-		__cam0 = cam_max;
++	if (__cam0 > cam_max_size)
++		__cam0 = cam_max_size;
+ 	ram -= __cam0;
+ 	if (ram) {
+ 		__cam1 = 1UL << 2 * (__ilog2(ram) / 2);
+-		if (__cam1 > cam_max)
+-			__cam1 = cam_max;
++		if (__cam1 > cam_max_size)
++			__cam1 = cam_max_size;
+ 		ram -= __cam1;
+ 	}
+ 	if (ram) {
+ 		__cam2 = 1UL << 2 * (__ilog2(ram) / 2);
+-		if (__cam2 > cam_max)
+-			__cam2 = cam_max;
++		if (__cam2 > cam_max_size)
++			__cam2 = cam_max_size;
+ 		ram -= __cam2;
+ 	}
  
--		highmem_mapnr = total_lowmem >> PAGE_SHIFT;
-+		highmem_mapnr = lowmem_end_addr >> PAGE_SHIFT;
- 		for (pfn = highmem_mapnr; pfn < max_mapnr; ++pfn) {
- 			struct page *page = pfn_to_page(pfn);
- 			if (lmb_is_reserved(pfn << PAGE_SHIFT))
-diff --git a/arch/powerpc/mm/mmu_decl.h b/arch/powerpc/mm/mmu_decl.h
-index 5bc11f5..67477e7 100644
---- a/arch/powerpc/mm/mmu_decl.h
-+++ b/arch/powerpc/mm/mmu_decl.h
-@@ -52,6 +52,7 @@ extern unsigned long __initial_memory_limit;
- extern unsigned long total_memory;
- extern unsigned long total_lowmem;
- extern phys_addr_t memstart_addr;
-+extern phys_addr_t lowmem_end_addr;
- 
- /* ...and now those things that may be slightly different between processor
-  * architectures.  -- Dan
+@@ -231,6 +226,6 @@ adjust_total_lowmem(void)
+ 			" CAM2=%ldMb residual: %ldMb\n",
+ 			__cam0 >> 20, __cam1 >> 20, __cam2 >> 20,
+ 			(total_lowmem - __cam0 - __cam1 - __cam2) >> 20);
+-	__max_low_memory = max_low_mem = __cam0 + __cam1 + __cam2;
+-	__initial_memory_limit = __max_low_memory;
++	__max_low_memory = __cam0 + __cam1 + __cam2;
++	__initial_memory_limit = memstart_addr + __max_low_memory;
+ }
 -- 
 1.5.4.1
