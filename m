@@ -2,14 +2,15 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id A8BE4DE673
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Apr 2008 05:56:30 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id BC81BDE386
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Apr 2008 05:56:31 +1000 (EST)
 From: Kumar Gala <galak@kernel.crashing.org>
 To: paulus@samba.org
-Subject: [PATCH 09/13] [POWERPC] Move phys_addr_t definition into asm/types.h
-Date: Tue, 15 Apr 2008 14:52:27 -0500
-Message-Id: <1208289151-2925-10-git-send-email-galak@kernel.crashing.org>
-In-Reply-To: <1208289151-2925-9-git-send-email-galak@kernel.crashing.org>
+Subject: [PATCH 10/13] [POWERPC] Update linker script to properly set physical
+	addresses
+Date: Tue, 15 Apr 2008 14:52:28 -0500
+Message-Id: <1208289151-2925-11-git-send-email-galak@kernel.crashing.org>
+In-Reply-To: <1208289151-2925-10-git-send-email-galak@kernel.crashing.org>
 References: <1208289151-2925-1-git-send-email-galak@kernel.crashing.org>
 	<1208289151-2925-2-git-send-email-galak@kernel.crashing.org>
 	<1208289151-2925-3-git-send-email-galak@kernel.crashing.org>
@@ -19,6 +20,7 @@ References: <1208289151-2925-1-git-send-email-galak@kernel.crashing.org>
 	<1208289151-2925-7-git-send-email-galak@kernel.crashing.org>
 	<1208289151-2925-8-git-send-email-galak@kernel.crashing.org>
 	<1208289151-2925-9-git-send-email-galak@kernel.crashing.org>
+	<1208289151-2925-10-git-send-email-galak@kernel.crashing.org>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -29,128 +31,215 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Moved phys_addr_t out of mmu-*.h and into asm/types.h so we can use it in
-places that before would have caused recursive includes.
+We can set LOAD_OFFSET and use the AT attribute on sections and the
+linker will properly set the physical address of the LOAD program
+header for us.
 
-For example to use phys_addr_t in <asm/page.h> we would have included
-<asm/mmu.h> which would have possibly included <asm/mmu-hash64.h> which
-includes <asm/page.h>.  Wheeee recursive include.
+This allows us to know how the PHYSICAL_START the user configured a
+kernel with by just looking at the resulting vmlinux ELF.
 
-CONFIG_PHYS_64BIT is a bit counterintuitive in light of ppc64 systems
-and thus the config option is only used for ppc32 systems with >32-bit
-physical addresses (44x, 85xx, 745x, etc.).
+This is pretty much stolen from how x86 does things in their linker
+scripts.
 
 Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 ---
- include/asm-powerpc/mmu-40x.h       |    2 --
- include/asm-powerpc/mmu-44x.h       |    2 --
- include/asm-powerpc/mmu-8xx.h       |    2 --
- include/asm-powerpc/mmu-fsl-booke.h |    6 ------
- include/asm-powerpc/mmu-hash32.h    |    2 --
- include/asm-powerpc/mmu-hash64.h    |    3 ---
- include/asm-powerpc/types.h         |    7 +++++++
- 7 files changed, 7 insertions(+), 17 deletions(-)
+ arch/powerpc/kernel/vmlinux.lds.S |   47 ++++++++++++++++++-------------------
+ include/asm-powerpc/page.h        |    1 +
+ 2 files changed, 24 insertions(+), 24 deletions(-)
 
-diff --git a/include/asm-powerpc/mmu-40x.h b/include/asm-powerpc/mmu-40x.h
-index 7d37f77..3d10867 100644
---- a/include/asm-powerpc/mmu-40x.h
-+++ b/include/asm-powerpc/mmu-40x.h
-@@ -53,8 +53,6 @@
+diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
+index b5a76bc..0c3000b 100644
+--- a/arch/powerpc/kernel/vmlinux.lds.S
++++ b/arch/powerpc/kernel/vmlinux.lds.S
+@@ -31,7 +31,7 @@ SECTIONS
+  */
  
- #ifndef __ASSEMBLY__
+ 	/* Text and gots */
+-	.text : {
++	.text : AT(ADDR(.text) - LOAD_OFFSET) {
+ 		ALIGN_FUNCTION();
+ 		*(.text.head)
+ 		_text = .;
+@@ -56,7 +56,7 @@ SECTIONS
+ 	RODATA
  
--typedef unsigned long phys_addr_t;
--
- typedef struct {
- 	unsigned long id;
- 	unsigned long vdso_base;
-diff --git a/include/asm-powerpc/mmu-44x.h b/include/asm-powerpc/mmu-44x.h
-index 62772ae..c8b02d9 100644
---- a/include/asm-powerpc/mmu-44x.h
-+++ b/include/asm-powerpc/mmu-44x.h
-@@ -53,8 +53,6 @@
+ 	/* Exception & bug tables */
+-	__ex_table : {
++	__ex_table : AT(ADDR(__ex_table) - LOAD_OFFSET) {
+ 		__start___ex_table = .;
+ 		*(__ex_table)
+ 		__stop___ex_table = .;
+@@ -72,7 +72,7 @@ SECTIONS
+ 	. = ALIGN(PAGE_SIZE);
+ 	__init_begin = .;
  
- #ifndef __ASSEMBLY__
+-	.init.text : {
++	.init.text : AT(ADDR(.init.text) - LOAD_OFFSET) {
+ 		_sinittext = .;
+ 		INIT_TEXT
+ 		_einittext = .;
+@@ -81,11 +81,11 @@ SECTIONS
+ 	/* .exit.text is discarded at runtime, not link time,
+ 	 * to deal with references from __bug_table
+ 	 */
+-	.exit.text : {
++	.exit.text : AT(ADDR(.exit.text) - LOAD_OFFSET) {
+ 		EXIT_TEXT
+ 	}
  
--typedef unsigned long long phys_addr_t;
--
- typedef struct {
- 	unsigned long id;
- 	unsigned long vdso_base;
-diff --git a/include/asm-powerpc/mmu-8xx.h b/include/asm-powerpc/mmu-8xx.h
-index 952bd88..9db877e 100644
---- a/include/asm-powerpc/mmu-8xx.h
-+++ b/include/asm-powerpc/mmu-8xx.h
-@@ -136,8 +136,6 @@
- #define SPRN_M_TW	799
+-	.init.data : {
++	.init.data : AT(ADDR(.init.data) - LOAD_OFFSET) {
+ 		INIT_DATA
+ 		__vtop_table_begin = .;
+ 		*(.vtop_fixup);
+@@ -101,19 +101,19 @@ SECTIONS
+ 	}
  
- #ifndef __ASSEMBLY__
--typedef unsigned long phys_addr_t;
--
- typedef struct {
- 	unsigned long id;
- 	unsigned long vdso_base;
-diff --git a/include/asm-powerpc/mmu-fsl-booke.h b/include/asm-powerpc/mmu-fsl-booke.h
-index 3758000..925d93c 100644
---- a/include/asm-powerpc/mmu-fsl-booke.h
-+++ b/include/asm-powerpc/mmu-fsl-booke.h
-@@ -73,12 +73,6 @@
+ 	. = ALIGN(16);
+-	.init.setup : {
++	.init.setup : AT(ADDR(.init.setup) - LOAD_OFFSET) {
+ 		__setup_start = .;
+ 		*(.init.setup)
+ 		__setup_end = .;
+ 	}
  
- #ifndef __ASSEMBLY__
+-	.initcall.init : {
++	.initcall.init : AT(ADDR(.initcall.init) - LOAD_OFFSET) {
+ 		__initcall_start = .;
+ 		INITCALLS
+ 		__initcall_end = .;
+ 		}
  
--#ifndef CONFIG_PHYS_64BIT
--typedef unsigned long phys_addr_t;
--#else
--typedef unsigned long long phys_addr_t;
--#endif
--
- typedef struct {
- 	unsigned long id;
- 	unsigned long vdso_base;
-diff --git a/include/asm-powerpc/mmu-hash32.h b/include/asm-powerpc/mmu-hash32.h
-index 4bd735b..6e21ca6 100644
---- a/include/asm-powerpc/mmu-hash32.h
-+++ b/include/asm-powerpc/mmu-hash32.h
-@@ -84,8 +84,6 @@ typedef struct {
- 	unsigned long vdso_base;
- } mm_context_t;
+-	.con_initcall.init : {
++	.con_initcall.init : AT(ADDR(.con_initcall.init) - LOAD_OFFSET) {
+ 		__con_initcall_start = .;
+ 		*(.con_initcall.init)
+ 		__con_initcall_end = .;
+@@ -122,14 +122,14 @@ SECTIONS
+ 	SECURITY_INIT
  
--typedef unsigned long phys_addr_t;
--
- #endif /* !__ASSEMBLY__ */
+ 	. = ALIGN(8);
+-	__ftr_fixup : {
++	__ftr_fixup : AT(ADDR(__ftr_fixup) - LOAD_OFFSET) {
+ 		__start___ftr_fixup = .;
+ 		*(__ftr_fixup)
+ 		__stop___ftr_fixup = .;
+ 	}
+ #ifdef CONFIG_PPC64
+ 	. = ALIGN(8);
+-	__fw_ftr_fixup : {
++	__fw_ftr_fixup : AT(ADDR(__fw_ftr_fixup) - LOAD_OFFSET) {
+ 		__start___fw_ftr_fixup = .;
+ 		*(__fw_ftr_fixup)
+ 		__stop___fw_ftr_fixup = .;
+@@ -137,14 +137,14 @@ SECTIONS
+ #endif
+ #ifdef CONFIG_BLK_DEV_INITRD
+ 	. = ALIGN(PAGE_SIZE);
+-	.init.ramfs : {
++	.init.ramfs : AT(ADDR(.init.ramfs) - LOAD_OFFSET) {
+ 		__initramfs_start = .;
+ 		*(.init.ramfs)
+ 		__initramfs_end = .;
+ 	}
+ #endif
+ 	. = ALIGN(PAGE_SIZE);
+-	.data.percpu : {
++	.data.percpu  : AT(ADDR(.data.percpu) - LOAD_OFFSET) {
+ 		__per_cpu_start = .;
+ 		*(.data.percpu)
+ 		*(.data.percpu.shared_aligned)
+@@ -152,7 +152,7 @@ SECTIONS
+ 	}
  
- #endif /* _ASM_POWERPC_MMU_HASH32_H_ */
-diff --git a/include/asm-powerpc/mmu-hash64.h b/include/asm-powerpc/mmu-hash64.h
-index 2864fa3..0dff767 100644
---- a/include/asm-powerpc/mmu-hash64.h
-+++ b/include/asm-powerpc/mmu-hash64.h
-@@ -469,9 +469,6 @@ static inline unsigned long get_vsid(unsigned long context, unsigned long ea,
- 				 VSID_MODULUS_256M)
- #define KERNEL_VSID(ea)		VSID_SCRAMBLE(GET_ESID(ea))
+ 	. = ALIGN(8);
+-	.machine.desc : {
++	.machine.desc : AT(ADDR(.machine.desc) - LOAD_OFFSET) {
+ 		__machine_desc_start = . ;
+ 		*(.machine.desc)
+ 		__machine_desc_end = . ;
+@@ -170,25 +170,24 @@ SECTIONS
+ 	_sdata = .;
  
--/* Physical address used by some IO functions */
--typedef unsigned long phys_addr_t;
--
- #endif /* __ASSEMBLY__ */
- 
- #endif /* _ASM_POWERPC_MMU_HASH64_H_ */
-diff --git a/include/asm-powerpc/types.h b/include/asm-powerpc/types.h
-index 903fd19..c243a6a 100644
---- a/include/asm-powerpc/types.h
-+++ b/include/asm-powerpc/types.h
-@@ -84,6 +84,13 @@ typedef unsigned long long u64;
- 
- typedef __vector128 vector128;
- 
-+/* Physical address used by some IO functions */
-+#if defined(CONFIG_PPC64) || defined(CONFIG_PHYS_64BIT)
-+typedef u64 phys_addr_t;
-+#else
-+typedef u32 phys_addr_t;
-+#endif
-+
- #ifdef __powerpc64__
- typedef u64 dma_addr_t;
+ #ifdef CONFIG_PPC32
+-	.data    :
+-	{
++	.data : AT(ADDR(.data) - LOAD_OFFSET) {
+ 		DATA_DATA
+ 		*(.sdata)
+ 		*(.got.plt) *(.got)
+ 	}
  #else
+-	.data : {
++	.data : AT(ADDR(.data) - LOAD_OFFSET) {
+ 		DATA_DATA
+ 		*(.data.rel*)
+ 		*(.toc1)
+ 		*(.branch_lt)
+ 	}
+ 
+-	.opd : {
++	.opd : AT(ADDR(.opd) - LOAD_OFFSET) {
+ 		*(.opd)
+ 	}
+ 
+-	.got : {
++	.got : AT(ADDR(.got) - LOAD_OFFSET) {
+ 		__toc_start = .;
+ 		*(.got)
+ 		*(.toc)
+@@ -205,26 +204,26 @@ SECTIONS
+ #else
+ 	. = ALIGN(16384);
+ #endif
+-	.data.init_task : {
++	.data.init_task : AT(ADDR(.data.init_task) - LOAD_OFFSET) {
+ 		*(.data.init_task)
+ 	}
+ 
+ 	. = ALIGN(PAGE_SIZE);
+-	.data.page_aligned : {
++	.data.page_aligned : AT(ADDR(.data.page_aligned) - LOAD_OFFSET) {
+ 		*(.data.page_aligned)
+ 	}
+ 
+-	.data.cacheline_aligned : {
++	.data.cacheline_aligned : AT(ADDR(.data.cacheline_aligned) - LOAD_OFFSET) {
+ 		*(.data.cacheline_aligned)
+ 	}
+ 
+ 	. = ALIGN(L1_CACHE_BYTES);
+-	.data.read_mostly : {
++	.data.read_mostly : AT(ADDR(.data.read_mostly) - LOAD_OFFSET) {
+ 		*(.data.read_mostly)
+ 	}
+ 
+ 	. = ALIGN(PAGE_SIZE);
+-	__data_nosave : {
++	.data_nosave : AT(ADDR(.data_nosave) - LOAD_OFFSET) {
+ 		__nosave_begin = .;
+ 		*(.data.nosave)
+ 		. = ALIGN(PAGE_SIZE);
+@@ -235,7 +234,7 @@ SECTIONS
+  * And finally the bss
+  */
+ 
+-	.bss : {
++	.bss : AT(ADDR(.bss) - LOAD_OFFSET) {
+ 		__bss_start = .;
+ 		*(.sbss) *(.scommon)
+ 		*(.dynbss)
+diff --git a/include/asm-powerpc/page.h b/include/asm-powerpc/page.h
+index df47bbb..6c85060 100644
+--- a/include/asm-powerpc/page.h
++++ b/include/asm-powerpc/page.h
+@@ -53,6 +53,7 @@
+ 
+ #define PAGE_OFFSET     ASM_CONST(CONFIG_KERNEL_START)
+ #define KERNELBASE      (PAGE_OFFSET + PHYSICAL_START)
++#define LOAD_OFFSET	PAGE_OFFSET
+ 
+ #ifdef CONFIG_FLATMEM
+ #define pfn_valid(pfn)		((pfn) < max_mapnr)
 -- 
 1.5.4.1
