@@ -1,21 +1,29 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <Martin.Leisner@xerox.com>
+Received: from wvmler2.mail.xerox.com (wvmler2.mail.xerox.com [13.8.138.217])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D0457DDF61
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Apr 2008 07:52:24 +1000 (EST)
-Message-Id: <84E88152-BE40-44C8-AFA6-0D833983216D@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Scott Wood <scottwood@freescale.com>
-In-Reply-To: <48051FBA.1000801@freescale.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: [PATCH] fsl_soc: Factor fsl_get_sys_freq() out of the wdt and spi
-	inits.
-Date: Tue, 15 Apr 2008 16:52:12 -0500
-References: <20080415185234.GA10579@loki.buserror.net>
-	<20080415213221.GA2646@zarina> <48051FBA.1000801@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+	(Client CN "wvmler2.mail.xerox.com",
+	Issuer "wvmler2.mail.xerox.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id D6D62DDFC0
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Apr 2008 08:04:04 +1000 (EST)
+Received: from wvmlir3.mail.xerox.com (wvmlir3.mail.xerox.com [13.147.8.223])
+	by wvmler2.mail.xerox.com (8.14.2/8.13.8) with ESMTP id
+	m3FLmL3g014188
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Apr 2008 14:48:21 -0700
+Received: from wvmlir3.mail.xerox.com (localhost.localdomain [127.0.0.1])
+	by wvmlir3.mail.xerox.com (8.13.8/8.13.6) with ESMTP id m3FLmFCX014089
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Apr 2008 14:48:15 -0700
+Received: from USA0300GW002.na.xerox.net (usa0300gw002.na.xerox.net
+	[13.135.210.15])
+	by wvmlir3.mail.xerox.com (8.13.8/8.13.6) with ESMTP id m3FLm9Ds014035
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Apr 2008 14:48:15 -0700
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RFC:  adding post build comments to kernels
+Date: Tue, 15 Apr 2008 17:47:23 -0400
+Message-ID: <556445368AFA1C438794ABDA8901891C08790522@USA0300MS03.na.xerox.net>
+From: "Leisner, Martin" <Martin.Leisner@xerox.com>
+To: <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,27 +33,70 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+I'm a big proponent of marking kernels with their characteristics during
+development -- instead of trying to  coordinate multiple pieces of
+information and hope you get it right (I don't like to try)
+I've been lobbying for /proc/config for a decade (that's one of the
+first
+things I enable when I'm doing kernel hacking).
 
-On Apr 15, 2008, at 4:35 PM, Scott Wood wrote:
-> Anton Vorontsov wrote:
->>> +u32 fsl_get_sys_freq(void)
->>> +{
->>> +	struct device_node *soc;
->>> +	const u32 *prop;
->>> +	int size;
->>> +
->>> +	if (sysfreq != -1)
->>> +		return sysfreq;
->>> +
->>> +	soc = of_find_node_by_type(NULL, "soc");
->>> +	if (!soc)
->>> +		return -1;
->> Um.. can we finally decide on compatible for the soc nodes,
->> and add there compatible matching from the start?
->
-> This is just a code reorganization; any change in what we match on  
-> should be a separate patch.
+I have a strategy to put "patch comments" into a kernel which you can
+easily=20
+extract at runtime (I use a separate elf section for now, is there a
+subsystem which already had the capability -- I have a macro
 
-I agree and Scott has posted a version of this long ago.
+PATCH_ENTRY(string)
 
-- k
+which puts this string wherever you want in the source(marging it with
+the file/line,date). =20
+
+What I wanted is something so I can "add text" to a kernel (i.e. the
+results of my patches).  It would be nice to extract at runtime, but not
+necessary.
+
+What I did was just:
+
+cat >>uImage
+some comments
+<control-D>
+
+and I can easily extract it with this script:
+
+#! /bin/bash
+
+image=3D$1
+args=3D$(mkimage -l $1 2>/dev/null | grep 'Data Size')
+
+set - $args
+
+size=3D$3
+
+size=3D$((size + 64))
+
+
+dd if=3D$image skip=3D$size bs=3D1 2>/dev/null
+
+This works fine:
+%uboot-comments ./uImage 2.6.22.19-vanilla
+this is a test
+lovely kernel
+
+but mkimage -l complains a little:
+
+%mkimage -l uImage-2.6.22.19-vanilla
+*** Warning: "uImage-2.6.22.19-vanilla" has corrupted data!
+Image Name:   Linux-2.6.22.19
+Created:      Mon Apr 14 13:04:02 2008
+Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+Data Size:    1578239 Bytes =3D 1541.25 kB =3D 1.51 MB
+Load Address: 0x00000000
+Entry Point:  0x00000000
+
+
+I suppose a tool could be build with compresses the kernel, puts in a
+special elf section with a comment, recompresses the kernel, and builds
+a new image -- but this is pretty easy...
+
+This seems to boot with no problems...
+
+marty
