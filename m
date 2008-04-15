@@ -2,21 +2,22 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id DEF30DF306
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Apr 2008 09:21:35 +1000 (EST)
-Message-Id: <E8DF8116-CAE0-40E5-824C-4BFD01C4379F@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id 20BB7DE1AF
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Apr 2008 09:25:12 +1000 (EST)
+Message-Id: <80CCBF8C-FE21-4DD7-B1CF-0647D31655D9@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
 To: Paul Gortmaker <paul.gortmaker@windriver.com>
-In-Reply-To: <d4df2c06535af05ef2cd80c0dd053b1d200f6993.1208296521.git.paul.gortmaker@windriver.com>
+In-Reply-To: <20080415224628.GA21663@windriver.com>
 Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: [PATCH 3/3] powerpc: Add defconfig for Wind River SBC8641D board
-Date: Tue, 15 Apr 2008 18:21:31 -0500
-References: <1208299292-21937-1-git-send-email-paul.gortmaker@windriver.com>
-	<96011ba20ab9319aa866c12e2ff91ad579d26aed.1208296521.git.paul.gortmaker@windriver.com>
-	<c3840b6d7622db88a748213c806c6cfe4bf404ef.1208296521.git.paul.gortmaker@windriver.com>
-	<d4df2c06535af05ef2cd80c0dd053b1d200f6993.1208296521.git.paul.gortmaker@windriver.com>
-Cc: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] 86xx: mark functions static, other minor cleanups
+Date: Tue, 15 Apr 2008 18:24:58 -0500
+References: <1207933186-20555-1-git-send-email-paul.gortmaker@windriver.com>
+	<4804D39C.9000309@freescale.com> <4804D7C4.8060805@windriver.com>
+	<4804D867.4070205@freescale.com>
+	<20080415224628.GA21663@windriver.com>
+Cc: linuxppc-dev@ozlabs.org, Timur Tabi <timur@freescale.com>,
+	sfr@canb.auug.org.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,17 +28,40 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Apr 15, 2008, at 5:41 PM, Paul Gortmaker wrote:
-> This adds a sample defconfig for the Wind River SBC8641D
-> board, with SMP, PCI and NFS root enabled.
+On Apr 15, 2008, at 5:46 PM, Paul Gortmaker wrote:
+> In message: Re: [PATCH] 86xx: mark functions static, other minor  
+> cleanups
+> on 15/04/2008 Timur Tabi wrote:
 >
-> Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
+>> Paul Gortmaker wrote:
+>>
+>>> Valid point.  Is there a precedent here -- like a printk indicating
+>>> that the old ID matched, to let the user know?
+>>
+>> Not really, but a pr_warning() would be nice.
+>
+> Done.
+>
+> I've also removed the sbc8641 content from this patch, and rolled it
+> into the resend of those board specific patches.  This is now just for
+> incorporating that same feedback into existing boards.
+>
+> Thanks,
+> Paul.
 > ---
-> arch/powerpc/configs/sbc8641d_defconfig | 1342 ++++++++++++++++++++++ 
-> +++++++++
-> 1 files changed, 1342 insertions(+), 0 deletions(-)
-> create mode 100644 arch/powerpc/configs/sbc8641d_defconfig
+>
+> From aa2d1dd871c7eb440b3947cf8952d28249acf218 Mon Sep 17 00:00:00 2001
+> From: Paul Gortmaker <paul.gortmaker@windriver.com>
+> Date: Fri, 11 Apr 2008 12:51:04 -0400
+> Subject: [PATCH] 86xx: mark functions static, other minor cleanups
+>
+> Cleanups as suggested by Stephen Rothwell and Dale Farnsworth, which
+> incudes marking a bunch of functions static and add a vendor prefix to
+> the compat node check for uniqueness.  We match on the old compat node
+> ID for one version and warn accordingly, so as to not plunge people
+> into silent boot death, as suggested by Timur Tabi.
 
-applied.
+can you add a commit about the change to the root compatible and its  
+eventual removal for backward compatibility.
 
 - k
