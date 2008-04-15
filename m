@@ -1,23 +1,29 @@
-Return-Path: <rsc@pengutronix.de>
-Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
-	[83.236.181.26]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id EE714DE911
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Apr 2008 01:30:01 +1000 (EST)
-Received: from octopus.labnet.pengutronix.de ([10.1.1.3])
-	by metis.extern.pengutronix.de with esmtp (Exim 4.63)
-	(envelope-from <rsc@pengutronix.de>) id 1Jln6Y-0003H1-AX
-	for linuxppc-dev@ozlabs.org; Tue, 15 Apr 2008 17:29:55 +0200
-Received: from rsc by octopus.labnet.pengutronix.de with local (Exim 4.69)
-	(envelope-from <rsc@pengutronix.de>) id 1Jln6Y-00036K-98
-	for linuxppc-dev@ozlabs.org; Tue, 15 Apr 2008 17:29:54 +0200
-Date: Tue, 15 Apr 2008 17:29:54 +0200
-From: Robert Schwebel <r.schwebel@pengutronix.de>
-To: linuxppc-dev@ozlabs.org
-Subject: mpc5200: add interrupt type function
-Message-ID: <20080415152954.GX13814@pengutronix.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id EC5B5DE2CE
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Apr 2008 01:30:31 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m3FFSJ4v027551
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Apr 2008 11:28:19 -0400
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m3FFUObG145340
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Apr 2008 09:30:26 -0600
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m3FFUKaI030819
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Apr 2008 09:30:20 -0600
+Date: Tue, 15 Apr 2008 10:27:04 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: paulus@samba.org
+Subject: Please pull 'for-2.6.26' branch of 4xx tree
+Message-ID: <20080415102704.39511160@zod.rchland.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,75 +33,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Sascha Hauer <s.hauer@pengutronix.de>
+Hi Paul
 
-Add a set_type function for external (GPIO) interrupts.
+Please pull from:
 
-Signed-off-by: Juergen Beisert <j.beisert@pengutronix.de>
-Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
+ master.kernel.org:/pub/scm/linux/kernel/git/jwboyer/powerpc-4xx.git for-2.6.26
 
----
- arch/powerpc/platforms/52xx/mpc52xx_pic.c |   38 ++++++++++++++++++++++++++++++
- 1 file changed, 38 insertions(+)
+to pick up some additional patches for 4xx.  This contains the
+defconfig reorg, some EMAC patches from Valentine that have been
+outstanding for a while, and a new idle loop patch.
 
-Index: arch/powerpc/platforms/52xx/mpc52xx_pic.c
-===================================================================
---- a/arch/powerpc/platforms/52xx/mpc52xx_pic.c.orig	2008-04-15 11:25:29.000000000 +0200
-+++ b/arch/powerpc/platforms/52xx/mpc52xx_pic.c	2008-04-15 11:25:39.000000000 +0200
-@@ -18,6 +18,7 @@
- 
- #undef DEBUG
- 
-+#include <linux/interrupt.h>
- #include <linux/irq.h>
- #include <linux/of.h>
- #include <asm/io.h>
-@@ -109,11 +110,48 @@
- 	io_be_setbit(&intr->ctrl, 27-l2irq);
- }
- 
-+static int mpc52xx_extirq_set_type(unsigned int virq, unsigned int flow_type)
-+{
-+	u32 ctrl_reg, type;
-+	int irq;
-+	int l2irq;
-+
-+	irq = irq_map[virq].hwirq;
-+	l2irq = (irq & MPC52xx_IRQ_L2_MASK) >> MPC52xx_IRQ_L2_OFFSET;
-+
-+	pr_debug("%s: irq=%x. l2=%d flow_type=%d\n", __func__, irq, l2irq, flow_type);
-+
-+	switch (flow_type) {
-+	case IRQF_TRIGGER_HIGH:
-+		type = 0;
-+		break;
-+	case IRQF_TRIGGER_RISING:
-+		type = 1;
-+		break;
-+	case IRQF_TRIGGER_FALLING:
-+		type = 2;
-+		break;
-+	case IRQF_TRIGGER_LOW:
-+		type = 3;
-+		break;
-+	default:
-+		type = 0;
-+	}
-+
-+	ctrl_reg = in_be32(&intr->ctrl);
-+	ctrl_reg &= ~(0x3 << (22 - (l2irq * 2)));
-+	ctrl_reg |= (type << (22 - (l2irq * 2)));
-+	out_be32(&intr->ctrl, ctrl_reg);
-+
-+	return 0;
-+}
-+
- static struct irq_chip mpc52xx_extirq_irqchip = {
- 	.typename = " MPC52xx IRQ[0-3] ",
- 	.mask = mpc52xx_extirq_mask,
- 	.unmask = mpc52xx_extirq_unmask,
- 	.ack = mpc52xx_extirq_ack,
-+	.set_type = mpc52xx_extirq_set_type,
- };
- 
- /*
+josh
+
+Jerone Young (1):
+      [POWERPC] 4xx: Add idle wait support for 44x platforms
+
+Josh Boyer (2):
+      [POWERPC] 4xx: Reorganize 4xx defconfigs
+      [POWERPC] 4xx: Add ppc40x_defconfig
+
+Valentine Barshak (2):
+      [POWERPC] ibm_newemac: PowerPC 440GX EMAC PHY clock workaround
+      [POWERPC] ibm_newemac: PowerPC 440EP/440GR EMAC PHY clock workaround
+
+ arch/powerpc/configs/{ => 40x}/ep405_defconfig     |    0 
+ arch/powerpc/configs/{ => 40x}/kilauea_defconfig   |    0 
+ arch/powerpc/configs/{ => 40x}/makalu_defconfig    |    0 
+ arch/powerpc/configs/{ => 40x}/walnut_defconfig    |    0 
+ arch/powerpc/configs/{ => 44x}/bamboo_defconfig    |    0 
+ .../configs/{ => 44x}/canyonlands_defconfig        |    0 
+ arch/powerpc/configs/{ => 44x}/ebony_defconfig     |    0 
+ arch/powerpc/configs/{ => 44x}/katmai_defconfig    |    0 
+ arch/powerpc/configs/{ => 44x}/rainier_defconfig   |    0 
+ arch/powerpc/configs/{ => 44x}/sequoia_defconfig   |    0 
+ arch/powerpc/configs/{ => 44x}/taishan_defconfig   |    0 
+ arch/powerpc/configs/{ => 44x}/warp_defconfig      |    0 
+ .../configs/{walnut_defconfig => ppc40x_defconfig} |   31 ++++++---
+ arch/powerpc/platforms/44x/Makefile                |    2 +-
+ arch/powerpc/platforms/44x/idle.c                  |   67 ++++++++++++++++++++
+ drivers/net/ibm_newemac/core.c                     |   48 +++++++++++++-
+ drivers/net/ibm_newemac/core.h                     |   14 +++-
+ 17 files changed, 145 insertions(+), 17 deletions(-)
+ rename arch/powerpc/configs/{ => 40x}/ep405_defconfig (100%)
+ rename arch/powerpc/configs/{ => 40x}/kilauea_defconfig (100%)
+ rename arch/powerpc/configs/{ => 40x}/makalu_defconfig (100%)
+ copy arch/powerpc/configs/{ => 40x}/walnut_defconfig (100%)
+ rename arch/powerpc/configs/{ => 44x}/bamboo_defconfig (100%)
+ rename arch/powerpc/configs/{ => 44x}/canyonlands_defconfig (100%)
+ rename arch/powerpc/configs/{ => 44x}/ebony_defconfig (100%)
+ rename arch/powerpc/configs/{ => 44x}/katmai_defconfig (100%)
+ rename arch/powerpc/configs/{ => 44x}/rainier_defconfig (100%)
+ rename arch/powerpc/configs/{ => 44x}/sequoia_defconfig (100%)
+ rename arch/powerpc/configs/{ => 44x}/taishan_defconfig (100%)
+ rename arch/powerpc/configs/{ => 44x}/warp_defconfig (100%)
+ rename arch/powerpc/configs/{walnut_defconfig => ppc40x_defconfig} (97%)
+ create mode 100644 arch/powerpc/platforms/44x/idle.c
