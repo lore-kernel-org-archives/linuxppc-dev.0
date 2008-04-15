@@ -1,21 +1,19 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 06B47DE92A
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Apr 2008 01:34:44 +1000 (EST)
-Message-ID: <4804CB12.1000308@freescale.com>
-Date: Tue, 15 Apr 2008 10:34:42 -0500
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <rsc@pengutronix.de>
+Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
+	[83.236.181.26]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 6D66EDE875
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Apr 2008 01:44:45 +1000 (EST)
+Date: Tue, 15 Apr 2008 17:44:39 +0200
+From: Robert Schwebel <r.schwebel@pengutronix.de>
+To: netdev@vger.kernel.org
+Subject: fec_mpc5200: reset FEC on error
+Message-ID: <20080415154439.GZ13814@pengutronix.de>
+References: <20080415152638.GW13814@pengutronix.de>
 MIME-Version: 1.0
-To: Laurent Pinchart <laurentp@cse-semaphore.com>
-Subject: Re: [RFC] Using two baud rate generators with the cpm_uart driver
-References: <200804151532.27057.laurentp@cse-semaphore.com>
-In-Reply-To: <200804151532.27057.laurentp@cse-semaphore.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=iso-8859-15
+In-Reply-To: <20080415152638.GW13814@pengutronix.de>
+Cc: linuxppc-dev@ozlabs.org, Domen Puncer <domen@coderock.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,31 +23,63 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Laurent Pinchart wrote:
-> thanks to a bad hardware design decision, I'm faced with a software issue with 
-> the cpm_uart driver.
-> 
-> My hardware uses either SCC4 or SMC2 (production-time option) as an RS485 port 
-> with an external transceiver. The transceiver's data direction is controlled 
-> by external logic that monitors the SCC4/SMC2 TxD signal.
-> 
-> The external logic needs an input clock at the baud rate frequency on the 
-> MPC8248 BRG5 output pin (although I could modify it to accept an input clock 
-> at 16x the baud rate frequency). This means the cpm_uart driver has to setup 
-> two baud rate generators instead of one.
-> 
-> The ppc architecture was easy to hack as it used a fs_uart_platform_info 
-> structure in which I added a set_brg function pointer provided by platform 
-> code. This isn't possible with the powerpc architecture anymore.
- >
-> Is there a clean way to fix this issue ? Kicking the hardware designer won't 
-> help :-)
+From: Sascha Hauer <s.hauer@pengutronix.de>
 
-Maybe not, but it'd be satisfying. :-)
+The error handling for the mpc5200 fec interrupt is broken. The intended
+behaviour is like this:
 
-The clean solution would be to have an abstracted clock API, similar to 
-phylib, where the caller doesn't know details about BRGs and such. 
-Maybe the linux/clk.h API would be suitable; I haven't looked at it in 
-detail.
+* If one of FEC_IEVENT_RFIFO_ERROR and FEC_IEVENT_XFIFO_ERROR happens,
+  the datasheet says (MPC5200B User's Guide R1.2, p. 14-13): "When this
+  occurs, software must ensure both the FIFO Controller and BestComm are
+  soft-reset".
 
--Scott
+* On any other error (non-TFINT) interrupt, just issue a debug message.
+
+v2 changed to -p1 and posted on linuxppc list (2008-04-15).
+
+v1 posted on linuxppc list (2008-04-15).
+
+Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
+
+---
+ drivers/net/fec_mpc52xx.c |   23 +++++++++++++----------
+ 1 file changed, 13 insertions(+), 10 deletions(-)
+
+Index: drivers/net/fec_mpc52xx.c
+===================================================================
+--- a/drivers/net/fec_mpc52xx.c.orig
++++ b/drivers/net/fec_mpc52xx.c
+@@ -491,20 +491,23 @@
+ 
+ 	out_be32(&fec->ievent, ievent);		/* clear pending events */
+ 
+-	if (ievent & ~(FEC_IEVENT_RFIFO_ERROR | FEC_IEVENT_XFIFO_ERROR)) {
+-		if (ievent & ~FEC_IEVENT_TFINT)
+-			dev_dbg(&dev->dev, "ievent: %08x\n", ievent);
++	/* on fifo error, soft-reset fec */
++	if (ievent & (FEC_IEVENT_RFIFO_ERROR | FEC_IEVENT_XFIFO_ERROR)) {
++
++		if (net_ratelimit() && (ievent & FEC_IEVENT_RFIFO_ERROR))
++			dev_warn(&dev->dev, "FEC_IEVENT_RFIFO_ERROR\n");
++		if (net_ratelimit() && (ievent & FEC_IEVENT_XFIFO_ERROR))
++			dev_warn(&dev->dev, "FEC_IEVENT_XFIFO_ERROR\n");
++
++		mpc52xx_fec_reset(dev);
++
++		netif_wake_queue(dev);
+ 		return IRQ_HANDLED;
+ 	}
+ 
+-	if (net_ratelimit() && (ievent & FEC_IEVENT_RFIFO_ERROR))
+-		dev_warn(&dev->dev, "FEC_IEVENT_RFIFO_ERROR\n");
+-	if (net_ratelimit() && (ievent & FEC_IEVENT_XFIFO_ERROR))
+-		dev_warn(&dev->dev, "FEC_IEVENT_XFIFO_ERROR\n");
+-
+-	mpc52xx_fec_reset(dev);
++	if (ievent & ~FEC_IEVENT_TFINT)
++		dev_dbg(&dev->dev, "ievent: %08x\n", ievent);
+ 
+-	netif_wake_queue(dev);
+ 	return IRQ_HANDLED;
+ }
+ 
