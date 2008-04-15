@@ -1,20 +1,24 @@
-Return-Path: <avorontsov@dev.rtsoft.ru>
-Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
-	by ozlabs.org (Postfix) with SMTP id 35B49DE597
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Apr 2008 00:30:38 +1000 (EST)
-Date: Tue, 15 Apr 2008 18:30:37 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Laurent Pinchart <laurentp@cse-semaphore.com>
-Subject: Re: [RFC] GPIO-based flow control in the cpm_uart driver
-Message-ID: <20080415143037.GA18931@polina.dev.rtsoft.ru>
-References: <200804151522.36884.laurentp@cse-semaphore.com>
-	<20080415134007.GA17096@polina.dev.rtsoft.ru>
-	<200804151547.44052.laurentp@cse-semaphore.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <200804151547.44052.laurentp@cse-semaphore.com>
-Cc: David Brownell <david-b@pacbell.net>, linuxppc-dev@ozlabs.org
-Reply-To: avorontsov@ru.mvista.com
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id ACBB0DE06C
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Apr 2008 00:35:05 +1000 (EST)
+Message-Id: <EE972833-6928-4ECC-B257-432DFD947627@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Paul Mackerras <paulus@samba.org>
+In-Reply-To: <18436.23196.673130.542635@cargo.ozlabs.ibm.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v919.2)
+Subject: Re: [PATCH 03/12] [POWERPC] Remove and replace uses of PPC_MEMSTART
+	with memstart_addr
+Date: Tue, 15 Apr 2008 09:35:00 -0500
+References: <1207824531-27168-1-git-send-email-galak@kernel.crashing.org>
+	<1207824531-27168-2-git-send-email-galak@kernel.crashing.org>
+	<1207824531-27168-3-git-send-email-galak@kernel.crashing.org>
+	<1207824531-27168-4-git-send-email-galak@kernel.crashing.org>
+	<18436.23196.673130.542635@cargo.ozlabs.ibm.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,45 +28,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Apr 15, 2008 at 03:47:41PM +0200, Laurent Pinchart wrote:
-> On Tuesday 15 April 2008 15:40, Anton Vorontsov wrote:
-> > On Tue, Apr 15, 2008 at 03:22:33PM +0200, Laurent Pinchart wrote:
-> > > Hi everybody,
-> > > 
-> > > I'm implementing flow control and modem control lines support in the
-> > > cpm_uart driver.
-> > > 
-> > > The implementation is based on the GPIO lib. Modem control lines are
-> > > described in the device tree as GPIO resources and accessed through the OF
-> > > GPIO bindings. The I/O ports have to be initialized as GPIOs in the 
-> > > platform-specific code.
-> > > 
-> > > Reading and writing the modem control lines isn't an issue, but activating 
-> > > hardware flow control is more complex. The driver needs to turn dedicated 
-> > > functions on and off for the RTS and CTS signals, and the GPIO API doesn't 
-> > > provide a way to access the PPAR* registers (which does make sense -
-> > > although arguably - as PPAR* control specific functions, not GPIOs).
-> > > 
-> > > Hardcoding RTS and CTS lines control in the driver is not an option I want
-> > > to consider. Extending the GPIO API to handled special functions has been
-> > > nacked in the past (see 
-> > > http://ozlabs.org/pipermail/linuxppc-dev/2008-February/051241.html). An 
-> > > option would be to export gpio_to_chip from drivers/gpio/gpiolib.c and use 
-> > > cpm1/2_set_pin in the cpm_uart driver.
-> > 
-> > Since you have successfuly ported QE USB controller onto CPM USB
-> > hardware, now it's obvious that we will need generic gpio_set_dedicated()
-> > function. So I would rather beg David to accept gpio_set_dedicated()
-> > approach instead of exporting gpio_to_chip(). That way we'll kill two
-> > birds with one stone.
-> 
-> Or maybe some kind of gpio_set_option() with flags specific to the 
-> controller ? This could be used to enable open-drain outputs or internal 
-> pull-ups for instance.
 
-Yes, probably this name. The purpose will be the same anyway. ;-)
+On Apr 15, 2008, at 2:34 AM, Paul Mackerras wrote:
+> Kumar Gala writes:
+>
+>> +phys_addr_t memstart_addr;
+>> +EXPORT_SYMBOL(memstart_addr);
+>
+> Do you have a modular user of memstart_addr in mind?
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+I believe its needed for the CONFIG_RELOCATE build, but I can double  
+check that.
+
+- k
