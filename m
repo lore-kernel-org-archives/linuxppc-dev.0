@@ -2,22 +2,18 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id ACBB0DE06C
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Apr 2008 00:35:05 +1000 (EST)
-Message-Id: <EE972833-6928-4ECC-B257-432DFD947627@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id 3F4B7DE230
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Apr 2008 00:36:37 +1000 (EST)
+Message-Id: <36CB2DB8-2B4D-4F6E-A2DD-31538AA76ECF@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
 To: Paul Mackerras <paulus@samba.org>
-In-Reply-To: <18436.23196.673130.542635@cargo.ozlabs.ibm.com>
+In-Reply-To: <18436.12968.728788.841679@cargo.ozlabs.ibm.com>
 Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: [PATCH 03/12] [POWERPC] Remove and replace uses of PPC_MEMSTART
-	with memstart_addr
-Date: Tue, 15 Apr 2008 09:35:00 -0500
-References: <1207824531-27168-1-git-send-email-galak@kernel.crashing.org>
-	<1207824531-27168-2-git-send-email-galak@kernel.crashing.org>
-	<1207824531-27168-3-git-send-email-galak@kernel.crashing.org>
-	<1207824531-27168-4-git-send-email-galak@kernel.crashing.org>
-	<18436.23196.673130.542635@cargo.ozlabs.ibm.com>
+Subject: Re: [PATCH] [POWERPC] Make Book-E debug handling SMP safe
+Date: Tue, 15 Apr 2008 09:36:32 -0500
+References: <Pine.LNX.4.64.0804091621140.24556@blarg.am.freescale.net>
+	<18436.12968.728788.841679@cargo.ozlabs.ibm.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -29,15 +25,27 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Apr 15, 2008, at 2:34 AM, Paul Mackerras wrote:
+On Apr 14, 2008, at 11:44 PM, Paul Mackerras wrote:
 > Kumar Gala writes:
 >
->> +phys_addr_t memstart_addr;
->> +EXPORT_SYMBOL(memstart_addr);
+>> global_dbcr0 needs to be a per cpu set of save areas instead of a  
+>> single
+>> global on all processors.
 >
-> Do you have a modular user of memstart_addr in mind?
+> Looks reasonable.  At some point you might want to use a per-cpu
+> variable instead of an array in order to reduce cacheline bouncing.
 
-I believe its needed for the CONFIG_RELOCATE build, but I can double  
-check that.
+Can you point me at an example of this.  Do we do any asm access with  
+per-cpu variables anywhere today?
+
+>> Also, we switch to using DBCR0_IDM to determine if the user space  
+>> app is
+>> being debugged as its a more consistent way.  In the future we should
+>> support features like hardware breakpoint and watchpoints which will
+>> have DBCR0_IDM set but not necessarily DBCR0_IC (single step).
+>
+> That should be OK.
+
+Ok.  I'll put it my powerpc-next tree.
 
 - k
