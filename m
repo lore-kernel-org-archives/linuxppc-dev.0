@@ -1,21 +1,16 @@
-Return-Path: <timur@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 3AC16DF20C
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Apr 2008 02:31:45 +1000 (EST)
-Message-ID: <4804D867.4070205@freescale.com>
-Date: Tue, 15 Apr 2008 11:31:35 -0500
-From: Timur Tabi <timur@freescale.com>
+Return-Path: <mail4mz@gmail.com>
+Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.177])
+	by ozlabs.org (Postfix) with ESMTP id 48693DE090
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Apr 2008 04:29:01 +1000 (EST)
+Received: by py-out-1112.google.com with SMTP id z59so2297394pyg.27
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Apr 2008 11:29:00 -0700 (PDT)
+Message-ID: <5c9cd53b0804151129s2006af68n79975e8a8c07177b@mail.gmail.com>
+Date: Tue, 15 Apr 2008 14:29:00 -0400
+From: "mike zheng" <mail4mz@gmail.com>
+To: linuxppc-dev@ozlabs.org
+Subject: MCC problem of MPC8568
 MIME-Version: 1.0
-To: Paul Gortmaker <paul.gortmaker@windriver.com>
-Subject: Re: [PATCH] 86xx: mark functions static, other minor cleanups
-References: <1207933186-20555-1-git-send-email-paul.gortmaker@windriver.com>
-	<4804D39C.9000309@freescale.com> <4804D7C4.8060805@windriver.com>
-In-Reply-To: <4804D7C4.8060805@windriver.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, sfr@canb.auug.org.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,18 +20,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Paul Gortmaker wrote:
+Hi,
 
-> Valid point.  Is there a precedent here -- like a printk indicating
-> that the old ID matched, to let the user know?
+Currently, I have problem of the UBoot MCC driver. I setup the
+internal loopback on MPC8568. And here is the data of each channel:
 
-Not really, but a pr_warning() would be nice.
+           Channel #                Tx Data            Rx Data
+                  0                         0x01                0x9D
+                  1                         0x02                0xE1
+                  2                         0x03                0x9E
+                  3                         0x04                0xF1
+                  4                         0x05                0x83
+           ...
 
-> Actually on this one, we are OK, since the board support didn't exist
-> in the default kernel until I'd just sent it last week.
+Any idea on this issue? Or where can I find a working MCC Uboot driver
+of MPC8568?
 
-No problem, then.
+Thanks for your help,
 
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+Mike
