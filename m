@@ -1,21 +1,18 @@
-Return-Path: <dargaud@lpsc.in2p3.fr>
-Received: from lpsc-mail.in2p3.fr (lpsc-mail.in2p3.fr [134.158.40.8])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 8DAA4DDD04
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Apr 2008 19:33:51 +1000 (EST)
-Message-ID: <02f201c89edb$cb666150$ad289e86@LPSC0173W>
-From: "Guillaume Dargaud" <dargaud@lpsc.in2p3.fr>
-To: "Ulf Samuelsson" <ulf.samuelsson@atmel.com>, <linuxppc-dev@ozlabs.org>,
-	"Buildroot Mailinglist, " <buildroot@uclibc.org>
-References: <014701c89bda$09380060$ad289e86@LPSC0173W><fa686aa40804110655x48120e84tde01a52d8bb39a3@mail.gmail.com>
-	<01e801c89e49$6d0e6400$ad289e86@LPSC0173W>
-	<000b01c89eb5$2af81630$070514ac@atmel.com>
-Subject: Re: [Buildroot] zImage.embedded
-Date: Tue, 15 Apr 2008 11:33:37 +0200
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; format=flowed; charset="iso-8859-1";
-	reply-type=original
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18436.23196.673130.542635@cargo.ozlabs.ibm.com>
+Date: Tue, 15 Apr 2008 17:34:52 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 03/12] [POWERPC] Remove and replace uses of PPC_MEMSTART
+	with memstart_addr
+In-Reply-To: <1207824531-27168-4-git-send-email-galak@kernel.crashing.org>
+References: <1207824531-27168-1-git-send-email-galak@kernel.crashing.org>
+	<1207824531-27168-2-git-send-email-galak@kernel.crashing.org>
+	<1207824531-27168-3-git-send-email-galak@kernel.crashing.org>
+	<1207824531-27168-4-git-send-email-galak@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,22 +22,11 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> I think you need to figure out how to build u-boot for your board
-> outside buildroot, before you try to build it inside buildroot.
+Kumar Gala writes:
 
-Working on it...
+> +phys_addr_t memstart_addr;
+> +EXPORT_SYMBOL(memstart_addr);
 
-While I do that, I have a side question:
-is it possible to boot off a first kernel on a local partition, but tell it 
-to tftp boot off another kernel instead ?
+Do you have a modular user of memstart_addr in mind?
 
-The rational is that I have a working system on a card in my embedded 
-system, but if possible I'd like to have it boot off the latest version 
-available on the network.
-
-And if not available, simple boot using fallback parameters.
-
-Makes sense ?
--- 
-Guillaume Dargaud
-http://www.gdargaud.net/
+Paul.
