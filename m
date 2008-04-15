@@ -1,19 +1,19 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id F2045DEB36
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Apr 2008 02:03:16 +1000 (EST)
-Date: Tue, 15 Apr 2008 11:03:38 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: galak@kernel.crashing.org
-Subject: [PATCH] mpc8313erdb: Update defconfig, enabling FCM NAND and OF
-	partitions
-Message-ID: <20080415160338.GA2705@loki.buserror.net>
+Return-Path: <laurentp@cse-semaphore.com>
+Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
+	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id 40A4CDE21E
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Apr 2008 02:03:59 +1000 (EST)
+From: Laurent Pinchart <laurentp@cse-semaphore.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [RFC] Using two baud rate generators with the cpm_uart driver
+Date: Tue, 15 Apr 2008 18:03:56 +0200
+References: <200804151532.27057.laurentp@cse-semaphore.com>
+	<200804151754.21664.laurentp@cse-semaphore.com>
+	<4804D0EB.5020508@freescale.com>
+In-Reply-To: <4804D0EB.5020508@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; boundary="nextPart5102985.7ahpLTo4jS";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
+Message-Id: <200804151803.56383.laurentp@cse-semaphore.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -24,57 +24,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Signed-off-by: Scott Wood <scottwood@freescale.com>
----
- arch/powerpc/configs/mpc8313_rdb_defconfig |    8 +++++---
- 1 files changed, 5 insertions(+), 3 deletions(-)
+--nextPart5102985.7ahpLTo4jS
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-diff --git a/arch/powerpc/configs/mpc8313_rdb_defconfig b/arch/powerpc/configs/mpc8313_rdb_defconfig
-index 7a862a6..7d18440 100644
---- a/arch/powerpc/configs/mpc8313_rdb_defconfig
-+++ b/arch/powerpc/configs/mpc8313_rdb_defconfig
-@@ -1,7 +1,7 @@
- #
- # Automatically generated make config: don't edit
- # Linux kernel version: 2.6.25-rc6
--# Mon Mar 24 08:48:14 2008
-+# Fri Apr 11 11:10:09 2008
- #
- # CONFIG_PPC64 is not set
- 
-@@ -196,6 +196,7 @@ CONFIG_PREEMPT_NONE=y
- # CONFIG_PREEMPT is not set
- CONFIG_BINFMT_ELF=y
- # CONFIG_BINFMT_MISC is not set
-+CONFIG_FORCE_MAX_ZONEORDER=11
- # CONFIG_IOMMU_HELPER is not set
- CONFIG_ARCH_ENABLE_MEMORY_HOTPLUG=y
- CONFIG_ARCH_HAS_WALK_MEMORY=y
-@@ -360,7 +361,7 @@ CONFIG_MTD=y
- CONFIG_MTD_PARTITIONS=y
- # CONFIG_MTD_REDBOOT_PARTS is not set
- # CONFIG_MTD_CMDLINE_PARTS is not set
--# CONFIG_MTD_OF_PARTS is not set
-+CONFIG_MTD_OF_PARTS=y
- 
- #
- # User Modules And Translation Layers
-@@ -436,7 +437,7 @@ CONFIG_MTD_NAND_IDS=y
- # CONFIG_MTD_NAND_NANDSIM is not set
- # CONFIG_MTD_NAND_PLATFORM is not set
- # CONFIG_MTD_ALAUDA is not set
--# CONFIG_MTD_NAND_FSL_ELBC is not set
-+CONFIG_MTD_NAND_FSL_ELBC=y
- # CONFIG_MTD_ONENAND is not set
- 
- #
-@@ -1293,6 +1294,7 @@ CONFIG_PLIST=y
- CONFIG_HAS_IOMEM=y
- CONFIG_HAS_IOPORT=y
- CONFIG_HAS_DMA=y
-+CONFIG_HAVE_LMB=y
- 
- #
- # Kernel hacking
--- 
-1.5.4.4
+On Tuesday 15 April 2008 17:59, Scott Wood wrote:
+> Laurent Pinchart wrote:
+> >> The clean solution would be to have an abstracted clock API, similar t=
+o=20
+> >> phylib, where the caller doesn't know details about BRGs and such.=20
+> >> Maybe the linux/clk.h API would be suitable; I haven't looked at it in=
+=20
+> >> detail.
+> >=20
+> > The clock API would have to be quite advanced to express things like "t=
+he SCC4=20
+> > clock is a combination of BRG2 and BRG5" (and I don't even consider=20
+> > adding "with BRG2 set to 16x the baud rate and BRG5 to the baud rate").
+>=20
+> What I was picturing was platform code providing a clock object that the=
+=20
+> cpm_uart driver could be pointed at (possibly by modifying the device=20
+> tree in platform init); the knowledge of the multiple BRG weirdness=20
+> would be contained in platform code.
+
+I'll think about it.
+
+Thanks.
+
+=2D-=20
+Laurent Pinchart
+CSE Semaphore Belgium
+
+Chaussee de Bruxelles, 732A
+B-1410 Waterloo
+Belgium
+
+T +32 (2) 387 42 59
+=46 +32 (2) 387 42 75
+
+--nextPart5102985.7ahpLTo4jS
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
+
+iD8DBQBIBNHs8y9gWxC9vpcRAkh0AKCh2I2MIoeauppPY5ZI+JPnreQ6AACgim2M
+XH8gU/Fwf4B+FKMWq/2vgZs=
+=XJZm
+-----END PGP SIGNATURE-----
+
+--nextPart5102985.7ahpLTo4jS--
