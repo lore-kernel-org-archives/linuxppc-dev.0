@@ -1,31 +1,23 @@
-Return-Path: <ahuja@austin.ibm.com>
-Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id A059ADE471
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Apr 2008 08:56:24 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e5.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m3FMuGcS022912
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Apr 2008 18:56:16 -0400
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m3FMuGmS387716
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Apr 2008 18:56:16 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m3FMuGsX021037
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Apr 2008 18:56:16 -0400
-Message-ID: <4805328E.2050709@austin.ibm.com>
-Date: Tue, 15 Apr 2008 17:56:14 -0500
-From: Manish Ahuja <ahuja@austin.ibm.com>
-MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH] pseries: phyp dump: Variable size reserve space.
-References: <47FAB221.7050406@austin.ibm.com>	<47FFF4E8.9010705@austin.ibm.com>
-	<18436.18955.450131.623072@cargo.ozlabs.ibm.com>
-In-Reply-To: <18436.18955.450131.623072@cargo.ozlabs.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: mahuja@us.ibm.com, linuxppc-dev@ozlabs.org, linasvepstas@gmail.com
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 49177DE3ED
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Apr 2008 09:01:43 +1000 (EST)
+Message-Id: <320C966D-3E0E-470C-8598-CFB657B75E92@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Paul Gortmaker <paul.gortmaker@windriver.com>
+In-Reply-To: <20080415224628.GA21663@windriver.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v919.2)
+Subject: Re: [PATCH] 86xx: mark functions static, other minor cleanups
+Date: Tue, 15 Apr 2008 18:01:26 -0500
+References: <1207933186-20555-1-git-send-email-paul.gortmaker@windriver.com>
+	<4804D39C.9000309@freescale.com> <4804D7C4.8060805@windriver.com>
+	<4804D867.4070205@freescale.com>
+	<20080415224628.GA21663@windriver.com>
+Cc: linuxppc-dev@ozlabs.org, Timur Tabi <timur@freescale.com>,
+	sfr@canb.auug.org.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,22 +27,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Paul,
+>
+> -void
+> +static void
+> mpc86xx_hpcn_show_cpuinfo(struct seq_file *m)
+> {
+> 	struct device_node *root;
+> @@ -190,13 +190,19 @@ static int __init mpc86xx_hpcn_probe(void)
+> {
+> 	unsigned long root = of_get_flat_dt_root();
+>
+> -	if (of_flat_dt_is_compatible(root, "mpc86xx"))
+> +	/* Delete this in 2.6.27 */
+> +	if (of_flat_dt_is_compatible(root, "mpc86xx")) {
+> +		pr_warning("WARNING: your dts/dtb is old. You must update before  
+> the next kernel release\n");
+> +		return 1;
+> +	}
+> +
+> +	if (of_flat_dt_is_compatible(root, "fsl,mpc8641hpcn"))
+> 		return 1;	/* Looks good */
+>
 
-The aim is to have more flex space for the kernel on machines with more resources. Although the dump will be collected pretty fast and the memory released really early on allowing the machine to have the full memory available, this alleviates any issues that can be caused by having way too little memory on very very large systems during those few minutes.
+how about reversing the order of the checks.
 
--Manish
+- k
 
 
-
-Paul Mackerras wrote:
-> Manish Ahuja writes:
-> 
->> B. It computers 5% of total ram and rounds it down to multiples of 256MB.
->> C. Compares the rounded down value and returns larger of 256MB or the new
->>    computed value.
-> 
-> So if we have 10GB of memory or more we'll use reserve more than
-> 256MB.  What is the advantage of reserving more than 256MB of memory?
-> 
-> Paul.
+> 	return 0;
+> }
