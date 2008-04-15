@@ -1,19 +1,21 @@
-Return-Path: <sam.d.karp@gmail.com>
-Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.180])
-	by ozlabs.org (Postfix) with ESMTP id DD3E1DE13D
+Return-Path: <hugo.villeneuve@lyrtech.com>
+Received: from toq2-srv.bellnexxia.net (toq2.bellnexxia.net [209.226.175.121])
+	by ozlabs.org (Postfix) with ESMTP id 56E71DE2B0
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 15 Apr 2008 12:27:41 +1000 (EST)
-Received: by py-out-1112.google.com with SMTP id z59so1920678pyg.27
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 14 Apr 2008 19:27:40 -0700 (PDT)
-Message-ID: <800687fe0804141927y1f6ea75cv7ad0ba68b4fa637a@mail.gmail.com>
-Date: Mon, 14 Apr 2008 20:27:39 -0600
-From: "Sam Karp" <sam.d.karp@gmail.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: SecretLab 2.6.24 with USB
+	Wed, 16 Apr 2008 00:37:48 +1000 (EST)
+Received: from toip35-bus.srvr.bell.ca ([67.69.240.36])
+	by tomts47-srv.bellnexxia.net
+	(InterMail vM.5.01.06.13 201-253-122-130-113-20050324) with ESMTP id
+	<20080415135714.ZPDH1673.tomts47-srv.bellnexxia.net@toip35-bus.srvr.bell.ca>
+	for <linuxppc-embedded@ozlabs.org>; Tue, 15 Apr 2008 09:57:14 -0400
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_14288_641075.1208226459739"
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: [PATCH] LLTEMAC resource end address
+Date: Tue, 15 Apr 2008 09:57:13 -0400
+Message-ID: <42848A5C5A0D1E47B026E644DD49B08E025AA4D8@mail>
+From: "Hugo Villeneuve" <hugo.villeneuve@lyrtech.com>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -24,33 +26,65 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-------=_Part_14288_641075.1208226459739
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Hi,
+We have a design with LLTEMAC0 using channels 0 & 1, and LLTEMAC1 using =
+channel 0. When the Linux kernel boots, we had the following error =
+message:
 
-Hi all,
+---
+Registering device xilinx_lltemac:0
+Registering device xilinx_lltemac:1
+xilinx_lltemac.1: failed to claim resource 0
+cannot register dev xilinx_lltemac:1
+Registering device xilinx_lltemac:2
+---
 
-I've downloaded the SecretLab Xilinx Linux 2.6.24 Kernel and I'm trying to
-use a thumbdrive with the kernel.  I'm booting from a ramdisk and insert the
-thumbdrive but I have no /dev/sd* or /dev/hd* blocks.  Is there anything I
-need to add to the kernel or design to ensure that the thumbdrive is working
-or getting power?
+We found out that the two channels of a LLTEMAC interface are each using =
+0x40 bytes in length, and are contiguous. The following patch took care =
+of the problem for us (against the linux-2.6-xlnx-git tree):
 
-Thanks,
--Sam
+---
+diff --git a/arch/ppc/syslib/virtex_devices.c =
+b/arch/ppc/syslib/virtex_devices.c
+index 457e1bd..7f731e4 100644
+--- a/arch/ppc/syslib/virtex_devices.c
++++ b/arch/ppc/syslib/virtex_devices.c
+@@ -202,7 +202,7 @@
+        .resource =3D (struct resource[]) { \
+                { \
+                        .start =3D XPAR_LLTEMAC_##num##_BASEADDR, \
+-                       .end =3D XPAR_LLTEMAC_##num##_BASEADDR + 0x1000, =
+\
++                       .end =3D XPAR_LLTEMAC_##num##_BASEADDR + 0x003F, =
+\
+                        .flags =3D IORESOURCE_MEM \
+                }, \
+                { \
+---
 
-------=_Part_14288_641075.1208226459739
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Hugo V.
 
-<div>Hi all,</div>
-<div>&nbsp;</div>
-<div>I&#39;ve downloaded the SecretLab Xilinx Linux 2.6.24 Kernel and I&#39;m trying to use a thumbdrive with the kernel.&nbsp; I&#39;m booting from a ramdisk and insert the thumbdrive but I have no /dev/sd* or /dev/hd* blocks.&nbsp; Is there anything I need to add to the kernel or design to ensure that the thumbdrive is working or getting power?</div>
 
-<div>&nbsp;</div>
-<div>Thanks,</div>
-<div>-Sam</div>
+Hugo Villeneuve
+Hardware developer | Concepteur mat=E9riel
+Lyrtech
+Phone/T=E9l. : (1) (418) 877-4644 #2395
+Toll-free/Sans frais - Canada & USA : (1) (888) 922-4644 #2395
+Fax/T=E9l=E9c. : (1) (418) 877-7710
+www.lyrtech.com
+Infinite possibilities...TM
 
-------=_Part_14288_641075.1208226459739--
+THIS MESSAGE AND ALL ATTACHED DOCUMENTS ARE EXCLUSIVELY INTENDED
+TO THE INDICATED RECIPIENTS AND ITS CONTENTS MAY BE CONFIDENTIAL.
+IT IS STRICTLY FORBIDDEN TO ANYONE TO TAKE COGNIZANCE, USE, OR
+DIVULGE THE INFORMATION CONTAINED HEREIN. IF YOU MISTAKENLY
+RECEIVE THIS MESSAGE, IMMEDIATELY INFORM LYRTECH AND DESTROY THE
+MESSAGE AND ATTACHMENTS FORTHWITH.THANK YOU.
+
+LE PRESENT MESSAGE ET LES DOCUMENTS QUI Y SONT JOINTS S'ADRESSENT
+EXCLUSIVEMENT AU(X)DESTINATAIRE(S) INDIQUE(S) ET LEUR TENEUR PEUT
+ETRE CONFIDENTIELLE. IL EST STRICTEMENT INTERDIT A QUICONQUE D'EN
+PRENDRE CONNAISSANCE, DE LES UTILISER OU DE LES DIVULGUER. SI
+VOUS RECEVEZ LE PRESENT MESSAGE PAR ERREUR, VEUILLEZ EN AVISER
+LYRTECH IMMEDIATEMENT ET DETRUIRE LE MESSAGE SEANCE TENANTE,
+AINSI QUE LES DOCUMENTS QUI Y SONT JOINTS.
