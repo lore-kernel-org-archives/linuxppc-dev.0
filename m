@@ -4,13 +4,14 @@ Received: from az33egw01.freescale.net (az33egw01.freescale.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "az33egw01.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id F1540DEB0F
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Apr 2008 02:02:15 +1000 (EST)
-Date: Tue, 15 Apr 2008 11:02:31 -0500
+	by ozlabs.org (Postfix) with ESMTPS id F2045DEB36
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Apr 2008 02:03:16 +1000 (EST)
+Date: Tue, 15 Apr 2008 11:03:38 -0500
 From: Scott Wood <scottwood@freescale.com>
 To: galak@kernel.crashing.org
-Subject: [RESEND PATCH] cuboot-pq2: PCI fixes
-Message-ID: <20080415160231.GA2642@loki.buserror.net>
+Subject: [PATCH] mpc8313erdb: Update defconfig, enabling FCM NAND and OF
+	partitions
+Message-ID: <20080415160338.GA2705@loki.buserror.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Cc: linuxppc-dev@ozlabs.org
@@ -23,95 +24,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-1. Detect (and bail out on) more conditions that violate the
-assumptions of the setup code -- we assume in such cases that the device
-tree is correct and reflects what the firmware did.
-
-2. The inbound memory mask calculation was wrong.
-
 Signed-off-by: Scott Wood <scottwood@freescale.com>
 ---
- arch/powerpc/boot/cuboot-pq2.c |   27 +++++++++++++++++++--------
- 1 files changed, 19 insertions(+), 8 deletions(-)
+ arch/powerpc/configs/mpc8313_rdb_defconfig |    8 +++++---
+ 1 files changed, 5 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/boot/cuboot-pq2.c b/arch/powerpc/boot/cuboot-pq2.c
-index f56ac6c..9c7d134 100644
---- a/arch/powerpc/boot/cuboot-pq2.c
-+++ b/arch/powerpc/boot/cuboot-pq2.c
-@@ -128,7 +128,7 @@ static void fixup_pci(void)
- 	u8 *soc_regs;
- 	int i, len;
- 	void *node, *parent_node;
--	u32 naddr, nsize, mem_log2;
-+	u32 naddr, nsize, mem_pow2, mem_mask;
+diff --git a/arch/powerpc/configs/mpc8313_rdb_defconfig b/arch/powerpc/configs/mpc8313_rdb_defconfig
+index 7a862a6..7d18440 100644
+--- a/arch/powerpc/configs/mpc8313_rdb_defconfig
++++ b/arch/powerpc/configs/mpc8313_rdb_defconfig
+@@ -1,7 +1,7 @@
+ #
+ # Automatically generated make config: don't edit
+ # Linux kernel version: 2.6.25-rc6
+-# Mon Mar 24 08:48:14 2008
++# Fri Apr 11 11:10:09 2008
+ #
+ # CONFIG_PPC64 is not set
  
- 	node = finddevice("/pci");
- 	if (!node || !dt_is_compatible(node, "fsl,pq2-pci"))
-@@ -141,7 +141,7 @@ static void fixup_pci(void)
+@@ -196,6 +196,7 @@ CONFIG_PREEMPT_NONE=y
+ # CONFIG_PREEMPT is not set
+ CONFIG_BINFMT_ELF=y
+ # CONFIG_BINFMT_MISC is not set
++CONFIG_FORCE_MAX_ZONEORDER=11
+ # CONFIG_IOMMU_HELPER is not set
+ CONFIG_ARCH_ENABLE_MEMORY_HOTPLUG=y
+ CONFIG_ARCH_HAS_WALK_MEMORY=y
+@@ -360,7 +361,7 @@ CONFIG_MTD=y
+ CONFIG_MTD_PARTITIONS=y
+ # CONFIG_MTD_REDBOOT_PARTS is not set
+ # CONFIG_MTD_CMDLINE_PARTS is not set
+-# CONFIG_MTD_OF_PARTS is not set
++CONFIG_MTD_OF_PARTS=y
  
- 	soc_regs = (u8 *)fsl_get_immr();
- 	if (!soc_regs)
--		goto err;
-+		goto unhandled;
+ #
+ # User Modules And Translation Layers
+@@ -436,7 +437,7 @@ CONFIG_MTD_NAND_IDS=y
+ # CONFIG_MTD_NAND_NANDSIM is not set
+ # CONFIG_MTD_NAND_PLATFORM is not set
+ # CONFIG_MTD_ALAUDA is not set
+-# CONFIG_MTD_NAND_FSL_ELBC is not set
++CONFIG_MTD_NAND_FSL_ELBC=y
+ # CONFIG_MTD_ONENAND is not set
  
- 	dt_get_reg_format(node, &naddr, &nsize);
- 	if (naddr != 3 || nsize != 2)
-@@ -153,7 +153,7 @@ static void fixup_pci(void)
+ #
+@@ -1293,6 +1294,7 @@ CONFIG_PLIST=y
+ CONFIG_HAS_IOMEM=y
+ CONFIG_HAS_IOPORT=y
+ CONFIG_HAS_DMA=y
++CONFIG_HAVE_LMB=y
  
- 	dt_get_reg_format(parent_node, &naddr, &nsize);
- 	if (naddr != 1 || nsize != 1)
--		goto err;
-+		goto unhandled;
- 
- 	len = getprop(node, "ranges", pci_ranges_buf,
- 	              sizeof(pci_ranges_buf));
-@@ -170,14 +170,20 @@ static void fixup_pci(void)
- 	}
- 
- 	if (!mem || !mmio || !io)
--		goto err;
-+		goto unhandled;
-+	if (mem->size[1] != mmio->size[1])
-+		goto unhandled;
-+	if (mem->size[1] & (mem->size[1] - 1))
-+		goto unhandled;
-+	if (io->size[1] & (io->size[1] - 1))
-+		goto unhandled;
- 
- 	if (mem->phys_addr + mem->size[1] == mmio->phys_addr)
- 		mem_base = mem;
- 	else if (mmio->phys_addr + mmio->size[1] == mem->phys_addr)
- 		mem_base = mmio;
- 	else
--		goto err;
-+		goto unhandled;
- 
- 	out_be32(&pci_regs[1][0], mem_base->phys_addr | 1);
- 	out_be32(&pci_regs[2][0], ~(mem->size[1] + mmio->size[1] - 1));
-@@ -201,8 +207,9 @@ static void fixup_pci(void)
- 	out_le32(&pci_regs[0][58], 0);
- 	out_le32(&pci_regs[0][60], 0);
- 
--	mem_log2 = 1 << (__ilog2_u32(bd.bi_memsize - 1) + 1);
--	out_le32(&pci_regs[0][62], 0xa0000000 | ~((1 << (mem_log2 - 12)) - 1));
-+	mem_pow2 = 1 << (__ilog2_u32(bd.bi_memsize - 1) + 1);
-+	mem_mask = ~(mem_pow2 - 1) >> 12;
-+	out_le32(&pci_regs[0][62], 0xa0000000 | mem_mask);
- 
- 	/* If PCI is disabled, drive RST high to enable. */
- 	if (!(in_le32(&pci_regs[0][32]) & 1)) {
-@@ -228,7 +235,11 @@ static void fixup_pci(void)
- 	return;
- 
- err:
--	printf("Bad PCI node\r\n");
-+	printf("Bad PCI node -- using existing firmware setup.\r\n");
-+	return;
-+
-+unhandled:
-+	printf("Unsupported PCI node -- using existing firmware setup.\r\n");
- }
- 
- static void pq2_platform_fixups(void)
+ #
+ # Kernel hacking
 -- 
-1.5.3.8
+1.5.4.4
