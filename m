@@ -1,20 +1,11 @@
-Return-Path: <andre.schwarz@matrix-vision.de>
-Received: from p15137414.pureserver.info (matrixvision.de [217.160.213.229])
-	by ozlabs.org (Postfix) with ESMTP id 4FEE5DE19D
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Apr 2008 21:54:00 +1000 (EST)
-Message-ID: <48049754.8010008@matrix-vision.de>
-Date: Tue, 15 Apr 2008 13:53:56 +0200
-From: Andre Schwarz <andre.schwarz@matrix-vision.de>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: Flash on LocalBus @ MPC8343
-References: <47FF802B.5020708@matrix-vision.de>	<20080411153849.GB2588@loki.buserror.net>	<47FFC2DE.80808@matrix-vision.de>
-	<47FFC397.9040200@freescale.com>	<480079CA.5040000@matrix-vision.de>
-	<20080414164518.GB7061@ld0162-tx32.am.freescale.net>
-In-Reply-To: <20080414164518.GB7061@ld0162-tx32.am.freescale.net>
-Content-Type: multipart/alternative;
-	boundary="------------050803030807080906090908"
-Cc: linux-ppc list <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18436.41073.464457.384938@cargo.ozlabs.ibm.com>
+Date: Tue, 15 Apr 2008 22:32:49 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: linuxppc-dev@ozlabs.org
+Subject: Patches pushed to powerpc.git master and powerpc-next branches
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,133 +15,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------050803030807080906090908
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: quoted-printable
+I have just pushed the following patches to the master and
+powerpc-next branches of the powerpc.git repository, and pulled in
+Linus' tree as of 2.6.25-rc9.
 
-Scott,
+Paul.
 
-there has been a "compatible=3Dsoc" in my of_bus_id[] ...
-It was taken from mpc834x_mds some weeks ago.
+Dale Farnsworth (5):
+      [POWERPC] prpmc2800: Fix frequencies in prpmc2800.dts
+      [POWERPC] mv64x60: Remove device tree absolute path references
+      [POWERPC] mv643xx_eth: Prepare to support multiple silicon blocks
+      [POWERPC] Document the mv64x60 device tree bindings
+      [POWERPC] prpmc2800 needs a dtbImage
 
-I changed to :
+David S. Miller (1):
+      [LMB] Add lmb_alloc_nid()
 
-static struct of_device_id __initdata of_bus_ids[] =3D {
-        { .compatible =3D "fsl,pq2pro-localbus", },
-        {},
-};
+Mark A. Greer (3):
+      [POWERPC] prpmc2800: Convert DTS to v1 and add labels
+      [POWERPC] mv64x60: Fix FDT compatible names: mv64x60 => mv64360
+      [POWERPC] prpmc2800: Clean up dts properties
 
+Paul Mackerras (3):
+      [POWERPC] Fix handling of unrecoverable SLB miss interrupts
+      [LMB] Fix some whitespace and other formatting issues, use pr_debug
+      [LMB] Restructure allocation loops to avoid unsigned underflow
 
-now it works fine.
-
-
-Thanks !
-
-Andre
-
-Scott Wood schrieb:
-> On Sat, Apr 12, 2008 at 10:58:50AM +0200, Andr=E9 Schwarz wrote:
->  =20
->> thanks , but ... can't find "of_bus_ids[]" entry.
->>    =20
->
-> That means your platform likely isn't calling of_platform_bus_probe() a=
-t
-> all.  Look at other platforms, such as mpc831x_rdb, for an example.
->
->  =20
->> I'm obviously out of sync. My last git-pull from denx is 3 days old, n=
-ow=20
->> - need to update on monday.
->>    =20
->
-> For Denx-specific support, please contact Denx.
->
-> This certainly isn't something that was added in the past 3 days.
->
-> -Scott
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
->  =20
-
-
-
-MATRIX VISION GmbH, Talstra=DFe 16, DE-71570 Oppenweiler  - Registergeric=
-ht: Amtsgericht Stuttgart, HRB 271090
-Gesch=E4ftsf=FChrer: Gerhard Thullner, Werner Armingeon, Uwe Furtner
-
---------------050803030807080906090908
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-<head>
-  <meta content="text/html;charset=ISO-8859-1" http-equiv="Content-Type">
-</head>
-<body bgcolor="#ffffff" text="#000000">
-Scott,<br>
-<br>
-there has been a "compatible=soc" in my of_bus_id[] ...<br>
-It was taken from mpc834x_mds some weeks ago.<br>
-<br>
-I changed to :<br>
-<br>
-static struct of_device_id __initdata of_bus_ids[] = {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; { .compatible = "fsl,pq2pro-localbus", },<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {},<br>
-};<br>
-<br>
-<br>
-now it works fine.<br>
-<br>
-<br>
-Thanks !<br>
-<br>
-Andre<br>
-<br>
-Scott Wood schrieb:
-<blockquote
- cite="mid:20080414164518.GB7061@ld0162-tx32.am.freescale.net"
- type="cite">
-  <pre wrap="">On Sat, Apr 12, 2008 at 10:58:50AM +0200, Andr&eacute; Schwarz wrote:
-  </pre>
-  <blockquote type="cite">
-    <pre wrap="">thanks , but ... can't find "of_bus_ids[]" entry.
-    </pre>
-  </blockquote>
-  <pre wrap=""><!---->
-That means your platform likely isn't calling of_platform_bus_probe() at
-all.  Look at other platforms, such as mpc831x_rdb, for an example.
-
-  </pre>
-  <blockquote type="cite">
-    <pre wrap="">I'm obviously out of sync. My last git-pull from denx is 3 days old, now 
-- need to update on monday.
-    </pre>
-  </blockquote>
-  <pre wrap=""><!---->
-For Denx-specific support, please contact Denx.
-
-This certainly isn't something that was added in the past 3 days.
-
--Scott
-_______________________________________________
-Linuxppc-dev mailing list
-<a class="moz-txt-link-abbreviated" href="mailto:Linuxppc-dev@ozlabs.org">Linuxppc-dev@ozlabs.org</a>
-<a class="moz-txt-link-freetext" href="https://ozlabs.org/mailman/listinfo/linuxppc-dev">https://ozlabs.org/mailman/listinfo/linuxppc-dev</a>
-  </pre>
-</blockquote>
-<br>
-<BR>
-
-MATRIX VISION GmbH, Talstraße 16, DE-71570 Oppenweiler  - Registergericht: Amtsgericht Stuttgart, HRB 271090
-Geschäftsführer: Gerhard Thullner, Werner Armingeon, Uwe Furtner
-<BR>
-</body>
-</html>
-
---------------050803030807080906090908--
+Stephen Rothwell (6):
+      [POWERPC] Fix MAX_ORDER config problem
+      [POWERPC] iSeries: Use alternate paca structure for booting
+      [POWERPC] iSeries: Make iseries_reg_save private to iSeries
+      [POWERPC] iSeries: Localise and constify some iSeries data
+      [POWERPC] remove include of asm/of_device.h from pmi.h
+      [POWERPC] replace asm/of_device.h with linux/of_device.h in macio.h
