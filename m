@@ -1,14 +1,17 @@
 Return-Path: <paul.gortmaker@windriver.com>
 Received: from mail.wrs.com (mail.windriver.com [147.11.1.11])
-	by ozlabs.org (Postfix) with ESMTP id CF091DE473
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Apr 2008 08:41:05 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 2166FDE53F
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Apr 2008 08:41:11 +1000 (EST)
 From: Paul Gortmaker <paul.gortmaker@windriver.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 1/3] powerpc: Add support for Wind River SBC8641D board
-Date: Tue, 15 Apr 2008 18:41:30 -0400
-Message-Id: <96011ba20ab9319aa866c12e2ff91ad579d26aed.1208296521.git.paul.gortmaker@windriver.com>
-In-Reply-To: <1208299292-21937-1-git-send-email-paul.gortmaker@windriver.com>
+Subject: [PATCH 2/3] powerpc: Add device tree source for Wind River SBC8641D
+Date: Tue, 15 Apr 2008 18:41:31 -0400
+Message-Id: <c3840b6d7622db88a748213c806c6cfe4bf404ef.1208296521.git.paul.gortmaker@windriver.com>
+In-Reply-To: <96011ba20ab9319aa866c12e2ff91ad579d26aed.1208296521.git.paul.gortmaker@windriver.com>
 References: <1208299292-21937-1-git-send-email-paul.gortmaker@windriver.com>
+	<96011ba20ab9319aa866c12e2ff91ad579d26aed.1208296521.git.paul.gortmaker@windriver.com>
+In-Reply-To: <96011ba20ab9319aa866c12e2ff91ad579d26aed.1208296521.git.paul.gortmaker@windriver.com>
+References: <96011ba20ab9319aa866c12e2ff91ad579d26aed.1208296521.git.paul.gortmaker@windriver.com>
 Cc: Paul Gortmaker <paul.gortmaker@windriver.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -19,68 +22,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This adds support for the Wind River SBC8641D board, based
-largely on the mpc86xx_hpcn support.  The biggest difference is
-the lack of the Uli and the i8259 cascade, which simplifies things.
+This adds in the device tree source for the SBC8641D, based
+largely on the mpc8641_hpcn.dts.  The biggest differences are
+the lack of a complex IRQ mapping (since no Uli/i8259 cascade)
+and the different layout of devices on the localbus node.
 
 Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
 ---
- arch/powerpc/platforms/86xx/Kconfig    |    8 ++-
- arch/powerpc/platforms/86xx/Makefile   |    1 +
- arch/powerpc/platforms/86xx/sbc8641d.c |  164 ++++++++++++++++++++++++++++++++
- 3 files changed, 172 insertions(+), 1 deletions(-)
- create mode 100644 arch/powerpc/platforms/86xx/sbc8641d.c
+ arch/powerpc/boot/dts/sbc8641d.dts |  352 ++++++++++++++++++++++++++++++++++++
+ 1 files changed, 352 insertions(+), 0 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/sbc8641d.dts
 
-diff --git a/arch/powerpc/platforms/86xx/Kconfig b/arch/powerpc/platforms/86xx/Kconfig
-index 21d1135..7442c58 100644
---- a/arch/powerpc/platforms/86xx/Kconfig
-+++ b/arch/powerpc/platforms/86xx/Kconfig
-@@ -11,6 +11,12 @@ config MPC8641_HPCN
- 	help
- 	  This option enables support for the MPC8641 HPCN board.
- 
-+config SBC8641D
-+	bool "Wind River SBC8641D"
-+	select DEFAULT_UIMAGE
-+	help
-+	  This option enables support for the WRS SBC8641D board.
-+
- config MPC8610_HPCD
- 	bool "Freescale MPC8610 HPCD"
- 	select DEFAULT_UIMAGE
-@@ -24,7 +30,7 @@ config MPC8641
- 	select FSL_PCI if PCI
- 	select PPC_UDBG_16550
- 	select MPIC
--	default y if MPC8641_HPCN
-+	default y if MPC8641_HPCN || SBC8641D
- 
- config MPC8610
- 	bool
-diff --git a/arch/powerpc/platforms/86xx/Makefile b/arch/powerpc/platforms/86xx/Makefile
-index c967063..1b9b4a9 100644
---- a/arch/powerpc/platforms/86xx/Makefile
-+++ b/arch/powerpc/platforms/86xx/Makefile
-@@ -4,4 +4,5 @@
- 
- obj-$(CONFIG_SMP)		+= mpc86xx_smp.o
- obj-$(CONFIG_MPC8641_HPCN)	+= mpc86xx_hpcn.o
-+obj-$(CONFIG_SBC8641D)		+= sbc8641d.o
- obj-$(CONFIG_MPC8610_HPCD)	+= mpc8610_hpcd.o
-diff --git a/arch/powerpc/platforms/86xx/sbc8641d.c b/arch/powerpc/platforms/86xx/sbc8641d.c
+diff --git a/arch/powerpc/boot/dts/sbc8641d.dts b/arch/powerpc/boot/dts/sbc8641d.dts
 new file mode 100644
-index 0000000..510a06e
+index 0000000..f2d85b3
 --- /dev/null
-+++ b/arch/powerpc/platforms/86xx/sbc8641d.c
-@@ -0,0 +1,164 @@
++++ b/arch/powerpc/boot/dts/sbc8641d.dts
+@@ -0,0 +1,352 @@
 +/*
-+ * SBC8641D board specific routines
++ * SBC8641D Device Tree Source
 + *
 + * Copyright 2008 Wind River Systems Inc.
 + *
-+ * By Paul Gortmaker (see MAINTAINERS for contact information)
++ * Paul Gortmaker (see MAINTAINERS for contact information)
 + *
-+ * Based largely on the 8641 HPCN support by Freescale Semiconductor Inc.
++ * Based largely on the mpc8641_hpcn.dts by Freescale Semiconductor Inc.
 + *
 + * This program is free software; you can redistribute  it and/or modify it
 + * under  the terms of  the GNU General  Public License as published by the
@@ -88,154 +54,342 @@ index 0000000..510a06e
 + * option) any later version.
 + */
 +
-+#include <linux/stddef.h>
-+#include <linux/kernel.h>
-+#include <linux/pci.h>
-+#include <linux/kdev_t.h>
-+#include <linux/delay.h>
-+#include <linux/seq_file.h>
-+#include <linux/of_platform.h>
++/dts-v1/;
 +
-+#include <asm/system.h>
-+#include <asm/time.h>
-+#include <asm/machdep.h>
-+#include <asm/pci-bridge.h>
-+#include <asm/mpc86xx.h>
-+#include <asm/prom.h>
-+#include <mm/mmu_decl.h>
-+#include <asm/udbg.h>
++/ {
++	model = "SBC8641D";
++	compatible = "wind,sbc8641";
++	#address-cells = <1>;
++	#size-cells = <1>;
 +
-+#include <asm/mpic.h>
++	aliases {
++		ethernet0 = &enet0;
++		ethernet1 = &enet1;
++		ethernet2 = &enet2;
++		ethernet3 = &enet3;
++		serial0 = &serial0;
++		serial1 = &serial1;
++		pci0 = &pci0;
++		pci1 = &pci1;
++	};
 +
-+#include <sysdev/fsl_pci.h>
-+#include <sysdev/fsl_soc.h>
++	cpus {
++		#address-cells = <1>;
++		#size-cells = <0>;
 +
-+#include "mpc86xx.h"
++		PowerPC,8641@0 {
++			device_type = "cpu";
++			reg = <0>;
++			d-cache-line-size = <32>;
++			i-cache-line-size = <32>;
++			d-cache-size = <32768>;		// L1
++			i-cache-size = <32768>;		// L1
++			timebase-frequency = <0>;	// From uboot
++			bus-frequency = <0>;		// From uboot
++			clock-frequency = <0>;		// From uboot
++		};
++		PowerPC,8641@1 {
++			device_type = "cpu";
++			reg = <1>;
++			d-cache-line-size = <32>;
++			i-cache-line-size = <32>;
++			d-cache-size = <32768>;
++			i-cache-size = <32768>;
++			timebase-frequency = <0>;	// From uboot
++			bus-frequency = <0>;		// From uboot
++			clock-frequency = <0>;		// From uboot
++		};
++	};
 +
-+static void __init
-+sbc8641_init_irq(void)
-+{
-+	struct mpic *mpic1;
-+	struct device_node *np;
-+	struct resource res;
++	memory {
++		device_type = "memory";
++		reg = <0x00000000 0x20000000>;	// 512M at 0x0
++	};
 +
-+	/* Determine PIC address. */
-+	np = of_find_node_by_type(NULL, "open-pic");
-+	if (np == NULL)
-+		return;
-+	of_address_to_resource(np, 0, &res);
++	localbus@f8005000 {
++		#address-cells = <2>;
++		#size-cells = <1>;
++		compatible = "fsl,mpc8641-localbus", "simple-bus";
++		reg = <0xf8005000 0x1000>;
++		interrupts = <19 2>;
++		interrupt-parent = <&mpic>;
 +
-+	/* Alloc mpic structure and per isu has 16 INT entries. */
-+	mpic1 = mpic_alloc(np, res.start,
-+			MPIC_PRIMARY | MPIC_WANTS_RESET | MPIC_BIG_ENDIAN,
-+			0, 256, " MPIC     ");
-+	of_node_put(np);
-+	BUG_ON(mpic1 == NULL);
++		ranges = <0 0 0xff000000 0x01000000	// 16MB Boot flash
++			  1 0 0xf0000000 0x00010000	// 64KB EEPROM
++			  2 0 0xf1000000 0x00100000	// EPLD (1MB)
++			  3 0 0xe0000000 0x04000000	// 64MB LB SDRAM (CS3)
++			  4 0 0xe4000000 0x04000000	// 64MB LB SDRAM (CS4)
++			  6 0 0xf4000000 0x00100000	// LCD display (1MB)
++			  7 0 0xe8000000 0x04000000>;	// 64MB OneNAND
 +
-+	mpic_init(mpic1);
-+}
++		flash@0,0 {
++			compatible = "cfi-flash";
++			reg = <0 0 0x01000000>;
++			bank-width = <2>;
++			device-width = <2>;
++			#address-cells = <1>;
++			#size-cells = <1>;
++			partition@0 {
++				label = "dtb";
++				reg = <0x00000000 0x00100000>;
++				read-only;
++			};
++			partition@300000 {
++				label = "kernel";
++				reg = <0x00100000 0x00400000>;
++				read-only;
++			};
++			partition@400000 {
++				label = "fs";
++				reg = <0x00500000 0x00a00000>;
++			};
++			partition@700000 {
++				label = "firmware";
++				reg = <0x00f00000 0x00100000>;
++				read-only;
++			};
++		};
 +
-+static void __init
-+sbc8641_setup_arch(void)
-+{
-+#ifdef CONFIG_PCI
-+	struct device_node *np;
-+#endif
++		epld@2,0 {
++			compatible = "wrs,epld-localbus";
++			#address-cells = <2>;
++			#size-cells = <1>;
++			reg = <2 0 0x100000>;
++			ranges = <0 0 5 0 1	// User switches
++				  1 0 5 1 1	// Board ID/Rev
++				  3 0 5 3 1>;	// LEDs
++		};
++	};
 +
-+	if (ppc_md.progress)
-+		ppc_md.progress("sbc8641_setup_arch()", 0);
++	soc@f8000000 {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		device_type = "soc";
++		compatible = "simple-bus";
++		ranges = <0x00000000 0xf8000000 0x00100000>;
++		reg = <0xf8000000 0x00001000>;	// CCSRBAR
++		bus-frequency = <0>;
 +
-+#ifdef CONFIG_PCI
-+	for_each_compatible_node(np, "pci", "fsl,mpc8641-pcie")
-+		fsl_add_bridge(np, 0);
-+#endif
++		i2c@3000 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			cell-index = <0>;
++			compatible = "fsl-i2c";
++			reg = <0x3000 0x100>;
++			interrupts = <43 2>;
++			interrupt-parent = <&mpic>;
++			dfsrr;
++		};
 +
-+	printk("SBC8641 board from Wind River\n");
++		i2c@3100 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			cell-index = <1>;
++			compatible = "fsl-i2c";
++			reg = <0x3100 0x100>;
++			interrupts = <43 2>;
++			interrupt-parent = <&mpic>;
++			dfsrr;
++		};
 +
-+#ifdef CONFIG_SMP
-+	mpc86xx_smp_init();
-+#endif
-+}
++		mdio@24520 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			compatible = "fsl,gianfar-mdio";
++			reg = <0x24520 0x20>;
 +
++			phy0: ethernet-phy@1f {
++				interrupt-parent = <&mpic>;
++				interrupts = <10 1>;
++				reg = <0x1f>;
++				device_type = "ethernet-phy";
++			};
++			phy1: ethernet-phy@0 {
++				interrupt-parent = <&mpic>;
++				interrupts = <10 1>;
++				reg = <0>;
++				device_type = "ethernet-phy";
++			};
++			phy2: ethernet-phy@1 {
++				interrupt-parent = <&mpic>;
++				interrupts = <10 1>;
++				reg = <1>;
++				device_type = "ethernet-phy";
++			};
++			phy3: ethernet-phy@2 {
++				interrupt-parent = <&mpic>;
++				interrupts = <10 1>;
++				reg = <2>;
++				device_type = "ethernet-phy";
++			};
++		};
 +
-+static void
-+sbc8641_show_cpuinfo(struct seq_file *m)
-+{
-+	struct device_node *root;
-+	uint memsize = total_memory;
-+	const char *model = "";
-+	uint svid = mfspr(SPRN_SVR);
++		enet0: ethernet@24000 {
++			cell-index = <0>;
++			device_type = "network";
++			model = "TSEC";
++			compatible = "gianfar";
++			reg = <0x24000 0x1000>;
++			local-mac-address = [ 00 00 00 00 00 00 ];
++			interrupts = <29 2 30  2 34 2>;
++			interrupt-parent = <&mpic>;
++			phy-handle = <&phy0>;
++			phy-connection-type = "rgmii-id";
++		};
 +
-+	seq_printf(m, "Vendor\t\t: Wind River Systems\n");
++		enet1: ethernet@25000 {
++			cell-index = <1>;
++			device_type = "network";
++			model = "TSEC";
++			compatible = "gianfar";
++			reg = <0x25000 0x1000>;
++			local-mac-address = [ 00 00 00 00 00 00 ];
++			interrupts = <35 2 36 2 40 2>;
++			interrupt-parent = <&mpic>;
++			phy-handle = <&phy1>;
++			phy-connection-type = "rgmii-id";
++		};
++		
++		enet2: ethernet@26000 {
++			cell-index = <2>;
++			device_type = "network";
++			model = "TSEC";
++			compatible = "gianfar";
++			reg = <0x26000 0x1000>;
++			local-mac-address = [ 00 00 00 00 00 00 ];
++			interrupts = <31 2 32 2 33 2>;
++			interrupt-parent = <&mpic>;
++			phy-handle = <&phy2>;
++			phy-connection-type = "rgmii-id";
++		};
 +
-+	root = of_find_node_by_path("/");
-+	if (root)
-+		model = of_get_property(root, "model", NULL);
-+	seq_printf(m, "Machine\t\t: %s\n", model);
-+	of_node_put(root);
++		enet3: ethernet@27000 {
++			cell-index = <3>;
++			device_type = "network";
++			model = "TSEC";
++			compatible = "gianfar";
++			reg = <0x27000 0x1000>;
++			local-mac-address = [ 00 00 00 00 00 00 ];
++			interrupts = <37 2 38 2 39 2>;
++			interrupt-parent = <&mpic>;
++			phy-handle = <&phy3>;
++			phy-connection-type = "rgmii-id";
++		};
 +
-+	seq_printf(m, "SVR\t\t: 0x%x\n", svid);
-+	seq_printf(m, "Memory\t\t: %d MB\n", memsize / (1024 * 1024));
-+}
++		serial0: serial@4500 {
++			cell-index = <0>;
++			device_type = "serial";
++			compatible = "ns16550";
++			reg = <0x4500 0x100>;
++			clock-frequency = <0>;
++			interrupts = <42 2>;
++			interrupt-parent = <&mpic>;
++		};
 +
++		serial1: serial@4600 {
++			cell-index = <1>;
++			device_type = "serial";
++			compatible = "ns16550";
++			reg = <0x4600 0x100>;
++			clock-frequency = <0>;
++			interrupts = <28 2>;
++			interrupt-parent = <&mpic>;
++		};
 +
-+/*
-+ * Called very early, device-tree isn't unflattened
-+ */
-+static int __init sbc8641_probe(void)
-+{
-+	unsigned long root = of_get_flat_dt_root();
++		mpic: pic@40000 {
++			clock-frequency = <0>;
++			interrupt-controller;
++			#address-cells = <0>;
++			#interrupt-cells = <2>;
++			reg = <0x40000 0x40000>;
++			compatible = "chrp,open-pic";
++			device_type = "open-pic";
++			big-endian;
++		};
 +
-+	if (of_flat_dt_is_compatible(root, "wind,sbc8641"))
-+		return 1;	/* Looks good */
++		global-utilities@e0000 {
++			compatible = "fsl,mpc8641-guts";
++			reg = <0xe0000 0x1000>;
++			fsl,has-rstcr;
++		};
++	};
 +
-+	return 0;
-+}
++	pci0: pcie@f8008000 {
++		cell-index = <0>;
++		compatible = "fsl,mpc8641-pcie";
++		device_type = "pci";
++		#interrupt-cells = <1>;
++		#size-cells = <2>;
++		#address-cells = <3>;
++		reg = <0xf8008000 0x1000>;
++		bus-range = <0x0 0xff>;
++		ranges = <0x02000000 0x0 0x80000000 0x80000000 0x0 0x20000000
++			  0x01000000 0x0 0x00000000 0xe2000000 0x0 0x00100000>;
++		clock-frequency = <33333333>;
++		interrupt-parent = <&mpic>;
++		interrupts = <24 2>;
++		interrupt-map-mask = <0xff00 0 0 7>;
++		interrupt-map = <
++			/* IDSEL 0x0 */
++			0x0000 0 0 1 &mpic 0 1
++			0x0000 0 0 2 &mpic 1 1
++			0x0000 0 0 3 &mpic 2 1
++			0x0000 0 0 4 &mpic 3 1
++			>;
 +
-+static long __init
-+mpc86xx_time_init(void)
-+{
-+	unsigned int temp;
++		pcie@0 {
++			reg = <0 0 0 0 0>;
++			#size-cells = <2>;
++			#address-cells = <3>;
++			device_type = "pci";
++			ranges = <0x02000000 0x0 0x80000000
++				  0x02000000 0x0 0x80000000
++				  0x0 0x20000000
 +
-+	/* Set the time base to zero */
-+	mtspr(SPRN_TBWL, 0);
-+	mtspr(SPRN_TBWU, 0);
++				  0x01000000 0x0 0x00000000
++				  0x01000000 0x0 0x00000000
++				  0x0 0x00100000>;
++		};
 +
-+	temp = mfspr(SPRN_HID0);
-+	temp |= HID0_TBEN;
-+	mtspr(SPRN_HID0, temp);
-+	asm volatile("isync");
++	};
 +
-+	return 0;
-+}
++	pci1: pcie@f8009000 {
++		cell-index = <1>;
++		compatible = "fsl,mpc8641-pcie";
++		device_type = "pci";
++		#interrupt-cells = <1>;
++		#size-cells = <2>;
++		#address-cells = <3>;
++		reg = <0xf8009000 0x1000>;
++		bus-range = <0 0xff>;
++		ranges = <0x02000000 0x0 0xa0000000 0xa0000000 0x0 0x20000000
++			  0x01000000 0x0 0x00000000 0xe3000000 0x0 0x00100000>;
++		clock-frequency = <33333333>;
++		interrupt-parent = <&mpic>;
++		interrupts = <25 2>;
++		interrupt-map-mask = <0xf800 0 0 7>;
++		interrupt-map = <
++			/* IDSEL 0x0 */
++			0x0000 0 0 1 &mpic 4 1
++			0x0000 0 0 2 &mpic 5 1
++			0x0000 0 0 3 &mpic 6 1
++			0x0000 0 0 4 &mpic 7 1
++			>;
 +
-+static __initdata struct of_device_id of_bus_ids[] = {
-+	{ .compatible = "simple-bus", },
-+	{},
-+};
++		pcie@0 {
++			reg = <0 0 0 0 0>;
++			#size-cells = <2>;
++			#address-cells = <3>;
++			device_type = "pci";
++			ranges = <0x02000000 0x0 0xa0000000
++				  0x02000000 0x0 0xa0000000
++				  0x0 0x20000000
 +
-+static int __init declare_of_platform_devices(void)
-+{
-+	of_platform_bus_probe(NULL, of_bus_ids, NULL);
-+
-+	return 0;
-+}
-+machine_device_initcall(sbc8641, declare_of_platform_devices);
-+
-+define_machine(sbc8641) {
-+	.name			= "SBC8641D",
-+	.probe			= sbc8641_probe,
-+	.setup_arch		= sbc8641_setup_arch,
-+	.init_IRQ		= sbc8641_init_irq,
-+	.show_cpuinfo		= sbc8641_show_cpuinfo,
-+	.get_irq		= mpic_get_irq,
-+	.restart		= fsl_rstcr_restart,
-+	.time_init		= mpc86xx_time_init,
-+	.calibrate_decr		= generic_calibrate_decr,
-+	.progress		= udbg_progress,
-+#ifdef CONFIG_PCI
-+	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
-+#endif
++				  0x01000000 0x0 0x00000000
++				  0x01000000 0x0 0x00000000
++				  0x0 0x00100000>;
++		};
++	};
 +};
 -- 
 1.5.4.3
