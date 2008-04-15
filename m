@@ -1,22 +1,14 @@
-Return-Path: <rdreier@cisco.com>
-Received: from sj-iport-5.cisco.com (sj-iport-5.cisco.com [171.68.10.87])
-	(using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "sj-iport-5.cisco.com", Issuer "Cisco SSCA" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 4C28CDE0C2
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Apr 2008 14:13:36 +1000 (EST)
-From: Roland Dreier <rdreier@cisco.com>
-To: Stefan Roscher <ossrosch@linux.vnet.ibm.com>
-Subject: Re: [PATCH] IB/ehca: extend query_device() and query_port() to
-	support all values for ibv_devinfo
-References: <200804071457.36248.ossrosch@linux.vnet.ibm.com>
-Date: Mon, 14 Apr 2008 21:01:24 -0700
-In-Reply-To: <200804071457.36248.ossrosch@linux.vnet.ibm.com> (Stefan
-	Roscher's message of "Mon, 7 Apr 2008 13:57:33 +0100")
-Message-ID: <adad4orpy0b.fsf@cisco.com>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: fenkes@de.ibm.com, ewg@lists.openfabrics.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, raisch@de.ibm.com, general@lists.openfabrics.org
+Message-ID: <18436.12968.728788.841679@cargo.ozlabs.ibm.com>
+Date: Tue, 15 Apr 2008 14:44:24 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] [POWERPC] Make Book-E debug handling SMP safe
+In-Reply-To: <Pine.LNX.4.64.0804091621140.24556@blarg.am.freescale.net>
+References: <Pine.LNX.4.64.0804091621140.24556@blarg.am.freescale.net>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,4 +18,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-thanks, applied
+Kumar Gala writes:
+
+> global_dbcr0 needs to be a per cpu set of save areas instead of a single
+> global on all processors.
+
+Looks reasonable.  At some point you might want to use a per-cpu
+variable instead of an array in order to reduce cacheline bouncing.
+
+> Also, we switch to using DBCR0_IDM to determine if the user space app is
+> being debugged as its a more consistent way.  In the future we should
+> support features like hardware breakpoint and watchpoints which will
+> have DBCR0_IDM set but not necessarily DBCR0_IC (single step).
+
+That should be OK.
+
+Paul.
