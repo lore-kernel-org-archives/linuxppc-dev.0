@@ -1,27 +1,22 @@
-Return-Path: <stephen.neuendorffer@xilinx.com>
-Received: from outbound4-dub-R.bigfish.com (outbound-dub.frontbridge.com
-	[213.199.154.16])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 89B78DE779
+Return-Path: <kashiwagi@co-nss.co.jp>
+Received: from nssinet2.co-nss.co.jp (nssinet2.co-nss.co.jp [150.96.0.5])
+	by ozlabs.org (Postfix) with ESMTP id 03E9ADE07C
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 16 Apr 2008 04:37:12 +1000 (EST)
+	Wed, 16 Apr 2008 04:42:08 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="UTF-8"
-Subject: RE: Problems of using APU/FPU under linux
-Date: Tue, 15 Apr 2008 11:37:05 -0700
-In-reply-to: <607F58E8-CB29-4BD7-9886-DF3C8B495ED7@gmail.com>
+Date: Wed, 16 Apr 2008 03:20:14 +0900
+Subject: Re: Problems of using APU/FPU under linux
+From: Yoshio Kashiwagi <kashiwagi@co-nss.co.jp>
+To: Shanyuan Gao <sygao.research@gmail.com>,
+	John Bonesio <john.bonesio@xilinx.com>,
+	Stephen Neuendorffer <stephenn@xilinx.com>, linuxppc-embedded@ozlabs.org
+Message-ID: <JO200804160320143.12198109@co-nss.co.jp>
+Content-Type: text/plain; charset=ISO-2022-JP
+In-Reply-To: <1B35E815-094F-40CB-AEDA-C04A6CBECC07@gmail.com>
 References: <287479FF-A7FC-4B48-BE1E-FDDCB97D55A9@gmail.com>
 	<977C41F842E66D4CB2E41332313B615005CB0A39@XSJ-EXCHVS1.xlnx.xilinx.com>
 	<20080414183255.F056C1C300A3@mail62-sin.bigfish.com>
 	<1B35E815-094F-40CB-AEDA-C04A6CBECC07@gmail.com>
-	<JO200804160320143.12198109@co-nss.co.jp>
-	<607F58E8-CB29-4BD7-9886-DF3C8B495ED7@gmail.com>
-From: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
-To: "Shanyuan Gao" <sygao.research@gmail.com>,
-	"Yoshio Kashiwagi" <kashiwagi@co-nss.co.jp>, <linuxppc-embedded@ozlabs.org>
-Message-Id: <20080415183706.C694717D807B@mail80-dub.bigfish.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -32,116 +27,130 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-U2hhbnl1YW4sDQoNCkRpZCB5b3UgaW5zdGFsbCB0aGUgRlBVX1VOQVZBSUxBQkxFIHRyYXAgaW4g
-aGVhZF80MHguUz8NCg0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IFNo
-YW55dWFuIEdhbyBbbWFpbHRvOnN5Z2FvLnJlc2VhcmNoQGdtYWlsLmNvbV0NCj4gU2VudDogVHVl
-c2RheSwgQXByaWwgMTUsIDIwMDggMTE6MzQgQU0NCj4gVG86IFlvc2hpbyBLYXNoaXdhZ2k7IGxp
-bnV4cHBjLWVtYmVkZGVkQG96bGFicy5vcmcNCj4gQ2M6IFN0ZXBoZW4gTmV1ZW5kb3JmZmVyOyBK
-b2huIEJvbmVzaW8NCj4gU3ViamVjdDogUmU6IFByb2JsZW1zIG9mIHVzaW5nIEFQVS9GUFUgdW5k
-ZXIgbGludXgNCj4gDQo+IFRoYW5rIHlvdSwgWW9zaGlvISENCj4gDQo+IEkganVzdCBhcHBsaWVk
-IHRoZSBjaGFuZ2UsIHNlZW1zIGl0IHdvcmtzISBCdXQgaXQgZG9lc24ndCB3b3JrDQo+IGNvcnJl
-Y3RseS4gSSBtZWFuIGl0IHdvbid0IGdpdmUgbWUgdHJhcHMgYW55IG1vcmUsIGJ1dCB0aGUgYW5z
-d2VyIGlzDQo+IG5vdCBjb3JyZWN0bHkuIEkganVzdCB0cmllZCB0byBtdWx0aXBseSB0d28gZmxv
-YXQgbnVtYmVycy4gQnV0IGl0DQo+IGdpdmVzIG1lIDAuDQo+IA0KPiBUaGUgZmlyc3QgdGltZSBJ
-IGNoYW5nZSB0aGUgcmVnLmggd2FzIHRvIGVuYWJsZSBhcHUgZW5hYmxlLCBhcHUNCj4gZXhjZXB0
-aW9uIGVuYWJsZSBhbmQgZnB1IGVuYWJsZS4gSXQgZ2l2ZXMgbWUgYW5zd2VyIDAuDQo+IFRoZSBz
-ZWNvbmQgdHJ5IEkgZGlkIHdhcyBlbmFibGluZyBhcHUgZW5hYmxlIGFuZCBhcHUgZXhjZXB0aW9u
-LA0KPiBiZWNhdXNlIEkgbm90aWNlIHRoYXQgaW5zaWRlIC9hcmNoL3Bvd2VycGMva2VybmVsL2Zw
-dS5TLCBpdCB3aWxsDQo+IGVuYWJsZSBGUFUgaW4gbG9hZF91cF9mcHUuIFNvIEkgZ3Vlc3MgSSBj
-YW5ub3QgZW5hYmxlIEZQVSBhbGwgdGhlDQo+IHRpbWUuIEhvd2V2ZXIsIHRoaXMgdGltZSBpdCBn
-YXZlIG1lIHRyYXAgYWdhaW4sIHdlbGwsIHdpdGggYQ0KPiBkaWZmZXJlbnQgTVNSLg0KPiANCj4g
-Tm93IG15IGd1ZXNzIGlzIGxvYWRfdXBfZnB1IGlzIG5vdCB3b3JraW5nIGNvcnJlY3RseS4gSSBh
-bSB3b3JraW5nIG9uDQo+IHRoYXQuDQo+IA0KPiANCj4gU2hhbg0KPiANCj4gDQo+IA0KPiBPbiBB
-cHIgMTUsIDIwMDgsIGF0IDI6MjAgUE0sIFlvc2hpbyBLYXNoaXdhZ2kgd3JvdGU6DQo+IA0KPiA+
-IEhpLA0KPiA+DQo+ID4gVGhlIGZvbGxvd2luZyBtb2RpZmljYXRpb24gaXMgcmVxdWlyZWQgaWYg
-eW91IHVzZSBBUFUgaW4gdXNlciBzcGFjZS4NCj4gPg0KPiA+IGluIGluY2x1ZGUvYXNtLXBvd2Vy
-cGMvcmVnLmgNCj4gPg0KPiA+IC0jZGVmaW5lIE1TUl9VU0VSICAgKE1TUl9LRVJORUx8TVNSX1BS
-fE1TUl9FRSkNCj4gPiArI2RlZmluZSBNU1JfVVNFUiAgIChNU1JfS0VSTkVMfE1TUl9QUnxNU1Jf
-RUV8TVNSX1ZFQykNCj4gPg0KPiA+IFlvc2hpbyBLYXNoaXdhZ2kgLSBOaXNzaW4gU3lzdGVtcw0K
-PiA+DQo+ID4+IFRoYW5rIHlvdSB2ZXJ5IG11Y2gsIFN0ZXZlIGFuZCBKb2huIQ0KPiA+Pg0KPiA+
-PiBNeSBhZHZpc29yIGFuZCBJIGRpc2N1c3NlZCBob3cgTGludXggd29ya3Mgd2l0aCBBUFUvRlBV
-IGEgZmV3IGRheXMNCj4gPj4gYWdvLg0KPiA+ICBBbmQgaGUgaGFkIHRoZSBzYW1lIHRob3VnaHRz
-IHdpdGggSm9obi4gTXkgbmFpdmUgZ3Vlc3Mgd2FzIGl0IHdvdWxkDQo+ID4gYXV0b21hdGljYWxs
-eSBkZWNvZGUgRlAgb3BlcmF0aW9ucyBhbmQgbWFzayB0aGUgdHJhcC4gTm93IGl0DQo+ID4gYW5z
-d2VycyBteQ0KPiA+IHNlY29uZCBxdWVzdGlvbi4gSSB3aWxsIHRyeSBpdCBsYXRlci4NCj4gPj4N
-Cj4gPj4gQnV0IGZvciBteSBmaXJzdCBxdWVzdGlvbiwgSSBzZWFyY2hlZCBhbGwgKGFsbW9zdCBh
-bGwpIHRoZSBmaWxlcywNCj4gPj4gc3VjaA0KPiA+IGFzIGhlYWQuUywgZW50cnkuUywgaGVhZF80
-eHguUywgZXRjLiBBbmQgYWRkZWQgZm9sbG93aW5nIHRocmVlIGxpbmVzDQo+ID4gYmVmb3JlIG10
-bXNyIG9yIE1UTVNSRCDvv71hcmUgdXNlZA0KPiA+Pg0KPiA+PiBvcmkg77+9IO+/vSDvv70g77+9
-cjEwLCByMTAsIDE8PDEzIO+/vS8qIGVuYWJsZSBmcHUgKi8NCj4gPj4gb3JpcyDvv70g77+9IO+/
-vXIxMCwgcjEwLCAxPDw5IO+/vSDvv70vKiBlbmFibGUgYXB1ICovDQo+ID4+IG9yaXMg77+9IO+/
-vSDvv71yMTAsIHIxMCwgMTw8MyDvv70g77+9LyogZW5hYmxlIGFwdSBleGNlcHRpb24gKi8NCj4g
-Pj4NCj4gPj4gSG93ZXZlciB0aGUgTVNSIGluIHRyYXAgcHJvbXB0cyBrZWVwcyB0aGUgc2FtZSAo
-MmQwMzApIGJlZm9yZSBhbmQNCj4gPiBhZnRlciBJIGFkZGVkIHRob3NlIGxpbmVzLu+/vQ0KPiA+
-Pg0KPiA+PiBb77+977+9IDMxLjgxOTA3OV0gQmFkIHRyYXAgYXQgUEM6IDEwMDAwNDU4LCBNU1I6
-IDJkMDMwLA0KPiA+PiB2ZWN0b3I9ODAw77+977+977+9IE5vdA0KPiA+IHRhaW50ZWQNCj4gPj4g
-W++/ve+/vSAzMS44ODcwMjdd77+977+9IFNpZ25hbDogNQ0KPiA+PiBb77+977+9IDMxLjg4NzA0
-Ml3vv73vv70gQ29kZTrvv73vv70gMA0KPiA+PiBb77+977+9IDMxLjg4NzA1OF3vv73vv70gQWRk
-cjrvv73vv70gMA0KPiA+PiBUcmFjZS9icmVha3BvaW50IHRyYXANCj4gPj4NCj4gPj4gSSBndWVz
-cyB0aGVyZSBtdXN0IGJlIHNvbWUgcGxhY2VzLCBsaWtlIHNvbWUgaW50ZXJydXB0cyB0aGF0IGNo
-YW5nZWQNCj4gPiB0aGUgTVNSIHRoYXQgSSBkaWRuJ3Qga25vdy4g77+9DQo+ID4+DQo+ID4+IEFu
-ZCBmb3IgRlAgZXhjZXB0aW9ucywgaXQgaGFzIHR3byBiaXRzICh0d28gbW9kZXMpIGluIE1TUi4g
-SSB0aGluaw0KPiA+IHRoZXkgYXJlIGZvciBzdWNoIGV4Y2VwdGlvbnMgbGlrZSBkaXZpZGVkIGJ5
-IHplcm8uIERvIEkgbmVlZCB0byBzZXQNCj4gPiB0aGVtDQo+ID4gYWxzbz8NCj4gPj4NCj4gPj4g
-SW4gbXkgcHJldmlvdXMgYnVpbGQsIEkgYWxzbyBhZGRlZCBQUENfRlBVIHVuZGVyIGNvbmZpZyA0
-MHggaW4gYXJjaC8NCj4gPiBwcGMvS2NvbmZpZy4gSXQgY29tcGlsZWQgYXJjaC9wb3dlcnBjL2tl
-cm5lbC9mcHUuUyBpbiwgYnV0IGRpZG4ndA0KPiA+IGhlbHAuDQo+ID4gSSB3aWxsIHRyeSBDT05G
-SUdfUFBDX0ZQVSBsYXRlci4NCj4gPj4NCj4gPj4NCj4gPj4gU2hhbg0KPiA+Pg0KPiA+PiBPbiBB
-cHIgMTQsIDIwMDgsIGF0IDI6MzIgUE0sIEpvaG4gQm9uZXNpbyB3cm90ZToNCj4gPj4NCj4gPj4g
-SGksDQo+ID4+DQo+ID4+IFRoZSBMaW51eCBrZXJuZWwgaXRzZWxmIGRvZXNuJ3QgaXNzdWUgZmxv
-YXRpbmcgcG9pbnQgaW5zdHJ1Y3Rpb25zDQo+ID4gb3RoZXIgdGhhbiB0byBzYXZlIGFuZCByZXN0
-b3JlIHRoZSBmcHUgc3RhdGUgd2hlbiBuZWNlc3NhcnkuDQo+ID4+DQo+ID4+IEluIExpbnV4LCB0
-aGUgd2F5IGl0IHNhdmVzIGFuZCByZXN0b3JlcyB0aGUgZnB1IHN0YXRlIGlzIHRvIG1ha2UgdXNl
-DQo+ID4gb2YgdGhlIHRyYXAuIFdoZW4gdGhlIHRyYXAgKGZwdSB1bmF2YWlsYWJsZSkgb2NjdXJz
-LCBpdCBsb2FkcyB0aGUgZnB1DQo+ID4gc3RhdGUgZm9yIHRoZSBjdXJyZW50IHRhc2ssIHNldHMg
-dXAgdGhlIE1TUiwgYW5kIHJldHVybnMgdG8gcmUtdHJ5IHRoZQ0KPiA+IGluc3RydWN0aW9uLg0K
-PiA+Pg0KPiA+PiBTbywgZ2V0dGluZyB0aGUgdHJhcCBpcyBub3JtYWwuIElmIHRoZSBGUFUgaXMg
-bm90IGJlaW5nIHNldCB1cA0KPiA+IGNvcnJlY3RseSwgdGhlbiB0aGVyZSBtYXkgYmUgYSBwcm9i
-bGVtIHdpdGggdGhlIHJlc3RvcmluZyBvZiB0aGUNCj4gPiBzdGF0ZS4NCj4gPj4NCj4gPj4gV2hl
-biB5b3UgZ3VpbGQgdGhlIExpbnV4IGtlcm5lbCwgeW91IG5lZWQgdG8gaGF2ZSBDT05GSUdfUFBD
-X0ZQVQ0KPiA+IGVuYWJsZWQuIE90aGVyd2lzZSB0aGUga2VybmVsIGRvZXMgbm90IHNldHVwIHRo
-ZSBmcHUgZXhjZXB0aW9uDQo+ID4gaGFuZGxpbmcuDQo+ID4+DQo+ID4+IC0gSm9obg0KPiA+Pg0K
-PiA+Pg0KPiA+PiBPbiBNb25kYXkgMTQgQXByaWwgMjAwOCAxMDozNSwgU3RlcGhlbiBOZXVlbmRv
-cmZmZXIgd3JvdGU6DQo+ID4+DQo+ID4+IEknbSBub3Qgc3VyZSBleGFjdGx5IHdoYXQncyBnb2lu
-ZyBvbiBoZXJlLu+/vSBHZW5lcmFsbHkgc3BlYWtpbmcsDQo+ID4+IGlmIHlvdQ0KPiA+PiBoYXZl
-IHRoZSBGUFUgaW5zdGFudGlhdGVkIGluIHRoZSBkZXNpZ24gYW5kIGVuYWJsZSB0aGUgQVBVIGlu
-IHRoZQ0KPiA+PiBtc3IsDQo+ID4+IHRoZW4gdGhlIHByb2Nlc3NvciBzaG91bGQgZGVjb2RlIEZQ
-IGluc3RydWN0aW9ucyBhbmQgc2VuZCB0aGVtDQo+ID4gZGlyZWN0bHkNCj4gPj4gdG8gdGhlIEFQ
-VSB3aXRoIG5vIHRyYXAu77+9IEkgaGF2ZW4ndCBkb25lIHRoaXMgbXlzZWxmLCBvciBJIGNvdWxk
-DQo+ID4+IHByb2JhYmx5IGdpdmUgeW91IHNvbWUgYmV0dGVyIGhlbHAuLi4NCj4gPj4NCj4gPj4g
-T25lIHRoaW5nIHlvdSBzaG91bGQgYmUgYXdhcmUgb2YgaXMgdGhhdCB0aGUgdGhlcmUgYXJlIGdj
-YyBjb21waWxlcg0KPiA+PiBwYXRjaGVzIHdoaWNoIGFyZSBuZWNlc3NhcnkgdG8gZ2V0IHRoZSBG
-UFUgd29ya2luZyBwcm9wZXJseS7vv70NCj4gPj4gSG93ZXZlciwNCj4gPiBJDQo+ID4+IGRvbid0
-IHRoaW5rIHRoZSBmYWlsdXJlIG1vZGUgdGhhdCB0aGVzZSBwYXRjaGVzIHdvcmthcm91bmQgd291
-bGQNCj4gPj4gY2F1c2UNCj4gPiBhDQo+ID4+IHRyYXAsIHNvIG15IGd1ZXNzIGlzIHRoYXQgdGhl
-cmUgaXMgc3RpbGwgc29tZXRoaW5nIGVsc2Ugd3JvbmcuDQo+ID4+DQo+ID4+IFN0ZXZlDQo+ID4+
-DQo+ID4+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+ID4+IEZyb206IGxpbnV4cHBjLWVt
-YmVkZGVkLWJvdW5jZXMrc3RlcGhlbj1uZXVlbmRvcmZmZXIubmFtZUBvemxhYnMub3JnDQo+ID4+
-IFttYWlsdG86bGludXhwcGMtZW1iZWRkZWQtDQo+ID4+IGJvdW5jZXMrc3RlcGhlbj1uZXVlbmRv
-cmZmZXIubmFtZUBvemxhYnMub3JnXSBPbiBCZWhhbGYgT2YgU2hhbnl1YW4NCj4gPj4gR2FvDQo+
-ID4+IFNlbnQ6IE1vbmRheSwgQXByaWwgMTQsIDIwMDggOToxOCBBTQ0KPiA+PiBUbzogbGludXhw
-cGMtZW1iZWRkZWRAb3psYWJzLm9yZw0KPiA+PiBTdWJqZWN0OiBQcm9ibGVtcyBvZiB1c2luZyBB
-UFUvRlBVIHVuZGVyIGxpbnV4DQo+ID4+DQo+ID4+IEhpLA0KPiA+Pg0KPiA+PiBSZWNlbnRseSBJ
-IHdhcyB0cnlpbmcgdG8gbWFrZSBBUFUvRlBVIHdvcmtpbmcgdW5kZXIgTGludXggb24gWGlsaW54
-DQo+ID4+IE1MNDEwLiBUaGUgc3RhbmRhbG9uZSBwcm9ncmFtcyB3b3JrIHBlcmZlY3RseS4gSG93
-ZXZlciB1bmRlciBMaW51eCwNCj4gPj4gd2hlbiBJIHRyeSB0byB1c2UgYSBmbG9hdGluZyBwb2lu
-dCBvcGVyYXRpb24sIGxpa2UgKmZtdWxzKiwgaXQgd2lsbA0KPiA+PiBnaXZlIG1lIGEgKnRyYXAq
-Lg0KPiA+Pg0KPiA+PiBCeSBzdHVkeWluZyB0aGUgdXNlciBndWlkZSBmcm9tIFhpbGlueCBhbmQg
-ZHVtcGluZyB0aGUgb2JqZWN0IGZpbGVzLA0KPiA+PiBJIGtub3cgSSBuZWVkIHRvIGNoYW5nZSB0
-aGUgY29ycmVzcG9uZGluZyBiaXRzIChBUFUgZW5hYmxlLCBGUA0KPiA+PiBlbmFibGUsIG1heWJl
-IEFQVSBFeGNlcHRpb24gZW5hYmxlKSBpbiBNYWNoaW5lIFN0YXRlIFJlZ2lzdGVyLiBJDQo+ID4+
-IGd1ZXNzIEkgbmVlZCB0byBlbmFibGUgdGhlIGJpdHMgd2hlbmV2ZXIgYmVmb3JlIHRoZSBrZXJu
-ZWwgdXNlcw0KPiA+PiAqbXRtc3IqLiBIb3dldmVyLCBpdCBkb2Vzbid0IHdvcmsuIEkgZ290IHRo
-ZSBzYW1lIHRyYXAgd2l0aCB0aGUgc2FtZQ0KPiA+PiBNU1IsIGFzIEkgaGFkIG5vIEFQVS9GUFUg
-YmVmb3JlLiBJIGFsc28gdHJpZWQgdG8gYWRkIHRoZSBGUFUuUyB0byBwcGMNCj4gPj4gdHJlZSwg
-YnV0IGl0IGRvZXNuJ3Qgd29yayBlaXRoZXIuDQo+ID4+DQo+ID4+IFRoZSBxdWVzdGlvbnMgYXJl
-DQo+ID4+IDEuIEkgZ3Vlc3MgdGhlcmUgbWlnaHQgYmUgc29tZSBwbGFjZSB0aGF0IGNoYW5nZWQg
-TVNSIGFmdGVyIGFsbCBteQ0KPiA+PiBjaGFuZ2VzLiBCdXQgSSBkb24ndCBrbm93IHdoZXJlLiBB
-bmQgY2FuIEkgd3JpdGUgYSBrZXJuZWwgbW9kdWxlIHRvDQo+ID4+IGNoYW5nZSB0aGUgTVNSIGFm
-dGVyIGJvb3RpbmcgaW4gTGludXg/ICh3ZWxsLCBpdCdzIGhhcmQgZm9yIG1lDQo+ID4+IHRob3Vn
-aCkNCj4gPj4NCj4gPj4gMi4gRG9lcyBpdCBoYXZlIGFueSBleGNlcHRpb24vaW50ZXJydXB0IG1l
-Y2hhbmlzbSB0byBkaXJlY3QgRlANCj4gPj4gb3BlcmF0aW9uIHRvIEFQVS9GUFU/IE9yIGFmdGVy
-IGVuYWJsaW5nIEFQVS9GUFUgaXQgd2lsbCBtYXNrIHRoZQ0KPiA+PiBleGNlcHRpb24vaW50ZXJy
-dXB0IGFuZCBkZWNvZGUgRlAgb3BlcmF0aW9uIGJ5IGl0c2VsZj8NCj4gPj4NCj4gPj4NCj4gPj4g
-QW55IGlkZWFzIGFyZSBhcHByZWNpYXRlZC4gVGhhbmsgeW91IHZlcnkgbXVjaCENCj4gPj4NCj4g
-Pj4NCj4gPj4gU2hhbg0KPiA+DQo+IA0KDQo=
+Hi,
+
+The following modification is required if you use APU in user space.
+
+in include/asm-powerpc/reg.h
+
+-#define MSR_USER   (MSR_KERNEL|MSR_PR|MSR_EE)
++#define MSR_USER   (MSR_KERNEL|MSR_PR|MSR_EE|MSR_VEC)
+
+Yoshio Kashiwagi - Nissin Systems
+
+> Thank you very much, Steve and John!
+> 
+> My advisor and I discussed how Linux works with APU/FPU a few days ago.
+ And he had the same thoughts with John. My naive guess was it would 
+automatically decode FP operations and mask the trap. Now it answers my 
+second question. I will try it later.
+> 
+> But for my first question, I searched all (almost all) the files, such 
+as head.S, entry.S, head_4xx.S, etc. And added following three lines 
+before mtmsr or MTMSRD  are used
+> 
+> ori        r10, r10, 1<<13  /* enable fpu */
+> oris      r10, r10, 1<<9    /* enable apu */
+> oris      r10, r10, 1<<3    /* enable apu exception */
+> 
+> However the MSR in trap prompts keeps the same (2d030) before and 
+after I added those lines. 
+> 
+> [   31.819079] Bad trap at PC: 10000458, MSR: 2d030, vector=800    Not 
+tainted
+> [   31.887027]   Signal: 5
+> [   31.887042]   Code:   0
+> [   31.887058]   Addr:   0
+> Trace/breakpoint trap
+> 
+> I guess there must be some places, like some interrupts that changed 
+the MSR that I didn't know.  
+> 
+> And for FP exceptions, it has two bits (two modes) in MSR. I think 
+they are for such exceptions like divided by zero. Do I need to set them 
+also?
+> 
+> In my previous build, I also added PPC_FPU under config 40x in arch/
+ppc/Kconfig. It compiled arch/powerpc/kernel/fpu.S in, but didn't help. 
+I will try CONFIG_PPC_FPU later.
+> 
+> 
+> Shan
+> 
+> On Apr 14, 2008, at 2:32 PM, John Bonesio wrote:
+> 
+> Hi,
+> 
+> The Linux kernel itself doesn't issue floating point instructions 
+other than to save and restore the fpu state when necessary.
+> 
+> In Linux, the way it saves and restores the fpu state is to make use 
+of the trap. When the trap (fpu unavailable) occurs, it loads the fpu 
+state for the current task, sets up the MSR, and returns to re-try the 
+instruction.
+> 
+> So, getting the trap is normal. If the FPU is not being set up 
+correctly, then there may be a problem with the restoring of the state.
+> 
+> When you guild the Linux kernel, you need to have CONFIG_PPC_FPU 
+enabled. Otherwise the kernel does not setup the fpu exception handling.
+> 
+> - John
+> 
+> 
+> On Monday 14 April 2008 10:35, Stephen Neuendorffer wrote:
+> 
+> I'm not sure exactly what's going on here.  Generally speaking, if you
+> have the FPU instantiated in the design and enable the APU in the msr,
+> then the processor should decode FP instructions and send them 
+directly
+> to the APU with no trap.  I haven't done this myself, or I could
+> probably give you some better help...
+> 
+> One thing you should be aware of is that the there are gcc compiler
+> patches which are necessary to get the FPU working properly.  However, 
+I
+> don't think the failure mode that these patches workaround would cause 
+a
+> trap, so my guess is that there is still something else wrong.
+> 
+> Steve
+> 
+> -----Original Message-----
+> From: linuxppc-embedded-bounces+stephen=neuendorffer.name@ozlabs.org
+> [mailto:linuxppc-embedded-
+> bounces+stephen=neuendorffer.name@ozlabs.org] On Behalf Of Shanyuan
+> Gao
+> Sent: Monday, April 14, 2008 9:18 AM
+> To: linuxppc-embedded@ozlabs.org
+> Subject: Problems of using APU/FPU under linux
+> 
+> Hi,
+> 
+> Recently I was trying to make APU/FPU working under Linux on Xilinx
+> ML410. The standalone programs work perfectly. However under Linux,
+> when I try to use a floating point operation, like *fmuls*, it will
+> give me a *trap*.
+> 
+> By studying the user guide from Xilinx and dumping the object files,
+> I know I need to change the corresponding bits (APU enable, FP
+> enable, maybe APU Exception enable) in Machine State Register. I
+> guess I need to enable the bits whenever before the kernel uses
+> *mtmsr*. However, it doesn't work. I got the same trap with the same
+> MSR, as I had no APU/FPU before. I also tried to add the FPU.S to ppc
+> tree, but it doesn't work either.
+> 
+> The questions are
+> 1. I guess there might be some place that changed MSR after all my
+> changes. But I don't know where. And can I write a kernel module to
+> change the MSR after booting in Linux? (well, it's hard for me though)
+> 
+> 2. Does it have any exception/interrupt mechanism to direct FP
+> operation to APU/FPU? Or after enabling APU/FPU it will mask the
+> exception/interrupt and decode FP operation by itself?
+> 
+> 
+> Any ideas are appreciated. Thank you very much!
+> 
+> 
+> Shan
