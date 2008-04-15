@@ -1,33 +1,17 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <rsc@pengutronix.de>
+Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
+	[83.236.181.26]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 61226DE20A
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Apr 2008 01:24:09 +1000 (EST)
-Message-Id: <3AA4D778-0529-4DF0-B2EC-35EFC7896584@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Paul Mackerras <paulus@samba.org>
-In-Reply-To: <18436.35348.316368.332336@cargo.ozlabs.ibm.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: [PATCH 12/12] [POWERPC] 85xx: Add support for relocatble kernel
-	(and booting at non-zero)
-Date: Tue, 15 Apr 2008 10:24:03 -0500
-References: <1207824531-27168-1-git-send-email-galak@kernel.crashing.org>
-	<1207824531-27168-2-git-send-email-galak@kernel.crashing.org>
-	<1207824531-27168-3-git-send-email-galak@kernel.crashing.org>
-	<1207824531-27168-4-git-send-email-galak@kernel.crashing.org>
-	<1207824531-27168-5-git-send-email-galak@kernel.crashing.org>
-	<1207824531-27168-6-git-send-email-galak@kernel.crashing.org>
-	<1207824531-27168-7-git-send-email-galak@kernel.crashing.org>
-	<1207824531-27168-8-git-send-email-galak@kernel.crashing.org>
-	<1207824531-27168-9-git-send-email-galak@kernel.crashing.org>
-	<1207824531-27168-10-git-send-email-galak@kernel.crashing.org>
-	<1207824531-27168-11-git-send-email-galak@kernel.crashing.org>
-	<1207824531-27168-12-git-send-email-galak@kernel.crashing.org>
-	<1207824531-27168-13-git-send-email-galak@kernel.crashing.org>
-	<18436.35348.316368.332336@cargo.ozlabs.ibm.com>
-Cc: linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTPS id 19625DE4CD
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Apr 2008 01:26:50 +1000 (EST)
+Date: Tue, 15 Apr 2008 17:26:38 +0200
+From: Robert Schwebel <r.schwebel@pengutronix.de>
+To: linuxppc-dev@ozlabs.org
+Subject: fec_mpc5200: reset FEC on error
+Message-ID: <20080415152638.GW13814@pengutronix.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Cc: Domen Puncer <domen@coderock.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,68 +21,59 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+From: Sascha Hauer <s.hauer@pengutronix.de>
 
-On Apr 15, 2008, at 5:57 AM, Paul Mackerras wrote:
-> Kumar Gala writes:
->
->> Added support to allow an 85xx kernel to be run from a non-zero  
->> physical
->> address (useful for cooperative asymmetric multiprocessing  
->> situations) and
->> kdump.  The support can either be at compile time or runtime
->> (CONFIG_RELOCATABLE).
->>
->> Currently we are limited to running at a physical address that is  
->> module
->> 256M.  This is due to how we map TLBs to cover lowmem and should be  
->> fixed
->> up to allow 64M or maybe even 16M alignment in the future.
->
-> The first 11 patches look pretty reasonable, but I think I want a bit
-> more time to digest this one.  At the least it needs a bit more
-> description, saying for instance why you remove USER_PGD_PTRS and
-> KERNEL_PGD_PTRS (yes they are unused now but why does this patch need
-> to remove them?).
+The error handling for the mpc5200 fec interrupt is broken. The intended
+behaviour is like this:
 
-No reason.  I'll separate their removal into their own patch.
+* If one of FEC_IEVENT_RFIFO_ERROR and FEC_IEVENT_XFIFO_ERROR happens,
+  the datasheet says (MPC5200B User's Guide R1.2, p. 14-13): "When this
+  occurs, software must ensure both the FIFO Controller and BestComm are
+  soft-reset".
 
->  Also, given that we changed from using a
-> PPC_MEMSTART #define to a memstart_addr variable earlier in the patch
-> series, why do we need to change back to a #define (MEMORY_START) now?
+* On any other error (non-TFINT) interrupt, just issue a debug message.
 
-I re-introduced it because I wanted ARCH_PFN_OFFSET to be a compile  
-time define if !CONFIG_RELOCATABLE
+Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
 
-I can easily move the ARCH_PFN_OFFSET define inside the  
-CONFIG_RELOCATABLE ifdef.
+---
+ drivers/net/fec_mpc52xx.c |   23 +++++++++++++----------
+ 1 file changed, 13 insertions(+), 10 deletions(-)
 
-> I take it that with CONFIG_RELOCATABLE set, the kernel won't touch any
-> RAM below the point where it's loaded?
-
-that's correct.
-
->  Is CONFIG_PHYSICAL_START used
-> at all if CONFIG_RELOCATABLE is set, and if so what does it mean?
-
-its not used for anything but as a 'hint' for setting the physical  
-address of the PHDR.
-
-> What happens if CONFIG_KERNEL_START != CONFIG_PAGE_OFFSET and the
-> kernel is loaded at some address != CONFIG_PHYSICAL_START?
-
-> Are we sure that ARCH_PFN_OFFSET only gets applied to normal memory
-> pages, not any I/O?  What happens to /dev/mem when ARCH_PFN_OFFSET !=
-> 0?
-
-I need to think on these two.
-
-> Also, since you're changing pmd_page(), it would be better to make it
-> use pfn_to_page or something similar rather than using mem_map + xxx.
-
-I'll change it to:
-pfn_to_page(__pa(pmd_val(pmd)) >> PAGE_SHIFT)
-
-(I'll move this into a cleanup patch with the removal of USER_PGD_PTRS  
-and KERNEL_PGD_PTRS)
-
-- k
+Index: drivers/net/fec_mpc52xx.c
+===================================================================
+--- drivers/net/fec_mpc52xx.c.orig
++++ drivers/net/fec_mpc52xx.c
+@@ -491,20 +491,23 @@
+ 
+ 	out_be32(&fec->ievent, ievent);		/* clear pending events */
+ 
+-	if (ievent & ~(FEC_IEVENT_RFIFO_ERROR | FEC_IEVENT_XFIFO_ERROR)) {
+-		if (ievent & ~FEC_IEVENT_TFINT)
+-			dev_dbg(&dev->dev, "ievent: %08x\n", ievent);
++	/* on fifo error, soft-reset fec */
++	if (ievent & (FEC_IEVENT_RFIFO_ERROR | FEC_IEVENT_XFIFO_ERROR)) {
++
++		if (net_ratelimit() && (ievent & FEC_IEVENT_RFIFO_ERROR))
++			dev_warn(&dev->dev, "FEC_IEVENT_RFIFO_ERROR\n");
++		if (net_ratelimit() && (ievent & FEC_IEVENT_XFIFO_ERROR))
++			dev_warn(&dev->dev, "FEC_IEVENT_XFIFO_ERROR\n");
++
++		mpc52xx_fec_reset(dev);
++
++		netif_wake_queue(dev);
+ 		return IRQ_HANDLED;
+ 	}
+ 
+-	if (net_ratelimit() && (ievent & FEC_IEVENT_RFIFO_ERROR))
+-		dev_warn(&dev->dev, "FEC_IEVENT_RFIFO_ERROR\n");
+-	if (net_ratelimit() && (ievent & FEC_IEVENT_XFIFO_ERROR))
+-		dev_warn(&dev->dev, "FEC_IEVENT_XFIFO_ERROR\n");
+-
+-	mpc52xx_fec_reset(dev);
++	if (ievent & ~FEC_IEVENT_TFINT)
++		dev_dbg(&dev->dev, "ievent: %08x\n", ievent);
+ 
+-	netif_wake_queue(dev);
+ 	return IRQ_HANDLED;
+ }
+ 
