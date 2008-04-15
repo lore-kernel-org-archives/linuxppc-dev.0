@@ -1,20 +1,20 @@
-Return-Path: <laurentp@cse-semaphore.com>
-Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
-	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id 40A4CDE21E
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Apr 2008 02:03:59 +1000 (EST)
-From: Laurent Pinchart <laurentp@cse-semaphore.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [RFC] Using two baud rate generators with the cpm_uart driver
-Date: Tue, 15 Apr 2008 18:03:56 +0200
-References: <200804151532.27057.laurentp@cse-semaphore.com>
-	<200804151754.21664.laurentp@cse-semaphore.com>
-	<4804D0EB.5020508@freescale.com>
-In-Reply-To: <4804D0EB.5020508@freescale.com>
+Return-Path: <timur@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id B0C03DEB9B
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Apr 2008 02:11:26 +1000 (EST)
+Message-ID: <4804D39C.9000309@freescale.com>
+Date: Tue, 15 Apr 2008 11:11:08 -0500
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart5102985.7ahpLTo4jS";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Message-Id: <200804151803.56383.laurentp@cse-semaphore.com>
-Cc: linuxppc-dev@ozlabs.org
+To: Paul Gortmaker <paul.gortmaker@windriver.com>
+Subject: Re: [PATCH] 86xx: mark functions static, other minor cleanups
+References: <1207933186-20555-1-git-send-email-paul.gortmaker@windriver.com>
+In-Reply-To: <1207933186-20555-1-git-send-email-paul.gortmaker@windriver.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, sfr@canb.auug.org.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,56 +24,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---nextPart5102985.7ahpLTo4jS
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Paul Gortmaker wrote:
 
-On Tuesday 15 April 2008 17:59, Scott Wood wrote:
-> Laurent Pinchart wrote:
-> >> The clean solution would be to have an abstracted clock API, similar t=
-o=20
-> >> phylib, where the caller doesn't know details about BRGs and such.=20
-> >> Maybe the linux/clk.h API would be suitable; I haven't looked at it in=
-=20
-> >> detail.
-> >=20
-> > The clock API would have to be quite advanced to express things like "t=
-he SCC4=20
-> > clock is a combination of BRG2 and BRG5" (and I don't even consider=20
-> > adding "with BRG2 set to 16x the baud rate and BRG5 to the baud rate").
->=20
-> What I was picturing was platform code providing a clock object that the=
-=20
-> cpm_uart driver could be pointed at (possibly by modifying the device=20
-> tree in platform init); the knowledge of the multiple BRG weirdness=20
-> would be contained in platform code.
+> -void
+> +static void
+>  mpc86xx_hpcn_show_cpuinfo(struct seq_file *m)
+>  {
+>  	struct device_node *root;
+> @@ -190,13 +190,13 @@ static int __init mpc86xx_hpcn_probe(void)
+>  {
+>  	unsigned long root = of_get_flat_dt_root();
+>  
+> -	if (of_flat_dt_is_compatible(root, "mpc86xx"))
+> +	if (of_flat_dt_is_compatible(root, "fsl,mpc86xx"))
+>  		return 1;	/* Looks good */
 
-I'll think about it.
+This breaks compatibility with older device trees.  You still need to look for
+"mpc86xx".
 
-Thanks.
+A lot of people have been doing this recently, and it needs to stop.  You need
+to wait at least one whole kernel version before you can remove support for an
+older device tree.
 
-=2D-=20
-Laurent Pinchart
-CSE Semaphore Belgium
+> -void
+> +static void
+>  sbc8641_show_cpuinfo(struct seq_file *m)
+>  {
+>  	struct device_node *root;
+> @@ -118,13 +111,13 @@ static int __init sbc8641_probe(void)
+>  {
+>  	unsigned long root = of_get_flat_dt_root();
+>  
+> -	if (of_flat_dt_is_compatible(root, "mpc86xx"))
+> +	if (of_flat_dt_is_compatible(root, "wrs,sbc8641"))
+>  		return 1;	/* Looks good */
 
-Chaussee de Bruxelles, 732A
-B-1410 Waterloo
-Belgium
+Same here.
 
-T +32 (2) 387 42 59
-=46 +32 (2) 387 42 75
-
---nextPart5102985.7ahpLTo4jS
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
-
-iD8DBQBIBNHs8y9gWxC9vpcRAkh0AKCh2I2MIoeauppPY5ZI+JPnreQ6AACgim2M
-XH8gU/Fwf4B+FKMWq/2vgZs=
-=XJZm
------END PGP SIGNATURE-----
-
---nextPart5102985.7ahpLTo4jS--
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
