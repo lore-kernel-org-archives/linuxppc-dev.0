@@ -1,21 +1,17 @@
-Return-Path: <paul.gortmaker@windriver.com>
-Received: from mail.wrs.com (mail.windriver.com [147.11.1.11])
-	by ozlabs.org (Postfix) with ESMTP id 2904ADE095
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Apr 2008 23:14:30 +1000 (EST)
-Message-ID: <4805FBD2.6010101@windriver.com>
-Date: Wed, 16 Apr 2008 09:14:58 -0400
-From: Paul Gortmaker <paul.gortmaker@windriver.com>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id B0CA8DE20D
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Apr 2008 23:23:23 +1000 (EST)
+Date: Wed, 16 Apr 2008 08:19:36 -0500 (CDT)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Paul Mackerras <paulus@samba.org>
+Subject: [PATCH] [POWERPC] Remove unused machine call outs
+Message-ID: <Pine.LNX.4.64.0804160819200.19231@blarg.am.freescale.net>
 MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH v2.6.26 0/2] Dynamic TBIPA for gianfar
-References: <1208276601-16964-1-git-send-email-paul.gortmaker@windriver.com>
-	<18437.18289.944128.351533@cargo.ozlabs.ibm.com>
-	<7d1d9c250804151857x65cf14cfxe6dc5696505631c7@mail.gmail.com>
-	<6C6E8854-3F7A-4661-A5F3-B7CA8676A11A@kernel.crashing.org>
-In-Reply-To: <6C6E8854-3F7A-4661-A5F3-B7CA8676A11A@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>, netdev@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,41 +21,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
->
-> On Apr 15, 2008, at 8:57 PM, Paul Gortmaker wrote:
->> On Tue, Apr 15, 2008 at 8:25 PM, Paul Mackerras <paulus@samba.org> 
->> wrote:
->>> Paul Gortmaker writes:
->>>
->>>> This is the resend of the two patches as per Andy's request for 
->>>> v2.6.26
->>>> that allow boards with a PHY at the end of the bus to function, by 
->>>> having
->>>> the TBIPA set dynamically.  The 1st patch factors out some of the PHY
->>>> probe code so it can be recycled by the TBIPA probe, and the second 
->>>> patch
->>>> implements the dynamic probe itself.
->>>
->>> I notice that these two patches only touch drivers/net and
->>> include/linux.  If you want these to go upstream into Linus' tree, you
->>> will need to send them to Jeff Garzik and the netdev list.  Posting
->>> them to the linuxppc-dev list is fine for getting them reviewed but
->>> isn't a path to upstream.
->>
->> Yep, they have already been sent to Jeff/netdev earlier today as well.
->> I'd inadvertently left them off the CC but Andy reminded me already.
->>
->> Thanks,
->> Paul.
->
-> these should get an Ack by Andy before going in to any tree.
+When we moved to arch/powerpc we actively tried to avoid using the
+ppc_md.setup_io_mappings().  Currently no board ports use it so lets
+remove it to avoid any new boards using it.
 
-Andy has already done that, so I think we should be good to go.
+Also, remove early_serial_map() since we don't even have a call out for
+it in arch/powerpc.
 
-http://ozlabs.org/pipermail/linuxppc-dev/2008-April/054572.html
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
+ arch/powerpc/mm/init_32.c     |    2 --
+ include/asm-powerpc/machdep.h |    3 ---
+ 2 files changed, 0 insertions(+), 5 deletions(-)
 
-Paul.
+diff --git a/arch/powerpc/mm/init_32.c b/arch/powerpc/mm/init_32.c
+index 0c66a9f..5316cbc 100644
+--- a/arch/powerpc/mm/init_32.c
++++ b/arch/powerpc/mm/init_32.c
+@@ -184,8 +184,6 @@ void __init MMU_init(void)
+ 	/* Map in I/O resources */
+ 	if (ppc_md.progress)
+ 		ppc_md.progress("MMU:setio", 0x302);
+-	if (ppc_md.setup_io_mappings)
+-		ppc_md.setup_io_mappings();
 
->
-> - k
+ 	/* Initialize the context management stuff */
+ 	mmu_context_init();
+diff --git a/include/asm-powerpc/machdep.h b/include/asm-powerpc/machdep.h
+index b95386a..54ed64d 100644
+--- a/include/asm-powerpc/machdep.h
++++ b/include/asm-powerpc/machdep.h
+@@ -198,9 +198,6 @@ struct machdep_calls {
+ 	   May be NULL. */
+ 	void		(*init)(void);
+
+-	void		(*setup_io_mappings)(void);
+-
+-	void		(*early_serial_map)(void);
+ 	void		(*kgdb_map_scc)(void);
+
+ 	/*
+-- 
+1.5.4.1
