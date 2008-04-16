@@ -1,21 +1,23 @@
 Return-Path: <avorontsov@dev.rtsoft.ru>
 Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
-	by ozlabs.org (Postfix) with SMTP id CF0C3DE011
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Apr 2008 04:22:17 +1000 (EST)
-Date: Wed, 16 Apr 2008 22:22:14 +0400
+	by ozlabs.org (Postfix) with SMTP id 1A668DDF86
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Apr 2008 04:39:05 +1000 (EST)
+Date: Wed, 16 Apr 2008 22:39:04 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH v2][POWERPC] qe_lib and ucc_geth: switch to the cpm_muram
-	implementation
-Message-ID: <20080416182214.GA20056@polina.dev.rtsoft.ru>
-References: <20080320173945.GA8446@localhost.localdomain>
-	<20080414181810.GA1038@polina.dev.rtsoft.ru>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 6/8] [POWERPC] sysdev,qe_lib: implement FSL GTM support
+Message-ID: <20080416183904.GA23512@polina.dev.rtsoft.ru>
+References: <20080311172106.GA4766@localhost.localdomain>
+	<20080311172429.GF7727@localhost.localdomain>
+	<20080318174329.GB4099@loki.buserror.net>
+	<20080318192152.GA26493@localhost.localdomain>
+	<47E01E22.9000807@freescale.com>
+	<20080318202717.GA1030@localhost.localdomain>
+	<47E02A8C.2080705@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=windows-1251
-In-Reply-To: <20080414181810.GA1038@polina.dev.rtsoft.ru>
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
-	Jeff Garzik <jgarzik@pobox.com>,
-	Timur Tabi <timur@freescale.com>, netdev@vger.kernel.org
+In-Reply-To: <47E02A8C.2080705@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -26,776 +28,564 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is very trivial patch. We're transitioning to the cpm_muram_*
-calls. That's it.
+On Tue, Mar 18, 2008 at 03:48:12PM -0500, Scott Wood wrote:
+[...]
+> How about:
+>
+> struct gtm_timer *gtm_get_specific_timer(struct gtm *gtm, int timer,
+>                                          int width);
+>
+> ...with np->data used by the caller to figure out which gtm pointer to  
+> pass in.
 
-Less trivial changes:
-- BD_SC_* defines were defined in the cpm.h and qe.h, so to avoid redefines
-  we remove BD_SC from the qe.h and use cpm.h along with cpm_muram_*
-  prototypes;
-- qe_muram_dump was unused and thus removed;
-- added some code to the cpm_common.c to support legacy QE bindings
-  (data-only node name).
+Thanks for the comments, I've tried to address them all.
+
+Updated patch below (not for applying, still waiting for further
+comments, if any).
+
+- - - -
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: [POWERPC] sysdev,qe_lib: implement FSL GTM support
+
+GTM stands for General-purpose Timers Module and able to generate
+timer{1,2,3,4} interrupts.
+
+There are several limitations in this support:
+1. Cascaded (32 bit) timers unimplemented (1-2, 3-4).
+   This is straightforward to implement when needed, two timers should
+   be marked as "requested" and configured as appropriate.
+2. Super-cascaded (64 bit) timers unimplemented (1-2-3-4).
+   This is also straightforward to implement when needed, all timers
+   should be marked as "requested" and configured as appropriate.
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
+ Documentation/powerpc/booting-without-of.txt |   32 +++-
+ arch/powerpc/Kconfig                         |    5 +
+ arch/powerpc/sysdev/Makefile                 |    1 +
+ arch/powerpc/sysdev/fsl_gtm.c                |  322 ++++++++++++++++++++++++++
+ include/asm-powerpc/fsl_gtm.h                |  106 +++++++++
+ 5 files changed, 465 insertions(+), 1 deletions(-)
+ create mode 100644 arch/powerpc/sysdev/fsl_gtm.c
+ create mode 100644 include/asm-powerpc/fsl_gtm.h
 
-Oops, this small hunk wormed into the other patch in my series:
-
->--- a/arch/powerpc/sysdev/cpm_common.c
->+++ b/arch/powerpc/sysdev/cpm_common.c
->@@ -195,7 +195,7 @@ EXPORT_SYMBOL(cpm_muram_addr);
->
-> unsigned long cpm_muram_offset(void __iomem *addr)
-> {
->-       return addr - muram_vbase;
->+       return addr - (void __iomem *)muram_vbase;
-> }
-> EXPORT_SYMBOL(cpm_muram_offset);
-
-Without it compile will break:
-
-arch/powerpc/sysdev/cpm_common.c: In function ‘cpm_muram_offset’:
-arch/powerpc/sysdev/cpm_common.c:198: error: invalid operands to binary -
-
-Fixed patch down below.
-
- arch/powerpc/sysdev/Makefile          |    1 +
- arch/powerpc/sysdev/cpm_common.c      |   16 +++++-
- arch/powerpc/sysdev/qe_lib/qe.c       |   96 +--------------------------------
- arch/powerpc/sysdev/qe_lib/ucc_fast.c |    8 ++--
- arch/powerpc/sysdev/qe_lib/ucc_slow.c |   18 +++---
- drivers/net/ucc_geth.c                |   96 ++++++++++++++++----------------
- include/asm-powerpc/cpm.h             |    1 +
- include/asm-powerpc/qe.h              |   29 +----------
- 8 files changed, 79 insertions(+), 186 deletions(-)
-
+diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
+index f19fe9f..ee14ecd 100644
+--- a/Documentation/powerpc/booting-without-of.txt
++++ b/Documentation/powerpc/booting-without-of.txt
+@@ -57,7 +57,8 @@ Table of Contents
+       n) 4xx/Axon EMAC ethernet nodes
+       o) Xilinx IP cores
+       p) Freescale Synchronous Serial Interface
+-	  q) USB EHCI controllers
++      q) USB EHCI controllers
++      r) Freescale General-purpose Timers Module
+ 
+   VII - Specifying interrupt information for devices
+     1) interrupts property
+@@ -2795,6 +2796,35 @@ platforms are moved over to use the flattened-device-tree model.
+ 		   big-endian;
+ 	   };
+ 
++    r) Freescale General-purpose Timers Module
++
++    Required properties:
++      - compatible : should be "fsl,gtm" ("fsl,qe-gtm" in addition for QE
++                     GTMs).
++      - reg : should contain gtm registers location and length (0x40).
++      - interrupts : should contain four interrupts.
++      - interrupt-parent : interrupt source phandle.
++      - clock-frequency : specifies the frequency driving the timer.
++
++    Example:
++
++    timer@500 {
++    	compatible = "fsl,gtm";
++    	reg = <0x500 0x40>;
++    	interrupts = <90 8 78 8 84 8 72 8>;
++    	interrupt-parent = <&ipic>;
++    	/* filled by u-boot */
++    	clock-frequency = <0>;
++    };
++
++    timer@440 {
++    	compatible = "fsl,qe-gtm", "fsl,gtm";
++    	reg = <0x440 0x40>;
++    	interrupts = <12 13 14 15>;
++    	interrupt-parent = <&qeic>;
++    	/* filled by u-boot */
++    	clock-frequency = <0>;
++    };
+ 
+    More devices will be defined as this spec matures.
+ 
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 00c5e79..dd30ea4 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -520,6 +520,11 @@ config FSL_LBC
+ 	help
+ 	  Freescale Localbus support
+ 
++config FSL_GTM
++	bool
++	help
++	  Freescale General-purpose Timers support
++
+ # Yes MCA RS/6000s exist but Linux-PPC does not currently support any
+ config MCA
+ 	bool
 diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile
-index 6d386d0..42b44a1 100644
+index 42b44a1..3974412 100644
 --- a/arch/powerpc/sysdev/Makefile
 +++ b/arch/powerpc/sysdev/Makefile
-@@ -40,6 +40,7 @@ endif
- ifeq ($(ARCH),powerpc)
- obj-$(CONFIG_CPM)		+= cpm_common.o
- obj-$(CONFIG_CPM2)		+= cpm2.o cpm2_pic.o
-+obj-$(CONFIG_QUICC_ENGINE)	+= cpm_common.o
- obj-$(CONFIG_PPC_DCR)		+= dcr.o
- obj-$(CONFIG_8xx)		+= mpc8xx_pic.o cpm1.o
- obj-$(CONFIG_UCODE_PATCH)	+= micropatch.o
-diff --git a/arch/powerpc/sysdev/cpm_common.c b/arch/powerpc/sysdev/cpm_common.c
-index cb7df2d..9b75d16 100644
---- a/arch/powerpc/sysdev/cpm_common.c
-+++ b/arch/powerpc/sysdev/cpm_common.c
-@@ -85,9 +85,13 @@ int __init cpm_muram_init(void)
- 
- 	np = of_find_compatible_node(NULL, NULL, "fsl,cpm-muram-data");
- 	if (!np) {
--		printk(KERN_ERR "Cannot find CPM muram data node");
--		ret = -ENODEV;
--		goto out;
-+		/* try legacy bindings */
-+		np = of_find_node_by_name(NULL, "data-only");
-+		if (!np) {
-+			printk(KERN_ERR "Cannot find CPM muram data node");
-+			ret = -ENODEV;
-+			goto out;
-+		}
- 	}
- 
- 	muram_pbase = of_translate_address(np, zero);
-@@ -189,6 +193,12 @@ void __iomem *cpm_muram_addr(unsigned long offset)
- }
- EXPORT_SYMBOL(cpm_muram_addr);
- 
-+unsigned long cpm_muram_offset(void __iomem *addr)
-+{
-+	return addr - (void __iomem *)muram_vbase;
-+}
-+EXPORT_SYMBOL(cpm_muram_offset);
+@@ -13,6 +13,7 @@ obj-$(CONFIG_MMIO_NVRAM)	+= mmio_nvram.o
+ obj-$(CONFIG_FSL_SOC)		+= fsl_soc.o
+ obj-$(CONFIG_FSL_PCI)		+= fsl_pci.o
+ obj-$(CONFIG_FSL_LBC)		+= fsl_lbc.o
++obj-$(CONFIG_FSL_GTM)		+= fsl_gtm.o
+ obj-$(CONFIG_RAPIDIO)		+= fsl_rio.o
+ obj-$(CONFIG_TSI108_BRIDGE)	+= tsi108_pci.o tsi108_dev.o
+ obj-$(CONFIG_QUICC_ENGINE)	+= qe_lib/
+diff --git a/arch/powerpc/sysdev/fsl_gtm.c b/arch/powerpc/sysdev/fsl_gtm.c
+new file mode 100644
+index 0000000..6d86983
+--- /dev/null
++++ b/arch/powerpc/sysdev/fsl_gtm.c
+@@ -0,0 +1,322 @@
++/*
++ * Freescale General-purpose Timers Module
++ *
++ * Copyright (c) Freescale Semicondutor, Inc. 2006.
++ *               Shlomi Gridish <gridish@freescale.com>
++ *               Jerry Huang <Chang-Ming.Huang@freescale.com>
++ * Copyright (c) MontaVista Software, Inc. 2008.
++ *               Anton Vorontsov <avorontsov@ru.mvista.com>
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ */
 +
- /**
-  * cpm_muram_dma - turn a muram virtual address into a DMA address
-  * @offset: virtual address from cpm_muram_addr() to convert
-diff --git a/arch/powerpc/sysdev/qe_lib/qe.c b/arch/powerpc/sysdev/qe_lib/qe.c
-index cff550e..4b48094 100644
---- a/arch/powerpc/sysdev/qe_lib/qe.c
-+++ b/arch/powerpc/sysdev/qe_lib/qe.c
-@@ -35,7 +35,6 @@
- #include <asm/rheap.h>
- 
- static void qe_snums_init(void);
--static void qe_muram_init(void);
- static int qe_sdma_init(void);
- 
- static DEFINE_SPINLOCK(qe_lock);
-@@ -99,7 +98,7 @@ void qe_reset(void)
- 		     QE_CR_PROTOCOL_UNSPECIFIED, 0);
- 
- 	/* Reclaim the MURAM memory for our use. */
--	qe_muram_init();
-+	cpm_muram_init();
- 
- 	if (qe_sdma_init())
- 		panic("sdma init failed!");
-@@ -314,7 +313,7 @@ static int qe_sdma_init(void)
- 
- 	/* allocate 2 internal temporary buffers (512 bytes size each) for
- 	 * the SDMA */
-- 	sdma_buf_offset = qe_muram_alloc(512 * 2, 4096);
-+	sdma_buf_offset = cpm_muram_alloc(512 * 2, 4096);
- 	if (IS_ERR_VALUE(sdma_buf_offset))
- 		return -ENOMEM;
- 
-@@ -325,97 +324,6 @@ static int qe_sdma_init(void)
- 	return 0;
- }
- 
--/*
-- * muram_alloc / muram_free bits.
-- */
--static DEFINE_SPINLOCK(qe_muram_lock);
--
--/* 16 blocks should be enough to satisfy all requests
-- * until the memory subsystem goes up... */
--static rh_block_t qe_boot_muram_rh_block[16];
--static rh_info_t qe_muram_info;
--
--static void qe_muram_init(void)
--{
--	struct device_node *np;
--	const u32 *address;
--	u64 size;
--	unsigned int flags;
--
--	/* initialize the info header */
--	rh_init(&qe_muram_info, 1,
--		sizeof(qe_boot_muram_rh_block) /
--		sizeof(qe_boot_muram_rh_block[0]), qe_boot_muram_rh_block);
--
--	/* Attach the usable muram area */
--	/* XXX: This is a subset of the available muram. It
--	 * varies with the processor and the microcode patches activated.
--	 */
--	np = of_find_compatible_node(NULL, NULL, "fsl,qe-muram-data");
--	if (!np) {
--		np = of_find_node_by_name(NULL, "data-only");
--		if (!np) {
--			WARN_ON(1);
--			return;
--		}
--	}
--
--	address = of_get_address(np, 0, &size, &flags);
--	WARN_ON(!address);
--
--	of_node_put(np);
--	if (address)
--		rh_attach_region(&qe_muram_info, *address, (int)size);
--}
--
--/* This function returns an index into the MURAM area.
-- */
--unsigned long qe_muram_alloc(int size, int align)
--{
--	unsigned long start;
--	unsigned long flags;
--
--	spin_lock_irqsave(&qe_muram_lock, flags);
--	start = rh_alloc_align(&qe_muram_info, size, align, "QE");
--	spin_unlock_irqrestore(&qe_muram_lock, flags);
--
--	return start;
--}
--EXPORT_SYMBOL(qe_muram_alloc);
--
--int qe_muram_free(unsigned long offset)
--{
--	int ret;
--	unsigned long flags;
--
--	spin_lock_irqsave(&qe_muram_lock, flags);
--	ret = rh_free(&qe_muram_info, offset);
--	spin_unlock_irqrestore(&qe_muram_lock, flags);
--
--	return ret;
--}
--EXPORT_SYMBOL(qe_muram_free);
--
--/* not sure if this is ever needed */
--unsigned long qe_muram_alloc_fixed(unsigned long offset, int size)
--{
--	unsigned long start;
--	unsigned long flags;
--
--	spin_lock_irqsave(&qe_muram_lock, flags);
--	start = rh_alloc_fixed(&qe_muram_info, offset, size, "commproc");
--	spin_unlock_irqrestore(&qe_muram_lock, flags);
--
--	return start;
--}
--EXPORT_SYMBOL(qe_muram_alloc_fixed);
--
--void qe_muram_dump(void)
--{
--	rh_dump(&qe_muram_info);
--}
--EXPORT_SYMBOL(qe_muram_dump);
--
- /* The maximum number of RISCs we support */
- #define MAX_QE_RISC     2
- 
-diff --git a/arch/powerpc/sysdev/qe_lib/ucc_fast.c b/arch/powerpc/sysdev/qe_lib/ucc_fast.c
-index bcf88e6..559678d 100644
---- a/arch/powerpc/sysdev/qe_lib/ucc_fast.c
-+++ b/arch/powerpc/sysdev/qe_lib/ucc_fast.c
-@@ -267,7 +267,7 @@ int ucc_fast_init(struct ucc_fast_info * uf_info, struct ucc_fast_private ** ucc
- 
- 	/* Allocate memory for Tx Virtual Fifo */
- 	uccf->ucc_fast_tx_virtual_fifo_base_offset =
--	    qe_muram_alloc(uf_info->utfs, UCC_FAST_VIRT_FIFO_REGS_ALIGNMENT);
-+	    cpm_muram_alloc(uf_info->utfs, UCC_FAST_VIRT_FIFO_REGS_ALIGNMENT);
- 	if (IS_ERR_VALUE(uccf->ucc_fast_tx_virtual_fifo_base_offset)) {
- 		printk(KERN_ERR "%s: cannot allocate MURAM for TX FIFO\n",
- 			__func__);
-@@ -278,7 +278,7 @@ int ucc_fast_init(struct ucc_fast_info * uf_info, struct ucc_fast_private ** ucc
- 
- 	/* Allocate memory for Rx Virtual Fifo */
- 	uccf->ucc_fast_rx_virtual_fifo_base_offset =
--		qe_muram_alloc(uf_info->urfs +
-+		cpm_muram_alloc(uf_info->urfs +
- 			   UCC_FAST_RECEIVE_VIRTUAL_FIFO_SIZE_FUDGE_FACTOR,
- 			   UCC_FAST_VIRT_FIFO_REGS_ALIGNMENT);
- 	if (IS_ERR_VALUE(uccf->ucc_fast_rx_virtual_fifo_base_offset)) {
-@@ -350,10 +350,10 @@ void ucc_fast_free(struct ucc_fast_private * uccf)
- 		return;
- 
- 	if (uccf->ucc_fast_tx_virtual_fifo_base_offset)
--		qe_muram_free(uccf->ucc_fast_tx_virtual_fifo_base_offset);
-+		cpm_muram_free(uccf->ucc_fast_tx_virtual_fifo_base_offset);
- 
- 	if (uccf->ucc_fast_rx_virtual_fifo_base_offset)
--		qe_muram_free(uccf->ucc_fast_rx_virtual_fifo_base_offset);
-+		cpm_muram_free(uccf->ucc_fast_rx_virtual_fifo_base_offset);
- 
- 	kfree(uccf);
- }
-diff --git a/arch/powerpc/sysdev/qe_lib/ucc_slow.c b/arch/powerpc/sysdev/qe_lib/ucc_slow.c
-index a578bc7..49e6949 100644
---- a/arch/powerpc/sysdev/qe_lib/ucc_slow.c
-+++ b/arch/powerpc/sysdev/qe_lib/ucc_slow.c
-@@ -187,7 +187,7 @@ int ucc_slow_init(struct ucc_slow_info * us_info, struct ucc_slow_private ** ucc
- 
- 	/* Get PRAM base */
- 	uccs->us_pram_offset =
--		qe_muram_alloc(UCC_SLOW_PRAM_SIZE, ALIGNMENT_OF_UCC_SLOW_PRAM);
-+		cpm_muram_alloc(UCC_SLOW_PRAM_SIZE, ALIGNMENT_OF_UCC_SLOW_PRAM);
- 	if (IS_ERR_VALUE(uccs->us_pram_offset)) {
- 		printk(KERN_ERR "%s: cannot allocate MURAM for PRAM", __func__);
- 		ucc_slow_free(uccs);
-@@ -197,7 +197,7 @@ int ucc_slow_init(struct ucc_slow_info * us_info, struct ucc_slow_private ** ucc
- 	qe_issue_cmd(QE_ASSIGN_PAGE_TO_DEVICE, id, us_info->protocol,
- 		     uccs->us_pram_offset);
- 
--	uccs->us_pram = qe_muram_addr(uccs->us_pram_offset);
-+	uccs->us_pram = cpm_muram_addr(uccs->us_pram_offset);
- 
- 	/* Set UCC to slow type */
- 	ret = ucc_set_type(us_info->ucc_num, UCC_SPEED_TYPE_SLOW);
-@@ -213,7 +213,7 @@ int ucc_slow_init(struct ucc_slow_info * us_info, struct ucc_slow_private ** ucc
- 
- 	/* Allocate BDs. */
- 	uccs->rx_base_offset =
--		qe_muram_alloc(us_info->rx_bd_ring_len * sizeof(struct qe_bd),
-+		cpm_muram_alloc(us_info->rx_bd_ring_len * sizeof(struct qe_bd),
- 				QE_ALIGNMENT_OF_BD);
- 	if (IS_ERR_VALUE(uccs->rx_base_offset)) {
- 		printk(KERN_ERR "%s: cannot allocate %u RX BDs\n", __func__,
-@@ -224,7 +224,7 @@ int ucc_slow_init(struct ucc_slow_info * us_info, struct ucc_slow_private ** ucc
- 	}
- 
- 	uccs->tx_base_offset =
--		qe_muram_alloc(us_info->tx_bd_ring_len * sizeof(struct qe_bd),
-+		cpm_muram_alloc(us_info->tx_bd_ring_len * sizeof(struct qe_bd),
- 			QE_ALIGNMENT_OF_BD);
- 	if (IS_ERR_VALUE(uccs->tx_base_offset)) {
- 		printk(KERN_ERR "%s: cannot allocate TX BDs", __func__);
-@@ -234,7 +234,7 @@ int ucc_slow_init(struct ucc_slow_info * us_info, struct ucc_slow_private ** ucc
- 	}
- 
- 	/* Init Tx bds */
--	bd = uccs->confBd = uccs->tx_bd = qe_muram_addr(uccs->tx_base_offset);
-+	bd = uccs->confBd = uccs->tx_bd = cpm_muram_addr(uccs->tx_base_offset);
- 	for (i = 0; i < us_info->tx_bd_ring_len - 1; i++) {
- 		/* clear bd buffer */
- 		out_be32(&bd->buf, 0);
-@@ -247,7 +247,7 @@ int ucc_slow_init(struct ucc_slow_info * us_info, struct ucc_slow_private ** ucc
- 	out_be32((u32 *) bd, cpu_to_be32(T_W));
- 
- 	/* Init Rx bds */
--	bd = uccs->rx_bd = qe_muram_addr(uccs->rx_base_offset);
-+	bd = uccs->rx_bd = cpm_muram_addr(uccs->rx_base_offset);
- 	for (i = 0; i < us_info->rx_bd_ring_len - 1; i++) {
- 		/* set bd status and length */
- 		out_be32((u32*)bd, 0);
-@@ -362,13 +362,13 @@ void ucc_slow_free(struct ucc_slow_private * uccs)
- 		return;
- 
- 	if (uccs->rx_base_offset)
--		qe_muram_free(uccs->rx_base_offset);
-+		cpm_muram_free(uccs->rx_base_offset);
- 
- 	if (uccs->tx_base_offset)
--		qe_muram_free(uccs->tx_base_offset);
-+		cpm_muram_free(uccs->tx_base_offset);
- 
- 	if (uccs->us_pram) {
--		qe_muram_free(uccs->us_pram_offset);
-+		cpm_muram_free(uccs->us_pram_offset);
- 		uccs->us_pram = NULL;
- 	}
- 
-diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
-index ed84182..ba30a25 100644
---- a/drivers/net/ucc_geth.c
-+++ b/drivers/net/ucc_geth.c
-@@ -299,7 +299,7 @@ static int fill_init_enet_entries(struct ucc_geth_private *ugeth,
- 			init_enet_offset = 0;
- 		else {
- 			init_enet_offset =
--			    qe_muram_alloc(thread_size, thread_alignment);
-+			    cpm_muram_alloc(thread_size, thread_alignment);
- 			if (IS_ERR_VALUE(init_enet_offset)) {
- 				if (netif_msg_ifup(ugeth))
- 					ugeth_err("fill_init_enet_entries: Can not allocate DPRAM memory.");
-@@ -338,7 +338,7 @@ static int return_init_enet_entries(struct ucc_geth_private *ugeth,
- 				init_enet_offset =
- 				    (in_be32(p_start) &
- 				     ENET_INIT_PARAM_PTR_MASK);
--				qe_muram_free(init_enet_offset);
-+				cpm_muram_free(init_enet_offset);
- 			}
- 			*(p_start++) = 0;	/* Just for cosmetics */
- 		}
-@@ -375,8 +375,8 @@ static int dump_init_enet_entries(struct ucc_geth_private *ugeth,
- 				ugeth_info("Init enet entry %d:", i);
- 				ugeth_info("Base address: 0x%08x",
- 					   (u32)
--					   qe_muram_addr(init_enet_offset));
--				mem_disp(qe_muram_addr(init_enet_offset),
-+					   cpm_muram_addr(init_enet_offset));
-+				mem_disp(cpm_muram_addr(init_enet_offset),
- 					 thread_size);
- 			}
- 			p_start++;
-@@ -1085,11 +1085,11 @@ static void dump_regs(struct ucc_geth_private *ugeth)
- 			ugeth_info("ucode RX Prefetched BDs:");
- 			ugeth_info("Base address: 0x%08x",
- 				   (u32)
--				   qe_muram_addr(in_be32
-+				   cpm_muram_addr(in_be32
- 						 (&ugeth->p_rx_bd_qs_tbl[i].
- 						  bdbaseptr)));
- 			mem_disp((u8 *)
--				 qe_muram_addr(in_be32
-+				 cpm_muram_addr(in_be32
- 					       (&ugeth->p_rx_bd_qs_tbl[i].
- 						bdbaseptr)),
- 				 sizeof(struct ucc_geth_rx_prefetched_bds));
-@@ -2090,47 +2090,47 @@ static void ucc_geth_memclean(struct ucc_geth_private *ugeth)
- 	}
- 
- 	if (ugeth->p_thread_data_tx) {
--		qe_muram_free(ugeth->thread_dat_tx_offset);
-+		cpm_muram_free(ugeth->thread_dat_tx_offset);
- 		ugeth->p_thread_data_tx = NULL;
- 	}
- 	if (ugeth->p_thread_data_rx) {
--		qe_muram_free(ugeth->thread_dat_rx_offset);
-+		cpm_muram_free(ugeth->thread_dat_rx_offset);
- 		ugeth->p_thread_data_rx = NULL;
- 	}
- 	if (ugeth->p_exf_glbl_param) {
--		qe_muram_free(ugeth->exf_glbl_param_offset);
-+		cpm_muram_free(ugeth->exf_glbl_param_offset);
- 		ugeth->p_exf_glbl_param = NULL;
- 	}
- 	if (ugeth->p_rx_glbl_pram) {
--		qe_muram_free(ugeth->rx_glbl_pram_offset);
-+		cpm_muram_free(ugeth->rx_glbl_pram_offset);
- 		ugeth->p_rx_glbl_pram = NULL;
- 	}
- 	if (ugeth->p_tx_glbl_pram) {
--		qe_muram_free(ugeth->tx_glbl_pram_offset);
-+		cpm_muram_free(ugeth->tx_glbl_pram_offset);
- 		ugeth->p_tx_glbl_pram = NULL;
- 	}
- 	if (ugeth->p_send_q_mem_reg) {
--		qe_muram_free(ugeth->send_q_mem_reg_offset);
-+		cpm_muram_free(ugeth->send_q_mem_reg_offset);
- 		ugeth->p_send_q_mem_reg = NULL;
- 	}
- 	if (ugeth->p_scheduler) {
--		qe_muram_free(ugeth->scheduler_offset);
-+		cpm_muram_free(ugeth->scheduler_offset);
- 		ugeth->p_scheduler = NULL;
- 	}
- 	if (ugeth->p_tx_fw_statistics_pram) {
--		qe_muram_free(ugeth->tx_fw_statistics_pram_offset);
-+		cpm_muram_free(ugeth->tx_fw_statistics_pram_offset);
- 		ugeth->p_tx_fw_statistics_pram = NULL;
- 	}
- 	if (ugeth->p_rx_fw_statistics_pram) {
--		qe_muram_free(ugeth->rx_fw_statistics_pram_offset);
-+		cpm_muram_free(ugeth->rx_fw_statistics_pram_offset);
- 		ugeth->p_rx_fw_statistics_pram = NULL;
- 	}
- 	if (ugeth->p_rx_irq_coalescing_tbl) {
--		qe_muram_free(ugeth->rx_irq_coalescing_tbl_offset);
-+		cpm_muram_free(ugeth->rx_irq_coalescing_tbl_offset);
- 		ugeth->p_rx_irq_coalescing_tbl = NULL;
- 	}
- 	if (ugeth->p_rx_bd_qs_tbl) {
--		qe_muram_free(ugeth->rx_bd_qs_tbl_offset);
-+		cpm_muram_free(ugeth->rx_bd_qs_tbl_offset);
- 		ugeth->p_rx_bd_qs_tbl = NULL;
- 	}
- 	if (ugeth->p_init_enet_param_shadow) {
-@@ -2171,7 +2171,7 @@ static void ucc_geth_memclean(struct ucc_geth_private *ugeth)
- 				kfree((void *)ugeth->tx_bd_ring_offset[i]);
- 			else if (ugeth->ug_info->uf_info.bd_mem_part ==
- 				 MEM_PART_MURAM)
--				qe_muram_free(ugeth->tx_bd_ring_offset[i]);
-+				cpm_muram_free(ugeth->tx_bd_ring_offset[i]);
- 			ugeth->p_tx_bd_ring[i] = NULL;
- 		}
- 	}
-@@ -2201,7 +2201,7 @@ static void ucc_geth_memclean(struct ucc_geth_private *ugeth)
- 				kfree((void *)ugeth->rx_bd_ring_offset[i]);
- 			else if (ugeth->ug_info->uf_info.bd_mem_part ==
- 				 MEM_PART_MURAM)
--				qe_muram_free(ugeth->rx_bd_ring_offset[i]);
-+				cpm_muram_free(ugeth->rx_bd_ring_offset[i]);
- 			ugeth->p_rx_bd_ring[i] = NULL;
- 		}
- 	}
-@@ -2610,11 +2610,11 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 					align) & ~(align - 1));
- 		} else if (uf_info->bd_mem_part == MEM_PART_MURAM) {
- 			ugeth->tx_bd_ring_offset[j] =
--			    qe_muram_alloc(length,
-+			    cpm_muram_alloc(length,
- 					   UCC_GETH_TX_BD_RING_ALIGNMENT);
- 			if (!IS_ERR_VALUE(ugeth->tx_bd_ring_offset[j]))
- 				ugeth->p_tx_bd_ring[j] =
--				    (u8 *) qe_muram_addr(ugeth->
-+				    (u8 *) cpm_muram_addr(ugeth->
- 							 tx_bd_ring_offset[j]);
- 		}
- 		if (!ugeth->p_tx_bd_ring[j]) {
-@@ -2646,11 +2646,11 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 					align) & ~(align - 1));
- 		} else if (uf_info->bd_mem_part == MEM_PART_MURAM) {
- 			ugeth->rx_bd_ring_offset[j] =
--			    qe_muram_alloc(length,
-+			    cpm_muram_alloc(length,
- 					   UCC_GETH_RX_BD_RING_ALIGNMENT);
- 			if (!IS_ERR_VALUE(ugeth->rx_bd_ring_offset[j]))
- 				ugeth->p_rx_bd_ring[j] =
--				    (u8 *) qe_muram_addr(ugeth->
-+				    (u8 *) cpm_muram_addr(ugeth->
- 							 rx_bd_ring_offset[j]);
- 		}
- 		if (!ugeth->p_rx_bd_ring[j]) {
-@@ -2733,7 +2733,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 	/* Tx global PRAM */
- 	/* Allocate global tx parameter RAM page */
- 	ugeth->tx_glbl_pram_offset =
--	    qe_muram_alloc(sizeof(struct ucc_geth_tx_global_pram),
-+	    cpm_muram_alloc(sizeof(struct ucc_geth_tx_global_pram),
- 			   UCC_GETH_TX_GLOBAL_PRAM_ALIGNMENT);
- 	if (IS_ERR_VALUE(ugeth->tx_glbl_pram_offset)) {
- 		if (netif_msg_ifup(ugeth))
-@@ -2744,7 +2744,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 		return -ENOMEM;
- 	}
- 	ugeth->p_tx_glbl_pram =
--	    (struct ucc_geth_tx_global_pram *) qe_muram_addr(ugeth->
-+	    (struct ucc_geth_tx_global_pram *) cpm_muram_addr(ugeth->
- 							tx_glbl_pram_offset);
- 	/* Zero out p_tx_glbl_pram */
- 	memset(ugeth->p_tx_glbl_pram, 0, sizeof(struct ucc_geth_tx_global_pram));
-@@ -2754,7 +2754,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 	/* TQPTR */
- 	/* Size varies with number of Tx threads */
- 	ugeth->thread_dat_tx_offset =
--	    qe_muram_alloc(numThreadsTxNumerical *
-+	    cpm_muram_alloc(numThreadsTxNumerical *
- 			   sizeof(struct ucc_geth_thread_data_tx) +
- 			   32 * (numThreadsTxNumerical == 1),
- 			   UCC_GETH_THREAD_DATA_ALIGNMENT);
-@@ -2768,7 +2768,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 	}
- 
- 	ugeth->p_thread_data_tx =
--	    (struct ucc_geth_thread_data_tx *) qe_muram_addr(ugeth->
-+	    (struct ucc_geth_thread_data_tx *) cpm_muram_addr(ugeth->
- 							thread_dat_tx_offset);
- 	out_be32(&ugeth->p_tx_glbl_pram->tqptr, ugeth->thread_dat_tx_offset);
- 
-@@ -2784,7 +2784,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 	/* SQPTR */
- 	/* Size varies with number of Tx queues */
- 	ugeth->send_q_mem_reg_offset =
--	    qe_muram_alloc(ug_info->numQueuesTx *
-+	    cpm_muram_alloc(ug_info->numQueuesTx *
- 			   sizeof(struct ucc_geth_send_queue_qd),
- 			   UCC_GETH_SEND_QUEUE_QUEUE_DESCRIPTOR_ALIGNMENT);
- 	if (IS_ERR_VALUE(ugeth->send_q_mem_reg_offset)) {
-@@ -2797,7 +2797,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 	}
- 
- 	ugeth->p_send_q_mem_reg =
--	    (struct ucc_geth_send_queue_mem_region *) qe_muram_addr(ugeth->
-+	    (struct ucc_geth_send_queue_mem_region *) cpm_muram_addr(ugeth->
- 			send_q_mem_reg_offset);
- 	out_be32(&ugeth->p_tx_glbl_pram->sqptr, ugeth->send_q_mem_reg_offset);
- 
-@@ -2829,7 +2829,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 	if (ug_info->numQueuesTx > 1) {
- 	/* scheduler exists only if more than 1 tx queue */
- 		ugeth->scheduler_offset =
--		    qe_muram_alloc(sizeof(struct ucc_geth_scheduler),
-+		    cpm_muram_alloc(sizeof(struct ucc_geth_scheduler),
- 				   UCC_GETH_SCHEDULER_ALIGNMENT);
- 		if (IS_ERR_VALUE(ugeth->scheduler_offset)) {
- 			if (netif_msg_ifup(ugeth))
-@@ -2841,7 +2841,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 		}
- 
- 		ugeth->p_scheduler =
--		    (struct ucc_geth_scheduler *) qe_muram_addr(ugeth->
-+		    (struct ucc_geth_scheduler *) cpm_muram_addr(ugeth->
- 							   scheduler_offset);
- 		out_be32(&ugeth->p_tx_glbl_pram->schedulerbasepointer,
- 			 ugeth->scheduler_offset);
-@@ -2877,7 +2877,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 	if (ug_info->
- 	    statisticsMode & UCC_GETH_STATISTICS_GATHERING_MODE_FIRMWARE_TX) {
- 		ugeth->tx_fw_statistics_pram_offset =
--		    qe_muram_alloc(sizeof
-+		    cpm_muram_alloc(sizeof
- 				   (struct ucc_geth_tx_firmware_statistics_pram),
- 				   UCC_GETH_TX_STATISTICS_ALIGNMENT);
- 		if (IS_ERR_VALUE(ugeth->tx_fw_statistics_pram_offset)) {
-@@ -2891,7 +2891,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 		}
- 		ugeth->p_tx_fw_statistics_pram =
- 		    (struct ucc_geth_tx_firmware_statistics_pram *)
--		    qe_muram_addr(ugeth->tx_fw_statistics_pram_offset);
-+		    cpm_muram_addr(ugeth->tx_fw_statistics_pram_offset);
- 		/* Zero out p_tx_fw_statistics_pram */
- 		memset(ugeth->p_tx_fw_statistics_pram,
- 		       0, sizeof(struct ucc_geth_tx_firmware_statistics_pram));
-@@ -2919,7 +2919,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 	/* Rx global PRAM */
- 	/* Allocate global rx parameter RAM page */
- 	ugeth->rx_glbl_pram_offset =
--	    qe_muram_alloc(sizeof(struct ucc_geth_rx_global_pram),
-+	    cpm_muram_alloc(sizeof(struct ucc_geth_rx_global_pram),
- 			   UCC_GETH_RX_GLOBAL_PRAM_ALIGNMENT);
- 	if (IS_ERR_VALUE(ugeth->rx_glbl_pram_offset)) {
- 		if (netif_msg_ifup(ugeth))
-@@ -2930,7 +2930,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 		return -ENOMEM;
- 	}
- 	ugeth->p_rx_glbl_pram =
--	    (struct ucc_geth_rx_global_pram *) qe_muram_addr(ugeth->
-+	    (struct ucc_geth_rx_global_pram *) cpm_muram_addr(ugeth->
- 							rx_glbl_pram_offset);
- 	/* Zero out p_rx_glbl_pram */
- 	memset(ugeth->p_rx_glbl_pram, 0, sizeof(struct ucc_geth_rx_global_pram));
-@@ -2940,7 +2940,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 	/* RQPTR */
- 	/* Size varies with number of Rx threads */
- 	ugeth->thread_dat_rx_offset =
--	    qe_muram_alloc(numThreadsRxNumerical *
-+	    cpm_muram_alloc(numThreadsRxNumerical *
- 			   sizeof(struct ucc_geth_thread_data_rx),
- 			   UCC_GETH_THREAD_DATA_ALIGNMENT);
- 	if (IS_ERR_VALUE(ugeth->thread_dat_rx_offset)) {
-@@ -2953,7 +2953,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 	}
- 
- 	ugeth->p_thread_data_rx =
--	    (struct ucc_geth_thread_data_rx *) qe_muram_addr(ugeth->
-+	    (struct ucc_geth_thread_data_rx *) cpm_muram_addr(ugeth->
- 							thread_dat_rx_offset);
- 	out_be32(&ugeth->p_rx_glbl_pram->rqptr, ugeth->thread_dat_rx_offset);
- 
-@@ -2964,7 +2964,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 	if (ug_info->
- 	    statisticsMode & UCC_GETH_STATISTICS_GATHERING_MODE_FIRMWARE_RX) {
- 		ugeth->rx_fw_statistics_pram_offset =
--		    qe_muram_alloc(sizeof
-+		    cpm_muram_alloc(sizeof
- 				   (struct ucc_geth_rx_firmware_statistics_pram),
- 				   UCC_GETH_RX_STATISTICS_ALIGNMENT);
- 		if (IS_ERR_VALUE(ugeth->rx_fw_statistics_pram_offset)) {
-@@ -2977,7 +2977,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 		}
- 		ugeth->p_rx_fw_statistics_pram =
- 		    (struct ucc_geth_rx_firmware_statistics_pram *)
--		    qe_muram_addr(ugeth->rx_fw_statistics_pram_offset);
-+		    cpm_muram_addr(ugeth->rx_fw_statistics_pram_offset);
- 		/* Zero out p_rx_fw_statistics_pram */
- 		memset(ugeth->p_rx_fw_statistics_pram, 0,
- 		       sizeof(struct ucc_geth_rx_firmware_statistics_pram));
-@@ -2987,7 +2987,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 
- 	/* Size varies with number of Rx queues */
- 	ugeth->rx_irq_coalescing_tbl_offset =
--	    qe_muram_alloc(ug_info->numQueuesRx *
-+	    cpm_muram_alloc(ug_info->numQueuesRx *
- 			   sizeof(struct ucc_geth_rx_interrupt_coalescing_entry)
- 			   + 4, UCC_GETH_RX_INTERRUPT_COALESCING_ALIGNMENT);
- 	if (IS_ERR_VALUE(ugeth->rx_irq_coalescing_tbl_offset)) {
-@@ -3001,7 +3001,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 
- 	ugeth->p_rx_irq_coalescing_tbl =
- 	    (struct ucc_geth_rx_interrupt_coalescing_table *)
--	    qe_muram_addr(ugeth->rx_irq_coalescing_tbl_offset);
-+	    cpm_muram_addr(ugeth->rx_irq_coalescing_tbl_offset);
- 	out_be32(&ugeth->p_rx_glbl_pram->intcoalescingptr,
- 		 ugeth->rx_irq_coalescing_tbl_offset);
- 
-@@ -3055,7 +3055,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 	/* RBDQPTR */
- 	/* Size varies with number of Rx queues */
- 	ugeth->rx_bd_qs_tbl_offset =
--	    qe_muram_alloc(ug_info->numQueuesRx *
-+	    cpm_muram_alloc(ug_info->numQueuesRx *
- 			   (sizeof(struct ucc_geth_rx_bd_queues_entry) +
- 			    sizeof(struct ucc_geth_rx_prefetched_bds)),
- 			   UCC_GETH_RX_BD_QUEUES_ALIGNMENT);
-@@ -3069,7 +3069,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 	}
- 
- 	ugeth->p_rx_bd_qs_tbl =
--	    (struct ucc_geth_rx_bd_queues_entry *) qe_muram_addr(ugeth->
-+	    (struct ucc_geth_rx_bd_queues_entry *) cpm_muram_addr(ugeth->
- 				    rx_bd_qs_tbl_offset);
- 	out_be32(&ugeth->p_rx_glbl_pram->rbdqptr, ugeth->rx_bd_qs_tbl_offset);
- 	/* Zero out p_rx_bd_qs_tbl */
-@@ -3148,7 +3148,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 		/* Allocate memory for extended filtering Mode Global
- 		Parameters */
- 		ugeth->exf_glbl_param_offset =
--		    qe_muram_alloc(sizeof(struct ucc_geth_exf_global_pram),
-+		    cpm_muram_alloc(sizeof(struct ucc_geth_exf_global_pram),
- 		UCC_GETH_RX_EXTENDED_FILTERING_GLOBAL_PARAMETERS_ALIGNMENT);
- 		if (IS_ERR_VALUE(ugeth->exf_glbl_param_offset)) {
- 			if (netif_msg_ifup(ugeth))
-@@ -3160,7 +3160,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 		}
- 
- 		ugeth->p_exf_glbl_param =
--		    (struct ucc_geth_exf_global_pram *) qe_muram_addr(ugeth->
-+		    (struct ucc_geth_exf_global_pram *) cpm_muram_addr(ugeth->
- 				 exf_glbl_param_offset);
- 		out_be32(&ugeth->p_rx_glbl_pram->exfGlobalParam,
- 			 ugeth->exf_glbl_param_offset);
-@@ -3297,7 +3297,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 	}
- 
- 	/* Allocate InitEnet command parameter structure */
--	init_enet_pram_offset = qe_muram_alloc(sizeof(struct ucc_geth_init_pram), 4);
-+	init_enet_pram_offset = cpm_muram_alloc(sizeof(struct ucc_geth_init_pram), 4);
- 	if (IS_ERR_VALUE(init_enet_pram_offset)) {
- 		if (netif_msg_ifup(ugeth))
- 			ugeth_err
-@@ -3307,7 +3307,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 		return -ENOMEM;
- 	}
- 	p_init_enet_pram =
--	    (struct ucc_geth_init_pram *) qe_muram_addr(init_enet_pram_offset);
-+	    (struct ucc_geth_init_pram *) cpm_muram_addr(init_enet_pram_offset);
- 
- 	/* Copy shadow InitEnet command parameter structure into PRAM */
- 	p_init_enet_pram->resinit1 = ugeth->p_init_enet_param_shadow->resinit1;
-@@ -3336,7 +3336,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 		     init_enet_pram_offset);
- 
- 	/* Free InitEnet command parameter */
--	qe_muram_free(init_enet_pram_offset);
-+	cpm_muram_free(init_enet_pram_offset);
- 
- 	return 0;
- }
-diff --git a/include/asm-powerpc/cpm.h b/include/asm-powerpc/cpm.h
-index ede38ff..63a5533 100644
---- a/include/asm-powerpc/cpm.h
-+++ b/include/asm-powerpc/cpm.h
-@@ -96,6 +96,7 @@ unsigned long cpm_muram_alloc(unsigned long size, unsigned long align);
- int cpm_muram_free(unsigned long offset);
- unsigned long cpm_muram_alloc_fixed(unsigned long offset, unsigned long size);
- void __iomem *cpm_muram_addr(unsigned long offset);
-+unsigned long cpm_muram_offset(void __iomem *addr);
- dma_addr_t cpm_muram_dma(void __iomem *addr);
- int cpm_command(u32 command, u8 opcode);
- 
-diff --git a/include/asm-powerpc/qe.h b/include/asm-powerpc/qe.h
-index c3be6e2..54864dd 100644
---- a/include/asm-powerpc/qe.h
-+++ b/include/asm-powerpc/qe.h
-@@ -16,6 +16,7 @@
- #define _ASM_POWERPC_QE_H
- #ifdef __KERNEL__
- 
-+#include <asm/cpm.h>
- #include <asm/immap_qe.h>
- 
- #define QE_NUM_OF_SNUM	28
-@@ -89,20 +90,6 @@ unsigned int qe_get_brg_clk(void);
- int qe_setbrg(enum qe_clock brg, unsigned int rate, unsigned int multiplier);
- int qe_get_snum(void);
- void qe_put_snum(u8 snum);
--unsigned long qe_muram_alloc(int size, int align);
--int qe_muram_free(unsigned long offset);
--unsigned long qe_muram_alloc_fixed(unsigned long offset, int size);
--void qe_muram_dump(void);
--
--static inline void __iomem *qe_muram_addr(unsigned long offset)
--{
--	return (void __iomem *)&qe_immr->muram[offset];
--}
--
--static inline unsigned long qe_muram_offset(void __iomem *addr)
--{
--	return addr - (void __iomem *)qe_immr->muram;
--}
- 
- /* Structure that defines QE firmware binary files.
-  *
-@@ -166,20 +153,6 @@ struct qe_bd {
- #define BD_STATUS_MASK	0xffff0000
- #define BD_LENGTH_MASK	0x0000ffff
- 
--#define BD_SC_EMPTY	0x8000	/* Receive is empty */
--#define BD_SC_READY	0x8000	/* Transmit is ready */
--#define BD_SC_WRAP	0x2000	/* Last buffer descriptor */
--#define BD_SC_INTRPT	0x1000	/* Interrupt on change */
--#define BD_SC_LAST	0x0800	/* Last buffer in frame */
--#define BD_SC_CM	0x0200	/* Continous mode */
--#define BD_SC_ID	0x0100	/* Rec'd too many idles */
--#define BD_SC_P		0x0100	/* xmt preamble */
--#define BD_SC_BR	0x0020	/* Break received */
--#define BD_SC_FR	0x0010	/* Framing error */
--#define BD_SC_PR	0x0008	/* Parity error */
--#define BD_SC_OV	0x0002	/* Overrun */
--#define BD_SC_CD	0x0001	/* ?? */
--
- /* Alignment */
- #define QE_INTR_TABLE_ALIGN	16	/* ??? */
- #define QE_ALIGNMENT_OF_BD	8
++#include <linux/kernel.h>
++#include <linux/errno.h>
++#include <linux/io.h>
++#include <linux/of.h>
++#include <linux/spinlock.h>
++#include <asm/fsl_gtm.h>
++
++/**
++ * gtm_get_timer - request GTM timer to use it with the rest of GTM API
++ * @width:	timer width (only 16 bits wide timers implemented so far)
++ *
++ * This function reserves GTM timer for later use. It returns gtm_timer
++ * structure to use with the rest of GTM API, you should use timer->irq
++ * to manage timer interrupt.
++ */
++struct gtm_timer *gtm_get_timer(int width)
++{
++	struct device_node *np;
++	struct gtm *gtm = NULL;
++	int i;
++
++	if (width != 16)
++		return ERR_PTR(-ENOSYS);
++
++	for_each_compatible_node(np, NULL, "fsl,gtm") {
++		if (!np->data) {
++			WARN_ON(1);
++			continue;
++		}
++		gtm = np->data;
++
++		spin_lock_irq(&gtm->lock);
++
++		for (i = 0; i < ARRAY_SIZE(gtm->timers); i++) {
++			if (!gtm->timers[i].requested) {
++				gtm->timers[i].requested = true;
++				spin_unlock_irq(&gtm->lock);
++				of_node_put(np);
++				return &gtm->timers[i];
++			}
++		}
++
++		spin_unlock_irq(&gtm->lock);
++	}
++
++	if (gtm)
++		return ERR_PTR(-EBUSY);
++	return ERR_PTR(-ENODEV);
++}
++EXPORT_SYMBOL(gtm_get_timer);
++
++/**
++ * gtm_get_specific_timer - request specific GTM timer
++ * @gtm:	specific GTM, pass here GTM's device_node->data
++ * @timer:	specific timer number, Timer1 is 0.
++ * @width:	timer width (only 16 bits wide timers implemented so far)
++ *
++ * This function reserves GTM timer for later use. It returns gtm_timer
++ * structure to use with the rest of GTM API, you should use timer->irq
++ * to manage timer interrupt.
++ */
++struct gtm_timer *gtm_get_specific_timer(struct gtm *gtm, int timer, int width)
++{
++	struct gtm_timer *ret = ERR_PTR(-EBUSY);
++
++	if (width != 16)
++		return ERR_PTR(-ENOSYS);
++
++	spin_lock_irq(&gtm->lock);
++
++	if (gtm->timers[timer].requested)
++		goto out;
++
++	ret = &gtm->timers[timer];
++	ret->requested = true;
++
++out:
++	spin_unlock_irq(&gtm->lock);
++	return ret;
++}
++EXPORT_SYMBOL(gtm_get_specific_timer);
++
++/**
++ * gtm_put_timer - release GTM timer
++ * @width:	timer width (only 16 bits wide timers implemented so far)
++ *
++ * This function releases GTM timer so others may request it.
++ */
++void gtm_put_timer(struct gtm_timer *tmr)
++{
++	spin_lock_irq(&tmr->gtm->lock);
++
++	tmr->requested = false;
++
++	spin_unlock_irq(&tmr->gtm->lock);
++}
++EXPORT_SYMBOL(gtm_put_timer);
++
++/*
++ * This is back-end for the exported functions, it's used to reset single
++ * timer in reference mode.
++ */
++static int gtm_reset_ref_timer16(struct gtm_timer *tmr, int frequency,
++				 int reference_value, bool free_run)
++{
++	struct gtm *gtm = tmr->gtm;
++	int num = tmr - &gtm->timers[0];
++	unsigned int prescaler;
++	u8 iclk = GTMDR_ICLK_ICLK;
++	u8 psr;
++	u8 sps;
++	unsigned long flags;
++
++	prescaler = gtm->clock / frequency;
++	/*
++	 * We have two 8 bit prescalers -- primary and secondary (psr, sps),
++	 * plus "slow go" mode (clk / 16). So, total prescale value is
++	 * 16 * (psr + 1) * (sps + 1).
++	 */
++	if (prescaler > 256 * 256 * 16)
++		return -EINVAL;
++
++	if (prescaler > 256 * 256) {
++		iclk = GTMDR_ICLK_SLGO;
++		prescaler /= 16;
++	}
++
++	if (prescaler > 256) {
++		psr = 256 - 1;
++		sps = prescaler / 256 - 1;
++	} else {
++		psr = prescaler - 1;
++		sps = 1 - 1;
++	}
++
++	spin_lock_irqsave(&gtm->lock, flags);
++
++	/*
++	 * Properly reset timers: stop, reset, set up prescalers, reference
++	 * value and clear event register.
++	 */
++	clrsetbits_8(tmr->gtcfr, ~(GTCFR_STP(num) | GTCFR_RST(num)),
++				 GTCFR_STP(num) | GTCFR_RST(num));
++
++	setbits8(tmr->gtcfr, GTCFR_STP(num));
++
++	out_be16(tmr->gtpsr, psr);
++	clrsetbits_be16(tmr->gtmdr, 0xFFFF, iclk | GTMDR_SPS(sps) |
++			GTMDR_ORI | (free_run ? GTMDR_FFR : 0));
++	out_be16(tmr->gtcnr, 0);
++	out_be16(tmr->gtrfr, reference_value);
++	out_be16(tmr->gtevr, 0xFFFF);
++
++	/* Let it be. */
++	clrbits8(tmr->gtcfr, GTCFR_STP(num));
++
++	spin_unlock_irqrestore(&gtm->lock, flags);
++
++	return 0;
++}
++
++/**
++ * gtm_reset_utimer16 - reset 16 bits timer
++ * @tmr:	pointer to the gtm_timer structure obtained from gtm_get_timer
++ * @usec:	timer interval in microseconds
++ * @free_run:	free run flag
++ *
++ * This function (re)sets GTM timer so it counts up to the interval value and
++ * fires the interrupt when the value is reached. If free_run flag was set,
++ * timer will also reset itself upon reference value, otherwise it continues to
++ * increment.
++ */
++int gtm_reset_utimer16(struct gtm_timer *tmr, u16 usec, bool free_run)
++{
++	/* quite obvious, frequency which is enough for µSec precision */
++	const int freq = 1000000;
++
++	/*
++	 * We can lower the frequency (and probably power consumption) by
++	 * dividing both frequency and usec by 2 until there is no remainder.
++	 * But we won't bother with this unless savings are measured, so just
++	 * run the timer as is.
++	 */
++
++	return gtm_reset_ref_timer16(tmr, freq, usec, free_run);
++}
++EXPORT_SYMBOL(gtm_reset_utimer16);
++
++/**
++ * gtm_stop_timer16 - stop single timer
++ * @tmr:	pointer to the gtm_timer structure obtained from gtm_get_timer
++ *
++ * This function simply stops the GTM timer.
++ */
++void gtm_stop_timer16(struct gtm_timer *tmr)
++{
++	struct gtm *gtm = tmr->gtm;
++	int num = tmr - &gtm->timers[0];
++	unsigned long flags;
++
++	spin_lock_irqsave(&gtm->lock, flags);
++
++	setbits8(tmr->gtcfr, GTCFR_STP(num));
++	out_be16(tmr->gtevr, 0xFFFF);
++
++	spin_unlock_irqrestore(&gtm->lock, flags);
++}
++EXPORT_SYMBOL(gtm_stop_timer16);
++
++static void __init gtm_set_shortcuts(struct gtm_timer *timers,
++				     struct gtm_timers_regs __iomem *regs)
++{
++	/*
++	 * Yeah, I don't like this either, but timers' registers a bit messed,
++	 * so we have to provide shortcuts to write timer independent code.
++	 * Alternative option is to create gt*() accessors, but that will be
++	 * even uglier and cryptic.
++	 */
++	timers[0].gtcfr = &regs->gtcfr1;
++	timers[0].gtmdr = &regs->gtmdr1;
++	timers[0].gtpsr = &regs->gtpsr1;
++	timers[0].gtcnr = &regs->gtcnr1;
++	timers[0].gtrfr = &regs->gtrfr1;
++	timers[0].gtevr = &regs->gtevr1;
++
++	timers[1].gtcfr = &regs->gtcfr1;
++	timers[1].gtmdr = &regs->gtmdr2;
++	timers[1].gtpsr = &regs->gtpsr2;
++	timers[1].gtcnr = &regs->gtcnr2;
++	timers[1].gtrfr = &regs->gtrfr2;
++	timers[1].gtevr = &regs->gtevr2;
++
++	timers[2].gtcfr = &regs->gtcfr2;
++	timers[2].gtmdr = &regs->gtmdr3;
++	timers[2].gtpsr = &regs->gtpsr3;
++	timers[2].gtcnr = &regs->gtcnr3;
++	timers[2].gtrfr = &regs->gtrfr3;
++	timers[2].gtevr = &regs->gtevr3;
++
++	timers[3].gtcfr = &regs->gtcfr2;
++	timers[3].gtmdr = &regs->gtmdr4;
++	timers[3].gtpsr = &regs->gtpsr4;
++	timers[3].gtcnr = &regs->gtcnr4;
++	timers[3].gtrfr = &regs->gtrfr4;
++	timers[3].gtevr = &regs->gtevr4;
++}
++
++static int __init gtm_init(void)
++{
++	struct device_node *np;
++
++	for_each_compatible_node(np, NULL, "fsl,gtm") {
++		int i;
++		struct gtm *gtm;
++		const u32 *clock;
++		int size;
++
++		gtm = kzalloc(sizeof(*gtm), GFP_KERNEL);
++		if (!gtm) {
++			pr_err("%s: unable to allocate memory\n",
++				np->full_name);
++			continue;
++		}
++
++		spin_lock_init(&gtm->lock);
++
++		clock = of_get_property(np, "clock-frequency", &size);
++		if (!clock || size != sizeof(*clock)) {
++			pr_err("%s: no clock-frequency\n", np->full_name);
++			goto err;
++		}
++		gtm->clock = *clock;
++
++		for (i = 0; i < ARRAY_SIZE(gtm->timers); i++) {
++			int ret;
++			struct resource irq;
++
++			ret = of_irq_to_resource(np, i, &irq);
++			if (ret == NO_IRQ) {
++				pr_err("%s: not enough interrupts specified\n",
++				       np->full_name);
++				goto err;
++			}
++			gtm->timers[i].irq = irq.start;
++			gtm->timers[i].gtm = gtm;
++		}
++
++		gtm->regs = of_iomap(np, 0);
++		if (!gtm->regs) {
++			pr_err("%s: unable to iomap registers\n",
++			       np->full_name);
++			goto err;
++		}
++
++		gtm_set_shortcuts(gtm->timers, gtm->regs);
++
++		/* We don't want to lose the node and its ->data */
++		of_node_get(np);
++		np->data = gtm;
++
++		continue;
++err:
++		kfree(gtm);
++	}
++	return 0;
++}
++arch_initcall(gtm_init);
+diff --git a/include/asm-powerpc/fsl_gtm.h b/include/asm-powerpc/fsl_gtm.h
+new file mode 100644
+index 0000000..46c02e7
+--- /dev/null
++++ b/include/asm-powerpc/fsl_gtm.h
+@@ -0,0 +1,106 @@
++/*
++ * Freescale General-purpose Timers Module
++ *
++ * Copyright (c) Freescale Semicondutor, Inc. 2006.
++ *               Shlomi Gridish <gridish@freescale.com>
++ *               Jerry Huang <Chang-Ming.Huang@freescale.com>
++ * Copyright (c) MontaVista Software, Inc. 2008.
++ *               Anton Vorontsov <avorontsov@ru.mvista.com>
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ */
++
++#ifndef __ASM_FSL_GTM_H
++#define __ASM_FSL_GTM_H
++
++#include <linux/types.h>
++#include <linux/spinlock.h>
++#include <linux/io.h>
++
++#define GTCFR_STP(x)		((x) & 1 ? 1 << 5 : 1 << 1)
++#define GTCFR_RST(x)		((x) & 1 ? 1 << 4 : 1 << 0)
++
++#define GTMDR_ICLK_MASK		(3 << 1)
++#define GTMDR_ICLK_ICAS		(0 << 1)
++#define GTMDR_ICLK_ICLK		(1 << 1)
++#define GTMDR_ICLK_SLGO		(2 << 1)
++#define GTMDR_FFR		(1 << 3)
++#define GTMDR_ORI		(1 << 4)
++#define GTMDR_SPS(x)		((x) << 8)
++
++struct gtm_timers_regs {
++	u8	gtcfr1;		/* Timer 1, Timer 2 global config register */
++	u8	res0[0x3];
++	u8	gtcfr2;		/* Timer 3, timer 4 global config register */
++	u8	res1[0xB];
++	__be16	gtmdr1;		/* Timer 1 mode register */
++	__be16	gtmdr2;		/* Timer 2 mode register */
++	__be16	gtrfr1;		/* Timer 1 reference register */
++	__be16	gtrfr2;		/* Timer 2 reference register */
++	__be16	gtcpr1;		/* Timer 1 capture register */
++	__be16	gtcpr2;		/* Timer 2 capture register */
++	__be16	gtcnr1;		/* Timer 1 counter */
++	__be16	gtcnr2;		/* Timer 2 counter */
++	__be16	gtmdr3;		/* Timer 3 mode register */
++	__be16	gtmdr4;		/* Timer 4 mode register */
++	__be16	gtrfr3;		/* Timer 3 reference register */
++	__be16	gtrfr4;		/* Timer 4 reference register */
++	__be16	gtcpr3;		/* Timer 3 capture register */
++	__be16	gtcpr4;		/* Timer 4 capture register */
++	__be16	gtcnr3;		/* Timer 3 counter */
++	__be16	gtcnr4;		/* Timer 4 counter */
++	__be16	gtevr1;		/* Timer 1 event register */
++	__be16	gtevr2;		/* Timer 2 event register */
++	__be16	gtevr3;		/* Timer 3 event register */
++	__be16	gtevr4;		/* Timer 4 event register */
++	__be16	gtpsr1;		/* Timer 1 prescale register */
++	__be16	gtpsr2;		/* Timer 2 prescale register */
++	__be16	gtpsr3;		/* Timer 3 prescale register */
++	__be16	gtpsr4;		/* Timer 4 prescale register */
++	u8 res2[0x40];
++} __attribute__ ((packed));
++
++struct gtm_timer {
++	unsigned int irq;
++
++	struct gtm *gtm;
++	bool requested;
++	u8 __iomem *gtcfr;
++	__be16 __iomem *gtmdr;
++	__be16 __iomem *gtpsr;
++	__be16 __iomem *gtcnr;
++	__be16 __iomem *gtrfr;
++	__be16 __iomem *gtevr;
++};
++
++struct gtm {
++	unsigned int clock;
++	struct gtm_timers_regs __iomem *regs;
++	struct gtm_timer timers[4];
++	spinlock_t lock;
++};
++
++extern struct gtm_timer *gtm_get_timer(int width);
++extern struct gtm_timer *gtm_get_specific_timer(struct gtm *gtm, int timer,
++						int width);
++extern void gtm_put_timer(struct gtm_timer *tmr);
++extern int gtm_reset_utimer16(struct gtm_timer *tmr, u16 usec, bool free_run);
++extern void gtm_stop_timer16(struct gtm_timer *tmr);
++
++/**
++ * gtm_ack_timer16 - acknowledge timer event (free-run timers only)
++ * @tmr:	pointer to the gtm_timer structure obtained from gtm_get_timer
++ * @events:	events mask to ack
++ *
++ * Thus function used to acknowledge timer interrupt event, use it inside the
++ * interrupt handler.
++ */
++static inline void gtm_ack_timer16(struct gtm_timer *tmr, u16 events)
++{
++	out_be16(tmr->gtevr, events);
++}
++
++#endif /* __ASM_FSL_GTM_H */
 -- 
 1.5.5
