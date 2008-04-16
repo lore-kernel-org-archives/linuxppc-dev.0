@@ -1,19 +1,23 @@
-Return-Path: <tosettofabio83@libero.it>
-Received: from smtp-out4.libero.it (smtp-out4.libero.it [212.52.84.46])
-	by ozlabs.org (Postfix) with ESMTP id 416BFDE271
+Return-Path: <hugo.villeneuve@lyrtech.com>
+Received: from tomts33-srv.bellnexxia.net (tomts33-srv.bellnexxia.net
+	[209.226.175.107]) by ozlabs.org (Postfix) with ESMTP id 937C4DE1B4
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 16 Apr 2008 21:26:46 +1000 (EST)
-Received: from mailrelay07.libero.it (192.168.32.94) by smtp-out4.libero.it
-	(7.3.120) id 4628C8830A70DCE0 for linuxppc-embedded@ozlabs.org;
-	Wed, 16 Apr 2008 13:26:43 +0200
-Message-ID: <7804866.414101208345202994.JavaMail.defaultUser@defaultHost>
-Date: Wed, 16 Apr 2008 13:26:42 +0200 (CEST)
-From: "tosettofabio83@libero.it" <tosettofabio83@libero.it>
-To: linuxppc-embedded@ozlabs.org
-Subject: MPC5200B MMC over SPI into PSC6
+	Wed, 16 Apr 2008 23:19:37 +1000 (EST)
+Received: from toip37-bus.srvr.bell.ca ([67.69.240.38])
+	by tomts33-srv.bellnexxia.net
+	(InterMail vM.5.01.06.13 201-253-122-130-113-20050324) with ESMTP id
+	<20080416131935.JWZY1809.tomts33-srv.bellnexxia.net@toip37-bus.srvr.bell.ca>
+	for <linuxppc-embedded@ozlabs.org>; Wed, 16 Apr 2008 09:19:35 -0400
 MIME-Version: 1.0
-Content-Type: text/plain;charset="UTF-8"
-Reply-To: "tosettofabio83@libero.it" <tosettofabio83@libero.it>
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: RE: XLlTemac  soft lockup BUG
+Date: Wed, 16 Apr 2008 09:19:34 -0400
+Message-ID: <42848A5C5A0D1E47B026E644DD49B08E025AA69F@mail>
+In-Reply-To: <16711066.post@talk.nabble.com>
+References: <16711066.post@talk.nabble.com>
+From: "Hugo Villeneuve" <hugo.villeneuve@lyrtech.com>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -24,81 +28,54 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello, I have an embedded system with an on-board processor powerpc MPC5200B 
-and Linux kernel 2.6.22, 
-I must turn over to MMC SPI on the PSC6.
+linuxppc-embedded-bounces+hugo.villeneuve=3Dlyrtech.com@ozlabs.org =
+wrote:
+> Hi all,
+>=20
+> I am trying to switch my design from the PLB Temac to the local link
+> temac, and i have a problem when trying to run ifconfig in my init
+> script.  It gives me a BUG: soft lockup - CPU#0 stuck for 11s!
+> [ifconfig:208] Here is the rest of the dump, thanks for your help in
+> advance. [  233.114960] eth0: XLlTemac: Options: 0x3fa  =20
+>=20
+> [  233.118449] eth0: XLlTemac: allocating interrupt 8 for fifo mode.
+>=20
+> [  237.135029] eth0: XLlTemac: We renegotiated the speed to: 100
+>=20
+> [  237.150339] eth0: XLlTemac: speed set to 100Mb/s
+>=20
+> [  244.792140] BUG: soft lockup - CPU#0 stuck for 11s! [ifconfig:204]
 
-First, I 
-have enabled PSC6:
+Hi,
+we had a similar error message, which was caused by us selecting the =
+wrong PHY type in the kernel configuration menu (latest =
+linux-2.6-xlnx-git tree). In fact, we had to modify the lltemac driver =
+to support our PHY (BCM5466). Once we did that, the error message went =
+away.
 
-in ../arch/ppc/platforms/lite5200.c added PSC6 in SPI mode
-
-
-struct mpc52xx_psc_func mpc52xx_psc_functions[] = {
- {       .id     = 3,
-
-                 .func   = "uart",
-         },
-         {       .id     = 4,
-
-                 .func   = "uart",
-         },
-	 {       .id     = 5,
-
-                 .func   = "spi",
-         },
-};
-
-in ..
-/arch/powerpc/boot/dts/lite5200b.dts enabled PSC6 in SPI mode
-
-                
-// PSC6 in spi mode example
-		spi@2c00 {		// PSC6
-			device_type = "spi";
-			
-compatible = "mpc5200b-psc-spi\0mpc5200-psc-spi";
-			cell-index = <5>;
-			reg = 
-<2c00 100>;
-			interrupts = <2 4 0>;
-			interrupt-parent = <&mpc5200_pic>;
-		};
+Hugo V.
 
 
-Now on the menuconfig enabling these options:
+Hugo Villeneuve
+Hardware developer | Concepteur mat=E9riel
+Lyrtech
+Phone/T=E9l. : (1) (418) 877-4644 #2395
+Toll-free/Sans frais - Canada & USA : (1) (888) 922-4644 #2395
+Fax/T=E9l=E9c. : (1) (418) 877-7710
+www.lyrtech.com
+Infinite possibilities...TM
 
-$ make ARCH=powerpc 
-CROSS_COMPILE=powerpc-linux-gnu- menuconfig
- 
- Platform support  --->
-    [*] 
-MPC5200 (L25R) bugfix support 
-    [*] Freescale Lite5200 Eval Board
+THIS MESSAGE AND ALL ATTACHED DOCUMENTS ARE EXCLUSIVELY INTENDED
+TO THE INDICATED RECIPIENTS AND ITS CONTENTS MAY BE CONFIDENTIAL.
+IT IS STRICTLY FORBIDDEN TO ANYONE TO TAKE COGNIZANCE, USE, OR
+DIVULGE THE INFORMATION CONTAINED HEREIN. IF YOU MISTAKENLY
+RECEIVE THIS MESSAGE, IMMEDIATELY INFORM LYRTECH AND DESTROY THE
+MESSAGE AND ATTACHMENTS FORTHWITH.THANK YOU.
 
- Device 
-Drivers  ---> SPI Support --->
-    [*] SPI support 
-   <*> Freescale MPC52xx 
-PSC SPI controller
-
-this options settings the CONFIG_SPI_MPC52xx_PSC=y variable 
-into .config
-
-When linux booting, if I debug ../driver/spi/mpc52xx_psc_spi.c, 
-see that:
-
-bus platform: add driver mpc52xx-psc-
-spi                                                                                
-
-bus platform: remove driver mpc52xx-psc-spi
-drivers/spi/mpc52xx_psc_spi.c: 
-of_register_platform_driver failed (-19)
-
-why??
-any idea??
-
-Someone knows how 
-to enable mmc over spi on PSC6?
-
-thanks Fabio Tosetto
+LE PRESENT MESSAGE ET LES DOCUMENTS QUI Y SONT JOINTS S'ADRESSENT
+EXCLUSIVEMENT AU(X)DESTINATAIRE(S) INDIQUE(S) ET LEUR TENEUR PEUT
+ETRE CONFIDENTIELLE. IL EST STRICTEMENT INTERDIT A QUICONQUE D'EN
+PRENDRE CONNAISSANCE, DE LES UTILISER OU DE LES DIVULGUER. SI
+VOUS RECEVEZ LE PRESENT MESSAGE PAR ERREUR, VEUILLEZ EN AVISER
+LYRTECH IMMEDIATEMENT ET DETRUIRE LE MESSAGE SEANCE TENANTE,
+AINSI QUE LES DOCUMENTS QUI Y SONT JOINTS.
