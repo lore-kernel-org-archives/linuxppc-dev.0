@@ -1,24 +1,27 @@
-Return-Path: <jbe@pengutronix.de>
-Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
-	[83.236.181.26]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id BD721DE23E
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Apr 2008 21:24:25 +1000 (EST)
-Received: from themisto.extern.pengutronix.de ([83.236.181.29] helo=localhost)
-	by metis.extern.pengutronix.de with esmtp (Exim 4.63)
-	(envelope-from <jbe@pengutronix.de>) id 1Jm5kO-0000SF-Qw
-	for linuxppc-dev@ozlabs.org; Wed, 16 Apr 2008 13:24:20 +0200
-From: Juergen Beisert <jbe@pengutronix.de>
-To: linuxppc-dev@ozlabs.org
-Date: Wed, 16 Apr 2008 13:24:15 +0200
-References: <47FDEF9B.5000506@semihalf.com> <47FF135E.2060003@246tnt.com>
-	<200804151003.17865.jbe@pengutronix.de>
-In-Reply-To: <200804151003.17865.jbe@pengutronix.de>
+Return-Path: <andre.schwarz@matrix-vision.de>
+Received: from p15137414.pureserver.info (matrixvision.de [217.160.213.229])
+	by ozlabs.org (Postfix) with ESMTP id 7DFFEDE0AD
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Apr 2008 22:08:19 +1000 (EST)
+Received: from pandora.intern.matrix-vision.de (g1.matrix-vision.com
+	[217.7.222.190])
+	by p15137414.pureserver.info (Postfix) with ESMTP id 6F53B3CC02E
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Apr 2008 14:08:16 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+	by pandora.intern.matrix-vision.de (Postfix) with ESMTP id 41119E3C0B
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Apr 2008 14:06:51 +0200 (CEST)
+Received: from hegemone (hegemone.intern.matrix-vision.de [192.168.5.77])
+	by pandora.intern.matrix-vision.de (Postfix) with ESMTP id 18EB2E3C0B
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Apr 2008 14:06:51 +0200 (CEST)
+Received: from [192.168.65.5] (unknown [192.168.65.5])
+	by hegemone (Postfix) with ESMTP id D33F253E
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Apr 2008 14:08:14 +0200 (CEST)
+Message-ID: <4805EC2F.50909@matrix-vision.de>
+Date: Wed, 16 Apr 2008 14:08:15 +0200
+From: Andre Schwarz <andre.schwarz@matrix-vision.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200804161324.15887.jbe@pengutronix.de>
-Subject: Re: State of the MPC5200 PSC AC97 driver
+To: linux-ppc list <linuxppc-dev@ozlabs.org>
+Subject: USB @ MPC8343
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,92 +31,77 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tuesday 15 April 2008 10:03, Juergen Beisert wrote:
-> Currently it fails to play anything with an external Wolfson WM9712
-> connected to it. It seems the current AC97 reset sequence switches the
-> WM9712 into testmode due to SDATA_OUT and Sync are not held low while the
-> reset is active. Any idea to solve this? Switching both signals to GPIO a=
-nd
-> force them to low level while reset is active? How to cover PSC1 and PSC2
-> with different GPIOs for this case?
+Dear List,
 
-Cannot reproduce the reset issue now, but in my case the bestcomm was
-programmed to service the wrong PSC unit. That was the reason I never heard
-any sound.
+on my MPC8343 based board there is a "USB3300" ULPI-PHY connected to the 
+processor.
+It's an OTG capable PHY but host mode should be enough right now.
 
-Can us give the oftree a better differentiation to program the bestcomm in a
-correct manner?
+Since USB is not used inside bootloader it's not configured at all...
+As far as I can see the setup should be done inside the kernel completely.
 
-Subject: [@num@/@total@] mpc52xx: Change the AC97 driver to be more generic
-=46rom: Juergen Beisert <j.beisert@pengutronix.de>
+My dts looks like this :
 
-The current AC97 driver for the mpc52xx CPU is fixed to work on PSC2. This
-patch tries to make it more generic, as it detects the PSC unit for AC97 us=
-age
-to forward this information into the Bestcomm-API.
+                usb@23000 {
+                        device_type = "usb";
+                        compatible = "fsl-usb2-dr";
+                        reg = <0x23000 0x1000>;
+                        #address-cells = <1>;
+                        #size-cells = <0>;
+                        interrupt-parent = <&ipic>;
+                        interrupts = <38 0x8>;
+                        dr_mode = "host";
+                        phy_type = "ulpi";
+                        port1;
+                };
 
-Signed-off-by: Juergen Beisert <j.beisert@pengutronix.de>
-=2D--
- sound/ppc/mpc52xx_ac97.c |   21 ++++++++++++++++++++-
- 1 file changed, 20 insertions(+), 1 deletion(-)
 
-Index: sound/ppc/mpc52xx_ac97.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-=2D-- sound/ppc/mpc52xx_ac97.c.orig
-+++ sound/ppc/mpc52xx_ac97.c
-@@ -651,6 +651,7 @@ mpc52xx_ac97_probe(struct of_device *op,
- 	struct mpc52xx_ac97_priv *priv;
- 	struct snd_card *card;
- 	struct resource res;
-+	int tx_initiator;
- 	int rv;
-=20
- 	dev_dbg(&op->dev, "probing MPC52xx PSC AC97 driver\n");
-@@ -699,10 +700,27 @@ mpc52xx_ac97_probe(struct of_device *op,
- 	/* Setup Bestcomm tasks */
- 	spin_lock_init(&priv->dma_lock);
-=20
-+	/*
-+	 * PSC1 or PSC2 can be configured for AC97 usage. Select the right
-+	 * channel, to let the BCOMM unit does its job correctly.
-+	 */
-+	switch (priv->mem_start & 0xFFFF) {
-+	case 0x2000:	/* PSC1 */
-+		tx_initiator =3D 14;
-+		break;
-+	case 0x2200:	/* PSC2 */
-+		tx_initiator =3D 12;
-+		break;
-+	default:
-+		dev_dbg(priv->dev, "Unknown PSC unit for AC97 usage!\n");
-+		rv - ENODEV;
-+		goto err_irq;
-+	}
-+
- 	priv->tsk_tx =3D bcom_gen_bd_tx_init(AC97_TX_NUM_BD,
- 				priv->mem_start + offsetof(struct mpc52xx_psc,
- 							tfdata),
-=2D				12,	/* initiator : FIXME */
-+				tx_initiator,
- 				2);	/* ipr : FIXME */
- 	if (!priv->tsk_tx) {
- 		printk(KERN_ERR DRV_NAME ": bcom_gen_bd_tx_init failed\n");
-@@ -759,6 +777,7 @@ err_irqreq:
- 	bcom_gen_bd_tx_release(priv->tsk_tx);
- err_bcomm:
- 	mpc52xx_ac97_hwshutdown(priv);
-+err_irq:
- 	irq_dispose_mapping(priv->irq);
- err_irqmap:
- 	iounmap(priv->psc);
+Since the MPC8343 has only one USB port I assume it is "port1" since the 
+port1-pins are coming out of the package :-)
+DR registers are located @ 0x23000
 
-Juergen
 
-=2D-=20
-Dipl.-Ing. Juergen Beisert | http://www.pengutronix.de
-=A0Pengutronix - Linux Solutions for Science and Industry
-=A0   Handelsregister: Amtsgericht Hildesheim, HRA 2686
-=A0 =A0 =A0    Vertretung Sued/Muenchen, Germany
-   Phone: +49-8766-939 228 |  Fax: +49-5121-206917-9
+
+Kernel log :
+
+fsl-ehci fsl-ehci.0: Freescale On-Chip EHCI Host Controller
+fsl-ehci fsl-ehci.0: new USB bus registered, assigned bus number 1
+fsl-ehci fsl-ehci.0: irq 38, io base 0xe0023000
+fsl-ehci fsl-ehci.0: USB 2.0 started, EHCI 1.00, driver 10 Dec 2004
+usb usb1: configuration #1 chosen from 1 choice
+hub 1-0:1.0: USB hub found
+hub 1-0:1.0: 1 port detected
+usb usb1: New USB device found, idVendor=1d6b, idProduct=0002
+usb usb1: New USB device strings: Mfr=3, Product=2, SerialNumber=1
+usb usb1: Product: Freescale On-Chip EHCI Host Controller
+usb usb1: Manufacturer: Linux 2.6.25-rc8-01233-g6249f9d-dirty ehci_hcd
+usb usb1: SerialNumber: fsl-ehci.0
+ohci_hcd: 2006 August 04 USB 1.1 'Open' Host Controller (OHCI) Driver
+usbcore: registered new interface driver cdc_acm
+drivers/usb/class/cdc-acm.c: v0.25:USB Abstract Control Model driver for 
+USB modems and ISDN adapters
+Initializing USB Mass Storage driver...
+usbcore: registered new interface driver usb-storage
+USB Mass Storage support registered.
+usbcore: registered new interface driver libusual
+
+
+
+Clocks and communication are looking fine (from an electrical point of 
+view) and bus power is applied.
+
+
+But : no device (mouse, memory stick, ...) gets recognized.
+
+No interrupts either.
+
+
+An hints ?
+
+
+regards,
+Andre Schwarz
+Matrix Vision
+
+MATRIX VISION GmbH, Talstraße 16, DE-71570 Oppenweiler  - Registergericht: Amtsgericht Stuttgart, HRB 271090
+Geschäftsführer: Gerhard Thullner, Werner Armingeon, Uwe Furtner
