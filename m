@@ -1,21 +1,37 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from tmnt04.transmode.se (mail.transmode.se [83.241.175.147])
-	by ozlabs.org (Postfix) with ESMTP id D3EC8DE16B
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Apr 2008 07:40:47 +1000 (EST)
-From: "Joakim Tjernlund" <Joakim.Tjernlund@transmode.se>
-To: "'Timur Tabi'" <timur@freescale.com>
-References: <48066857.4030109@freescale.com>
-	<062501c8a006$27b17b90$771472b0$@Tjernlund@transmode.se>
-	<48066B54.30309@freescale.com>
-	<062801c8a006$a7715710$f6540530$@Tjernlund@transmode.se>
-	<48066C94.5040707@freescale.com>
-In-Reply-To: <48066C94.5040707@freescale.com>
-Subject: RE: lseek() on entries in /proc/device-tree returns EINVAL
-Date: Wed, 16 Apr 2008 23:40:32 +0200
-Message-ID: <064101c8a00a$7fc6a0e0$7f53e2a0$@Tjernlund@transmode.se>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 0A214DE1CE
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Apr 2008 07:58:27 +1000 (EST)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
+	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
+	m3GLwNqU010023
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Apr 2008 14:58:23 -0700 (MST)
+Received: from ld0162-tx32.am.freescale.net (ld0162-tx32.am.freescale.net
+	[10.82.19.112])
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id m3GLwMVI016829
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Apr 2008 16:58:22 -0500 (CDT)
+Date: Wed, 16 Apr 2008 16:58:21 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Anton Vorontsov <cbouatmailru@gmail.com>
+Subject: Re: [PATCH 6/8] [POWERPC] sysdev,qe_lib: implement FSL GTM support
+Message-ID: <20080416215821.GA15566@ld0162-tx32.am.freescale.net>
+References: <20080311172106.GA4766@localhost.localdomain>
+	<20080311172429.GF7727@localhost.localdomain>
+	<20080318174329.GB4099@loki.buserror.net>
+	<20080318192152.GA26493@localhost.localdomain>
+	<47E01E22.9000807@freescale.com>
+	<20080318202717.GA1030@localhost.localdomain>
+	<47E02A8C.2080705@freescale.com>
+	<20080416183904.GA23512@polina.dev.rtsoft.ru>
+	<20080416184442.GA12179@ld0162-tx32.am.freescale.net>
+	<20080416210042.GA3579@zarina>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080416210042.GA3579@zarina>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -26,23 +42,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: Timur Tabi [mailto:timur@freescale.com]
-> Sent: den 16 april 2008 23:16
-> To: Joakim Tjernlund
-> Cc: linuxppc-dev@ozlabs.org
-> Subject: Re: lseek() on entries in /proc/device-tree returns EINVAL
+On Thu, Apr 17, 2008 at 01:00:42AM +0400, Anton Vorontsov wrote:
+> On Wed, Apr 16, 2008 at 01:44:42PM -0500, Scott Wood wrote:
+> > A maximal timeout of ~65 ms is a little low...  For use as a wakeup from
+> > sleep mode, I'd like to be able to request timeouts as large as the
+> > hardware allows.
 > 
-> Joakim Tjernlund wrote:
-> 
-> > Good, bb should probably do the same. I just hope Al will allow a grace period and restore
-> > the old behavior so bb can catch up.
-> 
-> I don't see any reason why lseek() should not always work.  Besides, a "grace
-> period" would mean that on some future kernel, older busybox will not work.
+> That is about precision. You just need to implement gtm_reset_stimer()
+> is you want precision with a seconds, this will run a timer at 1 Hz.
 
-Sure, but better a grace period than none at all. Currently no bb
-works but with a grace period you can at least tell users to upgrade bb
-when the grace period is over.
+Enh.  I'm not crazy about having to call separately named functions,
+rather than have the timer code set the reference clock to the highest
+precision that has the needed range.
 
- Jocke
+-Scott
