@@ -1,35 +1,14 @@
-Return-Path: <scottwood@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 51258DE2C2
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Apr 2008 04:44:51 +1000 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
-	m3GIihA2010392
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Apr 2008 11:44:44 -0700 (MST)
-Received: from ld0162-tx32.am.freescale.net (ld0162-tx32.am.freescale.net
-	[10.82.19.112])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m3GIih0p000557
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Apr 2008 13:44:43 -0500 (CDT)
-Date: Wed, 16 Apr 2008 13:44:42 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: [PATCH 6/8] [POWERPC] sysdev,qe_lib: implement FSL GTM support
-Message-ID: <20080416184442.GA12179@ld0162-tx32.am.freescale.net>
-References: <20080311172106.GA4766@localhost.localdomain>
-	<20080311172429.GF7727@localhost.localdomain>
-	<20080318174329.GB4099@loki.buserror.net>
-	<20080318192152.GA26493@localhost.localdomain>
-	<47E01E22.9000807@freescale.com>
-	<20080318202717.GA1030@localhost.localdomain>
-	<47E02A8C.2080705@freescale.com>
-	<20080416183904.GA23512@polina.dev.rtsoft.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080416183904.GA23512@polina.dev.rtsoft.ru>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <jmarc007@yahoo.com>
+Received: from n73a.bullet.mail.sp1.yahoo.com (n73a.bullet.mail.sp1.yahoo.com
+	[98.136.45.20]) by ozlabs.org (Postfix) with SMTP id 08CD3DE082
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Apr 2008 04:53:57 +1000 (EST)
+Date: Wed, 16 Apr 2008 11:48:02 -0700 (PDT)
+From: John Marc <jmarc007@yahoo.com>
+Subject: USB on MPC8641D
+To: linuxppc-dev@ozlabs.org
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="0-1340586825-1208371682=:50949"
+Message-ID: <453663.50949.qm@web46010.mail.sp1.yahoo.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,22 +18,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Apr 16, 2008 at 10:39:04PM +0400, Anton Vorontsov wrote:
-> +/**
-> + * gtm_reset_utimer16 - reset 16 bits timer
-> + * @tmr:	pointer to the gtm_timer structure obtained from gtm_get_timer
-> + * @usec:	timer interval in microseconds
-> + * @free_run:	free run flag
-> + *
-> + * This function (re)sets GTM timer so it counts up to the interval value and
-> + * fires the interrupt when the value is reached. If free_run flag was set,
-> + * timer will also reset itself upon reference value, otherwise it continues to
-> + * increment.
-> + */
-> +int gtm_reset_utimer16(struct gtm_timer *tmr, u16 usec, bool free_run)
+--0-1340586825-1208371682=:50949
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 
-A maximal timeout of ~65 ms is a little low...  For use as a wakeup from
-sleep mode, I'd like to be able to request timeouts as large as the
-hardware allows.
+Hi Everybody,
+  I find this forum very much useful for the people who are working with powerpc's , and i am the one of them.Actually one more thing that make me to join this forum is my interest towards the Freescale MPC8641d board :-). I found that Freescale recently uploaded the linux BSP for MPC8641D board. One of the thing new in this BSP is USB driver.
+   
+  At Ozlabs I found various patches for MPC8641D board,Most of then are regarding the PCI Express fixes, Some patches of ULI1575 chip, but my main concern is USB.
+   
+  Can amyone help me out to find , what are the changes that freescale does for the USB drivers. I tried to search a lot for USB patch, but my bad luck , i don't find anything.
+   
+  It would be a great help if anyone help me out to find what are the changes that freescale does for USB driver. 
+   
+  Thanks
+  John
 
--Scott
+       
+---------------------------------
+Be a better friend, newshound, and know-it-all with Yahoo! Mobile.  Try it now.
+--0-1340586825-1208371682=:50949
+Content-Type: text/html; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+
+<DIV>Hi Everybody,</DIV>  <DIV>I find this forum very much useful for the people who are working with powerpc's , and i am the one of them.Actually one more thing that make me to join this forum is my interest towards the Freescale MPC8641d board :-). I found that Freescale recently uploaded the linux BSP for MPC8641D board. One of the thing new in this BSP is USB driver.</DIV>  <DIV>&nbsp;</DIV>  <DIV>At Ozlabs&nbsp;I found various patches for MPC8641D board,Most of then are regarding the PCI Express fixes, Some patches of ULI1575 chip,&nbsp;but my main concern is USB.</DIV>  <DIV>&nbsp;</DIV>  <DIV>Can amyone help me out to find , what are the changes that freescale does for the USB drivers. I tried to search a lot for USB patch, but my bad luck , i don't find anything.</DIV>  <DIV>&nbsp;</DIV>  <DIV>It would be a great help if anyone help me out to find what are the changes that freescale does for USB driver. </DIV>  <DIV>&nbsp;</DIV>  <DIV>Thanks</DIV> 
+ <DIV>John</DIV><p>&#32;
+
+
+
+      <hr size=1>Be a better friend, newshound, and 
+know-it-all with Yahoo! Mobile. <a href="http://us.rd.yahoo.com/evt=51733/*http://mobile.yahoo.com/;_ylt=Ahu06i62sR8HDtDypao8Wcj9tAcJ "> Try it now.</a>
+--0-1340586825-1208371682=:50949--
