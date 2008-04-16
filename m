@@ -1,14 +1,33 @@
-Return-Path: <jmarc007@yahoo.com>
-Received: from n73a.bullet.mail.sp1.yahoo.com (n73a.bullet.mail.sp1.yahoo.com
-	[98.136.45.20]) by ozlabs.org (Postfix) with SMTP id 08CD3DE082
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Apr 2008 04:53:57 +1000 (EST)
-Date: Wed, 16 Apr 2008 11:48:02 -0700 (PDT)
-From: John Marc <jmarc007@yahoo.com>
-Subject: USB on MPC8641D
-To: linuxppc-dev@ozlabs.org
+Return-Path: <jschopp@austin.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 2229CDE149
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Apr 2008 05:42:45 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e36.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m3GJgfJh007599
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Apr 2008 15:42:41 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m3GJgfJp192396
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Apr 2008 13:42:41 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m3GJgeAo014728
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Apr 2008 13:42:40 -0600
+Message-ID: <480656AB.2080009@austin.ibm.com>
+Date: Wed, 16 Apr 2008 14:42:35 -0500
+From: Joel Schopp <jschopp@austin.ibm.com>
 MIME-Version: 1.0
-Content-Type: multipart/alternative; boundary="0-1340586825-1208371682=:50949"
-Message-ID: <453663.50949.qm@web46010.mail.sp1.yahoo.com>
+To: Manish Ahuja <ahuja@austin.ibm.com>
+Subject: Re: [PATCH] pseries: phyp dump: Variable size reserve space.
+References: <47FAB221.7050406@austin.ibm.com>	<47FFF4E8.9010705@austin.ibm.com>	<18436.18955.450131.623072@cargo.ozlabs.ibm.com>
+	<4805328E.2050709@austin.ibm.com>
+In-Reply-To: <4805328E.2050709@austin.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: mahuja@us.ibm.com, linuxppc-dev@ozlabs.org, linasvepstas@gmail.com,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,34 +37,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---0-1340586825-1208371682=:50949
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
 
-Hi Everybody,
-  I find this forum very much useful for the people who are working with powerpc's , and i am the one of them.Actually one more thing that make me to join this forum is my interest towards the Freescale MPC8641d board :-). I found that Freescale recently uploaded the linux BSP for MPC8641D board. One of the thing new in this BSP is USB driver.
-   
-  At Ozlabs I found various patches for MPC8641D board,Most of then are regarding the PCI Express fixes, Some patches of ULI1575 chip, but my main concern is USB.
-   
-  Can amyone help me out to find , what are the changes that freescale does for the USB drivers. I tried to search a lot for USB patch, but my bad luck , i don't find anything.
-   
-  It would be a great help if anyone help me out to find what are the changes that freescale does for USB driver. 
-   
-  Thanks
-  John
-
-       
----------------------------------
-Be a better friend, newshound, and know-it-all with Yahoo! Mobile.  Try it now.
---0-1340586825-1208371682=:50949
-Content-Type: text/html; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-
-<DIV>Hi Everybody,</DIV>  <DIV>I find this forum very much useful for the people who are working with powerpc's , and i am the one of them.Actually one more thing that make me to join this forum is my interest towards the Freescale MPC8641d board :-). I found that Freescale recently uploaded the linux BSP for MPC8641D board. One of the thing new in this BSP is USB driver.</DIV>  <DIV>&nbsp;</DIV>  <DIV>At Ozlabs&nbsp;I found various patches for MPC8641D board,Most of then are regarding the PCI Express fixes, Some patches of ULI1575 chip,&nbsp;but my main concern is USB.</DIV>  <DIV>&nbsp;</DIV>  <DIV>Can amyone help me out to find , what are the changes that freescale does for the USB drivers. I tried to search a lot for USB patch, but my bad luck , i don't find anything.</DIV>  <DIV>&nbsp;</DIV>  <DIV>It would be a great help if anyone help me out to find what are the changes that freescale does for USB driver. </DIV>  <DIV>&nbsp;</DIV>  <DIV>Thanks</DIV> 
- <DIV>John</DIV><p>&#32;
-
-
-
-      <hr size=1>Be a better friend, newshound, and 
-know-it-all with Yahoo! Mobile. <a href="http://us.rd.yahoo.com/evt=51733/*http://mobile.yahoo.com/;_ylt=Ahu06i62sR8HDtDypao8Wcj9tAcJ "> Try it now.</a>
---0-1340586825-1208371682=:50949--
+> The aim is to have more flex space for the kernel on machines with more resources. Although the dump will be collected pretty fast and the memory released really early on allowing the machine to have the full memory available, this alleviates any issues that can be caused by having way too little memory on very very large systems during those few minutes.
+>
+> -Manish
+I think this would be an issue for distro kernels that have minimum 
+requirements for memory above 256MB.  It seems like a reasonable attempt 
+to have good defaults.  The user can always override it with boot args.  
+I'm not sure where the exact numbers should be but the general statement 
+that larger memory systems should have more memory to boot with seems 
+like a good one.
