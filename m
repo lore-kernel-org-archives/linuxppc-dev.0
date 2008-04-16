@@ -1,25 +1,28 @@
-Return-Path: <timur@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 8D31CDE224
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Apr 2008 06:58:06 +1000 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	m3GKw0uC026152
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Apr 2008 13:58:00 -0700 (MST)
-Received: from [10.82.19.119] (ld0169-tx32.am.freescale.net [10.82.19.119])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m3GKw0Hw004056
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Apr 2008 15:58:00 -0500 (CDT)
-Message-ID: <48066857.4030109@freescale.com>
-Date: Wed, 16 Apr 2008 15:57:59 -0500
-From: Timur Tabi <timur@freescale.com>
+Return-Path: <cbouatmailru@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.174])
+	by ozlabs.org (Postfix) with ESMTP id 4E3A4DE178
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Apr 2008 07:00:58 +1000 (EST)
+Received: by ug-out-1314.google.com with SMTP id q7so941083uge.0
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Apr 2008 14:00:50 -0700 (PDT)
+Date: Thu, 17 Apr 2008 01:00:42 +0400
+From: Anton Vorontsov <cbouatmailru@gmail.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 6/8] [POWERPC] sysdev,qe_lib: implement FSL GTM support
+Message-ID: <20080416210042.GA3579@zarina>
+References: <20080311172106.GA4766@localhost.localdomain>
+	<20080311172429.GF7727@localhost.localdomain>
+	<20080318174329.GB4099@loki.buserror.net>
+	<20080318192152.GA26493@localhost.localdomain>
+	<47E01E22.9000807@freescale.com>
+	<20080318202717.GA1030@localhost.localdomain>
+	<47E02A8C.2080705@freescale.com>
+	<20080416183904.GA23512@polina.dev.rtsoft.ru>
+	<20080416184442.GA12179@ld0162-tx32.am.freescale.net>
 MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: lseek() on entries in /proc/device-tree returns EINVAL
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <20080416184442.GA12179@ld0162-tx32.am.freescale.net>
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: cbouatmailru@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,35 +32,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I'm writing a utility that parses the device tree in /proc/device-tree, and in
-order to read a property into memory, I have to first find out how large it is.
- So I have the following code:
+On Wed, Apr 16, 2008 at 01:44:42PM -0500, Scott Wood wrote:
+> On Wed, Apr 16, 2008 at 10:39:04PM +0400, Anton Vorontsov wrote:
+> > +/**
+> > + * gtm_reset_utimer16 - reset 16 bits timer
+> > + * @tmr:	pointer to the gtm_timer structure obtained from gtm_get_timer
+> > + * @usec:	timer interval in microseconds
+> > + * @free_run:	free run flag
+> > + *
+> > + * This function (re)sets GTM timer so it counts up to the interval value and
+> > + * fires the interrupt when the value is reached. If free_run flag was set,
+> > + * timer will also reset itself upon reference value, otherwise it continues to
+> > + * increment.
+> > + */
+> > +int gtm_reset_utimer16(struct gtm_timer *tmr, u16 usec, bool free_run)
+> 
+> A maximal timeout of ~65 ms is a little low...  For use as a wakeup from
+> sleep mode, I'd like to be able to request timeouts as large as the
+> hardware allows.
 
-	off_t off;
-	int f;
-
-	f = open(filename, O_RDONLY);
-	if (f == -1) {
-		perror(__func__);
-		return NULL;
-	}
-
-	off = lseek(f, 0, SEEK_END);
-	if (off == -1) {
-		perror(__func__);
-		goto fail;
-	}
-
-The lseek() call returns -1, and errno is set to EINVAL.  According to the man
-page, this means:
-
-       EINVAL The  whence  argument  is  not a proper value, or the resulting
-              file offset would be negative for a regular file, block special
-              file, or directory.
-
-Is there a limitation for the implementation of /proc/device-tree that prevents
-lseek() from working?  If so, how do I determine the size of a property?
+That is about precision. You just need to implement gtm_reset_stimer()
+is you want precision with a seconds, this will run a timer at 1 Hz.
 
 -- 
-Timur Tabi
-Linux kernel developer at Freescale
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
