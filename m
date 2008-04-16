@@ -1,20 +1,25 @@
-Return-Path: <linasvepstas@gmail.com>
-Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.28])
-	by ozlabs.org (Postfix) with ESMTP id D1F7EDE44A
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Apr 2008 06:22:53 +1000 (EST)
-Received: by yw-out-2324.google.com with SMTP id 3so1546087ywj.39
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Apr 2008 13:22:42 -0700 (PDT)
-Message-ID: <3ae3aa420804161322i10e5efe2v2f74e1f9d6698e90@mail.gmail.com>
-Date: Wed, 16 Apr 2008 15:22:42 -0500
-From: "Linas Vepstas" <linasvepstas@gmail.com>
-To: "Manish Ahuja" <ahuja@austin.ibm.com>
-Subject: Re: [PATCH] pseries: phyp dump: Variable size reserve space.
-In-Reply-To: <47FAB221.7050406@austin.ibm.com>
+Return-Path: <timur@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 8D31CDE224
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Apr 2008 06:58:06 +1000 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
+	m3GKw0uC026152
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Apr 2008 13:58:00 -0700 (MST)
+Received: from [10.82.19.119] (ld0169-tx32.am.freescale.net [10.82.19.119])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m3GKw0Hw004056
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Apr 2008 15:58:00 -0500 (CDT)
+Message-ID: <48066857.4030109@freescale.com>
+Date: Wed, 16 Apr 2008 15:57:59 -0500
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-References: <47FAB221.7050406@austin.ibm.com>
-Cc: mahuja@us.ibm.com, linuxppc-dev@ozlabs.org, paulus@samba.org
-Reply-To: linasvepstas@gmail.com
+To: linuxppc-dev@ozlabs.org
+Subject: lseek() on entries in /proc/device-tree returns EINVAL
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,24 +29,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 07/04/2008, Manish Ahuja <ahuja@austin.ibm.com> wrote:
-> A small proposed change in the amount of reserve space we allocate during boot.
->  Currently we reserve 256MB only.
->  The proposed change does one of the 3 things.
->
->  A. It checks to see if there is cmdline variable set and if found sets the
->    value to it. OR
->  B. It computes 5% of total ram and rounds it down to multiples of 256MB. AND
->  C. Compares the rounded down value and returns larger of two values, the new
->    computed value or 256MB.
->
->  Again this is for large systems who have excess memory.
->
-[...]
->   early_param("phyp_dump", early_phyp_dump_enabled);
+I'm writing a utility that parses the device tree in /proc/device-tree, and in
+order to read a property into memory, I have to first find out how large it is.
+ So I have the following code:
 
-I'm pretty sure you will want to document this boot param in the documentation,
-as well as add a few words about why it might be interesting to users (i.e.
-that its for large systems...)
+	off_t off;
+	int f;
 
---linas
+	f = open(filename, O_RDONLY);
+	if (f == -1) {
+		perror(__func__);
+		return NULL;
+	}
+
+	off = lseek(f, 0, SEEK_END);
+	if (off == -1) {
+		perror(__func__);
+		goto fail;
+	}
+
+The lseek() call returns -1, and errno is set to EINVAL.  According to the man
+page, this means:
+
+       EINVAL The  whence  argument  is  not a proper value, or the resulting
+              file offset would be negative for a regular file, block special
+              file, or directory.
+
+Is there a limitation for the implementation of /proc/device-tree that prevents
+lseek() from working?  If so, how do I determine the size of a property?
+
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
