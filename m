@@ -1,19 +1,20 @@
-Return-Path: <rodolfo@lesc.ufc.br>
-Received: from lesc0.lesc.ufc.br (unknown [200.17.37.126])
-	by ozlabs.org (Postfix) with ESMTP id 7A25ADE0BE
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 1FEDBDE282
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 16 Apr 2008 13:10:40 +1000 (EST)
-Received: from webmail.lesc.ufc.br (unknown [192.168.0.1])
-	by lesc0.lesc.ufc.br (Postfix) with ESMTP id 7BD6964C665
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 15 Apr 2008 23:41:02 -0300 (BRT)
-MIME-Version: 1.0
-Date: Tue, 15 Apr 2008 23:40:28 -0300
-From: rodolfo <rodolfo@lesc.ufc.br>
-To: Linuxppc embedded <linuxppc-embedded@ozlabs.org>
-Subject: SystemACE on Kernel 2.6
-Message-ID: <7aa21da00314dfb40c194e38e2488048@lesc.ufc.br>
-Content-Type: text/plain; charset="UTF-8"
+	Wed, 16 Apr 2008 13:52:26 +1000 (EST)
+Message-Id: <8F634002-7BF7-4B6F-BB88-CDCCEE2AA4A1@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Gutson Daniel-ADG035 <daniel.gutson@motorola.com>
+In-Reply-To: <0539F2514A979C4B9386FF81809203FF016B6540@ct11exm66.ds.mot.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v919.2)
+Subject: Re: io_block_mapping & ioremap question
+Date: Tue, 15 Apr 2008 22:52:19 -0500
+References: <0539F2514A979C4B9386FF81809203FF016B6540@ct11exm66.ds.mot.com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -24,33 +25,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Grant likely,
 
-I got kernel 2.6.20 from kernel.org and I want boot it on XUP Virtex II Pro
-University board.
-I edited the Makefile putting:
- ARCH? = ppc
- CROSS_COMPILE? = ppc_4xx-
-But I can't see anything about SystemACE driver on make menuconfig from
-this Kernel. How can I add SystemACE controler?
+On Apr 15, 2008, at 11:25 AM, Gutson Daniel-ADG035 wrote:
+> Hi,
+> 	I'm doing some work on 2.6.10, and got this problem:
+> - there are some io_block_mapping calls in the setup_io_mapping
+> callback, that use the BATs, and passing same va and pa each one.
+> Problem arises later when vmallocs gets a a pointer within the mapped
+> ranges. In other words, seems like the VMM is not aware of the BATs
+> mapping.
+>
+> So what I did is: called first ioremap and then io_block_mapping in  
+> the
+> callback thus not hardcoding the va, something like:
+> 	va = ioremap(pa, size);
+> 	io_block_mapping(pa, va, size);
+>
+> Questions:
+> 	1) Is it right?
+> 	2) Should I unmap that address sometime later? (i.e. after
+> mem_init_done).
 
-I compiled the kernel repeatedly generating a file zImage.elf. I used this
-file with the genace.tcl from Xilinx and this opt file:
--jprog
--board user
--target ppc_hw
--hw implementation/download.bit
--elf zImage.elf
--configdevice devicenr 1 idcode 0x1127e093 irlength 14 partname xc2vp30
--debugdevice devicenr 1 cpunr 1
--ace system.ace
+You should look at getting ride of your io_block_mapping calls as  
+we've removed that in new kernels.
 
-to generated ace file and put it in FAT16 partition of CF card, like a lot
-of references in web. But it doesn't works!
-Which IP cores must be present in my project of the EDK?
-Still speaking in the EDK Did i have to mark bram with ppc_405_0_bootloop? 
-Did I have to mark bram whit any software project?
+However, ioremap() should work properly in that it should lookup the  
+address you are mapping via p_mapped_by_bats().
 
-My work in with Linux on Virtex don't work. I am almost dropping...
-
-Thanks!!
+- k
