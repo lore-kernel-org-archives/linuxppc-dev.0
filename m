@@ -1,20 +1,24 @@
-Return-Path: <avorontsov@dev.rtsoft.ru>
-Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
-	by ozlabs.org (Postfix) with SMTP id 59E57DE35A
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Apr 2008 00:02:13 +1000 (EST)
-Date: Wed, 16 Apr 2008 18:02:10 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH] fsl_soc: Factor fsl_get_sys_freq() out of the wdt and
-	spi inits.
-Message-ID: <20080416140210.GA15529@polina.dev.rtsoft.ru>
-References: <20080415185234.GA10579@loki.buserror.net>
-	<20080415213221.GA2646@zarina> <48051FBA.1000801@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <48051FBA.1000801@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: avorontsov@ru.mvista.com
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 51ABCDE69F
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Apr 2008 00:02:54 +1000 (EST)
+Subject: Re: Please pull 'for-2.6.26' branch of 4xx tree
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+In-Reply-To: <20080416084349.3c9997f1@zod.rchland.ibm.com>
+References: <20080415102704.39511160@zod.rchland.ibm.com>
+	<20080416072758.092c83c5@zod.rchland.ibm.com>
+	<20080416073139.7f56e72c@zod.rchland.ibm.com>
+	<1208350247.6958.283.camel@pasglop>
+	<20080416084349.3c9997f1@zod.rchland.ibm.com>
+Content-Type: text/plain
+Date: Thu, 17 Apr 2008 00:02:47 +1000
+Message-Id: <1208354567.6958.289.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,32 +28,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Apr 15, 2008 at 04:35:54PM -0500, Scott Wood wrote:
-> Anton Vorontsov wrote:
->>> +u32 fsl_get_sys_freq(void)
->>> +{
->>> +	struct device_node *soc;
->>> +	const u32 *prop;
->>> +	int size;
->>> +
->>> +	if (sysfreq != -1)
->>> +		return sysfreq;
->>> +
->>> +	soc = of_find_node_by_type(NULL, "soc");
->>> +	if (!soc)
->>> +		return -1;
->>
->> Um.. can we finally decide on compatible for the soc nodes,
->> and add there compatible matching from the start?
->
-> This is just a code reorganization; any change in what we match on  
-> should be a separate patch.
 
-Yes, it makes sense of course. Just wanted to get rid of the device_type
-asap, because I'm going to submit mpc836x_rdk board, and I'd preferred to
-submit it w/o device_type = "soc"... Oh well, ok.. later.
+On Wed, 2008-04-16 at 08:43 -0500, Josh Boyer wrote:
+> 
+> For a final solution, we're going to have to come up with a more
+> clever
+> way of doing the clocking stuff in ibm_newemac.  The SDRs are board
+> specific and completely outside of EMAC/MAL itself.  So doing a
+> dcr_map
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+Not board specific... chip specific.
+
+> on it becomes a bit more difficult, since there really isn't an SDR
+> node in the device tree at the moment.
+
+That is why I tried hard to avoid the bloody workarounds...
+unfortunatly, the HW is crap enough that we have no real choice here.
+
+Ben.
+ 
