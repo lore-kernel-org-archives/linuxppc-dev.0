@@ -1,11 +1,20 @@
-Return-Path: <michael@ozlabs.org>
-To: <linuxppc-dev@ozlabs.org>
-Message-Id: <6cafb63611e792391bf4e259ebcee9aa99fd0338.1208317906.git.michael@ellerman.id.au>
-In-Reply-To: <0709e3bcb1c8a4341b474f530c1823d2735d26ce.1208317906.git.michael@ellerman.id.au>
-References: <0709e3bcb1c8a4341b474f530c1823d2735d26ce.1208317906.git.michael@ellerman.id.au>
-From: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH 2/2] Always add preferred consoles in platforms/pseries/lpar.c
-Date: Wed, 16 Apr 2008 13:51:49 +1000 (EST)
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id D4A3DDE050
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Apr 2008 17:18:27 +1000 (EST)
+Subject: Re: [PATCH 2/11] cell: generalize io-workarounds code
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
+In-Reply-To: <20080314.212034.-1625856941.kouish@swc.toshiba.co.jp>
+References: <20080314.212034.-1625856941.kouish@swc.toshiba.co.jp>
+Content-Type: text/plain
+Date: Wed, 16 Apr 2008 17:18:01 +1000
+Message-Id: <1208330282.6958.264.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,63 +24,86 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-There is logic in platforms/peries/lpars.c which checks if the user has
-specified a console on the command line, and refrains from adding a
-preferred console entry for the hvc/hvsi console if they have.
 
-This trips up if you use "netconsole=foo" on the command line, and has
-the result that you get _only_ the netconsole, because the hvc device is
-never added as a preferred console. Worse still if you get the netconsole
-configuration wrong somehow, you end up with no console at all.
+On Fri, 2008-03-14 at 21:20 +0900, Ishizaki Kou wrote:
+> This patch splits cell io-workaround code into spider-pci dependent
+> code and a generic part, and also adds interfaces to the generic
+> io-workaround mechanism.
+> 
+> Signed-off-by: Kou Ishizaki <kou.ishizaki@toshiba.co.jp>
+> ---
+> 
+> Please test on CellBlade because I don't have any access to CellBlade.
 
-As it turns out we don't need to worry about checking the command line.
-If the user has specified "console=foo", then foo will be set as the
-preferred console when the command line is parsed in start_kernel(), much
-later than the pseries code, and so the latter setting will take effect.
+Unfortunately, that crashes on spider based cell blade, see below:
 
-Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
----
- arch/powerpc/platforms/pseries/lpar.c |    9 ++-------
- 1 files changed, 2 insertions(+), 7 deletions(-)
+> +
+> +	/* setup dummy read */
+> +	/*
+> +	 * On CellBlade, we can't know that which XDR memory is used by
+> +	 * kmalloc() to allocate dummy_page_va.
+> +	 * In order to imporve the performance, the XDR which is used to
+> +	 * allocate dummy_page_va is the nearest the spider-pci.
+> +	 * We have to select the CBE which is the nearest the spider-pci
+> +	 * to allocate memory from the best XDR, but I don't know that
+> +	 * how to do.
+> +	 *
+> +	 * Celleb does not have this problem, because it has only one XDR.
+> +	 */
+> +	dummy_page_va = kmalloc(PAGE_SIZE, GFP_KERNEL);
+> +	if (!dummy_page_va) {
+> +		pr_err("SPIDERPCI-IOWA:Alloc dummy_page_va failed.\n");
+> +		return -1;
+> +	}
+> +
+> +	dummy_page_da = dma_map_single(phb->parent, dummy_page_va,
+> +				       PAGE_SIZE, DMA_FROM_DEVICE);
+> +	if (dma_mapping_error(dummy_page_da)) {
+> +		pr_err("SPIDER-IOWA:Map dummy page filed.\n");
+> +		kfree(dummy_page_va);
+> +		return -1;
+> +	}
 
-diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
-index 8a20452..9235c46 100644
---- a/arch/powerpc/platforms/pseries/lpar.c
-+++ b/arch/powerpc/platforms/pseries/lpar.c
-@@ -204,7 +204,6 @@ void __init find_udbg_vterm(void)
- 	struct device_node *stdout_node;
- 	const u32 *termno;
- 	const char *name;
--	int add_console;
+The above dma_map_single() will crash on QS20 because there is no
+phb->parent on these. The QS20 uses the "old style" PCI probing
+mechanism where PCI busses are setup off the root node at setup_arch
+time and have no struct device attached, which means yo ucan't call
+dma_map_single on them unfortunately.
  
- 	/* find the boot console from /chosen/stdout */
- 	if (!of_chosen)
-@@ -220,8 +219,6 @@ void __init find_udbg_vterm(void)
- 		printk(KERN_WARNING "stdout node missing 'name' property!\n");
- 		goto out;
- 	}
--	/* The user has requested a console so this is already set up. */
--	add_console = !strstr(cmd_line, "console=");
- 
- 	/* Check if it's a virtual terminal */
- 	if (strncmp(name, "vty", 3) != 0)
-@@ -235,15 +232,13 @@ void __init find_udbg_vterm(void)
- 		udbg_putc = udbg_putcLP;
- 		udbg_getc = udbg_getcLP;
- 		udbg_getc_poll = udbg_getc_pollLP;
--		if (add_console)
--			add_preferred_console("hvc", termno[0] & 0xff, NULL);
-+		add_preferred_console("hvc", termno[0] & 0xff, NULL);
- 	} else if (of_device_is_compatible(stdout_node, "hvterm-protocol")) {
- 		vtermno = termno[0];
- 		udbg_putc = udbg_hvsi_putc;
- 		udbg_getc = udbg_hvsi_getc;
- 		udbg_getc_poll = udbg_hvsi_getc_poll;
--		if (add_console)
--			add_preferred_console("hvsi", termno[0] & 0xff, NULL);
-+		add_preferred_console("hvsi", termno[0] & 0xff, NULL);
- 	}
- out:
- 	of_node_put(stdout_node);
--- 
-1.5.5
+Now I wonder...
+
+> +int __init spiderpci_iowa_init(struct iowa_bus *bus, void *data)
+> +{
+> +	void __iomem *regs = NULL;
+> +	struct spiderpci_iowa_private *priv;
+> +	struct device_node *np = bus->phb->dn;
+> +	struct resource r;
+> +	unsigned long offset = (unsigned long)data;
+> +
+> +	pr_debug("SPIDERPCI-IOWA:Bus initialize for spider(%s)\n",
+> +		 np->full_name);
+> +
+
+   .../...
+
+Is the above spiderpci_iowa_init() function ever used on Celleb ? It
+looks to me like Celleb relies on the new of_platform stuff to create
+the PCI host bridges off OF devices, after boot, in which case that
+would work for you. That would mean that the above function is really
+only useful for busses created in setup_arch() which is really only the
+QS20 cell blade, right ?
+
+In that case, I think that function should be moved to the cell blade
+setup.c file instead of here. Now, regarding the above problem, I'm not
+sure what is the best fix at this stage. We can't create sane struct
+device objects at setup_arch() time.
+
+We could create a hand-made platform or of_platform device from the
+above function for every bridge that doesn't have one and hook up it's
+DMA ops... I suppose that would fix it.
+
+I've started hacking something but didn't yet get it working, I'll
+continue tomorrow unless you come up with some other solution.
+
+Cheers,
+Ben.
