@@ -1,9 +1,11 @@
 Return-Path: <michael@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
-Message-Id: <0709e3bcb1c8a4341b474f530c1823d2735d26ce.1208317906.git.michael@ellerman.id.au>
+Message-Id: <6cafb63611e792391bf4e259ebcee9aa99fd0338.1208317906.git.michael@ellerman.id.au>
+In-Reply-To: <0709e3bcb1c8a4341b474f530c1823d2735d26ce.1208317906.git.michael@ellerman.id.au>
+References: <0709e3bcb1c8a4341b474f530c1823d2735d26ce.1208317906.git.michael@ellerman.id.au>
 From: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH 1/2] Move prototype for find_udbg_vterm() into a header file
-Date: Wed, 16 Apr 2008 13:51:48 +1000 (EST)
+Subject: [PATCH 2/2] Always add preferred consoles in platforms/pseries/lpar.c
+Date: Wed, 16 Apr 2008 13:51:49 +1000 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -13,52 +15,63 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Move the prototype for find_udbg_vterm() into pseries.h, removing
-it from setup.c
+There is logic in platforms/peries/lpars.c which checks if the user has
+specified a console on the command line, and refrains from adding a
+preferred console entry for the hvc/hvsi console if they have.
+
+This trips up if you use "netconsole=foo" on the command line, and has
+the result that you get _only_ the netconsole, because the hvc device is
+never added as a preferred console. Worse still if you get the netconsole
+configuration wrong somehow, you end up with no console at all.
+
+As it turns out we don't need to worry about checking the command line.
+If the user has specified "console=foo", then foo will be set as the
+preferred console when the command line is parsed in start_kernel(), much
+later than the pseries code, and so the latter setting will take effect.
 
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
- arch/powerpc/platforms/pseries/lpar.c    |    1 +
- arch/powerpc/platforms/pseries/pseries.h |    2 ++
- arch/powerpc/platforms/pseries/setup.c   |    3 ---
- 3 files changed, 3 insertions(+), 3 deletions(-)
+ arch/powerpc/platforms/pseries/lpar.c |    9 ++-------
+ 1 files changed, 2 insertions(+), 7 deletions(-)
 
 diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
-index 233d9be..8a20452 100644
+index 8a20452..9235c46 100644
 --- a/arch/powerpc/platforms/pseries/lpar.c
 +++ b/arch/powerpc/platforms/pseries/lpar.c
-@@ -40,6 +40,7 @@
- #include <asm/smp.h>
+@@ -204,7 +204,6 @@ void __init find_udbg_vterm(void)
+ 	struct device_node *stdout_node;
+ 	const u32 *termno;
+ 	const char *name;
+-	int add_console;
  
- #include "plpar_wrappers.h"
-+#include "pseries.h"
+ 	/* find the boot console from /chosen/stdout */
+ 	if (!of_chosen)
+@@ -220,8 +219,6 @@ void __init find_udbg_vterm(void)
+ 		printk(KERN_WARNING "stdout node missing 'name' property!\n");
+ 		goto out;
+ 	}
+-	/* The user has requested a console so this is already set up. */
+-	add_console = !strstr(cmd_line, "console=");
  
- #ifdef DEBUG_LOW
- #define DBG_LOW(fmt...) do { udbg_printf(fmt); } while(0)
-diff --git a/arch/powerpc/platforms/pseries/pseries.h b/arch/powerpc/platforms/pseries/pseries.h
-index 61136d0..9e17c0d 100644
---- a/arch/powerpc/platforms/pseries/pseries.h
-+++ b/arch/powerpc/platforms/pseries/pseries.h
-@@ -38,4 +38,6 @@ extern void pSeries_final_fixup(void);
- /* Poweron flag used for enabling auto ups restart */
- extern unsigned long rtas_poweron_auto;
- 
-+extern void find_udbg_vterm(void);
-+
- #endif /* _PSERIES_PSERIES_H */
-diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-index 90555a3..fccca89 100644
---- a/arch/powerpc/platforms/pseries/setup.c
-+++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -76,9 +76,6 @@
- #define DBG(fmt...)
- #endif
- 
--/* move those away to a .h */
--extern void find_udbg_vterm(void);
--
- int fwnmi_active;  /* TRUE if an FWNMI handler is present */
- 
- static void pseries_shared_idle_sleep(void);
+ 	/* Check if it's a virtual terminal */
+ 	if (strncmp(name, "vty", 3) != 0)
+@@ -235,15 +232,13 @@ void __init find_udbg_vterm(void)
+ 		udbg_putc = udbg_putcLP;
+ 		udbg_getc = udbg_getcLP;
+ 		udbg_getc_poll = udbg_getc_pollLP;
+-		if (add_console)
+-			add_preferred_console("hvc", termno[0] & 0xff, NULL);
++		add_preferred_console("hvc", termno[0] & 0xff, NULL);
+ 	} else if (of_device_is_compatible(stdout_node, "hvterm-protocol")) {
+ 		vtermno = termno[0];
+ 		udbg_putc = udbg_hvsi_putc;
+ 		udbg_getc = udbg_hvsi_getc;
+ 		udbg_getc_poll = udbg_hvsi_getc_poll;
+-		if (add_console)
+-			add_preferred_console("hvsi", termno[0] & 0xff, NULL);
++		add_preferred_console("hvsi", termno[0] & 0xff, NULL);
+ 	}
+ out:
+ 	of_node_put(stdout_node);
 -- 
 1.5.5
