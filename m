@@ -1,27 +1,20 @@
-Return-Path: <andre.schwarz@matrix-vision.de>
-Received: from p15137414.pureserver.info (matrixvision.de [217.160.213.229])
-	by ozlabs.org (Postfix) with ESMTP id 7DFFEDE0AD
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Apr 2008 22:08:19 +1000 (EST)
-Received: from pandora.intern.matrix-vision.de (g1.matrix-vision.com
-	[217.7.222.190])
-	by p15137414.pureserver.info (Postfix) with ESMTP id 6F53B3CC02E
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Apr 2008 14:08:16 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
-	by pandora.intern.matrix-vision.de (Postfix) with ESMTP id 41119E3C0B
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Apr 2008 14:06:51 +0200 (CEST)
-Received: from hegemone (hegemone.intern.matrix-vision.de [192.168.5.77])
-	by pandora.intern.matrix-vision.de (Postfix) with ESMTP id 18EB2E3C0B
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Apr 2008 14:06:51 +0200 (CEST)
-Received: from [192.168.65.5] (unknown [192.168.65.5])
-	by hegemone (Postfix) with ESMTP id D33F253E
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Apr 2008 14:08:14 +0200 (CEST)
-Message-ID: <4805EC2F.50909@matrix-vision.de>
-Date: Wed, 16 Apr 2008 14:08:15 +0200
-From: Andre Schwarz <andre.schwarz@matrix-vision.de>
-MIME-Version: 1.0
-To: linux-ppc list <linuxppc-dev@ozlabs.org>
-Subject: USB @ MPC8343
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 5064BDE350
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Apr 2008 22:10:12 +1000 (EST)
+Subject: Re: Phy read timeout in ibm_new_emac driver
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: M B <super.firetwister@googlemail.com>
+In-Reply-To: <6a6049b80804160349q42120b4bs1c0db49ea5ad055d@mail.gmail.com>
+References: <6a6049b80804160349q42120b4bs1c0db49ea5ad055d@mail.gmail.com>
+Content-Type: text/plain
+Date: Wed, 16 Apr 2008 22:09:51 +1000
+Message-Id: <1208347791.6958.279.camel@pasglop>
+Mime-Version: 1.0
+Cc: netdev@vger.kernel.org, ppc-dev <linuxppc-dev@ozlabs.org>
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,77 +24,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Dear List,
 
-on my MPC8343 based board there is a "USB3300" ULPI-PHY connected to the 
-processor.
-It's an OTG capable PHY but host mode should be enough right now.
+> My Micrel/Kendin KSZ8721BT on my ppc405EP board needs one us longer to
+> finish. I was able to reproduce this all the time. So I wonder if the
+> timeout of 100us is defined by the MII standard, or by the author of
+> the driver?
+> If it's a standard I've still a bad feeling if we just correct the
+> timeout to 100us, maybe 110 should be fine. If it's not defined by the
+> standard, I would add 50% to the timeout. It won't slow down other
+> phys, but a scan on the phy bus might get slowed down.
+> Same applies for __emac_mdio_write.
+> 
+> Oh and we could save a us by putting the udelay(1) after the if section ;-)
 
-Since USB is not used inside bootloader it's not configured at all...
-As far as I can see the setup should be done inside the kernel completely.
+Increasing the timeout is fine. In fact, EMAC specifically can sleep in
+it's MDIO access routines (it already takes mutexes) so maybe a good
+option here is to use longer sleeping delays and less iterations.
 
-My dts looks like this :
+Somebody knows off hand what the standard says the timeout should be ? I
+can check that tomorrow, I don't have it at hand right now and it's
+getting late but feel free to beat me to it :-) 
 
-                usb@23000 {
-                        device_type = "usb";
-                        compatible = "fsl-usb2-dr";
-                        reg = <0x23000 0x1000>;
-                        #address-cells = <1>;
-                        #size-cells = <0>;
-                        interrupt-parent = <&ipic>;
-                        interrupts = <38 0x8>;
-                        dr_mode = "host";
-                        phy_type = "ulpi";
-                        port1;
-                };
-
-
-Since the MPC8343 has only one USB port I assume it is "port1" since the 
-port1-pins are coming out of the package :-)
-DR registers are located @ 0x23000
-
-
-
-Kernel log :
-
-fsl-ehci fsl-ehci.0: Freescale On-Chip EHCI Host Controller
-fsl-ehci fsl-ehci.0: new USB bus registered, assigned bus number 1
-fsl-ehci fsl-ehci.0: irq 38, io base 0xe0023000
-fsl-ehci fsl-ehci.0: USB 2.0 started, EHCI 1.00, driver 10 Dec 2004
-usb usb1: configuration #1 chosen from 1 choice
-hub 1-0:1.0: USB hub found
-hub 1-0:1.0: 1 port detected
-usb usb1: New USB device found, idVendor=1d6b, idProduct=0002
-usb usb1: New USB device strings: Mfr=3, Product=2, SerialNumber=1
-usb usb1: Product: Freescale On-Chip EHCI Host Controller
-usb usb1: Manufacturer: Linux 2.6.25-rc8-01233-g6249f9d-dirty ehci_hcd
-usb usb1: SerialNumber: fsl-ehci.0
-ohci_hcd: 2006 August 04 USB 1.1 'Open' Host Controller (OHCI) Driver
-usbcore: registered new interface driver cdc_acm
-drivers/usb/class/cdc-acm.c: v0.25:USB Abstract Control Model driver for 
-USB modems and ISDN adapters
-Initializing USB Mass Storage driver...
-usbcore: registered new interface driver usb-storage
-USB Mass Storage support registered.
-usbcore: registered new interface driver libusual
-
-
-
-Clocks and communication are looking fine (from an electrical point of 
-view) and bus power is applied.
-
-
-But : no device (mouse, memory stick, ...) gets recognized.
-
-No interrupts either.
-
-
-An hints ?
-
-
-regards,
-Andre Schwarz
-Matrix Vision
-
-MATRIX VISION GmbH, Talstraße 16, DE-71570 Oppenweiler  - Registergericht: Amtsgericht Stuttgart, HRB 271090
-Geschäftsführer: Gerhard Thullner, Werner Armingeon, Uwe Furtner
+Cheers,
+Ben.
