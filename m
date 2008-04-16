@@ -1,24 +1,33 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id AE59DDE0FF
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Apr 2008 23:31:18 +1000 (EST)
-Message-Id: <6C1D456C-0E5B-4D1A-8162-C91BFB7D2821@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Paul Gortmaker <paul.gortmaker@windriver.com>
-In-Reply-To: <4805FBD2.6010101@windriver.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: [PATCH v2.6.26 0/2] Dynamic TBIPA for gianfar
-Date: Wed, 16 Apr 2008 08:31:10 -0500
-References: <1208276601-16964-1-git-send-email-paul.gortmaker@windriver.com>
-	<18437.18289.944128.351533@cargo.ozlabs.ibm.com>
-	<7d1d9c250804151857x65cf14cfxe6dc5696505631c7@mail.gmail.com>
-	<6C6E8854-3F7A-4661-A5F3-B7CA8676A11A@kernel.crashing.org>
-	<4805FBD2.6010101@windriver.com>
-Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>, netdev@vger.kernel.org
+	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 5301EDE5F1
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Apr 2008 23:40:27 +1000 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e3.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m3GDeNwR009766
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Apr 2008 09:40:23 -0400
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m3GDeNRg235168
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Apr 2008 09:40:23 -0400
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m3GDeMS9015447
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Apr 2008 09:40:22 -0400
+Date: Wed, 16 Apr 2008 08:36:59 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org
+Subject: Re: linux-next: 4xx build failure
+Message-ID: <20080416083659.542373d6@zod.rchland.ibm.com>
+In-Reply-To: <1208350282.6958.285.camel@pasglop>
+References: <20080416194227.1e5e1a9a.sfr@canb.auug.org.au>
+	<20080416072453.59858204@zod.rchland.ibm.com>
+	<1208350282.6958.285.camel@pasglop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+	ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,45 +37,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Wed, 16 Apr 2008 22:51:22 +1000
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-On Apr 16, 2008, at 8:14 AM, Paul Gortmaker wrote:
-> Kumar Gala wrote:
->>
->> On Apr 15, 2008, at 8:57 PM, Paul Gortmaker wrote:
->>> On Tue, Apr 15, 2008 at 8:25 PM, Paul Mackerras <paulus@samba.org>  
->>> wrote:
->>>> Paul Gortmaker writes:
->>>>
->>>>> This is the resend of the two patches as per Andy's request for  
->>>>> v2.6.26
->>>>> that allow boards with a PHY at the end of the bus to function,  
->>>>> by having
->>>>> the TBIPA set dynamically.  The 1st patch factors out some of  
->>>>> the PHY
->>>>> probe code so it can be recycled by the TBIPA probe, and the  
->>>>> second patch
->>>>> implements the dynamic probe itself.
->>>>
->>>> I notice that these two patches only touch drivers/net and
->>>> include/linux.  If you want these to go upstream into Linus'  
->>>> tree, you
->>>> will need to send them to Jeff Garzik and the netdev list.  Posting
->>>> them to the linuxppc-dev list is fine for getting them reviewed but
->>>> isn't a path to upstream.
->>>
->>> Yep, they have already been sent to Jeff/netdev earlier today as  
->>> well.
->>> I'd inadvertently left them off the CC but Andy reminded me already.
->>>
->>> Thanks,
->>> Paul.
->>
->> these should get an Ack by Andy before going in to any tree.
->
-> Andy has already done that, so I think we should be good to go.
->
-> http://ozlabs.org/pipermail/linuxppc-dev/2008-April/054572.html
+> 
+> > Grr.  Yes, that's probably the right solution for now.  I had forgotten
+> > about Axon.
+> > 
+> > Sorry for the trouble.  I'll revert those commits locally and repush.
+> 
+> MMIO is not only Axon.. .some Xilinx stuff too. We should have a proper
 
-Cool.  I'm guessing these will go via jeff's tree for 2.6.26?
+Yes.  But Axon is the only one in-tree that uses it at the moment.
 
-- k
+> implementation of the dcri stuff for MMIO.
+
+Yes, of course.  Though neither you or I thought of that when we acked
+the patch :).
+
+josh
