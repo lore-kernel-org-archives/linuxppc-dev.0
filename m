@@ -1,32 +1,20 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 55EE9DE041
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Apr 2008 00:00:50 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e2.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m3GE0k7u002688
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Apr 2008 10:00:46 -0400
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m3GE0kXH269666
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Apr 2008 10:00:46 -0400
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
-	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m3GE0kYa018947
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Apr 2008 10:00:46 -0400
-Date: Wed, 16 Apr 2008 08:57:23 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: More patches pushed to powerpc.git master and powerpc-next
-	branches
-Message-ID: <20080416085723.3f0ec4df@zod.rchland.ibm.com>
-In-Reply-To: <18437.62522.276473.12143@cargo.ozlabs.ibm.com>
-References: <18437.61934.495516.351438@cargo.ozlabs.ibm.com>
-	<18437.62522.276473.12143@cargo.ozlabs.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Return-Path: <avorontsov@dev.rtsoft.ru>
+Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
+	by ozlabs.org (Postfix) with SMTP id 59E57DE35A
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Apr 2008 00:02:13 +1000 (EST)
+Date: Wed, 16 Apr 2008 18:02:10 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH] fsl_soc: Factor fsl_get_sys_freq() out of the wdt and
+	spi inits.
+Message-ID: <20080416140210.GA15529@polina.dev.rtsoft.ru>
+References: <20080415185234.GA10579@loki.buserror.net>
+	<20080415213221.GA2646@zarina> <48051FBA.1000801@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <48051FBA.1000801@freescale.com>
 Cc: linuxppc-dev@ozlabs.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,23 +24,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 16 Apr 2008 22:42:34 +1000
-Paul Mackerras <paulus@samba.org> wrote:
+On Tue, Apr 15, 2008 at 04:35:54PM -0500, Scott Wood wrote:
+> Anton Vorontsov wrote:
+>>> +u32 fsl_get_sys_freq(void)
+>>> +{
+>>> +	struct device_node *soc;
+>>> +	const u32 *prop;
+>>> +	int size;
+>>> +
+>>> +	if (sysfreq != -1)
+>>> +		return sysfreq;
+>>> +
+>>> +	soc = of_find_node_by_type(NULL, "soc");
+>>> +	if (!soc)
+>>> +		return -1;
+>>
+>> Um.. can we finally decide on compatible for the soc nodes,
+>> and add there compatible matching from the start?
+>
+> This is just a code reorganization; any change in what we match on  
+> should be a separate patch.
 
-> I wrote:
-> 
-> > The following commits are now in the master and powerpc-next branches
-> > in the powerpc.git tree.  This includes commits pulled from Josh
-> > Boyer's and Olof Johansson's trees.
-> 
-> Because of a problem caused by a couple of commits in Josh Boyer's
-> tree, I have forced the master and powerpc-next branches back to where
-> they were until an hour or so ago.  Hopefully no-one has done a pull
-> in that time; if anyone has then they will need to do a git pull -f
-> when I eventually push the commits out (since they will have different
-> IDs).
+Yes, it makes sense of course. Just wanted to get rid of the device_type
+asap, because I'm going to submit mpc836x_rdk board, and I'd preferred to
+submit it w/o device_type = "soc"... Oh well, ok.. later.
 
-My "next" and "for-2.6.26" branches are reset and the offending patches
-have been dropped.  My apologies for all the trouble.
-
-josh
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
