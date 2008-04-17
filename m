@@ -1,21 +1,24 @@
-Return-Path: <seanm@seanm.ca>
-Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
-	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 4560DDECFE
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Apr 2008 01:50:48 +1000 (EST)
-Date: Thu, 17 Apr 2008 11:50:45 -0400
-From: Sean MacLennan <seanm@seanm.ca>
-To: "Dale Farnsworth" <dale@farnsworth.org>
-Subject: Re: Warp patches for 2.6.26
-Message-ID: <20080417115045.7e4e6b1e@lappy.seanm.ca>
-In-Reply-To: <E1Jksea-0001ba-DL@xyzzy.farnsworth.org>
-References: <20080412134831.424480cf@lappy.seanm.ca>
-	<20080413104430.c98244d2.sfr@canb.auug.org.au>
-	<20080412215544.38fa2d0b@lappy.seanm.ca>
-	<fa686aa40804121909s4ee04731ua63afa76fe088828@mail.gmail.com>
-	<E1Jksea-0001ba-DL@xyzzy.farnsworth.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <heukelum@fastmail.fm>
+Received: from out1.smtp.messagingengine.com (out1.smtp.messagingengine.com
+	[66.111.4.25]) by ozlabs.org (Postfix) with ESMTP id 6BE3ADE2A3
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Apr 2008 19:10:59 +1000 (EST)
+Message-Id: <1208423077.31914.1248369455@webmail.messagingengine.com>
+From: "Alexander van Heukelum" <heukelum@fastmail.fm>
+To: "Paul Mackerras" <paulus@samba.org>, "Ingo Molnar" <mingo@elte.hu>,
+	linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset="ISO-8859-1"
+MIME-Version: 1.0
+References: <1208191719.12568.1247788911@webmail.messagingengine.com>   
+	<20080416125724.GC6304@elte.hu>   
+	<20080416135508.GA16439@mailshack.com>   
+	<20080416144051.GH24383@elte.hu>   
+	<18438.33744.389334.543623@cargo.ozlabs.ibm.com>
+Subject: Re: [PATCH] x86: fix find_next_bit breakage on ppc and powerpc
+In-Reply-To: <18438.33744.389334.543623@cargo.ozlabs.ibm.com>
+Date: Thu, 17 Apr 2008 11:04:37 +0200
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+	Alexander van Heukelum <heukelum@mailshack.com>,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,47 +28,67 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, 12 Apr 2008 20:13:16 -0700
-"Dale Farnsworth" <dale@farnsworth.org> wrote:
+On Thu, 17 Apr 2008 08:55:12 +1000, "Paul Mackerras" <paulus@samba.org>
+said:
+> Ingo Molnar writes:
+> > 
+> > * Alexander van Heukelum <heukelum@mailshack.com> wrote:
+> > 
+> > > Powerpc (and ppc) have their have some code in their bitops.h which 
+> > > used to be exacly the same as asm-generic/bitops/find.h. Include this 
+> > > header instead.
+> > > 
+> > > This should also fix the compile problems due to the generic 
+> > > find_next_bit changes. Those were fixed by Thomas Gleixner in 
+> > > asm-generic/bitops/find.h earlier.
+> > > 
+> > > Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
+> > 
+> > thanks, applied. I dropped:
+> 
+> Why are powerpc (and ppc) patches
+> - not being sent to the powerpc maintainer (me)
+> - not being cc'd to the linuxppc-dev@ozlabs.org list
+> - ending up going through the x86 tree?
 
-> Each patch needs to be standalone.  you need to add a header
-> describing what the patch is intended to accomplish.  Being more
-> descriptive is better than less.  Also, as Stephen said, make sure
-> that the subject of each email containing a patch is descriptive and
-> reasonably unique within the entire kernel.
+Hello,
 
-Splitting up the patches would be very error prone. I would have to
-basically do all the editing by hand.
+My apologies for that. The patches that are now in x86#testing were
+needed because of changes I introduced. Thomas Gleixner found a
+problem with the patches that caused compile problems for basically
+all archs with GENERIC_FIND_NEXT_BIT=y, and his fix was to change
+asm-generic/bitops/find.h. However, ppc and powerpc did things
+differently... (x86 too, but they have special permissions ;) )
 
-I also think I am not being clear enough. Basically what is currently
-in the mainline is platform code for a Rev A board with minimal FPGA
-functionality, since that is what we had at the time.
+(Better late than never) Please consider applying the patch in
+        http://lkml.org/lkml/2008/4/16/107
+as:
 
-These patches, I should probably merge them into one patch, bring the
-platform code up to a Rev B board with a more complete FPGA load. (I
-say more complete because FPGA loads are never complete ;)
+[PATCH] powerpc: use asm-generic/bitops/find.h in bitops.h
 
-These patches only affect the Warp. Ignoring the LED and WDT patches,
-you have to have all the changes to get a working Rev B. You can't just
-put in the DTM changes or just put in the NAND changes.
+Powerpc (and ppc) have some code in their bitops.h that is
+exacly the same as asm-generic/bitops/find.h. Include this
+header instead of the private implementation.
 
-I listed 8 changes, but three are for NAND, and four are for DTM. I
-could compress them down:
+> How come patches to unify x86_32 and x86_64 bitops need to end up
+> touching powerpc?
 
-Updated platform code to support Rev B boards.
-  * Switched from 64M NOR/64M NAND to 4M NOR/256M NAND.
-  * Fully functional DTM.
-  * Added POST information.
-  * Removed LED function, moved to new LED driver.
+This was not a pure unification. Originally I wanted to convert
+both x86_64 and i386 to the existing generic bitops. Andi Kleen,
+however, objected because x86_64 would than lose a certain
+optimization for small bitmaps. I moved this optimization to
+the generic code, and broke non-x86. Everyone except ppc/powerpc
+was fixed by Thomas Gleixner (in a generic header file).
+http://lkml.org/lkml/2008/4/16/107 just changes ppc/powerpc in
+such a way that Thomas' fix works there too.
 
-Now, the POST function and the removed LED function could be separate
-patches I guess, but it hardly seems worth it. The LED function was
-never used except in temporary debug code.
+Greetings,
+    Alexander
 
-> For example, instead of "WDT driver", as a minimum something like:
-> "[POWERPC] warp: Add WDT driver".
+> Paul.
+-- 
+  Alexander van Heukelum
+  heukelum@fastmail.fm
 
-Ok, that I can do.
-
-Cheers,
-   Sean
+-- 
+http://www.fastmail.fm - The professional email service
