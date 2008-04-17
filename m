@@ -1,19 +1,14 @@
-Return-Path: <jgarzik@pobox.com>
-Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 58DE4DE02D
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Apr 2008 10:54:08 +1000 (EST)
-Message-ID: <48069FA7.5060207@pobox.com>
-Date: Wed, 16 Apr 2008 20:53:59 -0400
-From: Jeff Garzik <jgarzik@pobox.com>
+Return-Path: <luoxu_gun@yahoo.com.cn>
+Received: from web15908.mail.cnb.yahoo.com (web15908.mail.cnb.yahoo.com
+	[202.165.103.53]) by ozlabs.org (Postfix) with SMTP id 2422FDE16C
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Apr 2008 11:11:58 +1000 (EST)
+Date: Thu, 17 Apr 2008 09:11:56 +0800 (CST)
+From: =?gb2312?q?=D0=F1=20=C2=DE?= <luoxu_gun@yahoo.com.cn>
+Subject: a question about serial driver on MPC8313
+To: linuxppc-dev@ozlabs.org
 MIME-Version: 1.0
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Subject: Re: [PATCH] natsemi: fix MMIO for PPC 44x platforms
-References: <200804122058.31075.sshtylyov@ru.mvista.com>
-In-Reply-To: <200804122058.31075.sshtylyov@ru.mvista.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
+Content-Type: multipart/alternative; boundary="0-437664925-1208394716=:28956"
+Message-ID: <910783.28956.qm@web15908.mail.cnb.yahoo.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,26 +18,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Sergei Shtylyov wrote:
-> The driver stores the PCI resource address into 'unsigned long' variable before
-> calling ioremap()  on it. This warrants a kernel oops when the registers are
-> accessed on PPC 44x platforms which (being 32-bit) have PCI memory space mapped
-> beyond 4 GB.
-> 
-> The arch/ppc/ kernel has a fixup in ioremap() that creates an illusion of the
-> PCI memory resources are mapped below 4 GB, but arch/powerpc/ code got rid of
-> this trick, having instead CONFIG_RESOURCES_64BIT enabled.
-> 
-> Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-> 
-> ---
-> Reposting the patch with the typecast, log, and summary corrected.
-> This is the same issue as the one that has been recently addressed by commits
-> 3c34ac36ac1084e571ef9b6fb1d6a5b10ccc1fd0 (e1000: Fix for 32 bits platforms with
-> 64 bits resources) and c976816b6e901341ec3c4653147316c15549a1c4 (siimage: fix
-> kernel oops on PPC 44x).  The patch has only been compile tested though...
-> 
->  drivers/net/natsemi.c |   10 ++++++----
->  1 files changed, 6 insertions(+), 4 deletions(-)
+--0-437664925-1208394716=:28956
+Content-Type: text/plain; charset=gb2312
+Content-Transfer-Encoding: 8bit
 
-applied
+hello all:
+    In my system, the CPU is MPC8313. When i debug it, i can't find the serial driver for the MPC8313 soc, i can only find the file 8250.c which is in the /drivers/serial directory. I am not sure the source code is the serial driver for the MPC8313. Could any one can help me to solve this problem or some one can give me some advises.
+
+thanks 
+best wishs
+ 
+       
+---------------------------------
+ —≈ª¢” œ‰£¨ƒ˙µƒ÷’…˙” œ‰£°
+--0-437664925-1208394716=:28956
+Content-Type: text/html; charset=gb2312
+Content-Transfer-Encoding: 8bit
+
+hello all:<br>&nbsp;&nbsp;&nbsp; In my system, the CPU is MPC8313. When i debug it, i can't find the serial driver for the MPC8313 soc, i can only find the file 8250.c which is in the /drivers/serial directory. I am not sure the source code is the serial driver for the MPC8313. Could any one can help me to solve this problem or some one can give me some advises.<br><br>thanks <br>best wishs<br> <p>&#32;
+
+
+      <hr size=1><a href="http://cn.mail.yahoo.com/"> —≈ª¢” œ‰£¨ƒ˙µƒ÷’…˙” œ‰£°</a>
+--0-437664925-1208394716=:28956--
