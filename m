@@ -1,21 +1,24 @@
-Return-Path: <Rick.Moleres@xilinx.com>
-Received: from outbound4-sin-R.bigfish.com (outbound-sin.frontbridge.com
-	[207.46.51.80])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 76796DEE72
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Apr 2008 01:57:57 +1000 (EST)
+Return-Path: <dale@farnsworth.org>
+Received: from xyzzy.farnsworth.org (xyzzy.farnsworth.org [65.39.95.219])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 138C0DF783
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Apr 2008 02:08:20 +1000 (EST)
+Date: Thu, 17 Apr 2008 09:08:04 -0700
+From: Dale Farnsworth <dale@farnsworth.org>
+To: Sean MacLennan <seanm@seanm.ca>
+Message-ID: <20080417160804.GA696@farnsworth.org>
+References: <20080412134831.424480cf@lappy.seanm.ca>
+	<20080413104430.c98244d2.sfr@canb.auug.org.au>
+	<20080412215544.38fa2d0b@lappy.seanm.ca>
+	<fa686aa40804121909s4ee04731ua63afa76fe088828@mail.gmail.com>
+	<E1Jksea-0001ba-DL@xyzzy.farnsworth.org>
+	<20080417115045.7e4e6b1e@lappy.seanm.ca>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Subject: RE: Xilinx network trouble
-Date: Thu, 17 Apr 2008 09:56:08 -0600
-In-Reply-To: <03fc01c8a072$67280110$ad289e86@LPSC0173W>
-References: <03fc01c8a072$67280110$ad289e86@LPSC0173W>
-From: "Rick Moleres" <Rick.Moleres@xilinx.com>
-To: "Guillaume Dargaud" <dargaud@lpsc.in2p3.fr>,
-	<linuxppc-dev@ozlabs.org>
-Message-Id: <20080417155609.9061E1D000B0@mail147-sin.bigfish.com>
+In-Reply-To: <20080417115045.7e4e6b1e@lappy.seanm.ca>
+Subject: Re: Warp patches for 2.6.26
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,111 +28,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thu, Apr 17, 2008 at 11:50:45AM -0400, Sean MacLennan wrote:
+> On Sat, 12 Apr 2008 20:13:16 -0700
+> "Dale Farnsworth" <dale@farnsworth.org> wrote:
+> 
+> > Each patch needs to be standalone.  you need to add a header
+> > describing what the patch is intended to accomplish.  Being more
+> > descriptive is better than less.  Also, as Stephen said, make sure
+> > that the subject of each email containing a patch is descriptive and
+> > reasonably unique within the entire kernel.
+> 
+> Splitting up the patches would be very error prone. I would have to
+> basically do all the editing by hand.
 
-Which version of xps_ll_temac are you using, and which version of EDK?
-Also, do both designs meet timing?
+I didn't suggest splitting the patches or further modification of the
+patches themselves.  What I found lacking were the patch descriptions.
+You need to describe in each patch (commit) commentary exactly what
+the patch is intended to accomplish, and the rationale behind it.
 
--Rick
+> I also think I am not being clear enough. Basically what is currently
+> in the mainline is platform code for a Rev A board with minimal FPGA
+> functionality, since that is what we had at the time.
+> 
+> These patches, I should probably merge them into one patch, bring the
+> platform code up to a Rev B board with a more complete FPGA load. (I
+> say more complete because FPGA loads are never complete ;)
+> 
+> These patches only affect the Warp. Ignoring the LED and WDT patches,
+> you have to have all the changes to get a working Rev B. You can't just
+> put in the DTM changes or just put in the NAND changes.
+> 
+> I listed 8 changes, but three are for NAND, and four are for DTM. I
+> could compress them down:
+> 
+> Updated platform code to support Rev B boards.
+>   * Switched from 64M NOR/64M NAND to 4M NOR/256M NAND.
+>   * Fully functional DTM.
+>   * Added POST information.
+>   * Removed LED function, moved to new LED driver.
+> 
+> Now, the POST function and the removed LED function could be separate
+> patches I guess, but it hardly seems worth it. The LED function was
+> never used except in temporary debug code.
+> 
+> > For example, instead of "WDT driver", as a minimum something like:
+> > "[POWERPC] warp: Add WDT driver".
+> 
+> Ok, that I can do.
 
------Original Message-----
-From: linuxppc-dev-bounces+moleres=3Dxilinx.com@ozlabs.org
-[mailto:linuxppc-dev-bounces+moleres=3Dxilinx.com@ozlabs.org] On Behalf =
-Of
-Guillaume Dargaud
-Sent: Thursday, April 17, 2008 4:04 AM
-To: linuxppc-dev@ozlabs.org
-Subject: Xilinx network trouble
-
-Our network guru is out on vacation, so I'll ask here...
-I now have a working Xilinx ML405 board... except the network is flaky
-to=20
-say the least.
-
-I have tried both with the Emac Lite and the LLTemac IPs.
-
-They both work during the DHCP state of the kernel boot, my target board
-
-gets its IP and network parameters alright from the host DHCP server.
-
-The Emac Lite can ping both ways, but with 500ms and 30% packet loss
-when=20
-pinging from the host PC and 300ms and 70% packet loss the other way.
-And it=20
-goes in hiccups: 30s or so with no pings, and then 30s or so with 90%=20
-success... RX/TX LEDs also are dark when there's nothing going on.
-
-When using the LLTemac, ping just doesn't work.
-
-ifconfig shows no drops and no collisions in both cases.
-
-I'm no network specialist so I don't know what kind of tools I can use
-for=20
-further diagnosis.
-
-Here are some of the relevant kernel options I've set for both=20
-configurations:
-
-$ egrep "EMAC|NET|XILINX|NFS" .config | egrep -v "^#|^$"
-CONFIG_XILINX_ML405=3Dy
-CONFIG_XILINX_MLxxx=3Dy
-CONFIG_XILINX_VIRTEX_4_FX=3Dy
-CONFIG_XILINX_VIRTEX=3Dy
-CONFIG_XILINX_EMBED_CONFIG=3Dy
-CONFIG_NET=3Dy
-CONFIG_INET=3Dy
-CONFIG_INET_DIAG=3Dy
-CONFIG_INET_TCP_DIAG=3Dy
-CONFIG_XILINX_SYSACE=3Dy
-CONFIG_XILINX_DRIVERS=3Dy
-CONFIG_NEED_XILINX_IPIF=3Dy
-CONFIG_NETDEVICES=3Dy
-CONFIG_NET_ETHERNET=3Dy
-CONFIG_XILINX_EMACLITE=3Dy
-CONFIG_XILINX_GPIO=3Dy
-CONFIG_XILINX_HWICAP=3Dy
-CONFIG_XILINX_IIC=3Dy
-CONFIG_XILINX_EDK=3Dy
-CONFIG_NETWORK_FILESYSTEMS=3Dy
-CONFIG_NFS_FS=3Dy
-CONFIG_NFS_V3=3Dy
-CONFIG_ROOT_NFS=3Dy
-CONFIG_NFS_COMMON=3Dy
-
-or:
-
-CONFIG_XILINX_ML405=3Dy
-CONFIG_XILINX_MLxxx=3Dy
-CONFIG_XILINX_VIRTEX_4_FX=3Dy
-CONFIG_XILINX_VIRTEX=3Dy
-CONFIG_XILINX_EMBED_CONFIG=3Dy
-CONFIG_NET=3Dy
-CONFIG_INET=3Dy
-CONFIG_INET_DIAG=3Dy
-CONFIG_INET_TCP_DIAG=3Dy
-CONFIG_XILINX_SYSACE=3Dy
-CONFIG_XILINX_DRIVERS=3Dy
-CONFIG_NEED_XILINX_LLDMA=3Dy
-CONFIG_NETDEVICES=3Dy
-CONFIG_NETDEV_1000=3Dy
-CONFIG_XILINX_LLTEMAC=3Dy
-CONFIG_XILINX_LLTEMAC_MARVELL_88E1111_GMII=3Dy
-CONFIG_XILINX_GPIO=3Dy
-CONFIG_XILINX_HWICAP=3Dy
-CONFIG_XILINX_IIC=3Dy
-CONFIG_XILINX_EDK=3Dy
-CONFIG_NETWORK_FILESYSTEMS=3Dy
-CONFIG_NFS_FS=3Dy
-CONFIG_NFS_V3=3Dy
-CONFIG_ROOT_NFS=3Dy
-CONFIG_NFS_COMMON=3Dy
-
-Thanks for any hint.
---=20
-Guillaume Dargaud
-http://www.gdargaud.net/
-
-
-_______________________________________________
-Linuxppc-dev mailing list
-Linuxppc-dev@ozlabs.org
-https://ozlabs.org/mailman/listinfo/linuxppc-dev
+-Dale
