@@ -1,23 +1,27 @@
-Return-Path: <SRS0+717c909e079b4f65c96e+1698+infradead.org+dwmw2@pentafluge.srs.infradead.org>
-Received: from pentafluge.infradead.org (pentafluge.infradead.org
-	[213.146.154.40])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 5456DDEF7B
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Apr 2008 02:37:34 +1000 (EST)
-Subject: Re: [EFIKA] Really, don't pretend to be CHRP
-From: David Woodhouse <dwmw2@infradead.org>
-To: Matt Sealey <matt@genesi-usa.com>
-In-Reply-To: <48076A00.1080608@genesi-usa.com>
-References: <1208105558.3026.137.camel@pmac.infradead.org>
-	<4807427B.3030902@genesi-usa.com>
-	<1208443057.9212.250.camel@pmac.infradead.org>
-	<48076A00.1080608@genesi-usa.com>
-Content-Type: text/plain
-Date: Thu, 17 Apr 2008 17:37:27 +0100
-Message-Id: <1208450247.9212.275.camel@pmac.infradead.org>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Return-Path: <avorontsov@dev.rtsoft.ru>
+Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
+	by ozlabs.org (Postfix) with SMTP id A916FDFA52
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Apr 2008 02:43:07 +1000 (EST)
+Date: Thu, 17 Apr 2008 20:43:06 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 6/8] [POWERPC] sysdev,qe_lib: implement FSL GTM support
+Message-ID: <20080417164306.GA31113@polina.dev.rtsoft.ru>
+References: <20080318202717.GA1030@localhost.localdomain>
+	<47E02A8C.2080705@freescale.com>
+	<20080416183904.GA23512@polina.dev.rtsoft.ru>
+	<20080416184442.GA12179@ld0162-tx32.am.freescale.net>
+	<20080416210042.GA3579@zarina>
+	<20080416215821.GA15566@ld0162-tx32.am.freescale.net>
+	<20080417125235.GA32480@polina.dev.rtsoft.ru>
+	<20080417141903.GB21793@ld0162-tx32.am.freescale.net>
+	<20080417150755.GA29239@polina.dev.rtsoft.ru>
+	<48077748.1040001@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=windows-1251
+In-Reply-To: <48077748.1040001@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,80 +31,71 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2008-04-17 at 16:17 +0100, Matt Sealey wrote:
-> David Woodhouse wrote:
-> > On Thu, 2008-04-17 at 13:28 +0100, Matt Sealey wrote:
-> >> I thought we were using efika.forth for this in Fedora.
-> > 
-> > We were, until you pointed out that the kernel actually works just fine
-> > these days without it.
-> 
-> I said the kernel has had braindead patches shoved into it that sort of
-> obviate the need for the most heinous of crimes committed in the Efika
-> device tree.
+On Thu, Apr 17, 2008 at 11:14:00AM -0500, Scott Wood wrote:
+> Anton Vorontsov wrote:
+>> This isn't a timer with usec precision! This is a timer that silently
+>> crops precision as it wants to. Ahh, I see you dropped "u" prefix.
+>
+> It is a timer with usec precision, unless you ask for a timeout of more  
+> than 65535 usec -- at which point the hardware can't provide usec 
+> precision.
+>
+> And s/as it wants to/as it needs to/.
+>
+>> Well. I'm not going to use it anyway, so just give it some name you
+>> prefer and I'll wrap it into the patch. Preferably, drop a line here with
+>> kerneldoc for it, so I'll not have to document its drawbacks. :-)
+>
+> /**
+>  * gtm_reset_timer16 - reset 16 bit timer with arbitrary precision
+>  * @tmr: pointer to the gtm_timer structure obtained from gtm_get_timer
+>  * @usec: timer interval in microseconds
+>  * @reload: if set, the timer will reset upon expiry rather than
+>  * continue running free.
+>  *
+>  * This function (re)sets the GTM timer so that it counts up to the
+>  * requested interval value, and fires the interrupt when the value is
+>  * reached.  This function will reduce the precision of the timer as
+>  * needed in order for the requested timeout to fit in a 16-bit
+>  * register.
+>  */
+> int gtm_reset_timer16(struct gtm_timer *tmr, unsigned long usec,
+>                       bool reload)
+> {
+> 	...
+> }
 
-:)
+Thanks!
 
-> The Linux kernel fixups don't add the CDM or XLB arbiter or many other
-> components some out-of-mainline drivers
+>>> It could be made faster using cntlzw.
+>>
+>> No need to cntlzw, there is fls() already.
+>
+> fls() uses cntlzw, does it not?  I was just too lazy to look up what  
+> Linux calls it. :-)
 
-I don't give a monkey's left testicle about code which isn't mainline.
-If and when it's merged, we can make sure the device-tree fixups are
-sufficient for it -- by whatever means.
+Yup, I looked it up. ;-)
 
-> > can't set environment variables from within Linux (and yes, we can
-> > probably improve on that too, but we let them setenv for themselves, for
-> > now).
-> 
-> You really won't be improving on it because there's no reliable way to
-> pass setenv back to the firmware from userland :D
+>> Though, here you'll need two because of u64.
+>
+> We can probably get away with 32 bits.
+>
+>> Btw, I hope you aware that single GTM timer running at 166MHz will give you
+>> 6 minutes of sleep, maximum.
+>
+> Yes, but it's all we have on-chip that can do the job.
+>
+>> With cascaded timer you'll get much better
+>> result of 310 days. Is that possible to use cascaded timer as a wakeup
+>> event on 8313? 
+>
+> No, unfortunately.  Only timer4 can be a wakeup source, and when  
+> cascaded, timer4 is the input to timer3, rather than the other way 
+> around.
 
-Except by putting it in a text file which is booted instead of yaboot,
-the first time after install. The user just types 'boot hd:,\fixme.fth'
-instead of having to set the variables manually.
-
-> My ideal situation is all this stuff is stripped from the kernel. You do
-> realise 90% of the Efika traffic on this list is submitting code that
-> fixes fixups for a firmware which has a seperated fixup script, putting
-> the responsibility firmly where Linux-PPC policy dictated it should be
-> (with the firmware).
-
-The fixup script is a fairly unwieldy hack for a distribution to try to
-support. It turns our release/install notes for Efika from a few lines
-of "Efika firmware is a bit crap" into twice as many lines of "Efika
-firmware is entirely crap".
-
-> I think it's stunting the development of the platform. In lieu of a
-> real, solid, flashable firmware update that fixes the problems, 
-
-Bored now. Quit whining and give us a real, solid, flashable firmware
-update that fixes the problems. Really.
-
-> I don't think patching the Linux kernel is the correct solution, and I
-> do not appreciate the 180 degree turn that Linux-PPC policy has taken
-> with this.
-> If we could not commit fixes for it in the beginning and were lambasted
-> for shoving firmware bugfixes into the kernel, how should it be so
-> different now?
-
-Haven't we covered this? We were originally promised a firmware update
-which would fix all this, about a year ago. It was quite reasonable at
-the time to wait for it and avoid putting the hacks in the kernel.
-Now we've come to the conclusion that it isn't going to happen, it's
-also quite reasonable to change tack and work around it.
-
-If there was a chance of policy, it was because we were promised
-something which didn't appear.
-
-> You do realise that once the fixes are in the kernel *you may never
-> see another firmware update*? There'll be no point..
-
-Except to fix the off-by-one problems and various other breakages other
-than the device-tree, perhaps. But I thought we'd already reached the
-conclusion that we may never see another firmware update?
-
-OTOH, it probably wouldn't be _so_ hard to port Mitch's OpenFirmware to
-mpc5200...
+Ok, very well.
 
 -- 
-dwmw2
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
