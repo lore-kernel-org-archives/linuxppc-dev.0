@@ -1,27 +1,21 @@
-Return-Path: <avorontsov@dev.rtsoft.ru>
-Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
-	by ozlabs.org (Postfix) with SMTP id BB92ADF26B
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Apr 2008 01:07:58 +1000 (EST)
-Date: Thu, 17 Apr 2008 19:07:55 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 6/8] [POWERPC] sysdev,qe_lib: implement FSL GTM support
-Message-ID: <20080417150755.GA29239@polina.dev.rtsoft.ru>
-References: <20080318192152.GA26493@localhost.localdomain>
-	<47E01E22.9000807@freescale.com>
-	<20080318202717.GA1030@localhost.localdomain>
-	<47E02A8C.2080705@freescale.com>
-	<20080416183904.GA23512@polina.dev.rtsoft.ru>
-	<20080416184442.GA12179@ld0162-tx32.am.freescale.net>
-	<20080416210042.GA3579@zarina>
-	<20080416215821.GA15566@ld0162-tx32.am.freescale.net>
-	<20080417125235.GA32480@polina.dev.rtsoft.ru>
-	<20080417141903.GB21793@ld0162-tx32.am.freescale.net>
+Return-Path: <neko@genesi-usa.com>
+Received: from ik-out-1112.google.com (ik-out-1112.google.com [66.249.90.176])
+	by ozlabs.org (Postfix) with ESMTP id 00FB7DE1ED
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Apr 2008 01:10:12 +1000 (EST)
+Received: by ik-out-1112.google.com with SMTP id b32so33937ika.1
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Apr 2008 08:10:10 -0700 (PDT)
+Message-ID: <4807684C.4000508@genesi-usa.com>
+Date: Thu, 17 Apr 2008 16:10:04 +0100
+From: Matt Sealey <matt@genesi-usa.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=windows-1251
-In-Reply-To: <20080417141903.GB21793@ld0162-tx32.am.freescale.net>
+To: Juergen Beisert <jbe@pengutronix.de>
+Subject: Re: RFC: MPC5200 PSC AC97 driver
+References: <47FDEF9B.5000506@semihalf.com>	<200804151003.17865.jbe@pengutronix.de>	<200804161324.15887.jbe@pengutronix.de>
+	<200804171619.56615.jbe@pengutronix.de>
+In-Reply-To: <200804171619.56615.jbe@pengutronix.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Sender: Matt Sealey <neko@genesi-usa.com>
 Cc: linuxppc-dev@ozlabs.org
-Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,75 +25,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Apr 17, 2008 at 09:19:03AM -0500, Scott Wood wrote:
-> On Thu, Apr 17, 2008 at 04:52:35PM +0400, Anton Vorontsov wrote:
-> > Heh. Scott, think about it. You have single 16bit timer with variable
-> > frequency. To use it, you'd better know what exactly precision you need.
-> 
-> Why?  I know the timeout I need.
-> 
-> > Then you limited to u16 for the interval for this chosen precision.
-> > 
-> > Yes, you can implement this:
-> > 
-> > #define MAX_PRESCALER (256 * 256 * 16)
-> > 
-> > int gtm_reset_weird_behaving_utimer16(struct gtm_timer *tmr,
-> > 				      unsigned long long usec,
-> > 				      bool free_run)
-> > {
-> > 	int freq = 1000000;
-> > 	int min_hz2 = (tmr->gtm->freq / MAX_PRESCALER) << 1;
-> > 
-> > 	while (!(freq & 1) && !(usec & 1) && freq >= min_hz2) {
-> > 		freq >>= 1;
-> > 		usec >>= 1;
-> > 	}
-> > 
-> > 	if (usec > 0xffff)
-> > 		return -EINVAL;
-> > 
-> > 	return gtm_reset_ref_timer16(tmr, freq, (u16)usec, free_run);
-> > }
-> 
-> Try something like this:
-> 
-> int gtm_reset_sane_behaving_timer(struct gtm_timer *tmr,
->                                   u64 usec, bool free_run)
-> {
-> 	int freq = 1000000;
-> 	int min_hz2 = (tmr->gtm->freq / MAX_PRESCALER) << 1;
-> 
-> 	while (usec > 0xffff && freq >= min_hz2) {
 
-This isn't a timer with usec precision! This is a timer that silently
-crops precision as it wants to. Ahh, I see you dropped "u" prefix.
+Juergen Beisert wrote:
+> Hi,
+> +	/* the fifo starts right after psc ends */
+> +	priv->fifo = (struct mpc52xx_psc_fifo*)&priv->psc[1];	/* FIXME */
 
-Well. I'm not going to use it anyway, so just give it some name you
-prefer and I'll wrap it into the patch. Preferably, drop a line here with
-kerneldoc for it, so I'll not have to document its drawbacks. :-)
+Wouldn't
 
-> 		freq >>= 1;
-> 		usec >>= 1;
-> 	}
-> 
-> 	if (usec > 0xffff)
-> 		return -EINVAL;
-> 
-> 	return gtm_reset_ref_timer16(tmr, freq, usec, free_run);
-> }
-> 
-> It could be made faster using cntlzw.
+	priv->fifo = (struct mpc52xx_psc_fifo*) (priv->psc + sizeof(struct mpc52xx_psc));
 
-No need to cntlzw, there is fls() already. Though, here you'll need
-two because of u64.
+Be a little less obtuse use of C?
 
-Btw, I hope you aware that single GTM timer running at 166MHz will give you
-6 minutes of sleep, maximum. With cascaded timer you'll get much better
-result of 310 days. Is that possible to use cascaded timer as a wakeup
-event on 8313? If so, I'd suggest you to implement cascading firstly.
+I just added 0x58 and gave it a pretty define in my version (PSC_FIFO_OFFSET or
+something). I guess that was lame since the structure might change size in some
+other dimension, but I don't think there is any smart way to do it... the 5121E
+stuff really stomped on the way the device tree should be organised for the 5200B.
 
 -- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+Matt Sealey <matt@genesi-usa.com>
+Genesi, Manager, Developer Relations
