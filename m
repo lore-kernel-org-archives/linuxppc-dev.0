@@ -1,21 +1,21 @@
-Return-Path: <SRS0+717c909e079b4f65c96e+1698+infradead.org+dwmw2@pentafluge.srs.infradead.org>
-Received: from pentafluge.infradead.org (pentafluge.infradead.org
-	[213.146.154.40])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 5A38EDE851
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Apr 2008 01:11:57 +1000 (EST)
-Subject: Re: [EFIKA] Really, don't pretend to be CHRP
-From: David Woodhouse <dwmw2@infradead.org>
-To: Matt Sealey <matt@genesi-usa.com>
-In-Reply-To: <4807427B.3030902@genesi-usa.com>
-References: <1208105558.3026.137.camel@pmac.infradead.org>
-	<4807427B.3030902@genesi-usa.com>
-Content-Type: text/plain
-Date: Thu, 17 Apr 2008 15:37:37 +0100
-Message-Id: <1208443057.9212.250.camel@pmac.infradead.org>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Return-Path: <avorontsov@dev.rtsoft.ru>
+Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
+	by ozlabs.org (Postfix) with SMTP id 84D53DE296
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Apr 2008 01:13:06 +1000 (EST)
+Date: Thu, 17 Apr 2008 19:13:05 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Laurent Pinchart <laurentp@cse-semaphore.com>
+Subject: Re: [PATCH 6/8] [POWERPC] sysdev,qe_lib: implement FSL GTM support
+Message-ID: <20080417151305.GA6130@polina.dev.rtsoft.ru>
+References: <20080311172106.GA4766@localhost.localdomain>
+	<47E02A8C.2080705@freescale.com>
+	<20080416183904.GA23512@polina.dev.rtsoft.ru>
+	<200804171624.02769.laurentp@cse-semaphore.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=windows-1251
+In-Reply-To: <200804171624.02769.laurentp@cse-semaphore.com>
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,27 +25,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2008-04-17 at 13:28 +0100, Matt Sealey wrote:
-> I thought we were using efika.forth for this in Fedora.
+On Thu, Apr 17, 2008 at 04:23:56PM +0200, Laurent Pinchart wrote:
+[...]
+> > +	/*
+> > +	 * We have two 8 bit prescalers -- primary and secondary (psr, sps),
+> > +	 * plus "slow go" mode (clk / 16). So, total prescale value is
+> > +	 * 16 * (psr + 1) * (sps + 1).
+> > +	 */
+> > +	if (prescaler > 256 * 256 * 16)
+> > +		return -EINVAL;
+> > +
+> > +	if (prescaler > 256 * 256) {
+> > +		iclk = GTMDR_ICLK_SLGO;
+> > +		prescaler /= 16;
+> > +	}
+> > +
+> > +	if (prescaler > 256) {
+> > +		psr = 256 - 1;
+> > +		sps = prescaler / 256 - 1;
+> > +	} else {
+> > +		psr = prescaler - 1;
+> > +		sps = 1 - 1;
+> > +	}
+> 
+> Don't forget that the CPM2 doesn't support the primary prescaler.
 
-We were, until you pointed out that the kernel actually works just fine
-these days without it.
-
-Now, the _only_ thing that goes wrong without it is that 'CHRP' in the
-machine: line -- which is fixed by this patch. And so the user's life is
-made easier -- all they have to work around now is the fact that we
-can't set environment variables from within Linux (and yes, we can
-probably improve on that too, but we let them setenv for themselves, for
-now).
-
-> Why don't we just roll all those fixes into prom_efika.c or something
-> and make it a huge, unwieldy file nice and *seperate* from
-> prom_init.c?
-
-That might be a little cleaner than what we have at the moment, yes. But
-what we have also works, so I'd rather concentrate on things like
-getting audio support merged, before we faff around with what are
-essentially cosmetics.
+I didn't know that, how can I possibly forget it? Oh, now I can.
+Thanks for the info. :-)
 
 -- 
-dwmw2
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
