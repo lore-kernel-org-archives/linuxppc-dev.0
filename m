@@ -1,18 +1,20 @@
-Return-Path: <rsc@pengutronix.de>
-Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
-	[83.236.181.26]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E09F3DDE03
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Apr 2008 16:00:39 +1000 (EST)
-Date: Thu, 17 Apr 2008 08:00:31 +0200
-From: Robert Schwebel <r.schwebel@pengutronix.de>
-To: tnt@246tNt.com, grant.likely@secretlab.ca
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.246])
+	by ozlabs.org (Postfix) with ESMTP id DCB5ADE0A1
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Apr 2008 16:41:19 +1000 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so816509anc.78
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Apr 2008 23:41:08 -0700 (PDT)
+Message-ID: <fa686aa40804162341h5e68e460t975f69118ff8beca@mail.gmail.com>
+Date: Wed, 16 Apr 2008 23:41:08 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Robert Schwebel" <r.schwebel@pengutronix.de>
 Subject: Re: mpc5200: add interrupt type function
-Message-ID: <20080417060031.GH13814@pengutronix.de>
-References: <20080415152954.GX13814@pengutronix.de>
+In-Reply-To: <20080417060031.GH13814@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-In-Reply-To: <20080415152954.GX13814@pengutronix.de>
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20080415152954.GX13814@pengutronix.de>
+	<20080417060031.GH13814@pengutronix.de>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -23,21 +25,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Apr 15, 2008 at 05:29:54PM +0200, Robert Schwebel wrote:
-> From: Sascha Hauer <s.hauer@pengutronix.de>
-> 
-> Add a set_type function for external (GPIO) interrupts.
-> 
-> Signed-off-by: Juergen Beisert <j.beisert@pengutronix.de>
-> Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
+On Wed, Apr 16, 2008 at 11:00 PM, Robert Schwebel
+<r.schwebel@pengutronix.de> wrote:
+> On Tue, Apr 15, 2008 at 05:29:54PM +0200, Robert Schwebel wrote:
+>  > From: Sascha Hauer <s.hauer@pengutronix.de>
+>  >
+>  > Add a set_type function for external (GPIO) interrupts.
+>  >
+>  > Signed-off-by: Juergen Beisert <j.beisert@pengutronix.de>
+>  > Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
+>
+>  As we didn't get negative feedback yet, could this go into the 2.6.26
+>  merge window?
 
-As we didn't get negative feedback yet, could this go into the 2.6.26
-merge window?
+I didn't see this the first time (didn't get cc'd).
 
-Robert
+It looks mostly okay, but in doesn't have any mutual exclusion which
+it probably should have.  What are the users of this?
+
+Cheers,
+g.
+
 -- 
- Dipl.-Ing. Robert Schwebel | http://www.pengutronix.de
- Pengutronix - Linux Solutions for Science and Industry
-   Handelsregister:  Amtsgericht Hildesheim, HRA 2686
-     Hannoversche Str. 2, 31134 Hildesheim, Germany
-   Phone: +49-5121-206917-0 |  Fax: +49-5121-206917-9
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
