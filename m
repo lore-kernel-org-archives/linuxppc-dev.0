@@ -1,20 +1,20 @@
-Return-Path: <laurentp@cse-semaphore.com>
-Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
-	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id 222E2DDD04
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Apr 2008 22:08:49 +1000 (EST)
-From: Laurent Pinchart <laurentp@cse-semaphore.com>
-To: Jochen Friedrich <jochen@scram.de>
-Subject: Re: [PATCH] powerpc: Implement GPIO LIB API on CPM2 Freescale SoC.
-Date: Thu, 17 Apr 2008 14:08:43 +0200
-References: <200804171148.11593.laurentp@cse-semaphore.com>
-	<200804171311.46781.laurentp@cse-semaphore.com>
-	<480732C9.9080800@scram.de>
-In-Reply-To: <480732C9.9080800@scram.de>
+Return-Path: <neko@genesi-usa.com>
+Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.185])
+	by ozlabs.org (Postfix) with ESMTP id 05E36DDE24
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Apr 2008 22:28:51 +1000 (EST)
+Received: by nf-out-0910.google.com with SMTP id g16so33602nfd.9
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Apr 2008 05:28:49 -0700 (PDT)
+Message-ID: <4807427B.3030902@genesi-usa.com>
+Date: Thu, 17 Apr 2008 13:28:43 +0100
+From: Matt Sealey <matt@genesi-usa.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart5814556.xPrFek32Yl";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Message-Id: <200804171408.46533.laurentp@cse-semaphore.com>
-Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>
+To: David Woodhouse <dwmw2@infradead.org>
+Subject: Re: [EFIKA] Really, don't pretend to be CHRP
+References: <1208105558.3026.137.camel@pmac.infradead.org>
+In-Reply-To: <1208105558.3026.137.camel@pmac.infradead.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Sender: Matt Sealey <neko@genesi-usa.com>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,64 +24,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---nextPart5814556.xPrFek32Yl
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+I thought we were using efika.forth for this in Fedora.
 
-On Thursday 17 April 2008 13:21, Jochen Friedrich wrote:
-> Hi Laurent,
->=20
-> >> http://patchwork.ozlabs.org/linuxppc/patch?id=3D16282
-> >=20
-> > The link doesn't seem to be related.
->=20
-> http://patchwork.ozlabs.org/linuxppc/patch?id=3D17490 is the correct one.=
-=20
+Why don't we just roll all those fixes into prom_efika.c or something
+and make it a huge, unwieldy file nice and *seperate* from prom_init.c?
 
-Thanks.
+:)
 
-> > I'll rework the patch to move CPM2 GPIO support to cpm_common.c. Have y=
-ou=20
-> > thought about a proper name for the compatible property ?
->=20
-> I would leave cpm_init_par_io() in cpm2.c and just move the other parts.
-> - for cpm2, the property fsl,cpm2-pario-bank is correct.
-> - for cpm1, i'm thinking of something like fsl,cpm1-pario-bank32b and=20
-fsl,cpm1-pario-bank32e.
+-- 
+Matt Sealey <matt@genesi-usa.com>
+Genesi, Manager, Developer Relations
 
-Any preference for common function names ? cpm2_gpio32* might be too=20
-CPM2-specific for cpm_common.c. cpm_gpio32* is a bit too generic as it=20
-doesn't support port E on the CPM1.
-
-BTW, what's the purpose of the shadow data register in the CPM GPIO chip=20
-structure ? As the set operation is protected by a spinlock, the only use I=
-=20
-can think of is to prevent changing bits in the PDAT register for pins=20
-configured as inputs. Is that correct ? If so this should be clearly=20
-documented in the code.
-
-=2D-=20
-Laurent Pinchart
-CSE Semaphore Belgium
-
-Chaussee de Bruxelles, 732A
-B-1410 Waterloo
-Belgium
-
-T +32 (2) 387 42 59
-=46 +32 (2) 387 42 75
-
---nextPart5814556.xPrFek32Yl
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
-
-iD8DBQBIBz3O8y9gWxC9vpcRAqsWAJ9QzcWicr24ZImsFiqFeis9ksCgsQCgl9PL
-8eTeKfdRaX1MlkkU/h+tJGc=
-=shIa
------END PGP SIGNATURE-----
-
---nextPart5814556.xPrFek32Yl--
+David Woodhouse wrote:
+> Fedora 9 works on Efika without the separate 'device-tree supplement',
+> thanks to the kernel's own fixups. With one exception -- because 'CHRP'
+> still appears on the 'machine:' line in /proc/cpuinfo, the installer
+> misdetects the platform and misconfigures yaboot, putting it into a PReP
+> boot partition instead of in the /boot filesystem where the Efika's
+> firmware could find it.
+> 
+> The kernel's fixups for Efika already correct one instance of 'chrp', in
+> the 'device_type' property. This fixes it in the 'CODEGEN,description'
+> property too, since that's what's exposed to userspace in /proc/cpuinfo.
+> 
+> Signed-off-by: David Woodhouse <dwmw2@infradead.org>
+> 
+> diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
+> index 5ab4c84..723422e 100644
+> --- a/arch/powerpc/kernel/prom_init.c
+> +++ b/arch/powerpc/kernel/prom_init.c
+> @@ -2240,6 +2240,14 @@ static void __init fixup_device_tree_efika(void)
+>  	if (rv != PROM_ERROR && (strcmp(prop, "chrp") == 0))
+>  		prom_setprop(node, "/", "device_type", "efika", sizeof("efika"));
+>  
+> +	/* CODEGEN,description is exposed in /proc/cpuinfo so
+> +	   fix that too */
+> +	rv = prom_getprop(node, "CODEGEN,description", prop, sizeof(prop));
+> +	if (rv != PROM_ERROR && (strstr(prop, "CHRP")))
+> +		prom_setprop(node, "/", "CODEGEN,description",
+> +			     "Efika 5200B PowerPC System",
+> +			     sizeof("Efika 5200B PowerPC System"));
+> +
+>  	/* Fixup bestcomm interrupts property */
+>  	node = call_prom("finddevice", 1, 1, ADDR("/builtin/bestcomm"));
+>  	if (PHANDLE_VALID(node)) {
+> 
+> 
+> 
