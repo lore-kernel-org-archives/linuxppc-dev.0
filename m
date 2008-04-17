@@ -1,21 +1,19 @@
-Return-Path: <cbouatmailru@gmail.com>
-Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.191])
-	by ozlabs.org (Postfix) with ESMTP id C835DDE4B1
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Apr 2008 08:47:55 +1000 (EST)
-Received: by nf-out-0910.google.com with SMTP id g16so264210nfd.9
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Apr 2008 15:47:45 -0700 (PDT)
-Date: Fri, 18 Apr 2008 02:47:40 +0400
-From: Anton Vorontsov <cbouatmailru@gmail.com>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: [PATCH 1/5] [POWERPC] sysdev: implement FSL GTM support
-Message-ID: <20080417224740.GA25323@zarina>
-References: <20080417192656.GA19107@polina.dev.rtsoft.ru>
-	<20080417192832.GA28286@polina.dev.rtsoft.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <20080417192832.GA28286@polina.dev.rtsoft.ru>
+Return-Path: <rmachet@slac.stanford.edu>
+Received: from nospam3.slac.stanford.edu (nospam3.slac.stanford.edu
+	[134.79.18.120])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id A8F4FDE112
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Apr 2008 09:35:51 +1000 (EST)
+Subject: [PATCH] sysdev,mv64x60: initialization of mv64x60 ethernet, serial
+	and I2C
+From: Remi Machet <rmachet@slac.stanford.edu>
+To: Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain
+Date: Thu, 17 Apr 2008 16:35:55 -0700
+Message-Id: <1208475355.5789.30.camel@pcds-ts102.slac.stanford.edu>
+Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
-Reply-To: cbouatmailru@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,70 +23,121 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Apr 17, 2008 at 11:28:32PM +0400, Anton Vorontsov wrote:
-> GTM stands for General-purpose Timers Module and able to generate
-> timer{1,2,3,4} interrupts. These timers are used by the drivers that
-> need time precise interrupts (like for USB transactions scheduling for
-> the Freescale USB Host controller as found in some QE and CPM chips),
-> or these timers could be used as wakeup events from the CPU deep-sleep
-> mode.
-> 
-> Things unimplemented:
-> 1. Cascaded (32 bit) timers (1-2, 3-4).
->    This is straightforward to implement when needed, two timers should
->    be marked as "requested" and configured as appropriate.
-> 2. Super-cascaded (64 bit) timers (1-2-3-4).
->    This is also straightforward to implement when needed, all timers
->    should be marked as "requested" and configured as appropriate.
-> 
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> ---
->  Documentation/powerpc/booting-without-of.txt |   32 +++-
->  arch/powerpc/Kconfig                         |    5 +
->  arch/powerpc/sysdev/Makefile                 |    1 +
->  arch/powerpc/sysdev/fsl_gtm.c                |  362 ++++++++++++++++++++++++++
->  include/asm-powerpc/fsl_gtm.h                |  108 ++++++++
->  5 files changed, 507 insertions(+), 1 deletions(-)
->  create mode 100644 arch/powerpc/sysdev/fsl_gtm.c
->  create mode 100644 include/asm-powerpc/fsl_gtm.h
-> 
-> diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
-> index 4cc7800..827b630 100644
-> --- a/Documentation/powerpc/booting-without-of.txt
-> +++ b/Documentation/powerpc/booting-without-of.txt
-[...]
-> +/**
-> + * gtm_reset_timer16 - reset 16 bit timer with arbitrary precision
-> + * @tmr:	pointer to the gtm_timer structure obtained from gtm_get_timer
-> + * @usec:	timer interval in microseconds
-> + * @reload:	if set, the timer will reset upon expiry rather than
-> + *         	continue running free.
-> + *
-> + * This function (re)sets the GTM timer so that it counts up to the requested
-> + * interval value, and fires the interrupt when the value is reached. This
-> + * function will reduce the precision of the timer as needed in order for the
-> + * requested timeout to fit in a 16-bit register.
-> + */
-> +int gtm_reset_timer16(struct gtm_timer *tmr, unsigned long usec, bool reload)
-> +{
-> +	/* quite obvious, frequency which is enough for µSec precision */
-> +	int freq = 1000000;
-> +	unsigned int bit;
-> +
-> +	bit = fls_long(usec);
-> +	if (bit > 15) {
-> +		freq >>= bit - 15;
-> +		usec >>= bit - 15;
-> +	}
+This patch affects only the mv64x60 driver. It fixes 2 problem:
 
-if (!freq)
-	return -EINVAL;
+-If one of the devices of the mv64x60 init fails, the remaining 
+devices are not initialized => I changed the code to display an
+error and continue the initialization.
 
-> +	return gtm_reset_ref_timer16(tmr, freq, usec, reload);
-> +}
-> +EXPORT_SYMBOL(gtm_reset_timer16);
+-I2C parameters freq_m and freq_n are assigned default in the code
+but if those properties are not found in the open firmware description 
+the init returns an error=> the code now uses the default
+values if the properties are not found.
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+Signed-off-by: Remi Machet (rmachet@slac.stanford.edu)
+---
+
+diff --git a/arch/powerpc/sysdev/mv64x60_dev.c b/arch/powerpc/sysdev/mv64x60_dev.c
+index 047b310..ef0fc99 100644
+--- a/arch/powerpc/sysdev/mv64x60_dev.c
++++ b/arch/powerpc/sysdev/mv64x60_dev.c
+@@ -338,15 +338,13 @@ static int __init mv64x60_i2c_device_setup(struct device_node *np, int id)
+ 
+ 	pdata.freq_m = 8;	/* default */
+ 	prop = of_get_property(np, "freq_m", NULL);
+-	if (!prop)
+-		return -ENODEV;
+-	pdata.freq_m = *prop;
++	if (prop)
++		pdata.freq_m = *prop;
+ 
+ 	pdata.freq_m = 3;	/* default */
+ 	prop = of_get_property(np, "freq_n", NULL);
+-	if (!prop)
+-		return -ENODEV;
+-	pdata.freq_n = *prop;
++	if (prop)
++		pdata.freq_n = *prop;
+ 
+ 	pdata.timeout = 1000;				/* default: 1 second */
+ 
+@@ -433,9 +431,15 @@ static int __init mv64x60_device_setup(void)
+ 	int err;
+ 
+ 	id = 0;
+-	for_each_compatible_node(np, "serial", "marvell,mv64360-mpsc")
+-		if ((err = mv64x60_mpsc_device_setup(np, id++)))
+-			goto error;
++	for_each_compatible_node(np, "serial", "marvell,mv64360-mpsc") {
++		err = mv64x60_mpsc_device_setup(np, id++);
++		if (err) {
++			printk(KERN_ERR "Failed to initialize MV64x60 " \
++					"serial device %s: error %d.\n",
++					np->full_name, err);
++			of_node_put(np);
++		};
++	};
+ 
+ 	id = 0;
+ 	id2 = 0;
+@@ -443,38 +447,48 @@ static int __init mv64x60_device_setup(void)
+ 		pdev = mv64x60_eth_register_shared_pdev(np, id++);
+ 		if (IS_ERR(pdev)) {
+ 			err = PTR_ERR(pdev);
+-			goto error;
+-		}
++			printk(KERN_ERR "Failed to initialize MV64x60 " \
++					"network block %s: error %d.\n",
++					np->full_name, err);
++			of_node_put(np);
++			continue;
++		};
+ 		for_each_child_of_node(np, np2) {
+ 			if (!of_device_is_compatible(np2,
+ 					"marvell,mv64360-eth"))
+ 				continue;
+ 			err = mv64x60_eth_device_setup(np2, id2++, pdev);
+ 			if (err) {
+-				of_node_put(np2);
+-				goto error;
++				printk(KERN_ERR "Failed to initialize " \
++						"MV64x60 network device %s: " \
++						"error %d.\n",
++						np2->full_name, err);
+ 			}
+ 		}
+ 	}
+ 
+ 	id = 0;
+-	for_each_compatible_node(np, "i2c", "marvell,mv64360-i2c")
+-		if ((err = mv64x60_i2c_device_setup(np, id++)))
+-			goto error;
++	for_each_compatible_node(np, "i2c", "marvell,mv64360-i2c") {
++		err = mv64x60_i2c_device_setup(np, id++);
++		if (err) {
++			printk(KERN_ERR "Failed to initialize MV64x60 I2C " \
++					"bus %s: error %d.\n",
++					np->full_name, err);
++			of_node_put(np);
++		};
++	};
+ 
+ 	/* support up to one watchdog timer */
+ 	np = of_find_compatible_node(np, NULL, "marvell,mv64360-wdt");
+ 	if (np) {
+ 		if ((err = mv64x60_wdt_device_setup(np, id)))
+-			goto error;
++			printk(KERN_ERR "Failed to initialize MV64x60 " \
++					"Watchdog %s: error %d.\n",
++					np->full_name, err);
+ 		of_node_put(np);
+ 	}
+ 
+ 	return 0;
+-
+-error:
+-	of_node_put(np);
+-	return err;
+ }
+ arch_initcall(mv64x60_device_setup);
+ 
