@@ -1,16 +1,31 @@
-Return-Path: <jmarc007@yahoo.com>
-Received: from n69.bullet.mail.sp1.yahoo.com (n69.bullet.mail.sp1.yahoo.com
-	[98.136.44.41]) by ozlabs.org (Postfix) with SMTP id 6A7AFDE26A
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Apr 2008 18:36:09 +1000 (EST)
-Date: Thu, 17 Apr 2008 01:36:08 -0700 (PDT)
-From: John Marc <jmarc007@yahoo.com>
-Subject: Re: USB on MPC8641D
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <0C6DE62B-F58F-4E61-B7AC-56EC1D1DCAE7@kernel.crashing.org>
+Return-Path: <LeoLi@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 7FE7ADE28D
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Apr 2008 18:55:14 +1000 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
+	m3H8t8Lc004533
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Apr 2008 01:55:08 -0700 (MST)
+Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
+	[10.192.129.221])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m3H8t624012198
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Apr 2008 03:55:07 -0500 (CDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Message-ID: <624875.78682.qm@web46013.mail.sp1.yahoo.com>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+	charset="gb2312"
+Subject: RE: A question about the 8250/16550 Driver
+Date: Thu, 17 Apr 2008 16:55:04 +0800
+Message-ID: <989B956029373F45A0B8AF02970818900200759C@zch01exm26.fsl.freescale.net>
+In-Reply-To: <351993.9457.qm@web15901.mail.cnb.yahoo.com>
+References: <351993.9457.qm@web15901.mail.cnb.yahoo.com>
+From: "Li Yang" <LeoLi@freescale.com>
+To: =?gb2312?B?0PEgwt4=?= <luoxu_gun@yahoo.com.cn>,
+	"Linu PPC Mail list" <linuxppc-dev@ozlabs.org>
+Cc: Wood Scott <scottwood@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,80 +35,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi 
-I Have the kernel patches , but no one for the USB.
-The changes for the USB are integrated in the Kernel.
-I am currently looking into the linux BSP for usb
-changes , but unfortunately don't find any major
-chages. 
+> -----Original Message-----
+> From: linuxppc-dev-bounces+leoli=3Dfreescale.com@ozlabs.org=20
+> [mailto:linuxppc-dev-bounces+leoli=3Dfreescale.com@ozlabs.org]=20
+> On Behalf Of =D0=F1 =C2=DE
+> Sent: Thursday, April 17, 2008 3:32 PM
+> To: Linu PPC Mail list
+> Cc: Wood Scott
+> Subject: A question about the 8250/16550 Driver
+>=20
+> Hello:
+>     I have founded that the serial can't be initialized as=20
+> the bootting process. My platform is MPC8313 and my kernel=20
+> version is linux-2.6.23.9. I look though the source code and=20
+> find that the MPC8313 driver is compatible with 8250/16550.=20
+> The driver is in the \drivers\serial\8250.c
+>=20
+> In the function serial8250_isa_init_ports we should use the=20
+> structer old_serial_port  but i can't find the definition for=20
+> this struct. I can only find the following senrense in the=20
+> head of this file=20
 
-MPC8641 board have one EHCI controller and 3 OHCI
-conroller.
+If you look into the function carefully enough, you can find that =
+old_serial_port is optional and can be empty.  It seems to be some =
+leftover to provide backward compatibility when the port structure =
+changed.
 
-As I am also new to USB , it would be great help, if
-someone give me any idea about the changes in new
-MPC8641 BSP ?
-
-Does freescale fix the PCI Express issue , that makes
-USB works.  
-
-I have lots of hope with this forum :-)
-
-
-With Regards
-John 
-
-
---- Kumar Gala <galak@kernel.crashing.org> wrote:
-
-> 
-> On Apr 16, 2008, at 1:48 PM, John Marc wrote:
-> > Hi Everybody,
-> > I find this forum very much useful for the people
-> who are working  
-> > with powerpc's , and i am the one of them.Actually
-> one more thing  
-> > that make me to join this forum is my interest
-> towards the Freescale  
-> > MPC8641d board :-). I found that Freescale
-> recently uploaded the  
-> > linux BSP for MPC8641D board. One of the thing new
-> in this BSP is  
-> > USB driver.
-> >
-> > At Ozlabs I found various patches for MPC8641D
-> board,Most of then  
-> > are regarding the PCI Express fixes, Some patches
-> of ULI1575 chip,  
-> > but my main concern is USB.
-> >
-> > Can amyone help me out to find , what are the
-> changes that freescale  
-> > does for the USB drivers. I tried to search a lot
-> for USB patch, but  
-> > my bad luck , i don't find anything.
-> >
-> > It would be a great help if anyone help me out to
-> find what are the  
-> > changes that freescale does for USB driver.
-> 
-> There shouldn't be any, but if you have a BSP from
-> Freescale you  
-> should have patches to that kernel as well.
-> 
-> We should be using the stock USB driver for the ULI
-> chipset.  (I  
-> forget if its ehci/ohci/uchi).
-> 
-> - k
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
-> 
-
-
-
-      ____________________________________________________________________________________
-Be a better friend, newshound, and 
-know-it-all with Yahoo! Mobile.  Try it now.  http://mobile.yahoo.com/;_ylt=Ahu06i62sR8HDtDypao8Wcj9tAcJ
+- Leo
