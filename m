@@ -1,21 +1,15 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C1F27DF26F
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Apr 2008 00:57:44 +1000 (EST)
-Message-Id: <FC8BD7E0-1C94-44AA-A7FB-481CB140D491@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Paul Gortmaker <paul.gortmaker@windriver.com>
-In-Reply-To: <a267e81e741560d8715ca4422179dcfe2ec467c6.1208364243.git.paul.gortmaker@windriver.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: [PATCH 2/2] mpc86xx_hpcn: Temporarily accept old dts node
-	identifier.
-Date: Thu, 17 Apr 2008 09:57:40 -0500
-References: <80CCBF8C-FE21-4DD7-B1CF-0647D31655D9@kernel.crashing.org>
-	<ebd47a82600724a6a80f7fd6efacab22e778858d.1208364243.git.paul.gortmaker@windriver.com>
-	<a267e81e741560d8715ca4422179dcfe2ec467c6.1208364243.git.paul.gortmaker@windriver.com>
+Return-Path: <laurentp@cse-semaphore.com>
+Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
+	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id 31D49DEE07
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Apr 2008 01:03:02 +1000 (EST)
+From: Laurent Pinchart <laurentp@cse-semaphore.com>
+To: a.zummo@towertech.it
+Subject: [PATCH] rtc-pcf8563: Add device ids table
+Date: Thu, 17 Apr 2008 17:02:58 +0200
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200804171702.59562.laurentp@cse-semaphore.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -26,23 +20,60 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hi,
 
-On Apr 16, 2008, at 12:53 PM, Paul Gortmaker wrote:
-> As suggested by Timur Tabi, we match on the old compat node ID for one
-> version and warn accordingly.  If we don't do this, we plunge people  
-> who
-> try to use an old DTB into silent boot death with no clear  
-> indication of
-> what the problem is.
->
-> This patch should be removed at the beginning of the 2.6.27 dev cycle.
-> It is only meant to ease the transition in the short term.
->
-> Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
-> ---
-> arch/powerpc/platforms/86xx/mpc86xx_hpcn.c |    6 ++++++
-> 1 files changed, 6 insertions(+), 0 deletions(-)
+here's a patch against 2.6.25-rc8-mm2 that adds support for device tree names
+to the rtc-pcf8563 driver.
 
-applied.
+Is the new-style driver conversion patch in 2.6.25-rc8-mm2 scheduled for
+2.6.26 ?
 
-- k
+--
+
+This patch adds support for device tree names via the i2c mod alias mechanism
+to the rtc-pcf8563 driver.
+
+Signed-off-by: Laurent Pinchart <laurentp@cse-semaphore.com>
+---
+ drivers/rtc/rtc-pcf8563.c |    8 ++++++++
+ 1 files changed, 8 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/rtc/rtc-pcf8563.c b/drivers/rtc/rtc-pcf8563.c
+index a1e2f39..9667a3f 100644
+--- a/drivers/rtc/rtc-pcf8563.c
++++ b/drivers/rtc/rtc-pcf8563.c
+@@ -299,12 +299,20 @@ static int pcf8563_remove(struct i2c_client *client)
+ 	return 0;
+ }
+ 
++static struct i2c_device_id pcf8563_id[] = {
++	{ "pcf8563", 0 },
++	{ "rtc8564", 0 },
++	{},
++};
++MODULE_DEVICE_TABLE(i2c, pcf8563_id);
++
+ static struct i2c_driver pcf8563_driver = {
+ 	.driver		= {
+ 		.name	= "rtc-pcf8563",
+ 	},
+ 	.probe		= pcf8563_probe,
+ 	.remove		= pcf8563_remove,
++	.id_table	= pcf8563_id,
+ };
+ 
+ static int __init pcf8563_init(void)
+-- 
+1.5.0
+
+
+-- 
+Laurent Pinchart
+CSE Semaphore Belgium
+
+Chaussee de Bruxelles, 732A
+B-1410 Waterloo
+Belgium
+
+T +32 (2) 387 42 59
+F +32 (2) 387 42 75
