@@ -1,27 +1,25 @@
-Return-Path: <avorontsov@dev.rtsoft.ru>
-Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
-	by ozlabs.org (Postfix) with SMTP id 3BB07DE33E
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Apr 2008 22:52:38 +1000 (EST)
-Date: Thu, 17 Apr 2008 16:52:35 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 6/8] [POWERPC] sysdev,qe_lib: implement FSL GTM support
-Message-ID: <20080417125235.GA32480@polina.dev.rtsoft.ru>
-References: <20080311172429.GF7727@localhost.localdomain>
-	<20080318174329.GB4099@loki.buserror.net>
-	<20080318192152.GA26493@localhost.localdomain>
-	<47E01E22.9000807@freescale.com>
-	<20080318202717.GA1030@localhost.localdomain>
-	<47E02A8C.2080705@freescale.com>
-	<20080416183904.GA23512@polina.dev.rtsoft.ru>
-	<20080416184442.GA12179@ld0162-tx32.am.freescale.net>
-	<20080416210042.GA3579@zarina>
-	<20080416215821.GA15566@ld0162-tx32.am.freescale.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=windows-1251
-In-Reply-To: <20080416215821.GA15566@ld0162-tx32.am.freescale.net>
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: avorontsov@ru.mvista.com
+Return-Path: <Haiying.Wang@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 64B57DE163
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Apr 2008 22:56:07 +1000 (EST)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by de01egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	m3HCu25Y001265
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Apr 2008 05:56:02 -0700 (MST)
+Received: from az33exm23.fsl.freescale.net (az33exm23.am.freescale.net
+	[10.64.32.8])
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id m3HCu1FG028063
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Apr 2008 07:56:01 -0500 (CDT)
+Subject: [PATCH for 2.6.26] Fix the size of qe muram for MPC8568E
+From: Haiying Wang <Haiying.Wang@freescale.com>
+To: linuxppc-dev@ozlabs.org
+Content-Type: text/plain
+Date: Thu, 17 Apr 2008 08:56:02 -0400
+Message-Id: <1208436962.2963.5.camel@r54964-12.am.freescale.net>
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,60 +29,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Apr 16, 2008 at 04:58:21PM -0500, Scott Wood wrote:
-> On Thu, Apr 17, 2008 at 01:00:42AM +0400, Anton Vorontsov wrote:
-> > On Wed, Apr 16, 2008 at 01:44:42PM -0500, Scott Wood wrote:
-> > > A maximal timeout of ~65 ms is a little low...  For use as a wakeup from
-> > > sleep mode, I'd like to be able to request timeouts as large as the
-> > > hardware allows.
-> > 
-> > That is about precision. You just need to implement gtm_reset_stimer()
-> > is you want precision with a seconds, this will run a timer at 1 Hz.
-> 
-> Enh.  I'm not crazy about having to call separately named functions,
-> rather than have the timer code set the reference clock to the highest
-> precision that has the needed range.
+MPC8568E has 64K byte MURAM, so the size should be 0x10000, not 0xc000 in dts.
 
-Heh. Scott, think about it. You have single 16bit timer with variable
-frequency. To use it, you'd better know what exactly precision you need.
-Then you limited to u16 for the interval for this chosen precision.
+Signed-off-by: Haiying Wang <Haiying.Wang@freescale.com>
+---
+ arch/powerpc/boot/dts/mpc8568mds.dts |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-Yes, you can implement this:
-
-#define MAX_PRESCALER (256 * 256 * 16)
-
-int gtm_reset_weird_behaving_utimer16(struct gtm_timer *tmr,
-				      unsigned long long usec,
-				      bool free_run)
-{
-	int freq = 1000000;
-	int min_hz2 = (tmr->gtm->freq / MAX_PRESCALER) << 1;
-
-	while (!(freq & 1) && !(usec & 1) && freq >= min_hz2) {
-		freq >>= 1;
-		usec >>= 1;
-	}
-
-	if (usec > 0xffff)
-		return -EINVAL;
-
-	return gtm_reset_ref_timer16(tmr, freq, (u16)usec, free_run);
-}
-
-This function (depending on clock-frequency) will work for 1001 usecs,
-but will return -EINVAL for 1000001 usecs, thought it will work for
-1000000 usecs, and for 333000000 it will work too, but will again
-return -EINVAL for 333000010 usecs. I hope this pattern is obvious.
-This is really weird behaving, isn't it?
-
-Oh, and later you can drop the 16 suffix and implement the dynamically
-chosen cascading, depending if usec argument fits into single/double/quad
-timer.
-
-Though, I don't need all this stuff in the FHCI irq handlers, I do know
-the precision I want. Like the most of kernel code does.
-
+diff --git a/arch/powerpc/boot/dts/mpc8568mds.dts b/arch/powerpc/boot/dts/mpc8568mds.dts
+index c47d69e..a025a8e 100644
+--- a/arch/powerpc/boot/dts/mpc8568mds.dts
++++ b/arch/powerpc/boot/dts/mpc8568mds.dts
+@@ -291,12 +291,12 @@
+  			#address-cells = <1>;
+  			#size-cells = <1>;
+ 			compatible = "fsl,qe-muram", "fsl,cpm-muram";
+-			ranges = <0x0 0x10000 0xc000>;
++			ranges = <0x0 0x10000 0x10000>;
+ 
+ 			data-only@0 {
+ 				compatible = "fsl,qe-muram-data",
+ 					     "fsl,cpm-muram-data";
+-				reg = <0x0 0xc000>;
++				reg = <0x0 0x10000>;
+ 			};
+ 		};
+ 
 -- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+1.5.3.rc3.13.g7ab3
