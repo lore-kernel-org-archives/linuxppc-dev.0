@@ -1,38 +1,12 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 0A214DE1CE
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Apr 2008 07:58:27 +1000 (EST)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	m3GLwNqU010023
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Apr 2008 14:58:23 -0700 (MST)
-Received: from ld0162-tx32.am.freescale.net (ld0162-tx32.am.freescale.net
-	[10.82.19.112])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id m3GLwMVI016829
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Apr 2008 16:58:22 -0500 (CDT)
-Date: Wed, 16 Apr 2008 16:58:21 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Anton Vorontsov <cbouatmailru@gmail.com>
-Subject: Re: [PATCH 6/8] [POWERPC] sysdev,qe_lib: implement FSL GTM support
-Message-ID: <20080416215821.GA15566@ld0162-tx32.am.freescale.net>
-References: <20080311172106.GA4766@localhost.localdomain>
-	<20080311172429.GF7727@localhost.localdomain>
-	<20080318174329.GB4099@loki.buserror.net>
-	<20080318192152.GA26493@localhost.localdomain>
-	<47E01E22.9000807@freescale.com>
-	<20080318202717.GA1030@localhost.localdomain>
-	<47E02A8C.2080705@freescale.com>
-	<20080416183904.GA23512@polina.dev.rtsoft.ru>
-	<20080416184442.GA12179@ld0162-tx32.am.freescale.net>
-	<20080416210042.GA3579@zarina>
-Mime-Version: 1.0
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080416210042.GA3579@zarina>
-Cc: linuxppc-dev@ozlabs.org
+Message-ID: <18438.39830.98206.763623@cargo.ozlabs.ibm.com>
+Date: Thu, 17 Apr 2008 10:36:38 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: linuxppc-dev@ozlabs.org
+Subject: More patches pushed to powerpc.git master and powerpc-next
+	branches (second try)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -42,17 +16,74 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Apr 17, 2008 at 01:00:42AM +0400, Anton Vorontsov wrote:
-> On Wed, Apr 16, 2008 at 01:44:42PM -0500, Scott Wood wrote:
-> > A maximal timeout of ~65 ms is a little low...  For use as a wakeup from
-> > sleep mode, I'd like to be able to request timeouts as large as the
-> > hardware allows.
-> 
-> That is about precision. You just need to implement gtm_reset_stimer()
-> is you want precision with a seconds, this will run a timer at 1 Hz.
+The following commits are now in the master and powerpc-next branches
+in the powerpc.git tree.  This includes commits pulled from Josh
+Boyer's and Olof Johansson's trees.
 
-Enh.  I'm not crazy about having to call separately named functions,
-rather than have the timer code set the reference clock to the highest
-precision that has the needed range.
+There was a short period recently (approx. 12 hours ago) when
+powerpc.git had a string of commits including two that broke the
+ibm-newemac driver on some platforms.  If you pulled during that
+period then you'll need to do a git pull -f when you pull this lot.
 
--Scott
+Paul.
+
+Adrian Bunk (1):
+      [POWERPC] Add MODULE_LICENSE to powerpc/sysdev/rtc_cmos_setup.c
+
+Anton Vorontsov (2):
+      [POWERPC] OF helpers for the GPIO API
+      [POWERPC] Implement support for the GPIO LIB API
+
+Benjamin Herrenschmidt (3):
+      [POWERPC] Initialize paca->current earlier
+      [POWERPC] Fixup softirq preempt count
+      [POWERPC] properly declare onstack completion in iseries veth
+
+David Woodhouse (1):
+      [POWERPC] Efika: Really, don't pretend to be CHRP
+
+Ishizaki Kou (2):
+      [POWERPC] celleb: Coding style cleanup
+      [POWERPC] hvcbeat: Fix buffer manipulation
+
+Jerone Young (1):
+      [POWERPC] 4xx: Add idle wait support for 44x platforms
+
+Jochen Friedrich (1):
+      [POWERPC] i2c: OF helpers for the i2c API
+
+Josh Boyer (2):
+      [POWERPC] 4xx: Reorganize 4xx defconfigs
+      [POWERPC] 4xx: Add ppc40x_defconfig
+
+Kumar Gala (13):
+      [POWERPC] Remove Kconfig option BOOT_LOAD
+      [POWERPC] Provide access to arch/powerpc include path on ppc64
+      [POWERPC] Remove and replace uses of PPC_MEMSTART with memstart_addr
+      [POWERPC] Introduce lowmem_end_addr to distinguish from total_lowmem
+      [POWERPC] 85xx: Cleanup TLB initialization
+      [POWERPC] Use lowmem_end_addr to limit lmb allocations on ppc32
+      [POWERPC] Rename __initial_memory_limit to __initial_memory_limit_addr
+      [POWERPC] Clean up some linker and symbol usage
+      [POWERPC] Move phys_addr_t definition into asm/types.h
+      [POWERPC] Update linker script to properly set physical addresses
+      [POWERPC] bootwrapper: Use physical address in PHDR for uImage
+      [POWERPC] Cleanup pgtable-ppc32.h
+      [POWERPC] Remove unused machine call outs
+
+Manish Ahuja (1):
+      [POWERPC] pseries/phyp dump: Reserve a variable amount of space at boot
+
+Michael Ellerman (2):
+      [POWERPC] Move prototype for find_udbg_vterm() into a header file
+      [POWERPC] Always add preferred consoles in platforms/pseries/lpar.c
+
+Nate Case (1):
+      pasemi_mac: Netpoll support
+
+Olof Johansson (2):
+      pasemi_mac: Jumbo frame bugfixes
+      [POWERPC] pasemi: Minor iommu cleanup
+
+Valentine Barshak (1):
+      [POWERPC] kexec: MPIC ack interrupts at mpic_teardown_this_cpu()
