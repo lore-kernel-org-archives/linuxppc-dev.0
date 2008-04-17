@@ -1,29 +1,19 @@
-Return-Path: <rmachet@slac.stanford.edu>
-Received: from nospam3.slac.stanford.edu (nospam3.slac.stanford.edu
-	[134.79.18.120])
+Return-Path: <jgarzik@pobox.com>
+Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B98EBDE227
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Apr 2008 10:41:58 +1000 (EST)
-Received: from mailgate01.slac.stanford.edu (mailgate01.slac.stanford.edu
-	[134.79.18.80])
-	by nospam3.slac.stanford.edu (8.13.8/8.13.8) with ESMTP id
-	m3H0aUK9007835
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Apr 2008 17:36:30 -0700 (PDT)
-	(envelope-from rmachet@slac.stanford.edu)
-Received: from pcds-ts102.slac.stanford.edu (pcds-ts102.slac.stanford.edu
-	[134.79.128.151])
-	by mailgate01.slac.stanford.edu (8.13.8/8.13.8) with ESMTP id
-	m3H0aTub019989
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Apr 2008 17:36:29 -0700 (PDT)
-	(envelope-from rmachet@slac.stanford.edu)
-Subject: MV64x60 device bus
-From: Remi Machet <rmachet@slac.stanford.edu>
-To: linuxppc-dev@ozlabs.org
-Content-Type: text/plain
-Date: Wed, 16 Apr 2008 17:36:36 -0700
-Message-Id: <1208392597.5668.82.camel@pcds-ts102.slac.stanford.edu>
-Mime-Version: 1.0
+	by ozlabs.org (Postfix) with ESMTPS id 58DE4DE02D
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Apr 2008 10:54:08 +1000 (EST)
+Message-ID: <48069FA7.5060207@pobox.com>
+Date: Wed, 16 Apr 2008 20:53:59 -0400
+From: Jeff Garzik <jgarzik@pobox.com>
+MIME-Version: 1.0
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Subject: Re: [PATCH] natsemi: fix MMIO for PPC 44x platforms
+References: <200804122058.31075.sshtylyov@ru.mvista.com>
+In-Reply-To: <200804122058.31075.sshtylyov@ru.mvista.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,27 +23,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+Sergei Shtylyov wrote:
+> The driver stores the PCI resource address into 'unsigned long' variable before
+> calling ioremap()  on it. This warrants a kernel oops when the registers are
+> accessed on PPC 44x platforms which (being 32-bit) have PCI memory space mapped
+> beyond 4 GB.
+> 
+> The arch/ppc/ kernel has a fixup in ioremap() that creates an illusion of the
+> PCI memory resources are mapped below 4 GB, but arch/powerpc/ code got rid of
+> this trick, having instead CONFIG_RESOURCES_64BIT enabled.
+> 
+> Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+> 
+> ---
+> Reposting the patch with the typecast, log, and summary corrected.
+> This is the same issue as the one that has been recently addressed by commits
+> 3c34ac36ac1084e571ef9b6fb1d6a5b10ccc1fd0 (e1000: Fix for 32 bits platforms with
+> 64 bits resources) and c976816b6e901341ec3c4653147316c15549a1c4 (siimage: fix
+> kernel oops on PPC 44x).  The patch has only been compile tested though...
+> 
+>  drivers/net/natsemi.c |   10 ++++++----
+>  1 files changed, 6 insertions(+), 4 deletions(-)
 
-I am working on a board with an MV64460 and this controller has what its
-data sheet call a device controller (ie a generic asynchronous bus to
-connect NOR flashes and other similar devices). On this board a NOR
-flash is connected to it and I would like to get it to be recognized by
-the Open Firmware MTD map driver.
-
-The problem is that this driver expects the flash to be registered as an
-of_platform device, I could do that in the board file itself but I think
-it would be more useful to add some generic code for all MV64360 based
-boards: 
-
-My idea would be to add to the MV64360 initialization code the
-registration of an of_platform bus if a node of type 'devicectrl' is
-found (inside the mv64360 node); this node would contain all the devices
-attached to the device bus and the of_platform sub-system would take
-care of creating the proper of_platform devices.
-
-Does anyone have comments or a better idea ?
-
-Thanks,
-
-Remi
+applied
