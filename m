@@ -2,10 +2,10 @@ Return-Path: <jochen@scram.de>
 Received: from mail.scram.de (mail0.scram.de [78.47.204.202])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mail.scram.de", Issuer "scram e.V. CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 35B08DE237
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Apr 2008 22:46:55 +1000 (EST)
-Message-ID: <480746B0.7070409@scram.de>
-Date: Thu, 17 Apr 2008 14:46:40 +0200
+	by ozlabs.org (Postfix) with ESMTPS id 7B0A2DDED9
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Apr 2008 22:49:04 +1000 (EST)
+Message-ID: <4807472E.9000300@scram.de>
+Date: Thu, 17 Apr 2008 14:48:46 +0200
 From: Jochen Friedrich <jochen@scram.de>
 MIME-Version: 1.0
 To: Laurent Pinchart <laurentp@cse-semaphore.com>
@@ -28,15 +28,12 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Hi Laurent,
 
-> BTW, what's the purpose of the shadow data register in the CPM GPIO chip 
-> structure ? As the set operation is protected by a spinlock, the only use I 
-> can think of is to prevent changing bits in the PDAT register for pins 
-> configured as inputs. Is that correct ? If so this should be clearly 
-> documented in the code.
+> Any preference for common function names ? cpm2_gpio32* might be too 
+> CPM2-specific for cpm_common.c. cpm_gpio32* is a bit too generic as it 
+> doesn't support port E on the CPM1.
 
-It's for pins configured as open drain. See the discussion in:
-
-http://ozlabs.org/pipermail/linuxppc-dev/2008-January/050826.html
+I would keep the cpm2 name. I'll just add a comment to cpm1.c that
+fsl,cpm1-pario-bank32e uses cpm2 layout.
 
 Thanks,
 Jochen
