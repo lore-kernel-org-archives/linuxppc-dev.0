@@ -1,22 +1,22 @@
-Return-Path: <timur@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 1389DDEF74
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Apr 2008 08:00:32 +1000 (EST)
-Message-ID: <4807C874.10200@freescale.com>
-Date: Thu, 17 Apr 2008 17:00:20 -0500
-From: Timur Tabi <timur@freescale.com>
-MIME-Version: 1.0
-To: cbouatmailru@gmail.com
-Subject: Re: [PATCH 2/5] [POWERPC] QE: add support for QE USB clocks routing
+Return-Path: <cbouatmailru@gmail.com>
+Received: from fk-out-0910.google.com (fk-out-0910.google.com [209.85.128.186])
+	by ozlabs.org (Postfix) with ESMTP id 416F6DE32C
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Apr 2008 08:35:08 +1000 (EST)
+Received: by fk-out-0910.google.com with SMTP id z22so381036fkz.9
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Apr 2008 15:35:05 -0700 (PDT)
+Date: Fri, 18 Apr 2008 02:35:00 +0400
+From: Anton Vorontsov <cbouatmailru@gmail.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 3/5] [POWERPC] QE: split par_io_config_pin()
+Message-ID: <20080417223500.GA16022@zarina>
 References: <20080417192656.GA19107@polina.dev.rtsoft.ru>
-	<20080417192846.GB28286@polina.dev.rtsoft.ru>
-	<4807AB7A.90005@freescale.com> <20080417214846.GA3161@zarina>
-In-Reply-To: <20080417214846.GA3161@zarina>
-Content-Type: text/plain; charset=ISO-8859-1
+	<20080417192850.GC28286@polina.dev.rtsoft.ru>
+	<2F36BD63-363C-4BA6-AA42-8002A09FD937@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <2F36BD63-363C-4BA6-AA42-8002A09FD937@kernel.crashing.org>
 Cc: linuxppc-dev@ozlabs.org
+Reply-To: cbouatmailru@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,21 +26,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Anton Vorontsov wrote:
+On Thu, Apr 17, 2008 at 04:53:34PM -0500, Kumar Gala wrote:
+>
+> On Apr 17, 2008, at 2:28 PM, Anton Vorontsov wrote:
+>> This patch splits par_io_config_pin so we can use it with GPIO LIB  
+>> API.
+>>
+>> Also add a comment regarding #ifdef CONFIG_PPC_85xx being legacy.
+>
+> legacy to what?
 
-> static inline bool qe_clock_is_brg(enum qe_clock clk)
-> {
-> 	return clk < QE_CLK1;
-> }
+If we'll ever manage to remove pio fixups from the device tree, we then
+can safely remove whole par_io_of_config(struct device_node *np) along
+with par_io_*(u8 port, ...), which only needs this #ifdef CONFIG_PPC_85xx.
+Users (so far only mpc8323e-rdb IIRC) of par_io_data_set(u8 port, ...)
+will be converted to GPIO API.
 
-I have no problem with this function (the UART driver could use it), except that
-your implementation is wrong.  You would need to do this:
-
-static inline bool qe_clock_is_brg(enum qe_clock clk)
-{
-	return (clk >= QE_BRG1) && (clk <= QE_BRG16);
-}
+And since device tree fixups considered legacy, I marked this code as
+legacy too. Am I wrong here?
 
 -- 
-Timur Tabi
-Linux kernel developer at Freescale
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
