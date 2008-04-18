@@ -1,20 +1,11 @@
-Return-Path: <laurentp@cse-semaphore.com>
-Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
-	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id 20650DE5C1
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Apr 2008 21:34:39 +1000 (EST)
-From: Laurent Pinchart <laurentp@cse-semaphore.com>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [RFC fs_enet: Convert MII bitbang driver to use GPIO lib
-Date: Fri, 18 Apr 2008 13:34:29 +0200
-References: <200804161640.42693.laurentp@cse-semaphore.com>
-	<20080416160540.GB442@polina.dev.rtsoft.ru>
-	<200804161809.40805.laurentp@cse-semaphore.com>
-In-Reply-To: <200804161809.40805.laurentp@cse-semaphore.com>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3467580.lIyNInjBNs";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Message-Id: <200804181334.34229.laurentp@cse-semaphore.com>
-Cc: Scott Wood <scottwood@freescale.com>, netdev@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18440.34891.440661.248400@cargo.ozlabs.ibm.com>
+Date: Fri, 18 Apr 2008 21:38:51 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: linuxppc-dev@ozlabs.org
+Subject: Patches added to powerpc.git master and powerpc-next branches
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,79 +15,96 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---nextPart3467580.lIyNInjBNs
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+I have pushed out the following commits to the master and powerpc-next
+branches of the powerpc.git tree.  This includes commits from Kumar's
+and Jeremy's trees.
 
-On Wednesday 16 April 2008 18:09, Laurent Pinchart wrote:
-> On Wednesday 16 April 2008 18:05, Anton Vorontsov wrote:
-> > On Wed, Apr 16, 2008 at 04:40:42PM +0200, Laurent Pinchart wrote:
-> > > This patch converts the MII bitband driver to use GPIO lib for GPIO
-> > > access. The driver can now handle MDC and MDIO on different GPIO bank=
-s.
-> > >=20
-> > > The patch depends on Anton Vorontsov GPIO lib support scheduled for
-> > > 2.6.26. It is by no means complete, I just would like to get some
-> > > feedback on the approach. I'll resubmit it when the CPM2 GPIO support
-> > > patches will be available in the powerpc git tree.
-> >=20
-> > Cool! By the way, maybe it is worth splitting it into completely separa=
-te
-> > driver, e.g. net/mdio_gpio.c?
->=20
-> Splitting it into a completely separate driver makes sense.
->
-> > Plus, keep in mind that somebody will eventually want this cool stuff w=
-ith
-> > platform_device bindings in addition. :-)=20
->=20
-> I'm sure that person will be happy to implement platform_device bindings =
-:-)
+I am intending to ask Linus to pull the powerpc-next branch once we
+have the breakage from the OF helpers for i2c patch sorted out.
 
-I had a first try at moving mdio gpio code into a separate driver.
+Paul.
 
-Very little code is OF-independant, so the driver should probably be called=
-=20
-mdio_of_gpio.c or mdio_ofgpio.c.
+Alexander van Heukelum (1):
+      [POWERPC] Use asm-generic/bitops/find.h in bitops.h
 
-Scott Wood was concerned in=20
-http://patchwork.ozlabs.org/linuxppc/patch?id=3D17490 that the gpio lib mig=
-ht=20
-be an unnecessary burden for memory-constraint platforms. Should we keep tw=
-o=20
-mdio bitbang drivers, one with direct access to the ports and one using gpi=
-o=20
-lib ? The later solves the concurrent access issues present in the current=
-=20
-fs_enet mdio bitbang driber.
+Anton Vorontsov (9):
+      [POWERPC] QE: UCC nodes cleanup
+      [POWERPC] fsl_elbc_nand: factor out localbus defines
+      [POWERPC] fsl_lbc: implement few UPM routines
+      [POWERPC] QE: implement qe_muram_offset
+      [POWERPC] QE: immap_qe.h should include asm/io.h
+      [POWERPC] QE: export qe_get_brg_clk()
+      [POWERPC] QE: fix sparse warnings
+      [POWERPC] 83xx: mpc837x_rdb: add simple-bus compatible matching
+      [POWERPC] 83xx: mpc8315 - fix USB UTMI Host setup
 
-I'll submit a patch for whichever solution gets selected (modifying the=20
-current fs enet mdio bitbang driver to use the gpio lib, or creating a new=
-=20
-driver).
+Benjamin Herrenschmidt (3):
+      [POWERPC] Fix device-tree locking vs. interrupts
+      [POWERPC] Move stackframe definitions to common header
+      [POWERPC] irqtrace support for 64-bit powerpc
 
-=2D-=20
-Laurent Pinchart
-CSE Semaphore Belgium
+Christoph Hellwig (1):
+      [POWERPC] Stacktrace support for lockdep
 
-Chaussee de Bruxelles, 732A
-B-1410 Waterloo
-Belgium
+Gerhard Stenzel (1):
+      [POWERPC] spufs: fix incorrect file descriptors in SPU coredump note names
 
-T +32 (2) 387 42 59
-=46 +32 (2) 387 42 75
+Haiying Wang (1):
+      [POWERPC] 85xx: Fix the size of qe muram for MPC8568E
 
---nextPart3467580.lIyNInjBNs
-Content-Type: application/pgp-signature
+Jeremy Kerr (3):
+      [POWERPC] spufs: add newline to signal{1,2}_type files
+      [POWERPC] spufs: reacquire LS pointer in spu_process_callback
+      [POWERPC] spufs: save MFC command channel before purging MFC queue
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
+Kumar Gala (8):
+      [POWERPC] Rework Book-E debug exception handling
+      [POWERPC] 83xx/85xx: Reorganize defconfigs
+      [POWERPC] Make Book-E debug handling SMP safe
+      [POWERPC] 83xx: Enable FCM NAND and OF partitions in defconfig
+      [POWERPC] 85xx: Fix compile warning
+      [POWERPC] 85xx: Convert dts to v1 syntax
+      [POWERPC] 85xx: minor .dts cleanups
+      [POWERPC] fsl: Convert dts to v1 syntax
 
-iD8DBQBICIdK8y9gWxC9vpcRAr7PAKCIt21AmihWsIvGxygiqEfJMkDGCQCghddh
-uM+IR/Bns8ILK7Inc/RBgzc=
-=7Vam
------END PGP SIGNATURE-----
+Laurent Pinchart (6):
+      [POWERPC] cpm_uart: Allocate DPRAM memory for SMC ports on CPM2-based platforms.
+      [POWERPC] Add bootwrapper function to get virtual reg from the device tree.
+      [POWERPC] cpm-serial: Relocate CPM buffer descriptors and SMC parameter ram.
+      [POWERPC] ep8248e: Reference SMC parameter RAM base in the device tree.
+      [POWERPC] CPM2: Reset the CPM when early debugging is not enabled.
+      [POWERPC] CPM: Move opcodes common to CPM1 and CPM2 to include/asm-powerpc/cpm.h
 
---nextPart3467580.lIyNInjBNs--
+Michael Ellerman (4):
+      [POWERPC] Move xics_setup_8259_cascade() into platforms/pseries/setup.c
+      [POWERPC] Turn xics_setup_8259_cascade() into a generic pseries_setup_i8259_cascade()
+      [POWERPC] Use pseries_setup_i8259_cascade() in pseries_mpic_init_IRQ()
+      [POWERPC] Simplify xics direct/lpar irq_host setup
+
+Olof Johansson (1):
+      [POWERPC] Remove unused __max_memory variable
+
+Paul Gortmaker (5):
+      [POWERPC] 86xx: Add support for Wind River SBC8641D board
+      [POWERPC] 86xx: Add defconfig for Wind River SBC8641D board
+      [POWERPC] 86xx: Add device tree source for Wind River SBC8641D
+      [POWERPC] 86xx: mark functions static, other minor cleanups
+      [POWERPC] 86xx: mpc86xx_hpcn - Temporarily accept old dts node identifier.
+
+Paul Mackerras (1):
+      [POWERPC] Optimize fls64() on 64-bit processors
+
+Scott Wood (4):
+      [POWERPC] CPM: Always use new binding.
+      [POWERPC] fsl_soc: Factor fsl_get_sys_freq() out of the wdt and spi inits.
+      [POWERPC] cuboot-pq2: PCI fixes
+      [POWERPC] 83xx: mpc8313erdb - Enable FCM NAND and OF partitions in defconfig
+
+Sebastian Siewior (1):
+      [POWERPC] 85xx: Enable DMA engine on the MPC8544 DS
+
+Timur Tabi (1):
+      [POWERPC] Make rheap safe for spinlocks
+
+Trent Piepho (1):
+      [POWERPC] Make pci_bus_to_host()'s struct pci_bus * argument const
