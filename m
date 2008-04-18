@@ -1,24 +1,21 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id CFF41DE35A
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Apr 2008 22:52:01 +1000 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	m3ICpuwI005205
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Apr 2008 05:51:57 -0700 (MST)
-Message-Id: <2E5B7A5C-F193-4A25-A329-8C3CC9002102@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-To: Jason Jin <Jason.jin@freescale.com>
-In-Reply-To: <1208588876-23103-1-git-send-email-Jason.jin@freescale.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id B0AD2DE009
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Apr 2008 23:19:42 +1000 (EST)
+Message-Id: <3DA03449-754F-4A10-A45D-0E0C4ADAA44B@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Johannes Berg <johannes@sipsolutions.net>
+In-Reply-To: <1207690574.7442.4.camel@johannes.berg>
 Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: [PATCH] Fix the wrong serial1 interrupt for 8610 board
-Date: Fri, 18 Apr 2008 07:51:54 -0500
-References: <1208588876-23103-1-git-send-email-Jason.jin@freescale.com>
+Subject: Re: [PATCH v3] powerpc: Add irqtrace support for 32-bit powerpc
+Date: Fri, 18 Apr 2008 08:19:22 -0500
+References: <20080404213932.GA15847@farnsworth.org>
+	<20080407171428.GA14900@farnsworth.org>
+	<1207670643.5550.11.camel@johannes.berg>
+	<1207690574.7442.4.camel@johannes.berg>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -30,29 +27,23 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Apr 19, 2008, at 2:07 AM, Jason Jin wrote:
-> Signed-off-by: Jason Jin <Jason.jin@freescale.com>
-> ---
-> arch/powerpc/boot/dts/mpc8610_hpcd.dts |    2 +-
-> 1 files changed, 1 insertions(+), 1 deletions(-)
+On Apr 8, 2008, at 4:36 PM, Johannes Berg wrote:
 >
-> diff --git a/arch/powerpc/boot/dts/mpc8610_hpcd.dts b/arch/powerpc/ 
-> boot/dts/mpc8610_hpcd.dts
-> index 16c947b..97fdb01 100644
-> --- a/arch/powerpc/boot/dts/mpc8610_hpcd.dts
-> +++ b/arch/powerpc/boot/dts/mpc8610_hpcd.dts
-> @@ -100,7 +100,7 @@
-> 			compatible = "ns16550";
-> 			reg = <0x4600 0x100>;
-> 			clock-frequency = <0>;
-> -			interrupts = <28 2>;
-> +			interrupts = <42 2>;
-
-I've converted the .dts to v1 syntax but I'll fix this when I apply  
-since its trivial.
-
+>>> This version fixes the clobbering of r12 by the call to
+>>> trace_hardirqs_off() that was pointed out by BenH.
+>>>
+>>> Johannes, I'd appreciate your trying this version if/when
+>>> you get the chance.
+>>
+>> Thanks Dale, this version seems to work. I'll stress it a bit more
+>> later, but so far it has survived *much* longer than both previous
+>> versions.
 >
-> 			interrupt-parent = <&mpic>;
-> 		};
+> Hmm. Bad news. I got a crash in console_callback() again where
+> apparently r28 had a bogus value. That, however, doesn't make sense,  
+> so
+> maybe that register value was calculated from another register.
+
+did we ever figure this out?
 
 - k
