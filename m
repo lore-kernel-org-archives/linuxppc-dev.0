@@ -1,22 +1,18 @@
-Return-Path: <Rick.Moleres@xilinx.com>
-Received: from outbound5-dub-R.bigfish.com (outbound-dub.frontbridge.com
-	[213.199.154.16])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 32CB0DE311
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 Apr 2008 02:15:05 +1000 (EST)
+Return-Path: <sshtylyov@ru.mvista.com>
+Received: from imap.sh.mvista.com (unknown [63.81.120.155])
+	by ozlabs.org (Postfix) with ESMTP id DAC6BDE149
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 Apr 2008 02:29:44 +1000 (EST)
+Message-ID: <4808CC4E.5000705@ru.mvista.com>
+Date: Fri, 18 Apr 2008 20:29:02 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Subject: RE: Xilinx network trouble (mostly solved)
-Date: Fri, 18 Apr 2008 10:14:52 -0600
-In-Reply-To: <04c001c8a162$242e7330$ad289e86@LPSC0173W>
-References: <03fc01c8a072$67280110$ad289e86@LPSC0173W><20080417155609.9061E1D000B0@mail147-sin.bigfish.com>
-	<04c001c8a162$242e7330$ad289e86@LPSC0173W>
-From: "Rick Moleres" <Rick.Moleres@xilinx.com>
-To: "Guillaume Dargaud" <dargaud@lpsc.in2p3.fr>,
-	<linuxppc-dev@ozlabs.org>
-Message-Id: <20080418161454.E9E0C44009E@mail114-dub.bigfish.com>
+To: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
+Subject: Re: pci issue - wrong detection of pci ressources
+References: <48088F02.2060806@linux.vnet.ibm.com>
+In-Reply-To: <48088F02.2060806@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev@ozlabs.org, Detlev Zundel <dzu@denx.de>,
+	Hollis Blanchard <hollisb@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,53 +22,98 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Christian Ehrhardt wrote:
 
-Guillaume,
+> I tried to use a radeon r200 based graphic card on a sequoia ppc 
+> (440epx) board. I wondered about the initialization of radeonfb that 
+> failed with
+>     __ioremap(): phys addr 0x0 is RAM lr c029cf80
+>     radeonfb (0000:00:0a.0): cannot map MMIO
+>     radeonfb: probe of 0000:00:0a.0 failed with error -5
 
-You might try v1.00a of the xps_ll_temac core.  There are a couple of
-issues with v1.00b (posted previously on this list) that may (or may
-not) be causing the problem you see.
+> I trigger a check in ioremap, because the address it wants to remap is 
+> 0x0 which can never work. The reason of that is that the pci ressource 
+> of that graphic card is not properly detected.
 
--Rick
+    There might be another reason.  This driver seems to be another subject to 
+the 440-specific PCI memory space issue beacuse it uses 'unsigned long' to 
+store the PCI memory physical addresses and those are 64-bit in the 440 
+arch/powerpc/ kernels.
 
------Original Message-----
-From: linuxppc-dev-bounces+moleres=3Dxilinx.com@ozlabs.org
-[mailto:linuxppc-dev-bounces+moleres=3Dxilinx.com@ozlabs.org] On Behalf =
-Of
-Guillaume Dargaud
-Sent: Friday, April 18, 2008 8:40 AM
-To: linuxppc-dev@ozlabs.org
-Subject: Re: Xilinx network trouble (mostly solved)
+> With some help I found two kernels - one that work and one that has this 
+> issue.
+> Unfortunately they are very different:
+>   good => 2.6.24.2 from the linux-2.6-denx - built for arch=ppc
+>   bad => we have 2.6.25-rc9 (used in our kvm ppc project atm) - build 
+> for arch=powerpc
+> I tried building the 2.6.25-rc9 with arch=ppc, but that one does not 
+> boot so far. Because of that I can't surely tell you if it is only that 
+> difference that breaks the pci detection.
+> We need arch=powerpc for our kvm code anyway, so I hope there is another 
+> solution than to switch to arch=ppc ;-)
 
-Hello Rick,
+    Yes, the driver needs fixing -- at least that.
 
-> Which version of xps_ll_temac are you using, and which version of EDK?
-Using xps 9.2.02i, build EDK_lm_SP2.3+0
+> I just started to debug into that, but I wanted to ask here if there 
+> might be some known issues causing that and/or to get some hints where 
+> to look at.
 
-IP version for the TriMode_MAC_GMII (xps_ll_temac) is 1.00.b. EmacLite
-is=20
-1.00.a
+    Now you know of at least one.
 
-> Also, do both designs meet timing?
-As the software guy here, I have no idea. I've passed the question onto
-the=20
-electronics guys...
+> The issue is much better visible when I boot with these two kernels and 
+> use "lspci -vvv"
 
-BUT, you put me on the right tracks: looking at the driver versions I=20
-started playing with the options you get in the [Configure IP] of the=20
-Ethernet Mac drivers. I couldn't get any improvement with the LLTEMAC,
-but=20
-after I added the buffers to the EmacLite: IT WORKED !
+> Good kernel:
+> 00:0a.0 VGA compatible controller: ATI Technologies Inc RV280 [Radeon 
+> 9200 PRO] (rev 01) (prog-if 00 [VGA])
+>        Subsystem: PC Partner Limited Unknown device 0250
+>        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- 
+> ParErr- Stepping- SERR- FastB2B-
+>        Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- 
+> <TAbort- <MAbort- >SERR- <PERR-
+>        Latency: 128 (2000ns min)
+>        Interrupt: pin A routed to IRQ 67
+>        Region 0: Memory at 88000000 (32-bit, prefetchable) [size=128M]
+>        Region 1: I/O ports at ff00 [size=256]
+>        Region 2: Memory at 87ff0000 (32-bit, non-prefetchable) [size=64K]
+>        Expansion ROM at 80020000 [disabled] [size=128K]
 
-I'm still having trouble mounting an NFS root and ssh'ing into the
-target,=20
-but I guess that's another issue...
---=20
-Guillaume Dargaud
-http://www.gdargaud.net/
+    Here, the PCI resources have been re-assigned by arch/ppc/ kernel, and are 
+confined to 4 GB due to fixup_bigphys_addr() trick used for 440...
 
+>        Capabilities: [50] Power Management version 2
+>                Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=0mA 
+> PME(D0-,D1-,D2-,D3hot-,D3cold-)
+>                Status: D0 PME-Enable- DSel=0 DScale=0 PME-
 
-_______________________________________________
-Linuxppc-dev mailing list
-Linuxppc-dev@ozlabs.org
-https://ozlabs.org/mailman/listinfo/linuxppc-dev
+> Bad kernel:
+> 00:0a.0 VGA compatible controller: ATI Technologies Inc RV280 [Radeon 
+> 9200 PRO] (rev 01) (prog-if 00 [VGA])
+>        Subsystem: PC Partner Limited Unknown device 0250
+>        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- 
+> ParErr- Stepping- SERR- FastB2B-
+>        Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- 
+> <TAbort- <MAbort- >SERR- <PERR-
+>        Latency: 128 (2000ns min)
+>        Interrupt: pin A routed to IRQ 16
+>        Region 0: Memory at 180000000 (32-bit, prefetchable) [size=128M]
+
+    That's beyond 4 GB, seems correct. That should be the address assigned by 
+bootloader? BTW, what's your bootloader, U-Boot?
+
+>        Region 1: I/O ports at 1000 [size=256]
+>        Region 2: Memory at <ignored> (32-bit, non-prefetchable)
+
+    Hm... what could this mean? Could you post the result of 'lspci -x'?
+
+>        Capabilities: [50] Power Management version 2
+>                Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=0mA 
+> PME(D0-,D1-,D2-,D3hot-,D3cold-)
+>                Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+
+> => Region 2 is not detected with our kernel, this later break things 
+> like radeonfb initialization.
+
+    Well, not only this...
+
+WBR, Sergei
