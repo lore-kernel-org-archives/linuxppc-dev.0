@@ -2,20 +2,22 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 60C10DE6C8
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Apr 2008 18:21:11 +1000 (EST)
-Subject: Re: [PATCH 02/11] Add udbg_console_anytime() which sets udbg
-	console to CON_ANYTIME
+	by ozlabs.org (Postfix) with ESMTPS id 088EADDFAE
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Apr 2008 18:24:26 +1000 (EST)
+Subject: Re: [EFIKA] Really, don't pretend to be CHRP
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Michael Ellerman <michael@ellerman.id.au>
-In-Reply-To: <bdf32a463da3cf9603c0b0bd257ac5deedcbbfe0.1208505275.git.michael@ellerman.id.au>
-References: <fbb91d0892c720d6f28501e1830028c78eb6664f.1208505275.git.michael@ellerman.id.au>
-	<bdf32a463da3cf9603c0b0bd257ac5deedcbbfe0.1208505275.git.michael@ellerman.id.au>
+To: Matt Sealey <matt@genesi-usa.com>
+In-Reply-To: <48076A00.1080608@genesi-usa.com>
+References: <1208105558.3026.137.camel@pmac.infradead.org>
+	<4807427B.3030902@genesi-usa.com>
+	<1208443057.9212.250.camel@pmac.infradead.org>
+	<48076A00.1080608@genesi-usa.com>
 Content-Type: text/plain
-Date: Fri, 18 Apr 2008 18:20:58 +1000
-Message-Id: <1208506858.6958.404.camel@pasglop>
+Date: Fri, 18 Apr 2008 18:24:08 +1000
+Message-Id: <1208507048.6958.407.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, David Woodhouse <dwmw2@infradead.org>,
+	paulus@samba.org
 Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -27,53 +29,32 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Fri, 2008-04-18 at 17:54 +1000, Michael Ellerman wrote:
-> In theory the udbg console should be safe to call basically at any time
-> after boot. It does not need any per-cpu resources or for the cpu to be
-> online, as long as there is a udbg_putc routine hooked up it should
-> work. So it should be able to be marked as CON_ANYTIME.
+On Thu, 2008-04-17 at 16:17 +0100, Matt Sealey wrote:
 > 
-> Verifying this will take a bit of time and testing though, so instead of
-> marking udbg console as CON_ANYTIME for all platforms, add a routine so
-> that a platform can opt-in to having udbg console called early.
+> I said the kernel has had braindead patches shoved into it that sort
+> of
+> obviate the need for the most heinous of crimes committed in the Efika
+> device tree.
 > 
-> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+> The Linux kernel fixups don't add the CDM or XLB arbiter or many other
+> components some out-of-mainline drivers will need (and should be able
+> to just access without writing a fixup first) to map to work properly.
+> Adding these will clean up things like the UART module, Sylvain's
+> sleep
+> patches will work on Efika, etc.
 
-Nah, just stick it always.
+What about you guys fix the firmware once for all instead of spamming
+our mailboxes ?
 
-Cheers,
+> > can't set environment variables from within Linux (and yes, we can
+> > probably improve on that too, but we let them setenv for themselves,
+> for
+> > now).
+> 
+> You really won't be improving on it because there's no reliable way to
+> pass setenv back to the firmware from userland :D
+
+They aren't in nvram ? If they are and using the standard OF CHRP
+format, then we can.
+
 Ben.
-
-> ---
->  arch/powerpc/kernel/udbg.c |    5 +++++
->  include/asm-powerpc/udbg.h |    1 +
->  2 files changed, 6 insertions(+), 0 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/udbg.c b/arch/powerpc/kernel/udbg.c
-> index 9ac5f3a..7b1fd86 100644
-> --- a/arch/powerpc/kernel/udbg.c
-> +++ b/arch/powerpc/kernel/udbg.c
-> @@ -158,6 +158,11 @@ static struct console udbg_console = {
->  	.index	= 0,
->  };
->  
-> +void udbg_console_anytime(void)
-> +{
-> +	udbg_console.flags |= CON_ANYTIME;
-> +}
-> +
->  static int early_console_initialized;
->  
->  /*
-> diff --git a/include/asm-powerpc/udbg.h b/include/asm-powerpc/udbg.h
-> index 6418cee..102fa91 100644
-> --- a/include/asm-powerpc/udbg.h
-> +++ b/include/asm-powerpc/udbg.h
-> @@ -23,6 +23,7 @@ extern int udbg_write(const char *s, int n);
->  extern int udbg_read(char *buf, int buflen);
->  
->  extern void register_early_udbg_console(void);
-> +extern void udbg_console_anytime(void);
->  extern void udbg_printf(const char *fmt, ...)
->  	__attribute__ ((format (printf, 1, 2)));
->  extern void udbg_progress(char *s, unsigned short hex);
