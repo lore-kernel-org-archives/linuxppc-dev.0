@@ -1,18 +1,20 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Fri, 18 Apr 2008 10:17:22 +1000
+Date: Fri, 18 Apr 2008 10:35:02 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
-To: Matt Sealey <matt@genesi-usa.com>
-Subject: Re: [EFIKA] Really, don't pretend to be CHRP
-Message-ID: <20080418001722.GA8724@yookeroo.seuss>
-References: <1208105558.3026.137.camel@pmac.infradead.org>
-	<4807427B.3030902@genesi-usa.com>
-	<1208443057.9212.250.camel@pmac.infradead.org>
-	<48076A00.1080608@genesi-usa.com>
+To: Paul Gortmaker <paul.gortmaker@gmail.com>
+Subject: Re: [PATCH] 86xx: mark functions static, other minor cleanups
+Message-ID: <20080418003502.GC8724@yookeroo.seuss>
+References: <1207933186-20555-1-git-send-email-paul.gortmaker@windriver.com>
+	<20080411171628.GA3203@loki.buserror.net>
+	<20080411184312.GA23941@windriver.com>
+	<28ac27892f91a47cd620aee7b7b9ecdb@kernel.crashing.org>
+	<7d1d9c250804141832pa9c9fbbicf4939c9854dc5f5@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <48076A00.1080608@genesi-usa.com>
-Cc: linuxppc-dev@ozlabs.org, David Woodhouse <dwmw2@infradead.org>,
-	paulus@samba.org
+In-Reply-To: <7d1d9c250804141832pa9c9fbbicf4939c9854dc5f5@mail.gmail.com>
+Cc: Scott Wood <scottwood@freescale.com>,
+	Paul Gortmaker <paul.gortmaker@windriver.com>,
+	linuxppc-dev@ozlabs.org, sfr@canb.auug.org.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,53 +24,67 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Apr 17, 2008 at 04:17:20PM +0100, Matt Sealey wrote:
->
-> David Woodhouse wrote:
->> On Thu, 2008-04-17 at 13:28 +0100, Matt Sealey wrote:
->>> I thought we were using efika.forth for this in Fedora.
->>
->> We were, until you pointed out that the kernel actually works just fine
->> these days without it.
->
-> I said the kernel has had braindead patches shoved into it that sort of
-> obviate the need for the most heinous of crimes committed in the Efika
-> device tree.
->
-> The Linux kernel fixups don't add the CDM or XLB arbiter or many other
-> components some out-of-mainline drivers will need (and should be able
-> to just access without writing a fixup first) to map to work properly.
-> Adding these will clean up things like the UART module, Sylvain's sleep
-> patches will work on Efika, etc.
->
->> can't set environment variables from within Linux (and yes, we can
->> probably improve on that too, but we let them setenv for themselves, for
->> now).
->
-> You really won't be improving on it because there's no reliable way to
-> pass setenv back to the firmware from userland :D
->
->> That might be a little cleaner than what we have at the moment, yes. But
->> what we have also works, so I'd rather concentrate on things like
->> getting audio support merged, before we faff around with what are
->> essentially cosmetics.
->
-> My ideal situation is all this stuff is stripped from the kernel. You do
-> realise 90% of the Efika traffic on this list is submitting code that
-> fixes fixups for a firmware which has a seperated fixup script, putting
-> the responsibility firmly where Linux-PPC policy dictated it should be
-> (with the firmware).
+On Mon, Apr 14, 2008 at 09:32:44PM -0400, Paul Gortmaker wrote:
+> On Fri, Apr 11, 2008 at 3:11 PM, Segher Boessenkool
+> <segher@kernel.crashing.org> wrote:
+> >
+> > > Updated as per above, and with tickerized prefixes for sbc8641.
+> > >
+> >
+> >  Care to try once more?  It's only "tickerized" if it's in all
+> >  uppercase.
+> 
+> I'm looking at what exists in arch/powerpc/boot/dts/* and I'm
+> not seeing too much uppercase - here is a sample:
+> 
+> ebony.dts:        compatible = "ibm,ebony";
+> ep405.dts:        compatible = "ibm,uic";
+> ep8248e.dts:    compatible = "fsl,ep8248e";
+> bamboo.dts:     compatible = "amcc,bamboo";
+> cm5200.dts:     compatible = "schindler,cm5200";
+> ep88xc.dts:     compatible = "fsl,ep88xc";
+> haleakala.dts:  compatible = "amcc,kilauea";
+> holly.dts:         compatible = "ibm,holly";
+> katmai.dts:     compatible = "amcc,katmai";
+> kilauea.dts:    compatible = "amcc,kilauea";
+> lite5200b.dts:  compatible = "fsl,lite5200b";
+> motionpro.dts:  compatible = "promess,motionpro";
+> mpc8272ads.dts: compatible = "fsl,mpc8272ads";
+> mpc866ads.dts:  compatible = "fsl,mpc866ads";
+> 
+> > > +       compatible = "wind,sbc8641";
+> 
+> To me this looks in keeping with the rest.  And I prefer
+> with the lower case, actually.  (Apparently so do a lot of
+> other people...)
 
-That's not Linux-PPC policy as far as I'm concerned.  It's nice if
-firmware provides a more-or-less accurate device tree, but we're not
-naive enough to think that's actually going to happen.  Firmware
-always is, and always will be, crap, so it's expected that the kernel
-will have to workaround device tree inaccuracies in the firmware.
+The confusion arises due to a difference between historical OF
+practice, and current flattened DT practice.
 
-Sometimes the simplest way of doing that is just to have workarounds
-in the drivers.  Other times, doing that would be ugly and invasive,
-so instead the bootwrapper should fixup the device tree before passing
-it on to the kernel - this is one of the purposes of the bootwrapper.
+Historically, as Segher says, uppercase names are stock tickers (and
+thereby a centrally registered, guaranteed-unique namespace).
+Lowercase names are a free-for-all, no central management, put pick a
+reasonable name and it will probably be ok.
+
+Use of the formal uppercase names in OF practice isn't particularly
+common - there certainly are AAPL, and IBM, names out there but
+they're rather outnumbered by the informal lowercase prefixes.  Which
+is why most of us doing flattened tree work didn't realise the
+distinction.  So, the flattened tree Linux community independently
+came up with the convention of using stock tickers as a way of
+uniqueifying the names - but used lowercase names.
+
+So, it's a bit of a mess.  Here's my recommended procedure:
+
+	* If you can find a single dominant existing practice for the
+vendor in question, use that.  (Consider both OF and flattened tree
+practice). i.e. existing practice trumps all.
+
+	* If you can't find any existing practice and need to make a
+new prefix, use the stock ticker.
+
+	* If you find more than one existing practice (and none is
+clearly dominant), take it to the list and we can argue about it.
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
