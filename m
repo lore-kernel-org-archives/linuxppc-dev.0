@@ -1,12 +1,22 @@
-Return-Path: <d.stonier@gmail.com>
-Message-ID: <27dfa3d0804171704j711aad1cwe7b558c077da3350@mail.gmail.com>
-Date: Fri, 18 Apr 2008 09:04:51 +0900
-From: "Daniel Stonier" <d.stonier@gmail.com>
-To: Linuxppc-embedded@ozlabs.org
-Subject: eldk and usb to serial converters
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.240])
+	by ozlabs.org (Postfix) with ESMTP id 21365DDF69
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri, 18 Apr 2008 13:14:29 +1000 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so89852anc.78
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 17 Apr 2008 20:14:27 -0700 (PDT)
+Message-ID: <fa686aa40804172014qfda92bek5a292b1c34833f4c@mail.gmail.com>
+Date: Thu, 17 Apr 2008 20:14:27 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: rodolfo <rodolfo@lesc.ufc.br>
+Subject: Re: problems with 'XPAR_PLB_CLOCK_FREQ_HZ'.
+In-Reply-To: <75c089d6de2ba74b5fdbf6a6fd91e468@lesc.ufc.br>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_557_19763838.1208477091679"
+Content-Type: text/plain; charset=ISO-8859-1
+References: <75c089d6de2ba74b5fdbf6a6fd91e468@lesc.ufc.br>
+Cc: Linuxppc embedded <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -17,35 +27,37 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-------=_Part_557_19763838.1208477091679
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Thu, Apr 17, 2008 at 12:15 PM, rodolfo <rodolfo@lesc.ufc.br> wrote:
+> Hi, everybody,
+>
+>  my xparameters_ml300.h does not include 'XPAR_PLB_CLOCK_FREQ_HZ'.
+>
+>
+>   CC      arch/ppc/boot/simple/embed_config.o
+>  arch/ppc/boot/simple/embed_config.c: In function 'embed_config':
+>  arch/ppc/boot/simple/embed_config.c:781: error: 'XPAR_PLB_CLOCK_FREQ_HZ'
+>  undeclared (first use in this function)
+>  arch/ppc/boot/simple/embed_config.c:781: error: (Each undeclared identifier
+>  is reported only once
+>  arch/ppc/boot/simple/embed_config.c:781: error: for each function it
+>  appears in.)
+>  make[2]: ** [arch/ppc/boot/simple/embed_config.o] Erro 1
+>  make[1]: ** [simple] Erro 2
+>  make: ** [zImage] Erro 2
+>
 
-Hi all,
+You probably didn't select the "linux_26" OS target in software
+platform settings before generating your xparameters_ml40x.h file.
 
-I'm currently trying to compile a kernel for an AMCC440EP board within an
-eldk environment. We've got a FTDI usb2serial converter we need to connect
-to the board. Now I've compiled a kernel on a gentoo machine for this device
-and had no problems. With this board, the kernel recognizes the device fine:
+>
+>  Can I replace 'XPAR_PLB_CLOCK_FREQ_HZ' for XPAR_CORE_CLOCK_FREQ_HZ/3
+>  knowing that my MHS file description is:
 
-ftdi_sio 1-1:1.0: FTDI USB Serial Device converter detected
-usb 1-1: FTDI USB Serial Device converter now attached to ttyUSB0
-drivers/usb/serial/ftdi_sio.c: v1.4.3:USB FTDI Serial Converters Driver
-
-but udev doesn't actually make the ttyUSB0 node. If anyone knows what may
-have caused the problem and how to fix it, it'd be much appreciated.
+No; that one is different.
 
 Cheers,
-Daniel.
+g.
 
-------=_Part_557_19763838.1208477091679
-Content-Type: text/html; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-Hi all,<br><br>I&#39;m currently trying to compile a kernel for an AMCC440EP board within an eldk environment. We&#39;ve got a FTDI usb2serial converter we need to connect to the board. Now I&#39;ve compiled a kernel on a gentoo machine for this device and had no problems. With this board, the kernel recognizes the device fine:<br>
-<br>ftdi_sio 1-1:1.0: FTDI USB Serial Device converter detected<br>usb 1-1: FTDI USB Serial Device converter now attached to ttyUSB0<br>drivers/usb/serial/ftdi_sio.c: v1.4.3:USB FTDI Serial Converters Driver<br><br>but udev doesn&#39;t actually make the ttyUSB0 node. If anyone knows what may have caused the problem and how to fix it, it&#39;d be much appreciated.<br>
-<br>Cheers,<br>Daniel.<br><br>
-
-------=_Part_557_19763838.1208477091679--
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
