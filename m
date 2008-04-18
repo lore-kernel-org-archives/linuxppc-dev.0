@@ -1,16 +1,12 @@
-Return-Path: <rodolfo@lesc.ufc.br>
-Received: from lesc0.lesc.ufc.br (unknown [200.17.37.126])
-	by ozlabs.org (Postfix) with ESMTP id 27258DE5F0
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 18 Apr 2008 05:15:47 +1000 (EST)
+Return-Path: <d.stonier@gmail.com>
+Message-ID: <27dfa3d0804171704j711aad1cwe7b558c077da3350@mail.gmail.com>
+Date: Fri, 18 Apr 2008 09:04:51 +0900
+From: "Daniel Stonier" <d.stonier@gmail.com>
+To: Linuxppc-embedded@ozlabs.org
+Subject: eldk and usb to serial converters
 MIME-Version: 1.0
-Date: Thu, 17 Apr 2008 16:15:43 -0300
-From: rodolfo <rodolfo@lesc.ufc.br>
-To: Grant Likely <grant.likely@secretlab.ca>,
-	Linuxppc embedded <linuxppc-embedded@ozlabs.org>
-Subject: problems with 'XPAR_PLB_CLOCK_FREQ_HZ'.
-Message-ID: <75c089d6de2ba74b5fdbf6a6fd91e468@lesc.ufc.br>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: multipart/alternative;
+	boundary="----=_Part_557_19763838.1208477091679"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -21,53 +17,35 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi, everybody,
+------=_Part_557_19763838.1208477091679
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-my xparameters_ml300.h does not include 'XPAR_PLB_CLOCK_FREQ_HZ'.
+Hi all,
 
+I'm currently trying to compile a kernel for an AMCC440EP board within an
+eldk environment. We've got a FTDI usb2serial converter we need to connect
+to the board. Now I've compiled a kernel on a gentoo machine for this device
+and had no problems. With this board, the kernel recognizes the device fine:
 
-  CC      arch/ppc/boot/simple/embed_config.o
-arch/ppc/boot/simple/embed_config.c: In function 'embed_config':
-arch/ppc/boot/simple/embed_config.c:781: error: 'XPAR_PLB_CLOCK_FREQ_HZ'
-undeclared (first use in this function)
-arch/ppc/boot/simple/embed_config.c:781: error: (Each undeclared identifier
-is reported only once
-arch/ppc/boot/simple/embed_config.c:781: error: for each function it
-appears in.)
-make[2]: ** [arch/ppc/boot/simple/embed_config.o] Erro 1
-make[1]: ** [simple] Erro 2
-make: ** [zImage] Erro 2
+ftdi_sio 1-1:1.0: FTDI USB Serial Device converter detected
+usb 1-1: FTDI USB Serial Device converter now attached to ttyUSB0
+drivers/usb/serial/ftdi_sio.c: v1.4.3:USB FTDI Serial Converters Driver
 
+but udev doesn't actually make the ttyUSB0 node. If anyone knows what may
+have caused the problem and how to fix it, it'd be much appreciated.
 
+Cheers,
+Daniel.
 
-Can I replace 'XPAR_PLB_CLOCK_FREQ_HZ' for XPAR_CORE_CLOCK_FREQ_HZ/3
-knowing that my MHS file description is:
+------=_Part_557_19763838.1208477091679
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
+Hi all,<br><br>I&#39;m currently trying to compile a kernel for an AMCC440EP board within an eldk environment. We&#39;ve got a FTDI usb2serial converter we need to connect to the board. Now I&#39;ve compiled a kernel on a gentoo machine for this device and had no problems. With this board, the kernel recognizes the device fine:<br>
+<br>ftdi_sio 1-1:1.0: FTDI USB Serial Device converter detected<br>usb 1-1: FTDI USB Serial Device converter now attached to ttyUSB0<br>drivers/usb/serial/ftdi_sio.c: v1.4.3:USB FTDI Serial Converters Driver<br><br>but udev doesn&#39;t actually make the ttyUSB0 node. If anyone knows what may have caused the problem and how to fix it, it&#39;d be much appreciated.<br>
+<br>Cheers,<br>Daniel.<br><br>
 
-# Processor clock frequency: 300.000000 MHz
-# Bus clock frequency: 100.000000 MHz
-
-
-MHS FILE:
-#
-##############################################################################
-# Created by Base System Builder Wizard for Xilinx EDK 9.1 Build EDK_J.19
-# Thu Apr  3 17:07:17 2008
-# Target Board:  Xilinx XUP Virtex-II Pro Development System Rev C
-# Family:	 virtex2p
-# Device:	 xc2vp30
-# Package:	 ff896
-# Speed Grade:	 -7
-# Processor: PPC 405
-# Processor clock frequency: 300.000000 MHz
-# Bus clock frequency: 100.000000 MHz
-# Debug interface: FPGA JTAG
-# On Chip Memory : 128 KB
-# Total Off Chip Memory : 512 MB
-# - DDR_SDRAM_64Mx64 Dual Rank = 256 MB
-# - DDR_512MB_64Mx64_rank2_row13_col10_cl2_5 = 256 MB
-#
-##############################################################################
-
-regards,
-rodolfo
+------=_Part_557_19763838.1208477091679--
