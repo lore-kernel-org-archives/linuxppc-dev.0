@@ -1,17 +1,25 @@
-Return-Path: <stephen.neuendorffer@xilinx.com>
-Received: from outbound1-dub-R.bigfish.com (outbound-dub.frontbridge.com
-	[213.199.154.16])
+Return-Path: <afleming@ld0175-tx32.am.freescale.net>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 19988DDEDC
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 Apr 2008 07:55:20 +1000 (EST)
-From: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
-To: benh@kernel.crashing.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH 1/2] [v3][POWERPC] refactor dcr code
-Date: Fri, 18 Apr 2008 14:55:03 -0700
-In-Reply-To: <1206914576.10388.132.camel@pasglop>
-References: <1206914576.10388.132.camel@pasglop>
-Message-Id: <20080418215513.ACA0C17F007A@mail131-dub.bigfish.com>
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 59D2ADE202
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 Apr 2008 08:35:55 +1000 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	m3IMZpih026869
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Apr 2008 15:35:51 -0700 (MST)
+Received: from ld0175-tx32.am.freescale.net (ld0175-tx32.am.freescale.net
+	[10.82.19.125])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m3IMZoP6018972
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Apr 2008 17:35:50 -0500 (CDT)
+From: Andy Fleming <afleming@freescale.com>
+To: galak@kernel.crashing.org
+Subject: [PATCH v2.6.26] powerpc: Add 8568 PHY workaround to board code
+Date: Fri, 18 Apr 2008 17:35:49 -0500
+Message-Id: <1208558149-6029-1-git-send-email-afleming@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, jgarzik@pobox.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,350 +29,159 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Previously, dcr support was configured at compile time to either using
-MMIO or native dcr instructions.  Although this works for most
-platforms, it fails on FPGA platforms:
+The 8568 MDS needs some configuration changes to the PHY in order to work
+properly.  These are done in the firmware, normally, but Linux shouldn't
+need to rely on the firmware running such things (someone could disable
+the PHY support in the firmware to save space, for instance).
 
-1) Systems may include more than one dcr bus.
-2) Systems may be native dcr capable and still use memory mapped dcr interface.
-
-This patch provides runtime support based on the device trees for the
-case where CONFIG_PPC_DCR_MMIO and CONFIG_PPC_DCR_NATIVE are both
-selected.  Previously, this was a poorly defined configuration, which
-happened to provide NATIVE support.  The runtime selection is made
-based on the dcr controller having a 'dcr-access-method' attribute
-in the device tree.  If only one of the above options is selected,
-then the code uses #defines to select only the used code in order to
-avoid introducing overhead in existing usage.
-
-Signed-off-by: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
+Signed-off-by: Andy Fleming <afleming@freescale.com>
 ---
- arch/powerpc/sysdev/dcr.c         |   91 ++++++++++++++++++++++++++++++++-----
- include/asm-powerpc/dcr-generic.h |   49 ++++++++++++++++++++
- include/asm-powerpc/dcr-mmio.h    |   20 +++++---
- include/asm-powerpc/dcr-native.h  |   16 ++++---
- include/asm-powerpc/dcr.h         |   36 ++++++++++++++-
- 5 files changed, 186 insertions(+), 26 deletions(-)
- create mode 100644 include/asm-powerpc/dcr-generic.h
 
-diff --git a/arch/powerpc/sysdev/dcr.c b/arch/powerpc/sysdev/dcr.c
-index 437e48d..d3de0ff 100644
---- a/arch/powerpc/sysdev/dcr.c
-+++ b/arch/powerpc/sysdev/dcr.c
-@@ -23,6 +23,68 @@
- #include <asm/prom.h>
- #include <asm/dcr.h>
+Jeff, copying you so you can see what code uses the board fixup patch.  Also,
+Kumar, note that this patch is utterly useless without the patch sent to netdev:
+Add support for board-level PHY fixups.
+
+ arch/powerpc/platforms/85xx/mpc85xx_mds.c |  114 +++++++++++++++++++++++++++++
+ 1 files changed, 114 insertions(+), 0 deletions(-)
+
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_mds.c b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
+index 25f8bc7..b1bf06d 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_mds.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
+@@ -32,6 +32,7 @@
+ #include <linux/fsl_devices.h>
+ #include <linux/of_platform.h>
+ #include <linux/of_device.h>
++#include <linux/phy.h>
  
-+#if defined(CONFIG_PPC_DCR_NATIVE) && defined(CONFIG_PPC_DCR_MMIO)
-+
-+bool dcr_map_ok_generic(dcr_host_t host)
-+{
-+	if (host.type == INVALID)
-+		return 0;
-+	else if (host.type == NATIVE)
-+		return dcr_map_ok_native(host.host.native);
-+	else
-+		return dcr_map_ok_mmio(host.host.mmio);
-+}
-+EXPORT_SYMBOL_GPL(dcr_map_ok_generic);
-+
-+dcr_host_t dcr_map_generic(struct device_node *dev,
-+			   unsigned int dcr_n,
-+			   unsigned int dcr_c)
-+{
-+	dcr_host_t host;
-+	const char *prop = of_get_property(dev, "dcr-access-method", NULL);
-+
-+	if (!strcmp(prop, "native")) {
-+		host.type = NATIVE;
-+		host.host.native = dcr_map_native(dev, dcr_n, dcr_c);
-+	} else if (!strcmp(prop, "mmio")) {
-+		host.type = MMIO;
-+		host.host.mmio = dcr_map_mmio(dev, dcr_n, dcr_c);
-+	} else
-+		host.type = INVALID;
-+
-+	return host;
-+}
-+EXPORT_SYMBOL_GPL(dcr_map_generic);
-+
-+void dcr_unmap_generic(dcr_host_t host, unsigned int dcr_c)
-+{
-+	if (host.type == NATIVE)
-+		dcr_unmap_native(host.host.native, dcr_c);
-+	else
-+		dcr_unmap_mmio(host.host.mmio, dcr_c);
-+}
-+EXPORT_SYMBOL_GPL(dcr_unmap_generic);
-+
-+u32 dcr_read_generic(dcr_host_t host, unsigned int dcr_n)
-+{
-+	if (host.type == NATIVE)
-+		return dcr_read_native(host.host.native, dcr_n);
-+	else
-+		return dcr_read_mmio(host.host.mmio, dcr_n);
-+}
-+EXPORT_SYMBOL_GPL(dcr_read_generic);
-+
-+void dcr_write_generic(dcr_host_t host, unsigned int dcr_n, u32 value)
-+{
-+	if (host.type == NATIVE)
-+		dcr_write_native(host.host.native, dcr_n, value);
-+	else
-+		dcr_write_mmio(host.host.mmio, dcr_n, value);
-+}
-+EXPORT_SYMBOL_GPL(dcr_write_generic);
-+
-+#endif /* defined(CONFIG_PPC_DCR_NATIVE) && defined(CONFIG_PPC_DCR_MMIO) */
-+
- unsigned int dcr_resource_start(struct device_node *np, unsigned int index)
- {
- 	unsigned int ds;
-@@ -47,7 +109,7 @@ unsigned int dcr_resource_len(struct device_node *np, unsigned int index)
- }
- EXPORT_SYMBOL_GPL(dcr_resource_len);
- 
--#ifndef CONFIG_PPC_DCR_NATIVE
-+#ifdef CONFIG_PPC_DCR_MMIO
- 
- static struct device_node * find_dcr_parent(struct device_node * node)
- {
-@@ -101,18 +163,19 @@ u64 of_translate_dcr_address(struct device_node *dev,
- 	return ret;
- }
- 
--dcr_host_t dcr_map(struct device_node *dev, unsigned int dcr_n,
--		   unsigned int dcr_c)
-+dcr_host_mmio_t dcr_map_mmio(struct device_node *dev,
-+			     unsigned int dcr_n,
-+			     unsigned int dcr_c)
- {
--	dcr_host_t ret = { .token = NULL, .stride = 0, .base = dcr_n };
-+	dcr_host_mmio_t ret = { .token = NULL, .stride = 0, .base = dcr_n };
- 	u64 addr;
- 
- 	pr_debug("dcr_map(%s, 0x%x, 0x%x)\n",
- 		 dev->full_name, dcr_n, dcr_c);
- 
- 	addr = of_translate_dcr_address(dev, dcr_n, &ret.stride);
--	pr_debug("translates to addr: 0x%lx, stride: 0x%x\n",
--		 addr, ret.stride);
-+	pr_debug("translates to addr: 0x%llx, stride: 0x%x\n",
-+		 (unsigned long long) addr, ret.stride);
- 	if (addr == OF_BAD_ADDR)
- 		return ret;
- 	pr_debug("mapping 0x%x bytes\n", dcr_c * ret.stride);
-@@ -124,11 +187,11 @@ dcr_host_t dcr_map(struct device_node *dev, unsigned int dcr_n,
- 	ret.token -= dcr_n * ret.stride;
- 	return ret;
- }
--EXPORT_SYMBOL_GPL(dcr_map);
-+EXPORT_SYMBOL_GPL(dcr_map_mmio);
- 
--void dcr_unmap(dcr_host_t host, unsigned int dcr_c)
-+void dcr_unmap_mmio(dcr_host_mmio_t host, unsigned int dcr_c)
- {
--	dcr_host_t h = host;
-+	dcr_host_mmio_t h = host;
- 
- 	if (h.token == NULL)
- 		return;
-@@ -136,7 +199,11 @@ void dcr_unmap(dcr_host_t host, unsigned int dcr_c)
- 	iounmap(h.token);
- 	h.token = NULL;
- }
--EXPORT_SYMBOL_GPL(dcr_unmap);
--#else	/* defined(CONFIG_PPC_DCR_NATIVE) */
-+EXPORT_SYMBOL_GPL(dcr_unmap_mmio);
-+
-+#endif /* defined(CONFIG_PPC_DCR_MMIO) */
-+
-+#ifdef CONFIG_PPC_DCR_NATIVE
- DEFINE_SPINLOCK(dcr_ind_lock);
--#endif	/* !defined(CONFIG_PPC_DCR_NATIVE) */
-+#endif	/* defined(CONFIG_PPC_DCR_NATIVE) */
-+
-diff --git a/include/asm-powerpc/dcr-generic.h b/include/asm-powerpc/dcr-generic.h
-new file mode 100644
-index 0000000..0ee74fb
---- /dev/null
-+++ b/include/asm-powerpc/dcr-generic.h
-@@ -0,0 +1,49 @@
-+/*
-+ * (c) Copyright 2006 Benjamin Herrenschmidt, IBM Corp.
-+ *                    <benh@kernel.crashing.org>
-+ *
-+ *   This program is free software;  you can redistribute it and/or modify
-+ *   it under the terms of the GNU General Public License as published by
-+ *   the Free Software Foundation; either version 2 of the License, or
-+ *   (at your option) any later version.
-+ *
-+ *   This program is distributed in the hope that it will be useful,
-+ *   but WITHOUT ANY WARRANTY;  without even the implied warranty of
-+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See
-+ *   the GNU General Public License for more details.
-+ *
-+ *   You should have received a copy of the GNU General Public License
-+ *   along with this program;  if not, write to the Free Software
-+ *   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
-+ */
-+
-+#ifndef _ASM_POWERPC_DCR_GENERIC_H
-+#define _ASM_POWERPC_DCR_GENERIC_H
-+#ifdef __KERNEL__
-+#ifndef __ASSEMBLY__
-+
-+enum host_type_t {MMIO, NATIVE, INVALID};
-+
-+typedef struct {
-+	enum host_type_t type;
-+	union {
-+		dcr_host_mmio_t mmio;
-+		dcr_host_native_t native;
-+	} host;
-+} dcr_host_t;
-+
-+extern bool dcr_map_ok_generic(dcr_host_t host);
-+
-+extern dcr_host_t dcr_map_generic(struct device_node *dev, unsigned int dcr_n,
-+			  unsigned int dcr_c);
-+extern void dcr_unmap_generic(dcr_host_t host, unsigned int dcr_c);
-+
-+extern u32 dcr_read_generic(dcr_host_t host, unsigned int dcr_n);
-+
-+extern void dcr_write_generic(dcr_host_t host, unsigned int dcr_n, u32 value);
-+
-+#endif /* __ASSEMBLY__ */
-+#endif /* __KERNEL__ */
-+#endif /* _ASM_POWERPC_DCR_GENERIC_H */
-+
-+
-diff --git a/include/asm-powerpc/dcr-mmio.h b/include/asm-powerpc/dcr-mmio.h
-index 08532ff..acd491d 100644
---- a/include/asm-powerpc/dcr-mmio.h
-+++ b/include/asm-powerpc/dcr-mmio.h
-@@ -27,20 +27,26 @@ typedef struct {
- 	void __iomem *token;
- 	unsigned int stride;
- 	unsigned int base;
--} dcr_host_t;
-+} dcr_host_mmio_t;
- 
--#define DCR_MAP_OK(host)	((host).token != NULL)
-+static inline bool dcr_map_ok_mmio(dcr_host_mmio_t host)
-+{
-+	return host.token != NULL;
-+}
- 
--extern dcr_host_t dcr_map(struct device_node *dev, unsigned int dcr_n,
--			  unsigned int dcr_c);
--extern void dcr_unmap(dcr_host_t host, unsigned int dcr_c);
-+extern dcr_host_mmio_t dcr_map_mmio(struct device_node *dev,
-+				    unsigned int dcr_n,
-+				    unsigned int dcr_c);
-+extern void dcr_unmap_mmio(dcr_host_mmio_t host, unsigned int dcr_c);
- 
--static inline u32 dcr_read(dcr_host_t host, unsigned int dcr_n)
-+static inline u32 dcr_read_mmio(dcr_host_mmio_t host, unsigned int dcr_n)
- {
- 	return in_be32(host.token + ((host.base + dcr_n) * host.stride));
- }
- 
--static inline void dcr_write(dcr_host_t host, unsigned int dcr_n, u32 value)
-+static inline void dcr_write_mmio(dcr_host_mmio_t host,
-+				  unsigned int dcr_n,
-+				  u32 value)
- {
- 	out_be32(host.token + ((host.base + dcr_n) * host.stride), value);
- }
-diff --git a/include/asm-powerpc/dcr-native.h b/include/asm-powerpc/dcr-native.h
-index f8398ce..72d2b72 100644
---- a/include/asm-powerpc/dcr-native.h
-+++ b/include/asm-powerpc/dcr-native.h
-@@ -26,14 +26,18 @@
- 
- typedef struct {
- 	unsigned int base;
--} dcr_host_t;
-+} dcr_host_native_t;
- 
--#define DCR_MAP_OK(host)	(1)
-+static inline bool dcr_map_ok_native(dcr_host_native_t host)
-+{
-+	return 1;
-+}
- 
--#define dcr_map(dev, dcr_n, dcr_c)	((dcr_host_t){ .base = (dcr_n) })
--#define dcr_unmap(host, dcr_c)		do {} while (0)
--#define dcr_read(host, dcr_n)		mfdcr(dcr_n + host.base)
--#define dcr_write(host, dcr_n, value)	mtdcr(dcr_n + host.base, value)
-+#define dcr_map_native(dev, dcr_n, dcr_c) \
-+	((dcr_host_native_t){ .base = (dcr_n) })
-+#define dcr_unmap_native(host, dcr_c)		do {} while (0)
-+#define dcr_read_native(host, dcr_n)		mfdcr(dcr_n + host.base)
-+#define dcr_write_native(host, dcr_n, value)	mtdcr(dcr_n + host.base, value)
- 
- /* Device Control Registers */
- void __mtdcr(int reg, unsigned int val);
-diff --git a/include/asm-powerpc/dcr.h b/include/asm-powerpc/dcr.h
-index 9338d50..6b86322 100644
---- a/include/asm-powerpc/dcr.h
-+++ b/include/asm-powerpc/dcr.h
-@@ -20,14 +20,47 @@
- #ifndef _ASM_POWERPC_DCR_H
- #define _ASM_POWERPC_DCR_H
- #ifdef __KERNEL__
-+#ifndef __ASSEMBLY__
- #ifdef CONFIG_PPC_DCR
- 
- #ifdef CONFIG_PPC_DCR_NATIVE
- #include <asm/dcr-native.h>
--#else
-+#endif
-+
-+#ifdef CONFIG_PPC_DCR_MMIO
- #include <asm/dcr-mmio.h>
+ #include <asm/system.h>
+ #include <asm/atomic.h>
+@@ -56,6 +57,95 @@
+ #define DBG(fmt...)
  #endif
  
-+#if defined(CONFIG_PPC_DCR_NATIVE) && defined(CONFIG_PPC_DCR_MMIO)
++#define MV88E1111_SCR	0x10
++#define MV88E1111_SCR_125CLK	0x0010
++static int mpc8568_fixup_125_clock(struct phy_device *phydev)
++{
++	int scr;
++	int err;
 +
-+#include <asm/dcr-generic.h>
++	/* Workaround for the 125 CLK Toggle */
++	scr = phy_read(phydev, MV88E1111_SCR);
 +
-+#define DCR_MAP_OK(host)	dcr_map_ok_generic(host)
-+#define dcr_map(dev, dcr_n, dcr_c) dcr_map_generic(dev, dcr_n, dcr_c)
-+#define dcr_unmap(host, dcr_c) dcr_unmap_generic(host, dcr_c)
-+#define dcr_read(host, dcr_n) dcr_read_generic(host, dcr_n)
-+#define dcr_write(host, dcr_n, value) dcr_write_generic(host, dcr_n, value)
++	if (scr < 0)
++		return scr;
 +
-+#else
++	err = phy_write(phydev, MV88E1111_SCR, scr & ~(MV88E1111_SCR_125CLK));
 +
-+#ifdef CONFIG_PPC_DCR_NATIVE
-+typedef dcr_host_native_t dcr_host_t;
-+#define DCR_MAP_OK(host)	dcr_map_ok_native(host)
-+#define dcr_map(dev, dcr_n, dcr_c) dcr_map_native(dev, dcr_n, dcr_c)
-+#define dcr_unmap(host, dcr_c) dcr_unmap_native(host, dcr_c)
-+#define dcr_read(host, dcr_n) dcr_read_native(host, dcr_n)
-+#define dcr_write(host, dcr_n, value) dcr_write_native(host, dcr_n, value)
-+#else
-+typedef dcr_host_mmio_t dcr_host_t;
-+#define DCR_MAP_OK(host)	dcr_map_ok_mmio(host)
-+#define dcr_map(dev, dcr_n, dcr_c) dcr_map_mmio(dev, dcr_n, dcr_c)
-+#define dcr_unmap(host, dcr_c) dcr_unmap_mmio(host, dcr_c)
-+#define dcr_read(host, dcr_n) dcr_read_mmio(host, dcr_n)
-+#define dcr_write(host, dcr_n, value) dcr_write_mmio(host, dcr_n, value)
-+#endif
++	if (err)
++		return err;
 +
-+#endif /* defined(CONFIG_PPC_DCR_NATIVE) && defined(CONFIG_PPC_DCR_MMIO) */
++	err = phy_write(phydev, MII_BMCR, BMCR_RESET);
 +
- /*
-  * On CONFIG_PPC_MERGE, we have additional helpers to read the DCR
-  * base from the device-tree
-@@ -41,5 +74,6 @@ extern unsigned int dcr_resource_len(struct device_node *np,
- #endif /* CONFIG_PPC_MERGE */
++	if (err)
++		return err;
++
++	scr = phy_read(phydev, MV88E1111_SCR);
++
++	if (scr < 0)
++		return err;
++
++	err = phy_write(phydev, MV88E1111_SCR, scr | 0x0008);
++
++	return err;
++}
++
++static int mpc8568_mds_phy_fixups(struct phy_device *phydev)
++{
++	int temp;
++	int err;
++
++	/* Errata */
++	err = phy_write(phydev,29, 0x0006);
++
++	if (err)
++		return err;
++
++	temp = phy_read(phydev, 30);
++
++	if (temp < 0)
++		return temp;
++
++	temp = (temp & (~0x8000)) | 0x4000;
++	err = phy_write(phydev,30, temp);
++
++	if (err)
++		return err;
++
++	err = phy_write(phydev,29, 0x000a);
++
++	if (err)
++		return err;
++
++	temp = phy_read(phydev, 30);
++
++	if (temp < 0)
++		return temp;
++
++	temp = phy_read(phydev, 30);
++
++	if (temp < 0)
++		return temp;
++
++	temp &= ~0x0020;
++
++	err = phy_write(phydev,30,temp);
++
++	if (err)
++		return err;
++
++	/* Disable automatic MDI/MDIX selection */
++	temp = phy_read(phydev, 16);
++
++	if (temp < 0)
++		return temp;
++
++	temp &= ~0x0060;
++	err = phy_write(phydev,16,temp);
++
++	return err;
++}
++
+ /* ************************************************************************
+  *
+  * Setup the architecture
+@@ -138,6 +228,30 @@ static void __init mpc85xx_mds_setup_arch(void)
+ #endif	/* CONFIG_QUICC_ENGINE */
+ }
  
- #endif /* CONFIG_PPC_DCR */
-+#endif /* __ASSEMBLY__ */
- #endif /* __KERNEL__ */
- #endif /* _ASM_POWERPC_DCR_H */
++
++static int __init board_fixups(void)
++{
++	char phy_id[BUS_ID_SIZE];
++	struct device_node *mdio;
++	struct resource res;
++
++	/* Register a workaround to fixup the clock source */
++	mdio = of_find_node_by_name(NULL, "mdio");
++
++	of_address_to_resource(mdio, 0, &res);
++	snprintf(phy_id, BUS_ID_SIZE, "%x:%02x", res.start, 1);
++
++	phy_register_fixup_for_id(phy_id, mpc8568_fixup_125_clock);
++	phy_register_fixup_for_id(phy_id, mpc8568_mds_phy_fixups);
++
++	/* Register a workaround for errata */
++	snprintf(phy_id, BUS_ID_SIZE, "%x:%02x", res.start, 7);
++	phy_register_fixup_for_id(phy_id, mpc8568_mds_phy_fixups);
++
++	return 0;
++}
++arch_initcall(board_fixups);
++
+ static struct of_device_id mpc85xx_ids[] = {
+ 	{ .type = "soc", },
+ 	{ .compatible = "soc", },
 -- 
-1.5.3.4-dirty
+1.5.4.GIT
