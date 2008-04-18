@@ -1,18 +1,19 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: More patches pushed to powerpc.git master and powerpc-next
-	branches (second try)
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Paul Mackerras <paulus@samba.org>
-In-Reply-To: <18438.39830.98206.763623@cargo.ozlabs.ibm.com>
-References: <18438.39830.98206.763623@cargo.ozlabs.ibm.com>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-ITtzMQYkDaBdx7opdxib"
-Date: Fri, 18 Apr 2008 13:49:48 +1000
-Message-Id: <1208490588.9319.0.camel@concordia.ozlabs.ibm.com>
+Return-Path: <benh@ozlabs.org>
+Subject: Re: [PATCH 1/2] Add thread_info_cache_init() to all archs
+From: Benjamin Herrenschmidt <benh@ozlabs.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20080413191338.9776ebd0.akpm@linux-foundation.org>
+References: <20080410032354.90CB1DDF0F@ozlabs.org>
+	<20080413171953.bde5e9ac.akpm@linux-foundation.org>
+	<1208133506.6958.82.camel@pasglop>
+	<20080413191338.9776ebd0.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Fri, 18 Apr 2008 13:58:06 +1000
+Message-Id: <1208491086.6958.381.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: michael@ellerman.id.au
+Cc: Linux-Arch <linux-arch@vger.kernel.org>, linux-m32r@ml.linux-m32r.org,
+	takata@linux-m32r.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,43 +24,64 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-ITtzMQYkDaBdx7opdxib
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> > > otoh, if only one .c file will ever call this function then I think that
+> > > all problems are solved by
+> > > 
+> > > a) moving the above ifdeffery into the .c file
+> > > b) adding a comment explaining which arch file must provide the override
+> > > c) directly including that file from within the .c file.
+> > 
+> > I can definitely do that. I have no problem either way. I can add to all
+> > archs too, it's just that whatever way I choose, some people won't be
+> > happy with it :-)
+> > 
+> > Anyway, I'll move the ifdeferry to init/main.c then.
+> 
+> Thanks ;)
+> 
+> I'm still wounded by my recent encounter with set_softirq_pending()
+> and or_softirq_pending().
 
-Hi Paul,
+Well, looking there, I saw we already used weak symbols for that so what
+about the patch below ? If you're ok, I'll re-send with appropriate sob
+& adapted powerpc part.
 
-Can you grab these when you're bored?
+Cheers,
+Ben.
 
-http://patchwork.ozlabs.org/linuxppc/patch?q=3Dellerman&id=3D17653
-http://patchwork.ozlabs.org/linuxppc/patch?q=3Dellerman&id=3D17654
-http://patchwork.ozlabs.org/linuxppc/patch?q=3Dellerman&id=3D17655
-http://patchwork.ozlabs.org/linuxppc/patch?q=3Dellerman&id=3D17656
-
-BenH might want to Ack them.
-
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-ITtzMQYkDaBdx7opdxib
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBICBpcdSjSd0sB4dIRAmJ6AJ9VmZdsKajTIcAshMboYiTaHe8kHgCeKQIN
-ds+BL5YH3475tt8B9UAbauY=
-=Yup7
------END PGP SIGNATURE-----
-
---=-ITtzMQYkDaBdx7opdxib--
+Index: linux-work/init/main.c
+===================================================================
+--- linux-work.orig/init/main.c	2008-03-26 10:39:25.000000000 +1100
++++ linux-work/init/main.c	2008-04-18 13:10:35.000000000 +1000
+@@ -504,6 +504,10 @@ void __init __attribute__((weak)) smp_se
+ {
+ }
+ 
++void __init __attribute__((weak) thread_info_cache_init(void)
++{
++}
++
+ asmlinkage void __init start_kernel(void)
+ {
+ 	char * command_line;
+@@ -623,6 +627,7 @@ asmlinkage void __init start_kernel(void
+ 	if (efi_enabled)
+ 		efi_enter_virtual_mode();
+ #endif
++	thread_info_cache_init();
+ 	fork_init(num_physpages);
+ 	proc_caches_init();
+ 	buffer_init();
+Index: linux-work/include/linux/sched.h
+===================================================================
+--- linux-work.orig/include/linux/sched.h	2008-04-02 09:47:56.000000000 +1100
++++ linux-work/include/linux/sched.h	2008-04-18 13:11:10.000000000 +1000
+@@ -1893,6 +1893,8 @@ static inline unsigned long *end_of_stac
+ 
+ #endif
+ 
++extern void thread_info_cache_init(void);
++
+ /* set thread flags in other task's structures
+  * - see asm/thread_info.h for TIF_xxxx flags available
+  */
