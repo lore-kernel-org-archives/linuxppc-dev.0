@@ -1,21 +1,12 @@
 Return-Path: <benh@ozlabs.org>
-Subject: Re: [PATCH 1/2] Add thread_info_cache_init() to all archs
-From: Benjamin Herrenschmidt <benh@ozlabs.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20080417211905.8ff769fa.akpm@linux-foundation.org>
-References: <20080410032354.90CB1DDF0F@ozlabs.org>
-	<20080413171953.bde5e9ac.akpm@linux-foundation.org>
-	<1208133506.6958.82.camel@pasglop>
-	<20080413191338.9776ebd0.akpm@linux-foundation.org>
-	<1208491086.6958.381.camel@pasglop>
-	<20080417211905.8ff769fa.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Fri, 18 Apr 2008 16:44:21 +1000
-Message-Id: <1208501061.6958.394.camel@pasglop>
-Mime-Version: 1.0
-Cc: Linux-Arch <linux-arch@vger.kernel.org>, linux-m32r@ml.linux-m32r.org,
-	takata@linux-m32r.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+To: Andrew Morton <akpm@linux-foundation.org>,
+	Paul Mackerras <paulus@samba.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Fri, 18 Apr 2008 16:56:15 +1000
+Subject: [PATCH 1/3] Add thread_info_cache_init() weak hook
+Message-Id: <20080418065726.C466EDE246@ozlabs.org>
+Cc: Linux-Arch <linux-arch@vger.kernel.org>, linuxppc-dev@ozlabs.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,24 +16,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Some architecture need to maintain a kmem cache for thread info
+structures. (next patch adds that to powerpc to fix an alignment
+problem).
 
-> > so what
-> > about the patch below ?
-> 
-> I like it, but the compiler won't ;)
-> 
-> > If you're ok, I'll re-send with appropriate sob
-> > & adapted powerpc part.
-> 
-> Sure.
-> 
-> > +void __init __attribute__((weak) thread_info_cache_init(void)
-> 
-> s/weak)/weak))/
+There is no good arch callback to use to initialize that cache
+that I can find, so this adds a new one in the form of a weak
+function whose default is empty.
 
-Yeah, missing quilt ref :-)
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
 
-I'll send the proper patches in a minute.
+ include/linux/sched.h |    2 ++
+ init/main.c           |    5 +++++
+ 2 files changed, 7 insertions(+)
 
-Cheers,
-Ben.
+--- linux-work.orig/init/main.c	2008-03-26 10:39:25.000000000 +1100
++++ linux-work/init/main.c	2008-04-18 16:43:53.000000000 +1000
+@@ -504,6 +504,10 @@ void __init __attribute__((weak)) smp_se
+ {
+ }
+ 
++void __init __weak thread_info_cache_init(void)
++{
++}
++
+ asmlinkage void __init start_kernel(void)
+ {
+ 	char * command_line;
+@@ -623,6 +627,7 @@ asmlinkage void __init start_kernel(void
+ 	if (efi_enabled)
+ 		efi_enter_virtual_mode();
+ #endif
++	thread_info_cache_init();
+ 	fork_init(num_physpages);
+ 	proc_caches_init();
+ 	buffer_init();
+Index: linux-work/include/linux/sched.h
+===================================================================
+--- linux-work.orig/include/linux/sched.h	2008-04-02 09:47:56.000000000 +1100
++++ linux-work/include/linux/sched.h	2008-04-18 13:11:10.000000000 +1000
+@@ -1893,6 +1893,8 @@ static inline unsigned long *end_of_stac
+ 
+ #endif
+ 
++extern void thread_info_cache_init(void);
++
+ /* set thread flags in other task's structures
+  * - see asm/thread_info.h for TIF_xxxx flags available
+  */
