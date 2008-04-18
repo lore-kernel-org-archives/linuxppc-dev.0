@@ -1,14 +1,21 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18440.16870.977737.279043@cargo.ozlabs.ibm.com>
-Date: Fri, 18 Apr 2008 16:38:30 +1000
-From: Paul Mackerras <paulus@samba.org>
+Return-Path: <benh@ozlabs.org>
+Subject: Re: [PATCH 1/2] Add thread_info_cache_init() to all archs
+From: Benjamin Herrenschmidt <benh@ozlabs.org>
 To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: 2.6.25-mm1 on the g5
-In-Reply-To: <20080417224248.fdd89284.akpm@linux-foundation.org>
-References: <20080417224248.fdd89284.akpm@linux-foundation.org>
-Cc: linuxppc-dev@ozlabs.org
+In-Reply-To: <20080417211905.8ff769fa.akpm@linux-foundation.org>
+References: <20080410032354.90CB1DDF0F@ozlabs.org>
+	<20080413171953.bde5e9ac.akpm@linux-foundation.org>
+	<1208133506.6958.82.camel@pasglop>
+	<20080413191338.9776ebd0.akpm@linux-foundation.org>
+	<1208491086.6958.381.camel@pasglop>
+	<20080417211905.8ff769fa.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Fri, 18 Apr 2008 16:44:21 +1000
+Message-Id: <1208501061.6958.394.camel@pasglop>
+Mime-Version: 1.0
+Cc: Linux-Arch <linux-arch@vger.kernel.org>, linux-m32r@ml.linux-m32r.org,
+	takata@linux-m32r.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,16 +25,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Andrew Morton writes:
 
-> It had been running happily and hard for a couple of hours when:
+> > so what
+> > about the patch below ?
+> 
+> I like it, but the compiler won't ;)
+> 
+> > If you're ok, I'll re-send with appropriate sob
+> > & adapted powerpc part.
+> 
+> Sure.
+> 
+> > +void __init __attribute__((weak) thread_info_cache_init(void)
+> 
+> s/weak)/weak))/
 
-Looks like the bug that Kamalesh Babulal reported and which I have
-been chasing without success so far.
+Yeah, missing quilt ref :-)
 
-> That's a pretty crappy trace.  Perhaps netconsole lost some of it, dunno.
+I'll send the proper patches in a minute.
 
-Yeah, there's a bug in the handling of that particular error condition
-which I have a patch to fix.
-
-Paul.
+Cheers,
+Ben.
