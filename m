@@ -1,25 +1,18 @@
-Return-Path: <neko@genesi-usa.com>
-Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.187])
-	by ozlabs.org (Postfix) with ESMTP id 0FA2CDE4FB
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 Apr 2008 01:21:49 +1000 (EST)
-Received: by nf-out-0910.google.com with SMTP id g16so383959nfd.9
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Apr 2008 08:21:38 -0700 (PDT)
-Message-ID: <4808BC7B.6040702@genesi-usa.com>
-Date: Fri, 18 Apr 2008 16:21:31 +0100
-From: Matt Sealey <matt@genesi-usa.com>
+Return-Path: <vbarshak@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id E5BC6DEDEC
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 Apr 2008 01:22:07 +1000 (EST)
+Message-ID: <4808BC33.7070109@ru.mvista.com>
+Date: Fri, 18 Apr 2008 19:20:19 +0400
+From: Valentine Barshak <vbarshak@ru.mvista.com>
 MIME-Version: 1.0
-To: benh@kernel.crashing.org
-Subject: Re: [EFIKA] Really, don't pretend to be CHRP
-References: <1208105558.3026.137.camel@pmac.infradead.org>	
-	<4807427B.3030902@genesi-usa.com>	
-	<1208443057.9212.250.camel@pmac.infradead.org>	
-	<48076A00.1080608@genesi-usa.com>
-	<1208507048.6958.407.camel@pasglop>
-In-Reply-To: <1208507048.6958.407.camel@pasglop>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Sender: Matt Sealey <neko@genesi-usa.com>
-Cc: linuxppc-dev@ozlabs.org, David Woodhouse <dwmw2@infradead.org>,
-	paulus@samba.org
+To: Stefan Roese <sr@denx.de>
+Subject: Re: [PATCH] PowerPC 44x: Add NOR flash entry to Canyonlands DTS.
+References: <20080417193744.GA17524@ru.mvista.com>
+	<200804181626.09585.sr@denx.de>
+In-Reply-To: <200804181626.09585.sr@denx.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,20 +22,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-Benjamin Herrenschmidt wrote:
->>> can't set environment variables from within Linux (and yes, we can
->>> probably improve on that too, but we let them setenv for themselves,
->> for
->>> now).
->> You really won't be improving on it because there's no reliable way to
->> pass setenv back to the firmware from userland :D
+Stefan Roese wrote:
+> On Thursday 17 April 2008, Valentine Barshak wrote:
+>> This patch adds NOR flash entry to the PowerPC 460EX Canyonlands DTS.
 > 
-> They aren't in nvram ? If they are and using the standard OF CHRP
-> format, then we can.
+> Right, I forgot to add this. But the partition names and sizes are a little 
+> different from those we used before (e.g. kilauea). I'll send a patch to 
+> update the Canyonlands & Glacier dts files in a short while.
+> 
 
-They aren't (especially on Pegasos) and they aren't, so you can't.
+I've got these partition names and sizes form amcc site.
+They seem to correspond to u-boot environment my board has.
+Are these incorrect?
+Thanks,
+Valentine.
 
--- 
-Matt Sealey <matt@genesi-usa.com>
-Genesi, Manager, Developer Relations
+> Thanks.
+> 
+> Best regards,
+> Stefan
