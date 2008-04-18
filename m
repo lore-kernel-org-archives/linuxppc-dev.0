@@ -1,24 +1,24 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <akpm@linux-foundation.org>
+Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
+	[140.211.169.13])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 088EADDFAE
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Apr 2008 18:24:26 +1000 (EST)
-Subject: Re: [EFIKA] Really, don't pretend to be CHRP
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Matt Sealey <matt@genesi-usa.com>
-In-Reply-To: <48076A00.1080608@genesi-usa.com>
-References: <1208105558.3026.137.camel@pmac.infradead.org>
-	<4807427B.3030902@genesi-usa.com>
-	<1208443057.9212.250.camel@pmac.infradead.org>
-	<48076A00.1080608@genesi-usa.com>
-Content-Type: text/plain
-Date: Fri, 18 Apr 2008 18:24:08 +1000
-Message-Id: <1208507048.6958.407.camel@pasglop>
+	(Client CN "smtp.linux-foundation.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 5302ADE01D
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Apr 2008 18:39:07 +1000 (EST)
+Date: Fri, 18 Apr 2008 01:38:57 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: benh@kernel.crashing.org
+Subject: Re: [PATCH 3/3] Use __weak macro for smp_setup_processor_id
+Message-Id: <20080418013857.92824cfb.akpm@linux-foundation.org>
+In-Reply-To: <1208506747.6958.402.camel@pasglop>
+References: <20080418065728.31AF4DE255@ozlabs.org>
+	<20080418000717.5a9c9758.akpm@linux-foundation.org>
+	<1208506747.6958.402.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, David Woodhouse <dwmw2@infradead.org>,
-	paulus@samba.org
-Reply-To: benh@kernel.crashing.org
+Content-Type: text/plain; charset=US-ASCII
+Cc: Linux-Arch <linux-arch@vger.kernel.org>, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,33 +28,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Fri, 18 Apr 2008 18:19:07 +1000 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-On Thu, 2008-04-17 at 16:17 +0100, Matt Sealey wrote:
 > 
-> I said the kernel has had braindead patches shoved into it that sort
-> of
-> obviate the need for the most heinous of crimes committed in the Efika
-> device tree.
+> On Fri, 2008-04-18 at 00:07 -0700, Andrew Morton wrote:
+> > On Fri, 18 Apr 2008 16:56:18 +1000 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+> > 
+> > > Use the __weak macro instead of the longer __attribute__ ((weak)) form
+> > > 
+> > > Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> > > --
+> > > 
+> > >  init/main.c |    2 +-
+> > >  1 file changed, 1 insertion(+), 1 deletion(-)
+> > > 
+> > > --- linux-work.orig/init/main.c	2008-04-18 16:44:32.000000000 +1000
+> > > +++ linux-work/init/main.c	2008-04-18 16:44:37.000000000 +1000
+> > > @@ -500,7 +500,7 @@ static void __init boot_cpu_init(void)
+> > >  	cpu_set(cpu, cpu_possible_map);
+> > >  }
+> > >  
+> > > -void __init __attribute__((weak)) smp_setup_processor_id(void)
+> > > +void __init __weak smp_setup_processor_id(void)
+> > >  {
+> > >  }
+> > 
+> > ack on all three. Please fold #3 into #1 and add both to git-powerpc.
 > 
-> The Linux kernel fixups don't add the CDM or XLB arbiter or many other
-> components some out-of-mainline drivers will need (and should be able
-> to just access without writing a fixup first) to map to work properly.
-> Adding these will clean up things like the UART module, Sylvain's
-> sleep
-> patches will work on Efika, etc.
+> Damn ! I took 5mn to actually split it out in order to not do two
+> different things in one patch :-)
 
-What about you guys fix the firmware once for all instead of spamming
-our mailboxes ?
+ah, I misread it.  I thought this was changing the __attribute__((weak))
+which patch #1 added.  But it's changing a different one.  I though that
+was odd.
 
-> > can't set environment variables from within Linux (and yes, we can
-> > probably improve on that too, but we let them setenv for themselves,
-> for
-> > now).
-> 
-> You really won't be improving on it because there's no reliable way to
-> pass setenv back to the firmware from userland :D
+> Will do.
 
-They aren't in nvram ? If they are and using the standard OF CHRP
-format, then we can.
-
-Ben.
+whatever ;)
