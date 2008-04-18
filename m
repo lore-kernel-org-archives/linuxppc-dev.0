@@ -1,24 +1,19 @@
 Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH 1/2] Add thread_info_cache_init() to all archs
+Subject: Re: [RFC/PATCH 3/4] Use pseries_setup_i8259_cascade() in
+	pseries_mpic_init_IRQ()
 From: Michael Ellerman <michael@ellerman.id.au>
-To: Benjamin Herrenschmidt <benh@ozlabs.org>
-In-Reply-To: <20080417211905.8ff769fa.akpm@linux-foundation.org>
-References: <20080410032354.90CB1DDF0F@ozlabs.org>
-	<20080413171953.bde5e9ac.akpm@linux-foundation.org>
-	<1208133506.6958.82.camel@pasglop>
-	<20080413191338.9776ebd0.akpm@linux-foundation.org>
-	<1208491086.6958.381.camel@pasglop>
-	<20080417211905.8ff769fa.akpm@linux-foundation.org>
+To: benh@kernel.crashing.org
+In-Reply-To: <1208492131.6958.390.camel@pasglop>
+References: <6840627eab063b5246ec661968986a4ae2d7be61.1207032121.git.michael@ellerman.id.au>
+	<87206bccf429273c3d7abba408ef606b69bae265.1207032121.git.michael@ellerman.id.au>
+	<1208492131.6958.390.camel@pasglop>
 Content-Type: multipart/signed; micalg=pgp-sha1;
 	protocol="application/pgp-signature";
-	boundary="=-FDPfa9rGsj0DdIbVrzKH"
-Date: Fri, 18 Apr 2008 14:38:55 +1000
-Message-Id: <1208493535.9319.3.camel@concordia.ozlabs.ibm.com>
+	boundary="=-Pm3VUVXt7YB4iO/L+Kr5"
+Date: Fri, 18 Apr 2008 14:47:34 +1000
+Message-Id: <1208494054.9319.6.camel@concordia.ozlabs.ibm.com>
 Mime-Version: 1.0
-Cc: Linux-Arch <linux-arch@vger.kernel.org>, linux-m32r@ml.linux-m32r.org,
-	takata@linux-m32r.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Andrew Morton <akpm@linux-foundation.org>
+Cc: linuxppc-dev@ozlabs.org
 Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -30,52 +25,25 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-FDPfa9rGsj0DdIbVrzKH
+--=-Pm3VUVXt7YB4iO/L+Kr5
 Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, 2008-04-17 at 21:19 -0700, Andrew Morton wrote:
-> On Fri, 18 Apr 2008 13:58:06 +1000 Benjamin Herrenschmidt <benh@ozlabs.or=
-g> wrote:
->=20
+On Fri, 2008-04-18 at 14:15 +1000, Benjamin Herrenschmidt wrote:
+> On Tue, 2008-04-01 at 17:42 +1100, Michael Ellerman wrote:
+> > pseries_mpic_init_IRQ() implements the same logic as the xics code did =
+to
+> > find the i8259 cascade irq. Now that we've pulled that logic out into
+> > pseries_setup_i8259_cascade() we can use it in the mpic code.
 > >=20
-> > > > > otoh, if only one .c file will ever call this function then I thi=
-nk that
-> > > > > all problems are solved by
-> > > > >=20
-> > > > > a) moving the above ifdeffery into the .c file
-> > > > > b) adding a comment explaining which arch file must provide the o=
-verride
-> > > > > c) directly including that file from within the .c file.
-> > > >=20
-> > > > I can definitely do that. I have no problem either way. I can add t=
-o all
-> > > > archs too, it's just that whatever way I choose, some people won't =
-be
-> > > > happy with it :-)
-> > > >=20
-> > > > Anyway, I'll move the ifdeferry to init/main.c then.
-> > >=20
-> > > Thanks ;)
-> > >=20
-> > > I'm still wounded by my recent encounter with set_softirq_pending()
-> > > and or_softirq_pending().
-> >=20
-> > Well, looking there, I saw we already used weak symbols for that
+> > Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 >=20
-> Yes, `weak' is a nice solution.  It does add a few bytes of text which we
-> could avoid with compile-time trickery, but only a very few.
+> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 >=20
-> Plus this is __init anyway, although I don't know how well the combinatio=
-n
-> of `weak' and __init works.
->=20
-> > +void __init __attribute__((weak) thread_info_cache_init(void)
->=20
-> s/weak)/weak))/
+> (provided you test it and it works :-)
 
-There's also a #define of this called "__weak" if you like, less typing
-and less ugly.
+Done. Booted on a Power something (5 or 6) partion and also booted fine
+on bongohits, an old power 3 machine with an MPIC.
 
 cheers
 
@@ -89,16 +57,16 @@ phone: +61 2 6212 1183 (tie line 70 21183)
 We do not inherit the earth from our ancestors,
 we borrow it from our children. - S.M.A.R.T Person
 
---=-FDPfa9rGsj0DdIbVrzKH
+--=-Pm3VUVXt7YB4iO/L+Kr5
 Content-Type: application/pgp-signature; name=signature.asc
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.6 (GNU/Linux)
 
-iD8DBQBICCXfdSjSd0sB4dIRAhE1AJ9ZHfHcu3unHY6kSWfP0t+aNTPkKQCeI0zj
-966HGDJEisppeO7PrUitiG8=
-=RoAh
+iD8DBQBICCfmdSjSd0sB4dIRAgPEAJ4uahQlNPARvqACkLQmIKJSnhjhUQCdHZrP
+utLCT6Tu7vRZKd2z4cEDwPA=
+=y3EA
 -----END PGP SIGNATURE-----
 
---=-FDPfa9rGsj0DdIbVrzKH--
+--=-Pm3VUVXt7YB4iO/L+Kr5--
