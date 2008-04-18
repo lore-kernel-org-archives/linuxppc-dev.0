@@ -2,20 +2,20 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 5EA36DE09B
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Apr 2008 18:19:17 +1000 (EST)
-Subject: Re: [PATCH 3/3] Use __weak macro for smp_setup_processor_id
+	by ozlabs.org (Postfix) with ESMTPS id 60C10DE6C8
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Apr 2008 18:21:11 +1000 (EST)
+Subject: Re: [PATCH 02/11] Add udbg_console_anytime() which sets udbg
+	console to CON_ANYTIME
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20080418000717.5a9c9758.akpm@linux-foundation.org>
-References: <20080418065728.31AF4DE255@ozlabs.org>
-	<20080418000717.5a9c9758.akpm@linux-foundation.org>
+To: Michael Ellerman <michael@ellerman.id.au>
+In-Reply-To: <bdf32a463da3cf9603c0b0bd257ac5deedcbbfe0.1208505275.git.michael@ellerman.id.au>
+References: <fbb91d0892c720d6f28501e1830028c78eb6664f.1208505275.git.michael@ellerman.id.au>
+	<bdf32a463da3cf9603c0b0bd257ac5deedcbbfe0.1208505275.git.michael@ellerman.id.au>
 Content-Type: text/plain
-Date: Fri, 18 Apr 2008 18:19:07 +1000
-Message-Id: <1208506747.6958.402.camel@pasglop>
+Date: Fri, 18 Apr 2008 18:20:58 +1000
+Message-Id: <1208506858.6958.404.camel@pasglop>
 Mime-Version: 1.0
-Cc: Linux-Arch <linux-arch@vger.kernel.org>, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@ozlabs.org
 Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -27,34 +27,53 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Fri, 2008-04-18 at 00:07 -0700, Andrew Morton wrote:
-> On Fri, 18 Apr 2008 16:56:18 +1000 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+On Fri, 2008-04-18 at 17:54 +1000, Michael Ellerman wrote:
+> In theory the udbg console should be safe to call basically at any time
+> after boot. It does not need any per-cpu resources or for the cpu to be
+> online, as long as there is a udbg_putc routine hooked up it should
+> work. So it should be able to be marked as CON_ANYTIME.
 > 
-> > Use the __weak macro instead of the longer __attribute__ ((weak)) form
-> > 
-> > Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> > --
-> > 
-> >  init/main.c |    2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > 
-> > --- linux-work.orig/init/main.c	2008-04-18 16:44:32.000000000 +1000
-> > +++ linux-work/init/main.c	2008-04-18 16:44:37.000000000 +1000
-> > @@ -500,7 +500,7 @@ static void __init boot_cpu_init(void)
-> >  	cpu_set(cpu, cpu_possible_map);
-> >  }
-> >  
-> > -void __init __attribute__((weak)) smp_setup_processor_id(void)
-> > +void __init __weak smp_setup_processor_id(void)
-> >  {
-> >  }
+> Verifying this will take a bit of time and testing though, so instead of
+> marking udbg console as CON_ANYTIME for all platforms, add a routine so
+> that a platform can opt-in to having udbg console called early.
 > 
-> ack on all three. Please fold #3 into #1 and add both to git-powerpc.
+> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 
-Damn ! I took 5mn to actually split it out in order to not do two
-different things in one patch :-)
-
-Will do.
+Nah, just stick it always.
 
 Cheers,
 Ben.
+
+> ---
+>  arch/powerpc/kernel/udbg.c |    5 +++++
+>  include/asm-powerpc/udbg.h |    1 +
+>  2 files changed, 6 insertions(+), 0 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/udbg.c b/arch/powerpc/kernel/udbg.c
+> index 9ac5f3a..7b1fd86 100644
+> --- a/arch/powerpc/kernel/udbg.c
+> +++ b/arch/powerpc/kernel/udbg.c
+> @@ -158,6 +158,11 @@ static struct console udbg_console = {
+>  	.index	= 0,
+>  };
+>  
+> +void udbg_console_anytime(void)
+> +{
+> +	udbg_console.flags |= CON_ANYTIME;
+> +}
+> +
+>  static int early_console_initialized;
+>  
+>  /*
+> diff --git a/include/asm-powerpc/udbg.h b/include/asm-powerpc/udbg.h
+> index 6418cee..102fa91 100644
+> --- a/include/asm-powerpc/udbg.h
+> +++ b/include/asm-powerpc/udbg.h
+> @@ -23,6 +23,7 @@ extern int udbg_write(const char *s, int n);
+>  extern int udbg_read(char *buf, int buflen);
+>  
+>  extern void register_early_udbg_console(void);
+> +extern void udbg_console_anytime(void);
+>  extern void udbg_printf(const char *fmt, ...)
+>  	__attribute__ ((format (printf, 1, 2)));
+>  extern void udbg_progress(char *s, unsigned short hex);
