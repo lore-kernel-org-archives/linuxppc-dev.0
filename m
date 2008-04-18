@@ -1,23 +1,17 @@
-Return-Path: <cbouatmailru@gmail.com>
-Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.28])
-	by ozlabs.org (Postfix) with ESMTP id 6596DDE39D
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Apr 2008 19:55:23 +1000 (EST)
-Received: by yw-out-2324.google.com with SMTP id 3so313353ywj.39
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Apr 2008 02:55:10 -0700 (PDT)
-Date: Fri, 18 Apr 2008 13:54:59 +0400
-From: Anton Vorontsov <cbouatmailru@gmail.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 1/5] [POWERPC] sysdev: implement FSL GTM support
-Message-ID: <20080418095459.GA23772@zarina>
-References: <20080417192656.GA19107@polina.dev.rtsoft.ru>
-	<20080417192832.GA28286@polina.dev.rtsoft.ru>
-	<20080417224740.GA25323@zarina>
-	<E0A0E0FF-C2D5-432B-86A4-59AF23D3B63F@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <E0A0E0FF-C2D5-432B-86A4-59AF23D3B63F@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: cbouatmailru@gmail.com
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH 2.6.26?] Raise the upper limit of NR_CPUS.
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Tony Breeds <tony@bakeyournoodle.com>
+In-Reply-To: <20080418053349.GE20457@bakeyournoodle.com>
+References: <20080418053349.GE20457@bakeyournoodle.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-asBtM8HVq9oVBJyGUBbD"
+Date: Fri, 18 Apr 2008 20:33:44 +1000
+Message-Id: <1208514829.8424.0.camel@concordia>
+Mime-Version: 1.0
+Cc: LinuxPPC-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,38 +21,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Apr 17, 2008 at 11:19:39PM -0500, Kumar Gala wrote:
-[...]
->>> + * interval value, and fires the interrupt when the value is  
->>> reached. This
->>> + * function will reduce the precision of the timer as needed in  
->>> order for the
->>> + * requested timeout to fit in a 16-bit register.
->>> + */
->>> +int gtm_reset_timer16(struct gtm_timer *tmr, unsigned long usec,  
->>> bool reload)
->>> +{
->>> +	/* quite obvious, frequency which is enough for ÂµSec precision */
->>> +	int freq = 1000000;
->>> +	unsigned int bit;
->>> +
->>> +	bit = fls_long(usec);
->>> +	if (bit > 15) {
->>> +		freq >>= bit - 15;
->>> +		usec >>= bit - 15;
->>> +	}
->>
->> if (!freq)
->> 	return -EINVAL;
->
-> do you want me to fix this up on commit or are you going to respin the  
-> patch set based on feedback?
 
-I would better respin the whole thing. Will do this today.
+--=-asBtM8HVq9oVBJyGUBbD
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Thanks,
+On Fri, 2008-04-18 at 15:33 +1000, Tony Breeds wrote:
+> As the pacas are statically initialised increasing NR_CPUS beyond 128,
+> means that any additional pacas will be empty  ... which is bad.
+>=20
+> This patch adds the required functionality to fill in any excess pacas
+> at runtime.
+>=20
+> Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
+> ---
+> I know it's late, but can this be considered for 2.6.26?
+>=20
+>  arch/powerpc/kernel/paca.c             |   33 ++++++++++----------------=
+--
+>  arch/powerpc/kernel/prom_init.c        |   36 ++++++++++++++++++++++++++=
+++++++
+>  arch/powerpc/platforms/Kconfig.cputype |    4 +-
+>  include/asm-powerpc/paca.h             |   19 ++++++++++++++++
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+What happens on non prom-init platforms?
+
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-asBtM8HVq9oVBJyGUBbD
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBICHkIdSjSd0sB4dIRAsDfAJ9wunbIAfdlMkLXc55XSssbzCWdwACbBSdL
+WAVjlqPzHI6I4Df355ZiYR8=
+=ZcuM
+-----END PGP SIGNATURE-----
+
+--=-asBtM8HVq9oVBJyGUBbD--
