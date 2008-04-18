@@ -1,21 +1,22 @@
-Return-Path: <sha@pengutronix.de>
-Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
-	[83.236.181.26]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id A602EDE59D
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Apr 2008 18:17:49 +1000 (EST)
-Date: Fri, 18 Apr 2008 10:19:45 +0200
-From: Sascha Hauer <s.hauer@pengutronix.de>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: mpc5200: add interrupt type function
-Message-ID: <20080418081945.GO14658@pengutronix.de>
-References: <20080415152954.GX13814@pengutronix.de>
-	<20080417060031.GH13814@pengutronix.de>
-	<fa686aa40804162341h5e68e460t975f69118ff8beca@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <fa686aa40804162341h5e68e460t975f69118ff8beca@mail.gmail.com>
-Cc: linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTPS id 42126DE617
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Apr 2008 18:18:28 +1000 (EST)
+Subject: Re: [PATCH 2/3] [POWERPC] Fix kernel stack allocation alignment
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20080418000618.0c46c78f.akpm@linux-foundation.org>
+References: <20080418065727.5FE1CDE247@ozlabs.org>
+	<20080418000618.0c46c78f.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Fri, 18 Apr 2008 18:18:18 +1000
+Message-Id: <1208506698.6958.400.camel@pasglop>
+Mime-Version: 1.0
+Cc: Linux-Arch <linux-arch@vger.kernel.org>, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,33 +26,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Apr 16, 2008 at 11:41:08PM -0700, Grant Likely wrote:
-> On Wed, Apr 16, 2008 at 11:00 PM, Robert Schwebel
-> <r.schwebel@pengutronix.de> wrote:
-> > On Tue, Apr 15, 2008 at 05:29:54PM +0200, Robert Schwebel wrote:
-> >  > From: Sascha Hauer <s.hauer@pengutronix.de>
-> >  >
-> >  > Add a set_type function for external (GPIO) interrupts.
-> >  >
-> >  > Signed-off-by: Juergen Beisert <j.beisert@pengutronix.de>
-> >  > Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
-> >
-> >  As we didn't get negative feedback yet, could this go into the 2.6.26
-> >  merge window?
+
+> so...  the "0" defeats all of SLAB_DEBUG_FREE, SLAB_RED_ZONE, SLAB_POISON
+> and SLAB_STORE_USER, if the comment in slab.h is to be believed.
 > 
-> I didn't see this the first time (didn't get cc'd).
-> 
-> It looks mostly okay, but in doesn't have any mutual exclusion which
-> it probably should have.  What are the users of this?
+> Was that overkill?
 
-No, it is used in kernel/irq/chip.c and kernel/irq/manage.c. Both
-callers already hold the mpc52xx_extirq_irqchip.lock spinlock.
+Well, I copied over from something else, looks like there's a -lot- of 0
+users here... 
 
-Sascha
+Shouldn't there be some kind of SLAB_DEFAULT that contain those things ?
 
-
--- 
-Pengutronix e.K. - Linux Solutions for Science and Industry
------------------------------------------------------------
-Kontakt-Informationen finden Sie im Header dieser Mail oder
-auf der Webseite -> http://www.pengutronix.de/impressum/ <-
+Ben.
