@@ -1,22 +1,18 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 11676DE089
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 Apr 2008 13:04:33 +1000 (EST)
-Subject: Re: [PATCH 1/2] [v3][POWERPC] refactor dcr code
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Grant Likely <grant.likely@secretlab.ca>
-In-Reply-To: <fa686aa40804181930s724b2e11we01943236ec0b8a7@mail.gmail.com>
-References: <1206914576.10388.132.camel@pasglop>
-	<20080418215513.ACA0C17F007A@mail131-dub.bigfish.com>
-	<fa686aa40804181930s724b2e11we01943236ec0b8a7@mail.gmail.com>
-Content-Type: text/plain
-Date: Sat, 19 Apr 2008 13:04:26 +1000
-Message-Id: <1208574266.6958.441.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: benh@kernel.crashing.org
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18441.28496.84724.411784@cargo.ozlabs.ibm.com>
+Date: Sat, 19 Apr 2008 14:04:32 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Jochen Friedrich <jochen@scram.de>
+Subject: Re: [PATCH] [POWERPC] i2c: fix build breakage introduced by OF helpers
+In-Reply-To: <4808AEC7.8040000@scram.de>
+References: <4808AEC7.8040000@scram.de>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>, "Kernel,
+	Linux" <linux-kernel@vger.kernel.org>,
+	Scott Wood <scottwood@freescale.com>, Linux I2C <i2c@lm-sensors.org>,
+	Jean Delvare <khali@linux-fr.org>, David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,17 +22,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Jochen Friedrich writes:
 
-> By current conventions; these should probably be static functions (but
-> don't make them inline).  The compiler will do the right thing with
-> them.  Functions are easier to validate by the compiler and sparse
-> than #defines.
+> Fix build breakage introduced in commit
+> "[POWERPC] i2c: OF helpers for the i2c API".
+> If i2c-core is compiled as module, the helper needs to be
+> compiled as module, as well. Rename i2c.c to of_i2c.c to
+> avoid name space conflict.
 
-Not necessarily... yes we tend to prefer functions, but in that case
-which is 100% a renaming trick, macros are fine and somewhat simpler.
+Actually, since only powerpc has irq_of_parse_and_map, I'm now
+inclined to think that drivers/of/i2c.c should live under arch/powerpc
+for now, or at the least its option should depend on PPC_OF.
 
-There is no type difference and the macro will not prevent type checking
-here.
-
-Cheers,
-Ben.
+Paul.
