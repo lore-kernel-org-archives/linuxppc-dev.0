@@ -1,22 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 87709DE04D
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 Apr 2008 10:54:34 +1000 (EST)
-Subject: Re: pci issue - wrong detection of pci ressources
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
-In-Reply-To: <1208566122.6958.425.camel@pasglop>
-References: <48088F02.2060806@linux.vnet.ibm.com>
-	<1208566122.6958.425.camel@pasglop>
-Content-Type: text/plain
-Date: Sat, 19 Apr 2008 10:51:15 +1000
-Message-Id: <1208566275.6958.427.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Detlev Zundel <dzu@denx.de>,
-	Hollis Blanchard <hollisb@us.ibm.com>
-Reply-To: benh@kernel.crashing.org
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.248])
+	by ozlabs.org (Postfix) with ESMTP id D0FD8DE1EE
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 Apr 2008 12:30:05 +1000 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so216870anc.78
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Apr 2008 19:30:04 -0700 (PDT)
+Message-ID: <fa686aa40804181930s724b2e11we01943236ec0b8a7@mail.gmail.com>
+Date: Fri, 18 Apr 2008 20:30:03 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
+Subject: Re: [PATCH 1/2] [v3][POWERPC] refactor dcr code
+In-Reply-To: <20080418215513.ACA0C17F007A@mail131-dub.bigfish.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <1206914576.10388.132.camel@pasglop>
+	<20080418215513.ACA0C17F007A@mail131-dub.bigfish.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,32 +25,89 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Fri, Apr 18, 2008 at 3:55 PM, Stephen Neuendorffer
+<stephen.neuendorffer@xilinx.com> wrote:
+> Previously, dcr support was configured at compile time to either using
+>  MMIO or native dcr instructions.  Although this works for most
+>  platforms, it fails on FPGA platforms:
+>
+>  1) Systems may include more than one dcr bus.
+>  2) Systems may be native dcr capable and still use memory mapped dcr interface.
+>
+>  This patch provides runtime support based on the device trees for the
+>  case where CONFIG_PPC_DCR_MMIO and CONFIG_PPC_DCR_NATIVE are both
+>  selected.  Previously, this was a poorly defined configuration, which
+>  happened to provide NATIVE support.  The runtime selection is made
+>  based on the dcr controller having a 'dcr-access-method' attribute
+>
+> in the device tree.  If only one of the above options is selected,
+>  then the code uses #defines to select only the used code in order to
+>  avoid introducing overhead in existing usage.
 
-On Sat, 2008-04-19 at 10:48 +1000, Benjamin Herrenschmidt wrote:
-> On Fri, 2008-04-18 at 14:07 +0200, Christian Ehrhardt wrote:
-> > => Region 2 is not detected with our kernel, this later break things
-> > like radeonfb initialization.
-> 
-> I'll need some information here:
-> 
-> - Your device-tree (is that the base sequoia one ?)
-> - Enable DEBUG in arch/powerpc/kernel/pci-common.c and pci_32.c
-> - Send me the resulting dmesg log
-> - Also include the output of /proc/iomem
+I'm not really qualified to ack this patch, but it looks right to me;
+except for one comment below (sorry I didn't get to looking at this
+earlier).
 
-Actually, there's a bug in radeonfb:
 
-In radeonfb.h, try changing
+>  diff --git a/include/asm-powerpc/dcr.h b/include/asm-powerpc/dcr.h
+>  index 9338d50..6b86322 100644
+>  --- a/include/asm-powerpc/dcr.h
+>  +++ b/include/asm-powerpc/dcr.h
+>  @@ -20,14 +20,47 @@
+>   #ifndef _ASM_POWERPC_DCR_H
+>   #define _ASM_POWERPC_DCR_H
+>   #ifdef __KERNEL__
+>  +#ifndef __ASSEMBLY__
+>   #ifdef CONFIG_PPC_DCR
+>
+>   #ifdef CONFIG_PPC_DCR_NATIVE
+>   #include <asm/dcr-native.h>
+>  -#else
+>  +#endif
+>  +
+>  +#ifdef CONFIG_PPC_DCR_MMIO
+>   #include <asm/dcr-mmio.h>
+>   #endif
+>
+>  +#if defined(CONFIG_PPC_DCR_NATIVE) && defined(CONFIG_PPC_DCR_MMIO)
+>  +
+>  +#include <asm/dcr-generic.h>
+>  +
+>  +#define DCR_MAP_OK(host)       dcr_map_ok_generic(host)
+>  +#define dcr_map(dev, dcr_n, dcr_c) dcr_map_generic(dev, dcr_n, dcr_c)
+>  +#define dcr_unmap(host, dcr_c) dcr_unmap_generic(host, dcr_c)
+>  +#define dcr_read(host, dcr_n) dcr_read_generic(host, dcr_n)
+>  +#define dcr_write(host, dcr_n, value) dcr_write_generic(host, dcr_n, value)
+>  +
+>  +#else
+>  +
+>  +#ifdef CONFIG_PPC_DCR_NATIVE
+>  +typedef dcr_host_native_t dcr_host_t;
+>  +#define DCR_MAP_OK(host)       dcr_map_ok_native(host)
+>  +#define dcr_map(dev, dcr_n, dcr_c) dcr_map_native(dev, dcr_n, dcr_c)
+>  +#define dcr_unmap(host, dcr_c) dcr_unmap_native(host, dcr_c)
+>  +#define dcr_read(host, dcr_n) dcr_read_native(host, dcr_n)
+>  +#define dcr_write(host, dcr_n, value) dcr_write_native(host, dcr_n, value)
+>  +#else
+>  +typedef dcr_host_mmio_t dcr_host_t;
+>  +#define DCR_MAP_OK(host)       dcr_map_ok_mmio(host)
+>  +#define dcr_map(dev, dcr_n, dcr_c) dcr_map_mmio(dev, dcr_n, dcr_c)
+>  +#define dcr_unmap(host, dcr_c) dcr_unmap_mmio(host, dcr_c)
+>  +#define dcr_read(host, dcr_n) dcr_read_mmio(host, dcr_n)
+>  +#define dcr_write(host, dcr_n, value) dcr_write_mmio(host, dcr_n, value)
+>  +#endif
+>  +
+>  +#endif /* defined(CONFIG_PPC_DCR_NATIVE) && defined(CONFIG_PPC_DCR_MMIO) */
+>  +
 
-	unsigned long		mmio_base_phys;
-	unsigned long		fb_base_phys;
-
-To
-
-	resource_size_t		mmio_base_phys;
-	resource_size_t		fb_base_phys;
-
-And tell us if it makes a difference too.
+By current conventions; these should probably be static functions (but
+don't make them inline).  The compiler will do the right thing with
+them.  Functions are easier to validate by the compiler and sparse
+than #defines.
 
 Cheers,
-Ben.
+g.
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
