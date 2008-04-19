@@ -1,17 +1,20 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <david-b@pacbell.net>
+Received: from smtp115.sbc.mail.sp1.yahoo.com (smtp115.sbc.mail.sp1.yahoo.com
+	[69.147.64.88]) by ozlabs.org (Postfix) with SMTP id 687C4DE291
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 Apr 2008 15:55:53 +1000 (EST)
+From: David Brownell <david-b@pacbell.net>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>,
+	Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 4/5] [POWERPC] QE: implement support for the GPIO LIB API
+Date: Fri, 18 Apr 2008 22:49:10 -0700
+References: <20080418190632.GA32204@polina.dev.rtsoft.ru>
+	<20080418190959.GD4407@polina.dev.rtsoft.ru>
+In-Reply-To: <20080418190959.GD4407@polina.dev.rtsoft.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18441.33181.511355.338428@cargo.ozlabs.ibm.com>
-Date: Sat, 19 Apr 2008 15:22:37 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: David Miller <davem@davemloft.net>
-Subject: Re: [PATCH] [POWERPC] i2c: fix build breakage introduced by OF helpers
-In-Reply-To: <20080418.210933.01471700.davem@davemloft.net>
-References: <4808AEC7.8040000@scram.de>
-	<18441.28496.84724.411784@cargo.ozlabs.ibm.com>
-	<20080418.210933.01471700.davem@davemloft.net>
-Cc: sfr@canb.auug.org.au, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	i2c@lm-sensors.org, scottwood@freescale.com, khali@linux-fr.org
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200804182249.11580.david-b@pacbell.net>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,37 +24,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Miller writes:
-> From: Paul Mackerras <paulus@samba.org>
-> Date: Sat, 19 Apr 2008 14:04:32 +1000
+On Friday 18 April 2008, Anton Vorontsov wrote:
+> On Thu, Apr 17, 2008 at 09:21:40PM -0500, Kumar Gala wrote:
+> > On Apr 17, 2008, at 5:41 PM, Anton Vorontsov wrote:
+> >> 
+> >> No problem. Would you prefer this to go under drivers/gpio/ ?
+> >
+> > Yes that would be better.  We actively worked on pull drivers out of  
+> > arch/ppc back in the day.
+
+I'm not sure I see the problem here.  This is precisely
+the kind of *non-driver* code that normally (i.e. for
+all other Linux platforms I've looked at) *belongs* in
+the arch code ... what's the objection to doing it the
+same way other platforms do?
+
+And for that matter, why make it optional, via Kconfig,
+instead of always configuring it in, along with the GPIO
+interrupt support?  A quick glance at one of the MPC83xx
+chips suggested that QE port IRQ capabilities would be
+very chip specific, so I'd expect that GPIO IRQ support
+wouldn't naturally move out of the arch tree.
+
+- Dave
+
+
+> Hi David,
 > 
-> > Jochen Friedrich writes:
-> > 
-> > > Fix build breakage introduced in commit
-> > > "[POWERPC] i2c: OF helpers for the i2c API".
-> > > If i2c-core is compiled as module, the helper needs to be
-> > > compiled as module, as well. Rename i2c.c to of_i2c.c to
-> > > avoid name space conflict.
-> > 
-> > Actually, since only powerpc has irq_of_parse_and_map, I'm now
-> > inclined to think that drivers/of/i2c.c should live under arch/powerpc
-> > for now, or at the least its option should depend on PPC_OF.
+> Do we need your Ack to go this through powerpc tree, and if so, could
+> you provide one?
 > 
-> I specifically asked for this to not be PPC only so that I
-> can make use of this infrastructure on sparc64 for I2C devices.
-
-OK.
-
-> It's OK if this breaks the sparc64 allmodconfig build, I'll take
-> care of this once it's merged in.
-
-It breaks the sparc32 allmodconfig build, which seems to be a
-concern.  How do you suggest we fix that?
-
-> Please merge the PPC tree to Linus soon, so that I can merge
-> in my sparc64 NUMA bits which depend upon the LMB changesets
-> in the PPC tree.
-
-Sure, it's just this sparc32 breakage which is holding me up.
-
-Paul.
+> Thanks.
+> 
+>  Documentation/powerpc/booting-without-of.txt |   34 ++++---
+>  arch/powerpc/platforms/Kconfig               |    2 +
+>  drivers/gpio/Kconfig                         |    9 ++
+>  drivers/gpio/Makefile                        |    1 +
+>  drivers/gpio/qe.c                            |  147 ++++++++++++++++++++++++++
+>  5 files changed, 180 insertions(+), 13 deletions(-)
+>  create mode 100644 drivers/gpio/qe.c
