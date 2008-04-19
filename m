@@ -1,20 +1,20 @@
-Return-Path: <david-b@pacbell.net>
-Received: from smtp115.sbc.mail.sp1.yahoo.com (smtp115.sbc.mail.sp1.yahoo.com
-	[69.147.64.88]) by ozlabs.org (Postfix) with SMTP id 687C4DE291
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 Apr 2008 15:55:53 +1000 (EST)
-From: David Brownell <david-b@pacbell.net>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>,
-	Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 4/5] [POWERPC] QE: implement support for the GPIO LIB API
-Date: Fri, 18 Apr 2008 22:49:10 -0700
-References: <20080418190632.GA32204@polina.dev.rtsoft.ru>
-	<20080418190959.GD4407@polina.dev.rtsoft.ru>
-In-Reply-To: <20080418190959.GD4407@polina.dev.rtsoft.ru>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200804182249.11580.david-b@pacbell.net>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net (unknown [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id 129C7DE42E
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 Apr 2008 16:11:28 +1000 (EST)
+Date: Fri, 18 Apr 2008 23:11:28 -0700 (PDT)
+Message-Id: <20080418.231128.97404791.davem@davemloft.net>
+To: paulus@samba.org
+Subject: Re: [PATCH] [POWERPC] i2c: fix build breakage introduced by OF helpers
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <18441.33181.511355.338428@cargo.ozlabs.ibm.com>
+References: <18441.28496.84724.411784@cargo.ozlabs.ibm.com>
+	<20080418.210933.01471700.davem@davemloft.net>
+	<18441.33181.511355.338428@cargo.ozlabs.ibm.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: sfr@canb.auug.org.au, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	i2c@lm-sensors.org, scottwood@freescale.com, khali@linux-fr.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,42 +24,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Friday 18 April 2008, Anton Vorontsov wrote:
-> On Thu, Apr 17, 2008 at 09:21:40PM -0500, Kumar Gala wrote:
-> > On Apr 17, 2008, at 5:41 PM, Anton Vorontsov wrote:
-> >> 
-> >> No problem. Would you prefer this to go under drivers/gpio/ ?
-> >
-> > Yes that would be better.  We actively worked on pull drivers out of  
-> > arch/ppc back in the day.
+From: Paul Mackerras <paulus@samba.org>
+Date: Sat, 19 Apr 2008 15:22:37 +1000
 
-I'm not sure I see the problem here.  This is precisely
-the kind of *non-driver* code that normally (i.e. for
-all other Linux platforms I've looked at) *belongs* in
-the arch code ... what's the objection to doing it the
-same way other platforms do?
-
-And for that matter, why make it optional, via Kconfig,
-instead of always configuring it in, along with the GPIO
-interrupt support?  A quick glance at one of the MPC83xx
-chips suggested that QE port IRQ capabilities would be
-very chip specific, so I'd expect that GPIO IRQ support
-wouldn't naturally move out of the arch tree.
-
-- Dave
-
-
-> Hi David,
+> David Miller writes:
+> > From: Paul Mackerras <paulus@samba.org>
+> > Date: Sat, 19 Apr 2008 14:04:32 +1000
+> > 
+> > It's OK if this breaks the sparc64 allmodconfig build, I'll take
+> > care of this once it's merged in.
 > 
-> Do we need your Ack to go this through powerpc tree, and if so, could
-> you provide one?
-> 
-> Thanks.
-> 
->  Documentation/powerpc/booting-without-of.txt |   34 ++++---
->  arch/powerpc/platforms/Kconfig               |    2 +
->  drivers/gpio/Kconfig                         |    9 ++
->  drivers/gpio/Makefile                        |    1 +
->  drivers/gpio/qe.c                            |  147 ++++++++++++++++++++++++++
->  5 files changed, 180 insertions(+), 13 deletions(-)
->  create mode 100644 drivers/gpio/qe.c
+> It breaks the sparc32 allmodconfig build, which seems to be a
+> concern.  How do you suggest we fix that?
+
+I'll fix both sparc64 and sparc32 builds when I merge my sparc
+tree in.
