@@ -1,15 +1,21 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <rsc@pengutronix.de>
+Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
+	[83.236.181.26]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 704F9DE49E
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 Apr 2008 23:37:15 +1000 (EST)
+Date: Sat, 19 Apr 2008 15:36:58 +0200
+From: Robert Schwebel <r.schwebel@pengutronix.de>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH] [POWERPC] mpc5200: Switch mpc5200 dts files to dts-v1
+	format
+Message-ID: <20080419133658.GJ13814@pengutronix.de>
+References: <20080418160812.11897.5654.stgit@trillian.secretlab.ca>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18441.58154.608911.337978@cargo.ozlabs.ibm.com>
-Date: Sat, 19 Apr 2008 22:18:50 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: Patches added to powerpc.git master and powerpc-next branches
-In-Reply-To: <9CE9EFA8-A303-49C9-B9A2-F62D42F927B7@kernel.crashing.org>
-References: <18440.34891.440661.248400@cargo.ozlabs.ibm.com>
-	<9CE9EFA8-A303-49C9-B9A2-F62D42F927B7@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=iso-8859-15
+In-Reply-To: <20080418160812.11897.5654.stgit@trillian.secretlab.ca>
+Cc: linuxppc-dev@ozlabs.org, Sascha Hauer <sha@pengutronix.de>, m8@semihalf.com,
+	Wolfram Sang <wsa@pengutronix.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,24 +25,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala writes:
+On Fri, Apr 18, 2008 at 09:10:04AM -0700, Grant Likely wrote:
+> Update dts files to current format
 
-> [POWERPC] 85xx: Add support for relocatble kernel (and booting at non- 
-> zero)
+Is it somehow possible that this device tree stuff is *not* changed over
+and over again and break everything out there? When people have not even
+agreed on basic things like decimal vs. hex numbers, the whole idea
+should be developed out-of-tree, then stabilize and *then* be submitted
+to the Linux mainline.
 
-Should be OK to go though probably not in the first batch.  I want to
-look through it carefully again since it's touching code that is
-common to a lot of platforms.  The patch description looks reasonable
-as to what it explains but the english could use a touch-up here or
-there (e.g. "a physical address that is module 256M" doesn't actually
-mean anything; "a physical address that is 0 modulo 256M" would be
-correct).
+Is it also really necessary to change like "gpt" vs. "timer" and "pic"
+vs. "interrupt-controller" all the time? If you compare the last
+mainline kernels, each one got a fundamental change in the naming, each
+time breaking anyone who doesn't have his stuff in the mainline yet.
 
-> [POWERPC] Port fixmap from x86 and use for kmap_atomic
+Sorry, but this is simply annoying, and the whole "the only thing we
+have to do is to define it once and be done then" is crap.
 
-Once again I want to go through it carefully and understand how it all
-works, and in particular understand things like the way it ensures
-that the base address for the kmap region is aligned to a 4M boundary
-so all the kmap ptes are in a single page (assuming it does :).
-
-Paul.
+Robert
+-- 
+ Dipl.-Ing. Robert Schwebel | http://www.pengutronix.de
+ Pengutronix - Linux Solutions for Science and Industry
+   Handelsregister:  Amtsgericht Hildesheim, HRA 2686
+     Hannoversche Str. 2, 31134 Hildesheim, Germany
+   Phone: +49-5121-206917-0 |  Fax: +49-5121-206917-9
