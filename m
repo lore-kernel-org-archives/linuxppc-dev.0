@@ -1,21 +1,22 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.242])
-	by ozlabs.org (Postfix) with ESMTP id B2E18DE8DD
-	for <linuxppc-dev@ozlabs.org>; Sun, 20 Apr 2008 02:27:08 +1000 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so280923anc.78
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 Apr 2008 09:27:07 -0700 (PDT)
-Message-ID: <fa686aa40804190927u1067bd00m5734dd8b2aa84d0b@mail.gmail.com>
-Date: Sat, 19 Apr 2008 10:27:07 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Kumar Gala" <galak@kernel.crashing.org>
-Subject: Re: removal of arch/ppc in 2.6.27?
-In-Reply-To: <D713F373-AE2A-4341-9C29-EF65B9399B36@kernel.crashing.org>
+Return-Path: <jochen@scram.de>
+Received: from mail.scram.de (mail0.scram.de [78.47.204.202])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail.scram.de", Issuer "scram e.V. CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 04E0BDE9DE
+	for <linuxppc-dev@ozlabs.org>; Sun, 20 Apr 2008 02:41:39 +1000 (EST)
+Message-ID: <480A2117.7020502@scram.de>
+Date: Sat, 19 Apr 2008 18:43:03 +0200
+From: Jochen Friedrich <jochen@scram.de>
 MIME-Version: 1.0
+To: Jean Delvare <khali@linux-fr.org>
+Subject: Re: [PATCH] rtc-pcf8563: Add device ids table
+References: <200804171708.32847.laurentp@cse-semaphore.com>	<20080418235451.2643183b@i1501.lan.towertech.it>	<20080419113417.19f5567a@hyperion.delvare>	<4809EF23.7070902@scram.de>
+	<20080419162358.746b714c@hyperion.delvare>
+In-Reply-To: <20080419162358.746b714c@hyperion.delvare>
 Content-Type: text/plain; charset=ISO-8859-1
-References: <D713F373-AE2A-4341-9C29-EF65B9399B36@kernel.crashing.org>
-Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>,
-	LinuxPPC-Embedded <linuxppc-embedded@ozlabs.org>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Alessandro Zummo <alessandro.zummo@towertech.it>,
+	i2c@lm-sensors.org, rtc-linux@googlegroups.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,31 +26,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, Apr 19, 2008 at 9:30 AM, Kumar Gala <galak@kernel.crashing.org> wrote:
-> This is intended as a reminder that we plan on getting rid of arch/ppc this
-> summer.  I'm guessing based on kernel release times that will be 2.6.27.
-> That would mean 2.6.26 will be the last kernel to support arch/ppc.
->
->  If people have boards that like ported over please let us know and work
-> with us to port this over to arch/powerpc.
->
->  Here is a list based on arch/ppc/platforms.  Its not intended to be
-> complete but a general idea of what's left in arch/ppc.
->
+Jean Delvare wrote:
+> On Sat, 19 Apr 2008 15:09:55 +0200, Jochen Friedrich wrote:
+>> Hi Jean,
+>>
+>>>>> Is the new-style driver conversion patch in 2.6.25-rc8-mm2 scheduled for
+>>>>> 2.6.26 ?
+>>>>  hope so! :)
+>>> Note that this patch depends on i2c patches which aren't upstream yet.
+>> Is there any chance they will got to 2.6.26?
+> 
+> I'm not sure. I didn't have the time to look at it myself, but I am
+> under the impression that the powerpc folks are tired of having to wait
+> for me and may push it to Linus through their tree? That would be fine
+> with me, as I don't want to be the one delaying something many
+> developers want (but I also can't sign patches I've not even read.)
 
->  LITE5200        52xx
+The required patches are:
 
-This is in arch/powerpc
+http://patchwork.ozlabs.org/linuxppc/patch?id=17833
+http://patchwork.ozlabs.org/linuxppc/patch?id=17834
 
->  XILINX_ML300    40x
->  XILINX_ML403    40x
+which are just the forward ported patches you sent to the poweprc mailing list some time ago:
 
-These are also supported in arch/powerpc; we just don't have .dts
-files for the reference designs merged yet.
+http://patchwork.ozlabs.org/linuxppc/patch?id=16282
+http://patchwork.ozlabs.org/linuxppc/patch?id=16283
 
-Cheers,
-g.
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Thanks,
+Jochen
