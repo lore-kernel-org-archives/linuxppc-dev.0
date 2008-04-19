@@ -1,21 +1,16 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 762B6DDDFD
-	for <linuxppc-dev@ozlabs.org>; Sun, 20 Apr 2008 00:58:43 +1000 (EST)
-Message-Id: <670559C8-CDD2-42A3-BF8A-E5521E5DC411@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Jeff Garzik <jeff@garzik.org>
-In-Reply-To: <633e3f1106fd888b93a0f18c73449fd86054cc05.1208559659.git.jgarzik@redhat.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: [PATCH 04/15] [PPC] minor irq handler cleanups
-Date: Sat, 19 Apr 2008 09:57:55 -0500
-References: <d7afbccda111e535bb14ad8082b208c7a2cd9833.1208559659.git.jgarzik@redhat.com>
-	<633e3f1106fd888b93a0f18c73449fd86054cc05.1208559659.git.jgarzik@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-	LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org
+Return-Path: <jwboyer@gmail.com>
+Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.177])
+	by ozlabs.org (Postfix) with ESMTP id A3305DE4AF
+	for <linuxppc-dev@ozlabs.org>; Sun, 20 Apr 2008 01:26:21 +1000 (EST)
+Received: by py-out-1112.google.com with SMTP id z59so1062849pyg.27
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 Apr 2008 08:26:20 -0700 (PDT)
+Subject: [PATCH] [PPC] 4xx: Fix arch/ppc 440 builds
+From: Josh Boyer <jwboyer@gmail.com>
+To: linuxppc-dev@ozlabs.org
+Content-Type: text/plain
+Date: Sat, 19 Apr 2008 10:26:15 -0500
+Message-Id: <1208618775.6654.12.camel@vader.jdub.homelinux.org>
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,27 +20,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Commit d04ceb3fc294ea2c4f538a04343f3a473953a3b0 moved phys_addr_t definitions
+to include/asm-powerpc/types.h.  However, arch/ppc 440 builds had a duplicate
+definition in include/asm-ppc/mmu.h that caused the build to fail.
 
-On Apr 18, 2008, at 6:22 PM, Jeff Garzik wrote:
-> - whitespace cleanups
->
-> - remove pointless prototype (uses always follow func implementation)
->
-> - 'irq' argument is often used purely as a local variable.  rename
->  argument to 'dummy' and define 'irq' as local to make this plain.
->
-> - remove pointless casts from void*
->
-> This change's main purpose is to prepare for the patchset in
-> jgarzik/misc-2.6.git#irq-remove, that explores removal of the
-> never-used 'irq' argument in each interrupt handler.
->
-> Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
+This removes the duplicate definition in arch/ppc.
 
-arch/ppc is pretty much left for dead at this point.  I'm guessing we  
-will end up removing it 2.6.27 if we follow through with our plans of  
-killing it this summer.
+Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 
-Acked-by: Kumar Gala <galak@kernel.crashing.org>
+---
+ include/asm-ppc/mmu.h |    2 --
+ 1 file changed, 2 deletions(-)
 
-- k
+--- linux-2.6.orig/include/asm-ppc/mmu.h
++++ linux-2.6/include/asm-ppc/mmu.h
+@@ -15,10 +15,8 @@
+  * physical need a larger than native word size type. -Matt
+  */
+ #ifndef CONFIG_PHYS_64BIT
+-typedef unsigned long phys_addr_t;
+ #define PHYS_FMT	"%.8lx"
+ #else
+-typedef unsigned long long phys_addr_t;
+ extern phys_addr_t fixup_bigphys_addr(phys_addr_t, phys_addr_t);
+ #define PHYS_FMT	"%16Lx"
+ #endif
