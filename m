@@ -1,20 +1,20 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.177])
-	by ozlabs.org (Postfix) with ESMTP id 90A80DE619
-	for <linuxppc-dev@ozlabs.org>; Sun, 20 Apr 2008 04:13:28 +1000 (EST)
-Received: by py-out-1112.google.com with SMTP id z59so1113481pyg.27
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 Apr 2008 11:13:27 -0700 (PDT)
-Subject: Re: removal of arch/ppc in 2.6.27?
-From: Josh Boyer <jwboyer@gmail.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <D713F373-AE2A-4341-9C29-EF65B9399B36@kernel.crashing.org>
-References: <D713F373-AE2A-4341-9C29-EF65B9399B36@kernel.crashing.org>
-Content-Type: text/plain
-Date: Sat, 19 Apr 2008 13:13:21 -0500
-Message-Id: <1208628801.6654.18.camel@vader.jdub.homelinux.org>
-Mime-Version: 1.0
-Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>,
-	LinuxPPC-Embedded <linuxppc-embedded@ozlabs.org>
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.241])
+	by ozlabs.org (Postfix) with ESMTP id 64FEFDDFDD
+	for <linuxppc-dev@ozlabs.org>; Sun, 20 Apr 2008 04:14:30 +1000 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so290218anc.78
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 Apr 2008 11:14:28 -0700 (PDT)
+Message-ID: <fa686aa40804191114i2cef26eegabfe9bc28d8ecc18@mail.gmail.com>
+Date: Sat, 19 Apr 2008 12:14:28 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Kumar Gala" <galak@kernel.crashing.org>
+Subject: Re: [PATCH] [PPC] Remove mpc8272 ads board from arch/ppc
+In-Reply-To: <Pine.LNX.4.64.0804191051420.20132@blarg.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <Pine.LNX.4.64.0804191051420.20132@blarg.am.freescale.net>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,23 +24,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, 2008-04-19 at 10:30 -0500, Kumar Gala wrote:
-> This is intended as a reminder that we plan on getting rid of arch/ppc  
-> this summer.  I'm guessing based on kernel release times that will be  
-> 2.6.27.  That would mean 2.6.26 will be the last kernel to support  
-> arch/ppc.
-> 
-> If people have boards that like ported over please let us know and  
-> work with us to port this over to arch/powerpc.
-> 
-> Here is a list based on arch/ppc/platforms.  Its not intended to be  
-> complete but a general idea of what's left in arch/ppc.
-> 
+On Sat, Apr 19, 2008 at 9:52 AM, Kumar Gala <galak@kernel.crashing.org> wrote:
+> We have a board port in arch/powerpc so we dont need this one anymore.
+>
+> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 
-<snip>
+Personally, I'd rather not do the piecemeal removal of board ports
+from arch/ppc.  We've only got one release left anyway.  Removing them
+just generates more churn and has the risk of causing other side
+effects.
 
-> OCOTEA          44x
+Cheers,
+g.
 
-I have one of these.  I'll port it eventually.
-
-josh
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
