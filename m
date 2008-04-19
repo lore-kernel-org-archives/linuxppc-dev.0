@@ -1,24 +1,14 @@
-Return-Path: <neko@genesi-usa.com>
-Received: from fk-out-0910.google.com (fk-out-0910.google.com [209.85.128.191])
-	by ozlabs.org (Postfix) with ESMTP id 55F36DE3F9
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 Apr 2008 22:02:37 +1000 (EST)
-Received: by fk-out-0910.google.com with SMTP id z22so1370334fkz.9
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 Apr 2008 05:02:34 -0700 (PDT)
-Message-ID: <4809DF54.2080609@genesi-usa.com>
-Date: Sat, 19 Apr 2008 13:02:28 +0100
-From: Matt Sealey <matt@genesi-usa.com>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: RFC: MPC5200 PSC AC97 driver
-References: <47FDEF9B.5000506@semihalf.com>	
-	<200804171619.56615.jbe@pengutronix.de>	
-	<4808C1BE.1050607@fang.fa.gau.hu>	
-	<200804181802.34833.jbe@pengutronix.de>	
-	<4808E469.9020408@genesi-usa.com>
-	<fa686aa40804181553q622b3c1fi7a302712abe79be1@mail.gmail.com>
-In-Reply-To: <fa686aa40804181553q622b3c1fi7a302712abe79be1@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Sender: Matt Sealey <neko@genesi-usa.com>
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18441.58154.608911.337978@cargo.ozlabs.ibm.com>
+Date: Sat, 19 Apr 2008 22:18:50 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: Patches added to powerpc.git master and powerpc-next branches
+In-Reply-To: <9CE9EFA8-A303-49C9-B9A2-F62D42F927B7@kernel.crashing.org>
+References: <18440.34891.440661.248400@cargo.ozlabs.ibm.com>
+	<9CE9EFA8-A303-49C9-B9A2-F62D42F927B7@kernel.crashing.org>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -29,27 +19,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Kumar Gala writes:
 
-Grant Likely wrote:
-> On Fri, Apr 18, 2008 at 12:11 PM, Matt Sealey <matt@genesi-usa.com> wrote:
->>  Juergen Beisert wrote:
-> BTW, is anyone trying to shepherd this driver into the ALSA tree?  Its
-> out of my area of expertise and responsibility, so I haven't been
-> pursuing it.
+> [POWERPC] 85xx: Add support for relocatble kernel (and booting at non- 
+> zero)
 
-We (well, I) were going to try but we got some oopses; from one thing or another,
-but with Juergen's fixes and cell-index in place, now it plays audio.
+Should be OK to go though probably not in the first batch.  I want to
+look through it carefully again since it's touching code that is
+common to a lot of platforms.  The patch description looks reasonable
+as to what it explains but the english could use a touch-up here or
+there (e.g. "a physical address that is module 256M" doesn't actually
+mean anything; "a physical address that is 0 modulo 256M" would be
+correct).
 
-Now it can be pushed to ALSA on that basis, but I'm still trying to get my
-head around where we need to throw patches and if it goes into ALSA Drivers
-first or the kernel or both? It's kind of convoluted compared to the ease
-of just CC'ing netdev or linux-ide..
+> [POWERPC] Port fixmap from x86 and use for kmap_atomic
 
-If you want to push it, please do, but also I guess it'll need to be bundled
-with the cell-index patch for the fixups (we couldn't get it to make the
-property for some odd reason) or a change to using addresses in the driver
-for PSC selection (Juergen's original patch did this anyway)
+Once again I want to go through it carefully and understand how it all
+works, and in particular understand things like the way it ensures
+that the base address for the kmap region is aligned to a 4M boundary
+so all the kmap ptes are in a single page (assuming it does :).
 
--- 
-Matt Sealey <matt@genesi-usa.com>
-Genesi, Manager, Developer Relations
+Paul.
