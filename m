@@ -1,20 +1,22 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.248])
-	by ozlabs.org (Postfix) with ESMTP id D0FD8DE1EE
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 Apr 2008 12:30:05 +1000 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so216870anc.78
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Apr 2008 19:30:04 -0700 (PDT)
-Message-ID: <fa686aa40804181930s724b2e11we01943236ec0b8a7@mail.gmail.com>
-Date: Fri, 18 Apr 2008 20:30:03 -0600
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.250])
+	by ozlabs.org (Postfix) with ESMTP id 733CDDE26F
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 Apr 2008 12:31:58 +1000 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so217099anc.78
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Apr 2008 19:31:58 -0700 (PDT)
+Message-ID: <fa686aa40804181931p2b18d728q794a0c5c19d1e3b7@mail.gmail.com>
+Date: Fri, 18 Apr 2008 20:31:57 -0600
 From: "Grant Likely" <grant.likely@secretlab.ca>
 Sender: glikely@secretlab.ca
 To: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
-Subject: Re: [PATCH 1/2] [v3][POWERPC] refactor dcr code
-In-Reply-To: <20080418215513.ACA0C17F007A@mail131-dub.bigfish.com>
+Subject: Re: [PATCH 2/2] [POWERPC] Xilinx: Virtex: Enable dcr for MMIO and
+	NATIVE
+In-Reply-To: <20080418215513.C8D1A44007F@mail114-dub.bigfish.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 References: <1206914576.10388.132.camel@pasglop>
-	<20080418215513.ACA0C17F007A@mail131-dub.bigfish.com>
+	<1208555704-8978-1-git-send-email-stephen.neuendorffer@xilinx.com>
+	<20080418215513.C8D1A44007F@mail114-dub.bigfish.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -27,86 +29,47 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 On Fri, Apr 18, 2008 at 3:55 PM, Stephen Neuendorffer
 <stephen.neuendorffer@xilinx.com> wrote:
-> Previously, dcr support was configured at compile time to either using
->  MMIO or native dcr instructions.  Although this works for most
->  platforms, it fails on FPGA platforms:
+> FPGA designs may have need of both MMIO-based and NATIVE-based dcr
+>  interfaces.
 >
->  1) Systems may include more than one dcr bus.
->  2) Systems may be native dcr capable and still use memory mapped dcr interface.
+>  Signed-off-by: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
+>  ---
+>   arch/powerpc/platforms/40x/Kconfig |    2 ++
+>   1 files changed, 2 insertions(+), 0 deletions(-)
 >
->  This patch provides runtime support based on the device trees for the
->  case where CONFIG_PPC_DCR_MMIO and CONFIG_PPC_DCR_NATIVE are both
->  selected.  Previously, this was a poorly defined configuration, which
->  happened to provide NATIVE support.  The runtime selection is made
->  based on the dcr controller having a 'dcr-access-method' attribute
+>  diff --git a/arch/powerpc/platforms/40x/Kconfig b/arch/powerpc/platforms/40x/Kconfig
+>  index a9260e2..b8e06df 100644
+>  --- a/arch/powerpc/platforms/40x/Kconfig
+>  +++ b/arch/powerpc/platforms/40x/Kconfig
+>  @@ -123,6 +123,8 @@ config 405GPR
 >
-> in the device tree.  If only one of the above options is selected,
->  then the code uses #defines to select only the used code in order to
->  avoid introducing overhead in existing usage.
+>   config XILINX_VIRTEX
+>         bool
+>  +       select PPC_DCR_MMIO
+>  +       select PPC_DCR_NATIVE
 
-I'm not really qualified to ack this patch, but it looks right to me;
-except for one comment below (sorry I didn't get to looking at this
-earlier).
+Yeah; we'll probably want to be more sophisticated about this in the
+future; but for now...
 
+Acked-by: Grant Likely <grant.likely@secretlab.ca>
 
->  diff --git a/include/asm-powerpc/dcr.h b/include/asm-powerpc/dcr.h
->  index 9338d50..6b86322 100644
->  --- a/include/asm-powerpc/dcr.h
->  +++ b/include/asm-powerpc/dcr.h
->  @@ -20,14 +20,47 @@
->   #ifndef _ASM_POWERPC_DCR_H
->   #define _ASM_POWERPC_DCR_H
->   #ifdef __KERNEL__
->  +#ifndef __ASSEMBLY__
->   #ifdef CONFIG_PPC_DCR
+(Paulus; but this does depend on patch 1 of this series)
+
 >
->   #ifdef CONFIG_PPC_DCR_NATIVE
->   #include <asm/dcr-native.h>
->  -#else
->  +#endif
->  +
->  +#ifdef CONFIG_PPC_DCR_MMIO
->   #include <asm/dcr-mmio.h>
->   #endif
+>   config XILINX_VIRTEX_II_PRO
+>         bool
+>  --
+>  1.5.3.4-dirty
 >
->  +#if defined(CONFIG_PPC_DCR_NATIVE) && defined(CONFIG_PPC_DCR_MMIO)
->  +
->  +#include <asm/dcr-generic.h>
->  +
->  +#define DCR_MAP_OK(host)       dcr_map_ok_generic(host)
->  +#define dcr_map(dev, dcr_n, dcr_c) dcr_map_generic(dev, dcr_n, dcr_c)
->  +#define dcr_unmap(host, dcr_c) dcr_unmap_generic(host, dcr_c)
->  +#define dcr_read(host, dcr_n) dcr_read_generic(host, dcr_n)
->  +#define dcr_write(host, dcr_n, value) dcr_write_generic(host, dcr_n, value)
->  +
->  +#else
->  +
->  +#ifdef CONFIG_PPC_DCR_NATIVE
->  +typedef dcr_host_native_t dcr_host_t;
->  +#define DCR_MAP_OK(host)       dcr_map_ok_native(host)
->  +#define dcr_map(dev, dcr_n, dcr_c) dcr_map_native(dev, dcr_n, dcr_c)
->  +#define dcr_unmap(host, dcr_c) dcr_unmap_native(host, dcr_c)
->  +#define dcr_read(host, dcr_n) dcr_read_native(host, dcr_n)
->  +#define dcr_write(host, dcr_n, value) dcr_write_native(host, dcr_n, value)
->  +#else
->  +typedef dcr_host_mmio_t dcr_host_t;
->  +#define DCR_MAP_OK(host)       dcr_map_ok_mmio(host)
->  +#define dcr_map(dev, dcr_n, dcr_c) dcr_map_mmio(dev, dcr_n, dcr_c)
->  +#define dcr_unmap(host, dcr_c) dcr_unmap_mmio(host, dcr_c)
->  +#define dcr_read(host, dcr_n) dcr_read_mmio(host, dcr_n)
->  +#define dcr_write(host, dcr_n, value) dcr_write_mmio(host, dcr_n, value)
->  +#endif
->  +
->  +#endif /* defined(CONFIG_PPC_DCR_NATIVE) && defined(CONFIG_PPC_DCR_MMIO) */
->  +
+>
+>
+>  _______________________________________________
+>  Linuxppc-dev mailing list
+>  Linuxppc-dev@ozlabs.org
+>  https://ozlabs.org/mailman/listinfo/linuxppc-dev
+>
 
-By current conventions; these should probably be static functions (but
-don't make them inline).  The compiler will do the right thing with
-them.  Functions are easier to validate by the compiler and sparse
-than #defines.
 
-Cheers,
-g.
 
 -- 
 Grant Likely, B.Sc., P.Eng.
