@@ -1,31 +1,21 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 51E3DDDF7F
-	for <linuxppc-dev@ozlabs.org>; Sun, 20 Apr 2008 00:39:07 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e5.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m3JEd4XY015532
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 Apr 2008 10:39:04 -0400
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m3JEd4U6264858
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 Apr 2008 10:39:04 -0400
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
-	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m3JEd3Nm001544
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 Apr 2008 10:39:03 -0400
-Date: Sat, 19 Apr 2008 09:35:00 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
-Subject: Re: [PATCH 1/2] [v3][POWERPC] refactor dcr code
-Message-ID: <20080419093500.752c1930@zod.rchland.ibm.com>
-In-Reply-To: <20080418215513.ACA0C17F007A@mail131-dub.bigfish.com>
-References: <1206914576.10388.132.camel@pasglop>
-	<20080418215513.ACA0C17F007A@mail131-dub.bigfish.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 762B6DDDFD
+	for <linuxppc-dev@ozlabs.org>; Sun, 20 Apr 2008 00:58:43 +1000 (EST)
+Message-Id: <670559C8-CDD2-42A3-BF8A-E5521E5DC411@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Jeff Garzik <jeff@garzik.org>
+In-Reply-To: <633e3f1106fd888b93a0f18c73449fd86054cc05.1208559659.git.jgarzik@redhat.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v919.2)
+Subject: Re: [PATCH 04/15] [PPC] minor irq handler cleanups
+Date: Sat, 19 Apr 2008 09:57:55 -0500
+References: <d7afbccda111e535bb14ad8082b208c7a2cd9833.1208559659.git.jgarzik@redhat.com>
+	<633e3f1106fd888b93a0f18c73449fd86054cc05.1208559659.git.jgarzik@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+	LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,98 +25,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 18 Apr 2008 14:55:03 -0700
-Stephen Neuendorffer <stephen.neuendorffer@xilinx.com> wrote:
 
-> Previously, dcr support was configured at compile time to either using
-> MMIO or native dcr instructions.  Although this works for most
-> platforms, it fails on FPGA platforms:
-> 
-> 1) Systems may include more than one dcr bus.
-> 2) Systems may be native dcr capable and still use memory mapped dcr interface.
-> 
-> This patch provides runtime support based on the device trees for the
-> case where CONFIG_PPC_DCR_MMIO and CONFIG_PPC_DCR_NATIVE are both
-> selected.  Previously, this was a poorly defined configuration, which
-> happened to provide NATIVE support.  The runtime selection is made
-> based on the dcr controller having a 'dcr-access-method' attribute
-> in the device tree.  If only one of the above options is selected,
-> then the code uses #defines to select only the used code in order to
-> avoid introducing overhead in existing usage.
-> 
-> Signed-off-by: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
+On Apr 18, 2008, at 6:22 PM, Jeff Garzik wrote:
+> - whitespace cleanups
+>
+> - remove pointless prototype (uses always follow func implementation)
+>
+> - 'irq' argument is often used purely as a local variable.  rename
+>  argument to 'dummy' and define 'irq' as local to make this plain.
+>
+> - remove pointless casts from void*
+>
+> This change's main purpose is to prepare for the patchset in
+> jgarzik/misc-2.6.git#irq-remove, that explores removal of the
+> never-used 'irq' argument in each interrupt handler.
+>
+> Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
 
-Hi Stephen,
+arch/ppc is pretty much left for dead at this point.  I'm guessing we  
+will end up removing it 2.6.27 if we follow through with our plans of  
+killing it this summer.
 
-Sorry for the late review.  See some comments below.  Mostly minor
-stuff and I think the general direction here is good.
+Acked-by: Kumar Gala <galak@kernel.crashing.org>
 
-> diff --git a/arch/powerpc/sysdev/dcr.c b/arch/powerpc/sysdev/dcr.c
-> index 437e48d..d3de0ff 100644
-> --- a/arch/powerpc/sysdev/dcr.c
-> +++ b/arch/powerpc/sysdev/dcr.c
-> @@ -23,6 +23,68 @@
->  #include <asm/prom.h>
->  #include <asm/dcr.h>
-> 
-> +#if defined(CONFIG_PPC_DCR_NATIVE) && defined(CONFIG_PPC_DCR_MMIO)
-> +
-> +bool dcr_map_ok_generic(dcr_host_t host)
-> +{
-> +	if (host.type == INVALID)
-> +		return 0;
-> +	else if (host.type == NATIVE)
-> +		return dcr_map_ok_native(host.host.native);
-> +	else
-> +		return dcr_map_ok_mmio(host.host.mmio);
-> +}
-> +EXPORT_SYMBOL_GPL(dcr_map_ok_generic);
-> +
-> +dcr_host_t dcr_map_generic(struct device_node *dev,
-> +			   unsigned int dcr_n,
-> +			   unsigned int dcr_c)
-> +{
-> +	dcr_host_t host;
-> +	const char *prop = of_get_property(dev, "dcr-access-method", NULL);
-> +
-> +	if (!strcmp(prop, "native")) {
-> +		host.type = NATIVE;
-> +		host.host.native = dcr_map_native(dev, dcr_n, dcr_c);
-> +	} else if (!strcmp(prop, "mmio")) {
-> +		host.type = MMIO;
-> +		host.host.mmio = dcr_map_mmio(dev, dcr_n, dcr_c);
-> +	} else
-> +		host.type = INVALID;
-> +
-> +	return host;
-> +}
-> +EXPORT_SYMBOL_GPL(dcr_map_generic);
-> +
-> +void dcr_unmap_generic(dcr_host_t host, unsigned int dcr_c)
-> +{
-> +	if (host.type == NATIVE)
-> +		dcr_unmap_native(host.host.native, dcr_c);
-> +	else
-> +		dcr_unmap_mmio(host.host.mmio, dcr_c);
-
-What happens if host.type == INVALID?  Same question for the other
-accessors in dcr_*_generic.
-
-<snip>
-
-> diff --git a/include/asm-powerpc/dcr-generic.h b/include/asm-powerpc/dcr-generic.h
-> new file mode 100644
-> index 0000000..0ee74fb
-> --- /dev/null
-> +++ b/include/asm-powerpc/dcr-generic.h
-> @@ -0,0 +1,49 @@
-
-<snip> 
-
-> +enum host_type_t {MMIO, NATIVE, INVALID};
-
-Should these be DCR_HOST_MMIO, DCR_HOST_NATIVE, DCR_HOST_INVALID?
-
-I worry about the generic nature of the names.
-
-josh
+- k
