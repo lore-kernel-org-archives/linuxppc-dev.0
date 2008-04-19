@@ -1,25 +1,23 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.251])
-	by ozlabs.org (Postfix) with ESMTP id 32CAADE13B
-	for <linuxppc-dev@ozlabs.org>; Sun, 20 Apr 2008 01:59:28 +1000 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so278750anc.78
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 Apr 2008 08:59:27 -0700 (PDT)
-Message-ID: <fa686aa40804190859l3cbc5744i458cb893d8501d7b@mail.gmail.com>
-Date: Sat, 19 Apr 2008 09:59:27 -0600
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.246])
+	by ozlabs.org (Postfix) with ESMTP id 725BCDDE25
+	for <linuxppc-dev@ozlabs.org>; Sun, 20 Apr 2008 02:03:44 +1000 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so279075anc.78
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 Apr 2008 09:03:42 -0700 (PDT)
+Message-ID: <fa686aa40804190903w60e214b9s2c05262d606c626b@mail.gmail.com>
+Date: Sat, 19 Apr 2008 10:03:41 -0600
 From: "Grant Likely" <grant.likely@secretlab.ca>
 Sender: glikely@secretlab.ca
-To: "Matt Sealey" <matt@genesi-usa.com>
+To: "Peter Czanik" <pczanik@fang.fa.gau.hu>
 Subject: Re: RFC: MPC5200 PSC AC97 driver
-In-Reply-To: <4809DF54.2080609@genesi-usa.com>
+In-Reply-To: <4808C1BE.1050607@fang.fa.gau.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 References: <47FDEF9B.5000506@semihalf.com>
+	<200804151003.17865.jbe@pengutronix.de>
+	<200804161324.15887.jbe@pengutronix.de>
 	<200804171619.56615.jbe@pengutronix.de>
 	<4808C1BE.1050607@fang.fa.gau.hu>
-	<200804181802.34833.jbe@pengutronix.de>
-	<4808E469.9020408@genesi-usa.com>
-	<fa686aa40804181553q622b3c1fi7a302712abe79be1@mail.gmail.com>
-	<4809DF54.2080609@genesi-usa.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -30,44 +28,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, Apr 19, 2008 at 6:02 AM, Matt Sealey <matt@genesi-usa.com> wrote:
+On Fri, Apr 18, 2008 at 9:43 AM, Peter Czanik <pczanik@fang.fa.gau.hu> wrote:
+> Hello,
 >
->  Grant Likely wrote:
+>  factory:/usr/src/linux-2.6.25 # diff -u
+> arch/powerpc/kernel/prom_init.c.orig arch/powerpc/kernel/prom_init.c
+>  --- arch/powerpc/kernel/prom_init.c.orig        2008-04-18
+> 13:55:07.000000000 +0200
+>  +++ arch/powerpc/kernel/prom_init.c     2008-04-18 16:26:51.000000000 +0200
+>  @@ -2212,6 +2212,7 @@
 >
-> >
-> > On Fri, Apr 18, 2008 at 12:11 PM, Matt Sealey <matt@genesi-usa.com> wrote:
-> >
-> > >  Juergen Beisert wrote:
-> > >
-> >
-> > BTW, is anyone trying to shepherd this driver into the ALSA tree?  Its
-> > out of my area of expertise and responsibility, so I haven't been
-> > pursuing it.
-> >
->
->  We (well, I) were going to try but we got some oopses; from one thing or
-> another,
->  but with Juergen's fixes and cell-index in place, now it plays audio.
->
->  Now it can be pushed to ALSA on that basis, but I'm still trying to get my
->  head around where we need to throw patches and if it goes into ALSA Drivers
->  first or the kernel or both? It's kind of convoluted compared to the ease
->  of just CC'ing netdev or linux-ide..
->
->  If you want to push it, please do, but also I guess it'll need to be
-> bundled
->  with the cell-index patch for the fixups (we couldn't get it to make the
->  property for some odd reason) or a change to using addresses in the driver
->  for PSC selection (Juergen's original patch did this anyway)
+>  static void __init fixup_device_tree_efika(void)
+>  {
+>  +       int sound_ci = 1;
+>        int sound_irq[3] = { 2, 2, 0 };
+>        int bcomm_irq[3*16] = { 3,0,0, 3,1,0, 3,2,0, 3,3,0,
+>                                3,4,0, 3,5,0, 3,6,0, 3,7,0,
+>  @@ -2257,6 +2258,8 @@
+>                rv = prom_getprop(node, "interrupts", prop, sizeof(prop));
+>                if (rv == PROM_ERROR) {
+>                        prom_printf("Adding sound interrupts property\n");
+>  +                        prom_setprop(node, "/builtin/sound", "cell-index",
+>  +                                     &sound_ci, sizeof(int));
+>                        prom_setprop(node, "/builtin/sound", "interrupts",
+>                                     sound_irq, sizeof(sound_irq));
+>                }
 
-I can pick up the cell-index patch, but I won't pick up the ALSA
-stuff; that's not my tree.  Post the driver patch to the alsa list
-(but still cc linuxppc and me).  The driver needs to go into ALSA
-drivers first.  The kernel is updated from there.
+This probably isn't the ideal solution; but I've got no objection to
+bringing it in as a work around until someone can make the driver
+cleaner.
+
+However, this change needs to be more robust.  It must first check if
+the cell-index property already exists before trying to create it
+(just like how adding the interrupts property works).
 
 Cheers,
 g.
-
 
 -- 
 Grant Likely, B.Sc., P.Eng.
