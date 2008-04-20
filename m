@@ -1,29 +1,15 @@
-Return-Path: <glppe-linuxppc-embedded-2@m.gmane.org>
-Received: from ciao.gmane.org (main.gmane.org [80.91.229.2])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 7C22ADE316
+Return-Path: <rje@valleytech.com>
+Received: from smtp-0.hosting.atlantic.net (smtp-0.hosting.atlantic.net
+	[209.208.105.24]) by ozlabs.org (Postfix) with ESMTP id 2DE7EDE096
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 20 Apr 2008 11:05:15 +1000 (EST)
-Received: from root by ciao.gmane.org with local (Exim 4.43)
-	id 1JnNfy-0002yW-NK
-	for linuxppc-embedded@ozlabs.org; Sun, 20 Apr 2008 00:45:03 +0000
-Received: from 65.161.19.125 ([65.161.19.125])
-	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
-	id 1AlnuQ-0007hv-00
-	for <linuxppc-embedded@ozlabs.org>; Sun, 20 Apr 2008 00:45:02 +0000
-Received: from dwayne.fontenot by 65.161.19.125 with local (Gmexim 0.1
-	(Debian)) id 1AlnuQ-0007hv-00
-	for <linuxppc-embedded@ozlabs.org>; Sun, 20 Apr 2008 00:45:02 +0000
-To: linuxppc-embedded@ozlabs.org
-From: Dwayne Fontenot <dwayne.fontenot@att.net>
-Subject: Re: removal of arch/ppc in 2.6.27?
-Date: Sun, 20 Apr 2008 00:39:49 +0000 (UTC)
-Message-ID: <loom.20080420T003504-90@post.gmane.org>
-References: <D713F373-AE2A-4341-9C29-EF65B9399B36@kernel.crashing.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Sender: news <news@ger.gmane.org>
+	Sun, 20 Apr 2008 15:49:16 +1000 (EST)
+Message-ID: <480AD64E.1040406@valleytech.com>
+Date: Sun, 20 Apr 2008 01:36:14 -0400
+From: "R. Ebersole (VTI - new)" <rje@valleytech.com>
+MIME-Version: 1.0
+To: linuxppc-embedded@ozlabs.org.
+Subject: mpc8349, gb ethernet, bridging
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -34,31 +20,66 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala <galak <at> kernel.crashing.org> writes:
 
-> 
-> This is intended as a reminder that we plan on getting rid of arch/ppc  
-> this summer.  I'm guessing based on kernel release times that will be  
-> 2.6.27.  That would mean 2.6.26 will be the last kernel to support  
-> arch/ppc.
-> 
-> If people have boards that like ported over please let us know and  
-> work with us to port this over to arch/powerpc.
-> 
-> Here is a list based on arch/ppc/platforms.  Its not intended to be  
-> complete but a general idea of what's left in arch/ppc.
-> 
-...
-> MVME5100        e6xx
+Hi.
 
-I would very much like to see mvme5100 move to powerpc.
+We are having some issues regarding bridging the 2 ethernet ports of an 
+mpc8349, and are
+trying to determine what is going on.
 
-I'll help any way I can including trying to port it myself.
 
-Is it significant that in arch/powerpc/platforms/prep/Kconfig
-PPC_PREP depends on BROKEN ?
-What are the implications of that?
+We are attempting to daisy-chain several mpc8349-based boards via the 2 
+ethernet ports
+on each 8349.  When we enable bridging for the units, we (sometimes) 
+start seeing the following
+on one of the interior bridge's (mostly on the root bridge) console(s):
 
-Thanks,
+NETDEV WATCHDOG: eth1 : transmit timed out
 
-Dwayne
+We then see the bridge output  messages that indicate that is is going 
+through a topology
+state change.
+
+This situation keeps recurring.
+
+At some point, the message from the bridge that it is entering a 
+disabled state for port #2
+(eth1) is followed by garbage (actually, it appears to be some pointers 
+and/or memory
+addresses printed out), and the system hangs.
+
+We are using NAPI and the skbuff-recycling for the gianfar driver.
+We use ring(s) of 32 buffers.
+The gianfar's watchdog is set to  1Hz (once a seond ?)
+
+We are not sure if/how affect things:
+
+Port #1 of the 'root' bridge  is attached directly to our LAN
+Port #1 of the 'root' bridge runs at 10 Mbs
+Port #2 of the 'root' bridge runs at 1Gbs
+All other ports in the chain are       1Gbs
+We are using CAT-5 cables for all connections
+
+We have an application on each bridge in the chain that periodically 
+sends several hundred bytes
+'up the chain', towards its head (ie, towards our LAN).   This 
+application is typically running
+when the issue is seen.
+
+Setting the bridge's forwarding delay to 0 and hellotime to 6,000 
+helped, but did
+not solve the issue.
+
+???
+
+-- 
+
+Sometimes I feel like a red shirt in the Star Trek episode of life.
+
+--
+
+This message contains confidential information and is intended only for the
+individual named.  If you are not the intended recipient you should not
+disseminate, distribute or copy this e-mail.  Please notify the sender
+immediately by e-mail if you have received this e-mail by mistake and delete
+this e-mail from your system.
