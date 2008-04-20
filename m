@@ -1,15 +1,15 @@
-Return-Path: <rje@valleytech.com>
-Received: from smtp-0.hosting.atlantic.net (smtp-0.hosting.atlantic.net
-	[209.208.105.24]) by ozlabs.org (Postfix) with ESMTP id 2DE7EDE096
+Return-Path: <rodolfo@lesc.ufc.br>
+Received: from lesc0.lesc.ufc.br (unknown [200.17.37.126])
+	by ozlabs.org (Postfix) with ESMTP id EB6E6DE308
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 20 Apr 2008 15:49:16 +1000 (EST)
-Message-ID: <480AD64E.1040406@valleytech.com>
-Date: Sun, 20 Apr 2008 01:36:14 -0400
-From: "R. Ebersole (VTI - new)" <rje@valleytech.com>
+	Mon, 21 Apr 2008 00:02:18 +1000 (EST)
 MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org.
-Subject: mpc8349, gb ethernet, bridging
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Date: Sun, 20 Apr 2008 11:02:14 -0300
+From: rodolfo <rodolfo@lesc.ufc.br>
+To: Linuxppc embedded <linuxppc-embedded@ozlabs.org>, rodolfo__17@hotmail.com
+Subject: git.secretlab.ca doubts
+Message-ID: <864d5483726541708c00636bdd6193b8@lesc.ufc.br>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -20,66 +20,13 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hi,
 
-Hi.
+Did I had to use uartlite.c from "Uartlite: Make console output actually
+work." topic in git server instead of driver/serial/uartlite.c in mmy
+kernel tree? 
 
-We are having some issues regarding bridging the 2 ethernet ports of an 
-mpc8349, and are
-trying to determine what is going on.
+and about Makefile from "Linux 2.6.25-rc7  v2.6.25-rc7" topic in git
+server, Did I had to replace for my Makefile (2.6.25 from kernel.org) ?? 
 
-
-We are attempting to daisy-chain several mpc8349-based boards via the 2 
-ethernet ports
-on each 8349.  When we enable bridging for the units, we (sometimes) 
-start seeing the following
-on one of the interior bridge's (mostly on the root bridge) console(s):
-
-NETDEV WATCHDOG: eth1 : transmit timed out
-
-We then see the bridge output  messages that indicate that is is going 
-through a topology
-state change.
-
-This situation keeps recurring.
-
-At some point, the message from the bridge that it is entering a 
-disabled state for port #2
-(eth1) is followed by garbage (actually, it appears to be some pointers 
-and/or memory
-addresses printed out), and the system hangs.
-
-We are using NAPI and the skbuff-recycling for the gianfar driver.
-We use ring(s) of 32 buffers.
-The gianfar's watchdog is set to  1Hz (once a seond ?)
-
-We are not sure if/how affect things:
-
-Port #1 of the 'root' bridge  is attached directly to our LAN
-Port #1 of the 'root' bridge runs at 10 Mbs
-Port #2 of the 'root' bridge runs at 1Gbs
-All other ports in the chain are       1Gbs
-We are using CAT-5 cables for all connections
-
-We have an application on each bridge in the chain that periodically 
-sends several hundred bytes
-'up the chain', towards its head (ie, towards our LAN).   This 
-application is typically running
-when the issue is seen.
-
-Setting the bridge's forwarding delay to 0 and hellotime to 6,000 
-helped, but did
-not solve the issue.
-
-???
-
--- 
-
-Sometimes I feel like a red shirt in the Star Trek episode of life.
-
---
-
-This message contains confidential information and is intended only for the
-individual named.  If you are not the intended recipient you should not
-disseminate, distribute or copy this e-mail.  Please notify the sender
-immediately by e-mail if you have received this e-mail by mistake and delete
-this e-mail from your system.
+When I have to use the files from git server?
