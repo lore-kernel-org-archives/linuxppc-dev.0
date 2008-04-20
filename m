@@ -1,20 +1,20 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from wx-out-0506.google.com (wx-out-0506.google.com [66.249.82.234])
-	by ozlabs.org (Postfix) with ESMTP id D5DF2DE1DC
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Apr 2008 08:42:59 +1000 (EST)
-Received: by wx-out-0506.google.com with SMTP id h27so1052023wxd.15
-	for <linuxppc-dev@ozlabs.org>; Sun, 20 Apr 2008 15:42:57 -0700 (PDT)
-Message-ID: <fa686aa40804201542x534f891q69790973d9fc0ecd@mail.gmail.com>
-Date: Sun, 20 Apr 2008 16:42:57 -0600
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.249])
+	by ozlabs.org (Postfix) with ESMTP id 51138DE16D
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 Apr 2008 09:02:44 +1000 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so414013anc.78
+	for <linuxppc-dev@ozlabs.org>; Sun, 20 Apr 2008 16:02:38 -0700 (PDT)
+Message-ID: <fa686aa40804201602p32b90f19wb6ca270503bd2a53@mail.gmail.com>
+Date: Sun, 20 Apr 2008 17:02:38 -0600
 From: "Grant Likely" <grant.likely@secretlab.ca>
 Sender: glikely@secretlab.ca
-To: "Laurent Pinchart" <laurentp@cse-semaphore.com>
-Subject: Re: [RFC fs_enet: Convert MII bitbang driver to use GPIO lib
-In-Reply-To: <200804161640.42693.laurentp@cse-semaphore.com>
+To: "David H. Lynch Jr." <dhlii@dlasys.net>
+Subject: Re: UartLite
+In-Reply-To: <480BA62D.5020904@dlasys.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-References: <200804161640.42693.laurentp@cse-semaphore.com>
-Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org
+References: <480BA62D.5020904@dlasys.net>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,45 +24,68 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Apr 16, 2008 at 8:40 AM, Laurent Pinchart
-<laurentp@cse-semaphore.com> wrote:
-> This patch converts the MII bitband driver to use GPIO lib for GPIO access.
->  The driver can now handle MDC and MDIO on different GPIO banks.
->
->  The patch depends on Anton Vorontsov GPIO lib support scheduled for 2.6.26.
->  It is by no means complete, I just would like to get some feedback on the
->  approach. I'll resubmit it when the CPM2 GPIO support patches will be
->  available in the powerpc git tree.
+BTW, you should really be asking these questions on the linuxppc mailing list
 
-I agree with Anton; nice rework.  This would be useful on other
-platforms too.  Comment below.
-
->  --- a/Documentation/powerpc/booting-without-of.txt
->  +++ b/Documentation/powerpc/booting-without-of.txt
->  @@ -2030,21 +2030,19 @@ platforms are moved over to use the flattened-device-tree model.
->     fsl,cpm2-mdio-bitbang (reg is port C registers)
+On Sun, Apr 20, 2008 at 2:23 PM, David H. Lynch Jr. <dhlii@dlasys.net> wrote:
+> I have been looking more and more at the kernel uartlite driver.
+>  Somewhere along the line while I was not watching PK's driver has
+>  developed alot stronger resemblance to most normal serial drivers. I am
+>  seriously thinking of putting some effort into getting it working for
+>  me, and then pushing my polling patch for interrupt free implimentations.
 >
->     Properties for fsl,cpm2-mdio-bitbang:
->  -   fsl,mdio-pin : pin of port C controlling mdio data
->  -   fsl,mdc-pin : pin of port C controlling mdio clock
->  +   gpios : GPIOs controlling mdio clock and mdio data (in that order).
+>  But I have tripped over several things that trouble me. Though I am not
+>  a serial driver expert.
 >
->     Example:
+>  The first is that all the Uartlite related definitions tend to create a
+>  BaseAddress+3 definition.
+>  This really bothers me, it presumes that the registers are all 4 bytes
+>  apart - I know that is the norm
+>  and I have never actually seen a different implimentation, but I do not
+>  think it is set in stone.
+>  It also is basically a cleaver trick to get readb/writeb to work without
+>  adjustment.
+>  Endian issues tend to give me headaches, but somehow I think there is an
+>  endian issue in this.
+>  All the port offsets are defined with the presumption the registers are
+>  4 bytes apart.
+>  Despite the fact that all the offsets masks and bits are needed in
+>  several files, they are not in a header.
+
+Yes, I'm not a big fan of the +3 either; but it is expedient.  I think
+the best solution is to encode it into the device tree by adding
+optional "reg-stride" and "reg-offset" properties (at least for memory
+mapped implementations).
+
+We can define another binding for the DCR version.
+
+>  If I can manage to get the thing to work for me,
+>  Am I going to be stepping on any toes if I make changes to adress my
+>  concerns above ?
+
+I've got no problem reworking the register accessor functions.
+
+>  I really want to migrate all the direct IO to a ulite_in() and
+>  ulite_out() routine.
+>  Letting those two routines deal with all the issues of BaseAddress,
+>  register size, endianness, register shift,
+>  and even whether access is via DCR - I have seen atleast one
+>  implimentation that was DCR.
 >
->  -       mdio@10d40 {
->  +       mdio {
->                 device_type = "mdio";
->                 compatible = "fsl,mpc8272ads-mdio-bitbang",
->                              "fsl,mpc8272-mdio-bitbang",
->                              "fsl,cpm2-mdio-bitbang";
-
-I think it would be better for the defined binding to use something
-like "virtual,mdio-bitbang" or "gpio-mdio".  (I like the first better,
-but there is already some precedence with the "gpio-led" driver.  I
-think there is less chance of namespace conflicts with the first)
-
-Of course; the *driver* could also accept these additional compatible
-values for backwards compatibility.
+>  I would like to remove the +3 from all the macro's etc. as it seems to
+>  me to confuse what is actually going on.
+>
+>  I did a diff merge against my own driver a few days ago and aside from
+>  these issues, order of functions, some naming issues, the absence of OF
+>  support in my driver, and the presence of polling in mine, the code now
+>  very very strongly parallels my code now. So it should not be alot of
+>  work to merge  my code  into the  standard driver now.
+>
+>  I will be happy to do this - presuming I am not going to be stepping on
+>  any toes.
+>  I would be happy to not have to support a separate driver, but the stock
+>  driver has to work with my hardware.
+>  It still does not, but I think the code is now close enough for me to
+>  track down and kill the problem.
 
 Cheers,
 g.
