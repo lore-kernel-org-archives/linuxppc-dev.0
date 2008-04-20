@@ -1,22 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 31086DE1AB
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Apr 2008 07:40:04 +1000 (EST)
-Subject: Re: pci issue - wrong detection of pci ressources
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
-In-Reply-To: <480BA937.7050603@linux.vnet.ibm.com>
-References: <48088F02.2060806@linux.vnet.ibm.com>
-	<1208566122.6958.425.camel@pasglop>
-	<480BA937.7050603@linux.vnet.ibm.com>
-Content-Type: text/plain
-Date: Mon, 21 Apr 2008 07:36:48 +1000
-Message-Id: <1208727408.7009.0.camel@pasglop>
-Mime-Version: 1.0
-Cc: Hollis Blanchard <hollisb@us.ibm.com>, linuxppc-dev@ozlabs.org
-Reply-To: benh@kernel.crashing.org
+Return-Path: <glikely@secretlab.ca>
+Received: from wx-out-0506.google.com (wx-out-0506.google.com [66.249.82.234])
+	by ozlabs.org (Postfix) with ESMTP id D5DF2DE1DC
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 Apr 2008 08:42:59 +1000 (EST)
+Received: by wx-out-0506.google.com with SMTP id h27so1052023wxd.15
+	for <linuxppc-dev@ozlabs.org>; Sun, 20 Apr 2008 15:42:57 -0700 (PDT)
+Message-ID: <fa686aa40804201542x534f891q69790973d9fc0ecd@mail.gmail.com>
+Date: Sun, 20 Apr 2008 16:42:57 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Laurent Pinchart" <laurentp@cse-semaphore.com>
+Subject: Re: [RFC fs_enet: Convert MII bitbang driver to use GPIO lib
+In-Reply-To: <200804161640.42693.laurentp@cse-semaphore.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <200804161640.42693.laurentp@cse-semaphore.com>
+Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,14 +24,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Wed, Apr 16, 2008 at 8:40 AM, Laurent Pinchart
+<laurentp@cse-semaphore.com> wrote:
+> This patch converts the MII bitband driver to use GPIO lib for GPIO access.
+>  The driver can now handle MDC and MDIO on different GPIO banks.
+>
+>  The patch depends on Anton Vorontsov GPIO lib support scheduled for 2.6.26.
+>  It is by no means complete, I just would like to get some feedback on the
+>  approach. I'll resubmit it when the CPM2 GPIO support patches will be
+>  available in the powerpc git tree.
 
-> Yes you're right. Early at the pci initialization are errors of the allocation for pi ressources.
-> And that are exactly the ressources failing later, so that pci initialization seem to be the reason for my problem.
-> Was there any simple solution (e.g. just somehow increase memory reserved for pci) when you came across that issue Johan ?
+I agree with Anton; nice rework.  This would be useful on other
+platforms too.  Comment below.
 
-Hrm... I was expecting to see a lot more output here, make sure you have
-"debug" on your command line (or enable early debug output, same
-effect).
+>  --- a/Documentation/powerpc/booting-without-of.txt
+>  +++ b/Documentation/powerpc/booting-without-of.txt
+>  @@ -2030,21 +2030,19 @@ platforms are moved over to use the flattened-device-tree model.
+>     fsl,cpm2-mdio-bitbang (reg is port C registers)
+>
+>     Properties for fsl,cpm2-mdio-bitbang:
+>  -   fsl,mdio-pin : pin of port C controlling mdio data
+>  -   fsl,mdc-pin : pin of port C controlling mdio clock
+>  +   gpios : GPIOs controlling mdio clock and mdio data (in that order).
+>
+>     Example:
+>
+>  -       mdio@10d40 {
+>  +       mdio {
+>                 device_type = "mdio";
+>                 compatible = "fsl,mpc8272ads-mdio-bitbang",
+>                              "fsl,mpc8272-mdio-bitbang",
+>                              "fsl,cpm2-mdio-bitbang";
+
+I think it would be better for the defined binding to use something
+like "virtual,mdio-bitbang" or "gpio-mdio".  (I like the first better,
+but there is already some precedence with the "gpio-led" driver.  I
+think there is less chance of namespace conflicts with the first)
+
+Of course; the *driver* could also accept these additional compatible
+values for backwards compatibility.
 
 Cheers,
-Ben.
+g.
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
