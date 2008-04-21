@@ -1,21 +1,32 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 37754DED3C
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Apr 2008 03:51:08 +1000 (EST)
-Message-Id: <C69E510D-5838-4BE6-AB57-56FCB0592414@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Paul Mackerras <paulus@samba.org>
-In-Reply-To: <18441.58154.608911.337978@cargo.ozlabs.ibm.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: Patches added to powerpc.git master and powerpc-next branches
-Date: Mon, 21 Apr 2008 12:51:04 -0500
-References: <18440.34891.440661.248400@cargo.ozlabs.ibm.com>
-	<9CE9EFA8-A303-49C9-B9A2-F62D42F927B7@kernel.crashing.org>
-	<18441.58154.608911.337978@cargo.ozlabs.ibm.com>
-Cc: linuxppc-dev@ozlabs.org
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id CCAFFDE1DA
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Apr 2008 03:57:33 +1000 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	m3LHuSVK020661
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 Apr 2008 10:56:28 -0700 (MST)
+Received: from ld0162-tx32.am.freescale.net (ld0162-tx32.am.freescale.net
+	[10.82.19.112])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m3LHuR1L019534
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 Apr 2008 12:56:27 -0500 (CDT)
+Date: Mon, 21 Apr 2008 12:56:27 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Laurent Pinchart <laurentp@cse-semaphore.com>
+Subject: Re: [RFC fs_enet: Convert MII bitbang driver to use GPIO lib
+Message-ID: <20080421175627.GD4134@ld0162-tx32.am.freescale.net>
+References: <200804161640.42693.laurentp@cse-semaphore.com>
+	<20080416160540.GB442@polina.dev.rtsoft.ru>
+	<200804161809.40805.laurentp@cse-semaphore.com>
+	<200804181334.34229.laurentp@cse-semaphore.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200804181334.34229.laurentp@cse-semaphore.com>
+Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,42 +36,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Fri, Apr 18, 2008 at 01:34:29PM +0200, Laurent Pinchart wrote:
+> Scott Wood was concerned in 
+> http://patchwork.ozlabs.org/linuxppc/patch?id=17490 that the gpio lib might 
+> be an unnecessary burden for memory-constraint platforms. Should we keep two 
+> mdio bitbang drivers, one with direct access to the ports and one using gpio 
+> lib ? The later solves the concurrent access issues present in the current 
+> fs_enet mdio bitbang driber.
 
-On Apr 19, 2008, at 7:18 AM, Paul Mackerras wrote:
-> Kumar Gala writes:
->
->> [POWERPC] 85xx: Add support for relocatble kernel (and booting at  
->> non-
->> zero)
->
-> Should be OK to go though probably not in the first batch.  I want to
-> look through it carefully again since it's touching code that is
-> common to a lot of platforms.  The patch description looks reasonable
-> as to what it explains but the english could use a touch-up here or
-> there (e.g. "a physical address that is module 256M" doesn't actually
-> mean anything; "a physical address that is 0 modulo 256M" would be
-> correct).
+The memory-constrained platform I had in mind was 8xx, which doesn't use
+bitbanged MDIO.  It might nice to keep the gpiolib bit separate to avoid
+situations such as ep8248e where mdiobb would be the only thing requiring
+a gpiolib binding, though -- but it shouldn't be two separate bitbang
+drivers, just the existing bitbang driver plus some glue code that binds
+it to gpiolib.
 
-Ok.  I'll have my grammar police review it and repost.
-
->> [POWERPC] Port fixmap from x86 and use for kmap_atomic
->
-> Once again I want to go through it carefully and understand how it all
-> works, and in particular understand things like the way it ensures
-> that the base address for the kmap region is aligned to a 4M boundary
-> so all the kmap ptes are in a single page (assuming it does :).
-
-I'm not clear on why this is needed.  I can see value in having the  
-PGD entry in place but the pte PAs would be changing all the time so I  
-don't see what benefit there is in keeping them in one page.
-
-For normal kmap ptes we cover things in one PGD via:
-
-#define PKMAP_BASE      ((FIXADDR_BOOT_START - PAGE_SIZE*(LAST_PKMAP +  
-1)) & PMD_MASK)
-
-The kmap_atomic ptes do NOT have a similar guarantee as they are  
-controlled via fixmap.  However we do "pre-allocate" the PGD via  
-calling map_page() on all fixmap addresses.
-
-- k
+-Scott
