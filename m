@@ -1,19 +1,20 @@
-Return-Path: <rmachet@slac.stanford.edu>
-Received: from nospam3.slac.stanford.edu (nospam3.slac.stanford.edu
-	[134.79.18.120])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <dale@farnsworth.org>
+Received: from xyzzy.farnsworth.org (xyzzy.farnsworth.org [65.39.95.219])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 1D564DDF6B
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Apr 2008 04:47:10 +1000 (EST)
-Subject: [PATCH 2/2 v3] sysdev,mv64x60: initialization of mv64x60 ethernet,
-	serial and I2C
-From: Remi Machet <rmachet@slac.stanford.edu>
-To: Dale Farnsworth <dale@farnsworth.org>, Paul Mackerras <paulus@samba.org>
-Content-Type: text/plain
-Date: Mon, 21 Apr 2008 11:46:12 -0700
-Message-Id: <1208803572.5789.78.camel@pcds-ts102.slac.stanford.edu>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTPS id 26171DE364
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Apr 2008 04:56:54 +1000 (EST)
+Date: Mon, 21 Apr 2008 11:56:41 -0700
+From: Dale Farnsworth <dale@farnsworth.org>
+To: Remi Machet <rmachet@slac.stanford.edu>
+Message-ID: <20080421185641.GA14647@farnsworth.org>
+References: <1208803572.5789.78.camel@pcds-ts102.slac.stanford.edu>
+MIME-Version: 1.0
+In-Reply-To: <1208803572.5789.78.camel@pcds-ts102.slac.stanford.edu>
+Subject: Re: [PATCH 2/2 v3] sysdev,mv64x60: initialization of mv64x60
+	ethernet, serial and I2C
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,89 +24,11 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-If one of the devices of the mv64x60 init fails, the remaining 
-devices are not initialized => This patch changes the code to 
-display an error and continue the initialization.
+On Mon, Apr 21, 2008 at 11:46:12AM -0700, Remi Machet wrote:
+> If one of the devices of the mv64x60 init fails, the remaining 
+> devices are not initialized => This patch changes the code to 
+> display an error and continue the initialization.
+> 
+> Signed-off-by: Remi Machet (rmachet@slac.stanford.edu)
 
-Signed-off-by: Remi Machet (rmachet@slac.stanford.edu)
----
-Integrated the few format changes requested by Dale in the 
-previous version of this patch.
-
---- a/arch/powerpc/sysdev/mv64x60_dev.c
-+++ b/arch/powerpc/sysdev/mv64x60_dev.c
-@@ -431,9 +431,13 @@ static int __init mv64x60_device_setup(v
- 	int err;
- 
- 	id = 0;
--	for_each_compatible_node(np, "serial", "marvell,mv64360-mpsc")
--		if ((err = mv64x60_mpsc_device_setup(np, id++)))
--			goto error;
-+	for_each_compatible_node(np, "serial", "marvell,mv64360-mpsc") {
-+		err = mv64x60_mpsc_device_setup(np, id++);
-+		if (err)
-+			printk(KERN_ERR "Failed to initialize MV64x60 "
-+					"serial device %s: error %d.\n",
-+					np->full_name, err);
-+	}
- 
- 	id = 0;
- 	id2 = 0;
-@@ -441,38 +445,44 @@ static int __init mv64x60_device_setup(v
- 		pdev = mv64x60_eth_register_shared_pdev(np, id++);
- 		if (IS_ERR(pdev)) {
- 			err = PTR_ERR(pdev);
--			goto error;
-+			printk(KERN_ERR "Failed to initialize MV64x60 "
-+					"network block %s: error %d.\n",
-+					np->full_name, err);
-+			continue;
- 		}
- 		for_each_child_of_node(np, np2) {
- 			if (!of_device_is_compatible(np2,
- 					"marvell,mv64360-eth"))
- 				continue;
- 			err = mv64x60_eth_device_setup(np2, id2++, pdev);
--			if (err) {
--				of_node_put(np2);
--				goto error;
--			}
-+			if (err)
-+				printk(KERN_ERR "Failed to initialize "
-+						"MV64x60 network device %s: "
-+						"error %d.\n",
-+						np2->full_name, err);
- 		}
- 	}
- 
- 	id = 0;
--	for_each_compatible_node(np, "i2c", "marvell,mv64360-i2c")
--		if ((err = mv64x60_i2c_device_setup(np, id++)))
--			goto error;
-+	for_each_compatible_node(np, "i2c", "marvell,mv64360-i2c") {
-+		err = mv64x60_i2c_device_setup(np, id++);
-+		if (err)
-+			printk(KERN_ERR "Failed to initialize MV64x60 I2C "
-+					"bus %s: error %d.\n",
-+					np->full_name, err);
-+	}
- 
- 	/* support up to one watchdog timer */
- 	np = of_find_compatible_node(np, NULL, "marvell,mv64360-wdt");
- 	if (np) {
- 		if ((err = mv64x60_wdt_device_setup(np, id)))
--			goto error;
-+			printk(KERN_ERR "Failed to initialize MV64x60 "
-+					"Watchdog %s: error %d.\n",
-+					np->full_name, err);
- 		of_node_put(np);
- 	}
- 
- 	return 0;
--
--error:
--	of_node_put(np);
--	return err;
- }
- arch_initcall(mv64x60_device_setup);
- 
+Acked by: Dale Farnsworth <dale@farnsworth.org>
