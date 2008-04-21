@@ -1,12 +1,23 @@
-Return-Path: <sr@denx.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id D0FC9DE899
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Apr 2008 01:05:23 +1000 (EST)
-From: Stefan Roese <sr@denx.de>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v2] [POWERPC] 4xx: Add endpoint support to 4xx PCIe driver
-Date: Mon, 21 Apr 2008 16:54:30 +0200
-Message-Id: <1208789670-28909-1-git-send-email-sr@denx.de>
+Return-Path: <sshtylyov@ru.mvista.com>
+Received: from imap.sh.mvista.com (unknown [63.81.120.155])
+	by ozlabs.org (Postfix) with ESMTP id ACDD0DEBC9
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Apr 2008 01:17:12 +1000 (EST)
+Message-ID: <480CAFD2.2050108@ru.mvista.com>
+Date: Mon, 21 Apr 2008 19:16:34 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+MIME-Version: 1.0
+To: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
+Subject: Re: pci issue - wrong detection of pci ressources
+References: <48088F02.2060806@linux.vnet.ibm.com>
+	<1208566122.6958.425.camel@pasglop>
+	<480BA937.7050603@linux.vnet.ibm.com>
+	<1208727408.7009.0.camel@pasglop>
+	<480C80B6.30904@linux.vnet.ibm.com>
+	<480C87BD.8090207@ru.mvista.com>
+	<480C9FE2.4030601@linux.vnet.ibm.com>
+In-Reply-To: <480C9FE2.4030601@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev@ozlabs.org, Hollis Blanchard <hollisb@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,279 +27,95 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch adds basic endpoint support to the 4xx PCIe driver.
+Christian Ehrhardt wrote:
 
-This is done by checking the device_type property of the PCIe
-device node ("pci" for root-complex and "pci-endpoint" for endpoint
-configuration).
+>>> +else {
+>>> +printk(KERN_ERR"%s - continue with start 0x%0lx on %p\n", __func__, 
+>>> (this->end + 1), this->sibling);
+>>> +}
+>>>                 new->start = this->end + 1;
+>>>                 this = this->sibling;
+>>
+>>
+>>    And here. Yet it's not clear why you call resource's 'end' 'start'...
 
-Note: Currently we map a fixed 64MByte window to PLB address 0 (SDRAM).
-This should probably be configurable via a dts property.
+> It's the new->start that get's calculated one line after that new else 
+> part.
+> I printed that one to to see a bit how the loop iterates the resource 
+> elements.
 
-Signed-off-by: Stefan Roese <sr@denx.de>
----
-Changes in v2:
---------------
-- As suggested by Benjamin Herrenschmidt, don't determine endpoint mode
-  by looking at the already configured PCIe port state, but evaluate
-  the device_type property instead. This makes it possible for boards
-  without a previously run PCIe configuration (e.g. U-Boot) to configure
-  a port as endpoint as well.
+    Yeah, I figured that out right after sending mail. :-)
 
-- Don't map the big external config space upon endpoint configuration.
+> ------------------------------------------------------------------------
 
-- Introduce "vendor-id" and "device-id" properties to be written to
-  the host bridge.
+> With DEBUG in arch/powerpc/kernel/pci-common.c, debug in commandline and a patch with some printk's (I attached the patch because it is the usual "put printk's everywhere" so the diff helps to understand where the prints come from). Corrected prinf format specifiers according to the comments from Sergei Shtylyov.
 
- arch/powerpc/sysdev/ppc4xx_pci.c |  180 +++++++++++++++++++++++++++----------
- 1 files changed, 131 insertions(+), 49 deletions(-)
+> PCI host bridge /plb/pci@1ec000000 (primary) ranges:
+>  MEM 0x0000000180000000..0x000000018fffffff -> 0x0000000080000000
+>   IO 0x00000001e8000000..0x00000001e80fffff -> 0x0000000000000000
+> 4xx PCI DMA offset set to 0x00000000
+> PCI: Probing PCI hardware
+> PCI: Hiding 4xx host bridge resources 0000:00:00.0
+> Try to map irq for 0000:00:00.0...
+>  -> got one, spec 2 cells (0x00000003 0x00000008...) on /interrupt-controller2
+>  -> mapped to linux irq 16
+> Try to map irq for 0000:00:0a.0...
+>  -> got one, spec 2 cells (0x00000003 0x00000008...) on /interrupt-controller2
+>  -> mapped to linux irq 16
+> Try to map irq for 0000:00:0a.1...
+> PCI: PHB (bus 0) bridge rsrc 0: 0000000000000000-00000000000fffff [0x100], parent c0365060 (PCI IO)
+> __request_resource - request 0xcf8045b0 name '/plb/pci@1ec000000' start 0x0 end 0xfffff
+> __request_resource - no conflict parent 0xc0365060 sibling 0x00000000
+> PCI: PHB (bus 0) bridge rsrc 1: 0000000180000000-000000018fffffff [0x200], parent c0365038 (PCI mem)
+> __request_resource - request 0xcf8045d8 name '/plb/pci@1ec000000' start 0x180000000 end 0x18fffffff
+> __request_resource - no conflict parent 0xc0365038 sibling 0x00000000
+> PCI: Assigning unassigned resouces...
+> pci_assign_unassigned_resources -#1- bus 0xcf82d400
+> pci_assign_unassigned_resources -#2- bus 0xcf82d400
+> pci_assign_resource - allocate with IORESOURCE_PREFETCH
+> pci_bus_alloc_resource - enter
+> pci_assign_resource - second pci_bus_alloc_resource call
+> pci_bus_alloc_resource - enter
+> pci_bus_alloc_resource - call allocate ressource size 0x8000000 startcalc 0xffffffff, align 0x8000000
+> find_resource - size 0x8000000, min 0x180000000, max 0xffffffffffffffff
+> find_resource - found start 0x180000000 end 0x187ffffff
+> __request_resource - request 0xcf810578 name '0000:00:0a.0' start 0x180000000 end 0x187ffffff
+> __request_resource - no conflict parent 0xcf8045d8 sibling 0x00000000
+> pci_assign_resource - allocate with IORESOURCE_PREFETCH
+> pci_bus_alloc_resource - enter
+> pci_assign_resource - second pci_bus_alloc_resource call
+> pci_bus_alloc_resource - enter
+> pci_bus_alloc_resource - call allocate ressource size 0x8000000 startcalc 0xffffffff, align 0x8000000
+> find_resource - size 0x8000000, min 0x180000000, max 0xffffffffffffffff
+> find_resource - continue with start 0x188000000 on 0x00000000
+> find_resource - found start 0x188000000 end 0x18fffffff
+> __request_resource - request 0xcf810178 name '0000:00:0a.1' start 0x188000000 end 0x18fffffff
+> __request_resource - no conflict parent 0xcf8045d8 sibling 0x00000000
+> pci_assign_resource - allocate with IORESOURCE_PREFETCH
+> pci_bus_alloc_resource - enter
+> pci_assign_resource - second pci_bus_alloc_resource call
+> pci_bus_alloc_resource - enter
 
-diff --git a/arch/powerpc/sysdev/ppc4xx_pci.c b/arch/powerpc/sysdev/ppc4xx_pci.c
-index 1087196..acdc309 100644
---- a/arch/powerpc/sysdev/ppc4xx_pci.c
-+++ b/arch/powerpc/sysdev/ppc4xx_pci.c
-@@ -1390,28 +1390,59 @@ static void __init ppc4xx_configure_pciex_PIMs(struct ppc4xx_pciex_port *port,
- 	resource_size_t size = res->end - res->start + 1;
- 	u64 sa;
- 
--	/* Calculate window size */
--	sa = (0xffffffffffffffffull << ilog2(size));;
--	if (res->flags & IORESOURCE_PREFETCH)
--		sa |= 0x8;
-+	if (port->endpoint) {
-+		resource_size_t ep_addr = 0;
-+		resource_size_t ep_size = 32 << 20;
-+
-+		/* Currently we map a fixed 64MByte window to PLB address
-+		 * 0 (SDRAM). This should probably be configurable via a dts
-+		 * property.
-+		 */
-+
-+		/* Calculate window size */
-+		sa = (0xffffffffffffffffull << ilog2(ep_size));;
-+
-+		/* Setup BAR0 */
-+		out_le32(mbase + PECFG_BAR0HMPA, RES_TO_U32_HIGH(sa));
-+		out_le32(mbase + PECFG_BAR0LMPA, RES_TO_U32_LOW(sa) |
-+			 PCI_BASE_ADDRESS_MEM_TYPE_64);
- 
--	out_le32(mbase + PECFG_BAR0HMPA, RES_TO_U32_HIGH(sa));
--	out_le32(mbase + PECFG_BAR0LMPA, RES_TO_U32_LOW(sa));
-+		/* Disable BAR1 & BAR2 */
-+		out_le32(mbase + PECFG_BAR1MPA, 0);
-+		out_le32(mbase + PECFG_BAR2HMPA, 0);
-+		out_le32(mbase + PECFG_BAR2LMPA, 0);
- 
--	/* The setup of the split looks weird to me ... let's see if it works */
--	out_le32(mbase + PECFG_PIM0LAL, 0x00000000);
--	out_le32(mbase + PECFG_PIM0LAH, 0x00000000);
--	out_le32(mbase + PECFG_PIM1LAL, 0x00000000);
--	out_le32(mbase + PECFG_PIM1LAH, 0x00000000);
--	out_le32(mbase + PECFG_PIM01SAH, 0xffff0000);
--	out_le32(mbase + PECFG_PIM01SAL, 0x00000000);
-+		out_le32(mbase + PECFG_PIM01SAH, RES_TO_U32_HIGH(sa));
-+		out_le32(mbase + PECFG_PIM01SAL, RES_TO_U32_LOW(sa));
-+
-+		out_le32(mbase + PCI_BASE_ADDRESS_0, RES_TO_U32_LOW(ep_addr));
-+		out_le32(mbase + PCI_BASE_ADDRESS_1, RES_TO_U32_HIGH(ep_addr));
-+	} else {
-+		/* Calculate window size */
-+		sa = (0xffffffffffffffffull << ilog2(size));;
-+		if (res->flags & IORESOURCE_PREFETCH)
-+			sa |= 0x8;
-+
-+		out_le32(mbase + PECFG_BAR0HMPA, RES_TO_U32_HIGH(sa));
-+		out_le32(mbase + PECFG_BAR0LMPA, RES_TO_U32_LOW(sa));
-+
-+		/* The setup of the split looks weird to me ... let's see
-+		 * if it works
-+		 */
-+		out_le32(mbase + PECFG_PIM0LAL, 0x00000000);
-+		out_le32(mbase + PECFG_PIM0LAH, 0x00000000);
-+		out_le32(mbase + PECFG_PIM1LAL, 0x00000000);
-+		out_le32(mbase + PECFG_PIM1LAH, 0x00000000);
-+		out_le32(mbase + PECFG_PIM01SAH, 0xffff0000);
-+		out_le32(mbase + PECFG_PIM01SAL, 0x00000000);
-+
-+		out_le32(mbase + PCI_BASE_ADDRESS_0, RES_TO_U32_LOW(res->start));
-+		out_le32(mbase + PCI_BASE_ADDRESS_1, RES_TO_U32_HIGH(res->start));
-+	}
- 
- 	/* Enable inbound mapping */
- 	out_le32(mbase + PECFG_PIMEN, 0x1);
- 
--	out_le32(mbase + PCI_BASE_ADDRESS_0, RES_TO_U32_LOW(res->start));
--	out_le32(mbase + PCI_BASE_ADDRESS_1, RES_TO_U32_HIGH(res->start));
--
- 	/* Enable I/O, Mem, and Busmaster cycles */
- 	out_le16(mbase + PCI_COMMAND,
- 		 in_le16(mbase + PCI_COMMAND) |
-@@ -1425,13 +1456,8 @@ static void __init ppc4xx_pciex_port_setup_hose(struct ppc4xx_pciex_port *port)
- 	const int *bus_range;
- 	int primary = 0, busses;
- 	void __iomem *mbase = NULL, *cfg_data = NULL;
--
--	/* XXX FIXME: Handle endpoint mode properly */
--	if (port->endpoint) {
--		printk(KERN_WARNING "PCIE%d: Port in endpoint mode !\n",
--		       port->index);
--		return;
--	}
-+	const u32 *pval;
-+	u32 val;
- 
- 	/* Check if primary bridge */
- 	if (of_get_property(port->node, "primary", NULL))
-@@ -1465,21 +1491,30 @@ static void __init ppc4xx_pciex_port_setup_hose(struct ppc4xx_pciex_port *port)
- 		hose->last_busno = hose->first_busno + busses;
- 	}
- 
--	/* We map the external config space in cfg_data and the host config
--	 * space in cfg_addr. External space is 1M per bus, internal space
--	 * is 4K
-+	if (!port->endpoint) {
-+		/* Only map the external config space in cfg_data for
-+		 * PCIe root-complexes. External space is 1M per bus
-+		 */
-+		cfg_data = ioremap(port->cfg_space.start +
-+				   (hose->first_busno + 1) * 0x100000,
-+				   busses * 0x100000);
-+		if (cfg_data == NULL) {
-+			printk(KERN_ERR "%s: Can't map external config space !",
-+			       port->node->full_name);
-+			goto fail;
-+		}
-+		hose->cfg_data = cfg_data;
-+	}
-+
-+	/* Always map the host config space in cfg_addr.
-+	 * Internal space is 4K
- 	 */
--	cfg_data = ioremap(port->cfg_space.start +
--				 (hose->first_busno + 1) * 0x100000,
--				 busses * 0x100000);
- 	mbase = ioremap(port->cfg_space.start + 0x10000000, 0x1000);
--	if (cfg_data == NULL || mbase == NULL) {
--		printk(KERN_ERR "%s: Can't map config space !",
-+	if (mbase == NULL) {
-+		printk(KERN_ERR "%s: Can't map internal config space !",
- 		       port->node->full_name);
- 		goto fail;
- 	}
--
--	hose->cfg_data = cfg_data;
- 	hose->cfg_addr = mbase;
- 
- 	pr_debug("PCIE %s, bus %d..%d\n", port->node->full_name,
-@@ -1492,12 +1527,14 @@ static void __init ppc4xx_pciex_port_setup_hose(struct ppc4xx_pciex_port *port)
- 	port->hose = hose;
- 	mbase = (void __iomem *)hose->cfg_addr;
- 
--	/*
--	 * Set bus numbers on our root port
--	 */
--	out_8(mbase + PCI_PRIMARY_BUS, hose->first_busno);
--	out_8(mbase + PCI_SECONDARY_BUS, hose->first_busno + 1);
--	out_8(mbase + PCI_SUBORDINATE_BUS, hose->last_busno);
-+	if (!port->endpoint) {
-+		/*
-+		 * Set bus numbers on our root port
-+		 */
-+		out_8(mbase + PCI_PRIMARY_BUS, hose->first_busno);
-+		out_8(mbase + PCI_SECONDARY_BUS, hose->first_busno + 1);
-+		out_8(mbase + PCI_SUBORDINATE_BUS, hose->last_busno);
-+	}
- 
- 	/*
- 	 * OMRs are already reset, also disable PIMs
-@@ -1518,17 +1555,49 @@ static void __init ppc4xx_pciex_port_setup_hose(struct ppc4xx_pciex_port *port)
- 	ppc4xx_configure_pciex_PIMs(port, hose, mbase, &dma_window);
- 
- 	/* The root complex doesn't show up if we don't set some vendor
--	 * and device IDs into it. Those are the same bogus one that the
--	 * initial code in arch/ppc add. We might want to change that.
-+	 * and device IDs into it. The defaults below are the same bogus
-+	 * one that the initial code in arch/ppc had. This can be
-+	 * overwritten by setting the "vendor-id/device-id" properties
-+	 * in the pciex node.
- 	 */
--	out_le16(mbase + 0x200, 0xaaa0 + port->index);
--	out_le16(mbase + 0x202, 0xbed0 + port->index);
- 
--	/* Set Class Code to PCI-PCI bridge and Revision Id to 1 */
--	out_le32(mbase + 0x208, 0x06040001);
-+	/* Get the (optional) vendor-/device-id from the device-tree */
-+	pval = of_get_property(port->node, "vendor-id", NULL);
-+	if (pval) {
-+		val = *pval;
-+	} else {
-+		if (!port->endpoint)
-+			val = 0xaaa0 + port->index;
-+		else
-+			val = 0xeee0 + port->index;
-+	}
-+	out_le16(mbase + 0x200, val);
-+
-+	pval = of_get_property(port->node, "device-id", NULL);
-+	if (pval) {
-+		val = *pval;
-+	} else {
-+		if (!port->endpoint)
-+			val = 0xbed0 + port->index;
-+		else
-+			val = 0xfed0 + port->index;
-+	}
-+	out_le16(mbase + 0x202, val);
-+
-+	if (!port->endpoint) {
-+		/* Set Class Code to PCI-PCI bridge and Revision Id to 1 */
-+		out_le32(mbase + 0x208, 0x06040001);
-+
-+		printk(KERN_INFO "PCIE%d: successfully set as root-complex\n",
-+		       port->index);
-+	} else {
-+		/* Set Class Code to Processor/PPC */
-+		out_le32(mbase + 0x208, 0x0b200001);
-+
-+		printk(KERN_INFO "PCIE%d: successfully set as endpoint\n",
-+		       port->index);
-+	}
- 
--	printk(KERN_INFO "PCIE%d: successfully set as root-complex\n",
--	       port->index);
- 	return;
-  fail:
- 	if (hose)
-@@ -1545,6 +1614,7 @@ static void __init ppc4xx_probe_pciex_bridge(struct device_node *np)
- 	const u32 *pval;
- 	int portno;
- 	unsigned int dcrs;
-+	const char *val;
- 
- 	/* First, proceed to core initialization as we assume there's
- 	 * only one PCIe core in the system
-@@ -1576,8 +1646,20 @@ static void __init ppc4xx_probe_pciex_bridge(struct device_node *np)
- 	}
- 	port->sdr_base = *pval;
- 
--	/* XXX Currently, we only support root complex mode */
--	port->endpoint = 0;
-+	/* Check if device_type property is set to "pci" or "pci-endpoint".
-+	 * Resulting from this setup this PCIe port will be configured
-+	 * as root-complex or as endpoint.
-+	 */
-+	val = of_get_property(port->node, "device_type", NULL);
-+	if (!strcmp(val, "pci-endpoint")) {
-+		port->endpoint = 1;
-+	} else if (!strcmp(val, "pci")) {
-+		port->endpoint = 0;
-+	} else {
-+		printk(KERN_ERR "PCIE: missing or incorrect device_type for %s\n",
-+		       np->full_name);
-+		return;
-+	}
- 
- 	/* Fetch config space registers address */
- 	if (of_address_to_resource(np, 0, &port->cfg_space)) {
--- 
-1.5.5
+    Ah, that's what happens -- BAR0 in functions 0/1 takes up the whole 265 
+MiB of the PCI memory space (128+128), so no place is left for other memory BARs.
+
+> pci_bus_alloc_resource - call allocate ressource size 0x20000 startcalc 0xffffffff, align 0x20000
+> find_resource - size 0x20000, min 0x180000000, max 0xffffffffffffffff
+> find_resource - continue with start 0x188000000 on 0xcf810178
+> find_resource - continue with start 0x190000000 on 0x00000000
+> find_resource - no this - exit
+> PCI: pci_assign_resource - Failed to allocate mem resource #6:20000@190000000 for 0000:00:0a.0
+> pci_assign_resource - allocate with IORESOURCE_PREFETCH
+> pci_bus_alloc_resource - enter
+> pci_bus_alloc_resource - call allocate ressource size 0x10000 startcalc 0xffffffff, align 0x10000
+> find_resource - size 0x10000, min 0x180000000, max 0xffffffffffffffff
+> find_resource - continue with start 0x188000000 on 0xcf810178
+> find_resource - continue with start 0x190000000 on 0x00000000
+> find_resource - no this - exit
+> PCI: pci_assign_resource - Failed to allocate mem resource #2:10000@190000000 for 0000:00:0a.0
+> pci_assign_resource - allocate with IORESOURCE_PREFETCH
+
+    Hm, BAR2 shouldn't be allocated in theprefetchable space -- it corresponds 
+to non-prefetchable (from lspci's output) MMIO register region...
+
+WBR, Sergei
