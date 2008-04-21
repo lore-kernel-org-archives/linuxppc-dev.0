@@ -1,34 +1,22 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 186E5DE187
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Apr 2008 23:08:40 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e36.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m3LD8anD032095
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Apr 2008 09:08:36 -0400
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m3LD8aVF163342
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Apr 2008 07:08:36 -0600
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m3LD8ZKG026270
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Apr 2008 07:08:36 -0600
-Date: Mon, 21 Apr 2008 08:03:53 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
-Subject: Re: [PATCH 1/2] [v3][POWERPC] refactor dcr code
-Message-ID: <20080421080353.5d2b3bb9@zod.rchland.ibm.com>
-In-Reply-To: <20080421035624.E528B48806A@mail212-sin.bigfish.com>
-References: <1206914576.10388.132.camel@pasglop>
-	<20080418215513.ACA0C17F007A@mail131-dub.bigfish.com>
-	<20080419093500.752c1930@zod.rchland.ibm.com>
-	<20080421035624.E528B48806A@mail212-sin.bigfish.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.240])
+	by ozlabs.org (Postfix) with ESMTP id B6A88DE349
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 Apr 2008 23:21:17 +1000 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so470361anc.78
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 Apr 2008 06:21:14 -0700 (PDT)
+Message-ID: <fa686aa40804210621h304c051ev3fd3c080dd0b8dda@mail.gmail.com>
+Date: Mon, 21 Apr 2008 07:21:14 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Sascha Hauer" <s.hauer@pengutronix.de>
+Subject: Re: [PATCH] [POWERPC] mpc5200: Switch mpc5200 dts files to dts-v1
+	format
+In-Reply-To: <20080421084337.GB5618@pengutronix.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20080418160812.11897.5654.stgit@trillian.secretlab.ca>
+	<20080421084337.GB5618@pengutronix.de>
+Cc: linuxppc-dev@ozlabs.org, m8@semihalf.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,38 +26,62 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, 20 Apr 2008 20:56:20 -0700
-"Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com> wrote:
+On Mon, Apr 21, 2008 at 2:43 AM, Sascha Hauer <s.hauer@pengutronix.de> wrote:
+> On Fri, Apr 18, 2008 at 09:10:04AM -0700, Grant Likely wrote:
+>
+>
+> > Update dts files to current format
+>  >
+>  > From: Grant Likely <grant.likely@secretlab.ca>
+>  >
+>  > Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+>  > ---
+>  >
+>  >  arch/powerpc/boot/dts/cm5200.dts    |   98 +++++++++++------------
+>  >  arch/powerpc/boot/dts/lite5200.dts  |  132 ++++++++++++++++----------------
+>  >  arch/powerpc/boot/dts/lite5200b.dts |  146 +++++++++++++++++------------------
+>  >  arch/powerpc/boot/dts/motionpro.dts |  118 ++++++++++++++--------------
+>  >  arch/powerpc/boot/dts/tqm5200.dts   |   80 ++++++++++---------
+>  >  5 files changed, 286 insertions(+), 288 deletions(-)
+>  >
+>  > diff --git a/arch/powerpc/boot/dts/cm5200.dts b/arch/powerpc/boot/dts/cm5200.dts
+>  > index c6ca631..2f74cc4 100644
+>  > --- a/arch/powerpc/boot/dts/cm5200.dts
+>  > +++ b/arch/powerpc/boot/dts/cm5200.dts
+>  > @@ -10,11 +10,7 @@
+>  >   * option) any later version.
+>  >   */
+>  >
+>  > -/*
+>  > - * WARNING: Do not depend on this tree layout remaining static just yet.
+>  > - * The MPC5200 device tree conventions are still in flux
+>  > - * Keep an eye on the linuxppc-dev mailing list for more details
+>  > - */
+>  > +/dts-v1/;
+>  >
+>  >  / {
+>  >       model = "schindler,cm5200";
+>  > @@ -29,10 +25,10 @@
+>  >               PowerPC,5200@0 {
+>  >                       device_type = "cpu";
+>  >                       reg = <0>;
+>  > -                     d-cache-line-size = <20>;
+>  > -                     i-cache-line-size = <20>;
+>  > -                     d-cache-size = <4000>;          // L1, 16K
+>  > -                     i-cache-size = <4000>;          // L1, 16K
+>  > +                     d-cache-line-size = <32>;
+>  > +                     i-cache-line-size = <32>;
+>
+>  Has the standard number format changed to decimal lately? Otherwise this
+>  looks wrong. There are more occurences of this in the other dts files.
 
-> 
-> 
-> > > +void dcr_unmap_generic(dcr_host_t host, unsigned int dcr_c)
-> > > +{
-> > > +	if (host.type == NATIVE)
-> > > +		dcr_unmap_native(host.host.native, dcr_c);
-> > > +	else
-> > > +		dcr_unmap_mmio(host.host.mmio, dcr_c);
-> >
-> > What happens if host.type == INVALID?  Same question for the other
-> > accessors in dcr_*_generic.
-> 
-> I guess looking back on it, I assumed that MAP_OK would return 0, meaning that behavior was undefined,
-> but I agree it's probably safer to have some error reporting there...  There starts to become a speed tradeoff
-> at some point, which would make function pointers more attractive.  If the ioremap does fail, or the
-> dcr-access-method can't be determined, then dcr_unmap_mmio would probably SEGV anyway, although that's
-> not something I'd really want to rely on.  I'll put an error case in there.
+Yes, that is the major change in v1 of the dts format.  It uses C
+style number format.
 
-Well, MAP_OK would return 0, and the caller of the original dcr_map
-should probably return an error or something.  But there's nothing to
-enforce that.  Which is true for the current code today as well, so
-it's not something you've introduced.
+Cheers,
+g.
 
-I just thought that if you were going to go to the trouble of defining
-an invalid host type, that you'd check for it in the accessor
-functions.  There is the concern of the speed tradeoffs.  I suppose you
-could just omit INVALID altogether and have it match the existing code
-in behavior if it was too big of a deal.
 
-Ben, any thoughts?
-
-josh
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
