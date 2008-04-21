@@ -1,21 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <mingo@elte.hu>
+Received: from mx2.mail.elte.hu (mx2.mail.elte.hu [157.181.151.9])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id DEC73DDEF5
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Apr 2008 19:24:36 +1000 (EST)
-Subject: Re: [PATCH 2.6.26?] Raise the upper limit of NR_CPUS.
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: michael@ellerman.id.au
-In-Reply-To: <1208768706.9955.9.camel@concordia>
-References: <20080418053349.GE20457@bakeyournoodle.com>
-	<1208743427.10486.2.camel@pasglop> <1208768706.9955.9.camel@concordia>
-Content-Type: text/plain
-Date: Mon, 21 Apr 2008 19:24:14 +1000
-Message-Id: <1208769854.9640.24.camel@pasglop>
-Mime-Version: 1.0
-Cc: LinuxPPC-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
-Reply-To: benh@kernel.crashing.org
+	by ozlabs.org (Postfix) with ESMTPS id 4F1D9DDF83
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 Apr 2008 19:51:28 +1000 (EST)
+Date: Mon, 21 Apr 2008 11:51:02 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: linux-next: x86-latest/powerpc-next merge conflict
+Message-ID: <20080421095102.GB1666@elte.hu>
+References: <20080421191231.41a34aef.sfr@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080421191231.41a34aef.sfr@canb.auug.org.au>
+Cc: Alexander van Heukelum <heukelum@fastmail.fm>, linuxppc-dev@ozlabs.org,
+	linux-next@vger.kernel.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,34 +25,23 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Mon, 2008-04-21 at 19:05 +1000, Michael Ellerman wrote:
+* Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+
+> Hi all,
 > 
-> Tony, you should NAK Ben tomorrow after lunch if you know what I
-> mean :)
+> Today's linux-next merge of the x86-latest tree got a conflict in 
+> include/asm-powerpc/bitops.h between commit 
+> cd008c0f03f3d451e5fbd108b8e74079d402be64 ("generic: implement __fls on 
+> all 64-bit archs") from the x86-latest tree and commit 
+> 9f264be6101c42cb9e471c58322fb83a5cde1461 ("[POWERPC] Optimize fls64() 
+> on 64-bit processors") from the powerpc-next tree.  The fixup was not 
+> quite trivial and is worth a look to see if I got it right.
 
-Should I hide ? :-)
+Paul, do you agree with those generic bitops changes? Just in case it's 
+not obvious from previous discussions: we'll push them upstream via a 
+separate pull request, not via usual x86.git changes. They originated 
+from x86.git but grew into a more generic improvement for all. They sit 
+in x86.git for tester convenience but are of course not pure x86 changes 
+anymore.
 
-> > You must NEVER manipulate kernel globals from prom_init.c. The fact
-> that
-> > prom_init is linked with the kernel is an "accident" which may
-> change.
-> 
-> A very long running accident, we should really look at fixing it some
-> time.
-
-Patch welcome :-)
-
-Historically, it used to manipulate some kernel data structures, but we
-fixed all of that when we introduced the flat DT model.
-
-> > Your scheme would break among others with kexec or non-OF
-> bootloaders
-> 
-> I talked to Tony about it this morning and we came up with a scheme
-> that
-> should work for all cases.
-
-Excellent.
-
-Cheers,
-Ben.
+	Ingo
