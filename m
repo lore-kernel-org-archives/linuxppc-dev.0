@@ -1,20 +1,18 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <rmachet@slac.stanford.edu>
+Received: from nospam3.slac.stanford.edu (nospam3.slac.stanford.edu
+	[134.79.18.120])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 8BDE1DE20E
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Apr 2008 06:25:23 +1000 (EST)
-Message-Id: <B34B52EF-51C4-4CF6-B72E-BACCEF4EE733@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Gabriel Paubert <paubert@iram.es>
-In-Reply-To: <20080421201959.GA2281@iram.es>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: [PATCH] [POWERPC] ppc32: Fix errata for 603 CPUs
-Date: Mon, 21 Apr 2008 15:25:15 -0500
-References: <Pine.LNX.4.64.0804211457010.8003@blarg.am.freescale.net>
-	<20080421201959.GA2281@iram.es>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+	by ozlabs.org (Postfix) with ESMTPS id E09DBDE41F
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Apr 2008 07:03:05 +1000 (EST)
+Subject: [PATCH] sysdev,mv64x60: early console fix
+From: Remi Machet <rmachet@slac.stanford.edu>
+To: Paul Mackerras <paulus@samba.org>, Dale Farnsworth <dale@farnsworth.org>
+Content-Type: text/plain
+Date: Mon, 21 Apr 2008 14:02:56 -0700
+Message-Id: <1208811777.5789.86.camel@pcds-ts102.slac.stanford.edu>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,68 +22,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+The MPSC driver and prpmc2800.dts have been modified to
+use property 'cell-index' as the serial port number but 
+the early serial console driver for the mv64x60 has not 
+been modified to use this new property.
 
-On Apr 21, 2008, at 3:19 PM, Gabriel Paubert wrote:
-> On Mon, Apr 21, 2008 at 02:57:47PM -0500, Kumar Gala wrote:
->> 603 CPUs have the same issue that some 750 CPUs have in that they  
->> can crash
->> in funny ways if a store from an FPU register instruction is  
->> executed on a
->> register that has never been initialized since power on.  This  
->> patch fixes
->> it by making sure all FP registers have been properly initialized  
->> at kernel
->> boot.
->>
->> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
->> ---
->>
->> Paul, I've put this into my powerpc-next tree since its a pretty  
->> trivial
->> patch.
->>
->> - k
->>
->> arch/powerpc/kernel/cpu_setup_6xx.S |    9 ++++++++-
->> 1 files changed, 8 insertions(+), 1 deletions(-)
->>
->> diff --git a/arch/powerpc/kernel/cpu_setup_6xx.S b/arch/powerpc/ 
->> kernel/cpu_setup_6xx.S
->> index f1ee0b3..4a1c3cd 100644
->> --- a/arch/powerpc/kernel/cpu_setup_6xx.S
->> +++ b/arch/powerpc/kernel/cpu_setup_6xx.S
->> @@ -17,7 +17,14 @@
->> #include <asm/cache.h>
->>
->> _GLOBAL(__setup_cpu_603)
->> -	b	setup_common_caches
->> +	mflr	r4
->> +BEGIN_FTR_SECTION
->> +	bl	__init_fpu_registers
->> +END_FTR_SECTION_IFCLR(CPU_FTR_FPU_UNAVAILABLE)
->> +	bl	__init_fpu_registers
->
-> I don't understand that code.
->
-> What does the second bl __init_fpu_regiters do?
+Signed-off-by: Remi Machet (rmachet@slac.stanford.edu)
+---
 
-that was a copy/paste error.  (see v2 of the patch).
+ arch/powerpc/sysdev/mv64x60_udbg.c |    2 +-
+ 1 files changed, 1 insertion(+), 1 deletion(-)
 
-> As I understand it, the first one is conditional on the presence
-> of an FPU (reasonable). But the secone one makes no sense.
->
-> Finally wouldn't it be simpler to initialize the FPU on all CPU
-> that have it?
-
-that would require a change to the entry point of all these  
-functions.  Its not worth the savings.
-
->> +	bl	setup_common_caches
->> +	mtlr	r4
->> +	blr
->
-> You can use tail call elimination and save one instruction there :-)
-
-I think we can find better places to save code size. :)
-
-- k
+diff --git a/arch/powerpc/sysdev/mv64x60_udbg.c b/arch/powerpc/sysdev/mv64x60_udbg.c
+index ccdb3b0..2792dc8 100644
+--- a/arch/powerpc/sysdev/mv64x60_udbg.c
++++ b/arch/powerpc/sysdev/mv64x60_udbg.c
+@@ -94,7 +94,7 @@ static void mv64x60_udbg_init(void)
+ 	if (!np)
+ 		return;
+ 
+-	block_index = of_get_property(np, "block-index", NULL);
++	block_index = of_get_property(np, "cell-index", NULL);
+ 	if (!block_index)
+ 		goto error;
+ 
