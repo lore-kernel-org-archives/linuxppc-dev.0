@@ -1,37 +1,20 @@
-Return-Path: <fenkes@de.ibm.com>
-Received: from mtagate1.uk.ibm.com (mtagate1.uk.ibm.com [195.212.29.134])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate1.uk.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 7141CDE261
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Apr 2008 18:08:23 +1000 (EST)
-Received: from d06nrmr1407.portsmouth.uk.ibm.com
-	(d06nrmr1407.portsmouth.uk.ibm.com [9.149.38.185])
-	by mtagate1.uk.ibm.com (8.13.8/8.13.8) with ESMTP id m3L88IqO162948
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Apr 2008 08:08:18 GMT
-Received: from d06av03.portsmouth.uk.ibm.com (d06av03.portsmouth.uk.ibm.com
-	[9.149.37.213])
-	by d06nrmr1407.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v8.7) with
-	ESMTP id m3L88H4V2089010
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Apr 2008 09:08:17 +0100
-Received: from d06av03.portsmouth.uk.ibm.com (loopback [127.0.0.1])
-	by d06av03.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id m3L88Hke007441
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Apr 2008 08:08:17 GMT
-From: Joachim Fenkes <fenkes@de.ibm.com>
-To: "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
-	LKML <linux-kernel@vger.kernel.org>,
-	"OF-General" <general@lists.openfabrics.org>,
-	Roland Dreier <rolandd@cisco.com>, "OF-EWG" <ewg@lists.openfabrics.org>
-Subject: [PATCH 5/5] IB/ehca: Bump version number to 0026
-References: <200804211003.10695.fenkes@de.ibm.com>
-In-Reply-To: <200804211003.10695.fenkes@de.ibm.com>
+Return-Path: <sha@pengutronix.de>
+Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
+	[83.236.181.26]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id D6E07DDF0A
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 Apr 2008 18:41:36 +1000 (EST)
+Date: Mon, 21 Apr 2008 10:43:37 +0200
+From: Sascha Hauer <s.hauer@pengutronix.de>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH] [POWERPC] mpc5200: Switch mpc5200 dts files to dts-v1
+	format
+Message-ID: <20080421084337.GB5618@pengutronix.de>
+References: <20080418160812.11897.5654.stgit@trillian.secretlab.ca>
 MIME-Version: 1.0
-Date: Mon, 21 Apr 2008 09:08:16 +0100
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200804211008.17023.fenkes@de.ibm.com>
-Cc: Stefan Roscher <stefan.roscher@de.ibm.com>,
-	Christoph Raisch <raisch@de.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080418160812.11897.5654.stgit@trillian.secretlab.ca>
+Cc: linuxppc-dev@ozlabs.org, m8@semihalf.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -41,23 +24,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
----
- drivers/infiniband/hw/ehca/ehca_main.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+On Fri, Apr 18, 2008 at 09:10:04AM -0700, Grant Likely wrote:
+> Update dts files to current format
+> 
+> From: Grant Likely <grant.likely@secretlab.ca>
+> 
+> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+> ---
+> 
+>  arch/powerpc/boot/dts/cm5200.dts    |   98 +++++++++++------------
+>  arch/powerpc/boot/dts/lite5200.dts  |  132 ++++++++++++++++----------------
+>  arch/powerpc/boot/dts/lite5200b.dts |  146 +++++++++++++++++------------------
+>  arch/powerpc/boot/dts/motionpro.dts |  118 ++++++++++++++--------------
+>  arch/powerpc/boot/dts/tqm5200.dts   |   80 ++++++++++---------
+>  5 files changed, 286 insertions(+), 288 deletions(-)
+> 
+> diff --git a/arch/powerpc/boot/dts/cm5200.dts b/arch/powerpc/boot/dts/cm5200.dts
+> index c6ca631..2f74cc4 100644
+> --- a/arch/powerpc/boot/dts/cm5200.dts
+> +++ b/arch/powerpc/boot/dts/cm5200.dts
+> @@ -10,11 +10,7 @@
+>   * option) any later version.
+>   */
+>  
+> -/*
+> - * WARNING: Do not depend on this tree layout remaining static just yet.
+> - * The MPC5200 device tree conventions are still in flux
+> - * Keep an eye on the linuxppc-dev mailing list for more details
+> - */
+> +/dts-v1/;
+>  
+>  / {
+>  	model = "schindler,cm5200";
+> @@ -29,10 +25,10 @@
+>  		PowerPC,5200@0 {
+>  			device_type = "cpu";
+>  			reg = <0>;
+> -			d-cache-line-size = <20>;
+> -			i-cache-line-size = <20>;
+> -			d-cache-size = <4000>;		// L1, 16K
+> -			i-cache-size = <4000>;		// L1, 16K
+> +			d-cache-line-size = <32>;
+> +			i-cache-line-size = <32>;
 
-diff --git a/drivers/infiniband/hw/ehca/ehca_main.c b/drivers/infiniband/hw/ehca/ehca_main.c
-index 45fe35a..6504897 100644
---- a/drivers/infiniband/hw/ehca/ehca_main.c
-+++ b/drivers/infiniband/hw/ehca/ehca_main.c
-@@ -50,7 +50,7 @@
- #include "ehca_tools.h"
- #include "hcp_if.h"
- 
--#define HCAD_VERSION "0025"
-+#define HCAD_VERSION "0026"
- 
- MODULE_LICENSE("Dual BSD/GPL");
- MODULE_AUTHOR("Christoph Raisch <raisch@de.ibm.com>");
+Has the standard number format changed to decimal lately? Otherwise this
+looks wrong. There are more occurences of this in the other dts files.
+
+Sascha
+
 -- 
-1.5.5
+Pengutronix e.K. - Linux Solutions for Science and Industry
+-----------------------------------------------------------
+Kontakt-Informationen finden Sie im Header dieser Mail oder
+auf der Webseite -> http://www.pengutronix.de/impressum/ <-
