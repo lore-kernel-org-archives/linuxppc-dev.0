@@ -1,16 +1,16 @@
 Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <18444.34002.74202.564600@cargo.ozlabs.ibm.com>
-Date: Mon, 21 Apr 2008 22:13:06 +1000
+Message-ID: <18444.33867.747492.180348@cargo.ozlabs.ibm.com>
+Date: Mon, 21 Apr 2008 22:10:51 +1000
 From: Paul Mackerras <paulus@samba.org>
-To: "Alexander van Heukelum" <heukelum@fastmail.fm>
+To: Ingo Molnar <mingo@elte.hu>
 Subject: Re: linux-next: x86-latest/powerpc-next merge conflict
-In-Reply-To: <1208776790.4613.1248992953@webmail.messagingengine.com>
+In-Reply-To: <20080421095102.GB1666@elte.hu>
 References: <20080421191231.41a34aef.sfr@canb.auug.org.au>
 	<20080421095102.GB1666@elte.hu>
-	<1208776790.4613.1248992953@webmail.messagingengine.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Ingo Molnar <mingo@elte.hu>,
+Cc: Alexander van Heukelum <heukelum@fastmail.fm>,
+	Stephen Rothwell <sfr@canb.auug.org.au>,
 	linux-next@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -21,24 +21,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Alexander van Heukelum writes:
+Ingo Molnar writes:
 
-> Powerpc would pick up an optimized version via this chain: generic fls64
-> ->
-> powerpc __fls --> __ilog2 --> asm (PPC_CNTLZL "%0,%1" : "=r" (lz) : "r"
-> (x)).
+> Paul, do you agree with those generic bitops changes? Just in case it's 
 
-Why wouldn't powerpc continue to use the fls64 that I have in there
-now?
+Well, it looks OK, but I'm sure people are going to get confused with
+fls vs. fls64 vs. __fls all being subtly different.  I'd say it's
+worth putting a little file in the Documentation directory to explain
+it all.
 
-> However, the generic version of fls64 first tests the argument for zero.
-> From
-> your code I derive that the count-leading-zeroes instruction for
-> argument zero
-> is defined as cntlzl(0) == BITS_PER_LONG.
+> not obvious from previous discussions: we'll push them upstream via a 
+> separate pull request, not via usual x86.git changes. They originated 
+> from x86.git but grew into a more generic improvement for all. They sit 
+> in x86.git for tester convenience but are of course not pure x86 changes 
+> anymore.
 
-That is correct.  If the argument is 0 then all of the zero bits are
-leading zeroes. :)
+I'm not sure why the "add __fls to all 64-bit architectures" change
+has to be done as a single patch rather than a patch per architecture
+going through the architecture maintainers.  I suppose that avoids any
+problem with some maintainers not sending it upstream quickly.  I
+would expect that if it is a single cross-architecture patch that it
+would go through Andrew Morton, though.  But if Andrew wants you to
+handle it then I'm happy to give you an Acked-by for it.
 
 Regards,
 Paul.
