@@ -1,23 +1,17 @@
-Return-Path: <laurentp@cse-semaphore.com>
-Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
-	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id 956E7DE0F2
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Apr 2008 21:56:13 +1000 (EST)
-From: Laurent Pinchart <laurentp@cse-semaphore.com>
-To: Jochen Friedrich <jochen@scram.de>
-Subject: Re: [PATCH] rtc-pcf8563: Add device ids table
-Date: Mon, 21 Apr 2008 13:56:09 +0200
-References: <200804171708.32847.laurentp@cse-semaphore.com>
-	<20080419162358.746b714c@hyperion.delvare>
-	<480A2117.7020502@scram.de>
-In-Reply-To: <480A2117.7020502@scram.de>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1693107.9xNIqqW0Io";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Message-Id: <200804211356.10192.laurentp@cse-semaphore.com>
-Cc: Jean Delvare <khali@linux-fr.org>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Alessandro Zummo <alessandro.zummo@towertech.it>,
-	i2c@lm-sensors.org, rtc-linux@googlegroups.com
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18444.34002.74202.564600@cargo.ozlabs.ibm.com>
+Date: Mon, 21 Apr 2008 22:13:06 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: "Alexander van Heukelum" <heukelum@fastmail.fm>
+Subject: Re: linux-next: x86-latest/powerpc-next merge conflict
+In-Reply-To: <1208776790.4613.1248992953@webmail.messagingengine.com>
+References: <20080421191231.41a34aef.sfr@canb.auug.org.au>
+	<20080421095102.GB1666@elte.hu>
+	<1208776790.4613.1248992953@webmail.messagingengine.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Ingo Molnar <mingo@elte.hu>,
+	linux-next@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,69 +21,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---nextPart1693107.9xNIqqW0Io
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Alexander van Heukelum writes:
 
-On Saturday 19 April 2008 18:43, Jochen Friedrich wrote:
-> Jean Delvare wrote:
-> > On Sat, 19 Apr 2008 15:09:55 +0200, Jochen Friedrich wrote:
-> > > Hi Jean,
-> > >
-> > > > > > Is the new-style driver conversion patch in 2.6.25-rc8-mm2
-> > > > > > scheduled for 2.6.26 ?
-> > > > >  hope so! :)
-> > > > Note that this patch depends on i2c patches which aren't upstream y=
-et.
-> > > Is there any chance they will got to 2.6.26?
-> >=20
-> > I'm not sure. I didn't have the time to look at it myself, but I am
-> > under the impression that the powerpc folks are tired of having to wait
-> > for me and may push it to Linus through their tree? That would be fine
-> > with me, as I don't want to be the one delaying something many
-> > developers want (but I also can't sign patches I've not even read.)
+> Powerpc would pick up an optimized version via this chain: generic fls64
+> ->
+> powerpc __fls --> __ilog2 --> asm (PPC_CNTLZL "%0,%1" : "=r" (lz) : "r"
+> (x)).
 
-The patches are required for long awaited I2C support on various PowerPC=20
-boards. As the ppc architecture support is going away in 2.6.27, it would b=
-e=20
-nice to have them applied in 2.6.26.
+Why wouldn't powerpc continue to use the fls64 that I have in there
+now?
 
-> The required patches are:
->=20
-> http://patchwork.ozlabs.org/linuxppc/patch?id=3D17833
-> http://patchwork.ozlabs.org/linuxppc/patch?id=3D17834
->=20
-> which are just the forward ported patches you sent to the poweprc mailing
-> list some time ago:=20
->=20
-> http://patchwork.ozlabs.org/linuxppc/patch?id=3D16282
-> http://patchwork.ozlabs.org/linuxppc/patch?id=3D16283
->=20
-> Thanks,
-> Jochen
+> However, the generic version of fls64 first tests the argument for zero.
+> From
+> your code I derive that the count-leading-zeroes instruction for
+> argument zero
+> is defined as cntlzl(0) == BITS_PER_LONG.
 
-=2D-=20
-Laurent Pinchart
-CSE Semaphore Belgium
+That is correct.  If the argument is 0 then all of the zero bits are
+leading zeroes. :)
 
-Chaussee de Bruxelles, 732A
-B-1410 Waterloo
-Belgium
-
-T +32 (2) 387 42 59
-=46 +32 (2) 387 42 75
-
---nextPart1693107.9xNIqqW0Io
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
-
-iD8DBQBIDIDa8y9gWxC9vpcRAsmuAKDHl9S60v+HwQXs/KsowljmpGGHdwCgrCTQ
-IDZTZLv+cL8zSTGJTwwdhJk=
-=wwEJ
------END PGP SIGNATURE-----
-
---nextPart1693107.9xNIqqW0Io--
+Regards,
+Paul.
