@@ -1,18 +1,19 @@
-Return-Path: <rmachet@slac.stanford.edu>
-Received: from nospam3.slac.stanford.edu (nospam3.slac.stanford.edu
-	[134.79.18.120])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 28145DE66B
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Apr 2008 03:37:22 +1000 (EST)
-Subject: [PATCH 2/2 v2] sysdev,mv64x60: initialization of mv64x60 ethernet,
-	serial and I2C
-From: Remi Machet <rmachet@slac.stanford.edu>
-To: Paul Mackerras <paulus@samba.org>
-Content-Type: text/plain
-Date: Mon, 21 Apr 2008 10:37:14 -0700
-Message-Id: <1208799434.5789.53.camel@pcds-ts102.slac.stanford.edu>
-Mime-Version: 1.0
+	by ozlabs.org (Postfix) with ESMTPS id C342FDE2AD
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Apr 2008 03:45:03 +1000 (EST)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Gerhard Pircher <gerhard_pircher@gmx.net>
+In-Reply-To: <20080419110740.107700@gmx.net>
+Subject: Re: [PATCH] [POWERPC] Port fixmap from x86 and use for kmap_atomic
+References: <Pine.LNX.4.64.0804172156390.32124@blarg.am.freescale.net>
+	<20080419110740.107700@gmx.net>
+Message-Id: <0744A9B5-A855-440A-A833-F0BA45FEE179@kernel.crashing.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v919.2)
+Date: Mon, 21 Apr 2008 12:44:55 -0500
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -23,92 +24,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-If one of the devices of the mv64x60 init fails, the remaining 
-devices are not initialized => This patch change the code to 
-display an error and continue the initialization.
 
-Signed-off-by: Remi Machet (rmachet@slac.stanford.edu)
----
-This is the second part of the re-submission of my patch of 4/17/2008
-titled "[PATCH] sysdev,mv64x60: initialization of mv64x60 ethernet, 
-serial and I2C"
+On Apr 19, 2008, at 6:07 AM, Gerhard Pircher wrote:
+>
+> -------- Original-Nachricht --------
+>> Datum: Thu, 17 Apr 2008 21:57:05 -0500 (CDT)
+>> Von: Kumar Gala <galak@kernel.crashing.org>
+>> An: Paul Mackerras <paulus@samba.org>
+>> CC: linuxppc-dev@ozlabs.org
+>> Betreff: [PATCH] [POWERPC] Port fixmap from x86 and use for  
+>> kmap_atomic
+>
+>> The fixmap code from x86 allows us to have compile time virtual  
+>> addresses
+>> that we change the physical addresses of at run time.
+> ...
+>> +/*
+>> + * Here we define all the compile-time 'special' virtual
+>> + * addresses. The point is to have a constant address at
+>> + * compile time, but to set the physical address only
+>> + * in the boot process. We allocate these special addresses
+>> + * from the end of virtual memory (0xfffff000) backwards.
+>> + * Also this lets us do fail-safe vmalloc(), we
+>> + * can guarantee that these special addresses and
+>> + * vmalloc()-ed addresses never overlap.
+> I don't understand how highmem works, but I'm just interested to  
+> know, if
+> this implementation could conflict somehow with the non coherent DMA
+> implementation in dma-noncoherent.c (which uses address space from
+> 0xff100000 to 0xff300000 for DMA memory).
 
---- a/arch/powerpc/sysdev/mv64x60_dev.c
-+++ b/arch/powerpc/sysdev/mv64x60_dev.c
-@@ -431,9 +431,14 @@ static int __init mv64x60_device_setup(void)
- 	int err;
- 
- 	id = 0;
--	for_each_compatible_node(np, "serial", "marvell,mv64360-mpsc")
--		if ((err = mv64x60_mpsc_device_setup(np, id++)))
--			goto error;
-+	for_each_compatible_node(np, "serial", "marvell,mv64360-mpsc") {
-+		err = mv64x60_mpsc_device_setup(np, id++);
-+		if (err) {
-+			printk(KERN_ERR "Failed to initialize MV64x60 " \
-+					"serial device %s: error %d.\n",
-+					np->full_name, err);
-+		};
-+	};
- 
- 	id = 0;
- 	id2 = 0;
-@@ -441,38 +446,46 @@ static int __init mv64x60_device_setup(void)
- 		pdev = mv64x60_eth_register_shared_pdev(np, id++);
- 		if (IS_ERR(pdev)) {
- 			err = PTR_ERR(pdev);
--			goto error;
--		}
-+			printk(KERN_ERR "Failed to initialize MV64x60 " \
-+					"network block %s: error %d.\n",
-+					np->full_name, err);
-+			continue;
-+		};
- 		for_each_child_of_node(np, np2) {
- 			if (!of_device_is_compatible(np2,
- 					"marvell,mv64360-eth"))
- 				continue;
- 			err = mv64x60_eth_device_setup(np2, id2++, pdev);
- 			if (err) {
--				of_node_put(np2);
--				goto error;
-+				printk(KERN_ERR "Failed to initialize " \
-+						"MV64x60 network device %s: " \
-+						"error %d.\n",
-+						np2->full_name, err);
- 			}
- 		}
- 	}
- 
- 	id = 0;
--	for_each_compatible_node(np, "i2c", "marvell,mv64360-i2c")
--		if ((err = mv64x60_i2c_device_setup(np, id++)))
--			goto error;
-+	for_each_compatible_node(np, "i2c", "marvell,mv64360-i2c") {
-+		err = mv64x60_i2c_device_setup(np, id++);
-+		if (err) {
-+			printk(KERN_ERR "Failed to initialize MV64x60 I2C " \
-+					"bus %s: error %d.\n",
-+					np->full_name, err);
-+		};
-+	};
- 
- 	/* support up to one watchdog timer */
- 	np = of_find_compatible_node(np, NULL, "marvell,mv64360-wdt");
- 	if (np) {
- 		if ((err = mv64x60_wdt_device_setup(np, id)))
--			goto error;
-+			printk(KERN_ERR "Failed to initialize MV64x60 " \
-+					"Watchdog %s: error %d.\n",
-+					np->full_name, err);
- 		of_node_put(np);
- 	}
- 
- 	return 0;
--
--error:
--	of_node_put(np);
--	return err;
- }
- arch_initcall(mv64x60_device_setup);
- 
+if the size is fixed we can easily change it so the Kconfig options  
+aren't needed anymore.
+
+> On the other side could dma-noncoherent.c benefit from fixmaps so  
+> that it
+> isn't necessary to configure a start address for DMA allocations?
+
+Its possible however the fixmap is all about keeping the VA the same  
+while changing the PA. I think some work that is being done for the SW  
+IOMMU might be more useful to your needs.
+
+- k
