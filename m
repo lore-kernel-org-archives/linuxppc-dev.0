@@ -1,37 +1,18 @@
-Return-Path: <fenkes@de.ibm.com>
-Received: from mtagate4.uk.ibm.com (mtagate4.uk.ibm.com [195.212.29.137])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate4.uk.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id F1B02DE42F
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Apr 2008 18:45:32 +1000 (EST)
-Received: from d06nrmr1407.portsmouth.uk.ibm.com
-	(d06nrmr1407.portsmouth.uk.ibm.com [9.149.38.185])
-	by mtagate4.uk.ibm.com (8.13.8/8.13.8) with ESMTP id m3L8jR5K101730
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Apr 2008 08:45:27 GMT
-Received: from d06av02.portsmouth.uk.ibm.com (d06av02.portsmouth.uk.ibm.com
-	[9.149.37.228])
-	by d06nrmr1407.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v8.7) with
-	ESMTP id m3L8jRI41941658
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Apr 2008 09:45:27 +0100
-Received: from d06av02.portsmouth.uk.ibm.com (loopback [127.0.0.1])
-	by d06av02.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id m3L8jQ6t022595
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Apr 2008 08:45:27 GMT
-From: Joachim Fenkes <fenkes@de.ibm.com>
-To: "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>
-Subject: Re: [PATCH 1/5] IB/ehca: Prevent posting of SQ WQEs if QP not in RTS
-Date: Mon, 21 Apr 2008 09:45:25 +0100
-References: <200804211003.10695.fenkes@de.ibm.com>
-	<200804211004.44666.fenkes@de.ibm.com>
-In-Reply-To: <200804211004.44666.fenkes@de.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200804211045.26183.fenkes@de.ibm.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, OF-EWG <ewg@lists.openfabrics.org>,
-	Christoph Raisch <raisch@de.ibm.com>,
-	OF-General <general@lists.openfabrics.org>,
-	Stefan Roscher <stefan.roscher@de.ibm.com>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH 2.6.26?] Raise the upper limit of NR_CPUS.
+From: Michael Ellerman <michael@ellerman.id.au>
+To: benh@kernel.crashing.org
+In-Reply-To: <1208743427.10486.2.camel@pasglop>
+References: <20080418053349.GE20457@bakeyournoodle.com>
+	<1208743427.10486.2.camel@pasglop>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-zZ8bJm9b+QEA+dOAUnHo"
+Date: Mon, 21 Apr 2008 19:05:06 +1000
+Message-Id: <1208768706.9955.9.camel@concordia>
+Mime-Version: 1.0
+Cc: LinuxPPC-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -41,19 +22,60 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Monday 21 April 2008 10:04, Joachim Fenkes wrote:
 
-> +	if (unlikely(my_qp->state != IB_QPS_RTS)) {
-> +		ehca_err(qp->device, "QP not in RTS state  qpn=%x", qp->qp_num);
-> +		return -EINVAL;
-> +	}
+--=-zZ8bJm9b+QEA+dOAUnHo
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Myself, I'm not very happy with using EINVAL, but I can't think of a more
-fitting return code. Also, this is what nes, amso and cxgb3 return in such a
-case; ipath posts an error CQE and mthca/mlx4 don't do this check at all
-(AFAICS).
+On Mon, 2008-04-21 at 12:03 +1000, Benjamin Herrenschmidt wrote:
+> On Fri, 2008-04-18 at 15:33 +1000, Tony Breeds wrote:
+> > As the pacas are statically initialised increasing NR_CPUS beyond 128,
+> > means that any additional pacas will be empty  ... which is bad.
+> >=20
+> > This patch adds the required functionality to fill in any excess pacas
+> > at runtime.
+> >=20
+> > Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
+> > ---
+> > I know it's late, but can this be considered for 2.6.26?
+>=20
+> NAK.
 
-Better suggestions, anyone?
+Tony, you should NAK Ben tomorrow after lunch if you know what I mean :)
 
-Regards,
-  Joachim
+> You must NEVER manipulate kernel globals from prom_init.c. The fact that
+> prom_init is linked with the kernel is an "accident" which may change.
+
+A very long running accident, we should really look at fixing it some
+time.
+
+> Your scheme would break among others with kexec or non-OF bootloaders
+
+I talked to Tony about it this morning and we came up with a scheme that
+should work for all cases.
+
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-zZ8bJm9b+QEA+dOAUnHo
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBIDFjCdSjSd0sB4dIRAgGUAJ9jS/e2QLLNpPnHxWhhKzzJwpiOIwCcC1qk
+FBYlhO76JOWmTKuG9NIphi4=
+=v55b
+-----END PGP SIGNATURE-----
+
+--=-zZ8bJm9b+QEA+dOAUnHo--
