@@ -1,14 +1,22 @@
-Return-Path: <scottwood@freescale.com>
-Date: Mon, 21 Apr 2008 12:34:50 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: =?utf-8?B?5byg5LiW5LmQ?= <slzhang1980@gmail.com>
-Subject: Re: Help! mpc8247 porting kernel 2.6.25 problem.
-Message-ID: <20080421173450.GC4134@ld0162-tx32.am.freescale.net>
-References: <8d59c9040804202006m607fe15bre29288240b73081d@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <8d59c9040804202006m607fe15bre29288240b73081d@mail.gmail.com>
-Cc: Linuxppc-embedded@ozlabs.org
+Return-Path: <glikely@secretlab.ca>
+Received: from wx-out-0506.google.com (wx-out-0506.google.com [66.249.82.237])
+	by ozlabs.org (Postfix) with ESMTP id 2569ADE047
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 22 Apr 2008 04:09:08 +1000 (EST)
+Received: by wx-out-0506.google.com with SMTP id h27so1409713wxd.15
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 21 Apr 2008 11:09:07 -0700 (PDT)
+Message-ID: <fa686aa40804211109g2f7f45d0gf836be46e2c1a40b@mail.gmail.com>
+Date: Mon, 21 Apr 2008 12:09:07 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Sam Karp" <sam.d.karp@gmail.com>
+Subject: Re: SecretLab 2.6.24 with USB
+In-Reply-To: <800687fe0804141927y1f6ea75cv7ad0ba68b4fa637a@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <800687fe0804141927y1f6ea75cv7ad0ba68b4fa637a@mail.gmail.com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -19,23 +27,29 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Mon, Apr 21, 2008 at 11:06:28AM +0800, 张世乐 wrote:
-> Uncompressing Kernel Image ... OK
-> Booting using the fdt at 0x600000
-> 
-> [nothing output and hanging here]
-> 
-> I use the led on the board to trace the kernel fund it stop in the function
-> 
-> setup_common_caches  in arch/powerpc/kernel/cpu_setup_6xx.S
-> 
-> Can you give me some ideas?
+On Mon, Apr 14, 2008 at 8:27 PM, Sam Karp <sam.d.karp@gmail.com> wrote:
+> Hi all,
+>
+> I've downloaded the SecretLab Xilinx Linux 2.6.24 Kernel and I'm trying to
+> use a thumbdrive with the kernel.  I'm booting from a ramdisk and insert the
+> thumbdrive but I have no /dev/sd* or /dev/hd* blocks.  Is there anything I
+> need to add to the kernel or design to ensure that the thumbdrive is working
+> or getting power?
 
-That's probably not where it's actually stopping, but rather where caches
-are enabled without the MMU, thus making it difficult to access devices. 
-You can try placing a dcbf after each write to the LED register, though
-this may perturb nearby registers.
+Sorry I didn't get back to you earlier.  Your best bet is to use
+Xilinx's git tree and manually patch in the c67x00 driver from Peter
+Korsgaard's driver.
 
-Have you tried enabling early debug printk?
+http://www.mail-archive.com/linux-usb@vger.kernel.org/msg01907.html
+http://www.mail-archive.com/linux-usb@vger.kernel.org/msg01908.html
+http://www.mail-archive.com/linux-usb@vger.kernel.org/msg01906.html
+http://www.mail-archive.com/linux-usb@vger.kernel.org/msg01907.html
 
--Scott
+I haven't been keeping my tree up to date lately.
+
+Cheers,
+g.
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
