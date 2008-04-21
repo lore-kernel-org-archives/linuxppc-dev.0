@@ -1,11 +1,12 @@
-Return-Path: <slzhang1980@gmail.com>
-Message-ID: <8d59c9040804202006m607fe15bre29288240b73081d@mail.gmail.com>
-Date: Mon, 21 Apr 2008 11:06:28 +0800
-From: "=?GB2312?B?1cXKwMDW?=" <slzhang1980@gmail.com>
-To: Linuxppc-embedded@ozlabs.org
-Subject: Help! mpc8247 porting kernel 2.6.25 problem.
+Return-Path: <Leonid@a-k-a.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: DMA on AMCC ppc440epx
+Date: Sun, 20 Apr 2008 21:55:41 -0700
+Message-ID: <406A31B117F2734987636D6CCC93EE3C0252933D@ehost011-3.exch011.intermedia.net>
+From: "Leonid" <Leonid@a-k-a.net>
+To: <Linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -16,24 +17,14 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi All,
+Hi:
 
-I encounter a problem when porting kernel 2.6.25 to a mpc8247 platform board.
+Is anybody using DMA on this AMCC CPU and if anybody knows where I can
+get some sample working code or HOWTO documentation or anything?
 
-after run command line: bootm 300000 - 600000
-the output of u-boot like this:
+I never used DMA on AMCC CPUs but have heard there are some problems but
+I am not sure.
 
-[snip]
+Thanks,
 
-Uncompressing Kernel Image ... OK
-Booting using the fdt at 0x600000
-
-[nothing output and hanging here]
-
-I use the led on the board to trace the kernel fund it stop in the function
-
-setup_common_caches  in arch/powerpc/kernel/cpu_setup_6xx.S
-
-Can you give me some ideas?
-
-Thanks!
+Leonid.
