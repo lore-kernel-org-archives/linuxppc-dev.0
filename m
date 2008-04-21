@@ -1,19 +1,23 @@
-Return-Path: <dale@farnsworth.org>
-Received: from xyzzy.farnsworth.org (xyzzy.farnsworth.org [65.39.95.219])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 1A614DEDC5
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Apr 2008 07:32:18 +1000 (EST)
-Date: Mon, 21 Apr 2008 14:32:10 -0700
-From: Dale Farnsworth <dale@farnsworth.org>
-To: Remi Machet <rmachet@slac.stanford.edu>
-Message-ID: <20080421213210.GA21645@farnsworth.org>
-References: <1208811777.5789.86.camel@pcds-ts102.slac.stanford.edu>
+Return-Path: <cbouatmailru@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.169])
+	by ozlabs.org (Postfix) with ESMTP id 09C55DDEEB
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Apr 2008 07:33:55 +1000 (EST)
+Received: by ug-out-1314.google.com with SMTP id q7so686196uge.0
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 Apr 2008 14:33:53 -0700 (PDT)
+Date: Tue, 22 Apr 2008 01:33:49 +0400
+From: Anton Vorontsov <cbouatmailru@gmail.com>
+To: David Brownell <david-b@pacbell.net>
+Subject: Re: [PATCH 4/5] [POWERPC] QE: implement support for the GPIO LIB API
+Message-ID: <20080421213349.GA3833@zarina>
+References: <20080418190632.GA32204@polina.dev.rtsoft.ru>
+	<fa686aa40804210758r70a5906eqb090cd3d8b797317@mail.gmail.com>
+	<20080421164128.GA28561@polina.dev.rtsoft.ru>
+	<200804211301.13026.david-b@pacbell.net>
 MIME-Version: 1.0
-In-Reply-To: <1208811777.5789.86.camel@pcds-ts102.slac.stanford.edu>
-Subject: Re: [PATCH] sysdev,mv64x60: early console fix
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <200804211301.13026.david-b@pacbell.net>
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: cbouatmailru@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,12 +27,54 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Apr 21, 2008 at 02:02:56PM -0700, Remi Machet wrote:
-> The MPSC driver and prpmc2800.dts have been modified to
-> use property 'cell-index' as the serial port number but 
-> the early serial console driver for the mv64x60 has not 
-> been modified to use this new property.
+On Mon, Apr 21, 2008 at 01:01:12PM -0700, David Brownell wrote:
+> On Monday 21 April 2008, Anton Vorontsov wrote:
+> >  From: J. Random Hacker
+> >  Subject: [POWERPC] cleanup board initialization code
+> > 
+> >  This patch removes vast amount of machine_arch_initcall()s that were
+> >  used to solely initialize some hardware, like this:
+> > 
+> >  qe_add_gpio_chips();
+> >  fsl_gtm_init();
+> >  fsl_spi_init();
+> >  ...
+> > 
+> >  So, instead of calling this stuff from the board files, we implement
+> >  own arch_initcalls for these functions.
 > 
-> Signed-off-by: Remi Machet (rmachet@slac.stanford.edu)
+> The way other platforms do this is to hav SOC-specific
+> init code, and have board-specific initcalls call the
+> relevant SOC-specific setup.
 
-Acked-by: Dale Farnsworth <dale@farnsworth.org>
+I don't know about other platforms other than PowerPC and some ARM,
+of course. For example, PXA boards don't call any SOC specific code.
+Instead, looking into reworked PXA code, I can see that there are
+separate arch_initcalls() for the pxa25x, pxa27x, and pxa3xx SOCs.
+The same for s3cxxxx. So, at least not every platform out there doing
+this.
+
+Yes, I can see AVR32. But there are only two boards, and when you'll
+have more, probably later you'd want to eliminate some repetitive
+code, if possible.
+
+Here, with OF, it's quite simple because we have methods of "probing" SOC
+devices instead of placing init code into board files (think arch/ppc/).
+
+> Among other things that facilitates kernels that handle
+> multiple SOCs (if they're closely-enough related).  That
+> may not be used by many distros (handhelds.org being at
+> least a partial exception), but it certainly helps cut
+> the number of configurations that need build-testing.
+
+Is this about QE_GPIO being user-selectable? Yes, verbose Konfig option
+have its own drawbacks. Though, I don't actually have any objections
+for making it silent.
+
+And well, I'm not objecting for placing qe gpio code under arch/, too.
+I'll resend this patch once again reverting its placement to arch/.
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
