@@ -1,17 +1,20 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E5F93DE1A4
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Apr 2008 06:01:44 +1000 (EST)
-Date: Mon, 21 Apr 2008 14:57:47 -0500 (CDT)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] [POWERPC] ppc32: Fix errata for 603 CPUs
-Message-ID: <Pine.LNX.4.64.0804211457010.8003@blarg.am.freescale.net>
+Return-Path: <david-b@pacbell.net>
+Received: from smtp117.sbc.mail.sp1.yahoo.com (smtp117.sbc.mail.sp1.yahoo.com
+	[69.147.64.90]) by ozlabs.org (Postfix) with SMTP id 61DEEDE0C5
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Apr 2008 06:04:19 +1000 (EST)
+From: David Brownell <david-b@pacbell.net>
+To: avorontsov@ru.mvista.com
+Subject: Re: [PATCH 4/5] [POWERPC] QE: implement support for the GPIO LIB API
+Date: Mon, 21 Apr 2008 13:01:12 -0700
+References: <20080418190632.GA32204@polina.dev.rtsoft.ru>
+	<fa686aa40804210758r70a5906eqb090cd3d8b797317@mail.gmail.com>
+	<20080421164128.GA28561@polina.dev.rtsoft.ru>
+In-Reply-To: <20080421164128.GA28561@polina.dev.rtsoft.ru>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200804211301.13026.david-b@pacbell.net>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,42 +24,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-603 CPUs have the same issue that some 750 CPUs have in that they can crash
-in funny ways if a store from an FPU register instruction is executed on a
-register that has never been initialized since power on.  This patch fixes
-it by making sure all FP registers have been properly initialized at kernel
-boot.
+On Monday 21 April 2008, Anton Vorontsov wrote:
+>  From: J. Random Hacker
+>  Subject: [POWERPC] cleanup board initialization code
+> 
+>  This patch removes vast amount of machine_arch_initcall()s that were
+>  used to solely initialize some hardware, like this:
+> 
+>  qe_add_gpio_chips();
+>  fsl_gtm_init();
+>  fsl_spi_init();
+>  ...
+> 
+>  So, instead of calling this stuff from the board files, we implement
+>  own arch_initcalls for these functions.
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
----
+The way other platforms do this is to hav SOC-specific
+init code, and have board-specific initcalls call the
+relevant SOC-specific setup.
 
-Paul, I've put this into my powerpc-next tree since its a pretty trivial
-patch.
+Among other things that facilitates kernels that handle
+multiple SOCs (if they're closely-enough related).  That
+may not be used by many distros (handhelds.org being at
+least a partial exception), but it certainly helps cut
+the number of configurations that need build-testing.
 
-- k
-
- arch/powerpc/kernel/cpu_setup_6xx.S |    9 ++++++++-
- 1 files changed, 8 insertions(+), 1 deletions(-)
-
-diff --git a/arch/powerpc/kernel/cpu_setup_6xx.S b/arch/powerpc/kernel/cpu_setup_6xx.S
-index f1ee0b3..4a1c3cd 100644
---- a/arch/powerpc/kernel/cpu_setup_6xx.S
-+++ b/arch/powerpc/kernel/cpu_setup_6xx.S
-@@ -17,7 +17,14 @@
- #include <asm/cache.h>
-
- _GLOBAL(__setup_cpu_603)
--	b	setup_common_caches
-+	mflr	r4
-+BEGIN_FTR_SECTION
-+	bl	__init_fpu_registers
-+END_FTR_SECTION_IFCLR(CPU_FTR_FPU_UNAVAILABLE)
-+	bl	__init_fpu_registers
-+	bl	setup_common_caches
-+	mtlr	r4
-+	blr
- _GLOBAL(__setup_cpu_604)
- 	mflr	r4
- 	bl	setup_common_caches
--- 
-1.5.4.1
+- Dave
