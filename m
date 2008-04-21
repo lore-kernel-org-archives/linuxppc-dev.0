@@ -1,29 +1,17 @@
-Return-Path: <glppe-linuxppc-embedded-2@m.gmane.org>
-Received: from ciao.gmane.org (main.gmane.org [80.91.229.2])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 4AD07DE068
+Return-Path: <rje@valleytech.com>
+Received: from smtp-1.hosting.atlantic.net (smtp-1.hosting.atlantic.net
+	[209.208.105.25]) by ozlabs.org (Postfix) with ESMTP id 01039DEA27
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 22 Apr 2008 01:00:24 +1000 (EST)
-Received: from list by ciao.gmane.org with local (Exim 4.43)
-	id 1JnxV8-0000mR-7i
-	for linuxppc-embedded@ozlabs.org; Mon, 21 Apr 2008 15:00:14 +0000
-Received: from p5497c4d8.dip.t-dialin.net ([84.151.196.216])
-	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
-	id 1AlnuQ-0007hv-00
-	for <linuxppc-embedded@ozlabs.org>; Mon, 21 Apr 2008 15:00:14 +0000
-Received: from dzu by p5497c4d8.dip.t-dialin.net with local (Gmexim 0.1
-	(Debian)) id 1AlnuQ-0007hv-00
-	for <linuxppc-embedded@ozlabs.org>; Mon, 21 Apr 2008 15:00:14 +0000
-To: linuxppc-embedded@ozlabs.org
-From: Detlev Zundel <dzu@denx.de>
-Subject: Re: eldk and usb to serial converters
-Date: Mon, 21 Apr 2008 16:59:25 +0200
-Message-ID: <m2r6cz45ki.fsf@ohwell.denx.de>
-References: <27dfa3d0804171704j711aad1cwe7b558c077da3350@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Sender: news <news@ger.gmane.org>
+	Tue, 22 Apr 2008 01:16:50 +1000 (EST)
+Message-ID: <480CAE64.3060405@valleytech.com>
+Date: Mon, 21 Apr 2008 11:10:28 -0400
+From: rje@valleytech.com
+MIME-Version: 1.0
+To: linuxppc-embedded@ozlabs.org.
+Subject: Re: mpc8349, gb ethernet, bridging
+References: <480AD64E.1040406@valleytech.com>
+In-Reply-To: <480AD64E.1040406@valleytech.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -34,32 +22,80 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Daniel,
+Hi.
+Anybody have any idea what could cause the NETDEV WATCHDOG timeout?
+On the GB ethernet port?
 
-> I'm currently trying to compile a kernel for an AMCC440EP board within an eldk
-> environment. We've got a FTDI usb2serial converter we need to connect to the
-> board. Now I've compiled a kernel on a gentoo machine for this device and had
-> no problems. With this board, the kernel recognizes the device fine:
+Could that happen if the other port was being overflowed?
+
+That watchdog timeout seems to be involved pretty much every time
+that the bridge goes down.  When the timeout occurs, the gianfar driver 
+stops
+and then (re)starts itself.
+
+
+
 >
-> ftdi_sio 1-1:1.0: FTDI USB Serial Device converter detected
-> usb 1-1: FTDI USB Serial Device converter now attached to ttyUSB0
-> drivers/usb/serial/ftdi_sio.c: v1.4.3:USB FTDI Serial Converters Driver
+> Hi.
 >
-> but udev doesn't actually make the ttyUSB0 node. If anyone knows what may have
-> caused the problem and how to fix it, it'd be much appreciated.
-
-Maybe udev isn't running at all?  The ELDKs including udev disable it
-per default (what version are you using?).  Embedded systeme like to
-have static kernel configurations presenting no surprises at runtime...
-
-Cheers
-  Detlev
+> We are having some issues regarding bridging the 2 ethernet ports of 
+> an mpc8349, and are
+> trying to determine what is going on.
+>
+>
+> We are attempting to daisy-chain several mpc8349-based boards via the 
+> 2 ethernet ports
+> on each 8349.  When we enable bridging for the units, we (sometimes) 
+> start seeing the following
+> on one of the interior bridge's (mostly on the root bridge) console(s):
+>
+> NETDEV WATCHDOG: eth1 : transmit timed out
+>
+> We then see the bridge output  messages that indicate that is is going 
+> through a topology
+> state change.
+>
+> This situation keeps recurring.
+>
+> At some point, the message from the bridge that it is entering a 
+> disabled state for port #2
+> (eth1) is followed by garbage (actually, it appears to be some 
+> pointers and/or memory
+> addresses printed out), and the system hangs.
+>
+> We are using NAPI and the skbuff-recycling for the gianfar driver.
+> We use ring(s) of 32 buffers.
+> The gianfar's watchdog is set to  1Hz (once a seond ?)
+>
+> We are not sure if/how affect things:
+>
+> Port #1 of the 'root' bridge  is attached directly to our LAN
+> Port #1 of the 'root' bridge runs at 10 Mbs
+> Port #2 of the 'root' bridge runs at 1Gbs
+> All other ports in the chain are       1Gbs
+> We are using CAT-5 cables for all connections
+>
+> We have an application on each bridge in the chain that periodically 
+> sends several hundred bytes
+> 'up the chain', towards its head (ie, towards our LAN).   This 
+> application is typically running
+> when the issue is seen.
+>
+> Setting the bridge's forwarding delay to 0 and hellotime to 6,000 
+> helped, but did
+> not solve the issue.
+>
+> ???
+>
 
 -- 
-Programming X-Windows is like trying to find the square root of pi
-using roman numerals.
-                                          -- The UNIX Haters Handbook
+
+Sometimes I feel like a red shirt in the Star Trek episode of life.
+
 --
-DENX Software Engineering GmbH,      MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich,  Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-40 Fax: (+49)-8142-66989-80 Email: dzu@denx.de
+
+This message contains confidential information and is intended only for the
+individual named.  If you are not the intended recipient you should not
+disseminate, distribute or copy this e-mail.  Please notify the sender
+immediately by e-mail if you have received this e-mail by mistake and delete
+this e-mail from your system.
