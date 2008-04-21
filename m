@@ -1,21 +1,37 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.250])
-	by ozlabs.org (Postfix) with ESMTP id BE6F3DE53C
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Apr 2008 00:03:33 +1000 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so473397anc.78
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Apr 2008 07:03:31 -0700 (PDT)
-Message-ID: <fa686aa40804210703iaa8251ctc125313a8e52f4ef@mail.gmail.com>
-Date: Mon, 21 Apr 2008 08:03:31 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Anton Vorontsov" <avorontsov@ru.mvista.com>
-Subject: Re: [PATCH 1/5] [POWERPC] sysdev: implement FSL GTM support
-In-Reply-To: <20080418190908.GA4407@polina.dev.rtsoft.ru>
+Return-Path: <ehrhardt@linux.vnet.ibm.com>
+Received: from mtagate7.uk.ibm.com (mtagate7.uk.ibm.com [195.212.29.140])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mtagate7.uk.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 158B6DDF6D
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Apr 2008 00:07:58 +1000 (EST)
+Received: from d06nrmr1407.portsmouth.uk.ibm.com
+	(d06nrmr1407.portsmouth.uk.ibm.com [9.149.38.185])
+	by mtagate7.uk.ibm.com (8.13.8/8.13.8) with ESMTP id m3LE7q9N266980
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 Apr 2008 14:07:52 GMT
+Received: from d06av02.portsmouth.uk.ibm.com (d06av02.portsmouth.uk.ibm.com
+	[9.149.37.228])
+	by d06nrmr1407.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v8.7) with
+	ESMTP id m3LE7qMR1757216
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 Apr 2008 15:07:52 +0100
+Received: from d06av02.portsmouth.uk.ibm.com (loopback [127.0.0.1])
+	by d06av02.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id m3LE7p7G030044
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 Apr 2008 14:07:51 GMT
+Message-ID: <480C9FE2.4030601@linux.vnet.ibm.com>
+Date: Mon, 21 Apr 2008 16:08:34 +0200
+From: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20080418190632.GA32204@polina.dev.rtsoft.ru>
-	<20080418190908.GA4407@polina.dev.rtsoft.ru>
-Cc: linuxppc-dev@ozlabs.org
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Subject: Re: pci issue - wrong detection of pci ressources
+References: <48088F02.2060806@linux.vnet.ibm.com>
+	<1208566122.6958.425.camel@pasglop>
+	<480BA937.7050603@linux.vnet.ibm.com>
+	<1208727408.7009.0.camel@pasglop>
+	<480C80B6.30904@linux.vnet.ibm.com>
+	<480C87BD.8090207@ru.mvista.com>
+In-Reply-To: <480C87BD.8090207@ru.mvista.com>
+Content-Type: multipart/mixed; boundary="------------010809060305030200030502"
+Cc: linuxppc-dev@ozlabs.org, Hollis Blanchard <hollisb@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,664 +41,390 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-2008/4/18 Anton Vorontsov <avorontsov@ru.mvista.com>:
-> GTM stands for General-purpose Timers Module and able to generate
->  timer{1,2,3,4} interrupts. These timers are used by the drivers that
->  need time precise interrupts (like for USB transactions scheduling for
->  the Freescale USB Host controller as found in some QE and CPM chips),
->  or these timers could be used as wakeup events from the CPU deep-sleep
->  mode.
+This is a multi-part message in MIME format.
+--------------010809060305030200030502
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
 
-Comments below.
+Sergei Shtylyov wrote:
+> Hello.
+> 
+> Christian Ehrhardt wrote:
+> 
+>>> Cheers,
+>>> Ben.
+> 
+>> For comparison I defined DEBUG in the good kernel (arch=ppc) and that 
+>> is what the initialization prints (pci ...:0a:1 is the secondary head 
+>> of the same graphic card an it's not an issue if thats not allocated):
+[...]
+>    You've changed fb_base_phys and mmio_base_phys to resource_size_t 
+> which is 64-bit, so use %llx to print them.
+> 
+Thanks your absolutely right, I sometimes forget that I need long long for 64bit on 32bit archs (and ignored the warnings :-( ).
+I corrected the printk format strings and attached the new logs.
 
->  diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentatio=
-n/powerpc/booting-without-of.txt
->  index 4cc7800..827b630 100644
->  --- a/Documentation/powerpc/booting-without-of.txt
->  +++ b/Documentation/powerpc/booting-without-of.txt
->  @@ -57,7 +57,8 @@ Table of Contents
->        n) 4xx/Axon EMAC ethernet nodes
->        o) Xilinx IP cores
->        p) Freescale Synchronous Serial Interface
->  -         q) USB EHCI controllers
->  +      q) USB EHCI controllers
->  +      r) Freescale General-purpose Timers Module
->
->    VII - Marvell Discovery mv64[345]6x System Controller chips
->      1) The /system-controller node
->  @@ -2825,6 +2826,35 @@ platforms are moved over to use the flattened-dev=
-ice-tree model.
->                    big-endian;
->            };
->
->  +    r) Freescale General-purpose Timers Module
->  +
->  +    Required properties:
->  +      - compatible : should be "fsl,gtm" ("fsl,qe-gtm" in addition for =
-QE
->  +                     GTMs or "fsl,cpm2-gtm" for CPM2 GTMs).
+[...]
+>> +else {
+>> +printk(KERN_ERR"%s - continue with start 0x%0lx on %p\n", __func__, (this->end + 1), this->sibling);
+>> +}
+>>                 new->start = this->end + 1;
+>>                 this = this->sibling;
+> 
+>    And here. Yet it's not clear why you call resource's 'end' 'start'...
 
-I don't think this is specific enough.  It is a very real possibility
-for Freescale to produce another part with a "general purpose timers
-module" that isn't register level compatible (and fsl,i2c is an
-example of what not to do).  The compatible string should include the
-exact chip version.  Newer parts can also claim compatibility with
-older ones.
+It's the new->start that get's calculated one line after that new else part.
+I printed that one to to see a bit how the loop iterates the resource elements.
 
-Defining a 'generic' compatible value is also known as "making stuff up".  =
-:-)
-
->  +      - reg : should contain gtm registers location and length (0x40).
->  +      - interrupts : should contain four interrupts.
->  +      - interrupt-parent : interrupt source phandle.
->  +      - clock-frequency : specifies the frequency driving the timer.
->  +
->  +    Example:
->  +
->  +    timer@500 {
->  +       compatible =3D "fsl,gtm";
->  +       reg =3D <0x500 0x40>;
->  +       interrupts =3D <90 8 78 8 84 8 72 8>;
->  +       interrupt-parent =3D <&ipic>;
->  +       /* filled by u-boot */
->  +       clock-frequency =3D <0>;
->  +    };
->  +
->  +    timer@440 {
->  +       compatible =3D "fsl,qe-gtm", "fsl,gtm";
->  +       reg =3D <0x440 0x40>;
->  +       interrupts =3D <12 13 14 15>;
->  +       interrupt-parent =3D <&qeic>;
->  +       /* filled by u-boot */
->  +       clock-frequency =3D <0>;
->  +    };
->
->   VII - Marvell Discovery mv64[345]6x System Controller chips
->   =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
->  diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
->  index 7f2f126..ad874e4 100644
->  --- a/arch/powerpc/Kconfig
->  +++ b/arch/powerpc/Kconfig
->  @@ -525,6 +525,11 @@ config FSL_LBC
->         help
->           Freescale Localbus support
->
->  +config FSL_GTM
->  +       bool
->  +       help
->  +         Freescale General-purpose Timers support
->  +
->   # Yes MCA RS/6000s exist but Linux-PPC does not currently support any
->   config MCA
->         bool
->  diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile
->  index 6d386d0..9d3ddd2 100644
->  --- a/arch/powerpc/sysdev/Makefile
->  +++ b/arch/powerpc/sysdev/Makefile
->  @@ -13,6 +13,7 @@ obj-$(CONFIG_MMIO_NVRAM)      +=3D mmio_nvram.o
->   obj-$(CONFIG_FSL_SOC)          +=3D fsl_soc.o
->   obj-$(CONFIG_FSL_PCI)          +=3D fsl_pci.o
->   obj-$(CONFIG_FSL_LBC)          +=3D fsl_lbc.o
->  +obj-$(CONFIG_FSL_GTM)          +=3D fsl_gtm.o
->   obj-$(CONFIG_RAPIDIO)          +=3D fsl_rio.o
->   obj-$(CONFIG_TSI108_BRIDGE)    +=3D tsi108_pci.o tsi108_dev.o
->   obj-$(CONFIG_QUICC_ENGINE)     +=3D qe_lib/
->  diff --git a/arch/powerpc/sysdev/fsl_gtm.c b/arch/powerpc/sysdev/fsl_gtm=
-.c
->  new file mode 100644
->  index 0000000..d29df56
->  --- /dev/null
->  +++ b/arch/powerpc/sysdev/fsl_gtm.c
->  @@ -0,0 +1,365 @@
->  +/*
->  + * Freescale General-purpose Timers Module
->  + *
->  + * Copyright (c) Freescale Semicondutor, Inc. 2006.
->  + *               Shlomi Gridish <gridish@freescale.com>
->  + *               Jerry Huang <Chang-Ming.Huang@freescale.com>
->  + * Copyright (c) MontaVista Software, Inc. 2008.
->  + *               Anton Vorontsov <avorontsov@ru.mvista.com>
->  + *
->  + * This program is free software; you can redistribute  it and/or modif=
-y it
->  + * under  the terms of  the GNU General  Public License as published by=
- the
->  + * Free Software Foundation;  either version 2 of the  License, or (at =
-your
->  + * option) any later version.
->  + */
->  +
->  +#include <linux/kernel.h>
->  +#include <linux/errno.h>
->  +#include <linux/io.h>
->  +#include <linux/of.h>
->  +#include <linux/spinlock.h>
->  +#include <linux/bitops.h>
->  +#include <asm/fsl_gtm.h>
->  +
->  +/**
->  + * gtm_get_timer - request GTM timer to use it with the rest of GTM API
->  + * @width:     timer width (only 16 bits wide timers implemented so far=
-)
->  + *
->  + * This function reserves GTM timer for later use. It returns gtm_timer
->  + * structure to use with the rest of GTM API, you should use timer->irq
->  + * to manage timer interrupt.
->  + */
->  +struct gtm_timer *gtm_get_timer(int width)
->  +{
->  +       struct device_node *np;
->  +       struct gtm *gtm =3D NULL;
->  +       int i;
->  +
->  +       if (width !=3D 16)
->  +               return ERR_PTR(-ENOSYS);
->  +
->  +       for_each_compatible_node(np, NULL, "fsl,gtm") {
->  +               if (!np->data) {
->  +                       WARN_ON(1);
->  +                       continue;
->  +               }
->  +               gtm =3D np->data;
->  +
->  +               spin_lock_irq(&gtm->lock);
->  +
->  +               for (i =3D 0; i < ARRAY_SIZE(gtm->timers); i++) {
->  +                       if (!gtm->timers[i].requested) {
->  +                               gtm->timers[i].requested =3D true;
->  +                               spin_unlock_irq(&gtm->lock);
->  +                               of_node_put(np);
->  +                               return &gtm->timers[i];
->  +                       }
->  +               }
->  +
->  +               spin_unlock_irq(&gtm->lock);
->  +       }
->  +
->  +       if (gtm)
->  +               return ERR_PTR(-EBUSY);
->  +       return ERR_PTR(-ENODEV);
->  +}
->  +EXPORT_SYMBOL(gtm_get_timer);
-
-This isn't a very efficient construct.  You've already located all of
-the relevant nodes in the gtm_init() function.  Searching the device
-tree is not efficient, so it should be avoided and only be performed
-once.  Can you move the extraction of data from the tree to gtm_init()
-and only parse the drivers list of timers in this function?
-
->  +
->  +/**
->  + * gtm_get_specific_timer - request specific GTM timer
->  + * @gtm:       specific GTM, pass here GTM's device_node->data
->  + * @timer:     specific timer number, Timer1 is 0.
->  + * @width:     timer width (only 16 bits wide timers implemented so far=
-)
->  + *
->  + * This function reserves GTM timer for later use. It returns gtm_timer
->  + * structure to use with the rest of GTM API, you should use timer->irq
->  + * to manage timer interrupt.
->  + */
->  +struct gtm_timer *gtm_get_specific_timer(struct gtm *gtm, int timer, in=
-t width)
->  +{
->  +       struct gtm_timer *ret =3D ERR_PTR(-EBUSY);
->  +
->  +       if (width !=3D 16)
->  +               return ERR_PTR(-ENOSYS);
->  +
->  +       spin_lock_irq(&gtm->lock);
->  +
->  +       if (gtm->timers[timer].requested)
->  +               goto out;
->  +
->  +       ret =3D &gtm->timers[timer];
->  +       ret->requested =3D true;
->  +
->  +out:
->  +       spin_unlock_irq(&gtm->lock);
->  +       return ret;
->  +}
->  +EXPORT_SYMBOL(gtm_get_specific_timer);
->  +
->  +/**
->  + * gtm_put_timer - release GTM timer
->  + * @width:     timer width (only 16 bits wide timers implemented so far=
-)
->  + *
->  + * This function releases GTM timer so others may request it.
->  + */
->  +void gtm_put_timer(struct gtm_timer *tmr)
->  +{
->  +       spin_lock_irq(&tmr->gtm->lock);
->  +
->  +       tmr->requested =3D false;
->  +
->  +       spin_unlock_irq(&tmr->gtm->lock);
->  +}
->  +EXPORT_SYMBOL(gtm_put_timer);
->  +
->  +/*
->  + * This is back-end for the exported functions, it's used to reset sing=
-le
->  + * timer in reference mode.
->  + */
->  +static int gtm_reset_ref_timer16(struct gtm_timer *tmr, int frequency,
->  +                                int reference_value, bool free_run)
->  +{
->  +       struct gtm *gtm =3D tmr->gtm;
->  +       int num =3D tmr - &gtm->timers[0];
->  +       unsigned int prescaler;
->  +       u8 iclk =3D GTMDR_ICLK_ICLK;
->  +       u8 psr;
->  +       u8 sps;
->  +       unsigned long flags;
->  +       int max_prescaler =3D 256 * 256 * 16;
->  +
->  +       /* CPM2 doesn't have primary prescaler */
->  +       if (!tmr->gtpsr)
->  +               max_prescaler /=3D 256;
->  +
->  +       prescaler =3D gtm->clock / frequency;
->  +       /*
->  +        * We have two 8 bit prescalers -- primary and secondary (psr, s=
-ps),
->  +        * plus "slow go" mode (clk / 16). So, total prescale value is
->  +        * 16 * (psr + 1) * (sps + 1). Though, for CPM2 GTMs we losing p=
-sr.
->  +        */
->  +       if (prescaler > max_prescaler)
->  +               return -EINVAL;
->  +
->  +       if (prescaler > max_prescaler / 16) {
->  +               iclk =3D GTMDR_ICLK_SLGO;
->  +               prescaler /=3D 16;
->  +       }
->  +
->  +       if (prescaler <=3D 256) {
->  +               psr =3D 0;
->  +               sps =3D prescaler - 1;
->  +       } else {
->  +               psr =3D 256 - 1;
->  +               sps =3D prescaler / 256 - 1;
->  +       }
->  +
->  +       spin_lock_irqsave(&gtm->lock, flags);
->  +
->  +       /*
->  +        * Properly reset timers: stop, reset, set up prescalers, refere=
-nce
->  +        * value and clear event register.
->  +        */
->  +       clrsetbits_8(tmr->gtcfr, ~(GTCFR_STP(num) | GTCFR_RST(num)),
->  +                                GTCFR_STP(num) | GTCFR_RST(num));
->  +
->  +       setbits8(tmr->gtcfr, GTCFR_STP(num));
->  +
->  +       if (tmr->gtpsr)
->  +               out_be16(tmr->gtpsr, psr);
->  +       clrsetbits_be16(tmr->gtmdr, 0xFFFF, iclk | GTMDR_SPS(sps) |
->  +                       GTMDR_ORI | (free_run ? GTMDR_FRR : 0));
->  +       out_be16(tmr->gtcnr, 0);
->  +       out_be16(tmr->gtrfr, reference_value);
->  +       out_be16(tmr->gtevr, 0xFFFF);
->  +
->  +       /* Let it be. */
->  +       clrbits8(tmr->gtcfr, GTCFR_STP(num));
->  +
->  +       spin_unlock_irqrestore(&gtm->lock, flags);
->  +
->  +       return 0;
->  +}
->  +/**
->  + * gtm_reset_timer16 - reset 16 bit timer with arbitrary precision
->  + * @tmr:       pointer to the gtm_timer structure obtained from gtm_get=
-_timer
->  + * @usec:      timer interval in microseconds
->  + * @reload:    if set, the timer will reset upon expiry rather than
->  + *             continue running free.
->  + *
->  + * This function (re)sets the GTM timer so that it counts up to the req=
-uested
->  + * interval value, and fires the interrupt when the value is reached. T=
-his
->  + * function will reduce the precision of the timer as needed in order f=
-or the
->  + * requested timeout to fit in a 16-bit register.
->  + */
->  +int gtm_reset_timer16(struct gtm_timer *tmr, unsigned long usec, bool r=
-eload)
->  +{
->  +       /* quite obvious, frequency which is enough for =B5Sec precision=
- */
->  +       int freq =3D 1000000;
->  +       unsigned int bit;
->  +
->  +       bit =3D fls_long(usec);
->  +       if (bit > 15) {
->  +               freq >>=3D bit - 15;
->  +               usec >>=3D bit - 15;
->  +       }
->  +
->  +       if (!freq)
->  +               return -EINVAL;
->  +
->  +       return gtm_reset_ref_timer16(tmr, freq, usec, reload);
->  +}
->  +EXPORT_SYMBOL(gtm_reset_timer16);
->  +
->  +/**
->  + * gtm_reset_utimer16 - reset 16 bits timer
->  + * @tmr:       pointer to the gtm_timer structure obtained from gtm_get=
-_timer
->  + * @usec:      timer interval in microseconds
->  + * @reload:    if set, the timer will reset upon expiry rather than
->  + *             continue running free.
->  + *
->  + * This function (re)sets GTM timer so that it counts up to the request=
-ed
->  + * interval value, and fires the interrupt when the value is reached. I=
-f reload
->  + * flag was set, timer will also reset itself upon reference value, oth=
-erwise
->  + * it continues to increment.
->  + */
->  +int gtm_reset_utimer16(struct gtm_timer *tmr, u16 usec, bool reload)
->  +{
->  +       /* quite obvious, frequency which is enough for =B5Sec precision=
- */
->  +       const int freq =3D 1000000;
->  +
->  +       /*
->  +        * We can lower the frequency (and probably power consumption) b=
-y
->  +        * dividing both frequency and usec by 2 until there is no remai=
-nder.
->  +        * But we won't bother with this unless savings are measured, so=
- just
->  +        * run the timer as is.
->  +        */
->  +
->  +       return gtm_reset_ref_timer16(tmr, freq, usec, reload);
->  +}
->  +EXPORT_SYMBOL(gtm_reset_utimer16);
->  +
->  +/**
->  + * gtm_stop_timer16 - stop single timer
->  + * @tmr:       pointer to the gtm_timer structure obtained from gtm_get=
-_timer
->  + *
->  + * This function simply stops the GTM timer.
->  + */
->  +void gtm_stop_timer16(struct gtm_timer *tmr)
->  +{
->  +       struct gtm *gtm =3D tmr->gtm;
->  +       int num =3D tmr - &gtm->timers[0];
->  +       unsigned long flags;
->  +
->  +       spin_lock_irqsave(&gtm->lock, flags);
->  +
->  +       setbits8(tmr->gtcfr, GTCFR_STP(num));
->  +       out_be16(tmr->gtevr, 0xFFFF);
->  +
->  +       spin_unlock_irqrestore(&gtm->lock, flags);
->  +}
->  +EXPORT_SYMBOL(gtm_stop_timer16);
->  +
->  +static void __init gtm_set_shortcuts(struct device_node *np,
->  +                                    struct gtm_timer *timers,
->  +                                    struct gtm_timers_regs __iomem *reg=
-s)
->  +{
->  +       /*
->  +        * Yeah, I don't like this either, but timers' registers a bit m=
-essed,
->  +        * so we have to provide shortcuts to write timer independent co=
-de.
->  +        * Alternative option is to create gt*() accessors, but that wil=
-l be
->  +        * even uglier and cryptic.
->  +        */
->  +       timers[0].gtcfr =3D &regs->gtcfr1;
->  +       timers[0].gtmdr =3D &regs->gtmdr1;
->  +       timers[0].gtcnr =3D &regs->gtcnr1;
->  +       timers[0].gtrfr =3D &regs->gtrfr1;
->  +       timers[0].gtevr =3D &regs->gtevr1;
->  +
->  +       timers[1].gtcfr =3D &regs->gtcfr1;
->  +       timers[1].gtmdr =3D &regs->gtmdr2;
->  +       timers[1].gtcnr =3D &regs->gtcnr2;
->  +       timers[1].gtrfr =3D &regs->gtrfr2;
->  +       timers[1].gtevr =3D &regs->gtevr2;
->  +
->  +       timers[2].gtcfr =3D &regs->gtcfr2;
->  +       timers[2].gtmdr =3D &regs->gtmdr3;
->  +       timers[2].gtcnr =3D &regs->gtcnr3;
->  +       timers[2].gtrfr =3D &regs->gtrfr3;
->  +       timers[2].gtevr =3D &regs->gtevr3;
->  +
->  +       timers[3].gtcfr =3D &regs->gtcfr2;
->  +       timers[3].gtmdr =3D &regs->gtmdr4;
->  +       timers[3].gtcnr =3D &regs->gtcnr4;
->  +       timers[3].gtrfr =3D &regs->gtrfr4;
->  +       timers[3].gtevr =3D &regs->gtevr4;
->  +
->  +       /* CPM2 doesn't have primary prescaler */
->  +       if (!of_device_is_compatible(np, "fsl,cpm2-gtm")) {
->  +               timers[0].gtpsr =3D &regs->gtpsr1;
->  +               timers[1].gtpsr =3D &regs->gtpsr2;
->  +               timers[2].gtpsr =3D &regs->gtpsr3;
->  +               timers[3].gtpsr =3D &regs->gtpsr4;
->  +       }
->  +}
->  +
->  +static int __init gtm_init(void)
->  +{
->  +       struct device_node *np;
->  +
->  +       for_each_compatible_node(np, NULL, "fsl,gtm") {
->  +               int i;
->  +               struct gtm *gtm;
->  +               const u32 *clock;
->  +               int size;
->  +
->  +               gtm =3D kzalloc(sizeof(*gtm), GFP_KERNEL);
->  +               if (!gtm) {
->  +                       pr_err("%s: unable to allocate memory\n",
->  +                               np->full_name);
->  +                       continue;
->  +               }
->  +
->  +               spin_lock_init(&gtm->lock);
->  +
->  +               clock =3D of_get_property(np, "clock-frequency", &size);
->  +               if (!clock || size !=3D sizeof(*clock)) {
->  +                       pr_err("%s: no clock-frequency\n", np->full_name=
-);
->  +                       goto err;
->  +               }
->  +               gtm->clock =3D *clock;
->  +
->  +               for (i =3D 0; i < ARRAY_SIZE(gtm->timers); i++) {
->  +                       int ret;
->  +                       struct resource irq;
->  +
->  +                       ret =3D of_irq_to_resource(np, i, &irq);
->  +                       if (ret =3D=3D NO_IRQ) {
->  +                               pr_err("%s: not enough interrupts specif=
-ied\n",
->  +                                      np->full_name);
->  +                               goto err;
->  +                       }
->  +                       gtm->timers[i].irq =3D irq.start;
->  +                       gtm->timers[i].gtm =3D gtm;
->  +               }
->  +
->  +               gtm->regs =3D of_iomap(np, 0);
->  +               if (!gtm->regs) {
->  +                       pr_err("%s: unable to iomap registers\n",
->  +                              np->full_name);
->  +                       goto err;
->  +               }
->  +
->  +               gtm_set_shortcuts(np, gtm->timers, gtm->regs);
->  +
->  +               /* We don't want to lose the node and its ->data */
->  +               of_node_get(np);
->  +               np->data =3D gtm;
->  +
->  +               continue;
->  +err:
->  +               kfree(gtm);
->  +       }
->  +       return 0;
->  +}
->  +arch_initcall(gtm_init);
->  diff --git a/include/asm-powerpc/fsl_gtm.h b/include/asm-powerpc/fsl_gtm=
-.h
->  new file mode 100644
->  index 0000000..3eafb21
->  --- /dev/null
->  +++ b/include/asm-powerpc/fsl_gtm.h
->  @@ -0,0 +1,108 @@
->  +/*
->  + * Freescale General-purpose Timers Module
->  + *
->  + * Copyright (c) Freescale Semicondutor, Inc. 2006.
->  + *               Shlomi Gridish <gridish@freescale.com>
->  + *               Jerry Huang <Chang-Ming.Huang@freescale.com>
->  + * Copyright (c) MontaVista Software, Inc. 2008.
->  + *               Anton Vorontsov <avorontsov@ru.mvista.com>
->  + *
->  + * This program is free software; you can redistribute  it and/or modif=
-y it
->  + * under  the terms of  the GNU General  Public License as published by=
- the
->  + * Free Software Foundation;  either version 2 of the  License, or (at =
-your
->  + * option) any later version.
->  + */
->  +
->  +#ifndef __ASM_FSL_GTM_H
->  +#define __ASM_FSL_GTM_H
->  +
->  +#include <linux/types.h>
->  +#include <linux/spinlock.h>
->  +#include <linux/io.h>
->  +
->  +#define GTCFR_STP(x)           ((x) & 1 ? 1 << 5 : 1 << 1)
->  +#define GTCFR_RST(x)           ((x) & 1 ? 1 << 4 : 1 << 0)
->  +
->  +#define GTMDR_ICLK_MASK                (3 << 1)
->  +#define GTMDR_ICLK_ICAS                (0 << 1)
->  +#define GTMDR_ICLK_ICLK                (1 << 1)
->  +#define GTMDR_ICLK_SLGO                (2 << 1)
->  +#define GTMDR_FRR              (1 << 3)
->  +#define GTMDR_ORI              (1 << 4)
->  +#define GTMDR_SPS(x)           ((x) << 8)
->  +
->  +struct gtm_timers_regs {
->  +       u8      gtcfr1;         /* Timer 1, Timer 2 global config regist=
-er */
->  +       u8      res0[0x3];
->  +       u8      gtcfr2;         /* Timer 3, timer 4 global config regist=
-er */
->  +       u8      res1[0xB];
->  +       __be16  gtmdr1;         /* Timer 1 mode register */
->  +       __be16  gtmdr2;         /* Timer 2 mode register */
->  +       __be16  gtrfr1;         /* Timer 1 reference register */
->  +       __be16  gtrfr2;         /* Timer 2 reference register */
->  +       __be16  gtcpr1;         /* Timer 1 capture register */
->  +       __be16  gtcpr2;         /* Timer 2 capture register */
->  +       __be16  gtcnr1;         /* Timer 1 counter */
->  +       __be16  gtcnr2;         /* Timer 2 counter */
->  +       __be16  gtmdr3;         /* Timer 3 mode register */
->  +       __be16  gtmdr4;         /* Timer 4 mode register */
->  +       __be16  gtrfr3;         /* Timer 3 reference register */
->  +       __be16  gtrfr4;         /* Timer 4 reference register */
->  +       __be16  gtcpr3;         /* Timer 3 capture register */
->  +       __be16  gtcpr4;         /* Timer 4 capture register */
->  +       __be16  gtcnr3;         /* Timer 3 counter */
->  +       __be16  gtcnr4;         /* Timer 4 counter */
->  +       __be16  gtevr1;         /* Timer 1 event register */
->  +       __be16  gtevr2;         /* Timer 2 event register */
->  +       __be16  gtevr3;         /* Timer 3 event register */
->  +       __be16  gtevr4;         /* Timer 4 event register */
->  +       __be16  gtpsr1;         /* Timer 1 prescale register */
->  +       __be16  gtpsr2;         /* Timer 2 prescale register */
->  +       __be16  gtpsr3;         /* Timer 3 prescale register */
->  +       __be16  gtpsr4;         /* Timer 4 prescale register */
->  +       u8 res2[0x40];
->  +} __attribute__ ((packed));
->  +
->  +struct gtm_timer {
->  +       unsigned int irq;
->  +
->  +       struct gtm *gtm;
->  +       bool requested;
->  +       u8 __iomem *gtcfr;
->  +       __be16 __iomem *gtmdr;
->  +       __be16 __iomem *gtpsr;
->  +       __be16 __iomem *gtcnr;
->  +       __be16 __iomem *gtrfr;
->  +       __be16 __iomem *gtevr;
->  +};
->  +
->  +struct gtm {
->  +       unsigned int clock;
->  +       struct gtm_timers_regs __iomem *regs;
->  +       struct gtm_timer timers[4];
->  +       spinlock_t lock;
->  +};
-
-Consider moving the register definitions and structures inside the .c
-file.  This is all anonymous data as far as the caller is concerned.
-If the structures are only access inside the driver then you gain
-yourself a bit of safety by moving them.
-
->  +
->  +extern struct gtm_timer *gtm_get_timer(int width);
->  +extern struct gtm_timer *gtm_get_specific_timer(struct gtm *gtm, int ti=
-mer,
->  +                                               int width);
->  +extern void gtm_put_timer(struct gtm_timer *tmr);
->  +extern int gtm_reset_timer16(struct gtm_timer *tmr, unsigned long usec,
->  +                            bool reload);
->  +extern int gtm_reset_utimer16(struct gtm_timer *tmr, u16 usec, bool rel=
-oad);
->  +extern void gtm_stop_timer16(struct gtm_timer *tmr);
->  +
->  +/**
->  + * gtm_ack_timer16 - acknowledge timer event (free-run timers only)
->  + * @tmr:       pointer to the gtm_timer structure obtained from gtm_get=
-_timer
->  + * @events:    events mask to ack
->  + *
->  + * Thus function used to acknowledge timer interrupt event, use it insi=
-de the
->  + * interrupt handler.
->  + */
->  +static inline void gtm_ack_timer16(struct gtm_timer *tmr, u16 events)
->  +{
->  +       out_be16(tmr->gtevr, events);
->  +}
-
-Drop 'inline' and expect gcc to do the right thing.
-
->  +
->  +#endif /* __ASM_FSL_GTM_H */
->  --
->  1.5.5
->
->  _______________________________________________
->  Linuxppc-dev mailing list
->  Linuxppc-dev@ozlabs.org
->  https://ozlabs.org/mailman/listinfo/linuxppc-dev
+> 
+> WBR, Sergei
 
 
+-- 
 
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Grüsse / regards, 
+Christian Ehrhardt
+IBM Linux Technology Center, Open Virtualization
+
+--------------010809060305030200030502
+Content-Type: text/plain;
+ name="pci_resource_issue_bootmsg_badkernel.txt"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="pci_resource_issue_bootmsg_badkernel.txt"
+
+With DEBUG in arch/powerpc/kernel/pci-common.c, debug in commandline and a patch with some printk's (I attached the patch because it is the usual "put printk's everywhere" so the diff helps to understand where the prints come from). Corrected prinf format specifiers according to the comments from Sergei Shtylyov.
+
+PCI host bridge /plb/pci@1ec000000 (primary) ranges:
+ MEM 0x0000000180000000..0x000000018fffffff -> 0x0000000080000000
+  IO 0x00000001e8000000..0x00000001e80fffff -> 0x0000000000000000
+4xx PCI DMA offset set to 0x00000000
+PCI: Probing PCI hardware
+PCI: Hiding 4xx host bridge resources 0000:00:00.0
+Try to map irq for 0000:00:00.0...
+ -> got one, spec 2 cells (0x00000003 0x00000008...) on /interrupt-controller2
+ -> mapped to linux irq 16
+Try to map irq for 0000:00:0a.0...
+ -> got one, spec 2 cells (0x00000003 0x00000008...) on /interrupt-controller2
+ -> mapped to linux irq 16
+Try to map irq for 0000:00:0a.1...
+PCI: PHB (bus 0) bridge rsrc 0: 0000000000000000-00000000000fffff [0x100], parent c0365060 (PCI IO)
+__request_resource - request 0xcf8045b0 name '/plb/pci@1ec000000' start 0x0 end 0xfffff
+__request_resource - no conflict parent 0xc0365060 sibling 0x00000000
+PCI: PHB (bus 0) bridge rsrc 1: 0000000180000000-000000018fffffff [0x200], parent c0365038 (PCI mem)
+__request_resource - request 0xcf8045d8 name '/plb/pci@1ec000000' start 0x180000000 end 0x18fffffff
+__request_resource - no conflict parent 0xc0365038 sibling 0x00000000
+PCI: Assigning unassigned resouces...
+pci_assign_unassigned_resources -#1- bus 0xcf82d400
+pci_assign_unassigned_resources -#2- bus 0xcf82d400
+pci_assign_resource - allocate with IORESOURCE_PREFETCH
+pci_bus_alloc_resource - enter
+pci_assign_resource - second pci_bus_alloc_resource call
+pci_bus_alloc_resource - enter
+pci_bus_alloc_resource - call allocate ressource size 0x8000000 startcalc 0xffffffff, align 0x8000000
+find_resource - size 0x8000000, min 0x180000000, max 0xffffffffffffffff
+find_resource - found start 0x180000000 end 0x187ffffff
+__request_resource - request 0xcf810578 name '0000:00:0a.0' start 0x180000000 end 0x187ffffff
+__request_resource - no conflict parent 0xcf8045d8 sibling 0x00000000
+pci_assign_resource - allocate with IORESOURCE_PREFETCH
+pci_bus_alloc_resource - enter
+pci_assign_resource - second pci_bus_alloc_resource call
+pci_bus_alloc_resource - enter
+pci_bus_alloc_resource - call allocate ressource size 0x8000000 startcalc 0xffffffff, align 0x8000000
+find_resource - size 0x8000000, min 0x180000000, max 0xffffffffffffffff
+find_resource - continue with start 0x188000000 on 0x00000000
+find_resource - found start 0x188000000 end 0x18fffffff
+__request_resource - request 0xcf810178 name '0000:00:0a.1' start 0x188000000 end 0x18fffffff
+__request_resource - no conflict parent 0xcf8045d8 sibling 0x00000000
+pci_assign_resource - allocate with IORESOURCE_PREFETCH
+pci_bus_alloc_resource - enter
+pci_assign_resource - second pci_bus_alloc_resource call
+pci_bus_alloc_resource - enter
+pci_bus_alloc_resource - call allocate ressource size 0x20000 startcalc 0xffffffff, align 0x20000
+find_resource - size 0x20000, min 0x180000000, max 0xffffffffffffffff
+find_resource - continue with start 0x188000000 on 0xcf810178
+find_resource - continue with start 0x190000000 on 0x00000000
+find_resource - no this - exit
+PCI: pci_assign_resource - Failed to allocate mem resource #6:20000@190000000 for 0000:00:0a.0
+pci_assign_resource - allocate with IORESOURCE_PREFETCH
+pci_bus_alloc_resource - enter
+pci_bus_alloc_resource - call allocate ressource size 0x10000 startcalc 0xffffffff, align 0x10000
+find_resource - size 0x10000, min 0x180000000, max 0xffffffffffffffff
+find_resource - continue with start 0x188000000 on 0xcf810178
+find_resource - continue with start 0x190000000 on 0x00000000
+find_resource - no this - exit
+PCI: pci_assign_resource - Failed to allocate mem resource #2:10000@190000000 for 0000:00:0a.0
+pci_assign_resource - allocate with IORESOURCE_PREFETCH
+pci_bus_alloc_resource - enter
+pci_bus_alloc_resource - call allocate ressource size 0x10000 startcalc 0xffffffff, align 0x10000
+find_resource - size 0x10000, min 0x180000000, max 0xffffffffffffffff
+find_resource - continue with start 0x188000000 on 0xcf810178
+find_resource - continue with start 0x190000000 on 0x00000000
+find_resource - no this - exit
+PCI: pci_assign_resource - Failed to allocate mem resource #1:10000@190000000 for 0000:00:0a.1
+pci_assign_resource - allocate with IORESOURCE_PREFETCH
+pci_bus_alloc_resource - enter
+pci_bus_alloc_resource - call allocate ressource size 0x100 startcalc 0xffffffff, align 0x100
+find_resource - size 0x100, min 0x1000, max 0xffffffffffffffff
+find_resource - found start 0x1000 end 0x10ff
+__request_resource - request 0xcf8105a0 name '0000:00:0a.0' start 0x1000 end 0x10ff
+__request_resource - no conflict parent 0xcf8045b0 sibling 0x00000000
+
+[...]
+
+radeonfb_pci_register BEGIN
+radeonfb_pci_register - resource0 0x180000000 - 0x187ffffff
+radeonfb_pci_register - resource1 0x1000 - 0x10ff
+radeonfb_pci_register - resource2 0x0 - 0x0
+radeonfb_pci_register - got pci ressources fb_base_phys 0x180000000 mmio_base_phys 0x0
+__request_resource - request 0xcf8bfd20 name 'radeonfb framebuffer' start 0x180000000 end 0x187ffffff
+__request_resource - request 0xcf8bfd20 name 'radeonfb framebuffer' start 0x180000000 end 0x187ffffff
+__request_resource - request 0xcf8bfd20 name 'radeonfb framebuffer' start 0x180000000 end 0x187ffffff
+__request_resource - no conflict parent 0xcf810578 sibling 0x00000000
+radeonfb_pci_register - call ioremap for base 0x0 and size 16384
+__ioremap(): phys addr 0x0 is RAM lr 0xc029df88 - mem_init_done 1 highmem@0x10000000
+radeonfb (0000:00:0a.0): cannot map MMIO
+radeonfb: probe of 0000:00:0a.0 failed with error -5
+
+
+--------------010809060305030200030502
+Content-Type: text/x-patch;
+ name="debug_pci_radeonfb.diff"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="debug_pci_radeonfb.diff"
+
+Subject: [PATCH] : ! debug only ! - printk's in pci ressource handling
+
+From: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
+
+This defines debug for pci and put's some printk's to keep track of the pci
+ressource handling. This patch is just for reference to understand the
+resulting boot message log.
+The patch is ugly - but for debugging only ;-)
+
+Signed-off-by: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
+---
+
+[diffstat]
+ arch/powerpc/kernel/pci-common.c |    2 ++
+ arch/powerpc/mm/pgtable_32.c     |    4 ++--
+ drivers/pci/bus.c                |    3 +++
+ drivers/pci/setup-res.c          |   12 ++++++++----
+ drivers/video/aty/radeon_base.c  |    7 +++++++
+ drivers/video/aty/radeonfb.h     |    4 ++--
+ kernel/resource.c                |   17 ++++++++++++++++-
+ 7 files changed, 40 insertions(+), 9 deletions(-)
+
+diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+--- a/arch/powerpc/kernel/pci-common.c
++++ b/arch/powerpc/kernel/pci-common.c
+@@ -37,6 +37,8 @@
+ #include <asm/machdep.h>
+ #include <asm/ppc-pci.h>
+ #include <asm/firmware.h>
++
++#define DEBUG
+ 
+ #ifdef DEBUG
+ #include <asm/udbg.h>
+diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
+--- a/arch/powerpc/mm/pgtable_32.c
++++ b/arch/powerpc/mm/pgtable_32.c
+@@ -183,8 +183,8 @@ __ioremap(phys_addr_t addr, unsigned lon
+ 	 * mem_init() sets high_memory so only do the check after that.
+ 	 */
+ 	if (mem_init_done && (p < virt_to_phys(high_memory))) {
+-		printk("__ioremap(): phys addr 0x%llx is RAM lr %p\n",
+-		       (unsigned long long)p, __builtin_return_address(0));
++		printk("__ioremap(): phys addr 0x%llx is RAM lr 0x%p - mem_init_done %d highmem@0x%p\n",
++		       (unsigned long long)p, __builtin_return_address(0), mem_init_done, virt_to_phys(high_memory));
+ 		return NULL;
+ 	}
+ 
+diff --git a/drivers/pci/bus.c b/drivers/pci/bus.c
+--- a/drivers/pci/bus.c
++++ b/drivers/pci/bus.c
+@@ -42,6 +42,8 @@ pci_bus_alloc_resource(struct pci_bus *b
+ {
+ 	int i, ret = -ENOMEM;
+ 
++printk(KERN_ERR"%s - enter\n", __func__);
++
+ 	type_mask |= IORESOURCE_IO | IORESOURCE_MEM;
+ 
+ 	for (i = 0; i < PCI_BUS_NUM_RESOURCES; i++) {
+@@ -59,6 +61,7 @@ pci_bus_alloc_resource(struct pci_bus *b
+ 		    !(res->flags & IORESOURCE_PREFETCH))
+ 			continue;
+ 
++printk(KERN_ERR"%s - call allocate ressource size 0x%0llx startcalc 0x%0x, align 0x%0llx\n", __func__, size, (r->start ? : min,-1), align);
+ 		/* Ok, try it out.. */
+ 		ret = allocate_resource(r, res, size,
+ 					r->start ? : min,
+diff --git a/drivers/pci/setup-bus.c b/drivers/pci/setup-bus.c
+--- a/drivers/pci/setup-bus.c
++++ b/drivers/pci/setup-bus.c
+@@ -544,10 +544,12 @@ pci_assign_unassigned_resources(void)
+ 	/* Depth first, calculate sizes and alignments of all
+ 	   subordinate buses. */
+ 	list_for_each_entry(bus, &pci_root_buses, node) {
++printk(KERN_ERR"%s -#1- bus 0x%p\n",__func__, bus);
+ 		pci_bus_size_bridges(bus);
+ 	}
+ 	/* Depth last, allocate resources and update the hardware. */
+ 	list_for_each_entry(bus, &pci_root_buses, node) {
++printk(KERN_ERR"%s -#2- bus 0x%p\n",__func__, bus);
+ 		pci_bus_assign_resources(bus);
+ 		pci_enable_bridges(bus);
+ 	}
+diff --git a/drivers/pci/setup-res.c b/drivers/pci/setup-res.c
+--- a/drivers/pci/setup-res.c
++++ b/drivers/pci/setup-res.c
+@@ -142,10 +142,13 @@ int pci_assign_resource(struct pci_dev *
+ 	   required alignment in the "start" field. */
+ 	align = (resno < PCI_BRIDGE_RESOURCES) ? size : res->start;
+ 
++printk(KERN_ERR"%s - allocate with IORESOURCE_PREFETCH\n", __func__);
++
+ 	/* First, try exact prefetching match.. */
+ 	ret = pci_bus_alloc_resource(bus, res, size, align, min,
+ 				     IORESOURCE_PREFETCH,
+ 				     pcibios_align_resource, dev);
++
+ 
+ 	if (ret < 0 && (res->flags & IORESOURCE_PREFETCH)) {
+ 		/*
+@@ -154,13 +157,14 @@ int pci_assign_resource(struct pci_dev *
+ 		 * But a prefetching area can handle a non-prefetching
+ 		 * window (it will just not perform as well).
+ 		 */
++printk(KERN_ERR"%s - second pci_bus_alloc_resource call\n", __func__);
+ 		ret = pci_bus_alloc_resource(bus, res, size, align, min, 0,
+ 					     pcibios_align_resource, dev);
+ 	}
+ 
+ 	if (ret) {
+-		printk(KERN_ERR "PCI: Failed to allocate %s resource "
+-			"#%d:%llx@%llx for %s\n",
++		printk(KERN_ERR "PCI: %s - Failed to allocate %s resource "
++			"#%d:%llx@%llx for %s\n", __func__,
+ 			res->flags & IORESOURCE_IO ? "I/O" : "mem",
+ 			resno, (unsigned long long)size,
+ 			(unsigned long long)res->start, pci_name(dev));
+@@ -197,8 +201,8 @@ int pci_assign_resource_fixed(struct pci
+ 	}
+ 
+ 	if (ret) {
+-		printk(KERN_ERR "PCI: Failed to allocate %s resource "
+-				"#%d:%llx@%llx for %s\n",
++		printk(KERN_ERR "PCI: %s - Failed to allocate %s resource "
++				"#%d:%llx@%llx for %s\n", __func__,
+ 			res->flags & IORESOURCE_IO ? "I/O" : "mem",
+ 			resno, (unsigned long long)(res->end - res->start + 1),
+ 			(unsigned long long)res->start, pci_name(dev));
+diff --git a/drivers/video/aty/radeon_base.c b/drivers/video/aty/radeon_base.c
+--- a/drivers/video/aty/radeon_base.c
++++ b/drivers/video/aty/radeon_base.c
+@@ -2160,6 +2160,10 @@ static int __devinit radeonfb_pci_regist
+ 	int ret;
+ 
+ 	RTRACE("radeonfb_pci_register BEGIN\n");
++
++printk(KERN_ERR"%s - resource0 0x%0llx - 0x%0llx\n", __func__, pdev->resource[0].start, pdev->resource[0].end);
++printk(KERN_ERR"%s - resource1 0x%0llx - 0x%0llx\n", __func__, pdev->resource[1].start, pdev->resource[1].end);
++printk(KERN_ERR"%s - resource2 0x%0llx - 0x%0llx\n", __func__, pdev->resource[2].start, pdev->resource[2].end);
+ 	
+ 	/* Enable device in PCI config */
+ 	ret = pci_enable_device(pdev);
+@@ -2198,6 +2202,8 @@ static int __devinit radeonfb_pci_regist
+ 	rinfo->fb_base_phys = pci_resource_start (pdev, 0);
+ 	rinfo->mmio_base_phys = pci_resource_start (pdev, 2);
+ 
++printk(KERN_ERR"%s - got pci ressources fb_base_phys 0x%0llx mmio_base_phys 0x%0llx\n", __func__,rinfo->fb_base_phys,rinfo->mmio_base_phys);
++
+ 	/* request the mem regions */
+ 	ret = pci_request_region(pdev, 0, "radeonfb framebuffer");
+ 	if (ret < 0) {
+@@ -2214,6 +2220,7 @@ static int __devinit radeonfb_pci_regist
+ 	}
+ 
+ 	/* map the regions */
++printk(KERN_ERR "%s - call ioremap for base 0x%0llx and size %d\n",__func__, rinfo->mmio_base_phys, RADEON_REGSIZE);
+ 	rinfo->mmio_base = ioremap(rinfo->mmio_base_phys, RADEON_REGSIZE);
+ 	if (!rinfo->mmio_base) {
+ 		printk(KERN_ERR "radeonfb (%s): cannot map MMIO\n",
+diff --git a/drivers/video/aty/radeonfb.h b/drivers/video/aty/radeonfb.h
+--- a/drivers/video/aty/radeonfb.h
++++ b/drivers/video/aty/radeonfb.h
+@@ -287,8 +287,8 @@ struct radeonfb_info {
+ 
+ 	char			name[DEVICE_NAME_SIZE];
+ 
+-	unsigned long		mmio_base_phys;
+-	unsigned long		fb_base_phys;
++	resource_size_t		mmio_base_phys;
++	resource_size_t		fb_base_phys;
+ 
+ 	void __iomem		*mmio_base;
+ 	void __iomem		*fb_base;
+diff --git a/kernel/resource.c b/kernel/resource.c
+--- a/kernel/resource.c
++++ b/kernel/resource.c
+@@ -152,6 +152,9 @@ static struct resource * __request_resou
+ 	resource_size_t end = new->end;
+ 	struct resource *tmp, **p;
+ 
++printk(KERN_ERR"%s - request 0x%p name '%s' start 0x%0llx end 0x%0llx\n",
++			__func__, new, new->name, start, end);
++
+ 	if (end < start)
+ 		return root;
+ 	if (start < root->start)
+@@ -165,6 +168,7 @@ static struct resource * __request_resou
+ 			new->sibling = tmp;
+ 			*p = new;
+ 			new->parent = root;
++printk(KERN_ERR"%s - no conflict parent 0x%p sibling 0x%p\n",__func__, new->parent, new->sibling);
+ 			return NULL;
+ 		}
+ 		p = &tmp->sibling;
+@@ -305,6 +309,8 @@ static int find_resource(struct resource
+ {
+ 	struct resource *this = root->child;
+ 
++printk(KERN_ERR"%s - size 0x%0llx, min 0x%0llx, max 0x%0llx\n", __func__, size, min, max);
++
+ 	new->start = root->start;
+ 	/*
+ 	 * Skip past an allocated resource that starts at 0, since the assignment
+@@ -328,10 +334,16 @@ static int find_resource(struct resource
+ 			alignf(alignf_data, new, size, align);
+ 		if (new->start < new->end && new->end - new->start >= size - 1) {
+ 			new->end = new->start + size - 1;
++printk(KERN_ERR"%s - found start 0x%0llx end 0x%0llx\n", __func__, new->start, new->end);
+ 			return 0;
+ 		}
+-		if (!this)
++		if (!this) {
++printk(KERN_ERR"%s - no this - exit\n", __func__);
+ 			break;
++}
++else {
++printk(KERN_ERR"%s - continue with start 0x%0llx on 0x%p\n", __func__, (this->end + 1), this->sibling);
++}
+ 		new->start = this->end + 1;
+ 		this = this->sibling;
+ 	}
+@@ -385,6 +397,9 @@ int insert_resource(struct resource *par
+ {
+ 	int result;
+ 	struct resource *first, *next;
++
++printk(KERN_ERR"%s - insert 0x%p (start 0x%0llx end 0x%0llx) under parent 0x%p\n",
++			__func__, new, new->start, new->end, parent);
+ 
+ 	write_lock(&resource_lock);
+ 
+
+--------------010809060305030200030502--
