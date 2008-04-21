@@ -1,14 +1,18 @@
-Return-Path: <sfalco@harris.com>
-Received: from mlbe2k1.cs.myharris.net (mlbe2k1.cs.myharris.net
-	[137.237.90.88]) by ozlabs.org (Postfix) with ESMTP id 203A5DDF7F
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Apr 2008 02:19:33 +1000 (EST)
-Message-ID: <480CBA91.5050003@harris.com>
-Date: Mon, 21 Apr 2008 12:02:25 -0400
-From: "Steven A. Falco" <sfalco@harris.com>
+Return-Path: <sshtylyov@ru.mvista.com>
+Received: from imap.sh.mvista.com (unknown [63.81.120.155])
+	by ozlabs.org (Postfix) with ESMTP id 1B5B5DEDDC
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Apr 2008 02:21:25 +1000 (EST)
+Message-ID: <480CBEE0.9000104@ru.mvista.com>
+Date: Mon, 21 Apr 2008 20:20:48 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: RFC: Possible section mismatch problem in ibm_newemac?
-Content-Type: text/plain; charset=UTF-8
+To: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
+Subject: Re: pci issue - wrong detection of pci ressources
+References: <48088F02.2060806@linux.vnet.ibm.com>	<1208566122.6958.425.camel@pasglop>	<480BA937.7050603@linux.vnet.ibm.com>	<1208727408.7009.0.camel@pasglop>	<480C80B6.30904@linux.vnet.ibm.com>	<480C87BD.8090207@ru.mvista.com>	<480C9FE2.4030601@linux.vnet.ibm.com>
+	<480CAFD2.2050108@ru.mvista.com>
+In-Reply-To: <480CAFD2.2050108@ru.mvista.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev@ozlabs.org, Hollis Blanchard <hollisb@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,73 +22,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I am using a recent DENX git tree.  I want to enable debugging in prom_parse.c.
-When I do that, I see link warnings like:
+Hello, I wrote:
 
-WARNING: drivers/net/ibm_newemac/ibm_newemac.o(.data+0x6e0): Section mismatch in reference from the variable emac_of_bus_notifier to the function .devinit.text:emac_of_bus_notify()
-The variable emac_of_bus_notifier references
-the function __devinit emac_of_bus_notify()
+>    Ah, that's what happens -- BAR0 in functions 0/1 takes up the whole 
+> 265 MiB of the PCI memory space (128+128), so no place is left for other 
+> memory BARs.
 
-WARNING: drivers/net/ibm_newemac/built-in.o(.devinit.text+0x14d4): Section mismatch in reference from the function emac_probe() to the function .devexit.text:rgmii_detach()
-The function __devinit emac_probe() references
-a function __devexit rgmii_detach().
+    What's interesting, the Sequoia/Rainier board user manual says that PCI 
+memory is 0x80000000 thru 0xbfffffff (i.e. 1 GiB), while the Linux code seem 
+to always have assumed only 0x[1]800000000 thru 0x[1]8fffffff...
 
-I've made the following changes, which clean up the link warnings, but I'm not
-sure this is the right way to fix the problem.  If it is correct, I'd like to
-submit the patch.
-
-Signed-off-by: Steve Falco <sfalco@harris.com>
----
-
-diff --git a/drivers/net/ibm_newemac/core.c b/drivers/net/ibm_newemac/core.c
-index 5153901..d54393e 100644
---- a/drivers/net/ibm_newemac/core.c
-+++ b/drivers/net/ibm_newemac/core.c
-@@ -2241,7 +2241,7 @@ static int __devinit emac_of_bus_notify(struct notifier_block *nb,
- 	return 0;
- }
- 
--static struct notifier_block emac_of_bus_notifier = {
-+static struct notifier_block __devinitdata emac_of_bus_notifier = {
- 	.notifier_call = emac_of_bus_notify
- };
- 
-diff --git a/drivers/net/ibm_newemac/mal.c b/drivers/net/ibm_newemac/mal.c
-index fb9c9eb..e9dbd6b 100644
---- a/drivers/net/ibm_newemac/mal.c
-+++ b/drivers/net/ibm_newemac/mal.c
-@@ -61,7 +61,7 @@ int __devinit mal_register_commac(struct mal_instance	*mal,
- 	return 0;
- }
- 
--void __devexit mal_unregister_commac(struct mal_instance	*mal,
-+void mal_unregister_commac(struct mal_instance	*mal,
- 				     struct mal_commac		*commac)
- {
- 	unsigned long flags;
-diff --git a/drivers/net/ibm_newemac/rgmii.c b/drivers/net/ibm_newemac/rgmii.c
-index 5757788..e32da3d 100644
---- a/drivers/net/ibm_newemac/rgmii.c
-+++ b/drivers/net/ibm_newemac/rgmii.c
-@@ -179,7 +179,7 @@ void rgmii_put_mdio(struct of_device *ofdev, int input)
- 	mutex_unlock(&dev->lock);
- }
- 
--void __devexit rgmii_detach(struct of_device *ofdev, int input)
-+void rgmii_detach(struct of_device *ofdev, int input)
- {
- 	struct rgmii_instance *dev = dev_get_drvdata(&ofdev->dev);
- 	struct rgmii_regs __iomem *p = dev->base;
-diff --git a/drivers/net/ibm_newemac/zmii.c b/drivers/net/ibm_newemac/zmii.c
-index 2ea472a..17b1541 100644
---- a/drivers/net/ibm_newemac/zmii.c
-+++ b/drivers/net/ibm_newemac/zmii.c
-@@ -189,7 +189,7 @@ void zmii_set_speed(struct of_device *ofdev, int input, int speed)
- 	mutex_unlock(&dev->lock);
- }
- 
--void __devexit zmii_detach(struct of_device *ofdev, int input)
-+void zmii_detach(struct of_device *ofdev, int input)
- {
- 	struct zmii_instance *dev = dev_get_drvdata(&ofdev->dev);
- 
+WBR, Sergei
