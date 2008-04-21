@@ -1,22 +1,24 @@
-Return-Path: <galak@kernel.crashing.org>
+Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 9C177DE081
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Apr 2008 08:31:32 +1000 (EST)
-Message-Id: <B9800143-8E81-44D2-A922-28E992203717@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: benh@kernel.crashing.org
-In-Reply-To: <1208815944.9640.49.camel@pasglop>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v919.2)
+	by ozlabs.org (Postfix) with ESMTPS id 647AEDDFD1
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Apr 2008 08:39:55 +1000 (EST)
 Subject: Re: [PATCH] [POWERPC] ppc32: Fix errata for 603 CPUs
-Date: Mon, 21 Apr 2008 17:31:25 -0500
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <B9800143-8E81-44D2-A922-28E992203717@kernel.crashing.org>
 References: <Pine.LNX.4.64.0804211457010.8003@blarg.am.freescale.net>
 	<1208812957.9640.47.camel@pasglop>
 	<059AA568-4729-4060-A876-C8460E0A7794@kernel.crashing.org>
 	<1208815944.9640.49.camel@pasglop>
+	<B9800143-8E81-44D2-A922-28E992203717@kernel.crashing.org>
+Content-Type: text/plain
+Date: Tue, 22 Apr 2008 08:39:48 +1000
+Message-Id: <1208817588.9640.51.camel@pasglop>
+Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,42 +29,16 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Apr 21, 2008, at 5:12 PM, Benjamin Herrenschmidt wrote:
->
-> On Mon, 2008-04-21 at 17:04 -0500, Kumar Gala wrote:
->> On Apr 21, 2008, at 4:22 PM, Benjamin Herrenschmidt wrote:
->>>
->>>>
->>>> _GLOBAL(__setup_cpu_603)
->>>> -	b	setup_common_caches
->>>> +	mflr	r4
->>>> +BEGIN_FTR_SECTION
->>>> +	bl	__init_fpu_registers
->>>> +END_FTR_SECTION_IFCLR(CPU_FTR_FPU_UNAVAILABLE)
->>>> +	bl	__init_fpu_registers
->>>> +	bl	setup_common_caches
->>>> +	mtlr	r4
->>>> +	blr
->>>> _GLOBAL(__setup_cpu_604)
->>>> 	mflr	r4
->>>> 	bl	setup_common_cache
->>>
->>> Has the feature fixup been perform yet when __setup_* is called ?
->>
->> Yes.  We call do_feature_fixups() in early_init and call
->> call_setup_cpu() after than on 6xx (in head_32.S).
->
-> Hrm. I think that may be the other way around on 64 bits... damn, I  
-> need
-> to consolidate these.
->
-> I'd rather have the init code explicitely test for the features.
+On Mon, 2008-04-21 at 17:31 -0500, Kumar Gala wrote:
+> Ok, but we'd also need to fix setup_750_7400_hid0 and  
+> setup_745x_specifics to test.
+> 
+> There's a bit more cleanup that needs to be done here.  I'm not
+> going  
+> to worry about it for this patch since it covers handling a chip  
+> errata and isn't any more "broken" than other bits of code in this fi
 
-Ok, but we'd also need to fix setup_750_7400_hid0 and  
-setup_745x_specifics to test.
+True.
 
-There's a bit more cleanup that needs to be done here.  I'm not going  
-to worry about it for this patch since it covers handling a chip  
-errata and isn't any more "broken" than other bits of code in this file.
-
-- k 
+Cheers,
+Ben.
