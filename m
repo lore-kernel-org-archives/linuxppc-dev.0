@@ -1,20 +1,22 @@
-Return-Path: <david-b@pacbell.net>
-Received: from smtp117.sbc.mail.sp1.yahoo.com (smtp117.sbc.mail.sp1.yahoo.com
-	[69.147.64.90]) by ozlabs.org (Postfix) with SMTP id A702EDE16F
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Apr 2008 08:19:06 +1000 (EST)
-From: David Brownell <david-b@pacbell.net>
-To: cbouatmailru@gmail.com
-Subject: Re: [PATCH 4/5] [POWERPC] QE: implement support for the GPIO LIB API
-Date: Mon, 21 Apr 2008 15:19:02 -0700
-References: <20080418190632.GA32204@polina.dev.rtsoft.ru>
-	<200804211301.13026.david-b@pacbell.net>
-	<20080421213349.GA3833@zarina>
-In-Reply-To: <20080421213349.GA3833@zarina>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200804211519.03199.david-b@pacbell.net>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 9C177DE081
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Apr 2008 08:31:32 +1000 (EST)
+Message-Id: <B9800143-8E81-44D2-A922-28E992203717@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: benh@kernel.crashing.org
+In-Reply-To: <1208815944.9640.49.camel@pasglop>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v919.2)
+Subject: Re: [PATCH] [POWERPC] ppc32: Fix errata for 603 CPUs
+Date: Mon, 21 Apr 2008 17:31:25 -0500
+References: <Pine.LNX.4.64.0804211457010.8003@blarg.am.freescale.net>
+	<1208812957.9640.47.camel@pasglop>
+	<059AA568-4729-4060-A876-C8460E0A7794@kernel.crashing.org>
+	<1208815944.9640.49.camel@pasglop>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,55 +26,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Monday 21 April 2008, Anton Vorontsov wrote:
-> On Mon, Apr 21, 2008 at 01:01:12PM -0700, David Brownell wrote:
 
-> > The way other platforms do this is to hav SOC-specific
-> > init code, and have board-specific initcalls call the
-> > relevant SOC-specific setup.
-> 
-> I don't know about other platforms other than PowerPC and some ARM,
-> of course. For example, PXA boards don't call any SOC specific code.
-> Instead, looking into reworked PXA code, I can see that there are
-> separate arch_initcalls() for the pxa25x, pxa27x, and pxa3xx SOCs.
+On Apr 21, 2008, at 5:12 PM, Benjamin Herrenschmidt wrote:
+>
+> On Mon, 2008-04-21 at 17:04 -0500, Kumar Gala wrote:
+>> On Apr 21, 2008, at 4:22 PM, Benjamin Herrenschmidt wrote:
+>>>
+>>>>
+>>>> _GLOBAL(__setup_cpu_603)
+>>>> -	b	setup_common_caches
+>>>> +	mflr	r4
+>>>> +BEGIN_FTR_SECTION
+>>>> +	bl	__init_fpu_registers
+>>>> +END_FTR_SECTION_IFCLR(CPU_FTR_FPU_UNAVAILABLE)
+>>>> +	bl	__init_fpu_registers
+>>>> +	bl	setup_common_caches
+>>>> +	mtlr	r4
+>>>> +	blr
+>>>> _GLOBAL(__setup_cpu_604)
+>>>> 	mflr	r4
+>>>> 	bl	setup_common_cache
+>>>
+>>> Has the feature fixup been perform yet when __setup_* is called ?
+>>
+>> Yes.  We call do_feature_fixups() in early_init and call
+>> call_setup_cpu() after than on 6xx (in head_32.S).
+>
+> Hrm. I think that may be the other way around on 64 bits... damn, I  
+> need
+> to consolidate these.
+>
+> I'd rather have the init code explicitely test for the features.
 
-Exactly:  SOC-specific initcalls.
+Ok, but we'd also need to fix setup_750_7400_hid0 and  
+setup_745x_specifics to test.
 
+There's a bit more cleanup that needs to be done here.  I'm not going  
+to worry about it for this patch since it covers handling a chip  
+errata and isn't any more "broken" than other bits of code in this file.
 
-> > Among other things that facilitates kernels that handle
-> > multiple SOCs (if they're closely-enough related).  That
-> > may not be used by many distros (handhelds.org being at
-> > least a partial exception), but it certainly helps cut
-> > the number of configurations that need build-testing.
-> 
-> Is this about QE_GPIO being user-selectable?
-
-No.  It's about "kernels that handle multiple SOCs".  Like
-for example pxa{25,27,3x}x ... or omap{16xx,17xx,5912}.
-
-Consider several ways to support a family of SOCs.
-
- - One way supports only one board at a time.  Testing
-   builds after arch level changes means rebuilding kernels
-   for each board ... quite possibly several dozen.
-
- - Another supports several boards, but only if they use
-   the same SOC.  Testing builds here takes fewer kernels;
-   one per SOC; better, but still routinely shortchanged.
-
- - Yet another way supports any number of boards, using
-   a variety of mostly-compatible SOCs.  This allows test
-   builds that support entire SOC families (e.g. OMAP1,
-   or OMAP2/OMAP3, or PXA XScale, etc).
-
-Test builds are a quality control thing.  If they're done
-regularly, it's less likely you'll push code upstream
-that can't build in some configuration.
-
-
-> And well, I'm not objecting for placing qe gpio code under arch/, too.
-> I'll resend this patch once again reverting its placement to arch/.
-
-OK, good.  Then I don't really have to be involved with that.
-
-- Dave
+- k 
