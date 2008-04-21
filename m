@@ -1,18 +1,22 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id 1B5B5DEDDC
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Apr 2008 02:21:25 +1000 (EST)
-Message-ID: <480CBEE0.9000104@ru.mvista.com>
-Date: Mon, 21 Apr 2008 20:20:48 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-MIME-Version: 1.0
-To: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
-Subject: Re: pci issue - wrong detection of pci ressources
-References: <48088F02.2060806@linux.vnet.ibm.com>	<1208566122.6958.425.camel@pasglop>	<480BA937.7050603@linux.vnet.ibm.com>	<1208727408.7009.0.camel@pasglop>	<480C80B6.30904@linux.vnet.ibm.com>	<480C87BD.8090207@ru.mvista.com>	<480C9FE2.4030601@linux.vnet.ibm.com>
-	<480CAFD2.2050108@ru.mvista.com>
-In-Reply-To: <480CAFD2.2050108@ru.mvista.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev@ozlabs.org, Hollis Blanchard <hollisb@us.ibm.com>
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 53337DEE0D
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Apr 2008 02:28:17 +1000 (EST)
+In-Reply-To: <20080421142826.GA19458@polina.dev.rtsoft.ru>
+References: <20080418190632.GA32204@polina.dev.rtsoft.ru>
+	<20080418190908.GA4407@polina.dev.rtsoft.ru>
+	<fa686aa40804210703iaa8251ctc125313a8e52f4ef@mail.gmail.com>
+	<20080421142826.GA19458@polina.dev.rtsoft.ru>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <4a0ef28ea7b12ffd518a44d5c5b850eb@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 1/5] [POWERPC] sysdev: implement FSL GTM support
+Date: Mon, 21 Apr 2008 18:28:10 +0200
+To: avorontsov@ru.mvista.com
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,14 +26,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello, I wrote:
+>>>  +static inline void gtm_ack_timer16(struct gtm_timer *tmr, u16 
+>>> events)
+>>>  +{
+>>>  +       out_be16(tmr->gtevr, events);
+>>>  +}
+>>
+>> Drop 'inline' and expect gcc to do the right thing.
+>
+> Not sure about newer gccs, but older complained about "defined but not
+> used" functions w/o inline keyword. I'm almost sure that this is still
+> true.
 
->    Ah, that's what happens -- BAR0 in functions 0/1 takes up the whole 
-> 265 MiB of the PCI memory space (128+128), so no place is left for other 
-> memory BARs.
+It is.  So why is it unused?  Because you put the code in the header
+file.  Can't you move it to the .c file instead?
 
-    What's interesting, the Sequoia/Rainier board user manual says that PCI 
-memory is 0x80000000 thru 0xbfffffff (i.e. 1 GiB), while the Linux code seem 
-to always have assumed only 0x[1]800000000 thru 0x[1]8fffffff...
+> I can surely use __maybe_unused, but "static inline" is pretty
+> settled tradition, plus this function is small enough anyway.
 
-WBR, Sergei
+All code in header files should be inline.  Code in implementation
+files should only be inline if you have a very good reason for
+doing so.  Same goes for __maybe_unused.
+
+
+Segher
