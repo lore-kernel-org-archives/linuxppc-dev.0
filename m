@@ -1,22 +1,23 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.240])
-	by ozlabs.org (Postfix) with ESMTP id B6A88DE349
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Apr 2008 23:21:17 +1000 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so470361anc.78
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Apr 2008 06:21:14 -0700 (PDT)
-Message-ID: <fa686aa40804210621h304c051ev3fd3c080dd0b8dda@mail.gmail.com>
-Date: Mon, 21 Apr 2008 07:21:14 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Sascha Hauer" <s.hauer@pengutronix.de>
-Subject: Re: [PATCH] [POWERPC] mpc5200: Switch mpc5200 dts files to dts-v1
-	format
-In-Reply-To: <20080421084337.GB5618@pengutronix.de>
+Return-Path: <paubert@iram.es>
+Received: from gra-lx1.iram.es (gra-lx1.iram.es [150.214.224.41])
+	by ozlabs.org (Postfix) with ESMTP id 6E5AADE472
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 Apr 2008 23:36:15 +1000 (EST)
+From: Gabriel Paubert <paubert@iram.es>
+Date: Mon, 21 Apr 2008 15:36:06 +0200
+To: Alexander van Heukelum <heukelum@fastmail.fm>
+Subject: Re: linux-next: x86-latest/powerpc-next merge conflict
+Message-ID: <20080421133606.GA27304@iram.es>
+References: <20080421191231.41a34aef.sfr@canb.auug.org.au>
+	<20080421095102.GB1666@elte.hu>
+	<1208776790.4613.1248992953@webmail.messagingengine.com>
+	<18444.34002.74202.564600@cargo.ozlabs.ibm.com>
+	<1208783233.25773.1249008469@webmail.messagingengine.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20080418160812.11897.5654.stgit@trillian.secretlab.ca>
-	<20080421084337.GB5618@pengutronix.de>
-Cc: linuxppc-dev@ozlabs.org, m8@semihalf.com
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1208783233.25773.1249008469@webmail.messagingengine.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Ingo Molnar <mingo@elte.hu>,
+	linux-next@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,62 +27,61 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Apr 21, 2008 at 2:43 AM, Sascha Hauer <s.hauer@pengutronix.de> wrote:
-> On Fri, Apr 18, 2008 at 09:10:04AM -0700, Grant Likely wrote:
->
->
-> > Update dts files to current format
->  >
->  > From: Grant Likely <grant.likely@secretlab.ca>
->  >
->  > Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
->  > ---
->  >
->  >  arch/powerpc/boot/dts/cm5200.dts    |   98 +++++++++++------------
->  >  arch/powerpc/boot/dts/lite5200.dts  |  132 ++++++++++++++++----------------
->  >  arch/powerpc/boot/dts/lite5200b.dts |  146 +++++++++++++++++------------------
->  >  arch/powerpc/boot/dts/motionpro.dts |  118 ++++++++++++++--------------
->  >  arch/powerpc/boot/dts/tqm5200.dts   |   80 ++++++++++---------
->  >  5 files changed, 286 insertions(+), 288 deletions(-)
->  >
->  > diff --git a/arch/powerpc/boot/dts/cm5200.dts b/arch/powerpc/boot/dts/cm5200.dts
->  > index c6ca631..2f74cc4 100644
->  > --- a/arch/powerpc/boot/dts/cm5200.dts
->  > +++ b/arch/powerpc/boot/dts/cm5200.dts
->  > @@ -10,11 +10,7 @@
->  >   * option) any later version.
->  >   */
->  >
->  > -/*
->  > - * WARNING: Do not depend on this tree layout remaining static just yet.
->  > - * The MPC5200 device tree conventions are still in flux
->  > - * Keep an eye on the linuxppc-dev mailing list for more details
->  > - */
->  > +/dts-v1/;
->  >
->  >  / {
->  >       model = "schindler,cm5200";
->  > @@ -29,10 +25,10 @@
->  >               PowerPC,5200@0 {
->  >                       device_type = "cpu";
->  >                       reg = <0>;
->  > -                     d-cache-line-size = <20>;
->  > -                     i-cache-line-size = <20>;
->  > -                     d-cache-size = <4000>;          // L1, 16K
->  > -                     i-cache-size = <4000>;          // L1, 16K
->  > +                     d-cache-line-size = <32>;
->  > +                     i-cache-line-size = <32>;
->
->  Has the standard number format changed to decimal lately? Otherwise this
->  looks wrong. There are more occurences of this in the other dts files.
-
-Yes, that is the major change in v1 of the dts format.  It uses C
-style number format.
-
-Cheers,
-g.
+On Mon, Apr 21, 2008 at 03:07:13PM +0200, Alexander van Heukelum wrote:
+> On Mon, 21 Apr 2008 22:13:06 +1000, "Paul Mackerras" <paulus@samba.org>
+> said:
+> > Alexander van Heukelum writes:
+> > > Powerpc would pick up an optimized version via this chain: generic fls64
+> > > ->
+> > > powerpc __fls --> __ilog2 --> asm (PPC_CNTLZL "%0,%1" : "=r" (lz) : "r"
+> > > (x)).
+> > 
+> > Why wouldn't powerpc continue to use the fls64 that I have in there
+> > now?
+> 
+> In Linus' tree that would be the generic one that uses (the 32-bit)
+> fls():
+> 
+> static inline int fls64(__u64 x)
+> {
+>         __u32 h = x >> 32;
+>         if (h)
+>                 return fls(h) + 32;
+>         return fls(x);
+> }
+> 
+> > > However, the generic version of fls64 first tests the argument for zero.
+> > > From
+> > > your code I derive that the count-leading-zeroes instruction for
+> > > argument zero
+> > > is defined as cntlzl(0) == BITS_PER_LONG.
+> > 
+> > That is correct.  If the argument is 0 then all of the zero bits are
+> > leading zeroes. :)
+> 
+> So... for 64-bit powerpc it makes sense to have its own implementation
+> and ignore the (improved) generic one and for 32-bit powerpc the generic
+> implementation of fls64 is fine. The current situation in linux-next
+> seems
+> optimal to me.
 
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Not so sure, the optimal version of fls64 for 32 bit PPC seems to be:
+
+	cntlzw	ch,h ; ch = fls32(h) where h = x>>32
+	cntlzw	cl,l ; cl = fls32(l) where l = (__u32)x
+	srwi	t1,ch,5
+	neg	t1,t1	; t1 = (h==0) ? -1 : 0
+	and	cl,t1,cl ; cl = (h==0) ? cl : 0
+	add	result,ch,cl
+
+That's only 6 instructions without any branch, although the dependency 
+chain is 5 instructions long. Good luck getting the compiler to 
+generate something as compact as this.
+
+Don't worry about the number of cntlzw, it's one clock on all 32 bit 
+PPC processors I know, some may even be able to perform 2 or 3 cntlzw 
+per clock.
+
+	Regards,
+	Gabriel
