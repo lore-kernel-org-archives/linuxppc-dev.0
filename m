@@ -1,23 +1,26 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 83713DDFB1
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Apr 2008 07:14:10 +1000 (EST)
-Subject: Re: pci issue - wrong detection of pci ressources
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
-In-Reply-To: <480C80B6.30904@linux.vnet.ibm.com>
-References: <48088F02.2060806@linux.vnet.ibm.com>
-	<1208566122.6958.425.camel@pasglop>
-	<480BA937.7050603@linux.vnet.ibm.com>
-	<1208727408.7009.0.camel@pasglop> <480C80B6.30904@linux.vnet.ibm.com>
-Content-Type: text/plain
-Date: Tue, 22 Apr 2008 07:13:46 +1000
-Message-Id: <1208812426.9640.44.camel@pasglop>
-Mime-Version: 1.0
-Cc: Hollis Blanchard <hollisb@us.ibm.com>, linuxppc-dev@ozlabs.org
-Reply-To: benh@kernel.crashing.org
+Return-Path: <glikely@secretlab.ca>
+Received: from hs-out-0708.google.com (hs-out-0708.google.com [64.233.178.246])
+	by ozlabs.org (Postfix) with ESMTP id 37A96DE05A
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Apr 2008 07:15:35 +1000 (EST)
+Received: by hs-out-0708.google.com with SMTP id z77so1158411hsz.9
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 Apr 2008 14:15:34 -0700 (PDT)
+Message-ID: <fa686aa40804211415q7a477651q3b1b516a5fb262e5@mail.gmail.com>
+Date: Mon, 21 Apr 2008 15:15:34 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: avorontsov@ru.mvista.com
+Subject: Re: [PATCH 4/5] [POWERPC] QE: implement support for the GPIO LIB API
+In-Reply-To: <20080421164128.GA28561@polina.dev.rtsoft.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20080418190632.GA32204@polina.dev.rtsoft.ru>
+	<20080418190959.GD4407@polina.dev.rtsoft.ru>
+	<fa686aa40804210719x475698f8n3b82e795547bfc70@mail.gmail.com>
+	<20080421143313.GB18008@polina.dev.rtsoft.ru>
+	<20080421144938.GA25627@polina.dev.rtsoft.ru>
+	<fa686aa40804210758r70a5906eqb090cd3d8b797317@mail.gmail.com>
+	<20080421164128.GA28561@polina.dev.rtsoft.ru>
+Cc: David Brownell <david-b@pacbell.net>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,28 +30,54 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Mon, Apr 21, 2008 at 10:41 AM, Anton Vorontsov
+<avorontsov@ru.mvista.com> wrote:
+> On Mon, Apr 21, 2008 at 08:58:09AM -0600, Grant Likely wrote:
+>  > Its not great.  It has a boot time impact for every platform compiled
+>  > into the kernel.  The problem gets worse every time another block of
+>  > code uses this method.  Personally I prefer platform code calling it
+>  > explicitly.
+>  >
+>  > Making it an of_platform device would also eliminate that problem, but
+>  > you'd need a method to synchronize the driver with its users.
+>  >
+>  > I'm not going to raise a big stink about it, but the issue should not
+>  > be ignored.
+>
+>  Heh.. how QE GPIO is different from FSL GTM then? Should I call
+>  fsl_gtm_init() from the board file too? For the every board? I do
+>  believe that years later someone will show up with something like this:
+>
+>
+>   From: J. Random Hacker
+>   Subject: [POWERPC] cleanup board initialization code
+>
+>   This patch removes vast amount of machine_arch_initcall()s that were
+>   used to solely initialize some hardware, like this:
+>
+>   qe_add_gpio_chips();
+>   fsl_gtm_init();
+>   fsl_spi_init();
 
-On Mon, 2008-04-21 at 13:55 +0200, Christian Ehrhardt wrote:
-> Benjamin Herrenschmidt wrote:
-> >> Yes you're right. Early at the pci initialization are errors of the allocation for pi ressources.
-> >> And that are exactly the ressources failing later, so that pci initialization seem to be the reason for my problem.
-> >> Was there any simple solution (e.g. just somehow increase memory reserved for pci) when you came across that issue Johan ?
-> > 
-> > Hrm... I was expecting to see a lot more output here, make sure you have
-> > "debug" on your command line (or enable early debug output, same
-> > effect).
-> 
-> There is nothing more even with debug in kernel command line.
+Or have a soc-level helper function for calling them for you; but yes.
 
-Weird. pcibios_fixup_resources() should have printed things that I
-didn't see in your log, which is why I asked...
+And, no, we shouldn't have a vast array of individual initcalls
+because the platform code shouldn't be that large.  As much as
+possible, multiple boards should be supported by the same platform
+code.  I argue that most boards using the same SoC should use the same
+platform code. (see platforms/52xx/mpc5200_simple.c)
 
-I -think- your card is just asking too much, more than what we know how
-to assign, but that doesn't explain why it used to work. I'll have to
-dig a bit more.
+Individual calls has the added advantage that if a board port needs
+those functions to *not* be called (for whatever reason) then it has
+the ability to not call them.
 
-You can assign more by changing the "ranges" property in the .dts, I
-would expect the 44x PCI code I wrote to automatically adjust.
+It is for the same reason that the platform code is responsible for
+calling of_platform_bus_probe() instead of it being an initcall; it
+give the platform code control over the device registrations.
 
 Cheers,
-Ben.
+g.
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
