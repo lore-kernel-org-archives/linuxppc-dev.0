@@ -1,20 +1,22 @@
-Return-Path: <avorontsov@dev.rtsoft.ru>
-Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
-	by ozlabs.org (Postfix) with SMTP id 4EF78DEA06
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Apr 2008 00:28:28 +1000 (EST)
-Date: Mon, 21 Apr 2008 18:28:26 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH 1/5] [POWERPC] sysdev: implement FSL GTM support
-Message-ID: <20080421142826.GA19458@polina.dev.rtsoft.ru>
-References: <20080418190632.GA32204@polina.dev.rtsoft.ru>
-	<20080418190908.GA4407@polina.dev.rtsoft.ru>
-	<fa686aa40804210703iaa8251ctc125313a8e52f4ef@mail.gmail.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.244])
+	by ozlabs.org (Postfix) with ESMTP id 128CADE02C
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Apr 2008 00:30:04 +1000 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so475030anc.78
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 Apr 2008 07:30:03 -0700 (PDT)
+Message-ID: <fa686aa40804210730s2f356d92ib4247423d55911cd@mail.gmail.com>
+Date: Mon, 21 Apr 2008 08:30:02 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Jochen Friedrich" <jochen@scram.de>
+Subject: Re: [PATCH2/2] [POWERPC] CPM1: implement GPIO LIB API on CPM1
+	Freescale SoC.
+In-Reply-To: <4808D606.5070309@scram.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=windows-1251
-In-Reply-To: <fa686aa40804210703iaa8251ctc125313a8e52f4ef@mail.gmail.com>
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: avorontsov@ru.mvista.com
+Content-Type: text/plain; charset=ISO-8859-1
+References: <4808D606.5070309@scram.de>
+Cc: Scott Wood <scottwood@freescale.com>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,618 +26,356 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Apr 21, 2008 at 08:03:31AM -0600, Grant Likely wrote:
-> 2008/4/18 Anton Vorontsov <avorontsov@ru.mvista.com>:
-> > GTM stands for General-purpose Timers Module and able to generate
-> >  timer{1,2,3,4} interrupts. These timers are used by the drivers that
-> >  need time precise interrupts (like for USB transactions scheduling for
-> >  the Freescale USB Host controller as found in some QE and CPM chips),
-> >  or these timers could be used as wakeup events from the CPU deep-sleep
-> >  mode.
-> 
-> Comments below.
-> 
-> >  diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
-> >  index 4cc7800..827b630 100644
-> >  --- a/Documentation/powerpc/booting-without-of.txt
-> >  +++ b/Documentation/powerpc/booting-without-of.txt
-> >  @@ -57,7 +57,8 @@ Table of Contents
-> >        n) 4xx/Axon EMAC ethernet nodes
-> >        o) Xilinx IP cores
-> >        p) Freescale Synchronous Serial Interface
-> >  -         q) USB EHCI controllers
-> >  +      q) USB EHCI controllers
-> >  +      r) Freescale General-purpose Timers Module
-> >
-> >    VII - Marvell Discovery mv64[345]6x System Controller chips
-> >      1) The /system-controller node
-> >  @@ -2825,6 +2826,35 @@ platforms are moved over to use the flattened-device-tree model.
-> >                    big-endian;
-> >            };
-> >
-> >  +    r) Freescale General-purpose Timers Module
-> >  +
-> >  +    Required properties:
-> >  +      - compatible : should be "fsl,gtm" ("fsl,qe-gtm" in addition for QE
-> >  +                     GTMs or "fsl,cpm2-gtm" for CPM2 GTMs).
-> 
-> I don't think this is specific enough.  It is a very real possibility
-> for Freescale to produce another part with a "general purpose timers
-> module" that isn't register level compatible (and fsl,i2c is an
-> example of what not to do).  The compatible string should include the
-> exact chip version.  Newer parts can also claim compatibility with
-> older ones.
+On Fri, Apr 18, 2008 at 11:10 AM, Jochen Friedrich <jochen@scram.de> wrote:
+> This patch implement GPIO LIB support for the CPM1 GPIOs.
+>
+>  Signed-off-by: Jochen Friedrich <jochen@scram.de>
+>  ---
+>   arch/powerpc/platforms/8xx/Kconfig |   10 ++
+>   arch/powerpc/sysdev/cpm1.c         |  261 +++++++++++++++++++++++++++++++++++-
+>   2 files changed, 266 insertions(+), 5 deletions(-)
 
-Ok, I'll expand this to fsl,<cpu-specific>-gtm and
-fsl,<cpu-specific>-{qe,cpm2}-gtm.
+2 quick comments:
 
-> Defining a 'generic' compatible value is also known as "making stuff up".  :-)
-> 
-> >  +      - reg : should contain gtm registers location and length (0x40).
-> >  +      - interrupts : should contain four interrupts.
-> >  +      - interrupt-parent : interrupt source phandle.
-> >  +      - clock-frequency : specifies the frequency driving the timer.
-> >  +
-> >  +    Example:
-> >  +
-> >  +    timer@500 {
-> >  +       compatible = "fsl,gtm";
-> >  +       reg = <0x500 0x40>;
-> >  +       interrupts = <90 8 78 8 84 8 72 8>;
-> >  +       interrupt-parent = <&ipic>;
-> >  +       /* filled by u-boot */
-> >  +       clock-frequency = <0>;
-> >  +    };
-> >  +
-> >  +    timer@440 {
-> >  +       compatible = "fsl,qe-gtm", "fsl,gtm";
-> >  +       reg = <0x440 0x40>;
-> >  +       interrupts = <12 13 14 15>;
-> >  +       interrupt-parent = <&qeic>;
-> >  +       /* filled by u-boot */
-> >  +       clock-frequency = <0>;
-> >  +    };
-> >
-> >   VII - Marvell Discovery mv64[345]6x System Controller chips
-> >   ===========================================================
-> >  diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> >  index 7f2f126..ad874e4 100644
-> >  --- a/arch/powerpc/Kconfig
-> >  +++ b/arch/powerpc/Kconfig
-> >  @@ -525,6 +525,11 @@ config FSL_LBC
-> >         help
-> >           Freescale Localbus support
-> >
-> >  +config FSL_GTM
-> >  +       bool
-> >  +       help
-> >  +         Freescale General-purpose Timers support
-> >  +
-> >   # Yes MCA RS/6000s exist but Linux-PPC does not currently support any
-> >   config MCA
-> >         bool
-> >  diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile
-> >  index 6d386d0..9d3ddd2 100644
-> >  --- a/arch/powerpc/sysdev/Makefile
-> >  +++ b/arch/powerpc/sysdev/Makefile
-> >  @@ -13,6 +13,7 @@ obj-$(CONFIG_MMIO_NVRAM)      += mmio_nvram.o
-> >   obj-$(CONFIG_FSL_SOC)          += fsl_soc.o
-> >   obj-$(CONFIG_FSL_PCI)          += fsl_pci.o
-> >   obj-$(CONFIG_FSL_LBC)          += fsl_lbc.o
-> >  +obj-$(CONFIG_FSL_GTM)          += fsl_gtm.o
-> >   obj-$(CONFIG_RAPIDIO)          += fsl_rio.o
-> >   obj-$(CONFIG_TSI108_BRIDGE)    += tsi108_pci.o tsi108_dev.o
-> >   obj-$(CONFIG_QUICC_ENGINE)     += qe_lib/
-> >  diff --git a/arch/powerpc/sysdev/fsl_gtm.c b/arch/powerpc/sysdev/fsl_gtm.c
-> >  new file mode 100644
-> >  index 0000000..d29df56
-> >  --- /dev/null
-> >  +++ b/arch/powerpc/sysdev/fsl_gtm.c
-> >  @@ -0,0 +1,365 @@
-> >  +/*
-> >  + * Freescale General-purpose Timers Module
-> >  + *
-> >  + * Copyright (c) Freescale Semicondutor, Inc. 2006.
-> >  + *               Shlomi Gridish <gridish@freescale.com>
-> >  + *               Jerry Huang <Chang-Ming.Huang@freescale.com>
-> >  + * Copyright (c) MontaVista Software, Inc. 2008.
-> >  + *               Anton Vorontsov <avorontsov@ru.mvista.com>
-> >  + *
-> >  + * This program is free software; you can redistribute  it and/or modify it
-> >  + * under  the terms of  the GNU General  Public License as published by the
-> >  + * Free Software Foundation;  either version 2 of the  License, or (at your
-> >  + * option) any later version.
-> >  + */
-> >  +
-> >  +#include <linux/kernel.h>
-> >  +#include <linux/errno.h>
-> >  +#include <linux/io.h>
-> >  +#include <linux/of.h>
-> >  +#include <linux/spinlock.h>
-> >  +#include <linux/bitops.h>
-> >  +#include <asm/fsl_gtm.h>
-> >  +
-> >  +/**
-> >  + * gtm_get_timer - request GTM timer to use it with the rest of GTM API
-> >  + * @width:     timer width (only 16 bits wide timers implemented so far)
-> >  + *
-> >  + * This function reserves GTM timer for later use. It returns gtm_timer
-> >  + * structure to use with the rest of GTM API, you should use timer->irq
-> >  + * to manage timer interrupt.
-> >  + */
-> >  +struct gtm_timer *gtm_get_timer(int width)
-> >  +{
-> >  +       struct device_node *np;
-> >  +       struct gtm *gtm = NULL;
-> >  +       int i;
-> >  +
-> >  +       if (width != 16)
-> >  +               return ERR_PTR(-ENOSYS);
-> >  +
-> >  +       for_each_compatible_node(np, NULL, "fsl,gtm") {
-> >  +               if (!np->data) {
-> >  +                       WARN_ON(1);
-> >  +                       continue;
-> >  +               }
-> >  +               gtm = np->data;
-> >  +
-> >  +               spin_lock_irq(&gtm->lock);
-> >  +
-> >  +               for (i = 0; i < ARRAY_SIZE(gtm->timers); i++) {
-> >  +                       if (!gtm->timers[i].requested) {
-> >  +                               gtm->timers[i].requested = true;
-> >  +                               spin_unlock_irq(&gtm->lock);
-> >  +                               of_node_put(np);
-> >  +                               return &gtm->timers[i];
-> >  +                       }
-> >  +               }
-> >  +
-> >  +               spin_unlock_irq(&gtm->lock);
-> >  +       }
-> >  +
-> >  +       if (gtm)
-> >  +               return ERR_PTR(-EBUSY);
-> >  +       return ERR_PTR(-ENODEV);
-> >  +}
-> >  +EXPORT_SYMBOL(gtm_get_timer);
-> 
-> This isn't a very efficient construct.  You've already located all of
-> the relevant nodes in the gtm_init() function.  Searching the device
-> tree is not efficient, so it should be avoided and only be performed
-> once.  Can you move the extraction of data from the tree to gtm_init()
-> and only parse the drivers list of timers in this function?
+1. You need to include binding documentation to booting without of
+2. You need to specifiy exact chip names in your compatible string.
+"fsl,cpm1-pario-<bank>" is a made up thing.
 
-Well, yes. I can create a list, and place all the GTMs in there.
+Cheers,
+g.
 
-> >  +
-> >  +/**
-> >  + * gtm_get_specific_timer - request specific GTM timer
-> >  + * @gtm:       specific GTM, pass here GTM's device_node->data
-> >  + * @timer:     specific timer number, Timer1 is 0.
-> >  + * @width:     timer width (only 16 bits wide timers implemented so far)
-> >  + *
-> >  + * This function reserves GTM timer for later use. It returns gtm_timer
-> >  + * structure to use with the rest of GTM API, you should use timer->irq
-> >  + * to manage timer interrupt.
-> >  + */
-> >  +struct gtm_timer *gtm_get_specific_timer(struct gtm *gtm, int timer, int width)
-> >  +{
-> >  +       struct gtm_timer *ret = ERR_PTR(-EBUSY);
-> >  +
-> >  +       if (width != 16)
-> >  +               return ERR_PTR(-ENOSYS);
-> >  +
-> >  +       spin_lock_irq(&gtm->lock);
-> >  +
-> >  +       if (gtm->timers[timer].requested)
-> >  +               goto out;
-> >  +
-> >  +       ret = &gtm->timers[timer];
-> >  +       ret->requested = true;
-> >  +
-> >  +out:
-> >  +       spin_unlock_irq(&gtm->lock);
-> >  +       return ret;
-> >  +}
-> >  +EXPORT_SYMBOL(gtm_get_specific_timer);
-> >  +
-> >  +/**
-> >  + * gtm_put_timer - release GTM timer
-> >  + * @width:     timer width (only 16 bits wide timers implemented so far)
-> >  + *
-> >  + * This function releases GTM timer so others may request it.
-> >  + */
-> >  +void gtm_put_timer(struct gtm_timer *tmr)
-> >  +{
-> >  +       spin_lock_irq(&tmr->gtm->lock);
-> >  +
-> >  +       tmr->requested = false;
-> >  +
-> >  +       spin_unlock_irq(&tmr->gtm->lock);
-> >  +}
-> >  +EXPORT_SYMBOL(gtm_put_timer);
-> >  +
-> >  +/*
-> >  + * This is back-end for the exported functions, it's used to reset single
-> >  + * timer in reference mode.
-> >  + */
-> >  +static int gtm_reset_ref_timer16(struct gtm_timer *tmr, int frequency,
-> >  +                                int reference_value, bool free_run)
-> >  +{
-> >  +       struct gtm *gtm = tmr->gtm;
-> >  +       int num = tmr - &gtm->timers[0];
-> >  +       unsigned int prescaler;
-> >  +       u8 iclk = GTMDR_ICLK_ICLK;
-> >  +       u8 psr;
-> >  +       u8 sps;
-> >  +       unsigned long flags;
-> >  +       int max_prescaler = 256 * 256 * 16;
-> >  +
-> >  +       /* CPM2 doesn't have primary prescaler */
-> >  +       if (!tmr->gtpsr)
-> >  +               max_prescaler /= 256;
-> >  +
-> >  +       prescaler = gtm->clock / frequency;
-> >  +       /*
-> >  +        * We have two 8 bit prescalers -- primary and secondary (psr, sps),
-> >  +        * plus "slow go" mode (clk / 16). So, total prescale value is
-> >  +        * 16 * (psr + 1) * (sps + 1). Though, for CPM2 GTMs we losing psr.
-> >  +        */
-> >  +       if (prescaler > max_prescaler)
-> >  +               return -EINVAL;
-> >  +
-> >  +       if (prescaler > max_prescaler / 16) {
-> >  +               iclk = GTMDR_ICLK_SLGO;
-> >  +               prescaler /= 16;
-> >  +       }
-> >  +
-> >  +       if (prescaler <= 256) {
-> >  +               psr = 0;
-> >  +               sps = prescaler - 1;
-> >  +       } else {
-> >  +               psr = 256 - 1;
-> >  +               sps = prescaler / 256 - 1;
-> >  +       }
-> >  +
-> >  +       spin_lock_irqsave(&gtm->lock, flags);
-> >  +
-> >  +       /*
-> >  +        * Properly reset timers: stop, reset, set up prescalers, reference
-> >  +        * value and clear event register.
-> >  +        */
-> >  +       clrsetbits_8(tmr->gtcfr, ~(GTCFR_STP(num) | GTCFR_RST(num)),
-> >  +                                GTCFR_STP(num) | GTCFR_RST(num));
-> >  +
-> >  +       setbits8(tmr->gtcfr, GTCFR_STP(num));
-> >  +
-> >  +       if (tmr->gtpsr)
-> >  +               out_be16(tmr->gtpsr, psr);
-> >  +       clrsetbits_be16(tmr->gtmdr, 0xFFFF, iclk | GTMDR_SPS(sps) |
-> >  +                       GTMDR_ORI | (free_run ? GTMDR_FRR : 0));
-> >  +       out_be16(tmr->gtcnr, 0);
-> >  +       out_be16(tmr->gtrfr, reference_value);
-> >  +       out_be16(tmr->gtevr, 0xFFFF);
-> >  +
-> >  +       /* Let it be. */
-> >  +       clrbits8(tmr->gtcfr, GTCFR_STP(num));
-> >  +
-> >  +       spin_unlock_irqrestore(&gtm->lock, flags);
-> >  +
-> >  +       return 0;
-> >  +}
-> >  +/**
-> >  + * gtm_reset_timer16 - reset 16 bit timer with arbitrary precision
-> >  + * @tmr:       pointer to the gtm_timer structure obtained from gtm_get_timer
-> >  + * @usec:      timer interval in microseconds
-> >  + * @reload:    if set, the timer will reset upon expiry rather than
-> >  + *             continue running free.
-> >  + *
-> >  + * This function (re)sets the GTM timer so that it counts up to the requested
-> >  + * interval value, and fires the interrupt when the value is reached. This
-> >  + * function will reduce the precision of the timer as needed in order for the
-> >  + * requested timeout to fit in a 16-bit register.
-> >  + */
-> >  +int gtm_reset_timer16(struct gtm_timer *tmr, unsigned long usec, bool reload)
-> >  +{
-> >  +       /* quite obvious, frequency which is enough for µSec precision */
-> >  +       int freq = 1000000;
-> >  +       unsigned int bit;
-> >  +
-> >  +       bit = fls_long(usec);
-> >  +       if (bit > 15) {
-> >  +               freq >>= bit - 15;
-> >  +               usec >>= bit - 15;
-> >  +       }
-> >  +
-> >  +       if (!freq)
-> >  +               return -EINVAL;
-> >  +
-> >  +       return gtm_reset_ref_timer16(tmr, freq, usec, reload);
-> >  +}
-> >  +EXPORT_SYMBOL(gtm_reset_timer16);
-> >  +
-> >  +/**
-> >  + * gtm_reset_utimer16 - reset 16 bits timer
-> >  + * @tmr:       pointer to the gtm_timer structure obtained from gtm_get_timer
-> >  + * @usec:      timer interval in microseconds
-> >  + * @reload:    if set, the timer will reset upon expiry rather than
-> >  + *             continue running free.
-> >  + *
-> >  + * This function (re)sets GTM timer so that it counts up to the requested
-> >  + * interval value, and fires the interrupt when the value is reached. If reload
-> >  + * flag was set, timer will also reset itself upon reference value, otherwise
-> >  + * it continues to increment.
-> >  + */
-> >  +int gtm_reset_utimer16(struct gtm_timer *tmr, u16 usec, bool reload)
-> >  +{
-> >  +       /* quite obvious, frequency which is enough for µSec precision */
-> >  +       const int freq = 1000000;
-> >  +
-> >  +       /*
-> >  +        * We can lower the frequency (and probably power consumption) by
-> >  +        * dividing both frequency and usec by 2 until there is no remainder.
-> >  +        * But we won't bother with this unless savings are measured, so just
-> >  +        * run the timer as is.
-> >  +        */
-> >  +
-> >  +       return gtm_reset_ref_timer16(tmr, freq, usec, reload);
-> >  +}
-> >  +EXPORT_SYMBOL(gtm_reset_utimer16);
-> >  +
-> >  +/**
-> >  + * gtm_stop_timer16 - stop single timer
-> >  + * @tmr:       pointer to the gtm_timer structure obtained from gtm_get_timer
-> >  + *
-> >  + * This function simply stops the GTM timer.
-> >  + */
-> >  +void gtm_stop_timer16(struct gtm_timer *tmr)
-> >  +{
-> >  +       struct gtm *gtm = tmr->gtm;
-> >  +       int num = tmr - &gtm->timers[0];
-> >  +       unsigned long flags;
-> >  +
-> >  +       spin_lock_irqsave(&gtm->lock, flags);
-> >  +
-> >  +       setbits8(tmr->gtcfr, GTCFR_STP(num));
-> >  +       out_be16(tmr->gtevr, 0xFFFF);
-> >  +
-> >  +       spin_unlock_irqrestore(&gtm->lock, flags);
-> >  +}
-> >  +EXPORT_SYMBOL(gtm_stop_timer16);
-> >  +
-> >  +static void __init gtm_set_shortcuts(struct device_node *np,
-> >  +                                    struct gtm_timer *timers,
-> >  +                                    struct gtm_timers_regs __iomem *regs)
-> >  +{
-> >  +       /*
-> >  +        * Yeah, I don't like this either, but timers' registers a bit messed,
-> >  +        * so we have to provide shortcuts to write timer independent code.
-> >  +        * Alternative option is to create gt*() accessors, but that will be
-> >  +        * even uglier and cryptic.
-> >  +        */
-> >  +       timers[0].gtcfr = &regs->gtcfr1;
-> >  +       timers[0].gtmdr = &regs->gtmdr1;
-> >  +       timers[0].gtcnr = &regs->gtcnr1;
-> >  +       timers[0].gtrfr = &regs->gtrfr1;
-> >  +       timers[0].gtevr = &regs->gtevr1;
-> >  +
-> >  +       timers[1].gtcfr = &regs->gtcfr1;
-> >  +       timers[1].gtmdr = &regs->gtmdr2;
-> >  +       timers[1].gtcnr = &regs->gtcnr2;
-> >  +       timers[1].gtrfr = &regs->gtrfr2;
-> >  +       timers[1].gtevr = &regs->gtevr2;
-> >  +
-> >  +       timers[2].gtcfr = &regs->gtcfr2;
-> >  +       timers[2].gtmdr = &regs->gtmdr3;
-> >  +       timers[2].gtcnr = &regs->gtcnr3;
-> >  +       timers[2].gtrfr = &regs->gtrfr3;
-> >  +       timers[2].gtevr = &regs->gtevr3;
-> >  +
-> >  +       timers[3].gtcfr = &regs->gtcfr2;
-> >  +       timers[3].gtmdr = &regs->gtmdr4;
-> >  +       timers[3].gtcnr = &regs->gtcnr4;
-> >  +       timers[3].gtrfr = &regs->gtrfr4;
-> >  +       timers[3].gtevr = &regs->gtevr4;
-> >  +
-> >  +       /* CPM2 doesn't have primary prescaler */
-> >  +       if (!of_device_is_compatible(np, "fsl,cpm2-gtm")) {
-> >  +               timers[0].gtpsr = &regs->gtpsr1;
-> >  +               timers[1].gtpsr = &regs->gtpsr2;
-> >  +               timers[2].gtpsr = &regs->gtpsr3;
-> >  +               timers[3].gtpsr = &regs->gtpsr4;
-> >  +       }
-> >  +}
-> >  +
-> >  +static int __init gtm_init(void)
-> >  +{
-> >  +       struct device_node *np;
-> >  +
-> >  +       for_each_compatible_node(np, NULL, "fsl,gtm") {
-> >  +               int i;
-> >  +               struct gtm *gtm;
-> >  +               const u32 *clock;
-> >  +               int size;
-> >  +
-> >  +               gtm = kzalloc(sizeof(*gtm), GFP_KERNEL);
-> >  +               if (!gtm) {
-> >  +                       pr_err("%s: unable to allocate memory\n",
-> >  +                               np->full_name);
-> >  +                       continue;
-> >  +               }
-> >  +
-> >  +               spin_lock_init(&gtm->lock);
-> >  +
-> >  +               clock = of_get_property(np, "clock-frequency", &size);
-> >  +               if (!clock || size != sizeof(*clock)) {
-> >  +                       pr_err("%s: no clock-frequency\n", np->full_name);
-> >  +                       goto err;
-> >  +               }
-> >  +               gtm->clock = *clock;
-> >  +
-> >  +               for (i = 0; i < ARRAY_SIZE(gtm->timers); i++) {
-> >  +                       int ret;
-> >  +                       struct resource irq;
-> >  +
-> >  +                       ret = of_irq_to_resource(np, i, &irq);
-> >  +                       if (ret == NO_IRQ) {
-> >  +                               pr_err("%s: not enough interrupts specified\n",
-> >  +                                      np->full_name);
-> >  +                               goto err;
-> >  +                       }
-> >  +                       gtm->timers[i].irq = irq.start;
-> >  +                       gtm->timers[i].gtm = gtm;
-> >  +               }
-> >  +
-> >  +               gtm->regs = of_iomap(np, 0);
-> >  +               if (!gtm->regs) {
-> >  +                       pr_err("%s: unable to iomap registers\n",
-> >  +                              np->full_name);
-> >  +                       goto err;
-> >  +               }
-> >  +
-> >  +               gtm_set_shortcuts(np, gtm->timers, gtm->regs);
-> >  +
-> >  +               /* We don't want to lose the node and its ->data */
-> >  +               of_node_get(np);
-> >  +               np->data = gtm;
-> >  +
-> >  +               continue;
-> >  +err:
-> >  +               kfree(gtm);
-> >  +       }
-> >  +       return 0;
-> >  +}
-> >  +arch_initcall(gtm_init);
-> >  diff --git a/include/asm-powerpc/fsl_gtm.h b/include/asm-powerpc/fsl_gtm.h
-> >  new file mode 100644
-> >  index 0000000..3eafb21
-> >  --- /dev/null
-> >  +++ b/include/asm-powerpc/fsl_gtm.h
-> >  @@ -0,0 +1,108 @@
-> >  +/*
-> >  + * Freescale General-purpose Timers Module
-> >  + *
-> >  + * Copyright (c) Freescale Semicondutor, Inc. 2006.
-> >  + *               Shlomi Gridish <gridish@freescale.com>
-> >  + *               Jerry Huang <Chang-Ming.Huang@freescale.com>
-> >  + * Copyright (c) MontaVista Software, Inc. 2008.
-> >  + *               Anton Vorontsov <avorontsov@ru.mvista.com>
-> >  + *
-> >  + * This program is free software; you can redistribute  it and/or modify it
-> >  + * under  the terms of  the GNU General  Public License as published by the
-> >  + * Free Software Foundation;  either version 2 of the  License, or (at your
-> >  + * option) any later version.
-> >  + */
-> >  +
-> >  +#ifndef __ASM_FSL_GTM_H
-> >  +#define __ASM_FSL_GTM_H
-> >  +
-> >  +#include <linux/types.h>
-> >  +#include <linux/spinlock.h>
-> >  +#include <linux/io.h>
-> >  +
-> >  +#define GTCFR_STP(x)           ((x) & 1 ? 1 << 5 : 1 << 1)
-> >  +#define GTCFR_RST(x)           ((x) & 1 ? 1 << 4 : 1 << 0)
-> >  +
-> >  +#define GTMDR_ICLK_MASK                (3 << 1)
-> >  +#define GTMDR_ICLK_ICAS                (0 << 1)
-> >  +#define GTMDR_ICLK_ICLK                (1 << 1)
-> >  +#define GTMDR_ICLK_SLGO                (2 << 1)
-> >  +#define GTMDR_FRR              (1 << 3)
-> >  +#define GTMDR_ORI              (1 << 4)
-> >  +#define GTMDR_SPS(x)           ((x) << 8)
-> >  +
-> >  +struct gtm_timers_regs {
-> >  +       u8      gtcfr1;         /* Timer 1, Timer 2 global config register */
-> >  +       u8      res0[0x3];
-> >  +       u8      gtcfr2;         /* Timer 3, timer 4 global config register */
-> >  +       u8      res1[0xB];
-> >  +       __be16  gtmdr1;         /* Timer 1 mode register */
-> >  +       __be16  gtmdr2;         /* Timer 2 mode register */
-> >  +       __be16  gtrfr1;         /* Timer 1 reference register */
-> >  +       __be16  gtrfr2;         /* Timer 2 reference register */
-> >  +       __be16  gtcpr1;         /* Timer 1 capture register */
-> >  +       __be16  gtcpr2;         /* Timer 2 capture register */
-> >  +       __be16  gtcnr1;         /* Timer 1 counter */
-> >  +       __be16  gtcnr2;         /* Timer 2 counter */
-> >  +       __be16  gtmdr3;         /* Timer 3 mode register */
-> >  +       __be16  gtmdr4;         /* Timer 4 mode register */
-> >  +       __be16  gtrfr3;         /* Timer 3 reference register */
-> >  +       __be16  gtrfr4;         /* Timer 4 reference register */
-> >  +       __be16  gtcpr3;         /* Timer 3 capture register */
-> >  +       __be16  gtcpr4;         /* Timer 4 capture register */
-> >  +       __be16  gtcnr3;         /* Timer 3 counter */
-> >  +       __be16  gtcnr4;         /* Timer 4 counter */
-> >  +       __be16  gtevr1;         /* Timer 1 event register */
-> >  +       __be16  gtevr2;         /* Timer 2 event register */
-> >  +       __be16  gtevr3;         /* Timer 3 event register */
-> >  +       __be16  gtevr4;         /* Timer 4 event register */
-> >  +       __be16  gtpsr1;         /* Timer 1 prescale register */
-> >  +       __be16  gtpsr2;         /* Timer 2 prescale register */
-> >  +       __be16  gtpsr3;         /* Timer 3 prescale register */
-> >  +       __be16  gtpsr4;         /* Timer 4 prescale register */
-> >  +       u8 res2[0x40];
-> >  +} __attribute__ ((packed));
-> >  +
-> >  +struct gtm_timer {
-> >  +       unsigned int irq;
-> >  +
-> >  +       struct gtm *gtm;
-> >  +       bool requested;
-> >  +       u8 __iomem *gtcfr;
-> >  +       __be16 __iomem *gtmdr;
-> >  +       __be16 __iomem *gtpsr;
-> >  +       __be16 __iomem *gtcnr;
-> >  +       __be16 __iomem *gtrfr;
-> >  +       __be16 __iomem *gtevr;
-> >  +};
-> >  +
-> >  +struct gtm {
-> >  +       unsigned int clock;
-> >  +       struct gtm_timers_regs __iomem *regs;
-> >  +       struct gtm_timer timers[4];
-> >  +       spinlock_t lock;
-> >  +};
-> 
-> Consider moving the register definitions and structures inside the .c
-> file.  This is all anonymous data as far as the caller is concerned.
-> If the structures are only access inside the driver then you gain
-> yourself a bit of safety by moving them.
+>
+>  diff --git a/arch/powerpc/platforms/8xx/Kconfig b/arch/powerpc/platforms/8xx/Kconfig
+>  index 6fc849e..3488bb7 100644
+>  --- a/arch/powerpc/platforms/8xx/Kconfig
+>  +++ b/arch/powerpc/platforms/8xx/Kconfig
+>  @@ -105,6 +105,16 @@ config 8xx_COPYBACK
+>
+>           If in doubt, say Y here.
+>
+>  +config 8xx_GPIO
+>  +       bool "GPIO API Support"
+>  +       select GENERIC_GPIO
+>  +       select HAVE_GPIO_LIB
+>  +       help
+>  +         Saying Y here will cause the ports on an MPC8xx processor to be used
+>  +         with the GPIO API.  If you say N here, the kernel needs less memory.
+>  +
+>  +         If in doubt, say Y here.
+>  +
+>   config 8xx_CPU6
+>         bool "CPU6 Silicon Errata (860 Pre Rev. C)"
+>         help
+>  diff --git a/arch/powerpc/sysdev/cpm1.c b/arch/powerpc/sysdev/cpm1.c
+>  index 58292a0..01ae3ae 100644
+>  --- a/arch/powerpc/sysdev/cpm1.c
+>  +++ b/arch/powerpc/sysdev/cpm1.c
+>  @@ -30,6 +30,7 @@
+>   #include <linux/interrupt.h>
+>   #include <linux/irq.h>
+>   #include <linux/module.h>
+>  +#include <linux/spinlock.h>
+>   #include <asm/page.h>
+>   #include <asm/pgtable.h>
+>   #include <asm/8xx_immap.h>
+>  @@ -42,6 +43,10 @@
+>
+>   #include <asm/fs_pd.h>
+>
+>  +#ifdef CONFIG_8xx_GPIO
+>  +#include <linux/of_gpio.h>
+>  +#endif
+>  +
+>   #define CPM_MAP_SIZE    (0x4000)
+>
+>   cpm8xx_t __iomem *cpmp;  /* Pointer to comm processor space */
+>  @@ -290,20 +295,24 @@ struct cpm_ioport16 {
+>         __be16 res[3];
+>   };
+>
+>  -struct cpm_ioport32 {
+>  -       __be32 dir, par, sor;
+>  +struct cpm_ioport32b {
+>  +       __be32 dir, par, odr, dat;
+>  +};
+>  +
+>  +struct cpm_ioport32e {
+>  +       __be32 dir, par, sor, odr, dat;
+>   };
+>
+>   static void cpm1_set_pin32(int port, int pin, int flags)
+>   {
+>  -       struct cpm_ioport32 __iomem *iop;
+>  +       struct cpm_ioport32e __iomem *iop;
+>         pin = 1 << (31 - pin);
+>
+>         if (port == CPM_PORTB)
+>  -               iop = (struct cpm_ioport32 __iomem *)
+>  +               iop = (struct cpm_ioport32e __iomem *)
+>                       &mpc8xx_immr->im_cpm.cp_pbdir;
+>         else
+>  -               iop = (struct cpm_ioport32 __iomem *)
+>  +               iop = (struct cpm_ioport32e __iomem *)
+>                       &mpc8xx_immr->im_cpm.cp_pedir;
+>
+>         if (flags & CPM_PIN_OUTPUT)
+>  @@ -498,3 +507,245 @@ int cpm1_clk_setup(enum cpm_clk_target target, int clock, int mode)
+>
+>         return 0;
+>   }
+>  +
+>  +/*
+>  + * GPIO LIB API implementation
+>  + */
+>  +#ifdef CONFIG_8xx_GPIO
+>  +
+>  +struct cpm1_gpio16_chip {
+>  +       struct of_mm_gpio_chip mm_gc;
+>  +       spinlock_t lock;
+>  +
+>  +       /* shadowed data register to clear/set bits safely */
+>  +       u16 cpdata;
+>  +};
+>  +
+>  +static inline struct cpm1_gpio16_chip *
+>  +to_cpm1_gpio16_chip(struct of_mm_gpio_chip *mm_gc)
+>  +{
+>  +       return container_of(mm_gc, struct cpm1_gpio16_chip, mm_gc);
+>  +}
+>  +
+>  +static void cpm1_gpio16_save_regs(struct of_mm_gpio_chip *mm_gc)
+>  +{
+>  +       struct cpm1_gpio16_chip *cpm1_gc = to_cpm1_gpio16_chip(mm_gc);
+>  +       struct cpm_ioport16 __iomem *iop = mm_gc->regs;
+>  +
+>  +       cpm1_gc->cpdata = in_be16(&iop->dat);
+>  +}
+>  +
+>  +static int cpm1_gpio16_get(struct gpio_chip *gc, unsigned int gpio)
+>  +{
+>  +       struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
+>  +       struct cpm_ioport16 __iomem *iop = mm_gc->regs;
+>  +       u16 pin_mask;
+>  +
+>  +       pin_mask = 1 << (15 - gpio);
+>  +
+>  +       return !!(in_be16(&iop->dat) & pin_mask);
+>  +}
+>  +
+>  +static void cpm1_gpio16_set(struct gpio_chip *gc, unsigned int gpio, int value)
+>  +{
+>  +       struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
+>  +       struct cpm1_gpio16_chip *cpm1_gc = to_cpm1_gpio16_chip(mm_gc);
+>  +       struct cpm_ioport16 __iomem *iop = mm_gc->regs;
+>  +       unsigned long flags;
+>  +       u16 pin_mask = 1 << (15 - gpio);
+>  +
+>  +       spin_lock_irqsave(&cpm1_gc->lock, flags);
+>  +
+>  +       if (value)
+>  +               cpm1_gc->cpdata |= pin_mask;
+>  +       else
+>  +               cpm1_gc->cpdata &= ~pin_mask;
+>  +
+>  +       out_be16(&iop->dat, cpm1_gc->cpdata);
+>  +
+>  +       spin_unlock_irqrestore(&cpm1_gc->lock, flags);
+>  +}
+>  +
+>  +static int cpm1_gpio16_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
+>  +{
+>  +       struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
+>  +       struct cpm_ioport16 __iomem *iop = mm_gc->regs;
+>  +       u16 pin_mask;
+>  +
+>  +       pin_mask = 1 << (15 - gpio);
+>  +
+>  +       setbits16(&iop->dir, pin_mask);
+>  +
+>  +       cpm1_gpio16_set(gc, gpio, val);
+>  +
+>  +       return 0;
+>  +}
+>  +
+>  +static int cpm1_gpio16_dir_in(struct gpio_chip *gc, unsigned int gpio)
+>  +{
+>  +       struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
+>  +       struct cpm_ioport16 __iomem *iop = mm_gc->regs;
+>  +       u16 pin_mask;
+>  +
+>  +       pin_mask = 1 << (15 - gpio);
+>  +
+>  +       clrbits16(&iop->dir, pin_mask);
+>  +
+>  +       return 0;
+>  +}
+>  +
+>  +int cpm1_gpiochip_add16(struct device_node *np)
+>  +{
+>  +       struct cpm1_gpio16_chip *cpm1_gc;
+>  +       struct of_mm_gpio_chip *mm_gc;
+>  +       struct of_gpio_chip *of_gc;
+>  +       struct gpio_chip *gc;
+>  +
+>  +       cpm1_gc = kzalloc(sizeof(*cpm1_gc), GFP_KERNEL);
+>  +       if (!cpm1_gc)
+>  +               return -ENOMEM;
+>  +
+>  +       spin_lock_init(&cpm1_gc->lock);
+>  +
+>  +       mm_gc = &cpm1_gc->mm_gc;
+>  +       of_gc = &mm_gc->of_gc;
+>  +       gc = &of_gc->gc;
+>  +
+>  +       mm_gc->save_regs = cpm1_gpio16_save_regs;
+>  +       of_gc->gpio_cells = 1;
+>  +       gc->ngpio = 16;
+>  +       gc->direction_input = cpm1_gpio16_dir_in;
+>  +       gc->direction_output = cpm1_gpio16_dir_out;
+>  +       gc->get = cpm1_gpio16_get;
+>  +       gc->set = cpm1_gpio16_set;
+>  +
+>  +       return of_mm_gpiochip_add(np, mm_gc);
+>  +}
+>  +
+>  +struct cpm1_gpio32_chip {
+>  +       struct of_mm_gpio_chip mm_gc;
+>  +       spinlock_t lock;
+>  +
+>  +       /* shadowed data register to clear/set bits safely */
+>  +       u32 cpdata;
+>  +};
+>  +
+>  +static inline struct cpm1_gpio32_chip *
+>  +to_cpm1_gpio32_chip(struct of_mm_gpio_chip *mm_gc)
+>  +{
+>  +       return container_of(mm_gc, struct cpm1_gpio32_chip, mm_gc);
+>  +}
+>  +
+>  +static void cpm1_gpio32_save_regs(struct of_mm_gpio_chip *mm_gc)
+>  +{
+>  +       struct cpm1_gpio32_chip *cpm1_gc = to_cpm1_gpio32_chip(mm_gc);
+>  +       struct cpm_ioport32b __iomem *iop = mm_gc->regs;
+>  +
+>  +       cpm1_gc->cpdata = in_be32(&iop->dat);
+>  +}
+>  +
+>  +static int cpm1_gpio32_get(struct gpio_chip *gc, unsigned int gpio)
+>  +{
+>  +       struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
+>  +       struct cpm_ioport32b __iomem *iop = mm_gc->regs;
+>  +       u32 pin_mask;
+>  +
+>  +       pin_mask = 1 << (31 - gpio);
+>  +
+>  +       return !!(in_be32(&iop->dat) & pin_mask);
+>  +}
+>  +
+>  +static void cpm1_gpio32_set(struct gpio_chip *gc, unsigned int gpio, int value)
+>  +{
+>  +       struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
+>  +       struct cpm1_gpio32_chip *cpm1_gc = to_cpm1_gpio32_chip(mm_gc);
+>  +       struct cpm_ioport32b __iomem *iop = mm_gc->regs;
+>  +       unsigned long flags;
+>  +       u32 pin_mask = 1 << (31 - gpio);
+>  +
+>  +       spin_lock_irqsave(&cpm1_gc->lock, flags);
+>  +
+>  +       if (value)
+>  +               cpm1_gc->cpdata |= pin_mask;
+>  +       else
+>  +               cpm1_gc->cpdata &= ~pin_mask;
+>  +
+>  +       out_be32(&iop->dat, cpm1_gc->cpdata);
+>  +
+>  +       spin_unlock_irqrestore(&cpm1_gc->lock, flags);
+>  +}
+>  +
+>  +static int cpm1_gpio32_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
+>  +{
+>  +       struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
+>  +       struct cpm_ioport32b __iomem *iop = mm_gc->regs;
+>  +       u32 pin_mask;
+>  +
+>  +       pin_mask = 1 << (31 - gpio);
+>  +
+>  +       setbits32(&iop->dir, pin_mask);
+>  +
+>  +       cpm1_gpio32_set(gc, gpio, val);
+>  +
+>  +       return 0;
+>  +}
+>  +
+>  +static int cpm1_gpio32_dir_in(struct gpio_chip *gc, unsigned int gpio)
+>  +{
+>  +       struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
+>  +       struct cpm_ioport32b __iomem *iop = mm_gc->regs;
+>  +       u32 pin_mask;
+>  +
+>  +       pin_mask = 1 << (31 - gpio);
+>  +
+>  +       clrbits32(&iop->dir, pin_mask);
+>  +
+>  +       return 0;
+>  +}
+>  +
+>  +int cpm1_gpiochip_add32(struct device_node *np)
+>  +{
+>  +       struct cpm1_gpio32_chip *cpm1_gc;
+>  +       struct of_mm_gpio_chip *mm_gc;
+>  +       struct of_gpio_chip *of_gc;
+>  +       struct gpio_chip *gc;
+>  +
+>  +       cpm1_gc = kzalloc(sizeof(*cpm1_gc), GFP_KERNEL);
+>  +       if (!cpm1_gc)
+>  +               return -ENOMEM;
+>  +
+>  +       spin_lock_init(&cpm1_gc->lock);
+>  +
+>  +       mm_gc = &cpm1_gc->mm_gc;
+>  +       of_gc = &mm_gc->of_gc;
+>  +       gc = &of_gc->gc;
+>  +
+>  +       mm_gc->save_regs = cpm1_gpio32_save_regs;
+>  +       of_gc->gpio_cells = 1;
+>  +       gc->ngpio = 32;
+>  +       gc->direction_input = cpm1_gpio32_dir_in;
+>  +       gc->direction_output = cpm1_gpio32_dir_out;
+>  +       gc->get = cpm1_gpio32_get;
+>  +       gc->set = cpm1_gpio32_set;
+>  +
+>  +       return of_mm_gpiochip_add(np, mm_gc);
+>  +}
+>  +
+>  +static int cpm_init_par_io(void)
+>  +{
+>  +       struct device_node *np;
+>  +
+>  +       for_each_compatible_node(np, NULL, "fsl,cpm1-pario-bank16")
+>  +               cpm1_gpiochip_add16(np);
+>  +
+>  +       for_each_compatible_node(np, NULL, "fsl,cpm1-pario-bank32b")
+>  +               cpm1_gpiochip_add32(np);
+>  +
+>  +       /* Port E uses CPM2 layout */
+>  +       for_each_compatible_node(np, NULL, "fsl,cpm1-pario-bank32e")
+>  +               cpm2_gpiochip_add32(np);
+>  +       return 0;
+>  +}
+>  +arch_initcall(cpm_init_par_io);
+>  +
+>  +#endif /* CONFIG_8xx_GPIO */
+>  --
+>  1.5.5
+>
+>  _______________________________________________
+>  Linuxppc-dev mailing list
+>  Linuxppc-dev@ozlabs.org
+>  https://ozlabs.org/mailman/listinfo/linuxppc-dev
+>
 
-Ok.
-
-> >  +
-> >  +extern struct gtm_timer *gtm_get_timer(int width);
-> >  +extern struct gtm_timer *gtm_get_specific_timer(struct gtm *gtm, int timer,
-> >  +                                               int width);
-> >  +extern void gtm_put_timer(struct gtm_timer *tmr);
-> >  +extern int gtm_reset_timer16(struct gtm_timer *tmr, unsigned long usec,
-> >  +                            bool reload);
-> >  +extern int gtm_reset_utimer16(struct gtm_timer *tmr, u16 usec, bool reload);
-> >  +extern void gtm_stop_timer16(struct gtm_timer *tmr);
-> >  +
-> >  +/**
-> >  + * gtm_ack_timer16 - acknowledge timer event (free-run timers only)
-> >  + * @tmr:       pointer to the gtm_timer structure obtained from gtm_get_timer
-> >  + * @events:    events mask to ack
-> >  + *
-> >  + * Thus function used to acknowledge timer interrupt event, use it inside the
-> >  + * interrupt handler.
-> >  + */
-> >  +static inline void gtm_ack_timer16(struct gtm_timer *tmr, u16 events)
-> >  +{
-> >  +       out_be16(tmr->gtevr, events);
-> >  +}
-> 
-> Drop 'inline' and expect gcc to do the right thing.
-
-Not sure about newer gccs, but older complained about "defined but not
-used" functions w/o inline keyword. I'm almost sure that this is still
-true. I can surely use __maybe_unused, but "static inline" is pretty
-settled tradition, plus this function is small enough anyway.
 
 
 -- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
