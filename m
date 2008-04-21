@@ -1,20 +1,22 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 4F1CCDDF83
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Apr 2008 08:04:34 +1000 (EST)
-Message-Id: <059AA568-4729-4060-A876-C8460E0A7794@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: benh@kernel.crashing.org
-In-Reply-To: <1208812957.9640.47.camel@pasglop>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: [PATCH] [POWERPC] ppc32: Fix errata for 603 CPUs
-Date: Mon, 21 Apr 2008 17:04:27 -0500
-References: <Pine.LNX.4.64.0804211457010.8003@blarg.am.freescale.net>
-	<1208812957.9640.47.camel@pasglop>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Return-Path: <cbouatmailru@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.172])
+	by ozlabs.org (Postfix) with ESMTP id DDC2FDE49C
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Apr 2008 08:04:47 +1000 (EST)
+Received: by ug-out-1314.google.com with SMTP id q7so692999uge.0
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 Apr 2008 15:04:45 -0700 (PDT)
+Date: Tue, 22 Apr 2008 02:04:40 +0400
+From: Anton Vorontsov <cbouatmailru@gmail.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH 5/5] [POWERPC] 83xx: new board support: MPC8360E-RDK
+Message-ID: <20080421220440.GA25741@zarina>
+References: <20080418190632.GA32204@polina.dev.rtsoft.ru>
+	<20080418191009.GE4407@polina.dev.rtsoft.ru>
+	<fa686aa40804211405mbe3f6beof07a3287d7157fbe@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <fa686aa40804211405mbe3f6beof07a3287d7157fbe@mail.gmail.com>
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: cbouatmailru@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,27 +26,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Mon, Apr 21, 2008 at 03:05:25PM -0600, Grant Likely wrote:
+> On Fri, Apr 18, 2008 at 1:10 PM, Anton Vorontsov
+> <avorontsov@ru.mvista.com> wrote:
+> > This is patch adds board file, device tree, and defconfig for the new
+> >  board, made by Freescale Semiconductor Inc. and Logic Product Development.
+> 
+> >   arch/powerpc/platforms/83xx/mpc836x_rdk.c       |  106 +++
+> 
+> I don't see anything exotic in here.  This can be merged with one of
+> the other non-exotic mpc83xx board files.  The dts parsing takes care
+> of the differences.
 
-On Apr 21, 2008, at 4:22 PM, Benjamin Herrenschmidt wrote:
->
->>
->> _GLOBAL(__setup_cpu_603)
->> -	b	setup_common_caches
->> +	mflr	r4
->> +BEGIN_FTR_SECTION
->> +	bl	__init_fpu_registers
->> +END_FTR_SECTION_IFCLR(CPU_FTR_FPU_UNAVAILABLE)
->> +	bl	__init_fpu_registers
->> +	bl	setup_common_caches
->> +	mtlr	r4
->> +	blr
->> _GLOBAL(__setup_cpu_604)
->> 	mflr	r4
->> 	bl	setup_common_cache
->
-> Has the feature fixup been perform yet when __setup_* is called ?
+Please name the board file in which you think I'll easily merge this
+indeed non-exotic board.
 
-Yes.  We call do_feature_fixups() in early_init and call  
-call_setup_cpu() after than on 6xx (in head_32.S).
+The only QE boards there are: mpc832x_{rdb,mds} and mpc836x_mds. All of
+them have board-specific fixups either in the machine_device_initcall()s
+or setup_arch()s.
 
-- k
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
