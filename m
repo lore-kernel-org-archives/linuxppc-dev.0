@@ -1,22 +1,30 @@
-Return-Path: <neko@genesi-usa.com>
-Received: from ti-out-0910.google.com (ti-out-0910.google.com [209.85.142.185])
-	by ozlabs.org (Postfix) with ESMTP id EE480DE845
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Apr 2008 03:04:31 +1000 (EST)
-Received: by ti-out-0910.google.com with SMTP id y6so496609tia.13
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Apr 2008 10:04:29 -0700 (PDT)
-Message-ID: <480CC914.1050903@genesi-usa.com>
-Date: Mon, 21 Apr 2008 18:04:20 +0100
-From: Matt Sealey <matt@genesi-usa.com>
-MIME-Version: 1.0
-To: Juergen Beisert <jbe@pengutronix.de>
-Subject: Re: RFC: MPC5200 PSC AC97 driver
-References: <47FDEF9B.5000506@semihalf.com>
-	<fa686aa40804181553q622b3c1fi7a302712abe79be1@mail.gmail.com>
-	<4809DF54.2080609@genesi-usa.com>
-	<200804211002.07452.jbe@pengutronix.de>
-In-Reply-To: <200804211002.07452.jbe@pengutronix.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Sender: Matt Sealey <neko@genesi-usa.com>
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id D3F71DEB7C
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Apr 2008 03:10:06 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e32.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m3LH7avH014270
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 Apr 2008 13:07:36 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m3LHA2Di221116
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 Apr 2008 11:10:03 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m3LHA28J011913
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 Apr 2008 11:10:02 -0600
+Date: Mon, 21 Apr 2008 12:05:30 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: "Steven A. Falco" <sfalco@harris.com>
+Subject: Re: RFC: Possible section mismatch problem in ibm_newemac?
+Message-ID: <20080421120530.259b2094@zod.rchland.ibm.com>
+In-Reply-To: <480CBA91.5050003@harris.com>
+References: <480CBA91.5050003@harris.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -27,24 +35,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Mon, 21 Apr 2008 12:02:25 -0400
+"Steven A. Falco" <sfalco@harris.com> wrote:
 
-Juergen Beisert wrote:
+> I am using a recent DENX git tree.  I want to enable debugging in prom_parse.c.
+> When I do that, I see link warnings like:
 
-> Please don't forget what Sylvian said about this driver: "I also completely 
-> skipped the 5200 (not B) support ..." and your own "I think it should be left 
-> noted here that the CCR size changed from 16 bits to 32 bits from 5200 to 
-> 5200B in order to reduce confusion.". Its not solved yet. So any user of an 
-> old MPC5200 will be surprised...
+I already sent a patch a month and a half ago to clean all these
+warnings up.  It never got pushed upstream.
 
-+static struct of_device_id mpc52xx_ac97_of_match[] = {
-+	{
-+		.type		= "sound",
-+		.compatible	= "mpc5200b-psc-ac97",	/* B only for now */
-+	},
-+};
-
-It shouldn't even load, the matchlist is 5200b only..? No alarms and no surprises.. :)
-
--- 
-Matt Sealey <matt@genesi-usa.com>
-Genesi, Manager, Developer Relations
+josh
