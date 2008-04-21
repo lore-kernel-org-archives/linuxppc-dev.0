@@ -1,20 +1,18 @@
-Return-Path: <dale@farnsworth.org>
-Received: from xyzzy.farnsworth.org (xyzzy.farnsworth.org [65.39.95.219])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id BE4A5DDE25
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Apr 2008 04:24:13 +1000 (EST)
-Date: Mon, 21 Apr 2008 11:23:57 -0700
-From: Dale Farnsworth <dale@farnsworth.org>
-To: Remi Machet <rmachet@slac.stanford.edu>
-Message-ID: <20080421182357.GB12468@farnsworth.org>
-References: <1208799434.5789.53.camel@pcds-ts102.slac.stanford.edu>
+	by ozlabs.org (Postfix) with ESMTPS id 69AD2DE3B2
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Apr 2008 04:26:32 +1000 (EST)
+Date: Mon, 21 Apr 2008 13:22:34 -0500 (CDT)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Paul Mackerras <paulus@samba.org>
+Subject: [PATCH v7] [POWERPC] 85xx: Add support for relocatable kernel (and
+	booting at non-zero)
+Message-ID: <Pine.LNX.4.64.0804211322110.18912@blarg.am.freescale.net>
 MIME-Version: 1.0
-In-Reply-To: <1208799434.5789.53.camel@pcds-ts102.slac.stanford.edu>
-Subject: Re: [PATCH 2/2 v2] sysdev,mv64x60: initialization of mv64x60
-	ethernet, serial and I2C
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,101 +22,395 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Apr 21, 2008 at 10:37:14AM -0700, Remi Machet wrote:
-> If one of the devices of the mv64x60 init fails, the remaining 
-> devices are not initialized => This patch change the code to 
-> display an error and continue the initialization.
-> 
-> Signed-off-by: Remi Machet (rmachet@slac.stanford.edu)
-> ---
-> This is the second part of the re-submission of my patch of 4/17/2008
-> titled "[PATCH] sysdev,mv64x60: initialization of mv64x60 ethernet, 
-> serial and I2C"
-> 
-> --- a/arch/powerpc/sysdev/mv64x60_dev.c
-> +++ b/arch/powerpc/sysdev/mv64x60_dev.c
-> @@ -431,9 +431,14 @@ static int __init mv64x60_device_setup(void)
->  	int err;
->  
->  	id = 0;
-> -	for_each_compatible_node(np, "serial", "marvell,mv64360-mpsc")
-> -		if ((err = mv64x60_mpsc_device_setup(np, id++)))
-> -			goto error;
-> +	for_each_compatible_node(np, "serial", "marvell,mv64360-mpsc") {
-> +		err = mv64x60_mpsc_device_setup(np, id++);
-> +		if (err) {
-> +			printk(KERN_ERR "Failed to initialize MV64x60 " \
+Added support to allow an 85xx kernel to be run from a non-zero physical
+address (useful for cooperative asymmetric multiprocessing situations and
+kdump).  The support can be configured at compile time by setting
+CONFIG_PAGE_OFFSET, CONFIG_KERNEL_START, and CONFIG_PHYSICAL_START as
+desired.
 
-No need for the backslash continuation above.  Also below.
+Alternatively, the kernel build can set CONFIG_RELOCATABLE.  Setting this
+config option causes the kernel to determine at runtime the physical
+addresses of CONFIG_PAGE_OFFSET and CONFIG_KERNEL_START.  If
+CONFIG_RELOCATABLE is set, then CONFIG_PHYSICAL_START has no meaning.
+However, CONFIG_PHYSICAL_START will always be used to set the LOAD program
+header physical address field in the resulting ELF image.
 
-> +					"serial device %s: error %d.\n",
-> +					np->full_name, err);
-> +		};
+Currently we are limited to running at a physical address that is modulo
+256M.  This is due to how we map TLBs to cover lowmem. This should be
+fixed to allow 64M or maybe even 16M alignment in the future.  It is
+considered an error to try and run a kernel at a non-aligned physical
+address.
 
-You don't need the braces around the single printk statement.
+All the magic for this support is accomplished by proper initialization
+of the kernel memory subsystem and use of ARCH_PFN_OFFSET.
 
-> +	};
+The use of ARCH_PFN_OFFSET only affects normal memory and not IO mappings.
+ioremap uses map_page and isn't affected by ARCH_PFN_OFFSET.
 
-No need for the semi-colon following closing brace, also below.
+/dev/mem continues to allow access to any physical address in the system
+regardless of how CONFIG_PHYSICAL_START is set.
 
->  
->  	id = 0;
->  	id2 = 0;
-> @@ -441,38 +446,46 @@ static int __init mv64x60_device_setup(void)
->  		pdev = mv64x60_eth_register_shared_pdev(np, id++);
->  		if (IS_ERR(pdev)) {
->  			err = PTR_ERR(pdev);
-> -			goto error;
-> -		}
-> +			printk(KERN_ERR "Failed to initialize MV64x60 " \
-> +					"network block %s: error %d.\n",
-> +					np->full_name, err);
-> +			continue;
-> +		};
->  		for_each_child_of_node(np, np2) {
->  			if (!of_device_is_compatible(np2,
->  					"marvell,mv64360-eth"))
->  				continue;
->  			err = mv64x60_eth_device_setup(np2, id2++, pdev);
->  			if (err) {
-> -				of_node_put(np2);
-> -				goto error;
-> +				printk(KERN_ERR "Failed to initialize " \
-> +						"MV64x60 network device %s: " \
-> +						"error %d.\n",
-> +						np2->full_name, err);
->  			}
->  		}
->  	}
->  
->  	id = 0;
-> -	for_each_compatible_node(np, "i2c", "marvell,mv64360-i2c")
-> -		if ((err = mv64x60_i2c_device_setup(np, id++)))
-> -			goto error;
-> +	for_each_compatible_node(np, "i2c", "marvell,mv64360-i2c") {
-> +		err = mv64x60_i2c_device_setup(np, id++);
-> +		if (err) {
-> +			printk(KERN_ERR "Failed to initialize MV64x60 I2C " \
-> +					"bus %s: error %d.\n",
-> +					np->full_name, err);
-> +		};
-> +	};
->  
->  	/* support up to one watchdog timer */
->  	np = of_find_compatible_node(np, NULL, "marvell,mv64360-wdt");
->  	if (np) {
->  		if ((err = mv64x60_wdt_device_setup(np, id)))
-> -			goto error;
-> +			printk(KERN_ERR "Failed to initialize MV64x60 " \
-> +					"Watchdog %s: error %d.\n",
-> +					np->full_name, err);
->  		of_node_put(np);
->  	}
->  
->  	return 0;
-> -
-> -error:
-> -	of_node_put(np);
-> -	return err;
->  }
->  arch_initcall(mv64x60_device_setup);
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
+
+Improved the grammar of the commit message.
+
+- k
+
+ arch/powerpc/Kconfig                 |   69 ++++++++++++++++++++++++++++++++-
+ arch/powerpc/kernel/head_fsl_booke.S |   11 +++++
+ arch/powerpc/kernel/prom.c           |    4 ++
+ arch/powerpc/kernel/setup_64.c       |    2 +-
+ arch/powerpc/mm/fsl_booke_mmu.c      |    2 +-
+ arch/powerpc/mm/init_32.c            |    5 ++-
+ arch/powerpc/mm/init_64.c            |    3 +-
+ arch/powerpc/mm/mem.c                |    5 +-
+ include/asm-powerpc/kdump.h          |    5 --
+ include/asm-powerpc/page.h           |   45 ++++++++++++++++++----
+ include/asm-powerpc/page_32.h        |    6 +++
+ 11 files changed, 135 insertions(+), 22 deletions(-)
+
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 4bb2e93..fdc755a 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -656,21 +656,76 @@ config LOWMEM_SIZE
+ 	hex "Maximum low memory size (in bytes)" if LOWMEM_SIZE_BOOL
+ 	default "0x30000000"
+
++config RELOCATABLE
++	bool "Build a relocatable kernel (EXPERIMENTAL)"
++	depends on EXPERIMENTAL && ADVANCED_OPTIONS && FLATMEM && FSL_BOOKE
++	help
++	  This builds a kernel image that is capable of running at the
++	  location the kernel is loaded at (some alignment restrictions may
++	  exist).
++
++	  One use is for the kexec on panic case where the recovery kernel
++	  must live at a different physical address than the primary
++	  kernel.
++
++	  Note: If CONFIG_RELOCATABLE=y, then the kernel runs from the address
++	  it has been loaded at and the compile time physical addresses
++	  CONFIG_PHYSICAL_START is ignored.  However CONFIG_PHYSICAL_START
++	  setting can still be useful to bootwrappers that need to know the
++	  load location of the kernel (eg. u-boot/mkimage).
++
++config PAGE_OFFSET_BOOL
++	bool "Set custom page offset address"
++	depends on ADVANCED_OPTIONS
++	help
++	  This option allows you to set the kernel virtual address at which
++	  the kernel will map low memory.  This can be useful in optimizing
++	  the virtual memory layout of the system.
++
++	  Say N here unless you know what you are doing.
++
++config PAGE_OFFSET
++	hex "Virtual address of memory base" if PAGE_OFFSET_BOOL
++	default "0xc0000000"
++
+ config KERNEL_START_BOOL
+ 	bool "Set custom kernel base address"
+ 	depends on ADVANCED_OPTIONS
+ 	help
+ 	  This option allows you to set the kernel virtual address at which
+-	  the kernel will map low memory (the kernel image will be linked at
+-	  this address).  This can be useful in optimizing the virtual memory
+-	  layout of the system.
++	  the kernel will be loaded.  Normally this should match PAGE_OFFSET
++	  however there are times (like kdump) that one might not want them
++	  to be the same.
+
+ 	  Say N here unless you know what you are doing.
+
+ config KERNEL_START
+ 	hex "Virtual address of kernel base" if KERNEL_START_BOOL
++	default PAGE_OFFSET if PAGE_OFFSET_BOOL
++	default "0xc2000000" if CRASH_DUMP
+ 	default "0xc0000000"
+
++config PHYSICAL_START_BOOL
++	bool "Set physical address where the kernel is loaded"
++	depends on ADVANCED_OPTIONS && FLATMEM && FSL_BOOKE
++	help
++	  This gives the physical address where the kernel is loaded.
++
++	  Say N here unless you know what you are doing.
++
++config PHYSICAL_START
++	hex "Physical address where the kernel is loaded" if PHYSICAL_START_BOOL
++	default "0x02000000" if PPC_STD_MMU && CRASH_DUMP
++	default "0x00000000"
++
++config PHYSICAL_ALIGN
++	hex
++	default "0x10000000" if FSL_BOOKE
++	help
++	  This value puts the alignment restrictions on physical address
++	  where kernel is loaded and run from. Kernel is compiled for an
++	  address which meets above alignment restriction.
++
+ config TASK_SIZE_BOOL
+ 	bool "Set custom user task size"
+ 	depends on ADVANCED_OPTIONS
+@@ -717,9 +772,17 @@ config PIN_TLB
+ endmenu
+
+ if PPC64
++config PAGE_OFFSET
++	hex
++	default "0xc000000000000000"
+ config KERNEL_START
+ 	hex
++	default "0xc000000002000000" if CRASH_DUMP
+ 	default "0xc000000000000000"
++config PHYSICAL_START
++	hex
++	default "0x02000000" if CRASH_DUMP
++	default "0x00000000"
+ endif
+
+ source "net/Kconfig"
+diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
+index 4ff7441..e581524 100644
+--- a/arch/powerpc/kernel/head_fsl_booke.S
++++ b/arch/powerpc/kernel/head_fsl_booke.S
+@@ -371,6 +371,17 @@ skpinv:	addi	r6,r6,1				/* Increment */
+
+ 	bl	early_init
+
++#ifdef CONFIG_RELOCATABLE
++	lis	r3,kernstart_addr@ha
++	la	r3,kernstart_addr@l(r3)
++#ifdef CONFIG_PHYS_64BIT
++	stw	r23,0(r3)
++	stw	r25,4(r3)
++#else
++	stw	r25,0(r3)
++#endif
++#endif
++
+ 	mfspr	r3,SPRN_TLB1CFG
+ 	andi.	r3,r3,0xfff
+ 	lis	r4,num_tlbcam_entries@ha
+diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+index 3bfe783..2aefe2a 100644
+--- a/arch/powerpc/kernel/prom.c
++++ b/arch/powerpc/kernel/prom.c
+@@ -53,6 +53,7 @@
+ #include <asm/pci-bridge.h>
+ #include <asm/phyp_dump.h>
+ #include <asm/kexec.h>
++#include <mm/mmu_decl.h>
+
+ #ifdef DEBUG
+ #define DBG(fmt...) printk(KERN_ERR fmt)
+@@ -978,7 +979,10 @@ static int __init early_init_dt_scan_memory(unsigned long node,
+ 		}
+ #endif
+ 		lmb_add(base, size);
++
++		memstart_addr = min((u64)memstart_addr, base);
+ 	}
++
+ 	return 0;
+ }
+
+diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+index 31ada9f..153a48d 100644
+--- a/arch/powerpc/kernel/setup_64.c
++++ b/arch/powerpc/kernel/setup_64.c
+@@ -435,7 +435,7 @@ void __init setup_system(void)
+ 		printk("htab_address                  = 0x%p\n", htab_address);
+ 	printk("htab_hash_mask                = 0x%lx\n", htab_hash_mask);
+ #if PHYSICAL_START > 0
+-	printk("physical_start                = 0x%x\n", PHYSICAL_START);
++	printk("physical_start                = 0x%lx\n", PHYSICAL_START);
+ #endif
+ 	printk("-----------------------------------------------------\n");
+
+diff --git a/arch/powerpc/mm/fsl_booke_mmu.c b/arch/powerpc/mm/fsl_booke_mmu.c
+index ada249b..ce10e2b 100644
+--- a/arch/powerpc/mm/fsl_booke_mmu.c
++++ b/arch/powerpc/mm/fsl_booke_mmu.c
+@@ -202,7 +202,7 @@ adjust_total_lowmem(void)
+ 		cam_max_size = max_lowmem_size;
+
+ 	/* adjust lowmem size to max_lowmem_size */
+-	ram = min(max_lowmem_size, total_lowmem);
++	ram = min(max_lowmem_size, (phys_addr_t)total_lowmem);
+
+ 	/* Calculate CAM values */
+ 	__cam0 = 1UL << 2 * (__ilog2(ram) / 2);
+diff --git a/arch/powerpc/mm/init_32.c b/arch/powerpc/mm/init_32.c
+index 47325f2..578750e 100644
+--- a/arch/powerpc/mm/init_32.c
++++ b/arch/powerpc/mm/init_32.c
+@@ -59,7 +59,10 @@ DEFINE_PER_CPU(struct mmu_gather, mmu_gathers);
+ unsigned long total_memory;
+ unsigned long total_lowmem;
+
+-phys_addr_t memstart_addr;
++phys_addr_t memstart_addr = (phys_addr_t)~0ull;
++EXPORT_SYMBOL(memstart_addr);
++phys_addr_t kernstart_addr;
++EXPORT_SYMBOL(kernstart_addr);
+ phys_addr_t lowmem_end_addr;
+
+ int boot_mapsize;
+diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
+index 698bd00..c5ac532 100644
+--- a/arch/powerpc/mm/init_64.c
++++ b/arch/powerpc/mm/init_64.c
+@@ -72,7 +72,8 @@
+ #warning TASK_SIZE is smaller than it needs to be.
+ #endif
+
+-phys_addr_t memstart_addr;
++phys_addr_t memstart_addr = ~0;
++phys_addr_t kernstart_addr;
+
+ void free_initmem(void)
+ {
+diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+index 16def4d..0062e6b 100644
+--- a/arch/powerpc/mm/mem.c
++++ b/arch/powerpc/mm/mem.c
+@@ -216,7 +216,7 @@ void __init do_init_bootmem(void)
+ 	unsigned long total_pages;
+ 	int boot_mapsize;
+
+-	max_pfn = lmb_end_of_DRAM() >> PAGE_SHIFT;
++	max_low_pfn = max_pfn = lmb_end_of_DRAM() >> PAGE_SHIFT;
+ 	total_pages = (lmb_end_of_DRAM() - memstart_addr) >> PAGE_SHIFT;
+ #ifdef CONFIG_HIGHMEM
+ 	total_pages = total_lowmem >> PAGE_SHIFT;
+@@ -232,7 +232,8 @@ void __init do_init_bootmem(void)
+
+ 	start = lmb_alloc(bootmap_pages << PAGE_SHIFT, PAGE_SIZE);
+
+-	boot_mapsize = init_bootmem(start >> PAGE_SHIFT, total_pages);
++	min_low_pfn = MEMORY_START >> PAGE_SHIFT;
++	boot_mapsize = init_bootmem_node(NODE_DATA(0), start >> PAGE_SHIFT, min_low_pfn, max_low_pfn);
+
+ 	/* Add active regions with valid PFNs */
+ 	for (i = 0; i < lmb.memory.cnt; i++) {
+diff --git a/include/asm-powerpc/kdump.h b/include/asm-powerpc/kdump.h
+index 10e8eb1..f6c93c7 100644
+--- a/include/asm-powerpc/kdump.h
++++ b/include/asm-powerpc/kdump.h
+@@ -11,16 +11,11 @@
+
+ #ifdef CONFIG_CRASH_DUMP
+
+-#define PHYSICAL_START	KDUMP_KERNELBASE
+ #define KDUMP_TRAMPOLINE_START	0x0100
+ #define KDUMP_TRAMPOLINE_END	0x3000
+
+ #define KDUMP_MIN_TCE_ENTRIES	2048
+
+-#else /* !CONFIG_CRASH_DUMP */
+-
+-#define PHYSICAL_START	0x0
+-
+ #endif /* CONFIG_CRASH_DUMP */
+
+ #ifndef __ASSEMBLY__
+diff --git a/include/asm-powerpc/page.h b/include/asm-powerpc/page.h
+index 6c85060..cffdf0e 100644
+--- a/include/asm-powerpc/page.h
++++ b/include/asm-powerpc/page.h
+@@ -12,6 +12,7 @@
+
+ #include <asm/asm-compat.h>
+ #include <asm/kdump.h>
++#include <asm/types.h>
+
+ /*
+  * On PPC32 page size is 4K. For PPC64 we support either 4K or 64K software
+@@ -42,8 +43,23 @@
+  *
+  * The kdump dump kernel is one example where KERNELBASE != PAGE_OFFSET.
+  *
+- * To get a physical address from a virtual one you subtract PAGE_OFFSET,
+- * _not_ KERNELBASE.
++ * PAGE_OFFSET is the virtual address of the start of lowmem.
++ *
++ * PHYSICAL_START is the physical address of the start of the kernel.
++ *
++ * MEMORY_START is the physical address of the start of lowmem.
++ *
++ * KERNELBASE, PAGE_OFFSET, and PHYSICAL_START are all configurable on
++ * ppc32 and based on how they are set we determine MEMORY_START.
++ *
++ * For the linear mapping the following equation should be true:
++ * KERNELBASE - PAGE_OFFSET = PHYSICAL_START - MEMORY_START
++ *
++ * Also, KERNELBASE >= PAGE_OFFSET and PHYSICAL_START >= MEMORY_START
++ *
++ * There are two was to determine a physical address from a virtual one:
++ * va = pa + PAGE_OFFSET - MEMORY_START
++ * va = pa + KERNELBASE - PHYSICAL_START
+  *
+  * If you want to know something's offset from the start of the kernel you
+  * should subtract KERNELBASE.
+@@ -51,20 +67,33 @@
+  * If you want to test if something's a kernel address, use is_kernel_addr().
+  */
+
+-#define PAGE_OFFSET     ASM_CONST(CONFIG_KERNEL_START)
+-#define KERNELBASE      (PAGE_OFFSET + PHYSICAL_START)
+-#define LOAD_OFFSET	PAGE_OFFSET
++#define KERNELBASE      ASM_CONST(CONFIG_KERNEL_START)
++#define PAGE_OFFSET	ASM_CONST(CONFIG_PAGE_OFFSET)
++#define LOAD_OFFSET	ASM_CONST((CONFIG_KERNEL_START-CONFIG_PHYSICAL_START))
++
++#if defined(CONFIG_RELOCATABLE) && defined(CONFIG_FLATMEM)
++#ifndef __ASSEMBLY__
++extern phys_addr_t memstart_addr;
++extern phys_addr_t kernstart_addr;
++#endif
++#define PHYSICAL_START	kernstart_addr
++#define MEMORY_START	memstart_addr
++#else
++#define PHYSICAL_START	ASM_CONST(CONFIG_PHYSICAL_START)
++#define MEMORY_START	(PHYSICAL_START + PAGE_OFFSET - KERNELBASE)
++#endif
+
+ #ifdef CONFIG_FLATMEM
+-#define pfn_valid(pfn)		((pfn) < max_mapnr)
++#define ARCH_PFN_OFFSET		(MEMORY_START >> PAGE_SHIFT)
++#define pfn_valid(pfn)		((pfn) >= ARCH_PFN_OFFSET && (pfn) < (ARCH_PFN_OFFSET + max_mapnr))
+ #endif
+
+ #define virt_to_page(kaddr)	pfn_to_page(__pa(kaddr) >> PAGE_SHIFT)
+ #define pfn_to_kaddr(pfn)	__va((pfn) << PAGE_SHIFT)
+ #define virt_addr_valid(kaddr)	pfn_valid(__pa(kaddr) >> PAGE_SHIFT)
+
+-#define __va(x) ((void *)((unsigned long)(x) + PAGE_OFFSET))
+-#define __pa(x) ((unsigned long)(x) - PAGE_OFFSET)
++#define __va(x) ((void *)((unsigned long)(x) - PHYSICAL_START + KERNELBASE))
++#define __pa(x) ((unsigned long)(x) + PHYSICAL_START - KERNELBASE)
+
+ /*
+  * Unfortunately the PLT is in the BSS in the PPC32 ELF ABI,
+diff --git a/include/asm-powerpc/page_32.h b/include/asm-powerpc/page_32.h
+index 51f8134..ebfae53 100644
+--- a/include/asm-powerpc/page_32.h
++++ b/include/asm-powerpc/page_32.h
+@@ -1,6 +1,12 @@
+ #ifndef _ASM_POWERPC_PAGE_32_H
+ #define _ASM_POWERPC_PAGE_32_H
+
++#if defined(CONFIG_PHYSICAL_ALIGN) && (CONFIG_PHYSICAL_START != 0)
++#if (CONFIG_PHYSICAL_START % CONFIG_PHYSICAL_ALIGN) != 0
++#error "CONFIG_PHYSICAL_START must be a multiple of CONFIG_PHYSICAL_ALIGN"
++#endif
++#endif
++
+ #define VM_DATA_DEFAULT_FLAGS	VM_DATA_DEFAULT_FLAGS32
+
+ #ifdef CONFIG_NOT_COHERENT_CACHE
+-- 
+1.5.4.1
