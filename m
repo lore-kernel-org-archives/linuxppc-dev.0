@@ -1,24 +1,20 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from hs-out-0708.google.com (hs-out-0708.google.com [64.233.178.250])
-	by ozlabs.org (Postfix) with ESMTP id 9665EDE0AC
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Apr 2008 07:16:48 +1000 (EST)
-Received: by hs-out-0708.google.com with SMTP id z77so1158768hsz.9
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Apr 2008 14:16:47 -0700 (PDT)
-Message-ID: <fa686aa40804211416l5a366f3dl3d91acbea00b539f@mail.gmail.com>
-Date: Mon, 21 Apr 2008 15:16:46 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Segher Boessenkool" <segher@kernel.crashing.org>
-Subject: Re: [PATCH] [PPC] Remove mpc8272 ads board from arch/ppc
-In-Reply-To: <00248a3c226d44aa352ebb69894183f4@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <Pine.LNX.4.64.0804191051420.20132@blarg.am.freescale.net>
-	<fa686aa40804191114i2cef26eegabfe9bc28d8ecc18@mail.gmail.com>
-	<5422E8EE-4AFA-491B-8920-BDEBF596FF00@kernel.crashing.org>
-	<20080421182953.GB6111@ld0162-tx32.am.freescale.net>
-	<00248a3c226d44aa352ebb69894183f4@kernel.crashing.org>
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id A077ADE1FD
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Apr 2008 07:18:41 +1000 (EST)
+Subject: Re: [PATCH v2] [POWERPC] 4xx: Add endpoint support to 4xx PCIe driver
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Stefan Roese <sr@denx.de>
+In-Reply-To: <1208789670-28909-1-git-send-email-sr@denx.de>
+References: <1208789670-28909-1-git-send-email-sr@denx.de>
+Content-Type: text/plain
+Date: Tue, 22 Apr 2008 07:16:31 +1000
+Message-Id: <1208812591.9640.45.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,22 +24,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Apr 21, 2008 at 3:10 PM, Segher Boessenkool
-<segher@kernel.crashing.org> wrote:
->
-> > Speaking of making it obvious, is it time to put a #warning in some
-> > prominent arch/ppc header?
-> >
->
->  The last time arch/ppc built for me (a few days ago), it got
->  535 warnings.  I don't think anyone would notice one more.
->  Also, whoever doesn't yet know arch/ppc will be going away
->  has been living under a rock for the last two years.
 
-You say that as if it is an uncommon living condition.
+On Mon, 2008-04-21 at 16:54 +0200, Stefan Roese wrote:
 
-g.
+> --------------
+> - As suggested by Benjamin Herrenschmidt, don't determine endpoint mode
+>   by looking at the already configured PCIe port state, but evaluate
+>   the device_type property instead. This makes it possible for boards
+>   without a previously run PCIe configuration (e.g. U-Boot) to configure
+>   a port as endpoint as well.
+> 
+> - Don't map the big external config space upon endpoint configuration.
+> 
+> - Introduce "vendor-id" and "device-id" properties to be written to
+>   the host bridge.
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+and class-code too ?
+
+Appart from that, I'll have a quick look at the patch later today but at
+first it looks good.
+
+Cheers,
+Ben.
