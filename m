@@ -1,21 +1,22 @@
-Return-Path: <jbe@pengutronix.de>
-Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
-	[83.236.181.26]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <SRS0+6fcec71e9a37e012d0a0+1702+infradead.org+dwmw2@pentafluge.srs.infradead.org>
+Received: from pentafluge.infradead.org (pentafluge.infradead.org
+	[213.146.154.40])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 77276DE123
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Apr 2008 18:02:20 +1000 (EST)
-From: Juergen Beisert <jbe@pengutronix.de>
-To: linuxppc-dev@ozlabs.org
-Date: Mon, 21 Apr 2008 10:02:06 +0200
-References: <47FDEF9B.5000506@semihalf.com>
-	<fa686aa40804181553q622b3c1fi7a302712abe79be1@mail.gmail.com>
-	<4809DF54.2080609@genesi-usa.com>
-In-Reply-To: <4809DF54.2080609@genesi-usa.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Message-Id: <200804211002.07452.jbe@pengutronix.de>
-Subject: Re: RFC: MPC5200 PSC AC97 driver
+	by ozlabs.org (Postfix) with ESMTPS id 5D60CDE15C
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 Apr 2008 18:03:13 +1000 (EST)
+Subject: Re: removal of arch/ppc in 2.6.27?
+From: David Woodhouse <dwmw2@infradead.org>
+To: Paul Mackerras <paulus@samba.org>
+In-Reply-To: <18443.13999.770734.826892@cargo.ozlabs.ibm.com>
+References: <D713F373-AE2A-4341-9C29-EF65B9399B36@kernel.crashing.org>
+	<200804201314.47311.marvin24@gmx.de>
+	<18443.13999.770734.826892@cargo.ozlabs.ibm.com>
+Content-Type: text/plain
+Date: Mon, 21 Apr 2008 09:03:05 +0100
+Message-Id: <1208764985.9212.453.camel@pmac.infradead.org>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,42 +26,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Matt,
+On Sun, 2008-04-20 at 22:27 +1000, Paul Mackerras wrote:
+> Marvin writes:
+> 
+> > will this be the end of life for all the PReP's ? I remember a patch posted 
+> > some month ago, but didn't heard anything since then. Any news? Or just let 
+> > it die quietly?
+> 
+> No, I'm still planning on getting PReP support over to arch/powerpc,
+> but getting time to work on it has been the difficulty.
+> 
+> What sort of PReP do you have?
 
-On Saturday 19 April 2008 14:02, Matt Sealey wrote:
-> Grant Likely wrote:
-> > On Fri, Apr 18, 2008 at 12:11 PM, Matt Sealey <matt@genesi-usa.com> wro=
-te:
-> >>  Juergen Beisert wrote:
-> >
-> > BTW, is anyone trying to shepherd this driver into the ALSA tree?  Its
-> > out of my area of expertise and responsibility, so I haven't been
-> > pursuing it.
->
-> We (well, I) were going to try but we got some oopses; from one thing or
-> another, but with Juergen's fixes and cell-index in place, now it plays
-> audio.
->
-> Now it can be pushed to ALSA on that basis, but I'm still trying to get my
-> head around where we need to throw patches and if it goes into ALSA Drive=
-rs
-> first or the kernel or both? It's kind of convoluted compared to the ease
-> of just CC'ing netdev or linux-ide..
+I have a 43P-140, which I bought on eBay a few weeks ago to add to the
+Fedora testing pile. Foolishly I was trying to get the CHRP kernel
+booting on it, just because it says 'chrp' in its device_type.
 
-Please don't forget what Sylvian said about this driver: "I also completely=
-=20
-skipped the 5200 (not B) support ..." and your own "I think it should be le=
-ft=20
-noted here that the CCR size changed from 16 bits to 32 bits from 5200 to=20
-5200B in order to reduce confusion.". Its not solved yet. So any user of an=
-=20
-old MPC5200 will be surprised...
+Unfortunately I seem to have killed it -- I tried to update its firmware
+from TIG97251 to TIG04204 and although the update looked successful, it
+never came back. Says 'F2A' on the diagnostic panel. I renamed the
+firmware file on the floppy to 'precover.img' as the documentation
+suggests, but it never even looks at the floppy drive when it starts up.
 
-Juergen
+Anyone know if the firmware flash on these can be removed and flashed
+externally, or have any better suggestions?
 
-=2D-=20
-Dipl.-Ing. Juergen Beisert | http://www.pengutronix.de
-=C2=A0Pengutronix - Linux Solutions for Science and Industry
-=C2=A0   Handelsregister: Amtsgericht Hildesheim, HRA 2686
-=C2=A0 =C2=A0 =C2=A0    Vertretung Sued/Muenchen, Germany
-   Phone: +49-8766-939 228 |  Fax: +49-5121-206917-9
+-- 
+dwmw2
