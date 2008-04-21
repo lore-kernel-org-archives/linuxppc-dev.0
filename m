@@ -1,20 +1,29 @@
-Return-Path: <fboudra@gmail.com>
-Received: from hs-out-0708.google.com (hs-out-0708.google.com [64.233.178.249])
-	by ozlabs.org (Postfix) with ESMTP id 0805CDDFE9
+Return-Path: <glppe-linuxppc-embedded-2@m.gmane.org>
+Received: from ciao.gmane.org (main.gmane.org [80.91.229.2])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 4AD07DE068
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 21 Apr 2008 18:45:05 +1000 (EST)
-Received: by hs-out-0708.google.com with SMTP id z77so1021514hsz.9
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 21 Apr 2008 01:45:04 -0700 (PDT)
-Message-ID: <6a2e33620804210145n79470da4v549ab0c19c35775@mail.gmail.com>
-Date: Mon, 21 Apr 2008 10:45:02 +0200
-From: "Fathi Boudra" <fboudra@gmail.com>
+	Tue, 22 Apr 2008 01:00:24 +1000 (EST)
+Received: from list by ciao.gmane.org with local (Exim 4.43)
+	id 1JnxV8-0000mR-7i
+	for linuxppc-embedded@ozlabs.org; Mon, 21 Apr 2008 15:00:14 +0000
+Received: from p5497c4d8.dip.t-dialin.net ([84.151.196.216])
+	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
+	id 1AlnuQ-0007hv-00
+	for <linuxppc-embedded@ozlabs.org>; Mon, 21 Apr 2008 15:00:14 +0000
+Received: from dzu by p5497c4d8.dip.t-dialin.net with local (Gmexim 0.1
+	(Debian)) id 1AlnuQ-0007hv-00
+	for <linuxppc-embedded@ozlabs.org>; Mon, 21 Apr 2008 15:00:14 +0000
 To: linuxppc-embedded@ozlabs.org
-Subject: stuck on update mpc834x based board from 2.6.20 to 2.6.21
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_11624_4566137.1208767502893"
-Reply-To: fboudra@gmail.com
+From: Detlev Zundel <dzu@denx.de>
+Subject: Re: eldk and usb to serial converters
+Date: Mon, 21 Apr 2008 16:59:25 +0200
+Message-ID: <m2r6cz45ki.fsf@ohwell.denx.de>
+References: <27dfa3d0804171704j711aad1cwe7b558c077da3350@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Sender: news <news@ger.gmane.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -25,42 +34,32 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-------=_Part_11624_4566137.1208767502893
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Hi Daniel,
 
-Hi,
+> I'm currently trying to compile a kernel for an AMCC440EP board within an eldk
+> environment. We've got a FTDI usb2serial converter we need to connect to the
+> board. Now I've compiled a kernel on a gentoo machine for this device and had
+> no problems. With this board, the kernel recognizes the device fine:
+>
+> ftdi_sio 1-1:1.0: FTDI USB Serial Device converter detected
+> usb 1-1: FTDI USB Serial Device converter now attached to ttyUSB0
+> drivers/usb/serial/ftdi_sio.c: v1.4.3:USB FTDI Serial Converters Driver
+>
+> but udev doesn't actually make the ttyUSB0 node. If anyone knows what may have
+> caused the problem and how to fix it, it'd be much appreciated.
 
-I've got a mpc8347e based board with a working 2.6.20 kernel and a dtb.
-I wasn't able to boot on a more recent kernel (>2.6.20).
+Maybe udev isn't running at all?  The ELDKs including udev disable it
+per default (what version are you using?).  Embedded systeme like to
+have static kernel configurations presenting no surprises at runtime...
 
-To update my config. I tried ppc and powerpc arch.:
+Cheers
+  Detlev
 
-a) make ARCH=ppc CROSS_COMPILE=ppc_6xx- oldconfig
-then select 6xx/MPC834X SYS
-
-b) make ARCH=powerpc CROSS_COMPILE=ppc_6xx- oldconfig
-then select 83XX/MPC834X MDS
-
-On each generated kernel, I'm stuck at:
-Booting using flat device tree at 0x3c0000
-
-For infos, I use ELDK 4.2, U-Boot 1.1.4 and always the same dtb.
-
-did I miss something ?
-
-cheers,
-
-Fathi
-
-------=_Part_11624_4566137.1208767502893
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-Hi,<br><br>I&#39;ve got a mpc8347e based board with a working 2.6.20 kernel and a dtb.<br>I wasn&#39;t able to boot on a more recent kernel (&gt;2.6.20).<br><br>To update my config. I tried ppc and powerpc arch.:<br><br>a) make ARCH=ppc CROSS_COMPILE=ppc_6xx- oldconfig<br>
-then select 6xx/MPC834X SYS<br><br>b) make ARCH=powerpc CROSS_COMPILE=ppc_6xx- oldconfig<br>then select 83XX/MPC834X MDS<br><br>On each generated kernel, I&#39;m stuck at:<br>Booting using flat device tree at 0x3c0000<br>
-<br>For infos, I use ELDK 4.2, U-Boot 1.1.4 and always the same dtb.<br><br>did I miss something ?<br><br>cheers,<br><br>Fathi<br><br>
-
-------=_Part_11624_4566137.1208767502893--
+-- 
+Programming X-Windows is like trying to find the square root of pi
+using roman numerals.
+                                          -- The UNIX Haters Handbook
+--
+DENX Software Engineering GmbH,      MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich,  Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-40 Fax: (+49)-8142-66989-80 Email: dzu@denx.de
