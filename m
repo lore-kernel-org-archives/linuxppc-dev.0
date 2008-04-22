@@ -1,18 +1,23 @@
-Return-Path: <tony@bakeyournoodle.com>
-Received: from pythia.bakeyournoodle.com (pythia.bakeyournoodle.com
-	[203.82.209.197]) by ozlabs.org (Postfix) with ESMTP id EC54EDDDEE
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Apr 2008 15:55:37 +1000 (EST)
-Date: Tue, 22 Apr 2008 15:55:36 +1000
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH 1/3] Raise the upper limit of NR_CPUS.
-Message-ID: <20080422055536.GI20457@bakeyournoodle.com>
-References: <767e424a294239aba86aa7da086f6395f7066d14.1208834828.git.tony@bakeyournoodle.com>
-	<20080422135005.16b4a65d.sfr@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20080422135005.16b4a65d.sfr@canb.auug.org.au>
-From: tony@bakeyournoodle.com (Tony Breeds)
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id B3C1BDE08B
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Apr 2008 17:56:58 +1000 (EST)
+Subject: Re: Patches added to powerpc.git master and powerpc-next branches
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <C69E510D-5838-4BE6-AB57-56FCB0592414@kernel.crashing.org>
+References: <18440.34891.440661.248400@cargo.ozlabs.ibm.com>
+	<9CE9EFA8-A303-49C9-B9A2-F62D42F927B7@kernel.crashing.org>
+	<18441.58154.608911.337978@cargo.ozlabs.ibm.com>
+	<C69E510D-5838-4BE6-AB57-56FCB0592414@kernel.crashing.org>
+Content-Type: text/plain
+Date: Tue, 22 Apr 2008 17:56:50 +1000
+Message-Id: <1208851010.9640.90.camel@pasglop>
+Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,32 +27,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Apr 22, 2008 at 01:50:05PM +1000, Stephen Rothwell wrote:
-> Hi Tony,
-> 
-> On Tue, 22 Apr 2008 13:30:06 +1000 (EST) Tony Breeds <tony@bakeyournoodle.com> wrote:
-> >
-> > +void __init initialise_pacas(void)
-> > +{
-> > +	int cpu;
-> > +	unsigned long kernel_toc = (unsigned long)(&__toc_start) + 0x8000UL;
-> 
-> This line could do with a comment saying what it is doing ...
 
-It does need a comment I agree, but I don't think I can do it justice :)
-... I just used what was already there.
- 
-> > +++ b/include/asm-powerpc/paca.h
-> >
-> > +#if   NR_CPUS >= 32
-> > +#define NR_STATIC_PACAS	64
-> 
-> This allocates 64 pacas etc for NR_CPUS == 32 so surely that test should
-> be >?
+On Mon, 2008-04-21 at 12:51 -0500, Kumar Gala wrote:
 
-Yes it should be.
+> I'm not clear on why this is needed.  I can see value in having the  
+> PGD entry in place but the pte PAs would be changing all the time so
+> I  
+> don't see what benefit there is in keeping them in one page.
 
-Yours Tony
+Because they are accessed as an array by the C code ?
 
-  linux.conf.au    http://www.marchsouth.org/
-  Jan 19 - 24 2009 The Australian Linux Technical Conference!
+Ben.
