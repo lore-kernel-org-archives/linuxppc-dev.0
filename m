@@ -1,29 +1,22 @@
-Return-Path: <scottwood@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 1291FDDED2
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Apr 2008 06:21:29 +1000 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
-	m3MKKOgH020751
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Apr 2008 13:20:25 -0700 (MST)
-Received: from ld0162-tx32.am.freescale.net (ld0162-tx32.am.freescale.net
-	[10.82.19.112])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m3MKKNTq026345
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Apr 2008 15:20:24 -0500 (CDT)
-Date: Tue, 22 Apr 2008 15:20:23 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Grant Likely <grant.likely@secretlab.ca>
+Return-Path: <glikely@secretlab.ca>
+Received: from hs-out-0708.google.com (hs-out-0708.google.com [64.233.178.249])
+	by ozlabs.org (Postfix) with ESMTP id 157F3DDF66
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Apr 2008 06:27:01 +1000 (EST)
+Received: by hs-out-0708.google.com with SMTP id z77so1577237hsz.9
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Apr 2008 13:26:59 -0700 (PDT)
+Message-ID: <fa686aa40804221326k14b095adk6a5ef5ccf9cd2a17@mail.gmail.com>
+Date: Tue, 22 Apr 2008 14:26:59 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Scott Wood" <scottwood@freescale.com>
 Subject: Re: [RFC POWERPC] booting-without-of: bindings for FHCI USB, GPIO LEDs,
 	MCU, and NAND on UPM
-Message-ID: <20080422202023.GA23165@ld0162-tx32.am.freescale.net>
+In-Reply-To: <20080422202023.GA23165@ld0162-tx32.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 References: <20080422194135.GA27822@polina.dev.rtsoft.ru>
 	<fa686aa40804221308w5960ces1f03a6a8c049edd4@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <fa686aa40804221308w5960ces1f03a6a8c049edd4@mail.gmail.com>
+	<20080422202023.GA23165@ld0162-tx32.am.freescale.net>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -34,31 +27,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Apr 22, 2008 at 02:08:45PM -0600, Grant Likely wrote:
-> > +    Example:
-> > +
-> > +       usb-pram@8b00 {
-> > +               compatible = "fsl,mpc8360-qe-muram-usb-pram",
-> > +                            "fsl,qe-muram-usb-pram",
-> > +                            "fsl,cpm-muram-usb-pram";
-> > +               reg = <0x8b00 0x100>;
-> > +       };
+On Tue, Apr 22, 2008 at 2:20 PM, Scott Wood <scottwood@freescale.com> wrote:
+> On Tue, Apr 22, 2008 at 02:08:45PM -0600, Grant Likely wrote:
+>  > > +    Example:
+>  > > +
+>  > > +       usb-pram@8b00 {
+>  > > +               compatible = "fsl,mpc8360-qe-muram-usb-pram",
+>  > > +                            "fsl,qe-muram-usb-pram",
+>  > > +                            "fsl,cpm-muram-usb-pram";
+>  > > +               reg = <0x8b00 0x100>;
+>  > > +       };
+>
+>  Why not put it as an additional reg resource on the ucc node, instead of
+>  in its own node?  That's how existing CPM bindings do it.
 
-Why not put it as an additional reg resource on the ucc node, instead of
-in its own node?  That's how existing CPM bindings do it.
+hmmm, yeah, that sounds like a better approach.
 
-> > +    t) Freescale QUICC Engine USB Controller
-> > +
-> > +    Required properties:
-> > +      - compatible : should be "fsl,<chip>-qe-usb", "fsl,qe-usb",
-> > +        "fsl,usb-fhci"
-> 
-> Again, I'd leave out "fsl,qe-usb" and "fsl,usb-fhci".
+>
+>  > > +    t) Freescale QUICC Engine USB Controller
+>  > > +
+>  > > +    Required properties:
+>  > > +      - compatible : should be "fsl,<chip>-qe-usb", "fsl,qe-usb",
+>  > > +        "fsl,usb-fhci"
+>  >
+>  > Again, I'd leave out "fsl,qe-usb" and "fsl,usb-fhci".
+>
+>  QE is the name of a specific IP block, and is unlikely to be broken in a
+>  non-backwards-compatible manner without having a new name such as QE2.  I
+>  think this is taking "no generic names" too far.
 
-QE is the name of a specific IP block, and is unlikely to be broken in a
-non-backwards-compatible manner without having a new name such as QE2.  I
-think this is taking "no generic names" too far.  If these names *are*
-left out, then at least document which chip we're supposed to pick out of
-a hat to claim compatibility with.
+I'll just leave my comment as "I disagree" and resist the temptation
+to rehash my argument.  :-)
 
--Scott
+>  If these names *are*
+>  left out, then at least document which chip we're supposed to pick out of
+>  a hat to claim compatibility with.
+
+I agree with that.
+
+>
+>  -Scott
+>
+
+
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
