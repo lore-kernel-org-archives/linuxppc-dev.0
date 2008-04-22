@@ -2,9 +2,9 @@ Return-Path: <benh@ozlabs.org>
 To: <jgarzik@pobox.com>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Date: Tue, 22 Apr 2008 10:46:42 +1000
-Subject: [PATCH 1/6] ibm_newemac: Fix problem with jumbo frame support and
-	EMAC V4.patch
-Message-Id: <20080422004758.1A823DE19B@ozlabs.org>
+Subject: [PATCH 2/6] ibm_newemac: Add support for 460EX/GT-type MAL rx-channel
+	handling
+Message-Id: <20080422004758.DB022DE1C0@ozlabs.org>
 Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -17,31 +17,48 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Stefan Roese <sr@denx.de>
 
-This fixes the jumbo frame support on EMAC V4 systems. Now the correct
-bit is set depending on the EMAC version configured.
-
-Tested on Kilauea (405EX) and Canyonlands (460EX).
+On some 4xx PPC's (e.g. 460EX/GT), the rx channel number is a multiple
+of 8 (e.g. 8 for EMAC1, 16 for EMAC2), but enabling in MAL_RXCASR needs
+the divided by 8 value for the bitmask.
 
 Signed-off-by: Stefan Roese <sr@denx.de>
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
 ---
- drivers/net/ibm_newemac/core.c |    5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+ drivers/net/ibm_newemac/mal.c |   16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
 
-diff --git a/drivers/net/ibm_newemac/core.c b/drivers/net/ibm_newemac/core.c
-index 0789802..486901f 100644
---- a/drivers/net/ibm_newemac/core.c
-+++ b/drivers/net/ibm_newemac/core.c
-@@ -524,7 +524,10 @@ static int emac_configure(struct emac_instance *dev)
- 		rx_size = dev->rx_fifo_size_gige;
+diff --git a/drivers/net/ibm_newemac/mal.c b/drivers/net/ibm_newemac/mal.c
+index 6869f08..fb9c9eb 100644
+--- a/drivers/net/ibm_newemac/mal.c
++++ b/drivers/net/ibm_newemac/mal.c
+@@ -136,6 +136,14 @@ void mal_enable_rx_channel(struct mal_instance *mal, int channel)
+ {
+ 	unsigned long flags;
  
- 		if (dev->ndev->mtu > ETH_DATA_LEN) {
--			mr1 |= EMAC_MR1_JPSM;
-+			if (emac_has_feature(dev, EMAC_FTR_EMAC4))
-+				mr1 |= EMAC4_MR1_JPSM;
-+			else
-+				mr1 |= EMAC_MR1_JPSM;
- 			dev->stop_timeout = STOP_TIMEOUT_1000_JUMBO;
- 		} else
- 			dev->stop_timeout = STOP_TIMEOUT_1000;
++	/*
++	 * On some 4xx PPC's (e.g. 460EX/GT), the rx channel is a multiple
++	 * of 8, but enabling in MAL_RXCASR needs the divided by 8 value
++	 * for the bitmask
++	 */
++	if (!(channel % 8))
++		channel >>= 3;
++
+ 	spin_lock_irqsave(&mal->lock, flags);
+ 
+ 	MAL_DBG(mal, "enable_rx(%d)" NL, channel);
+@@ -148,6 +156,14 @@ void mal_enable_rx_channel(struct mal_instance *mal, int channel)
+ 
+ void mal_disable_rx_channel(struct mal_instance *mal, int channel)
+ {
++	/*
++	 * On some 4xx PPC's (e.g. 460EX/GT), the rx channel is a multiple
++	 * of 8, but enabling in MAL_RXCASR needs the divided by 8 value
++	 * for the bitmask
++	 */
++	if (!(channel % 8))
++		channel >>= 3;
++
+ 	set_mal_dcrn(mal, MAL_RXCARR, MAL_CHAN_MASK(channel));
+ 
+ 	MAL_DBG(mal, "disable_rx(%d)" NL, channel);
