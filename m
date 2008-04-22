@@ -1,17 +1,22 @@
-Return-Path: <yuyongbao@126.com>
-Received: from m5-142.126.com (m5-142.126.com [202.108.5.142])
-	by ozlabs.org (Postfix) with SMTP id 1A82EDE15E
+Return-Path: <d.stonier@gmail.com>
+Received: from ti-out-0910.google.com (ti-out-0910.google.com [209.85.142.191])
+	by ozlabs.org (Postfix) with ESMTP id 8AAE7DDF1B
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 22 Apr 2008 13:38:32 +1000 (EST)
-Message-ID: <8F7682C0F2B249D7AF2906A081CB25A5@baby>
-From: "???" <yuyongbao@126.com>
-To: <linuxppc-embedded@ozlabs.org>
-References: <mailman.3.1208829603.21538.linuxppc-embedded@ozlabs.org>
-Subject: mpc8379e rdb nand flash support
-Date: Tue, 22 Apr 2008 11:07:13 +0800
+	Tue, 22 Apr 2008 14:24:00 +1000 (EST)
+Received: by ti-out-0910.google.com with SMTP id y6so660033tia.13
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 21 Apr 2008 21:23:58 -0700 (PDT)
+Message-ID: <27dfa3d0804212123i1085456bpbc6f39b75e005ff5@mail.gmail.com>
+Date: Tue, 22 Apr 2008 13:23:57 +0900
+From: "Daniel Stonier" <d.stonier@gmail.com>
+To: "Detlev Zundel" <dzu@denx.de>, linuxppc-embedded@ozlabs.org
+Subject: Re: eldk and usb to serial converters
+In-Reply-To: <m2r6cz45ki.fsf@ohwell.denx.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: multipart/alternative;
+	boundary="----=_Part_13477_16195152.1208838238018"
+References: <27dfa3d0804171704j711aad1cwe7b558c077da3350@mail.gmail.com>
+	<m2r6cz45ki.fsf@ohwell.denx.de>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -22,49 +27,105 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-RGVhciBhbGw6DQogICAgIE5vdyBJIHVzZWQgdGhlIG1wYzgzNzllcmRiIGJvYXJkIGFuZCBjaGFu
-Z2VkIHRoZSBuYW5kIGZsYXNoIGZyb20gMzJNIHRvIDFHIC4NCiAgICAgYnV0IHdoZW4gSSB1c2Vk
-IHUtYm9vdCBjb21tYW5kIGZvciBuYW5kIHdyaXRlICxzb21lIHByb2JsZW0gaGFwcGVuZWQgbGlr
-ZToNClUtQm9vdCAxLjMuMC1yYzINCi8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8v
-Ly8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8v
-Ly8vDQogICAgIEVob21ldGVjaCAjaGVscCBuYW5kDQpuYW5kIGluZm8gICAgICAgICAgICAgICAg
-ICAtIHNob3cgYXZhaWxhYmxlIE5BTkQgZGV2aWNlcw0KbmFuZCBkZXZpY2UgW2Rldl0gICAgIC0g
-c2hvdyBvciBzZXQgY3VycmVudCBkZXZpY2UNCm5hbmQgcmVhZFsuamZmczJdICAgICAtIGFkZHIg
-b2ZmfHBhcnRpdGlvbiBzaXplDQpuYW5kIHdyaXRlWy5qZmZzMl0gICAgLSBhZGRyIG9mZnxwYXJ0
-aXRpb24gc2l6ZSAtIHJlYWQvd3JpdGUgYHNpemUnIGJ5dGVzIHN0YXJ0aW5nDQogICAgYXQgb2Zm
-c2V0IGBvZmYnIHRvL2Zyb20gbWVtb3J5IGFkZHJlc3MgYGFkZHInDQpuYW5kIGVyYXNlIFtjbGVh
-bl0gW29mZiBzaXplXSAtIGVyYXNlIGBzaXplJyBieXRlcyBmcm9tDQogICAgb2Zmc2V0IGBvZmYn
-IChlbnRpcmUgZGV2aWNlIGlmIG5vdCBzcGVjaWZpZWQpDQpuYW5kIGJhZCAtIHNob3cgYmFkIGJs
-b2Nrcw0KbmFuZCBkdW1wWy5vb2JdIG9mZiAtIGR1bXAgcGFnZQ0KbmFuZCBzY3J1YiAtIHJlYWxs
-eSBjbGVhbiBOQU5EIGVyYXNpbmcgYmFkIGJsb2NrcyAoVU5TQUZFKQ0KbmFuZCBtYXJrYmFkIG9m
-ZiAtIG1hcmsgYmFkIGJsb2NrIGF0IG9mZnNldCAoVU5TQUZFKQ0KbmFuZCBiaXRlcnIgb2ZmIC0g
-bWFrZSBhIGJpdCBlcnJvciBhdCBvZmZzZXQgKFVOU0FGRSkNCm5hbmQgbG9jayBbdGlnaHRdIFtz
-dGF0dXNdIC0gYnJpbmcgbmFuZCB0byBsb2NrIHN0YXRlIG9yIGRpc3BsYXkgbG9ja2VkIHBhZ2Vz
-DQpuYW5kIHVubG9jayBbb2Zmc2V0XSBbc2l6ZV0gLSB1bmxvY2sgc2VjdGlvbg0KDQpFaG9tZXRl
-Y2ggI25hbmQgZXJhc2UNCg0KTkFORCBlcmFzZTogZGV2aWNlIDAgd2hvbGUgY2hpcA0KRXJhc2lu
-ZyBhdCAweDNmZmMwMDAwIC0tIDEwMCUgY29tcGxldGUuDQpPSw0KRWhvbWV0ZWNoICNuYW5kIGJh
-ZA0KDQpEZXZpY2UgMCBiYWQgYmxvY2tzOg0KRWhvbWV0ZWNoICN0ZnRwIDEwMDAwMDAgcm9vdC1w
-MmstYjRrLmpmZnMyDQpUU0VDMDogTm8gbGluay4NClNwZWVkOiAxMDAwLCBmdWxsIGR1cGxleA0K
-VXNpbmcgVFNFQzEgZGV2aWNlDQpURlRQIGZyb20gc2VydmVyIDE5Mi4xNjguMC4yMDA7IG91ciBJ
-UCBhZGRyZXNzIGlzIDE5Mi4xNjguMC4yMjANCkZpbGVuYW1lICdyb290LXAyay1iNGsuamZmczIn
-Lg0KTG9hZCBhZGRyZXNzOiAweDEwMDAwMDANCkxvYWRpbmc6IFQgVCAjIyMjIyMjIyMjIyMjIyMj
-IyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIw0KICAgICAg
-ICAgIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMj
-IyMjIyMjIyMjIyMNCiAgICAgICAgICMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMj
-IyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjDQogICAgICAgICAjIyMjIyMjIyMjIyMjIyMj
-IyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIw0KICAgICAg
-ICAgIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMj
-IyMjIyMjIyMjIyMNCiAgICAgICAgICMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMj
-IyMjIyMjIw0KZG9uZQ0KQnl0ZXMgdHJhbnNmZXJyZWQgPSA1MzgzNjUyICg1MjI1ZTQgaGV4KQ0K
-RWhvbWV0ZWNoICNuYW5kIHdyaXRlLmpmZnMyIDEwMDAwMDAgMCA1MjI1ZTQNCg0KTkFORCB3cml0
-ZTogZGV2aWNlIDAgb2Zmc2V0IDB4MCwgc2l6ZSAweDUyMjVlNA0KDQpXcml0aW5nIGRhdGEgYXQg
-MHgxYTAwMCAtLSAgIDIlIGNvbXBsZXRlLndyaXRpbmcgTkFORCBwYWdlIGF0IG9mZnNldCAweDIw
-MDAwIGZhaWxlZA0KRGF0YSBkaWQgbm90IGZpdCBpbnRvIGRldmljZSwgZHVlIHRvIGJhZCBibG9j
-a3MNCiA1MzgzNjUyIGJ5dGVzIHdyaXR0ZW46IEVSUk9SDQpFaG9tZXRlY2ggI25hbmQgZGV2aWNl
-DQoNCkRldmljZSAwOiBOQU5EIDFHaUIgMywzViA4LWJpdA0KRWhvbWV0ZWNoICMNCg0KLy8vLy8v
-Ly8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8v
-Ly8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8NCiAgICBCdXQgdGhlIG5hbmQgZmxhc2gg
-aGFzIG5vIGJhZCBibG9ja3Mgd2hlbiBJIHVzZSAibmFuZCBiYWQiY29tbWFuZC4gDQpyb290LXAy
-ay1iNGsuamZmczIgaXMgdGhlIGpmZnMyIGZpbGVzeXN0ZW0gbWFkZSBieSBta2ZzLmpmZnMyIC1l
-IDB4NDAwMDAgDQogDQogICBUaGFuayB5b3UhQmVzdCB3aXNoZXMuDQogICANCiAgIEJvYiB5dSAN
-CiAgIDIwMDgtNC0yMg0KICAgICA=
+------=_Part_13477_16195152.1208838238018
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+Just discovered that this morning! Had made the assumption it was
+automatically enabled, but only clued onto it when I noticed udevmonitor
+wasn't giving only UEVENT output, not UDEV output. Should have been obvious,
+but I kept barking up the wrong tree!
+
+So, turning out to be a good chance to learn how the lower levels of a linux
+system work and managed to learn exactly how udev works while stumbling on
+this one.
+Thanks for the reply
+
+2008/4/21 Detlev Zundel <dzu@denx.de>:
+
+> Hi Daniel,
+>
+> > I'm currently trying to compile a kernel for an AMCC440EP board within
+> an eldk
+> > environment. We've got a FTDI usb2serial converter we need to connect to
+> the
+> > board. Now I've compiled a kernel on a gentoo machine for this device
+> and had
+> > no problems. With this board, the kernel recognizes the device fine:
+> >
+> > ftdi_sio 1-1:1.0: FTDI USB Serial Device converter detected
+> > usb 1-1: FTDI USB Serial Device converter now attached to ttyUSB0
+> > drivers/usb/serial/ftdi_sio.c: v1.4.3:USB FTDI Serial Converters Driver
+> >
+> > but udev doesn't actually make the ttyUSB0 node. If anyone knows what
+> may have
+> > caused the problem and how to fix it, it'd be much appreciated.
+>
+> Maybe udev isn't running at all?  The ELDKs including udev disable it
+> per default (what version are you using?).  Embedded systeme like to
+> have static kernel configurations presenting no surprises at runtime...
+>
+> Cheers
+>  Detlev
+>
+> --
+> Programming X-Windows is like trying to find the square root of pi
+> using roman numerals.
+>                                          -- The UNIX Haters Handbook
+> --
+> DENX Software Engineering GmbH,      MD: Wolfgang Denk & Detlev Zundel
+> HRB 165235 Munich,  Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+> Phone: (+49)-8142-66989-40 Fax: (+49)-8142-66989-80 Email: dzu@denx.de
+>
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>
+
+------=_Part_13477_16195152.1208838238018
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+Just discovered that this morning! Had made the assumption it was automatically enabled, but only clued onto it when I noticed udevmonitor wasn&#39;t giving only UEVENT output, not UDEV output. Should have been obvious, but I kept barking up the wrong tree! <br>
+<br>So, turning out to be a good chance to learn how the lower levels of a linux system work and managed to learn exactly how udev works while stumbling on this one. <br>Thanks for the reply<br><br><div class="gmail_quote">
+2008/4/21 Detlev Zundel &lt;<a href="mailto:dzu@denx.de">dzu@denx.de</a>&gt;:<br><blockquote class="gmail_quote" style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">Hi Daniel,<br>
+
+<div><div></div><div class="Wj3C7c"><br>
+&gt; I&#39;m currently trying to compile a kernel for an AMCC440EP board within an eldk<br>
+&gt; environment. We&#39;ve got a FTDI usb2serial converter we need to connect to the<br>
+&gt; board. Now I&#39;ve compiled a kernel on a gentoo machine for this device and had<br>
+&gt; no problems. With this board, the kernel recognizes the device fine:<br>
+&gt;<br>
+&gt; ftdi_sio 1-1:1.0: FTDI USB Serial Device converter detected<br>
+&gt; usb 1-1: FTDI USB Serial Device converter now attached to ttyUSB0<br>
+&gt; drivers/usb/serial/ftdi_sio.c: v1.4.3:USB FTDI Serial Converters Driver<br>
+&gt;<br>
+&gt; but udev doesn&#39;t actually make the ttyUSB0 node. If anyone knows what may have<br>
+&gt; caused the problem and how to fix it, it&#39;d be much appreciated.<br>
+<br>
+</div></div>Maybe udev isn&#39;t running at all? &nbsp;The ELDKs including udev disable it<br>
+per default (what version are you using?). &nbsp;Embedded systeme like to<br>
+have static kernel configurations presenting no surprises at runtime...<br>
+<br>
+Cheers<br>
+ &nbsp;Detlev<br>
+<br>
+--<br>
+Programming X-Windows is like trying to find the square root of pi<br>
+using roman numerals.<br>
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;-- The UNIX Haters Handbook<br>
+--<br>
+DENX Software Engineering GmbH, &nbsp; &nbsp; &nbsp;MD: Wolfgang Denk &amp; Detlev Zundel<br>
+HRB 165235 Munich, &nbsp;Office: Kirchenstr.5, D-82194 Groebenzell, Germany<br>
+Phone: (+49)-8142-66989-40 Fax: (+49)-8142-66989-80 Email: <a href="mailto:dzu@denx.de">dzu@denx.de</a><br>
+<br>
+_______________________________________________<br>
+Linuxppc-embedded mailing list<br>
+<a href="mailto:Linuxppc-embedded@ozlabs.org">Linuxppc-embedded@ozlabs.org</a><br>
+<a href="https://ozlabs.org/mailman/listinfo/linuxppc-embedded" target="_blank">https://ozlabs.org/mailman/listinfo/linuxppc-embedded</a><br>
+</blockquote></div><br>
+
+------=_Part_13477_16195152.1208838238018--
