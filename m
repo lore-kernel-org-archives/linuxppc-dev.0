@@ -1,22 +1,17 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from wx-out-0506.google.com (wx-out-0506.google.com [66.249.82.237])
-	by ozlabs.org (Postfix) with ESMTP id 2569ADE047
+Return-Path: <yuyongbao@126.com>
+Received: from m5-142.126.com (m5-142.126.com [202.108.5.142])
+	by ozlabs.org (Postfix) with SMTP id 1A82EDE15E
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 22 Apr 2008 04:09:08 +1000 (EST)
-Received: by wx-out-0506.google.com with SMTP id h27so1409713wxd.15
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 21 Apr 2008 11:09:07 -0700 (PDT)
-Message-ID: <fa686aa40804211109g2f7f45d0gf836be46e2c1a40b@mail.gmail.com>
-Date: Mon, 21 Apr 2008 12:09:07 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Sam Karp" <sam.d.karp@gmail.com>
-Subject: Re: SecretLab 2.6.24 with USB
-In-Reply-To: <800687fe0804141927y1f6ea75cv7ad0ba68b4fa637a@mail.gmail.com>
+	Tue, 22 Apr 2008 13:38:32 +1000 (EST)
+Message-ID: <8F7682C0F2B249D7AF2906A081CB25A5@baby>
+From: "???" <yuyongbao@126.com>
+To: <linuxppc-embedded@ozlabs.org>
+References: <mailman.3.1208829603.21538.linuxppc-embedded@ozlabs.org>
+Subject: mpc8379e rdb nand flash support
+Date: Tue, 22 Apr 2008 11:07:13 +0800
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <800687fe0804141927y1f6ea75cv7ad0ba68b4fa637a@mail.gmail.com>
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain;
+	charset="iso-8859-1"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -27,29 +22,49 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Mon, Apr 14, 2008 at 8:27 PM, Sam Karp <sam.d.karp@gmail.com> wrote:
-> Hi all,
->
-> I've downloaded the SecretLab Xilinx Linux 2.6.24 Kernel and I'm trying to
-> use a thumbdrive with the kernel.  I'm booting from a ramdisk and insert the
-> thumbdrive but I have no /dev/sd* or /dev/hd* blocks.  Is there anything I
-> need to add to the kernel or design to ensure that the thumbdrive is working
-> or getting power?
-
-Sorry I didn't get back to you earlier.  Your best bet is to use
-Xilinx's git tree and manually patch in the c67x00 driver from Peter
-Korsgaard's driver.
-
-http://www.mail-archive.com/linux-usb@vger.kernel.org/msg01907.html
-http://www.mail-archive.com/linux-usb@vger.kernel.org/msg01908.html
-http://www.mail-archive.com/linux-usb@vger.kernel.org/msg01906.html
-http://www.mail-archive.com/linux-usb@vger.kernel.org/msg01907.html
-
-I haven't been keeping my tree up to date lately.
-
-Cheers,
-g.
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+RGVhciBhbGw6DQogICAgIE5vdyBJIHVzZWQgdGhlIG1wYzgzNzllcmRiIGJvYXJkIGFuZCBjaGFu
+Z2VkIHRoZSBuYW5kIGZsYXNoIGZyb20gMzJNIHRvIDFHIC4NCiAgICAgYnV0IHdoZW4gSSB1c2Vk
+IHUtYm9vdCBjb21tYW5kIGZvciBuYW5kIHdyaXRlICxzb21lIHByb2JsZW0gaGFwcGVuZWQgbGlr
+ZToNClUtQm9vdCAxLjMuMC1yYzINCi8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8v
+Ly8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8v
+Ly8vDQogICAgIEVob21ldGVjaCAjaGVscCBuYW5kDQpuYW5kIGluZm8gICAgICAgICAgICAgICAg
+ICAtIHNob3cgYXZhaWxhYmxlIE5BTkQgZGV2aWNlcw0KbmFuZCBkZXZpY2UgW2Rldl0gICAgIC0g
+c2hvdyBvciBzZXQgY3VycmVudCBkZXZpY2UNCm5hbmQgcmVhZFsuamZmczJdICAgICAtIGFkZHIg
+b2ZmfHBhcnRpdGlvbiBzaXplDQpuYW5kIHdyaXRlWy5qZmZzMl0gICAgLSBhZGRyIG9mZnxwYXJ0
+aXRpb24gc2l6ZSAtIHJlYWQvd3JpdGUgYHNpemUnIGJ5dGVzIHN0YXJ0aW5nDQogICAgYXQgb2Zm
+c2V0IGBvZmYnIHRvL2Zyb20gbWVtb3J5IGFkZHJlc3MgYGFkZHInDQpuYW5kIGVyYXNlIFtjbGVh
+bl0gW29mZiBzaXplXSAtIGVyYXNlIGBzaXplJyBieXRlcyBmcm9tDQogICAgb2Zmc2V0IGBvZmYn
+IChlbnRpcmUgZGV2aWNlIGlmIG5vdCBzcGVjaWZpZWQpDQpuYW5kIGJhZCAtIHNob3cgYmFkIGJs
+b2Nrcw0KbmFuZCBkdW1wWy5vb2JdIG9mZiAtIGR1bXAgcGFnZQ0KbmFuZCBzY3J1YiAtIHJlYWxs
+eSBjbGVhbiBOQU5EIGVyYXNpbmcgYmFkIGJsb2NrcyAoVU5TQUZFKQ0KbmFuZCBtYXJrYmFkIG9m
+ZiAtIG1hcmsgYmFkIGJsb2NrIGF0IG9mZnNldCAoVU5TQUZFKQ0KbmFuZCBiaXRlcnIgb2ZmIC0g
+bWFrZSBhIGJpdCBlcnJvciBhdCBvZmZzZXQgKFVOU0FGRSkNCm5hbmQgbG9jayBbdGlnaHRdIFtz
+dGF0dXNdIC0gYnJpbmcgbmFuZCB0byBsb2NrIHN0YXRlIG9yIGRpc3BsYXkgbG9ja2VkIHBhZ2Vz
+DQpuYW5kIHVubG9jayBbb2Zmc2V0XSBbc2l6ZV0gLSB1bmxvY2sgc2VjdGlvbg0KDQpFaG9tZXRl
+Y2ggI25hbmQgZXJhc2UNCg0KTkFORCBlcmFzZTogZGV2aWNlIDAgd2hvbGUgY2hpcA0KRXJhc2lu
+ZyBhdCAweDNmZmMwMDAwIC0tIDEwMCUgY29tcGxldGUuDQpPSw0KRWhvbWV0ZWNoICNuYW5kIGJh
+ZA0KDQpEZXZpY2UgMCBiYWQgYmxvY2tzOg0KRWhvbWV0ZWNoICN0ZnRwIDEwMDAwMDAgcm9vdC1w
+MmstYjRrLmpmZnMyDQpUU0VDMDogTm8gbGluay4NClNwZWVkOiAxMDAwLCBmdWxsIGR1cGxleA0K
+VXNpbmcgVFNFQzEgZGV2aWNlDQpURlRQIGZyb20gc2VydmVyIDE5Mi4xNjguMC4yMDA7IG91ciBJ
+UCBhZGRyZXNzIGlzIDE5Mi4xNjguMC4yMjANCkZpbGVuYW1lICdyb290LXAyay1iNGsuamZmczIn
+Lg0KTG9hZCBhZGRyZXNzOiAweDEwMDAwMDANCkxvYWRpbmc6IFQgVCAjIyMjIyMjIyMjIyMjIyMj
+IyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIw0KICAgICAg
+ICAgIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMj
+IyMjIyMjIyMjIyMNCiAgICAgICAgICMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMj
+IyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjDQogICAgICAgICAjIyMjIyMjIyMjIyMjIyMj
+IyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIw0KICAgICAg
+ICAgIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMj
+IyMjIyMjIyMjIyMNCiAgICAgICAgICMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMj
+IyMjIyMjIw0KZG9uZQ0KQnl0ZXMgdHJhbnNmZXJyZWQgPSA1MzgzNjUyICg1MjI1ZTQgaGV4KQ0K
+RWhvbWV0ZWNoICNuYW5kIHdyaXRlLmpmZnMyIDEwMDAwMDAgMCA1MjI1ZTQNCg0KTkFORCB3cml0
+ZTogZGV2aWNlIDAgb2Zmc2V0IDB4MCwgc2l6ZSAweDUyMjVlNA0KDQpXcml0aW5nIGRhdGEgYXQg
+MHgxYTAwMCAtLSAgIDIlIGNvbXBsZXRlLndyaXRpbmcgTkFORCBwYWdlIGF0IG9mZnNldCAweDIw
+MDAwIGZhaWxlZA0KRGF0YSBkaWQgbm90IGZpdCBpbnRvIGRldmljZSwgZHVlIHRvIGJhZCBibG9j
+a3MNCiA1MzgzNjUyIGJ5dGVzIHdyaXR0ZW46IEVSUk9SDQpFaG9tZXRlY2ggI25hbmQgZGV2aWNl
+DQoNCkRldmljZSAwOiBOQU5EIDFHaUIgMywzViA4LWJpdA0KRWhvbWV0ZWNoICMNCg0KLy8vLy8v
+Ly8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8v
+Ly8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8NCiAgICBCdXQgdGhlIG5hbmQgZmxhc2gg
+aGFzIG5vIGJhZCBibG9ja3Mgd2hlbiBJIHVzZSAibmFuZCBiYWQiY29tbWFuZC4gDQpyb290LXAy
+ay1iNGsuamZmczIgaXMgdGhlIGpmZnMyIGZpbGVzeXN0ZW0gbWFkZSBieSBta2ZzLmpmZnMyIC1l
+IDB4NDAwMDAgDQogDQogICBUaGFuayB5b3UhQmVzdCB3aXNoZXMuDQogICANCiAgIEJvYiB5dSAN
+CiAgIDIwMDgtNC0yMg0KICAgICA=
