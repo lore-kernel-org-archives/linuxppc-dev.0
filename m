@@ -1,21 +1,35 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.177])
-	by ozlabs.org (Postfix) with ESMTP id A445BDE3BF
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Apr 2008 10:50:34 +1000 (EST)
-Received: by py-out-1112.google.com with SMTP id z59so2249444pyg.27
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Apr 2008 17:50:32 -0700 (PDT)
-Subject: [PATCH 2/2] [PPC] Add strncmp to arch/ppc
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: linuxppc-dev@ozlabs.org
-In-Reply-To: <1208825276.6654.41.camel@vader.jdub.homelinux.org>
-References: <1208825276.6654.41.camel@vader.jdub.homelinux.org>
-Content-Type: text/plain
-Date: Mon, 21 Apr 2008 19:50:27 -0500
-Message-Id: <1208825427.6654.46.camel@vader.jdub.homelinux.org>
+Return-Path: <scottwood@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 5FB40DE06D
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Apr 2008 11:06:42 +1000 (EST)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	m3M16bvU011679
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 Apr 2008 18:06:37 -0700 (MST)
+Received: from ld0162-tx32.am.freescale.net (ld0162-tx32.am.freescale.net
+	[10.82.19.112])
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id m3M16aHS014640
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 Apr 2008 20:06:36 -0500 (CDT)
+Date: Mon, 21 Apr 2008 20:06:35 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] [PPC] Remove mpc8272 ads board from arch/ppc
+Message-ID: <20080422010634.GA9245@ld0162-tx32.am.freescale.net>
+References: <Pine.LNX.4.64.0804191051420.20132@blarg.am.freescale.net>
+	<fa686aa40804191114i2cef26eegabfe9bc28d8ecc18@mail.gmail.com>
+	<5422E8EE-4AFA-491B-8920-BDEBF596FF00@kernel.crashing.org>
+	<20080421182953.GB6111@ld0162-tx32.am.freescale.net>
+	<00248a3c226d44aa352ebb69894183f4@kernel.crashing.org>
+	<fa686aa40804211416l5a366f3dl3d91acbea00b539f@mail.gmail.com>
+	<d6a1e8455b5c2c2a23d3713ee7c16805@kernel.crashing.org>
 Mime-Version: 1.0
-Sender: Josh Boyer <jwboyer@gmail.com>
-Cc: paulus@samba.org
-Reply-To: jwboyer@linux.vnet.ibm.com
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <d6a1e8455b5c2c2a23d3713ee7c16805@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,48 +39,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Commit 0119536cd314ef95553604208c25bc35581f7f0a added an assembly version
-of strncmp to PowerPC.  However, it changed a common header file between
-arch/ppc and arch/powerpc without adding strncmp to arch/ppc.  This fixes
-that omission so that arch/ppc links again.
+On Mon, Apr 21, 2008 at 11:25:29PM +0200, Segher Boessenkool wrote:
+> >> The last time arch/ppc built for me (a few days ago), it got
+> >> 535 warnings.
 
-Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Heh.
 
----
- arch/ppc/kernel/ppc_ksyms.c |    1 +
- arch/ppc/lib/string.S       |   14 ++++++++++++++
- 2 files changed, 15 insertions(+)
+> >> I don't think anyone would notice one more. 
 
---- linux-2.6.orig/arch/ppc/kernel/ppc_ksyms.c
-+++ linux-2.6/arch/ppc/kernel/ppc_ksyms.c
-@@ -89,6 +89,7 @@ EXPORT_SYMBOL(strncpy);
- EXPORT_SYMBOL(strcat);
- EXPORT_SYMBOL(strlen);
- EXPORT_SYMBOL(strcmp);
-+EXPORT_SYMBOL(strncmp);
- 
- EXPORT_SYMBOL(csum_partial);
- EXPORT_SYMBOL(csum_partial_copy_generic);
---- linux-2.6.orig/arch/ppc/lib/string.S
-+++ linux-2.6/arch/ppc/lib/string.S
-@@ -121,6 +121,20 @@ _GLOBAL(strcmp)
- 	beq	1b
- 	blr
- 
-+_GLOBAL(strncmp)
-+	PPC_LCMPI r5,0
-+	beqlr
-+	mtctr	r5
-+	addi	r5,r3,-1
-+	addi	r4,r4,-1
-+1:	lbzu	r3,1(r5)
-+	cmpwi	1,r3,0
-+	lbzu	r0,1(r4)
-+	subf.	r3,r0,r3
-+	beqlr	1
-+	bdnzt	eq,1b
-+	blr
-+
- _GLOBAL(strlen)
- 	addi	r4,r3,-1
- 1:	lbzu	r0,1(r4)
+Well, it wouldn't be one more, it'd be one per file that includes the
+header.  If we choose something like asm/system.h, and scream in 
+*** ALL CAPS!!one!11! ***, it should get through the noise.
+
+> >> Also, whoever doesn't yet know arch/ppc will be going away has been
+> >> living under a rock for the last two years.
+> >
+> >You say that as if it is an uncommon living condition.
+> 
+> Oh sorry.  "Under a rock without any connection to the intertubes".
+
+I guess you missed the recent patch someone posted with style cleanup in
+arch/ppc/8xx_io? :-P
+
+-Scott
