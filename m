@@ -1,24 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 2D351DE0D1
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Apr 2008 08:24:31 +1000 (EST)
-Subject: Re: [PATCH 1/3] radeonfb: Fix 64 bits resources on 32 bits archs
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
-In-Reply-To: <480E0A54.9010203@linux.vnet.ibm.com>
-References: <20080422012723.BA9F2DE13F@ozlabs.org>
-	<480E0A54.9010203@linux.vnet.ibm.com>
-Content-Type: text/plain
-Date: Wed, 23 Apr 2008 08:21:43 +1000
-Message-Id: <1208902903.9640.138.camel@pasglop>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: Question on MPC83xx interrupts
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Scott Wood <scottwood@freescale.com>
+In-Reply-To: <20080422172306.GA17992@ld0162-tx32.am.freescale.net>
+References: <480E1939.6000701@matrix-vision.de>
+	<20080422172306.GA17992@ld0162-tx32.am.freescale.net>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-9pUXeY62eYJCAzUHmoa/"
+Date: Wed, 23 Apr 2008 08:57:11 +1000
+Message-Id: <1208905031.6947.0.camel@concordia>
 Mime-Version: 1.0
-Cc: linux-fbdev-devel@lists.sourceforge.net,
-	Hollis Blanchard <hollisb@us.ibm.com>, adaplas@gmail.com,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Andrew Morton <akpm@linux-foundation.org>, Detlev Zundel <dzu@denx.de>
-Reply-To: benh@kernel.crashing.org
+Cc: Andre Schwarz <andre.schwarz@matrix-vision.de>,
+	linux-ppc list <linuxppc-dev@ozlabs.org>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,17 +24,45 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Tue, 2008-04-22 at 17:55 +0200, Christian Ehrhardt wrote:
-> I wanted to ask if there are any known workarounds atm that would
-> allow me to use my X11 for now?
+--=-9pUXeY62eYJCAzUHmoa/
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-X is doing a mmap of /dev/mem instead of /dev/fb ?
+On Tue, 2008-04-22 at 12:23 -0500, Scott Wood wrote:
+> On Tue, Apr 22, 2008 at 06:58:33PM +0200, Andre Schwarz wrote:
+> > I wonder if the IRQ number should match the vector of the datasheet ...=
+=20
+> > giving :
+>=20
+> No.  The numbers in /proc/interrupts are virtual IRQ numbers, which are a
+> purely Linux-internal construct.
 
-You can normally map the fb mapping /dev/fb and then map the registers
-using /dev/fb at an offset beyond the framebuffer (fix->smem_len).
+You can see the mapping between virq and hwirq numbers by turning on
+CONFIG_VIRQ_DEBUG and looking in /sys/kernel/debug/powerpc/virq_mapping
+(after mounting debugfs).
 
-If X is using /dev/mem instead, then it's being stupid and needs to be
-fixed...
+cheers
 
-Cheers,
-Ben.
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-9pUXeY62eYJCAzUHmoa/
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBIDm1HdSjSd0sB4dIRAnxqAKCB/UUoHloI9kHTZ+Wf1lMUfs1PwwCggEb/
+9JMOKZo1ge2ew/Y0D070+nI=
+=dPFH
+-----END PGP SIGNATURE-----
+
+--=-9pUXeY62eYJCAzUHmoa/--
