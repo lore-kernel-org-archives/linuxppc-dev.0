@@ -1,10 +1,17 @@
-Return-Path: <benh@ozlabs.org>
-To: <jgarzik@pobox.com>
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Tue, 22 Apr 2008 10:46:46 +1000
-Subject: [PATCH 5/6] ibm_newemac: PowerPC 440GX EMAC PHY clock workaround
-Message-Id: <20080422004803.7F497DE2C5@ozlabs.org>
-Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
+Return-Path: <jwboyer@gmail.com>
+Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.180])
+	by ozlabs.org (Postfix) with ESMTP id 58832DE254
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Apr 2008 10:48:02 +1000 (EST)
+Received: by py-out-1112.google.com with SMTP id z59so2248584pyg.27
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 Apr 2008 17:48:01 -0700 (PDT)
+Subject: [PATCH 0/2] Fix 440 arch/ppc builds
+From: Josh Boyer <jwboyer@gmail.com>
+To: linuxppc-dev@ozlabs.org
+Content-Type: text/plain
+Date: Mon, 21 Apr 2008 19:47:56 -0500
+Message-Id: <1208825276.6654.41.camel@vader.jdub.homelinux.org>
+Mime-Version: 1.0
+Cc: paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -14,99 +21,8 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Valentine Barshak <vbarshak@ru.mvista.com>
+The following two patches fix arch/ppc 440 builds.  Unless some miracle
+occurs and people stop breaking arch/ppc with commits, this will likely
+be the last kernel where it builds.
 
-The PowerPC 440GX Taishan board fails to reset EMAC3 (reset timeout error)
-if there's no link. Because of that it fails to find PHY chip. The older ibm_emac
-driver had a workaround for that: the EMAC_CLK_INTERNAL/EMAC_CLK_EXTERNAL macros,
-which toggle the Ethernet Clock Select bit in the SDR0_MFR register. This patch
-does the same for "ibm,emac-440gx" compatible chips. The workaround forces
-clock on -all- EMACs, so we select clock under global emac_phy_map_lock.
-
-BenH: Made that #ifdef CONFIG_PPC_DCR_NATIVE for now as dcri_* stuff doesn't
-exist for MMIO type DCRs like Cell. Some future rework & improvements of the
-DCR infrastructure will make that cleaner but for now, this makes it work.
-
-Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-
----
- drivers/net/ibm_newemac/core.c |   18 +++++++++++++++++-
- drivers/net/ibm_newemac/core.h |    8 ++++++--
- 2 files changed, 23 insertions(+), 3 deletions(-)
-
---- linux-work.orig/drivers/net/ibm_newemac/core.c	2008-04-22 10:11:59.000000000 +1000
-+++ linux-work/drivers/net/ibm_newemac/core.c	2008-04-22 10:31:18.000000000 +1000
-@@ -43,6 +43,8 @@
- #include <asm/io.h>
- #include <asm/dma.h>
- #include <asm/uaccess.h>
-+#include <asm/dcr.h>
-+#include <asm/dcr-regs.h>
- 
- #include "core.h"
- 
-@@ -2333,6 +2335,11 @@ static int __devinit emac_init_phy(struc
- 	dev->phy.mdio_read = emac_mdio_read;
- 	dev->phy.mdio_write = emac_mdio_write;
- 
-+	/* Enable internal clock source */
-+#ifdef CONFIG_PPC_DCR_NATIVE
-+	if (emac_has_feature(dev, EMAC_FTR_440GX_PHY_CLK_FIX))
-+		dcri_clrset(SDR0, SDR0_MFR, 0, SDR0_MFR_ECS);
-+#endif
- 	/* Configure EMAC with defaults so we can at least use MDIO
- 	 * This is needed mostly for 440GX
- 	 */
-@@ -2365,6 +2372,12 @@ static int __devinit emac_init_phy(struc
- 			if (!emac_mii_phy_probe(&dev->phy, i))
- 				break;
- 		}
-+
-+	/* Enable external clock source */
-+#ifdef CONFIG_PPC_DCR_NATIVE
-+	if (emac_has_feature(dev, EMAC_FTR_440GX_PHY_CLK_FIX))
-+		dcri_clrset(SDR0, SDR0_MFR, SDR0_MFR_ECS, 0);
-+#endif
- 	mutex_unlock(&emac_phy_map_lock);
- 	if (i == 0x20) {
- 		printk(KERN_WARNING "%s: can't find PHY!\n", np->full_name);
-@@ -2490,8 +2503,11 @@ static int __devinit emac_init_config(st
- 	}
- 
- 	/* Check EMAC version */
--	if (of_device_is_compatible(np, "ibm,emac4"))
-+	if (of_device_is_compatible(np, "ibm,emac4")) {
- 		dev->features |= EMAC_FTR_EMAC4;
-+		if (of_device_is_compatible(np, "ibm,emac-440gx"))
-+			dev->features |= EMAC_FTR_440GX_PHY_CLK_FIX;
-+	}
- 
- 	/* Fixup some feature bits based on the device tree */
- 	if (of_get_property(np, "has-inverted-stacr-oc", NULL))
-Index: linux-work/drivers/net/ibm_newemac/core.h
-===================================================================
---- linux-work.orig/drivers/net/ibm_newemac/core.h	2008-04-22 10:06:31.000000000 +1000
-+++ linux-work/drivers/net/ibm_newemac/core.h	2008-04-22 10:30:03.000000000 +1000
-@@ -301,6 +301,10 @@ struct emac_instance {
-  * Set if we have new type STACR with STAOPC
-  */
- #define EMAC_FTR_HAS_NEW_STACR		0x00000040
-+/*
-+ * Set if we need phy clock workaround for 440gx
-+ */
-+#define EMAC_FTR_440GX_PHY_CLK_FIX	0x00000080
- 
- 
- /* Right now, we don't quite handle the always/possible masks on the
-@@ -312,8 +316,8 @@ enum {
- 
- 	EMAC_FTRS_POSSIBLE	=
- #ifdef CONFIG_IBM_NEW_EMAC_EMAC4
--	    EMAC_FTR_EMAC4	| EMAC_FTR_HAS_NEW_STACR	|
--	    EMAC_FTR_STACR_OC_INVERT	|
-+	    EMAC_FTR_EMAC4 | EMAC_FTR_HAS_NEW_STACR |
-+	    EMAC_FTR_STACR_OC_INVERT | EMAC_FTR_440GX_PHY_CLK_FIX |
- #endif
- #ifdef CONFIG_IBM_NEW_EMAC_TAH
- 	    EMAC_FTR_HAS_TAH	|
+josh
