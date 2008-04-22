@@ -1,19 +1,18 @@
-Return-Path: <sr@denx.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.183]) by ozlabs.org (Postfix) with ESMTP id 5FD92DE0C2
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Apr 2008 15:17:42 +1000 (EST)
-From: Stefan Roese <sr@denx.de>
-To: benh@kernel.crashing.org
-Subject: Re: [PATCH v2] [POWERPC] 4xx: Add endpoint support to 4xx PCIe driver
-Date: Tue, 22 Apr 2008 07:17:30 +0200
-References: <1208789670-28909-1-git-send-email-sr@denx.de>
-	<1208812591.9640.45.camel@pasglop>
-In-Reply-To: <1208812591.9640.45.camel@pasglop>
+Return-Path: <tony@bakeyournoodle.com>
+Received: from pythia.bakeyournoodle.com (pythia.bakeyournoodle.com
+	[203.82.209.197]) by ozlabs.org (Postfix) with ESMTP id EC54EDDDEE
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Apr 2008 15:55:37 +1000 (EST)
+Date: Tue, 22 Apr 2008 15:55:36 +1000
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [PATCH 1/3] Raise the upper limit of NR_CPUS.
+Message-ID: <20080422055536.GI20457@bakeyournoodle.com>
+References: <767e424a294239aba86aa7da086f6395f7066d14.1208834828.git.tony@bakeyournoodle.com>
+	<20080422135005.16b4a65d.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Message-Id: <200804220717.30546.sr@denx.de>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20080422135005.16b4a65d.sfr@canb.auug.org.au>
+From: tony@bakeyournoodle.com (Tony Breeds)
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,29 +22,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Monday 21 April 2008, Benjamin Herrenschmidt wrote:
-> On Mon, 2008-04-21 at 16:54 +0200, Stefan Roese wrote:
-> > --------------
-> > - As suggested by Benjamin Herrenschmidt, don't determine endpoint mode
-> >   by looking at the already configured PCIe port state, but evaluate
-> >   the device_type property instead. This makes it possible for boards
-> >   without a previously run PCIe configuration (e.g. U-Boot) to configure
-> >   a port as endpoint as well.
+On Tue, Apr 22, 2008 at 01:50:05PM +1000, Stephen Rothwell wrote:
+> Hi Tony,
+> 
+> On Tue, 22 Apr 2008 13:30:06 +1000 (EST) Tony Breeds <tony@bakeyournoodle.com> wrote:
 > >
-> > - Don't map the big external config space upon endpoint configuration.
+> > +void __init initialise_pacas(void)
+> > +{
+> > +	int cpu;
+> > +	unsigned long kernel_toc = (unsigned long)(&__toc_start) + 0x8000UL;
+> 
+> This line could do with a comment saying what it is doing ...
+
+It does need a comment I agree, but I don't think I can do it justice :)
+... I just used what was already there.
+ 
+> > +++ b/include/asm-powerpc/paca.h
 > >
-> > - Introduce "vendor-id" and "device-id" properties to be written to
-> >   the host bridge.
->
-> and class-code too ?
+> > +#if   NR_CPUS >= 32
+> > +#define NR_STATIC_PACAS	64
+> 
+> This allocates 64 pacas etc for NR_CPUS == 32 so surely that test should
+> be >?
 
-Sure, could be done. But this is not really endpoint/root-complex related. So 
-I suggest to add this later with an additional patch.
+Yes it should be.
 
-> Appart from that, I'll have a quick look at the patch later today but at
-> first it looks good.
+Yours Tony
 
-Thanks.
-
-Best regards,
-Stefan
+  linux.conf.au    http://www.marchsouth.org/
+  Jan 19 - 24 2009 The Australian Linux Technical Conference!
