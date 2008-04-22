@@ -1,11 +1,13 @@
 Return-Path: <tony@bakeyournoodle.com>
 Received: from pythia.bakeyournoodle.com (pythia.bakeyournoodle.com
-	[203.82.209.197]) by ozlabs.org (Postfix) with ESMTP id 25214DDE04
+	[203.82.209.197]) by ozlabs.org (Postfix) with ESMTP id 254E2DE13D
 	for <linuxppc-dev@ozlabs.org>; Tue, 22 Apr 2008 13:30:07 +1000 (EST)
 To: Paul Mackerras <paulus@samba.org>, <linuxppc-dev@ozlabs.org>
-Message-Id: <767e424a294239aba86aa7da086f6395f7066d14.1208834828.git.tony@bakeyournoodle.com>
+Message-Id: <a125ba5f7ce860d279003a8dc23c6d1eb53d2a33.1208834829.git.tony@bakeyournoodle.com>
+In-Reply-To: <767e424a294239aba86aa7da086f6395f7066d14.1208834828.git.tony@bakeyournoodle.com>
+References: <767e424a294239aba86aa7da086f6395f7066d14.1208834828.git.tony@bakeyournoodle.com>
 From: Tony Breeds <tony@bakeyournoodle.com>
-Subject: [PATCH 1/3] Raise the upper limit of NR_CPUS.
+Subject: [PATCH 3/3] Move the paca array into the BSS.
 Date: Tue, 22 Apr 2008 13:30:06 +1000 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -16,189 +18,158 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-As the pacas are statically initialised increasing NR_CPUS beyond 128,
-means that any additional pacas will be empty  ... which is bad.
+With NR_CPUS=1024
+text    data     bss     dec     hex filename
+ 137 1704032       0 1704169  1a00e9 arch/powerpc/kernel/paca.o :Before
+ 121 1179744  524288 1704153  1a00d9 arch/powerpc/kernel/paca.o :After
 
-This patch adds the required functionality to fill in any excess pacas
-at runtime.
+Now that we're not staatically allocating the paca, we don't need the
+NR_STATIC_PACAS #define anymore.
+
+Also remove unneeded #includes.
 
 Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
 ---
- arch/powerpc/kernel/paca.c             |   57 ++++++++++++++++++++------------
- arch/powerpc/kernel/setup_64.c         |    3 ++
- arch/powerpc/platforms/Kconfig.cputype |    4 +-
- include/asm-powerpc/paca.h             |   20 +++++++++++
- 4 files changed, 61 insertions(+), 23 deletions(-)
+ arch/powerpc/kernel/paca.c |   64 +++-----------------------------------------
+ include/asm-powerpc/paca.h |   17 -----------
+ 2 files changed, 4 insertions(+), 77 deletions(-)
 
 diff --git a/arch/powerpc/kernel/paca.c b/arch/powerpc/kernel/paca.c
-index ac163bd..7cd55f2 100644
+index 7cd55f2..c4c02c6 100644
 --- a/arch/powerpc/kernel/paca.c
 +++ b/arch/powerpc/kernel/paca.c
-@@ -18,6 +18,15 @@
- #include <asm/paca.h>
- #include <asm/mmu.h>
+@@ -7,26 +7,11 @@
+  *      2 of the License, or (at your option) any later version.
+  */
  
-+/*
-+ * In order to handle "strange" values of NR_CPUS, Make sure we use
-+ * max(NR_CPUS, NR_STATIC_PACAS) for array sizes below
-+ */
-+#if NR_CPUS > NR_STATIC_PACAS
-+#define MAX_CPUS	NR_CPUS
-+#else
-+#define MAX_CPUS	NR_STATIC_PACAS
-+#endif
+-#include <linux/types.h>
+ #include <linux/threads.h>
+ #include <linux/module.h>
+ 
+-#include <asm/processor.h>
+-#include <asm/ptrace.h>
+-#include <asm/page.h>
+ #include <asm/lppaca.h>
+ #include <asm/paca.h>
+-#include <asm/mmu.h>
+-
+-/*
+- * In order to handle "strange" values of NR_CPUS, Make sure we use
+- * max(NR_CPUS, NR_STATIC_PACAS) for array sizes below
+- */
+-#if NR_CPUS > NR_STATIC_PACAS
+-#define MAX_CPUS	NR_CPUS
+-#else
+-#define MAX_CPUS	NR_STATIC_PACAS
+-#endif
  
  /* This symbol is provided by the linker - let it fill in the paca
   * field correctly */
-@@ -33,7 +42,7 @@ extern unsigned long __toc_start;
+@@ -42,7 +27,7 @@ extern unsigned long __toc_start;
   * will suffice to ensure that it doesn't cross a page boundary.
   */
  struct lppaca lppaca[] = {
--	[0 ... (NR_CPUS-1)] = {
-+	[0 ... (MAX_CPUS-1)] = {
+-	[0 ... (MAX_CPUS-1)] = {
++	[0 ... (NR_CPUS-1)] = {
  		.desc = 0xd397d781,	/* "LpPa" */
  		.size = sizeof(struct lppaca),
  		.dyn_proc_status = 2,
-@@ -50,7 +59,7 @@ struct lppaca lppaca[] = {
+@@ -59,7 +44,7 @@ struct lppaca lppaca[] = {
   * initially, hence will all be invaild until we actually write them.
   */
  struct slb_shadow slb_shadow[] __cacheline_aligned = {
--	[0 ... (NR_CPUS-1)] = {
-+	[0 ... (MAX_CPUS-1)] = {
+-	[0 ... (MAX_CPUS-1)] = {
++	[0 ... (NR_CPUS-1)] = {
  		.persistent = SLB_NUM_BOLTED,
  		.buffer_length = sizeof(struct slb_shadow),
  	},
-@@ -76,7 +85,7 @@ struct slb_shadow slb_shadow[] __cacheline_aligned = {
- 	.__current = &init_task,					    \
- }
- 
--struct paca_struct paca[] = {
-+struct paca_struct paca[MAX_CPUS] = {
- 	PACA_INIT(0),
- #if NR_CPUS > 1
- 	PACA_INIT(  1), PACA_INIT(  2), PACA_INIT(  3),
-@@ -98,27 +107,33 @@ struct paca_struct paca[] = {
- 	PACA_INIT( 52), PACA_INIT( 53), PACA_INIT( 54), PACA_INIT( 55),
- 	PACA_INIT( 56), PACA_INIT( 57), PACA_INIT( 58), PACA_INIT( 59),
- 	PACA_INIT( 60), PACA_INIT( 61), PACA_INIT( 62), PACA_INIT( 63),
--#if NR_CPUS > 64
--	PACA_INIT( 64), PACA_INIT( 65), PACA_INIT( 66), PACA_INIT( 67),
--	PACA_INIT( 68), PACA_INIT( 69), PACA_INIT( 70), PACA_INIT( 71),
--	PACA_INIT( 72), PACA_INIT( 73), PACA_INIT( 74), PACA_INIT( 75),
--	PACA_INIT( 76), PACA_INIT( 77), PACA_INIT( 78), PACA_INIT( 79),
--	PACA_INIT( 80), PACA_INIT( 81), PACA_INIT( 82), PACA_INIT( 83),
--	PACA_INIT( 84), PACA_INIT( 85), PACA_INIT( 86), PACA_INIT( 87),
--	PACA_INIT( 88), PACA_INIT( 89), PACA_INIT( 90), PACA_INIT( 91),
--	PACA_INIT( 92), PACA_INIT( 93), PACA_INIT( 94), PACA_INIT( 95),
--	PACA_INIT( 96), PACA_INIT( 97), PACA_INIT( 98), PACA_INIT( 99),
--	PACA_INIT(100), PACA_INIT(101), PACA_INIT(102), PACA_INIT(103),
--	PACA_INIT(104), PACA_INIT(105), PACA_INIT(106), PACA_INIT(107),
--	PACA_INIT(108), PACA_INIT(109), PACA_INIT(110), PACA_INIT(111),
--	PACA_INIT(112), PACA_INIT(113), PACA_INIT(114), PACA_INIT(115),
--	PACA_INIT(116), PACA_INIT(117), PACA_INIT(118), PACA_INIT(119),
--	PACA_INIT(120), PACA_INIT(121), PACA_INIT(122), PACA_INIT(123),
--	PACA_INIT(124), PACA_INIT(125), PACA_INIT(126), PACA_INIT(127),
+@@ -74,57 +59,16 @@ struct slb_shadow slb_shadow[] __cacheline_aligned = {
+  * processors.  The processor VPD array needs one entry per physical
+  * processor (not thread).
+  */
+-#define PACA_INIT(number)						    \
+-{									    \
+-	.lppaca_ptr = &lppaca[number],					    \
+-	.lock_token = 0x8000,						    \
+-	.paca_index = (number),		/* Paca Index */		    \
+-	.kernel_toc = (unsigned long)(&__toc_start) + 0x8000UL,		    \
+-	.hw_cpu_id = 0xffff,						    \
+-	.slb_shadow_ptr = &slb_shadow[number],				    \
+-	.__current = &init_task,					    \
+-}
+-
+-struct paca_struct paca[MAX_CPUS] = {
+-	PACA_INIT(0),
+-#if NR_CPUS > 1
+-	PACA_INIT(  1), PACA_INIT(  2), PACA_INIT(  3),
+-#if NR_CPUS > 4
+-	PACA_INIT(  4), PACA_INIT(  5), PACA_INIT(  6), PACA_INIT(  7),
+-#if NR_CPUS > 8
+-	PACA_INIT(  8), PACA_INIT(  9), PACA_INIT( 10), PACA_INIT( 11),
+-	PACA_INIT( 12), PACA_INIT( 13), PACA_INIT( 14), PACA_INIT( 15),
+-	PACA_INIT( 16), PACA_INIT( 17), PACA_INIT( 18), PACA_INIT( 19),
+-	PACA_INIT( 20), PACA_INIT( 21), PACA_INIT( 22), PACA_INIT( 23),
+-	PACA_INIT( 24), PACA_INIT( 25), PACA_INIT( 26), PACA_INIT( 27),
+-	PACA_INIT( 28), PACA_INIT( 29), PACA_INIT( 30), PACA_INIT( 31),
+-#if NR_CPUS > 32
+-	PACA_INIT( 32), PACA_INIT( 33), PACA_INIT( 34), PACA_INIT( 35),
+-	PACA_INIT( 36), PACA_INIT( 37), PACA_INIT( 38), PACA_INIT( 39),
+-	PACA_INIT( 40), PACA_INIT( 41), PACA_INIT( 42), PACA_INIT( 43),
+-	PACA_INIT( 44), PACA_INIT( 45), PACA_INIT( 46), PACA_INIT( 47),
+-	PACA_INIT( 48), PACA_INIT( 49), PACA_INIT( 50), PACA_INIT( 51),
+-	PACA_INIT( 52), PACA_INIT( 53), PACA_INIT( 54), PACA_INIT( 55),
+-	PACA_INIT( 56), PACA_INIT( 57), PACA_INIT( 58), PACA_INIT( 59),
+-	PACA_INIT( 60), PACA_INIT( 61), PACA_INIT( 62), PACA_INIT( 63),
 -#endif
- #endif
- #endif
- #endif
- #endif
- };
+-#endif
+-#endif
+-#endif
+-};
++struct paca_struct paca[NR_CPUS];
  EXPORT_SYMBOL(paca);
-+
-+/*
-+ * The first few (NR_STATIC_PACAS) paca entires are initiialised
-+ * statically. populate the rest.
-+ */
-+void __init initialise_pacas(void)
-+{
-+	int cpu;
-+	unsigned long kernel_toc = (unsigned long)(&__toc_start) + 0x8000UL;
-+
-+	/* Can't use for_each_*_cpu, as they aren't functional yet */
-+	for (cpu = NR_STATIC_PACAS; cpu < NR_CPUS; cpu++) {
-+		struct paca_struct *new_paca = &paca[cpu];
-+
-+		new_paca->lppaca_ptr = &lppaca[cpu];
-+		new_paca->lock_token = 0x8000;
-+		new_paca->paca_index = cpu;
-+		new_paca->kernel_toc = kernel_toc;
-+		new_paca->hw_cpu_id = 0xffff;
-+		new_paca->slb_shadow_ptr = &slb_shadow[cpu];
-+		new_paca->__current = &init_task;
-+
-+	}
-+}
-diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index 31ada9f..5e382ac 100644
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -170,6 +170,9 @@ void __init setup_paca(int cpu)
  
- void __init early_setup(unsigned long dt_ptr)
+-/*
+- * The first few (NR_STATIC_PACAS) paca entires are initiialised
+- * statically. populate the rest.
+- */
+ void __init initialise_pacas(void)
  {
-+	/* Fill in any unititialised pacas */
-+	initialise_pacas();
-+
- 	/* Identify CPU type */
- 	identify_cpu(0, mfspr(SPRN_PVR));
+ 	int cpu;
+ 	unsigned long kernel_toc = (unsigned long)(&__toc_start) + 0x8000UL;
  
-diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-index 5fc7fac..f7efaa9 100644
---- a/arch/powerpc/platforms/Kconfig.cputype
-+++ b/arch/powerpc/platforms/Kconfig.cputype
-@@ -220,8 +220,8 @@ config SMP
- 	  If you don't know what to do here, say N.
+ 	/* Can't use for_each_*_cpu, as they aren't functional yet */
+-	for (cpu = NR_STATIC_PACAS; cpu < NR_CPUS; cpu++) {
++	for (cpu = 0; cpu < NR_CPUS; cpu++) {
+ 		struct paca_struct *new_paca = &paca[cpu];
  
- config NR_CPUS
--	int "Maximum number of CPUs (2-128)"
--	range 2 128
-+	int "Maximum number of CPUs (2-1024)"
-+	range 2 1024
- 	depends on SMP
- 	default "32" if PPC64
- 	default "4"
+ 		new_paca->lppaca_ptr = &lppaca[cpu];
 diff --git a/include/asm-powerpc/paca.h b/include/asm-powerpc/paca.h
-index eb61b9c..871f693 100644
+index 871f693..0bfc180 100644
 --- a/include/asm-powerpc/paca.h
 +++ b/include/asm-powerpc/paca.h
-@@ -16,10 +16,29 @@
- #define _ASM_POWERPC_PACA_H
- #ifdef __KERNEL__
- 
-+#include <linux/threads.h>
-+
- #include	<asm/types.h>
+@@ -22,23 +22,6 @@
  #include	<asm/lppaca.h>
  #include	<asm/mmu.h>
  
-+/*
-+ * iSeries needs the paca to be statically allocated and initialised.
-+ * We will allocated this many, based on NR_CPUS.
-+ */
-+#if   NR_CPUS >= 32
-+#define NR_STATIC_PACAS	64
-+#elif NR_CPUS > 8
-+#define NR_STATIC_PACAS	32
-+#elif NR_CPUS > 4
-+#define NR_STATIC_PACAS	8
-+#elif NR_CPUS > 1
-+#define NR_STATIC_PACAS	4
-+#else
-+#define NR_STATIC_PACAS	1
-+#endif
-+
-+
+-/*
+- * iSeries needs the paca to be statically allocated and initialised.
+- * We will allocated this many, based on NR_CPUS.
+- */
+-#if   NR_CPUS >= 32
+-#define NR_STATIC_PACAS	64
+-#elif NR_CPUS > 8
+-#define NR_STATIC_PACAS	32
+-#elif NR_CPUS > 4
+-#define NR_STATIC_PACAS	8
+-#elif NR_CPUS > 1
+-#define NR_STATIC_PACAS	4
+-#else
+-#define NR_STATIC_PACAS	1
+-#endif
+-
+-
  register struct paca_struct *local_paca asm("r13");
  
  #if defined(CONFIG_DEBUG_PREEMPT) && defined(CONFIG_SMP)
-@@ -108,6 +127,7 @@ struct paca_struct {
- };
- 
- extern struct paca_struct paca[];
-+extern void initialise_pacas(void);
- 
- #endif /* __KERNEL__ */
- #endif /* _ASM_POWERPC_PACA_H */
 -- 
 1.5.5
