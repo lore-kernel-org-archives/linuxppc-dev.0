@@ -1,22 +1,32 @@
-Return-Path: <avorontsov@dev.rtsoft.ru>
-Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
-	by ozlabs.org (Postfix) with SMTP id 399E2DE49D
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Apr 2008 01:36:34 +1000 (EST)
-Date: Tue, 22 Apr 2008 19:36:31 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
+Return-Path: <scottwood@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id EC5B7DE410
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Apr 2008 01:37:04 +1000 (EST)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	m3MFarHR010690
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Apr 2008 08:36:54 -0700 (MST)
+Received: from ld0162-tx32.am.freescale.net (ld0162-tx32.am.freescale.net
+	[10.82.19.112])
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id m3MFaqqj025397
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Apr 2008 10:36:53 -0500 (CDT)
+Date: Tue, 22 Apr 2008 10:36:52 -0500
+From: Scott Wood <scottwood@freescale.com>
 To: Laurent Pinchart <laurentp@cse-semaphore.com>
 Subject: Re: [RFC fs_enet: Convert MII bitbang driver to use GPIO lib
-Message-ID: <20080422153631.GA30309@polina.dev.rtsoft.ru>
+Message-ID: <20080422153652.GF15474@ld0162-tx32.am.freescale.net>
 References: <200804161640.42693.laurentp@cse-semaphore.com>
 	<200804221055.09038.laurentp@cse-semaphore.com>
 	<20080422150844.GA15474@ld0162-tx32.am.freescale.net>
 	<200804221721.51461.laurentp@cse-semaphore.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=windows-1251
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 In-Reply-To: <200804221721.51461.laurentp@cse-semaphore.com>
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
-	netdev@vger.kernel.org
-Reply-To: avorontsov@ru.mvista.com
+Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,77 +37,32 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 On Tue, Apr 22, 2008 at 05:21:49PM +0200, Laurent Pinchart wrote:
-> On Tuesday 22 April 2008 17:08, Scott Wood wrote:
-> > On Tue, Apr 22, 2008 at 10:55:06AM +0200, Laurent Pinchart wrote:
-> > > On Monday 21 April 2008 19:56, Scott Wood wrote:
-> > > > The memory-constrained platform I had in mind was 8xx, which doesn't use
-> > > > bitbanged MDIO.  It might nice to keep the gpiolib bit separate to avoid
-> > > > situations such as ep8248e where mdiobb would be the only thing
-> > > > requiring a gpiolib binding, though -- but it shouldn't be two separate
-> > > > bitbang drivers, just the existing bitbang driver plus some glue code
-> > > > that binds it to gpiolib.
-> > > 
-> > > I would be fine with that if the glue code wasn't 90% of the whole driver. 
-> > > There is really little (not to say nothing) that can be shared between the 
-> > > two drivers.
-> > 
-> > I think we're thinking of a different pair of drivers...  I thought you
-> > were talking about duplicating drivers/net/phy/mdio-bitbang.c, not
-> > drivers/net/fs_enet/mii-bitbang.c.
-> 
-> I don't plan to touch drivers/net/phy/mdio-bitbang.c at all, it does its job 
-> well enough.
-> 
 > As the openfirmware + gpio + mdio driver might benefit non-powerpc platforms, 
 > I plan to create a new driver (probably drivers/net/phy/mdio-ofgpio.c) that 
 > mostly ports drivers/net/fs_enet/mii-bitbang.c to the gpiolib (this replaces 
 > around 90% of the code).
 > 
 > If both drivers/net/fs_enet/mii-bitbang.c and drivers/net/phy/mdio-ofgpio.c 
-> must live together, I'll have a problem in 
-> drivers/net/fs_enet/fs_enet-main.c. The net device probing code searches the 
-> device tree for an associated PHY, and creates a PHY id from the PHY node. As 
-> the id will be generated from different bus ids in the two mdio drivers (the 
-> bus number is the register address for drivers/net/fs_enet/mii-bitbang.c, and 
-> is the gpio index for drivers/net/phy/mdio-ofgpio.c), things will break.
+> must live together, 
+
+The only reason I can see for that would be if the gpiolib version
+doesn't work on arch/ppc -- but that's not going to be a problem for very
+much longer.
+
+> I'll have a problem in drivers/net/fs_enet/fs_enet-main.c. The net
+> device probing code searches the device tree for an associated PHY, and
+> creates a PHY id from the PHY node. As the id will be generated from
+> different bus ids in the two mdio drivers (the bus number is the
+> register address for drivers/net/fs_enet/mii-bitbang.c, and is the gpio
+> index for drivers/net/phy/mdio-ofgpio.c), things will break.
 > 
 > Any idea regarding how to get rid of that fs_enet/mii-bitbang hardcoded 
 > dependency ?
 
-Hm... PHYs are having bus_id equal to MDIOBUS:PHYID, for example
-e0024520:02, see fs_enet-main.c find_phy() and fs_init_phy():
+If mii-bitbang is only used on arch/ppc, then #ifdef CONFIG_PPC_MERGE
+should do it.
 
-        data = of_get_property(np, "phy-handle", &len);
-        phynode = of_find_node_by_phandle(*data);
-        mdionode = of_get_parent(phynode);
-        ret = of_address_to_resource(mdionode, 0, &res);
-        data = of_get_property(phynode, "reg", &len);
-        snprintf(fpi->bus_id, 16, PHY_ID_FMT, res.start, *data);
-...
-	phydev = phy_connect(dev, fep->fpi->bus_id, &fs_adjust_link, 0,
-		PHY_INTERFACE_MODE_MII);
+It'd be nice to be able to give phylib an OF node rather than a string,
+though...
 
-So in the device tree you could do this:
-
-mdio@<GPIO bank addr> {
-	compatible = "linux,mdio-gpio";
-	...
-	phy123: ethernet-phy@2 {
-		reg = <2>;
-		device_type = "ethernet-phy";
-	};
-};
-
-ethernet@... {
-	...
-	compatible = "fs_enet";
-	...
-	phy-handle = <&phy123>;
-};
-
-And fs_enet will match mdio-ofgpio driver.
-
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+-Scott
