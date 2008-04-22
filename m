@@ -1,16 +1,19 @@
-Return-Path: <tony@bakeyournoodle.com>
-Received: from pythia.bakeyournoodle.com (pythia.bakeyournoodle.com
-	[203.82.209.197]) by ozlabs.org (Postfix) with ESMTP id 2A37EDE13E
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Apr 2008 13:30:07 +1000 (EST)
-To: Paul Mackerras <paulus@samba.org>, <linuxppc-dev@ozlabs.org>
-Message-Id: <7be4c4c6f56d04b595c92690b297de17140304d2.1208834828.git.tony@bakeyournoodle.com>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 219FADDE0E
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Apr 2008 13:50:11 +1000 (EST)
+Date: Tue, 22 Apr 2008 13:50:05 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Tony Breeds <tony@bakeyournoodle.com>
+Subject: Re: [PATCH 1/3] Raise the upper limit of NR_CPUS.
+Message-Id: <20080422135005.16b4a65d.sfr@canb.auug.org.au>
 In-Reply-To: <767e424a294239aba86aa7da086f6395f7066d14.1208834828.git.tony@bakeyournoodle.com>
 References: <767e424a294239aba86aa7da086f6395f7066d14.1208834828.git.tony@bakeyournoodle.com>
-From: Tony Breeds <tony@bakeyournoodle.com>
-Subject: [PATCH 2/3] Make iSeries spin on __secondary_hold_spinloop,
-	like pSeries.
-Date: Tue, 22 Apr 2008 13:30:06 +1000 (EST)
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Tue__22_Apr_2008_13_50_05_+1000_GUlLMPPmL97_UMSU"
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,61 +23,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Currently all iSeries secondary CPU's spin directly on the cpu_start in thier
-paca.  Make them spin on the global __secondary_hold_spinloop, until after the
-pacas have been initialised.
+--Signature=_Tue__22_Apr_2008_13_50_05_+1000_GUlLMPPmL97_UMSU
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
----
- arch/powerpc/platforms/iseries/exception.S |   27 ++++++++++++++++++++++++++-
- 1 files changed, 26 insertions(+), 1 deletions(-)
+Hi Tony,
 
-diff --git a/arch/powerpc/platforms/iseries/exception.S b/arch/powerpc/platforms/iseries/exception.S
-index c775cd4..8ff330d 100644
---- a/arch/powerpc/platforms/iseries/exception.S
-+++ b/arch/powerpc/platforms/iseries/exception.S
-@@ -59,8 +59,33 @@ system_reset_iSeries:
- 	andc	r4,r4,r5
- 	mtspr	SPRN_CTRLT,r4
- 
-+/* Spin on __secondary_hold_spinloop until it is updated by the boot cpu. */
-+/* In the UP case we'll yeild() later, and we will not access the paca anyway */
-+#ifdef CONFIG_SMP
- 1:
- 	HMT_LOW
-+	LOAD_REG_IMMEDIATE(r23, __secondary_hold_spinloop)
-+	ld	r23,0(r23)
-+	sync
-+	LOAD_REG_IMMEDIATE(r3,current_set)
-+	sldi	r28,r24,3		/* get current_set[cpu#] */
-+	ldx	r3,r3,r28
-+	addi	r1,r3,THREAD_SIZE
-+	subi	r1,r1,STACK_FRAME_OVERHEAD
-+
-+	cmpwi	0,r23,0			/* Keep poking the Hypervisor until */
-+	bne	2f			/* we're released */
-+	/* Let the Hypervisor know we are alive */
-+	/* 8002 is a call to HvCallCfg::getLps, a harmless Hypervisor function */
-+	lis	r3,0x8002
-+	rldicr	r3,r3,32,15		/* r0 = (r3 << 32) & 0xffff000000000000 */
-+	li	r0,-1			/* r0=-1 indicates a Hypervisor call */
-+	sc				/* Invoke the hypervisor via a system call */
-+	b	1b
-+#endif
-+
-+2:
-+	HMT_LOW
- #ifdef CONFIG_SMP
- 	lbz	r23,PACAPROCSTART(r13)	/* Test if this processor
- 					 * should start */
-@@ -91,7 +116,7 @@ iSeries_secondary_smp_loop:
- 	li	r0,-1			/* r0=-1 indicates a Hypervisor call */
- 	sc				/* Invoke the hypervisor via a system call */
- 	mfspr	r13,SPRN_SPRG3		/* Put r13 back ???? */
--	b	1b			/* If SMP not configured, secondaries
-+	b	2b			/* If SMP not configured, secondaries
- 					 * loop forever */
- 
- /***  ISeries-LPAR interrupt handlers ***/
--- 
-1.5.5
+On Tue, 22 Apr 2008 13:30:06 +1000 (EST) Tony Breeds <tony@bakeyournoodle.c=
+om> wrote:
+>
+> +void __init initialise_pacas(void)
+> +{
+> +	int cpu;
+> +	unsigned long kernel_toc =3D (unsigned long)(&__toc_start) + 0x8000UL;
+
+This line could do with a comment saying what it is doing ...
+
+> +++ b/include/asm-powerpc/paca.h
+>
+> +#if   NR_CPUS >=3D 32
+> +#define NR_STATIC_PACAS	64
+
+This allocates 64 pacas etc for NR_CPUS =3D=3D 32 so surely that test should
+be >?
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Tue__22_Apr_2008_13_50_05_+1000_GUlLMPPmL97_UMSU
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFIDWBxTgG2atn1QN8RArUiAJ0TJqlfobdy2/KIyn7NIE+EI6aLrgCfYKuT
+7Pz3zBzN8LXxZIPnneTFq/0=
+=57Nl
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__22_Apr_2008_13_50_05_+1000_GUlLMPPmL97_UMSU--
