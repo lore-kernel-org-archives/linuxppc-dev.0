@@ -1,18 +1,30 @@
-Return-Path: <andre.schwarz@matrix-vision.de>
-Received: from p15137414.pureserver.info (matrixvision.de [217.160.213.229])
-	by ozlabs.org (Postfix) with ESMTP id 14893DE38A
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Apr 2008 03:36:50 +1000 (EST)
-Message-ID: <480E2230.2030601@matrix-vision.de>
-Date: Tue, 22 Apr 2008 19:36:48 +0200
-From: Andre Schwarz <andre.schwarz@matrix-vision.de>
-MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 4BA5EDE38A
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Apr 2008 03:42:15 +1000 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	m3MHg9Gl001847
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Apr 2008 10:42:10 -0700 (MST)
+Received: from ld0162-tx32.am.freescale.net (ld0162-tx32.am.freescale.net
+	[10.82.19.112])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m3MHg9lp014922
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Apr 2008 12:42:09 -0500 (CDT)
+Date: Tue, 22 Apr 2008 12:42:08 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Andre Schwarz <andre.schwarz@matrix-vision.de>
 Subject: Re: Question on MPC83xx interrupts
+Message-ID: <20080422174208.GB18076@ld0162-tx32.am.freescale.net>
 References: <480E1939.6000701@matrix-vision.de>
 	<20080422172306.GA17992@ld0162-tx32.am.freescale.net>
-In-Reply-To: <20080422172306.GA17992@ld0162-tx32.am.freescale.net>
-Content-Type: multipart/alternative;
-	boundary="------------020808060905040308040308"
+	<480E2230.2030601@matrix-vision.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <480E2230.2030601@matrix-vision.de>
 Cc: linux-ppc list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -23,86 +35,11 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------020808060905040308040308
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+On Tue, Apr 22, 2008 at 07:36:48PM +0200, Andre Schwarz wrote:
+> thanks - any Idea how to figure out where the BAD comes from ?
+> Is it simply an unhandled/unacked one ?
 
-Scott Wood schrieb:
-> On Tue, Apr 22, 2008 at 06:58:33PM +0200, Andre Schwarz wrote:
->   
->> I wonder if the IRQ number should match the vector of the datasheet ... 
->> giving :
->>     
->
-> No.  The numbers in /proc/interrupts are virtual IRQ numbers, which are a
-> purely Linux-internal construct.
->
-> -Scott
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
->   
-Scott,
-
-thanks - any Idea how to figure out where the BAD comes from ?
-Is it simply an unhandled/unacked one ?
-
-
-regards,
-Andre
-
-
-MATRIX VISION GmbH, Talstraße 16, DE-71570 Oppenweiler  - Registergericht: Amtsgericht Stuttgart, HRB 271090
-Geschäftsführer: Gerhard Thullner, Werner Armingeon, Uwe Furtner
-
---------------020808060905040308040308
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-<head>
-  <meta content="text/html;charset=ISO-8859-1" http-equiv="Content-Type">
-</head>
-<body bgcolor="#ffffff" text="#000000">
-Scott Wood schrieb:
-<blockquote
- cite="mid:20080422172306.GA17992@ld0162-tx32.am.freescale.net"
- type="cite">
-  <pre wrap="">On Tue, Apr 22, 2008 at 06:58:33PM +0200, Andre Schwarz wrote:
-  </pre>
-  <blockquote type="cite">
-    <pre wrap="">I wonder if the IRQ number should match the vector of the datasheet ... 
-giving :
-    </pre>
-  </blockquote>
-  <pre wrap=""><!---->
-No.  The numbers in /proc/interrupts are virtual IRQ numbers, which are a
-purely Linux-internal construct.
+It generally happens when an interrupt is requested, and the core takes
+the exception, but then the interrupt source deasserts itself.
 
 -Scott
-_______________________________________________
-Linuxppc-dev mailing list
-<a class="moz-txt-link-abbreviated" href="mailto:Linuxppc-dev@ozlabs.org">Linuxppc-dev@ozlabs.org</a>
-<a class="moz-txt-link-freetext" href="https://ozlabs.org/mailman/listinfo/linuxppc-dev">https://ozlabs.org/mailman/listinfo/linuxppc-dev</a>
-  </pre>
-</blockquote>
-Scott,<br>
-<br>
-thanks - any Idea how to figure out where the BAD comes from ?<br>
-Is it simply an unhandled/unacked one ?<br>
-<br>
-<br>
-regards,<br>
-Andre<br>
-<BR>
-
-MATRIX VISION GmbH, Talstraße 16, DE-71570 Oppenweiler  - Registergericht: Amtsgericht Stuttgart, HRB 271090
-Geschäftsführer: Gerhard Thullner, Werner Armingeon, Uwe Furtner
-<BR>
-</body>
-</html>
-
---------------020808060905040308040308--
