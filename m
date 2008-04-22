@@ -1,20 +1,25 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id 02F3DDE164
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Apr 2008 23:31:46 +1000 (EST)
-Message-ID: <480DE89B.2030402@ru.mvista.com>
-Date: Tue, 22 Apr 2008 17:31:07 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-MIME-Version: 1.0
-To: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
-Subject: Re: pci issue - wrong detection of pci ressources
-References: <48088F02.2060806@linux.vnet.ibm.com>	<1208566122.6958.425.camel@pasglop>	<480BA937.7050603@linux.vnet.ibm.com>	<1208727408.7009.0.camel@pasglop>	<480C80B6.30904@linux.vnet.ibm.com>	<480C87BD.8090207@ru.mvista.com>	<480C9FE2.4030601@linux.vnet.ibm.com>
-	<480CAFD2.2050108@ru.mvista.com> <480CBEE0.9000104@ru.mvista.com>
-	<480DDE2B.4000808@linux.vnet.ibm.com>
-In-Reply-To: <480DDE2B.4000808@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev@ozlabs.org, Detlev Zundel <dzu@denx.de>,
-	Hollis Blanchard <hollisb@us.ibm.com>
+Return-Path: <kumar.gala@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 69B34DDF6D
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Apr 2008 23:38:02 +1000 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	m3MDbuuk004899
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Apr 2008 06:37:56 -0700 (MST)
+Message-Id: <65D1ED37-6B8D-436C-A994-E8764922FE6D@freescale.com>
+From: Kumar Gala <kumar.gala@freescale.com>
+To: Jason Jin <Jason.jin@freescale.com>
+In-Reply-To: <1208857064-26863-1-git-send-email-Jason.jin@freescale.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v919.2)
+Subject: Re: [PATCH v2] MSI driver for Freescale 83xx/85xx/86xx cpu
+Date: Tue, 22 Apr 2008 08:37:53 -0500
+References: <1208857064-26863-1-git-send-email-Jason.jin@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,167 +29,424 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello.
+> diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/ 
+> Makefile
+> index 6d386d0..e60a238 100644
+> --- a/arch/powerpc/sysdev/Makefile
+> +++ b/arch/powerpc/sysdev/Makefile
+> @@ -4,6 +4,7 @@ endif
+>
+> mpic-msi-obj-$(CONFIG_PCI_MSI)	+= mpic_msi.o mpic_u3msi.o  
+> mpic_pasemi_msi.o
+> obj-$(CONFIG_MPIC)		+= mpic.o $(mpic-msi-obj-y)
+> +obj-$(CONFIG_FSL_PCI)		+= fsl_msi.o
 
-Christian Ehrhardt wrote:
+can we do something like:
+fsl_pci-$(CONFIG_MSI)           += fsl_msi.o
+obj-$(CONFIG_FSL_PCI)           += fsl_pci.o $(fsl_pci-y)
 
->>>    Ah, that's what happens -- BAR0 in functions 0/1 takes up the 
->>> whole 265 MiB of the PCI memory space (128+128), so no place is left 
->>> for other memory BARs.
-
->>    What's interesting, the Sequoia/Rainier board user manual says that 
->> PCI memory is 0x80000000 thru 0xbfffffff (i.e. 1 GiB), while the Linux 
->> code seem to always have assumed only 0x[1]800000000 thru 
->> 0x[1]8fffffff...
-
-> Thanks to all your help I saw that the detected spaces on boot are wrong 
-> because of the dts file.
-
-> PCI host bridge /plb/pci@1ec000000 (primary) ranges:
-> MEM 0x0000000180000000..0x000000018fffffff -> 0x0000000080000000    => 256M
->  IO 0x00000001e8000000..0x00000001e80fffff -> 0x0000000000000000    => 1M
-
-    Yeah, I/O space should be 64K according to what arch/ppc/ had (well, I'm 
-looking at the out-of-tree source code :-).
-
-> The Documentation of the 440EPx core lists these spaces:
-> PCI 1 Memory     1 8000 0000     1 BFFF FFFF     1GB
-> I/O              1 E800 0000     1 E800 FFFF     64KB
-> I/O              1 E880 0000     1 EBFF FFFF     56MB
-
-    Having 2 I/O spaces looks just wrong. Actually, PCs do well with only 64K 
-of I/O space.
-
-> I modified the dts file and now it shows this on boot which is what the 
-> user manual lists as mem/io space:
-
-> PCI host bridge /plb/pci@1ec000000 (primary) ranges:
-> MEM 0x0000000180000000..0x00000001bfffffff -> 0x0000000080000000
->  IO 0x00000001e8000000..0x00000001e800ffff -> 0x0000000000000000
->  IO 0x00000001e8800000..0x00000001ebffffff -> 0x0000000000000000
-> \--> Skipped (too many) !
-> 4xx PCI DMA offset set to 0x00000000
-
-> The detected sizes look good compared to the processor documentation.
-> But I never modified a dts file before and I only found a ranges 
-> documentation speaking of three elemnts in the ranges element.
-> So feel free to correct the dts if I wrote something bad without knowing 
-> it (e.g. that skipped message).
-
-> The issue that let me start debugging this was the initialization of the 
-> radeonfb driver and with that patch it works:
-> radeonfb_pci_register BEGIN
-> radeonfb (0000:00:0a.0): Cannot match card to OF node !
-> aper_base: 80000000 MC_FB_LOC to: 87ff8000, MC_AGP_LOC to: ffff9000
-> radeonfb (0000:00:0a.0): Found 131072k of DDR 64 bits wide videoram
-> radeonfb (0000:00:0a.0): mapped 16384k videoram
-> radeonfb: Found Intel x86 BIOS ROM Image
-> radeonfb: Retrieved PLL infos from BIOS
-> radeonfb: Reference=27.00 MHz (RefDiv=12) Memory=240.00 Mhz, 
-> System=200.00 MHz
-> radeonfb: PLL min 20000 max 40000
-> 1 chips in connector info
-> - chip 1 has 2 connectors
->  * connector 0 of type 2 (CRT) : 2300
->  * connector 1 of type 3 (DVI-I) : 3201
-> Starting monitor auto detection...
-> radeonfb: I2C (port 1) ... not found
-> radeonfb: I2C (port 2) ... found TMDS panel
-> radeonfb: I2C (port 3) ... found CRT display
-> i2c-adapter i2c-3: unable to read EDID block.
-> i2c-adapter i2c-3: unable to read EDID block.
-> i2c-adapter i2c-3: unable to read EDID block.
-> radeonfb: I2C (port 4) ... not found
-> radeon_probe_OF_head
-> radeonfb: I2C (port 2) ... found TMDS panel
-> radeon_probe_OF_head
-> radeonfb: I2C (port 3) ... found CRT display
-> radeonfb: Monitor 1 type DFP found
-> radeonfb: EDID probed
-> radeonfb: Monitor 2 type CRT found
-> radeonfb: EDID probed
-> Parsing EDID data for panel info
-> Setting up default mode based on panel info
-> radeonfb (0000:00:0a.0): ATI Radeon Y`
-
-    Hm, what's that Y`?
-
-> radeonfb_pci_register END
-
-> And btw. now we really need the change of the radeonfb.h to use the 
-> correct resource_size_t type, otherwise it fails with:
-
-    Of course.
+> obj-$(CONFIG_PPC_MPC106)	+= grackle.o
+> obj-$(CONFIG_PPC_DCR_NATIVE)	+= dcr-low.o
 
 
-> I attached the patch I used to get it working now for further discussion 
-> e.g. because I don't really know dts syntax ;-)
-> I hope both changes find their way into the kernel once you are all 
-> agreeing with the new dts content.
 
-> I still have issues with my X11, but thats another story.
+> +static int fsl_msi_init_allocator(struct fsl_msi *msi_data)
+> +{
+> +	int rc, size;
+> +
+> +	size = BITS_TO_LONGS(NR_MSI_IRQS) * sizeof(long);
 
+should this be long or u32?
 
-> ------------------------------------------------------------------------
-> 
-> Subject: [PATCH][dts][radeonfb]: fix pci mem in dts and radeonfb resource variables
+> +
+> +	msi_data->fsl_msi_bitmap = kzalloc(size, GFP_KERNEL);
+> +
+> +	if (msi_data->fsl_msi_bitmap == NULL) {
+> +		pr_debug("%s: ENOMEM allocating allocator bitmap!\n",
+> +				__func__);
+> +		return -ENOMEM;
+> +	}
+> +
+> +	rc = fsl_msi_free_dt_hwirqs(msi_data);
+> +	if (rc)
+> +		goto out_free;
+> +
+> +	return 0;
+> +out_free:
+> +	kfree(msi_data->fsl_msi_bitmap);
+> +
+> +	msi_data->fsl_msi_bitmap = NULL;
+> +	return rc;
+> +
+> +}
+> +
+> +static int fsl_msi_check_device(struct pci_dev *pdev, int nvec, int  
+> type)
+> +{
+> +	if (type == PCI_CAP_ID_MSIX)
+> +		pr_debug("fslmsi: MSI-X untested, trying anyway.\n");
+> +
+> +	return 0;
+> +}
+> +
+> +static void fsl_teardown_msi_irqs(struct pci_dev *pdev)
+> +{
+> +	struct msi_desc *entry;
+> +	struct fsl_msi *msi_data = fsl_msi;
+> +
+> +	list_for_each_entry(entry, &pdev->msi_list, list) {
+> +		if (entry->irq == NO_IRQ)
+> +			continue;
+> +		set_irq_msi(entry->irq, NULL);
+> +		fsl_msi_free_hwirqs(msi_data, virq_to_hw(entry->irq), 1);
+> +		irq_dispose_mapping(entry->irq);
+> +	}
+> +
+> +	return;
+> +}
+> +
+> +static void fsl_compose_msi_msg(struct pci_dev *pdev, int hwirq,
+> +				  struct msi_msg *msg)
+> +{
+> +	struct fsl_msi *msi_data = fsl_msi;
+> +
+> +	msg->address_lo = msi_data->msi_addr_lo;
+> +	msg->address_hi = msi_data->msi_addr_hi;
+> +	msg->data = hwirq;
+> +
+> +	pr_debug("%s: allocated srs: %d, ibs: %d\n",
+> +		__func__, hwirq / INT_PER_MSIR, hwirq % INT_PER_MSIR);
+> +}
+> +
+> +static int fsl_setup_msi_irqs(struct pci_dev *pdev, int nvec, int  
+> type)
+> +{
+> +	irq_hw_number_t hwirq;
+> +	int rc;
+> +	unsigned int virq;
+> +	struct msi_desc *entry;
+> +	struct msi_msg msg;
+> +	struct fsl_msi *msi_data = fsl_msi;
+> +
+> +	list_for_each_entry(entry, &pdev->msi_list, list) {
+> +		hwirq = fsl_msi_alloc_hwirqs(msi_data, 1);
+> +		if (hwirq < 0) {
+> +			rc = hwirq;
+> +			pr_debug("%s: fail allocating msi interrupt\n",
+> +					__func__);
+> +			goto out_free;
+> +		}
+> +
+> +		virq = irq_create_mapping(msi_data->irqhost, hwirq);
+> +
+> +		if (virq == NO_IRQ) {
+> +			pr_debug("%s: fail mapping hwirq 0x%lx\n",
+> +					__func__, hwirq);
+> +			fsl_msi_free_hwirqs(msi_data, hwirq, 1);
+> +			rc = -ENOSPC;
+> +			goto out_free;
+> +		}
+> +		set_irq_msi(virq, entry);
+> +
+> +		fsl_compose_msi_msg(pdev, hwirq, &msg);
+> +		write_msi_msg(virq, &msg);
+> +	}
+> +	return 0;
+> +
+> +out_free:
+> +	return rc;
+> +}
+> +
+> +void fsl_msi_cascade(unsigned int irq, struct irq_desc *desc)
+> +{
+> +	unsigned int cascade_irq;
+> +	struct fsl_msi *msi_data = fsl_msi;
+> +	int msir_index = -1;
+> +	u32 msir_value = 0;
+> +	u32 intr_index;
+> +	u32 have_shift = 0;
+> +
+> +	spin_lock(&desc->lock);
+> +	if ((msi_data->feature &  FSL_PIC_IP_MASK) == FSL_PIC_IP_IPIC) {
+> +		if (desc->chip->mask_ack)
+> +			desc->chip->mask_ack(irq);
+> +		else {
+> +			desc->chip->mask(irq);
+> +			desc->chip->ack(irq);
+> +		}
+> +	}
+> +
+> +	if (unlikely(desc->status & IRQ_INPROGRESS))
+> +		goto unlock;
+> +
+> +	msir_index = (int)(desc->handler_data);
+> +
+> +	if (msir_index >= NR_MSIR)
+> +		cascade_irq = NO_IRQ;
+> +
+> +	desc->status |= IRQ_INPROGRESS;
+> +	switch (fsl_msi->feature & FSL_PIC_IP_MASK) {
+> +	case FSL_PIC_IP_MPIC:
+> +		msir_value = fsl_msi_read(msi_data->msi_regs,
+> +			msir_index * 0x10);
+> +		break;
+> +	case FSL_PIC_IP_IPIC:
+> +		msir_value = fsl_msi_read(msi_data->msi_regs, msir_index * 0x4);
+> +		break;
+> +	}
+> +
+> +	while (msir_value) {
+> +		intr_index = ffs(msir_value) - 1;
+> +
+> +		cascade_irq = irq_linear_revmap(msi_data->irqhost,
+> +			(msir_index * INT_PER_MSIR + intr_index + have_shift));
+> +
+> +		if (cascade_irq != NO_IRQ)
+> +			generic_handle_irq(cascade_irq);
+> +		have_shift += (intr_index + 1);
+> +		msir_value = (msir_value >> (intr_index + 1));
+> +	}
+> +	desc->status &= ~IRQ_INPROGRESS;
+> +
+> +	switch (msi_data->feature & FSL_PIC_IP_MASK) {
+> +	case FSL_PIC_IP_MPIC:
+> +		desc->chip->eoi(irq);
+> +		break;
+> +	case FSL_PIC_IP_IPIC:
+> +		if (!(desc->status & IRQ_DISABLED) && desc->chip->unmask)
+> +			desc->chip->unmask(irq);
+> +		break;
+> +	}
+> +unlock:
+> +	spin_unlock(&desc->lock);
+> +}
+> +
+> +static int __devinit fsl_of_msi_probe(struct of_device *dev,
+> +				const struct of_device_id *match)
+> +{
+> +	struct fsl_msi *msi;
+> +	struct resource res;
+> +	int err, i, count;
+> +	int rc;
+> +	int virt_msir;
+> +	const u32 *p;
+> +	struct fsl_msi_feature *tmp_data;
+> +
+> +	printk(KERN_DEBUG "Setting up fsl msi support\n");
+> +
+> +	msi = kzalloc(sizeof(struct fsl_msi), GFP_KERNEL);
+> +	if (!msi) {
+> +		dev_err(&dev->dev, "No memory for MSI structure\n");
+> +		err = -ENOMEM;
+> +		goto error_out;
+> +	}
+> +
+> +	msi->of_node = dev->node;
+> +
+> +	msi->irqhost = irq_alloc_host(of_node_get(dev->node),
+> +				IRQ_HOST_MAP_LINEAR,
+> +				NR_MSI_IRQS, &fsl_msi_host_ops, 0);
+> +	if (msi->irqhost == NULL) {
+> +		dev_err(&dev->dev, "No memory for MSI irqhost\n");
+> +		of_node_put(dev->node);
+> +		err = -ENOMEM;
+> +		goto error_out;
+> +	}
+> +
+> +	/* Get the MSI reg base */
+> +	err = of_address_to_resource(dev->node, 0, &res);
+> +	if (err) {
+> +		dev_err(&dev->dev, "%s resource error!\n",
+> +				dev->node->full_name);
+> +		goto error_out;
+> +	}
+> +
+> +	msi->msi_regs = ioremap(res.start, res.end - res.start + 1);
+> +	if (!msi->msi_regs) {
+> +		dev_err(&dev->dev, "ioremap problem failed\n");
+> +		goto error_out;
+> +	}
+> +
+> +	tmp_data = (struct fsl_msi_feature *)match->data;
+> +
+> +	msi->feature = tmp_data->fsl_pic_ip;
+> +
+> +	msi->irqhost->host_data = msi;
+> +
+> +	msi->msi_addr_hi = 0x0;
+> +	msi->msi_addr_lo = res.start + tmp_data->msiir_offset;
+> +
+> +	rc = fsl_msi_init_allocator(msi);
+> +	if (rc) {
+> +		dev_err(&dev->dev, "Error allocating MSI bitmap\n");
+> +		goto error_out;
+> +	}
+> +
+> +	p = of_get_property(dev->node, "interrupts", &count);
+> +	if (!p) {
+> +		dev_err(&dev->dev, "no interrupts property found on %s\n",
+> +				dev->node->full_name);
+> +		err = -ENODEV;
+> +		goto error_out;
+> +	}
+> +	if (count % 8 != 0) {
+> +		dev_err(&dev->dev, "Malformed interrupts property on %s\n",
+> +				dev->node->full_name);
+> +		err = -EINVAL;
+> +		goto error_out;
+> +	}
+> +
+> +	count /= sizeof(u32);
+> +	for (i = 0; i < count / 2; i++) {
+> +		if (i > NR_MSIR)
+> +			break;
+> +		virt_msir = irq_of_parse_and_map(dev->node, i);
+> +		if (virt_msir != NO_IRQ) {
+> +			set_irq_data(virt_msir, (void *)i);
+> +			set_irq_chained_handler(virt_msir, fsl_msi_cascade);
+> +		}
+> +	}
+> +
+> +	fsl_msi = msi;
+> +
+> +	WARN_ON(ppc_md.setup_msi_irqs);
+> +	ppc_md.setup_msi_irqs = fsl_setup_msi_irqs;
+> +	ppc_md.teardown_msi_irqs = fsl_teardown_msi_irqs;
+> +	ppc_md.msi_check_device = fsl_msi_check_device;
+> +	return 0;
+> +error_out:
+> +	kfree(msi);
+> +	return err;
+> +}
+> +
+> +static const struct fsl_msi_feature mpic_msi_feature =  
+> {FSL_PIC_IP_MPIC, 0x140};
+> +static const struct fsl_msi_feature ipic_msi_feature =  
+> {FSL_PIC_IP_IPIC, 0x38};
 
-> From: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
+make this
+{
+	.fsl_pic_ip = FSL_PIC_IP_MPIC
+	.offset = 0x140
+};
 
-> This patch is fixing the sequoia.dts device tree file to the values defined
-> in the 440Epx data sheet from amcc.
-> That fixes an issue where my graphic card could not initialize because the pci
-> resource space was not big enough.
-> The related mail thread about the backgrounds of this has the subject "pci
-> issue - wrong detection of pci ressources"
-> After these values were fixed another modification that came up in the mail
-> thread was needed to prevent an error. This change fixes the type of the
-> resource vaiables in the radeon frame buffer driver (We might want to split
-> that into two patches).
+for readability.
 
-> Signed-off-by: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
+> +
+> +static const struct of_device_id fsl_of_msi_ids[] = {
+> +	{
+> +		.compatible = "fsl,MPIC-MSI",
+> +		.data = (void *)&mpic_msi_feature,
+> +	},
+> +	{
+> +		.compatible = "fsl,IPIC-MSI",
+> +		.data = (void *)&ipic_msi_feature,
+> +	},
+> +	{}
+> +};
+> +
+> +static struct of_platform_driver fsl_of_msi_driver = {
+> +	.name = "fsl-of-msi",
+> +	.match_table = fsl_of_msi_ids,
+> +	.probe = fsl_of_msi_probe,
+> +};
+> +
+> +static __init int fsl_of_msi_init(void)
+> +{
+> +	return of_register_platform_driver(&fsl_of_msi_driver);
+> +}
+> +
+> +subsys_initcall(fsl_of_msi_init);
+> diff --git a/arch/powerpc/sysdev/fsl_msi.h b/arch/powerpc/sysdev/ 
+> fsl_msi.h
+> new file mode 100644
+> index 0000000..628b6c0
+> --- /dev/null
+> +++ b/arch/powerpc/sysdev/fsl_msi.h
+> @@ -0,0 +1,36 @@
+> +#ifndef _POWERPC_SYSDEV_FSL_MSI_H
+> +#define _POWERPC_SYSDEV_FSL_MSI_H
+> +
+> +#define NR_MSIR	8
 
-> diff --git a/arch/powerpc/boot/dts/sequoia.dts b/arch/powerpc/boot/dts/sequoia.dts
-> --- a/arch/powerpc/boot/dts/sequoia.dts
-> +++ b/arch/powerpc/boot/dts/sequoia.dts
-> @@ -344,9 +344,14 @@
->  			/* Outbound ranges, one memory and one IO,
->  			 * later cannot be changed. Chip supports a second
->  			 * IO range but we don't use it for now
-> +			 * From the 440EPx user manual:
-> +			 * PCI 1 Memory     1 8000 0000     1 BFFF FFFF     1GB
-> +			 * I/O              1 E800 0000     1 E800 FFFF     64KB
-> +			 * I/O              1 E880 0000     1 EBFF FFFF     56MB
->  			 */
-> -			ranges = <02000000 0 80000000 1 80000000 0 10000000
-> -				01000000 0 00000000 1 e8000000 0 00100000>;
-> +			ranges = <02000000 0 80000000 1 80000000 0 40000000
-> +				01000000 0 00000000 1 e8000000 0 00010000
-> +				01000000 0 00000000 1 e8800000 0 03800000>;
+NR_MSR_REG
 
-   I don't think 56 MiB of I/O space make sense, so might as well skip the 3rg 
-range...
+> +#define INT_PER_MSIR	32
 
->  
->  			/* Inbound 2GB range starting at 0 */
->  			dma-ranges = <42000000 0 0 0 0 0 80000000>;
-> diff --git a/drivers/video/aty/radeonfb.h b/drivers/video/aty/radeonfb.h
-> --- a/drivers/video/aty/radeonfb.h
-> +++ b/drivers/video/aty/radeonfb.h
-> @@ -287,8 +287,8 @@ struct radeonfb_info {
->  
->  	char			name[DEVICE_NAME_SIZE];
->  
-> -	unsigned long		mmio_base_phys;
-> -	unsigned long		fb_base_phys;
-> +	resource_size_t		mmio_base_phys;
-> +	resource_size_t		fb_base_phys;
->  
->  	void __iomem		*mmio_base;
->  	void __iomem		*fb_base;
+IRQS_PER_MSI_REG
 
-    I think you'd better use Ben's patch that he's just posted:
+>
+> +#define NR_MSI_IRQS	(NR_MSIR * INT_PER_MSIR)
+> +
+> +#define FSL_PIC_IP_MASK	0x0000000F
+> +#define FSL_PIC_IP_MPIC	0x00000001
+> +#define FSL_PIC_IP_IPIC	0x00000002
+> +
+> +struct fsl_msi {
+> +	/* Device node of the MSI interrupt*/
+> +	struct device_node *of_node;
+> +
+> +	struct irq_host *irqhost;
+> +
+> +	unsigned long cascade_irq;
+> +
+> +	u32 msi_addr_lo;
+> +	u32 msi_addr_hi;
+> +	void __iomem *msi_regs;
+> +	u32 feature;
+> +
+> +	unsigned long *fsl_msi_bitmap;
+> +	spinlock_t bitmap_lock;
+> +	const char *name;
+> +};
+> +
+> +struct fsl_msi_feature {
+> +	u32 fsl_pic_ip;
+> +	u32 msiir_offset;
+> +};
 
-http://patchwork.ozlabs.org/linuxppc/patch?id=18034
+move this struct into .c
+>
+> +
+> +#endif /* _POWERPC_SYSDEV_FSL_MSI_H */
+> +
+> diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/ 
+> fsl_pci.c
+> index bf13c21..fede767 100644
+> --- a/arch/powerpc/sysdev/fsl_pci.c
+> +++ b/arch/powerpc/sysdev/fsl_pci.c
+> @@ -106,6 +106,16 @@ void __init setup_pci_cmd(struct pci_controller  
+> *hose)
+> 	}
+> }
+>
+> +#ifdef CONFIG_PCI_MSI
+> +void __init setup_pci_pcsrbar(struct pci_controller *hose)
+> +{
+> +	phys_addr_t immr_base;
+> +
+> +	immr_base = get_immrbase();
+> +	early_write_config_dword(hose, 0, 0, PCI_BASE_ADDRESS_0, immr_base);
+> +}
+> +#endif
+> +
+> static int fsl_pcie_bus_fixup;
+>
+> static void __init quirk_fsl_pcie_header(struct pci_dev *dev)
+> @@ -211,6 +221,10 @@ int __init fsl_add_bridge(struct device_node  
+> *dev, int is_primary)
+> 	/* Setup PEX window registers */
+> 	setup_pci_atmu(hose, &rsrc);
+>
+> +	/*Setup PEXCSRBAR */
+> +#ifdef CONFIG_PCI_MSI
+> +	setup_pci_pcsrbar(hose);
+> +#endif
 
-WBR, Sergei
+I'm not convinced this is safe.  we need to be careful to make sure  
+the pcsrbar doesn't overlap with any other device.
+
+> 	return 0;
+> }
+
+- k
