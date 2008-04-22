@@ -1,23 +1,27 @@
-Return-Path: <michel@tungstengraphics.com>
-Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.184])
-	by ozlabs.org (Postfix) with ESMTP id E2A0CDE6E8
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Apr 2008 02:04:35 +1000 (EST)
-Received: by nf-out-0910.google.com with SMTP id g16so1124990nfd.9
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Apr 2008 09:04:33 -0700 (PDT)
-Subject: Re: [PATCH 1/3] radeonfb: Fix 64 bits resources on 32 bits archs
-From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@tungstengraphics.com>
-To: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
-In-Reply-To: <480E0A54.9010203@linux.vnet.ibm.com>
-References: <20080422012723.BA9F2DE13F@ozlabs.org>
-	<480E0A54.9010203@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=UTF-8
-Date: Tue, 22 Apr 2008 18:04:29 +0200
-Message-Id: <1208880269.5632.262.camel@thor.sulgenrain.local>
-Mime-Version: 1.0
-Cc: linux-fbdev-devel@lists.sourceforge.net,
-	Hollis Blanchard <hollisb@us.ibm.com>, adaplas@gmail.com,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Andrew Morton <akpm@linux-foundation.org>, Detlev Zundel <dzu@denx.de>
+Return-Path: <andre.schwarz@matrix-vision.de>
+Received: from p15137414.pureserver.info (matrixvision.de [217.160.213.229])
+	by ozlabs.org (Postfix) with ESMTP id 30DD0DE10A
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Apr 2008 02:58:36 +1000 (EST)
+Received: from pandora.intern.matrix-vision.de (g1.matrix-vision.com
+	[217.7.222.190])
+	by p15137414.pureserver.info (Postfix) with ESMTP id 571253CC062
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Apr 2008 18:58:33 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+	by pandora.intern.matrix-vision.de (Postfix) with ESMTP id 2D3E9E3C25
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Apr 2008 18:56:39 +0200 (CEST)
+Received: from hegemone (hegemone.intern.matrix-vision.de [192.168.5.77])
+	by pandora.intern.matrix-vision.de (Postfix) with ESMTP id E8E5CE3C25
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Apr 2008 18:56:38 +0200 (CEST)
+Received: from [192.168.65.5] (unknown [192.168.65.5])
+	by hegemone (Postfix) with ESMTP id 595DF53D
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Apr 2008 18:58:04 +0200 (CEST)
+Message-ID: <480E1939.6000701@matrix-vision.de>
+Date: Tue, 22 Apr 2008 18:58:33 +0200
+From: Andre Schwarz <andre.schwarz@matrix-vision.de>
+MIME-Version: 1.0
+To: linux-ppc list <linuxppc-dev@ozlabs.org>
+Subject: Question on MPC83xx interrupts
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,15 +31,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2008-04-22 at 17:55 +0200, Christian Ehrhardt wrote:
-> 
-> You see it e.g. when you try to initialize X11, the x11 radeon driver
-> issues a FBIOGET_FSCREENINFO ioctl [...]
+All,
 
-FWIW, current versions of the xf86-video-ati radeon driver no longer use
-radeonfb for anything.
+I'm currently running a MPC8343 based board.
+
+Looks like I'm having problems with IRQs of a PCI device.
+
+/proc/interrupts give :
+
+           CPU0
+ 16:        554   IPIC   Level     i2c-mpc
+ 17:         11   IPIC   Level     i2c-mpc
+ 18:        134   IPIC   Level     ath
+ 19:       1557   IPIC   Level     serial
+ 21:        341   IPIC   Level     mpc83xx_spi
+ 38:          0   IPIC   Level     ehci_hcd:usb1
+BAD:          2
 
 
--- 
-Earthling Michel DÃ¤nzer           |          http://tungstengraphics.com
-Libre software enthusiast         |          Debian, X and DRI developer
+
+I wonder if the IRQ number should match the vector of the datasheet ... 
+giving :
+
+14  -> I2C1
+15  -> I2C2
+16  -> SPI
+38  -> USB DR
+
+The "ath" is a PCI Ath5k WiFi module connected to IRQ1, i.e. mapped to 
+vector 17.
+
+
+Are the IRQ numbers shifted/mapped/scrambled in any way ?
+
+Can anyone shed some light on this ?
+
+
+Cheers,
+Andre Schwarz
+Matrix Vision
+
+MATRIX VISION GmbH, Talstraße 16, DE-71570 Oppenweiler  - Registergericht: Amtsgericht Stuttgart, HRB 271090
+Geschäftsführer: Gerhard Thullner, Werner Armingeon, Uwe Furtner
