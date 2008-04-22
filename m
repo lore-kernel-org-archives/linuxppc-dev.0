@@ -1,31 +1,18 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
+Return-Path: <mathieu.desnoyers@polymtl.ca>
+Received: from smtp.polymtl.ca (smtp.polymtl.ca [132.207.4.11])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 4BA5EDE38A
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Apr 2008 03:42:15 +1000 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
-	m3MHg9Gl001847
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Apr 2008 10:42:10 -0700 (MST)
-Received: from ld0162-tx32.am.freescale.net (ld0162-tx32.am.freescale.net
-	[10.82.19.112])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m3MHg9lp014922
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Apr 2008 12:42:09 -0500 (CDT)
-Date: Tue, 22 Apr 2008 12:42:08 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Andre Schwarz <andre.schwarz@matrix-vision.de>
-Subject: Re: Question on MPC83xx interrupts
-Message-ID: <20080422174208.GB18076@ld0162-tx32.am.freescale.net>
-References: <480E1939.6000701@matrix-vision.de>
-	<20080422172306.GA17992@ld0162-tx32.am.freescale.net>
-	<480E2230.2030601@matrix-vision.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <480E2230.2030601@matrix-vision.de>
-Cc: linux-ppc list <linuxppc-dev@ozlabs.org>
+	(Client CN "smtp.polymtl.ca", Issuer "Ca_Cert_Smtp_Poly" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 0EAC1DE4F2
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Apr 2008 03:50:17 +1000 (EST)
+Message-Id: <20080422172842.427209743@polymtl.ca>
+References: <20080422172404.502954084@polymtl.ca>
+Date: Tue, 22 Apr 2008 13:24:10 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Sam Ravnborg <sam@ravnborg.org>, akpm@linux-foundation.org,
+	Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Subject: [RFC patch 6/9] POWERPC remove -traditional
+Cc: paulus@samba.org, Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,11 +22,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Apr 22, 2008 at 07:36:48PM +0200, Andre Schwarz wrote:
-> thanks - any Idea how to figure out where the BAD comes from ?
-> Is it simply an unhandled/unacked one ?
+Subject: [RFC patch 6/9] Re: [PATCH] Stringify support commas
+ > This is a no-no for those archs that still use -traditional.
+ > > I dunno if this is a problem for you at the moment and the
+ > > right fix is anyway to nuke -traditional.
+ > > 
+ > >     Sam
 
-It generally happens when an interrupt is requested, and the core takes
-the exception, but then the interrupt source deasserts itself.
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: Sam Ravnborg <sam@ravnborg.org>
+CC: paulus@samba.org
+CC: linuxppc-dev@ozlabs.org
+---
+ arch/powerpc/boot/Makefile |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
--Scott
+Index: linux-2.6-lttng/arch/powerpc/boot/Makefile
+===================================================================
+--- linux-2.6-lttng.orig/arch/powerpc/boot/Makefile	2008-04-21 10:03:05.000000000 -0400
++++ linux-2.6-lttng/arch/powerpc/boot/Makefile	2008-04-21 10:03:17.000000000 -0400
+@@ -23,7 +23,7 @@ BOOTCFLAGS    := -Wall -Wundef -Wstrict-
+ 		 -fno-strict-aliasing -Os -msoft-float -pipe \
+ 		 -fomit-frame-pointer -fno-builtin -fPIC -nostdinc \
+ 		 -isystem $(shell $(CROSS32CC) -print-file-name=include)
+-BOOTAFLAGS	:= -D__ASSEMBLY__ $(BOOTCFLAGS) -traditional -nostdinc
++BOOTAFLAGS	:= -D__ASSEMBLY__ $(BOOTCFLAGS) -nostdinc
+ 
+ ifdef CONFIG_DEBUG_INFO
+ BOOTCFLAGS	+= -g
+
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
