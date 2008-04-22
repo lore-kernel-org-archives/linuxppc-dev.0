@@ -1,23 +1,25 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from ag-out-0708.google.com (ag-out-0708.google.com [72.14.246.240])
-	by ozlabs.org (Postfix) with ESMTP id F345BDE026
+Received: from wx-out-0506.google.com (wx-out-0506.google.com [66.249.82.228])
+	by ozlabs.org (Postfix) with ESMTP id BE801DE0AB
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 23 Apr 2008 06:10:02 +1000 (EST)
-Received: by ag-out-0708.google.com with SMTP id 31so3572727agc.0
+	Wed, 23 Apr 2008 06:55:34 +1000 (EST)
+Received: by wx-out-0506.google.com with SMTP id h27so1949005wxd.15
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 22 Apr 2008 13:10:01 -0700 (PDT)
-Message-ID: <fa686aa40804221309g7d0749e8qc329ad72389f0138@mail.gmail.com>
-Date: Tue, 22 Apr 2008 14:09:59 -0600
+	Tue, 22 Apr 2008 13:55:33 -0700 (PDT)
+Message-ID: <fa686aa40804221355s11f8fd6em3f2075bbb2073c8@mail.gmail.com>
+Date: Tue, 22 Apr 2008 14:55:32 -0600
 From: "Grant Likely" <grant.likely@secretlab.ca>
 Sender: glikely@secretlab.ca
-To: aaronsells <aaron.sells@zin-tech.com>
+To: "Aaron Sells" <aaron.sells@zin-tech.com>
 Subject: Re: SecretLab 2.6.24 with USB
-In-Reply-To: <16825460.post@talk.nabble.com>
+In-Reply-To: <480E4EBD.3010202@zin-tech.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 References: <800687fe0804141927y1f6ea75cv7ad0ba68b4fa637a@mail.gmail.com>
 	<fa686aa40804211109g2f7f45d0gf836be46e2c1a40b@mail.gmail.com>
 	<16825460.post@talk.nabble.com>
+	<fa686aa40804221309g7d0749e8qc329ad72389f0138@mail.gmail.com>
+	<480E4EBD.3010202@zin-tech.com>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -29,34 +31,22 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, Apr 22, 2008 at 1:23 PM, aaronsells <aaron.sells@zin-tech.com> wrote:
+On Tue, Apr 22, 2008 at 2:46 PM, Aaron Sells <aaron.sells@zin-tech.com> wrote:
+> Grant Likely wrote:
 >
+> > 2. Make sure a platform device for the usb controller is getting
+> > registered with the kernel.
+> >
 >
->  Grant Likely-2 wrote:
->  >
->  > Your best bet is to use
->  > Xilinx's git tree and manually patch in the c67x00 driver from Peter
->  > Korsgaard's driver.
->  >
->  > http://www.mail-archive.com/linux-usb@vger.kernel.org/msg01907.html
->  > http://www.mail-archive.com/linux-usb@vger.kernel.org/msg01908.html
->  > http://www.mail-archive.com/linux-usb@vger.kernel.org/msg01906.html
->  > http://www.mail-archive.com/linux-usb@vger.kernel.org/msg01907.html
->  >
->
->  I've tried this on my ML403 board with no success.  My Xilinx git tree is
->  current.  I'm using Peter's most recent patches from
->  http://peter.korsgaard.com/patches/linux/. I'm using an OpenEmbedded
->  console-image mounted via nfs as my root filesystem.  I don't receive any
->  messages when I plug USB devices into the board (keyboard, mouse, webcam).
->  Any ideas on how I can troubleshoot this?
+>  Correct me if I'm wrong, but it does not look like my Cypress CY7C6300 USB
+> host controller is getting registered with the kernel.  Any ideas?
 
-1. Post your boot log
-2. Make sure a platform device for the usb controller is getting
-registered with the kernel.
+Compare arch/ppc/syslib/virtex_devices.c with the one in my git tree.
+Add the relevant missing bits.
 
 Cheers,
 g.
+
 
 -- 
 Grant Likely, B.Sc., P.Eng.
