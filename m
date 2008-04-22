@@ -1,26 +1,31 @@
-Return-Path: <michel@tungstengraphics.com>
-Received: from fg-out-1718.google.com (fg-out-1718.google.com [72.14.220.157])
-	by ozlabs.org (Postfix) with ESMTP id 474E6DE028
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Apr 2008 00:27:38 +1000 (EST)
-Received: by fg-out-1718.google.com with SMTP id 16so1919113fgg.39
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Apr 2008 07:27:36 -0700 (PDT)
-Subject: Re: pci issue - wrong detection of pci ressources
-From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@tungstengraphics.com>
-To: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
-In-Reply-To: <480DF46F.9090900@linux.vnet.ibm.com>
-References: <48088F02.2060806@linux.vnet.ibm.com>
-	<1208566122.6958.425.camel@pasglop>	<480BA937.7050603@linux.vnet.ibm.com>
-	<1208727408.7009.0.camel@pasglop>	<480C80B6.30904@linux.vnet.ibm.com>
-	<480C87BD.8090207@ru.mvista.com>	<480C9FE2.4030601@linux.vnet.ibm.com>
-	<480CAFD2.2050108@ru.mvista.com> <480CBEE0.9000104@ru.mvista.com>
-	<480DDE2B.4000808@linux.vnet.ibm.com> <480DE89B.2030402@ru.mvista.com>
-	<480DF46F.9090900@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=UTF-8
-Date: Tue, 22 Apr 2008 16:27:31 +0200
-Message-Id: <1208874451.5632.251.camel@thor.sulgenrain.local>
+Return-Path: <scottwood@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 7D02ADDEFD
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Apr 2008 01:08:52 +1000 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	m3MF8j2e012586
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Apr 2008 08:08:45 -0700 (MST)
+Received: from ld0162-tx32.am.freescale.net (ld0162-tx32.am.freescale.net
+	[10.82.19.112])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m3MF8jpm019015
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Apr 2008 10:08:45 -0500 (CDT)
+Date: Tue, 22 Apr 2008 10:08:44 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Laurent Pinchart <laurentp@cse-semaphore.com>
+Subject: Re: [RFC fs_enet: Convert MII bitbang driver to use GPIO lib
+Message-ID: <20080422150844.GA15474@ld0162-tx32.am.freescale.net>
+References: <200804161640.42693.laurentp@cse-semaphore.com>
+	<200804181334.34229.laurentp@cse-semaphore.com>
+	<20080421175627.GD4134@ld0162-tx32.am.freescale.net>
+	<200804221055.09038.laurentp@cse-semaphore.com>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Hollis Blanchard <hollisb@us.ibm.com>,
-	Detlev Zundel <dzu@denx.de>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200804221055.09038.laurentp@cse-semaphore.com>
+Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,26 +35,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2008-04-22 at 16:21 +0200, Christian Ehrhardt wrote:
+On Tue, Apr 22, 2008 at 10:55:06AM +0200, Laurent Pinchart wrote:
+> On Monday 21 April 2008 19:56, Scott Wood wrote:
+> > The memory-constrained platform I had in mind was 8xx, which doesn't use
+> > bitbanged MDIO.  It might nice to keep the gpiolib bit separate to avoid
+> > situations such as ep8248e where mdiobb would be the only thing requiring
+> > a gpiolib binding, though -- but it shouldn't be two separate bitbang
+> > drivers, just the existing bitbang driver plus some glue code that binds
+> > it to gpiolib.
 > 
-> >> radeonfb: EDID probed
-> >> Parsing EDID data for panel info
-> >> Setting up default mode based on panel info
-> >> radeonfb (0000:00:0a.0): ATI Radeon Y`
-> > 
-> >    Hm, what's that Y`?
-> 
-> Thats the final message in the radeonfb driver ater initializing everything.
->    printk ("radeonfb (%s): %s\n", pci_name(rinfo->pdev), rinfo->name);
-> I wonder why that rinfo->name is clobbered - maybe another issue, I
-> have to keep that in mind.
+> I would be fine with that if the glue code wasn't 90% of the whole driver. 
+> There is really little (not to say nothing) that can be shared between the 
+> two drivers.
 
-It isn't clobbered, it's just the PCI device ID printed as characters.
-That was a human readable string with early Radeons and thus convenient
-for identifying them between humans, but that's no longer the case with
-newer ones.
+I think we're thinking of a different pair of drivers...  I thought you
+were talking about duplicating drivers/net/phy/mdio-bitbang.c, not
+drivers/net/fs_enet/mii-bitbang.c.
 
-
--- 
-Earthling Michel Dänzer           |          http://tungstengraphics.com
-Libre software enthusiast         |          Debian, X and DRI developer
+-Scott
