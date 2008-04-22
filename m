@@ -1,15 +1,18 @@
-Return-Path: <slzhang1980@gmail.com>
-Message-ID: <8d59c9040804212210y6abe755frba0d2c2ef0e12cd4@mail.gmail.com>
-Date: Tue, 22 Apr 2008 13:10:54 +0800
-From: "=?GB2312?B?1cXKwMDW?=" <slzhang1980@gmail.com>
-To: "Scott Wood" <scottwood@freescale.com>
-Subject: Re: Help! mpc8247 porting kernel 2.6.25 problem.
-In-Reply-To: <20080421173450.GC4134@ld0162-tx32.am.freescale.net>
+Return-Path: <mike.koss@ngc.com>
+Received: from xmrt0101.northgrum.com (xmrt0101.northgrum.com [208.20.220.55])
+	by ozlabs.org (Postfix) with ESMTP id 9180BDE0A1
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 22 Apr 2008 23:17:01 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=GB2312
-References: <8d59c9040804202006m607fe15bre29288240b73081d@mail.gmail.com>
-	<20080421173450.GC4134@ld0162-tx32.am.freescale.net>
-Cc: Linuxppc-embedded@ozlabs.org
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: 
+Date: Tue, 22 Apr 2008 07:53:34 -0500
+Message-ID: <EDAE140DF1B2FC42B5867C22CA0B333F0A5A3F@XMBIL132.northgrum.com>
+From: "Koss, Mike (Mission Systems)" <mike.koss@ngc.com>
+To: "David H. Lynch Jr." <dhlii@dlasys.net>,
+	"Grant Likely" <grant.likely@secretlab.ca>
+Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -20,34 +23,3 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-VGhhbmsgeW91LCBEb2N0b3IgU2NvdHQuIEknbSB2ZXJ5IGdyYXRlZnVsIHRvIHlvdSBmb3IgeW91
-IGtpbmRseSBoZWxwLgoKSSdsbCB0cnkgdGhlIHdheSB5b3Ugc3VnZ2VzdGVkIHNvb24uCgpBbmQs
-IG15IGNvZGUgZm9yIGxpZ2h0IHRoZSBsZWQgcnVuIGFzIGZvbGxvd3M6Cgp2b2lkIHNldF9sZWRf
-YV9yZWQodm9pZCkKewoJLypQRElSQzogMHhmYzAxMGQ0MCovCgkvKlBQQVJDOiAweGZjMDEwZDQ0
-Ki8KCS8qUE9EUkM6IDB4ZmMwMTBkNGMqLwoJLypQREFUQzogMHhmYzAxMGQ1MCovCgkqKCh1bnNp
-Z25lZCBsb25nICopKDB4ZmIwMTBkNDApKSB8PSAweDAwMDAwMGQ0OwoJKigodW5zaWduZWQgbG9u
-ZyAqKSgweGZiMDEwZDQ0KSkgJj0gfjB4MDAwMDAwZDQ7CgkqKCh1bnNpZ25lZCBsb25nICopKDB4
-ZmIwMTBkNGMpKSAmPSB+MHgwMDAwMDBkNDsKCSooKHVuc2lnbmVkIGxvbmcgKikoMHhmYjAxMGQ1
-MCkpIHw9IDB4MDAwMDAwMDQ7CgkqKCh1bnNpZ25lZCBsb25nICopKDB4ZmIwMTBkNTApKSAmPSB+
-MHgwMDAwMDAxMDsKfQouLi4KCkkgcHV0IGlzIGluIHRoZSBmaWxlIGFyY2gvcG93ZXIva2VybmVs
-L3NldHVwXzMyLmMsIGlzIHRoaXMgT0s/CkFuZCBJIGNhbGwgaXQgaW4gdGhlIHNldHVwX2NvbW1v
-bl9jYWNoZXMgYXMgZm9sbG93cwouLi4KYmwgICAgICAgIHNldF9sZWRfYV9yZWQKbXRzcHIgIFNQ
-Uk5fSElEMCwgcjgKYmwgICAgICAgIHNldF9sZWRfYV9ncmVlbgoKSSd2ZSB0cmllZCB0byBjb21w
-aWxlIHRoZSBrZXJuZWwgd2l0aCBlbmFibGUgdGhlIGVhcmx5IGRlYnVnIHByaW5rLiBidXQgaXQK
-b3V0cHV0IG5vdGhpbmcuIG1heWJlIEkgbWFrZSBzb21lIGZvb2xpc2ggbWlzdGFrZSBpbiBjb25m
-aWd1cmF0ZSB0aGUKQ1BNIFVBUlQgZWFybHkgZGVidWcgdHJhbnNtaXQgZGVzY3JpcHRvciBhZGRy
-ZXNzLgoKVGhhbmtzIGFnYWluLiBJdCByZWFsbHkgdmVyeSBraW5kIG9mIHlvdSB0byBnaXZlIG1l
-IHNvbWUgc3VnZ2VzdGlvbnMuCgoyMDA4LzQvMjIgU2NvdHQgV29vZCA8c2NvdHR3b29kQGZyZWVz
-Y2FsZS5jb20+Ogo+IE9uIE1vbiwgQXByIDIxLCAyMDA4IGF0IDExOjA2OjI4QU0gKzA4MDAsINXF
-ysDA1iB3cm90ZToKPiAgPiBVbmNvbXByZXNzaW5nIEtlcm5lbCBJbWFnZSAuLi4gT0sKPiAgPiBC
-b290aW5nIHVzaW5nIHRoZSBmZHQgYXQgMHg2MDAwMDAKPiAgPgo+ICA+IFtub3RoaW5nIG91dHB1
-dCBhbmQgaGFuZ2luZyBoZXJlXQo+ICA+Cj4gID4gSSB1c2UgdGhlIGxlZCBvbiB0aGUgYm9hcmQg
-dG8gdHJhY2UgdGhlIGtlcm5lbCBmdW5kIGl0IHN0b3AgaW4gdGhlIGZ1bmN0aW9uCj4gID4KPiAg
-PiBzZXR1cF9jb21tb25fY2FjaGVzICBpbiBhcmNoL3Bvd2VycGMva2VybmVsL2NwdV9zZXR1cF82
-eHguUwo+ICA+Cj4gID4gQ2FuIHlvdSBnaXZlIG1lIHNvbWUgaWRlYXM/Cj4KPiAgVGhhdCdzIHBy
-b2JhYmx5IG5vdCB3aGVyZSBpdCdzIGFjdHVhbGx5IHN0b3BwaW5nLCBidXQgcmF0aGVyIHdoZXJl
-IGNhY2hlcwo+ICBhcmUgZW5hYmxlZCB3aXRob3V0IHRoZSBNTVUsIHRodXMgbWFraW5nIGl0IGRp
-ZmZpY3VsdCB0byBhY2Nlc3MgZGV2aWNlcy4KPiAgWW91IGNhbiB0cnkgcGxhY2luZyBhIGRjYmYg
-YWZ0ZXIgZWFjaCB3cml0ZSB0byB0aGUgTEVEIHJlZ2lzdGVyLCB0aG91Z2gKPiAgdGhpcyBtYXkg
-cGVydHVyYiBuZWFyYnkgcmVnaXN0ZXJzLgo+Cj4gIEhhdmUgeW91IHRyaWVkIGVuYWJsaW5nIGVh
-cmx5IGRlYnVnIHByaW50az8KPgo+ICAtU2NvdHQKPgo=
