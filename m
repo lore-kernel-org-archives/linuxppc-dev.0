@@ -2,22 +2,25 @@ Return-Path: <segher@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 2AB30DE463
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Apr 2008 02:01:40 +1000 (EST)
-In-Reply-To: <1208905031.6947.0.camel@concordia>
-References: <480E1939.6000701@matrix-vision.de>
-	<20080422172306.GA17992@ld0162-tx32.am.freescale.net>
-	<1208905031.6947.0.camel@concordia>
+	by ozlabs.org (Postfix) with ESMTPS id 7172ADE46F
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Apr 2008 02:06:04 +1000 (EST)
+In-Reply-To: <1208929545.9212.12.camel@concordia.ozlabs.ibm.com>
+References: <1208597267-30960-1-git-send-email-Jason.jin@freescale.com>
+	<1208758907.9955.4.camel@concordia>
+	<CC27DED0F8F39E48A7E75FD768688B7A874E57@zch01exm27.fsl.freescale.net>
+	<1208838916.12660.10.camel@concordia.ozlabs.ibm.com>
+	<e642c15622ac3ca89a6a43f439f2c222@kernel.crashing.org>
+	<1208929545.9212.12.camel@concordia.ozlabs.ibm.com>
 Mime-Version: 1.0 (Apple Message framework v623)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <49d9febd1f7b8022b6c418b592af2e33@kernel.crashing.org>
+Message-Id: <8c9045cf69926c5ea881b780054e1c17@kernel.crashing.org>
 From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: Question on MPC83xx interrupts
-Date: Wed, 23 Apr 2008 18:00:26 +0200
+Subject: Re: [PATCH 1/3] MSI driver for Freescale 83xx/85xx/86xx cpu
+Date: Wed, 23 Apr 2008 18:05:47 +0200
 To: michael@ellerman.id.au
-Cc: Scott Wood <scottwood@freescale.com>,
-	linux-ppc list <linuxppc-dev@ozlabs.org>,
-	Andre Schwarz <andre.schwarz@matrix-vision.de>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Kumar Gala <kumar.gala@freescale.com>,
+	Jin Zhengxiong <Jason.Jin@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,12 +30,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> You can see the mapping between virq and hwirq numbers by turning on
-> CONFIG_VIRQ_DEBUG and looking in /sys/kernel/debug/powerpc/virq_mapping
-> (after mounting debugfs).
+>>> data = ((hwirq / 32) << 5) | ((hwirq % 32) & 0x1F)
+>>>
+>>> Which doesn't seem to actually do anything?
+>>
+>> It's not a no-op, because hwirq is signed.  It probably should be
+>> unsigned, like most things.
+>
+> You'll have to draw me a picture.
 
-Ooh, nice!  Are there plans to move this into some "real" sysfs
-nodes?
+In C, signed division is round-towards-zero, while unsigned division
+is round-towards-negative-infinity.  Suppose hwirq is -1, then
+hwirq/32 is 0 and hwirq%32 is -1, so that the full expression above
+will be 0x1f, not -1.  There is no such problem if hwirq would be
+unsigned; the compiler can generate better code in that case.
 
 
 Segher
