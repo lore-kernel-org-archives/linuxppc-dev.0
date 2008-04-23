@@ -1,26 +1,17 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <12o3l@tiscali.nl>
+Received: from smtp-out2.tiscali.nl (smtp-out2.tiscali.nl [195.241.79.177])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 7172ADE46F
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Apr 2008 02:06:04 +1000 (EST)
-In-Reply-To: <1208929545.9212.12.camel@concordia.ozlabs.ibm.com>
-References: <1208597267-30960-1-git-send-email-Jason.jin@freescale.com>
-	<1208758907.9955.4.camel@concordia>
-	<CC27DED0F8F39E48A7E75FD768688B7A874E57@zch01exm27.fsl.freescale.net>
-	<1208838916.12660.10.camel@concordia.ozlabs.ibm.com>
-	<e642c15622ac3ca89a6a43f439f2c222@kernel.crashing.org>
-	<1208929545.9212.12.camel@concordia.ozlabs.ibm.com>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <8c9045cf69926c5ea881b780054e1c17@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 1/3] MSI driver for Freescale 83xx/85xx/86xx cpu
-Date: Wed, 23 Apr 2008 18:05:47 +0200
-To: michael@ellerman.id.au
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Kumar Gala <kumar.gala@freescale.com>,
-	Jin Zhengxiong <Jason.Jin@freescale.com>
+	by ozlabs.org (Postfix) with ESMTPS id 8F8D3DDFD9
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Apr 2008 02:51:26 +1000 (EST)
+Message-ID: <480F6905.3070808@tiscali.nl>
+Date: Wed, 23 Apr 2008 18:51:17 +0200
+From: Roel Kluin <12o3l@tiscali.nl>
+MIME-Version: 1.0
+To: paulus@samba.org, linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc: mpic_pasemi_msi: failed allocation unnoticed
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: lkml <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,20 +21,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>> data = ((hwirq / 32) << 5) | ((hwirq % 32) & 0x1F)
->>>
->>> Which doesn't seem to actually do anything?
->>
->> It's not a no-op, because hwirq is signed.  It probably should be
->> unsigned, like most things.
->
-> You'll have to draw me a picture.
+bitmap_find_free_region(), called by mpic_msi_alloc_hwirqs() may
+return -ENOMEM, but hwirq of type irq_hw_number_t which is unsigned.
 
-In C, signed division is round-towards-zero, while unsigned division
-is round-towards-negative-infinity.  Suppose hwirq is -1, then
-hwirq/32 is 0 and hwirq%32 is -1, so that the full expression above
-will be 0x1f, not -1.  There is no such problem if hwirq would be
-unsigned; the compiler can generate better code in that case.
+Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+---
+The functions can be found respectively in:
+//---[ vi lib/bitmap.c +807 ]---
+//---[ vi arch/powerpc/sysdev/mpic_msi.c +39 ]---
 
-
-Segher
+diff --git a/arch/powerpc/sysdev/mpic_pasemi_msi.c b/arch/powerpc/sysdev/mpic_pasemi_msi.c
+index 33cbfb2..a15ac5c 100644
+--- a/arch/powerpc/sysdev/mpic_pasemi_msi.c
++++ b/arch/powerpc/sysdev/mpic_pasemi_msi.c
+@@ -109,7 +109,7 @@ static int pasemi_msi_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type)
+ 		 * sources can be changed independently.
+ 		 */
+ 		hwirq = mpic_msi_alloc_hwirqs(msi_mpic, ALLOC_CHUNK);
+-		if (hwirq < 0) {
++		if (hwirq == -ENOMEM) {
+ 			pr_debug("pasemi_msi: failed allocating hwirq\n");
+ 			return hwirq;
+ 		}
