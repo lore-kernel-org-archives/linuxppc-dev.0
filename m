@@ -1,17 +1,16 @@
 Return-Path: <12o3l@tiscali.nl>
-Received: from smtp-out3.tiscali.nl (smtp-out3.tiscali.nl [195.241.79.178])
+Received: from smtp-out2.tiscali.nl (smtp-out2.tiscali.nl [195.241.79.177])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 9B5F0DE2BE
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Apr 2008 05:00:45 +1000 (EST)
-Message-ID: <480F8754.7000200@tiscali.nl>
-Date: Wed, 23 Apr 2008 21:00:36 +0200
+	by ozlabs.org (Postfix) with ESMTPS id 5EB91DE0A4
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Apr 2008 06:19:42 +1000 (EST)
+Message-ID: <480F99D5.7070300@tiscali.nl>
+Date: Wed, 23 Apr 2008 22:19:33 +0200
 From: Roel Kluin <12o3l@tiscali.nl>
 MIME-Version: 1.0
-To: paulus@samba.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH 2/2] mpic_u3msi: mpic_u3msi: failed allocation unnoticed
-References: <480F6905.3070808@tiscali.nl>
-In-Reply-To: <480F6905.3070808@tiscali.nl>
+To: galak@kernel.crashing.org, linuxppc-dev@ozlabs.org
+Subject: [PATCH] spi_mpc83xx: test below 0 on unsigned irq in
+	mpc83xx_spi_probe()
 Content-Type: text/plain; charset=ISO-8859-1
 Cc: lkml <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -23,28 +22,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-A similar problem in arch/powerpc/sysdev/mpic_u3msi.c,
-sorry for the dup, fixed header.
----
-bitmap_find_free_region(), called by mpic_msi_alloc_hwirqs() may
-return -ENOMEM, but hwirq of type irq_hw_number_t which is unsigned.
+mpc83xx_spi->irq is unsigned, so the test fails
 
 Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
 ---
-The functions can be found respectively in:
-//---[ vi lib/bitmap.c +807 ]---
-//---[ vi arch/powerpc/sysdev/mpic_msi.c +39 ]---
-
-diff --git a/arch/powerpc/sysdev/mpic_u3msi.c b/arch/powerpc/sysdev/mpic_u3msi.c
-index 1d5a408..30a4e27 100644
---- a/arch/powerpc/sysdev/mpic_u3msi.c
-+++ b/arch/powerpc/sysdev/mpic_u3msi.c
-@@ -122,7 +122,7 @@ static int u3msi_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type)
+diff --git a/drivers/spi/spi_mpc83xx.c b/drivers/spi/spi_mpc83xx.c
+index be15a62..033fd51 100644
+--- a/drivers/spi/spi_mpc83xx.c
++++ b/drivers/spi/spi_mpc83xx.c
+@@ -454,12 +454,12 @@ static int __init mpc83xx_spi_probe(struct platform_device *dev)
+ 		goto put_master;
+ 	}
  
- 	list_for_each_entry(entry, &pdev->msi_list, list) {
- 		hwirq = mpic_msi_alloc_hwirqs(msi_mpic, 1);
--		if (hwirq < 0) {
-+		if (hwirq == -ENOMEM) {
- 			pr_debug("u3msi: failed allocating hwirq\n");
- 			return hwirq;
- 		}
+-	mpc83xx_spi->irq = platform_get_irq(dev, 0);
+-
+-	if (mpc83xx_spi->irq < 0) {
+-		ret = -ENXIO;
++	ret = platform_get_irq(dev, 0);
++	if (ret < 0)
+ 		goto unmap_io;
+-	}
++
++	mpc83xx_spi->irq = ret;
++	ret = 0;
+ 
+ 	/* Register for SPI Interrupt */
+ 	ret = request_irq(mpc83xx_spi->irq, mpc83xx_spi_irq,
