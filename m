@@ -1,22 +1,20 @@
-Return-Path: <laurentp@cse-semaphore.com>
-Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
-	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id 85CF6DE16B
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Apr 2008 23:53:21 +1000 (EST)
-From: Laurent Pinchart <laurentp@cse-semaphore.com>
-To: Jean Delvare <khali@linux-fr.org>
-Subject: Re: [PATCH] rtc-pcf8563: Add device ids table
-Date: Wed, 23 Apr 2008 15:53:14 +0200
-References: <200804171708.32847.laurentp@cse-semaphore.com>
-	<200804231412.40038.laurentp@cse-semaphore.com>
-	<20080423144756.3fc9b1bf@hyperion.delvare>
-In-Reply-To: <20080423144756.3fc9b1bf@hyperion.delvare>
+Return-Path: <avorontsov@dev.rtsoft.ru>
+Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
+	by ozlabs.org (Postfix) with SMTP id EA61BDDF9C
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Apr 2008 00:01:34 +1000 (EST)
+Date: Wed, 23 Apr 2008 18:01:31 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Laurent Pinchart <laurentp@cse-semaphore.com>
+Subject: Re: [RFC POWERPC] booting-without-of: bindings for FHCI USB, GPIO
+	LEDs, MCU, and NAND on UPM
+Message-ID: <20080423140131.GA28303@polina.dev.rtsoft.ru>
+References: <20080422194135.GA27822@polina.dev.rtsoft.ru>
+	<200804231115.39126.laurentp@cse-semaphore.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart9233562.uNRQ6XUGWQ";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Message-Id: <200804231553.17926.laurentp@cse-semaphore.com>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Alessandro Zummo <alessandro.zummo@towertech.it>,
-	rtc-linux@googlegroups.com, i2c@lm-sensors.org
+Content-Type: text/plain; charset=windows-1251
+In-Reply-To: <200804231115.39126.laurentp@cse-semaphore.com>
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,120 +24,154 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---nextPart9233562.uNRQ6XUGWQ
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Wed, Apr 23, 2008 at 11:15:35AM +0200, Laurent Pinchart wrote:
+> Hi Anton,
+> 
+> On Tuesday 22 April 2008 21:41, Anton Vorontsov wrote:
+> > Hi all,
+> > 
+> > Here is purposed bindings draft for the new drivers that I would like to
+> > send for this or next merge window, depending on results of this RFC. ;-)
+> > (The new bindings needs to be in-tree or at least Acked before I could
+> > send the drivers.)
+> > 
+> > Comments and suggestions are highly appreciated.
+> > 
+> > Thanks.
+> > 
+> > diff --git a/Documentation/powerpc/booting-without-of.txt 
+> b/Documentation/powerpc/booting-without-of.txt
+> > index c350623..38fe3e9 100644
+> > --- a/Documentation/powerpc/booting-without-of.txt
+> > +++ b/Documentation/powerpc/booting-without-of.txt
+> > @@ -59,6 +59,11 @@ Table of Contents
+> >        p) Freescale Synchronous Serial Interface
+> >        q) USB EHCI controllers
+> >        r) Freescale General-purpose Timers Module
+> > +      s) Freescale USB Parameter RAM:
+> > +      t) Freescale QUICC Engine USB Controller
+> > +      u) LEDs on GPIOs
+> > +      v) Freescale MCU with MPC8349E-mITX compatible firmware
+> > +      w) NAND on UPM-driven Freescale Localbus
+> >  
+> >    VII - Marvell Discovery mv64[345]6x System Controller chips
+> >      1) The /system-controller node
+> > @@ -2866,6 +2871,139 @@ platforms are moved over to use the 
+> flattened-device-tree model.
+> >      	clock-frequency = <0>;
+> >      };
+> >  
+> > +    s) Freescale USB Parameter RAM:
+> > +
+> > +    Required properties:
+> > +      - compatible : should be "fsl,<chip>-qe-muram-usb-pram",
+> > +        "fsl,qe-muram-usb-pram", "fsl,cpm-muram-usb-pram".
+> > +      - reg : should contain USB PRAM location and length.
+> > +
+> > +    Example:
+> > +
+> > +	usb-pram@8b00 {
+> > +		compatible = "fsl,mpc8360-qe-muram-usb-pram",
+> > +			     "fsl,qe-muram-usb-pram",
+> > +			     "fsl,cpm-muram-usb-pram";
+> > +		reg = <0x8b00 0x100>;
+> > +	};
+> > +
+> > +    t) Freescale QUICC Engine USB Controller
+> > +
+> > +    Required properties:
+> > +      - compatible : should be "fsl,<chip>-qe-usb", "fsl,qe-usb",
+> > +        "fsl,usb-fhci"
+> > +      - reg : should contain gtm registers location and length.
+> > +      - interrupts : should contain USB interrupt.
+> > +      - interrupt-parent : interrupt source phandle.
+> > +      - fsl,fullspeed-clock : specifies the full speed USB clock source.
+> > +      - fsl,lowspeed-clock : specifies the low speed USB clock source.
+> > +      - fsl,usb-mode : should be "host".
+> > +      - linux,hub-power-budget : optional, USB power budget for the root 
+> hub
+> > +        in mA.
+> > +      - gpios : should specify GPIOs in this order: USBOE, USBTP, USBTN, 
+> USBRP,
+> > +        USBRN, SPEED (optional), and SUSPEND (optional).
+> 
+> Suspend should in my opinion be renamed power (or bus power or anything 
+> similar), as it controls the USB power and not USB PHY sleep mode.
 
-On Wednesday 23 April 2008 14:47, Jean Delvare wrote:
-> On Wed, 23 Apr 2008 14:12:37 +0200, Laurent Pinchart wrote:
-> > On Wednesday 23 April 2008 13:16, Jean Delvare wrote:
-> > > I still don't know exactly what happened there... I think I saw some
-> > > "OpenFirmware i2c" patches go upstream yesterday? But not the ones
-> > > listed below, which I thought they depended upon.
-> >=20
-> > The code that went upstream introduces helper functions to create i2c
-> > devices from information supplied by the OF device tree. It doesn't
-> > strictly depend on the below patches, but the new devices won't be
-> > properly bound to a driver without them.
->=20
-> OK. So... Out of the 7 patches Jochen sent originally, only 1 ([3/7] OF
-> helpers for the i2c API) went upstream. Am I correct?
->=20
-> Jochen, I'm a bit confused by the dependencies that exist - or not -
-> between these 7 patches you sent at once. I thought they had to be
-> applied in sequence but it seems not? And some of them should
-> apparently go through me i2c tree but others (e.g. [7/7]) not?
->=20
-> I would appreciate if you could summarize quickly which patches depend
-> on others in which way. If we can make smaller subsets of patches, that
-> will be easier for me to review and push upstream on my limited time.
+Thanks, I'll rename it.
 
-Here is a summary based on my understanding of the situation. Jochen please=
-=20
-correct me if I'm wrong.
+> > +    Example:
+> > +
+> > +	usb@6c0 {
+> > +		compatible = "fsl,mpc8360-qe-usb", "fsl,qe-usb",
+> > +			     "fsl,usb-fhci";
+> > +		reg = <0x6c0 0x40>;
+> > +		interrupts = <11>;
+> > +		interrupt-parent = <&qeic>;
+> > +		fsl,fullspeed-clock = "clk21";
+> > +		fsl,usb-mode = "host";
+> > +		gpios = <&qe_pio_b  2 0 /* USBOE */
+> > +			 &qe_pio_b  3 0 /* USBTP */
+> > +			 &qe_pio_b  8 0 /* USBTN */
+> > +			 &qe_pio_b  9 0 /* USBRP */
+> > +			 &qe_pio_b 11 0 /* USBRN */
+> > +			 &qe_pio_e 20 0 /* SPEED */
+> > +			 &qe_pio_e 21 0 /* SUSPN */>;
+> > +	};
+> > +
+> > +    u) LEDs on GPIOs
+> > +
+> > +    Required properties:
+> > +      - compatible : should be "linux,gpio-led".
+> > +      - linux,name : LED name.
+> > +      - linux,active-low : property should be present if LED wired as
+> > +        active-low.
+> 
+> Just thinking out loud, wasn't the third GPIO cell supposed to be used to 
+> encode such properties ?
 
-[PATCH1/7] i2c: Add support for device alias names
+Oh well, yes, origianally I wrote that it `may' encode this information.
+Encoding this would be really useful if node is using many gpios that are
+wired in some random inverted/not-inverted way...
 
-This patch allows new-style i2c chip drivers to have alias names using
-the official kernel aliasing system and MODULE_DEVICE_TABLE(). It basically=
-=20
-adds device id table found in various subsystems (PCI, USB, ...) to i2c=20
-new-style drivers.
+gpios <&qe_pio 2 1   /* wired active-low */
+       &qe_pio 3 0   /* wired active-high */
+       &qe_pio 4 1   /* wired active-low */
+       &qe_pio 5 0   /* wired active-high */
+       &qe_pio 6 1>; /* wired active-low */
 
-The patch extends the new-style i2c device/driver matching code to support=
-=20
-device id tables. It modifies the drivers accordingly, as the probe functio=
-n=20
-now takes an extra argument (pointer to the device id entry that matched),=
-=20
-but doesn't add device id tables to the drivers.
 
-[PATCH2/7] i2c: Convert all new-style drivers to use module aliasing
+But we didn't see this setup yet, and I'm not sure if I want to implement
+this support now just for the LEDs. Specifying this information via
+gpios = <> property or separate one isn't going to conflict anyhow
+and when we'll implement actual flags for GPIOs, we'll easily could
+switch to it in backwards compatible way.
 
-This patch adds the device id tables to the new-style i2c drivers. It depen=
-ds=20
-on the previous patch.
+Thanks for brining it up though.
 
-[PATCH3/7] i2c: OF helpers for the i2c API
+> > +      - linux,default-trigger : Linux default trigger for this LED.
+> > +      - linux,brightness : default brightness.
+> > +      - gpios : should specify LED GPIO.
+> > +
+> > +    Example:
+> > +
+> > +	led@0 {
+> > +		compatible = "linux,gpio-led";
+> > +		linux,name = "pwr";
+> > +		linux,brightness = <1>;
+> > +		linux,active-low;
+> > +		gpios = <&mcu_pio 0>;
+> > +	};
+> > +
+> > +	led@1 {
+> > +	        compatible = "linux,gpio-led";
+> > +	        linux,name = "hdd";
+> > +	        linux,default-trigger = "ide-disk";
+> > +		linux,active-low;
+> > +		gpios = <&mcu_pio 1>;
+> > +	};
 
-This one has already been applied through the ppc subsystem. It adds helper=
-=20
-functions to instantiate i2c devices from the OF device tree. The patch has=
-=20
-no compile time dependencies but relies on 1/7 and 2/7 to bind devices to=20
-drivers at runtime.
-
-[PATCH4/7] i2c: Convert PowerPC MPC i2c to of_platform_driver from=20
-platform_driver
-
-This patch should go through the ppc subsystem. It adds OF device tree supp=
-ort=20
-to the i2c-mpc driver. To the best of my knowledge it depends on 3/7 only.
-
-[PATCH5/7] i2c: Kill the old driver matching scheme
-
-This patch removes the old driver_name/type scheme for i2c driver matching.=
-=20
-Only the new matching scheme introduced by 2/7 remains for new-style driver=
-s.
-
-[PATCH6/7] i2c: adds support for i2c bus on Freescale CPM1/CPM2 controllers
-
-This one introduces a new i2c bus driver. It should go through the ppc=20
-subsystem. To the best of my knowledge it depends on 3/7 only.
-
-[PATCH7/7] [POWERPC] Add i2c pins to dts and board setup
-
-This last patch configures i2c pins on various powerpc boards and updates t=
-he=20
-associated device trees to include the i2c controller. It should go through=
-=20
-the ppc subsystem. It has no compile-time dependency on any other patch in=
-=20
-the serie.
-
-=2D-=20
-Laurent Pinchart
-CSE Semaphore Belgium
-
-Chaussee de Bruxelles, 732A
-B-1410 Waterloo
-Belgium
-
-T +32 (2) 387 42 59
-=46 +32 (2) 387 42 75
-
---nextPart9233562.uNRQ6XUGWQ
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
-
-iD8DBQBIDz9N8y9gWxC9vpcRAqBsAJ9oADBm6R00DzJRCK9xxhL6RQaRnQCdHQQw
-YgfMHJs4GJ6hEnKOkMPoJI4=
-=LMqq
------END PGP SIGNATURE-----
-
---nextPart9233562.uNRQ6XUGWQ--
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
