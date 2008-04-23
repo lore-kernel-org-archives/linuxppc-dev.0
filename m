@@ -1,21 +1,22 @@
-Return-Path: <dhlii@picocomputing.net>
-Received: from outbound-mail-02.bluehost.com (outbound-mail-02.bluehost.com
-	[69.89.21.12]) by ozlabs.org (Postfix) with SMTP id 213B1DE168
+Return-Path: <glikely@secretlab.ca>
+Received: from wx-out-0506.google.com (wx-out-0506.google.com [66.249.82.235])
+	by ozlabs.org (Postfix) with ESMTP id 30D9ADE006
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 24 Apr 2008 04:41:19 +1000 (EST)
-Received: from 70.15.107.162.res-cmts.eph.ptd.net ([70.15.107.162]
-	helo=hp-dhlii.dlasys.lcl)
-	by host200.hostmonster.com with esmtpsa (TLSv1:AES256-SHA:256)
-	(Exim 4.68) (envelope-from <dhlii@picocomputing.net>)
-	id 1Jojnh-00068R-MO
-	for linuxppc-embedded@ozlabs.org; Wed, 23 Apr 2008 12:34:37 -0600
-Message-ID: <480F8148.8090906@picocomputing.net>
-Date: Wed, 23 Apr 2008 14:34:48 -0400
-From: "David H. Lynch Jr." <dhlii@picocomputing.net>
+	Thu, 24 Apr 2008 04:49:05 +1000 (EST)
+Received: by wx-out-0506.google.com with SMTP id h27so2357482wxd.15
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 23 Apr 2008 11:49:02 -0700 (PDT)
+Message-ID: <fa686aa40804231149j344a4cc5iaf15ac12828146f7@mail.gmail.com>
+Date: Wed, 23 Apr 2008 12:49:01 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "David H. Lynch Jr." <dhlii@picocomputing.net>
+Subject: Re: simpleboot
+In-Reply-To: <480F8148.8090906@picocomputing.net>
 MIME-Version: 1.0
-To: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: simpleboot
 Content-Type: text/plain; charset=ISO-8859-1
+References: <480F8148.8090906@picocomputing.net>
+Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -26,26 +27,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-    I am trying to decipher hot to use the simpleboot devicetree wrapper
-and I am not grasping the process.
+On Wed, Apr 23, 2008 at 12:34 PM, David H. Lynch Jr.
+<dhlii@picocomputing.net> wrote:
+>     I am trying to decipher hot to use the simpleboot devicetree wrapper
+>  and I am not grasping the process.
+>
+>     I need an initramfs kernel, inside an elf wrapper.
+>     right now I get that pretty much for free.
+>
+>     How do  ask for a simpleboot wrapper kernel ?
+>        It is a target for a makefile in arch/powerpc/boot how to I cause
+>  that target to get invoked
+>
+>     How does it choose the device tree to wrap ?
+>
+>     How does it interact with things like initramfs ?
 
-    I need an initramfs kernel, inside an elf wrapper.
-    right now I get that pretty much for free.
+make simpleImage.<boardname>
+- or -
+make simpleImage.initrd.<boardname>
 
-    How do  ask for a simpleboot wrapper kernel ?
-       It is a target for a makefile in arch/powerpc/boot how to I cause
-that target to get invoked
-      
-    How does it choose the device tree to wrap ?
+The makefile will use arch/powerpc/boot/dts/<boardname>.dts for the device tree.
 
-    How does it interact with things like initramfs ?
-
-
-
+Cheers,
+g.
 
 -- 
-Dave Lynch                                          Pico Computing, Inc.
-Software Development                                      Embedded Linux
-717.627.3770      dhlii@picocomputing.net   http://www.picocomputing.com
-fax: 1.253.369.9244                                 Cell: 1.717.587.7774
-Tiny Mighty Machines
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
