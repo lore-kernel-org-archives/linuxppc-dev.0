@@ -1,21 +1,27 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from wx-out-0506.google.com (wx-out-0506.google.com [66.249.82.232])
-	by ozlabs.org (Postfix) with ESMTP id 5AF7EDDFE3
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Apr 2008 00:33:46 +1000 (EST)
-Received: by wx-out-0506.google.com with SMTP id h27so2251377wxd.15
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Apr 2008 07:33:45 -0700 (PDT)
-Message-ID: <fa686aa40804230733n43064fa5q7b900bcf2b2754e6@mail.gmail.com>
-Date: Wed, 23 Apr 2008 08:33:44 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "John Linn" <John.Linn@xilinx.com>
-Subject: Re: Xilinx GPIO driver / CONFIG_OF
-In-Reply-To: <20080423132127.632CC1290067@mail80-sin.bigfish.com>
+Return-Path: <olaf@aepfle.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 33C6FDDF80
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Apr 2008 01:22:09 +1000 (EST)
+Received: from mail01.m-online.net (mail.m-online.net [192.168.3.149])
+	by mail-out.m-online.net (Postfix) with ESMTP id B25DE21D815
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Apr 2008 17:22:30 +0200 (CEST)
+Received: from localhost (unknown [192.168.1.157])
+	by mail.m-online.net (Postfix) with ESMTP id 0130390019
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Apr 2008 17:22:07 +0200 (CEST)
+Received: from localhost ([192.168.3.149])
+	by localhost (scanner1.m-online.net [192.168.1.157]) (amavisd-new,
+	port 10024) with ESMTP id bPMxTsvLIKWH for <linuxppc-dev@ozlabs.org>;
+	Wed, 23 Apr 2008 17:22:07 +0200 (CEST)
+Received: from ibook.aepfle.de (DSL01.83.171.163.124.ip-pool.NEFkom.net
+	[83.171.163.124]) by mail.mnet-online.de (Postfix) with ESMTP
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Apr 2008 17:22:06 +0200 (CEST)
+Date: Wed, 23 Apr 2008 17:22:06 +0200
+From: Olaf Hering <olaf@aepfle.de>
+To: linuxppc-dev@ozlabs.org
+Subject: missing current-speed property prevents autoconsole on pegasos
+Message-ID: <20080423152206.GA10935@aepfle.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <7e0dd21a0804230548n21a57969pc5f0acb7d9c77e50@mail.gmail.com>
-	<20080423132127.632CC1290067@mail80-sin.bigfish.com>
-Cc: Johann Baudy <johaahn@gmail.com>, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,21 +31,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Apr 23, 2008 at 7:21 AM, John Linn <John.Linn@xilinx.com> wrote:
-> Hi Johann,
->
->  Not to my knowledge yet.  We have it on our list to do.
->
->  Thanks,
->  John
 
-I've got a partial driver but it's not updated to the new GPIO
-infrastructure.  I'll try to post what I have today.
+Pegasos2 has no current-speed property in
+/pci@80000000/isa@C/serial@i2F8. As a result, console=ttyS0,115200 is
+still required unless the patch below is used.
 
-Cheers,
-g.
+What is the correct way to restore console detection on pegasos2?
 
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Index: linux-2.6.25-pegasos/arch/powerpc/platforms/chrp/setup.c
+===================================================================
+--- linux-2.6.25-pegasos.orig/arch/powerpc/platforms/chrp/setup.c
++++ linux-2.6.25-pegasos/arch/powerpc/platforms/chrp/setup.c
+@@ -302,7 +305,7 @@ static void chrp_init_early(void)
+        if (!property)
+                goto out_put;
+        if (!strcmp(property, "failsafe") || !strcmp(property, "serial"))
+-               add_preferred_console("ttyS", 0, NULL);
++               add_preferred_console("ttyS", 0, "115200");
+ out_put:
+        of_node_put(node);
+ }
