@@ -1,25 +1,17 @@
-Return-Path: <jacmet@gmail.com>
-Received: from mu-out-0910.google.com (mu-out-0910.google.com [209.85.134.190])
-	by ozlabs.org (Postfix) with ESMTP id AA408DDFBB
+Return-Path: <yuyongbao@126.com>
+Received: from m5-141.126.com (m5-141.126.com [202.108.5.141])
+	by ozlabs.org (Postfix) with SMTP id 21B2BDDFFB
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 23 Apr 2008 16:43:15 +1000 (EST)
-Received: by mu-out-0910.google.com with SMTP id w8so2780260mue.9
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 22 Apr 2008 23:43:12 -0700 (PDT)
-To: aaronsells <aaron.sells@zin-tech.com>
-Subject: Re: SecretLab 2.6.24 with USB
-References: <800687fe0804141927y1f6ea75cv7ad0ba68b4fa637a@mail.gmail.com>
-	<fa686aa40804211109g2f7f45d0gf836be46e2c1a40b@mail.gmail.com>
-	<16825460.post@talk.nabble.com>
-From: Peter Korsgaard <jacmet@sunsite.dk>
-Date: Wed, 23 Apr 2008 08:43:06 +0200
-In-Reply-To: <16825460.post@talk.nabble.com> (aaronsells's message of "Tue\,
-	22 Apr 2008 12\:23\:57 -0700 \(PDT\)")
-Message-ID: <87k5ipkr5x.fsf@macbook.be.48ers.dk>
+	Wed, 23 Apr 2008 18:17:06 +1000 (EST)
+Message-ID: <FD78E578AB254426A3B97E7B65553E65@baby>
+From: "???" <yuyongbao@126.com>
+To: <linuxppc-embedded@ozlabs.org>
+References: <mailman.2018.1208895004.11702.linuxppc-embedded@ozlabs.org>
+Subject: mpc8379e rdb nand flash support 
+Date: Wed, 23 Apr 2008 15:47:00 +0800
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Sender: Peter Korsgaard <jacmet@gmail.com>
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain;
+	charset="iso-8859-1"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -30,20 +22,39 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
->>>>> "aaronsells" == aaronsells  <aaron.sells@zin-tech.com> writes:
-
-Hi,
-
- aaronsells> I've tried this on my ML403 board with no success.  My
- aaronsells> Xilinx git tree is current.  I'm using Peter's most
- aaronsells> recent patches from
- aaronsells> http://peter.korsgaard.com/patches/linux/. I'm using an
- aaronsells> OpenEmbedded console-image mounted via nfs as my root
- aaronsells> filesystem.  I don't receive any messages when I plug USB
- aaronsells> devices into the board (keyboard, mouse, webcam).  Any
- aaronsells> ideas on how I can troubleshoot this?
-
-Did you register a struct platform_device for the c67x00?
-
--- 
-Bye, Peter Korsgaard
+RGVhciBhbGw6DQogICAgRGlkIGFueW9uZSB1c2UgbXBjODM3OWVyZGIgYm9hcmQ/ICBJIGNoYW5n
+ZWQgbmFuZCBmbGFzaCBmcm9tIHNhbXN1bmcgMzJNIHRvIGh5bml4IDFHIGJ5dGUuQW5kIHRoZSAx
+RyBieXRlIG5hbmQncyBlcmFzZSBibG9jayBzaXplIGlzIDI1NktCLg0KICAgIE5vdyB0aGUgcHJv
+YmxlbSBpczogd2hlbiBJIHVzZSAiIG5hbmQgd3JpdGUuamZmczIiIGNvbW1hbmQgdG8gd3JpdGUg
+amZmczIgZmlsZXN5c3RlbXMgdG8gbmFuZCBmbGFzaCAsdGhlcmUgaXMgb25seSAxMjhLQnl0ZSBv
+ZiBldmVyeSBlcmFzZSBibG9ja3MgY2FuIGJlIHdyaXRlZC4NCiAgICBGcm9tIHRoZSBkYXRhc2hl
+ZXQgb2YgdGhlIG1wYzgzNzllICwiUGFnZSBzaXplIG9mIDIwNDggbWFpbiBhcmVhIGJ5dGVzIHBs
+dXMgNjQgc3BhcmUgYXJlYSBieXRlcyAobGFyZ2UgcGFnZSBkZXZpY2VzKTsNCkZDTSBSQU0gYnVm
+ZmVycyBhcmUgNCBLYnl0ZXMgZWFjaDsgRmxhc2ggYmxvY2sgc2l6ZSBvZiAxMjggS2J5dGVzLiIN
+CiAgICBJcyBpdCBtZWFucyBtcGM4Mzc5ZSBvbmx5IHN1cHBvcnQgMTI4S2J5dGVzIGJsb2NrIHNp
+emU/DQogICAgSGVyZSBpcyB0aGUgaW5mb3JtYXRpb24gd2hlbiBJIHRyaWVkIHRvIHdyaXRlIGl0
+IDoNCg0KLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8v
+Ly8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLw0KICAgIEVob21l
+dGVjaCMgbmFuZCBlcmFzZSANCiAgICBOQU5EIGVyYXNlOiBkZXZpY2UgMCB3aG9sZSBjaGlwDQog
+ICAgRXJhc2luZyBhdCAweDNmZmMwMDAwIC0tIDEwMCUgY29tcGxldGUuDQogICAgT0sNCiAgICBF
+aG9tZXRlY2gjIG5hbmQgZGV2aWNlDQogICAgRGV2aWNlIDA6IE5BTkQgMUdpQiAzLDNWIDgtYml0
+DQogICAgRWhvbWV0ZWNoIyBuYW5kIGluZm8NCiAgICBEZXZpY2UgMDogTkFORCAxR2lCIDMsM1Yg
+OC1iaXQsIHNlY3RvciBzaXplIDI1NiBLaUINCiAgICBFaG9tZXRlY2gjIG5hbmQgd3JpdGUuamZm
+czIgMTAwMDAwMCAwIDk5YjM1Yw0KICAgIE5BTkQgd3JpdGU6IGRldmljZSAwIG9mZnNldCAweDAs
+IHNpemUgMHg5OWIzNWMNCiAgICBXcml0aW5nIGRhdGEgYXQgMHgxODgwMCAtLSAgIDElIGNvbXBs
+ZXRlLndyaXRpbmcgTkFORCBwYWdlIGF0IG9mZnNldCAweDIwMDAwIGZhaWxlZA0KICAgIERhdGEg
+ZGlkIG5vdCBmaXQgaW50byBkZXZpY2UsIGR1ZSB0byBiYWQgYmxvY2tzDQogICAgMTAwNzI5MjQg
+Ynl0ZXMgd3JpdHRlbjogRVJST1INCiAgICBFaG9tZXRlY2gjIG5hbmQgYmFkDQogICAgRGV2aWNl
+IDAgYmFkIGJsb2NrczoNCiAgICBFaG9tZXRlY2gjIG5hbmQgd3JpdGUuamZmczIgMTAwMDAwMCA0
+MDAwMCA5OWIzNWMNCiAgICBOQU5EIHdyaXRlOiBkZXZpY2UgMCBvZmZzZXQgMHg0MDAwMCwgc2l6
+ZSAweDk5YjM1Yw0KICAgIFdyaXRpbmcgZGF0YSBhdCAweDU4ODAwIC0tICAgMSUgY29tcGxldGUu
+d3JpdGluZyBOQU5EIHBhZ2UgYXQgb2Zmc2V0IDB4NjAwMDAgZmFpbGVkDQogICAgRGF0YSBkaWQg
+bm90IGZpdCBpbnRvIGRldmljZSwgZHVlIHRvIGJhZCBibG9ja3MNCiAgICAxMDA3MjkyNCBieXRl
+cyB3cml0dGVuOiBFUlJPUg0KICAgIEVob21ldGVjaCMgbmFuZCB3cml0ZS5qZmZzMiAxMDAwMDAw
+IDEwMDAwMCA5OWIzNWMNCiAgICBOQU5EIHdyaXRlOiBkZXZpY2UgMCBvZmZzZXQgMHgxMDAwMDAs
+IHNpemUgMHg5OWIzNWMNCiAgICBXcml0aW5nIGRhdGEgYXQgMHgxMTg4MDAgLS0gICAxJSBjb21w
+bGV0ZS53cml0aW5nIE5BTkQgcGFnZSBhdCBvZmZzZXQgMHgxMjAwMDAgZmFpbGVkDQogICAgRGF0
+YSBkaWQgbm90IGZpdCBpbnRvIGRldmljZSwgZHVlIHRvIGJhZCBibG9ja3MNCiAgICAxMDA3Mjky
+NCBieXRlcyB3cml0dGVuOiBFUlJPUg0KDQovLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8v
+Ly8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8v
+Ly8vDQogICAgQmVzdCBXaXNoZXMhDQogICAgMjAwOC00LTIzIA==
