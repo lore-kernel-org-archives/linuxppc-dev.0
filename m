@@ -1,17 +1,17 @@
-Return-Path: <timur@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 2EA4FDDF37
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Apr 2008 08:45:31 +1000 (EST)
-From: Timur Tabi <timur@freescale.com>
-To: linuxppc-dev@ozlabs.org, paulus@samba.org
-Subject: [PATCH] Add Timur Tabi to the MAINTAINERS file
-Date: Wed, 23 Apr 2008 17:45:26 -0500
-Message-Id: <1208990726-9283-1-git-send-email-timur@freescale.com>
-Cc: Timur Tabi <timur@freescale.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id D8F86DDED9
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Apr 2008 08:54:06 +1000 (EST)
+Date: Wed, 23 Apr 2008 17:50:05 -0500 (CDT)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Please pull from 'powerpc-next' branch
+Message-ID: <Pine.LNX.4.64.0804231749530.14182@blarg.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,67 +21,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Add Timur TAbi as the maintainer for the Freescale QE library, the Freescale
-QE UART device driver, the Freescale SOC sound drivers, and the Crystal
-Semiconductor CS4270 device driver.
+Please pull from 'powerpc-next' branch of
 
-Signed-off-by: Timur Tabi <timur@freescale.com>
----
+	master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git powerpc-next
 
-This patch is for 2.6.26.
+to receive the following updates:
 
- MAINTAINERS |   25 +++++++++++++++++++++++++
- 1 files changed, 25 insertions(+), 0 deletions(-)
+ arch/powerpc/kernel/cpu_setup_6xx.S   |    8
+ arch/ppc/8260_io/fcc_enet.c           |   19
+ arch/ppc/8xx_io/enet.c                |   23
+ arch/ppc/Kconfig                      |   82 --
+ arch/ppc/configs/ads8272_defconfig    |  930 ----------------------------------
+ arch/ppc/configs/mpc86x_ads_defconfig |  633 -----------------------
+ arch/ppc/configs/mpc885ads_defconfig  |  622 ----------------------
+ arch/ppc/platforms/Makefile           |    4
+ arch/ppc/platforms/fads.h             |   25
+ arch/ppc/platforms/mpc8272ads_setup.c |  367 -------------
+ arch/ppc/platforms/mpc885ads.h        |   93 ---
+ arch/ppc/platforms/mpc885ads_setup.c  |  476 -----------------
+ arch/ppc/platforms/pq2ads.c           |   53 -
+ arch/ppc/platforms/pq2ads.h           |   94 ---
+ arch/ppc/platforms/pq2ads_pd.h        |   32 -
+ arch/ppc/syslib/m8260_setup.c         |    6
+ arch/ppc/syslib/m82xx_pci.c           |   38 -
+ arch/ppc/syslib/m8xx_setup.c          |   10
+ include/asm-ppc/mpc8260.h             |    4
+ include/asm-ppc/mpc8xx.h              |    4
+ 20 files changed, 9 insertions(+), 3514 deletions(-)
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 90dcbbc..7a8bc0a 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -1104,6 +1104,12 @@ M:	kernel@wantstofly.org
- L:	linux-usb@vger.kernel.org
- S:	Maintained
- 
-+CIRRUS LOGIC CS4270 SOUND DRIVER
-+P:	Timur Tabi
-+M:	timur@freescale.com
-+L:	alsa-devel@alsa-project.org
-+S:	Supported
-+
- CIRRUS LOGIC CS4280/CS461x SOUNDDRIVER
- P:	Cirrus Logic Corporation (kernel 2.2 driver)
- M:	Cirrus Logic Corporation, Thomas Woller <twoller@crystal.cirrus.com>
-@@ -1626,6 +1632,12 @@ L:	linuxppc-dev@ozlabs.org
- L:	netdev@vger.kernel.org
- S:	Maintained
- 
-+FREESCALE QUICC ENGINE LIBRARY
-+P:	Timur Tabi
-+M:	timur@freescale.com
-+L:	linuxppc-dev@ozlabs.org
-+S:	Supported
-+
- FREESCALE HIGHSPEED USB DEVICE DRIVER
- P:	Li Yang
- M:	leoli@freescale.com
-@@ -1640,6 +1652,19 @@ L:	netdev@vger.kernel.org
- L:	linuxppc-dev@ozlabs.org
- S:	Maintained
- 
-+FREESCALE QUICC ENGINE UCC UART DRIVER
-+P:	Timur Tabi
-+M:	timur@freescale.com
-+L:	linuxppc-dev@ozlabs.org
-+S:	Supported
-+
-+FREESCALE SOC SOUND DRIVERS
-+P:	Timur Tabi
-+M:	timur@freescale.com
-+L:	alsa-devel@alsa-project.org
-+L:	linuxppc-dev@ozlabs.org
-+S:	Supported
-+
- FILE LOCKING (flock() and fcntl()/lockf())
- P:	Matthew Wilcox
- M:	matthew@wil.cx
--- 
-1.5.3
+Kumar Gala (3):
+      [PPC] Remove mpc8272 ads board from arch/ppc
+      [PPC] Remove mpc885ads and mpc86x ads boards from arch/ppc
+      [POWERPC] ppc32: Fix errata for 603 CPUs
