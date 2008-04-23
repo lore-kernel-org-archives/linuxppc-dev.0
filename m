@@ -1,21 +1,22 @@
 Return-Path: <cbouatmailru@gmail.com>
-Received: from fk-out-0910.google.com (fk-out-0910.google.com [209.85.128.187])
-	by ozlabs.org (Postfix) with ESMTP id B3B27DDD01
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Apr 2008 10:37:38 +1000 (EST)
-Received: by fk-out-0910.google.com with SMTP id z22so3869589fkz.9
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Apr 2008 17:37:36 -0700 (PDT)
-Date: Wed, 23 Apr 2008 04:37:30 +0400
+Received: from fg-out-1718.google.com (fg-out-1718.google.com [72.14.220.156])
+	by ozlabs.org (Postfix) with ESMTP id 6F812DDF9E
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Apr 2008 10:37:43 +1000 (EST)
+Received: by fg-out-1718.google.com with SMTP id 16so2072289fgg.39
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Apr 2008 17:37:42 -0700 (PDT)
+Date: Wed, 23 Apr 2008 04:37:37 +0400
 From: Anton Vorontsov <cbouatmailru@gmail.com>
-To: Grant Likely <grant.likely@secretlab.ca>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 Subject: Re: [RFC POWERPC] booting-without-of: bindings for FHCI USB, GPIO
 	LEDs, MCU, and NAND on UPM
-Message-ID: <20080423003730.GA7589@zarina>
+Message-ID: <20080423003737.GA11781@zarina>
 References: <20080422194135.GA27822@polina.dev.rtsoft.ru>
 	<fa686aa40804221308w5960ces1f03a6a8c049edd4@mail.gmail.com>
+	<1208897422.6654.61.camel@vader.jdub.homelinux.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf8
-In-Reply-To: <fa686aa40804221308w5960ces1f03a6a8c049edd4@mail.gmail.com>
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org
+In-Reply-To: <1208897422.6654.61.camel@vader.jdub.homelinux.org>
+Cc: linuxppc-dev@ozlabs.org
 Reply-To: cbouatmailru@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -26,261 +27,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Apr 22, 2008 at 02:08:45PM -0600, Grant Likely wrote:
-> On Tue, Apr 22, 2008 at 1:41 PM, Anton Vorontsov
-> <avorontsov@ru.mvista.com> wrote:
-> > Hi all,
-> >
-> > Here is purposed bindings draft for the new drivers that I would like to
-> > send for this or next merge window, depending on results of this RFC. ;-)
-> > (The new bindings needs to be in-tree or at least Acked before I could
-> > send the drivers.)
-> >
-> > Comments and suggestions are highly appreciated.
+On Tue, Apr 22, 2008 at 03:50:22PM -0500, Josh Boyer wrote:
+> On Tue, 2008-04-22 at 14:08 -0600, Grant Likely wrote:
+> > On Tue, Apr 22, 2008 at 1:41 PM, Anton Vorontsov
+> > <avorontsov@ru.mvista.com> wrote:
+> > > Hi all,
+> > > +    w) NAND on UPM-driven Freescale Localbus
+> > > +
+> > > +      Required properties:
+> > > +      - compatible : "fsl,upm-nand".
+> > > +      - reg : should specify localbus chip select and size used for the chip.
+> > > +      - width : should specify port size in bytes.
+> > > +      - fsl,upm-addr-offset : UPM pattern offset for the address latch.
+> > > +      - fsl,upm-cmd-offset : UPM pattern offset for the command latch.
+> > > +      - fsl,wait-pattern : should be present if NAND chip requires waiting
+> > > +        for Ready-Not-Busy pin after each executed pattern.
+> > > +      - fsl,wait-write : should be present if NAND chip needs waiting on
+> > > +        Ready-Not-Busy pin after each write cycle.
+> > > +      - linux,chip-delay : optional, may contain delay value in milliseconds
+> > > +        (in case when Ready-Not-Busy pin was unspecified).
+> > > +      - gpios : may specify optional GPIO connected to the Ready-Not-Busy pin.
+> > 
+> > I'm not competent to comment on this binding; I haven't spent any time
+> > looking at NAND binding conventions.
 > 
-> Thanks for cc'ing me.  Mostly looks good, comments below.
-
-Thanks for the comments!
-
-> Cheers,
-> g.
+> That's because there are none, and every time someone proposes one it's
+> like this.  Full of weird $board specific stuff that have nothing to do
+> with the actual NAND chip.
 > 
-> > diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
-> > index c350623..38fe3e9 100644
-> > --- a/Documentation/powerpc/booting-without-of.txt
-> > +++ b/Documentation/powerpc/booting-without-of.txt
-> > @@ -59,6 +59,11 @@ Table of Contents
-> >       p) Freescale Synchronous Serial Interface
-> >       q) USB EHCI controllers
-> >       r) Freescale General-purpose Timers Module
-> > +      s) Freescale USB Parameter RAM:
-> > +      t) Freescale QUICC Engine USB Controller
-> > +      u) LEDs on GPIOs
-> > +      v) Freescale MCU with MPC8349E-mITX compatible firmware
-> > +      w) NAND on UPM-driven Freescale Localbus
-> >
-> >   VII - Marvell Discovery mv64[345]6x System Controller chips
-> >     1) The /system-controller node
-> > @@ -2866,6 +2871,139 @@ platforms are moved over to use the flattened-device-tree model.
-> >        clock-frequency = <0>;
-> >     };
-> >
-> > +    s) Freescale USB Parameter RAM:
-> > +
-> > +    Required properties:
-> > +      - compatible : should be "fsl,<chip>-qe-muram-usb-pram",
-> > +        "fsl,qe-muram-usb-pram", "fsl,cpm-muram-usb-pram".
-> > +      - reg : should contain USB PRAM location and length.
-> > +
-> 
-> Personally, I'd leave out "fsl,qe-muram-usb-pram" and
-> "fsl,cpm-muram-usb-pram", but otherwise looks good to me.
+> For example, why is fsl,wait-write defined as an fsl specific property?
+> It seems generic to the NAND chip itself.  Also, why in the example is
+> the specific NAND chip part number listed, followed by fsl,upm-nand?
+> It's almost as if people want to mix the NAND chip and NAND controller
+> definitions together.  Maybe there is a good reason for it, but it's
+> really confusing.
 
-Per Scott comment I'll try to fold pram address into usb node,
-so this node isn't relevant anymore.
-
-> > +    Example:
-> > +
-> > +       usb-pram@8b00 {
-> > +               compatible = "fsl,mpc8360-qe-muram-usb-pram",
-> > +                            "fsl,qe-muram-usb-pram",
-> > +                            "fsl,cpm-muram-usb-pram";
-> > +               reg = <0x8b00 0x100>;
-> > +       };
-> > +
-> > +    t) Freescale QUICC Engine USB Controller
-> > +
-> > +    Required properties:
-> > +      - compatible : should be "fsl,<chip>-qe-usb", "fsl,qe-usb",
-> > +        "fsl,usb-fhci"
-> 
-> Again, I'd leave out "fsl,qe-usb" and "fsl,usb-fhci".
-
-Given that mpc8323 is the first (IIRC) chip that supports QE USB,
-do I understand correctly that you're purposing something like this
-(e.g. for mpc8360):
-
-       usb@6c0 {
-               compatible = "fsl,mpc8360-qe-usb", "fsl,mpc8323-qe-usb";
-
-Or... do I have to write somthing like this in the driver itself:
-
-static const struct of_device_id of_fhci_match[] = {
-	{ .compatible = "fsl,mpc8323-qe-usb", },
-	{ .compatible = "fsl,mpc8360-qe-usb", },
-	{ ...new chips... }
-	{},
-};
-
-And specify only "fsl,mpc8360-qe-usb" (for mpc8360 case again)?
-
-I have no objections to either of this, just want some clarity.
-
-> > +      - reg : should contain gtm registers location and length.
-> > +      - interrupts : should contain USB interrupt.
-> > +      - interrupt-parent : interrupt source phandle.
-> > +      - fsl,fullspeed-clock : specifies the full speed USB clock source.
-> > +      - fsl,lowspeed-clock : specifies the low speed USB clock source.
-> 
-> What is the format of the clock properties?
-
-I'll make it clear in the next revision (the format is "clk<NUM>" or
-"brg<NUM>").
-
-> > +      - fsl,usb-mode : should be "host".
-> 
-> What other options are there?  Is this something that would be better
-> encoded into "compatible" for driver binding?  (I've seen both
-> approaches; I don't have a firm opinion on which is best)
-
-Well, no. QE USB is the same device, but it can be used as either host
-or gadget (peripheral). Peripheral mode isn't yet supported, so binding
-lists only host mode.
-
-> > +      - linux,hub-power-budget : optional, USB power budget for the root hub
-> > +        in mA.
-> > +      - gpios : should specify GPIOs in this order: USBOE, USBTP, USBTN, USBRP,
-> > +        USBRN, SPEED (optional), and SUSPEND (optional).
-> > +
-> > +    Example:
-> > +
-> > +       usb@6c0 {
-> > +               compatible = "fsl,mpc8360-qe-usb", "fsl,qe-usb",
-> > +                            "fsl,usb-fhci";
-> > +               reg = <0x6c0 0x40>;
-> > +               interrupts = <11>;
-> > +               interrupt-parent = <&qeic>;
-> > +               fsl,fullspeed-clock = "clk21";
-> > +               fsl,usb-mode = "host";
-> > +               gpios = <&qe_pio_b  2 0 /* USBOE */
-> > +                        &qe_pio_b  3 0 /* USBTP */
-> > +                        &qe_pio_b  8 0 /* USBTN */
-> > +                        &qe_pio_b  9 0 /* USBRP */
-> > +                        &qe_pio_b 11 0 /* USBRN */
-> > +                        &qe_pio_e 20 0 /* SPEED */
-> > +                        &qe_pio_e 21 0 /* SUSPN */>;
-> > +       };
-> > +
-> > +    u) LEDs on GPIOs
-> > +
-> > +    Required properties:
-> > +      - compatible : should be "linux,gpio-led".
-> > +      - linux,name : LED name.
-> > +      - linux,active-low : property should be present if LED wired as
-> > +        active-low.
-> > +      - linux,default-trigger : Linux default trigger for this LED.
-> > +      - linux,brightness : default brightness.
-> > +      - gpios : should specify LED GPIO.
-> 
-> Looks good to me.
-> 
-> > +
-> > +    Example:
-> > +
-> > +       led@0 {
-> > +               compatible = "linux,gpio-led";
-> > +               linux,name = "pwr";
-> > +               linux,brightness = <1>;
-> > +               linux,active-low;
-> > +               gpios = <&mcu_pio 0>;
-> > +       };
-> > +
-> > +       led@1 {
-> > +               compatible = "linux,gpio-led";
-> > +               linux,name = "hdd";
-> > +               linux,default-trigger = "ide-disk";
-> > +               linux,active-low;
-> > +               gpios = <&mcu_pio 1>;
-> > +       };
-> > +
-> > +    v) Freescale MCU with MPC8349E-mITX compatible firmware
-> > +
-> > +    Required properties:
-> > +      - compatible : "fsl,<mcu-chip>-<board>", "fsl,mcu-mpc8349emitx",
-> > +        "simple-bus";
-> 
-> I don't think "simple-bus" is appropriate here.  This device doesn't
-> have any sub nodes so is not a bus.  (I'm talking about the binding
-> here; and I understand that simple-bus is convenient for causing
-> subnodes to be picked up into of_platform and that you'll be putting
-> the LED nodes as children of this one.  It just shouldn't be part of
-> this binding documentation.)
-
-Ok, I'll remove simple-bus from the bindings.
-
-> Also, since this node describes a device+firmware instead of just a
-> device, then "fsl,mcu-mpc8349emitx" should uniquely identify the
-> device from all other possibilities.  It appears to be a very board
-> specific thing.
-
-Yes, it is board specific. For example, for MPC8377E-RDB boards I'll
-write this:
-
-compatible = "fsl,mc9s08qg8-mpc8377erdb", "fsl,mcu-mpc8349emitx",
-	     "simple-bus";
-
-I.e. "very-specific", "device-that-compatible", "simple-bus".
-
-Is that ok?
-
-> > +        "simple-bus";
-> 
-> > +      - reg : should specify I2C address (0x0a).
-> > +      - #address-cells : should be 0.
-> > +      - #size-cells : should be 0.
-> > +      - #gpio-cells : should be 1.
-> > +      - gpio-controller : should be present;
-> > +
-> > +    Example:
-> > +
-> > +       mcu_pio: mcu@0a {
-> > +               #address-cells = <0>;
-> > +               #size-cells = <0>;
-> > +               #gpio-cells = <1>;
-> > +               compatible = "fsl,mc9s08qg8-mpc8349emitx",
-> > +                            "fsl,mcu-mpc8349emitx",
-> > +                            "simple-bus";
-> > +               reg = <0x0a>;
-> > +               gpio-controller;
-> > +       };
-> > +
-> > +    w) NAND on UPM-driven Freescale Localbus
-> > +
-> > +      Required properties:
-> > +      - compatible : "fsl,upm-nand".
-> > +      - reg : should specify localbus chip select and size used for the chip.
-> > +      - width : should specify port size in bytes.
-> > +      - fsl,upm-addr-offset : UPM pattern offset for the address latch.
-> > +      - fsl,upm-cmd-offset : UPM pattern offset for the command latch.
-> > +      - fsl,wait-pattern : should be present if NAND chip requires waiting
-> > +        for Ready-Not-Busy pin after each executed pattern.
-> > +      - fsl,wait-write : should be present if NAND chip needs waiting on
-> > +        Ready-Not-Busy pin after each write cycle.
-> > +      - linux,chip-delay : optional, may contain delay value in milliseconds
-> > +        (in case when Ready-Not-Busy pin was unspecified).
-> > +      - gpios : may specify optional GPIO connected to the Ready-Not-Busy pin.
-> 
-> I'm not competent to comment on this binding; I haven't spent any time
-> looking at NAND binding conventions.
-
-Thanks for bringing it up though, Josh Boyer evolved it into neat idea. :-)
-
-> > +
-> > +      Example:
-> > +
-> > +       flash@1,0 {
-> > +               compatible = "stmicro,NAND512W3A2BN6E", "fsl,upm-nand";
-> > +               reg = <1 0 1>;
-> > +               width = <1>;
-> > +               fsl,upm-addr-offset = <16>;
-> > +               fsl,upm-cmd-offset = <8>;
-> > +               fsl,wait-pattern;
-> > +               fsl,wait-write;
-> > +               gpios = <&qe_pio_e 18 0>;
-> > +       };
-> > +
-> >  VII - Marvell Discovery mv64[345]6x System Controller chips
-> >  ===========================================================
+Much thanks for the idea, I should indeed separate UPM NAND controller
+and NAND chip itself.
 
 -- 
 Anton Vorontsov
