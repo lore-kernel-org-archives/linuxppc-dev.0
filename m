@@ -1,17 +1,19 @@
-Return-Path: <yuyongbao@126.com>
-Received: from m5-141.126.com (m5-141.126.com [202.108.5.141])
-	by ozlabs.org (Postfix) with SMTP id 21B2BDDFFB
+Return-Path: <sr@denx.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.179]) by ozlabs.org (Postfix) with ESMTP id 63976DE06C
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 23 Apr 2008 18:17:06 +1000 (EST)
-Message-ID: <FD78E578AB254426A3B97E7B65553E65@baby>
-From: "???" <yuyongbao@126.com>
-To: <linuxppc-embedded@ozlabs.org>
-References: <mailman.2018.1208895004.11702.linuxppc-embedded@ozlabs.org>
-Subject: mpc8379e rdb nand flash support 
-Date: Wed, 23 Apr 2008 15:47:00 +0800
+	Wed, 23 Apr 2008 22:49:31 +1000 (EST)
+From: Stefan Roese <sr@denx.de>
+To: u-boot-users@lists.sourceforge.net
+Subject: Re: [U-Boot-Users] AMCC PPC440EPx/sequoia stability question...
+Date: Wed, 23 Apr 2008 14:49:24 +0200
+References: <480EADF4.2020706@verizon.net>
+In-Reply-To: <480EADF4.2020706@verizon.net>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="iso-8859-1"
+  charset="iso-8859-1"
+Message-Id: <200804231449.24746.sr@denx.de>
+Cc: Dave Littell <littelld@verizon.net>, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -22,39 +24,45 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-RGVhciBhbGw6DQogICAgRGlkIGFueW9uZSB1c2UgbXBjODM3OWVyZGIgYm9hcmQ/ICBJIGNoYW5n
-ZWQgbmFuZCBmbGFzaCBmcm9tIHNhbXN1bmcgMzJNIHRvIGh5bml4IDFHIGJ5dGUuQW5kIHRoZSAx
-RyBieXRlIG5hbmQncyBlcmFzZSBibG9jayBzaXplIGlzIDI1NktCLg0KICAgIE5vdyB0aGUgcHJv
-YmxlbSBpczogd2hlbiBJIHVzZSAiIG5hbmQgd3JpdGUuamZmczIiIGNvbW1hbmQgdG8gd3JpdGUg
-amZmczIgZmlsZXN5c3RlbXMgdG8gbmFuZCBmbGFzaCAsdGhlcmUgaXMgb25seSAxMjhLQnl0ZSBv
-ZiBldmVyeSBlcmFzZSBibG9ja3MgY2FuIGJlIHdyaXRlZC4NCiAgICBGcm9tIHRoZSBkYXRhc2hl
-ZXQgb2YgdGhlIG1wYzgzNzllICwiUGFnZSBzaXplIG9mIDIwNDggbWFpbiBhcmVhIGJ5dGVzIHBs
-dXMgNjQgc3BhcmUgYXJlYSBieXRlcyAobGFyZ2UgcGFnZSBkZXZpY2VzKTsNCkZDTSBSQU0gYnVm
-ZmVycyBhcmUgNCBLYnl0ZXMgZWFjaDsgRmxhc2ggYmxvY2sgc2l6ZSBvZiAxMjggS2J5dGVzLiIN
-CiAgICBJcyBpdCBtZWFucyBtcGM4Mzc5ZSBvbmx5IHN1cHBvcnQgMTI4S2J5dGVzIGJsb2NrIHNp
-emU/DQogICAgSGVyZSBpcyB0aGUgaW5mb3JtYXRpb24gd2hlbiBJIHRyaWVkIHRvIHdyaXRlIGl0
-IDoNCg0KLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8v
-Ly8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLw0KICAgIEVob21l
-dGVjaCMgbmFuZCBlcmFzZSANCiAgICBOQU5EIGVyYXNlOiBkZXZpY2UgMCB3aG9sZSBjaGlwDQog
-ICAgRXJhc2luZyBhdCAweDNmZmMwMDAwIC0tIDEwMCUgY29tcGxldGUuDQogICAgT0sNCiAgICBF
-aG9tZXRlY2gjIG5hbmQgZGV2aWNlDQogICAgRGV2aWNlIDA6IE5BTkQgMUdpQiAzLDNWIDgtYml0
-DQogICAgRWhvbWV0ZWNoIyBuYW5kIGluZm8NCiAgICBEZXZpY2UgMDogTkFORCAxR2lCIDMsM1Yg
-OC1iaXQsIHNlY3RvciBzaXplIDI1NiBLaUINCiAgICBFaG9tZXRlY2gjIG5hbmQgd3JpdGUuamZm
-czIgMTAwMDAwMCAwIDk5YjM1Yw0KICAgIE5BTkQgd3JpdGU6IGRldmljZSAwIG9mZnNldCAweDAs
-IHNpemUgMHg5OWIzNWMNCiAgICBXcml0aW5nIGRhdGEgYXQgMHgxODgwMCAtLSAgIDElIGNvbXBs
-ZXRlLndyaXRpbmcgTkFORCBwYWdlIGF0IG9mZnNldCAweDIwMDAwIGZhaWxlZA0KICAgIERhdGEg
-ZGlkIG5vdCBmaXQgaW50byBkZXZpY2UsIGR1ZSB0byBiYWQgYmxvY2tzDQogICAgMTAwNzI5MjQg
-Ynl0ZXMgd3JpdHRlbjogRVJST1INCiAgICBFaG9tZXRlY2gjIG5hbmQgYmFkDQogICAgRGV2aWNl
-IDAgYmFkIGJsb2NrczoNCiAgICBFaG9tZXRlY2gjIG5hbmQgd3JpdGUuamZmczIgMTAwMDAwMCA0
-MDAwMCA5OWIzNWMNCiAgICBOQU5EIHdyaXRlOiBkZXZpY2UgMCBvZmZzZXQgMHg0MDAwMCwgc2l6
-ZSAweDk5YjM1Yw0KICAgIFdyaXRpbmcgZGF0YSBhdCAweDU4ODAwIC0tICAgMSUgY29tcGxldGUu
-d3JpdGluZyBOQU5EIHBhZ2UgYXQgb2Zmc2V0IDB4NjAwMDAgZmFpbGVkDQogICAgRGF0YSBkaWQg
-bm90IGZpdCBpbnRvIGRldmljZSwgZHVlIHRvIGJhZCBibG9ja3MNCiAgICAxMDA3MjkyNCBieXRl
-cyB3cml0dGVuOiBFUlJPUg0KICAgIEVob21ldGVjaCMgbmFuZCB3cml0ZS5qZmZzMiAxMDAwMDAw
-IDEwMDAwMCA5OWIzNWMNCiAgICBOQU5EIHdyaXRlOiBkZXZpY2UgMCBvZmZzZXQgMHgxMDAwMDAs
-IHNpemUgMHg5OWIzNWMNCiAgICBXcml0aW5nIGRhdGEgYXQgMHgxMTg4MDAgLS0gICAxJSBjb21w
-bGV0ZS53cml0aW5nIE5BTkQgcGFnZSBhdCBvZmZzZXQgMHgxMjAwMDAgZmFpbGVkDQogICAgRGF0
-YSBkaWQgbm90IGZpdCBpbnRvIGRldmljZSwgZHVlIHRvIGJhZCBibG9ja3MNCiAgICAxMDA3Mjky
-NCBieXRlcyB3cml0dGVuOiBFUlJPUg0KDQovLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8v
-Ly8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8v
-Ly8vDQogICAgQmVzdCBXaXNoZXMhDQogICAgMjAwOC00LTIzIA==
+On Wednesday 23 April 2008, Dave Littell wrote:
+> I'm working on an AMCC PPC440EPx-based platform that's similar to the
+> Sequoia.  The board runs pretty well, but occasionally takes exceptions
+> both in U-Boot and while running Linux.  The exceptions vary from
+> Illegal Instructions to FP Unavailable to FP Unimplemented to ITLB and
+> DTLB Errors, to DSI, etc., which made us believe there's a problem with
+> SDRAM.
+
+Yes, this is my first idea too. Almost every time such "random" errors are 
+seen, SDRAM setup/initialization is the cause for it.
+
+> Sometimes there are simple hard lockups from which even the JTAG 
+> can't regain control.  However, the SDRAM physical/electrical and DDR
+> Controller configurations have been investigated in detail (and some
+> corrections made) with no resulting improvement in the exception behavior.
+
+Is the SDRAM termination similar to the one used on Sequoia too? Are you using 
+soldered chips and not DIMM modules? Is ECC available?
+
+> We see problems primarily at 667 MHz but have noted some issues at 533
+> MHz as well.  Some boards seem particularly susceptible to this while
+> others rarely (if ever) exhibit the problem.
+>
+> At this point all possibilities are on the table and I'm looking for any
+> input from anyone with experience (good, bad, or whatever) with this
+> processor and/or designs similar to the Sequoia.
+
+If you scan the U-Boot mailing list for 440EPx/Denali DDR2 problems, you will 
+most likely find some references.
+
+Please note that I recently introduced a CFG_MEM_TOP_HIDE option for the 
+440EPx CHIP 11 errata. I suggest you take a look at this too and see if this 
+changes your behavior.
+
+Best regards,
+Stefan
+
+=====================================================================
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: +49-8142-66989-0 Fax: +49-8142-66989-80  Email: office@denx.de
+=====================================================================
