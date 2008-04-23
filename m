@@ -1,32 +1,21 @@
-Return-Path: <jacmet@gmail.com>
-Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.190])
-	by ozlabs.org (Postfix) with ESMTP id 3D170DE4D3
+Return-Path: <dhlii@picocomputing.net>
+Received: from outbound-mail-02.bluehost.com (outbound-mail-02.bluehost.com
+	[69.89.21.12]) by ozlabs.org (Postfix) with SMTP id 213B1DE168
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 24 Apr 2008 04:27:51 +1000 (EST)
-Received: by nf-out-0910.google.com with SMTP id g16so1533232nfd.9
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 23 Apr 2008 11:27:49 -0700 (PDT)
-To: "Sam Karp" <sam.d.karp@gmail.com>
-Subject: Re: Fwd: SecretLab 2.6.24 with USB
-References: <800687fe0804141927y1f6ea75cv7ad0ba68b4fa637a@mail.gmail.com>
-	<fa686aa40804211109g2f7f45d0gf836be46e2c1a40b@mail.gmail.com>
-	<16825460.post@talk.nabble.com>
-	<fa686aa40804221309g7d0749e8qc329ad72389f0138@mail.gmail.com>
-	<480E4EBD.3010202@zin-tech.com>
-	<fa686aa40804221355s11f8fd6em3f2075bbb2073c8@mail.gmail.com>
-	<480F4E8E.4010506@zin-tech.com> <87iqy8haf8.fsf@macbook.be.48ers.dk>
-	<Pine.LNX.4.62.0804231741110.20567@henka.dyndns.org>
-	<800687fe0804231007l5fdf664fn1d94a1e40dd7fe74@mail.gmail.com>
-	<800687fe0804231047k46d1310as9f37de3a5bbbf259@mail.gmail.com>
-From: Peter Korsgaard <jacmet@sunsite.dk>
-Date: Wed, 23 Apr 2008 20:27:44 +0200
-In-Reply-To: <800687fe0804231047k46d1310as9f37de3a5bbbf259@mail.gmail.com>
-	(Sam Karp's message of "Wed\, 23 Apr 2008 12\:47\:00 -0500")
-Message-ID: <87k5iofmu7.fsf@macbook.be.48ers.dk>
+	Thu, 24 Apr 2008 04:41:19 +1000 (EST)
+Received: from 70.15.107.162.res-cmts.eph.ptd.net ([70.15.107.162]
+	helo=hp-dhlii.dlasys.lcl)
+	by host200.hostmonster.com with esmtpsa (TLSv1:AES256-SHA:256)
+	(Exim 4.68) (envelope-from <dhlii@picocomputing.net>)
+	id 1Jojnh-00068R-MO
+	for linuxppc-embedded@ozlabs.org; Wed, 23 Apr 2008 12:34:37 -0600
+Message-ID: <480F8148.8090906@picocomputing.net>
+Date: Wed, 23 Apr 2008 14:34:48 -0400
+From: "David H. Lynch Jr." <dhlii@picocomputing.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Sender: Peter Korsgaard <jacmet@gmail.com>
-Cc: linuxppc-embedded@ozlabs.org
+To: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: simpleboot
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -37,28 +26,26 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
->>>>> "Sam" == Sam Karp <sam.d.karp@gmail.com> writes:
+    I am trying to decipher hot to use the simpleboot devicetree wrapper
+and I am not grasping the process.
 
-Hi,
+    I need an initramfs kernel, inside an elf wrapper.
+    right now I get that pretty much for free.
 
- Sam> [   77.688344] sd 0:0:0:0: [sda] 15584 512-byte hardware sectors (8 MB)
- Sam> [   77.770266] sd 0:0:0:0: [sda] Write Protect is off
- Sam> [   77.827242] sd 0:0:0:0: [sda] Assuming drive cache: write through
- Sam> [   77.919287] sd 0:0:0:0: [sda] 15584 512-byte hardware sectors (8 MB)
- Sam> [   78.001280] sd 0:0:0:0: [sda] Write Protect is off
- Sam> [   78.058131] sd 0:0:0:0: [sda] Assuming drive cache: write through
- Sam> [   78.131034]  sda:<7>usb-storage: queuecommand called
- Sam> [   78.201342]  sda1
- Sam> [   78.230344] sd 0:0:0:0: [sda] Attached SCSI removable disk
- Sam> [   78.298014] sd 0:0:0:0: Attached scsi generic sg0 type 0
+    How do  ask for a simpleboot wrapper kernel ?
+       It is a target for a makefile in arch/powerpc/boot how to I cause
+that target to get invoked
+      
+    How does it choose the device tree to wrap ?
 
-Looks good.
+    How does it interact with things like initramfs ?
 
- Sam> ls /dev/sd*
- Sam> ls: /dev/sd*: No such file or directory
 
-Do you use mdev/udev? If not, you'll have to create the device nodes
-yourself.
+
 
 -- 
-Bye, Peter Korsgaard
+Dave Lynch                                          Pico Computing, Inc.
+Software Development                                      Embedded Linux
+717.627.3770      dhlii@picocomputing.net   http://www.picocomputing.com
+fax: 1.253.369.9244                                 Cell: 1.717.587.7774
+Tiny Mighty Machines
