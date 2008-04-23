@@ -1,22 +1,17 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C290FDDF78
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Apr 2008 15:18:57 +1000 (EST)
-Subject: Re: Phy read timeout in ibm_new_emac driver
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Markus Brunner <super.firetwister@googlemail.com>
-In-Reply-To: <200804230706.32641.super.firetwister@gmail.com>
-References: <6a6049b80804160349q42120b4bs1c0db49ea5ad055d@mail.gmail.com>
-	<1208347791.6958.279.camel@pasglop>
-	<200804230706.32641.super.firetwister@gmail.com>
-Content-Type: text/plain
-Date: Wed, 23 Apr 2008 15:18:48 +1000
-Message-Id: <1208927928.9060.18.camel@pasglop>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH 1/3 v3] Raise the upper limit of NR_CPUS.
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Tony Breeds <tony@bakeyournoodle.com>
+In-Reply-To: <d54206d25b690c9160401f65a583f586004dcd5d.1208923391.git.tony@bakeyournoodle.com>
+References: <d54206d25b690c9160401f65a583f586004dcd5d.1208923391.git.tony@bakeyournoodle.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-gUhVGDmVQ9Auy7tIG5Ob"
+Date: Wed, 23 Apr 2008 15:41:39 +1000
+Message-Id: <1208929299.9212.4.camel@concordia.ozlabs.ibm.com>
 Mime-Version: 1.0
-Cc: netdev@vger.kernel.org, ppc-dev <linuxppc-dev@ozlabs.org>
-Reply-To: benh@kernel.crashing.org
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,24 +22,49 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Wed, 2008-04-23 at 07:06 +0200, Markus Brunner wrote:
-> On Wednesday 16 April 2008, Benjamin Herrenschmidt wrote:
-> 
-> > Somebody knows off hand what the standard says the timeout should be ?
-> 
-> Anyone?
-> 
-> I didn't find any documentation on the standard, but I had a look at other 
-> drivers. 
-> au1000_eth.c waits 20 ms (20 * 1ms) in mdio_read.
-> bfin_mac.c waits 500 * 1us in mdio_poll. 
-> In both functions the last delay before the timeout is useless, like in 
-> new_emac. Not nice, but timeouts shouldn't occur anyway.
-> 
-> new emac probably doesn't wait long enough, but 20ms seems to be a bit too 
-> long.
+--=-gUhVGDmVQ9Auy7tIG5Ob
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-I just send Jeff a patch doubling the timeouts.
+On Wed, 2008-04-23 at 14:06 +1000, Tony Breeds wrote:
+> As the pacas are statically initialised increasing NR_CPUS beyond 128,
+> means that any additional pacas will be empty  ... which is bad.
+>=20
+> This patch adds the required functionality to fill in any excess pacas
+> at runtime.
+>=20
+> Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
+> ---
 
-Cheers,
-Ben.
+You add about 30 lines of code in this patch, which you remove in patch
+3, is there a better way to do it?
+
+Is there any harm dynamically initialising the statically initialised
+pacas, I think that would allow you to basically skip the
+NR_STATIC_PACAS business.
+
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-gUhVGDmVQ9Auy7tIG5Ob
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBIDswTdSjSd0sB4dIRAoccAJ91Oov9z+vKmlXmJq4WrirZhf762gCgwCCw
+PPQEeoZgOQrqFJHCpku40k4=
+=f2Eq
+-----END PGP SIGNATURE-----
+
+--=-gUhVGDmVQ9Auy7tIG5Ob--
