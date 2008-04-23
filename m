@@ -1,21 +1,23 @@
-Return-Path: <johaahn@gmail.com>
-Received: from wf-out-1314.google.com (wf-out-1314.google.com [209.85.200.170])
-	by ozlabs.org (Postfix) with ESMTP id AAE2FDE0C2
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Apr 2008 01:59:05 +1000 (EST)
-Received: by wf-out-1314.google.com with SMTP id 25so2121398wfa.15
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Apr 2008 08:59:04 -0700 (PDT)
-Message-ID: <7e0dd21a0804230754t57dfff02y33b3247edb80b60c@mail.gmail.com>
-Date: Wed, 23 Apr 2008 14:54:45 +0000
-From: "Johann Baudy" <johaahn@gmail.com>
-To: "Grant Likely" <grant.likely@secretlab.ca>
-Subject: Re: Xilinx GPIO driver / CONFIG_OF
-In-Reply-To: <fa686aa40804230733n43064fa5q7b900bcf2b2754e6@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <7e0dd21a0804230548n21a57969pc5f0acb7d9c77e50@mail.gmail.com>
-	<20080423132127.632CC1290067@mail80-sin.bigfish.com>
-	<fa686aa40804230733n43064fa5q7b900bcf2b2754e6@mail.gmail.com>
-Cc: linuxppc-dev@ozlabs.org, John Linn <John.Linn@xilinx.com>
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 2AB30DE463
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Apr 2008 02:01:40 +1000 (EST)
+In-Reply-To: <1208905031.6947.0.camel@concordia>
+References: <480E1939.6000701@matrix-vision.de>
+	<20080422172306.GA17992@ld0162-tx32.am.freescale.net>
+	<1208905031.6947.0.camel@concordia>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <49d9febd1f7b8022b6c418b592af2e33@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: Question on MPC83xx interrupts
+Date: Wed, 23 Apr 2008 18:00:26 +0200
+To: michael@ellerman.id.au
+Cc: Scott Wood <scottwood@freescale.com>,
+	linux-ppc list <linuxppc-dev@ozlabs.org>,
+	Andre Schwarz <andre.schwarz@matrix-vision.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,34 +27,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Perfect :)
+> You can see the mapping between virq and hwirq numbers by turning on
+> CONFIG_VIRQ_DEBUG and looking in /sys/kernel/debug/powerpc/virq_mapping
+> (after mounting debugfs).
 
-Many thanks,
-Johann Baudy
-
-On Wed, Apr 23, 2008 at 2:33 PM, Grant Likely <grant.likely@secretlab.ca> wrote:
-> On Wed, Apr 23, 2008 at 7:21 AM, John Linn <John.Linn@xilinx.com> wrote:
->  > Hi Johann,
->  >
->  >  Not to my knowledge yet.  We have it on our list to do.
->  >
->  >  Thanks,
->  >  John
->
->  I've got a partial driver but it's not updated to the new GPIO
->  infrastructure.  I'll try to post what I have today.
->
->  Cheers,
->  g.
->
->
->  --
->  Grant Likely, B.Sc., P.Eng.
->  Secret Lab Technologies Ltd.
->
+Ooh, nice!  Are there plans to move this into some "real" sysfs
+nodes?
 
 
-
--- 
-Johann Baudy
-johaahn@gmail.com
+Segher
