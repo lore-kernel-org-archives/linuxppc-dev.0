@@ -1,22 +1,25 @@
-Return-Path: <roland@redhat.com>
-Received: from QMTA07.emeryville.ca.mail.comcast.net
-	(qmta07.emeryville.ca.mail.comcast.net [76.96.30.64])
-	by ozlabs.org (Postfix) with ESMTP id 45E44DDF52
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Apr 2008 16:37:58 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-From: Roland McGrath <roland@redhat.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH] powerpc TLF_RESTORE_SIGMASK
-In-Reply-To: Paul Mackerras's message of  Wednesday,
-	23 April 2008 15:04:53 +1000
-	<18446.50037.964682.539009@cargo.ozlabs.ibm.com>
-References: <20080403210842.6C88C26F98D@magilla.localdomain>
-	<18446.50037.964682.539009@cargo.ozlabs.ibm.com>
-Message-Id: <20080423063753.C2088270381@magilla.localdomain>
-Date: Tue, 22 Apr 2008 23:37:53 -0700 (PDT)
-Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
-	linux-kernel@vger.kernel.org
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (xc.sipsolutions.net [83.246.72.84])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 25FAADDF1E
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Apr 2008 17:05:11 +1000 (EST)
+Subject: Re: [PATCH v3] powerpc: Add irqtrace support for 32-bit powerpc
+From: Johannes Berg <johannes@sipsolutions.net>
+To: benh@kernel.crashing.org
+In-Reply-To: <1208925639.9060.16.camel@pasglop>
+References: <20080404213932.GA15847@farnsworth.org>
+	<20080407171428.GA14900@farnsworth.org>
+	<1207670643.5550.11.camel@johannes.berg>
+	<1207690574.7442.4.camel@johannes.berg>
+	<1208925639.9060.16.camel@pasglop>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-aKGPidFxLKlUPc4iOZur"
+Date: Wed, 23 Apr 2008 08:33:59 +0200
+Message-Id: <1208932439.31429.49.camel@johannes.berg>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,159 +29,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> Roland McGrath writes:
-> 
-> > This requires the earlier HAVE_SET_RESTORE_SIGMASK patch series.
-> > This does the same for powerpc that I posted the x86 change for.
-> 
-> ...
-> 
-> > +static inline void set_restore_sigmask(void)
-> > +{
-> > +	struct thread_info *ti = current_thread_info();
-> > +	ti->local_flags |= TLF_RESTORE_SIGMASK;
-> 
-> This should be _TLF_RESTORE_SIGMASK (leading '_'), I think.
 
-Indeed so.  Here's a replacement patch.
+--=-aKGPidFxLKlUPc4iOZur
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Thanks,
-Roland
+On Wed, 2008-04-23 at 14:40 +1000, Benjamin Herrenschmidt wrote:
 
----
-[PATCH] powerpc TLF_RESTORE_SIGMASK
+> > Hmm. Bad news. I got a crash in console_callback() again where
+> > apparently r28 had a bogus value. That, however, doesn't make sense, so
+> > maybe that register value was calculated from another register.
+>=20
+> Possibly. How hard was it to reproduce ?=20
 
-Replace TIF_RESTORE_SIGMASK with TLF_RESTORE_SIGMASK and define
-our own set_restore_sigmask() function.  This saves the costly
-SMP-safe set_bit operation, which we do not need for the sigmask
-flag since TIF_SIGPENDING always has to be set too.
+It just happened after maybe half an hour or an hour uptime.
 
-Signed-off-by: Roland McGrath <roland@redhat.com>
----
- arch/powerpc/kernel/entry_32.S    |    4 ++--
- arch/powerpc/kernel/signal.c      |   12 ++++++------
- arch/powerpc/kernel/signal_32.c   |    2 +-
- include/asm-powerpc/thread_info.h |   17 +++++++++++++----
- 4 files changed, 22 insertions(+), 13 deletions(-)
+> Could it be a bug unrelated to lockdep ?
 
-diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
-index 84c8686..f056b3c 100644
---- a/arch/powerpc/kernel/entry_32.S
-+++ b/arch/powerpc/kernel/entry_32.S
-@@ -667,7 +667,7 @@ user_exc_return:		/* r10 contains MSR_KERNEL here */
- 	/* Check current_thread_info()->flags */
- 	rlwinm	r9,r1,0,0,(31-THREAD_SHIFT)
- 	lwz	r9,TI_FLAGS(r9)
--	andi.	r0,r9,(_TIF_SIGPENDING|_TIF_RESTORE_SIGMASK|_TIF_NEED_RESCHED)
-+	andi.	r0,r9,(_TIF_SIGPENDING|_TIF_NEED_RESCHED)
- 	bne	do_work
- 
- restore_user:
-@@ -924,7 +924,7 @@ recheck:
- 	lwz	r9,TI_FLAGS(r9)
- 	andi.	r0,r9,_TIF_NEED_RESCHED
- 	bne-	do_resched
--	andi.	r0,r9,_TIF_SIGPENDING|_TIF_RESTORE_SIGMASK
-+	andi.	r0,r9,_TIF_SIGPENDING
- 	beq	restore_user
- do_user_signal:			/* r10 contains MSR_KERNEL here */
- 	ori	r10,r10,MSR_EE
-diff --git a/arch/powerpc/kernel/signal.c b/arch/powerpc/kernel/signal.c
-index a65a44f..ad55488 100644
---- a/arch/powerpc/kernel/signal.c
-+++ b/arch/powerpc/kernel/signal.c
-@@ -120,7 +120,7 @@ int do_signal(sigset_t *oldset, struct pt_regs *regs)
- 	int ret;
- 	int is32 = is_32bit_task();
- 
--	if (test_thread_flag(TIF_RESTORE_SIGMASK))
-+	if (current_thread_info()->local_flags & _TLF_RESTORE_SIGMASK)
- 		oldset = &current->saved_sigmask;
- 	else if (!oldset)
- 		oldset = &current->blocked;
-@@ -131,9 +131,10 @@ int do_signal(sigset_t *oldset, struct pt_regs *regs)
- 	check_syscall_restart(regs, &ka, signr > 0);
- 
- 	if (signr <= 0) {
-+		struct thread_info *ti = current_thread_info();
- 		/* No signal to deliver -- put the saved sigmask back */
--		if (test_thread_flag(TIF_RESTORE_SIGMASK)) {
--			clear_thread_flag(TIF_RESTORE_SIGMASK);
-+		if (ti->local_flags & _TLF_RESTORE_SIGMASK) {
-+			ti->local_flags &= ~_TLF_RESTORE_SIGMASK;
- 			sigprocmask(SIG_SETMASK, &current->saved_sigmask, NULL);
- 		}
- 		return 0;               /* no signals delivered */
-@@ -169,10 +170,9 @@ int do_signal(sigset_t *oldset, struct pt_regs *regs)
- 
- 		/*
- 		 * A signal was successfully delivered; the saved sigmask is in
--		 * its frame, and we can clear the TIF_RESTORE_SIGMASK flag.
-+		 * its frame, and we can clear the TLF_RESTORE_SIGMASK flag.
- 		 */
--		if (test_thread_flag(TIF_RESTORE_SIGMASK))
--			clear_thread_flag(TIF_RESTORE_SIGMASK);
-+		current_thread_info()->local_flags &= ~_TLF_RESTORE_SIGMASK;
- 	}
- 
- 	return ret;
-diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
-index ad69434..4ae16d1 100644
---- a/arch/powerpc/kernel/signal_32.c
-+++ b/arch/powerpc/kernel/signal_32.c
-@@ -243,7 +243,7 @@ long sys_sigsuspend(old_sigset_t mask)
- 
-  	current->state = TASK_INTERRUPTIBLE;
-  	schedule();
-- 	set_thread_flag(TIF_RESTORE_SIGMASK);
-+	set_restore_sigmask();
-  	return -ERESTARTNOHAND;
- }
- 
-diff --git a/include/asm-powerpc/thread_info.h b/include/asm-powerpc/thread_info.h
-index 40d5f98..07d5106 100644
---- a/include/asm-powerpc/thread_info.h
-+++ b/include/asm-powerpc/thread_info.h
-@@ -120,7 +120,6 @@ static inline struct thread_info *current_thread_info(void)
- #define TIF_SECCOMP		10	/* secure computing */
- #define TIF_RESTOREALL		11	/* Restore all regs (implies NOERROR) */
- #define TIF_NOERROR		12	/* Force successful syscall return */
--#define TIF_RESTORE_SIGMASK	13	/* Restore signal mask in do_signal */
- #define TIF_FREEZE		14	/* Freezing for suspend */
- #define TIF_RUNLATCH		15	/* Is the runlatch enabled? */
- #define TIF_ABI_PENDING		16	/* 32/64 bit switch needed */
-@@ -138,21 +137,31 @@ static inline struct thread_info *current_thread_info(void)
- #define _TIF_SECCOMP		(1<<TIF_SECCOMP)
- #define _TIF_RESTOREALL		(1<<TIF_RESTOREALL)
- #define _TIF_NOERROR		(1<<TIF_NOERROR)
--#define _TIF_RESTORE_SIGMASK	(1<<TIF_RESTORE_SIGMASK)
- #define _TIF_FREEZE		(1<<TIF_FREEZE)
- #define _TIF_RUNLATCH		(1<<TIF_RUNLATCH)
- #define _TIF_ABI_PENDING	(1<<TIF_ABI_PENDING)
- #define _TIF_SYSCALL_T_OR_A	(_TIF_SYSCALL_TRACE|_TIF_SYSCALL_AUDIT|_TIF_SECCOMP)
- 
--#define _TIF_USER_WORK_MASK	( _TIF_SIGPENDING | \
--				 _TIF_NEED_RESCHED | _TIF_RESTORE_SIGMASK)
-+#define _TIF_USER_WORK_MASK	(_TIF_SIGPENDING | _TIF_NEED_RESCHED)
- #define _TIF_PERSYSCALL_MASK	(_TIF_RESTOREALL|_TIF_NOERROR)
- 
- /* Bits in local_flags */
- /* Don't move TLF_NAPPING without adjusting the code in entry_32.S */
- #define TLF_NAPPING		0	/* idle thread enabled NAP mode */
-+#define TLF_RESTORE_SIGMASK	1	/* Restore signal mask in do_signal */
- 
- #define _TLF_NAPPING		(1 << TLF_NAPPING)
-+#define _TLF_RESTORE_SIGMASK	(1 << TLF_RESTORE_SIGMASK)
-+
-+#ifndef __ASSEMBLY__
-+#define HAVE_SET_RESTORE_SIGMASK	1
-+static inline void set_restore_sigmask(void)
-+{
-+	struct thread_info *ti = current_thread_info();
-+	ti->local_flags |= _TLF_RESTORE_SIGMASK;
-+	set_bit(TIF_SIGPENDING, &ti->flags);
-+}
-+#endif	/* !__ASSEMBLY__ */
- 
- #endif /* __KERNEL__ */
- 
+Unlikely, I've been running the same kernel for days without that patch.
+
+johannes
+
+--=-aKGPidFxLKlUPc4iOZur
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iQIVAwUASA7YVqVg1VMiehFYAQI1mBAAsZTFv/VBBZZmQ3ZLqxdZWwTJyPKoGMvq
+8yXL4hT72NDC/tmq1OjTKZ5bYONxcJLSbBK3IvPngKkMgeaYpO8ODiFMOe5FhX9x
+DqKw4rDQ0Y77ncAUs1oHbG95T139NBL6fbFa3NLWw4YSQ5AGJeBOdaeB1tXJnY76
+fDrejs6rr66brzCFFU6lcatt8rXM5tnGXhbmm6uXIaQ/s/CTx9xN0HIybGNJRdBZ
+Qw2V1eTfWaMUXSiKQ6qIEOovnMVUipFIKHIMH6arm/79GsgqeVrayeWmPiResicI
+GIQnSCT4WSOzbAMN5Iex1Hx8UFhuh5LhTNEC7NaSl6uXmqNyO+ypBAtV/10G0Lk/
+Qo7YA048l6SF+vGD/jQFl65ctf3CHDP35bWmu3xT37CwrbX9aW6FRZMOWrn84iu5
+HWzqqqRtKBocWTyw+CqvEA2LQKgR3wJOMCIKVLtn2XXC5f4ligEaSCJtxZGl8Il8
+PKICCeKMW4V2FG+Z3O0UoZY2nrePeVsdNmkarMLiEoYUJBhGWTSvirV9sL6Iy1Kx
+t9p2S+CTetZbJlo5rQIbfUgPTC4bwZOqkV7bbnKxfZ1VsPEWhE7H1MvqAGk3In9/
+nF+ZfCzXlodN4mFyntJ17kptZ5S+qdE8KGVGkolOSlSQE+NDXwT0JHFVgYr8Negy
+R4H7yf5VrCc=
+=ZF+0
+-----END PGP SIGNATURE-----
+
+--=-aKGPidFxLKlUPc4iOZur--
