@@ -1,27 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <khali@linux-fr.org>
+Received: from services.gcu-squad.org (zone0.gcu-squad.org [212.85.147.21])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 7D1E0DDEDE
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Apr 2008 20:34:44 +1000 (EST)
-Subject: Re: [Linux-fbdev-devel] [PATCH 1/3] radeonfb: Fix 64 bits
-	resources on 32 bits archs
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: David Miller <davem@davemloft.net>
-In-Reply-To: <20080423.025721.50367920.davem@davemloft.net>
-References: <480E0A54.9010203@linux.vnet.ibm.com>
-	<1208902903.9640.138.camel@pasglop>
-	<1208943127.5632.324.camel@thor.sulgenrain.local>
-	<20080423.025721.50367920.davem@davemloft.net>
-Content-Type: text/plain
-Date: Wed, 23 Apr 2008 20:34:21 +1000
-Message-Id: <1208946861.9060.30.camel@pasglop>
+	by ozlabs.org (Postfix) with ESMTPS id 14818DDF4C
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Apr 2008 21:09:35 +1000 (EST)
+Date: Wed, 23 Apr 2008 13:09:19 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Stefan Roese <sr@denx.de>
+Subject: Re: [PATCH] rtc-pcf8563: Add device ids table
+Message-ID: <20080423130919.5d55feff@hyperion.delvare>
+In-Reply-To: <200804211412.49201.sr@denx.de>
+References: <200804171708.32847.laurentp@cse-semaphore.com>
+	<480A2117.7020502@scram.de>
+	<200804211356.10192.laurentp@cse-semaphore.com>
+	<200804211412.49201.sr@denx.de>
 Mime-Version: 1.0
-Cc: linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com,
-	hollisb@us.ibm.com, linux-kernel@vger.kernel.org,
-	michel@tungstengraphics.com, linuxppc-dev@ozlabs.org,
-	akpm@linux-foundation.org, dzu@denx.de
-Reply-To: benh@kernel.crashing.org
+Content-Type: text/plain; charset=US-ASCII
+Cc: Alessandro Zummo <alessandro.zummo@towertech.it>,
+	rtc-linux@googlegroups.com, linuxppc-dev@ozlabs.org, i2c@lm-sensors.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,19 +27,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Wed, 2008-04-23 at 02:57 -0700, David Miller wrote:
-> > It's up to the driver, and again, the current radeon driver doesn't
-> use
-> > radeonfb at all anymore...
+On Mon, 21 Apr 2008 14:12:48 +0200, Stefan Roese wrote:
+> On Monday 21 April 2008, Laurent Pinchart wrote:
+> > > > > Is there any chance they will got to 2.6.26?
+> > > >
+> > > > I'm not sure. I didn't have the time to look at it myself, but I am
+> > > > under the impression that the powerpc folks are tired of having to wait
+> > > > for me and may push it to Linus through their tree? That would be fine
+> > > > with me, as I don't want to be the one delaying something many
+> > > > developers want (but I also can't sign patches I've not even read.)
+> >
+> > The patches are required for long awaited I2C support on various PowerPC
+> > boards. As the ppc architecture support is going away in 2.6.27, it would
+> > be nice to have them applied in 2.6.26.
 > 
-> The only portable thing is for X to use the PCI sysfs mmap() stuff,
-> which current Xorg servers using libpciaccess do.
-> 
-> I know because I'm typing this from a sparc64 using a Radeon
-> with current Xorg :-)
+> Yes, please.
 
-True :-) But I'd still like to fix the fb API for the sake of things
-like directfb etc...
+I know that many people would like to see these patches upstream
+quickly, no question about that. The problem is that I am very busy
+with my day job and my family life these days so I just don't know when
+I will find the time an energy to go through this huge patch set.
 
-Ben.
+-- 
+Jean Delvare
