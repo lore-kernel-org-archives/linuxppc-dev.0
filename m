@@ -1,24 +1,20 @@
-Return-Path: <khali@linux-fr.org>
-Received: from services.gcu-squad.org (zone0.gcu-squad.org [212.85.147.21])
+Return-Path: <jochen@scram.de>
+Received: from mail.scram.de (mail0.scram.de [78.47.204.202])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 79145DDF8D
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Apr 2008 21:17:17 +1000 (EST)
-Date: Wed, 23 Apr 2008 13:16:57 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Laurent Pinchart <laurentp@cse-semaphore.com>
-Subject: Re: [PATCH] rtc-pcf8563: Add device ids table
-Message-ID: <20080423131657.71d6312f@hyperion.delvare>
-In-Reply-To: <200804221612.06745.laurentp@cse-semaphore.com>
-References: <200804171708.32847.laurentp@cse-semaphore.com>
-	<20080419162358.746b714c@hyperion.delvare>
-	<480A2117.7020502@scram.de>
-	<200804221612.06745.laurentp@cse-semaphore.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Alessandro Zummo <alessandro.zummo@towertech.it>,
-	rtc-linux@googlegroups.com, i2c@lm-sensors.org
+	(Client CN "mail.scram.de", Issuer "scram e.V. CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id CC179DE231
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Apr 2008 21:25:54 +1000 (EST)
+Message-ID: <480F1CB5.6050307@scram.de>
+Date: Wed, 23 Apr 2008 13:25:41 +0200
+From: Jochen Friedrich <jochen@scram.de>
+MIME-Version: 1.0
+To: Adrian Bunk <bunk@kernel.org>
+Subject: Re: [2.6 patch] drivers/of/of_i2c.c: add MODULE_LICENSE
+References: <20080423095134.GZ28933@cs181133002.pp.htv.fi>
+In-Reply-To: <20080423095134.GZ28933@cs181133002.pp.htv.fi>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,49 +24,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Laurent,
+Adrian Bunk schrieb:
 
-On Tue, 22 Apr 2008 16:11:56 +0200, Laurent Pinchart wrote:
-> Hi Jean,
+> After commit 585468e5d5962660867c269e26f0a4b89a599473
+> ([POWERPC] i2c: Fix build breakage introduced by OF helpers)
+> drivers/of/of_i2c.c needs a MODULE_LICENSE.
 > 
-> On Saturday 19 April 2008 18:43, Jochen Friedrich wrote:
-> > Jean Delvare wrote:
-> > > I'm not sure. I didn't have the time to look at it myself, but I am
-> > > under the impression that the powerpc folks are tired of having to wait
-> > > for me and may push it to Linus through their tree? That would be fine
-> > > with me, as I don't want to be the one delaying something many
-> > > developers want (but I also can't sign patches I've not even read.)
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
-I still don't know exactly what happened there... I think I saw some
-"OpenFirmware i2c" patches go upstream yesterday? But not the ones
-listed below, which I thought they depended upon.
+Acked-by: Jochen Friedrich <jochen@scram.de>
 
-> > The required patches are:
-> > 
-> > http://patchwork.ozlabs.org/linuxppc/patch?id=17833
-> > http://patchwork.ozlabs.org/linuxppc/patch?id=17834
-> > 
-> > which are just the forward ported patches you sent to the poweprc mailing
-> > list some time ago: 
-> > 
-> > http://patchwork.ozlabs.org/linuxppc/patch?id=16282
-> > http://patchwork.ozlabs.org/linuxppc/patch?id=16283
-> 
-> Given that the required patches are just forward-ported versions of patches 
-> you sent (and thus probably reviewed as well :-)), what's the best way to get 
-> them in 2.6.26 (if at all possible) ?
-
-It's not that easy. A lot of new new-style i2c drivers have shown up in
-the kernel since I wrote my patches (themselves derived heavily from
-Jon Smirl's). Even if Jochen's patches are based on mine, we still need
-to take a careful look on how each driver is modified, I remember for
-example that some v4l drivers were using the original new-style driver
-binding in a way I did not expect. So I can't just sign these patches
-and hope they didn't break anything. It needs care, and this requires
-time.
-
-I will do my best to get this done before the 2.6.26 merge window
-closes, but I can't promise anything.
-
--- 
-Jean Delvare
+Thanks,
+Jochen
