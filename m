@@ -1,23 +1,18 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH 1/3] MSI driver for Freescale 83xx/85xx/86xx cpu
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-In-Reply-To: <e642c15622ac3ca89a6a43f439f2c222@kernel.crashing.org>
-References: <1208597267-30960-1-git-send-email-Jason.jin@freescale.com>
-	<1208758907.9955.4.camel@concordia>
-	<CC27DED0F8F39E48A7E75FD768688B7A874E57@zch01exm27.fsl.freescale.net>
-	<1208838916.12660.10.camel@concordia.ozlabs.ibm.com>
-	<e642c15622ac3ca89a6a43f439f2c222@kernel.crashing.org>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-RBT0dD8wP4m1LbWSKBO1"
-Date: Wed, 23 Apr 2008 15:45:45 +1000
-Message-Id: <1208929545.9212.12.camel@concordia.ozlabs.ibm.com>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Kumar Gala <kumar.gala@freescale.com>,
-	Jin Zhengxiong <Jason.Jin@freescale.com>
-Reply-To: michael@ellerman.id.au
+Return-Path: <tony@bakeyournoodle.com>
+Received: from pythia.bakeyournoodle.com (pythia.bakeyournoodle.com
+	[203.82.209.197]) by ozlabs.org (Postfix) with ESMTP id F22F5DDFD2
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Apr 2008 16:08:38 +1000 (EST)
+Date: Wed, 23 Apr 2008 16:08:36 +1000
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [PATCH 1/3 v3] Raise the upper limit of NR_CPUS.
+Message-ID: <20080423060836.GM20457@bakeyournoodle.com>
+References: <d54206d25b690c9160401f65a583f586004dcd5d.1208923391.git.tony@bakeyournoodle.com>
+	<1208929299.9212.4.camel@concordia.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <1208929299.9212.4.camel@concordia.ozlabs.ibm.com>
+From: tony@bakeyournoodle.com (Tony Breeds)
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,49 +22,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Wed, Apr 23, 2008 at 03:41:39PM +1000, Michael Ellerman wrote:
+ 
+> You add about 30 lines of code in this patch, which you remove in patch
+> 3, is there a better way to do it?
+> 
+> Is there any harm dynamically initialising the statically initialised
+> pacas, I think that would allow you to basically skip the
+> NR_STATIC_PACAS business.
 
---=-RBT0dD8wP4m1LbWSKBO1
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Yes, I could make patch 2 the first in the series, and then roll batches
+1 and 3 together.  As iSeries will barf I do all the PACAs dynamically
+without that extra wait.
 
-On Tue, 2008-04-22 at 15:22 +0200, Segher Boessenkool wrote:
-> >>>> +static void fsl_compose_msi_msg(struct pci_dev *pdev, int hwirq,
-> >>>> +				  struct msi_msg *msg)
->=20
-> > No I mean I'm confused about the maths here. If we pull out the
-> > variables it boils down to:
-> >
-> > data =3D ((hwirq / 32) << 5) | ((hwirq % 32) & 0x1F)
-> >
-> > Which doesn't seem to actually do anything?
->=20
-> It's not a no-op, because hwirq is signed.  It probably should be
-> unsigned, like most things.
+/me is too linear.
 
-You'll have to draw me a picture.
+new version comming.
 
-cheers
+Yours Tony
 
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-RBT0dD8wP4m1LbWSKBO1
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBIDs0JdSjSd0sB4dIRAhQVAJ9dzxyEirtGx4caQRZmkN1wUa/CAQCgp4on
-COiMasFLxM+p169G6U+AAw4=
-=I/r4
------END PGP SIGNATURE-----
-
---=-RBT0dD8wP4m1LbWSKBO1--
+  linux.conf.au    http://www.marchsouth.org/
+  Jan 19 - 24 2009 The Australian Linux Technical Conference!
