@@ -1,24 +1,19 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <laurentp@cse-semaphore.com>
+Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
+	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id BF6A9DDF45
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Apr 2008 19:15:42 +1000 (EST)
+From: Laurent Pinchart <laurentp@cse-semaphore.com>
+To: linuxppc-dev@ozlabs.org,
+ avorontsov@ru.mvista.com
+Subject: Re: [RFC POWERPC] booting-without-of: bindings for FHCI USB, GPIO LEDs,
+	MCU, and NAND on UPM
+Date: Wed, 23 Apr 2008 11:15:35 +0200
+References: <20080422194135.GA27822@polina.dev.rtsoft.ru>
+In-Reply-To: <20080422194135.GA27822@polina.dev.rtsoft.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18446.61538.620549.715043@cargo.ozlabs.ibm.com>
-Date: Wed, 23 Apr 2008 18:16:34 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Subject: Re: [BUG] 2.6.25-rc2-git4 - Regression Kernel oops  while running
-	kernbench and tbench on powerpc
-In-Reply-To: <48035C03.10104@linux.vnet.ibm.com>
-References: <47BC40BC.3040405@linux.vnet.ibm.com>
-	<18427.11023.8067.795279@cargo.ozlabs.ibm.com>
-	<47FB5C5A.5020104@linux.vnet.ibm.com>
-	<18427.65299.403151.344959@cargo.ozlabs.ibm.com>
-	<47FC5227.3030501@linux.vnet.ibm.com>
-	<18435.11286.201115.396713@cargo.ozlabs.ibm.com>
-	<48035C03.10104@linux.vnet.ibm.com>
-Cc: kernel list <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
-	linux-next@vger.kernel.org, nacc@us.ibm.com,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Balbir Singh <balbir@linux.vnet.ibm.com>
+Content-Type: multipart/signed; boundary="nextPart1247358.4FznQWRhra";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
+Message-Id: <200804231115.39126.laurentp@cse-semaphore.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,137 +23,161 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kamalesh Babulal writes:
+--nextPart1247358.4FznQWRhra
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-> After applying the patch above and the patch posted on
-> http://lkml.org/lkml/2008/4/8/42
-> the bug had the following information,
+Hi Anton,
 
-Thanks.  The patch below, against Linus' current git tree, fixes one
-bug that might be the cause of the problem, and also attempts to
-detect the erroneous situation earlier and fix it up, and also print
-some debug information.  Please try to reproduce the problem with this
-patch applied, and if there are any console log messages starting with
-SLB: or FWNMI:, please send me the console log.
+On Tuesday 22 April 2008 21:41, Anton Vorontsov wrote:
+> Hi all,
+>=20
+> Here is purposed bindings draft for the new drivers that I would like to
+> send for this or next merge window, depending on results of this RFC. ;-)
+> (The new bindings needs to be in-tree or at least Acked before I could
+> send the drivers.)
+>=20
+> Comments and suggestions are highly appreciated.
+>=20
+> Thanks.
+>=20
+> diff --git a/Documentation/powerpc/booting-without-of.txt=20
+b/Documentation/powerpc/booting-without-of.txt
+> index c350623..38fe3e9 100644
+> --- a/Documentation/powerpc/booting-without-of.txt
+> +++ b/Documentation/powerpc/booting-without-of.txt
+> @@ -59,6 +59,11 @@ Table of Contents
+>        p) Freescale Synchronous Serial Interface
+>        q) USB EHCI controllers
+>        r) Freescale General-purpose Timers Module
+> +      s) Freescale USB Parameter RAM:
+> +      t) Freescale QUICC Engine USB Controller
+> +      u) LEDs on GPIOs
+> +      v) Freescale MCU with MPC8349E-mITX compatible firmware
+> +      w) NAND on UPM-driven Freescale Localbus
+> =20
+>    VII - Marvell Discovery mv64[345]6x System Controller chips
+>      1) The /system-controller node
+> @@ -2866,6 +2871,139 @@ platforms are moved over to use the=20
+flattened-device-tree model.
+>      	clock-frequency =3D <0>;
+>      };
+> =20
+> +    s) Freescale USB Parameter RAM:
+> +
+> +    Required properties:
+> +      - compatible : should be "fsl,<chip>-qe-muram-usb-pram",
+> +        "fsl,qe-muram-usb-pram", "fsl,cpm-muram-usb-pram".
+> +      - reg : should contain USB PRAM location and length.
+> +
+> +    Example:
+> +
+> +	usb-pram@8b00 {
+> +		compatible =3D "fsl,mpc8360-qe-muram-usb-pram",
+> +			     "fsl,qe-muram-usb-pram",
+> +			     "fsl,cpm-muram-usb-pram";
+> +		reg =3D <0x8b00 0x100>;
+> +	};
+> +
+> +    t) Freescale QUICC Engine USB Controller
+> +
+> +    Required properties:
+> +      - compatible : should be "fsl,<chip>-qe-usb", "fsl,qe-usb",
+> +        "fsl,usb-fhci"
+> +      - reg : should contain gtm registers location and length.
+> +      - interrupts : should contain USB interrupt.
+> +      - interrupt-parent : interrupt source phandle.
+> +      - fsl,fullspeed-clock : specifies the full speed USB clock source.
+> +      - fsl,lowspeed-clock : specifies the low speed USB clock source.
+> +      - fsl,usb-mode : should be "host".
+> +      - linux,hub-power-budget : optional, USB power budget for the root=
+=20
+hub
+> +        in mA.
+> +      - gpios : should specify GPIOs in this order: USBOE, USBTP, USBTN,=
+=20
+USBRP,
+> +        USBRN, SPEED (optional), and SUSPEND (optional).
 
-Paul.
+Suspend should in my opinion be renamed power (or bus power or anything=20
+similar), as it controls the USB power and not USB PHY sleep mode.
 
-diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index c0db5b7..f7f0962 100644
---- a/arch/powerpc/kernel/entry_64.S
-+++ b/arch/powerpc/kernel/entry_64.S
-@@ -439,6 +439,19 @@ END_FTR_SECTION_IFSET(CPU_FTR_1T_SEGMENT)
- 	mr	r1,r8		/* start using new stack pointer */
- 	std	r7,PACAKSAVE(r13)
- 
-+	/* check that SLB entry 2 contains the right thing */
-+	clrrdi	r6,r1,28
-+	clrldi.	r0,r6,2
-+	beq	3f
-+	li	r0,2
-+	slbmfee	r7,r0
-+	oris	r6,r6,SLB_ESID_V@h
-+	cmpd	r6,r7
-+	beq	3f
-+	bl	bad_slb_switch
-+	ld	r3,PACACURRENT(r13)
-+	addi	r3,r3,THREAD
-+3:
- 	ld	r6,_CCR(r1)
- 	mtcrf	0xFF,r6
- 
-@@ -540,6 +553,19 @@ END_FW_FTR_SECTION_IFSET(FW_FEATURE_ISERIES)
- 	ld	r4,_XER(r1)
- 	mtspr	SPRN_XER,r4
- 
-+	/* check that SLB entry 2 contains the right thing */
-+	clrrdi	r6,r1,28	/* stack ESID */
-+	clrldi.	r0,r6,2
-+	beq	57f
-+	li	r0,2
-+	slbmfee	r7,r0
-+	oris	r6,r6,SLB_ESID_V@h
-+	cmpd	r6,r7
-+	beq	57f
-+	addi	r3,r1,STACK_FRAME_OVERHEAD
-+	bl	bad_slb_exc
-+	ld	r3,_MSR(r1)
-+57:
- 	REST_8GPRS(5, r1)
- 
- 	andi.	r0,r3,MSR_RI
-diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-index be35ffa..c938134 100644
---- a/arch/powerpc/kernel/smp.c
-+++ b/arch/powerpc/kernel/smp.c
-@@ -45,6 +45,7 @@
- #include <asm/system.h>
- #include <asm/mpic.h>
- #include <asm/vdso_datapage.h>
-+#include <asm/mmu.h>
- #ifdef CONFIG_PPC64
- #include <asm/paca.h>
- #endif
-@@ -580,6 +581,10 @@ int __devinit start_secondary(void *unused)
- 	atomic_inc(&init_mm.mm_count);
- 	current->active_mm = &init_mm;
- 
-+	/* Bolt in the entry for the kernel stack now */
-+	if (cpu_has_feature(CPU_FTR_SLB))
-+		slb_flush_and_rebolt();
-+
- 	smp_store_cpu_info(cpu);
- 	set_dec(tb_ticks_per_jiffy);
- 	preempt_disable();
-diff --git a/arch/powerpc/mm/slb.c b/arch/powerpc/mm/slb.c
-index 906daed..bb7765b 100644
---- a/arch/powerpc/mm/slb.c
-+++ b/arch/powerpc/mm/slb.c
-@@ -309,3 +309,34 @@ void slb_initialize(void)
- 	 * one. */
- 	asm volatile("isync":::"memory");
- }
-+
-+static void dump_slb(void)
-+{
-+	long entry;
-+	unsigned long esid, vsid;
-+
-+	printk(KERN_EMERG "SLB contents now:\n");
-+	for (entry = 0; entry < 64; ++entry) {
-+		asm volatile("slbmfee  %0,%1" : "=r" (esid) : "r" (entry));
-+		if (esid == 0)
-+			/* valid bit is clear along with everything else */
-+			continue;
-+		asm volatile("slbmfev  %0,%1" : "=r" (vsid) : "r" (entry));
-+		printk(KERN_EMERG "%d: %.16lx %.16lx\n", entry, esid, vsid);
-+	}
-+}
-+
-+void bad_slb_exc(struct pt_regs *regs)
-+{
-+	printk(KERN_EMERG "SLB: stack not bolted on exception return\n");
-+	dump_slb();
-+	slb_flush_and_rebolt();
-+	show_regs(regs);
-+}
-+
-+void bad_slb_switch(void)
-+{
-+	printk(KERN_EMERG "SLB: stack not bolted on context switch\n");
-+	dump_slb();
-+	slb_flush_and_rebolt();
-+}
-diff --git a/arch/powerpc/platforms/pseries/ras.c b/arch/powerpc/platforms/pseries/ras.c
-index a1ab25c..ed68083 100644
---- a/arch/powerpc/platforms/pseries/ras.c
-+++ b/arch/powerpc/platforms/pseries/ras.c
-@@ -325,6 +325,8 @@ static int recover_mce(struct pt_regs *regs, struct rtas_error_log * err)
- 
- 	if (err->disposition == RTAS_DISP_FULLY_RECOVERED) {
- 		/* Platform corrected itself */
-+		printk(KERN_ALERT "FWNMI: platform corrected error %.16lx\n",
-+		       *(unsigned long *)err);
- 		nonfatal = 1;
- 	} else if ((regs->msr & MSR_RI) &&
- 		   user_mode(regs) &&
+> +    Example:
+> +
+> +	usb@6c0 {
+> +		compatible =3D "fsl,mpc8360-qe-usb", "fsl,qe-usb",
+> +			     "fsl,usb-fhci";
+> +		reg =3D <0x6c0 0x40>;
+> +		interrupts =3D <11>;
+> +		interrupt-parent =3D <&qeic>;
+> +		fsl,fullspeed-clock =3D "clk21";
+> +		fsl,usb-mode =3D "host";
+> +		gpios =3D <&qe_pio_b  2 0 /* USBOE */
+> +			 &qe_pio_b  3 0 /* USBTP */
+> +			 &qe_pio_b  8 0 /* USBTN */
+> +			 &qe_pio_b  9 0 /* USBRP */
+> +			 &qe_pio_b 11 0 /* USBRN */
+> +			 &qe_pio_e 20 0 /* SPEED */
+> +			 &qe_pio_e 21 0 /* SUSPN */>;
+> +	};
+> +
+> +    u) LEDs on GPIOs
+> +
+> +    Required properties:
+> +      - compatible : should be "linux,gpio-led".
+> +      - linux,name : LED name.
+> +      - linux,active-low : property should be present if LED wired as
+> +        active-low.
+
+Just thinking out loud, wasn't the third GPIO cell supposed to be used to=20
+encode such properties ?
+
+> +      - linux,default-trigger : Linux default trigger for this LED.
+> +      - linux,brightness : default brightness.
+> +      - gpios : should specify LED GPIO.
+> +
+> +    Example:
+> +
+> +	led@0 {
+> +		compatible =3D "linux,gpio-led";
+> +		linux,name =3D "pwr";
+> +		linux,brightness =3D <1>;
+> +		linux,active-low;
+> +		gpios =3D <&mcu_pio 0>;
+> +	};
+> +
+> +	led@1 {
+> +	        compatible =3D "linux,gpio-led";
+> +	        linux,name =3D "hdd";
+> +	        linux,default-trigger =3D "ide-disk";
+> +		linux,active-low;
+> +		gpios =3D <&mcu_pio 1>;
+> +	};
+
+[snip]
+
+=2D-=20
+Laurent Pinchart
+CSE Semaphore Belgium
+
+Chaussee de Bruxelles, 732A
+B-1410 Waterloo
+Belgium
+
+T +32 (2) 387 42 59
+=46 +32 (2) 387 42 75
+
+--nextPart1247358.4FznQWRhra
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
+
+iD8DBQBIDv478y9gWxC9vpcRArWiAKCFQF5iXEd/bA/KUSRnXMpYb/1g7wCfTLOe
+hxaO0s2NTCVcTERSm9Sfwy0=
+=gkHz
+-----END PGP SIGNATURE-----
+
+--nextPart1247358.4FznQWRhra--
