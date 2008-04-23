@@ -1,20 +1,21 @@
-Return-Path: <hch@lst.de>
-Received: from verein.lst.de (verein.lst.de [213.95.11.210])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 8D9F9DE3EB
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Apr 2008 00:32:51 +1000 (EST)
-Date: Wed, 23 Apr 2008 16:32:29 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: new warnings from stacktrace patch
-Message-ID: <20080423143229.GA18667@lst.de>
-References: <20080423175938.a4b3cc26.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080423175938.a4b3cc26.sfr@canb.auug.org.au>
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
-	Christoph Hellwig <hch@lst.de>
+Return-Path: <glikely@secretlab.ca>
+Received: from wx-out-0506.google.com (wx-out-0506.google.com [66.249.82.232])
+	by ozlabs.org (Postfix) with ESMTP id 5AF7EDDFE3
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Apr 2008 00:33:46 +1000 (EST)
+Received: by wx-out-0506.google.com with SMTP id h27so2251377wxd.15
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Apr 2008 07:33:45 -0700 (PDT)
+Message-ID: <fa686aa40804230733n43064fa5q7b900bcf2b2754e6@mail.gmail.com>
+Date: Wed, 23 Apr 2008 08:33:44 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "John Linn" <John.Linn@xilinx.com>
+Subject: Re: Xilinx GPIO driver / CONFIG_OF
+In-Reply-To: <20080423132127.632CC1290067@mail80-sin.bigfish.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <7e0dd21a0804230548n21a57969pc5f0acb7d9c77e50@mail.gmail.com>
+	<20080423132127.632CC1290067@mail80-sin.bigfish.com>
+Cc: Johann Baudy <johaahn@gmail.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,25 +25,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Apr 23, 2008 at 05:59:38PM +1000, Stephen Rothwell wrote:
-> This is from commit fd3e0bbc6052ca9747a5332b382584ece83aab6d ("[POWERPC]
-> Stacktrace support for lockdep").  We don't include asm-offsets.h in any
-> other C file in the powerpc build.
+On Wed, Apr 23, 2008 at 7:21 AM, John Linn <John.Linn@xilinx.com> wrote:
+> Hi Johann,
+>
+>  Not to my knowledge yet.  We have it on our list to do.
+>
+>  Thanks,
+>  John
 
-I think the include can be safely removed.
+I've got a partial driver but it's not updated to the new GPIO
+infrastructure.  I'll try to post what I have today.
+
+Cheers,
+g.
 
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
-
-Index: linux-2.6/arch/powerpc/kernel/stacktrace.c
-===================================================================
---- linux-2.6.orig/arch/powerpc/kernel/stacktrace.c	2008-04-23 15:28:05.000000000 +0200
-+++ linux-2.6/arch/powerpc/kernel/stacktrace.c	2008-04-23 15:28:16.000000000 +0200
-@@ -13,7 +13,6 @@
- #include <linux/sched.h>
- #include <linux/stacktrace.h>
- #include <asm/ptrace.h>
--#include <asm/asm-offsets.h>
- 
- /*
-  * Save stack-backtrace addresses into a stack_trace buffer.
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
