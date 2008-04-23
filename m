@@ -1,18 +1,22 @@
-Return-Path: <tony@bakeyournoodle.com>
-Received: from pythia.bakeyournoodle.com (pythia.bakeyournoodle.com
-	[203.82.209.197]) by ozlabs.org (Postfix) with ESMTP id F22F5DDFD2
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Apr 2008 16:08:38 +1000 (EST)
-Date: Wed, 23 Apr 2008 16:08:36 +1000
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH 1/3 v3] Raise the upper limit of NR_CPUS.
-Message-ID: <20080423060836.GM20457@bakeyournoodle.com>
-References: <d54206d25b690c9160401f65a583f586004dcd5d.1208923391.git.tony@bakeyournoodle.com>
-	<1208929299.9212.4.camel@concordia.ozlabs.ibm.com>
+Return-Path: <roland@redhat.com>
+Received: from QMTA07.emeryville.ca.mail.comcast.net
+	(qmta07.emeryville.ca.mail.comcast.net [76.96.30.64])
+	by ozlabs.org (Postfix) with ESMTP id 45E44DDF52
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Apr 2008 16:37:58 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <1208929299.9212.4.camel@concordia.ozlabs.ibm.com>
-From: tony@bakeyournoodle.com (Tony Breeds)
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain; charset=us-ascii
+From: Roland McGrath <roland@redhat.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH] powerpc TLF_RESTORE_SIGMASK
+In-Reply-To: Paul Mackerras's message of  Wednesday,
+	23 April 2008 15:04:53 +1000
+	<18446.50037.964682.539009@cargo.ozlabs.ibm.com>
+References: <20080403210842.6C88C26F98D@magilla.localdomain>
+	<18446.50037.964682.539009@cargo.ozlabs.ibm.com>
+Message-Id: <20080423063753.C2088270381@magilla.localdomain>
+Date: Tue, 22 Apr 2008 23:37:53 -0700 (PDT)
+Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,24 +26,159 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Apr 23, 2008 at 03:41:39PM +1000, Michael Ellerman wrote:
- 
-> You add about 30 lines of code in this patch, which you remove in patch
-> 3, is there a better way to do it?
+> Roland McGrath writes:
 > 
-> Is there any harm dynamically initialising the statically initialised
-> pacas, I think that would allow you to basically skip the
-> NR_STATIC_PACAS business.
+> > This requires the earlier HAVE_SET_RESTORE_SIGMASK patch series.
+> > This does the same for powerpc that I posted the x86 change for.
+> 
+> ...
+> 
+> > +static inline void set_restore_sigmask(void)
+> > +{
+> > +	struct thread_info *ti = current_thread_info();
+> > +	ti->local_flags |= TLF_RESTORE_SIGMASK;
+> 
+> This should be _TLF_RESTORE_SIGMASK (leading '_'), I think.
 
-Yes, I could make patch 2 the first in the series, and then roll batches
-1 and 3 together.  As iSeries will barf I do all the PACAs dynamically
-without that extra wait.
+Indeed so.  Here's a replacement patch.
 
-/me is too linear.
+Thanks,
+Roland
 
-new version comming.
+---
+[PATCH] powerpc TLF_RESTORE_SIGMASK
 
-Yours Tony
+Replace TIF_RESTORE_SIGMASK with TLF_RESTORE_SIGMASK and define
+our own set_restore_sigmask() function.  This saves the costly
+SMP-safe set_bit operation, which we do not need for the sigmask
+flag since TIF_SIGPENDING always has to be set too.
 
-  linux.conf.au    http://www.marchsouth.org/
-  Jan 19 - 24 2009 The Australian Linux Technical Conference!
+Signed-off-by: Roland McGrath <roland@redhat.com>
+---
+ arch/powerpc/kernel/entry_32.S    |    4 ++--
+ arch/powerpc/kernel/signal.c      |   12 ++++++------
+ arch/powerpc/kernel/signal_32.c   |    2 +-
+ include/asm-powerpc/thread_info.h |   17 +++++++++++++----
+ 4 files changed, 22 insertions(+), 13 deletions(-)
+
+diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
+index 84c8686..f056b3c 100644
+--- a/arch/powerpc/kernel/entry_32.S
++++ b/arch/powerpc/kernel/entry_32.S
+@@ -667,7 +667,7 @@ user_exc_return:		/* r10 contains MSR_KERNEL here */
+ 	/* Check current_thread_info()->flags */
+ 	rlwinm	r9,r1,0,0,(31-THREAD_SHIFT)
+ 	lwz	r9,TI_FLAGS(r9)
+-	andi.	r0,r9,(_TIF_SIGPENDING|_TIF_RESTORE_SIGMASK|_TIF_NEED_RESCHED)
++	andi.	r0,r9,(_TIF_SIGPENDING|_TIF_NEED_RESCHED)
+ 	bne	do_work
+ 
+ restore_user:
+@@ -924,7 +924,7 @@ recheck:
+ 	lwz	r9,TI_FLAGS(r9)
+ 	andi.	r0,r9,_TIF_NEED_RESCHED
+ 	bne-	do_resched
+-	andi.	r0,r9,_TIF_SIGPENDING|_TIF_RESTORE_SIGMASK
++	andi.	r0,r9,_TIF_SIGPENDING
+ 	beq	restore_user
+ do_user_signal:			/* r10 contains MSR_KERNEL here */
+ 	ori	r10,r10,MSR_EE
+diff --git a/arch/powerpc/kernel/signal.c b/arch/powerpc/kernel/signal.c
+index a65a44f..ad55488 100644
+--- a/arch/powerpc/kernel/signal.c
++++ b/arch/powerpc/kernel/signal.c
+@@ -120,7 +120,7 @@ int do_signal(sigset_t *oldset, struct pt_regs *regs)
+ 	int ret;
+ 	int is32 = is_32bit_task();
+ 
+-	if (test_thread_flag(TIF_RESTORE_SIGMASK))
++	if (current_thread_info()->local_flags & _TLF_RESTORE_SIGMASK)
+ 		oldset = &current->saved_sigmask;
+ 	else if (!oldset)
+ 		oldset = &current->blocked;
+@@ -131,9 +131,10 @@ int do_signal(sigset_t *oldset, struct pt_regs *regs)
+ 	check_syscall_restart(regs, &ka, signr > 0);
+ 
+ 	if (signr <= 0) {
++		struct thread_info *ti = current_thread_info();
+ 		/* No signal to deliver -- put the saved sigmask back */
+-		if (test_thread_flag(TIF_RESTORE_SIGMASK)) {
+-			clear_thread_flag(TIF_RESTORE_SIGMASK);
++		if (ti->local_flags & _TLF_RESTORE_SIGMASK) {
++			ti->local_flags &= ~_TLF_RESTORE_SIGMASK;
+ 			sigprocmask(SIG_SETMASK, &current->saved_sigmask, NULL);
+ 		}
+ 		return 0;               /* no signals delivered */
+@@ -169,10 +170,9 @@ int do_signal(sigset_t *oldset, struct pt_regs *regs)
+ 
+ 		/*
+ 		 * A signal was successfully delivered; the saved sigmask is in
+-		 * its frame, and we can clear the TIF_RESTORE_SIGMASK flag.
++		 * its frame, and we can clear the TLF_RESTORE_SIGMASK flag.
+ 		 */
+-		if (test_thread_flag(TIF_RESTORE_SIGMASK))
+-			clear_thread_flag(TIF_RESTORE_SIGMASK);
++		current_thread_info()->local_flags &= ~_TLF_RESTORE_SIGMASK;
+ 	}
+ 
+ 	return ret;
+diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
+index ad69434..4ae16d1 100644
+--- a/arch/powerpc/kernel/signal_32.c
++++ b/arch/powerpc/kernel/signal_32.c
+@@ -243,7 +243,7 @@ long sys_sigsuspend(old_sigset_t mask)
+ 
+  	current->state = TASK_INTERRUPTIBLE;
+  	schedule();
+- 	set_thread_flag(TIF_RESTORE_SIGMASK);
++	set_restore_sigmask();
+  	return -ERESTARTNOHAND;
+ }
+ 
+diff --git a/include/asm-powerpc/thread_info.h b/include/asm-powerpc/thread_info.h
+index 40d5f98..07d5106 100644
+--- a/include/asm-powerpc/thread_info.h
++++ b/include/asm-powerpc/thread_info.h
+@@ -120,7 +120,6 @@ static inline struct thread_info *current_thread_info(void)
+ #define TIF_SECCOMP		10	/* secure computing */
+ #define TIF_RESTOREALL		11	/* Restore all regs (implies NOERROR) */
+ #define TIF_NOERROR		12	/* Force successful syscall return */
+-#define TIF_RESTORE_SIGMASK	13	/* Restore signal mask in do_signal */
+ #define TIF_FREEZE		14	/* Freezing for suspend */
+ #define TIF_RUNLATCH		15	/* Is the runlatch enabled? */
+ #define TIF_ABI_PENDING		16	/* 32/64 bit switch needed */
+@@ -138,21 +137,31 @@ static inline struct thread_info *current_thread_info(void)
+ #define _TIF_SECCOMP		(1<<TIF_SECCOMP)
+ #define _TIF_RESTOREALL		(1<<TIF_RESTOREALL)
+ #define _TIF_NOERROR		(1<<TIF_NOERROR)
+-#define _TIF_RESTORE_SIGMASK	(1<<TIF_RESTORE_SIGMASK)
+ #define _TIF_FREEZE		(1<<TIF_FREEZE)
+ #define _TIF_RUNLATCH		(1<<TIF_RUNLATCH)
+ #define _TIF_ABI_PENDING	(1<<TIF_ABI_PENDING)
+ #define _TIF_SYSCALL_T_OR_A	(_TIF_SYSCALL_TRACE|_TIF_SYSCALL_AUDIT|_TIF_SECCOMP)
+ 
+-#define _TIF_USER_WORK_MASK	( _TIF_SIGPENDING | \
+-				 _TIF_NEED_RESCHED | _TIF_RESTORE_SIGMASK)
++#define _TIF_USER_WORK_MASK	(_TIF_SIGPENDING | _TIF_NEED_RESCHED)
+ #define _TIF_PERSYSCALL_MASK	(_TIF_RESTOREALL|_TIF_NOERROR)
+ 
+ /* Bits in local_flags */
+ /* Don't move TLF_NAPPING without adjusting the code in entry_32.S */
+ #define TLF_NAPPING		0	/* idle thread enabled NAP mode */
++#define TLF_RESTORE_SIGMASK	1	/* Restore signal mask in do_signal */
+ 
+ #define _TLF_NAPPING		(1 << TLF_NAPPING)
++#define _TLF_RESTORE_SIGMASK	(1 << TLF_RESTORE_SIGMASK)
++
++#ifndef __ASSEMBLY__
++#define HAVE_SET_RESTORE_SIGMASK	1
++static inline void set_restore_sigmask(void)
++{
++	struct thread_info *ti = current_thread_info();
++	ti->local_flags |= _TLF_RESTORE_SIGMASK;
++	set_bit(TIF_SIGPENDING, &ti->flags);
++}
++#endif	/* !__ASSEMBLY__ */
+ 
+ #endif /* __KERNEL__ */
+ 
