@@ -1,14 +1,13 @@
-Return-Path: <segher@gcc12.fsffrance.org>
-Received: from snail.fsffrance.org (eucd.info [88.191.250.43])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id DBBB8DE193
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Apr 2008 01:46:05 +1000 (EST)
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc: Don't play type punning games with lock_token
-Date: Wed, 23 Apr 2008 17:13:26 +0200
-Message-Id: <2fcdb6beb2e205a397a1928c2c2c4b1e3360b09e.1208962154.git.segher@kernel.crashing.org>
+Return-Path: <cel@us.ibm.com>
+Subject: [Cbe-oss-dev] [PATCH] Reworked Cell OProfile: SPU mutex lock fix
+From: Carl Love <cel@us.ibm.com>
+To: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	Arnd Bergmann <arnd@arndb.de>, oprofile-list@lists.sf.net
+Content-Type: text/plain
+Date: Wed, 23 Apr 2008 08:50:11 -0700
+Message-Id: <1208965811.6444.91.camel@carll-linux-desktop>
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,137 +17,438 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The two u16 fields lock_token and paca_index in struct paca_struct are
-accessed as one u32 field via type punning.  Change this into one u32
-field paca_id, and add a paca_get_index() function to access only the
-low 16 bits of this.
+This is a reworked patch to fix the SPU data storage.  Currently, the 
+SPU escape sequences and program counter data is being added directly 
+into the kernel buffer without holding the buffer_mutex lock.  This 
+patch changes how the data is stored.  A new function,
+oprofile_add_value, is added into the oprofile driver to allow adding
+generic data to the per cpu buffers.  This enables a series of calls
+to the oprofile_add_value to enter the needed SPU escape sequences 
+and SPU program data into the kernel buffer via the per cpu buffers
+without any additional processing. The oprofile_add_value function is
+generic so it could be used by other architecures as well provided
+the needed postprocessing was added to opreport.
 
-Signed-off-by: Segher Boessenkool <segher@kernel.crashing.org>
----
- arch/powerpc/kernel/asm-offsets.c          |    2 +-
- arch/powerpc/kernel/paca.c                 |    3 +--
- arch/powerpc/platforms/iseries/exception.S |    2 +-
- include/asm-powerpc/iseries/hv_call.h      |    2 +-
- include/asm-powerpc/paca.h                 |   18 ++++++++++++------
- include/asm-powerpc/smp.h                  |    2 +-
- include/asm-powerpc/spinlock.h             |    2 +-
- 7 files changed, 18 insertions(+), 13 deletions(-)
+Finally, this patch backs out the changes previously added to the 
+oprofile generic code for handling the architecture specific 
+ops.sync_start and ops.sync_stop that allowed the architecture
+to skip the per CPU buffer creation.
 
-diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
-index 4b749c4..d00171f 100644
---- a/arch/powerpc/kernel/asm-offsets.c
-+++ b/arch/powerpc/kernel/asm-offsets.c
-@@ -108,7 +108,7 @@ int main(void)
- 	DEFINE(ICACHEL1LINESPERPAGE, offsetof(struct ppc64_caches, ilines_per_page));
- 	/* paca */
- 	DEFINE(PACA_SIZE, sizeof(struct paca_struct));
--	DEFINE(PACAPACAINDEX, offsetof(struct paca_struct, paca_index));
-+	DEFINE(PACAPACAID, offsetof(struct paca_struct, paca_id));
- 	DEFINE(PACAPROCSTART, offsetof(struct paca_struct, cpu_start));
- 	DEFINE(PACAKSAVE, offsetof(struct paca_struct, kstack));
- 	DEFINE(PACACURRENT, offsetof(struct paca_struct, __current));
-diff --git a/arch/powerpc/kernel/paca.c b/arch/powerpc/kernel/paca.c
-index 55f1a25..d68d86c 100644
---- a/arch/powerpc/kernel/paca.c
-+++ b/arch/powerpc/kernel/paca.c
-@@ -68,8 +68,7 @@ struct slb_shadow slb_shadow[] __cacheline_aligned = {
-  */
- #define PACA_INIT_COMMON(number)					    \
- 	.lppaca_ptr = &lppaca[number],					    \
--	.lock_token = 0x8000,						    \
--	.paca_index = (number),		/* Paca Index */		    \
-+	.paca_id = 0x80000000 | (number),	/* Paca Index */	    \
- 	.kernel_toc = (unsigned long)(&__toc_start) + 0x8000UL,		    \
- 	.hw_cpu_id = 0xffff,						    \
- 	.slb_shadow_ptr = &slb_shadow[number],
-diff --git a/arch/powerpc/platforms/iseries/exception.S b/arch/powerpc/platforms/iseries/exception.S
-index 5381038..17dea0d 100644
---- a/arch/powerpc/platforms/iseries/exception.S
-+++ b/arch/powerpc/platforms/iseries/exception.S
-@@ -42,7 +42,7 @@ system_reset_iSeries:
- 	mfmsr	r24
- 	ori	r24,r24,MSR_RI
- 	mtmsrd	r24			/* RI on */
--	lhz	r24,PACAPACAINDEX(r13)	/* Get processor # */
-+	lhz	r24,(PACAPACAID+2)(r13)	/* Get processor # */
- 	cmpwi	0,r24,0			/* Are we processor 0? */
- 	bne	1f
- 	b	.__start_initialization_iSeries	/* Start up the first processor */
-diff --git a/include/asm-powerpc/iseries/hv_call.h b/include/asm-powerpc/iseries/hv_call.h
-index 162d653..998db2c 100644
---- a/include/asm-powerpc/iseries/hv_call.h
-+++ b/include/asm-powerpc/iseries/hv_call.h
-@@ -105,7 +105,7 @@ extern void HvCall_writeLogBuffer(const void *buffer, u64 bufLen);
+Signed-off-by: Carl Love <carll@us.ibm.com>
+
+Index: Cell_kernel_4_15_2008/arch/powerpc/oprofile/cell/pr_util.h
+===================================================================
+--- Cell_kernel_4_15_2008.orig/arch/powerpc/oprofile/cell/pr_util.h
++++ Cell_kernel_4_15_2008/arch/powerpc/oprofile/cell/pr_util.h
+@@ -20,11 +20,6 @@
+ #include <asm/cell-regs.h>
+ #include <asm/spu.h>
  
- static inline void HvCall_sendIPI(struct paca_struct *targetPaca)
+-/* Defines used for sync_start */
+-#define SKIP_GENERIC_SYNC 0
+-#define SYNC_START_ERROR -1
+-#define DO_GENERIC_SYNC 1
+-
+ struct spu_overlay_info {	/* map of sections within an SPU overlay */
+ 	unsigned int vma;	/* SPU virtual memory address from elf */
+ 	unsigned int size;	/* size of section from elf */
+@@ -85,7 +80,7 @@ void stop_spu_profiling(void);
+ int spu_sync_start(void);
+ 
+ /* remove the hooks */
+-int spu_sync_stop(void);
++void spu_sync_stop(void);
+ 
+ /* Record SPU program counter samples to the oprofile event buffer. */
+ void spu_sync_buffer(int spu_num, unsigned int *samples,
+Index: Cell_kernel_4_15_2008/arch/powerpc/oprofile/cell/spu_task_sync.c
+===================================================================
+--- Cell_kernel_4_15_2008.orig/arch/powerpc/oprofile/cell/spu_task_sync.c
++++ Cell_kernel_4_15_2008/arch/powerpc/oprofile/cell/spu_task_sync.c
+@@ -31,11 +31,13 @@
+ 
+ #define RELEASE_ALL 9999
+ 
+-static DEFINE_SPINLOCK(buffer_lock);
++static DEFINE_SPINLOCK(add_value_lock);
+ static DEFINE_SPINLOCK(cache_lock);
+ static int num_spu_nodes;
++int per_cpu_buffers_exist=0;
+ int spu_prof_num_nodes;
+ int last_guard_val[MAX_NUMNODES * 8];
++static int spu_ctx_sw_seen[MAX_NUMNODES * 8];
+ 
+ /* Container for caching information about an active SPU task. */
+ struct cached_info {
+@@ -289,6 +291,7 @@ static int process_context_switch(struct
+ 	int retval;
+ 	unsigned int offset = 0;
+ 	unsigned long spu_cookie = 0, app_dcookie;
++	int cpu_buf;
+ 
+ 	retval = prepare_cached_spu_info(spu, objectId);
+ 	if (retval)
+@@ -303,17 +306,28 @@ static int process_context_switch(struct
+ 		goto out;
+ 	}
+ 
+-	/* Record context info in event buffer */
+-	spin_lock_irqsave(&buffer_lock, flags);
+-	add_event_entry(ESCAPE_CODE);
+-	add_event_entry(SPU_CTX_SWITCH_CODE);
+-	add_event_entry(spu->number);
+-	add_event_entry(spu->pid);
+-	add_event_entry(spu->tgid);
+-	add_event_entry(app_dcookie);
+-	add_event_entry(spu_cookie);
+-	add_event_entry(offset);
+-	spin_unlock_irqrestore(&buffer_lock, flags);
++	/* Record context info in event buffer.  Note, there are 4x more
++	 * SPUs then CPUs.  Map the SPU events/data for a given SPU to
++	 * the same CPU buffer.  Need to ensure the cntxt switch data and
++	 * samples stay in order.
++	 */
++	cpu_buf = spu->number >> 2;
++	spin_lock_irqsave(&add_value_lock, flags);
++	oprofile_add_value(ESCAPE_CODE, cpu_buf);
++	oprofile_add_value(SPU_CTX_SWITCH_CODE, cpu_buf);
++	oprofile_add_value(spu->number, cpu_buf);
++	oprofile_add_value(spu->pid, cpu_buf);
++	oprofile_add_value(spu->tgid, cpu_buf);
++	oprofile_add_value(app_dcookie, cpu_buf);
++	oprofile_add_value(spu_cookie, cpu_buf);
++	oprofile_add_value(offset, cpu_buf);
++
++	/* Set flag to indicate SPU PC data can now be written out.  If
++	 * the SPU program counter data is seen before an SPU context
++	 * record is seen, the postprocessing will fail.
++	 */
++	spu_ctx_sw_seen[spu->number] = 1;
++	spin_unlock_irqrestore(&add_value_lock, flags);
+ 	smp_wmb();	/* insure spu event buffer updates are written */
+ 			/* don't want entries intermingled... */
+ out:
+@@ -363,41 +377,55 @@ static int number_of_online_nodes(void)
+ /* The main purpose of this function is to synchronize
+  * OProfile with SPUFS by registering to be notified of
+  * SPU task switches.
+- *
+- * NOTE: When profiling SPUs, we must ensure that only
+- * spu_sync_start is invoked and not the generic sync_start
+- * in drivers/oprofile/oprof.c.	 A return value of
+- * SKIP_GENERIC_SYNC or SYNC_START_ERROR will
+- * accomplish this.
+  */
+ int spu_sync_start(void)
  {
--	HvCall1(HvCallBaseSendIPI, targetPaca->paca_index);
-+	HvCall1(HvCallBaseSendIPI, paca_get_index(targetPaca));
+ 	int k;
+-	int ret = SKIP_GENERIC_SYNC;
++	int ret = 0;
+ 	int register_ret;
+-	unsigned long flags = 0;
++	int cpu;
+ 
+ 	spu_prof_num_nodes = number_of_online_nodes();
+ 	num_spu_nodes = spu_prof_num_nodes * 8;
+ 
+-	spin_lock_irqsave(&buffer_lock, flags);
+-	add_event_entry(ESCAPE_CODE);
+-	add_event_entry(SPU_PROFILING_CODE);
+-	add_event_entry(num_spu_nodes);
+-	spin_unlock_irqrestore(&buffer_lock, flags);
++	/* At this point, the CPU buffers have been generated so
++	 * writes to the per CPU buffers can occur.  Need to
++	 * set the flag that the buffers exist before registering for
++	 * the SPU context switches or the routine to process the
++	 * context switches will not write context switch information.
++	 */
++	per_cpu_buffers_exist = 1;
++
++	/* The SPU_PROFILING_CODE escape sequence must proceed
++	 * the SPU context switch info.
++	 */
++	for_each_online_cpu(cpu) {
++		oprofile_add_value(ESCAPE_CODE, cpu);
++		oprofile_add_value(SPU_PROFILING_CODE, cpu);
++		oprofile_add_value((unsigned long int)
++					    num_spu_nodes, cpu);
++	}
+ 
+ 	/* Register for SPU events  */
+ 	register_ret = spu_switch_event_register(&spu_active);
+ 	if (register_ret) {
+-		ret = SYNC_START_ERROR;
++		/* Stop the profile_spus() function from trying
++		 * to store samples into the per CPU buffer.  The
++		 * buffer will not be there.
++		 */
++		per_cpu_buffers_exist = 0;
++		ret = -1;
+ 		goto out;
+ 	}
+ 
+-	for (k = 0; k < (MAX_NUMNODES * 8); k++)
++	for (k = 0; k < (MAX_NUMNODES * 8); k++) {
+ 		last_guard_val[k] = 0;
++		spu_ctx_sw_seen[k] = 0;
++	}
+ 	pr_debug("spu_sync_start -- running.\n");
+ out:
+ 	return ret;
++
  }
  
- #endif /* _ASM_POWERPC_ISERIES_HV_CALL_H */
-diff --git a/include/asm-powerpc/paca.h b/include/asm-powerpc/paca.h
-index 748b35a..7665d0a 100644
---- a/include/asm-powerpc/paca.h
-+++ b/include/asm-powerpc/paca.h
-@@ -65,13 +65,12 @@ struct paca_struct {
- #endif /* CONFIG_PPC_ISERIES */
+ /* Record SPU program counter samples to the oprofile event buffer. */
+@@ -432,7 +460,7 @@ void spu_sync_buffer(int spu_num, unsign
  
- 	/*
--	 * MAGIC: the spinlock functions in arch/powerpc/lib/locks.c 
--	 * load lock_token and paca_index with a single lwz
--	 * instruction.  They must travel together and be properly
--	 * aligned.
-+	 * MAGIC: the spinlock functions in arch/powerpc/lib/locks.c
-+	 * load paca_id with a single lwz instruction.  The high half
-+	 * of this is constant 0x8000; the low half is the paca index,
-+	 * accessed with paca_get_index().
- 	 */
--	u16 lock_token;			/* Constant 0x8000, used in locks */
--	u16 paca_index;			/* Logical processor number */
-+	u32 paca_id;
+ 	map = c_info->map;
+ 	the_spu = c_info->the_spu;
+-	spin_lock(&buffer_lock);
++	spin_lock(&add_value_lock);
+ 	for (i = 0; i < num_samples; i++) {
+ 		unsigned int sample = *(samples+i);
+ 		int grd_val = 0;
+@@ -452,15 +480,22 @@ void spu_sync_buffer(int spu_num, unsign
+ 			break;
+ 		}
  
- 	u64 kernel_toc;			/* Kernel TOC address */
- 	u64 stab_real;			/* Absolute address of segment table */
-@@ -117,6 +116,13 @@ struct paca_struct {
- 	u64 startspurr;			/* SPURR value snapshot */
- };
+-		add_event_entry(file_offset | spu_num_shifted);
++		/* We must ensure that the SPU context switch has been written
++		 * out before samples for the SPU.  Otherwise, the SPU context
++		 * information is not available and the postprocessing of the
++		 * SPU PC will fail with no available anonymous map information.
++		 */
++		if (spu_ctx_sw_seen[spu_num])
++			oprofile_add_value((file_offset | spu_num_shifted),
++						    (spu_num >> 2));
+ 	}
+-	spin_unlock(&buffer_lock);
++	spin_unlock(&add_value_lock);
+ out:
+ 	spin_unlock_irqrestore(&cache_lock, flags);
+ }
  
-+static inline u16 paca_get_index(struct paca_struct *paca)
-+{
-+	/* GCC will transform this into a single lhz instruction.  */
+ 
+-int spu_sync_stop(void)
++void spu_sync_stop(void)
+ {
+ 	unsigned long flags = 0;
+ 	int ret = spu_switch_event_unregister(&spu_active);
+@@ -475,8 +510,9 @@ int spu_sync_stop(void)
+ 	ret = release_cached_info(RELEASE_ALL);
+ 	spin_unlock_irqrestore(&cache_lock, flags);
+ out:
++	per_cpu_buffers_exist = 0;
+ 	pr_debug("spu_sync_stop -- done.\n");
+-	return ret;
++	return;
+ }
+ 
+ 
+Index: Cell_kernel_4_15_2008/arch/powerpc/oprofile/op_model_cell.c
+===================================================================
+--- Cell_kernel_4_15_2008.orig/arch/powerpc/oprofile/op_model_cell.c
++++ Cell_kernel_4_15_2008/arch/powerpc/oprofile/op_model_cell.c
+@@ -1191,15 +1191,15 @@ static int cell_sync_start(void)
+ 	if (spu_cycle_reset)
+ 		return spu_sync_start();
+ 	else
+-		return DO_GENERIC_SYNC;
++		return 0;
+ }
+ 
+-static int cell_sync_stop(void)
++static void cell_sync_stop(void)
+ {
+ 	if (spu_cycle_reset)
+-		return spu_sync_stop();
+-	else
+-		return 1;
++		spu_sync_stop();
 +
-+	return paca->paca_id & 0xffff;
++	return;
+ }
+ 
+ struct op_powerpc_model op_model_cell = {
+Index: Cell_kernel_4_15_2008/drivers/oprofile/buffer_sync.c
+===================================================================
+--- Cell_kernel_4_15_2008.orig/drivers/oprofile/buffer_sync.c
++++ Cell_kernel_4_15_2008/drivers/oprofile/buffer_sync.c
+@@ -521,6 +521,20 @@ void sync_buffer(int cpu)
+ 			} else if (s->event == CPU_TRACE_BEGIN) {
+ 				state = sb_bt_start;
+ 				add_trace_begin();
++			} else if (s->event == VALUE_HEADER_ID) {
++				/* The next event contains a value
++				 * to enter directly into the event buffer.
++				 */
++				increment_tail(cpu_buf);
++				i++;  /* one less entry in buffer to process */
++
++				s = &cpu_buf->buffer[cpu_buf->tail_pos];
++
++				if (is_code(s->eip))
++					add_event_entry(s->event);
++				else
++					printk("KERN_ERR Oprofile per CPU" \
++					       "buffer sequence error.\n");
+ 			} else {
+ 				struct mm_struct * oldmm = mm;
+ 
+Index: Cell_kernel_4_15_2008/drivers/oprofile/cpu_buffer.c
+===================================================================
+--- Cell_kernel_4_15_2008.orig/drivers/oprofile/cpu_buffer.c
++++ Cell_kernel_4_15_2008/drivers/oprofile/cpu_buffer.c
+@@ -224,6 +224,35 @@ static void oprofile_end_trace(struct op
+ 	cpu_buf->tracing = 0;
+ }
+ 
++/*
++ * Add a value to the per CPU buffer.  The value is passed from the per CPU
++ * buffer to the kernel buffer with no additional processing.  The assumption
++ * is any processing of the value will be done in the postprocessor.  This
++ * function should only be used for special architecture specific data.
++ * Currently only used by the CELL processor.
++ *
++ * The first enty in the per cpu buffer consists of the escape code and
++ * the VALUE_HEADER_ID value.  The next entry consists of an escape code
++ * with the value to store.  The syn_buffer routine takes the value from
++ * the second entry and put it into the kernel buffer.
++ */
++void oprofile_add_value(unsigned long value, int cpu) {
++	struct oprofile_cpu_buffer * cpu_buf = &cpu_buffer[cpu];
++
++	/* Enter a sequence of two evnets.  The first event says the
++	 * next event contains a value that is to be put directly into the
++	 * event buffer.
++	 */
++
++	if (nr_available_slots(cpu_buf) < 3) {
++		cpu_buf->sample_lost_overflow++;
++		return;
++	}
++
++	add_sample(cpu_buf, ESCAPE_CODE, VALUE_HEADER_ID);
++	add_sample(cpu_buf, ESCAPE_CODE, value);
 +}
 +
- extern struct paca_struct paca[];
+ void oprofile_add_ext_sample(unsigned long pc, struct pt_regs * const regs,
+ 				unsigned long event, int is_kernel)
+ {
+Index: Cell_kernel_4_15_2008/drivers/oprofile/cpu_buffer.h
+===================================================================
+--- Cell_kernel_4_15_2008.orig/drivers/oprofile/cpu_buffer.h
++++ Cell_kernel_4_15_2008/drivers/oprofile/cpu_buffer.h
+@@ -54,5 +54,6 @@ void cpu_buffer_reset(struct oprofile_cp
+ /* transient events for the CPU buffer -> event buffer */
+ #define CPU_IS_KERNEL 1
+ #define CPU_TRACE_BEGIN 2
++#define VALUE_HEADER_ID 3
  
- #endif /* __KERNEL__ */
-diff --git a/include/asm-powerpc/smp.h b/include/asm-powerpc/smp.h
-index 505f35b..5fb4f13 100644
---- a/include/asm-powerpc/smp.h
-+++ b/include/asm-powerpc/smp.h
-@@ -46,7 +46,7 @@ void generic_mach_cpu_die(void);
- #endif
+ #endif /* OPROFILE_CPU_BUFFER_H */
+Index: Cell_kernel_4_15_2008/drivers/oprofile/oprof.c
+===================================================================
+--- Cell_kernel_4_15_2008.orig/drivers/oprofile/oprof.c
++++ Cell_kernel_4_15_2008/drivers/oprofile/oprof.c
+@@ -53,24 +53,13 @@ int oprofile_setup(void)
+ 	 * us missing task deaths and eventually oopsing
+ 	 * when trying to process the event buffer.
+ 	 */
+-	if (oprofile_ops.sync_start) {
+-		int sync_ret = oprofile_ops.sync_start();
+-		switch (sync_ret) {
+-		case 0:
+-			goto post_sync;
+-		case 1:
+-			goto do_generic;
+-		case -1:
+-			goto out3;
+-		default:
+-			goto out3;
+-		}
+-	}
+-do_generic:
++	if (oprofile_ops.sync_start
++	    && ((err = oprofile_ops.sync_start())))
++		goto out2;
++
+ 	if ((err = sync_start()))
+ 		goto out3;
  
- #ifdef CONFIG_PPC64
--#define raw_smp_processor_id()	(local_paca->paca_index)
-+#define raw_smp_processor_id()	paca_get_index(local_paca)
- #define hard_smp_processor_id() (get_paca()->hw_cpu_id)
- #else
- /* 32-bit */
-diff --git a/include/asm-powerpc/spinlock.h b/include/asm-powerpc/spinlock.h
-index cc4cfce..5922a2f 100644
---- a/include/asm-powerpc/spinlock.h
-+++ b/include/asm-powerpc/spinlock.h
-@@ -31,7 +31,7 @@
+-post_sync:
+ 	is_setup = 1;
+ 	mutex_unlock(&start_mutex);
+ 	return 0;
+@@ -133,20 +122,9 @@ out:
+ void oprofile_shutdown(void)
+ {
+ 	mutex_lock(&start_mutex);
+-	if (oprofile_ops.sync_stop) {
+-		int sync_ret = oprofile_ops.sync_stop();
+-		switch (sync_ret) {
+-		case 0:
+-			goto post_sync;
+-		case 1:
+-			goto do_generic;
+-		default:
+-			goto post_sync;
+-		}
+-	}
+-do_generic:
++	if (oprofile_ops.sync_stop)
++		oprofile_ops.sync_stop();
+ 	sync_stop();
+-post_sync:
+ 	if (oprofile_ops.shutdown)
+ 		oprofile_ops.shutdown();
+ 	is_setup = 0;
+Index: Cell_kernel_4_15_2008/include/linux/oprofile.h
+===================================================================
+--- Cell_kernel_4_15_2008.orig/include/linux/oprofile.h
++++ Cell_kernel_4_15_2008/include/linux/oprofile.h
+@@ -56,12 +56,10 @@ struct oprofile_operations {
+ 	/* Stop delivering interrupts. */
+ 	void (*stop)(void);
+ 	/* Arch-specific buffer sync functions.
+-	 * Return value = 0:  Success
+-	 * Return value = -1: Failure
+-	 * Return value = 1:  Run generic sync function
++	 * Sync start: Return 0 for Success,  -1 for Failure
+ 	 */
+ 	int (*sync_start)(void);
+-	int (*sync_stop)(void);
++	void (*sync_stop)(void);
  
- #ifdef CONFIG_PPC64
- /* use 0x800000yy when locked, where yy == CPU number */
--#define LOCK_TOKEN	(*(u32 *)(&get_paca()->lock_token))
-+#define LOCK_TOKEN	(get_paca()->paca_id)
- #else
- #define LOCK_TOKEN	1
- #endif
--- 
-1.5.5.23.g2a5f.dirty
+ 	/* Initiate a stack backtrace. Optional. */
+ 	void (*backtrace)(struct pt_regs * const regs, unsigned int depth);
+@@ -106,6 +104,17 @@ void oprofile_add_sample(struct pt_regs 
+ void oprofile_add_ext_sample(unsigned long pc, struct pt_regs * const regs,
+ 				unsigned long event, int is_kernel);
+ 
++/*
++ * Add a value to the per CPU buffer.  The value is passed from the per CPU
++ * buffer to the kernel buffer with no additional processing.  The assumption
++ * is any processing of the value will be done in the postprocessor.  This
++ * function should only be used for special architecture specific data.
++ * Currently only used by the CELL processor.
++ *
++ * This function does not perform a backtrace.
++ */
++void oprofile_add_value(unsigned long value, int cpu);
++
+ /* Use this instead when the PC value is not from the regs. Doesn't
+  * backtrace. */
+ void oprofile_add_pc(unsigned long pc, int is_kernel, unsigned long event);
+Index: Cell_kernel_4_15_2008/include/asm-powerpc/oprofile_impl.h
+===================================================================
+--- Cell_kernel_4_15_2008.orig/include/asm-powerpc/oprofile_impl.h
++++ Cell_kernel_4_15_2008/include/asm-powerpc/oprofile_impl.h
+@@ -48,7 +48,7 @@ struct op_powerpc_model {
+ 	void (*stop) (void);
+ 	void (*global_stop) (void);
+ 	int (*sync_start)(void);
+-	int (*sync_stop)(void);
++	void (*sync_stop)(void);
+ 	void (*handle_interrupt) (struct pt_regs *,
+ 				  struct op_counter_config *);
+ 	int num_counters;
