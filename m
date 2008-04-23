@@ -1,23 +1,25 @@
-Return-Path: <khali@linux-fr.org>
-Received: from services.gcu-squad.org (zone0.gcu-squad.org [212.85.147.21])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 14818DDF4C
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Apr 2008 21:09:35 +1000 (EST)
-Date: Wed, 23 Apr 2008 13:09:19 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Stefan Roese <sr@denx.de>
-Subject: Re: [PATCH] rtc-pcf8563: Add device ids table
-Message-ID: <20080423130919.5d55feff@hyperion.delvare>
-In-Reply-To: <200804211412.49201.sr@denx.de>
-References: <200804171708.32847.laurentp@cse-semaphore.com>
-	<480A2117.7020502@scram.de>
-	<200804211356.10192.laurentp@cse-semaphore.com>
-	<200804211412.49201.sr@denx.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Alessandro Zummo <alessandro.zummo@towertech.it>,
-	rtc-linux@googlegroups.com, linuxppc-dev@ozlabs.org, i2c@lm-sensors.org
+Return-Path: <sshtylyov@ru.mvista.com>
+Received: from imap.sh.mvista.com (unknown [63.81.120.155])
+	by ozlabs.org (Postfix) with ESMTP id D9E09DE039
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Apr 2008 21:13:36 +1000 (EST)
+Message-ID: <480F19B9.1070403@ru.mvista.com>
+Date: Wed, 23 Apr 2008 15:12:57 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+MIME-Version: 1.0
+To: David Woodhouse <dwmw2@infradead.org>
+Subject: Re: [PATCH 1/2] [MTD] Add support for RAM & ROM
+	mappings	in	the	physmap_of MTD driver.
+References: <200803261344.03438.laurentp@cse-semaphore.com>	
+	<47EA6B11.7050804@ru.mvista.com>	
+	<777c028aa41fe870542afdb4fa7d2db6@kernel.crashing.org>	
+	<200803271026.51555.laurentp@cse-semaphore.com>	
+	<1208894995.9212.669.camel@pmac.infradead.org>	
+	<480E479C.7040408@ru.mvista.com>
+	<1208895496.9212.671.camel@pmac.infradead.org>
+In-Reply-To: <1208895496.9212.671.camel@pmac.infradead.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: ben@simtec.co.uk, linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
+	David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,26 +29,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 21 Apr 2008 14:12:48 +0200, Stefan Roese wrote:
-> On Monday 21 April 2008, Laurent Pinchart wrote:
-> > > > > Is there any chance they will got to 2.6.26?
-> > > >
-> > > > I'm not sure. I didn't have the time to look at it myself, but I am
-> > > > under the impression that the powerpc folks are tired of having to wait
-> > > > for me and may push it to Linus through their tree? That would be fine
-> > > > with me, as I don't want to be the one delaying something many
-> > > > developers want (but I also can't sign patches I've not even read.)
-> >
-> > The patches are required for long awaited I2C support on various PowerPC
-> > boards. As the ppc architecture support is going away in 2.6.27, it would
-> > be nice to have them applied in 2.6.26.
-> 
-> Yes, please.
+David Woodhouse wrote:
 
-I know that many people would like to see these patches upstream
-quickly, no question about that. The problem is that I am very busy
-with my day job and my family life these days so I just don't know when
-I will find the time an energy to go through this huge patch set.
+>>>>Ok. I'll submit a new patch as soon as we agree on a compatible name.
 
--- 
-Jean Delvare
+>>>Did we?
+
+>>    IIRC, The latest agreement was that we don't need the "compatible" and 
+>>will match on node name.
+
+> Ok. Is there a current patch I should be merging?
+
+    Looks like it was decided to revert to the platform device method, not 
+sure why -- so, no changes. Laurent?
+
+WBR, Sergei
