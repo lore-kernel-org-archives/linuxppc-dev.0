@@ -1,25 +1,24 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id D9E09DE039
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Apr 2008 21:13:36 +1000 (EST)
-Message-ID: <480F19B9.1070403@ru.mvista.com>
-Date: Wed, 23 Apr 2008 15:12:57 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-MIME-Version: 1.0
-To: David Woodhouse <dwmw2@infradead.org>
-Subject: Re: [PATCH 1/2] [MTD] Add support for RAM & ROM
-	mappings	in	the	physmap_of MTD driver.
-References: <200803261344.03438.laurentp@cse-semaphore.com>	
-	<47EA6B11.7050804@ru.mvista.com>	
-	<777c028aa41fe870542afdb4fa7d2db6@kernel.crashing.org>	
-	<200803271026.51555.laurentp@cse-semaphore.com>	
-	<1208894995.9212.669.camel@pmac.infradead.org>	
-	<480E479C.7040408@ru.mvista.com>
-	<1208895496.9212.671.camel@pmac.infradead.org>
-In-Reply-To: <1208895496.9212.671.camel@pmac.infradead.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: ben@simtec.co.uk, linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
-	David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <khali@linux-fr.org>
+Received: from services.gcu-squad.org (zone0.gcu-squad.org [212.85.147.21])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 79145DDF8D
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Apr 2008 21:17:17 +1000 (EST)
+Date: Wed, 23 Apr 2008 13:16:57 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Laurent Pinchart <laurentp@cse-semaphore.com>
+Subject: Re: [PATCH] rtc-pcf8563: Add device ids table
+Message-ID: <20080423131657.71d6312f@hyperion.delvare>
+In-Reply-To: <200804221612.06745.laurentp@cse-semaphore.com>
+References: <200804171708.32847.laurentp@cse-semaphore.com>
+	<20080419162358.746b714c@hyperion.delvare>
+	<480A2117.7020502@scram.de>
+	<200804221612.06745.laurentp@cse-semaphore.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Alessandro Zummo <alessandro.zummo@towertech.it>,
+	rtc-linux@googlegroups.com, i2c@lm-sensors.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,18 +28,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Woodhouse wrote:
+Hi Laurent,
 
->>>>Ok. I'll submit a new patch as soon as we agree on a compatible name.
+On Tue, 22 Apr 2008 16:11:56 +0200, Laurent Pinchart wrote:
+> Hi Jean,
+> 
+> On Saturday 19 April 2008 18:43, Jochen Friedrich wrote:
+> > Jean Delvare wrote:
+> > > I'm not sure. I didn't have the time to look at it myself, but I am
+> > > under the impression that the powerpc folks are tired of having to wait
+> > > for me and may push it to Linus through their tree? That would be fine
+> > > with me, as I don't want to be the one delaying something many
+> > > developers want (but I also can't sign patches I've not even read.)
 
->>>Did we?
+I still don't know exactly what happened there... I think I saw some
+"OpenFirmware i2c" patches go upstream yesterday? But not the ones
+listed below, which I thought they depended upon.
 
->>    IIRC, The latest agreement was that we don't need the "compatible" and 
->>will match on node name.
+> > The required patches are:
+> > 
+> > http://patchwork.ozlabs.org/linuxppc/patch?id=17833
+> > http://patchwork.ozlabs.org/linuxppc/patch?id=17834
+> > 
+> > which are just the forward ported patches you sent to the poweprc mailing
+> > list some time ago: 
+> > 
+> > http://patchwork.ozlabs.org/linuxppc/patch?id=16282
+> > http://patchwork.ozlabs.org/linuxppc/patch?id=16283
+> 
+> Given that the required patches are just forward-ported versions of patches 
+> you sent (and thus probably reviewed as well :-)), what's the best way to get 
+> them in 2.6.26 (if at all possible) ?
 
-> Ok. Is there a current patch I should be merging?
+It's not that easy. A lot of new new-style i2c drivers have shown up in
+the kernel since I wrote my patches (themselves derived heavily from
+Jon Smirl's). Even if Jochen's patches are based on mine, we still need
+to take a careful look on how each driver is modified, I remember for
+example that some v4l drivers were using the original new-style driver
+binding in a way I did not expect. So I can't just sign these patches
+and hope they didn't break anything. It needs care, and this requires
+time.
 
-    Looks like it was decided to revert to the platform device method, not 
-sure why -- so, no changes. Laurent?
+I will do my best to get this done before the 2.6.26 merge window
+closes, but I can't promise anything.
 
-WBR, Sergei
+-- 
+Jean Delvare
