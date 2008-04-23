@@ -1,19 +1,19 @@
 Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH 02/11] Add udbg_console_anytime() which sets udbg
-	console to CON_ANYTIME
+Subject: Re: [PATCH 04/11] Convert from DBG() to pr_debug() in
+	platforms/pseries/setup.c
 From: Michael Ellerman <michael@ellerman.id.au>
-To: benh@kernel.crashing.org
-In-Reply-To: <1208506858.6958.404.camel@pasglop>
+To: Olof Johansson <olof@lixom.net>
+In-Reply-To: <20080422133120.GA8338@lixom.net>
 References: <fbb91d0892c720d6f28501e1830028c78eb6664f.1208505275.git.michael@ellerman.id.au>
-	<bdf32a463da3cf9603c0b0bd257ac5deedcbbfe0.1208505275.git.michael@ellerman.id.au>
-	<1208506858.6958.404.camel@pasglop>
+	<6112063f5eac0a820949415417d49a5376ad5ffd.1208505275.git.michael@ellerman.id.au>
+	<20080422133120.GA8338@lixom.net>
 Content-Type: multipart/signed; micalg=pgp-sha1;
 	protocol="application/pgp-signature";
-	boundary="=-NPwDs9tpdV9FAwpne0He"
-Date: Wed, 23 Apr 2008 05:43:23 +0000
-Message-Id: <1208929403.9212.7.camel@concordia.ozlabs.ibm.com>
+	boundary="=-8EJUoYeWeBFPH6gqEN9W"
+Date: Wed, 23 Apr 2008 15:45:11 +1000
+Message-Id: <1208929511.9212.10.camel@concordia.ozlabs.ibm.com>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -25,31 +25,22 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-NPwDs9tpdV9FAwpne0He
+--=-8EJUoYeWeBFPH6gqEN9W
 Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, 2008-04-18 at 18:20 +1000, Benjamin Herrenschmidt wrote:
-> On Fri, 2008-04-18 at 17:54 +1000, Michael Ellerman wrote:
-> > In theory the udbg console should be safe to call basically at any time
-> > after boot. It does not need any per-cpu resources or for the cpu to be
-> > online, as long as there is a udbg_putc routine hooked up it should
-> > work. So it should be able to be marked as CON_ANYTIME.
-> >=20
-> > Verifying this will take a bit of time and testing though, so instead o=
-f
-> > marking udbg console as CON_ANYTIME for all platforms, add a routine so
-> > that a platform can opt-in to having udbg console called early.
-> >=20
+On Tue, 2008-04-22 at 08:31 -0500, Olof Johansson wrote:
+> On Fri, Apr 18, 2008 at 05:54:36PM +1000, Michael Ellerman wrote:
 > > Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 >=20
-> Nah, just stick it always.
+> I know it's fun to see yourself in the changeset statistics, but this is
+> silly. Please bake together all the simple changes to one patch instead
+> of one per file. They are all trivial.
 
-Meh, OK. I'm still going to require the platform code to call
-register_early_udbg_console() if it wants to register earlier than
-setup_system() - so the behaviour will essentially be the same.
+Yeah that's totally what I was going for ...
 
-NB that if it breaks anything I can now say BenH told me to do it ;)
+Thanks for reading them at least, they're mostly trivial but many eyes
+make light work.
 
 cheers
 
@@ -63,16 +54,16 @@ phone: +61 2 6212 1183 (tie line 70 21183)
 We do not inherit the earth from our ancestors,
 we borrow it from our children. - S.M.A.R.T Person
 
---=-NPwDs9tpdV9FAwpne0He
+--=-8EJUoYeWeBFPH6gqEN9W
 Content-Type: application/pgp-signature; name=signature.asc
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.6 (GNU/Linux)
 
-iD8DBQBIDsx7dSjSd0sB4dIRAqTWAJ0VpUoJesVLTO8ax0LvPuXnGL5OXQCcCK6r
-j4XpVi5r6xzGd8QFbIzUyYY=
-=G54R
+iD8DBQBIDszndSjSd0sB4dIRAkeZAJ0XI+9hrg0SuIcxdaPDWMbYL9R0cwCfQicV
+5M8aXffAY1oHdV0MEdBGzww=
+=ARO0
 -----END PGP SIGNATURE-----
 
---=-NPwDs9tpdV9FAwpne0He--
+--=-8EJUoYeWeBFPH6gqEN9W--
