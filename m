@@ -1,25 +1,23 @@
-Return-Path: <khali@linux-fr.org>
-Received: from services.gcu-squad.org (zone0.gcu-squad.org [212.85.147.21])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id ED88EDE601
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Apr 2008 22:48:23 +1000 (EST)
-Date: Wed, 23 Apr 2008 14:47:56 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Laurent Pinchart <laurentp@cse-semaphore.com>, Jochen Friedrich
-	<jochen@scram.de>
-Subject: Re: [PATCH] rtc-pcf8563: Add device ids table
-Message-ID: <20080423144756.3fc9b1bf@hyperion.delvare>
-In-Reply-To: <200804231412.40038.laurentp@cse-semaphore.com>
-References: <200804171708.32847.laurentp@cse-semaphore.com>
-	<200804221612.06745.laurentp@cse-semaphore.com>
-	<20080423131657.71d6312f@hyperion.delvare>
-	<200804231412.40038.laurentp@cse-semaphore.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Alessandro Zummo <alessandro.zummo@towertech.it>,
-	i2c@lm-sensors.org, rtc-linux@googlegroups.com
+	by ozlabs.org (Postfix) with ESMTPS id 709CBDE285
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Apr 2008 22:50:00 +1000 (EST)
+Message-Id: <CA750B46-2360-4C75-8F8E-5DFD0FB9807C@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Paul Mackerras <paulus@samba.org>
+In-Reply-To: <18445.11801.422321.151268@cargo.ozlabs.ibm.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v919.2)
+Subject: Re: Patches added to powerpc.git master and powerpc-next branches
+Date: Wed, 23 Apr 2008 07:49:55 -0500
+References: <18440.34891.440661.248400@cargo.ozlabs.ibm.com>
+	<9CE9EFA8-A303-49C9-B9A2-F62D42F927B7@kernel.crashing.org>
+	<18441.58154.608911.337978@cargo.ozlabs.ibm.com>
+	<C69E510D-5838-4BE6-AB57-56FCB0592414@kernel.crashing.org>
+	<18445.11801.422321.151268@cargo.ozlabs.ibm.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,29 +27,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 23 Apr 2008 14:12:37 +0200, Laurent Pinchart wrote:
-> On Wednesday 23 April 2008 13:16, Jean Delvare wrote:
-> > I still don't know exactly what happened there... I think I saw some
-> > "OpenFirmware i2c" patches go upstream yesterday? But not the ones
-> > listed below, which I thought they depended upon.
-> 
-> The code that went upstream introduces helper functions to create i2c devices 
-> from information supplied by the OF device tree. It doesn't strictly depend 
-> on the below patches, but the new devices won't be properly bound to a driver 
-> without them.
 
-OK. So... Out of the 7 patches Jochen sent originally, only 1 ([3/7] OF
-helpers for the i2c API) went upstream. Am I correct?
+On Apr 21, 2008, at 7:15 PM, Paul Mackerras wrote:
+> Kumar Gala writes:
+>
+>>> Once again I want to go through it carefully and understand how it  
+>>> all
+>>> works, and in particular understand things like the way it ensures
+>>> that the base address for the kmap region is aligned to a 4M  
+>>> boundary
+>>> so all the kmap ptes are in a single page (assuming it does :).
+>>
+>> I'm not clear on why this is needed.  I can see value in having the
+>> PGD entry in place but the pte PAs would be changing all the time  
+>> so I
+>> don't see what benefit there is in keeping them in one page.
+>
+> Have a look at map_new_virtual in mm/highmem.c.  In particular:
+>
+>        set_pte_at(&init_mm, vaddr,
+>                   &(pkmap_page_table[last_pkmap_nr]), mk_pte(page,  
+> kmap_prot));
+>
+> assumes that the ptes that kmap uses are in a contiguous array whose
+> base is pkmap_page_table.
+>
+>> For normal kmap ptes we cover things in one PGD via:
+>>
+>> #define PKMAP_BASE      ((FIXADDR_BOOT_START -  
+>> PAGE_SIZE*(LAST_PKMAP +
+>> 1)) & PMD_MASK)
+>
+> OK, that probably does the trick ... <checks> ... yes it does.
+>
+> We seem to have a distinction without a difference between
+> FIXADDR_START and FIXADDR_BOOT_START, and similarly between
+> __FIXADDR_SIZE and __FIXADDR_BOOT_SIZE.  Is there any actual
+> difference and if not why do we have two names for the same thing?
+>
+>
+> Also, we seem to have an unnecessary distinction (and unnecessary
+> casting) between __FIXADDR_TOP and FIXADDR_TOP.
 
-Jochen, I'm a bit confused by the dependencies that exist - or not -
-between these 7 patches you sent at once. I thought they had to be
-applied in sequence but it seems not? And some of them should
-apparently go through me i2c tree but others (e.g. [7/7]) not?
+its left over from the x86 port.  I'll get rid of __FIXADDR_BOOT_SIZE,  
+FIXADDR_BOOT_START, and __FIXADDR_TOP.
 
-I would appreciate if you could summarize quickly which patches depend
-on others in which way. If we can make smaller subsets of patches, that
-will be easier for me to review and push upstream on my limited time.
+If we want the early ioremap support in the future we can add back  
+__FIXADDR_BOOT_SIZE and FIXADDR_BOOT_START.
 
-Thanks,
--- 
-Jean Delvare
+- k
