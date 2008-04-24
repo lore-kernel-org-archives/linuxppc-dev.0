@@ -1,20 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <dargaud@lpsc.in2p3.fr>
+Received: from lpsc-mail.in2p3.fr (lpsc-mail.in2p3.fr [134.158.40.8])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 6E667DDEDD
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Apr 2008 17:19:04 +1000 (EST)
-Subject: Re: [RFC][WIP][PATCH] Add IRQSTACKS to ppc32
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <Pine.LNX.4.64.0804240034160.23185@blarg.am.freescale.net>
-References: <Pine.LNX.4.64.0804240034160.23185@blarg.am.freescale.net>
-Content-Type: text/plain
-Date: Thu, 24 Apr 2008 17:18:57 +1000
-Message-Id: <1209021537.9060.156.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: benh@kernel.crashing.org
+	by ozlabs.org (Postfix) with ESMTPS id 32C6BDDED8
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Apr 2008 18:35:10 +1000 (EST)
+Received: from LPSC0173W (lpsc0173w.in2p3.fr [134.158.40.173])
+	by lpsc-mail.in2p3.fr (8.13.1/8.13.1/In2p3) with SMTP id m3O8YusJ002357
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Apr 2008 10:34:56 +0200
+Message-ID: <07c101c8a5e6$13670980$ad289e86@LPSC0173W>
+From: "Guillaume Dargaud" <dargaud@lpsc.in2p3.fr>
+To: <linuxppc-dev@ozlabs.org>
+Subject: ML405 failed reboot
+Date: Thu, 24 Apr 2008 10:34:49 +0200
+MIME-Version: 1.0
+Content-Type: text/plain; format=flowed; charset="iso-8859-1";
+	reply-type=original
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,24 +24,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Now that my Xilinx card is operational with Kernel 2.6.24 and a 
+buildroot/busybox/uClibc config, I'm getting on the application side.
 
-On Thu, 2008-04-24 at 00:37 -0500, Kumar Gala wrote:
-> +       /*
-> +        * interrupt stacks must be under 256MB, we cannot afford to
-> take
-> +        * SLB misses on them.
-> +        */
-> +       for_each_possible_cpu(i) {
-> +               softirq_ctx[i] = (struct thread_info *)
-> +                       __va(lmb_alloc_base(THREAD_SIZE,
-> +                                           THREAD_SIZE, 0x10000000));
-> +               hardirq_ctx[i] = (struct thread_info *)
-> +                       __va(lmb_alloc_base(THREAD_SIZE,
-> +                                           THREAD_SIZE, 0x10000000));
-> +       }
-> +
+First hitch: I can't do a soft reboot of the card:
 
-The comment is a bit bogus :-) (about SLB misses). lowmem is your limit
-I think. Also, why not share the code with ppc64 ?
+# reboot
+The system is going down NOW!
+Sending SIGTERM to all processes
+Requesting system reboot
+[  434.713999] Restarting system.
+[  434.7[  434.718123]   Signal: 4
+[  434.718133]   Code:   30001
+[  434.718144]   Addr:   c74cbdc8
 
-Ben.
+And then it just hangs.
+I also tried the additional -n (no sync) and -f (force) without difference.
+
+Design problem ?
+Any other way to force a reboot ?
+-- 
+Guillaume Dargaud
+http://www.gdargaud.net/
