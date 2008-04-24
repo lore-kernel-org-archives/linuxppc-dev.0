@@ -1,20 +1,12 @@
 Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 2BC88DE02A
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Apr 2008 02:28:46 +1000 (EST)
-Message-Id: <6B144635-72B7-45F5-9873-3D7D1A808138@kernel.crashing.org>
+Date: Thu, 24 Apr 2008 11:37:44 -0500 (CDT)
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Dale Farnsworth <dale@farnsworth.org>
-In-Reply-To: <20080424154258.GA25852@farnsworth.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: [PATCH 00/10] powerpc: Add kexec/kdump support for ppc32
-Date: Thu, 24 Apr 2008 11:28:34 -0500
-References: <20071122154159.GA24711@xyzzy.farnsworth.org>
-	<C695814A-E9D5-4C62-81DF-E49127ECD2E0@kernel.crashing.org>
-	<20080424154258.GA25852@farnsworth.org>
+To: jk@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Subject: [PATCH] [POWERPC] spufs: add .gitignore for spu_save_dump.h &
+	spu_restore_dump.h
+Message-ID: <Pine.LNX.4.64.0804241136310.22265@blarg.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -25,22 +17,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
+ arch/powerpc/platforms/cell/spufs/.gitignore |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
+ create mode 100644 arch/powerpc/platforms/cell/spufs/.gitignore
 
-On Apr 24, 2008, at 10:42 AM, Dale Farnsworth wrote:
-> On Thu, Apr 24, 2008 at 07:50:52AM -0500, Kumar Gala wrote:
->> On Nov 22, 2007, at 9:42 AM, Dale Farnsworth wrote:
->>> This patch series adds kexec and kdump support for ppc32 in arch/
->>> powerpc.
->>> It has been successfully tested on the mpc8548_cds and prpmc2800
->>> platforms.
->>> Mark Greer and I are preparing patches to the kexec-tools package as
->>> well.
->>
->> Dale, can you look at updating your patchset now that we've made some
->> progress on other patches.
->
-> Yes.  It'll take a couple of weeks for me to fit it in though.
-
-no problem.  I figure we are aiming for 2.6.27 for this functionality.
-
-- k
+diff --git a/arch/powerpc/platforms/cell/spufs/.gitignore b/arch/powerpc/platforms/cell/spufs/.gitignore
+new file mode 100644
+index 0000000..a09ee8d
+--- /dev/null
++++ b/arch/powerpc/platforms/cell/spufs/.gitignore
+@@ -0,0 +1,2 @@
++spu_save_dump.h
++spu_restore_dump.h
+-- 
+1.5.4.1
