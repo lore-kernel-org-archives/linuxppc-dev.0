@@ -1,30 +1,16 @@
-Return-Path: <jacmet@gmail.com>
-Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.191])
-	by ozlabs.org (Postfix) with ESMTP id 5111BDE260
+Return-Path: <bsilverman@iveia.com>
+Received: from wisrv001.westonlan.com (mail1.westonlan.com [75.148.20.91])
+	by ozlabs.org (Postfix) with ESMTP id 5EB57DE33B
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 25 Apr 2008 04:25:46 +1000 (EST)
-Received: by nf-out-0910.google.com with SMTP id g16so1930591nfd.9
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 24 Apr 2008 11:25:44 -0700 (PDT)
-To: Aaron Sells <aaron.sells@zin-tech.com>
-Subject: Re: SecretLab 2.6.24 with USB
-References: <800687fe0804141927y1f6ea75cv7ad0ba68b4fa637a@mail.gmail.com>
-	<fa686aa40804211109g2f7f45d0gf836be46e2c1a40b@mail.gmail.com>
-	<16825460.post@talk.nabble.com>
-	<fa686aa40804221309g7d0749e8qc329ad72389f0138@mail.gmail.com>
-	<480E4EBD.3010202@zin-tech.com>
-	<fa686aa40804221355s11f8fd6em3f2075bbb2073c8@mail.gmail.com>
-	<480F4E8E.4010506@zin-tech.com> <87iqy8haf8.fsf@macbook.be.48ers.dk>
-	<4810AF87.80602@zin-tech.com>
-From: Peter Korsgaard <jacmet@sunsite.dk>
-Date: Thu, 24 Apr 2008 20:25:41 +0200
-In-Reply-To: <4810AF87.80602@zin-tech.com> (Aaron Sells's message of "Thu\,
-	24 Apr 2008 12\:04\:23 -0400")
-Message-ID: <87bq3z2jq2.fsf@macbook.be.48ers.dk>
+	Fri, 25 Apr 2008 00:45:05 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Sender: Peter Korsgaard <jacmet@gmail.com>
-Cc: sam.d.karp@gmail.com, linuxppc-embedded@ozlabs.org
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C8A618.17197C52"
+Subject: EABI
+Date: Thu, 24 Apr 2008 10:32:57 -0400
+Message-ID: <D3DA1D029B6D214DAA13E79CD073026F0A8DD2@wisrv001.westonlan.com>
+From: "Brian Silverman" <bsilverman@iveia.com>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -35,80 +21,83 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
->>>>> "Aaron" == Aaron Sells <aaron.sells@zin-tech.com> writes:
+This is a multi-part message in MIME format.
 
-Hi,
+------_=_NextPart_001_01C8A618.17197C52
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
- Aaron> I generate the xparameters_ml403.h file using Xilinx's EDK base system
- Aaron> builder wizard.  However, the wizard does not automatically enable the
- Aaron> Cypress device to be interrupt driven.  I have manually done this as
- Aaron> described in the attached patch.
+Is it possible to compile a Linux application using an EABI compiler
+(specfically, Xilinx's EDK powerpc-eabi-gcc.exe)?
+=20
+The issue at hand is that we'd like for our customers to be able to use
+the Xilinx EDK toolchain (which we know they will have) to compile Linx
+apps without having to install another toolchain (crosstool, ELDK, etc).
+=20
+So, what I'm hoping is that the EDK toolchain can be configured to be
+Linux compatible binaries, or that there is some kind of wrapper that
+will handle the incompatible interfaces.  Searching around, I've seen
+some mention of Linux EABI compatibility (for Debian ARM releases), but
+I haven't found any clear concensus...
+=20
+----
+Brian Silverman
+Principal Engineer
+iVeia
+=20
 
- Aaron> The resulting xparameters_ml403.h has the following defines:
+------_=_NextPart_001_01C8A618.17197C52
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
- Aaron> sellsa@SS-SBIR-Ubuntu:~/spacesuit/linux-2.6-xlnx$ cat
- Aaron> arch/ppc/platforms/4xx/xparameters/xparameters_ml403.h | grep USB
- Aaron> /* Definitions for peripheral CYPRESS_USB */
- Aaron> #define XPAR_CYPRESS_USB_PRH0_BASEADDR 0x80800000
- Aaron> #define XPAR_CYPRESS_USB_PRH0_HIGHADDR 0x8080FFFF
- Aaron> #define XPAR_SYSTEM_USB_INT_PIN_MASK 0X000001
- Aaron> #define XPAR_XPS_INTC_0_SYSTEM_USB_INT_PIN_INTR 0
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Dus-ascii">
+<META content=3D"MSHTML 6.00.2900.3314" name=3DGENERATOR></HEAD>
+<BODY>
+<DIV><SPAN class=3D768110114-24042008><FONT face=3DArial size=3D2>Is it =
+possible to=20
+compile a Linux application using an EABI compiler (specfically, =
+Xilinx's EDK=20
+powerpc-eabi-gcc.exe)?</FONT></SPAN></DIV>
+<DIV><SPAN class=3D768110114-24042008><FONT face=3DArial=20
+size=3D2></FONT></SPAN>&nbsp;</DIV>
+<DIV><SPAN class=3D768110114-24042008><FONT face=3DArial size=3D2>The =
+issue at hand is=20
+that&nbsp;we'd like for our customers to be able to use the Xilinx EDK =
+toolchain=20
+(which we know they will have) to compile Linx apps without having to =
+install=20
+another toolchain (crosstool, ELDK, etc).</FONT></SPAN></DIV>
+<DIV><SPAN class=3D768110114-24042008><FONT face=3DArial=20
+size=3D2></FONT></SPAN>&nbsp;</DIV>
+<DIV><SPAN class=3D768110114-24042008><FONT face=3DArial size=3D2>So, =
+what I'm hoping=20
+is that the EDK toolchain can be configured to be Linux compatible =
+binaries, or=20
+that there is some kind of wrapper that will handle the incompatible=20
+interfaces.&nbsp; Searching around, I've seen some mention of Linux EABI =
 
-Ok.
+compatibility (for Debian ARM releases), but I haven't found any clear=20
+concensus...</FONT></SPAN></DIV>
+<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
+<DIV align=3Dleft>
+<DIV align=3Dleft><FONT face=3DArial size=3D2><SPAN =
+class=3D179563815-09112007>
+<DIV><FONT face=3DArial><FONT face=3DVerdana =
+size=3D2>----</FONT></FONT></DIV>
+<DIV><FONT face=3DArial color=3D#000000 size=3D2><STRONG><FONT =
+face=3DVerdana=20
+color=3D#0000ff size=3D3>Brian Silverman<BR></FONT></STRONG><SPAN=20
+style=3D"FONT-SIZE: 12px"><STRONG><FONT color=3D#808080><FONT =
+face=3DVerdana>Principal=20
+Engineer<BR></FONT></STRONG></SPAN></FONT><SPAN><FONT =
+face=3DVerdana><FONT=20
+color=3D#0000ff><STRONG>iVeia</STRONG></FONT></FONT></SPAN></FONT></DIV><=
+/SPAN></FONT></DIV></DIV>
+<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV></BODY></HTML>
 
- Aaron> When I boot the Xilinx ML403 board up, I get the following:
-
- Aaron> [    9.256329] ------------[ cut here ]------------
- Aaron> [    9.260000] Badness at drivers/usb/c67x00/c67x00-ll-hpi.c:244
- Aaron> [    9.260000] NIP: c01b5d6c LR: c01b5d60 CTR: c00170f4
- Aaron> [    9.260000] REGS: c3c19d70 TRAP: 0700   Not tainted
- Aaron> (2.6.24-rc8-xlnx-dirty)
- Aaron> [    9.260000] MSR: 00029030 <EE,ME,IR,DR>  CR: 24000082  XER: 20000073
- Aaron> [    9.260000] TASK = c3c178a0[1] 'swapper' THREAD: c3c18000
- Aaron> [    9.260000] GPR00: 00000001 c3c19e20 c3c178a0 00000000 c032f518
- Aaron> c0372730 27b38fa6 00000001
- Aaron> [    9.260000] GPR08: 00000000 00200200 c3d2b164 c3d2b164 24000082
- Aaron> ffffcd64 c02d4c5c c02d4c6c
- Aaron> [    9.260000] GPR16: c02d4c90 c02d4c98 c02d4ca8 c02d4cd4 c02d4ce8
- Aaron> 00000000 c02d7114 c0370e78
- Aaron> [    9.260000] GPR24: c0360000 c02d4c54 c0330724 00000000 c3d2b148
- Aaron> 00000000 c3d2b140 c0330708
- Aaron> [    9.260000] NIP [c01b5d6c] c67x00_ll_reset+0x48/0x88
- Aaron> [    9.260000] LR [c01b5d60] c67x00_ll_reset+0x3c/0x88
- Aaron> [    9.260000] Call Trace:
- Aaron> [    9.260000] [c3c19e20] [c01b5d60] c67x00_ll_reset+0x3c/0x88 (unreliable)
-
-This is an interrupt timeout. It seems like the interrupt isn't
-correctly connected.
-
- Aaron> Sam, since you have this working, any help would be greatly
- Aaron> appreciated. What else do I need to do in order to get USB host
- Aaron> working on this board?
-
-That should be about it.
- 
- Aaron> +/*
- Aaron> + * Cypress USB C67x00 shortcut macro for single instance
- Aaron> + */
- Aaron> +#define XPAR_C67x00_USB(num) { \
- Aaron> +	.name = "c67x00", \
- Aaron> +	.id = num, \
- Aaron> +	.num_resources = 2, \
- Aaron> +	.resource = (struct resource[]) { \
- Aaron> +		{ \
- Aaron> +			.start	= XPAR_CYPRESS_USB_PRH0_BASEADDR, \
- Aaron> +			.end	= XPAR_CYPRESS_USB_PRH0_BASEADDR + 0xf, \
- Aaron> +			.flags	= IORESOURCE_MEM, \
- Aaron> +		}, \
- Aaron> +		{ \
- Aaron> +			.start  = XPAR_XPS_INTC_0_SYSTEM_USB_INT_PIN_INTR, \
- Aaron> +			.end    = XPAR_XPS_INTC_0_SYSTEM_USB_INT_PIN_INTR, \
- Aaron> +			.flags  = IORESOURCE_IRQ, \
- Aaron> +		}, \
- Aaron> +	}, \
-
-I guess you need to add a few "num" to those defines to make it work
-with multiple devices.
-
--- 
-Bye, Peter Korsgaard
+------_=_NextPart_001_01C8A618.17197C52--
