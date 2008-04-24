@@ -1,17 +1,18 @@
-Return-Path: <michael@ellerman.id.au>
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net (unknown [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id B0DC2DDF2B
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Apr 2008 16:40:27 +1000 (EST)
+Date: Wed, 23 Apr 2008 23:40:26 -0700 (PDT)
+Message-Id: <20080423.234026.193720682.davem@davemloft.net>
+To: michael@ellerman.id.au
 Subject: Re: LMB regression...
-From: Michael Ellerman <michael@ellerman.id.au>
-To: David Miller <davem@davemloft.net>
-In-Reply-To: <20080423.232419.193712136.davem@davemloft.net>
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1209018933.22532.0.camel@concordia.ozlabs.ibm.com>
 References: <20080423.232419.193712136.davem@davemloft.net>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-H0HU0D/UVcp2i6cGTbUH"
-Date: Thu, 24 Apr 2008 16:35:33 +1000
-Message-Id: <1209018933.22532.0.camel@concordia.ozlabs.ibm.com>
+	<1209018933.22532.0.camel@concordia.ozlabs.ibm.com>
 Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
-Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,76 +22,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+From: Michael Ellerman <michael@ellerman.id.au>
+Date: Thu, 24 Apr 2008 16:35:33 +1000
 
---=-H0HU0D/UVcp2i6cGTbUH
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> Sounds like we need a test suite :)
 
-On Wed, 2008-04-23 at 23:24 -0700, David Miller wrote:
-> Paul, I finally got around to testing your changeset on sparc64, it
-> breaks things:
->=20
-> commit d9024df02ffe74d723d97d552f86de3b34beb8cc
-> Author: Paul Mackerras <paulus@samba.org>
-> Date:   Sat Apr 12 15:20:59 2008 +1000
->=20
->     [LMB] Restructure allocation loops to avoid unsigned underflow
->  ...   =20
->=20
-> Specifically, you removed the aligning of the size argument given to
-> lmb_add_region() in the lmb allocators, and that is critical when
-> allocating many small chunks, we run out of LMB slots otherwise
-> and allocations start failing.
->=20
-> I added the alignment there as a bug fix earlier:
->=20
-> commit eea89e13a9c61d3928223d2f9bf2295e22e0efb6
-> Author: David S. Miller <davem@davemloft.net>
-> Date:   Wed Feb 13 16:57:09 2008 -0800
->=20
->     [LMB]: Fix bug in __lmb_alloc_base().
->    =20
->     We need to check lmb_add_region() for errors, it can run out
->     of regions etc.
->    =20
->     Also, the size needs to be padded to the given alignment
->     or else the lmb.reserved regions don't get expanded and
->     instead we get tons of holes and eventually run out of
->     regions prematurely.
->    =20
->     Signed-off-by: David S. Miller <davem@davemloft.net>
->=20
-> Please be more careful in the future :-(
->=20
-> I find it quite ironic that you spent so much time and effort fixing
-> an absolutely totally theoretical bug that nobody was triggering, and
-> in the process reintroduced a real one that triggers immediately on
-> real systems, and that had even been explicitly fixed previously.
+Maybe :-)  Anyways, here is the bug fix I plan to push to
+Linus with my sparc64 NUMA changes, unless someone has an
+objection:
 
-Sounds like we need a test suite :)
+[LMB]: Fix lmb allocation regression.
 
-cheers
+Changeset d9024df02ffe74d723d97d552f86de3b34beb8cc ("[LMB] Restructure
+allocation loops to avoid unsigned underflow") removed the alignment
+of the 'size' argument to call lmb_add_region() done by __lmb_alloc_base().
 
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
+In doing so it reintroduced the bug fixed by changeset
+eea89e13a9c61d3928223d2f9bf2295e22e0efb6 ("[LMB]: Fix bug in
+__lmb_alloc_base().").
 
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
+This puts it back.
 
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
+Signed-off-by: David S. Miller <davem@davemloft.net>
+---
+ lib/lmb.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
---=-H0HU0D/UVcp2i6cGTbUH
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBIECo1dSjSd0sB4dIRAr4DAKClS3pi7RW15+8XOEAyA/wncN6H7ACfZ2L7
-NF7guM3FFMRD4DNScLgU1WU=
-=WQGh
------END PGP SIGNATURE-----
-
---=-H0HU0D/UVcp2i6cGTbUH--
+diff --git a/lib/lmb.c b/lib/lmb.c
+index 896e283..207147a 100644
+--- a/lib/lmb.c
++++ b/lib/lmb.c
+@@ -346,7 +346,7 @@ u64 __init __lmb_alloc_base(u64 size, u64 align, u64 max_addr)
+ 			if (j < 0) {
+ 				/* this area isn't reserved, take it */
+ 				if (lmb_add_region(&lmb.reserved, base,
+-						   size) < 0)
++						   lmb_align_up(size, align)) < 0)
+ 					return 0;
+ 				return base;
+ 			}
+-- 
+1.5.5.1.57.g5909c
