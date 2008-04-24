@@ -2,10 +2,10 @@ Return-Path: <kou.ishizaki@toshiba.co.jp>
 Received: from imx12.toshiba.co.jp (imx12.toshiba.co.jp [61.202.160.132])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 1280ADDEF8
+	by ozlabs.org (Postfix) with ESMTPS id 15D92DDEFC
 	for <linuxppc-dev@ozlabs.org>; Thu, 24 Apr 2008 13:10:42 +1000 (EST)
-Date: Thu, 24 Apr 2008 12:07:22 +0900 (JST)
-Message-Id: <20080424.120722.-1300531374.kouish@swc.toshiba.co.jp>
+Date: Thu, 24 Apr 2008 12:10:20 +0900 (JST)
+Message-Id: <20080424.121020.-1300529737.kouish@swc.toshiba.co.jp>
 To: benh@kernel.crashing.org
 Subject: Re: [PATCH 2/11] cell: generalize io-workarounds code
 In-Reply-To: <1208396890.6958.323.camel@pasglop>
