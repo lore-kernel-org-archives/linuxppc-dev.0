@@ -1,23 +1,21 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.182])
-	by ozlabs.org (Postfix) with ESMTP id E8771DDF13
+Return-Path: <dhlii@picocomputing.net>
+Received: from outbound-mail-125.bluehost.com (outbound-mail-125.bluehost.com
+	[67.222.38.25]) by ozlabs.org (Postfix) with SMTP id D8CE4DDEE7
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 24 Apr 2008 11:10:31 +1000 (EST)
-Received: by py-out-1112.google.com with SMTP id z59so3376949pyg.27
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 23 Apr 2008 18:10:30 -0700 (PDT)
-Subject: Re: [U-Boot-Users] AMCC PPC440EPx/sequoia stability question...
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Stefan Roese <sr@denx.de>
-In-Reply-To: <200804231449.24746.sr@denx.de>
-References: <480EADF4.2020706@verizon.net>  <200804231449.24746.sr@denx.de>
-Content-Type: text/plain
-Date: Wed, 23 Apr 2008 20:10:27 -0500
-Message-Id: <1208999427.2946.8.camel@vader.jdub.homelinux.org>
-Mime-Version: 1.0
-Sender: Josh Boyer <jwboyer@gmail.com>
-Cc: u-boot-users@lists.sourceforge.net, linuxppc-embedded@ozlabs.org
-Reply-To: jwboyer@linux.vnet.ibm.com
+	Thu, 24 Apr 2008 11:56:52 +1000 (EST)
+Message-ID: <480FE762.8060403@picocomputing.net>
+Date: Wed, 23 Apr 2008 21:50:26 -0400
+From: "David H. Lynch Jr." <dhlii@picocomputing.net>
+MIME-Version: 1.0
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: simpleboot
+References: <480F8148.8090906@picocomputing.net>	
+	<fa686aa40804231149j344a4cc5iaf15ac12828146f7@mail.gmail.com>	
+	<480F917F.8040809@picocomputing.net>
+	<fa686aa40804231248s162479d9o530051d3c88da471@mail.gmail.com>
+In-Reply-To: <fa686aa40804231248s162479d9o530051d3c88da471@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -28,19 +26,37 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2008-04-23 at 14:49 +0200, Stefan Roese wrote:
-> On Wednesday 23 April 2008, Dave Littell wrote:
-> > At this point all possibilities are on the table and I'm looking for any
-> > input from anyone with experience (good, bad, or whatever) with this
-> > processor and/or designs similar to the Sequoia.
-> 
-> If you scan the U-Boot mailing list for 440EPx/Denali DDR2 problems, you will 
-> most likely find some references.
-> 
-> Please note that I recently introduced a CFG_MEM_TOP_HIDE option for the 
-> 440EPx CHIP 11 errata. I suggest you take a look at this too and see if this 
-> changes your behavior.
+Grant Likely wrote:
+> Its whatever kind of image you pass it.
+>
+>   
+The simpleboot stuff must have hit Linux's tree today.
+I synced with it.
+created an arch/powerpc/boot/dts/pico_e1x.dts that is probably fouled up
+- but that is a problem for later.
 
-Explain this a bit more please?  Is a kernel change needed here?
+did:
+make -f Makefile ARCH=powerpc   CROSS_COMPILE=powerpc-linux-uclibc-
+simpleImage.pico_e1x
 
-josh
+had to deal with a few different config options and then got:
+
+make[1]: Entering directory `/usr/src/linux-2.6.pico'
+make[1]: *** No rule to make target `simpleImage.pico_e1x'.  Stop.
+make[1]: Leaving directory `/usr/src/linux-2.6.pico'
+make: *** [release] Error 2
+
+So how does the top level Makefile know about  the simpeImage.% target
+in  arch/powerpc/boot ?
+
+
+
+
+
+
+-- 
+Dave Lynch                                          Pico Computing, Inc.
+Software Development                                      Embedded Linux
+717.627.3770      dhlii@picocomputing.net   http://www.picocomputing.com
+fax: 1.253.369.9244                                 Cell: 1.717.587.7774
+Tiny Mighty Machines
