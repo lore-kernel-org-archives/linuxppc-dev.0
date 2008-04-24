@@ -1,18 +1,20 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 762EEDDF15
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Apr 2008 17:01:34 +1000 (EST)
-Date: Thu, 24 Apr 2008 00:01:31 -0700 (PDT)
-Message-Id: <20080424.000131.193689574.davem@davemloft.net>
-To: paulus@samba.org
-Subject: Re: LMB regression...
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <18448.12058.743037.267216@cargo.ozlabs.ibm.com>
-References: <20080423.232419.193712136.davem@davemloft.net>
-	<18448.12058.743037.267216@cargo.ozlabs.ibm.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 6E667DDEDD
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Apr 2008 17:19:04 +1000 (EST)
+Subject: Re: [RFC][WIP][PATCH] Add IRQSTACKS to ppc32
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <Pine.LNX.4.64.0804240034160.23185@blarg.am.freescale.net>
+References: <Pine.LNX.4.64.0804240034160.23185@blarg.am.freescale.net>
+Content-Type: text/plain
+Date: Thu, 24 Apr 2008 17:18:57 +1000
+Message-Id: <1209021537.9060.156.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
 Cc: linuxppc-dev@ozlabs.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,18 +24,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Paul Mackerras <paulus@samba.org>
-Date: Thu, 24 Apr 2008 16:56:26 +1000
 
-> David Miller writes:
-> 
-> > Specifically, you removed the aligning of the size argument given to
-> > lmb_add_region() in the lmb allocators, and that is critical when
-> > allocating many small chunks, we run out of LMB slots otherwise
-> > and allocations start failing.
-> 
-> Sorry.  It's still there in lmb_alloc_nid_unreserved but I lost the
-> one in __lmb_alloc_base.  Are you going to send a fix to Linus, or
-> will I include it in the pull request I'm going to send tomorrow?
+On Thu, 2008-04-24 at 00:37 -0500, Kumar Gala wrote:
+> +       /*
+> +        * interrupt stacks must be under 256MB, we cannot afford to
+> take
+> +        * SLB misses on them.
+> +        */
+> +       for_each_possible_cpu(i) {
+> +               softirq_ctx[i] = (struct thread_info *)
+> +                       __va(lmb_alloc_base(THREAD_SIZE,
+> +                                           THREAD_SIZE, 0x10000000));
+> +               hardirq_ctx[i] = (struct thread_info *)
+> +                       __va(lmb_alloc_base(THREAD_SIZE,
+> +                                           THREAD_SIZE, 0x10000000));
+> +       }
+> +
 
-I've got it, see my other email.
+The comment is a bit bogus :-) (about SLB misses). lowmem is your limit
+I think. Also, why not share the code with ppc64 ?
+
+Ben.
