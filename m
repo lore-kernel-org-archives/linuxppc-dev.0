@@ -1,20 +1,21 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 031F0DE54E
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Apr 2008 23:00:04 +1000 (EST)
-Message-Id: <43F83C6F-D84B-4626-8974-9BCEDF03194E@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: benh@kernel.crashing.org
-In-Reply-To: <1209021537.9060.156.camel@pasglop>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: [RFC][WIP][PATCH] Add IRQSTACKS to ppc32
-Date: Thu, 24 Apr 2008 07:59:55 -0500
-References: <Pine.LNX.4.64.0804240034160.23185@blarg.am.freescale.net>
-	<1209021537.9060.156.camel@pasglop>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <olaf@aepfle.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 1A605DE3A9
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Apr 2008 23:16:06 +1000 (EST)
+Date: Thu, 24 Apr 2008 15:16:00 +0200
+From: Olaf Hering <olaf@aepfle.de>
+To: Paul Mackerras <paulus@samba.org>
+Subject: [PATCH v5] create modalias file in sysfs for bus of_platform
+Message-ID: <20080424131600.GA15226@aepfle.de>
+References: <20080122142109.GA12967@aepfle.de>
+	<20080122144053.GA13019@aepfle.de>
+	<20080122190939.GA14124@aepfle.de>
+	<18330.32110.449914.354218@cargo.ozlabs.ibm.com>
+	<20080126100427.GA1162@aepfle.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20080126100427.GA1162@aepfle.de>
+Cc: sparclinux@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,32 +25,138 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Create /sys/bus/of_platform/devices/*/modalias file to allow autoloading
+of modules. modalias files are already present for many other bus types.
+This adds also a newline to the devspec files.
 
-On Apr 24, 2008, at 2:18 AM, Benjamin Herrenschmidt wrote:
->
-> On Thu, 2008-04-24 at 00:37 -0500, Kumar Gala wrote:
->> +       /*
->> +        * interrupt stacks must be under 256MB, we cannot afford to
->> take
->> +        * SLB misses on them.
->> +        */
->> +       for_each_possible_cpu(i) {
->> +               softirq_ctx[i] = (struct thread_info *)
->> +                       __va(lmb_alloc_base(THREAD_SIZE,
->> +                                           THREAD_SIZE,  
->> 0x10000000));
->> +               hardirq_ctx[i] = (struct thread_info *)
->> +                       __va(lmb_alloc_base(THREAD_SIZE,
->> +                                           THREAD_SIZE,  
->> 0x10000000));
->> +       }
->> +
->
-> The comment is a bit bogus :-) (about SLB misses). lowmem is your  
-> limit
-> I think. Also, why not share the code with ppc64 ?
+Also create a devspec file for mac-io devices. They were created as a side
+effect. Use correct buffer size for mac-io modalias buffer.
 
-I'm going to change it to be just lmb_alloc() so it will be difficult  
-to share with ppc64 (other than w/an ifdef).
+Tested on iBook1 and Efika.
 
-- k
+Signed-off-by: Olaf Hering <olaf@aepfle.de>
+
+---
+ drivers/macintosh/macio_sysfs.c |   12 +++++++++++-
+ drivers/of/device.c             |   36 ++++++++++++++++++++----------------
+ drivers/of/platform.c           |    3 +++
+ 3 files changed, 34 insertions(+), 17 deletions(-)
+
+--- a/drivers/macintosh/macio_sysfs.c
++++ b/drivers/macintosh/macio_sysfs.c
+@@ -44,7 +44,7 @@ static ssize_t modalias_show (struct dev
+ 	struct of_device *ofdev = to_of_device(dev);
+ 	int len;
+ 
+-	len = of_device_get_modalias(ofdev, buf, PAGE_SIZE);
++	len = of_device_get_modalias(ofdev, buf, PAGE_SIZE - 2);
+ 
+ 	buf[len] = '\n';
+ 	buf[len+1] = 0;
+@@ -52,6 +52,15 @@ static ssize_t modalias_show (struct dev
+ 	return len+1;
+ }
+ 
++static ssize_t devspec_show(struct device *dev,
++				struct device_attribute *attr, char *buf)
++{
++	struct of_device *ofdev;
++
++	ofdev = to_of_device(dev);
++	return sprintf(buf, "%s\n", ofdev->node->full_name);
++}
++
+ macio_config_of_attr (name, "%s\n");
+ macio_config_of_attr (type, "%s\n");
+ 
+@@ -60,5 +69,6 @@ struct device_attribute macio_dev_attrs[
+ 	__ATTR_RO(type),
+ 	__ATTR_RO(compatible),
+ 	__ATTR_RO(modalias),
++	__ATTR_RO(devspec),
+ 	__ATTR_NULL
+ };
+--- a/drivers/of/device.c
++++ b/drivers/of/device.c
+@@ -48,16 +48,32 @@ void of_dev_put(struct of_device *dev)
+ }
+ EXPORT_SYMBOL(of_dev_put);
+ 
+-static ssize_t dev_show_devspec(struct device *dev,
++static ssize_t devspec_show(struct device *dev,
+ 				struct device_attribute *attr, char *buf)
+ {
+ 	struct of_device *ofdev;
+ 
+ 	ofdev = to_of_device(dev);
+-	return sprintf(buf, "%s", ofdev->node->full_name);
++	return sprintf(buf, "%s\n", ofdev->node->full_name);
+ }
+ 
+-static DEVICE_ATTR(devspec, S_IRUGO, dev_show_devspec, NULL);
++static ssize_t modalias_show(struct device *dev,
++				struct device_attribute *attr, char *buf)
++{
++	struct of_device *ofdev = to_of_device(dev);
++	ssize_t len = 0;
++
++	len = of_device_get_modalias(ofdev, buf, PAGE_SIZE - 2);
++	buf[len] = '\n';
++	buf[len+1] = 0;
++	return len+1;
++}
++
++struct device_attribute of_platform_device_attrs[] = {
++	__ATTR_RO(devspec),
++	__ATTR_RO(modalias),
++	__ATTR_NULL
++};
+ 
+ /**
+  * of_release_dev - free an of device structure when all users of it are finished.
+@@ -78,25 +94,13 @@ EXPORT_SYMBOL(of_release_dev);
+ 
+ int of_device_register(struct of_device *ofdev)
+ {
+-	int rc;
+-
+ 	BUG_ON(ofdev->node == NULL);
+-
+-	rc = device_register(&ofdev->dev);
+-	if (rc)
+-		return rc;
+-
+-	rc = device_create_file(&ofdev->dev, &dev_attr_devspec);
+-	if (rc)
+-		device_unregister(&ofdev->dev);
+-
+-	return rc;
++	return device_register(&ofdev->dev);
+ }
+ EXPORT_SYMBOL(of_device_register);
+ 
+ void of_device_unregister(struct of_device *ofdev)
+ {
+-	device_remove_file(&ofdev->dev, &dev_attr_devspec);
+ 	device_unregister(&ofdev->dev);
+ }
+ EXPORT_SYMBOL(of_device_unregister);
+--- a/drivers/of/platform.c
++++ b/drivers/of/platform.c
+@@ -17,6 +17,8 @@
+ #include <linux/of_device.h>
+ #include <linux/of_platform.h>
+ 
++extern struct device_attribute of_platform_device_attrs[];
++
+ static int of_platform_bus_match(struct device *dev, struct device_driver *drv)
+ {
+ 	struct of_device *of_dev = to_of_device(dev);
+@@ -103,6 +105,7 @@ int of_bus_type_init(struct bus_type *bu
+ 	bus->suspend = of_platform_device_suspend;
+ 	bus->resume = of_platform_device_resume;
+ 	bus->shutdown = of_platform_device_shutdown;
++	bus->dev_attrs = of_platform_device_attrs;
+ 	return bus_register(bus);
+ }
+ 
