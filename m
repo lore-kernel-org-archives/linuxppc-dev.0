@@ -2,22 +2,20 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 7204FDDEEA
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Apr 2008 10:42:42 +1000 (EST)
-Subject: Re: [PATCH 2/2 v2] mpic_u3msi: mpic_u3msi: failed allocation unnoticed
+	by ozlabs.org (Postfix) with ESMTPS id C930ADDED6
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Apr 2008 10:44:43 +1000 (EST)
+Subject: Re: new warnings from stacktrace patch
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: michael@ellerman.id.au
-In-Reply-To: <1208993783.9245.10.camel@concordia.ozlabs.ibm.com>
-References: <480F6905.3070808@tiscali.nl> <480F8754.7000200@tiscali.nl>
-	<df21920e067e73985f73047e2d8bcbda@kernel.crashing.org>
-	<480FB766.1040405@tiscali.nl>
-	<1208993783.9245.10.camel@concordia.ozlabs.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Date: Thu, 24 Apr 2008 10:42:29 +1000
-Message-Id: <1208997749.9060.77.camel@pasglop>
+To: Christoph Hellwig <hch@lst.de>
+In-Reply-To: <20080423143229.GA18667@lst.de>
+References: <20080423175938.a4b3cc26.sfr@canb.auug.org.au>
+	<20080423143229.GA18667@lst.de>
+Content-Type: text/plain
+Date: Thu, 24 Apr 2008 10:44:21 +1000
+Message-Id: <1208997861.9060.79.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Roel Kluin <12o3l@tiscali.nl>,
-	lkml <linux-kernel@vger.kernel.org>, paulus@samba.org
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Paul Mackerras <paulus@samba.org>,
+	ppc-dev <linuxppc-dev@ozlabs.org>
 Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -29,24 +27,34 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Thu, 2008-04-24 at 09:36 +1000, Michael Ellerman wrote:
+On Wed, 2008-04-23 at 16:32 +0200, Christoph Hellwig wrote:
+> On Wed, Apr 23, 2008 at 05:59:38PM +1000, Stephen Rothwell wrote:
+> > This is from commit fd3e0bbc6052ca9747a5332b382584ece83aab6d ("[POWERPC]
+> > Stacktrace support for lockdep").  We don't include asm-offsets.h in any
+> > other C file in the powerpc build.
 > 
-> I think the real bug is that we're using irq_hw_number_t to represent
-> something which isn't. At the end of the day we have to stash the
-> hwirq
-> into the MSI message data, which is a u32.
+> I think the include can be safely removed.
+
+Yup. It's a leftover from before I fixed up some stuff in ptrace.h
+
 > 
-> I guess we could imagine a driver that does something magic to allow
-> it
-> to put something bigger than a u32 in the MSI message, but I doubt it.
-> 
-> So I think ﻿mpic_msi_alloc_hwirqs() should return a long, which allows
-> it to return a full u32 plus the negative error values.
+> Signed-off-by: Christoph Hellwig <hch@lst.de>
 
-Until it's used on 32 bits...
+Ack.
 
-Make it return an int error code and pass the hwirq elsewhere or use the
-"illegal" hwirq number (each PIC defines one) as the error return.
-
-Cheers,
-Ben.
+> Index: linux-2.6/arch/powerpc/kernel/stacktrace.c
+> ===================================================================
+> --- linux-2.6.orig/arch/powerpc/kernel/stacktrace.c	2008-04-23 15:28:05.000000000 +0200
+> +++ linux-2.6/arch/powerpc/kernel/stacktrace.c	2008-04-23 15:28:16.000000000 +0200
+> @@ -13,7 +13,6 @@
+>  #include <linux/sched.h>
+>  #include <linux/stacktrace.h>
+>  #include <asm/ptrace.h>
+> -#include <asm/asm-offsets.h>
+>  
+>  /*
+>   * Save stack-backtrace addresses into a stack_trace buffer.
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
