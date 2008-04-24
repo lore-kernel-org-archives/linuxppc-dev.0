@@ -1,19 +1,23 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
-	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id 9D3AEDE6A5
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Apr 2008 01:31:49 +1000 (EST)
-Received: from vixen.sonytel.be (piraat.sonytel.be [43.221.60.197])
-	by vervifontaine.sonycom.com (Postfix) with ESMTP id A10E658AE0
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Apr 2008 17:31:40 +0200 (MEST)
-Date: Thu, 24 Apr 2008 17:31:40 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Linux/PPC Development <linuxppc-dev@ozlabs.org>
-Subject: Memory corruption
-Message-ID: <Pine.LNX.4.64.0804241717510.16220@vixen.sonytel.be>
+Return-Path: <sha@pengutronix.de>
+Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
+	[83.236.181.26]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id A0240DE0F7
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Apr 2008 01:34:39 +1000 (EST)
+Received: from kiwi.ptxnet.pengutronix.de ([10.1.0.84])
+	by metis.extern.pengutronix.de with esmtp (Exim 4.63)
+	(envelope-from <sha@pengutronix.de>) id 1Jp3T0-0005g1-Cj
+	for linuxppc-dev@ozlabs.org; Thu, 24 Apr 2008 17:34:34 +0200
+Received: from sha by kiwi.ptxnet.pengutronix.de with local (Exim 4.69)
+	(envelope-from <sha@pengutronix.de>) id 1Jp3VL-0002em-Uh
+	for linuxppc-dev@ozlabs.org; Thu, 24 Apr 2008 17:36:59 +0200
+Date: Thu, 24 Apr 2008 17:36:59 +0200
+From: Sascha Hauer <s.hauer@pengutronix.de>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] add gpiolib support for mpc5200
+Message-ID: <20080424153659.GJ6692@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED;
-	BOUNDARY="-584349381-1687256500-1209051100=:16220"
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,109 +27,468 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Hi all,
 
----584349381-1687256500-1209051100=:16220
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Feel free to comment on this.
 
-	Hi,
+Sascha
 
-I saw some random lockups on my PS3, so I decided to give the current kernel a
-try on the PS3 development tool.  It crashes when setting up the network:
 
-| <5>Sending DHCP requests ., OK
-| IP-Config: Got DHCP answer from 192.168.106.200, my address is 192.168.106.196
-| IP-Config: Complete:
-|      device=eth0, addr=192.168.106.196, mask=255.255.255.0, gw=192.168.106.254,
-|      host=192.168.106.196, domain=sonytel.be, nis-domain=(none),
-|      bootserver=192.168.106.200, rootserver=192.168.106.200, rootpath=/disk-02/ps3linux/debian-powerpc
-| <5>Looking up port of RPC 100003/2 on 192.168.106.200
-| <0>Unrecoverable FP Unavailable Exception 800 at c000000000305220
-| Oops: Unrecoverable FP Unavailable Exception, sig: 6 [#1]
-| SMP NR_CPUS=2 PS3
-| Modules linked in:
-| NIP: c000000000305220 LR: c000000000304d34 CTR: c0000000003051c0
-| REGS: c00000000604aa70 TRAP: 0800   Not tainted  (2.6.25-03562-g3dc5063-dirty)
-| MSR: 8000000000008032 <EE,IR,DR>  CR: 24004082  XER: 00000000
-| TASK = c000000006046040[1] 'swapper' THREAD: c000000006048000 CPU: 0
-| <6>GPR00: 0000000000000800 c00000000604acf0 c000000000603a88 c000000006262680 
-| <6>GPR04: 0662160400000002 0000000000004000 c0000000064a4110 c00000000062eda8 
-| <6>GPR08: c0000000061a6000 0000000000000001 0000000000000100 c0000000062bf880 
-| <6>GPR12: 0000001100000000 c000000000548300 0000000000000000 0000000000000000 
-| <6>GPR16: 0000000000000000 000000000000005c 0000000000000000 000000000000005c 
-| <6>GPR20: c0000000063a9db8 00000000c0a86ac8 0000000000000000 c0000000063a9d08 
-| <6>GPR24: 0000000000000040 0000000000004000 c0000000063a9b80 c000000006391e00 
-| <6>GPR28: c0000000064a4020 c000000006262680 c0000000005ae478 c00000000604acf0 
-| NIP [c000000000305220] .ip_output+0x60/0x8c
-| LR [c000000000304d34] .ip_local_out+0x50/0x78
-| Call Trace:
-| [c00000000604acf0] [c00000000604ada0] 0xc00000000604ada0 (unreliable)
-| [c00000000604ad70] [c000000000304d34] .ip_local_out+0x50/0x78
-| [c00000000604ae00] [c0000000003050c0] .ip_push_pending_frames+0x364/0x410
-| [c00000000604aeb0] [c000000000326a60] .udp_push_pending_frames+0x350/0x408
-| [c00000000604af70] [c000000000328048] .udp_sendmsg+0x4c4/0x630
-| [c00000000604b0d0] [c0000000003306e4] .inet_sendmsg+0x84/0xb0
-| [c00000000604b170] [c0000000002cd430] .sock_sendmsg+0xc4/0x108
-| [c00000000604b370] [c0000000002ceed8] .kernel_sendmsg+0x40/0x64
-| [c00000000604b400] [c00000000038cc1c] .xs_send_kvec+0xc8/0x100
-| [c00000000604b510] [c00000000038cd10] .xs_sendpages+0xbc/0x2f4
-| [c00000000604b5e0] [c00000000038ed38] .xs_udp_send_request+0x60/0x148
-| [c00000000604b680] [c00000000038b1b8] .xprt_transmit+0x144/0x27c
-| [c00000000604b730] [c00000000038776c] .call_transmit+0x248/0x2b0
-| [c00000000604b7d0] [c000000000390a68] .__rpc_execute+0xd8/0x314
-| [c00000000604b870] [c000000000390d18] .rpc_execute+0x40/0x5c
-| [c00000000604b900] [c000000000387fe8] .rpc_run_task+0x84/0xb0
-| [c00000000604b9a0] [c00000000038814c] .rpc_call_sync+0x74/0xc0
-| [c00000000604ba70] [c00000000039a568] .rpcb_getport_sync+0x110/0x178
-| [c00000000604bb80] [c000000000511118] .root_nfs_getport+0x8c/0xbc
-| [c00000000604bc30] [c0000000005112f0] .nfs_root_data+0x1a8/0x328
-| [c00000000604bd70] [c0000000004f66a8] .mount_root+0x40/0x150
-| [c00000000604be10] [c0000000004f695c] .prepare_namespace+0x1a4/0x1f4
-| [c00000000604bea0] [c0000000004f5a48] .kernel_init+0x388/0x3c8
-| [c00000000604bf90] [c0000000000229c8] .kernel_thread+0x4c/0x68
-| Instruction dump:
-| e9230028 e8fe8018 7c000026 54001ffe e9090018 78001f24 7d27002a 38000800 
-| 7d2948f8 7d6b482a e92b0058 39290001 <c0000000> 00546e70 f9030020 4bfff775 
-                                       ^^^^^^^^  ^^^^^^^^
-			     should be f92b0058  b003007e
+This patch adds gpiolib support for mpc5200 SOCs. I'm not sure
+whether it's a good idea to make this optional via kconfig.
+The gpt devices only support a single gpio. In the current of_gpio
+implementation each chip consumes 32 GPIOs which leads to huge
+gaps.
 
-| <4>---[ end trace c7cf3d9b6c787395 ]---
-| <0>Kernel panic - not syncing: Attempted to kill init!
-| smp_call_function on cpu 0: other cpus not responding (0)
-| 
-|    System does not reboot automatically.
-|    Please press POWER button.
-| 
-| <7>eth0: no IPv6 routers present
+Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
 
-Findings:
-  - Disabling CONFIG_INET fixed the problem.
-  - I didn't manage to lock up my PS3 afterwards neither.
-    But... while typing this, I saw an oops accessing address
-    0xf000f000f0007000 somewhere in the networking code, so it looks like some
-    corruption is going on after all.
-  - Upon closer look, 8 bytes in the instruction dump above are not correct
-    and have been overwritten with 0xc000000000546e70, which is the address of
-    init_task.
+---
+ arch/powerpc/platforms/52xx/Kconfig        |    6 
+ arch/powerpc/platforms/52xx/Makefile       |    2 
+ arch/powerpc/platforms/52xx/mpc52xx_gpio.c |  408 +++++++++++++++++++++++++++++
+ 3 files changed, 416 insertions(+)
 
-With kind regards,
+Index: arch/powerpc/platforms/52xx/mpc52xx_gpio.c
+===================================================================
+--- /dev/null
++++ b/arch/powerpc/platforms/52xx/mpc52xx_gpio.c
+@@ -0,0 +1,408 @@
++/*
++ * MPC52xx gpio driver
++ *
++ * Copyright (c) 2008 Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2
++ * as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
++ */
++
++#include <linux/of.h>
++#include <linux/kernel.h>
++#include <linux/of_gpio.h>
++#include <linux/io.h>
++#include <asm/of_platform.h>
++#include <asm/prom.h>
++#include <asm/gpio.h>
++#include <asm/mpc52xx.h>
++#include <sysdev/fsl_soc.h>
++
++static DEFINE_SPINLOCK(gpio_lock);
++
++/*
++ * GPIO LIB API implementation for wakeup GPIOs.
++ *
++ * There's a maximum of 8 wakeup GPIOs. Which of these are available
++ * for use depends on your board setup.
++ *
++ * 0 -> GPIO_WKUP_7
++ * 1 -> GPIO_WKUP_6
++ * 2 -> PSC6_1
++ * 3 -> PSC6_0
++ * 4 -> ETH_17
++ * 5 -> PSC3_9
++ * 6 -> PSC2_4
++ * 7 -> PSC1_4
++ *
++ */
++static int mpc52xx_wkup_gpio_get(struct gpio_chip *gc, unsigned int gpio)
++{
++	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
++	struct mpc52xx_gpio_wkup __iomem *regs = mm_gc->regs;
++	unsigned int ret;
++
++	ret = (in_8(&regs->wkup_ival) >> (7 - gpio)) & 1;
++
++	pr_debug("%s: gpio: %d ret: %d\n", __func__, gpio, ret);
++
++	return ret;
++}
++
++static void mpc52xx_wkup_gpio_set(struct gpio_chip *gc, unsigned int gpio, int val)
++{
++	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
++	struct mpc52xx_gpio_wkup __iomem *regs = mm_gc->regs;
++	unsigned int tmp;
++	unsigned long flags;
++
++	spin_lock_irqsave(&gpio_lock, flags);
++
++	tmp = in_8(&regs->wkup_dvo);
++	if (val)
++		tmp |= 1 << (7 - gpio);
++	else
++		tmp &= ~(1 << (7 - gpio));
++	out_8(&regs->wkup_dvo, tmp);
++
++	spin_unlock_irqrestore(&gpio_lock, flags);
++
++	pr_debug("%s: gpio: %d val: %d\n", __func__, gpio, val);
++}
++
++static int mpc52xx_wkup_gpio_dir_in(struct gpio_chip *gc, unsigned int gpio)
++{
++	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
++	struct mpc52xx_gpio_wkup *regs = mm_gc->regs;
++	unsigned int tmp;
++	unsigned long flags;
++
++	spin_lock_irqsave(&gpio_lock, flags);
++
++	tmp = in_8(&regs->wkup_ddr);
++	tmp &= ~(1 << (7 - gpio));
++	out_8(&regs->wkup_ddr, tmp);
++
++	spin_unlock_irqrestore(&gpio_lock, flags);
++
++	return 0;
++}
++
++static int mpc52xx_wkup_gpio_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
++{
++	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
++	struct mpc52xx_gpio_wkup *regs = mm_gc->regs;
++	unsigned int tmp;
++	unsigned long flags;
++
++	/* First set initial value */
++	mpc52xx_wkup_gpio_set(gc, gpio, val);
++
++	spin_lock_irqsave(&gpio_lock, flags);
++
++	/* Then set direction */
++	tmp = in_8(&regs->wkup_ddr);
++	tmp |= 1 << (7 - gpio);
++	out_8(&regs->wkup_ddr, tmp);
++
++	/* Finally enable the pin */
++	tmp = in_8(&regs->wkup_gpioe);
++	tmp |= 1 << (7 - gpio);
++	out_8(&regs->wkup_gpioe, tmp);
++
++	spin_unlock_irqrestore(&gpio_lock, flags);
++
++	pr_debug("%s: gpio: %d val: %d\n", __func__, gpio, val);
++
++	return 0;
++}
++
++static int __devinit mpc52xx_wkup_gpiochip_probe(struct of_device *ofdev,
++                                    const struct of_device_id *match)
++{
++	struct of_mm_gpio_chip *mmchip;
++	struct of_gpio_chip *chip;
++
++	mmchip = kzalloc(sizeof(*mmchip), GFP_KERNEL);
++	if (!mmchip)
++		return -ENOMEM;
++
++	chip = &mmchip->of_gc;
++
++	chip->gpio_cells          = 2;
++	chip->gc.ngpio            = 8;
++	chip->gc.direction_input  = mpc52xx_wkup_gpio_dir_in;
++	chip->gc.direction_output = mpc52xx_wkup_gpio_dir_out;
++	chip->gc.get              = mpc52xx_wkup_gpio_get;
++	chip->gc.set              = mpc52xx_wkup_gpio_set;
++
++	return of_mm_gpiochip_add(ofdev->node, mmchip);
++}
++
++static int mpc52xx_gpiochip_remove(struct of_device *ofdev)
++{
++	return -EBUSY;
++}
++
++static struct of_device_id mpc52xx_wkup_gpiochip_match[] = {
++	{
++		.compatible = "fsl,mpc5200-gpio-wkup",
++	},
++	{}
++};
++
++static struct of_platform_driver mpc52xx_wkup_gpiochip_driver = {
++	.name = "gpio_wkup",
++	.match_table = mpc52xx_wkup_gpiochip_match,
++	.probe = mpc52xx_wkup_gpiochip_probe,
++	.remove = mpc52xx_gpiochip_remove,
++};
++
++/*
++ * GPIO LIB API implementation for simple GPIOs
++ *
++ * There's a maximum of 32 simple GPIOs. Which of these are available
++ * for use depends on your board setup.
++ * The numbering reflects the bit numbering in the port registers:
++ *
++ *  0..1  > reserved
++ *  2..3  > IRDA
++ *  4..7  > ETHR
++ *  8..11 > reserved
++ * 12..15 > USB
++ * 16..17 > reserved
++ * 18..23 > PSC3
++ * 24..27 > PSC2
++ * 28..31 > PSC1
++ */
++static int mpc52xx_simple_gpio_get(struct gpio_chip *gc, unsigned int gpio)
++{
++	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
++	struct mpc52xx_gpio __iomem *regs = mm_gc->regs;
++	unsigned int ret;
++
++	ret = (in_be32(&regs->simple_ival) >> (31 - gpio)) & 1;
++
++	return ret;
++}
++
++static void mpc52xx_simple_gpio_set(struct gpio_chip *gc, unsigned int gpio, int val)
++{
++	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
++	struct mpc52xx_gpio __iomem *regs = mm_gc->regs;
++	unsigned int tmp;
++	unsigned long flags;
++
++	spin_lock_irqsave(&gpio_lock, flags);
++
++	tmp = in_be32(&regs->simple_dvo);
++	if (val)
++		tmp |= 1 << (31 - gpio);
++	else
++		tmp &= ~(1 << (31 - gpio));
++	out_be32(&regs->simple_dvo, tmp);
++
++	spin_unlock_irqrestore(&gpio_lock, flags);
++
++	pr_debug("%s: gpio: %d val: %d\n", __func__, gpio, val);
++}
++
++static int mpc52xx_simple_gpio_dir_in(struct gpio_chip *gc, unsigned int gpio)
++{
++	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
++	struct mpc52xx_gpio *regs = mm_gc->regs;
++	unsigned int tmp;
++	unsigned long flags;
++
++	spin_lock_irqsave(&gpio_lock, flags);
++
++	tmp = in_be32(&regs->simple_ddr);
++	tmp &= ~(1 << (31 - gpio));
++	out_be32(&regs->simple_ddr, tmp);
++
++	spin_unlock_irqrestore(&gpio_lock, flags);
++
++	return 0;
++}
++
++static int mpc52xx_simple_gpio_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
++{
++	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
++	struct mpc52xx_gpio *regs = mm_gc->regs;
++	unsigned int tmp;
++	unsigned long flags;
++
++	/* First set initial value */
++	mpc52xx_simple_gpio_set(gc, gpio, val);
++
++	spin_lock_irqsave(&gpio_lock, flags);
++
++	/* Then set direction */
++	tmp = in_be32(&regs->simple_ddr);
++	tmp |= 1 << (31 - gpio);
++	out_be32(&regs->simple_ddr, tmp);
++
++	/* Finally enable the pin */
++	tmp = in_be32(&regs->simple_gpioe);
++	tmp |= 1 << (31 - gpio);
++	out_be32(&regs->simple_gpioe, tmp);
++
++	spin_unlock_irqrestore(&gpio_lock, flags);
++
++	pr_debug("%s: gpio: %d val: %d\n", __func__, gpio, val);
++
++	return 0;
++}
++
++static int __devinit mpc52xx_simple_gpiochip_probe(struct of_device *ofdev,
++                                    const struct of_device_id *match)
++{
++	struct of_mm_gpio_chip *mmchip;
++	struct of_gpio_chip *chip;
++
++	mmchip = kzalloc(sizeof(*mmchip), GFP_KERNEL);
++	if (!mmchip)
++		return -ENOMEM;
++
++	chip = &mmchip->of_gc;
++
++	chip->gpio_cells          = 2;
++	chip->gc.ngpio            = 32;
++	chip->gc.direction_input  = mpc52xx_simple_gpio_dir_in;
++	chip->gc.direction_output = mpc52xx_simple_gpio_dir_out;
++	chip->gc.get              = mpc52xx_simple_gpio_get;
++	chip->gc.set              = mpc52xx_simple_gpio_set;
++
++	return of_mm_gpiochip_add(ofdev->node, mmchip);
++}
++
++static struct of_device_id mpc52xx_simple_gpiochip_match[] = {
++	{
++		.compatible = "fsl,mpc5200-gpio",
++	},
++	{}
++};
++
++static struct of_platform_driver mpc52xx_simple_gpiochip_driver = {
++	.name = "gpio",
++	.match_table = mpc52xx_simple_gpiochip_match,
++	.probe = mpc52xx_simple_gpiochip_probe,
++	.remove = mpc52xx_gpiochip_remove,
++};
++
++/*
++ * GPIO LIB API implementation for gpt GPIOs.
++ *
++ * Each gpt only has a single GPIO.
++ */
++static int mpc52xx_gpt_gpio_get(struct gpio_chip *gc, unsigned int gpio)
++{
++	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
++	struct mpc52xx_gpt __iomem *regs = mm_gc->regs;
++	unsigned int ret;
++
++	return (in_be32(&regs->status) & (1 << (31 - 23))) ? 1 : 0;
++
++	return ret;
++}
++
++static void mpc52xx_gpt_gpio_set(struct gpio_chip *gc, unsigned int gpio, int val)
++{
++	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
++	struct mpc52xx_gpt __iomem *regs = mm_gc->regs;
++
++	if (val)
++		out_be32(&regs->mode, 0x34);
++	else
++		out_be32(&regs->mode, 0x24);
++
++	pr_debug("%s: gpio: %d val: %d\n", __func__, gpio, val);
++}
++
++static int mpc52xx_gpt_gpio_dir_in(struct gpio_chip *gc, unsigned int gpio)
++{
++	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
++	struct mpc52xx_gpt *regs = mm_gc->regs;
++
++	out_be32(&regs->mode, 0x04);
++
++	return 0;
++}
++
++static int mpc52xx_gpt_gpio_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
++{
++	mpc52xx_gpt_gpio_set(gc, gpio, val);
++	pr_debug("%s: gpio: %d val: %d\n", __func__, gpio, val);
++
++	return 0;
++}
++
++static int __devinit mpc52xx_gpt_gpiochip_probe(struct of_device *ofdev,
++                                    const struct of_device_id *match)
++{
++	struct of_mm_gpio_chip *mmchip;
++	struct of_gpio_chip *chip;
++
++	mmchip = kzalloc(sizeof(*mmchip), GFP_KERNEL);
++	if (!mmchip)
++		return -ENOMEM;
++
++	chip = &mmchip->of_gc;
++
++	chip->gpio_cells          = 2;
++	chip->gc.ngpio            = 1;
++	chip->gc.direction_input  = mpc52xx_gpt_gpio_dir_in;
++	chip->gc.direction_output = mpc52xx_gpt_gpio_dir_out;
++	chip->gc.get              = mpc52xx_gpt_gpio_get;
++	chip->gc.set              = mpc52xx_gpt_gpio_set;
++
++	return of_mm_gpiochip_add(ofdev->node, mmchip);
++}
++
++static struct of_device_id mpc52xx_gpt_gpiochip_match[] = {
++	{
++		.compatible = "fsl,mpc5200-gpt-gpio",
++	},
++	{}
++};
++
++static struct of_platform_driver mpc52xx_gpt_gpiochip_driver = {
++	.name = "gpio_gpt",
++	.match_table = mpc52xx_gpt_gpiochip_match,
++	.probe = mpc52xx_gpt_gpiochip_probe,
++	.remove = mpc52xx_gpiochip_remove,
++};
++
++static int __init mpc52xx_gpio_init(void)
++{
++	if (of_register_platform_driver(&mpc52xx_wkup_gpiochip_driver))
++		printk(KERN_ERR "Unable to register wakeup GPIO driver\n");
++
++	if (of_register_platform_driver(&mpc52xx_simple_gpiochip_driver))
++		printk(KERN_ERR "Unable to register simple GPIO driver\n");
++
++	if (of_register_platform_driver(&mpc52xx_gpt_gpiochip_driver))
++		printk(KERN_ERR "Unable to register gpt GPIO driver\n");
++
++	return 0;
++}
++
++
++/* Make sure we get initialised before anyone else tries to use us */
++subsys_initcall(mpc52xx_gpio_init);
++
++/* No exit call at the moment as we cannot unregister of gpio chips */
++
++MODULE_DESCRIPTION("Freescale MPC52xx gpio driver");
++MODULE_AUTHOR("Sascha Hauer <s.hauer@pengutronix.de");
++MODULE_LICENSE("GPL v2");
++
+Index: arch/powerpc/platforms/52xx/Kconfig
+===================================================================
+--- a/arch/powerpc/platforms/52xx/Kconfig.orig
++++ b/arch/powerpc/platforms/52xx/Kconfig
+@@ -44,3 +44,9 @@ config PPC_MPC5200_BUGFIX
+ 
+ 	  It is safe to say 'Y' here
+ 
++config PPC_MPC5200_GPIO
++	bool "MPC5200 GPIO support"
++	depends on PPC_MPC52xx
++	select HAVE_GPIO_LIB
++	help
++	  Enable gpiolib support for mpc5200 based boards
+Index: arch/powerpc/platforms/52xx/Makefile
+===================================================================
+--- a/arch/powerpc/platforms/52xx/Makefile.orig
++++ b/arch/powerpc/platforms/52xx/Makefile
+@@ -14,3 +14,5 @@ obj-$(CONFIG_PM)		+= mpc52xx_sleep.o mpc
+ ifeq ($(CONFIG_PPC_LITE5200),y)
+ 	obj-$(CONFIG_PM)	+= lite5200_sleep.o lite5200_pm.o
+ endif
++
++obj-$(CONFIG_PPC_MPC5200_GPIO)	+= mpc52xx_gpio.o
+\ No newline at end of file
 
-Geert Uytterhoeven
-Software Architect
-
-Sony Network and Software Technology Center Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
-
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
-
-Sony Network and Software Technology Center Europe
-A division of Sony Service Centre (Europe) N.V.
-Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium
-VAT BE 0413.825.160 · RPR Brussels
-Fortis Bank Zaventem · BIC GEBABEBB08A · IBAN BE39001382358619
----584349381-1687256500-1209051100=:16220--
+-- 
+Pengutronix e.K. - Linux Solutions for Science and Industry
+-----------------------------------------------------------
+Kontakt-Informationen finden Sie im Header dieser Mail oder
+auf der Webseite -> http://www.pengutronix.de/impressum/ <-
