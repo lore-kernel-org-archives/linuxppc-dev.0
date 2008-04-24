@@ -2,20 +2,23 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C930ADDED6
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Apr 2008 10:44:43 +1000 (EST)
-Subject: Re: new warnings from stacktrace patch
+	by ozlabs.org (Postfix) with ESMTPS id 12794DDEF7
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Apr 2008 10:45:32 +1000 (EST)
+Subject: Re: Patches added to powerpc.git master and powerpc-next branches
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Christoph Hellwig <hch@lst.de>
-In-Reply-To: <20080423143229.GA18667@lst.de>
-References: <20080423175938.a4b3cc26.sfr@canb.auug.org.au>
-	<20080423143229.GA18667@lst.de>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <CA750B46-2360-4C75-8F8E-5DFD0FB9807C@kernel.crashing.org>
+References: <18440.34891.440661.248400@cargo.ozlabs.ibm.com>
+	<9CE9EFA8-A303-49C9-B9A2-F62D42F927B7@kernel.crashing.org>
+	<18441.58154.608911.337978@cargo.ozlabs.ibm.com>
+	<C69E510D-5838-4BE6-AB57-56FCB0592414@kernel.crashing.org>
+	<18445.11801.422321.151268@cargo.ozlabs.ibm.com>
+	<CA750B46-2360-4C75-8F8E-5DFD0FB9807C@kernel.crashing.org>
 Content-Type: text/plain
-Date: Thu, 24 Apr 2008 10:44:21 +1000
-Message-Id: <1208997861.9060.79.camel@pasglop>
+Date: Thu, 24 Apr 2008 10:45:24 +1000
+Message-Id: <1208997924.9060.81.camel@pasglop>
 Mime-Version: 1.0
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Paul Mackerras <paulus@samba.org>,
-	ppc-dev <linuxppc-dev@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -27,34 +30,15 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Wed, 2008-04-23 at 16:32 +0200, Christoph Hellwig wrote:
-> On Wed, Apr 23, 2008 at 05:59:38PM +1000, Stephen Rothwell wrote:
-> > This is from commit fd3e0bbc6052ca9747a5332b382584ece83aab6d ("[POWERPC]
-> > Stacktrace support for lockdep").  We don't include asm-offsets.h in any
-> > other C file in the powerpc build.
+On Wed, 2008-04-23 at 07:49 -0500, Kumar Gala wrote:
+> its left over from the x86 port.  I'll get rid of
+> __FIXADDR_BOOT_SIZE,  
+> FIXADDR_BOOT_START, and __FIXADDR_TOP.
 > 
-> I think the include can be safely removed.
+> If we want the early ioremap support in the future we can add back  
+> __FIXADDR_BOOT_SIZE and FIXADDR_BOOT_START.
 
-Yup. It's a leftover from before I fixed up some stuff in ptrace.h
+Our early ioremap works differently. Do you see any reason why we may
+want to do it like x86 instead ? Is it any better ?
 
-> 
-> Signed-off-by: Christoph Hellwig <hch@lst.de>
-
-Ack.
-
-> Index: linux-2.6/arch/powerpc/kernel/stacktrace.c
-> ===================================================================
-> --- linux-2.6.orig/arch/powerpc/kernel/stacktrace.c	2008-04-23 15:28:05.000000000 +0200
-> +++ linux-2.6/arch/powerpc/kernel/stacktrace.c	2008-04-23 15:28:16.000000000 +0200
-> @@ -13,7 +13,6 @@
->  #include <linux/sched.h>
->  #include <linux/stacktrace.h>
->  #include <asm/ptrace.h>
-> -#include <asm/asm-offsets.h>
->  
->  /*
->   * Save stack-backtrace addresses into a stack_trace buffer.
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+Ben.
