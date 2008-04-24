@@ -1,19 +1,19 @@
-Return-Path: <dale@farnsworth.org>
-Received: from xyzzy.farnsworth.org (xyzzy.farnsworth.org [65.39.95.219])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <sha@pengutronix.de>
+Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
+	[83.236.181.26]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 12942DE797
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Apr 2008 01:43:10 +1000 (EST)
-Date: Thu, 24 Apr 2008 08:42:59 -0700
-From: Dale Farnsworth <dale@farnsworth.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-Message-ID: <20080424154258.GA25852@farnsworth.org>
-References: <20071122154159.GA24711@xyzzy.farnsworth.org>
-	<C695814A-E9D5-4C62-81DF-E49127ECD2E0@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id A9E10DE2A6
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Apr 2008 01:50:43 +1000 (EST)
+Date: Thu, 24 Apr 2008 17:53:03 +0200
+From: Sascha Hauer <s.hauer@pengutronix.de>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: mpc5200b custom board upstreamable?
+Message-ID: <20080424155303.GK6692@pengutronix.de>
+References: <20080424151237.GI6692@pengutronix.de>
+	<fa686aa40804240813p66889769y3bee6eb0111741f7@mail.gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <C695814A-E9D5-4C62-81DF-E49127ECD2E0@kernel.crashing.org>
-Subject: Re: [PATCH 00/10] powerpc: Add kexec/kdump support for ppc32
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <fa686aa40804240813p66889769y3bee6eb0111741f7@mail.gmail.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -24,18 +24,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Apr 24, 2008 at 07:50:52AM -0500, Kumar Gala wrote:
-> On Nov 22, 2007, at 9:42 AM, Dale Farnsworth wrote:
->> This patch series adds kexec and kdump support for ppc32 in arch/ 
->> powerpc.
->> It has been successfully tested on the mpc8548_cds and prpmc2800  
->> platforms.
->> Mark Greer and I are preparing patches to the kexec-tools package as
->> well.
->
-> Dale, can you look at updating your patchset now that we've made some  
-> progress on other patches.
+On Thu, Apr 24, 2008 at 09:13:45AM -0600, Grant Likely wrote:
+> On Thu, Apr 24, 2008 at 9:12 AM, Sascha Hauer <s.hauer@pengutronix.de> wrote:
+> >
+> >  Hi all,
+> >
+> >  I had the intention to push the code for a custom mpc5200b board (freely
+> >  available, no internal project) upstream. After cleaning up the code I
+> >  realized that actually no board specific code is left and our board is
+> >  well handled by the mpc5200_simple_platform machine.
+> >
+> >  The only issue is that the machine only matches things like
+> >  "schindler,cm5200", there's no generic entry. Would it be possible to
+> >  add a "generic-mpc52xx" entry to this list?
+> 
+> I'm being cautious about this for the time being.  I'd like to have a
+> generic match mechanism, but I don't want to do something that isn't
+> easy to recover from if it turns out to be brain dead.  For now, just
+> add your board name to the explicit match list.
 
-Yes.  It'll take a couple of weeks for me to fit it in though.
+The board is called "generic". No, just kidding ;)
 
--Dale
+> 
+> >
+> >  Another question: are defconfig and dts files for custom boards acceptable
+> >  for upstream?
+> 
+> Yes, in the arch/powerpc/configs/52xx/ directory.
+
+ok
+
+Sascha
+
+-- 
+Pengutronix e.K. - Linux Solutions for Science and Industry
+-----------------------------------------------------------
+Kontakt-Informationen finden Sie im Header dieser Mail oder
+auf der Webseite -> http://www.pengutronix.de/impressum/ <-
