@@ -1,22 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <sha@pengutronix.de>
+Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
+	[83.236.181.26]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 407F3DE517
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Apr 2008 00:53:41 +1000 (EST)
-Subject: Re: [RFC][WIP][PATCH] Add IRQSTACKS to ppc32
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <43F83C6F-D84B-4626-8974-9BCEDF03194E@kernel.crashing.org>
-References: <Pine.LNX.4.64.0804240034160.23185@blarg.am.freescale.net>
-	<1209021537.9060.156.camel@pasglop>
-	<43F83C6F-D84B-4626-8974-9BCEDF03194E@kernel.crashing.org>
-Content-Type: text/plain
-Date: Fri, 25 Apr 2008 00:53:33 +1000
-Message-Id: <1209048813.9060.192.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: benh@kernel.crashing.org
+	by ozlabs.org (Postfix) with ESMTPS id F134FDE032
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Apr 2008 01:10:17 +1000 (EST)
+Received: from kiwi.ptxnet.pengutronix.de ([10.1.0.84])
+	by metis.extern.pengutronix.de with esmtp (Exim 4.63)
+	(envelope-from <sha@pengutronix.de>) id 1Jp35Q-0004WQ-1a
+	for linuxppc-dev@ozlabs.org; Thu, 24 Apr 2008 17:10:12 +0200
+Received: from sha by kiwi.ptxnet.pengutronix.de with local (Exim 4.69)
+	(envelope-from <sha@pengutronix.de>) id 1Jp37l-0002eS-C6
+	for linuxppc-dev@ozlabs.org; Thu, 24 Apr 2008 17:12:37 +0200
+Date: Thu, 24 Apr 2008 17:12:37 +0200
+From: Sascha Hauer <s.hauer@pengutronix.de>
+To: linuxppc-dev@ozlabs.org
+Subject: mpc5200b custom board upstreamable?
+Message-ID: <20080424151237.GI6692@pengutronix.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,14 +28,24 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Thu, 2008-04-24 at 07:59 -0500, Kumar Gala wrote:
-> I'm going to change it to be just lmb_alloc() so it will be difficult  
-> to share with ppc64 (other than w/an ifdef).
+Hi all,
 
-Unless we change lmb_alloc to just be an lmb_alloc_base with 0 and have
-the later do the right thing ?
+I had the intention to push the code for a custom mpc5200b board (freely
+available, no internal project) upstream. After cleaning up the code I
+realized that actually no board specific code is left and our board is
+well handled by the mpc5200_simple_platform machine.
 
-You don't put highmem in the LMBs ? If you do, we do need to have the
-max lowmem there no ?
+The only issue is that the machine only matches things like
+"schindler,cm5200", there's no generic entry. Would it be possible to
+add a "generic-mpc52xx" entry to this list?
 
-Ben.
+Another question: are defconfig and dts files for custom boards acceptable
+for upstream?
+
+Sascha
+
+-- 
+Pengutronix e.K. - Linux Solutions for Science and Industry
+-----------------------------------------------------------
+Kontakt-Informationen finden Sie im Header dieser Mail oder
+auf der Webseite -> http://www.pengutronix.de/impressum/ <-
