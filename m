@@ -1,25 +1,10 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 12794DDEF7
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Apr 2008 10:45:32 +1000 (EST)
-Subject: Re: Patches added to powerpc.git master and powerpc-next branches
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <CA750B46-2360-4C75-8F8E-5DFD0FB9807C@kernel.crashing.org>
-References: <18440.34891.440661.248400@cargo.ozlabs.ibm.com>
-	<9CE9EFA8-A303-49C9-B9A2-F62D42F927B7@kernel.crashing.org>
-	<18441.58154.608911.337978@cargo.ozlabs.ibm.com>
-	<C69E510D-5838-4BE6-AB57-56FCB0592414@kernel.crashing.org>
-	<18445.11801.422321.151268@cargo.ozlabs.ibm.com>
-	<CA750B46-2360-4C75-8F8E-5DFD0FB9807C@kernel.crashing.org>
-Content-Type: text/plain
-Date: Thu, 24 Apr 2008 10:45:24 +1000
-Message-Id: <1208997924.9060.81.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
-Reply-To: benh@kernel.crashing.org
+Return-Path: <michael@ozlabs.org>
+To: <linuxppc-dev@ozlabs.org>
+Message-Id: <d3f56e3d99619e642b6f8cd73b35dad4597934ed.1209002897.git.michael@ellerman.id.au>
+From: Michael Ellerman <michael@ellerman.id.au>
+Subject: [PATCH] Discourage people from fiddling with kernel data from
+	prom_init
+Date: Thu, 24 Apr 2008 12:08:22 +1000 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,16 +14,106 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+As BenH said the other day, it is an "accident" that prom_init.o is linked
+with the rest of the kernel. The truth is a little more subtle, prom_init
+isn't truly bootloader, it does fiddle with kernel data in a few places.
 
-On Wed, 2008-04-23 at 07:49 -0500, Kumar Gala wrote:
-> its left over from the x86 port.  I'll get rid of
-> __FIXADDR_BOOT_SIZE,  
-> FIXADDR_BOOT_START, and __FIXADDR_TOP.
-> 
-> If we want the early ioremap support in the future we can add back  
-> __FIXADDR_BOOT_SIZE and FIXADDR_BOOT_START.
+What we can do is discourage people from adding new code that accesses
+data outside of prom_init. And hence this patch, from the script:
 
-Our early ioremap works differently. Do you see any reason why we may
-want to do it like x86 instead ? Is it any better ?
+ # This script checks prom_init.o to see what external symbols it
+ # is using, if it finds symbols not in the whitelist it returns
+ # an error. The point of this is to discourage people from
+ # intentionally or accidentally adding new code to prom_init.c
+ # which has side effects on other parts of the kernel.
 
-Ben.
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+---
+ arch/powerpc/kernel/Makefile           |    9 +++++
+ arch/powerpc/kernel/prom_init_check.sh |   58 ++++++++++++++++++++++++++++++++
+ 2 files changed, 67 insertions(+), 0 deletions(-)
+
+diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
+index 5183a90..562bb02 100644
+--- a/arch/powerpc/kernel/Makefile
++++ b/arch/powerpc/kernel/Makefile
+@@ -106,4 +106,13 @@ PHONY += systbl_chk
+ systbl_chk: $(src)/systbl_chk.sh $(obj)/systbl_chk.i
+ 	$(call cmd,systbl_chk)
+ 
++$(obj)/built-in.o:		prom_init_check
++
++quiet_cmd_prom_init_check = CALL    $<
++      cmd_prom_init_check = $(CONFIG_SHELL) $< "$(NM)" "$(obj)/prom_init.o"
++
++PHONY += prom_init_check
++prom_init_check: $(src)/prom_init_check.sh $(obj)/prom_init.o
++	$(call cmd,prom_init_check)
++
+ clean-files := vmlinux.lds
+diff --git a/arch/powerpc/kernel/prom_init_check.sh b/arch/powerpc/kernel/prom_init_check.sh
+new file mode 100644
+index 0000000..8e24fc1
+--- /dev/null
++++ b/arch/powerpc/kernel/prom_init_check.sh
+@@ -0,0 +1,58 @@
++#!/bin/sh
++#
++# Copyright © 2008 IBM Corporation
++#
++# This program is free software; you can redistribute it and/or
++# modify it under the terms of the GNU General Public License
++# as published by the Free Software Foundation; either version
++# 2 of the License, or (at your option) any later version.
++
++# This script checks prom_init.o to see what external symbols it
++# is using, if it finds symbols not in the whitelist it returns
++# an error. The point of this is to discourage people from
++# intentionally or accidentally adding new code to prom_init.c
++# which has side effects on other parts of the kernel.
++
++# If you really need to reference something from prom_init.o add
++# it to the list below:
++
++WHITELIST="add_reloc_offset __bss_start __bss_stop copy_and_flush
++_end enter_prom memcpy memset reloc_offset __secondary_hold
++__secondary_hold_acknowledge __secondary_hold_spinloop __start
++strcmp strcpy strlcpy strlen strncmp strstr logo_linux_clut224
++reloc_got2"
++
++NM="$1"
++OBJ="$2"
++
++ERROR=0
++
++for UNDEF in $($NM -u $OBJ | awk '{print $2}')
++do
++	# On 64-bit nm gives us the function descriptors, which have
++	# a leading . on the name, so strip it off here.
++	UNDEF="${UNDEF#.}"
++
++	if [ $KBUILD_VERBOSE ]; then
++		if [ $KBUILD_VERBOSE -ne 0 ]; then
++			echo "Checking prom_init.o symbol '$UNDEF'"
++		fi
++	fi
++
++	OK=0
++	for WHITE in $WHITELIST
++	do
++		if [ "$UNDEF" = "$WHITE" ]; then
++			OK=1
++			break
++		fi
++	done
++
++	if [ $OK -eq 0 ]; then
++		ERROR=1
++		echo "Error: External symbol '$UNDEF' referenced" \
++		     "from prom_init.c" >&2
++	fi
++done
++
++exit $ERROR
+-- 
+1.5.5
