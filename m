@@ -1,19 +1,19 @@
 Return-Path: <dhlii@picocomputing.net>
-Received: from outbound-mail-125.bluehost.com (outbound-mail-125.bluehost.com
-	[67.222.38.25]) by ozlabs.org (Postfix) with SMTP id D8CE4DDEE7
+Received: from outbound-mail-06.bluehost.com (outbound-mail-06.bluehost.com
+	[69.89.17.206]) by ozlabs.org (Postfix) with SMTP id 4E23EDDE0E
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 24 Apr 2008 11:56:52 +1000 (EST)
-Message-ID: <480FE762.8060403@picocomputing.net>
-Date: Wed, 23 Apr 2008 21:50:26 -0400
+	Thu, 24 Apr 2008 12:09:11 +1000 (EST)
+Message-ID: <480FEA44.8090105@picocomputing.net>
+Date: Wed, 23 Apr 2008 22:02:44 -0400
 From: "David H. Lynch Jr." <dhlii@picocomputing.net>
 MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
+To: Josh Boyer <jwboyer@gmail.com>
 Subject: Re: simpleboot
 References: <480F8148.8090906@picocomputing.net>	
 	<fa686aa40804231149j344a4cc5iaf15ac12828146f7@mail.gmail.com>	
 	<480F917F.8040809@picocomputing.net>
-	<fa686aa40804231248s162479d9o530051d3c88da471@mail.gmail.com>
-In-Reply-To: <fa686aa40804231248s162479d9o530051d3c88da471@mail.gmail.com>
+	<1208999357.2946.6.camel@vader.jdub.homelinux.org>
+In-Reply-To: <1208999357.2946.6.camel@vader.jdub.homelinux.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -26,33 +26,34 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Grant Likely wrote:
-> Its whatever kind of image you pass it.
->
+
+Josh Boyer wrote:
+> simpleboot is in Linus' tree now.  It went in with the first pull
+> request paulus sent for .26.
 >   
-The simpleboot stuff must have hit Linux's tree today.
-I synced with it.
-created an arch/powerpc/boot/dts/pico_e1x.dts that is probably fouled up
-- but that is a problem for later.
+    I got it, now to figure it out.
+> I don't understand that comment anyway though.  If you're working with a
+> PowerPC board, why aren't you using the powerpc tree (paulus') to begin
+> with?  "Backporting" pieces of it to some other tree seems to be a waste
+> of time to me...
+>   
+    I am updating a port I did in 2005 ? based on the  ml403 port that
+was in at that time.
+    But it is an independent BSP. I need to move it to the current
+powerpc/devicetree,
+    but I have to do so without breaking alot of things we have have
+working for years.
 
-did:
-make -f Makefile ARCH=powerpc   CROSS_COMPILE=powerpc-linux-uclibc-
-simpleImage.pico_e1x
+    At the moment I am somewhat "surely" about a number of the issues
+related to the powerpc/devicetree migration.
+    Aside from the BSP issues, this breaks my boot monitor, and is going
+to require adding alot more code than I can either justify
+    or see as necescary because there are some aspects of how the
+devicetree/powerpc stuff is architected that
+    politely I think are brain dead.
 
-had to deal with a few different config options and then got:
-
-make[1]: Entering directory `/usr/src/linux-2.6.pico'
-make[1]: *** No rule to make target `simpleImage.pico_e1x'.  Stop.
-make[1]: Leaving directory `/usr/src/linux-2.6.pico'
-make: *** [release] Error 2
-
-So how does the top level Makefile know about  the simpeImage.% target
-in  arch/powerpc/boot ?
-
-
-
-
-
+    But I will get over it - probably. There just may be a bit of
+cursing and foul language before things work.
 
 -- 
 Dave Lynch                                          Pico Computing, Inc.
