@@ -1,12 +1,19 @@
-Return-Path: <michael@ozlabs.org>
-To: <linuxppc-dev@ozlabs.org>
-Message-Id: <f80c18430f822e26ad6f824058baff5c61647354.1209013992.git.michael@ellerman.id.au>
-In-Reply-To: <c01702547f6296b2c18e5ff7504ad52cb0402664.1209013992.git.michael@ellerman.id.au>
-References: <c01702547f6296b2c18e5ff7504ad52cb0402664.1209013992.git.michael@ellerman.id.au>
-From: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH 5/5] Add CONFIG_PPC_PSERIES_DEBUG to enable debugging for
-	platforms/pseries
-Date: Thu, 24 Apr 2008 15:13:21 +1000 (EST)
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 7F425DDF1C
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Apr 2008 15:41:52 +1000 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id m3O5fkB8020727
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Apr 2008 00:41:47 -0500
+Date: Thu, 24 Apr 2008 00:37:50 -0500 (CDT)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [RFC][WIP][PATCH] Add IRQSTACKS to ppc32
+Message-ID: <Pine.LNX.4.64.0804240034160.23185@blarg.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,155 +23,124 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Add a DEBUG config setting which turns on all (most) of the debugging
-under platforms/pseries.
+Posting this to get any review and suggestions on the functionality of the
+patch.
 
-To have this take effect we need to remove all the #undef DEBUG's, in
-various files. We leave the #undef DEBUG in platforms/pseries/lpar.c,
-as this enables debugging printks from the low-level hash table routines,
-and tends to make your system unusable. If you want those enabled you
-still have to turn them on by hand.
+Questions/issues:
+* what to do about the stack_ovf check in entry_32.S
+* do we really have any constraints on ppc32 (beyond being in lowmem) on
+the locations of the stacks [see irqstack_early_init()]
 
-Also some of the RAS code has a DEBUG block which causes a functional
-change, so I've keyed this off a different (non-existant) debug #define.
+- k
 
-This is only enabled if you have PPC_EARLY_DEBUG enabled also.
+diff --git a/arch/powerpc/Kconfig.debug b/arch/powerpc/Kconfig.debug
+index a86d8d8..2cf72d2 100644
+--- a/arch/powerpc/Kconfig.debug
++++ b/arch/powerpc/Kconfig.debug
+@@ -118,7 +118,6 @@ config XMON_DISASSEMBLY
 
-Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
----
- arch/powerpc/platforms/pseries/Kconfig     |    5 +++++
- arch/powerpc/platforms/pseries/Makefile    |    4 ++++
- arch/powerpc/platforms/pseries/eeh.c       |    1 -
- arch/powerpc/platforms/pseries/eeh_cache.c |    1 -
- arch/powerpc/platforms/pseries/firmware.c  |    1 -
- arch/powerpc/platforms/pseries/ras.c       |    4 +---
- arch/powerpc/platforms/pseries/setup.c     |    2 --
- arch/powerpc/platforms/pseries/smp.c       |    1 -
- arch/powerpc/platforms/pseries/xics.c      |    1 -
- 9 files changed, 10 insertions(+), 10 deletions(-)
-
-diff --git a/arch/powerpc/platforms/pseries/Kconfig b/arch/powerpc/platforms/pseries/Kconfig
-index 306a9d0..07fe5b6 100644
---- a/arch/powerpc/platforms/pseries/Kconfig
-+++ b/arch/powerpc/platforms/pseries/Kconfig
-@@ -34,3 +34,8 @@ config LPARCFG
+ config IRQSTACKS
+ 	bool "Use separate kernel stacks when processing interrupts"
+-	depends on PPC64
  	help
- 	Provide system capacity information via human readable
- 	<key word>=<value> pairs through a /proc/ppc64/lparcfg interface.
+ 	  If you say Y here the kernel will use separate kernel stacks
+ 	  for handling hard and soft interrupts.  This can help avoid
+diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+index 425616f..ad40eb4 100644
+--- a/arch/powerpc/kernel/irq.c
++++ b/arch/powerpc/kernel/irq.c
+@@ -352,7 +352,7 @@ void __init init_IRQ(void)
+ {
+ 	if (ppc_md.init_IRQ)
+ 		ppc_md.init_IRQ();
+-#ifdef CONFIG_PPC64
++#ifdef CONFIG_IRQSTACKS
+ 	irq_ctx_init();
+ #endif
+ }
+diff --git a/arch/powerpc/kernel/misc_32.S b/arch/powerpc/kernel/misc_32.S
+index 92ccc6f..89aaaa6 100644
+--- a/arch/powerpc/kernel/misc_32.S
++++ b/arch/powerpc/kernel/misc_32.S
+@@ -32,6 +32,31 @@
+
+ 	.text
+
++#ifdef CONFIG_IRQSTACKS
++_GLOBAL(call_do_softirq)
++	mflr	r0
++	stw	r0,4(r1)
++	stwu	r1,THREAD_SIZE-STACK_FRAME_OVERHEAD(r3)
++	mr	r1,r3
++	bl	__do_softirq
++	lwz	r1,0(r1)
++	lwz	r0,4(r1)
++	mtlr	r0
++	blr
 +
-+config PPC_PSERIES_DEBUG
-+	depends on PPC_PSERIES && PPC_EARLY_DEBUG
-+	bool "Enable extra debug logging in platforms/pseries"
-+	default y
-diff --git a/arch/powerpc/platforms/pseries/Makefile b/arch/powerpc/platforms/pseries/Makefile
-index bdae04b..bd2593e 100644
---- a/arch/powerpc/platforms/pseries/Makefile
-+++ b/arch/powerpc/platforms/pseries/Makefile
-@@ -2,6 +2,10 @@ ifeq ($(CONFIG_PPC64),y)
- EXTRA_CFLAGS		+= -mno-minimal-toc
- endif
- 
-+ifeq ($(CONFIG_PPC_PSERIES_DEBUG),y)
-+EXTRA_CFLAGS		+= -DDEBUG
-+endif
++_GLOBAL(call_handle_irq)
++	mflr	r0
++	stw	r0,4(r1)
++	mtctr	r6
++	stwu	r1,THREAD_SIZE-STACK_FRAME_OVERHEAD(r5)
++	mr	r1,r5
++	bctrl
++	lwz	r1,0(r1)
++	lwz	r0,4(r1)
++	mtlr	r0
++	blr
++#endif /* CONFIG_IRQSTACKS */
 +
- obj-y			:= lpar.o hvCall.o nvram.o reconfig.o \
- 			   setup.o iommu.o ras.o rtasd.o \
- 			   firmware.o power.o
-diff --git a/arch/powerpc/platforms/pseries/eeh.c b/arch/powerpc/platforms/pseries/eeh.c
-index 550b2f7..a3fd56b 100644
---- a/arch/powerpc/platforms/pseries/eeh.c
-+++ b/arch/powerpc/platforms/pseries/eeh.c
-@@ -39,7 +39,6 @@
- #include <asm/ppc-pci.h>
- #include <asm/rtas.h>
- 
--#undef DEBUG
- 
- /** Overview:
-  *  EEH, or "Extended Error Handling" is a PCI bridge technology for
-diff --git a/arch/powerpc/platforms/pseries/eeh_cache.c b/arch/powerpc/platforms/pseries/eeh_cache.c
-index 1e83fcd..ce37040 100644
---- a/arch/powerpc/platforms/pseries/eeh_cache.c
-+++ b/arch/powerpc/platforms/pseries/eeh_cache.c
-@@ -28,7 +28,6 @@
- #include <asm/pci-bridge.h>
- #include <asm/ppc-pci.h>
- 
--#undef DEBUG
- 
- /**
-  * The pci address cache subsystem.  This subsystem places
-diff --git a/arch/powerpc/platforms/pseries/firmware.c b/arch/powerpc/platforms/pseries/firmware.c
-index 743d494..9d3a40f 100644
---- a/arch/powerpc/platforms/pseries/firmware.c
-+++ b/arch/powerpc/platforms/pseries/firmware.c
-@@ -21,7 +21,6 @@
-  * 2 of the License, or (at your option) any later version.
+ /*
+  * This returns the high 64 bits of the product of two 64-bit numbers.
   */
- 
--#undef DEBUG
- 
- #include <asm/firmware.h>
- #include <asm/prom.h>
-diff --git a/arch/powerpc/platforms/pseries/ras.c b/arch/powerpc/platforms/pseries/ras.c
-index a1ab25c..2b548af 100644
---- a/arch/powerpc/platforms/pseries/ras.c
-+++ b/arch/powerpc/platforms/pseries/ras.c
-@@ -67,8 +67,6 @@ static int ras_check_exception_token;
- static irqreturn_t ras_epow_interrupt(int irq, void *dev_id);
- static irqreturn_t ras_error_interrupt(int irq, void *dev_id);
- 
--/* #define DEBUG */
--
- 
- static void request_ras_irqs(struct device_node *np,
- 			irq_handler_t handler,
-@@ -237,7 +235,7 @@ static irqreturn_t ras_error_interrupt(int irq, void *dev_id)
- 		printk(KERN_EMERG "Error: Fatal hardware error <0x%lx 0x%x>\n",
- 		       *((unsigned long *)&ras_log_buf), status);
- 
--#ifndef DEBUG
-+#ifndef DEBUG_RTAS_POWER_OFF
- 		/* Don't actually power off when debugging so we can test
- 		 * without actually failing while injecting errors.
- 		 * Error data will not be logged to syslog.
-diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-index 65e8795..f5d29f5 100644
---- a/arch/powerpc/platforms/pseries/setup.c
-+++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -16,8 +16,6 @@
-  * bootup setup stuff..
-  */
- 
--#undef DEBUG
--
+diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
+index 36f6779..ebd1b1d 100644
+--- a/arch/powerpc/kernel/setup_32.c
++++ b/arch/powerpc/kernel/setup_32.c
+@@ -16,6 +16,7 @@
+ #include <linux/root_dev.h>
  #include <linux/cpu.h>
- #include <linux/errno.h>
- #include <linux/sched.h>
-diff --git a/arch/powerpc/platforms/pseries/smp.c b/arch/powerpc/platforms/pseries/smp.c
-index e9bc2a5..9d8f8c8 100644
---- a/arch/powerpc/platforms/pseries/smp.c
-+++ b/arch/powerpc/platforms/pseries/smp.c
-@@ -12,7 +12,6 @@
-  *      2 of the License, or (at your option) any later version.
-  */
- 
--#undef DEBUG
- 
- #include <linux/kernel.h>
- #include <linux/module.h>
-diff --git a/arch/powerpc/platforms/pseries/xics.c b/arch/powerpc/platforms/pseries/xics.c
-index 43df53c..ebebc28 100644
---- a/arch/powerpc/platforms/pseries/xics.c
-+++ b/arch/powerpc/platforms/pseries/xics.c
-@@ -9,7 +9,6 @@
-  *  2 of the License, or (at your option) any later version.
-  */
- 
--#undef DEBUG
- 
- #include <linux/types.h>
- #include <linux/threads.h>
--- 
-1.5.5
+ #include <linux/console.h>
++#include <linux/lmb.h>
+
+ #include <asm/io.h>
+ #include <asm/prom.h>
+@@ -229,6 +230,28 @@ int __init ppc_init(void)
+
+ arch_initcall(ppc_init);
+
++#ifdef CONFIG_IRQSTACKS
++static void __init irqstack_early_init(void)
++{
++	unsigned int i;
++
++	/*
++	 * interrupt stacks must be under 256MB, we cannot afford to take
++	 * SLB misses on them.
++	 */
++	for_each_possible_cpu(i) {
++		softirq_ctx[i] = (struct thread_info *)
++			__va(lmb_alloc_base(THREAD_SIZE,
++					    THREAD_SIZE, 0x10000000));
++		hardirq_ctx[i] = (struct thread_info *)
++			__va(lmb_alloc_base(THREAD_SIZE,
++					    THREAD_SIZE, 0x10000000));
++	}
++}
++#else
++#define irqstack_early_init()
++#endif
++
+ /* Warning, IO base is not yet inited */
+ void __init setup_arch(char **cmdline_p)
+ {
+@@ -286,6 +309,8 @@ void __init setup_arch(char **cmdline_p)
+ 	init_mm.end_data = (unsigned long) _edata;
+ 	init_mm.brk = klimit;
+
++	irqstack_early_init();
++
+ 	/* set up the bootmem stuff with available memory */
+ 	do_init_bootmem();
+ 	if ( ppc_md.progress ) ppc_md.progress("setup_arch: bootmem", 0x3eab);
