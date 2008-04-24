@@ -1,8 +1,8 @@
 Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <18448.10563.385481.904182@cargo.ozlabs.ibm.com>
-Date: Thu, 24 Apr 2008 16:31:31 +1000
+Message-ID: <18448.10755.660560.776824@cargo.ozlabs.ibm.com>
+Date: Thu, 24 Apr 2008 16:34:43 +1000
 From: Paul Mackerras <paulus@samba.org>
 To: Roland McGrath <roland@redhat.com>
 Subject: Re: [PATCH] powerpc TLF_RESTORE_SIGMASK
@@ -23,13 +23,11 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Roland McGrath writes:
 
-> > This should be _TLF_RESTORE_SIGMASK (leading '_'), I think.
-> 
 > Indeed so.  Here's a replacement patch.
 
-Thanks.  That can't go in until some generic changes have gone in
-first, right?  So are you going to push the lot in one go via Andrew,
-or should I wait until the generic part is upstream and then push the
-powerpc bit?
+Oh, and could you please also fix the occurrence of
+TIF_RESTORE_SIGMASK in arch/ppc/kernel/entry.S when this stuff goes
+in?
 
+Thanks,
 Paul.
