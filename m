@@ -1,22 +1,22 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <sha@pengutronix.de>
+Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
+	[83.236.181.26]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id CC881DEB3D
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Apr 2008 02:25:45 +1000 (EST)
-Message-Id: <B1DC8A71-174F-48E2-A61B-8D98984F10AD@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: benh@kernel.crashing.org
-In-Reply-To: <1209048813.9060.192.camel@pasglop>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: [RFC][WIP][PATCH] Add IRQSTACKS to ppc32
-Date: Thu, 24 Apr 2008 11:25:38 -0500
-References: <Pine.LNX.4.64.0804240034160.23185@blarg.am.freescale.net>
-	<1209021537.9060.156.camel@pasglop>
-	<43F83C6F-D84B-4626-8974-9BCEDF03194E@kernel.crashing.org>
-	<1209048813.9060.192.camel@pasglop>
-Cc: linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTPS id BE86DDEC40
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Apr 2008 02:25:56 +1000 (EST)
+Date: Thu, 24 Apr 2008 18:28:13 +0200
+From: Sascha Hauer <s.hauer@pengutronix.de>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: mpc5200b custom board upstreamable?
+Message-ID: <20080424162813.GL6692@pengutronix.de>
+References: <20080424151237.GI6692@pengutronix.de>
+	<fa686aa40804240813p66889769y3bee6eb0111741f7@mail.gmail.com>
+	<20080424155303.GK6692@pengutronix.de>
+	<fa686aa40804240907w7e36b579y4d2c63f00dd30848@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <fa686aa40804240907w7e36b579y4d2c63f00dd30848@mail.gmail.com>
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,22 +26,67 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thu, Apr 24, 2008 at 10:07:20AM -0600, Grant Likely wrote:
+> On Thu, Apr 24, 2008 at 9:53 AM, Sascha Hauer <s.hauer@pengutronix.de> wrote:
+> > On Thu, Apr 24, 2008 at 09:13:45AM -0600, Grant Likely wrote:
+> >  > On Thu, Apr 24, 2008 at 9:12 AM, Sascha Hauer <s.hauer@pengutronix.de> wrote:
+> >  > >
+> >  > >  Hi all,
+> >  > >
+> >  > >  I had the intention to push the code for a custom mpc5200b board (freely
+> >  > >  available, no internal project) upstream. After cleaning up the code I
+> >  > >  realized that actually no board specific code is left and our board is
+> >  > >  well handled by the mpc5200_simple_platform machine.
+> >  > >
+> >  > >  The only issue is that the machine only matches things like
+> >  > >  "schindler,cm5200", there's no generic entry. Would it be possible to
+> >  > >  add a "generic-mpc52xx" entry to this list?
+> >  >
+> >  > I'm being cautious about this for the time being.  I'd like to have a
+> >  > generic match mechanism, but I don't want to do something that isn't
+> >  > easy to recover from if it turns out to be brain dead.  For now, just
+> >  > add your board name to the explicit match list.
+> >
+> >  The board is called "generic". No, just kidding ;)
+> 
+> /me slaps Sascha
+> 
+> Seriously though; I do intend to fix this, but I don't think adding a
+> generic entry to the compatible list is the right way to do it.  For
+> example, what would "mpc5200-generic" really mean anyway?  Convention
+> for usage of 'compatible' would indicate that it means the *entire
+> board* is compatible (obviously not true).  The use-case you're
+> talking about is simply "the board uses a 5200 and firmware is sane".
+> On the other hand, I may just be overthinking things and compatible is
+> the most appropriate place to specify that the board is a mpc5200
+> based board.  (please feel free to argue with my; my opinion can
+> probably be swayed... attaching promises of beer to your argument is
+> probably an effective strategy)
 
-On Apr 24, 2008, at 9:53 AM, Benjamin Herrenschmidt wrote:
->
-> On Thu, 2008-04-24 at 07:59 -0500, Kumar Gala wrote:
->> I'm going to change it to be just lmb_alloc() so it will be difficult
->> to share with ppc64 (other than w/an ifdef).
->
-> Unless we change lmb_alloc to just be an lmb_alloc_base with 0 and  
-> have
-> the later do the right thing ?
+At the moment my compatible entry looks like this:
 
-don't follow.  Look at the "real" patch and comment on that.
+compatible = "phytec,pcm030","generic-mpc52xx";
 
-> You don't put highmem in the LMBs ? If you do, we do need to have the
-> max lowmem there no ?
+What I think would be nice is that "phytec,pcm030" support is used
+when available and "generic-mpc52xx" as a fallback. We do not have any
+platform specific hacks at the moment, but we may have later. Having
+"phytec,pcm030" in the simple machine would prevent us from doing so.
 
-we restrict lmb alloc via LMB_REAL_LIMIT in include/asm-powerpc/lmb.h
+> 
+> This is an issue that probably affects the other embedded platforms
+> too, so it would be nice to agree on a common method of handling it.
+> 
+> Regardless, whatever method is chosen, it is also important that it is
+> always possible for board specific fixups to override the generic
+> behavior.
 
-- k
+agreed
+
+Sascha
+
+
+-- 
+Pengutronix e.K. - Linux Solutions for Science and Industry
+-----------------------------------------------------------
+Kontakt-Informationen finden Sie im Header dieser Mail oder
+auf der Webseite -> http://www.pengutronix.de/impressum/ <-
