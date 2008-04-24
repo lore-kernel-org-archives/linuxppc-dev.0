@@ -1,21 +1,17 @@
-Return-Path: <olaf@aepfle.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 1A605DE3A9
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Apr 2008 23:16:06 +1000 (EST)
-Date: Thu, 24 Apr 2008 15:16:00 +0200
-From: Olaf Hering <olaf@aepfle.de>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id DC348DE312
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Apr 2008 23:19:03 +1000 (EST)
+Date: Thu, 24 Apr 2008 08:15:01 -0500 (CDT)
+From: Kumar Gala <galak@kernel.crashing.org>
 To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH v5] create modalias file in sysfs for bus of_platform
-Message-ID: <20080424131600.GA15226@aepfle.de>
-References: <20080122142109.GA12967@aepfle.de>
-	<20080122144053.GA13019@aepfle.de>
-	<20080122190939.GA14124@aepfle.de>
-	<18330.32110.449914.354218@cargo.ozlabs.ibm.com>
-	<20080126100427.GA1162@aepfle.de>
+Subject: [PATCH] [POWERPC] Add IRQSTACKS support on ppc32
+Message-ID: <Pine.LNX.4.64.0804240814280.29846@blarg.am.freescale.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20080126100427.GA1162@aepfle.de>
-Cc: sparclinux@vger.kernel.org, linuxppc-dev@ozlabs.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,138 +21,243 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Create /sys/bus/of_platform/devices/*/modalias file to allow autoloading
-of modules. modalias files are already present for many other bus types.
-This adds also a newline to the devspec files.
+* Added allocation and initialization of the irq stacks.  We limit the
+  stacks to be in lowmem for ppc32.
+* Implemented ppc32 versions of call_do_softirq() and call_handle_irq()
+  to switch the stack pointers
+* Reworked how we do stack overflow detection.  We now keep around the
+  limit of the stack in the thread_struct and compare against the limit
+  to see if we've overflowed.  We can now use this on ppc64 if desired.
 
-Also create a devspec file for mac-io devices. They were created as a side
-effect. Use correct buffer size for mac-io modalias buffer.
-
-Tested on iBook1 and Efika.
-
-Signed-off-by: Olaf Hering <olaf@aepfle.de>
-
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 ---
- drivers/macintosh/macio_sysfs.c |   12 +++++++++++-
- drivers/of/device.c             |   36 ++++++++++++++++++++----------------
- drivers/of/platform.c           |    3 +++
- 3 files changed, 34 insertions(+), 17 deletions(-)
+ arch/powerpc/Kconfig.debug        |    1 -
+ arch/powerpc/kernel/asm-offsets.c |    1 +
+ arch/powerpc/kernel/entry_32.S    |    4 ++--
+ arch/powerpc/kernel/irq.c         |   10 +++++++++-
+ arch/powerpc/kernel/misc_32.S     |   25 +++++++++++++++++++++++++
+ arch/powerpc/kernel/process.c     |    2 ++
+ arch/powerpc/kernel/setup_32.c    |   21 +++++++++++++++++++++
+ include/asm-powerpc/processor.h   |    6 ++++++
+ 8 files changed, 66 insertions(+), 4 deletions(-)
 
---- a/drivers/macintosh/macio_sysfs.c
-+++ b/drivers/macintosh/macio_sysfs.c
-@@ -44,7 +44,7 @@ static ssize_t modalias_show (struct dev
- 	struct of_device *ofdev = to_of_device(dev);
- 	int len;
- 
--	len = of_device_get_modalias(ofdev, buf, PAGE_SIZE);
-+	len = of_device_get_modalias(ofdev, buf, PAGE_SIZE - 2);
- 
- 	buf[len] = '\n';
- 	buf[len+1] = 0;
-@@ -52,6 +52,15 @@ static ssize_t modalias_show (struct dev
- 	return len+1;
+diff --git a/arch/powerpc/Kconfig.debug b/arch/powerpc/Kconfig.debug
+index a86d8d8..2cf72d2 100644
+--- a/arch/powerpc/Kconfig.debug
++++ b/arch/powerpc/Kconfig.debug
+@@ -118,7 +118,6 @@ config XMON_DISASSEMBLY
+
+ config IRQSTACKS
+ 	bool "Use separate kernel stacks when processing interrupts"
+-	depends on PPC64
+ 	help
+ 	  If you say Y here the kernel will use separate kernel stacks
+ 	  for handling hard and soft interrupts.  This can help avoid
+diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
+index adf1d09..0ef4d41 100644
+--- a/arch/powerpc/kernel/asm-offsets.c
++++ b/arch/powerpc/kernel/asm-offsets.c
+@@ -64,6 +64,7 @@ int main(void)
+ #endif /* CONFIG_PPC64 */
+
+ 	DEFINE(KSP, offsetof(struct thread_struct, ksp));
++	DEFINE(KSP_LIMIT, offsetof(struct thread_struct, ksp_limit));
+ 	DEFINE(PT_REGS, offsetof(struct thread_struct, regs));
+ 	DEFINE(THREAD_FPEXC_MODE, offsetof(struct thread_struct, fpexc_mode));
+ 	DEFINE(THREAD_FPR0, offsetof(struct thread_struct, fpr[0]));
+diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
+index 84c8686..f33c1fe 100644
+--- a/arch/powerpc/kernel/entry_32.S
++++ b/arch/powerpc/kernel/entry_32.S
+@@ -137,8 +137,8 @@ transfer_to_handler:
+ 2:	/* if from kernel, check interrupted DOZE/NAP mode and
+          * check for stack overflow
+          */
+-	lwz	r9,THREAD_INFO-THREAD(r12)
+-	cmplw	r1,r9			/* if r1 <= current->thread_info */
++	lwz	r9,KSP_LIMIT(r12)
++	cmplw	r1,r9			/* if r1 <= ksp_limit */
+ 	ble-	stack_ovf		/* then the kernel stack overflowed */
+ 5:
+ #ifdef CONFIG_6xx
+diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+index 425616f..7378c98 100644
+--- a/arch/powerpc/kernel/irq.c
++++ b/arch/powerpc/kernel/irq.c
+@@ -307,6 +307,7 @@ void do_IRQ(struct pt_regs *regs)
+ 		if (curtp != irqtp) {
+ 			struct irq_desc *desc = irq_desc + irq;
+ 			void *handler = desc->handle_irq;
++			unsigned long saved_sp_limit = current->thread.ksp_limit;
+ 			if (handler == NULL)
+ 				handler = &__do_IRQ;
+ 			irqtp->task = curtp->task;
+@@ -319,7 +320,10 @@ void do_IRQ(struct pt_regs *regs)
+ 				(irqtp->preempt_count & ~SOFTIRQ_MASK) |
+ 				(curtp->preempt_count & SOFTIRQ_MASK);
+
++			current->thread.ksp_limit = (unsigned long)irqtp +
++				_ALIGN_UP(sizeof(struct thread_info), 16);
+ 			call_handle_irq(irq, desc, irqtp, handler);
++			current->thread.ksp_limit = saved_sp_limit;
+ 			irqtp->task = NULL;
+
+
+@@ -352,7 +356,7 @@ void __init init_IRQ(void)
+ {
+ 	if (ppc_md.init_IRQ)
+ 		ppc_md.init_IRQ();
+-#ifdef CONFIG_PPC64
++#ifdef CONFIG_IRQSTACKS
+ 	irq_ctx_init();
+ #endif
  }
- 
-+static ssize_t devspec_show(struct device *dev,
-+				struct device_attribute *attr, char *buf)
+@@ -383,11 +387,15 @@ void irq_ctx_init(void)
+ static inline void do_softirq_onstack(void)
+ {
+ 	struct thread_info *curtp, *irqtp;
++	unsigned long saved_sp_limit = current->thread.ksp_limit;
+
+ 	curtp = current_thread_info();
+ 	irqtp = softirq_ctx[smp_processor_id()];
+ 	irqtp->task = curtp->task;
++	current->thread.ksp_limit = (unsigned long)irqtp +
++				    _ALIGN_UP(sizeof(struct thread_info), 16);
+ 	call_do_softirq(irqtp);
++	current->thread.ksp_limit = saved_sp_limit;
+ 	irqtp->task = NULL;
+ }
+
+diff --git a/arch/powerpc/kernel/misc_32.S b/arch/powerpc/kernel/misc_32.S
+index 92ccc6f..89aaaa6 100644
+--- a/arch/powerpc/kernel/misc_32.S
++++ b/arch/powerpc/kernel/misc_32.S
+@@ -32,6 +32,31 @@
+
+ 	.text
+
++#ifdef CONFIG_IRQSTACKS
++_GLOBAL(call_do_softirq)
++	mflr	r0
++	stw	r0,4(r1)
++	stwu	r1,THREAD_SIZE-STACK_FRAME_OVERHEAD(r3)
++	mr	r1,r3
++	bl	__do_softirq
++	lwz	r1,0(r1)
++	lwz	r0,4(r1)
++	mtlr	r0
++	blr
++
++_GLOBAL(call_handle_irq)
++	mflr	r0
++	stw	r0,4(r1)
++	mtctr	r6
++	stwu	r1,THREAD_SIZE-STACK_FRAME_OVERHEAD(r5)
++	mr	r1,r5
++	bctrl
++	lwz	r1,0(r1)
++	lwz	r0,4(r1)
++	mtlr	r0
++	blr
++#endif /* CONFIG_IRQSTACKS */
++
+ /*
+  * This returns the high 64 bits of the product of two 64-bit numbers.
+  */
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index 6caad17..7de41c3 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -589,6 +589,8 @@ int copy_thread(int nr, unsigned long clone_flags, unsigned long usp,
+ 	kregs = (struct pt_regs *) sp;
+ 	sp -= STACK_FRAME_OVERHEAD;
+ 	p->thread.ksp = sp;
++	p->thread.ksp_limit = (unsigned long)task_stack_page(p) +
++				_ALIGN_UP(sizeof(struct thread_info), 16);
+
+ #ifdef CONFIG_PPC64
+ 	if (cpu_has_feature(CPU_FTR_SLB)) {
+diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
+index 36f6779..5112a4a 100644
+--- a/arch/powerpc/kernel/setup_32.c
++++ b/arch/powerpc/kernel/setup_32.c
+@@ -16,6 +16,7 @@
+ #include <linux/root_dev.h>
+ #include <linux/cpu.h>
+ #include <linux/console.h>
++#include <linux/lmb.h>
+
+ #include <asm/io.h>
+ #include <asm/prom.h>
+@@ -229,6 +230,24 @@ int __init ppc_init(void)
+
+ arch_initcall(ppc_init);
+
++#ifdef CONFIG_IRQSTACKS
++static void __init irqstack_early_init(void)
 +{
-+	struct of_device *ofdev;
++	unsigned int i;
 +
-+	ofdev = to_of_device(dev);
-+	return sprintf(buf, "%s\n", ofdev->node->full_name);
++	/* interrupt stacks must be in lowmem, we get that for free on ppc32
++	 * as the lmb is limited to lowmem by LMB_REAL_LIMIT */
++	for_each_possible_cpu(i) {
++		softirq_ctx[i] = (struct thread_info *)
++			__va(lmb_alloc(THREAD_SIZE, THREAD_SIZE));
++		hardirq_ctx[i] = (struct thread_info *)
++			__va(lmb_alloc(THREAD_SIZE, THREAD_SIZE));
++	}
 +}
++#else
++#define irqstack_early_init()
++#endif
 +
- macio_config_of_attr (name, "%s\n");
- macio_config_of_attr (type, "%s\n");
- 
-@@ -60,5 +69,6 @@ struct device_attribute macio_dev_attrs[
- 	__ATTR_RO(type),
- 	__ATTR_RO(compatible),
- 	__ATTR_RO(modalias),
-+	__ATTR_RO(devspec),
- 	__ATTR_NULL
- };
---- a/drivers/of/device.c
-+++ b/drivers/of/device.c
-@@ -48,16 +48,32 @@ void of_dev_put(struct of_device *dev)
- }
- EXPORT_SYMBOL(of_dev_put);
- 
--static ssize_t dev_show_devspec(struct device *dev,
-+static ssize_t devspec_show(struct device *dev,
- 				struct device_attribute *attr, char *buf)
+ /* Warning, IO base is not yet inited */
+ void __init setup_arch(char **cmdline_p)
  {
- 	struct of_device *ofdev;
- 
- 	ofdev = to_of_device(dev);
--	return sprintf(buf, "%s", ofdev->node->full_name);
-+	return sprintf(buf, "%s\n", ofdev->node->full_name);
- }
- 
--static DEVICE_ATTR(devspec, S_IRUGO, dev_show_devspec, NULL);
-+static ssize_t modalias_show(struct device *dev,
-+				struct device_attribute *attr, char *buf)
-+{
-+	struct of_device *ofdev = to_of_device(dev);
-+	ssize_t len = 0;
+@@ -286,6 +305,8 @@ void __init setup_arch(char **cmdline_p)
+ 	init_mm.end_data = (unsigned long) _edata;
+ 	init_mm.brk = klimit;
+
++	irqstack_early_init();
 +
-+	len = of_device_get_modalias(ofdev, buf, PAGE_SIZE - 2);
-+	buf[len] = '\n';
-+	buf[len+1] = 0;
-+	return len+1;
-+}
+ 	/* set up the bootmem stuff with available memory */
+ 	do_init_bootmem();
+ 	if ( ppc_md.progress ) ppc_md.progress("setup_arch: bootmem", 0x3eab);
+diff --git a/include/asm-powerpc/processor.h b/include/asm-powerpc/processor.h
+index fd98ca9..cf83f2d 100644
+--- a/include/asm-powerpc/processor.h
++++ b/include/asm-powerpc/processor.h
+@@ -138,6 +138,8 @@ typedef struct {
+
+ struct thread_struct {
+ 	unsigned long	ksp;		/* Kernel stack pointer */
++	unsigned long	ksp_limit;	/* if ksp <= ksp_limit stack overflow */
 +
-+struct device_attribute of_platform_device_attrs[] = {
-+	__ATTR_RO(devspec),
-+	__ATTR_RO(modalias),
-+	__ATTR_NULL
-+};
- 
- /**
-  * of_release_dev - free an of device structure when all users of it are finished.
-@@ -78,25 +94,13 @@ EXPORT_SYMBOL(of_release_dev);
- 
- int of_device_register(struct of_device *ofdev)
- {
--	int rc;
--
- 	BUG_ON(ofdev->node == NULL);
--
--	rc = device_register(&ofdev->dev);
--	if (rc)
--		return rc;
--
--	rc = device_create_file(&ofdev->dev, &dev_attr_devspec);
--	if (rc)
--		device_unregister(&ofdev->dev);
--
--	return rc;
-+	return device_register(&ofdev->dev);
- }
- EXPORT_SYMBOL(of_device_register);
- 
- void of_device_unregister(struct of_device *ofdev)
- {
--	device_remove_file(&ofdev->dev, &dev_attr_devspec);
- 	device_unregister(&ofdev->dev);
- }
- EXPORT_SYMBOL(of_device_unregister);
---- a/drivers/of/platform.c
-+++ b/drivers/of/platform.c
-@@ -17,6 +17,8 @@
- #include <linux/of_device.h>
- #include <linux/of_platform.h>
- 
-+extern struct device_attribute of_platform_device_attrs[];
-+
- static int of_platform_bus_match(struct device *dev, struct device_driver *drv)
- {
- 	struct of_device *of_dev = to_of_device(dev);
-@@ -103,6 +105,7 @@ int of_bus_type_init(struct bus_type *bu
- 	bus->suspend = of_platform_device_suspend;
- 	bus->resume = of_platform_device_resume;
- 	bus->shutdown = of_platform_device_shutdown;
-+	bus->dev_attrs = of_platform_device_attrs;
- 	return bus_register(bus);
- }
- 
+ #ifdef CONFIG_PPC64
+ 	unsigned long	ksp_vsid;
+ #endif
+@@ -182,11 +184,14 @@ struct thread_struct {
+ #define ARCH_MIN_TASKALIGN 16
+
+ #define INIT_SP		(sizeof(init_stack) + (unsigned long) &init_stack)
++#define INIT_SP_LIMIT \
++	(_ALIGN_UP(sizeof(init_thread_info), 16) + (unsigned long) &init_stack)
+
+
+ #ifdef CONFIG_PPC32
+ #define INIT_THREAD { \
+ 	.ksp = INIT_SP, \
++	.ksp_limit = INIT_SP_LIMIT, \
+ 	.fs = KERNEL_DS, \
+ 	.pgdir = swapper_pg_dir, \
+ 	.fpexc_mode = MSR_FE0 | MSR_FE1, \
+@@ -194,6 +199,7 @@ struct thread_struct {
+ #else
+ #define INIT_THREAD  { \
+ 	.ksp = INIT_SP, \
++	.ksp_limit = INIT_SP_LIMIT, \
+ 	.regs = (struct pt_regs *)INIT_SP - 1, /* XXX bogus, I think */ \
+ 	.fs = KERNEL_DS, \
+ 	.fpr = {0}, \
+-- 
+1.5.4.1
