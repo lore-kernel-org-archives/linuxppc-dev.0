@@ -1,16 +1,24 @@
-Return-Path: <galak@kernel.crashing.org>
-Message-Id: <EB183C40-A46E-4899-9BFF-A6D79C641AE4@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Jeremy Kerr <jk@ozlabs.org>
-In-Reply-To: <200804250826.12128.jk@ozlabs.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: [PATCH] [POWERPC] spufs: add .gitignore for spu_save_dump.h &
-	spu_restore_dump.h
-Date: Thu, 24 Apr 2008 19:47:19 -0500
-References: <Pine.LNX.4.64.0804241136310.22265@blarg.am.freescale.net>
-	<200804250826.12128.jk@ozlabs.org>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id E67B7DDE17
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Apr 2008 10:59:23 +1000 (EST)
+Subject: Re: mpc5200b custom board upstreamable?
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Sascha Hauer <s.hauer@pengutronix.de>
+In-Reply-To: <20080424162813.GL6692@pengutronix.de>
+References: <20080424151237.GI6692@pengutronix.de>
+	<fa686aa40804240813p66889769y3bee6eb0111741f7@mail.gmail.com>
+	<20080424155303.GK6692@pengutronix.de>
+	<fa686aa40804240907w7e36b579y4d2c63f00dd30848@mail.gmail.com>
+	<20080424162813.GL6692@pengutronix.de>
+Content-Type: text/plain
+Date: Fri, 25 Apr 2008 10:58:49 +1000
+Message-Id: <1209085129.9060.221.camel@pasglop>
+Mime-Version: 1.0
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,19 +29,29 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Apr 24, 2008, at 5:26 PM, Jeremy Kerr wrote:
-> Kumar,
->
->> --- /dev/null
->> +++ b/arch/powerpc/platforms/cell/spufs/.gitignore
->> @@ -0,0 +1,2 @@
->> +spu_save_dump.h
->> +spu_restore_dump.h
->
-> nak - these still need to be tracked (and distributed with the  
-> tree), as
-> we want to be able to build the kernel without spu-gcc.
+On Thu, 2008-04-24 at 18:28 +0200, Sascha Hauer wrote:
+> 
+> At the moment my compatible entry looks like this:
+> 
+> compatible = "phytec,pcm030","generic-mpc52xx";
+> 
+> What I think would be nice is that "phytec,pcm030" support is used
+> when available and "generic-mpc52xx" as a fallback. We do not have any
+> platform specific hacks at the moment, but we may have later. Having
+> "phytec,pcm030" in the simple machine would prevent us from doing so.
 
-So they should be added to the tree?
+No, please avoid that 'generic' stuff for now, for all the good reasons
+Grant gave. It might be nice but we aren't there yet. It's trivial to
+add phytec,pcm030 to the list we support and use that for now.
 
-- k
+If you do a rev tomorrow that is still compatible and in fact is very
+close to the pcm030 programmatically and call it pcm035, then you could
+do something like
+
+compatible = "phytec,pcm035", "phytec,pcm030".
+
+But don't toy with "generic" things, they sound like good ideas but they
+ultimately come back and bite us.
+
+Cheers,
+Ben.
