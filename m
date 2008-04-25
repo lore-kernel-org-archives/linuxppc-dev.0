@@ -1,18 +1,18 @@
-Return-Path: <galak@kernel.crashing.org>
-Message-Id: <038320CE-DA98-4CB4-A8C3-DAE5DFFBF51D@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Jeremy Kerr <jk@ozlabs.org>
-In-Reply-To: <200804251055.27909.jk@ozlabs.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: [PATCH] [POWERPC] spufs: add .gitignore for spu_save_dump.h &
-	spu_restore_dump.h
-Date: Thu, 24 Apr 2008 21:32:24 -0500
-References: <Pine.LNX.4.64.0804241136310.22265@blarg.am.freescale.net>
-	<200804250826.12128.jk@ozlabs.org>
-	<EB183C40-A46E-4899-9BFF-A6D79C641AE4@kernel.crashing.org>
-	<200804251055.27909.jk@ozlabs.org>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Return-Path: <kevdig@hypersurf.com>
+Received: from smtpauth.hypersurf.com (smtpauth.hypersurf.com [209.237.0.8])
+	by ozlabs.org (Postfix) with ESMTP id 2DE47DDED7
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Apr 2008 13:22:20 +1000 (EST)
+Received: from [192.168.1.37] (node76.78.251.72.1dial.com [72.251.78.76])
+	(authenticated bits=0)
+	by smtpauth.hypersurf.com (8.14.2/8.14.2) with ESMTP id m3P3Kj5Z004244
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Apr 2008 20:22:13 -0700 (PDT)
+Message-ID: <4811593B.8080508@hypersurf.com>
+Date: Thu, 24 Apr 2008 21:08:27 -0700
+From: Kevin Diggs <kevdig@hypersurf.com>
+MIME-Version: 1.0
+To: linuxppc-dev@ozlabs.org
+Subject: sysfs cpu entry
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,13 +22,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hi,
 
-On Apr 24, 2008, at 7:55 PM, Jeremy Kerr wrote:
-> Kumar,
->
-> Ah, I was mistaking them for the .h_shipped files. Nevermind me, your
-> patch is fine. Applied to my spufs tree.
+	Can someone suggest where to add the code for a cpu
+(/sys/devices/system/cpu/cpu0) entry in sysfs?
 
-ok. thanks.
+	The 2.6.24 release has a sysfs.c file but it only seems to be used for 
+64-bit? Anyone know why? What kind of planetary disasters will I create 
+if I allow it to be used in 32-bit as well?
 
-- k
+kevin
+
+P.S.:  On an unrelated note, anyone know where to start looking for
+problems in pmac_zilog. My 8600 modem which worked fine in 2.4 is now
+essentially useless. Some problem with handshaking, I think.
