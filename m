@@ -1,18 +1,20 @@
-Return-Path: <SRS0+e639c3499b0c9a0d38b5+1706+infradead.org+dwmw2@pentafluge.srs.infradead.org>
-Received: from pentafluge.infradead.org (pentafluge.infradead.org
-	[213.146.154.40])
+Return-Path: <khali@linux-fr.org>
+Received: from services.gcu-squad.org (zone0.gcu-squad.org [212.85.147.21])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E65E9DDE0E
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Apr 2008 19:29:33 +1000 (EST)
-Subject: [PATCH, RESEND] RTC class driver for ppc_md RTC functions
-From: David Woodhouse <dwmw2@infradead.org>
-To: paulus@samba.org
-Content-Type: text/plain; charset=UTF-8
-Date: Fri, 25 Apr 2008 10:29:12 +0100
-Message-Id: <1209115752.9212.1110.camel@pmac.infradead.org>
+	by ozlabs.org (Postfix) with ESMTPS id 8F91EDDF49
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Apr 2008 19:43:30 +1000 (EST)
+Date: Fri, 25 Apr 2008 11:43:18 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Jon Smirl <jonsmirl@gmail.com>
+Subject: Re: [PATCH] mpc i2c driver, compare to NO_IRQ instead of zero
+Message-ID: <20080425114318.36e3fd03@hyperion.delvare>
+In-Reply-To: <20080219174221.5b18cba8@hyperion.delvare>
+References: <20080121200740.13800.20524.stgit@terra.home>
+	<20080219174221.5b18cba8@hyperion.delvare>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, i2c@lm-sensors.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,110 +24,96 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This hooks up the platform-specific [gs]et_rtc_time functions so that
-kernels using CONFIG_RTC_CLASS have RTC support on most PowerPC
-platforms.
+Hi Jon,
 
-Signed-off-by: David Woodhouse <dwmw2@infradead.org>
+On Tue, 19 Feb 2008 17:42:21 +0100, Jean Delvare wrote:
+> On Mon, 21 Jan 2008 15:07:40 -0500, Jon Smirl wrote:
+> > Alter the mpc i2c driver to use the NO_IRQ symbol instead of
+> > the constant zero when checking for valid interrupts. NO_IRQ=-1
+> > on ppc and NO_IRQ=0 on powerpc so the checks against zero are
+> > not correct.
+> 
+> Using NO_IRQ sounds good, just one question:
+> 
+> > 
+> > Signed-off-by: Jon Smirl <jonsmirl@gmail.com>
+> > ---
+> > 
+> >  drivers/i2c/busses/i2c-mpc.c |   10 +++++-----
+> >  1 files changed, 5 insertions(+), 5 deletions(-)
+> > 
+> > 
+> > diff --git a/drivers/i2c/busses/i2c-mpc.c b/drivers/i2c/busses/i2c-mpc.c
+> > index bbe787b..d20959d 100644
+> > --- a/drivers/i2c/busses/i2c-mpc.c
+> > +++ b/drivers/i2c/busses/i2c-mpc.c
+> > @@ -99,7 +99,7 @@ static int i2c_wait(struct mpc_i2c *i2c, unsigned timeout, int writing)
+> >  	u32 x;
+> >  	int result = 0;
+> >  
+> > -	if (i2c->irq == 0)
+> > +	if (i2c->irq == NO_IRQ)
+> >  	{
+> >  		while (!(readb(i2c->base + MPC_I2C_SR) & CSR_MIF)) {
+> >  			schedule();
+> > @@ -329,7 +329,7 @@ static int fsl_i2c_probe(struct platform_device *pdev)
+> >  		return -ENOMEM;
+> >  
+> >  	i2c->irq = platform_get_irq(pdev, 0);
+> > -	if (i2c->irq < 0) {
+> > +	if (i2c->irq < NO_IRQ) {
+> 
+> I am skeptical about this one. Can platform_get_irq() really return
+> NO_IRQ? I thought that the IRQ resource would be plain missing if the
+> device has no IRQ, so I would expect:
+> 
+>  	i2c->irq = platform_get_irq(pdev, 0);
+> 	if (i2c->irq < 0)
+> 		i2c->irq = NO_IRQ; /* Use polling */
+> 
+> Testing against NO_IRQ suggests that devices with no IRQ would still
+> have an IRQ resource defined and explicitly set to NO_IRQ. Sounds weird
+> to me. Can you please clarify this point?
+> 
+> For what it's worth, no other kernel driver checks for irq < NO_IRQ.
+> They all check for irq < 0 after calling platform_get_irq().
+> 
+> >  		result = -ENXIO;
+> >  		goto fail_get_irq;
+> >  	}
+> > @@ -344,7 +344,7 @@ static int fsl_i2c_probe(struct platform_device *pdev)
+> >  		goto fail_map;
+> >  	}
+> >  
+> > -	if (i2c->irq != 0)
+> > +	if (i2c->irq != NO_IRQ)
+> >  		if ((result = request_irq(i2c->irq, mpc_i2c_isr,
+> >  					  IRQF_SHARED, "i2c-mpc", i2c)) < 0) {
+> >  			printk(KERN_ERR
+> > @@ -367,7 +367,7 @@ static int fsl_i2c_probe(struct platform_device *pdev)
+> >  	return result;
+> >  
+> >        fail_add:
+> > -	if (i2c->irq != 0)
+> > +	if (i2c->irq != NO_IRQ)
+> >  		free_irq(i2c->irq, i2c);
+> >        fail_irq:
+> >  	iounmap(i2c->base);
+> > @@ -384,7 +384,7 @@ static int fsl_i2c_remove(struct platform_device *pdev)
+> >  	i2c_del_adapter(&i2c->adap);
+> >  	platform_set_drvdata(pdev, NULL);
+> >  
+> > -	if (i2c->irq != 0)
+> > +	if (i2c->irq != NO_IRQ)
+> >  		free_irq(i2c->irq, i2c);
+> >  
+> >  	iounmap(i2c->base);
+> 
+> The rest looks good.
 
-diff --git a/drivers/rtc/Kconfig b/drivers/rtc/Kconfig
-index 1e6715e..3e788b7 100644
---- a/drivers/rtc/Kconfig
-+++ b/drivers/rtc/Kconfig
-@@ -461,4 +461,12 @@ config RTC_DRV_RS5C313
- 	help
- 	  If you say yes here you get support for the Ricoh RS5C313 RTC chips.
- 
-+config RTC_DRV_PPC
-+       tristate "PowerPC machine dependent RTC support"
-+       depends on PPC_MERGE
-+       help
-+         The PowerPC kernel has machine-specific functions for accessing
-+	 the RTC. This exposes that functionality through the generic RTC
-+	 class.
-+
- endif # RTC_CLASS
-diff --git a/drivers/rtc/Makefile b/drivers/rtc/Makefile
-index 465db4d..e822e56 100644
---- a/drivers/rtc/Makefile
-+++ b/drivers/rtc/Makefile
-@@ -49,3 +49,4 @@ obj-$(CONFIG_RTC_DRV_TEST)	+= rtc-test.o
- obj-$(CONFIG_RTC_DRV_V3020)	+= rtc-v3020.o
- obj-$(CONFIG_RTC_DRV_VR41XX)	+= rtc-vr41xx.o
- obj-$(CONFIG_RTC_DRV_X1205)	+= rtc-x1205.o
-+obj-$(CONFIG_RTC_DRV_PPC)	+= rtc-ppc.o
---- /dev/null	2007-12-03 03:08:41.854157978 +0000
-+++ b/drivers/rtc/rtc-ppc.c	2007-12-03 16:56:15.000000000 +0000
-@@ -0,0 +1,69 @@
-+/*
-+ * RTC driver for ppc_md RTC functions
-+ *
-+ * © 2007 Red Hat, Inc.
-+ *
-+ * Author: David Woodhouse <dwmw2@infradead.org>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
-+
-+
-+#include <linux/module.h>
-+#include <linux/err.h>
-+#include <linux/rtc.h>
-+#include <linux/platform_device.h>
-+#include <asm/machdep.h>
-+
-+static int ppc_rtc_read_time(struct device *dev, struct rtc_time *tm)
-+{
-+	ppc_md.get_rtc_time(tm);
-+	return 0;
-+}
-+
-+static int ppc_rtc_set_time(struct device *dev, struct rtc_time *tm)
-+{
-+	return ppc_md.set_rtc_time(tm);
-+}
-+
-+static const struct rtc_class_ops ppc_rtc_ops = {
-+	.set_time = ppc_rtc_set_time,
-+	.read_time = ppc_rtc_read_time,
-+};
-+
-+static struct rtc_device *rtc;
-+static struct platform_device *ppc_rtc_pdev;
-+
-+static int __init ppc_rtc_init(void)
-+{
-+	if (!ppc_md.get_rtc_time || !ppc_md.set_rtc_time)
-+		return -ENODEV;
-+
-+	ppc_rtc_pdev = platform_device_register_simple("ppc-rtc", 0, NULL, 0);
-+	if (IS_ERR(ppc_rtc_pdev))
-+		return PTR_ERR(ppc_rtc_pdev);
-+
-+	rtc = rtc_device_register("ppc_md", &ppc_rtc_pdev->dev,
-+				  &ppc_rtc_ops, THIS_MODULE);
-+	if (IS_ERR(rtc)) {
-+		platform_device_unregister(ppc_rtc_pdev);
-+		return PTR_ERR(rtc);
-+	}
-+
-+	return 0;
-+}
-+
-+static void __exit ppc_rtc_exit(void)
-+{
-+	rtc_device_unregister(rtc);
-+	platform_device_unregister(ppc_rtc_pdev);
-+}
-+
-+module_init(ppc_rtc_init);
-+module_exit(ppc_rtc_exit);
-+
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("David Woodhouse <dwmw2@infradead.org>");
-+MODULE_DESCRIPTION("Generic RTC class driver for PowerPC");
+Any news about this patch? I had a question above which is left
+unanswered. If you want this patch merged in 2.6.26 you'll have to be
+quick.
 
 -- 
-dwmw2
+Jean Delvare
