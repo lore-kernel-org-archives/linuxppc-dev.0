@@ -1,21 +1,18 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id BF64FDDDF9
+Return-Path: <rje@valleytech.com>
+Received: from smtp-0.hosting.atlantic.net (smtp-0.hosting.atlantic.net
+	[209.208.105.24]) by ozlabs.org (Postfix) with ESMTP id 88C86DDED7
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 25 Apr 2008 15:49:37 +1000 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1JpGoP-0007bh-Vv
-	for linuxppc-embedded@ozlabs.org; Thu, 24 Apr 2008 22:49:33 -0700
-Message-ID: <16890712.post@talk.nabble.com>
-Date: Thu, 24 Apr 2008 22:49:33 -0700 (PDT)
-From: gforgcc <narendra.ka@lntemsys.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: bringing up latest kernel on EP8248E problems....
+	Fri, 25 Apr 2008 23:29:10 +1000 (EST)
+Message-ID: <4811DB22.2070004@valleytech.com>
+Date: Fri, 25 Apr 2008 09:22:42 -0400
+From: rje@valleytech.com
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: rje@valleytech.com
+Subject: Re: mpc8349, gb ethernet, bridging
+References: <480AD64E.1040406@valleytech.com> <480CAE64.3060405@valleytech.com>
+In-Reply-To: <480CAE64.3060405@valleytech.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-embedded@ozlabs.org.
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -27,62 +24,119 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-Hi geeks,
-i am trying to bring up the latest kernel on EP8248 target,
-i am using U-boot-1.3.2 and linux-2.6.25-rc8,
-I had some problems when i tried to build the u-boot source ( first i did
-""make ep8248_config"" and then ""make"") it was giving undefined reference
-related to ft_board_setup() function so i altered the U-boot-1.3.2 source
-code... i added the below code to the following file board/ep8248/ep8248.c
 
-#if defined(CONFIG_OF_LIBFDT) && defined(CONFIG_OF_BOARD_SETUP)
-void ft_board_setup(void *blob, bd_t *bd)
-{
-        ft_cpu_setup(blob, bd);
-}
-#endif /* defined(CONFIG_OF_LIBFDT) && defined(CONFIG_OF_BOARD_SETUP) */
+I think that I know what the immediate cause of the crash is.
+
+In clean_tx_ring(),
+GFAR_KFREE_SKBUF() is being given a NULL (0) for its skb argument
+
+This is after a watchdog-timeout.  That timeout cause the driver to 
+stop, and then restart.
+The descriptior rings and the skbuffs are cleared, released, nulled.
+
+Before anything gets put into the TX buffers, a NAPI poll causes 
+clean_tx_ring() to be
+called.  The check for empty vs. full ring says "FULL" (the current + 
+dirty pointers (?)
+are == and, for some reason, the queue is _not_ stopped), even though 
+its empty.
+The crash happens while processing the 1st buffer (whose zeroed status 
+bits indiate it
+should be reclaimed/freed).
+
+Now ... _why_ this happens, is a good question.
+
+I have tried bumping up the TIMEOUT value, but to no avail.
+The timeout occured, and the issue happened.
+
+Does anybody have any ideas?
+Or has anybody seen anything similar?
 
 
-and also added the below lines to the file include/configs/ep8248.h by
-looking into the corresponding .dts file in the kernel source....
+
+We are running on an MCP8349E-based board.
+Our base kernel and drivers were Freescale's BSP for their 8349emds 
+evaluation board.
+The ethernet driver is the gianfar driver from that BSP.
 
 
-/* pass open firmware flat tree */
-#define CONFIG_OF_LIBFDT        1
-#define CONFIG_OF_BOARD_SETUP   1
+rje@valleytech.com wrote:
 
-#define OF_CPU  "PowerPC,8248@0"
-#define OF_SOC  "soc@f0000000"
-#define OF_TBCLK        (bd->bi_busfreq / 4)
-#define OF_STDOUT_PATH  "/soc@f0000000/serial@11a80"
-
-Now afte doing the above 2 alterations i was able to build the u-boot-1.3.2
-source for ep8248e....
-
-then i created the uImage with the latest kernel source linux-2.6.25-rc8 and
-put that uImage to the target...also i created the ep8248e.dtb from the dtc
-(DEVICE TREE COMPILER) and put that to the target and passed this as an
-argument to the bootm
-I also cross checked in the U-boot environment for the fdt command ... it
-was present
-Finally when it hanged I started debugging using BDI2000.which helped me to
-know atleast what is going wrong, i have added some printk's in the kernel
-source but still i am not able to find where and what exactly is going
-wrong, The first statement it is printing in the log buffer is
-""Using Embedded Planet EP8248E machine description"" and thats it the next
-message is
-Unable to handle kernel paging request for data at address 0xbfff0000
-Faulting instruction address:0xc0012070 (This nearest address to this
-address in System.map file is cacheable_memzero)
-and tracing like this i came to know that in the file
-arch/powerpc/mm/ppc_mmu_32.c , here in the function __init MMU_init_hw() and
-in the line n_hpteg = total_memory / (PAGE_SIZE * 8); probably it is getting
-problem because when i tried to print the variable total_memory it is
-printing zero !!! :( :(  so probably i am thinking it is not able to find
-some memory for Hash table :(
-Please share your knowledge and skills to solve this problem.. 
-thanks... :)
+> Hi.
+> Anybody have any idea what could cause the NETDEV WATCHDOG timeout?
+> On the GB ethernet port?
+>
+> Could that happen if the other port was being overflowed?
+>
+> That watchdog timeout seems to be involved pretty much every time
+> that the bridge goes down.  When the timeout occurs, the gianfar 
+> driver stops
+> and then (re)starts itself.
+>
+>
+>
+>>
+>> Hi.
+>>
+>> We are having some issues regarding bridging the 2 ethernet ports of 
+>> an mpc8349, and are
+>> trying to determine what is going on.
+>>
+>>
+>> We are attempting to daisy-chain several mpc8349-based boards via the 
+>> 2 ethernet ports
+>> on each 8349.  When we enable bridging for the units, we (sometimes) 
+>> start seeing the following
+>> on one of the interior bridge's (mostly on the root bridge) console(s):
+>>
+>> NETDEV WATCHDOG: eth1 : transmit timed out
+>>
+>> We then see the bridge output  messages that indicate that is is 
+>> going through a topology
+>> state change.
+>>
+>> This situation keeps recurring.
+>>
+>> At some point, the message from the bridge that it is entering a 
+>> disabled state for port #2
+>> (eth1) is followed by garbage (actually, it appears to be some 
+>> pointers and/or memory
+>> addresses printed out), and the system hangs.
+>>
+>> We are using NAPI and the skbuff-recycling for the gianfar driver.
+>> We use ring(s) of 32 buffers.
+>> The gianfar's watchdog is set to  1Hz (once a seond ?)
+>>
+>> We are not sure if/how affect things:
+>>
+>> Port #1 of the 'root' bridge  is attached directly to our LAN
+>> Port #1 of the 'root' bridge runs at 10 Mbs
+>> Port #2 of the 'root' bridge runs at 1Gbs
+>> All other ports in the chain are       1Gbs
+>> We are using CAT-5 cables for all connections
+>>
+>> We have an application on each bridge in the chain that periodically 
+>> sends several hundred bytes
+>> 'up the chain', towards its head (ie, towards our LAN).   This 
+>> application is typically running
+>> when the issue is seen.
+>>
+>> Setting the bridge's forwarding delay to 0 and hellotime to 6,000 
+>> helped, but did
+>> not solve the issue.
+>>
+>> ???
+>>
+>
 
 -- 
-View this message in context: http://www.nabble.com/bringing-up-latest-kernel-on-EP8248E-problems....-tp16890712p16890712.html
-Sent from the linuxppc-embedded mailing list archive at Nabble.com.
+
+Sometimes I feel like a red shirt in the Star Trek episode of life.
+
+--
+
+This message contains confidential information and is intended only for the
+individual named.  If you are not the intended recipient you should not
+disseminate, distribute or copy this e-mail.  Please notify the sender
+immediately by e-mail if you have received this e-mail by mistake and delete
+this e-mail from your system.
