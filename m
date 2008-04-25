@@ -1,21 +1,18 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 0600EDE189
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Apr 2008 23:03:43 +1000 (EST)
-Subject: Re: [RFC][WIP][PATCH] Add IRQSTACKS to ppc32
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Christoph Hellwig <hch@lst.de>
-In-Reply-To: <20080425072332.GB23053@lst.de>
-References: <Pine.LNX.4.64.0804240034160.23185@blarg.am.freescale.net>
-	<20080425072332.GB23053@lst.de>
-Content-Type: text/plain
-Date: Fri, 25 Apr 2008 23:03:34 +1000
-Message-Id: <1209128614.5420.6.camel@pasglop>
-Mime-Version: 1.0
+Return-Path: <avorontsov@dev.rtsoft.ru>
+Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
+	by ozlabs.org (Postfix) with SMTP id A3170DE39F
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Apr 2008 23:07:38 +1000 (EST)
+Date: Fri, 25 Apr 2008 17:07:37 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Sascha Hauer <s.hauer@pengutronix.de>
+Subject: Re: [PATCH] add gpiolib support for mpc5200
+Message-ID: <20080425130737.GA3430@polina.dev.rtsoft.ru>
+References: <20080424153659.GJ6692@pengutronix.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=windows-1251
+In-Reply-To: <20080424153659.GJ6692@pengutronix.de>
 Cc: linuxppc-dev@ozlabs.org
-Reply-To: benh@kernel.crashing.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,19 +22,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thu, Apr 24, 2008 at 05:36:59PM +0200, Sascha Hauer wrote:
 
-On Fri, 2008-04-25 at 09:23 +0200, Christoph Hellwig wrote:
-> On Thu, Apr 24, 2008 at 12:37:50AM -0500, Kumar Gala wrote:
-> >  config IRQSTACKS
-> >  	bool "Use separate kernel stacks when processing interrupts"
-> > -	depends on PPC64
-> 
-> Why do we have this as a user-selectable option?  It should be on by
-> default on 32 or 64bit.
+> +#include <linux/of.h>
+> +#include <linux/kernel.h>
+> +#include <linux/of_gpio.h>
+> +#include <linux/io.h>
+> +#include <asm/of_platform.h>
+> +#include <asm/prom.h>
+> +#include <asm/gpio.h>
 
-History maybe ? In the early days it was a bit "experimental" (we had a
-couple of issues that popped up with some thread flags not being
-properly recovered etc...). Nowadays, I agree it should not be an
-option.
+In the latest kernels the preferred way is to include <linux/gpio.h>,
+the patch introducing it was merged just recently, so few people know
+about it yet.
 
-Ben.
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
