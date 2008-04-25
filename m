@@ -1,22 +1,23 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from tmnt04.transmode.se (mail.transmode.se [83.241.175.147])
-	by ozlabs.org (Postfix) with ESMTP id 6D5C1DE048
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Apr 2008 21:25:08 +1000 (EST)
-Subject: RE: [PATCH 1/2] spi_mpc83xx: test below 0 on unsigned irq
-	in	mpc83xx_spi_probe()
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-To: 'Roel Kluin' <12o3l@tiscali.nl>
-In-Reply-To: <00ed01c8a58c$b4a5fa40$1df1eec0$@Tjernlund@transmode.se>
-References: <480FA234.1000601@tiscali.nl>
-	<00ed01c8a58c$b4a5fa40$1df1eec0$@Tjernlund@transmode.se>
-Content-Type: text/plain
-Date: Fri, 25 Apr 2008 13:25:06 +0200
-Message-Id: <1209122706.31117.8.camel@gentoo-jocke.transmode.se>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, dbrownell@users.sourceforge.net,
-	'lkml' <linux-kernel@vger.kernel.org>,
-	spi-devel-general@lists.sourceforge.net
-Reply-To: joakim.tjernlund@transmode.se
+Return-Path: <laurentp@cse-semaphore.com>
+Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
+	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id A31D2DE159
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Apr 2008 21:53:17 +1000 (EST)
+From: Laurent Pinchart <laurentp@cse-semaphore.com>
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Subject: Re: [PATCH 1/2] [MTD] Add support for RAM & ROM
+	=?iso-8859-1?q?mappings=09in=09the=09physmap=5Fof_MTD?= driver.
+Date: Fri, 25 Apr 2008 13:53:10 +0200
+References: <200803261344.03438.laurentp@cse-semaphore.com>
+	<1208895496.9212.671.camel@pmac.infradead.org>
+	<480F19B9.1070403@ru.mvista.com>
+In-Reply-To: <480F19B9.1070403@ru.mvista.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart1348340.kMds0ggu8j";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
+Message-Id: <200804251353.13698.laurentp@cse-semaphore.com>
+Cc: ben@simtec.co.uk, linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
+	David Woodhouse <dwmw2@infradead.org>,
+	David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,65 +27,60 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+--nextPart1348340.kMds0ggu8j
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-On Wed, 2008-04-23 at 23:55 +0200, Joakim Tjernlund wrote:
-> > -----Original Message-----
-> > From: linuxppc-dev-bounces+joakim.tjernlund=transmode.se@ozlabs.org [mailto:linuxppc-dev-
-> > bounces+joakim.tjernlund=transmode.se@ozlabs.org] On Behalf Of Roel Kluin
-> > Sent: den 23 april 2008 22:55
-> > To: galak@kernel.crashing.org; linuxppc-dev@ozlabs.org
-> > Cc: spi-devel-general@lists.sourceforge.net; dbrownell@users.sourceforge.net; lkml
-> > Subject: [PATCH 1/2] spi_mpc83xx: test below 0 on unsigned irq in mpc83xx_spi_probe()
-> > 
-> > mpc83xx_spi->irq is unsigned, so the test fails
-> > 
-> > Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
-> 
-> hmm, I got a pretty large 83xx spi patch queued at dbrownell. I hope
-> that one can be applied first. Then you probably need to rediff this patch.
-> 
-> David, any progress on my patch?
+On Wednesday 23 April 2008 13:12, Sergei Shtylyov wrote:
+> David Woodhouse wrote:
+>=20
+> >>>>Ok. I'll submit a new patch as soon as we agree on a compatible name.
+>=20
+> >>>Did we?
+>=20
+> >>    IIRC, The latest agreement was that we don't need the "compatible" =
+and=20
+> >>will match on node name.
+>=20
+> > Ok. Is there a current patch I should be merging?
+>=20
+>     Looks like it was decided to revert to the platform device method, no=
+t=20
+> sure why -- so, no changes. Laurent?
 
-David, heard nothing from you in a while. Don't you get my mails?
+Last thing I heard was that the device tree should not encode a device's=20
+expected usage, so memory nodes should not have any compatible property tha=
+t=20
+would automatically associated them to an MTD driver. I've been adviced to=
+=20
+add platform-specific code to instantiate a platform device manually=20
+(possibly checking if the required memory node is present in the device=20
+tree). This arguably makes sense, but adds more platform-specific code.
 
-   Jocke 
+So, no need for a patch so far.
 
-> 
->  Jocke
-> > ---
-> > diff --git a/drivers/spi/spi_mpc83xx.c b/drivers/spi/spi_mpc83xx.c
-> > index be15a62..033fd51 100644
-> > --- a/drivers/spi/spi_mpc83xx.c
-> > +++ b/drivers/spi/spi_mpc83xx.c
-> > @@ -454,12 +454,12 @@ static int __init mpc83xx_spi_probe(struct platform_device *dev)
-> >  		goto put_master;
-> >  	}
-> > 
-> > -	mpc83xx_spi->irq = platform_get_irq(dev, 0);
-> > -
-> > -	if (mpc83xx_spi->irq < 0) {
-> > -		ret = -ENXIO;
-> > +	ret = platform_get_irq(dev, 0);
-> > +	if (ret < 0)
-> >  		goto unmap_io;
-> > -	}
-> > +
-> > +	mpc83xx_spi->irq = ret;
-> > +	ret = 0;
-> > 
-> >  	/* Register for SPI Interrupt */
-> >  	ret = request_irq(mpc83xx_spi->irq, mpc83xx_spi_irq,
-> > 
-> > _______________________________________________
-> > Linuxppc-dev mailing list
-> > Linuxppc-dev@ozlabs.org
-> > https://ozlabs.org/mailman/listinfo/linuxppc-dev
-> > 
-> 
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
-> 
-> 
+=2D-=20
+Laurent Pinchart
+CSE Semaphore Belgium
+
+Chaussee de Bruxelles, 732A
+B-1410 Waterloo
+Belgium
+
+T +32 (2) 387 42 59
+=46 +32 (2) 387 42 75
+
+--nextPart1348340.kMds0ggu8j
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
+
+iD8DBQBIEcYp8y9gWxC9vpcRAqpPAJ9pgoC/J7pU8528wM7jjShyVIA4NQCg2lju
+9PJv5uWyxitlFdXinauxy1c=
+=DZmk
+-----END PGP SIGNATURE-----
+
+--nextPart1348340.kMds0ggu8j--
