@@ -1,19 +1,16 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id 8F892DE953
-	for <linuxppc-dev@ozlabs.org>; Sat, 26 Apr 2008 02:00:10 +1000 (EST)
-Message-ID: <4811FFE4.2020203@ru.mvista.com>
-Date: Fri, 25 Apr 2008 19:59:32 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Return-Path: <avorontsov@dev.rtsoft.ru>
+Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
+	by ozlabs.org (Postfix) with SMTP id 05E4CDE11B
+	for <linuxppc-dev@ozlabs.org>; Sat, 26 Apr 2008 03:00:17 +1000 (EST)
+Date: Fri, 25 Apr 2008 21:00:14 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: [PATCH 0/6 v3] Few more patches for Kumar's powerpc.git
+Message-ID: <20080425170014.GA11669@polina.dev.rtsoft.ru>
 MIME-Version: 1.0
-To: joakim.tjernlund@transmode.se
-Subject: Re: HR timers on PowerPC 83xx
-References: <1209132039.31117.17.camel@gentoo-jocke.transmode.se>	
-	<4811E845.2060509@ru.mvista.com>
-	<1209135051.31117.19.camel@gentoo-jocke.transmode.se>
-In-Reply-To: <1209135051.31117.19.camel@gentoo-jocke.transmode.se>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: 'linuxppc-dev Development' <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=utf8
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,17 +20,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Joakim Tjernlund wrote:
+Hi Kumar,
 
->>>Trying to understand what is needed to make nanosleep() and friends to
->>>have better resolution than HZ on my 83xx CPU. Is this possible
->>>and what CONFIG options do I need to enable? Kernel is 2.6.25
+Here is the third try.
 
->>    Should be possible with CONFIG_HIGH_RES_TIMERS=y.
+I've tried to address all the comments from the previous version.
 
-> What about NO_HZ? Does that setting change anything?
+The only comment I left out is merging mpc836x_rdk.c board file into some
+existing board (as I explained, there are three QE boards: mpc832x_{rdb,mds}
+and mpc836x_mds, and all have board-specific fixups either in the
+machine_device_initcall()s or setup_arch()s, so I don't see an easy way to
+merge RDK board into existing).
 
-    It is independent from HRT and selects the mode where the idle process 
-stops timer HZ interrupts from occuring until it's scheduled off CPU.
+Thanks,
 
-WBR, Sergei
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
