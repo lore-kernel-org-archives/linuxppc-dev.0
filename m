@@ -1,18 +1,29 @@
-Return-Path: <rje@valleytech.com>
-Received: from smtp-0.hosting.atlantic.net (smtp-0.hosting.atlantic.net
-	[209.208.105.24]) by ozlabs.org (Postfix) with ESMTP id 88C86DDED7
+Return-Path: <glppe-linuxppc-embedded-2@m.gmane.org>
+Received: from ciao.gmane.org (main.gmane.org [80.91.229.2])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id CC19CDE580
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 25 Apr 2008 23:29:10 +1000 (EST)
-Message-ID: <4811DB22.2070004@valleytech.com>
-Date: Fri, 25 Apr 2008 09:22:42 -0400
-From: rje@valleytech.com
-MIME-Version: 1.0
-To: rje@valleytech.com
-Subject: Re: mpc8349, gb ethernet, bridging
-References: <480AD64E.1040406@valleytech.com> <480CAE64.3060405@valleytech.com>
-In-Reply-To: <480CAE64.3060405@valleytech.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org.
+	Fri, 25 Apr 2008 23:38:13 +1000 (EST)
+Received: from list by ciao.gmane.org with local (Exim 4.43)
+	id 1JpO7p-00032t-FA
+	for linuxppc-embedded@ozlabs.org; Fri, 25 Apr 2008 13:38:06 +0000
+Received: from p5497d382.dip.t-dialin.net ([84.151.211.130])
+	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
+	id 1AlnuQ-0007hv-00
+	for <linuxppc-embedded@ozlabs.org>; Fri, 25 Apr 2008 13:38:05 +0000
+Received: from dzu by p5497d382.dip.t-dialin.net with local (Gmexim 0.1
+	(Debian)) id 1AlnuQ-0007hv-00
+	for <linuxppc-embedded@ozlabs.org>; Fri, 25 Apr 2008 13:38:05 +0000
+To: linuxppc-embedded@ozlabs.org
+From: Detlev Zundel <dzu@denx.de>
+Subject: Re: ppc_4xx uImage - kernel boot problem
+Date: Fri, 25 Apr 2008 15:37:11 +0200
+Message-ID: <m2prseys1k.fsf@ohwell.denx.de>
+References: <a399f0740804180036n189507cavd34f64891326bac1@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Sender: news <news@ger.gmane.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -23,120 +34,67 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hi Ayhan,
 
-
-I think that I know what the immediate cause of the crash is.
-
-In clean_tx_ring(),
-GFAR_KFREE_SKBUF() is being given a NULL (0) for its skb argument
-
-This is after a watchdog-timeout.  That timeout cause the driver to 
-stop, and then restart.
-The descriptior rings and the skbuffs are cleared, released, nulled.
-
-Before anything gets put into the TX buffers, a NAPI poll causes 
-clean_tx_ring() to be
-called.  The check for empty vs. full ring says "FULL" (the current + 
-dirty pointers (?)
-are == and, for some reason, the queue is _not_ stopped), even though 
-its empty.
-The crash happens while processing the 1st buffer (whose zeroed status 
-bits indiate it
-should be reclaimed/freed).
-
-Now ... _why_ this happens, is a good question.
-
-I have tried bumping up the TIMEOUT value, but to no avail.
-The timeout occured, and the issue happened.
-
-Does anybody have any ideas?
-Or has anybody seen anything similar?
-
-
-
-We are running on an MCP8349E-based board.
-Our base kernel and drivers were Freescale's BSP for their 8349emds 
-evaluation board.
-The ethernet driver is the gianfar driver from that BSP.
-
-
-rje@valleytech.com wrote:
-
-> Hi.
-> Anybody have any idea what could cause the NETDEV WATCHDOG timeout?
-> On the GB ethernet port?
->
-> Could that happen if the other port was being overflowed?
->
-> That watchdog timeout seems to be involved pretty much every time
-> that the bridge goes down.  When the timeout occurs, the gianfar 
-> driver stops
-> and then (re)starts itself.
+> I have an AMCC 405gp board on which runs u-boot. I try to boot the Linux Kernel
+> via network but can not. I download uImage using DHCPD/TFTP. Here is the 
+> minicom console output:
 >
 >
+> Type "run flash_nfs" to mount root filesystem over NFS
 >
->>
->> Hi.
->>
->> We are having some issues regarding bridging the 2 ethernet ports of 
->> an mpc8349, and are
->> trying to determine what is going on.
->>
->>
->> We are attempting to daisy-chain several mpc8349-based boards via the 
->> 2 ethernet ports
->> on each 8349.  When we enable bridging for the units, we (sometimes) 
->> start seeing the following
->> on one of the interior bridge's (mostly on the root bridge) console(s):
->>
->> NETDEV WATCHDOG: eth1 : transmit timed out
->>
->> We then see the bridge output  messages that indicate that is is 
->> going through a topology
->> state change.
->>
->> This situation keeps recurring.
->>
->> At some point, the message from the bridge that it is entering a 
->> disabled state for port #2
->> (eth1) is followed by garbage (actually, it appears to be some 
->> pointers and/or memory
->> addresses printed out), and the system hangs.
->>
->> We are using NAPI and the skbuff-recycling for the gianfar driver.
->> We use ring(s) of 32 buffers.
->> The gianfar's watchdog is set to  1Hz (once a seond ?)
->>
->> We are not sure if/how affect things:
->>
->> Port #1 of the 'root' bridge  is attached directly to our LAN
->> Port #1 of the 'root' bridge runs at 10 Mbs
->> Port #2 of the 'root' bridge runs at 1Gbs
->> All other ports in the chain are       1Gbs
->> We are using CAT-5 cables for all connections
->>
->> We have an application on each bridge in the chain that periodically 
->> sends several hundred bytes
->> 'up the chain', towards its head (ie, towards our LAN).   This 
->> application is typically running
->> when the issue is seen.
->>
->> Setting the bridge's forwarding delay to 0 and hellotime to 6,000 
->> helped, but did
->> not solve the issue.
->>
->> ???
->>
+> Hit any key to stop autoboot:  0
+> ENET Speed is 100 Mbps - FULL duplex connection (EMAC0)
+> Using ppc_4xx_eth0 device
+> TFTP from server 192.168.1.210; our IP address is 192.168.1.220
+> Filename 'uImage'.
+> Load address: 0x200000
+> Loading: #################################################################
+>          ###############
+> done
+> Bytes transferred = 1167936 (11d240 hex)
+> ## Booting image at 00200000 ...
+>    Image Name:   Linux-2.6.25-rc7-00000-ga1ba6f0
+>    Created:      2008-04-07  12:32:44 UTC
+>    Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+>    Data Size:    1167872 Bytes =  1.1 MB
+>    Load Address: 00000000
+>    Entry Point:  00000000
+>    Verifying Checksum ... OK
+>    Uncompressing Kernel Image ... OK
 >
+>
+> Here the console is frozen. It's the point where u-boot ends up and the kernel
+> code starts. I think I have a mistake in addressing. I don't have sufficient
+> knowledge about uImage format and the kernel compilation process. I followed
+> the steps through the ELDK documantation from DENX software for cross-compiling
+> the linux kernel as below:    
+>
+>       bash$ make mrproper
+>       bash$ make ARCH=ppc CROSS_COMPILE=ppc_4xx- walnut_defconfig
+>       bash$ make ARCH=ppc CROSS_COMPILE=ppc_4xx- uImage
+>
+> Could anyone help me solving the boot problem?
+
+Very likely your kernel is booting, but you do not have specified a
+serial console, so you do not see any output.
+
+Can you show us the exact sequence of commands booting the kernel,
+i.e. especially show us the bootargs U-Boot variable.
+
+You can also try the post mortem log buffer examination[1] to see what
+kernel messages were generated.
+
+Cheers
+  Detlev
+
+[1] http://www.denx.de/wiki/view/DULG/LinuxPostMortemAnalysis
 
 -- 
-
-Sometimes I feel like a red shirt in the Star Trek episode of life.
-
+Greenspun's Tenth Rule of Programming: "Any sufficiently complicated C
+or Fortran program contains an ad-hoc, informally-specified bug-ridden
+slow implementation of half of Common Lisp."
 --
-
-This message contains confidential information and is intended only for the
-individual named.  If you are not the intended recipient you should not
-disseminate, distribute or copy this e-mail.  Please notify the sender
-immediately by e-mail if you have received this e-mail by mistake and delete
-this e-mail from your system.
+DENX Software Engineering GmbH,      MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich,  Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-40 Fax: (+49)-8142-66989-80 Email: dzu@denx.de
