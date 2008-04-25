@@ -1,33 +1,22 @@
-Return-Path: <LeoLi@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id D0039DDF8B
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Apr 2008 21:10:09 +1000 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	m3PBA2Pc006622
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Apr 2008 04:10:03 -0700 (MST)
-Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
-	[10.192.129.221])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m3PBA1vl007552
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Apr 2008 06:10:01 -0500 (CDT)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH] MTD: fix partition scan control logic in physmap_ofand
-	fsl_elbc_nand
-Date: Fri, 25 Apr 2008 19:09:59 +0800
-Message-ID: <989B956029373F45A0B8AF029708189002007C8F@zch01exm26.fsl.freescale.net>
-In-Reply-To: <1208890162.9212.646.camel@pmac.infradead.org>
-References: <1204201051-13107-1-git-send-email-leoli@freescale.com>
-	<1208890162.9212.646.camel@pmac.infradead.org>
-From: "Li Yang" <LeoLi@freescale.com>
-To: "David Woodhouse" <dwmw2@infradead.org>
-Cc: linuxppc-dev@ozlabs.org, Stefan Roese <sr@denx.de>,
-	linux-mtd@lists.infradead.org
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from tmnt04.transmode.se (mail.transmode.se [83.241.175.147])
+	by ozlabs.org (Postfix) with ESMTP id 6D5C1DE048
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Apr 2008 21:25:08 +1000 (EST)
+Subject: RE: [PATCH 1/2] spi_mpc83xx: test below 0 on unsigned irq
+	in	mpc83xx_spi_probe()
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+To: 'Roel Kluin' <12o3l@tiscali.nl>
+In-Reply-To: <00ed01c8a58c$b4a5fa40$1df1eec0$@Tjernlund@transmode.se>
+References: <480FA234.1000601@tiscali.nl>
+	<00ed01c8a58c$b4a5fa40$1df1eec0$@Tjernlund@transmode.se>
+Content-Type: text/plain
+Date: Fri, 25 Apr 2008 13:25:06 +0200
+Message-Id: <1209122706.31117.8.camel@gentoo-jocke.transmode.se>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, dbrownell@users.sourceforge.net,
+	'lkml' <linux-kernel@vger.kernel.org>,
+	spi-devel-general@lists.sourceforge.net
+Reply-To: joakim.tjernlund@transmode.se
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,40 +26,65 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: David Woodhouse [mailto:dwmw2@infradead.org]=20
-> Sent: Wednesday, April 23, 2008 2:49 AM
-> To: Li Yang
-> Cc: linux-mtd@lists.infradead.org; Stefan Roese;=20
-> linuxppc-dev@ozlabs.org
-> Subject: Re: [PATCH] MTD: fix partition scan control logic in=20
-> physmap_ofand fsl_elbc_nand
->=20
-> On Thu, 2008-02-28 at 20:17 +0800, Li Yang wrote:
-> > The generic rule for partition scan is to try all supported=20
-> partition=20
-> > types before an usable partition table is found.
-> > However the original code returns unsuccessful when there=20
-> is an error=20
-> > in any of the partition types.
-> >=20
-> > Signed-off-by: Li Yang <leoli@freescale.com>
-> > Cc: Stefan Roese <sr@denx.de>
-> > Cc: Peter Korsgaard <jacmet@sunsite.dk>
+
+On Wed, 2008-04-23 at 23:55 +0200, Joakim Tjernlund wrote:
+> > -----Original Message-----
+> > From: linuxppc-dev-bounces+joakim.tjernlund=transmode.se@ozlabs.org [mailto:linuxppc-dev-
+> > bounces+joakim.tjernlund=transmode.se@ozlabs.org] On Behalf Of Roel Kluin
+> > Sent: den 23 april 2008 22:55
+> > To: galak@kernel.crashing.org; linuxppc-dev@ozlabs.org
+> > Cc: spi-devel-general@lists.sourceforge.net; dbrownell@users.sourceforge.net; lkml
+> > Subject: [PATCH 1/2] spi_mpc83xx: test below 0 on unsigned irq in mpc83xx_spi_probe()
+> > 
+> > mpc83xx_spi->irq is unsigned, so the test fails
+> > 
+> > Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+> 
+> hmm, I got a pretty large 83xx spi patch queued at dbrownell. I hope
+> that one can be applied first. Then you probably need to rediff this patch.
+> 
+> David, any progress on my patch?
+
+David, heard nothing from you in a while. Don't you get my mails?
+
+   Jocke 
+
+> 
+>  Jocke
 > > ---
-> > I later found that Stefan has proposed a similar patch for=20
-> physmap_of=20
-> > and Peter proposed another patch to fix cmdlinepart instead.
-> > I'd say that even after cmdlinepart patch is applied the=20
-> scan control=20
-> > logic still needs to be fixed.
->=20
-> I'm not convinced. I think the partition code should return=20
-> an error if it hits a hard error, like a failure to read from=20
-> the device. And return zero when it doesn't find anything.
-
-The error can also be soft error like a typo in the cmdline or device
-tree.  I could be better to try other ways to see if we can find a sane
-partition table than just to fail.
-
-- Leo
+> > diff --git a/drivers/spi/spi_mpc83xx.c b/drivers/spi/spi_mpc83xx.c
+> > index be15a62..033fd51 100644
+> > --- a/drivers/spi/spi_mpc83xx.c
+> > +++ b/drivers/spi/spi_mpc83xx.c
+> > @@ -454,12 +454,12 @@ static int __init mpc83xx_spi_probe(struct platform_device *dev)
+> >  		goto put_master;
+> >  	}
+> > 
+> > -	mpc83xx_spi->irq = platform_get_irq(dev, 0);
+> > -
+> > -	if (mpc83xx_spi->irq < 0) {
+> > -		ret = -ENXIO;
+> > +	ret = platform_get_irq(dev, 0);
+> > +	if (ret < 0)
+> >  		goto unmap_io;
+> > -	}
+> > +
+> > +	mpc83xx_spi->irq = ret;
+> > +	ret = 0;
+> > 
+> >  	/* Register for SPI Interrupt */
+> >  	ret = request_irq(mpc83xx_spi->irq, mpc83xx_spi_irq,
+> > 
+> > _______________________________________________
+> > Linuxppc-dev mailing list
+> > Linuxppc-dev@ozlabs.org
+> > https://ozlabs.org/mailman/listinfo/linuxppc-dev
+> > 
+> 
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+> 
+> 
