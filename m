@@ -1,20 +1,32 @@
-Return-Path: <khali@linux-fr.org>
-Received: from services.gcu-squad.org (zone0.gcu-squad.org [212.85.147.21])
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 8F91EDDF49
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Apr 2008 19:43:30 +1000 (EST)
-Date: Fri, 25 Apr 2008 11:43:18 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Jon Smirl <jonsmirl@gmail.com>
-Subject: Re: [PATCH] mpc i2c driver, compare to NO_IRQ instead of zero
-Message-ID: <20080425114318.36e3fd03@hyperion.delvare>
-In-Reply-To: <20080219174221.5b18cba8@hyperion.delvare>
-References: <20080121200740.13800.20524.stgit@terra.home>
-	<20080219174221.5b18cba8@hyperion.delvare>
+	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id BF6A2DDF50
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Apr 2008 20:43:14 +1000 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e3.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m3PAh7T5005193
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Apr 2008 06:43:07 -0400
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m3PAh6RL227720
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Apr 2008 06:43:06 -0400
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m3PAgu1K011401
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Apr 2008 06:42:56 -0400
+Date: Fri, 25 Apr 2008 05:37:24 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org
+Subject: Re: [PATCH v2] [POWERPC] 4xx: Add endpoint support to 4xx PCIe driver
+Message-ID: <20080425053724.5b3eeb2f@zod.rchland.ibm.com>
+In-Reply-To: <1209104641.9060.228.camel@pasglop>
+References: <1208789670-28909-1-git-send-email-sr@denx.de>
+	<1209104641.9060.228.camel@pasglop>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, i2c@lm-sensors.org
+Cc: linuxppc-dev@ozlabs.org, Stefan Roese <sr@denx.de>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,96 +36,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Jon,
+On Fri, 25 Apr 2008 16:24:01 +1000
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-On Tue, 19 Feb 2008 17:42:21 +0100, Jean Delvare wrote:
-> On Mon, 21 Jan 2008 15:07:40 -0500, Jon Smirl wrote:
-> > Alter the mpc i2c driver to use the NO_IRQ symbol instead of
-> > the constant zero when checking for valid interrupts. NO_IRQ=-1
-> > on ppc and NO_IRQ=0 on powerpc so the checks against zero are
-> > not correct.
 > 
-> Using NO_IRQ sounds good, just one question:
-> 
+> On Mon, 2008-04-21 at 16:54 +0200, Stefan Roese wrote:
+> > This patch adds basic endpoint support to the 4xx PCIe driver.
 > > 
-> > Signed-off-by: Jon Smirl <jonsmirl@gmail.com>
-> > ---
+> > This is done by checking the device_type property of the PCIe
+> > device node ("pci" for root-complex and "pci-endpoint" for endpoint
+> > configuration).
 > > 
-> >  drivers/i2c/busses/i2c-mpc.c |   10 +++++-----
-> >  1 files changed, 5 insertions(+), 5 deletions(-)
+> > Note: Currently we map a fixed 64MByte window to PLB address 0 (SDRAM).
+> > This should probably be configurable via a dts property.
 > > 
-> > 
-> > diff --git a/drivers/i2c/busses/i2c-mpc.c b/drivers/i2c/busses/i2c-mpc.c
-> > index bbe787b..d20959d 100644
-> > --- a/drivers/i2c/busses/i2c-mpc.c
-> > +++ b/drivers/i2c/busses/i2c-mpc.c
-> > @@ -99,7 +99,7 @@ static int i2c_wait(struct mpc_i2c *i2c, unsigned timeout, int writing)
-> >  	u32 x;
-> >  	int result = 0;
-> >  
-> > -	if (i2c->irq == 0)
-> > +	if (i2c->irq == NO_IRQ)
-> >  	{
-> >  		while (!(readb(i2c->base + MPC_I2C_SR) & CSR_MIF)) {
-> >  			schedule();
-> > @@ -329,7 +329,7 @@ static int fsl_i2c_probe(struct platform_device *pdev)
-> >  		return -ENOMEM;
-> >  
-> >  	i2c->irq = platform_get_irq(pdev, 0);
-> > -	if (i2c->irq < 0) {
-> > +	if (i2c->irq < NO_IRQ) {
+> > Signed-off-by: Stefan Roese <sr@denx.de>
 > 
-> I am skeptical about this one. Can platform_get_irq() really return
-> NO_IRQ? I thought that the IRQ resource would be plain missing if the
-> device has no IRQ, so I would expect:
+> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> ---
 > 
->  	i2c->irq = platform_get_irq(pdev, 0);
-> 	if (i2c->irq < 0)
-> 		i2c->irq = NO_IRQ; /* Use polling */
-> 
-> Testing against NO_IRQ suggests that devices with no IRQ would still
-> have an IRQ resource defined and explicitly set to NO_IRQ. Sounds weird
-> to me. Can you please clarify this point?
-> 
-> For what it's worth, no other kernel driver checks for irq < NO_IRQ.
-> They all check for irq < 0 after calling platform_get_irq().
-> 
-> >  		result = -ENXIO;
-> >  		goto fail_get_irq;
-> >  	}
-> > @@ -344,7 +344,7 @@ static int fsl_i2c_probe(struct platform_device *pdev)
-> >  		goto fail_map;
-> >  	}
-> >  
-> > -	if (i2c->irq != 0)
-> > +	if (i2c->irq != NO_IRQ)
-> >  		if ((result = request_irq(i2c->irq, mpc_i2c_isr,
-> >  					  IRQF_SHARED, "i2c-mpc", i2c)) < 0) {
-> >  			printk(KERN_ERR
-> > @@ -367,7 +367,7 @@ static int fsl_i2c_probe(struct platform_device *pdev)
-> >  	return result;
-> >  
-> >        fail_add:
-> > -	if (i2c->irq != 0)
-> > +	if (i2c->irq != NO_IRQ)
-> >  		free_irq(i2c->irq, i2c);
-> >        fail_irq:
-> >  	iounmap(i2c->base);
-> > @@ -384,7 +384,7 @@ static int fsl_i2c_remove(struct platform_device *pdev)
-> >  	i2c_del_adapter(&i2c->adap);
-> >  	platform_set_drvdata(pdev, NULL);
-> >  
-> > -	if (i2c->irq != 0)
-> > +	if (i2c->irq != NO_IRQ)
-> >  		free_irq(i2c->irq, i2c);
-> >  
-> >  	iounmap(i2c->base);
-> 
-> The rest looks good.
+> Paul, I forgot to send that ack a while ago, this is .26 material, been
+> around for some time.
 
-Any news about this patch? I had a question above which is left
-unanswered. If you want this patch merged in 2.6.26 you'll have to be
-quick.
+I'll add it to my tree.  And this version of the patch was only sent
+out on Monday.
 
--- 
-Jean Delvare
+josh
