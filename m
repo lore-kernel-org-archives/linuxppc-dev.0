@@ -1,18 +1,21 @@
-Return-Path: <avorontsov@dev.rtsoft.ru>
-Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
-	by ozlabs.org (Postfix) with SMTP id 2350FDE91C
-	for <linuxppc-dev@ozlabs.org>; Sat, 26 Apr 2008 03:01:31 +1000 (EST)
-Date: Fri, 25 Apr 2008 21:01:29 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH 6/6] [POWERPC] booting-without-of: add FHCI USB, FSL MCU,
-	FSL UPM and GPIO LEDs bindings
-Message-ID: <20080425170129.GF12154@polina.dev.rtsoft.ru>
-References: <20080425170014.GA11669@polina.dev.rtsoft.ru>
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from tmnt04.transmode.se (mail.transmode.se [83.241.175.147])
+	by ozlabs.org (Postfix) with ESMTP id 4F1D4DE328
+	for <linuxppc-dev@ozlabs.org>; Sat, 26 Apr 2008 04:30:06 +1000 (EST)
+From: "Joakim Tjernlund" <Joakim.Tjernlund@transmode.se>
+To: "'Sergei Shtylyov'" <sshtylyov@ru.mvista.com>
+References: <1209132039.31117.17.camel@gentoo-jocke.transmode.se>	
+	<4811E845.2060509@ru.mvista.com>
+	<1209135051.31117.19.camel@gentoo-jocke.transmode.se>
+	<4811FFE4.2020203@ru.mvista.com>
+In-Reply-To: <4811FFE4.2020203@ru.mvista.com>
+Subject: RE: HR timers on PowerPC 83xx
+Date: Fri, 25 Apr 2008 20:29:37 +0200
+Message-ID: <003601c8a702$51535c90$f3fa15b0$@Tjernlund@transmode.se>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <20080425170014.GA11669@polina.dev.rtsoft.ru>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+	charset="us-ascii"
+Cc: 'linuxppc-dev Development' <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,156 +25,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch adds few bindings for the new drivers to be submitted through
-appropriate maintainers.
+> -----Original Message-----
+> From: Sergei Shtylyov [mailto:sshtylyov@ru.mvista.com]
+> Sent: den 25 april 2008 18:00
+> To: joakim.tjernlund@transmode.se
+> Cc: 'linuxppc-dev Development'
+> Subject: Re: HR timers on PowerPC 83xx
+> 
+> Joakim Tjernlund wrote:
+> 
+> >>>Trying to understand what is needed to make nanosleep() and friends to
+> >>>have better resolution than HZ on my 83xx CPU. Is this possible
+> >>>and what CONFIG options do I need to enable? Kernel is 2.6.25
+> 
+> >>    Should be possible with CONFIG_HIGH_RES_TIMERS=y.
+> 
+> > What about NO_HZ? Does that setting change anything?
+> 
+>     It is independent from HRT and selects the mode where the idle process
+> stops timer HZ interrupts from occuring until it's scheduled off CPU.
 
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
- Documentation/powerpc/booting-without-of.txt |  125 ++++++++++++++++++++++++++
- 1 files changed, 125 insertions(+), 0 deletions(-)
+OK, Thanks
 
-diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
-index 098f456..0b07bc7 100644
---- a/Documentation/powerpc/booting-without-of.txt
-+++ b/Documentation/powerpc/booting-without-of.txt
-@@ -59,6 +59,10 @@ Table of Contents
-       p) Freescale Synchronous Serial Interface
-       q) USB EHCI controllers
-       r) Freescale General-purpose Timers Module
-+      s) Freescale QUICC Engine USB Controller
-+      t) LEDs on GPIOs
-+      u) Freescale MCU with MPC8349E-mITX compatible firmware
-+      v) NAND on UPM-driven Freescale Localbus
- 
-   VII - Marvell Discovery mv64[345]6x System Controller chips
-     1) The /system-controller node
-@@ -2869,6 +2873,127 @@ platforms are moved over to use the flattened-device-tree model.
-     	clock-frequency = <0>;
-     };
- 
-+    s) Freescale QUICC Engine USB Controller
-+
-+    Required properties:
-+      - compatible : should be "fsl,<chip>-qe-usb", "fsl,mpc8323-qe-usb";
-+      - reg : the first two cells should contain gtm registers location and
-+        length, the next two two cells should contain PRAM location and
-+        length.
-+      - interrupts : should contain USB interrupt.
-+      - interrupt-parent : interrupt source phandle.
-+      - fsl,fullspeed-clock : specifies the full speed USB clock source in
-+        "clk<num>" or "brg<num>" format.
-+      - fsl,lowspeed-clock : specifies the low speed USB clock source in
-+        "clk<num>" or "brg<num>" format.
-+      - fsl,usb-mode : should be "host".
-+      - linux,hub-power-budget : optional, USB power budget for the root hub
-+        in mA.
-+      - gpios : should specify GPIOs in this order: USBOE, USBTP, USBTN, USBRP,
-+        USBRN, SPEED (optional), and POWER (optional).
-+
-+    Example:
-+
-+	usb@6c0 {
-+		compatible = "fsl,mpc8360-qe-usb", "fsl,mpc8323-qe-usb";
-+		reg = <0x6c0 0x40 0x8b00 0x100>;
-+		interrupts = <11>;
-+		interrupt-parent = <&qeic>;
-+		fsl,fullspeed-clock = "clk21";
-+		fsl,usb-mode = "host";
-+		gpios = <&qe_pio_b  2 0 /* USBOE */
-+			 &qe_pio_b  3 0 /* USBTP */
-+			 &qe_pio_b  8 0 /* USBTN */
-+			 &qe_pio_b  9 0 /* USBRP */
-+			 &qe_pio_b 11 0 /* USBRN */
-+			 &qe_pio_e 20 0 /* SPEED */
-+			 &qe_pio_e 21 0 /* POWER */>;
-+	};
-+
-+    t) LEDs on GPIOs
-+
-+    Required properties:
-+      - compatible : should be "linux,gpio-led".
-+      - linux,name : LED name.
-+      - linux,active-low : property should be present if LED wired as
-+        active-low.
-+      - linux,default-trigger : Linux default trigger for this LED.
-+      - linux,brightness : default brightness.
-+      - gpios : should specify LED GPIO.
-+
-+    Example:
-+
-+	led@0 {
-+		compatible = "linux,gpio-led";
-+		linux,name = "pwr";
-+		linux,brightness = <1>;
-+		linux,active-low;
-+		gpios = <&mcu_pio 0>;
-+	};
-+
-+	led@1 {
-+	        compatible = "linux,gpio-led";
-+	        linux,name = "hdd";
-+	        linux,default-trigger = "ide-disk";
-+		linux,active-low;
-+		gpios = <&mcu_pio 1>;
-+	};
-+
-+    u) Freescale MCU with MPC8349E-mITX compatible firmware
-+
-+    Required properties:
-+      - compatible : "fsl,<mcu-chip>-<board>", "fsl,mcu-mpc8349emitx";
-+      - reg : should specify I2C address (0x0a).
-+      - #address-cells : should be 0.
-+      - #size-cells : should be 0.
-+      - #gpio-cells : should be 2.
-+      - gpio-controller : should be present;
-+
-+    Example:
-+
-+	mcu_pio: mcu@0a {
-+		#address-cells = <0>;
-+		#size-cells = <0>;
-+		#gpio-cells = <2>;
-+		compatible = "fsl,mc9s08qg8-mpc8349emitx",
-+			     "fsl,mcu-mpc8349emitx";
-+		reg = <0x0a>;
-+		gpio-controller;
-+	};
-+
-+    v) Freescale Localbus UPM programmed to work with NAND flash
-+
-+      Required properties:
-+      - #address-cells : should be 0;
-+      - #size-cells : should be 0;
-+      - compatible : "fsl,upm-nand".
-+      - reg : should specify localbus chip select and size used for the chip.
-+      - fsl,upm-addr-offset : UPM pattern offset for the address latch.
-+      - fsl,upm-cmd-offset : UPM pattern offset for the command latch.
-+      - gpios : may specify optional GPIO connected to the Ready-Not-Busy pin.
-+
-+      Example:
-+
-+	upm@1,0 {
-+		#address-cells = <0>;
-+		#size-cells = <0>;
-+		compatible = "fsl,upm-nand";
-+		reg = <1 0 1>;
-+		fsl,upm-addr-offset = <16>;
-+		fsl,upm-cmd-offset = <8>;
-+		gpios = <&qe_pio_e 18 0>;
-+
-+		flash {
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			compatible = "stmicro,NAND512W3A2BN6E";
-+
-+			partition@0 {
-+				...
-+			};
-+		};
-+	};
-+
- VII - Marvell Discovery mv64[345]6x System Controller chips
- ===========================================================
- 
--- 
-1.5.5.1
+One last question, do I need a current glibc to use
+the new resolution? I got 2.3.6 now
+
+     Jocke
