@@ -2,21 +2,19 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 7D68FDE135
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Apr 2008 22:59:01 +1000 (EST)
-Subject: Re: [PATCH v2] [POWERPC] 4xx: Add endpoint support to 4xx PCIe driver
+	by ozlabs.org (Postfix) with ESMTPS id 0600EDE189
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Apr 2008 23:03:43 +1000 (EST)
+Subject: Re: [RFC][WIP][PATCH] Add IRQSTACKS to ppc32
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-In-Reply-To: <20080425053724.5b3eeb2f@zod.rchland.ibm.com>
-References: <1208789670-28909-1-git-send-email-sr@denx.de>
-	<1209104641.9060.228.camel@pasglop>
-	<20080425053724.5b3eeb2f@zod.rchland.ibm.com>
+To: Christoph Hellwig <hch@lst.de>
+In-Reply-To: <20080425072332.GB23053@lst.de>
+References: <Pine.LNX.4.64.0804240034160.23185@blarg.am.freescale.net>
+	<20080425072332.GB23053@lst.de>
 Content-Type: text/plain
-Date: Fri, 25 Apr 2008 22:58:04 +1000
-Message-Id: <1209128284.5420.0.camel@pasglop>
+Date: Fri, 25 Apr 2008 23:03:34 +1000
+Message-Id: <1209128614.5420.6.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Stefan Roese <sr@denx.de>,
-	Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@ozlabs.org
 Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -28,32 +26,18 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Fri, 2008-04-25 at 05:37 -0500, Josh Boyer wrote:
-> On Fri, 25 Apr 2008 16:24:01 +1000
-> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+On Fri, 2008-04-25 at 09:23 +0200, Christoph Hellwig wrote:
+> On Thu, Apr 24, 2008 at 12:37:50AM -0500, Kumar Gala wrote:
+> >  config IRQSTACKS
+> >  	bool "Use separate kernel stacks when processing interrupts"
+> > -	depends on PPC64
 > 
-> > 
-> > On Mon, 2008-04-21 at 16:54 +0200, Stefan Roese wrote:
-> > > This patch adds basic endpoint support to the 4xx PCIe driver.
-> > > 
-> > > This is done by checking the device_type property of the PCIe
-> > > device node ("pci" for root-complex and "pci-endpoint" for endpoint
-> > > configuration).
-> > > 
-> > > Note: Currently we map a fixed 64MByte window to PLB address 0 (SDRAM).
-> > > This should probably be configurable via a dts property.
-> > > 
-> > > Signed-off-by: Stefan Roese <sr@denx.de>
-> > 
-> > Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> > ---
-> > 
-> > Paul, I forgot to send that ack a while ago, this is .26 material, been
-> > around for some time.
-> 
-> I'll add it to my tree.  And this version of the patch was only sent
-> out on Monday.
+> Why do we have this as a user-selectable option?  It should be on by
+> default on 32 or 64bit.
 
-True but I'm to blame for waiting too long to review it...
+History maybe ? In the early days it was a bit "experimental" (we had a
+couple of issues that popped up with some thread flags not being
+properly recovered etc...). Nowadays, I agree it should not be an
+option.
 
 Ben.
