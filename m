@@ -1,19 +1,20 @@
-Return-Path: <ttyagi@amcc.com>
-Received: from sdcmail01.amcc.com (sdcmail01-ext1.amcc.com [198.137.200.72])
-	(using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "Messaging Gateway Appliance Demo Cert",
-	Issuer "Messaging Gateway Appliance Demo Cert" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id AC099DDDFB
+Return-Path: <littelld@verizon.net>
+Received: from vms040pub.verizon.net (vms040pub.verizon.net [206.46.252.40])
+	by ozlabs.org (Postfix) with ESMTP id 47498DDE0A
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 26 Apr 2008 12:59:22 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: Enabling 64 bit data type for dma_addr_t on non PPC64 architecture
-Date: Fri, 25 Apr 2008 19:48:56 -0700
-Message-ID: <BA76C315ECE5B149AE7194FE094819E205E59012@SDCEXCHANGE01.ad.amcc.com>
-From: "Tushar Tyagi" <ttyagi@amcc.com>
-To: <linuxppc-embedded@ozlabs.org>
+	Sun, 27 Apr 2008 10:59:35 +1000 (EST)
+Received: from [192.168.0.6] ([71.240.185.42])
+	by vms040.mailsrvcs.net (Sun Java System Messaging Server 6.2-6.01
+	(built Apr
+	3 2006)) with ESMTPA id <0JZY005O7ITTRSY1@vms040.mailsrvcs.net> for
+	linuxppc-embedded@ozlabs.org; Sat, 26 Apr 2008 19:03:29 -0500 (CDT)
+Date: Sat, 26 Apr 2008 18:59:19 -0500
+From: Dave Littell <littelld@verizon.net>
+Subject: syslogd lockup or hang at startup
+To: linuxppc-embedded@ozlabs.org
+Message-id: <4813C1D7.1020305@verizon.net>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -24,32 +25,15 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello,
-I'm working a new DMA hardware for PPC processors.
-The processor is a 32 bit architecture having 40 bit physical address
-space.=20
-So we need the 32 bit processor code base but we want the type
-dma_addr_t to represent 64 bit data, without enabling the CONFIG_PPC64
-flag.
-=20
-We want to use the Linux generic DMA layer to offload DMA operations to
-the hw and the Linux code path goes through function=20
-dma_async_memcpy_buf_to_buf and then dma_map_single.
-=20
-Currently the dma_map_single function has 2 versions based upon
-CONFIG_PPC64 defined or not.
-=20
-Is it possible to reuse the CONFIG_PPC64 based code only pertaining to
-DMA by doing the following:
-=20
-Add a new flag called CONFIG_DMA64 along with CONFIG_PPC64 and
-__powerpc64__ flags, enabling our code to use the generic DMA layer with
-64 bit data type for dma_addr_t.
-=20
-With the above modification, the function dma_map_single starts
-returning 64 bit data type instead of 32.
-=20
-Do you have any comments or suggestions ?
-=20
--thanks
-TT
+Hi all,
+
+I occasionally see syslogd hang at system startup.  The startup process
+will issue a "failed (1:)" message after about 5 minutes and the system
+will continue to boot, but syslogd is nowhere to be found.
+
+Has anyone else seen this and (more importantly) know how to fix it?
+One suggestion was to use "-m 0", but that didn't resolve this problem.
+
+
+Thanks,
+Dave
