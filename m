@@ -1,34 +1,18 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 54F63DDE05
-	for <linuxppc-dev@ozlabs.org>; Sat, 26 Apr 2008 10:04:39 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e2.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m3Q04aRc001024
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Apr 2008 20:04:36 -0400
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m3Q04amJ260098
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Apr 2008 20:04:36 -0400
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m3Q04PbN024504
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Apr 2008 20:04:26 -0400
-Date: Fri, 25 Apr 2008 18:58:42 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org
-Subject: Re: [PATCH] ibm_newemac: Increase MDIO timeouts
-Message-ID: <20080425185842.7ab463e7@zod.rchland.ibm.com>
-In-Reply-To: <1209162158.5420.35.camel@pasglop>
-References: <20080423051832.63BF7DDF65@ozlabs.org>
-	<20080425165703.864e63bd.billfink@mindspring.com>
-	<1209162158.5420.35.camel@pasglop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: super.firetwister@googlemail.com, netdev@vger.kernel.org,
-	Bill Fink <billfink@mindspring.com>, jgarzik@pobox.com,
-	linuxppc-dev@ozlabs.org
+Return-Path: <ttyagi@amcc.com>
+Received: from sdcmail01.amcc.com (sdcmail01-ext1.amcc.com [198.137.200.72])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "Messaging Gateway Appliance Demo Cert",
+	Issuer "Messaging Gateway Appliance Demo Cert" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 8E8F9DDE0F
+	for <linuxppc-dev@ozlabs.org>; Sat, 26 Apr 2008 13:03:00 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: Enabling 64 bit data type for dma_addr_t on non PPC64 architecture
+Date: Fri, 25 Apr 2008 19:52:40 -0700
+Message-ID: <BA76C315ECE5B149AE7194FE094819E205E59014@SDCEXCHANGE01.ad.amcc.com>
+From: "Tushar Tyagi" <ttyagi@amcc.com>
+To: <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,25 +22,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, 26 Apr 2008 08:22:38 +1000
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-
-> 
-> On Fri, 2008-04-25 at 16:57 -0400, Bill Fink wrote:
-> > On Wed, 23 Apr 2008, Benjamin Herrenschmidt wrote:
-> > 
-> > > This patch doubles the MDIO timeouts in EMAC as there are field
-> > > cases where they are two short to communicate with some PHYs.
-> > 
-> > I guess them being "two short" is why they needed to be doubled.  :-)
-> 
-> Well, in that case, it makes sense, it's still pretty short and better
-> safe than sorry. On day I may look at actually measuring PHYs and see if
-> it's worth trying to do sleeping waits in there.
-
-I think you missed Bill's joke.  Read your original email and spot the
-typo, then read Bill's pun.
-
-And stop emailing before you eat breakfast ;)
-
-josh
+Hello,
+I'm working a new DMA hardware for PPC processors.
+The processor is a 32 bit architecture having 40 bit physical address
+space.=20
+So we need the 32 bit processor code base but we want the type
+dma_addr_t to represent 64 bit data, without enabling the CONFIG_PPC64
+flag.
+=20
+We want to use the Linux generic DMA layer to offload DMA operations to
+the hw and the Linux code path goes through function
+dma_async_memcpy_buf_to_buf and then dma_map_single.
+=20
+Currently the dma_map_single function has 2 versions based upon
+CONFIG_PPC64 defined or not.
+=20
+Is it possible to reuse the CONFIG_PPC64 based code only pertaining to
+DMA by doing the following:
+=20
+Add a new flag called CONFIG_DMA64 along with CONFIG_PPC64 and
+__powerpc64__ flags, enabling our code to use the generic DMA layer with
+64 bit data type for dma_addr_t.
+=20
+With the above modification, the function dma_map_single starts
+returning 64 bit data type instead of 32.
+=20
+Do you have any comments or suggestions ?
+=20
+-thanks
+TT
