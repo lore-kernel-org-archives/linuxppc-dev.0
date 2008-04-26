@@ -1,18 +1,25 @@
-Return-Path: <ttyagi@amcc.com>
-Received: from sdcmail01.amcc.com (sdcmail01-ext1.amcc.com [198.137.200.72])
-	(using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "Messaging Gateway Appliance Demo Cert",
-	Issuer "Messaging Gateway Appliance Demo Cert" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 8E8F9DDE0F
-	for <linuxppc-dev@ozlabs.org>; Sat, 26 Apr 2008 13:03:00 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: Enabling 64 bit data type for dma_addr_t on non PPC64 architecture
-Date: Fri, 25 Apr 2008 19:52:40 -0700
-Message-ID: <BA76C315ECE5B149AE7194FE094819E205E59014@SDCEXCHANGE01.ad.amcc.com>
-From: "Tushar Tyagi" <ttyagi@amcc.com>
-To: <linuxppc-dev@ozlabs.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 85FDBDDD0C
+	for <linuxppc-dev@ozlabs.org>; Sat, 26 Apr 2008 13:36:34 +1000 (EST)
+Subject: Re: [PATCH] ibm_newemac: Increase MDIO timeouts
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+In-Reply-To: <20080425185842.7ab463e7@zod.rchland.ibm.com>
+References: <20080423051832.63BF7DDF65@ozlabs.org>
+	<20080425165703.864e63bd.billfink@mindspring.com>
+	<1209162158.5420.35.camel@pasglop>
+	<20080425185842.7ab463e7@zod.rchland.ibm.com>
+Content-Type: text/plain
+Date: Sat, 26 Apr 2008 13:35:13 +1000
+Message-Id: <1209180913.5420.37.camel@pasglop>
+Mime-Version: 1.0
+Cc: super.firetwister@googlemail.com, netdev@vger.kernel.org,
+	Bill Fink <billfink@mindspring.com>, jgarzik@pobox.com,
+	linuxppc-dev@ozlabs.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,32 +29,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello,
-I'm working a new DMA hardware for PPC processors.
-The processor is a 32 bit architecture having 40 bit physical address
-space.=20
-So we need the 32 bit processor code base but we want the type
-dma_addr_t to represent 64 bit data, without enabling the CONFIG_PPC64
-flag.
-=20
-We want to use the Linux generic DMA layer to offload DMA operations to
-the hw and the Linux code path goes through function
-dma_async_memcpy_buf_to_buf and then dma_map_single.
-=20
-Currently the dma_map_single function has 2 versions based upon
-CONFIG_PPC64 defined or not.
-=20
-Is it possible to reuse the CONFIG_PPC64 based code only pertaining to
-DMA by doing the following:
-=20
-Add a new flag called CONFIG_DMA64 along with CONFIG_PPC64 and
-__powerpc64__ flags, enabling our code to use the generic DMA layer with
-64 bit data type for dma_addr_t.
-=20
-With the above modification, the function dma_map_single starts
-returning 64 bit data type instead of 32.
-=20
-Do you have any comments or suggestions ?
-=20
--thanks
-TT
+
+On Fri, 2008-04-25 at 18:58 -0500, Josh Boyer wrote:
+> > > I guess them being "two short" is why they needed to be
+> doubled.  :-)
+> > 
+> > Well, in that case, it makes sense, it's still pretty short and
+> better
+> > safe than sorry. On day I may look at actually measuring PHYs and
+> see if
+> > it's worth trying to do sleeping waits in there.
+> 
+> I think you missed Bill's joke.  Read your original email and spot the
+> typo, then read Bill's pun.
+> 
+> And stop emailing before you eat breakfast ;)
+
+Hrm ... yeah allright I missed my initial typo and I missed Bill
+joke :-) looks like another case of replying while still half asleep ...
+
+Ben.
