@@ -1,19 +1,16 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id E779BDDE11
-	for <linuxppc-dev@ozlabs.org>; Sun, 27 Apr 2008 13:21:37 +1000 (EST)
-Date: Sat, 26 Apr 2008 20:21:35 -0700 (PDT)
-Message-Id: <20080426.202135.145326755.davem@davemloft.net>
-To: kevdig@hypersurf.com
-Subject: Re: get_cycles()
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <4813E74B.1020506@hypersurf.com>
-References: <4812DFA3.6090106@hypersurf.com>
-	<20080426.001102.65527296.davem@davemloft.net>
-	<4813E74B.1020506@hypersurf.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <jacmet@gmail.com>
+Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.190])
+	by ozlabs.org (Postfix) with ESMTP id 448BDDDE20
+	for <linuxppc-dev@ozlabs.org>; Sun, 27 Apr 2008 17:02:55 +1000 (EST)
+Received: by nf-out-0910.google.com with SMTP id g16so2706379nfd.9
+	for <linuxppc-dev@ozlabs.org>; Sun, 27 Apr 2008 00:02:51 -0700 (PDT)
+Message-Id: <20080427065942.514492739@sunsite.dk>
+Date: Sun, 27 Apr 2008 08:59:42 +0200
+From: Peter Korsgaard <jacmet@sunsite.dk>
+To: dbrownell@users.sourceforge.net, linux-usb@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, greg@kroah.com
+Subject: [patch v11 0/4] Cypress c67x00 (EZ-Host/EZ-OTG) support
+Sender: Peter Korsgaard <jacmet@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,15 +20,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Kevin Diggs <kevdig@hypersurf.com>
-Date: Sat, 26 Apr 2008 19:39:07 -0700
+The Cypress c67x00 (EZ-Host/EZ-OTG) controllers are multi-role low/fullspeed
+USB controllers. This patch series implements a HCD driver and shows the
+work-in-progress status of a gadget driver.
 
-> This looks pretty cool ... but I don't want to create a dependency on
-> hrtimer.
+I believe patch 1..3 are ready, and I would like to see them queued up for
+mainline.
 
-It doesn't create such a dependency.
+Changes since v10:
+ - Rebased against mainline, platform driver MODULE_ALIAS, checkpatch fixes
+ - Gadget driver accesses hw directly instead of using BIOS and working around
+   it's limitations. Still not merge ready though.
 
-We use it unconditionally in the generic networking.
+Changes since v9:
+ - Put Kconfig in alphabetical order, use ccflags-$(CONFIG_USB_DEBUG)
+   (feedback from David)
 
-Please don't use platform specific interfaces if you don't have to.
-You're be insulated from so many things.
+Changes since v8:
+ - checkpatch.pl fixes (__FUNCTION__ -> __func__, indent)
+
+Changes since v7:
+ - Moved dummy hcd probe/remove functions for conditional hcd support into
+   udc patch.
+ - Moved usb_disabled() check into c67x00_hcd_probe().
+ - Moved c67x00_get_comm_reg() to udc patch as it is only needed for gadget
+   support.
+
+Changes since v6:
+ - Addressed David and Alan's comments (removed done list + tasklet)
+
+Changes since v5:
+ - Merged c67x00_ll_{get,set}_siemsg() into c67x00_ll_fetch_siemsg().
+ - Fix for interrupt race condition at probe time (reported by Grant)
+
+Changes since v4:
+ - Addressed Grant's comments (c67x00_dev->c67x00_hcd_dev, label indent)
+ - Moved c67x00_ll_set_ep_{ctrl,packet_size}_reg() to patch 4 as they are
+   only needed for gadget support.
+
+Changes since v3:
+- Lots of cleanups: checkpatch, interrupt handling, c67x00_ prefixes, ..
+- The dummy platform_device's created per serial engine are gone.
+- Gadget driver (WIP)
+-- 
+Bye, Peter Korsgaard
