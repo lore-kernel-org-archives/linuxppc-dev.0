@@ -1,21 +1,22 @@
-Return-Path: <kevdig@hypersurf.com>
-Received: from smtpauth.hypersurf.com (smtpauth.hypersurf.com [209.237.0.8])
-	by ozlabs.org (Postfix) with ESMTP id 7A1E8DDDEF
-	for <linuxppc-dev@ozlabs.org>; Sun, 27 Apr 2008 19:51:03 +1000 (EST)
-Received: from [192.168.1.37] (node93.73.251.72.1dial.com [72.251.73.93])
-	(authenticated bits=0)
-	by smtpauth.hypersurf.com (8.14.2/8.14.2) with ESMTP id m3R9nBXt048592
-	for <linuxppc-dev@ozlabs.org>; Sun, 27 Apr 2008 02:50:52 -0700 (PDT)
-Message-ID: <48145709.9020809@hypersurf.com>
-Date: Sun, 27 Apr 2008 03:35:54 -0700
-From: Kevin Diggs <kevdig@hypersurf.com>
+Return-Path: <jochen@scram.de>
+Received: from mail.scram.de (mail0.scram.de [78.47.204.202])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail.scram.de", Issuer "scram e.V. CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 5DC3DDDDEE
+	for <linuxppc-dev@ozlabs.org>; Sun, 27 Apr 2008 21:06:09 +1000 (EST)
+Message-ID: <48145E7B.6040805@scram.de>
+Date: Sun, 27 Apr 2008 13:07:39 +0200
+From: Jochen Friedrich <jochen@scram.de>
 MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: Re: get_cycles()
-References: <4812DFA3.6090106@hypersurf.com>	<20080426.001102.65527296.davem@davemloft.net>	<4813E74B.1020506@hypersurf.com>
-	<20080426.202135.145326755.davem@davemloft.net>
-In-Reply-To: <20080426.202135.145326755.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Jean Delvare <khali@linux-fr.org>
+Subject: Re: [PATCH1/7] i2c: Add support for device alias names
+References: <47FF70A7.5070002@scram.de>
+	<20080426223815.16e38a85@hyperion.delvare>
+In-Reply-To: <20080426223815.16e38a85@hyperion.delvare>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: "Kernel, Linux" <linux-kernel@vger.kernel.org>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Scott Wood <scottwood@freescale.com>, Linux I2C <i2c@lm-sensors.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,35 +26,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Miller wrote:
-> From: Kevin Diggs <kevdig@hypersurf.com>
-> Date: Sat, 26 Apr 2008 19:39:07 -0700
-> 
-> 
->>This looks pretty cool ... but I don't want to create a dependency on
->>hrtimer.
-> 
-> 
-> It doesn't create such a dependency.
-> 
-> We use it unconditionally in the generic networking.
-> 
-> Please don't use platform specific interfaces if you don't have to.
-> You're be insulated from so many things.
-> 
+Hi Jean,
 
-I'm working on a cpufreq driver for the 750GX so I don't think I have to 
-worry about being to platform specific.
+>> -	if ((err = f75375_probe(client)) < 0)
+>> +	err = f75375_probe(client, NULL);
+>> +	if (err < 0)
+>>  		goto exit_detach;
+>>  
+>>  	return 0;
+> 
+> These coding style cleanups don't belong to this patch (if they belong
+> anywhere - I don't much see the point)
 
-Would a compile time configuration be a good idea (hrtimer or 
-get_cycles() assisted timing)?
+I just wanted to make sure, scripts/checkpatch.pl doesn't complain.
+But you're right. The coding style cleanup should have been another patch.
 
-In the 2.4 code I just used a timer 2 ticks in the future to be certain 
-I did not go under the 100 us PLL lock delay. I was trying to see if I 
-could cut the latency down.
+Thanks a lot for your efforts of getting the alias stuff in!
 
-What about using OF? Isn't there a timebase property for the cpus?
-
-Thoughts?
-
-kevin
+Jochen
