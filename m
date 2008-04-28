@@ -1,11 +1,18 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <tony@bakeyournoodle.com>
+Received: from pythia.bakeyournoodle.com (pythia.bakeyournoodle.com
+	[203.82.209.197]) by ozlabs.org (Postfix) with ESMTP id 51159DDE00
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 Apr 2008 14:20:46 +1000 (EST)
+Date: Mon, 28 Apr 2008 14:20:44 +1000
+To: Christian Kujau <lists@nerdbynature.de>,
+	Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: 2.6.25: pmac_newworld undefined
+Message-ID: <20080428042044.GX20457@bakeyournoodle.com>
+References: <alpine.DEB.1.10.0804271951190.11017@sheep.housecafe.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18453.18943.906693.409245@cargo.ozlabs.ibm.com>
-Date: Mon, 28 Apr 2008 13:52:31 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] Add fast little-endian switch system call
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <alpine.DEB.1.10.0804271951190.11017@sheep.housecafe.de>
+From: tony@bakeyournoodle.com (Tony Breeds)
+Cc: linuxppc-dev@ozlabs.org, LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,53 +22,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This adds a system call on 64-bit platforms for switching between
-little-endian and big-endian modes that is much faster than doing a
-prctl call.  This system call is handled as a special case right at
-the start of the system call entry code, and because it is a special
-case, it uses a system call number which is out of the range of
-normal system calls, namely 0x1ebe.
+On Sun, Apr 27, 2008 at 08:03:46PM +0200, Christian Kujau wrote:
+> Hi,
+> 
+> the build failure reported[0] by Kamalesh back in 01/2008 is still 
+> present in today's 2.6.25-git with CONFIG_NVRAM=m (instead of =y):
+> 
+>   Building modules, stage 2.
+>   MODPOST 72 modules
+> ERROR: "pmac_newworld" [arch/powerpc/platforms/powermac/nvram.ko] undefined!
+> ERROR: "__alloc_bootmem" [arch/powerpc/platforms/powermac/nvram.ko] 
+> undefined!
+> make[1]: *** [__modpost] Error 1
 
-Measurements with lmbench on a 4.2GHz POWER6 showed no measurable
-change in the speed of normal system calls with this patch.
+Yeah that isn't really surprising.  Essentially
+arch/powerpc/platforms/powermac/nvram.c must be builtin (not modular)
+but CONFIG_NVRAM is tristate, and your .config has CONFIG_NVRAM=m.
 
-Switching endianness with this new system call takes around 60ns on a
-4.2GHz POWER6, compared with around 300ns to switch endian mode with a
-prctl.  This can provide a significant performance advantage for
-emulators for little-endian architectures that want to switch between
-big-endian and little-endian mode frequently, e.g. because they are
-generating instructions sequences on the fly and they want to run
-those sequences in little-endian mode.
+We can probably "fix" this by adding another config config symbol and
+"selecting" that from CONFIG_NVRAM.  Then using this new symbol in
+arch/powerpc/platforms/powermac/*
 
-Signed-off-by: Paul Mackerras <paulus@samba.org>
----
+so I think with we need is:
+config NVRAM
+  bool "..." if PPC32
+  tristate "..." if !PPC32
+  ...
+  ...
 
-diff --git a/arch/powerpc/kernel/head_64.S b/arch/powerpc/kernel/head_64.S
-index 215973a..2eb49a7 100644
---- a/arch/powerpc/kernel/head_64.S
-+++ b/arch/powerpc/kernel/head_64.S
-@@ -239,6 +239,10 @@ instruction_access_slb_pSeries:
- 	.globl	system_call_pSeries
- system_call_pSeries:
- 	HMT_MEDIUM
-+BEGIN_FTR_SECTION
-+	cmpdi	r0,0x1ebe
-+	beq-	1f
-+END_FTR_SECTION_IFSET(CPU_FTR_REAL_LE)
- 	mr	r9,r13
- 	mfmsr	r10
- 	mfspr	r13,SPRN_SPRG3
-@@ -253,6 +257,13 @@ system_call_pSeries:
- 	rfid
- 	b	.	/* prevent speculative execution */
- 
-+/* Fast LE/BE switch system call */
-+1:	mfspr	r12,SPRN_SRR1
-+	xori	r12,r12,MSR_LE
-+	mtspr	SPRN_SRR1,r12
-+	rfid		/* return to userspace */
-+	b	.
-+
- 	STD_EXCEPTION_PSERIES(0xd00, single_step)
- 	STD_EXCEPTION_PSERIES(0xe00, trap_0e)
- 
+Sam is there some way to achieve that or should we just create an
+secondary symbol?
+
+Yours Tony
+
+  linux.conf.au    http://www.marchsouth.org/
+  Jan 19 - 24 2009 The Australian Linux Technical Conference!
