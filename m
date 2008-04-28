@@ -1,23 +1,19 @@
-Return-Path: <rdreier@cisco.com>
-Received: from sj-iport-2.cisco.com (sj-iport-2.cisco.com [171.71.176.71])
-	(using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "sj-iport-2.cisco.com", Issuer "Cisco SSCA" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 9663FDDE9F
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Apr 2008 09:00:10 +1000 (EST)
-From: Roland Dreier <rdreier@cisco.com>
-To: Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>
-Subject: Re: IB/ehca: handle negative return value from ibmebus_request_irq()
-	properly in ehca_create_eq()
-References: <200804281847.44968.hnguyen@linux.vnet.ibm.com>
-Date: Mon, 28 Apr 2008 16:00:04 -0700
-In-Reply-To: <200804281847.44968.hnguyen@linux.vnet.ibm.com> (Hoang-Nam
-	Nguyen's message of "Mon, 28 Apr 2008 18:47:44 +0200")
-Message-ID: <ada4p9lzitn.fsf@cisco.com>
+Return-Path: <tony@bakeyournoodle.com>
+Received: from pythia.bakeyournoodle.com (pythia.bakeyournoodle.com
+	[203.82.209.197]) by ozlabs.org (Postfix) with ESMTP id 59B51DDF17
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 Apr 2008 09:06:34 +1000 (EST)
+Date: Tue, 29 Apr 2008 09:06:33 +1000
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] Change the default link address for pSeries zImage
+	kernels.
+Message-ID: <20080428230633.GA20457@bakeyournoodle.com>
+References: <20080425053941.GT20457@bakeyournoodle.com>
+	<1209103970.9060.226.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, Christoph Raisch <RAISCH@de.ibm.com>,
-	Roel Kluin <12o3l@tiscali.nl>, linux-kernel@vger.kernel.org,
-	general@lists.openfabrics.org
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <1209103970.9060.226.camel@pasglop>
+From: tony@bakeyournoodle.com (Tony Breeds)
+Cc: LinuxPPC-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,4 +23,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-thanks, applied
+On Fri, Apr 25, 2008 at 04:12:50PM +1000, Benjamin Herrenschmidt wrote:
+
+> Considering how bad OF can be on some machines, I'd like this to be
+> boot-tested on a wider range of machines. Also, it might depend on the
+> OF real-base setting as well...
+> 
+> At least, we should be able to test at ozlabs on cell blades, POWER4
+> bare metal (ie "SMP mode"), POWER5 and POWER5+.
+
+Hmm okay it fails on POWER4, I'll see what can be done there.
+
+Yours Tony
+
+  linux.conf.au    http://www.marchsouth.org/
+  Jan 19 - 24 2009 The Australian Linux Technical Conference!
