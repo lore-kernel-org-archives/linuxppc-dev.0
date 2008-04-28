@@ -1,22 +1,17 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from wx-out-0506.google.com (wx-out-0506.google.com [66.249.82.233])
-	by ozlabs.org (Postfix) with ESMTP id 8BAB0DDFC2
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Apr 2008 05:56:17 +1000 (EST)
-Received: by wx-out-0506.google.com with SMTP id h27so4115318wxd.15
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 Apr 2008 12:56:15 -0700 (PDT)
-Message-ID: <fa686aa40804281256y722d8cf6pcae462d68b04e01f@mail.gmail.com>
-Date: Mon, 28 Apr 2008 13:56:11 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Sean MacLennan" <smaclennan@pikatech.com>
-Subject: Re: [RESEND][PATCH][POWERPC] PIKA Warp: Update platform code to
-	supportRev B boards
-In-Reply-To: <20080428145310.553b8271@lappy.seanm.ca>
+Return-Path: <adobriyan@gmail.com>
+Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.189])
+	by ozlabs.org (Postfix) with ESMTP id CD1ADDE452
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 Apr 2008 06:12:04 +1000 (EST)
+Received: by nf-out-0910.google.com with SMTP id g16so3215793nfd.9
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 Apr 2008 13:12:00 -0700 (PDT)
+Date: Tue, 29 Apr 2008 01:07:25 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Olaf Hering <olaf@aepfle.de>
+Subject: Re: pci_proc_init: proc_dir_entry '00' already registered
+Message-ID: <20080428210725.GA15955@martell.zuzino.mipt.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20080417152251.2bf07219@lappy.seanm.ca>
-	<20080428145310.553b8271@lappy.seanm.ca>
-Cc: Sean MacLennan <seanm@seanm.ca>, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,294 +21,64 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Apr 28, 2008 at 12:53 PM, Sean MacLennan
-<smaclennan@pikatech.com> wrote:
-> Ok, here is another version of the patch with Stephen Rothwell's and
->  Grant Likely's suggestions.
->
->  Cheers,
->   Sean
+Olaf Hering wrote:
+> On Sun, Feb 10, Alexey Dobriyan wrote:
+> 
+> > On Sun, Feb 10, 2008 at 11:07:57AM +0100, Olaf Hering wrote:
+> > > Current Linus tree gives this new warning during bootup:
+> > > 
+> > > +proc_dir_entry '00' already registered
+> > > +Call Trace:
+> > > +[c00000007b0dfba0] [c00000000000e4b0] .show_stack+0x70/0x1bc
+> > > (unreliable)
+> > > +[c00000007b0dfc50] [c0000000000f2714] .proc_register+0x130/0x210
+> > > +[c00000007b0dfd00] [c0000000000f299c] .proc_mkdir_mode+0x40/0x70
+> > > +[c00000007b0dfd80] [c000000000276ed8]
+> > > .pci_proc_attach_device+0xac/0x144
+> > > +[c00000007b0dfe20] [c0000000005bdb3c] .pci_proc_init+0x74/0xac
+> > > +[c00000007b0dfea0] [c0000000005a27ac] .kernel_init+0x1d0/0x394
+> > > +[c00000007b0dff90] [c00000000001e258] .kernel_thread+0x4c/0x68
+> > 
+> > Can you insert dump_stack() when '00' is registered, not just second
+> > time?
+> 
+> Its pci_bus_add_device(). Full dmesg attached:
 
-A few more comments below.
+It can't be. "proc_initialized" is 0 at that point, so no new files in
+/proc .
 
-Also, it might help to split up the .dts and code changes into 2
-separate patches.  That way the .dts can be picked up even if the
-actual platform code still needs some revisions.
+Must be something PCI domains related: if pci_proc_domain() returns 0
+for some reason, busses will be different, but name the same -- '00'.
+The reason there is no second warning is that you don't have anything
+on 0001:0a .
 
-Finally, since this is a 4xx board port, you need to cc: Josh Boyer on
-these patches.
-
->  diff --git a/arch/powerpc/boot/dts/warp.dts b/arch/powerpc/boot/dts/warp.dts
->  index b04a52e..d124497 100644
-> --- a/arch/powerpc/boot/dts/warp.dts
->  +++ b/arch/powerpc/boot/dts/warp.dts
->  @@ -186,6 +179,16 @@
->                                 reg = <ef600700 14>;
->                                 interrupt-parent = <&UIC0>;
->                                 interrupts = <2 4>;
->  +                               index = <0>;
->  +                               #address-cells = <1>;
->  +                               #size-cells = <0>;
->  +
->  +                               ad7414@4a {
->  +                                       compatible = "adi,ad7414";
->  +                                       reg = <4a>;
->  +                                       interrupts = <19 8>;
->  +                                       interrupt-parent = <&UIC0>;
->  +                               };
->                         };
->
->                         GPIO0: gpio@ef600b00 {
->  @@ -196,8 +199,22 @@
->                         GPIO1: gpio@ef600c00 {
->                                 compatible = "ibm,gpio-440ep";
->                                 reg = <ef600c00 48>;
->  +
->  +                       };
-
-You need to add the gpio-controller and #gpio-cells properties to the
-GPIO nodes for the LED's gpios property to work correctly.  Search for
-"2) gpio-controller nodes" in
-Documentation/powerpc/booting-without-of.txt for details.  #gpio-cells
-should probably be '2' for this gpio controller; 1 cell for the gpio
-pin and 1 cell for flags.
-
->  +
->  +                       led@31 {
->
-> +                               compatible = "linux,gpio-led";
->  +                               linux,name = "green";
->  +                               gpios = <&GPIO1 31>;
->  +                       };
->  +
->  +                       led@30 {
->  +                               compatible = "linux,gpio-led";
->  +                               linux,name = "red";
->  +                               gpios = <&GPIO1 30>;
->                         };
-
-These should not be children of the soc node (they are not part of the
-SoC internal bus).  However, I think it would be perfectly valid to
-make them children of the gpio node since they don't have any
-connections to other device on the platform.
-
->
->  +
->                         ZMII0: emac-zmii@ef600d00 {
->                                 compatible = "ibm,zmii-440ep", "ibm,zmii-440gp", "ibm,zmii";
->                                 reg = <ef600d00 c>;
->
-> diff --git a/arch/powerpc/platforms/44x/warp-nand.c b/arch/powerpc/platforms/44x/warp-nand.c
->  index 9150318..d293c70 100644
->
-> --- a/arch/powerpc/platforms/44x/warp-nand.c
->  +++ b/arch/powerpc/platforms/44x/warp-nand.c
->  @@ -11,8 +11,10 @@
->   #include <linux/mtd/partitions.h>
->   #include <linux/mtd/nand.h>
->   #include <linux/mtd/ndfc.h>
->  +#include <linux/of.h>
->
->
->  #include <asm/machdep.h>
->
->  +
->   #ifdef CONFIG_MTD_NAND_NDFC
->
->   #define CS_NAND_0      1       /* use chip select 1 for NAND device 0 */
->  @@ -35,13 +37,23 @@ static struct mtd_partition nand_parts[] = {
->         {
->                 .name   = "root",
->                 .offset = 0x0200000,
->  -               .size   = 0x3400000
->  +               .size   = 0x3E00000
->  +       },
->  +       {
->  +               .name   = "persistent",
->  +               .offset = 0x4000000,
->  +               .size   = 0x4000000
->         },
->         {
->  -               .name   = "user",
->  -               .offset = 0x3600000,
->  -               .size   = 0x0A00000
->  +               .name   = "persistent1",
->  +               .offset = 0x8000000,
->  +               .size   = 0x4000000
->         },
->  +       {
->  +               .name   = "persistent2",
->  +               .offset = 0xC000000,
->  +               .size   = 0x4000000
->  +       }
->   };
-
-Why is this information in the dts *and* the platform file?  I haven't
-been following the flash partition map binding conventions, but having
-it in both places looks wrong....
-
-oh, wait... the one in the dts is for NOR and this one is for NAND,
-right?  And we don't have a binding yet for NAND partitions yet,
-correct?
-
->
->   struct ndfc_controller_settings warp_ndfc_settings = {
->  @@ -67,19 +79,15 @@ static struct platform_device warp_ndfc_device = {
->         .resource = &warp_ndfc,
->   };
->
->  -static struct nand_ecclayout nand_oob_16 = {
->  -       .eccbytes = 3,
->  -       .eccpos = { 0, 1, 2, 3, 6, 7 },
->  -       .oobfree = { {.offset = 8, .length = 16} }
->  -};
->  -
->  +/* Do NOT set the ecclayout: let it default so it is correct for both
->  + * 64M and 256M flash chips.
->  + */
->   static struct platform_nand_chip warp_nand_chip0 = {
->         .nr_chips = 1,
->         .chip_offset = CS_NAND_0,
->         .nr_partitions = ARRAY_SIZE(nand_parts),
->         .partitions = nand_parts,
->  -       .chip_delay = 50,
->  -       .ecclayout = &nand_oob_16,
->  +       .chip_delay = 20,
->         .priv = &warp_chip0_settings,
->   };
->
->  @@ -96,6 +104,23 @@ static struct platform_device warp_nand_device = {
->
->   static int warp_setup_nand_flash(void)
->   {
->  +       struct device_node *np;
->  +
->  +       /* Try to detect a rev A based on NOR size. */
->  +       np = of_find_compatible_node(NULL, NULL, "cfi-flash");
->  +       if (np) {
->  +               struct property *pp;
->  +
->  +               pp = of_find_property(np, "reg", NULL);
->  +               if (pp && (pp->length == 12)) {
->  +                       u32 *v = pp->value;
->  +                       if (v[2] == 0x4000000)
->  +                               /* Rev A = 64M NAND */
->  +                               warp_nand_chip0.nr_partitions = 2;
->  +               }
->  +               of_node_put(np);
->  +       }
->  +
->         platform_device_register(&warp_ndfc_device);
->         platform_device_register(&warp_nand_device);
->
->  diff --git a/arch/powerpc/platforms/44x/warp.c b/arch/powerpc/platforms/44x/warp.c
->  index 39cf615..8f7d016 100644
->
-> --- a/arch/powerpc/platforms/44x/warp.c
->  +++ b/arch/powerpc/platforms/44x/warp.c
->  @@ -12,6 +12,10 @@
->
->  #include <linux/init.h>
->   #include <linux/of_platform.h>
->   #include <linux/kthread.h>
->  +#include <linux/i2c.h>
->  +#include <linux/interrupt.h>
->  +#include <linux/pika.h>
->  +#include <linux/delay.h>
->
->
->   #include <asm/machdep.h>
->   #include <asm/prom.h>
->  @@ -27,6 +31,18 @@ static __initdata struct of_device_id warp_of_bus[] = {
->
->         {},
->   };
->
->  +static __initdata struct i2c_board_info warp_i2c_info[] = {
->  +       { I2C_BOARD_INFO("ad7414", 0x4a) }
->  +};
->  +
->  +static int __init warp_arch_init(void)
->  +{
->  +       /* This should go away once support is moved to the dts. */
->  +       i2c_register_board_info(0, warp_i2c_info, ARRAY_SIZE(warp_i2c_info));
->  +       return 0;
->  +}
->  +machine_arch_initcall(warp, warp_arch_init);
->  +
->   static int __init warp_device_probe(void)
->   {
->         of_platform_bus_probe(NULL, warp_of_bus, NULL);
->  @@ -52,61 +68,232 @@ define_machine(warp) {
->
->
->  };
->
->
->  -#define LED_GREEN (0x80000000 >> 0)
->  -#define LED_RED   (0x80000000 >> 1)
->  +/* I am not sure this is the best place for this... */
->  +static int __init warp_post_info(void)
->  +{
->  +       struct device_node *np;
->  +       void __iomem *fpga;
->  +       u32 post1, post2;
->  +
->  +       /* Sighhhh... POST information is in the sd area. */
->  +       np = of_find_compatible_node(NULL, NULL, "pika,fpga-sd");
->  +       if (np == NULL)
->  +               return -ENOENT;
->  +
->  +       fpga = of_iomap(np, 0);
->  +       of_node_put(np);
->  +       if (fpga == NULL)
->  +               return -ENOENT;
->  +
->  +       post1 = in_be32(fpga + 0x40);
->  +       post2 = in_be32(fpga + 0x44);
->  +
->  +       iounmap(fpga);
->  +
->  +       if (post1 || post2)
->  +               printk(KERN_INFO "Warp POST %08x %08x\n", post1, post2);
->  +       else
->  +               printk(KERN_INFO "Warp POST OK\n");
->  +
->  +       return 0;
->  +}
->  +machine_late_initcall(warp, warp_post_info);
->  +
->  +
->  +#ifdef CONFIG_SENSORS_AD7414
-<snip>
->  +#else /* !CONFIG_SENSORS_AD7414 */
->
-> +
->  +int dtm_register_shutdown(void (*func)(void *arg), void *arg)
->  +{
->  +       return 0;
->  +}
->
-> +
->  +int dtm_unregister_shutdown(void (*func)(void *arg), void *arg)
->  +{
->  +       return 0;
->  +}
->  +
->   #endif
->  +
->
-> +EXPORT_SYMBOL(dtm_register_shutdown);
->
-> +EXPORT_SYMBOL(dtm_unregister_shutdown);
-
-When exporting symbols for platform code you should avoid polluting
-the global Linux namespace and prefix the functions with your platform
-name.
-
-Cheers,
-g.
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+> pci_proc_attach_device(395) swapper(1):c0,j4294937353 1: c00000007b113800 - 0000:00:0b.0
+> pci_proc_attach_device(395) swapper(1):c0,j4294937353 1: c00000007b113000 - 0000:0a:00.0
+> pci_proc_attach_device(395) swapper(1):c0,j4294937353 1: c00000007b149800 - 0001:00:00.0
+> proc_dir_entry '00' already registered
+> Call Trace:
+> [c00000007b0dfb60] [c00000000000f4ec] .show_stack+0x5c/0x1f0 (unreliable)
+> [c00000007b0dfc10] [c000000000112e40] .proc_register+0x190/0x250
+> [c00000007b0dfcd0] [c000000000113130] .proc_mkdir_mode+0x40/0x80
+> [c00000007b0dfd50] [c0000000002c7548] .pci_proc_attach_device+0x158/0x190
+> [c00000007b0dfe00] [c00000000065c3f8] .pci_proc_init+0xb8/0x100
+> [c00000007b0dfe90] [c00000000063c8a8] .kernel_init+0x1d8/0x420
+> [c00000007b0dff90] [c000000000021dac] .kernel_thread+0x4c/0x68
+> pci_proc_attach_device(395) swapper(1):c0,j4294937353 1: c00000007b149000 - 0001:00:01.0
+> pci_proc_attach_device(395) swapper(1):c0,j4294937353 1: c00000007b1a4800 - 0001:00:02.0
+> pci_proc_attach_device(395) swapper(1):c0,j4294937353 1: c00000007b1a4000 - 0001:00:03.0
+> pci_proc_attach_device(395) swapper(1):c0,j4294937353 1: c00000007b1a5800 - 0001:00:04.0
+> pci_proc_attach_device(395) swapper(1):c0,j4294937353 1: c00000007b1a5000 - 0001:00:05.0
+> pci_proc_attach_device(395) swapper(1):c0,j4294937353 1: c00000007b1a6800 - 0001:00:06.0
+> pci_proc_attach_device(395) swapper(1):c0,j4294937353 1: c00000007b1a6000 - 0001:00:07.0
+> pci_proc_attach_device(395) swapper(1):c0,j4294937353 1: c00000007b1a7800 - 0001:00:08.0
+> pci_proc_attach_device(395) swapper(1):c0,j4294937353 1: c00000007b1a7000 - 0001:00:09.0
+> pci_proc_attach_device(395) swapper(1):c0,j4294937353 1: c00000007b1a9800 - 0001:05:04.0
+> pci_proc_attach_device(395) swapper(1):c0,j4294937353 1: c00000007b1a9000 - 0001:05:04.1
+> pci_proc_attach_device(395) swapper(1):c0,j4294937353 1: c00000007b1ab800 - 0001:01:07.0
+> pci_proc_attach_device(395) swapper(1):c0,j4294937353 1: c00000007b1ab000 - 0001:01:0b.0
+> pci_proc_attach_device(395) swapper(1):c0,j4294937353 1: c00000007b1ac800 - 0001:01:0b.1
+> pci_proc_attach_device(395) swapper(1):c0,j4294937353 1: c00000007b1ac000 - 0001:01:0b.2
+> pci_proc_attach_device(395) swapper(1):c0,j4294937353 1: c00000007b1ae800 - 0001:03:0c.0
+> pci_proc_attach_device(395) swapper(1):c0,j4294937353 1: c00000007b1ae000 - 0001:03:0d.0
+> pci_proc_attach_device(395) swapper(1):c0,j4294937353 1: c00000007b1af800 - 0001:03:0e.0
