@@ -1,24 +1,23 @@
-Return-Path: <roland@redhat.com>
-Received: from QMTA08.emeryville.ca.mail.comcast.net
-	(qmta08.emeryville.ca.mail.comcast.net [76.96.30.80])
-	by ozlabs.org (Postfix) with ESMTP id EEF01DDDFF
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 Apr 2008 17:30:43 +1000 (EST)
+Return-Path: <paubert@iram.es>
+Received: from gra-lx1.iram.es (gra-lx1.iram.es [150.214.224.41])
+	by ozlabs.org (Postfix) with ESMTP id 18811DDDFC
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 Apr 2008 18:48:23 +1000 (EST)
+From: Gabriel Paubert <paubert@iram.es>
+Date: Mon, 28 Apr 2008 10:46:30 +0200
+To: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: cpu_clock confusion
+Message-ID: <20080428084630.GA1623@iram.es>
+References: <1207240450.3797.22.camel@johannes.berg>
+	<20080404144641.GA15844@elte.hu>
+	<1209028912.3357.52.camel@johannes.berg>
+	<20080424.022404.151729194.davem@davemloft.net>
+	<1209029257.3357.55.camel@johannes.berg>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-From: Roland McGrath <roland@redhat.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH] powerpc TLF_RESTORE_SIGMASK
-In-Reply-To: Paul Mackerras's message of  Thursday,
-	24 April 2008 16:31:31 +1000
-	<18448.10563.385481.904182@cargo.ozlabs.ibm.com>
-References: <20080403210842.6C88C26F98D@magilla.localdomain>
-	<18446.50037.964682.539009@cargo.ozlabs.ibm.com>
-	<20080423063753.C2088270381@magilla.localdomain>
-	<18448.10563.385481.904182@cargo.ozlabs.ibm.com>
-Message-Id: <20080428073037.B649B26F8F0@magilla.localdomain>
-Date: Mon, 28 Apr 2008 00:30:37 -0700 (PDT)
-Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
-	linux-kernel@vger.kernel.org
+In-Reply-To: <1209029257.3357.55.camel@johannes.berg>
+Cc: linux-kernel@vger.kernel.org, benh@ozlabs.org, linuxppc-dev@ozlabs.org,
+	tglx@linutronix.de, arndb@de.ibm.com, mingo@elte.hu,
+	David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,185 +27,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> Thanks.  That can't go in until some generic changes have gone in
-> first, right?  So are you going to push the lot in one go via Andrew,
-> or should I wait until the generic part is upstream and then push the
-> powerpc bit?
+On Thu, Apr 24, 2008 at 11:27:37AM +0200, Johannes Berg wrote:
+> On Thu, 2008-04-24 at 02:24 -0700, David Miller wrote:
+> > From: Johannes Berg <johannes@sipsolutions.net>
+> > Date: Thu, 24 Apr 2008 11:21:52 +0200
+> > 
+> > > Hmm. Why is that whole cpu_clock stuff in place anyway? powerpc has
+> > > perfectly synchronised time across processors with dirt cheap access to
+> > > it as well, so why build all this code that only messes it up on top of
+> > > it?
+> > 
+> > Same on sparc64.  These changes add more bugs than they fix.
+> 
+> I tend to think all this clock business should be done local to those
+> arches that aren't capable of providing cheap, useful synchronised and
+> accurate clocks themselves. Or be a lib that they can link in if needed.
+> As it stands, it seems to me that it all just penalises those
+> architectures that have decent clocks.
 
->From what I can see, the related patches are in -mm now, but the powerpc
-patch is not.  Linus already said he approved of the patches, so I hope
-they can be merged in real soon.  That will simplify the juggling for arch
-patches.  That said, there is really no hurry for this change for powerpc;
-it's a small optimization.
+100% agreed. 
 
-> Oh, and could you please also fix the occurrence of
-> TIF_RESTORE_SIGMASK in arch/ppc/kernel/entry.S when this stuff goes
-> in?
-
-Oh, I didn't realize that file was in use (or existed).
-Third time's the charm (or is this the fifth time?).
-
-
-Thanks,
-Roland
-
----
-[PATCH] powerpc TLF_RESTORE_SIGMASK
-
-Replace TIF_RESTORE_SIGMASK with TLF_RESTORE_SIGMASK and define
-our own set_restore_sigmask() function.  This saves the costly
-SMP-safe set_bit operation, which we do not need for the sigmask
-flag since TIF_SIGPENDING always has to be set too.
-
-Signed-off-by: Roland McGrath <roland@redhat.com>
----
- arch/powerpc/kernel/entry_32.S    |    4 ++--
- arch/powerpc/kernel/signal.c      |   12 ++++++------
- arch/powerpc/kernel/signal_32.c   |    2 +-
- arch/ppc/kernel/entry.S           |    4 ++--
- include/asm-powerpc/thread_info.h |   17 +++++++++++++----
- 5 files changed, 24 insertions(+), 15 deletions(-)
-
-diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
-index 84c8686..7e2ecf0 100644
---- a/arch/powerpc/kernel/entry_32.S
-+++ b/arch/powerpc/kernel/entry_32.S
-@@ -667,7 +667,7 @@ user_exc_return:		/* r10 contains MSR_KERNEL here */
- 	/* Check current_thread_info()->flags */
- 	rlwinm	r9,r1,0,0,(31-THREAD_SHIFT)
- 	lwz	r9,TI_FLAGS(r9)
--	andi.	r0,r9,(_TIF_SIGPENDING|_TIF_RESTORE_SIGMASK|_TIF_NEED_RESCHED)
-+	andi.	r0,r9,_TIF_USER_WORK_MASK
- 	bne	do_work
- 
- restore_user:
-@@ -924,7 +924,7 @@ recheck:
- 	lwz	r9,TI_FLAGS(r9)
- 	andi.	r0,r9,_TIF_NEED_RESCHED
- 	bne-	do_resched
--	andi.	r0,r9,_TIF_SIGPENDING|_TIF_RESTORE_SIGMASK
-+	andi.	r0,r9,_TIF_USER_WORK_MASK
- 	beq	restore_user
- do_user_signal:			/* r10 contains MSR_KERNEL here */
- 	ori	r10,r10,MSR_EE
-diff --git a/arch/powerpc/kernel/signal.c b/arch/powerpc/kernel/signal.c
-index a65a44f..ad55488 100644
---- a/arch/powerpc/kernel/signal.c
-+++ b/arch/powerpc/kernel/signal.c
-@@ -120,7 +120,7 @@ int do_signal(sigset_t *oldset, struct pt_regs *regs)
- 	int ret;
- 	int is32 = is_32bit_task();
- 
--	if (test_thread_flag(TIF_RESTORE_SIGMASK))
-+	if (current_thread_info()->local_flags & _TLF_RESTORE_SIGMASK)
- 		oldset = &current->saved_sigmask;
- 	else if (!oldset)
- 		oldset = &current->blocked;
-@@ -131,9 +131,10 @@ int do_signal(sigset_t *oldset, struct pt_regs *regs)
- 	check_syscall_restart(regs, &ka, signr > 0);
- 
- 	if (signr <= 0) {
-+		struct thread_info *ti = current_thread_info();
- 		/* No signal to deliver -- put the saved sigmask back */
--		if (test_thread_flag(TIF_RESTORE_SIGMASK)) {
--			clear_thread_flag(TIF_RESTORE_SIGMASK);
-+		if (ti->local_flags & _TLF_RESTORE_SIGMASK) {
-+			ti->local_flags &= ~_TLF_RESTORE_SIGMASK;
- 			sigprocmask(SIG_SETMASK, &current->saved_sigmask, NULL);
- 		}
- 		return 0;               /* no signals delivered */
-@@ -169,10 +170,9 @@ int do_signal(sigset_t *oldset, struct pt_regs *regs)
- 
- 		/*
- 		 * A signal was successfully delivered; the saved sigmask is in
--		 * its frame, and we can clear the TIF_RESTORE_SIGMASK flag.
-+		 * its frame, and we can clear the TLF_RESTORE_SIGMASK flag.
- 		 */
--		if (test_thread_flag(TIF_RESTORE_SIGMASK))
--			clear_thread_flag(TIF_RESTORE_SIGMASK);
-+		current_thread_info()->local_flags &= ~_TLF_RESTORE_SIGMASK;
- 	}
- 
- 	return ret;
-diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
-index ad69434..4ae16d1 100644
---- a/arch/powerpc/kernel/signal_32.c
-+++ b/arch/powerpc/kernel/signal_32.c
-@@ -243,7 +243,7 @@ long sys_sigsuspend(old_sigset_t mask)
- 
-  	current->state = TASK_INTERRUPTIBLE;
-  	schedule();
-- 	set_thread_flag(TIF_RESTORE_SIGMASK);
-+	set_restore_sigmask();
-  	return -ERESTARTNOHAND;
- }
- 
-diff --git a/arch/ppc/kernel/entry.S b/arch/ppc/kernel/entry.S
-index 5f3a5d0..fcd830a 100644
---- a/arch/ppc/kernel/entry.S
-+++ b/arch/ppc/kernel/entry.S
-@@ -647,7 +647,7 @@ user_exc_return:		/* r10 contains MSR_KERNEL here */
- 	/* Check current_thread_info()->flags */
- 	rlwinm	r9,r1,0,0,18
- 	lwz	r9,TI_FLAGS(r9)
--	andi.	r0,r9,(_TIF_SIGPENDING|_TIF_RESTORE_SIGMASK|_TIF_NEED_RESCHED)
-+	andi.	r0,r9,_TIF_USER_WORK_MASK
- 	bne	do_work
- 
- restore_user:
-@@ -898,7 +898,7 @@ recheck:
- 	lwz	r9,TI_FLAGS(r9)
- 	andi.	r0,r9,_TIF_NEED_RESCHED
- 	bne-	do_resched
--	andi.	r0,r9,_TIF_SIGPENDING
-+	andi.	r0,r9,_TIF_USER_WORK_MASK
- 	beq	restore_user
- do_user_signal:			/* r10 contains MSR_KERNEL here */
- 	ori	r10,r10,MSR_EE
-diff --git a/include/asm-powerpc/thread_info.h b/include/asm-powerpc/thread_info.h
-index d030f5c..e079e81 100644
---- a/include/asm-powerpc/thread_info.h
-+++ b/include/asm-powerpc/thread_info.h
-@@ -116,7 +116,6 @@ static inline struct thread_info *current_thread_info(void)
- #define TIF_SECCOMP		10	/* secure computing */
- #define TIF_RESTOREALL		11	/* Restore all regs (implies NOERROR) */
- #define TIF_NOERROR		12	/* Force successful syscall return */
--#define TIF_RESTORE_SIGMASK	13	/* Restore signal mask in do_signal */
- #define TIF_FREEZE		14	/* Freezing for suspend */
- #define TIF_RUNLATCH		15	/* Is the runlatch enabled? */
- #define TIF_ABI_PENDING		16	/* 32/64 bit switch needed */
-@@ -134,21 +133,31 @@ static inline struct thread_info *current_thread_info(void)
- #define _TIF_SECCOMP		(1<<TIF_SECCOMP)
- #define _TIF_RESTOREALL		(1<<TIF_RESTOREALL)
- #define _TIF_NOERROR		(1<<TIF_NOERROR)
--#define _TIF_RESTORE_SIGMASK	(1<<TIF_RESTORE_SIGMASK)
- #define _TIF_FREEZE		(1<<TIF_FREEZE)
- #define _TIF_RUNLATCH		(1<<TIF_RUNLATCH)
- #define _TIF_ABI_PENDING	(1<<TIF_ABI_PENDING)
- #define _TIF_SYSCALL_T_OR_A	(_TIF_SYSCALL_TRACE|_TIF_SYSCALL_AUDIT|_TIF_SECCOMP)
- 
--#define _TIF_USER_WORK_MASK	( _TIF_SIGPENDING | \
--				 _TIF_NEED_RESCHED | _TIF_RESTORE_SIGMASK)
-+#define _TIF_USER_WORK_MASK	(_TIF_SIGPENDING | _TIF_NEED_RESCHED)
- #define _TIF_PERSYSCALL_MASK	(_TIF_RESTOREALL|_TIF_NOERROR)
- 
- /* Bits in local_flags */
- /* Don't move TLF_NAPPING without adjusting the code in entry_32.S */
- #define TLF_NAPPING		0	/* idle thread enabled NAP mode */
-+#define TLF_RESTORE_SIGMASK	1	/* Restore signal mask in do_signal */
- 
- #define _TLF_NAPPING		(1 << TLF_NAPPING)
-+#define _TLF_RESTORE_SIGMASK	(1 << TLF_RESTORE_SIGMASK)
-+
-+#ifndef __ASSEMBLY__
-+#define HAVE_SET_RESTORE_SIGMASK	1
-+static inline void set_restore_sigmask(void)
-+{
-+	struct thread_info *ti = current_thread_info();
-+	ti->local_flags |= _TLF_RESTORE_SIGMASK;
-+	set_bit(TIF_SIGPENDING, &ti->flags);
-+}
-+#endif	/* !__ASSEMBLY__ */
- 
- #endif /* __KERNEL__ */
- 
+	Gabriel
