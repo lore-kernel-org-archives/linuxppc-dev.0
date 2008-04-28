@@ -4,27 +4,30 @@ Received: from az33egw02.freescale.net (az33egw02.freescale.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "az33egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 2B870DE3CE
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Apr 2008 06:33:36 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id D1C43DE4C2
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 Apr 2008 06:31:17 +1000 (EST)
 Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
 	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	m3SKXMvq003851
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 Apr 2008 13:33:23 -0700 (MST)
+	m3SKU5wF002198
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 Apr 2008 13:30:05 -0700 (MST)
 Received: from ld0162-tx32.am.freescale.net (ld0162-tx32.am.freescale.net
 	[10.82.19.112])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m3SKXMcL014582
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 Apr 2008 15:33:22 -0500 (CDT)
-Date: Mon, 28 Apr 2008 15:33:22 -0500
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m3SKU47R013254
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 Apr 2008 15:30:05 -0500 (CDT)
+Date: Mon, 28 Apr 2008 15:30:04 -0500
 From: Scott Wood <scottwood@freescale.com>
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Subject: Re: [PATCH 1/7] Implement arch disable/enable irq hooks.
-Message-ID: <20080428203322.GD15223@ld0162-tx32.am.freescale.net>
-References: <20071023212404.GA30942@loki.buserror.net>
-	<Pine.LNX.4.64.0804251454050.6045@axis700.grange>
+To: Rune Torgersen <runet@innovsys.com>
+Subject: Re: [PATCH 1/2] [MTD] Add support for RAM & ROMmappings in the
+	physmap_of MTD driver.
+Message-ID: <20080428203004.GC15223@ld0162-tx32.am.freescale.net>
+References: <200804251353.13698.laurentp@cse-semaphore.com>
+	<DCEAAC0833DD314AB0B58112AD99B93B04512785@ismail.innsys.innovsys.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.64.0804251454050.6045@axis700.grange>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+In-Reply-To: <DCEAAC0833DD314AB0B58112AD99B93B04512785@ismail.innsys.innovsys.com>
+Cc: ben@simtec.co.uk, linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
+	David Woodhouse <dwmw2@infradead.org>,
+	David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,15 +37,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Apr 25, 2008 at 02:57:24PM +0200, Guennadi Liakhovetski wrote:
-> is there any specific reason, why out of these 7 patches only the first 
-> one made it into the mainline? AFAICS, there has been only one comment, 
-> suggesting to replace printk with dev_err on two occasions in one of 
-> the patches...
+On Mon, Apr 28, 2008 at 11:26:15AM -0500, Rune Torgersen wrote:
+> Examples would be the FCC's on a Freescale PQ2 chip, where they are
+> encoded as ethernet controllers. (Thsy could be used as high-speed HDLC
+> controllers, ATM controllers and other usages), the SCC ports (as
+> serial, they can be used for syncronous serial and HDLC)
 
-A while ago Paul said on IRC he'd prefer to do the TLF_SLEEPING hack more
-like the soft IRQ disabling that 64-bit uses.  I haven't yet had a chance
-to look into it, so the patch collects dust, despite the current
-implementation of TLF_SLEEPING working just fine.
+But that choice is made by board-level hardware, not purely by software.
 
 -Scott
