@@ -1,25 +1,17 @@
-Return-Path: <G.Chen@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 09140DDE3A
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 Apr 2008 16:22:55 +1000 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	m3S6MoQX007354
-	for <linuxppc-dev@ozlabs.org>; Sun, 27 Apr 2008 23:22:51 -0700 (MST)
-Received: from zch01exm21.fsl.freescale.net (zch01exm21.ap.freescale.net
-	[10.192.129.205])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m3S6Mncr006420
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 Apr 2008 01:22:49 -0500 (CDT)
-From: Chen Gong <g.chen@freescale.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATHC V3] Watchdog on MPC85xx SMP system
-Date: Mon, 28 Apr 2008 14:20:37 +0800
-Message-Id: <1209363637-22739-1-git-send-email-g.chen@freescale.com>
-Cc: Chen Gong <g.chen@freescale.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 1AA0CDDE26
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 Apr 2008 16:25:31 +1000 (EST)
+Date: Mon, 28 Apr 2008 01:21:22 -0500 (CDT)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Paul Mackerras <paulus@samba.org>
+Subject: [PATCH v2] [POWERPC] Add IRQSTACKS support on ppc32
+Message-ID: <Pine.LNX.4.64.0804280121070.27882@blarg.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,116 +21,248 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Book-E SMP systems each core has its own private watchdog.
-If only one watchdog is enabled, when the core that doesn't
-enable the watchdog is hung, system can't reset because no
-watchdog is running on it. That's bad. It means we must enable
-watchdogs on both cores.
+* Added allocation and initialization of the irq stacks.  We limit the
+  stacks to be in lowmem for ppc32.
+* Implemented ppc32 versions of call_do_softirq() and call_handle_irq()
+  to switch the stack pointers
+* Reworked how we do stack overflow detection.  We now keep around the
+  limit of the stack in the thread_struct and compare against the limit
+  to see if we've overflowed.  We can now use this on ppc64 if desired.
 
-We can use smp_call_function() to send appropriate messages to all the other
-cores to enable and update the watchdog.
-
-Signed-off-by: Chen Gong <g.chen@freescale.com>
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 ---
-Tested on MPC8572DS platform.
 
- drivers/char/watchdog/booke_wdt.c |   34 +++++++++++++++++++++++++++-------
- 1 files changed, 27 insertions(+), 7 deletions(-)
+Removed ifdef from init_IRQ since we have a dummy version of irq_ctx_init
+in irq.h
 
-diff --git a/drivers/char/watchdog/booke_wdt.c b/drivers/char/watchdog/booke_wdt.c
-index d362f5b..b3a37d0 100644
---- a/drivers/char/watchdog/booke_wdt.c
-+++ b/drivers/char/watchdog/booke_wdt.c
-@@ -6,7 +6,12 @@
-  * Author: Matthew McClintock
-  * Maintainer: Kumar Gala <galak@kernel.crashing.org>
-  *
-- * Copyright 2005 Freescale Semiconductor Inc.
-+ * Copyright 2005, 2008 Freescale Semiconductor Inc.
-+ *
-+ * Changelog:
-+ * 	2008-04-28 Chen Gong <g.chen@freescale.com>
-+ * 	Add SMP support for MPC85xx system. Tested on
-+ * 	MPC8572DS platform
-  *
-  * This program is free software; you can redistribute  it and/or modify it
-  * under  the terms of  the GNU General  Public License as published by the
-@@ -16,6 +21,7 @@
- 
- #include <linux/module.h>
- #include <linux/fs.h>
-+#include <linux/smp.h>
- #include <linux/miscdevice.h>
- #include <linux/notifier.h>
- #include <linux/watchdog.h>
-@@ -47,23 +53,31 @@ u32 booke_wdt_period = WDT_PERIOD_DEFAULT;
- #define WDTP(x)		(TCR_WP(x))
- #endif
- 
-+static DEFINE_SPINLOCK(booke_wdt_lock);
+ arch/powerpc/Kconfig.debug        |    1 -
+ arch/powerpc/kernel/asm-offsets.c |    1 +
+ arch/powerpc/kernel/entry_32.S    |    4 ++--
+ arch/powerpc/kernel/irq.c         |   10 ++++++++--
+ arch/powerpc/kernel/misc_32.S     |   25 +++++++++++++++++++++++++
+ arch/powerpc/kernel/process.c     |    2 ++
+ arch/powerpc/kernel/setup_32.c    |   21 +++++++++++++++++++++
+ include/asm-powerpc/processor.h   |    6 ++++++
+ 8 files changed, 65 insertions(+), 5 deletions(-)
+
+diff --git a/arch/powerpc/Kconfig.debug b/arch/powerpc/Kconfig.debug
+index a86d8d8..2cf72d2 100644
+--- a/arch/powerpc/Kconfig.debug
++++ b/arch/powerpc/Kconfig.debug
+@@ -118,7 +118,6 @@ config XMON_DISASSEMBLY
+
+ config IRQSTACKS
+ 	bool "Use separate kernel stacks when processing interrupts"
+-	depends on PPC64
+ 	help
+ 	  If you say Y here the kernel will use separate kernel stacks
+ 	  for handling hard and soft interrupts.  This can help avoid
+diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
+index adf1d09..0ef4d41 100644
+--- a/arch/powerpc/kernel/asm-offsets.c
++++ b/arch/powerpc/kernel/asm-offsets.c
+@@ -64,6 +64,7 @@ int main(void)
+ #endif /* CONFIG_PPC64 */
+
+ 	DEFINE(KSP, offsetof(struct thread_struct, ksp));
++	DEFINE(KSP_LIMIT, offsetof(struct thread_struct, ksp_limit));
+ 	DEFINE(PT_REGS, offsetof(struct thread_struct, regs));
+ 	DEFINE(THREAD_FPEXC_MODE, offsetof(struct thread_struct, fpexc_mode));
+ 	DEFINE(THREAD_FPR0, offsetof(struct thread_struct, fpr[0]));
+diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
+index 84c8686..f33c1fe 100644
+--- a/arch/powerpc/kernel/entry_32.S
++++ b/arch/powerpc/kernel/entry_32.S
+@@ -137,8 +137,8 @@ transfer_to_handler:
+ 2:	/* if from kernel, check interrupted DOZE/NAP mode and
+          * check for stack overflow
+          */
+-	lwz	r9,THREAD_INFO-THREAD(r12)
+-	cmplw	r1,r9			/* if r1 <= current->thread_info */
++	lwz	r9,KSP_LIMIT(r12)
++	cmplw	r1,r9			/* if r1 <= ksp_limit */
+ 	ble-	stack_ovf		/* then the kernel stack overflowed */
+ 5:
+ #ifdef CONFIG_6xx
+diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+index 425616f..2f73f70 100644
+--- a/arch/powerpc/kernel/irq.c
++++ b/arch/powerpc/kernel/irq.c
+@@ -307,6 +307,7 @@ void do_IRQ(struct pt_regs *regs)
+ 		if (curtp != irqtp) {
+ 			struct irq_desc *desc = irq_desc + irq;
+ 			void *handler = desc->handle_irq;
++			unsigned long saved_sp_limit = current->thread.ksp_limit;
+ 			if (handler == NULL)
+ 				handler = &__do_IRQ;
+ 			irqtp->task = curtp->task;
+@@ -319,7 +320,10 @@ void do_IRQ(struct pt_regs *regs)
+ 				(irqtp->preempt_count & ~SOFTIRQ_MASK) |
+ 				(curtp->preempt_count & SOFTIRQ_MASK);
+
++			current->thread.ksp_limit = (unsigned long)irqtp +
++				_ALIGN_UP(sizeof(struct thread_info), 16);
+ 			call_handle_irq(irq, desc, irqtp, handler);
++			current->thread.ksp_limit = saved_sp_limit;
+ 			irqtp->task = NULL;
+
+
+@@ -352,9 +356,7 @@ void __init init_IRQ(void)
+ {
+ 	if (ppc_md.init_IRQ)
+ 		ppc_md.init_IRQ();
+-#ifdef CONFIG_PPC64
+ 	irq_ctx_init();
+-#endif
+ }
+
+
+@@ -383,11 +385,15 @@ void irq_ctx_init(void)
+ static inline void do_softirq_onstack(void)
+ {
+ 	struct thread_info *curtp, *irqtp;
++	unsigned long saved_sp_limit = current->thread.ksp_limit;
+
+ 	curtp = current_thread_info();
+ 	irqtp = softirq_ctx[smp_processor_id()];
+ 	irqtp->task = curtp->task;
++	current->thread.ksp_limit = (unsigned long)irqtp +
++				    _ALIGN_UP(sizeof(struct thread_info), 16);
+ 	call_do_softirq(irqtp);
++	current->thread.ksp_limit = saved_sp_limit;
+ 	irqtp->task = NULL;
+ }
+
+diff --git a/arch/powerpc/kernel/misc_32.S b/arch/powerpc/kernel/misc_32.S
+index 92ccc6f..89aaaa6 100644
+--- a/arch/powerpc/kernel/misc_32.S
++++ b/arch/powerpc/kernel/misc_32.S
+@@ -32,6 +32,31 @@
+
+ 	.text
+
++#ifdef CONFIG_IRQSTACKS
++_GLOBAL(call_do_softirq)
++	mflr	r0
++	stw	r0,4(r1)
++	stwu	r1,THREAD_SIZE-STACK_FRAME_OVERHEAD(r3)
++	mr	r1,r3
++	bl	__do_softirq
++	lwz	r1,0(r1)
++	lwz	r0,4(r1)
++	mtlr	r0
++	blr
 +
-+static void __booke_wdt_ping(void *data)
++_GLOBAL(call_handle_irq)
++	mflr	r0
++	stw	r0,4(r1)
++	mtctr	r6
++	stwu	r1,THREAD_SIZE-STACK_FRAME_OVERHEAD(r5)
++	mr	r1,r5
++	bctrl
++	lwz	r1,0(r1)
++	lwz	r0,4(r1)
++	mtlr	r0
++	blr
++#endif /* CONFIG_IRQSTACKS */
++
+ /*
+  * This returns the high 64 bits of the product of two 64-bit numbers.
+  */
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index 6caad17..7de41c3 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -589,6 +589,8 @@ int copy_thread(int nr, unsigned long clone_flags, unsigned long usp,
+ 	kregs = (struct pt_regs *) sp;
+ 	sp -= STACK_FRAME_OVERHEAD;
+ 	p->thread.ksp = sp;
++	p->thread.ksp_limit = (unsigned long)task_stack_page(p) +
++				_ALIGN_UP(sizeof(struct thread_info), 16);
+
+ #ifdef CONFIG_PPC64
+ 	if (cpu_has_feature(CPU_FTR_SLB)) {
+diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
+index 36f6779..5112a4a 100644
+--- a/arch/powerpc/kernel/setup_32.c
++++ b/arch/powerpc/kernel/setup_32.c
+@@ -16,6 +16,7 @@
+ #include <linux/root_dev.h>
+ #include <linux/cpu.h>
+ #include <linux/console.h>
++#include <linux/lmb.h>
+
+ #include <asm/io.h>
+ #include <asm/prom.h>
+@@ -229,6 +230,24 @@ int __init ppc_init(void)
+
+ arch_initcall(ppc_init);
+
++#ifdef CONFIG_IRQSTACKS
++static void __init irqstack_early_init(void)
 +{
-+	mtspr(SPRN_TSR, TSR_ENW|TSR_WIS);
-+}
++	unsigned int i;
 +
- /*
-  * booke_wdt_ping:
-  */
- static __inline__ void booke_wdt_ping(void)
++	/* interrupt stacks must be in lowmem, we get that for free on ppc32
++	 * as the lmb is limited to lowmem by LMB_REAL_LIMIT */
++	for_each_possible_cpu(i) {
++		softirq_ctx[i] = (struct thread_info *)
++			__va(lmb_alloc(THREAD_SIZE, THREAD_SIZE));
++		hardirq_ctx[i] = (struct thread_info *)
++			__va(lmb_alloc(THREAD_SIZE, THREAD_SIZE));
++	}
++}
++#else
++#define irqstack_early_init()
++#endif
++
+ /* Warning, IO base is not yet inited */
+ void __init setup_arch(char **cmdline_p)
  {
--	mtspr(SPRN_TSR, TSR_ENW|TSR_WIS);
-+	smp_call_function(__booke_wdt_ping, NULL, 0, 0);
-+	__booke_wdt_ping(NULL);
- }
- 
- /*
-- * booke_wdt_enable:
-+ * __booke_wdt_enable:
-  */
--static __inline__ void booke_wdt_enable(void)
-+static __inline__ void __booke_wdt_enable(void *data)
- {
- 	u32 val;
- 
- 	/* clear status before enabling watchdog */
--	booke_wdt_ping();
-+	__booke_wdt_ping(NULL);
- 	val = mfspr(SPRN_TCR);
- 	val |= (TCR_WIE|TCR_WRC(WRC_CHIP)|WDTP(booke_wdt_period));
- 
-@@ -137,12 +151,15 @@ static int booke_wdt_ioctl (struct inode *inode, struct file *file,
-  */
- static int booke_wdt_open (struct inode *inode, struct file *file)
- {
-+	spin_lock(&booke_wdt_lock);
- 	if (booke_wdt_enabled == 0) {
- 		booke_wdt_enabled = 1;
--		booke_wdt_enable();
-+		__booke_wdt_enable(NULL);
-+		smp_call_function(__booke_wdt_enable, NULL, 0, 0);
- 		printk (KERN_INFO "PowerPC Book-E Watchdog Timer Enabled (wdt_period=%d)\n",
- 				booke_wdt_period);
- 	}
-+	spin_unlock(&booke_wdt_lock);
- 
- 	return nonseekable_open(inode, file);
- }
-@@ -183,11 +200,14 @@ static int __init booke_wdt_init(void)
- 		return ret;
- 	}
- 
-+	spin_lock(&booke_wdt_lock);
- 	if (booke_wdt_enabled == 1) {
- 		printk (KERN_INFO "PowerPC Book-E Watchdog Timer Enabled (wdt_period=%d)\n",
- 				booke_wdt_period);
--		booke_wdt_enable();
-+		__booke_wdt_enable(NULL);
-+		smp_call_function(__booke_wdt_enable, NULL, 0, 0);
- 	}
-+	spin_unlock(&booke_wdt_lock);
- 
- 	return ret;
- }
+@@ -286,6 +305,8 @@ void __init setup_arch(char **cmdline_p)
+ 	init_mm.end_data = (unsigned long) _edata;
+ 	init_mm.brk = klimit;
+
++	irqstack_early_init();
++
+ 	/* set up the bootmem stuff with available memory */
+ 	do_init_bootmem();
+ 	if ( ppc_md.progress ) ppc_md.progress("setup_arch: bootmem", 0x3eab);
+diff --git a/include/asm-powerpc/processor.h b/include/asm-powerpc/processor.h
+index fd98ca9..cf83f2d 100644
+--- a/include/asm-powerpc/processor.h
++++ b/include/asm-powerpc/processor.h
+@@ -138,6 +138,8 @@ typedef struct {
+
+ struct thread_struct {
+ 	unsigned long	ksp;		/* Kernel stack pointer */
++	unsigned long	ksp_limit;	/* if ksp <= ksp_limit stack overflow */
++
+ #ifdef CONFIG_PPC64
+ 	unsigned long	ksp_vsid;
+ #endif
+@@ -182,11 +184,14 @@ struct thread_struct {
+ #define ARCH_MIN_TASKALIGN 16
+
+ #define INIT_SP		(sizeof(init_stack) + (unsigned long) &init_stack)
++#define INIT_SP_LIMIT \
++	(_ALIGN_UP(sizeof(init_thread_info), 16) + (unsigned long) &init_stack)
+
+
+ #ifdef CONFIG_PPC32
+ #define INIT_THREAD { \
+ 	.ksp = INIT_SP, \
++	.ksp_limit = INIT_SP_LIMIT, \
+ 	.fs = KERNEL_DS, \
+ 	.pgdir = swapper_pg_dir, \
+ 	.fpexc_mode = MSR_FE0 | MSR_FE1, \
+@@ -194,6 +199,7 @@ struct thread_struct {
+ #else
+ #define INIT_THREAD  { \
+ 	.ksp = INIT_SP, \
++	.ksp_limit = INIT_SP_LIMIT, \
+ 	.regs = (struct pt_regs *)INIT_SP - 1, /* XXX bogus, I think */ \
+ 	.fs = KERNEL_DS, \
+ 	.fpr = {0}, \
 -- 
-1.5.4
+1.5.4.1
