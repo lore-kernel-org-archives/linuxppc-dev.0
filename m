@@ -1,23 +1,18 @@
-Return-Path: <smaclennan@pikatech.com>
-Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
-	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 9A799DE213
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Apr 2008 03:10:03 +1000 (EST)
-Date: Mon, 28 Apr 2008 13:10:01 -0400
-From: Sean MacLennan <smaclennan@pikatech.com>
-To: "Grant Likely" <grant.likely@secretlab.ca>
-Subject: Re: [RESEND][PATCH][POWERPC] PIKA Warp: Update platform code to
-	supportRev B boards
-Message-ID: <20080428131001.052be010@lappy.seanm.ca>
-In-Reply-To: <fa686aa40804272147y54df795fj7e8dad89dc237ecd@mail.gmail.com>
-References: <20080417152251.2bf07219@lappy.seanm.ca>
-	<20080427152546.1e26b145@lappy.seanm.ca>
-	<20080428105859.daef4d71.sfr@canb.auug.org.au>
-	<fa686aa40804271851t6d762a1et76fa3cc02c2205fe@mail.gmail.com>
-	<20080427222514.1086f2d3@lappy.seanm.ca>
-	<fa686aa40804272147y54df795fj7e8dad89dc237ecd@mail.gmail.com>
+Return-Path: <rmachet@slac.stanford.edu>
+Received: from nospam3.slac.stanford.edu (nospam3.slac.stanford.edu
+	[134.79.18.120])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 109F7DE49D
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 Apr 2008 03:11:56 +1000 (EST)
+Subject: [PATCH] sysdev,mv64x60: MV64x60 device bus
+From: Remi Machet <rmachet@slac.stanford.edu>
+To: Paul Mackerras <paulus@samba.org>, Dale Farnsworth <dale@farnsworth.org>
+Content-Type: text/plain
+Date: Mon, 28 Apr 2008 10:12:09 -0700
+Message-Id: <1209402729.14407.2.camel@pcds-ts102.slac.stanford.edu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,42 +22,55 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, 27 Apr 2008 22:47:43 -0600
-"Grant Likely" <grant.likely@secretlab.ca> wrote:
+Follow up of my email of 4/16/2008 titled "MV64x60 device bus".
+For each mv64360 entry in the OpenFirmware database, add the 
+registration of an of_bus to take care of devices connected to
+the MV64x60 asynchronous devices controller.
 
-> If your LEDs are attached to gpio pins, then you should use the
-> current draft led->gpio bindings as shown in the above patch.  Then,
-> let your platform code extract whatever data it needs from the device
-> tree to set up the LEDs.
+Signed-off-by: Remi Machet (rmachet@slac.stanford.edu)
+---
+I did not modify the PRPMC2800 dts file to use that feature because
+I cannot test it on that board. I will soon submit a patch to add
+support for a board that makes use of this feature. If someone want
+to use that feature to register the PRPMC2800 flash you just need
+to move the NOR flash declaration in a subcategory whose device_type
+field is set to "devicectrl".
 
-I added the following to the dts:
+ arch/powerpc/sysdev/mv64x60_dev.c |   10 ++++++++++
+ 1 files changed, 10 insertions(+)
 
-	led@31 {
-		compatible = "linux,gpio-led";
-		linux,name = "green";
-		gpios = <&GPIO1 31>;
-	};
-
-	led@30 {
-		compatible = "linux,gpio-led";
-		linux,name = "red";
-		gpios = <&GPIO1 30>;
-	};
-
-I then map the gpio base as follows (I removed the if checks just to
-make things short and sweet):
-
-	np = of_find_compatible_node(NULL, NULL, "linux,gpio-led");
-
-	gpios = of_get_property(np, "gpios", &lenp);
-	of_node_put(np);
-
-	np = of_find_node_by_phandle(gpios[0]);
-
-	gpio_base = of_iomap(np, 0);
-	of_node_put(np);
-
-Comments?
-
-Cheers,
-  Sean
+diff --git a/arch/powerpc/sysdev/mv64x60_dev.c b/arch/powerpc/sysdev/mv64x60_dev.c
+index 41af122..f335fd5 100644
+--- a/arch/powerpc/sysdev/mv64x60_dev.c
++++ b/arch/powerpc/sysdev/mv64x60_dev.c
+@@ -15,6 +15,7 @@
+ #include <linux/console.h>
+ #include <linux/mv643xx.h>
+ #include <linux/platform_device.h>
++#include <linux/of_platform.h>
+ 
+ #include <asm/prom.h>
+ 
+@@ -25,6 +26,11 @@
+  * PowerPC of_platform_bus_type.  They support platform_bus_type instead.
+  */
+ 
++static struct of_device_id of_mv64x60_devices[] = {
++	{ .type = "devicectrl", },
++	{}
++};
++
+ /*
+  * Create MPSC platform devices
+  */
+@@ -482,6 +488,10 @@ static int __init mv64x60_device_setup(void)
+ 		of_node_put(np);
+ 	}
+ 
++	/* Now add every node that is on the device bus (type is devicectrl */
++	for_each_compatible_node(np, NULL, "marvell,mv64360")
++		of_platform_bus_probe(np, of_mv64x60_devices, NULL);
++
+ 	return 0;
+ }
+ arch_initcall(mv64x60_device_setup);
