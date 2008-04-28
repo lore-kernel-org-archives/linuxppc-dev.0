@@ -1,23 +1,19 @@
-Return-Path: <khali@linux-fr.org>
-Received: from services.gcu-squad.org (zone0.gcu-squad.org [212.85.147.21])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 3AA47DDFD3
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Apr 2008 01:40:45 +1000 (EST)
-Date: Mon, 28 Apr 2008 17:40:10 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Subject: Re: [PATCH 1/2] i2c: Add support for device alias names
-Message-ID: <20080428174010.5a40c2c0@hyperion.delvare>
-In-Reply-To: <1209395245.3666.9.camel@linux.site>
-References: <20080428113052.6d024bda@hyperion.delvare>
-	<20080428113901.2772e9d9@hyperion.delvare>
-	<1209395245.3666.9.camel@linux.site>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Paul Mundt <lethal@linux-sh.org>,
-	Scott Wood <scottwood@freescale.com>, Jon, Linux I2C <i2c@lm-sensors.org>
+	by ozlabs.org (Postfix) with ESMTPS id 8C4DCDE0D7
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 Apr 2008 01:41:47 +1000 (EST)
+Received: from [IPv6:::1] (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id m3SFevAL028237
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 Apr 2008 10:40:58 -0500
+Message-Id: <DF3B8F4C-EAE1-4F44-8884-44535A855139@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v919.2)
+Subject: suggestions on handling additional exception levels on ppc32
+Date: Mon, 28 Apr 2008 10:40:56 -0500
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,71 +23,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Kay,
+I'm looking at fixing an issue parts that have multiple exception  
+levels (e300, 40x, booke).
 
-On Mon, 28 Apr 2008 17:07:25 +0200, Kay Sievers wrote:
-> On Mon, 2008-04-28 at 11:39 +0200, Jean Delvare wrote:
-> > One thing I am still not happy with is that the aliases created have a
-> > trailing "*":
-> >=20
-> > $ /sbin/modinfo lm90
-> > filename:       /lib/modules/2.6.25-git11/kernel/drivers/hwmon/lm90.ko
-> > author:         Jean Delvare <khali@linux-fr.org>
-> > description:    LM90/ADM1032 driver
-> > license:        GPL
-> > vermagic:       2.6.25-git11 mod_unload
-> > depends:        hwmon
-> > alias:          i2c:lm90*
-> > alias:          i2c:adm1032*
-> > alias:          i2c:lm99*
-> > alias:          i2c:lm86*
-> > alias:          i2c:max6657*
-> > alias:          i2c:adt7461*
-> > alias:          i2c:max6680*
-> > $
-> >=20
-> > This would cause trouble if one I2C chip name matches the beginning of
-> > another I2C chip name and both chips are supported by different
-> > drivers. This has yet to be seen, but still, I'd like to see this
-> > problem fixed quickly.
->=20
-> =EF=BB=BFRight, the trailing "*" is not nice.
->=20
-> We should terminate the string, so the trailing "*" will not match
-> longer strings. The usual thing is to add a ":" to the end, which would
-> then show up as
->   alias: i2c:max6680:*
->=20
-> See DMI and ACPI:
->   alias dmi:*:svnFUJITSU:pnLifeBook*:pvr*:rvnFUJITSU:* apanel
->   alias acpi*:ASIM0000:* atlas_btns
+One of the issues is the transfer_to_handler patch in entry_32.S  
+doesn't use the proper save/restore registers to transfer to C code.
 
-I didn't know about these cases, thanks for the hint.
+The following bit of code is what I'm having issues with:
 
->=20
-> If i2c device modaliases could ever contain multiple strings, it should
-> be:
->   alias: i2c*:max6680:*
-> =EF=BB=BFto match the module, regardless of the order of the strings in t=
-he
-> modalias:
+         .globl transfer_to_handler_cont
+transfer_to_handler_cont:
+3:
+         mflr    r9
+         lwz     r11,0(r9)               /* virtual address of handler  
+*/
+         lwz     r9,4(r9)                /* where to go when done */
+         mtspr   SPRN_SRR0,r11
+         mtspr   SPRN_SRR1,r10
+         mtlr    r9
+         SYNC
+         RFI                             /* jump to handler, enable  
+MMU */
 
-Why would i2c device modaliases ever contain multiple strings? A device
-can't have multiple names, can it?
+A few possibilities:
+* introduce an additional function pointer as part of  
+EXC_XFER_TEMPLATE() to specifies the type of handler (normal, crit,  
+dbg, mcheck)
+* use the traps field low order bits to determine normal, crit, dbg,  
+mcheck at run time.
+* duplicate the code paths for each exception level
 
-Adding a ":" at the end of the i2c device names solves the problem I
-was mentioning, sure, but why don't we simply remove the trailing "*",
-instead of trying to work around it? A trailing "*" simply makes no
-sense for aliases which are simple device names. This is not only i2c
-devices, but also platform devices, acpi, dmi, pnp... Looking at the
-various device types handled by file2alias.c, it seems that most of
-them don't need the trailing "*", and many of them have the problem I
-was mentioning.
+suggestions?
 
-Can't we just stop handle_moddevtable() from adding a tailing "*"
-automatically, and just let the device types which need it, add it on
-their own?
-
-Thanks,
---=20
-Jean Delvare
+- k
