@@ -1,24 +1,30 @@
-Return-Path: <jochen@scram.de>
-Received: from mail.scram.de (mail0.scram.de [78.47.204.202])
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.scram.de", Issuer "scram e.V. CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 59029DDF37
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Apr 2008 06:24:50 +1000 (EST)
-Message-ID: <4816327C.3080207@scram.de>
-Date: Mon, 28 Apr 2008 22:24:28 +0200
-From: Jochen Friedrich <jochen@scram.de>
-MIME-Version: 1.0
-To: Wolfram Sang <w.sang@pengutronix.de>
-Subject: Re: [i2c] [PATCH 0/2] i2c: Add support for device alias names
-References: <20080428113052.6d024bda@hyperion.delvare>
-	<20080428153543.GB4353@pengutronix.de>
-In-Reply-To: <20080428153543.GB4353@pengutronix.de>
-Content-Type: text/plain; charset=ISO-8859-15
-Cc: Sievers <kay.sievers@vrfy.org>, Laurent@ATrpms.net,
-	Scott Wood <scottwood@freescale.com>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Paul Mundt <lethal@linux-sh.org>, Linux I2C <i2c@lm-sensors.org>,
-	Kay@ATrpms.net, Jean Delvare <khali@linux-fr.org>
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 2B870DE3CE
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 Apr 2008 06:33:36 +1000 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
+	m3SKXMvq003851
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 Apr 2008 13:33:23 -0700 (MST)
+Received: from ld0162-tx32.am.freescale.net (ld0162-tx32.am.freescale.net
+	[10.82.19.112])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m3SKXMcL014582
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 Apr 2008 15:33:22 -0500 (CDT)
+Date: Mon, 28 Apr 2008 15:33:22 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Subject: Re: [PATCH 1/7] Implement arch disable/enable irq hooks.
+Message-ID: <20080428203322.GD15223@ld0162-tx32.am.freescale.net>
+References: <20071023212404.GA30942@loki.buserror.net>
+	<Pine.LNX.4.64.0804251454050.6045@axis700.grange>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.64.0804251454050.6045@axis700.grange>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,16 +34,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Wolfram,
+On Fri, Apr 25, 2008 at 02:57:24PM +0200, Guennadi Liakhovetski wrote:
+> is there any specific reason, why out of these 7 patches only the first 
+> one made it into the mainline? AFAICS, there has been only one comment, 
+> suggesting to replace printk with dev_err on two occasions in one of 
+> the patches...
 
-> I tested on this hardware
-> 
->  MPC8260 (powerpc) + PCF8575 (io expander) + LM84 (sensor)
->  + RS5C372 (rtc) + X24645 (eeprom)
+A while ago Paul said on IRC he'd prefer to do the TLF_SLEEPING hack more
+like the soft IRQ disabling that 64-bit uses.  I haven't yet had a chance
+to look into it, so the patch collects dust, despite the current
+implementation of TLF_SLEEPING working just fine.
 
-It's also OK on dbox2 hardware: MPC823 (powerpc)
-+ saa7127 (patch needed to add id_table) + dbox frontprocessor
-(8051 controller with i2c interface).
-
-Thanks,
-Jochen
+-Scott
