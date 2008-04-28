@@ -1,13 +1,13 @@
 Return-Path: <g.liakhovetski@gmx.de>
 Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id D54B9DE53E
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Apr 2008 01:38:16 +1000 (EST)
-Date: Mon, 28 Apr 2008 17:38:30 +0200 (CEST)
+	by ozlabs.org (Postfix) with SMTP id 03071DE034
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 Apr 2008 01:39:18 +1000 (EST)
+Date: Mon, 28 Apr 2008 17:39:32 +0200 (CEST)
 From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 3/7] mpc83xx: Power Management support
+Subject: [PATCH 4/7] mpc83xx: timer driver for PM wakeup
 In-Reply-To: <Pine.LNX.4.64.0804281714000.7897@axis700.grange>
-Message-ID: <Pine.LNX.4.64.0804281720090.7897@axis700.grange>
+Message-ID: <Pine.LNX.4.64.0804281721050.7897@axis700.grange>
 References: <Pine.LNX.4.64.0804281714000.7897@axis700.grange>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -22,1306 +22,355 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Basic PM support for 83xx.  Standby is implemented as sleep.
-Suspend-to-RAM is implemented as "deep sleep" (with the processor
-turned off) on 831x.
+This is a driver for the mpc83xx's GTM4 timer.  It's functionality
+is limited to providing a wakeup source for suspend-to-RAM.
 
 Signed-off-by: Scott Wood <scottwood@freescale.com>
 Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 ---
-The enabling of i-cache at the end of the suspend code somehow fell off of
-the code that was sent out in the previous patch (it still works when
-booting high, which is what I tested, but not booting low).
+ arch/powerpc/platforms/83xx/Kconfig  |    9 +
+ arch/powerpc/platforms/83xx/Makefile |    1 +
+ arch/powerpc/platforms/83xx/timer.c  |  299 ++++++++++++++++++++++++++++++++++
+ 3 files changed, 309 insertions(+), 0 deletions(-)
+ create mode 100644 arch/powerpc/platforms/83xx/timer.c
 
-The rest of the patchset stays the same.
-
- arch/powerpc/platforms/83xx/Kconfig       |    5 +
- arch/powerpc/platforms/83xx/Makefile      |    1 +
- arch/powerpc/platforms/83xx/suspend-asm.S |  539 +++++++++++++++++++++++++++++
- arch/powerpc/platforms/83xx/suspend.c     |  423 ++++++++++++++++++++++
- arch/powerpc/sysdev/fsl_soc.c             |   33 ++
- arch/powerpc/sysdev/fsl_soc.h             |   10 +
- arch/powerpc/sysdev/ipic.c                |   71 ++++
- include/asm-powerpc/reg.h                 |    4 +
- include/linux/fsl_devices.h               |   24 ++
- 9 files changed, 1110 insertions(+), 0 deletions(-)
- create mode 100644 arch/powerpc/platforms/83xx/suspend-asm.S
- create mode 100644 arch/powerpc/platforms/83xx/suspend.c
-
-diff -u a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -192,7 +192,7 @@ config ARCH_HIBERNATION_POSSIBLE
- 
- config ARCH_SUSPEND_POSSIBLE
- 	def_bool y
--	depends on ADB_PMU || PPC_EFIKA || PPC_LITE5200
-+	depends on ADB_PMU || PPC_EFIKA || PPC_LITE5200 || PPC_83xx
- 
- config PPC_DCR_NATIVE
- 	bool
 diff --git a/arch/powerpc/platforms/83xx/Kconfig b/arch/powerpc/platforms/83xx/Kconfig
-index ec305f1..901dbaf 100644
+index 901dbaf..800f547 100644
 --- a/arch/powerpc/platforms/83xx/Kconfig
 +++ b/arch/powerpc/platforms/83xx/Kconfig
-@@ -6,6 +6,11 @@ menuconfig MPC83xx
+@@ -80,6 +80,15 @@ config PPC_83xx_SUSPEND
+ 	  This option enables support for the Wind River SBC834x board.
  
- if MPC83xx
- 
-+config PPC_83xx_SUSPEND
-+	bool
-+	default y
-+	depends on SUSPEND
+ endif
 +
- config MPC831x_RDB
- 	bool "Freescale MPC831x RDB"
- 	select DEFAULT_UIMAGE
++config MPC83xx_GTM
++	tristate "83xx General-Purpose Timers for PM wakeup"
++	help
++	  This enables a driver for the GTM4 timer, to be used
++	  as a wakeup source for suspend-to-RAM.  To arm the
++	  timer, write the number of seconds until expiration
++	  to the "timeout" file in the device's sysfs directory.
++	  To disarm, write 0 to the "timeout" file.
+ 
+ # used for usb
+ config PPC_MPC831x
 diff --git a/arch/powerpc/platforms/83xx/Makefile b/arch/powerpc/platforms/83xx/Makefile
-index 5a98f88..944369e 100644
+index 944369e..bcc1003 100644
 --- a/arch/powerpc/platforms/83xx/Makefile
 +++ b/arch/powerpc/platforms/83xx/Makefile
-@@ -3,6 +3,7 @@
- #
+@@ -4,6 +4,7 @@
  obj-y				:= misc.o usb.o
  obj-$(CONFIG_PCI)		+= pci.o
-+obj-$(CONFIG_SUSPEND)		+= suspend.o suspend-asm.o
+ obj-$(CONFIG_SUSPEND)		+= suspend.o suspend-asm.o
++obj-$(CONFIG_MPC83xx_GTM)	+= timer.o
  obj-$(CONFIG_MPC831x_RDB)	+= mpc831x_rdb.o
  obj-$(CONFIG_MPC832x_RDB)	+= mpc832x_rdb.o
  obj-$(CONFIG_MPC834x_MDS)	+= mpc834x_mds.o
-diff --git a/arch/powerpc/platforms/83xx/suspend-asm.S b/arch/powerpc/platforms/83xx/suspend-asm.S
+diff --git a/arch/powerpc/platforms/83xx/timer.c b/arch/powerpc/platforms/83xx/timer.c
 new file mode 100644
-index 0000000..03e29a2
+index 0000000..7fc6048
 --- /dev/null
-+++ b/arch/powerpc/platforms/83xx/suspend-asm.S
-@@ -0,0 +1,539 @@
++++ b/arch/powerpc/platforms/83xx/timer.c
+@@ -0,0 +1,300 @@
 +/*
-+ * Enter and leave sleep state on MPC83xx
++ * MPC83xx Global Timer4 support
 + *
-+ * Author: Scott Wood <scottwood@freescale.com>
++ * This driver is currently specific to timer 4 in 16-bit mode,
++ * as that is all that can be used as a wakeup source for deep sleep
++ * on the MPC8313.
 + *
-+ * Copyright (c) 2006 Freescale Semiconductor, Inc.
++ * Copyright (c) 2007 Freescale Semiconductor, Inc.
 + *
 + * This program is free software; you can redistribute it and/or modify it
 + * under the terms of the GNU General Public License version 2 as published
 + * by the Free Software Foundation.
 + */
 +
-+#include <asm/page.h>
-+#include <asm/ppc_asm.h>
-+#include <asm/reg.h>
-+#include <asm/asm-offsets.h>
-+
-+#define SS_MEMSAVE	0x00
-+#define SS_HID		0x08 /* 3 HIDs */
-+#define SS_IABR		0x14 /* 2 IABRs */
-+#define SS_IBCR		0x1c
-+#define SS_DABR		0x20 /* 2 DABRs */
-+#define SS_DBCR		0x28
-+#define SS_SP		0x2c
-+#define SS_SR		0x30 /* 16 segment registers */
-+#define SS_CURRENT	0x70
-+#define SS_MSR		0x74
-+#define SS_SDR1		0x78
-+#define SS_LR		0x7c
-+#define SS_SPRG		0x80 /* 4 SPRGs */
-+#define SS_DBAT		0x90 /* 8 DBATs */
-+#define SS_IBAT		0xd0 /* 8 IBATs */
-+#define SS_TB		0x110
-+#define SS_CR		0x118
-+#define SS_GPREG	0x11c /* r12-r31 */
-+#define STATE_SAVE_SIZE 0x16c
-+
-+	.section .data
-+	.align	5
-+
-+mpc83xx_sleep_save_area:
-+	.space	STATE_SAVE_SIZE
-+immrbase:
-+	.long	0
-+
-+	.section .text
-+	.align	5
-+
-+	/* r3 = physical address of IMMR */
-+_GLOBAL(mpc83xx_enter_deep_sleep)
-+	/* Re-use the state saving/restoring code in
-+	 * arch/powerpc/kernel/swsusp_32.S, but have
-+	 * it call us instead of swsusp_save.
-+	 */
-+
-+	lis	r4, immrbase@ha
-+	stw	r3, immrbase@l(r4)
-+
-+	/* The first 2 words of memory are used to communicate with the
-+	 * bootloader, to tell it how to resume.
-+	 *
-+	 * The first word is the magic number 0xf5153ae5, and the second
-+	 * is the pointer to mpc83xx_deep_resume.
-+	 *
-+	 * The original content of these two words is saved in the state
-+	 * save area.
-+	 */
-+
-+	lis	r3, mpc83xx_sleep_save_area@h
-+	ori	r3, r3, mpc83xx_sleep_save_area@l
-+
-+	lis	r4, KERNELBASE@h
-+	lwz	r5, 0(r4)
-+	lwz	r6, 4(r4)
-+
-+	stw	r5, SS_MEMSAVE+0(r3)
-+	stw	r6, SS_MEMSAVE+4(r3)
-+
-+	mfspr	r5, SPRN_HID0
-+	mfspr	r6, SPRN_HID1
-+	mfspr	r7, SPRN_HID2
-+
-+	stw	r5, SS_HID+0(r3)
-+	stw	r6, SS_HID+4(r3)
-+	stw	r7, SS_HID+8(r3)
-+
-+	mfspr	r4, SPRN_IABR
-+	mfspr	r5, SPRN_IABR2
-+	mfspr	r6, SPRN_IBCR
-+	mfspr	r7, SPRN_DABR
-+	mfspr	r8, SPRN_DABR2
-+	mfspr	r9, SPRN_DBCR
-+
-+	stw	r4, SS_IABR+0(r3)
-+	stw	r5, SS_IABR+4(r3)
-+	stw	r6, SS_IBCR(r3)
-+	stw	r7, SS_DABR+0(r3)
-+	stw	r8, SS_DABR+4(r3)
-+	stw	r9, SS_DBCR(r3)
-+
-+	mfspr	r4, SPRN_SPRG0
-+	mfspr	r5, SPRN_SPRG1
-+	mfspr	r6, SPRN_SPRG2
-+	mfspr	r7, SPRN_SPRG3
-+	mfsdr1	r8
-+
-+	stw	r4, SS_SPRG+0(r3)
-+	stw	r5, SS_SPRG+4(r3)
-+	stw	r6, SS_SPRG+8(r3)
-+	stw	r7, SS_SPRG+12(r3)
-+	stw	r8, SS_SDR1(r3)
-+
-+	mfspr	r4, SPRN_DBAT0U
-+	mfspr	r5, SPRN_DBAT0L
-+	mfspr	r6, SPRN_DBAT1U
-+	mfspr	r7, SPRN_DBAT1L
-+
-+	stw	r4, SS_DBAT+0x00(r3)
-+	stw	r5, SS_DBAT+0x04(r3)
-+	stw	r6, SS_DBAT+0x08(r3)
-+	stw	r7, SS_DBAT+0x0c(r3)
-+
-+	mfspr	r4, SPRN_DBAT2U
-+	mfspr	r5, SPRN_DBAT2L
-+	mfspr	r6, SPRN_DBAT3U
-+	mfspr	r7, SPRN_DBAT3L
-+
-+	stw	r4, SS_DBAT+0x10(r3)
-+	stw	r5, SS_DBAT+0x14(r3)
-+	stw	r6, SS_DBAT+0x18(r3)
-+	stw	r7, SS_DBAT+0x1c(r3)
-+
-+	mfspr	r4, SPRN_DBAT4U
-+	mfspr	r5, SPRN_DBAT4L
-+	mfspr	r6, SPRN_DBAT5U
-+	mfspr	r7, SPRN_DBAT5L
-+
-+	stw	r4, SS_DBAT+0x20(r3)
-+	stw	r5, SS_DBAT+0x24(r3)
-+	stw	r6, SS_DBAT+0x28(r3)
-+	stw	r7, SS_DBAT+0x2c(r3)
-+
-+	mfspr	r4, SPRN_DBAT6U
-+	mfspr	r5, SPRN_DBAT6L
-+	mfspr	r6, SPRN_DBAT7U
-+	mfspr	r7, SPRN_DBAT7L
-+
-+	stw	r4, SS_DBAT+0x30(r3)
-+	stw	r5, SS_DBAT+0x34(r3)
-+	stw	r6, SS_DBAT+0x38(r3)
-+	stw	r7, SS_DBAT+0x3c(r3)
-+
-+	mfspr	r4, SPRN_IBAT0U
-+	mfspr	r5, SPRN_IBAT0L
-+	mfspr	r6, SPRN_IBAT1U
-+	mfspr	r7, SPRN_IBAT1L
-+
-+	stw	r4, SS_IBAT+0x00(r3)
-+	stw	r5, SS_IBAT+0x04(r3)
-+	stw	r6, SS_IBAT+0x08(r3)
-+	stw	r7, SS_IBAT+0x0c(r3)
-+
-+	mfspr	r4, SPRN_IBAT2U
-+	mfspr	r5, SPRN_IBAT2L
-+	mfspr	r6, SPRN_IBAT3U
-+	mfspr	r7, SPRN_IBAT3L
-+
-+	stw	r4, SS_IBAT+0x10(r3)
-+	stw	r5, SS_IBAT+0x14(r3)
-+	stw	r6, SS_IBAT+0x18(r3)
-+	stw	r7, SS_IBAT+0x1c(r3)
-+
-+	mfspr	r4, SPRN_IBAT4U
-+	mfspr	r5, SPRN_IBAT4L
-+	mfspr	r6, SPRN_IBAT5U
-+	mfspr	r7, SPRN_IBAT5L
-+
-+	stw	r4, SS_IBAT+0x20(r3)
-+	stw	r5, SS_IBAT+0x24(r3)
-+	stw	r6, SS_IBAT+0x28(r3)
-+	stw	r7, SS_IBAT+0x2c(r3)
-+
-+	mfspr	r4, SPRN_IBAT6U
-+	mfspr	r5, SPRN_IBAT6L
-+	mfspr	r6, SPRN_IBAT7U
-+	mfspr	r7, SPRN_IBAT7L
-+
-+	stw	r4, SS_IBAT+0x30(r3)
-+	stw	r5, SS_IBAT+0x34(r3)
-+	stw	r6, SS_IBAT+0x38(r3)
-+	stw	r7, SS_IBAT+0x3c(r3)
-+
-+	mfmsr	r4
-+	mflr	r5
-+	mfcr	r6
-+
-+	stw	r4, SS_MSR(r3)
-+	stw	r5, SS_LR(r3)
-+	stw	r6, SS_CR(r3)
-+	stw	r1, SS_SP(r3)
-+	stw	r2, SS_CURRENT(r3)
-+
-+1:	mftbu	r4
-+	mftb	r5
-+	mftbu	r6
-+	cmpw	r4, r6
-+	bne	1b
-+
-+	stw	r4, SS_TB+0(r3)
-+	stw	r5, SS_TB+4(r3)
-+
-+	stmw	r12, SS_GPREG(r3)
-+
-+	li	r4, 0
-+	addi	r6, r3, SS_SR-4
-+1:	mfsrin	r5, r4
-+	stwu	r5, 4(r6)
-+	addis	r4, r4, 0x1000
-+	cmpwi	r4, 0
-+	bne	1b
-+
-+	/* Disable machine checks and critical exceptions */
-+	mfmsr	r4
-+	rlwinm	r4, r4, 0, ~MSR_CE
-+	rlwinm	r4, r4, 0, ~MSR_ME
-+	mtmsr	r4
-+	isync
-+
-+#define TMP_VIRT_IMMR		0xf0000000
-+#define DEFAULT_IMMR_VALUE	0xff400000
-+#define IMMRBAR_BASE		0x0000
-+
-+	lis	r4, immrbase@ha
-+	lwz	r4, immrbase@l(r4)
-+
-+	/* Use DBAT0 to address the current IMMR space */
-+
-+	ori	r4, r4, 0x002a
-+	mtspr	SPRN_DBAT0L, r4
-+	lis	r8, TMP_VIRT_IMMR@h
-+	ori	r4, r8, 0x001e	/* 1 MByte accessable from Kernel Space only */
-+	mtspr	SPRN_DBAT0U, r4
-+	isync
-+
-+	/* Use DBAT1 to address the original IMMR space */
-+
-+	lis	r4, DEFAULT_IMMR_VALUE@h
-+	ori	r4, r4, 0x002a
-+	mtspr	SPRN_DBAT1L, r4
-+	lis	r9, (TMP_VIRT_IMMR + 0x01000000)@h
-+	ori	r4, r9, 0x001e	/* 1 MByte accessable from Kernel Space only */
-+	mtspr	SPRN_DBAT1U, r4
-+	isync
-+
-+	/* Use DBAT2 to address the beginning of RAM.  This isn't done
-+	 * using the normal virtual mapping, because with page debugging
-+	 * enabled it will be read-only. */
-+
-+	li	r4, 0x0002
-+	mtspr	SPRN_DBAT2L, r4
-+	lis	r4, KERNELBASE@h
-+	ori	r4, r4, 0x001e	/* 1 MByte accessable from Kernel Space only */
-+	mtspr	SPRN_DBAT2U, r4
-+	isync
-+
-+	/* Flush the cache with our BAT, as there will be TLB misses
-+	 * otherwise if page debugging is enabled, and these misses
-+	 * will disturb the PLRU algorithm.
-+	 */
-+
-+	bl	__flush_disable_L1
-+
-+	/* Keep the i-cache enabled, so the hack below for low-boot
-+	 * flash will work.
-+	 */
-+	mfspr	r3, SPRN_HID0
-+	ori	r3, r3, HID0_ICE
-+	mtspr	SPRN_HID0, r3
-+	isync
-+
-+	lis	r6, 0xf515
-+	ori	r6, r6, 0x3ae5
-+
-+	lis	r7, mpc83xx_deep_resume@h
-+	ori	r7, r7, mpc83xx_deep_resume@l
-+	tophys(r7, r7)
-+
-+	lis	r5, KERNELBASE@h
-+	stw	r6, 0(r5)
-+	stw	r7, 4(r5)
-+
-+	/* Reset BARs */
-+
-+	li	r4, 0
-+	stw	r4, 0x0024(r8)
-+	stw	r4, 0x002c(r8)
-+	stw	r4, 0x0034(r8)
-+	stw	r4, 0x003c(r8)
-+	stw	r4, 0x0064(r8)
-+	stw	r4, 0x006c(r8)
-+
-+	/* Rev 1 of the 8313 has problems with wakeup events that are
-+	 * pending during the transition to deep sleep state (such as if
-+	 * the PCI host sets the state to D3 and then D0 in rapid
-+	 * succession).  This check shrinks the race window somewhat.
-+	 *
-+	 * See erratum PCI23, though the problem is not limited
-+	 * to PCI.
-+	 */
-+
-+	lwz	r3, 0x0b04(r8)
-+	andi.	r3, r3, 1
-+	bne-	mpc83xx_deep_resume
-+
-+	/* Move IMMR back to the default location, following the
-+	 * procedure specified in the MPC8313 manual.
-+	 */
-+	lwz	r4, IMMRBAR_BASE(r8)
-+	isync
-+	lis	r4, DEFAULT_IMMR_VALUE@h
-+	stw	r4, IMMRBAR_BASE(r8)
-+	lis	r4, KERNELBASE@h
-+	lwz	r4, 0(r4)
-+	isync
-+	lwz	r4, IMMRBAR_BASE(r9)
-+	mr	r8, r9
-+	isync
-+
-+	/* Check the Reset Configuration Word to see whether flash needs
-+	 * to be mapped at a low address or a high address.
-+	 */
-+
-+	lwz	r4, 0x0904(r8)
-+	andis.	r4, r4, 0x0400
-+	li	r4, 0
-+	beq	boot_low
-+	lis	r4, 0xff80
-+boot_low:
-+	stw	r4, 0x0020(r8)
-+	lis	r7, 0x8000
-+	ori	r7, r7, 0x0016
-+
-+	mfspr	r5, SPRN_HID0
-+	rlwinm	r5, r5, 0, ~(HID0_DOZE | HID0_NAP)
-+	oris	r5, r5, HID0_SLEEP@h
-+	mtspr	SPRN_HID0, r5
-+	isync
-+
-+	mfmsr	r5
-+	oris	r5, r5, MSR_POW@h
-+
-+	/* Enable the flash mapping at the appropriate address.  This
-+	 * mapping will override the RAM mapping, so there's no need to
-+	 * disable the latter.  This must be done inside the same cache
-+	 * line as setting MSR_POW, so that no instruction fetches from
-+	 * RAM happen after the flash mapping is turned on.
-+	 */
-+
-+	.align	5
-+	stw	r7, 0x0024(r8)
-+	sync
-+	isync
-+	mtmsr	r5
-+	isync
-+1:	b	1b
-+
-+mpc83xx_deep_resume:
-+	lis	r4, 1f@h
-+	ori	r4, r4, 1f@l
-+	tophys(r4, r4)
-+	mtsrr0	r4
-+
-+	mfmsr	r4
-+	rlwinm	r4, r4, 0, ~(MSR_IR | MSR_DR)
-+	mtsrr1	r4
-+
-+	rfi
-+
-+1:	tlbia
-+	bl	__inval_enable_L1
-+
-+	lis	r3, mpc83xx_sleep_save_area@h
-+	ori	r3, r3, mpc83xx_sleep_save_area@l
-+	tophys(r3, r3)
-+
-+	lwz	r5, SS_MEMSAVE+0(r3)
-+	lwz	r6, SS_MEMSAVE+4(r3)
-+
-+	stw	r5, 0(0)
-+	stw	r6, 4(0)
-+
-+	lwz	r5, SS_HID+0(r3)
-+	lwz	r6, SS_HID+4(r3)
-+	lwz	r7, SS_HID+8(r3)
-+
-+	mtspr	SPRN_HID0, r5
-+	mtspr	SPRN_HID1, r6
-+	mtspr	SPRN_HID2, r7
-+
-+	lwz	r4, SS_IABR+0(r3)
-+	lwz	r5, SS_IABR+4(r3)
-+	lwz	r6, SS_IBCR(r3)
-+	lwz	r7, SS_DABR+0(r3)
-+	lwz	r8, SS_DABR+4(r3)
-+	lwz	r9, SS_DBCR(r3)
-+
-+	mtspr	SPRN_IABR, r4
-+	mtspr	SPRN_IABR2, r5
-+	mtspr	SPRN_IBCR, r6
-+	mtspr	SPRN_DABR, r7
-+	mtspr	SPRN_DABR2, r8
-+	mtspr	SPRN_DBCR, r9
-+
-+	li	r4, 0
-+	addi	r6, r3, SS_SR-4
-+1:	lwzu	r5, 4(r6)
-+	mtsrin	r5, r4
-+	addis	r4, r4, 0x1000
-+	cmpwi	r4, 0
-+	bne	1b
-+
-+	lwz	r4, SS_DBAT+0x00(r3)
-+	lwz	r5, SS_DBAT+0x04(r3)
-+	lwz	r6, SS_DBAT+0x08(r3)
-+	lwz	r7, SS_DBAT+0x0c(r3)
-+
-+	mtspr	SPRN_DBAT0U, r4
-+	mtspr	SPRN_DBAT0L, r5
-+	mtspr	SPRN_DBAT1U, r6
-+	mtspr	SPRN_DBAT1L, r7
-+
-+	lwz	r4, SS_DBAT+0x10(r3)
-+	lwz	r5, SS_DBAT+0x14(r3)
-+	lwz	r6, SS_DBAT+0x18(r3)
-+	lwz	r7, SS_DBAT+0x1c(r3)
-+
-+	mtspr	SPRN_DBAT2U, r4
-+	mtspr	SPRN_DBAT2L, r5
-+	mtspr	SPRN_DBAT3U, r6
-+	mtspr	SPRN_DBAT3L, r7
-+
-+	lwz	r4, SS_DBAT+0x20(r3)
-+	lwz	r5, SS_DBAT+0x24(r3)
-+	lwz	r6, SS_DBAT+0x28(r3)
-+	lwz	r7, SS_DBAT+0x2c(r3)
-+
-+	mtspr	SPRN_DBAT4U, r4
-+	mtspr	SPRN_DBAT4L, r5
-+	mtspr	SPRN_DBAT5U, r6
-+	mtspr	SPRN_DBAT5L, r7
-+
-+	lwz	r4, SS_DBAT+0x30(r3)
-+	lwz	r5, SS_DBAT+0x34(r3)
-+	lwz	r6, SS_DBAT+0x38(r3)
-+	lwz	r7, SS_DBAT+0x3c(r3)
-+
-+	mtspr	SPRN_DBAT6U, r4
-+	mtspr	SPRN_DBAT6L, r5
-+	mtspr	SPRN_DBAT7U, r6
-+	mtspr	SPRN_DBAT7L, r7
-+
-+	lwz	r4, SS_IBAT+0x00(r3)
-+	lwz	r5, SS_IBAT+0x04(r3)
-+	lwz	r6, SS_IBAT+0x08(r3)
-+	lwz	r7, SS_IBAT+0x0c(r3)
-+
-+	mtspr	SPRN_IBAT0U, r4
-+	mtspr	SPRN_IBAT0L, r5
-+	mtspr	SPRN_IBAT1U, r6
-+	mtspr	SPRN_IBAT1L, r7
-+
-+	lwz	r4, SS_IBAT+0x10(r3)
-+	lwz	r5, SS_IBAT+0x14(r3)
-+	lwz	r6, SS_IBAT+0x18(r3)
-+	lwz	r7, SS_IBAT+0x1c(r3)
-+
-+	mtspr	SPRN_IBAT2U, r4
-+	mtspr	SPRN_IBAT2L, r5
-+	mtspr	SPRN_IBAT3U, r6
-+	mtspr	SPRN_IBAT3L, r7
-+
-+	lwz	r4, SS_IBAT+0x20(r3)
-+	lwz	r5, SS_IBAT+0x24(r3)
-+	lwz	r6, SS_IBAT+0x28(r3)
-+	lwz	r7, SS_IBAT+0x2c(r3)
-+
-+	mtspr	SPRN_IBAT4U, r4
-+	mtspr	SPRN_IBAT4L, r5
-+	mtspr	SPRN_IBAT5U, r6
-+	mtspr	SPRN_IBAT5L, r7
-+
-+	lwz	r4, SS_IBAT+0x30(r3)
-+	lwz	r5, SS_IBAT+0x34(r3)
-+	lwz	r6, SS_IBAT+0x38(r3)
-+	lwz	r7, SS_IBAT+0x3c(r3)
-+
-+	mtspr	SPRN_IBAT6U, r4
-+	mtspr	SPRN_IBAT6L, r5
-+	mtspr	SPRN_IBAT7U, r6
-+	mtspr	SPRN_IBAT7L, r7
-+
-+	lwz	r4, SS_SPRG+0(r3)
-+	lwz	r5, SS_SPRG+4(r3)
-+	lwz	r6, SS_SPRG+8(r3)
-+	lwz	r7, SS_SPRG+12(r3)
-+	lwz	r8, SS_SDR1(r3)
-+
-+	mtspr	SPRN_SPRG0, r4
-+	mtspr	SPRN_SPRG1, r5
-+	mtspr	SPRN_SPRG2, r6
-+	mtspr	SPRN_SPRG3, r7
-+	mtsdr1	r8
-+
-+	lwz	r4, SS_MSR(r3)
-+	lwz	r5, SS_LR(r3)
-+	lwz	r6, SS_CR(r3)
-+	lwz	r1, SS_SP(r3)
-+	lwz	r2, SS_CURRENT(r3)
-+
-+	mtsrr1	r4
-+	mtsrr0	r5
-+	mtcr	r6
-+
-+	li	r4, 0
-+	mtspr	SPRN_TBWL, r4
-+
-+	lwz	r4, SS_TB+0(r3)
-+	lwz	r5, SS_TB+4(r3)
-+
-+	mtspr	SPRN_TBWU, r4
-+	mtspr	SPRN_TBWL, r5
-+
-+	lmw	r12, SS_GPREG(r3)
-+
-+	/* Kick decrementer */
-+	li	r0, 1
-+	mtdec	r0
-+
-+	rfi
-diff --git a/arch/powerpc/platforms/83xx/suspend.c b/arch/powerpc/platforms/83xx/suspend.c
-new file mode 100644
-index 0000000..61bca38
---- /dev/null
-+++ b/arch/powerpc/platforms/83xx/suspend.c
-@@ -0,0 +1,423 @@
-+/*
-+ * MPC83xx suspend support
-+ *
-+ * Author: Scott Wood <scottwood@freescale.com>
-+ *
-+ * Copyright (c) 2006-2007 Freescale Semiconductor, Inc.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License version 2 as published
-+ * by the Free Software Foundation.
-+ */
-+
++#include <linux/kernel.h>
 +#include <linux/init.h>
-+#include <linux/pm.h>
-+#include <linux/types.h>
-+#include <linux/ioport.h>
++#include <linux/sched.h>
++#include <linux/errno.h>
++#include <linux/module.h>
++#include <linux/mm.h>
++#include <linux/delay.h>
++#include <linux/fs.h>
++#include <linux/string.h>
 +#include <linux/interrupt.h>
-+#include <linux/wait.h>
-+#include <linux/kthread.h>
-+#include <linux/freezer.h>
-+#include <linux/suspend.h>
-+#include <linux/fsl_devices.h>
++#include <linux/sysfs.h>
 +#include <linux/of_platform.h>
 +
-+#include <asm/reg.h>
 +#include <asm/io.h>
-+#include <asm/time.h>
-+#include <asm/mpc6xx.h>
++#include <asm/irq.h>
 +
 +#include <sysdev/fsl_soc.h>
 +
-+#define PMCCR1_NEXT_STATE       0x0C /* Next state for power management */
-+#define PMCCR1_NEXT_STATE_SHIFT 2
-+#define PMCCR1_CURR_STATE       0x03 /* Current state for power management*/
-+#define IMMR_RCW_OFFSET         0x900
-+#define RCW_PCI_HOST            0x80000000
++#define MDR_ICLK_DIV16	0x0004
 +
-+void mpc83xx_enter_deep_sleep(phys_addr_t immrbase);
++struct gtm_regs {
++	u8    cfr1; /* Timer1/2 Configuration  */
++	#define CFR1_PCAS 0x80 /* Pair Cascade mode  */
++	#define CFR1_BCM  0x40  /* Backward compatible mode  */
++	#define CFR1_STP2 0x20 /* Stop timer  */
++	#define CFR1_RST2 0x10 /* Reset timer  */
++	#define CFR1_GM2  0x08 /* Gate mode for pin 2  */
++	#define CFR1_GM1  0x04 /* Gate mode for pin 1  */
++	#define CFR1_STP1 0x02 /* Stop timer  */
++	#define CFR1_RST1 0x01 /* Reset timer  */
++	#define CFR1_RES ~(CFR1_PCAS | CFR1_STP2 | CFR1_RST2 | CFR1_GM2 |\
++		CFR1_GM1 | CFR1_STP1 | CFR1_RST1)
 +
-+struct mpc83xx_pmc {
-+	u32 config;
-+#define PMCCR_DLPEN 2 /* DDR SDRAM low power enable */
-+#define PMCCR_SLPEN 1 /* System low power enable */
++	u8    res0[3];
++	u8    cfr2; /* Timer3/4 Configuration  */
++	#define CFR2_PCAS 0x80 /* Pair Cascade mode  */
++	#define CFR2_SCAS 0x40 /* Super Cascade mode  */
++	#define CFR2_STP4 0x20 /* Stop timer  */
++	#define CFR2_RST4 0x10 /* Reset timer  */
++	#define CFR2_GM4  0x08 /* Gate mode for pin 4  */
++	#define CFR2_GM3  0x04 /* Gate mode for pin 3  */
++	#define CFR2_STP3 0x02 /* Stop timer  */
++	#define CFR2_RST3 0x01 /* Reset timer  */
 +
-+	u32 event;
-+	u32 mask;
-+/* All but PMCI are deep-sleep only */
-+#define PMCER_GPIO   0x100
-+#define PMCER_PCI    0x080
-+#define PMCER_USB    0x040
-+#define PMCER_ETSEC1 0x020
-+#define PMCER_ETSEC2 0x010
-+#define PMCER_TIMER  0x008
-+#define PMCER_INT1   0x004
-+#define PMCER_INT2   0x002
-+#define PMCER_PMCI   0x001
-+#define PMCER_ALL    0x1FF
++	u8    res1[11];
++	u16   mdr1; /* Timer1 Mode Register  */
++	#define MDR_SPS  0xff00 /* Secondary Prescaler value (256) */
++	#define MDR_CE   0x00c0 /* Capture edge and enable interrupt  */
++	#define MDR_OM   0x0020 /* Output mode  */
++	#define MDR_ORI  0x0010 /* Output reference interrupt enable  */
++	#define MDR_FRR  0x0008 /* Free run/restart  */
++	#define MDR_ICLK 0x0006 /* Input clock source for the timer */
++	#define MDR_GE   0x0001 /* Gate enable  */
 +
-+	/* deep-sleep only */
-+	u32 config1;
-+#define PMCCR1_USE_STATE  0x80000000
-+#define PMCCR1_PME_EN     0x00000080
-+#define PMCCR1_ASSERT_PME 0x00000040
-+#define PMCCR1_POWER_OFF  0x00000020
++	u16   mdr2; /* Timer2 Mode Register  */
++	u16   rfr1; /* Timer1 Reference Register  */
++	u16   rfr2; /* Timer2 Reference Register  */
++	u16   cpr1; /* Timer1 Capture Register  */
++	u16   cpr2; /* Timer2 Capture Register  */
++	u16   cnr1; /* Timer1 Counter Register  */
++	u16   cnr2; /* Timer2 Counter Register  */
++	u16   mdr3; /* Timer3 Mode Register  */
++	u16   mdr4; /* Timer4 Mode Register  */
++	u16   rfr3; /* Timer3 Reference Register  */
++	u16   rfr4; /* Timer4 Reference Register  */
++	u16   cpr3; /* Timer3 Capture Register  */
++	u16   cpr4; /* Timer4 Capture Register  */
++	u16   cnr3; /* Timer3 Counter Register  */
++	u16   cnr4; /* Timer4 Counter Register  */
++	u16   evr1; /* Timer1 Event Register  */
++	u16   evr2; /* Timer2 Event Register  */
++	u16   evr3; /* Timer3 Event Register  */
++	u16   evr4; /* Timer4 Event Register  */
++	#define GTEVR_REF 0x0002 /* Output reference event  */
++	#define GTEVR_CAP 0x0001 /* Counter Capture event   */
++	#define GTEVR_RES ~(EVR_CAP|EVR_REF)
 +
-+	/* deep-sleep only */
-+	u32 config2;
++	u16   psr1; /* Timer1 Prescaler Register  */
++	u16   psr2; /* Timer2 Prescaler Register  */
++	u16   psr3; /* Timer3 Prescaler Register  */
++	u16   psr4; /* Timer4 Prescaler Register  */
++	#define GTPSR_PPS  0x00FF /* Primary Prescaler Bits (256). */
++	#define GTPSR_RES  ~(GTPSR_PPS)
 +};
 +
-+struct mpc83xx_rcw {
-+	u32 rcwlr;
-+	u32 rcwhr;
++struct gtm_priv {
++	struct gtm_regs __iomem *regs;
++	int irq;
++	int ticks_per_sec;
++	spinlock_t lock;
 +};
 +
-+struct mpc83xx_clock {
-+	u32 spmr;
-+	u32 occr;
-+	u32 sccr;
-+};
-+
-+struct pmc_type {
-+	int has_deep_sleep;
-+};
-+
-+static struct of_device *pmc_dev;
-+static int has_deep_sleep, deep_sleeping;
-+static int pmc_irq;
-+static struct mpc83xx_pmc __iomem *pmc_regs;
-+static struct mpc83xx_clock __iomem *clock_regs;
-+static int is_pci_agent, wake_from_pci;
-+static phys_addr_t immrbase;
-+static int pci_pm_state;
-+static DECLARE_WAIT_QUEUE_HEAD(agent_wq);
-+
-+static u32 saved_sccr;
-+static DEFINE_SPINLOCK(device_sleep_lock);
-+
-+void fsl_sleep_device(struct fsl_sleep_platform_data *data)
++static irqreturn_t fsl_gtm_isr(int irq, void *dev_id)
 +{
-+	if (clock_regs && data->sccr_mask) {
-+		unsigned long flags;
-+		u32 sccr;
++	struct gtm_priv *priv = dev_id;
++	unsigned long flags;
++	u16 event;
 +
-+		spin_lock_irqsave(&device_sleep_lock, flags);
-+		sccr = in_be32(&clock_regs->sccr);
++	spin_lock_irqsave(&priv->lock, flags);
 +
-+		saved_sccr &= ~data->sccr_mask;
-+		saved_sccr |= sccr & data->sccr_mask;
++	event = in_be16(&priv->regs->evr4);
++	out_be16(&priv->regs->evr4, event);
 +
-+		out_be32(&clock_regs->sccr, sccr & ~data->sccr_mask);
-+		spin_unlock_irqrestore(&device_sleep_lock, flags);
-+	}
-+}
-+EXPORT_SYMBOL(fsl_sleep_device);
++	if (event & GTEVR_REF)
++		out_8(&priv->regs->cfr2, CFR2_STP4);
 +
-+void fsl_wake_device(struct fsl_sleep_platform_data *data)
-+{
-+	if (clock_regs && data->sccr_mask) {
-+		unsigned long flags;
-+		u32 sccr;
-+
-+		spin_lock_irqsave(&device_sleep_lock, flags);
-+
-+		sccr = in_be32(&clock_regs->sccr);
-+		sccr |= saved_sccr & data->sccr_mask;
-+		out_be32(&clock_regs->sccr, sccr);
-+
-+		spin_unlock_irqrestore(&device_sleep_lock, flags);
-+	}
-+}
-+EXPORT_SYMBOL(fsl_wake_device);
-+
-+int fsl_deep_sleep(void)
-+{
-+	return deep_sleeping;
++	spin_unlock_irqrestore(&priv->lock, flags);
++	return event ? IRQ_HANDLED : IRQ_NONE;
 +}
 +
-+static int mpc83xx_change_state(void)
++static ssize_t gtm_timeout_store(struct device *dev,
++                                 struct device_attribute *attr,
++                                 const char *buf, size_t count)
 +{
-+	u32 curr_state;
-+	u32 reg_cfg1 = in_be32(&pmc_regs->config1);
++	struct gtm_priv *priv = dev_get_drvdata(dev);
++	unsigned long interval = simple_strtoul(buf, NULL, 0);
 +
-+	if (is_pci_agent) {
-+		pci_pm_state = (reg_cfg1 & PMCCR1_NEXT_STATE) >>
-+		               PMCCR1_NEXT_STATE_SHIFT;
-+		curr_state = reg_cfg1 & PMCCR1_CURR_STATE;
-+
-+		if (curr_state != pci_pm_state) {
-+			reg_cfg1 &= ~PMCCR1_CURR_STATE;
-+			reg_cfg1 |= pci_pm_state;
-+			out_be32(&pmc_regs->config1, reg_cfg1);
-+
-+			wake_up(&agent_wq);
-+			return 1;
-+		}
++	if (interval > 0xffff) {
++		dev_dbg(dev, "gtm: interval %lu (in ns) too long\n", interval);
++		return -EINVAL;
 +	}
 +
-+	return 0;
-+}
++	interval *= priv->ticks_per_sec;
 +
-+static irqreturn_t pmc_irq_handler(int irq, void *dev_id)
-+{
-+	u32 event = in_be32(&pmc_regs->event);
-+	int ret = IRQ_NONE;
-+
-+	if (mpc83xx_change_state())
-+		ret = IRQ_HANDLED;
-+
-+	if (event) {
-+		out_be32(&pmc_regs->event, event);
-+		ret = IRQ_HANDLED;
++	if (interval > 0xffff) {
++		dev_dbg(dev, "gtm: interval %lu (in ticks) too long\n",
++		        interval);
++		return -EINVAL;
 +	}
 +
-+	return ret;
-+}
++	spin_lock_irq(&priv->lock);
 +
-+static int mpc83xx_suspend_enter(suspend_state_t state)
-+{
-+	int ret = -EAGAIN;
++	/* reset timer 4 */
++	out_8(&priv->regs->cfr2, CFR2_STP3 | CFR2_STP4);
 +
-+	/* Don't go to sleep if there's a race where pci_pm_state changes
-+	 * between the agent thread checking it and the PM code disabling
-+	 * interrupts.
-+	 */
-+	if (wake_from_pci) {
-+		if (pci_pm_state != (deep_sleeping ? 3 : 2))
-+			goto out;
-+
-+		out_be32(&pmc_regs->config1,
-+		         in_be32(&pmc_regs->config1) | PMCCR1_PME_EN);
++	if (interval != 0) {
++		out_8(&priv->regs->cfr2, CFR2_GM4 | CFR2_RST4 | CFR2_STP4);
++		/* clear events */
++		out_be16(&priv->regs->evr4, GTEVR_REF | GTEVR_CAP);
++		/* maximum primary prescale (256) */
++		out_be16(&priv->regs->psr4, GTPSR_PPS);
++		/* clear current counter */
++		out_be16(&priv->regs->cnr4, 0x0);
++		/* set count limit */
++		out_be16(&priv->regs->rfr4, interval);
++		out_be16(&priv->regs->mdr4, MDR_SPS | MDR_ORI | MDR_FRR |
++		                            MDR_ICLK_DIV16);
++		/* start timer */
++		out_8(&priv->regs->cfr2, CFR2_GM4 | CFR2_STP3 | CFR2_RST4);
 +	}
 +
-+	/* Put the system into low-power mode and the RAM
-+	 * into self-refresh mode once the core goes to
-+	 * sleep.
-+	 */
++	spin_unlock_irq(&priv->lock);
++	return count;
++}
 +
-+	out_be32(&pmc_regs->config, PMCCR_SLPEN | PMCCR_DLPEN);
++static ssize_t gtm_timeout_show(struct device *dev,
++                                struct device_attribute *attr,
++                                char *buf)
++{
++	struct gtm_priv *priv = dev_get_drvdata(dev);
++	int timeout = 0;
 +
-+	/* If it has deep sleep (i.e. it's an 831x or compatible),
-+	 * disable power to the core upon entering sleep mode.  This will
-+	 * require going through the boot firmware upon a wakeup event.
-+	 */
++	spin_lock_irq(&priv->lock);
 +
-+	if (deep_sleeping) {
-+		out_be32(&pmc_regs->mask, PMCER_ALL);
-+
-+		out_be32(&pmc_regs->config1,
-+		         in_be32(&pmc_regs->config1) | PMCCR1_POWER_OFF);
-+
-+		enable_kernel_fp();
-+
-+		mpc83xx_enter_deep_sleep(immrbase);
-+
-+		out_be32(&pmc_regs->config1,
-+		         in_be32(&pmc_regs->config1) & ~PMCCR1_POWER_OFF);
-+
-+		out_be32(&pmc_regs->mask, PMCER_PMCI);
-+	} else {
-+		out_be32(&pmc_regs->mask, PMCER_PMCI);
-+
-+		mpc6xx_enter_standby();
++	if (!(in_8(&priv->regs->cfr2) & CFR2_STP4)) {
++		timeout = in_be16(&priv->regs->rfr4) -
++		          in_be16(&priv->regs->cnr4);
++		timeout += priv->ticks_per_sec - 1;
++		timeout /= priv->ticks_per_sec;
 +	}
 +
-+	ret = 0;
-+
-+out:
-+	out_be32(&pmc_regs->config1,
-+	         in_be32(&pmc_regs->config1) & ~PMCCR1_PME_EN);
-+
-+	return ret;
++	spin_unlock_irq(&priv->lock);
++	return sprintf(buf, "%u\n", timeout);
 +}
 +
-+static void mpc83xx_suspend_finish(void)
++static DEVICE_ATTR(timeout, 0660, gtm_timeout_show, gtm_timeout_store);
++
++static int __devinit gtm_probe(struct of_device *dev,
++                               const struct of_device_id *match)
 +{
-+	deep_sleeping = 0;
-+}
++	struct device_node *np = dev->node;
++	struct resource res;
++	int ret = 0;
++	u32 busfreq = fsl_get_sys_freq();
++	struct gtm_priv *priv;
 +
-+static int mpc83xx_suspend_valid(suspend_state_t state)
-+{
-+	return state == PM_SUSPEND_STANDBY || state == PM_SUSPEND_MEM;
-+}
-+
-+static int mpc83xx_suspend_set_target(suspend_state_t state)
-+{
-+	switch (state) {
-+		case PM_SUSPEND_STANDBY:
-+			deep_sleeping = 0;
-+			return 0;
-+
-+		case PM_SUSPEND_MEM:
-+			if (has_deep_sleep)
-+				deep_sleeping = 1;
-+
-+			return 0;
-+
-+		default:
-+			return -EINVAL;
-+	}
-+}
-+
-+static int agent_thread_fn(void *data)
-+{
-+	while (1) {
-+		wait_event_interruptible(agent_wq, pci_pm_state >= 2);
-+		try_to_freeze();
-+
-+		if (signal_pending(current) || pci_pm_state < 2)
-+			continue;
-+
-+		/* With a preemptible kernel (or SMP), this could race with a
-+		 * userspace-driven suspend request.  It's probably best to
-+		 * avoid mixing the two with such a configuration (or else fix
-+		 * it by adding a mutex to state_store that we can synchronize
-+		 * with).
-+		 */
-+
-+		wake_from_pci = 1;
-+
-+		pm_suspend(pci_pm_state == 3 ? PM_SUSPEND_MEM :
-+		                               PM_SUSPEND_STANDBY);
-+
-+		wake_from_pci = 0;
++	if (busfreq == 0) {
++		dev_err(&dev->dev, "gtm: No bus frequency in device tree.\n");
++		return -ENODEV;
 +	}
 +
-+	return 0;
-+}
-+
-+void mpc83xx_set_agent(void)
-+{
-+	out_be32(&pmc_regs->config1, PMCCR1_USE_STATE);
-+	out_be32(&pmc_regs->mask, PMCER_PMCI);
-+
-+	kthread_run(agent_thread_fn, NULL, "PCI power mgt");
-+}
-+
-+static int mpc83xx_is_pci_agent(void)
-+{
-+	struct mpc83xx_rcw __iomem *rcw_regs;
-+	int ret;
-+
-+	rcw_regs = ioremap(get_immrbase() + IMMR_RCW_OFFSET,
-+	                   sizeof(struct mpc83xx_rcw));
-+
-+	if (!rcw_regs)
++	priv = kmalloc(sizeof(struct gtm_priv), GFP_KERNEL);
++	if (!priv)
 +		return -ENOMEM;
 +
-+	ret = !(in_be32(&rcw_regs->rcwhr) & RCW_PCI_HOST);
-+
-+	iounmap(rcw_regs);
-+	return ret;
-+}
-+
-+static struct platform_suspend_ops mpc83xx_suspend_ops = {
-+	.valid = mpc83xx_suspend_valid,
-+	.set_target = mpc83xx_suspend_set_target,
-+	.enter = mpc83xx_suspend_enter,
-+	.finish = mpc83xx_suspend_finish,
-+};
-+
-+static int pmc_probe(struct of_device *ofdev,
-+                     const struct of_device_id *match)
-+{
-+	struct device_node *np = ofdev->node;
-+	struct resource res;
-+	struct pmc_type *type = match->data;
-+	int ret = 0;
-+
-+	has_deep_sleep = type->has_deep_sleep;
-+	immrbase = get_immrbase();
-+	pmc_dev = ofdev;
-+
-+	is_pci_agent = mpc83xx_is_pci_agent();
-+	if (is_pci_agent < 0)
-+		return is_pci_agent;
++	spin_lock_init(&priv->lock);
++	dev_set_drvdata(&dev->dev, priv);
 +
 +	ret = of_address_to_resource(np, 0, &res);
 +	if (ret)
-+		return -ENODEV;
++		goto out;
 +
-+	pmc_irq = irq_of_parse_and_map(np, 0);
-+	if (pmc_irq != NO_IRQ) {
-+		ret = request_irq(pmc_irq, pmc_irq_handler, IRQF_SHARED,
-+		                  "pmc", ofdev);
-+
-+		if (ret)
-+			return -EBUSY;
++	priv->irq = irq_of_parse_and_map(np, 0);
++	if (priv->irq == NO_IRQ) {
++		dev_err(&dev->dev, "mpc83xx-gtm exists in device tree "
++		                   "without an IRQ.\n");
++		ret = -ENODEV;
++		goto out;
 +	}
 +
-+	pmc_regs = ioremap(res.start, sizeof(struct mpc83xx_pmc));
++	ret = request_irq(priv->irq, fsl_gtm_isr, 0, "gtm timer", priv);
++	if (ret)
++		goto out;
 +
-+	if (!pmc_regs) {
++	priv->regs = ioremap(res.start, sizeof(struct gtm_regs));
++	if (!priv->regs) {
 +		ret = -ENOMEM;
 +		goto out;
 +	}
 +
-+	ret = of_address_to_resource(np, 1, &res);
-+	if (ret) {
-+		ret = -ENODEV;
-+		goto out_pmc;
-+	}
++	/* Disable the unused clocks to save power. */
++	out_8(&priv->regs->cfr1, CFR1_STP1 | CFR1_STP2);
++	out_8(&priv->regs->cfr2, CFR2_STP3 | CFR2_STP4);
 +
-+	clock_regs = ioremap(res.start, sizeof(struct mpc83xx_pmc));
-+
-+	if (!clock_regs) {
-+		ret = -ENOMEM;
-+		goto out_pmc;
-+	}
-+
-+	if (is_pci_agent)
-+		mpc83xx_set_agent();
-+
-+	suspend_set_ops(&mpc83xx_suspend_ops);
-+	return 0;
-+
-+out_pmc:
-+	iounmap(pmc_regs);
-+out:
-+	if (pmc_irq != NO_IRQ)
-+		free_irq(pmc_irq, ofdev);
-+
-+	return ret;
-+}
-+
-+static int pmc_remove(struct of_device *ofdev)
-+{
-+	return -EPERM;
-+};
-+
-+static struct pmc_type pmc_types[] = {
-+	{
-+		.has_deep_sleep = 1,
-+	},
-+	{
-+		.has_deep_sleep = 0,
-+	}
-+};
-+
-+static struct of_device_id pmc_match[] = {
-+	{
-+		.compatible = "fsl,mpc8313-pmc",
-+		.data = &pmc_types[0],
-+	},
-+	{
-+		.compatible = "fsl,mpc8349-pmc",
-+		.data = &pmc_types[1],
-+	},
-+	{}
-+};
-+
-+static struct of_platform_driver pmc_driver = {
-+	.name = "mpc83xx-pmc",
-+	.match_table = pmc_match,
-+	.probe = pmc_probe,
-+	.remove = pmc_remove
-+};
-+
-+static int pmc_init(void)
-+{
-+	return of_register_platform_driver(&pmc_driver);
-+}
-+
-+module_init(pmc_init);
-diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
-index e1ba33c..d5fd916 100644
---- a/arch/powerpc/sysdev/fsl_soc.c
-+++ b/arch/powerpc/sysdev/fsl_soc.c
-@@ -207,6 +207,33 @@ static int __init of_add_fixed_phys(void)
- arch_initcall(of_add_fixed_phys);
- #endif /* CONFIG_FIXED_PHY */
- 
-+int fsl_sleep_init(struct fsl_sleep_platform_data *sleep,
-+                   struct device_node *node)
-+{
-+	int proplen, ret = -ENODEV;
-+	const u32 *sleepdata = of_get_property(node, "sleep", &proplen);
-+	struct device_node *sleep_controller;
-+
-+	if (!sleepdata || proplen != 8)
-+		return -ENODEV;
-+
-+	sleep_controller = of_find_node_by_phandle(sleepdata[0]);
-+	if (!sleep_controller)
-+		return -ENODEV;
-+
-+	/* There can only be one fsl,mpc83xx-pmc device in the system;
-+	 * it is assumed that it is the one that the pmc driver matches.
-+	 */
-+	if (of_device_is_compatible(sleep_controller, "fsl,mpc83xx-pmc")) {
-+		sleep->sccr_mask = sleepdata[1];
-+		ret = 0;
-+	}
-+
-+	of_node_put(sleep_controller);
-+	return ret;
-+}
-+EXPORT_SYMBOL(fsl_sleep_init);
-+
- static int __init gfar_mdio_of_init(void)
- {
- 	struct device_node *np = NULL;
-@@ -396,6 +423,8 @@ static int __init gfar_of_init(void)
- 			of_node_put(mdio);
- 		}
- 
-+		fsl_sleep_init(&gfar_data.sleep, np);
-+
- 		ret =
- 		    platform_device_add_data(gfar_dev, &gfar_data,
- 					     sizeof(struct
-@@ -647,6 +676,8 @@ static int __init fsl_usb_of_init(void)
- 		prop = of_get_property(np, "phy_type", NULL);
- 		usb_data.phy_mode = determine_usb_phy(prop);
- 
-+		fsl_sleep_init(&usb_data.sleep, np);
-+
- 		ret =
- 		    platform_device_add_data(usb_dev_mph, &usb_data,
- 					     sizeof(struct
-@@ -710,6 +741,8 @@ static int __init fsl_usb_of_init(void)
- 		prop = of_get_property(np, "phy_type", NULL);
- 		usb_data.phy_mode = determine_usb_phy(prop);
- 
-+		fsl_sleep_init(&usb_data.sleep, np);
-+
- 		if (usb_dev_dr_host) {
- 			usb_dev_dr_host->dev.coherent_dma_mask = 0xffffffffUL;
- 			usb_dev_dr_host->dev.dma_mask = &usb_dev_dr_host->
-diff --git a/arch/powerpc/sysdev/fsl_soc.h b/arch/powerpc/sysdev/fsl_soc.h
-index 74c4a96..fb52d39 100644
---- a/arch/powerpc/sysdev/fsl_soc.h
-+++ b/arch/powerpc/sysdev/fsl_soc.h
-@@ -10,12 +10,22 @@ extern u32 get_baudrate(void);
- extern u32 fsl_get_sys_freq(void);
- 
- struct spi_board_info;
-+struct fsl_sleep_platform_data;
-+struct device_node;
- 
- extern int fsl_spi_init(struct spi_board_info *board_infos,
- 			unsigned int num_board_infos,
- 			void (*activate_cs)(u8 cs, u8 polarity),
- 			void (*deactivate_cs)(u8 cs, u8 polarity));
- 
-+int fsl_sleep_init(struct fsl_sleep_platform_data *sleep,
-+                   struct device_node *node);
-+
-+/* Calls to fsl_sleep_dev and fsl_wake_dev cannot be nested. */
-+void fsl_sleep_dev(struct fsl_sleep_platform_data *sleep);
-+void fsl_wake_dev(struct fsl_sleep_platform_data *sleep);
-+
- extern void fsl_rstcr_restart(char *cmd);
-+
- #endif
- #endif
-diff --git a/arch/powerpc/sysdev/ipic.c b/arch/powerpc/sysdev/ipic.c
-index 05a56e5..e2388cf 100644
---- a/arch/powerpc/sysdev/ipic.c
-+++ b/arch/powerpc/sysdev/ipic.c
-@@ -22,6 +22,7 @@
- #include <linux/device.h>
- #include <linux/bootmem.h>
- #include <linux/spinlock.h>
-+#include <linux/fsl_devices.h>
- #include <asm/irq.h>
- #include <asm/io.h>
- #include <asm/prom.h>
-@@ -893,8 +894,78 @@ unsigned int ipic_get_irq(void)
- 	return irq_linear_revmap(primary_ipic->irqhost, irq);
- }
- 
-+#ifdef CONFIG_PM
-+static struct {
-+	u32 sicfr;
-+	u32 siprr[2];
-+	u32 simsr[2];
-+	u32 sicnr;
-+	u32 smprr[2];
-+	u32 semsr;
-+	u32 secnr;
-+	u32 sermr;
-+	u32 sercr;
-+} ipic_saved_state;
-+
-+static int ipic_suspend(struct sys_device *sdev, pm_message_t state)
-+{
-+	struct ipic *ipic = primary_ipic;
-+
-+	ipic_saved_state.sicfr = ipic_read(ipic->regs, IPIC_SICFR);
-+	ipic_saved_state.siprr[0] = ipic_read(ipic->regs, IPIC_SIPRR_A);
-+	ipic_saved_state.siprr[1] = ipic_read(ipic->regs, IPIC_SIPRR_D);
-+	ipic_saved_state.simsr[0] = ipic_read(ipic->regs, IPIC_SIMSR_H);
-+	ipic_saved_state.simsr[1] = ipic_read(ipic->regs, IPIC_SIMSR_L);
-+	ipic_saved_state.sicnr = ipic_read(ipic->regs, IPIC_SICNR);
-+	ipic_saved_state.smprr[0] = ipic_read(ipic->regs, IPIC_SMPRR_A);
-+	ipic_saved_state.smprr[1] = ipic_read(ipic->regs, IPIC_SMPRR_B);
-+	ipic_saved_state.semsr = ipic_read(ipic->regs, IPIC_SEMSR);
-+	ipic_saved_state.secnr = ipic_read(ipic->regs, IPIC_SECNR);
-+	ipic_saved_state.sermr = ipic_read(ipic->regs, IPIC_SERMR);
-+	ipic_saved_state.sercr = ipic_read(ipic->regs, IPIC_SERCR);
-+
-+	if (fsl_deep_sleep()) {
-+		/* In deep sleep, make sure there can be no
-+		 * pending interrupts, as this can cause
-+		 * problems on 831x.
-+		 */
-+		ipic_write(ipic->regs, IPIC_SIMSR_H, 0);
-+		ipic_write(ipic->regs, IPIC_SIMSR_L, 0);
-+		ipic_write(ipic->regs, IPIC_SEMSR, 0);
-+		ipic_write(ipic->regs, IPIC_SERMR, 0);
-+	}
-+
-+	return 0;
-+}
-+
-+static int ipic_resume(struct sys_device *sdev)
-+{
-+	struct ipic *ipic = primary_ipic;
-+
-+	ipic_write(ipic->regs, IPIC_SICFR, ipic_saved_state.sicfr);
-+	ipic_write(ipic->regs, IPIC_SIPRR_A, ipic_saved_state.siprr[0]);
-+	ipic_write(ipic->regs, IPIC_SIPRR_D, ipic_saved_state.siprr[1]);
-+	ipic_write(ipic->regs, IPIC_SIMSR_H, ipic_saved_state.simsr[0]);
-+	ipic_write(ipic->regs, IPIC_SIMSR_L, ipic_saved_state.simsr[1]);
-+	ipic_write(ipic->regs, IPIC_SICNR, ipic_saved_state.sicnr);
-+	ipic_write(ipic->regs, IPIC_SMPRR_A, ipic_saved_state.smprr[0]);
-+	ipic_write(ipic->regs, IPIC_SMPRR_B, ipic_saved_state.smprr[1]);
-+	ipic_write(ipic->regs, IPIC_SEMSR, ipic_saved_state.semsr);
-+	ipic_write(ipic->regs, IPIC_SECNR, ipic_saved_state.secnr);
-+	ipic_write(ipic->regs, IPIC_SERMR, ipic_saved_state.sermr);
-+	ipic_write(ipic->regs, IPIC_SERCR, ipic_saved_state.sercr);
-+
-+	return 0;
-+}
-+#else
-+#define ipic_suspend NULL
-+#define ipic_resume NULL
-+#endif
-+
- static struct sysdev_class ipic_sysclass = {
- 	.name = "ipic",
-+	.suspend = ipic_suspend,
-+	.resume = ipic_resume,
- };
- 
- static struct sys_device device_ipic = {
-diff --git a/include/asm-powerpc/reg.h b/include/asm-powerpc/reg.h
-index 1f68504..68968c1 100644
---- a/include/asm-powerpc/reg.h
-+++ b/include/asm-powerpc/reg.h
-@@ -153,10 +153,12 @@
- #define   CTRL_RUNLATCH	0x1
- #define SPRN_DABR	0x3F5	/* Data Address Breakpoint Register */
- #define   DABR_TRANSLATION	(1UL << 2)
-+#define SPRN_DABR2	0x13D	/* 83xx */
- #define SPRN_DABRX	0x3F7	/* Data Address Breakpoint Register Extension */
- #define   DABRX_USER	(1UL << 0)
- #define   DABRX_KERNEL	(1UL << 1)
- #define SPRN_DAR	0x013	/* Data Address Register */
-+#define SPRN_DBCR	0x136	/* 83xx Data Breakpoint Control Reg */
- #define SPRN_DSISR	0x012	/* Data Storage Interrupt Status Register */
- #define   DSISR_NOHPTE		0x40000000	/* no translation found */
- #define   DSISR_PROTFAULT	0x08000000	/* protection fault */
-@@ -262,6 +264,8 @@
- #define HID1_PS		(1<<16)		/* 750FX PLL selection */
- #define SPRN_HID2	0x3F8		/* Hardware Implementation Register 2 */
- #define SPRN_IABR	0x3F2	/* Instruction Address Breakpoint Register */
-+#define SPRN_IABR2	0x3FA		/* 83xx */
-+#define SPRN_IBCR	0x135		/* 83xx Insn Breakpoint Control Reg */
- #define SPRN_HID4	0x3F4		/* 970 HID4 */
- #define SPRN_HID5	0x3F6		/* 970 HID5 */
- #define SPRN_HID6	0x3F9	/* BE HID 6 */
-diff --git a/include/linux/fsl_devices.h b/include/linux/fsl_devices.h
-index 1831b19..5cec939 100644
---- a/include/linux/fsl_devices.h
-+++ b/include/linux/fsl_devices.h
-@@ -45,10 +45,27 @@
-  *
-  */
- 
-+struct fsl_sleep_platform_data {
 +	/*
-+	 * The bits set in this mask will be cleared in the SCCR
-+	 * when put to sleep, and restored on wakeup.
++	 * Maximum prescaling is used (input clock/16, 256 primary prescaler,
++	 * 256 secondary prescaler) to maximize the timer's range.  With a
++	 * bus clock of 133MHz, this yields a maximum interval of 516
++	 * seconds while retaining subsecond precision.  Since only
++	 * timer 4 is supported for wakeup on the 8313, and timer 4
++	 * is the LSB when chained, we can't use chaining to increase
++	 * the range.
 +	 */
-+	u32 sccr_mask;
++	priv->ticks_per_sec = busfreq / (16*256*256);
++
++	ret = device_create_file(&dev->dev, &dev_attr_timeout);
++	if (ret)
++		goto out;
++
++	return 0;
++
++out:
++	dev_set_drvdata(&dev->dev, NULL);
++	kfree(priv);
++	return ret;
++}
++
++static int __devexit gtm_remove(struct of_device *dev)
++{
++	struct gtm_priv *priv = dev_get_drvdata(&dev->dev);
++
++	device_remove_file(&dev->dev, &dev_attr_timeout);
++	free_irq(priv->irq, priv);
++	iounmap(priv->regs);
++
++	dev_set_drvdata(&dev->dev, NULL);
++	kfree(priv);
++	return 0;
++}
++
++static struct of_device_id gtm_match[] = {
++	{
++		.compatible = "fsl,mpc8313-gtm",
++	},
++	{},
 +};
 +
-+/*
-+ * Calls to fsl_sleep_device do not nest -- if you call
-+ * sleep twice without an intervening wake, you will not
-+ * be able to wake the device again.
-+ */
-+void fsl_sleep_device(struct fsl_sleep_platform_data *data);
-+void fsl_wake_device(struct fsl_sleep_platform_data *data);
++static struct of_platform_driver gtm_driver = {
++	.name = "mpc83xx-gtm",
++	.match_table = gtm_match,
++	.probe = gtm_probe,
++	.remove = __devexit_p(gtm_remove)
++};
 +
- struct gianfar_platform_data {
- 	/* device specific information */
- 	u32	device_flags;
- 	/* board specific information */
-+	struct fsl_sleep_platform_data sleep;
- 	u32	board_flags;
- 	char	bus_id[MII_BUS_ID_SIZE];
- 	u32	phy_id;
-@@ -104,6 +121,7 @@ struct fsl_usb2_platform_data {
- 	enum fsl_usb2_operating_modes	operating_mode;
- 	enum fsl_usb2_phy_modes		phy_mode;
- 	unsigned int			port_enables;
-+	struct fsl_sleep_platform_data sleep;
- };
- 
- /* Flags in fsl_usb2_mph_platform_data */
-@@ -126,5 +144,11 @@ struct mpc8xx_pcmcia_ops {
- 	int(*voltage_set)(int slot, int vcc, int vpp);
- };
- 
-+/* Returns non-zero if the current suspend operation would
-+ * lead to a deep sleep (i.e. power removed from the core,
-+ * instead of just the clock).
-+ */
-+int fsl_deep_sleep(void);
++static int __init gtm_init(void)
++{
++	return of_register_platform_driver(&gtm_driver);
++}
 +
- #endif /* _FSL_DEVICE_H_ */
- #endif /* __KERNEL__ */
++static void __exit gtm_exit(void)
++{
++	of_unregister_platform_driver(&gtm_driver);
++}
++
++module_init(gtm_init);
++module_exit(gtm_exit);
 -- 
 1.5.3.7
