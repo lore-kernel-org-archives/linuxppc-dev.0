@@ -1,20 +1,20 @@
-Return-Path: <hoffman@marvell.com>
-Received: from il.marvell.com (shoshil.marvell.com [199.203.130.250])
-	by ozlabs.org (Postfix) with ESMTP id 26144DDE1A
+Return-Path: <ankur_maheshwari@procsys.com>
+Received: from mailsvr.procsys.com (unknown [61.95.199.26])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id A4103DDDFF
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 28 Apr 2008 17:53:52 +1000 (EST)
-Received: from msil-owa01.marvell.com ([10.4.5.100])
-	by il.marvell.com (8.13.1/8.13.1) with ESMTP id m3S7eRCn009152
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 28 Apr 2008 10:42:16 +0300 (IDT)
+	Mon, 28 Apr 2008 19:32:19 +1000 (EST)
+Received: from [192.168.1.243] ([192.168.1.243])
+	by mailsvr.procsys.com (8.13.5/8.13.5) with ESMTP id m3S9P7WU001409
+	for <linuxppc-embedded@ozlabs.org>; Mon, 28 Apr 2008 14:55:09 +0530
+Message-ID: <48159743.8000404@procsys.com>
+Date: Mon, 28 Apr 2008 14:52:11 +0530
+From: Ankur Maheshwari <ankur_maheshwari@procsys.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: Linux support MPC7448 L2 ECC errors 
-Date: Mon, 28 Apr 2008 10:40:53 +0300
-Message-ID: <B9FFC3F97441D04093A504CEA31B7C410250A319@MSILEXCH01.marvell.com>
-From: "Assaf Hoffman" <hoffman@marvell.com>
-To: <linuxppc-embedded@ozlabs.org>
+To: Linux PPC <linuxppc-embedded@ozlabs.org>
+Subject: MPC852T Linux Support
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -26,6 +26,14 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 Hi all,
-Can you please tell if MPC7448 L2 ECC error handling is implemented in
-any of Linux kernels?
-Many thanks.
+
+I am planning to use MPC-852T on my next card. I want to know whether 
+any Linux support is available for MPC-852T.
+I have worked with MPC860-Kernel-2.4.4 (MPC8xx) earlier. Can I use the 
+same kernel for MPC-852T or do I need to change something.
+
+If MPC852T Evaluation card / linux support is already available, kindly 
+send me the pointers.
+
+thanks,
+Ankur Maheshwari
