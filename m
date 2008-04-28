@@ -1,20 +1,15 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <viro@ftp.linux.org.uk>
+Received: from ZenIV.linux.org.uk (zeniv.linux.org.uk [195.92.253.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B19CDDDDFD
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 Apr 2008 15:50:34 +1000 (EST)
-Message-Id: <D84B894B-B6E8-47FD-97CE-CACDE7835B78@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Paul Mackerras <paulus@samba.org>
-In-Reply-To: <18453.24013.647603.723185@cargo.ozlabs.ibm.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: [PATCH] [POWERPC] Add IRQSTACKS support on ppc32
-Date: Mon, 28 Apr 2008 00:50:28 -0500
-References: <Pine.LNX.4.64.0804240814280.29846@blarg.am.freescale.net>
-	<18453.24013.647603.723185@cargo.ozlabs.ibm.com>
-Cc: linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTPS id D95AFDDE00
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 Apr 2008 15:59:50 +1000 (EST)
+To: torvalds@linux-foundation.org
+Subject: [PATCH] celleb_scc_pciex __iomem annotations
+Message-Id: <E1JqMOv-0004ml-Vo@ZenIV.linux.org.uk>
+From: Al Viro <viro@ftp.linux.org.uk>
+Date: Mon, 28 Apr 2008 06:59:45 +0100
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,42 +20,88 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Apr 28, 2008, at 12:17 AM, Paul Mackerras wrote:
-> Kumar Gala writes:
->
->> * Added allocation and initialization of the irq stacks.  We limit  
->> the
->>  stacks to be in lowmem for ppc32.
->> * Implemented ppc32 versions of call_do_softirq() and  
->> call_handle_irq()
->>  to switch the stack pointers
->> * Reworked how we do stack overflow detection.  We now keep around  
->> the
->>  limit of the stack in the thread_struct and compare against the  
->> limit
->>  to see if we've overflowed.  We can now use this on ppc64 if  
->> desired.
->
-> Mostly looks great.  One minor nit is that this ifdef could disappear
-> entirely now:
+Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+---
+ arch/powerpc/platforms/cell/celleb_scc_pciex.c |   18 +++++++++---------
+ 1 files changed, 9 insertions(+), 9 deletions(-)
 
-How do you figure?  If we want to maintain it as a config option (for  
-at least 2.6.26) we  either need this ifdef or a dummy irq_ctx_init().
-
-
->> @@ -352,7 +356,7 @@ void __init init_IRQ(void)
->> {
->> 	if (ppc_md.init_IRQ)
->> 		ppc_md.init_IRQ();
->> -#ifdef CONFIG_PPC64
->> +#ifdef CONFIG_IRQSTACKS
->> 	irq_ctx_init();
->> #endif
->
-> Since it looks pretty much exactly like what 64-bit already does, and
-> it's under a config option, I withdraw my objection to it going into
-> 2.6.26.
-
-:)
-
-- k
+diff --git a/arch/powerpc/platforms/cell/celleb_scc_pciex.c b/arch/powerpc/platforms/cell/celleb_scc_pciex.c
+index ab24d94..31da84c 100644
+--- a/arch/powerpc/platforms/cell/celleb_scc_pciex.c
++++ b/arch/powerpc/platforms/cell/celleb_scc_pciex.c
+@@ -36,8 +36,8 @@
+ #include "celleb_scc.h"
+ #include "celleb_pci.h"
+ 
+-#define PEX_IN(base, off)	in_be32((void *)(base) + (off))
+-#define PEX_OUT(base, off, data) out_be32((void *)(base) + (off), (data))
++#define PEX_IN(base, off)	in_be32((void __iomem *)(base) + (off))
++#define PEX_OUT(base, off, data) out_be32((void __iomem *)(base) + (off), (data))
+ 
+ static void scc_pciex_io_flush(struct iowa_bus *bus)
+ {
+@@ -304,7 +304,7 @@ static int __init scc_pciex_iowa_init(struct iowa_bus *bus, void *data)
+ 	((((0x1 << (size))-1) << ((addr) & 0x3)) << PEXDCMND_BYTE_EN_SHIFT)
+ #define MK_PEXDCMND(cmd, addr, size) ((cmd) | MK_PEXDCMND_BYTE_EN(addr, size))
+ 
+-static uint32_t config_read_pciex_dev(unsigned int *base,
++static uint32_t config_read_pciex_dev(unsigned int __iomem *base,
+ 		uint64_t bus_no, uint64_t dev_no, uint64_t func_no,
+ 		uint64_t off, uint64_t size)
+ {
+@@ -320,7 +320,7 @@ static uint32_t config_read_pciex_dev(unsigned int *base,
+ 	return ret;
+ }
+ 
+-static void config_write_pciex_dev(unsigned int *base, uint64_t bus_no,
++static void config_write_pciex_dev(unsigned int __iomem *base, uint64_t bus_no,
+ 	uint64_t dev_no, uint64_t func_no, uint64_t off, uint64_t size,
+ 	uint32_t data)
+ {
+@@ -338,7 +338,7 @@ static void config_write_pciex_dev(unsigned int *base, uint64_t bus_no,
+ 	((((0x1 << (len)) - 1) << ((off) & 0x3)) << PEXCADRS_BYTE_EN_SHIFT)
+ #define MK_PEXCADRS(cmd, addr, size) \
+ 	((cmd) | MK_PEXCADRS_BYTE_EN(addr, size) | ((addr) & ~0x3))
+-static uint32_t config_read_pciex_rc(unsigned int *base,
++static uint32_t config_read_pciex_rc(unsigned int __iomem *base,
+ 				     uint32_t where, uint32_t size)
+ {
+ 	PEX_OUT(base, PEXCADRS, MK_PEXCADRS(PEXCADRS_CMD_READ, where, size));
+@@ -346,7 +346,7 @@ static uint32_t config_read_pciex_rc(unsigned int *base,
+ 		>> ((where & (4 - size)) * 8)) & ((0x1 << (size * 8)) - 1);
+ }
+ 
+-static void config_write_pciex_rc(unsigned int *base, uint32_t where,
++static void config_write_pciex_rc(unsigned int __iomem *base, uint32_t where,
+ 				  uint32_t size, uint32_t val)
+ {
+ 	uint32_t data;
+@@ -410,7 +410,7 @@ static struct pci_ops scc_pciex_pci_ops = {
+ 	scc_pciex_write_config,
+ };
+ 
+-static void pciex_clear_intr_all(unsigned int *base)
++static void pciex_clear_intr_all(unsigned int __iomem *base)
+ {
+ 	PEX_OUT(base, PEXAERRSTS, 0xffffffff);
+ 	PEX_OUT(base, PEXPRERRSTS, 0xffffffff);
+@@ -427,7 +427,7 @@ static void pciex_disable_intr_all(unsigned int *base)
+ }
+ #endif
+ 
+-static void pciex_enable_intr_all(unsigned int *base)
++static void pciex_enable_intr_all(unsigned int __iomem *base)
+ {
+ 	PEX_OUT(base, PEXINTMASK, 0x0000e7f1);
+ 	PEX_OUT(base, PEXAERRMASK, 0x03ff01ff);
+@@ -435,7 +435,7 @@ static void pciex_enable_intr_all(unsigned int *base)
+ 	PEX_OUT(base, PEXVDMASK, 0x00000001);
+ }
+ 
+-static void pciex_check_status(unsigned int *base)
++static void pciex_check_status(unsigned int __iomem *base)
+ {
+ 	uint32_t err = 0;
+ 	uint32_t intsts, aerr, prerr, rcvcp, lenerr;
+-- 
+1.5.3.GIT
