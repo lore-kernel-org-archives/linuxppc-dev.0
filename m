@@ -1,21 +1,23 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 8BF4CDDDF5
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 Apr 2008 10:59:05 +1000 (EST)
-Date: Mon, 28 Apr 2008 10:58:59 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Sean MacLennan <smaclennan@pikatech.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.247])
+	by ozlabs.org (Postfix) with ESMTP id EF419DDDF3
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 Apr 2008 11:51:58 +1000 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so1177377anc.78
+	for <linuxppc-dev@ozlabs.org>; Sun, 27 Apr 2008 18:51:57 -0700 (PDT)
+Message-ID: <fa686aa40804271851t6d762a1et76fa3cc02c2205fe@mail.gmail.com>
+Date: Sun, 27 Apr 2008 19:51:57 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Stephen Rothwell" <sfr@canb.auug.org.au>
 Subject: Re: [RESEND][PATCH][POWERPC] PIKA Warp: Update platform code to
 	supportRev B boards
-Message-Id: <20080428105859.daef4d71.sfr@canb.auug.org.au>
-In-Reply-To: <20080427152546.1e26b145@lappy.seanm.ca>
+In-Reply-To: <20080428105859.daef4d71.sfr@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 References: <20080417152251.2bf07219@lappy.seanm.ca>
 	<20080427152546.1e26b145@lappy.seanm.ca>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Mon__28_Apr_2008_10_58_59_+1000_ZXYvZopi8iXU7oyn"
-Cc: linuxppc-dev@ozlabs.org
+	<20080428105859.daef4d71.sfr@canb.auug.org.au>
+Cc: linuxppc-dev@ozlabs.org, Sean MacLennan <smaclennan@pikatech.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,52 +27,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Mon__28_Apr_2008_10_58_59_+1000_ZXYvZopi8iXU7oyn
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi Sean,
-
-On Sun, 27 Apr 2008 15:25:46 -0400 Sean MacLennan <smaclennan@pikatech.com>=
- wrote:
+On Sun, Apr 27, 2008 at 6:58 PM, Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+> Hi Sean,
 >
-> +++ b/arch/powerpc/platforms/44x/warp-nand.c
-> @@ -11,8 +11,10 @@
->  #include <linux/mtd/partitions.h>
->  #include <linux/mtd/nand.h>
->  #include <linux/mtd/ndfc.h>
-> +#include <linux/of_platform.h>
+>
+>  On Sun, 27 Apr 2008 15:25:46 -0400 Sean MacLennan <smaclennan@pikatech.com> wrote:
+>  >
+>  > +++ b/arch/powerpc/platforms/44x/warp-nand.c
+>  > @@ -11,8 +11,10 @@
+>  >  #include <linux/mtd/partitions.h>
+>  >  #include <linux/mtd/nand.h>
+>  >  #include <linux/mtd/ndfc.h>
+>  > +#include <linux/of_platform.h>
+>
+>  You really want linux.of.h (unless there was some preexisting reason to
+>  require of_platform.h).
+>
+>
+>  > +static void pika_setup_critical_temp(struct i2c_client *client)
+>  > +{
+>  > +     struct device_node *np;
+>  > +     int irq, rc;
+>  > +
+>  > +     /* Setup power LEDS for possible critical temp */
+>  > +     np = of_find_compatible_node(NULL, NULL, "ibm,gpio-440EP");
+>  > +     if (np)
+>  > +             np = of_find_compatible_node(np, NULL, "ibm,gpio-440EP");
+>
+>  Did you really mean to test if (!np) above instead?
 
-You really want linux.of.h (unless there was some preexisting reason to
-require of_platform.h).
+Actually, it looks like he's trying to find the second gpio node in the tree.
 
-> +static void pika_setup_critical_temp(struct i2c_client *client)
-> +{
-> +	struct device_node *np;
-> +	int irq, rc;
-> +
-> +	/* Setup power LEDS for possible critical temp */
-> +	np =3D of_find_compatible_node(NULL, NULL, "ibm,gpio-440EP");
-> +	if (np)
-> +		np =3D of_find_compatible_node(np, NULL, "ibm,gpio-440EP");
+Sean, if that is true, then this is a very fragile way to do it.
+Really, you should have a phandle somewhere that points to the GPIO
+node that your LEDs are attached to.  Others have been addressing the
+same problem and the consensus seems to be to add a 'leds' node for
+each of your leds with a phandle and gpio descriptor to the gpio node.
 
-Did you really mean to test if (!np) above instead?
+See the documentation added by this patch (section 't'):
+http://patchwork.ozlabs.org/linuxppc/patch?id=18156
 
---=20
 Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+g.
 
---Signature=_Mon__28_Apr_2008_10_58_59_+1000_ZXYvZopi8iXU7oyn
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFIFSFXTgG2atn1QN8RAphbAJ9ggVntIYj55N3vTIjBx4LN+4nyiACfTz0Q
-4nh08+7GnYEalswZ1XVCG6Q=
-=QY41
------END PGP SIGNATURE-----
-
---Signature=_Mon__28_Apr_2008_10_58_59_+1000_ZXYvZopi8iXU7oyn--
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
