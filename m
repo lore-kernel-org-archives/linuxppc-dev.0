@@ -1,18 +1,20 @@
-Return-Path: <rsass@uncc.edu>
-Received: from rsass-homer.uncc.edu (rsass-homer.uncc.edu [152.15.91.5])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id CE0B1DDE0F
+Return-Path: <hoffman@marvell.com>
+Received: from il.marvell.com (shoshil.marvell.com [199.203.130.250])
+	by ozlabs.org (Postfix) with ESMTP id 26144DDE1A
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 28 Apr 2008 07:38:51 +1000 (EST)
-Message-Id: <200804272036.m3RKaopf032054@rsass-homer.uncc.edu>
-To: Brian Silverman <bsilverman@conceptxdesign.com>
-Subject: Re: EABI 
-In-reply-to: <4810B196.7000300@conceptxdesign.com> 
-References: <4810B196.7000300@conceptxdesign.com>
-Date: Sun, 27 Apr 2008 16:36:50 -0400
-From: Ron Sass <rsass@uncc.edu>
-Cc: linuxppc-embedded@ozlabs.org
+	Mon, 28 Apr 2008 17:53:52 +1000 (EST)
+Received: from msil-owa01.marvell.com ([10.4.5.100])
+	by il.marvell.com (8.13.1/8.13.1) with ESMTP id m3S7eRCn009152
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 28 Apr 2008 10:42:16 +0300 (IDT)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: Linux support MPC7448 L2 ECC errors 
+Date: Mon, 28 Apr 2008 10:40:53 +0300
+Message-ID: <B9FFC3F97441D04093A504CEA31B7C410250A319@MSILEXCH01.marvell.com>
+From: "Assaf Hoffman" <hoffman@marvell.com>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -23,34 +25,7 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-
-Unfortunately, it is not that easy.  The Xilinx tool chain use
-newlib but your Linux kernel (and rootfs) is probably built
-around glibc.  When we've wanted to do a quick-and-dirty test of
-something that relies on Xilinx's patches to gcc, we have used
-powerpc-eabi-gcc to compile to assembler and then used our own
-crosstools compilers to link and load.
-
-That doesn't solve your problem but hopefully it explains the
-issue.
-
-Ron
-
-> Is it possible to compile a Linux application using an EABI compiler 
-> (specfically, Xilinx's EDK powerpc-eabi-gcc.exe)?
->  
-> The issue at hand is that we'd like for our customers to be able to use 
-> the Xilinx EDK toolchain (which we know they will have) to compile Linx 
-> apps without having to install another toolchain (crosstool, ELDK, etc).
->  
-> So, what I'm hoping is that the EDK toolchain can be configured to be 
-> Linux compatible binaries, or that there is some kind of wrapper that 
-> will handle the incompatible interfaces.  Searching around, I've seen 
-> some mention of Linux EABI compatibility (for Debian ARM releases), but 
-> I haven't found any clear concensus...
-> 
-> P.S. My apologies if this message appears on the mailing list twice...
-> 
-> -- 
-> Brian Silverman
-> Concept X, LLC
+Hi all,
+Can you please tell if MPC7448 L2 ECC error handling is implemented in
+any of Linux kernels?
+Many thanks.
