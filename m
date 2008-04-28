@@ -1,23 +1,21 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.247])
-	by ozlabs.org (Postfix) with ESMTP id EF419DDDF3
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 Apr 2008 11:51:58 +1000 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so1177377anc.78
-	for <linuxppc-dev@ozlabs.org>; Sun, 27 Apr 2008 18:51:57 -0700 (PDT)
-Message-ID: <fa686aa40804271851t6d762a1et76fa3cc02c2205fe@mail.gmail.com>
-Date: Sun, 27 Apr 2008 19:51:57 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Stephen Rothwell" <sfr@canb.auug.org.au>
+Return-Path: <smaclennan@pikatech.com>
+Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
+	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id B0C08DDE04
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 Apr 2008 12:25:16 +1000 (EST)
+Date: Sun, 27 Apr 2008 22:25:14 -0400
+From: Sean MacLennan <smaclennan@pikatech.com>
+To: "Grant Likely" <grant.likely@secretlab.ca>
 Subject: Re: [RESEND][PATCH][POWERPC] PIKA Warp: Update platform code to
 	supportRev B boards
-In-Reply-To: <20080428105859.daef4d71.sfr@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Message-ID: <20080427222514.1086f2d3@lappy.seanm.ca>
+In-Reply-To: <fa686aa40804271851t6d762a1et76fa3cc02c2205fe@mail.gmail.com>
 References: <20080417152251.2bf07219@lappy.seanm.ca>
 	<20080427152546.1e26b145@lappy.seanm.ca>
 	<20080428105859.daef4d71.sfr@canb.auug.org.au>
-Cc: linuxppc-dev@ozlabs.org, Sean MacLennan <smaclennan@pikatech.com>
+	<fa686aa40804271851t6d762a1et76fa3cc02c2205fe@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,49 +25,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, Apr 27, 2008 at 6:58 PM, Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-> Hi Sean,
->
->
->  On Sun, 27 Apr 2008 15:25:46 -0400 Sean MacLennan <smaclennan@pikatech.com> wrote:
->  >
->  > +++ b/arch/powerpc/platforms/44x/warp-nand.c
->  > @@ -11,8 +11,10 @@
->  >  #include <linux/mtd/partitions.h>
->  >  #include <linux/mtd/nand.h>
->  >  #include <linux/mtd/ndfc.h>
->  > +#include <linux/of_platform.h>
->
->  You really want linux.of.h (unless there was some preexisting reason to
->  require of_platform.h).
->
->
->  > +static void pika_setup_critical_temp(struct i2c_client *client)
->  > +{
->  > +     struct device_node *np;
->  > +     int irq, rc;
->  > +
->  > +     /* Setup power LEDS for possible critical temp */
->  > +     np = of_find_compatible_node(NULL, NULL, "ibm,gpio-440EP");
->  > +     if (np)
->  > +             np = of_find_compatible_node(np, NULL, "ibm,gpio-440EP");
->
->  Did you really mean to test if (!np) above instead?
+On Sun, 27 Apr 2008 19:51:57 -0600
+"Grant Likely" <grant.likely@secretlab.ca> wrote:
 
-Actually, it looks like he's trying to find the second gpio node in the tree.
+> Actually, it looks like he's trying to find the second gpio node in
+> the tree.
 
-Sean, if that is true, then this is a very fragile way to do it.
-Really, you should have a phandle somewhere that points to the GPIO
-node that your LEDs are attached to.  Others have been addressing the
-same problem and the consensus seems to be to add a 'leds' node for
-each of your leds with a phandle and gpio descriptor to the gpio node.
+Correct.
 
-See the documentation added by this patch (section 't'):
-http://patchwork.ozlabs.org/linuxppc/patch?id=18156
+> Sean, if that is true, then this is a very fragile way to do it.
+> Really, you should have a phandle somewhere that points to the GPIO
+> node that your LEDs are attached to.  Others have been addressing the
+> same problem and the consensus seems to be to add a 'leds' node for
+> each of your leds with a phandle and gpio descriptor to the gpio node.
+> 
+> See the documentation added by this patch (section 't'):
+> http://patchwork.ozlabs.org/linuxppc/patch?id=18156
+
+I saw that earlier. I thought that that method relied on the gpio_led
+driver? I want to use the gpio_led driver, but I believe the underlying
+gpio code for the 440EP is not done yet.
+
+If *either* assumption is wrong, let me know! It would be one less
+driver (the warp_led driver) that I would have to support outside the
+mainline kernel.
+
+I believe, if the platform update gets accepted, that in 2.6.26 the
+Warp will be usable with the the mainline kernel. You will just lose
+some functionally, such as the SD driver which has already been
+rejected.
 
 Cheers,
-g.
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+   Sean
