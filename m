@@ -1,15 +1,25 @@
-Return-Path: <avorontsov@dev.rtsoft.ru>
-Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
-	by ozlabs.org (Postfix) with SMTP id 84D21DDE1E
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Apr 2008 00:05:27 +1000 (EST)
-Date: Tue, 29 Apr 2008 18:05:24 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] of/gpio: use dynamic base allocation
-Message-ID: <20080429140524.GA14573@polina.dev.rtsoft.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-Cc: linuxppc-dev@ozlabs.org, David Miller <davem@davemloft.net>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 727E3DE260
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Apr 2008 00:09:11 +1000 (EST)
+Message-Id: <C415A4D5-CE5A-4E48-B5D5-0B9A6C7A5CA6@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Greg KH <greg@kroah.com>
+In-Reply-To: <4816C214.60806@pobox.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v919.2)
+Subject: Re: [PATCH] devres: support addresses greater than an unsigned long
+	via dev_ioremap
+Date: Tue, 29 Apr 2008 09:08:14 -0500
+References: <Pine.LNX.4.64.0804290122210.10928@blarg.am.freescale.net>
+	<4816C094.6030601@gmail.com> <4816C214.60806@pobox.com>
+Cc: Andrew Morton <akpm@osdl.org>, Tejun Heo <htejun@gmail.com>,
+	lkml Mailing List <linux-kernel@vger.kernel.org>,
+	Jesse Barnes <jbarnes@virtuousgeek.org>,
+	"linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>,
+	Jeff Garzik <jgarzik@pobox.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,72 +29,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Since gpiolib-dynamic-gpio-number-allocation.patch -mm patch was recently
-merged into Linus' tree (commit 8d0aab2f16c4fa170f32e7a74a52cd0122bbafef),
-we can use dynamic GPIO base allocation now.
 
-This, in turn, removes number of gpios per chip constraint.
+On Apr 29, 2008, at 1:37 AM, Jeff Garzik wrote:
+> Tejun Heo wrote:
+>> Kumar Gala wrote:
+>>> Use a resource_size_t instead of unsigned long since some arch's are
+>>> capable of having ioremap deal with addresses greater than the  
+>>> size of a
+>>> unsigned long.
+>>>
+>>> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+>> Acked-by: Tejun Heo <htejun@gmail.com>
+>
+> Fine with me, too.
+>
+> I think devres changes should go via GregKH (device core) or Jesse  
+> (PCI) rather than my libata tree, unless there are obvious  
+> dependencies...
 
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
- drivers/of/gpio.c |   38 +-------------------------------------
- 1 files changed, 1 insertions(+), 37 deletions(-)
+GregKH will you handle pushing this to Linus.  Its a pretty trivial  
+patch and would be nice to go into 2.6.26.  I would also consider it a  
+bug fix of shorts for any driver using devres and resource_size_t  
+being typedef'd to u64 on a 32-bit processor.
 
-diff --git a/drivers/of/gpio.c b/drivers/of/gpio.c
-index 000681e..1c9cab8 100644
---- a/drivers/of/gpio.c
-+++ b/drivers/of/gpio.c
-@@ -137,38 +137,6 @@ int of_gpio_simple_xlate(struct of_gpio_chip *of_gc, struct device_node *np,
- }
- EXPORT_SYMBOL(of_gpio_simple_xlate);
- 
--/* Should be sufficient for now, later we'll use dynamic bases. */
--#if defined(CONFIG_PPC32) || defined(CONFIG_SPARC32)
--#define GPIOS_PER_CHIP 32
--#else
--#define GPIOS_PER_CHIP 64
--#endif
--
--static int of_get_gpiochip_base(struct device_node *np)
--{
--	struct device_node *gc = NULL;
--	int gpiochip_base = 0;
--
--	while ((gc = of_find_all_nodes(gc))) {
--		if (!of_get_property(gc, "gpio-controller", NULL))
--			continue;
--
--		if (gc != np) {
--			gpiochip_base += GPIOS_PER_CHIP;
--			continue;
--		}
--
--		of_node_put(gc);
--
--		if (gpiochip_base >= ARCH_NR_GPIOS)
--			return -ENOSPC;
--
--		return gpiochip_base;
--	}
--
--	return -ENOENT;
--}
--
- /**
-  * of_mm_gpiochip_add - Add memory mapped GPIO chip (bank)
-  * @np:		device node of the GPIO chip
-@@ -205,11 +173,7 @@ int of_mm_gpiochip_add(struct device_node *np,
- 	if (!mm_gc->regs)
- 		goto err1;
- 
--	gc->base = of_get_gpiochip_base(np);
--	if (gc->base < 0) {
--		ret = gc->base;
--		goto err1;
--	}
-+	gc->base = -1;
- 
- 	if (!of_gc->xlate)
- 		of_gc->xlate = of_gpio_simple_xlate;
--- 
-1.5.5.1
+- k
