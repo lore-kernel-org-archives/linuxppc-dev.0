@@ -1,12 +1,21 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <htejun@gmail.com>
+Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.183])
+	by ozlabs.org (Postfix) with ESMTP id E6E5FDDF0A
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 Apr 2008 16:30:51 +1000 (EST)
+Received: by py-out-1112.google.com with SMTP id z59so6002588pyg.27
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 Apr 2008 23:30:50 -0700 (PDT)
+Message-ID: <4816C094.6030601@gmail.com>
+Date: Tue, 29 Apr 2008 15:30:44 +0900
+From: Tejun Heo <htejun@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18454.49097.53537.474679@cargo.ozlabs.ibm.com>
-Date: Tue, 29 Apr 2008 16:27:21 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: "Grant Likely" <grant.likely@secretlab.ca>
-Subject: build failure on efika
-Cc: linuxppc-dev@ozlabs.org
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] devres: support addresses greater than an unsigned long
+	via dev_ioremap
+References: <Pine.LNX.4.64.0804290122210.10928@blarg.am.freescale.net>
+In-Reply-To: <Pine.LNX.4.64.0804290122210.10928@blarg.am.freescale.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org, jgarzik@pobox.com,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,13 +25,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-My test builds for efika currently fail with this message:
+Kumar Gala wrote:
+> Use a resource_size_t instead of unsigned long since some arch's are
+> capable of having ioremap deal with addresses greater than the size of a
+> unsigned long.
+> 
+> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 
-FATAL: drivers/serial/mpc52xx_uart: struct of_device_id is not terminated with a NULL entry!
-make[2]: *** [__modpost] Error 1
-make[1]: *** [modules] Error 2
-make: *** [sub-make] Error 2
+Acked-by: Tejun Heo <htejun@gmail.com>
 
-Could you do a little patch to add the NULL entry please?
+Thanks.
 
-Paul.
+-- 
+tejun
