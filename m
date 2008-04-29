@@ -1,25 +1,22 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <becky.bruce@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 727E3DE260
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Apr 2008 00:09:11 +1000 (EST)
-Message-Id: <C415A4D5-CE5A-4E48-B5D5-0B9A6C7A5CA6@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Greg KH <greg@kroah.com>
-In-Reply-To: <4816C214.60806@pobox.com>
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 27D1FDDE05
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Apr 2008 01:14:58 +1000 (EST)
+Message-Id: <0ACF4915-6674-4627-8945-CC91E54C830E@freescale.com>
+From: Becky Bruce <becky.bruce@freescale.com>
+To: benh@kernel.crashing.org
+In-Reply-To: <1209181131.5420.42.camel@pasglop>
 Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: [PATCH] devres: support addresses greater than an unsigned long
-	via dev_ioremap
-Date: Tue, 29 Apr 2008 09:08:14 -0500
-References: <Pine.LNX.4.64.0804290122210.10928@blarg.am.freescale.net>
-	<4816C094.6030601@gmail.com> <4816C214.60806@pobox.com>
-Cc: Andrew Morton <akpm@osdl.org>, Tejun Heo <htejun@gmail.com>,
-	lkml Mailing List <linux-kernel@vger.kernel.org>,
-	Jesse Barnes <jbarnes@virtuousgeek.org>,
-	"linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>,
-	Jeff Garzik <jgarzik@pobox.com>
+Subject: Re: Enabling 64 bit data type for dma_addr_t on non PPC64 architecture
+Date: Tue, 29 Apr 2008 10:14:44 -0500
+References: <BA76C315ECE5B149AE7194FE094819E205E59014@SDCEXCHANGE01.ad.amcc.com>
+	<1209181131.5420.42.camel@pasglop>
+Cc: linuxppc-dev@ozlabs.org, Tushar Tyagi <ttyagi@amcc.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,26 +27,69 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Apr 29, 2008, at 1:37 AM, Jeff Garzik wrote:
-> Tejun Heo wrote:
->> Kumar Gala wrote:
->>> Use a resource_size_t instead of unsigned long since some arch's are
->>> capable of having ioremap deal with addresses greater than the  
->>> size of a
->>> unsigned long.
->>>
->>> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
->> Acked-by: Tejun Heo <htejun@gmail.com>
+On Apr 25, 2008, at 10:38 PM, Benjamin Herrenschmidt wrote:
 >
-> Fine with me, too.
+> On Fri, 2008-04-25 at 19:52 -0700, Tushar Tyagi wrote:
+>> Hello,
+>> I'm working a new DMA hardware for PPC processors.
+>> The processor is a 32 bit architecture having 40 bit physical address
+>> space.
+>> So we need the 32 bit processor code base but we want the type
+>> dma_addr_t to represent 64 bit data, without enabling the  
+>> CONFIG_PPC64
+>> flag.
 >
-> I think devres changes should go via GregKH (device core) or Jesse  
-> (PCI) rather than my libata tree, unless there are obvious  
-> dependencies...
+> That shouldn't be a big issue, we already support 64 bits resources,
+> extending dma_addr_t shouldn't too hard.
+>
+>> We want to use the Linux generic DMA layer to offload DMA  
+>> operations to
+>> the hw and the Linux code path goes through function
+>> dma_async_memcpy_buf_to_buf and then dma_map_single.
+>>
+>> Currently the dma_map_single function has 2 versions based upon
+>> CONFIG_PPC64 defined or not.
+>>
+>> Is it possible to reuse the CONFIG_PPC64 based code only pertaining  
+>> to
+>> DMA by doing the following:
+>
+> It's possible, it might be a good idea even as it would allow to have
+> different implementations for different busses, which is in fact  
+> needed
+> for some things like 4xx if we start changing the mapping between
+> different PCI bridges vs. SoCs. In fact, I think there's been some
+> patches from Becky Bruce posted in februrary for doing just that,  
+> which
+> I totally forgot to review...
+>
+>> Add a new flag called CONFIG_DMA64 along with CONFIG_PPC64 and
+>> __powerpc64__ flags, enabling our code to use the generic DMA layer  
+>> with
+>> 64 bit data type for dma_addr_t.
+>>
+>> With the above modification, the function dma_map_single starts
+>> returning 64 bit data type instead of 32.
+>>
+>> Do you have any comments or suggestions ?
+>
+> I'd suggest working with Becky on her initial patch and using that as
+> the basis for your stuff. I'll try to give it a good review asap.
 
-GregKH will you handle pushing this to Linus.  Its a pretty trivial  
-patch and would be nice to go into 2.6.26.  I would also consider it a  
-bug fix of shorts for any driver using devres and resource_size_t  
-being typedef'd to u64 on a 32-bit processor.
+Actually, Ben, wait on that review - I've made significant changes to  
+those patches, including some bugfixes for HIGHMEM and will be posting  
+the revised version soon (hopefully later today or tomorrow).   I'm  
+behind a bit on the top-of-tree so I'll need to bring them up to date  
+and do some testing before I post.  I think the newer version is  
+cleaner than the last but can still probably use some improvement.
 
-- k
+I've also got a patch that enables larger physical addressing in  
+general - it changes the page table/mmu handling to allow for larger  
+physical addresses on MPC8641; BookE parts will need a slightly  
+different set of changes (some of which are already in place, but I've  
+not done any work/testing on BookE at this point).  I'll try to get a  
+version of that out this week as well - it needs some cleanup and  
+testing on the latest tree.
+
+Cheers,
+Becky
