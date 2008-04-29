@@ -1,21 +1,19 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	by ozlabs.org (Postfix) with ESMTP id 2ED93DDF2B
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id CC210DDF55
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 29 Apr 2008 18:53:54 +1000 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1Jqlaw-000777-M7
-	for linuxppc-embedded@ozlabs.org; Tue, 29 Apr 2008 01:53:50 -0700
-Message-ID: <16955743.post@talk.nabble.com>
-Date: Tue, 29 Apr 2008 01:53:50 -0700 (PDT)
-From: wangyanlong <killyouatonce@gmail.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: Virtex4FX12LC hangs in calibrating delay loop
-In-Reply-To: <20070621151554.GA22663@cip.informatik.uni-erlangen.de>
+	Tue, 29 Apr 2008 19:27:31 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-embedded@ozlabs.org,
+ dhlii@dlasys.net
+Subject: Re: HAVE_CONFIG
+Date: Tue, 29 Apr 2008 11:27:13 +0200
+References: <4816B372.10608@dlasys.net>
+In-Reply-To: <4816B372.10608@dlasys.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-References: <20070621151554.GA22663@cip.informatik.uni-erlangen.de>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200804291127.14666.arnd@arndb.de>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -26,47 +24,10 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+On Tuesday 29 April 2008, David H. Lynch Jr. wrote:
+> =A0 =A0 Why does CONFIG_PPC set CONFIG_HAVE_IDE ?
 
-I meet the same problem as yours ,  have you fix your problem now ??? I am
-keep trying !!!!
+Because it's possible to build ide drivers on the powerpc architecture.
+It means you get the option to enable to disable the old ATA (IDE) drivers.
 
-Thomas Glanzmann wrote:
-> 
-> Hello,
-> I used the HEAD secretlabs kernel and used ml403 defconfig. I still see
-> no serial output from the _kernel_ on the serial console. But I do see
-> output from the in kernel embedded boot loader "load_kernel". I typed in
-> stop in xmd and got an instruction pointer which points to:
-> 
->         c00045a0 <__delay>:
->         c00045a0:       2c 03 00 00     cmpwi   r3,0
->         c00045a4:       7c 69 03 a6     mtctr   r3
->         c00045a8:       4d 82 00 20     beqlr
->         c00045ac:       42 00 00 00     bdnz-   c00045ac <__delay+0xc>      
-> <<<<<<<<
->         c00045b0:       4e 80 00 20     blr
-> 
-> So I guess it is the calibrating delay loop and I am not sure. I can
-> reproduce
-> this. It is always in this function. Now I wonder is my board missing
-> timer interrupts? What could be the reason for this. And of course one
-> much more important question:
-> 
->         - Is the serial console initialized before or after the
->           calibrating delay loop?
-> 
-> Is there a way to get a backtrace out of this? If that is the case what
-> do I have to do? Recompile the Kernel with frame pointers and attach
-> gdb?
-> 
->         Thomas
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> 
-> 
-
--- 
-View this message in context: http://www.nabble.com/Virtex4FX12LC-hangs-in-calibrating-delay-loop-tp11235297p16955743.html
-Sent from the linuxppc-embedded mailing list archive at Nabble.com.
+	Arnd <><
