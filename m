@@ -1,24 +1,17 @@
-Return-Path: <khali@linux-fr.org>
-Received: from services.gcu-squad.org (zone0.gcu-squad.org [212.85.147.21])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 6A6E7DDE0F
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Apr 2008 22:49:30 +1000 (EST)
-Date: Tue, 29 Apr 2008 14:49:16 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: "Jon Smirl" <jonsmirl@gmail.com>
-Subject: Re: [PATCH 1/2 v2] i2c: Add support for device alias names
-Message-ID: <20080429144916.59b46313@hyperion.delvare>
-In-Reply-To: <9e4733910804290516g1fd0b653jae63e811409e00f9@mail.gmail.com>
-References: <20080429124241.08e18ae3@hyperion.delvare>
-	<20080429124621.07e6efd6@hyperion.delvare>
-	<9e4733910804290516g1fd0b653jae63e811409e00f9@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Kay Sievers <kay.sievers@vrfy.org>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Paul Mundt <lethal@linux-sh.org>, Linux I2C <i2c@lm-sensors.org>,
-	Scott Wood <scottwood@freescale.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from wr-out-0506.google.com (wr-out-0506.google.com [64.233.184.234])
+	by ozlabs.org (Postfix) with ESMTP id 48443DE132
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 Apr 2008 23:34:52 +1000 (EST)
+Received: by wr-out-0506.google.com with SMTP id 67so7121wri.3
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 Apr 2008 06:34:51 -0700 (PDT)
+Message-ID: <fa686aa40804290634j3ee81b1dxc83ea3230af0f163@mail.gmail.com>
+Date: Tue, 29 Apr 2008 07:34:50 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Paul Mackerras" <paulus@samba.org>, linuxppc-dev <linuxppc-dev@ozlabs.org>
+Subject: Please pull linux-2.6-mpc52xx.git
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,28 +21,59 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Jon,
+The following changes since commit 6c39103ce5192bdb2195f3daab7323dfa44fb52e:
+  Zhang Wei (1):
+        [RAPIDIO] Change RapidIO doorbell source and target ID field to 16-bit
 
-On Tue, 29 Apr 2008 08:16:13 -0400, Jon Smirl wrote:
-> On 4/29/08, Jean Delvare <khali@linux-fr.org> wrote:
-> > Based on earlier work by Jon Smirl and Jochen Friedrich.
-> >  +/* Looks like: i2c:S */
-> >  +static int do_i2c_entry(const char *filename, struct i2c_device_id *id,
-> >  +                       char *alias)
-> >  +{
-> >  +       sprintf(alias, I2C_MODULE_PREFIX "%s", id->name);
-> 
-> Do you want to add the colon?
+are available in the git repository at:
 
-Not yet. This can be added later anyway, so I'd rather push the
-known-to-work patches as is for now, and we fix this detail between rc1
-and rc2. For now I am still in favor of removing the "*" we don't need,
-I'll send a patch doing this later today (I hope) for discussion.
+  git://git.secretlab.ca/git/linux-2.6-mpc52xx.git for-2.6.26
 
-> >  +
-> >  +       return 1;
-> >  +}
+Bartlomiej Sieka (1):
+      [POWERPC] mpc5200: defconfigs for CM5200, Lite5200B, Motion-PRO
+and TQM5200
 
-Thanks,
+Grant Likely (2):
+      [POWERPC] mpc5200: Fix unterminated of_device_id table
+      [POWERPC] mpc5200: Switch mpc5200 dts files to dts-v1 format
+
+Sascha Hauer (2):
+      [POWERPC] mpc5200: add interrupt type function
+      [POWERPC] mpc5200: Fix FEC error handling on FIFO errors
+
+s.hauer@pengutronix.de (2):
+      [POWERPC] mpc5200: add gpiolib support for mpc5200
+      [POWERPC] mpc5200: add Phytec pcm030 board support
+
+ .../powerpc/mpc52xx-device-tree-bindings.txt       |   12 +
+ arch/powerpc/boot/dts/cm5200.dts                   |   98 +-
+ arch/powerpc/boot/dts/lite5200.dts                 |  132 ++--
+ arch/powerpc/boot/dts/lite5200b.dts                |  146 ++--
+ arch/powerpc/boot/dts/motionpro.dts                |  118 +-
+ arch/powerpc/boot/dts/pcm030.dts                   |  363 ++++++
+ arch/powerpc/boot/dts/tqm5200.dts                  |   80 +-
+ arch/powerpc/configs/52xx/cm5200_defconfig         | 1099 ++++++++++++++++++
+ arch/powerpc/configs/52xx/lite5200b_defconfig      | 1049 +++++++++++++++++
+ arch/powerpc/configs/52xx/motionpro_defconfig      | 1107 ++++++++++++++++++
+ arch/powerpc/configs/52xx/pcm030_defconfig         | 1115 ++++++++++++++++++
+ arch/powerpc/configs/52xx/tqm5200_defconfig        | 1214 ++++++++++++++++++++
+ arch/powerpc/platforms/52xx/Kconfig                |    6 +
+ arch/powerpc/platforms/52xx/Makefile               |    2 +
+ arch/powerpc/platforms/52xx/mpc5200_simple.c       |    1 +
+ arch/powerpc/platforms/52xx/mpc52xx_gpio.c         |  465 ++++++++
+ arch/powerpc/platforms/52xx/mpc52xx_pic.c          |   38 +
+ drivers/net/fec_mpc52xx.c                          |   23 +-
+ drivers/serial/mpc52xx_uart.c                      |    2 +-
+ 19 files changed, 6771 insertions(+), 299 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/pcm030.dts
+ create mode 100644 arch/powerpc/configs/52xx/cm5200_defconfig
+ create mode 100644 arch/powerpc/configs/52xx/lite5200b_defconfig
+ create mode 100644 arch/powerpc/configs/52xx/motionpro_defconfig
+ create mode 100644 arch/powerpc/configs/52xx/pcm030_defconfig
+ create mode 100644 arch/powerpc/configs/52xx/tqm5200_defconfig
+ create mode 100644 arch/powerpc/platforms/52xx/mpc52xx_gpio.c
+
+
 -- 
-Jean Delvare
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
