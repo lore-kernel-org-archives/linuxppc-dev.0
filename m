@@ -1,20 +1,23 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.249])
-	by ozlabs.org (Postfix) with ESMTP id 6D7E6DDE11
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Apr 2008 22:09:07 +1000 (EST)
-Received: by an-out-0708.google.com with SMTP id c34so58851anc.78
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Apr 2008 05:09:06 -0700 (PDT)
-Message-ID: <fa686aa40804290508y16c0ae6eq967d2c0d1911b4db@mail.gmail.com>
-Date: Tue, 29 Apr 2008 06:08:38 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Paul Mackerras" <paulus@samba.org>
-Subject: Re: build failure on efika
-In-Reply-To: <18454.49097.53537.474679@cargo.ozlabs.ibm.com>
+Return-Path: <jonsmirl@gmail.com>
+Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.181])
+	by ozlabs.org (Postfix) with ESMTP id 87D0FDDE41
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 Apr 2008 22:16:15 +1000 (EST)
+Received: by wa-out-1112.google.com with SMTP id m28so8043220wag.13
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 Apr 2008 05:16:13 -0700 (PDT)
+Message-ID: <9e4733910804290516g1fd0b653jae63e811409e00f9@mail.gmail.com>
+Date: Tue, 29 Apr 2008 08:16:13 -0400
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: "Jean Delvare" <khali@linux-fr.org>
+Subject: Re: [PATCH 1/2 v2] i2c: Add support for device alias names
+In-Reply-To: <20080429124621.07e6efd6@hyperion.delvare>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-References: <18454.49097.53537.474679@cargo.ozlabs.ibm.com>
-Cc: linuxppc-dev@ozlabs.org
+References: <20080429124241.08e18ae3@hyperion.delvare>
+	<20080429124621.07e6efd6@hyperion.delvare>
+Cc: Kay Sievers <kay.sievers@vrfy.org>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Paul Mundt <lethal@linux-sh.org>, Linux I2C <i2c@lm-sensors.org>,
+	Scott Wood <scottwood@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,20 +27,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Apr 29, 2008 at 12:27 AM, Paul Mackerras <paulus@samba.org> wrote:
-> My test builds for efika currently fail with this message:
->
->  FATAL: drivers/serial/mpc52xx_uart: struct of_device_id is not terminated with a NULL entry!
->  make[2]: *** [__modpost] Error 1
->  make[1]: *** [modules] Error 2
->  make: *** [sub-make] Error 2
->
->  Could you do a little patch to add the NULL entry please?
+On 4/29/08, Jean Delvare <khali@linux-fr.org> wrote:
+> Based on earlier work by Jon Smirl and Jochen Friedrich.
+>  +/* Looks like: i2c:S */
+>  +static int do_i2c_entry(const char *filename, struct i2c_device_id *id,
+>  +                       char *alias)
+>  +{
+>  +       sprintf(alias, I2C_MODULE_PREFIX "%s", id->name);
 
-Will do.
+Do you want to add the colon?
 
-g.
+>  +
+>  +       return 1;
+>  +}
 
 -- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Jon Smirl
+jonsmirl@gmail.com
