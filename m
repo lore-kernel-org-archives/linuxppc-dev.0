@@ -1,19 +1,23 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id DB399DDE0C
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Apr 2008 11:55:02 +1000 (EST)
-Date: Tue, 29 Apr 2008 11:54:56 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Remi Machet <rmachet@slac.stanford.edu>
-Subject: Re: [PATCH] sysdev,mv64x60: MV64x60 device bus
-Message-Id: <20080429115456.2fa164c7.sfr@canb.auug.org.au>
-In-Reply-To: <1209402729.14407.2.camel@pcds-ts102.slac.stanford.edu>
-References: <1209402729.14407.2.camel@pcds-ts102.slac.stanford.edu>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Tue__29_Apr_2008_11_54_56_+1000_Vgi75Jws1H=VAtF/"
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.244])
+	by ozlabs.org (Postfix) with ESMTP id 1F7B4DDF0F
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 Apr 2008 11:58:27 +1000 (EST)
+Received: by an-out-0708.google.com with SMTP id c34so9622anc.78
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 Apr 2008 18:58:26 -0700 (PDT)
+Message-ID: <fa686aa40804281858r6b2a1f9eva16983d0a3680fc0@mail.gmail.com>
+Date: Mon, 28 Apr 2008 19:58:26 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Sean MacLennan" <smaclennan@pikatech.com>
+Subject: Re: [RESEND][PATCH 2/2][POWERPC] PIKA Warp: Update platform code to
+	supportRev B boards
+In-Reply-To: <20080428215029.0e38a0d2@lappy.seanm.ca>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20080417152251.2bf07219@lappy.seanm.ca>
+	<20080428214711.240419c3@lappy.seanm.ca>
+	<20080428215029.0e38a0d2@lappy.seanm.ca>
+Cc: linuxppc-dev@ozlabs.org, Stephen Rothwell <sfr@canb.auug.org.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,34 +27,61 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Tue__29_Apr_2008_11_54_56_+1000_Vgi75Jws1H=VAtF/
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Mon, Apr 28, 2008 at 7:50 PM, Sean MacLennan <smaclennan@pikatech.com> wrote:
+> diff --git a/arch/powerpc/boot/dts/warp.dts b/arch/powerpc/boot/dts/warp.dts
+>  index b04a52e..3e95e99 100644
 
-Hi Remi,
+You still need to have *some* kind of change log and a signed-off-by
+line in this patch.  :-)
 
-On Mon, 28 Apr 2008 10:12:09 -0700 Remi Machet <rmachet@slac.stanford.edu> =
-wrote:
+There is one minor change that needs to be added below; otherwise:
+
+Acked-by: Grant Likely <grant.likely@secretlab.ca>
+
+(You can add my acked-by line to the next version of this patch if
+you're only changing the thing I comment on).
+
+Josh, when he respins it I think the dts changes are ready to be picked up.
+
+>  @@ -186,18 +179,45 @@
+>                         GPIO1: gpio@ef600c00 {
+>                                 compatible = "ibm,gpio-440ep";
+>                                 reg = <ef600c00 48>;
+>  +                               #gpio-cells = <2>;
+>  +                               gpio-controller;
+>  +
+>  +                               led@31 {
 >
-> +static struct of_device_id of_mv64x60_devices[] =3D {
+> +                                       compatible = "linux,gpio-led";
+>  +                                       linux,name = ":green:";
+>  +                                       gpios = <&GPIO1 31>;
 
-__initdata, please.
+Since #gpio-cells is '2'; the gpios property needs to reflect that.
+It should be:
 
---=20
+gpios = <&GPIO1 31 0>;
+
+The second cell the GPIO controller would use for flags (inverted,
+open-drain, etc).
+
+>  +                               };
+>  +
+>  +                               led@30 {
+>  +                                       compatible = "linux,gpio-led";
+>  +                                       linux,name = ":red:";
+>  +                                       gpios = <&GPIO1 30>;
+
+ditto
+
+>  +                               };
+>
+>
+>                         };
+>
+
 Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+g.
 
---Signature=_Tue__29_Apr_2008_11_54_56_+1000_Vgi75Jws1H=VAtF/
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFIFn/0TgG2atn1QN8RAirGAJwParzN1/T40RljzS+2FpNRQuxhIQCffnwX
-eVQqGWibMdG+V1M0THoN23c=
-=TT1t
------END PGP SIGNATURE-----
-
---Signature=_Tue__29_Apr_2008_11_54_56_+1000_Vgi75Jws1H=VAtF/--
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
