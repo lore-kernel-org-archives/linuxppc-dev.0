@@ -1,27 +1,15 @@
-Return-Path: <andre.schwarz@matrix-vision.de>
-Received: from p15137414.pureserver.info (matrixvision.de [217.160.213.229])
-	by ozlabs.org (Postfix) with ESMTP id 9180FDE4A9
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Apr 2008 02:44:13 +1000 (EST)
-Received: from pandora.intern.matrix-vision.de (g1.matrix-vision.com
-	[217.7.222.190])
-	by p15137414.pureserver.info (Postfix) with ESMTP id 455A93CC067
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Apr 2008 18:44:10 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
-	by pandora.intern.matrix-vision.de (Postfix) with ESMTP id C3179E3C09
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Apr 2008 18:41:42 +0200 (CEST)
-Received: from hegemone (hegemone.intern.matrix-vision.de [192.168.5.77])
-	by pandora.intern.matrix-vision.de (Postfix) with ESMTP id A9DDCE3C09
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Apr 2008 18:41:42 +0200 (CEST)
-Received: from [192.168.65.5] (unknown [192.168.65.5])
-	by hegemone (Postfix) with ESMTP id D34CF536
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Apr 2008 18:44:09 +0200 (CEST)
-Message-ID: <48175059.9080001@matrix-vision.de>
-Date: Tue, 29 Apr 2008 18:44:09 +0200
-From: Andre Schwarz <andre.schwarz@matrix-vision.de>
+Return-Path: <Shengping.Liu@windriver.com>
+Received: from mail.wrs.com (mail.windriver.com [147.11.1.11])
+	by ozlabs.org (Postfix) with ESMTP id 00105DE079
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Apr 2008 03:35:10 +1000 (EST)
+Message-ID: <4816CFF9.5030505@windriver.com>
+Date: Tue, 29 Apr 2008 16:36:25 +0900
+From: Andrew Liu <shengping.liu@windriver.com>
 MIME-Version: 1.0
-To: linux-ppc list <linuxppc-dev@ozlabs.org>
-Subject: EXT_IRQ0 @ MPC834x
-Content-Type: text/plain; charset=ISO-8859-15
+To: grant.likely@secretlab.ca, tnt@246tnt.com
+Subject: [PATCH]  Fix a potential issue in mpc52xx uart driver 
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,86 +19,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-All,
+mpc52xx_uart_int and __uart_put_char both try to acquire the
+port->lock. Therefore the function sequence of:
 
-actually I'm having trouble getting the IRQ0 work on a MPC8343 with
-2.6.25-rc8.
-There's an external PCI device connected to it ....
+mpc52xx_uart_int--> ...-->flush_to_ldisc-->...-->__uart_put_char
 
+can potentially trigger a deadlock. To avoid this deadlock a fix
+similar to that found in the 8250.c serial driver is applied. The
+deadlock is avoided by releasing the lock before pushing a buffer
+and reacquiring it when completed.
 
-Regarding to the manual IRQ0 is somewhat special and has Vector 48 assigned.
+Signed-off-by: Andrew Liu <shengping.liu@windriver.com>
 
-Therefore my dts entry for this device looks like :
+diff --git a/drivers/serial/mpc52xx_uart.c b/drivers/serial/mpc52xx_uart.c
+index d93b357..5f95e53 100644
+--- a/drivers/serial/mpc52xx_uart.c
++++ b/drivers/serial/mpc52xx_uart.c
+@@ -783,7 +783,9 @@ mpc52xx_uart_int_rx_chars(struct uart_port *port)
+                 }
+         }
 
-interrupt-map = <0x5800 0 0 1 &ipic 0x30 0x8
-                                 ... >;
++       spin_unlock(&port->lock);
+         tty_flip_buffer_push(tty);
++       spin_lock(&port->lock);
 
-Having a look on virq mapping gives :
-
-mvBL-M7> cat /sys/kernel/debug/powerpc/virq_mapping
-virq   hwirq    chip name        host name
-   16  0x0000e   IPIC            /soc@e0000000/pic@700
-   17  0x0000f   IPIC            /soc@e0000000/pic@700
-   18  0x00009   IPIC            /soc@e0000000/pic@700
-   20  0x00010   IPIC            /soc@e0000000/pic@700
-   32  0x00020   IPIC            /soc@e0000000/pic@700
-   33  0x00021   IPIC            /soc@e0000000/pic@700
-   34  0x00022   IPIC            /soc@e0000000/pic@700
-   38  0x00026   IPIC            /soc@e0000000/pic@700
-   48  0x00030   IPIC            /soc@e0000000/pic@700
-
-
-After loading the device driver (=mvbcdma) the irq shows up correctly.
-
-mvBL-M7> cat /proc/interrupts
-           CPU0
- 16:        603   IPIC   Level     i2c-mpc
- 17:          8   IPIC   Level     i2c-mpc
- 18:        295   IPIC   Level     serial
- 20:        341   IPIC   Level     mpc83xx_spi
- 32:          2   IPIC   Level     enet_tx
- 33:          3   IPIC   Level     enet_rx
- 34:          0   IPIC   Level     enet_error
- 38:          0   IPIC   Level     ehci_hcd:usb1
- 48:          0   IPIC   Level     mvbcdma0
-BAD:          0
-
-
-As soon as the device generates an interrupt I get :
-
-irq 48: nobody cared (try booting with the "irqpoll" option)
-handlers:
-[<d18d66e8>] (mvbcdma_irq+0x0/0x180 [mvbcdma])
-Disabling IRQ #48
-
-
-The handler _would_ have returned IRQ_RETVAL(1).
-Obviously the handler isn't called at all - but why ?
-
-
-Using "nm" on the kernel module gives :
-
-000006e8 t mvbcdma_irq
-
-->offset 0x6e8 inside module matches with output regarding handler.
-
-
-Any help is welcome !
-
-
-regards,
-Andre Schwarz
-
-
-
-
-
-
-
-
-
-
-
-
-MATRIX VISION GmbH, Talstraße 16, DE-71570 Oppenweiler  - Registergericht: Amtsgericht Stuttgart, HRB 271090
-Geschäftsführer: Gerhard Thullner, Werner Armingeon, Uwe Furtner
+         return psc_ops->raw_rx_rdy(port);
+  }
