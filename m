@@ -1,17 +1,18 @@
 Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <18454.44114.425038.8901@cargo.ozlabs.ibm.com>
-Date: Tue, 29 Apr 2008 15:04:18 +1000
+Message-ID: <18454.44365.719572.654726@cargo.ozlabs.ibm.com>
+Date: Tue, 29 Apr 2008 15:08:29 +1000
 From: Paul Mackerras <paulus@samba.org>
-To: Scott Wood <scottwood@freescale.com>,
-	Guennadi Liakhovetski <g.liakhovetski@gmx.de>, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 1/7] Implement arch disable/enable irq hooks.
-In-Reply-To: <18454.42926.213374.977098@cargo.ozlabs.ibm.com>
-References: <20071023212404.GA30942@loki.buserror.net>
-	<Pine.LNX.4.64.0804251454050.6045@axis700.grange>
-	<20080428203322.GD15223@ld0162-tx32.am.freescale.net>
-	<18454.42926.213374.977098@cargo.ozlabs.ibm.com>
+To: Sean MacLennan <smaclennan@pikatech.com>
+Subject: Re: [RESEND][PATCH 1/2][POWERPC] PIKA Warp: Update platform code to
+	supportRev B boards
+In-Reply-To: <20080428232855.22c13830@lappy.seanm.ca>
+References: <20080417152251.2bf07219@lappy.seanm.ca>
+	<20080428214711.240419c3@lappy.seanm.ca>
+	<20080428232855.22c13830@lappy.seanm.ca>
+Cc: linuxppc-dev@ozlabs.org, Sean MacLennan <sean.maclennan@ottawa.kanatek.ca>,
+	Stephen Rothwell <sfr@canb.auug.org.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,12 +22,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I wrote:
+It doesn't help that both of these patches have the same subject line,
+nor that it starts with "Re:". :(
 
-> +7:	rlwinm	r12,r12,0,~TLF_SLEEPING
-
-That should be rlwinm r12,r12,0,~_TLF_SLEEPING (with the leading
-underscore), of course.  Thanks to Stephen Rothwell for pointing that
-out.
+Also, I find the statement "A change to the dts to get gpios correct
+broke the led code" a bit opaque.  It doesn't tell me in what way it
+was broken or what this patch does to correct, or even what the change
+was in enough detail that I could find the change in the git
+repository.
 
 Paul.
