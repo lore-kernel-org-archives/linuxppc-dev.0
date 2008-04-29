@@ -1,21 +1,21 @@
-Return-Path: <bunk@kernel.org>
-Received: from smtp6.pp.htv.fi (smtp6.pp.htv.fi [213.243.153.40])
-	by ozlabs.org (Postfix) with ESMTP id 261F7DDF77
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Apr 2008 05:45:57 +1000 (EST)
-Date: Tue, 29 Apr 2008 22:45:17 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Sam Ravnborg <sam@ravnborg.org>, paulus@samba.org
-Subject: Re: 2.6.25: pmac_newworld undefined
-Message-ID: <20080429194517.GC2898@cs181133002.pp.htv.fi>
-References: <alpine.DEB.1.10.0804271951190.11017@sheep.housecafe.de>
-	<20080428042044.GX20457@bakeyournoodle.com>
-	<20080428193324.GC13400@uranus.ravnborg.org>
-	<20080429133514.GA30524@cs181133002.pp.htv.fi>
-	<20080429191753.GA32685@uranus.ravnborg.org>
+Return-Path: <timur@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id BA86ADEA71
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Apr 2008 05:57:45 +1000 (EST)
+Message-ID: <48177DAE.7030807@freescale.com>
+Date: Tue, 29 Apr 2008 14:57:34 -0500
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20080429191753.GA32685@uranus.ravnborg.org>
-Cc: linuxppc-dev@ozlabs.org, LKML <linux-kernel@vger.kernel.org>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: Re: [PATCH 2/6] [POWERPC] QE: add support for QE USB clocks routing
+References: <20080429185920.GA19735@polina.dev.rtsoft.ru>
+	<20080429190031.GB21203@polina.dev.rtsoft.ru>
+In-Reply-To: <20080429190031.GB21203@polina.dev.rtsoft.ru>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,37 +25,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Apr 29, 2008 at 09:17:53PM +0200, Sam Ravnborg wrote:
->...
-> So something like:
+Anton Vorontsov wrote:
+> This patch adds a function to the qe_lib to setup QE USB clocks routing.
+> To setup clocks safely, cmxgcr register needs locking, so I just reused
+> ucc_lock since it was used only to protect cmxgcr.
 > 
-> config PPC32_NVRAM
-> 	bool
-> 	depends on NVRAM
+> The idea behind placing clocks routing functions into the qe_lib is that
+> later we'll hopefully switch to the generic Linux Clock API, thus, for
+> example, FHCI driver may be used for QE and CPM chips without nasty #ifdefs.
 > 
-> obj-$(CONFIG_PPC32_NVRAM) += nvram.o
-> obj-$(CONFIG_NVRAM)       += nvram.o
+> This patch also fixes QE_USB_RESTART_TX command definition in the qe.h.
 > 
-> Or did you have another solution in mind?
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 
-I start to understand the problem, and I'm currently wondering why 
-powerpc uses CONFIG_NVRAM although the code CONFIG_NVRAM enables on 
-other platforms is not enabled on powerpc.
+Acked-By: Timur Tabi <timur@freescale.com>
 
-Can we rename it and move drivers/char/generic_nvram.c under 
-arch/powerpc/ ?
-
-Can some powerpc person bring some background what's going on and why 
-it's this way?
-
-> 	Sam
-
-cu
-Adrian
+Anton, please be sure to CC: me on any QE library patches you send out.
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Timur Tabi
+Linux kernel developer at Freescale
