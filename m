@@ -1,28 +1,10 @@
-Return-Path: <markn@au1.ibm.com>
-Received: from e23smtp03.au.ibm.com (E23SMTP03.au.ibm.com [202.81.18.172])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp03.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 59E96DDF15
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Apr 2008 15:17:43 +1000 (EST)
-Received: from sd0109e.au.ibm.com (d23rh905.au.ibm.com [202.81.18.225])
-	by e23smtp03.au.ibm.com (8.13.1/8.13.1) with ESMTP id m3T5GqXX016179
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Apr 2008 15:16:52 +1000
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
-	by sd0109e.au.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m3T5Lc2n222752
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Apr 2008 15:21:38 +1000
-Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
-	by d23av04.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m3T5Hcvr018314
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Apr 2008 15:17:38 +1000
-Message-ID: <4816AF79.502@au1.ibm.com>
-Date: Tue, 29 Apr 2008 15:17:45 +1000
-From: Mark Nelson <markn@au1.ibm.com>
-MIME-Version: 1.0
-To: PowerPC dev list <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] [POWERPC] Add struct iommu_table argument to iommu_map_sg()
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: fujita.tomonori@lab.ntt.co.jp
+Return-Path: <benh@ozlabs.org>
+To: Paul Mackerras <paulus@samba.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Tue, 29 Apr 2008 15:39:55 +1000
+Subject: [PATCH] windfarm: add PowerMac 12,1 support
+Message-Id: <20080429054123.591BCDDF1F@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,70 +14,1195 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Make iommu_map_sg take a struct iommu_table. It did so before commit
-740c3ce66700640a6e6136ff679b067e92125794 (iommu sg merging: ppc: make
-iommu respect the segment size limits).
+From: Etienne Bersac <bersace@gmail.com>
 
-This stops the function looking in the archdata.dma_data for the iommu
-table because in the future it will be called with a device that has
-no table there.
+Implement a new driver named windfarm_pm121 which drive fans on PowerMac
+12,1 machine : iMac G5 iSight (rev C) 17" and 20". It's based on
+windfarm_pm81 driver from Benjamin Herrenschmidt.
 
-This also has the nice side effect of making iommu_map_sg() match the
-other map functions.
-
-Signed-off-by: Mark Nelson <markn@au1.ibm.com>
+Signed-off-by: Etienne Bersac <bersace@gmail.com>
+Signed-off-by: David Woodhouse <dwmw2@infradead.org>
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- arch/powerpc/kernel/dma_64.c |    2 +-
- arch/powerpc/kernel/iommu.c  |    7 +++----
- include/asm-powerpc/iommu.h  |    6 +++---
- 3 files changed, 7 insertions(+), 8 deletions(-)
 
-Index: upstream/arch/powerpc/kernel/dma_64.c
+Initial patch by Etienne, fixes by David, but they couldn't be
+bothered making that a single patch for merging so here it is.
+
+(Etienne, the accent on your name didn't survive the process sorry)
+
+ arch/powerpc/configs/g5_defconfig           |    1 
+ drivers/macintosh/Kconfig                   |    8 
+ drivers/macintosh/Makefile                  |    5 
+ drivers/macintosh/windfarm_lm75_sensor.c    |    6 
+ drivers/macintosh/windfarm_max6690_sensor.c |   20 
+ drivers/macintosh/windfarm_pm121.c          | 1040 ++++++++++++++++++++++++++++
+ drivers/macintosh/windfarm_smu_controls.c   |    4 
+ 7 files changed, 1078 insertions(+), 6 deletions(-)
+
+--- linux-work.orig/arch/powerpc/configs/g5_defconfig	2008-04-22 10:15:29.000000000 +1000
++++ linux-work/arch/powerpc/configs/g5_defconfig	2008-04-29 15:32:50.000000000 +1000
+@@ -696,6 +696,7 @@ CONFIG_WINDFARM=y
+ CONFIG_WINDFARM_PM81=y
+ CONFIG_WINDFARM_PM91=y
+ CONFIG_WINDFARM_PM112=y
++CONFIG_WINDFARM_PM121=y
+ # CONFIG_PMAC_RACKMETER is not set
+ CONFIG_NETDEVICES=y
+ # CONFIG_NETDEVICES_MULTIQUEUE is not set
+Index: linux-work/drivers/macintosh/Kconfig
 ===================================================================
---- upstream.orig/arch/powerpc/kernel/dma_64.c
-+++ upstream/arch/powerpc/kernel/dma_64.c
-@@ -68,7 +68,7 @@ static void dma_iommu_unmap_single(struc
- static int dma_iommu_map_sg(struct device *dev, struct scatterlist *sglist,
- 			    int nelems, enum dma_data_direction direction)
+--- linux-work.orig/drivers/macintosh/Kconfig	2008-03-03 11:58:43.000000000 +1100
++++ linux-work/drivers/macintosh/Kconfig	2008-04-29 15:32:50.000000000 +1000
+@@ -234,6 +234,14 @@ config WINDFARM_PM112
+ 	  which are the recent dual and quad G5 machines using the
+ 	  970MP dual-core processor.
+ 
++config WINDFARM_PM121
++	tristate "Support for thermal management on PowerMac12,1"
++	depends on WINDFARM && I2C && PMAC_SMU
++	select I2C_POWERMAC
++	help
++	  This driver provides thermal control for the PowerMac12,1
++	  which is the iMac G5 (iSight)
++
+ config ANSLCD
+ 	tristate "Support for ANS LCD display"
+ 	depends on ADB_CUDA && PPC_PMAC
+Index: linux-work/drivers/macintosh/Makefile
+===================================================================
+--- linux-work.orig/drivers/macintosh/Makefile	2007-09-28 11:42:07.000000000 +1000
++++ linux-work/drivers/macintosh/Makefile	2008-04-29 15:32:50.000000000 +1000
+@@ -42,4 +42,9 @@ obj-$(CONFIG_WINDFARM_PM112)	+= windfarm
+ 				   windfarm_smu_sensors.o \
+ 				   windfarm_max6690_sensor.o \
+ 				   windfarm_lm75_sensor.o windfarm_pid.o
++obj-$(CONFIG_WINDFARM_PM121)	+= windfarm_pm121.o windfarm_smu_sat.o \
++				   windfarm_smu_controls.o \
++				   windfarm_smu_sensors.o \
++				   windfarm_max6690_sensor.o \
++				   windfarm_lm75_sensor.o windfarm_pid.o
+ obj-$(CONFIG_PMAC_RACKMETER)	+= rack-meter.o
+Index: linux-work/drivers/macintosh/windfarm_lm75_sensor.c
+===================================================================
+--- linux-work.orig/drivers/macintosh/windfarm_lm75_sensor.c	2007-09-28 11:42:07.000000000 +1000
++++ linux-work/drivers/macintosh/windfarm_lm75_sensor.c	2008-04-29 15:32:50.000000000 +1000
+@@ -127,6 +127,12 @@ static struct wf_lm75_sensor *wf_lm75_cr
+ 	 */
+ 	if (!strcmp(loc, "Hard drive") || !strcmp(loc, "DRIVE BAY"))
+ 		lm->sens.name = "hd-temp";
++	else if (!strcmp(loc, "Incoming Air Temp"))
++		lm->sens.name = "incoming-air-temp";
++	else if (!strcmp(loc, "ODD Temp"))
++		lm->sens.name = "optical-drive-temp";
++	else if (!strcmp(loc, "HD Temp"))
++		lm->sens.name = "hard-drive-temp";
+ 	else
+ 		goto fail;
+ 
+Index: linux-work/drivers/macintosh/windfarm_max6690_sensor.c
+===================================================================
+--- linux-work.orig/drivers/macintosh/windfarm_max6690_sensor.c	2007-09-28 11:42:07.000000000 +1000
++++ linux-work/drivers/macintosh/windfarm_max6690_sensor.c	2008-04-29 15:32:50.000000000 +1000
+@@ -77,18 +77,28 @@ static struct wf_sensor_ops wf_max6690_o
+ 	.owner		= THIS_MODULE,
+ };
+ 
+-static void wf_max6690_create(struct i2c_adapter *adapter, u8 addr)
++static void wf_max6690_create(struct i2c_adapter *adapter, u8 addr,
++			      const char *loc)
  {
--	return iommu_map_sg(dev, sglist, nelems,
-+	return iommu_map_sg(dev, dev->archdata.dma_data, sglist, nelems,
- 			    device_to_mask(dev), direction);
- }
+ 	struct wf_6690_sensor *max;
+-	char *name = "backside-temp";
++	char *name;
  
-Index: upstream/arch/powerpc/kernel/iommu.c
+ 	max = kzalloc(sizeof(struct wf_6690_sensor), GFP_KERNEL);
+ 	if (max == NULL) {
+ 		printk(KERN_ERR "windfarm: Couldn't create MAX6690 sensor %s: "
+-		       "no memory\n", name);
++		       "no memory\n", loc);
+ 		return;
+ 	}
+ 
++	if (!strcmp(loc, "BACKSIDE"))
++		name = "backside-temp";
++	else if (!strcmp(loc, "NB Ambient"))
++		name = "north-bridge-temp";
++	else if (!strcmp(loc, "GPU Ambient"))
++		name = "gpu-temp";
++	else
++		goto fail;
++
+ 	max->sens.ops = &wf_max6690_ops;
+ 	max->sens.name = name;
+ 	max->i2c.addr = addr >> 1;
+@@ -138,9 +148,7 @@ static int wf_max6690_attach(struct i2c_
+ 		if (loc == NULL || addr == 0)
+ 			continue;
+ 		printk("found max6690, loc=%s addr=0x%02x\n", loc, addr);
+-		if (strcmp(loc, "BACKSIDE"))
+-			continue;
+-		wf_max6690_create(adapter, addr);
++		wf_max6690_create(adapter, addr, loc);
+ 	}
+ 
+ 	return 0;
+Index: linux-work/drivers/macintosh/windfarm_pm121.c
 ===================================================================
---- upstream.orig/arch/powerpc/kernel/iommu.c
-+++ upstream/arch/powerpc/kernel/iommu.c
-@@ -267,11 +267,10 @@ static void iommu_free(struct iommu_tabl
- 	spin_unlock_irqrestore(&(tbl->it_lock), flags);
- }
- 
--int iommu_map_sg(struct device *dev, struct scatterlist *sglist,
--		 int nelems, unsigned long mask,
--		 enum dma_data_direction direction)
-+int iommu_map_sg(struct device *dev, struct iommu_table *tbl,
-+		 struct scatterlist *sglist, int nelems,
-+		 unsigned long mask, enum dma_data_direction direction)
- {
--	struct iommu_table *tbl = dev->archdata.dma_data;
- 	dma_addr_t dma_next = 0, dma_addr;
- 	unsigned long flags;
- 	struct scatterlist *s, *outs, *segstart;
-Index: upstream/include/asm-powerpc/iommu.h
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-work/drivers/macintosh/windfarm_pm121.c	2008-04-29 15:32:58.000000000 +1000
+@@ -0,0 +1,1040 @@
++/*
++ * Windfarm PowerMac thermal control. iMac G5 iSight
++ *
++ * (c) Copyright 2007 Étienne Bersac <bersace@gmail.com>
++ *
++ * Bits & pieces from windfarm_pm81.c by (c) Copyright 2005 Benjamin
++ * Herrenschmidt, IBM Corp. <benh@kernel.crashing.org>
++ *
++ * Released under the term of the GNU GPL v2.
++ *
++ *
++ *
++ * PowerMac12,1
++ * ============
++ *
++ *
++ * The algorithm used is the PID control algorithm, used the same way
++ * the published Darwin code does, using the same values that are
++ * present in the Darwin 8.10 snapshot property lists (note however
++ * that none of the code has been re-used, it's a complete
++ * re-implementation
++ *
++ * There is two models using PowerMac12,1. Model 2 is iMac G5 iSight
++ * 17" while Model 3 is iMac G5 20". They do have both the same
++ * controls with a tiny difference. The control-ids of hard-drive-fan
++ * and cpu-fan is swapped.
++ *
++ *
++ * Target Correction :
++ *
++ * controls have a target correction calculated as :
++ *
++ * new_min = ((((average_power * slope) >> 16) + offset) >> 16) + min_value
++ * new_value = max(new_value, max(new_min, 0))
++ *
++ * OD Fan control correction.
++ *
++ * # model_id: 2
++ *   offset		: -19563152
++ *   slope		:  1956315
++ *
++ * # model_id: 3
++ *   offset		: -15650652
++ *   slope		:  1565065
++ *
++ * HD Fan control correction.
++ *
++ * # model_id: 2
++ *   offset		: -15650652
++ *   slope		:  1565065
++ *
++ * # model_id: 3
++ *   offset		: -19563152
++ *   slope		:  1956315
++ *
++ * CPU Fan control correction.
++ *
++ * # model_id: 2
++ *   offset		: -25431900
++ *   slope		:  2543190
++ *
++ * # model_id: 3
++ *   offset		: -15650652
++ *   slope		:  1565065
++ *
++ *
++ * Target rubber-banding :
++ *
++ * Some controls have a target correction which depends on another
++ * control value. The correction is computed in the following way :
++ *
++ * new_min = ref_value * slope + offset
++ *
++ * ref_value is the value of the reference control. If new_min is
++ * greater than 0, then we correct the target value using :
++ *
++ * new_target = max (new_target, new_min >> 16)
++ *
++ *
++ * # model_id : 2
++ *   control	: cpu-fan
++ *   ref	: optical-drive-fan
++ *   offset	: -15650652
++ *   slope	: 1565065
++ *
++ * # model_id : 3
++ *   control	: optical-drive-fan
++ *   ref	: hard-drive-fan
++ *   offset	: -32768000
++ *   slope	: 65536
++ *
++ *
++ * In order to have the moste efficient correction with those
++ * dependencies, we must trigger HD loop before OD loop before CPU
++ * loop.
++ *
++ *
++ * The various control loops found in Darwin config file are:
++ *
++ * HD Fan control loop.
++ *
++ * # model_id: 2
++ *   control        : hard-drive-fan
++ *   sensor         : hard-drive-temp
++ *   PID params     : G_d = 0x00000000
++ *                    G_p = 0x002D70A3
++ *                    G_r = 0x00019999
++ *                    History = 2 entries
++ *                    Input target = 0x370000
++ *                    Interval = 5s
++ *
++ * # model_id: 3
++ *   control        : hard-drive-fan
++ *   sensor         : hard-drive-temp
++ *   PID params     : G_d = 0x00000000
++ *                    G_p = 0x002170A3
++ *                    G_r = 0x00019999
++ *                    History = 2 entries
++ *                    Input target = 0x370000
++ *                    Interval = 5s
++ *
++ * OD Fan control loop.
++ *
++ * # model_id: 2
++ *   control        : optical-drive-fan
++ *   sensor         : optical-drive-temp
++ *   PID params     : G_d = 0x00000000
++ *                    G_p = 0x001FAE14
++ *                    G_r = 0x00019999
++ *                    History = 2 entries
++ *                    Input target = 0x320000
++ *                    Interval = 5s
++ *
++ * # model_id: 3
++ *   control        : optical-drive-fan
++ *   sensor         : optical-drive-temp
++ *   PID params     : G_d = 0x00000000
++ *                    G_p = 0x001FAE14
++ *                    G_r = 0x00019999
++ *                    History = 2 entries
++ *                    Input target = 0x320000
++ *                    Interval = 5s
++ *
++ * GPU Fan control loop.
++ *
++ * # model_id: 2
++ *   control        : hard-drive-fan
++ *   sensor         : gpu-temp
++ *   PID params     : G_d = 0x00000000
++ *                    G_p = 0x002A6666
++ *                    G_r = 0x00019999
++ *                    History = 2 entries
++ *                    Input target = 0x5A0000
++ *                    Interval = 5s
++ *
++ * # model_id: 3
++ *   control        : cpu-fan
++ *   sensor         : gpu-temp
++ *   PID params     : G_d = 0x00000000
++ *                    G_p = 0x0010CCCC
++ *                    G_r = 0x00019999
++ *                    History = 2 entries
++ *                    Input target = 0x500000
++ *                    Interval = 5s
++ *
++ * KODIAK (aka northbridge) Fan control loop.
++ *
++ * # model_id: 2
++ *   control        : optical-drive-fan
++ *   sensor         : north-bridge-temp
++ *   PID params     : G_d = 0x00000000
++ *                    G_p = 0x003BD70A
++ *                    G_r = 0x00019999
++ *                    History = 2 entries
++ *                    Input target = 0x550000
++ *                    Interval = 5s
++ *
++ * # model_id: 3
++ *   control        : hard-drive-fan
++ *   sensor         : north-bridge-temp
++ *   PID params     : G_d = 0x00000000
++ *                    G_p = 0x0030F5C2
++ *                    G_r = 0x00019999
++ *                    History = 2 entries
++ *                    Input target = 0x550000
++ *                    Interval = 5s
++ *
++ * CPU Fan control loop.
++ *
++ *   control        : cpu-fan
++ *   sensors        : cpu-temp, cpu-power
++ *   PID params     : from SDB partition
++ *
++ *
++ * CPU Slew control loop.
++ *
++ *   control        : cpufreq-clamp
++ *   sensor         : cpu-temp
++ *
++ */
++
++#undef	DEBUG
++
++#include <linux/types.h>
++#include <linux/errno.h>
++#include <linux/kernel.h>
++#include <linux/delay.h>
++#include <linux/slab.h>
++#include <linux/init.h>
++#include <linux/spinlock.h>
++#include <linux/wait.h>
++#include <linux/kmod.h>
++#include <linux/device.h>
++#include <linux/platform_device.h>
++#include <asm/prom.h>
++#include <asm/machdep.h>
++#include <asm/io.h>
++#include <asm/system.h>
++#include <asm/sections.h>
++#include <asm/smu.h>
++
++#include "windfarm.h"
++#include "windfarm_pid.h"
++
++#define VERSION "0.3"
++
++static int pm121_mach_model;	/* machine model id */
++
++/* Controls & sensors */
++static struct wf_sensor	*sensor_cpu_power;
++static struct wf_sensor	*sensor_cpu_temp;
++static struct wf_sensor	*sensor_cpu_voltage;
++static struct wf_sensor	*sensor_cpu_current;
++static struct wf_sensor	*sensor_gpu_temp;
++static struct wf_sensor	*sensor_north_bridge_temp;
++static struct wf_sensor	*sensor_hard_drive_temp;
++static struct wf_sensor	*sensor_optical_drive_temp;
++static struct wf_sensor	*sensor_incoming_air_temp; /* unused ! */
++
++enum {
++	FAN_CPU,
++	FAN_HD,
++	FAN_OD,
++	CPUFREQ,
++	N_CONTROLS
++};
++static struct wf_control *controls[N_CONTROLS] = {};
++
++/* Set to kick the control loop into life */
++static int pm121_all_controls_ok, pm121_all_sensors_ok, pm121_started;
++
++enum {
++	FAILURE_FAN		= 1 << 0,
++	FAILURE_SENSOR		= 1 << 1,
++	FAILURE_OVERTEMP	= 1 << 2
++};
++
++/* All sys loops. Note the HD before the OD loop in order to have it
++   run before. */
++enum {
++	LOOP_GPU,		/* control = hd or cpu, but luckily,
++				   it doesn't matter */
++	LOOP_HD,		/* control = hd */
++	LOOP_KODIAK,		/* control = hd or od */
++	LOOP_OD,		/* control = od */
++	N_LOOPS
++};
++
++static const char *loop_names[N_LOOPS] = {
++	"GPU",
++	"HD",
++	"KODIAK",
++	"OD",
++};
++
++#define	PM121_NUM_CONFIGS	2
++
++static unsigned int pm121_failure_state;
++static int pm121_readjust, pm121_skipping;
++static s32 average_power;
++
++struct pm121_correction {
++	int	offset;
++	int	slope;
++};
++
++static struct pm121_correction corrections[N_CONTROLS][PM121_NUM_CONFIGS] = {
++	/* FAN_OD */
++	{
++		/* MODEL 2 */
++		{ .offset	= -19563152,
++		  .slope	=  1956315
++		},
++		/* MODEL 3 */
++		{ .offset	= -15650652,
++		  .slope	=  1565065
++		},
++	},
++	/* FAN_HD */
++	{
++		/* MODEL 2 */
++		{ .offset	= -15650652,
++		  .slope	=  1565065
++		},
++		/* MODEL 3 */
++		{ .offset	= -19563152,
++		  .slope	=  1956315
++		},
++	},
++	/* FAN_CPU */
++	{
++		/* MODEL 2 */
++		{ .offset	= -25431900,
++		  .slope	=  2543190
++		},
++		/* MODEL 3 */
++		{ .offset	= -15650652,
++		  .slope	=  1565065
++		},
++	},
++	/* CPUFREQ has no correction (and is not implemented at all) */
++};
++
++struct pm121_connection {
++	unsigned int	control_id;
++	unsigned int	ref_id;
++	struct pm121_correction	correction;
++};
++
++static struct pm121_connection pm121_connections[] = {
++	/* MODEL 2 */
++	{ .control_id	= FAN_CPU,
++	  .ref_id	= FAN_OD,
++	  { .offset	= -32768000,
++	    .slope	=  65536
++	  }
++	},
++	/* MODEL 3 */
++	{ .control_id	= FAN_OD,
++	  .ref_id	= FAN_HD,
++	  { .offset	= -32768000,
++	    .slope	=  65536
++	  }
++	},
++};
++
++/* pointer to the current model connection */
++static struct pm121_connection *pm121_connection;
++
++/*
++ * ****** System Fans Control Loop ******
++ *
++ */
++
++/* Since each loop handles only one control and we want to avoid
++ * writing virtual control, we store the control correction with the
++ * loop params. Some data are not set, there are common to all loop
++ * and thus, hardcoded.
++ */
++struct pm121_sys_param {
++	/* purely informative since we use mach_model-2 as index */
++	int			model_id;
++	struct wf_sensor	**sensor; /* use sensor_id instead ? */
++	s32			gp, itarget;
++	unsigned int		control_id;
++};
++
++static struct pm121_sys_param
++pm121_sys_all_params[N_LOOPS][PM121_NUM_CONFIGS] = {
++	/* GPU Fan control loop */
++	{
++		{ .model_id	= 2,
++		  .sensor	= &sensor_gpu_temp,
++		  .gp		= 0x002A6666,
++		  .itarget	= 0x5A0000,
++		  .control_id	= FAN_HD,
++		},
++		{ .model_id	= 3,
++		  .sensor	= &sensor_gpu_temp,
++		  .gp		= 0x0010CCCC,
++		  .itarget	= 0x500000,
++		  .control_id	= FAN_CPU,
++		},
++	},
++	/* HD Fan control loop */
++	{
++		{ .model_id	= 2,
++		  .sensor	= &sensor_hard_drive_temp,
++		  .gp		= 0x002D70A3,
++		  .itarget	= 0x370000,
++		  .control_id	= FAN_HD,
++		},
++		{ .model_id	= 3,
++		  .sensor	= &sensor_hard_drive_temp,
++		  .gp		= 0x002170A3,
++		  .itarget	= 0x370000,
++		  .control_id	= FAN_HD,
++		},
++	},
++	/* KODIAK Fan control loop */
++	{
++		{ .model_id	= 2,
++		  .sensor	= &sensor_north_bridge_temp,
++		  .gp		= 0x003BD70A,
++		  .itarget	= 0x550000,
++		  .control_id	= FAN_OD,
++		},
++		{ .model_id	= 3,
++		  .sensor	= &sensor_north_bridge_temp,
++		  .gp		= 0x0030F5C2,
++		  .itarget	= 0x550000,
++		  .control_id	= FAN_HD,
++		},
++	},
++	/* OD Fan control loop */
++	{
++		{ .model_id	= 2,
++		  .sensor	= &sensor_optical_drive_temp,
++		  .gp		= 0x001FAE14,
++		  .itarget	= 0x320000,
++		  .control_id	= FAN_OD,
++		},
++		{ .model_id	= 3,
++		  .sensor	= &sensor_optical_drive_temp,
++		  .gp		= 0x001FAE14,
++		  .itarget	= 0x320000,
++		  .control_id	= FAN_OD,
++		},
++	},
++};
++
++/* the hardcoded values */
++#define	PM121_SYS_GD		0x00000000
++#define	PM121_SYS_GR		0x00019999
++#define	PM121_SYS_HISTORY_SIZE	2
++#define	PM121_SYS_INTERVAL	5
++
++/* State data used by the system fans control loop
++ */
++struct pm121_sys_state {
++	int			ticks;
++	s32			setpoint;
++	struct wf_pid_state	pid;
++};
++
++struct pm121_sys_state *pm121_sys_state[N_LOOPS] = {};
++
++/*
++ * ****** CPU Fans Control Loop ******
++ *
++ */
++
++#define PM121_CPU_INTERVAL	1
++
++/* State data used by the cpu fans control loop
++ */
++struct pm121_cpu_state {
++	int			ticks;
++	s32			setpoint;
++	struct wf_cpu_pid_state	pid;
++};
++
++static struct pm121_cpu_state *pm121_cpu_state;
++
++
++
++/*
++ * ***** Implementation *****
++ *
++ */
++
++/* correction the value using the output-low-bound correction algo */
++static s32 pm121_correct(s32 new_setpoint,
++			 unsigned int control_id,
++			 s32 min)
++{
++	s32 new_min;
++	struct pm121_correction *correction;
++	correction = &corrections[control_id][pm121_mach_model - 2];
++
++	new_min = (average_power * correction->slope) >> 16;
++	new_min += correction->offset;
++	new_min = (new_min >> 16) + min;
++
++	return max(new_setpoint, max(new_min, 0));
++}
++
++static s32 pm121_connect(unsigned int control_id, s32 setpoint)
++{
++	s32 new_min, value, new_setpoint;
++
++	if (pm121_connection->control_id == control_id) {
++		controls[control_id]->ops->get_value(controls[control_id],
++						     &value);
++		new_min = value * pm121_connection->correction.slope;
++		new_min += pm121_connection->correction.offset;
++		if (new_min > 0) {
++			new_setpoint = max(setpoint, (new_min >> 16));
++			if (new_setpoint != setpoint) {
++				pr_debug("pm121: %s depending on %s, "
++					 "corrected from %d to %d RPM\n",
++					 controls[control_id]->name,
++					 controls[pm121_connection->ref_id]->name,
++					 (int) setpoint, (int) new_setpoint);
++			}
++		} else
++			new_setpoint = setpoint;
++	}
++	/* no connection */
++	else
++		new_setpoint = setpoint;
++
++	return new_setpoint;
++}
++
++/* FAN LOOPS */
++static void pm121_create_sys_fans(int loop_id)
++{
++	struct pm121_sys_param *param = NULL;
++	struct wf_pid_param pid_param;
++	struct wf_control *control = NULL;
++	int i;
++
++	/* First, locate the params for this model */
++	for (i = 0; i < PM121_NUM_CONFIGS; i++) {
++		if (pm121_sys_all_params[loop_id][i].model_id == pm121_mach_model) {
++			param = &(pm121_sys_all_params[loop_id][i]);
++			break;
++		}
++	}
++
++	/* No params found, put fans to max */
++	if (param == NULL) {
++		printk(KERN_WARNING "pm121: %s fan config not found "
++		       " for this machine model\n",
++		       loop_names[loop_id]);
++		goto fail;
++	}
++
++	control = controls[param->control_id];
++
++	/* Alloc & initialize state */
++	pm121_sys_state[loop_id] = kmalloc(sizeof(struct pm121_sys_state),
++					   GFP_KERNEL);
++	if (pm121_sys_state[loop_id] == NULL) {
++		printk(KERN_WARNING "pm121: Memory allocation error\n");
++		goto fail;
++	}
++	pm121_sys_state[loop_id]->ticks = 1;
++
++	/* Fill PID params */
++	pid_param.gd		= PM121_SYS_GD;
++	pid_param.gp		= param->gp;
++	pid_param.gr		= PM121_SYS_GR;
++	pid_param.interval	= PM121_SYS_INTERVAL;
++	pid_param.history_len	= PM121_SYS_HISTORY_SIZE;
++	pid_param.itarget	= param->itarget;
++	pid_param.min		= control->ops->get_min(control);
++	pid_param.max		= control->ops->get_max(control);
++
++	wf_pid_init(&pm121_sys_state[loop_id]->pid, &pid_param);
++
++	pr_debug("pm121: %s Fan control loop initialized.\n"
++		 "       itarged=%d.%03d, min=%d RPM, max=%d RPM\n",
++		 loop_names[loop_id], FIX32TOPRINT(pid_param.itarget),
++		 pid_param.min, pid_param.max);
++	return;
++
++ fail:
++	/* note that this is not optimal since another loop may still
++	   control the same control */
++	printk(KERN_WARNING "pm121: failed to set up %s loop "
++	       "setting \"%s\" to max speed.\n",
++	       loop_names[loop_id], control->name);
++
++	if (control)
++		wf_control_set_max(control);
++}
++
++static void pm121_sys_fans_tick(int loop_id)
++{
++	struct pm121_sys_param *param;
++	struct pm121_sys_state *st;
++	struct wf_sensor *sensor;
++	struct wf_control *control;
++	s32 temp, new_setpoint;
++	int rc;
++
++	param = &(pm121_sys_all_params[loop_id][pm121_mach_model-2]);
++	st = pm121_sys_state[loop_id];
++	sensor = *(param->sensor);
++	control = controls[param->control_id];
++
++	if (--st->ticks != 0) {
++		if (pm121_readjust)
++			goto readjust;
++		return;
++	}
++	st->ticks = PM121_SYS_INTERVAL;
++
++	rc = sensor->ops->get_value(sensor, &temp);
++	if (rc) {
++		printk(KERN_WARNING "windfarm: %s sensor error %d\n",
++		       sensor->name, rc);
++		pm121_failure_state |= FAILURE_SENSOR;
++		return;
++	}
++
++	pr_debug("pm121: %s Fan tick ! %s: %d.%03d\n",
++		 loop_names[loop_id], sensor->name,
++		 FIX32TOPRINT(temp));
++
++	new_setpoint = wf_pid_run(&st->pid, temp);
++
++	/* correction */
++	new_setpoint = pm121_correct(new_setpoint,
++				     param->control_id,
++				     st->pid.param.min);
++	/* linked corretion */
++	new_setpoint = pm121_connect(param->control_id, new_setpoint);
++
++	if (new_setpoint == st->setpoint)
++		return;
++	st->setpoint = new_setpoint;
++	pr_debug("pm121: %s corrected setpoint: %d RPM\n",
++		 control->name, (int)new_setpoint);
++ readjust:
++	if (control && pm121_failure_state == 0) {
++		rc = control->ops->set_value(control, st->setpoint);
++		if (rc) {
++			printk(KERN_WARNING "windfarm: %s fan error %d\n",
++			       control->name, rc);
++			pm121_failure_state |= FAILURE_FAN;
++		}
++	}
++}
++
++
++/* CPU LOOP */
++static void pm121_create_cpu_fans(void)
++{
++	struct wf_cpu_pid_param pid_param;
++	const struct smu_sdbp_header *hdr;
++	struct smu_sdbp_cpupiddata *piddata;
++	struct smu_sdbp_fvt *fvt;
++	struct wf_control *fan_cpu;
++	s32 tmax, tdelta, maxpow, powadj;
++
++	fan_cpu = controls[FAN_CPU];
++
++	/* First, locate the PID params in SMU SBD */
++	hdr = smu_get_sdb_partition(SMU_SDB_CPUPIDDATA_ID, NULL);
++	if (hdr == 0) {
++		printk(KERN_WARNING "pm121: CPU PID fan config not found.\n");
++		goto fail;
++	}
++	piddata = (struct smu_sdbp_cpupiddata *)&hdr[1];
++
++	/* Get the FVT params for operating point 0 (the only supported one
++	 * for now) in order to get tmax
++	 */
++	hdr = smu_get_sdb_partition(SMU_SDB_FVT_ID, NULL);
++	if (hdr) {
++		fvt = (struct smu_sdbp_fvt *)&hdr[1];
++		tmax = ((s32)fvt->maxtemp) << 16;
++	} else
++		tmax = 0x5e0000; /* 94 degree default */
++
++	/* Alloc & initialize state */
++	pm121_cpu_state = kmalloc(sizeof(struct pm121_cpu_state),
++				  GFP_KERNEL);
++	if (pm121_cpu_state == NULL)
++		goto fail;
++	pm121_cpu_state->ticks = 1;
++
++	/* Fill PID params */
++	pid_param.interval = PM121_CPU_INTERVAL;
++	pid_param.history_len = piddata->history_len;
++	if (pid_param.history_len > WF_CPU_PID_MAX_HISTORY) {
++		printk(KERN_WARNING "pm121: History size overflow on "
++		       "CPU control loop (%d)\n", piddata->history_len);
++		pid_param.history_len = WF_CPU_PID_MAX_HISTORY;
++	}
++	pid_param.gd = piddata->gd;
++	pid_param.gp = piddata->gp;
++	pid_param.gr = piddata->gr / pid_param.history_len;
++
++	tdelta = ((s32)piddata->target_temp_delta) << 16;
++	maxpow = ((s32)piddata->max_power) << 16;
++	powadj = ((s32)piddata->power_adj) << 16;
++
++	pid_param.tmax = tmax;
++	pid_param.ttarget = tmax - tdelta;
++	pid_param.pmaxadj = maxpow - powadj;
++
++	pid_param.min = fan_cpu->ops->get_min(fan_cpu);
++	pid_param.max = fan_cpu->ops->get_max(fan_cpu);
++
++	wf_cpu_pid_init(&pm121_cpu_state->pid, &pid_param);
++
++	pr_debug("pm121: CPU Fan control initialized.\n");
++	pr_debug("       ttarged=%d.%03d, tmax=%d.%03d, min=%d RPM, max=%d RPM,\n",
++		 FIX32TOPRINT(pid_param.ttarget), FIX32TOPRINT(pid_param.tmax),
++		 pid_param.min, pid_param.max);
++
++	return;
++
++ fail:
++	printk(KERN_WARNING "pm121: CPU fan config not found, max fan speed\n");
++
++	if (controls[CPUFREQ])
++		wf_control_set_max(controls[CPUFREQ]);
++	if (fan_cpu)
++		wf_control_set_max(fan_cpu);
++}
++
++
++static void pm121_cpu_fans_tick(struct pm121_cpu_state *st)
++{
++	s32 new_setpoint, temp, power;
++	struct wf_control *fan_cpu = NULL;
++	int rc;
++
++	if (--st->ticks != 0) {
++		if (pm121_readjust)
++			goto readjust;
++		return;
++	}
++	st->ticks = PM121_CPU_INTERVAL;
++
++	fan_cpu = controls[FAN_CPU];
++
++	rc = sensor_cpu_temp->ops->get_value(sensor_cpu_temp, &temp);
++	if (rc) {
++		printk(KERN_WARNING "pm121: CPU temp sensor error %d\n",
++		       rc);
++		pm121_failure_state |= FAILURE_SENSOR;
++		return;
++	}
++
++	rc = sensor_cpu_power->ops->get_value(sensor_cpu_power, &power);
++	if (rc) {
++		printk(KERN_WARNING "pm121: CPU power sensor error %d\n",
++		       rc);
++		pm121_failure_state |= FAILURE_SENSOR;
++		return;
++	}
++
++	pr_debug("pm121: CPU Fans tick ! CPU temp: %d.%03d°C, power: %d.%03d\n",
++		 FIX32TOPRINT(temp), FIX32TOPRINT(power));
++
++	if (temp > st->pid.param.tmax)
++		pm121_failure_state |= FAILURE_OVERTEMP;
++
++	new_setpoint = wf_cpu_pid_run(&st->pid, power, temp);
++
++	/* correction */
++	new_setpoint = pm121_correct(new_setpoint,
++				     FAN_CPU,
++				     st->pid.param.min);
++
++	/* connected correction */
++	new_setpoint = pm121_connect(FAN_CPU, new_setpoint);
++
++	if (st->setpoint == new_setpoint)
++		return;
++	st->setpoint = new_setpoint;
++	pr_debug("pm121: CPU corrected setpoint: %d RPM\n", (int)new_setpoint);
++
++ readjust:
++	if (fan_cpu && pm121_failure_state == 0) {
++		rc = fan_cpu->ops->set_value(fan_cpu, st->setpoint);
++		if (rc) {
++			printk(KERN_WARNING "pm121: %s fan error %d\n",
++			       fan_cpu->name, rc);
++			pm121_failure_state |= FAILURE_FAN;
++		}
++	}
++}
++
++/*
++ * ****** Common ******
++ *
++ */
++
++static void pm121_tick(void)
++{
++	unsigned int last_failure = pm121_failure_state;
++	unsigned int new_failure;
++	s32 total_power;
++	int i;
++
++	if (!pm121_started) {
++		pr_debug("pm121: creating control loops !\n");
++		for (i = 0; i < N_LOOPS; i++)
++			pm121_create_sys_fans(i);
++
++		pm121_create_cpu_fans();
++		pm121_started = 1;
++	}
++
++	/* skipping ticks */
++	if (pm121_skipping && --pm121_skipping)
++		return;
++
++	/* compute average power */
++	total_power = 0;
++	for (i = 0; i < pm121_cpu_state->pid.param.history_len; i++)
++		total_power += pm121_cpu_state->pid.powers[i];
++
++	average_power = total_power / pm121_cpu_state->pid.param.history_len;
++
++
++	pm121_failure_state = 0;
++	for (i = 0 ; i < N_LOOPS; i++) {
++		if (pm121_sys_state[i])
++			pm121_sys_fans_tick(i);
++	}
++
++	if (pm121_cpu_state)
++		pm121_cpu_fans_tick(pm121_cpu_state);
++
++	pm121_readjust = 0;
++	new_failure = pm121_failure_state & ~last_failure;
++
++	/* If entering failure mode, clamp cpufreq and ramp all
++	 * fans to full speed.
++	 */
++	if (pm121_failure_state && !last_failure) {
++		for (i = 0; i < N_CONTROLS; i++) {
++			if (controls[i])
++				wf_control_set_max(controls[i]);
++		}
++	}
++
++	/* If leaving failure mode, unclamp cpufreq and readjust
++	 * all fans on next iteration
++	 */
++	if (!pm121_failure_state && last_failure) {
++		if (controls[CPUFREQ])
++			wf_control_set_min(controls[CPUFREQ]);
++		pm121_readjust = 1;
++	}
++
++	/* Overtemp condition detected, notify and start skipping a couple
++	 * ticks to let the temperature go down
++	 */
++	if (new_failure & FAILURE_OVERTEMP) {
++		wf_set_overtemp();
++		pm121_skipping = 2;
++	}
++
++	/* We only clear the overtemp condition if overtemp is cleared
++	 * _and_ no other failure is present. Since a sensor error will
++	 * clear the overtemp condition (can't measure temperature) at
++	 * the control loop levels, but we don't want to keep it clear
++	 * here in this case
++	 */
++	if (new_failure == 0 && last_failure & FAILURE_OVERTEMP)
++		wf_clear_overtemp();
++}
++
++
++static struct wf_control* pm121_register_control(struct wf_control *ct,
++						 const char *match,
++						 unsigned int id)
++{
++	if (controls[id] == NULL && !strcmp(ct->name, match)) {
++		if (wf_get_control(ct) == 0)
++			controls[id] = ct;
++	}
++	return controls[id];
++}
++
++static void pm121_new_control(struct wf_control *ct)
++{
++	int all = 1;
++
++	if (pm121_all_controls_ok)
++		return;
++
++	all = pm121_register_control(ct, "optical-drive-fan", FAN_OD) && all;
++	all = pm121_register_control(ct, "hard-drive-fan", FAN_HD) && all;
++	all = pm121_register_control(ct, "cpu-fan", FAN_CPU) && all;
++	all = pm121_register_control(ct, "cpufreq-clamp", CPUFREQ) && all;
++
++	if (all)
++		pm121_all_controls_ok = 1;
++}
++
++
++
++
++static struct wf_sensor* pm121_register_sensor(struct wf_sensor *sensor,
++					       const char *match,
++					       struct wf_sensor **var)
++{
++	if (*var == NULL && !strcmp(sensor->name, match)) {
++		if (wf_get_sensor(sensor) == 0)
++			*var = sensor;
++	}
++	return *var;
++}
++
++static void pm121_new_sensor(struct wf_sensor *sr)
++{
++	int all = 1;
++
++	if (pm121_all_sensors_ok)
++		return;
++
++	all = pm121_register_sensor(sr, "cpu-temp",
++				    &sensor_cpu_temp) && all;
++	all = pm121_register_sensor(sr, "cpu-current",
++				    &sensor_cpu_current) && all;
++	all = pm121_register_sensor(sr, "cpu-voltage",
++				    &sensor_cpu_voltage) && all;
++	all = pm121_register_sensor(sr, "cpu-power",
++				    &sensor_cpu_power) && all;
++	all = pm121_register_sensor(sr, "hard-drive-temp",
++				    &sensor_hard_drive_temp) && all;
++	all = pm121_register_sensor(sr, "optical-drive-temp",
++				    &sensor_optical_drive_temp) && all;
++	all = pm121_register_sensor(sr, "incoming-air-temp",
++				    &sensor_incoming_air_temp) && all;
++	all = pm121_register_sensor(sr, "north-bridge-temp",
++				    &sensor_north_bridge_temp) && all;
++	all = pm121_register_sensor(sr, "gpu-temp",
++				    &sensor_gpu_temp) && all;
++
++	if (all)
++		pm121_all_sensors_ok = 1;
++}
++
++
++
++static int pm121_notify(struct notifier_block *self,
++			unsigned long event, void *data)
++{
++	switch (event) {
++	case WF_EVENT_NEW_CONTROL:
++		pr_debug("pm121: new control %s detected\n",
++			 ((struct wf_control *)data)->name);
++		pm121_new_control(data);
++		break;
++	case WF_EVENT_NEW_SENSOR:
++		pr_debug("pm121: new sensor %s detected\n",
++			 ((struct wf_sensor *)data)->name);
++		pm121_new_sensor(data);
++		break;
++	case WF_EVENT_TICK:
++		if (pm121_all_controls_ok && pm121_all_sensors_ok)
++			pm121_tick();
++		break;
++	}
++
++	return 0;
++}
++
++static struct notifier_block pm121_events = {
++	.notifier_call	= pm121_notify,
++};
++
++static int pm121_init_pm(void)
++{
++	const struct smu_sdbp_header *hdr;
++
++	hdr = smu_get_sdb_partition(SMU_SDB_SENSORTREE_ID, NULL);
++	if (hdr != 0) {
++		struct smu_sdbp_sensortree *st =
++			(struct smu_sdbp_sensortree *)&hdr[1];
++		pm121_mach_model = st->model_id;
++	}
++
++	pm121_connection = &pm121_connections[pm121_mach_model - 2];
++
++	printk(KERN_INFO "pm121: Initializing for iMac G5 iSight model ID %d\n",
++	       pm121_mach_model);
++
++	return 0;
++}
++
++
++static int pm121_probe(struct platform_device *ddev)
++{
++	wf_register_client(&pm121_events);
++
++	return 0;
++}
++
++static int __devexit pm121_remove(struct platform_device *ddev)
++{
++	wf_unregister_client(&pm121_events);
++	return 0;
++}
++
++static struct platform_driver pm121_driver = {
++	.probe = pm121_probe,
++	.remove = __devexit_p(pm121_remove),
++	.driver = {
++		.name = "windfarm",
++		.bus = &platform_bus_type,
++	},
++};
++
++
++static int __init pm121_init(void)
++{
++	int rc = -ENODEV;
++
++	if (machine_is_compatible("PowerMac12,1"))
++		rc = pm121_init_pm();
++
++	if (rc == 0) {
++		request_module("windfarm_smu_controls");
++		request_module("windfarm_smu_sensors");
++		request_module("windfarm_smu_sat");
++		request_module("windfarm_lm75_sensor");
++		request_module("windfarm_max6690_sensor");
++		request_module("windfarm_cpufreq_clamp");
++		platform_driver_register(&pm121_driver);
++	}
++
++	return rc;
++}
++
++static void __exit pm121_exit(void)
++{
++
++	platform_driver_unregister(&pm121_driver);
++}
++
++
++module_init(pm121_init);
++module_exit(pm121_exit);
++
++MODULE_AUTHOR("Étienne Bersac <bersace@gmail.com>");
++MODULE_DESCRIPTION("Thermal control logic for iMac G5 (iSight)");
++MODULE_LICENSE("GPL");
++
+Index: linux-work/drivers/macintosh/windfarm_smu_controls.c
 ===================================================================
---- upstream.orig/include/asm-powerpc/iommu.h
-+++ upstream/include/asm-powerpc/iommu.h
-@@ -79,9 +79,9 @@ extern void iommu_free_table(struct iomm
- extern struct iommu_table *iommu_init_table(struct iommu_table * tbl,
- 					    int nid);
+--- linux-work.orig/drivers/macintosh/windfarm_smu_controls.c	2007-09-28 11:42:07.000000000 +1000
++++ linux-work/drivers/macintosh/windfarm_smu_controls.c	2008-04-29 15:32:50.000000000 +1000
+@@ -218,6 +218,10 @@ static struct smu_fan_control *smu_fan_c
+ 		fct->ctrl.name = "cpu-fan";
+ 	else if (!strcmp(l, "Hard Drive") || !strcmp(l, "Hard drive"))
+ 		fct->ctrl.name = "drive-bay-fan";
++	else if (!strcmp(l, "HDD Fan")) /* seen on iMac G5 iSight */
++		fct->ctrl.name = "hard-drive-fan";
++	else if (!strcmp(l, "ODD Fan")) /* same */
++		fct->ctrl.name = "optical-drive-fan";
  
--extern int iommu_map_sg(struct device *dev, struct scatterlist *sglist,
--			int nelems, unsigned long mask,
--			enum dma_data_direction direction);
-+extern int iommu_map_sg(struct device *dev, struct iommu_table *tbl,
-+			struct scatterlist *sglist, int nelems,
-+			unsigned long mask, enum dma_data_direction direction);
- extern void iommu_unmap_sg(struct iommu_table *tbl, struct scatterlist *sglist,
- 			   int nelems, enum dma_data_direction direction);
- 
+ 	/* Unrecognized fan, bail out */
+ 	if (fct->ctrl.name == NULL)
