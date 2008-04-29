@@ -1,15 +1,17 @@
 Return-Path: <avorontsov@dev.rtsoft.ru>
 Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
-	by ozlabs.org (Postfix) with SMTP id 6B960DE484
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Apr 2008 01:53:20 +1000 (EST)
-Date: Tue, 29 Apr 2008 19:53:18 +0400
+	by ozlabs.org (Postfix) with SMTP id B5C5BDE631
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Apr 2008 01:53:35 +1000 (EST)
+Date: Tue, 29 Apr 2008 19:53:33 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Jeff Garzik <jgarzik@pobox.com>
-Subject: [PATCH 2/3] [NET] uli526x: fix endianness issues in the setup frame
-Message-ID: <20080429155318.GB28166@polina.dev.rtsoft.ru>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: [PATCH 3/3] [POWERPC] 86xx: mpc8610_hpcd: use ULI526X driver for
+	on-board ethernet
+Message-ID: <20080429155333.GC28166@polina.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf8
-Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
+Cc: netdev@vger.kernel.org, Jeff Garzik <jgarzik@pobox.com>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,74 +21,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch fixes uli526x driver's issues on a PowerPC boards: uli chip
-is unable to receive the packets.
+As of current mainline tree, TULIP driver is unusable on MPC8610HPCD
+boards. There is a patch[1] floating around (and also included in the
+BSP), which tries to heal the situation, though the ethernet is still
+unusable. Practically it takes ages to mount NFS filesystem:
 
-It appears that send_frame_filter prepares the setup frame in the
-endianness unsafe manner. On a big endian machines we should shift
-the address nibble by two bytes.
+VFS: Mounted root (nfs filesystem).
+Freeing unused kernel memory: 180k init
+nfs: server 10.0.0.2 not responding, still trying
+nfs: server 10.0.0.2 OK
+nfs: server 10.0.0.2 not responding, still trying
+nfs: server 10.0.0.2 not responding, still trying
+nfs: server 10.0.0.2 not responding, still trying
+nfs: server 10.0.0.2 not responding, still trying
+nfs: server 10.0.0.2 OK
+nfs: server 10.0.0.2 not responding, still trying
+
+So, instead of trying to add uli526x functionality into TULIP driver
+(which is already bloated enough), I fixed existing ULI526X driver
+and now it works perfectly well here.
+
+[1] http://www.bitshrine.org/gpp/0024-MPC8610-ETH-Lyra-native-ethernet.txt
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- drivers/net/tulip/uli526x.c |   30 ++++++++++++++++++------------
- 1 files changed, 18 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/net/tulip/uli526x.c b/drivers/net/tulip/uli526x.c
-index 1f077ac..2511ca7 100644
---- a/drivers/net/tulip/uli526x.c
-+++ b/drivers/net/tulip/uli526x.c
-@@ -1368,6 +1368,12 @@ static void update_cr6(u32 cr6_data, unsigned long ioaddr)
-  *	This setup frame initialize ULI526X address filter mode
-  */
- 
-+#ifdef __BIG_ENDIAN
-+#define FLT_SHIFT 16
-+#else
-+#define FLT_SHIFT 0
-+#endif
-+
- static void send_filter_frame(struct net_device *dev, int mc_cnt)
- {
- 	struct uli526x_board_info *db = netdev_priv(dev);
-@@ -1384,27 +1390,27 @@ static void send_filter_frame(struct net_device *dev, int mc_cnt)
- 
- 	/* Node address */
- 	addrptr = (u16 *) dev->dev_addr;
--	*suptr++ = addrptr[0];
--	*suptr++ = addrptr[1];
--	*suptr++ = addrptr[2];
-+	*suptr++ = addrptr[0] << FLT_SHIFT;
-+	*suptr++ = addrptr[1] << FLT_SHIFT;
-+	*suptr++ = addrptr[2] << FLT_SHIFT;
- 
- 	/* broadcast address */
--	*suptr++ = 0xffff;
--	*suptr++ = 0xffff;
--	*suptr++ = 0xffff;
-+	*suptr++ = 0xffff << FLT_SHIFT;
-+	*suptr++ = 0xffff << FLT_SHIFT;
-+	*suptr++ = 0xffff << FLT_SHIFT;
- 
- 	/* fit the multicast address */
- 	for (mcptr = dev->mc_list, i = 0; i < mc_cnt; i++, mcptr = mcptr->next) {
- 		addrptr = (u16 *) mcptr->dmi_addr;
--		*suptr++ = addrptr[0];
--		*suptr++ = addrptr[1];
--		*suptr++ = addrptr[2];
-+		*suptr++ = addrptr[0] << FLT_SHIFT;
-+		*suptr++ = addrptr[1] << FLT_SHIFT;
-+		*suptr++ = addrptr[2] << FLT_SHIFT;
- 	}
- 
- 	for (; i<14; i++) {
--		*suptr++ = 0xffff;
--		*suptr++ = 0xffff;
--		*suptr++ = 0xffff;
-+		*suptr++ = 0xffff << FLT_SHIFT;
-+		*suptr++ = 0xffff << FLT_SHIFT;
-+		*suptr++ = 0xffff << FLT_SHIFT;
- 	}
- 
- 	/* prepare the setup frame */
+This is for powerpc tree.
+
+ arch/powerpc/configs/mpc8610_hpcd_defconfig |    7 ++-----
+ 1 files changed, 2 insertions(+), 5 deletions(-)
+
+diff --git a/arch/powerpc/configs/mpc8610_hpcd_defconfig b/arch/powerpc/configs/mpc8610_hpcd_defconfig
+index 9270afe..f9e53bd 100644
+--- a/arch/powerpc/configs/mpc8610_hpcd_defconfig
++++ b/arch/powerpc/configs/mpc8610_hpcd_defconfig
+@@ -567,14 +567,11 @@ CONFIG_MII=y
+ # CONFIG_NET_VENDOR_3COM is not set
+ CONFIG_NET_TULIP=y
+ # CONFIG_DE2104X is not set
+-CONFIG_TULIP=y
+-# CONFIG_TULIP_MWI is not set
+-CONFIG_TULIP_MMIO=y
+-# CONFIG_TULIP_NAPI is not set
++# CONFIG_TULIP is not set
+ # CONFIG_DE4X5 is not set
+ # CONFIG_WINBOND_840 is not set
+ # CONFIG_DM9102 is not set
+-# CONFIG_ULI526X is not set
++CONFIG_ULI526X=y
+ # CONFIG_HP100 is not set
+ # CONFIG_IBM_NEW_EMAC_ZMII is not set
+ # CONFIG_IBM_NEW_EMAC_RGMII is not set
 -- 
 1.5.5.1
