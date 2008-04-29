@@ -1,20 +1,19 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.183]) by ozlabs.org (Postfix) with ESMTP id 3E7FBDDE1A
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Apr 2008 19:46:48 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 2/2] Raise the upper limit of NR_CPUS and move the pacas
-	into the BSS.
-Date: Tue, 29 Apr 2008 11:46:30 +0200
-References: <b863aa7fba7b2b00cb72d327fdd7a04b6cb81106.1209008469.git.tony@bakeyournoodle.com>
-	<6bbf4d3637c9b72f9f0a4cf8a6f2c322c0784d7e.1209008469.git.tony@bakeyournoodle.com>
-In-Reply-To: <6bbf4d3637c9b72f9f0a4cf8a6f2c322c0784d7e.1209008469.git.tony@bakeyournoodle.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200804291146.30353.arnd@arndb.de>
-Cc: Paul Mackerras <paulus@samba.org>
+Return-Path: <khali@linux-fr.org>
+Received: from services.gcu-squad.org (zone0.gcu-squad.org [212.85.147.21])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 4F312DDEF6
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 Apr 2008 20:42:58 +1000 (EST)
+Date: Tue, 29 Apr 2008 12:42:41 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Linux I2C <i2c@lm-sensors.org>
+Subject: [PATCH 0/2 v2] i2c: Add support for device alias names
+Message-ID: <20080429124241.08e18ae3@hyperion.delvare>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Laurent, Sievers <kay.sievers@vrfy.org>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Paul Mundt <lethal@linux-sh.org>, Scott Wood <scottwood@freescale.com>, Kay
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,27 +23,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thursday 24 April 2008, Tony Breeds wrote:
-> This patch adds the required functionality to fill in all pacas at runtim=
-e.
->=20
-> With NR_CPUS=3D1024
-> text =A0 =A0data =A0 =A0 bss =A0 =A0 dec =A0 =A0 hex filename
-> =A0137 1704032 =A0 =A0 =A0 0 1704169 =A01a00e9 arch/powerpc/kernel/paca.o=
- :Before
-> =A0121 1179744 =A0524288 1704153 =A01a00d9 arch/powerpc/kernel/paca.o :Af=
-ter
->=20
-> Also remove unneeded #includes from arch/powerpc/kernel/paca.c
->=20
-> Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
+Hi all,
 
-Maybe we can go even further than this: Since it is now a substantial amount
-of .bss, maybe the unused parts can be returned to the buddy allocator
-using free_bootmem or similar once you know how many CPUs there are?
+This is yesterday's patch set updated to apply cleanly (and hopefully
+work) on top of 2.6.25-git13. Basically the only change since yesterday
+is the sync with the rtc subsystem updates, which converted 3 drivers
+(rtc-x1205, rtc-pcf8563 and rtc-isl1208).
 
-I know that this would be an evil hack, but it may still be worth it.
-Your patch should certainly go in first though, freeing the memory would
-be an additional extension.
+The plan is to send this to Linus this evening. The more testing it
+gets, the better. Thanks to Wolfram and Jochen for yesterday's test
+reports!
 
-	Arnd <><
+-- 
+Jean Delvare
