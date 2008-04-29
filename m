@@ -1,19 +1,31 @@
-Return-Path: <smaclennan@pikatech.com>
-Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
-	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id E57E8DDEDB
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Apr 2008 13:28:57 +1000 (EST)
-Date: Mon, 28 Apr 2008 23:28:55 -0400
-From: Sean MacLennan <smaclennan@pikatech.com>
-To: Sean MacLennan <sean.maclennan@ottawa.kanatek.ca>
-Subject: Re: [RESEND][PATCH 1/2][POWERPC] PIKA Warp: Update platform code to
-	supportRev B boards
-Message-ID: <20080428232855.22c13830@lappy.seanm.ca>
-In-Reply-To: <20080428214711.240419c3@lappy.seanm.ca>
-References: <20080417152251.2bf07219@lappy.seanm.ca>
-	<20080428214711.240419c3@lappy.seanm.ca>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Stephen Rothwell <sfr@canb.auug.org.au>
+Return-Path: <Jason.Jin@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id F2150DDEEB
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 Apr 2008 13:39:46 +1000 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
+	m3T3deKJ023731
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 Apr 2008 20:39:40 -0700 (MST)
+Received: from zch01exm27.fsl.freescale.net (zch01exm27.ap.freescale.net
+	[10.192.129.223])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m3T3dcm8006023
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 Apr 2008 22:39:39 -0500 (CDT)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [PATCH v2] MSI driver for Freescale 83xx/85xx/86xx cpu
+Date: Tue, 29 Apr 2008 11:39:39 +0800
+Message-ID: <CC27DED0F8F39E48A7E75FD768688B7A8754CB@zch01exm27.fsl.freescale.net>
+In-Reply-To: <65D1ED37-6B8D-436C-A994-E8764922FE6D@freescale.com>
+References: <1208857064-26863-1-git-send-email-Jason.jin@freescale.com>
+	<65D1ED37-6B8D-436C-A994-E8764922FE6D@freescale.com>
+From: "Jin Zhengxiong" <Jason.Jin@freescale.com>
+To: "Gala Kumar" <kumar.gala@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,537 +35,444 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-A change to the dts to get gpios correct broke the led code.
+=20
 
-PIKA Warp: Update platform code to support Rev B boards.
-* Switched from 64M NOR/64M NAND to 4M NOR/256M NAND.
-* Full DTM support including critical temperature.
-* Added POST information.
-* Removed LED function, moved to new LED driver.
-* Moved ad7414 to new style I2C initialization.
+> -----Original Message-----
+> From: Gala Kumar=20
+> Sent: Tuesday, April 22, 2008 9:38 PM
+> To: Jin Zhengxiong
+> Cc: linuxppc-dev@ozlabs.org
+> Subject: Re: [PATCH v2] MSI driver for Freescale 83xx/85xx/86xx cpu
+>=20
+> > diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/=20
+> > Makefile index 6d386d0..e60a238 100644
+> > --- a/arch/powerpc/sysdev/Makefile
+> > +++ b/arch/powerpc/sysdev/Makefile
+> > @@ -4,6 +4,7 @@ endif
+> >
+> > mpic-msi-obj-$(CONFIG_PCI_MSI)	+=3D mpic_msi.o mpic_u3msi.o =20
+> > mpic_pasemi_msi.o
+> > obj-$(CONFIG_MPIC)		+=3D mpic.o $(mpic-msi-obj-y)
+> > +obj-$(CONFIG_FSL_PCI)		+=3D fsl_msi.o
+>=20
+> can we do something like:
+> fsl_pci-$(CONFIG_MSI)           +=3D fsl_msi.o
+> obj-$(CONFIG_FSL_PCI)           +=3D fsl_pci.o $(fsl_pci-y)
+>=20
+> > obj-$(CONFIG_PPC_MPC106)	+=3D grackle.o
+> > obj-$(CONFIG_PPC_DCR_NATIVE)	+=3D dcr-low.o
 
-Signed-off-by: Sean MacLennan <smaclennan@pikatech.com>
+OK, Thanks
 
-diff --git a/arch/powerpc/boot/cuboot-warp.c b/arch/powerpc/boot/cuboot-warp.c
-index eb108a8..2178021 100644
---- a/arch/powerpc/boot/cuboot-warp.c
-+++ b/arch/powerpc/boot/cuboot-warp.c
-@@ -10,6 +10,7 @@
- #include "ops.h"
- #include "4xx.h"
- #include "cuboot.h"
-+#include "stdio.h"
- 
- #define TARGET_4xx
- #define TARGET_44x
-@@ -17,14 +18,54 @@
- 
- static bd_t bd;
- 
--static void warp_fixups(void)
-+static void warp_fixup_one_nor(u32 from, u32 to)
- {
--	unsigned long sysclk = 66000000;
-+	void *devp;
-+	char name[50];
-+	u32 v[2];
-+
-+	sprintf(name, "/plb/opb/ebc/nor_flash@0,0/partition@%x", from);
-+
-+	devp = finddevice(name);
-+	if (!devp)
-+		return;
-+
-+	if (getprop(devp, "reg", v, sizeof(v)) == sizeof(v)) {
-+		v[0] = to;
-+		setprop(devp, "reg", v, sizeof(v));
-+
-+		printf("NOR 64M fixup %x -> %x\r\n", from, to);
-+	}
-+}
-+
- 
--	ibm440ep_fixup_clocks(sysclk, 11059200, 50000000);
-+static void warp_fixups(void)
-+{
-+	ibm440ep_fixup_clocks(66000000, 11059200, 50000000);
- 	ibm4xx_sdram_fixup_memsize();
- 	ibm4xx_fixup_ebc_ranges("/plb/opb/ebc");
- 	dt_fixup_mac_address_by_alias("ethernet0", bd.bi_enetaddr);
-+
-+	/* Fixup for 64M flash on Rev A boards. */
-+	if (bd.bi_flashsize == 0x4000000) {
-+		void *devp;
-+		u32 v[3];
-+
-+		devp = finddevice("/plb/opb/ebc/nor_flash@0,0");
-+		if (!devp)
-+			return;
-+
-+		/* Fixup the size */
-+		if (getprop(devp, "reg", v, sizeof(v)) == sizeof(v)) {
-+			v[2] = bd.bi_flashsize;
-+			setprop(devp, "reg", v, sizeof(v));
-+		}
-+
-+		/* Fixup parition offsets */
-+		warp_fixup_one_nor(0x300000, 0x3f00000);
-+		warp_fixup_one_nor(0x340000, 0x3f40000);
-+		warp_fixup_one_nor(0x380000, 0x3f80000);
-+	}
- }
- 
- 
-diff --git a/arch/powerpc/platforms/44x/warp-nand.c b/arch/powerpc/platforms/44x/warp-nand.c
-index 9150318..d293c70 100644
---- a/arch/powerpc/platforms/44x/warp-nand.c
-+++ b/arch/powerpc/platforms/44x/warp-nand.c
-@@ -11,8 +11,10 @@
- #include <linux/mtd/partitions.h>
- #include <linux/mtd/nand.h>
- #include <linux/mtd/ndfc.h>
-+#include <linux/of.h>
- #include <asm/machdep.h>
- 
-+
- #ifdef CONFIG_MTD_NAND_NDFC
- 
- #define CS_NAND_0	1	/* use chip select 1 for NAND device 0 */
-@@ -35,13 +37,23 @@ static struct mtd_partition nand_parts[] = {
- 	{
- 		.name   = "root",
- 		.offset = 0x0200000,
--		.size   = 0x3400000
-+		.size   = 0x3E00000
-+	},
-+	{
-+		.name   = "persistent",
-+		.offset = 0x4000000,
-+		.size   = 0x4000000
- 	},
- 	{
--		.name   = "user",
--		.offset = 0x3600000,
--		.size   = 0x0A00000
-+		.name   = "persistent1",
-+		.offset = 0x8000000,
-+		.size   = 0x4000000
- 	},
-+	{
-+		.name   = "persistent2",
-+		.offset = 0xC000000,
-+		.size   = 0x4000000
-+	}
- };
- 
- struct ndfc_controller_settings warp_ndfc_settings = {
-@@ -67,19 +79,15 @@ static struct platform_device warp_ndfc_device = {
- 	.resource = &warp_ndfc,
- };
- 
--static struct nand_ecclayout nand_oob_16 = {
--	.eccbytes = 3,
--	.eccpos = { 0, 1, 2, 3, 6, 7 },
--	.oobfree = { {.offset = 8, .length = 16} }
--};
--
-+/* Do NOT set the ecclayout: let it default so it is correct for both
-+ * 64M and 256M flash chips.
-+ */
- static struct platform_nand_chip warp_nand_chip0 = {
- 	.nr_chips = 1,
- 	.chip_offset = CS_NAND_0,
- 	.nr_partitions = ARRAY_SIZE(nand_parts),
- 	.partitions = nand_parts,
--	.chip_delay = 50,
--	.ecclayout = &nand_oob_16,
-+	.chip_delay = 20,
- 	.priv = &warp_chip0_settings,
- };
- 
-@@ -96,6 +104,23 @@ static struct platform_device warp_nand_device = {
- 
- static int warp_setup_nand_flash(void)
- {
-+	struct device_node *np;
-+
-+	/* Try to detect a rev A based on NOR size. */
-+	np = of_find_compatible_node(NULL, NULL, "cfi-flash");
-+	if (np) {
-+		struct property *pp;
-+
-+		pp = of_find_property(np, "reg", NULL);
-+		if (pp && (pp->length == 12)) {
-+			u32 *v = pp->value;
-+			if (v[2] == 0x4000000)
-+				/* Rev A = 64M NAND */
-+				warp_nand_chip0.nr_partitions = 2;
-+		}
-+		of_node_put(np);
-+	}
-+
- 	platform_device_register(&warp_ndfc_device);
- 	platform_device_register(&warp_nand_device);
- 
-diff --git a/arch/powerpc/platforms/44x/warp.c b/arch/powerpc/platforms/44x/warp.c
-index 39cf615..318f859 100644
---- a/arch/powerpc/platforms/44x/warp.c
-+++ b/arch/powerpc/platforms/44x/warp.c
-@@ -12,6 +12,10 @@
- #include <linux/init.h>
- #include <linux/of_platform.h>
- #include <linux/kthread.h>
-+#include <linux/i2c.h>
-+#include <linux/interrupt.h>
-+#include <linux/pika.h>
-+#include <linux/delay.h>
- 
- #include <asm/machdep.h>
- #include <asm/prom.h>
-@@ -27,6 +31,18 @@ static __initdata struct of_device_id warp_of_bus[] = {
- 	{},
- };
- 
-+static __initdata struct i2c_board_info warp_i2c_info[] = {
-+	{ I2C_BOARD_INFO("ad7414", 0x4a) }
-+};
-+
-+static int __init warp_arch_init(void)
-+{
-+	/* This should go away once support is moved to the dts. */
-+	i2c_register_board_info(0, warp_i2c_info, ARRAY_SIZE(warp_i2c_info));
-+	return 0;
-+}
-+machine_arch_initcall(warp, warp_arch_init);
-+
- static int __init warp_device_probe(void)
- {
- 	of_platform_bus_probe(NULL, warp_of_bus, NULL);
-@@ -52,61 +68,232 @@ define_machine(warp) {
- };
- 
- 
--#define LED_GREEN (0x80000000 >> 0)
--#define LED_RED   (0x80000000 >> 1)
-+/* I am not sure this is the best place for this... */
-+static int __init warp_post_info(void)
-+{
-+	struct device_node *np;
-+	void __iomem *fpga;
-+	u32 post1, post2;
-+
-+	/* Sighhhh... POST information is in the sd area. */
-+	np = of_find_compatible_node(NULL, NULL, "pika,fpga-sd");
-+	if (np == NULL)
-+		return -ENOENT;
-+
-+	fpga = of_iomap(np, 0);
-+	of_node_put(np);
-+	if (fpga == NULL)
-+		return -ENOENT;
-+
-+	post1 = in_be32(fpga + 0x40);
-+	post2 = in_be32(fpga + 0x44);
-+
-+	iounmap(fpga);
-+
-+	if (post1 || post2)
-+		printk(KERN_INFO "Warp POST %08x %08x\n", post1, post2);
-+	else
-+		printk(KERN_INFO "Warp POST OK\n");
-+
-+	return 0;
-+}
-+machine_late_initcall(warp, warp_post_info);
-+
-+
-+#ifdef CONFIG_SENSORS_AD7414
-+
-+static LIST_HEAD(dtm_shutdown_list);
-+static void __iomem *dtm_fpga;
-+static void __iomem *gpio_base;
-+
-+
-+struct dtm_shutdown {
-+	struct list_head list;
-+	void (*func)(void *arg);
-+	void *arg;
-+};
- 
- 
--/* This is for the power LEDs 1 = on, 0 = off, -1 = leave alone */
--void warp_set_power_leds(int green, int red)
-+int pika_dtm_register_shutdown(void (*func)(void *arg), void *arg)
- {
--	static void __iomem *gpio_base = NULL;
--	unsigned leds;
--
--	if (gpio_base == NULL) {
--		struct device_node *np;
--
--		/* Power LEDS are on the second GPIO controller */
--		np = of_find_compatible_node(NULL, NULL, "ibm,gpio-440EP");
--		if (np)
--			np = of_find_compatible_node(np, NULL, "ibm,gpio-440EP");
--		if (np == NULL) {
--			printk(KERN_ERR __FILE__ ": Unable to find gpio\n");
--			return;
-+	struct dtm_shutdown *shutdown;
-+
-+	shutdown = kmalloc(sizeof(struct dtm_shutdown), GFP_KERNEL);
-+	if (shutdown == NULL)
-+		return -ENOMEM;
-+
-+	shutdown->func = func;
-+	shutdown->arg = arg;
-+
-+	list_add(&shutdown->list, &dtm_shutdown_list);
-+
-+	return 0;
-+}
-+
-+int pika_dtm_unregister_shutdown(void (*func)(void *arg), void *arg)
-+{
-+	struct dtm_shutdown *shutdown;
-+
-+	list_for_each_entry(shutdown, &dtm_shutdown_list, list)
-+		if (shutdown->func == func && shutdown->arg == arg) {
-+			list_del(&shutdown->list);
-+			kfree(shutdown);
-+			return 0;
-+		}
-+
-+	return -EINVAL;
-+}
-+
-+static irqreturn_t temp_isr(int irq, void *context)
-+{
-+	struct dtm_shutdown *shutdown;
-+
-+	local_irq_disable();
-+
-+	/* Run through the shutdown list. */
-+	list_for_each_entry(shutdown, &dtm_shutdown_list, list)
-+		shutdown->func(shutdown->arg);
-+
-+	printk(KERN_EMERG "\n\nCritical Temperature Shutdown\n");
-+
-+	while (1) {
-+		if (dtm_fpga) {
-+			unsigned reset = in_be32(dtm_fpga + 0x14);
-+			out_be32(dtm_fpga + 0x14, reset);
- 		}
- 
--		gpio_base = of_iomap(np, 0);
--		of_node_put(np);
--		if (gpio_base == NULL) {
--			printk(KERN_ERR __FILE__ ": Unable to map gpio");
--			return;
-+		if (gpio_base) {
-+			unsigned leds = in_be32(gpio_base);
-+
-+			/* green off, red toggle */
-+			leds &= ~0x80000000;
-+			leds ^=  0x40000000;
-+
-+			out_be32(gpio_base, leds);
- 		}
-+
-+		mdelay(500);
-+	}
-+}
-+
-+static int pika_setup_leds(void)
-+{
-+	struct device_node *np;
-+	const u32 *gpios;
-+	int len;
-+
-+	np = of_find_compatible_node(NULL, NULL, "linux,gpio-led");
-+	if (!np) {
-+		printk(KERN_ERR __FILE__ ": Unable to find gpio-led\n");
-+		return -ENOENT;
- 	}
- 
--	leds = in_be32(gpio_base);
-+	gpios = of_get_property(np, "gpios", &len);
-+	of_node_put(np);
-+	if (!gpios || len < 4) {
-+		printk(KERN_ERR __FILE__
-+		       ": Unable to get gpios property (%d)\n", len);
-+		return -ENOENT;
-+	}
- 
--	switch (green) {
--	case 0: leds &= ~LED_GREEN; break;
--	case 1: leds |=  LED_GREEN; break;
-+	np = of_find_node_by_phandle(gpios[0]);
-+	if (!np) {
-+		printk(KERN_ERR __FILE__ ": Unable to find gpio\n");
-+		return -ENOENT;
- 	}
--	switch (red) {
--	case 0: leds &= ~LED_RED; break;
--	case 1: leds |=  LED_RED; break;
-+
-+	gpio_base = of_iomap(np, 0);
-+	of_node_put(np);
-+	if (!gpio_base) {
-+		printk(KERN_ERR __FILE__ ": Unable to map gpio");
-+		return -ENOMEM;
- 	}
- 
--	out_be32(gpio_base, leds);
-+	return 0;
- }
--EXPORT_SYMBOL(warp_set_power_leds);
- 
-+static void pika_setup_critical_temp(struct i2c_client *client)
-+{
-+	struct device_node *np;
-+	int irq, rc;
-+
-+	/* Do this before enabling critical temp interrupt since we
-+	 * may immediately interrupt.
-+	 */
-+	pika_setup_leds();
-+
-+	/* These registers are in 1 degree increments. */
-+	i2c_smbus_write_byte_data(client, 2, 65); /* Thigh */
-+	i2c_smbus_write_byte_data(client, 3, 55); /* Tlow */
-+
-+	np = of_find_compatible_node(NULL, NULL, "adi,ad7414");
-+	if (np == NULL) {
-+		printk(KERN_ERR __FILE__ ": Unable to find ad7414\n");
-+		return;
-+	}
-+
-+	irq = irq_of_parse_and_map(np, 0);
-+	of_node_put(np);
-+	if (irq  == NO_IRQ) {
-+		printk(KERN_ERR __FILE__ ": Unable to get ad7414 irq\n");
-+		return;
-+	}
-+
-+	rc = request_irq(irq, temp_isr, 0, "ad7414", NULL);
-+	if (rc) {
-+		printk(KERN_ERR __FILE__
-+		       ": Unable to request ad7414 irq %d = %d\n", irq, rc);
-+		return;
-+	}
-+}
-+
-+static inline void pika_dtm_check_fan(void __iomem *fpga)
-+{
-+	static int fan_state;
-+	u32 fan = in_be32(fpga + 0x34) & (1 << 14);
-+
-+	if (fan_state != fan) {
-+		fan_state = fan;
-+		if (fan)
-+			printk(KERN_WARNING "Fan rotation error detected."
-+				   " Please check hardware.\n");
-+	}
-+}
- 
--#ifdef CONFIG_SENSORS_AD7414
- static int pika_dtm_thread(void __iomem *fpga)
- {
--	extern int ad7414_get_temp(int index);
-+	struct i2c_adapter *adap;
-+	struct i2c_client *client;
-+
-+	/* We loop in case either driver was compiled as a module and
-+	 * has not been insmoded yet.
-+	 */
-+	while (!(adap = i2c_get_adapter(0))) {
-+		set_current_state(TASK_INTERRUPTIBLE);
-+		schedule_timeout(HZ);
-+	}
-+
-+	while (1) {
-+		list_for_each_entry(client, &adap->clients, list)
-+			if (client->addr == 0x4a)
-+				goto found_it;
-+
-+		set_current_state(TASK_INTERRUPTIBLE);
-+		schedule_timeout(HZ);
-+	}
-+
-+found_it:
-+	i2c_put_adapter(adap);
-+
-+	pika_setup_critical_temp(client);
-+
-+	printk(KERN_INFO "PIKA DTM thread running.\n");
- 
- 	while (!kthread_should_stop()) {
--		int temp = ad7414_get_temp(0);
-+		u16 temp = swab16(i2c_smbus_read_word_data(client, 0));
-+		out_be32(fpga + 0x20, temp);
- 
--		out_be32(fpga, temp);
-+		pika_dtm_check_fan(fpga);
- 
- 		set_current_state(TASK_INTERRUPTIBLE);
- 		schedule_timeout(HZ);
-@@ -115,37 +302,44 @@ static int pika_dtm_thread(void __iomem *fpga)
- 	return 0;
- }
- 
-+
- static int __init pika_dtm_start(void)
- {
- 	struct task_struct *dtm_thread;
- 	struct device_node *np;
--	struct resource res;
--	void __iomem *fpga;
- 
- 	np = of_find_compatible_node(NULL, NULL, "pika,fpga");
- 	if (np == NULL)
- 		return -ENOENT;
- 
--	/* We do not call of_iomap here since it would map in the entire
--	 * fpga space, which is over 8k.
--	 */
--	if (of_address_to_resource(np, 0, &res)) {
--		of_node_put(np);
--		return -ENOENT;
--	}
-+	dtm_fpga = of_iomap(np, 0);
- 	of_node_put(np);
--
--	fpga = ioremap(res.start, 0x24);
--	if (fpga == NULL)
-+	if (dtm_fpga == NULL)
- 		return -ENOENT;
- 
--	dtm_thread = kthread_run(pika_dtm_thread, fpga + 0x20, "pika-dtm");
-+	dtm_thread = kthread_run(pika_dtm_thread, dtm_fpga, "pika-dtm");
- 	if (IS_ERR(dtm_thread)) {
--		iounmap(fpga);
-+		iounmap(dtm_fpga);
- 		return PTR_ERR(dtm_thread);
- 	}
- 
- 	return 0;
- }
--device_initcall(pika_dtm_start);
-+machine_late_initcall(warp, pika_dtm_start);
-+
-+#else /* !CONFIG_SENSORS_AD7414 */
-+
-+int pika_dtm_register_shutdown(void (*func)(void *arg), void *arg)
-+{
-+	return 0;
-+}
-+
-+int pika_dtm_unregister_shutdown(void (*func)(void *arg), void *arg)
-+{
-+	return 0;
-+}
-+
- #endif
-+
-+EXPORT_SYMBOL(pika_dtm_register_shutdown);
-+EXPORT_SYMBOL(pika_dtm_unregister_shutdown);
+>=20
+> > +static int fsl_msi_init_allocator(struct fsl_msi *msi_data) {
+> > +	int rc, size;
+> > +
+> > +	size =3D BITS_TO_LONGS(NR_MSI_IRQS) * sizeof(long);
+>=20
+> should this be long or u32?
+>=20
+> > +
+> > +	msi_data->fsl_msi_bitmap =3D kzalloc(size, GFP_KERNEL);
+> > +
+> > +	if (msi_data->fsl_msi_bitmap =3D=3D NULL) {
+> > +		pr_debug("%s: ENOMEM allocating allocator bitmap!\n",
+> > +				__func__);
+> > +		return -ENOMEM;
+> > +	}
+> > +
+> > +	rc =3D fsl_msi_free_dt_hwirqs(msi_data);
+> > +	if (rc)
+> > +		goto out_free;
+> > +
+> > +	return 0;
+> > +out_free:
+> > +	kfree(msi_data->fsl_msi_bitmap);
+> > +
+> > +	msi_data->fsl_msi_bitmap =3D NULL;
+> > +	return rc;
+> > +
+> > +}
+> > +
+> > +static int fsl_msi_check_device(struct pci_dev *pdev, int nvec, int
+> > type)
+> > +{
+> > +	if (type =3D=3D PCI_CAP_ID_MSIX)
+> > +		pr_debug("fslmsi: MSI-X untested, trying anyway.\n");
+> > +
+> > +	return 0;
+> > +}
+> > +
+> > +static void fsl_teardown_msi_irqs(struct pci_dev *pdev) {
+> > +	struct msi_desc *entry;
+> > +	struct fsl_msi *msi_data =3D fsl_msi;
+> > +
+> > +	list_for_each_entry(entry, &pdev->msi_list, list) {
+> > +		if (entry->irq =3D=3D NO_IRQ)
+> > +			continue;
+> > +		set_irq_msi(entry->irq, NULL);
+> > +		fsl_msi_free_hwirqs(msi_data,=20
+> virq_to_hw(entry->irq), 1);
+> > +		irq_dispose_mapping(entry->irq);
+> > +	}
+> > +
+> > +	return;
+> > +}
+> > +
+> > +static void fsl_compose_msi_msg(struct pci_dev *pdev, int hwirq,
+> > +				  struct msi_msg *msg)
+> > +{
+> > +	struct fsl_msi *msi_data =3D fsl_msi;
+> > +
+> > +	msg->address_lo =3D msi_data->msi_addr_lo;
+> > +	msg->address_hi =3D msi_data->msi_addr_hi;
+> > +	msg->data =3D hwirq;
+> > +
+> > +	pr_debug("%s: allocated srs: %d, ibs: %d\n",
+> > +		__func__, hwirq / INT_PER_MSIR, hwirq % INT_PER_MSIR); }
+> > +
+> > +static int fsl_setup_msi_irqs(struct pci_dev *pdev, int nvec, int
+> > type)
+> > +{
+> > +	irq_hw_number_t hwirq;
+> > +	int rc;
+> > +	unsigned int virq;
+> > +	struct msi_desc *entry;
+> > +	struct msi_msg msg;
+> > +	struct fsl_msi *msi_data =3D fsl_msi;
+> > +
+> > +	list_for_each_entry(entry, &pdev->msi_list, list) {
+> > +		hwirq =3D fsl_msi_alloc_hwirqs(msi_data, 1);
+> > +		if (hwirq < 0) {
+> > +			rc =3D hwirq;
+> > +			pr_debug("%s: fail allocating msi interrupt\n",
+> > +					__func__);
+> > +			goto out_free;
+> > +		}
+> > +
+> > +		virq =3D irq_create_mapping(msi_data->irqhost, hwirq);
+> > +
+> > +		if (virq =3D=3D NO_IRQ) {
+> > +			pr_debug("%s: fail mapping hwirq 0x%lx\n",
+> > +					__func__, hwirq);
+> > +			fsl_msi_free_hwirqs(msi_data, hwirq, 1);
+> > +			rc =3D -ENOSPC;
+> > +			goto out_free;
+> > +		}
+> > +		set_irq_msi(virq, entry);
+> > +
+> > +		fsl_compose_msi_msg(pdev, hwirq, &msg);
+> > +		write_msi_msg(virq, &msg);
+> > +	}
+> > +	return 0;
+> > +
+> > +out_free:
+> > +	return rc;
+> > +}
+> > +
+> > +void fsl_msi_cascade(unsigned int irq, struct irq_desc *desc) {
+> > +	unsigned int cascade_irq;
+> > +	struct fsl_msi *msi_data =3D fsl_msi;
+> > +	int msir_index =3D -1;
+> > +	u32 msir_value =3D 0;
+> > +	u32 intr_index;
+> > +	u32 have_shift =3D 0;
+> > +
+> > +	spin_lock(&desc->lock);
+> > +	if ((msi_data->feature &  FSL_PIC_IP_MASK) =3D=3D FSL_PIC_IP_IPIC) =
+{
+> > +		if (desc->chip->mask_ack)
+> > +			desc->chip->mask_ack(irq);
+> > +		else {
+> > +			desc->chip->mask(irq);
+> > +			desc->chip->ack(irq);
+> > +		}
+> > +	}
+> > +
+> > +	if (unlikely(desc->status & IRQ_INPROGRESS))
+> > +		goto unlock;
+> > +
+> > +	msir_index =3D (int)(desc->handler_data);
+> > +
+> > +	if (msir_index >=3D NR_MSIR)
+> > +		cascade_irq =3D NO_IRQ;
+> > +
+> > +	desc->status |=3D IRQ_INPROGRESS;
+> > +	switch (fsl_msi->feature & FSL_PIC_IP_MASK) {
+> > +	case FSL_PIC_IP_MPIC:
+> > +		msir_value =3D fsl_msi_read(msi_data->msi_regs,
+> > +			msir_index * 0x10);
+> > +		break;
+> > +	case FSL_PIC_IP_IPIC:
+> > +		msir_value =3D fsl_msi_read(msi_data->msi_regs,=20
+> msir_index * 0x4);
+> > +		break;
+> > +	}
+> > +
+> > +	while (msir_value) {
+> > +		intr_index =3D ffs(msir_value) - 1;
+> > +
+> > +		cascade_irq =3D irq_linear_revmap(msi_data->irqhost,
+> > +			(msir_index * INT_PER_MSIR + intr_index=20
+> + have_shift));
+> > +
+> > +		if (cascade_irq !=3D NO_IRQ)
+> > +			generic_handle_irq(cascade_irq);
+> > +		have_shift +=3D (intr_index + 1);
+> > +		msir_value =3D (msir_value >> (intr_index + 1));
+> > +	}
+> > +	desc->status &=3D ~IRQ_INPROGRESS;
+> > +
+> > +	switch (msi_data->feature & FSL_PIC_IP_MASK) {
+> > +	case FSL_PIC_IP_MPIC:
+> > +		desc->chip->eoi(irq);
+> > +		break;
+> > +	case FSL_PIC_IP_IPIC:
+> > +		if (!(desc->status & IRQ_DISABLED) &&=20
+> desc->chip->unmask)
+> > +			desc->chip->unmask(irq);
+> > +		break;
+> > +	}
+> > +unlock:
+> > +	spin_unlock(&desc->lock);
+> > +}
+> > +
+> > +static int __devinit fsl_of_msi_probe(struct of_device *dev,
+> > +				const struct of_device_id *match) {
+> > +	struct fsl_msi *msi;
+> > +	struct resource res;
+> > +	int err, i, count;
+> > +	int rc;
+> > +	int virt_msir;
+> > +	const u32 *p;
+> > +	struct fsl_msi_feature *tmp_data;
+> > +
+> > +	printk(KERN_DEBUG "Setting up fsl msi support\n");
+> > +
+> > +	msi =3D kzalloc(sizeof(struct fsl_msi), GFP_KERNEL);
+> > +	if (!msi) {
+> > +		dev_err(&dev->dev, "No memory for MSI structure\n");
+> > +		err =3D -ENOMEM;
+> > +		goto error_out;
+> > +	}
+> > +
+> > +	msi->of_node =3D dev->node;
+> > +
+> > +	msi->irqhost =3D irq_alloc_host(of_node_get(dev->node),
+> > +				IRQ_HOST_MAP_LINEAR,
+> > +				NR_MSI_IRQS, &fsl_msi_host_ops, 0);
+> > +	if (msi->irqhost =3D=3D NULL) {
+> > +		dev_err(&dev->dev, "No memory for MSI irqhost\n");
+> > +		of_node_put(dev->node);
+> > +		err =3D -ENOMEM;
+> > +		goto error_out;
+> > +	}
+> > +
+> > +	/* Get the MSI reg base */
+> > +	err =3D of_address_to_resource(dev->node, 0, &res);
+> > +	if (err) {
+> > +		dev_err(&dev->dev, "%s resource error!\n",
+> > +				dev->node->full_name);
+> > +		goto error_out;
+> > +	}
+> > +
+> > +	msi->msi_regs =3D ioremap(res.start, res.end - res.start + 1);
+> > +	if (!msi->msi_regs) {
+> > +		dev_err(&dev->dev, "ioremap problem failed\n");
+> > +		goto error_out;
+> > +	}
+> > +
+> > +	tmp_data =3D (struct fsl_msi_feature *)match->data;
+> > +
+> > +	msi->feature =3D tmp_data->fsl_pic_ip;
+> > +
+> > +	msi->irqhost->host_data =3D msi;
+> > +
+> > +	msi->msi_addr_hi =3D 0x0;
+> > +	msi->msi_addr_lo =3D res.start + tmp_data->msiir_offset;
+> > +
+> > +	rc =3D fsl_msi_init_allocator(msi);
+> > +	if (rc) {
+> > +		dev_err(&dev->dev, "Error allocating MSI bitmap\n");
+> > +		goto error_out;
+> > +	}
+> > +
+> > +	p =3D of_get_property(dev->node, "interrupts", &count);
+> > +	if (!p) {
+> > +		dev_err(&dev->dev, "no interrupts property=20
+> found on %s\n",
+> > +				dev->node->full_name);
+> > +		err =3D -ENODEV;
+> > +		goto error_out;
+> > +	}
+> > +	if (count % 8 !=3D 0) {
+> > +		dev_err(&dev->dev, "Malformed interrupts=20
+> property on %s\n",
+> > +				dev->node->full_name);
+> > +		err =3D -EINVAL;
+> > +		goto error_out;
+> > +	}
+> > +
+> > +	count /=3D sizeof(u32);
+> > +	for (i =3D 0; i < count / 2; i++) {
+> > +		if (i > NR_MSIR)
+> > +			break;
+> > +		virt_msir =3D irq_of_parse_and_map(dev->node, i);
+> > +		if (virt_msir !=3D NO_IRQ) {
+> > +			set_irq_data(virt_msir, (void *)i);
+> > +			set_irq_chained_handler(virt_msir,=20
+> fsl_msi_cascade);
+> > +		}
+> > +	}
+> > +
+> > +	fsl_msi =3D msi;
+> > +
+> > +	WARN_ON(ppc_md.setup_msi_irqs);
+> > +	ppc_md.setup_msi_irqs =3D fsl_setup_msi_irqs;
+> > +	ppc_md.teardown_msi_irqs =3D fsl_teardown_msi_irqs;
+> > +	ppc_md.msi_check_device =3D fsl_msi_check_device;
+> > +	return 0;
+> > +error_out:
+> > +	kfree(msi);
+> > +	return err;
+> > +}
+> > +
+> > +static const struct fsl_msi_feature mpic_msi_feature =3D
+> > {FSL_PIC_IP_MPIC, 0x140};
+> > +static const struct fsl_msi_feature ipic_msi_feature =3D
+> > {FSL_PIC_IP_IPIC, 0x38};
+>=20
+> make this
+> {
+> 	.fsl_pic_ip =3D FSL_PIC_IP_MPIC
+> 	.offset =3D 0x140
+> };
+>=20
+> for readability.
+>=20
+OK!
+
+> > +
+> > +static const struct of_device_id fsl_of_msi_ids[] =3D {
+> > +	{
+> > +		.compatible =3D "fsl,MPIC-MSI",
+> > +		.data =3D (void *)&mpic_msi_feature,
+> > +	},
+> > +	{
+> > +		.compatible =3D "fsl,IPIC-MSI",
+> > +		.data =3D (void *)&ipic_msi_feature,
+> > +	},
+> > +	{}
+> > +};
+> > +
+> > +static struct of_platform_driver fsl_of_msi_driver =3D {
+> > +	.name =3D "fsl-of-msi",
+> > +	.match_table =3D fsl_of_msi_ids,
+> > +	.probe =3D fsl_of_msi_probe,
+> > +};
+> > +
+> > +static __init int fsl_of_msi_init(void) {
+> > +	return of_register_platform_driver(&fsl_of_msi_driver);
+> > +}
+> > +
+> > +subsys_initcall(fsl_of_msi_init);
+> > diff --git a/arch/powerpc/sysdev/fsl_msi.h b/arch/powerpc/sysdev/=20
+> > fsl_msi.h new file mode 100644 index 0000000..628b6c0
+> > --- /dev/null
+> > +++ b/arch/powerpc/sysdev/fsl_msi.h
+> > @@ -0,0 +1,36 @@
+> > +#ifndef _POWERPC_SYSDEV_FSL_MSI_H
+> > +#define _POWERPC_SYSDEV_FSL_MSI_H
+> > +
+> > +#define NR_MSIR	8
+>=20
+> NR_MSR_REG
+>=20
+> > +#define INT_PER_MSIR	32
+>=20
+> IRQS_PER_MSI_REG
+>=20
+> >
+> > +#define NR_MSI_IRQS	(NR_MSIR * INT_PER_MSIR)
+> > +
+> > +#define FSL_PIC_IP_MASK	0x0000000F
+> > +#define FSL_PIC_IP_MPIC	0x00000001
+> > +#define FSL_PIC_IP_IPIC	0x00000002
+> > +
+> > +struct fsl_msi {
+> > +	/* Device node of the MSI interrupt*/
+> > +	struct device_node *of_node;
+> > +
+> > +	struct irq_host *irqhost;
+> > +
+> > +	unsigned long cascade_irq;
+> > +
+> > +	u32 msi_addr_lo;
+> > +	u32 msi_addr_hi;
+> > +	void __iomem *msi_regs;
+> > +	u32 feature;
+> > +
+> > +	unsigned long *fsl_msi_bitmap;
+> > +	spinlock_t bitmap_lock;
+> > +	const char *name;
+> > +};
+> > +
+> > +struct fsl_msi_feature {
+> > +	u32 fsl_pic_ip;
+> > +	u32 msiir_offset;
+> > +};
+>=20
+> move this struct into .c
+OK
+
+> >
+> > +
+> > +#endif /* _POWERPC_SYSDEV_FSL_MSI_H */
+> > +
+> > diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/=20
+> > fsl_pci.c index bf13c21..fede767 100644
+> > --- a/arch/powerpc/sysdev/fsl_pci.c
+> > +++ b/arch/powerpc/sysdev/fsl_pci.c
+> > @@ -106,6 +106,16 @@ void __init setup_pci_cmd(struct pci_controller
+> > *hose)
+> > 	}
+> > }
+> >
+> > +#ifdef CONFIG_PCI_MSI
+> > +void __init setup_pci_pcsrbar(struct pci_controller *hose) {
+> > +	phys_addr_t immr_base;
+> > +
+> > +	immr_base =3D get_immrbase();
+> > +	early_write_config_dword(hose, 0, 0,=20
+> PCI_BASE_ADDRESS_0, immr_base);=20
+> > +} #endif
+> > +
+> > static int fsl_pcie_bus_fixup;
+> >
+> > static void __init quirk_fsl_pcie_header(struct pci_dev *dev) @@=20
+> > -211,6 +221,10 @@ int __init fsl_add_bridge(struct=20
+> device_node *dev,=20
+> > int is_primary)
+> > 	/* Setup PEX window registers */
+> > 	setup_pci_atmu(hose, &rsrc);
+> >
+> > +	/*Setup PEXCSRBAR */
+> > +#ifdef CONFIG_PCI_MSI
+> > +	setup_pci_pcsrbar(hose);
+> > +#endif
+>=20
+> I'm not convinced this is safe.  we need to be careful to=20
+> make sure the pcsrbar doesn't overlap with any other device.
+>=20
+The PCI MEM inbound/outband map seems 'one-one map' in our system and=20
+the dts may guard the outband space not overlap(No one wish to set the
+space
+the same as immrbase :) ). =20
+But the 2G inbound MEM was set in our system directly, So far the
+pcsrbar is=20
+not overlap with other device.
+
+Thanks
+Jason
+
+=20
