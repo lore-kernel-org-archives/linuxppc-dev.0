@@ -1,31 +1,21 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id EA0B5DE63B
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Apr 2008 05:41:03 +1000 (EST)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	m3TJevEn025489
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Apr 2008 12:40:58 -0700 (MST)
-Received: from ld0162-tx32.am.freescale.net (ld0162-tx32.am.freescale.net
-	[10.82.19.112])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id m3TJev2m011774
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Apr 2008 14:40:57 -0500 (CDT)
-Date: Tue, 29 Apr 2008 14:40:56 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] [POWERPC] convert transfer_to_handler into a macro
-Message-ID: <20080429194056.GB9134@ld0162-tx32.am.freescale.net>
-References: <Pine.LNX.4.64.0804290856210.9230@blarg.am.freescale.net>
-	<20080429183559.GE6561@ld0162-tx32.am.freescale.net>
-	<3BD17695-2826-43CC-98A0-16F3E33EDC43@kernel.crashing.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3BD17695-2826-43CC-98A0-16F3E33EDC43@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Return-Path: <bunk@kernel.org>
+Received: from smtp6.pp.htv.fi (smtp6.pp.htv.fi [213.243.153.40])
+	by ozlabs.org (Postfix) with ESMTP id 261F7DDF77
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Apr 2008 05:45:57 +1000 (EST)
+Date: Tue, 29 Apr 2008 22:45:17 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Sam Ravnborg <sam@ravnborg.org>, paulus@samba.org
+Subject: Re: 2.6.25: pmac_newworld undefined
+Message-ID: <20080429194517.GC2898@cs181133002.pp.htv.fi>
+References: <alpine.DEB.1.10.0804271951190.11017@sheep.housecafe.de>
+	<20080428042044.GX20457@bakeyournoodle.com>
+	<20080428193324.GC13400@uranus.ravnborg.org>
+	<20080429133514.GA30524@cs181133002.pp.htv.fi>
+	<20080429191753.GA32685@uranus.ravnborg.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20080429191753.GA32685@uranus.ravnborg.org>
+Cc: linuxppc-dev@ozlabs.org, LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,17 +25,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Apr 29, 2008 at 02:36:32PM -0500, Kumar Gala wrote:
-> what's an assembler macro look like?
+On Tue, Apr 29, 2008 at 09:17:53PM +0200, Sam Ravnborg wrote:
+>...
+> So something like:
+> 
+> config PPC32_NVRAM
+> 	bool
+> 	depends on NVRAM
+> 
+> obj-$(CONFIG_PPC32_NVRAM) += nvram.o
+> obj-$(CONFIG_NVRAM)       += nvram.o
+> 
+> Or did you have another solution in mind?
 
-.macro macroname arg1 arg2
-	do something with \arg1
-	do something with \arg2
-.endm
+I start to understand the problem, and I'm currently wondering why 
+powerpc uses CONFIG_NVRAM although the code CONFIG_NVRAM enables on 
+other platforms is not enabled on powerpc.
 
->  I don't believe we use them anywhere else.
+Can we rename it and move drivers/char/generic_nvram.c under 
+arch/powerpc/ ?
 
-arch/powerpc/boot/ps3-hvcall.S uses them, as well as lots of asm code in
-other architectures.
+Can some powerpc person bring some background what's going on and why 
+it's this way?
 
--Scott
+> 	Sam
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
