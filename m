@@ -1,19 +1,20 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 8FC83DDF47
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Apr 2008 18:56:44 +1000 (EST)
-Message-Id: <30110DA2-3887-4679-9073-CC69A267E9DC@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Paul Mackerras <paulus@samba.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: overloading existing PTRACE_GET_DEBUGREG/PTRACE_SET_DEBUGREG commands
-Date: Tue, 29 Apr 2008 03:56:31 -0500
-Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>,
-	Anton Blanchard <anton@samba.org>, Roland McGrath <roland@redhat.com>,
-	Paralkar Anmol <Anmol@freescale.com>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.183]) by ozlabs.org (Postfix) with ESMTP id 3E7FBDDE1A
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 Apr 2008 19:46:48 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 2/2] Raise the upper limit of NR_CPUS and move the pacas
+	into the BSS.
+Date: Tue, 29 Apr 2008 11:46:30 +0200
+References: <b863aa7fba7b2b00cb72d327fdd7a04b6cb81106.1209008469.git.tony@bakeyournoodle.com>
+	<6bbf4d3637c9b72f9f0a4cf8a6f2c322c0784d7e.1209008469.git.tony@bakeyournoodle.com>
+In-Reply-To: <6bbf4d3637c9b72f9f0a4cf8a6f2c322c0784d7e.1209008469.git.tony@bakeyournoodle.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200804291146.30353.arnd@arndb.de>
+Cc: Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,30 +24,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-It looks like when Anton added the PTRACE_GET_DEBUGREG/ 
-PTRACE_SET_DEBUGREG he envisioned future chips having more than one  
-IABR/DABR.
+On Thursday 24 April 2008, Tony Breeds wrote:
+> This patch adds the required functionality to fill in all pacas at runtim=
+e.
+>=20
+> With NR_CPUS=3D1024
+> text =A0 =A0data =A0 =A0 bss =A0 =A0 dec =A0 =A0 hex filename
+> =A0137 1704032 =A0 =A0 =A0 0 1704169 =A01a00e9 arch/powerpc/kernel/paca.o=
+ :Before
+> =A0121 1179744 =A0524288 1704153 =A01a00d9 arch/powerpc/kernel/paca.o :Af=
+ter
+>=20
+> Also remove unneeded #includes from arch/powerpc/kernel/paca.c
+>=20
+> Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
 
-I'm wondering what the feeling is about using the commands for  
-handling some of the sub-arch variants we have:
+Maybe we can go even further than this: Since it is now a substantial amount
+of .bss, maybe the unused parts can be returned to the buddy allocator
+using free_bootmem or similar once you know how many CPUs there are?
 
-e300 (603 style machine) - adds IABR2, DABR2, IBCR (control) and DBCR  
-(control).  We can use IABR1/2 (and DABR1/2) either as unique  
-addresses or for various ranges (inclusive or exclusive)
+I know that this would be an evil hack, but it may still be worth it.
+Your patch should certainly go in first though, freeing the memory would
+be an additional extension.
 
-Book-e class machines can have the following registers: DBCR[0-2],  
-IAC1-4, DAC1-2, DVC1-2, DBSR.  IACs are roughly equivalent to IABRs,  
-DACs are roughly equivalent to DABRs.  Booke has similar ability to  
-the e300 to do inclusive, exclusive ranges as well as some other  
-features.
-
-My question is how to handle providing access to the debug resources  
-we have on these other machine types.  Should we just use GET_DEBUGREG/ 
-SET_DEBUGREG and specify what the buffers look like for these specific  
-machine types?  Is it ok to overload the commands this way?  How does  
-this play with utrace?
-
-Also, what functionality can GDB take advantage of today?  Does it  
-comprehend the idea of breakpoints or watchpoints that cover a range?
-
-- k
+	Arnd <><
