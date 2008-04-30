@@ -1,12 +1,20 @@
-Return-Path: <jk@ozlabs.org>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Subject: [GIT PULL] Please pull spufs master branch
-Message-Id: <1209537841.611177.228566605486.0.gpush@pingu>
-To: Paul Mackerras <paulus@samba.org>
-From: Jeremy Kerr <jk@ozlabs.org>
-Date: Wed, 30 Apr 2008 16:44:01 +1000
-Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from tmnt04.transmode.se (mail.transmode.se [83.241.175.147])
+	by ozlabs.org (Postfix) with ESMTP id 8AD38DDF38
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Apr 2008 17:36:05 +1000 (EST)
+Subject: Re: [PATCH] [POWERPC] mpc5200: Allow for fixed speed MII
+	configurations
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+To: Grant Likely <grant.likely@secretlab.ca>
+In-Reply-To: <20080429230620.11248.25729.stgit@trillian.secretlab.ca>
+References: <20080429230620.11248.25729.stgit@trillian.secretlab.ca>
+Content-Type: text/plain
+Date: Wed, 30 Apr 2008 09:36:01 +0200
+Message-Id: <1209540962.18445.8.camel@gentoo-jocke.transmode.se>
+Mime-Version: 1.0
+Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org,
+	domen.puncer@telargo.com
+Reply-To: joakim.tjernlund@transmode.se
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,62 +24,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Paul,
 
-Please do a:
+On Tue, 2008-04-29 at 17:06 -0600, Grant Likely wrote:
+> From: Grant Likely <grant.likely@secretlab.ca>
+> 
+> Various improvements for configuring the MPC5200 MII link from the
+> device tree:
+> * Look for 'current-speed' property for fixed speed MII links
 
-git-pull git://git.kernel.org/pub/scm/linux/kernel/git/jk/spufs.git
+Not that I have looked, but why can't you use the fixed-link property?
 
-For some updates for 2.6.26. This includes some sputrace updates and a
-new switch_log for spufs contexts.
-
-Cheers,
-
-
-Jeremy
-
-
---- 6 commits:
-
-  [POWERPC] spufs: add context switch notification log
-    Christoph Hellwig <hch@lst.de>
-
-    arch/powerpc/platforms/cell/spufs/context.c        |    1 
-    arch/powerpc/platforms/cell/spufs/file.c           |  166 ++++++++++
-    arch/powerpc/platforms/cell/spufs/run.c            |    2 
-    arch/powerpc/platforms/cell/spufs/sched.c          |    2 
-    arch/powerpc/platforms/cell/spufs/spufs.h          |   29 +
-    5 files changed, 200 insertions(+)
-   
-  [POWERPC] spufs: add sputrace marker parameter names
-    Julio M. Merino Vidal <jmerino@ac.upc.edu>
-
-    arch/powerpc/platforms/cell/spufs/spufs.h          |    4 -
-    arch/powerpc/platforms/cell/spufs/sputrace.c       |   36 +++++-----
-    2 files changed, 20 insertions(+), 20 deletions(-)
-   
-  [POWERPC] spufs: add marker for destroy_spu_context
-    Julio M. Merino Vidal <jmerino@ac.upc.edu>
-
-    arch/powerpc/platforms/cell/spufs/context.c        |    1 +
-    1 file changed, 1 insertion(+)
-   
-  [POWERPC] spufs: fix marker name for find_victim
-    Julio M. Merino Vidal <jmerino@ac.upc.edu>
-
-    arch/powerpc/platforms/cell/spufs/sched.c          |    2 +-
-    1 file changed, 1 insertion(+), 1 deletion(-)
-   
-  [POWERPC] spufs: trace spu_acquire_saved events
-    Julio M. Merino Vidal <jmerino@ac.upc.edu>
-
-    arch/powerpc/platforms/cell/spufs/context.c        |    2 ++
-    1 file changed, 2 insertions(+)
-   
-  [POWERPC] spufs: add .gitignore for spu_save_dump.h & spu_restore_dump.h
-    Kumar Gala <galak@kernel.crashing.org>
-
-    arch/powerpc/platforms/cell/spufs/.gitignore       |    0 
-    arch/powerpc/platforms/cell/spufs/.gitignore       |    2 ++
-    2 files changed, 2 insertions(+)
-   
+   Jocke
