@@ -1,35 +1,20 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 0A1B9DDE0F
-	for <linuxppc-dev@ozlabs.org>; Thu,  1 May 2008 07:07:51 +1000 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
-	m3UL7kse004547
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Apr 2008 14:07:46 -0700 (MST)
-Received: from ld0162-tx32.am.freescale.net (ld0162-tx32.am.freescale.net
-	[10.82.19.112])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m3UL7jn7016140
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Apr 2008 16:07:46 -0500 (CDT)
-Date: Wed, 30 Apr 2008 16:07:45 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 1/7] Implement arch disable/enable irq hooks.
-Message-ID: <20080430210745.GA10569@ld0162-tx32.am.freescale.net>
-References: <20071023212404.GA30942@loki.buserror.net>
-	<Pine.LNX.4.64.0804251454050.6045@axis700.grange>
-	<20080428203322.GD15223@ld0162-tx32.am.freescale.net>
-	<18454.42926.213374.977098@cargo.ozlabs.ibm.com>
-	<20080430172254.GA28169@ld0162-tx32.am.freescale.net>
-	<2af4cf23ed3fc48c87b50a5f63d868d7@kernel.crashing.org>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 4BFD3DDEF9
+	for <linuxppc-dev@ozlabs.org>; Thu,  1 May 2008 07:19:07 +1000 (EST)
+Subject: Re: [RFC] [PATCH] vmemmap fixes to use smaller pages
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Geoff Levand <geoffrey.levand@am.sony.com>
+In-Reply-To: <4818C33F.60007@am.sony.com>
+References: <1209534108.18023.221.camel@pasglop> <4818C33F.60007@am.sony.com>
+Content-Type: text/plain
+Date: Thu, 01 May 2008 07:18:58 +1000
+Message-Id: <1209590338.18023.230.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <2af4cf23ed3fc48c87b50a5f63d868d7@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,31 +24,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Apr 30, 2008 at 11:01:47PM +0200, Segher Boessenkool wrote:
-> >>3. The style in all the assembly code is not to have spaces after
-> >>commas separating instruction operands.
-> >
-> >I'll do that if that's what is prefered, but how did that come about as
-> >the style used?  It's different from what we do in C,
+
+On Wed, 2008-04-30 at 12:06 -0700, Geoff Levand wrote:
+> > booting 2.6.25 with a ps3_defconfig and that doesn't work neither
+> > (though at least when doing the later, I do get a black screen & no
+> > sync, like of ps3fb failed monitor detection, while with current
+> > upstream, I just get the last kexec messages and nothing happens).
 > 
-> But this isn't C code, it's assembler code.
-
-Enh.  It's a comma-delineated list in both cases.
-
-> PowerPC assembler code (and most other assembler code) doesn't use
-> spaces here usually.
-
-Looking at other arches, it seems pretty evenly split.
-
-> >and adding the space helps readability in asm as well...
 > 
-> Many people disagree ;-)
+> This should work.  You are the first to report a problem with 
+> 2.6.25.  Could you double check your build, and if you still have
+> trouble, put your vmlinux somewhere I can get it?
 
-Compressionhelpsreadability?
+I'll dbl check today. It could be bad monitor detection...
 
-> Anyway, it's better to keep a consistent style, whatever that style
-> is, don't you agree?
+> OK, I'll try it with the upstream kernel from last week and report
+> within the next day or so.
 
-Not if it's GNU-style. :-)
+Thanks.
 
--Scott
+Cheers,
+Ben.
