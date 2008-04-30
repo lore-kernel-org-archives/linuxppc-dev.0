@@ -2,18 +2,19 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 4BFD3DDEF9
-	for <linuxppc-dev@ozlabs.org>; Thu,  1 May 2008 07:19:07 +1000 (EST)
-Subject: Re: [RFC] [PATCH] vmemmap fixes to use smaller pages
+	by ozlabs.org (Postfix) with ESMTPS id 18AF2DDF12
+	for <linuxppc-dev@ozlabs.org>; Thu,  1 May 2008 07:43:38 +1000 (EST)
+Subject: Re: [PATCH] [POWERPC] Set lower flag bits in regs->trap to
+	indicate debug level exception
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Geoff Levand <geoffrey.levand@am.sony.com>
-In-Reply-To: <4818C33F.60007@am.sony.com>
-References: <1209534108.18023.221.camel@pasglop> <4818C33F.60007@am.sony.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <Pine.LNX.4.64.0804300544370.7714@blarg.am.freescale.net>
+References: <Pine.LNX.4.64.0804300544370.7714@blarg.am.freescale.net>
 Content-Type: text/plain
-Date: Thu, 01 May 2008 07:18:58 +1000
-Message-Id: <1209590338.18023.230.camel@pasglop>
+Date: Thu, 01 May 2008 07:43:31 +1000
+Message-Id: <1209591811.18023.234.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org
 Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -25,23 +26,11 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Wed, 2008-04-30 at 12:06 -0700, Geoff Levand wrote:
-> > booting 2.6.25 with a ps3_defconfig and that doesn't work neither
-> > (though at least when doing the later, I do get a black screen & no
-> > sync, like of ps3fb failed monitor detection, while with current
-> > upstream, I just get the last kexec messages and nothing happens).
+On Wed, 2008-04-30 at 05:44 -0500, Kumar Gala wrote:
+> We use the low bits of regs->trap as flag bits.  We already indicate
+> critical and machine check level exceptions via this mechanism.  Extend it
+> to indicate debug level exceptions.
 > 
-> 
-> This should work.  You are the first to report a problem with 
-> 2.6.25.  Could you double check your build, and if you still have
-> trouble, put your vmlinux somewhere I can get it?
+> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 
-I'll dbl check today. It could be bad monitor detection...
-
-> OK, I'll try it with the upstream kernel from last week and report
-> within the next day or so.
-
-Thanks.
-
-Cheers,
-Ben.
+Ack.
