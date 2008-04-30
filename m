@@ -4,20 +4,19 @@ Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "smtp.linux-foundation.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 697D1DE06C
-	for <linuxppc-dev@ozlabs.org>; Thu,  1 May 2008 03:32:18 +1000 (EST)
-Date: Wed, 30 Apr 2008 10:31:32 -0700
+	by ozlabs.org (Postfix) with ESMTPS id 83B75DE134
+	for <linuxppc-dev@ozlabs.org>; Thu,  1 May 2008 04:35:07 +1000 (EST)
+Date: Wed, 30 Apr 2008 11:35:00 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH v2] [POWERPC] devres: Add devm_ioremap_flags()
-Message-Id: <20080430103132.c110a84c.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0804301106010.22992@blarg.am.freescale.net>
-References: <Pine.LNX.4.64.0804301106010.22992@blarg.am.freescale.net>
+To: "Randy.Dunlap" <rdunlap@xenotime.net>
+Subject: Re: [PATCH] docbook: fix fatal rapidio yet again (and more to come)
+Message-Id: <20080430113500.dfe21880.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0804292009000.18219@shark.he.net>
+References: <Pine.LNX.4.64.0804292009000.18219@shark.he.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: htejun@gmail.com, jeff@garzik.org, greg@kroah.com,
-	linux-kernel@vger.kernel.org, Emilian.Medve@Freescale.com,
-	linuxppc-dev@ozlabs.org
+Cc: Benjamin, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>, torvalds@linux-foundation.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,26 +26,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 30 Apr 2008 11:08:51 -0500 (CDT)
-Kumar Gala <galak@kernel.crashing.org> wrote:
+On Tue, 29 Apr 2008 20:10:55 -0700 (PDT)
+"Randy.Dunlap" <rdunlap@xenotime.net> wrote:
 
-> From: Emil Medve <Emilian.Medve@Freescale.com>
+> From: Randy Dunlap <randy.dunlap@oracle.com>
 > 
-> We provide an ioremap_flags so provide a coresphonding devm_ioremap_flags.
+> Don't refer to file that no longer exists:
+> docproc: linux-2.6.25-git14/arch/powerpc/kernel/rio.c: No such file or directory
 > 
-> Signed-off-by: Emil Medve <Emilian.Medve@Freescale.com>
-> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
 > ---
+>  Documentation/DocBook/rapidio.tmpl |    1 -
+>  1 file changed, 1 deletion(-)
 > 
-> Forgot to commit the actual implemtation in arch/powerpc/lib/devres.c
-> 
-> Which tree should this go through, powerpc.git?
+> --- linux-2.6.25-git14.orig/Documentation/DocBook/rapidio.tmpl
+> +++ linux-2.6.25-git14/Documentation/DocBook/rapidio.tmpl
+> @@ -133,7 +133,6 @@
+>  !Idrivers/rapidio/rio-sysfs.c
+>       </sect1>
+>       <sect1 id="PPC32_support"><title>PPC32 support</title>
+> -!Iarch/powerpc/kernel/rio.c
+>  !Earch/powerpc/sysdev/fsl_rio.c
+>  !Iarch/powerpc/sysdev/fsl_rio.c
+>       </sect1>
 
-I'd say so, yes.
+grumble.
 
-> arch/powerpc/lib/Makefile |    1 +
-> arch/powerpc/lib/devres.c |   33 +++++++++++++++++++++++++++++++++
-> include/asm-powerpc/io.h  |    8 +++++++-
-> include/linux/io.h        |    1 +
-> lib/devres.c              |    2 +-
->
+This is a subset of rapidio-fix-docbook-references.patch, but I appear to
+be unable to interest anyone in merging/reviewing/accepting/anything-else
+that quite large set of patches.
+
+Guys, those patches were sent six weeks ago and it now looks like they will
+miss 2.6.26.  This is pretty slack of us.  Help?
