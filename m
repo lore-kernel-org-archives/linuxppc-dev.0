@@ -1,19 +1,22 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <stephen.neuendorffer@xilinx.com>
+Received: from outbound2-dub-R.bigfish.com (outbound-dub.frontbridge.com
+	[213.199.154.16])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 1F337DE041
-	for <linuxppc-dev@ozlabs.org>; Thu,  1 May 2008 02:13:48 +1000 (EST)
-Date: Wed, 30 Apr 2008 11:08:51 -0500 (CDT)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Greg KH <greg@kroah.com>
-Subject: [PATCH v2] [POWERPC] devres: Add devm_ioremap_flags()
-Message-ID: <Pine.LNX.4.64.0804301106010.22992@blarg.am.freescale.net>
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id AAE57DDF5D
+	for <linuxppc-dev@ozlabs.org>; Thu,  1 May 2008 02:39:55 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Andrew Morton <akpm@osdl.org>, htejun@gmail.com,
-	Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org,
-	Emilian.Medve@Freescale.com, linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+	charset="UTF-8"
+Subject: RE: [PATCH] [POWERPC] Xilinx: Fix compile warnings
+Date: Wed, 30 Apr 2008 09:39:45 -0700
+In-reply-to: <Pine.LNX.4.64.0804301025270.19599@blarg.am.freescale.net>
+References: <Pine.LNX.4.64.0804301025270.19599@blarg.am.freescale.net>
+From: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
+To: "Kumar Gala" <galak@kernel.crashing.org>,
+	"Josh Boyer" <jwboyer@linux.vnet.ibm.com>
+Message-Id: <20080430163946.C635B18B8059@mail52-dub.bigfish.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,133 +26,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Emil Medve <Emilian.Medve@Freescale.com>
-
-We provide an ioremap_flags so provide a coresphonding devm_ioremap_flags.
-
-Signed-off-by: Emil Medve <Emilian.Medve@Freescale.com>
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
----
-
-Forgot to commit the actual implemtation in arch/powerpc/lib/devres.c
-
-Which tree should this go through, powerpc.git?
-
-- k
-
- arch/powerpc/lib/Makefile |    1 +
- arch/powerpc/lib/devres.c |   33 +++++++++++++++++++++++++++++++++
- include/asm-powerpc/io.h  |    8 +++++++-
- include/linux/io.h        |    1 +
- lib/devres.c              |    2 +-
- 5 files changed, 43 insertions(+), 2 deletions(-)
- create mode 100644 arch/powerpc/lib/devres.c
-
-diff --git a/arch/powerpc/lib/Makefile b/arch/powerpc/lib/Makefile
-index 4bb023f..f1d2cdc 100644
---- a/arch/powerpc/lib/Makefile
-+++ b/arch/powerpc/lib/Makefile
-@@ -23,3 +23,4 @@ obj-$(CONFIG_SMP)	+= locks.o
- endif
-
- obj-$(CONFIG_PPC_LIB_RHEAP) += rheap.o
-+obj-$(CONFIG_HAS_IOMEM)	+= devres.o
-diff --git a/arch/powerpc/lib/devres.c b/arch/powerpc/lib/devres.c
-new file mode 100644
-index 0000000..b73c64b
---- /dev/null
-+++ b/arch/powerpc/lib/devres.c
-@@ -0,0 +1,33 @@
-+#include <linux/device.h>	/* devres_*(), devm_ioremap_release() */
-+#include <linux/io.h>		/* ioremap_flags() */
-+#include <linux/module.h>	/* EXPORT_SYMBOL() */
-+
-+/**
-+ * devm_ioremap_flags - Managed ioremap_flags()
-+ * @dev: Generic device to remap IO address for
-+ * @offset: BUS offset to map
-+ * @size: Size of map
-+ * @flags: Page flags
-+ *
-+ * Managed ioremap_flags().  Map is automatically unmapped on driver
-+ * detach.
-+ */
-+void __iomem *devm_ioremap_flags(struct device *dev, resource_size_t offset,
-+				 size_t size, unsigned long flags)
-+{
-+	void __iomem **ptr, *addr;
-+
-+	ptr = devres_alloc(devm_ioremap_release, sizeof(*ptr), GFP_KERNEL);
-+	if (!ptr)
-+		return NULL;
-+
-+	addr = ioremap_flags(offset, size, flags);
-+	if (addr) {
-+		*ptr = addr;
-+		devres_add(dev, ptr);
-+	} else
-+		devres_free(ptr);
-+
-+	return addr;
-+}
-+EXPORT_SYMBOL(devm_ioremap_flags);
-diff --git a/include/asm-powerpc/io.h b/include/asm-powerpc/io.h
-index afae069..3b8c334 100644
---- a/include/asm-powerpc/io.h
-+++ b/include/asm-powerpc/io.h
-@@ -2,7 +2,7 @@
- #define _ASM_POWERPC_IO_H
- #ifdef __KERNEL__
-
--/*
-+/*
-  * This program is free software; you can redistribute it and/or
-  * modify it under the terms of the GNU General Public License
-  * as published by the Free Software Foundation; either version
-@@ -18,6 +18,9 @@ extern int check_legacy_ioport(unsigned long base_port);
- #define _PNPWRP		0xa79
- #define PNPBIOS_BASE	0xf000
-
-+#include <linux/device.h>
-+#include <linux/io.h>
-+
- #include <linux/compiler.h>
- #include <asm/page.h>
- #include <asm/byteorder.h>
-@@ -744,6 +747,9 @@ static inline void * bus_to_virt(unsigned long address)
-
- #define clrsetbits_8(addr, clear, set) clrsetbits(8, addr, clear, set)
-
-+void __iomem *devm_ioremap_flags(struct device *dev, resource_size_t offset,
-+				 size_t size, unsigned long flags);
-+
- #endif /* __KERNEL__ */
-
- #endif /* _ASM_POWERPC_IO_H */
-diff --git a/include/linux/io.h b/include/linux/io.h
-index 831f57c..7a390cf 100644
---- a/include/linux/io.h
-+++ b/include/linux/io.h
-@@ -58,6 +58,7 @@ static inline void devm_ioport_unmap(struct device *dev, void __iomem *addr)
- }
- #endif
-
-+void devm_ioremap_release(struct device *dev, void *res);
- void __iomem * devm_ioremap(struct device *dev, resource_size_t offset,
- 			    unsigned long size);
- void __iomem * devm_ioremap_nocache(struct device *dev, resource_size_t offset,
-diff --git a/lib/devres.c b/lib/devres.c
-index 26c87c4..72c8909 100644
---- a/lib/devres.c
-+++ b/lib/devres.c
-@@ -2,7 +2,7 @@
- #include <linux/io.h>
- #include <linux/module.h>
-
--static void devm_ioremap_release(struct device *dev, void *res)
-+void devm_ioremap_release(struct device *dev, void *res)
- {
- 	iounmap(*(void __iomem **)res);
- }
--- 
-1.5.4.1
+Rm9yIHdoYXQgaXQncyB3b3J0aDoNCkFja2VkLWJ5OiBTdGVwaGVuIE5ldWVuZG9yZmZlciA8c3Rl
+cGhlbi5uZXVlbmRvcmZmZXJAeGlsaW54LmNvbT4NCg0KVGhlcmUncyBvbmUgb3IgdHdvIG90aGVy
+IHRoaW5ncyBJJ3ZlIGJlZW4gbWVhbmluZyB0byBjbGVhbiB1cCwgc3VjaCBhcyB0aGUgc2VjdGlv
+biBtaXNtYXRjaCBvbiBod2ljYXBfb2ZfbWF0Y2gsIHRvby4NCg0KU3RldmUNCg0KPiAtLS0tLU9y
+aWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBsaW51eHBwYy1kZXYtYm91bmNlcytzdGVwaGVu
+Lm5ldWVuZG9yZmZlcj14aWxpbnguY29tQG96bGFicy5vcmcgW21haWx0bzpsaW51eHBwYy1kZXYt
+DQo+IGJvdW5jZXMrc3RlcGhlbi5uZXVlbmRvcmZmZXI9eGlsaW54LmNvbUBvemxhYnMub3JnXSBP
+biBCZWhhbGYgT2YgS3VtYXIgR2FsYQ0KPiBTZW50OiBXZWRuZXNkYXksIEFwcmlsIDMwLCAyMDA4
+IDg6MjYgQU0NCj4gVG86IEpvc2ggQm95ZXINCj4gQ2M6IGxpbnV4cHBjLWRldkBvemxhYnMub3Jn
+DQo+IFN1YmplY3Q6IFtQQVRDSF0gW1BPV0VSUENdIFhpbGlueDogRml4IGNvbXBpbGUgd2Fybmlu
+Z3MNCj4gDQo+IGFyY2gvcG93ZXJwYy9zeXNkZXYveGlsaW54X2ludGMuYzogSW4gZnVuY3Rpb24g
+w6LigqzLnHhpbGlueF9pbnRjX2luaXTDouKCrOKEojoNCj4gYXJjaC9wb3dlcnBjL3N5c2Rldi94
+aWxpbnhfaW50Yy5jOjExMTogd2FybmluZzogZm9ybWF0IMOi4oKsy5wlMDhYw6LigqzihKIgZXhw
+ZWN0cyB0eXBlIMOi4oKsy5x1bnNpZ25lZCBpbnTDouKCrOKEoiwNCj4gYnV0IGFyZ3VtZW50IDIg
+aGFzIHR5cGUgw6LigqzLnHJlc291cmNlX3NpemVfdMOi4oKs4oSiDQo+IGRyaXZlcnMvY2hhci94
+aWxpbnhfaHdpY2FwL3hpbGlueF9od2ljYXAuYzogSW4gZnVuY3Rpb24gw6LigqzLnGh3aWNhcF9z
+ZXR1cMOi4oKs4oSiOg0KPiBkcml2ZXJzL2NoYXIveGlsaW54X2h3aWNhcC94aWxpbnhfaHdpY2Fw
+LmM6NjI2OiB3YXJuaW5nOiBjYXN0IHRvIHBvaW50ZXIgZnJvbSBpbnRlZ2VyIG9mIGRpZmZlcmVu
+dA0KPiBzaXplDQo+IGRyaXZlcnMvY2hhci94aWxpbnhfaHdpY2FwL3hpbGlueF9od2ljYXAuYzo2
+NDY6IHdhcm5pbmc6IGZvcm1hdCDDouKCrMucJXjDouKCrOKEoiBleHBlY3RzIHR5cGUgw6LigqzL
+nHVuc2lnbmVkDQo+IGludMOi4oKs4oSiLCBidXQgYXJndW1lbnQgNiBoYXMgdHlwZSDDouKCrMuc
+cmVzb3VyY2Vfc2l6ZV90w6LigqzihKINCj4gDQo+IFNpZ25lZC1vZmYtYnk6IEt1bWFyIEdhbGEg
+PGdhbGFrQGtlcm5lbC5jcmFzaGluZy5vcmc+DQo+IC0tLQ0KPiAgYXJjaC9wb3dlcnBjL3N5c2Rl
+di94aWxpbnhfaW50Yy5jICAgICAgICAgIHwgICAgMiArLQ0KPiAgZHJpdmVycy9jaGFyL3hpbGlu
+eF9od2ljYXAveGlsaW54X2h3aWNhcC5jIHwgICAgNiArKystLS0NCj4gIDIgZmlsZXMgY2hhbmdl
+ZCwgNCBpbnNlcnRpb25zKCspLCA0IGRlbGV0aW9ucygtKQ0KPiANCj4gZGlmZiAtLWdpdCBhL2Fy
+Y2gvcG93ZXJwYy9zeXNkZXYveGlsaW54X2ludGMuYyBiL2FyY2gvcG93ZXJwYy9zeXNkZXYveGls
+aW54X2ludGMuYw0KPiBpbmRleCBiYThlZWEyLi5iN2FlZmQwIDEwMDY0NA0KPiAtLS0gYS9hcmNo
+L3Bvd2VycGMvc3lzZGV2L3hpbGlueF9pbnRjLmMNCj4gKysrIGIvYXJjaC9wb3dlcnBjL3N5c2Rl
+di94aWxpbnhfaW50Yy5jDQo+IEBAIC0xMDcsNyArMTA3LDcgQEAgeGlsaW54X2ludGNfaW5pdChz
+dHJ1Y3QgZGV2aWNlX25vZGUgKm5wKQ0KPiAgCX0NCj4gIAlyZWdzID0gaW9yZW1hcChyZXMuc3Rh
+cnQsIDMyKTsNCj4gDQo+IC0JcHJpbnRrKEtFUk5fSU5GTyAiWGlsaW54IGludGMgYXQgMHglMDhY
+IG1hcHBlZCB0byAweCVwXG4iLA0KPiArCXByaW50ayhLRVJOX0lORk8gIlhpbGlueCBpbnRjIGF0
+IDB4JTA4TFggbWFwcGVkIHRvIDB4JXBcbiIsDQo+ICAJCXJlcy5zdGFydCwgcmVncyk7DQo+IA0K
+PiAgCS8qIFNldHVwIGludGVycnVwdCBjb250cm9sbGVyICovDQo+IGRpZmYgLS1naXQgYS9kcml2
+ZXJzL2NoYXIveGlsaW54X2h3aWNhcC94aWxpbnhfaHdpY2FwLmMgYi9kcml2ZXJzL2NoYXIveGls
+aW54X2h3aWNhcC94aWxpbnhfaHdpY2FwLmMNCj4gaW5kZXggZGZlNjkwNy4uM2VkZjFmYyAxMDA2
+NDQNCj4gLS0tIGEvZHJpdmVycy9jaGFyL3hpbGlueF9od2ljYXAveGlsaW54X2h3aWNhcC5jDQo+
+ICsrKyBiL2RyaXZlcnMvY2hhci94aWxpbnhfaHdpY2FwL3hpbGlueF9od2ljYXAuYw0KPiBAQCAt
+NjIzLDggKzYyMyw4IEBAIHN0YXRpYyBpbnQgX19kZXZpbml0IGh3aWNhcF9zZXR1cChzdHJ1Y3Qg
+ZGV2aWNlICpkZXYsIGludCBpZCwNCj4gDQo+ICAJaWYgKCFyZXF1ZXN0X21lbV9yZWdpb24oZHJ2
+ZGF0YS0+bWVtX3N0YXJ0LA0KPiAgCQkJCQlkcnZkYXRhLT5tZW1fc2l6ZSwgRFJJVkVSX05BTUUp
+KSB7DQo+IC0JCWRldl9lcnIoZGV2LCAiQ291bGRuJ3QgbG9jayBtZW1vcnkgcmVnaW9uIGF0ICVw
+XG4iLA0KPiAtCQkJKHZvaWQgKilyZWdzX3Jlcy0+c3RhcnQpOw0KPiArCQlkZXZfZXJyKGRldiwg
+IkNvdWxkbid0IGxvY2sgbWVtb3J5IHJlZ2lvbiBhdCAlTHhcbiIsDQo+ICsJCQlyZWdzX3Jlcy0+
+c3RhcnQpOw0KPiAgCQlyZXR2YWwgPSAtRUJVU1k7DQo+ICAJCWdvdG8gZmFpbGVkMTsNCj4gIAl9
+DQo+IEBAIC02NDMsNyArNjQzLDcgQEAgc3RhdGljIGludCBfX2RldmluaXQgaHdpY2FwX3NldHVw
+KHN0cnVjdCBkZXZpY2UgKmRldiwgaW50IGlkLA0KPiAgCW11dGV4X2luaXQoJmRydmRhdGEtPnNl
+bSk7DQo+ICAJZHJ2ZGF0YS0+aXNfb3BlbiA9IDA7DQo+IA0KPiAtCWRldl9pbmZvKGRldiwgImlv
+cmVtYXAgJWx4IHRvICVwIHdpdGggc2l6ZSAleFxuIiwNCj4gKwlkZXZfaW5mbyhkZXYsICJpb3Jl
+bWFwICVseCB0byAlcCB3aXRoIHNpemUgJUx4XG4iLA0KPiAgCQkgKHVuc2lnbmVkIGxvbmcgaW50
+KWRydmRhdGEtPm1lbV9zdGFydCwNCj4gIAkJCWRydmRhdGEtPmJhc2VfYWRkcmVzcywgZHJ2ZGF0
+YS0+bWVtX3NpemUpOw0KPiANCj4gLS0NCj4gMS41LjQuMQ0K
