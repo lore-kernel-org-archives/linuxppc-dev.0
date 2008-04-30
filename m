@@ -1,24 +1,18 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 7C2BCDDFC3
-	for <linuxppc-dev@ozlabs.org>; Thu,  1 May 2008 08:04:16 +1000 (EST)
-Message-Id: <2A2997EA-F3AF-4C90-8952-42CA48AA07BC@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: benh@kernel.crashing.org
-In-Reply-To: <1209592794.18023.248.camel@pasglop>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: [PATCH] [POWERPC] convert transfer_to_handler into a macro
-Date: Wed, 30 Apr 2008 17:04:08 -0500
-References: <Pine.LNX.4.64.0804290856210.9230@blarg.am.freescale.net>
-	<18455.37613.709102.30668@cargo.ozlabs.ibm.com>
-	<73CD5806-5CE4-40A7-957B-8F164E26FAFB@kernel.crashing.org>
-	<1209537128.18023.225.camel@pasglop>
-	<EDF2E889-4B04-42A8-8D93-E04B35162661@kernel.crashing.org>
-	<1209592794.18023.248.camel@pasglop>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18456.60948.463017.139935@cargo.ozlabs.ibm.com>
+Date: Thu, 1 May 2008 08:09:24 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] docbook: fix fatal rapidio yet again (and more to come)
+In-Reply-To: <20080430121239.28492328.akpm@linux-foundation.org>
+References: <Pine.LNX.4.64.0804292009000.18219@shark.he.net>
+	<20080430113500.dfe21880.akpm@linux-foundation.org>
+	<51A34080-7981-4958-B225-4921FC95B84A@kernel.crashing.org>
+	<20080430121239.28492328.akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, rdunlap@xenotime.net,
+	torvalds@linux-foundation.org, Zhang Wei <Wei.Zhang@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,15 +22,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Andrew Morton writes:
 
-On Apr 30, 2008, at 4:59 PM, Benjamin Herrenschmidt wrote:
->
-> On Wed, 2008-04-30 at 03:02 -0500, Kumar Gala wrote:
->> got that.  Does 40x/44x have anything similar we need to save/ 
->> restore?
->
-> MMUCR I'd say... look at what our tlbie does there...
+> > Odd.  I thought Paul had picked up a docbook RapidIO patch from you in  
+> > the latest merge round.
+> > 
+> 
+> Well it's more than "a" patch.  The six-week-old patch series is:
+> 
+> rapidio-add-memory-mapping-driver-to-rapidio.patch
+> rapidio-add-rapidio-space-allocation-bitmap-arithmetic.patch
+> rapidio-add-fsl-rapidio-controller-memory-ops-functions.patch
+> rapidio-add-the-rapidio-master-port-maintance-and-doorbell-window-to-space-resources.patch
+> rapidio-add-rapidio-proc-fs-for-memory-mapping-debugging.patch
+> rapidio-add-the-memory-mapping-support-in-rionet-driver.patch
+> rapidio-fix-docbook-references.patch
+> rapidio-fix-kernel-doc-problems.patch
 
-thanks.  Will take a look.  I just plan on overloading MMUCR with MAS0.
+What happened is that you (Andrew) sent them on to me pretty much
+unexamined.  I took a look at them and dropped one of them because it
+created a new /proc file.  I asked Kumar to look at them and he had
+issues with another three of the patches, and dropping those meant
+that all the following ones (including the fix-kernel-doc one)
+wouldn't apply, so I dropped them too.  I applied the rest and sent
+them to Linus.
 
-- k
+> (seems that I forgot to cc Jeff on the rionet change too).
+
+Yeah.  I nearly dropped that one too.  I probably should have. :)
+
+> Oh well.  If nobody puts their hand up in the next 24 hours or so I'll just
+> send it all in to Linus.
+
+Please don't.  At this stage I think the best thing is for Kumar to
+talk to Zhang Wei (they both work for Freescale, so that should be
+possible in theory :) and get him to rework the remaining patches as
+required for inclusion in 2.6.27.
+
+Paul.
