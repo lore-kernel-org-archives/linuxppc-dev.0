@@ -1,18 +1,32 @@
-Return-Path: <rmachet@slac.stanford.edu>
-Received: from nospam3.slac.stanford.edu (nospam3.slac.stanford.edu
-	[134.79.18.120])
+Return-Path: <scottwood@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 87BD5DE060
-	for <linuxppc-dev@ozlabs.org>; Thu,  1 May 2008 02:47:06 +1000 (EST)
-Subject: [PATCH v4] sysdev,mv64x60: MV64x60 device bus
-From: Remi Machet <rmachet@slac.stanford.edu>
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id A9E97DDFF6
+	for <linuxppc-dev@ozlabs.org>; Thu,  1 May 2008 03:23:07 +1000 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	m3UHMsNV001145
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Apr 2008 10:22:55 -0700 (MST)
+Received: from ld0162-tx32.am.freescale.net (ld0162-tx32.am.freescale.net
+	[10.82.19.112])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m3UHMsnA006069
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Apr 2008 12:22:54 -0500 (CDT)
+Date: Wed, 30 Apr 2008 12:22:54 -0500
+From: Scott Wood <scottwood@freescale.com>
 To: Paul Mackerras <paulus@samba.org>
-Content-Type: text/plain
-Date: Wed, 30 Apr 2008 09:47:16 -0700
-Message-Id: <1209574037.14407.57.camel@pcds-ts102.slac.stanford.edu>
+Subject: Re: [PATCH 1/7] Implement arch disable/enable irq hooks.
+Message-ID: <20080430172254.GA28169@ld0162-tx32.am.freescale.net>
+References: <20071023212404.GA30942@loki.buserror.net>
+	<Pine.LNX.4.64.0804251454050.6045@axis700.grange>
+	<20080428203322.GD15223@ld0162-tx32.am.freescale.net>
+	<18454.42926.213374.977098@cargo.ozlabs.ibm.com>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Stephen Rothwell <sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <18454.42926.213374.977098@cargo.ozlabs.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,57 +36,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-For each mv64360 entry in the OpenFirmware database, add the 
-registration of an of_bus to take care of devices connected to
-the MV64x60 asynchronous devices controller.
-This change makes it possible for those devices to be detected by 
-drivers that support the of_platform without having a custom call 
-for each of them in the board file.
+On Tue, Apr 29, 2008 at 02:44:30PM +1000, Paul Mackerras wrote:
+> 3. The style in all the assembly code is not to have spaces after
+> commas separating instruction operands.
 
-Signed-off-by: Remi Machet (rmachet@slac.stanford.edu)
----
-Changes:
-v2: Use the compatible field to detect devices to register (on Dale Farnsworth
-suggestion).
-v3: Added __initdata to variable of_mv64x60_devices (thanks to Stephen Rothwell 
-for pointing that out).
-v4: Re-wrote the patch description.
+I'll do that if that's what is prefered, but how did that come about as
+the style used?  It's different from what we do in C, and adding the
+space helps readability in asm as well...
 
- arch/powerpc/sysdev/mv64x60_dev.c |   10 ++++++++++
- 1 files changed, 10 insertions(+)
+> The untested patch below is what I was thinking of.  If you'd like to
+> try it out, I'd be interested to hear how it goes.
 
-diff --git a/arch/powerpc/sysdev/mv64x60_dev.c b/arch/powerpc/sysdev/mv64x60_dev.c
-index 41af122..c38695e 100644
---- a/arch/powerpc/sysdev/mv64x60_dev.c
-+++ b/arch/powerpc/sysdev/mv64x60_dev.c
-@@ -15,6 +15,7 @@
- #include <linux/console.h>
- #include <linux/mv643xx.h>
- #include <linux/platform_device.h>
-+#include <linux/of_platform.h>
- 
- #include <asm/prom.h>
- 
-@@ -25,6 +26,11 @@
-  * PowerPC of_platform_bus_type.  They support platform_bus_type instead.
-  */
- 
-+static struct of_device_id __initdata of_mv64x60_devices[] = {
-+	{ .compatible = "marvell,mv64306-devctrl", },
-+	{}
-+};
-+
- /*
-  * Create MPSC platform devices
-  */
-@@ -482,6 +488,10 @@ static int __init mv64x60_device_setup(void)
- 		of_node_put(np);
- 	}
- 
-+	/* Now add every node that is on the device bus (type is devicectrl */
-+	for_each_compatible_node(np, NULL, "marvell,mv64360")
-+		of_platform_bus_probe(np, of_mv64x60_devices, NULL);
-+
- 	return 0;
- }
- arch_initcall(mv64x60_device_setup);
+It works for me.
+
+-Scott
