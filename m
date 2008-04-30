@@ -1,68 +1,54 @@
-Return-Path: <johnpol@2ka.mipt.ru>
-Received: from 2ka.mipt.ru (relay.2ka.mipt.ru [194.85.82.65])
-	by ozlabs.org (Postfix) with ESMTP id F0C68DDE3A
-	for <linuxppc-dev@ozlabs.org>; Sat, 31 May 2008 19:59:14 +1000 (EST)
-Date: Sat, 31 May 2008 13:59:02 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Kim Phillips <kim.phillips@freescale.com>
-Subject: Re: [PATCH 2/2] talitos: Freescale integrated security engine (SEC)
-	driver
-Message-ID: <20080531095901.GA16281@2ka.mipt.ru>
-References: <20080530180904.GA18945@2ka.mipt.ru>
-	<20080530143614.1e675228.kim.phillips@freescale.com>
-	<4840585D.8050805@freescale.com>
-	<20080530151638.087970ab.kim.phillips@freescale.com>
-	<4840615F.4070103@freescale.com>
-	<20080530153505.21eb1ec4.kim.phillips@freescale.com>
-	<48406562.4010306@freescale.com>
-	<20080530154820.6e56b625.kim.phillips@freescale.com>
-	<20080530211204.GA15768@2ka.mipt.ru>
-	<20080530171930.61965d59.kim.phillips@freescale.com>
+Return-Path: <glppe-linuxppc-embedded-2@m.gmane.org>
+Received: from ciao.gmane.org (main.gmane.org [80.91.229.2])
+	by ozlabs.org (Postfix) with ESMTP id D9C92DDF72
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu,  1 May 2008 03:00:12 +1000 (EST)
+Received: from list by ciao.gmane.org with local (Exim 4.43)
+	id 1JrFex-0003oA-6E
+	for linuxppc-embedded@ozlabs.org; Wed, 30 Apr 2008 16:59:59 +0000
+Received: from p5497e5e0.dip.t-dialin.net ([84.151.229.224])
+	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
+	id 1AlnuQ-0007hv-00
+	for <linuxppc-embedded@ozlabs.org>; Wed, 30 Apr 2008 16:59:59 +0000
+Received: from dzu by p5497e5e0.dip.t-dialin.net with local (Gmexim 0.1
+	(Debian)) id 1AlnuQ-0007hv-00
+	for <linuxppc-embedded@ozlabs.org>; Wed, 30 Apr 2008 16:59:59 +0000
+To: linuxppc-embedded@ozlabs.org
+From: Detlev Zundel <dzu@denx.de>
+Subject: Re: Predefined Compiler Flag for CROSS_COMPILE in ELDK
+Date: Wed, 30 Apr 2008 18:59:05 +0200
+Message-ID: <m2tzhjxorq.fsf@ohwell.denx.de>
+References: <6e404418e8a1a19e1870eab8117c625e@lesc.ufc.br>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080530171930.61965d59.kim.phillips@freescale.com>
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
-	mr.scada@gmail.com, linux-crypto@vger.kernel.org,
-	herbert@gondor.apana.org.au
-List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
-List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
-List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
-List-Post: <mailto:linuxppc-dev@ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
-List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
+Sender: news <news@ger.gmane.org>
+List-Id: Linux on Embedded PowerPC Developers Mail List
+	<linuxppc-embedded.ozlabs.org>
+List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
+	<mailto:linuxppc-embedded-request@ozlabs.org?subject=unsubscribe>
+List-Archive: <http://ozlabs.org/pipermail/linuxppc-embedded>
+List-Post: <mailto:linuxppc-embedded@ozlabs.org>
+List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
+List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
+	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi.
+Hi Rodolfo,
 
-On Fri, May 30, 2008 at 05:19:30PM -0500, Kim Phillips (kim.phillips@freescale.com) wrote:
-> ok, I see what you are saying now; if a channel gets done during
-> talitos_done processing, it'll trigger an interrupt and reset
-> priv->status, leaving the tasklet in the dark as to which channel has
-> done status, depending on how many channel dones it has already
-> processed.  I think the only solution here is to call flush_channel on
-> each channel, regardless of the bits in the interrupt status - I'll
-> send out a patch shortly.
+> I using ppc_4xx- cross-compiler for build linux in xup virtex II pro.
+> How can I change -mpcu compiler flag for a specific vallue for my
+> board/processor? 
 
-Out of curiosity, what is number of channels? I had simialar issue with
-HIFN crypto driver and limited number of descriptor to 80 iirc, since
-with that number HIFN traversal did not show perfromance degradataion on
-Ghz x86.
+Do the obvious thing - specify it on every command line.
 
-> > callback, during that time cached status and priv itself (and tail like
-> > in two simultaneous flushes) could change (or not?)
-> 
-> I think you're talking about a different 'status' here; flush_channel's
-> local 'status' doesn't resemble priv->status bits in any way, it looks
-> at the descriptor header writeback bits for done status, on a per
-> descriptor basis.  It forwards this descriptor done vs. error status to
-> the callback.
-> 
-> priv itself won't change; it's uniquely associated to the device.
-
-I meant descriptor hdr value accessed via it - can it be checked in
-tasklet under the lock and in submit path without? Can they correlate
-somehow?
+Cheers
+  Detlev
 
 -- 
-	Evgeniy Polyakov
+"Oh, didn't you know, the Lord did the original programming of the universe in
+COBOL." - "That's why the world is the evil work of Satan. A true divine being
+would have used Scheme."  -  "And, if so, Jesus would have been crucified on a
+big lambda symbol."  -- K. Chafin, K. Schilling & D. Hanley, on comp.lang.lisp
+--
+DENX Software Engineering GmbH,      MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich,  Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-40 Fax: (+49)-8142-66989-80 Email: dzu@denx.de
