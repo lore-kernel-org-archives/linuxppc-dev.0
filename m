@@ -1,16 +1,14 @@
 Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <18455.59014.305281.949578@cargo.ozlabs.ibm.com>
-Date: Wed, 30 Apr 2008 13:24:54 +1000
+Message-ID: <18455.63249.595170.712335@cargo.ozlabs.ibm.com>
+Date: Wed, 30 Apr 2008 14:35:29 +1000
 From: Paul Mackerras <paulus@samba.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] [POWERPC] convert transfer_to_handler into a macro
-In-Reply-To: <73CD5806-5CE4-40A7-957B-8F164E26FAFB@kernel.crashing.org>
-References: <Pine.LNX.4.64.0804290856210.9230@blarg.am.freescale.net>
-	<18455.37613.709102.30668@cargo.ozlabs.ibm.com>
-	<73CD5806-5CE4-40A7-957B-8F164E26FAFB@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org
+To: Remi Machet <rmachet@slac.stanford.edu>
+Subject: Re: [PATCH v3] sysdev,mv64x60: MV64x60 device bus
+In-Reply-To: <1209500798.14407.32.camel@pcds-ts102.slac.stanford.edu>
+References: <1209500798.14407.32.camel@pcds-ts102.slac.stanford.edu>
+Cc: linuxppc-dev@ozlabs.org, Stephen Rothwell <sfr@canb.auug.org.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,19 +18,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala writes:
+Remi Machet writes:
 
-> > Wouldn't it be better and safer to have the exception prolog for
-> > critical interrupts save SRR0/1 in the stack frame, and have the
-> > prolog for machine checks save SRR0/1 and CSRR0/1 likewise?
-> 
-> If we do this I guess we can use SRR0/1 regardless of which level we  
-> came from.
+> Follow up of my email of 4/16/2008 titled "MV64x60 device bus".
+> For each mv64360 entry in the OpenFirmware database, add the 
+> registration of an of_bus to take care of devices connected to
+> the MV64x60 asynchronous devices controller.
 
-That's the idea.  I actually thought the booke exception prologs
-already did that, but it seems I'm wrong.
+Your patch description should also explain what good things will come
+of doing this, or what bad things will be avoided.  Also please put
+the "Follow up..." sentence below the 3 dashes so I don't have to edit
+it out.
 
-What sort of things do you expect critical and machine-check handlers
-to be needing to do?
+If there are no further review comments, and if you resend with a
+better patch description, I'll queue this up for the next merge window
+(for 2.6.27).
 
 Paul.
