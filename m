@@ -2,13 +2,13 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 48CC3DE3BD
-	for <linuxppc-dev@ozlabs.org>; Thu,  1 May 2008 02:06:21 +1000 (EST)
-Date: Wed, 30 Apr 2008 11:01:24 -0500 (CDT)
+	by ozlabs.org (Postfix) with ESMTPS id 1F337DE041
+	for <linuxppc-dev@ozlabs.org>; Thu,  1 May 2008 02:13:48 +1000 (EST)
+Date: Wed, 30 Apr 2008 11:08:51 -0500 (CDT)
 From: Kumar Gala <galak@kernel.crashing.org>
 To: Greg KH <greg@kroah.com>
-Subject: [PATCH] [POWERPC] devres: Add devm_ioremap_flags()
-Message-ID: <Pine.LNX.4.64.0804301059430.22937@blarg.am.freescale.net>
+Subject: [PATCH v2] [POWERPC] devres: Add devm_ioremap_flags()
+Message-ID: <Pine.LNX.4.64.0804301106010.22992@blarg.am.freescale.net>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Cc: Andrew Morton <akpm@osdl.org>, htejun@gmail.com,
@@ -31,13 +31,19 @@ Signed-off-by: Emil Medve <Emilian.Medve@Freescale.com>
 Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 ---
 
+Forgot to commit the actual implemtation in arch/powerpc/lib/devres.c
+
 Which tree should this go through, powerpc.git?
 
+- k
+
  arch/powerpc/lib/Makefile |    1 +
+ arch/powerpc/lib/devres.c |   33 +++++++++++++++++++++++++++++++++
  include/asm-powerpc/io.h  |    8 +++++++-
  include/linux/io.h        |    1 +
  lib/devres.c              |    2 +-
- 4 files changed, 10 insertions(+), 2 deletions(-)
+ 5 files changed, 43 insertions(+), 2 deletions(-)
+ create mode 100644 arch/powerpc/lib/devres.c
 
 diff --git a/arch/powerpc/lib/Makefile b/arch/powerpc/lib/Makefile
 index 4bb023f..f1d2cdc 100644
@@ -48,6 +54,45 @@ index 4bb023f..f1d2cdc 100644
 
  obj-$(CONFIG_PPC_LIB_RHEAP) += rheap.o
 +obj-$(CONFIG_HAS_IOMEM)	+= devres.o
+diff --git a/arch/powerpc/lib/devres.c b/arch/powerpc/lib/devres.c
+new file mode 100644
+index 0000000..b73c64b
+--- /dev/null
++++ b/arch/powerpc/lib/devres.c
+@@ -0,0 +1,33 @@
++#include <linux/device.h>	/* devres_*(), devm_ioremap_release() */
++#include <linux/io.h>		/* ioremap_flags() */
++#include <linux/module.h>	/* EXPORT_SYMBOL() */
++
++/**
++ * devm_ioremap_flags - Managed ioremap_flags()
++ * @dev: Generic device to remap IO address for
++ * @offset: BUS offset to map
++ * @size: Size of map
++ * @flags: Page flags
++ *
++ * Managed ioremap_flags().  Map is automatically unmapped on driver
++ * detach.
++ */
++void __iomem *devm_ioremap_flags(struct device *dev, resource_size_t offset,
++				 size_t size, unsigned long flags)
++{
++	void __iomem **ptr, *addr;
++
++	ptr = devres_alloc(devm_ioremap_release, sizeof(*ptr), GFP_KERNEL);
++	if (!ptr)
++		return NULL;
++
++	addr = ioremap_flags(offset, size, flags);
++	if (addr) {
++		*ptr = addr;
++		devres_add(dev, ptr);
++	} else
++		devres_free(ptr);
++
++	return addr;
++}
++EXPORT_SYMBOL(devm_ioremap_flags);
 diff --git a/include/asm-powerpc/io.h b/include/asm-powerpc/io.h
 index afae069..3b8c334 100644
 --- a/include/asm-powerpc/io.h
