@@ -1,14 +1,18 @@
-Return-Path: <jose.franca@nsn.com>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 304D5DDFD0
+	for <linuxppc-dev@ozlabs.org>; Thu,  1 May 2008 01:30:29 +1000 (EST)
+Date: Wed, 30 Apr 2008 10:25:46 -0500 (CDT)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Subject: [PATCH] [POWERPC] Xilinx: Fix compile warnings
+Message-ID: <Pine.LNX.4.64.0804301025270.19599@blarg.am.freescale.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Subject: RE: SKB corruption on heavy traffic
-Date: Wed, 30 Apr 2008 16:07:15 +0100
-Message-ID: <56DEE2D3217CD946B290399093C8FA7C213014@PTLIEXC001.nsn-intra.net>
-In-Reply-To: <20080430150053.GB23545@ld0162-tx32.am.freescale.net>
-From: "Franca, Jose (NSN - PT/Portugal - MiniMD)" <jose.franca@nsn.com>
-To: "ext Scott Wood" <scottwood@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
+Content-Type: MULTIPART/MIXED;
+	BOUNDARY="330304082-1539717417-1209569146=:19599"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,50 +22,63 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Ok... We will try to enable debug on slab! :)
-Ring buffer full occurs on tx in spite of having free bd's in the ring,
-it doesn't use them... And it does not recover.
-The problems that I refered are from previous kernel versions to ours
-(our base of development was 2.4.31) and even on 2.6 kernels.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Filipe
+--330304082-1539717417-1209569146=:19599
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 
------Original Message-----
-From: ext Scott Wood [mailto:scottwood@freescale.com]=20
-Sent: quarta-feira, 30 de Abril de 2008 16:01
-To: Franca, Jose (NSN - PT/Portugal - MiniMD)
-Cc: linuxppc-dev@ozlabs.org; linuxppc-embedded@ozlabs.org
-Subject: Re: SKB corruption on heavy traffic
+arch/powerpc/sysdev/xilinx_intc.c: In function ‘xilinx_intc_init’:
+arch/powerpc/sysdev/xilinx_intc.c:111: warning: format ‘%08X’ expects type ‘unsigned int’, but argument 2 has type ‘resource_size_t’
+drivers/char/xilinx_hwicap/xilinx_hwicap.c: In function ‘hwicap_setup’:
+drivers/char/xilinx_hwicap/xilinx_hwicap.c:626: warning: cast to pointer from integer of different size
+drivers/char/xilinx_hwicap/xilinx_hwicap.c:646: warning: format ‘%x’ expects type ‘unsigned int’, but argument 6 has type ‘resource_size_t’
 
-On Wed, Apr 30, 2008 at 09:43:33AM +0100, Franca, Jose (NSN -
-PT/Portugal - MiniMD) wrote:
-> 	It't quite dificult to say if the problem exists without our
-> 	changes, since the all software is dependent on this changes so
-> 	to work with the hardware. I can't answer to that right now on
-> 	that, but I forgot to add one thing: we have ring buffer full
-> 	problems on our fcc_enet driver from time to time. So, I think
-> 	the problem could be on linux configurations (related to hw)
-> 	because there is a lot of posts on the web related to problems
-> 	similar to this (none of them has really solved the bottom
-> 	problem).
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
+ arch/powerpc/sysdev/xilinx_intc.c          |    2 +-
+ drivers/char/xilinx_hwicap/xilinx_hwicap.c |    6 +++---
+ 2 files changed, 4 insertions(+), 4 deletions(-)
 
-One thing you could try is to enable slab debugging, rather than your
-custom debugging code; this will poison the memory upon free, making it
-more likely that whatever is accessing it will crash immediately rather
-than just cause corruption.  Or, if you want to mantain the delay, do
-the
-poisoning yourself.
+diff --git a/arch/powerpc/sysdev/xilinx_intc.c b/arch/powerpc/sysdev/xilinx_intc.c
+index ba8eea2..b7aefd0 100644
+--- a/arch/powerpc/sysdev/xilinx_intc.c
++++ b/arch/powerpc/sysdev/xilinx_intc.c
+@@ -107,7 +107,7 @@ xilinx_intc_init(struct device_node *np)
+ 	}
+ 	regs = ioremap(res.start, 32);
 
-Of course, this won't help if the access is write-only, or if the
-corruption is happening via DMA.
+-	printk(KERN_INFO "Xilinx intc at 0x%08X mapped to 0x%p\n",
++	printk(KERN_INFO "Xilinx intc at 0x%08LX mapped to 0x%p\n",
+ 		res.start, regs);
 
-When you say you have a full ring buffer, do you mean tx or rx?  Does it
-recover gracefully?  Do you think it's caused by something other than
-sending data faster than the line can support (tx) or receiving packets
-faster than the cpu can handle (rx)?
+ 	/* Setup interrupt controller */
+diff --git a/drivers/char/xilinx_hwicap/xilinx_hwicap.c b/drivers/char/xilinx_hwicap/xilinx_hwicap.c
+index dfe6907..3edf1fc 100644
+--- a/drivers/char/xilinx_hwicap/xilinx_hwicap.c
++++ b/drivers/char/xilinx_hwicap/xilinx_hwicap.c
+@@ -623,8 +623,8 @@ static int __devinit hwicap_setup(struct device *dev, int id,
 
-Are any of the other problem reports from recent, unmodified kernels
-(2.4
-is very old)?
+ 	if (!request_mem_region(drvdata->mem_start,
+ 					drvdata->mem_size, DRIVER_NAME)) {
+-		dev_err(dev, "Couldn't lock memory region at %p\n",
+-			(void *)regs_res->start);
++		dev_err(dev, "Couldn't lock memory region at %Lx\n",
++			regs_res->start);
+ 		retval = -EBUSY;
+ 		goto failed1;
+ 	}
+@@ -643,7 +643,7 @@ static int __devinit hwicap_setup(struct device *dev, int id,
+ 	mutex_init(&drvdata->sem);
+ 	drvdata->is_open = 0;
 
--Scott
+-	dev_info(dev, "ioremap %lx to %p with size %x\n",
++	dev_info(dev, "ioremap %lx to %p with size %Lx\n",
+ 		 (unsigned long int)drvdata->mem_start,
+ 			drvdata->base_address, drvdata->mem_size);
+
+-- 
+1.5.4.1
+
+--330304082-1539717417-1209569146=:19599--
