@@ -1,23 +1,29 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.240])
-	by ozlabs.org (Postfix) with ESMTP id BCD81DE0E5
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Apr 2008 23:07:59 +1000 (EST)
-Received: by an-out-0708.google.com with SMTP id c34so129426anc.78
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Apr 2008 06:07:58 -0700 (PDT)
-Message-ID: <fa686aa40804300607k72ef9985m43b3c4111cad6085@mail.gmail.com>
-Date: Wed, 30 Apr 2008 07:07:58 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: joakim.tjernlund@transmode.se
-Subject: Re: [PATCH] [POWERPC] mpc5200: Allow for fixed speed MII
-	configurations
-In-Reply-To: <1209540962.18445.8.camel@gentoo-jocke.transmode.se>
+Return-Path: <andre.schwarz@matrix-vision.de>
+Received: from p15137414.pureserver.info (matrixvision.de [217.160.213.229])
+	by ozlabs.org (Postfix) with ESMTP id A9EF8DE22F
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Apr 2008 23:09:12 +1000 (EST)
+Received: from pandora.intern.matrix-vision.de (g1.matrix-vision.com
+	[217.7.222.190])
+	by p15137414.pureserver.info (Postfix) with ESMTP id B48D83CC012
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Apr 2008 15:09:09 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+	by pandora.intern.matrix-vision.de (Postfix) with ESMTP id B6931E3C09
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Apr 2008 15:09:06 +0200 (CEST)
+Received: from hegemone (hegemone.intern.matrix-vision.de [192.168.5.77])
+	by pandora.intern.matrix-vision.de (Postfix) with ESMTP id 41C4CE3C09
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Apr 2008 15:09:06 +0200 (CEST)
+Received: from [192.168.65.5] (unknown [192.168.65.5])
+	by hegemone (Postfix) with ESMTP id 4D0D9536
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Apr 2008 15:09:05 +0200 (CEST)
+Message-ID: <48186F73.9000608@matrix-vision.de>
+Date: Wed, 30 Apr 2008 15:09:07 +0200
+From: =?ISO-8859-15?Q?Andr=E9_Schwarz?= <andre.schwarz@matrix-vision.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20080429230620.11248.25729.stgit@trillian.secretlab.ca>
-	<1209540962.18445.8.camel@gentoo-jocke.transmode.se>
-Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org,
-	domen.puncer@telargo.com
+To: linux-ppc list <linuxppc-dev@ozlabs.org>
+Subject: Re: EXT_IRQ0 @ MPC834x
+References: <48175059.9080001@matrix-vision.de>
+In-Reply-To: <48175059.9080001@matrix-vision.de>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,26 +33,110 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Apr 30, 2008 at 1:36 AM, Joakim Tjernlund
-<joakim.tjernlund@transmode.se> wrote:
->
->  On Tue, 2008-04-29 at 17:06 -0600, Grant Likely wrote:
->  > From: Grant Likely <grant.likely@secretlab.ca>
->  >
->  > Various improvements for configuring the MPC5200 MII link from the
->  > device tree:
->  > * Look for 'current-speed' property for fixed speed MII links
->
->  Not that I have looked, but why can't you use the fixed-link property?
+Issue solved !
 
-fixed-link seems to be a recent invention, whereas current-speed is
-better know having already been in use with serial devices.  It seemed
-to me to be a better choice, but my opinion can probably be swayed
-(arguments welcome).
+IRQ has been requested with IRQF_SHARED.
+Obviously this is not neccessary and caused this bogus behaviour.
+
+Don't know if it's a bug or a feature.
+
 
 Cheers,
-g.
+Andr=E9
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Andre Schwarz schrieb:
+> All,
+>=20
+> actually I'm having trouble getting the IRQ0 work on a MPC8343 with
+> 2.6.25-rc8.
+> There's an external PCI device connected to it ....
+>=20
+>=20
+> Regarding to the manual IRQ0 is somewhat special and has Vector 48 assi=
+gned.
+>=20
+> Therefore my dts entry for this device looks like :
+>=20
+> interrupt-map =3D <0x5800 0 0 1 &ipic 0x30 0x8
+>                                  ... >;
+>=20
+> Having a look on virq mapping gives :
+>=20
+> mvBL-M7> cat /sys/kernel/debug/powerpc/virq_mapping
+> virq   hwirq    chip name        host name
+>    16  0x0000e   IPIC            /soc@e0000000/pic@700
+>    17  0x0000f   IPIC            /soc@e0000000/pic@700
+>    18  0x00009   IPIC            /soc@e0000000/pic@700
+>    20  0x00010   IPIC            /soc@e0000000/pic@700
+>    32  0x00020   IPIC            /soc@e0000000/pic@700
+>    33  0x00021   IPIC            /soc@e0000000/pic@700
+>    34  0x00022   IPIC            /soc@e0000000/pic@700
+>    38  0x00026   IPIC            /soc@e0000000/pic@700
+>    48  0x00030   IPIC            /soc@e0000000/pic@700
+>=20
+>=20
+> After loading the device driver (=3Dmvbcdma) the irq shows up correctly=
+.
+>=20
+> mvBL-M7> cat /proc/interrupts
+>            CPU0
+>  16:        603   IPIC   Level     i2c-mpc
+>  17:          8   IPIC   Level     i2c-mpc
+>  18:        295   IPIC   Level     serial
+>  20:        341   IPIC   Level     mpc83xx_spi
+>  32:          2   IPIC   Level     enet_tx
+>  33:          3   IPIC   Level     enet_rx
+>  34:          0   IPIC   Level     enet_error
+>  38:          0   IPIC   Level     ehci_hcd:usb1
+>  48:          0   IPIC   Level     mvbcdma0
+> BAD:          0
+>=20
+>=20
+> As soon as the device generates an interrupt I get :
+>=20
+> irq 48: nobody cared (try booting with the "irqpoll" option)
+> handlers:
+> [<d18d66e8>] (mvbcdma_irq+0x0/0x180 [mvbcdma])
+> Disabling IRQ #48
+>=20
+>=20
+> The handler _would_ have returned IRQ_RETVAL(1).
+> Obviously the handler isn't called at all - but why ?
+>=20
+>=20
+> Using "nm" on the kernel module gives :
+>=20
+> 000006e8 t mvbcdma_irq
+>=20
+> ->offset 0x6e8 inside module matches with output regarding handler.
+>=20
+>=20
+> Any help is welcome !
+>=20
+>=20
+> regards,
+> Andre Schwarz
+>=20
+>=20
+>=20
+>=20
+>=20
+>=20
+>=20
+>=20
+>=20
+>=20
+>=20
+>=20
+> MATRIX VISION GmbH, Talstra=DFe 16, DE-71570 Oppenweiler  - Registerger=
+icht: Amtsgericht Stuttgart, HRB 271090
+> Gesch=E4ftsf=FChrer: Gerhard Thullner, Werner Armingeon, Uwe Furtner
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+
+
+MATRIX VISION GmbH, Talstra=DFe 16, DE-71570 Oppenweiler  - Registergeric=
+ht: Amtsgericht Stuttgart, HRB 271090
+Gesch=E4ftsf=FChrer: Gerhard Thullner, Werner Armingeon, Uwe Furtner
