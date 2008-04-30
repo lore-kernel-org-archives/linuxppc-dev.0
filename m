@@ -1,30 +1,20 @@
-Return-Path: <randy.dunlap@Oracle.com>
-Received: from rgminet02.oracle.com (rgminet02.oracle.com [148.87.113.119])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 5AEF8DDECF
-	for <linuxppc-dev@ozlabs.org>; Thu,  1 May 2008 09:00:51 +1000 (EST)
-Received: from rgminet01.oracle.com (rgminet01.oracle.com [148.87.113.118])
-	by rgminet02.oracle.com (Switch-3.2.4/Switch-3.1.7) with ESMTP id
-	m3UMCZpX004490
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Apr 2008 16:12:35 -0600
-Date: Wed, 30 Apr 2008 15:11:49 -0700
-From: Randy Dunlap <randy.dunlap@Oracle.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH] docbook: fix fatal rapidio yet again (and more to come)
-Message-Id: <20080430151149.063920cf.randy.dunlap@oracle.com>
-In-Reply-To: <18456.60948.463017.139935@cargo.ozlabs.ibm.com>
-References: <Pine.LNX.4.64.0804292009000.18219@shark.he.net>
-	<20080430113500.dfe21880.akpm@linux-foundation.org>
-	<51A34080-7981-4958-B225-4921FC95B84A@kernel.crashing.org>
-	<20080430121239.28492328.akpm@linux-foundation.org>
-	<18456.60948.463017.139935@cargo.ozlabs.ibm.com>
+	by ozlabs.org (Postfix) with ESMTPS id 4845BDDEFE
+	for <linuxppc-dev@ozlabs.org>; Thu,  1 May 2008 09:01:49 +1000 (EST)
+Subject: Re: [patch 1/5] POWERPC: Fix slb.c compile warnings
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Geoff Levand <geoffrey.levand@am.sony.com>
+In-Reply-To: <4818F1BA.80408@am.sony.com>
+References: <20080430215644.655638516@am.sony.com> <4818F1BA.80408@am.sony.com>
+Content-Type: text/plain
+Date: Thu, 01 May 2008 09:01:41 +1000
+Message-Id: <1209596501.18023.260.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Andrew Morton <akpm@linux-foundation.org>, torvalds@linux-foundation.org,
-	"\"Zhang Wei\" rdunlap@xenotime.net" <Wei.Zhang@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,47 +24,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 1 May 2008 08:09:24 +1000 Paul Mackerras wrote:
 
-> Andrew Morton writes:
+On Wed, 2008-04-30 at 15:24 -0700, Geoff Levand wrote:
+> Arrange for a syntax check to always be done on the powerpc/mm/slb.c
+> DBG() macro by defining it to pr_debug() for non-debug builds. 
 > 
-> > > Odd.  I thought Paul had picked up a docbook RapidIO patch from you in  
-> > > the latest merge round.
-> > > 
-> > 
-> > Well it's more than "a" patch.  The six-week-old patch series is:
-> > 
-> > rapidio-add-memory-mapping-driver-to-rapidio.patch
-> > rapidio-add-rapidio-space-allocation-bitmap-arithmetic.patch
-> > rapidio-add-fsl-rapidio-controller-memory-ops-functions.patch
-> > rapidio-add-the-rapidio-master-port-maintance-and-doorbell-window-to-space-resources.patch
-> > rapidio-add-rapidio-proc-fs-for-memory-mapping-debugging.patch
-> > rapidio-add-the-memory-mapping-support-in-rionet-driver.patch
-> > rapidio-fix-docbook-references.patch
-> > rapidio-fix-kernel-doc-problems.patch
+> Also, fix these related compile warnings:
 > 
-> What happened is that you (Andrew) sent them on to me pretty much
-> unexamined.  I took a look at them and dropped one of them because it
-> created a new /proc file.  I asked Kumar to look at them and he had
-> issues with another three of the patches, and dropping those meant
-> that all the following ones (including the fix-kernel-doc one)
-> wouldn't apply, so I dropped them too.  I applied the rest and sent
-> them to Linus.
+>   slb.c:273: warning: format '%04x' expects type 'unsigned int', but argument 2 has type 'long unsigned int
+>   slb.c:274: warning: format '%04x' expects type 'unsigned int', but argument 2 has type 'long unsigned int'
 > 
-> > (seems that I forgot to cc Jeff on the rionet change too).
-> 
-> Yeah.  I nearly dropped that one too.  I probably should have. :)
-> 
-> > Oh well.  If nobody puts their hand up in the next 24 hours or so I'll just
-> > send it all in to Linus.
-> 
-> Please don't.  At this stage I think the best thing is for Kumar to
-> talk to Zhang Wei (they both work for Freescale, so that should be
-> possible in theory :) and get him to rework the remaining patches as
-> required for inclusion in 2.6.27.
+> Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 
-Just to be clear, the docbook changes shouldn't wait for 2.6.27.
-There's no need for that.
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
----
-~Randy
+> ---
+>  arch/powerpc/mm/slb.c |    6 +++---
+>  1 file changed, 3 insertions(+), 3 deletions(-)
+> 
+> --- a/arch/powerpc/mm/slb.c
+> +++ b/arch/powerpc/mm/slb.c
+> @@ -30,7 +30,7 @@
+>  #ifdef DEBUG
+>  #define DBG(fmt...) udbg_printf(fmt)
+>  #else
+> -#define DBG(fmt...)
+> +#define DBG pr_debug
+>  #endif
+>  
+>  extern void slb_allocate_realmode(unsigned long ea);
+> @@ -279,8 +279,8 @@ void slb_initialize(void)
+>  		patch_slb_encoding(slb_compare_rr_to_size,
+>  				   mmu_slb_size);
+>  
+> -		DBG("SLB: linear  LLP = %04x\n", linear_llp);
+> -		DBG("SLB: io      LLP = %04x\n", io_llp);
+> +		DBG("SLB: linear  LLP = %04lx\n", linear_llp);
+> +		DBG("SLB: io      LLP = %04lx\n", io_llp);
+>  	}
+>  
+>  	get_paca()->stab_rr = SLB_NUM_BOLTED;
+> 
