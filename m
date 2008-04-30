@@ -1,18 +1,23 @@
-Return-Path: <gerhard_pircher@gmx.net>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id F0859DE13E
-	for <linuxppc-dev@ozlabs.org>; Thu,  1 May 2008 05:20:44 +1000 (EST)
-Content-Type: text/plain; charset="us-ascii"
-Date: Wed, 30 Apr 2008 21:20:42 +0200
-From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
-In-Reply-To: <56DEE2D3217CD946B290399093C8FA7C212F55@PTLIEXC001.nsn-intra.net>
-Message-ID: <20080430192042.76910@gmx.net>
-MIME-Version: 1.0
-References: <56DEE2D3217CD946B290399093C8FA7C212F55@PTLIEXC001.nsn-intra.net>
-Subject: Re: RE: FW: SKB corruption on heavy traffic
-To: "Franca, Jose (NSN - PT/Portugal - MiniMD)" <jose.franca@nsn.com>,
-	scottwood@freescale.com
-Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
+Return-Path: <becky.bruce@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 1598FDE10C
+	for <linuxppc-dev@ozlabs.org>; Thu,  1 May 2008 05:22:09 +1000 (EST)
+In-Reply-To: <20080430192030.GA9084@ld0162-tx32.am.freescale.net>
+References: <6E2EBEAF-DF1E-4439-91EF-B15EE39CAF61@freescale.com>
+	<20080430192030.GA9084@ld0162-tx32.am.freescale.net>
+Mime-Version: 1.0 (Apple Message framework v753)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <151BA0B1-A188-41C7-B2DB-E8D63D15C218@freescale.com>
+From: Becky Bruce <becky.bruce@freescale.com>
+Subject: Re: drivers/net/fec_8xx config problem
+Date: Wed, 30 Apr 2008 14:24:19 -0500
+To: Scott Wood <scottwood@freescale.com>
+Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>,
+	jengelh@linux01.gwdg.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,51 +28,20 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
--------- Original-Nachricht --------
-> Datum: Wed, 30 Apr 2008 14:03:02 +0100
-> Von: "Franca, Jose (NSN - PT/Portugal - MiniMD)" <jose.franca@nsn.com>
-> An: "ext Gerhard Pircher" <gerhard_pircher@gmx.net>, "Scott Wood" <scottwood@freescale.com>
-> CC: linuxppc-embedded@ozlabs.org, linuxppc-dev@ozlabs.org
-> Betreff: RE: FW: SKB corruption on heavy traffic
+On Apr 30, 2008, at 2:20 PM, Scott Wood wrote:
+> On Wed, Apr 30, 2008 at 02:19:21PM -0500, Becky Bruce wrote:
+>> I just noticed that the fec_8xx driver is not currently reachable via
+>> menuconfig because it depends on 8XX instead of 8xx.
+> [snip]
+>> Since nobody has noticed this problem, I'm wondering if this driver
+>> is still in (infrequent) use, or if it's been superseded and should
+>> be removed, or if I'm just completely missing something with respect
+>> to the use of "8XX" instead of "8xx".
+>
+> It's been superseded by drivers/net/fs_enet.
 
-> Hi!
-> 
-> 	There was a sugestion to change slab to slub alocation method... I > don't know quite well yet what is necessary to do this, but it seems that
-> the current implementation of slub is more commonly available on 2.6
-> kernels, not in 2.4 that I use :(...
-> 	Any guesses or hints on this?
-I'm using SLUB with kernel v2.6.25 and I still get data corruption on high
-load. On the other side it is a good idea to enable SLAB debugging, as
-Scott suggested. Maybe that sheds some light on this issue (even if most
-of the network drivers make use of DMA).
+Is there any reason we haven't removed it?  If not, I can push a  
+patch to yank it.
 
-regards,
-
-Gerhard
-
-> 
-> Regards!
-> Filipe.
-> 
-> -----Original Message-----
-> From: ext Gerhard Pircher [mailto:gerhard_pircher@gmx.net] 
-> Sent: quarta-feira, 30 de Abril de 2008 13:26
-> To: Franca, Jose (NSN - PT/Portugal - MiniMD); Scott Wood
-> Cc: linuxppc-embedded@ozlabs.org; linuxppc-dev@ozlabs.org
-> Subject: Re: FW: SKB corruption on heavy traffic
-> 
-> Hi,
-> 
-> I think I have the same problem here with all versions of the 2.6.x
-> kernel series (tested with kernel v2.6.8/14/16/18/25 on a PPC7455 machine 
-> with different PCI network cards by transferring a big file over
-> NFS/SCP). Data corruption occurs under high load, but I don't get any
-> kernel oops.
-> 
-> regards,
-> 
-> Gerhard
-
--- 
-Ist Ihr Browser Vista-kompatibel? Jetzt die neuesten 
-Browser-Versionen downloaden: http://www.gmx.net/de/go/browser
+Cheers,
+B
