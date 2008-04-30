@@ -1,20 +1,26 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <timur@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 4845BDDEFE
-	for <linuxppc-dev@ozlabs.org>; Thu,  1 May 2008 09:01:49 +1000 (EST)
-Subject: Re: [patch 1/5] POWERPC: Fix slb.c compile warnings
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Geoff Levand <geoffrey.levand@am.sony.com>
-In-Reply-To: <4818F1BA.80408@am.sony.com>
-References: <20080430215644.655638516@am.sony.com> <4818F1BA.80408@am.sony.com>
-Content-Type: text/plain
-Date: Thu, 01 May 2008 09:01:41 +1000
-Message-Id: <1209596501.18023.260.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
-Reply-To: benh@kernel.crashing.org
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 19611DDED4
+	for <linuxppc-dev@ozlabs.org>; Thu,  1 May 2008 09:03:52 +1000 (EST)
+Message-ID: <4818FAD1.8020808@freescale.com>
+Date: Wed, 30 Apr 2008 18:03:45 -0500
+From: Timur Tabi <timur@freescale.com>
+MIME-Version: 1.0
+To: cbouatmailru@gmail.com
+Subject: Re: [PATCH v2 4/6] [POWERPC] QE: implement support for the GPIO LIB
+	API
+References: <20080429185920.GA19735@polina.dev.rtsoft.ru>
+	<20080429190045.GD21203@polina.dev.rtsoft.ru>
+	<20080430193040.GA9239@polina.dev.rtsoft.ru>
+	<4818CB8B.9010106@freescale.com> <20080430224726.GA5529@zarina>
+	<4818F7C2.2030408@freescale.com> <20080430225951.GA10361@zarina>
+In-Reply-To: <20080430225951.GA10361@zarina>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,44 +30,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Anton Vorontsov wrote:
 
-On Wed, 2008-04-30 at 15:24 -0700, Geoff Levand wrote:
-> Arrange for a syntax check to always be done on the powerpc/mm/slb.c
-> DBG() macro by defining it to pr_debug() for non-debug builds. 
-> 
-> Also, fix these related compile warnings:
-> 
->   slb.c:273: warning: format '%04x' expects type 'unsigned int', but argument 2 has type 'long unsigned int
->   slb.c:274: warning: format '%04x' expects type 'unsigned int', but argument 2 has type 'long unsigned int'
-> 
-> Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
+> What is the problem with returning (int)(u32 & u32) value?
 
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Technically, a signed int is smaller than an unsigned int, so a value of
+0x80000000 won't fit in an 'int'.
 
-> ---
->  arch/powerpc/mm/slb.c |    6 +++---
->  1 file changed, 3 insertions(+), 3 deletions(-)
-> 
-> --- a/arch/powerpc/mm/slb.c
-> +++ b/arch/powerpc/mm/slb.c
-> @@ -30,7 +30,7 @@
->  #ifdef DEBUG
->  #define DBG(fmt...) udbg_printf(fmt)
->  #else
-> -#define DBG(fmt...)
-> +#define DBG pr_debug
->  #endif
->  
->  extern void slb_allocate_realmode(unsigned long ea);
-> @@ -279,8 +279,8 @@ void slb_initialize(void)
->  		patch_slb_encoding(slb_compare_rr_to_size,
->  				   mmu_slb_size);
->  
-> -		DBG("SLB: linear  LLP = %04x\n", linear_llp);
-> -		DBG("SLB: io      LLP = %04x\n", io_llp);
-> +		DBG("SLB: linear  LLP = %04lx\n", linear_llp);
-> +		DBG("SLB: io      LLP = %04lx\n", io_llp);
->  	}
->  
->  	get_paca()->stab_rr = SLB_NUM_BOLTED;
-> 
+> You've asked to remove "!!" stuff and now purposing exactly the
+> same... :-?
+
+The !! stuff was because the function was returning a boolean value, so non-zero
+== TRUE.  I don't think the return value from 'get' is a technically a boolean,
+so I'm assuming that the spec says the return value should be 0 or 1, to reflect
+the value of that GPIO pin.
+
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
