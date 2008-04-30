@@ -1,22 +1,12 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 03A3DDDED6
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Apr 2008 16:32:14 +1000 (EST)
-Subject: Re: [PATCH] [POWERPC] convert transfer_to_handler into a macro
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <73CD5806-5CE4-40A7-957B-8F164E26FAFB@kernel.crashing.org>
-References: <Pine.LNX.4.64.0804290856210.9230@blarg.am.freescale.net>
-	<18455.37613.709102.30668@cargo.ozlabs.ibm.com>
-	<73CD5806-5CE4-40A7-957B-8F164E26FAFB@kernel.crashing.org>
-Content-Type: text/plain
-Date: Wed, 30 Apr 2008 16:32:08 +1000
-Message-Id: <1209537128.18023.225.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
-Reply-To: benh@kernel.crashing.org
+Return-Path: <jk@ozlabs.org>
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Subject: [GIT PULL] Please pull spufs master branch
+Message-Id: <1209537841.611177.228566605486.0.gpush@pingu>
+To: Paul Mackerras <paulus@samba.org>
+From: Jeremy Kerr <jk@ozlabs.org>
+Date: Wed, 30 Apr 2008 16:44:01 +1000
+Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,31 +16,62 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hi Paul,
 
-On Tue, 2008-04-29 at 18:52 -0500, Kumar Gala wrote:
-> On Apr 29, 2008, at 4:28 PM, Paul Mackerras wrote:
-> > Kumar Gala writes:
-> >
-> >> We need to have unique transfer_to_handler paths for each exception  
-> >> level
-> >> that is supported.  We need to use the proper xSRR0/1 depending on  
-> >> which
-> >> exception level the interrupt was from.  The macro conversion lets up
-> >> templatize this code path.
-> >
-> > It seems to me that this implies you are assuming that you will never
-> > ever get a synchronous normal interrupt such as a TLB miss while you
-> > are in a critical or machine check handler.
-> 
-> Grr.. one more thing to fix :)
-> 
-> > Wouldn't it be better and safer to have the exception prolog for
-> > critical interrupts save SRR0/1 in the stack frame, and have the
-> > prolog for machine checks save SRR0/1 and CSRR0/1 likewise?
-> 
-> If we do this I guess we can use SRR0/1 regardless of which level we  
-> came from.
+Please do a:
 
-Also consider saving/restoring MAS
+git-pull git://git.kernel.org/pub/scm/linux/kernel/git/jk/spufs.git
 
-Ben.
+For some updates for 2.6.26. This includes some sputrace updates and a
+new switch_log for spufs contexts.
+
+Cheers,
+
+
+Jeremy
+
+
+--- 6 commits:
+
+  [POWERPC] spufs: add context switch notification log
+    Christoph Hellwig <hch@lst.de>
+
+    arch/powerpc/platforms/cell/spufs/context.c        |    1 
+    arch/powerpc/platforms/cell/spufs/file.c           |  166 ++++++++++
+    arch/powerpc/platforms/cell/spufs/run.c            |    2 
+    arch/powerpc/platforms/cell/spufs/sched.c          |    2 
+    arch/powerpc/platforms/cell/spufs/spufs.h          |   29 +
+    5 files changed, 200 insertions(+)
+   
+  [POWERPC] spufs: add sputrace marker parameter names
+    Julio M. Merino Vidal <jmerino@ac.upc.edu>
+
+    arch/powerpc/platforms/cell/spufs/spufs.h          |    4 -
+    arch/powerpc/platforms/cell/spufs/sputrace.c       |   36 +++++-----
+    2 files changed, 20 insertions(+), 20 deletions(-)
+   
+  [POWERPC] spufs: add marker for destroy_spu_context
+    Julio M. Merino Vidal <jmerino@ac.upc.edu>
+
+    arch/powerpc/platforms/cell/spufs/context.c        |    1 +
+    1 file changed, 1 insertion(+)
+   
+  [POWERPC] spufs: fix marker name for find_victim
+    Julio M. Merino Vidal <jmerino@ac.upc.edu>
+
+    arch/powerpc/platforms/cell/spufs/sched.c          |    2 +-
+    1 file changed, 1 insertion(+), 1 deletion(-)
+   
+  [POWERPC] spufs: trace spu_acquire_saved events
+    Julio M. Merino Vidal <jmerino@ac.upc.edu>
+
+    arch/powerpc/platforms/cell/spufs/context.c        |    2 ++
+    1 file changed, 2 insertions(+)
+   
+  [POWERPC] spufs: add .gitignore for spu_save_dump.h & spu_restore_dump.h
+    Kumar Gala <galak@kernel.crashing.org>
+
+    arch/powerpc/platforms/cell/spufs/.gitignore       |    0 
+    arch/powerpc/platforms/cell/spufs/.gitignore       |    2 ++
+    2 files changed, 2 insertions(+)
+   
