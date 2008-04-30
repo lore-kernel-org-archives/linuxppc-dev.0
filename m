@@ -1,26 +1,22 @@
-Return-Path: <cbouatmailru@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.173])
-	by ozlabs.org (Postfix) with ESMTP id 7C34BDDF27
-	for <linuxppc-dev@ozlabs.org>; Thu,  1 May 2008 09:24:34 +1000 (EST)
-Received: by ug-out-1314.google.com with SMTP id q7so1232113uge.0
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Apr 2008 16:24:32 -0700 (PDT)
-Date: Thu, 1 May 2008 03:24:30 +0400
-From: Anton Vorontsov <cbouatmailru@gmail.com>
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: [PATCH v2 4/6] [POWERPC] QE: implement support for the GPIO
-	LIB API
-Message-ID: <20080430232430.GA14233@zarina>
-References: <20080429185920.GA19735@polina.dev.rtsoft.ru>
-	<20080429190045.GD21203@polina.dev.rtsoft.ru>
-	<20080430193040.GA9239@polina.dev.rtsoft.ru>
-	<4818CB8B.9010106@freescale.com> <20080430224726.GA5529@zarina>
-	<4818F7C2.2030408@freescale.com> <20080430225951.GA10361@zarina>
-	<4818FAD1.8020808@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <4818FAD1.8020808@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: cbouatmailru@gmail.com
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 83C27DDFC8
+	for <linuxppc-dev@ozlabs.org>; Thu,  1 May 2008 09:24:44 +1000 (EST)
+Message-Id: <443B3050-8332-451D-8B79-28CC1C3AEB15@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: benh@kernel.crashing.org
+In-Reply-To: <1209593896.18023.253.camel@pasglop>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Mime-Version: 1.0 (Apple Message framework v919.2)
+Subject: Re: [PATCH] [POWERPC] Rework EXC_LEVEL_EXCEPTION_PROLOG code
+Date: Wed, 30 Apr 2008 18:24:37 -0500
+References: <Pine.LNX.4.64.0804300424040.31028@blarg.am.freescale.net>
+	<1209592495.18023.246.camel@pasglop>
+	<12ECF63E-7CEA-48FD-9447-7D534C29271D@kernel.crashing.org>
+	<1209593896.18023.253.camel@pasglop>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,28 +26,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Apr 30, 2008 at 06:03:45PM -0500, Timur Tabi wrote:
-> Anton Vorontsov wrote:
-> 
-> > What is the problem with returning (int)(u32 & u32) value?
-> 
-> Technically, a signed int is smaller than an unsigned int, so a value of
-> 0x80000000 won't fit in an 'int'.
 
-They're of the same size. And because of that, we'll not lose
-information, so (int)(0x80000000U) still != 0, it is just negative.
+On Apr 30, 2008, at 5:18 PM, Benjamin Herrenschmidt wrote:
+>
+> On Wed, 2008-04-30 at 17:13 -0500, Kumar Gala wrote:
+>>>> stack there by make references go from GPR11-INT_FRAME_SIZE(r8) to
+>>>> just GPR(r8)
+>>>           ^^ 11 ?
+>>
+>> r8 is correct for my example.  My point is
+>> s/GPR11-INT_FRAME_SIZE/GPR11/
+>
+> Sorry, I put the ^^ in the wrong place :-) I meant the example should
+> say GPR11(r8)
 
-> > You've asked to remove "!!" stuff and now purposing exactly the
-> > same... :-?
-> 
-> The !! stuff was because the function was returning a boolean value, so non-zero
-> == TRUE.  I don't think the return value from 'get' is a technically a boolean,
-> so I'm assuming that the spec says the return value should be 0 or 1, to reflect
-> the value of that GPIO pin.
+ah, that makes sense.  Will fix in the next revision.
 
-No. The spec indeed says that 0 for low, non-0 for high.
-
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+- k
