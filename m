@@ -1,22 +1,24 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
-	[140.211.169.13])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id EA77FDDE06
-	for <linuxppc-dev@ozlabs.org>; Thu,  1 May 2008 08:46:43 +1000 (EST)
-Date: Wed, 30 Apr 2008 15:46:31 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: David Brownell <david-b@pacbell.net>
-Subject: Re: [patch 2.6.25-git] spi_mpc83xx much improved driver
-Message-Id: <20080430154631.b86797de.akpm@linux-foundation.org>
-In-Reply-To: <200804301537.07965.david-b@pacbell.net>
-References: <200804301537.07965.david-b@pacbell.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: spi-devel-general@lists.sourceforge.net, 12o3l@tiscali.nl,
-	linuxppc-dev@ozlabs.org
+Return-Path: <cbouatmailru@gmail.com>
+Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.184])
+	by ozlabs.org (Postfix) with ESMTP id 17711DDEFD
+	for <linuxppc-dev@ozlabs.org>; Thu,  1 May 2008 08:47:30 +1000 (EST)
+Received: by nf-out-0910.google.com with SMTP id e27so440943nfd.9
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Apr 2008 15:47:27 -0700 (PDT)
+Date: Thu, 1 May 2008 02:47:26 +0400
+From: Anton Vorontsov <cbouatmailru@gmail.com>
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: [PATCH v2 4/6] [POWERPC] QE: implement support for the GPIO
+	LIB API
+Message-ID: <20080430224726.GA5529@zarina>
+References: <20080429185920.GA19735@polina.dev.rtsoft.ru>
+	<20080429190045.GD21203@polina.dev.rtsoft.ru>
+	<20080430193040.GA9239@polina.dev.rtsoft.ru>
+	<4818CB8B.9010106@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <4818CB8B.9010106@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: cbouatmailru@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,41 +28,54 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 30 Apr 2008 15:37:07 -0700
-David Brownell <david-b@pacbell.net> wrote:
-
-> From: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
-> Date: Fri, 11 Apr 2008 18:57:21 +0200
-> Subject: [PATCH] Much improved mpc83xx SPI driver.
+On Wed, Apr 30, 2008 at 02:42:03PM -0500, Timur Tabi wrote:
+> Anton Vorontsov wrote:
 > 
-> The current driver may cause glitches on SPI CLK line since one must
-> disable the SPI controller before changing any HW settings.  Fix this
-> by implementing a local spi_transfer function that won't change speed
-> and/or word size while CS is active.
+> > +   Example:
+> > +	qe_pio_a: gpio-controller@1400 {
+> > +		#gpio-cells = <2>;
+> > +		compatible = "fsl,mpc8360-qe-pario-bank",
+> > +			     "fsl,mpc8323-qe-pario-bank";
 > 
-> While doing that heavy lifting a few other issues were addressed too:
->  - Make word size 16 and 32 work too.
->  - Honor bits_per_word and speed_hz in spi transaction.
->  - Optimize the common path.
+> I know this is an example, but would we ever include both compatible strings in
+> one DTS?  Isn't the norm something like:
 > 
-> This also stops using the "bitbang" framework (except for a few
-> constants).
->
-> ...
->
-> +static void mpc83xx_spi_work(struct work_struct *work)
-> +{
-> +	struct mpc83xx_spi *mpc83xx_spi =
-> +		container_of(work, struct mpc83xx_spi, work);
-> +
-> +	spin_lock_irq(&mpc83xx_spi->lock);
+> "fsl,mpc8360-qe-pario-bank", "fsl,qe-pario-bank";
+> 
+> I.e. specific version, then generic version?
 
-irq-safe.
+Per Grant Likely's comments, "fsl,qe-pario-bank" considered as a made up
+stuff. MPC8323 is the first QE chip, so every next QE chips should be
+compatible.
 
-> ...
->
-> +	spin_lock(&mpc83xx_spi->lock);
+Though, for fsl,gtm we can't use this, since we really want generic
+name.
 
-not irq-safe.
+> Otherwise, every time we introduce a new QE part, we'll have to update *every*
+> QE-enabled device tree *and* the QE gpio driver.
 
-Deliberate?
+Nope. If the the QE is compatible with the previous, just write
+"fsl,newchip-qe-pario-bank", "fsl,mpc8323-qe-pario-bank".
+
+Btw, the same we do for the 8349 compatible PCI.
+
+> > +static int qe_gpio_get(struct gpio_chip *gc, unsigned int gpio)
+> > +{
+> > +	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
+> > +	struct qe_pio_regs __iomem *regs = mm_gc->regs;
+> > +	u32 pin_mask = 1 << (QE_PIO_PINS - 1 - gpio);
+> > +
+> > +	return in_be32(&regs->cpdata) & pin_mask;
+> > +}
+> 
+> Return value should be "u32", not "int".
+
+gpio.h disagree
+
+$ cat include/asm-generic/gpio.h  | grep \*get
+        int                     (*get)(struct gpio_chip *chip,
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
