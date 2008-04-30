@@ -1,22 +1,18 @@
-Return-Path: <stephen.neuendorffer@xilinx.com>
-Received: from outbound2-dub-R.bigfish.com (outbound-dub.frontbridge.com
-	[213.199.154.16])
+Return-Path: <rmachet@slac.stanford.edu>
+Received: from nospam3.slac.stanford.edu (nospam3.slac.stanford.edu
+	[134.79.18.120])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id AAE57DDF5D
-	for <linuxppc-dev@ozlabs.org>; Thu,  1 May 2008 02:39:55 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="UTF-8"
-Subject: RE: [PATCH] [POWERPC] Xilinx: Fix compile warnings
-Date: Wed, 30 Apr 2008 09:39:45 -0700
-In-reply-to: <Pine.LNX.4.64.0804301025270.19599@blarg.am.freescale.net>
-References: <Pine.LNX.4.64.0804301025270.19599@blarg.am.freescale.net>
-From: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
-To: "Kumar Gala" <galak@kernel.crashing.org>,
-	"Josh Boyer" <jwboyer@linux.vnet.ibm.com>
-Message-Id: <20080430163946.C635B18B8059@mail52-dub.bigfish.com>
-Cc: linuxppc-dev@ozlabs.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 87BD5DE060
+	for <linuxppc-dev@ozlabs.org>; Thu,  1 May 2008 02:47:06 +1000 (EST)
+Subject: [PATCH v4] sysdev,mv64x60: MV64x60 device bus
+From: Remi Machet <rmachet@slac.stanford.edu>
+To: Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain
+Date: Wed, 30 Apr 2008 09:47:16 -0700
+Message-Id: <1209574037.14407.57.camel@pcds-ts102.slac.stanford.edu>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Stephen Rothwell <sfr@canb.auug.org.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,56 +22,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Rm9yIHdoYXQgaXQncyB3b3J0aDoNCkFja2VkLWJ5OiBTdGVwaGVuIE5ldWVuZG9yZmZlciA8c3Rl
-cGhlbi5uZXVlbmRvcmZmZXJAeGlsaW54LmNvbT4NCg0KVGhlcmUncyBvbmUgb3IgdHdvIG90aGVy
-IHRoaW5ncyBJJ3ZlIGJlZW4gbWVhbmluZyB0byBjbGVhbiB1cCwgc3VjaCBhcyB0aGUgc2VjdGlv
-biBtaXNtYXRjaCBvbiBod2ljYXBfb2ZfbWF0Y2gsIHRvby4NCg0KU3RldmUNCg0KPiAtLS0tLU9y
-aWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBsaW51eHBwYy1kZXYtYm91bmNlcytzdGVwaGVu
-Lm5ldWVuZG9yZmZlcj14aWxpbnguY29tQG96bGFicy5vcmcgW21haWx0bzpsaW51eHBwYy1kZXYt
-DQo+IGJvdW5jZXMrc3RlcGhlbi5uZXVlbmRvcmZmZXI9eGlsaW54LmNvbUBvemxhYnMub3JnXSBP
-biBCZWhhbGYgT2YgS3VtYXIgR2FsYQ0KPiBTZW50OiBXZWRuZXNkYXksIEFwcmlsIDMwLCAyMDA4
-IDg6MjYgQU0NCj4gVG86IEpvc2ggQm95ZXINCj4gQ2M6IGxpbnV4cHBjLWRldkBvemxhYnMub3Jn
-DQo+IFN1YmplY3Q6IFtQQVRDSF0gW1BPV0VSUENdIFhpbGlueDogRml4IGNvbXBpbGUgd2Fybmlu
-Z3MNCj4gDQo+IGFyY2gvcG93ZXJwYy9zeXNkZXYveGlsaW54X2ludGMuYzogSW4gZnVuY3Rpb24g
-w6LigqzLnHhpbGlueF9pbnRjX2luaXTDouKCrOKEojoNCj4gYXJjaC9wb3dlcnBjL3N5c2Rldi94
-aWxpbnhfaW50Yy5jOjExMTogd2FybmluZzogZm9ybWF0IMOi4oKsy5wlMDhYw6LigqzihKIgZXhw
-ZWN0cyB0eXBlIMOi4oKsy5x1bnNpZ25lZCBpbnTDouKCrOKEoiwNCj4gYnV0IGFyZ3VtZW50IDIg
-aGFzIHR5cGUgw6LigqzLnHJlc291cmNlX3NpemVfdMOi4oKs4oSiDQo+IGRyaXZlcnMvY2hhci94
-aWxpbnhfaHdpY2FwL3hpbGlueF9od2ljYXAuYzogSW4gZnVuY3Rpb24gw6LigqzLnGh3aWNhcF9z
-ZXR1cMOi4oKs4oSiOg0KPiBkcml2ZXJzL2NoYXIveGlsaW54X2h3aWNhcC94aWxpbnhfaHdpY2Fw
-LmM6NjI2OiB3YXJuaW5nOiBjYXN0IHRvIHBvaW50ZXIgZnJvbSBpbnRlZ2VyIG9mIGRpZmZlcmVu
-dA0KPiBzaXplDQo+IGRyaXZlcnMvY2hhci94aWxpbnhfaHdpY2FwL3hpbGlueF9od2ljYXAuYzo2
-NDY6IHdhcm5pbmc6IGZvcm1hdCDDouKCrMucJXjDouKCrOKEoiBleHBlY3RzIHR5cGUgw6LigqzL
-nHVuc2lnbmVkDQo+IGludMOi4oKs4oSiLCBidXQgYXJndW1lbnQgNiBoYXMgdHlwZSDDouKCrMuc
-cmVzb3VyY2Vfc2l6ZV90w6LigqzihKINCj4gDQo+IFNpZ25lZC1vZmYtYnk6IEt1bWFyIEdhbGEg
-PGdhbGFrQGtlcm5lbC5jcmFzaGluZy5vcmc+DQo+IC0tLQ0KPiAgYXJjaC9wb3dlcnBjL3N5c2Rl
-di94aWxpbnhfaW50Yy5jICAgICAgICAgIHwgICAgMiArLQ0KPiAgZHJpdmVycy9jaGFyL3hpbGlu
-eF9od2ljYXAveGlsaW54X2h3aWNhcC5jIHwgICAgNiArKystLS0NCj4gIDIgZmlsZXMgY2hhbmdl
-ZCwgNCBpbnNlcnRpb25zKCspLCA0IGRlbGV0aW9ucygtKQ0KPiANCj4gZGlmZiAtLWdpdCBhL2Fy
-Y2gvcG93ZXJwYy9zeXNkZXYveGlsaW54X2ludGMuYyBiL2FyY2gvcG93ZXJwYy9zeXNkZXYveGls
-aW54X2ludGMuYw0KPiBpbmRleCBiYThlZWEyLi5iN2FlZmQwIDEwMDY0NA0KPiAtLS0gYS9hcmNo
-L3Bvd2VycGMvc3lzZGV2L3hpbGlueF9pbnRjLmMNCj4gKysrIGIvYXJjaC9wb3dlcnBjL3N5c2Rl
-di94aWxpbnhfaW50Yy5jDQo+IEBAIC0xMDcsNyArMTA3LDcgQEAgeGlsaW54X2ludGNfaW5pdChz
-dHJ1Y3QgZGV2aWNlX25vZGUgKm5wKQ0KPiAgCX0NCj4gIAlyZWdzID0gaW9yZW1hcChyZXMuc3Rh
-cnQsIDMyKTsNCj4gDQo+IC0JcHJpbnRrKEtFUk5fSU5GTyAiWGlsaW54IGludGMgYXQgMHglMDhY
-IG1hcHBlZCB0byAweCVwXG4iLA0KPiArCXByaW50ayhLRVJOX0lORk8gIlhpbGlueCBpbnRjIGF0
-IDB4JTA4TFggbWFwcGVkIHRvIDB4JXBcbiIsDQo+ICAJCXJlcy5zdGFydCwgcmVncyk7DQo+IA0K
-PiAgCS8qIFNldHVwIGludGVycnVwdCBjb250cm9sbGVyICovDQo+IGRpZmYgLS1naXQgYS9kcml2
-ZXJzL2NoYXIveGlsaW54X2h3aWNhcC94aWxpbnhfaHdpY2FwLmMgYi9kcml2ZXJzL2NoYXIveGls
-aW54X2h3aWNhcC94aWxpbnhfaHdpY2FwLmMNCj4gaW5kZXggZGZlNjkwNy4uM2VkZjFmYyAxMDA2
-NDQNCj4gLS0tIGEvZHJpdmVycy9jaGFyL3hpbGlueF9od2ljYXAveGlsaW54X2h3aWNhcC5jDQo+
-ICsrKyBiL2RyaXZlcnMvY2hhci94aWxpbnhfaHdpY2FwL3hpbGlueF9od2ljYXAuYw0KPiBAQCAt
-NjIzLDggKzYyMyw4IEBAIHN0YXRpYyBpbnQgX19kZXZpbml0IGh3aWNhcF9zZXR1cChzdHJ1Y3Qg
-ZGV2aWNlICpkZXYsIGludCBpZCwNCj4gDQo+ICAJaWYgKCFyZXF1ZXN0X21lbV9yZWdpb24oZHJ2
-ZGF0YS0+bWVtX3N0YXJ0LA0KPiAgCQkJCQlkcnZkYXRhLT5tZW1fc2l6ZSwgRFJJVkVSX05BTUUp
-KSB7DQo+IC0JCWRldl9lcnIoZGV2LCAiQ291bGRuJ3QgbG9jayBtZW1vcnkgcmVnaW9uIGF0ICVw
-XG4iLA0KPiAtCQkJKHZvaWQgKilyZWdzX3Jlcy0+c3RhcnQpOw0KPiArCQlkZXZfZXJyKGRldiwg
-IkNvdWxkbid0IGxvY2sgbWVtb3J5IHJlZ2lvbiBhdCAlTHhcbiIsDQo+ICsJCQlyZWdzX3Jlcy0+
-c3RhcnQpOw0KPiAgCQlyZXR2YWwgPSAtRUJVU1k7DQo+ICAJCWdvdG8gZmFpbGVkMTsNCj4gIAl9
-DQo+IEBAIC02NDMsNyArNjQzLDcgQEAgc3RhdGljIGludCBfX2RldmluaXQgaHdpY2FwX3NldHVw
-KHN0cnVjdCBkZXZpY2UgKmRldiwgaW50IGlkLA0KPiAgCW11dGV4X2luaXQoJmRydmRhdGEtPnNl
-bSk7DQo+ICAJZHJ2ZGF0YS0+aXNfb3BlbiA9IDA7DQo+IA0KPiAtCWRldl9pbmZvKGRldiwgImlv
-cmVtYXAgJWx4IHRvICVwIHdpdGggc2l6ZSAleFxuIiwNCj4gKwlkZXZfaW5mbyhkZXYsICJpb3Jl
-bWFwICVseCB0byAlcCB3aXRoIHNpemUgJUx4XG4iLA0KPiAgCQkgKHVuc2lnbmVkIGxvbmcgaW50
-KWRydmRhdGEtPm1lbV9zdGFydCwNCj4gIAkJCWRydmRhdGEtPmJhc2VfYWRkcmVzcywgZHJ2ZGF0
-YS0+bWVtX3NpemUpOw0KPiANCj4gLS0NCj4gMS41LjQuMQ0K
+For each mv64360 entry in the OpenFirmware database, add the 
+registration of an of_bus to take care of devices connected to
+the MV64x60 asynchronous devices controller.
+This change makes it possible for those devices to be detected by 
+drivers that support the of_platform without having a custom call 
+for each of them in the board file.
+
+Signed-off-by: Remi Machet (rmachet@slac.stanford.edu)
+---
+Changes:
+v2: Use the compatible field to detect devices to register (on Dale Farnsworth
+suggestion).
+v3: Added __initdata to variable of_mv64x60_devices (thanks to Stephen Rothwell 
+for pointing that out).
+v4: Re-wrote the patch description.
+
+ arch/powerpc/sysdev/mv64x60_dev.c |   10 ++++++++++
+ 1 files changed, 10 insertions(+)
+
+diff --git a/arch/powerpc/sysdev/mv64x60_dev.c b/arch/powerpc/sysdev/mv64x60_dev.c
+index 41af122..c38695e 100644
+--- a/arch/powerpc/sysdev/mv64x60_dev.c
++++ b/arch/powerpc/sysdev/mv64x60_dev.c
+@@ -15,6 +15,7 @@
+ #include <linux/console.h>
+ #include <linux/mv643xx.h>
+ #include <linux/platform_device.h>
++#include <linux/of_platform.h>
+ 
+ #include <asm/prom.h>
+ 
+@@ -25,6 +26,11 @@
+  * PowerPC of_platform_bus_type.  They support platform_bus_type instead.
+  */
+ 
++static struct of_device_id __initdata of_mv64x60_devices[] = {
++	{ .compatible = "marvell,mv64306-devctrl", },
++	{}
++};
++
+ /*
+  * Create MPSC platform devices
+  */
+@@ -482,6 +488,10 @@ static int __init mv64x60_device_setup(void)
+ 		of_node_put(np);
+ 	}
+ 
++	/* Now add every node that is on the device bus (type is devicectrl */
++	for_each_compatible_node(np, NULL, "marvell,mv64360")
++		of_platform_bus_probe(np, of_mv64x60_devices, NULL);
++
+ 	return 0;
+ }
+ arch_initcall(mv64x60_device_setup);
