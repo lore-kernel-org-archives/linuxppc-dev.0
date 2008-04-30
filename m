@@ -1,24 +1,19 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
-	[140.211.169.13])
+Return-Path: <becky.bruce@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id DDB69DE4DA
-	for <linuxppc-dev@ozlabs.org>; Thu,  1 May 2008 05:12:46 +1000 (EST)
-Date: Wed, 30 Apr 2008 12:12:39 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] docbook: fix fatal rapidio yet again (and more to come)
-Message-Id: <20080430121239.28492328.akpm@linux-foundation.org>
-In-Reply-To: <51A34080-7981-4958-B225-4921FC95B84A@kernel.crashing.org>
-References: <Pine.LNX.4.64.0804292009000.18219@shark.he.net>
-	<20080430113500.dfe21880.akpm@linux-foundation.org>
-	<51A34080-7981-4958-B225-4921FC95B84A@kernel.crashing.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, rdunlap@xenotime.net,
-	paulus@samba.org, torvalds@linux-foundation.org
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 3BB5ADDF1E
+	for <linuxppc-dev@ozlabs.org>; Thu,  1 May 2008 05:17:14 +1000 (EST)
+Mime-Version: 1.0 (Apple Message framework v753)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <6E2EBEAF-DF1E-4439-91EF-B15EE39CAF61@freescale.com>
+From: Becky Bruce <becky.bruce@freescale.com>
+Subject: drivers/net/fec_8xx config problem
+Date: Wed, 30 Apr 2008 14:19:21 -0500
+To: pantelis.antoniou@gmail.com, jengelh@linux01.gwdg.de
+Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,81 +23,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 30 Apr 2008 14:01:12 -0500
-Kumar Gala <galak@kernel.crashing.org> wrote:
+I just noticed that the fec_8xx driver is not currently reachable via  
+menuconfig because it depends on 8XX instead of 8xx.  It looks like  
+this change occurred in commit  
+d1c0a65fb597697d1fbce4eadf42b84f70483edc, almost a year ago:
 
-> 
-> On Apr 30, 2008, at 1:35 PM, Andrew Morton wrote:
-> > On Tue, 29 Apr 2008 20:10:55 -0700 (PDT)
-> > "Randy.Dunlap" <rdunlap@xenotime.net> wrote:
-> >
-> >> From: Randy Dunlap <randy.dunlap@oracle.com>
-> >>
-> >> Don't refer to file that no longer exists:
-> >> docproc: linux-2.6.25-git14/arch/powerpc/kernel/rio.c: No such file  
-> >> or directory
-> >>
-> >> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-> >> ---
-> >> Documentation/DocBook/rapidio.tmpl |    1 -
-> >> 1 file changed, 1 deletion(-)
-> >>
-> >> --- linux-2.6.25-git14.orig/Documentation/DocBook/rapidio.tmpl
-> >> +++ linux-2.6.25-git14/Documentation/DocBook/rapidio.tmpl
-> >> @@ -133,7 +133,6 @@
-> >> !Idrivers/rapidio/rio-sysfs.c
-> >>      </sect1>
-> >>      <sect1 id="PPC32_support"><title>PPC32 support</title>
-> >> -!Iarch/powerpc/kernel/rio.c
-> >> !Earch/powerpc/sysdev/fsl_rio.c
-> >> !Iarch/powerpc/sysdev/fsl_rio.c
-> >>      </sect1>
-> >
-> > grumble.
-> >
-> > This is a subset of rapidio-fix-docbook-references.patch, but I  
-> > appear to
-> > be unable to interest anyone in merging/reviewing/accepting/anything- 
-> > else
-> > that quite large set of patches.
-> >
-> > Guys, those patches were sent six weeks ago and it now looks like  
-> > they will
-> > miss 2.6.26.  This is pretty slack of us.  Help?
-> 
-> Odd.  I thought Paul had picked up a docbook RapidIO patch from you in  
-> the latest merge round.
-> 
-
-Well it's more than "a" patch.  The six-week-old patch series is:
-
-rapidio-add-memory-mapping-driver-to-rapidio.patch
-rapidio-add-rapidio-space-allocation-bitmap-arithmetic.patch
-rapidio-add-fsl-rapidio-controller-memory-ops-functions.patch
-rapidio-add-the-rapidio-master-port-maintance-and-doorbell-window-to-space-resources.patch
-rapidio-add-rapidio-proc-fs-for-memory-mapping-debugging.patch
-rapidio-add-the-memory-mapping-support-in-rionet-driver.patch
-rapidio-fix-docbook-references.patch
-rapidio-fix-kernel-doc-problems.patch
-
-totalling:
-
- arch/powerpc/sysdev/fsl_rio.c       |   13 +
- include/linux/rio.h                 |   10 
- drivers/net/Kconfig                 |   10 
- drivers/net/rionet.c                |  324 ++++++++++++++++++++++++++++++
- drivers/rapidio/Makefile            |    1 
- drivers/rapidio/rio.c               |   10 
- drivers/rapidio/sallocator/Kconfig  |    9 
- drivers/rapidio/sallocator/Makefile |   12 +
- drivers/rapidio/sallocator/bitmap.c |  384 ++++++++++++++++++++++++++++++++++++
- include/linux/rio.h                 |   10 
- include/linux/rio_drv.h             |   41 +++
- 16 files changed, 1425 insertions(+), 14 deletions(-)
+diff --git a/drivers/net/fec_8xx/Kconfig b/drivers/net/fec_8xx/Kconfig
+index a84c232..afb34de 100644
+--- a/drivers/net/fec_8xx/Kconfig+++ b/drivers/net/fec_8xx/Kconfig
+@@ -1,6 +1,6 @@
+  config FEC_8XX
+         tristate "Motorola 8xx FEC driver"
+-       depends on NET_ETHERNET && 8xx
++       depends on 8XX
+         select MII
 
 
-(seems that I forgot to cc Jeff on the rionet change too).
+Since nobody has noticed this problem, I'm wondering if this driver  
+is still in (infrequent) use, or if it's been superseded and should  
+be removed, or if I'm just completely missing something with respect  
+to the use of "8XX" instead of "8xx".
 
+I'm happy to submit a patch to correct this, I'm just not sure what  
+the right answer is.
 
-Oh well.  If nobody puts their hand up in the next 24 hours or so I'll just
-send it all in to Linus.
+Thanks,
+Becky
