@@ -1,17 +1,15 @@
-Return-Path: <sanders-rob@zai.com>
-Received: from york.rivers.zai.com (picture.zai.com [12.47.112.36])
-	by ozlabs.org (Postfix) with ESMTP id B0C3CDE470
-	for <linuxppc-dev@ozlabs.org>; Thu,  1 May 2008 01:00:50 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: RE: DPMS for Radeon 9600 in G5
-Date: Wed, 30 Apr 2008 10:45:36 -0400
-Message-ID: <D108F32273D3044F8C7B24328CB771370E7686@york.rivers.zai.com>
-References: <48188C9F.3070805@hypersurf.com>
-From: "Sanders, Rob M." <sanders-rob@zai.com>
-To: "Kevin Diggs" <kevdig@hypersurf.com>,
-	<linuxppc-dev@ozlabs.org>
+Return-Path: <scottwood@freescale.com>
+Date: Wed, 30 Apr 2008 10:00:53 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: "Franca, Jose (NSN - PT/Portugal - MiniMD)" <jose.franca@nsn.com>
+Subject: Re: SKB corruption on heavy traffic
+Message-ID: <20080430150053.GB23545@ld0162-tx32.am.freescale.net>
+References: <20080429191510.GC8955@ld0162-tx32.am.freescale.net>
+	<56DEE2D3217CD946B290399093C8FA7C212E1F@PTLIEXC001.nsn-intra.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <56DEE2D3217CD946B290399093C8FA7C212E1F@PTLIEXC001.nsn-intra.net>
+Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,31 +19,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kevin,
-  Have you tried posting to the xorg =
-(http://lists.freedesktop.org/mailman/listinfo/xorg) mailing list? =20
-They helped me fix an issue I was seeing with my Radeon 9600 and G5.  =
-I'm running YDL6 with two LCDs hanging
-off the back of my Radeon. =20
+On Wed, Apr 30, 2008 at 09:43:33AM +0100, Franca, Jose (NSN - PT/Portugal - MiniMD) wrote:
+> 	It't quite dificult to say if the problem exists without our
+> 	changes, since the all software is dependent on this changes so
+> 	to work with the hardware. I can't answer to that right now on
+> 	that, but I forgot to add one thing: we have ring buffer full
+> 	problems on our fcc_enet driver from time to time. So, I think
+> 	the problem could be on linux configurations (related to hw)
+> 	because there is a lot of posts on the web related to problems
+> 	similar to this (none of them has really solved the bottom
+> 	problem).
 
-Rob
+One thing you could try is to enable slab debugging, rather than your
+custom debugging code; this will poison the memory upon free, making it
+more likely that whatever is accessing it will crash immediately rather
+than just cause corruption.  Or, if you want to mantain the delay, do the
+poisoning yourself.
 
+Of course, this won't help if the access is write-only, or if the
+corruption is happening via DMA.
 
+When you say you have a full ring buffer, do you mean tx or rx?  Does it
+recover gracefully?  Do you think it's caused by something other than
+sending data faster than the line can support (tx) or receiving packets
+faster than the cpu can handle (rx)?
 
------Original Message-----
-From: linuxppc-dev-bounces+sanders-rob=3Dzai.com@ozlabs.org on behalf of =
-Kevin Diggs
-Sent: Wed 4/30/2008 11:13 AM
-To: linuxppc-dev@ozlabs.org
-Subject: DPMS for Radeon 9600 in G5
-=20
-Anyone one have any suggestions on how to get DPMS working for a Radeon=20
-9600? Using a DVI cable?
+Are any of the other problem reports from recent, unmodified kernels (2.4
+is very old)?
 
-Thanks!
-
-kevin
-_______________________________________________
-Linuxppc-dev mailing list
-Linuxppc-dev@ozlabs.org
-https://ozlabs.org/mailman/listinfo/linuxppc-dev
+-Scott
