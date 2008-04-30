@@ -1,25 +1,30 @@
-Return-Path: <cbouatmailru@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.174])
-	by ozlabs.org (Postfix) with ESMTP id 3E858DDE0E
-	for <linuxppc-dev@ozlabs.org>; Thu,  1 May 2008 08:59:54 +1000 (EST)
-Received: by ug-out-1314.google.com with SMTP id q7so1228963uge.0
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Apr 2008 15:59:52 -0700 (PDT)
-Date: Thu, 1 May 2008 02:59:51 +0400
-From: Anton Vorontsov <cbouatmailru@gmail.com>
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: [PATCH v2 4/6] [POWERPC] QE: implement support for the GPIO LIB
-	API
-Message-ID: <20080430225951.GA10361@zarina>
-References: <20080429185920.GA19735@polina.dev.rtsoft.ru>
-	<20080429190045.GD21203@polina.dev.rtsoft.ru>
-	<20080430193040.GA9239@polina.dev.rtsoft.ru>
-	<4818CB8B.9010106@freescale.com> <20080430224726.GA5529@zarina>
-	<4818F7C2.2030408@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <4818F7C2.2030408@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: cbouatmailru@gmail.com
+Return-Path: <randy.dunlap@Oracle.com>
+Received: from rgminet02.oracle.com (rgminet02.oracle.com [148.87.113.119])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 5AEF8DDECF
+	for <linuxppc-dev@ozlabs.org>; Thu,  1 May 2008 09:00:51 +1000 (EST)
+Received: from rgminet01.oracle.com (rgminet01.oracle.com [148.87.113.118])
+	by rgminet02.oracle.com (Switch-3.2.4/Switch-3.1.7) with ESMTP id
+	m3UMCZpX004490
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Apr 2008 16:12:35 -0600
+Date: Wed, 30 Apr 2008 15:11:49 -0700
+From: Randy Dunlap <randy.dunlap@Oracle.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH] docbook: fix fatal rapidio yet again (and more to come)
+Message-Id: <20080430151149.063920cf.randy.dunlap@oracle.com>
+In-Reply-To: <18456.60948.463017.139935@cargo.ozlabs.ibm.com>
+References: <Pine.LNX.4.64.0804292009000.18219@shark.he.net>
+	<20080430113500.dfe21880.akpm@linux-foundation.org>
+	<51A34080-7981-4958-B225-4921FC95B84A@kernel.crashing.org>
+	<20080430121239.28492328.akpm@linux-foundation.org>
+	<18456.60948.463017.139935@cargo.ozlabs.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Andrew Morton <akpm@linux-foundation.org>, torvalds@linux-foundation.org,
+	"\"Zhang Wei\" rdunlap@xenotime.net" <Wei.Zhang@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,33 +34,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Apr 30, 2008 at 05:50:42PM -0500, Timur Tabi wrote:
-> Anton Vorontsov wrote:
-> 
-> > Per Grant Likely's comments, "fsl,qe-pario-bank" considered as a made up
-> > stuff. MPC8323 is the first QE chip, so every next QE chips should be
-> > compatible.
-> 
-> Ok.
-> 
-> >> Return value should be "u32", not "int".
-> > 
-> > gpio.h disagree
-> > 
-> > $ cat include/asm-generic/gpio.h  | grep \*get
-> >         int                     (*get)(struct gpio_chip *chip,
-> > 
-> 
-> In that case, perhaps you should return this:
-> 
-> 	return in_be32(&regs->cpdata) & pin_mask ? 1 : 0;
+On Thu, 1 May 2008 08:09:24 +1000 Paul Mackerras wrote:
 
-What is the problem with returning (int)(u32 & u32) value?
+> Andrew Morton writes:
+> 
+> > > Odd.  I thought Paul had picked up a docbook RapidIO patch from you in  
+> > > the latest merge round.
+> > > 
+> > 
+> > Well it's more than "a" patch.  The six-week-old patch series is:
+> > 
+> > rapidio-add-memory-mapping-driver-to-rapidio.patch
+> > rapidio-add-rapidio-space-allocation-bitmap-arithmetic.patch
+> > rapidio-add-fsl-rapidio-controller-memory-ops-functions.patch
+> > rapidio-add-the-rapidio-master-port-maintance-and-doorbell-window-to-space-resources.patch
+> > rapidio-add-rapidio-proc-fs-for-memory-mapping-debugging.patch
+> > rapidio-add-the-memory-mapping-support-in-rionet-driver.patch
+> > rapidio-fix-docbook-references.patch
+> > rapidio-fix-kernel-doc-problems.patch
+> 
+> What happened is that you (Andrew) sent them on to me pretty much
+> unexamined.  I took a look at them and dropped one of them because it
+> created a new /proc file.  I asked Kumar to look at them and he had
+> issues with another three of the patches, and dropping those meant
+> that all the following ones (including the fix-kernel-doc one)
+> wouldn't apply, so I dropped them too.  I applied the rest and sent
+> them to Linus.
+> 
+> > (seems that I forgot to cc Jeff on the rionet change too).
+> 
+> Yeah.  I nearly dropped that one too.  I probably should have. :)
+> 
+> > Oh well.  If nobody puts their hand up in the next 24 hours or so I'll just
+> > send it all in to Linus.
+> 
+> Please don't.  At this stage I think the best thing is for Kumar to
+> talk to Zhang Wei (they both work for Freescale, so that should be
+> possible in theory :) and get him to rework the remaining patches as
+> required for inclusion in 2.6.27.
 
-You've asked to remove "!!" stuff and now purposing exactly the
-same... :-?
+Just to be clear, the docbook changes shouldn't wait for 2.6.27.
+There's no need for that.
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+---
+~Randy
