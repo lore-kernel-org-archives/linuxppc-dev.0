@@ -1,22 +1,20 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Received: from outbound5-dub-R.bigfish.com (outbound-dub.frontbridge.com
+	[213.199.154.16])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 92038DDEEA
-	for <linuxppc-dev@ozlabs.org>; Thu,  1 May 2008 05:01:50 +1000 (EST)
-Message-Id: <51A34080-7981-4958-B225-4921FC95B84A@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20080430113500.dfe21880.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: [PATCH] docbook: fix fatal rapidio yet again (and more to come)
-Date: Wed, 30 Apr 2008 14:01:12 -0500
-References: <Pine.LNX.4.64.0804292009000.18219@shark.he.net>
-	<20080430113500.dfe21880.akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	"Randy.Dunlap" <rdunlap@xenotime.net>,
-	Paul Mackerras <paulus@samba.org>, torvalds@linux-foundation.org
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id E4988DE175
+	for <linuxppc-dev@ozlabs.org>; Thu,  1 May 2008 05:06:50 +1000 (EST)
+Message-ID: <4818C33F.60007@am.sony.com>
+Date: Wed, 30 Apr 2008 12:06:39 -0700
+From: Geoff Levand <geoffrey.levand@am.sony.com>
+MIME-Version: 1.0
+To: benh@kernel.crashing.org
+Subject: Re: [RFC] [PATCH] vmemmap fixes to use smaller pages
+References: <1209534108.18023.221.camel@pasglop>
+In-Reply-To: <1209534108.18023.221.camel@pasglop>
+Content-Type: text/plain; charset="UTF-8"
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,46 +24,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Benjamin Herrenschmidt wrote:
+> This patch changes vmemmap to use a different region (region 0xf) of the
+> address space whose page size can be dynamically configured at boot.
+> 
+> The problem with the current approach of always using 16M pages is that
+> it's not well suited to machines that have small amounts of memory such
+> as small partitions on pseries, or PS3's.
+> 
+> In fact, on the PS3, failure to allocate the 16M page backing vmmemmap
+> tends to prevent hotplugging the HV's "additional" memory, thus limiting
+> the available memory even more, from my experience down to something
+> like 80M total, which makes it really not very useable.
+> 
+> The logic used by my match to choose the vmemmap page size is:
+> 
+>  - If 16M pages are available and there's 1G or more RAM at boot, use that size.
+>  - Else if 64K pages are available, use that
+>  - Else use 4K pages
+> 
+> I've tested on a POWER6 (16M pages) and on an iSeries POWER3 (4K pages)
+> and it seems to work fine.
+> 
+> However, when attempting to test on a PS3, it didn't boot.
+> 
+> In fact, it doesn't boot without my patch with current upstream. 
 
-On Apr 30, 2008, at 1:35 PM, Andrew Morton wrote:
-> On Tue, 29 Apr 2008 20:10:55 -0700 (PDT)
-> "Randy.Dunlap" <rdunlap@xenotime.net> wrote:
->
->> From: Randy Dunlap <randy.dunlap@oracle.com>
->>
->> Don't refer to file that no longer exists:
->> docproc: linux-2.6.25-git14/arch/powerpc/kernel/rio.c: No such file  
->> or directory
->>
->> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
->> ---
->> Documentation/DocBook/rapidio.tmpl |    1 -
->> 1 file changed, 1 deletion(-)
->>
->> --- linux-2.6.25-git14.orig/Documentation/DocBook/rapidio.tmpl
->> +++ linux-2.6.25-git14/Documentation/DocBook/rapidio.tmpl
->> @@ -133,7 +133,6 @@
->> !Idrivers/rapidio/rio-sysfs.c
->>      </sect1>
->>      <sect1 id="PPC32_support"><title>PPC32 support</title>
->> -!Iarch/powerpc/kernel/rio.c
->> !Earch/powerpc/sysdev/fsl_rio.c
->> !Iarch/powerpc/sysdev/fsl_rio.c
->>      </sect1>
->
-> grumble.
->
-> This is a subset of rapidio-fix-docbook-references.patch, but I  
-> appear to
-> be unable to interest anyone in merging/reviewing/accepting/anything- 
-> else
-> that quite large set of patches.
->
-> Guys, those patches were sent six weeks ago and it now looks like  
-> they will
-> miss 2.6.26.  This is pretty slack of us.  Help?
 
-Odd.  I thought Paul had picked up a docbook RapidIO patch from you in  
-the latest merge round.
+Yes, this is a know problem I am working on, related to recent
+changes in bootmem.  Errors with: 'sparse_early_usemap_alloc: allocation failed'.
 
-- k
+
+I tried
+> booting 2.6.25 with a ps3_defconfig and that doesn't work neither
+> (though at least when doing the later, I do get a black screen & no
+> sync, like of ps3fb failed monitor detection, while with current
+> upstream, I just get the last kexec messages and nothing happens).
+
+
+This should work.  You are the first to report a problem with 
+2.6.25.  Could you double check your build, and if you still have
+trouble, put your vmlinux somewhere I can get it?
+
+
+> Since the PS3 boot failures are impossible to debug unless your email is
+> @sony* and you have the special magic tools, I'll let Geoff try the
+> patch out.
+
+
+OK, I'll try it with the upstream kernel from last week and report
+within the next day or so.
+
+
+-Geoff
