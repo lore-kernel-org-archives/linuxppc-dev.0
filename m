@@ -1,15 +1,25 @@
-Return-Path: <scottwood@freescale.com>
-Date: Wed, 30 Apr 2008 10:00:53 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: "Franca, Jose (NSN - PT/Portugal - MiniMD)" <jose.franca@nsn.com>
-Subject: Re: SKB corruption on heavy traffic
-Message-ID: <20080430150053.GB23545@ld0162-tx32.am.freescale.net>
-References: <20080429191510.GC8955@ld0162-tx32.am.freescale.net>
-	<56DEE2D3217CD946B290399093C8FA7C212E1F@PTLIEXC001.nsn-intra.net>
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from tmnt04.transmode.se (mail.transmode.se [83.241.175.147])
+	by ozlabs.org (Postfix) with ESMTP id EC976DE629
+	for <linuxppc-dev@ozlabs.org>; Thu,  1 May 2008 01:04:04 +1000 (EST)
+Subject: Re: [PATCH] [POWERPC] mpc5200: Allow for fixed speed MII
+	configurations
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+To: Grant Likely <grant.likely@secretlab.ca>
+In-Reply-To: <fa686aa40804300728y1a761bf9nd4568b682dc0bb52@mail.gmail.com>
+References: <20080429230620.11248.25729.stgit@trillian.secretlab.ca>
+	<1209540962.18445.8.camel@gentoo-jocke.transmode.se>
+	<fa686aa40804300607k72ef9985m43b3c4111cad6085@mail.gmail.com>
+	<1209561053.16926.2.camel@gentoo-jocke.transmode.se>
+	<fa686aa40804300626v41828f64oc3d0d88ff5954825@mail.gmail.com>
+	<1209564975.16926.8.camel@gentoo-jocke.transmode.se>
+	<fa686aa40804300728y1a761bf9nd4568b682dc0bb52@mail.gmail.com>
+Content-Type: text/plain
+Date: Wed, 30 Apr 2008 17:04:02 +0200
+Message-Id: <1209567842.16926.27.camel@gentoo-jocke.transmode.se>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <56DEE2D3217CD946B290399093C8FA7C212E1F@PTLIEXC001.nsn-intra.net>
-Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, netdev@vger.kernel.org
+Reply-To: joakim.tjernlund@transmode.se
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,32 +29,66 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Apr 30, 2008 at 09:43:33AM +0100, Franca, Jose (NSN - PT/Portugal - MiniMD) wrote:
-> 	It't quite dificult to say if the problem exists without our
-> 	changes, since the all software is dependent on this changes so
-> 	to work with the hardware. I can't answer to that right now on
-> 	that, but I forgot to add one thing: we have ring buffer full
-> 	problems on our fcc_enet driver from time to time. So, I think
-> 	the problem could be on linux configurations (related to hw)
-> 	because there is a lot of posts on the web related to problems
-> 	similar to this (none of them has really solved the bottom
-> 	problem).
 
-One thing you could try is to enable slab debugging, rather than your
-custom debugging code; this will poison the memory upon free, making it
-more likely that whatever is accessing it will crash immediately rather
-than just cause corruption.  Or, if you want to mantain the delay, do the
-poisoning yourself.
+On Wed, 2008-04-30 at 08:28 -0600, Grant Likely wrote:
+> On Wed, Apr 30, 2008 at 8:16 AM, Joakim Tjernlund
+> <joakim.tjernlund@transmode.se> wrote:
+> >
+> >
+> >  On Wed, 2008-04-30 at 07:26 -0600, Grant Likely wrote:
+> >  > On Wed, Apr 30, 2008 at 7:10 AM, Joakim Tjernlund
+> >  > <joakim.tjernlund@transmode.se> wrote:
+> >  > >
+> >  > >
+> >  > >  On Wed, 2008-04-30 at 07:07 -0600, Grant Likely wrote:
+> >  > >  > On Wed, Apr 30, 2008 at 1:36 AM, Joakim Tjernlund
+> >  > >  > <joakim.tjernlund@transmode.se> wrote:
+> >  > >  > >
+> >  > >  > >  On Tue, 2008-04-29 at 17:06 -0600, Grant Likely wrote:
+> >  > >  > >  > From: Grant Likely <grant.likely@secretlab.ca>
+> >  > >  > >  >
+> >  > >  > >  > Various improvements for configuring the MPC5200 MII link from the
+> >  > >  > >  > device tree:
+> >  > >  > >  > * Look for 'current-speed' property for fixed speed MII links
+> >  > >  > >
+> >  > >  > >  Not that I have looked, but why can't you use the fixed-link property?
+> >  > >  >
+> >  > >  > fixed-link seems to be a recent invention, whereas current-speed is
+> >  > >  > better know having already been in use with serial devices.  It seemed
+> >  > >  > to me to be a better choice, but my opinion can probably be swayed
+> >  > >  > (arguments welcome).
+> >  > >
+> >  > >  yes it is fairly new. You get alot more than just speed: Duplex/Pause
+> >  > >  You need these too.
+> >  >
+> >  > duplex I've got.  pause I don't need.
+> >
+> >  dunno how you speify Half/Full Duplex, but isn't it possible that
+> >  someone else wants to use Pause in the future?
+> >  Isn't the point that everyone should use fixed-link when it is there
+> >  for this purpose?
+> 
+> The format of the data is pretty much entirely device dependent (much
+> like interrupt and gpio specifiers are controller dependent).  I see
+> any need in trying to define a common format for this data since it is
+> entirely local to the device.  ie. there is requirement for this data
+> to be in the same format for every device.  Also, by not trying to
+> lock it down into a common format it gives future devices freedom to
+> specify additional flags and parameters in the data.
+> 
+> so,
+> * gianfar:  needs 5 bits of data.
+> * 5200 FEC: only needs 2.
+> 
+> As for 'current-speed' vs. 'fixed-link'.  I just think 'current-speed'
+> is the better name.  :-)
 
-Of course, this won't help if the access is write-only, or if the
-corruption is happening via DMA.
+Then some day someone else needs Pause or need to control Duplex. Then
+you end up with several impl. Maybe fixed-link isn't the best 
+name, but it is designed for this purpose.
 
-When you say you have a full ring buffer, do you mean tx or rx?  Does it
-recover gracefully?  Do you think it's caused by something other than
-sending data faster than the line can support (tx) or receiving packets
-faster than the cpu can handle (rx)?
+Anyhow, I not going to argue this more. Seems like I am the
+only one thinking it would be better to use fixed-link instead so I 
+guess I am wrong here.
 
-Are any of the other problem reports from recent, unmodified kernels (2.4
-is very old)?
-
--Scott
+ Jocke
