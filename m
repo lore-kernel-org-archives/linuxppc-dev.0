@@ -1,20 +1,37 @@
-Return-Path: <wg@grandegger.com>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 4C346DDF3D
-	for <linuxppc-dev@ozlabs.org>; Fri,  2 May 2008 02:38:15 +1000 (EST)
-Message-ID: <4819F1F3.2000406@grandegger.com>
-Date: Thu, 01 May 2008 18:38:11 +0200
-From: Wolfgang Grandegger <wg@grandegger.com>
-MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH] [POWERPC] mpc5200: Allow for fixed speed MII
-	configurations
-References: <20080429230620.11248.25729.stgit@trillian.secretlab.ca>
-	<fa686aa40805010733o6bb5b522hd16669b732f1892@mail.gmail.com>
-In-Reply-To: <fa686aa40805010733o6bb5b522hd16669b732f1892@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org,
-	Domen Puncer <domen@coderock.org>
+Return-Path: <scottwood@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 0BC78DE067
+	for <linuxppc-dev@ozlabs.org>; Fri,  2 May 2008 02:42:45 +1000 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	m41GgSbh004583
+	for <linuxppc-dev@ozlabs.org>; Thu, 1 May 2008 09:42:29 -0700 (MST)
+Received: from ld0162-tx32.am.freescale.net (ld0162-tx32.am.freescale.net
+	[10.82.19.112])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m41GgSfk012654
+	for <linuxppc-dev@ozlabs.org>; Thu, 1 May 2008 11:42:28 -0500 (CDT)
+Date: Thu, 1 May 2008 11:42:28 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] [POWERPC] Rework EXC_LEVEL_EXCEPTION_PROLOG code
+Message-ID: <20080501164228.GA17992@ld0162-tx32.am.freescale.net>
+References: <Pine.LNX.4.64.0804300424040.31028@blarg.am.freescale.net>
+	<1209592495.18023.246.camel@pasglop>
+	<12ECF63E-7CEA-48FD-9447-7D534C29271D@kernel.crashing.org>
+	<18457.1279.401197.763726@cargo.ozlabs.ibm.com>
+	<A9B566F7-D00B-4202-9B85-427C38EE6070@kernel.crashing.org>
+	<18457.32297.485053.356477@cargo.ozlabs.ibm.com>
+	<2DF41779-732B-4477-9DAC-147CDC5C9885@kernel.crashing.org>
+	<20080501161451.GH17142@ld0162-tx32.am.freescale.net>
+	<78125A27-D99A-447D-9C65-4705DD153567@kernel.crashing.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <78125A27-D99A-447D-9C65-4705DD153567@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,64 +41,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Grant,
+On Thu, May 01, 2008 at 11:33:34AM -0500, Kumar Gala wrote:
+> Let me ask the question differently.  Are there cases that some event  
+> occurs in the system and a signal is delivered to the current process  
+> regardless of what that process is.
 
-Grant Likely wrote:
-> On Tue, Apr 29, 2008 at 5:06 PM, Grant Likely <grant.likely@secretlab.ca> wrote:
->> From: Grant Likely <grant.likely@secretlab.ca>
->>
->>  Various improvements for configuring the MPC5200 MII link from the
->>  device tree:
->>  * Look for 'current-speed' property for fixed speed MII links
->>  * Look for 'fsl,7-wire-mode' property for boards using the 7 wire mode
->>  * move definition of private data structure out of the header file
->>
->>  Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
-> 
-> Any more comments on this patch?  I want to push it to Paulus, but I'd
-> like to have someone ack it first.
-> 
-> Wolfgang, you used the previous version of this patch.  Does this one
-> work for you?
+Yes, timers that expire based on CPU usage.
 
-Sorry for the late answer. The patch works fine (under Linux 2.6.24) on
-my board with a 3-port Micrel ethernet switch. There is still a minor
-issue, though:
+>  I'm guessing so, based on the tty example.
 
-[...deletions...]
->>  diff --git a/drivers/net/fec_mpc52xx.c b/drivers/net/fec_mpc52xx.c
->>  index d21b7ab..eeb4433 100644
->>  --- a/drivers/net/fec_mpc52xx.c
->>  +++ b/drivers/net/fec_mpc52xx.c
-[...deletions...]
->>  @@ -950,24 +976,36 @@ mpc52xx_fec_probe(struct of_device *op, const struct of_device_id *match)
->>         priv->msg_enable = netif_msg_init(debug, MPC52xx_MESSAGES_DEFAULT);
->>         priv->duplex = DUPLEX_FULL;
+I don't think tty interrupts would -- it'd go to the process group
+associated with the tty.
 
-More concerning this line below.
+> So for the specific case I'm looking at (kprobes & debug exceptions  
+> from kernel space), I think its reasonable to BUG_ON() if thread_info- 
+> >flags changes such that TIF_SIGPENDING or TIF_NEED_RESCHED get set  
+> we aren't from user-space.
 
->>
->>  -       /* is the phy present in device tree? */
->>  -       ph = of_get_property(op->node, "phy-handle", NULL);
->>  -       if (ph) {
->>  -               const unsigned int *prop;
->>  -               struct device_node *phy_dn;
->>  -               priv->has_phy = 1;
->>  -
->>  -               phy_dn = of_find_node_by_phandle(*ph);
->>  -               prop = of_get_property(phy_dn, "reg", NULL);
->>  -               priv->phy_addr = *prop;
->>  +       /*
->>  +        * Link mode configuration
->>  +        */
->>
->>  -               of_node_put(phy_dn);
->>  +       /* Start with safe defaults for link connection */
->>  +       priv->phy_addr = FEC5200_PHYADDR_NONE;
->>  +       priv->speed = 100;
->>  +       priv->duplex = 0;
+Why?  It may not happen currently, but it seems more future-proof to just
+copy the flags.  And it's certainly not reasonable for normal interrupts.
 
-priv->duplex is re-defined here. And instead of "0" we should use
-DUPLEX_HALF.
-
-Wolfgang.
+-Scott
