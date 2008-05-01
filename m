@@ -1,22 +1,24 @@
-Return-Path: <cbouatmailru@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.173])
-	by ozlabs.org (Postfix) with ESMTP id 69784DDD04
-	for <linuxppc-dev@ozlabs.org>; Thu,  1 May 2008 21:43:25 +1000 (EST)
-Received: by ug-out-1314.google.com with SMTP id q7so1321251uge.0
-	for <linuxppc-dev@ozlabs.org>; Thu, 01 May 2008 04:43:23 -0700 (PDT)
-Date: Thu, 1 May 2008 15:43:18 +0400
-From: Anton Vorontsov <cbouatmailru@gmail.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 1/6] [POWERPC] sysdev: implement FSL GTM support
-Message-ID: <20080501114318.GA10759@zarina>
-References: <20080429185920.GA19735@polina.dev.rtsoft.ru>
-	<20080429190017.GA21203@polina.dev.rtsoft.ru>
-	<9E78A635-CB7B-4A51-9FD5-2922747D4847@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <9E78A635-CB7B-4A51-9FD5-2922747D4847@kernel.crashing.org>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 722AEDDE0F
+	for <linuxppc-dev@ozlabs.org>; Thu,  1 May 2008 23:17:15 +1000 (EST)
+Message-Id: <2DF41779-732B-4477-9DAC-147CDC5C9885@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Paul Mackerras <paulus@samba.org>
+In-Reply-To: <18457.32297.485053.356477@cargo.ozlabs.ibm.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v919.2)
+Subject: Re: [PATCH] [POWERPC] Rework EXC_LEVEL_EXCEPTION_PROLOG code
+Date: Thu, 1 May 2008 08:17:07 -0500
+References: <Pine.LNX.4.64.0804300424040.31028@blarg.am.freescale.net>
+	<1209592495.18023.246.camel@pasglop>
+	<12ECF63E-7CEA-48FD-9447-7D534C29271D@kernel.crashing.org>
+	<18457.1279.401197.763726@cargo.ozlabs.ibm.com>
+	<A9B566F7-D00B-4202-9B85-427C38EE6070@kernel.crashing.org>
+	<18457.32297.485053.356477@cargo.ozlabs.ibm.com>
 Cc: linuxppc-dev@ozlabs.org
-Reply-To: cbouatmailru@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,59 +28,63 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Apr 30, 2008 at 11:00:42PM -0500, Kumar Gala wrote:
->
-> On Apr 29, 2008, at 2:00 PM, Anton Vorontsov wrote:
->> GTM stands for General-purpose Timers Module and able to generate
->> timer{1,2,3,4} interrupts. These timers are used by the drivers that
->> need time precise interrupts (like for USB transactions scheduling for
->> the Freescale USB Host controller as found in some QE and CPM chips),
->> or these timers could be used as wakeup events from the CPU deep-sleep
->> mode.
->>
->> Things unimplemented:
->> 1. Cascaded (32 bit) timers (1-2, 3-4).
->>   This is straightforward to implement when needed, two timers should
->>   be marked as "requested" and configured as appropriate.
->> 2. Super-cascaded (64 bit) timers (1-2-3-4).
->>   This is also straightforward to implement when needed, all timers
->>   should be marked as "requested" and configured as appropriate.
->>
->> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
->> ---
->> Documentation/powerpc/booting-without-of.txt |   37 +++-
->> arch/powerpc/Kconfig                         |    5 +
->> arch/powerpc/sysdev/Makefile                 |    1 +
->> arch/powerpc/sysdev/fsl_gtm.c                |  424 +++++++++++++++++ 
->> +++++++++
->> include/asm-powerpc/fsl_gtm.h                |   47 +++
->> 5 files changed, 513 insertions(+), 1 deletions(-)
->> create mode 100644 arch/powerpc/sysdev/fsl_gtm.c
->> create mode 100644 include/asm-powerpc/fsl_gtm.h
->>
->>
->
->>
->> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
->> index 4e40c12..4070a78 100644
->> --- a/arch/powerpc/Kconfig
->> +++ b/arch/powerpc/Kconfig
->> @@ -538,6 +538,11 @@ config FSL_LBC
->> 	help
->> 	  Freescale Localbus support
->>
->> +config FSL_GTM
->> +	bool
->> +	help
->> +	  Freescale General-purpose Timers support
->> +
->
-> what chips actually use this?  just QE or 83xx?
 
-83xx/85xx, QE, CPM2 and CPM1 (no support).
-Probably some more old and new chips.
+On May 1, 2008, at 3:24 AM, Paul Mackerras wrote:
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+> Kumar Gala writes:
+>
+>>> It depends on whether a critical or machine check handler can ever  
+>>> do
+>>> anything to generate a signal or a reschedule.  If they can't, then
+>>> there is no problem.
+>>
+>> They can if the come from user space.  I'm question what it means to
+>> send a signal based on receiving an async exception.
+>
+> The most common cases are (a) something that ultimately generates
+> input on a tty (e.g. a character arriving on a serial port) and that
+> input turns out to be a ^C or similar, or (b) something that signals
+> I/O completion and the program doing the I/O has requested
+> notification by a SIGIO.  But in general any driver code can send a
+> signal to userspace if it wants.
+
+ok.  Was just wondering how the async exception know that the signal  
+it wanted to send belonged to the particular process that is running.   
+But I guess there are cases that the signal is really intended for who  
+ever is currently running?
+
+>>> If they can, then we have to be very careful.  If a critical or
+>>> machine check happens at a point where normal interrupts are  
+>>> disabled
+>>> then we have to be extremely careful not to do anything that the  
+>>> code
+>>> we've interrupted assumes can't happen - so we'd better not try to
+>>> take any spinlocks, for example.  That severely limits what the
+>>> handler can do.  It probably shouldn't even call printk, for
+>>> instance, or wake any process up, and definitely shouldn't call
+>>> schedule (or schedule_preempt) on the way out.
+
+Do we ensure that synchronous exceptions will not occur in these cases  
+that kernel code things interrupts are disabled in?
+
+>> how do we provide someone stick a kprobe on such code today?
+>
+> -ENOPARSE
+
+I was asking how we prevent the cases you were describing working w/ 
+kprobes today.  Since it ends up single stepping in kernel codes its  
+possible that someone sets a kprobe in code that shouldn't be  
+interrupted, yet we'd cause a SingleStep Exception.
+
+>> So I'm not if there is any good way to preclude the handlers
+>> associated with these exceptions from doing the things you listed.
+>
+> In that case, you'd better expect to see system freezes, memory
+> corruption and general instability.
+
+So the case I'm trying to make work is debug and kprobes.  This case  
+seems like we have pretty good control over what the "handler" does.   
+Are there checks we can add to BUG_ON() so we are at least aware of  
+the code attempts to do something it shouldnt?
+
+- k
