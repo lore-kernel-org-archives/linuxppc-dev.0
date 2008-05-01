@@ -1,18 +1,19 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 76C19DDD0B
-	for <linuxppc-dev@ozlabs.org>; Thu,  1 May 2008 11:18:24 +1000 (EST)
-Date: Thu, 1 May 2008 11:18:17 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Kumar Gala <galak@kernel.crashing.org>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id EC35EDDE10
+	for <linuxppc-dev@ozlabs.org>; Thu,  1 May 2008 11:30:27 +1000 (EST)
+Message-Id: <D069945D-A47A-4782-91B5-F3D4209F6003@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+In-Reply-To: <20080501111817.e0d19258.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v919.2)
 Subject: Re: [PATCH v2] [POWERPC] devres: Add devm_ioremap_flags()
-Message-Id: <20080501111817.e0d19258.sfr@canb.auug.org.au>
-In-Reply-To: <Pine.LNX.4.64.0804301106010.22992@blarg.am.freescale.net>
+Date: Wed, 30 Apr 2008 20:29:56 -0500
 References: <Pine.LNX.4.64.0804301106010.22992@blarg.am.freescale.net>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Thu__1_May_2008_11_18_17_+1000_I.KODudsyXwzfRnh"
+	<20080501111817.e0d19258.sfr@canb.auug.org.au>
 Cc: Andrew Morton <akpm@osdl.org>, htejun@gmail.com,
 	Jeff Garzik <jeff@garzik.org>, Greg KH <greg@kroah.com>,
 	linux-kernel@vger.kernel.org, Emilian.Medve@Freescale.com,
@@ -26,36 +27,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Thu__1_May_2008_11_18_17_+1000_I.KODudsyXwzfRnh
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-On Wed, 30 Apr 2008 11:08:51 -0500 (CDT) Kumar Gala <galak@kernel.crashing.=
-org> wrote:
+On Apr 30, 2008, at 8:18 PM, Stephen Rothwell wrote:
+> On Wed, 30 Apr 2008 11:08:51 -0500 (CDT) Kumar Gala <galak@kernel.crashing.org 
+> > wrote:
+>>
+>> +++ b/arch/powerpc/lib/devres.c
+>> @@ -0,0 +1,33 @@
+>> +#include <linux/device.h>	/* devres_*(), devm_ioremap_release() */
+>> +#include <linux/io.h>		/* ioremap_flags() */
+>> +#include <linux/module.h>	/* EXPORT_SYMBOL() */
 >
-> +++ b/arch/powerpc/lib/devres.c
-> @@ -0,0 +1,33 @@
-> +#include <linux/device.h>	/* devres_*(), devm_ioremap_release() */
-> +#include <linux/io.h>		/* ioremap_flags() */
-> +#include <linux/module.h>	/* EXPORT_SYMBOL() */
+> This file needs a copyright notice and license ...
 
-This file needs a copyright notice and license ...
+agreed.  will add.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Thu__1_May_2008_11_18_17_+1000_I.KODudsyXwzfRnh
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFIGRpdTgG2atn1QN8RAljoAJsEEhyCmz92exTYDTqpFy4aSQG69gCfWHnS
-kCHJIEd0ARTyFnzKIcTMV2A=
-=MxSH
------END PGP SIGNATURE-----
-
---Signature=_Thu__1_May_2008_11_18_17_+1000_I.KODudsyXwzfRnh--
+- k
