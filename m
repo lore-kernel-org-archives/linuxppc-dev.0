@@ -1,29 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 10449DDE20
-	for <linuxppc-dev@ozlabs.org>; Thu,  1 May 2008 10:48:44 +1000 (EST)
-Subject: Re: [PATCH] [POWERPC] convert transfer_to_handler into a macro
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-In-Reply-To: <20080430191153.49fce28e@zod.rchland.ibm.com>
-References: <Pine.LNX.4.64.0804290856210.9230@blarg.am.freescale.net>
-	<18455.37613.709102.30668@cargo.ozlabs.ibm.com>
-	<73CD5806-5CE4-40A7-957B-8F164E26FAFB@kernel.crashing.org>
-	<1209537128.18023.225.camel@pasglop>
-	<EDF2E889-4B04-42A8-8D93-E04B35162661@kernel.crashing.org>
-	<1209592794.18023.248.camel@pasglop>
-	<2A2997EA-F3AF-4C90-8952-42CA48AA07BC@kernel.crashing.org>
-	<20080430184502.4f0c66e2@zod.rchland.ibm.com>
-	<1209599602.18023.273.camel@pasglop>
-	<20080430191153.49fce28e@zod.rchland.ibm.com>
-Content-Type: text/plain
-Date: Thu, 01 May 2008 10:48:35 +1000
-Message-Id: <1209602915.18023.277.camel@pasglop>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 76C19DDD0B
+	for <linuxppc-dev@ozlabs.org>; Thu,  1 May 2008 11:18:24 +1000 (EST)
+Date: Thu, 1 May 2008 11:18:17 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH v2] [POWERPC] devres: Add devm_ioremap_flags()
+Message-Id: <20080501111817.e0d19258.sfr@canb.auug.org.au>
+In-Reply-To: <Pine.LNX.4.64.0804301106010.22992@blarg.am.freescale.net>
+References: <Pine.LNX.4.64.0804301106010.22992@blarg.am.freescale.net>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
-Reply-To: benh@kernel.crashing.org
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Thu__1_May_2008_11_18_17_+1000_I.KODudsyXwzfRnh"
+Cc: Andrew Morton <akpm@osdl.org>, htejun@gmail.com,
+	Jeff Garzik <jeff@garzik.org>, Greg KH <greg@kroah.com>,
+	linux-kernel@vger.kernel.org, Emilian.Medve@Freescale.com,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,18 +26,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+--Signature=_Thu__1_May_2008_11_18_17_+1000_I.KODudsyXwzfRnh
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Wed, 2008-04-30 at 19:11 -0500, Josh Boyer wrote:
-> 
-> > Nah, he meant using the slot for MAS0 in the exception frame
-> structure
-> > as to not have to define two different structures I suppose...
-> 
-> Ah, ok.  Sorry, still playing catch up on email.  I thought we were
-> talking about a #define.
+On Wed, 30 Apr 2008 11:08:51 -0500 (CDT) Kumar Gala <galak@kernel.crashing.=
+org> wrote:
+>
+> +++ b/arch/powerpc/lib/devres.c
+> @@ -0,0 +1,33 @@
+> +#include <linux/device.h>	/* devres_*(), devm_ioremap_release() */
+> +#include <linux/io.h>		/* ioremap_flags() */
+> +#include <linux/module.h>	/* EXPORT_SYMBOL() */
 
-Heh, now that I think about it ... maybe :-) That would be bad indeed.
-Kumar ?
+This file needs a copyright notice and license ...
 
-Cheers
-Ben.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Thu__1_May_2008_11_18_17_+1000_I.KODudsyXwzfRnh
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFIGRpdTgG2atn1QN8RAljoAJsEEhyCmz92exTYDTqpFy4aSQG69gCfWHnS
+kCHJIEd0ARTyFnzKIcTMV2A=
+=MxSH
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__1_May_2008_11_18_17_+1000_I.KODudsyXwzfRnh--
