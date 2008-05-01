@@ -1,20 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 3F59EDDDFA
-	for <linuxppc-dev@ozlabs.org>; Fri,  2 May 2008 08:40:01 +1000 (EST)
-Subject: Re: [RFC] [PATCH] vmemmap fixes to use smaller pages
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Geoff Levand <geoffrey.levand@am.sony.com>
-In-Reply-To: <481A3A50.3060101@am.sony.com>
-References: <1209534108.18023.221.camel@pasglop> <481A3A50.3060101@am.sony.com>
-Content-Type: text/plain
-Date: Fri, 02 May 2008 08:39:50 +1000
-Message-Id: <1209681590.18023.295.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Reply-To: benh@kernel.crashing.org
+Return-Path: <tony@bakeyournoodle.com>
+Received: from pythia.bakeyournoodle.com (pythia.bakeyournoodle.com
+	[203.82.209.197]) by ozlabs.org (Postfix) with ESMTP id 9A538DDDF0
+	for <linuxppc-dev@ozlabs.org>; Fri,  2 May 2008 09:07:54 +1000 (EST)
+Date: Fri, 2 May 2008 09:07:53 +1000
+To: Badari Pulavarty <pbadari@gmail.com>
+Subject: Re: powerpc boot regression
+Message-ID: <20080501230753.GP20457@bakeyournoodle.com>
+References: <20080429.231241.221824292.davem@davemloft.net>
+	<20080501051304.GM20457@bakeyournoodle.com>
+	<1209653507.27240.7.camel@badari-desktop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <1209653507.27240.7.camel@badari-desktop>
+From: tony@bakeyournoodle.com (Tony Breeds)
+Cc: linux-kernel@vger.kernel.org, LinuxPPC-dev <linuxppc-dev@ozlabs.org>,
+	y-goto@jp.fujitsu.com, akpm@linux-foundation.org,
+	David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,17 +25,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thu, May 01, 2008 at 07:51:47AM -0700, Badari Pulavarty wrote:
+ 
+> I don't see the problem on my power5 machine. Can you send the
+> config ? Is CONFIG_SPARSEMEM_VMEMMAP enabled ?
 
-On Thu, 2008-05-01 at 14:46 -0700, Geoff Levand wrote:
-> 
-> It doesn't seem to cause problems on PS3, and I added it into
-> ps3-linux.git
-> as other/powerpc-vmemmap-variable-page-size.diff, but I couldn't get
-> it to
-> fail without the patch...
->  
-> Could you send me your kernel .config?
+Yes.  I'm just using ppc64_defconfig.
 
-ps3_defconfig with added vmmemap (which is disabled by default).
+Yours Tony
 
-Ben.
+  linux.conf.au    http://www.marchsouth.org/
+  Jan 19 - 24 2009 The Australian Linux Technical Conference!
