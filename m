@@ -1,19 +1,29 @@
-Return-Path: <rmachet@slac.stanford.edu>
-Received: from nospam3.slac.stanford.edu (nospam3.slac.stanford.edu
-	[134.79.18.120])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id AAF91DDFE9
-	for <linuxppc-dev@ozlabs.org>; Thu,  1 May 2008 10:40:34 +1000 (EST)
-Subject: [PATCH v5] sysdev,mv64x60: MV64x60 device bus
-From: Remi Machet <rmachet@slac.stanford.edu>
-To: Stephen Rothwell <sfr@canb.auug.org.au>, Paul Mackerras <paulus@samba.org>,
-	Dale Farnsworth <dale@farnsworth.org>
+	by ozlabs.org (Postfix) with ESMTPS id 10449DDE20
+	for <linuxppc-dev@ozlabs.org>; Thu,  1 May 2008 10:48:44 +1000 (EST)
+Subject: Re: [PATCH] [POWERPC] convert transfer_to_handler into a macro
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+In-Reply-To: <20080430191153.49fce28e@zod.rchland.ibm.com>
+References: <Pine.LNX.4.64.0804290856210.9230@blarg.am.freescale.net>
+	<18455.37613.709102.30668@cargo.ozlabs.ibm.com>
+	<73CD5806-5CE4-40A7-957B-8F164E26FAFB@kernel.crashing.org>
+	<1209537128.18023.225.camel@pasglop>
+	<EDF2E889-4B04-42A8-8D93-E04B35162661@kernel.crashing.org>
+	<1209592794.18023.248.camel@pasglop>
+	<2A2997EA-F3AF-4C90-8952-42CA48AA07BC@kernel.crashing.org>
+	<20080430184502.4f0c66e2@zod.rchland.ibm.com>
+	<1209599602.18023.273.camel@pasglop>
+	<20080430191153.49fce28e@zod.rchland.ibm.com>
 Content-Type: text/plain
-Date: Wed, 30 Apr 2008 17:40:44 -0700
-Message-Id: <1209602445.14407.84.camel@pcds-ts102.slac.stanford.edu>
+Date: Thu, 01 May 2008 10:48:35 +1000
+Message-Id: <1209602915.18023.277.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,58 +33,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-For each mv64360 entry in the OpenFirmware database, add the 
-registration of an of_bus to take care of devices connected to
-the MV64x60 asynchronous devices controller.
-This change makes it possible for those devices to be detected by 
-drivers that support the of_platform without having a custom call 
-for each of them in the board file.
 
-Signed-off-by: Remi Machet <rmachet@slac.stanford.edu>
----
-Changes:
-v2: Use the compatible field to detect devices to register (on Dale Farnsworth
-suggestion).
-v3: Added __initdata to variable of_mv64x60_devices (thanks to Stephen Rothwell 
-for pointing that out).
-v4: Re-wrote the patch description.
-v5: Changed the format of the email address
+On Wed, 2008-04-30 at 19:11 -0500, Josh Boyer wrote:
+> 
+> > Nah, he meant using the slot for MAS0 in the exception frame
+> structure
+> > as to not have to define two different structures I suppose...
+> 
+> Ah, ok.  Sorry, still playing catch up on email.  I thought we were
+> talking about a #define.
 
- arch/powerpc/sysdev/mv64x60_dev.c |   10 ++++++++++
- 1 files changed, 10 insertions(+)
+Heh, now that I think about it ... maybe :-) That would be bad indeed.
+Kumar ?
 
-diff --git a/arch/powerpc/sysdev/mv64x60_dev.c b/arch/powerpc/sysdev/mv64x60_dev.c
-index 41af122..c38695e 100644
---- a/arch/powerpc/sysdev/mv64x60_dev.c
-+++ b/arch/powerpc/sysdev/mv64x60_dev.c
-@@ -15,6 +15,7 @@
- #include <linux/console.h>
- #include <linux/mv643xx.h>
- #include <linux/platform_device.h>
-+#include <linux/of_platform.h>
- 
- #include <asm/prom.h>
- 
-@@ -25,6 +26,11 @@
-  * PowerPC of_platform_bus_type.  They support platform_bus_type instead.
-  */
- 
-+static struct of_device_id __initdata of_mv64x60_devices[] = {
-+	{ .compatible = "marvell,mv64306-devctrl", },
-+	{}
-+};
-+
- /*
-  * Create MPSC platform devices
-  */
-@@ -482,6 +488,10 @@ static int __init mv64x60_device_setup(void)
- 		of_node_put(np);
- 	}
- 
-+	/* Now add every node that is on the device bus */
-+	for_each_compatible_node(np, NULL, "marvell,mv64360")
-+		of_platform_bus_probe(np, of_mv64x60_devices, NULL);
-+
- 	return 0;
- }
- arch_initcall(mv64x60_device_setup);
+Cheers
+Ben.
