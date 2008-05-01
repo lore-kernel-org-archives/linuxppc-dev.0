@@ -1,12 +1,23 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18457.23905.318625.552927@cargo.ozlabs.ibm.com>
-Date: Thu, 1 May 2008 16:04:17 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [POWERPC] Bolt in SLB entry for kernel stack on secondary cpus
-Cc: linux-kernel@vger.kernel.org
+Return-Path: <vitb@kernel.crashing.org>
+Received: from vitb-lp (unknown [89.169.139.223])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 4C760DDDFD
+	for <linuxppc-dev@ozlabs.org>; Thu,  1 May 2008 16:12:14 +1000 (EST)
+Date: Thu, 1 May 2008 09:47:38 +0400
+From: Vitaly Bordug <vitb@kernel.crashing.org>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: drivers/net/fec_8xx config problem
+Message-ID: <20080501094738.13dca29a@vitb-lp>
+In-Reply-To: <20080430192329.GA9150@ld0162-tx32.am.freescale.net>
+References: <6E2EBEAF-DF1E-4439-91EF-B15EE39CAF61@freescale.com>
+	<20080430192030.GA9084@ld0162-tx32.am.freescale.net>
+	<151BA0B1-A188-41C7-B2DB-E8D63D15C218@freescale.com>
+	<20080430192329.GA9150@ld0162-tx32.am.freescale.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: jengelh@linux01.gwdg.de,
+	"linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,98 +27,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This fixes a regression reported by Kamalesh Bulabel where a POWER4
-machine would crash because of an SLB miss at a point where the SLB
-miss exception was unrecoverable.  This regression is tracked at:
+On Wed, 30 Apr 2008 14:23:29 -0500
+Scott Wood wrote:
 
-http://bugzilla.kernel.org/show_bug.cgi?id=10082
+> On Wed, Apr 30, 2008 at 02:24:19PM -0500, Becky Bruce wrote:
+> > 
+> > On Apr 30, 2008, at 2:20 PM, Scott Wood wrote:
+> > >On Wed, Apr 30, 2008 at 02:19:21PM -0500, Becky Bruce wrote:
+> > >>I just noticed that the fec_8xx driver is not currently reachable
+> > >>via menuconfig because it depends on 8XX instead of 8xx.
+> > >[snip]
+> > >>Since nobody has noticed this problem, I'm wondering if this
+> > >>driver is still in (infrequent) use, or if it's been superseded
+> > >>and should be removed, or if I'm just completely missing
+> > >>something with respect to the use of "8XX" instead of "8xx".
+> > >
+> > >It's been superseded by drivers/net/fs_enet.
+> > 
+> > Is there any reason we haven't removed it?
+> 
+> To keep arch/ppc/8xx_io company? :-)
+> 
+> > If not, I can push a patch to yank it.
+> 
+> I have no objection.
 
-SLB misses at such points shouldn't happen because the kernel stack is
-the only memory accessed other than things in the first segment of the
-linear mapping (which is mapped at all times by entry 0 of the SLB).
-The context switch code ensures that SLB entry 2 covers the kernel
-stack, if it is not already covered by entry 0.  None of entries 0
-to 2 are ever replaced by the SLB miss handler.
+I am OK with this too. Should have been done long ago, but who likes janitorial stuff :)
 
-Where this went wrong is that the context switch code assumes it
-doesn't have to write to SLB entry 2 if the new kernel stack is in the
-same segment as the old kernel stack, since entry 2 should already be
-correct.  However, when we start up a secondary cpu, it calls
-slb_initialize, which doesn't set up entry 2.  This is correct for
-the boot cpu, where we will be using a stack in the kernel BSS at this
-point (i.e. init_thread_union), but not necessarily for secondary
-cpus, whose initial stack can be allocated anywhere.  This doesn't
-cause any immediate problem since the SLB miss handler will just
-create an SLB entry somewhere else to cover the initial stack.
-
-In fact it's possible for the cpu to go quite a long time without SLB
-entry 2 being valid.  Eventually, though, the entry created by the SLB
-miss handler will get overwritten by some other entry, and if the next
-access to the stack is at an unrecoverable point, we get the crash.
-
-This fixes the problem by making slb_initialize create a suitable
-entry for the kernel stack, if we are on a secondary cpu and the stack
-isn't covered by SLB entry 0.  This requires initializing the
-get_paca()->kstack field earlier, so I do that in smp_create_idle
-where the current field is initialized.  This also abstracts a bit of
-the computation that mk_esid_data in slb.c does so that it can be used
-in slb_initialize.
-
-Signed-off-by: Paul Mackerras <paulus@samba.org>
----
-diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-index be35ffa..1457aa0 100644
---- a/arch/powerpc/kernel/smp.c
-+++ b/arch/powerpc/kernel/smp.c
-@@ -386,6 +386,8 @@ static void __init smp_create_idle(unsigned int cpu)
- 		panic("failed fork for CPU %u: %li", cpu, PTR_ERR(p));
- #ifdef CONFIG_PPC64
- 	paca[cpu].__current = p;
-+	paca[cpu].kstack = (unsigned long) task_thread_info(p)
-+		+ THREAD_SIZE - STACK_FRAME_OVERHEAD;
- #endif
- 	current_set[cpu] = task_thread_info(p);
- 	task_thread_info(p)->cpu = cpu;
-diff --git a/arch/powerpc/mm/slb.c b/arch/powerpc/mm/slb.c
-index 906daed..b2c43d0 100644
---- a/arch/powerpc/mm/slb.c
-+++ b/arch/powerpc/mm/slb.c
-@@ -44,13 +44,13 @@ static void slb_allocate(unsigned long ea)
- 	slb_allocate_realmode(ea);
- }
- 
-+#define slb_esid_mask(ssize)	\
-+	(((ssize) == MMU_SEGSIZE_256M)? ESID_MASK: ESID_MASK_1T)
-+
- static inline unsigned long mk_esid_data(unsigned long ea, int ssize,
- 					 unsigned long slot)
- {
--	unsigned long mask;
--
--	mask = (ssize == MMU_SEGSIZE_256M)? ESID_MASK: ESID_MASK_1T;
--	return (ea & mask) | SLB_ESID_V | slot;
-+	return (ea & slb_esid_mask(ssize)) | SLB_ESID_V | slot;
- }
- 
- #define slb_vsid_shift(ssize)	\
-@@ -301,11 +301,16 @@ void slb_initialize(void)
- 
- 	create_shadowed_slbe(VMALLOC_START, mmu_kernel_ssize, vflags, 1);
- 
-+	/* For the boot cpu, we're running on the stack in init_thread_union,
-+	 * which is in the first segment of the linear mapping, and also
-+	 * get_paca()->kstack hasn't been initialized yet.
-+	 * For secondary cpus, we need to bolt the kernel stack entry now.
-+	 */
- 	slb_shadow_clear(2);
-+	if (raw_smp_processor_id() > 0 &&
-+	    (get_paca()->kstack & slb_esid_mask(mmu_kernel_ssize)) > PAGE_OFFSET)
-+		create_shadowed_slbe(get_paca()->kstack,
-+				     mmu_kernel_ssize, lflags, 2);
- 
--	/* We don't bolt the stack for the time being - we're in boot,
--	 * so the stack is in the bolted segment.  By the time it goes
--	 * elsewhere, we'll call _switch() which will bolt in the new
--	 * one. */
- 	asm volatile("isync":::"memory");
- }
+-Vitaly
