@@ -1,20 +1,17 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from wr-out-0506.google.com (wr-out-0506.google.com [64.233.184.227])
-	by ozlabs.org (Postfix) with ESMTP id 5AD25DDF5D
-	for <linuxppc-dev@ozlabs.org>; Fri,  2 May 2008 04:07:07 +1000 (EST)
-Received: by wr-out-0506.google.com with SMTP id 67so1122990wri.3
-	for <linuxppc-dev@ozlabs.org>; Thu, 01 May 2008 11:07:06 -0700 (PDT)
-Message-ID: <fa686aa40805011107p3b3ed242ue79849719961f8db@mail.gmail.com>
-Date: Thu, 1 May 2008 12:07:06 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Andrew Liu" <shengping.liu@windriver.com>
-Subject: Re: [PATCH] Fix a potential issue in mpc52xx uart driver
-In-Reply-To: <4816CFF9.5030505@windriver.com>
+Return-Path: <ron_madrid@hotmail.com>
+Received: from bay0-omc1-s40.bay0.hotmail.com (bay0-omc1-s40.bay0.hotmail.com
+	[65.54.246.112]) by ozlabs.org (Postfix) with ESMTP id 2ED4CDE02F
+	for <linuxppc-dev@ozlabs.org>; Fri,  2 May 2008 04:29:40 +1000 (EST)
+Message-ID: <BAY114-W26E8656DD55138DB5CC3A6F4DB0@phx.gbl>
+Content-Type: multipart/alternative;
+	boundary="_8444c3a3-76e7-42c1-840c-a7d560bb5880_"
+From: Ronald Madrid <ron_madrid@hotmail.com>
+To: <linuxppc-dev@ozlabs.org>
+Subject: NAND command line partiions
+Date: Thu, 1 May 2008 11:24:35 -0700
+In-Reply-To: <1410.216.70.248.131.1209657620.squirrel@mechanicalanarchy.com>
+References: <1410.216.70.248.131.1209657620.squirrel@mechanicalanarchy.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <4816CFF9.5030505@windriver.com>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,45 +21,66 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Apr 29, 2008 at 1:36 AM, Andrew Liu <shengping.liu@windriver.com> wrote:
-> mpc52xx_uart_int and __uart_put_char both try to acquire the
->  port->lock. Therefore the function sequence of:
->
->  mpc52xx_uart_int--> ...-->flush_to_ldisc-->...-->__uart_put_char
->
->  can potentially trigger a deadlock. To avoid this deadlock a fix
->  similar to that found in the 8250.c serial driver is applied. The
->  deadlock is avoided by releasing the lock before pushing a buffer
->  and reacquiring it when completed.
->
->  Signed-off-by: Andrew Liu <shengping.liu@windriver.com>
+--_8444c3a3-76e7-42c1-840c-a7d560bb5880_
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-Your patch is whitespace damaged and does not apply (tabs have been
-converted to spaces).  It was trivial so I've applied it manually, but
-please be careful when posting future patches.
+I am using u-boot-1.3.1 in order to boot linux 2.6.25 on a custom MPC8313 b=
+ased board.  In past versions of the kernel I was able to pass the NAND par=
+tition information to the kernel with this line: root=3D/dev/mtdblock2 root=
+fstype=3Djffs2 rw console=3DttyS0,115200 mtdparts=3Dnand0:1M(u-boot),3M(ker=
+nel),-(jffs2).  In this latest version the kernel will not mount the partit=
+ions because the name that is parsed from the command line (nand0) is diffe=
+rent from that of the name of the NAND that comes from ./drivers/mtd/nand/n=
+and_ids.c (NAND 256MiB 3,3V 8-bit).
 
-Thanks,
-g.
+I have tried to change the name of the NAND that is passed in via the comma=
+nd line, but u-boot does not seem to like the format of the name that linux=
+ compares against.  It doesn't like the ,(comma) in 3,3V.
 
->
->  diff --git a/drivers/serial/mpc52xx_uart.c b/drivers/serial/mpc52xx_uart.c
->  index d93b357..5f95e53 100644
->  --- a/drivers/serial/mpc52xx_uart.c
->  +++ b/drivers/serial/mpc52xx_uart.c
->  @@ -783,7 +783,9 @@ mpc52xx_uart_int_rx_chars(struct uart_port *port)
->                 }
->         }
->
->  +       spin_unlock(&port->lock);
->         tty_flip_buffer_push(tty);
->  +       spin_lock(&port->lock);
->
->         return psc_ops->raw_rx_rdy(port);
->   }
->
+Does anyone have any suggestions?
 
+Ron Madrid
 
+_________________________________________________________________
+Make i'm yours.=A0 Create a custom banner to support your cause.
+http://im.live.com/Messenger/IM/Contribute/Default.aspx?source=3DTXT_TAGHM_=
+MSN_Make_IM_Yours=
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+--_8444c3a3-76e7-42c1-840c-a7d560bb5880_
+Content-Type: text/html; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+<html>
+<head>
+<style>
+.hmmessage P
+{
+margin:0px;
+padding:0px
+}
+body.hmmessage
+{
+FONT-SIZE: 10pt;
+FONT-FAMILY:Tahoma
+}
+</style>
+</head>
+<body class=3D'hmmessage'><div style=3D"text-align: left;">I am using u-boo=
+t-1.3.1 in order to boot linux 2.6.25 on a custom MPC8313 based board.&nbsp=
+; In past versions of the kernel I was able to pass the NAND partition info=
+rmation to the kernel with this line: root=3D/dev/mtdblock2 rootfstype=3Djf=
+fs2 rw console=3DttyS0,115200 mtdparts=3Dnand0:1M(u-boot),3M(kernel),-(jffs=
+2).&nbsp; In this latest version the kernel will not mount the partitions b=
+ecause the name that is parsed from the command line (nand0) is different f=
+rom that of the name of the NAND that comes from ./drivers/mtd/nand/nand_id=
+s.c (NAND 256MiB 3,3V 8-bit).<br><br>I have tried to change the name of the=
+ NAND that is passed in via the command line, but u-boot does not seem to l=
+ike the format of the name that linux compares against.&nbsp; It doesn't li=
+ke the ,(comma) in 3,3V.<br><br>Does anyone have any suggestions?<br></div>=
+<br>Ron Madrid<br><br /><hr />Make i'm yours. <a href=3D'http://im.live.com=
+/Messenger/IM/Contribute/Default.aspx?source=3DTXT_TAGHM_MSN_Make_IM_Yours'=
+ target=3D'_new'>Create a custom banner to support your cause.</a></body>
+</html>=
+
+--_8444c3a3-76e7-42c1-840c-a7d560bb5880_--
