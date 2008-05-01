@@ -1,20 +1,33 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <markn@au1.ibm.com>
+Received: from e23smtp01.au.ibm.com (E23SMTP01.au.ibm.com [202.81.18.162])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e23smtp01.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 46532DDDFA
+	for <linuxppc-dev@ozlabs.org>; Fri,  2 May 2008 09:47:42 +1000 (EST)
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.18.234])
+	by e23smtp01.au.ibm.com (8.13.1/8.13.1) with ESMTP id m41NmPtv020154
+	for <linuxppc-dev@ozlabs.org>; Fri, 2 May 2008 09:48:25 +1000
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m41NlYn84247700
+	for <linuxppc-dev@ozlabs.org>; Fri, 2 May 2008 09:47:34 +1000
+Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
+	by d23av04.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m41NlfEe008225
+	for <linuxppc-dev@ozlabs.org>; Fri, 2 May 2008 09:47:41 +1000
+From: Mark Nelson <markn@au1.ibm.com>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 5/6] [POWERPC] Move device_to_mask() to dma-mapping.h
+Date: Fri, 2 May 2008 09:47:47 +1000
+References: <20080501042949.237603158@au1.ibm.com>
+	<20080501043737.892888612@au1.ibm.com>
+	<742b5895cdf9b898ec2b4834926a41ac@kernel.crashing.org>
+In-Reply-To: <742b5895cdf9b898ec2b4834926a41ac@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18458.21372.757211.450855@cargo.ozlabs.ibm.com>
-Date: Fri, 2 May 2008 09:34:20 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] [POWERPC] Rework EXC_LEVEL_EXCEPTION_PROLOG code
-In-Reply-To: <2DF41779-732B-4477-9DAC-147CDC5C9885@kernel.crashing.org>
-References: <Pine.LNX.4.64.0804300424040.31028@blarg.am.freescale.net>
-	<1209592495.18023.246.camel@pasglop>
-	<12ECF63E-7CEA-48FD-9447-7D534C29271D@kernel.crashing.org>
-	<18457.1279.401197.763726@cargo.ozlabs.ibm.com>
-	<A9B566F7-D00B-4202-9B85-427C38EE6070@kernel.crashing.org>
-	<18457.32297.485053.356477@cargo.ozlabs.ibm.com>
-	<2DF41779-732B-4477-9DAC-147CDC5C9885@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org
+Message-Id: <200805020947.47176.markn@au1.ibm.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,47 +37,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala writes:
-
-> ok.  Was just wondering how the async exception know that the signal  
-> it wanted to send belonged to the particular process that is running.   
-
-Usually the driver would have a reference to the task_struct of the
-task that should get the signal, and it would send the signal to that
-task, rather than the current task.  That task could be the current
-task, of course, but it might not be.
-
-I can't think of a case where an asynchronous interrupt would always
-result in a signal being sent to the current task.
-
-> >> how do we provide someone stick a kprobe on such code today?
-> >
-> > -ENOPARSE
+On Thu, 1 May 2008 07:04:30 pm Segher Boessenkool wrote:
+> > Move device_to_mask() to dma-mapping.h because we need to use it from
+> > outside dma_64.c in a later patch.
 > 
-> I was asking how we prevent the cases you were describing working w/ 
-> kprobes today.  Since it ends up single stepping in kernel codes its  
-> possible that someone sets a kprobe in code that shouldn't be  
-> interrupted, yet we'd cause a SingleStep Exception.
-
-I'd have to look more closely at the kprobes code to answer that in
-detail.  I assume the kprobes exception handlers are sufficiently
-careful about what they do because they are aware they could have
-interrupted interrupt-disabled code.
-
-> >> So I'm not if there is any good way to preclude the handlers
-> >> associated with these exceptions from doing the things you listed.
-> >
-> > In that case, you'd better expect to see system freezes, memory
-> > corruption and general instability.
+> Why does this need to become an inline function?
 > 
-> So the case I'm trying to make work is debug and kprobes.  This case  
-> seems like we have pretty good control over what the "handler" does.   
-> Are there checks we can add to BUG_ON() so we are at least aware of  
-> the code attempts to do something it shouldnt?
+> 
+> Segher
+> 
 
-Well, there's in_interrupt(), and there's the __kprobes marking, which
-is used to mark functions where kprobes must not put a breakpoint.
-Apart from that I would need to read through the kprobes code to
-comment further...
+I'm not sure exactly what you mean - it was inline before the move.
 
-Paul.
+But, I honestly didn't think about it too much (although I possibly should
+have)... I figured that it was static inline before my patch so I should leave
+it as such.
+
+But if everybody thinks it would be better to leave it in dma_64.c and just
+expose it for use outside, I'm fine with that.
+
+Thanks!
+
+Mark.
