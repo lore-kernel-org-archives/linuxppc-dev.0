@@ -1,34 +1,24 @@
-Return-Path: <pbadari@gmail.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 2CEAADDE28
-	for <linuxppc-dev@ozlabs.org>; Fri,  2 May 2008 00:51:54 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e32.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m41En1gZ008366
-	for <linuxppc-dev@ozlabs.org>; Thu, 1 May 2008 10:49:01 -0400
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m41EpkuN207342
-	for <linuxppc-dev@ozlabs.org>; Thu, 1 May 2008 08:51:48 -0600
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m41EpeJM007435
-	for <linuxppc-dev@ozlabs.org>; Thu, 1 May 2008 08:51:46 -0600
-Subject: Re: powerpc boot regression
-From: Badari Pulavarty <pbadari@gmail.com>
-To: Tony Breeds <tony@bakeyournoodle.com>
-In-Reply-To: <20080501051304.GM20457@bakeyournoodle.com>
-References: <20080429.231241.221824292.davem@davemloft.net>
-	<20080501051304.GM20457@bakeyournoodle.com>
-Content-Type: text/plain
-Date: Thu, 01 May 2008 07:51:47 -0700
-Message-Id: <1209653507.27240.7.camel@badari-desktop>
+Return-Path: <kay.sievers@vrfy.org>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.174]) by ozlabs.org (Postfix) with ESMTP id 3A986DDEC6
+	for <linuxppc-dev@ozlabs.org>; Fri,  2 May 2008 01:53:03 +1000 (EST)
+Subject: Re: [PATCH 1/2] i2c: Add support for device alias names
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: Jean Delvare <khali@linux-fr.org>
+In-Reply-To: <20080501100409.1b04fdb7@hyperion.delvare>
+References: <20080428113052.6d024bda@hyperion.delvare>
+	<20080428113901.2772e9d9@hyperion.delvare>
+	<1209395245.3666.9.camel@linux.site>
+	<20080428174010.5a40c2c0@hyperion.delvare>
+	<1209399377.3666.30.camel@linux.site>
+	<20080501100409.1b04fdb7@hyperion.delvare>
+Content-Type: text/plain; charset=utf-8
+Date: Thu, 01 May 2008 17:51:29 +0200
+Message-Id: <1209657089.20889.46.camel@linux.site>
 Mime-Version: 1.0
-Cc: linux-kernel@vger.kernel.org, LinuxPPC-dev <linuxppc-dev@ozlabs.org>,
-	y-goto@jp.fujitsu.com, akpm@linux-foundation.org,
-	David Miller <davem@davemloft.net>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Paul Mundt <lethal@linux-sh.org>, Scott Wood <scottwood@freescale.com>,
+	Linux I2C <i2c@lm-sensors.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,144 +28,79 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thu, 2008-05-01 at 10:04 +0200, Jean Delvare wrote:
+> On Mon, 28 Apr 2008 18:16:17 +0200, Kay Sievers wrote:
+> > On Mon, 2008-04-28 at 17:40 +0200, Jean Delvare wrote:
+> > > Why would i2c device modaliases ever contain multiple strings? A devi=
+ce
+> > > can't have multiple names, can it?
+> >=20
+> > Like ACPI/PNP devices, which can have several compat id's, which means
+> > that a single device can have "multiple names":
+> >   $ cat /sys/bus/pnp/devices/00:09/id
+> >   IBM0057
+> >   PNP0f13
+>=20
+> Ah, I didn't know about this. Now I'm curious how it can work. Does it
+> mean that several drivers attempt to bind to this device?=20
 
-On Thu, 2008-05-01 at 15:13 +1000, Tony Breeds wrote:
-> On Tue, Apr 29, 2008 at 11:12:41PM -0700, David Miller wrote:
-> > 
-> > This commit causes bootup failures on sparc64:
-> > 
-> > commit 86f6dae1377523689bd8468fed2f2dd180fc0560
-> > Author: Yasunori Goto <y-goto@jp.fujitsu.com>
-> > Date:   Mon Apr 28 02:13:33 2008 -0700
-> > 
-> >     memory hotplug: allocate usemap on the section with pgdat
-> 
-> 
-> <snip>
-> 
-> We're seeing a boot failure on powerpc.  git bisect points the problem
-> at this commit.   However reverting just this one comitt doesn't fix the
-> regression.  I also needed to revert
-> 04753278769f3b6c3b79a080edb52f21d83bf6e2 (memory hotplug: register
-> section/node id to free")
-> 
-> Problem seen on power4, power5 and ps3.
+=EF=BB=BFThey are usually all id's for the same type of device, and don't d=
+escribe
+multiple functions at the same time. In most cases the vendor id's, like
+"IBM0057" here, do not match anything.
 
-I don't see the problem on my power5 machine. Can you send the
-config ? Is CONFIG_SPARSEMEM_VMEMMAP enabled ?
+> > > Can't we just stop handle_moddevtable() from adding a tailing "*"
+> > > automatically, and just let the device types which need it, add it on
+> > > their own?
+> >=20
+> > For a lot subsystems it's fine to have it appended, as there is a
+> > defined list of identifiers, which must appear in the same order, and
+> > new identifiers are appended to the end. So the "*" still matches
+> > modules with possibly extended modalias strings.
+>=20
+> I understand the logic, however I am skeptical how useful it is in
+> practice. If we add an identifier to the device aliases, then we also
+> update the corresponding modalias, so no in-tree driver can break. The
+> only case where it makes a difference, as far as I can see, is for
+> out-of-tree drivers. Am I correct?
 
-Please let me know.
+=EF=BB=BFThat sounds correct, yes.
+
+> On top of that, I doubt that we
+> actually add new identifiers that frequently, do we?
+
+Not that I know.
+
+> > We would also need to review all buses which export modalias, if they
+> > need the "*" or not, and add them by hand, if needed.
+> >=20
+> > I guess, it's easier to introduce an additional parameter to
+> > file2alias::do_table() and suppress the trailing "*" for i2c?
+>=20
+> That's one possibility, but I had a slightly different approach, which
+> is to just let the type-specific handlers add the trailing "*" by
+> themselves if they need it. This allows for optimization in a few
+> cases.
+>=20
+> Subject: modpost: i2c aliases need no trailing wildcard
+>=20
+> Not all device type aliases need a trailing wildcard, in particular
+> the i2c aliases don't. Don't add a wildcard by default in do_table(),
+> instead let each device type handler add it if needed.
+
+...
+
+> The patch only changes the i2c aliases, all the rest is the same as
+> before (unless I messed up somewhere, that is.) Do you think this would
+> be acceptable for upstream? If you think it's better to add a parameter
+> to do_table() and let it add the "*" as it did so far, that's also fine
+> with me, I can update the patch to do that.
+
+Looks fine to me.
+
+If the content of:
+  /lib/modules/$(uname -r)/modules.alias
+looks correct after the patch, this should go in, I think.
 
 Thanks,
-Badari
-
-
-
-> 
-> If the fix isn't trivial, can we get that patch series reverted?
-> 
-> FWIW a boot looks like:
-> zImage starting: loaded at 0x00400000 (sp: 0x02f5fea0)
-> Allocating 0xa2d4c8 bytes for kernel ...
-> OF version = 'IBM,SF240_332'
-> gunzipping (0x01400000 <- 0x00407000:0x0079aa5d)...done 0x9a8ee0 bytes
-> 
-> Linux/PowerPC load: root=/dev/sdc3 ro
-> Finalizing device tree... using OF tree (promptr=02039a68)
-> OF stdout device is: /vdevice/vty@30000000
-> Hypertas detected, assuming LPAR !
-> command line: root=/dev/sdc3 ro
-> memory layout at init:
->   alloc_bottom : 0000000001e32000
->   alloc_top    : 0000000008000000
->   alloc_top_hi : 0000000080000000
->   rmo_top      : 0000000008000000
->   ram_top      : 0000000080000000
-> Looking for displays
-> instantiating rtas at 0x00000000076a1000 ... done
-> 0000000000000000 : boot cpu     0000000000000000
-> copying OF device tree ...
-> Building dt strings...
-> Building dt structure...
-> Device tree strings 0x0000000001e33000 -> 0x0000000001e3417c
-> Device tree struct  0x0000000001e35000 -> 0x0000000001e3d000
-> Calling quiesce ...
-> returning from prom_init
-> Crash kernel location must be 0x2000000
-> Reserving 0MB of memory at 32MB for crashkernel (System RAM: 2048MB)
-> Using pSeries machine description
-> console [udbg0] enabled
-> Partition configured for 20 cpus.
-> CPU maps initialized for 2 threads per core
-> Starting Linux PPC64 #52 SMP Thu May 1 14:04:46 EST 2008
-> -----------------------------------------------------
-> ppc64_pft_size                = 0x19
-> physicalMemorySize            = 0x80000000
-> htab_hash_mask                = 0x3ffff
-> -----------------------------------------------------
-> Initializing cgroup subsys cpuset
-> Linux version 2.6.25 (tony@Sprygo) (gcc version 4.0.4 20060507 (prerelease) (Debian 4.0.3-3)) #52 SMP Thu May 1 14:04:46 EST 2008
-> [boot]0012 Setup Arch
-> sparse_early_usemap_alloc: allocation failed
-> <snip 127 more>
-> EEH: No capable adapters found
-> PPC64 nvram contains 7168 bytes
-> Zone PFN ranges:
->   DMA             0 ->   524288
->   Normal     524288 ->   524288
-> Movable zone start PFN for each node
-> early_node_map[1] active PFN ranges
->     0:        0 ->   524288
-> [boot]0015 Setup Done
-> Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 517120
-> Kernel command line: root=/dev/sdc3 ro
-> [boot]0020 XICS Init
-> [boot]0021 XICS Done
-> PID hash table entries: 4096 (order: 12, 32768 bytes)
-> clocksource: timebase mult[1545815] shift[22] registered
-> Console: colour dummy device 80x25
-> console handover: boot [udbg0] -> real [hvc0]
-> Dentry cache hash table entries: 262144 (order: 9, 2097152 bytes)
-> Inode-cache hash table entries: 131072 (order: 8, 1048576 bytes)
-> Unable to handle kernel paging request for data at address 0xcf00000000030858
-> Faulting instruction address: 0xc0000000000c4530
-> Oops: Kernel access of bad area, sig: 11 [#1]
-> SMP NR_CPUS=32 pSeries
-> Modules linked in:
-> NIP: c0000000000c4530 LR: c0000000007e8790 CTR: 80000000001af404
-> REGS: c000000000987ae0 TRAP: 0300   Not tainted  (2.6.25)
-> MSR: 8000000000009032 <EE,ME,IR,DR>  CR: 24000088  XER: 20000002
-> DAR: cf00000000030858, DSISR: 0000000040010000
-> TASK = c000000000862650[0] 'swapper' THREAD: c000000000984000 CPU: 0
-> GPR00: 0000000020000000 c000000000987d60 c000000000981f18 cf00000000030858 
-> GPR04: 0000000000000000 0000000000000001 0000000000000000 c0000000009f2a68 
-> GPR08: c0000000009f2a58 00000000000001b8 0000000000000000 cf00000000030858 
-> GPR12: 0000000000004000 c0000000009ae400 0000000000000000 0000000000000000 
-> GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000001 
-> GPR20: c00000007ffe8000 0000000000080000 0000000000000001 c0000000009f2848 
-> GPR24: cf00000000030200 0000000040000000 0000000000000dc0 000000000000001d 
-> GPR28: ffffffffe0000000 cf00000000030890 c0000000008e5088 0000000000000dde 
-> NIP [c0000000000c4530] .__free_pages_bootmem+0xc/0xa8
-> LR [c0000000007e8790] .free_all_bootmem_core+0x140/0x218
-> Call Trace:
-> [c000000000987d60] [0000000001c0a438] 0x1c0a438 (unreliable)
-> [c000000000987e40] [c0000000007d29c8] .mem_init+0x68/0x1b0
-> [c000000000987ed0] [c0000000007c091c] .start_kernel+0x34c/0x45c
-> [c000000000987f90] [c00000000000859c] .start_here_common+0x4c/0xb0
-> Instruction dump:
-> 780007c6 792907c6 7c630214 38000038 7863a302 7c6301d2 4d820020 7c634a14 
-> 4bffffa0 7c862379 7c6b1b78 40820028 <e8030000> 39200000 7800a842 78005800 
-> ---[ end trace 8640abe69a316dee ]---
-> Kernel panic - not syncing: Attempted to kill the idle task!
-> Rebooting in 180 seconds..
-> 
-> Yours Tony
-> 
->   linux.conf.au    http://www.marchsouth.org/
->   Jan 19 - 24 2009 The Australian Linux Technical Conference!
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Kay
