@@ -1,27 +1,22 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from wr-out-0506.google.com (wr-out-0506.google.com [64.233.184.229])
-	by ozlabs.org (Postfix) with ESMTP id 90C98DDE24
-	for <linuxppc-dev@ozlabs.org>; Fri,  2 May 2008 00:26:57 +1000 (EST)
-Received: by wr-out-0506.google.com with SMTP id 67so953557wri.3
-	for <linuxppc-dev@ozlabs.org>; Thu, 01 May 2008 07:26:55 -0700 (PDT)
-Subject: Re: [PATCH] [POWERPC] Rework EXC_LEVEL_EXCEPTION_PROLOG code
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <CF55CEE2-CAF5-4728-947E-C1C37E262EDB@kernel.crashing.org>
-References: <Pine.LNX.4.64.0804300424040.31028@blarg.am.freescale.net>
-	<1209592495.18023.246.camel@pasglop>
-	<12ECF63E-7CEA-48FD-9447-7D534C29271D@kernel.crashing.org>
-	<18457.1279.401197.763726@cargo.ozlabs.ibm.com>
-	<A9B566F7-D00B-4202-9B85-427C38EE6070@kernel.crashing.org>
-	<1209628423.18023.286.camel@pasglop>
-	<CF55CEE2-CAF5-4728-947E-C1C37E262EDB@kernel.crashing.org>
-Content-Type: text/plain
-Date: Thu, 01 May 2008 09:26:52 -0500
-Message-Id: <1209652012.2946.124.camel@vader.jdub.homelinux.org>
-Mime-Version: 1.0
-Sender: Josh Boyer <jwboyer@gmail.com>
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
-Reply-To: jwboyer@linux.vnet.ibm.com
+Return-Path: <glikely@secretlab.ca>
+Received: from wr-out-0506.google.com (wr-out-0506.google.com [64.233.184.235])
+	by ozlabs.org (Postfix) with ESMTP id 83E5EDDF5F
+	for <linuxppc-dev@ozlabs.org>; Fri,  2 May 2008 00:33:26 +1000 (EST)
+Received: by wr-out-0506.google.com with SMTP id 67so957665wri.3
+	for <linuxppc-dev@ozlabs.org>; Thu, 01 May 2008 07:33:24 -0700 (PDT)
+Message-ID: <fa686aa40805010733o6bb5b522hd16669b732f1892@mail.gmail.com>
+Date: Thu, 1 May 2008 08:33:24 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: wg@grandegger.com, linuxppc-dev@ozlabs.org, paulus@samba.org,
+	netdev@vger.kernel.org, wd@denx.de, "Domen Puncer" <domen@coderock.org>,
+	"Sylvain Munaut" <tnt@246tnt.com>
+Subject: Re: [PATCH] [POWERPC] mpc5200: Allow for fixed speed MII
+	configurations
+In-Reply-To: <20080429230620.11248.25729.stgit@trillian.secretlab.ca>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20080429230620.11248.25729.stgit@trillian.secretlab.ca>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,41 +26,255 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2008-05-01 at 08:22 -0500, Kumar Gala wrote:
-> >> So we have 4 actual exceptions:
-> >> * CriticalInput (some external device signaled this.  There are two
-> >> concepts of critical.  One is error the other is high priority)
-> >> However this would have the same caveats as any ExternalInput  
-> >> handler.
-> >
-> > No, it's worse. It can interrupt code that normally has
-> > local_irq_disabled() and thus doesn't expect to be interrupted. That
-> > means that everything becomes unsafe including locks etc....
-> 
-> Fair.  Should local_irq_disable() clear MSR_SE & MSR_BE on classic  
-> parts?
-> 
-> > Note that driver that want to make active use of that probably want  
-> > some
-> > explicit local_crit_irq_disable/enable functions to be able to  
-> > implement
-> > some sort of synchronization.
-> 
-> Or we could just have local_irq_disable -- clear MSR_EE and MSR_CE
+On Tue, Apr 29, 2008 at 5:06 PM, Grant Likely <grant.likely@secretlab.ca> wrote:
+> From: Grant Likely <grant.likely@secretlab.ca>
+>
+>  Various improvements for configuring the MPC5200 MII link from the
+>  device tree:
+>  * Look for 'current-speed' property for fixed speed MII links
+>  * Look for 'fsl,7-wire-mode' property for boards using the 7 wire mode
+>  * move definition of private data structure out of the header file
+>
+>  Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 
-That sort of defeats the purpose of using critical interrupts in the
-"higher priority" sense, doesn't it?  Seems it would effectively
-eliminate that level altogether.  And it would also mask off the
-watchdog interrupt, which I don't think you want to do.
+Any more comments on this patch?  I want to push it to Paulus, but I'd
+like to have someone ack it first.
 
-Ben suggested local_crit_irq_disable.  That would suffice for drivers
-that know they are configured as CE and need to do locking primitives,
-but that isn't very common.  On 4xx there isn't even an interface for a
-driver to request it's interrupts be set to CE and we init all UICs to
-have UIC_CR be 0.
+Wolfgang, you used the previous version of this patch.  Does this one
+work for you?
 
-So for 4xx at least, most of this discussion is theoretical for now.
-However, I can see value in having CEs being used for certain devices,
-etc so it would be nice to figure it out in the long run.
+Cheers,
+g.
 
-josh
+>  ---
+>
+>   .../powerpc/mpc52xx-device-tree-bindings.txt       |   11 ++
+>   drivers/net/fec_mpc52xx.c                          |   96 +++++++++++++++-----
+>   drivers/net/fec_mpc52xx.h                          |   19 ----
+>   3 files changed, 85 insertions(+), 41 deletions(-)
+>
+>  diff --git a/Documentation/powerpc/mpc52xx-device-tree-bindings.txt b/Documentation/powerpc/mpc52xx-device-tree-bindings.txt
+>  index cda7a7d..6f12f1c 100644
+>  --- a/Documentation/powerpc/mpc52xx-device-tree-bindings.txt
+>  +++ b/Documentation/powerpc/mpc52xx-device-tree-bindings.txt
+>  @@ -237,6 +237,17 @@ Each GPIO controller node should have the empty property gpio-controller and
+>   according to the bit numbers in the GPIO control registers. The second cell
+>   is for flags which is currently unsused.
+>
+>  +8) FEC nodes
+>  +The FEC node can specify one of the following properties to configure
+>  +the MII link:
+>  +"fsl,7-wire-mode" - An empty property that specifies the link uses 7-wire
+>  +                    mode instead of MII
+>  +"current-speed"   - Specifies that the MII should be configured for a fixed
+>  +                    speed.  This property should contain two cells.  The
+>  +                    first cell specifies the speed in Mbps and the second
+>  +                    should be '0' for half duplex and '1' for full duplex
+>  +"phy-handle"      - Contains a phandle to an Ethernet PHY.
+>  +
+>   IV - Extra Notes
+>   ================
+>
+>  diff --git a/drivers/net/fec_mpc52xx.c b/drivers/net/fec_mpc52xx.c
+>  index d21b7ab..eeb4433 100644
+>  --- a/drivers/net/fec_mpc52xx.c
+>  +++ b/drivers/net/fec_mpc52xx.c
+>  @@ -43,6 +43,29 @@
+>
+>   #define DRIVER_NAME "mpc52xx-fec"
+>
+>  +#define FEC5200_PHYADDR_NONE   (-1)
+>  +#define FEC5200_PHYADDR_7WIRE  (-2)
+>  +
+>  +/* Private driver data structure */
+>  +struct mpc52xx_fec_priv {
+>  +       int duplex;
+>  +       int speed;
+>  +       int r_irq;
+>  +       int t_irq;
+>  +       struct mpc52xx_fec __iomem *fec;
+>  +       struct bcom_task *rx_dmatsk;
+>  +       struct bcom_task *tx_dmatsk;
+>  +       spinlock_t lock;
+>  +       int msg_enable;
+>  +
+>  +       /* MDIO link details */
+>  +       int phy_addr;
+>  +       unsigned int phy_speed;
+>  +       struct phy_device *phydev;
+>  +       enum phy_state link;
+>  +};
+>  +
+>  +
+>   static irqreturn_t mpc52xx_fec_interrupt(int, void *);
+>   static irqreturn_t mpc52xx_fec_rx_interrupt(int, void *);
+>   static irqreturn_t mpc52xx_fec_tx_interrupt(int, void *);
+>  @@ -223,7 +246,7 @@ static int mpc52xx_fec_phy_start(struct net_device *dev)
+>         struct mpc52xx_fec_priv *priv = netdev_priv(dev);
+>         int err;
+>
+>  -       if (!priv->has_phy)
+>  +       if (priv->phy_addr < 0)
+>                 return 0;
+>
+>         err = mpc52xx_fec_init_phy(dev);
+>  @@ -243,7 +266,7 @@ static void mpc52xx_fec_phy_stop(struct net_device *dev)
+>   {
+>         struct mpc52xx_fec_priv *priv = netdev_priv(dev);
+>
+>  -       if (!priv->has_phy)
+>  +       if (!priv->phydev)
+>                 return;
+>
+>         phy_disconnect(priv->phydev);
+>  @@ -255,7 +278,7 @@ static void mpc52xx_fec_phy_stop(struct net_device *dev)
+>   static int mpc52xx_fec_phy_mii_ioctl(struct mpc52xx_fec_priv *priv,
+>                 struct mii_ioctl_data *mii_data, int cmd)
+>   {
+>  -       if (!priv->has_phy)
+>  +       if (!priv->phydev)
+>                 return -ENOTSUPP;
+>
+>         return phy_mii_ioctl(priv->phydev, mii_data, cmd);
+>  @@ -265,7 +288,7 @@ static void mpc52xx_fec_phy_hw_init(struct mpc52xx_fec_priv *priv)
+>   {
+>         struct mpc52xx_fec __iomem *fec = priv->fec;
+>
+>  -       if (!priv->has_phy)
+>  +       if (priv->phydev)
+>                 return;
+>
+>         out_be32(&fec->mii_speed, priv->phy_speed);
+>  @@ -704,7 +727,7 @@ static void mpc52xx_fec_start(struct net_device *dev)
+>         rcntrl = FEC_RX_BUFFER_SIZE << 16;      /* max frame length */
+>         rcntrl |= FEC_RCNTRL_FCE;
+>
+>  -       if (priv->has_phy)
+>  +       if (priv->phy_addr != FEC5200_PHYADDR_7WIRE)
+>                 rcntrl |= FEC_RCNTRL_MII_MODE;
+>
+>         if (priv->duplex == DUPLEX_FULL)
+>  @@ -864,7 +887,10 @@ mpc52xx_fec_probe(struct of_device *op, const struct of_device_id *match)
+>         struct net_device *ndev;
+>         struct mpc52xx_fec_priv *priv = NULL;
+>         struct resource mem;
+>  -       const phandle *ph;
+>  +       struct device_node *phy_node;
+>  +       const phandle *phy_handle;
+>  +       const u32 *prop;
+>  +       int prop_size;
+>
+>         phys_addr_t rx_fifo;
+>         phys_addr_t tx_fifo;
+>  @@ -950,24 +976,36 @@ mpc52xx_fec_probe(struct of_device *op, const struct of_device_id *match)
+>         priv->msg_enable = netif_msg_init(debug, MPC52xx_MESSAGES_DEFAULT);
+>         priv->duplex = DUPLEX_FULL;
+>
+>  -       /* is the phy present in device tree? */
+>  -       ph = of_get_property(op->node, "phy-handle", NULL);
+>  -       if (ph) {
+>  -               const unsigned int *prop;
+>  -               struct device_node *phy_dn;
+>  -               priv->has_phy = 1;
+>  -
+>  -               phy_dn = of_find_node_by_phandle(*ph);
+>  -               prop = of_get_property(phy_dn, "reg", NULL);
+>  -               priv->phy_addr = *prop;
+>  +       /*
+>  +        * Link mode configuration
+>  +        */
+>
+>  -               of_node_put(phy_dn);
+>  +       /* Start with safe defaults for link connection */
+>  +       priv->phy_addr = FEC5200_PHYADDR_NONE;
+>  +       priv->speed = 100;
+>  +       priv->duplex = 0;
+>  +       priv->phy_speed = ((mpc52xx_find_ipb_freq(op->node) >> 20) / 5) << 1;
+>  +
+>  +       /* the 7-wire property means don't use MII mode */
+>  +       if (of_find_property(op->node, "fsl,7-wire-mode", NULL))
+>  +               priv->phy_addr = FEC5200_PHYADDR_7WIRE;
+>  +
+>  +       /* The current speed preconfigures the speed of the MII link */
+>  +       prop = of_get_property(op->node, "current-speed", &prop_size);
+>  +       if (prop && (prop_size >= sizeof(u32) * 2)) {
+>  +               priv->speed = prop[0];
+>  +               priv->duplex = prop[1] ? DUPLEX_FULL : DUPLEX_HALF;
+>  +       }
+>
+>  -               /* Phy speed */
+>  -               priv->phy_speed = ((mpc52xx_find_ipb_freq(op->node) >> 20) / 5) << 1;
+>  -       } else {
+>  -               dev_info(&ndev->dev, "can't find \"phy-handle\" in device"
+>  -                               " tree, using 7-wire mode\n");
+>  +       /* If there is a phy handle, setup link to that phy */
+>  +       phy_handle = of_get_property(op->node, "phy-handle", &prop_size);
+>  +       if (phy_handle && (prop_size >= sizeof(phandle))) {
+>  +               phy_node = of_find_node_by_phandle(*phy_handle);
+>  +               prop = of_get_property(phy_node, "reg", &prop_size);
+>  +               if (prop && (prop_size >= sizeof(u32)))
+>  +                       if ((*prop >= 0) && (*prop < PHY_MAX_ADDR))
+>  +                               priv->phy_addr = *prop;
+>  +               of_node_put(phy_node);
+>         }
+>
+>         /* Hardware init */
+>  @@ -982,6 +1020,20 @@ mpc52xx_fec_probe(struct of_device *op, const struct of_device_id *match)
+>         if (rv < 0)
+>                 goto probe_error;
+>
+>  +       /* Now report the link setup */
+>  +       switch (priv->phy_addr) {
+>  +        case FEC5200_PHYADDR_NONE:
+>  +               dev_info(&ndev->dev, "Fixed speed MII link: %i%cD\n",
+>  +                        priv->speed, priv->duplex ? 'F' : 'H');
+>  +               break;
+>  +        case FEC5200_PHYADDR_7WIRE:
+>  +               dev_info(&ndev->dev, "using 7-wire PHY mode\n");
+>  +               break;
+>  +        default:
+>  +               dev_info(&ndev->dev, "Using PHY at MDIO address %i\n",
+>  +                        priv->phy_addr);
+>  +       }
+>  +
+>         /* We're done ! */
+>         dev_set_drvdata(&op->dev, ndev);
+>
+>  diff --git a/drivers/net/fec_mpc52xx.h b/drivers/net/fec_mpc52xx.h
+>  index 8b1f753..a227a52 100644
+>  --- a/drivers/net/fec_mpc52xx.h
+>  +++ b/drivers/net/fec_mpc52xx.h
+>  @@ -26,25 +26,6 @@
+>
+>   #define FEC_WATCHDOG_TIMEOUT   ((400*HZ)/1000)
+>
+>  -struct mpc52xx_fec_priv {
+>  -       int duplex;
+>  -       int r_irq;
+>  -       int t_irq;
+>  -       struct mpc52xx_fec __iomem *fec;
+>  -       struct bcom_task *rx_dmatsk;
+>  -       struct bcom_task *tx_dmatsk;
+>  -       spinlock_t lock;
+>  -       int msg_enable;
+>  -
+>  -       int has_phy;
+>  -       unsigned int phy_speed;
+>  -       unsigned int phy_addr;
+>  -       struct phy_device *phydev;
+>  -       enum phy_state link;
+>  -       int speed;
+>  -};
+>  -
+>  -
+>   /* ======================================================================== */
+>   /* Hardware register sets & bits                                            */
+>   /* ======================================================================== */
+>
+>
+
+
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
