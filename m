@@ -1,22 +1,25 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <afleming@ld0175-tx32.am.freescale.net>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 4C881DDFBF
-	for <linuxppc-dev@ozlabs.org>; Sat,  3 May 2008 03:34:46 +1000 (EST)
-In-Reply-To: <F62A680D-C2D8-42B0-B4D6-F3A00F228EB1@kernel.crashing.org>
-References: <Pine.LNX.4.64.0805020920120.1141@blarg.am.freescale.net>
-	<20080502150753.GA7753@ld0162-tx32.am.freescale.net>
-	<F62A680D-C2D8-42B0-B4D6-F3A00F228EB1@kernel.crashing.org>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <03e9cbca081bff8f6db9862bf3d8d028@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] [POWERPC] Fix kernel builds with newer gcc versions and
-	-Os
-Date: Fri, 2 May 2008 19:34:23 +0200
-To: Kumar Gala <galak@kernel.crashing.org>
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 91D30DE0EE
+	for <linuxppc-dev@ozlabs.org>; Sat,  3 May 2008 04:03:28 +1000 (EST)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
+	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
+	m42I3Nuq012800
+	for <linuxppc-dev@ozlabs.org>; Fri, 2 May 2008 11:03:24 -0700 (MST)
+Received: from ld0175-tx32.am.freescale.net (ld0175-tx32.am.freescale.net
+	[10.82.19.125])
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id m42I3M2R014176
+	for <linuxppc-dev@ozlabs.org>; Fri, 2 May 2008 13:03:23 -0500 (CDT)
+From: Andy Fleming <afleming@freescale.com>
+To: galak@kernel.crashing.org
+Subject: [PATCH v2.6.26] 85xx: Fix some sparse warnings for 85xx MDS
+Date: Fri,  2 May 2008 13:03:22 -0500
+Message-Id: <1209751402-25586-1-git-send-email-afleming@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,16 +29,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> <brokenrecord>
->> Why don't we just link with libgcc?
->> </brokenrecord>
->
-> Its something of a PITA to do that in the kernel at this point since 
-> we've duplicated libgcc functionality in it.  I'm sure there are some 
-> historical reasons this wasn't done to start with.
+Signed-off-by: Andy Fleming <afleming@freescale.com>
+---
+ arch/powerpc/platforms/85xx/mpc85xx_mds.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-That's the same as saying that it would be a nice cleanup to remove all
-that duplicated code now...
-
-
-Segher
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_mds.c b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
+index 25f8bc7..12f68ab 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_mds.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
+@@ -64,7 +64,7 @@
+ static void __init mpc85xx_mds_setup_arch(void)
+ {
+ 	struct device_node *np;
+-	static u8 *bcsr_regs = NULL;
++	static u8 __iomem *bcsr_regs = NULL;
+ 
+ 	if (ppc_md.progress)
+ 		ppc_md.progress("mpc85xx_mds_setup_arch()", 0);
+-- 
+1.5.4.GIT
