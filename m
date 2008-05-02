@@ -4,13 +4,13 @@ Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "smtp.linux-foundation.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 61D3FDDE26
-	for <linuxppc-dev@ozlabs.org>; Sat,  3 May 2008 06:35:28 +1000 (EST)
-Message-Id: <200805022034.m42KY234013256@imap1.linux-foundation.org>
-Subject: [patch 1/5] macintosh: therm_pm72: driver_lock semaphore to mutex
+	by ozlabs.org (Postfix) with ESMTPS id CC7F6DDFC5
+	for <linuxppc-dev@ozlabs.org>; Sat,  3 May 2008 06:35:32 +1000 (EST)
+Message-Id: <200805022034.m42KY3Wn013261@imap1.linux-foundation.org>
+Subject: [patch 2/5] macintosh: qindfarm_smu_sat: semaphore to mutex
 To: paulus@samba.org
 From: akpm@linux-foundation.org
-Date: Fri, 02 May 2008 13:34:01 -0700
+Date: Fri, 02 May 2008 13:34:02 -0700
 Cc: akpm@linux-foundation.org, dwalker@mvista.com, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -29,133 +29,55 @@ Cc: Paul Mackerras <paulus@samba.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- drivers/macintosh/therm_pm72.c |   31 ++++++++++++++++---------------
- 1 file changed, 16 insertions(+), 15 deletions(-)
+ drivers/macintosh/windfarm_smu_sat.c |   10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
-diff -puN drivers/macintosh/therm_pm72.c~macintosh-therm_pm72-driver_lock-semaphore-to-mutex drivers/macintosh/therm_pm72.c
---- a/drivers/macintosh/therm_pm72.c~macintosh-therm_pm72-driver_lock-semaphore-to-mutex
-+++ a/drivers/macintosh/therm_pm72.c
-@@ -122,6 +122,7 @@
- #include <linux/kmod.h>
+diff -puN drivers/macintosh/windfarm_smu_sat.c~macintosh-qindfarm_smu_sat-semaphore-to-mutex drivers/macintosh/windfarm_smu_sat.c
+--- a/drivers/macintosh/windfarm_smu_sat.c~macintosh-qindfarm_smu_sat-semaphore-to-mutex
++++ a/drivers/macintosh/windfarm_smu_sat.c
+@@ -13,7 +13,7 @@
+ #include <linux/init.h>
+ #include <linux/wait.h>
  #include <linux/i2c.h>
- #include <linux/kthread.h>
+-#include <linux/semaphore.h>
 +#include <linux/mutex.h>
  #include <asm/prom.h>
- #include <asm/machdep.h>
- #include <asm/io.h>
-@@ -169,7 +170,7 @@ static int				rackmac;
- static s32				dimm_output_clamp;
- static int 				fcu_rpm_shift;
- static int				fcu_tickle_ticks;
--static DECLARE_MUTEX(driver_lock);
-+static DEFINE_MUTEX(driver_lock);
+ #include <asm/smu.h>
+ #include <asm/pmac_low_i2c.h>
+@@ -36,7 +36,7 @@
+ struct wf_sat {
+ 	int			nr;
+ 	atomic_t		refcnt;
+-	struct semaphore	mutex;
++	struct mutex		mutex;
+ 	unsigned long		last_read; /* jiffies when cache last updated */
+ 	u8			cache[16];
+ 	struct i2c_client	i2c;
+@@ -163,7 +163,7 @@ static int wf_sat_get(struct wf_sensor *
+ 	if (sat->i2c.adapter == NULL)
+ 		return -ENODEV;
  
- /*
-  * We have 3 types of CPU PID control. One is "split" old style control
-@@ -729,9 +730,9 @@ static void fetch_cpu_pumps_minmax(void)
- static ssize_t show_##name(struct device *dev, struct device_attribute *attr, char *buf)	\
- {								\
- 	ssize_t r;						\
--	down(&driver_lock);					\
-+	mutex_lock(&driver_lock);					\
- 	r = sprintf(buf, "%d.%03d", FIX32TOPRINT(data));	\
--	up(&driver_lock);					\
-+	mutex_unlock(&driver_lock);					\
- 	return r;						\
+-	down(&sat->mutex);
++	mutex_lock(&sat->mutex);
+ 	if (time_after(jiffies, (sat->last_read + MAX_AGE))) {
+ 		err = wf_sat_read_cache(sat);
+ 		if (err)
+@@ -182,7 +182,7 @@ static int wf_sat_get(struct wf_sensor *
+ 	err = 0;
+ 
+  fail:
+-	up(&sat->mutex);
++	mutex_unlock(&sat->mutex);
+ 	return err;
  }
- #define BUILD_SHOW_FUNC_INT(name, data)				\
-@@ -1803,11 +1804,11 @@ static int main_control_loop(void *x)
- {
- 	DBG("main_control_loop started\n");
  
--	down(&driver_lock);
-+	mutex_lock(&driver_lock);
- 
- 	if (start_fcu() < 0) {
- 		printk(KERN_ERR "kfand: failed to start FCU\n");
--		up(&driver_lock);
-+		mutex_unlock(&driver_lock);
- 		goto out;
- 	}
- 
-@@ -1822,14 +1823,14 @@ static int main_control_loop(void *x)
- 
- 	fcu_tickle_ticks = FCU_TICKLE_TICKS;
- 
--	up(&driver_lock);
-+	mutex_unlock(&driver_lock);
- 
- 	while (state == state_attached) {
- 		unsigned long elapsed, start;
- 
- 		start = jiffies;
- 
--		down(&driver_lock);
-+		mutex_lock(&driver_lock);
- 
- 		/* Tickle the FCU just in case */
- 		if (--fcu_tickle_ticks < 0) {
-@@ -1861,7 +1862,7 @@ static int main_control_loop(void *x)
- 			do_monitor_slots(&slots_state);
- 		else
- 			do_monitor_drives(&drives_state);
--		up(&driver_lock);
-+		mutex_unlock(&driver_lock);
- 
- 		if (critical_state == 1) {
- 			printk(KERN_WARNING "Temperature control detected a critical condition\n");
-@@ -2019,13 +2020,13 @@ static void detach_fcu(void)
-  */
- static int therm_pm72_attach(struct i2c_adapter *adapter)
- {
--	down(&driver_lock);
-+	mutex_lock(&driver_lock);
- 
- 	/* Check state */
- 	if (state == state_detached)
- 		state = state_attaching;
- 	if (state != state_attaching) {
--		up(&driver_lock);
-+		mutex_unlock(&driver_lock);
- 		return 0;
- 	}
- 
-@@ -2054,7 +2055,7 @@ static int therm_pm72_attach(struct i2c_
- 		state = state_attached;
- 		start_control_loops();
- 	}
--	up(&driver_lock);
-+	mutex_unlock(&driver_lock);
- 
- 	return 0;
- }
-@@ -2065,16 +2066,16 @@ static int therm_pm72_attach(struct i2c_
-  */
- static int therm_pm72_detach(struct i2c_adapter *adapter)
- {
--	down(&driver_lock);
-+	mutex_lock(&driver_lock);
- 
- 	if (state != state_detached)
- 		state = state_detaching;
- 
- 	/* Stop control loops if any */
- 	DBG("stopping control loops\n");
--	up(&driver_lock);
-+	mutex_unlock(&driver_lock);
- 	stop_control_loops();
--	down(&driver_lock);
-+	mutex_lock(&driver_lock);
- 
- 	if (u3_0 != NULL && !strcmp(adapter->name, "u3 0")) {
- 		DBG("lost U3-0, disposing control loops\n");
-@@ -2090,7 +2091,7 @@ static int therm_pm72_detach(struct i2c_
- 	if (u3_0 == NULL && u3_1 == NULL)
- 		state = state_detached;
- 
--	up(&driver_lock);
-+	mutex_unlock(&driver_lock);
- 
- 	return 0;
- }
+@@ -233,7 +233,7 @@ static void wf_sat_create(struct i2c_ada
+ 	sat->nr = -1;
+ 	sat->node = of_node_get(dev);
+ 	atomic_set(&sat->refcnt, 0);
+-	init_MUTEX(&sat->mutex);
++	mutex_init(&sat->mutex);
+ 	sat->i2c.addr = (addr >> 1) & 0x7f;
+ 	sat->i2c.adapter = adapter;
+ 	sat->i2c.driver = &wf_sat_driver;
 _
