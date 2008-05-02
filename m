@@ -2,18 +2,15 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 7D13ADDD01
-	for <linuxppc-dev@ozlabs.org>; Fri,  2 May 2008 14:06:52 +1000 (EST)
-Message-Id: <056A4D90-9815-4987-9CCF-EE8A6C009FD1@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id 8C580DDDEF
+	for <linuxppc-dev@ozlabs.org>; Fri,  2 May 2008 14:17:56 +1000 (EST)
+Date: Thu, 1 May 2008 23:13:40 -0500 (CDT)
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Becky Bruce <bgill@freescale.com>
-In-Reply-To: <Pine.LNX.4.64.0805011814110.8816@monty.am.freescale.net>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: [PATCH] Squash build warning for print of resource_size_t in
-	fsl_soc.c
-Date: Thu, 1 May 2008 23:06:42 -0500
-References: <Pine.LNX.4.64.0805011814110.8816@monty.am.freescale.net>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Please pull from 'powerpc-next' branch
+Message-ID: <Pine.LNX.4.64.0805012309020.1300@blarg.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -24,18 +21,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Please pull from 'powerpc-next' branch of
 
-On May 1, 2008, at 6:15 PM, Becky Bruce wrote:
+	master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git powerpc-next
 
->
-> When resource_size_t is larger than an int, the current code
-> generates a build warning.  Kill it.
->
-> Signed-off-by: Becky Bruce <becky.bruce@freescale.com>
-> ---
-> arch/powerpc/sysdev/fsl_soc.c |    4 ++--
-> 1 files changed, 2 insertions(+), 2 deletions(-)
+I dropped '[POWERPC] Set lower flag bits..' patch and will get it in for
+the next release.
 
-applied.
+-k
 
-- k
+to receive the following updates:
+
+ arch/powerpc/boot/dts/mpc8610_hpcd.dts     |   23 ++++++++++++++++++++++-
+ arch/powerpc/sysdev/fsl_rio.c              |    9 +++++++--
+ arch/powerpc/sysdev/fsl_soc.c              |    4 ++--
+ arch/powerpc/sysdev/xilinx_intc.c          |    2 +-
+ drivers/char/xilinx_hwicap/xilinx_hwicap.c |    6 +++---
+ include/linux/rio.h                        |    2 ++
+ 6 files changed, 37 insertions(+), 9 deletions(-)
+
+Anton Vorontsov (1):
+      [POWERPC] 86xx: mpc8610_hpcd: add support for PCI Express x8 slot
+
+Becky Bruce (1):
+      [POWERPC] Squash build warning for print of resource_size_t in fsl_soc.c
+
+Jason Jin (1):
+      [POWERPC] 86xx: Fix the wrong serial1 interrupt for 8610 board
+
+Kumar Gala (1):
+      [POWERPC] Xilinx: Fix compile warnings
+
+Randy Dunlap (1):
+      [RAPIDIO] fix current kernel-doc notation
