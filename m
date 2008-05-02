@@ -1,34 +1,16 @@
-Return-Path: <scottwood@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id E47FADE295
+Return-Path: <DWatkins@tranzeo.com>
+Received: from mail.tranzeo.com (unknown [64.114.87.10])
+	by ozlabs.org (Postfix) with ESMTP id DCB36DE049
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  1 May 2008 04:28:29 +1000 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	m3UISJEe024800 for <linuxppc-embedded@ozlabs.org>;
-	Wed, 30 Apr 2008 11:28:20 -0700 (MST)
-Received: from ld0162-tx32.am.freescale.net (ld0162-tx32.am.freescale.net
-	[10.82.19.112])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m3UISFLS029979
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 30 Apr 2008 13:28:15 -0500 (CDT)
-Date: Wed, 30 Apr 2008 13:28:15 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: ??? <yuyongbao@126.com>
-Subject: Re: mpc8379e rdb nand flash support
-Message-ID: <20080430182815.GA8639@ld0162-tx32.am.freescale.net>
-References: <mailman.2018.1208895004.11702.linuxppc-embedded@ozlabs.org>
-	<FD78E578AB254426A3B97E7B65553E65@baby>
-	<20080423163538.GA32452@ld0162-tx32.am.freescale.net>
-	<2F9EE17A2D4D48458F49220889E0FAAD@baby>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <2F9EE17A2D4D48458F49220889E0FAAD@baby>
-Cc: linuxppc-embedded@ozlabs.org
+	Sat,  3 May 2008 00:11:27 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: treeImage vs cuImage
+Date: Fri, 2 May 2008 07:14:27 -0700
+Message-ID: <D61182AC8012EA4EBC531B3AF23BE109583679@tranzeo-mail2.12stewart.tranzeo.com>
+From: "Darcy Watkins" <DWatkins@tranzeo.com>
+To: "LinuxPPC-Embedded" <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -39,24 +21,39 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thu, Apr 24, 2008 at 09:52:25AM +0800, ??? wrote:
->    Since our projects need more capability to store filesystems,I changed nand flash to 1G byte.
->     I think it is the same to operate nand flash both in u-boot and linux kernel ,because the code about FCM nand flash control is almost the same.So I just test it in u-boot.
->     From the mpc8379e reference manual page 484 :
->      21        PGS NAND Flash E2PROM page size, buffer size, and block size.
->           0   Page size of 512 main area bytes plus 16 spare area bytes (small page devices);
->               FCM RAM buffers are 1 Kbyte each; Flash block size of 16 Kbytes.
->           1   Page size of 2048 main area bytes plus 64 spare area bytes (large page devices);
->               FCM RAM buffers are 4 Kbytes each; Flash block size of 128 Kbytes.
-> 
->     Because the 32M nand flash block size is just the 16Kbytes,and it
-> works well.But the block size of the 1G bytes nand flash is
-> 256Kbytes,when every time I tried to write to it ,It just can be writed
-> the first 128kbytes of every 256kbytes.As I wrote in last email.
->     Below is the linux kernel information when I operate nand flash.
+Hello,
 
-Try changing set_addr() to hardcode the shift applied before writing to
-FBAR to the width of FPAR[PI], rather than basing it on the actual erase
-block size.
+I am upgrading my BSP to 2.6.25 and notice cuImage and treeImage.  The
+source files both say Old U-Boot compatibility.
 
--Scott
+Someone please educate me (or point me to a good URL that explains) as
+to what the difference is.
+
+I want to be able to load the kernel image using an older U-Boot and
+currently use cuImage for 2.6.23 arch/powerpc (and plain uImage for
+older kernels under arch/ppc).
+
+Eventually, I want to generate both an old U-Boot compatible image and a
+new U-boot compatible image.
+
+I notice that some boards, the boot support is all in one file, in
+others, it is split between cuboot-<board>.c and <board>.c.  In the case
+of ebony board, I see support for both cuImage and treeImage.  Is the
+strcuture into multiple files to ensure that ebony supports both of
+these and new U-boot support as well?
+
+I would like to make my BSP modules lean and clean enough to eventually
+send back upstream to kernel.org.
+
+Also, if there are common snags / pitfalls I need to watch out for
+switching my BSP and DTS from 2.6.23 to 2.6.25, please warn me.
+
+I am using AMCC PPC405EP processor.
+
+
+Thanks in advance.
+
+
+Regards,
+
+Darcy
