@@ -1,20 +1,21 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 2ABC0DDEE2
-	for <linuxppc-dev@ozlabs.org>; Fri,  2 May 2008 23:32:28 +1000 (EST)
-Message-Id: <E55D097A-13D0-45BF-9AE8-E9741A0A869D@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: jwboyer@linux.vnet.ibm.com
-In-Reply-To: <1209730435.2946.160.camel@vader.jdub.homelinux.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: [PATCH] [POWERPC] Fix bootwrapper builds with newer gcc versions
-Date: Fri, 2 May 2008 08:32:12 -0500
-References: <Pine.LNX.4.64.0805020311310.28690@blarg.am.freescale.net>
-	<1209730435.2946.160.camel@vader.jdub.homelinux.org>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <glikely@secretlab.ca>
+Received: from wr-out-0506.google.com (wr-out-0506.google.com [64.233.184.226])
+	by ozlabs.org (Postfix) with ESMTP id ACD9FDDF4E
+	for <linuxppc-dev@ozlabs.org>; Fri,  2 May 2008 23:35:24 +1000 (EST)
+Received: by wr-out-0506.google.com with SMTP id 67so1605477wri.3
+	for <linuxppc-dev@ozlabs.org>; Fri, 02 May 2008 06:35:22 -0700 (PDT)
+Message-ID: <fa686aa40805020635l471e07b8kecd0d40a24c477e7@mail.gmail.com>
+Date: Fri, 2 May 2008 07:35:22 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Paul Mackerras" <paulus@samba.org>
+Subject: Re: [git pull] Please pull powerpc.git master branch
+In-Reply-To: <18458.44292.817770.800636@cargo.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <18458.44292.817770.800636@cargo.ozlabs.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
+	torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,69 +25,94 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On May 2, 2008, at 7:13 AM, Josh Boyer wrote:
-
-> On Fri, 2008-05-02 at 03:11 -0500, Kumar Gala wrote:
->> GCC 4.4.x looks to be adding support for generating out-of-line  
->> register
->> saves/restores based on:
->>
->> http://gcc.gnu.org/ml/gcc-patches/2008-04/msg01678.html
->>
->> This breaks the bootwrapper as we'd need to link with libgcc to get  
->> the
->> implementation of the register save/restores.
+On Thu, May 1, 2008 at 11:56 PM, Paul Mackerras <paulus@samba.org> wrote:
+> Linus,
 >
-> We don't link with libgcc anywhere in the kernel.  Is this going to  
-> have
-> similar impacts for building the vmlinux itself?
+>  Please do:
+>
+>  git pull \
+>  git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git master
 
-Not by default.  The issue only shows up with -Os.  Not sure if we can  
-build the kernel that way.
+Hmmm; none of these commits appear in your public git server ATM.  Top
+of tree is still "[POWERPC] Fix crashkernel= handling when no
+crashkernel" from 2 days ago.
 
-> What are they actually error messages you see with that version of  
-> GCC,
-> out of curiosity?
+http://git.kernel.org/?p=linux/kernel/git/paulus/powerpc.git;a=summary
+
+Cheers,
+g.
+
+>
+>  With the exception of one commit from Grant Likely, these are all
+>  fixes for various bugs and compile problems, or documentation
+>  updates.  The one from Grant is something that has been around for a
+>  month or so and only affects MPC5200-based embedded platforms.
+>
+>  Thanks,
+>  Paul.
+>
+>   .../powerpc/mpc52xx-device-tree-bindings.txt       |   11 ++
+>   arch/powerpc/boot/dts/mpc8610_hpcd.dts             |   23 +++
+>   arch/powerpc/configs/ps3_defconfig                 |  132 +++++++++++++-------
+>   arch/powerpc/kernel/smp.c                          |    2
+>   arch/powerpc/mm/slb.c                              |   27 ++--
+>   arch/powerpc/platforms/ps3/interrupt.c             |    6 -
+>   arch/powerpc/sysdev/fsl_rio.c                      |    9 +
+>   arch/powerpc/sysdev/fsl_soc.c                      |    4 -
+>   arch/powerpc/sysdev/xilinx_intc.c                  |    2
+>   drivers/char/xilinx_hwicap/xilinx_hwicap.c         |    6 -
+>   drivers/net/fec_mpc52xx.c                          |   97 +++++++++++----
+>   drivers/net/fec_mpc52xx.h                          |   19 ---
+>   drivers/ps3/ps3-lpm.c                              |    1
+>   drivers/ps3/ps3-sys-manager.c                      |    7 -
+>   drivers/serial/mpc52xx_uart.c                      |    2
+>   include/asm-powerpc/ps3.h                          |    3
+>   include/linux/rio.h                                |    2
+>   17 files changed, 231 insertions(+), 122 deletions(-)
+>
+>  Andrew Liu (1):
+>       Fix a potential issue in mpc52xx uart driver
+>
+>  Anton Vorontsov (1):
+>       [POWERPC] 86xx: mpc8610_hpcd: add support for PCI Express x8 slot
+>
+>  Becky Bruce (1):
+>       [POWERPC] Squash build warning for print of resource_size_t in fsl_soc.c
+>
+>  FUJITA Tomonori (1):
+>       [POWERPC] PS3: Add time include to lpm
+>
+>  Geert Uytterhoeven (1):
+>       [POWERPC] PS3: Make ps3_virq_setup and ps3_virq_destroy static
+>
+>  Geoff Levand (3):
+>       [POWERPC] Fix slb.c compile warnings
+>       [POWERPC] PS3: Remove unsupported wakeup sources
+>       [POWERPC] PS3: Update ps3_defconfig
+>
+>  Grant Likely (1):
+>       [POWERPC] mpc5200: Allow for fixed speed MII configurations
+>
+>  Jason Jin (1):
+>       [POWERPC] 86xx: Fix the wrong serial1 interrupt for 8610 board
+>
+>  Kumar Gala (1):
+>       [POWERPC] Xilinx: Fix compile warnings
+>
+>  Paul Mackerras (1):
+>       [POWERPC] Bolt in SLB entry for kernel stack on secondary cpus
+>
+>  Randy Dunlap (1):
+>       [RAPIDIO] fix current kernel-doc notation
+>
+>  _______________________________________________
+>  Linuxppc-dev mailing list
+>  Linuxppc-dev@ozlabs.org
+>  https://ozlabs.org/mailman/listinfo/linuxppc-dev
+>
 
 
-   CC      fs/qnx4/qnx4.mod.o
-arch/powerpc/boot/cuboot-85xx.o: In function `setprop':
-/home/galak/git/linux-2.6/arch/powerpc/boot/ops.h:114: undefined  
-reference to `_restgpr_30_x'
-arch/powerpc/boot/cuboot-85xx.o: In function `platform_init':
-/home/galak/git/linux-2.6/arch/powerpc/boot/cuboot-85xx.c:60:  
-undefined reference to `_restgpr_25_x'
-arch/powerpc/boot/cuboot-85xx.o: In function `find_node_by_devtype':
-/home/galak/git/linux-2.6/arch/powerpc/boot/ops.h:163: undefined  
-reference to `_restgpr_29_x'
-arch/powerpc/boot/cuboot-85xx.o: In function `platform_fixups':
-/home/galak/git/linux-2.6/arch/powerpc/boot/cuboot-85xx.c:51:  
-undefined reference to `_restgpr_25_x'
-   CC      fs/sysv/sysv.mod.o
-arch/powerpc/boot/wrapper.a(main.o): In function `setprop':
-/home/galak/git/linux-2.6/arch/powerpc/boot/ops.h:114: undefined  
-reference to `_restgpr_30_x'
-arch/powerpc/boot/wrapper.a(main.o): In function `start':
-/home/galak/git/linux-2.6/arch/powerpc/boot/main.c:207: undefined  
-reference to `_restgpr_24_x'
-arch/powerpc/boot/wrapper.a(libfdt-wrapper.o): In function `fdt_init':
-/home/galak/git/linux-2.6/arch/powerpc/boot/libfdt-wrapper.c:193:  
-undefined reference to `_restgpr_30_x'
 
-...
-
-/home/galak/git/linux-2.6/arch/powerpc/boot/libfdt/fdt_wip.c:132:  
-undefined reference to `_restgpr_26_x'
-arch/powerpc/boot/wrapper.a(fdt_wip.o): In function `fdt_nop_node':
-/home/galak/git/linux-2.6/arch/powerpc/boot/libfdt/fdt_wip.c:144:  
-undefined reference to `_restgpr_28_x'
-arch/powerpc/boot/wrapper.a(fdt_wip.o): In function  
-`fdt_setprop_inplace':
-/home/galak/git/linux-2.6/arch/powerpc/boot/libfdt/fdt_wip.c:73:  
-undefined reference to `_restgpr_29_x'
-make[1]: *** [arch/powerpc/boot/cuImage.mpc8560ads] Error 1
-   CC      lib/libcrc32c.mod.o
-   CC      net/key/af_key.mod.o
-
-- k
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
