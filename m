@@ -1,21 +1,20 @@
-Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from outbound2-dub-R.bigfish.com (outbound-dub.frontbridge.com
-	[213.199.154.16])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id EE46FDDF24
-	for <linuxppc-dev@ozlabs.org>; Sat,  3 May 2008 08:21:52 +1000 (EST)
-Message-ID: <481B93F9.80700@am.sony.com>
-Date: Fri, 2 May 2008 15:21:45 -0700
-From: Geoff Levand <geoffrey.levand@am.sony.com>
-MIME-Version: 1.0
-To: benh@kernel.crashing.org
-Subject: Re: [RFC] [PATCH] vmemmap fixes to use smaller pages
-References: <1209534108.18023.221.camel@pasglop>	
-	<481A3A50.3060101@am.sony.com> <1209681590.18023.295.camel@pasglop>
-In-Reply-To: <1209681590.18023.295.camel@pasglop>
-Content-Type: text/plain; charset="UTF-8"
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net (unknown [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id 927CCDDE1F
+	for <linuxppc-dev@ozlabs.org>; Sat,  3 May 2008 08:31:01 +1000 (EST)
+Date: Fri, 02 May 2008 15:30:59 -0700 (PDT)
+Message-Id: <20080502.153059.91956773.davem@davemloft.net>
+To: scottwood@freescale.com
+Subject: Re: [PATCH] [POWERPC] Fix kernel builds with newer gcc versions
+	and -Os
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <481B92A7.3070302@freescale.com>
+References: <481B8B89.2030703@freescale.com>
+	<20080502.150448.32652665.davem@davemloft.net>
+	<481B92A7.3070302@freescale.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,23 +24,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt wrote:
-> On Thu, 2008-05-01 at 14:46 -0700, Geoff Levand wrote:
->> 
->> It doesn't seem to cause problems on PS3, and I added it into
->> ps3-linux.git
->> as other/powerpc-vmemmap-variable-page-size.diff, but I couldn't get
->> it to
->> fail without the patch...
->>  
->> Could you send me your kernel .config?
-> 
-> ps3_defconfig with added vmmemap (which is disabled by default).
+From: Scott Wood <scottwood@freescale.com>
+Date: Fri, 02 May 2008 17:16:07 -0500
 
-Well, it seems that it wasn't that I couldn't get it to fail, but
-that it always fails.  add_memory() doesn't work anymore, with or
-without vmmemap.
+> If GCC generates a call to a libgcc function that calls a libc function, 
+> I'd consider that a pretty serious bug, given that said libc function is 
+> likely to consist of GCC-generated code, which could call the same 
+> libgcc function, which calls the libc function, etc.
 
-I'll look at it more next week.
+Not really, there are several interfaces in libgcc that need some
+runtime help from the C library or the dynamic linker.
 
--Geoff
+For example, EH frame support.
+
+You really don't know what you're talking about.
+
+> I'd say problems are more likely if you use nonstandard implementations 
+> of GCC internals...
+
+The kernel is a special environment.  Therefore even if you start
+linking with libgcc, it is inevitable that you will need some
+changed local version for some of those routines in the kernel.
