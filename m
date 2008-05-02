@@ -1,19 +1,32 @@
-Return-Path: <marvin24@gmx.de>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id 79801DDF63
-	for <linuxppc-dev@ozlabs.org>; Fri,  2 May 2008 23:45:06 +1000 (EST)
-From: Marvin <marvin24@gmx.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [patch 5/5] PS3: Update ps3_defconfig
-Date: Fri, 2 May 2008 15:45:01 +0200
-References: <20080430215644.655638516@am.sony.com>
-	<4818F1E0.4010609@am.sony.com>
-In-Reply-To: <4818F1E0.4010609@am.sony.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200805021545.01676.marvin24@gmx.de>
-Cc: paulus@samba.org
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 19644DDE08
+	for <linuxppc-dev@ozlabs.org>; Fri,  2 May 2008 23:53:24 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e1.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m42DrKJW014522
+	for <linuxppc-dev@ozlabs.org>; Fri, 2 May 2008 09:53:20 -0400
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m42DrKB4218584
+	for <linuxppc-dev@ozlabs.org>; Fri, 2 May 2008 09:53:20 -0400
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m42DrJ0G024480
+	for <linuxppc-dev@ozlabs.org>; Fri, 2 May 2008 09:53:19 -0400
+Date: Fri, 2 May 2008 08:53:04 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] [POWERPC] Fix bootwrapper builds with newer gcc versions
+Message-ID: <20080502085304.1c58d995@zod.rchland.ibm.com>
+In-Reply-To: <E55D097A-13D0-45BF-9AE8-E9741A0A869D@kernel.crashing.org>
+References: <Pine.LNX.4.64.0805020311310.28690@blarg.am.freescale.net>
+	<1209730435.2946.160.camel@vader.jdub.homelinux.org>
+	<E55D097A-13D0-45BF-9AE8-E9741A0A869D@kernel.crashing.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,39 +36,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Fri, 2 May 2008 08:32:12 -0500
+Kumar Gala <galak@kernel.crashing.org> wrote:
 
-Hi Geoff,
+> 
+> On May 2, 2008, at 7:13 AM, Josh Boyer wrote:
+> 
+> > On Fri, 2008-05-02 at 03:11 -0500, Kumar Gala wrote:
+> >> GCC 4.4.x looks to be adding support for generating out-of-line  
+> >> register
+> >> saves/restores based on:
+> >>
+> >> http://gcc.gnu.org/ml/gcc-patches/2008-04/msg01678.html
+> >>
+> >> This breaks the bootwrapper as we'd need to link with libgcc to get  
+> >> the
+> >> implementation of the register save/restores.
+> >
+> > We don't link with libgcc anywhere in the kernel.  Is this going to  
+> > have
+> > similar impacts for building the vmlinux itself?
+> 
+> Not by default.  The issue only shows up with -Os.  Not sure if we can  
+> build the kernel that way.
 
-what about adding these defaults:
-	- CONFIG_SCHED_SMT
-	- CONFIG_HUGETLBFS (needed by ibm cell sdk)	
+We can.  See CONFIG_CC_OPTIMIZE_FOR_SIZE.  That's set in at least
+pseries_defconfig and ps3_defconfig.  It's also something I've been
+thinking about trying with 4xx.
 
+Seems we need a bit more than just the bootwrapper.
 
-not sure about:
-	- CONFIG_SPU_FS_64K_LS
-
-Greetings
-
-	Marvin
-
-On Thursday 01 May 2008 00:25:36 Geoff Levand wrote:
-> Update ps3_defconfig.
->
-> Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
-> ---
->  arch/powerpc/configs/ps3_defconfig |  132
-> +++++++++++++++++++++++-------------- 1 file changed, 84 insertions(+), 48
-> deletions(-)
->
-> --- a/arch/powerpc/configs/ps3_defconfig
-> +++ b/arch/powerpc/configs/ps3_defconfig
-> @@ -1,7 +1,7 @@
->  #
->  # Automatically generated make config: don't edit
-> -# Linux kernel version: 2.6.25-rc6
-> -# Thu Mar 20 11:07:04 2008
-> +# Linux kernel version: 2.6.25
-> +# Mon Apr 28 12:39:10 2008
->  #
->  CONFIG_PPC64=y
-> [...]
+josh
