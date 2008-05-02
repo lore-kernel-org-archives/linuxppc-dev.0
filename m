@@ -1,22 +1,19 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D16D2DDF34
-	for <linuxppc-dev@ozlabs.org>; Fri,  2 May 2008 23:41:35 +1000 (EST)
-Message-Id: <68FE3962-84B3-4A5A-A64A-3FD1B7F6B4E3@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-In-Reply-To: <20862df61b024849f55dbd54de7cfb8f@kernel.crashing.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: [PATCH] [POWERPC] Fix bootwrapper builds with newer gcc versions
-Date: Fri, 2 May 2008 08:41:27 -0500
-References: <Pine.LNX.4.64.0805020311310.28690@blarg.am.freescale.net>
-	<bfc75e2dc32ba86b93751cb21df97e56@kernel.crashing.org>
-	<BC3385F6-8403-446C-BC04-4DA811CFE96A@kernel.crashing.org>
-	<20862df61b024849f55dbd54de7cfb8f@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <marvin24@gmx.de>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id 79801DDF63
+	for <linuxppc-dev@ozlabs.org>; Fri,  2 May 2008 23:45:06 +1000 (EST)
+From: Marvin <marvin24@gmx.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [patch 5/5] PS3: Update ps3_defconfig
+Date: Fri, 2 May 2008 15:45:01 +0200
+References: <20080430215644.655638516@am.sony.com>
+	<4818F1E0.4010609@am.sony.com>
+In-Reply-To: <4818F1E0.4010609@am.sony.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200805021545.01676.marvin24@gmx.de>
+Cc: paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,27 +24,38 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On May 2, 2008, at 8:37 AM, Segher Boessenkool wrote:
+Hi Geoff,
 
->>> Why can't we link with libgcc, instead?
->>
->> we possibly could, the problem is knowing the path of libgcc to  
->> link with.
+what about adding these defaults:
+	- CONFIG_SCHED_SMT
+	- CONFIG_HUGETLBFS (needed by ibm cell sdk)	
+
+
+not sure about:
+	- CONFIG_SPU_FS_64K_LS
+
+Greetings
+
+	Marvin
+
+On Thursday 01 May 2008 00:25:36 Geoff Levand wrote:
+> Update ps3_defconfig.
 >
-> gcc -print-libgcc-file-name
-
-It wasn't clear if we used a multilib toolchain if we always get the  
-proper libgcc since we are building bootwrappers for all kinda of  
-variants.  (e500, 40x, 6xx, etc.).  My patch seemed the least painful  
-solution to me.
-
-I assume there is a reason we don't link libgcc w/the kernel.
-
->>  This seemed easier to me than the makefile headaches to ensure  
->> that we get that right.
+> Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
+> ---
+>  arch/powerpc/configs/ps3_defconfig |  132
+> +++++++++++++++++++++++-------------- 1 file changed, 84 insertions(+), 48
+> deletions(-)
 >
-> Ah come on, make syntax is fun!
-
-Yes, yes it is ;)
-
-- k
+> --- a/arch/powerpc/configs/ps3_defconfig
+> +++ b/arch/powerpc/configs/ps3_defconfig
+> @@ -1,7 +1,7 @@
+>  #
+>  # Automatically generated make config: don't edit
+> -# Linux kernel version: 2.6.25-rc6
+> -# Thu Mar 20 11:07:04 2008
+> +# Linux kernel version: 2.6.25
+> +# Mon Apr 28 12:39:10 2008
+>  #
+>  CONFIG_PPC64=y
+> [...]
