@@ -1,22 +1,15 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 0BD27DDE07
-	for <linuxppc-dev@ozlabs.org>; Fri,  2 May 2008 10:33:45 +1000 (EST)
-In-Reply-To: <200805020947.47176.markn@au1.ibm.com>
-References: <20080501042949.237603158@au1.ibm.com>
-	<20080501043737.892888612@au1.ibm.com>
-	<742b5895cdf9b898ec2b4834926a41ac@kernel.crashing.org>
-	<200805020947.47176.markn@au1.ibm.com>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <b016a9cc9ea0ae22204dc6cbd583af7a@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 5/6] [POWERPC] Move device_to_mask() to dma-mapping.h
-Date: Fri, 2 May 2008 02:32:35 +0200
-To: Mark Nelson <markn@au1.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Return-Path: <roland@redhat.com>
+Received: from QMTA08.emeryville.ca.mail.comcast.net
+	(qmta08.emeryville.ca.mail.comcast.net [76.96.30.80])
+	by ozlabs.org (Postfix) with ESMTP id DFC7CDDDFA
+	for <linuxppc-dev@ozlabs.org>; Fri,  2 May 2008 11:21:22 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+From: Roland McGrath <roland@redhat.com>
+To: linuxppc-dev@ozlabs.org
+Subject: how to check for "optional" ppc chip features (MSR_BE)
+Message-Id: <20080502012118.96ED926FA07@magilla.localdomain>
+Date: Thu,  1 May 2008 18:21:18 -0700 (PDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,15 +19,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> I'm not sure exactly what you mean - it was inline before the move.
+I've been looking at PowerISA_Public.pdf that I downloaded from some ppc
+site.  It describes various things as "need not be supported on all
+implementations", for example the MSR_BE bit.  Is there a generic way to
+detect if such a feature is supported, or a known table of models that
+support features, or what?
 
-Heh, I missed that.
+Right now I'm considering MSR_BE (branch tracing).  I have a patch to use
+this (arch_has_block_step, enabling a PTRACE_SINGLEBLOCK).  The only
+machine handy to test is a Mac G5 (PPC970FX, 3.0 (pvr 003c 0300)).  I know
+this chip supports MSR_BE.  But that's only because I wrote an affirmative
+test case and tried it and saw it work right.  
 
-> But if everybody thinks it would be better to leave it in dma_64.c and 
-> just
-> expose it for use outside, I'm fine with that.
-
-That's what I meant, yes.
+Before submitting the kernel changes, I want to get the CPU model
+conditionalization correct (a runtime check on some feature bit mask is
+fine here, if CONFIG_* alone does not indicate for sure).
 
 
-Segher
+Thanks,
+Roland
