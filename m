@@ -1,20 +1,19 @@
-Return-Path: <jonsmirl@gmail.com>
-Received: from rn-out-0910.google.com (rn-out-0910.google.com [64.233.170.188])
-	by ozlabs.org (Postfix) with ESMTP id 99782DDE20
-	for <linuxppc-dev@ozlabs.org>; Sat,  3 May 2008 00:23:03 +1000 (EST)
-Received: by rn-out-0910.google.com with SMTP id e13so700871rng.16
-	for <linuxppc-dev@ozlabs.org>; Fri, 02 May 2008 07:23:02 -0700 (PDT)
-Message-ID: <9e4733910805020723p7900c132j872893113f9d739e@mail.gmail.com>
-Date: Fri, 2 May 2008 10:23:01 -0400
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Jean Delvare" <khali@linux-fr.org>
-Subject: Re: [PATCH] mpc i2c driver, compare to NO_IRQ instead of zero
-In-Reply-To: <20080219174221.5b18cba8@hyperion.delvare>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 954EEDDF11
+	for <linuxppc-dev@ozlabs.org>; Sat,  3 May 2008 00:25:26 +1000 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id m42EPLjc031513
+	for <linuxppc-dev@ozlabs.org>; Fri, 2 May 2008 09:25:22 -0500
+Date: Fri, 2 May 2008 09:21:08 -0500 (CDT)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] [POWERPC] Fix kernel builds with newer gcc versions and -Os
+Message-ID: <Pine.LNX.4.64.0805020920120.1141@blarg.am.freescale.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20080121200740.13800.20524.stgit@terra.home>
-	<20080219174221.5b18cba8@hyperion.delvare>
-Cc: linuxppc-dev@ozlabs.org, i2c@lm-sensors.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,72 +23,235 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 2/19/08, Jean Delvare <khali@linux-fr.org> wrote:
->  >       i2c->irq = platform_get_irq(pdev, 0);
->  > -     if (i2c->irq < 0) {
->  > +     if (i2c->irq < NO_IRQ) {
->
->
-> I am skeptical about this one. Can platform_get_irq() really return
->  NO_IRQ? I thought that the IRQ resource would be plain missing if the
->  device has no IRQ, so I would expect:
->
->
->         i2c->irq = platform_get_irq(pdev, 0);
->         if (i2c->irq < 0)
->
->                 i2c->irq = NO_IRQ; /* Use polling */
->
->  Testing against NO_IRQ suggests that devices with no IRQ would still
->  have an IRQ resource defined and explicitly set to NO_IRQ. Sounds weird
->  to me. Can you please clarify this point?
+GCC 4.4.x looks to be adding support for generating out-of-line register
+saves/restores based on:
 
-Your fix is correct. I'm not sure polling worked in the original driver.
+http://gcc.gnu.org/ml/gcc-patches/2008-04/msg01678.html
 
->  For what it's worth, no other kernel driver checks for irq < NO_IRQ.
->  They all check for irq < 0 after calling platform_get_irq().
->
->
->  >               result = -ENXIO;
->  >               goto fail_get_irq;
->  >       }
->  > @@ -344,7 +344,7 @@ static int fsl_i2c_probe(struct platform_device *pdev)
->  >               goto fail_map;
->  >       }
->  >
->  > -     if (i2c->irq != 0)
->  > +     if (i2c->irq != NO_IRQ)
->  >               if ((result = request_irq(i2c->irq, mpc_i2c_isr,
->  >                                         IRQF_SHARED, "i2c-mpc", i2c)) < 0) {
->  >                       printk(KERN_ERR
->  > @@ -367,7 +367,7 @@ static int fsl_i2c_probe(struct platform_device *pdev)
->  >       return result;
->  >
->  >        fail_add:
->  > -     if (i2c->irq != 0)
->  > +     if (i2c->irq != NO_IRQ)
->  >               free_irq(i2c->irq, i2c);
->  >        fail_irq:
->  >       iounmap(i2c->base);
->  > @@ -384,7 +384,7 @@ static int fsl_i2c_remove(struct platform_device *pdev)
->  >       i2c_del_adapter(&i2c->adap);
->  >       platform_set_drvdata(pdev, NULL);
->  >
->  > -     if (i2c->irq != 0)
->  > +     if (i2c->irq != NO_IRQ)
->  >               free_irq(i2c->irq, i2c);
->  >
->  >       iounmap(i2c->base);
->
->
-> The rest looks good.
->
->  --
->
-> Jean Delvare
->
+This breaks the kernel build as we'd have to link with libgcc to get the
+implementation of the register save/restores.
 
+To workaround this issue, we just stole the save/restore code from gcc
+and simplified it down for our needs (integer only).  We only do this if
+PPC32 as gcc makes believe the linker on ppc64 will deal with this and
+only if CONFIG_CC_OPTIMIZE_FOR_SIZE is set (thus -Os).
 
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
+
+If someone using cutting edge toolchains for ppc64 could test and make
+sure if we enable CONFIG_CC_OPTIMIZE_FOR_SIZE things work that would be
+nice.
+
+- k
+
+ arch/powerpc/kernel/misc_32.S   |   77 +++++++++++++++++++++++++++
+ arch/powerpc/kernel/ppc_ksyms.c |  111 +++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 188 insertions(+), 0 deletions(-)
+
+diff --git a/arch/powerpc/kernel/misc_32.S b/arch/powerpc/kernel/misc_32.S
+index 89aaaa6..651eac0 100644
+--- a/arch/powerpc/kernel/misc_32.S
++++ b/arch/powerpc/kernel/misc_32.S
+@@ -974,3 +974,80 @@ relocate_new_kernel_end:
+ relocate_new_kernel_size:
+ 	.long relocate_new_kernel_end - relocate_new_kernel
+ #endif
++
++#if defined(CONFIG_PPC32) && defined(CONFIG_CC_OPTIMIZE_FOR_SIZE)
++/* Routines for saving integer registers, called by the compiler.  */
++/* Called with r11 pointing to the stack header word of the caller of the */
++/* function, just beyond the end of the integer save area.  */
++
++_GLOBAL(_savegpr_14)	stw	14,-72(11)	/* save gp registers */
++_GLOBAL(_savegpr_15)	stw	15,-68(11)
++_GLOBAL(_savegpr_16)	stw	16,-64(11)
++_GLOBAL(_savegpr_17)	stw	17,-60(11)
++_GLOBAL(_savegpr_18)	stw	18,-56(11)
++_GLOBAL(_savegpr_19)	stw	19,-52(11)
++_GLOBAL(_savegpr_20)	stw	20,-48(11)
++_GLOBAL(_savegpr_21)	stw	21,-44(11)
++_GLOBAL(_savegpr_22)	stw	22,-40(11)
++_GLOBAL(_savegpr_23)	stw	23,-36(11)
++_GLOBAL(_savegpr_24)	stw	24,-32(11)
++_GLOBAL(_savegpr_25)	stw	25,-28(11)
++_GLOBAL(_savegpr_26)	stw	26,-24(11)
++_GLOBAL(_savegpr_27)	stw	27,-20(11)
++_GLOBAL(_savegpr_28)	stw	28,-16(11)
++_GLOBAL(_savegpr_29)	stw	29,-12(11)
++_GLOBAL(_savegpr_30)	stw	30,-8(11)
++_GLOBAL(_savegpr_31)	stw	31,-4(11)
++			blr
++
++/* Routines for restoring integer registers, called by the compiler.  */
++/* Called with r11 pointing to the stack header word of the caller of the */
++/* function, just beyond the end of the integer restore area.  */
++
++_GLOBAL(_restgpr_14)	lwz	14,-72(11)	/* restore gp registers */
++_GLOBAL(_restgpr_15)	lwz	15,-68(11)
++_GLOBAL(_restgpr_16)	lwz	16,-64(11)
++_GLOBAL(_restgpr_17)	lwz	17,-60(11)
++_GLOBAL(_restgpr_18)	lwz	18,-56(11)
++_GLOBAL(_restgpr_19)	lwz	19,-52(11)
++_GLOBAL(_restgpr_20)	lwz	20,-48(11)
++_GLOBAL(_restgpr_21)	lwz	21,-44(11)
++_GLOBAL(_restgpr_22)	lwz	22,-40(11)
++_GLOBAL(_restgpr_23)	lwz	23,-36(11)
++_GLOBAL(_restgpr_24)	lwz	24,-32(11)
++_GLOBAL(_restgpr_25)	lwz	25,-28(11)
++_GLOBAL(_restgpr_26)	lwz	26,-24(11)
++_GLOBAL(_restgpr_27)	lwz	27,-20(11)
++_GLOBAL(_restgpr_28)	lwz	28,-16(11)
++_GLOBAL(_restgpr_29)	lwz	29,-12(11)
++_GLOBAL(_restgpr_30)	lwz	30,-8(11)
++_GLOBAL(_restgpr_31)	lwz	31,-4(11)
++			blr
++
++/* Routines for restoring integer registers, called by the compiler.  */
++/* Called with r11 pointing to the stack header word of the caller of the */
++/* function, just beyond the end of the integer restore area.  */
++
++_GLOBAL(_restgpr_14_x)	lwz	14,-72(11)	/* restore gp registers */
++_GLOBAL(_restgpr_15_x)	lwz	15,-68(11)
++_GLOBAL(_restgpr_16_x)	lwz	16,-64(11)
++_GLOBAL(_restgpr_17_x)	lwz	17,-60(11)
++_GLOBAL(_restgpr_18_x)	lwz	18,-56(11)
++_GLOBAL(_restgpr_19_x)	lwz	19,-52(11)
++_GLOBAL(_restgpr_20_x)	lwz	20,-48(11)
++_GLOBAL(_restgpr_21_x)	lwz	21,-44(11)
++_GLOBAL(_restgpr_22_x)	lwz	22,-40(11)
++_GLOBAL(_restgpr_23_x)	lwz	23,-36(11)
++_GLOBAL(_restgpr_24_x)	lwz	24,-32(11)
++_GLOBAL(_restgpr_25_x)	lwz	25,-28(11)
++_GLOBAL(_restgpr_26_x)	lwz	26,-24(11)
++_GLOBAL(_restgpr_27_x)	lwz	27,-20(11)
++_GLOBAL(_restgpr_28_x)	lwz	28,-16(11)
++_GLOBAL(_restgpr_29_x)	lwz	29,-12(11)
++_GLOBAL(_restgpr_30_x)	lwz	30,-8(11)
++_GLOBAL(_restgpr_31_x)	lwz	0,4(11)
++			lwz	31,-4(11)
++			mtlr	0
++			mr	1,11
++			blr
++#endif
+diff --git a/arch/powerpc/kernel/ppc_ksyms.c b/arch/powerpc/kernel/ppc_ksyms.c
+index cf6b5a7..a165ef0 100644
+--- a/arch/powerpc/kernel/ppc_ksyms.c
++++ b/arch/powerpc/kernel/ppc_ksyms.c
+@@ -185,3 +185,114 @@ EXPORT_SYMBOL(__mtdcr);
+ EXPORT_SYMBOL(__mfdcr);
+ #endif
+ EXPORT_SYMBOL(empty_zero_page);
++
++#if defined(CONFIG_PPC32) && defined(CONFIG_CC_OPTIMIZE_FOR_SIZE)
++void _savegpr_14(void);
++void _savegpr_15(void);
++void _savegpr_16(void);
++void _savegpr_17(void);
++void _savegpr_18(void);
++void _savegpr_19(void);
++void _savegpr_20(void);
++void _savegpr_21(void);
++void _savegpr_22(void);
++void _savegpr_23(void);
++void _savegpr_24(void);
++void _savegpr_25(void);
++void _savegpr_26(void);
++void _savegpr_27(void);
++void _savegpr_28(void);
++void _savegpr_29(void);
++void _savegpr_30(void);
++void _savegpr_31(void);
++void _restgpr_14(void);
++void _restgpr_15(void);
++void _restgpr_16(void);
++void _restgpr_17(void);
++void _restgpr_18(void);
++void _restgpr_19(void);
++void _restgpr_20(void);
++void _restgpr_21(void);
++void _restgpr_22(void);
++void _restgpr_23(void);
++void _restgpr_24(void);
++void _restgpr_25(void);
++void _restgpr_26(void);
++void _restgpr_27(void);
++void _restgpr_28(void);
++void _restgpr_29(void);
++void _restgpr_30(void);
++void _restgpr_31(void);
++void _restgpr_14_x(void);
++void _restgpr_15_x(void);
++void _restgpr_16_x(void);
++void _restgpr_17_x(void);
++void _restgpr_18_x(void);
++void _restgpr_19_x(void);
++void _restgpr_20_x(void);
++void _restgpr_21_x(void);
++void _restgpr_22_x(void);
++void _restgpr_23_x(void);
++void _restgpr_24_x(void);
++void _restgpr_25_x(void);
++void _restgpr_26_x(void);
++void _restgpr_27_x(void);
++void _restgpr_28_x(void);
++void _restgpr_29_x(void);
++void _restgpr_30_x(void);
++void _restgpr_31_x(void);
++EXPORT_SYMBOL(_savegpr_14);
++EXPORT_SYMBOL(_savegpr_15);
++EXPORT_SYMBOL(_savegpr_16);
++EXPORT_SYMBOL(_savegpr_17);
++EXPORT_SYMBOL(_savegpr_18);
++EXPORT_SYMBOL(_savegpr_19);
++EXPORT_SYMBOL(_savegpr_20);
++EXPORT_SYMBOL(_savegpr_21);
++EXPORT_SYMBOL(_savegpr_22);
++EXPORT_SYMBOL(_savegpr_23);
++EXPORT_SYMBOL(_savegpr_24);
++EXPORT_SYMBOL(_savegpr_25);
++EXPORT_SYMBOL(_savegpr_26);
++EXPORT_SYMBOL(_savegpr_27);
++EXPORT_SYMBOL(_savegpr_28);
++EXPORT_SYMBOL(_savegpr_29);
++EXPORT_SYMBOL(_savegpr_30);
++EXPORT_SYMBOL(_savegpr_31);
++EXPORT_SYMBOL(_restgpr_14);
++EXPORT_SYMBOL(_restgpr_15);
++EXPORT_SYMBOL(_restgpr_16);
++EXPORT_SYMBOL(_restgpr_17);
++EXPORT_SYMBOL(_restgpr_18);
++EXPORT_SYMBOL(_restgpr_19);
++EXPORT_SYMBOL(_restgpr_20);
++EXPORT_SYMBOL(_restgpr_21);
++EXPORT_SYMBOL(_restgpr_22);
++EXPORT_SYMBOL(_restgpr_23);
++EXPORT_SYMBOL(_restgpr_24);
++EXPORT_SYMBOL(_restgpr_25);
++EXPORT_SYMBOL(_restgpr_26);
++EXPORT_SYMBOL(_restgpr_27);
++EXPORT_SYMBOL(_restgpr_28);
++EXPORT_SYMBOL(_restgpr_29);
++EXPORT_SYMBOL(_restgpr_30);
++EXPORT_SYMBOL(_restgpr_31);
++EXPORT_SYMBOL(_restgpr_14_x);
++EXPORT_SYMBOL(_restgpr_15_x);
++EXPORT_SYMBOL(_restgpr_16_x);
++EXPORT_SYMBOL(_restgpr_17_x);
++EXPORT_SYMBOL(_restgpr_18_x);
++EXPORT_SYMBOL(_restgpr_19_x);
++EXPORT_SYMBOL(_restgpr_20_x);
++EXPORT_SYMBOL(_restgpr_21_x);
++EXPORT_SYMBOL(_restgpr_22_x);
++EXPORT_SYMBOL(_restgpr_23_x);
++EXPORT_SYMBOL(_restgpr_24_x);
++EXPORT_SYMBOL(_restgpr_25_x);
++EXPORT_SYMBOL(_restgpr_26_x);
++EXPORT_SYMBOL(_restgpr_27_x);
++EXPORT_SYMBOL(_restgpr_28_x);
++EXPORT_SYMBOL(_restgpr_29_x);
++EXPORT_SYMBOL(_restgpr_30_x);
++EXPORT_SYMBOL(_restgpr_31_x);
++#endif /* CONFIG_PPC32 && CONFIG_CC_OPTIMIZE_FOR_SIZE */
 -- 
-Jon Smirl
-jonsmirl@gmail.com
+1.5.4.1
