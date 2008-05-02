@@ -4,14 +4,15 @@ Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "smtp.linux-foundation.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id CC7F6DDFC5
-	for <linuxppc-dev@ozlabs.org>; Sat,  3 May 2008 06:35:32 +1000 (EST)
-Message-Id: <200805022034.m42KY3Wn013261@imap1.linux-foundation.org>
-Subject: [patch 2/5] macintosh: qindfarm_smu_sat: semaphore to mutex
+	by ozlabs.org (Postfix) with ESMTPS id 33FEEDDE1E
+	for <linuxppc-dev@ozlabs.org>; Sat,  3 May 2008 06:40:28 +1000 (EST)
+Message-Id: <200805022034.m42KY44h013267@imap1.linux-foundation.org>
+Subject: [patch 4/5] powerpc: devres: Add devm_ioremap_prot()
 To: paulus@samba.org
 From: akpm@linux-foundation.org
-Date: Fri, 02 May 2008 13:34:02 -0700
-Cc: akpm@linux-foundation.org, dwalker@mvista.com, linuxppc-dev@ozlabs.org
+Date: Fri, 02 May 2008 13:34:04 -0700
+Cc: htejun@gmail.com, Emilian.Medve@Freescale.com, linuxppc-dev@ozlabs.org,
+	akpm@linux-foundation.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,63 +22,133 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Daniel Walker <dwalker@mvista.com>
+From: Emil Medve <Emilian.Medve@Freescale.com>
 
-Signed-off-by: Daniel Walker <dwalker@mvista.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+We provide an ioremap_flags so provide a corresponding devm_ioremap_prot.  The
+slight name difference is at Ben Herrenschmidt request as he plans on changing
+ioremap_flags to ioremap_prot in the future.
+
+Signed-off-by: Emil Medve <Emilian.Medve@Freescale.com>
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+Acked-by: Tejun Heo <htejun@gmail.com>
 Cc: Paul Mackerras <paulus@samba.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- drivers/macintosh/windfarm_smu_sat.c |   10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+ arch/powerpc/lib/Makefile |    1 
+ arch/powerpc/lib/devres.c |   42 ++++++++++++++++++++++++++++++++++++
+ include/asm-powerpc/io.h  |    8 ++++++
+ include/linux/io.h        |    1 
+ lib/devres.c              |    2 -
+ 5 files changed, 52 insertions(+), 2 deletions(-)
 
-diff -puN drivers/macintosh/windfarm_smu_sat.c~macintosh-qindfarm_smu_sat-semaphore-to-mutex drivers/macintosh/windfarm_smu_sat.c
---- a/drivers/macintosh/windfarm_smu_sat.c~macintosh-qindfarm_smu_sat-semaphore-to-mutex
-+++ a/drivers/macintosh/windfarm_smu_sat.c
-@@ -13,7 +13,7 @@
- #include <linux/init.h>
- #include <linux/wait.h>
- #include <linux/i2c.h>
--#include <linux/semaphore.h>
-+#include <linux/mutex.h>
- #include <asm/prom.h>
- #include <asm/smu.h>
- #include <asm/pmac_low_i2c.h>
-@@ -36,7 +36,7 @@
- struct wf_sat {
- 	int			nr;
- 	atomic_t		refcnt;
--	struct semaphore	mutex;
-+	struct mutex		mutex;
- 	unsigned long		last_read; /* jiffies when cache last updated */
- 	u8			cache[16];
- 	struct i2c_client	i2c;
-@@ -163,7 +163,7 @@ static int wf_sat_get(struct wf_sensor *
- 	if (sat->i2c.adapter == NULL)
- 		return -ENODEV;
+diff -puN arch/powerpc/lib/Makefile~devres-add-devm_ioremap_prot arch/powerpc/lib/Makefile
+--- a/arch/powerpc/lib/Makefile~devres-add-devm_ioremap_prot
++++ a/arch/powerpc/lib/Makefile
+@@ -23,3 +23,4 @@ obj-$(CONFIG_SMP)	+= locks.o
+ endif
  
--	down(&sat->mutex);
-+	mutex_lock(&sat->mutex);
- 	if (time_after(jiffies, (sat->last_read + MAX_AGE))) {
- 		err = wf_sat_read_cache(sat);
- 		if (err)
-@@ -182,7 +182,7 @@ static int wf_sat_get(struct wf_sensor *
- 	err = 0;
+ obj-$(CONFIG_PPC_LIB_RHEAP) += rheap.o
++obj-$(CONFIG_HAS_IOMEM)	+= devres.o
+diff -puN /dev/null arch/powerpc/lib/devres.c
+--- /dev/null
++++ a/arch/powerpc/lib/devres.c
+@@ -0,0 +1,42 @@
++/*
++ * Copyright (C) 2008 Freescale Semiconductor, Inc.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ */
++
++#include <linux/device.h>	/* devres_*(), devm_ioremap_release() */
++#include <linux/io.h>		/* ioremap_flags() */
++#include <linux/module.h>	/* EXPORT_SYMBOL() */
++
++/**
++ * devm_ioremap_prot - Managed ioremap_flags()
++ * @dev: Generic device to remap IO address for
++ * @offset: BUS offset to map
++ * @size: Size of map
++ * @flags: Page flags
++ *
++ * Managed ioremap_prot().  Map is automatically unmapped on driver
++ * detach.
++ */
++void __iomem *devm_ioremap_prot(struct device *dev, resource_size_t offset,
++				 size_t size, unsigned long flags)
++{
++	void __iomem **ptr, *addr;
++
++	ptr = devres_alloc(devm_ioremap_release, sizeof(*ptr), GFP_KERNEL);
++	if (!ptr)
++		return NULL;
++
++	addr = ioremap_flags(offset, size, flags);
++	if (addr) {
++		*ptr = addr;
++		devres_add(dev, ptr);
++	} else
++		devres_free(ptr);
++
++	return addr;
++}
++EXPORT_SYMBOL(devm_ioremap_prot);
+diff -puN include/asm-powerpc/io.h~devres-add-devm_ioremap_prot include/asm-powerpc/io.h
+--- a/include/asm-powerpc/io.h~devres-add-devm_ioremap_prot
++++ a/include/asm-powerpc/io.h
+@@ -2,7 +2,7 @@
+ #define _ASM_POWERPC_IO_H
+ #ifdef __KERNEL__
  
-  fail:
--	up(&sat->mutex);
-+	mutex_unlock(&sat->mutex);
- 	return err;
+-/* 
++/*
+  * This program is free software; you can redistribute it and/or
+  * modify it under the terms of the GNU General Public License
+  * as published by the Free Software Foundation; either version
+@@ -18,6 +18,9 @@ extern int check_legacy_ioport(unsigned 
+ #define _PNPWRP		0xa79
+ #define PNPBIOS_BASE	0xf000
+ 
++#include <linux/device.h>
++#include <linux/io.h>
++
+ #include <linux/compiler.h>
+ #include <asm/page.h>
+ #include <asm/byteorder.h>
+@@ -744,6 +747,9 @@ static inline void * bus_to_virt(unsigne
+ 
+ #define clrsetbits_8(addr, clear, set) clrsetbits(8, addr, clear, set)
+ 
++void __iomem *devm_ioremap_prot(struct device *dev, resource_size_t offset,
++				size_t size, unsigned long flags);
++
+ #endif /* __KERNEL__ */
+ 
+ #endif /* _ASM_POWERPC_IO_H */
+diff -puN include/linux/io.h~devres-add-devm_ioremap_prot include/linux/io.h
+--- a/include/linux/io.h~devres-add-devm_ioremap_prot
++++ a/include/linux/io.h
+@@ -65,5 +65,6 @@ void __iomem *devm_ioremap_nocache(struc
+ void devm_iounmap(struct device *dev, void __iomem *addr);
+ int check_signature(const volatile void __iomem *io_addr,
+ 			const unsigned char *signature, int length);
++void devm_ioremap_release(struct device *dev, void *res);
+ 
+ #endif /* _LINUX_IO_H */
+diff -puN lib/devres.c~devres-add-devm_ioremap_prot lib/devres.c
+--- a/lib/devres.c~devres-add-devm_ioremap_prot
++++ a/lib/devres.c
+@@ -2,7 +2,7 @@
+ #include <linux/io.h>
+ #include <linux/module.h>
+ 
+-static void devm_ioremap_release(struct device *dev, void *res)
++void devm_ioremap_release(struct device *dev, void *res)
+ {
+ 	iounmap(*(void __iomem **)res);
  }
- 
-@@ -233,7 +233,7 @@ static void wf_sat_create(struct i2c_ada
- 	sat->nr = -1;
- 	sat->node = of_node_get(dev);
- 	atomic_set(&sat->refcnt, 0);
--	init_MUTEX(&sat->mutex);
-+	mutex_init(&sat->mutex);
- 	sat->i2c.addr = (addr >> 1) & 0x7f;
- 	sat->i2c.adapter = adapter;
- 	sat->i2c.driver = &wf_sat_driver;
 _
