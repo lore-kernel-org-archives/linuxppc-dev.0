@@ -1,24 +1,24 @@
 Return-Path: <afleming@ld0175-tx32.am.freescale.net>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
+	(Client CN "az33egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 46C5EDE266
-	for <linuxppc-dev@ozlabs.org>; Sat,  3 May 2008 04:03:49 +1000 (EST)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
-	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
-	m42I3irg009733
-	for <linuxppc-dev@ozlabs.org>; Fri, 2 May 2008 11:03:44 -0700 (MST)
+	by ozlabs.org (Postfix) with ESMTPS id 87C61DE67C
+	for <linuxppc-dev@ozlabs.org>; Sat,  3 May 2008 04:04:00 +1000 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
+	m42I3pDW013023
+	for <linuxppc-dev@ozlabs.org>; Fri, 2 May 2008 11:03:51 -0700 (MST)
 Received: from ld0175-tx32.am.freescale.net (ld0175-tx32.am.freescale.net
 	[10.82.19.125])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id m42I3gR2014292
-	for <linuxppc-dev@ozlabs.org>; Fri, 2 May 2008 13:03:43 -0500 (CDT)
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m42I3oZ6019701
+	for <linuxppc-dev@ozlabs.org>; Fri, 2 May 2008 13:03:50 -0500 (CDT)
 From: Andy Fleming <afleming@freescale.com>
 To: galak@kernel.crashing.org
-Subject: [PATCH v2.6.26] powerpc: Add 8568 PHY workarounds to board code
-Date: Fri,  2 May 2008 13:03:42 -0500
-Message-Id: <1209751422-25634-1-git-send-email-afleming@freescale.com>
+Subject: [PATCH v2.6.26] powerpc: Add support for multiple gfar mdio interfaces
+Date: Fri,  2 May 2008 13:03:50 -0500
+Message-Id: <1209751430-25656-1-git-send-email-afleming@freescale.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -29,159 +29,133 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The 8568 MDS needs some configuration changes to the PHY in order to work
-properly.  These are done in the firmware, normally, but Linux shouldn't
-need to rely on the firmware running such things (someone could disable
-the PHY support in the firmware to save space, for instance).
+The old code assumed there was only one, but the 8572 actually has 3.
+
+Also, our usual id, 0xe0024520, gets resolved to -1 somewhere, and this was
+preventing the multiple buses from having different ids.  So we only keep
+the low 20 bits, which have the interesting info, anyway.
 
 Signed-off-by: Andy Fleming <afleming@freescale.com>
 ---
- arch/powerpc/platforms/85xx/mpc85xx_mds.c |  119 +++++++++++++++++++++++++++++
- 1 files changed, 119 insertions(+), 0 deletions(-)
+ arch/powerpc/sysdev/fsl_soc.c |   84 ++++++++++++++++++----------------------
+ 1 files changed, 38 insertions(+), 46 deletions(-)
 
-diff --git a/arch/powerpc/platforms/85xx/mpc85xx_mds.c b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-index 12f68ab..9ae29c5 100644
---- a/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-+++ b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-@@ -32,6 +32,7 @@
- #include <linux/fsl_devices.h>
- #include <linux/of_platform.h>
- #include <linux/of_device.h>
-+#include <linux/phy.h>
+diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
+index 3a7054e..52f52b2 100644
+--- a/arch/powerpc/sysdev/fsl_soc.c
++++ b/arch/powerpc/sysdev/fsl_soc.c
+@@ -207,66 +207,58 @@ static int __init of_add_fixed_phys(void)
+ arch_initcall(of_add_fixed_phys);
+ #endif /* CONFIG_FIXED_PHY */
  
- #include <asm/system.h>
- #include <asm/atomic.h>
-@@ -56,6 +57,95 @@
- #define DBG(fmt...)
- #endif
+-static int __init gfar_mdio_of_init(void)
++static int gfar_mdio_of_init_one(struct device_node *np)
+ {
+-	struct device_node *np = NULL;
++	int k;
++	struct device_node *child = NULL;
++	struct gianfar_mdio_data mdio_data;
+ 	struct platform_device *mdio_dev;
+ 	struct resource res;
+ 	int ret;
  
-+#define MV88E1111_SCR	0x10
-+#define MV88E1111_SCR_125CLK	0x0010
-+static int mpc8568_fixup_125_clock(struct phy_device *phydev)
-+{
-+	int scr;
-+	int err;
-+
-+	/* Workaround for the 125 CLK Toggle */
-+	scr = phy_read(phydev, MV88E1111_SCR);
-+
-+	if (scr < 0)
-+		return scr;
-+
-+	err = phy_write(phydev, MV88E1111_SCR, scr & ~(MV88E1111_SCR_125CLK));
-+
-+	if (err)
-+		return err;
-+
-+	err = phy_write(phydev, MII_BMCR, BMCR_RESET);
-+
-+	if (err)
-+		return err;
-+
-+	scr = phy_read(phydev, MV88E1111_SCR);
-+
-+	if (scr < 0)
-+		return err;
-+
-+	err = phy_write(phydev, MV88E1111_SCR, scr | 0x0008);
-+
-+	return err;
-+}
-+
-+static int mpc8568_mds_phy_fixups(struct phy_device *phydev)
-+{
-+	int temp;
-+	int err;
-+
-+	/* Errata */
-+	err = phy_write(phydev,29, 0x0006);
-+
-+	if (err)
-+		return err;
-+
-+	temp = phy_read(phydev, 30);
-+
-+	if (temp < 0)
-+		return temp;
-+
-+	temp = (temp & (~0x8000)) | 0x4000;
-+	err = phy_write(phydev,30, temp);
-+
-+	if (err)
-+		return err;
-+
-+	err = phy_write(phydev,29, 0x000a);
-+
-+	if (err)
-+		return err;
-+
-+	temp = phy_read(phydev, 30);
-+
-+	if (temp < 0)
-+		return temp;
-+
-+	temp = phy_read(phydev, 30);
-+
-+	if (temp < 0)
-+		return temp;
-+
-+	temp &= ~0x0020;
-+
-+	err = phy_write(phydev,30,temp);
-+
-+	if (err)
-+		return err;
-+
-+	/* Disable automatic MDI/MDIX selection */
-+	temp = phy_read(phydev, 16);
-+
-+	if (temp < 0)
-+		return temp;
-+
-+	temp &= ~0x0060;
-+	err = phy_write(phydev,16,temp);
-+
-+	return err;
-+}
-+
- /* ************************************************************************
-  *
-  * Setup the architecture
-@@ -138,6 +228,35 @@ static void __init mpc85xx_mds_setup_arch(void)
- #endif	/* CONFIG_QUICC_ENGINE */
- }
+-	np = of_find_compatible_node(np, NULL, "fsl,gianfar-mdio");
+-
+-	/* try the deprecated version */
+-	if (!np)
+-		np = of_find_compatible_node(np, "mdio", "gianfar");
++	memset(&res, 0, sizeof(res));
++	memset(&mdio_data, 0, sizeof(mdio_data));
  
-+
-+static int __init board_fixups(void)
-+{
-+	char phy_id[BUS_ID_SIZE];
-+	char *compstrs[2] = {"fsl,gianfar-mdio", "fsl,ucc-mdio"};
-+	struct device_node *mdio;
-+	struct resource res;
-+	int i;
-+
-+	for (i = 0; i < ARRAY_SIZE(compstrs); i++) {
-+		mdio = of_find_compatible_node(NULL, NULL, compstrs[i]);
-+
-+		of_address_to_resource(mdio, 0, &res);
-+		snprintf(phy_id, BUS_ID_SIZE, "%x:%02x", res.start, 1);
-+
-+		phy_register_fixup_for_id(phy_id, mpc8568_fixup_125_clock);
-+		phy_register_fixup_for_id(phy_id, mpc8568_mds_phy_fixups);
-+
-+		/* Register a workaround for errata */
-+		snprintf(phy_id, BUS_ID_SIZE, "%x:%02x", res.start, 7);
-+		phy_register_fixup_for_id(phy_id, mpc8568_mds_phy_fixups);
-+
-+		of_node_put(mdio);
+-	if (np) {
+-		int k;
+-		struct device_node *child = NULL;
+-		struct gianfar_mdio_data mdio_data;
++	ret = of_address_to_resource(np, 0, &res);
++	if (ret)
++		return ret;
+ 
+-		memset(&res, 0, sizeof(res));
+-		memset(&mdio_data, 0, sizeof(mdio_data));
++	mdio_dev = platform_device_register_simple("fsl-gianfar_mdio",
++			res.start&0xfffff, &res, 1);
++	if (IS_ERR(mdio_dev))
++		return PTR_ERR(mdio_dev);
+ 
+-		ret = of_address_to_resource(np, 0, &res);
+-		if (ret)
+-			goto err;
++	for (k = 0; k < 32; k++)
++		mdio_data.irq[k] = PHY_POLL;
+ 
+-		mdio_dev =
+-		    platform_device_register_simple("fsl-gianfar_mdio",
+-						    res.start, &res, 1);
+-		if (IS_ERR(mdio_dev)) {
+-			ret = PTR_ERR(mdio_dev);
+-			goto err;
++	while ((child = of_get_next_child(np, child)) != NULL) {
++		int irq = irq_of_parse_and_map(child, 0);
++		if (irq != NO_IRQ) {
++			const u32 *id = of_get_property(child, "reg", NULL);
++			mdio_data.irq[*id] = irq;
+ 		}
 +	}
+ 
+-		for (k = 0; k < 32; k++)
+-			mdio_data.irq[k] = PHY_POLL;
++	ret = platform_device_add_data(mdio_dev, &mdio_data,
++				sizeof(struct gianfar_mdio_data));
++	if (ret)
++		platform_device_unregister(mdio_dev);
+ 
+-		while ((child = of_get_next_child(np, child)) != NULL) {
+-			int irq = irq_of_parse_and_map(child, 0);
+-			if (irq != NO_IRQ) {
+-				const u32 *id = of_get_property(child,
+-							"reg", NULL);
+-				mdio_data.irq[*id] = irq;
+-			}
+-		}
++	return ret;
++}
+ 
+-		ret =
+-		    platform_device_add_data(mdio_dev, &mdio_data,
+-					     sizeof(struct gianfar_mdio_data));
+-		if (ret)
+-			goto unreg;
+-	}
++static int __init gfar_mdio_of_init(void)
++{
++	struct device_node *np = NULL;
+ 
+-	of_node_put(np);
+-	return 0;
++	for_each_compatible_node(np, NULL, "fsl,gianfar-mdio")
++		gfar_mdio_of_init_one(np);
+ 
+-unreg:
+-	platform_device_unregister(mdio_dev);
+-err:
+-	of_node_put(np);
+-	return ret;
++	/* try the deprecated version */
++	for_each_compatible_node(np, "mdio", "gianfar");
++		gfar_mdio_of_init_one(np);
 +
 +	return 0;
-+}
-+arch_initcall(board_fixups);
-+
- static struct of_device_id mpc85xx_ids[] = {
- 	{ .type = "soc", },
- 	{ .compatible = "soc", },
+ }
+ 
+ arch_initcall(gfar_mdio_of_init);
+@@ -390,7 +382,7 @@ static int __init gfar_of_init(void)
+ 
+ 			gfar_data.phy_id = *id;
+ 			snprintf(gfar_data.bus_id, MII_BUS_ID_SIZE, "%llx",
+-				 (unsigned long long)res.start);
++				 (unsigned long long)res.start&0xfffff);
+ 
+ 			of_node_put(phy);
+ 			of_node_put(mdio);
 -- 
 1.5.4.GIT
