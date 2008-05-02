@@ -1,20 +1,16 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 7376FDDF25
-	for <linuxppc-dev@ozlabs.org>; Sat,  3 May 2008 09:29:51 +1000 (EST)
-Subject: Re: function calls from identify_cpu()
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kevin Diggs <kevdig@hypersurf.com>
-In-Reply-To: <481B7CB4.90103@hypersurf.com>
-References: <481B7CB4.90103@hypersurf.com>
-Content-Type: text/plain
-Date: Sat, 03 May 2008 09:29:40 +1000
-Message-Id: <1209770980.26383.18.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: benh@kernel.crashing.org
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18459.42256.729189.8744@cargo.ozlabs.ibm.com>
+Date: Sat, 3 May 2008 09:34:40 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [git pull] Please pull powerpc.git master branch
+In-Reply-To: <alpine.LFD.1.10.0805020818440.5994@woody.linux-foundation.org>
+References: <18458.44292.817770.800636@cargo.ozlabs.ibm.com>
+	<alpine.LFD.1.10.0805020818440.5994@woody.linux-foundation.org>
+Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,27 +20,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Linus Torvalds writes:
 
-On Fri, 2008-05-02 at 13:42 -0700, Kevin Diggs wrote:
-> I added:
+> On Fri, 2 May 2008, Paul Mackerras wrote:
+> > 
+> > git pull \
+> > git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git master
 > 
-> int __init iDoNothingUseful(struct cpu_spec *s,struct cpu_spec *t)
-> {
->          return s-t;
-> }
+> "Already up-to-date."
 > 
-> right before the definition of identify_cpu() in cputable.c and:
-> 
-> //                      (void) (*PTRRELOC(&iDoNothingUseful))(s,t);
->                          (void) iDoNothingUseful(s,t);
-> 
-> right before the return s; in the match block and it will not boot? Can 
-> someone please explain what might be going on?
+> Forgot to push?
 
-Why are you trying to muck around with that code in the first
-place ? :-)
+Yep. :(
 
-What are you trying to achieve ?
+Try again now.
 
-Cheers,
-Ben.
+Thanks,
+Paul.
