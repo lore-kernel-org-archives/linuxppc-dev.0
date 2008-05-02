@@ -1,14 +1,19 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Fri, 2 May 2008 15:56:48 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 2EB8CDDDFF
+	for <linuxppc-dev@ozlabs.org>; Fri,  2 May 2008 16:20:43 +1000 (EST)
+Message-Id: <10501390-24CA-4AD8-8CB3-7B15A7564F82@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
 To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [POWERPC][v2] Bolt in SLB entry for kernel stack on secondary cpus
-Message-ID: <20080502055648.GA28378@yookeroo.seuss>
-References: <18458.39064.783013.268948@cargo.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <18458.39064.783013.268948@cargo.ozlabs.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+In-Reply-To: <18458.44292.817770.800636@cargo.ozlabs.ibm.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v919.2)
+Subject: Re: [git pull] Please pull powerpc.git master branch
+Date: Fri, 2 May 2008 01:20:37 -0500
+References: <18458.44292.817770.800636@cargo.ozlabs.ibm.com>
+Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,55 +23,9 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, May 02, 2008 at 02:29:12PM +1000, Paul Mackerras wrote:
-> This fixes a regression reported by Kamalesh Bulabel where a POWER4
-> machine would crash because of an SLB miss at a point where the SLB
-> miss exception was unrecoverable.  This regression is tracked at:
-> 
-> http://bugzilla.kernel.org/show_bug.cgi?id=10082
-> 
-> SLB misses at such points shouldn't happen because the kernel stack is
-> the only memory accessed other than things in the first segment of the
-> linear mapping (which is mapped at all times by entry 0 of the SLB).
-> The context switch code ensures that SLB entry 2 covers the kernel
-> stack, if it is not already covered by entry 0.  None of entries 0
-> to 2 are ever replaced by the SLB miss handler.
-> 
-> Where this went wrong is that the context switch code assumes it
-> doesn't have to write to SLB entry 2 if the new kernel stack is in the
-> same segment as the old kernel stack, since entry 2 should already be
-> correct.  However, when we start up a secondary cpu, it calls
-> slb_initialize, which doesn't set up entry 2.  This is correct for
-> the boot cpu, where we will be using a stack in the kernel BSS at this
-> point (i.e. init_thread_union), but not necessarily for secondary
-> cpus, whose initial stack can be allocated anywhere.  This doesn't
-> cause any immediate problem since the SLB miss handler will just
-> create an SLB entry somewhere else to cover the initial stack.
-> 
-> In fact it's possible for the cpu to go quite a long time without SLB
-> entry 2 being valid.  Eventually, though, the entry created by the SLB
-> miss handler will get overwritten by some other entry, and if the next
-> access to the stack is at an unrecoverable point, we get the crash.
-> 
-> This fixes the problem by making slb_initialize create a suitable
-> entry for the kernel stack, if we are on a secondary cpu and the stack
-> isn't covered by SLB entry 0.  This requires initializing the
-> get_paca()->kstack field earlier, so I do that in smp_create_idle
-> where the current field is initialized.  This also abstracts a bit of
-> the computation that mk_esid_data in slb.c does so that it can be used
-> in slb_initialize.
-> 
-> Signed-off-by: Paul Mackerras <paulus@samba.org>
-> ---
-> Michael Ellerman pointed out that I should be comparing
-> raw_smp_processor_id() with boot_cpuid rather than with 0.
+Paul,
 
-Do you even need the processor ID test at all?  The boot processor
-should always have its stack covered by SLB entry 0 when we come
-through here, shouldn't it?
+Any plans to start applying some patches to powerpc-next (for .27)?   
+For example, your NAP patch?  the devres_ioremap_prot patch.
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+- k
