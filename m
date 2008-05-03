@@ -1,22 +1,21 @@
-Return-Path: <afleming@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 049D3DDE1F
-	for <linuxppc-dev@ozlabs.org>; Sat,  3 May 2008 10:01:07 +1000 (EST)
-Message-Id: <C7C06232-EB2F-40F5-8742-E95592B084CA@freescale.com>
-From: Andy Fleming <afleming@freescale.com>
-To: Timur Tabi <timur@freescale.com>
-In-Reply-To: <481B5F59.8020201@freescale.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: [PATCH v2.6.26] powerpc: Fix a bunch of sparse warnings in the
-	qe_lib
-Date: Fri, 2 May 2008 19:00:59 -0500
-References: <1209751415-25612-1-git-send-email-afleming@freescale.com>
-	<481B5F59.8020201@freescale.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 398A6DDEFA
+	for <linuxppc-dev@ozlabs.org>; Sat,  3 May 2008 10:07:02 +1000 (EST)
+In-Reply-To: <20080502.163855.96423898.davem@davemloft.net>
+References: <3B083683-CB6E-4F1D-87EF-BBFA7D491271@kernel.crashing.org>
+	<20080502.144009.147804001.davem@davemloft.net>
+	<1209770875.26383.14.camel@pasglop>
+	<20080502.163855.96423898.davem@davemloft.net>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <f35f5840a7aaee04c051ba6312a02ec3@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] [POWERPC] Fix bootwrapper builds with newer gcc versions
+Date: Sat, 3 May 2008 02:06:51 +0200
+To: David Miller <davem@davemloft.net>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -27,40 +26,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+>> That is, it would be fairly non-sensical for module code to go through
+>> the trampoline to call those stubs in the kernel (and having to
+>> EXPORT_SYMBOL them).
 
-On May 2, 2008, at 13:37, Timur Tabi wrote:
+You can link every module to libgcc separately.  Probably it can also
+be set up so that some libgcc routines get linked into the kernel,
+and exported, and the rest is linked into every module that wants
+them.  We can also blacklist some symbols altogether (__udivdi3...)
 
-> Andy Fleming wrote:
+> Oh, I forgot about how far function calls are done on powerpc.
+> Yes, that will suck.
 >
->> int ucc_fast_init(struct ucc_fast_info * uf_info, struct  
->> ucc_fast_private ** uccf_ret)
->> {
->> 	struct ucc_fast_private *uccf;
->> -	struct ucc_fast *uf_regs;
->> +	struct ucc_fast __iomem *uf_regs;
->> 	u32 gumr;
->> 	int ret;
->>
->> @@ -216,10 +216,10 @@ int ucc_fast_init(struct ucc_fast_info *  
->> uf_info, struct ucc_fast_private ** ucc
->> 	uccf->stopped_tx = 0;
->> 	uccf->stopped_rx = 0;
->> 	uf_regs = uccf->uf_regs;
->> -	uccf->p_ucce = (u32 *) & (uf_regs->ucce);
->> -	uccf->p_uccm = (u32 *) & (uf_regs->uccm);
->> +	uccf->p_ucce = (u32 __iomem *) & (uf_regs->ucce);
->> +	uccf->p_uccm = (u32 __iomem *) & (uf_regs->uccm);
->
-> Since you've already made uf_regs into an __iomem pointer, do you  
-> really need to
-> cast it?
+> Is there some way to map all of the modules in the low 32-bits and
+> thus aovid the trampolines?  The powerpc call instruction can cover
+> 4GB like on sparc right?
 
-Ah, yes.  That's probably leftover from when uf_regs wasn't __iomem.
+A direct call reaches +-32MB, either relative or absolute; an indirect
+call can go anywhere.
+
+> Actually, I remember there is some linkage register that has
+> to be setup on powerpc with the code model you guys use, is
+> that the problem?
+
+I think the problem is just that the compiler generates "near" calls
+(the 32MB thing) because of the code model used, but things don't
+necessarily end up this close by at run time.
 
 
->
-> And please remember to CC: me on any QE library patches.
-
-Can do.
-
-Andy
+Segher
