@@ -1,18 +1,21 @@
-Return-Path: <sam@ravnborg.org>
-Received: from pasmtpB.tele.dk (pasmtpb.tele.dk [80.160.77.98])
-	by ozlabs.org (Postfix) with ESMTP id EB584DDDF0
-	for <linuxppc-dev@ozlabs.org>; Mon,  5 May 2008 05:24:01 +1000 (EST)
-Date: Sun, 4 May 2008 21:24:34 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: How to link a .o with all modules
-Message-ID: <20080504192434.GA23752@uranus.ravnborg.org>
-References: <6C8AB345-2DA0-460D-B7C8-262463247DDE@kernel.crashing.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 1EB27DDDFB
+	for <linuxppc-dev@ozlabs.org>; Mon,  5 May 2008 07:45:56 +1000 (EST)
+Subject: Re: how to check for "optional" ppc chip features (MSR_BE)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Roland McGrath <roland@redhat.com>
+In-Reply-To: <DC173CDE-FBC4-4EA0-8022-3F993B6466BF@kernel.crashing.org>
+References: <20080502012118.96ED926FA07@magilla.localdomain>
+	<DC173CDE-FBC4-4EA0-8022-3F993B6466BF@kernel.crashing.org>
+Content-Type: text/plain
+Date: Mon, 05 May 2008 07:45:49 +1000
+Message-Id: <1209937549.21644.2.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <6C8AB345-2DA0-460D-B7C8-262463247DDE@kernel.crashing.org>
-Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>,
-	lkml List <linux-kernel@vger.kernel.org>
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,48 +25,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, May 04, 2008 at 01:22:38PM -0500, Kumar Gala wrote:
-> Sam,
+
+On Thu, 2008-05-01 at 22:48 -0500, Kumar Gala wrote:
 > 
-> We have a case in powerpc in which we want to link some library  
-> routines with all module objects.  The routines are intended for  
-> handling out-of-line function call register save/restore so having  
-> them as EXPORT_SYMBOL() is counter productive (we do also need to link  
-> the same "library" code into the kernel).
+> Look at arch/powerpc/kernel/cputable.c to see how we handle issues  
+> like this.
 > 
-> Any suggestions on how to handle this?
 
-I assume you have the .o file build somewhere as part of the
-normal kernel build.
+Oh and classic pitfall: If you define a new feature bit, make sure
+CPU_FTRS_POSSIBLE is updated to contain it in cputable.h
 
-Then you in
-arch/powerpc/Makefile adds the following assignment:
+Also, It may not be totally clear, but:
 
-LDFLAGS_MODULE += arch/powerpc/lib/my_magic_file.o
+PPC_FEATURE_* are exposed to userspace via AT_HWCAP
 
-kbuild will then during the modpost stage link this
-file on all modules.
-To add the same file to the kernel just include it
-in a obj-y += my_magic_file.o
+CPU_FTR_* are kernel internal (and can be used for runtime patching of
+assembly code).
 
-One trap is that my_magic_file.o needs to be built
-for a modules build too.
-I think you need to assign it to always:
-
-   always := my_magic_file.o
-
-to accomplish this.
-
-So in the end we will have:
-
-arch/powerpc/Makefile:
-LDFLAGS_MODULE += arch/powerpc/lib/my_magic_file.o
-
-arch/powerpc/lib/Makefile:
-always := my_magic_file.o
-obj-y += my_magic_file.o
-
-
-Let me know if this does address your question.
-
-	Sam
+Ben.
