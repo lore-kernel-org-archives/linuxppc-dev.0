@@ -1,19 +1,16 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from ag-out-0708.google.com (ag-out-0708.google.com [72.14.246.244])
-	by ozlabs.org (Postfix) with ESMTP id B1BE5DDFEE
-	for <linuxppc-dev@ozlabs.org>; Tue,  6 May 2008 06:01:27 +1000 (EST)
-Received: by ag-out-0708.google.com with SMTP id 8so701056agc.0
-	for <linuxppc-dev@ozlabs.org>; Mon, 05 May 2008 13:01:26 -0700 (PDT)
-Message-ID: <fa686aa40805051301u1542c51evbd2126fc1df5db22@mail.gmail.com>
-Date: Mon, 5 May 2008 14:01:26 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
-Subject: Re: [PATCH] Xilinx: hwicap: cleanup polling timeout.
-In-Reply-To: <20080505182150.E9878B8004D@mail95-dub.bigfish.com>
+Return-Path: <jeremymc@gmail.com>
+Received: from mail.wrs.com (mail.windriver.com [147.11.1.11])
+	by ozlabs.org (Postfix) with ESMTP id 07D35DE29B
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 May 2008 06:04:27 +1000 (EST)
+Message-ID: <481F685C.400@gmail.com>
+Date: Mon, 05 May 2008 16:04:44 -0400
+From: Jeremy McNicoll <jeremymc@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20080505182150.E9878B8004D@mail95-dub.bigfish.com>
+To: Jeremy McNicoll <jeremy.mcnicoll@windriver.com>
+Subject: Re: [PATCH] SBC8548: Add flash support and HW Rev reporting
+References: <1209759601-5659-1-git-send-email-jeremy.mcnicoll@windriver.com>
+In-Reply-To: <1209759601-5659-1-git-send-email-jeremy.mcnicoll@windriver.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -24,106 +21,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, May 5, 2008 at 12:20 PM, Stephen Neuendorffer
-<stephen.neuendorffer@xilinx.com> wrote:
-> In order to avoid polling forever if an error occurs, this driver
->  includes a timeout counter.  However, in fast systems, this counter
->  wasn't high enough.  This patch fixes the bug and also makes the
->  buffer-based and fifo-based drivers return the same error condition on
->  a timeout (-EIO).
+Jeremy McNicoll wrote:
+> The following adds local bus, flash and MTD partition nodes for
+> sbc8548. As well, a compatible field for the soc node, so that
+> of_platform_bus_probe() will pick it up.
+>
+> Something that is provided through this newly added epld node
+> is the Hardware Revision is now being reported at bootup.
+>
+> Signed-off-by: Jeremy McNicoll <jeremy.mcnicoll@windriver.com>
+> ---
+>  arch/powerpc/boot/dts/sbc8548.dts     |   94 +++++++++++++++++++++++++++++++++
+>  arch/powerpc/platforms/85xx/sbc8548.c |   25 +++++++++
+>  2 files changed, 119 insertions(+), 0 deletions(-)
+>   
+This patch may not be as efficient as it could be, an updated version to 
+follow.
 
-Would it be better to base the timeout on real time instead of a hard
-iteration count?
-
-Cheers,
-g.
-
->
->  Signed-off-by: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
->  ---
->   drivers/char/xilinx_hwicap/buffer_icap.c   |   10 ++++++++--
->   drivers/char/xilinx_hwicap/fifo_icap.c     |    9 +++++++++
->   drivers/char/xilinx_hwicap/xilinx_hwicap.h |    3 ---
->   3 files changed, 17 insertions(+), 5 deletions(-)
->
->  diff --git a/drivers/char/xilinx_hwicap/buffer_icap.c b/drivers/char/xilinx_hwicap/buffer_icap.c
->  index aa7f796..0993883 100644
->  --- a/drivers/char/xilinx_hwicap/buffer_icap.c
->  +++ b/drivers/char/xilinx_hwicap/buffer_icap.c
->  @@ -35,6 +35,12 @@
->
->   #include "buffer_icap.h"
->
->  +/* Number of times to poll the done register.  This has to be large
->  +   enough to allow an entire configuration to complete. If an entire
->  +   page (4kb) is configured at once, that could take up to 4k cycles
->  +   with a byte-wide icap interface. */
->  +#define XHI_MAX_RETRIES     5000
->  +
->   /* Indicates how many bytes will fit in a buffer. (1 BRAM) */
->   #define XHI_MAX_BUFFER_BYTES        2048
->   #define XHI_MAX_BUFFER_INTS         (XHI_MAX_BUFFER_BYTES >> 2)
->  @@ -208,7 +214,7 @@ static int buffer_icap_device_read(struct hwicap_drvdata *drvdata,
->         while (buffer_icap_busy(base_address)) {
->                 retries++;
->                 if (retries > XHI_MAX_RETRIES)
->  -                       return -EBUSY;
->  +                       return -EIO;
->         }
->         return 0;
->
->  @@ -242,7 +248,7 @@ static int buffer_icap_device_write(struct hwicap_drvdata *drvdata,
->         while (buffer_icap_busy(base_address)) {
->                 retries++;
->                 if (retries > XHI_MAX_RETRIES)
->  -                       return -EBUSY;
->  +                       return -EIO;
->         }
->         return 0;
->
->  diff --git a/drivers/char/xilinx_hwicap/fifo_icap.c b/drivers/char/xilinx_hwicap/fifo_icap.c
->  index 776b505..d1cd928 100644
->  --- a/drivers/char/xilinx_hwicap/fifo_icap.c
->  +++ b/drivers/char/xilinx_hwicap/fifo_icap.c
->  @@ -35,6 +35,15 @@
->
->   #include "fifo_icap.h"
->
->  +/* Number of times to poll the done register.  This has to be large
->  + * enough to allow an entire configuration to complete.  If an entire
->  + * page (4kb) is configured at once, that could take up to 4k cycles
->  + * with a byte-wide icap interface.  In most cases, this driver is
->  + * used with a much smaller fifo, but this should be sufficient in the
->  + * worst case.
->  + */
->  +#define XHI_MAX_RETRIES     5000
->  +
->   /* Register offsets for the XHwIcap device. */
->   #define XHI_GIER_OFFSET        0x1C  /* Device Global Interrupt Enable Reg */
->   #define XHI_IPISR_OFFSET 0x20  /* Interrupt Status Register */
->  diff --git a/drivers/char/xilinx_hwicap/xilinx_hwicap.h b/drivers/char/xilinx_hwicap/xilinx_hwicap.h
->  index 1f9c8b0..fd4be31 100644
->  --- a/drivers/char/xilinx_hwicap/xilinx_hwicap.h
->  +++ b/drivers/char/xilinx_hwicap/xilinx_hwicap.h
->  @@ -89,9 +89,6 @@ struct hwicap_driver_config {
->         void (*reset)(struct hwicap_drvdata *drvdata);
->   };
->
->  -/* Number of times to poll the done regsiter */
->  -#define XHI_MAX_RETRIES     10
->  -
->   /************ Constant Definitions *************/
->
->   #define XHI_PAD_FRAMES              0x1
->  --
->  1.5.3.4-dirty
->
->
->
->
-
-
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+-jeremy
