@@ -1,18 +1,9 @@
-Return-Path: <seanm@seanm.ca>
-Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
-	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 1C4FADDDED
-	for <linuxppc-dev@ozlabs.org>; Mon,  5 May 2008 14:40:26 +1000 (EST)
-Date: Mon, 5 May 2008 00:40:23 -0400
-From: Sean MacLennan <seanm@seanm.ca>
-To: <benh@kernel.crashing.org>
-Subject: Re: WARNING: mutexes are preferred for single holder semaphores
-Message-ID: <20080505004023.05603b93@lappy.seanm.ca>
-In-Reply-To: <1209958719.21644.32.camel@pasglop>
-References: <20080504204104.7eea7618@lappy.seanm.ca>
-	<1209958719.21644.32.camel@pasglop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <benh@ozlabs.org>
+To: <linuxppc-dev@ozlabs.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Mon, 05 May 2008 15:22:27 +1000
+Subject: [PATCH] [POWERPC] More useful cputable defaults
+Message-Id: <20080505052405.23E38DDE0A@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,24 +13,106 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 05 May 2008 13:38:39 +1000
-"Benjamin Herrenschmidt" <benh@kernel.crashing.org> wrote:
+Changes the cputable so that various CPU families that have an exclusive
+CONFIG_ option have a more sensible default entry to patch if the specific
+processor hasn't been identified.
 
-> Show us the code... It could be a bug in checkpatch or you using 
-> the wrong functions somewhere ...
+This makes the kernel more generally useful when booted on an unknown
+PVR for things like new 4xx variants.
 
-The change to DEFINE_MUTEX and changing up/down to
-mutex_lock/mutex_unlock solved the problem.
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
 
-The code is GPLed but not currently available on the net. It is
-basically a little driver that registers a character device and
-then passes out the minor numbers to the PIKA board drivers.
+ arch/powerpc/kernel/cputable.c |   53 +++++++++++++++++++++++++++++++++--------
+ 1 file changed, 43 insertions(+), 10 deletions(-)
 
-It was written to isolate all the character/sysfs code to one place
-since we have five drivers, and many debug drivers, that use it.
-
-If anybody is really interested, I can post it here. I doubt it will
-ever be submitted to the mainline kernel however.
-
-Cheers,
-   Sean
+--- linux-work.orig/arch/powerpc/kernel/cputable.c	2008-05-05 13:43:02.000000000 +1000
++++ linux-work/arch/powerpc/kernel/cputable.c	2008-05-05 13:47:52.000000000 +1000
+@@ -1207,6 +1207,18 @@ static struct cpu_spec __initdata cpu_sp
+ 		.machine_check		= machine_check_4xx,
+ 		.platform		= "ppc405",
+ 	},
++	{	/* default match */
++		.pvr_mask		= 0x00000000,
++		.pvr_value		= 0x00000000,
++		.cpu_name		= "(generic 40x PPC)",
++		.cpu_features		= CPU_FTRS_40X,
++		.cpu_user_features	= PPC_FEATURE_32 |
++			PPC_FEATURE_HAS_MMU | PPC_FEATURE_HAS_4xxMAC,
++		.icache_bsize		= 32,
++		.dcache_bsize		= 32,
++		.machine_check		= machine_check_4xx,
++		.platform		= "ppc405",
++	}
+ 
+ #endif /* CONFIG_40x */
+ #ifdef CONFIG_44x
+@@ -1397,8 +1409,18 @@ static struct cpu_spec __initdata cpu_sp
+ 		.machine_check		= machine_check_440A,
+ 		.platform		= "ppc440",
+ 	},
++	{	/* default match */
++		.pvr_mask		= 0x00000000,
++		.pvr_value		= 0x00000000,
++		.cpu_name		= "(generic 44x PPC)",
++		.cpu_features		= CPU_FTRS_44X,
++		.cpu_user_features	= COMMON_USER_BOOKE,
++		.icache_bsize		= 32,
++		.dcache_bsize		= 32,
++		.machine_check		= machine_check_4xx,
++		.platform		= "ppc440",
++	}
+ #endif /* CONFIG_44x */
+-#ifdef CONFIG_FSL_BOOKE
+ #ifdef CONFIG_E200
+ 	{	/* e200z5 */
+ 		.pvr_mask		= 0xfff00000,
+@@ -1427,7 +1449,19 @@ static struct cpu_spec __initdata cpu_sp
+ 		.machine_check		= machine_check_e200,
+ 		.platform		= "ppc5554",
+ 	},
+-#elif defined(CONFIG_E500)
++	{	/* default match */
++		.pvr_mask		= 0x00000000,
++		.pvr_value		= 0x00000000,
++		.cpu_name		= "(generic E200 PPC)",
++		.cpu_features		= CPU_FTRS_E200,
++		.cpu_user_features	= COMMON_USER_BOOKE |
++			PPC_FEATURE_HAS_EFP_SINGLE |
++			PPC_FEATURE_UNIFIED_CACHE,
++		.dcache_bsize		= 32,
++		.machine_check		= machine_check_e200,
++		.platform		= "ppc5554",
++#endif /* CONFIG_E200 */
++#ifdef CONFIG_E500
+ 	{	/* e500 */
+ 		.pvr_mask		= 0xffff0000,
+ 		.pvr_value		= 0x80200000,
+@@ -1463,20 +1497,19 @@ static struct cpu_spec __initdata cpu_sp
+ 		.machine_check		= machine_check_e500,
+ 		.platform		= "ppc8548",
+ 	},
+-#endif
+-#endif
+-#if !CLASSIC_PPC
+ 	{	/* default match */
+ 		.pvr_mask		= 0x00000000,
+ 		.pvr_value		= 0x00000000,
+-		.cpu_name		= "(generic PPC)",
+-		.cpu_features		= CPU_FTRS_GENERIC_32,
+-		.cpu_user_features	= PPC_FEATURE_32,
++		.cpu_name		= "(generic E500 PPC)",
++		.cpu_features		= CPU_FTRS_E500,
++		.cpu_user_features	= COMMON_USER_BOOKE |
++			PPC_FEATURE_HAS_SPE_COMP |
++			PPC_FEATURE_HAS_EFP_SINGLE_COMP,
+ 		.icache_bsize		= 32,
+ 		.dcache_bsize		= 32,
++		.machine_check		= machine_check_e500,
+ 		.platform		= "powerpc",
+-	}
+-#endif /* !CLASSIC_PPC */
++#endif /* CONFIG_E500 */
+ #endif /* CONFIG_PPC32 */
+ };
+ 
