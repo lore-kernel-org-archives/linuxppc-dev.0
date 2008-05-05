@@ -1,14 +1,14 @@
 Return-Path: <davem@davemloft.net>
 Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 8E970DDEFC
-	for <linuxppc-dev@ozlabs.org>; Mon,  5 May 2008 17:57:17 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 8DAA9DDF2B
+	for <linuxppc-dev@ozlabs.org>; Mon,  5 May 2008 17:59:59 +1000 (EST)
 Received: from localhost (localhost [127.0.0.1])
-	by sunset.davemloft.net (Postfix) with ESMTP id C8887C8C21E
-	for <linuxppc-dev@ozlabs.org>; Mon,  5 May 2008 00:57:15 -0700 (PDT)
-Date: Mon, 05 May 2008 00:57:15 -0700 (PDT)
-Message-Id: <20080505.005715.215572318.davem@davemloft.net>
+	by sunset.davemloft.net (Postfix) with ESMTP id A351BC8C21E
+	for <linuxppc-dev@ozlabs.org>; Mon,  5 May 2008 00:59:58 -0700 (PDT)
+Date: Mon, 05 May 2008 00:59:58 -0700 (PDT)
+Message-Id: <20080505.005958.186160264.davem@davemloft.net>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH]: PPC_OF protect USB driver...
+Subject: on the topic of of_device resources...
 From: David Miller <davem@davemloft.net>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -22,25 +22,26 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-This uses APIs that are not generic, or at least not part of
-what Sparc provides yet.
+Since it came to my attention due to the build error fix
+I just had to fix, I figured I'd mention some things.
 
-So just PPC_OF this for now just like the EHCI_OF driver.
+Right now, powerpc and sparc differ in how they resolve
+interrupts and resources.
 
-This fixes allmodconfig build errors on sparc.
+Powerpc uses an on-demand model, whereas Sparc pre-resolves
+everything at bootup when parsing the OF tree.
 
-Signed-off-by: David S. Miller <davem@davemloft.net>
+Unfortunately they operate on differing objects too, otherwise I could
+provide routines to match the interfaces that powerpc OF drivers want
+:-/
 
-diff --git a/drivers/usb/host/Kconfig b/drivers/usb/host/Kconfig
-index 33b467a..1ef6df3 100644
---- a/drivers/usb/host/Kconfig
-+++ b/drivers/usb/host/Kconfig
-@@ -129,7 +129,7 @@ config USB_ISP1760_PCI
- 
- config USB_ISP1760_OF
- 	bool "Support for the OF platform bus"
--	depends on USB_ISP1760_HCD && OF
-+	depends on USB_ISP1760_HCD && PPC_OF
- 	---help---
- 	  Enables support for the device present on the PowerPC
- 	  OpenFirmware platform bus.
+Powerpc drivers want device_node objects, whereas sparc roots all
+driver usable objects under of_platform_bus using of_device objects
+(which point to the device_node if the driver needs that).
+
+Inside of the of_device is where we hang the fully resolved resources
+and interrupts.
+
+I'd like to see consolidation in this area, and in return I'll be
+compiling all of your PPC_OF devices in my allmodconfig builds on
+sparc :-)
