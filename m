@@ -2,17 +2,16 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E9737DDDF3
-	for <linuxppc-dev@ozlabs.org>; Mon,  5 May 2008 15:46:14 +1000 (EST)
-Subject: Re: [patch 3/5] machintosh: ADB driver: adb_handler_sem semaphore
-	to mutex
+	by ozlabs.org (Postfix) with ESMTPS id 23CA0DDDF3
+	for <linuxppc-dev@ozlabs.org>; Mon,  5 May 2008 15:47:09 +1000 (EST)
+Subject: Re: [patch 2/5] macintosh: qindfarm_smu_sat: semaphore to mutex
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: akpm@linux-foundation.org
-In-Reply-To: <200805022034.m42KY3gD013264@imap1.linux-foundation.org>
-References: <200805022034.m42KY3gD013264@imap1.linux-foundation.org>
+In-Reply-To: <200805022034.m42KY3Wn013261@imap1.linux-foundation.org>
+References: <200805022034.m42KY3Wn013261@imap1.linux-foundation.org>
 Content-Type: text/plain
-Date: Mon, 05 May 2008 15:45:39 +1000
-Message-Id: <1209966339.21644.48.camel@pasglop>
+Date: Mon, 05 May 2008 15:44:47 +1000
+Message-Id: <1209966287.21644.46.camel@pasglop>
 Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, dwalker@mvista.com
 Reply-To: benh@kernel.crashing.org
