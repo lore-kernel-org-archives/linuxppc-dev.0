@@ -1,31 +1,21 @@
-Return-Path: <ossrosch@linux.vnet.ibm.com>
-Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 128C5DDEDE
-	for <linuxppc-dev@ozlabs.org>; Tue,  6 May 2008 01:11:41 +1000 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e3.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m45FBZQK012223
-	for <linuxppc-dev@ozlabs.org>; Mon, 5 May 2008 11:11:35 -0400
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m45FBZcx191546
-	for <linuxppc-dev@ozlabs.org>; Mon, 5 May 2008 11:11:35 -0400
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
-	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m45FBZmn018334
-	for <linuxppc-dev@ozlabs.org>; Mon, 5 May 2008 11:11:35 -0400
-From: Stefan Roscher <ossrosch@linux.vnet.ibm.com>
-To: Roland Dreier <rdreier@cisco.com>,
-	"LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
-	LKML <linux-kernel@vger.kernel.org>, "OF-EWG" <ewg@lists.openfabrics.org>
-Subject: [PATCH] IB/ehca: Change function return types to correct type.
-Date: Mon, 5 May 2008 17:11:13 +0200
+Return-Path: <rider4ever@gmail.com>
+Received: from gv-out-0910.google.com (gv-out-0910.google.com [216.239.58.185])
+	by ozlabs.org (Postfix) with ESMTP id 5FB2FDDEDE
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 May 2008 01:29:26 +1000 (EST)
+Received: by gv-out-0910.google.com with SMTP id y18so148509gvf.14
+	for <linuxppc-dev@ozlabs.org>; Mon, 05 May 2008 08:29:24 -0700 (PDT)
+Message-ID: <ed84ed090805050829s72b819f0tda48ea749bb27350@mail.gmail.com>
+Date: Mon, 5 May 2008 17:29:22 +0200
+From: "Fabrizio Garetto" <fabrizio.garetto@gmail.com>
+Sender: rider4ever@gmail.com
+To: "Grant Likely" <grant.likely@secretlab.ca>
+Subject: Re: MPC52xx and SPI (native one, NOT psc)
+In-Reply-To: <fa686aa40805050655j20e617edy9d69f2c351705fd2@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200805051711.15281.ossrosch@linux.vnet.ibm.com>
-Cc: fenkes@de.ibm.com, raisch@de.ibm.com
+Content-Type: text/plain; charset=ISO-8859-1
+References: <ed84ed090805050100y4d33bf05vf6ab9b73ad0547c4@mail.gmail.com>
+	<fa686aa40805050655j20e617edy9d69f2c351705fd2@mail.gmail.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,52 +25,78 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Also remove duplicate assignment of local_ca_ack_delay
-and change min_t check for local_ca_ack_delay to u8 instead of int.
+Yes, please, I'll appreciate very much.
 
-Signed-off-by: Stefan Roscher <stefan.roscher at de.ibm.com>
----
- drivers/infiniband/hw/ehca/ehca_hca.c |    7 +++----
- 1 files changed, 3 insertions(+), 4 deletions(-)
+Currently I'm working of 2.6.22 kernel version, but I can test it on
+the 2.6.24 as well.
+I've found also this patch that should enable the native spi on my mpc52xx
+http://cba.si/slefika/kernel/patches/mpc5200-spi.patch
 
-diff --git a/drivers/infiniband/hw/ehca/ehca_hca.c b/drivers/infiniband/hw/ehca/ehca_hca.c
-index 2515cbd..bc3b37d 100644
---- a/drivers/infiniband/hw/ehca/ehca_hca.c
-+++ b/drivers/infiniband/hw/ehca/ehca_hca.c
-@@ -101,7 +101,6 @@ int ehca_query_device(struct ib_device *ibdev, struct ib_device_attr *props)
- 	props->max_ee          = limit_uint(rblock->max_rd_ee_context);
- 	props->max_rdd         = limit_uint(rblock->max_rd_domain);
- 	props->max_fmr         = limit_uint(rblock->max_mr);
--	props->local_ca_ack_delay  = limit_uint(rblock->local_ca_ack_delay);
- 	props->max_qp_rd_atom  = limit_uint(rblock->max_rr_qp);
- 	props->max_ee_rd_atom  = limit_uint(rblock->max_rr_ee_context);
- 	props->max_res_rd_atom = limit_uint(rblock->max_rr_hca);
-@@ -115,7 +114,7 @@ int ehca_query_device(struct ib_device *ibdev, struct ib_device_attr *props)
- 	}
- 
- 	props->max_pkeys           = 16;
--	props->local_ca_ack_delay  = limit_uint(rblock->local_ca_ack_delay);
-+	props->local_ca_ack_delay  = min_t(u8, rblock->local_ca_ack_delay, 255);
- 	props->max_raw_ipv6_qp     = limit_uint(rblock->max_raw_ipv6_qp);
- 	props->max_raw_ethy_qp     = limit_uint(rblock->max_raw_ethy_qp);
- 	props->max_mcast_grp       = limit_uint(rblock->max_mcast_grp);
-@@ -136,7 +135,7 @@ query_device1:
- 	return ret;
- }
- 
--static int map_mtu(struct ehca_shca *shca, u32 fw_mtu)
-+static enum ib_mtu map_mtu(struct ehca_shca *shca, u32 fw_mtu)
- {
- 	switch (fw_mtu) {
- 	case 0x1:
-@@ -156,7 +155,7 @@ static int map_mtu(struct ehca_shca *shca, u32 fw_mtu)
- 	}
- }
- 
--static int map_number_of_vls(struct ehca_shca *shca, u32 vl_cap)
-+static u8 map_number_of_vls(struct ehca_shca *shca, u32 vl_cap)
- {
- 	switch (vl_cap) {
- 	case 0x1:
--- 
-1.5.5
+but I've various problems: first of all, if I select to enable that
+SPI using menuconfig, the relative CONFIG_SPI_MPC5200=y is saved in
+the .config file, but when I start the compilation that setting
+disappears and the file is skipped.
+
+Forcing CONFIG_SPI_MPC5200=y by hand I got the following errors:
+In file included from include/linux/of_device.h:6,
+                 from include/linux/of_platform.h:18,
+                 from arch/ppc/include/asm/of_platform.h:15,
+                 from drivers/spi/mpc5200_spi.c:24:
+include/linux/of.h:39: error: expected identifier or '(' before 'void'
+include/linux/of.h:39: error: expected ')' before numeric constant
+include/linux/of.h:45: error: expected ')' before 'handle'
+include/linux/of.h:54: error: expected identifier or '(' before 'void'
+include/linux/of.h:54: error: expected ')' before numeric constant
+In file included from drivers/spi/mpc5200_spi.c:24:
+arch/ppc/include/asm/of_platform.h:32: error: expected ')' before 'ph'
+drivers/spi/mpc5200_spi.c: In function 'mpc5200_spi_txrx':
+drivers/spi/mpc5200_spi.c:215: error: implicit declaration of function 'udelay'
+drivers/spi/mpc5200_spi.c: In function 'mpc5200_spi_probe':
+drivers/spi/mpc5200_spi.c:251: error: implicit declaration of function
+'of_address_to_resource'
+drivers/spi/mpc5200_spi.c:256: error: implicit declaration of function
+'irq_of_parse_and_map'
+drivers/spi/mpc5200_spi.c:281: error: implicit declaration of function
+'mpc52xx_find_ipb_freq'
+make[2]: *** [drivers/spi/mpc5200_spi.o] Error 1
+make[1]: *** [drivers/spi] Error 2
+make: *** [drivers] Error 2
+
+Regards,
+F. Garetto
+
+On Mon, May 5, 2008 at 3:55 PM, Grant Likely <grant.likely@secretlab.ca> wrote:
+>
+> On Mon, May 5, 2008 at 2:00 AM, Fabrizio Garetto
+>  <fabrizio.garetto@gmail.com> wrote:
+>  > Hello to everyone,
+>  >  I was trying to enable the SPI of a lite5200 board. I've seen that
+>  >  there's something related to this in
+>  >  arch/powerpc/boot/dts/lite5200b.dts
+>  >
+>  >  >spi@f00 {
+>  >  >                       device_type = "spi";
+>  >  >                       compatible = "mpc5200b-spi\0mpc5200-spi";
+>  >  >                       reg = <f00 20>;
+>  >  >                       interrupts = <2 d 0 2 e 0>;
+>  >  >                       interrupt-parent = <&mpc5200_pic>;
+>  >  >               };
+>  >  >
+>  >
+>  >  but I'm not able to find where to enable it in menuconfig. Under
+>  >  device drivers -> Spi support there only the PSC SPI.
+>  >  Where am I wrong?
+>
+>  The device tree describes the hardware; even if there isn't a driver
+>  for it.  The non-PSC SPI does not have a driver right now.
+>
+>  I'm actually working on a driver for it *right now*.  Are you able to
+>  help with testing?
+>
+>  Cheers,
+>  g.
+>
+>  --
+>  Grant Likely, B.Sc., P.Eng.
+>  Secret Lab Technologies Ltd.
+>
