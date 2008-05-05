@@ -2,19 +2,20 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 62D2DDDEE7
-	for <linuxppc-dev@ozlabs.org>; Tue,  6 May 2008 09:42:03 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 82CA8DDEF4
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 May 2008 09:44:30 +1000 (EST)
 Subject: Re: [PATCH] Sam440ep support
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-In-Reply-To: <20080505135404.5c57720e@zod.rchland.ibm.com>
+To: Gerhard Pircher <gerhard_pircher@gmx.net>
+In-Reply-To: <20080505195054.172000@gmx.net>
 References: <a265241c0805051123h595123edrd46bf65a8099c3c2@mail.gmail.com>
-	<20080505135404.5c57720e@zod.rchland.ibm.com>
+	<6DA6B1DA-11B5-4B89-88AD-561B4D17B33B@kernel.crashing.org>
+	<20080505195054.172000@gmx.net>
 Content-Type: text/plain
-Date: Tue, 06 May 2008 09:40:05 +1000
-Message-Id: <1210030805.21644.118.camel@pasglop>
+Date: Tue, 06 May 2008 09:44:18 +1000
+Message-Id: <1210031058.21644.120.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Giuseppe Coviello <cjg@cruxppc.org>
+Cc: linuxppc-dev@ozlabs.org, cjg@cruxppc.org
 Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -26,14 +27,30 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Mon, 2008-05-05 at 13:54 -0500, Josh Boyer wrote:
-> > +arch_initcall(sam440ep_i2c_of_init);
+On Mon, 2008-05-05 at 21:50 +0200, Gerhard Pircher wrote:
+> This is a (bad) hack that I also use on the AmigaOne to get the ALSA
+> sound
+> drivers working with DMA, because ALSA doesn't work with
+> dma-noncoherent.c.
+> The problem is the "nopage" mechanism, which fails with non coherent
+> DMA
+> allocations due to their own virtual address space (correct me, if I'm
+> wrong).
 > 
-> Ok, now I'm confused as to why you aren't doing this in your platform
-> file (which would make it specific, and therefore justify its
-> existence.
+> See this thread for more info:
+> http://readlist.com/lists/vger.kernel.org/linux-kernel/45/226541.html
+> 
+> This is a general problem that affects all powerpc boards that use
+> dma-noncoherent.c with ALSA PCI drivers.
 
-I addition, that gets called on all platforms, not only sam440ep, which
-is wrong.
+The link above doesn't provide any useful information on the problem and
+it contains itself a non working link...
+
+Can somebody explains exactly what's going on ? That shouldn't be hard
+to fix. I can't believe the problem has been around for 2 years and
+nobody actually bothered fixing it properly.
+
+Send me a sound card that needs that hack and I can take care of it
+myself.
 
 Ben.
