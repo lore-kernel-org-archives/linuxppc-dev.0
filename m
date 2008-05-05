@@ -1,17 +1,17 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 8DAA9DDF2B
-	for <linuxppc-dev@ozlabs.org>; Mon,  5 May 2008 17:59:59 +1000 (EST)
-Received: from localhost (localhost [127.0.0.1])
-	by sunset.davemloft.net (Postfix) with ESMTP id A351BC8C21E
-	for <linuxppc-dev@ozlabs.org>; Mon,  5 May 2008 00:59:58 -0700 (PDT)
-Date: Mon, 05 May 2008 00:59:58 -0700 (PDT)
-Message-Id: <20080505.005958.186160264.davem@davemloft.net>
+Return-Path: <rider4ever@gmail.com>
+Received: from wx-out-0506.google.com (wx-out-0506.google.com [66.249.82.228])
+	by ozlabs.org (Postfix) with ESMTP id 7C055DDDFB
+	for <linuxppc-dev@ozlabs.org>; Mon,  5 May 2008 18:00:53 +1000 (EST)
+Received: by wx-out-0506.google.com with SMTP id i30so60528wxd.15
+	for <linuxppc-dev@ozlabs.org>; Mon, 05 May 2008 01:00:50 -0700 (PDT)
+Message-ID: <ed84ed090805050100y4d33bf05vf6ab9b73ad0547c4@mail.gmail.com>
+Date: Mon, 5 May 2008 10:00:50 +0200
+From: "Fabrizio Garetto" <fabrizio.garetto@gmail.com>
+Sender: rider4ever@gmail.com
 To: linuxppc-dev@ozlabs.org
-Subject: on the topic of of_device resources...
-From: David Miller <davem@davemloft.net>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Subject: MPC52xx and SPI (native one, NOT psc)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,27 +21,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hello to everyone,
+I was trying to enable the SPI of a lite5200 board. I've seen that
+there's something related to this in
+arch/powerpc/boot/dts/lite5200b.dts
 
-Since it came to my attention due to the build error fix
-I just had to fix, I figured I'd mention some things.
+>spi@f00 {
+>			device_type = "spi";
+>			compatible = "mpc5200b-spi\0mpc5200-spi";
+>			reg = <f00 20>;
+>			interrupts = <2 d 0 2 e 0>;
+>			interrupt-parent = <&mpc5200_pic>;
+>		};
+>
 
-Right now, powerpc and sparc differ in how they resolve
-interrupts and resources.
+but I'm not able to find where to enable it in menuconfig. Under
+device drivers -> Spi support there only the PSC SPI.
+Where am I wrong?
 
-Powerpc uses an on-demand model, whereas Sparc pre-resolves
-everything at bootup when parsing the OF tree.
-
-Unfortunately they operate on differing objects too, otherwise I could
-provide routines to match the interfaces that powerpc OF drivers want
-:-/
-
-Powerpc drivers want device_node objects, whereas sparc roots all
-driver usable objects under of_platform_bus using of_device objects
-(which point to the device_node if the driver needs that).
-
-Inside of the of_device is where we hang the fully resolved resources
-and interrupts.
-
-I'd like to see consolidation in this area, and in return I'll be
-compiling all of your PPC_OF devices in my allmodconfig builds on
-sparc :-)
+Thanks in advance,
+Fabrizio Garetto
