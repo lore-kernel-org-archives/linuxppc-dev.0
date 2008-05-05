@@ -1,14 +1,23 @@
-Return-Path: <seanm@seanm.ca>
-Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
-	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 0F9E7DDDFC
-	for <linuxppc-dev@ozlabs.org>; Mon,  5 May 2008 10:41:07 +1000 (EST)
-Date: Sun, 4 May 2008 20:41:04 -0400
-From: Sean MacLennan <seanm@seanm.ca>
-To: <linuxppc-dev@ozlabs.org>
-Subject: WARNING: mutexes are preferred for single holder semaphores
-Message-ID: <20080504204104.7eea7618@lappy.seanm.ca>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 6D377DDE0F
+	for <linuxppc-dev@ozlabs.org>; Mon,  5 May 2008 10:49:18 +1000 (EST)
+Subject: Re: how to check for "optional" ppc chip features (MSR_BE)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Roland McGrath <roland@redhat.com>
+In-Reply-To: <20080504231207.8377E26FA08@magilla.localdomain>
+References: <20080502012118.96ED926FA07@magilla.localdomain>
+	<DC173CDE-FBC4-4EA0-8022-3F993B6466BF@kernel.crashing.org>
+	<1209937549.21644.2.camel@pasglop>
+	<20080504231207.8377E26FA08@magilla.localdomain>
+Content-Type: text/plain
+Date: Mon, 05 May 2008 10:49:10 +1000
+Message-Id: <1209948550.21644.30.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,20 +27,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a bit OT, but I got the warning in the subject from
-checkpatch.pl for a piece of code. The code *is* using a mutex. Does it
-actually mean I shouldn't use a mutex?
 
-The code declares a global mutex:
+On Sun, 2008-05-04 at 16:12 -0700, Roland McGrath wrote:
+> > Oh and classic pitfall: If you define a new feature bit, make sure
+> > CPU_FTRS_POSSIBLE is updated to contain it in cputable.h
+> 
+> Yeah, all that stuff I could figure out as needed.  What I really meant
+> was, where is the big official table of which chips behave which ways that
+> you base all code that on?
 
-	static DECLARE_MUTEX(list_lock);
+There isn't any ...
 
-The odds of two accesses to the list_lock at the same time are zero.
-But it would be Very Bad(tm) if it did happen. Since the odds of
-contention are near zero, the cost of the mutex is near zero, so I put
-it in.
+> Actually, I don't really care as long as you
+> all are happy to be responsible for figuring out what matters.  With the
+> patch I posted to use MSR_BE, I took Kumar Gala's word as gospel that all
+> the chips on which we use MSR_SE also have MSR_BE.  If that's not right,
+> then I hope you'd like to pick a feature bit, populate the tables, etc.,
+> and fix the definition of arch_has_block_step() as appropriate.
 
-I think I can safely ignore the warning, but I want to make sure....
+I'll have to check with Paul, we'll scrub the IBM parts, and Kumar can
+dbl check the "classic 32" FSL parts.
 
-Cheers,
-  Sean
+Ben.
