@@ -1,18 +1,23 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <rdreier@cisco.com>
+Received: from sj-iport-6.cisco.com (sj-iport-6.cisco.com [171.71.176.117])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "sj-iport-6.cisco.com", Issuer "Cisco SSCA" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 994F4DDE22
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 May 2008 08:52:03 +1000 (EST)
+From: Roland Dreier <rdreier@cisco.com>
+To: Stefan Roscher <ossrosch@linux.vnet.ibm.com>
+Subject: Re: [ewg] [PATCH] IB/ehca: Change function return types to correct
+	type.
+References: <200805051711.15281.ossrosch@linux.vnet.ibm.com>
+Date: Mon, 05 May 2008 15:51:59 -0700
+In-Reply-To: <200805051711.15281.ossrosch@linux.vnet.ibm.com> (Stefan
+	Roscher's message of "Mon, 5 May 2008 17:11:13 +0200")
+Message-ID: <adawsm8z7n4.fsf@cisco.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <18463.35946.644765.644061@cargo.ozlabs.ibm.com>
-Date: Tue, 6 May 2008 08:38:34 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [git pull] Please pull powerpc.git powerpc-next branch
-In-Reply-To: <7F696AAE-069D-443A-9511-5CF92F4538EA@kernel.crashing.org>
-References: <18463.1101.341437.600410@cargo.ozlabs.ibm.com>
-	<alpine.LFD.1.10.0805051018550.32269@woody.linux-foundation.org>
-	<7F696AAE-069D-443A-9511-5CF92F4538EA@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	linux-kernel@vger.kernel.org
+Cc: LinuxPPC-Dev <linuxppc-dev@ozlabs.org>, fenkes@de.ibm.com,
+	LKML <linux-kernel@vger.kernel.org>, raisch@de.ibm.com,
+	OF-EWG <ewg@lists.openfabrics.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,11 +27,4 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala writes:
-
-> Paul's clearly starting to lose it.  First a pull request w/o him  
-> pushing to his tree.  Now a pull request from the ether.
-
-Show some respect, young man, or I'll hit you with my walking frame.
-
-Paul.
+thanks, applied
