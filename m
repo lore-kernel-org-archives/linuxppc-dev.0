@@ -1,20 +1,13 @@
-Return-Path: <hch@lst.de>
-Received: from verein.lst.de (verein.lst.de [213.95.11.210])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 85DD7DDE1E
-	for <linuxppc-dev@ozlabs.org>; Mon,  5 May 2008 16:02:05 +1000 (EST)
-Date: Mon, 5 May 2008 08:01:54 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: WARNING: mutexes are preferred for single holder semaphores
-Message-ID: <20080505060154.GA12393@lst.de>
-References: <20080504204104.7eea7618@lappy.seanm.ca>
-	<18462.27991.229693.188377@cargo.ozlabs.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <18462.27991.229693.188377@cargo.ozlabs.ibm.com>
-Cc: Sean MacLennan <seanm@seanm.ca>, linuxppc-dev@ozlabs.org
+Return-Path: <sr@denx.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id 764BBDDED6
+	for <linuxppc-dev@ozlabs.org>; Mon,  5 May 2008 17:02:19 +1000 (EST)
+From: Stefan Roese <sr@denx.de>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] [POWERPC] 4xx: Fix problem with new TLB storage attibute
+	fields on 440x6 core
+Date: Mon,  5 May 2008 08:53:19 +0200
+Message-Id: <1209970399-4464-1-git-send-email-sr@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,15 +17,64 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, May 05, 2008 at 12:13:43PM +1000, Paul Mackerras wrote:
-> Sean MacLennan writes:
-> 
-> > This is a bit OT, but I got the warning in the subject from
-> > checkpatch.pl for a piece of code. The code *is* using a mutex. Does it
-> > actually mean I shouldn't use a mutex?
-> 
-> I don't require zero checkpatch warnings or errors on patches before I
-> accept them.  If what checkpatch is saying is rubbish, just ignore it.
+The new 440x6 core used on AMCC 460EX/GT introduces new storage attibure
+fields to the TLB2 word. Those are:
 
-Current versions don't spew much rubbish anymore, and this one certainly
-isn't.
+Bit  11   12   13   14   15
+     WL1  IL1I IL1D IL2I IL2D
+
+With these bits the cache (L1 and L2) can be configured in a more flexible
+way, instruction- and data-cache independently now. The "old" I and W bits
+are still available and setting these old bits will automically set these
+new bits too (for backward compatibilty).
+
+The current code does not clear these fields resulting in disabling the cache
+by chance. This patch now makes sure that these new bits are cleared when
+the TLB2 word is written.
+
+Signed-off-by: Stefan Roese <sr@denx.de>
+---
+ arch/powerpc/kernel/head_44x.S      |    9 ++++++++-
+ include/asm-powerpc/pgtable-ppc32.h |    7 +++++++
+ 2 files changed, 15 insertions(+), 1 deletions(-)
+
+diff --git a/arch/powerpc/kernel/head_44x.S b/arch/powerpc/kernel/head_44x.S
+index ad071a1..5485000 100644
+--- a/arch/powerpc/kernel/head_44x.S
++++ b/arch/powerpc/kernel/head_44x.S
+@@ -653,7 +653,14 @@ finish_tlb_load:
+ 	rlwimi	r10, r11, 0, 26, 26		/* UX = HWEXEC & USER */
+ 
+ 	rlwimi	r12, r10, 0, 26, 31		/* Insert static perms */
+-	rlwinm	r12, r12, 0, 20, 15		/* Clear U0-U3 */
++
++	/*
++	 * Clear U0-U3 and WL1 IL1I IL1D IL2I IL2D bits which are added
++	 * on newer 440 cores like the 440x6 used on AMCC 460EX/460GT (see
++	 * include/asm-powerpc/pgtable-ppc32.h for details).
++	 */
++	rlwinm	r12, r12, 0, 20, 10
++
+ 	tlbwe	r12, r13, PPC44x_TLB_ATTRIB	/* Write ATTRIB */
+ 
+ 	/* Done...restore registers and get out of here.
+diff --git a/include/asm-powerpc/pgtable-ppc32.h b/include/asm-powerpc/pgtable-ppc32.h
+index 2c79f55..a30e081 100644
+--- a/include/asm-powerpc/pgtable-ppc32.h
++++ b/include/asm-powerpc/pgtable-ppc32.h
+@@ -212,6 +212,13 @@ extern int icache_44x_need_flush;
+  *   0  1  2  3  4  ... 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31
+  *   -  -  -  -  -    - U0 U1 U2 U3 W  I  M  G  E   - UX UW UR SX SW SR
+  *
++ * Newer 440 cores (440x6 as used on AMCC 460EX/460GT) have additional
++ * TLB2 storage attibute fields. Those are:
++ *
++ *   TLB2:
++ *   0...10    11   12   13   14   15   16...31
++ *   no change WL1  IL1I IL1D IL2I IL2D no change
++ *
+  * There are some constrains and options, to decide mapping software bits
+  * into TLB entry.
+  *
+-- 
+1.5.5.1
