@@ -1,20 +1,25 @@
-Return-Path: <jonsmirl@gmail.com>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.178])
-	by ozlabs.org (Postfix) with ESMTP id 09C6ADDF49
-	for <linuxppc-dev@ozlabs.org>; Tue,  6 May 2008 00:03:26 +1000 (EST)
-Received: by wa-out-1112.google.com with SMTP id n7so482001wag.13
-	for <linuxppc-dev@ozlabs.org>; Mon, 05 May 2008 07:03:25 -0700 (PDT)
-Message-ID: <9e4733910805050703p7aa58225q5b5438feadd66f22@mail.gmail.com>
-Date: Mon, 5 May 2008 10:03:25 -0400
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Grant Likely" <grant.likely@secretlab.ca>
-Subject: Re: MPC52xx and SPI (native one, NOT psc)
-In-Reply-To: <fa686aa40805050655j20e617edy9d69f2c351705fd2@mail.gmail.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from wx-out-0506.google.com (wx-out-0506.google.com [66.249.82.233])
+	by ozlabs.org (Postfix) with ESMTP id 13A9DDDE03
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 May 2008 00:24:29 +1000 (EST)
+Received: by wx-out-0506.google.com with SMTP id i30so166638wxd.15
+	for <linuxppc-dev@ozlabs.org>; Mon, 05 May 2008 07:24:28 -0700 (PDT)
+Message-ID: <fa686aa40805050724w59d4357ak6029a2a7a612329e@mail.gmail.com>
+Date: Mon, 5 May 2008 08:24:28 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: monstr@seznam.cz
+Subject: Re: [PATCH 04/56] microblaze_v2: Open firmware files
+In-Reply-To: <684c36e5ad3f598e5079e88ec195545c4a7150c2.1209897266.git.monstr@monstr.eu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-References: <ed84ed090805050100y4d33bf05vf6ab9b73ad0547c4@mail.gmail.com>
-	<fa686aa40805050655j20e617edy9d69f2c351705fd2@mail.gmail.com>
-Cc: linuxppc-dev@ozlabs.org, Fabrizio Garetto <fabrizio.garetto@gmail.com>
+References: <a4a778e34c66d126f5c4bf1ca423cf32950ea5ab.1209897266.git.monstr@monstr.eu>
+	<684c36e5ad3f598e5079e88ec195545c4a7150c2.1209897266.git.monstr@monstr.eu>
+Cc: linux-arch@vger.kernel.org, Michal Simek <monstr@monstr.eu>, arnd@arndb.de,
+	matthew@wil.cx, microblaze-uclinux@itee.uq.edu.au,
+	linux-kernel@vger.kernel.org,
+	linuxppc-dev <linuxppc-dev@ozlabs.org>, will.newton@gmail.com,
+	John.Linn@xilinx.com, john.williams@petalogix.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,52 +29,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 5/5/08, Grant Likely <grant.likely@secretlab.ca> wrote:
-> On Mon, May 5, 2008 at 2:00 AM, Fabrizio Garetto
->  <fabrizio.garetto@gmail.com> wrote:
->  > Hello to everyone,
->  >  I was trying to enable the SPI of a lite5200 board. I've seen that
->  >  there's something related to this in
->  >  arch/powerpc/boot/dts/lite5200b.dts
->  >
->  >  >spi@f00 {
->  >  >                       device_type = "spi";
->  >  >                       compatible = "mpc5200b-spi\0mpc5200-spi";
->  >  >                       reg = <f00 20>;
->  >  >                       interrupts = <2 d 0 2 e 0>;
->  >  >                       interrupt-parent = <&mpc5200_pic>;
->  >  >               };
->  >  >
->  >
->  >  but I'm not able to find where to enable it in menuconfig. Under
->  >  device drivers -> Spi support there only the PSC SPI.
->  >  Where am I wrong?
+On Sun, May 4, 2008 at 5:40 AM,  <monstr@seznam.cz> wrote:
+> From: Michal Simek <monstr@monstr.eu>
 >
 >
-> The device tree describes the hardware; even if there isn't a driver
->  for it.  The non-PSC SPI does not have a driver right now.
->
->  I'm actually working on a driver for it *right now*.  Are you able to
->  help with testing?
+>  Signed-off-by: Michal Simek <monstr@monstr.eu>
+>  ---
+>   arch/microblaze/kernel/prom.c        | 1653 ++++++++++++++++++++++++++++++++++
+>   include/asm-microblaze/of_device.h   |   41 +
+>   include/asm-microblaze/of_platform.h |   45 +
+>   include/asm-microblaze/prom.h        |  311 +++++++
 
-Have you tired using an SD card with your new driver?
+another mostly-clone from arch/powerpc/kernel.  Is anyone working on
+moving the guts of this file to a common location?
 
->
->  Cheers,
->  g.
->
->
->  --
->  Grant Likely, B.Sc., P.Eng.
->  Secret Lab Technologies Ltd.
->
-> _______________________________________________
->  Linuxppc-dev mailing list
->  Linuxppc-dev@ozlabs.org
->  https://ozlabs.org/mailman/listinfo/linuxppc-dev
->
-
+Cheers,
+g.
 
 -- 
-Jon Smirl
-jonsmirl@gmail.com
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
