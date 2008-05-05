@@ -1,25 +1,21 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from wx-out-0506.google.com (wx-out-0506.google.com [66.249.82.233])
-	by ozlabs.org (Postfix) with ESMTP id 13A9DDDE03
-	for <linuxppc-dev@ozlabs.org>; Tue,  6 May 2008 00:24:29 +1000 (EST)
-Received: by wx-out-0506.google.com with SMTP id i30so166638wxd.15
-	for <linuxppc-dev@ozlabs.org>; Mon, 05 May 2008 07:24:28 -0700 (PDT)
-Message-ID: <fa686aa40805050724w59d4357ak6029a2a7a612329e@mail.gmail.com>
-Date: Mon, 5 May 2008 08:24:28 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: monstr@seznam.cz
-Subject: Re: [PATCH 04/56] microblaze_v2: Open firmware files
-In-Reply-To: <684c36e5ad3f598e5079e88ec195545c4a7150c2.1209897266.git.monstr@monstr.eu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <a4a778e34c66d126f5c4bf1ca423cf32950ea5ab.1209897266.git.monstr@monstr.eu>
-	<684c36e5ad3f598e5079e88ec195545c4a7150c2.1209897266.git.monstr@monstr.eu>
-Cc: linux-arch@vger.kernel.org, Michal Simek <monstr@monstr.eu>, arnd@arndb.de,
-	matthew@wil.cx, microblaze-uclinux@itee.uq.edu.au,
-	linux-kernel@vger.kernel.org,
-	linuxppc-dev <linuxppc-dev@ozlabs.org>, will.newton@gmail.com,
-	John.Linn@xilinx.com, john.williams@petalogix.com
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 42822DDE25
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 May 2008 00:46:13 +1000 (EST)
+Message-Id: <D346E2E4-26C3-482E-ABBF-AF1EE97E91CD@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Sam Ravnborg <sam@ravnborg.org>
+In-Reply-To: <20080504192434.GA23752@uranus.ravnborg.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v919.2)
+Subject: Re: How to link a .o with all modules
+Date: Mon, 5 May 2008 09:46:08 -0500
+References: <6C8AB345-2DA0-460D-B7C8-262463247DDE@kernel.crashing.org>
+	<20080504192434.GA23752@uranus.ravnborg.org>
+Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>,
+	lkml List <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,23 +25,63 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, May 4, 2008 at 5:40 AM,  <monstr@seznam.cz> wrote:
-> From: Michal Simek <monstr@monstr.eu>
+
+On May 4, 2008, at 2:24 PM, Sam Ravnborg wrote:
+
+> On Sun, May 04, 2008 at 01:22:38PM -0500, Kumar Gala wrote:
+>> Sam,
+>>
+>> We have a case in powerpc in which we want to link some library
+>> routines with all module objects.  The routines are intended for
+>> handling out-of-line function call register save/restore so having
+>> them as EXPORT_SYMBOL() is counter productive (we do also need to  
+>> link
+>> the same "library" code into the kernel).
+>>
+>> Any suggestions on how to handle this?
+>
+> I assume you have the .o file build somewhere as part of the
+> normal kernel build.
+>
+> Then you in
+> arch/powerpc/Makefile adds the following assignment:
+>
+> LDFLAGS_MODULE += arch/powerpc/lib/my_magic_file.o
+>
+> kbuild will then during the modpost stage link this
+> file on all modules.
+> To add the same file to the kernel just include it
+> in a obj-y += my_magic_file.o
+>
+> One trap is that my_magic_file.o needs to be built
+> for a modules build too.
+> I think you need to assign it to always:
+>
+>   always := my_magic_file.o
+>
+> to accomplish this.
+>
+> So in the end we will have:
+>
+> arch/powerpc/Makefile:
+> LDFLAGS_MODULE += arch/powerpc/lib/my_magic_file.o
+>
+> arch/powerpc/lib/Makefile:
+> always := my_magic_file.o
+> obj-y += my_magic_file.o
 >
 >
->  Signed-off-by: Michal Simek <monstr@monstr.eu>
->  ---
->   arch/microblaze/kernel/prom.c        | 1653 ++++++++++++++++++++++++++++++++++
->   include/asm-microblaze/of_device.h   |   41 +
->   include/asm-microblaze/of_platform.h |   45 +
->   include/asm-microblaze/prom.h        |  311 +++++++
+> Let me know if this does address your question.
 
-another mostly-clone from arch/powerpc/kernel.  Is anyone working on
-moving the guts of this file to a common location?
+The problem is MODPOST complains about undefined symbols:
 
-Cheers,
-g.
+   MODPOST 24 modules
+ERROR: "_restgpr_20_x" [net/key/af_key.ko] undefined!
+ERROR: "_restgpr_25_x" [net/key/af_key.ko] undefined!
+ERROR: "_restgpr_30_x" [net/key/af_key.ko] undefined!
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+...
+
+Any ideas on that?
+
+- k
