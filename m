@@ -1,20 +1,18 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 4EAF9DDE03
-	for <linuxppc-dev@ozlabs.org>; Mon,  5 May 2008 13:38:46 +1000 (EST)
-Subject: Re: WARNING: mutexes are preferred for single holder semaphores
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Sean MacLennan <seanm@seanm.ca>
-In-Reply-To: <20080504204104.7eea7618@lappy.seanm.ca>
-References: <20080504204104.7eea7618@lappy.seanm.ca>
-Content-Type: text/plain
-Date: Mon, 05 May 2008 13:38:39 +1000
-Message-Id: <1209958719.21644.32.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: benh@kernel.crashing.org
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18462.35282.374180.770237@cargo.ozlabs.ibm.com>
+Date: Mon, 5 May 2008 14:15:14 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Jochen Friedrich <jochen@scram.de>
+Subject: Re: [PATCH] [POWERPC] Fix of_i2c include for module compilation
+In-Reply-To: <481C5DD0.5090503@scram.de>
+References: <481C5DD0.5090503@scram.de>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>, "Kernel,
+	Linux" <linux-kernel@vger.kernel.org>,
+	Scott Wood <scottwood@freescale.com>, Linux I2C <i2c@lm-sensors.org>,
+	Jean Delvare <khali@linux-fr.org>, David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,24 +22,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Jochen Friedrich writes:
 
-On Sun, 2008-05-04 at 20:41 -0400, Sean MacLennan wrote:
-> This is a bit OT, but I got the warning in the subject from
-> checkpatch.pl for a piece of code. The code *is* using a mutex. Does it
-> actually mean I shouldn't use a mutex?
-> 
-> The code declares a global mutex:
-> 
-> 	static DECLARE_MUTEX(list_lock);
-> 
-> The odds of two accesses to the list_lock at the same time are zero.
-> But it would be Very Bad(tm) if it did happen. Since the odds of
-> contention are near zero, the cost of the mutex is near zero, so I put
-> it in.
-> 
-> I think I can safely ignore the warning, but I want to make sure....
+> -#ifdef CONFIG_OF_I2C
+> +#if defined(CONFIG_OF_I2C) || defined(CONFIG_OF_I2C_MODULE)
+>  
+>  void of_register_i2c_devices(struct i2c_adapter *adap,
+>  			     struct device_node *adap_node);
 
-Show us the code... It could be a bug in checkpatch or you using 
-the wrong functions somewhere ...
+Why do we have that ifdef there at all?  There's only that one
+external declaration within it, so the #ifdef and #endif could just be
+removed.  If the ifdef hadn't been there in the first place we
+wouldn't have had this problem.
 
-Ben.
+Paul.
