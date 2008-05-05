@@ -1,19 +1,22 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 38348DDED7
-	for <linuxppc-dev@ozlabs.org>; Tue,  6 May 2008 05:11:42 +1000 (EST)
-Message-Id: <EFF7334F-3526-4E2B-8D5C-B97A02BDA71A@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-In-Reply-To: <20080505185607.GB4906@polina.dev.rtsoft.ru>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: [PATCH 2/2] [POWERPC] 86xx: mpc8610_hpcd: add support for ULI RTC
-Date: Mon, 5 May 2008 14:11:30 -0500
-References: <20080505185607.GB4906@polina.dev.rtsoft.ru>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <glikely@secretlab.ca>
+Received: from ag-out-0708.google.com (ag-out-0708.google.com [72.14.246.241])
+	by ozlabs.org (Postfix) with ESMTP id 6A7DADDE1F
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 May 2008 05:38:32 +1000 (EST)
+Received: by ag-out-0708.google.com with SMTP id 8so686980agc.0
+	for <linuxppc-dev@ozlabs.org>; Mon, 05 May 2008 12:38:30 -0700 (PDT)
+Message-ID: <fa686aa40805051238n7df0c24fmc9fabeef4b7f6c63@mail.gmail.com>
+Date: Mon, 5 May 2008 13:38:30 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Segher Boessenkool" <segher@kernel.crashing.org>
+Subject: Re: [PATCH] add Phytec pcm030 board support
+In-Reply-To: <1328d38bed8a830af756850bbaf2e8ad@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20080425134805.GP6692@pengutronix.de>
+	<20080505011607.GA9349@yookeroo.seuss>
+	<1328d38bed8a830af756850bbaf2e8ad@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,20 +26,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On May 5, 2008, at 1:56 PM, Anton Vorontsov wrote:
-
-> The ULI "Super South Bridge" contains ISA bridge to the legacy
-> devices, such as Super IO mouse/keyboard/floppy disk controllers,
-> parallel port, i8259 interrupt controller and so on.
+On Mon, May 5, 2008 at 12:06 PM, Segher Boessenkool
+<segher@kernel.crashing.org> wrote:
 >
-> On the MPC8610HPCD, i8259 seems to be disabled (mpc8610_hpcd.c
-> confirms this), and other peripherals are not traced out.
-> So we use only RTC.
+> >
+> > > Add board support for the Phytec pcm030 mpc5200b based board. It
+> > > does not need any platform specific fixups and as such is handled
+> > > as a mpc5200 simple platform.
+> > >
+> >
+> > Those still whingeing about how horrible and hard and tedious the new
+> > world of device trees is, take note.  We've certainly had some
+> > teething problems as we all figure out how to use the device tree
+> > properly.  But this is the payoff: support for a new board added with
+> > one text file.  It's only going to get more common.
+> >
 >
-> This patch also adds ULI quirk to make RTC actually work (this
-> quirk differs a bit from the one in the fsl_uli1575.c).
+>  /me imagines a world where every sane device (not just PowerPC)
+>  uses OF device trees...
 
-Can we just one quick for both?
+PowerPC? check.
+Sparc? check.
+Microblaze? check.
 
-- k
+its just a matter of taking them out one at a time.  :-P
+
+g.
+
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
