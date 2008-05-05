@@ -1,13 +1,20 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.245])
+	by ozlabs.org (Postfix) with ESMTP id 23267DDED9
+	for <linuxppc-dev@ozlabs.org>; Mon,  5 May 2008 23:55:42 +1000 (EST)
+Received: by an-out-0708.google.com with SMTP id c34so705708anc.78
+	for <linuxppc-dev@ozlabs.org>; Mon, 05 May 2008 06:55:41 -0700 (PDT)
+Message-ID: <fa686aa40805050655j20e617edy9d69f2c351705fd2@mail.gmail.com>
+Date: Mon, 5 May 2008 07:55:40 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Fabrizio Garetto" <fabrizio.garetto@gmail.com>
+Subject: Re: MPC52xx and SPI (native one, NOT psc)
+In-Reply-To: <ed84ed090805050100y4d33bf05vf6ab9b73ad0547c4@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18463.1101.341437.600410@cargo.ozlabs.ibm.com>
-Date: Mon, 5 May 2008 22:57:49 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [git pull] Please pull powerpc.git powerpc-next branch
-Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
-	linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+References: <ed84ed090805050100y4d33bf05vf6ab9b73ad0547c4@mail.gmail.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,40 +24,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Linus,
+On Mon, May 5, 2008 at 2:00 AM, Fabrizio Garetto
+<fabrizio.garetto@gmail.com> wrote:
+> Hello to everyone,
+>  I was trying to enable the SPI of a lite5200 board. I've seen that
+>  there's something related to this in
+>  arch/powerpc/boot/dts/lite5200b.dts
+>
+>  >spi@f00 {
+>  >                       device_type = "spi";
+>  >                       compatible = "mpc5200b-spi\0mpc5200-spi";
+>  >                       reg = <f00 20>;
+>  >                       interrupts = <2 d 0 2 e 0>;
+>  >                       interrupt-parent = <&mpc5200_pic>;
+>  >               };
+>  >
+>
+>  but I'm not able to find where to enable it in menuconfig. Under
+>  device drivers -> Spi support there only the PSC SPI.
+>  Where am I wrong?
 
-This is a pull request where I think these commits can go in 2.6.26
-quite safely, but I don't mind if you prefer to leave them until
-2.6.27.  There are five commits here that Andrew Morton has sent on to
-me: three semaphore to mutex conversions, one that changes a
-proc_create call to proc_create_data, and one that adds a new
-devm_ioremap_prot function and makes devm_ioremap_release (in
-lib/devres.c) available to outside callers.
+The device tree describes the hardware; even if there isn't a driver
+for it.  The non-PSC SPI does not have a driver right now.
 
-If you think these should wait until 2.6.27, just let me know.
+I'm actually working on a driver for it *right now*.  Are you able to
+help with testing?
 
-Thanks,
-Paul.
+Cheers,
+g.
 
- arch/powerpc/lib/Makefile                |    1 +
- arch/powerpc/lib/devres.c                |   42 ++++++++++++++++++++++++++++++
- arch/powerpc/platforms/pseries/scanlog.c |   19 +-------------
- drivers/macintosh/adb.c                  |   30 +++++++++++----------
- drivers/macintosh/therm_pm72.c           |   31 +++++++++++-----------
- drivers/macintosh/windfarm_smu_sat.c     |   10 ++++---
- include/asm-powerpc/io.h                 |    8 +++++-
- include/linux/io.h                       |    1 +
- lib/devres.c                             |    2 +
- 9 files changed, 90 insertions(+), 54 deletions(-)
- create mode 100644 arch/powerpc/lib/devres.c
-
-Daniel Walker (3):
-      [POWERPC] macintosh: therm_pm72: driver_lock semaphore to mutex
-      [POWERPC] macintosh: windfarm_smu_sat: semaphore to mutex
-      [POWERPC] macintosh: ADB driver: adb_handler_sem semaphore to mutex
-
-Denis V. Lunev (1):
-      [POWERPC] Assign PDE->data before gluing PDE into /proc tree
-
-Emil Medve (1):
-      [POWERPC] devres: Add devm_ioremap_prot()
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
