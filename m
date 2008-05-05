@@ -1,21 +1,19 @@
-Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from outbound5-va3-R.bigfish.com (outbound-va3.frontbridge.com
-	[216.32.180.16])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id EE749DDE0C
-	for <linuxppc-dev@ozlabs.org>; Tue,  6 May 2008 05:00:53 +1000 (EST)
-Message-ID: <481F595F.2090407@am.sony.com>
-Date: Mon, 5 May 2008 12:00:47 -0700
-From: Geoff Levand <geoffrey.levand@am.sony.com>
-MIME-Version: 1.0
-To: Marvin <marvin24@gmx.de>
-Subject: Re: [patch 5/5] PS3: Update ps3_defconfig
-References: <20080430215644.655638516@am.sony.com>
-	<4818F1E0.4010609@am.sony.com> <200805021545.01676.marvin24@gmx.de>
-In-Reply-To: <200805021545.01676.marvin24@gmx.de>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 38348DDED7
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 May 2008 05:11:42 +1000 (EST)
+Message-Id: <EFF7334F-3526-4E2B-8D5C-B97A02BDA71A@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+In-Reply-To: <20080505185607.GB4906@polina.dev.rtsoft.ru>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Mime-Version: 1.0 (Apple Message framework v919.2)
+Subject: Re: [PATCH 2/2] [POWERPC] 86xx: mpc8610_hpcd: add support for ULI RTC
+Date: Mon, 5 May 2008 14:11:30 -0500
+References: <20080505185607.GB4906@polina.dev.rtsoft.ru>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,15 +23,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Marvin wrote:
-> what about adding these defaults:
-> 	- CONFIG_SCHED_SMT
-> 	- CONFIG_HUGETLBFS (needed by ibm cell sdk)	
-> 
-> not sure about:
-> 	- CONFIG_SPU_FS_64K_LS
 
-Did you test these options?  Please let me know
-your results.
+On May 5, 2008, at 1:56 PM, Anton Vorontsov wrote:
 
--Geoff
+> The ULI "Super South Bridge" contains ISA bridge to the legacy
+> devices, such as Super IO mouse/keyboard/floppy disk controllers,
+> parallel port, i8259 interrupt controller and so on.
+>
+> On the MPC8610HPCD, i8259 seems to be disabled (mpc8610_hpcd.c
+> confirms this), and other peripherals are not traced out.
+> So we use only RTC.
+>
+> This patch also adds ULI quirk to make RTC actually work (this
+> quirk differs a bit from the one in the fsl_uli1575.c).
+
+Can we just one quick for both?
+
+- k
