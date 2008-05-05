@@ -1,20 +1,23 @@
 Return-Path: <paubert@iram.es>
 Received: from gra-lx1.iram.es (gra-lx1.iram.es [150.214.224.41])
-	by ozlabs.org (Postfix) with ESMTP id 9046BDDD04
-	for <linuxppc-dev@ozlabs.org>; Mon,  5 May 2008 21:55:44 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 5217BDDDFA
+	for <linuxppc-dev@ozlabs.org>; Mon,  5 May 2008 21:57:36 +1000 (EST)
 From: Gabriel Paubert <paubert@iram.es>
-Date: Mon, 5 May 2008 13:55:37 +0200
-To: David Miller <davem@davemloft.net>
-Subject: Re: [PATCH] [POWERPC] Fix bootwrapper builds with newer gcc versions
-Message-ID: <20080505115537.GA16128@iram.es>
-References: <1209770875.26383.14.camel@pasglop>
-	<20080502.163855.96423898.davem@davemloft.net>
-	<1209801017.26383.21.camel@pasglop>
-	<20080503.005510.88048425.davem@davemloft.net>
+Date: Mon, 5 May 2008 13:57:29 +0200
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] [POWERPC] Rework EXC_LEVEL_EXCEPTION_PROLOG code
+Message-ID: <20080505115729.GB16128@iram.es>
+References: <Pine.LNX.4.64.0804300424040.31028@blarg.am.freescale.net>
+	<1209592495.18023.246.camel@pasglop>
+	<12ECF63E-7CEA-48FD-9447-7D534C29271D@kernel.crashing.org>
+	<18457.1279.401197.763726@cargo.ozlabs.ibm.com>
+	<A9B566F7-D00B-4202-9B85-427C38EE6070@kernel.crashing.org>
+	<1209628423.18023.286.camel@pasglop>
+	<CF55CEE2-CAF5-4728-947E-C1C37E262EDB@kernel.crashing.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080503.005510.88048425.davem@davemloft.net>
-Cc: linuxppc-dev@ozlabs.org
+In-Reply-To: <CF55CEE2-CAF5-4728-947E-C1C37E262EDB@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,33 +27,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, May 03, 2008 at 12:55:10AM -0700, David Miller wrote:
-> From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Date: Sat, 03 May 2008 17:50:17 +1000
+On Thu, May 01, 2008 at 08:22:08AM -0500, Kumar Gala wrote:
+> >>So we have 4 actual exceptions:
+> >>* CriticalInput (some external device signaled this.  There are two
+> >>concepts of critical.  One is error the other is high priority)
+> >>However this would have the same caveats as any ExternalInput  
+> >>handler.
+> >
+> >No, it's worse. It can interrupt code that normally has
+> >local_irq_disabled() and thus doesn't expect to be interrupted. That
+> >means that everything becomes unsafe including locks etc....
 > 
-> > Best would be if we could get those runtime bits linked in the module
-> > itself, but I don't know enough about our toolchain to know if that's
-> > easy (I suppose everything is always possible :-)
+> Fair.  Should local_irq_disable() clear MSR_SE & MSR_BE on classic  
+> parts?
 > 
-> The only downside is that you'd have N copies of these
-> routines, one for every module that emmited the libcalls.
+> >Note that driver that want to make active use of that probably want  
+> >some
+> >explicit local_crit_irq_disable/enable functions to be able to  
+> >implement
+> >some sort of synchronization.
+> 
+> Or we could just have local_irq_disable -- clear MSR_EE and MSR_CE
+> 
+> >>* Watchdog - pretty severe if this fires.
+> >>
+> >>* Debug - user space debug is pretty straight forward.  However we
+> >>have features like kprobes that require kernel level support.
+> >
+> >Which means we have to be extra careful, in fact, I consider it a  
+> >design
+> >bug of BookE to have made debug be a critical interrupt...
+> 
+> I consider the whole BookE debug arch a design bug :)
 
-It's probably not as bad as it seems: 
+Why only the debug part? :-)
 
-1) it will be smaller than having the saved/restore inlined in every 
-function prologue and epilogue
-
-2) as soon as you have ten functions or so that call them, it might
-even be smaller than the size of all the trampolines. Unless I'm
-mistaken, you would need at least two trampolines for every entry
-point that you use in the save/restore routines, which have an entry
-point at every instruction boundary or so. That's about 32 bytes
-(8 instructions) per set of save/restore functions IIRC.
-
-The ultimate solution might be lo link all these routines at a fixed
-large absolute address (between -32M and -1UL) so that you can
-call them with a bla instruction. But this requires memory layout
-changes which would be quite painful.
-
-	Regards,
 	Gabriel
