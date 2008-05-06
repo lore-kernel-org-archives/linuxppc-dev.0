@@ -1,14 +1,15 @@
-Return-Path: <gerhard_pircher@gmx.net>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id 8016DDDF50
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 May 2008 06:52:29 +1000 (EST)
-Content-Type: text/plain; charset="iso-8859-1"
-Date: Tue, 06 May 2008 22:52:26 +0200
-From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
-Message-ID: <20080506205226.210060@gmx.net>
+Return-Path: <ron_madrid@hotmail.com>
+Received: from bay0-omc1-s36.bay0.hotmail.com (bay0-omc1-s36.bay0.hotmail.com
+	[65.54.246.108]) by ozlabs.org (Postfix) with ESMTP id 60AE1DDEDF
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 May 2008 07:10:37 +1000 (EST)
+Message-ID: <BAY114-W949ADEBC809E7A60716CCF4D60@phx.gbl>
+Content-Type: multipart/alternative;
+	boundary="_20cc832d-76ed-49b8-bd53-d337c0ac5d43_"
+From: Ronald Madrid <ron_madrid@hotmail.com>
+To: <linuxppc-dev@ozlabs.org>
+Subject: ifconfig MPC8313
+Date: Tue, 6 May 2008 14:10:36 -0700
 MIME-Version: 1.0
-Subject: Strange build error in boot/wrapper script
-To: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,51 +19,75 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+--_20cc832d-76ed-49b8-bd53-d337c0ac5d43_
+Content-Type: text/plain; charset="Windows-1252"
+Content-Transfer-Encoding: quoted-printable
 
-I get a rather strange error here with kernel v2.6.26-rc1 and gcc version
-4.1.2 20061115 (prerelease) (Debian 4.1.1-21) (cross compile version).
-This is the output of the build process:
+Hello all,
 
-> $ make ARCH=powerpc CROSS_COMPILE=powerpc-linux-gnu- zImage
->   CHK     include/linux/version.h
->   CHK     include/linux/utsrelease.h
->   CALL    scripts/checksyscalls.sh
->   CHK     include/linux/compile.h
->   CALL    arch/powerpc/kernel/systbl_chk.sh
->   CALL    arch/powerpc/kernel/prom_init_check.sh
->   WRAP    arch/powerpc/boot/uImage
-> Image Name:   Linux-2.6.26-rc1
-> Created:      Tue May  6 22:43:54 2008
-> Image Type:   PowerPC Linux Kernel Image (gzip compressed)
-> Data Size:    1780300 Bytes = 1738.57 kB = 1.70 MB
-> Load Address: 0x00000000
-> Entry Point:  0x00000000
-> arch/powerpc/boot/dtc -O dtb -o arch/powerpc/boot/amigaone.dtb -b 0  /home/geri/AmigaOne/Linux/linux-2.6.26/arch/powerpc/boot/dts/amigaone.dts
-> DTC: dts->dtb  on file "/home/geri/AmigaOne/Linux/linux-2.6.26/arch/powerpc/boot/dts/amigaone.dts"
->   WRAP    arch/powerpc/boot/cuImage.amigaone
-> powerpc-linux-gnu-objcopy: Warning: could not locate './vmlinux.strip'. reason: The value is too big for the defined data type (translated to English)
-> Image Name:   Linux-2.6.26-rc1
-> Created:      Tue May  6 22:43:54 2008
-> Image Type:   PowerPC Linux Kernel Image (gzip compressed)
-> Data Size:    21675 Bytes = 21.17 kB = 0.02 MB
-> Load Address: 0x00400000
-> Entry Point:  0x00400444
-> rm arch/powerpc/boot/amigaone.dtb
+I am working on porting linux 2.6.25 with a custom MPC8313 based board, but=
+ am having a little bit of trouble with the ethernet, more specifically ifc=
+onfig.
 
-As you can see, the wrapper script generates an incomplete cuImage. The
-vmlinux.strip file is there, but I wonder why it is so big:
+after typing "ifconfig eth0 10.196.31.84" I receive the following error
+ifconfig: SIOCSIFFLAGS: Cannot assign requested address
 
-> -rw-r--r--  3225085348 2008-05-06 21:58 vmlinux.strip
+after entering a MAC address via "ifconfig eth0 hw ether"  I receive this e=
+rror.
+e0024520:01 not found
+eth0: Could not attach to PHY
+ifconfig: SIOCSIFFLAGS: No such device
 
-Any ideas what is going wrong here? Broken compiler?
+which I have traced to bus_find_device, but I'm not sure what to make of th=
+is.
 
-Thanks!
+I'm not sure where I'm going wrong here, and I'm sure that it's something t=
+hat I'm forgetting to do/include.
 
-regards,
+Sorry if this isn't enough information, but I don't know enough to know wha=
+t other information would be needed.
 
-Gerhard
 
--- 
-249 Spiele für nur 1 Preis. Die GMX Spieleflatrate schon ab 9,90 Euro.
-Neu: Asterix bei den Olympischen Spielen: http://flat.games.gmx.de
+Ron
+
+_________________________________________________________________
+Get Free (PRODUCT) RED=99  Emoticons, Winks and Display Pics.
+http://joinred.spaces.live.com?ocid=3DTXT_HMTG_prodredemoticons_052008=
+
+--_20cc832d-76ed-49b8-bd53-d337c0ac5d43_
+Content-Type: text/html; charset="Windows-1252"
+Content-Transfer-Encoding: quoted-printable
+
+<html>
+<head>
+<style>
+.hmmessage P
+{
+margin:0px;
+padding:0px
+}
+body.hmmessage
+{
+FONT-SIZE: 10pt;
+FONT-FAMILY:Tahoma
+}
+</style>
+</head>
+<body class=3D'hmmessage'><div style=3D"text-align: left;">Hello all,<br><b=
+r>I am working on porting linux 2.6.25 with a custom MPC8313 based board, b=
+ut am having a little bit of trouble with the ethernet, more specifically i=
+fconfig.<br><br>after typing "ifconfig eth0 10.196.31.84" I receive the fol=
+lowing error<br>ifconfig: SIOCSIFFLAGS: Cannot assign requested address<br>=
+<br>after entering a MAC address via "ifconfig eth0 hw ether"&nbsp; I recei=
+ve this error.<br>e0024520:01 not found<br>eth0: Could not attach to PHY<br=
+>ifconfig: SIOCSIFFLAGS: No such device<br><br>which I have traced to bus_f=
+ind_device, but I'm not sure what to make of this.<br><br>I'm not sure wher=
+e I'm going wrong here, and I'm sure that it's something that I'm forgettin=
+g to do/include.<br><br>Sorry if this isn't enough information, but I don't=
+ know enough to know what other information would be needed.<br><br></div><=
+br>Ron<br><br /><hr />Get Free (PRODUCT) RED=99  Emoticons, Winks and Displ=
+ay Pics. <a href=3D'http://joinred.spaces.live.com?ocid=3DTXT_HMTG_prodrede=
+moticons_052008' target=3D'_new'>Check it out!</a></body>
+</html>=
+
+--_20cc832d-76ed-49b8-bd53-d337c0ac5d43_--
