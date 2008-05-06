@@ -1,19 +1,17 @@
-Return-Path: <sha@pengutronix.de>
-Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
-	[83.236.181.26]) by ozlabs.org (Postfix) with ESMTP id 2AF97DDEF1
-	for <linuxppc-dev@ozlabs.org>; Tue,  6 May 2008 18:05:35 +1000 (EST)
-Date: Tue, 6 May 2008 10:08:11 +0200
-From: Sascha Hauer <s.hauer@pengutronix.de>
-To: Jon Smirl <jonsmirl@gmail.com>
-Subject: Re: [PATCH] add Phytec pcm030 board support
-Message-ID: <20080506080811.GB4326@pengutronix.de>
-References: <20080425134805.GP6692@pengutronix.de>
-	<9e4733910805051001h2c02fd57yb246091af8bf5a7d@mail.gmail.com>
-	<fa686aa40805051008t656e7e11pc469b6a43241c63f@mail.gmail.com>
-	<9e4733910805051022q7c2f868bw80173fd93e92b907@mail.gmail.com>
+Return-Path: <paubert@iram.es>
+Received: from gra-lx1.iram.es (gra-lx1.iram.es [150.214.224.41])
+	by ozlabs.org (Postfix) with ESMTP id C840CDDE22
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 May 2008 18:06:07 +1000 (EST)
+From: Gabriel Paubert <paubert@iram.es>
+Date: Tue, 6 May 2008 10:06:02 +0200
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: Re: [PATCH 1/2] [POWERPC] rtc_cmos_setup: assign interrupts only if
+	there is i8259 PIC
+Message-ID: <20080506080602.GA13650@iram.es>
+References: <20080505185538.GA4906@polina.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <9e4733910805051022q7c2f868bw80173fd93e92b907@mail.gmail.com>
+In-Reply-To: <20080505185538.GA4906@polina.dev.rtsoft.ru>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -24,65 +22,80 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, May 05, 2008 at 01:22:40PM -0400, Jon Smirl wrote:
-> On 5/5/08, Grant Likely <grant.likely@secretlab.ca> wrote:
-> > On Mon, May 5, 2008 at 11:01 AM, Jon Smirl <jonsmirl@gmail.com> wrote:
-> >  > Did this get fixed somehow? I used to need this to boot a pcm030.
-> >
-> >
-> > I'm sorry; I'm at a lost as to context.  Are you asking for this patch
-> >  to be applied?  Or are you asking if this has been addressed in
-> >  another way?
+On Mon, May 05, 2008 at 10:55:38PM +0400, Anton Vorontsov wrote:
+> Sometimes (particularly on MPC8610HPCD) we want IRQ-less CMOS RTC for
+> the boards without (or disabled) i8259 PICs.
 > 
-> Sascha said the pcm030 was working with the simple dts. I always
-> needed that patch to get a pcm030 to boot. Sasha's company wrote the
-> patch. I'm just wondering how it got handled, do we still need the
-> patch or did he come up with some other solution.
+> We lookup the device tree for "chrp,iic" compatible devices, and if not
+> found we do not assign RTC IRQ.
 
-Yes, it is working with the simple dts except for the flash support. For
-this we need the Flash description in the oftree.
+I suspect this will break on machines which have an RTC and the
+interrupt line is not connected. 
 
-> >  >
-> >  >  diff --git a/fs/jffs2/scan.c b/fs/jffs2/scan.c
-> >  >  index 272872d..c982adc 100644
-> >  >  --- a/fs/jffs2/scan.c
-> >  >  +++ b/fs/jffs2/scan.c
-> >  >  @@ -16,6 +16,7 @@
-> >  >   #include <linux/pagemap.h>
-> >  >   #include <linux/crc32.h>
-> >  >   #include <linux/compiler.h>
-> >  >  +#include <asm/io.h>
-> >  >   #include "nodelist.h"
-> >  >   #include "summary.h"
-> >  >   #include "debug.h"
-> >  >  @@ -505,7 +506,7 @@ static int jffs2_scan_eraseblock (struct
-> >  >  jffs2_sb_info *c, struct jffs2_eraseblo
-> >  >                                         sumptr = kmalloc(sumlen, GFP_KERNEL);
-> >  >                                         if (!sumptr)
-> >  >                                                 return -ENOMEM;
-> >  >  -                                       memcpy(sumptr + sumlen -
-> >  >  buf_len, buf + buf_size - buf_len, buf_len);
-> >  >  +                                       memcpy_fromio(sumptr + sumlen
-> >  >  - buf_len, buf + buf_size - buf_len, buf_len);
-> >  >                                 }
-> >  >                                 if (buf_len < sumlen) {
-> >  >                                         /* Need to read more so that
-> >  >  the entire summary node is present */
-> >  >  @@ -1035,7 +1036,7 @@ static int jffs2_scan_dirent_node(struct
-> >  >  jffs2_sb_info *c, struct jffs2_eraseblo
-> >  >         if (!fd) {
-> >  >                 return -ENOMEM;
-> >  >         }
-> >  >  -       memcpy(&fd->name, rd->name, checkedlen);
-> >  >  +       memcpy_fromio(&fd->name, rd->name, checkedlen);
+These are PreP machines like MVME2[467]xxx (I have a bunch of them,
+stilll running 2.2 kernels but on a private network). 
+Interrupt 8 is connected, but not to the RTC...
 
-This patch is needed because memcpy uses unaligned accesses whereas
-memcpy_fromio only uses aligned accesses on the io side. See this
-thread: http://ozlabs.org/pipermail/linuxppc-embedded/2006-April/022544.html
+I have no problems with the patch going in for now, it will have
+to be revisited whenever (if ever) support for these machines is added
+to the kernel (what is really needed to support these machines is a
+residual data->device tree converter).
+
+	Gabriel
 
 
--- 
-Pengutronix e.K. - Linux Solutions for Science and Industry
------------------------------------------------------------
-Kontakt-Informationen finden Sie im Header dieser Mail oder
-auf der Webseite -> http://www.pengutronix.de/impressum/ <-
+
+> 
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> ---
+>  arch/powerpc/sysdev/rtc_cmos_setup.c |   21 +++++++++++++++------
+>  1 files changed, 15 insertions(+), 6 deletions(-)
+> 
+> diff --git a/arch/powerpc/sysdev/rtc_cmos_setup.c b/arch/powerpc/sysdev/rtc_cmos_setup.c
+> index c09ddc0..e5d0bcb 100644
+> --- a/arch/powerpc/sysdev/rtc_cmos_setup.c
+> +++ b/arch/powerpc/sysdev/rtc_cmos_setup.c
+> @@ -21,6 +21,7 @@ static int  __init add_rtc(void)
+>  	struct device_node *np;
+>  	struct platform_device *pd;
+>  	struct resource res[2];
+> +	unsigned int num_res = 1;
+>  	int ret;
+>  
+>  	memset(&res, 0, sizeof(res));
+> @@ -41,14 +42,22 @@ static int  __init add_rtc(void)
+>  	if (res[0].start != RTC_PORT(0))
+>  		return -EINVAL;
+>  
+> -	/* Use a fixed interrupt value of 8 since on PPC if we are using this
+> -	 * its off an i8259 which we ensure has interrupt numbers 0..15. */
+> -	res[1].start = 8;
+> -	res[1].end = 8;
+> -	res[1].flags = IORESOURCE_IRQ;
+> +	np = of_find_compatible_node(NULL, NULL, "chrp,iic");
+> +	if (np) {
+> +		of_node_put(np);
+> +		/*
+> +		 * Use a fixed interrupt value of 8 since on PPC if we are
+> +		 * using this its off an i8259 which we ensure has interrupt
+> +		 * numbers 0..15.
+> +		 */
+> +		res[1].start = 8;
+> +		res[1].end = 8;
+> +		res[1].flags = IORESOURCE_IRQ;
+> +		num_res++;
+> +	}
+>  
+>  	pd = platform_device_register_simple("rtc_cmos", -1,
+> -					     &res[0], 2);
+> +					     &res[0], num_res);
+>  
+>  	if (IS_ERR(pd))
+>  		return PTR_ERR(pd);
+> -- 
+> 1.5.5.1
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
