@@ -1,19 +1,22 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 0A6CADE00A
-	for <linuxppc-dev@ozlabs.org>; Tue,  6 May 2008 23:37:26 +1000 (EST)
-Message-Id: <8D90346B-3E16-4B77-BFF0-35F1FAA1B2B8@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: "Bryan O'Donoghue" <bodonoghue@codehermit.ie>
-In-Reply-To: <20080506032813.19e2d07a@neuromancer.mindspace>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: [PATCH] Add support for Analogue & Micro ASP837E board
-Date: Tue, 6 May 2008 08:37:16 -0500
-References: <20080506032813.19e2d07a@neuromancer.mindspace>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <wsa@pengutronix.de>
+Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
+	[83.236.181.26]) by ozlabs.org (Postfix) with ESMTP id 9E32ADE12B
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 May 2008 23:51:25 +1000 (EST)
+Date: Tue, 6 May 2008 15:51:13 +0200
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: Jochen Friedrich <jochen@scram.de>
+Subject: Re: [i2c] [PATCH6/7] i2c: adds support for i2c bus on Freescale
+	CPM1/CPM2 controllers
+Message-ID: <20080506135113.GA4265@pengutronix.de>
+References: <47FF71A9.4010907@scram.de>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="UlVJffcvxoiEqYs2"
+In-Reply-To: <47FF71A9.4010907@scram.de>
+Cc: Scott Wood <scottwood@freescale.com>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Linux I2C <i2c@lm-sensors.org>, "Kernel,
+	Linux" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,279 +26,854 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->
-> @@ -0,0 +1,247 @@
+
+--UlVJffcvxoiEqYs2
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+
+Hi Jochen,
+
+I just had a debug session with a MPC8260 + eeprom and got some
+questions:
+
+> This driver uses the port of 2.4 code from Vitaly Bordug
+> <vitb@kernel.crashing.org> and the actual algorithm used by the i2c
+> driver of the DBox code on cvs.tuxboc.org from Felix Domke
+> (tmbinc@gmx.net) and Gillem (htoa@gmx.net) converted to an
+> of_platform_driver. Tested on CPM1 (MPC823 on dbox2 hardware) and
+> CPM2 (MPC8272).
+>=20
+> Signed-off-by: Jochen Friedrich <jochen@scram.de>
+> ---
+>  drivers/i2c/busses/Kconfig   |   10 +
+>  drivers/i2c/busses/Makefile  |    1 +
+>  drivers/i2c/busses/i2c-cpm.c |  728 ++++++++++++++++++++++++++++++++++++=
+++++++
+>  3 files changed, 739 insertions(+), 0 deletions(-)
+>  create mode 100644 drivers/i2c/busses/i2c-cpm.c
+>=20
+> diff --git a/drivers/i2c/busses/Kconfig b/drivers/i2c/busses/Kconfig
+> index 5fa9c3c..5c4f270 100644
+> --- a/drivers/i2c/busses/Kconfig
+> +++ b/drivers/i2c/busses/Kconfig
+> @@ -114,6 +114,16 @@ config I2C_BLACKFIN_TWI_CLK_KHZ
+>  	help
+>  	  The unit of the TWI clock is kHz.
+> =20
+> +config I2C_CPM
+> +	tristate "Freescale CPM1 or CPM2 (MPC8xx/826x)"
+> +	depends on (CPM1 || CPM2) && PPC_OF
+> +	help
+> +	  This supports the use of the I2C interface on Freescale
+> +	  processors with CPM1 or CPM2.
+> +
+> +	  This driver can also be built as a module.  If so, the module
+> +	  will be called i2c-cpm.
+> +
+>  config I2C_DAVINCI
+>  	tristate "DaVinci I2C driver"
+>  	depends on ARCH_DAVINCI
+> diff --git a/drivers/i2c/busses/Makefile b/drivers/i2c/busses/Makefile
+> index ea7068f..1291e2b 100644
+> --- a/drivers/i2c/busses/Makefile
+> +++ b/drivers/i2c/busses/Makefile
+> @@ -11,6 +11,7 @@ obj-$(CONFIG_I2C_AMD8111)	+=3D i2c-amd8111.o
+>  obj-$(CONFIG_I2C_AT91)		+=3D i2c-at91.o
+>  obj-$(CONFIG_I2C_AU1550)	+=3D i2c-au1550.o
+>  obj-$(CONFIG_I2C_BLACKFIN_TWI)	+=3D i2c-bfin-twi.o
+> +obj-$(CONFIG_I2C_CPM)		+=3D i2c-cpm.o
+>  obj-$(CONFIG_I2C_DAVINCI)	+=3D i2c-davinci.o
+>  obj-$(CONFIG_I2C_ELEKTOR)	+=3D i2c-elektor.o
+>  obj-$(CONFIG_I2C_GPIO)		+=3D i2c-gpio.o
+> diff --git a/drivers/i2c/busses/i2c-cpm.c b/drivers/i2c/busses/i2c-cpm.c
+> new file mode 100644
+> index 0000000..e6e8317
+> --- /dev/null
+> +++ b/drivers/i2c/busses/i2c-cpm.c
+> @@ -0,0 +1,728 @@
 > +/*
-> + * Analogue & Micro ASP8347 Device Tree Source
+> + * Freescale CPM1/CPM2 I2C interface.
+> + * Copyright (c) 1999 Dan Malek (dmalek@jlc.net).
 > + *
-> + * Copyright 2008 Codehermit
+> + * moved into proper i2c interface;
+> + * Brad Parker (brad@heeltoe.com)
 > + *
-> + * This program is free software; you can redistribute  it and/or  
-> modify it
-> + * under  the terms of  the GNU General  Public License as  
-> published by the
-> + * Free Software Foundation;  either version 2 of the  License, or  
-> (at your
-> + * option) any later version.
+> + * (C) 2007 Montavista Software, Inc.
+> + * Vitaly Bordug <vitb@kernel.crashing.org>
+> + *
+> + * Parts from dbox2_i2c.c (cvs.tuxbox.org)
+> + * (C) 2000-2001 Felix Domke (tmbinc@gmx.net), Gillem (htoa@gmx.net)
+> + *
+> + * Converted to of_platform_device. Renamed to i2c-cpm.c.
+> + * (C) 2007,2008 Jochen Friedrich <jochen@scram.de>
+> + *
+> + *  This program is free software; you can redistribute it and/or modify
+> + *  it under the terms of the GNU General Public License as published by
+> + *  the Free Software Foundation; either version 2 of the License, or
+> + *  (at your option) any later version.
+> + *
+> + *  This program is distributed in the hope that it will be useful,
+> + *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> + *  GNU General Public License for more details.
+> + *
+> + *  You should have received a copy of the GNU General Public License
+> + *  along with this program; if not, write to the Free Software
+> + *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 > + */
 > +
-> +/dts-v1/;
+> +#include <linux/kernel.h>
+> +#include <linux/module.h>
+> +#include <linux/delay.h>
+> +#include <linux/slab.h>
+> +#include <linux/init.h>
+> +#include <linux/interrupt.h>
+> +#include <linux/errno.h>
+> +#include <linux/stddef.h>
+> +#include <linux/i2c.h>
+> +#include <linux/io.h>
+> +#include <linux/dma-mapping.h>
+> +#include <linux/of_device.h>
+> +#include <linux/of_platform.h>
+> +#include <linux/of_i2c.h>
+> +#include <sysdev/fsl_soc.h>
+> +#include <asm/cpm.h>
 > +
-> +/ {
-> +	model = "ASP8347E";
-> +	compatible = "ASP8347E";
-
-"analogue-and-micro, ASP8347E";
-
->
-> +	#address-cells = <1>;
-> +	#size-cells = <1>;
+> +/* Try to define this if you have an older CPU (earlier than rev D4) */
+> +/* However, better use a GPIO based bitbang driver in this case :/   */
+> +#undef	I2C_CHIP_ERRATA
 > +
-> +	aliases {
-> +		ethernet0 = &enet0;
-> +		ethernet1 = &enet1;
-> +		serial0 = &serial0;
-> +		serial1 = &serial1;
-> +	};
+> +#define CPM_MAX_READ    513
+> +#define CPM_MAXBD       4
 > +
-> +	cpus {
-> +		#address-cells = <1>;
-> +		#size-cells = <0>;
+> +#define CPM_CR_INIT_TRX		(0x00)
+> +#define CPM_CR_CLOSE_RX_BD	(0x07)
 > +
-> +		PowerPC,8347@0 {
-> +			device_type = "cpu";
-> +			reg = <0x0>;
-> +			d-cache-line-size = <32>;
-> +			i-cache-line-size = <32>;
-> +			d-cache-size = <32768>;
-> +			i-cache-size = <32768>;
-> +			timebase-frequency = <0>;	// from bootloader
-> +			bus-frequency = <0>;		// from bootloader
-> +			clock-frequency = <0>;		// from bootloader
-> +		};
-> +	};
+> +#define I2C_EB			(0x10) /* Big endian mode */
+> +#define I2C_EB_CPM2		(0x30) /* Big endian mode, memory snoop */
 > +
-> +	memory {
-> +		device_type = "memory";
-> +		reg = <0x00000000 0x8000000>;	// 128MB at 0
-
-is memory really fixed on this board or does the bootloader set this  
-if, dynamic make it <0 0>
-
->
-> +	};
+> +#define DPRAM_BASE		((u8 __iomem __force *)cpm_muram_addr(0))
 > +
-> +	localbus@ff005000 {
-> +		#address-cells = <2>;
-> +		#size-cells = <1>;
-> +		compatible = "fsl,mpc8347e-localbus",
-> +			     "fsl,pq2pro-localbus",
-> +			     "simple-bus";
-> +		reg = <0xff005000 0x1000>;
-> +		interrupts = <77 0x8>;
-> +		interrupt-parent = <&ipic>;
-> +
-> +		ranges = <
-> +			0 0 0xf0000000 0x02000000
-> +		>;
-> +
-> +		flash@0,0 {
-> +			compatible = "cfi-flash";
-> +			reg = <0 0 0x02000000>;
-> +			bank-width = <2>;
-> +			device-width = <2>;
-> +		};
-> +	};
-> +
-> +	soc8349@ff000000 {
-> +		#address-cells = <1>;
-> +		#size-cells = <1>;
-> +		device_type = "soc";
-> +		ranges = <0x0 0xff000000 0xff100000>;
-
-this is wrong, size should be like 0x100000
-
->
-> +		reg = <0xff000000 0x00000200>;
-> +		bus-frequency = <0>;
-> +
-> +		wdt@200 {
-> +			device_type = "watchdog";
-> +			compatible = "mpc83xx_wdt";
-> +			reg = <0x200 0x100>;
-> +		};
-> +
-> +		i2c@3000 {
-> +			#address-cells = <1>;
-> +			#size-cells = <0>;
-> +			cell-index = <0>;
-> +			compatible = "fsl-i2c";
-> +			reg = <0x3000 0x100>;
-> +			interrupts = <14 0x8>;
-> +			interrupt-parent = <&ipic>;
-> +			dfsrr;
-> +
-> +			rtc@68 {
-> +				compatible = "dallas,ds1374";
-> +				reg = <0x68>;
-> +			};
-> +		};
-> +
-> +		i2c@3100 {
-> +			#address-cells = <1>;
-> +			#size-cells = <0>;
-> +			cell-index = <1>;
-> +			compatible = "fsl-i2c";
-> +			reg = <0x3100 0x100>;
-> +			interrupts = <15 0x8>;
-> +			interrupt-parent = <&ipic>;
-> +			dfsrr;
-> +		};
-> +
-> +		spi@7000 {
-> +			cell-index = <0>;
-> +			compatible = "fsl,spi";
-> +			reg = <0x7000 0x1000>;
-> +			interrupts = <16 0x8>;
-> +			interrupt-parent = <&ipic>;
-> +			mode = "cpu";
-> +		};
-> +
-> +		/* phy type (ULPI or SERIAL) are only types supported for MPH */
-> +		/* port = 0 or 1 */
-> +		usb@22000 {
-> +			compatible = "fsl-usb2-mph";
-> +			reg = <0x22000 0x1000>;
-> +			#address-cells = <1>;
-> +			#size-cells = <0>;
-> +			interrupt-parent = <&ipic>;
-> +			interrupts = <39 0x8>;
-> +			phy_type = "ulpi";
-> +			port1;
-> +		};
-> +		/* phy type (ULPI, UTMI, UTMI_WIDE, SERIAL) */
-> +		usb@23000 {
-> +			compatible = "fsl-usb2-dr";
-> +			reg = <0x23000 0x1000>;
-> +			#address-cells = <1>;
-> +			#size-cells = <0>;
-> +			interrupt-parent = <&ipic>;
-> +			interrupts = <38 0x8>;
-> +			dr_mode = "otg";
-> +			phy_type = "ulpi";
-> +		};
-> +
-> +		mdio@24520 {
-> +			#address-cells = <1>;
-> +			#size-cells = <0>;
-> +			compatible = "fsl,gianfar-mdio";
-> +			reg = <0x24520 0x20>;
-> +
-> +			phy0: ethernet-phy@0 {
-> +				interrupt-parent = <&ipic>;
-> +				interrupts = <17 0x8>;
-> +				reg = <0x1>;
-> +				device_type = "ethernet-phy";
-> +			};
-> +			phy1: ethernet-phy@1 {
-> +				interrupt-parent = <&ipic>;
-> +				interrupts = <18 0x8>;
-> +				reg = <0x2>;
-> +				device_type = "ethernet-phy";
-> +			};
-> +		};
-> +
-> +		enet0: ethernet@24000 {
-> +			cell-index = <0>;
-> +			device_type = "network";
-> +			model = "TSEC";
-> +			compatible = "gianfar";
-> +			reg = <0x24000 0x1000>;
-> +			local-mac-address = [ 00 08 e5 11 32 33 ];
-> +			interrupts = <32 0x8 33 0x8 34 0x8>;
-> +			interrupt-parent = <&ipic>;
-> +			phy-handle = <&phy0>;
-> +			linux,network-index = <0>;
-
-you shouldn't need this anymore. we should be using the aliases.
-
->
-> +		};
-> +
-> +		enet1: ethernet@25000 {
-> +			cell-index = <1>;
-> +			device_type = "network";
-> +			model = "TSEC";
-> +			compatible = "gianfar";
-> +			reg = <0x25000 0x1000>;
-> +			local-mac-address = [ 00 08 e5 11 32 34 ];
-> +			interrupts = <35 0x8 36 0x8 37 0x8>;
-> +			interrupt-parent = <&ipic>;
-> +			phy-handle = <&phy1>;
-> +			linux,network-index = <1>;
-
-ditto.
-
->
-> +		};
-> +
-> +		serial0: serial@4500 {
-> +			cell-index = <0>;
-> +			device_type = "serial";
-> +			compatible = "ns16550";
-> +			reg = <0x4500 0x100>;
-> +			clock-frequency = <400000000>;
-> +			interrupts = <9 0x8>;
-> +			interrupt-parent = <&ipic>;
-> +		};
-> +
-> +		serial1: serial@4600 {
-> +			cell-index = <1>;
-> +			device_type = "serial";
-> +			compatible = "ns16550";
-> +			reg = <0x4600 0x100>;
-> +			clock-frequency = <400000000>;
-> +			interrupts = <10 0x8>;
-> +			interrupt-parent = <&ipic>;
-> +		};
-> +
-> +		/* May need to remove if on a part without crypto engine */
-> +		crypto@30000 {
-> +			device_type = "crypto";
-> +			model = "SEC2";
-> +			compatible = "talitos";
-> +			reg = <0x30000 0x10000>;
-> +			interrupts = <11 0x8>;
-> +			interrupt-parent = <&ipic>;
-> +			num-channels = <4>;
-> +			channel-fifo-len = <24>;
-> +			exec-units-mask = <0x0000007e>;
-> +			/* desc mask is for rev2.0,
-> +			 * we need runtime fixup for >2.0 */
-> +			descriptor-types-mask = <0x01010ebf>;
-> +		};
-> +
-> +		/* IPIC
-> +		 * interrupts cell = <intr #, sense>
-> +		 * sense values match linux IORESOURCE_IRQ_* defines:
-> +		 * sense == 8: Level, low assertion
-> +		 * sense == 2: Edge, high-to-low change
-> +		 */
-> +		ipic: pic@700 {
-> +			interrupt-controller;
-> +			#address-cells = <0>;
-> +			#interrupt-cells = <2>;
-> +			reg = <0x700 0x100>;
-> +			device_type = "ipic";
-> +		};
-> +	};
-> +
-> +	chosen {
-> +		bootargs = "console=ttyS0,38400 root=/dev/mtdblock3  
-> rootfstype=jffs2";
-> +		linux,stdout-path = &serial0;
-> +	};
-> +
+> +/* I2C parameter RAM. */
+> +struct i2c_ram {
+> +	ushort  rbase;		/* Rx Buffer descriptor base address */
+> +	ushort  tbase;		/* Tx Buffer descriptor base address */
+> +	u_char  rfcr;		/* Rx function code */
+> +	u_char  tfcr;		/* Tx function code */
+> +	ushort  mrblr;		/* Max receive buffer length */
+> +	uint    rstate;		/* Internal */
+> +	uint    rdp;		/* Internal */
+> +	ushort  rbptr;		/* Rx Buffer descriptor pointer */
+> +	ushort  rbc;		/* Internal */
+> +	uint    rxtmp;		/* Internal */
+> +	uint    tstate;		/* Internal */
+> +	uint    tdp;		/* Internal */
+> +	ushort  tbptr;		/* Tx Buffer descriptor pointer */
+> +	ushort  tbc;		/* Internal */
+> +	uint    txtmp;		/* Internal */
+> +	char    res1[4];	/* Reserved */
+> +	ushort  rpbase;		/* Relocation pointer */
+> +	char    res2[2];	/* Reserved */
 > +};
+> +
+> +/* I2C Registers */
+> +struct i2c_reg {
+> +	u8	i2mod;
+> +	u8	res1[3];
+> +	u8	i2add;
+> +	u8	res2[3];
+> +	u8	i2brg;
+> +	u8	res3[3];
+> +	u8	i2com;
+> +	u8	res4[3];
+> +	u8	i2cer;
+> +	u8	res5[3];
+> +	u8	i2cmr;
+> +};
+> +
+> +struct cpm_i2c {
+> +	char *base;
+> +	struct of_device *ofdev;
+> +	struct i2c_adapter adap;
+> +	uint dp_addr;
+> +	int version; /* CPM1=3D1, CPM2=3D2 */
+> +	int irq;
+> +	int cp_command;
+> +	struct i2c_reg __iomem *i2c_reg;
+> +	struct i2c_ram __iomem *i2c_ram;
+> +	u16 i2c_addr;
+> +	wait_queue_head_t i2c_wait;
+> +	struct mutex i2c_mutex; /* Protects struct i2c_ram */
+> +	cbd_t __iomem *tbase;
+> +	cbd_t __iomem *rbase;
+> +	u_char *txbuf[CPM_MAXBD];
+> +	u_char *rxbuf[CPM_MAXBD];
+> +	u32 txdma[CPM_MAXBD];
+> +	u32 rxdma[CPM_MAXBD];
+> +};
+> +
+> +static irqreturn_t cpm_i2c_interrupt(int irq, void *dev_id)
+> +{
+> +	struct cpm_i2c *cpm;
+> +	struct i2c_reg __iomem *i2c_reg;
+> +	struct i2c_adapter *adap =3D dev_id;
+> +	int i;
+> +
+> +	cpm =3D i2c_get_adapdata(dev_id);
+> +	i2c_reg =3D cpm->i2c_reg;
+> +
+> +	/* Clear interrupt. */
+> +	i =3D in_8(&i2c_reg->i2cer);
+> +	out_8(&i2c_reg->i2cer, i);
+> +
+> +	dev_dbg(&adap->dev, "Interrupt: %x\n", i);
+> +
+> +	/* Get me going again. */
+> +	wake_up_interruptible(&cpm->i2c_wait);
+> +
+> +	return i ? IRQ_HANDLED : IRQ_NONE;
+> +}
+> +
+> +static void cpm_reset_i2c_params(struct cpm_i2c *cpm)
+> +{
+> +	struct i2c_ram __iomem *i2c_ram =3D cpm->i2c_ram;
+> +
+> +	/* Set up the IIC parameters in the parameter ram. */
+> +	out_be16(&i2c_ram->tbase, (u8 __iomem *)cpm->tbase - DPRAM_BASE);
+> +	out_be16(&i2c_ram->rbase, (u8 __iomem *)cpm->rbase - DPRAM_BASE);
+> +
+> +	if (cpm->version =3D=3D 1) {
+> +		out_8(&i2c_ram->tfcr, I2C_EB);
+> +		out_8(&i2c_ram->rfcr, I2C_EB);
+> +	} else {
+> +		out_8(&i2c_ram->tfcr, I2C_EB_CPM2);
+> +		out_8(&i2c_ram->rfcr, I2C_EB_CPM2);
+> +	}
+> +
+> +	out_be16(&i2c_ram->mrblr, CPM_MAX_READ);
+> +
+> +	out_be32(&i2c_ram->rstate, 0);
+> +	out_be32(&i2c_ram->rdp, 0);
+> +	out_be16(&i2c_ram->rbptr, 0);
+> +	out_be16(&i2c_ram->rbc, 0);
+> +	out_be32(&i2c_ram->rxtmp, 0);
+> +	out_be32(&i2c_ram->tstate, 0);
+> +	out_be32(&i2c_ram->tdp, 0);
+> +	out_be16(&i2c_ram->tbptr, 0);
+> +	out_be16(&i2c_ram->tbc, 0);
+> +	out_be32(&i2c_ram->txtmp, 0);
+> +}
+> +
+> +static void cpm_i2c_force_close(struct i2c_adapter *adap)
+> +{
+> +	struct cpm_i2c *cpm =3D i2c_get_adapdata(adap);
+> +	struct i2c_reg __iomem *i2c_reg =3D cpm->i2c_reg;
+> +
+> +	dev_dbg(&adap->dev, "cpm_i2c_force_close()\n");
+> +
+> +	cpm_command(cpm->cp_command, CPM_CR_CLOSE_RX_BD);
+> +
+> +	out_8(&i2c_reg->i2cmr, 0x00);	/* Disable all interrupts */
+> +	out_8(&i2c_reg->i2cer, 0xff);
+> +}
+> +
+> +static void cpm_i2c_parse_message(struct i2c_adapter *adap,
+> +	struct i2c_msg *pmsg, int num, int tx, int rx)
+> +{
+> +	cbd_t __iomem *tbdf;
+> +	cbd_t __iomem *rbdf;
+> +	u_char addr;
+> +	u_char *tb;
+> +	u_char *rb;
+> +	struct cpm_i2c *cpm =3D i2c_get_adapdata(adap);
+> +
+> +	tbdf =3D cpm->tbase + tx;
+> +	rbdf =3D cpm->rbase + rx;
+> +
+> +	addr =3D pmsg->addr << 1;
+> +	if (pmsg->flags & I2C_M_RD)
+> +		addr |=3D 1;
+> +
+> +	tb =3D cpm->txbuf[tx];
+> +	rb =3D cpm->rxbuf[rx];
+> +
+> +	/* Align read buffer */
+> +	rb =3D (u_char *) (((ulong) rb + 1) & ~1);
+> +
+> +	tb[0] =3D addr;		/* Device address byte w/rw flag */
+> +
+> +	out_be16(&tbdf->cbd_datlen, pmsg->len + 1);
+> +	out_be16(&tbdf->cbd_sc, 0);
+> +
+> +	if (!(pmsg->flags & I2C_M_NOSTART))
+> +		setbits16(&tbdf->cbd_sc, BD_I2C_START);
+> +
+> +	if (tx + 1 =3D=3D num)
+> +		setbits16(&tbdf->cbd_sc, BD_SC_LAST | BD_SC_WRAP);
+> +
+> +	if (pmsg->flags & I2C_M_RD) {
+> +		/*
+> +		 * To read, we need an empty buffer of the proper length.
+> +		 * All that is used is the first byte for address, the remainder
+> +		 * is just used for timing (and doesn't really have to exist).
+> +		 */
+> +
+> +		dev_dbg(&adap->dev, "cpm_i2c_read(abyte=3D0x%x)\n", addr);
+> +
+> +		out_be16(&rbdf->cbd_datlen, 0);
+> +		out_be16(&rbdf->cbd_sc, BD_SC_EMPTY | BD_SC_INTRPT);
+> +
+> +		if (rx + 1 =3D=3D CPM_MAXBD)
+> +			setbits16(&rbdf->cbd_sc, BD_SC_WRAP);
+> +
+> +		eieio();
+> +		setbits16(&tbdf->cbd_sc, BD_SC_READY);
+> +	} else {
+> +		dev_dbg(&adap->dev, "cpm_iic_write(abyte=3D0x%x)\n", addr);
+> +
+> +		memcpy(tb+1, pmsg->buf, pmsg->len);
+> +
+> +		eieio();
+> +		setbits16(&tbdf->cbd_sc, BD_SC_READY | BD_SC_INTRPT);
+> +	}
+> +}
+> +
+> +static int cpm_i2c_check_message(struct i2c_adapter *adap,
+> +	struct i2c_msg *pmsg, int tx, int rx)
+> +{
+> +	cbd_t __iomem *tbdf;
+> +	cbd_t __iomem *rbdf;
+> +	u_char *tb;
+> +	u_char *rb;
+> +	struct cpm_i2c *cpm =3D i2c_get_adapdata(adap);
+> +
+> +	tbdf =3D cpm->tbase + tx;
+> +	rbdf =3D cpm->rbase + rx;
+> +
+> +	tb =3D cpm->txbuf[tx];
+> +	rb =3D cpm->rxbuf[rx];
+> +
+> +	/* Align read buffer */
+> +	rb =3D (u_char *) (((uint) rb + 1) & ~1);
+> +
+> +	eieio();
+> +	if (pmsg->flags & I2C_M_RD) {
+> +		dev_dbg(&adap->dev, "tx sc 0x%04x, rx sc 0x%04x\n",
+> +			in_be16(&tbdf->cbd_sc), in_be16(&rbdf->cbd_sc));
+> +
+> +		if (in_be16(&tbdf->cbd_sc) & BD_SC_NAK) {
+> +			dev_err(&adap->dev, "IIC read; No ack\n");
+> +			return -EIO;
+> +		}
+> +		if (in_be16(&rbdf->cbd_sc) & BD_SC_EMPTY) {
+> +			dev_err(&adap->dev,
+> +				"IIC read; complete but rbuf empty\n");
+> +			return -EREMOTEIO;
+> +		}
+> +		if (in_be16(&rbdf->cbd_sc) & BD_SC_OV) {
+> +			dev_err(&adap->dev, "IIC read; Overrun\n");
+> +			return -EREMOTEIO;
+> +		}
+> +		memcpy(pmsg->buf, rb, pmsg->len);
+> +	} else {
+> +		dev_dbg(&adap->dev, "tx sc %d 0x%04x\n", tx,
+> +			in_be16(&tbdf->cbd_sc));
+> +
+> +		if (in_be16(&tbdf->cbd_sc) & BD_SC_NAK) {
+> +			dev_err(&adap->dev, "IIC write; No ack\n");
+> +			return -EIO;
+> +		}
+> +		if (in_be16(&tbdf->cbd_sc) & BD_SC_UN) {
+> +			dev_err(&adap->dev, "IIC write; Underrun\n");
+> +			return -EIO;
+> +		}
+> +		if (in_be16(&tbdf->cbd_sc) & BD_SC_CL) {
+> +			dev_err(&adap->dev, "IIC write; Collision\n");
+> +			return -EIO;
+> +		}
+> +	}
+> +	return 0;
+> +}
+> +
+> +static int cpm_i2c_xfer(struct i2c_adapter *adap, struct i2c_msg *msgs, =
+int num)
+> +{
+> +	struct cpm_i2c *cpm =3D i2c_get_adapdata(adap);
+> +	struct i2c_reg __iomem *i2c_reg =3D cpm->i2c_reg;
+> +	struct i2c_ram __iomem *i2c_ram =3D cpm->i2c_ram;
+> +	struct i2c_msg *pmsg;
+> +	int ret, i;
+> +	int tptr;
+> +	int rptr;
+> +	cbd_t __iomem *tbdf;
+> +	cbd_t __iomem *rbdf;
+> +
+> +	if (num > CPM_MAXBD)
+> +		return -EINVAL;
+> +
+> +	/* Check if we have any oversized READ requests */
+> +	for (i =3D 0; i < num; i++) {
+> +		pmsg =3D &msgs[i];
+> +		if (pmsg->len >=3D CPM_MAX_READ)
+> +			return -EINVAL;
+> +	}
+> +
+> +	mutex_lock(&cpm->i2c_mutex);
+> +
+> +	/* Reset to use first buffer */
+> +	out_be16(&i2c_ram->rbptr, in_be16(&i2c_ram->rbase));
+> +	out_be16(&i2c_ram->tbptr, in_be16(&i2c_ram->tbase));
+> +
+> +	tbdf =3D cpm->tbase;
+> +	rbdf =3D cpm->rbase;
+> +
+> +	tptr =3D 0;
+> +	rptr =3D 0;
+> +
+> +	while (tptr < num) {
+> +		pmsg =3D &msgs[tptr];
+> +		dev_dbg(&adap->dev, "R: %d T: %d\n", rptr, tptr);
+> +
+> +		cpm_i2c_parse_message(adap, pmsg, num, tptr, rptr);
+> +		if (pmsg->flags & I2C_M_RD)
+> +			rptr++;
+> +		tptr++;
+> +	}
+> +	/* Start transfer now */
+> +	/* Chip bug, set enable here */
+> +	out_8(&i2c_reg->i2cmr, 0x13);	/* Enable RX/TX/Error interupts */
+Hardcoded value. Some OR-ed defines should be more readable.
 
-- k
+> +	out_8(&i2c_reg->i2cer, 0xff);	/* Clear interrupt status */
+> +	setbits8(&i2c_reg->i2mod, 1);	/* Enable */
+Hardcoded value.
+
+> +	/* Begin transmission */
+> +	setbits8(&i2c_reg->i2com, 0x80);
+Hardcoded value. (I also wonder if 0x81 might be more suitable, as it
+keeps the "be-a-master"-bit set. Still, both values work with my setup.)
+
+> +
+> +	tptr =3D 0;
+> +	rptr =3D 0;
+> +
+> +	while (tptr < num) {
+> +		/* Check for outstanding messages */
+> +		dev_dbg(&adap->dev, "test ready.\n");
+> +		pmsg =3D &msgs[tptr];
+> +		if (pmsg->flags & I2C_M_RD)
+> +			ret =3D wait_event_interruptible_timeout(cpm->i2c_wait,
+> +				!(in_be16(&rbdf[rptr].cbd_sc) & BD_SC_EMPTY),
+> +				1 * HZ);
+> +		else
+> +			ret =3D wait_event_interruptible_timeout(cpm->i2c_wait,
+> +				!(in_be16(&tbdf[tptr].cbd_sc) & BD_SC_READY),
+> +				1 * HZ);
+> +		if (ret =3D=3D 0) {
+> +			ret =3D -EREMOTEIO;
+> +			dev_dbg(&adap->dev, "I2C read: timeout!\n");
+> +			goto out_err;
+> +		}
+> +		if (ret > 0) {
+> +			dev_dbg(&adap->dev, "ready.\n");
+> +			ret =3D cpm_i2c_check_message(adap, pmsg, tptr, rptr);
+> +			tptr++;
+> +			if (pmsg->flags & I2C_M_RD)
+> +				rptr++;
+> +			if (ret)
+> +				goto out_err;
+> +		}
+> +	}
+> +#ifdef I2C_CHIP_ERRATA
+> +	/*
+> +	 * Chip errata, clear enable. This is not needed on rev D4 CPUs.
+> +	 * Disabling I2C too early may cause too short stop condition
+> +	 */
+> +	udelay(4);
+> +	clrbits8(&i2c_reg->i2mod, 1);
+I was unable to find the corresponding errata document, still I wonder
+if it is a 0 which should have been written? The text says "clear" and
+according to the reference manual, this means the bit should be 0.
+
+> +#endif
+> +	mutex_unlock(&cpm->i2c_mutex);
+> +	return (num);
+> +
+> +out_err:
+> +	cpm_i2c_force_close(adap);
+> +#ifdef I2C_CHIP_ERRATA
+> +	/*
+> +	 * Chip errata, clear enable. This is not needed on rev D4 CPUs.
+> +	 */
+> +	clrbits8(&i2c_reg->i2mod, 1);
+write 0? see above.
+
+> +#endif
+> +	mutex_unlock(&cpm->i2c_mutex);
+> +	return ret;
+> +}
+> +
+> +static u32 cpm_i2c_func(struct i2c_adapter *adap)
+> +{
+> +	return I2C_FUNC_I2C | (I2C_FUNC_SMBUS_EMUL & ~I2C_FUNC_SMBUS_QUICK);
+> +}
+> +
+> +/* -----exported algorithm data: -------------------------------------	*/
+> +
+> +static const struct i2c_algorithm cpm_i2c_algo =3D {
+> +	.master_xfer =3D cpm_i2c_xfer,
+> +	.functionality =3D cpm_i2c_func,
+> +};
+> +
+> +static const struct i2c_adapter cpm_ops =3D {
+> +	.owner		=3D THIS_MODULE,
+> +	.name		=3D "i2c-cpm",
+> +	.algo		=3D &cpm_i2c_algo,
+> +	.class		=3D I2C_CLASS_HWMON,
+> +};
+> +
+> +static int __devinit cpm_i2c_setup(struct cpm_i2c *cpm)
+> +{
+> +	struct of_device *ofdev =3D cpm->ofdev;
+> +	const u32 *data;
+> +	int len, ret, i;
+> +	void __iomem *i2c_base;
+> +	cbd_t __iomem *tbdf;
+> +	cbd_t __iomem *rbdf;
+> +	unsigned char brg;
+> +
+> +	dev_dbg(&cpm->ofdev->dev, "cpm_i2c_setup()\n");
+> +
+> +	init_waitqueue_head(&cpm->i2c_wait);
+> +	mutex_init(&cpm->i2c_mutex);
+> +
+> +	cpm->irq =3D of_irq_to_resource(ofdev->node, 0, NULL);
+> +	if (cpm->irq =3D=3D NO_IRQ)
+> +		return -EINVAL;
+> +
+> +	/* Install interrupt handler. */
+> +	ret =3D request_irq(cpm->irq, cpm_i2c_interrupt, 0, "cpm_i2c",
+> +			  &cpm->adap);
+> +	if (ret)
+> +		goto out_irq;
+> +
+> +	/* IIC parameter RAM */
+> +	i2c_base =3D of_iomap(ofdev->node, 1);
+> +	if (i2c_base =3D=3D NULL) {
+> +		ret =3D -EINVAL;
+> +		goto out_irq;
+> +	}
+> +
+> +	if (of_device_is_compatible(ofdev->node, "fsl,cpm1-i2c")) {
+> +
+> +		/* Check for and use a microcode relocation patch. */
+> +		cpm->i2c_ram =3D i2c_base;
+> +		cpm->i2c_addr =3D in_be16(&cpm->i2c_ram->rpbase);
+> +
+> +		/*
+> +		 * Maybe should use cpm_muram_alloc instead of hardcoding
+> +		 * this in micropatch.c
+> +		 */
+> +		if (cpm->i2c_addr) {
+> +			cpm->i2c_ram =3D cpm_muram_addr(cpm->i2c_addr);
+> +			iounmap(i2c_base);
+> +		}
+> +
+> +		cpm->version =3D 1;
+> +
+> +	} else if (of_device_is_compatible(ofdev->node, "fsl,cpm2-i2c")) {
+> +		cpm->i2c_addr =3D cpm_muram_alloc(sizeof(struct i2c_ram), 64);
+> +		cpm->i2c_ram =3D cpm_muram_addr(cpm->i2c_addr);
+> +		out_be16(i2c_base, cpm->i2c_addr);
+> +		iounmap(i2c_base);
+> +
+> +		cpm->version =3D 2;
+> +
+> +	} else {
+> +		iounmap(i2c_base);
+> +		ret =3D -EINVAL;
+> +		goto out_irq;
+> +	}
+> +
+> +	/* I2C control/status registers */
+> +	cpm->i2c_reg =3D of_iomap(ofdev->node, 0);
+> +	if (cpm->i2c_reg =3D=3D NULL) {
+> +		ret =3D -EINVAL;
+> +		goto out_ram;
+> +	}
+> +
+> +	data =3D of_get_property(ofdev->node, "fsl,cpm-command", &len);
+> +	if (!data || len !=3D 4) {
+> +		ret =3D -EINVAL;
+> +		goto out_reg;
+> +	}
+> +	cpm->cp_command =3D *data;
+> +
+> +	data =3D of_get_property(ofdev->node, "linux,i2c-class", &len);
+> +	if (data && len =3D=3D 4)
+> +		cpm->adap.class =3D *data;
+> +
+> +	/*
+> +	 * Allocate space for CPM_MAXBD transmit and receive buffer
+> +	 * descriptors in the DP ram.
+> +	 */
+> +	cpm->dp_addr =3D cpm_muram_alloc(sizeof(cbd_t) * 2 * CPM_MAXBD, 8);
+> +	if (!cpm->dp_addr) {
+> +		ret =3D -ENOMEM;
+> +		goto out_reg;
+> +	}
+> +
+> +	cpm->tbase =3D cpm_muram_addr(cpm->dp_addr);
+> +	cpm->rbase =3D cpm_muram_addr(cpm->dp_addr + sizeof(cbd_t) * CPM_MAXBD);
+> +
+> +	/* Allocate TX and RX buffers */
+> +
+> +	tbdf =3D cpm->tbase;
+> +	rbdf =3D cpm->rbase;
+> +
+> +	for (i =3D 0; i < CPM_MAXBD; i++) {
+> +		cpm->rxbuf[i] =3D dma_alloc_coherent(
+> +			NULL, CPM_MAX_READ + 1, &cpm->rxdma[i], GFP_KERNEL);
+> +		if (!cpm->rxbuf[i]) {
+> +			ret =3D -ENOMEM;
+> +			goto out_muram;
+> +		}
+> +		out_be32(&rbdf[i].cbd_bufaddr, ((cpm->rxdma[i] + 1) & ~1));
+> +
+> +		cpm->txbuf[i] =3D (unsigned char *)dma_alloc_coherent(
+> +			NULL, CPM_MAX_READ + 1, &cpm->txdma[i], GFP_KERNEL);
+> +		if (!cpm->txbuf[i]) {
+> +			ret =3D -ENOMEM;
+> +			goto out_muram;
+> +		}
+> +		out_be32(&tbdf[i].cbd_bufaddr, cpm->txdma[i]);
+> +	}
+> +
+> +	/* Initialize Tx/Rx parameters. */
+> +
+> +	cpm_reset_i2c_params(cpm);
+> +
+> +	dev_dbg(&cpm->ofdev->dev, "i2c_ram %p, i2c_addr 0x%04x\n",
+> +		cpm->i2c_ram, cpm->i2c_addr);
+> +	dev_dbg(&cpm->ofdev->dev, "tbase 0x%04x, rbase 0x%04x\n",
+> +		(u8 __iomem *)cpm->tbase - DPRAM_BASE,
+> +		(u8 __iomem *)cpm->rbase - DPRAM_BASE);
+> +
+> +	cpm_command(cpm->cp_command, CPM_CR_INIT_TRX);
+> +
+> +	/*
+> +	 * Select an invalid address. Just make sure we don't use loopback mode
+> +	 */
+> +	out_8(&cpm->i2c_reg->i2add, 0xfe);
+Maybe 0x7f << 1 is a tiny bit more obvious?
+
+> +
+> +	/* Make clock run at 60 kHz. */
+> +
+> +	brg =3D get_brgfreq() / (32 * 2 * 60000) - 3;
+> +	out_8(&cpm->i2c_reg->i2brg, brg);
+> +
+> +	out_8(&cpm->i2c_reg->i2mod, 0x00);
+> +	out_8(&cpm->i2c_reg->i2com, 0x01);	/* Master mode */
+Hardcoded value.
+
+> +
+> +	/* Disable interrupts. */
+> +	out_8(&cpm->i2c_reg->i2cmr, 0);
+> +	out_8(&cpm->i2c_reg->i2cer, 0xff);
+> +
+> +	return 0;
+> +
+> +out_muram:
+> +	for (i =3D 0; i < CPM_MAXBD; i++) {
+> +		if (cpm->rxbuf[i])
+> +			dma_free_coherent(NULL, CPM_MAX_READ + 1,
+> +				cpm->rxbuf[i], cpm->rxdma[i]);
+> +		if (cpm->txbuf[i])
+> +			dma_free_coherent(NULL, CPM_MAX_READ + 1,
+> +				cpm->txbuf[i], cpm->txdma[i]);
+> +	}
+> +	cpm_muram_free(cpm->dp_addr);
+> +out_reg:
+> +	iounmap(cpm->i2c_reg);
+> +out_ram:
+> +	if ((cpm->version =3D=3D 1) && (!cpm->i2c_addr))
+> +		iounmap(cpm->i2c_ram);
+> +	if (cpm->version =3D=3D 2)
+> +		cpm_muram_free(cpm->i2c_addr);
+> +out_irq:
+> +	free_irq(cpm->irq, &cpm->adap);
+> +	return ret;
+> +}
+> +
+> +static void cpm_i2c_shutdown(struct cpm_i2c *cpm)
+> +{
+> +	int i;
+> +
+> +	/* Shut down I2C. */
+> +	clrbits8(&cpm->i2c_reg->i2mod, 1);
+write 0? see above.
+
+> +
+> +	/* Disable interrupts */
+> +	out_8(&cpm->i2c_reg->i2cmr, 0);
+> +	out_8(&cpm->i2c_reg->i2cer, 0xff);
+> +
+> +	free_irq(cpm->irq, &cpm->adap);
+> +
+> +	/* Free all memory */
+> +	for (i =3D 0; i < CPM_MAXBD; i++) {
+> +		dma_free_coherent(NULL, CPM_MAX_READ + 1,
+> +			cpm->rxbuf[i], cpm->rxdma[i]);
+> +		dma_free_coherent(NULL, CPM_MAX_READ + 1,
+> +			cpm->txbuf[i], cpm->txdma[i]);
+> +	}
+> +
+> +	cpm_muram_free(cpm->dp_addr);
+> +	iounmap(cpm->i2c_reg);
+> +
+> +	if ((cpm->version =3D=3D 1) && (!cpm->i2c_addr))
+> +		iounmap(cpm->i2c_ram);
+> +	if (cpm->version =3D=3D 2)
+> +		cpm_muram_free(cpm->i2c_addr);
+> +
+> +	return;
+> +}
+> +
+> +static int __devinit cpm_i2c_probe(struct of_device *ofdev,
+> +			 const struct of_device_id *match)
+> +{
+> +	int result;
+> +	struct cpm_i2c *cpm;
+> +
+> +	cpm =3D kzalloc(sizeof(struct cpm_i2c), GFP_KERNEL);
+> +	if (!cpm)
+> +		return -ENOMEM;
+> +
+> +	cpm->ofdev =3D ofdev;
+> +
+> +	dev_set_drvdata(&ofdev->dev, cpm);
+> +
+> +	cpm->adap =3D cpm_ops;
+> +	i2c_set_adapdata(&cpm->adap, cpm);
+> +	cpm->adap.dev.parent =3D &ofdev->dev;
+> +
+> +	result =3D cpm_i2c_setup(cpm);
+> +	if (result) {
+> +		dev_err(&ofdev->dev, "Unable to init hardware\n");
+> +		goto out_free;
+> +	}
+> +
+> +	/* register new adapter to i2c module... */
+> +
+> +	result =3D i2c_add_adapter(&cpm->adap);
+> +	if (result < 0) {
+> +		dev_err(&ofdev->dev, "Unable to register with I2C\n");
+> +		goto out_shut;
+> +	}
+> +
+> +	dev_dbg(&ofdev->dev, "hw routines for %s registered.\n",
+> +		cpm->adap.name);
+> +
+> +	/*
+> +	 * register OF I2C devices
+> +	 */
+> +	of_register_i2c_devices(&cpm->adap, ofdev->node);
+> +
+> +	return 0;
+> +out_shut:
+> +	cpm_i2c_shutdown(cpm);
+> +out_free:
+> +	dev_set_drvdata(&ofdev->dev, NULL);
+> +	kfree(cpm);
+> +
+> +	return result;
+> +}
+> +
+> +static int __devexit cpm_i2c_remove(struct of_device *ofdev)
+> +{
+> +	struct cpm_i2c *cpm =3D dev_get_drvdata(&ofdev->dev);
+> +
+> +	i2c_del_adapter(&cpm->adap);
+> +
+> +	cpm_i2c_shutdown(cpm);
+> +
+> +	dev_set_drvdata(&ofdev->dev, NULL);
+> +	kfree(cpm);
+> +
+> +	return 0;
+> +}
+> +
+> +static const struct of_device_id cpm_i2c_match[] =3D {
+> +	{
+> +		.compatible =3D "fsl,cpm-i2c",
+> +	},
+> +	{},
+> +};
+> +
+> +MODULE_DEVICE_TABLE(of, cpm_i2c_match);
+> +
+> +static struct of_platform_driver cpm_i2c_driver =3D {
+> +	.match_table	=3D cpm_i2c_match,
+> +	.probe		=3D cpm_i2c_probe,
+> +	.remove		=3D __devexit_p(cpm_i2c_remove),
+> +	.driver		=3D {
+> +		.name	=3D "fsl-i2c-cpm",
+> +		.owner	=3D THIS_MODULE,
+> +	}
+> +};
+> +
+> +static int __init cpm_i2c_init(void)
+> +{
+> +	return of_register_platform_driver(&cpm_i2c_driver);
+> +}
+> +
+> +static void __exit cpm_i2c_exit(void)
+> +{
+> +	of_unregister_platform_driver(&cpm_i2c_driver);
+> +}
+> +
+> +module_init(cpm_i2c_init);
+> +module_exit(cpm_i2c_exit);
+> +
+> +MODULE_AUTHOR("Jochen Friedrich <jochen@scram.de>");
+> +MODULE_DESCRIPTION("I2C-Bus adapter routines for CPM boards");
+> +MODULE_LICENSE("GPL");
+> --=20
+> 1.5.4.5
+>=20
+>=20
+>=20
+>=20
+> _______________________________________________
+> i2c mailing list
+> i2c@lm-sensors.org
+> http://lists.lm-sensors.org/mailman/listinfo/i2c
+
+In general, the driver works well for me (just had to disable broadcast
+responses; eeprom at 00-1f \o/).
+
+Kind regards,
+
+   Wolfram
+
+--=20
+  Dipl.-Ing. Wolfram Sang | http://www.pengutronix.de
+ Pengutronix - Linux Solutions for Science and Industry
+
+--UlVJffcvxoiEqYs2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFIIGJRD27XaX1/VRsRApOMAKCEFgeX6uHySgUzBRo6Sqa1m7k68gCgzJsV
+jUSxooBQCqPgxRL8jrSVRzI=
+=O0F5
+-----END PGP SIGNATURE-----
+
+--UlVJffcvxoiEqYs2--
