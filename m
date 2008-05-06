@@ -1,26 +1,20 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id B3D28DDF0B
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 May 2008 08:03:33 +1000 (EST)
-Message-ID: <4820D5E5.9030509@freescale.com>
-Date: Tue, 06 May 2008 17:04:21 -0500
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Ronald Madrid <ron_madrid@hotmail.com>
-Subject: Re: ifconfig MPC8313
-References: <BAY114-W949ADEBC809E7A60716CCF4D60@phx.gbl>
-	<4820CB5D.3000703@freescale.com>
-	<BAY114-W46AEF8E266395E333E7FCF4D60@phx.gbl>
-	<4820CF2A.5040301@freescale.com>
-	<BAY114-W4066C5694CA67654680FB7F4D60@phx.gbl>
-	<4820D11D.1050005@freescale.com>
-	<BAY114-W13CCF7FDD3C01260AC40A9F4D60@phx.gbl>
-In-Reply-To: <BAY114-W13CCF7FDD3C01260AC40A9F4D60@phx.gbl>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 871BDDDECF
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 May 2008 08:06:14 +1000 (EST)
+In-Reply-To: <20080506164915.3f15cfe8@zod.rchland.ibm.com>
+References: <20080506150955.0fdcaa85@zod.rchland.ibm.com>
+	<e568c51ffa5f865094b26827ef959aa1@kernel.crashing.org>
+	<20080506164915.3f15cfe8@zod.rchland.ibm.com>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <22231049fb717d6df966d6be8415d3e0@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: arch/ppc is broken
+Date: Wed, 7 May 2008 00:04:58 +0200
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -31,11 +25,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Ronald Madrid wrote:
-> I believe that it is zero.  Is that valid?
+>> On a related note, arch/ppc defconfig doesn't even configure anymore;
+>> common_defconfig was removed, but it is still the default.  What 
+>> config
+>> should we use as default now?
+>
+> I'd be willing to guess that the answer is "nothing".
 
-FWIH, it's not recommended, as it's interpreted as a broadcast address 
-in some cases.  However, if that's the way the board is, then go ahead 
-and put a zero in the phy node's reg property.
+Plain "defconfig" should use _something_.  Something that still exists,
+even.
 
--Scott
+> You're welcome to use ebony_defconfig
+
+Yeah, that's what I use again now.
+
+> but that's just as much unmaintained as the rest
+> of arch/ppc and only builds when someone doesn't break it.
+
+That's more often than "never even starts to build" ;-)
+
+>> Josh, I'll look into the build failure now.
+>
+> Masochist ;)
+
+Sadist.
+
+
+Segher
