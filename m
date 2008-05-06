@@ -1,19 +1,21 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [patch 5/5] PS3: Update ps3_defconfig
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Marvin <marvin24@gmx.de>
-In-Reply-To: <200805061014.16229.marvin24@gmx.de>
-References: <20080430215644.655638516@am.sony.com>
-	<200805021545.01676.marvin24@gmx.de> <481F595F.2090407@am.sony.com>
-	<200805061014.16229.marvin24@gmx.de>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-/FjtJNYTTGXeiJHBV62H"
-Date: Tue, 06 May 2008 20:51:45 +1000
-Message-Id: <1210071105.7445.2.camel@localhost>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
-Reply-To: michael@ellerman.id.au
+Return-Path: <segher@kernel.crashing.org>
+In-Reply-To: <20080506061444.GB17798@yookeroo.seuss>
+References: <20080421080353.5d2b3bb9@zod.rchland.ibm.com>
+	<1210010201-28436-1-git-send-email-stephen.neuendorffer@xilinx.com>
+	<1210010201-28436-2-git-send-email-stephen.neuendorffer@xilinx.com>
+	<1210010201-28436-3-git-send-email-stephen.neuendorffer@xilinx.com>
+	<1210010201-28436-4-git-send-email-stephen.neuendorffer@xilinx.com>
+	<20080505175647.4F3AC1C9004A@mail57-sin.bigfish.com>
+	<fa686aa40805052155q43a7ebd8x14c1711bd4c6bbfa@mail.gmail.com>
+	<20080506061444.GB17798@yookeroo.seuss>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <4777b221c199009151e8f5b7b5f16de3@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 4/4] [POWERPC] Xilinx: Framebuffer: Use dcr infrastructure.
+Date: Tue, 6 May 2008 12:56:44 +0200
+To: David Gibson <david@gibson.dropbear.id.au>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,56 +25,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+> Current standard practice is not to represent the DCR bus as node with
+> subnodes for the DCR-controlled devices.  That's because the DCR bus
+> tends to run in addition to other on-chip busses, and some things have
+> to go on another on-chip bus to make sense, but still have DCR control
+> registers (for example the internal bus bridges on 4xx).
 
---=-/FjtJNYTTGXeiJHBV62H
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Yeah.
 
-On Tue, 2008-05-06 at 10:14 +0200, Marvin wrote:
-> Hi Geoff,
->=20
-> On Monday 05 May 2008 21:00:47 you wrote:
-> > Marvin wrote:
-> > > what about adding these defaults:
-> > > 	- CONFIG_SCHED_SMT
-> > > 	- CONFIG_HUGETLBFS (needed by ibm cell sdk)
->=20
-> I'm using these for years now ;-)
->=20
-> > > not sure about:
-> > > 	- CONFIG_SPU_FS_64K_LS
->=20
-> I also have this option enabled. I think you can forget about it, as it s=
-eems=20
-> to improve performance only in some corner cases. I'm not an expert, so m=
-aybe=20
-> asking at cbe-oss-dev would be a better place.=20
+> Arguably for DCR-only devices we should instead have a node
+> representing the DCR bus and just put the devices under it with the
+> DCR number encoded in reg in the normal way.
 
-Assuming it works on PS3 (the HV lets us use 64k pages I take it?) I
-think it should be enabled.
+Right.
 
-cheers
+> But then its
+> inconsistent with the devices that need the other DCR representation.
 
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
+OTOH, it _is_ consistent with all other (non-DCR) devices that way.
 
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
+What you could do right now is to give such DCR-only devices both
+normal "reg" etc., and the "dcr-reg" etc. properties, containing
+both the same info.  If you do that, your device tree will be
+correct (because you got all the standard stuff right), and the
+kernel will like it as well (because it looks for the "dcr-reg"
+stuff).
 
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
+Then maybe later, if/when the kernel supports the standard addressing
+for DCR as well, you could drop the "dcr-reg" things from your DTS.
+Or you could just keep it.
 
---=-/FjtJNYTTGXeiJHBV62H
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+David, will this work, do you think?
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+> Segher and I did toss around some ideas for generalizing the DCR
+> representation to a way of representing that any node has some
+> presence on a bus other than its "primary" parent (e.g. other-bus-reg
+> = <&dcr-bus 0x0d0 0x010 &strange-i2c-control-bus 0xabc>).  Then
+> DCR-only devices would use normal "reg", devices that sit on another
+> bus would sit on that bus and use this representation to show their
+> DCR control registers.  Maybe one day.
 
-iD8DBQBIIDhBdSjSd0sB4dIRAmq5AJ9ME9pdJYY9bVozXvsnz0xtQlYiSgCgsdY6
-J9KNz/r6HAMtNlsKv0t3rHY=
-=DisV
------END PGP SIGNATURE-----
+One day perhaps, yes :-)
 
---=-/FjtJNYTTGXeiJHBV62H--
+It sounds cleaner to split such a prop into separate props per bus.
+Maybe I said the opposite before, heh :-)
+
+
+Segher
