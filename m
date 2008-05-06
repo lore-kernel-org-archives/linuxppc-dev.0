@@ -1,20 +1,14 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Tue, 6 May 2008 16:14:44 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH 4/4] [POWERPC] Xilinx: Framebuffer: Use dcr infrastructure.
-Message-ID: <20080506061444.GB17798@yookeroo.seuss>
-References: <20080421080353.5d2b3bb9@zod.rchland.ibm.com>
-	<1210010201-28436-1-git-send-email-stephen.neuendorffer@xilinx.com>
-	<1210010201-28436-2-git-send-email-stephen.neuendorffer@xilinx.com>
-	<1210010201-28436-3-git-send-email-stephen.neuendorffer@xilinx.com>
-	<1210010201-28436-4-git-send-email-stephen.neuendorffer@xilinx.com>
-	<20080505175647.4F3AC1C9004A@mail57-sin.bigfish.com>
-	<fa686aa40805052155q43a7ebd8x14c1711bd4c6bbfa@mail.gmail.com>
+Return-Path: <tnt@246tnt.com>
+Received: from mailrelay010.isp.belgacom.be (mailrelay010.isp.belgacom.be
+	[195.238.6.177]) by ozlabs.org (Postfix) with ESMTP id D4FB0DDE1B
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 May 2008 16:43:04 +1000 (EST)
+Message-ID: <481FFDF5.7060208@246tnt.com>
+Date: Tue, 06 May 2008 08:43:01 +0200
+From: Sylvain Munaut <tnt@246tnt.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <fa686aa40805052155q43a7ebd8x14c1711bd4c6bbfa@mail.gmail.com>
-Cc: linuxppc-dev@ozlabs.org
+To: linuxppc-dev@ozlabs.org, Grant Likely <grant.likely@secretlab.ca>
+Subject: [Fwd: fix for drivers/serial/mpc52xx_uart.c]
+Content-Type: multipart/mixed; boundary="------------070103090303010302040608"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,83 +18,86 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, May 05, 2008 at 10:55:53PM -0600, Grant Likely wrote:
-> On Mon, May 5, 2008 at 11:56 AM, Stephen Neuendorffer
-> <stephen.neuendorffer@xilinx.com> wrote:
-> > This device contains a dcr interface.  Previously, the dcr interface
-> >  was assumed to be used in mmio mode, and the register space of the dcr
-> >  interface was precomputed and stuffed in the device tree.  This patch
-> >  makes use of the new dcr infrastructure to represent the dcr interface
-> >  as any other dcr interface in the device tree.  This enables the dcr
-> >  interface to be connected directly to a native dcr interface in a
-> >  clean way.
-> >
-> >  In particular, the device tree expected looks like:
-> >
-> >                         dcr_v29_0: dcr@0 {
-> >                                 #address-cells = <1>;
-> >                                 #size-cells = <1>;
-> >                                 compatible = "xlnx,dcr-v29-1.00.a";
-> >                                 VGA_FrameBuffer: tft@80 {
-> >                                         compatible = "xlnx,plb-tft-cntlr-ref-1.00.a";
-> >                                         dcr-parent = <&opb2dcr_bridge_0>;
-> >                                         dcr-reg = < 80 2 >;
-> >                                         xlnx,default-tft-base-addr = <7f>;
-> >                                         xlnx,dps-init = <1>;
-> >                                         xlnx,on-init = <1>;
-> >                                         xlnx,pixclk-is-busclk-divby4 = <1>;
-> >                                 } ;
-> >                         } ;
-> >
-> >                         opb2dcr_bridge_0: opb2dcr-bridge@40700000 {
-> >                                 compatible = "xlnx,opb2dcr-bridge-1.00.b";
-> >                                 dcr-access-method = "mmio";
-> >                                 dcr-controller ;
-> >                                 dcr-mmio-range = < 40700000 1000 >;
-> >                                 dcr-mmio-stride = <4>;
-> >                                 reg = < 40700000 1000 >;
-> >                                 xlnx,family = "virtex2p";
-> >                         } ;
-> 
-> Hmmm, something doesn't quite feel right about this.  The node
-> describing the tft device is a child of the dcr@0 node which is the
-> dcr bus.  However, dcr bindings use dcr-bus and dcr-reg instead of
-> parent-child relationship to specify how to access the dcr registers.
-> So, in this example; if the device is described by tft@80, and the dcr
-> bus is described by opb2dcr-bridge@40700000, then what does dcr@0
-> describe?  (I do understand what they really describe in EDK terms;
-> but I'm looking at it through device tree glasses).
-> 
-> I don't think the presence of a dcr@0 node is a problem, but in this
-> case #size/address-cells doesn't have any meaning (the child doesn't
-> have a reg property) and it looks like it should be a child of the
-> opb2dcr-bridge node (otherwise, what is it attached to?).
+This is a multi-part message in MIME format.
+--------------070103090303010302040608
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-Yes, indeed.  If dcr@0 is representing the DCR bus / interface it
-should really have the dcr-access-method property and have all the
-dcr-parent handles point at it.
+Patch, obviously correct, sent to me personally instead of the list.
 
-Current standard practice is not to represent the DCR bus as node with
-subnodes for the DCR-controlled devices.  That's because the DCR bus
-tends to run in addition to other on-chip busses, and some things have
-to go on another on-chip bus to make sense, but still have DCR control
-registers (for example the internal bus bridges on 4xx).
+    Sylvain
 
-Arguably for DCR-only devices we should instead have a node
-representing the DCR bus and just put the devices under it with the
-DCR number encoded in reg in the normal way.  But then its
-inconsistent with the devices that need the other DCR representation.
+--------------070103090303010302040608
+Content-Type: message/rfc822;
+ name="fix for drivers/serial/mpc52xx_uart.c.eml"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="fix for drivers/serial/mpc52xx_uart.c.eml"
 
-Segher and I did toss around some ideas for generalizing the DCR
-representation to a way of representing that any node has some
-presence on a bus other than its "primary" parent (e.g. other-bus-reg
-= <&dcr-bus 0x0d0 0x010 &strange-i2c-control-bus 0xabc>).  Then
-DCR-only devices would use normal "reg", devices that sit on another
-bus would sit on that bus and use this representation to show their
-DCR control registers.  Maybe one day.
+Return-Path: <sintonen@iki.fi>
+X-Spam-Checker-Version: SpamAssassin 3.1.3-gr0 (2006-06-01) on
+	leia.blacksnow.net
+X-Spam-Level: 
+X-Spam-Status: No, score=-1.1 required=4.0 tests=BAYES_05
+	autolearn=unavailable version=3.1.3-gr0
+X-Original-To: tnt@246tNt.com
+Delivered-To: tnt@leia.blacksnow.net
+Received: from smtp10.kymp.net (smtp10.kymp.net [80.248.96.136])
+	by leia.blacksnow.net (Postfix) with ESMTP id BEA8D752E
+	for <tnt@246tNt.com>; Mon,  5 May 2008 21:42:05 +0200 (CEST)
+Received: from adsl-215-228-47.kymp.net ([82.215.228.47])
+	by smtp10.kymp.net (8.13.6/8.13.6) with ESMTP id m45KdEsC032038
+	for <tnt@246tNt.com>; Mon, 5 May 2008 23:39:14 +0300
+Date: Mon, 5 May 2008 23:39:14 +0300 (EEST)
+From: Harry Sintonen <sintonen@iki.fi>
+X-X-Sender: p@abit.home
+To: tnt@246tNt.com
+Subject: fix for drivers/serial/mpc52xx_uart.c
+Message-ID: <Pine.LNX.4.64.0805052325120.4331@abit.home>
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="656640-82358496-1210019954=:4331"
+X-Virus-Scanned: by amavisd-new
 
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
+
+--656640-82358496-1210019954=:4331
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+
+Here is a fix for the unterminated mpc52xx_uart_of_match array when 
+CONFIG_PPC_MPC512x is not defined. Should be quite self explonary, but if 
+not feel free to bug me about it.
+
+Patch applies against 2.6.25 and 2.6.25.1 at least.
+
+Patch can be credited to Harry Sintonen <sintonen@iki.fi>.
+
+
+   Regards,
 -- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+l=2001;main(i){float o,O,_,I,D;for(;O=I=l/571.-1.75,l;)for(putchar(--l%80?
+i:10),o=D=l%80*.05-2,i=31;_=O*O,O=2*o*O+I,o=o*o-_+D,o+_+_<4+D&i++<87;);puts
+("  Harry 'Piru' Sintonen <sintonen@iki.fi> http://www.iki.fi/sintonen");}
+--656640-82358496-1210019954=:4331
+Content-Type: TEXT/plain; charset=US-ASCII; name=patch.txt
+Content-Transfer-Encoding: BASE64
+Content-ID: <Pine.LNX.4.64.0805052339140.4331@abit.home>
+Content-Description: 
+Content-Disposition: attachment; filename=patch.txt
+
+LS0tIGRyaXZlcnMvc2VyaWFsL21wYzUyeHhfdWFydC5jLW9yaWcJMjAwOC0w
+NS0wNSAyMjo1MDo1Ni4wMDAwMDAwMDAgKzAzMDANCisrKyBkcml2ZXJzL3Nl
+cmlhbC9tcGM1Mnh4X3VhcnQuYwkyMDA4LTA1LTA1IDIyOjUxOjU2LjAwMDAw
+MDAwMCArMDMwMA0KQEAgLTEyMjAsMTAgKzEyMjAsMTAgQEANCiAJeyAuY29t
+cGF0aWJsZSA9ICJtcGM1MjAwLXNlcmlhbCIsIC5kYXRhID0gJm1wYzUyeHhf
+cHNjX29wcywgfSwNCiAjZW5kaWYNCiAjaWZkZWYgQ09ORklHX1BQQ19NUEM1
+MTJ4DQogCXsgLmNvbXBhdGlibGUgPSAiZnNsLG1wYzUxMjEtcHNjLXVhcnQi
+LCAuZGF0YSA9ICZtcGM1MTJ4X3BzY19vcHMsIH0sDQotCXt9LA0KICNlbmRp
+Zg0KKwl7fSwNCiB9Ow0KIA0KIHN0YXRpYyBpbnQgX19kZXZpbml0DQogbXBj
+NTJ4eF91YXJ0X29mX3Byb2JlKHN0cnVjdCBvZl9kZXZpY2UgKm9wLCBjb25z
+dCBzdHJ1Y3Qgb2ZfZGV2aWNlX2lkICptYXRjaCkNCg==
+
+--656640-82358496-1210019954=:4331--
+
+
+--------------070103090303010302040608--
