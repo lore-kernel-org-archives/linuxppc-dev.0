@@ -1,23 +1,22 @@
-Return-Path: <wsa@pengutronix.de>
-Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
-	[83.236.181.26]) by ozlabs.org (Postfix) with ESMTP id 2237DDE0C0
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 May 2008 03:03:55 +1000 (EST)
-Date: Tue, 6 May 2008 17:40:54 +0200
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: Jochen Friedrich <jochen@scram.de>
-Subject: Re: [i2c] [PATCH6/7] i2c: adds support for i2c bus on Freescale
-	CPM1/CPM2 controllers
-Message-ID: <20080506154054.GC4265@pengutronix.de>
-References: <47FF71A9.4010907@scram.de> <20080506135113.GA4265@pengutronix.de>
-	<4820770B.1010002@scram.de>
+Return-Path: <stephen.neuendorffer@xilinx.com>
+Received: from WA4EHSOBE001.bigfish.com (outbound-wa4.frontbridge.com
+	[216.32.181.16]) by ozlabs.org (Postfix) with ESMTP id 3CAE3DDD01
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 May 2008 03:33:47 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="iFRdW5/EC4oqxDHL"
-In-Reply-To: <4820770B.1010002@scram.de>
-Cc: Scott Wood <scottwood@freescale.com>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Linux I2C <i2c@lm-sensors.org>, "Kernel,
-	Linux" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="US-ASCII"
+Subject: RE: [PATCH 2/4] [POWERPC] Xilinx: Virtex: Enable dcr for MMIO
+	andNATIVE
+Date: Tue, 6 May 2008 10:33:43 -0700
+In-Reply-To: <1210032708.21644.131.camel@pasglop>
+References: <20080421080353.5d2b3bb9@zod.rchland.ibm.com>
+	<1210010201-28436-1-git-send-email-stephen.neuendorffer@xilinx.com>
+	<1210010201-28436-2-git-send-email-stephen.neuendorffer@xilinx.com>
+	<20080505175646.BDF3D11806D@mail196-wa4.bigfish.com>
+	<1210032708.21644.131.camel@pasglop>
+From: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
+To: <benh@kernel.crashing.org>
+Message-ID: <20080506173344.974BBC300BB@mail2-wa4.bigfish.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,33 +27,50 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---iFRdW5/EC4oqxDHL
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Yes, but this is a symptom of a separate problem, which is that it is
+sometimes valuable to generate an optimized kernel configuration for a
+particular FPGA system.  First order, I'm more concerned about getting a
+kernel which is generic and can work with (more or less) any device
+tree.
 
-On Tue, May 06, 2008 at 05:19:39PM +0200, Jochen Friedrich wrote:
-> setbits8() and clrbits8() use a bitmask as second argument.
-Ouch! Guess my mind wanted to read in_8 and out_8 for some reason...
-Sorry and thanks for clarifying!
+Steve
 
-   Wolfram
-
---=20
-  Dipl.-Ing. Wolfram Sang | http://www.pengutronix.de
- Pengutronix - Linux Solutions for Science and Industry
-
---iFRdW5/EC4oqxDHL
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFIIHwGD27XaX1/VRsRAgMAAKCuMHYpHITge6JsAJL5zq3rxHWDzACeLVXM
-EYriBQiZ3qWFJdwjM5mfXC8=
-=zDgZ
------END PGP SIGNATURE-----
-
---iFRdW5/EC4oqxDHL--
+> -----Original Message-----
+> From: Benjamin Herrenschmidt [mailto:benh@kernel.crashing.org]
+> Sent: Monday, May 05, 2008 5:12 PM
+> To: Stephen Neuendorffer
+> Cc: jwboyer@linux.vnet.ibm.com; grant.likely@secretlab.ca;
+linuxppc-dev@ozlabs.org
+> Subject: Re: [PATCH 2/4] [POWERPC] Xilinx: Virtex: Enable dcr for MMIO
+andNATIVE
+>=20
+>=20
+> On Mon, 2008-05-05 at 10:56 -0700, Stephen Neuendorffer wrote:
+> > FPGA designs may have need of both MMIO-based and NATIVE-based dcr
+> > interfaces.
+>=20
+> You say _may_ ... wouldn't it be better if it was thus left to a given
+> virtex based platform to enable DCR_MMIO if it uses it and leave only
+> NATIVE by default ?
+>=20
+> > Signed-off-by: Stephen Neuendorffer
+<stephen.neuendorffer@xilinx.com>
+> > ---
+> >  arch/powerpc/platforms/40x/Kconfig |    2 ++
+> >  1 files changed, 2 insertions(+), 0 deletions(-)
+> >
+> > diff --git a/arch/powerpc/platforms/40x/Kconfig
+b/arch/powerpc/platforms/40x/Kconfig
+> > index a9260e2..b8e06df 100644
+> > --- a/arch/powerpc/platforms/40x/Kconfig
+> > +++ b/arch/powerpc/platforms/40x/Kconfig
+> > @@ -123,6 +123,8 @@ config 405GPR
+> >
+> >  config XILINX_VIRTEX
+> >  	bool
+> > +	select PPC_DCR_MMIO
+> > +	select PPC_DCR_NATIVE
+> >
+> >  config XILINX_VIRTEX_II_PRO
+> >  	bool
+>=20
