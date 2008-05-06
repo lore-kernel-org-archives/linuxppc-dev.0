@@ -1,22 +1,18 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 2C26BDDF04
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 May 2008 07:34:50 +1000 (EST)
-Message-ID: <4820CF2A.5040301@freescale.com>
-Date: Tue, 06 May 2008 16:35:38 -0500
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Ronald Madrid <ron_madrid@hotmail.com>
-Subject: Re: ifconfig MPC8313
-References: <BAY114-W949ADEBC809E7A60716CCF4D60@phx.gbl>
-	<4820CB5D.3000703@freescale.com>
-	<BAY114-W46AEF8E266395E333E7FCF4D60@phx.gbl>
-In-Reply-To: <BAY114-W46AEF8E266395E333E7FCF4D60@phx.gbl>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 54568DDE24
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 May 2008 07:40:47 +1000 (EST)
+In-Reply-To: <20080506150955.0fdcaa85@zod.rchland.ibm.com>
+References: <20080506150955.0fdcaa85@zod.rchland.ibm.com>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <e568c51ffa5f865094b26827ef959aa1@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: arch/ppc is broken
+Date: Tue, 6 May 2008 23:39:34 +0200
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -27,12 +23,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Ronald Madrid wrote:
-> I'm guessing by device tree you mean the .dts file?  I'm using a 
-> modified version of the mpc8313erdb.dts with minor changes (to the local 
-> bus only).  Here is a copy of it.
+> Every arch/ppc defconfig I built today failed.  Someone broke it.
 
-OK, according to that device tree, eth0 is associated with PHY address 
-1.  Is that correct on your board?
+On a related note, arch/ppc defconfig doesn't even configure anymore;
+common_defconfig was removed, but it is still the default.  What config
+should we use as default now?
 
--Scott
+Josh, I'll look into the build failure now.
+
+
+Segher
