@@ -1,33 +1,20 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+Return-Path: <rick.jones2@hp.com>
+Received: from g4t0016.houston.hp.com (g4t0016.houston.hp.com [15.201.24.19])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 4479EDE030
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 May 2008 06:11:13 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m46K8Eqp014785
-	for <linuxppc-dev@ozlabs.org>; Tue, 6 May 2008 16:08:15 -0400
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m46KB9MS218698
-	for <linuxppc-dev@ozlabs.org>; Tue, 6 May 2008 14:11:09 -0600
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m46KB9Dr028293
-	for <linuxppc-dev@ozlabs.org>; Tue, 6 May 2008 14:11:09 -0600
-Received: from zod.rchland.ibm.com (wecm-9-67-192-35.wecm.ibm.com
-	[9.67.192.35])
-	by d03av03.boulder.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	m46KB8aJ028260
-	for <linuxppc-dev@ozlabs.org>; Tue, 6 May 2008 14:11:08 -0600
-Date: Tue, 6 May 2008 15:09:55 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Subject: arch/ppc is broken
-Message-ID: <20080506150955.0fdcaa85@zod.rchland.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	(Client CN "bastion.smtp.hp.com", Issuer "RSA Data Security,
+	Inc." (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id A0547DE6A2
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 May 2008 06:18:45 +1000 (EST)
+Message-ID: <4820BA72.3090903@hp.com>
+Date: Tue, 06 May 2008 13:07:14 -0700
+From: Rick Jones <rick.jones2@hp.com>
+MIME-Version: 1.0
+To: avorontsov@ru.mvista.com
+Subject: Re: [RFC] gianfar: low gigabit throughput
+References: <20080506192008.GA30148@polina.dev.rtsoft.ru>
+In-Reply-To: <20080506192008.GA30148@polina.dev.rtsoft.ru>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,22 +24,169 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Every arch/ppc defconfig I built today failed.  Someone broke it.
-Those interested in fixing it might want to see why.  I suspect the
+Anton Vorontsov wrote:
+> Hi all,
+> 
+> Down here few question regarding networking throughput, I would
+> appreciate any thoughts or ideas.
+> 
+> On the MPC8315E-RDB board (CPU at 400MHz, CSB at 133 MHz) I'm observing
+> relatively low TCP throughput using gianfar driver...
 
- ppc/powerpc: use kbuild.h instead of defining macros in asm-offsets.c
+What is the "target" of the test - is it another of those boards, or 
+something else?
 
-is responsible, but I have no evidence of that.
+> 
+> The maximum value I've seen with the current kernels is 142 Mb/s of TCP
+> and 354 Mb/s of UDP (NAPI and interrupts coalescing enabled):
+> 
+>   root@b1:~# netperf -l 10 -H 10.0.1.1 -t TCP_STREAM -- -m 32768 -s 157344 -S 157344
+>   TCP STREAM TEST to 10.0.1.1
+>   #Cpu utilization 0.10
+>   Recv   Send    Send
+>   Socket Socket  Message  Elapsed
+>   Size   Size    Size     Time     Throughput
+>   bytes  bytes   bytes    secs.    10^6bits/sec
+> 
+>   206848 212992  32768    10.00     142.40
+> 
+>   root@b1:~# netperf -l 10 -H 10.0.1.1 -t UDP_STREAM -- -m 32768 -s 157344 -S 157344
+>   UDP UNIDIRECTIONAL SEND TEST to 10.0.1.1
+>   #Cpu utilization 100.00
+>   Socket  Message  Elapsed      Messages
+>   Size    Size     Time         Okay Errors   Throughput
+>   bytes   bytes    secs            #      #   10^6bits/sec
+> 
+>   212992   32768   10.00       13539      0     354.84
+>   206848           10.00       13539            354.84
+> 
 
-josh
+I have _got_ to make CPU utilization enabled by default one of these 
+days :)  At least for mechanisms which don't require calibration.
 
-/home/jwboyer/src/linux-2.6/arch/ppc/kernel/ppc_ksyms.c:152: error: '__flush_icache_range' undeclared here (not in a function)
-/home/jwboyer/src/linux-2.6/arch/ppc/kernel/ppc_ksyms.c:152: warning: type defaults to 'int' in declaration of '__flush_icache_range'
-/home/jwboyer/src/linux-2.6/arch/ppc/kernel/ppc_ksyms.c:153: error: 'flush_dcache_range' undeclared here (not in a function)
-/home/jwboyer/src/linux-2.6/arch/ppc/kernel/ppc_ksyms.c:153: warning: type defaults to 'int' in declaration of 'flush_dcache_range'
-/home/jwboyer/src/linux-2.6/arch/ppc/kernel/ppc_ksyms.c:154: error: 'flush_icache_user_range' undeclared here (not in a function)
-/home/jwboyer/src/linux-2.6/arch/ppc/kernel/ppc_ksyms.c:154: warning: type defaults to 'int' in declaration of 'flush_icache_user_range'
-/home/jwboyer/src/linux-2.6/arch/ppc/kernel/ppc_ksyms.c:155: error: 'flush_dcache_page' undeclared here (not in a function)
-/home/jwboyer/src/linux-2.6/arch/ppc/kernel/ppc_ksyms.c:155: warning: type defaults to 'int' in declaration of 'flush_dcache_page'
-make[2]: *** [arch/ppc/kernel/ppc_ksyms.o] Error 1
-/home/jwboyer/src/linux-2.6/arch/powerpc/kernel/prom_init.c:130: error: expected specifier-qualifier-list before 'ihandle'
+> Is this normal?
+
+Does gianfar do TSO?  If not, what happens when you tell UDP_STREAM to 
+send 1472 byte messages to bypass IP fragmentation?
+
+While stock netperf won't report what the socket buffer size becomes 
+when you allow autotuning to rear its head, you can take the top of 
+trunk and enable the "omni" tests (./configure --enable-omni) and those 
+versions of *_STREAM etc can report what the socket buffer size was at 
+the beginning and at the end of the test. You can let the stack autotune 
+and see if anything changes there.  You can do the same with stock 
+netperf, just it will only report the initial socket buffer sizes...
+
+> netperf running in loopback gives me 329 Mb/s of TCP throughput:
+> 
+>   root@b1:~# netperf -l 10 -H 127.0.0.1 -t TCP_STREAM -- -m 32768 -s 157344 -S 157344
+>   TCP STREAM TEST to 127.0.0.1
+>   #Cpu utilization 100.00
+>   #Cpu utilization 100.00
+>   Recv   Send    Send
+>   Socket Socket  Message  Elapsed
+>   Size   Size    Size     Time     Throughput
+>   bytes  bytes   bytes    secs.    10^6bits/sec
+> 
+>   212992 212992  32768    10.00     329.60
+> 
+> 
+> May I consider this as a something that is close to the Linux'
+> theoretical maximum for this setup? Or this isn't reliable test?
+
+I'm always leery of using a loopback number.  It excercises both send 
+and receive at the same time, but without the driver.  Also, lo tends to 
+have a much larger MTU than a "standard" NIC and if that NIC doesn't to 
+TSO and LRO that can be a big difference in the number of times up and 
+down the stack per KB transferred.
+
+> I can compare with teh MPC8377E-RDB (very similar board - exactly the same
+> ethernet phy, the same drivers are used, i.e. everything is the same from
+> the ethernet stand point), but running at 666 MHz, CSB at 333MHz:
+> 
+>          |CPU MHz|BUS MHz|UDP Mb/s|TCP Mb/s|
+>   ------------------------------------------
+>   MPC8377|    666|    333|     646|     264|
+>   MPC8315|    400|    133|     354|     142|
+>   ------------------------------------------
+>   RATIO  |    1.6|    2.5|     1.8|     1.8|
+> 
+> It seems that things are really dependant on the CPU/CSB speed.
+
+What is the nature of the DMA stream between the two tests?  I find it 
+interesting that the TCP Mb/s went up by more than the CPU MHz and 
+wonder how much the Bus MHz came into play there - perhaps there were 
+more DMA's to setup or across a broader memory footprint for TCP than 
+for UDP.
+
+> 
+> I've tried to tune gianfar driver in various ways... and it gave
+> some positive results with this patch:
+> 
+> diff --git a/drivers/net/gianfar.h b/drivers/net/gianfar.h
+> index fd487be..b5943f9 100644
+> --- a/drivers/net/gianfar.h
+> +++ b/drivers/net/gianfar.h
+> @@ -123,8 +123,8 @@ extern const char gfar_driver_version[];
+>  #define GFAR_10_TIME    25600
+>  
+>  #define DEFAULT_TX_COALESCE 1
+> -#define DEFAULT_TXCOUNT	16
+> -#define DEFAULT_TXTIME	21
+> +#define DEFAULT_TXCOUNT	80
+> +#define DEFAULT_TXTIME	105
+>  
+>  #define DEFAULT_RXTIME	21
+
+No ethtool coalescing tuning support for gianfar?-)
+
+> Basically this raises the tx interrupts coalescing threshold (raising
+> it more didn't help, as well as didn't help raising rx thresholds).
+> Now:
+> 
+> root@b1:~# netperf -l 3 -H 10.0.1.1 -t TCP_STREAM -- -m 32768 -s 157344 -S 157344
+> TCP STREAM TEST to 10.0.1.1
+> #Cpu utilization 100.00
+> Recv   Send    Send
+> Socket Socket  Message  Elapsed
+> Size   Size    Size     Time     Throughput
+> bytes  bytes   bytes    secs.    10^6bits/sec
+> 
+> 206848 212992  32768    3.00      163.04
+> 
+> 
+> That is +21 Mb/s (14% up). Not fantastic, but good anyway.
+> 
+> As expected, the latency increased too:
+> 
+> Before the patch:
+> 
+> --- 10.0.1.1 ping statistics ---
+> 20 packets transmitted, 20 received, 0% packet loss, time 18997ms
+> rtt min/avg/max/mdev = 0.108/0.124/0.173/0.022 ms
+> 
+> After:
+> 
+> --- 10.0.1.1 ping statistics ---
+> 22 packets transmitted, 22 received, 0% packet loss, time 20997ms
+> rtt min/avg/max/mdev = 0.158/0.167/0.182/0.004 ms
+> 
+> 
+> 34% up... heh. Should we sacrifice the latency in favour of throughput?
+> Is 34% latency growth bad thing? What is worse, lose 21 Mb/s or 34% of
+> latency? ;-)
+
+Well, I'm not always fond of that sort of trade-off:
+
+ftp://ftp.cup.hp.com/dist/networking/briefs/
+
+there should be a nic latency vs tput writeup there.
+
+> 
+> 
+> Thanks in advance,
+> 
+> p.s. Btw, the patch above helps even better on the on the -rt kernels,
+> since on the -rt kernels the throughput is near 100 Mb/s, with the
+> patch the throughput is close to 140 Mb/s.
+> 
