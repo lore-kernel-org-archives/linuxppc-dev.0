@@ -1,19 +1,20 @@
-Return-Path: <gerhard_pircher@gmx.net>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id 40411DDEE2
-	for <linuxppc-dev@ozlabs.org>; Tue,  6 May 2008 17:51:27 +1000 (EST)
-Content-Type: text/plain; charset="us-ascii"
-Date: Tue, 06 May 2008 09:51:15 +0200
-From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
-In-Reply-To: <1210031058.21644.120.camel@pasglop>
-Message-ID: <20080506075115.269150@gmx.net>
+Return-Path: <sha@pengutronix.de>
+Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
+	[83.236.181.26]) by ozlabs.org (Postfix) with ESMTP id 2AF97DDEF1
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 May 2008 18:05:35 +1000 (EST)
+Date: Tue, 6 May 2008 10:08:11 +0200
+From: Sascha Hauer <s.hauer@pengutronix.de>
+To: Jon Smirl <jonsmirl@gmail.com>
+Subject: Re: [PATCH] add Phytec pcm030 board support
+Message-ID: <20080506080811.GB4326@pengutronix.de>
+References: <20080425134805.GP6692@pengutronix.de>
+	<9e4733910805051001h2c02fd57yb246091af8bf5a7d@mail.gmail.com>
+	<fa686aa40805051008t656e7e11pc469b6a43241c63f@mail.gmail.com>
+	<9e4733910805051022q7c2f868bw80173fd93e92b907@mail.gmail.com>
 MIME-Version: 1.0
-References: <a265241c0805051123h595123edrd46bf65a8099c3c2@mail.gmail.com>	
-	<6DA6B1DA-11B5-4B89-88AD-561B4D17B33B@kernel.crashing.org>	
-	<20080505195054.172000@gmx.net> <1210031058.21644.120.camel@pasglop>
-Subject: Re: [PATCH] Sam440ep support
-To: benh@kernel.crashing.org
-Cc: Takashi Iwai <tiwai@suse.de>, linuxppc-dev@ozlabs.org, cjg@cruxppc.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <9e4733910805051022q7c2f868bw80173fd93e92b907@mail.gmail.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,49 +24,65 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
--------- Original-Nachricht --------
-> Datum: Tue, 06 May 2008 09:44:18 +1000
-> Von: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> An: Gerhard Pircher <gerhard_pircher@gmx.net>
-> CC: Kumar Gala <galak@kernel.crashing.org>, cjg@cruxppc.org, linuxppc-dev@ozlabs.org
-> Betreff: Re: [PATCH] Sam440ep support
-
+On Mon, May 05, 2008 at 01:22:40PM -0400, Jon Smirl wrote:
+> On 5/5/08, Grant Likely <grant.likely@secretlab.ca> wrote:
+> > On Mon, May 5, 2008 at 11:01 AM, Jon Smirl <jonsmirl@gmail.com> wrote:
+> >  > Did this get fixed somehow? I used to need this to boot a pcm030.
+> >
+> >
+> > I'm sorry; I'm at a lost as to context.  Are you asking for this patch
+> >  to be applied?  Or are you asking if this has been addressed in
+> >  another way?
 > 
-> On Mon, 2008-05-05 at 21:50 +0200, Gerhard Pircher wrote:
-> > This is a (bad) hack that I also use on the AmigaOne to get the ALSA
-> > sound drivers working with DMA, because ALSA doesn't work with
-> > dma-noncoherent.c. The problem is the "nopage" mechanism, which fails
-> > with non coherent DMA allocations due to their own virtual address
-> > space (correct me, if I'm wrong).
-> > 
-> > See this thread for more info:
-> > http://readlist.com/lists/vger.kernel.org/linux-kernel/45/226541.html
-> > 
-> > This is a general problem that affects all powerpc boards that use
-> > dma-noncoherent.c with ALSA PCI drivers.
-> 
-> The link above doesn't provide any useful information on the problem and
-> it contains itself a non working link...
-Sorry, I didn't check the embedded link. This one should work:
-http://www.uwsg.iu.edu/hypermail/linux/kernel/0406.2/0801.html
+> Sascha said the pcm030 was working with the simple dts. I always
+> needed that patch to get a pcm030 to boot. Sasha's company wrote the
+> patch. I'm just wondering how it got handled, do we still need the
+> patch or did he come up with some other solution.
 
-IIRC the problem is the mmaping of non coherent DMA allocations, as you
-already know. The link above points to a very old (from 2004) and quite
-long thread where the correct DMA API for mmaping DMA allocations was
-discussed.
+Yes, it is working with the simple dts except for the flash support. For
+this we need the Flash description in the oftree.
 
-> Can somebody explains exactly what's going on ? That shouldn't be hard
-> to fix. I can't believe the problem has been around for 2 years and
-> nobody actually bothered fixing it properly.
-Takashi Iwai posted a preliminary patch a long time ago. I tested it on my
-machine and it failed with non coherent scatter-gather DMA allocations
-(I guess almost all ALSA PCI drivers use SG DMA?).
+> >  >
+> >  >  diff --git a/fs/jffs2/scan.c b/fs/jffs2/scan.c
+> >  >  index 272872d..c982adc 100644
+> >  >  --- a/fs/jffs2/scan.c
+> >  >  +++ b/fs/jffs2/scan.c
+> >  >  @@ -16,6 +16,7 @@
+> >  >   #include <linux/pagemap.h>
+> >  >   #include <linux/crc32.h>
+> >  >   #include <linux/compiler.h>
+> >  >  +#include <asm/io.h>
+> >  >   #include "nodelist.h"
+> >  >   #include "summary.h"
+> >  >   #include "debug.h"
+> >  >  @@ -505,7 +506,7 @@ static int jffs2_scan_eraseblock (struct
+> >  >  jffs2_sb_info *c, struct jffs2_eraseblo
+> >  >                                         sumptr = kmalloc(sumlen, GFP_KERNEL);
+> >  >                                         if (!sumptr)
+> >  >                                                 return -ENOMEM;
+> >  >  -                                       memcpy(sumptr + sumlen -
+> >  >  buf_len, buf + buf_size - buf_len, buf_len);
+> >  >  +                                       memcpy_fromio(sumptr + sumlen
+> >  >  - buf_len, buf + buf_size - buf_len, buf_len);
+> >  >                                 }
+> >  >                                 if (buf_len < sumlen) {
+> >  >                                         /* Need to read more so that
+> >  >  the entire summary node is present */
+> >  >  @@ -1035,7 +1036,7 @@ static int jffs2_scan_dirent_node(struct
+> >  >  jffs2_sb_info *c, struct jffs2_eraseblo
+> >  >         if (!fd) {
+> >  >                 return -ENOMEM;
+> >  >         }
+> >  >  -       memcpy(&fd->name, rd->name, checkedlen);
+> >  >  +       memcpy_fromio(&fd->name, rd->name, checkedlen);
 
-Thanks!
+This patch is needed because memcpy uses unaligned accesses whereas
+memcpy_fromio only uses aligned accesses on the io side. See this
+thread: http://ozlabs.org/pipermail/linuxppc-embedded/2006-April/022544.html
 
-Gerhard
 
 -- 
-GMX startet ShortView.de. Hier findest Du Leute mit Deinen Interessen!
-Jetzt dabei sein: http://www.shortview.de/?mc=sv_ext_mf@gmx
+Pengutronix e.K. - Linux Solutions for Science and Industry
+-----------------------------------------------------------
+Kontakt-Informationen finden Sie im Header dieser Mail oder
+auf der Webseite -> http://www.pengutronix.de/impressum/ <-
