@@ -1,31 +1,23 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
+Return-Path: <jochen@scram.de>
+Received: from mail.scram.de (mail0.scram.de [78.47.204.202])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 4292ADDEDB
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 May 2008 01:02:32 +1000 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e6.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m46F4c9j012043
-	for <linuxppc-dev@ozlabs.org>; Tue, 6 May 2008 11:04:38 -0400
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m46F2SPx259878
-	for <linuxppc-dev@ozlabs.org>; Tue, 6 May 2008 11:02:28 -0400
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m46F2SUd002832
-	for <linuxppc-dev@ozlabs.org>; Tue, 6 May 2008 11:02:28 -0400
-Date: Tue, 6 May 2008 10:01:17 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Stefan Roese <sr@denx.de>
-Subject: Re: [PATCH] [POWERPC] 4xx: Fix problem with new TLB storage
-	attibute fields on 440x6 core
-Message-ID: <20080506100117.22c88b09@zod.rchland.ibm.com>
-In-Reply-To: <1209970399-4464-1-git-send-email-sr@denx.de>
-References: <1209970399-4464-1-git-send-email-sr@denx.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+	(Client CN "mail.scram.de", Issuer "scram e.V. CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 2DE3FDDF13
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 May 2008 01:19:57 +1000 (EST)
+Message-ID: <4820770B.1010002@scram.de>
+Date: Tue, 06 May 2008 17:19:39 +0200
+From: Jochen Friedrich <jochen@scram.de>
+MIME-Version: 1.0
+To: Wolfram Sang <w.sang@pengutronix.de>
+Subject: Re: [i2c] [PATCH6/7] i2c: adds support for i2c bus on
+	Freescale	CPM1/CPM2 controllers
+References: <47FF71A9.4010907@scram.de> <20080506135113.GA4265@pengutronix.de>
+In-Reply-To: <20080506135113.GA4265@pengutronix.de>
+Content-Type: text/plain; charset=ISO-8859-15
+Cc: Scott Wood <scottwood@freescale.com>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Linux I2C <i2c@lm-sensors.org>, "Kernel,
+	Linux" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,27 +27,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon,  5 May 2008 08:53:19 +0200
-Stefan Roese <sr@denx.de> wrote:
+Hi Wolfram,
 
-> The new 440x6 core used on AMCC 460EX/GT introduces new storage attibure
-> fields to the TLB2 word. Those are:
-> 
-> Bit  11   12   13   14   15
->      WL1  IL1I IL1D IL2I IL2D
-> 
-> With these bits the cache (L1 and L2) can be configured in a more flexible
-> way, instruction- and data-cache independently now. The "old" I and W bits
-> are still available and setting these old bits will automically set these
-> new bits too (for backward compatibilty).
-> 
-> The current code does not clear these fields resulting in disabling the cache
-> by chance. This patch now makes sure that these new bits are cleared when
-> the TLB2 word is written.
-> 
-> Signed-off-by: Stefan Roese <sr@denx.de>
+>> +	/* Begin transmission */
+>> +	setbits8(&i2c_reg->i2com, 0x80);
+> Hardcoded value. (I also wonder if 0x81 might be more suitable, as it
+> keeps the "be-a-master"-bit set. Still, both values work with my setup.)
 
-Finally catching back up with email.  This looks like .26 material,
-correct?
+>> +#ifdef I2C_CHIP_ERRATA
+>> +	/*
+>> +	 * Chip errata, clear enable. This is not needed on rev D4 CPUs.
+>> +	 * Disabling I2C too early may cause too short stop condition
+>> +	 */
+>> +	udelay(4);
+>> +	clrbits8(&i2c_reg->i2mod, 1);
+> I was unable to find the corresponding errata document, still I wonder
+> if it is a 0 which should have been written? The text says "clear" and
+> according to the reference manual, this means the bit should be 0.
 
-josh
+setbits8() and clrbits8() use a bitmask as second argument.
+
+setbits8(&i2c_reg->i2com, 0x80) will set bit 7 on the i2com register but 
+leave bit 0 untouched. Likewise, clrbits8(&i2c_reg->i2mod, 1) will clear bit 0.
+
+Thanks,
+Jochen
