@@ -1,18 +1,19 @@
-Return-Path: <segher@kernel.crashing.org>
-In-Reply-To: <20080506140656.7cff910c.sfr@canb.auug.org.au>
-References: <20080425134805.GP6692@pengutronix.de>
-	<20080505011607.GA9349@yookeroo.seuss>
-	<1328d38bed8a830af756850bbaf2e8ad@kernel.crashing.org>
-	<fa686aa40805051238n7df0c24fmc9fabeef4b7f6c63@mail.gmail.com>
-	<20080506140656.7cff910c.sfr@canb.auug.org.au>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <4df1ef3575f95f1daf2d67e237ead667@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] add Phytec pcm030 board support
-Date: Tue, 6 May 2008 07:51:55 +0200
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id EBD53DDE06
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 May 2008 16:11:16 +1000 (EST)
+Date: Tue, 6 May 2008 16:11:10 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Bryan O'Donoghue <bodonoghue@codehermit.ie>
+Subject: Re: [PATCH] Add support for Analogue & Micro ASP837E board
+Message-Id: <20080506161110.02c2f974.sfr@canb.auug.org.au>
+In-Reply-To: <20080506032813.19e2d07a@neuromancer.mindspace>
+References: <20080506032813.19e2d07a@neuromancer.mindspace>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Tue__6_May_2008_16_11_10_+1000_DuZ/+tEO+Vm7ra8b"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,13 +23,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> PowerPC? check.
->> Sparc? check.
->> Microblaze? check.
+--Signature=_Tue__6_May_2008_16_11_10_+1000_DuZ/+tEO+Vm7ra8b
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi Bryan,
+
+On Tue, 6 May 2008 03:28:13 +0100 Bryan O'Donoghue <bodonoghue@codehermit.i=
+e> wrote:
 >
-> OLPC? check?
+> +static void __init asp834x_init_IRQ(void)
+> +{
+> +	struct device_node *np;
+> +
+> +	np =3D of_find_node_by_type(NULL, "ipic");
+> +	if (!np)
+> +		return;
+> +
+> +	ipic_init(np, 0);
 
-No check.  The kernel hardly uses the device tree at all, there.
+You need an "of_node_put(np)" here to drop the reference gained in
+"of_find_node_by_type".
 
+> +static struct of_device_id asp8347_ids[] =3D {
 
-Segher
+Please make this __initdata.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Tue__6_May_2008_16_11_10_+1000_DuZ/+tEO+Vm7ra8b
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFIH/aCTgG2atn1QN8RAntHAJ9QB0SVMTJU99RSBM1NsoBrVVqjtgCeLSHQ
+zq6GwSdjVD5nnFneOvVIKIU=
+=1oXH
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__6_May_2008_16_11_10_+1000_DuZ/+tEO+Vm7ra8b--
