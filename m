@@ -1,24 +1,18 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C3CF1DDE1E
-	for <linuxppc-dev@ozlabs.org>; Tue,  6 May 2008 20:13:58 +1000 (EST)
-Subject: Re: [PATCH] Sam440ep support
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Gerhard Pircher <gerhard_pircher@gmx.net>
-In-Reply-To: <20080506091622.269180@gmx.net>
-References: <a265241c0805051123h595123edrd46bf65a8099c3c2@mail.gmail.com>
-	<6DA6B1DA-11B5-4B89-88AD-561B4D17B33B@kernel.crashing.org>
-	<20080505195054.172000@gmx.net> <1210031058.21644.120.camel@pasglop>
-	<20080506075115.269150@gmx.net> <1210063719.21644.162.camel@pasglop>
-	<20080506091622.269180@gmx.net>
-Content-Type: text/plain
-Date: Tue, 06 May 2008 20:12:27 +1000
-Message-Id: <1210068747.21644.164.camel@pasglop>
+Return-Path: <bodonoghue@codehermit.ie>
+Received: from lugano.hostireland.com (lugano.hostireland.com [67.192.77.34])
+	by ozlabs.org (Postfix) with ESMTP id E5987DDDEE
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 May 2008 20:30:46 +1000 (EST)
+Date: Tue, 6 May 2008 11:30:55 +0100
+From: Bryan O'Donoghue <bodonoghue@codehermit.ie>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [PATCH] Add support for Analogue & Micro ASP837E board
+Message-ID: <20080506113055.499947e5@neuromancer.mindspace>
+In-Reply-To: <20080506161110.02c2f974.sfr@canb.auug.org.au>
+References: <20080506032813.19e2d07a@neuromancer.mindspace>
+	<20080506161110.02c2f974.sfr@canb.auug.org.au>
 Mime-Version: 1.0
-Cc: tiwai@suse.de, linuxppc-dev@ozlabs.org, cjg@cruxppc.org
-Reply-To: benh@kernel.crashing.org
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,29 +22,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Tue, 6 May 2008 16:11:10 +1000
+Stephen Rothwell <sfr@canb.auug.org.au> wrote:
 
-On Tue, 2008-05-06 at 11:16 +0200, Gerhard Pircher wrote:
-> I can't answer this question. *ducked* :-) Takashi?
+> Hi Bryan,
 > 
-> FYI: I posted the results of the test with Takashi's dma_mmap_coherent
-> patch here:
-> http://ozlabs.org/pipermail/linuxppc-dev/2006-June/024078.html
+> On Tue, 6 May 2008 03:28:13 +0100 Bryan O'Donoghue <bodonoghue@codehermit.ie>
+> wrote:
+> >
+> > +static void __init asp834x_init_IRQ(void)
+> > +{
+> > +	struct device_node *np;
+> > +
+> > +	np = of_find_node_by_type(NULL, "ipic");
+> > +	if (!np)
+> > +		return;
+> > +
+> > +	ipic_init(np, 0);
 > 
-> On the other side it looks like this problem does not only affect
-> ALSA.
-> As far as I can tell also some V4L(2) drivers have a problem with
-> mmaping
-> non coherent DMA allocations, but I'm not sure (it's a long time since
-> I
-> did some tests with video cards on my AmigaOne).
+> You need an "of_node_put(np)" here to drop the reference gained in
+> "of_find_node_by_type".
 > 
-> Naturally I can do some tests, if you or Takashi come up with a new
-> patch.
+> > +static struct of_device_id asp8347_ids[] = {
+> 
+> Please make this __initdata.
+> 
 
-Time that we sort that stuff out once for all..
+Hey Stephen.
 
-sg allocations are usually lists of page, so virt_to_page shouldn't be a
-problem in the first place, though we still need some way to get the
-right prot attributes.
+Thanks for spotting that. Will do.
 
-Ben.
+
+Cheers,
+Bryan
