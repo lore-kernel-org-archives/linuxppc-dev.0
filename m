@@ -1,18 +1,17 @@
-Return-Path: <bodonoghue@codehermit.ie>
-Received: from lugano.hostireland.com (lugano.hostireland.com [67.192.77.34])
-	by ozlabs.org (Postfix) with ESMTP id E5987DDDEE
-	for <linuxppc-dev@ozlabs.org>; Tue,  6 May 2008 20:30:46 +1000 (EST)
-Date: Tue, 6 May 2008 11:30:55 +0100
-From: Bryan O'Donoghue <bodonoghue@codehermit.ie>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH] Add support for Analogue & Micro ASP837E board
-Message-ID: <20080506113055.499947e5@neuromancer.mindspace>
-In-Reply-To: <20080506161110.02c2f974.sfr@canb.auug.org.au>
-References: <20080506032813.19e2d07a@neuromancer.mindspace>
-	<20080506161110.02c2f974.sfr@canb.auug.org.au>
+Return-Path: <lists@munckfish.net>
+Subject: Re: [Cbe-oss-dev] Xorg crash when PCI not enabled (was [patch 5/5]
+	PS3: Update ps3_defconfig)
+From: Dan Munckton <lists@munckfish.net>
+To: Marvin <marvin24@gmx.de>
+In-Reply-To: <200805061014.16229.marvin24@gmx.de>
+References: <20080430215644.655638516@am.sony.com>
+	<200805021545.01676.marvin24@gmx.de> <481F595F.2090407@am.sony.com>
+	<200805061014.16229.marvin24@gmx.de>
+Content-Type: text/plain
+Date: Tue, 06 May 2008 10:44:12 +0100
+Message-Id: <1210067053.8444.14.camel@dylan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,36 +21,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 6 May 2008 16:11:10 +1000
-Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+Hi
 
-> Hi Bryan,
-> 
-> On Tue, 6 May 2008 03:28:13 +0100 Bryan O'Donoghue <bodonoghue@codehermit.ie>
-> wrote:
-> >
-> > +static void __init asp834x_init_IRQ(void)
-> > +{
-> > +	struct device_node *np;
-> > +
-> > +	np = of_find_node_by_type(NULL, "ipic");
-> > +	if (!np)
-> > +		return;
-> > +
-> > +	ipic_init(np, 0);
-> 
-> You need an "of_node_put(np)" here to drop the reference gained in
-> "of_find_node_by_type".
-> 
-> > +static struct of_device_id asp8347_ids[] = {
-> 
-> Please make this __initdata.
-> 
+On Tue, 2008-05-06 at 10:14 +0200, Marvin wrote:
+> p.s. I installed fc9 last week and Xorg crashes when PCI is not
+> enabled. just 
+> in case someone has the same problem.
 
-Hey Stephen.
+The Ubuntu PS3 team is also working on an a couple of bugs relating to
+lack of PCI info. I don't know if these are the same issues you're
+facing. We're tracking them here at [0] and [2].
 
-Thanks for spotting that. Will do.
+We had an initial crash was simple to fix [1]. Now we need to get X to
+automatically load the fbdev driver instead of vesa [2].
 
+Cheers
 
-Cheers,
-Bryan
+Dan
+
+[0] https://bugs.launchpad.net/ubuntu-ps3-port/+bug/217647
+[1] http://launchpadlibrarian.net/13569440/closedir.patch
+[2] https://bugs.launchpad.net/ubuntu-ps3-port/+bug/219424
