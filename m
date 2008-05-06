@@ -1,19 +1,30 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from ag-out-0708.google.com (ag-out-0708.google.com [72.14.246.248])
-	by ozlabs.org (Postfix) with ESMTP id 2FDDFDDF10
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 May 2008 00:39:57 +1000 (EST)
-Received: by ag-out-0708.google.com with SMTP id 8so1573578agc.0
-	for <linuxppc-dev@ozlabs.org>; Tue, 06 May 2008 07:39:55 -0700 (PDT)
-Message-ID: <fa686aa40805060739t32b83a67g434d0ae1595ea8e8@mail.gmail.com>
-Date: Tue, 6 May 2008 08:39:54 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Sylvain Munaut" <tnt@246tnt.com>
-Subject: Re: [Fwd: fix for drivers/serial/mpc52xx_uart.c]
-In-Reply-To: <481FFDF5.7060208@246tnt.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <481FFDF5.7060208@246tnt.com>
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 4292ADDEDB
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 May 2008 01:02:32 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e6.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m46F4c9j012043
+	for <linuxppc-dev@ozlabs.org>; Tue, 6 May 2008 11:04:38 -0400
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m46F2SPx259878
+	for <linuxppc-dev@ozlabs.org>; Tue, 6 May 2008 11:02:28 -0400
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m46F2SUd002832
+	for <linuxppc-dev@ozlabs.org>; Tue, 6 May 2008 11:02:28 -0400
+Date: Tue, 6 May 2008 10:01:17 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Stefan Roese <sr@denx.de>
+Subject: Re: [PATCH] [POWERPC] 4xx: Fix problem with new TLB storage
+	attibute fields on 440x6 core
+Message-ID: <20080506100117.22c88b09@zod.rchland.ibm.com>
+In-Reply-To: <1209970399-4464-1-git-send-email-sr@denx.de>
+References: <1209970399-4464-1-git-send-email-sr@denx.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -24,21 +35,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, May 6, 2008 at 12:43 AM, Sylvain Munaut <tnt@246tnt.com> wrote:
-> Patch, obviously correct, sent to me personally instead of the list.
->
->     Sylvain
->
-> Here is a fix for the unterminated mpc52xx_uart_of_match array when CONFIG_PPC_MPC512x is not defined. Should be quite self explonary, but if not feel free to bug me about it.
->
->  Patch applies against 2.6.25 and 2.6.25.1 at least.
+On Mon,  5 May 2008 08:53:19 +0200
+Stefan Roese <sr@denx.de> wrote:
 
-Already fixed in mainline; it needs to be back ported to 2.6.25.  I'll
-poke GregKH
+> The new 440x6 core used on AMCC 460EX/GT introduces new storage attibure
+> fields to the TLB2 word. Those are:
+> 
+> Bit  11   12   13   14   15
+>      WL1  IL1I IL1D IL2I IL2D
+> 
+> With these bits the cache (L1 and L2) can be configured in a more flexible
+> way, instruction- and data-cache independently now. The "old" I and W bits
+> are still available and setting these old bits will automically set these
+> new bits too (for backward compatibilty).
+> 
+> The current code does not clear these fields resulting in disabling the cache
+> by chance. This patch now makes sure that these new bits are cleared when
+> the TLB2 word is written.
+> 
+> Signed-off-by: Stefan Roese <sr@denx.de>
 
-Cheers,
-g.
+Finally catching back up with email.  This looks like .26 material,
+correct?
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+josh
