@@ -1,31 +1,22 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 7D20CDDE24
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 May 2008 07:50:38 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m46LldYl023479
-	for <linuxppc-dev@ozlabs.org>; Tue, 6 May 2008 17:47:39 -0400
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m46LoYvA051816
-	for <linuxppc-dev@ozlabs.org>; Tue, 6 May 2008 15:50:34 -0600
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m46LoY9o017054
-	for <linuxppc-dev@ozlabs.org>; Tue, 6 May 2008 15:50:34 -0600
-Date: Tue, 6 May 2008 16:49:15 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: arch/ppc is broken
-Message-ID: <20080506164915.3f15cfe8@zod.rchland.ibm.com>
-In-Reply-To: <e568c51ffa5f865094b26827ef959aa1@kernel.crashing.org>
-References: <20080506150955.0fdcaa85@zod.rchland.ibm.com>
-	<e568c51ffa5f865094b26827ef959aa1@kernel.crashing.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Return-Path: <ron_madrid@hotmail.com>
+Received: from bay0-omc3-s15.bay0.hotmail.com (bay0-omc3-s15.bay0.hotmail.com
+	[65.54.246.215]) by ozlabs.org (Postfix) with ESMTP id 97FCFDDE08
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 May 2008 07:56:45 +1000 (EST)
+Message-ID: <BAY114-W13CCF7FDD3C01260AC40A9F4D60@phx.gbl>
+Content-Type: multipart/alternative;
+	boundary="_f0b81097-1cca-4edb-bff3-bc8978fd1eec_"
+From: Ronald Madrid <ron_madrid@hotmail.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: RE: ifconfig MPC8313
+Date: Tue, 6 May 2008 14:56:44 -0700
+In-Reply-To: <4820D11D.1050005@freescale.com>
+References: <BAY114-W949ADEBC809E7A60716CCF4D60@phx.gbl>
+	<4820CB5D.3000703@freescale.com>
+	<BAY114-W46AEF8E266395E333E7FCF4D60@phx.gbl>
+	<4820CF2A.5040301@freescale.com>
+	<BAY114-W4066C5694CA67654680FB7F4D60@phx.gbl>
+	<4820D11D.1050005@freescale.com>
+MIME-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -36,21 +27,65 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 6 May 2008 23:39:34 +0200
-Segher Boessenkool <segher@kernel.crashing.org> wrote:
+--_f0b81097-1cca-4edb-bff3-bc8978fd1eec_
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-> > Every arch/ppc defconfig I built today failed.  Someone broke it.
-> 
-> On a related note, arch/ppc defconfig doesn't even configure anymore;
-> common_defconfig was removed, but it is still the default.  What config
-> should we use as default now?
+I believe that it is zero.  Is that valid?
 
-I'd be willing to guess that the answer is "nothing".  You're welcome
-to use ebony_defconfig but that's just as much unmaintained as the rest
-of arch/ppc and only builds when someone doesn't break it.
+Ron
 
-> Josh, I'll look into the build failure now.
+> Date: Tue, 6 May 2008 16:43:57 -0500
+> From: scottwood@freescale.com
+> To: ron_madrid@hotmail.com
+> CC: linuxppc-dev@ozlabs.org
+> Subject: Re: ifconfig MPC8313
+>=20
+> Ronald Madrid wrote:
+> > I don't know, where would I find that out?
+> >=20
+> > Sorry, I'm still kind of new to this.
+>=20
+> In the documentation/schematics/designer's-head of your custom board.
+>=20
+> -Scott
 
-Masochist ;)
+_________________________________________________________________
+With Windows Live for mobile, your contacts travel with you.
+http://www.windowslive.com/mobile/overview.html?ocid=3DTXT_TAGLM_WL_Refresh=
+_mobile_052008=
 
-josh
+--_f0b81097-1cca-4edb-bff3-bc8978fd1eec_
+Content-Type: text/html; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+<html>
+<head>
+<style>
+.hmmessage P
+{
+margin:0px;
+padding:0px
+}
+body.hmmessage
+{
+FONT-SIZE: 10pt;
+FONT-FAMILY:Tahoma
+}
+</style>
+</head>
+<body class=3D'hmmessage'><div style=3D"text-align: left;">I believe that i=
+t is zero.&nbsp; Is that valid?<br></div><br>Ron<br><br><hr id=3D"stopSpell=
+ing">&gt; Date: Tue, 6 May 2008 16:43:57 -0500<br>&gt; From: scottwood@free=
+scale.com<br>&gt; To: ron_madrid@hotmail.com<br>&gt; CC: linuxppc-dev@ozlab=
+s.org<br>&gt; Subject: Re: ifconfig MPC8313<br>&gt; <br>&gt; Ronald Madrid =
+wrote:<br>&gt; &gt; I don't know, where would I find that out?<br>&gt; &gt;=
+ <br>&gt; &gt; Sorry, I'm still kind of new to this.<br>&gt; <br>&gt; In th=
+e documentation/schematics/designer's-head of your custom board.<br>&gt; <b=
+r>&gt; -Scott<br><br /><hr />With Windows Live for mobile, your contacts tr=
+avel with you. <a href=3D'http://www.windowslive.com/mobile/overview.html?o=
+cid=3DTXT_TAGLM_WL_Refresh_mobile_052008' target=3D'_new'>Connect on the go=
+.</a></body>
+</html>=
+
+--_f0b81097-1cca-4edb-bff3-bc8978fd1eec_--
