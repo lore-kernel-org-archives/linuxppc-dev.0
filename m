@@ -1,16 +1,33 @@
-Return-Path: <avorontsov@dev.rtsoft.ru>
-Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
-	by ozlabs.org (Postfix) with SMTP id 33053DDE32
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 May 2008 05:20:16 +1000 (EST)
-Date: Tue, 6 May 2008 23:20:08 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: netdev@vger.kernel.org
-Subject: [RFC] gianfar: low gigabit throughput
-Message-ID: <20080506192008.GA30148@polina.dev.rtsoft.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id A2F3BDE483
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 May 2008 05:42:20 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e4.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m46JgHZT027821
+	for <linuxppc-dev@ozlabs.org>; Tue, 6 May 2008 15:42:17 -0400
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m46JgH4U264538
+	for <linuxppc-dev@ozlabs.org>; Tue, 6 May 2008 15:42:17 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m46JgGqm011726
+	for <linuxppc-dev@ozlabs.org>; Tue, 6 May 2008 15:42:16 -0400
+Date: Tue, 6 May 2008 14:41:02 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Stefan Roese <sr@denx.de>
+Subject: Re: [PATCH] [POWERPC] 4xx: Fix problem with new TLB storage
+	attibute fields on 440x6 core
+Message-ID: <20080506144102.62a0ca95@zod.rchland.ibm.com>
+In-Reply-To: <200805061841.44277.sr@denx.de>
+References: <1209970399-4464-1-git-send-email-sr@denx.de>
+	<20080506100117.22c88b09@zod.rchland.ibm.com>
+	<200805061841.44277.sr@denx.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-dev@ozlabs.org
-Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,134 +37,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi all,
+On Tue, 6 May 2008 18:41:44 +0200
+Stefan Roese <sr@denx.de> wrote:
 
-Down here few question regarding networking throughput, I would
-appreciate any thoughts or ideas.
+> On Tuesday 06 May 2008, Josh Boyer wrote:
+> > > The new 440x6 core used on AMCC 460EX/GT introduces new storage attibure
+> > > fields to the TLB2 word. Those are:
+> > >
+> > > Bit  11   12   13   14   15
+> > >      WL1  IL1I IL1D IL2I IL2D
+> > >
+> > > With these bits the cache (L1 and L2) can be configured in a more
+> > > flexible way, instruction- and data-cache independently now. The "old" I
+> > > and W bits are still available and setting these old bits will
+> > > automically set these new bits too (for backward compatibilty).
+> > >
+> > > The current code does not clear these fields resulting in disabling the
+> > > cache by chance. This patch now makes sure that these new bits are
+> > > cleared when the TLB2 word is written.
+> > >
+> > > Signed-off-by: Stefan Roese <sr@denx.de>
+> >
+> > Finally catching back up with email.  This looks like .26 material,
+> > correct?
+> 
+> Definitely, yes.
 
-On the MPC8315E-RDB board (CPU at 400MHz, CSB at 133 MHz) I'm observing
-relatively low TCP throughput using gianfar driver...
+Figured.  I have it queued up.
 
-The maximum value I've seen with the current kernels is 142 Mb/s of TCP
-and 354 Mb/s of UDP (NAPI and interrupts coalescing enabled):
-
-  root@b1:~# netperf -l 10 -H 10.0.1.1 -t TCP_STREAM -- -m 32768 -s 157344 -S 157344
-  TCP STREAM TEST to 10.0.1.1
-  #Cpu utilization 0.10
-  Recv   Send    Send
-  Socket Socket  Message  Elapsed
-  Size   Size    Size     Time     Throughput
-  bytes  bytes   bytes    secs.    10^6bits/sec
-
-  206848 212992  32768    10.00     142.40
-
-  root@b1:~# netperf -l 10 -H 10.0.1.1 -t UDP_STREAM -- -m 32768 -s 157344 -S 157344
-  UDP UNIDIRECTIONAL SEND TEST to 10.0.1.1
-  #Cpu utilization 100.00
-  Socket  Message  Elapsed      Messages
-  Size    Size     Time         Okay Errors   Throughput
-  bytes   bytes    secs            #      #   10^6bits/sec
-
-  212992   32768   10.00       13539      0     354.84
-  206848           10.00       13539            354.84
-
-
-Is this normal?
-
-netperf running in loopback gives me 329 Mb/s of TCP throughput:
-
-  root@b1:~# netperf -l 10 -H 127.0.0.1 -t TCP_STREAM -- -m 32768 -s 157344 -S 157344
-  TCP STREAM TEST to 127.0.0.1
-  #Cpu utilization 100.00
-  #Cpu utilization 100.00
-  Recv   Send    Send
-  Socket Socket  Message  Elapsed
-  Size   Size    Size     Time     Throughput
-  bytes  bytes   bytes    secs.    10^6bits/sec
-
-  212992 212992  32768    10.00     329.60
-
-
-May I consider this as a something that is close to the Linux'
-theoretical maximum for this setup? Or this isn't reliable test?
-
-
-I can compare with teh MPC8377E-RDB (very similar board - exactly the same
-ethernet phy, the same drivers are used, i.e. everything is the same from
-the ethernet stand point), but running at 666 MHz, CSB at 333MHz:
-
-         |CPU MHz|BUS MHz|UDP Mb/s|TCP Mb/s|
-  ------------------------------------------
-  MPC8377|    666|    333|     646|     264|
-  MPC8315|    400|    133|     354|     142|
-  ------------------------------------------
-  RATIO  |    1.6|    2.5|     1.8|     1.8|
-
-It seems that things are really dependant on the CPU/CSB speed.
-
-I've tried to tune gianfar driver in various ways... and it gave
-some positive results with this patch:
-
-diff --git a/drivers/net/gianfar.h b/drivers/net/gianfar.h
-index fd487be..b5943f9 100644
---- a/drivers/net/gianfar.h
-+++ b/drivers/net/gianfar.h
-@@ -123,8 +123,8 @@ extern const char gfar_driver_version[];
- #define GFAR_10_TIME    25600
- 
- #define DEFAULT_TX_COALESCE 1
--#define DEFAULT_TXCOUNT	16
--#define DEFAULT_TXTIME	21
-+#define DEFAULT_TXCOUNT	80
-+#define DEFAULT_TXTIME	105
- 
- #define DEFAULT_RXTIME	21
-
-
-Basically this raises the tx interrupts coalescing threshold (raising
-it more didn't help, as well as didn't help raising rx thresholds).
-Now:
-
-root@b1:~# netperf -l 3 -H 10.0.1.1 -t TCP_STREAM -- -m 32768 -s 157344 -S 157344
-TCP STREAM TEST to 10.0.1.1
-#Cpu utilization 100.00
-Recv   Send    Send
-Socket Socket  Message  Elapsed
-Size   Size    Size     Time     Throughput
-bytes  bytes   bytes    secs.    10^6bits/sec
-
-206848 212992  32768    3.00      163.04
-
-
-That is +21 Mb/s (14% up). Not fantastic, but good anyway.
-
-As expected, the latency increased too:
-
-Before the patch:
-
---- 10.0.1.1 ping statistics ---
-20 packets transmitted, 20 received, 0% packet loss, time 18997ms
-rtt min/avg/max/mdev = 0.108/0.124/0.173/0.022 ms
-
-After:
-
---- 10.0.1.1 ping statistics ---
-22 packets transmitted, 22 received, 0% packet loss, time 20997ms
-rtt min/avg/max/mdev = 0.158/0.167/0.182/0.004 ms
-
-
-34% up... heh. Should we sacrifice the latency in favour of throughput?
-Is 34% latency growth bad thing? What is worse, lose 21 Mb/s or 34% of
-latency? ;-)
-
-
-Thanks in advance,
-
-p.s. Btw, the patch above helps even better on the on the -rt kernels,
-since on the -rt kernels the throughput is near 100 Mb/s, with the
-patch the throughput is close to 140 Mb/s.
-
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+josh
