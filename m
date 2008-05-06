@@ -1,14 +1,18 @@
 Return-Path: <segher@gcc12.fsffrance.org>
 Received: from snail.fsffrance.org (eucd.info [88.191.250.43])
-	by ozlabs.org (Postfix) with ESMTP id 2DE59DDEDE
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 May 2008 08:58:57 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 706EADDEE1
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 May 2008 08:59:00 +1000 (EST)
+Received: from gcc12.fsffrance.org ([87.98.193.184] ident=Debian-exim)
+	by snail.fsffrance.org with esmtp (Exim 4.50) id 1JtW7c-0000F4-BJ
+	for linuxppc-dev@ozlabs.org; Wed, 07 May 2008 00:58:56 +0200
+Received: from segher by gcc12.fsffrance.org with local (Exim 4.63)
+	(envelope-from <segher@gcc12.fsffrance.org>) id 1JtW7W-0001Lz-Hi
+	for linuxppc-dev@ozlabs.org; Wed, 07 May 2008 00:58:50 +0200
 From: Segher Boessenkool <segher@kernel.crashing.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 1/3] ppc: Use ebony_defconfig for defconfig
-Date: Wed,  7 May 2008 00:58:48 +0200
-Message-Id: <cf74cd88187bdd9378fbb0a0ff7d53ac3a7b23d2.1210114487.git.segher@kernel.crashing.org>
-In-Reply-To: <1210114730-5047-1-git-send-email-segher@kernel.crashing.org>
-References: <1210114730-5047-1-git-send-email-segher@kernel.crashing.org>
+Subject: Fix arch/ppc builds
+Date: Wed,  7 May 2008 00:58:47 +0200
+Message-Id: <1210114730-5047-1-git-send-email-segher@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,25 +22,8 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-We used to use common_defconfig, but it was removed some time ago.
 
-Signed-off-by: Segher Boessenkool <segher@kernel.crashing.org>
----
- arch/ppc/Makefile |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+These three trivial patches make arch/ppc build again.
 
-diff --git a/arch/ppc/Makefile b/arch/ppc/Makefile
-index 8df7f0e..2352d13 100644
---- a/arch/ppc/Makefile
-+++ b/arch/ppc/Makefile
-@@ -43,7 +43,7 @@ KBUILD_AFLAGS += $(cpu-as-y)
- KBUILD_CFLAGS += $(cpu-as-y)
- 
- # Default to the common case.
--KBUILD_DEFCONFIG := common_defconfig
-+KBUILD_DEFCONFIG := ebony_defconfig
- 
- head-y				:= arch/ppc/kernel/head.o
- head-$(CONFIG_8xx)		:= arch/ppc/kernel/head_8xx.o
--- 
-1.5.5.23.g2a5f.dirty
+
+Segher
