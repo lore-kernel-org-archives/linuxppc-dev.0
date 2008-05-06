@@ -1,33 +1,22 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id EB598DDEE1
-	for <linuxppc-dev@ozlabs.org>; Tue,  6 May 2008 10:10:30 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e31.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m460AR12009001
-	for <linuxppc-dev@ozlabs.org>; Mon, 5 May 2008 20:10:27 -0400
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m460AQTZ219342
-	for <linuxppc-dev@ozlabs.org>; Mon, 5 May 2008 18:10:26 -0600
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m460AQKT030829
-	for <linuxppc-dev@ozlabs.org>; Mon, 5 May 2008 18:10:26 -0600
-Date: Mon, 5 May 2008 19:09:23 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org
-Subject: Re: [PATCH] Sam440ep support
-Message-ID: <20080505190923.6123a6e5@zod.rchland.ibm.com>
-In-Reply-To: <1210030805.21644.118.camel@pasglop>
-References: <a265241c0805051123h595123edrd46bf65a8099c3c2@mail.gmail.com>
-	<20080505135404.5c57720e@zod.rchland.ibm.com>
-	<1210030805.21644.118.camel@pasglop>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 3BAB4DDEED
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 May 2008 10:12:35 +1000 (EST)
+Subject: Re: [PATCH 1/4] [v4][POWERPC] refactor dcr code
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
+In-Reply-To: <20080505175647.5C26F2B0059@mail60-sin.bigfish.com>
+References: <20080421080353.5d2b3bb9@zod.rchland.ibm.com>
+	<1210010201-28436-1-git-send-email-stephen.neuendorffer@xilinx.com>
+	<20080505175647.5C26F2B0059@mail60-sin.bigfish.com>
+Content-Type: text/plain
+Date: Tue, 06 May 2008 10:12:19 +1000
+Message-Id: <1210032739.21644.133.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Giuseppe Coviello <cjg@cruxppc.org>
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,22 +26,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 06 May 2008 09:40:05 +1000
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
+On Mon, 2008-05-05 at 10:56 -0700, Stephen Neuendorffer wrote:
+> Previously, dcr support was configured at compile time to either using
+> MMIO or native dcr instructions.  Although this works for most
+> platforms, it fails on FPGA platforms:
 > 
-> On Mon, 2008-05-05 at 13:54 -0500, Josh Boyer wrote:
-> > > +arch_initcall(sam440ep_i2c_of_init);
-> > 
-> > Ok, now I'm confused as to why you aren't doing this in your platform
-> > file (which would make it specific, and therefore justify its
-> > existence.
+> 1) Systems may include more than one dcr bus.
+> 2) Systems may be native dcr capable and still use memory mapped dcr interface.
 > 
-> I addition, that gets called on all platforms, not only sam440ep, which
-> is wrong.
+> This patch provides runtime support based on the device trees for the
+> case where CONFIG_PPC_DCR_MMIO and CONFIG_PPC_DCR_NATIVE are both
+> selected.  Previously, this was a poorly defined configuration, which
+> happened to provide NATIVE support.  The runtime selection is made
+> based on the dcr controller having a 'dcr-access-method' attribute
+> in the device tree.  If only one of the above options is selected,
+> then the code uses #defines to select only the used code in order to
+> avoid introducing overhead in existing usage.
+> 
+> Signed-off-by: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
 
-Correct.  I was starting with code organization vs. specific comments
-since it was all one big patch.  I'll get into details when it gets
-split properly :).
+Quick look seems ok, but that was really only a quick look :-)
 
-josh
+I'll rely on Josh to review further.
+
+Cheers,
+Ben.
