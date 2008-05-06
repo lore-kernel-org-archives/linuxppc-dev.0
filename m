@@ -1,22 +1,18 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 51F54DDE19
-	for <linuxppc-dev@ozlabs.org>; Tue,  6 May 2008 14:07:01 +1000 (EST)
-Date: Tue, 6 May 2008 14:06:56 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: "Grant Likely" <grant.likely@secretlab.ca>
-Subject: Re: [PATCH] add Phytec pcm030 board support
-Message-Id: <20080506140656.7cff910c.sfr@canb.auug.org.au>
-In-Reply-To: <fa686aa40805051238n7df0c24fmc9fabeef4b7f6c63@mail.gmail.com>
-References: <20080425134805.GP6692@pengutronix.de>
-	<20080505011607.GA9349@yookeroo.seuss>
-	<1328d38bed8a830af756850bbaf2e8ad@kernel.crashing.org>
-	<fa686aa40805051238n7df0c24fmc9fabeef4b7f6c63@mail.gmail.com>
+Return-Path: <smaclennan@pikatech.com>
+Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
+	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 6975CDDE03
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 May 2008 14:18:53 +1000 (EST)
+Date: Tue, 6 May 2008 00:18:50 -0400
+From: Sean MacLennan <smaclennan@pikatech.com>
+To: <benh@kernel.crashing.org>
+Subject: Re: [PATCH] Sam440ep support
+Message-ID: <20080506001850.340e4e7f@lappy.seanm.ca>
+In-Reply-To: <1210030608.21644.114.camel@pasglop>
+References: <a265241c0805051123h595123edrd46bf65a8099c3c2@mail.gmail.com>
+	<1210030608.21644.114.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Tue__6_May_2008_14_06_56_+1000_VUkn4aqIDVrRp2Mh"
-Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Giuseppe Coviello <cjg@cruxppc.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,34 +22,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Tue__6_May_2008_14_06_56_+1000_VUkn4aqIDVrRp2Mh
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Tue, 06 May 2008 09:36:48 +1000
+"Benjamin Herrenschmidt" <benh@kernel.crashing.org> wrote:
 
-On Mon, 5 May 2008 13:38:30 -0600 "Grant Likely" <grant.likely@secretlab.ca=
-> wrote:
->
-> PowerPC? check.
-> Sparc? check.
-> Microblaze? check.
+> The IBM IIC driver should already have an of_platform_device created
+> for it, so we can have here a generic driver for that chip that
+> instanciates itself based on it. No need to create a platform
+> device .. Or is the ibm iic host driver only in the form of a
+> platform device nowadays ?
 
-OLPC? check?
+As of 2.6.26-rc1 (and I believe Josh's for-2.6.26 tree?) the ibm iic
+driver is available as an of_platform driver. So you need a very recent
+kernel.
 
---=20
+However, the patches should be available in the linuxppc-dev archives if
+you search for them.
+
+Look at platforms/44x/warp.c for an example of how to initialize the
+driver for the 440EP.
+
 Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Tue__6_May_2008_14_06_56_+1000_VUkn4aqIDVrRp2Mh
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFIH9lkTgG2atn1QN8RAtUHAJwN4PJBVTw9T6Ox6XxzqvXxatzmbACaAu8A
-k/aXFu1dnqfmx/cJldjvz8Q=
-=/uzm
------END PGP SIGNATURE-----
-
---Signature=_Tue__6_May_2008_14_06_56_+1000_VUkn4aqIDVrRp2Mh--
+   Sean
