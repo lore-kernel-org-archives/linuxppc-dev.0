@@ -1,24 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 4E161DDE0E
-	for <linuxppc-dev@ozlabs.org>; Tue,  6 May 2008 10:26:48 +1000 (EST)
-Subject: Re: [PATCH 2/4] [POWERPC] Xilinx: Virtex: Enable dcr for MMIO and
-	NATIVE
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
-In-Reply-To: <20080505175646.BDF3D11806D@mail196-wa4.bigfish.com>
-References: <20080421080353.5d2b3bb9@zod.rchland.ibm.com>
-	<1210010201-28436-1-git-send-email-stephen.neuendorffer@xilinx.com>
-	<1210010201-28436-2-git-send-email-stephen.neuendorffer@xilinx.com>
-	<20080505175646.BDF3D11806D@mail196-wa4.bigfish.com>
-Content-Type: text/plain
-Date: Tue, 06 May 2008 10:11:48 +1000
-Message-Id: <1210032708.21644.131.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: benh@kernel.crashing.org
+Return-Path: <zhangyihere@gmail.com>
+Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.28])
+	by ozlabs.org (Postfix) with ESMTP id 3AB38DDE03
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 May 2008 10:32:33 +1000 (EST)
+Received: by yw-out-2324.google.com with SMTP id 5so1973025ywh.39
+	for <linuxppc-dev@ozlabs.org>; Mon, 05 May 2008 17:32:24 -0700 (PDT)
+Message-ID: <2c8360dd0805051732v64966f4ej7ded735519c63f65@mail.gmail.com>
+Date: Tue, 6 May 2008 08:32:24 +0800
+From: "=?GB2312?B?1cXp8w==?=" <zhangyihere@gmail.com>
+To: linuxppc-dev@ozlabs.org
+Subject: Fwd: linux2.6 does not boot from XUP
+In-Reply-To: <2c8360dd0805050632q4f7b90akc5b7f01ad97c02de@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_Part_5533_6522730.1210033944554"
+References: <2c8360dd0805050632q4f7b90akc5b7f01ad97c02de@mail.gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,30 +23,88 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+------=_Part_5533_6522730.1210033944554
+Content-Type: text/plain; charset=GB2312
+Content-Transfer-Encoding: base64
+Content-Disposition: inline
 
-On Mon, 2008-05-05 at 10:56 -0700, Stephen Neuendorffer wrote:
-> FPGA designs may have need of both MMIO-based and NATIVE-based dcr
-> interfaces.
+LS0tLS0tLS0tLSBGb3J3YXJkZWQgbWVzc2FnZSAtLS0tLS0tLS0tCkZyb206INXF6fMgPHpoYW5n
+eWloZXJlQGdtYWlsLmNvbT4KRGF0ZTogMjAwOC81LzUKU3ViamVjdDogbGludXgyLjYgZG9lcyBu
+b3QgYm9vdCBmcm9tIFhVUApUbzogZ3JhbnQubGlrZWx5QHNlY3JldGxhYi5jYQoKCkhpLEdyYW50
+CgpJIGhvcGUgSSBjb3VsZCBnZXQgc29tZSBhZHZpY2VzIGZyb20geW91IGFib3V0IGhvdyB0byBm
+aXggdGhlIGVycm9yIG9mCnBvcnRpbmcgbGludXgyLjYgdG8gWGlsaW54IFhVUFYyUC4KClRoZSBr
+ZXJuZWwgSSBhbSB1c2luZyBpcyAyLjYuMjQsZ2NjIDQuMS4wLGdsaWJjIDIuMy42LGFuZCB0aGUg
+Ym9hcmQgWGlsaW54ClhVUFYyUAoKSXQgY29tcGlsZXMgc3VjY2Vzc2Z1bGx5IHdpdGggc29tZSB3
+YXJuaW5ncyBsaWtlIGJlbG93OgogIE1PRFBPU1Qgdm1saW51eC5vCldBUk5JTkc6IHZtbGludXgu
+bygudGV4dCsweDIyM2MpOiBTZWN0aW9uIG1pc21hdGNoOiByZWZlcmVuY2UgdG8KLmluaXQudGV4
+dDplYXJseV9pbml0IChiZXR3ZWVuICdzdGFydF9oZXJlJyBhbmQgJ2luaXRpYWxfbW11JykKV0FS
+TklORzogdm1saW51eC5vKC50ZXh0KzB4MjI1NCk6IFNlY3Rpb24gbWlzbWF0Y2g6IHJlZmVyZW5j
+ZSB0bwouaW5pdC50ZXh0Om1hY2hpbmVfaW5pdCAoYmV0d2VlbiAnc3RhcnRfaGVyZScgYW5kICdp
+bml0aWFsX21tdScpCldBUk5JTkc6IHZtbGludXgubygudGV4dCsweDIyNTgpOiBTZWN0aW9uIG1p
+c21hdGNoOiByZWZlcmVuY2UgdG8KLmluaXQudGV4dDpNTVVfaW5pdCAoYmV0d2VlbiAnc3RhcnRf
+aGVyZScgYW5kICdpbml0aWFsX21tdScpCldBUk5JTkc6IHZtbGludXgubygudGV4dCsweDIyYjIp
+OiBTZWN0aW9uIG1pc21hdGNoOiByZWZlcmVuY2UgdG8KLmluaXQudGV4dDpzdGFydF9rZXJuZWwg
+KGJldHdlZW4gJ3N0YXJ0X2hlcmUnIGFuZCAnaW5pdGlhbF9tbXUnKQpXQVJOSU5HOiB2bWxpbnV4
+Lm8oLnRleHQrMHgyMmI2KTogU2VjdGlvbiBtaXNtYXRjaDogcmVmZXJlbmNlIHRvCi5pbml0LnRl
+eHQ6c3RhcnRfa2VybmVsIChiZXR3ZWVuICdzdGFydF9oZXJlJyBhbmQgJ2luaXRpYWxfbW11JykK
+ICAgTEQgICAgICB2bWxpbnV4CgpUaGUgc3lzdGVtIGlzIGNyZWF0ZWQgYXMgQUNFIGZpbGUgYW5k
+IGJvb3RlZCBmcm9tIENGIENhcmQKCkFmdGVyIHVuY29tcHJlc3NpbmcgdGhlIGtlcm5lbCx0aGUg
+c3lzdGVtIGhhbmdzLlRoZSBpbmZvcm1hdGlvbiBpcyBsaWtlCmJlbG93OgoKbG9hZGVkIGF0OiAg
+ICAgMDA0MDAwMDAgMDA1NjYxOUMKYm9hcmQgZGF0YSBhdDogMDAwMDAwMDAgMDAwMDAwN0MKcmVs
+b2NhdGVkIHRvOiAgMDA0MDQwNjggMDA0MDQwRTQKemltYWdlIGF0OiAgICAgMDA0MDRFNTEgMDA1
+NjNCRjQKYXZhaWwgcmFtOiAgICAgMDA1NjcwMDAgN0M5RTIzNzAKCkxpbnV4L1BQQyBsb2FkOiBj
+b25zb2xlPXR0eVMwLDk2MDAgcm9vdD0vZGV2L3hzeXNhY2UvZGlzYzAvcGFydDMgcncKVW5jb21w
+cmVzc2luZyBMaW51eC4uLmRvbmUuCk5vdyBib290aW5nIHRoZSBrZXJuZWwKSSB3b25kZXIgaWYg
+aXQgaXMgdGhlIHVwcGVyIFdBUk5JTkdzIHRoYXQgY2F1c2VzIHRoZSBoYW5nIG9mIHRoZSBzeXN0
+ZW0sIGFuZApob3cgY2FuIEkgZml4IGl0LgoKVGhhbmtzIGluIGFkdmFuY2UsIGFueSBhZHZpY2Ug
+d291bGQgYmUgaGVscGZ1bAoKQmVzdCBSZWdhcmRzCgpZaQo=
+------=_Part_5533_6522730.1210033944554
+Content-Type: text/html; charset=GB2312
+Content-Transfer-Encoding: base64
+Content-Disposition: inline
 
-You say _may_ ... wouldn't it be better if it was thus left to a given
-virtex based platform to enable DCR_MMIO if it uses it and leave only
-NATIVE by default ?
-
-> Signed-off-by: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
-> ---
->  arch/powerpc/platforms/40x/Kconfig |    2 ++
->  1 files changed, 2 insertions(+), 0 deletions(-)
-> 
-> diff --git a/arch/powerpc/platforms/40x/Kconfig b/arch/powerpc/platforms/40x/Kconfig
-> index a9260e2..b8e06df 100644
-> --- a/arch/powerpc/platforms/40x/Kconfig
-> +++ b/arch/powerpc/platforms/40x/Kconfig
-> @@ -123,6 +123,8 @@ config 405GPR
->  
->  config XILINX_VIRTEX
->  	bool
-> +	select PPC_DCR_MMIO
-> +	select PPC_DCR_NATIVE
->  
->  config XILINX_VIRTEX_II_PRO
->  	bool
+PGJyPjxicj48ZGl2IGNsYXNzPSJnbWFpbF9xdW90ZSI+LS0tLS0tLS0tLSBGb3J3YXJkZWQgbWVz
+c2FnZSAtLS0tLS0tLS0tPGJyPkZyb206IDxiIGNsYXNzPSJnbWFpbF9zZW5kZXJuYW1lIj7Vxenz
+PC9iPiAmbHQ7PGEgaHJlZj0ibWFpbHRvOnpoYW5neWloZXJlQGdtYWlsLmNvbSI+emhhbmd5aWhl
+cmVAZ21haWwuY29tPC9hPiZndDs8YnI+RGF0ZTogMjAwOC81LzU8YnI+U3ViamVjdDogbGludXgy
+LjYgZG9lcyBub3QgYm9vdCBmcm9tIFhVUDxicj4KVG86IDxhIGhyZWY9Im1haWx0bzpncmFudC5s
+aWtlbHlAc2VjcmV0bGFiLmNhIj5ncmFudC5saWtlbHlAc2VjcmV0bGFiLmNhPC9hPjxicj48YnI+
+PGJyPjxkaXY+SGksR3JhbnQ8L2Rpdj4KPGRpdj4mbmJzcDs8L2Rpdj4KPGRpdj5JIGhvcGUgSSBj
+b3VsZCBnZXQgc29tZSBhZHZpY2VzIGZyb20geW91Jm5ic3A7YWJvdXQgaG93IHRvIGZpeCB0aGUg
+ZXJyb3Igb2YgcG9ydGluZyBsaW51eDIuNiB0byBYaWxpbnggWFVQVjJQLjwvZGl2Pgo8ZGl2PiZu
+YnNwOzwvZGl2Pgo8ZGl2PlRoZSBrZXJuZWwgSSBhbSB1c2luZyBpcyAyLjYuMjQsZ2NjIDQuMS4w
+LGdsaWJjIDIuMy42LGFuZCB0aGUgYm9hcmQmbmJzcDtYaWxpbnggWFVQVjJQPC9kaXY+CjxkaXY+
+Jm5ic3A7PC9kaXY+CjxkaXY+SXQgY29tcGlsZXMgc3VjY2Vzc2Z1bGx5IHdpdGggc29tZSB3YXJu
+aW5ncyBsaWtlIGJlbG93Ojxicj4mbmJzcDsgTU9EUE9TVCB2bWxpbnV4Lm88YnI+V0FSTklORzog
+dm1saW51eC5vKC50ZXh0KzB4MjIzYyk6IFNlY3Rpb24gbWlzbWF0Y2g6IHJlZmVyZW5jZSB0byAu
+aW5pdC50ZXh0OmVhcmx5X2luaXQgKGJldHdlZW4gJiMzOTtzdGFydF9oZXJlJiMzOTsgYW5kICYj
+Mzk7aW5pdGlhbF9tbXUmIzM5Oyk8YnI+CgpXQVJOSU5HOiB2bWxpbnV4Lm8oLnRleHQrMHgyMjU0
+KTogU2VjdGlvbiBtaXNtYXRjaDogcmVmZXJlbmNlIHRvIC5pbml0LnRleHQ6bWFjaGluZV9pbml0
+IChiZXR3ZWVuICYjMzk7c3RhcnRfaGVyZSYjMzk7IGFuZCAmIzM5O2luaXRpYWxfbW11JiMzOTsp
+PGJyPldBUk5JTkc6IHZtbGludXgubygudGV4dCsweDIyNTgpOiBTZWN0aW9uIG1pc21hdGNoOiBy
+ZWZlcmVuY2UgdG8gLmluaXQudGV4dDpNTVVfaW5pdCAoYmV0d2VlbiAmIzM5O3N0YXJ0X2hlcmUm
+IzM5OyBhbmQgJiMzOTtpbml0aWFsX21tdSYjMzk7KTxicj4KCldBUk5JTkc6IHZtbGludXgubygu
+dGV4dCsweDIyYjIpOiBTZWN0aW9uIG1pc21hdGNoOiByZWZlcmVuY2UgdG8gLmluaXQudGV4dDpz
+dGFydF9rZXJuZWwgKGJldHdlZW4gJiMzOTtzdGFydF9oZXJlJiMzOTsgYW5kICYjMzk7aW5pdGlh
+bF9tbXUmIzM5Oyk8YnI+V0FSTklORzogdm1saW51eC5vKC50ZXh0KzB4MjJiNik6IFNlY3Rpb24g
+bWlzbWF0Y2g6IHJlZmVyZW5jZSB0byAuaW5pdC50ZXh0OnN0YXJ0X2tlcm5lbCAoYmV0d2VlbiAm
+IzM5O3N0YXJ0X2hlcmUmIzM5OyBhbmQgJiMzOTtpbml0aWFsX21tdSYjMzk7KTxicj4KCiZuYnNw
+OyZuYnNwOyBMRCZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyB2bWxpbnV4PC9kaXY+Cjxk
+aXY+Jm5ic3A7PC9kaXY+CjxkaXY+VGhlJm5ic3A7c3lzdGVtIGlzIGNyZWF0ZWQmbmJzcDthcyBB
+Q0UgZmlsZSBhbmQgYm9vdGVkIGZyb20gQ0YgQ2FyZDwvZGl2Pgo8ZGl2PiZuYnNwOzwvZGl2Pgo8
+ZGl2PkFmdGVyIHVuY29tcHJlc3NpbmcgdGhlIGtlcm5lbCx0aGUgc3lzdGVtIGhhbmdzLlRoZSBp
+bmZvcm1hdGlvbiBpcyBsaWtlIGJlbG93OjwvZGl2Pgo8ZGl2PiZuYnNwOzwvZGl2Pgo8ZGl2Pmxv
+YWRlZCBhdDombmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsgMDA0MDAwMDAgMDA1NjYxOUM8YnI+Ym9h
+cmQgZGF0YSBhdDogMDAwMDAwMDAgMDAwMDAwN0M8YnI+cmVsb2NhdGVkIHRvOiZuYnNwOyAwMDQw
+NDA2OCAwMDQwNDBFNDxicj56aW1hZ2UgYXQ6Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7IDAwNDA0
+RTUxIDAwNTYzQkY0PGJyPmF2YWlsIHJhbTombmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsgMDA1Njcw
+MDAgN0M5RTIzNzA8L2Rpdj4KPHA+TGludXgvUFBDIGxvYWQ6IGNvbnNvbGU9dHR5UzAsOTYwMCBy
+b290PS9kZXYveHN5c2FjZS9kaXNjMC9wYXJ0MyBydzxicj5VbmNvbXByZXNzaW5nIExpbnV4Li4u
+ZG9uZS48YnI+Tm93IGJvb3RpbmcgdGhlIGtlcm5lbDwvcD4KPGRpdj5JJm5ic3A7d29uZGVyJm5i
+c3A7aWYgaXQmbmJzcDtpcyB0aGUgdXBwZXIgV0FSTklOR3MmbmJzcDt0aGF0IGNhdXNlcyB0aGUg
+aGFuZyBvZiB0aGUmbmJzcDtzeXN0ZW0sIGFuZCBob3cgY2FuJm5ic3A7SSBmaXggaXQuPC9kaXY+
+CjxkaXY+Jm5ic3A7PC9kaXY+CjxkaXY+VGhhbmtzJm5ic3A7aW4gYWR2YW5jZSwmbmJzcDthbnkg
+YWR2aWNlIHdvdWxkIGJlIGhlbHBmdWw8L2Rpdj4KPGRpdj4mbmJzcDs8L2Rpdj4KPGRpdj5CZXN0
+IFJlZ2FyZHM8L2Rpdj4KPGRpdj4mbmJzcDs8L2Rpdj4KPGRpdj5ZaTxicj4mbmJzcDs8L2Rpdj4K
+PC9kaXY+PGJyPgo=
+------=_Part_5533_6522730.1210033944554--
