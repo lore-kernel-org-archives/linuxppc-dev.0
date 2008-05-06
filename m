@@ -1,23 +1,19 @@
-Return-Path: <jochen@scram.de>
-Received: from mail.scram.de (mail0.scram.de [78.47.204.202])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.scram.de", Issuer "scram e.V. CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 2DE3FDDF13
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 May 2008 01:19:57 +1000 (EST)
-Message-ID: <4820770B.1010002@scram.de>
-Date: Tue, 06 May 2008 17:19:39 +0200
-From: Jochen Friedrich <jochen@scram.de>
-MIME-Version: 1.0
-To: Wolfram Sang <w.sang@pengutronix.de>
-Subject: Re: [i2c] [PATCH6/7] i2c: adds support for i2c bus on
-	Freescale	CPM1/CPM2 controllers
-References: <47FF71A9.4010907@scram.de> <20080506135113.GA4265@pengutronix.de>
-In-Reply-To: <20080506135113.GA4265@pengutronix.de>
-Content-Type: text/plain; charset=ISO-8859-15
-Cc: Scott Wood <scottwood@freescale.com>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Linux I2C <i2c@lm-sensors.org>, "Kernel,
-	Linux" <linux-kernel@vger.kernel.org>
+Return-Path: <smaclennan@pikatech.com>
+Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
+	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 426DDDE07E
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 May 2008 01:27:37 +1000 (EST)
+Date: Tue, 6 May 2008 11:27:35 -0400
+From: Sean MacLennan <smaclennan@pikatech.com>
+Subject: Re: [RESEND][PATCH 1/2][POWERPC] PIKA Warp: Update platform code
+	tosupportRev B boards
+Message-ID: <20080506112735.7c2c720e@lappy.seanm.ca>
+In-Reply-To: <20080428232855.22c13830@lappy.seanm.ca>
+References: <20080417152251.2bf07219@lappy.seanm.ca>
+	<20080428214711.240419c3@lappy.seanm.ca>
+	<20080428232855.22c13830@lappy.seanm.ca>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Stephen Rothwell <sfr@canb.auug.org.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,28 +23,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Wolfram,
+Opps, there is a bug in this patch. The file pika.h is not included. I
+have attached it below, but a simpler solution might be to just delete
+it from this file. It is not required to build the kernel.
 
->> +	/* Begin transmission */
->> +	setbits8(&i2c_reg->i2com, 0x80);
-> Hardcoded value. (I also wonder if 0x81 might be more suitable, as it
-> keeps the "be-a-master"-bit set. Still, both values work with my setup.)
+The file currently contains the exported dtm functions. These functions
+are only used by the telephony driver, which is not in the mainline
+kernel.
 
->> +#ifdef I2C_CHIP_ERRATA
->> +	/*
->> +	 * Chip errata, clear enable. This is not needed on rev D4 CPUs.
->> +	 * Disabling I2C too early may cause too short stop condition
->> +	 */
->> +	udelay(4);
->> +	clrbits8(&i2c_reg->i2mod, 1);
-> I was unable to find the corresponding errata document, still I wonder
-> if it is a 0 which should have been written? The text says "clear" and
-> according to the reference manual, this means the bit should be 0.
+Cheers,
+   Sean
 
-setbits8() and clrbits8() use a bitmask as second argument.
+Signed-off-by: Sean MacLennan <smaclennan@pikatech.com>
 
-setbits8(&i2c_reg->i2com, 0x80) will set bit 7 on the i2com register but 
-leave bit 0 untouched. Likewise, clrbits8(&i2c_reg->i2mod, 1) will clear bit 0.
-
-Thanks,
-Jochen
+diff --git a/include/linux/pika.h b/include/linux/pika.h
+new file mode 100644
+index 0000000..83d51df
+--- /dev/null
++++ b/include/linux/pika.h
+@@ -0,0 +1,18 @@
++/*
++ * PIKA exported functions
++ *
++ * Copyright (c) 2008 PIKA Technologies
++ *   Sean MacLennan <smaclennan@pikatech.com>
++ */
++
++#ifndef _LINUX_PIKA_H
++#define _LINUX_PIKA_H
++
++#ifdef __KERNEL__
++
++int pika_dtm_register_shutdown(void (*func)(void *arg), void *arg);
++int pika_dtm_unregister_shutdown(void (*func)(void *arg), void *arg);
++
++#endif
++
++#endif
