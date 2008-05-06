@@ -1,20 +1,20 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.245])
-	by ozlabs.org (Postfix) with ESMTP id 1674BDE274
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 May 2008 01:36:35 +1000 (EST)
-Received: by an-out-0708.google.com with SMTP id c34so842511anc.78
-	for <linuxppc-dev@ozlabs.org>; Tue, 06 May 2008 08:36:32 -0700 (PDT)
-Message-ID: <fa686aa40805060836o519bff20yf2506676ff1c3e6@mail.gmail.com>
-Date: Tue, 6 May 2008 09:36:31 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Fabio Tosetto" <tosettofabio83@libero.it>
-Subject: Re: MPC5200b MMC over SPI into PSC6
-In-Reply-To: <481F4DFD.1000702@libero.it>
+Return-Path: <marvin24@gmx.de>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id 118FEDE252
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 May 2008 02:01:20 +1000 (EST)
+From: Marvin <marvin24@gmx.de>
+To: Dan Munckton <lists@munckfish.net>
+Subject: Re: [Cbe-oss-dev] Xorg crash when PCI not enabled
+Date: Tue, 6 May 2008 18:01:15 +0200
+References: <20080430215644.655638516@am.sony.com>
+	<200805061014.16229.marvin24@gmx.de>
+	<1210067053.8444.14.camel@dylan>
+In-Reply-To: <1210067053.8444.14.camel@dylan>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <481F4DFD.1000702@libero.it>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+  charset="utf-8"
+Message-Id: <200805061801.16116.marvin24@gmx.de>
+Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,32 +24,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, May 5, 2008 at 12:12 PM, Fabio Tosetto <tosettofabio83@libero.it> wrote:
-> Hello, I have an embedded system with an on-board processor powerpc MPC5200B
->  and Linux kernel 2.6.22,
->  I must turn over to MMC SPI on the PSC6.
+
+Hi Dan,
+
+On Tuesday 06 May 2008 11:44:12 Dan Munckton wrote:
+> Hi
 >
->  First, I
->  have enabled PSC6:
+> On Tue, 2008-05-06 at 10:14 +0200, Marvin wrote:
+> > p.s. I installed fc9 last week and Xorg crashes when PCI is not
+> > enabled. just
+> > in case someone has the same problem.
 >
->  in ../arch/ppc/platforms/lite5200.c added PSC6 in SPI mode
+> The Ubuntu PS3 team is also working on an a couple of bugs relating to
+> lack of PCI info. I don't know if these are the same issues you're
+> facing. We're tracking them here at [0] and [2].
+>
+> We had an initial crash was simple to fix [1]. Now we need to get X to
+> automatically load the fbdev driver instead of vesa [2].
 
-You're using arch/ppc which is depreciated.  You should move to using
-arch/powerpc (set ARCH=powerpc when compiling).  Devices are then
-enabled in the device tree source file
-arch/powerpc/boot/dts/lite5200b.dts.
+Fedora uses a newer Xorg (1.5.0 RC1) then Ubuntu. It seems that the 
+detection/scanning code was changed. For me, it crashes right behind "using 
+VT number 7", where a file in /sys/bus/pci is accessed (which of course does 
+not exist), so its not related to the other mentioned bugs. I'm hesitating to 
+file a fedora bug report, because the default kernel works. It's more a Xorg 
+bug to assume everyone has PCI ...
 
-Many things have changed with MPC5200 support in the last year, you
-should also use the latest kernel release (2.6.25.2 when it is
-released.  If you use 2.6.25.1, then there is a trivial bug in the psc
-serial port driver that you'll need to fix.  I'll include the link to
-the patch below)
+Greetings
 
-Cheers,
-g.
-
-http://ozlabs.org/pipermail/linuxppc-dev/2008-April/055495.html
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+	Marvin
