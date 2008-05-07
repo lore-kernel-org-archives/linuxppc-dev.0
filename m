@@ -1,21 +1,21 @@
-Return-Path: <avorontsov@dev.rtsoft.ru>
-Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
-	by ozlabs.org (Postfix) with SMTP id 06F65DDF49
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 May 2008 23:33:48 +1000 (EST)
-Date: Wed, 7 May 2008 17:33:46 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Andy Fleming <afleming@freescale.com>
-Subject: Re: [RFC] gianfar: low gigabit throughput
-Message-ID: <20080507133346.GA8308@polina.dev.rtsoft.ru>
-References: <20080506192008.GA30148@polina.dev.rtsoft.ru>
-	<4820BA72.3090903@hp.com>
-	<E82C3C5F-0D93-4190-ADDC-3FA37D13E250@freescale.com>
+Return-Path: <bunk@kernel.org>
+Received: from smtp6.pp.htv.fi (smtp6.pp.htv.fi [213.243.153.40])
+	by ozlabs.org (Postfix) with ESMTP id C1629DDF2F
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 May 2008 23:42:15 +1000 (EST)
+Date: Wed, 7 May 2008 16:40:57 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Subject: Re: [BUG] 2.6.26-rc1-git4 - task blocked on powerpc for more than
+	120 seconds
+Message-ID: <20080507134057.GA30637@cs181133002.pp.htv.fi>
+References: <4821AD2D.8020001@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <E82C3C5F-0D93-4190-ADDC-3FA37D13E250@freescale.com>
-Cc: netdev@vger.kernel.org, Rick Jones <rick.jones2@hp.com>,
-	linuxppc-dev@ozlabs.org
-Reply-To: avorontsov@ru.mvista.com
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <4821AD2D.8020001@linux.vnet.ibm.com>
+Cc: kernel list <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
+	Pierre Peiffer <pierre.peiffer@bull.net>,
+	Nadia Derbey <Nadia.Derbey@bull.net>,
+	Balbir Singh <balbir@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,49 +25,140 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, May 06, 2008 at 03:29:06PM -0500, Andy Fleming wrote:
->>>
->>> I've tried to tune gianfar driver in various ways... and it gave
->>> some positive results with this patch:
->>> diff --git a/drivers/net/gianfar.h b/drivers/net/gianfar.h
->>> index fd487be..b5943f9 100644
->>> --- a/drivers/net/gianfar.h
->>> +++ b/drivers/net/gianfar.h
->>> @@ -123,8 +123,8 @@ extern const char gfar_driver_version[];
->>> #define GFAR_10_TIME    25600
->>>  #define DEFAULT_TX_COALESCE 1
->>> -#define DEFAULT_TXCOUNT	16
->>> -#define DEFAULT_TXTIME	21
->>> +#define DEFAULT_TXCOUNT	80
->>> +#define DEFAULT_TXTIME	105
->>>  #define DEFAULT_RXTIME	21
->>
->> No ethtool coalescing tuning support for gianfar?-)
->
-> Yeah, there's coalescing tuning in gianfar.
->
-> Anton, those numbers aren't too surprising on a 400 MHz machine, I  
-> think.
+On Wed, May 07, 2008 at 06:52:53PM +0530, Kamalesh Babulal wrote:
+> While running the ltp over the powerpc with the 2.6.26-rc1-git4 kernel,
+> task get blocked for more 120 seconds and does not proceeds future.
+> 
+> The task msgctl08 is a ipc testcase, which test the msgget(2) msgctl(2)
+> syscalls.
 
-This is my thinking too, actually. I've seen the MPC885 board with CPU
-running at 133 MHz and CSB at 66MHz. It was using the completely
-different driver (fs_enet's FEC), and it failed to produce even 60 Mb/s
-(with a 100 Mb/s PHY). 50-55 Mb/s was quite normal for that board.
+Thanks for your report.
 
-Which means, I think, that ~160 Mb/s is quite good for the 400/133
-MHz board.
+I assume this is reproducible?
 
-> But I'd be happy to see any analysis on performance bottlenecks 
-> in the driver.  And patches to fix those bottlenecks are even better!  :)
+If yes, what was the last kernel that worked for you?
 
-The thing is that I don't see obvious bottlenecks, so I'm afraid we'll
-not able to do x2 boost or something... Just fine tuning the driver here
-and there... Interrupts coalescing was very obvious step to boost the
-troughtput, but there are its drawbacks...
+I've also added Pierre Peiffer and Nadia Derbey to the Cc since their 
+recent ipc commits are my first suspects.
 
-Thanks,
+> Machine is stuck in the task, printing the following call trace
+> more than 5000 times. The oom-killer invoked once in-between.
+> 
+> INFO: task msgctl08:16248 blocked for more than 120 seconds.
+> "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+> Call Trace:
+> [c0000000762435a0] [0000000000000001] 0x1 (unreliable)
+> [c000000076243770] [c000000000010acc] .__switch_to+0x128/0x16c
+> [c000000076243800] [c0000000004b07a4] .schedule+0x7ac/0x890
+> [c0000000762438f0] [c0000000004b2ba4] .rwsem_down_failed_common+0x260/0x2b0
+> [c0000000762439b0] [c0000000004b2c60] .rwsem_down_read_failed+0x2c/0x44
+> [c000000076243a60] [c0000000004b1b84] .down_read+0x44/0x5c
+> [c000000076243af0] [c000000000295e10] .ipc_lock+0x34/0xe0
+> [c000000076243b90] [c00000000029690c] .ipc_lock_check+0x24/0x78
+> [c000000076243c20] [c0000000002972c0] .do_msgsnd+0xb0/0x3f8
+> [c000000076243d10] [c000000000293ce8] .compat_sys_msgsnd+0x94/0xc0
+> [c000000076243db0] [c000000000014418] .compat_sys_ipc+0x130/0x1f4
+> [c000000076243e30] [c000000000008734] syscall_exit+0x0/0x40
+> msgctl08 invoked oom-killer: gfp_mask=0x1200d2, order=0, oomkilladj=0
+> Call Trace:
+> [c00000001e1c7640] [c0000000000101bc] .show_stack+0x70/0x1bc (unreliable)
+> [c00000001e1c76f0] [c0000000000c2c78] .oom_kill_process+0x78/0x230
+> [c00000001e1c77a0] [c0000000000c3390] .out_of_memory+0x28c/0x320
+> [c00000001e1c7870] [c0000000000c70ac] .__alloc_pages_internal+0x364/0x468
+> [c00000001e1c7980] [c0000000000e83cc] .alloc_page_vma+0x120/0x14c
+> [c00000001e1c7a20] [c0000000000e0224] .read_swap_cache_async+0x7c/0x160
+> [c00000001e1c7ae0] [c0000000000e035c] .swapin_readahead+0x54/0xd4
+> [c00000001e1c7ba0] [c0000000000d47e8] .handle_mm_fault+0x520/0x9d8
+> [c00000001e1c7c80] [c0000000004b5054] .do_page_fault+0x440/0x624
+> [c00000001e1c7e30] [c0000000000053fc] handle_page_fault+0x20/0x5c
+> Mem-info:
+> Node 0 DMA per-cpu:
+> CPU    0: hi:    6, btch:   1 usd:   1
+> CPU    1: hi:    6, btch:   1 usd:   1
+> Node 1 DMA per-cpu:
+> CPU    0: hi:    6, btch:   1 usd:   5
+> CPU    1: hi:    6, btch:   1 usd:   5
+> Active:31 inactive:2628 dirty:1 writeback:6 unstable:0
+>  free:156 slab:13071 mapped:548 pagetables:41109 bounce:0
+> Node 0 DMA free:5312kB min:5760kB low:7168kB high:8640kB active:1024kB inactive:768kB present:3928832kB pages_scanned:3912 all_unreclaimable? no
+> lowmem_reserve[]: 0 0 0
+> Node 1 DMA free:4672kB min:4992kB low:6208kB high:7488kB active:960kB inactive:169792kB present:3404992kB pages_scanned:140140 all_unreclaimable? no
+> lowmem_reserve[]: 0 0 0
+> Node 0 DMA: 5*64kB 15*128kB 2*256kB 1*512kB 0*1024kB 1*2048kB 0*4096kB 0*8192kB 0*16384kB = 5312kB
+> Node 1 DMA: 8*64kB 5*128kB 6*256kB 0*512kB 0*1024kB 1*2048kB 0*4096kB 0*8192kB 0*16384kB = 4736kB
+> 8185 total pagecache pages
+> Swap cache: add 29545, delete 21888, find 5602/10373
+> Free swap  = 803712kB
+> Total swap = 2048128kB
+> 114688 pages of RAM
+> 766 reserved pages
+> 231218 pages shared
+> 7657 pages swap cached
+> Out of memory: kill process 15371 (msgctl08) score 39223 or a child
+> Killed process 15373 (msgctl08)
+> INFO: task msgctl08:15385 blocked for more than 120 seconds.
+> "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+> Call Trace:
+> [c0000000e9a43290] [0000000000000001] 0x1 (unreliable)
+> [c0000000e9a43460] [c000000000010acc] .__switch_to+0x128/0x16c
+> [c0000000e9a434f0] [c0000000004b07a4] .schedule+0x7ac/0x890
+> [c0000000e9a435e0] [c0000000004b0d90] .io_schedule+0x7c/0xe8
+> [c0000000e9a43670] [c0000000002d7f44] .get_request_wait+0x15c/0x1e0
+> [c0000000e9a43750] [c0000000002d8950] .__make_request+0x3ec/0x4d8
+> [c0000000e9a43800] [c0000000002d6624] .generic_make_request+0x35c/0x3b0
+> [c0000000e9a438e0] [c0000000002d81b0] .submit_bio+0x118/0x140
+> [c0000000e9a439a0] [c0000000000dfa88] .swap_readpage+0x94/0xb4
+> [c0000000e9a43a20] [c0000000000e02b8] .read_swap_cache_async+0x110/0x160
+> [c0000000e9a43ae0] [c0000000000e035c] .swapin_readahead+0x54/0xd4
+> [c0000000e9a43ba0] [c0000000000d47e8] .handle_mm_fault+0x520/0x9d8
+> [c0000000e9a43c80] [c0000000004b5054] .do_page_fault+0x440/0x624
+> [c0000000e9a43e30] [c0000000000053fc] handle_page_fault+0x20/0x5c
+> INFO: task msgctl08:15405 blocked for more than 120 seconds.
+> "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+> Call Trace:
+> [c0000000b1757290] [0000000000000001] 0x1 (unreliable)
+> [c0000000b1757460] [c000000000010acc] .__switch_to+0x128/0x16c
+> [c0000000b17574f0] [c0000000004b07a4] .schedule+0x7ac/0x890
+> [c0000000b17575e0] [c0000000004b0d90] .io_schedule+0x7c/0xe8
+> [c0000000b1757670] [c0000000002d7f44] .get_request_wait+0x15c/0x1e0
+> [c0000000b1757750] [c0000000002d8950] .__make_request+0x3ec/0x4d8
+> [c0000000b1757800] [c0000000002d6624] .generic_make_request+0x35c/0x3b0
+> [c0000000b17578e0] [c0000000002d81b0] .submit_bio+0x118/0x140
+> [c0000000b17579a0] [c0000000000dfa88] .swap_readpage+0x94/0xb4
+> [c0000000b1757a20] [c0000000000e02b8] .read_swap_cache_async+0x110/0x160
+> [c0000000b1757ae0] [c0000000000e035c] .swapin_readahead+0x54/0xd4
+> [c0000000b1757ba0] [c0000000000d47e8] .handle_mm_fault+0x520/0x9d8
+> [c0000000b1757c80] [c0000000004b5054] .do_page_fault+0x440/0x624
+> [c0000000b1757e30] [c0000000000053fc] handle_page_fault+0x20/0x5c
+> INFO: task msgctl08:15406 blocked for more than 120 seconds.
+> "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+> Call Trace:
+> [c0000000eec53290] [0000000000000001] 0x1 (unreliable)
+> [c0000000eec53460] [c000000000010acc] .__switch_to+0x128/0x16c
+> [c0000000eec534f0] [c0000000004b07a4] .schedule+0x7ac/0x890
+> [c0000000eec535e0] [c0000000004b0d90] .io_schedule+0x7c/0xe8
+> [c0000000eec53670] [c0000000002d7f44] .get_request_wait+0x15c/0x1e0
+> [c0000000eec53750] [c0000000002d8950] .__make_request+0x3ec/0x4d8
+> [c0000000eec53800] [c0000000002d6624] .generic_make_request+0x35c/0x3b0
+> [c0000000eec538e0] [c0000000002d81b0] .submit_bio+0x118/0x140
+> [c0000000eec539a0] [c0000000000dfa88] .swap_readpage+0x94/0xb4
+> [c0000000eec53a20] [c0000000000e02b8] .read_swap_cache_async+0x110/0x160
+> [c0000000eec53ae0] [c0000000000e035c] .swapin_readahead+0x54/0xd4
+> [c0000000eec53ba0] [c0000000000d47e8] .handle_mm_fault+0x520/0x9d8
+> [c0000000eec53c80] [c0000000004b5054] .do_page_fault+0x440/0x624
+> [c0000000eec53e30] [c0000000000053fc] handle_page_fault+0x20/0x5c
+> -- 
+> Thanks & Regards,
+> Kamalesh Babulal,
+> Linux Technology Center,
+> IBM, ISTL.
+
+cu
+Adrian
 
 -- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
