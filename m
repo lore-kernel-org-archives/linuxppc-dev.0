@@ -1,20 +1,16 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <stephen.neuendorffer@xilinx.com>
+Received: from outbound4-sin-R.bigfish.com (outbound-sin.frontbridge.com
+	[207.46.51.80])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 33F21DDF5A
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 May 2008 06:42:55 +1000 (EST)
-In-Reply-To: <1210157630.25560.884.camel@pmac.infradead.org>
-References: <20080507102724.GE4326@pengutronix.de>
-	<1210157630.25560.884.camel@pmac.infradead.org>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <9146b2e7fde34e912d20e6ea954bb067@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: jffs2 and unaligned access
-Date: Wed, 7 May 2008 22:42:28 +0200
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 1F456DDEED
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 May 2008 06:47:37 +1000 (EST)
+From: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
+To: grant.likely@secretlab.ca, linuxppc-dev@ozlabs.org
+Subject: [PATCH] [POWERPC] Xilinx: add compatibility for IBM coreconnect
+	busses.
+Date: Wed,  7 May 2008 13:47:31 -0700
+Message-Id: <20080507204734.574B6185804E@mail138-sin.bigfish.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,24 +20,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> memcpy_from/to_io() use word aligned accesses on the io side of 
->> memory.
->> The MPC5200 local plus bus where our flashes are connected does not
->> allow unaligned accesses, so we have to use the io versions of memcpy.
->
-> But this region of flash is marked as suitable for execute-in-place,
-> otherwise the point() function wouldn't be working to give a direct
-> pointer to it. It sounds like we shouldn't be allowing that.
->
-> Which in turn means that perhaps we should have a property in the
-> corresponding node in the device-tree which indicates that it's not
-> suitable for direct access?
+The IBM coreconnect names are pretty well defined, it appears.  In
+addition, the Xilinx versions of these IPs seem to be proliferating.
+Hence, in the future let's prefer to use the standard names.  I've
+left the old names in for some backward compatibility for existing
+device trees.
 
-This isn't usually a property of the flash device, but of the various
-buses/controllers above the flash device.  The device tree should mimic
-reality (and it does, it just seems the kernel doesn't use this 
-information
-yet?)
+Signed-off-by: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
+---
+ arch/powerpc/platforms/40x/virtex.c |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
 
-
-Segher
+diff --git a/arch/powerpc/platforms/40x/virtex.c b/arch/powerpc/platforms/40x/virtex.c
+index 6c72994..7e1c0e3 100644
+--- a/arch/powerpc/platforms/40x/virtex.c
++++ b/arch/powerpc/platforms/40x/virtex.c
+@@ -16,11 +16,15 @@
+ #include <asm/xilinx_intc.h>
+ 
+ static struct of_device_id xilinx_of_bus_ids[] __initdata = {
++	{ .compatible = "ibm,plb3", },
++	{ .compatible = "ibm,plb4", },
+ 	{ .compatible = "xlnx,plb-v46-1.00.a", },
+ 	{ .compatible = "xlnx,plb-v46-1.02.a", },
+ 	{ .compatible = "xlnx,plb-v34-1.01.a", },
+ 	{ .compatible = "xlnx,plb-v34-1.02.a", },
++	{ .compatible = "ibm,opb", },
+ 	{ .compatible = "xlnx,opb-v20-1.10.c", },
++	{ .compatible = "ibm,dcr", },
+ 	{ .compatible = "xlnx,dcr-v29-1.00.a", },
+ 	{ .compatible = "xlnx,compound", },
+ 	{}
+-- 
+1.5.3.4
