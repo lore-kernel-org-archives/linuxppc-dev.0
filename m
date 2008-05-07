@@ -1,25 +1,16 @@
-Return-Path: <rdreier@cisco.com>
-Received: from sj-iport-1.cisco.com (sj-iport-1.cisco.com [171.71.176.70])
-	(using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "sj-iport-1.cisco.com", Issuer "Cisco SSCA" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 4B3C4DE252
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 May 2008 05:18:22 +1000 (EST)
-From: Roland Dreier <rdreier@cisco.com>
-To: Stefan Roscher <ossrosch@linux.vnet.ibm.com>
-Subject: Re: [ewg] [PATCH] IB/ehca: Protect QP against destroying until all
-	async events for it are handled.
-References: <200805071319.37164.ossrosch@linux.vnet.ibm.com>
-	<adahcdaw2oc.fsf@cisco.com>
-	<200805071800.15595.ossrosch@linux.vnet.ibm.com>
-Date: Wed, 07 May 2008 12:18:18 -0700
-In-Reply-To: <200805071800.15595.ossrosch@linux.vnet.ibm.com> (Stefan
-	Roscher's message of "Wed, 7 May 2008 18:00:14 +0200")
-Message-ID: <adaej8dvs79.fsf@cisco.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: LinuxPPC-Dev <linuxppc-dev@ozlabs.org>, fenkes@de.ibm.com,
-	LKML <linux-kernel@vger.kernel.org>, raisch@de.ibm.com,
-	OF-EWG <ewg@lists.openfabrics.org>
+Return-Path: <timur@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 9470BDE347
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 May 2008 05:20:09 +1000 (EST)
+From: Timur Tabi <timur@freescale.com>
+To: linuxppc-dev@ozlabs.org, paulus@samba.org
+Subject: [PATCH] Add null pointer check to of_find_property
+Date: Wed,  7 May 2008 14:19:59 -0500
+Message-Id: <1210187999-20274-1-git-send-email-timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,7 +20,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-So I applied this, but thinking about it further, do you (theoretically
-at least) have the same problem with CQ and SRQ async events?
+Update function of_find_property() to return NULL if the device_node passed
+to it is also NULL.  Otherwise, passing NULL will cause a null pointer
+dereference.
 
- - R.
+Signed-off-by: Timur Tabi <timur@freescale.com>
+---
+
+This patch allows callers to do this:
+
+np = of_find_compatible_node(...);
+prop = of_get_property(np);
+if (!prop)
+     goto error;
+
+Today, we need a np==NULL check between the two of_ calls.  Some callers may
+not care whether the node is missing or the property is missing.
+
+ drivers/of/base.c |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/of/base.c b/drivers/of/base.c
+index 9bd7c4a..23ffb7c 100644
+--- a/drivers/of/base.c
++++ b/drivers/of/base.c
+@@ -65,6 +65,9 @@ struct property *of_find_property(const struct device_node *np,
+ {
+ 	struct property *pp;
+ 
++	if (!np)
++		return NULL;
++
+ 	read_lock(&devtree_lock);
+ 	for (pp = np->properties; pp != 0; pp = pp->next) {
+ 		if (of_prop_cmp(pp->name, name) == 0) {
+-- 
+1.5.5
