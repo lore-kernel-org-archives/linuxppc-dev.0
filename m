@@ -1,21 +1,19 @@
-Return-Path: <bunk@kernel.org>
-Received: from smtp6.pp.htv.fi (smtp6.pp.htv.fi [213.243.153.40])
-	by ozlabs.org (Postfix) with ESMTP id C1629DDF2F
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 May 2008 23:42:15 +1000 (EST)
-Date: Wed, 7 May 2008 16:40:57 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Subject: Re: [BUG] 2.6.26-rc1-git4 - task blocked on powerpc for more than
-	120 seconds
-Message-ID: <20080507134057.GA30637@cs181133002.pp.htv.fi>
-References: <4821AD2D.8020001@linux.vnet.ibm.com>
+Return-Path: <tosettofabio83@libero.it>
+Received: from polito.it (unknown [130.192.3.45])
+	by ozlabs.org (Postfix) with ESMTP id 82DC7DDE0D
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 May 2008 23:50:05 +1000 (EST)
+Message-ID: <4821A551.3060205@libero.it>
+Date: Wed, 07 May 2008 14:49:21 +0200
+From: Fabio Tosetto <tosettofabio83@libero.it>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <4821AD2D.8020001@linux.vnet.ibm.com>
-Cc: kernel list <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
-	Pierre Peiffer <pierre.peiffer@bull.net>,
-	Nadia Derbey <Nadia.Derbey@bull.net>,
-	Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: MPC5200b MMC over SPI into PSC6
+References: <481F4DFD.1000702@libero.it>
+	<fa686aa40805060836o519bff20yf2506676ff1c3e6@mail.gmail.com>
+In-Reply-To: <fa686aa40805060836o519bff20yf2506676ff1c3e6@mail.gmail.com>
+Content-Type: multipart/alternative;
+	boundary="------------060609030300060301030703"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,140 +23,189 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, May 07, 2008 at 06:52:53PM +0530, Kamalesh Babulal wrote:
-> While running the ltp over the powerpc with the 2.6.26-rc1-git4 kernel,
-> task get blocked for more 120 seconds and does not proceeds future.
-> 
-> The task msgctl08 is a ipc testcase, which test the msgget(2) msgctl(2)
-> syscalls.
+This is a multi-part message in MIME format.
+--------------060609030300060301030703
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Thanks for your report.
+I've tried to port my exesting configurations to the powerpc tree but 
+some configurations files are missing.
 
-I assume this is reproducible?
+I need to set PSC3 - PSC4 in uart mode:
+before in file *arch/ppc/platforms/lite5200.c* I added
 
-If yes, what was the last kernel that worked for you?
+struct mpc52xx_psc_func mpc52xx_psc_functions[] = {
+        {       .id     = 3,
+                .func   = "uart",
+        },
+        {       .id     = 4,
+                .func   = "uart",
+        },
+        {       .id     = -1,   /* End entry */
+                .func   = NULL,
+        }
+};
 
-I've also added Pierre Peiffer and Nadia Derbey to the Cc since their 
-recent ipc commits are my first suspects.
+I need to set PSC4 as a low level debug: *
+*before in file  *arch/ppc/platforms/lite5200.h *I added
 
-> Machine is stuck in the task, printing the following call trace
-> more than 5000 times. The oom-killer invoked once in-between.
-> 
-> INFO: task msgctl08:16248 blocked for more than 120 seconds.
-> "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
-> Call Trace:
-> [c0000000762435a0] [0000000000000001] 0x1 (unreliable)
-> [c000000076243770] [c000000000010acc] .__switch_to+0x128/0x16c
-> [c000000076243800] [c0000000004b07a4] .schedule+0x7ac/0x890
-> [c0000000762438f0] [c0000000004b2ba4] .rwsem_down_failed_common+0x260/0x2b0
-> [c0000000762439b0] [c0000000004b2c60] .rwsem_down_read_failed+0x2c/0x44
-> [c000000076243a60] [c0000000004b1b84] .down_read+0x44/0x5c
-> [c000000076243af0] [c000000000295e10] .ipc_lock+0x34/0xe0
-> [c000000076243b90] [c00000000029690c] .ipc_lock_check+0x24/0x78
-> [c000000076243c20] [c0000000002972c0] .do_msgsnd+0xb0/0x3f8
-> [c000000076243d10] [c000000000293ce8] .compat_sys_msgsnd+0x94/0xc0
-> [c000000076243db0] [c000000000014418] .compat_sys_ipc+0x130/0x1f4
-> [c000000076243e30] [c000000000008734] syscall_exit+0x0/0x40
-> msgctl08 invoked oom-killer: gfp_mask=0x1200d2, order=0, oomkilladj=0
-> Call Trace:
-> [c00000001e1c7640] [c0000000000101bc] .show_stack+0x70/0x1bc (unreliable)
-> [c00000001e1c76f0] [c0000000000c2c78] .oom_kill_process+0x78/0x230
-> [c00000001e1c77a0] [c0000000000c3390] .out_of_memory+0x28c/0x320
-> [c00000001e1c7870] [c0000000000c70ac] .__alloc_pages_internal+0x364/0x468
-> [c00000001e1c7980] [c0000000000e83cc] .alloc_page_vma+0x120/0x14c
-> [c00000001e1c7a20] [c0000000000e0224] .read_swap_cache_async+0x7c/0x160
-> [c00000001e1c7ae0] [c0000000000e035c] .swapin_readahead+0x54/0xd4
-> [c00000001e1c7ba0] [c0000000000d47e8] .handle_mm_fault+0x520/0x9d8
-> [c00000001e1c7c80] [c0000000004b5054] .do_page_fault+0x440/0x624
-> [c00000001e1c7e30] [c0000000000053fc] handle_page_fault+0x20/0x5c
-> Mem-info:
-> Node 0 DMA per-cpu:
-> CPU    0: hi:    6, btch:   1 usd:   1
-> CPU    1: hi:    6, btch:   1 usd:   1
-> Node 1 DMA per-cpu:
-> CPU    0: hi:    6, btch:   1 usd:   5
-> CPU    1: hi:    6, btch:   1 usd:   5
-> Active:31 inactive:2628 dirty:1 writeback:6 unstable:0
->  free:156 slab:13071 mapped:548 pagetables:41109 bounce:0
-> Node 0 DMA free:5312kB min:5760kB low:7168kB high:8640kB active:1024kB inactive:768kB present:3928832kB pages_scanned:3912 all_unreclaimable? no
-> lowmem_reserve[]: 0 0 0
-> Node 1 DMA free:4672kB min:4992kB low:6208kB high:7488kB active:960kB inactive:169792kB present:3404992kB pages_scanned:140140 all_unreclaimable? no
-> lowmem_reserve[]: 0 0 0
-> Node 0 DMA: 5*64kB 15*128kB 2*256kB 1*512kB 0*1024kB 1*2048kB 0*4096kB 0*8192kB 0*16384kB = 5312kB
-> Node 1 DMA: 8*64kB 5*128kB 6*256kB 0*512kB 0*1024kB 1*2048kB 0*4096kB 0*8192kB 0*16384kB = 4736kB
-> 8185 total pagecache pages
-> Swap cache: add 29545, delete 21888, find 5602/10373
-> Free swap  = 803712kB
-> Total swap = 2048128kB
-> 114688 pages of RAM
-> 766 reserved pages
-> 231218 pages shared
-> 7657 pages swap cached
-> Out of memory: kill process 15371 (msgctl08) score 39223 or a child
-> Killed process 15373 (msgctl08)
-> INFO: task msgctl08:15385 blocked for more than 120 seconds.
-> "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
-> Call Trace:
-> [c0000000e9a43290] [0000000000000001] 0x1 (unreliable)
-> [c0000000e9a43460] [c000000000010acc] .__switch_to+0x128/0x16c
-> [c0000000e9a434f0] [c0000000004b07a4] .schedule+0x7ac/0x890
-> [c0000000e9a435e0] [c0000000004b0d90] .io_schedule+0x7c/0xe8
-> [c0000000e9a43670] [c0000000002d7f44] .get_request_wait+0x15c/0x1e0
-> [c0000000e9a43750] [c0000000002d8950] .__make_request+0x3ec/0x4d8
-> [c0000000e9a43800] [c0000000002d6624] .generic_make_request+0x35c/0x3b0
-> [c0000000e9a438e0] [c0000000002d81b0] .submit_bio+0x118/0x140
-> [c0000000e9a439a0] [c0000000000dfa88] .swap_readpage+0x94/0xb4
-> [c0000000e9a43a20] [c0000000000e02b8] .read_swap_cache_async+0x110/0x160
-> [c0000000e9a43ae0] [c0000000000e035c] .swapin_readahead+0x54/0xd4
-> [c0000000e9a43ba0] [c0000000000d47e8] .handle_mm_fault+0x520/0x9d8
-> [c0000000e9a43c80] [c0000000004b5054] .do_page_fault+0x440/0x624
-> [c0000000e9a43e30] [c0000000000053fc] handle_page_fault+0x20/0x5c
-> INFO: task msgctl08:15405 blocked for more than 120 seconds.
-> "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
-> Call Trace:
-> [c0000000b1757290] [0000000000000001] 0x1 (unreliable)
-> [c0000000b1757460] [c000000000010acc] .__switch_to+0x128/0x16c
-> [c0000000b17574f0] [c0000000004b07a4] .schedule+0x7ac/0x890
-> [c0000000b17575e0] [c0000000004b0d90] .io_schedule+0x7c/0xe8
-> [c0000000b1757670] [c0000000002d7f44] .get_request_wait+0x15c/0x1e0
-> [c0000000b1757750] [c0000000002d8950] .__make_request+0x3ec/0x4d8
-> [c0000000b1757800] [c0000000002d6624] .generic_make_request+0x35c/0x3b0
-> [c0000000b17578e0] [c0000000002d81b0] .submit_bio+0x118/0x140
-> [c0000000b17579a0] [c0000000000dfa88] .swap_readpage+0x94/0xb4
-> [c0000000b1757a20] [c0000000000e02b8] .read_swap_cache_async+0x110/0x160
-> [c0000000b1757ae0] [c0000000000e035c] .swapin_readahead+0x54/0xd4
-> [c0000000b1757ba0] [c0000000000d47e8] .handle_mm_fault+0x520/0x9d8
-> [c0000000b1757c80] [c0000000004b5054] .do_page_fault+0x440/0x624
-> [c0000000b1757e30] [c0000000000053fc] handle_page_fault+0x20/0x5c
-> INFO: task msgctl08:15406 blocked for more than 120 seconds.
-> "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
-> Call Trace:
-> [c0000000eec53290] [0000000000000001] 0x1 (unreliable)
-> [c0000000eec53460] [c000000000010acc] .__switch_to+0x128/0x16c
-> [c0000000eec534f0] [c0000000004b07a4] .schedule+0x7ac/0x890
-> [c0000000eec535e0] [c0000000004b0d90] .io_schedule+0x7c/0xe8
-> [c0000000eec53670] [c0000000002d7f44] .get_request_wait+0x15c/0x1e0
-> [c0000000eec53750] [c0000000002d8950] .__make_request+0x3ec/0x4d8
-> [c0000000eec53800] [c0000000002d6624] .generic_make_request+0x35c/0x3b0
-> [c0000000eec538e0] [c0000000002d81b0] .submit_bio+0x118/0x140
-> [c0000000eec539a0] [c0000000000dfa88] .swap_readpage+0x94/0xb4
-> [c0000000eec53a20] [c0000000000e02b8] .read_swap_cache_async+0x110/0x160
-> [c0000000eec53ae0] [c0000000000e035c] .swapin_readahead+0x54/0xd4
-> [c0000000eec53ba0] [c0000000000d47e8] .handle_mm_fault+0x520/0x9d8
-> [c0000000eec53c80] [c0000000004b5054] .do_page_fault+0x440/0x624
-> [c0000000eec53e30] [c0000000000053fc] handle_page_fault+0x20/0x5c
-> -- 
-> Thanks & Regards,
-> Kamalesh Babulal,
-> Linux Technology Center,
-> IBM, ISTL.
+#define MPC52xx_PF_CONSOLE_PORT 4    /* PSC4 */
 
-cu
-Adrian
 
--- 
+Finally I need to set  the virtual memory translation on a range of 128 MB:
+before in file *arch/ppc/kernel/head.S *I added
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+/*ori    r11,r11,BL_128M<<2|0x2    set up BAT registers for 604 */
+
+ori    r11,r11,BL_128M<<2|0x2    /* set up BAT registers for 604 */
+
+could you please explain me how to do the same operations in powerpc tree??
+
+thanks Fabio
+
+Grant Likely ha scritto:
+> On Mon, May 5, 2008 at 12:12 PM, Fabio Tosetto <tosettofabio83@libero.it> wrote:
+>   
+>> Hello, I have an embedded system with an on-board processor powerpc MPC5200B
+>>  and Linux kernel 2.6.22,
+>>  I must turn over to MMC SPI on the PSC6.
+>>
+>>  First, I
+>>  have enabled PSC6:
+>>
+>>  in ../arch/ppc/platforms/lite5200.c added PSC6 in SPI mode
+>>     
+>
+> You're using arch/ppc which is depreciated.  You should move to using
+> arch/powerpc (set ARCH=powerpc when compiling).  Devices are then
+> enabled in the device tree source file
+> arch/powerpc/boot/dts/lite5200b.dts.
+>
+> Many things have changed with MPC5200 support in the last year, you
+> should also use the latest kernel release (2.6.25.2 when it is
+> released.  If you use 2.6.25.1, then there is a trivial bug in the psc
+> serial port driver that you'll need to fix.  I'll include the link to
+> the patch below)
+>
+> Cheers,
+> g.
+>
+> http://ozlabs.org/pipermail/linuxppc-dev/2008-April/055495.html
+>
+>   
+
+
+--------------060609030300060301030703
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html;charset=ISO-8859-1" http-equiv="Content-Type">
+</head>
+<body bgcolor="#ffffff" text="#000000">
+I've tried to port my exesting configurations to the powerpc tree but
+some configurations files are missing.
+<br>
+<br>
+I need to set PSC3 - PSC4 in uart mode:
+<br>
+before in file <b class="moz-txt-star"><span class="moz-txt-tag">*</span>arch/ppc/platforms/lite5200.c<span
+ class="moz-txt-tag">*</span></b> I added
+<br>
+<br>
+struct mpc52xx_psc_func mpc52xx_psc_functions[] = {
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; .id&nbsp;&nbsp;&nbsp;&nbsp; = 3,
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; .func&nbsp;&nbsp; = "uart",
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; },
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; .id&nbsp;&nbsp;&nbsp;&nbsp; = 4,
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; .func&nbsp;&nbsp; = "uart",
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; },
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; .id&nbsp;&nbsp;&nbsp;&nbsp; = -1,&nbsp;&nbsp; /* End entry */
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; .func&nbsp;&nbsp; = NULL,
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }
+<br>
+};
+<br>
+<br>
+I need to set PSC4 as a low level debug: *
+<br>
+*before in file&nbsp; *arch/ppc/platforms/lite5200.h *I added
+<br>
+<br>
+#define MPC52xx_PF_CONSOLE_PORT 4&nbsp;&nbsp;&nbsp; /* PSC4 */
+<br>
+<br>
+<br>
+Finally I need to set&nbsp; the virtual memory translation on a range of 128
+MB:
+<br>
+before in file *arch/ppc/kernel/head.S *I added
+<br>
+<br>
+/*ori&nbsp;&nbsp;&nbsp; r11,r11,BL_128M&lt;&lt;2|0x2&nbsp;&nbsp;&nbsp; set up BAT registers for 604
+*/
+<br>
+<br>
+ori&nbsp;&nbsp;&nbsp; r11,r11,BL_128M&lt;&lt;2|0x2&nbsp;&nbsp;&nbsp; /* set up BAT registers for 604
+*/
+<br>
+<br>
+could you please explain me how to do the same operations in powerpc
+tree??
+<br>
+<br>
+thanks Fabio
+<br>
+<br>
+Grant Likely ha scritto:
+<blockquote
+ cite="mid:fa686aa40805060836o519bff20yf2506676ff1c3e6@mail.gmail.com"
+ type="cite">
+  <pre wrap="">On Mon, May 5, 2008 at 12:12 PM, Fabio Tosetto <a class="moz-txt-link-rfc2396E" href="mailto:tosettofabio83@libero.it">&lt;tosettofabio83@libero.it&gt;</a> wrote:
+  </pre>
+  <blockquote type="cite">
+    <pre wrap="">Hello, I have an embedded system with an on-board processor powerpc MPC5200B
+ and Linux kernel 2.6.22,
+ I must turn over to MMC SPI on the PSC6.
+
+ First, I
+ have enabled PSC6:
+
+ in ../arch/ppc/platforms/lite5200.c added PSC6 in SPI mode
+    </pre>
+  </blockquote>
+  <pre wrap=""><!---->
+You're using arch/ppc which is depreciated.  You should move to using
+arch/powerpc (set ARCH=powerpc when compiling).  Devices are then
+enabled in the device tree source file
+arch/powerpc/boot/dts/lite5200b.dts.
+
+Many things have changed with MPC5200 support in the last year, you
+should also use the latest kernel release (2.6.25.2 when it is
+released.  If you use 2.6.25.1, then there is a trivial bug in the psc
+serial port driver that you'll need to fix.  I'll include the link to
+the patch below)
+
+Cheers,
+g.
+
+<a class="moz-txt-link-freetext" href="http://ozlabs.org/pipermail/linuxppc-dev/2008-April/055495.html">http://ozlabs.org/pipermail/linuxppc-dev/2008-April/055495.html</a>
+
+  </pre>
+</blockquote>
+<br>
+</body>
+</html>
+
+--------------060609030300060301030703--
