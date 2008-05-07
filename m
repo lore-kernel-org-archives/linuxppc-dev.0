@@ -1,16 +1,22 @@
-Return-Path: <timur@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 9470BDE347
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 May 2008 05:20:09 +1000 (EST)
-From: Timur Tabi <timur@freescale.com>
-To: linuxppc-dev@ozlabs.org, paulus@samba.org
-Subject: [PATCH] Add null pointer check to of_find_property
-Date: Wed,  7 May 2008 14:19:59 -0500
-Message-Id: <1210187999-20274-1-git-send-email-timur@freescale.com>
+Return-Path: <Sergej.Stepanov@ids.de>
+Received: from ares.ids.de (ares.ids.de [213.144.29.131])
+	by ozlabs.org (Postfix) with ESMTP id 0C921DE450
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 May 2008 05:26:56 +1000 (EST)
+Received: from ares.ids.de (ares.ids.de [127.0.0.1])
+	by ares.ids.de (PGP Universal) with ESMTP id 8DCF7F49128
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 May 2008 21:26:54 +0200 (CEST)
+Subject: Re: powerpc port for sbc8260-based board problem
+From: Sergej Stepanov <Sergej.Stepanov@ids.de>
+To: Scott Wood <scottwood@freescale.com>
+In-Reply-To: <4821FBA0.9080203@freescale.com>
+References: <733382.15174.qm@web50603.mail.re2.yahoo.com>
+	<20080507182209.GA2710@loki.buserror.net>
+	<1210185652.3519.18.camel@p60365-ste> <4821FBA0.9080203@freescale.com>
+Date: Wed, 07 May 2008 21:26:53 +0200
+Message-Id: <1210188413.3519.36.camel@p60365-ste>
+Mime-Version: 1.0
+Content-Type: text/plain
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,39 +26,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Update function of_find_property() to return NULL if the device_node passed
-to it is also NULL.  Otherwise, passing NULL will cause a null pointer
-dereference.
 
-Signed-off-by: Timur Tabi <timur@freescale.com>
----
+Am Mittwoch, den 07.05.2008, 13:57 -0500 schrieb Scott Wood:
+> Sergej Stepanov wrote:
+> > My story is follow: we have mpc8247 based card.
+> > The problem with smc happens due to the cpm reset.
+> > Of course, if you have not CONFIG_PPC_EARLY_DEBUG_CPM with
+> > CONFIG_PPC_CPM_NEW_BINDING.
+> > May be it is some kind of mistake, but i could fix the problem with the
+> > patch i told above.
+> > Could give me some your note, please? Thank you.
+> 
+> I'm not sure how it would make a difference -- the BRG should have 
+> already been set through the set_termios callback, which is called from 
+> uart_set_options.
+> 
+> -Scott
+Yes, i thought it also, but i traced it for us for the uart console.
+The cpm_uart_set_termios(..) was not called.
+At which place should it be called?
+Is it uart_set_options(..)?
 
-This patch allows callers to do this:
-
-np = of_find_compatible_node(...);
-prop = of_get_property(np);
-if (!prop)
-     goto error;
-
-Today, we need a np==NULL check between the two of_ calls.  Some callers may
-not care whether the node is missing or the property is missing.
-
- drivers/of/base.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/of/base.c b/drivers/of/base.c
-index 9bd7c4a..23ffb7c 100644
---- a/drivers/of/base.c
-+++ b/drivers/of/base.c
-@@ -65,6 +65,9 @@ struct property *of_find_property(const struct device_node *np,
- {
- 	struct property *pp;
- 
-+	if (!np)
-+		return NULL;
-+
- 	read_lock(&devtree_lock);
- 	for (pp = np->properties; pp != 0; pp = pp->next) {
- 		if (of_prop_cmp(pp->name, name) == 0) {
--- 
-1.5.5
+Sergej.
