@@ -1,14 +1,20 @@
-Return-Path: <bshtein@yahoo.com>
-Received: from web50603.mail.re2.yahoo.com (web50603.mail.re2.yahoo.com
-	[206.190.38.90]) by ozlabs.org (Postfix) with SMTP id 5ECF6DDEDF
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 May 2008 18:38:35 +1000 (EST)
-Date: Wed, 7 May 2008 01:31:52 -0700 (PDT)
-From: Boris Shteinbock <bshtein@yahoo.com>
-Subject: powerpc port for sbc8260-based board problem
-To: linuxppc-dev@ozlabs.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <733382.15174.qm@web50603.mail.re2.yahoo.com>
+Return-Path: <SRS0+9d6426c59dd8b4fa22d3+1718+infradead.org+dwmw2@pentafluge.srs.infradead.org>
+Received: from pentafluge.infradead.org (pentafluge.infradead.org
+	[213.146.154.40])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id EED5BDDE21
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 May 2008 20:54:00 +1000 (EST)
+Subject: Re: jffs2 and unaligned access
+From: David Woodhouse <dwmw2@infradead.org>
+To: Sascha Hauer <s.hauer@pengutronix.de>
+In-Reply-To: <20080507102724.GE4326@pengutronix.de>
+References: <20080507102724.GE4326@pengutronix.de>
+Content-Type: text/plain
+Date: Wed, 07 May 2008 11:53:49 +0100
+Message-Id: <1210157630.25560.884.camel@pmac.infradead.org>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,56 +24,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi.
-I am doing a port from ppc to powerpc ARCH on sbc8260 based board.
-The problem is, that I can't get  SMC1 UART to work.
-After SMC console  is initialized.  
-cpm_uart_console_write() hangs here
+On Wed, 2008-05-07 at 12:27 +0200, Sascha Hauer wrote:
+> memcpy_from/to_io() use word aligned accesses on the io side of memory.
+> The MPC5200 local plus bus where our flashes are connected does not
+> allow unaligned accesses, so we have to use the io versions of memcpy.
 
-        /* Wait for transmitter fifo to empty.
-         * Ready indicates output is ready, and xmt is doing
-         * that, not that it is ready for us to send.
-         */
-        while ((in_be16(&bdp->cbd_sc) & BD_SC_READY) != 0)
-            ;
+But this region of flash is marked as suitable for execute-in-place,
+otherwise the point() function wouldn't be working to give a direct
+pointer to it. It sounds like we shouldn't be allowing that.
 
-I am using dts tree modified  from ep8248 port since it is the only one that has smc description in it. :
+Which in turn means that perhaps we should have a property in the
+corresponding node in the device-tree which indicates that it's not
+suitable for direct access?
 
-
-     brg@119f0 {
-       compatible = "fsl,mpc8260-brg",
-                    "fsl,cpm2-brg",
-                    "fsl,cpm-brg";
-       reg = <119f0 10 115f0 10>;
-       clock-frequency = <135000000>;
-       
-     };
-
-     /* Monitor port/SMC1 */
-     smc1: serial@11a80 {
-       device_type = "serial";
-       compatible = "fsl,mpc8260-smc-uart",
-                    "fsl,cpm2-smc-uart";
-       reg = <0x11a80 0x20 0x1100 0x40>;
-       interrupts = <4 8>;
-       interrupt-parent = <&PIC>;
-       fsl,cpm-brg = <1>;
-       fsl,cpm-command = <0x1d000000>;
-       linux,my-label = "SMC1";
-     };
-
-I checked a BRG settings against working u-boot configuration and they are the same. Anyway a wrong BRG setting wouldn't hang this loop
-
-So I have a few questions.
-If someone has done sbc8260 dts tree and port to "powerpc" already, I'd be very  grateful if he can share it with me.
-I couldn't find anything on the internet.
-
-Can someone, also, explain, how "fsl, cpm-command" field works,  booting-without-of document doesn't provide much information.
-I feel, that just copying this value from ep8248.dts isn't right somehow.
-
-Thank you
-
-
-      ____________________________________________________________________________________
-Be a better friend, newshound, and 
-know-it-all with Yahoo! Mobile.  Try it now.  http://mobile.yahoo.com/;_ylt=Ahu06i62sR8HDtDypao8Wcj9tAcJ
+-- 
+dwmw2
