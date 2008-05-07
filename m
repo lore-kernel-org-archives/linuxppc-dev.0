@@ -1,16 +1,21 @@
-Return-Path: <stephen.neuendorffer@xilinx.com>
-Received: from outbound4-sin-R.bigfish.com (outbound-sin.frontbridge.com
-	[207.46.51.80])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 1F456DDEED
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 May 2008 06:47:37 +1000 (EST)
-From: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
-To: grant.likely@secretlab.ca, linuxppc-dev@ozlabs.org
-Subject: [PATCH] [POWERPC] Xilinx: add compatibility for IBM coreconnect
-	busses.
-Date: Wed,  7 May 2008 13:47:31 -0700
-Message-Id: <20080507204734.574B6185804E@mail138-sin.bigfish.com>
+Return-Path: <CFRIESEN@nortel.com>
+Received: from zrtps0kn.nortel.com (zrtps0kn.nortel.com [47.140.192.55])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "zrtps0kn.nortel.com", Issuer "NORTEL" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 8DBB7DDED3
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 May 2008 07:18:01 +1000 (EST)
+Received: from zcarhxs1.corp.nortel.com (zcarhxs1.corp.nortel.com
+	[47.129.230.89])
+	by zrtps0kn.nortel.com (Switch-2.2.6/Switch-2.2.0) with ESMTP id
+	m47L9W701973
+	for <linuxppc-dev@ozlabs.org>; Wed, 7 May 2008 21:09:32 GMT
+Message-ID: <48221A5F.6020306@nortel.com>
+Date: Wed, 07 May 2008 15:08:47 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+MIME-Version: 1.0
+To: linuxppc-dev@ozlabs.org
+Subject: error building 2.6.25 for G5
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,36 +25,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The IBM coreconnect names are pretty well defined, it appears.  In
-addition, the Xilinx versions of these IPs seem to be proliferating.
-Hence, in the future let's prefer to use the standard names.  I've
-left the old names in for some backward compatibility for existing
-device trees.
+Hi,
 
-Signed-off-by: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
----
- arch/powerpc/platforms/40x/virtex.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
+I'm getting the following error when building 2.6.25.  Has anyone else 
+seen anything like this?  This is using gcc 3.4.3.
 
-diff --git a/arch/powerpc/platforms/40x/virtex.c b/arch/powerpc/platforms/40x/virtex.c
-index 6c72994..7e1c0e3 100644
---- a/arch/powerpc/platforms/40x/virtex.c
-+++ b/arch/powerpc/platforms/40x/virtex.c
-@@ -16,11 +16,15 @@
- #include <asm/xilinx_intc.h>
- 
- static struct of_device_id xilinx_of_bus_ids[] __initdata = {
-+	{ .compatible = "ibm,plb3", },
-+	{ .compatible = "ibm,plb4", },
- 	{ .compatible = "xlnx,plb-v46-1.00.a", },
- 	{ .compatible = "xlnx,plb-v46-1.02.a", },
- 	{ .compatible = "xlnx,plb-v34-1.01.a", },
- 	{ .compatible = "xlnx,plb-v34-1.02.a", },
-+	{ .compatible = "ibm,opb", },
- 	{ .compatible = "xlnx,opb-v20-1.10.c", },
-+	{ .compatible = "ibm,dcr", },
- 	{ .compatible = "xlnx,dcr-v29-1.00.a", },
- 	{ .compatible = "xlnx,compound", },
- 	{}
--- 
-1.5.3.4
+
+   CALL 
+/home/cfriesen/kernels/2.6.25/linux-2.6.25/scripts/checksyscalls.sh
+   CHK     include/linux/compile.h
+   CALL 
+/home/cfriesen/kernels/2.6.25/linux-2.6.25/arch/powerpc/kernel/systbl_chk.sh
+   AS      arch/powerpc/kernel/systbl.o
+   OBJCOPY arch/powerpc/kernel/vdso64/vdso64.so
+BFD: arch/powerpc/kernel/vdso64/vdso64.so: The first section in the 
+PT_DYNAMIC segment is not the .dynamic section
+/home/cfriesen/bin/ppc64-R9a/bin/ppc64-R9a-objcopy: 
+arch/powerpc/kernel/vdso64/vdso64.so: Bad value
+BFD: arch/powerpc/kernel/vdso64/vdso64.so: The first section in the 
+PT_DYNAMIC segment is not the .dynamic section
+/home/cfriesen/bin/ppc64-R9a/bin/ppc64-R9a-objcopy: 
+arch/powerpc/kernel/vdso64/vdso64.so: Bad value
+make[3]: *** [arch/powerpc/kernel/vdso64/vdso64.so] Error 1
+make[2]: *** [arch/powerpc/kernel/vdso64] Error 2
+make[1]: *** [arch/powerpc/kernel] Error 2
+make: *** [sub-make] Error 2
+
+
+
+Chris
