@@ -1,24 +1,20 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <timur@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
+	(Client CN "az33egw01.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 53099DDF6C
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 May 2008 05:33:16 +1000 (EST)
-Message-ID: <48220428.6020207@freescale.com>
-Date: Wed, 07 May 2008 14:34:00 -0500
-From: Scott Wood <scottwood@freescale.com>
+	by ozlabs.org (Postfix) with ESMTPS id 061B5DE305
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 May 2008 05:37:11 +1000 (EST)
+Message-ID: <482204DF.9070600@freescale.com>
+Date: Wed, 07 May 2008 14:37:03 -0500
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-To: Sergej Stepanov <Sergej.Stepanov@ids.de>
-Subject: Re: powerpc port for sbc8260-based board problem
-References: <733382.15174.qm@web50603.mail.re2.yahoo.com>	
-	<20080507182209.GA2710@loki.buserror.net>	
-	<1210185652.3519.18.camel@p60365-ste>
-	<4821FBA0.9080203@freescale.com>
-	<1210188413.3519.36.camel@p60365-ste>
-In-Reply-To: <1210188413.3519.36.camel@p60365-ste>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Andy Fleming <afleming@freescale.com>
+Subject: Re: [PATCH v2] powerpc: Fix a bunch of sparse warnings in the qe_lib
+References: <1210184384-28425-1-git-send-email-afleming@freescale.com>
+In-Reply-To: <1210184384-28425-1-git-send-email-afleming@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -29,18 +25,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Sergej Stepanov wrote:
-> Am Mittwoch, den 07.05.2008, 13:57 -0500 schrieb Scott Wood:
->> I'm not sure how it would make a difference -- the BRG should have 
->> already been set through the set_termios callback, which is called from 
->> uart_set_options.
->>
->> -Scott
-> Yes, i thought it also, but i traced it for us for the uart console.
-> The cpm_uart_set_termios(..) was not called.
-> At which place should it be called?
-> Is it uart_set_options(..)?
+Andy Fleming wrote:
+> Mostly having to do with not marking things __iomem.  And some failure
+> to use appropriate accessors to read MMIO regs.
+> 
+> Signed-off-by: Andy Fleming <afleming@freescale.com>
 
-Yes, uart_set_options() calls port->ops->set_termios().
+Acked-By: Timur Tabi <timur@freescale.com>
 
--Scott
+(Not timur.tabi@freescale.com)
+
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
