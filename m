@@ -1,18 +1,28 @@
-Return-Path: <sha@pengutronix.de>
-Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
-	[83.236.181.26]) by ozlabs.org (Postfix) with ESMTP id D31F8DDE11
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 May 2008 23:22:38 +1000 (EST)
-Date: Wed, 7 May 2008 15:25:14 +0200
-From: Sascha Hauer <s.hauer@pengutronix.de>
-To: David Woodhouse <dwmw2@infradead.org>
-Subject: Re: jffs2 and unaligned access
-Message-ID: <20080507132514.GF4326@pengutronix.de>
-References: <20080507102724.GE4326@pengutronix.de>
-	<1210157630.25560.884.camel@pmac.infradead.org>
+Return-Path: <kamalesh@linux.vnet.ibm.com>
+Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [59.145.155.4])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e28smtp04.in.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 9A4E0DDE1F
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 May 2008 23:23:20 +1000 (EST)
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+	by e28smtp04.in.ibm.com (8.13.1/8.13.1) with ESMTP id m47DMtOA027831
+	for <linuxppc-dev@ozlabs.org>; Wed, 7 May 2008 18:52:55 +0530
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+	by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m47DMkPN1425614
+	for <linuxppc-dev@ozlabs.org>; Wed, 7 May 2008 18:52:46 +0530
+Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
+	by d28av01.in.ibm.com (8.13.1/8.13.3) with ESMTP id m47DMepj022233
+	for <linuxppc-dev@ozlabs.org>; Wed, 7 May 2008 18:52:41 +0530
+Message-ID: <4821AD2D.8020001@linux.vnet.ibm.com>
+Date: Wed, 07 May 2008 18:52:53 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1210157630.25560.884.camel@pmac.infradead.org>
-Cc: linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org
+To: kernel list <linux-kernel@vger.kernel.org>
+Subject: [BUG] 2.6.26-rc1-git4 - task blocked on powerpc for more than 120
+	seconds
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, Balbir Singh <balbir@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,36 +32,118 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, May 07, 2008 at 11:53:49AM +0100, David Woodhouse wrote:
-> On Wed, 2008-05-07 at 12:27 +0200, Sascha Hauer wrote:
-> > memcpy_from/to_io() use word aligned accesses on the io side of memory.
-> > The MPC5200 local plus bus where our flashes are connected does not
-> > allow unaligned accesses, so we have to use the io versions of memcpy.
-> 
-> But this region of flash is marked as suitable for execute-in-place,
-> otherwise the point() function wouldn't be working to give a direct
-> pointer to it. It sounds like we shouldn't be allowing that.
+While running the ltp over the powerpc with the 2.6.26-rc1-git4 kernel,
+task get blocked for more 120 seconds and does not proceeds future.
 
-It actually is suitable for execute-in-place. It's the flash U-Boot
-starts from. The compiler will generate a proper alignment for you.
+The task msgctl08 is a ipc testcase, which test the msgget(2) msgctl(2)
+syscalls. Machine is stuck in the task, printing the following call trace
+more than 5000 times. The oom-killer invoked once in-between.
 
-> 
-> Which in turn means that perhaps we should have a property in the
-> corresponding node in the device-tree which indicates that it's not
-> suitable for direct access?
-
-So far we did not work with the device-tree flash binding but with the
-physmap-flash driver, but ok, this is subject to change anyway.
-
-I gave it a quick try to disable direct accesses. It works, but has a
-1:10 performance impact on mounting a jffs2. At least it's a clean
-solution.
-
-Sascha
-
-
+INFO: task msgctl08:16248 blocked for more than 120 seconds.
+"echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+Call Trace:
+[c0000000762435a0] [0000000000000001] 0x1 (unreliable)
+[c000000076243770] [c000000000010acc] .__switch_to+0x128/0x16c
+[c000000076243800] [c0000000004b07a4] .schedule+0x7ac/0x890
+[c0000000762438f0] [c0000000004b2ba4] .rwsem_down_failed_common+0x260/0x2b0
+[c0000000762439b0] [c0000000004b2c60] .rwsem_down_read_failed+0x2c/0x44
+[c000000076243a60] [c0000000004b1b84] .down_read+0x44/0x5c
+[c000000076243af0] [c000000000295e10] .ipc_lock+0x34/0xe0
+[c000000076243b90] [c00000000029690c] .ipc_lock_check+0x24/0x78
+[c000000076243c20] [c0000000002972c0] .do_msgsnd+0xb0/0x3f8
+[c000000076243d10] [c000000000293ce8] .compat_sys_msgsnd+0x94/0xc0
+[c000000076243db0] [c000000000014418] .compat_sys_ipc+0x130/0x1f4
+[c000000076243e30] [c000000000008734] syscall_exit+0x0/0x40
+msgctl08 invoked oom-killer: gfp_mask=0x1200d2, order=0, oomkilladj=0
+Call Trace:
+[c00000001e1c7640] [c0000000000101bc] .show_stack+0x70/0x1bc (unreliable)
+[c00000001e1c76f0] [c0000000000c2c78] .oom_kill_process+0x78/0x230
+[c00000001e1c77a0] [c0000000000c3390] .out_of_memory+0x28c/0x320
+[c00000001e1c7870] [c0000000000c70ac] .__alloc_pages_internal+0x364/0x468
+[c00000001e1c7980] [c0000000000e83cc] .alloc_page_vma+0x120/0x14c
+[c00000001e1c7a20] [c0000000000e0224] .read_swap_cache_async+0x7c/0x160
+[c00000001e1c7ae0] [c0000000000e035c] .swapin_readahead+0x54/0xd4
+[c00000001e1c7ba0] [c0000000000d47e8] .handle_mm_fault+0x520/0x9d8
+[c00000001e1c7c80] [c0000000004b5054] .do_page_fault+0x440/0x624
+[c00000001e1c7e30] [c0000000000053fc] handle_page_fault+0x20/0x5c
+Mem-info:
+Node 0 DMA per-cpu:
+CPU    0: hi:    6, btch:   1 usd:   1
+CPU    1: hi:    6, btch:   1 usd:   1
+Node 1 DMA per-cpu:
+CPU    0: hi:    6, btch:   1 usd:   5
+CPU    1: hi:    6, btch:   1 usd:   5
+Active:31 inactive:2628 dirty:1 writeback:6 unstable:0
+ free:156 slab:13071 mapped:548 pagetables:41109 bounce:0
+Node 0 DMA free:5312kB min:5760kB low:7168kB high:8640kB active:1024kB inactive:768kB present:3928832kB pages_scanned:3912 all_unreclaimable? no
+lowmem_reserve[]: 0 0 0
+Node 1 DMA free:4672kB min:4992kB low:6208kB high:7488kB active:960kB inactive:169792kB present:3404992kB pages_scanned:140140 all_unreclaimable? no
+lowmem_reserve[]: 0 0 0
+Node 0 DMA: 5*64kB 15*128kB 2*256kB 1*512kB 0*1024kB 1*2048kB 0*4096kB 0*8192kB 0*16384kB = 5312kB
+Node 1 DMA: 8*64kB 5*128kB 6*256kB 0*512kB 0*1024kB 1*2048kB 0*4096kB 0*8192kB 0*16384kB = 4736kB
+8185 total pagecache pages
+Swap cache: add 29545, delete 21888, find 5602/10373
+Free swap  = 803712kB
+Total swap = 2048128kB
+114688 pages of RAM
+766 reserved pages
+231218 pages shared
+7657 pages swap cached
+Out of memory: kill process 15371 (msgctl08) score 39223 or a child
+Killed process 15373 (msgctl08)
+INFO: task msgctl08:15385 blocked for more than 120 seconds.
+"echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+Call Trace:
+[c0000000e9a43290] [0000000000000001] 0x1 (unreliable)
+[c0000000e9a43460] [c000000000010acc] .__switch_to+0x128/0x16c
+[c0000000e9a434f0] [c0000000004b07a4] .schedule+0x7ac/0x890
+[c0000000e9a435e0] [c0000000004b0d90] .io_schedule+0x7c/0xe8
+[c0000000e9a43670] [c0000000002d7f44] .get_request_wait+0x15c/0x1e0
+[c0000000e9a43750] [c0000000002d8950] .__make_request+0x3ec/0x4d8
+[c0000000e9a43800] [c0000000002d6624] .generic_make_request+0x35c/0x3b0
+[c0000000e9a438e0] [c0000000002d81b0] .submit_bio+0x118/0x140
+[c0000000e9a439a0] [c0000000000dfa88] .swap_readpage+0x94/0xb4
+[c0000000e9a43a20] [c0000000000e02b8] .read_swap_cache_async+0x110/0x160
+[c0000000e9a43ae0] [c0000000000e035c] .swapin_readahead+0x54/0xd4
+[c0000000e9a43ba0] [c0000000000d47e8] .handle_mm_fault+0x520/0x9d8
+[c0000000e9a43c80] [c0000000004b5054] .do_page_fault+0x440/0x624
+[c0000000e9a43e30] [c0000000000053fc] handle_page_fault+0x20/0x5c
+INFO: task msgctl08:15405 blocked for more than 120 seconds.
+"echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+Call Trace:
+[c0000000b1757290] [0000000000000001] 0x1 (unreliable)
+[c0000000b1757460] [c000000000010acc] .__switch_to+0x128/0x16c
+[c0000000b17574f0] [c0000000004b07a4] .schedule+0x7ac/0x890
+[c0000000b17575e0] [c0000000004b0d90] .io_schedule+0x7c/0xe8
+[c0000000b1757670] [c0000000002d7f44] .get_request_wait+0x15c/0x1e0
+[c0000000b1757750] [c0000000002d8950] .__make_request+0x3ec/0x4d8
+[c0000000b1757800] [c0000000002d6624] .generic_make_request+0x35c/0x3b0
+[c0000000b17578e0] [c0000000002d81b0] .submit_bio+0x118/0x140
+[c0000000b17579a0] [c0000000000dfa88] .swap_readpage+0x94/0xb4
+[c0000000b1757a20] [c0000000000e02b8] .read_swap_cache_async+0x110/0x160
+[c0000000b1757ae0] [c0000000000e035c] .swapin_readahead+0x54/0xd4
+[c0000000b1757ba0] [c0000000000d47e8] .handle_mm_fault+0x520/0x9d8
+[c0000000b1757c80] [c0000000004b5054] .do_page_fault+0x440/0x624
+[c0000000b1757e30] [c0000000000053fc] handle_page_fault+0x20/0x5c
+INFO: task msgctl08:15406 blocked for more than 120 seconds.
+"echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+Call Trace:
+[c0000000eec53290] [0000000000000001] 0x1 (unreliable)
+[c0000000eec53460] [c000000000010acc] .__switch_to+0x128/0x16c
+[c0000000eec534f0] [c0000000004b07a4] .schedule+0x7ac/0x890
+[c0000000eec535e0] [c0000000004b0d90] .io_schedule+0x7c/0xe8
+[c0000000eec53670] [c0000000002d7f44] .get_request_wait+0x15c/0x1e0
+[c0000000eec53750] [c0000000002d8950] .__make_request+0x3ec/0x4d8
+[c0000000eec53800] [c0000000002d6624] .generic_make_request+0x35c/0x3b0
+[c0000000eec538e0] [c0000000002d81b0] .submit_bio+0x118/0x140
+[c0000000eec539a0] [c0000000000dfa88] .swap_readpage+0x94/0xb4
+[c0000000eec53a20] [c0000000000e02b8] .read_swap_cache_async+0x110/0x160
+[c0000000eec53ae0] [c0000000000e035c] .swapin_readahead+0x54/0xd4
+[c0000000eec53ba0] [c0000000000d47e8] .handle_mm_fault+0x520/0x9d8
+[c0000000eec53c80] [c0000000004b5054] .do_page_fault+0x440/0x624
+[c0000000eec53e30] [c0000000000053fc] handle_page_fault+0x20/0x5c
 -- 
-Pengutronix e.K. - Linux Solutions for Science and Industry
------------------------------------------------------------
-Kontakt-Informationen finden Sie im Header dieser Mail oder
-auf der Webseite -> http://www.pengutronix.de/impressum/ <-
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
