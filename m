@@ -1,23 +1,25 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id E4E60DDF0D
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 May 2008 04:56:53 +1000 (EST)
-Message-ID: <4821FBA0.9080203@freescale.com>
-Date: Wed, 07 May 2008 13:57:36 -0500
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <rdreier@cisco.com>
+Received: from sj-iport-1.cisco.com (sj-iport-1.cisco.com [171.71.176.70])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "sj-iport-1.cisco.com", Issuer "Cisco SSCA" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 4B3C4DE252
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 May 2008 05:18:22 +1000 (EST)
+From: Roland Dreier <rdreier@cisco.com>
+To: Stefan Roscher <ossrosch@linux.vnet.ibm.com>
+Subject: Re: [ewg] [PATCH] IB/ehca: Protect QP against destroying until all
+	async events for it are handled.
+References: <200805071319.37164.ossrosch@linux.vnet.ibm.com>
+	<adahcdaw2oc.fsf@cisco.com>
+	<200805071800.15595.ossrosch@linux.vnet.ibm.com>
+Date: Wed, 07 May 2008 12:18:18 -0700
+In-Reply-To: <200805071800.15595.ossrosch@linux.vnet.ibm.com> (Stefan
+	Roscher's message of "Wed, 7 May 2008 18:00:14 +0200")
+Message-ID: <adaej8dvs79.fsf@cisco.com>
 MIME-Version: 1.0
-To: Sergej Stepanov <Sergej.Stepanov@ids.de>
-Subject: Re: powerpc port for sbc8260-based board problem
-References: <733382.15174.qm@web50603.mail.re2.yahoo.com>	
-	<20080507182209.GA2710@loki.buserror.net>
-	<1210185652.3519.18.camel@p60365-ste>
-In-Reply-To: <1210185652.3519.18.camel@p60365-ste>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+Cc: LinuxPPC-Dev <linuxppc-dev@ozlabs.org>, fenkes@de.ibm.com,
+	LKML <linux-kernel@vger.kernel.org>, raisch@de.ibm.com,
+	OF-EWG <ewg@lists.openfabrics.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,17 +29,7 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Sergej Stepanov wrote:
-> My story is follow: we have mpc8247 based card.
-> The problem with smc happens due to the cpm reset.
-> Of course, if you have not CONFIG_PPC_EARLY_DEBUG_CPM with
-> CONFIG_PPC_CPM_NEW_BINDING.
-> May be it is some kind of mistake, but i could fix the problem with the
-> patch i told above.
-> Could give me some your note, please? Thank you.
+So I applied this, but thinking about it further, do you (theoretically
+at least) have the same problem with CQ and SRQ async events?
 
-I'm not sure how it would make a difference -- the BRG should have 
-already been set through the set_termios callback, which is called from 
-uart_set_options.
-
--Scott
+ - R.
