@@ -1,20 +1,29 @@
-Return-Path: <Sergej.Stepanov@ids.de>
-Received: from ares.ids.de (ares.ids.de [213.144.29.131])
-	by ozlabs.org (Postfix) with ESMTP id 1CC40DE097
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 May 2008 04:03:02 +1000 (EST)
-Received: from ares.ids.de (ares.ids.de [127.0.0.1])
-	by ares.ids.de (PGP Universal) with ESMTP id 13069F49114
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 May 2008 19:38:17 +0200 (CEST)
-Subject: Re: powerpc port for sbc8260-based board problem
-From: Sergej Stepanov <Sergej.Stepanov@ids.de>
-To: Boris Shteinbock <bshtein@yahoo.com>
-In-Reply-To: <733382.15174.qm@web50603.mail.re2.yahoo.com>
-References: <733382.15174.qm@web50603.mail.re2.yahoo.com>
-Date: Wed, 07 May 2008 19:38:16 +0200
-Message-Id: <1210181896.3519.2.camel@p60365-ste>
+Return-Path: <cel@us.ibm.com>
+Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id C640DDDE08
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 May 2008 04:14:33 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e3.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m47IERPv029462
+	for <linuxppc-dev@ozlabs.org>; Wed, 7 May 2008 14:14:27 -0400
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m47IERUA253096
+	for <linuxppc-dev@ozlabs.org>; Wed, 7 May 2008 14:14:27 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m47IEQiw022136
+	for <linuxppc-dev@ozlabs.org>; Wed, 7 May 2008 14:14:26 -0400
+Subject: [PATCH] Fix for OProfile callgraph for Power 64 bit user apps
+From: Carl Love <cel@us.ibm.com>
+To: inuxppc-dev <linuxppc-dev@ozlabs.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	Maynard Johnson <maynardj@us.ibm.com>, cel@us.ibm.com
+Content-Type: text/plain
+Date: Wed, 07 May 2008 11:12:04 -0700
+Message-Id: <1210183924.7726.28.camel@carll-linux-desktop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,107 +33,60 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hallo.
 
-I had the same problem.
-The following patch can help.
+The following patch fixes the 64 bit user code backtrace 
+which currently may hang the system.  
 
-diff -pruN paulus-git/drivers/serial/cpm_uart/cpm_uart_core.c linuxppc-2.6.=
-24-ids8247/drivers/serial/cpm_uart/cpm_uart_core.c
---- paulus-git/drivers/serial/cpm_uart/cpm_uart_core.c	2008-03-28 11:03:32.=
-000000000 +0100
-+++ linuxppc-2.6.24-ids8247/drivers/serial/cpm_uart/cpm_uart_core.c	2008-05=
--07 19:35:21.000000000 +0200
-@@ -1350,6 +1349,9 @@ static int __init cpm_uart_console_setup
- 	uart_set_options(port, co, baud, parity, bits, flow);
- 	cpm_line_cr_cmd(pinfo, CPM_CR_RESTART_TX);
-=20
-+#ifndef CONFIG_PPC_EARLY_DEBUG_CPM
-+	cpm_set_brg(pinfo->brg - 1, baud);
-+#endif
- 	return 0;
+Signed-off-by: Carl Love <carll@us.ibm.com>
+
+Index: linux-2.6.25.1/arch/powerpc/oprofile/backtrace.c
+===================================================================
+--- linux-2.6.25.1.orig/arch/powerpc/oprofile/backtrace.c	2008-05-01 16:45:25.000000000 -0500
++++ linux-2.6.25.1/arch/powerpc/oprofile/backtrace.c	2008-05-07 11:29:02.000000000 -0500
+@@ -53,19 +53,40 @@
+ #ifdef CONFIG_PPC64
+ static unsigned long user_getsp64(unsigned long sp, int is_first)
+ {
+-	unsigned long stack_frame[3];
++	unsigned long stk_frm_lr;
++	unsigned long stk_frm_sp;
++	unsigned long size;
++
++	/* Issue the __copy_from_user_inatomic() third argument currently
++	 * only takes sizes 1, 2, 4 or 8 bytes.  Don't read more then the 
++	 * first 48 bytes of the stack frame.  That is all that is 
++	 * guaranteed to exist.  Reading more may cause the system to hang.
++	 *
++	 * 64 bit stack frame layout:
++	 * 0-7   bytes is the pointer to previous stack 
++	 * 8-15  bytes condition register save area
++	 * 16-23 bytes link register save area
++	 */
++	size = sizeof(unsigned long);
++	if (!access_ok(VERIFY_READ, (void __user *)sp, size))
++		return 0;
+ 
+-	if (!access_ok(VERIFY_READ, (void __user *)sp, sizeof(stack_frame)))
++	if (__copy_from_user_inatomic(&stk_frm_sp, (void __user *)sp,
++					size))
+ 		return 0;
+ 
+-	if (__copy_from_user_inatomic(stack_frame, (void __user *)sp,
+-					sizeof(stack_frame)))
++	/* get the LR from the user stack */
++	if (!access_ok(VERIFY_READ, (void __user *)(sp+16), size))
++		return 0;
++
++	if (__copy_from_user_inatomic(&stk_frm_lr, (void __user *)(sp+16),
++					size))
+ 		return 0;
+ 
+ 	if (!is_first)
+-		oprofile_add_trace(STACK_LR64(stack_frame));
++		oprofile_add_trace(stk_frm_lr);
+ 
+-	return STACK_SP(stack_frame);
++	return stk_frm_sp;
  }
-=20
-Regards
-Sergej.
-
-Am Mittwoch, den 07.05.2008, 01:31 -0700 schrieb Boris Shteinbock:
-> Hi.
-> I am doing a port from ppc to powerpc ARCH on sbc8260 based board.
-> The problem is, that I can't get  SMC1 UART to work.
-> After SMC console  is initialized. =20
-> cpm_uart_console_write() hangs here
->=20
->         /* Wait for transmitter fifo to empty.
->          * Ready indicates output is ready, and xmt is doing
->          * that, not that it is ready for us to send.
->          */
->         while ((in_be16(&bdp->cbd_sc) & BD_SC_READY) !=3D 0)
->             ;
->=20
-> I am using dts tree modified  from ep8248 port since it is the only one t=
-hat has smc description in it. :
->=20
->=20
->      brg@119f0 {
->        compatible =3D "fsl,mpc8260-brg",
->                     "fsl,cpm2-brg",
->                     "fsl,cpm-brg";
->        reg =3D <119f0 10 115f0 10>;
->        clock-frequency =3D <135000000>;
->       =20
->      };
->=20
->      /* Monitor port/SMC1 */
->      smc1: serial@11a80 {
->        device_type =3D "serial";
->        compatible =3D "fsl,mpc8260-smc-uart",
->                     "fsl,cpm2-smc-uart";
->        reg =3D <0x11a80 0x20 0x1100 0x40>;
->        interrupts =3D <4 8>;
->        interrupt-parent =3D <&PIC>;
->        fsl,cpm-brg =3D <1>;
->        fsl,cpm-command =3D <0x1d000000>;
->        linux,my-label =3D "SMC1";
->      };
->=20
-> I checked a BRG settings against working u-boot configuration and they ar=
-e the same. Anyway a wrong BRG setting wouldn't hang this loop
->=20
-> So I have a few questions.
-> If someone has done sbc8260 dts tree and port to "powerpc" already, I'd b=
-e very  grateful if he can share it with me.
-> I couldn't find anything on the internet.
->=20
-> Can someone, also, explain, how "fsl, cpm-command" field works,  booting-=
-without-of document doesn't provide much information.
-> I feel, that just copying this value from ep8248.dts isn't right somehow.
->=20
-> Thank you
->=20
->=20
->       ___________________________________________________________________=
-_________________
-> Be a better friend, newshound, and=20
-> know-it-all with Yahoo! Mobile.  Try it now.  http://mobile.yahoo.com/;_y=
-lt=3DAhu06i62sR8HDtDypao8Wcj9tAcJ
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
---=20
-Dipl.-Ing. Sergej Stepanov=20
-Software-Entwicklung
-
-IDS GmbH=20
-E-PA  (Entwicklung - Prozess Automatisierung)
-Nobelstr. 18,=20
-D-76275 Ettlingen=20
-T. (0) 72 43/2 18-615=20
-F. (0) 72 43/2 18-100=20
-E. Sergej.Stepanov@ids.de
-
-<http://www.ids.de>
-Gesch=C3=A4ftsf=C3=BChrer: Norbert Wagner, Friedrich Abri=C3=9F=20
-Sitz der Gesellschaft: Ettlingen=20
-Amtsgericht Mannheim HRB 362503=20
+ #endif
+ 
