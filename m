@@ -1,29 +1,23 @@
-Return-Path: <glppd-linuxppc64-dev@m.gmane.org>
-Received: from ciao.gmane.org (main.gmane.org [80.91.229.2])
-	by ozlabs.org (Postfix) with ESMTP id 0EA51DDF72
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 May 2008 00:37:30 +1000 (EST)
-Received: from list by ciao.gmane.org with local (Exim 4.43)
-	id 1Jtklp-0007z3-Q4
-	for linuxppc-dev@ozlabs.org; Wed, 07 May 2008 14:37:25 +0000
-Received: from p5497d58b.dip.t-dialin.net ([84.151.213.139])
-	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
-	id 1AlnuQ-0007hv-00
-	for <linuxppc-dev@ozlabs.org>; Wed, 07 May 2008 14:37:25 +0000
-Received: from dzu by p5497d58b.dip.t-dialin.net with local (Gmexim 0.1
-	(Debian)) id 1AlnuQ-0007hv-00
-	for <linuxppc-dev@ozlabs.org>; Wed, 07 May 2008 14:37:25 +0000
-To: linuxppc-dev@ozlabs.org
-From: Detlev Zundel <dzu@denx.de>
-Subject: All your drivers are belong to us [was WARNING: mutexes are preferred
-	for single holder semaphores]
-Date: Wed, 07 May 2008 16:36:30 +0200
-Message-ID: <m23aouuqoh.fsf_-_@ohwell.denx.de>
-References: <20080504204104.7eea7618@lappy.seanm.ca>
-	<1209958719.21644.32.camel@pasglop>
-	<20080505004023.05603b93@lappy.seanm.ca>
-Mime-Version: 1.0
+Return-Path: <rdreier@cisco.com>
+Received: from sj-iport-1.cisco.com (sj-iport-1.cisco.com [171.71.176.70])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "sj-iport-1.cisco.com", Issuer "Cisco SSCA" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 522C1DE107
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 May 2008 01:32:07 +1000 (EST)
+From: Roland Dreier <rdreier@cisco.com>
+To: Stefan Roscher <ossrosch@linux.vnet.ibm.com>
+Subject: Re: [ewg] [PATCH] IB/ehca: Protect QP against destroying until all
+	async events for it are handled.
+References: <200805071319.37164.ossrosch@linux.vnet.ibm.com>
+Date: Wed, 07 May 2008 08:32:03 -0700
+In-Reply-To: <200805071319.37164.ossrosch@linux.vnet.ibm.com> (Stefan
+	Roscher's message of "Wed, 7 May 2008 13:19:35 +0200")
+Message-ID: <adahcdaw2oc.fsf@cisco.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Sender: news <news@ger.gmane.org>
+Cc: LinuxPPC-Dev <linuxppc-dev@ozlabs.org>, fenkes@de.ibm.com,
+	LKML <linux-kernel@vger.kernel.org>, raisch@de.ibm.com,
+	OF-EWG <ewg@lists.openfabrics.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,55 +27,11 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Sean,
+ > We are not sure if this should be fixed in the driver or in uverbs itself.
+ > Roland, what's your opinion about this?
 
-> The code is GPLed but not currently available on the net. It is
-> basically a little driver that registers a character device and
-> then passes out the minor numbers to the PIKA board drivers.
->
-> It was written to isolate all the character/sysfs code to one place
-> since we have five drivers, and many debug drivers, that use it.
->
-> If anybody is really interested, I can post it here. I doubt it will
-> ever be submitted to the mainline kernel however.
-
-Just for the record and because it may be interesting to others, during
-the Hannover Messe end of April, in the context of the OSADL Congress[1]
-I attended a speech of Greg KH about driver development and citing from
-memory he said:
-
-"I am serious, please post all drivers that there are, even if you think
-they are useless for other people.  We have a driver in mainline for a
-device that I know only exists once in the whole world.
-
-Having the drivers in the kernel gives the developers the chance to see
-how the infrastructure is being used and to isolate good opportunities
-for modularization benefiting the linux kernel.
-
-[...]
-
-It also happened that a driver once posted for what the customer
-thought was a completely specific device of his own today supports lots
-of different boards from at least four different manufacturers."
-
-The wording is of course not exact but I hope I caught the spirit of
-what Greg wanted to say.  So yes, please post the driver - maybe Greg KH
-will tunnel it into mainline...
-
-Cheers
-  Detlev
-
-[1] http://www.osadl.org/International-Congress-Open-Source-mee.hannover-2008-congress.0.html
-
-PS: The OSADL pages should be updated in a few days to link to slides of
-    the talks.
-
--- 
-Ftpd never switches uid and euid, it uses setfsuid(2) instead. The
-main reason is that uid switching has been exploited in several
-breakins, but the sheer ugliness of uid switching counts too.
-                                     -- pure-ftpd(8)
---
-DENX Software Engineering GmbH,      MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich,  Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-40 Fax: (+49)-8142-66989-80 Email: dzu@denx.de
+Would be nice to be able to fix it in uverbs but I don't see how.  In
+particular a kernel consumer has to have the same guarantee that no
+async events will come in after destroy QP returns.  And I don't see any
+way generic code can provide a guarantee about what low-level driver
+code may do internally.
