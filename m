@@ -1,23 +1,17 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
-	[140.211.169.13])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id E86AEDDE1E
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 May 2008 08:46:54 +1000 (EST)
-Date: Wed, 7 May 2008 15:46:41 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Roel Kluin <12o3l@tiscali.nl>
-Subject: Re: [PATCH 1/2] spi_mpc83xx: test below 0 on unsigned irq in
-	mpc83xx_spi_probe()
-Message-Id: <20080507154641.83a09a06.akpm@linux-foundation.org>
-In-Reply-To: <480FA234.1000601@tiscali.nl>
-References: <480FA234.1000601@tiscali.nl>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH] Add null pointer check to of_find_property
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Timur Tabi <timur@freescale.com>
+In-Reply-To: <1210187999-20274-1-git-send-email-timur@freescale.com>
+References: <1210187999-20274-1-git-send-email-timur@freescale.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-NrN4b70tdlu2juG81O39"
+Date: Thu, 08 May 2008 09:21:06 +1000
+Message-Id: <1210202466.16180.1.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, spi-devel-general@lists.sourceforge.net,
-	dbrownell@users.sourceforge.net, linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,36 +21,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 23 Apr 2008 22:55:16 +0200
-Roel Kluin <12o3l@tiscali.nl> wrote:
 
-> mpc83xx_spi->irq is unsigned, so the test fails
-> 
-> Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+--=-NrN4b70tdlu2juG81O39
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
+
+On Wed, 2008-05-07 at 14:19 -0500, Timur Tabi wrote:
+> Update function of_find_property() to return NULL if the device_node pass=
+ed
+> to it is also NULL.  Otherwise, passing NULL will cause a null pointer
+> dereference.
+>=20
+> Signed-off-by: Timur Tabi <timur@freescale.com>
 > ---
-> diff --git a/drivers/spi/spi_mpc83xx.c b/drivers/spi/spi_mpc83xx.c
-> index be15a62..033fd51 100644
-> --- a/drivers/spi/spi_mpc83xx.c
-> +++ b/drivers/spi/spi_mpc83xx.c
-> @@ -454,12 +454,12 @@ static int __init mpc83xx_spi_probe(struct platform_device *dev)
->  		goto put_master;
->  	}
->  
-> -	mpc83xx_spi->irq = platform_get_irq(dev, 0);
-> -
-> -	if (mpc83xx_spi->irq < 0) {
-> -		ret = -ENXIO;
-> +	ret = platform_get_irq(dev, 0);
-> +	if (ret < 0)
->  		goto unmap_io;
-> -	}
-> +
-> +	mpc83xx_spi->irq = ret;
-> +	ret = 0;
->  
->  	/* Register for SPI Interrupt */
->  	ret = request_irq(mpc83xx_spi->irq, mpc83xx_spi_irq,
-> 
+>=20
+> This patch allows callers to do this:
 
-In the recently-merged spi_mpc83xx-much-improved-driver.patch, mpc83xx_spi.irq
-has type `int' so I don't think we need this fix any more.
+np =3D of_find_compatible_node(...);
+prop =3D of_get_property(np);
+if (!prop)
+     goto error;
+
+...
+
+error:
+ of_node_put(np)
+
+:)
+
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-NrN4b70tdlu2juG81O39
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBIIjlidSjSd0sB4dIRApl1AJ9cQcCjMhA1CAGQ1nOskP1nNWTtAACfRStb
+RFsC08sR+DomvhqBCykvr5k=
+=QfkS
+-----END PGP SIGNATURE-----
+
+--=-NrN4b70tdlu2juG81O39--
