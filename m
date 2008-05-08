@@ -1,19 +1,19 @@
-Return-Path: <marco.stornelli@coritel.it>
-Received: from nausicaa2.coritel.it
-	(host254-130-static.190-82-b.business.telecomitalia.it
-	[82.190.130.254]) by ozlabs.org (Postfix) with ESMTP id BF720DDF03
+Return-Path: <hartmann@delta.uni-dortmund.de>
+Received: from athene.delta.uni-dortmund.de (Athene.delta.Uni-Dortmund.DE
+	[129.217.164.29]) by ozlabs.org (Postfix) with ESMTP id D00A9DE0A8
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  8 May 2008 23:14:18 +1000 (EST)
-Message-ID: <4822F5DE.80502@coritel.it>
-Date: Thu, 08 May 2008 14:45:18 +0200
-From: Marco Stornelli <marco.stornelli@coritel.it>
+	Fri,  9 May 2008 00:28:30 +1000 (EST)
+Received: from [129.217.164.30] (eos.delta.Uni-Dortmund.DE [129.217.164.30])
+	by athene.delta.uni-dortmund.de (8.11.6/8.11.6) with ESMTP id
+	m48DuIF21498
+	for <linuxppc-embedded@ozlabs.org>; Thu, 8 May 2008 15:56:18 +0200
+Message-ID: <48230682.8090000@delta.uni-dortmund.de>
+Date: Thu, 08 May 2008 15:56:18 +0200
+From: "Dr. Peter Hartmann" <hartmann@delta.uni-dortmund.de>
 MIME-Version: 1.0
-To: Sanal Kumar V K <sanalvk@centillium.com>
-Subject: Re: Running a section of code from internal memory
-References: <4822E5CE.3090701@centillium.com>
-In-Reply-To: <4822E5CE.3090701@centillium.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+To: linuxppc-embedded@ozlabs.org
+Subject: xilinx linux on a XUPV2P
+Content-Type: multipart/mixed; boundary="------------060807070001000404040607"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -24,38 +24,47 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Sanal Kumar V K ha scritto:
-> Hi All,
-> 
-> I am porting a GW/router application to embedded Linux for a product
-> based on SoC; following is the version information:
-> 
-> kernel: 2.6.10
-> uClibc: 0.9.27
-> gcc: 3.4.3
-> binutils: 2.15.94.0.2.2
-> 
-> A small part of the code needs to run from the on-chip "L2 scratch" for
-> getting optimum performance. I would really appreciate if some could
-> give me some pointers regarding the following questions:
-> 
-> 1. Is #pragma section supported by gcc.
-> The compiler prints this warning "ignoring #pragma section" and the
-> pragma is ignored indicating that it is not supported. Is there any way
-> I can get the pragma working for gcc or any alternative?
-> 
-> 2. Is there any patch available to modify the kernel thread creation so
-> as to place the stack and tcb in the user configured addresses for
-> kernel threads (similar to taskInit() in VxWorks)?
-> 
-> Thanks in advance,
-> Sanal
-> 
-> 
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> 
-I think at application level you can use the #pragma directive but I'm 
-sure that you can't use this directive at kernel level.
+This is a multi-part message in MIME format.
+--------------060807070001000404040607
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
+
+Hello everybody,
+
+I am trying to get the latest Kernel (2.6.25-rc9) from git.xilinx.com running on
+a XUPV2P board. I generated the hardware using JH Kelms step by step list,
+skipping points 6-8 and replacing point 9 by a more modern version of doing
+this. When I boot the system.ace from the CF card, the bootloader talks to me
+over the RS232, but as soon as it tries to boot the kernel it hangs up.
+I had 2.6.18-rc3 which I got from somebody else running this way. The reason I
+intend to change is the UARTLITE driver, which seems to be included in the
+latest kernel tree.
+I use Platform Studio 9.1.02i which I also used for the 2.6.18 Kernel.
+Has anybody yet got this to work out with 9.1.02i ??
+Would it be possible for somebody to give a dummy like me the steps you took to
+get it working on your board? I'm really lost here. Thanks!
+
+
+Thanks in advance!
+
+--------------060807070001000404040607
+Content-Type: text/x-vcard; charset=utf-8;
+ name="hartmann.vcf"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+ filename="hartmann.vcf"
+
+begin:vcard
+fn:Dr. Peter Hartmann
+n:Hartmann;Dr. Peter
+org;quoted-printable:Universit=C3=A4t Dortmund;DELTA
+adr;quoted-printable:;;Maria G=C3=B6ppert-Mayer-Str. 2;Dortmund;;44221;Deutschland
+email;internet:hartmann@delta.uni-dortmund.de
+tel;work:+49 231 755 5374
+tel;fax:+49 231 755 5383
+x-mozilla-html:FALSE
+version:2.1
+end:vcard
+
+
+--------------060807070001000404040607--
