@@ -1,21 +1,22 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.242])
-	by ozlabs.org (Postfix) with ESMTP id 4465CDDE28
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 May 2008 04:27:57 +1000 (EST)
-Received: by an-out-0708.google.com with SMTP id c34so250355anc.78
-	for <linuxppc-dev@ozlabs.org>; Thu, 08 May 2008 11:27:51 -0700 (PDT)
-Message-ID: <fa686aa40805081127q3aa0af59va86320e266aeea44@mail.gmail.com>
-Date: Thu, 8 May 2008 12:27:50 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
-Subject: Re: [PATCH] [POWERPC] Xilinx: add compatibility for 'simple-bus'.
-In-Reply-To: <20080508182534.82DF2129805E@mail16-dub.bigfish.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20080508161529.65566FB805F@mail185-va3.bigfish.com>
-	<20080508182534.82DF2129805E@mail16-dub.bigfish.com>
-Cc: linuxppc-dev@ozlabs.org, dwg@au1.ibm.com
+Return-Path: <sam@ravnborg.org>
+Received: from pasmtpA.tele.dk (pasmtpa.tele.dk [80.160.77.114])
+	by ozlabs.org (Postfix) with ESMTP id 3E823DDDF7
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 May 2008 06:21:25 +1000 (EST)
+Date: Thu, 8 May 2008 22:22:00 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: How to link a .o with all modules
+Message-ID: <20080508202200.GA12578@uranus.ravnborg.org>
+References: <6C8AB345-2DA0-460D-B7C8-262463247DDE@kernel.crashing.org>
+	<20080504192434.GA23752@uranus.ravnborg.org>
+	<D346E2E4-26C3-482E-ABBF-AF1EE97E91CD@kernel.crashing.org>
+	<20080505204449.GA9446@uranus.ravnborg.org>
+	<5DD68A6B-45FD-4163-BDF5-356C70A00676@kernel.crashing.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <5DD68A6B-45FD-4163-BDF5-356C70A00676@kernel.crashing.org>
+Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>,
+	lkml List <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,48 +26,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, May 8, 2008 at 12:25 PM, Stephen Neuendorffer
-<stephen.neuendorffer@xilinx.com> wrote:
-> ePAPR drafts propose 'simple-bus' as a generic compatibility type for
->  busses which cannot be probed for devices.  In addition, the Xilinx
->  versions of these IPs seem to be proliferating.  Hence, in the future
->  let's prefer to use the standard names.  I've left the old names in
->  for short term backward compatibility for existing device trees.
->
->  Signed-off-by: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
+On Thu, May 08, 2008 at 09:16:10AM -0500, Kumar Gala wrote:
+> 
+> On May 5, 2008, at 3:44 PM, Sam Ravnborg wrote:
+> 
+> >>>
+> >>>
+> >>>Let me know if this does address your question.
+> >>
+> >>The problem is MODPOST complains about undefined symbols:
+> >>
+> >> MODPOST 24 modules
+> >>ERROR: "_restgpr_20_x" [net/key/af_key.ko] undefined!
+> >>ERROR: "_restgpr_25_x" [net/key/af_key.ko] undefined!
+> >>ERROR: "_restgpr_30_x" [net/key/af_key.ko] undefined!
+> >
+> >I need a bit more context to try to analyse this.
+> >Where did you expect _restgpr_20_x to be defined.
+> >If in vmlinux then were they present in the
+> >Module.symvers file?
+> 
+> No they aren't there since we I'm not EXPORT_SYMBOL() them.  Should I  
+> also be doing EXPORT_SYMBOL?
 
-Acked-by: Grant Likely <grant.likely@secretlab.ca>
+So modpost claim it cannot find the symbols.
 
-I'll queue this up for .27
+> 
+> >If in the linked in .o file - could you
+> >see the symbols using objdump.
+> 
+> Yes.
+> 
+> readelf -a:
+> 
+> ...
+> Symbol table '.symtab' contains 113 entries:
+>    Num:    Value  Size Type    Bind   Vis      Ndx Name
+> ...
+>      5: 00000000     0 FUNC    GLOBAL DEFAULT    1 _savegpr_14
+>      6: 00000000     0 FUNC    GLOBAL DEFAULT    1 _save32gpr_14
+> ...
 
-Cheers,
-g.
+Strange.
 
->  ---
->   arch/powerpc/platforms/40x/virtex.c |    1 +
->   1 files changed, 1 insertions(+), 0 deletions(-)
->
->  diff --git a/arch/powerpc/platforms/40x/virtex.c b/arch/powerpc/platforms/40x/virtex.c
->  index 6c72994..b1ab7b8 100644
->  --- a/arch/powerpc/platforms/40x/virtex.c
->  +++ b/arch/powerpc/platforms/40x/virtex.c
->  @@ -16,6 +16,7 @@
->   #include <asm/xilinx_intc.h>
->
->   static struct of_device_id xilinx_of_bus_ids[] __initdata = {
->  +       { .compatible = "simple-bus", },
->         { .compatible = "xlnx,plb-v46-1.00.a", },
->         { .compatible = "xlnx,plb-v46-1.02.a", },
->         { .compatible = "xlnx,plb-v34-1.01.a", },
->  --
->  1.5.3.4
->
->
->
->
+I did not look closer.
+But it looks like the linker failed to resolve these symbols
+in the final link somehow - despite the symbols are present in
+the linked in .o file.
 
+Can you try to drop me the output of the relocation records for the
+finally linked .o file (the one with your .o file linked in).
 
+objdump -r IIRC
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+	Sam
