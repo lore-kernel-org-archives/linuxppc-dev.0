@@ -1,17 +1,15 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH] Add null pointer check to of_find_property
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Timur Tabi <timur@freescale.com>
-In-Reply-To: <1210187999-20274-1-git-send-email-timur@freescale.com>
-References: <1210187999-20274-1-git-send-email-timur@freescale.com>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-NrN4b70tdlu2juG81O39"
-Date: Thu, 08 May 2008 09:21:06 +1000
-Message-Id: <1210202466.16180.1.camel@localhost>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
-Reply-To: michael@ellerman.id.au
+Return-Path: <dgibson@ozlabs.org>
+Date: Thu, 8 May 2008 10:18:50 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
+Subject: Re: [PATCH] [POWERPC] Xilinx: add compatibility for IBM
+	coreconnect busses.
+Message-ID: <20080508001850.GB5156@yookeroo.seuss>
+References: <20080507204734.574B6185804E@mail138-sin.bigfish.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080507204734.574B6185804E@mail138-sin.bigfish.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,56 +19,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Wed, May 07, 2008 at 01:47:31PM -0700, Stephen Neuendorffer wrote:
+> The IBM coreconnect names are pretty well defined, it appears.  In
+> addition, the Xilinx versions of these IPs seem to be proliferating.
+> Hence, in the future let's prefer to use the standard names.  I've
+> left the old names in for some backward compatibility for existing
+> device trees.
+> 
+> Signed-off-by: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
 
---=-NrN4b70tdlu2juG81O39
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+If you're talking about future trees, can't you just slap "simple-bus"
+on them avoid this monster id table?
 
-On Wed, 2008-05-07 at 14:19 -0500, Timur Tabi wrote:
-> Update function of_find_property() to return NULL if the device_node pass=
-ed
-> to it is also NULL.  Otherwise, passing NULL will cause a null pointer
-> dereference.
->=20
-> Signed-off-by: Timur Tabi <timur@freescale.com>
-> ---
->=20
-> This patch allows callers to do this:
-
-np =3D of_find_compatible_node(...);
-prop =3D of_get_property(np);
-if (!prop)
-     goto error;
-
-...
-
-error:
- of_node_put(np)
-
-:)
-
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-NrN4b70tdlu2juG81O39
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBIIjlidSjSd0sB4dIRApl1AJ9cQcCjMhA1CAGQ1nOskP1nNWTtAACfRStb
-RFsC08sR+DomvhqBCykvr5k=
-=QfkS
------END PGP SIGNATURE-----
-
---=-NrN4b70tdlu2juG81O39--
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
