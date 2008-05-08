@@ -1,20 +1,16 @@
-Return-Path: <mike_timmons@trimble.com>
-Received: from snvl-smtp1.trimble.com (snvl-smtp1.trimble.com [155.63.64.31])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "snvl-smtp1.trimble.com", Issuer "Trimble CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 12965DDF0A
+Return-Path: <eemingliu@hotmail.com>
+Received: from bay0-omc2-s25.bay0.hotmail.com (bay0-omc2-s25.bay0.hotmail.com
+	[65.54.246.161]) by ozlabs.org (Postfix) with ESMTP id 03637DE17F
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  9 May 2008 01:27:16 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: FW: porting pci driverfrom arch=ppc on kernel 2.6.16 to arch=powerpc
-	on	2.6.24...
-Date: Thu, 8 May 2008 08:28:27 -0700
-Message-ID: <161B3BAD77161449A144FF054231C3D602131E28@uss-am-xch-01.am.trimblecorp.net>
-From: "Mike Timmons" <mike_timmons@trimble.com>
+	Fri,  9 May 2008 01:33:08 +1000 (EST)
+Message-ID: <BAY138-W55519F961B3A01D0B8A167B2D00@phx.gbl>
+Content-Type: multipart/alternative;
+	boundary="_85d97792-c533-49c7-9c61-1e8dda54c0d3_"
+From: MingLiu <eemingliu@hotmail.com>
 To: <linuxppc-embedded@ozlabs.org>
-Cc: scottwood@freescale.com
+Subject: mmap problem in device driver and application program.
+Date: Thu, 8 May 2008 15:33:06 +0000
+MIME-Version: 1.0
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -25,32 +21,105 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+--_85d97792-c533-49c7-9c61-1e8dda54c0d3_
+Content-Type: text/plain; charset="gb2312"
+Content-Transfer-Encoding: 8bit
 
-Thanks for the help Scott. Simply getting my irq from the pci device
-structure in my probe callback following successful PCI driver
-registration was the trick. I now have my Fujitsu CoralP driver running
-under the 2.6.24 kernel on the Lite5200b (although I have a HW problem
-on my product board that confused my efforts). Regardless, I'm now
-confident I'm doing this correctly, thanks to you help.
 
------Original Message-----
-From: Scott Wood [mailto:scottwood@freescale.com]=20
-Sent: Tuesday, May 06, 2008 2:42 PM
-To: Mike Timmons
-Cc: linuxppc-embedded@ozlabs.org; Mark Gibson
-Subject: Re: porting pci driverfrom arch=3Dppc on kernel 2.6.16 to
-arch=3Dpowerpc on 2.6.24...
+Dear all,
+I had some problem when I use mmap() file operation in the device driver file operation. My situation can be described as:
+ 
+1. I reserve 2MB DDR memory as a look-up-table (LUT) for my customized device. The physical start address in the memory is 0x03000000 and the size is 2MB. 
+ 
+2. In the device driver, I use mmap file operation to make this memory area directly accessible by application programs. In the mmap file operation, it looks like:
+ 
+  if(remap_pfn_range(vma, vma->vm_start, vma->vm_pgoff, vma->vm_end - vma->vm_start, vma->vm_page_prot)){     return -EAGAIN;   }
+ 
+3. In the application program, I read from a file and initialize the LUT area. I use the following sentence to mmap the physical address into a virtual one which could be accessed by the application:
+ 
+  // the physical address is from 0x03000000 with a size of LUT_SIZE_IN_BYTE equal to 2MB
+  lut_mem_base = (unsigned int *) mmap(0, LUT_SIZE_IN_BYTE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0x03000000);
+ 
+Then, I initialize the LUT area with the virtual address specified by lut_mem_base. 
+ 
+  for(i=0;;i++){
+    fread(&buf, sizeof(unsigned int), 1, fp);
+    *(lut_mem_base + i) = buf;
+    if(feop(fp)){
+       break;
+    }
+  }
+ 
+4. After the initialization of the LUT memory area, in the device driver, DMA transfer will be enabled using the physical address of 0x03000000 as the source address. The destination is a register in my customized device. The data is fed from the memory to my device register. 
+ 
+HOWEVER, I found that the data fed to the device register is not the same as the one used to initialize the LUT memory. Maybe the DMA fetches wrong data from different addresses and feeds to my device. Since this is my first time to use mmap, I am not self-confident to my program, both in the device driver and in the application. Is there anything wrong with my mmap part? I will appreciate so much if some experts could give me some hints. Thanks in advance.
+ 
+BR
+Ming
+ 
+ 
+ 
+ 
+ 
+ 
+_________________________________________________________________
+用手机MSN聊天写邮件看空间，无限沟通，分享精彩！
+http://mobile.msn.com.cn/
+--_85d97792-c533-49c7-9c61-1e8dda54c0d3_
+Content-Type: text/html; charset="gb2312"
+Content-Transfer-Encoding: 8bit
 
-Mike Timmons wrote:
-> If I'm not supposed to read the interrupt using config_read, should I
-> also not be writing to the host register on the coral P to clear the
-> interrupt?
->=20
-> Should I instead be using some PCI helper functions?=20
-
-No, clearing interrupts is device-specific.
-
-Have you verified that the device does not think it's generating an=20
-interrupt during the interrupt storm?  Do other PCI cards work?
-
--Scott
+<html>
+<head>
+<style>
+.hmmessage P
+{
+margin:0px;
+padding:0px
+}
+body.hmmessage
+{
+FONT-SIZE: 9pt;
+FONT-FAMILY:Tahoma
+}
+</style>
+</head>
+<body class='hmmessage'>
+Dear all,<BR>
+I had some problem when I use mmap() file operation in the device driver file operation. My situation can be described as:<BR>
+&nbsp;<BR>
+1. I reserve 2MB DDR memory as a look-up-table (LUT)&nbsp;for my customized device. The physical start&nbsp;address in the memory is 0x03000000 and the size is 2MB. <BR>
+&nbsp;<BR>
+2. In the device driver, I use mmap file operation to make this memory area directly accessible by application programs. In the mmap file operation, it looks like:<BR>
+&nbsp;<BR>
+&nbsp; if(remap_pfn_range(vma, vma-&gt;vm_start, vma-&gt;vm_pgoff, vma-&gt;vm_end - vma-&gt;vm_start, vma-&gt;vm_page_prot)){<BR>&nbsp;&nbsp;&nbsp;&nbsp; return -EAGAIN;<BR>&nbsp;&nbsp; }<BR>
+&nbsp;<BR>
+3. In the application program, I read from a file and initialize the LUT area. I use the following sentence to mmap the physical address into a virtual one which could be accessed by the application:<BR>
+&nbsp;<BR>
+&nbsp; // the physical address is from 0x03000000 with a size of LUT_SIZE_IN_BYTE equal to 2MB<BR>
+&nbsp; lut_mem_base = (unsigned int *) mmap(0, LUT_SIZE_IN_BYTE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0x03000000);<BR>
+&nbsp;<BR>
+Then, I initialize the LUT area with the virtual address specified by lut_mem_base. <BR>
+&nbsp;<BR>
+&nbsp; for(i=0;;i++){<BR>
+&nbsp;&nbsp;&nbsp; fread(&amp;buf, sizeof(unsigned int), 1, fp);<BR>
+&nbsp;&nbsp;&nbsp; *(lut_mem_base + i) = buf;<BR>
+&nbsp;&nbsp;&nbsp; if(feop(fp)){<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; break;<BR>
+&nbsp;&nbsp;&nbsp; }<BR>
+&nbsp; }<BR>
+&nbsp;<BR>
+4. After the initialization of the LUT memory area, in the device driver, DMA transfer will be enabled using the physical address of 0x03000000 as the source address. The destination is a register in my customized device. The data is fed from the memory to my device register. <BR>
+&nbsp;<BR>
+HOWEVER, I found that the data fed to the device register is not the same as the one used to initialize the LUT memory. Maybe the DMA fetches wrong data from different addresses and feeds to my device. Since this is my first time to use mmap, I am not self-confident to my program, both in the device driver and in the application. Is there anything wrong with my mmap part? I will appreciate so much if some experts could give me some hints. Thanks in advance.<BR>
+&nbsp;<BR>
+BR<BR>
+Ming<BR>
+&nbsp;<BR>
+&nbsp;<BR>
+&nbsp;<BR>
+&nbsp;<BR>
+&nbsp;<BR>
+&nbsp;<BR><br /><hr />Windows Live Writer，支持离线撰写博客内容，随时随地想写就写。 <a href='http://get.live.cn/product/writer.html' target='_new'>立即使用！</a></body>
+</html>
+--_85d97792-c533-49c7-9c61-1e8dda54c0d3_--
