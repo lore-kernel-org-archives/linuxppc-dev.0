@@ -1,22 +1,29 @@
-Return-Path: <smaclennan@pikatech.com>
-Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
-	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id D4C15DDF1B
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 May 2008 14:41:43 +1000 (EST)
-Date: Thu, 8 May 2008 00:41:40 -0400
-From: Sean MacLennan <smaclennan@pikatech.com>
-To: <linuxppc-dev@ozlabs.org>
-Subject: Re: All your drivers are belong to us [was WARNING: mutexes are
-	preferredfor single holder semaphores]
-Message-ID: <20080508004140.31a6b065@lappy.seanm.ca>
-In-Reply-To: <20080507194957.47abb103@zod.rchland.ibm.com>
-References: <20080504204104.7eea7618@lappy.seanm.ca>
-	<1209958719.21644.32.camel@pasglop>
-	<20080505004023.05603b93@lappy.seanm.ca>
-	<m23aouuqoh.fsf_-_@ohwell.denx.de>
-	<20080507174251.2af863d6@wally.pikatech.com>
-	<20080507194957.47abb103@zod.rchland.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Return-Path: <stephen.neuendorffer@xilinx.com>
+Received: from outbound4-wa4-R.bigfish.com (outbound-wa4.frontbridge.com
+	[216.32.181.16])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 629E5DDF17
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 May 2008 14:46:56 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C8B0C6.881F3D46"
+Subject: RE: [PATCH 4/4] [POWERPC] Xilinx: Framebuffer: Usedcrinfrastructure.
+Date: Wed, 7 May 2008 21:46:51 -0700
+References: <20080421080353.5d2b3bb9@zod.rchland.ibm.com>
+	<1210010201-28436-1-git-send-email-stephen.neuendorffer@xilinx.com>
+	<1210010201-28436-2-git-send-email-stephen.neuendorffer@xilinx.com>
+	<1210010201-28436-3-git-send-email-stephen.neuendorffer@xilinx.com>
+	<1210010201-28436-4-git-send-email-stephen.neuendorffer@xilinx.com>
+	<20080505175647.4F3AC1C9004A@mail57-sin.bigfish.com>
+	<fa686aa40805052155q43a7ebd8x14c1711bd4c6bbfa@mail.gmail.com>
+	<20080506061444.GB17798@yookeroo.seuss>
+	<20080506174352.52C857D805C@mail62-va3.bigfish.com>
+	<20080508015948.GG5156@yookeroo.seuss>
+From: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
+To: "David Gibson" <david@gibson.dropbear.id.au>
+Message-Id: <20080508044652.98467AA8064@mail133-wa4.bigfish.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,338 +33,259 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I have attached the driver in question below. This is *not*
-representative of PIKA board drivers in general. This driver was
-rewritten from scratch to work in 2.6.26, but still work on the 2.6.9
-kernel in RedHatES 4.
+This is a multi-part message in MIME format.
 
-Since it was rewritten, it matches the kernel coding specs rather than
-PIKA's. Emacs users will recognize the comment at the bottom ;)
+------_=_NextPart_001_01C8B0C6.881F3D46
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-This is also a generally useful driver that does one specific thing. It
-is also very small. The next smallest PIKA driver is close to 9,000
-lines of code. Our largest is about 130,000 lines of code and lsmod
-reports 1.6M in size.
 
-The other board drivers are *very* specific to PIKA hardware, and are
-not "chip" drivers as such. I suspect Greg was mainly talking about
-chip drivers.
+The problem is that the tft driver currently in mainline assumes that =
+the dcr control registers
+are accessed through mmio, and probes for a reg=3D<> property.  Since =
+the device is actually a dcr device,
+it can be connected via mmio through a bride, or to the native dcr bus =
+of the processor.  For the time being,
+I'd like to generate device trees compatible with either mechanism.
 
-I use this driver all the time to write quick drivers. It handles all
-the dirty work for you so you can quickly prototype character drivers.
+so, the problem is that the tree-parents of the tft node all have =
+ranges, and if the dcr-parent of the node is a bridge, then it has a =
+reg=3D<> property,
+But if the dcr-parent is also a tree-parent, then it has to have ranges; =
+and a reg=3D<> property, which seems very strange, and not something I =
+think is
+a good thing to do.
 
-And while the Linux driver project looks interesting, it doesn't really
-help me. We still have to support all our customers, which includes
-windows, and old Linux kernels. This means I would still have to
-maintain the PIKA version of the driver separate from the driver
-projects version.
+Steve
 
-Cheers,
-   Sean
+-----Original Message-----
+From: David Gibson [mailto:david@gibson.dropbear.id.au]
+Sent: Wed 5/7/2008 6:59 PM
+To: Stephen Neuendorffer
+Cc: Grant Likely; linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 4/4] [POWERPC] Xilinx: Framebuffer: =
+Usedcrinfrastructure.
+=20
+On Tue, May 06, 2008 at 10:43:50AM -0700, Stephen Neuendorffer wrote:
+[snip]
+> > > Hmmm, something doesn't quite feel right about this.  The node
+> > > describing the tft device is a child of the dcr@0 node which is =
+the
+> > > dcr bus.  However, dcr bindings use dcr-bus and dcr-reg instead of
+> > > parent-child relationship to specify how to access the dcr
+> registers.
+> > > So, in this example; if the device is described by tft@80, and the
+> dcr
+> > > bus is described by opb2dcr-bridge@40700000, then what does dcr@0
+> > > describe?  (I do understand what they really describe in EDK =
+terms;
+> > > but I'm looking at it through device tree glasses).
+> > >
+> > > I don't think the presence of a dcr@0 node is a problem, but in =
+this
+> > > case #size/address-cells doesn't have any meaning (the child =
+doesn't
+> > > have a reg property) and it looks like it should be a child of the
+> > > opb2dcr-bridge node (otherwise, what is it attached to?).
+> >=20
+> > Yes, indeed.  If dcr@0 is representing the DCR bus / interface it
+> > should really have the dcr-access-method property and have all the
+> > dcr-parent handles point at it.
+>=20
+> Hmm, I tend to agree.  Certainly the address-cells and size-cells can
+> go.  Part of the nastiness is that I'm trying to maintain a modicum of
+> backward compatibility at the moment in the device tree generator.  =
+This
+> structure allow the dcr@0 node to have ranges; and the tft node to =
+have
+> a properly translated reg =3D <> property for the existing driver =
+which
+> only understands mmio.  I don't think it really works for the opb2dcr
+> bridge to be a bridge and a dcr-controller at the same time. :)  This
+> structure is also very similar to what is generated if the
+> dcr-controller is native from the processor (there's just no bridge).
 
---- /dev/null	2005-11-20 22:22:37.000000000 -0500
-+++ pikacore.h	2008-05-07 23:48:47.000000000 -0400
-@@ -0,0 +1,39 @@
-+/*
-+ * PIKA Core Driver
-+ *
-+ * Copyright (c) 2008 PIKA Technologies
-+ *   Sean MacLennan <smaclennan@pikatech.com>
-+ */
-+
-+#ifndef PIKACORE_H
-+#define PIKACORE_H
-+
-+#include <linux/module.h>
-+#include <linux/fs.h>
-+#include <linux/device.h>
-+
-+
-+/* pikacore_register* returns a negative number on error.
-+ * On success, it returns the minor number.
-+ */
-+int pikacore_register_board(struct file_operations *fops);
-+int pikacore_register(int minor, char *name, struct file_operations *fops);
-+int pikacore_unregister(int minor);
-+int pikacore_device_attr(int minor, struct device_attribute *attr, void *data);
-+
-+
-+/* Some compatibility changes. */
-+
-+#ifndef DEFINE_MUTEX
-+#define DEFINE_MUTEX DECLARE_MUTEX
-+#define mutex_lock down
-+#define mutex_unlock up
-+#endif
-+
-+#include <linux/interrupt.h>
-+#ifndef IRQF_SHARED
-+#define IRQF_SHARED (SA_SHIRQ | SA_INTERRUPT)
-+#define IRQF_DISABLED 0
-+#endif
-+
-+#endif
---- /dev/null	2005-11-20 22:22:37.000000000 -0500
-+++ pikacore.c	2008-05-08 00:18:35.000000000 -0400
-@@ -0,0 +1,261 @@
-+/*
-+ * PIKA Core Driver
-+ *
-+ * Copyright (c) 2008 PIKA Technologies
-+ *   Sean MacLennan <smaclennan@pikatech.com>
-+ *
-+ * This driver handles all the details of creating a character device
-+ * driver. It also allows us to reuse one major number for all the
-+ * character device drivers.
-+ */
-+
-+#include "pikacore.h"
-+
-+#include <linux/cdev.h>
-+#include <linux/version.h>
-+
-+
-+static int major;
-+module_param(major, int, 0444);
-+
-+
-+#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 13)
-+/* This is really for RedHatES4 */
-+#define OLD_KERNEL
-+
-+#define class_create class_simple_create
-+#define class_destroy class_simple_destroy
-+
-+static inline struct class_device *device_create(struct class_simple *cls,
-+						 void *parent, dev_t devt,
-+						 const char *fmt, ...)
-+{
-+	va_list ap;
-+	char tmpname[20];
-+
-+	va_start(ap, fmt);
-+	vsnprintf(tmpname, sizeof(tmpname), fmt, ap);
-+	va_end(ap);
-+
-+	return class_simple_device_add(cls, devt, parent, tmpname);
-+}
-+
-+#define device_destroy(a, b) class_simple_device_remove(b)
-+
-+#define device class_device
-+static struct class_simple *pikacore_class;
-+#else
-+static struct class *pikacore_class;
-+#endif
-+
-+
-+struct pk_coredevice  {
-+	struct list_head list;
-+	int minor;
-+	struct cdev cdev;
-+	struct device *device;
-+};
-+
-+static LIST_HEAD(pikacore_list);
-+static DEFINE_MUTEX(pikacore_mtx);
-+
-+#define MAX_MINORS 64
-+static unsigned long pikacore_minors[MAX_MINORS / 8 / sizeof(unsigned long)];
-+
-+
-+int pikacore_register(int minor, char *name, struct file_operations *fops)
-+{
-+	struct pk_coredevice *pika;
-+	dev_t dev;
-+	int err;
-+
-+	mutex_lock(&pikacore_mtx);
-+
-+	if (minor == 0)
-+		minor = find_first_zero_bit(pikacore_minors, MAX_MINORS);
-+
-+	if (minor >= MAX_MINORS ||
-+	    test_and_set_bit(minor, pikacore_minors)) {
-+		mutex_unlock(&pikacore_mtx);
-+		return -ENOENT;
-+	}
-+
-+	mutex_unlock(&pikacore_mtx);
-+
-+	pika = kzalloc(sizeof(struct pk_coredevice), GFP_KERNEL);
-+	if (!pika)
-+		return -ENOMEM;
-+
-+	INIT_LIST_HEAD(&pika->list);
-+	pika->minor = minor;
-+	dev = MKDEV(major, minor);
-+
-+	if (name)
-+		pika->device = device_create(pikacore_class, NULL, dev,
-+					     "%s", name);
-+	else
-+		pika->device = device_create(pikacore_class, NULL, dev,
-+					     "pika%d", minor);
-+	if (IS_ERR(pika->device)) {
-+		err = PTR_ERR(pika->device);
-+		goto out;
-+	}
-+
-+	cdev_init(&pika->cdev, fops);
-+	err = cdev_add(&pika->cdev, dev, 1);
-+	if (err)
-+		goto out;
-+
-+	mutex_lock(&pikacore_mtx);
-+	list_add(&pika->list, &pikacore_list);
-+	mutex_unlock(&pikacore_mtx);
-+
-+	printk(KERN_INFO "pikacore: registered %d.%d\n", major, minor);
-+
-+	return minor;
-+
-+ out:
-+	if (pika->device)
-+		device_destroy(pikacore_class, MKDEV(major, minor));
-+
-+	kfree(pika);
-+	return err;
-+}
-+EXPORT_SYMBOL(pikacore_register);
-+
-+int pikacore_register_board(struct file_operations *fops)
-+{
-+	return pikacore_register(0, NULL, fops);
-+}
-+EXPORT_SYMBOL(pikacore_register_board);
-+
-+/* You must have pikacore_mtx held */
-+static inline struct pk_coredevice *find_by_minor(int minor)
-+{
-+	struct pk_coredevice *pika;
-+
-+	list_for_each_entry(pika, &pikacore_list, list)
-+		if (pika->minor == minor)
-+			return pika;
-+
-+	return NULL;
-+}
-+
-+int pikacore_unregister(int minor)
-+{
-+	struct pk_coredevice *pika;
-+
-+	mutex_lock(&pikacore_mtx);
-+
-+	pika = find_by_minor(minor);
-+	if (!pika) {
-+		mutex_unlock(&pikacore_mtx);
-+		return -EINVAL;
-+	}
-+
-+	list_del(&pika->list);
-+
-+	clear_bit(minor, pikacore_minors);
-+
-+	mutex_unlock(&pikacore_mtx);
-+
-+	printk(KERN_INFO "pikacore: remove %d.%d\n", major, minor);
-+
-+	device_destroy(pikacore_class, MKDEV(major, minor));
-+
-+	cdev_del(&pika->cdev);
-+
-+	kfree(pika);
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL(pikacore_unregister);
-+
-+int pikacore_device_attr(int minor, struct device_attribute *attr, void *data)
-+{
-+#ifdef OLD_KERNEL
-+	return -ENOSYS;
-+#else
-+	struct pk_coredevice *pika;
-+	int rc;
-+
-+	mutex_lock(&pikacore_mtx);
-+
-+	pika = find_by_minor(minor);
-+	if (!pika) {
-+		printk(KERN_WARNING "%s: %d is not a pika device\n",
-+		       __func__, minor);
-+		rc = -ENOENT;
-+		goto out;
-+	}
-+
-+	if (data) {
-+		void *cur = dev_get_drvdata(pika->device);
-+		if (cur == NULL)
-+			dev_set_drvdata(pika->device, data);
-+		else if (cur != data) {
-+			printk(KERN_WARNING "%s: data already set!!!\n",
-+			       __func__);
-+			rc = -EINVAL;
-+			goto out;
-+		}
-+	}
-+
-+	rc = device_create_file(pika->device, attr);
-+
-+out:
-+	mutex_unlock(&pikacore_mtx);
-+
-+	return rc;
-+#endif
-+}
-+EXPORT_SYMBOL(pikacore_device_attr);
-+
-+static int __init pikacore_init(void)
-+{
-+	int rc;
-+	dev_t devt;
-+
-+	pikacore_class = class_create(THIS_MODULE, "pika");
-+	if (IS_ERR(pikacore_class))
-+		return PTR_ERR(pikacore_class);
-+
-+	if (major) {
-+		/* user specified the major */
-+		devt = MKDEV(major, 0);
-+		rc = register_chrdev_region(devt, MAX_MINORS, "pikacore");
-+	} else
-+		/* dynamic */
-+		rc = alloc_chrdev_region(&devt, 0, MAX_MINORS, "pikacore");
-+	if (rc) {
-+		printk(KERN_ERR "pikacore: Unable to register (%d).\n", rc);
-+		class_destroy(pikacore_class);
-+		return rc;
-+	}
-+
-+	major = MAJOR(devt);
-+
-+	return 0;
-+}
-+module_init(pikacore_init);
-+
-+void __exit pikacore_exit(void)
-+{
-+	unregister_chrdev_region(MKDEV(major, 0), MAX_MINORS);
-+
-+	class_destroy(pikacore_class);
-+}
-+module_exit(pikacore_exit);
-+
-+MODULE_DESCRIPTION("pikacore - core class driver");
-+MODULE_AUTHOR("Sean MacLennan");
-+MODULE_LICENSE("GPL");
-+
-+/*
-+ * Force kernel coding standard on PIKA code
-+ * Local Variables:
-+ * tab-width: 8
-+ * c-basic-offset: 8
-+ * indent-tabs-mode: t
-+ * End:
-+ */
+I don't really understand what you're getting at here, sorry.  Perhaps
+you could describe what you're doing with the tft device in more
+detail?
+
+> > Current standard practice is not to represent the DCR bus as node =
+with
+> > subnodes for the DCR-controlled devices.  That's because the DCR bus
+> > tends to run in addition to other on-chip busses, and some things =
+have
+> > to go on another on-chip bus to make sense, but still have DCR =
+control
+> > registers (for example the internal bus bridges on 4xx).
+> >=20
+> > Arguably for DCR-only devices we should instead have a node
+> > representing the DCR bus and just put the devices under it with the
+> > DCR number encoded in reg in the normal way.  But then its
+> > inconsistent with the devices that need the other DCR =
+representation.
+>=20
+> Yup, it's exactly this problem I'm trying to fix in the case of the =
+tft
+> driver.
+
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ =
+_other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
+
+
+
+------_=_NextPart_001_01C8B0C6.881F3D46
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Diso-8859-1">
+<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
+6.5.7652.24">
+<TITLE>RE: [PATCH 4/4] [POWERPC] Xilinx: Framebuffer: =
+Usedcrinfrastructure.</TITLE>
+</HEAD>
+<BODY>
+<!-- Converted from text/plain format -->
+<BR>
+
+<P><FONT SIZE=3D2>The problem is that the tft driver currently in =
+mainline assumes that the dcr control registers<BR>
+are accessed through mmio, and probes for a reg=3D&lt;&gt; =
+property.&nbsp; Since the device is actually a dcr device,<BR>
+it can be connected via mmio through a bride, or to the native dcr bus =
+of the processor.&nbsp; For the time being,<BR>
+I'd like to generate device trees compatible with either mechanism.<BR>
+<BR>
+so, the problem is that the tree-parents of the tft node all have =
+ranges, and if the dcr-parent of the node is a bridge, then it has a =
+reg=3D&lt;&gt; property,<BR>
+But if the dcr-parent is also a tree-parent, then it has to have ranges; =
+and a reg=3D&lt;&gt; property, which seems very strange, and not =
+something I think is<BR>
+a good thing to do.<BR>
+<BR>
+Steve<BR>
+<BR>
+-----Original Message-----<BR>
+From: David Gibson [<A =
+HREF=3D"mailto:david@gibson.dropbear.id.au">mailto:david@gibson.dropbear.=
+id.au</A>]<BR>
+Sent: Wed 5/7/2008 6:59 PM<BR>
+To: Stephen Neuendorffer<BR>
+Cc: Grant Likely; linuxppc-dev@ozlabs.org<BR>
+Subject: Re: [PATCH 4/4] [POWERPC] Xilinx: Framebuffer: =
+Usedcrinfrastructure.<BR>
+<BR>
+On Tue, May 06, 2008 at 10:43:50AM -0700, Stephen Neuendorffer =
+wrote:<BR>
+[snip]<BR>
+&gt; &gt; &gt; Hmmm, something doesn't quite feel right about =
+this.&nbsp; The node<BR>
+&gt; &gt; &gt; describing the tft device is a child of the dcr@0 node =
+which is the<BR>
+&gt; &gt; &gt; dcr bus.&nbsp; However, dcr bindings use dcr-bus and =
+dcr-reg instead of<BR>
+&gt; &gt; &gt; parent-child relationship to specify how to access the =
+dcr<BR>
+&gt; registers.<BR>
+&gt; &gt; &gt; So, in this example; if the device is described by =
+tft@80, and the<BR>
+&gt; dcr<BR>
+&gt; &gt; &gt; bus is described by opb2dcr-bridge@40700000, then what =
+does dcr@0<BR>
+&gt; &gt; &gt; describe?&nbsp; (I do understand what they really =
+describe in EDK terms;<BR>
+&gt; &gt; &gt; but I'm looking at it through device tree glasses).<BR>
+&gt; &gt; &gt;<BR>
+&gt; &gt; &gt; I don't think the presence of a dcr@0 node is a problem, =
+but in this<BR>
+&gt; &gt; &gt; case #size/address-cells doesn't have any meaning (the =
+child doesn't<BR>
+&gt; &gt; &gt; have a reg property) and it looks like it should be a =
+child of the<BR>
+&gt; &gt; &gt; opb2dcr-bridge node (otherwise, what is it attached =
+to?).<BR>
+&gt; &gt;<BR>
+&gt; &gt; Yes, indeed.&nbsp; If dcr@0 is representing the DCR bus / =
+interface it<BR>
+&gt; &gt; should really have the dcr-access-method property and have all =
+the<BR>
+&gt; &gt; dcr-parent handles point at it.<BR>
+&gt;<BR>
+&gt; Hmm, I tend to agree.&nbsp; Certainly the address-cells and =
+size-cells can<BR>
+&gt; go.&nbsp; Part of the nastiness is that I'm trying to maintain a =
+modicum of<BR>
+&gt; backward compatibility at the moment in the device tree =
+generator.&nbsp; This<BR>
+&gt; structure allow the dcr@0 node to have ranges; and the tft node to =
+have<BR>
+&gt; a properly translated reg =3D &lt;&gt; property for the existing =
+driver which<BR>
+&gt; only understands mmio.&nbsp; I don't think it really works for the =
+opb2dcr<BR>
+&gt; bridge to be a bridge and a dcr-controller at the same time. =
+:)&nbsp; This<BR>
+&gt; structure is also very similar to what is generated if the<BR>
+&gt; dcr-controller is native from the processor (there's just no =
+bridge).<BR>
+<BR>
+I don't really understand what you're getting at here, sorry.&nbsp; =
+Perhaps<BR>
+you could describe what you're doing with the tft device in more<BR>
+detail?<BR>
+<BR>
+&gt; &gt; Current standard practice is not to represent the DCR bus as =
+node with<BR>
+&gt; &gt; subnodes for the DCR-controlled devices.&nbsp; That's because =
+the DCR bus<BR>
+&gt; &gt; tends to run in addition to other on-chip busses, and some =
+things have<BR>
+&gt; &gt; to go on another on-chip bus to make sense, but still have DCR =
+control<BR>
+&gt; &gt; registers (for example the internal bus bridges on 4xx).<BR>
+&gt; &gt;<BR>
+&gt; &gt; Arguably for DCR-only devices we should instead have a =
+node<BR>
+&gt; &gt; representing the DCR bus and just put the devices under it =
+with the<BR>
+&gt; &gt; DCR number encoded in reg in the normal way.&nbsp; But then =
+its<BR>
+&gt; &gt; inconsistent with the devices that need the other DCR =
+representation.<BR>
+&gt;<BR>
+&gt; Yup, it's exactly this problem I'm trying to fix in the case of the =
+tft<BR>
+&gt; driver.<BR>
+<BR>
+--<BR>
+David Gibson&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | I'll have my music baroque, =
+and my code<BR>
+david AT gibson.dropbear.id.au&nbsp; | minimalist, thank you.&nbsp; NOT =
+_the_ _other_<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | _way_ _around_!<BR>
+<A =
+HREF=3D"http://www.ozlabs.org/~dgibson">http://www.ozlabs.org/~dgibson</A=
+><BR>
+<BR>
+<BR>
+</FONT>
+</P>
+
+</BODY>
+</HTML>
+------_=_NextPart_001_01C8B0C6.881F3D46--
