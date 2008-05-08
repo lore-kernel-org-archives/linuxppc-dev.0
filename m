@@ -1,22 +1,15 @@
-Return-Path: <sam@ravnborg.org>
-Received: from pasmtpA.tele.dk (pasmtpa.tele.dk [80.160.77.114])
-	by ozlabs.org (Postfix) with ESMTP id 3E823DDDF7
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 May 2008 06:21:25 +1000 (EST)
-Date: Thu, 8 May 2008 22:22:00 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: How to link a .o with all modules
-Message-ID: <20080508202200.GA12578@uranus.ravnborg.org>
-References: <6C8AB345-2DA0-460D-B7C8-262463247DDE@kernel.crashing.org>
-	<20080504192434.GA23752@uranus.ravnborg.org>
-	<D346E2E4-26C3-482E-ABBF-AF1EE97E91CD@kernel.crashing.org>
-	<20080505204449.GA9446@uranus.ravnborg.org>
-	<5DD68A6B-45FD-4163-BDF5-356C70A00676@kernel.crashing.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <5DD68A6B-45FD-4163-BDF5-356C70A00676@kernel.crashing.org>
-Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>,
-	lkml List <linux-kernel@vger.kernel.org>
+Return-Path: <gerhard_pircher@gmx.net>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id B1F93DDF43
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 May 2008 06:51:45 +1000 (EST)
+Content-Type: text/plain; charset="us-ascii"
+Date: Thu, 08 May 2008 22:45:02 +0200
+From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
+Message-ID: <20080508204502.189970@gmx.net>
+MIME-Version: 1.0
+Subject: Patch [Port fixmap from x86 and use for kmap_atomic] breaks
+	dma_noncoherent.c
+To: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,57 +19,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, May 08, 2008 at 09:16:10AM -0500, Kumar Gala wrote:
-> 
-> On May 5, 2008, at 3:44 PM, Sam Ravnborg wrote:
-> 
-> >>>
-> >>>
-> >>>Let me know if this does address your question.
-> >>
-> >>The problem is MODPOST complains about undefined symbols:
-> >>
-> >> MODPOST 24 modules
-> >>ERROR: "_restgpr_20_x" [net/key/af_key.ko] undefined!
-> >>ERROR: "_restgpr_25_x" [net/key/af_key.ko] undefined!
-> >>ERROR: "_restgpr_30_x" [net/key/af_key.ko] undefined!
-> >
-> >I need a bit more context to try to analyse this.
-> >Where did you expect _restgpr_20_x to be defined.
-> >If in vmlinux then were they present in the
-> >Module.symvers file?
-> 
-> No they aren't there since we I'm not EXPORT_SYMBOL() them.  Should I  
-> also be doing EXPORT_SYMBOL?
+Hi,
 
-So modpost claim it cannot find the symbols.
+The commit "[POWERPC] Port fixmap from x86 and use for kmap_atomic" breaks
+dma-noncoherent.c, if highmem is enabled.
 
-> 
-> >If in the linked in .o file - could you
-> >see the symbols using objdump.
-> 
-> Yes.
-> 
-> readelf -a:
-> 
-> ...
-> Symbol table '.symtab' contains 113 entries:
->    Num:    Value  Size Type    Bind   Vis      Ndx Name
-> ...
->      5: 00000000     0 FUNC    GLOBAL DEFAULT    1 _savegpr_14
->      6: 00000000     0 FUNC    GLOBAL DEFAULT    1 _save32gpr_14
-> ...
+> --- a/arch/powerpc/mm/pgtable_32.c
+> +++ b/arch/powerpc/mm/pgtable_32.c
+> @@ -387,3 +388,25 @@ void kernel_map_pages(struct page *page, int numpages, int enable)
+>         change_page_attr(page, numpages, enable ? PAGE_KERNEL : __pgprot(0));
+>  }
+>  #endif /* CONFIG_DEBUG_PAGEALLOC */
+> +
+> +static int fixmaps;
+> +unsigned long FIXADDR_TOP = 0xfffff000;
+> +EXPORT_SYMBOL(FIXADDR_TOP);
+> +
+The address defined for FIXADDR_TOP seems to conflict with the address
+defined by CONSISTENT_START (default 0xff100000). It triggers the
+BUG_ON(!pte_none(*pte)) statement in __dma_alloc_coherent().
 
-Strange.
+regards,
 
-I did not look closer.
-But it looks like the linker failed to resolve these symbols
-in the final link somehow - despite the symbols are present in
-the linked in .o file.
+Gerhard
 
-Can you try to drop me the output of the relocation records for the
-finally linked .o file (the one with your .o file linked in).
-
-objdump -r IIRC
-
-	Sam
+-- 
+GMX startet ShortView.de. Hier findest Du Leute mit Deinen Interessen!
+Jetzt dabei sein: http://www.shortview.de/?mc=sv_ext_mf@gmx
