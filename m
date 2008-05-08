@@ -1,11 +1,11 @@
 Return-Path: <michael@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
-Message-Id: <ac0257defcf9ed41b9f990b2ca5bdfe2e79b3ce7.1210220828.git.michael@ellerman.id.au>
+Message-Id: <ec0c4e092c60d1bbcb4b776a94589ac838f4f008.1210220828.git.michael@ellerman.id.au>
 In-Reply-To: <5d2ed2a7e92250bdc6d9959dbeaeb3784a7109b4.1210220828.git.michael@ellerman.id.au>
 References: <5d2ed2a7e92250bdc6d9959dbeaeb3784a7109b4.1210220828.git.michael@ellerman.id.au>
 From: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH 03/12] Move declaration of tce variables into mmu-hash64.h
-Date: Thu,  8 May 2008 14:27:08 +1000 (EST)
+Subject: [PATCH 04/12] Remove duplicate variable definitions in mm/tlb_64.c
+Date: Thu,  8 May 2008 14:27:09 +1000 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,37 +15,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Somewhere along the way (e28f7faf05159f1cfd564596f5e6178edba6bd49,
+"Four level pagetables for ppc64") we ended up with duplicate
+definitions for pte_freelist_cur and pte_freelist_force_free.
+Somehow this compiles, but it would be better to just have one
+definition for each.
+
+The two definitions we end up with can be static too!
 
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
- arch/powerpc/mm/hash_utils_64.c  |    2 --
- include/asm-powerpc/mmu-hash64.h |    1 +
- 2 files changed, 1 insertions(+), 2 deletions(-)
+ arch/powerpc/mm/tlb_64.c |    7 ++-----
+ 1 files changed, 2 insertions(+), 5 deletions(-)
 
-diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-index 1a4b4b3..05f955f 100644
---- a/arch/powerpc/mm/hash_utils_64.c
-+++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -509,8 +509,6 @@ void __init htab_initialize(void)
- 	unsigned long base = 0, size = 0, limit;
- 	int i;
+diff --git a/arch/powerpc/mm/tlb_64.c b/arch/powerpc/mm/tlb_64.c
+index e2d867c..509bc56 100644
+--- a/arch/powerpc/mm/tlb_64.c
++++ b/arch/powerpc/mm/tlb_64.c
+@@ -37,8 +37,8 @@ DEFINE_PER_CPU(struct ppc64_tlb_batch, ppc64_tlb_batch);
+  * include/asm-powerpc/tlb.h file -- tgall
+  */
+ DEFINE_PER_CPU(struct mmu_gather, mmu_gathers);
+-DEFINE_PER_CPU(struct pte_freelist_batch *, pte_freelist_cur);
+-unsigned long pte_freelist_forced_free;
++static DEFINE_PER_CPU(struct pte_freelist_batch *, pte_freelist_cur);
++static unsigned long pte_freelist_forced_free;
  
--	extern unsigned long tce_alloc_start, tce_alloc_end;
+ struct pte_freelist_batch
+ {
+@@ -47,9 +47,6 @@ struct pte_freelist_batch
+ 	pgtable_free_t	tables[0];
+ };
+ 
+-DEFINE_PER_CPU(struct pte_freelist_batch *, pte_freelist_cur);
+-unsigned long pte_freelist_forced_free;
 -
- 	DBG(" -> htab_initialize()\n");
- 
- 	/* Initialize segment sizes */
-diff --git a/include/asm-powerpc/mmu-hash64.h b/include/asm-powerpc/mmu-hash64.h
-index 0dff767..f35d1e1 100644
---- a/include/asm-powerpc/mmu-hash64.h
-+++ b/include/asm-powerpc/mmu-hash64.h
-@@ -181,6 +181,7 @@ extern int mmu_io_psize;
- extern int mmu_kernel_ssize;
- extern int mmu_highuser_ssize;
- extern u16 mmu_slb_size;
-+extern unsigned long tce_alloc_start, tce_alloc_end;
- 
- /*
-  * If the processor supports 64k normal pages but not 64k cache
+ #define PTE_FREELIST_SIZE \
+ 	((PAGE_SIZE - sizeof(struct pte_freelist_batch)) \
+ 	  / sizeof(pgtable_free_t))
 -- 
 1.5.5
