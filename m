@@ -1,23 +1,32 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Thu, 8 May 2008 17:01:28 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
-Subject: Re: [PATCH 4/4] [POWERPC] Xilinx: Framebuffer: Usedcrinfrastructure.
-Message-ID: <20080508070128.GA22453@yookeroo.seuss>
-References: <1210010201-28436-1-git-send-email-stephen.neuendorffer@xilinx.com>
-	<1210010201-28436-2-git-send-email-stephen.neuendorffer@xilinx.com>
-	<1210010201-28436-3-git-send-email-stephen.neuendorffer@xilinx.com>
-	<1210010201-28436-4-git-send-email-stephen.neuendorffer@xilinx.com>
-	<20080505175647.4F3AC1C9004A@mail57-sin.bigfish.com>
-	<fa686aa40805052155q43a7ebd8x14c1711bd4c6bbfa@mail.gmail.com>
-	<20080506061444.GB17798@yookeroo.seuss>
-	<20080506174352.52C857D805C@mail62-va3.bigfish.com>
-	<20080508015948.GG5156@yookeroo.seuss>
-	<20080508044652.98467AA8064@mail133-wa4.bigfish.com>
+Return-Path: <Nick.Spence@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 51F1DDDEFC
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 May 2008 17:17:15 +1000 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	m487H5Hq000977
+	for <linuxppc-dev@ozlabs.org>; Thu, 8 May 2008 00:17:05 -0700 (MST)
+Received: from az33exm24.fsl.freescale.net (az33exm24.am.freescale.net
+	[10.64.32.14])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m487H5We015302
+	for <linuxppc-dev@ozlabs.org>; Thu, 8 May 2008 02:17:05 -0500 (CDT)
+Message-ID: <4822A8F0.1010602@freescale.com>
+Date: Thu, 08 May 2008 00:17:04 -0700
+From: Nick Spence <nick.spence@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080508044652.98467AA8064@mail133-wa4.bigfish.com>
-Cc: linuxppc-dev@ozlabs.org
+To: benh@kernel.crashing.org
+Subject: Re: [PATCH] [POWERPC] Reintroduce O_SYNC flag to make DRAM	non-cached.
+References: <1210224392246-git-send-email-nick.spence@freescale.com>	
+	<18466.38047.531381.157886@cargo.ozlabs.ibm.com>	
+	<9E50B2A5FE44294CBF877745D9A4125F01D37125@az33exm24.fsl.freescale.net>
+	<1210229743.1421.36.camel@pasglop>
+In-Reply-To: <1210229743.1421.36.camel@pasglop>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,34 +36,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, May 07, 2008 at 09:46:51PM -0700, Stephen Neuendorffer wrote:
+Benjamin Herrenschmidt wrote:
+> On Wed, 2008-05-07 at 23:31 -0700, Spence Nick wrote:
 > 
-> The problem is that the tft driver currently in mainline assumes
-> that the dcr control registers are accessed through mmio, and probes
-> for a reg=<> property.  Since the device is actually a dcr device,
-> it can be connected via mmio through a bride, or to the native dcr
-> bus of the processor.  For the time being, I'd like to generate
-> device trees compatible with either mechanism.
+> Then you should completely carve it out of the LMB's which will ensure
+> it's not seen as RAM by /dev/mem and not mapped by the linear mapping
+> (well, the later depends ... if it's carved out of the top of RAM it
+> should work fine, if it's a hole, I'm not sure we handle holes in the
+> linear mapping on 32 bits).
+> 
 
-Ah, I think I see.  The current driver expects the device to be
-represented as if it were an mmio device, not using the standard dcr
-notation.  It can get away with this because the DCRs are
-memory-mapped, in a way representable by 'ranges'.
+Unfortunately the memory window is 4 MBytes into the DDR and not at the 
+end. It would be hard to put it at the end because the contents are 
+location dependent and we can change the memory size.
 
-> so, the problem is that the tree-parents of the tft node all have
-> ranges, and if the dcr-parent of the node is a bridge, then it has a
-> reg=<> property, But if the dcr-parent is also a tree-parent, then
-> it has to have ranges; and a reg=<> property, which seems very
-> strange, and not something I think is a good thing to do.
+The region is reserved with an lmb_reserve().
 
-This I don't follow.
+/* Set the location and size of the shared DDR memory region */
+void* shared_mem_base = (void *)0x400000;
+long  shared_mem_size = 0x100000;
 
-But I don't think it matters.  The representation suggested by Segher,
-which has the DCR addressing redundantly described in 'reg' and
-'dcr-reg' properties should work for you.
+....
+lmb_reserve((unsigned long)shared_mem_base, shared_mem_size);
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+
+
+The page protection seemed to be allocated on a per pte basis, where 
+each PTE is a small fixed size. I will need to check the TLB setup further.
+
+Nick
