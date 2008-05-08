@@ -1,35 +1,9 @@
-Return-Path: <kamalesh@linux.vnet.ibm.com>
-Received: from e23smtp06.au.ibm.com (E23SMTP06.au.ibm.com [202.81.18.175])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp06.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id E86F5DDDFF
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 May 2008 13:59:49 +1000 (EST)
-Received: from sd0109e.au.ibm.com (d23rh905.au.ibm.com [202.81.18.225])
-	by e23smtp06.au.ibm.com (8.13.1/8.13.1) with ESMTP id m483xNfJ032121
-	for <linuxppc-dev@ozlabs.org>; Thu, 8 May 2008 13:59:23 +1000
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
-	by sd0109e.au.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m4843pmk289690
-	for <linuxppc-dev@ozlabs.org>; Thu, 8 May 2008 14:03:51 +1000
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
-	by d23av03.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m483xlXk020379
-	for <linuxppc-dev@ozlabs.org>; Thu, 8 May 2008 13:59:48 +1000
-Message-ID: <48227AAB.9000309@linux.vnet.ibm.com>
-Date: Thu, 08 May 2008 09:29:39 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-Subject: Re: [BUG] 2.6.26-rc1-git4 - task blocked on powerpc for more than
-	120 seconds
-References: <4821AD2D.8020001@linux.vnet.ibm.com>
-	<20080507134057.GA30637@cs181133002.pp.htv.fi>
-In-Reply-To: <20080507134057.GA30637@cs181133002.pp.htv.fi>
-Content-Type: text/plain; charset=UTF-8
-Cc: kernel list <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
-	Pierre Peiffer <pierre.peiffer@bull.net>,
-	Nadia Derbey <Nadia.Derbey@bull.net>,
-	Balbir Singh <balbir@linux.vnet.ibm.com>
+Return-Path: <michael@ozlabs.org>
+To: <linuxppc-dev@ozlabs.org>
+Message-Id: <3c91644d7ab701f99ec7f621fc5c16d23e75c71a.1210220561.git.michael@ellerman.id.au>
+From: Michael Ellerman <michael@ellerman.id.au>
+Subject: [PATCH 1/2] Add irq_free_host() to free an irq_host
+Date: Thu,  8 May 2008 14:23:10 +1000 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,145 +13,71 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Adrian Bunk wrote:
-> On Wed, May 07, 2008 at 06:52:53PM +0530, Kamalesh Babulal wrote:
->> While running the ltp over the powerpc with the 2.6.26-rc1-git4 kernel,
->> task get blocked for more 120 seconds and does not proceeds future.
->>
->> The task msgctl08 is a ipc testcase, which test the msgget(2) msgctl(2)
->> syscalls.
-> 
-> Thanks for your report.
-> 
-> I assume this is reproducible?
-> 
-> If yes, what was the last kernel that worked for you?
+Currently there is no irq_free_host() routine, and that's
+more or less OK - because all you need to do is free it.
+However the next patch needs to introduce additional
+tear down so we'll need a proper free routine.
 
-This is reproducible on 2.6.26-rc1 and 2.6.26-rc1-git(s). 2.6.25 is the last know kernel
-to work.
-
-> 
-> I've also added Pierre Peiffer and Nadia Derbey to the Cc since their 
-> recent ipc commits are my first suspects.
-> 
->> Machine is stuck in the task, printing the following call trace
->> more than 5000 times. The oom-killer invoked once in-between.
->>
->> INFO: task msgctl08:16248 blocked for more than 120 seconds.
->> "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
->> Call Trace:
->> [c0000000762435a0] [0000000000000001] 0x1 (unreliable)
->> [c000000076243770] [c000000000010acc] .__switch_to+0x128/0x16c
->> [c000000076243800] [c0000000004b07a4] .schedule+0x7ac/0x890
->> [c0000000762438f0] [c0000000004b2ba4] .rwsem_down_failed_common+0x260/0x2b0
->> [c0000000762439b0] [c0000000004b2c60] .rwsem_down_read_failed+0x2c/0x44
->> [c000000076243a60] [c0000000004b1b84] .down_read+0x44/0x5c
->> [c000000076243af0] [c000000000295e10] .ipc_lock+0x34/0xe0
->> [c000000076243b90] [c00000000029690c] .ipc_lock_check+0x24/0x78
->> [c000000076243c20] [c0000000002972c0] .do_msgsnd+0xb0/0x3f8
->> [c000000076243d10] [c000000000293ce8] .compat_sys_msgsnd+0x94/0xc0
->> [c000000076243db0] [c000000000014418] .compat_sys_ipc+0x130/0x1f4
->> [c000000076243e30] [c000000000008734] syscall_exit+0x0/0x40
->> msgctl08 invoked oom-killer: gfp_mask=0x1200d2, order=0, oomkilladj=0
->> Call Trace:
->> [c00000001e1c7640] [c0000000000101bc] .show_stack+0x70/0x1bc (unreliable)
->> [c00000001e1c76f0] [c0000000000c2c78] .oom_kill_process+0x78/0x230
->> [c00000001e1c77a0] [c0000000000c3390] .out_of_memory+0x28c/0x320
->> [c00000001e1c7870] [c0000000000c70ac] .__alloc_pages_internal+0x364/0x468
->> [c00000001e1c7980] [c0000000000e83cc] .alloc_page_vma+0x120/0x14c
->> [c00000001e1c7a20] [c0000000000e0224] .read_swap_cache_async+0x7c/0x160
->> [c00000001e1c7ae0] [c0000000000e035c] .swapin_readahead+0x54/0xd4
->> [c00000001e1c7ba0] [c0000000000d47e8] .handle_mm_fault+0x520/0x9d8
->> [c00000001e1c7c80] [c0000000004b5054] .do_page_fault+0x440/0x624
->> [c00000001e1c7e30] [c0000000000053fc] handle_page_fault+0x20/0x5c
->> Mem-info:
->> Node 0 DMA per-cpu:
->> CPU    0: hi:    6, btch:   1 usd:   1
->> CPU    1: hi:    6, btch:   1 usd:   1
->> Node 1 DMA per-cpu:
->> CPU    0: hi:    6, btch:   1 usd:   5
->> CPU    1: hi:    6, btch:   1 usd:   5
->> Active:31 inactive:2628 dirty:1 writeback:6 unstable:0
->>  free:156 slab:13071 mapped:548 pagetables:41109 bounce:0
->> Node 0 DMA free:5312kB min:5760kB low:7168kB high:8640kB active:1024kB inactive:768kB present:3928832kB pages_scanned:3912 all_unreclaimable? no
->> lowmem_reserve[]: 0 0 0
->> Node 1 DMA free:4672kB min:4992kB low:6208kB high:7488kB active:960kB inactive:169792kB present:3404992kB pages_scanned:140140 all_unreclaimable? no
->> lowmem_reserve[]: 0 0 0
->> Node 0 DMA: 5*64kB 15*128kB 2*256kB 1*512kB 0*1024kB 1*2048kB 0*4096kB 0*8192kB 0*16384kB = 5312kB
->> Node 1 DMA: 8*64kB 5*128kB 6*256kB 0*512kB 0*1024kB 1*2048kB 0*4096kB 0*8192kB 0*16384kB = 4736kB
->> 8185 total pagecache pages
->> Swap cache: add 29545, delete 21888, find 5602/10373
->> Free swap  = 803712kB
->> Total swap = 2048128kB
->> 114688 pages of RAM
->> 766 reserved pages
->> 231218 pages shared
->> 7657 pages swap cached
->> Out of memory: kill process 15371 (msgctl08) score 39223 or a child
->> Killed process 15373 (msgctl08)
->> INFO: task msgctl08:15385 blocked for more than 120 seconds.
->> "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
->> Call Trace:
->> [c0000000e9a43290] [0000000000000001] 0x1 (unreliable)
->> [c0000000e9a43460] [c000000000010acc] .__switch_to+0x128/0x16c
->> [c0000000e9a434f0] [c0000000004b07a4] .schedule+0x7ac/0x890
->> [c0000000e9a435e0] [c0000000004b0d90] .io_schedule+0x7c/0xe8
->> [c0000000e9a43670] [c0000000002d7f44] .get_request_wait+0x15c/0x1e0
->> [c0000000e9a43750] [c0000000002d8950] .__make_request+0x3ec/0x4d8
->> [c0000000e9a43800] [c0000000002d6624] .generic_make_request+0x35c/0x3b0
->> [c0000000e9a438e0] [c0000000002d81b0] .submit_bio+0x118/0x140
->> [c0000000e9a439a0] [c0000000000dfa88] .swap_readpage+0x94/0xb4
->> [c0000000e9a43a20] [c0000000000e02b8] .read_swap_cache_async+0x110/0x160
->> [c0000000e9a43ae0] [c0000000000e035c] .swapin_readahead+0x54/0xd4
->> [c0000000e9a43ba0] [c0000000000d47e8] .handle_mm_fault+0x520/0x9d8
->> [c0000000e9a43c80] [c0000000004b5054] .do_page_fault+0x440/0x624
->> [c0000000e9a43e30] [c0000000000053fc] handle_page_fault+0x20/0x5c
->> INFO: task msgctl08:15405 blocked for more than 120 seconds.
->> "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
->> Call Trace:
->> [c0000000b1757290] [0000000000000001] 0x1 (unreliable)
->> [c0000000b1757460] [c000000000010acc] .__switch_to+0x128/0x16c
->> [c0000000b17574f0] [c0000000004b07a4] .schedule+0x7ac/0x890
->> [c0000000b17575e0] [c0000000004b0d90] .io_schedule+0x7c/0xe8
->> [c0000000b1757670] [c0000000002d7f44] .get_request_wait+0x15c/0x1e0
->> [c0000000b1757750] [c0000000002d8950] .__make_request+0x3ec/0x4d8
->> [c0000000b1757800] [c0000000002d6624] .generic_make_request+0x35c/0x3b0
->> [c0000000b17578e0] [c0000000002d81b0] .submit_bio+0x118/0x140
->> [c0000000b17579a0] [c0000000000dfa88] .swap_readpage+0x94/0xb4
->> [c0000000b1757a20] [c0000000000e02b8] .read_swap_cache_async+0x110/0x160
->> [c0000000b1757ae0] [c0000000000e035c] .swapin_readahead+0x54/0xd4
->> [c0000000b1757ba0] [c0000000000d47e8] .handle_mm_fault+0x520/0x9d8
->> [c0000000b1757c80] [c0000000004b5054] .do_page_fault+0x440/0x624
->> [c0000000b1757e30] [c0000000000053fc] handle_page_fault+0x20/0x5c
->> INFO: task msgctl08:15406 blocked for more than 120 seconds.
->> "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
->> Call Trace:
->> [c0000000eec53290] [0000000000000001] 0x1 (unreliable)
->> [c0000000eec53460] [c000000000010acc] .__switch_to+0x128/0x16c
->> [c0000000eec534f0] [c0000000004b07a4] .schedule+0x7ac/0x890
->> [c0000000eec535e0] [c0000000004b0d90] .io_schedule+0x7c/0xe8
->> [c0000000eec53670] [c0000000002d7f44] .get_request_wait+0x15c/0x1e0
->> [c0000000eec53750] [c0000000002d8950] .__make_request+0x3ec/0x4d8
->> [c0000000eec53800] [c0000000002d6624] .generic_make_request+0x35c/0x3b0
->> [c0000000eec538e0] [c0000000002d81b0] .submit_bio+0x118/0x140
->> [c0000000eec539a0] [c0000000000dfa88] .swap_readpage+0x94/0xb4
->> [c0000000eec53a20] [c0000000000e02b8] .read_swap_cache_async+0x110/0x160
->> [c0000000eec53ae0] [c0000000000e035c] .swapin_readahead+0x54/0xd4
->> [c0000000eec53ba0] [c0000000000d47e8] .handle_mm_fault+0x520/0x9d8
->> [c0000000eec53c80] [c0000000004b5054] .do_page_fault+0x440/0x624
->> [c0000000eec53e30] [c0000000000053fc] handle_page_fault+0x20/0x5c
->> -- 
->> Thanks & Regards,
->> Kamalesh Babulal,
->> Linux Technology Center,
->> IBM, ISTL.
-> 
-> cu
-> Adrian
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+---
+ arch/powerpc/kernel/irq.c |   15 ++++++++-------
+ include/asm-powerpc/irq.h |    8 ++++++++
+ 2 files changed, 16 insertions(+), 7 deletions(-)
 
 
+ps.  This is 27 material.
+
+diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+index 2f73f70..8ba8fbf 100644
+--- a/arch/powerpc/kernel/irq.c
++++ b/arch/powerpc/kernel/irq.c
+@@ -442,6 +442,13 @@ static int default_irq_host_match(struct irq_host *h, struct device_node *np)
+ 	return h->of_node != NULL && h->of_node == np;
+ }
+ 
++void irq_free_host(struct irq_host *host)
++{
++	/* If it's still very early in boot we can't free, oh well. */
++	if (mem_init_done)
++		kfree(host);
++}
++
+ struct irq_host *irq_alloc_host(struct device_node *of_node,
+ 				unsigned int revmap_type,
+ 				unsigned int revmap_arg,
+@@ -478,13 +485,7 @@ struct irq_host *irq_alloc_host(struct device_node *of_node,
+ 	if (revmap_type == IRQ_HOST_MAP_LEGACY) {
+ 		if (irq_map[0].host != NULL) {
+ 			spin_unlock_irqrestore(&irq_big_lock, flags);
+-			/* If we are early boot, we can't free the structure,
+-			 * too bad...
+-			 * this will be fixed once slab is made available early
+-			 * instead of the current cruft
+-			 */
+-			if (mem_init_done)
+-				kfree(host);
++			irq_free_host(host);
+ 			return NULL;
+ 		}
+ 		irq_map[0].host = host;
+diff --git a/include/asm-powerpc/irq.h b/include/asm-powerpc/irq.h
+index 5089deb..7d9974a 100644
+--- a/include/asm-powerpc/irq.h
++++ b/include/asm-powerpc/irq.h
+@@ -165,6 +165,14 @@ extern struct irq_host *irq_alloc_host(struct device_node *of_node,
+ 				       struct irq_host_ops *ops,
+ 				       irq_hw_number_t inval_irq);
+ 
++/**
++ * irq_free_host - Free an irq_host data structure
++ * @host: The irq_host to free.
++ *
++ * Does any required cleanup and then frees the irq_host.
++ */
++extern void irq_free_host(struct irq_host *host);
++
+ 
+ /**
+  * irq_find_host - Locates a host for a given device node
 -- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+1.5.5
