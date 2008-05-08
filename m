@@ -1,19 +1,20 @@
-Return-Path: <eemingliu@hotmail.com>
-Received: from bay0-omc3-s37.bay0.hotmail.com (bay0-omc3-s37.bay0.hotmail.com
-	[65.54.246.237]) by ozlabs.org (Postfix) with ESMTP id 9A782DDE45
+Return-Path: <dzu@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id AAF18DDEDF
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  9 May 2008 04:42:12 +1000 (EST)
-Message-ID: <BAY138-W36C7249F532D111A1DC508B2D00@phx.gbl>
-Content-Type: multipart/alternative;
-	boundary="_9477b6e8-e42b-4bc8-bc0d-67739e52e665_"
-From: MingLiu <eemingliu@hotmail.com>
-To: Dave Cogley <dcogley@uslinc.com>, <linuxppc-embedded@ozlabs.org>
-Subject: RE: mmap problem in device driver and application program.
-Date: Thu, 8 May 2008 18:42:10 +0000
-In-Reply-To: <1210266109.3755.8.camel@localhost.localdomain>
-References: <BAY138-W55519F961B3A01D0B8A167B2D00@phx.gbl>
-	<1210266109.3755.8.camel@localhost.localdomain>
+	Fri,  9 May 2008 02:39:00 +1000 (EST)
+From: Detlev Zundel <dzu@denx.de>
+To: rodolfo <rodolfo@lesc.ufc.br>
+Subject: Re: Predefined Compiler Flag for CROSS_COMPILE in ELDK
+References: <m2tzhjxorq.fsf@ohwell.denx.de>
+	<8b6b0af3278e2fe8a9355b1e053e1419@lesc.ufc.br>
+Date: Thu, 08 May 2008 18:38:11 +0200
+In-Reply-To: <8b6b0af3278e2fe8a9355b1e053e1419@lesc.ufc.br>
+	(rodolfo@lesc.ufc.br's message of "Thu, 8 May 2008 08:46:17 -0300")
+Message-ID: <m24p98sqdo.fsf@ohwell.denx.de>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -24,57 +25,60 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---_9477b6e8-e42b-4bc8-bc0d-67739e52e665_
-Content-Type: text/plain; charset="gb2312"
-Content-Transfer-Encoding: 8bit
+Hi Rodolfo,
 
+> -mcpu is deprecated:
+>
+> HOSTCC  scripts/basic/fixdep
+> `-mcpu=' is deprecated. Use `-mtune=' or '-march=' instead.
+> scripts/basic/fixdep.c:1: error: bad value (405) for -mtune= switch
+> make[1]: ** [scripts/basic/fixdep] Erro 1
+> make: ** [scripts_basic] Erro 2
 
-Dear Dave,
- 
-Thanks for your answer first. However I am very confused. It seems that I understand the memory-mapping-related functions completely wrong. Here comes more questions. > The address you are passing to mmap is where the pointer will be mapped> in virtual address space. You need to determine the DMA memory address> page number down in the actual mmap call.> > int foo_mmap(struct file* filep, struct vm_area_struct* vma)> {> unsigned long dma_addr = 0x03000000;> unsigned long dma_size = 0x00200000;> unsigned long pfn;> > // convert the DMA address to page number> pfn = virt_to_phys(dma_addr) >> PAGE_SHIFT;
-Shall I use virt_to_phys? dma_addr is already exactly physical address which is used to initiate DMA transfers. 
- 
-> // remap our page frame to the vma offset> remap_pfn_range(vma, vma->vm_start, pfn, > dma_size, vma->vm_page_prot);> }> > Change the address parameter from 0x03000000 to 0:> > lut_mem_base = (unsigned int *) mmap(0, LUT_SIZE_IN_BYTE, > PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-Previously I used "remap_page_range(vma, vma->vm_start, physical_addr, vm_size, vma->vm_page_prot)" in the device driver, where physical_addr is 0x03000000. In the application program, I used "lut_mem_base = (unsigned int *) mmap(0, LUT_SIZE_IN_BYTE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);". I think it is correct but it doesn't work. I heard that in the new kernels, remap_page_range is not supported any more. However when I compile the driver, nothing was shown to complain that. I am using 2.6.10 kernel. Any hint for this?
- 
-Thank you for your help to make me understand. 
- 
-BR
-Ming
-_________________________________________________________________
-Windows Live Photo gallery 数码相机的超级伴侣，轻松管理和编辑照片，还能制作全景美图！
-http://get.live.cn/product/photo.html
---_9477b6e8-e42b-4bc8-bc0d-67739e52e665_
-Content-Type: text/html; charset="gb2312"
-Content-Transfer-Encoding: 8bit
+Uhu - HOSTCC is the native compiler, which very likely does not know
+anything about 405 cpus...
 
-<html>
-<head>
-<style>
-.hmmessage P
-{
-margin:0px;
-padding:0px
-}
-body.hmmessage
-{
-FONT-SIZE: 9pt;
-FONT-FAMILY:Tahoma
-}
-</style>
-</head>
-<body class='hmmessage'>
-Dear Dave,<BR>
-&nbsp;<BR>
-Thanks for your answer first. However I am&nbsp;very confused. It seems that I understand the memory-mapping-related functions completely wrong. Here comes more questions. <BR><BR><BR>&gt; The address you are passing to mmap is where the pointer will be mapped<BR>&gt; in virtual address space. You need to determine the DMA memory address<BR>&gt; page number down in the actual mmap call.<BR>&gt; <BR>&gt; int foo_mmap(struct file* filep, struct vm_area_struct* vma)<BR>&gt; {<BR>&gt; unsigned long dma_addr = 0x03000000;<BR>&gt; unsigned long dma_size = 0x00200000;<BR>&gt; unsigned long pfn;<BR>&gt; <BR>&gt; // convert the DMA address to page number<BR>&gt; pfn = virt_to_phys(dma_addr) &gt;&gt; PAGE_SHIFT;<BR><BR>
-Shall I use virt_to_phys? dma_addr is already exactly physical address which is used to initiate DMA transfers. <BR>
-&nbsp;<BR>
-&gt; // remap our page frame to the vma offset<BR>&gt; remap_pfn_range(vma, vma-&gt;vm_start, pfn, <BR>&gt; dma_size, vma-&gt;vm_page_prot);<BR>&gt; }<BR>&gt; <BR>&gt; Change the address parameter from 0x03000000 to 0:<BR>&gt; <BR>&gt; lut_mem_base = (unsigned int *) mmap(0, LUT_SIZE_IN_BYTE, <BR>&gt; PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);<BR><BR>
-Previously I used "remap_page_range(vma, vma-&gt;vm_start, physical_addr, vm_size, vma-&gt;vm_page_prot)" in the device driver, where physical_addr is 0x03000000. In the application program, I used "lut_mem_base = (unsigned int *) mmap(0, LUT_SIZE_IN_BYTE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);". I think it is correct but it doesn't work. I heard that in the new kernels, remap_page_range is not supported any more. However when I compile the driver, nothing was shown to complain that. I am using 2.6.10 kernel. Any hint for this?<BR>
-&nbsp;<BR>
-Thank you for your help to make me understand. <BR>
-&nbsp;<BR>
-BR<BR>
-Ming<BR><br /><hr />使用新一代 Windows Live Messenger 轻松交流和共享！ <a href='http://messenger.live.cn/' target='_new'>立即体验！</a></body>
-</html>
---_9477b6e8-e42b-4bc8-bc0d-67739e52e665_--
+> then I put -march=405 and give this errors:
+>
+> scripts/basic/fixdep.c:1: error: bad value (405) for -march= switch
+> scripts/basic/fixdep.c:1: error: bad value (405) for -mtune= switch
+> make[1]: ** [scripts/basic/fixdep] Erro 1
+> make: ** [scripts_basic] Erro 2
+
+Still, same problem - you want to use the flag for the cross compiler.
+
+> See a piece of my Makefile:
+>
+> HOSTCC       = gcc
+> HOSTCXX      = g++
+> HOSTCFLAGS   = -Wall -Wstrict-prototypes -O2 -fomit-frame-pointer
+> -march=405
+> HOSTCXXFLAGS = -O2
+
+Again, this is the host compiler.
+
+> How can I do this?
+
+If we are only talking about compiling a recent linux kernel, then the
+easiest way is to simply override CFLAGS_KERNEL from the commandline,
+i.e.:
+
+make CFLAGS_KERNEL=-mcpu=405 uImage
+
+If you want to check that this works, do a
+
+make CFLAGS_KERNEL=-mcpu=405 V=1 uImage
+
+and check the generated command lines.
+
+Cheers
+  Detlev
+
+-- 
+Alisa Sherer (AMD) suggested that consumer demand will not follow
+faster clock speeds. Marketing might help with this problem, she
+added.                                            -- 2004/02/20
+--
+DENX Software Engineering GmbH,      MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich,  Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-40 Fax: (+49)-8142-66989-80 Email: dzu@denx.de
