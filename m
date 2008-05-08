@@ -1,17 +1,17 @@
 Return-Path: <avorontsov@dev.rtsoft.ru>
 Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
-	by ozlabs.org (Postfix) with SMTP id B79C8DDF43
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 May 2008 00:20:08 +1000 (EST)
-Date: Thu, 8 May 2008 18:20:05 +0400
+	by ozlabs.org (Postfix) with SMTP id B1BE0DDF58
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 May 2008 00:20:47 +1000 (EST)
+Date: Thu, 8 May 2008 18:20:45 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Kumar Gala <galak@kernel.crashing.org>
-Subject: [RFC PATCH 0/3] Board-specific PCI fixups [was: Re: [PATCH 2/2]
-	[POWERPC] 86xx: mpc8610_hpcd: add support for ULI RTC]
-Message-ID: <20080508142005.GA6749@polina.dev.rtsoft.ru>
+Subject: [PATCH 1/3] [POWERPC] implement machine specific PCI fixup calls
+Message-ID: <20080508142045.GA7172@polina.dev.rtsoft.ru>
+References: <20080508142005.GA6749@polina.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf8
+In-Reply-To: <20080508142005.GA6749@polina.dev.rtsoft.ru>
 Cc: linuxppc-dev@ozlabs.org
-Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,29 +21,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, May 05, 2008 at 02:11:30PM -0500, Kumar Gala wrote:
->
-> On May 5, 2008, at 1:56 PM, Anton Vorontsov wrote:
->
->> The ULI "Super South Bridge" contains ISA bridge to the legacy
->> devices, such as Super IO mouse/keyboard/floppy disk controllers,
->> parallel port, i8259 interrupt controller and so on.
->>
->> On the MPC8610HPCD, i8259 seems to be disabled (mpc8610_hpcd.c
->> confirms this), and other peripherals are not traced out.
->> So we use only RTC.
->>
->> This patch also adds ULI quirk to make RTC actually work (this
->> quirk differs a bit from the one in the fsl_uli1575.c).
->
-> Can we just one quick for both?
+These are similar to machine_initcalls, but works for the PCI fixups.
+We need this to apply machine specific fixups for the same PCI devices.
 
-Probably yes, but fsl_uli1575 needs some other changes for this.
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
+ include/asm-powerpc/pci.h |   16 ++++++++++++++++
+ 1 files changed, 16 insertions(+), 0 deletions(-)
 
-This series fully tested on MPC8610HPCD, and build-tested for
-MPC85xxDS and MPC8641HPCN.
-
+diff --git a/include/asm-powerpc/pci.h b/include/asm-powerpc/pci.h
+index a05a942..03fdc58 100644
+--- a/include/asm-powerpc/pci.h
++++ b/include/asm-powerpc/pci.h
+@@ -224,5 +224,21 @@ extern void pci_resource_to_user(const struct pci_dev *dev, int bar,
+ extern void pcibios_do_bus_setup(struct pci_bus *bus);
+ extern void pcibios_fixup_of_probed_bus(struct pci_bus *bus);
+ 
++#define DEFINE_MACHINE_PCIFIXUP(type, mach, vendor, device, hook)        \
++	static void __devinit                                            \
++	__machine_pcifixup_##mach##_##hook(struct pci_dev *dev) {        \
++		if (machine_is(mach))                                    \
++			hook(dev);                                       \
++	}                                                                \
++	DECLARE_PCI_FIXUP_##type(vendor, device,                         \
++				 __machine_pcifixup_##mach##_##hook)
++
++#define MACH_PCI_FIXUP_EARLY(mach, vendor, device, hook) \
++	DEFINE_MACHINE_PCIFIXUP(EARLY, mach, vendor, device, hook)
++#define MACH_PCI_FIXUP_FINAL(mach, vendor, device, hook) \
++	DEFINE_MACHINE_PCIFIXUP(FINAL, mach, vendor, device, hook)
++#define MACH_PCI_FIXUP_HEADER(mach, vendor, device, hook) \
++	DEFINE_MACHINE_PCIFIXUP(HEADER, mach, vendor, device, hook)
++
+ #endif	/* __KERNEL__ */
+ #endif /* __ASM_POWERPC_PCI_H */
 -- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+1.5.5.1
