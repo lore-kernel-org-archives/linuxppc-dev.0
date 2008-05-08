@@ -1,22 +1,19 @@
-Return-Path: <olaf@aepfle.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 42CBBDDE18
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 May 2008 07:31:04 +1000 (EST)
-Date: Thu, 8 May 2008 23:31:01 +0200
-From: Olaf Hering <olaf@aepfle.de>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH v5] create modalias file in sysfs for bus of_platform
-Message-ID: <20080508213101.GA8848@aepfle.de>
-References: <20080122142109.GA12967@aepfle.de>
-	<20080122144053.GA13019@aepfle.de>
-	<20080122190939.GA14124@aepfle.de>
-	<18330.32110.449914.354218@cargo.ozlabs.ibm.com>
-	<20080126100427.GA1162@aepfle.de>
-	<20080424131600.GA15226@aepfle.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20080424131600.GA15226@aepfle.de>
-Cc: sparclinux@vger.kernel.org, linuxppc-dev@ozlabs.org
+Return-Path: <cel@us.ibm.com>
+Subject: Re: [Cbe-oss-dev] [PATCH] Updated: Reworked Cell OProfile: SPU
+	mutex lock fix
+From: Carl Love <cel@us.ibm.com>
+To: jroth@linux.vnet.ibm.com, linux-kernel <linux-kernel@vger.kernel.org>,
+	linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org,
+	Arnd Bergmann <arnd@arndb.de>
+In-Reply-To: <4822B03B.5060509@linux.vnet.ibm.com>
+References: <1209587712.7531.42.camel@carll-linux-desktop>
+	<4821DEB0.7050308@linux.vnet.ibm.com>
+	<1210199526.7726.43.camel@carll-linux-desktop>
+	<4822B03B.5060509@linux.vnet.ibm.com>
+Content-Type: text/plain
+Date: Thu, 08 May 2008 13:47:07 -0700
+Message-Id: <1210279627.7726.62.camel@carll-linux-desktop>
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,15 +23,80 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Apr 24, Olaf Hering wrote:
 
-> Create /sys/bus/of_platform/devices/*/modalias file to allow autoloading
-> of modules. modalias files are already present for many other bus types.
-> This adds also a newline to the devspec files.
+On Thu, 2008-05-08 at 09:48 +0200, Jochen Roth wrote:
+> >> Unable to handle kernel paging request for data at address 
+> >> 0xd0000000004fe9a8
+> >> Faulting instruction address: 0xd000000000330ad8
+> >> cpu 0x0: Vector: 300 (Data Access) at [c00000003c337680]
+> >>      pc: d000000000330ad8: .alloc_cpu_buffers+0x7c/0x12c [oprofile]
+> >>      lr: d000000000330abc: .alloc_cpu_buffers+0x60/0x12c [oprofile]
+> >>      sp: c00000003c337900
+> >>     msr: 9000000000009032
+> >>     dar: d0000000004fe9a8
+> >>   dsisr: 42000000
+> >>    current = 0xc00000003e128600
+> >>    paca    = 0xc0000000005b3480
+> >>      pid   = 2356, comm = oprofiled
+> >> enter ? for help
+> >> [c00000003c3379a0] d0000000003302ac .oprofile_setup+0x2c/0x134 [oprofile]
+> >> [c00000003c337a30] d00000000033176c .event_buffer_open+0x7c/0xc8 [oprofile]
+> >> [c00000003c337ac0] c0000000000d6ca8 .__dentry_open+0x190/0x308
+> >> [c00000003c337b70] c0000000000e7a5c .do_filp_open+0x3c4/0x8e8
+> >> [c00000003c337d00] c0000000000d6a1c .do_sys_open+0x80/0x14c
+> >> [c00000003c337db0] c0000000001192f4 .compat_sys_open+0x24/0x38
+> >> [c00000003c337e30] c0000000000076b4 syscall_exit+0x0/0x40
+> >> --- Exception: c01 (System Call) at 000000000ff006f8
+> >> SP (ffc6f6a0) is in userspace
+> >>
 > 
-> Also create a devspec file for mac-io devices. They were created as a side
-> effect. Use correct buffer size for mac-io modalias buffer.
+> Btw, I get this crash even without the patch applied. So it might be 
+> something unrelated. Shall I open a separate bugzilla for that?
 > 
-> Tested on iBook1 and Efika.
+> > A couple of things, first I am not finding a 2.6.25 Jeremy tree that you
+> > refer to.  The best that I see is a 2.6.23 tree at
+> > git://git.kernel.org/pub/scm/linux/kernel/git/jermey/xen.git.  Can you
+> > either send me a location to get the jeremy tree you used or
+> > tar/compress it an email it to me.  A link would be preferred.  
 
-Did anyone test this on other systems, like sparc?
+I pulled down the jeremy tree.  I tried compiling and booting it.  It
+also crashes for me without my patch. The tree is clearly bad.
+
+I looked at the jeremy tree.  The oprofile code is different then the
+Arnd tree.  My patch is consistent with the code in Arnd's tree.  The
+oprofile cpu_buffer has been changed in the Jeremy tree from what is in
+Arnd's tree.
+
+It is my understanding that Arnd is the official CELL kernel maintainer.
+I have no idea where the jeremy tree comes from.  My patch was done
+against the latest Arnd tree.  I would recommend you use Arnd's tree.
+Let me know if you find any issues with my patch with Arnd's tree.
+
+> 
+> git://git.kernel.org/pub/scm/linux/kernel/git/jk/spufs.git
+> 
+> > 
+> > I use Arnd's git tree at
+> > git://git.kernel.org/pub/scm/linux/kernel/git/arnd/cell-2.6.git
+> 
+> I'll clone Arnd's git and apply your patch.
+> 
+> > The second thing is the function that you changed is used when adding a
+> > sample to the CPU buffer.  It is only called when OProfile is running.
+> > The crash that you sent above looks like it occurred when the module was
+> > loading since it failed in the alloc_cpu_buffer call.  This would appear
+> > to me to be completely separate from the oprofile_add_value() function.
+> > The patch does make some changes in the oprofile arch specific sync init
+> > code.  Perhaps something is failing as part of the sync start
+> > (drivers/oprofile/oprof.c) and resulting in the crash.  There are no
+> > buffer creation specific changes in the patch so I am puzzled by the
+> > crash.  I would like to see if I can reproduce the crash on my system.
+> > I have a qs20.  What are you running on?
+> > 
+> 
+> Thanks for the explanation. It also crashed before applying your patch.
+> I'm using a QS21.
+> 
+> --
+> Kind regards,
+> Jochen
