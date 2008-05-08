@@ -1,11 +1,12 @@
 Return-Path: <michael@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
-Message-Id: <ae7065d77a4554d7b06e91122ba88fad6c7671c3.1210220828.git.michael@ellerman.id.au>
+Message-Id: <a2aa5ce3b65e8ba2bd7be0b7a2f47bb197aba97b.1210220828.git.michael@ellerman.id.au>
 In-Reply-To: <5d2ed2a7e92250bdc6d9959dbeaeb3784a7109b4.1210220828.git.michael@ellerman.id.au>
 References: <5d2ed2a7e92250bdc6d9959dbeaeb3784a7109b4.1210220828.git.michael@ellerman.id.au>
 From: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH 08/12] Fix sparse warnings in xmon.c
-Date: Thu,  8 May 2008 14:27:16 +1000 (EST)
+Subject: [PATCH 09/12] Make cpus_in_xmon static and remove extern mess from
+	hvc_console.c
+Date: Thu,  8 May 2008 14:27:17 +1000 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,303 +16,101 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
- warning: Using plain integer as NULL pointer
- warning: Using plain integer as NULL pointer
- warning: symbol 'excprint' was not declared. Should it be static?
- warning: symbol 'prregs' was not declared. Should it be static?
- warning: symbol 'cacheflush' was not declared. Should it be static?
- warning: symbol 'read_spr' was not declared. Should it be static?
- warning: symbol 'write_spr' was not declared. Should it be static?
- warning: symbol 'super_regs' was not declared. Should it be static?
- warning: symbol 'mread' was not declared. Should it be static?
- warning: symbol 'mwrite' was not declared. Should it be static?
- warning: symbol 'byterev' was not declared. Should it be static?
- warning: symbol 'memex' was not declared. Should it be static?
- warning: symbol 'bsesc' was not declared. Should it be static?
- warning: symbol 'dump' was not declared. Should it be static?
- warning: symbol 'prdump' was not declared. Should it be static?
- warning: symbol 'generic_inst_dump' was not declared. Should it be static?
- warning: symbol 'ppc_inst_dump' was not declared. Should it be static?
- warning: symbol 'memops' was not declared. Should it be static?
- warning: symbol 'memdiffs' was not declared. Should it be static?
- warning: symbol 'memlocate' was not declared. Should it be static?
- warning: symbol 'memzcan' was not declared. Should it be static?
- warning: symbol 'proccall' was not declared. Should it be static?
- warning: symbol 'scannl' was not declared. Should it be static?
- warning: symbol 'hexdigit' was not declared. Should it be static?
- warning: symbol 'flush_input' was not declared. Should it be static?
- warning: symbol 'inchar' was not declared. Should it be static?
- warning: symbol 'take_input' was not declared. Should it be static?
- warning: symbol 'xmon_init' was not declared. Should it be static?
+This is a little messier than I'd like because xmon.h only exists
+on powerpc and we can't have a static inline and an extern declaration
+visible at the same time.
 
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
- arch/powerpc/xmon/xmon.c |   59 +++++++++++++++++++++++----------------------
- 1 files changed, 30 insertions(+), 29 deletions(-)
+ arch/powerpc/xmon/xmon.c   |    7 ++++++-
+ drivers/char/hvc_console.c |    8 +-------
+ drivers/char/hvc_console.h |   10 ++++++++++
+ include/asm-powerpc/xmon.h |    4 ++++
+ 4 files changed, 21 insertions(+), 8 deletions(-)
 
 diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-index 52c7478..2f57850 100644
+index 2f57850..863ba0a 100644
 --- a/arch/powerpc/xmon/xmon.c
 +++ b/arch/powerpc/xmon/xmon.c
-@@ -154,7 +154,7 @@ static int do_spu_cmd(void);
- static void dump_tlb_44x(void);
- #endif
+@@ -54,7 +54,7 @@
+ #define skipbl	xmon_skipbl
  
--int xmon_no_auto_backtrace;
-+static int xmon_no_auto_backtrace;
- 
- extern void xmon_enter(void);
- extern void xmon_leave(void);
-@@ -593,7 +593,7 @@ static int xmon_iabr_match(struct pt_regs *regs)
+ #ifdef CONFIG_SMP
+-cpumask_t cpus_in_xmon = CPU_MASK_NONE;
++static cpumask_t cpus_in_xmon = CPU_MASK_NONE;
+ static unsigned long xmon_taken = 1;
+ static int xmon_owner;
+ static int xmon_gate;
+@@ -327,6 +327,11 @@ static void release_output_lock(void)
  {
- 	if ((regs->msr & (MSR_IR|MSR_PR|MSR_SF)) != (MSR_IR|MSR_SF))
- 		return 0;
--	if (iabr == 0)
-+	if (iabr == NULL)
- 		return 0;
- 	xmon_core(regs, 0);
- 	return 1;
-@@ -1142,7 +1142,7 @@ bpt_cmds(void)
- 		} else {
- 			/* assume a breakpoint address */
- 			bp = at_breakpoint(a);
--			if (bp == 0) {
-+			if (bp == NULL) {
- 				printf("No breakpoint at %x\n", a);
- 				break;
- 			}
-@@ -1370,7 +1370,7 @@ static void print_bug_trap(struct pt_regs *regs)
- #endif
+ 	xmon_speaker = 0;
  }
- 
--void excprint(struct pt_regs *fp)
-+static void excprint(struct pt_regs *fp)
- {
- 	unsigned long trap;
- 
-@@ -1408,7 +1408,7 @@ void excprint(struct pt_regs *fp)
- 		print_bug_trap(fp);
- }
- 
--void prregs(struct pt_regs *fp)
-+static void prregs(struct pt_regs *fp)
- {
- 	int n, trap;
- 	unsigned long base;
-@@ -1463,7 +1463,7 @@ void prregs(struct pt_regs *fp)
- 		printf("dar = "REG"   dsisr = %.8lx\n", fp->dar, fp->dsisr);
- }
- 
--void cacheflush(void)
-+static void cacheflush(void)
- {
- 	int cmd;
- 	unsigned long nflush;
-@@ -1495,7 +1495,7 @@ void cacheflush(void)
- 	catch_memory_errors = 0;
- }
- 
--unsigned long
-+static unsigned long
- read_spr(int n)
- {
- 	unsigned int instrs[2];
-@@ -1533,7 +1533,7 @@ read_spr(int n)
- 	return ret;
- }
- 
--void
-+static void
- write_spr(int n, unsigned long val)
- {
- 	unsigned int instrs[2];
-@@ -1571,7 +1571,7 @@ static unsigned long regno;
- extern char exc_prolog;
- extern char dec_exc;
- 
--void super_regs(void)
-+static void super_regs(void)
- {
- 	int cmd;
- 	unsigned long val;
-@@ -1629,7 +1629,7 @@ void super_regs(void)
- /*
-  * Stuff for reading and writing memory safely
-  */
--int
-+static int
- mread(unsigned long adrs, void *buf, int size)
- {
- 	volatile int n;
-@@ -1666,7 +1666,7 @@ mread(unsigned long adrs, void *buf, int size)
- 	return n;
- }
- 
--int
-+static int
- mwrite(unsigned long adrs, void *buf, int size)
- {
- 	volatile int n;
-@@ -1731,7 +1731,7 @@ static int handle_fault(struct pt_regs *regs)
- 
- #define SWAP(a, b, t)	((t) = (a), (a) = (b), (b) = (t))
- 
--void
-+static void
- byterev(unsigned char *val, int size)
- {
- 	int t;
-@@ -1793,7 +1793,7 @@ static char *memex_subcmd_help_string =
-     "  x        exit this mode\n"
-     "";
- 
--void
-+static void
- memex(void)
- {
- 	int cmd, inc, i, nslash;
-@@ -1944,7 +1944,7 @@ memex(void)
- 	}
- }
- 
--int
-+static int
- bsesc(void)
- {
- 	int c;
-@@ -1984,7 +1984,7 @@ static void xmon_rawdump (unsigned long adrs, long ndump)
- #define isxdigit(c)	(('0' <= (c) && (c) <= '9') \
- 			 || ('a' <= (c) && (c) <= 'f') \
- 			 || ('A' <= (c) && (c) <= 'F'))
--void
-+static void
- dump(void)
- {
- 	int c;
-@@ -2022,7 +2022,7 @@ dump(void)
- 	}
- }
- 
--void
-+static void
- prdump(unsigned long adrs, long ndump)
- {
- 	long n, m, c, r, nr;
-@@ -2066,7 +2066,7 @@ prdump(unsigned long adrs, long ndump)
- 
- typedef int (*instruction_dump_func)(unsigned long inst, unsigned long addr);
- 
--int
-+static int
- generic_inst_dump(unsigned long adr, long count, int praddr,
- 			instruction_dump_func dump_func)
- {
-@@ -2104,7 +2104,7 @@ generic_inst_dump(unsigned long adr, long count, int praddr,
- 	return adr - first_adr;
- }
- 
--int
-+static int
- ppc_inst_dump(unsigned long adr, long count, int praddr)
- {
- 	return generic_inst_dump(adr, count, praddr, print_insn_powerpc);
-@@ -2126,7 +2126,7 @@ static unsigned long mval;		/* byte value to set memory to */
- static unsigned long mcount;		/* # bytes to affect */
- static unsigned long mdiffs;		/* max # differences to print */
- 
--void
-+static void
- memops(int cmd)
- {
- 	scanhex((void *)&mdest);
-@@ -2152,7 +2152,7 @@ memops(int cmd)
- 	}
- }
- 
--void
-+static void
- memdiffs(unsigned char *p1, unsigned char *p2, unsigned nb, unsigned maxpr)
- {
- 	unsigned n, prt;
-@@ -2170,7 +2170,7 @@ memdiffs(unsigned char *p1, unsigned char *p2, unsigned nb, unsigned maxpr)
- static unsigned mend;
- static unsigned mask;
- 
--void
-+static void
- memlocate(void)
- {
- 	unsigned a, n;
-@@ -2203,7 +2203,7 @@ memlocate(void)
- static unsigned long mskip = 0x1000;
- static unsigned long mlim = 0xffffffff;
- 
--void
-+static void
- memzcan(void)
- {
- 	unsigned char v;
-@@ -2230,7 +2230,7 @@ memzcan(void)
- 		printf("%.8x\n", a - mskip);
- }
- 
--void proccall(void)
-+static void proccall(void)
- {
- 	unsigned long args[8];
- 	unsigned long ret;
-@@ -2388,7 +2388,7 @@ scanhex(unsigned long *vp)
- 	return 1;
- }
- 
--void
-+static void
- scannl(void)
- {
- 	int c;
-@@ -2399,7 +2399,7 @@ scannl(void)
- 		c = inchar();
- }
- 
--int hexdigit(int c)
-+static int hexdigit(int c)
- {
- 	if( '0' <= c && c <= '9' )
- 		return c - '0';
-@@ -2430,13 +2430,13 @@ getstring(char *s, int size)
- static char line[256];
- static char *lineptr;
- 
--void
-+static void
- flush_input(void)
- {
- 	lineptr = NULL;
- }
- 
--int
-+static int
- inchar(void)
- {
- 	if (lineptr == NULL || *lineptr == 0) {
-@@ -2449,7 +2449,7 @@ inchar(void)
- 	return *lineptr++;
- }
- 
--void
-+static void
- take_input(char *str)
- {
- 	lineptr = str;
-@@ -2618,7 +2618,8 @@ static void dump_tlb_44x(void)
- 	}
- }
- #endif /* CONFIG_44x */
--void xmon_init(int enable)
 +
-+static void xmon_init(int enable)
- {
- #ifdef CONFIG_PPC_ISERIES
- 	if (firmware_has_feature(FW_FEATURE_ISERIES))
++int cpus_are_in_xmon(void)
++{
++	return !cpus_empty(cpus_in_xmon);
++}
+ #endif
+ 
+ static int xmon_core(struct pt_regs *regs, int fromipi)
+diff --git a/drivers/char/hvc_console.c b/drivers/char/hvc_console.c
+index 44160d5..2f9759d 100644
+--- a/drivers/char/hvc_console.c
++++ b/drivers/char/hvc_console.c
+@@ -675,12 +675,6 @@ static int hvc_poll(struct hvc_struct *hp)
+ 	return poll_mask;
+ }
+ 
+-#if defined(CONFIG_XMON) && defined(CONFIG_SMP)
+-extern cpumask_t cpus_in_xmon;
+-#else
+-static const cpumask_t cpus_in_xmon = CPU_MASK_NONE;
+-#endif
+-
+ /*
+  * This kthread is either polling or interrupt driven.  This is determined by
+  * calling hvc_poll() who determines whether a console adapter support
+@@ -698,7 +692,7 @@ static int khvcd(void *unused)
+ 		hvc_kicked = 0;
+ 		try_to_freeze();
+ 		wmb();
+-		if (cpus_empty(cpus_in_xmon)) {
++		if (!cpus_are_in_xmon()) {
+ 			spin_lock(&hvc_structs_lock);
+ 			list_for_each_entry(hp, &hvc_structs, next) {
+ 				poll_mask |= hvc_poll(hp);
+diff --git a/drivers/char/hvc_console.h b/drivers/char/hvc_console.h
+index 8c59818..42ffb17 100644
+--- a/drivers/char/hvc_console.h
++++ b/drivers/char/hvc_console.h
+@@ -60,4 +60,14 @@ extern struct hvc_struct * __devinit hvc_alloc(uint32_t vtermno, int irq,
+ /* remove a vterm from hvc tty operation (modele_exit or hotplug remove) */
+ extern int __devexit hvc_remove(struct hvc_struct *hp);
+ 
++
++#if defined(CONFIG_XMON) && defined(CONFIG_SMP)
++#include <asm/xmon.h>
++#else
++static inline int cpus_are_in_xmon(void)
++{
++	return 0;
++}
++#endif
++
+ #endif // HVC_CONSOLE_H
+diff --git a/include/asm-powerpc/xmon.h b/include/asm-powerpc/xmon.h
+index d83da3c..5eb8e59 100644
+--- a/include/asm-powerpc/xmon.h
++++ b/include/asm-powerpc/xmon.h
+@@ -25,5 +25,9 @@ static inline void xmon_setup(void) { };
+ static inline void xmon_register_spus(struct list_head *list) { };
+ #endif
+ 
++#if defined(CONFIG_XMON) && defined(CONFIG_SMP)
++extern int cpus_are_in_xmon(void);
++#endif
++
+ #endif /* __KERNEL __ */
+ #endif /* __ASM_POWERPC_XMON_H */
 -- 
 1.5.5
