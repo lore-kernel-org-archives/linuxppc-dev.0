@@ -1,25 +1,19 @@
-Return-Path: <dcogley@uslinc.com>
-Received: from que11.charter.net (que11.charter.net [209.225.8.21])
-	by ozlabs.org (Postfix) with ESMTP id 8F927DDFAB
+Return-Path: <eemingliu@hotmail.com>
+Received: from bay0-omc3-s37.bay0.hotmail.com (bay0-omc3-s37.bay0.hotmail.com
+	[65.54.246.237]) by ozlabs.org (Postfix) with ESMTP id 9A782DDE45
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  9 May 2008 03:40:53 +1000 (EST)
-Received: from aarprv04.charter.net ([10.20.200.74]) by mta11.charter.net
-	(InterMail vM.7.08.03.00 201-2186-126-20070710) with ESMTP
-	id <20080508170143.IYH5653.mta11.charter.net@aarprv04.charter.net>
-	for <linuxppc-embedded@ozlabs.org>; Thu, 8 May 2008 13:01:43 -0400
-Received: from [192.168.1.32] (really [71.93.35.174])
-	by aarprv04.charter.net with ESMTP
-	id <20080508170142.NBER4495.aarprv04.charter.net@[192.168.1.32]>
-	for <linuxppc-embedded@ozlabs.org>; Thu, 8 May 2008 13:01:42 -0400
-Subject: Re: mmap problem in device driver and application program.
-From: Dave Cogley <dcogley@uslinc.com>
-To: linuxppc-embedded@ozlabs.org
-In-Reply-To: <BAY138-W55519F961B3A01D0B8A167B2D00@phx.gbl>
+	Fri,  9 May 2008 04:42:12 +1000 (EST)
+Message-ID: <BAY138-W36C7249F532D111A1DC508B2D00@phx.gbl>
+Content-Type: multipart/alternative;
+	boundary="_9477b6e8-e42b-4bc8-bc0d-67739e52e665_"
+From: MingLiu <eemingliu@hotmail.com>
+To: Dave Cogley <dcogley@uslinc.com>, <linuxppc-embedded@ozlabs.org>
+Subject: RE: mmap problem in device driver and application program.
+Date: Thu, 8 May 2008 18:42:10 +0000
+In-Reply-To: <1210266109.3755.8.camel@localhost.localdomain>
 References: <BAY138-W55519F961B3A01D0B8A167B2D00@phx.gbl>
-Content-Type: text/plain; charset=UTF-8
-Date: Thu, 08 May 2008 10:01:49 -0700
-Message-Id: <1210266109.3755.8.camel@localhost.localdomain>
-Mime-Version: 1.0
+	<1210266109.3755.8.camel@localhost.localdomain>
+MIME-Version: 1.0
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -30,98 +24,57 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-The address you are passing to mmap is where the pointer will be mapped
-in virtual address space. You need to determine the DMA memory address
-page number down in the actual mmap call.
+--_9477b6e8-e42b-4bc8-bc0d-67739e52e665_
+Content-Type: text/plain; charset="gb2312"
+Content-Transfer-Encoding: 8bit
 
-int foo_mmap(struct file* filep, struct vm_area_struct* vma)
+
+Dear Dave,
+ 
+Thanks for your answer first. However I am very confused. It seems that I understand the memory-mapping-related functions completely wrong. Here comes more questions. > The address you are passing to mmap is where the pointer will be mapped> in virtual address space. You need to determine the DMA memory address> page number down in the actual mmap call.> > int foo_mmap(struct file* filep, struct vm_area_struct* vma)> {> unsigned long dma_addr = 0x03000000;> unsigned long dma_size = 0x00200000;> unsigned long pfn;> > // convert the DMA address to page number> pfn = virt_to_phys(dma_addr) >> PAGE_SHIFT;
+Shall I use virt_to_phys? dma_addr is already exactly physical address which is used to initiate DMA transfers. 
+ 
+> // remap our page frame to the vma offset> remap_pfn_range(vma, vma->vm_start, pfn, > dma_size, vma->vm_page_prot);> }> > Change the address parameter from 0x03000000 to 0:> > lut_mem_base = (unsigned int *) mmap(0, LUT_SIZE_IN_BYTE, > PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+Previously I used "remap_page_range(vma, vma->vm_start, physical_addr, vm_size, vma->vm_page_prot)" in the device driver, where physical_addr is 0x03000000. In the application program, I used "lut_mem_base = (unsigned int *) mmap(0, LUT_SIZE_IN_BYTE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);". I think it is correct but it doesn't work. I heard that in the new kernels, remap_page_range is not supported any more. However when I compile the driver, nothing was shown to complain that. I am using 2.6.10 kernel. Any hint for this?
+ 
+Thank you for your help to make me understand. 
+ 
+BR
+Ming
+_________________________________________________________________
+Windows Live Photo gallery ÊýÂëÏà»úµÄ³¬¼¶°éÂÂ£¬ÇáËÉ¹ÜÀíºÍ±à¼­ÕÕÆ¬£¬»¹ÄÜÖÆ×÷È«¾°ÃÀÍ¼£¡
+http://get.live.cn/product/photo.html
+--_9477b6e8-e42b-4bc8-bc0d-67739e52e665_
+Content-Type: text/html; charset="gb2312"
+Content-Transfer-Encoding: 8bit
+
+<html>
+<head>
+<style>
+.hmmessage P
 {
-	unsigned long dma_addr = 0x03000000;
-	unsigned long dma_size = 0x00200000;
-	unsigned long pfn;
-
-	// convert the DMA address to page number
-	pfn = virt_to_phys(dma_addr) >> PAGE_SHIFT;
-
-	// remap our page frame to the vma offset
-	remap_pfn_range(vma, vma->vm_start, pfn, 
-		dma_size, vma->vm_page_prot);
+margin:0px;
+padding:0px
 }
-
-Change the address parameter from 0x03000000 to 0:
-
-lut_mem_base = (unsigned int *) mmap(0, LUT_SIZE_IN_BYTE, 
-	PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-
-
-Dave
-
-On Thu, 2008-05-08 at 15:33 +0000, MingLiu wrote:
-> Dear all,
-> I had some problem when I use mmap() file operation in the device
-> driver file operation. My situation can be described as:
->  
-> 1. I reserve 2MB DDR memory as a look-up-table (LUT) for my customized
-> device. The physical start address in the memory is 0x03000000 and the
-> size is 2MB. 
->  
-> 2. In the device driver, I use mmap file operation to make this memory
-> area directly accessible by application programs. In the mmap file
-> operation, it looks like:
->  
->   if(remap_pfn_range(vma, vma->vm_start, vma->vm_pgoff, vma->vm_end -
-> vma->vm_start, vma->vm_page_prot)){
->      return -EAGAIN;
->    }
->  
-> 3. In the application program, I read from a file and initialize the
-> LUT area. I use the following sentence to mmap the physical address
-> into a virtual one which could be accessed by the application:
->  
->   // the physical address is from 0x03000000 with a size of
-> LUT_SIZE_IN_BYTE equal to 2MB
->   lut_mem_base = (unsigned int *) mmap(0, LUT_SIZE_IN_BYTE, PROT_READ
-> | PROT_WRITE, MAP_SHARED, fd, 0x03000000);
->  
-> Then, I initialize the LUT area with the virtual address specified by
-> lut_mem_base. 
->  
->   for(i=0;;i++){
->     fread(&buf, sizeof(unsigned int), 1, fp);
->     *(lut_mem_base + i) = buf;
->     if(feop(fp)){
->        break;
->     }
->   }
->  
-> 4. After the initialization of the LUT memory area, in the device
-> driver, DMA transfer will be enabled using the physical address of
-> 0x03000000 as the source address. The destination is a register in my
-> customized device. The data is fed from the memory to my device
-> register. 
->  
-> HOWEVER, I found that the data fed to the device register is not the
-> same as the one used to initialize the LUT memory. Maybe the DMA
-> fetches wrong data from different addresses and feeds to my device.
-> Since this is my first time to use mmap, I am not self-confident to my
-> program, both in the device driver and in the application. Is there
-> anything wrong with my mmap part? I will appreciate so much if some
-> experts could give me some hints. Thanks in advance.
->  
-> BR
-> Ming
->  
->  
->  
->  
->  
->  
-> 
-> 
-> ______________________________________________________________________
-> Windows Live Writerï¼Œæ”¯æŒç¦»çº¿æ’°å†™åšå®¢å†…å®¹ï¼Œéšæ—¶éšåœ°æƒ³å†™å°±å†™ã€‚ ç«‹å³ä½¿
-> ç”¨ï¼
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+body.hmmessage
+{
+FONT-SIZE: 9pt;
+FONT-FAMILY:Tahoma
+}
+</style>
+</head>
+<body class='hmmessage'>
+Dear Dave,<BR>
+&nbsp;<BR>
+Thanks for your answer first. However I am&nbsp;very confused. It seems that I understand the memory-mapping-related functions completely wrong. Here comes more questions. <BR><BR><BR>&gt; The address you are passing to mmap is where the pointer will be mapped<BR>&gt; in virtual address space. You need to determine the DMA memory address<BR>&gt; page number down in the actual mmap call.<BR>&gt; <BR>&gt; int foo_mmap(struct file* filep, struct vm_area_struct* vma)<BR>&gt; {<BR>&gt; unsigned long dma_addr = 0x03000000;<BR>&gt; unsigned long dma_size = 0x00200000;<BR>&gt; unsigned long pfn;<BR>&gt; <BR>&gt; // convert the DMA address to page number<BR>&gt; pfn = virt_to_phys(dma_addr) &gt;&gt; PAGE_SHIFT;<BR><BR>
+Shall I use virt_to_phys? dma_addr is already exactly physical address which is used to initiate DMA transfers. <BR>
+&nbsp;<BR>
+&gt; // remap our page frame to the vma offset<BR>&gt; remap_pfn_range(vma, vma-&gt;vm_start, pfn, <BR>&gt; dma_size, vma-&gt;vm_page_prot);<BR>&gt; }<BR>&gt; <BR>&gt; Change the address parameter from 0x03000000 to 0:<BR>&gt; <BR>&gt; lut_mem_base = (unsigned int *) mmap(0, LUT_SIZE_IN_BYTE, <BR>&gt; PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);<BR><BR>
+Previously I used "remap_page_range(vma, vma-&gt;vm_start, physical_addr, vm_size, vma-&gt;vm_page_prot)" in the device driver, where physical_addr is 0x03000000. In the application program, I used "lut_mem_base = (unsigned int *) mmap(0, LUT_SIZE_IN_BYTE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);". I think it is correct but it doesn't work. I heard that in the new kernels, remap_page_range is not supported any more. However when I compile the driver, nothing was shown to complain that. I am using 2.6.10 kernel. Any hint for this?<BR>
+&nbsp;<BR>
+Thank you for your help to make me understand. <BR>
+&nbsp;<BR>
+BR<BR>
+Ming<BR><br /><hr />Ê¹ÓÃÐÂÒ»´ú Windows Live Messenger ÇáËÉ½»Á÷ºÍ¹²Ïí£¡ <a href='http://messenger.live.cn/' target='_new'>Á¢¼´ÌåÑé£¡</a></body>
+</html>
+--_9477b6e8-e42b-4bc8-bc0d-67739e52e665_--
