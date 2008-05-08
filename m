@@ -1,21 +1,31 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Thu, 8 May 2008 11:59:48 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
-Subject: Re: [PATCH 4/4] [POWERPC] Xilinx: Framebuffer: Use dcrinfrastructure.
-Message-ID: <20080508015948.GG5156@yookeroo.seuss>
-References: <20080421080353.5d2b3bb9@zod.rchland.ibm.com>
-	<1210010201-28436-1-git-send-email-stephen.neuendorffer@xilinx.com>
-	<1210010201-28436-2-git-send-email-stephen.neuendorffer@xilinx.com>
-	<1210010201-28436-3-git-send-email-stephen.neuendorffer@xilinx.com>
-	<1210010201-28436-4-git-send-email-stephen.neuendorffer@xilinx.com>
-	<20080505175647.4F3AC1C9004A@mail57-sin.bigfish.com>
-	<fa686aa40805052155q43a7ebd8x14c1711bd4c6bbfa@mail.gmail.com>
-	<20080506061444.GB17798@yookeroo.seuss>
-	<20080506174352.52C857D805C@mail62-va3.bigfish.com>
+Return-Path: <Jason.Jin@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 10A00DDE1E
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 May 2008 12:08:33 +1000 (EST)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	m4828RfT015566
+	for <linuxppc-dev@ozlabs.org>; Wed, 7 May 2008 19:08:27 -0700 (MST)
+Received: from zch01exm27.fsl.freescale.net (zch01exm27.ap.freescale.net
+	[10.192.129.223])
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id m4828OSV012505
+	for <linuxppc-dev@ozlabs.org>; Wed, 7 May 2008 21:08:26 -0500 (CDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080506174352.52C857D805C@mail62-va3.bigfish.com>
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [PATCH 2/2] [POWERPC] 86xx: mpc8610_hpcd: add support for ULI RTC
+Date: Thu, 8 May 2008 10:08:22 +0800
+Message-ID: <CC27DED0F8F39E48A7E75FD768688B7A8C152D@zch01exm27.fsl.freescale.net>
+In-Reply-To: <EFF7334F-3526-4E2B-8D5C-B97A02BDA71A@kernel.crashing.org>
+References: <20080505185607.GB4906@polina.dev.rtsoft.ru>
+	<EFF7334F-3526-4E2B-8D5C-B97A02BDA71A@kernel.crashing.org>
+From: "Jin Zhengxiong" <Jason.Jin@freescale.com>
+To: "Kumar Gala" <galak@kernel.crashing.org>,
+	"Anton Vorontsov" <avorontsov@ru.mvista.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -26,58 +36,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, May 06, 2008 at 10:43:50AM -0700, Stephen Neuendorffer wrote:
-[snip]
-> > > Hmmm, something doesn't quite feel right about this.  The node
-> > > describing the tft device is a child of the dcr@0 node which is the
-> > > dcr bus.  However, dcr bindings use dcr-bus and dcr-reg instead of
-> > > parent-child relationship to specify how to access the dcr
-> registers.
-> > > So, in this example; if the device is described by tft@80, and the
-> dcr
-> > > bus is described by opb2dcr-bridge@40700000, then what does dcr@0
-> > > describe?  (I do understand what they really describe in EDK terms;
-> > > but I'm looking at it through device tree glasses).
-> > >
-> > > I don't think the presence of a dcr@0 node is a problem, but in this
-> > > case #size/address-cells doesn't have any meaning (the child doesn't
-> > > have a reg property) and it looks like it should be a child of the
-> > > opb2dcr-bridge node (otherwise, what is it attached to?).
-> > 
-> > Yes, indeed.  If dcr@0 is representing the DCR bus / interface it
-> > should really have the dcr-access-method property and have all the
-> > dcr-parent handles point at it.
-> 
-> Hmm, I tend to agree.  Certainly the address-cells and size-cells can
-> go.  Part of the nastiness is that I'm trying to maintain a modicum of
-> backward compatibility at the moment in the device tree generator.  This
-> structure allow the dcr@0 node to have ranges; and the tft node to have
-> a properly translated reg = <> property for the existing driver which
-> only understands mmio.  I don't think it really works for the opb2dcr
-> bridge to be a bridge and a dcr-controller at the same time. :)  This
-> structure is also very similar to what is generated if the
-> dcr-controller is native from the processor (there's just no bridge).
+=20
 
-I don't really understand what you're getting at here, sorry.  Perhaps
-you could describe what you're doing with the tft device in more
-detail?
+> -----Original Message-----
+> From: linuxppc-dev-bounces+jinzhengxiong=3Dgmail.com@ozlabs.org=20
+> [mailto:linuxppc-dev-bounces+jinzhengxiong=3Dgmail.com@ozlabs.or
+> g] On Behalf Of Kumar Gala
+> Sent: Tuesday, May 06, 2008 3:12 AM
+> To: Anton Vorontsov
+> Cc: linuxppc-dev@ozlabs.org
+> Subject: Re: [PATCH 2/2] [POWERPC] 86xx: mpc8610_hpcd: add=20
+> support for ULI RTC
+>=20
+>=20
+> On May 5, 2008, at 1:56 PM, Anton Vorontsov wrote:
+>=20
+> > The ULI "Super South Bridge" contains ISA bridge to the legacy=20
+> > devices, such as Super IO mouse/keyboard/floppy disk controllers,=20
+> > parallel port, i8259 interrupt controller and so on.
+> >
+> > On the MPC8610HPCD, i8259 seems to be disabled (mpc8610_hpcd.c=20
+> > confirms this), and other peripherals are not traced out.
+> > So we use only RTC.
+> >
+> > This patch also adds ULI quirk to make RTC actually work=20
+> (this quirk=20
+> > differs a bit from the one in the fsl_uli1575.c).
+>=20
+> Can we just one quick for both?
 
-> > Current standard practice is not to represent the DCR bus as node with
-> > subnodes for the DCR-controlled devices.  That's because the DCR bus
-> > tends to run in addition to other on-chip busses, and some things have
-> > to go on another on-chip bus to make sense, but still have DCR control
-> > registers (for example the internal bus bridges on 4xx).
-> > 
-> > Arguably for DCR-only devices we should instead have a node
-> > representing the DCR bus and just put the devices under it with the
-> > DCR number encoded in reg in the normal way.  But then its
-> > inconsistent with the devices that need the other DCR representation.
-> 
-> Yup, it's exactly this problem I'm trying to fix in the case of the tft
-> driver.
+mpc8610HPCD board did not use the quirks in fsl_uli1575.c=20
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Jason
