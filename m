@@ -1,19 +1,31 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <Nick.Spence@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 66D8BDDEEC
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 May 2008 16:31:18 +1000 (EST)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
+	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
+	m486VCOO027381
+	for <linuxppc-dev@ozlabs.org>; Wed, 7 May 2008 23:31:12 -0700 (MST)
+Received: from az33exm24.fsl.freescale.net (az33exm24.am.freescale.net
+	[10.64.32.14])
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id m486VBZs018431
+	for <linuxppc-dev@ozlabs.org>; Thu, 8 May 2008 01:31:11 -0500 (CDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18466.40208.94904.902495@cargo.ozlabs.ibm.com>
-Date: Thu, 8 May 2008 16:26:24 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] [POWERPC] Fix kernel builds with newer gcc versions and
-	-Os
-In-Reply-To: <BFB7B7A0-6EA9-467D-B23E-B0D46EF6BA54@kernel.crashing.org>
-References: <Pine.LNX.4.64.0805020920120.1141@blarg.am.freescale.net>
-	<20080502150753.GA7753@ld0162-tx32.am.freescale.net>
-	<F62A680D-C2D8-42B0-B4D6-F3A00F228EB1@kernel.crashing.org>
-	<03e9cbca081bff8f6db9862bf3d8d028@kernel.crashing.org>
-	<BFB7B7A0-6EA9-467D-B23E-B0D46EF6BA54@kernel.crashing.org>
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+	charset="US-ASCII"
+Subject: RE: [PATCH] [POWERPC] Reintroduce O_SYNC flag to make DRAM non-cached.
+Date: Wed, 7 May 2008 23:31:09 -0700
+Message-ID: <9E50B2A5FE44294CBF877745D9A4125F01D37125@az33exm24.fsl.freescale.net>
+In-Reply-To: <18466.38047.531381.157886@cargo.ozlabs.ibm.com>
+References: <1210224392246-git-send-email-nick.spence@freescale.com>
+	<18466.38047.531381.157886@cargo.ozlabs.ibm.com>
+From: "Spence Nick" <Nick.Spence@freescale.com>
+To: "Paul Mackerras" <paulus@samba.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,37 +35,61 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala writes:
+Paul Mackerras wrote:
+> This says nothing about why you want to do this---what bad=20
+> things arise from the present code, or what good things would=20
+> happen if the change was made.  It needs to.
 
-> We'll hopefully this thread might spark either an explanation for why  
-> we aren't just linking libgcc in a statement that says we should and  
-> we can remove the code that implements libgcc functionality.
+We found the problem when porting code from Linux 2.4 to 2.6, where a
+user space application maps a 1 MByte region of DRAM with the O_SYNC=20
+flag to communicate with an internal core that shares access to the
+DRAM but does not have any cache snooping logic.
 
-I've just reviewed the code in the 32-bit and 64-bit PowerPC versions
-of libgcc.  It's pretty huge (half a megabyte or so in total) but
-fortunately most of the bulk is in the decimal floating-point support,
-which I largely ignored (though I did notice in passing that it calls
-libc functions including strchr, strtof, and sprintf).
+In 2.4 the mem driver honors the O_SYNC flag and makes the requested
+memory
+memory non-cached so that writes from user space are immediately
+available
+to the second core.
 
-On 64-bit I don't see anything there that I would expect we would
-need.  There are some things that are in there because some processors
-have particular instructions that others don't, for example popcountb
-(which is in the V2.05 architecture but not earlier versions), so gcc
-can generate either the instruction or a call to the libgcc function,
-depending on what sort of processor you're compiling for.  However, in
-those cases, we'd want our own version of the libgcc function so that
-we could use our CPU feature mechanism to give us the new instruction
-on those CPUs that have it.
+In 2.6 the powerpc mem driver no longer honors the O_SYNC flag so the
+data
+is only written out to DRAM (and becoming visible to the second core) as
+the
+cache reloads with other data.
 
-On 32-bit, it's pretty much just the 64-bit arithmetic routines that
-we would need from libgcc (shifts, compares, multiply, divide,
-modulo).  I'm not too impressed with the quality of the code there,
-for example, the 64-bit signed divide routine is 299 instructions,
-which seems enormous to me.  It's all generated from portable C code
-by gcc.  I think I can do a smaller and faster 64-bit divide routine
-in assembler, for instance.
+> The change isn't acceptable as it is, because IBM machines=20
+> with a hypervisor don't allow system memory to be mapped=20
+> uncacheable.  It would at least have to have some=20
+> platform-specific check in there.
+>=20
+> On other powerpc platforms, this would introduce possible=20
+> cache paradoxes, where a page is mapped cacheable at one=20
+> address (via the linear mapping) and uncacheable at another=20
+> address (via /dev/mem).  If you really really want to do=20
+> this, you'll need to add code to bust up the large pages (or=20
+> TLB entries) used for the linear mapping so that the=20
+> corresponding pages of the linear mapping can be unmapped, or=20
+> mapped cacheable.  Plus you'll need to add the appropriate=20
+> cache flushing code to make sure there aren't any cache lines=20
+> for the page in cache.  Further, you'll need to arrange=20
+> somehow to make sure that the kernel stack has a resident TLB=20
+> entry during the unrecoverable parts of the exception entry=20
+> and exit paths.
+>=20
 
-So on the whole I don't think we want to link with libgcc, although I
-don't feel very strongly about it.
+This is getting to be a much more elaborate project.
 
-Paul.
+In our case the memory area is reserved so that the main processor will
+not
+touch it except when mapped by the mem driver.
+
+Alternative solutions are to modify the user space code to flush out the
+caches by reading a large area, or to implement a board specific=20
+ppc_md.phys_mem_access_prot() function to do this.
+
+Either of these will meet my needs, but this will leave the O_SYNC flag
+ignored on the PowerPC architecture in 2.6, but honored by Linux 2.4 and
+other architectures. Probably not a problem for most people.
+
+Thanks,
+  Nick
