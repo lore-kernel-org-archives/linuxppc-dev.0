@@ -1,15 +1,22 @@
-Return-Path: <gerhard_pircher@gmx.net>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id B1F93DDF43
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 May 2008 06:51:45 +1000 (EST)
-Content-Type: text/plain; charset="us-ascii"
-Date: Thu, 08 May 2008 22:45:02 +0200
-From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
-Message-ID: <20080508204502.189970@gmx.net>
+Return-Path: <olaf@aepfle.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 42CBBDDE18
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 May 2008 07:31:04 +1000 (EST)
+Date: Thu, 8 May 2008 23:31:01 +0200
+From: Olaf Hering <olaf@aepfle.de>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH v5] create modalias file in sysfs for bus of_platform
+Message-ID: <20080508213101.GA8848@aepfle.de>
+References: <20080122142109.GA12967@aepfle.de>
+	<20080122144053.GA13019@aepfle.de>
+	<20080122190939.GA14124@aepfle.de>
+	<18330.32110.449914.354218@cargo.ozlabs.ibm.com>
+	<20080126100427.GA1162@aepfle.de>
+	<20080424131600.GA15226@aepfle.de>
 MIME-Version: 1.0
-Subject: Patch [Port fixmap from x86 and use for kmap_atomic] breaks
-	dma_noncoherent.c
-To: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20080424131600.GA15226@aepfle.de>
+Cc: sparclinux@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,30 +26,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+On Thu, Apr 24, Olaf Hering wrote:
 
-The commit "[POWERPC] Port fixmap from x86 and use for kmap_atomic" breaks
-dma-noncoherent.c, if highmem is enabled.
+> Create /sys/bus/of_platform/devices/*/modalias file to allow autoloading
+> of modules. modalias files are already present for many other bus types.
+> This adds also a newline to the devspec files.
+> 
+> Also create a devspec file for mac-io devices. They were created as a side
+> effect. Use correct buffer size for mac-io modalias buffer.
+> 
+> Tested on iBook1 and Efika.
 
-> --- a/arch/powerpc/mm/pgtable_32.c
-> +++ b/arch/powerpc/mm/pgtable_32.c
-> @@ -387,3 +388,25 @@ void kernel_map_pages(struct page *page, int numpages, int enable)
->         change_page_attr(page, numpages, enable ? PAGE_KERNEL : __pgprot(0));
->  }
->  #endif /* CONFIG_DEBUG_PAGEALLOC */
-> +
-> +static int fixmaps;
-> +unsigned long FIXADDR_TOP = 0xfffff000;
-> +EXPORT_SYMBOL(FIXADDR_TOP);
-> +
-The address defined for FIXADDR_TOP seems to conflict with the address
-defined by CONSISTENT_START (default 0xff100000). It triggers the
-BUG_ON(!pte_none(*pte)) statement in __dma_alloc_coherent().
-
-regards,
-
-Gerhard
-
--- 
-GMX startet ShortView.de. Hier findest Du Leute mit Deinen Interessen!
-Jetzt dabei sein: http://www.shortview.de/?mc=sv_ext_mf@gmx
+Did anyone test this on other systems, like sparc?
