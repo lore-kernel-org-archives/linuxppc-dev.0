@@ -1,25 +1,18 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 0D360DE36D
+Return-Path: <rodolfo@lesc.ufc.br>
+Received: from lesc0.lesc.ufc.br (unknown [200.17.37.126])
+	by ozlabs.org (Postfix) with ESMTP id 5ADE6DDED8
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  7 May 2008 05:41:08 +1000 (EST)
-Message-ID: <4820B485.1020506@freescale.com>
-Date: Tue, 06 May 2008 14:41:57 -0500
-From: Scott Wood <scottwood@freescale.com>
+	Thu,  8 May 2008 21:46:22 +1000 (EST)
 MIME-Version: 1.0
-To: Mike Timmons <mike_timmons@trimble.com>
-Subject: Re: porting pci driverfrom arch=ppc on kernel 2.6.16 to arch=powerpc
-	on	2.6.24...
-References: <161B3BAD77161449A144FF054231C3D6020D6A5D@uss-am-xch-01.am.trimblecorp.net>
-	<48209F79.70506@freescale.com>
-	<161B3BAD77161449A144FF054231C3D6020D6B08@uss-am-xch-01.am.trimblecorp.net>
-In-Reply-To: <161B3BAD77161449A144FF054231C3D6020D6B08@uss-am-xch-01.am.trimblecorp.net>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: Mark Gibson <Mark_Gibson@trimble.com>, linuxppc-embedded@ozlabs.org
+Date: Thu, 8 May 2008 08:46:17 -0300
+From: rodolfo <rodolfo@lesc.ufc.br>
+To: Detlev Zundel <dzu@denx.de>
+Subject: Re: Predefined Compiler Flag for CROSS_COMPILE in ELDK
+In-Reply-To: <m2tzhjxorq.fsf@ohwell.denx.de>
+References: <m2tzhjxorq.fsf@ohwell.denx.de>
+Message-ID: <8b6b0af3278e2fe8a9355b1e053e1419@lesc.ufc.br>
+Content-Type: text/plain; charset="UTF-8"
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -30,16 +23,65 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Mike Timmons wrote:
-> If I'm not supposed to read the interrupt using config_read, should I
-> also not be writing to the host register on the coral P to clear the
-> interrupt?
+Detlev,
+
+-mcpu is deprecated:
+
+HOSTCC  scripts/basic/fixdep
+`-mcpu=' is deprecated. Use `-mtune=' or '-march=' instead.
+scripts/basic/fixdep.c:1: error: bad value (405) for -mtune= switch
+make[1]: ** [scripts/basic/fixdep] Erro 1
+make: ** [scripts_basic] Erro 2
+
+
+then I put -march=405 and give this errors:
+
+scripts/basic/fixdep.c:1: error: bad value (405) for -march= switch
+scripts/basic/fixdep.c:1: error: bad value (405) for -mtune= switch
+make[1]: ** [scripts/basic/fixdep] Erro 1
+make: ** [scripts_basic] Erro 2
+
+See a piece of my Makefile:
+
+HOSTCC       = gcc
+HOSTCXX      = g++
+HOSTCFLAGS   = -Wall -Wstrict-prototypes -O2 -fomit-frame-pointer
+-march=405
+HOSTCXXFLAGS = -O2
+
+
+How can I do this?
+
+Thanks,
+
+
+On Wed, 30 Apr 2008 18:59:05 +0200, Detlev Zundel <dzu@denx.de> wrote:
+> Hi Rodolfo,
 > 
-> Should I instead be using some PCI helper functions? 
-
-No, clearing interrupts is device-specific.
-
-Have you verified that the device does not think it's generating an 
-interrupt during the interrupt storm?  Do other PCI cards work?
-
--Scott
+>> I using ppc_4xx- cross-compiler for build linux in xup virtex II pro.
+>> How can I change -mpcu compiler flag for a specific vallue for my
+>> board/processor?
+> 
+> Do the obvious thing - specify it on every command line.
+> 
+> Cheers
+>   Detlev
+> 
+> --
+> "Oh, didn't you know, the Lord did the original programming of the
+> universe in
+> COBOL." - "That's why the world is the evil work of Satan. A true divine
+> being
+> would have used Scheme."  -  "And, if so, Jesus would have been crucified
+> on a
+> big lambda symbol."  -- K. Chafin, K. Schilling & D. Hanley, on
+> comp.lang.lisp
+> --
+> DENX Software Engineering GmbH,      MD: Wolfgang Denk & Detlev Zundel
+> HRB 165235 Munich,  Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+> Phone: (+49)-8142-66989-40 Fax: (+49)-8142-66989-80 Email: dzu@denx.de
+> 
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
