@@ -1,30 +1,22 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <stephen.neuendorffer@xilinx.com>
+Received: from outbound8-sin-R.bigfish.com (outbound-sin.frontbridge.com
+	[207.46.51.80])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 24711DE28E
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id D9CA3DDF00
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  9 May 2008 01:33:21 +1000 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	m48FXGi1021182
-	for <linuxppc-embedded@ozlabs.org>; Thu, 8 May 2008 08:33:16 -0700 (MST)
-Received: from ld0162-tx32.am.freescale.net (ld0162-tx32.am.freescale.net
-	[10.82.19.112])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m48FXFjI016130
-	for <linuxppc-embedded@ozlabs.org>; Thu, 8 May 2008 10:33:15 -0500 (CDT)
-Date: Thu, 8 May 2008 10:33:15 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Sanal Kumar V K <sanalvk@centillium.com>
-Subject: Re: Running a section of code from internal memory
-Message-ID: <20080508153315.GC18740@ld0162-tx32.am.freescale.net>
-References: <4822E5CE.3090701@centillium.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4822E5CE.3090701@centillium.com>
-Cc: linuxppc-embedded@ozlabs.org
+	Fri,  9 May 2008 03:24:55 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="US-ASCII"
+Subject: RE: xilinx linux on a XUPV2P
+Date: Thu, 8 May 2008 10:24:19 -0700
+In-reply-to: <48230682.8090000@delta.uni-dortmund.de>
+References: <48230682.8090000@delta.uni-dortmund.de>
+From: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
+To: "Dr. Peter Hartmann" <hartmann@delta.uni-dortmund.de>,
+	<linuxppc-embedded@ozlabs.org>
+Message-Id: <20080508172430.BC58537006C@mail193-sin.bigfish.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -35,16 +27,45 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thu, May 08, 2008 at 05:06:46PM +0530, Sanal Kumar V K wrote:
-> A small part of the code needs to run from the on-chip "L2 scratch" for
-> getting optimum performance. I would really appreciate if some could
-> give me some pointers regarding the following questions:
-> 
-> 1. Is #pragma section supported by gcc.
-> The compiler prints this warning "ignoring #pragma section" and the
-> pragma is ignored indicating that it is not supported. Is there any way
-> I can get the pragma working for gcc or any alternative?
 
-__attribute__((section("section name")))
+Sounds like it's not finding the console.
+If you're using the uartlite, you need to specify console=3DttyUL0 on =
+the
+kernel command line.
 
--Scott
+Steve
+
+> -----Original Message-----
+> From: linuxppc-embedded-bounces+stephen=3Dneuendorffer.name@ozlabs.org
+[mailto:linuxppc-embedded-
+> bounces+stephen=3Dneuendorffer.name@ozlabs.org] On Behalf Of Dr. Peter
+Hartmann
+> Sent: Thursday, May 08, 2008 6:56 AM
+> To: linuxppc-embedded@ozlabs.org
+> Subject: xilinx linux on a XUPV2P
+>=20
+> Hello everybody,
+>=20
+> I am trying to get the latest Kernel (2.6.25-rc9) from git.xilinx.com
+running on
+> a XUPV2P board. I generated the hardware using JH Kelms step by step
+list,
+> skipping points 6-8 and replacing point 9 by a more modern version of
+doing
+> this. When I boot the system.ace from the CF card, the bootloader
+talks to me
+> over the RS232, but as soon as it tries to boot the kernel it hangs
+up.
+> I had 2.6.18-rc3 which I got from somebody else running this way. The
+reason I
+> intend to change is the UARTLITE driver, which seems to be included in
+the
+> latest kernel tree.
+> I use Platform Studio 9.1.02i which I also used for the 2.6.18 Kernel.
+> Has anybody yet got this to work out with 9.1.02i ??
+> Would it be possible for somebody to give a dummy like me the steps
+you took to
+> get it working on your board? I'm really lost here. Thanks!
+>=20
+>=20
+> Thanks in advance!
