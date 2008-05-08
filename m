@@ -1,23 +1,17 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E944CDDF29
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 May 2008 00:16:19 +1000 (EST)
-Message-Id: <5DD68A6B-45FD-4163-BDF5-356C70A00676@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-In-Reply-To: <20080505204449.GA9446@uranus.ravnborg.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: How to link a .o with all modules
-Date: Thu, 8 May 2008 09:16:10 -0500
-References: <6C8AB345-2DA0-460D-B7C8-262463247DDE@kernel.crashing.org>
-	<20080504192434.GA23752@uranus.ravnborg.org>
-	<D346E2E4-26C3-482E-ABBF-AF1EE97E91CD@kernel.crashing.org>
-	<20080505204449.GA9446@uranus.ravnborg.org>
-Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>,
-	lkml List <linux-kernel@vger.kernel.org>
+Return-Path: <avorontsov@dev.rtsoft.ru>
+Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
+	by ozlabs.org (Postfix) with SMTP id B79C8DDF43
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 May 2008 00:20:08 +1000 (EST)
+Date: Thu, 8 May 2008 18:20:05 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: [RFC PATCH 0/3] Board-specific PCI fixups [was: Re: [PATCH 2/2]
+	[POWERPC] 86xx: mpc8610_hpcd: add support for ULI RTC]
+Message-ID: <20080508142005.GA6749@polina.dev.rtsoft.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf8
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,52 +21,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On May 5, 2008, at 3:44 PM, Sam Ravnborg wrote:
-
->>>
->>>
->>> Let me know if this does address your question.
+On Mon, May 05, 2008 at 02:11:30PM -0500, Kumar Gala wrote:
+>
+> On May 5, 2008, at 1:56 PM, Anton Vorontsov wrote:
+>
+>> The ULI "Super South Bridge" contains ISA bridge to the legacy
+>> devices, such as Super IO mouse/keyboard/floppy disk controllers,
+>> parallel port, i8259 interrupt controller and so on.
 >>
->> The problem is MODPOST complains about undefined symbols:
+>> On the MPC8610HPCD, i8259 seems to be disabled (mpc8610_hpcd.c
+>> confirms this), and other peripherals are not traced out.
+>> So we use only RTC.
 >>
->>  MODPOST 24 modules
->> ERROR: "_restgpr_20_x" [net/key/af_key.ko] undefined!
->> ERROR: "_restgpr_25_x" [net/key/af_key.ko] undefined!
->> ERROR: "_restgpr_30_x" [net/key/af_key.ko] undefined!
+>> This patch also adds ULI quirk to make RTC actually work (this
+>> quirk differs a bit from the one in the fsl_uli1575.c).
 >
-> I need a bit more context to try to analyse this.
-> Where did you expect _restgpr_20_x to be defined.
-> If in vmlinux then were they present in the
-> Module.symvers file?
+> Can we just one quick for both?
 
-No they aren't there since we I'm not EXPORT_SYMBOL() them.  Should I  
-also be doing EXPORT_SYMBOL?
+Probably yes, but fsl_uli1575 needs some other changes for this.
 
-> If in the linked in .o file - could you
-> see the symbols using objdump.
+This series fully tested on MPC8610HPCD, and build-tested for
+MPC85xxDS and MPC8641HPCN.
 
-Yes.
-
-readelf -a:
-
-...
-Symbol table '.symtab' contains 113 entries:
-    Num:    Value  Size Type    Bind   Vis      Ndx Name
-...
-      5: 00000000     0 FUNC    GLOBAL DEFAULT    1 _savegpr_14
-      6: 00000000     0 FUNC    GLOBAL DEFAULT    1 _save32gpr_14
-...
->
->
-> etc.
->
-> Sorry - not much help right away.
->
-> PS. Travelling - do not expect responses until the
-> weekend.
-
-np.
->
->
-> 	Sam
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
