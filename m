@@ -1,22 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id AF90BDDEEB
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 May 2008 16:55:59 +1000 (EST)
-Subject: RE: [PATCH] [POWERPC] Reintroduce O_SYNC flag to make DRAM non-cached.
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Spence Nick <Nick.Spence@freescale.com>
-In-Reply-To: <9E50B2A5FE44294CBF877745D9A4125F01D37125@az33exm24.fsl.freescale.net>
-References: <1210224392246-git-send-email-nick.spence@freescale.com>
-	<18466.38047.531381.157886@cargo.ozlabs.ibm.com>
-	<9E50B2A5FE44294CBF877745D9A4125F01D37125@az33exm24.fsl.freescale.net>
-Content-Type: text/plain
-Date: Thu, 08 May 2008 16:55:43 +1000
-Message-Id: <1210229743.1421.36.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
-Reply-To: benh@kernel.crashing.org
+Return-Path: <dgibson@ozlabs.org>
+Date: Thu, 8 May 2008 17:01:28 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
+Subject: Re: [PATCH 4/4] [POWERPC] Xilinx: Framebuffer: Usedcrinfrastructure.
+Message-ID: <20080508070128.GA22453@yookeroo.seuss>
+References: <1210010201-28436-1-git-send-email-stephen.neuendorffer@xilinx.com>
+	<1210010201-28436-2-git-send-email-stephen.neuendorffer@xilinx.com>
+	<1210010201-28436-3-git-send-email-stephen.neuendorffer@xilinx.com>
+	<1210010201-28436-4-git-send-email-stephen.neuendorffer@xilinx.com>
+	<20080505175647.4F3AC1C9004A@mail57-sin.bigfish.com>
+	<fa686aa40805052155q43a7ebd8x14c1711bd4c6bbfa@mail.gmail.com>
+	<20080506061444.GB17798@yookeroo.seuss>
+	<20080506174352.52C857D805C@mail62-va3.bigfish.com>
+	<20080508015948.GG5156@yookeroo.seuss>
+	<20080508044652.98467AA8064@mail133-wa4.bigfish.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080508044652.98467AA8064@mail133-wa4.bigfish.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,22 +27,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Wed, 2008-05-07 at 23:31 -0700, Spence Nick wrote:
+On Wed, May 07, 2008 at 09:46:51PM -0700, Stephen Neuendorffer wrote:
 > 
-> In our case the memory area is reserved so that the main processor will
-> not touch it except when mapped by the mem driver.
+> The problem is that the tft driver currently in mainline assumes
+> that the dcr control registers are accessed through mmio, and probes
+> for a reg=<> property.  Since the device is actually a dcr device,
+> it can be connected via mmio through a bride, or to the native dcr
+> bus of the processor.  For the time being, I'd like to generate
+> device trees compatible with either mechanism.
 
-Then you should completely carve it out of the LMB's which will ensure
-it's not seen as RAM by /dev/mem and not mapped by the linear mapping
-(well, the later depends ... if it's carved out of the top of RAM it
-should work fine, if it's a hole, I'm not sure we handle holes in the
-linear mapping on 32 bits).
+Ah, I think I see.  The current driver expects the device to be
+represented as if it were an mmio device, not using the standard dcr
+notation.  It can get away with this because the DCRs are
+memory-mapped, in a way representable by 'ranges'.
 
-> Alternative solutions are to modify the user space code to flush out the
-> caches by reading a large area, or to implement a board specific 
-> ppc_md.phys_mem_access_prot() function to do this.
-> 
-> Either of these will meet my needs, but this will leave the O_SYNC flag
-> ignored on the PowerPC architecture in 2.6, but honored by Linux 2.4 and
-> other architectures. Probably not a problem for most people.
+> so, the problem is that the tree-parents of the tft node all have
+> ranges, and if the dcr-parent of the node is a bridge, then it has a
+> reg=<> property, But if the dcr-parent is also a tree-parent, then
+> it has to have ranges; and a reg=<> property, which seems very
+> strange, and not something I think is a good thing to do.
+
+This I don't follow.
+
+But I don't think it matters.  The representation suggested by Segher,
+which has the DCR addressing redundantly described in 'reg' and
+'dcr-reg' properties should work for you.
+
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
