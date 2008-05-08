@@ -1,19 +1,20 @@
-Return-Path: <hartmann@delta.uni-dortmund.de>
-Received: from athene.delta.uni-dortmund.de (Athene.delta.Uni-Dortmund.DE
-	[129.217.164.29]) by ozlabs.org (Postfix) with ESMTP id D00A9DE0A8
+Return-Path: <mike_timmons@trimble.com>
+Received: from snvl-smtp1.trimble.com (snvl-smtp1.trimble.com [155.63.64.31])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "snvl-smtp1.trimble.com", Issuer "Trimble CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 12965DDF0A
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  9 May 2008 00:28:30 +1000 (EST)
-Received: from [129.217.164.30] (eos.delta.Uni-Dortmund.DE [129.217.164.30])
-	by athene.delta.uni-dortmund.de (8.11.6/8.11.6) with ESMTP id
-	m48DuIF21498
-	for <linuxppc-embedded@ozlabs.org>; Thu, 8 May 2008 15:56:18 +0200
-Message-ID: <48230682.8090000@delta.uni-dortmund.de>
-Date: Thu, 08 May 2008 15:56:18 +0200
-From: "Dr. Peter Hartmann" <hartmann@delta.uni-dortmund.de>
+	Fri,  9 May 2008 01:27:16 +1000 (EST)
 MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Subject: xilinx linux on a XUPV2P
-Content-Type: multipart/mixed; boundary="------------060807070001000404040607"
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: FW: porting pci driverfrom arch=ppc on kernel 2.6.16 to arch=powerpc
+	on	2.6.24...
+Date: Thu, 8 May 2008 08:28:27 -0700
+Message-ID: <161B3BAD77161449A144FF054231C3D602131E28@uss-am-xch-01.am.trimblecorp.net>
+From: "Mike Timmons" <mike_timmons@trimble.com>
+To: <linuxppc-embedded@ozlabs.org>
+Cc: scottwood@freescale.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -24,47 +25,32 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------060807070001000404040607
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
 
-Hello everybody,
+Thanks for the help Scott. Simply getting my irq from the pci device
+structure in my probe callback following successful PCI driver
+registration was the trick. I now have my Fujitsu CoralP driver running
+under the 2.6.24 kernel on the Lite5200b (although I have a HW problem
+on my product board that confused my efforts). Regardless, I'm now
+confident I'm doing this correctly, thanks to you help.
 
-I am trying to get the latest Kernel (2.6.25-rc9) from git.xilinx.com running on
-a XUPV2P board. I generated the hardware using JH Kelms step by step list,
-skipping points 6-8 and replacing point 9 by a more modern version of doing
-this. When I boot the system.ace from the CF card, the bootloader talks to me
-over the RS232, but as soon as it tries to boot the kernel it hangs up.
-I had 2.6.18-rc3 which I got from somebody else running this way. The reason I
-intend to change is the UARTLITE driver, which seems to be included in the
-latest kernel tree.
-I use Platform Studio 9.1.02i which I also used for the 2.6.18 Kernel.
-Has anybody yet got this to work out with 9.1.02i ??
-Would it be possible for somebody to give a dummy like me the steps you took to
-get it working on your board? I'm really lost here. Thanks!
+-----Original Message-----
+From: Scott Wood [mailto:scottwood@freescale.com]=20
+Sent: Tuesday, May 06, 2008 2:42 PM
+To: Mike Timmons
+Cc: linuxppc-embedded@ozlabs.org; Mark Gibson
+Subject: Re: porting pci driverfrom arch=3Dppc on kernel 2.6.16 to
+arch=3Dpowerpc on 2.6.24...
 
+Mike Timmons wrote:
+> If I'm not supposed to read the interrupt using config_read, should I
+> also not be writing to the host register on the coral P to clear the
+> interrupt?
+>=20
+> Should I instead be using some PCI helper functions?=20
 
-Thanks in advance!
+No, clearing interrupts is device-specific.
 
---------------060807070001000404040607
-Content-Type: text/x-vcard; charset=utf-8;
- name="hartmann.vcf"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
- filename="hartmann.vcf"
+Have you verified that the device does not think it's generating an=20
+interrupt during the interrupt storm?  Do other PCI cards work?
 
-begin:vcard
-fn:Dr. Peter Hartmann
-n:Hartmann;Dr. Peter
-org;quoted-printable:Universit=C3=A4t Dortmund;DELTA
-adr;quoted-printable:;;Maria G=C3=B6ppert-Mayer-Str. 2;Dortmund;;44221;Deutschland
-email;internet:hartmann@delta.uni-dortmund.de
-tel;work:+49 231 755 5374
-tel;fax:+49 231 755 5383
-x-mozilla-html:FALSE
-version:2.1
-end:vcard
-
-
---------------060807070001000404040607--
+-Scott
