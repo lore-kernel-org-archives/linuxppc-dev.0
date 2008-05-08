@@ -1,35 +1,21 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id CB1E5DDDF5
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 May 2008 10:51:34 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m480pVuw030647
-	for <linuxppc-dev@ozlabs.org>; Wed, 7 May 2008 20:51:31 -0400
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m480pUkV181814
-	for <linuxppc-dev@ozlabs.org>; Wed, 7 May 2008 18:51:30 -0600
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m480pUnj027563
-	for <linuxppc-dev@ozlabs.org>; Wed, 7 May 2008 18:51:30 -0600
-Date: Wed, 7 May 2008 19:49:57 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Sean MacLennan <smaclennan@pikatech.com>
-Subject: Re: All your drivers are belong to us [was WARNING: mutexes are
-	preferredfor single holder semaphores]
-Message-ID: <20080507194957.47abb103@zod.rchland.ibm.com>
-In-Reply-To: <20080507174251.2af863d6@wally.pikatech.com>
-References: <20080504204104.7eea7618@lappy.seanm.ca>
-	<1209958719.21644.32.camel@pasglop>
-	<20080505004023.05603b93@lappy.seanm.ca>
-	<m23aouuqoh.fsf_-_@ohwell.denx.de>
-	<20080507174251.2af863d6@wally.pikatech.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Return-Path: <dgibson@ozlabs.org>
+Date: Thu, 8 May 2008 11:57:04 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 4/4] [POWERPC] Xilinx: Framebuffer: Use dcr infrastructure.
+Message-ID: <20080508015704.GF5156@yookeroo.seuss>
+References: <20080421080353.5d2b3bb9@zod.rchland.ibm.com>
+	<1210010201-28436-1-git-send-email-stephen.neuendorffer@xilinx.com>
+	<1210010201-28436-2-git-send-email-stephen.neuendorffer@xilinx.com>
+	<1210010201-28436-3-git-send-email-stephen.neuendorffer@xilinx.com>
+	<1210010201-28436-4-git-send-email-stephen.neuendorffer@xilinx.com>
+	<20080505175647.4F3AC1C9004A@mail57-sin.bigfish.com>
+	<fa686aa40805052155q43a7ebd8x14c1711bd4c6bbfa@mail.gmail.com>
+	<20080506061444.GB17798@yookeroo.seuss>
+	<4777b221c199009151e8f5b7b5f16de3@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4777b221c199009151e8f5b7b5f16de3@kernel.crashing.org>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -40,36 +26,64 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 7 May 2008 17:42:51 -0400
-Sean MacLennan <smaclennan@pikatech.com> wrote:
+On Tue, May 06, 2008 at 12:56:44PM +0200, Segher Boessenkool wrote:
+>> Current standard practice is not to represent the DCR bus as node with
+>> subnodes for the DCR-controlled devices.  That's because the DCR bus
+>> tends to run in addition to other on-chip busses, and some things have
+>> to go on another on-chip bus to make sense, but still have DCR control
+>> registers (for example the internal bus bridges on 4xx).
+>
+> Yeah.
+>
+>> Arguably for DCR-only devices we should instead have a node
+>> representing the DCR bus and just put the devices under it with the
+>> DCR number encoded in reg in the normal way.
+>
+> Right.
+>
+>> But then its
+>> inconsistent with the devices that need the other DCR representation.
+>
+> OTOH, it _is_ consistent with all other (non-DCR) devices that way.
+>
+> What you could do right now is to give such DCR-only devices both
+> normal "reg" etc., and the "dcr-reg" etc. properties, containing
+> both the same info.  If you do that, your device tree will be
+> correct (because you got all the standard stuff right), and the
+> kernel will like it as well (because it looks for the "dcr-reg"
+> stuff).
 
-> On Wed, 07 May 2008 16:36:30 +0200
-> "Detlev Zundel" <dzu@denx.de> wrote:
-> 
-> > It also happened that a driver once posted for what the customer
-> > thought was a completely specific device of his own today supports
-> > lots of different boards from at least four different manufacturers."
-> > 
-> > The wording is of course not exact but I hope I caught the spirit of
-> > what Greg wanted to say.  So yes, please post the driver - maybe Greg
-> > KH will tunnel it into mainline...
-> 
-> I agree with the sentiment. However, it is hard enough to get
-> legitimate drivers into the kernel. The drivers I mentioned do not
-> come close to following the Linux kernel coding spec.
+> Then maybe later, if/when the kernel supports the standard addressing
+> for DCR as well, you could drop the "dcr-reg" things from your DTS.
+> Or you could just keep it.
+>
+> David, will this work, do you think?
 
-Here's the cool part.  There's this Linux driver project:
+Um.. yeah, I guess that should work.  Don't forget to slap on
+"simple-bus" as appropriate.
 
-http://www.linuxdriverproject.org/twiki/bin/view
+>> Segher and I did toss around some ideas for generalizing the DCR
+>> representation to a way of representing that any node has some
+>> presence on a bus other than its "primary" parent (e.g. other-bus-reg
+>> = <&dcr-bus 0x0d0 0x010 &strange-i2c-control-bus 0xabc>).  Then
+>> DCR-only devices would use normal "reg", devices that sit on another
+>> bus would sit on that bus and use this representation to show their
+>> DCR control registers.  Maybe one day.
+>
+> One day perhaps, yes :-)
+>
+> It sounds cleaner to split such a prop into separate props per bus.
+> Maybe I said the opposite before, heh :-)
 
-where they can take drivers like that and clean them up.  At least to a
-reasonable degree.  The benefit for you is that once it's cleaned up,
-it can go into the mainline kernel and it will just be there in future
-releases.  Helpful when you update.
+No I think you said that before, too, but I'm not sure I agree.
+Seperate props per bus (well, per bus type, really) is probably more
+human-readable, but a single prop has the advantage that we can have a
+common parser that will interpret future variations on this theme
+correctly without having to add things to some list of properties to
+look for.
 
-Now, I can't say I've personally ever used that project but its mission
-does seem pretty targeted towards groups that want to do the right
-thing with respect to drivers.  Maybe you could give it a shot and tell
-others about the experience.
-
-josh
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
