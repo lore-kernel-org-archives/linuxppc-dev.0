@@ -1,21 +1,21 @@
-Return-Path: <timur@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id D1090DDE18
-	for <linuxppc-dev@ozlabs.org>; Sat, 10 May 2008 02:18:43 +1000 (EST)
-Message-ID: <4824795D.30004@freescale.com>
-Date: Fri, 09 May 2008 11:18:37 -0500
-From: Timur Tabi <timur@freescale.com>
-MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.249])
+	by ozlabs.org (Postfix) with ESMTP id 07D26DDF1B
+	for <linuxppc-dev@ozlabs.org>; Sat, 10 May 2008 02:24:42 +1000 (EST)
+Received: by an-out-0708.google.com with SMTP id c34so364956anc.78
+	for <linuxppc-dev@ozlabs.org>; Fri, 09 May 2008 09:24:41 -0700 (PDT)
+Message-ID: <fa686aa40805090924g6416b9e1h1670ac6279ed1d7e@mail.gmail.com>
+Date: Fri, 9 May 2008 10:24:41 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Timur Tabi" <timur@freescale.com>
 Subject: Re: [PATCH 1/4 V2] booting-without-of for Freescale MSI
+In-Reply-To: <4824795D.30004@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 References: <1210323810-24833-1-git-send-email-Jason.jin@freescale.com>
 	<fa686aa40805090634r66fbffd7i886ade757145e24f@mail.gmail.com>
-In-Reply-To: <fa686aa40805090634r66fbffd7i886ade757145e24f@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	<4824795D.30004@freescale.com>
 Cc: linuxppc-dev@ozlabs.org, Jason Jin <Jason.jin@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -26,13 +26,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Grant Likely wrote:
+On Fri, May 9, 2008 at 10:18 AM, Timur Tabi <timur@freescale.com> wrote:
+> Grant Likely wrote:
+>
+>> But here, you are only adding section t)
+>
+> That's because r) and s) already exist.  The person who added those sections
+> didn't update the TOC.
 
-> But here, you are only adding section t)
+heh.  I'm obviously being far too lazy in my patch review.
 
-That's because r) and s) already exist.  The person who added those sections
-didn't update the TOC.
+Cheers,
+g.
 
 -- 
-Timur Tabi
-Linux kernel developer at Freescale
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
