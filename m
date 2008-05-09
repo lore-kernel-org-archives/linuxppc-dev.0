@@ -1,13 +1,20 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.242])
+	by ozlabs.org (Postfix) with ESMTP id 9E321DDF47
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 May 2008 23:25:28 +1000 (EST)
+Received: by an-out-0708.google.com with SMTP id c34so347576anc.78
+	for <linuxppc-dev@ozlabs.org>; Fri, 09 May 2008 06:25:26 -0700 (PDT)
+Message-ID: <fa686aa40805090625m1f127898j19e3f2436ef0fbc6@mail.gmail.com>
+Date: Fri, 9 May 2008 07:25:26 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Jason Jin" <Jason.jin@freescale.com>
+Subject: Re: [PATCH 1/4 V2] booting-without-of for Freescale MSI
+In-Reply-To: <1210323810-24833-1-git-send-email-Jason.jin@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18468.20300.743426.133081@cargo.ozlabs.ibm.com>
-Date: Fri, 9 May 2008 23:19:08 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [git pull] Please pull powerpc.git merge branch
-Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
-	linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+References: <1210323810-24833-1-git-send-email-Jason.jin@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,87 +24,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Linus,
+On Fri, May 9, 2008 at 3:03 AM, Jason Jin <Jason.jin@freescale.com> wrote:
+> Binding document adding for Freescale MSI support.
+>
+> Signed-off-by: Jason Jin <Jason.jin@freescale.com>
+> ---
+> Updated to V2 version per Segher's suggestion.
+>
+>  Documentation/powerpc/booting-without-of.txt |   40 +++++++++++++++++++++++++-
+>  1 files changed, 39 insertions(+), 1 deletions(-)
+>
+> diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
+> index 1d2a772..887783c 100644
+> --- a/Documentation/powerpc/booting-without-of.txt
+> +++ b/Documentation/powerpc/booting-without-of.txt
+> @@ -57,7 +57,10 @@ Table of Contents
+>       n) 4xx/Axon EMAC ethernet nodes
+>       o) Xilinx IP cores
+>       p) Freescale Synchronous Serial Interface
+> -         q) USB EHCI controllers
+> +      q) USB EHCI controllers
+> +      r) Freescale Display Interface Unit
+> +      s) Freescale on board FPGA
+> +      t) Freescael MSI interrupt controller
+>
+>   VII - Marvell Discovery mv64[345]6x System Controller chips
+>     1) The /system-controller node
+> @@ -2870,6 +2873,41 @@ platforms are moved over to use the flattened-device-tree model.
+>                reg = <0xe8000000 32>;
+>        };
+>
+> +    t) Freescale MSI interrupt controller
+> +
+> +    Reguired properities:
+> +    - compatible : set as "fsl,86xx-MSI" for 86xx cpu, "fsl,85xx-MSI" for 85xx
+> +      cpu and "fsl,83xx-MSI" for 83xx cpu.
 
-Please pull from 'merge' branch of
+As Segher mentioned; don't use 'generic' compatible values.  Use names
+of *actual* devices and have newer parts claim compatibility with
+older ones.
 
-git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
+Otherwise looks good to me.
 
-to get some bug fixes and documentation/comment updates for powerpc,
-as listed below.
+Cheers,
+g.
 
-There is one commit there that isn't just a fix, the "Add endpoint
-support to 4xx PCIe driver" one.  I think it's OK to go in because (a)
-it's only adding functionality, (b) it only affects ppc4xx processors,
-and (c) the 4xx maintainer (Josh Boyer) said about it: "Stefan's pci-e
-endpoint driver is also included here as it is a fairly contained
-change with Ben's Ack.  It should have been included in my last pull
-request, but I missed it and have been out."
-
-Thanks,
-Paul.
-
- arch/powerpc/boot/dts/sequoia.dts            |    9 +
- arch/powerpc/kernel/btext.c                  |    1 
- arch/powerpc/kernel/cputable.c               |   53 ++++++--
- arch/powerpc/kernel/head_44x.S               |    9 +
- arch/powerpc/kernel/head_64.S                |    4 -
- arch/powerpc/kernel/isa-bridge.c             |    3 
- arch/powerpc/kernel/setup_64.c               |   10 +
- arch/powerpc/platforms/cell/interrupt.c      |   53 +++++++-
- arch/powerpc/platforms/cell/spu_base.c       |   31 +++-
- arch/powerpc/platforms/cell/spu_priv1_mmio.c |   16 ++
- arch/powerpc/platforms/cell/spufs/fault.c    |   17 ++
- arch/powerpc/platforms/cell/spufs/inode.c    |   10 +
- arch/powerpc/platforms/cell/spufs/run.c      |   38 +++--
- arch/powerpc/platforms/cell/spufs/sched.c    |    7 +
- arch/powerpc/platforms/cell/spufs/spufs.h    |    3 
- arch/powerpc/platforms/cell/spufs/switch.c   |   71 +++++++---
- arch/powerpc/sysdev/ppc4xx_pci.c             |  180 +++++++++++++++++++-------
- arch/powerpc/xmon/xmon.c                     |    6 +
- include/asm-powerpc/pgtable-ppc32.h          |    7 +
- include/asm-powerpc/spu.h                    |    9 +
- include/asm-powerpc/spu_csa.h                |    3 
- include/linux/of_i2c.h                       |    4 -
- 22 files changed, 399 insertions(+), 145 deletions(-)
-
-Benjamin Herrenschmidt (4):
-      [POWERPC] Make default cputable entries reflect selected CPU family
-      [POWERPC] Fix bogus paca->_current initialization
-      [POWERPC] Document when printk is useable
-      [POWERPC] Initialize lockdep earlier
-
-Christian Ehrhardt (1):
-      [POWERPC] 4xx: Fix PCI mem in sequoia DTS
-
-Christoph Hellwig (3):
-      [POWERPC] spufs: spu_create should send inotify IM_CREATE event
-      [POWERPC] spufs: don't requeue victim contex in find_victim if it's not in spu_run
-      [POWERPC] spufs: lockdep annotations for spufs_dir_close
-
-Huang Weiyi (1):
-      [POWERPC] Remove duplicate #include
-
-Jeremy Kerr (6):
-      [POWERPC] cell: Fix lost interrupts due to fasteoi handler
-      [POWERPC] spufs: don't touch suspend bits when purging DMA queue
-      [POWERPC] spufs: fix save of mfc_cntl register
-      [POWERPC] spufs: fix post-stopped update of MFC_CNTL register
-      [POWERPC] spufs: update master runcntl with context lock held
-      [POWERPC] spufs: don't acquire state_mutex interruptible while performing callback
-
-Jochen Friedrich (1):
-      [POWERPC] Fix of_i2c include for module compilation
-
-Luke Browning (4):
-      [POWERPC] spufs: set SPU_CONTEXT_SWITCH_PENDING before synchronising SPU irqs
-      [POWERPC] spufs: try to route SPU interrupts to local node
-      [POWERPC] spufs: fix concurrent delivery of class 0 & 1 exceptions
-      [POWERPC] spufs: handle faults while the context switch pending flag is set
-
-Nate Case (1):
-      [POWERPC] Remove leftover printk in isa-bridge.c
-
-Stefan Roese (2):
-      [POWERPC] 4xx: Fix problem with new TLB storage attibute fields on 440x6 core
-      [POWERPC] 4xx: Add endpoint support to 4xx PCIe driver
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
