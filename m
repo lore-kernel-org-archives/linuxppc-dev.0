@@ -1,17 +1,24 @@
-Return-Path: <ncase@xes-inc.com>
-Received: from xes-mad.com (xes-mad.com [216.165.139.214])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C06D0DDE22
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 May 2008 03:08:17 +1000 (EST)
-Subject: [PATCH] POWERPC: Get rid of leftover printk in isa-bridge.c
-From: Nate Case <ncase@xes-inc.com>
-To: kernel-janitors@vger.kernel.org
-Content-Type: text/plain
-Date: Thu, 08 May 2008 11:41:17 -0500
-Message-Id: <1210264877.13845.274.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18467.49613.367933.672004@cargo.ozlabs.ibm.com>
+Date: Fri, 9 May 2008 13:15:25 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Subject: Re: [BUG] 2.6.25-rc2-git4 - Regression Kernel oops  while running
+	kernbench and tbench on powerpc
+In-Reply-To: <4810231B.6020105@linux.vnet.ibm.com>
+References: <47BC40BC.3040405@linux.vnet.ibm.com>
+	<18427.11023.8067.795279@cargo.ozlabs.ibm.com>
+	<47FB5C5A.5020104@linux.vnet.ibm.com>
+	<18427.65299.403151.344959@cargo.ozlabs.ibm.com>
+	<47FC5227.3030501@linux.vnet.ibm.com>
+	<18435.11286.201115.396713@cargo.ozlabs.ibm.com>
+	<48035C03.10104@linux.vnet.ibm.com>
+	<18446.61538.620549.715043@cargo.ozlabs.ibm.com>
+	<4810231B.6020105@linux.vnet.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
+	linux-next@vger.kernel.org, kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,23 +28,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This printk() appears twice in the same function.  Only the latter one
-in the inval_range: section appears to be legitimate.
+Kamalesh Babulal writes:
 
-Signed-off-by: Nate Case <ncase@xes-inc.com>
----
+> Thanks, after applying the patch the oops is not reproducible on the machine. The console
+> log had no message starting with SLB: or FWNMI:. I have updated the bugzilla also.
+> 
+> Tested-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
 
-diff --git a/arch/powerpc/kernel/isa-bridge.c b/arch/powerpc/kernel/isa-bridge.c
-index ee172aa..e35092e 100644
---- a/arch/powerpc/kernel/isa-bridge.c
-+++ b/arch/powerpc/kernel/isa-bridge.c
-@@ -108,9 +108,6 @@ static void __devinit pci_process_ISA_OF_ranges(struct device_node *isa_node,
- 	if (size > 0x10000)
- 		size = 0x10000;
- 
--	printk(KERN_ERR "no ISA IO ranges or unexpected isa range, "
--	       "mapping 64k\n");
--
- 	__ioremap_at(phb_io_base_phys, (void *)ISA_IO_BASE,
- 		     size, _PAGE_NO_CACHE|_PAGE_GUARDED);
- 	return;
+Could you test Linus' current git tree and see if you can reproduce
+the same problem now?  The patch I sent upstream was a little
+different from the one you tested, though it should have the same
+effect, and I would like to be sure that it is just as effective at
+fixing the bug.
+
+Thanks,
+Paul.
