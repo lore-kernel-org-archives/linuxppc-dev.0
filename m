@@ -1,18 +1,22 @@
-Return-Path: <robert.richter@amd.com>
-Date: Fri, 9 May 2008 17:07:59 +0200
-From: Robert Richter <robert.richter@amd.com>
-To: Carl Love <cel@us.ibm.com>
-Subject: Re: [Cbe-oss-dev]  [PATCH] Updated: Reworked Cell OProfile: SPU
-	mutex lock fix
-Message-ID: <20080509150759.GL24041@erda.amd.com>
-References: <1209587712.7531.42.camel@carll-linux-desktop>
+Return-Path: <timur@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id D1090DDE18
+	for <linuxppc-dev@ozlabs.org>; Sat, 10 May 2008 02:18:43 +1000 (EST)
+Message-ID: <4824795D.30004@freescale.com>
+Date: Fri, 09 May 2008 11:18:37 -0500
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1209587712.7531.42.camel@carll-linux-desktop>
-Cc: linuxppc-dev@ozlabs.org,
-	oprofile-list <oprofile-list@lists.sourceforge.net>,
-	cbe-oss-dev@ozlabs.org, Arnd Bergmann <arnd@arndb.de>,
-	linux-kernel <linux-kernel@vger.kernel.org>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH 1/4 V2] booting-without-of for Freescale MSI
+References: <1210323810-24833-1-git-send-email-Jason.jin@freescale.com>
+	<fa686aa40805090634r66fbffd7i886ade757145e24f@mail.gmail.com>
+In-Reply-To: <fa686aa40805090634r66fbffd7i886ade757145e24f@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, Jason Jin <Jason.jin@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,85 +26,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Please see my comments below.
+Grant Likely wrote:
 
--Roberta
+> But here, you are only adding section t)
 
-On 30.04.08 13:35:12, Carl Love wrote:
-
-[...]
-
-> -int spu_sync_stop(void)
-> +void spu_sync_stop(void)
->  {
->  	unsigned long flags = 0;
-> -	int ret = spu_switch_event_unregister(&spu_active);
-> -	if (ret) {
-> -		printk(KERN_ERR "SPU_PROF: "
-> -			"%s, line %d: spu_switch_event_unregister returned %d\n",
-> -			__FUNCTION__, __LINE__, ret);
-> -		goto out;
-> -	}
-> +
-> +	/* Ignoring the return value from the unregister
-> +	 * call.  A failed return value simply says there
-> +	 * was no registered event.  Hence there will not
-> +	 * be any calls to process a switch event that
-> +	 * could cause a problem.
-> +	 */
-> +	spu_switch_event_unregister(&spu_active);
-
-Better to use this here, to show the return value is ignored:
-
-       (void)spu_switch_event_unregister(...)
-
->  
->  	spin_lock_irqsave(&cache_lock, flags);
-> -	ret = release_cached_info(RELEASE_ALL);
-> +	release_cached_info(RELEASE_ALL);
-
-Dito.
-
->  	spin_unlock_irqrestore(&cache_lock, flags);
-> -out:
->  	pr_debug("spu_sync_stop -- done.\n");
-> -	return ret;
-> +	return;
->  }
->  
->  
-> Index: Cell_kernel_4_15_2008/arch/powerpc/oprofile/op_model_cell.c
-> ===================================================================
-> --- Cell_kernel_4_15_2008.orig/arch/powerpc/oprofile/op_model_cell.c
-> +++ Cell_kernel_4_15_2008/arch/powerpc/oprofile/op_model_cell.c
-> @@ -1191,15 +1191,15 @@ static int cell_sync_start(void)
->  	if (spu_cycle_reset)
->  		return spu_sync_start();
->  	else
-> -		return DO_GENERIC_SYNC;
-> +		return 0;
->  }
->  
-> -static int cell_sync_stop(void)
-> +static void cell_sync_stop(void)
->  {
->  	if (spu_cycle_reset)
-> -		return spu_sync_stop();
-> -	else
-> -		return 1;
-> +		spu_sync_stop();
-
-Same here.
-
-> +
-> +	return;
->  }
->  
->  struct op_powerpc_model op_model_cell = {
-
-[...]
+That's because r) and s) already exist.  The person who added those sections
+didn't update the TOC.
 
 -- 
-Advanced Micro Devices, Inc.
-Operating System Research Center
-email: robert.richter@amd.com
+Timur Tabi
+Linux kernel developer at Freescale
