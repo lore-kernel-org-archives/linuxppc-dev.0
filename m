@@ -1,20 +1,18 @@
-Return-Path: <gicoviello@gmail.com>
-Received: from gv-out-0910.google.com (gv-out-0910.google.com [216.239.58.184])
-	by ozlabs.org (Postfix) with ESMTP id 272CBDDE08
-	for <linuxppc-dev@ozlabs.org>; Sat, 10 May 2008 01:54:37 +1000 (EST)
-Received: by gv-out-0910.google.com with SMTP id y18so185776gvf.14
-	for <linuxppc-dev@ozlabs.org>; Fri, 09 May 2008 08:53:48 -0700 (PDT)
-Message-ID: <a265241c0805090853s22f572c0t8f17c7ba89efd6aa@mail.gmail.com>
-Date: Fri, 9 May 2008 17:53:47 +0200
-From: "Giuseppe Coviello" <cjg@cruxppc.org>
-Sender: gicoviello@gmail.com
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] Sam440ep support
-In-Reply-To: <a265241c0805060937m25921c56o6fb2b132a3f821d6@mail.gmail.com>
+Return-Path: <robert.richter@amd.com>
+Date: Fri, 9 May 2008 17:07:59 +0200
+From: Robert Richter <robert.richter@amd.com>
+To: Carl Love <cel@us.ibm.com>
+Subject: Re: [Cbe-oss-dev]  [PATCH] Updated: Reworked Cell OProfile: SPU
+	mutex lock fix
+Message-ID: <20080509150759.GL24041@erda.amd.com>
+References: <1209587712.7531.42.camel@carll-linux-desktop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <a265241c0805051123h595123edrd46bf65a8099c3c2@mail.gmail.com>
-	<a265241c0805060937m25921c56o6fb2b132a3f821d6@mail.gmail.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1209587712.7531.42.camel@carll-linux-desktop>
+Cc: linuxppc-dev@ozlabs.org,
+	oprofile-list <oprofile-list@lists.sourceforge.net>,
+	cbe-oss-dev@ozlabs.org, Arnd Bergmann <arnd@arndb.de>,
+	linux-kernel <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,18 +22,85 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-2008/5/6 Giuseppe Coviello <cjg@cruxppc.org>:
-> I've prepared another path to add the support for the sam440ep;
-> shortly I've merged arch/powerpc/boot/sam440ep.c in
-> arch/powerpc/boot/cuboot-sam440ep.c; I've inserted the code to make
-> the rtc works directly in arch/powerpc/platforms/44x/sam440ep.c (so
-> there isn't any arch/powerpc/sysdev/sam440ep.c anymore), and I've
-> cutted away the nasty hack (dma-mapping.h and memmalloc.c) to make the
-> sound works.
-[cut]
+Please see my comments below.
 
-Sorry for our impatience, but we'll happy to know if this (second)
-version of the patch
-is acceptable, and, of course, what could be the future of this same patch.
+-Roberta
 
-Thank you, Giuseppe
+On 30.04.08 13:35:12, Carl Love wrote:
+
+[...]
+
+> -int spu_sync_stop(void)
+> +void spu_sync_stop(void)
+>  {
+>  	unsigned long flags = 0;
+> -	int ret = spu_switch_event_unregister(&spu_active);
+> -	if (ret) {
+> -		printk(KERN_ERR "SPU_PROF: "
+> -			"%s, line %d: spu_switch_event_unregister returned %d\n",
+> -			__FUNCTION__, __LINE__, ret);
+> -		goto out;
+> -	}
+> +
+> +	/* Ignoring the return value from the unregister
+> +	 * call.  A failed return value simply says there
+> +	 * was no registered event.  Hence there will not
+> +	 * be any calls to process a switch event that
+> +	 * could cause a problem.
+> +	 */
+> +	spu_switch_event_unregister(&spu_active);
+
+Better to use this here, to show the return value is ignored:
+
+       (void)spu_switch_event_unregister(...)
+
+>  
+>  	spin_lock_irqsave(&cache_lock, flags);
+> -	ret = release_cached_info(RELEASE_ALL);
+> +	release_cached_info(RELEASE_ALL);
+
+Dito.
+
+>  	spin_unlock_irqrestore(&cache_lock, flags);
+> -out:
+>  	pr_debug("spu_sync_stop -- done.\n");
+> -	return ret;
+> +	return;
+>  }
+>  
+>  
+> Index: Cell_kernel_4_15_2008/arch/powerpc/oprofile/op_model_cell.c
+> ===================================================================
+> --- Cell_kernel_4_15_2008.orig/arch/powerpc/oprofile/op_model_cell.c
+> +++ Cell_kernel_4_15_2008/arch/powerpc/oprofile/op_model_cell.c
+> @@ -1191,15 +1191,15 @@ static int cell_sync_start(void)
+>  	if (spu_cycle_reset)
+>  		return spu_sync_start();
+>  	else
+> -		return DO_GENERIC_SYNC;
+> +		return 0;
+>  }
+>  
+> -static int cell_sync_stop(void)
+> +static void cell_sync_stop(void)
+>  {
+>  	if (spu_cycle_reset)
+> -		return spu_sync_stop();
+> -	else
+> -		return 1;
+> +		spu_sync_stop();
+
+Same here.
+
+> +
+> +	return;
+>  }
+>  
+>  struct op_powerpc_model op_model_cell = {
+
+[...]
+
+-- 
+Advanced Micro Devices, Inc.
+Operating System Research Center
+email: robert.richter@amd.com
