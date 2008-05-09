@@ -1,24 +1,23 @@
 Return-Path: <Jason.Jin@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 0A15EDDE0D
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 May 2008 19:17:42 +1000 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	m499HbDN020104
-	for <linuxppc-dev@ozlabs.org>; Fri, 9 May 2008 02:17:37 -0700 (MST)
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 9279EDDEDA
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 May 2008 19:20:32 +1000 (EST)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by de01egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	m499IWoZ014624
+	for <linuxppc-dev@ozlabs.org>; Fri, 9 May 2008 02:18:33 -0700 (MST)
 Received: from zch01exm21.fsl.freescale.net (zch01exm21.ap.freescale.net
 	[10.192.129.205])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m499HZ9m021940
-	for <linuxppc-dev@ozlabs.org>; Fri, 9 May 2008 04:17:36 -0500 (CDT)
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id m499IUkq022931
+	for <linuxppc-dev@ozlabs.org>; Fri, 9 May 2008 04:18:31 -0500 (CDT)
 From: Jason Jin <Jason.jin@freescale.com>
 To: galak@kernel.crashing.org
-Subject: [PATCH 3/4 V2] Enable MSI support for MPC8610HPCD board
-Date: Fri,  9 May 2008 17:13:47 +0800
-Message-Id: <1210324427-25310-1-git-send-email-Jason.jin@freescale.com>
+Subject: [PATCH 4/4 V2] Enable MSI support for 85xxds board.
+Date: Fri,  9 May 2008 17:14:48 +0800
+Message-Id: <1210324488-25355-1-git-send-email-Jason.jin@freescale.com>
 Cc: linuxppc-dev@ozlabs.org, Jason Jin <Jason.jin@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -29,28 +28,55 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch enable the MSI on 8610hpcd board.
-Through the msi-available-ranges property, All the 256
-msi interrupts can be tested on this board.
+This patch enabled MSI on 8544ds and 8572ds board.
+only one MSI interrupt can generate on 8544 board.
 
 Signed-off-by: Jason Jin <Jason.jin@freescale.com>
 ---
 compatible name in dts was changed in V2 version.
 
- arch/powerpc/boot/dts/mpc8610_hpcd.dts     |   16 ++++++++++++++++
- arch/powerpc/platforms/86xx/mpc8610_hpcd.c |    6 +++++-
- 2 files changed, 21 insertions(+), 1 deletions(-)
+ arch/powerpc/boot/dts/mpc8544ds.dts      |   16 ++++++++++++++++
+ arch/powerpc/boot/dts/mpc8572ds.dts      |   16 ++++++++++++++++
+ arch/powerpc/platforms/85xx/mpc85xx_ds.c |    7 ++++++-
+ 3 files changed, 38 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/boot/dts/mpc8610_hpcd.dts b/arch/powerpc/boot/dts/mpc8610_hpcd.dts
-index bba234e..93e681b 100644
---- a/arch/powerpc/boot/dts/mpc8610_hpcd.dts
-+++ b/arch/powerpc/boot/dts/mpc8610_hpcd.dts
-@@ -128,6 +128,22 @@
+diff --git a/arch/powerpc/boot/dts/mpc8544ds.dts b/arch/powerpc/boot/dts/mpc8544ds.dts
+index 6a0d8db..5e9b774 100644
+--- a/arch/powerpc/boot/dts/mpc8544ds.dts
++++ b/arch/powerpc/boot/dts/mpc8544ds.dts
+@@ -219,6 +219,22 @@
+ 			device_type = "open-pic";
  			big-endian;
+ 		};
++
++		msi@41600 {
++			compatible = "fsl,85xx-MSI";
++			reg = <0x41600 0x80>;
++			msi-available-ranges = <0 0x100>;
++			interrupts = <
++				0xb0 0
++				0xb1 0
++				0xb2 0
++				0xb3 0
++				0xb4 0
++				0xb5 0
++				0xb6 0
++				0xb7 0>;
++			interrupt-parent = <&mpic>;
++		};
+ 	};
+ 
+ 	pci0: pci@e0008000 {
+diff --git a/arch/powerpc/boot/dts/mpc8572ds.dts b/arch/powerpc/boot/dts/mpc8572ds.dts
+index 66f27ab..6fe9e4c 100644
+--- a/arch/powerpc/boot/dts/mpc8572ds.dts
++++ b/arch/powerpc/boot/dts/mpc8572ds.dts
+@@ -221,6 +221,22 @@
+ 			fsl,has-rstcr;
  		};
  
 +		msi@41600 {
-+			compatible = "fsl,86xx-MSI";
++			compatible = "fsl,86xx-msi";
 +			reg = <0x41600 0x80>;
 +			msi-available-ranges = <0 0x100>;
 +			interrupts = <
@@ -65,27 +91,35 @@ index bba234e..93e681b 100644
 +			interrupt-parent = <&mpic>;
 +		};
 +
- 		global-utilities@e0000 {
- 			compatible = "fsl,mpc8610-guts";
- 			reg = <0xe0000 0x1000>;
-diff --git a/arch/powerpc/platforms/86xx/mpc8610_hpcd.c b/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
-index 5e1e8cf..59f75f7 100644
---- a/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
-+++ b/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
-@@ -70,9 +70,13 @@ static void __init mpc86xx_hpcd_init_irq(void)
- 	/* Alloc mpic structure and per isu has 16 INT entries. */
- 	mpic1 = mpic_alloc(np, res.start,
- 			MPIC_PRIMARY | MPIC_WANTS_RESET | MPIC_BIG_ENDIAN,
--			0, 256, " MPIC     ");
-+			64, 256, " MPIC     ");
- 	BUG_ON(mpic1 == NULL);
+ 		mpic: pic@40000 {
+ 			clock-frequency = <0>;
+ 			interrupt-controller;
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ds.c b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
+index dfd8b4a..2696d2f 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_ds.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
+@@ -79,9 +79,13 @@ void __init mpc85xx_ds_pic_init(void)
  
-+	mpic_assign_isu(mpic1, 0, res.start + 0x10000);
-+	mpic_assign_isu(mpic1, 1, res.start + 0x10800);
-+	mpic_assign_isu(mpic1, 2, res.start + 0x11600);
+ 	mpic = mpic_alloc(np, r.start,
+ 			  MPIC_PRIMARY | MPIC_WANTS_RESET | MPIC_BIG_ENDIAN,
+-			0, 256, " OpenPIC  ");
++			64, 256, " OpenPIC  ");
+ 	BUG_ON(mpic == NULL);
+ 
++	mpic_assign_isu(mpic, 0, r.start + 0x10000);
++	mpic_assign_isu(mpic, 1, r.start + 0x10800);
++	mpic_assign_isu(mpic, 2, r.start + 0x11600);
 +
- 	mpic_init(mpic1);
- }
+ 	mpic_init(mpic);
  
+ #ifdef CONFIG_PPC_I8259
+@@ -195,6 +199,7 @@ static int __init mpc85xxds_publish_devices(void)
+ 	return of_platform_bus_probe(NULL, mpc85xxds_ids, NULL);
+ }
+ machine_device_initcall(mpc8544_ds, mpc85xxds_publish_devices);
++machine_device_initcall(mpc8572_ds, mpc85xxds_publish_devices);
+ 
+ /*
+  * Called very early, device-tree isn't unflattened
 -- 
 1.5.4
