@@ -1,15 +1,14 @@
 Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <18467.55307.873805.423244@cargo.ozlabs.ibm.com>
-Date: Fri, 9 May 2008 14:50:19 +1000
+Message-ID: <18467.57545.798170.20885@cargo.ozlabs.ibm.com>
+Date: Fri, 9 May 2008 15:27:37 +1000
 From: Paul Mackerras <paulus@samba.org>
-To: michael@ellerman.id.au
-Subject: Re: [PATCH] Add null pointer check to of_find_property
-In-Reply-To: <1210202466.16180.1.camel@localhost>
-References: <1210187999-20274-1-git-send-email-timur@freescale.com>
-	<1210202466.16180.1.camel@localhost>
-Cc: linuxppc-dev@ozlabs.org, Timur Tabi <timur@freescale.com>
+To: David Miller <davem@davemloft.net>
+Subject: Re: [PATCH]: PPC_OF protect USB driver...
+In-Reply-To: <20080505.005715.215572318.davem@davemloft.net>
+References: <20080505.005715.215572318.davem@davemloft.net>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,40 +18,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Michael Ellerman writes:
+David Miller writes:
 
-> On Wed, 2008-05-07 at 14:19 -0500, Timur Tabi wrote:
-> > Update function of_find_property() to return NULL if the device_node passed
-> > to it is also NULL.  Otherwise, passing NULL will cause a null pointer
-> > dereference.
-> > 
-> > Signed-off-by: Timur Tabi <timur@freescale.com>
-> > ---
-> > 
-> > This patch allows callers to do this:
+> This uses APIs that are not generic, or at least not part of
+> what Sparc provides yet.
 > 
-> np = of_find_compatible_node(...);
-> prop = of_get_property(np);
-> if (!prop)
->      goto error;
+> So just PPC_OF this for now just like the EHCI_OF driver.
 > 
-> ...
-> 
-> error:
->  of_node_put(np)
-> 
-> :)
+> This fixes allmodconfig build errors on sparc.
 
-And of_node_put looks like this:
-
-void of_node_put(struct device_node *node)
-{
-        if (node)
-                kref_put(&node->kref, of_node_release);
-}
-
-so it's OK.
-
-:)
+Are you going to send this to the USB maintainers, or are you going to
+merge it to Linus, or do you want me to?
 
 Paul.
