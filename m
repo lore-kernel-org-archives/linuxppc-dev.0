@@ -1,18 +1,13 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH 2/4 V4] MSI support on 83xx/85xx/86xx board
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Jason Jin <Jason.jin@freescale.com>
-In-Reply-To: <1210323810-24833-2-git-send-email-Jason.jin@freescale.com>
-References: <1210323810-24833-1-git-send-email-Jason.jin@freescale.com>
-	<1210323810-24833-2-git-send-email-Jason.jin@freescale.com>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-WhfgqU6RgxIWpvc4SlU6"
-Date: Fri, 09 May 2008 22:21:59 +1000
-Message-Id: <1210335719.11689.5.camel@localhost>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: michael@ellerman.id.au
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18468.20300.743426.133081@cargo.ozlabs.ibm.com>
+Date: Fri, 9 May 2008 23:19:08 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [git pull] Please pull powerpc.git merge branch
+Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,63 +17,87 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Linus,
 
---=-WhfgqU6RgxIWpvc4SlU6
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Please pull from 'merge' branch of
 
-On Fri, 2008-05-09 at 17:03 +0800, Jason Jin wrote:
-> This MSI driver can be used on 83xx/85xx/86xx board.
-> In this driver, virtual interrupt host and chip were
-> setup. There are 256 MSI interrupts in this host, Every 32
-> MSI interrupts cascaded to one IPIC/MPIC interrupt.
-> The chip was treated as edge sensitive and some necessary
-> functions were setup for this chip.
+git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
 
-> diff --git a/arch/powerpc/sysdev/fsl_msi.c b/arch/powerpc/sysdev/fsl_msi.=
-c
-> new file mode 100644
-> index 0000000..be3304d
-> --- /dev/null
-> +++ b/arch/powerpc/sysdev/fsl_msi.c
-> @@ -0,0 +1,446 @@
+to get some bug fixes and documentation/comment updates for powerpc,
+as listed below.
 
-...
+There is one commit there that isn't just a fix, the "Add endpoint
+support to 4xx PCIe driver" one.  I think it's OK to go in because (a)
+it's only adding functionality, (b) it only affects ppc4xx processors,
+and (c) the 4xx maintainer (Josh Boyer) said about it: "Stefan's pci-e
+endpoint driver is also included here as it is a fairly contained
+change with Ben's Ack.  It should have been included in my last pull
+request, but I missed it and have been out."
 
-> +static int fsl_msi_host_match(struct irq_host *h, struct device_node *no=
-de)
-> +{
-> +	/* Exact match*/
-> +	return h->of_node =3D=3D node;
-> +}
+Thanks,
+Paul.
 
-This is the default behaviour, so technically you don't need this
-routine - but I'm not fussed.
+ arch/powerpc/boot/dts/sequoia.dts            |    9 +
+ arch/powerpc/kernel/btext.c                  |    1 
+ arch/powerpc/kernel/cputable.c               |   53 ++++++--
+ arch/powerpc/kernel/head_44x.S               |    9 +
+ arch/powerpc/kernel/head_64.S                |    4 -
+ arch/powerpc/kernel/isa-bridge.c             |    3 
+ arch/powerpc/kernel/setup_64.c               |   10 +
+ arch/powerpc/platforms/cell/interrupt.c      |   53 +++++++-
+ arch/powerpc/platforms/cell/spu_base.c       |   31 +++-
+ arch/powerpc/platforms/cell/spu_priv1_mmio.c |   16 ++
+ arch/powerpc/platforms/cell/spufs/fault.c    |   17 ++
+ arch/powerpc/platforms/cell/spufs/inode.c    |   10 +
+ arch/powerpc/platforms/cell/spufs/run.c      |   38 +++--
+ arch/powerpc/platforms/cell/spufs/sched.c    |    7 +
+ arch/powerpc/platforms/cell/spufs/spufs.h    |    3 
+ arch/powerpc/platforms/cell/spufs/switch.c   |   71 +++++++---
+ arch/powerpc/sysdev/ppc4xx_pci.c             |  180 +++++++++++++++++++-------
+ arch/powerpc/xmon/xmon.c                     |    6 +
+ include/asm-powerpc/pgtable-ppc32.h          |    7 +
+ include/asm-powerpc/spu.h                    |    9 +
+ include/asm-powerpc/spu_csa.h                |    3 
+ include/linux/of_i2c.h                       |    4 -
+ 22 files changed, 399 insertions(+), 145 deletions(-)
 
-Acked-by: Michael Ellerman <michael@ellerman.id.au>
+Benjamin Herrenschmidt (4):
+      [POWERPC] Make default cputable entries reflect selected CPU family
+      [POWERPC] Fix bogus paca->_current initialization
+      [POWERPC] Document when printk is useable
+      [POWERPC] Initialize lockdep earlier
 
-cheers
+Christian Ehrhardt (1):
+      [POWERPC] 4xx: Fix PCI mem in sequoia DTS
 
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
+Christoph Hellwig (3):
+      [POWERPC] spufs: spu_create should send inotify IM_CREATE event
+      [POWERPC] spufs: don't requeue victim contex in find_victim if it's not in spu_run
+      [POWERPC] spufs: lockdep annotations for spufs_dir_close
 
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
+Huang Weiyi (1):
+      [POWERPC] Remove duplicate #include
 
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
+Jeremy Kerr (6):
+      [POWERPC] cell: Fix lost interrupts due to fasteoi handler
+      [POWERPC] spufs: don't touch suspend bits when purging DMA queue
+      [POWERPC] spufs: fix save of mfc_cntl register
+      [POWERPC] spufs: fix post-stopped update of MFC_CNTL register
+      [POWERPC] spufs: update master runcntl with context lock held
+      [POWERPC] spufs: don't acquire state_mutex interruptible while performing callback
 
---=-WhfgqU6RgxIWpvc4SlU6
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+Jochen Friedrich (1):
+      [POWERPC] Fix of_i2c include for module compilation
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+Luke Browning (4):
+      [POWERPC] spufs: set SPU_CONTEXT_SWITCH_PENDING before synchronising SPU irqs
+      [POWERPC] spufs: try to route SPU interrupts to local node
+      [POWERPC] spufs: fix concurrent delivery of class 0 & 1 exceptions
+      [POWERPC] spufs: handle faults while the context switch pending flag is set
 
-iD8DBQBIJEHndSjSd0sB4dIRAspVAJ4q3YeVAHT1kE0zjGETaGjpr2aVDgCfeYXv
-XxttpUHtkq2H2qxjQ8C9aOY=
-=+7KF
------END PGP SIGNATURE-----
+Nate Case (1):
+      [POWERPC] Remove leftover printk in isa-bridge.c
 
---=-WhfgqU6RgxIWpvc4SlU6--
+Stefan Roese (2):
+      [POWERPC] 4xx: Fix problem with new TLB storage attibute fields on 440x6 core
+      [POWERPC] 4xx: Add endpoint support to 4xx PCIe driver
