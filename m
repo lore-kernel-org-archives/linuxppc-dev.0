@@ -1,20 +1,19 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.248])
-	by ozlabs.org (Postfix) with ESMTP id ED4A6DDF71
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 May 2008 23:31:38 +1000 (EST)
-Received: by an-out-0708.google.com with SMTP id c34so348208anc.78
-	for <linuxppc-dev@ozlabs.org>; Fri, 09 May 2008 06:31:37 -0700 (PDT)
-Message-ID: <fa686aa40805090631v2e8bc87fq24583f863872df97@mail.gmail.com>
-Date: Fri, 9 May 2008 07:31:37 -0600
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.247])
+	by ozlabs.org (Postfix) with ESMTP id DDEA9DDF8F
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 May 2008 23:34:33 +1000 (EST)
+Received: by an-out-0708.google.com with SMTP id c34so348556anc.78
+	for <linuxppc-dev@ozlabs.org>; Fri, 09 May 2008 06:34:32 -0700 (PDT)
+Message-ID: <fa686aa40805090634r66fbffd7i886ade757145e24f@mail.gmail.com>
+Date: Fri, 9 May 2008 07:34:31 -0600
 From: "Grant Likely" <grant.likely@secretlab.ca>
 Sender: glikely@secretlab.ca
 To: "Jason Jin" <Jason.jin@freescale.com>
-Subject: Re: [PATCH 2/4 V4] MSI support on 83xx/85xx/86xx board
-In-Reply-To: <1210323810-24833-2-git-send-email-Jason.jin@freescale.com>
+Subject: Re: [PATCH 1/4 V2] booting-without-of for Freescale MSI
+In-Reply-To: <1210323810-24833-1-git-send-email-Jason.jin@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 References: <1210323810-24833-1-git-send-email-Jason.jin@freescale.com>
-	<1210323810-24833-2-git-send-email-Jason.jin@freescale.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -26,32 +25,42 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 On Fri, May 9, 2008 at 3:03 AM, Jason Jin <Jason.jin@freescale.com> wrote:
-> This MSI driver can be used on 83xx/85xx/86xx board.
-> In this driver, virtual interrupt host and chip were
-> setup. There are 256 MSI interrupts in this host, Every 32
-> MSI interrupts cascaded to one IPIC/MPIC interrupt.
-> The chip was treated as edge sensitive and some necessary
-> functions were setup for this chip.
->
-> Before using the MSI interrupt, PCI/PCIE device need to
-> ask for a MSI interrupt in the 256 MSI interrupts. A 256bit
-> bitmap show which MSI interrupt was used, reserve bit in
-> the bitmap can be used to force the device use some designate
-> MSI interrupt in the 256 MSI interrupts. Sometimes this is useful
-> for testing the all the MSI interrupts. The msi-available-ranges
-> property in the dts file was used for this purpose.
+> Binding document adding for Freescale MSI support.
 >
 > Signed-off-by: Jason Jin <Jason.jin@freescale.com>
 > ---
-> Update to V4 version per the suggestion's from Michael Ellerman
-> +static struct of_platform_driver fsl_of_msi_driver = {
-> +       .name = "fsl-of-msi",
-> +       .match_table = fsl_of_msi_ids,
-> +       .probe = fsl_of_msi_probe,
-> +};
+> Updated to V2 version per Segher's suggestion.
+>
+>  Documentation/powerpc/booting-without-of.txt |   40 +++++++++++++++++++++++++-
+>  1 files changed, 39 insertions(+), 1 deletions(-)
+>
+> diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
+> index 1d2a772..887783c 100644
+> --- a/Documentation/powerpc/booting-without-of.txt
+> +++ b/Documentation/powerpc/booting-without-of.txt
+> @@ -57,7 +57,10 @@ Table of Contents
+>       n) 4xx/Axon EMAC ethernet nodes
+>       o) Xilinx IP cores
+>       p) Freescale Synchronous Serial Interface
+> -         q) USB EHCI controllers
+> +      q) USB EHCI controllers
+> +      r) Freescale Display Interface Unit
+> +      s) Freescale on board FPGA
+> +      t) Freescael MSI interrupt controller
 
-nitpick: 'of' in 'fsl-of-msi' is redundant.  We *already* know that
-this is an of_platform driver.  :-)
+One more comment: Here we see sections r), s) & t) added.
+
+>
+>   VII - Marvell Discovery mv64[345]6x System Controller chips
+>     1) The /system-controller node
+> @@ -2870,6 +2873,41 @@ platforms are moved over to use the flattened-device-tree model.
+>                reg = <0xe8000000 32>;
+>        };
+>
+> +    t) Freescale MSI interrupt controller
+> +
+
+But here, you are only adding section t)
 
 Cheers,
 g.
