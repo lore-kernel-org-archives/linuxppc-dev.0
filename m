@@ -1,22 +1,17 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.249])
-	by ozlabs.org (Postfix) with ESMTP id 07D26DDF1B
-	for <linuxppc-dev@ozlabs.org>; Sat, 10 May 2008 02:24:42 +1000 (EST)
-Received: by an-out-0708.google.com with SMTP id c34so364956anc.78
-	for <linuxppc-dev@ozlabs.org>; Fri, 09 May 2008 09:24:41 -0700 (PDT)
-Message-ID: <fa686aa40805090924g6416b9e1h1670ac6279ed1d7e@mail.gmail.com>
-Date: Fri, 9 May 2008 10:24:41 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Timur Tabi" <timur@freescale.com>
-Subject: Re: [PATCH 1/4 V2] booting-without-of for Freescale MSI
-In-Reply-To: <4824795D.30004@freescale.com>
+Return-Path: <CFRIESEN@nortel.com>
+Received: from zrtps0kn.nortel.com (zrtps0kn.nortel.com [47.140.192.55])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "zrtps0kn.nortel.com", Issuer "NORTEL" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 87C62DE055
+	for <linuxppc-dev@ozlabs.org>; Sat, 10 May 2008 03:17:18 +1000 (EST)
+Message-ID: <482486F7.3090805@nortel.com>
+Date: Fri, 09 May 2008 11:16:39 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <1210323810-24833-1-git-send-email-Jason.jin@freescale.com>
-	<fa686aa40805090634r66fbffd7i886ade757145e24f@mail.gmail.com>
-	<4824795D.30004@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, Jason Jin <Jason.jin@freescale.com>
+To: linuxppc-dev@ozlabs.org, roland@redhat.com, paulus@samba.org,
+	benh@kernel.crashing.org
+Subject: patch to install unstripped vDSO on disk breaks powerpc kernel build
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,19 +21,55 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, May 9, 2008 at 10:18 AM, Timur Tabi <timur@freescale.com> wrote:
-> Grant Likely wrote:
->
->> But here, you are only adding section t)
->
-> That's because r) and s) already exist.  The person who added those sections
-> didn't update the TOC.
+I'm using gcc 3.4.3 and binutils 2.15.92.0.2.  I originally saw the 
+following problem in 2.6.25 but it's present in git head as well:
 
-heh.  I'm obviously being far too lazy in my patch review.
+   CALL /home/cfriesen/kernels/2.6.25/linux-2.6.25/scripts/checksyscalls.sh
+   CHK     include/linux/compile.h
+   CALL 
+/home/cfriesen/kernels/2.6.25/linux-2.6.25/arch/powerpc/kernel/systbl_chk.sh
+   AS      arch/powerpc/kernel/systbl.o
+   OBJCOPY arch/powerpc/kernel/vdso64/vdso64.so
+BFD: arch/powerpc/kernel/vdso64/vdso64.so: The first section in the 
+PT_DYNAMIC segment is not the .dynamic section
+/home/cfriesen/bin/ppc64-R9a/bin/ppc64-R9a-objcopy: 
+arch/powerpc/kernel/vdso64/vdso64.so: Bad value
+BFD: arch/powerpc/kernel/vdso64/vdso64.so: The first section in the 
+PT_DYNAMIC segment is not the .dynamic section
+/home/cfriesen/bin/ppc64-R9a/bin/ppc64-R9a-objcopy: 
+arch/powerpc/kernel/vdso64/vdso64.so: Bad value
+make[3]: *** [arch/powerpc/kernel/vdso64/vdso64.so] Error 1
+make[2]: *** [arch/powerpc/kernel/vdso64] Error 2
+make[1]: *** [arch/powerpc/kernel] Error 2
+make: *** [sub-make] Error 2
 
-Cheers,
-g.
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+
+I installed git and bisected the problem.  It turns out that it's due to 
+the following commit:
+
+
+commit 8150caad02266623b5b9f58088d589f130fccd97
+Author: Roland McGrath <roland@redhat.com>
+Date:   Tue Oct 2 13:30:04 2007 -0700
+
+[POWERPC] powerpc vDSO: install unstripped copies on disk
+This keeps an unstripped copy of the vDSO images built before they are 
+stripped and embedded in the kernel.  The unstripped copies get 
+installed in $(MODLIB)/vdso/ by "make install".  These files can be 
+useful when they contain source-level debugging information.
+
+     Signed-off-by: Roland McGrath <roland@redhat.com>
+     Cc: Sam Ravnborg <sam@ravnborg.org>
+     Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+     Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+     Signed-off-by: Paul Mackerras <paulus@samba.org>
+
+
+
+Anyone have any idea what's going on?
+
+
+Thanks,
+
+Chris
