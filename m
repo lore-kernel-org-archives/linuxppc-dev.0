@@ -1,21 +1,18 @@
-Return-Path: <CFRIESEN@nortel.com>
-Received: from zcars04f.nortel.com (zcars04f.nortel.com [47.129.242.57])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "zcars04f.nortel.com", Issuer "NORTEL" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id D0233DDE00
-	for <linuxppc-dev@ozlabs.org>; Sat, 10 May 2008 14:50:29 +1000 (EST)
-Message-ID: <482527F3.60405@nortel.com>
-Date: Fri, 09 May 2008 22:43:31 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-MIME-Version: 1.0
-To: Roland McGrath <roland@redhat.com>
-Subject: Re: patch to install unstripped vDSO on disk breaks powerpc kernel
-	build
-References: <482486F7.3090805@nortel.com>
-	<20080509194427.3BDB126FA85@magilla.localdomain>
-In-Reply-To: <20080509194427.3BDB126FA85@magilla.localdomain>
-Content-Type: multipart/mixed; boundary="------------020902030702020300030701"
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: MPC5200b external interrupt registration problem
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Scott Wood <scottwood@freescale.com>
+In-Reply-To: <20080509190218.GA32008@ld0162-tx32.am.freescale.net>
+References: <169407.5661.qm@web88102.mail.re2.yahoo.com>
+	<20080509190218.GA32008@ld0162-tx32.am.freescale.net>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-nJAw3Vq71a6xc9X9C2DX"
+Date: Sat, 10 May 2008 17:30:51 +1000
+Message-Id: <1210404651.22483.2.camel@localhost>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,190 +22,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------020902030702020300030701
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
 
-Roland McGrath wrote:
-> I haven't seen that error before.  Can you show the output of {eu-,}readelf -lS
-> on vdso64.so.dbg, and also on the vdso64.so successfully built when you
-> revert the patch?
+--=-nJAw3Vq71a6xc9X9C2DX
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-I've attached the raw output from the two commands.  The delta between 
-the two is as follows:
+On Fri, 2008-05-09 at 14:02 -0500, Scott Wood wrote:
+> On Fri, May 09, 2008 at 02:49:04PM -0400, Nick wrote:
+> > I am writing a driver to service an interrupt from our fpga.  I am call=
+ing request_irq in the open
+> > function of my driver.  The fpga is connected to external interrupt 1. =
+ I am using interrupt
+> > number 65 in the request_irq but the function is failing.
+>=20
+> request_irq takes a virtual IRQ number, not a hardware IRQ number.  You
+> need to get the virtual IRQ number from irq_of_parse_and_map(), or from
+> irq_create_mapping().
+>=20
+> This would probably confuse far fewer people if we used pointers in the
+> API rather than virtual IRQ numbers...
 
+I'll do the core changes if you fix all the drivers .. ;)
 
--There are 14 section headers, starting at offset 0xd58:
-+There are 16 section headers, starting at offset 0xd68:
+cheers
 
-  Section Headers:
-    [Nr] Name              Type             Address           Offset
-@@ -33,7 +33,11 @@
-    [12] .rela.dyn         RELA             0000000000100be8  00000be8
-         0000000000000000  0000000000000018   A       2     0     8
-    [13] .shstrtab         STRTAB           0000000000000000  00000cd8
--       0000000000000079  0000000000000000           0     0     1
-+       0000000000000089  0000000000000000           0     0     1
-+  [14] .symtab           SYMTAB           0000000000000000  00001168
-+       0000000000000d80  0000000000000018          15   134     8
-+  [15] .strtab           STRTAB           0000000000000000  00001ee8
-+       00000000000004a3  0000000000000000           0     0     1
-  Key to Flags:
-    W (write), A (alloc), X (execute), M (merge), S (strings)
-    I (info), L (link order), G (group), x (unknown)
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
 
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
 
-Also, I'm going to be away on holidays next week, so I won't be able to 
-test this further until the 19th or so.
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
 
+--=-nJAw3Vq71a6xc9X9C2DX
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
-Chris
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
---------------020902030702020300030701
-Content-Type: text/plain;
- name="good.txt"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="good.txt"
+iD8DBQBIJU8rdSjSd0sB4dIRAu+2AKCvy9x2TAwDksmO8LAq7btl2wlc8gCcDjj6
+cx0VXUIKL4ns7FtFGnFp9rs=
+=N0vi
+-----END PGP SIGNATURE-----
 
-good:
-
-[cfriesen@localhost linux-2.6]$ /home/cfriesen/bin/ppc64-R9a/bin/ppc64-R9a-readelf -lS ../g5/arch/powerpc/kernel/vdso64/vdso64.so
-There are 14 section headers, starting at offset 0xd58:
-
-Section Headers:
-  [Nr] Name              Type             Address           Offset
-       Size              EntSize          Flags  Link  Info  Align
-  [ 0]                   NULL             0000000000000000  00000000
-       0000000000000000  0000000000000000           0     0     0
-  [ 1] .hash             HASH             0000000000100120  00000120
-       000000000000004c  0000000000000004   A       2     0     8
-  [ 2] .dynsym           DYNSYM           0000000000100170  00000170
-       0000000000000150  0000000000000018   A       3     4     8
-  [ 3] .dynstr           STRTAB           00000000001002c0  000002c0
-       00000000000000ef  0000000000000000   A       0     0     1
-  [ 4] .gnu.version      VERSYM           00000000001003b0  000003b0
-       000000000000001c  0000000000000002   A       2     0     2
-  [ 5] .gnu.version_d    VERDEF           00000000001003d0  000003d0
-       0000000000000038  0000000000000000   A       3     2     8
-  [ 6] .note             NOTE             0000000000100408  00000408
-       0000000000000018  0000000000000000   A       0     0     4
-  [ 7] .text             PROGBITS         0000000000100420  00000420
-       00000000000002ec  0000000000000000  AX       0     0     8
-  [ 8] .eh_frame_hdr     PROGBITS         0000000000100710  00000710
-       0000000000000008  0000000000000000   A       0     0     4
-  [ 9] .eh_frame         PROGBITS         0000000000100718  00000718
-       00000000000004c4  0000000000000000   A       0     0     8
-  [10] .got              PROGBITS         0000000000100be0  00000be0
-       0000000000000008  0000000000000008  WA       0     0     8
-  [11] .dynamic          DYNAMIC          0000000000100be8  00000be8
-       00000000000000f0  0000000000000010  WA       3     0     8
-  [12] .rela.dyn         RELA             0000000000100be8  00000be8
-       0000000000000000  0000000000000018   A       2     0     8
-  [13] .shstrtab         STRTAB           0000000000000000  00000cd8
-       0000000000000079  0000000000000000           0     0     1
-Key to Flags:
-  W (write), A (alloc), X (execute), M (merge), S (strings)
-  I (info), L (link order), G (group), x (unknown)
-  O (extra OS processing required) o (OS specific), p (processor specific)
-
-Elf file type is DYN (Shared object file)
-Entry point 0x0
-There are 4 program headers, starting at offset 64
-
-Program Headers:
-  Type           Offset             VirtAddr           PhysAddr
-                 FileSiz            MemSiz              Flags  Align
-  LOAD           0x0000000000000000 0x0000000000100000 0x0000000000100000
-                 0x0000000000000cd8 0x0000000000000cd8  R E    10000
-  NOTE           0x0000000000000408 0x0000000000100408 0x0000000000100408
-                 0x0000000000000018 0x0000000000000018  R      4
-  DYNAMIC        0x0000000000000be8 0x0000000000100be8 0x0000000000100be8
-                 0x00000000000000f0 0x00000000000000f0  R      8
-  GNU_EH_FRAME   0x0000000000000710 0x0000000000100710 0x0000000000100710
-                 0x0000000000000008 0x0000000000000008  R      4
-
- Section to Segment mapping:
-  Segment Sections...
-   00     .hash .dynsym .dynstr .gnu.version .gnu.version_d .note .text .eh_frame_hdr .eh_frame .got .dynamic
-   01     .note
-   02     .dynamic
-   03     .eh_frame_hdr
-
---------------020902030702020300030701
-Content-Type: text/plain;
- name="bad.txt"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="bad.txt"
-
-bad:
-
-[cfriesen@localhost linux-2.6]$ /home/cfriesen/bin/ppc64-R9a/bin/ppc64-R9a-readelf -lS ../g5/arch/powerpc/kernel/vdso64/vdso64.so.dbg
-There are 16 section headers, starting at offset 0xd68:
-
-Section Headers:
-  [Nr] Name              Type             Address           Offset
-       Size              EntSize          Flags  Link  Info  Align
-  [ 0]                   NULL             0000000000000000  00000000
-       0000000000000000  0000000000000000           0     0     0
-  [ 1] .hash             HASH             0000000000100120  00000120
-       000000000000004c  0000000000000004   A       2     0     8
-  [ 2] .dynsym           DYNSYM           0000000000100170  00000170
-       0000000000000150  0000000000000018   A       3     4     8
-  [ 3] .dynstr           STRTAB           00000000001002c0  000002c0
-       00000000000000ef  0000000000000000   A       0     0     1
-  [ 4] .gnu.version      VERSYM           00000000001003b0  000003b0
-       000000000000001c  0000000000000002   A       2     0     2
-  [ 5] .gnu.version_d    VERDEF           00000000001003d0  000003d0
-       0000000000000038  0000000000000000   A       3     2     8
-  [ 6] .note             NOTE             0000000000100408  00000408
-       0000000000000018  0000000000000000   A       0     0     4
-  [ 7] .text             PROGBITS         0000000000100420  00000420
-       00000000000002ec  0000000000000000  AX       0     0     8
-  [ 8] .eh_frame_hdr     PROGBITS         0000000000100710  00000710
-       0000000000000008  0000000000000000   A       0     0     4
-  [ 9] .eh_frame         PROGBITS         0000000000100718  00000718
-       00000000000004c4  0000000000000000   A       0     0     8
-  [10] .got              PROGBITS         0000000000100be0  00000be0
-       0000000000000008  0000000000000008  WA       0     0     8
-  [11] .dynamic          DYNAMIC          0000000000100be8  00000be8
-       00000000000000f0  0000000000000010  WA       3     0     8
-  [12] .rela.dyn         RELA             0000000000100be8  00000be8
-       0000000000000000  0000000000000018   A       2     0     8
-  [13] .shstrtab         STRTAB           0000000000000000  00000cd8
-       0000000000000089  0000000000000000           0     0     1
-  [14] .symtab           SYMTAB           0000000000000000  00001168
-       0000000000000d80  0000000000000018          15   134     8
-  [15] .strtab           STRTAB           0000000000000000  00001ee8
-       00000000000004a3  0000000000000000           0     0     1
-Key to Flags:
-  W (write), A (alloc), X (execute), M (merge), S (strings)
-  I (info), L (link order), G (group), x (unknown)
-  O (extra OS processing required) o (OS specific), p (processor specific)
-
-Elf file type is DYN (Shared object file)
-Entry point 0x0
-There are 4 program headers, starting at offset 64
-
-Program Headers:
-  Type           Offset             VirtAddr           PhysAddr
-                 FileSiz            MemSiz              Flags  Align
-  LOAD           0x0000000000000000 0x0000000000100000 0x0000000000100000
-                 0x0000000000000cd8 0x0000000000000cd8  R E    10000
-  NOTE           0x0000000000000408 0x0000000000100408 0x0000000000100408
-                 0x0000000000000018 0x0000000000000018  R      4
-  DYNAMIC        0x0000000000000be8 0x0000000000100be8 0x0000000000100be8
-                 0x00000000000000f0 0x00000000000000f0  R      8
-  GNU_EH_FRAME   0x0000000000000710 0x0000000000100710 0x0000000000100710
-                 0x0000000000000008 0x0000000000000008  R      4
-
- Section to Segment mapping:
-  Segment Sections...
-   00     .hash .dynsym .dynstr .gnu.version .gnu.version_d .note .text .eh_frame_hdr .eh_frame .got .dynamic
-   01     .note
-   02     .dynamic
-   03     .eh_frame_hdr
-
---------------020902030702020300030701--
+--=-nJAw3Vq71a6xc9X9C2DX--
