@@ -1,18 +1,15 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: MPC5200b external interrupt registration problem
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Scott Wood <scottwood@freescale.com>
-In-Reply-To: <20080509190218.GA32008@ld0162-tx32.am.freescale.net>
-References: <169407.5661.qm@web88102.mail.re2.yahoo.com>
-	<20080509190218.GA32008@ld0162-tx32.am.freescale.net>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-nJAw3Vq71a6xc9X9C2DX"
-Date: Sat, 10 May 2008 17:30:51 +1000
-Message-Id: <1210404651.22483.2.camel@localhost>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: michael@ellerman.id.au
+Return-Path: <mroos@linux.ee>
+Received: from smtp2.it.da.ut.ee (smtp2.it.da.ut.ee [193.40.5.67])
+	by ozlabs.org (Postfix) with ESMTP id E0340DDE17
+	for <linuxppc-dev@ozlabs.org>; Sat, 10 May 2008 22:16:10 +1000 (EST)
+Date: Sat, 10 May 2008 14:51:27 +0300 (EEST)
+From: Meelis Roos <mroos@linux.ee>
+Sender: mroos@math.ut.ee
+To: Linux Kernel list <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org
+Subject: ppc compile failure (__flush_icache_range etc undeclared)
+Message-ID: <Pine.SOC.4.64.0805101448580.8450@math.ut.ee>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,50 +19,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Tried 2.6.26-rc1+git on ppc (arch/ppc, PReP subarch) and got this:
 
---=-nJAw3Vq71a6xc9X9C2DX
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+arch/ppc/kernel/ppc_ksyms.c: At top level:
+arch/ppc/kernel/ppc_ksyms.c:152: error: '__flush_icache_range' undeclared here (not in a function)
+arch/ppc/kernel/ppc_ksyms.c:152: warning: type defaults to 'int' in declaration of '__flush_icache_range'
+arch/ppc/kernel/ppc_ksyms.c:153: error: 'flush_dcache_range' undeclared here (not in a function)
+arch/ppc/kernel/ppc_ksyms.c:153: warning: type defaults to 'int' in declaration of 'flush_dcache_range'
+arch/ppc/kernel/ppc_ksyms.c:154: error: 'flush_icache_user_range' undeclared here (not in a function)
+arch/ppc/kernel/ppc_ksyms.c:154: warning: type defaults to 'int' in declaration of 'flush_icache_user_range'
+arch/ppc/kernel/ppc_ksyms.c:155: error: 'flush_dcache_page' undeclared here (not in a function)
+arch/ppc/kernel/ppc_ksyms.c:155: warning: type defaults to 'int' in declaration of 'flush_dcache_page'
+make[1]: *** [arch/ppc/kernel/ppc_ksyms.o] Error 1
 
-On Fri, 2008-05-09 at 14:02 -0500, Scott Wood wrote:
-> On Fri, May 09, 2008 at 02:49:04PM -0400, Nick wrote:
-> > I am writing a driver to service an interrupt from our fpga.  I am call=
-ing request_irq in the open
-> > function of my driver.  The fpga is connected to external interrupt 1. =
- I am using interrupt
-> > number 65 in the request_irq but the function is failing.
->=20
-> request_irq takes a virtual IRQ number, not a hardware IRQ number.  You
-> need to get the virtual IRQ number from irq_of_parse_and_map(), or from
-> irq_create_mapping().
->=20
-> This would probably confuse far fewer people if we used pointers in the
-> API rather than virtual IRQ numbers...
 
-I'll do the core changes if you fix all the drivers .. ;)
-
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-nJAw3Vq71a6xc9X9C2DX
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBIJU8rdSjSd0sB4dIRAu+2AKCvy9x2TAwDksmO8LAq7btl2wlc8gCcDjj6
-cx0VXUIKL4ns7FtFGnFp9rs=
-=N0vi
------END PGP SIGNATURE-----
-
---=-nJAw3Vq71a6xc9X9C2DX--
+-- 
+Meelis Roos (mroos@linux.ee)
