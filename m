@@ -1,15 +1,30 @@
-Return-Path: <mroos@linux.ee>
-Received: from smtp2.it.da.ut.ee (smtp2.it.da.ut.ee [193.40.5.67])
-	by ozlabs.org (Postfix) with ESMTP id E0340DDE17
-	for <linuxppc-dev@ozlabs.org>; Sat, 10 May 2008 22:16:10 +1000 (EST)
-Date: Sat, 10 May 2008 14:51:27 +0300 (EEST)
-From: Meelis Roos <mroos@linux.ee>
-Sender: mroos@math.ut.ee
-To: Linux Kernel list <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org
-Subject: ppc compile failure (__flush_icache_range etc undeclared)
-Message-ID: <Pine.SOC.4.64.0805101448580.8450@math.ut.ee>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id D6DABDDE21
+	for <linuxppc-dev@ozlabs.org>; Sat, 10 May 2008 23:24:56 +1000 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e2.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m4ADOnZQ020597
+	for <linuxppc-dev@ozlabs.org>; Sat, 10 May 2008 09:24:49 -0400
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m4ADOmox083514
+	for <linuxppc-dev@ozlabs.org>; Sat, 10 May 2008 09:24:48 -0400
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m4ADOmeI001125
+	for <linuxppc-dev@ozlabs.org>; Sat, 10 May 2008 09:24:48 -0400
+Date: Sat, 10 May 2008 08:22:46 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Meelis Roos <mroos@linux.ee>
+Subject: Re: ppc compile failure (__flush_icache_range etc undeclared)
+Message-ID: <20080510082246.0ce82981@zod.rchland.ibm.com>
+In-Reply-To: <Pine.SOC.4.64.0805101448580.8450@math.ut.ee>
+References: <Pine.SOC.4.64.0805101448580.8450@math.ut.ee>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,19 +34,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Tried 2.6.26-rc1+git on ppc (arch/ppc, PReP subarch) and got this:
+On Sat, 10 May 2008 14:51:27 +0300 (EEST)
+Meelis Roos <mroos@linux.ee> wrote:
 
-arch/ppc/kernel/ppc_ksyms.c: At top level:
-arch/ppc/kernel/ppc_ksyms.c:152: error: '__flush_icache_range' undeclared here (not in a function)
-arch/ppc/kernel/ppc_ksyms.c:152: warning: type defaults to 'int' in declaration of '__flush_icache_range'
-arch/ppc/kernel/ppc_ksyms.c:153: error: 'flush_dcache_range' undeclared here (not in a function)
-arch/ppc/kernel/ppc_ksyms.c:153: warning: type defaults to 'int' in declaration of 'flush_dcache_range'
-arch/ppc/kernel/ppc_ksyms.c:154: error: 'flush_icache_user_range' undeclared here (not in a function)
-arch/ppc/kernel/ppc_ksyms.c:154: warning: type defaults to 'int' in declaration of 'flush_icache_user_range'
-arch/ppc/kernel/ppc_ksyms.c:155: error: 'flush_dcache_page' undeclared here (not in a function)
-arch/ppc/kernel/ppc_ksyms.c:155: warning: type defaults to 'int' in declaration of 'flush_dcache_page'
-make[1]: *** [arch/ppc/kernel/ppc_ksyms.o] Error 1
+> Tried 2.6.26-rc1+git on ppc (arch/ppc, PReP subarch) and got this:
 
+Segher sent patches to fix this earlier this week.  You can find them
+here:
 
--- 
-Meelis Roos (mroos@linux.ee)
+http://patchwork.ozlabs.org/linuxppc/patch?id=18348
+http://patchwork.ozlabs.org/linuxppc/patch?id=18346
+http://patchwork.ozlabs.org/linuxppc/patch?id=18347
+
+People keep breaking arch/ppc and it seems there's little motivation to
+fix it since it's going away in a month.
+
+josh
