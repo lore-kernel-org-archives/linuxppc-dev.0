@@ -1,19 +1,20 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <jochen@scram.de>
+Received: from mail.scram.de (mail0.scram.de [78.47.204.202])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 3D5B3DDECF
-	for <linuxppc-dev@ozlabs.org>; Sat, 10 May 2008 23:26:20 +1000 (EST)
-In-Reply-To: <Pine.SOC.4.64.0805101448580.8450@math.ut.ee>
-References: <Pine.SOC.4.64.0805101448580.8450@math.ut.ee>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <2b70b1438132c0ff12583c7bf9d96cc1@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: ppc compile failure (__flush_icache_range etc undeclared)
-Date: Sat, 10 May 2008 15:26:07 +0200
-To: Meelis Roos <mroos@linux.ee>
-Cc: linuxppc-dev@ozlabs.org, Linux Kernel list <linux-kernel@vger.kernel.org>
+	(Client CN "mail.scram.de", Issuer "scram e.V. CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id ED4B9DDE22
+	for <linuxppc-dev@ozlabs.org>; Sun, 11 May 2008 01:50:59 +1000 (EST)
+Message-ID: <4825C445.4020004@scram.de>
+Date: Sat, 10 May 2008 17:50:29 +0200
+From: Jochen Friedrich <jochen@scram.de>
+MIME-Version: 1.0
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: [PATCH] [POWERPC] Add i2c pins to dts and board setup
+Content-Type: text/plain; charset=ISO-8859-15
+Cc: "Kernel, Linux" <linux-kernel@vger.kernel.org>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Linux I2C <i2c@lm-sensors.org>, Scott Wood <scottwood@freescale.com>,
+	Jean Delvare <khali@linux-fr.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,14 +24,124 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> Tried 2.6.26-rc1+git on ppc (arch/ppc, PReP subarch) and got this:
->
-> arch/ppc/kernel/ppc_ksyms.c: At top level:
-> arch/ppc/kernel/ppc_ksyms.c:152: error: '__flush_icache_range' 
-> undeclared here (not in a function)
+Initialize I2C pins on boards with CPM1/CPM2 controllers.
 
-That's fixed by [2/3] in 
-http://ozlabs.org/pipermail/linuxppc-dev/2008-May/056010.html
+Signed-off-by: Jochen Friedrich <jochen@scram.de>
+---
+ arch/powerpc/boot/dts/mpc8272ads.dts         |   10 ++++++++++
+ arch/powerpc/boot/dts/mpc866ads.dts          |   10 ++++++++++
+ arch/powerpc/boot/dts/mpc885ads.dts          |   10 ++++++++++
+ arch/powerpc/platforms/82xx/mpc8272_ads.c    |    4 ++++
+ arch/powerpc/platforms/8xx/mpc86xads_setup.c |    4 ++++
+ arch/powerpc/platforms/8xx/mpc885ads_setup.c |    3 +++
+ 6 files changed, 41 insertions(+), 0 deletions(-)
 
-
-Segher
+diff --git a/arch/powerpc/boot/dts/mpc8272ads.dts b/arch/powerpc/boot/dts/mpc8272ads.dts
+index 46e2da3..57abcc1 100644
+--- a/arch/powerpc/boot/dts/mpc8272ads.dts
++++ b/arch/powerpc/boot/dts/mpc8272ads.dts
+@@ -217,6 +217,16 @@
+ 				linux,network-index = <1>;
+ 				fsl,cpm-command = <0x16200300>;
+ 			};
++
++			i2c@11860 {
++				compatible = "fsl,mpc8272-i2c",
++					     "fsl,cpm2-i2c",
++					     "fsl,cpm-i2c";
++				reg = <11860 20 8afc 2>;
++				interrupts = <1 8>;
++				interrupt-parent = <&PIC>;
++				fsl,cpm-command = <29600000>;
++			};
+ 		};
+ 
+ 		PIC: interrupt-controller@10c00 {
+diff --git a/arch/powerpc/boot/dts/mpc866ads.dts b/arch/powerpc/boot/dts/mpc866ads.dts
+index 765e43c..84c190e 100644
+--- a/arch/powerpc/boot/dts/mpc866ads.dts
++++ b/arch/powerpc/boot/dts/mpc866ads.dts
+@@ -171,6 +171,16 @@
+ 				fsl,cpm-command = <0000>;
+ 				linux,network-index = <1>;
+ 			};
++
++			i2c@860 {
++				compatible = "fsl,mpc866-i2c",
++					     "fsl,cpm1-i2c",
++					     "fsl,cpm-i2c";
++				reg = <860 20 3c80 30>;
++				interrupts = <10>;
++				interrupt-parent = <&CPM_PIC>;
++				fsl,cpm-command = <0010>;
++			};
+ 		};
+ 	};
+ 
+diff --git a/arch/powerpc/boot/dts/mpc885ads.dts b/arch/powerpc/boot/dts/mpc885ads.dts
+index 9895043..67d0e8d 100644
+--- a/arch/powerpc/boot/dts/mpc885ads.dts
++++ b/arch/powerpc/boot/dts/mpc885ads.dts
+@@ -215,6 +215,16 @@
+ 				fsl,cpm-command = <0x80>;
+ 				linux,network-index = <2>;
+ 			};
++
++			i2c@860 {
++				compatible = "fsl,mpc885-i2c",
++					     "fsl,cpm1-i2c",
++					     "fsl,cpm-i2c";
++				reg = <860 20 3c80 30>;
++				interrupts = <10>;
++				interrupt-parent = <&CPM_PIC>;
++				fsl,cpm-command = <0010>;
++			};
+ 		};
+ 	};
+ 
+diff --git a/arch/powerpc/platforms/82xx/mpc8272_ads.c b/arch/powerpc/platforms/82xx/mpc8272_ads.c
+index 7d30187..8054c68 100644
+--- a/arch/powerpc/platforms/82xx/mpc8272_ads.c
++++ b/arch/powerpc/platforms/82xx/mpc8272_ads.c
+@@ -96,6 +96,10 @@ static struct cpm_pin mpc8272_ads_pins[] = {
+ 	{1, 31, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
+ 	{2, 16, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
+ 	{2, 17, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
++
++	/* I2C */
++	{3, 14, CPM_PIN_INPUT | CPM_PIN_SECONDARY | CPM_PIN_OPENDRAIN},
++	{3, 15, CPM_PIN_INPUT | CPM_PIN_SECONDARY | CPM_PIN_OPENDRAIN},
+ };
+ 
+ static void __init init_ioports(void)
+diff --git a/arch/powerpc/platforms/8xx/mpc86xads_setup.c b/arch/powerpc/platforms/8xx/mpc86xads_setup.c
+index c028a5b..caaec29 100644
+--- a/arch/powerpc/platforms/8xx/mpc86xads_setup.c
++++ b/arch/powerpc/platforms/8xx/mpc86xads_setup.c
+@@ -65,6 +65,10 @@ static struct cpm_pin mpc866ads_pins[] = {
+ 	{CPM_PORTD, 13, CPM_PIN_OUTPUT},
+ 	{CPM_PORTD, 14, CPM_PIN_OUTPUT},
+ 	{CPM_PORTD, 15, CPM_PIN_OUTPUT},
++
++	/* I2C */
++	{CPM_PORTB, 26, CPM_PIN_INPUT | CPM_PIN_OPENDRAIN},
++	{CPM_PORTB, 27, CPM_PIN_INPUT | CPM_PIN_OPENDRAIN},
+ };
+ 
+ static void __init init_ioports(void)
+diff --git a/arch/powerpc/platforms/8xx/mpc885ads_setup.c b/arch/powerpc/platforms/8xx/mpc885ads_setup.c
+index 6e7ded0..45ed6cd 100644
+--- a/arch/powerpc/platforms/8xx/mpc885ads_setup.c
++++ b/arch/powerpc/platforms/8xx/mpc885ads_setup.c
+@@ -158,6 +158,9 @@ static struct cpm_pin mpc885ads_pins[] = {
+ 	{CPM_PORTE, 28, CPM_PIN_OUTPUT},
+ 	{CPM_PORTE, 29, CPM_PIN_OUTPUT},
+ #endif
++	/* I2C */
++	{CPM_PORTB, 26, CPM_PIN_INPUT | CPM_PIN_OPENDRAIN},
++	{CPM_PORTB, 27, CPM_PIN_INPUT | CPM_PIN_OPENDRAIN},
+ };
+ 
+ static void __init init_ioports(void)
+-- 
+1.5.5.1
