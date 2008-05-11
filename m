@@ -1,22 +1,31 @@
-Return-Path: <roland@redhat.com>
-Received: from QMTA03.westchester.pa.mail.comcast.net
-	(qmta03.westchester.pa.mail.comcast.net [76.96.62.32])
-	by ozlabs.org (Postfix) with ESMTP id 34BABDDE26
-	for <linuxppc-dev@ozlabs.org>; Sun, 11 May 2008 10:40:53 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-From: Roland McGrath <roland@redhat.com>
-To: "Chris Friesen" <cfriesen@nortel.com>
-Subject: Re: patch to install unstripped vDSO on disk breaks powerpc kernel
-	build
-In-Reply-To: Chris Friesen's message of  Friday,
-	9 May 2008 22:43:31 -0600 <482527F3.60405@nortel.com>
-References: <482486F7.3090805@nortel.com>
-	<20080509194427.3BDB126FA85@magilla.localdomain>
-	<482527F3.60405@nortel.com>
-Message-Id: <20080511004047.2B6E226FA86@magilla.localdomain>
-Date: Sat, 10 May 2008 17:40:47 -0700 (PDT)
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 53032DDDFF
+	for <linuxppc-dev@ozlabs.org>; Mon, 12 May 2008 07:15:50 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e32.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m4BLCc1X012659
+	for <linuxppc-dev@ozlabs.org>; Sun, 11 May 2008 17:12:38 -0400
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m4BLFmwZ104254
+	for <linuxppc-dev@ozlabs.org>; Sun, 11 May 2008 15:15:48 -0600
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m4BLFlYS014404
+	for <linuxppc-dev@ozlabs.org>; Sun, 11 May 2008 15:15:48 -0600
+Date: Sun, 11 May 2008 16:13:26 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: paulus@samba.org
+Subject: Re: Fix arch/ppc builds
+Message-ID: <20080511161326.25270b01@zod.rchland.ibm.com>
+In-Reply-To: <1210114730-5047-1-git-send-email-segher@kernel.crashing.org>
+References: <1210114730-5047-1-git-send-email-segher@kernel.crashing.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,50 +35,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Ok.  That looks like a bug in the older binutils (objcopy) you are using.
-It is confused by the empty .rela.dyn section right next to the .dynamic
-section.  Current binutils don't seem to have a problem with this.
+On Wed,  7 May 2008 00:58:47 +0200
+Segher Boessenkool <segher@kernel.crashing.org> wrote:
 
-I haven't tried to get an old binutils running to reproduce this.
-I suspect the following change will work around the problem.
-It should not cause any problem with newer or older binutils.
+> 
+> These three trivial patches make arch/ppc build again.
 
+We should either take these for 2.6.26, or drop arch/ppc altogether.
+Leaving it in-tree but broken just seems like bad form :).
 
-Thanks,
-Roland
-
----
-[PATCH] powerpc vdso64 linker script tweak
-
-This should work around bugs in older binutils' objcopy.
-The placement of these sections does not really matter,
-but it confused the buggy old BFD libraries.
-
-Signed-off-by: Roland McGrath <roland@redhat.com>
----
- arch/powerpc/kernel/vdso64/vdso64.lds.S |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/arch/powerpc/kernel/vdso64/vdso64.lds.S b/arch/powerpc/kernel/vdso64/vdso64.lds.S
-index 932b3fd..7d6585f 100644
---- a/arch/powerpc/kernel/vdso64/vdso64.lds.S
-+++ b/arch/powerpc/kernel/vdso64/vdso64.lds.S
-@@ -43,15 +43,15 @@ SECTIONS
- 	.rodata		: { *(.rodata .rodata.* .gnu.linkonce.r.*) }
- 	.rodata1	: { *(.rodata1) }
- 
-+	.dynamic	: { *(.dynamic) }		:text	:dynamic
-+
- 	.eh_frame_hdr	: { *(.eh_frame_hdr) }		:text	:eh_frame_hdr
- 	.eh_frame	: { KEEP (*(.eh_frame)) }	:text
- 	.gcc_except_table : { *(.gcc_except_table) }
-+	.rela.dyn ALIGN(8) : { *(.rela.dyn) }
- 
- 	.opd ALIGN(8)	: { KEEP (*(.opd)) }
- 	.got ALIGN(8)	: { *(.got .toc) }
--	.rela.dyn ALIGN(8) : { *(.rela.dyn) }
--
--	.dynamic	: { *(.dynamic) }		:text	:dynamic
- 
- 	_end = .;
- 	PROVIDE(end = .);
+josh
