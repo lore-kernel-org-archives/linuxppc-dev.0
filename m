@@ -1,13 +1,20 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <glikely@secretlab.ca>
+Received: from wx-out-0506.google.com (wx-out-0506.google.com [66.249.82.233])
+	by ozlabs.org (Postfix) with ESMTP id C63F5DDE03
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 May 2008 00:03:25 +1000 (EST)
+Received: by wx-out-0506.google.com with SMTP id i30so1885246wxd.15
+	for <linuxppc-dev@ozlabs.org>; Mon, 12 May 2008 07:03:22 -0700 (PDT)
+Message-ID: <fa686aa40805120703k61e26022lf43aa826a159ccca@mail.gmail.com>
+Date: Mon, 12 May 2008 08:03:22 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: Nick <ndroogh@rogers.com>
+Subject: Re: MPC5200b external interrupt registration problem
+In-Reply-To: <169407.5661.qm@web88102.mail.re2.yahoo.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18472.16324.442125.351127@cargo.ozlabs.ibm.com>
-Date: Mon, 12 May 2008 23:01:56 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [git pull] Please pull powerpc.git merge branch
-Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
-	linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+References: <169407.5661.qm@web88102.mail.re2.yahoo.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,35 +24,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Linus,
+On Fri, May 9, 2008 at 12:49 PM, Nick <ndroogh@rogers.com> wrote:
+> Hi,
+>
+>  I am writing a driver to service an interrupt from our fpga.  I am calling request_irq in the open
+>  function of my driver.  The fpga is connected to external interrupt 1.  I am using interrupt
+>  number 65 in the request_irq but the function is failing.  I traced to a function called setup_irq
+>  in file /kernel/irq/manage.c.  It fails because at this line: if (desc->chip == &no_irq_chip) .
+>  Is 65 the wrong interrupt number?  What do I need to do to properly setup for external interrupts?
 
-Please pull from the 'merge' branch of
+What kernel version are you using?
+Are you using arch/ppc or arch/powerpc?
 
-git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
+There has been a major shift in embedded powerpc support in the last
+year.  Now, instead of hard coding the peripheral list in the platform
+code, the devices are described in an OpenFirmware style device tree.
+(See arch/powerpc/boot/dts/lite5200b.dts).
 
-to get 5 commits; one that fixes a compile problem for ARCH=powerpc,
-and 4 that fix compile problems for ARCH=ppc.  Since 2.6.26 will be
-the last release that includes arch/ppc, we probably should make sure
-it works in case anyone wants to refer to it subsequently.
+You need to add a node to the tree for your device and specify the
+interrupt there.  Then use either of_irq_map_one() or
+irq_of_parse_and_map() to get something that you can pass to
+request_irq().
 
-Thanks,
-Paul.
+Cheers,
+g.
 
- arch/powerpc/kernel/Makefile   |    6 ++++++
- arch/powerpc/kernel/cputable.c |    2 ++
- arch/powerpc/lib/Makefile      |    2 +-
- arch/ppc/Makefile              |    2 +-
- arch/ppc/kernel/ppc_ksyms.c    |    1 +
- arch/ppc/kernel/setup.c        |    1 +
- arch/ppc/platforms/residual.c  |    1 +
- include/asm-ppc/system.h       |    2 +-
- 8 files changed, 14 insertions(+), 3 deletions(-)
-
-Paul Mackerras (2):
-      [POWERPC] Fix default cputable entries for e200 and e500 families
-      [POWERPC] ppc: More compile fixes
-
-Segher Boessenkool (3):
-      [POWERPC] ppc: Use ebony_defconfig for defconfig
-      [POWERPC] ppc: Include <asm/cacheflush.h> in kernel/ppc_ksyms.c
-      [POWERPC] ppc: Don't run prom_init_check for arch/ppc builds
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
