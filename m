@@ -1,24 +1,22 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
+Return-Path: <stephen.neuendorffer@xilinx.com>
+Received: from outbound10-sin-R.bigfish.com (outbound-sin.frontbridge.com
+	[207.46.51.80])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id A9781DE046
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 May 2008 03:22:05 +1000 (EST)
-Message-ID: <48287CE4.9050304@freescale.com>
-Date: Mon, 12 May 2008 12:22:44 -0500
-From: Scott Wood <scottwood@freescale.com>
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 76372DDF9F
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 May 2008 03:31:33 +1000 (EST)
 MIME-Version: 1.0
-To: Francois Romieu <romieu@fr.zoreil.com>
-Subject: Re: [PATCH 4/6] drivers/net/fs_enet: remove null pointer dereference
-References: <Pine.LNX.4.64.0805121537590.3694@ask.diku.dk>
-	<20080512165142.GC22190@electric-eye.fr.zoreil.com>
-In-Reply-To: <20080512165142.GC22190@electric-eye.fr.zoreil.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: netdev@vger.kernel.org, kernel-janitors@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Julia Lawall <julia@diku.dk>, vbordug@ru.mvista.com, jgarzik@pobox.com
+Content-Type: text/plain;
+	charset="US-ASCII"
+Subject: RE: [PATCH] Xilinx: framebuffer: add compatibility for ml507 dvi core.
+Date: Mon, 12 May 2008 10:31:28 -0700
+In-reply-to: <fa686aa40805120724u17a380adnd0826044ae3ac369@mail.gmail.com>
+References: <20080505175918.2AD03A58056@mail164-sin.bigfish.com>
+	<fa686aa40805120724u17a380adnd0826044ae3ac369@mail.gmail.com>
+From: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
+To: "Grant Likely" <grant.likely@secretlab.ca>
+Message-Id: <20080512173130.0D747181804D@mail89-sin.bigfish.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,29 +26,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Francois Romieu wrote:
-> Julia Lawall <julia@diku.dk> :
-> [...]
->> diff -u -p a/drivers/net/fs_enet/fs_enet-main.c b/drivers/net/fs_enet/fs_enet-main.c
->> --- a/drivers/net/fs_enet/fs_enet-main.c	2008-04-27 11:41:11.000000000 +0200
->> +++ b/drivers/net/fs_enet/fs_enet-main.c	2008-05-12 09:41:52.000000000 +0200
->> @@ -1093,7 +1093,7 @@ err:
->>  		if (registered)
->>  			unregister_netdev(ndev);
->>  
->> -		if (fep != NULL) {
->> +		if (fep && fep->ops) {
->>  			(*fep->ops->free_bd)(ndev);
->>  			(*fep->ops->cleanup_data)(ndev);
->>  		}
-> 
-> Extra cookies for the nice soul who:
-> - removes the 'if (registered)' test (it can not happen)
-> - uses different error lablels and unrolls the error path. I can not claim
->   that the current error path is wrong but it would not hurt if it was more
->   trivially balanced.
-> 
 
-Please note that this code is going away very soon, when arch/ppc dies.
+Not easily.  As we discussed before, there is nowhere that really
+specifies this information.  In some cases I've modified the device tree
+generator to understand what is backward compatible, as with ns16550,
+but for other cores it makes more sense to me to put this compatibility
+information with the driver if it has to be anywhere.
 
--Scott
+Steve
+
+> -----Original Message-----
+> From: glikely@secretlab.ca [mailto:glikely@secretlab.ca] On Behalf Of
+Grant Likely
+> Sent: Monday, May 12, 2008 7:25 AM
+> To: Stephen Neuendorffer
+> Cc: linuxppc-dev@ozlabs.org
+> Subject: Re: [PATCH] Xilinx: framebuffer: add compatibility for ml507
+dvi core.
+>=20
+> On Mon, May 5, 2008 at 11:59 AM, Stephen Neuendorffer
+> <stephen.neuendorffer@xilinx.com> wrote:
+> > Signed-off-by: Stephen Neuendorffer
+<stephen.neuendorffer@xilinx.com>
+> >  ---
+> >   drivers/video/xilinxfb.c |    1 +
+> >   1 files changed, 1 insertions(+), 0 deletions(-)
+> >
+> >  diff --git a/drivers/video/xilinxfb.c b/drivers/video/xilinxfb.c
+> >  index 848752e..a82c530 100644
+> >  --- a/drivers/video/xilinxfb.c
+> >  +++ b/drivers/video/xilinxfb.c
+> >  @@ -396,6 +396,7 @@ static int __devexit xilinxfb_of_remove(struct
+of_device *op)
+> >   /* Match table for of_platform binding */
+> >   static struct of_device_id xilinxfb_of_match[] __devinitdata =3D {
+> >         { .compatible =3D "xlnx,plb-tft-cntlr-ref-1.00.a", },
+> >  +       { .compatible =3D "xlnx,plb-dvi-cntlr-ref-1.00.c", },
+>=20
+> Can you get the dvi core to claim compatibility with the tft core
+> (assuming it is register level backwards compatible)?
+>=20
+> Cheers,
+> g.
+>=20
+> --
+> Grant Likely, B.Sc., P.Eng.
+> Secret Lab Technologies Ltd.
