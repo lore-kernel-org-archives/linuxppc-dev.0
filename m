@@ -1,27 +1,19 @@
-Return-Path: <dcogley@uslinc.com>
-Received: from mta21.charter.net (mta21.charter.net [216.33.127.81])
-	by ozlabs.org (Postfix) with ESMTP id 40729DDF45
+Return-Path: <ramkumarj2000@gmail.com>
+Received: from ti-out-0910.google.com (ti-out-0910.google.com [209.85.142.189])
+	by ozlabs.org (Postfix) with ESMTP id 4C2FEDDE3A
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 10 May 2008 06:55:54 +1000 (EST)
-Received: from aarprv04.charter.net ([10.20.200.74]) by mta21.charter.net
-	(InterMail vM.7.08.03.00 201-2186-126-20070710) with ESMTP
-	id <20080509205542.DOWT23078.mta21.charter.net@aarprv04.charter.net>
-	for <linuxppc-embedded@ozlabs.org>; Fri, 9 May 2008 16:55:42 -0400
-Received: from [192.168.1.32] (really [71.93.35.174])
-	by aarprv04.charter.net with ESMTP
-	id <20080509205542.IMPC4495.aarprv04.charter.net@[192.168.1.32]>
-	for <linuxppc-embedded@ozlabs.org>; Fri, 9 May 2008 16:55:42 -0400
-Subject: RE: mmap problem in device driver and application program.
-From: Dave Cogley <dcogley@uslinc.com>
+	Mon, 12 May 2008 19:12:46 +1000 (EST)
+Received: by ti-out-0910.google.com with SMTP id w7so871600tib.13
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 12 May 2008 02:12:44 -0700 (PDT)
+Message-ID: <4f8c3030805120212r730ded9dv23dfcc29119ebfe5@mail.gmail.com>
+Date: Mon, 12 May 2008 17:12:42 +0800
+From: "Ramkumar J" <ramkumarj2000@gmail.com>
 To: linuxppc-embedded@ozlabs.org
-In-Reply-To: <BAY138-W36C7249F532D111A1DC508B2D00@phx.gbl>
-References: <BAY138-W55519F961B3A01D0B8A167B2D00@phx.gbl>
-	<1210266109.3755.8.camel@localhost.localdomain>
-	<BAY138-W36C7249F532D111A1DC508B2D00@phx.gbl>
-Content-Type: text/plain; charset=UTF-8
-Date: Fri, 09 May 2008 13:55:52 -0700
-Message-Id: <1210366552.3755.21.camel@localhost.localdomain>
-Mime-Version: 1.0
+Subject: Compiling applications using cross compiler packs libc
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_Part_4564_3637462.1210583564086"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -32,84 +24,56 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> Shall I use virt_to_phys? dma_addr is already exactly physical address
-> which is used to initiate DMA transfers. 
+------=_Part_4564_3637462.1210583564086
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Is the physical memory outside of the reach of the kernel? If it is
-under control of the kernel memory management you will need to ioremap
-it. This will return a kernel virtual address which will need to be
-converted to a physical address and further convert to a page number.
-remap_pfn_range only works on page numbers not physical addresses.
+Hi All,
 
-So I guess it would look something like this:
+I am trying to execute a compiled simple stand-alone application (
+TestApp_Memory.c compiled with gcc 4.1.0 cross compiler for ppc [ I have
+installed this through crosstool on a Linux PC ] ) on the ML403 Board
+instead of using the compiler-set provided by XPS. I tried many options (
+like --static to gcc) to make the object file little as produced by the XPS
+Compiler Set. I find that when static is provided, the glibc is also packed
+up as a part of application though I never make any calls to the glibc
+libraries. If I dont provide the --static, the gcc produces a code assuming
+the library as shared and hence I get an interp section.
+Is there any way to produce the code  with only the application and NOT the
+glibc ( As XPS compilers does). Am I missing out something. Is there any
+specific flags. I find even nodefaultlib does not work.
 
-int foo_mmap(struct file* filep, struct vm_area_struct* vma)
+For Eg: This is another example I tried
+
+int main()
 {
-	unsigned long dma_addr = ioremap(0x03000000);
-	unsigned long dma_size = 0x00200000;
-	unsigned long pfn;
+    int a = 5;
+    int b = 10;
+    int c = 15;
 
-	// convert the DMA address to page number
-	pfn = virt_to_phys(dma_addr) >> PAGE_SHIFT;
+    c = a + b;
 
-	...
+    c += 12;
+
+    return 0;
 }
 
-If you are using memory that is not under the kernel's memory management
-you will need to use something other than remap_pfn_range.
+With --static compilation, size is about 500K for the above code though the
+useful content is too less. objdump reveals unneccessary calls to the libc.
+Any suggestions would be helpful.
 
-Dave
+Thanks and Regards,
+Ramkumar
 
-On Thu, 2008-05-08 at 18:42 +0000, MingLiu wrote:
-> Dear Dave,
->  
-> Thanks for your answer first. However I am very confused. It seems
-> that I understand the memory-mapping-related functions completely
-> wrong. Here comes more questions. 
-> 
-> 
-> > The address you are passing to mmap is where the pointer will be
-> mapped
-> > in virtual address space. You need to determine the DMA memory
-> address
-> > page number down in the actual mmap call.
-> > 
-> > int foo_mmap(struct file* filep, struct vm_area_struct* vma)
-> > {
-> > unsigned long dma_addr = 0x03000000;
-> > unsigned long dma_size = 0x00200000;
-> > unsigned long pfn;
-> > 
-> > // convert the DMA address to page number
-> > pfn = virt_to_phys(dma_addr) >> PAGE_SHIFT;
-> 
-> Shall I use virt_to_phys? dma_addr is already exactly physical address
-> which is used to initiate DMA transfers. 
->  
-> > // remap our page frame to the vma offset
-> > remap_pfn_range(vma, vma->vm_start, pfn, 
-> > dma_size, vma->vm_page_prot);
-> > }
-> > 
-> > Change the address parameter from 0x03000000 to 0:
-> > 
-> > lut_mem_base = (unsigned int *) mmap(0, LUT_SIZE_IN_BYTE, 
-> > PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-> 
-> Previously I used "remap_page_range(vma, vma->vm_start, physical_addr,
-> vm_size, vma->vm_page_prot)" in the device driver, where physical_addr
-> is 0x03000000. In the application program, I used "lut_mem_base =
-> (unsigned int *) mmap(0, LUT_SIZE_IN_BYTE, PROT_READ | PROT_WRITE,
-> MAP_SHARED, fd, 0);". I think it is correct but it doesn't work. I
-> heard that in the new kernels, remap_page_range is not supported any
-> more. However when I compile the driver, nothing was shown to complain
-> that. I am using 2.6.10 kernel. Any hint for this?
->  
-> Thank you for your help to make me understand. 
->  
-> BR
-> Ming
-> 
-> 
-> ______________________________________________________________________
-> 使用新一代 Windows Live Messenger 轻松交流和共享！ 立即体验！
+------=_Part_4564_3637462.1210583564086
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+<br>Hi All,<br><br>I am trying to execute a compiled simple stand-alone application ( TestApp_Memory.c compiled with gcc 4.1.0 cross compiler for ppc [ I have installed this through crosstool on a Linux PC ] ) on the ML403 Board instead of using the compiler-set provided by XPS. I tried many options ( like --static to gcc) to make the object file little as produced by the XPS Compiler Set. I find that when static is provided, the glibc is also packed up as a part of application though I never make any calls to the glibc libraries. If I dont provide the --static, the gcc produces a code assuming the library as shared and hence I get an interp section. <br>
+Is there any way to produce the code&nbsp; with only the application and NOT the glibc ( As XPS compilers does). Am I missing out something. Is there any specific flags. I find even nodefaultlib does not work.<br><br>For Eg: This is another example I tried<br>
+<br>int main()<br>{<br>&nbsp;&nbsp;&nbsp; int a = 5;<br>&nbsp;&nbsp;&nbsp; int b = 10;<br>&nbsp;&nbsp;&nbsp; int c = 15;<br><br>&nbsp;&nbsp;&nbsp; c = a + b;<br><br>&nbsp;&nbsp;&nbsp; c += 12;<br><br>&nbsp;&nbsp;&nbsp; return 0;<br>}<br><br>With --static compilation, size is about 500K for the above code though the useful content is too less. objdump reveals unneccessary calls to the libc.<br>
+Any suggestions would be helpful.<br><br>Thanks and Regards,<br>Ramkumar<br><br><br><br><br>
+
+------=_Part_4564_3637462.1210583564086--
