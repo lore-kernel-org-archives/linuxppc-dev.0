@@ -1,15 +1,13 @@
-Return-Path: <avorontsov@dev.rtsoft.ru>
-Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
-	by ozlabs.org (Postfix) with SMTP id 6E54FDDE07
-	for <linuxppc-dev@ozlabs.org>; Mon, 12 May 2008 22:35:37 +1000 (EST)
-Date: Mon, 12 May 2008 16:35:33 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH] [POWERPC] 86xx: mpc8610_hpcd: fix second serial port
-Message-ID: <20080512123533.GA29838@polina.dev.rtsoft.ru>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-Cc: linuxppc-dev@ozlabs.org, Timur Tabi <timur@freescale.com>
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18472.16324.442125.351127@cargo.ozlabs.ibm.com>
+Date: Mon, 12 May 2008 23:01:56 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [git pull] Please pull powerpc.git merge branch
+Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,44 +17,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-DIU platform code should not just write to the PIXIS' BRDCFG0 register,
-it should set and clear its own bits only, otherwise it will break
-firmware setup (in fact it breaks second uart).
+Linus,
 
-Also get rid of magic numbers in the related code.
+Please pull from the 'merge' branch of
 
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
- arch/powerpc/platforms/86xx/mpc8610_hpcd.c |   14 ++++++++++++--
- 1 files changed, 12 insertions(+), 2 deletions(-)
+git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
 
-diff --git a/arch/powerpc/platforms/86xx/mpc8610_hpcd.c b/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
-index 71dbd9d..4c61a10 100644
---- a/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
-+++ b/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
-@@ -285,11 +285,21 @@ void mpc8610hpcd_set_gamma_table(int monitor_port, char *gamma_table_base)
- 	}
- }
- 
-+#define PX_BRDCFG0_DVISEL	(1 << 3)
-+#define PX_BRDCFG0_DLINK	(1 << 4)
-+#define PX_BRDCFG0_DIU_MASK	(PX_BRDCFG0_DVISEL | PX_BRDCFG0_DLINK)
-+
- void mpc8610hpcd_set_monitor_port(int monitor_port)
- {
--	static const u8 bdcfg[] = {0xBD, 0xB5, 0xA5};
-+	static const u8 bdcfg[] = {
-+		PX_BRDCFG0_DVISEL | PX_BRDCFG0_DLINK,
-+		PX_BRDCFG0_DLINK,
-+		0,
-+	};
-+
- 	if (monitor_port < 3)
--		*pixis_bdcfg0 = bdcfg[monitor_port];
-+		clrsetbits_8(pixis_bdcfg0, PX_BRDCFG0_DIU_MASK,
-+			     bdcfg[monitor_port]);
- }
- 
- void mpc8610hpcd_set_pixel_clock(unsigned int pixclock)
--- 
-1.5.5.1
+to get 5 commits; one that fixes a compile problem for ARCH=powerpc,
+and 4 that fix compile problems for ARCH=ppc.  Since 2.6.26 will be
+the last release that includes arch/ppc, we probably should make sure
+it works in case anyone wants to refer to it subsequently.
+
+Thanks,
+Paul.
+
+ arch/powerpc/kernel/Makefile   |    6 ++++++
+ arch/powerpc/kernel/cputable.c |    2 ++
+ arch/powerpc/lib/Makefile      |    2 +-
+ arch/ppc/Makefile              |    2 +-
+ arch/ppc/kernel/ppc_ksyms.c    |    1 +
+ arch/ppc/kernel/setup.c        |    1 +
+ arch/ppc/platforms/residual.c  |    1 +
+ include/asm-ppc/system.h       |    2 +-
+ 8 files changed, 14 insertions(+), 3 deletions(-)
+
+Paul Mackerras (2):
+      [POWERPC] Fix default cputable entries for e200 and e500 families
+      [POWERPC] ppc: More compile fixes
+
+Segher Boessenkool (3):
+      [POWERPC] ppc: Use ebony_defconfig for defconfig
+      [POWERPC] ppc: Include <asm/cacheflush.h> in kernel/ppc_ksyms.c
+      [POWERPC] ppc: Don't run prom_init_check for arch/ppc builds
