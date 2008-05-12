@@ -1,12 +1,12 @@
 Return-Path: <avorontsov@dev.rtsoft.ru>
 Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
-	by ozlabs.org (Postfix) with SMTP id 76379DDF71
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 May 2008 04:52:11 +1000 (EST)
-Date: Mon, 12 May 2008 22:52:10 +0400
+	by ozlabs.org (Postfix) with SMTP id 6AC1CDE286
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 May 2008 04:52:18 +1000 (EST)
+Date: Mon, 12 May 2008 22:52:17 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH 2/3] [POWERPC] fsl_soc: register mpc83xx_wdt for PPC_86xx
-Message-ID: <20080512185210.GB25818@polina.dev.rtsoft.ru>
+Subject: [PATCH 3/3] [POWERPC] 86xx: mpc8610_hpcd: add watchdog node
+Message-ID: <20080512185217.GC25818@polina.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf8
 Cc: linuxppc-dev@ozlabs.org, Wim Van Sebroeck <wim@iguana.be>,
@@ -20,26 +20,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Since mpc83xx_wdt driver is able to handle MPC86xx watchdogs now,
-we want to regster the device appropriately.
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- arch/powerpc/sysdev/fsl_soc.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ arch/powerpc/boot/dts/mpc8610_hpcd.dts |    6 ++++++
+ 1 files changed, 6 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
-index a5ceeef..85861c9 100644
---- a/arch/powerpc/sysdev/fsl_soc.c
-+++ b/arch/powerpc/sysdev/fsl_soc.c
-@@ -545,7 +545,7 @@ err:
- arch_initcall(fsl_i2c_of_init);
- #endif
+diff --git a/arch/powerpc/boot/dts/mpc8610_hpcd.dts b/arch/powerpc/boot/dts/mpc8610_hpcd.dts
+index 5030533..67fd2c7 100644
+--- a/arch/powerpc/boot/dts/mpc8610_hpcd.dts
++++ b/arch/powerpc/boot/dts/mpc8610_hpcd.dts
+@@ -195,6 +195,12 @@
+ 			fsl,has-rstcr;
+ 		};
  
--#ifdef CONFIG_PPC_83xx
-+#if defined(CONFIG_PPC_83xx) || defined(CONFIG_PPC_86xx)
- static int __init mpc83xx_wdt_init(void)
- {
- 	struct resource r;
++		wdt@e4000 {
++			device_type = "watchdog";
++			compatible = "mpc83xx_wdt", "fsl,mpc8610-wdt";
++			reg = <0xe4000 0x100>;
++		};
++
+ 		gpio@f000 {
+ 			compatible = "fsl,mpc8610-gpio";
+ 			reg = <0xf000 0x100>;
 -- 
 1.5.5.1
