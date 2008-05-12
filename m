@@ -1,19 +1,22 @@
-Return-Path: <ncase@xes-inc.com>
-Received: from xes-mad.com (xes-mad.com [216.165.139.214])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 7E072DDDFF
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 May 2008 06:14:19 +1000 (EST)
-Received: from [10.52.0.27] (natec.xes-mad.com [10.52.0.27])
-	by xes-mad.com (8.13.8/8.13.8) with ESMTP id m4CKEFMT021639
-	for <linuxppc-dev@ozlabs.org>; Mon, 12 May 2008 15:14:15 -0500
-Subject: [PATCH] POWERPC: Fix uninitialized variable bug in copy_{to|from}_user
-From: Nate Case <ncase@xes-inc.com>
-To: linuxppc-dev <linuxppc-dev@ozlabs.org>
-Content-Type: text/plain
-Date: Mon, 12 May 2008 15:14:14 -0500
-Message-Id: <1210623254.13845.326.camel@localhost.localdomain>
-Mime-Version: 1.0
+Return-Path: <cbouatmailru@gmail.com>
+Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.187])
+	by ozlabs.org (Postfix) with ESMTP id 5FBD7DDF76
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 May 2008 06:53:12 +1000 (EST)
+Received: by nf-out-0910.google.com with SMTP id e27so1409098nfd.9
+	for <linuxppc-dev@ozlabs.org>; Mon, 12 May 2008 13:53:09 -0700 (PDT)
+Date: Tue, 13 May 2008 00:53:03 +0400
+From: Anton Vorontsov <cbouatmailru@gmail.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 1/3] [WATCHDOG] mpc83xx_wdt: add support for MPC86xx CPUs
+Message-ID: <20080512205303.GA14198@zarina>
+References: <20080512185206.GA25818@polina.dev.rtsoft.ru>
+	<64629276-8337-4FFE-B3E1-306678BF179D@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <64629276-8337-4FFE-B3E1-306678BF179D@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, Wim Van Sebroeck <wim@iguana.be>,
+	Timur Tabi <timur@freescale.com>
+Reply-To: cbouatmailru@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,37 +26,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Calls to copy_to_user() or copy_from_user() can fail
-when copying N bytes, where N is a constant less than 8,
-but not 1, 2, 4, or 8.
+On Mon, May 12, 2008 at 02:24:20PM -0500, Kumar Gala wrote:
+>
+> On May 12, 2008, at 1:52 PM, Anton Vorontsov wrote:
+>
+>> On MPC86xx the watchdog could be enabled only at power-on-reset, and
+>> could not be disabled afterwards. We must ping the watchdog from the
+>> kernel until the userspace handles it.
+>>
+>> MPC83xx CPUs are only differ in a way that watchdog could be disabled
+>> once, but after it was enabled via software it becomes just the same
+>> as MPC86xx.
+>>
+>> Thus, to support MPC86xx I added the kernel timer which pings the
+>> watchdog until the userspace opens it.
+>>
+>> Since we implemented the timer, now we're able to implement proper
+>> handling for the CONFIG_WATCHDOG_NOWAYOUT case, for MPC83xx and  
+>> MPC86xx.
+>>
+>> Also move the probe code into subsys_initcall, because we want start
+>> pinging the watchdog ASAP, and misc devices are available in
+>> subsys_initcall.
+>>
+>> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+>> ---
+>> drivers/watchdog/Kconfig       |    4 +-
+>> drivers/watchdog/mpc83xx_wdt.c |   63 +++++++++++++++++++++++++++++++ 
+>> +++++----
+>
+> we should rename it to mpc8xxx_wdt.c
 
-Signed-off-by: Dave Scidmore <dscidmore@xes-inc.com>
-Signed-off-by: Nate Case <ncase@xes-inc.com>
----
- include/asm-powerpc/uaccess.h |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+I don't see much sense in renaming the files just because the driver
+now supports another line of processors... Do you really want the rename?
+Please repeat if so.
 
-diff --git a/include/asm-powerpc/uaccess.h b/include/asm-powerpc/uaccess.h
-index 8e798e3..1a0736f 100644
---- a/include/asm-powerpc/uaccess.h
-+++ b/include/asm-powerpc/uaccess.h
-@@ -380,7 +380,7 @@ static inline unsigned long __copy_from_user_inatomic(void *to,
- 		const void __user *from, unsigned long n)
- {
- 	if (__builtin_constant_p(n) && (n <= 8)) {
--		unsigned long ret;
-+		unsigned long ret = 1;
- 
- 		switch (n) {
- 		case 1:
-@@ -406,7 +406,7 @@ static inline unsigned long __copy_to_user_inatomic(void __user *to,
- 		const void *from, unsigned long n)
- {
- 	if (__builtin_constant_p(n) && (n <= 8)) {
--		unsigned long ret;
-+		unsigned long ret = 1;
- 
- 		switch (n) {
- 		case 1:
 -- 
-1.5.4.4
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
