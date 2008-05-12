@@ -1,14 +1,20 @@
-Return-Path: <avorontsov@dev.rtsoft.ru>
-Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
-	by ozlabs.org (Postfix) with SMTP id 6AC1CDE286
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 May 2008 04:52:18 +1000 (EST)
-Date: Mon, 12 May 2008 22:52:17 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH 3/3] [POWERPC] 86xx: mpc8610_hpcd: add watchdog node
-Message-ID: <20080512185217.GC25818@polina.dev.rtsoft.ru>
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 9D552DE073
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 May 2008 04:57:46 +1000 (EST)
+Message-ID: <4828935D.1090807@freescale.com>
+Date: Mon, 12 May 2008 13:58:37 -0500
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: Re: [PATCH 1/3] [WATCHDOG] mpc83xx_wdt: add support for MPC86xx CPUs
+References: <20080512185206.GA25818@polina.dev.rtsoft.ru>
+In-Reply-To: <20080512185206.GA25818@polina.dev.rtsoft.ru>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Cc: linuxppc-dev@ozlabs.org, Wim Van Sebroeck <wim@iguana.be>,
 	Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -20,28 +26,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Anton Vorontsov wrote:
+> +	enabled = in_be32(&wd_base->swcrr) & SWCRR_SWEN;
+> +#ifdef CONFIG_PPC_86xx
+> +	if (!enabled) {
+> +		dev_info(&dev->dev, "could not be enabled by software\n");
+> +		ret = -ENOSYS;
+> +		goto err_unmap;
+> +	}
+> +#endif
 
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
- arch/powerpc/boot/dts/mpc8610_hpcd.dts |    6 ++++++
- 1 files changed, 6 insertions(+), 0 deletions(-)
+What happens on an 83xx+86xx multiplatform kernel?
 
-diff --git a/arch/powerpc/boot/dts/mpc8610_hpcd.dts b/arch/powerpc/boot/dts/mpc8610_hpcd.dts
-index 5030533..67fd2c7 100644
---- a/arch/powerpc/boot/dts/mpc8610_hpcd.dts
-+++ b/arch/powerpc/boot/dts/mpc8610_hpcd.dts
-@@ -195,6 +195,12 @@
- 			fsl,has-rstcr;
- 		};
- 
-+		wdt@e4000 {
-+			device_type = "watchdog";
-+			compatible = "mpc83xx_wdt", "fsl,mpc8610-wdt";
-+			reg = <0xe4000 0x100>;
-+		};
-+
- 		gpio@f000 {
- 			compatible = "fsl,mpc8610-gpio";
- 			reg = <0xf000 0x100>;
--- 
-1.5.5.1
+-Scott
