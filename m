@@ -1,22 +1,22 @@
-Return-Path: <John.Linn@xilinx.com>
-Received: from outbound7-sin-R.bigfish.com (outbound-sin.frontbridge.com
-	[207.46.51.80])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id A9EE3DDF05
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.248])
+	by ozlabs.org (Postfix) with ESMTP id 87C72DDF61
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 13 May 2008 23:42:17 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: Linux on Ml410
-Date: Tue, 13 May 2008 07:42:11 -0600
+	Tue, 13 May 2008 23:54:50 +1000 (EST)
+Received: by an-out-0708.google.com with SMTP id c34so746437anc.78
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 13 May 2008 06:54:48 -0700 (PDT)
+Message-ID: <fa686aa40805130654x114b4ec8p57622d0632a31692@mail.gmail.com>
+Date: Tue, 13 May 2008 07:54:48 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: mojtaba <kernelppc@gmail.com>
+Subject: Re: Linux on Ml410
 In-Reply-To: <016601c8b4ed$a56e57a0$f04b06e0$@com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 References: <016601c8b4ed$a56e57a0$f04b06e0$@com>
-From: "John Linn" <John.Linn@xilinx.com>
-To: "mojtaba" <kernelppc@gmail.com>,
-	<linuxppc-embedded@ozlabs.org>
-Message-Id: <20080513134214.1A6671970046@mail123-sin.bigfish.com>
+Cc: John Linn <John.Linn@xilinx.com>, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -27,43 +27,32 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Mojtaba,
+On Tue, May 13, 2008 at 5:36 AM, mojtaba <kernelppc@gmail.com> wrote:
+> Dear all,
+>
+>  I am trying to run linux 1.6.25 on ML410 board. When the system boot I
+>  receive this error:
+>
+>  loaded at:     00400000 004CD19C
+>  board data at: 004CB120 004CB19C
+>  relocated to:  00404050 004040CC
+>  zimage at:     00404E3C 004CA0D1
+>  avail ram:     004CE000 10000000
+>
+>  Linux/PPC load: console=ttyS0,115200 root=/dev/xsa2
+>  Uncompressing Linux...inflate returned FFFFFFFD
+>  exit
 
-Did you build the FPGA bit stream yourself or get it from somewhere?
+Not good.  If you get an error like this during decompression then you
+probably have some sort of memory error.  Are you using a reference
+design, or have you built a new design?  Have you tested your
 
-Specifying ttyS0 means you should have a 16550 UART in the hardware
-build, do you?
+It could also be a corrupt kernel image.  How did you build it?  How
+large is the image?
 
--- John
+Cheers,
+g.
 
------Original Message-----
-From: linuxppc-embedded-bounces+john.linn=3Dxilinx.com@ozlabs.org
-[mailto:linuxppc-embedded-bounces+john.linn=3Dxilinx.com@ozlabs.org] On
-Behalf Of mojtaba
-Sent: Tuesday, May 13, 2008 5:37 AM
-To: linuxppc-embedded@ozlabs.org
-Subject: Linux on Ml410
-
-Dear all,
-
-I am trying to run linux 1.6.25 on ML410 board. When the system boot I
-receive this error:
-
-loaded at:     00400000 004CD19C
-board data at: 004CB120 004CB19C
-relocated to:  00404050 004040CC
-zimage at:     00404E3C 004CA0D1
-avail ram:     004CE000 10000000
-
-Linux/PPC load: console=3DttyS0,115200 root=3D/dev/xsa2
-Uncompressing Linux...inflate returned FFFFFFFD
-exit
-
-I will appreciate it if somebody can kindly answer me?
-Regards,
-Mojtaba
-
-_______________________________________________
-Linuxppc-embedded mailing list
-Linuxppc-embedded@ozlabs.org
-https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
