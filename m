@@ -1,13 +1,13 @@
 Return-Path: <avorontsov@dev.rtsoft.ru>
 Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
-	by ozlabs.org (Postfix) with SMTP id C160CDDFDF
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 May 2008 00:14:56 +1000 (EST)
-Date: Tue, 13 May 2008 18:14:54 +0400
+	by ozlabs.org (Postfix) with SMTP id 33B63DE039
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 May 2008 00:14:58 +1000 (EST)
+Date: Tue, 13 May 2008 18:14:57 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Kumar Gala <galak@kernel.crashing.org>,
 	Wim Van Sebroeck <wim@iguana.be>
-Subject: [PATCH 1/6] [WATCHDOG] mpc83xx_wdt: convert to the OF platform driver
-Message-ID: <20080513141454.GA15717@polina.dev.rtsoft.ru>
+Subject: [PATCH 2/6] [WATCHDOG] mpc83xx_wdt: add support for MPC86xx CPUs
+Message-ID: <20080513141457.GB15717@polina.dev.rtsoft.ru>
 References: <20080513141411.GA8981@polina.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf8
@@ -23,137 +23,207 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch simply converts mpc83xx_wdt to the OF platform driver so we
-can directly work with the device tree without passing various stuff
-through platform data.
+On MPC86xx the watchdog could be enabled only at power-on-reset, and
+could not be disabled afterwards. We must ping the watchdog from the
+kernel until the userspace handles it.
+
+MPC83xx CPUs are only differ in a way that watchdog could be disabled
+once, but after it was enabled via software it becomes just the same
+as MPC86xx.
+
+Thus, to support MPC86xx I added the kernel timer which pings the
+watchdog until the userspace opens it.
+
+Since we implemented the timer, now we're able to implement proper
+handling for the CONFIG_WATCHDOG_NOWAYOUT case, for MPC83xx and MPC86xx.
+
+Also move the probe code into subsys_initcall, because we want start
+pinging the watchdog ASAP, and misc devices are available in
+subsys_initcall.
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- drivers/watchdog/mpc83xx_wdt.c |   64 ++++++++++++++++++----------------------
- 1 files changed, 29 insertions(+), 35 deletions(-)
+ drivers/watchdog/Kconfig       |    4 +-
+ drivers/watchdog/mpc83xx_wdt.c |   63 +++++++++++++++++++++++++++++++++++----
+ 2 files changed, 58 insertions(+), 9 deletions(-)
 
+diff --git a/drivers/watchdog/Kconfig b/drivers/watchdog/Kconfig
+index 254d115..2929055 100644
+--- a/drivers/watchdog/Kconfig
++++ b/drivers/watchdog/Kconfig
+@@ -683,8 +683,8 @@ config 8xx_WDT
+ 	depends on 8xx
+ 
+ config 83xx_WDT
+-	tristate "MPC83xx Watchdog Timer"
+-	depends on PPC_83xx
++	tristate "MPC83xx/MPC86xx Watchdog Timer"
++	depends on PPC_83xx || PPC_86xx
+ 
+ config MV64X60_WDT
+ 	tristate "MV64X60 (Marvell Discovery) Watchdog Timer"
 diff --git a/drivers/watchdog/mpc83xx_wdt.c b/drivers/watchdog/mpc83xx_wdt.c
-index b16c5cd..8f59225 100644
+index 8f59225..3534ae0 100644
 --- a/drivers/watchdog/mpc83xx_wdt.c
 +++ b/drivers/watchdog/mpc83xx_wdt.c
-@@ -19,11 +19,12 @@
- #include <linux/init.h>
- #include <linux/kernel.h>
- #include <linux/miscdevice.h>
--#include <linux/platform_device.h>
-+#include <linux/of_platform.h>
+@@ -1,10 +1,12 @@
+ /*
+- * mpc83xx_wdt.c - MPC83xx watchdog userspace interface
++ * mpc83xx_wdt.c - MPC83xx/MPC86xx watchdog userspace interface
+  *
+  * Authors: Dave Updegraff <dave@cray.org>
+  * 	    Kumar Gala <galak@kernel.crashing.org>
+  * 		Attribution: from 83xx_wst: Florian Schirmer <jolt@tuxbox.org>
+  * 				..and from sc520_wdt
++ * Copyright (c) 2008  MontaVista Software, Inc.
++ *                     Anton Vorontsov <avorontsov@ru.mvista.com>
+  *
+  * Note: it appears that you can only actually ENABLE or DISABLE the thing
+  * once after POR. Once enabled, you cannot disable, and vice versa.
+@@ -22,6 +24,7 @@
+ #include <linux/of_platform.h>
  #include <linux/module.h>
  #include <linux/watchdog.h>
++#include <linux/timer.h>
  #include <asm/io.h>
  #include <asm/uaccess.h>
-+#include <sysdev/fsl_soc.h>
+ #include <sysdev/fsl_soc.h>
+@@ -49,6 +52,11 @@ static int reset = 1;
+ module_param(reset, bool, 0);
+ MODULE_PARM_DESC(reset, "Watchdog Interrupt/Reset Mode. 0 = interrupt, 1 = reset");
  
- struct mpc83xx_wdt {
- 	__be32 res0;
-@@ -147,53 +148,42 @@ static struct miscdevice mpc83xx_wdt_miscdev = {
- 	.fops	= &mpc83xx_wdt_fops,
- };
++static int nowayout = WATCHDOG_NOWAYOUT;
++module_param(nowayout, int, 0);
++MODULE_PARM_DESC(nowayout, "Watchdog cannot be stopped once started "
++		 "(default=" __MODULE_STRING(WATCHDOG_NOWAYOUT) ")");
++
+ /*
+  * We always prescale, but if someone really doesn't want to they can set this
+  * to 0
+@@ -68,6 +76,22 @@ static void mpc83xx_wdt_keepalive(void)
+ 	spin_unlock(&wdt_spinlock);
+ }
  
--static int __devinit mpc83xx_wdt_probe(struct platform_device *dev)
-+static int __devinit mpc83xx_wdt_probe(struct of_device *ofdev,
-+				       const struct of_device_id *match)
++static void mpc83xx_wdt_timer_ping(unsigned long arg);
++static DEFINE_TIMER(wdt_timer, mpc83xx_wdt_timer_ping, 0, 0);
++
++static void mpc83xx_wdt_timer_ping(unsigned long arg)
++{
++	mpc83xx_wdt_keepalive();
++	/* We're pinging it twice faster than needed, just to be sure. */
++	mod_timer(&wdt_timer, jiffies + HZ * timeout_sec / 2);
++}
++
++static void mpc83xx_wdt_pr_warn(const char *msg)
++{
++	pr_crit("mpc83xx_wdt: %s, expect the %s soon!\n", msg,
++		reset ? "reset" : "machine check exception");
++}
++
+ static ssize_t mpc83xx_wdt_write(struct file *file, const char __user *buf,
+ 				 size_t count, loff_t *ppos)
  {
--	struct resource *r;
+@@ -83,7 +107,8 @@ static int mpc83xx_wdt_open(struct inode *inode, struct file *file)
+ 		return -EBUSY;
+ 
+ 	/* Once we start the watchdog we can't stop it */
+-	__module_get(THIS_MODULE);
++	if (nowayout)
++		__module_get(THIS_MODULE);
+ 
+ 	/* Good, fire up the show */
+ 	if (prescale)
+@@ -95,13 +120,17 @@ static int mpc83xx_wdt_open(struct inode *inode, struct file *file)
+ 
+ 	out_be32(&wd_base->swcrr, tmp);
+ 
++	del_timer_sync(&wdt_timer);
++
+ 	return nonseekable_open(inode, file);
+ }
+ 
+ static int mpc83xx_wdt_release(struct inode *inode, struct file *file)
+ {
+-	printk(KERN_CRIT "Unexpected close, not stopping watchdog!\n");
+-	mpc83xx_wdt_keepalive();
++	if (!nowayout)
++		mpc83xx_wdt_timer_ping(0);
++	else
++		mpc83xx_wdt_pr_warn("watchdog closed");
+ 	clear_bit(0, &wdt_is_open);
+ 	return 0;
+ }
+@@ -152,15 +181,24 @@ static int __devinit mpc83xx_wdt_probe(struct of_device *ofdev,
+ 				       const struct of_device_id *match)
+ {
  	int ret;
--	unsigned int *freq = dev->dev.platform_data;
-+	u32 freq = fsl_get_sys_freq();
++	struct device_node *np = ofdev->node;
+ 	u32 freq = fsl_get_sys_freq();
++	bool enabled;
  
--	/* get a pointer to the register memory */
--	r = platform_get_resource(dev, IORESOURCE_MEM, 0);
-+	if (!freq || freq == -1)
-+		return -EINVAL;
+ 	if (!freq || freq == -1)
+ 		return -EINVAL;
  
--	if (!r) {
--		ret = -ENODEV;
--		goto err_out;
--	}
--
--	wd_base = ioremap(r->start, sizeof (struct mpc83xx_wdt));
--
--	if (wd_base == NULL) {
--		ret = -ENOMEM;
--		goto err_out;
--	}
-+	wd_base = of_iomap(ofdev->node, 0);
-+	if (!wd_base)
-+		return -ENOMEM;
+-	wd_base = of_iomap(ofdev->node, 0);
++	wd_base = of_iomap(np, 0);
+ 	if (!wd_base)
+ 		return -ENOMEM;
  
++	enabled = in_be32(&wd_base->swcrr) & SWCRR_SWEN;
++	if (!enabled && of_device_is_compatible(np, "fsl,mpc8610-wdt")) {
++		pr_info("mpc83xx_wdt: could not be enabled in software\n");
++		ret = -ENOSYS;
++		goto err_unmap;
++	}
++
  	ret = misc_register(&mpc83xx_wdt_miscdev);
  	if (ret) {
--		printk(KERN_ERR "cannot register miscdev on minor=%d "
--				"(err=%d)\n",
--				WATCHDOG_MINOR, ret);
-+		pr_err("cannot register miscdev on minor=%d (err=%d)\n",
-+			WATCHDOG_MINOR, ret);
- 		goto err_unmap;
- 	}
- 
- 	/* Calculate the timeout in seconds */
- 	if (prescale)
--		timeout_sec = (timeout * 0x10000) / (*freq);
-+		timeout_sec = (timeout * 0x10000) / freq;
- 	else
--		timeout_sec = timeout / (*freq);
-+		timeout_sec = timeout / freq;
- 
--	printk(KERN_INFO "WDT driver for MPC83xx initialized. "
--		"mode:%s timeout=%d (%d seconds)\n",
--		reset ? "reset":"interrupt", timeout, timeout_sec);
-+	pr_info("WDT driver for MPC83xx initialized. mode:%s timeout=%d "
-+		"(%d seconds)\n", reset ? "reset" : "interrupt", timeout,
-+		timeout_sec);
+ 		pr_err("cannot register miscdev on minor=%d (err=%d)\n",
+@@ -177,6 +215,14 @@ static int __devinit mpc83xx_wdt_probe(struct of_device *ofdev,
+ 	pr_info("WDT driver for MPC83xx initialized. mode:%s timeout=%d "
+ 		"(%d seconds)\n", reset ? "reset" : "interrupt", timeout,
+ 		timeout_sec);
++
++	/*
++	 * If the watchdog was previously enabled or we're running on
++	 * MPC86xx, we should ping the wdt from the kernel until the
++	 * userspace handles it.
++	 */
++	if (enabled)
++		mpc83xx_wdt_timer_ping(0);
  	return 0;
--
  err_unmap:
  	iounmap(wd_base);
--err_out:
- 	return ret;
- }
+@@ -185,6 +231,8 @@ err_unmap:
  
--static int __devexit mpc83xx_wdt_remove(struct platform_device *dev)
-+static int __devexit mpc83xx_wdt_remove(struct of_device *ofdev)
+ static int __devexit mpc83xx_wdt_remove(struct of_device *ofdev)
  {
++	mpc83xx_wdt_pr_warn("watchdog removed");
++	del_timer_sync(&wdt_timer);
  	misc_deregister(&mpc83xx_wdt_miscdev);
  	iounmap(wd_base);
-@@ -201,23 +191,27 @@ static int __devexit mpc83xx_wdt_remove(struct platform_device *dev)
- 	return 0;
- }
  
--static struct platform_driver mpc83xx_wdt_driver = {
-+static const struct of_device_id mpc83xx_wdt_match[] = {
-+	{ .compatible = "mpc83xx_wdt", },
-+	{},
-+};
-+MODULE_DEVICE_TABLE(of, mpc83xx_wdt_match);
-+
-+static struct of_platform_driver mpc83xx_wdt_driver = {
-+	.name		= "mpc83xx_wdt",
-+	.match_table	= mpc83xx_wdt_match,
- 	.probe		= mpc83xx_wdt_probe,
- 	.remove		= __devexit_p(mpc83xx_wdt_remove),
--	.driver		= {
--		.name	= "mpc83xx_wdt",
--		.owner	= THIS_MODULE,
--	},
+@@ -193,6 +241,7 @@ static int __devexit mpc83xx_wdt_remove(struct of_device *ofdev)
+ 
+ static const struct of_device_id mpc83xx_wdt_match[] = {
+ 	{ .compatible = "mpc83xx_wdt", },
++	{ .compatible = "fsl,mpc8610-wdt", },
+ 	{},
  };
- 
- static int __init mpc83xx_wdt_init(void)
- {
--	return platform_driver_register(&mpc83xx_wdt_driver);
-+	return of_register_platform_driver(&mpc83xx_wdt_driver);
+ MODULE_DEVICE_TABLE(of, mpc83xx_wdt_match);
+@@ -214,11 +263,11 @@ static void __exit mpc83xx_wdt_exit(void)
+ 	of_unregister_platform_driver(&mpc83xx_wdt_driver);
  }
  
- static void __exit mpc83xx_wdt_exit(void)
- {
--	platform_driver_unregister(&mpc83xx_wdt_driver);
-+	of_unregister_platform_driver(&mpc83xx_wdt_driver);
- }
+-module_init(mpc83xx_wdt_init);
++subsys_initcall(mpc83xx_wdt_init);
+ module_exit(mpc83xx_wdt_exit);
  
- module_init(mpc83xx_wdt_init);
+ MODULE_AUTHOR("Dave Updegraff, Kumar Gala");
+-MODULE_DESCRIPTION("Driver for watchdog timer in MPC83xx uProcessor");
++MODULE_DESCRIPTION("Driver for watchdog timer in MPC83xx/MPC86xx uProcessor");
+ MODULE_LICENSE("GPL");
+ MODULE_ALIAS_MISCDEV(WATCHDOG_MINOR);
+ MODULE_ALIAS("platform:mpc83xx_wdt");
 -- 
 1.5.5.1
