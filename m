@@ -1,23 +1,32 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <kniht@us.ibm.com>
+Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 55819DE2E7
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 May 2008 02:53:43 +1000 (EST)
-Message-ID: <4829C5F6.8010206@freescale.com>
-Date: Tue, 13 May 2008 11:46:46 -0500
-From: Scott Wood <scottwood@freescale.com>
+	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 67856DE394
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 May 2008 03:07:24 +1000 (EST)
+Received: from d01relay07.pok.ibm.com (d01relay07.pok.ibm.com [9.56.227.147])
+	by e2.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m4DH7M8J018785
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 May 2008 13:07:22 -0400
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d01relay07.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m4DH7IXC241718
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 May 2008 13:07:18 -0400
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m4DH7E0f012966
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 May 2008 11:07:15 -0600
+Message-ID: <4829CAC3.30900@us.ibm.com>
+Date: Tue, 13 May 2008 12:07:15 -0500
+From: Jon Tollefson <kniht@us.ibm.com>
 MIME-Version: 1.0
-To: Jochen Friedrich <jochen@scram.de>
-Subject: Re: [PATCH] [POWERPC] Add i2c pins to dts and board setup
-References: <4825C445.4020004@scram.de>
-In-Reply-To: <4825C445.4020004@scram.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: "Kernel, Linux" <linux-kernel@vger.kernel.org>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Linux I2C <i2c@lm-sensors.org>, Jean Delvare <khali@linux-fr.org>
+To: linux-kernel@vger.kernel.org,
+	Linux Memory Management List <linux-mm@kvack.org>,
+	linuxppc-dev <linuxppc-dev@ozlabs.org>
+Subject: [PATCH 0/6] 16G and multi size hugetlb page support on powerpc
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Nick Piggin <npiggin@suse.de>, Nishanth Aravamudan <nacc@us.ibm.com>,
+	Andi Kleen <andi@firstfloor.org>, Paul Mackerras <paulus@samba.org>
+Reply-To: kniht@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,83 +36,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Jochen Friedrich wrote:
-> Initialize I2C pins on boards with CPM1/CPM2 controllers.
-> 
-> Signed-off-by: Jochen Friedrich <jochen@scram.de>
-> ---
->  arch/powerpc/boot/dts/mpc8272ads.dts         |   10 ++++++++++
->  arch/powerpc/boot/dts/mpc866ads.dts          |   10 ++++++++++
->  arch/powerpc/boot/dts/mpc885ads.dts          |   10 ++++++++++
->  arch/powerpc/platforms/82xx/mpc8272_ads.c    |    4 ++++
->  arch/powerpc/platforms/8xx/mpc86xads_setup.c |    4 ++++
->  arch/powerpc/platforms/8xx/mpc885ads_setup.c |    3 +++
->  6 files changed, 41 insertions(+), 0 deletions(-)
-> 
-> diff --git a/arch/powerpc/boot/dts/mpc8272ads.dts b/arch/powerpc/boot/dts/mpc8272ads.dts
-> index 46e2da3..57abcc1 100644
-> --- a/arch/powerpc/boot/dts/mpc8272ads.dts
-> +++ b/arch/powerpc/boot/dts/mpc8272ads.dts
-> @@ -217,6 +217,16 @@
->  				linux,network-index = <1>;
->  				fsl,cpm-command = <0x16200300>;
->  			};
-> +
-> +			i2c@11860 {
-> +				compatible = "fsl,mpc8272-i2c",
-> +					     "fsl,cpm2-i2c",
-> +					     "fsl,cpm-i2c";
-> +				reg = <11860 20 8afc 2>;
-> +				interrupts = <1 8>;
-> +				interrupt-parent = <&PIC>;
-> +				fsl,cpm-command = <29600000>;
-> +			};
->  		};
->  
->  		PIC: interrupt-controller@10c00 {
-> diff --git a/arch/powerpc/boot/dts/mpc866ads.dts b/arch/powerpc/boot/dts/mpc866ads.dts
-> index 765e43c..84c190e 100644
-> --- a/arch/powerpc/boot/dts/mpc866ads.dts
-> +++ b/arch/powerpc/boot/dts/mpc866ads.dts
-> @@ -171,6 +171,16 @@
->  				fsl,cpm-command = <0000>;
->  				linux,network-index = <1>;
->  			};
-> +
-> +			i2c@860 {
-> +				compatible = "fsl,mpc866-i2c",
-> +					     "fsl,cpm1-i2c",
-> +					     "fsl,cpm-i2c";
-> +				reg = <860 20 3c80 30>;
-> +				interrupts = <10>;
-> +				interrupt-parent = <&CPM_PIC>;
-> +				fsl,cpm-command = <0010>;
-> +			};
->  		};
->  	};
->  
-> diff --git a/arch/powerpc/boot/dts/mpc885ads.dts b/arch/powerpc/boot/dts/mpc885ads.dts
-> index 9895043..67d0e8d 100644
-> --- a/arch/powerpc/boot/dts/mpc885ads.dts
-> +++ b/arch/powerpc/boot/dts/mpc885ads.dts
-> @@ -215,6 +215,16 @@
->  				fsl,cpm-command = <0x80>;
->  				linux,network-index = <2>;
->  			};
-> +
-> +			i2c@860 {
-> +				compatible = "fsl,mpc885-i2c",
-> +					     "fsl,cpm1-i2c",
-> +					     "fsl,cpm-i2c";
-> +				reg = <860 20 3c80 30>;
-> +				interrupts = <10>;
-> +				interrupt-parent = <&CPM_PIC>;
-> +				fsl,cpm-command = <0010>;
-> +			};
->  		};
->  	};
->  
+This patch set builds on Nick Piggin's patches for multi size and giant 
+hugetlb page support of April 22.  The following set of patches adds 
+support for 16G huge pages on ppc64 and support for multiple huge page 
+sizes at the same time on ppc64.  Thus allowing 64K, 16M, and 16G huge 
+pages given a POWER5+ or later machine.
 
-These are v1 dts files -- you need an 0x  prefix on the hex numbers.
+New to this version of my patch is numerous bug fixes and cleanups, but 
+the biggest change is the support for multiple huge page sizes on power.
 
--Scott
+patch 1: changes to generic hugetlb to enable 16G pages on power
+patch 2: powerpc: adds function for allocating 16G pages
+patch 3: powerpc: setups 16G page locations found in device tree
+patch 4: powerpc: page definition support for 16G pages
+patch 5: check for overflow when user space is 32bit
+patch 6: powerpc: multiple huge page size support
+
+Jon
