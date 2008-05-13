@@ -1,24 +1,19 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 989E8DE181
+Return-Path: <gturnock@ivhs.com>
+Received: from postfix.fpelectronics.com (notes.fpelectronics.com
+	[66.46.242.98]) by ozlabs.org (Postfix) with ESMTP id 3F76DDDEFC
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 13 May 2008 01:56:25 +1000 (EST)
-Message-ID: <482868B1.9090005@freescale.com>
-Date: Mon, 12 May 2008 10:56:33 -0500
-From: Scott Wood <scottwood@freescale.com>
+	Tue, 13 May 2008 12:33:32 +1000 (EST)
+Received: from notes.fpelectronics.com (notes.fpelectronics.com [172.17.10.15])
+	by postfix.fpelectronics.com (Postfix) with ESMTP id D9C741D6288
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 12 May 2008 22:54:09 -0400 (EDT)
+Subject: Glenn Turnock Out-Of-Office May 13 through May 26 
+From: gturnock@ivhs.com
+To: linuxppc-embedded@ozlabs.org
+Message-ID: <OF72201050.0CC05EF4-ON85257448.000B2788-85257448.000B2788@fpelectronics.com>
+Date: Mon, 12 May 2008 22:01:50 -0400
 MIME-Version: 1.0
-To: Sanal Kumar V K <sanalvk@centillium.com>
-Subject: Re: Running a section of code from internal memory
-References: <4822E5CE.3090701@centillium.com>
-	<20080508153315.GC18740@ld0162-tx32.am.freescale.net>
-	<48285544.7040908@centillium.com>
-In-Reply-To: <48285544.7040908@centillium.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+Content-type: text/plain; charset=US-ASCII
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -29,17 +24,12 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Sanal Kumar V K wrote:
-> Now if I make the following entry in the linker script,
->   /* define L2 scratch here */
->   . = 0x9FC16800;
->   .l2_scratch         : { *(.l2_scratch) }
-> 
-> it says "collect2: ld returned 1 exit status".
 
-I'm guessing there was an earlier error message printed by ld?
+I will be out of the office starting Mon 05/12/2008 and will not return
+until Mon 05/26/2008.
 
-You probably located the L2 section too far away from the main section, 
-and it's trying to do short branches or other limited relocations.
+For VIIC Related issues, please contact Alastair Malarky at
+amalarky@ivhs.com
 
--Scott
+Thanks and Best Regards
+Glenn Turnock
