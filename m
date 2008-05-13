@@ -1,30 +1,22 @@
-Return-Path: <cjashfor@us.ibm.com>
-Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id CB3B2DDF58
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 May 2008 08:26:24 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e1.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m4DMQLfx024262
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 May 2008 18:26:21 -0400
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m4DMQLlr117558
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 May 2008 18:26:21 -0400
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
-	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m4DMQKqQ025443
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 May 2008 18:26:20 -0400
-Message-ID: <482A158A.2010005@us.ibm.com>
-Date: Tue, 13 May 2008 15:26:18 -0700
-From: Corey Ashford <cjashfor@us.ibm.com>
-MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org, Olof Johansson <olof@lixom.net>
-Subject: Re: Feedback requested on switching the exception wrapper used for
-	the PMU interrupt on ppc64
-References: <OFDA580598.87E2E65B-ON87257448.007AA3F0-88257448.007AB1E1@us.ibm.com>
-In-Reply-To: <OFDA580598.87E2E65B-ON87257448.007AA3F0-88257448.007AB1E1@us.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 75C13DDEEF
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 May 2008 09:32:45 +1000 (EST)
+Date: Wed, 14 May 2008 09:32:34 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: Re: [PATCH 1/6] [WATCHDOG] mpc83xx_wdt: convert to the OF platform
+	driver
+Message-Id: <20080514093234.495513b4.sfr@canb.auug.org.au>
+In-Reply-To: <20080513141454.GA15717@polina.dev.rtsoft.ru>
+References: <20080513141411.GA8981@polina.dev.rtsoft.ru>
+	<20080513141454.GA15717@polina.dev.rtsoft.ru>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Wed__14_May_2008_09_32_34_+1000_6T0CYARHgcbzKwGT"
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
+	Wim Van Sebroeck <wim@iguana.be>, Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,98 +26,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Corey J Ashford wrote:
-> On May 13, 2008, at 5:05 PM, Corey Ashford wrote:
-> 
->> Hello,
->>
->> One of the things I've been working on is porting perfmon2 to ppc64.
->> We've made a fair amount of progress on it, and support is available
->> in libpfm and the perfmon2 kernel patch.
->>
->> One of the things we had to work around was the "lazy interrupt
->> disabling" mechanism in ppc64 Linux.  The problem was that the PMU
->> exception handler (0xf00) uses the STD_EXCEPTION_PSERIES wrapper,
->> which does not support lazy interrupt disabling.
->>
->> This is desirable for Oprofile's use of the PMU since its handler is
->> fairly simple and being able to profile interrupt protected code is
->> desirable.  However, it causes problems for perfmon2, since the
->> operations it performs on the thread of its PMU interrupt handler
->> can cause a deadlock condition (it can end up calling spin_lock, for
->> example).
->>
->> Initially, to work around this, we created special spin_lock_irqsave
->> and spin_unlock_irqrestore macros for perfmon2 which we could
->> override for POWER to define them as functions which do hard
->> disables and restores.
->>
->> However, not all of the places that we need to disable interrupts
->> were occurring from within the perfmon2 code.  Specifically, getting
->> PMU interrupts in the middle of a schedule() call (where interrupts
->> were expected to be disabled) was causing kernel hangs.
->>
->> To fix this, I've gone back and removed the special spin_lock macros
->> we defined in perfmon2 and have ifdef'd arch/powerpc/kernel/
->> head_64.S file as follows:
->>
->> /*** pSeries interrupt support ***/
->>
->>        /* moved from 0xf00 */
->> + #ifdef CONFIG_PERFMON
->> +         MASKABLE_EXCEPTION_PSERIES(., performance_monitor)
->> + #else
->>        STD_EXCEPTION_PSERIES(., performance_monitor)
->> + #endif
->>
->> /*
->> * An interrupt came in while soft-disabled; clear EE in SRR1,
->> * clear paca->hard_enabled and return.
->>
->> The downside of this change is that if someone is using Oprofile and
->> they have enabled perfmon in their kernel, they will not get profile
->> samples that occur in interrupt-protected regions of the kernel.
->> However, they still can by configuring perfmon out of their kernel.
->>
->> What do you think of this idea?  Is this something that you would
->> object to when perfmon2 does go upstream to LKML?  I think we'd want
->> to add some documentation somewhere that describes this side-effect
->> of enabling perfmon in the ppc64 Linux kernel.  Do you have
->> suggestions on where that should go?  I'm thinking perhaps in both
->> the basic_profiling.txt and perfmon2.txt files in the Documentation
->> subdirectory.
-> 
-> Since you didn't post the perfmon2 code, I'll ask instead of go look:
-> 
-> Do you have a single entry point from performance_monitor into
-> perfmon2? If so, it's nicer to check and see if interrupts are soft
-> disabled right upon entry (before taking any locks, etc), and if they
-> are just return without doing more work.
-> 
-> PMU interrupts generally won't re-arm themselves so you'll obviously
-> have to deal with that as well but I'm sure you're already aware of
-> that...
-> 
-> 
-> -Olof
+--Signature=_Wed__14_May_2008_09_32_34_+1000_6T0CYARHgcbzKwGT
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-The perfmon2 code is available here: 
-http://sourceforge.net/project/showfiles.php?group_id=144822
+Hi Anton,
 
-perfmon2's interrupt handler does have a single entry point.  Could I 
-somehow mimic what the MASKABLE_EXCEPTION_PSERIES macro does inside of 
-the perfmon2 interrupt handler?  Are there examples of this I can look at?
+On Tue, 13 May 2008 18:14:54 +0400 Anton Vorontsov <avorontsov@ru.mvista.co=
+m> wrote:
+>
+> +static struct of_platform_driver mpc83xx_wdt_driver =3D {
+> +	.name		=3D "mpc83xx_wdt",
+> +	.match_table	=3D mpc83xx_wdt_match,
+>  	.probe		=3D mpc83xx_wdt_probe,
+>  	.remove		=3D __devexit_p(mpc83xx_wdt_remove),
+> -	.driver		=3D {
+> -		.name	=3D "mpc83xx_wdt",
+> -		.owner	=3D THIS_MODULE,
+> -	},
 
-That would give us the best of both worlds.
+You should leave this as it was because the name and owner fields are
+being removed from struct of_platform_driver in favour of those embedded in
+the .driver.
 
-Regards,
+Maybe I should add a comment to the structure definition.  Or maybe it is
+time to actually remove them.
 
-- Corey
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
--- 
-Corey Ashford
-Software Engineer
-IBM Linux Technology Center, Linux Toolchain
-Beaverton, OR
-503-578-3507
-cjashfor@us.ibm.com
+--Signature=_Wed__14_May_2008_09_32_34_+1000_6T0CYARHgcbzKwGT
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFIKiUXTgG2atn1QN8RAkYJAJ9RMqmbmiOaU9/GwGHdiuMZA9+LHgCfXe5Y
+PljSHpJCG3E4BEcY955rF6U=
+=lEuP
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__14_May_2008_09_32_34_+1000_6T0CYARHgcbzKwGT--
