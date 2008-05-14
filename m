@@ -1,12 +1,17 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18474.27384.524310.787499@cargo.ozlabs.ibm.com>
-Date: Wed, 14 May 2008 14:30:48 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] Defer processing of interrupts when the CPU wakes from sleep
-	mode
+Return-Path: <kou.ishizaki@toshiba.co.jp>
+Received: from imx2.toshiba.co.jp (inet-tsb5.toshiba.co.jp [202.33.96.24])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 0ACB8DDE0E
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 May 2008 19:05:27 +1000 (EST)
+Date: Wed, 14 May 2008 18:05:19 +0900 (JST)
+Message-Id: <20080514.180519.-1300524066.kouish@swc.toshiba.co.jp>
+To: paulus@samba.org
+Subject: [PATCH] cell: fix section mismatch warnings
+From: Kou Ishizaki <kou.ishizaki@toshiba.co.jp>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,64 +21,63 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This provides a way to defer processing of an interrupt that wakes the
-processor out of sleep mode.  On 32-bit platforms that use an
-interrupt to wake the processor, we have to have interrupts enabled in
-hardware at the point where we go to sleep, otherwise the processor
-will never wake up.  However, because interrupts are logically
-disabled at this point, we don't want to process the interrupt
-straight away.
+Fix following warnings:
+WARNING: arch/powerpc/platforms/cell/built-in.o(.devinit.text+0x9c): Section mismatch in reference from the function .cell_setup_phb() to the function .init.text:.iowa_register_bus()
+WARNING: arch/powerpc/platforms/cell/built-in.o(.devinit.text+0xa4): Section mismatch in reference from the function .cell_setup_phb() to the function .init.text:.io_workaround_init()
 
-This is handled by setting the _TLF_SLEEPING flag.  When we get an
-interrupt and _TLF_SLEEPING is set, we firstly clear the MSR_EE
-(external interrupt enable) bit in the saved MSR value, and secondly
-we then return to the address in the link register, like we do for
-_TLF_NAPPING, but without actually handling the interrupt.
-
-Note that this is handled somewhat differently on powerbooks, so this
-new code will only be used on non-Apple machines.
-
-Signed-off-by: Paul Mackerras <paulus@samba.org>
+Signed-off-by: Kou Ishizaki <kou.ishizaki@toshiba.co.jp>
 ---
+ arch/powerpc/platforms/cell/io-workarounds.c |    6 +++---
+ arch/powerpc/platforms/cell/io-workarounds.h |    6 +++---
+ 2 files changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
-index 84c8686..162500f 100644
---- a/arch/powerpc/kernel/entry_32.S
-+++ b/arch/powerpc/kernel/entry_32.S
-@@ -146,6 +146,7 @@ transfer_to_handler:
- 	lwz	r12,TI_LOCAL_FLAGS(r9)
- 	mtcrf	0x01,r12
- 	bt-	31-TLF_NAPPING,4f
-+	bt-	31-TLF_SLEEPING,7f
- #endif /* CONFIG_6xx */
- 	.globl transfer_to_handler_cont
- transfer_to_handler_cont:
-@@ -163,6 +164,13 @@ transfer_to_handler_cont:
- 4:	rlwinm	r12,r12,0,~_TLF_NAPPING
- 	stw	r12,TI_LOCAL_FLAGS(r9)
- 	b	power_save_6xx_restore
-+
-+7:	rlwinm	r12,r12,0,~_TLF_SLEEPING
-+	stw	r12,TI_LOCAL_FLAGS(r9)
-+	lwz	r9,_MSR(r11)		/* if sleeping, clear MSR.EE */
-+	rlwinm	r9,r9,0,~MSR_EE
-+	lwz	r12,_LINK(r11)		/* and return to address in LR */
-+	b	fast_exception_return
- #endif
+diff --git a/arch/powerpc/platforms/cell/io-workarounds.c b/arch/powerpc/platforms/cell/io-workarounds.c
+index 3b84e8b..b5f84e8 100644
+--- a/arch/powerpc/platforms/cell/io-workarounds.c
++++ b/arch/powerpc/platforms/cell/io-workarounds.c
+@@ -118,7 +118,7 @@ static void iowa_##name at					\
+ #undef DEF_PCI_AC_RET
+ #undef DEF_PCI_AC_NORET
  
- /*
-diff --git a/include/asm-powerpc/thread_info.h b/include/asm-powerpc/thread_info.h
-index d030f5c..1cd8c8f 100644
---- a/include/asm-powerpc/thread_info.h
-+++ b/include/asm-powerpc/thread_info.h
-@@ -147,8 +147,10 @@ static inline struct thread_info *current_thread_info(void)
- /* Bits in local_flags */
- /* Don't move TLF_NAPPING without adjusting the code in entry_32.S */
- #define TLF_NAPPING		0	/* idle thread enabled NAP mode */
-+#define TLF_SLEEPING		1	/* suspend code enabled SLEEP mode */
+-static struct ppc_pci_io __initdata iowa_pci_io = {
++static const struct ppc_pci_io __devinitconst iowa_pci_io = {
  
- #define _TLF_NAPPING		(1 << TLF_NAPPING)
-+#define _TLF_SLEEPING		(1 << TLF_SLEEPING)
+ #define DEF_PCI_AC_RET(name, ret, at, al, space, aa)	.name = iowa_##name,
+ #define DEF_PCI_AC_NORET(name, at, al, space, aa)	.name = iowa_##name,
+@@ -146,7 +146,7 @@ static void __iomem *iowa_ioremap(unsigned long addr, unsigned long size,
+ }
  
- #endif /* __KERNEL__ */
+ /* Regist new bus to support workaround */
+-void __init iowa_register_bus(struct pci_controller *phb,
++void __devinit iowa_register_bus(struct pci_controller *phb,
+ 			struct ppc_pci_io *ops,
+ 			int (*initfunc)(struct iowa_bus *, void *), void *data)
+ {
+@@ -173,7 +173,7 @@ void __init iowa_register_bus(struct pci_controller *phb,
+ }
  
+ /* enable IO workaround */
+-void __init io_workaround_init(void)
++void __devinit io_workaround_init(void)
+ {
+ 	static int io_workaround_inited;
+ 
+diff --git a/arch/powerpc/platforms/cell/io-workarounds.h b/arch/powerpc/platforms/cell/io-workarounds.h
+index 79d8ed3..6efc778 100644
+--- a/arch/powerpc/platforms/cell/io-workarounds.h
++++ b/arch/powerpc/platforms/cell/io-workarounds.h
+@@ -31,9 +31,9 @@ struct iowa_bus {
+ 	void   *private;
+ };
+ 
+-void __init io_workaround_init(void);
+-void __init iowa_register_bus(struct pci_controller *, struct ppc_pci_io *,
+-			      int (*)(struct iowa_bus *, void *), void *);
++void __devinit io_workaround_init(void);
++void __devinit iowa_register_bus(struct pci_controller *, struct ppc_pci_io *,
++				 int (*)(struct iowa_bus *, void *), void *);
+ struct iowa_bus *iowa_mem_find_bus(const PCI_IO_ADDR);
+ struct iowa_bus *iowa_pio_find_bus(unsigned long);
+ 
+-- 
+1.5.4.1
