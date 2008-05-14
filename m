@@ -1,22 +1,12 @@
-Return-Path: <npiggin@suse.de>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 128BEDDDFF
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 May 2008 14:25:50 +1000 (EST)
-Date: Wed, 14 May 2008 06:25:44 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: kniht@linux.vnet.ibm.com
-Subject: Re: [PATCH 0/6] 16G and multi size hugetlb page support on powerpc
-Message-ID: <20080514042544.GA23578@wotan.suse.de>
-References: <4829CAC3.30900@us.ibm.com>
-Mime-Version: 1.0
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4829CAC3.30900@us.ibm.com>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, linux-kernel@vger.kernel.org,
-	Linux Memory Management List <linux-mm@kvack.org>,
-	Andi Kleen <andi@firstfloor.org>, Paul Mackerras <paulus@samba.org>,
-	Nishanth Aravamudan <nacc@us.ibm.com>
+Message-ID: <18474.27384.524310.787499@cargo.ozlabs.ibm.com>
+Date: Wed, 14 May 2008 14:30:48 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] Defer processing of interrupts when the CPU wakes from sleep
+	mode
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,31 +16,64 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, May 13, 2008 at 12:07:15PM -0500, Jon Tollefson wrote:
-> This patch set builds on Nick Piggin's patches for multi size and giant 
-> hugetlb page support of April 22.  The following set of patches adds 
-> support for 16G huge pages on ppc64 and support for multiple huge page 
-> sizes at the same time on ppc64.  Thus allowing 64K, 16M, and 16G huge 
-> pages given a POWER5+ or later machine.
-> 
-> New to this version of my patch is numerous bug fixes and cleanups, but 
-> the biggest change is the support for multiple huge page sizes on power.
-> 
-> patch 1: changes to generic hugetlb to enable 16G pages on power
-> patch 2: powerpc: adds function for allocating 16G pages
-> patch 3: powerpc: setups 16G page locations found in device tree
-> patch 4: powerpc: page definition support for 16G pages
-> patch 5: check for overflow when user space is 32bit
-> patch 6: powerpc: multiple huge page size support
+This provides a way to defer processing of an interrupt that wakes the
+processor out of sleep mode.  On 32-bit platforms that use an
+interrupt to wake the processor, we have to have interrupts enabled in
+hardware at the point where we go to sleep, otherwise the processor
+will never wake up.  However, because interrupts are logically
+disabled at this point, we don't want to process the interrupt
+straight away.
 
-Hi Jon,
+This is handled by setting the _TLF_SLEEPING flag.  When we get an
+interrupt and _TLF_SLEEPING is set, we firstly clear the MSR_EE
+(external interrupt enable) bit in the saved MSR value, and secondly
+we then return to the address in the link register, like we do for
+_TLF_NAPPING, but without actually handling the interrupt.
 
-Thanks very much. I'll put these at the end of my patchset and attempt
-to keep them building if I make changes to the core code (have to spend
-a bit of time catching up with the review comments from last round).
+Note that this is handled somewhat differently on powerbooks, so this
+new code will only be used on non-Apple machines.
 
-I'll send out another patchset for review in a day or so after I catch
-up, and then hopefully get it merged in -mm for 2.6.27.
+Signed-off-by: Paul Mackerras <paulus@samba.org>
+---
 
-Thanks,
-Nick
+diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
+index 84c8686..162500f 100644
+--- a/arch/powerpc/kernel/entry_32.S
++++ b/arch/powerpc/kernel/entry_32.S
+@@ -146,6 +146,7 @@ transfer_to_handler:
+ 	lwz	r12,TI_LOCAL_FLAGS(r9)
+ 	mtcrf	0x01,r12
+ 	bt-	31-TLF_NAPPING,4f
++	bt-	31-TLF_SLEEPING,7f
+ #endif /* CONFIG_6xx */
+ 	.globl transfer_to_handler_cont
+ transfer_to_handler_cont:
+@@ -163,6 +164,13 @@ transfer_to_handler_cont:
+ 4:	rlwinm	r12,r12,0,~_TLF_NAPPING
+ 	stw	r12,TI_LOCAL_FLAGS(r9)
+ 	b	power_save_6xx_restore
++
++7:	rlwinm	r12,r12,0,~_TLF_SLEEPING
++	stw	r12,TI_LOCAL_FLAGS(r9)
++	lwz	r9,_MSR(r11)		/* if sleeping, clear MSR.EE */
++	rlwinm	r9,r9,0,~MSR_EE
++	lwz	r12,_LINK(r11)		/* and return to address in LR */
++	b	fast_exception_return
+ #endif
+ 
+ /*
+diff --git a/include/asm-powerpc/thread_info.h b/include/asm-powerpc/thread_info.h
+index d030f5c..1cd8c8f 100644
+--- a/include/asm-powerpc/thread_info.h
++++ b/include/asm-powerpc/thread_info.h
+@@ -147,8 +147,10 @@ static inline struct thread_info *current_thread_info(void)
+ /* Bits in local_flags */
+ /* Don't move TLF_NAPPING without adjusting the code in entry_32.S */
+ #define TLF_NAPPING		0	/* idle thread enabled NAP mode */
++#define TLF_SLEEPING		1	/* suspend code enabled SLEEP mode */
+ 
+ #define _TLF_NAPPING		(1 << TLF_NAPPING)
++#define _TLF_SLEEPING		(1 << TLF_SLEEPING)
+ 
+ #endif /* __KERNEL__ */
+ 
