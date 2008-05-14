@@ -1,29 +1,22 @@
-Return-Path: <DaveLiu@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id BC88DDDE10
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 May 2008 22:03:18 +1000 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by de01egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
-	m4EC3Bgg025059
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 May 2008 05:03:12 -0700 (MST)
-Received: from zch01exm21.fsl.freescale.net (zch01exm21.ap.freescale.net
-	[10.192.129.205])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id m4EC39lJ029518
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 May 2008 07:03:10 -0500 (CDT)
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id D5E34DDED7
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 May 2008 22:25:48 +1000 (EST)
+Date: Wed, 14 May 2008 16:25:44 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [PATCH 3/6] [WATCHDOG] mpc83xx_wdt: rename to mpc8xxx_wdt
+Message-ID: <20080514122544.GA8746@polina.dev.rtsoft.ru>
+References: <20080513141411.GA8981@polina.dev.rtsoft.ru>
+	<20080513141459.GC15717@polina.dev.rtsoft.ru>
+	<20080514114523.ae20b0da.sfr@canb.auug.org.au>
+	<20080514114805.61e1d50f.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Subject: RE: [PATCH] Defer processing of interrupts when the CPU wakes from
-	sleepmode
-Date: Wed, 14 May 2008 20:03:09 +0800
-Message-ID: <58A20A281BAF1047B4EAE68DE5C0BDC2F168CF@zch01exm21.fsl.freescale.net>
-In-Reply-To: <18474.27384.524310.787499@cargo.ozlabs.ibm.com>
-References: <18474.27384.524310.787499@cargo.ozlabs.ibm.com>
-From: "Liu Dave" <DaveLiu@freescale.com>
-To: "Paul Mackerras" <paulus@samba.org>, <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <20080514114805.61e1d50f.sfr@canb.auug.org.au>
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
+	Wim Van Sebroeck <wim@iguana.be>, Timur Tabi <timur@freescale.com>
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,32 +26,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-<snip>
+On Wed, May 14, 2008 at 11:48:05AM +1000, Stephen Rothwell wrote:
+> Hi Anton,
+> 
+> On Wed, 14 May 2008 11:45:23 +1000 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+> >
+> > Doing this status with "git diff -M --stat" would show us if the file was
+> > just renamed or if there were some changes as well ...
+> 
+> Not that I don't trust you, just for future reference.
 
-> This provides a way to defer processing of an interrupt that wakes the
-> processor out of sleep mode.  On 32-bit platforms that use an
-> interrupt to wake the processor, we have to have interrupts enabled in
-> hardware at the point where we go to sleep, otherwise the processor
-> will never wake up.  However, because interrupts are logically
-> disabled at this point, we don't want to process the interrupt
-> straight away.
->=20
-> This is handled by setting the _TLF_SLEEPING flag.  When we get an
-> interrupt and _TLF_SLEEPING is set, we firstly clear the MSR_EE
-> (external interrupt enable) bit in the saved MSR value, and secondly
-> we then return to the address in the link register, like we do for
-> _TLF_NAPPING, but without actually handling the interrupt.
->=20
-> Note that this is handled somewhat differently on powerbooks, so this
-> new code will only be used on non-Apple machines.
+I use git-format-patch. And -M option would generate the whole
+patch in the "git patch format", which you can not apply with patch(1)
+(I also recalling that there was someone protesting wrt sending the
+patches in the git patch format, since not everybody use git).
 
-Thanks Paul for this patch. The patch looks like very nice.
-But the users have to be aware of the LINK register (LR) not corrupted.
+Though, you can still check me if you want to, git generates useful
+headers in the patch itself:
 
-So, does power management patch from Scott Wood need to respin?
+diff --git a/drivers/watchdog/mpc83xx_wdt.c b/drivers/watchdog/mpc83xx_wdt.c
+deleted file mode 100644
+index 3534ae0..0000000
+....
+diff --git a/drivers/watchdog/mpc8xxx_wdt.c b/drivers/watchdog/mpc8xxx_wdt.c
+new file mode 100644
+index 0000000..3534ae0
 
-BTW, why the fast_exception_return does *not* need clear the reservation
-with stwcx.?
+The index stuff are hashes. They match. ;-)
 
-Thanks,
-Dave
+But sure, it would be great if git-format-patch could generate
+diffstat in the git format and leave the patch itself patch(1)-compatible.
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
