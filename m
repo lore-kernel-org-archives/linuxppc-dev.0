@@ -1,21 +1,23 @@
 Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
+	(Client CN "az33egw01.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 0A86CDDF13
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 May 2008 09:24:49 +1000 (EST)
-Message-ID: <482B74D7.7080508@freescale.com>
-Date: Wed, 14 May 2008 18:25:11 -0500
+	by ozlabs.org (Postfix) with ESMTPS id 51E8BDDEDB
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 May 2008 09:27:23 +1000 (EST)
+Message-ID: <482B7588.1010201@freescale.com>
+Date: Wed, 14 May 2008 18:28:08 -0500
 From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
 To: akpm@linux-foundation.org
-Subject: Re: [patch 2/4] powerpc: add i2c pins to dts and board setup
-References: <200805142312.m4ENCrIb026259@imap1.linux-foundation.org>
-In-Reply-To: <200805142312.m4ENCrIb026259@imap1.linux-foundation.org>
+Subject: Re: [patch 1/1] fsldma: the MPC8377MDS board device tree node for
+	fsldma	driver
+References: <200805142317.m4ENHNlm026461@imap1.linux-foundation.org>
+In-Reply-To: <200805142317.m4ENHNlm026461@imap1.linux-foundation.org>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Cc: shannon.nelson@intel.com, linuxppc-dev@ozlabs.org, paulus@samba.org,
+	galak@gate.crashing.org, dan.j.williams@intel.com, wei.zhang@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,45 +28,59 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 akpm@linux-foundation.org wrote:
-> From: Jochen Friedrich <jochen@scram.de>
+> From: Zhang Wei <wei.zhang@freescale.com>
 > 
-> Initialize I2C pins on boards with CPM1/CPM2 controllers.
+> The fsldma driver is tested on MPC8377MDS board.  The patch adds fsldma driver
+> support into MPC8377MDS device tree.
 > 
-> Signed-off-by: Jochen Friedrich <jochen@scram.de>
+> Signed-off-by: Zhang Wei <wei.zhang@freescale.com>
+> Cc: "Nelson, Shannon" <shannon.nelson@intel.com>
+> Cc: Dan Williams <dan.j.williams@intel.com>
+> Cc: Kumar Gala <galak@gate.crashing.org>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 > Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 > ---
 > 
->  arch/powerpc/boot/dts/mpc8272ads.dts         |   10 ++++++++++
->  arch/powerpc/boot/dts/mpc866ads.dts          |   10 ++++++++++
->  arch/powerpc/boot/dts/mpc885ads.dts          |   10 ++++++++++
->  arch/powerpc/platforms/82xx/mpc8272_ads.c    |    4 ++++
->  arch/powerpc/platforms/8xx/mpc86xads_setup.c |    4 ++++
->  arch/powerpc/platforms/8xx/mpc885ads_setup.c |    3 +++
->  6 files changed, 41 insertions(+)
+>  arch/powerpc/boot/dts/mpc8377_mds.dts |   27 ++++++++++++++++++++++++
+>  1 file changed, 27 insertions(+)
 > 
-> diff -puN arch/powerpc/boot/dts/mpc8272ads.dts~powerpc-add-i2c-pins-to-dts-and-board-setup arch/powerpc/boot/dts/mpc8272ads.dts
-> --- a/arch/powerpc/boot/dts/mpc8272ads.dts~powerpc-add-i2c-pins-to-dts-and-board-setup
-> +++ a/arch/powerpc/boot/dts/mpc8272ads.dts
-> @@ -217,6 +217,16 @@
->  				linux,network-index = <1>;
->  				fsl,cpm-command = <0x16200300>;
+> diff -puN arch/powerpc/boot/dts/mpc8377_mds.dts~fsldma-the-mpc8377mds-board-device-tree-node-for-fsldma-driver arch/powerpc/boot/dts/mpc8377_mds.dts
+> --- a/arch/powerpc/boot/dts/mpc8377_mds.dts~fsldma-the-mpc8377mds-board-device-tree-node-for-fsldma-driver
+> +++ a/arch/powerpc/boot/dts/mpc8377_mds.dts
+> @@ -295,6 +295,33 @@
 >  			};
-> +
-> +			i2c@11860 {
-> +				compatible = "fsl,mpc8272-i2c",
-> +					     "fsl,cpm2-i2c",
-> +					     "fsl,cpm-i2c";
-> +				reg = <11860 20 8afc 2>;
-> +				interrupts = <1 8>;
-> +				interrupt-parent = <&PIC>;
-> +				fsl,cpm-command = <29600000>;
+>  		};
+>  
+> +		dma@82a8 {
+> +			#address-cells = <1>;
+> +			#size-cells = <1>;
+> +			compatible = "fsl,mpc8349-dma";
+> +			reg = <0x82a8 4>;
+> +			ranges = <0 0x8100 0x1a8>;
+> +			interrupt-parent = <&ipic>;
+> +			interrupts = <0x47 8>;
+> +			cell-index = <0>;
+> +			dma-channel@0 {
+> +				compatible = "fsl,mpc8349-dma-channel";
+> +				reg = <0 0x80>;
+> +			};
+> +			dma-channel@80 {
+> +				compatible = "fsl,mpc8349-dma-channel";
+> +				reg = <0x80 0x80>;
+> +			};
+> +			dma-channel@100 {
+> +				compatible = "fsl,mpc8349-dma-channel";
+> +				reg = <0x100 0x80>;
+> +			};
+> +			dma-channel@180 {
+> +				compatible = "fsl,mpc8349-dma-channel";
+> +				reg = <0x180 0x28>;
 > +			};
 
-As I pointed out earlier, this patch is sticking dts-v0 style constants 
-into a dts-v1 file.  It will not work.
-
-We also need to document CPM2 i2c as an exception to the normal 
-interpretation of the second resource for a CPM device in 
-booting-without-of.txt.
+According to booting-without-of.txt, the interrupts property should be 
+repeated in each channel.  The driver also needs to be fixed to remember 
+whether it registered a DMA-block-level interrupt handler already, and 
+not try to register a channel interrupt.
 
 -Scott
