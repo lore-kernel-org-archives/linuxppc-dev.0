@@ -1,18 +1,21 @@
-Return-Path: <will.kritikos@gmail.com>
-Received: from ik-out-1112.google.com (ik-out-1112.google.com [66.249.90.177])
-	by ozlabs.org (Postfix) with ESMTP id 51136DDE2A
+Return-Path: <dwh@ovro.caltech.edu>
+Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail.ovro.caltech.edu",
+	Issuer "mail.ovro.caltech.edu" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 0A389DE1B6
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 15 May 2008 02:03:28 +1000 (EST)
-Received: by ik-out-1112.google.com with SMTP id c21so795841ika.1
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 14 May 2008 09:03:26 -0700 (PDT)
-Message-ID: <3ee6f9e50805140903o381346f5kddbce29a3d06ba1f@mail.gmail.com>
-Date: Wed, 14 May 2008 12:03:25 -0400
-From: "Will Kritikos" <will.kritikos@gmail.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: xilinx_hwicap driver problems
+	Thu, 15 May 2008 02:16:15 +1000 (EST)
+Message-ID: <482B0F7B.3020905@ovro.caltech.edu>
+Date: Wed, 14 May 2008 09:12:43 -0700
+From: David Hawkins <dwh@ovro.caltech.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: =?windows-1252?Q?=3F=3F?= <guojin02@tsinghua.org.cn>
+Subject: Re: How to test the DDR memory with burst visit mode?
+References: <410764342.21662@tsinghua.org.cn>
+In-Reply-To: <410764342.21662@tsinghua.org.cn>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -23,30 +26,50 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I am having some trouble using the xilinx_hwicap driver in Linux.
-I am using version 2.6.24-rc8-xlnx of the Linux kernel from the Xilinx
-GIT repository.
-The xilinx_hwicap driver is statically compiled in - not a loadable module.
-I am using the opb_hwicap device on a V4FX60 FPGA, Linux running on the PPC405.
 
-The driver successfully is initialized on boot - I added a printk to
-the init function to verify this.   However, as far as I can tell, the
-probe function is never called.  There is nothing in dmesg from the
-icap driver.
+> I designed my MPC8360E board with 1GBytes DDR-1 memory, I built two demo
+> boards, one is 533/266/400, the other is 660/330/400. The lower frequancy board is
+> no problem for our program, but the higher frequency board is always problem about
+> the data transmit on ethernet. 
+> I want to test 1GBytes DDR-1 memory, I want to know whether or not the DDR is
+> stable and accuracy. Could you tell me a simple way that test my DDR memory? 
 
-After boot, the following files exist in /sys
+I use MPC8349E, so the following should be similar.
 
-/sys/bus/platform/xilinx_icap.0
-/sys/bus/platform/drivers/icap/bind
-/sys/bus/platform/drivers/icap/uevent
-/sys/bus/platform/drivers/icap/unbind
-/sys/devices/platform/xilinx_icap.0
+1) If your board is a PCI agent.
 
-I can make a device node /dev/icap, major number 259 minor number 0,
-and copy partial bitstreams to it, but again nothing happens, and no
-output in dmesg.
+    You can run code on a host CPU that can view the MPC8360 board
+    over the PCI bus.
 
-Any help is appreciated.  I am probably overlooking something simple.
+    Setup the MPC8360 to come out of reset with the core held
+    in reset.
 
-Thanks,
-Will Kritikos
+    Program the DDR controller from the host CPU.
+
+    Program the DMA controller to move data to/from the board DDR
+    from/to the host memory (PCI transactions).
+
+    Sweep the DDR MCK and DQS clock skew registers across their
+    ranges and check for memory errors.
+
+    You should get two or three settings that work ok.
+
+2) If your board is a PCI host, then its a bit trickier, as you
+    ideally want to generate burst traffic to test the DDR controller,
+    and since you need to reprogram the DDR controller, you can not
+    be running code there, eg. U-Boot.
+
+    If the MPC8360 has an I/O Sequencer (IOS) as on the MPC8349E, then
+    I think you should be able to write some code that DMAs from
+    Flash to DDR. The IOS should copy the data first to its FIFO,
+    and then to the DDR, so it should generate a burst.
+
+    If you have a BDI2000, you should be able to manually program
+    the DDR controller and the DMA controller. If you don't, just
+    write some simple code that runs from the startup vector,
+    eg. copy the contents of start.S up until the stack-in-dcache
+    trick, and then you can write some C-code.
+
+Hope that helps.
+Cheers,
+Dave
