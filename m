@@ -1,20 +1,23 @@
-Return-Path: <j.borkhuis@dutchspace.nl>
-Received: from kirk.dutchspace.nl (kirk.dutchspace.nl [193.200.147.14])
-	by ozlabs.org (Postfix) with ESMTP id 2A16EDDE0E
+Return-Path: <jacmet@gmail.com>
+Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.185])
+	by ozlabs.org (Postfix) with ESMTP id F3294DDE11
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 14 May 2008 16:28:13 +1000 (EST)
-Message-ID: <482A8446.2030309@dutchspace.nl>
-Date: Wed, 14 May 2008 08:18:46 +0200
-From: Johan Borkhuis <j.borkhuis@dutchspace.nl>
+	Wed, 14 May 2008 17:07:32 +1000 (EST)
+Received: by nf-out-0910.google.com with SMTP id e27so1679331nfd.9
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 14 May 2008 00:07:30 -0700 (PDT)
+To: Jens Gehrlein <sew_s@tqs.de>
+Subject: Re: smc911x: how to call the driver?
+References: <4829BC19.5000909@tqs.de>
+From: Peter Korsgaard <jacmet@sunsite.dk>
+Date: Wed, 14 May 2008 09:07:24 +0200
+In-Reply-To: <4829BC19.5000909@tqs.de> (Jens Gehrlein's message of "Tue\,
+	13 May 2008 18\:04\:41 +0200")
+Message-ID: <87hcd1749f.fsf@macbook.be.48ers.dk>
 MIME-Version: 1.0
-To: MingLiu <eemingliu@hotmail.com>
-Subject: Re: mmap problem in device driver and application program.
-References: <BAY138-W55519F961B3A01D0B8A167B2D00@phx.gbl>	<1210266109.3755.8.camel@localhost.localdomain>	<BAY138-W36C7249F532D111A1DC508B2D00@phx.gbl>
-	<1210366552.3755.21.camel@localhost.localdomain>
-	<BAY138-W368A781D323F0E5E4D0BF3B2CF0@phx.gbl>
-In-Reply-To: <BAY138-W368A781D323F0E5E4D0BF3B2CF0@phx.gbl>
-Content-Type: text/plain; charset=GB2312
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+Sender: Peter Korsgaard <jacmet@gmail.com>
+Cc: linuxppc-embedded Mailinglist <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -25,25 +28,43 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-MingLiu wrote:
-> Dear Dave,
->   
->> If you are using memory that is not under the kernel's memory management> you will need to use something other than remap_pfn_range.> 
->>     
-> Happenly and unfortunately we are using the memory space out of the control from the kernel. We have 2GB memory on the board and only 64(or 32) MB is reserved for the kernel. The rest large space is for the data buffering or LUT use. In my question, the LUT memory is located in the rest part rather than the kernel memory area. 
->  
-> Any more suggestion on how to mmap this LUT area? Any idea will be valuable for a beginner like me. Thanks in advance. 
->   
+>>>>> "Jens" == Jens Gehrlein <sew_s@tqs.de> writes:
 
-If this is physical memory that is not controlled by the kernel you
-could also use the /dev/mem device. You could do something like:
+ Jens> Hi,
+ Jens> on our board a SMSC LAN9215i is connected to an i.MX31 ARM
+ Jens> processor. My hope is to get the smc911x driver run on this chip. The
+ Jens> LAN921x data sheets say that existing 911x drivers should work.
 
-memFd = open("/dev/mem", O_RDWR);
-memBuf = mmap(0, <Memory size>, PROT_READ | PROT_WRITE, MAP_SHARED,
-memFd, <Physical address of memory);
+Why are you asking this in a powerpc list?
 
-which maps the physical memory into user space, without the need for a
-special device driver or mmap implementation.
+ Jens> My next problem is:
+ Jens> Where and when get the functions smc911x_drv_probe() and
+ Jens> smc911x_init() called? Any hints?
 
-Kind regards,
-Johan Borkhuis
+You need to register a struct platform_device in your platform code,
+E.G. something like:
+
+static struct resource smc911x_resources[] = {
+        [0] = {
+                .start  = 0x8e000000,
+                .end    = 0x8e0000ff,
+                .flags  = IORESOURCE_MEM,
+        },
+        [1] = {
+                .start  = 4,
+                .end    = 4,
+                .flags  = IORESOURCE_IRQ,
+        },
+};
+
+static struct platform_device thinlite_eth = {
+        .name                   = "smc911x",
+        .id                     = 0,
+        .num_resources          = ARRAY_SIZE(smc911x_resources),
+        .resource               = smc911x_resources,
+};
+
+And then do a platform_add_devices with it.
+
+-- 
+Bye, Peter Korsgaard
