@@ -1,17 +1,29 @@
-Return-Path: <kou.ishizaki@toshiba.co.jp>
-Received: from imx2.toshiba.co.jp (inet-tsb5.toshiba.co.jp [202.33.96.24])
+Return-Path: <DaveLiu@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 0ACB8DDE0E
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 May 2008 19:05:27 +1000 (EST)
-Date: Wed, 14 May 2008 18:05:19 +0900 (JST)
-Message-Id: <20080514.180519.-1300524066.kouish@swc.toshiba.co.jp>
-To: paulus@samba.org
-Subject: [PATCH] cell: fix section mismatch warnings
-From: Kou Ishizaki <kou.ishizaki@toshiba.co.jp>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTPS id BC88DDDE10
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 May 2008 22:03:18 +1000 (EST)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by de01egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	m4EC3Bgg025059
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 May 2008 05:03:12 -0700 (MST)
+Received: from zch01exm21.fsl.freescale.net (zch01exm21.ap.freescale.net
+	[10.192.129.205])
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id m4EC39lJ029518
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 May 2008 07:03:10 -0500 (CDT)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="US-ASCII"
+Subject: RE: [PATCH] Defer processing of interrupts when the CPU wakes from
+	sleepmode
+Date: Wed, 14 May 2008 20:03:09 +0800
+Message-ID: <58A20A281BAF1047B4EAE68DE5C0BDC2F168CF@zch01exm21.fsl.freescale.net>
+In-Reply-To: <18474.27384.524310.787499@cargo.ozlabs.ibm.com>
+References: <18474.27384.524310.787499@cargo.ozlabs.ibm.com>
+From: "Liu Dave" <DaveLiu@freescale.com>
+To: "Paul Mackerras" <paulus@samba.org>, <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,63 +33,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Fix following warnings:
-WARNING: arch/powerpc/platforms/cell/built-in.o(.devinit.text+0x9c): Section mismatch in reference from the function .cell_setup_phb() to the function .init.text:.iowa_register_bus()
-WARNING: arch/powerpc/platforms/cell/built-in.o(.devinit.text+0xa4): Section mismatch in reference from the function .cell_setup_phb() to the function .init.text:.io_workaround_init()
+<snip>
 
-Signed-off-by: Kou Ishizaki <kou.ishizaki@toshiba.co.jp>
----
- arch/powerpc/platforms/cell/io-workarounds.c |    6 +++---
- arch/powerpc/platforms/cell/io-workarounds.h |    6 +++---
- 2 files changed, 6 insertions(+), 6 deletions(-)
+> This provides a way to defer processing of an interrupt that wakes the
+> processor out of sleep mode.  On 32-bit platforms that use an
+> interrupt to wake the processor, we have to have interrupts enabled in
+> hardware at the point where we go to sleep, otherwise the processor
+> will never wake up.  However, because interrupts are logically
+> disabled at this point, we don't want to process the interrupt
+> straight away.
+>=20
+> This is handled by setting the _TLF_SLEEPING flag.  When we get an
+> interrupt and _TLF_SLEEPING is set, we firstly clear the MSR_EE
+> (external interrupt enable) bit in the saved MSR value, and secondly
+> we then return to the address in the link register, like we do for
+> _TLF_NAPPING, but without actually handling the interrupt.
+>=20
+> Note that this is handled somewhat differently on powerbooks, so this
+> new code will only be used on non-Apple machines.
 
-diff --git a/arch/powerpc/platforms/cell/io-workarounds.c b/arch/powerpc/platforms/cell/io-workarounds.c
-index 3b84e8b..b5f84e8 100644
---- a/arch/powerpc/platforms/cell/io-workarounds.c
-+++ b/arch/powerpc/platforms/cell/io-workarounds.c
-@@ -118,7 +118,7 @@ static void iowa_##name at					\
- #undef DEF_PCI_AC_RET
- #undef DEF_PCI_AC_NORET
- 
--static struct ppc_pci_io __initdata iowa_pci_io = {
-+static const struct ppc_pci_io __devinitconst iowa_pci_io = {
- 
- #define DEF_PCI_AC_RET(name, ret, at, al, space, aa)	.name = iowa_##name,
- #define DEF_PCI_AC_NORET(name, at, al, space, aa)	.name = iowa_##name,
-@@ -146,7 +146,7 @@ static void __iomem *iowa_ioremap(unsigned long addr, unsigned long size,
- }
- 
- /* Regist new bus to support workaround */
--void __init iowa_register_bus(struct pci_controller *phb,
-+void __devinit iowa_register_bus(struct pci_controller *phb,
- 			struct ppc_pci_io *ops,
- 			int (*initfunc)(struct iowa_bus *, void *), void *data)
- {
-@@ -173,7 +173,7 @@ void __init iowa_register_bus(struct pci_controller *phb,
- }
- 
- /* enable IO workaround */
--void __init io_workaround_init(void)
-+void __devinit io_workaround_init(void)
- {
- 	static int io_workaround_inited;
- 
-diff --git a/arch/powerpc/platforms/cell/io-workarounds.h b/arch/powerpc/platforms/cell/io-workarounds.h
-index 79d8ed3..6efc778 100644
---- a/arch/powerpc/platforms/cell/io-workarounds.h
-+++ b/arch/powerpc/platforms/cell/io-workarounds.h
-@@ -31,9 +31,9 @@ struct iowa_bus {
- 	void   *private;
- };
- 
--void __init io_workaround_init(void);
--void __init iowa_register_bus(struct pci_controller *, struct ppc_pci_io *,
--			      int (*)(struct iowa_bus *, void *), void *);
-+void __devinit io_workaround_init(void);
-+void __devinit iowa_register_bus(struct pci_controller *, struct ppc_pci_io *,
-+				 int (*)(struct iowa_bus *, void *), void *);
- struct iowa_bus *iowa_mem_find_bus(const PCI_IO_ADDR);
- struct iowa_bus *iowa_pio_find_bus(unsigned long);
- 
--- 
-1.5.4.1
+Thanks Paul for this patch. The patch looks like very nice.
+But the users have to be aware of the LINK register (LR) not corrupted.
+
+So, does power management patch from Scott Wood need to respin?
+
+BTW, why the fast_exception_return does *not* need clear the reservation
+with stwcx.?
+
+Thanks,
+Dave
