@@ -1,15 +1,22 @@
-Return-Path: <BenGardiner@nanometrics.ca>
-Received: from nmxmail.nanometrics.ca (mail.nanometrics.ca [206.191.47.130])
-	by ozlabs.org (Postfix) with ESMTP id 3F7C7DDFDD
+Return-Path: <John.Linn@xilinx.com>
+Received: from outbound1-va3-R.bigfish.com (outbound-va3.frontbridge.com
+	[216.32.180.16])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 82FE0DE1BB
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 15 May 2008 01:01:54 +1000 (EST)
-Message-ID: <482AFCC5.2070907@nanometrics.ca>
-Date: Wed, 14 May 2008 10:52:53 -0400
-From: Ben Gardiner <BenGardiner@nanometrics.ca>
+	Thu, 15 May 2008 01:03:54 +1000 (EST)
 MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: 8xx: Work around CPU15 erratum.
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: linux 2.6 hangs at __delay function on Viretx 4 board
+Date: Wed, 14 May 2008 09:01:37 -0600
+In-Reply-To: <17222725.post@talk.nabble.com>
+References: <17222725.post@talk.nabble.com>
+From: "John Linn" <John.Linn@xilinx.com>
+To: "swamydp" <swamydp@gmail.com>,
+	<linuxppc-embedded@ozlabs.org>
+Message-Id: <20080514150139.E258D8D006F@mail70-va3.bigfish.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -20,51 +27,67 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello,
+Hi Swamy,
 
-This is my first post to the linuxppc-embedded list. Please forgive me 
-for jumping in late onto the CPU15 workaround discussions, but my 
-company is very interested in finding an efficient fix for this silicon 
-errata on our devices.
+I have seen this sometime before I think, but don't remember why.
 
-I applied the patch submitted by Scott Wood to our patched denx 2.4.24 
-tree and did some timing measurements to compare its effect on 
-performance. We noted a worst case 37% slowdown -- this was during 
-program load, where the PC is moving all over the place, so the penalty 
-for all the tlbie's is felt heavily. This is solely anecdotal, I don't 
-mean to imply that this fix will result in any particular slowdown on 
-anyone else's systems.
+I see that udelay depends on loops_per_jiffy, have you looked to see
+what value it is? Maybe it's garbage and some large value?
 
-I would like to start a discussion on the possibility of implementing a 
-selective invalidation of pages on i-tlb miss. On July 20th, 2007 Scott 
-Wood wrote:
- >The only lower-overhead workaround I know of requires compiler 
-modifications (and I made it configurable to allow for that possibility).
+Have you tried dumping the __log_buf to understand how far it got thru
+booting the kernel before it got hung?
 
-So there likely are reasons why the following is not possible:
-In the errata document from Freescale 
-(http://www.freescale.com/files/32bit/doc/errata/MPC860CE.pdf?fpsp=1), 
-they list an alternative to the "invalidate previous and next page" itlb 
-miss handler (see pg 57), where they use the SPS/SH/CI bits of a L2 page 
-entry to indicate whether: 1) a page is unchecked, 2) it does not 
-contain a bad branch, 3) it does contain a bad branch, or 4) it has a 
-previous page with a bad branch. These bits are zeroed before being 
-written to MI_RPN. In loose terms the itlb miss handle does the 
-following: If the page is unchecked, they check the last instruction the 
-current page or the previous page and write the status bits to the L2 
-entry accordingly. If the page has been checked the status bits are used 
-to selectively invalidate the next or previous page as needed.
+I assume you must be using xmd to load the image, you can also use it to
+dump the buffer.
 
-Since MI_RPN is always written with bits 24,25,26 and 27 set; could we 
-use bits 24, 25 and 26 in memory to indicate the 4 possible page states 
-and perform selective page invalidation as demonstrated in their example 
-listing?
+On another processor I have seen it get hung in the calibrate_delay call
+from the kernel if the interrupts or timer aren't working, but haven't
+ever seen that on the Powerpc.
 
-Regards,
-Ben Gardiner
+Thanks,
+John
 
-Nanometrics Inc.
-250 Herzberg Rd.
-Kanata ON
-K2K 2A1
-Telephone 613 592 6776 ext 239
+
+-----Original Message-----
+From: linuxppc-embedded-bounces+john.linn=3Dxilinx.com@ozlabs.org
+[mailto:linuxppc-embedded-bounces+john.linn=3Dxilinx.com@ozlabs.org] On
+Behalf Of swamydp
+Sent: Tuesday, May 13, 2008 9:29 PM
+To: linuxppc-embedded@ozlabs.org
+Subject: linux 2.6 hangs at __delay function on Viretx 4 board
+
+
+
+I am trying to boot linux 2.6 on HITECH virtex 4(fx60) board. Linux
+hangs at
+address 0xc00045ec which is in the __udelay function. I am using EDK
+9.2i
+and gcc version 4.0.2 for compiling the kernel. The following is the
+boot
+message from the bootloader.=20
+
+loaded at:     00400000 0054E19C
+board data at: 0054C120 0054C19C
+relocated to:  00404064 004040E0
+zimage at:     00404E55 0054B5B4
+avail ram:     0054F000 02000000
+
+Linux/PPC load: console=3DttyS0,9600 console=3Dtty0 root=3D/dev/sda2
+Uncompressing Linux...done.
+Now booting the kernel
+
+Any help is greatly appreciated. I have run out of ideas to fix this.
+
+Thanks
+swamy
+
+--=20
+View this message in context:
+http://www.nabble.com/linux-2.6-hangs-at-__delay-function-on-Viretx-4-bo
+ard-tp17222725p17222725.html
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
+
+_______________________________________________
+Linuxppc-embedded mailing list
+Linuxppc-embedded@ozlabs.org
+https://ozlabs.org/mailman/listinfo/linuxppc-embedded
