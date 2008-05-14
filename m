@@ -1,21 +1,16 @@
-Return-Path: <gerhard_pircher@gmx.net>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id 5DD27DDEEE
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 May 2008 07:01:13 +1000 (EST)
-Content-Type: text/plain; charset="iso-8859-1"
-Date: Wed, 14 May 2008 23:01:10 +0200
-From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
-In-Reply-To: <s5hr6c5ax6a.wl%tiwai@suse.de>
-Message-ID: <20080514210110.155050@gmx.net>
-MIME-Version: 1.0
-References: <a265241c0805051123h595123edrd46bf65a8099c3c2@mail.gmail.com>
-	<6DA6B1DA-11B5-4B89-88AD-561B4D17B33B@kernel.crashing.org>
-	<20080505195054.172000@gmx.net>	<1210031058.21644.120.camel@pasglop>
-	<20080506075115.269150@gmx.net>	<1210063719.21644.162.camel@pasglop>
-	<20080506091622.269180@gmx.net> <s5hr6c5ax6a.wl%tiwai@suse.de>
-Subject: Re: ALSA fixes for non-coherent archs (Re: [PATCH] Sam440ep support)
-To: Takashi Iwai <tiwai@suse.de>
-Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org, cjg@cruxppc.org
+Return-Path: <timur@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 8A2D7DDF22
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 May 2008 08:30:04 +1000 (EST)
+From: Timur Tabi <timur@freescale.com>
+To: galak@kernel.crashing.org, linuxppc-dev@ozlabs.org
+Subject: [PATCH] CS4270 node is misplaced in the MPC8610 device tree
+Date: Wed, 14 May 2008 17:29:53 -0500
+Message-Id: <1210804193-8908-1-git-send-email-timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,46 +20,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+The CS4270 is using the second I2C bus, not the first, on the Freescale
+MPC8610 HPCD, so its node in the device tree belongs under 'i2c@3100'
+and not 'i2c@3000'.
 
--------- Original-Nachricht --------
-> Datum: Wed, 14 May 2008 14:26:53 +0200
-> Von: Takashi Iwai <tiwai@suse.de>
-> An: "Gerhard Pircher" <gerhard_pircher@gmx.net>
-> CC: benh@kernel.crashing.org, galak@kernel.crashing.org, cjg@cruxppc.org, linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org
-> Betreff: ALSA fixes for non-coherent archs (Re: [PATCH] Sam440ep support)
+Signed-off-by: Timur Tabi <timur@freescale.com>
+---
 
-> At Tue, 06 May 2008 11:16:22 +0200,
-> Gerhard Pircher wrote:
-> > 
-> > Naturally I can do some tests, if you or Takashi come up with a new
-> > patch.
-> 
-> OK, here is another patch for testing.  Since I lost my old patch
-> somewhere (and it's not worth to dig the archive), I wrote it up
-> quickly from scratch.  This version should cover both SG and non-SG
-> buffers.  It's against the latest git tree.
-> 
-> The patch adds a hackish verison of dma_mmap_coherent() for some
-> architectures in sound/core/pcm_native.c.  I'm not sure whether this
-> works.  I just tested it on X86.  It'd be appreciated if someone can
-> test this.
-> 
-> Also, this disables HDSPM driver for non-X86/IA64 since the driver has
-> own copy and silence methods that are incompatible with the new
-> SG-buffer data.
-> 
-> 
-> And, yes, I know we need to clean up huge messes in ALSA memory
-> handling routines.  But, let's fix obvious bugs before starting a big
-> rewrite...
-Okay, it seems to work fine so far. No lock-ups or kernel oopses. Tested
-with kernel v2.6.26-rc2 and a Soundblaster 5.1/EMU10k1 device (which was
-not working with the old patch) on my non cache coherent G4 system.
+Kumar, this is a must-fix for 2.6.26.  
 
-Thanks again!
+The reason this didn't show up before is because the CS4270 driver
+is an old-style driver, and so it doesn't actually use the device tree
+to determine the I2C bus/address.
 
-Gerhard
+ arch/powerpc/boot/dts/mpc8610_hpcd.dts |   14 +++++++-------
+ 1 files changed, 7 insertions(+), 7 deletions(-)
 
+diff --git a/arch/powerpc/boot/dts/mpc8610_hpcd.dts b/arch/powerpc/boot/dts/mpc8610_hpcd.dts
+index 08a780d..771f169 100644
+--- a/arch/powerpc/boot/dts/mpc8610_hpcd.dts
++++ b/arch/powerpc/boot/dts/mpc8610_hpcd.dts
+@@ -124,13 +124,6 @@
+ 			interrupts = <43 2>;
+ 			interrupt-parent = <&mpic>;
+ 			dfsrr;
+-
+-			cs4270:codec@4f {
+-				compatible = "cirrus,cs4270";
+-				reg = <0x4f>;
+-				/* MCLK source is a stand-alone oscillator */
+-				clock-frequency = <12288000>;
+-			};
+ 		};
+ 
+ 		i2c@3100 {
+@@ -142,6 +135,13 @@
+ 			interrupts = <43 2>;
+ 			interrupt-parent = <&mpic>;
+ 			dfsrr;
++
++			cs4270:codec@4f {
++				compatible = "cirrus,cs4270";
++				reg = <0x4f>;
++				/* MCLK source is a stand-alone oscillator */
++				clock-frequency = <12288000>;
++			};
+ 		};
+ 
+ 		serial0: serial@4500 {
 -- 
-Psssst! Schon vom neuen GMX MultiMessenger gehört?
-Der kann`s mit allen: http://www.gmx.net/de/go/multimessenger
+1.5.5
