@@ -1,18 +1,22 @@
-Return-Path: <olaf@aepfle.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 36ADDDDF13
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 May 2008 17:06:55 +1000 (EST)
-Date: Thu, 15 May 2008 09:06:51 +0200
-From: Olaf Hering <olaf@aepfle.de>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: linux-next: powercp-next build failure
-Message-ID: <20080515070651.GA22079@aepfle.de>
-References: <20080515145913.5436adb9.sfr@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20080515145913.5436adb9.sfr@canb.auug.org.au>
-Cc: linuxppc-dev@ozlabs.org, linux-next@vger.kernel.org,
-	Paul Mackerras <paulus@samba.org>, David Miller <davem@davemloft.net>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id D1932DDFA3
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 May 2008 17:08:21 +1000 (EST)
+Message-Id: <DEC960ED-A6FD-410B-99BB-AC0520A3F7A0@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: David Gibson <david@gibson.dropbear.id.au>
+In-Reply-To: <20080515064753.GC30996@yookeroo.seuss>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v919.2)
+Subject: Re: [patch 2/4] powerpc: add i2c pins to dts and board setup
+Date: Thu, 15 May 2008 02:08:05 -0500
+References: <200805142312.m4ENCrIb026259@imap1.linux-foundation.org>
+	<482B74D7.7080508@freescale.com>
+	<20080515064753.GC30996@yookeroo.seuss>
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
+	akpm@linux-foundation.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,17 +26,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, May 15, Stephen Rothwell wrote:
 
-> Today's linux-next build (sparc64 defconfig) fails like this:
-> 
-> drivers/of/device.c: In function `modalias_show':
-> drivers/of/device.c:66: error: implicit declaration of function `of_device_get_modalias'
-> 
-> Caused by commit 140b932f8cb6cced10b96860651a198b1b89cbb9 ("[POWERPC]
-> Create modalias file in sysfs for of_platform bus") from the powerpc-next
-> tree as there is a definition and declaration of of_device_get_modalias
-> only for powerpc.  I reverted that commit for today.
+On May 15, 2008, at 1:47 AM, David Gibson wrote:
 
-Better fix it up because my patch was for 2.6.25, and I cant follow
-mainline due to time constraints.
+> On Wed, May 14, 2008 at 06:25:11PM -0500, Scott Wood wrote:
+>> akpm@linux-foundation.org wrote:
+>>> From: Jochen Friedrich <jochen@scram.de>
+>>>
+>>> Initialize I2C pins on boards with CPM1/CPM2 controllers.
+>>>
+>>> Signed-off-by: Jochen Friedrich <jochen@scram.de>
+>>> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+>>> ---
+>>>
+>>> arch/powerpc/boot/dts/mpc8272ads.dts         |   10 ++++++++++
+>>> arch/powerpc/boot/dts/mpc866ads.dts          |   10 ++++++++++
+>>> arch/powerpc/boot/dts/mpc885ads.dts          |   10 ++++++++++
+>>> arch/powerpc/platforms/82xx/mpc8272_ads.c    |    4 ++++
+>>> arch/powerpc/platforms/8xx/mpc86xads_setup.c |    4 ++++
+>>> arch/powerpc/platforms/8xx/mpc885ads_setup.c |    3 +++
+>>> 6 files changed, 41 insertions(+)
+>>>
+>>> diff -puN arch/powerpc/boot/dts/mpc8272ads.dts~powerpc-add-i2c- 
+>>> pins-to-dts-and-board-setup arch/powerpc/boot/dts/mpc8272ads.dts
+>>> --- a/arch/powerpc/boot/dts/mpc8272ads.dts~powerpc-add-i2c-pins-to- 
+>>> dts-and-board-setup
+>>> +++ a/arch/powerpc/boot/dts/mpc8272ads.dts
+>>> @@ -217,6 +217,16 @@
+>>> 				linux,network-index = <1>;
+>>> 				fsl,cpm-command = <0x16200300>;
+>>> 			};
+>>> +
+>>> +			i2c@11860 {
+>>> +				compatible = "fsl,mpc8272-i2c",
+>>> +					     "fsl,cpm2-i2c",
+>>> +					     "fsl,cpm-i2c";
+>>> +				reg = <11860 20 8afc 2>;
+>>> +				interrupts = <1 8>;
+>>> +				interrupt-parent = <&PIC>;
+>>> +				fsl,cpm-command = <29600000>;
+>>> +			};
+>>
+>> As I pointed out earlier, this patch is sticking dts-v0 style  
+>> constants
+>> into a dts-v1 file.  It will not work.
+>
+> Enough of this.  *Sends patch converting all remaining dts files to
+> v1*.  With any luck we can merge that soon, and forget about the
+> mistakes of v0 forever.
+
+The problem isn't that, its this patch is out of date with mainline  
+and needs to be respun.  All the .dts it touches have already been  
+converted to v1.
+
+- k
