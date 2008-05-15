@@ -1,19 +1,20 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 4F0D8DDF97
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 May 2008 19:59:30 +1000 (EST)
-Date: Thu, 15 May 2008 02:59:24 -0700 (PDT)
-Message-Id: <20080515.025924.244953352.davem@davemloft.net>
-To: paulus@samba.org
-Subject: Re: linux-next: powercp-next build failure
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <18476.327.432007.66792@cargo.ozlabs.ibm.com>
-References: <20080515145913.5436adb9.sfr@canb.auug.org.au>
-	<18476.327.432007.66792@cargo.ozlabs.ibm.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, olaf@aepfle.de, linux-next@vger.kernel.org,
-	sfr@canb.auug.org.au
+Return-Path: <jochen@scram.de>
+Received: from mail.scram.de (mail0.scram.de [78.47.204.202])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail.scram.de", Issuer "scram e.V. CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 84D57DDEFE
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 May 2008 20:58:04 +1000 (EST)
+Message-ID: <482C172B.1000600@scram.de>
+Date: Thu, 15 May 2008 12:57:47 +0200
+From: Jochen Friedrich <jochen@scram.de>
+MIME-Version: 1.0
+To: Scott Wood <scottwood@freescale.com>, akpm@linux-foundation.org,
+	linuxppc-dev@ozlabs.org, paulus@samba.org
+Subject: Re: [patch 2/4] powerpc: add i2c pins to dts and board setup
+References: <200805142312.m4ENCrIb026259@imap1.linux-foundation.org>	<482B74D7.7080508@freescale.com>
+	<20080515064753.GC30996@yookeroo.seuss>
+In-Reply-To: <20080515064753.GC30996@yookeroo.seuss>
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,14 +24,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Paul Mackerras <paulus@samba.org>
-Date: Thu, 15 May 2008 19:24:23 +1000
+Hi David,
 
-> > drivers/of/device.c: In function `modalias_show':
-> > drivers/of/device.c:66: error: implicit declaration of function `of_device_get_modalias'
+>> As I pointed out earlier, this patch is sticking dts-v0 style constants  
+>> into a dts-v1 file.  It will not work.
 > 
-> Dave, how would you prefer to fix this?  We could move
-> of_device_get_modalias into drivers/of/device.c, or I could simply
-> revert that commit.
+> Enough of this.  *Sends patch converting all remaining dts files to
+> v1*.  With any luck we can merge that soon, and forget about the
+> mistakes of v0 forever.
 
-Feel free to move that function into drivers/of/device.c
+Many thanks :). I'll repost a fixed patch later.
+
+Thanks,
+Jochen
