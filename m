@@ -1,22 +1,14 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D1932DDFA3
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 May 2008 17:08:21 +1000 (EST)
-Message-Id: <DEC960ED-A6FD-410B-99BB-AC0520A3F7A0@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: David Gibson <david@gibson.dropbear.id.au>
-In-Reply-To: <20080515064753.GC30996@yookeroo.seuss>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: [patch 2/4] powerpc: add i2c pins to dts and board setup
-Date: Thu, 15 May 2008 02:08:05 -0500
-References: <200805142312.m4ENCrIb026259@imap1.linux-foundation.org>
-	<482B74D7.7080508@freescale.com>
-	<20080515064753.GC30996@yookeroo.seuss>
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
-	akpm@linux-foundation.org, paulus@samba.org
+Return-Path: <pavan_savoy@indiatimes.com>
+Received: from omta2.indiatimes.com (logs.indiatimes.com [203.199.93.25])
+	by ozlabs.org (Postfix) with SMTP id 8C9DDDDF35
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 May 2008 17:35:11 +1000 (EST)
+Date: Thu, 15 May 2008 12:45:07 +0530 (IST)
+From: pavan_savoy@indiatimes.com
+To: linuxppc-dev@ozlabs.org
+Message-ID: <1655903468.17841210835707224.JavaMail.root@mbv7.indiatimes.com>
+Subject: Hi Question on External Interrupts
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,56 +19,15 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On May 15, 2008, at 1:47 AM, David Gibson wrote:
 
-> On Wed, May 14, 2008 at 06:25:11PM -0500, Scott Wood wrote:
->> akpm@linux-foundation.org wrote:
->>> From: Jochen Friedrich <jochen@scram.de>
->>>
->>> Initialize I2C pins on boards with CPM1/CPM2 controllers.
->>>
->>> Signed-off-by: Jochen Friedrich <jochen@scram.de>
->>> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
->>> ---
->>>
->>> arch/powerpc/boot/dts/mpc8272ads.dts         |   10 ++++++++++
->>> arch/powerpc/boot/dts/mpc866ads.dts          |   10 ++++++++++
->>> arch/powerpc/boot/dts/mpc885ads.dts          |   10 ++++++++++
->>> arch/powerpc/platforms/82xx/mpc8272_ads.c    |    4 ++++
->>> arch/powerpc/platforms/8xx/mpc86xads_setup.c |    4 ++++
->>> arch/powerpc/platforms/8xx/mpc885ads_setup.c |    3 +++
->>> 6 files changed, 41 insertions(+)
->>>
->>> diff -puN arch/powerpc/boot/dts/mpc8272ads.dts~powerpc-add-i2c- 
->>> pins-to-dts-and-board-setup arch/powerpc/boot/dts/mpc8272ads.dts
->>> --- a/arch/powerpc/boot/dts/mpc8272ads.dts~powerpc-add-i2c-pins-to- 
->>> dts-and-board-setup
->>> +++ a/arch/powerpc/boot/dts/mpc8272ads.dts
->>> @@ -217,6 +217,16 @@
->>> 				linux,network-index = <1>;
->>> 				fsl,cpm-command = <0x16200300>;
->>> 			};
->>> +
->>> +			i2c@11860 {
->>> +				compatible = "fsl,mpc8272-i2c",
->>> +					     "fsl,cpm2-i2c",
->>> +					     "fsl,cpm-i2c";
->>> +				reg = <11860 20 8afc 2>;
->>> +				interrupts = <1 8>;
->>> +				interrupt-parent = <&PIC>;
->>> +				fsl,cpm-command = <29600000>;
->>> +			};
->>
->> As I pointed out earlier, this patch is sticking dts-v0 style  
->> constants
->> into a dts-v1 file.  It will not work.
->
-> Enough of this.  *Sends patch converting all remaining dts files to
-> v1*.  With any luck we can merge that soon, and forget about the
-> mistakes of v0 forever.
+Hi,
 
-The problem isn't that, its this patch is out of date with mainline  
-and needs to be respun.  All the .dts it touches have already been  
-converted to v1.
+being new to low level details of PPC, I have this doubt on the external Interrupt openPIC of some platform like mpc8540ads.
 
-- k
+If at all, I request_irq on IRQ_EXT2 [say an example], and the interrupt handler is called, how do I know the line state of such an interrupt ? i.e is it low or high ?
+
+Actually I want to interface a spi or i2c slave device which also connects via an external Interrupt which generates and interrupt and my actions are based upon knowing the line status.
+
+[ Earlier interface was with arm architecture & GPIO and question must be naive].
+
+Thanks
