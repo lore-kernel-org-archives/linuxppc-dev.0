@@ -1,16 +1,31 @@
-Return-Path: <joerg@alea.gnuu.de>
-Received: from uucp.gnuu.de (banki.eumelnet.de [83.246.114.63])
-	by ozlabs.org (Postfix) with ESMTP id 7A1EFDDEE2
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 May 2008 09:05:40 +1000 (EST)
-Date: Fri, 16 May 2008 00:05:14 +0200
-From: =?iso-8859-1?Q?J=F6rg?= Sommer <joerg@alea.gnuu.de>
-To: linux-next@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: linux-next: iBook G4, keyboard is locked after wakeup
-Message-ID: <20080515220514.GA2475@alea.gnuu.de>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="n8g4imXOkfNTN/H1"
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 77224DDF12
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 May 2008 09:20:33 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e5.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m4FNKUHg012190
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 May 2008 19:20:30 -0400
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m4FNKUFl148942
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 May 2008 19:20:30 -0400
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m4FNKUEm003126
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 May 2008 19:20:30 -0400
+Date: Thu, 15 May 2008 18:17:15 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: Convert remaining dts-v0 files to v1
+Message-ID: <20080515181715.06dd124f@zod.rchland.ibm.com>
+In-Reply-To: <482C9B6F.1020907@am.sony.com>
+References: <20080515064639.GB30996@yookeroo.seuss>
+	<482C9B6F.1020907@am.sony.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,89 +35,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thu, 15 May 2008 13:22:07 -0700
+Geoff Levand <geoffrey.levand@am.sony.com> wrote:
 
---n8g4imXOkfNTN/H1
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> David Gibson wrote:
+> > At the moment we have a mixture of left-over version 0 and new-format
+> > version 1 files in arch/powerpc/boot/dts.  This is potentially
+> > confusing to people new to the dts format attempting to figure it out.p
+> > 
+> > So, this patch converts all the as-yet unconverted dts v0 files and
+> > converts them to v1.  They're mechanically-converted, and not hand
+> > tweaked so in some cases they're not 100% in keeping with usual v1
+> > style, but the convertor program does have some heuristics so the
+> > discrepancies aren't too bad.
+> > 
+> > I have checked that this patch produces no changes to the resulting
+> > dtb binaries.
+> > 
+> > Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+> > 
+> ...
+> > Index: working-2.6/arch/powerpc/boot/dts/ps3.dts
+> > ===================================================================
+> > --- working-2.6.orig/arch/powerpc/boot/dts/ps3.dts	2008-05-15 16:32:08.000000000 +1000
+> > +++ working-2.6/arch/powerpc/boot/dts/ps3.dts	2008-05-15 16:32:08.000000000 +1000
+> 
+> I tested this on PS3 and it seems to work OK.
+> 
+> Acked-by: Geoff Levand <geoffrey.levand@am.sony.com>
 
-Hi,
+Paul,
 
-I've an iBook G4 and tried the linux-next tree 20080515. When the
-computer awakes I see a black screen with the cursor blinking in the left
-upper corner. I can change the console with Alt+F1 =E2=80=A6, but I can inp=
-ut
-anything else. The system is locked. I've ran git bisect and it reported
-acff8d4223ddfb35f3950dce3709b1c515e96c08 as the first bad commit.
+Since this mostly effects DTSs for my boards, do you mind if I pull
+this into my tree?  I spoke with Geoff today and he doesn't have any
+planned PS3 DTS updates, so we shouldn't get conflicts doing it that
+way.
 
-commit acff8d4223ddfb35f3950dce3709b1c515e96c08
-Author: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Date:   Tue May 13 11:09:44 2008 +1000
-
-    ide: use __generic_unplug_device() in ide_do_drive_cmd()
-   =20
-    Call __elv_add_request() with 'plug' =3D=3D 1 (so the device will be
-    plugged) and then use __generic_unplug_device() instead of calling
-    ide_do_request() directly.
-   =20
-    This is a preparation for converting IDE to use blk_execute_rq().
-   =20
-    Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-    Cc: Borislav Petkov <petkovbb@gmail.com>
-    Cc: Jens Axboe <jens.axboe@oracle.com>
-    Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-
-diff --git a/drivers/ide/ide-io.c b/drivers/ide/ide-io.c
-index 5aed79e..a4083e4 100644
---- a/drivers/ide/ide-io.c
-+++ b/drivers/ide/ide-io.c
-@@ -1606,8 +1606,8 @@ int ide_do_drive_cmd (ide_drive_t *drive, struct requ=
-est *rq, ide_action_t actio
-        spin_lock_irqsave(&ide_lock, flags);
-        if (action =3D=3D ide_preempt)
-                hwgroup->rq =3D NULL;
--       __elv_add_request(drive->queue, rq, where, 0);
--       ide_do_request(hwgroup, IDE_NO_IRQ);
-+       __elv_add_request(drive->queue, rq, where, 1);
-+       __generic_unplug_device(drive->queue);
-        spin_unlock_irqrestore(&ide_lock, flags);
-=20
-        err =3D 0;
-
-% cat /proc/cpuinfo
-processor	: 0
-cpu		: 7455, altivec supported
-clock		: 606.000000MHz
-revision	: 0.3 (pvr 8001 0303)
-bogomips	: 36.73
-timebase	: 18432000
-platform	: PowerMac
-model		: PowerBook6,3
-machine		: PowerBook6,3
-motherboard	: PowerBook6,3 MacRISC3 Power Macintosh
-detected as	: 287 (iBook G4)
-pmac flags	: 0000001b
-L2 cache	: 256K unified
-pmac-generation	: NewWorld
-
-What else information do you need?
-
-Bye, J=C3=B6rg.
---=20
-Real programmers don't comment their code.  It was hard to write,
-it should be hard to understand.
-
---n8g4imXOkfNTN/H1
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature http://en.wikipedia.org/wiki/OpenPGP
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFILLOawe0mZwH1VIARAkGrAJ4hxLe8+MwFoY+U1seTKErOmXyyawCZAXmx
-sL62gtQh9Lfi5QSniTAMAJo=
-=SGER
------END PGP SIGNATURE-----
-
---n8g4imXOkfNTN/H1--
+josh
