@@ -1,28 +1,33 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
-	[140.211.169.13])
+Return-Path: <cel@us.ibm.com>
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id D8E98DE140
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 May 2008 03:43:44 +1000 (EST)
-Date: Thu, 15 May 2008 10:43:02 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: michael@ellerman.id.au
-Subject: Re: [patch 3/4] macintosh: replace deprecated __initcall with
-	device_initcall
-Message-Id: <20080515104302.1b78e522.akpm@linux-foundation.org>
-In-Reply-To: <1210842517.17568.41.camel@localhost>
-References: <200805142312.m4ENCsdu026262@imap1.linux-foundation.org>
-	<18475.47278.446992.728481@cargo.ozlabs.ibm.com>
-	<20080514230647.15d58897.akpm@linux-foundation.org>
-	<1210832908.17568.16.camel@localhost>
-	<20080514234102.d5735054.akpm@linux-foundation.org>
-	<1210842517.17568.41.camel@localhost>
+	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 06D74DDFA6
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 May 2008 04:03:25 +1000 (EST)
+Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
+	[9.17.195.228])
+	by e32.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m4FI03hL006233
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 May 2008 14:00:03 -0400
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m4FI3GX4023866
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 May 2008 12:03:17 -0600
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m4FI3Csh000365
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 May 2008 12:03:12 -0600
+Subject: Re: [PATCH] Fix for OProfile callgraph for Power 64 bit user apps
+From: Carl Love <cel@us.ibm.com>
+To: Paul Mackerras <paulus@samba.org>
+In-Reply-To: <18476.5290.709729.582063@cargo.ozlabs.ibm.com>
+References: <1210183924.7726.28.camel@carll-linux-desktop>
+	<18476.5290.709729.582063@cargo.ozlabs.ibm.com>
+Content-Type: text/plain
+Date: Thu, 15 May 2008 11:01:01 -0700
+Message-Id: <1210874462.20791.54.camel@carll-linux-desktop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, rpjday@crashcourse.ca,
-	Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,78 +37,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 15 May 2008 19:08:37 +1000 Michael Ellerman <michael@ellerman.id.au> wrote:
 
-> On Wed, 2008-05-14 at 23:41 -0700, Andrew Morton wrote:
-> > On Thu, 15 May 2008 16:28:28 +1000 Michael Ellerman <michael@ellerman.id.au> wrote:
-> > 
-> > > On Wed, 2008-05-14 at 23:06 -0700, Andrew Morton wrote:
-> > > > On Thu, 15 May 2008 14:14:38 +1000 Paul Mackerras <paulus@samba.org> wrote:
-> > > > 
-> > > > > akpm@linux-foundation.org writes:
-> > > > > 
-> > > > > > -__initcall(adb_init);
-> > > > > > +device_initcall(adb_init);
-> > > > > 
-> > > > > There's no particular reason why this needs to go in 2.6.26, is there?
-> > > > > It looks to me like something that I should queue up for 2.6.27.
-> > > > > 
-> > > > 
-> > > > No, this make no difference in code generation - it's just a
-> > > > use-the-modern-interface thing.
-> > > 
-> > > I missed the memo about __initcall being deprecated, or is it only
-> > > deprecated for use in device drivers?
-> > > 
-> > 
-> > It's just old-fashioned, that's all.
-> >
-> > #define pure_initcall(fn)		__define_initcall("0",fn,0)
-> > 
-> > #define core_initcall(fn)		__define_initcall("1",fn,1)
-> > #define core_initcall_sync(fn)		__define_initcall("1s",fn,1s)
-> > #define postcore_initcall(fn)		__define_initcall("2",fn,2)
-> > #define postcore_initcall_sync(fn)	__define_initcall("2s",fn,2s)
-> > #define arch_initcall(fn)		__define_initcall("3",fn,3)
-> > #define arch_initcall_sync(fn)		__define_initcall("3s",fn,3s)
-> > #define subsys_initcall(fn)		__define_initcall("4",fn,4)
-> > #define subsys_initcall_sync(fn)	__define_initcall("4s",fn,4s)
-> > #define fs_initcall(fn)			__define_initcall("5",fn,5)
-> > #define fs_initcall_sync(fn)		__define_initcall("5s",fn,5s)
-> > #define rootfs_initcall(fn)		__define_initcall("rootfs",fn,rootfs)
-> > #define device_initcall(fn)		__define_initcall("6",fn,6)
-> > #define device_initcall_sync(fn)	__define_initcall("6s",fn,6s)
-> > #define late_initcall(fn)		__define_initcall("7",fn,7)
-> > #define late_initcall_sync(fn)		__define_initcall("7s",fn,7s)
-> > 
-> > #define __initcall(fn) device_initcall(fn)
-> > 
-> > See, we have the nicely-ordered foo_initcall()'s, and the old-fashioned
-> > legacy __initcall happens to map onto device_initcall().
-> > 
-> > Such code should use device_initcall() directly.  So we see at which
-> > stage in initcalls this function will be called.
+On Thu, 2008-05-15 at 20:47 +1000, Paul Mackerras wrote:
+> Carl Love writes:
 > 
-> Yeah fair enough. 
+> > The following patch fixes the 64 bit user code backtrace 
+> > which currently may hang the system.  
 > 
-> A little git'ing tells me there were 31 new __initcall()'s added between
-> 2.6.24 and 2.6.25, and there are 12 more lurking between 2.6.25 and
-> linux-next. They're breeding!
+> What exactly is wrong with it?
 > 
-> You can't stick a #warning inside a #define can you? How about:
+> Having now taken a much closer look, I now don't think Nate Case's
+> patch addresses this, since it only affects constant size arguments
+> <= 8 to copy_{to,from}_user_inatomic.
 > 
-> #define __initcall(fn)				\
-> do {						\
-> int Use_device_initcall_not___initcall_please;	\
-> device_initcall(fn);				\
-> } while (0)
+> However, I don't see why your patch fixes anything.  It means we do
+> two access_ok calls and two __copy_from_user_inatomic calls, for 8
+> bytes, at sp and at sp + 16, rather than doing one access_ok and
+> __copy_from_user_inatomic for 24 bytes at sp.  Why does that make any
+> difference (apart from being slower)?
 > 
-> Which gives:
-> warning: unused variable ______Use_device_initcall_not___initcall_please___
-> 
-> ..
-> 
-> Yeah OK that was a joke.
+> Paul
 
-I'm sure Andy can give us a checkpatch warning when someone uses
-__initcall.  That'll help a bit.
+When I tried testing the oprofile call graph on a 64 bit app the system
+consistently hung.  I was able to isolate it to the
+__copy_from_user_inatomic() call.  When I made the change in my patch to
+make sure I was only requesting one of the values (8bytes) listed in the
+case statement this fixed the issue.  I do not know nor was I able to
+figure out why the __copy_from_user_inatomic() call failed trying to
+read 24 bytes.  The system would hang and any attempt to use printk to
+see what was going on failed as the output of the print would not go to
+the console before the system hangs.  
+
+I backed out my patch, put in Nate's patch.  The call graph test ran
+fine.  I then backed out Nate's patch to go back and try to re-validate
+that the system still hangs with the original code and it is not
+hanging.  Not sure why it now seems to work.  I have done some other
+work on the system but I don't see how that would have changed this.
+Argh, I hate chasing phantom bugs!  I was working on 2.6.21. I believe
+the 2.6.21 kernel had not been changed. Let me load the latest 2.6.25
+and start over with a pristine kernel and see if I can reproduce the
+hang.  Sorry for all the hassle.
+
+                 Carl Love
