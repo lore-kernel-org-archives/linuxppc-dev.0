@@ -1,23 +1,22 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
-	[140.211.169.13])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id F3EAADDE1F
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 May 2008 16:07:26 +1000 (EST)
-Date: Wed, 14 May 2008 23:06:47 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [patch 3/4] macintosh: replace deprecated __initcall with
-	device_initcall
-Message-Id: <20080514230647.15d58897.akpm@linux-foundation.org>
-In-Reply-To: <18475.47278.446992.728481@cargo.ozlabs.ibm.com>
-References: <200805142312.m4ENCsdu026262@imap1.linux-foundation.org>
-	<18475.47278.446992.728481@cargo.ozlabs.ibm.com>
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net (unknown [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id B7A0CDDEDF
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 May 2008 16:20:21 +1000 (EST)
+Date: Wed, 14 May 2008 23:20:14 -0700 (PDT)
+Message-Id: <20080514.232014.34303310.davem@davemloft.net>
+To: kamalesh@linux.vnet.ibm.com
+Subject: Re: [PATCH] list_for_each_rcu must die: networking
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <482BC96F.1030008@linux.vnet.ibm.com>
+References: <20080424033849.GA4401@linux.vnet.ibm.com>
+	<20080515001607.GB20811@linux.vnet.ibm.com>
+	<482BC96F.1030008@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, rpjday@crashcourse.ca
+Content-Type: Text/Plain; charset=us-ascii
+Cc: balbir@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, adobriyan@gmail.com,
+	akpm@linux-foundation.org, paulmck@linux.vnet.ibm.com,
+	shemminger@vyatta.com, sri@us.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,16 +26,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 15 May 2008 14:14:38 +1000 Paul Mackerras <paulus@samba.org> wrote:
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Date: Thu, 15 May 2008 10:56:07 +0530
 
-> akpm@linux-foundation.org writes:
+> Paul E. McKenney wrote:
+> > All uses of list_for_each_rcu() can be profitably replaced by the
+> > easier-to-use list_for_each_entry_rcu().  This patch makes this change
+> > for networking, in preparation for removing the list_for_each_rcu()
+> > API entirely.
+> > 
+> > Updated to remove the two now-unused variables as noted by Dave Miller,
+> > and also to fix my bonehead error detected by Kamalesh Babulal and
+> > Alexey Dobriyan.  It now passes LTP on POWER.  And also has valid SOB.
+> > Some days it just doesn't pay to get out of bed...
 > 
-> > -__initcall(adb_init);
-> > +device_initcall(adb_init);
+> Hi Paul,
 > 
-> There's no particular reason why this needs to go in 2.6.26, is there?
-> It looks to me like something that I should queue up for 2.6.27.
+> Thanks, the patch fixes the oops.
 > 
+> Tested-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+> > Acked-by: David S. Miller <davem@davemloft.net> (lkml.org/lkml/2008/4/23/448)
+> > Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 
-No, this make no difference in code generation - it's just a
-use-the-modern-interface thing.
+I'm fine with these changes, and I acked them already.
+They belong as a set with the other list_for_each_rcu killing
+patches, so I'm fine with them going all together in Andrew's
+tree.
+
+Thanks!
