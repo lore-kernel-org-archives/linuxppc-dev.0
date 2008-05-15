@@ -1,33 +1,34 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
+Return-Path: <cel@us.ibm.com>
 Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 51104DDEFF
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 May 2008 00:47:01 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e36.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m4FEkwAp004326
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 May 2008 10:46:58 -0400
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m4FEkwlR082966
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 May 2008 08:46:58 -0600
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m4FEkvC5028163
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 May 2008 08:46:57 -0600
-Received: from zod.rchland.ibm.com (wecm-9-67-211-47.wecm.ibm.com
-	[9.67.211.47])
-	by d03av03.boulder.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	m4FEkul2028121
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 May 2008 08:46:57 -0600
-Date: Thu, 15 May 2008 09:43:46 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] 4xx: Workaround for CHIP_11 Errata
-Message-ID: <20080515094346.3338e1f3@zod.rchland.ibm.com>
+	by ozlabs.org (Postfix) with ESMTPS id D0FC8DE0CF
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 May 2008 00:52:22 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e36.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m4FEqJ3o016278
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 May 2008 10:52:19 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m4FEqJ7k097302
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 May 2008 08:52:19 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m4FEqInv020821
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 May 2008 08:52:19 -0600
+Subject: Re: [patch 1/4] powerpc: fix for OProfile callgraph for Power 64
+	bit user apps
+From: Carl Love <cel@us.ibm.com>
+To: Paul Mackerras <paulus@samba.org>
+In-Reply-To: <18475.46317.936165.577835@cargo.ozlabs.ibm.com>
+References: <200805142312.m4ENCqLg026256@imap1.linux-foundation.org>
+	<1210810844.7603.17.camel@localhost>
+	<18475.46317.936165.577835@cargo.ozlabs.ibm.com>
+Content-Type: text/plain
+Date: Thu, 15 May 2008 07:50:08 -0700
+Message-Id: <1210863008.7726.129.camel@carll-linux-desktop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org, carll@us.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,64 +38,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The PowerPC 440EP, 440GR, 440EPx, and 440GRx chips have an issue that
-causes the PLB3-to-PLB4 bridge to wait indefinitely for transaction
-requests that cross the end-of-memory-range boundary.  Since the DDR
-controller only returns the valid portion of a read request, the bridge
-will prevent other PLB masters from completing their transactions.
 
-This implements the recommended workaround for this errata for chips that
-use older versions of firmware that do not already handle it.  The last
-4KiB of memory are hidden from the kernel to prevent the problem
-transactions from occurring.
+On Thu, 2008-05-15 at 13:58 +1000, Paul Mackerras wrote:
+> Michael Ellerman writes:
+> 
+> > __copy_from_user_inatomic() accepts any value for n, it just has a
+> > special case for 1, 2, 4 and 8 - but it should still work for other
+> > values.
+> 
+> There is a bug in __copy_from_user_inatomic that
+> 
+> http://patchwork.ozlabs.org/linuxppc/patch?id=18418
+> 
+> fixes, and I'm about to send that Linus-wards.
+> 
+> Carl, to what extent does that fix eliminate the need for the changes
+> in your patch?
+> 
+> Paul.
 
-Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Paul:
 
----
- arch/powerpc/boot/4xx.c |   21 +++++++++++++++++++++
- 1 file changed, 21 insertions(+)
+I will have to apply the above mentioned patch to see if it fixes the
+issue.  What I found was when the original code tried to copy three
+unsigned long into stack_frame[3], i.e. 24 bytes my system consistently
+failed.  The comment about 48 bytes is a note that is all that is
+guaranteed to be there according to the API.  I found by restricting the
+copy to the values in the case statement, things worked.  
 
---- linux-2.6.orig/arch/powerpc/boot/4xx.c
-+++ linux-2.6/arch/powerpc/boot/4xx.c
-@@ -21,6 +21,25 @@
- #include "reg.h"
- #include "dcr.h"
- 
-+static unsigned long chip_11_errata(unsigned long memsize)
-+{
-+	unsigned long pvr;
-+
-+	pvr = mfpvr();
-+
-+	switch (pvr & 0xf0000ff0) {
-+		case 0x40000850:
-+		case 0x400008d0:
-+		case 0x200008d0:
-+			memsize -= 4096;
-+			break;
-+		default:
-+			break;
-+	}
-+
-+	return memsize;
-+}
-+
- /* Read the 4xx SDRAM controller to get size of system memory. */
- void ibm4xx_sdram_fixup_memsize(void)
- {
-@@ -34,6 +53,7 @@ void ibm4xx_sdram_fixup_memsize(void)
- 			memsize += SDRAM_CONFIG_BANK_SIZE(bank_config);
- 	}
- 
-+	memsize = chip_11_errata(memsize);
- 	dt_fixup_memory(0, memsize);
- }
- 
-@@ -199,6 +219,7 @@ void ibm4xx_denali_fixup_memsize(void)
- 		bank = 4; /* 4 banks */
- 
- 	memsize = cs * (1 << (col+row)) * bank * dpath;
-+	memsize = chip_11_errata(memsize);
- 	dt_fixup_memory(0, memsize);
- }
- 
+              Carl Love
