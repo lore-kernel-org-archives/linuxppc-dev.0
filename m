@@ -1,20 +1,33 @@
-Return-Path: <jochen@scram.de>
-Received: from mail.scram.de (mail0.scram.de [78.47.204.202])
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.scram.de", Issuer "scram e.V. CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id E2929DDEEE
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 May 2008 00:44:36 +1000 (EST)
-Message-ID: <482C4C32.4060503@scram.de>
-Date: Thu, 15 May 2008 16:44:03 +0200
-From: Jochen Friedrich <jochen@scram.de>
-MIME-Version: 1.0
-To: Jean Delvare <khali@linux-fr.org>
-Subject: [PATCHv2] [POWERPC] Add i2c pins to dts and board setup
-Content-Type: text/plain; charset=ISO-8859-15
-Cc: "Kernel, Linux" <linux-kernel@vger.kernel.org>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Linux I2C <i2c@lm-sensors.org>, Scott Wood <scottwood@freescale.com>,
-	Andrew Morton <akpm@linux-foundation.org>
+	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id B1D5CDE4D9
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 May 2008 00:44:54 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m4FEfasM032441
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 May 2008 10:41:36 -0400
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m4FEih2e063150
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 May 2008 08:44:44 -0600
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m4FEidot019719
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 May 2008 08:44:40 -0600
+Received: from zod.rchland.ibm.com (wecm-9-67-211-47.wecm.ibm.com
+	[9.67.211.47])
+	by d03av04.boulder.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	m4FEiX8Q019592
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 May 2008 08:44:37 -0600
+Date: Thu, 15 May 2008 09:41:23 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] 4xx: Fix PCI mem in rainier DTS
+Message-ID: <20080515094123.44974e84@zod.rchland.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,181 +37,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Initialize I2C pins on boards with CPM1/CPM2 controllers.
+This fixes the PCI node in the Rainier to match the spec from AMCC.  A
+similar fix was done for 440EPx, which shares the same values as 440GRx.
 
-Signed-off-by: Jochen Friedrich <jochen@scram.de>
+Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+
 ---
- Documentation/powerpc/booting-without-of.txt |   39 ++++++++++++++++++++++++++
- arch/powerpc/boot/dts/mpc8272ads.dts         |   12 ++++++++
- arch/powerpc/boot/dts/mpc866ads.dts          |   12 ++++++++
- arch/powerpc/boot/dts/mpc885ads.dts          |   12 ++++++++
- arch/powerpc/platforms/82xx/mpc8272_ads.c    |    4 ++
- arch/powerpc/platforms/8xx/mpc86xads_setup.c |    4 ++
- arch/powerpc/platforms/8xx/mpc885ads_setup.c |    3 ++
- 7 files changed, 86 insertions(+), 0 deletions(-)
+ arch/powerpc/boot/dts/rainier.dts |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
-index 1d2a772..b95f03a 100644
---- a/Documentation/powerpc/booting-without-of.txt
-+++ b/Documentation/powerpc/booting-without-of.txt
-@@ -2132,6 +2132,45 @@ platforms are moved over to use the flattened-device-tree model.
- 		};
- 	};
-
-+   ix) I2C
-+
-+   The I2C controller is expressed as a bus under the CPM node.
-+
-+   Properties:
-+   - compatible      : "fsl,cpm1-i2c", "fsl,cpm2-i2c", "fsl,cpm-i2c"
-+   - reg             : On CPM2 devices, the second resource doesn't specify
-+		       the I2C Parameter RAM itself, but the I2C_BASE field
-+		       of the CPM2 Parameter RAM (typically 0x8afc 0x2).
-+   - #address-cells  : Should be one. The cell is the i2c device address with
-+		       the r/w bit set to zero.
-+   - #size-cells     : Should be zero.
-+   - linux,i2c-index : Can be used to hard code an i2c bus nummer.
-+   - linux,i2c-class : Can be used to override the i2c class. The class is used
-+		       by old style i2c device drivers to find a bus in a
-+		       specific context like system management, video or sound.
-+		       By default, I2C_CLASS_HWMON (1) is being used. The
-+		       definition of the classes can be found in
-+		       include/i2c/i2c.h
-+		
-+   Example, based on mpc823:
-+
-+	i2c@860 {
-+		compatible = "fsl,mpc823-i2c",
-+			     "fsl,cpm1-i2c",
-+			     "fsl,cpm-i2c";
-+		reg = <0x860 0x20 0x3c80 0x30>;
-+		interrupts = <16>;
-+		interrupt-parent = <&CPM_PIC>;
-+		fsl,cpm-command = <0x10>;
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+
-+		rtc@68 {
-+			compatible = "dallas,ds1307";
-+			reg = <0x68>;
-+		};
-+	};
-+
-    m) Chipselect/Local Bus
-
-    Properties:
-diff --git a/arch/powerpc/boot/dts/mpc8272ads.dts b/arch/powerpc/boot/dts/mpc8272ads.dts
-index 46e2da3..8ed1d22 100644
---- a/arch/powerpc/boot/dts/mpc8272ads.dts
-+++ b/arch/powerpc/boot/dts/mpc8272ads.dts
-@@ -217,6 +217,18 @@
- 				linux,network-index = <1>;
- 				fsl,cpm-command = <0x16200300>;
- 			};
-+
-+			i2c@11860 {
-+				compatible = "fsl,mpc8272-i2c",
-+					     "fsl,cpm2-i2c",
-+					     "fsl,cpm-i2c";
-+				reg = <0x11860 0x20 0x8afc 0x2>;
-+				interrupts = <1 8>;
-+				interrupt-parent = <&PIC>;
-+				fsl,cpm-command = <0x29600000>;
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+			};
- 		};
-
- 		PIC: interrupt-controller@10c00 {
-diff --git a/arch/powerpc/boot/dts/mpc866ads.dts b/arch/powerpc/boot/dts/mpc866ads.dts
-index 765e43c..50565b5 100644
---- a/arch/powerpc/boot/dts/mpc866ads.dts
-+++ b/arch/powerpc/boot/dts/mpc866ads.dts
-@@ -171,6 +171,18 @@
- 				fsl,cpm-command = <0000>;
- 				linux,network-index = <1>;
- 			};
-+
-+			i2c@860 {
-+				compatible = "fsl,mpc866-i2c",
-+					     "fsl,cpm1-i2c",
-+					     "fsl,cpm-i2c";
-+				reg = <0x860 0x20 0x3c80 0x30>;
-+				interrupts = <16>;
-+				interrupt-parent = <&CPM_PIC>;
-+				fsl,cpm-command = <0x10>;
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+			};
- 		};
- 	};
-
-diff --git a/arch/powerpc/boot/dts/mpc885ads.dts b/arch/powerpc/boot/dts/mpc885ads.dts
-index 9895043..d76331a 100644
---- a/arch/powerpc/boot/dts/mpc885ads.dts
-+++ b/arch/powerpc/boot/dts/mpc885ads.dts
-@@ -215,6 +215,18 @@
- 				fsl,cpm-command = <0x80>;
- 				linux,network-index = <2>;
- 			};
-+
-+			i2c@860 {
-+				compatible = "fsl,mpc885-i2c",
-+					     "fsl,cpm1-i2c",
-+					     "fsl,cpm-i2c";
-+				reg = <0x860 0x20 0x3c80 0x30>;
-+				interrupts = <16>;
-+				interrupt-parent = <&CPM_PIC>;
-+				fsl,cpm-command = <0x10>;
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+			};
- 		};
- 	};
-
-diff --git a/arch/powerpc/platforms/82xx/mpc8272_ads.c b/arch/powerpc/platforms/82xx/mpc8272_ads.c
-index 7d30187..8054c68 100644
---- a/arch/powerpc/platforms/82xx/mpc8272_ads.c
-+++ b/arch/powerpc/platforms/82xx/mpc8272_ads.c
-@@ -96,6 +96,10 @@ static struct cpm_pin mpc8272_ads_pins[] = {
- 	{1, 31, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
- 	{2, 16, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
- 	{2, 17, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
-+
-+	/* I2C */
-+	{3, 14, CPM_PIN_INPUT | CPM_PIN_SECONDARY | CPM_PIN_OPENDRAIN},
-+	{3, 15, CPM_PIN_INPUT | CPM_PIN_SECONDARY | CPM_PIN_OPENDRAIN},
- };
-
- static void __init init_ioports(void)
-diff --git a/arch/powerpc/platforms/8xx/mpc86xads_setup.c b/arch/powerpc/platforms/8xx/mpc86xads_setup.c
-index c028a5b..caaec29 100644
---- a/arch/powerpc/platforms/8xx/mpc86xads_setup.c
-+++ b/arch/powerpc/platforms/8xx/mpc86xads_setup.c
-@@ -65,6 +65,10 @@ static struct cpm_pin mpc866ads_pins[] = {
- 	{CPM_PORTD, 13, CPM_PIN_OUTPUT},
- 	{CPM_PORTD, 14, CPM_PIN_OUTPUT},
- 	{CPM_PORTD, 15, CPM_PIN_OUTPUT},
-+
-+	/* I2C */
-+	{CPM_PORTB, 26, CPM_PIN_INPUT | CPM_PIN_OPENDRAIN},
-+	{CPM_PORTB, 27, CPM_PIN_INPUT | CPM_PIN_OPENDRAIN},
- };
-
- static void __init init_ioports(void)
-diff --git a/arch/powerpc/platforms/8xx/mpc885ads_setup.c b/arch/powerpc/platforms/8xx/mpc885ads_setup.c
-index 6e7ded0..45ed6cd 100644
---- a/arch/powerpc/platforms/8xx/mpc885ads_setup.c
-+++ b/arch/powerpc/platforms/8xx/mpc885ads_setup.c
-@@ -158,6 +158,9 @@ static struct cpm_pin mpc885ads_pins[] = {
- 	{CPM_PORTE, 28, CPM_PIN_OUTPUT},
- 	{CPM_PORTE, 29, CPM_PIN_OUTPUT},
- #endif
-+	/* I2C */
-+	{CPM_PORTB, 26, CPM_PIN_INPUT | CPM_PIN_OPENDRAIN},
-+	{CPM_PORTB, 27, CPM_PIN_INPUT | CPM_PIN_OPENDRAIN},
- };
-
- static void __init init_ioports(void)
--- 
-1.5.5.1
+--- linux-2.6.orig/arch/powerpc/boot/dts/rainier.dts
++++ linux-2.6/arch/powerpc/boot/dts/rainier.dts
+@@ -328,8 +328,9 @@
+ 			 * later cannot be changed. Chip supports a second
+ 			 * IO range but we don't use it for now
+ 			 */
+-			ranges = <02000000 0 80000000 1 80000000 0 10000000
+-				01000000 0 00000000 1 e8000000 0 00100000>;
++			ranges = <02000000 0 80000000 1 80000000 0 40000000
++				01000000 0 00000000 1 e8000000 0 00010000
++				01000000 0 00000000 1 e8800000 0 03800000>;
+ 
+ 			/* Inbound 2GB range starting at 0 */
+ 			dma-ranges = <42000000 0 0 0 0 0 80000000>;
