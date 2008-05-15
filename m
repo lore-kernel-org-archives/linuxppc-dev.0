@@ -1,20 +1,26 @@
-Return-Path: <dargaud@lpsc.in2p3.fr>
-Received: from lpsc-mail.in2p3.fr (lpsc-mail.in2p3.fr [134.158.40.8])
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 9E4CCDE28C
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 May 2008 02:35:38 +1000 (EST)
-Received: from LPSC0173W (lpsc0173w.in2p3.fr [134.158.40.173])
-	by lpsc-mail.in2p3.fr (8.13.1/8.13.1/In2p3) with SMTP id m4FGZXdR028325
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 May 2008 18:35:33 +0200
-Message-ID: <02f401c8b6a9$b1e062e0$ad289e86@LPSC0173W>
-From: "Guillaume Dargaud" <dargaud@lpsc.in2p3.fr>
-To: <linuxppc-dev@ozlabs.org>
-Subject: Using GPIO
-Date: Thu, 15 May 2008 18:35:25 +0200
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id AD9A0DDE00
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 May 2008 02:49:09 +1000 (EST)
+Date: Thu, 15 May 2008 11:48:02 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: David Miller <davem@davemloft.net>
+Subject: Re: [PATCH 2/2] ftrace: support for PowerPC
+Message-ID: <20080515164802.GA2664@loki.buserror.net>
+References: <20080515034942.109223655@goodmis.org>
+	<20080515035918.896765954@goodmis.org>
+	<20080514.222857.246967279.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: text/plain; format=flowed; charset="iso-8859-1";
-	reply-type=original
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080514.222857.246967279.davem@davemloft.net>
+Cc: proski@gnu.org, a.p.zijlstra@chello.nl, sandmann@redhat.com, pq@iki.fi,
+	linux-kernel@vger.kernel.org, rostedt@goodmis.org,
+	linuxppc-dev@ozlabs.org, srostedt@redhat.com, paulus@samba.org,
+	mingo@elte.hu
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,18 +30,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello all,
-I'm trying to use the Xilinx GPIO from a user program.
-Since I haven't managed to compile their example (simon.c is given without a 
-makefile), I wanted to try using /dev/gpio...
+On Wed, May 14, 2008 at 10:28:57PM -0700, David Miller wrote:
+> From: Steven Rostedt <rostedt@goodmis.org>
+> Date: Wed, 14 May 2008 23:49:44 -0400
+> 
+> > +#ifdef CONFIG_FTRACE
+> > +#ifdef CONFIG_DYNAMIC_FTRACE
+> > +_GLOBAL(mcount)
+> > +_GLOBAL(_mcount)
+> > +	stwu	r1,-48(r1)
+> > +	stw	r3, 12(r1)
+> > +	stw	r4, 16(r1)
+> > +	stw	r5, 20(r1)
+> > +	stw	r6, 24(r1)
+> > +	mflr	r3
+> > +	stw	r7, 28(r1)
+> > +	mfcr	r5
+> > +	stw	r8, 32(r1)
+> > +	stw	r9, 36(r1)
+> > +	stw	r10,40(r1)
+> > +	stw	r3, 44(r1)
+> > +	stw	r5, 8(r1)
+> 
+> Yikes, that's really expensive.
+> 
+> Can't you do a tail call and let the function you end
+> up calling do all the callee-saved register pops onto
+> the stack?
 
-So I added
-/dev/gpio0  c  666  0  0  10  185 -  -  -
-to device_table.txt when I generated my root filesystem with buildroot, but 
-apparently this leads nowhere as it's not visible in /proc/devices.
+The PPC32 ABI seems to (unfortunately) suggest that, with mcount, all
+registers are callee-saved (except for the modifiable-during-function-linkage
+registers like r0, r11, and r12) -- so mcount has to save the registers that
+the callee won't (because they're normally volatile).
 
-Is there some example or tutorial on how to use CONFIG_XILINX_GPIO ? Either 
-as a device or as API calls...
--- 
-Guillaume Dargaud
-http://www.gdargaud.net/
+-Scott
