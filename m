@@ -1,15 +1,16 @@
 Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <18475.47278.446992.728481@cargo.ozlabs.ibm.com>
-Date: Thu, 15 May 2008 14:14:38 +1000
+Message-ID: <18475.48822.311219.341385@cargo.ozlabs.ibm.com>
+Date: Thu, 15 May 2008 14:40:22 +1000
 From: Paul Mackerras <paulus@samba.org>
-To: akpm@linux-foundation.org
-Subject: Re: [patch 3/4] macintosh: replace deprecated __initcall with
-	device_initcall
-In-Reply-To: <200805142312.m4ENCsdu026262@imap1.linux-foundation.org>
-References: <200805142312.m4ENCsdu026262@imap1.linux-foundation.org>
-Cc: linuxppc-dev@ozlabs.org, rpjday@crashcourse.ca
+To: Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [PATCH 0/2] ftrace ported to PPC
+In-Reply-To: <20080515034942.109223655@goodmis.org>
+References: <20080515034942.109223655@goodmis.org>
+Cc: proski@gnu.org, a.p.zijlstra@chello.nl, pq@iki.fi,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	sandmann@redhat.com, Ingo Molnar <mingo@elte.hu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,12 +20,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-akpm@linux-foundation.org writes:
+Steven Rostedt writes:
 
-> -__initcall(adb_init);
-> +device_initcall(adb_init);
+> The following two patches ports ftrace to PowerPC. I tested this on
+> both my PPC64 box as well as my 32bit PowerBook G4.
 
-There's no particular reason why this needs to go in 2.6.26, is there?
-It looks to me like something that I should queue up for 2.6.27.
+Very cool!  Thanks.
+
+> This applies to the latest sched-devel (with some extra hacks to get that
+> to boot on PPC).
+> 
+> This also depends on the CFLAGS_REMOVE_foo.o patches I sent earlier.
+
+Ingo, when do you intend to send the ftrace stuff to Linus?  In the
+next merge window?
 
 Paul.
