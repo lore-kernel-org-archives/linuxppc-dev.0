@@ -1,13 +1,13 @@
 Return-Path: <avorontsov@dev.rtsoft.ru>
 Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
-	by ozlabs.org (Postfix) with SMTP id 5B03CDE660
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 May 2008 02:54:02 +1000 (EST)
-Date: Thu, 15 May 2008 20:54:01 +0400
+	by ozlabs.org (Postfix) with SMTP id 56E27DE6B4
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 May 2008 02:54:05 +1000 (EST)
+Date: Thu, 15 May 2008 20:54:04 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Kumar Gala <galak@kernel.crashing.org>,
 	Wim Van Sebroeck <wim@iguana.be>
-Subject: [PATCH 6/8] [WATCHDOG] mpc8xxx_wdt: add support for MPC8xx watchdogs
-Message-ID: <20080515165401.GF3887@polina.dev.rtsoft.ru>
+Subject: [PATCH 7/8] [POWERPC] fsl_soc: remove mpc83xx_wdt code
+Message-ID: <20080515165404.GG3887@polina.dev.rtsoft.ru>
 References: <20080515165250.GA30738@polina.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf8
@@ -24,73 +24,69 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The mpc8xxx_wdt driver is using two registers: SWSRR to push magic
-numbers, and SWCRR to control the watchdog. Both registers are available
-on the MPC8xx, and seem to have the same offsets and semantics as in
-MPC83xx/MPC86xx watchdogs. The only difference is prescale value. So this
-driver should simply work on the MPC8xx CPUs.
-
-MPC823 seem to be the first CPU in MPC8xx line, so we use fsl,mpc823-wdt
-compatible matching.
-
-Though, this patch was only build-tested and okay to drop from this
-series until tested or corrected to work on the actual hardware.
+mpc83xx_wdt is the OF driver now, so we don't need fsl_soc constructor.
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- drivers/watchdog/Kconfig       |    3 ++-
- drivers/watchdog/mpc8xxx_wdt.c |   11 +++++++++--
- 2 files changed, 11 insertions(+), 3 deletions(-)
+ arch/powerpc/sysdev/fsl_soc.c |   46 -----------------------------------------
+ 1 files changed, 0 insertions(+), 46 deletions(-)
 
-diff --git a/drivers/watchdog/Kconfig b/drivers/watchdog/Kconfig
-index 008eaa6..f9e617b 100644
---- a/drivers/watchdog/Kconfig
-+++ b/drivers/watchdog/Kconfig
-@@ -684,10 +684,11 @@ config 8xx_WDT
+diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
+index a5ceeef..32a3ac8 100644
+--- a/arch/powerpc/sysdev/fsl_soc.c
++++ b/arch/powerpc/sysdev/fsl_soc.c
+@@ -545,52 +545,6 @@ err:
+ arch_initcall(fsl_i2c_of_init);
+ #endif
  
- config 8xxx_WDT
- 	tristate "MPC8xxx Platform Watchdog Timer"
--	depends on PPC_83xx || PPC_86xx
-+	depends on PPC_8xx || PPC_83xx || PPC_86xx
- 	help
- 	  This driver is for a SoC level watchdog that exists on some
- 	  Freescale PowerPC processors. So far this driver supports:
-+	  - MPC8xx watchdogs
- 	  - MPC83xx watchdogs
- 	  - MPC86xx watchdogs
- 
-diff --git a/drivers/watchdog/mpc8xxx_wdt.c b/drivers/watchdog/mpc8xxx_wdt.c
-index 2f0681f..c7e28f0 100644
---- a/drivers/watchdog/mpc8xxx_wdt.c
-+++ b/drivers/watchdog/mpc8xxx_wdt.c
-@@ -1,5 +1,5 @@
- /*
-- * mpc8xxx_wdt.c - MPC83xx/MPC86xx watchdog userspace interface
-+ * mpc8xxx_wdt.c - MPC8xx/MPC83xx/MPC86xx watchdog userspace interface
-  *
-  * Authors: Dave Updegraff <dave@cray.org>
-  * 	    Kumar Gala <galak@kernel.crashing.org>
-@@ -261,6 +261,12 @@ static const struct of_device_id mpc8xxx_wdt_match[] = {
- 			.hw_enabled = true,
- 		},
- 	},
-+	{
-+		.compatible = "fsl,mpc823-wdt",
-+		.data = &(struct mpc8xxx_wdt_type) {
-+			.prescaler = 0x800,
-+		},
-+	},
- 	{},
- };
- MODULE_DEVICE_TABLE(of, mpc8xxx_wdt_match);
-@@ -289,6 +295,7 @@ subsys_initcall(mpc8xxx_wdt_init);
- module_exit(mpc8xxx_wdt_exit);
- 
- MODULE_AUTHOR("Dave Updegraff, Kumar Gala");
--MODULE_DESCRIPTION("Driver for watchdog timer in MPC83xx/MPC86xx uProcessors");
-+MODULE_DESCRIPTION("Driver for watchdog timer in MPC8xx/MPC83xx/MPC86xx "
-+		   "uProcessors");
- MODULE_LICENSE("GPL");
- MODULE_ALIAS_MISCDEV(WATCHDOG_MINOR);
+-#ifdef CONFIG_PPC_83xx
+-static int __init mpc83xx_wdt_init(void)
+-{
+-	struct resource r;
+-	struct device_node *np;
+-	struct platform_device *dev;
+-	u32 freq = fsl_get_sys_freq();
+-	int ret;
+-
+-	np = of_find_compatible_node(NULL, "watchdog", "mpc83xx_wdt");
+-
+-	if (!np) {
+-		ret = -ENODEV;
+-		goto nodev;
+-	}
+-
+-	memset(&r, 0, sizeof(r));
+-
+-	ret = of_address_to_resource(np, 0, &r);
+-	if (ret)
+-		goto err;
+-
+-	dev = platform_device_register_simple("mpc83xx_wdt", 0, &r, 1);
+-	if (IS_ERR(dev)) {
+-		ret = PTR_ERR(dev);
+-		goto err;
+-	}
+-
+-	ret = platform_device_add_data(dev, &freq, sizeof(freq));
+-	if (ret)
+-		goto unreg;
+-
+-	of_node_put(np);
+-	return 0;
+-
+-unreg:
+-	platform_device_unregister(dev);
+-err:
+-	of_node_put(np);
+-nodev:
+-	return ret;
+-}
+-
+-arch_initcall(mpc83xx_wdt_init);
+-#endif
+-
+ static enum fsl_usb2_phy_modes determine_usb_phy(const char *phy_type)
+ {
+ 	if (!phy_type)
 -- 
 1.5.5.1
