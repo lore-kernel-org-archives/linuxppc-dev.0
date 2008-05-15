@@ -1,34 +1,18 @@
-Return-Path: <paulmck@paulmck-laptop.linux.vnet.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id CE3D7DDE04
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 May 2008 10:16:15 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m4F0CvbL002188
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 May 2008 20:12:57 -0400
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m4F0G9PC079096
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 May 2008 18:16:09 -0600
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m4F0G8CP027562
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 May 2008 18:16:09 -0600
-Date: Wed, 14 May 2008 17:16:07 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] list_for_each_rcu must die: networking
-Message-ID: <20080515001607.GB20811@linux.vnet.ibm.com>
-References: <20080424033849.GA4401@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080424033849.GA4401@linux.vnet.ibm.com>
-Cc: shemminger@vyatta.com, kamalesh@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org,
-	adobriyan@gmail.com, akpm@linux-foundation.org,
-	balbir@linux.vnet.ibm.com, davem@davemloft.net, sri@us.ibm.com
-Reply-To: paulmck@linux.vnet.ibm.com
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [patch 1/4] powerpc: fix for OProfile callgraph for Power 64
+	bit user apps
+From: Michael Ellerman <michael@ellerman.id.au>
+To: akpm@linux-foundation.org
+In-Reply-To: <200805142312.m4ENCqLg026256@imap1.linux-foundation.org>
+References: <200805142312.m4ENCqLg026256@imap1.linux-foundation.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-5QLaZ1+PCjPLR+KsMRk9"
+Date: Thu, 15 May 2008 10:20:44 +1000
+Message-Id: <1210810844.7603.17.camel@localhost>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, cel@us.ibm.com, paulus@samba.org, carll@us.ibm.com
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,116 +22,78 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-All uses of list_for_each_rcu() can be profitably replaced by the
-easier-to-use list_for_each_entry_rcu().  This patch makes this change
-for networking, in preparation for removing the list_for_each_rcu()
-API entirely.
 
-Updated to remove the two now-unused variables as noted by Dave Miller,
-and also to fix my bonehead error detected by Kamalesh Babulal and
-Alexey Dobriyan.  It now passes LTP on POWER.  And also has valid SOB.
-Some days it just doesn't pay to get out of bed...
+--=-5QLaZ1+PCjPLR+KsMRk9
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-Acked-by: David S. Miller <davem@davemloft.net> (lkml.org/lkml/2008/4/23/448)
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
----
+On Wed, 2008-05-14 at 16:12 -0700, akpm@linux-foundation.org wrote:
+> From: Carl Love <cel@us.ibm.com>
+>=20
+> Fix the 64 bit user code backtrace which currently may hang the system.
+>=20
+> Signed-off-by: Carl Love <carll@us.ibm.com>
+> Cc: Maynard Johnson <maynardj@us.ibm.com>
+> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
- 802/psnap.c     |    4 +---
- ipv4/af_inet.c  |    9 +++------
- ipv6/af_inet6.c |    9 +++------
- 3 files changed, 7 insertions(+), 15 deletions(-)
+Hi Carl,
 
-diff -urpNa -X dontdiff linux-2.6.26-rc2/net/802/psnap.c linux-2.6.26-rc2-lfer-net/net/802/psnap.c
---- linux-2.6.26-rc2/net/802/psnap.c	2008-04-16 19:49:44.000000000 -0700
-+++ linux-2.6.26-rc2-lfer-net/net/802/psnap.c	2008-05-14 13:38:13.000000000 -0700
-@@ -30,11 +30,9 @@ static struct llc_sap *snap_sap;
-  */
- static struct datalink_proto *find_snap_client(unsigned char *desc)
- {
--	struct list_head *entry;
- 	struct datalink_proto *proto = NULL, *p;
- 
--	list_for_each_rcu(entry, &snap_list) {
--		p = list_entry(entry, struct datalink_proto, node);
-+	list_for_each_entry_rcu(p, &snap_list, node) {
- 		if (!memcmp(p->type, desc, 5)) {
- 			proto = p;
- 			break;
-diff -urpNa -X dontdiff linux-2.6.26-rc2/net/ipv4/af_inet.c linux-2.6.26-rc2-lfer-net/net/ipv4/af_inet.c
---- linux-2.6.26-rc2/net/ipv4/af_inet.c	2008-05-14 13:35:32.000000000 -0700
-+++ linux-2.6.26-rc2-lfer-net/net/ipv4/af_inet.c	2008-05-14 13:46:26.000000000 -0700
-@@ -267,7 +267,6 @@ static inline int inet_netns_ok(struct n
- static int inet_create(struct net *net, struct socket *sock, int protocol)
- {
- 	struct sock *sk;
--	struct list_head *p;
- 	struct inet_protosw *answer;
- 	struct inet_sock *inet;
- 	struct proto *answer_prot;
-@@ -284,13 +283,12 @@ static int inet_create(struct net *net, 
- 	sock->state = SS_UNCONNECTED;
- 
- 	/* Look for the requested type/protocol pair. */
--	answer = NULL;
- lookup_protocol:
- 	err = -ESOCKTNOSUPPORT;
- 	rcu_read_lock();
--	list_for_each_rcu(p, &inetsw[sock->type]) {
--		answer = list_entry(p, struct inet_protosw, list);
-+	list_for_each_entry_rcu(answer, &inetsw[sock->type], list) {
- 
-+		err = 0;
- 		/* Check the non-wild match. */
- 		if (protocol == answer->protocol) {
- 			if (protocol != IPPROTO_IP)
-@@ -305,10 +303,9 @@ lookup_protocol:
- 				break;
- 		}
- 		err = -EPROTONOSUPPORT;
--		answer = NULL;
- 	}
- 
--	if (unlikely(answer == NULL)) {
-+	if (unlikely(err)) {
- 		if (try_loading_module < 2) {
- 			rcu_read_unlock();
- 			/*
-diff -urpNa -X dontdiff linux-2.6.26-rc2/net/ipv6/af_inet6.c linux-2.6.26-rc2-lfer-net/net/ipv6/af_inet6.c
---- linux-2.6.26-rc2/net/ipv6/af_inet6.c	2008-05-14 13:35:32.000000000 -0700
-+++ linux-2.6.26-rc2-lfer-net/net/ipv6/af_inet6.c	2008-05-14 13:45:08.000000000 -0700
-@@ -87,7 +87,6 @@ static int inet6_create(struct net *net,
- 	struct inet_sock *inet;
- 	struct ipv6_pinfo *np;
- 	struct sock *sk;
--	struct list_head *p;
- 	struct inet_protosw *answer;
- 	struct proto *answer_prot;
- 	unsigned char answer_flags;
-@@ -101,13 +100,12 @@ static int inet6_create(struct net *net,
- 		build_ehash_secret();
- 
- 	/* Look for the requested type/protocol pair. */
--	answer = NULL;
- lookup_protocol:
- 	err = -ESOCKTNOSUPPORT;
- 	rcu_read_lock();
--	list_for_each_rcu(p, &inetsw6[sock->type]) {
--		answer = list_entry(p, struct inet_protosw, list);
-+	list_for_each_entry_rcu(answer, &inetsw6[sock->type], list) {
- 
-+		err = 0;
- 		/* Check the non-wild match. */
- 		if (protocol == answer->protocol) {
- 			if (protocol != IPPROTO_IP)
-@@ -122,10 +120,9 @@ lookup_protocol:
- 				break;
- 		}
- 		err = -EPROTONOSUPPORT;
--		answer = NULL;
- 	}
- 
--	if (!answer) {
-+	if (err) {
- 		if (try_loading_module < 2) {
- 			rcu_read_unlock();
- 			/*
+I'm a bit confused by this change ..
+
+> diff -puN arch/powerpc/oprofile/backtrace.c~powerpc-fix-for-oprofile-call=
+graph-for-power-64-bit-user-apps arch/powerpc/oprofile/backtrace.c
+> --- a/arch/powerpc/oprofile/backtrace.c~powerpc-fix-for-oprofile-callgrap=
+h-for-power-64-bit-user-apps
+> +++ a/arch/powerpc/oprofile/backtrace.c
+> @@ -53,19 +53,40 @@ static unsigned int user_getsp32(unsigne
+>  #ifdef CONFIG_PPC64
+>  static unsigned long user_getsp64(unsigned long sp, int is_first)
+>  {
+> -	unsigned long stack_frame[3];
+> +	unsigned long stk_frm_lr;
+> +	unsigned long stk_frm_sp;
+> +	unsigned long size;
+> +
+> +	/* Issue the __copy_from_user_inatomic() third argument currently
+> +	 * only takes sizes 1, 2, 4 or 8 bytes.  Don't read more then the
+> +	 * first 48 bytes of the stack frame.  That is all that is
+> +	 * guaranteed to exist.  Reading more may cause the system to hang.
+
+__copy_from_user_inatomic() accepts any value for n, it just has a
+special case for 1, 2, 4 and 8 - but it should still work for other
+values.
+
+The old code copied 24 bytes from sp, and the new code copies 8 bytes
+from sp and 8 bytes from sp + 16 - so I don't see where the 48 bytes
+comes in to it?
+
+=EF=BB=BFAlso the comment is a little hard to parse, I think you mean "Issu=
+e:
+the ..", but I read "Issue" as a verb in that sentence. And "Don't read
+more then" should be "than".
+
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-5QLaZ1+PCjPLR+KsMRk9
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBIK4HcdSjSd0sB4dIRAviDAKCeZsfkplQBSa1NqDAIRdBBEFZosQCgyrC9
+OYESvVN+kUHGM3+i3+7FuqI=
+=4b33
+-----END PGP SIGNATURE-----
+
+--=-5QLaZ1+PCjPLR+KsMRk9--
