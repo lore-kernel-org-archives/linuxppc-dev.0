@@ -1,15 +1,22 @@
-Return-Path: <olaf@aepfle.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 4278CDE217
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 May 2008 22:13:44 +1000 (EST)
-Date: Thu, 15 May 2008 14:13:40 +0200
-From: Olaf Hering <olaf@aepfle.de>
-To: Matt Carlson <mcarlson@broadcom.com>, Michael Chan <mchan@broadcom.com>
-Subject: dead network on JS21 with tg3 driver after flowcontrol changes
-Message-ID: <20080515121340.GA23033@aepfle.de>
+Return-Path: <Nadia.Derbey@bull.net>
+Received: from ecfrec.frec.bull.fr (ecfrec.frec.bull.fr [129.183.4.8])
+	by ozlabs.org (Postfix) with ESMTP id C94A0DDF09
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 May 2008 22:16:42 +1000 (EST)
+Message-ID: <482C1ED8.3030508@bull.net>
+Date: Thu, 15 May 2008 13:30:32 +0200
+From: Nadia Derbey <Nadia.Derbey@bull.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Subject: Re: [BUG] 2.6.26-rc1-git4 - task blocked on powerpc for more than
+	120 seconds
+References: <4821AD2D.8020001@linux.vnet.ibm.com>
+	<20080507134057.GA30637@cs181133002.pp.htv.fi>
+	<48227AAB.9000309@linux.vnet.ibm.com>
+In-Reply-To: <48227AAB.9000309@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev@ozlabs.org, Adrian Bunk <bunk@kernel.org>,
+	Balbir Singh <balbir@linux.vnet.ibm.com>,
+	kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,256 +26,149 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Kamalesh Babulal wrote:
+> Adrian Bunk wrote:
+> 
+>>On Wed, May 07, 2008 at 06:52:53PM +0530, Kamalesh Babulal wrote:
+>>
+>>>While running the ltp over the powerpc with the 2.6.26-rc1-git4 kernel,
+>>>task get blocked for more 120 seconds and does not proceeds future.
+>>>
+>>>The task msgctl08 is a ipc testcase, which test the msgget(2) msgctl(2)
+>>>syscalls.
+>>
+>>Thanks for your report.
+>>
+>>I assume this is reproducible?
+>>
+>>If yes, what was the last kernel that worked for you?
+> 
+> 
+> This is reproducible on 2.6.26-rc1 and 2.6.26-rc1-git(s). 2.6.25 is the last know kernel
+> to work.
+> 
+> 
+>>I've also added Pierre Peiffer and Nadia Derbey to the Cc since their 
+>>recent ipc commits are my first suspects.
+>>
+>>
+>>>Machine is stuck in the task, printing the following call trace
+>>>more than 5000 times. The oom-killer invoked once in-between.
+>>>
+>>>INFO: task msgctl08:16248 blocked for more than 120 seconds.
+>>>"echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+>>>Call Trace:
+>>>[c0000000762435a0] [0000000000000001] 0x1 (unreliable)
+>>>[c000000076243770] [c000000000010acc] .__switch_to+0x128/0x16c
+>>>[c000000076243800] [c0000000004b07a4] .schedule+0x7ac/0x890
+>>>[c0000000762438f0] [c0000000004b2ba4] .rwsem_down_failed_common+0x260/0x2b0
+>>>[c0000000762439b0] [c0000000004b2c60] .rwsem_down_read_failed+0x2c/0x44
+>>>[c000000076243a60] [c0000000004b1b84] .down_read+0x44/0x5c
+>>>[c000000076243af0] [c000000000295e10] .ipc_lock+0x34/0xe0
+>>>[c000000076243b90] [c00000000029690c] .ipc_lock_check+0x24/0x78
+>>>[c000000076243c20] [c0000000002972c0] .do_msgsnd+0xb0/0x3f8
+>>>[c000000076243d10] [c000000000293ce8] .compat_sys_msgsnd+0x94/0xc0
+>>>[c000000076243db0] [c000000000014418] .compat_sys_ipc+0x130/0x1f4
+>>>[c000000076243e30] [c000000000008734] syscall_exit+0x0/0x40
+>>>msgctl08 invoked oom-killer: gfp_mask=0x1200d2, order=0, oomkilladj=0
+>>>Call Trace:
+>>>[c00000001e1c7640] [c0000000000101bc] .show_stack+0x70/0x1bc (unreliable)
+>>>[c00000001e1c76f0] [c0000000000c2c78] .oom_kill_process+0x78/0x230
+>>>[c00000001e1c77a0] [c0000000000c3390] .out_of_memory+0x28c/0x320
+>>>[c00000001e1c7870] [c0000000000c70ac] .__alloc_pages_internal+0x364/0x468
+>>>[c00000001e1c7980] [c0000000000e83cc] .alloc_page_vma+0x120/0x14c
+>>>[c00000001e1c7a20] [c0000000000e0224] .read_swap_cache_async+0x7c/0x160
+>>>[c00000001e1c7ae0] [c0000000000e035c] .swapin_readahead+0x54/0xd4
+>>>[c00000001e1c7ba0] [c0000000000d47e8] .handle_mm_fault+0x520/0x9d8
+>>>[c00000001e1c7c80] [c0000000004b5054] .do_page_fault+0x440/0x624
+>>>[c00000001e1c7e30] [c0000000000053fc] handle_page_fault+0x20/0x5c
+>>>Mem-info:
+>>>Node 0 DMA per-cpu:
+>>>CPU    0: hi:    6, btch:   1 usd:   1
+>>>CPU    1: hi:    6, btch:   1 usd:   1
+>>>Node 1 DMA per-cpu:
+>>>CPU    0: hi:    6, btch:   1 usd:   5
+>>>CPU    1: hi:    6, btch:   1 usd:   5
+>>>Active:31 inactive:2628 dirty:1 writeback:6 unstable:0
+>>> free:156 slab:13071 mapped:548 pagetables:41109 bounce:0
+>>>Node 0 DMA free:5312kB min:5760kB low:7168kB high:8640kB active:1024kB inactive:768kB present:3928832kB pages_scanned:3912 all_unreclaimable? no
+>>>lowmem_reserve[]: 0 0 0
+>>>Node 1 DMA free:4672kB min:4992kB low:6208kB high:7488kB active:960kB inactive:169792kB present:3404992kB pages_scanned:140140 all_unreclaimable? no
+>>>lowmem_reserve[]: 0 0 0
+>>>Node 0 DMA: 5*64kB 15*128kB 2*256kB 1*512kB 0*1024kB 1*2048kB 0*4096kB 0*8192kB 0*16384kB = 5312kB
+>>>Node 1 DMA: 8*64kB 5*128kB 6*256kB 0*512kB 0*1024kB 1*2048kB 0*4096kB 0*8192kB 0*16384kB = 4736kB
+>>>8185 total pagecache pages
+>>>Swap cache: add 29545, delete 21888, find 5602/10373
+>>>Free swap  = 803712kB
+>>>Total swap = 2048128kB
+>>>114688 pages of RAM
+>>>766 reserved pages
+>>>231218 pages shared
+>>>7657 pages swap cached
+>>>Out of memory: kill process 15371 (msgctl08) score 39223 or a child
+>>>Killed process 15373 (msgctl08)
+>>>INFO: task msgctl08:15385 blocked for more than 120 seconds.
+>>>"echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+>>>Call Trace:
+>>>[c0000000e9a43290] [0000000000000001] 0x1 (unreliable)
+>>>[c0000000e9a43460] [c000000000010acc] .__switch_to+0x128/0x16c
+>>>[c0000000e9a434f0] [c0000000004b07a4] .schedule+0x7ac/0x890
+>>>[c0000000e9a435e0] [c0000000004b0d90] .io_schedule+0x7c/0xe8
+>>>[c0000000e9a43670] [c0000000002d7f44] .get_request_wait+0x15c/0x1e0
+>>>[c0000000e9a43750] [c0000000002d8950] .__make_request+0x3ec/0x4d8
+>>>[c0000000e9a43800] [c0000000002d6624] .generic_make_request+0x35c/0x3b0
+>>>[c0000000e9a438e0] [c0000000002d81b0] .submit_bio+0x118/0x140
+>>>[c0000000e9a439a0] [c0000000000dfa88] .swap_readpage+0x94/0xb4
+>>>[c0000000e9a43a20] [c0000000000e02b8] .read_swap_cache_async+0x110/0x160
+>>>[c0000000e9a43ae0] [c0000000000e035c] .swapin_readahead+0x54/0xd4
+>>>[c0000000e9a43ba0] [c0000000000d47e8] .handle_mm_fault+0x520/0x9d8
+>>>[c0000000e9a43c80] [c0000000004b5054] .do_page_fault+0x440/0x624
+>>>[c0000000e9a43e30] [c0000000000053fc] handle_page_fault+0x20/0x5c
+>>>INFO: task msgctl08:15405 blocked for more than 120 seconds.
+>>>"echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+>>>Call Trace:
+>>>[c0000000b1757290] [0000000000000001] 0x1 (unreliable)
+>>>[c0000000b1757460] [c000000000010acc] .__switch_to+0x128/0x16c
+>>>[c0000000b17574f0] [c0000000004b07a4] .schedule+0x7ac/0x890
+>>>[c0000000b17575e0] [c0000000004b0d90] .io_schedule+0x7c/0xe8
+>>>[c0000000b1757670] [c0000000002d7f44] .get_request_wait+0x15c/0x1e0
+>>>[c0000000b1757750] [c0000000002d8950] .__make_request+0x3ec/0x4d8
+>>>[c0000000b1757800] [c0000000002d6624] .generic_make_request+0x35c/0x3b0
+>>>[c0000000b17578e0] [c0000000002d81b0] .submit_bio+0x118/0x140
+>>>[c0000000b17579a0] [c0000000000dfa88] .swap_readpage+0x94/0xb4
+>>>[c0000000b1757a20] [c0000000000e02b8] .read_swap_cache_async+0x110/0x160
+>>>[c0000000b1757ae0] [c0000000000e035c] .swapin_readahead+0x54/0xd4
+>>>[c0000000b1757ba0] [c0000000000d47e8] .handle_mm_fault+0x520/0x9d8
+>>>[c0000000b1757c80] [c0000000004b5054] .do_page_fault+0x440/0x624
+>>>[c0000000b1757e30] [c0000000000053fc] handle_page_fault+0x20/0x5c
+>>>INFO: task msgctl08:15406 blocked for more than 120 seconds.
+>>>"echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+>>>Call Trace:
+>>>[c0000000eec53290] [0000000000000001] 0x1 (unreliable)
+>>>[c0000000eec53460] [c000000000010acc] .__switch_to+0x128/0x16c
+>>>[c0000000eec534f0] [c0000000004b07a4] .schedule+0x7ac/0x890
+>>>[c0000000eec535e0] [c0000000004b0d90] .io_schedule+0x7c/0xe8
+>>>[c0000000eec53670] [c0000000002d7f44] .get_request_wait+0x15c/0x1e0
+>>>[c0000000eec53750] [c0000000002d8950] .__make_request+0x3ec/0x4d8
+>>>[c0000000eec53800] [c0000000002d6624] .generic_make_request+0x35c/0x3b0
+>>>[c0000000eec538e0] [c0000000002d81b0] .submit_bio+0x118/0x140
+>>>[c0000000eec539a0] [c0000000000dfa88] .swap_readpage+0x94/0xb4
+>>>[c0000000eec53a20] [c0000000000e02b8] .read_swap_cache_async+0x110/0x160
+>>>[c0000000eec53ae0] [c0000000000e035c] .swapin_readahead+0x54/0xd4
+>>>[c0000000eec53ba0] [c0000000000d47e8] .handle_mm_fault+0x520/0x9d8
+>>>[c0000000eec53c80] [c0000000004b5054] .do_page_fault+0x440/0x624
+>>>[c0000000eec53e30] [c0000000000053fc] handle_page_fault+0x20/0x5c
 
-Commit ef167e27039eeaea6d3cdd5c547b082e89840bdd ([TG3]: Fix supporting
-flowctrl code) breaks networking on IBM JS21 blade servers. If I revert
-this change from 2.6.26-rc2-git4, nfsroot for example will work again.
-There are no packages submitted, a tcpdump on a different host sees no
-broadcast messages.
+Kamalesh,
 
-Any ideas how to fix this?
-What info do you need from the system?
-I started with arch/powerpc/configs/ppc64_defconfig and updated CONFIG_CMDLINE
-for nfsroot.
+I'm wondering whether this is not related to a problem found in LTP 
+after msgmni had been changed from 16 to a computed value.
 
-....
-tg3.c:v3.92 (May 2, 2008)
-tg3 0000:10:04.0: enabling device (0000 -> 0002)
-eth0: Tigon3 [partno(none) rev 8003 PHY(5780)] (PCIX:133MHz:64-bit) 1000Base-SX Ethernet 00:11:25:c9:07:22
-eth0: RXcsums[1] LinkChgREG[0] MIirq[0] ASF[1] WireSpeed[0] TSOcap[1]
-eth0: dma_rwctrl[76144000] dma_mask[40-bit]
-tg3 0000:10:04.1: enabling device (0000 -> 0002)
-eth1: Tigon3 [partno(none) rev 8003 PHY(5780)] (PCIX:133MHz:64-bit) 1000Base-SX Ethernet 00:11:25:c9:07:23
-eth1: RXcsums[1] LinkChgREG[0] MIirq[0] ASF[0] WireSpeed[0] TSOcap[1]
-eth1: dma_rwctrl[76144000] dma_mask[40-bit]
-...
+Does your ltp test suite contain the patch I had sent in thread 
+http://lkml.org/lkml/2008/2/21/123?
 
-full dmesg:
+If you want to have a look at it, discussion started in thread 
+http://lkml.org/lkml/2008/2/16/6
 
-Using pSeries machine description
-Page orders: linear mapping = 24, virtual = 12, io = 12
-console [udbg0] enabled
-Partition configured for 2 cpus.
-CPU maps initialized for 1 thread per core
- (thread shift is 0)
-Starting Linux PPC64 #3 SMP Thu May 15 13:47:10 CEST 2008
------------------------------------------------------
-ppc64_pft_size                = 0x19
-physicalMemorySize            = 0x7a000000
-htab_hash_mask                = 0x3ffff
------------------------------------------------------
-Initializing cgroup subsys cpuset
-Linux version 2.6.26-rc2-git4 (olaf@lingonberry) (gcc version 4.1.2 20070115 (prerelease) (SUSE Linux)) #3 SMP Thu May 15 13:47:10 CEST 2008
-[boot]0012 Setup Arch
-Entering add_active_range(0, 0, 499712) 0 entries of 256 used
-PCI host bridge /pci@8000000f8000000  ranges:
-  IO 0x00000100f4000000..0x00000100f43fffff -> 0x0000000000000000
- MEM 0x0000010080000000..0x00000100efffffff -> 0x0000000080000000 
-PPC64 nvram contains 8192 bytes
-Using dedicated idle loop
-Top of RAM: 0x7a000000, Total RAM: 0x7a000000
-Memory hole size: 0MB
-Zone PFN ranges:
-  DMA             0 ->   499712
-  Normal     499712 ->   499712
-Movable zone start PFN for each node
-early_node_map[1] active PFN ranges
-    0:        0 ->   499712
-On node 0 totalpages: 499712
-  DMA zone: 6832 pages used for memmap
-  DMA zone: 0 pages reserved
-  DMA zone: 492880 pages, LIFO batch:31
-  Normal zone: 0 pages used for memmap
-  Movable zone: 0 pages used for memmap
-[boot]0015 Setup Done
-Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 492880
-Kernel command line: debug panic=9 rw root=/dev/nfs nfsroot=10.10.4.97:/data/inst/nfs/olh ip=:::::eth1:dhcp 
-[boot]0020 XICS Init
-[boot]0021 XICS Done
-pic: no ISA interrupt controller
-PID hash table entries: 4096 (order: 12, 32768 bytes)
-time_init: decrementer frequency = 14.318000 MHz
-time_init: processor frequency   = 2597.400000 MHz
-clocksource: timebase mult[1175e5e5] shift[22] registered
-clockevent: decrementer mult[3aa] shift[16] cpu[0]
-Console: colour dummy device 80x25
-console handover: boot [udbg0] -> real [hvc0]
-Dentry cache hash table entries: 262144 (order: 9, 2097152 bytes)
-Inode-cache hash table entries: 131072 (order: 8, 1048576 bytes)
-Memory: 1942124k/1998848k available (8288k kernel code, 56096k reserved, 1412k data, 532k bss, 380k init)
-SLUB: Genslabs=12, HWalign=128, Order=0-3, MinObjects=0, CPUs=2, Nodes=1
-Calibrating delay loop... 28.60 BogoMIPS (lpj=57216)
-Mount-cache hash table entries: 256
-clockevent: decrementer mult[3aa] shift[16] cpu[1]
-Processor 1 found.
-Brought up 2 CPUs
-CPU0 attaching sched-domain:
- domain 0: span 0-1
-  groups: 0 1
-CPU1 attaching sched-domain:
- domain 0: span 0-1
-  groups: 1 0
-khelper used greatest stack depth: 12896 bytes left
-khelper used greatest stack depth: 12320 bytes left
-khelper used greatest stack depth: 11904 bytes left
-net_namespace: 936 bytes
-xor: measuring software checksum speed
-   8regs     :  5830.000 MB/sec
-   8regs_prefetch:  4644.000 MB/sec
-   32regs    :  5751.000 MB/sec
-   32regs_prefetch:  4601.000 MB/sec
-xor: using function: 8regs (5830.000 MB/sec)
-NET: Registered protocol family 16
-IBM eBus Device Driver
-PCI: Probing PCI hardware
-IOMMU table initialized, virtual merging enabled
-PCI: Probing PCI hardware done
-SCSI subsystem initialized
-libata version 3.00 loaded.
-usbcore: registered new interface driver usbfs
-usbcore: registered new interface driver hub
-usbcore: registered new device driver usb
-NET: Registered protocol family 2
-Switched to high resolution mode on CPU 0
-Switched to high resolution mode on CPU 1
-IP route cache hash table entries: 65536 (order: 7, 524288 bytes)
-TCP established hash table entries: 262144 (order: 10, 4194304 bytes)
-TCP bind hash table entries: 65536 (order: 8, 1048576 bytes)
-TCP: Hash tables configured (established 262144 bind 65536)
-TCP reno registered
-NET: Registered protocol family 1
-RTAS daemon started
-Total HugeTLB memory allocated, 0
-JFS: nTxBlock = 8192, nTxLock = 65536
-msgmni has been set to 3794 for ipc namespace c00000000082cfe8
-async_tx: api initialized (sync-only)
-Block layer SCSI generic (bsg) driver version 0.4 loaded (major 252)
-io scheduler noop registered
-io scheduler anticipatory registered (default)
-io scheduler deadline registered
-io scheduler cfq registered
-khelper used greatest stack depth: 10864 bytes left
-vio_register_driver: driver hvc_console registering
-HVSI: registered 0 devices
-Serial: 8250/16550 driver $Revision: 1.90 $ 4 ports, IRQ sharing disabled
-TX39/49 Serial driver version 1.11
-brd: module loaded
-loop: module loaded
-Intel(R) PRO/1000 Network Driver - version 7.3.20-k2
-Copyright (c) 1999-2006 Intel Corporation.
-pcnet32.c:v1.35 21.Apr.2008 tsbogend@alpha.franken.de
-e100: Intel(R) PRO/100 Network Driver, 3.5.23-k4-NAPI
-e100: Copyright(c) 1999-2006 Intel Corporation
-tg3.c:v3.92 (May 2, 2008)
-tg3 0000:10:04.0: enabling device (0000 -> 0002)
-eth0: Tigon3 [partno(none) rev 8003 PHY(5780)] (PCIX:133MHz:64-bit) 1000Base-SX Ethernet 00:11:25:c9:07:22
-eth0: RXcsums[1] LinkChgREG[0] MIirq[0] ASF[1] WireSpeed[0] TSOcap[1]
-eth0: dma_rwctrl[76144000] dma_mask[40-bit]
-tg3 0000:10:04.1: enabling device (0000 -> 0002)
-eth1: Tigon3 [partno(none) rev 8003 PHY(5780)] (PCIX:133MHz:64-bit) 1000Base-SX Ethernet 00:11:25:c9:07:23
-eth1: RXcsums[1] LinkChgREG[0] MIirq[0] ASF[0] WireSpeed[0] TSOcap[1]
-eth1: dma_rwctrl[76144000] dma_mask[40-bit]
-console [netcon0] enabled
-netconsole: network logging started
-Uniform Multi-Platform E-IDE driver
-ide: Assuming 33MHz system bus speed for PIO modes; override with idebus=xx
-ipr: IBM Power RAID SCSI Device Driver version: 2.4.1 (April 24, 2007)
-ipr 0000:01:01.0: Found IOA with IRQ: 26
-ipr 0000:01:01.0: Starting IOA initialization sequence.
-ipr 0000:01:01.0: Adapter firmware version: 0616002F
-ipr 0000:01:01.0: IOA initialized.
-scsi0 : IBM 572E Storage Adapter
-scsi 0:0:1:0: Direct-Access     IBM-ESXS ST936701SS       B51B PQ: 0 ANSI: 5
-scsi 0:1:1:0: Direct-Access     IBM-ESXS ST936701SS       B51B PQ: 0 ANSI: 5
-scsi: unknown device type 31
-scsi 0:255:255:255: No Device         IBM      572E001          0150 PQ: 0 ANSI: 0
-vio_register_driver: driver ibmvscsi registering
-st: Version 20080224, fixed bufsize 32768, s/g segs 256
-Driver 'st' needs updating - please use bus_type methods
-Driver 'sd' needs updating - please use bus_type methods
-sd 0:0:1:0: [sda] 71096640 512-byte hardware sectors (36401 MB)
-sd 0:0:1:0: [sda] Write Protect is off
-sd 0:0:1:0: [sda] Mode Sense: bb 00 10 08
-sd 0:0:1:0: [sda] Write cache: disabled, read cache: enabled, supports DPO and FUA
-sd 0:0:1:0: [sda] 71096640 512-byte hardware sectors (36401 MB)
-sd 0:0:1:0: [sda] Write Protect is off
-sd 0:0:1:0: [sda] Mode Sense: bb 00 10 08
-sd 0:0:1:0: [sda] Write cache: disabled, read cache: enabled, supports DPO and FUA
- sda: sda1 sda2 sda3
-sd 0:0:1:0: [sda] Attached SCSI disk
-sd 0:1:1:0: [sdb] 71096640 512-byte hardware sectors (36401 MB)
-sd 0:1:1:0: [sdb] Write Protect is off
-sd 0:1:1:0: [sdb] Mode Sense: bb 00 10 08
-sd 0:1:1:0: [sdb] Write cache: disabled, read cache: enabled, supports DPO and FUA
-sd 0:1:1:0: [sdb] 71096640 512-byte hardware sectors (36401 MB)
-sd 0:1:1:0: [sdb] Write Protect is off
-sd 0:1:1:0: [sdb] Mode Sense: bb 00 10 08
-sd 0:1:1:0: [sdb] Write cache: disabled, read cache: enabled, supports DPO and FUA
- sdb: sdb1 sdb2 sdb3
-sd 0:1:1:0: [sdb] Attached SCSI disk
-Driver 'sr' needs updating - please use bus_type methods
-sd 0:0:1:0: Attached scsi generic sg0 type 0
-sd 0:1:1:0: Attached scsi generic sg1 type 0
-scsi 0:255:255:255: Attached scsi generic sg2 type 31
-ieee1394: raw1394: /dev/raw1394 device initialized
-ohci_hcd: 2006 August 04 USB 1.1 'Open' Host Controller (OHCI) Driver
-ohci_hcd 0000:40:00.0: OHCI Host Controller
-ohci_hcd 0000:40:00.0: new USB bus registered, assigned bus number 1
-ohci_hcd 0000:40:00.0: irq 19, io mem 0x100b0001000
-usb usb1: configuration #1 chosen from 1 choice
-hub 1-0:1.0: USB hub found
-hub 1-0:1.0: 3 ports detected
-ohci_hcd 0000:40:00.1: OHCI Host Controller
-ohci_hcd 0000:40:00.1: new USB bus registered, assigned bus number 2
-ohci_hcd 0000:40:00.1: irq 19, io mem 0x100b0000000
-usb usb2: configuration #1 chosen from 1 choice
-hub 2-0:1.0: USB hub found
-hub 2-0:1.0: 3 ports detected
-mice: PS/2 mouse device common for all mice
-i2c /dev entries driver
-md: linear personality registered for level -1
-md: raid0 personality registered for level 0
-md: raid1 personality registered for level 1
-md: raid10 personality registered for level 10
-raid6: int64x1   1389 MB/s
-raid6: int64x2   1883 MB/s
-raid6: int64x4   1900 MB/s
-raid6: int64x8   1947 MB/s
-raid6: altivecx1  3885 MB/s
-raid6: altivecx2  4572 MB/s
-raid6: altivecx4  5239 MB/s
-raid6: altivecx8  4743 MB/s
-raid6: using algorithm altivecx4 (5239 MB/s)
-md: raid6 personality registered for level 6
-md: raid5 personality registered for level 5
-md: raid4 personality registered for level 4
-device-mapper: ioctl: 4.13.0-ioctl (2007-10-18) initialised: dm-devel@redhat.com
-EDAC MC: Ver: 2.1.0 May 15 2008
-usbcore: registered new interface driver hiddev
-usbcore: registered new interface driver usbhid
-usbhid: v2.6:USB HID core driver
-oprofile: using ppc64/970MP performance monitoring.
-IPv4 over IPv4 tunneling driver
-TCP cubic registered
-NET: Registered protocol family 17
-RPC: Registered udp transport module.
-RPC: Registered tcp transport module.
-registered taskstats version 1
-/home/olaf/kernel/git/bug390314/linux-2.6.26-rc2/drivers/rtc/hctosys.c: unable to open rtc device (rtc0)
-Sending DHCP requests .<6>tg3: eth1: Link is up at 1000 Mbps, full duplex.
-tg3: eth1: Flow control is off for TX and off for RX.
-., OK
-IP-Config: Got DHCP answer from 10.10.4.97, my address is 10.10.1.110
-IP-Config: Complete:
-     device=eth1, addr=10.10.1.110, mask=255.255.0.0, gw=10.10.0.8,
-     host=carambola, domain=suse.de, nis-domain=suse.de,
-     bootserver=10.10.4.97, rootserver=10.10.4.97, rootpath=
-md: Autodetecting RAID arrays.
-md: Scanned 0 and added 0 devices.
-md: autorun ...
-md: ... autorun DONE.
-Looking up port of RPC 100003/2 on 10.10.4.97
-Looking up port of RPC 100005/1 on 10.10.4.97
-VFS: Mounted root (nfs filesystem).
-Freeing unused kernel memory: 380k freed
-mount used greatest stack depth: 7504 bytes left
+Regards,
+Nadia
