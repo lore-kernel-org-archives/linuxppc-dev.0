@@ -1,22 +1,27 @@
-Return-Path: <stephen.neuendorffer@xilinx.com>
-Received: from outbound7-sin-R.bigfish.com (outbound-sin.frontbridge.com
-	[207.46.51.80])
+Return-Path: <garyj@denx.de>
+Received: from mout1.freenet.de (mout1.freenet.de [195.4.92.91])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 477C8DE0D2
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 May 2008 04:56:40 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Subject: RE: Using GPIO
-Date: Thu, 15 May 2008 11:56:35 -0700
-In-reply-to: <20080515183910.6B40A75007E@mail106-va3.bigfish.com>
-References: <02f401c8b6a9$b1e062e0$ad289e86@LPSC0173W>
-	<20080515183910.6B40A75007E@mail106-va3.bigfish.com>
-From: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
-To: "John Bonesio" <john.bonesio@xilinx.com>,
-	"Guillaume Dargaud" <dargaud@lpsc.in2p3.fr>, <linuxppc-dev@ozlabs.org>
-Message-Id: <20080515185637.587AF43004B@mail186-sin.bigfish.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 9DD06DE22C
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 May 2008 05:02:28 +1000 (EST)
+Received: from [195.4.92.12] (helo=2.mx.freenet.de)
+	by mout1.freenet.de.freenet.de with esmtpa (ID
+	gary.jennejohn@freenet.de) (port 25) (Exim 4.69 #19)
+	id 1Jwiic-00054C-GI
+	for linuxppc-dev@ozlabs.org; Thu, 15 May 2008 21:02:22 +0200
+Received: from mace2.m.pppool.de ([89.49.172.226]:56689
+	helo=peedub.jennejohn.org)
+	by 2.mx.freenet.de with esmtpa (ID gary.jennejohn@freenet.de) (port 25)
+	(Exim 4.69 #12) id 1Jwiic-0008Pv-76
+	for linuxppc-dev@ozlabs.org; Thu, 15 May 2008 21:02:22 +0200
+Date: Thu, 15 May 2008 21:02:21 +0200
+From: Gary Jennejohn <garyj@denx.de>
+To: linuxppc-dev@ozlabs.org
+Subject: 440EPx - SPI and IIC1 conflict
+Message-ID: <20080515210221.2cd19762@peedub.jennejohn.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Reply-To: gary.jennejohn@freenet.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,98 +31,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hello,
 
+I've developed a driver for the SPI controller in the 440EPx, which should
+also work for e.g. the 460EX, and maybe other AMCC processors.
 
-I don't think the GPIO driver has device tree bindings yet in the driver
-for ARCH=3Dpowerpc.
+According to the UM bit 14 in SDR0_PFC1 controls whether certain signals
+are for IIC1 or SPI.  My driver assures that this bit is set to 0.  Note
+that I haven't been able to find any code in the Linux tree which
+manipulates this register except for my driver, so IIC1 isn't actually
+enabled for the 440EPx or the 460EX.
 
-Steve
+Anyway.  In order to guarantee that IIC1 doesn't interfere with the
+operation of SPI I have this code snippet in i2c-ibm_of.c:
 
-> -----Original Message-----
-> From: linuxppc-dev-bounces+stephen.neuendorffer=3Dxilinx.com@ozlabs.org
-[mailto:linuxppc-dev-
-> bounces+stephen.neuendorffer=3Dxilinx.com@ozlabs.org] On Behalf Of John
-Bonesio
-> Sent: Thursday, May 15, 2008 11:39 AM
-> To: Guillaume Dargaud; linuxppc-dev@ozlabs.org
-> Subject: RE: Using GPIO
->=20
->=20
-> Hi Guillaume,
->=20
-> If you're using arch/powerpc, my understanding is that
-> CONFIG_XILINX_GPIO needs to be enabled as well as having the right
-info
-> in the dts file.
->=20
-> Right now I'll have to defer to others to tell you what's needed in
-the
-> dts file.
->=20
-> If you're using arch/ppc, I believe you just need CONFIG_XILINX_GPIO
-> enabled.
->=20
-> When the system boots up, you see a message on the console when the
-GPIO
-> driver initializes.
->=20
-> This is not exactly a tutorial. Hopefully this still helps,
->=20
-> - John
->=20
-> -----Original Message-----
-> From: linuxppc-dev-bounces+john.bonesio=3Dxilinx.com@ozlabs.org
-> [mailto:linuxppc-dev-bounces+john.bonesio=3Dxilinx.com@ozlabs.org] On
-> Behalf Of Guillaume Dargaud
-> Sent: Thursday, May 15, 2008 9:35 AM
-> To: linuxppc-dev@ozlabs.org
-> Subject: Using GPIO
->=20
-> Hello all,
-> I'm trying to use the Xilinx GPIO from a user program.
-> Since I haven't managed to compile their example (simon.c is given
-> without a
-> makefile), I wanted to try using /dev/gpio...
->=20
-> So I added
-> /dev/gpio0  c  666  0  0  10  185 -  -  -
-> to device_table.txt when I generated my root filesystem with
-buildroot,
-> but
-> apparently this leads nowhere as it's not visible in /proc/devices.
->=20
-> Is there some example or tutorial on how to use CONFIG_XILINX_GPIO ?
-> Either
-> as a device or as API calls...
-> --
-> Guillaume Dargaud
-> http://www.gdargaud.net/
->=20
->=20
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
->=20
->=20
-> This email and any attachments are intended for the sole use of the
-named recipient(s) and contain(s)
-> confidential information that may be proprietary, privileged or
-copyrighted under applicable law. If
-> you are not the intended recipient, do not read, copy, or forward this
-email message or any
-> attachments. Delete this email message and any attachments
-immediately.
->=20
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+#if (defined(CONFIG_SPI_PPC4xx) || defined(CONFIG_SPI_PPC4xx_MODULE)) \
+	&& defined(CONFIG_440EPX)
+	/*
+	 * Hack, but on the 440EPx we can have either IIC1 or SPI.
+	 */
+	if (dev->paddr == 0x1ef600800ULL)
+		goto fail1;
+#endif
 
+which skips IIC1 if the SPI controller is being used.
 
-This email and any attachments are intended for the sole use of the named=
- recipient(s) and contain(s) confidential information that may be=
- proprietary, privileged or copyrighted under applicable law. If you are=
- not the intended recipient, do not read, copy, or forward this email=
- message or any attachments. Delete this email message and any attachments=
- immediately.
+However, this isn't very aesthetically pleasing.
+
+A colleague suggested testing bit 14 in SDR0_PFC1 and bailing if it's
+set.
+
+The problem with this is that the test would depend on the order in which
+the init routines are called.  Right now the SPI driver is initialized
+before the i2c driver, but I'm not certain that this would be the case for
+all time.
+
+Basically I'm wondering whether anyone on this list has any brilliant
+idea for handling this problem or whether my present solution is really
+just OK.
+
+---
+Gary Jennejohn
+*********************************************************************
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: +49-8142-66989-0 Fax: +49-8142-66989-80  Email: office@denx.de
+*********************************************************************
