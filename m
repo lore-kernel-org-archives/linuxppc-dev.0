@@ -1,21 +1,20 @@
-Return-Path: <mchan@broadcom.com>
-Received: from mms2.broadcom.com (mms2.broadcom.com [216.31.210.18])
-	by ozlabs.org (Postfix) with ESMTP id 91842DE0B0
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 May 2008 02:32:29 +1000 (EST)
-Subject: Re: dead network on JS21 with tg3 driver after flowcontrol
- changes
-From: "Michael Chan" <mchan@broadcom.com>
-To: "Olaf Hering" <olaf@aepfle.de>
-In-Reply-To: <20080515154948.GA23647@aepfle.de>
-References: <20080515121340.GA23033@aepfle.de>
-	<1551EAE59135BE47B544934E30FC4FC002AABCEE@nt-irva-0751.brcm.ad.broadcom.com>
-	<20080515154948.GA23647@aepfle.de>
-Date: Thu, 15 May 2008 10:37:07 -0700
-Message-ID: <1210873027.22745.0.camel@dell>
+Return-Path: <dargaud@lpsc.in2p3.fr>
+Received: from lpsc-mail.in2p3.fr (lpsc-mail.in2p3.fr [134.158.40.8])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 9E4CCDE28C
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 May 2008 02:35:38 +1000 (EST)
+Received: from LPSC0173W (lpsc0173w.in2p3.fr [134.158.40.173])
+	by lpsc-mail.in2p3.fr (8.13.1/8.13.1/In2p3) with SMTP id m4FGZXdR028325
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 May 2008 18:35:33 +0200
+Message-ID: <02f401c8b6a9$b1e062e0$ad289e86@LPSC0173W>
+From: "Guillaume Dargaud" <dargaud@lpsc.in2p3.fr>
+To: <linuxppc-dev@ozlabs.org>
+Subject: Using GPIO
+Date: Thu, 15 May 2008 18:35:25 +0200
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linuxppc-dev@ozlabs.org, Matthew Carlson <mcarlson@broadcom.com>,
-	netdev <netdev@vger.kernel.org>
+Content-Type: text/plain; format=flowed; charset="iso-8859-1";
+	reply-type=original
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,19 +24,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2008-05-15 at 17:49 +0200, Olaf Hering wrote:
-> On Thu, May 15, Michael Chan wrote:
-> 
-> > Olaf Hering wrote:
-> > 
-> > > Any ideas how to fix this?
-> > > What info do you need from the system?
-> > 
-> > Are you using eth0 or eth1?  The dmesg below shows that
-> > link came up on eth1 and IP address from DHCP was received.
-> 
-> I'm using eth1.
-> The log was done with the patch reverted.
-> 
+Hello all,
+I'm trying to use the Xilinx GPIO from a user program.
+Since I haven't managed to compile their example (simon.c is given without a 
+makefile), I wanted to try using /dev/gpio...
 
-In that case, please re-apply the patch and provide mii-tool -vvv eth1.
+So I added
+/dev/gpio0  c  666  0  0  10  185 -  -  -
+to device_table.txt when I generated my root filesystem with buildroot, but 
+apparently this leads nowhere as it's not visible in /proc/devices.
+
+Is there some example or tutorial on how to use CONFIG_XILINX_GPIO ? Either 
+as a device or as API calls...
+-- 
+Guillaume Dargaud
+http://www.gdargaud.net/
