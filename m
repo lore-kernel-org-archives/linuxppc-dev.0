@@ -1,19 +1,16 @@
-Return-Path: <BenGardiner@nanometrics.ca>
-Received: from nmxmail.nanometrics.ca (mail.nanometrics.ca [206.191.47.130])
-	by ozlabs.org (Postfix) with ESMTP id 77978DDF09
+Return-Path: <frannk_m1@yahoo.com>
+Received: from web32201.mail.mud.yahoo.com (web32201.mail.mud.yahoo.com
+	[68.142.207.132]) by ozlabs.org (Postfix) with SMTP id 55FDDDDE1F
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 15 May 2008 06:16:54 +1000 (EST)
-Message-ID: <482B48DA.5080300@nanometrics.ca>
-Date: Wed, 14 May 2008 16:17:30 -0400
-From: Ben Gardiner <BenGardiner@nanometrics.ca>
+	Thu, 15 May 2008 12:20:07 +1000 (EST)
+Date: Wed, 14 May 2008 19:13:27 -0700 (PDT)
+From: Frank <frannk_m1@yahoo.com>
+Subject: Re: How to test the DDR memory with burst visit mode?
+To: "¹ù¾¢" <guojin02@tsinghua.org.cn>, linuxppc-embedded@ozlabs.org
+In-Reply-To: <410764342.21662@tsinghua.org.cn>
 MIME-Version: 1.0
-To: Dan Malek <dan@embeddedalley.com>
-Subject: Re: 8xx: Work around CPU15 erratum.
-References: <482AFCC5.2070907@nanometrics.ca>
-	<07769C41-66EB-48C5-9494-3BBE34447BBD@embeddedalley.com>
-In-Reply-To: <07769C41-66EB-48C5-9494-3BBE34447BBD@embeddedalley.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=iso-8859-1
+Message-ID: <163586.166.qm@web32201.mail.mud.yahoo.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -24,36 +21,26 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Dan Malek wrote:
->
-> On May 14, 2008, at 10:52 AM, Ben Gardiner wrote:
->
->> So there likely are reasons why the following is not possible:
->
-> That's way too much code for a tlb exception handler.
-> From a system resource perspective, you are much better
-> off with a small and efficient piece of tlb loading code,
-> always invalidating pages on both ends and taking the
-> tlb exception fault.   Unfortunately, this could cause some
-> thrashing edge cases, so a little intelligence would be
-> needed.   Exception processing isn't free, and it quickly
-> destroys the cache footprint of your application, further
-> slowing down the entire system.  The tlb reload handler
-> goal should be maximum of 8 instructions and 4 memory
-> accesses, not 4K of elaborate conditional testing.  :-)
->
-> Thanks.
->
->     -- Dan
->
-Hi Dan,
-Thanks for the rapid reply :) I really appreciate you giving me an 
-answer "from the horse's mouth." I would still like to experiment a 
-little and I'm not really sure it is safe to use any bits in a PTE.
 
-Assuming I was crazy enough to ruin my cache footprint; are there any 
-three bits in the PTE that are safe to use for some page status 
-information?
+--- ¹ù¾¢ <guojin02@tsinghua.org.cn> wrote:
 
-Best Regards,
-Ben
+> Hi,friends,
+>    I designed my MPC8360E board with 1GBytes DDR-1 memory, I
+> built two demo
+> boards, one is 533/266/400, the other is 660/330/400. The
+> lower frequancy board is
+> no problem for our program, but the higher frequency board is
+> always problem about
+> the data transmit on ethernet. 
+>    I want to test 1GBytes DDR-1 memory, I want to know whether
+> or not the DDR is
+> stable and accuracy. Could you tell me a simple way that test
+> my DDR memory? 
+> 
+Boot the kernel and run something like stress from LTP (Linux
+Test project). I guarantee you if there is any instability it
+will show up...
+
+
+
+      
