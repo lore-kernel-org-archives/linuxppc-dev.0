@@ -1,17 +1,21 @@
-Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from WA4EHSOBE001.bigfish.com (outbound-wa4.frontbridge.com
-	[216.32.181.16]) by ozlabs.org (Postfix) with ESMTP id D1F9ADE085
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 May 2008 06:37:26 +1000 (EST)
-Message-ID: <482C9815.3030007@am.sony.com>
-Date: Thu, 15 May 2008 13:07:49 -0700
-From: Geoff Levand <geoffrey.levand@am.sony.com>
+Return-Path: <timur@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 6E952DE240
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 May 2008 07:01:42 +1000 (EST)
+Message-ID: <482CA47C.1020403@freescale.com>
+Date: Thu, 15 May 2008 16:00:44 -0500
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-To: benh@kernel.crashing.org
-Subject: Re: [RFC] [PATCH] vmemmap fixes to use smaller pages
-References: <1209534108.18023.221.camel@pasglop>
-In-Reply-To: <1209534108.18023.221.camel@pasglop>
-Content-Type: text/plain; charset="UTF-8"
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+To: Paul Mackerras <paulus@samba.org>, Kumar Gala <kumar.gala@freescale.com>
+Subject: Re: Patches added to powerpc.git powerpc-next branch
+References: <18475.30315.579805.168910@cargo.ozlabs.ibm.com>
+In-Reply-To: <18475.30315.579805.168910@cargo.ozlabs.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,13 +25,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt wrote:
-> This patch changes vmemmap to use a different region (region 0xf) of the
-> address space whose page size can be dynamically configured at boot.
+Paul Mackerras wrote:
+> I have added the following patches to the powerpc-next and master
+> branches of the powerpc.git repository.  This includes commits pulled
+> from Kumar's tree.
 
-This doesn't seem to cause any problems, and users successfully used it
-with the ubuntu hardy kernel, so I think it is OK to proceed with it.
+What about these:
 
-  https://bugs.launchpad.net/ubuntu-ps3-port/+bug/220524
+[PATCH] Add null pointer check to of_find_property
+[PATCH v2] Update defconfig for MPC8610 HPCD
 
--Geoff
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
