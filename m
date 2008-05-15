@@ -1,19 +1,21 @@
-Return-Path: <avorontsov@dev.rtsoft.ru>
-Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
-	by ozlabs.org (Postfix) with SMTP id 62A54DDF12
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 May 2008 02:20:51 +1000 (EST)
-Date: Thu, 15 May 2008 20:20:48 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [RFC PATCH 0/3] Board-specific PCI fixups [was: Re: [PATCH
-	2/2] [POWERPC] 86xx: mpc8610_hpcd: add support for ULI RTC]
-Message-ID: <20080515162048.GA28559@polina.dev.rtsoft.ru>
-References: <20080508142005.GA6749@polina.dev.rtsoft.ru>
+Return-Path: <mchan@broadcom.com>
+Received: from mms2.broadcom.com (mms2.broadcom.com [216.31.210.18])
+	by ozlabs.org (Postfix) with ESMTP id 91842DE0B0
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 May 2008 02:32:29 +1000 (EST)
+Subject: Re: dead network on JS21 with tg3 driver after flowcontrol
+ changes
+From: "Michael Chan" <mchan@broadcom.com>
+To: "Olaf Hering" <olaf@aepfle.de>
+In-Reply-To: <20080515154948.GA23647@aepfle.de>
+References: <20080515121340.GA23033@aepfle.de>
+	<1551EAE59135BE47B544934E30FC4FC002AABCEE@nt-irva-0751.brcm.ad.broadcom.com>
+	<20080515154948.GA23647@aepfle.de>
+Date: Thu, 15 May 2008 10:37:07 -0700
+Message-ID: <1210873027.22745.0.camel@dell>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <20080508142005.GA6749@polina.dev.rtsoft.ru>
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: avorontsov@ru.mvista.com
+Content-Type: text/plain
+Cc: linuxppc-dev@ozlabs.org, Matthew Carlson <mcarlson@broadcom.com>,
+	netdev <netdev@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,34 +25,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, May 08, 2008 at 06:20:05PM +0400, Anton Vorontsov wrote:
-> On Mon, May 05, 2008 at 02:11:30PM -0500, Kumar Gala wrote:
-> >
-> > On May 5, 2008, at 1:56 PM, Anton Vorontsov wrote:
-> >
-> >> The ULI "Super South Bridge" contains ISA bridge to the legacy
-> >> devices, such as Super IO mouse/keyboard/floppy disk controllers,
-> >> parallel port, i8259 interrupt controller and so on.
-> >>
-> >> On the MPC8610HPCD, i8259 seems to be disabled (mpc8610_hpcd.c
-> >> confirms this), and other peripherals are not traced out.
-> >> So we use only RTC.
-> >>
-> >> This patch also adds ULI quirk to make RTC actually work (this
-> >> quirk differs a bit from the one in the fsl_uli1575.c).
-> >
-> > Can we just one quick for both?
+On Thu, 2008-05-15 at 17:49 +0200, Olaf Hering wrote:
+> On Thu, May 15, Michael Chan wrote:
 > 
-> Probably yes, but fsl_uli1575 needs some other changes for this.
+> > Olaf Hering wrote:
+> > 
+> > > Any ideas how to fix this?
+> > > What info do you need from the system?
+> > 
+> > Are you using eth0 or eth1?  The dmesg below shows that
+> > link came up on eth1 and IP address from DHCP was received.
 > 
-> This series fully tested on MPC8610HPCD, and build-tested for
-> MPC85xxDS and MPC8641HPCN.
+> I'm using eth1.
+> The log was done with the patch reverted.
+> 
 
-Are these patches ideal? No comments so far... ;-)
-
-Could we then apply this to the powerpc-next for proper testing?
-
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+In that case, please re-apply the patch and provide mii-tool -vvv eth1.
