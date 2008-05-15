@@ -1,26 +1,19 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id AD9A0DDE00
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 May 2008 02:49:09 +1000 (EST)
-Date: Thu, 15 May 2008 11:48:02 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: David Miller <davem@davemloft.net>
-Subject: Re: [PATCH 2/2] ftrace: support for PowerPC
-Message-ID: <20080515164802.GA2664@loki.buserror.net>
-References: <20080515034942.109223655@goodmis.org>
-	<20080515035918.896765954@goodmis.org>
-	<20080514.222857.246967279.davem@davemloft.net>
+Return-Path: <avorontsov@dev.rtsoft.ru>
+Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
+	by ozlabs.org (Postfix) with SMTP id A12AEDDEE2
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 May 2008 02:52:51 +1000 (EST)
+Date: Thu, 15 May 2008 20:52:50 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Kumar Gala <galak@kernel.crashing.org>,
+	Wim Van Sebroeck <wim@iguana.be>
+Subject: [PATCH 0/8 v3] mpc83xx_wdt rework, support for mpc8610 and mpc8xx
+Message-ID: <20080515165250.GA30738@polina.dev.rtsoft.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080514.222857.246967279.davem@davemloft.net>
-Cc: proski@gnu.org, a.p.zijlstra@chello.nl, sandmann@redhat.com, pq@iki.fi,
-	linux-kernel@vger.kernel.org, rostedt@goodmis.org,
-	linuxppc-dev@ozlabs.org, srostedt@redhat.com, paulus@samba.org,
-	mingo@elte.hu
+Content-Type: text/plain; charset=utf8
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linuxppc-dev@ozlabs.org,
+	Chen Gong <G.Chen@freescale.com>, Scott Wood <scottwood@freescale.com>,
+	Timur Tabi <timur@freescale.com>
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,37 +23,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, May 14, 2008 at 10:28:57PM -0700, David Miller wrote:
-> From: Steven Rostedt <rostedt@goodmis.org>
-> Date: Wed, 14 May 2008 23:49:44 -0400
-> 
-> > +#ifdef CONFIG_FTRACE
-> > +#ifdef CONFIG_DYNAMIC_FTRACE
-> > +_GLOBAL(mcount)
-> > +_GLOBAL(_mcount)
-> > +	stwu	r1,-48(r1)
-> > +	stw	r3, 12(r1)
-> > +	stw	r4, 16(r1)
-> > +	stw	r5, 20(r1)
-> > +	stw	r6, 24(r1)
-> > +	mflr	r3
-> > +	stw	r7, 28(r1)
-> > +	mfcr	r5
-> > +	stw	r8, 32(r1)
-> > +	stw	r9, 36(r1)
-> > +	stw	r10,40(r1)
-> > +	stw	r3, 44(r1)
-> > +	stw	r5, 8(r1)
-> 
-> Yikes, that's really expensive.
-> 
-> Can't you do a tail call and let the function you end
-> up calling do all the callee-saved register pops onto
-> the stack?
+Hi all,
 
-The PPC32 ABI seems to (unfortunately) suggest that, with mcount, all
-registers are callee-saved (except for the modifiable-during-function-linkage
-registers like r0, r11, and r12) -- so mcount has to save the registers that
-the callee won't (because they're normally volatile).
+Once again thanks for the previous review, updated series follows.
 
--Scott
+Changes since v2:
+
+- New patch to fix current driver's checkpatch issues;
+- New patch supporting MPC8xx watchdogs (ok to drop until tested);
+- Removed MODULE_ALIAS("platform:mpc83xx_wdt"), since this driver is no
+  longer on the platform bus;
+- When renaming the driver also mention what kind of CPUs we support.
+  Also give a pointer for BookE watchdog driver. Though BookE users will
+  not see the MPC8xxx driver at all, because we're explicitly listing the
+  CPU families in "depends on". But this tip might be useful for
+  developers.
+- Scott Wood noticed that we don't need device_type anymore. I thought
+  that OpenFirmware defines this type, but google didn't prove that.
+  So I just removed the device_type.
+
+Changes since v1:
+
+- Scott Wood asked for mpc83xx_wdt on multiplatform kernels. Done via
+  OF platform driver;
+- Kumar Gala asked for mpc83xx_wdt -> mpc8xxx_wdt rename. Done in two
+  steps;
+- Segher Boessenkool noticed a negligence in the wdt device tree node.
+  Fixed by removing mpc83xx_wdt compatible entry.
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
