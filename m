@@ -2,19 +2,18 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 3FF26DDEE8
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 May 2008 16:51:38 +1000 (EST)
-Subject: Re: PS3: Fix memory hotplug
+	by ozlabs.org (Postfix) with ESMTPS id E0AF3DDF50
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 May 2008 16:55:23 +1000 (EST)
+Subject: Re: [PATCH 1/2] Add irq_free_host() to free an irq_host
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Geoff Levand <geoffrey.levand@am.sony.com>
-In-Reply-To: <1210834125.8297.80.camel@pasglop>
-References: <4829C07A.4040407@am.sony.com> <1210834125.8297.80.camel@pasglop>
+To: Michael Ellerman <michael@ellerman.id.au>
+In-Reply-To: <3c91644d7ab701f99ec7f621fc5c16d23e75c71a.1210220561.git.michael@ellerman.id.au>
+References: <3c91644d7ab701f99ec7f621fc5c16d23e75c71a.1210220561.git.michael@ellerman.id.au>
 Content-Type: text/plain
-Date: Wed, 14 May 2008 23:51:29 -0700
-Message-Id: <1210834289.8297.85.camel@pasglop>
+Date: Wed, 14 May 2008 23:55:12 -0700
+Message-Id: <1210834512.8297.87.camel@pasglop>
 Mime-Version: 1.0
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>, "David S. Miller" <davem@davemloft.net>
+Cc: linuxppc-dev@ozlabs.org
 Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -26,15 +25,20 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-> Paul, any thoughts here ? Should we add a lock ? That would mean being
-> careful as the LMB stuff can be called very early, and spinlock wants
-> things like PACA and possibly lockdep to be around.. 
+On Thu, 2008-05-08 at 14:23 +1000, Michael Ellerman wrote:
+> +void irq_free_host(struct irq_host *host)
+> +{
+> +       /* If it's still very early in boot we can't free, oh well. */
+> +       if (mem_init_done)
+> +               kfree(host);
+> +}
 
-Actually, we call early_init_devtree(), which populates the LMB, after
-we initialize the PACA and lockdep, so it -should- be safe to add a
-spinlock.
+Hrm... that means that a host that was allocated before mem_init_done
+and freed later will call kfree on memory obtained from bootmem... no
+good.
 
-Dave ? Any objection to adding a spinlock to the LMB code ?
+In which case do we need to free and irq host other than failure in
+irq_alloc_host ?
 
 Cheers,
 Ben.
