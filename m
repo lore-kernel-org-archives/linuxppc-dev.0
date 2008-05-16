@@ -1,33 +1,29 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+Return-Path: <dwg@au1.ibm.com>
+Received: from e23smtp03.au.ibm.com (E23SMTP03.au.ibm.com [202.81.18.172])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 8B9D5DDF1D
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 May 2008 11:05:28 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m4G12AgU019022
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 May 2008 21:02:10 -0400
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m4G15O6a112068
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 May 2008 19:05:24 -0600
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m4G15OY8025176
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 May 2008 19:05:24 -0600
-Date: Thu, 15 May 2008 20:02:07 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: Convert remaining dts-v0 files to v1
-Message-ID: <20080515200207.5102d770@zod.rchland.ibm.com>
-In-Reply-To: <18476.56005.520095.757098@cargo.ozlabs.ibm.com>
-References: <20080515064639.GB30996@yookeroo.seuss>
-	<482C9B6F.1020907@am.sony.com>
-	<20080515181715.06dd124f@zod.rchland.ibm.com>
-	<18476.56005.520095.757098@cargo.ozlabs.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	(Client CN "e23smtp03.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 08E3BDDEF4
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 May 2008 11:38:28 +1000 (EST)
+Received: from sd0109e.au.ibm.com (d23rh905.au.ibm.com [202.81.18.225])
+	by e23smtp03.au.ibm.com (8.13.1/8.13.1) with ESMTP id m4G1baeh006843
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 May 2008 11:37:36 +1000
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+	by sd0109e.au.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m4G1gVek287610
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 May 2008 11:42:31 +1000
+Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
+	by d23av04.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m4G1cPiF017074
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 May 2008 11:38:25 +1000
+Date: Fri, 16 May 2008 10:15:29 +1000
+From: David Gibson <dwg@au1.ibm.com>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Subject: Re: [PATCH] 4xx: Fix PCI mem in rainier DTS
+Message-ID: <20080516001529.GB11402@yookeroo.seuss>
+References: <20080515094123.44974e84@zod.rchland.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080515094123.44974e84@zod.rchland.ibm.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -38,25 +34,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 16 May 2008 10:52:21 +1000
-Paul Mackerras <paulus@samba.org> wrote:
+On Thu, May 15, 2008 at 09:41:23AM -0500, Josh Boyer wrote:
+> This fixes the PCI node in the Rainier to match the spec from AMCC.  A
+> similar fix was done for 440EPx, which shares the same values as 440GRx.
 
-> Josh Boyer writes:
-> 
-> > Since this mostly effects DTSs for my boards, do you mind if I pull
-> > this into my tree?  I spoke with Geoff today and he doesn't have any
-> > planned PS3 DTS updates, so we shouldn't get conflicts doing it that
-> > way.
-> 
-> Sounds fine.  Is this for 2.6.26?  Do you have some 2.6.26 updates
-> queued up for me (or will you)?
+This will conflict with the dts-v1 conversion patch.
 
-No, this is .27 work.  Which is why I figured it would be easier if I
-grabbed it for now.
+> --- linux-2.6.orig/arch/powerpc/boot/dts/rainier.dts
+> +++ linux-2.6/arch/powerpc/boot/dts/rainier.dts
+> @@ -328,8 +328,9 @@
+>  			 * later cannot be changed. Chip supports a second
+>  			 * IO range but we don't use it for now
+>  			 */
+> -			ranges = <02000000 0 80000000 1 80000000 0 10000000
+> -				01000000 0 00000000 1 e8000000 0 00100000>;
+> +			ranges = <02000000 0 80000000 1 80000000 0 40000000
+> +				01000000 0 00000000 1 e8000000 0 00010000
+> +				01000000 0 00000000 1 e8800000 0 03800000>;
+>  
+>  			/* Inbound 2GB range starting at 0 */
+>  			dma-ranges = <42000000 0 0 0 0 0 80000000>;
 
-The only possible .26 candidate I have at the moment would be the
-CHIP_11 errata workaround patch I sent out earlier today.  I need to do
-more testing across a wider variety of boards and that I was planning
-on having you pull that from me.
-
-josh
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
