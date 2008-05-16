@@ -1,19 +1,21 @@
-Return-Path: <mchan@broadcom.com>
-Received: from MMS3.broadcom.com (mms3.broadcom.com [216.31.210.19])
-	by ozlabs.org (Postfix) with ESMTP id AEED5DDEE2
-	for <linuxppc-dev@ozlabs.org>; Sat, 17 May 2008 01:09:20 +1000 (EST)
-MIME-Version: 1.0
-Subject: Re: dead network on JS21 with tg3 driver after flowcontrol
- changes
-Date: Fri, 16 May 2008 08:09:02 -0700
-Message-ID: <1551EAE59135BE47B544934E30FC4FC002AABCF8@nt-irva-0751.brcm.ad.broadcom.com>
-In-Reply-To: <20080516081330.GA26530@aepfle.de>
-From: "Michael Chan" <mchan@broadcom.com>
-To: "Olaf Hering" <olaf@aepfle.de>
-Content-Type: text/plain;
- charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, Matthew Carlson <mcarlson@broadcom.com>,
-	netdev <netdev@vger.kernel.org>
+Return-Path: <rmachet@slac.stanford.edu>
+Received: from nospam3.slac.stanford.edu (nospam3.slac.stanford.edu
+	[134.79.18.120])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 5ED6ADDFA9
+	for <linuxppc-dev@ozlabs.org>; Sat, 17 May 2008 01:46:36 +1000 (EST)
+Subject: Re: [PATCH 2/5] powerpc: boot code for the C2K
+From: Remi Machet <rmachet@slac.stanford.edu>
+To: David Gibson <david@gibson.dropbear.id.au>
+In-Reply-To: <20080516015647.GB27188@yookeroo.seuss>
+References: <1210897421.13992.14.camel@pcds-ts102.slac.stanford.edu>
+	<20080516015647.GB27188@yookeroo.seuss>
+Content-Type: text/plain
+Date: Fri, 16 May 2008 08:46:59 -0700
+Message-Id: <1210952820.13992.25.camel@pcds-ts102.slac.stanford.edu>
+Mime-Version: 1.0
+Cc: Linux PPC <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,17 +25,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Olaf Hering wrote:
+On Fri, 2008-05-16 at 11:56 +1000, David Gibson wrote:
+> On Thu, May 15, 2008 at 05:23:40PM -0700, Remi Machet wrote:
+> > Support for the C2K cPCI Single Board Computer from GEFanuc
+> > (PowerPC MPC7448 with a Marvell MV64460 chipset)
+> > All features of the board are not supported yet, but the board
+> > boots, flash works, all Ethernet ports are working and PCI 
+> > devices are all found (USB and SATA on PCI1 do not work yet).
+> > 
+> > Part 2 of 5: support for the board in arch/powerpc/boot.
+> > 
+> > Signed-off-by: Remi Machet <rmachet@slac.stanford.edu>
+> 
+> [snip]
+> > +BSS_STACK(16*KB);
+> 
+> 16kB is a really big stack for a bootwrapper.  Do you really need this
+> much?
+> 
+No, it was in the PRPMC2800 board file that I took as an example. I will
+tune that a little bit better and resubmit the patch.
 
-> Yes, this patch fixes nfsroot for me. Thanks.
-> mii-tool is not shipped anymore, even in SLES10.
-> I assume that ethtool is the replacement?
->=20
+Thanks !
 
-Thanks.  We'll send the patch to DaveM and to stable
-as well.
-
-ethtool can provide some high level link parameters.
-But in this case, I was trying to use mii-tool to
-look at the PHY registers to help debug the problem.
-ethtool would not provide that kind of information.
+Remi
