@@ -1,33 +1,13 @@
-Return-Path: <grant.likely@secretlab.ca>
-Received: from pd2mo3so.prod.shaw.ca (idcmail-mo1so.shaw.ca [24.71.223.10])
-	by ozlabs.org (Postfix) with ESMTP id ADD86DEAB7
-	for <linuxppc-dev@ozlabs.org>; Sat, 17 May 2008 05:37:30 +1000 (EST)
-Received: from pd2mr5so.prod.shaw.ca (pd2mr5so-qfe3.prod.shaw.ca [10.0.141.8])
-	by l-daemon (Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15
-	2004))
-	with ESMTP id <0K0Z00CPW7SUDR90@l-daemon> for linuxppc-dev@ozlabs.org;
-	Fri, 16 May 2008 13:36:30 -0600 (MDT)
-Received: from pn2ml1so.prod.shaw.ca ([10.0.121.145])
-	by pd2mr5so.prod.shaw.ca (Sun Java System Messaging Server 6.2-7.05
-	(built Sep
-	5 2006)) with ESMTP id <0K0Z00IAF7SPPZC0@pd2mr5so.prod.shaw.ca> for
-	linuxppc-dev@ozlabs.org; Fri, 16 May 2008 13:36:31 -0600 (MDT)
-Received: from trillian.cg.shawcable.net ([68.147.67.118])
-	by l-daemon (Sun Java System Messaging Server 6.2-7.05 (built Sep 5
-	2006))
-	with ESMTP id <0K0Z0034T7SIAAA0@l-daemon> for linuxppc-dev@ozlabs.org;
-	Fri, 16 May 2008 13:36:24 -0600 (MDT)
-Date: Fri, 16 May 2008 13:36:18 -0600
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH 4/4] [CSB] Add new mpc5200-spi (non-psc) device driver
-In-reply-to: <20080516193054.28030.35126.stgit@trillian.secretlab.ca>
-To: linuxppc-dev@ozlabs.org, spi-devel-general@lists.sourceforge.net,
-	linux-kernel@vger.kernel.org, dbrownell@users.sourceforge.net
-Message-id: <20080516193618.28030.15219.stgit@trillian.secretlab.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=utf-8
-References: <20080516193054.28030.35126.stgit@trillian.secretlab.ca>
-Cc: fabrizio.garetto@gmail.com
+Return-Path: <rmachet@slac.stanford.edu>
+Subject: [PATCH 1/5 v2] powerpc: DTS file for the C2K
+From: Remi Machet <rmachet@slac.stanford.edu>
+To: David Gibson <david@gibson.dropbear.id.au>,
+	Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain
+Date: Fri, 16 May 2008 12:28:48 -0700
+Message-Id: <1210966129.14883.1.camel@pcds-ts102.slac.stanford.edu>
+Mime-Version: 1.0
+Cc: Linux PPC <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,630 +17,384 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Grant Likely <grant.likely@secretlab.ca>
+Support for the C2K cPCI Single Board Computer from GEFanuc
+(PowerPC MPC7448 with a Marvell MV64460 chipset)
+All features of the board are not supported yet, but the board
+boots, flash works, all Ethernet ports are working and PCI 
+devices are all found (USB and SATA on PCI1 do not work yet).
 
-Unlike the old CSB driver, this driver uses the SPI infrastructure.
+Part 1 of 5: DTS file describing the board peripherals. As far as I know
+all peripherals except the FPGA are listed in there (I did not included
+the FPGA because a lot of work is needed there).
 
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+Signed-off-by: Remi Machet <rmachet@slac.stanford.edu>
 ---
+Changes:
+v1: original patch
+v2: cleaned up the file: removed i2c device_type, changed the name of
+the cpu node and added aliases for the pci buses.
 
- drivers/spi/Kconfig             |    8 +
- drivers/spi/Makefile            |    1 
- drivers/spi/mpc52xx_spi.c       |  561 +++++++++++++++++++++++++++++++++++++++
- include/linux/spi/mpc52xx_spi.h |   10 +
- 4 files changed, 580 insertions(+), 0 deletions(-)
+ c2k.dts |  355 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 355 insertions(+)
 
-diff --git a/drivers/spi/Kconfig b/drivers/spi/Kconfig
-index 12c35da..bd07429 100644
---- a/drivers/spi/Kconfig
-+++ b/drivers/spi/Kconfig
-@@ -120,6 +120,14 @@ config SPI_LM70_LLP
- 	  which interfaces to an LM70 temperature sensor using
- 	  a parallel port.
- 
-+config SPI_MPC52xx
-+	tristate "Freescale MPC52xx SPI (non-PSC) controller support"
-+	depends on PPC_MPC52xx && SPI
-+	select SPI_MASTER_OF
-+	help
-+	  This drivers supports the MPC52xx SPI controller in master SPI
-+	  mode.
-+
- config SPI_MPC52xx_PSC
- 	tristate "Freescale MPC52xx PSC SPI controller"
- 	depends on SPI_MASTER && PPC_MPC52xx && EXPERIMENTAL
-diff --git a/drivers/spi/Makefile b/drivers/spi/Makefile
-index 29c592f..805bef1 100644
---- a/drivers/spi/Makefile
-+++ b/drivers/spi/Makefile
-@@ -23,6 +23,7 @@ obj-$(CONFIG_SPI_PXA2XX)		+= pxa2xx_spi.o
- obj-$(CONFIG_SPI_OMAP_UWIRE)		+= omap_uwire.o
- obj-$(CONFIG_SPI_OMAP24XX)		+= omap2_mcspi.o
- obj-$(CONFIG_SPI_MPC52xx_PSC)		+= mpc52xx_psc_spi.o
-+obj-$(CONFIG_SPI_MPC52xx)		+= mpc52xx_spi.o
- obj-$(CONFIG_SPI_MPC83xx)		+= spi_mpc83xx.o
- obj-$(CONFIG_SPI_S3C24XX_GPIO)		+= spi_s3c24xx_gpio.o
- obj-$(CONFIG_SPI_S3C24XX)		+= spi_s3c24xx.o
-diff --git a/drivers/spi/mpc52xx_spi.c b/drivers/spi/mpc52xx_spi.c
+diff --git a/arch/powerpc/boot/dts/c2k.dts b/arch/powerpc/boot/dts/c2k.dts
 new file mode 100644
-index 0000000..39dc6a2
+index 0000000..29867cb
 --- /dev/null
-+++ b/drivers/spi/mpc52xx_spi.c
-@@ -0,0 +1,561 @@
-+/*
-+ * MPC52xx SPI master driver.
-+ * Copyright (C) 2008 Secret Lab Technologies Ltd.
++++ b/arch/powerpc/boot/dts/c2k.dts
+@@ -0,0 +1,355 @@
++/* Device Tree Source for GEFanuc C2K
 + *
-+ * This is the driver for the MPC5200's dedicated SPI device (not for a
-+ * PSC in SPI mode)
++ * Author: Remi Machet <rmachet@slac.stanford.edu>
++ * 
++ * Originated from prpmc2800.dts
++ *
++ * 2008 (c) Stanford University
++ * 2007 (c) MontaVista, Software, Inc.  
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License version 2 as published
++ * by the Free Software Foundation.
 + */
 +
-+#include <linux/module.h>
-+#include <linux/init.h>
-+#include <linux/errno.h>
-+#include <linux/of_platform.h>
-+#include <linux/interrupt.h>
-+#include <linux/delay.h>
-+#include <linux/spi/spi.h>
-+#include <linux/spi/spi_of.h>
-+#include <linux/spi/mpc52xx_spi.h>
-+#include <linux/io.h>
-+#include <linux/time.h>
-+#include <asm/mpc52xx.h>
++/dts-v1/;
 +
-+MODULE_AUTHOR("Grant Likely <grant.likely@secretlab.ca>");
-+MODULE_DESCRIPTION("MPC52xx SPI (non-PSC) Driver");
-+MODULE_LICENSE("GPL");
++/ {
++	#address-cells = <1>;
++	#size-cells = <1>;
++	model = "C2K";
++	compatible = "GEFanuc,C2K";
++	coherency-off;
 +
-+/* Register offsets */
-+#define SPI_CTRL1	0x00
-+#define SPI_CTRL1_SPIE		(1 << 7)
-+#define SPI_CTRL1_SPE		(1 << 6)
-+#define SPI_CTRL1_MSTR		(1 << 4)
-+#define SPI_CTRL1_CPOL		(1 << 3)
-+#define SPI_CTRL1_CPHA		(1 << 2)
-+#define SPI_CTRL1_SSOE		(1 << 1)
-+#define SPI_CTRL1_LSBFE		(1 << 0)
++	aliases {
++		pci0 = &PCI0;
++		pci1 = &PCI1;
++	};
 +
-+#define SPI_CTRL2	0x01
-+#define SPI_BRR		0x04
++	cpus {
++		#address-cells = <1>;
++		#size-cells = <0>;
 +
-+#define SPI_STATUS	0x05
-+#define SPI_STATUS_SPIF		(1 << 7)
-+#define SPI_STATUS_WCOL		(1 << 6)
-+#define SPI_STATUS_MODF		(1 << 4)
++		cpu@0 {
++			device_type = "cpu";
++			compatible = "PowerPC,7447";
++			reg = <0>;
++			clock-frequency = <996000000>;	/* 996 MHz */
++			bus-frequency = <166666667>;	/* 166.6666 MHz */
++			timebase-frequency = <41666667>;	/* 166.6666/4 MHz */
++			i-cache-line-size = <32>;
++			d-cache-line-size = <32>;
++			i-cache-size = <32768>;
++			d-cache-size = <32768>;
++		};
++	};
 +
-+#define SPI_DATA	0x09
-+#define SPI_PORTDATA	0x0d
-+#define SPI_DATADIR	0x10
++	memory {
++		device_type = "memory";
++		reg = <0x00000000 0x40000000>;	/* 1GB */
++	};
 +
-+/* FSM state return values */
-+#define FSM_STOP	0
-+#define FSM_POLL	1
-+#define FSM_CONTINUE	2
++	system-controller@d8000000 { /* Marvell Discovery */
++		#address-cells = <1>;
++		#size-cells = <1>;
++		model = "mv64460";
++		compatible = "marvell,mv64360";
++		clock-frequency = <166666667>;		/* 166.66... MHz */
++		reg = <0xd8000000 0x00010000>;
++		virtual-reg = <0xd8000000>;
++		ranges = <0xd4000000 0xd4000000 0x01000000	/* PCI 0 I/O Space */
++			  0x80000000 0x80000000 0x08000000	/* PCI 0 MEM Space */
++			  0xd0000000 0xd0000000 0x01000000	/* PCI 1 I/O Space */
++			  0xa0000000 0xa0000000 0x08000000	/* PCI 1 MEM Space */
++			  0xf8000000 0xf8000000 0x08000000	/* User FLASH */
++			  0x00000000 0xd8000000 0x00010000	/* Bridge's regs */
++			  0xd8140000 0xd8140000 0x00040000>;	/* Integrated SRAM */
 +
-+/* Driver internal data */
-+struct mpc52xx_spi {
-+	struct spi_master *master;
-+	u32 sysclk;
-+	void __iomem *regs;
-+	int irq;
-+	int ipb_freq;
++		mdio {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			compatible = "marvell,mv64360-mdio";
++			PHY0: ethernet-phy@0 {
++				device_type = "ethernet-phy";
++				interrupts = <76>;	/* GPP 12 */
++				interrupt-parent = <&PIC>;
++				reg = <0>;
++			};
++			PHY1: ethernet-phy@1 {
++				device_type = "ethernet-phy";
++				interrupts = <76>;	/* GPP 12 */
++				interrupt-parent = <&PIC>;
++				reg = <1>;
++			};
++			PHY2: ethernet-phy@2 {
++				device_type = "ethernet-phy";
++				interrupts = <76>;	/* GPP 12 */
++				interrupt-parent = <&PIC>;
++				reg = <2>;
++			};
++		};
 +
-+	/* Statistics */
-+	int msg_count;
-+	int wcol_count;
-+	int wcol_ticks;
-+	u32 wcol_tx_timestamp;
-+	int modf_count;
-+	int byte_count;
++		ethernet-group@2000 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			compatible = "marvell,mv64360-eth-group";
++			reg = <0x2000 0x2000>;
++			ethernet@0 {
++				device_type = "network";
++				compatible = "marvell,mv64360-eth";
++				reg = <0>;
++				interrupts = <32>;
++				interrupt-parent = <&PIC>;
++				phy = <&PHY0>;
++				local-mac-address = [ 00 00 00 00 00 00 ];
++			};
++			ethernet@1 {
++				device_type = "network";
++				compatible = "marvell,mv64360-eth";
++				reg = <1>;
++				interrupts = <33>;
++				interrupt-parent = <&PIC>;
++				phy = <&PHY1>;
++				local-mac-address = [ 00 00 00 00 00 00 ];
++			};
++			ethernet@2 {
++				device_type = "network";
++				compatible = "marvell,mv64360-eth";
++				reg = <2>;
++				interrupts = <34>;
++				interrupt-parent = <&PIC>;
++				phy = <&PHY2>;
++				local-mac-address = [ 00 00 00 00 00 00 ];
++			};
++		};
 +
-+	/* Hooks for platform modification of behaviour */
-+	void (*premessage)(struct spi_message *m, void *context);
-+	void *premessage_context;
++		SDMA0: sdma@4000 {
++			compatible = "marvell,mv64360-sdma";
++			reg = <0x4000 0xc18>;
++			virtual-reg = <0xd8004000>;
++			interrupt-base = <0>;
++			interrupts = <36>;
++			interrupt-parent = <&PIC>;
++		};
 +
-+	struct list_head queue;		/* queue of pending messages */
-+	spinlock_t lock;
-+	struct work_struct work;
++		SDMA1: sdma@6000 {
++			compatible = "marvell,mv64360-sdma";
++			reg = <0x6000 0xc18>;
++			virtual-reg = <0xd8006000>;
++			interrupt-base = <0>;
++			interrupts = <38>;
++			interrupt-parent = <&PIC>;
++		};
++
++		BRG0: brg@b200 {
++			compatible = "marvell,mv64360-brg";
++			reg = <0xb200 0x8>;
++			clock-src = <8>;
++			clock-frequency = <133333333>;
++			current-speed = <115200>;
++		};
++
++		BRG1: brg@b208 {
++			compatible = "marvell,mv64360-brg";
++			reg = <0xb208 0x8>;
++			clock-src = <8>;
++			clock-frequency = <133333333>;
++			current-speed = <115200>;
++		};
++
++		CUNIT: cunit@f200 {
++			reg = <0xf200 0x200>;
++		};
++
++		MPSCROUTING: mpscrouting@b400 {
++			reg = <0xb400 0xc>;
++		};
++
++		MPSCINTR: mpscintr@b800 {
++			reg = <0xb800 0x100>;
++			virtual-reg = <0xd800b800>;
++		};
++
++		MPSC0: mpsc@8000 {
++			device_type = "serial";
++			compatible = "marvell,mv64360-mpsc";
++			reg = <0x8000 0x38>;
++			virtual-reg = <0xd8008000>;
++			sdma = <&SDMA0>;
++			brg = <&BRG0>;
++			cunit = <&CUNIT>;
++			mpscrouting = <&MPSCROUTING>;
++			mpscintr = <&MPSCINTR>;
++			cell-index = <0>;
++			interrupts = <40>;
++			interrupt-parent = <&PIC>;
++		};
++
++		MPSC1: mpsc@9000 {
++			device_type = "serial";
++			compatible = "marvell,mv64360-mpsc";
++			reg = <0x9000 0x38>;
++			virtual-reg = <0xd8009000>;
++			sdma = <&SDMA1>;
++			brg = <&BRG1>;
++			cunit = <&CUNIT>;
++			mpscrouting = <&MPSCROUTING>;
++			mpscintr = <&MPSCINTR>;
++			cell-index = <1>;
++			interrupts = <42>;
++			interrupt-parent = <&PIC>;
++		};
++
++		wdt@b410 {			/* watchdog timer */
++			compatible = "marvell,mv64360-wdt";
++			reg = <0xb410 0x8>;
++		};
++
++		i2c@c000 {
++			compatible = "marvell,mv64360-i2c";
++			reg = <0xc000 0x20>;
++			virtual-reg = <0xd800c000>;
++			interrupts = <37>;
++			interrupt-parent = <&PIC>;
++		};
++
++		PIC: pic {
++			#interrupt-cells = <1>;
++			#address-cells = <0>;
++			compatible = "marvell,mv64360-pic";
++			reg = <0x0000 0x88>;
++			interrupt-controller;
++		};
++
++		mpp@f000 {
++			compatible = "marvell,mv64360-mpp";
++			reg = <0xf000 0x10>;
++		};
++
++		gpp@f100 {
++			compatible = "marvell,mv64360-gpp";
++			reg = <0xf100 0x20>;
++		};
++
++		PCI0: pci@80000000 {
++			#address-cells = <3>;
++			#size-cells = <2>;
++			#interrupt-cells = <1>;
++			device_type = "pci";
++			compatible = "marvell,mv64360-pci";
++			reg = <0x0cf8 0x8>;
++			ranges = <0x01000000 0x0 0x00000000 0xd4000000 0x0 0x01000000
++				  0x02000000 0x0 0x80000000 0x80000000 0x0 0x08000000>;
++			bus-range = <0 255>;
++			clock-frequency = <66000000>;
++			interrupt-pci-iack = <0x0c34>;
++			interrupt-parent = <&PIC>;
++			interrupt-map-mask = <0x0000 0x0 0x0 0x7>;
++			interrupt-map = <
++				/* Only one interrupt line for PMC0 slot (INTA) */
++				0x0000 0 0 1 &PIC 88
++			>;
++		};
 +
 +
-+	/* Details of current transfer (length, and buffer pointers) */
-+	struct spi_message *message;	/* current message */
-+	struct spi_transfer *transfer;	/* current transfer */
-+	int (*state)(struct mpc52xx_spi *ms);
-+	int len;
-+	int timestamp;
-+	u8 *rx_buf;
-+	const u8 *tx_buf;
-+	int cs_change;
++		PCI1: pci@a0000000 {
++			#address-cells = <3>;
++			#size-cells = <2>;
++			#interrupt-cells = <1>;
++			device_type = "pci";
++			compatible = "marvell,mv64360-pci";
++			reg = <0x0c78 0x8>;
++			ranges = <0x01000000 0x0 0x00000000 0xd0000000 0x0 0x01000000
++				  0x02000000 0x0 0x80000000 0xa0000000 0x0 0x08000000>;
++			bus-range = <0 255>;
++			clock-frequency = <66000000>;
++			interrupt-pci-iack = <0x0cb4>;
++			interrupt-parent = <&PIC>;
++			interrupt-map-mask = <0xf800 0x00 0x00 0x7>;
++			interrupt-map = <
++				/* IDSEL 0x01: PMC1 ? */
++				0x0800 0 0 1 &PIC 88
++				/* IDSEL 0x02: cPCI bridge */
++				0x1000 0 0 1 &PIC 88
++				/* IDSEL 0x03: USB controller */
++				0x1800 0 0 1 &PIC 91
++				/* IDSEL 0x04: SATA controller */
++				0x2000 0 0 1 &PIC 95
++			>;
++		};
++
++		cpu-error@0070 {
++			compatible = "marvell,mv64360-cpu-error";
++			reg = <0x0070 0x10 0x0128 0x28>;
++			interrupts = <3>;
++			interrupt-parent = <&PIC>;
++		};
++
++		sram-ctrl@0380 {
++			compatible = "marvell,mv64360-sram-ctrl";
++			reg = <0x0380 0x80>;
++			interrupts = <13>;
++			interrupt-parent = <&PIC>;
++		};
++
++		pci-error@1d40 {
++			compatible = "marvell,mv64360-pci-error";
++			reg = <0x1d40 0x40 0x0c28 0x4>;
++			interrupts = <12>;
++			interrupt-parent = <&PIC>;
++		};
++
++		pci-error@1dc0 {
++			compatible = "marvell,mv64360-pci-error";
++			reg = <0x1dc0 0x40 0x0ca8 0x4>;
++			interrupts = <16>;
++			interrupt-parent = <&PIC>;
++		};
++
++		mem-ctrl@1400 {
++			compatible = "marvell,mv64360-mem-ctrl";
++			reg = <0x1400 0x60>;
++			interrupts = <17>;
++			interrupt-parent = <&PIC>;
++		};
++		/* Devices attached to the device controller */
++		devicebus {
++			compatible = "marvell,mv64306-devctrl";
++			#address-cells = <1>;
++			#size-cells = <1>;
++			nor_flash {
++				compatible = "cfi-flash";
++				reg = <0xf8000000 0x8000000>; /* 128MB */
++				bank-width = <4>;
++				device-width = <1>;
++				#address-cells = <1>;
++				#size-cells = <1>;
++				partition@0 {
++					label = "boot";
++					reg = <0x00000000 0x00080000>;
++				};
++				partition@40000 {
++					label = "kernel";
++					reg = <0x00080000 0x00400000>;
++				};
++				partition@440000 {
++					label = "initrd";
++					reg = <0x00480000 0x00B80000>;
++				};
++				partition@1000000 {
++					label = "rootfs";
++					reg = <0x01000000 0x06800000>;
++				};
++				partition@7800000 {
++					label = "recovery";
++					reg = <0x07800000 0x00800000>;
++					read-only;
++				};
++			};
++		};
++	};
++	chosen {
++		bootargs = "ip=off root=/dev/mtdblock3 rootfstype=jffs2";
++		linux,stdout-path = &MPSC0;
++	};
 +};
-+
-+/*
-+ * CS control function
-+ */
-+static void mpc52xx_spi_chipsel(struct mpc52xx_spi *ms, int value)
-+{
-+	if (value)
-+		writeb(0, ms->regs + SPI_PORTDATA); /* Assert SS pin */
-+	else
-+		writeb(0x08, ms->regs + SPI_PORTDATA); /* Deassert SS pin */
-+}
-+
-+/*
-+ * Start a new transfer.  This is called both by the idle state
-+ * for the first transfer in a message, and by the wait state when the
-+ * previous transfer in a message is complete.
-+ */
-+static void mpc52xx_spi_start_transfer(struct mpc52xx_spi *ms)
-+{
-+	ms->rx_buf = ms->transfer->rx_buf;
-+	ms->tx_buf = ms->transfer->tx_buf;
-+	ms->len = ms->transfer->len;
-+
-+	/* Activate the chip select */
-+	if (ms->cs_change)
-+		mpc52xx_spi_chipsel(ms, 1);
-+	ms->cs_change = ms->transfer->cs_change;
-+
-+	/* Write out the first byte */
-+	ms->wcol_tx_timestamp = get_tbl();
-+	if (ms->tx_buf)
-+		writeb(*ms->tx_buf++, ms->regs + SPI_DATA);
-+	else
-+		writeb(0, ms->regs + SPI_DATA);
-+}
-+
-+/* Forward declaration of state handlers */
-+static int mpc52xx_spi_fsmstate_transfer(struct mpc52xx_spi *ms);
-+static int mpc52xx_spi_fsmstate_wait(struct mpc52xx_spi *ms);
-+
-+/*
-+ * IDLE state
-+ *
-+ * No transfers are in progress; if another transfer is pending then retrieve
-+ * it and kick it off.  Otherwise, stop processing the state machine
-+ */
-+static int mpc52xx_spi_fsmstate_idle(struct mpc52xx_spi *ms)
-+{
-+	struct spi_message *m;
-+	struct spi_device *spi;
-+	int spr, sppr;
-+	u8 ctrl1;
-+
-+	/* Check if there is another transfer waiting */
-+	if (list_empty(&ms->queue))
-+		return FSM_STOP;
-+
-+	/* Get the next message */
-+	spin_lock(&ms->lock);
-+
-+	/* Call the pre-message hook with a pointer to the next
-+	 * message.  The pre-message hook may enqueue a new message for
-+	 * changing the chip select value to the head of the queue */
-+	m = list_first_entry(&ms->queue, struct spi_message, queue);
-+	if (ms->premessage)
-+		ms->premessage(m, ms->premessage_context);
-+
-+	/* reget the head of the queue (the premessage hook may have enqueued
-+	 * something before it.) and drop the spinlock */
-+	ms->message = list_first_entry(&ms->queue, struct spi_message, queue);
-+	list_del_init(&ms->message->queue);
-+	spin_unlock(&ms->lock);
-+
-+	/* Setup the controller parameters */
-+	ctrl1 = SPI_CTRL1_SPIE | SPI_CTRL1_SPE | SPI_CTRL1_MSTR;
-+	spi = ms->message->spi;
-+	if (spi->mode & SPI_CPHA)
-+		ctrl1 |= SPI_CTRL1_CPHA;
-+	if (spi->mode & SPI_CPOL)
-+		ctrl1 |= SPI_CTRL1_CPOL;
-+	if (spi->mode & SPI_LSB_FIRST)
-+		ctrl1 |= SPI_CTRL1_LSBFE;
-+	writeb(ctrl1, ms->regs + SPI_CTRL1);
-+
-+	/* Setup the controller speed */
-+	/* minimum divider is '2'.  Also, add '1' to force rounding up. */
-+	sppr = ((ms->ipb_freq / ms->message->spi->max_speed_hz) + 1) >> 1;
-+	spr = 0;
-+	if (sppr < 1)
-+		sppr = 1;
-+	while (((sppr - 1) & ~0x7) != 0) {
-+		sppr = (sppr + 1) >> 1; /* add '1' to force rounding up */
-+		spr++;
-+	}
-+	sppr--;		/* sppr quantity in register is offset by 1 */
-+	if (spr > 7) {
-+		/* Don't overrun limits of SPI baudrate register */
-+		spr = 7;
-+		sppr = 7;
-+	}
-+	writeb(sppr << 4 | spr, ms->regs + SPI_BRR); /* Set speed */
-+
-+	ms->cs_change = 1;
-+	ms->transfer = container_of(ms->message->transfers.next,
-+				    struct spi_transfer, transfer_list);
-+
-+	mpc52xx_spi_start_transfer(ms);
-+	ms->state = mpc52xx_spi_fsmstate_transfer;
-+
-+#if defined(VERBOSE_DEBUG)
-+	dev_info(&ms->master->dev, "msg:%p, max_speed:%i, brr:%.2x\n",
-+		 ms->message, ms->message->spi->max_speed_hz,
-+		 readb(ms->regs + SPI_BRR));
-+#endif
-+
-+	return FSM_CONTINUE;
-+}
-+
-+/*
-+ * TRANSFER state
-+ *
-+ * In the middle of a transfer.  If the SPI core has completed processing
-+ * a byte, then read out the received data and write out the next byte
-+ * (unless this transfer is finished; in which case go on to the wait
-+ * state)
-+ */
-+static int mpc52xx_spi_fsmstate_transfer(struct mpc52xx_spi *ms)
-+{
-+	u8 status = readb(ms->regs + SPI_STATUS);
-+	u8 data;
-+
-+	/* Interrupt cleared by read of STATUS followed by read of DATA */
-+	if (!status)
-+		return ms->irq == NO_IRQ ? FSM_POLL : FSM_STOP;
-+
-+	if (status & SPI_STATUS_WCOL) {
-+		/* The SPI device is stoopid.  At slower speeds, it may raise
-+		 * the SPIF flag before the state machine is actually finished.
-+		 * which causes a collision (internal to the state machine
-+		 * only).  The manual recommends inserting a delay between
-+		 * receving the interrupt and sending the next byte, but
-+		 * it can also be worked around simply by retrying the
-+		 * transfer which is what we do here. */
-+		ms->wcol_count++;
-+		ms->wcol_ticks += get_tbl() - ms->wcol_tx_timestamp;
-+		ms->wcol_tx_timestamp = get_tbl();
-+		readb(ms->regs + SPI_DATA); /* clear status */
-+		data = 0;
-+		if (ms->tx_buf)
-+			data = *(ms->tx_buf-1);
-+		writeb(data, ms->regs + SPI_DATA); /* try again */
-+		return FSM_CONTINUE;
-+	} else if (status & SPI_STATUS_MODF) {
-+		ms->modf_count++;
-+		dev_err(&ms->master->dev, "mod fault\n");
-+		readb(ms->regs + SPI_DATA); /* clear status */
-+		mpc52xx_spi_chipsel(ms, 0);
-+		ms->message->status = -EIO;
-+		if (ms->message->complete)
-+			ms->message->complete(ms->message->context);
-+		ms->state = mpc52xx_spi_fsmstate_idle;
-+		return FSM_CONTINUE;
-+	}
-+
-+	/* Read data out of the spi device */
-+	ms->byte_count++;
-+	data = readb(ms->regs + SPI_DATA);
-+	if (ms->rx_buf)
-+		*ms->rx_buf++ = data;
-+
-+	/* Is the transfer complete? */
-+	ms->len--;
-+	if (ms->len == 0) {
-+		ms->timestamp = get_tbl();
-+		ms->timestamp += ms->transfer->delay_usecs * tb_ticks_per_usec;
-+		ms->state = mpc52xx_spi_fsmstate_wait;
-+		return FSM_CONTINUE;
-+	}
-+
-+	/* Write out the next byte */
-+	ms->wcol_tx_timestamp = get_tbl();
-+	if (ms->tx_buf)
-+		writeb(*ms->tx_buf++, ms->regs + SPI_DATA);
-+	else
-+		writeb(0, ms->regs + SPI_DATA);
-+
-+	return FSM_CONTINUE;
-+}
-+
-+/*
-+ * WAIT state
-+ *
-+ * A transfer has completed; need to wait for the delay period to complete
-+ * before starting the next transfer
-+ */
-+static int mpc52xx_spi_fsmstate_wait(struct mpc52xx_spi *ms)
-+{
-+	if (((int)get_tbl()) - ms->timestamp < 0)
-+		return FSM_POLL;
-+
-+	ms->message->actual_length += ms->transfer->len;
-+
-+	/* Check if there is another transfer in this message.  If there
-+	 * aren't then deactivate CS, notify sender, and drop back to idle
-+	 * to start the next message. */
-+	if (ms->transfer->transfer_list.next == &ms->message->transfers) {
-+		ms->msg_count++;
-+		mpc52xx_spi_chipsel(ms, 0);
-+		ms->message->status = 0;
-+		if (ms->message->complete)
-+			ms->message->complete(ms->message->context);
-+		ms->state = mpc52xx_spi_fsmstate_idle;
-+		return FSM_CONTINUE;
-+	}
-+
-+	/* There is another transfer; kick it off */
-+
-+	if (ms->cs_change)
-+		mpc52xx_spi_chipsel(ms, 0);
-+
-+	ms->transfer = container_of(ms->transfer->transfer_list.next,
-+				    struct spi_transfer, transfer_list);
-+	mpc52xx_spi_start_transfer(ms);
-+	ms->state = mpc52xx_spi_fsmstate_transfer;
-+	return FSM_CONTINUE;
-+}
-+
-+/*
-+ * IRQ handler
-+ */
-+static irqreturn_t mpc52xx_spi_irq(int irq, void *_ms)
-+{
-+	struct mpc52xx_spi *ms = _ms;
-+	int rc = FSM_CONTINUE;
-+
-+	while (rc == FSM_CONTINUE)
-+		rc = ms->state(ms);
-+
-+	if (rc == FSM_POLL)
-+		schedule_work(&ms->work);
-+
-+	return IRQ_HANDLED;
-+}
-+
-+/*
-+ * Workqueue method of running the state machine
-+ */
-+static void mpc52xx_spi_wq(struct work_struct *work)
-+{
-+	struct mpc52xx_spi *ms = container_of(work, struct mpc52xx_spi, work);
-+	mpc52xx_spi_irq(ms->irq, ms);
-+}
-+
-+/*
-+ * spi_master callbacks
-+ */
-+
-+static int mpc52xx_spi_setup(struct spi_device *spi)
-+{
-+	return 0;
-+}
-+
-+static int mpc52xx_spi_transfer(struct spi_device *spi, struct spi_message *m)
-+{
-+	struct mpc52xx_spi *ms = spi_master_get_devdata(spi->master);
-+	unsigned long flags;
-+
-+	m->actual_length = 0;
-+	m->status = -EINPROGRESS;
-+
-+	spin_lock_irqsave(&ms->lock, flags);
-+	list_add_tail(&m->queue, &ms->queue);
-+	spin_unlock_irqrestore(&ms->lock, flags);
-+	schedule_work(&ms->work);
-+
-+	return 0;
-+}
-+
-+/*
-+ * Hook to modify premessage hook
-+ */
-+void mpc52xx_spi_set_premessage_hook(struct spi_master *master,
-+				     void (*hook)(struct spi_message *m,
-+						  void *context),
-+				     void *hook_context)
-+{
-+	struct mpc52xx_spi *ms = spi_master_get_devdata(master);
-+	ms->premessage = hook;
-+	ms->premessage_context = hook_context;
-+}
-+EXPORT_SYMBOL(mpc52xx_spi_set_premessage_hook);
-+
-+/*
-+ * SysFS files
-+ */
-+static int
-+*mpc52xx_spi_sysfs_get_counter(struct mpc52xx_spi *ms, const char *name)
-+{
-+	if (strcmp(name, "msg_count") == 0)
-+		return &ms->msg_count;
-+	if (strcmp(name, "byte_count") == 0)
-+		return &ms->byte_count;
-+	if (strcmp(name, "wcol_count") == 0)
-+		return &ms->wcol_count;
-+	if (strcmp(name, "wcol_ticks") == 0)
-+		return &ms->wcol_ticks;
-+	if (strcmp(name, "modf_count") == 0)
-+		return &ms->modf_count;
-+	return NULL;
-+}
-+
-+static ssize_t mpc52xx_spi_show_count(struct device *dev,
-+				      struct device_attribute *attr,
-+				      char *buf)
-+{
-+	struct spi_master *master = container_of(dev, struct spi_master, dev);
-+	struct mpc52xx_spi *ms = spi_master_get_devdata(master);
-+	int *counter;
-+
-+	counter = mpc52xx_spi_sysfs_get_counter(ms, attr->attr.name);
-+	if (!counter)
-+		return sprintf(buf, "error\n");
-+	return sprintf(buf, "%d\n", *counter);
-+}
-+
-+static ssize_t mpc52xx_spi_set_count(struct device *dev,
-+				     struct device_attribute *attr,
-+				     const char *buf, size_t count)
-+{
-+	struct spi_master *master = container_of(dev, struct spi_master, dev);
-+	struct mpc52xx_spi *ms = spi_master_get_devdata(master);
-+	int *counter;
-+	int value = strict_strtoul(buf, NULL, 0);
-+
-+	counter = mpc52xx_spi_sysfs_get_counter(ms, attr->attr.name);
-+	if (counter)
-+		*counter = value;
-+	return count;
-+}
-+
-+DEVICE_ATTR(msg_count, 0644, mpc52xx_spi_show_count, mpc52xx_spi_set_count);
-+DEVICE_ATTR(byte_count, 0644, mpc52xx_spi_show_count, mpc52xx_spi_set_count);
-+DEVICE_ATTR(wcol_count, 0644, mpc52xx_spi_show_count, mpc52xx_spi_set_count);
-+DEVICE_ATTR(wcol_ticks, 0644, mpc52xx_spi_show_count, mpc52xx_spi_set_count);
-+DEVICE_ATTR(modf_count, 0644, mpc52xx_spi_show_count, mpc52xx_spi_set_count);
-+
-+/*
-+ * OF Platform Bus Binding
-+ */
-+static int __devinit mpc52xx_spi_of_probe(struct of_device *op,
-+					  const struct of_device_id *match)
-+{
-+	struct spi_master *master;
-+	struct mpc52xx_spi *ms;
-+	void __iomem *regs;
-+	const u32 *prop;
-+	int irq0, irq1, rc, len;
-+
-+	/* MMIO registers */
-+	dev_dbg(&op->dev, "probing mpc5200 SPI device\n");
-+	regs = of_iomap(op->node, 0);
-+	if (!regs)
-+		return -ENODEV;
-+
-+	/* irq */
-+	irq0 = irq_of_parse_and_map(op->node, 0);
-+	irq1 = irq_of_parse_and_map(op->node, 1);
-+
-+	dev_dbg(&op->dev, "allocating spi_master struct\n");
-+	master = spi_alloc_master(&op->dev, sizeof *ms);
-+	if (!master)
-+		return -ENOMEM;
-+	master->bus_num = -1;
-+	master->num_chipselect = 1;
-+	prop = of_get_property(op->node, "num-slaves", &len);
-+	if (prop && len >= sizeof(*prop))
-+		master->num_chipselect = *prop;
-+
-+	master->setup = mpc52xx_spi_setup;
-+	master->transfer = mpc52xx_spi_transfer;
-+	dev_set_drvdata(&op->dev, master);
-+
-+	ms = spi_master_get_devdata(master);
-+	ms->master = master;
-+	ms->regs = regs;
-+	ms->irq = irq0;
-+	ms->state = mpc52xx_spi_fsmstate_idle;
-+	ms->ipb_freq = mpc52xx_find_ipb_freq(op->node);
-+	spin_lock_init(&ms->lock);
-+	INIT_LIST_HEAD(&ms->queue);
-+	INIT_WORK(&ms->work, mpc52xx_spi_wq);
-+
-+	writeb(SPI_CTRL1_SPIE | SPI_CTRL1_SPE | SPI_CTRL1_MSTR,
-+	       ms->regs + SPI_CTRL1);
-+	writeb(0x0, ms->regs + SPI_CTRL2);
-+	writeb(0xe, ms->regs + SPI_DATADIR);	/* Set output pins */
-+	writeb(0x8, ms->regs + SPI_PORTDATA);	/* Deassert /SS signal */
-+
-+	dev_dbg(&op->dev, "registering spi_master struct\n");
-+	rc = spi_register_master(master);
-+	if (rc < 0)
-+		goto err_register;
-+
-+	rc = request_irq(irq0, mpc52xx_spi_irq, IRQF_SAMPLE_RANDOM,
-+			  "mpc5200 SPI MODF", ms);
-+	rc |= request_irq(irq1, mpc52xx_spi_irq, IRQF_SAMPLE_RANDOM,
-+			  "mpc5200 SPI SPIF", ms);
-+	if (rc) {
-+		dev_info(&op->dev, "error requesting irq; using polled mode\n");
-+		ms->irq = NO_IRQ; /* operate in polled mode */
-+	}
-+
-+	/* Create SysFS files */
-+	rc = device_create_file(&ms->master->dev, &dev_attr_msg_count);
-+	rc |= device_create_file(&ms->master->dev, &dev_attr_byte_count);
-+	rc |= device_create_file(&ms->master->dev, &dev_attr_wcol_count);
-+	rc |= device_create_file(&ms->master->dev, &dev_attr_wcol_ticks);
-+	rc |= device_create_file(&ms->master->dev, &dev_attr_modf_count);
-+	if (rc)
-+		dev_info(&ms->master->dev, "error creating sysfs files\n");
-+
-+	dev_info(&ms->master->dev, "registered MPC5200 SPI bus\n");
-+
-+	spi_of_register_devices(master, op->node);
-+
-+	return rc;
-+
-+ err_register:
-+	spi_master_put(master);
-+	return rc;
-+}
-+
-+static void __devexit mpc52xx_spi_of_remove(struct of_device *op)
-+{
-+	struct spi_master *master = dev_get_drvdata(&op->dev);
-+	struct mpc52xx_spi *ms = spi_master_get_devdata(master);
-+
-+	device_remove_file(&ms->master->dev, &dev_attr_msg_count);
-+	device_remove_file(&ms->master->dev, &dev_attr_byte_count);
-+	device_remove_file(&ms->master->dev, &dev_attr_wcol_count);
-+	device_remove_file(&ms->master->dev, &dev_attr_wcol_ticks);
-+	device_remove_file(&ms->master->dev, &dev_attr_modf_count);
-+
-+	spi_unregister_master(master);
-+	spi_master_put(master);
-+	iounmap(ms->regs);
-+}
-+
-+static struct of_device_id mpc52xx_spi_of_match[] __devinitdata = {
-+	{ .compatible = "fsl,mpc5200-spi", },
-+	{}
-+};
-+MODULE_DEVICE_TABLE(of, mpc52xx_psc_spi_of_match);
-+
-+static struct of_platform_driver mpc52xx_spi_of_driver = {
-+	.owner = THIS_MODULE,
-+	.name = "mpc52xx-spi",
-+	.match_table = mpc52xx_spi_of_match,
-+	.probe = mpc52xx_spi_of_probe,
-+	.remove = __exit_p(mpc52xx_spi_of_remove),
-+};
-+
-+static int __init mpc52xx_spi_init(void)
-+{
-+	return of_register_platform_driver(&mpc52xx_spi_of_driver);
-+}
-+module_init(mpc52xx_spi_init);
-+
-+static void __exit mpc52xx_spi_exit(void)
-+{
-+	of_unregister_platform_driver(&mpc52xx_spi_of_driver);
-+}
-+module_exit(mpc52xx_spi_exit);
-+
-diff --git a/include/linux/spi/mpc52xx_spi.h b/include/linux/spi/mpc52xx_spi.h
-new file mode 100644
-index 0000000..d1004cf
---- /dev/null
-+++ b/include/linux/spi/mpc52xx_spi.h
-@@ -0,0 +1,10 @@
-+
-+#ifndef INCLUDE_MPC5200_SPI_H
-+#define INCLUDE_MPC5200_SPI_H
-+
-+extern void mpc52xx_spi_set_premessage_hook(struct spi_master *master,
-+					    void (*hook)(struct spi_message *m,
-+							 void *context),
-+					    void *hook_context);
-+
-+#endif
