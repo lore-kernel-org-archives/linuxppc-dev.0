@@ -3,17 +3,17 @@ Received: from nospam3.slac.stanford.edu (nospam3.slac.stanford.edu
 	[134.79.18.120])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 5ED6ADDFA9
-	for <linuxppc-dev@ozlabs.org>; Sat, 17 May 2008 01:46:36 +1000 (EST)
-Subject: Re: [PATCH 2/5] powerpc: boot code for the C2K
+	by ozlabs.org (Postfix) with ESMTPS id 5FBA4DDEDC
+	for <linuxppc-dev@ozlabs.org>; Sat, 17 May 2008 02:01:11 +1000 (EST)
+Subject: Re: [PATCH 3/5] powerpc: C2K board driver
 From: Remi Machet <rmachet@slac.stanford.edu>
-To: David Gibson <david@gibson.dropbear.id.au>
-In-Reply-To: <20080516015647.GB27188@yookeroo.seuss>
-References: <1210897421.13992.14.camel@pcds-ts102.slac.stanford.edu>
-	<20080516015647.GB27188@yookeroo.seuss>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+In-Reply-To: <20080516144645.490114f6.sfr@canb.auug.org.au>
+References: <1210897468.13992.16.camel@pcds-ts102.slac.stanford.edu>
+	<20080516144645.490114f6.sfr@canb.auug.org.au>
 Content-Type: text/plain
-Date: Fri, 16 May 2008 08:46:59 -0700
-Message-Id: <1210952820.13992.25.camel@pcds-ts102.slac.stanford.edu>
+Date: Fri, 16 May 2008 09:01:32 -0700
+Message-Id: <1210953692.13992.28.camel@pcds-ts102.slac.stanford.edu>
 Mime-Version: 1.0
 Cc: Linux PPC <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -25,27 +25,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2008-05-16 at 11:56 +1000, David Gibson wrote:
-> On Thu, May 15, 2008 at 05:23:40PM -0700, Remi Machet wrote:
-> > Support for the C2K cPCI Single Board Computer from GEFanuc
-> > (PowerPC MPC7448 with a Marvell MV64460 chipset)
-> > All features of the board are not supported yet, but the board
-> > boots, flash works, all Ethernet ports are working and PCI 
-> > devices are all found (USB and SATA on PCI1 do not work yet).
-> > 
-> > Part 2 of 5: support for the board in arch/powerpc/boot.
-> > 
-> > Signed-off-by: Remi Machet <rmachet@slac.stanford.edu>
+On Fri, 2008-05-16 at 14:46 +1000, Stephen Rothwell wrote:
+> Hi Remi,
 > 
-> [snip]
-> > +BSS_STACK(16*KB);
+> On Thu, 15 May 2008 17:24:28 -0700 Remi Machet <rmachet@slac.stanford.edu> wrote:
+> >
+> > +#include <linux/stddef.h>
+> > +#include <linux/kernel.h>
+> > +#include <linux/delay.h>
+> > +#include <linux/interrupt.h>
+> > +#include <linux/seq_file.h>
+> > +
+> > +#include <asm/machdep.h>
+> > +#include <asm/prom.h>
+> > +#include <asm/system.h>
+> > +#include <linux/time.h>
+> > +#include <asm/time.h>
+> > +#include <linux/kexec.h>
 > 
-> 16kB is a really big stack for a bootwrapper.  Do you really need this
-> much?
+> Normally we don'y mix linux/ and asm/ includes (put all the linux ones at
+> the top).
 > 
-No, it was in the PRPMC2800 board file that I took as an example. I will
-tune that a little bit better and resubmit the patch.
+> You need to include <linux/of.h> because you use the device tree accessor
+> functions.
+> 
+Sorry, I made the mistake when correcting a few checkpatch.pl warnings.
+I will fix that and re-submit.
 
-Thanks !
+Thanks,
 
 Remi
