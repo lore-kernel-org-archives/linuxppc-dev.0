@@ -1,31 +1,23 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id E8694DDEEF
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 May 2008 13:55:45 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e5.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m4G3tfMb018227
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 May 2008 23:55:41 -0400
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m4G3tfQl144170
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 May 2008 23:55:41 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m4G3tf4A019737
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 May 2008 23:55:41 -0400
-Date: Thu, 15 May 2008 22:52:21 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: David Gibson <dwg@au1.ibm.com>
-Subject: Re: [PATCH] 4xx: Fix PCI mem in rainier DTS
-Message-ID: <20080515225221.277c8ce4@zod.rchland.ibm.com>
-In-Reply-To: <20080516001529.GB11402@yookeroo.seuss>
-References: <20080515094123.44974e84@zod.rchland.ibm.com>
-	<20080516001529.GB11402@yookeroo.seuss>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 0D3C2DDED9
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 May 2008 14:20:30 +1000 (EST)
+Date: Fri, 16 May 2008 14:20:16 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: Re: [PATCH 2/8] [WATCHDOG] mpc83xx_wdt: convert to the OF platform
+	driver
+Message-Id: <20080516142016.8eed4133.sfr@canb.auug.org.au>
+In-Reply-To: <20080515165349.GB3887@polina.dev.rtsoft.ru>
+References: <20080515165250.GA30738@polina.dev.rtsoft.ru>
+	<20080515165349.GB3887@polina.dev.rtsoft.ru>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Fri__16_May_2008_14_20_16_+1000_cbSSO5Mudez11Q=U"
+Cc: linuxppc-dev@ozlabs.org, Wim Van Sebroeck <wim@iguana.be>,
+	Chen Gong <G.Chen@freescale.com>,
+	Scott Wood <scottwood@freescale.com>, Tabi <timur@freescale.com>, Timur
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,15 +27,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 16 May 2008 10:15:29 +1000
-David Gibson <dwg@au1.ibm.com> wrote:
+--Signature=_Fri__16_May_2008_14_20_16_+1000_cbSSO5Mudez11Q=U
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> On Thu, May 15, 2008 at 09:41:23AM -0500, Josh Boyer wrote:
-> > This fixes the PCI node in the Rainier to match the spec from AMCC.  A
-> > similar fix was done for 440EPx, which shares the same values as 440GRx.
-> 
-> This will conflict with the dts-v1 conversion patch.
+Hi Anton,
 
-I'm well aware of that.  It will be fixed up.  Thanks.
+On Thu, 15 May 2008 20:53:49 +0400 Anton Vorontsov <avorontsov@ru.mvista.co=
+m> wrote:
+>
+> This patch simply converts mpc83xx_wdt to the OF platform driver so we
+> can directly work with the device tree without passing various stuff
+> through platform data.
+>=20
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 
-josh
+Looks good.
+
+Acked-by: Stephen Rothwell <sfr@canb.auug.org.au>
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Fri__16_May_2008_14_20_16_+1000_cbSSO5Mudez11Q=U
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFILQuJTgG2atn1QN8RArv9AKCWDehM2UCL1rFIGuGURAKfqD9x+wCfbtCj
+/8fKaPhp1FhvXBgG1cR6nFQ=
+=0o3A
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__16_May_2008_14_20_16_+1000_cbSSO5Mudez11Q=U--
