@@ -1,20 +1,20 @@
-Return-Path: <sr@denx.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.179]) by ozlabs.org (Postfix) with ESMTP id A3173DDE0D
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 May 2008 15:03:07 +1000 (EST)
-From: Stefan Roese <sr@denx.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] 4xx: Workaround for CHIP_11 Errata
-Date: Fri, 16 May 2008 06:57:00 +0200
-References: <20080515094346.3338e1f3@zod.rchland.ibm.com>
-	<20080515163104.18f0a613@lappy.seanm.ca>
-	<20080515160734.4e4ea759@zod.rchland.ibm.com>
-In-Reply-To: <20080515160734.4e4ea759@zod.rchland.ibm.com>
+Return-Path: <olaf@aepfle.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id A025ADDEE1
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 May 2008 18:13:34 +1000 (EST)
+Date: Fri, 16 May 2008 10:13:30 +0200
+From: Olaf Hering <olaf@aepfle.de>
+To: Michael Chan <mchan@broadcom.com>
+Subject: Re: dead network on JS21 with tg3 driver after flowcontrol changes
+Message-ID: <20080516081330.GA26530@aepfle.de>
+References: <20080515121340.GA23033@aepfle.de>
+	<20080515171520.GA20953@localdomain>
+	<1210881078.22745.9.camel@dell>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200805160657.00300.sr@denx.de>
-Cc: Sean MacLennan <smaclennan@pikatech.com>
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <1210881078.22745.9.camel@dell>
+Cc: linuxppc-dev@ozlabs.org, Matt Carlson <mcarlson@broadcom.com>,
+	netdev <netdev@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,20 +24,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thursday 15 May 2008, Josh Boyer wrote:
-> > "Josh Boyer" <jwboyer@linux.vnet.ibm.com> wrote:
-> > > This implements the recommended workaround for this errata for chips
-> > > that use older versions of firmware that do not already handle it.
-> > > The last 4KiB of memory are hidden from the kernel to prevent the
-> > > problem transactions from occurring.
-> >
-> > Do you know which versions of firmware have this problem?
->
-> Any U-Boot older than 1.3.3-rc1.  Not sure about PIBS, but I don't
-> think the version that is on my Bamboo board has a fix for it.
+On Thu, May 15, Michael Chan wrote:
 
-PIBS will definitely have this problem too. This errata is quite new on 
-440EP/GR.
+> Matt, I think that's very likely the problem.  If we are trying to
+> establish link in parallel detect mode, the flow control settings may
+> not match.  If we do not enter the if statement to do nothing, we will
+> keep autonegotiating forever and never establish link.
 
-Best regards,
-Stefan
+Yes, this patch fixes nfsroot for me. Thanks.
+mii-tool is not shipped anymore, even in SLES10.
+I assume that ethtool is the replacement?
+
+Olaf
