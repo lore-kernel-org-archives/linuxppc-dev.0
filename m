@@ -1,19 +1,25 @@
-Return-Path: <apw@shadowen.org>
-Received: from hellhawk.shadowen.org (hellhawk.shadowen.org [80.68.90.175])
-	by ozlabs.org (Postfix) with ESMTP id 4A38DDDEEC
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 May 2008 19:21:28 +1000 (EST)
-Date: Fri, 16 May 2008 09:46:02 +0100
-From: Andy Whitcroft <apw@shadowen.org>
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH] Discourage use of __initcall() in favour of
-	device_initcall()
-Message-ID: <20080516084602.GA28298@shadowen.org>
-References: <547098715b7ba4beb99bf2674a22debca001dc68.1210902536.git.michael@ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <547098715b7ba4beb99bf2674a22debca001dc68.1210902536.git.michael@ellerman.id.au>
-Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org,
-	rpjday@crashcourse.ca
+Return-Path: <Jason.Jin@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 27038DDFE1
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 May 2008 19:52:46 +1000 (EST)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
+	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	m4G9qa7O015614
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 May 2008 02:52:37 -0700 (MST)
+Received: from zch01exm21.fsl.freescale.net (zch01exm21.ap.freescale.net
+	[10.192.129.205])
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id m4G9qYLX013463
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 May 2008 04:52:35 -0500 (CDT)
+From: Jason Jin <Jason.jin@freescale.com>
+To: galak@kernel.crashing.org
+Subject: [PATCH 1/4 V3] booting-without-of for Freescale MSI
+Date: Fri, 16 May 2008 17:50:44 +0800
+Message-Id: <1210931447-16234-1-git-send-email-Jason.jin@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, Jason Jin <Jason.jin@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,55 +29,73 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, May 16, 2008 at 11:49:14AM +1000, Michael Ellerman wrote:
-> Add a comment above the definition of __initcall(), just in case
-> someone looks here.
-> 
-> And add a checkpatch warning for new uses of __initcall().
-> 
-> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
-> ---
-> 
-> How's this? My perl skills are not good, but this seems to work.
-> 
->  include/linux/init.h  |    1 +
->  scripts/checkpatch.pl |    4 ++++
->  2 files changed, 5 insertions(+), 0 deletions(-)
-> 
-> diff --git a/include/linux/init.h b/include/linux/init.h
-> index 21d658c..6390e22 100644
-> --- a/include/linux/init.h
-> +++ b/include/linux/init.h
-> @@ -193,6 +193,7 @@ extern void (*late_time_init)(void);
->  #define late_initcall(fn)		__define_initcall("7",fn,7)
->  #define late_initcall_sync(fn)		__define_initcall("7s",fn,7s)
->  
-> +/* Please use device_initcall() directly in new code */
->  #define __initcall(fn) device_initcall(fn)
->  
->  #define __exitcall(fn) \
-> diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
-> index b6bbbcd..3faff3f 100755
-> --- a/scripts/checkpatch.pl
-> +++ b/scripts/checkpatch.pl
-> @@ -2026,6 +2026,10 @@ sub process {
->  		if ($line =~ /\bsimple_(strto.*?)\s*\(/) {
->  			WARN("consider using strict_$1 in preference to simple_$1\n" . $herecurr);
->  		}
-> +# check for __initcall(), use device_initcall() explicitly please
-> +		if ($line =~ /^.\s*__initcall\(/) {
+Binding document adding for Freescale MSI support.
 
-Well you should probabally allow spaces before the ( but otherwise its
-in the spirit.
+Signed-off-by: Jason Jin <Jason.jin@freescale.com>
+---
+Change the compatible name in this V3 version.
 
-Checkpatch has its own tree as it has an extensive regression test
-suite.  So I'll suck this half up into my tree and it'll be in the 0.20
-update.
+ Documentation/powerpc/booting-without-of.txt |   41 +++++++++++++++++++++++++-
+ 1 files changed, 40 insertions(+), 1 deletions(-)
 
-> +			WARN("please use device_initcall() instead of __initcall()\n" . $herecurr);
-> +		}
->  
->  # use of NR_CPUS is usually wrong
->  # ignore definitions of NR_CPUS and usage to define arrays as likely right
-
--apw
+diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
+index 1d2a772..789cd5a 100644
+--- a/Documentation/powerpc/booting-without-of.txt
++++ b/Documentation/powerpc/booting-without-of.txt
+@@ -57,7 +57,10 @@ Table of Contents
+       n) 4xx/Axon EMAC ethernet nodes
+       o) Xilinx IP cores
+       p) Freescale Synchronous Serial Interface
+-	  q) USB EHCI controllers
++      q) USB EHCI controllers
++      r) Freescale Display Interface Unit
++      s) Freescale on board FPGA
++      t) Freescael MSI interrupt controller
+ 
+   VII - Marvell Discovery mv64[345]6x System Controller chips
+     1) The /system-controller node
+@@ -2870,6 +2873,42 @@ platforms are moved over to use the flattened-device-tree model.
+ 		reg = <0xe8000000 32>;
+ 	};
+ 
++    t) Freescale MSI interrupt controller
++
++    Reguired properities:
++    - compatible : set as "fsl,mpc8610-msi" for all the cpu which use MPIC,
++      and set as "fsl,mpc8379-msi" for those use IPIC.
++    - reg : should contain the address and the length of the shared message
++      interrupt register set.
++    - msi-available-ranges: use <start count> style section to define which
++      msi interrupt can be used in the 256 msi interrupts. This property is
++      optional, without this, all the 256 MSI interrupts can be used.
++    - interrupts : each one of the interrupts here is one entry per 32 MSIs,
++      and routed to the host interrupt controller. the interrupts should
++      be set as edge sensitive.
++    - interrupt-parent: the phandle for the interrupt controller
++      that services interrupts for this device. for 83xx cpu, the interrupts
++      are routed to IPIC, and for 85xx/86xx cpu the interrupts are routed
++      to MPIC.
++
++    Example
++	msi@41600 {
++		compatible = "fsl,mpc8610-msi";
++		reg = <0x41600 0x80>;
++		msi-available-ranges = <0 0x100>;
++		interrupts = <
++			0xb0 0
++			0xb1 0
++			0xb2 0
++			0xb3 0
++			0xb4 0
++			0xb5 0
++			0xb6 0
++			0xb7 0>;
++		interrupt-parent = <&mpic>;
++	};
++
++
+ VII - Marvell Discovery mv64[345]6x System Controller chips
+ ===========================================================
+ 
+-- 
+1.5.4
