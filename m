@@ -1,16 +1,19 @@
-Return-Path: <frannk_m1@yahoo.com>
-Received: from web32201.mail.mud.yahoo.com (web32201.mail.mud.yahoo.com
-	[68.142.207.132]) by ozlabs.org (Postfix) with SMTP id 55FDDDDE1F
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	by ozlabs.org (Postfix) with ESMTP id BC75FDDEED
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 15 May 2008 12:20:07 +1000 (EST)
-Date: Wed, 14 May 2008 19:13:27 -0700 (PDT)
-From: Frank <frannk_m1@yahoo.com>
-Subject: Re: How to test the DDR memory with burst visit mode?
-To: "¹ù¾¢" <guojin02@tsinghua.org.cn>, linuxppc-embedded@ozlabs.org
-In-Reply-To: <410764342.21662@tsinghua.org.cn>
+	Fri, 16 May 2008 13:17:40 +1000 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1JwqRs-0006EJ-7f
+	for linuxppc-embedded@ozlabs.org; Thu, 15 May 2008 20:17:36 -0700
+Message-ID: <17266881.post@talk.nabble.com>
+Date: Thu, 15 May 2008 20:17:36 -0700 (PDT)
+From: mohit_kumar <mohit.kumar@a-k-a.net>
+To: linuxppc-embedded@ozlabs.org
+Subject: PowerPC Linux PCI ethernet device Probe Error
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Message-ID: <163586.166.qm@web32201.mail.mud.yahoo.com>
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -22,25 +25,30 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
---- ¹ù¾¢ <guojin02@tsinghua.org.cn> wrote:
+Hi 
+We are using PowerPC Port of Linux 2.6 kernel.
+The processor architecture is PPC440EPx and the PCI card is Intel PRO PCI
+Adapter card.
 
-> Hi,friends,
->    I designed my MPC8360E board with 1GBytes DDR-1 memory, I
-> built two demo
-> boards, one is 533/266/400, the other is 660/330/400. The
-> lower frequancy board is
-> no problem for our program, but the higher frequency board is
-> always problem about
-> the data transmit on ethernet. 
->    I want to test 1GBytes DDR-1 memory, I want to know whether
-> or not the DDR is
-> stable and accuracy. Could you tell me a simple way that test
-> my DDR memory? 
-> 
-Boot the kernel and run something like stress from LTP (Linux
-Test project). I guarantee you if there is any instability it
-will show up...
+e100_probe: Cannot find proper PCI device base address, aborting
 
+If I use linux shell command,lspci -vv
+It shows:
+lspci -vv
+00:0c.0 Class 0200: 8086:1229 (rev 0c)
+        Subsystem: 8086:0040
+                Interrupt: pin A routed to IRQ 67
+        Region 1: I/O ports at <unassigned> [disabled]
+        Capabilities: [dc] Power Management version 2
 
-
-      
+It seems Linux can detect PCI device,Read Configuration Space like
+Vendor id, Device Id, Class Id  but others Registers like Device Control,
+Interrupt Line, Cache Line Size,
+latency Timer and Base Address Registers are not being updated even software
+is
+writing some values to them . ........Please give me some idea to resolve
+the pci access problem...feel free to ask information i missed to mention
+anything important...
+-- 
+View this message in context: http://www.nabble.com/PowerPC-Linux-PCI-ethernet-device-Probe-Error-tp17266881p17266881.html
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
