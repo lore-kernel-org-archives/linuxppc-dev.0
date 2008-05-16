@@ -1,23 +1,19 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 0D3C2DDED9
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 May 2008 14:20:30 +1000 (EST)
-Date: Fri, 16 May 2008 14:20:16 +1000
+	by ozlabs.org (Postfix) with ESMTP id B2C0ADDED9
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 May 2008 14:46:54 +1000 (EST)
+Date: Fri, 16 May 2008 14:46:45 +1000
 From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: [PATCH 2/8] [WATCHDOG] mpc83xx_wdt: convert to the OF platform
-	driver
-Message-Id: <20080516142016.8eed4133.sfr@canb.auug.org.au>
-In-Reply-To: <20080515165349.GB3887@polina.dev.rtsoft.ru>
-References: <20080515165250.GA30738@polina.dev.rtsoft.ru>
-	<20080515165349.GB3887@polina.dev.rtsoft.ru>
+To: Remi Machet <rmachet@slac.stanford.edu>
+Subject: Re: [PATCH 3/5] powerpc: C2K board driver
+Message-Id: <20080516144645.490114f6.sfr@canb.auug.org.au>
+In-Reply-To: <1210897468.13992.16.camel@pcds-ts102.slac.stanford.edu>
+References: <1210897468.13992.16.camel@pcds-ts102.slac.stanford.edu>
 Mime-Version: 1.0
 Content-Type: multipart/signed; protocol="application/pgp-signature";
 	micalg="PGP-SHA1";
-	boundary="Signature=_Fri__16_May_2008_14_20_16_+1000_cbSSO5Mudez11Q=U"
-Cc: linuxppc-dev@ozlabs.org, Wim Van Sebroeck <wim@iguana.be>,
-	Chen Gong <G.Chen@freescale.com>,
-	Scott Wood <scottwood@freescale.com>, Tabi <timur@freescale.com>, Timur
+	boundary="Signature=_Fri__16_May_2008_14_46_45_+1000_qaba6t8RU1P8iqoY"
+Cc: Linux PPC <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,40 +23,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Fri__16_May_2008_14_20_16_+1000_cbSSO5Mudez11Q=U
+--Signature=_Fri__16_May_2008_14_46_45_+1000_qaba6t8RU1P8iqoY
 Content-Type: text/plain; charset=US-ASCII
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Hi Anton,
+Hi Remi,
 
-On Thu, 15 May 2008 20:53:49 +0400 Anton Vorontsov <avorontsov@ru.mvista.co=
-m> wrote:
+On Thu, 15 May 2008 17:24:28 -0700 Remi Machet <rmachet@slac.stanford.edu> =
+wrote:
 >
-> This patch simply converts mpc83xx_wdt to the OF platform driver so we
-> can directly work with the device tree without passing various stuff
-> through platform data.
->=20
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> +#include <linux/stddef.h>
+> +#include <linux/kernel.h>
+> +#include <linux/delay.h>
+> +#include <linux/interrupt.h>
+> +#include <linux/seq_file.h>
+> +
+> +#include <asm/machdep.h>
+> +#include <asm/prom.h>
+> +#include <asm/system.h>
+> +#include <linux/time.h>
+> +#include <asm/time.h>
+> +#include <linux/kexec.h>
 
-Looks good.
+Normally we don'y mix linux/ and asm/ includes (put all the linux ones at
+the top).
 
-Acked-by: Stephen Rothwell <sfr@canb.auug.org.au>
+You need to include <linux/of.h> because you use the device tree accessor
+functions.
 
 --=20
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 http://www.canb.auug.org.au/~sfr/
 
---Signature=_Fri__16_May_2008_14_20_16_+1000_cbSSO5Mudez11Q=U
+--Signature=_Fri__16_May_2008_14_46_45_+1000_qaba6t8RU1P8iqoY
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.6 (GNU/Linux)
 
-iD8DBQFILQuJTgG2atn1QN8RArv9AKCWDehM2UCL1rFIGuGURAKfqD9x+wCfbtCj
-/8fKaPhp1FhvXBgG1cR6nFQ=
-=0o3A
+iD8DBQFILRG9TgG2atn1QN8RAhnRAJ9r+F8Dj4/75b/NgKgal46Oh+Sc/wCeNXSO
+enCrFhEHQq8NewwOrNSX6oU=
+=w4Rr
 -----END PGP SIGNATURE-----
 
---Signature=_Fri__16_May_2008_14_20_16_+1000_cbSSO5Mudez11Q=U--
+--Signature=_Fri__16_May_2008_14_46_45_+1000_qaba6t8RU1P8iqoY--
