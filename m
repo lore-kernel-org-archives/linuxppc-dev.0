@@ -1,14 +1,17 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Fri, 16 May 2008 11:56:47 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Remi Machet <rmachet@slac.stanford.edu>
-Subject: Re: [PATCH 2/5] powerpc: boot code for the C2K
-Message-ID: <20080516015647.GB27188@yookeroo.seuss>
-References: <1210897421.13992.14.camel@pcds-ts102.slac.stanford.edu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1210897421.13992.14.camel@pcds-ts102.slac.stanford.edu>
-Cc: Linux PPC <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net (unknown [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id 30CF7DDF09
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 May 2008 13:00:13 +1000 (EST)
+Date: Thu, 15 May 2008 20:00:06 -0700 (PDT)
+Message-Id: <20080515.200006.06776414.davem@davemloft.net>
+To: sfr@canb.auug.org.au
+Subject: Re: [PATCH] [POWERPC] move of_device_get_modalias fo drivers/of
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080516115745.efb998fb.sfr@canb.auug.org.au>
+References: <20080516115745.efb998fb.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, paulua@samba.org, olaf@aepfle.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,25 +21,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, May 15, 2008 at 05:23:40PM -0700, Remi Machet wrote:
-> Support for the C2K cPCI Single Board Computer from GEFanuc
-> (PowerPC MPC7448 with a Marvell MV64460 chipset)
-> All features of the board are not supported yet, but the board
-> boots, flash works, all Ethernet ports are working and PCI 
-> devices are all found (USB and SATA on PCI1 do not work yet).
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Fri, 16 May 2008 11:57:45 +1000
+
+> Commit 140b932f8cb6cced10b96860651a198b1b89cbb9 ("Create modalias file
+> in sysfs for of_platform bus") needs this to avoid breaking the sparc
+> builds.
 > 
-> Part 2 of 5: support for the board in arch/powerpc/boot.
+> Just move the code and add whitespace around some binary operators.
 > 
-> Signed-off-by: Remi Machet <rmachet@slac.stanford.edu>
+> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 
-[snip]
-> +BSS_STACK(16*KB);
-
-16kB is a really big stack for a bootwrapper.  Do you really need this
-much?
-
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Acked-by: David S. Miller <davem@davemloft.net>
