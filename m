@@ -1,29 +1,30 @@
 Return-Path: <grant.likely@secretlab.ca>
 Received: from pd3mo2so.prod.shaw.ca (idcmail-mo1so.shaw.ca [24.71.223.10])
-	by ozlabs.org (Postfix) with ESMTP id 6787BDE6DC
-	for <linuxppc-dev@ozlabs.org>; Sat, 17 May 2008 05:36:17 +1000 (EST)
-Received: from pd2mr2so.prod.shaw.ca
-	(pd2mr2so-qfe3.prod.shaw.ca [10.0.141.109]) by l-daemon
-	(Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15 2004))
-	with ESMTP id <0K0Z005747S49XD0@l-daemon> for linuxppc-dev@ozlabs.org;
-	Fri, 16 May 2008 13:36:04 -0600 (MDT)
-Received: from pn2ml5so.prod.shaw.ca ([10.0.121.149])
-	by pd2mr2so.prod.shaw.ca (Sun Java System Messaging Server 6.2-7.05
-	(built Sep
-	5 2006)) with ESMTP id <0K0Z008KO7S49J20@pd2mr2so.prod.shaw.ca> for
-	linuxppc-dev@ozlabs.org; Fri, 16 May 2008 13:36:05 -0600 (MDT)
-Received: from trillian.cg.shawcable.net ([68.147.67.118])
+	by ozlabs.org (Postfix) with ESMTP id 35D99DE6DC
+	for <linuxppc-dev@ozlabs.org>; Sat, 17 May 2008 05:36:19 +1000 (EST)
+Received: from pd2mr6so.prod.shaw.ca (pd2mr6so-qfe3.prod.shaw.ca [10.0.141.9])
 	by l-daemon (Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15
 	2004))
-	with ESMTP id <0K0Z00F847S3G040@l-daemon> for linuxppc-dev@ozlabs.org;
-	Fri, 16 May 2008 13:36:03 -0600 (MDT)
-Date: Fri, 16 May 2008 13:36:03 -0600
+	with ESMTP id <0K0Z0057K7SD9XD0@l-daemon> for linuxppc-dev@ozlabs.org;
+	Fri, 16 May 2008 13:36:13 -0600 (MDT)
+Received: from pn2ml1so.prod.shaw.ca ([10.0.121.145])
+	by pd2mr6so.prod.shaw.ca (Sun Java System Messaging Server 6.2-7.05
+	(built Sep
+	5 2006)) with ESMTP id <0K0Z002497SBA9C0@pd2mr6so.prod.shaw.ca> for
+	linuxppc-dev@ozlabs.org; Fri, 16 May 2008 13:36:14 -0600 (MDT)
+Received: from trillian.cg.shawcable.net ([68.147.67.118])
+	by l-daemon (Sun Java System Messaging Server 6.2-7.05 (built Sep 5
+	2006))
+	with ESMTP id <0K0Z0033Q7S8AAA0@l-daemon> for linuxppc-dev@ozlabs.org;
+	Fri, 16 May 2008 13:36:11 -0600 (MDT)
+Date: Fri, 16 May 2008 13:36:08 -0600
 From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH 1/4] spi: Change modalias from a pointer to a character array
+Subject: [PATCH 2/4] spi: split up spi_new_device() to allow two stage
+	registration.
 In-reply-to: <20080516193054.28030.35126.stgit@trillian.secretlab.ca>
 To: linuxppc-dev@ozlabs.org, spi-devel-general@lists.sourceforge.net,
 	linux-kernel@vger.kernel.org, dbrownell@users.sourceforge.net
-Message-id: <20080516193603.28030.51689.stgit@trillian.secretlab.ca>
+Message-id: <20080516193608.28030.34968.stgit@trillian.secretlab.ca>
 MIME-version: 1.0
 Content-type: text/plain; charset=utf-8
 References: <20080516193054.28030.35126.stgit@trillian.secretlab.ca>
@@ -39,59 +40,244 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Grant Likely <grant.likely@secretlab.ca>
 
-Currently, 'modalias' in the spi_device structure is a 'const char *'.
-The spi_new_device() function fills in the modalias value from a passed
-in spi_board_info data block.  Since it is a pointer copy, the new
-spi_device remains dependent on the spi_board_info structure after the
-new spi_device is registered (no other fields in spi_device directly
-depend on the spi_board_info structure; all of the other data is copied).
+spi_new_device() allocates and registers an spi device all in one swoop.
+If the driver needs to add extra data to the spi_device before it is
+registered, then this causes problems.
 
-This causes a problem when dynamically propulating the list of attached
-SPI devices.  For example, in arch/powerpc, the list of SPI devices can
-be populated from data in the device tree.  With the current code, the
-device tree adapter must kmalloc() a new spi_board_info structure for
-each new SPI device it finds in the device tree, and there is no simple
-mechanism in place for keeping track of these allocations.
+This patch splits the allocation and registration portions of code out
+of spi_new_device() and creates three new functions; spi_alloc_device(),
+spi_register_device(), and spi_device_release().  spi_new_device() is
+modified to use the new functions for allocation and registration.
+None of the existing users of spi_new_device() should be affected by
+this change.
 
-This patch changes modalias from a 'const char *' to a fixed char array.
-By copying the modalias string instead of referencing it, the dependency
-on the spi_board_info structure is eliminated and an outside caller does
-not need to maintain a separate spi_board_info allocation for each device.
+Drivers using the new API can forego the use of an spi_board_info
+structure to describe the device layout and populate data into the
+spi_device structure directly.
 
-If searched through the code to the best of my ability for any references
-to modalias which may be affected by this change and haven't found anything.
-It has been tested with the lite5200b platform in arch/powerpc.
+This change is in preparation for adding an OF device tree parser to
+generate spi_devices based on data in the device tree.
 
 Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 ---
 
- drivers/spi/spi.c       |    2 +-
- include/linux/spi/spi.h |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/spi/spi.c       |  150 +++++++++++++++++++++++++++++++++--------------
+ include/linux/spi/spi.h |   13 ++++
+ 2 files changed, 119 insertions(+), 44 deletions(-)
 
 diff --git a/drivers/spi/spi.c b/drivers/spi/spi.c
-index 1ad12af..bdf1b70 100644
+index bdf1b70..9c7a84d 100644
 --- a/drivers/spi/spi.c
 +++ b/drivers/spi/spi.c
-@@ -229,7 +229,7 @@ struct spi_device *spi_new_device(struct spi_master *master,
+@@ -178,6 +178,107 @@ struct boardinfo {
+ static LIST_HEAD(board_list);
+ static DEFINE_MUTEX(board_lock);
+ 
++/**
++ * spi_alloc_device - Allocate a new SPI device
++ * @master: Controller to which device is connected
++ * Context: can sleep
++ *
++ * Allows a driver to allocate and initialize and spi_device without
++ * registering it immediately.  This allows a driver to directly
++ * fill the spi_device with device parameters before calling
++ * spi_register_device() on it.
++ *
++ * Caller is responsible to call spi_register_device on the returned
++ * spi_device structure.
++ *
++ * Returns a pointer to the new device, or NULL.
++ */
++struct spi_device *spi_alloc_device(struct spi_master *master)
++{
++	struct spi_device	*spi;
++	struct device		*dev = master->dev.parent;
++
++	if (!spi_master_get(master))
++		return NULL;
++
++	spi = kzalloc(sizeof *spi, GFP_KERNEL);
++	if (!spi) {
++		dev_err(dev, "cannot alloc spi_device\n");
++		spi_master_put(master);
++		return NULL;
++	}
++
++	spi->master = master;
++	spi->dev.parent = dev;
++	spi->dev.bus = &spi_bus_type;
++	spi->dev.release = spidev_release;
++	return spi;
++}
++EXPORT_SYMBOL_GPL(spi_alloc_device);
++
++/**
++ * spi_register_device - Register an spi_device allocated with spi_alloc_device
++ * @spi: spi_device to register
++ *
++ * Companion function to spi_alloc_device.  Devices allocated with
++ * spi_alloc_device can be registerd onto the spi bus with this function.
++ *
++ * Returns 0 on success; non-zero on failure
++ */
++int spi_register_device(struct spi_device *spi)
++{
++	struct device *dev = spi->master->dev.parent;
++	int status;
++
++	/* Chipselects are numbered 0..max; validate. */
++	if (spi->chip_select >= spi->master->num_chipselect) {
++		dev_err(dev, "cs%d > max %d\n",
++			spi->chip_select,
++			spi->master->num_chipselect);
++		return -EINVAL;
++	}
++
++	/* Set the bus ID string */
++	snprintf(spi->dev.bus_id, sizeof spi->dev.bus_id,
++			"%s.%u", spi->master->dev.bus_id,
++			spi->chip_select);
++
++	/* drivers may modify this initial i/o setup */
++	status = spi->master->setup(spi);
++	if (status < 0) {
++		dev_err(dev, "can't %s %s, status %d\n",
++				"setup", spi->dev.bus_id, status);
++		return status;
++	}
++
++	/* driver core catches callers that misbehave by defining
++	 * devices that already exist.
++	 */
++	status = device_register(&spi->dev);
++	if (status < 0) {
++		dev_err(dev, "can't %s %s, status %d\n",
++				"add", spi->dev.bus_id, status);
++		return status;
++	}
++
++	dev_dbg(dev, "registered child %s\n", spi->dev.bus_id);
++	return 0;
++}
++EXPORT_SYMBOL_GPL(spi_register_device);
++
++/**
++ * spi_device_release - Free an allocated spi_device structure
++ * @spi: spi device to free
++ *
++ * Call this to free an spi_device allocated with spi_alloc_device().  Caller
++ * is responsible to ensure that the device has been unregistered first.
++ */
++void spi_device_release(struct spi_device *spi)
++{
++	spi_master_put(spi->master);
++	kfree(spi);
++}
++EXPORT_SYMBOL_GPL(spi_device_release);
+ 
+ /**
+  * spi_new_device - instantiate one new SPI device
+@@ -197,7 +298,6 @@ struct spi_device *spi_new_device(struct spi_master *master,
+ 				  struct spi_board_info *chip)
+ {
+ 	struct spi_device	*proxy;
+-	struct device		*dev = master->dev.parent;
+ 	int			status;
+ 
+ 	/* NOTE:  caller did any chip->bus_num checks necessary.
+@@ -207,64 +307,26 @@ struct spi_device *spi_new_device(struct spi_master *master,
+ 	 * suggests syslogged diagnostics are best here (ugh).
+ 	 */
+ 
+-	/* Chipselects are numbered 0..max; validate. */
+-	if (chip->chip_select >= master->num_chipselect) {
+-		dev_err(dev, "cs%d > max %d\n",
+-			chip->chip_select,
+-			master->num_chipselect);
+-		return NULL;
+-	}
+-
+-	if (!spi_master_get(master))
++	proxy = spi_alloc_device(master);
++	if (!proxy)
+ 		return NULL;
+ 
+-	proxy = kzalloc(sizeof *proxy, GFP_KERNEL);
+-	if (!proxy) {
+-		dev_err(dev, "can't alloc dev for cs%d\n",
+-			chip->chip_select);
+-		goto fail;
+-	}
+-	proxy->master = master;
+ 	proxy->chip_select = chip->chip_select;
  	proxy->max_speed_hz = chip->max_speed_hz;
  	proxy->mode = chip->mode;
  	proxy->irq = chip->irq;
--	proxy->modalias = chip->modalias;
-+	strncpy(proxy->modalias, chip->modalias, KOBJ_NAME_LEN);
+ 	strncpy(proxy->modalias, chip->modalias, KOBJ_NAME_LEN);
+-
+-	snprintf(proxy->dev.bus_id, sizeof proxy->dev.bus_id,
+-			"%s.%u", master->dev.bus_id,
+-			chip->chip_select);
+-	proxy->dev.parent = dev;
+-	proxy->dev.bus = &spi_bus_type;
+ 	proxy->dev.platform_data = (void *) chip->platform_data;
+ 	proxy->controller_data = chip->controller_data;
+ 	proxy->controller_state = NULL;
+-	proxy->dev.release = spidev_release;
  
- 	snprintf(proxy->dev.bus_id, sizeof proxy->dev.bus_id,
- 			"%s.%u", master->dev.bus_id,
+-	/* drivers may modify this initial i/o setup */
+-	status = master->setup(proxy);
++	status = spi_register_device(proxy);
+ 	if (status < 0) {
+-		dev_err(dev, "can't %s %s, status %d\n",
+-				"setup", proxy->dev.bus_id, status);
+-		goto fail;
++		spi_device_release(proxy);
++		return NULL;
+ 	}
+ 
+-	/* driver core catches callers that misbehave by defining
+-	 * devices that already exist.
+-	 */
+-	status = device_register(&proxy->dev);
+-	if (status < 0) {
+-		dev_err(dev, "can't %s %s, status %d\n",
+-				"add", proxy->dev.bus_id, status);
+-		goto fail;
+-	}
+-	dev_dbg(dev, "registered child %s\n", proxy->dev.bus_id);
+ 	return proxy;
+-
+-fail:
+-	spi_master_put(master);
+-	kfree(proxy);
+-	return NULL;
+ }
+ EXPORT_SYMBOL_GPL(spi_new_device);
+ 
 diff --git a/include/linux/spi/spi.h b/include/linux/spi/spi.h
-index 387e428..38a080b 100644
+index 38a080b..ca7c933 100644
 --- a/include/linux/spi/spi.h
 +++ b/include/linux/spi/spi.h
-@@ -82,7 +82,7 @@ struct spi_device {
- 	int			irq;
- 	void			*controller_state;
- 	void			*controller_data;
--	const char		*modalias;
-+	char			modalias[KOBJ_NAME_LEN];
+@@ -778,8 +778,21 @@ spi_register_board_info(struct spi_board_info const *info, unsigned n)
+  * use spi_new_device() to describe each device.  You can also call
+  * spi_unregister_device() to start making that device vanish, but
+  * normally that would be handled by spi_unregister_master().
++ *
++ * You can also use spi_alloc_device() and spi_register_device() to
++ * for a two stage registration of an SPI device.  This gives the caller
++ * some more control over the spi_device structure before it is registered
+  */
+ extern struct spi_device *
++spi_alloc_device(struct spi_master *master);
++
++extern int
++spi_register_device(struct spi_device *spi);
++
++extern void
++spi_device_release(struct spi_device *spi);
++
++extern struct spi_device *
+ spi_new_device(struct spi_master *, struct spi_board_info *);
  
- 	/*
- 	 * likely need more hooks for more protocol options affecting how
+ static inline void
