@@ -1,18 +1,35 @@
-Return-Path: <marco.stornelli@coritel.it>
-Received: from nausicaa2.coritel.it (unknown [82.190.130.254])
-	by ozlabs.org (Postfix) with ESMTP id 35BBBDDFB8
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 85CE0DDFAF
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 16 May 2008 22:37:28 +1000 (EST)
-Message-ID: <482D7BB0.4040505@coritel.it>
-Date: Fri, 16 May 2008 14:18:56 +0200
-From: Marco Stornelli <marco.stornelli@coritel.it>
-MIME-Version: 1.0
-To: mojtaba <kernelppc@gmail.com>
-Subject: Re: Booting Linux from an ACE File
-References: <007a01c8b74c$0ad9c2e0$208d48a0$@com>
-In-Reply-To: <007a01c8b74c$0ad9c2e0$208d48a0$@com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+	Fri, 16 May 2008 23:31:37 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e33.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m4GDVXut019979
+	for <linuxppc-embedded@ozlabs.org>; Fri, 16 May 2008 09:31:33 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m4GDVX56084100
+	for <linuxppc-embedded@ozlabs.org>; Fri, 16 May 2008 07:31:33 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m4GDVWrM001884
+	for <linuxppc-embedded@ozlabs.org>; Fri, 16 May 2008 07:31:33 -0600
+Date: Fri, 16 May 2008 08:28:08 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: "Welch, Martyn (GE EntSol, Intelligent Platforms)"
+	<martyn.welch@gefanuc.com>
+Subject: Re: Suitability of patchs as attachments
+Message-ID: <20080516082808.04e2704d@zod.rchland.ibm.com>
+In-Reply-To: <1CADFA951940554D86FBD8B24BBFF3A00129CBF5@LONMLVEM08.e2k.ad.ge.com>
+References: <1CADFA951940554D86FBD8B24BBFF3A00129CBF5@LONMLVEM08.e2k.ad.ge.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: "Lissaman, Stuart \(GE EntSol,
+	Intelligent Platforms\)" <stuart.lissaman@gefanuc.com>,
+	linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -23,47 +40,22 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-mojtaba ha scritto:
-> Dear all,
-> 
-> Could you please explain what happens exactly when Linux is booting from a
-> compact flash?
-> 
-> To my few knowledge, the Linux compressed image will be copied somewhere in
-> memory, will be uncompressed and the control will jump to the beginning
-> address of the Linux kernel.
-> 
-> Is there any boot loader that copies the Linux compressed image to the
-> memory?
-> 
-> Where in memory does it put the Linux kernel? For example, if I have 2 DDRs
-> in my hardware, in which of them it will be put the kernel?
-> 
-> Can I set the kernel location in memory manually?
-> 
-> Might be an stupid question but: Is it possible for the kernel to be half in
-> BRAMS and half in DDR?
-> 
-> Regards,
-> Moji
-> 
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> 
+On Fri, 16 May 2008 09:46:31 +0100
+"Welch, Martyn (GE EntSol, Intelligent Platforms)"
+<martyn.welch@gefanuc.com> wrote:
 
- > Is there any boot loader that copies the Linux compressed image to the
- > memory?
+> Hi all,
+> 
+> I wish I didn't have to ask this but...
+> 
+> For now I'm stuck using Outlook and Exchange for email, despite my best
+> efforts I have been unable to force it to send patchs inline without
+> breaking them (I can get it to do plain text, however it seems to have
+> the habbit of wrapping ling lines, such as the "diff --git..." lines).
+> 
+> Is anyone in the same position and has worked out how to do this?
 
-Yes there are several boot-loader for example U-Boot.
+Use gmail.  It's free, and as long as you make sure your message is
+plaintext it won't mess with patches.
 
- > Where in memory does it put the Linux kernel? For example, if I have 
-2 DDRs in my hardware, in which of them it will be put the kernel?
-
-The kernel usually is copied at the start of the memory, so if you have 
-mapped the address 0x00000000 in the first bank, here will be copied it.
-
- > Can I set the kernel location in memory manually?
-
-Yes but usually it's not needed and you have to be carefully to modify it.
+josh
