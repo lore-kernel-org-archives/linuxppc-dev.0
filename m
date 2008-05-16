@@ -1,21 +1,18 @@
-Return-Path: <coreppcdevel@gmail.com>
-Received: from el-out-1112.google.com (el-out-1112.google.com [209.85.162.177])
-	by ozlabs.org (Postfix) with ESMTP id 1D6E7DE078
-	for <linuxppc-dev@ozlabs.org>; Sat, 17 May 2008 00:05:18 +1000 (EST)
-Received: by el-out-1112.google.com with SMTP id o28so272731ele.3
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 May 2008 07:05:16 -0700 (PDT)
-Message-ID: <543e3890805160705l10e718f2g6e49d842086ec662@mail.gmail.com>
-Date: Fri, 16 May 2008 19:35:14 +0530
-From: "Suresh Chandra Mannava" <coreppcdevel@gmail.com>
-To: "Kumar Gala" <galak@kernel.crashing.org>
-Subject: Re: removal of arch/ppc in 2.6.27?
-In-Reply-To: <D713F373-AE2A-4341-9C29-EF65B9399B36@kernel.crashing.org>
+Return-Path: <arnd@arndb.de>
+From: Arnd Bergmann <arnd@arndb.de>
+To: Carl Love <cel@us.ibm.com>
+Subject: Re: [PATCH] Updated: Reworked Cell OProfile: SPU mutex lock fix
+Date: Fri, 16 May 2008 16:22:44 +0200
+References: <1209652994.17842.1.camel@carll-linux-desktop>
+	<200805151739.26392.arnd@arndb.de>
+	<1210878305.20791.109.camel@carll-linux-desktop>
+In-Reply-To: <1210878305.20791.109.camel@carll-linux-desktop>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_6800_23439431.1210946714567"
-References: <D713F373-AE2A-4341-9C29-EF65B9399B36@kernel.crashing.org>
-Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>,
-	LinuxPPC-Embedded <linuxppc-embedded@ozlabs.org>
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Message-Id: <200805161622.46232.arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org, oprofile-list <oprofile-list@lists.sf.net>,
+	cbe-oss-dev@ozlabs.org, linux-kernel <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,151 +22,111 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-------=_Part_6800_23439431.1210946714567
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Thursday 15 May 2008, Carl Love wrote:
+> On Thu, 2008-05-15 at 17:39 +0200, Arnd Bergmann wrote:
+> > 
+> > I noticed now that you are indexing arrays by SPU number. This is not
+> > a good idea, because you make assumptions about the system that may
+> > not be true. Better pass around 'struct spu' pointers and put those
+> > values in there if you need them. 
+> 
+> Hmm, well, we have arrays for last_guard_val[], spu_info[] as well that
+> are indexed by spu number.  So this would seem to be a more general
+> issue then just spu_ctx_seen[].  Not sure exactly what you are
+> suggesting with passing around 'struct spu' as a solution.  Are you
+> suggesting that a field be added to the structure for the spu context
+> seen flag?  Not sure that is a good idea.  We will need to clarify how
+> you propose to fix this not only for spu_ctx_sw_seen but the other
+> arrays as well that are already being indexed by spu number.
 
-On Sat, Apr 19, 2008 at 9:00 PM, Kumar Gala <galak@kernel.crashing.org>
-wrote:
+I'd suggest you add fields to struct spu, either directly to it, if
+it's short, or a pointer to your own struct.
 
-> This is intended as a reminder that we plan on getting rid of arch/ppc this
-> summer.  I'm guessing based on kernel release times that will be 2.6.27. That would mean 2.6.26 will be the last kernel to support arch/ppc.
->
-> If people have boards that like ported over please let us know and work
-> with us to port this over to arch/powerpc.
->
-> Here is a list based on arch/ppc/platforms.  Its not intended to be
-> complete but a general idea of what's left in arch/ppc.
+As I said, let's not do that now.
 
+>                                                 So, you can either add
+> a context switch sequence to a given CPU buffer or you can add an SPU
+> program counter to the CPU buffer not both at the same time.  The lock
+> is held until the entire SPU context switch entry is added to the CPU
+> queue to make sure entries are not intermingled.
 
+My point was that oprofile collecting samples for the CPU could possibly
+add entries to the same queue, which would race with this.
 
-I am still struggling to make SPRUCE work with 2.6.24 arch/ppc. I think no
-body had tested 2.6.x on SPRUCE. I think there is some issue with cpc700 pic
-driver.
-I feel it is better to move SPRUCE along with other arch/ppc boards to
-arch/powerpc
+> When the trace buffer is read, each 128 bit entry contains the 16 bit
+> SPU PC for each of the eight SPUs on the node.  Secondly, we really want
+> to keep the timing of the context switches and storing the SPU PC values
+> as close as possible.  Clearly there is some noise as the switch will
+> occur while the trace buffer is filling.
 
-Thanks,
-Suresh
+can't you just empty the trace buffer every time you encounter a context
+switch, even in the absence of a timer interrupt? That would prevent
+all of the noise.
 
+> Storing the all of the SPU PC 
+> values, into the current CPU buffer causes two issues.  One is that one
+> of the buffers will be much fuller then the rest increasing the
+> probability of overflowing the CPU buffer and dropping data.  As it is,
+> in user land, I have to increase the size of the CPU buffers to
+> accommodate four SPUs worth of data in a given CPU buffer.  Secondly,
+> the SPU context switch info for a given SPU would be going to a
+> different CPU buffer then the data. 
 
->
->
-> PPC_PREP        e6xx
-> PQ2ADS          82xx            in arch/powerpc?
-> TQM8260         82xx
-> CPCI690         e6xx/mv64x60
-> EV64260         e6xx/mv64x60
-> CHESTNUT        e6xx/mv64x60
-> LOPEC           e6xx
-> KATANA          e6xx/mv64x60
-> HDPU            e6xx/mv64x60
-> MVME5100        e6xx
-> PAL4            e6xx
-> POWERPMC250     e6xx
-> PPLUS           e6xx
-> PRPMC750        e6xx
-> PRPMC800        e6xx
-> RADSTONE_PPC7D  e6xx
-> SANDPOINT       e6xx
-> SBC82xx         82xx
-> SPRUCE          e6xx
-> LITE5200        52xx
-> EV64360         e6xx/mv64x60
-> MPC86XADS       8xx             in arch/powerpc
-> MPC885ADS       8xx             in arch/powerpc
-> ADS8272         82xx            in arch/powerpc
->
-> 4xx:
-> BAMBOO          44x             in arch/powerpc
-> CPCI405         40x
-> EBONY           44x             in arch/powerpc
-> EP405           40x             in arch/powerpc
-> BUBINGA         40x
-> LUAN            44x
-> YUCCA           44x
-> OCOTEA          44x
-> REDWOOD_5       40x
-> REDWOOD_6       40x
-> SYCAMORE        40x
-> TAISHAN         44x             in arch/powerpc
-> WALNUT          40x             in arch/powerpc
-> XILINX_ML300    40x
-> XILINX_ML403    40x
->
-> - k
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
->
+In practice, the calling CPUs should be well spread around by the way
+that spufs works, so I don't think it's a big problem.
+Did you observe this problem, or just expect it to happen?
 
-------=_Part_6800_23439431.1210946714567
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+> Depending on the timing of the CPU 
+> buffer syncs to the kernel buffer you might get the trace buffer emptied
+> multiple times before an SPU context switch event was sync'd to the
+> kernel buffer. Thus causing undesired additional skew in the data.
 
-<br><br><div class="gmail_quote">On Sat, Apr 19, 2008 at 9:00 PM, Kumar Gala &lt;<a href="mailto:galak@kernel.crashing.org">galak@kernel.crashing.org</a>&gt; wrote:<br><blockquote class="gmail_quote" style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">
-This is intended as a reminder that we plan on getting rid of arch/ppc this summer. &nbsp;I&#39;m guessing based on kernel release times that will be <a href="http://2.6.27." target="_blank">2.6.27.</a> &nbsp;That would mean 2.6.26 will be the last kernel to support arch/ppc.<br>
+good point. would this also get solved if you flush the trace buffer
+on a context switch? I suppose you need to make sure that the samples
+still end up ordered correctly throughout the CPU buffers. Is that
+possible?
 
-<br>
-If people have boards that like ported over please let us know and work with us to port this over to arch/powerpc.<br>
-<br>
-Here is a list based on arch/ppc/platforms. &nbsp;Its not intended to be complete but a general idea of what&#39;s left in arch/ppc.</blockquote><div><br><br>I am still struggling to make SPRUCE work with 2.6.24 arch/ppc. I think
-no body had tested 2.6.x on SPRUCE. I think there is some issue with
-cpc700 pic driver.<br>
-I feel it is better to move SPRUCE along with other arch/ppc boards to arch/powerpc<br><br>
-Thanks,<br>
-Suresh<br>&nbsp;</div><blockquote class="gmail_quote" style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;"><br>
-<br>
-PPC_PREP &nbsp; &nbsp; &nbsp; &nbsp;e6xx<br>
-PQ2ADS &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;82xx &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;in arch/powerpc?<br>
-TQM8260 &nbsp; &nbsp; &nbsp; &nbsp; 82xx<br>
-CPCI690 &nbsp; &nbsp; &nbsp; &nbsp; e6xx/mv64x60<br>
-EV64260 &nbsp; &nbsp; &nbsp; &nbsp; e6xx/mv64x60<br>
-CHESTNUT &nbsp; &nbsp; &nbsp; &nbsp;e6xx/mv64x60<br>
-LOPEC &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; e6xx<br>
-KATANA &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;e6xx/mv64x60<br>
-HDPU &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;e6xx/mv64x60<br>
-MVME5100 &nbsp; &nbsp; &nbsp; &nbsp;e6xx<br>
-PAL4 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;e6xx<br>
-POWERPMC250 &nbsp; &nbsp; e6xx<br>
-PPLUS &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; e6xx<br>
-PRPMC750 &nbsp; &nbsp; &nbsp; &nbsp;e6xx<br>
-PRPMC800 &nbsp; &nbsp; &nbsp; &nbsp;e6xx<br>
-RADSTONE_PPC7D &nbsp;e6xx<br>
-SANDPOINT &nbsp; &nbsp; &nbsp; e6xx<br>
-SBC82xx &nbsp; &nbsp; &nbsp; &nbsp; 82xx<br>
-SPRUCE &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;e6xx<br>
-LITE5200 &nbsp; &nbsp; &nbsp; &nbsp;52xx<br>
-EV64360 &nbsp; &nbsp; &nbsp; &nbsp; e6xx/mv64x60<br>
-MPC86XADS &nbsp; &nbsp; &nbsp; 8xx &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; in arch/powerpc<br>
-MPC885ADS &nbsp; &nbsp; &nbsp; 8xx &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; in arch/powerpc<br>
-ADS8272 &nbsp; &nbsp; &nbsp; &nbsp; 82xx &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;in arch/powerpc<br>
-<br>
-4xx:<br>
-BAMBOO &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;44x &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; in arch/powerpc<br>
-CPCI405 &nbsp; &nbsp; &nbsp; &nbsp; 40x<br>
-EBONY &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 44x &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; in arch/powerpc<br>
-EP405 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 40x &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; in arch/powerpc<br>
-BUBINGA &nbsp; &nbsp; &nbsp; &nbsp; 40x<br>
-LUAN &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;44x<br>
-YUCCA &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 44x<br>
-OCOTEA &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;44x<br>
-REDWOOD_5 &nbsp; &nbsp; &nbsp; 40x<br>
-REDWOOD_6 &nbsp; &nbsp; &nbsp; 40x<br>
-SYCAMORE &nbsp; &nbsp; &nbsp; &nbsp;40x<br>
-TAISHAN &nbsp; &nbsp; &nbsp; &nbsp; 44x &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; in arch/powerpc<br>
-WALNUT &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;40x &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; in arch/powerpc<br>
-XILINX_ML300 &nbsp; &nbsp;40x<br>
-XILINX_ML403 &nbsp; &nbsp;40x<br>
-<br>
-- k<br>
-_______________________________________________<br>
-Linuxppc-dev mailing list<br>
-<a href="mailto:Linuxppc-dev@ozlabs.org" target="_blank">Linuxppc-dev@ozlabs.org</a><br>
-<a href="https://ozlabs.org/mailman/listinfo/linuxppc-dev" target="_blank">https://ozlabs.org/mailman/listinfo/linuxppc-dev</a><br>
-</blockquote></div><br>
+> Any thoughts about moving oprofile_add_value() to buffer_sync.c and
+> having it grab the buffer_mutex lock while it inserts values directly
+> into the kernel buffer?  At the moment it looks the easiest.  
 
-------=_Part_6800_23439431.1210946714567--
+That would mean that again you can't call it from interrupt context,
+which is the problem you were trying to solve with the work queue
+in the previous version of your patch.
+ 
+> I can see a few other solutions but they involve creating per SPU arrays
+> for initially storing the switch info and SPU data and then having each
+> CPU flush a subset of the SPU data to its CPU buffer.  A lot more
+> storage and overhead we want.
+
+It might work if you do a per SPU buffer and generalize the way
+that per-CPU buffers are flushed to the kernel buffer so it works
+with either one.
+
+> > > +	/* The SPU_PROFILING_CODE escape sequence must proceed
+> > > +	 * the SPU context switch info.
+> > > +	 */
+> > > +	for_each_online_cpu(cpu) {
+> > > +		oprofile_add_value(ESCAPE_CODE, cpu);
+> > > +		oprofile_add_value(SPU_PROFILING_CODE, cpu);
+> > > +		oprofile_add_value((unsigned long int)
+> > > +					    num_spu_nodes, cpu);
+> > > +	}
+> > >  
+> > 
+> > You are no longer holding a lock while adding the events, which
+> > may be correct as long as no switch_events come in, but it's
+> > still inconsistent. Do you mind just adding the spinlock here
+> > as well?
+> > 
+> 
+> The claim is that the lock is not needed because we have not yet
+> registered for notification of the context switches as mentioned above.
+> Hence there is no race to worry about.  Registration for the switch
+> event notification happens right after this loop.  
+
+Right, that's what I understood as well. My point was that it's more
+consistent if you always call the function with the same locks held,
+in case somebody changes or tries to understand your code.
+ 	
+	Arnd <><
