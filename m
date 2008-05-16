@@ -1,11 +1,11 @@
 Return-Path: <rmachet@slac.stanford.edu>
-Subject: [PATCH 1/5 v2] powerpc: DTS file for the C2K
+Subject: [PATCH 2/5 v2] powerpc: boot code for the C2K
 From: Remi Machet <rmachet@slac.stanford.edu>
 To: David Gibson <david@gibson.dropbear.id.au>,
 	Paul Mackerras <paulus@samba.org>
 Content-Type: text/plain
-Date: Fri, 16 May 2008 12:28:48 -0700
-Message-Id: <1210966129.14883.1.camel@pcds-ts102.slac.stanford.edu>
+Date: Fri, 16 May 2008 12:29:51 -0700
+Message-Id: <1210966191.14883.2.camel@pcds-ts102.slac.stanford.edu>
 Mime-Version: 1.0
 Cc: Linux PPC <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -23,378 +23,283 @@ All features of the board are not supported yet, but the board
 boots, flash works, all Ethernet ports are working and PCI 
 devices are all found (USB and SATA on PCI1 do not work yet).
 
-Part 1 of 5: DTS file describing the board peripherals. As far as I know
-all peripherals except the FPGA are listed in there (I did not included
-the FPGA because a lot of work is needed there).
+Part 2 of 5: support for the board in arch/powerpc/boot.
 
 Signed-off-by: Remi Machet <rmachet@slac.stanford.edu>
 ---
 Changes:
 v1: original patch
-v2: cleaned up the file: removed i2c device_type, changed the name of
-the cpu node and added aliases for the pci buses.
+v2: changed stack size to be 4kB instead of 16kB (per
+David Gibson suggestion). Also changed the way PCI buses
+are detected, now the code is looking for an alias pciN
+where N is the bus number.
 
- c2k.dts |  355 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 355 insertions(+)
+ Makefile |    3
+ c2k.c    |  238 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 240 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/boot/dts/c2k.dts b/arch/powerpc/boot/dts/c2k.dts
+diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+index 7822d25..232a9b3 100644
+--- a/arch/powerpc/boot/Makefile
++++ b/arch/powerpc/boot/Makefile
+@@ -63,7 +63,7 @@ src-plat := of.c cuboot-52xx.c cuboot-824x.c cuboot-83xx.c cuboot-85xx.c holly.c
+ 		ps3-head.S ps3-hvcall.S ps3.c treeboot-bamboo.c cuboot-8xx.c \
+ 		cuboot-pq2.c cuboot-sequoia.c treeboot-walnut.c \
+ 		cuboot-bamboo.c cuboot-mpc7448hpc2.c cuboot-taishan.c \
+-		fixed-head.S ep88xc.c ep405.c \
++		fixed-head.S ep88xc.c ep405.c c2k.c \
+ 		cuboot-katmai.c cuboot-rainier.c redboot-8xx.c ep8248e.c \
+ 		cuboot-warp.c cuboot-85xx-cpm2.c cuboot-yosemite.c simpleboot.c \
+ 		virtex405-head.S
+@@ -197,6 +197,7 @@ image-$(CONFIG_PPC_HOLLY)		+= zImage.holly
+ image-$(CONFIG_PPC_PRPMC2800)		+= dtbImage.prpmc2800
+ image-$(CONFIG_PPC_ISERIES)		+= zImage.iseries
+ image-$(CONFIG_DEFAULT_UIMAGE)		+= uImage
++image-$(CONFIG_PPC_C2K)			+= dtbImage.c2k
+ 
+ #
+ # Targets which embed a device tree blob
+diff --git a/arch/powerpc/boot/c2k.c b/arch/powerpc/boot/c2k.c
 new file mode 100644
-index 0000000..29867cb
+index 0000000..774e3e5
 --- /dev/null
-+++ b/arch/powerpc/boot/dts/c2k.dts
-@@ -0,0 +1,355 @@
-+/* Device Tree Source for GEFanuc C2K
++++ b/arch/powerpc/boot/c2k.c
+@@ -0,0 +1,238 @@
++/*
++ * GEFanuc C2K platform code.
 + *
 + * Author: Remi Machet <rmachet@slac.stanford.edu>
-+ * 
-+ * Originated from prpmc2800.dts
++ *
++ * Originated from prpmc2800.c
 + *
 + * 2008 (c) Stanford University
-+ * 2007 (c) MontaVista, Software, Inc.  
++ * 2007 (c) MontaVista, Software, Inc.
 + *
 + * This program is free software; you can redistribute it and/or modify it
 + * under the terms of the GNU General Public License version 2 as published
 + * by the Free Software Foundation.
 + */
 +
-+/dts-v1/;
++#include "types.h"
++#include "stdio.h"
++#include "io.h"
++#include "ops.h"
++#include "elf.h"
++#include "gunzip_util.h"
++#include "mv64x60.h"
 +
-+/ {
-+	#address-cells = <1>;
-+	#size-cells = <1>;
-+	model = "C2K";
-+	compatible = "GEFanuc,C2K";
-+	coherency-off;
++#define KB        1024U
++#define MB        (KB*KB)
 +
-+	aliases {
-+		pci0 = &PCI0;
-+		pci1 = &PCI1;
++BSS_STACK(4*KB);
++
++static u8 *bridge_base;
++
++static void c2k_bridge_setup(u32 mem_size)
++{
++	u32 i, v[30], enables, acc_bits;
++	u32 pci_base_hi, pci_base_lo, size, buf[2];
++	unsigned long cpu_base;
++	int rc;
++	void *devp, *mv64x60_devp;
++	u8 *bridge_pbase, is_coherent;
++	struct mv64x60_cpu2pci_win *tbl;
++	int bus;
++
++	bridge_pbase = mv64x60_get_bridge_pbase();
++	is_coherent = mv64x60_is_coherent();
++
++	if (is_coherent)
++		acc_bits = MV64x60_PCI_ACC_CNTL_SNOOP_WB
++			| MV64x60_PCI_ACC_CNTL_SWAP_NONE
++			| MV64x60_PCI_ACC_CNTL_MBURST_32_BYTES
++			| MV64x60_PCI_ACC_CNTL_RDSIZE_32_BYTES;
++	else
++		acc_bits = MV64x60_PCI_ACC_CNTL_SNOOP_NONE
++			| MV64x60_PCI_ACC_CNTL_SWAP_NONE
++			| MV64x60_PCI_ACC_CNTL_MBURST_128_BYTES
++			| MV64x60_PCI_ACC_CNTL_RDSIZE_256_BYTES;
++
++	mv64x60_config_ctlr_windows(bridge_base, bridge_pbase, is_coherent);
++	mv64x60_devp = find_node_by_compatible(NULL, "marvell,mv64360");
++	if (mv64x60_devp == NULL)
++		fatal("Error: Missing marvell,mv64360 device tree node\n\r");
++
++	enables = in_le32((u32 *)(bridge_base + MV64x60_CPU_BAR_ENABLE));
++	enables |= 0x007ffe00; /* Disable all cpu->pci windows */
++	out_le32((u32 *)(bridge_base + MV64x60_CPU_BAR_ENABLE), enables);
++
++	/* Get the cpu -> pci i/o & mem mappings from the device tree */
++	devp = NULL;
++	for (bus = 0; ; bus++) {
++		char name[] = "pci ";
++
++		name[strlen(name)-1] = bus+'0';
++
++		devp = find_node_by_alias(name);
++		if (devp == NULL)
++			break;
++
++		if (bus >= 2)
++			fatal("Error: Only 2 PCI controllers are supported at" \
++				" this time.\n");
++
++		mv64x60_config_pci_windows(bridge_base, bridge_pbase, bus, 0,
++				mem_size, acc_bits);
++
++		rc = getprop(devp, "ranges", v, sizeof(v));
++		if (rc == 0)
++			fatal("Error: Can't find marvell,mv64360-pci ranges"
++				" property\n\r");
++
++		/* Get the cpu -> pci i/o & mem mappings from the device tree */
++
++		for (i = 0; i < rc; i += 6) {
++			switch (v[i] & 0xff000000) {
++			case 0x01000000: /* PCI I/O Space */
++				tbl = mv64x60_cpu2pci_io;
++				break;
++			case 0x02000000: /* PCI MEM Space */
++				tbl = mv64x60_cpu2pci_mem;
++				break;
++			default:
++				continue;
++			}
++
++			pci_base_hi = v[i+1];
++			pci_base_lo = v[i+2];
++			cpu_base = v[i+3];
++			size = v[i+5];
++
++			buf[0] = cpu_base;
++			buf[1] = size;
++
++			if (!dt_xlate_addr(devp, buf, sizeof(buf), &cpu_base))
++				fatal("Error: Can't translate PCI address " \
++						"0x%x\n\r", (u32)cpu_base);
++
++			mv64x60_config_cpu2pci_window(bridge_base, bus,
++				pci_base_hi, pci_base_lo, cpu_base, size, tbl);
++		}
++
++		enables &= ~(3<<(9+bus*5)); /* Enable cpu->pci<bus> i/o,
++						cpu->pci<bus> mem0 */
++		out_le32((u32 *)(bridge_base + MV64x60_CPU_BAR_ENABLE),
++			enables);
 +	};
++}
 +
-+	cpus {
-+		#address-cells = <1>;
-+		#size-cells = <0>;
++static void c2k_fixups(void)
++{
++	u32 mem_size;
 +
-+		cpu@0 {
-+			device_type = "cpu";
-+			compatible = "PowerPC,7447";
-+			reg = <0>;
-+			clock-frequency = <996000000>;	/* 996 MHz */
-+			bus-frequency = <166666667>;	/* 166.6666 MHz */
-+			timebase-frequency = <41666667>;	/* 166.6666/4 MHz */
-+			i-cache-line-size = <32>;
-+			d-cache-line-size = <32>;
-+			i-cache-size = <32768>;
-+			d-cache-size = <32768>;
-+		};
-+	};
++	mem_size = mv64x60_get_mem_size(bridge_base);
++	c2k_bridge_setup(mem_size); /* Do necessary bridge setup */
++}
 +
-+	memory {
-+		device_type = "memory";
-+		reg = <0x00000000 0x40000000>;	/* 1GB */
-+	};
++#define MV64x60_MPP_CNTL_0	0xf000
++#define MV64x60_MPP_CNTL_2	0xf008
++#define MV64x60_GPP_IO_CNTL	0xf100
++#define MV64x60_GPP_LEVEL_CNTL	0xf110
++#define MV64x60_GPP_VALUE_SET	0xf118
 +
-+	system-controller@d8000000 { /* Marvell Discovery */
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		model = "mv64460";
-+		compatible = "marvell,mv64360";
-+		clock-frequency = <166666667>;		/* 166.66... MHz */
-+		reg = <0xd8000000 0x00010000>;
-+		virtual-reg = <0xd8000000>;
-+		ranges = <0xd4000000 0xd4000000 0x01000000	/* PCI 0 I/O Space */
-+			  0x80000000 0x80000000 0x08000000	/* PCI 0 MEM Space */
-+			  0xd0000000 0xd0000000 0x01000000	/* PCI 1 I/O Space */
-+			  0xa0000000 0xa0000000 0x08000000	/* PCI 1 MEM Space */
-+			  0xf8000000 0xf8000000 0x08000000	/* User FLASH */
-+			  0x00000000 0xd8000000 0x00010000	/* Bridge's regs */
-+			  0xd8140000 0xd8140000 0x00040000>;	/* Integrated SRAM */
++static void c2k_reset(void)
++{
++	u32 temp;
 +
-+		mdio {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			compatible = "marvell,mv64360-mdio";
-+			PHY0: ethernet-phy@0 {
-+				device_type = "ethernet-phy";
-+				interrupts = <76>;	/* GPP 12 */
-+				interrupt-parent = <&PIC>;
-+				reg = <0>;
-+			};
-+			PHY1: ethernet-phy@1 {
-+				device_type = "ethernet-phy";
-+				interrupts = <76>;	/* GPP 12 */
-+				interrupt-parent = <&PIC>;
-+				reg = <1>;
-+			};
-+			PHY2: ethernet-phy@2 {
-+				device_type = "ethernet-phy";
-+				interrupts = <76>;	/* GPP 12 */
-+				interrupt-parent = <&PIC>;
-+				reg = <2>;
-+			};
-+		};
++	udelay(5000000);
 +
-+		ethernet-group@2000 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			compatible = "marvell,mv64360-eth-group";
-+			reg = <0x2000 0x2000>;
-+			ethernet@0 {
-+				device_type = "network";
-+				compatible = "marvell,mv64360-eth";
-+				reg = <0>;
-+				interrupts = <32>;
-+				interrupt-parent = <&PIC>;
-+				phy = <&PHY0>;
-+				local-mac-address = [ 00 00 00 00 00 00 ];
-+			};
-+			ethernet@1 {
-+				device_type = "network";
-+				compatible = "marvell,mv64360-eth";
-+				reg = <1>;
-+				interrupts = <33>;
-+				interrupt-parent = <&PIC>;
-+				phy = <&PHY1>;
-+				local-mac-address = [ 00 00 00 00 00 00 ];
-+			};
-+			ethernet@2 {
-+				device_type = "network";
-+				compatible = "marvell,mv64360-eth";
-+				reg = <2>;
-+				interrupts = <34>;
-+				interrupt-parent = <&PIC>;
-+				phy = <&PHY2>;
-+				local-mac-address = [ 00 00 00 00 00 00 ];
-+			};
-+		};
++	if (bridge_base != 0) {
++		temp = in_le32((u32 *)(bridge_base + MV64x60_MPP_CNTL_0));
++		temp &= 0xFFFF0FFF;
++		out_le32((u32 *)(bridge_base + MV64x60_MPP_CNTL_0), temp);
 +
-+		SDMA0: sdma@4000 {
-+			compatible = "marvell,mv64360-sdma";
-+			reg = <0x4000 0xc18>;
-+			virtual-reg = <0xd8004000>;
-+			interrupt-base = <0>;
-+			interrupts = <36>;
-+			interrupt-parent = <&PIC>;
-+		};
++		temp = in_le32((u32 *)(bridge_base + MV64x60_GPP_LEVEL_CNTL));
++		temp |= 0x00000004;
++		out_le32((u32 *)(bridge_base + MV64x60_GPP_LEVEL_CNTL), temp);
 +
-+		SDMA1: sdma@6000 {
-+			compatible = "marvell,mv64360-sdma";
-+			reg = <0x6000 0xc18>;
-+			virtual-reg = <0xd8006000>;
-+			interrupt-base = <0>;
-+			interrupts = <38>;
-+			interrupt-parent = <&PIC>;
-+		};
++		temp = in_le32((u32 *)(bridge_base + MV64x60_GPP_IO_CNTL));
++		temp |= 0x00000004;
++		out_le32((u32 *)(bridge_base + MV64x60_GPP_IO_CNTL), temp);
 +
-+		BRG0: brg@b200 {
-+			compatible = "marvell,mv64360-brg";
-+			reg = <0xb200 0x8>;
-+			clock-src = <8>;
-+			clock-frequency = <133333333>;
-+			current-speed = <115200>;
-+		};
++		temp = in_le32((u32 *)(bridge_base + MV64x60_MPP_CNTL_2));
++		temp &= 0xFFFF0FFF;
++		out_le32((u32 *)(bridge_base + MV64x60_MPP_CNTL_2), temp);
 +
-+		BRG1: brg@b208 {
-+			compatible = "marvell,mv64360-brg";
-+			reg = <0xb208 0x8>;
-+			clock-src = <8>;
-+			clock-frequency = <133333333>;
-+			current-speed = <115200>;
-+		};
++		temp = in_le32((u32 *)(bridge_base + MV64x60_GPP_LEVEL_CNTL));
++		temp |= 0x00080000;
++		out_le32((u32 *)(bridge_base + MV64x60_GPP_LEVEL_CNTL), temp);
 +
-+		CUNIT: cunit@f200 {
-+			reg = <0xf200 0x200>;
-+		};
++		temp = in_le32((u32 *)(bridge_base + MV64x60_GPP_IO_CNTL));
++		temp |= 0x00080000;
++		out_le32((u32 *)(bridge_base + MV64x60_GPP_IO_CNTL), temp);
 +
-+		MPSCROUTING: mpscrouting@b400 {
-+			reg = <0xb400 0xc>;
-+		};
++		out_le32((u32 *)(bridge_base + MV64x60_GPP_VALUE_SET),
++				0x00080004);
++	}
 +
-+		MPSCINTR: mpscintr@b800 {
-+			reg = <0xb800 0x100>;
-+			virtual-reg = <0xd800b800>;
-+		};
++	for (;;);
++}
 +
-+		MPSC0: mpsc@8000 {
-+			device_type = "serial";
-+			compatible = "marvell,mv64360-mpsc";
-+			reg = <0x8000 0x38>;
-+			virtual-reg = <0xd8008000>;
-+			sdma = <&SDMA0>;
-+			brg = <&BRG0>;
-+			cunit = <&CUNIT>;
-+			mpscrouting = <&MPSCROUTING>;
-+			mpscintr = <&MPSCINTR>;
-+			cell-index = <0>;
-+			interrupts = <40>;
-+			interrupt-parent = <&PIC>;
-+		};
++#define HEAP_SIZE	(16*MB)
++static struct gunzip_state gzstate;
 +
-+		MPSC1: mpsc@9000 {
-+			device_type = "serial";
-+			compatible = "marvell,mv64360-mpsc";
-+			reg = <0x9000 0x38>;
-+			virtual-reg = <0xd8009000>;
-+			sdma = <&SDMA1>;
-+			brg = <&BRG1>;
-+			cunit = <&CUNIT>;
-+			mpscrouting = <&MPSCROUTING>;
-+			mpscintr = <&MPSCINTR>;
-+			cell-index = <1>;
-+			interrupts = <42>;
-+			interrupt-parent = <&PIC>;
-+		};
++void platform_init(unsigned long r3, unsigned long r4, unsigned long r5,
++			unsigned long r6, unsigned long r7)
++{
++	struct elf_info ei;
++	char *heap_start, *dtb;
++	int dt_size = _dtb_end - _dtb_start;
++	void *vmlinuz_addr = _vmlinux_start;
++	unsigned long vmlinuz_size = _vmlinux_end - _vmlinux_start;
++	char elfheader[256];
 +
-+		wdt@b410 {			/* watchdog timer */
-+			compatible = "marvell,mv64360-wdt";
-+			reg = <0xb410 0x8>;
-+		};
++	if (dt_size <= 0) /* No fdt */
++		exit();
 +
-+		i2c@c000 {
-+			compatible = "marvell,mv64360-i2c";
-+			reg = <0xc000 0x20>;
-+			virtual-reg = <0xd800c000>;
-+			interrupts = <37>;
-+			interrupt-parent = <&PIC>;
-+		};
++	/*
++	 * Start heap after end of the kernel (after decompressed to
++	 * address 0) or the end of the zImage, whichever is higher.
++	 * That's so things allocated by simple_alloc won't overwrite
++	 * any part of the zImage and the kernel won't overwrite the dtb
++	 * when decompressed & relocated.
++	 */
++	gunzip_start(&gzstate, vmlinuz_addr, vmlinuz_size);
++	gunzip_exactly(&gzstate, elfheader, sizeof(elfheader));
 +
-+		PIC: pic {
-+			#interrupt-cells = <1>;
-+			#address-cells = <0>;
-+			compatible = "marvell,mv64360-pic";
-+			reg = <0x0000 0x88>;
-+			interrupt-controller;
-+		};
++	if (!parse_elf32(elfheader, &ei))
++		exit();
 +
-+		mpp@f000 {
-+			compatible = "marvell,mv64360-mpp";
-+			reg = <0xf000 0x10>;
-+		};
++	heap_start = (char *)(ei.memsize + ei.elfoffset); /* end of kernel*/
++	heap_start = max(heap_start, (char *)_end); /* end of zImage */
 +
-+		gpp@f100 {
-+			compatible = "marvell,mv64360-gpp";
-+			reg = <0xf100 0x20>;
-+		};
++	if ((unsigned)simple_alloc_init(heap_start, HEAP_SIZE, 2*KB, 16)
++			> (128*MB))
++		exit();
 +
-+		PCI0: pci@80000000 {
-+			#address-cells = <3>;
-+			#size-cells = <2>;
-+			#interrupt-cells = <1>;
-+			device_type = "pci";
-+			compatible = "marvell,mv64360-pci";
-+			reg = <0x0cf8 0x8>;
-+			ranges = <0x01000000 0x0 0x00000000 0xd4000000 0x0 0x01000000
-+				  0x02000000 0x0 0x80000000 0x80000000 0x0 0x08000000>;
-+			bus-range = <0 255>;
-+			clock-frequency = <66000000>;
-+			interrupt-pci-iack = <0x0c34>;
-+			interrupt-parent = <&PIC>;
-+			interrupt-map-mask = <0x0000 0x0 0x0 0x7>;
-+			interrupt-map = <
-+				/* Only one interrupt line for PMC0 slot (INTA) */
-+				0x0000 0 0 1 &PIC 88
-+			>;
-+		};
++	/* Relocate dtb to safe area past end of zImage & kernel */
++	dtb = malloc(dt_size);
++	if (!dtb)
++		exit();
++	memmove(dtb, _dtb_start, dt_size);
++	fdt_init(dtb);
 +
++	bridge_base = mv64x60_get_bridge_base();
 +
-+		PCI1: pci@a0000000 {
-+			#address-cells = <3>;
-+			#size-cells = <2>;
-+			#interrupt-cells = <1>;
-+			device_type = "pci";
-+			compatible = "marvell,mv64360-pci";
-+			reg = <0x0c78 0x8>;
-+			ranges = <0x01000000 0x0 0x00000000 0xd0000000 0x0 0x01000000
-+				  0x02000000 0x0 0x80000000 0xa0000000 0x0 0x08000000>;
-+			bus-range = <0 255>;
-+			clock-frequency = <66000000>;
-+			interrupt-pci-iack = <0x0cb4>;
-+			interrupt-parent = <&PIC>;
-+			interrupt-map-mask = <0xf800 0x00 0x00 0x7>;
-+			interrupt-map = <
-+				/* IDSEL 0x01: PMC1 ? */
-+				0x0800 0 0 1 &PIC 88
-+				/* IDSEL 0x02: cPCI bridge */
-+				0x1000 0 0 1 &PIC 88
-+				/* IDSEL 0x03: USB controller */
-+				0x1800 0 0 1 &PIC 91
-+				/* IDSEL 0x04: SATA controller */
-+				0x2000 0 0 1 &PIC 95
-+			>;
-+		};
++	platform_ops.fixups = c2k_fixups;
++	platform_ops.exit = c2k_reset;
 +
-+		cpu-error@0070 {
-+			compatible = "marvell,mv64360-cpu-error";
-+			reg = <0x0070 0x10 0x0128 0x28>;
-+			interrupts = <3>;
-+			interrupt-parent = <&PIC>;
-+		};
++	if (serial_console_init() < 0)
++		exit();
++}
 +
-+		sram-ctrl@0380 {
-+			compatible = "marvell,mv64360-sram-ctrl";
-+			reg = <0x0380 0x80>;
-+			interrupts = <13>;
-+			interrupt-parent = <&PIC>;
-+		};
-+
-+		pci-error@1d40 {
-+			compatible = "marvell,mv64360-pci-error";
-+			reg = <0x1d40 0x40 0x0c28 0x4>;
-+			interrupts = <12>;
-+			interrupt-parent = <&PIC>;
-+		};
-+
-+		pci-error@1dc0 {
-+			compatible = "marvell,mv64360-pci-error";
-+			reg = <0x1dc0 0x40 0x0ca8 0x4>;
-+			interrupts = <16>;
-+			interrupt-parent = <&PIC>;
-+		};
-+
-+		mem-ctrl@1400 {
-+			compatible = "marvell,mv64360-mem-ctrl";
-+			reg = <0x1400 0x60>;
-+			interrupts = <17>;
-+			interrupt-parent = <&PIC>;
-+		};
-+		/* Devices attached to the device controller */
-+		devicebus {
-+			compatible = "marvell,mv64306-devctrl";
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			nor_flash {
-+				compatible = "cfi-flash";
-+				reg = <0xf8000000 0x8000000>; /* 128MB */
-+				bank-width = <4>;
-+				device-width = <1>;
-+				#address-cells = <1>;
-+				#size-cells = <1>;
-+				partition@0 {
-+					label = "boot";
-+					reg = <0x00000000 0x00080000>;
-+				};
-+				partition@40000 {
-+					label = "kernel";
-+					reg = <0x00080000 0x00400000>;
-+				};
-+				partition@440000 {
-+					label = "initrd";
-+					reg = <0x00480000 0x00B80000>;
-+				};
-+				partition@1000000 {
-+					label = "rootfs";
-+					reg = <0x01000000 0x06800000>;
-+				};
-+				partition@7800000 {
-+					label = "recovery";
-+					reg = <0x07800000 0x00800000>;
-+					read-only;
-+				};
-+			};
-+		};
-+	};
-+	chosen {
-+		bootargs = "ip=off root=/dev/mtdblock3 rootfstype=jffs2";
-+		linux,stdout-path = &MPSC0;
-+	};
-+};
++/* _zimage_start called very early--need to turn off external interrupts */
++asm ("	.globl _zimage_start\n\
++	_zimage_start:\n\
++		mfmsr	10\n\
++		rlwinm	10,10,0,~(1<<15)	/* Clear MSR_EE */\n\
++		sync\n\
++		mtmsr	10\n\
++		isync\n\
++		b _zimage_start_lib\n\
++");
