@@ -1,35 +1,22 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 85CE0DDFAF
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.240])
+	by ozlabs.org (Postfix) with ESMTP id 8C9DBDE168
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 16 May 2008 23:31:37 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e33.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m4GDVXut019979
-	for <linuxppc-embedded@ozlabs.org>; Fri, 16 May 2008 09:31:33 -0400
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m4GDVX56084100
-	for <linuxppc-embedded@ozlabs.org>; Fri, 16 May 2008 07:31:33 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m4GDVWrM001884
-	for <linuxppc-embedded@ozlabs.org>; Fri, 16 May 2008 07:31:33 -0600
-Date: Fri, 16 May 2008 08:28:08 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: "Welch, Martyn (GE EntSol, Intelligent Platforms)"
-	<martyn.welch@gefanuc.com>
-Subject: Re: Suitability of patchs as attachments
-Message-ID: <20080516082808.04e2704d@zod.rchland.ibm.com>
-In-Reply-To: <1CADFA951940554D86FBD8B24BBFF3A00129CBF5@LONMLVEM08.e2k.ad.ge.com>
-References: <1CADFA951940554D86FBD8B24BBFF3A00129CBF5@LONMLVEM08.e2k.ad.ge.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: "Lissaman, Stuart \(GE EntSol,
-	Intelligent Platforms\)" <stuart.lissaman@gefanuc.com>,
-	linuxppc-embedded@ozlabs.org
+	Sat, 17 May 2008 00:26:50 +1000 (EST)
+Received: by an-out-0708.google.com with SMTP id c34so269027anc.78
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri, 16 May 2008 07:26:48 -0700 (PDT)
+Message-ID: <fa686aa40805160726i59c3d88l99c12a130eb073e2@mail.gmail.com>
+Date: Fri, 16 May 2008 08:26:47 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: mojtaba <kernelppc@gmail.com>
+Subject: Re: Booting Linux from an ACE File
+In-Reply-To: <007a01c8b74c$0ad9c2e0$208d48a0$@com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <007a01c8b74c$0ad9c2e0$208d48a0$@com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -40,22 +27,34 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Fri, 16 May 2008 09:46:31 +0100
-"Welch, Martyn (GE EntSol, Intelligent Platforms)"
-<martyn.welch@gefanuc.com> wrote:
+On Fri, May 16, 2008 at 5:57 AM, mojtaba <kernelppc@gmail.com> wrote:
+> Dear all,
+>
+> Could you please explain what happens exactly when Linux is booting from a
+> compact flash?
+>
+> To my few knowledge, the Linux compressed image will be copied somewhere in
+> memory, will be uncompressed and the control will jump to the beginning
+> address of the Linux kernel.
 
-> Hi all,
-> 
-> I wish I didn't have to ask this but...
-> 
-> For now I'm stuck using Outlook and Exchange for email, despite my best
-> efforts I have been unable to force it to send patchs inline without
-> breaking them (I can get it to do plain text, however it seems to have
-> the habbit of wrapping ling lines, such as the "diff --git..." lines).
-> 
-> Is anyone in the same position and has worked out how to do this?
+There are several methods to do this.
 
-Use gmail.  It's free, and as long as you make sure your message is
-plaintext it won't mess with patches.
+Option 1 is to pass the kernel zImage.elf to genace so that it gets
+wrapped up into the ace file itself and is loaded into RAM by the
+SystemACE on FPGA initialization.  However, this requires that your
+FPGA design gets RAM initialized before the SysACE starts squirting in
+the Linux image (which isn't always the case).  This option is also
+slow.
 
-josh
+Option 2 is to use an small bootloader blob (I think Xilinx has a
+technote with something suitable) loaded into BRAM that reads the CF
+card and copies a Linux image (hint; build a simpleImage when using
+arch/powerpc) off the CF and into RAM.  This method boots the system
+faster, but requires a little bit more work.
+
+Cheers,
+g.
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
