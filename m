@@ -1,11 +1,16 @@
 Return-Path: <rmachet@slac.stanford.edu>
-Subject: [PATCH 2/5 v2] powerpc: boot code for the C2K
+Received: from nospam3.slac.stanford.edu (nospam3.slac.stanford.edu
+	[134.79.18.120])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id D236EDE6C0
+	for <linuxppc-dev@ozlabs.org>; Sat, 17 May 2008 05:42:01 +1000 (EST)
+Subject: [PATCH 3/5 v2] powerpc: C2K board driver
 From: Remi Machet <rmachet@slac.stanford.edu>
-To: David Gibson <david@gibson.dropbear.id.au>,
-	Paul Mackerras <paulus@samba.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>, Paul Mackerras <paulus@samba.org>
 Content-Type: text/plain
-Date: Fri, 16 May 2008 12:29:51 -0700
-Message-Id: <1210966191.14883.2.camel@pcds-ts102.slac.stanford.edu>
+Date: Fri, 16 May 2008 12:31:04 -0700
+Message-Id: <1210966264.14883.5.camel@pcds-ts102.slac.stanford.edu>
 Mime-Version: 1.0
 Cc: Linux PPC <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -23,50 +28,43 @@ All features of the board are not supported yet, but the board
 boots, flash works, all Ethernet ports are working and PCI 
 devices are all found (USB and SATA on PCI1 do not work yet).
 
-Part 2 of 5: support for the board in arch/powerpc/boot.
+Part 3 of 5: driver for the board. At this time it is very generic 
+and similar to its original, the driver for the prpmc2800.
 
 Signed-off-by: Remi Machet <rmachet@slac.stanford.edu>
 ---
 Changes:
 v1: original patch
-v2: changed stack size to be 4kB instead of 16kB (per
-David Gibson suggestion). Also changed the way PCI buses
-are detected, now the code is looking for an alias pciN
-where N is the bus number.
+v2: re-organized the include files in c2k.c, putting all the linux/ 
+at the top. Also added linux/of.h (thanks to Stephen Rothwell).
 
- Makefile |    3
- c2k.c    |  238 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 240 insertions(+), 1 deletion(-)
+Note: checkpatch.pl reported one warning, but asm/time.h is needed
+(defines generic_calibrate_decr):
+WARNING: Use #include <linux/time.h> instead of <asm/time.h>
+#71: FILE: arch/powerpc/platforms/embedded6xx/c2k.c:28:
++#include <asm/time.h>
 
-diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-index 7822d25..232a9b3 100644
---- a/arch/powerpc/boot/Makefile
-+++ b/arch/powerpc/boot/Makefile
-@@ -63,7 +63,7 @@ src-plat := of.c cuboot-52xx.c cuboot-824x.c cuboot-83xx.c cuboot-85xx.c holly.c
- 		ps3-head.S ps3-hvcall.S ps3.c treeboot-bamboo.c cuboot-8xx.c \
- 		cuboot-pq2.c cuboot-sequoia.c treeboot-walnut.c \
- 		cuboot-bamboo.c cuboot-mpc7448hpc2.c cuboot-taishan.c \
--		fixed-head.S ep88xc.c ep405.c \
-+		fixed-head.S ep88xc.c ep405.c c2k.c \
- 		cuboot-katmai.c cuboot-rainier.c redboot-8xx.c ep8248e.c \
- 		cuboot-warp.c cuboot-85xx-cpm2.c cuboot-yosemite.c simpleboot.c \
- 		virtex405-head.S
-@@ -197,6 +197,7 @@ image-$(CONFIG_PPC_HOLLY)		+= zImage.holly
- image-$(CONFIG_PPC_PRPMC2800)		+= dtbImage.prpmc2800
- image-$(CONFIG_PPC_ISERIES)		+= zImage.iseries
- image-$(CONFIG_DEFAULT_UIMAGE)		+= uImage
-+image-$(CONFIG_PPC_C2K)			+= dtbImage.c2k
- 
- #
- # Targets which embed a device tree blob
-diff --git a/arch/powerpc/boot/c2k.c b/arch/powerpc/boot/c2k.c
+ Makefile |    1
+ c2k.c    |  158 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 159 insertions(+)
+
+diff --git a/arch/powerpc/platforms/embedded6xx/Makefile b/arch/powerpc/platforms/embedded6xx/Makefile
+index 06524d3..0773c08 100644
+--- a/arch/powerpc/platforms/embedded6xx/Makefile
++++ b/arch/powerpc/platforms/embedded6xx/Makefile
+@@ -6,3 +6,4 @@ obj-$(CONFIG_LINKSTATION)	+= linkstation.o ls_uart.o
+ obj-$(CONFIG_STORCENTER)	+= storcenter.o
+ obj-$(CONFIG_PPC_HOLLY)		+= holly.o
+ obj-$(CONFIG_PPC_PRPMC2800)	+= prpmc2800.o
++obj-$(CONFIG_PPC_C2K)		+= c2k.o
+diff --git a/arch/powerpc/platforms/embedded6xx/c2k.c b/arch/powerpc/platforms/embedded6xx/c2k.c
 new file mode 100644
-index 0000000..774e3e5
+index 0000000..d0b25b8
 --- /dev/null
-+++ b/arch/powerpc/boot/c2k.c
-@@ -0,0 +1,238 @@
++++ b/arch/powerpc/platforms/embedded6xx/c2k.c
+@@ -0,0 +1,158 @@
 +/*
-+ * GEFanuc C2K platform code.
++ * Board setup routines for the GEFanuc C2K board
 + *
 + * Author: Remi Machet <rmachet@slac.stanford.edu>
 + *
@@ -80,226 +78,146 @@ index 0000000..774e3e5
 + * by the Free Software Foundation.
 + */
 +
-+#include "types.h"
-+#include "stdio.h"
-+#include "io.h"
-+#include "ops.h"
-+#include "elf.h"
-+#include "gunzip_util.h"
-+#include "mv64x60.h"
++#include <linux/stddef.h>
++#include <linux/kernel.h>
++#include <linux/delay.h>
++#include <linux/interrupt.h>
++#include <linux/seq_file.h>
++#include <linux/time.h>
++#include <linux/of.h>
++#include <linux/kexec.h>
 +
-+#define KB        1024U
-+#define MB        (KB*KB)
++#include <asm/machdep.h>
++#include <asm/prom.h>
++#include <asm/system.h>
++#include <asm/time.h>
 +
-+BSS_STACK(4*KB);
++#include <mm/mmu_decl.h>
 +
-+static u8 *bridge_base;
++#include <sysdev/mv64x60.h>
 +
-+static void c2k_bridge_setup(u32 mem_size)
++#define MV64x60_MPP_CNTL_0	0x0000
++#define MV64x60_MPP_CNTL_2	0x0008
++
++#define MV64x60_GPP_IO_CNTL	0x0000
++#define MV64x60_GPP_LEVEL_CNTL	0x0010
++#define MV64x60_GPP_VALUE_SET	0x0018
++
++static void __iomem *mv64x60_mpp_reg_base;
++static void __iomem *mv64x60_gpp_reg_base;
++
++static void __init c2k_setup_arch(void)
 +{
-+	u32 i, v[30], enables, acc_bits;
-+	u32 pci_base_hi, pci_base_lo, size, buf[2];
-+	unsigned long cpu_base;
-+	int rc;
-+	void *devp, *mv64x60_devp;
-+	u8 *bridge_pbase, is_coherent;
-+	struct mv64x60_cpu2pci_win *tbl;
-+	int bus;
++	struct device_node *np;
++	phys_addr_t paddr;
++	const unsigned int *reg;
 +
-+	bridge_pbase = mv64x60_get_bridge_pbase();
-+	is_coherent = mv64x60_is_coherent();
++	/*
++	 * ioremap mpp and gpp registers in case they are later
++	 * needed by c2k_reset_board().
++	 */
++	np = of_find_compatible_node(NULL, NULL, "marvell,mv64360-mpp");
++	reg = of_get_property(np, "reg", NULL);
++	paddr = of_translate_address(np, reg);
++	of_node_put(np);
++	mv64x60_mpp_reg_base = ioremap(paddr, reg[1]);
 +
-+	if (is_coherent)
-+		acc_bits = MV64x60_PCI_ACC_CNTL_SNOOP_WB
-+			| MV64x60_PCI_ACC_CNTL_SWAP_NONE
-+			| MV64x60_PCI_ACC_CNTL_MBURST_32_BYTES
-+			| MV64x60_PCI_ACC_CNTL_RDSIZE_32_BYTES;
-+	else
-+		acc_bits = MV64x60_PCI_ACC_CNTL_SNOOP_NONE
-+			| MV64x60_PCI_ACC_CNTL_SWAP_NONE
-+			| MV64x60_PCI_ACC_CNTL_MBURST_128_BYTES
-+			| MV64x60_PCI_ACC_CNTL_RDSIZE_256_BYTES;
++	np = of_find_compatible_node(NULL, NULL, "marvell,mv64360-gpp");
++	reg = of_get_property(np, "reg", NULL);
++	paddr = of_translate_address(np, reg);
++	of_node_put(np);
++	mv64x60_gpp_reg_base = ioremap(paddr, reg[1]);
 +
-+	mv64x60_config_ctlr_windows(bridge_base, bridge_pbase, is_coherent);
-+	mv64x60_devp = find_node_by_compatible(NULL, "marvell,mv64360");
-+	if (mv64x60_devp == NULL)
-+		fatal("Error: Missing marvell,mv64360 device tree node\n\r");
-+
-+	enables = in_le32((u32 *)(bridge_base + MV64x60_CPU_BAR_ENABLE));
-+	enables |= 0x007ffe00; /* Disable all cpu->pci windows */
-+	out_le32((u32 *)(bridge_base + MV64x60_CPU_BAR_ENABLE), enables);
-+
-+	/* Get the cpu -> pci i/o & mem mappings from the device tree */
-+	devp = NULL;
-+	for (bus = 0; ; bus++) {
-+		char name[] = "pci ";
-+
-+		name[strlen(name)-1] = bus+'0';
-+
-+		devp = find_node_by_alias(name);
-+		if (devp == NULL)
-+			break;
-+
-+		if (bus >= 2)
-+			fatal("Error: Only 2 PCI controllers are supported at" \
-+				" this time.\n");
-+
-+		mv64x60_config_pci_windows(bridge_base, bridge_pbase, bus, 0,
-+				mem_size, acc_bits);
-+
-+		rc = getprop(devp, "ranges", v, sizeof(v));
-+		if (rc == 0)
-+			fatal("Error: Can't find marvell,mv64360-pci ranges"
-+				" property\n\r");
-+
-+		/* Get the cpu -> pci i/o & mem mappings from the device tree */
-+
-+		for (i = 0; i < rc; i += 6) {
-+			switch (v[i] & 0xff000000) {
-+			case 0x01000000: /* PCI I/O Space */
-+				tbl = mv64x60_cpu2pci_io;
-+				break;
-+			case 0x02000000: /* PCI MEM Space */
-+				tbl = mv64x60_cpu2pci_mem;
-+				break;
-+			default:
-+				continue;
-+			}
-+
-+			pci_base_hi = v[i+1];
-+			pci_base_lo = v[i+2];
-+			cpu_base = v[i+3];
-+			size = v[i+5];
-+
-+			buf[0] = cpu_base;
-+			buf[1] = size;
-+
-+			if (!dt_xlate_addr(devp, buf, sizeof(buf), &cpu_base))
-+				fatal("Error: Can't translate PCI address " \
-+						"0x%x\n\r", (u32)cpu_base);
-+
-+			mv64x60_config_cpu2pci_window(bridge_base, bus,
-+				pci_base_hi, pci_base_lo, cpu_base, size, tbl);
-+		}
-+
-+		enables &= ~(3<<(9+bus*5)); /* Enable cpu->pci<bus> i/o,
-+						cpu->pci<bus> mem0 */
-+		out_le32((u32 *)(bridge_base + MV64x60_CPU_BAR_ENABLE),
-+			enables);
-+	};
++#ifdef CONFIG_PCI
++	mv64x60_pci_init();
++#endif
 +}
 +
-+static void c2k_fixups(void)
-+{
-+	u32 mem_size;
-+
-+	mem_size = mv64x60_get_mem_size(bridge_base);
-+	c2k_bridge_setup(mem_size); /* Do necessary bridge setup */
-+}
-+
-+#define MV64x60_MPP_CNTL_0	0xf000
-+#define MV64x60_MPP_CNTL_2	0xf008
-+#define MV64x60_GPP_IO_CNTL	0xf100
-+#define MV64x60_GPP_LEVEL_CNTL	0xf110
-+#define MV64x60_GPP_VALUE_SET	0xf118
-+
-+static void c2k_reset(void)
++static void c2k_reset_board(void)
 +{
 +	u32 temp;
 +
-+	udelay(5000000);
++	local_irq_disable();
 +
-+	if (bridge_base != 0) {
-+		temp = in_le32((u32 *)(bridge_base + MV64x60_MPP_CNTL_0));
-+		temp &= 0xFFFF0FFF;
-+		out_le32((u32 *)(bridge_base + MV64x60_MPP_CNTL_0), temp);
++	temp = in_le32(mv64x60_mpp_reg_base + MV64x60_MPP_CNTL_0);
++	temp &= 0xFFFF0FFF;
++	out_le32(mv64x60_mpp_reg_base + MV64x60_MPP_CNTL_0, temp);
 +
-+		temp = in_le32((u32 *)(bridge_base + MV64x60_GPP_LEVEL_CNTL));
-+		temp |= 0x00000004;
-+		out_le32((u32 *)(bridge_base + MV64x60_GPP_LEVEL_CNTL), temp);
++	temp = in_le32(mv64x60_gpp_reg_base + MV64x60_GPP_LEVEL_CNTL);
++	temp |= 0x00000004;
++	out_le32(mv64x60_gpp_reg_base + MV64x60_GPP_LEVEL_CNTL, temp);
 +
-+		temp = in_le32((u32 *)(bridge_base + MV64x60_GPP_IO_CNTL));
-+		temp |= 0x00000004;
-+		out_le32((u32 *)(bridge_base + MV64x60_GPP_IO_CNTL), temp);
++	temp = in_le32(mv64x60_gpp_reg_base + MV64x60_GPP_IO_CNTL);
++	temp |= 0x00000004;
++	out_le32(mv64x60_gpp_reg_base + MV64x60_GPP_IO_CNTL, temp);
 +
-+		temp = in_le32((u32 *)(bridge_base + MV64x60_MPP_CNTL_2));
-+		temp &= 0xFFFF0FFF;
-+		out_le32((u32 *)(bridge_base + MV64x60_MPP_CNTL_2), temp);
++	temp = in_le32(mv64x60_mpp_reg_base + MV64x60_MPP_CNTL_2);
++	temp &= 0xFFFF0FFF;
++	out_le32(mv64x60_mpp_reg_base + MV64x60_MPP_CNTL_2, temp);
 +
-+		temp = in_le32((u32 *)(bridge_base + MV64x60_GPP_LEVEL_CNTL));
-+		temp |= 0x00080000;
-+		out_le32((u32 *)(bridge_base + MV64x60_GPP_LEVEL_CNTL), temp);
++	temp = in_le32(mv64x60_gpp_reg_base + MV64x60_GPP_LEVEL_CNTL);
++	temp |= 0x00080000;
++	out_le32(mv64x60_gpp_reg_base + MV64x60_GPP_LEVEL_CNTL, temp);
 +
-+		temp = in_le32((u32 *)(bridge_base + MV64x60_GPP_IO_CNTL));
-+		temp |= 0x00080000;
-+		out_le32((u32 *)(bridge_base + MV64x60_GPP_IO_CNTL), temp);
++	temp = in_le32(mv64x60_gpp_reg_base + MV64x60_GPP_IO_CNTL);
++	temp |= 0x00080000;
++	out_le32(mv64x60_gpp_reg_base + MV64x60_GPP_IO_CNTL, temp);
 +
-+		out_le32((u32 *)(bridge_base + MV64x60_GPP_VALUE_SET),
-+				0x00080004);
-+	}
-+
-+	for (;;);
++	out_le32(mv64x60_gpp_reg_base + MV64x60_GPP_VALUE_SET, 0x00080004);
 +}
 +
-+#define HEAP_SIZE	(16*MB)
-+static struct gunzip_state gzstate;
-+
-+void platform_init(unsigned long r3, unsigned long r4, unsigned long r5,
-+			unsigned long r6, unsigned long r7)
++static void c2k_restart(char *cmd)
 +{
-+	struct elf_info ei;
-+	char *heap_start, *dtb;
-+	int dt_size = _dtb_end - _dtb_start;
-+	void *vmlinuz_addr = _vmlinux_start;
-+	unsigned long vmlinuz_size = _vmlinux_end - _vmlinux_start;
-+	char elfheader[256];
-+
-+	if (dt_size <= 0) /* No fdt */
-+		exit();
-+
-+	/*
-+	 * Start heap after end of the kernel (after decompressed to
-+	 * address 0) or the end of the zImage, whichever is higher.
-+	 * That's so things allocated by simple_alloc won't overwrite
-+	 * any part of the zImage and the kernel won't overwrite the dtb
-+	 * when decompressed & relocated.
-+	 */
-+	gunzip_start(&gzstate, vmlinuz_addr, vmlinuz_size);
-+	gunzip_exactly(&gzstate, elfheader, sizeof(elfheader));
-+
-+	if (!parse_elf32(elfheader, &ei))
-+		exit();
-+
-+	heap_start = (char *)(ei.memsize + ei.elfoffset); /* end of kernel*/
-+	heap_start = max(heap_start, (char *)_end); /* end of zImage */
-+
-+	if ((unsigned)simple_alloc_init(heap_start, HEAP_SIZE, 2*KB, 16)
-+			> (128*MB))
-+		exit();
-+
-+	/* Relocate dtb to safe area past end of zImage & kernel */
-+	dtb = malloc(dt_size);
-+	if (!dtb)
-+		exit();
-+	memmove(dtb, _dtb_start, dt_size);
-+	fdt_init(dtb);
-+
-+	bridge_base = mv64x60_get_bridge_base();
-+
-+	platform_ops.fixups = c2k_fixups;
-+	platform_ops.exit = c2k_reset;
-+
-+	if (serial_console_init() < 0)
-+		exit();
++	c2k_reset_board();
++	msleep(100);
++	panic("restart failed\n");
 +}
 +
-+/* _zimage_start called very early--need to turn off external interrupts */
-+asm ("	.globl _zimage_start\n\
-+	_zimage_start:\n\
-+		mfmsr	10\n\
-+		rlwinm	10,10,0,~(1<<15)	/* Clear MSR_EE */\n\
-+		sync\n\
-+		mtmsr	10\n\
-+		isync\n\
-+		b _zimage_start_lib\n\
-+");
++#ifdef CONFIG_NOT_COHERENT_CACHE
++#define COHERENCY_SETTING "off"
++#else
++#define COHERENCY_SETTING "on"
++#endif
++
++void c2k_show_cpuinfo(struct seq_file *m)
++{
++	uint memsize = total_memory;
++
++	seq_printf(m, "Vendor\t\t: GEFanuc\n");
++	seq_printf(m, "Memory\t\t: %d MB\n", memsize / (1024 * 1024));
++	seq_printf(m, "coherency\t: %s\n", COHERENCY_SETTING);
++}
++
++/*
++ * Called very early, device-tree isn't unflattened
++ */
++static int __init c2k_probe(void)
++{
++	unsigned long root = of_get_flat_dt_root();
++
++	if (!of_flat_dt_is_compatible(root, "GEFanuc,C2K"))
++		return 0;
++
++	printk(KERN_INFO "Detected a GEFanuc C2K board\n");
++
++	_set_L2CR(0);
++	_set_L2CR(L2CR_L2E | L2CR_L2PE | L2CR_L2I);
++	return 1;
++}
++
++define_machine(c2k) {
++	.name			= "C2K",
++	.probe			= c2k_probe,
++	.setup_arch		= c2k_setup_arch,
++	.init_early		= mv64x60_init_early,
++	.show_cpuinfo		= c2k_show_cpuinfo,
++	.init_IRQ		= mv64x60_init_irq,
++	.get_irq		= mv64x60_get_irq,
++	.restart		= c2k_restart,
++	.calibrate_decr		= generic_calibrate_decr,
++#ifdef CONFIG_KEXEC
++	.machine_kexec		= default_machine_kexec,
++	.machine_kexec_prepare	= default_machine_kexec_prepare,
++	.machine_crash_shutdown	= default_machine_crash_shutdown,
++#endif
++};
