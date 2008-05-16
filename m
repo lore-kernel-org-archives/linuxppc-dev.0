@@ -1,23 +1,19 @@
-Return-Path: <jochen@scram.de>
-Received: from mail.scram.de (mail0.scram.de [78.47.204.202])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.scram.de", Issuer "scram e.V. CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 7DF69DDF0C
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 May 2008 19:17:58 +1000 (EST)
-Message-ID: <482D5129.6050402@scram.de>
-Date: Fri, 16 May 2008 11:17:29 +0200
-From: Jochen Friedrich <jochen@scram.de>
+Return-Path: <apw@shadowen.org>
+Received: from hellhawk.shadowen.org (hellhawk.shadowen.org [80.68.90.175])
+	by ozlabs.org (Postfix) with ESMTP id 4A38DDDEEC
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 May 2008 19:21:28 +1000 (EST)
+Date: Fri, 16 May 2008 09:46:02 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [PATCH] Discourage use of __initcall() in favour of
+	device_initcall()
+Message-ID: <20080516084602.GA28298@shadowen.org>
+References: <547098715b7ba4beb99bf2674a22debca001dc68.1210902536.git.michael@ellerman.id.au>
 MIME-Version: 1.0
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: [PATCH 6/8] [WATCHDOG] mpc8xxx_wdt: add support for
-	MPC8xx	watchdogs
-References: <20080515165250.GA30738@polina.dev.rtsoft.ru>
-	<20080515165401.GF3887@polina.dev.rtsoft.ru>
-In-Reply-To: <20080515165401.GF3887@polina.dev.rtsoft.ru>
-Content-Type: text/plain; charset=UTF-8
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linuxppc-dev@ozlabs.org,
-	Wim Van Sebroeck <wim@iguana.be>, Chen Gong <G.Chen@freescale.com>,
-	Scott Wood <scottwood@freescale.com>, Timur Tabi <timur@freescale.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <547098715b7ba4beb99bf2674a22debca001dc68.1210902536.git.michael@ellerman.id.au>
+Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org,
+	rpjday@crashcourse.ca
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,38 +23,55 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Anton,
-
-> The mpc8xxx_wdt driver is using two registers: SWSRR to push magic
-> numbers, and SWCRR to control the watchdog. Both registers are available
-> on the MPC8xx, and seem to have the same offsets and semantics as in
-> MPC83xx/MPC86xx watchdogs. The only difference is prescale value. So this
-> driver should simply work on the MPC8xx CPUs.
+On Fri, May 16, 2008 at 11:49:14AM +1000, Michael Ellerman wrote:
+> Add a comment above the definition of __initcall(), just in case
+> someone looks here.
 > 
-> MPC823 seem to be the first CPU in MPC8xx line, so we use fsl,mpc823-wdt
-> compatible matching.
+> And add a checkpatch warning for new uses of __initcall().
 > 
-> Though, this patch was only build-tested and okay to drop from this
-> series until tested or corrected to work on the actual hardware.
+> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+> ---
 > 
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> How's this? My perl skills are not good, but this seems to work.
+> 
+>  include/linux/init.h  |    1 +
+>  scripts/checkpatch.pl |    4 ++++
+>  2 files changed, 5 insertions(+), 0 deletions(-)
+> 
+> diff --git a/include/linux/init.h b/include/linux/init.h
+> index 21d658c..6390e22 100644
+> --- a/include/linux/init.h
+> +++ b/include/linux/init.h
+> @@ -193,6 +193,7 @@ extern void (*late_time_init)(void);
+>  #define late_initcall(fn)		__define_initcall("7",fn,7)
+>  #define late_initcall_sync(fn)		__define_initcall("7s",fn,7s)
+>  
+> +/* Please use device_initcall() directly in new code */
+>  #define __initcall(fn) device_initcall(fn)
+>  
+>  #define __exitcall(fn) \
+> diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
+> index b6bbbcd..3faff3f 100755
+> --- a/scripts/checkpatch.pl
+> +++ b/scripts/checkpatch.pl
+> @@ -2026,6 +2026,10 @@ sub process {
+>  		if ($line =~ /\bsimple_(strto.*?)\s*\(/) {
+>  			WARN("consider using strict_$1 in preference to simple_$1\n" . $herecurr);
+>  		}
+> +# check for __initcall(), use device_initcall() explicitly please
+> +		if ($line =~ /^.\s*__initcall\(/) {
 
-Tested-by: Jochen Friedrich <jochen@scram.de>
+Well you should probabally allow spaces before the ( but otherwise its
+in the spirit.
 
-The driver works OK on MPC823.
+Checkpatch has its own tree as it has an extensive regression test
+suite.  So I'll suck this half up into my tree and it'll be in the 0.20
+update.
 
-One nit however ist the late initialisation of the wdt timer. I had to add
-two hardcoded wdt resets in the board setup, one in setup_arch and one in
-arch_initcall, to prevent a reset until mpc8xxx_wdt kicks in. However, IMHO
-this is acceptable as it only hits the 8xx series with the small prescale.
+> +			WARN("please use device_initcall() instead of __initcall()\n" . $herecurr);
+> +		}
+>  
+>  # use of NR_CPUS is usually wrong
+>  # ignore definitions of NR_CPUS and usage to define arrays as likely right
 
-Some time ago in http://patchwork.ozlabs.org/linuxppc/patch?person=1023&id=16189,
-i tried a different aproach to the problem (mainly a port of the old ARC=ppc
-stuff), but the code became very ugly and the wdt maintainers didn't like it
-very much.
-
-So the only thing left for full 8xx support is a refactoring / cleanup of
-http://patchwork.ozlabs.org/linuxppc/patch?person=1023&id=16262.
-
-Thanks,
-Jochen
+-apw
