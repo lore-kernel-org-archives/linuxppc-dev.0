@@ -1,23 +1,23 @@
-Return-Path: <avorontsov@dev.rtsoft.ru>
-Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
-	by ozlabs.org (Postfix) with SMTP id 6A992DE09D
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 May 2008 21:46:29 +1000 (EST)
-Date: Fri, 16 May 2008 15:46:27 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Jochen Friedrich <jochen@scram.de>
-Subject: Re: [PATCH 6/8] [WATCHDOG] mpc8xxx_wdt: add support for MPC8xx
-	watchdogs
-Message-ID: <20080516114627.GA29928@polina.dev.rtsoft.ru>
-References: <20080515165250.GA30738@polina.dev.rtsoft.ru>
-	<20080515165401.GF3887@polina.dev.rtsoft.ru>
-	<482D5129.6050402@scram.de>
+Return-Path: <mingo@elte.hu>
+Received: from mx2.mail.elte.hu (mx2.mail.elte.hu [157.181.151.9])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 4A5BDDDF1D
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 May 2008 22:06:01 +1000 (EST)
+Date: Fri, 16 May 2008 14:05:35 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH 0/2] ftrace ported to PPC
+Message-ID: <20080516120535.GB11718@elte.hu>
+References: <20080515034942.109223655@goodmis.org>
+	<18475.48822.311219.341385@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <482D5129.6050402@scram.de>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linuxppc-dev@ozlabs.org,
-	Wim Van Sebroeck <wim@iguana.be>, Chen Gong <G.Chen@freescale.com>,
-	Scott Wood <scottwood@freescale.com>, Timur Tabi <timur@freescale.com>
-Reply-To: avorontsov@ru.mvista.com
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <18475.48822.311219.341385@cargo.ozlabs.ibm.com>
+Cc: proski@gnu.org, a.p.zijlstra@chello.nl, pq@iki.fi,
+	linux-kernel@vger.kernel.org,
+	Steven Rostedt <rostedt@goodmis.org>, linuxppc-dev@ozlabs.org,
+	sandmann@redhat.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,110 +27,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, May 16, 2008 at 11:17:29AM +0200, Jochen Friedrich wrote:
-> Hi Anton,
+
+* Paul Mackerras <paulus@samba.org> wrote:
+
+> Steven Rostedt writes:
 > 
-> > The mpc8xxx_wdt driver is using two registers: SWSRR to push magic
-> > numbers, and SWCRR to control the watchdog. Both registers are available
-> > on the MPC8xx, and seem to have the same offsets and semantics as in
-> > MPC83xx/MPC86xx watchdogs. The only difference is prescale value. So this
-> > driver should simply work on the MPC8xx CPUs.
-> > 
-> > MPC823 seem to be the first CPU in MPC8xx line, so we use fsl,mpc823-wdt
-> > compatible matching.
-> > 
-> > Though, this patch was only build-tested and okay to drop from this
-> > series until tested or corrected to work on the actual hardware.
-> > 
-> > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> > The following two patches ports ftrace to PowerPC. I tested this on 
+> > both my PPC64 box as well as my 32bit PowerBook G4.
 > 
-> Tested-by: Jochen Friedrich <jochen@scram.de>
+> Very cool!  Thanks.
 
-Thanks!
+great - could you please send an Acked-by line for those patches?
 
-> The driver works OK on MPC823.
+> > This applies to the latest sched-devel (with some extra hacks to get 
+> > that to boot on PPC).
+> > 
+> > This also depends on the CFLAGS_REMOVE_foo.o patches I sent earlier.
 > 
-> One nit however ist the late initialisation of the wdt timer. I had to add
-> two hardcoded wdt resets in the board setup, one in setup_arch and one in
-> arch_initcall, to prevent a reset until mpc8xxx_wdt kicks in. However, IMHO
-> this is acceptable as it only hits the 8xx series with the small prescale.
+> Ingo, when do you intend to send the ftrace stuff to Linus?  In the 
+> next merge window?
 
-Hm... This is strange because subsys initcalls should be called quite
-early... what type of initcall you're using in the board file to probe the
-OF bus? I guess this was machine_device_initcall, can you try the
-machine_subsys_initcall(), i.e. the same as we use in the driver?
+yeah, that's the plan, this merge window was too hot already. Right now 
+there's an ftrace topic in the -tip tree:
 
-If this still doesn't not work... You can try the patch attached here,
-and try using machine_arch_initcall to do of_platform_bus_probe().
-This way wdt should be called even earlier...
+    http://people.redhat.com/mingo/tip.git/README
 
-Also, if u-boot enables the watchdog, it should support the keepalive
-too, because it might spend precious time not pinging the wdt...
+that contains the latest ftrace patches. Please holler if you see 
+something weird in it.
 
-diff --git a/drivers/watchdog/mpc8xxx_wdt.c b/drivers/watchdog/mpc8xxx_wdt.c
-index c7e28f0..0f7e165 100644
---- a/drivers/watchdog/mpc8xxx_wdt.c
-+++ b/drivers/watchdog/mpc8xxx_wdt.c
-@@ -207,13 +207,6 @@ static int __devinit mpc8xxx_wdt_probe(struct of_device *ofdev,
- 		goto err_unmap;
- 	}
- 
--	ret = misc_register(&mpc8xxx_wdt_miscdev);
--	if (ret) {
--		pr_err("cannot register miscdev on minor=%d (err=%d)\n",
--			WATCHDOG_MINOR, ret);
--		goto err_unmap;
--	}
--
- 	/* Calculate the timeout in seconds */
- 	if (prescale)
- 		timeout_sec = (timeout * wdt_type->prescaler) / freq;
-@@ -234,6 +227,7 @@ static int __devinit mpc8xxx_wdt_probe(struct of_device *ofdev,
- 	return 0;
- err_unmap:
- 	iounmap(wd_base);
-+	wd_base = NULL;
- 	return ret;
- }
- 
-@@ -281,17 +275,38 @@ static struct of_platform_driver mpc8xxx_wdt_driver = {
- 	},
- };
- 
-+/*
-+ * We do wdt initialization in two steps: arch_initcall probes the wdt
-+ * very early to start pinging the watchdog (misc devices are not yet
-+ * available), and later module_init() just registers the misc device.
-+ */
-+static int __init mpc8xxx_wdt_init_late(void)
-+{
-+	int ret;
-+
-+	if (!wd_base)
-+		return -ENODEV;
-+
-+	ret = misc_register(&mpc8xxx_wdt_miscdev);
-+	if (ret) {
-+		pr_err("cannot register miscdev on minor=%d (err=%d)\n",
-+			WATCHDOG_MINOR, ret);
-+		return ret;
-+	}
-+	return 0;
-+}
-+module_init(mpc8xxx_wdt_init_late);
-+
- static int __init mpc8xxx_wdt_init(void)
- {
- 	return of_register_platform_driver(&mpc8xxx_wdt_driver);
- }
-+arch_initcall(mpc8xxx_wdt_init);
- 
- static void __exit mpc8xxx_wdt_exit(void)
- {
- 	of_unregister_platform_driver(&mpc8xxx_wdt_driver);
- }
--
--subsys_initcall(mpc8xxx_wdt_init);
- module_exit(mpc8xxx_wdt_exit);
- 
- MODULE_AUTHOR("Dave Updegraff, Kumar Gala");
+	Ingo
