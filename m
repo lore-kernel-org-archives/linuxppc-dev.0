@@ -1,16 +1,31 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id BC984DDF22
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 May 2008 11:57:49 +1000 (EST)
-Date: Fri, 16 May 2008 11:57:45 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: paulua@samba.org
-Subject: [PATCH] [POWERPC] move of_device_get_modalias fo drivers/of
-Message-Id: <20080516115745.efb998fb.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>, Olaf Hering <olaf@aepfle.de>,
-	"David S. Miller" <davem@davemloft.net>
+Return-Path: <cjashfor@us.ibm.com>
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id B7B42DDEFD
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 May 2008 12:04:43 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e33.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m4G24eT4004411
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 May 2008 22:04:40 -0400
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m4G24dgc077660
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 May 2008 20:04:39 -0600
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m4G24daL028709
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 May 2008 20:04:39 -0600
+In-Reply-To: <18476.56587.887087.503435@cargo.ozlabs.ibm.com>
+To: Paul Mackerras <paulus@samba.org>
+MIME-Version: 1.0
+Subject: Re: Feedback requested on switching the exception wrapper
+	used	for	the PMU interrupt on ppc64
+Message-ID: <OFA799651B.BB2A2EE9-ON8725744B.00083D5B-8825744B.000B6945@us.ibm.com>
+From: Corey J Ashford <cjashfor@us.ibm.com>
+Date: Thu, 15 May 2008 19:04:36 -0700
+Content-Type: text/plain; charset="US-ASCII"
+Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,166 +35,100 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Commit 140b932f8cb6cced10b96860651a198b1b89cbb9 ("Create modalias file
-in sysfs for of_platform bus") needs this to avoid breaking the sparc
-builds.
+Paul Mackerras <paulus@samba.org> wrote on 05/15/2008 06:02:03 PM:
 
-Just move the code and add whitespace around some binary operators.
+> Corey J Ashford writes:
+> 
+> > Thanks for the feedback.  I don't believe I need a separate flag, 
+because
+> > the PMU interrupt (via the PMAO bit) will still be pending when 
+interrupts
+> > are hard enabled again, and the handler will be reentered 
+automatically.
+> 
+> If that were the case then we wouldn't have had the problem with
+> losing PMU interrupts that meant we had to change the PMU interrupt
+> handler from a MASKABLE_EXCEPTION to a STD_EXCEPTION.  This was in
+> commit 449d846dbcbf61bdf7d50a923e4791102168c292.
+> 
+> My understanding is that the PMU only requests an interrupt when PMAO
+> goes from 0 to 1 (i.e. it's edge-triggered).  If the CPU takes the
+> interrupt and then sets MSR.EE again (e.g. by returning from the
+> interrupt handler), and PMAO has not been reset to 0, then I don't
+> think the PMU requests another interrupt at that point.
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- arch/powerpc/kernel/of_device.c |   48 ---------------------------------------
- drivers/of/device.c             |   48 +++++++++++++++++++++++++++++++++++++++
- include/asm-powerpc/of_device.h |    2 -
- include/linux/of_device.h       |    3 ++
- 4 files changed, 51 insertions(+), 50 deletions(-)
+I think that is the case on early POWER4 and PPC970 chips where this is no 
+PMAO bit.  However, from personal [bad] experience, I can say that if PMAO 
+is not cleared in the interrupt handler, the exception will be taken again 
+when interrupts are reenabled.  I've seen the system lockup in interrupt 
+handling "loops" because it wasn't being cleared.
 
-I have built this for ppc64_defconfig and sparc and sparc64 defconfigs.
+> 
+> > I discovered through some trial and error that get_paca() doesn't work
+> > correctly in the interrupt handler.  It appears that the value of r13 
+(the
+> > PACA pointer) is not initialized.  Perhaps r13 is a scratch register 
+used
+> > by the compiler?
+> 
+> Weird.  It definitely should be correct.  Loading r13 is one of the
+> first things the interrupt entry code does, and r13 is not a scratch
+> register (it's normally the thread-local storage pointer).
+> 
+> If r13 is bogus then that's definitely a serious bug.
 
-diff --git a/arch/powerpc/kernel/of_device.c b/arch/powerpc/kernel/of_device.c
-index 5748ddb..e9be908 100644
---- a/arch/powerpc/kernel/of_device.c
-+++ b/arch/powerpc/kernel/of_device.c
-@@ -89,54 +89,6 @@ struct of_device *of_device_alloc(struct device_node *np,
- }
- EXPORT_SYMBOL(of_device_alloc);
- 
--ssize_t of_device_get_modalias(struct of_device *ofdev,
--				char *str, ssize_t len)
--{
--	const char *compat;
--	int cplen, i;
--	ssize_t tsize, csize, repend;
--
--	/* Name & Type */
--	csize = snprintf(str, len, "of:N%sT%s",
--				ofdev->node->name, ofdev->node->type);
--
--	/* Get compatible property if any */
--	compat = of_get_property(ofdev->node, "compatible", &cplen);
--	if (!compat)
--		return csize;
--
--	/* Find true end (we tolerate multiple \0 at the end */
--	for (i=(cplen-1); i>=0 && !compat[i]; i--)
--		cplen--;
--	if (!cplen)
--		return csize;
--	cplen++;
--
--	/* Check space (need cplen+1 chars including final \0) */
--	tsize = csize + cplen;
--	repend = tsize;
--
--	if (csize>=len)		/* @ the limit, all is already filled */
--		return tsize;
--
--	if (tsize>=len) {		/* limit compat list */
--		cplen = len-csize-1;
--		repend = len;
--	}
--
--	/* Copy and do char replacement */
--	memcpy(&str[csize+1], compat, cplen);
--	for (i=csize; i<repend; i++) {
--		char c = str[i];
--		if (c=='\0')
--			str[i] = 'C';
--		else if (c==' ')
--			str[i] = '_';
--	}
--
--	return tsize;
--}
--
- int of_device_uevent(struct device *dev, struct kobj_uevent_env *env)
- {
- 	struct of_device *ofdev;
-diff --git a/drivers/of/device.c b/drivers/of/device.c
-index 8fbfeee..8a1d93a 100644
---- a/drivers/of/device.c
-+++ b/drivers/of/device.c
-@@ -104,3 +104,51 @@ void of_device_unregister(struct of_device *ofdev)
- 	device_unregister(&ofdev->dev);
- }
- EXPORT_SYMBOL(of_device_unregister);
-+
-+ssize_t of_device_get_modalias(struct of_device *ofdev,
-+				char *str, ssize_t len)
-+{
-+	const char *compat;
-+	int cplen, i;
-+	ssize_t tsize, csize, repend;
-+
-+	/* Name & Type */
-+	csize = snprintf(str, len, "of:N%sT%s",
-+				ofdev->node->name, ofdev->node->type);
-+
-+	/* Get compatible property if any */
-+	compat = of_get_property(ofdev->node, "compatible", &cplen);
-+	if (!compat)
-+		return csize;
-+
-+	/* Find true end (we tolerate multiple \0 at the end */
-+	for (i = (cplen - 1); i >= 0 && !compat[i]; i--)
-+		cplen--;
-+	if (!cplen)
-+		return csize;
-+	cplen++;
-+
-+	/* Check space (need cplen+1 chars including final \0) */
-+	tsize = csize + cplen;
-+	repend = tsize;
-+
-+	if (csize >= len)		/* @ the limit, all is already filled */
-+		return tsize;
-+
-+	if (tsize >= len) {		/* limit compat list */
-+		cplen = len - csize - 1;
-+		repend = len;
-+	}
-+
-+	/* Copy and do char replacement */
-+	memcpy(&str[csize + 1], compat, cplen);
-+	for (i = csize; i < repend; i++) {
-+		char c = str[i];
-+		if (c == '\0')
-+			str[i] = 'C';
-+		else if (c == ' ')
-+			str[i] = '_';
-+	}
-+
-+	return tsize;
-+}
-diff --git a/include/asm-powerpc/of_device.h b/include/asm-powerpc/of_device.h
-index 6526e13..3c12399 100644
---- a/include/asm-powerpc/of_device.h
-+++ b/include/asm-powerpc/of_device.h
-@@ -21,8 +21,6 @@ extern struct of_device *of_device_alloc(struct device_node *np,
- 					 const char *bus_id,
- 					 struct device *parent);
- 
--extern ssize_t of_device_get_modalias(struct of_device *ofdev,
--					char *str, ssize_t len);
- extern int of_device_uevent(struct device *dev,
- 			    struct kobj_uevent_env *env);
- 
-diff --git a/include/linux/of_device.h b/include/linux/of_device.h
-index afe3382..d3a74e0 100644
---- a/include/linux/of_device.h
-+++ b/include/linux/of_device.h
-@@ -24,4 +24,7 @@ static inline void of_device_free(struct of_device *dev)
- 	of_release_dev(&dev->dev);
- }
- 
-+extern ssize_t of_device_get_modalias(struct of_device *ofdev,
-+					char *str, ssize_t len);
-+
- #endif /* _LINUX_OF_DEVICE_H */
--- 
-1.5.5.1
+My evidence for this was that I was seeing get_paca()->soft_enable and 
+get_paca()->hard_enable set to zero, but regs->softe set to 1.
 
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Looking at the code again, I see that in STD_EXCEPTION_COMMON in 
+exception.h, the macro DISABLE_INTS is used, which zeros out the soft and 
+hard disable flags.  So r13 is ok, and I think using the regs struct is 
+the right way to go.
+
+
+> 
+> > Fortunately, because the soft enable flag is available in the pt_regs
+> > structure, and because the hard enable flag will be set to the same as 
+the
+> > value of regs->msr's MSR_EE flag in the restore code, I now have this 
+code
+> > in the interrupt handler:
+> > 
+> > void perfmon_pmu_int_handler(struct pt_regs *regs) {
+> > 
+> >       if (regs->softe == 0) {
+> >             /* disable hardware interrupts */
+> >             regs->msr &= ~MSR_EE;
+> >             return;
+> >       }
+> >       ...
+> > }
+> > 
+> > This code does seem to be working, but needs more testing.
+> 
+> I expect that after a little while you'll stop getting PMU
+> interrupts...
+> 
+> Paul.
+
+I haven't seen that yet, but I am seeing another kernel hang with my test 
+case that creates and deals with about 2000 interrupts per second.  After 
+a random amount of time running it, it hangs the system.  If I restart the 
+system into xmon, I see a callstack that doesn't have any perfmon code in 
+it, but does have some kernel interrupt handling code.  The hang is the 
+same when using MASKABLE_EXCEPTION_PSERIES and STD_EXCEPTION_PSERIES (+ 
+the above fix).
+
+I'd love to be able to run that call stack by you, if you have time to 
+look at it.
+
+Thanks,
+
+- Corey
+
+Corey Ashford
+Software Engineer
+IBM Linux Technology Center, Linux Toolchain
+Beaverton, OR 
+503-578-3507 
+cjashfor@us.ibm.com
