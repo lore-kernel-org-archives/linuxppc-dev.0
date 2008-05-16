@@ -1,23 +1,25 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.247])
-	by ozlabs.org (Postfix) with ESMTP id 40753DE0B9
-	for <linuxppc-dev@ozlabs.org>; Sat, 17 May 2008 03:48:05 +1000 (EST)
-Received: by an-out-0708.google.com with SMTP id c34so290969anc.78
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 May 2008 10:48:04 -0700 (PDT)
-Message-ID: <fa686aa40805161048s3a9d9959v205b0fabd66a751d@mail.gmail.com>
-Date: Fri, 16 May 2008 11:48:04 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Remi Machet" <rmachet@slac.stanford.edu>
-Subject: Re: [PATCH 1/5] powerpc: DTS file for the C2K
-In-Reply-To: <1210958434.14306.9.camel@pcds-ts102.slac.stanford.edu>
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id A795DDDDFB
+	for <linuxppc-dev@ozlabs.org>; Sat, 17 May 2008 05:04:41 +1000 (EST)
+Date: Fri, 16 May 2008 14:04:38 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: Re: [PATCH 1/4] [SPI] [POWERPC] spi_mpc83xx: handles Freescale
+	MPC8610 as well
+Message-ID: <20080516190438.GA2758@loki.buserror.net>
+References: <20080516165052.GA24196@polina.dev.rtsoft.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <1210897371.13992.13.camel@pcds-ts102.slac.stanford.edu>
-	<20080516015354.GA27188@yookeroo.seuss>
-	<1210958434.14306.9.camel@pcds-ts102.slac.stanford.edu>
-Cc: Linux PPC <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
-	David Gibson <david@gibson.dropbear.id.au>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080516165052.GA24196@polina.dev.rtsoft.ru>
+Cc: David Brownell <dbrownell@users.sourceforge.net>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	spi-devel-general@lists.sourceforge.net, Timur Tabi <timur@freescale.com>,
+	Pierre Ossman <drzeus-mmc@drzeus.cx>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,43 +29,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, May 16, 2008 at 11:20 AM, Remi Machet <rmachet@slac.stanford.edu> wrote:
-> On Fri, 2008-05-16 at 11:53 +1000, David Gibson wrote:
->> This is a suspicious looking use of cell-index, though again this
->> could be a problem in the binding rather than your tree per se.
->> cell-index should *only* be present if it's used to index into some
->> shared resource register.
-> This is actually my mistake: I use this property in
-> arch/powerpc/boot/c2k.c to differentiate the 2 PCI buses. What property
-> should I use instead ? I could detect the PCI bus # based on the reg
-> property (memory base can change but not the registers address), what do
-> you think ?
+On Fri, May 16, 2008 at 08:50:52PM +0400, Anton Vorontsov wrote:
+>  config SPI_MPC83xx
+>  	tristate "Freescale MPC83xx/QUICC Engine SPI controller"
+> -	depends on SPI_MASTER && (PPC_83xx || QUICC_ENGINE) && EXPERIMENTAL
+> +	depends on SPI_MASTER && (PPC_83xx || QUICC_ENGINE || PPC_86xx) && EXPERIMENTAL
 
-Use either the base address (a little ugly) or create a couple of
-properties under the aliases node with the path to the two PCI busses
-(cleaner, but a slight bit more work).
+How about "depends on SPI_MASTER && FSL_SOC && EXPERIMENTAL"?
 
-ie:
+Plus, we should change the option text to something like "MPC8xxx SPI
+controller".
 
-aliases {
-       pci-bus1 = &pci1;
-       pci-bus2 = &pci2;
-};
-
-Cheers,
-g.
-
->
-> Remi
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
->
-
-
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+-Scott
