@@ -1,19 +1,21 @@
-Return-Path: <jonsmirl@gmail.com>
-Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.230])
-	by ozlabs.org (Postfix) with ESMTP id 3BED3DE7FA
-	for <linuxppc-dev@ozlabs.org>; Sat, 17 May 2008 06:28:59 +1000 (EST)
-Received: by rv-out-0506.google.com with SMTP id f6so332286rvb.9
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 May 2008 13:27:33 -0700 (PDT)
-Message-ID: <9e4733910805161327u4c42fd1dg5b09319d89db447c@mail.gmail.com>
-Date: Fri, 16 May 2008 16:27:33 -0400
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Grant Likely" <grant.likely@secretlab.ca>
+Return-Path: <glikely@secretlab.ca>
+Received: from wx-out-0506.google.com (wx-out-0506.google.com [66.249.82.238])
+	by ozlabs.org (Postfix) with ESMTP id DB024DDE28
+	for <linuxppc-dev@ozlabs.org>; Sat, 17 May 2008 06:48:18 +1000 (EST)
+Received: by wx-out-0506.google.com with SMTP id i30so819754wxd.15
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 May 2008 13:48:16 -0700 (PDT)
+Message-ID: <fa686aa40805161348t52b94956w112ef6926ff30892@mail.gmail.com>
+Date: Fri, 16 May 2008 14:48:16 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Jon Smirl" <jonsmirl@gmail.com>
 Subject: Re: [RFC PATCH 0/4] Describe SPI devices in the OF device tree and
 	add mpc5200-spi driver
-In-Reply-To: <20080516193054.28030.35126.stgit@trillian.secretlab.ca>
+In-Reply-To: <9e4733910805161327u4c42fd1dg5b09319d89db447c@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 References: <20080516193054.28030.35126.stgit@trillian.secretlab.ca>
+	<9e4733910805161327u4c42fd1dg5b09319d89db447c@mail.gmail.com>
 Cc: fabrizio.garetto@gmail.com, linuxppc-dev@ozlabs.org,
 	dbrownell@users.sourceforge.net, linux-kernel@vger.kernel.org,
 	spi-devel-general@lists.sourceforge.net
@@ -26,42 +28,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 5/16/08, Grant Likely <grant.likely@secretlab.ca> wrote:
-> This series is a set of changes to allow the slaves on an SPI bus to be
->  described in the OF device tree (useful in arch/powerpc) and adds a driver
->  that uses it (the Freescale MPC5200 SoC's SPI device).
-
-Right now we have SPI hooked up to PSC3. Hardware engineer is gone but
-I'll see if I can get him to alter things to use the SPI controller. I
-have an old mail from him where he thinks the Phytec board is missing
-a signal needed to use the SPI controller.
-
-Is the current SPI driver working on PSC3? I have a MMC card wired up
-to it but I've never tried using it.
-
-I have the MPC5200 PSC SPI driver enabled and "MMC/SD over SPI"
-enabled in my kernel. The MMC bus gets created but there aren't any
-devices on it. Do we need something in the SPI driver so that the MMC
-layer can find it?
-
-Are you going to keeps this as two drivers or merge them? If it is two
-drivers there should be one entry in Kconfig and two sub choices for
-the types of drivers.
-
->  Please review and comment.  David, I've included in this series my earlier
->  patch to change modalias from a pointer to a string as one of the later
->  patches depends on it.
+On Fri, May 16, 2008 at 2:27 PM, Jon Smirl <jonsmirl@gmail.com> wrote:
+> On 5/16/08, Grant Likely <grant.likely@secretlab.ca> wrote:
+>> This series is a set of changes to allow the slaves on an SPI bus to be
+>>  described in the OF device tree (useful in arch/powerpc) and adds a driver
+>>  that uses it (the Freescale MPC5200 SoC's SPI device).
 >
->  Cheers,
->  g.
->
->
->  --
->  Grant Likely, B.Sc. P.Eng.
->  Secret Lab Technologies Ltd.
->
+> Right now we have SPI hooked up to PSC3. Hardware engineer is gone but
+> I'll see if I can get him to alter things to use the SPI controller. I
+> have an old mail from him where he thinks the Phytec board is missing
+> a signal needed to use the SPI controller.
 
+While I'd appreciate the testing, I suspect that you really don't want
+to do that.  The dedicated SPI controller isn't very good.  It only
+does a byte at a time and so is rather slow.  A PSC is SPI mode should
+be better (but I haven't tried it personally it yet).
+
+>
+> Is the current SPI driver working on PSC3? I have a MMC card wired up
+> to it but I've never tried using it.
+
+It should work.
+
+> I have the MPC5200 PSC SPI driver enabled and "MMC/SD over SPI"
+> enabled in my kernel. The MMC bus gets created but there aren't any
+> devices on it. Do we need something in the SPI driver so that the MMC
+> layer can find it?
+
+Yes, see patch 3 in my series.  the PSC SPI driver needs to do
+something like this.  SPI busses don't really do autodetection (but
+some sub-protocols, like MMC, do IIRC).
+
+> Are you going to keeps this as two drivers or merge them? If it is two
+> drivers there should be one entry in Kconfig and two sub choices for
+> the types of drivers.
+
+It will remain as two drivers.  The devices are entirely separate.  I
+don't think putting them under a single Kconfig is needed or a good
+idea.  They both depend on PPC_MPC52xx anyway so they only show up if
+you're building for a 5200 platform.
+
+Thanks for the comments.
+
+Cheers,
+g.
 
 -- 
-Jon Smirl
-jonsmirl@gmail.com
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
