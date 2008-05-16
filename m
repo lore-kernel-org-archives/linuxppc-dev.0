@@ -1,18 +1,34 @@
-Return-Path: <arnd@arndb.de>
-From: Arnd Bergmann <arnd@arndb.de>
-To: Carl Love <cel@us.ibm.com>
-Subject: Re: [PATCH] Updated: Reworked Cell OProfile: SPU mutex lock fix
-Date: Fri, 16 May 2008 16:22:44 +0200
-References: <1209652994.17842.1.camel@carll-linux-desktop>
-	<200805151739.26392.arnd@arndb.de>
-	<1210878305.20791.109.camel@carll-linux-desktop>
-In-Reply-To: <1210878305.20791.109.camel@carll-linux-desktop>
+Return-Path: <kamalesh@linux.vnet.ibm.com>
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [59.145.155.5])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e28smtp05.in.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 03E85DE1C5
+	for <linuxppc-dev@ozlabs.org>; Sat, 17 May 2008 00:27:22 +1000 (EST)
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+	by e28smtp05.in.ibm.com (8.13.1/8.13.1) with ESMTP id m4GEQdX7029785
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 May 2008 19:56:39 +0530
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+	by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m4GEQTCM1081566
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 May 2008 19:56:29 +0530
+Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
+	by d28av02.in.ibm.com (8.13.1/8.13.3) with ESMTP id m4GEQ45w015412
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 May 2008 19:56:04 +0530
+Message-ID: <482D999D.5090408@linux.vnet.ibm.com>
+Date: Fri, 16 May 2008 19:56:37 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Message-Id: <200805161622.46232.arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, oprofile-list <oprofile-list@lists.sf.net>,
-	cbe-oss-dev@ozlabs.org, linux-kernel <linux-kernel@vger.kernel.org>
+To: Nadia Derbey <Nadia.Derbey@bull.net>
+Subject: Re: [BUG] 2.6.26-rc1-git4 - task blocked on powerpc for more than
+	120 seconds
+References: <4821AD2D.8020001@linux.vnet.ibm.com>
+	<20080507134057.GA30637@cs181133002.pp.htv.fi>
+	<48227AAB.9000309@linux.vnet.ibm.com> <482C1ED8.3030508@bull.net>
+In-Reply-To: <482C1ED8.3030508@bull.net>
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, Adrian Bunk <bunk@kernel.org>,
+	Balbir Singh <balbir@linux.vnet.ibm.com>,
+	kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,111 +38,158 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thursday 15 May 2008, Carl Love wrote:
-> On Thu, 2008-05-15 at 17:39 +0200, Arnd Bergmann wrote:
-> > 
-> > I noticed now that you are indexing arrays by SPU number. This is not
-> > a good idea, because you make assumptions about the system that may
-> > not be true. Better pass around 'struct spu' pointers and put those
-> > values in there if you need them. 
+Nadia Derbey wrote:
+> Kamalesh Babulal wrote:
+>> Adrian Bunk wrote:
+>>
+>>> On Wed, May 07, 2008 at 06:52:53PM +0530, Kamalesh Babulal wrote:
+>>>
+>>>> While running the ltp over the powerpc with the 2.6.26-rc1-git4 kernel,
+>>>> task get blocked for more 120 seconds and does not proceeds future.
+>>>>
+>>>> The task msgctl08 is a ipc testcase, which test the msgget(2) msgctl(2)
+>>>> syscalls.
+>>> Thanks for your report.
+>>>
+>>> I assume this is reproducible?
+>>>
+>>> If yes, what was the last kernel that worked for you?
+>>
+>> This is reproducible on 2.6.26-rc1 and 2.6.26-rc1-git(s). 2.6.25 is the last know kernel
+>> to work.
+>>
+>>
+>>> I've also added Pierre Peiffer and Nadia Derbey to the Cc since their 
+>>> recent ipc commits are my first suspects.
+>>>
+>>>
+>>>> Machine is stuck in the task, printing the following call trace
+>>>> more than 5000 times. The oom-killer invoked once in-between.
+>>>>
+>>>> INFO: task msgctl08:16248 blocked for more than 120 seconds.
+>>>> "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+>>>> Call Trace:
+>>>> [c0000000762435a0] [0000000000000001] 0x1 (unreliable)
+>>>> [c000000076243770] [c000000000010acc] .__switch_to+0x128/0x16c
+>>>> [c000000076243800] [c0000000004b07a4] .schedule+0x7ac/0x890
+>>>> [c0000000762438f0] [c0000000004b2ba4] .rwsem_down_failed_common+0x260/0x2b0
+>>>> [c0000000762439b0] [c0000000004b2c60] .rwsem_down_read_failed+0x2c/0x44
+>>>> [c000000076243a60] [c0000000004b1b84] .down_read+0x44/0x5c
+>>>> [c000000076243af0] [c000000000295e10] .ipc_lock+0x34/0xe0
+>>>> [c000000076243b90] [c00000000029690c] .ipc_lock_check+0x24/0x78
+>>>> [c000000076243c20] [c0000000002972c0] .do_msgsnd+0xb0/0x3f8
+>>>> [c000000076243d10] [c000000000293ce8] .compat_sys_msgsnd+0x94/0xc0
+>>>> [c000000076243db0] [c000000000014418] .compat_sys_ipc+0x130/0x1f4
+>>>> [c000000076243e30] [c000000000008734] syscall_exit+0x0/0x40
+>>>> msgctl08 invoked oom-killer: gfp_mask=0x1200d2, order=0, oomkilladj=0
+>>>> Call Trace:
+>>>> [c00000001e1c7640] [c0000000000101bc] .show_stack+0x70/0x1bc (unreliable)
+>>>> [c00000001e1c76f0] [c0000000000c2c78] .oom_kill_process+0x78/0x230
+>>>> [c00000001e1c77a0] [c0000000000c3390] .out_of_memory+0x28c/0x320
+>>>> [c00000001e1c7870] [c0000000000c70ac] .__alloc_pages_internal+0x364/0x468
+>>>> [c00000001e1c7980] [c0000000000e83cc] .alloc_page_vma+0x120/0x14c
+>>>> [c00000001e1c7a20] [c0000000000e0224] .read_swap_cache_async+0x7c/0x160
+>>>> [c00000001e1c7ae0] [c0000000000e035c] .swapin_readahead+0x54/0xd4
+>>>> [c00000001e1c7ba0] [c0000000000d47e8] .handle_mm_fault+0x520/0x9d8
+>>>> [c00000001e1c7c80] [c0000000004b5054] .do_page_fault+0x440/0x624
+>>>> [c00000001e1c7e30] [c0000000000053fc] handle_page_fault+0x20/0x5c
+>>>> Mem-info:
+>>>> Node 0 DMA per-cpu:
+>>>> CPU    0: hi:    6, btch:   1 usd:   1
+>>>> CPU    1: hi:    6, btch:   1 usd:   1
+>>>> Node 1 DMA per-cpu:
+>>>> CPU    0: hi:    6, btch:   1 usd:   5
+>>>> CPU    1: hi:    6, btch:   1 usd:   5
+>>>> Active:31 inactive:2628 dirty:1 writeback:6 unstable:0
+>>>> free:156 slab:13071 mapped:548 pagetables:41109 bounce:0
+>>>> Node 0 DMA free:5312kB min:5760kB low:7168kB high:8640kB active:1024kB inactive:768kB present:3928832kB pages_scanned:3912 all_unreclaimable? no
+>>>> lowmem_reserve[]: 0 0 0
+>>>> Node 1 DMA free:4672kB min:4992kB low:6208kB high:7488kB active:960kB inactive:169792kB present:3404992kB pages_scanned:140140 all_unreclaimable? no
+>>>> lowmem_reserve[]: 0 0 0
+>>>> Node 0 DMA: 5*64kB 15*128kB 2*256kB 1*512kB 0*1024kB 1*2048kB 0*4096kB 0*8192kB 0*16384kB = 5312kB
+>>>> Node 1 DMA: 8*64kB 5*128kB 6*256kB 0*512kB 0*1024kB 1*2048kB 0*4096kB 0*8192kB 0*16384kB = 4736kB
+>>>> 8185 total pagecache pages
+>>>> Swap cache: add 29545, delete 21888, find 5602/10373
+>>>> Free swap  = 803712kB
+>>>> Total swap = 2048128kB
+>>>> 114688 pages of RAM
+>>>> 766 reserved pages
+>>>> 231218 pages shared
+>>>> 7657 pages swap cached
+>>>> Out of memory: kill process 15371 (msgctl08) score 39223 or a child
+>>>> Killed process 15373 (msgctl08)
+>>>> INFO: task msgctl08:15385 blocked for more than 120 seconds.
+>>>> "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+>>>> Call Trace:
+>>>> [c0000000e9a43290] [0000000000000001] 0x1 (unreliable)
+>>>> [c0000000e9a43460] [c000000000010acc] .__switch_to+0x128/0x16c
+>>>> [c0000000e9a434f0] [c0000000004b07a4] .schedule+0x7ac/0x890
+>>>> [c0000000e9a435e0] [c0000000004b0d90] .io_schedule+0x7c/0xe8
+>>>> [c0000000e9a43670] [c0000000002d7f44] .get_request_wait+0x15c/0x1e0
+>>>> [c0000000e9a43750] [c0000000002d8950] .__make_request+0x3ec/0x4d8
+>>>> [c0000000e9a43800] [c0000000002d6624] .generic_make_request+0x35c/0x3b0
+>>>> [c0000000e9a438e0] [c0000000002d81b0] .submit_bio+0x118/0x140
+>>>> [c0000000e9a439a0] [c0000000000dfa88] .swap_readpage+0x94/0xb4
+>>>> [c0000000e9a43a20] [c0000000000e02b8] .read_swap_cache_async+0x110/0x160
+>>>> [c0000000e9a43ae0] [c0000000000e035c] .swapin_readahead+0x54/0xd4
+>>>> [c0000000e9a43ba0] [c0000000000d47e8] .handle_mm_fault+0x520/0x9d8
+>>>> [c0000000e9a43c80] [c0000000004b5054] .do_page_fault+0x440/0x624
+>>>> [c0000000e9a43e30] [c0000000000053fc] handle_page_fault+0x20/0x5c
+>>>> INFO: task msgctl08:15405 blocked for more than 120 seconds.
+>>>> "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+>>>> Call Trace:
+>>>> [c0000000b1757290] [0000000000000001] 0x1 (unreliable)
+>>>> [c0000000b1757460] [c000000000010acc] .__switch_to+0x128/0x16c
+>>>> [c0000000b17574f0] [c0000000004b07a4] .schedule+0x7ac/0x890
+>>>> [c0000000b17575e0] [c0000000004b0d90] .io_schedule+0x7c/0xe8
+>>>> [c0000000b1757670] [c0000000002d7f44] .get_request_wait+0x15c/0x1e0
+>>>> [c0000000b1757750] [c0000000002d8950] .__make_request+0x3ec/0x4d8
+>>>> [c0000000b1757800] [c0000000002d6624] .generic_make_request+0x35c/0x3b0
+>>>> [c0000000b17578e0] [c0000000002d81b0] .submit_bio+0x118/0x140
+>>>> [c0000000b17579a0] [c0000000000dfa88] .swap_readpage+0x94/0xb4
+>>>> [c0000000b1757a20] [c0000000000e02b8] .read_swap_cache_async+0x110/0x160
+>>>> [c0000000b1757ae0] [c0000000000e035c] .swapin_readahead+0x54/0xd4
+>>>> [c0000000b1757ba0] [c0000000000d47e8] .handle_mm_fault+0x520/0x9d8
+>>>> [c0000000b1757c80] [c0000000004b5054] .do_page_fault+0x440/0x624
+>>>> [c0000000b1757e30] [c0000000000053fc] handle_page_fault+0x20/0x5c
+>>>> INFO: task msgctl08:15406 blocked for more than 120 seconds.
+>>>> "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+>>>> Call Trace:
+>>>> [c0000000eec53290] [0000000000000001] 0x1 (unreliable)
+>>>> [c0000000eec53460] [c000000000010acc] .__switch_to+0x128/0x16c
+>>>> [c0000000eec534f0] [c0000000004b07a4] .schedule+0x7ac/0x890
+>>>> [c0000000eec535e0] [c0000000004b0d90] .io_schedule+0x7c/0xe8
+>>>> [c0000000eec53670] [c0000000002d7f44] .get_request_wait+0x15c/0x1e0
+>>>> [c0000000eec53750] [c0000000002d8950] .__make_request+0x3ec/0x4d8
+>>>> [c0000000eec53800] [c0000000002d6624] .generic_make_request+0x35c/0x3b0
+>>>> [c0000000eec538e0] [c0000000002d81b0] .submit_bio+0x118/0x140
+>>>> [c0000000eec539a0] [c0000000000dfa88] .swap_readpage+0x94/0xb4
+>>>> [c0000000eec53a20] [c0000000000e02b8] .read_swap_cache_async+0x110/0x160
+>>>> [c0000000eec53ae0] [c0000000000e035c] .swapin_readahead+0x54/0xd4
+>>>> [c0000000eec53ba0] [c0000000000d47e8] .handle_mm_fault+0x520/0x9d8
+>>>> [c0000000eec53c80] [c0000000004b5054] .do_page_fault+0x440/0x624
+>>>> [c0000000eec53e30] [c0000000000053fc] handle_page_fault+0x20/0x5c
 > 
-> Hmm, well, we have arrays for last_guard_val[], spu_info[] as well that
-> are indexed by spu number.  So this would seem to be a more general
-> issue then just spu_ctx_seen[].  Not sure exactly what you are
-> suggesting with passing around 'struct spu' as a solution.  Are you
-> suggesting that a field be added to the structure for the spu context
-> seen flag?  Not sure that is a good idea.  We will need to clarify how
-> you propose to fix this not only for spu_ctx_sw_seen but the other
-> arrays as well that are already being indexed by spu number.
-
-I'd suggest you add fields to struct spu, either directly to it, if
-it's short, or a pointer to your own struct.
-
-As I said, let's not do that now.
-
->                                                 So, you can either add
-> a context switch sequence to a given CPU buffer or you can add an SPU
-> program counter to the CPU buffer not both at the same time.  The lock
-> is held until the entire SPU context switch entry is added to the CPU
-> queue to make sure entries are not intermingled.
-
-My point was that oprofile collecting samples for the CPU could possibly
-add entries to the same queue, which would race with this.
-
-> When the trace buffer is read, each 128 bit entry contains the 16 bit
-> SPU PC for each of the eight SPUs on the node.  Secondly, we really want
-> to keep the timing of the context switches and storing the SPU PC values
-> as close as possible.  Clearly there is some noise as the switch will
-> occur while the trace buffer is filling.
-
-can't you just empty the trace buffer every time you encounter a context
-switch, even in the absence of a timer interrupt? That would prevent
-all of the noise.
-
-> Storing the all of the SPU PC 
-> values, into the current CPU buffer causes two issues.  One is that one
-> of the buffers will be much fuller then the rest increasing the
-> probability of overflowing the CPU buffer and dropping data.  As it is,
-> in user land, I have to increase the size of the CPU buffers to
-> accommodate four SPUs worth of data in a given CPU buffer.  Secondly,
-> the SPU context switch info for a given SPU would be going to a
-> different CPU buffer then the data. 
-
-In practice, the calling CPUs should be well spread around by the way
-that spufs works, so I don't think it's a big problem.
-Did you observe this problem, or just expect it to happen?
-
-> Depending on the timing of the CPU 
-> buffer syncs to the kernel buffer you might get the trace buffer emptied
-> multiple times before an SPU context switch event was sync'd to the
-> kernel buffer. Thus causing undesired additional skew in the data.
-
-good point. would this also get solved if you flush the trace buffer
-on a context switch? I suppose you need to make sure that the samples
-still end up ordered correctly throughout the CPU buffers. Is that
-possible?
-
-> Any thoughts about moving oprofile_add_value() to buffer_sync.c and
-> having it grab the buffer_mutex lock while it inserts values directly
-> into the kernel buffer?  At the moment it looks the easiest.  
-
-That would mean that again you can't call it from interrupt context,
-which is the problem you were trying to solve with the work queue
-in the previous version of your patch.
- 
-> I can see a few other solutions but they involve creating per SPU arrays
-> for initially storing the switch info and SPU data and then having each
-> CPU flush a subset of the SPU data to its CPU buffer.  A lot more
-> storage and overhead we want.
-
-It might work if you do a per SPU buffer and generalize the way
-that per-CPU buffers are flushed to the kernel buffer so it works
-with either one.
-
-> > > +	/* The SPU_PROFILING_CODE escape sequence must proceed
-> > > +	 * the SPU context switch info.
-> > > +	 */
-> > > +	for_each_online_cpu(cpu) {
-> > > +		oprofile_add_value(ESCAPE_CODE, cpu);
-> > > +		oprofile_add_value(SPU_PROFILING_CODE, cpu);
-> > > +		oprofile_add_value((unsigned long int)
-> > > +					    num_spu_nodes, cpu);
-> > > +	}
-> > >  
-> > 
-> > You are no longer holding a lock while adding the events, which
-> > may be correct as long as no switch_events come in, but it's
-> > still inconsistent. Do you mind just adding the spinlock here
-> > as well?
-> > 
+> Kamalesh,
 > 
-> The claim is that the lock is not needed because we have not yet
-> registered for notification of the context switches as mentioned above.
-> Hence there is no race to worry about.  Registration for the switch
-> event notification happens right after this loop.  
+> I'm wondering whether this is not related to a problem found in LTP 
+> after msgmni had been changed from 16 to a computed value.
+> 
+> Does your ltp test suite contain the patch I had sent in thread 
+> http://lkml.org/lkml/2008/2/21/123?
+> 
+> If you want to have a look at it, discussion started in thread 
+> http://lkml.org/lkml/2008/2/16/6
+> 
+> Regards,
+> Nadia
+> 
+Hi Nadia,
+Thanks, I am using the LTP-20080430 and tried it with the 2.6.26-rc2-git4 kernel.
+but the call trace remains the same.
 
-Right, that's what I understood as well. My point was that it's more
-consistent if you always call the function with the same locks held,
-in case somebody changes or tries to understand your code.
- 	
-	Arnd <><
+-- 
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
