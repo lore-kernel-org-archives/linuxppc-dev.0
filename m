@@ -1,19 +1,20 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id B2C0ADDED9
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 May 2008 14:46:54 +1000 (EST)
-Date: Fri, 16 May 2008 14:46:45 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Remi Machet <rmachet@slac.stanford.edu>
-Subject: Re: [PATCH 3/5] powerpc: C2K board driver
-Message-Id: <20080516144645.490114f6.sfr@canb.auug.org.au>
-In-Reply-To: <1210897468.13992.16.camel@pcds-ts102.slac.stanford.edu>
-References: <1210897468.13992.16.camel@pcds-ts102.slac.stanford.edu>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Fri__16_May_2008_14_46_45_+1000_qaba6t8RU1P8iqoY"
-Cc: Linux PPC <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
+Return-Path: <sr@denx.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.179]) by ozlabs.org (Postfix) with ESMTP id A3173DDE0D
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 May 2008 15:03:07 +1000 (EST)
+From: Stefan Roese <sr@denx.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] 4xx: Workaround for CHIP_11 Errata
+Date: Fri, 16 May 2008 06:57:00 +0200
+References: <20080515094346.3338e1f3@zod.rchland.ibm.com>
+	<20080515163104.18f0a613@lappy.seanm.ca>
+	<20080515160734.4e4ea759@zod.rchland.ibm.com>
+In-Reply-To: <20080515160734.4e4ea759@zod.rchland.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200805160657.00300.sr@denx.de>
+Cc: Sean MacLennan <smaclennan@pikatech.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,49 +24,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Fri__16_May_2008_14_46_45_+1000_qaba6t8RU1P8iqoY
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi Remi,
-
-On Thu, 15 May 2008 17:24:28 -0700 Remi Machet <rmachet@slac.stanford.edu> =
-wrote:
+On Thursday 15 May 2008, Josh Boyer wrote:
+> > "Josh Boyer" <jwboyer@linux.vnet.ibm.com> wrote:
+> > > This implements the recommended workaround for this errata for chips
+> > > that use older versions of firmware that do not already handle it.
+> > > The last 4KiB of memory are hidden from the kernel to prevent the
+> > > problem transactions from occurring.
+> >
+> > Do you know which versions of firmware have this problem?
 >
-> +#include <linux/stddef.h>
-> +#include <linux/kernel.h>
-> +#include <linux/delay.h>
-> +#include <linux/interrupt.h>
-> +#include <linux/seq_file.h>
-> +
-> +#include <asm/machdep.h>
-> +#include <asm/prom.h>
-> +#include <asm/system.h>
-> +#include <linux/time.h>
-> +#include <asm/time.h>
-> +#include <linux/kexec.h>
+> Any U-Boot older than 1.3.3-rc1.  Not sure about PIBS, but I don't
+> think the version that is on my Bamboo board has a fix for it.
 
-Normally we don'y mix linux/ and asm/ includes (put all the linux ones at
-the top).
+PIBS will definitely have this problem too. This errata is quite new on 
+440EP/GR.
 
-You need to include <linux/of.h> because you use the device tree accessor
-functions.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Fri__16_May_2008_14_46_45_+1000_qaba6t8RU1P8iqoY
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFILRG9TgG2atn1QN8RAhnRAJ9r+F8Dj4/75b/NgKgal46Oh+Sc/wCeNXSO
-enCrFhEHQq8NewwOrNSX6oU=
-=w4Rr
------END PGP SIGNATURE-----
-
---Signature=_Fri__16_May_2008_14_46_45_+1000_qaba6t8RU1P8iqoY--
+Best regards,
+Stefan
