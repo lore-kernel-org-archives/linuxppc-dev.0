@@ -2,22 +2,17 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 8482BDDE25
-	for <linuxppc-dev@ozlabs.org>; Sun, 18 May 2008 01:00:36 +1000 (EST)
-Message-Id: <EEBAB3F3-A472-41D1-872F-BEF7616CADC3@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id DC7F2DDDFC
+	for <linuxppc-dev@ozlabs.org>; Mon, 19 May 2008 03:52:18 +1000 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id m4IHqD4W031812
+	for <linuxppc-dev@ozlabs.org>; Sun, 18 May 2008 12:52:14 -0500
+Date: Sun, 18 May 2008 12:52:13 -0500 (CDT)
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-In-Reply-To: <20080517125517.46cd43a7.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: [PATCH v3 3/3] [POWERPC] 40x/Book-E: Save/restore volatile
-	exception registers
-Date: Sat, 17 May 2008 10:00:14 -0500
-References: <Pine.LNX.4.64.0805161404410.6286@blarg.am.freescale.net>
-	<Pine.LNX.4.64.0805161406100.6286@blarg.am.freescale.net>
-	<Pine.LNX.4.64.0805161407440.6286@blarg.am.freescale.net>
-	<20080517125517.46cd43a7.sfr@canb.auug.org.au>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+To: linuxppc-dev@ozlabs.org
+Message-ID: <Pine.LNX.4.64.0805181252001.23820@blarg.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,31 +22,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+>From 716532d62cb1bf4087dc90c11b7e361cdcd28db4 Mon Sep 17 00:00:00 2001
+From: Kumar Gala <galak@kernel.crashing.org>
+Date: Fri, 16 May 2008 14:10:03 -0500
+Subject: [PATCH v3] [POWERPC] Add a comment about the Book-e tophys/tovirt macros
 
-On May 16, 2008, at 9:55 PM, Stephen Rothwell wrote:
+The Book-E versions of tophys/tovirt are not simple noops to
+ensure compatibility with their "classic" ppc brethren.
 
-> Hi Kumar,
->
-> On Fri, 16 May 2008 14:08:00 -0500 (CDT) Kumar Gala <galak@kernel.crashing.org 
-> > wrote:
->>
->> +++ b/arch/powerpc/kernel/asm-offsets.c
->> @@ -52,6 +52,15 @@
->> #include <asm/iseries/alpaca.h>
->> #endif
->>
->> +#if defined(CONFIG_BOOKE) || defined(CONFIG_40x)
->> +#include "head_booke.h"
->> +#endif
->> +
->> +#define DEFINE(sym, val) \
->> +	asm volatile("\n->" #sym " %0 " #val : : "i" (val))
->> +
->> +#define BLANK() asm volatile("\n->" : : )
->> +
->
-> Why are these defines here? We already pick them up from kbuild.h ...
+---
 
-thanks, this is a mismerge from some old tree, will clean up.
+Lets try this version based on paul's feedback.
 
-- k
+ include/asm-powerpc/ppc_asm.h |    6 ++++++
+ 1 files changed, 6 insertions(+), 0 deletions(-)
+
+diff --git a/include/asm-powerpc/ppc_asm.h b/include/asm-powerpc/ppc_asm.h
+index 2dbd4e7..5499c13 100644
+--- a/include/asm-powerpc/ppc_asm.h
++++ b/include/asm-powerpc/ppc_asm.h
+@@ -356,6 +356,12 @@ END_FTR_SECTION_IFCLR(CPU_FTR_601)
+ #define toreal(rd)
+ #define fromreal(rd)
+
++/*
++ * We use addis to ensure compatibility with the "classic" ppc versions of
++ * these macros.  use rs = 0 to get the tophys offset in rd, rather than
++ * converting the address in r0, and so this version has to do that too
++ * (i.e. set register rd to 0 when rs == 0)
++ */
+ #define tophys(rd,rs)				\
+ 	addis	rd,rs,0
+
+-- 
+1.5.4.5
