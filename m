@@ -1,22 +1,26 @@
-Return-Path: <g.liakhovetski@gmx.de>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id 92A44DE0FD
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 May 2008 02:30:19 +1000 (EST)
-Date: Mon, 19 May 2008 18:30:38 +0200 (CEST)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Grant Likely <grant.likely@secretlab.ca>
+Return-Path: <garyj@denx.de>
+Received: from mout1.freenet.de (mout1.freenet.de [195.4.92.91])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id D3FC5DDF5D
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 May 2008 03:09:16 +1000 (EST)
+Date: Mon, 19 May 2008 19:09:00 +0200
+From: Gary Jennejohn <garyj@denx.de>
+To: "Grant Likely" <grant.likely@secretlab.ca>
 Subject: Re: [PATCH 3/4] spi: Add OF binding support for SPI busses
+Message-ID: <20080519190900.01ec3b2a@peedub.jennejohn.org>
 In-Reply-To: <fa686aa40805190857u317d3304ie75d11870e109fc5@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0805191811510.29559@axis700.grange>
 References: <20080516193054.28030.35126.stgit@trillian.secretlab.ca>
 	<20080516193613.28030.13950.stgit@trillian.secretlab.ca>
 	<Pine.LNX.4.64.0805191446530.27140@axis700.grange>
 	<fa686aa40805190857u317d3304ie75d11870e109fc5@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Cc: fabrizio.garetto@gmail.com, linux-kernel@vger.kernel.org,
 	linuxppc-dev@ozlabs.org, dbrownell@users.sourceforge.net,
-	spi-devel-general@lists.sourceforge.net
+	spi-devel-general@lists.sourceforge.net,
+	Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Reply-To: gary.jennejohn@freenet.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,7 +30,8 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 19 May 2008, Grant Likely wrote:
+On Mon, 19 May 2008 09:57:21 -0600
+"Grant Likely" <grant.likely@secretlab.ca> wrote:
 
 > On Mon, May 19, 2008 at 7:17 AM, Guennadi Liakhovetski
 > <g.liakhovetski@gmx.de> wrote:
@@ -44,12 +49,7 @@ On Mon, 19 May 2008, Grant Likely wrote:
 > > OF-binding?
 > 
 > Actually, spi devices have *neither*.  :-)  They bind to the SPI bus.
-> Not the platform bus or of_platform bus.
-
-Right, sorry, your SPI bus driver scans the bus device bindings and 
-registers devices on it using spi_of_register_devices().
-
-> But that is Linux internal
+> Not the platform bus or of_platform bus.  But that is Linux internal
 > details; this discussion is about device tree bindings.
 > 
 > Note that I did say that drivers can define additional properties for
@@ -57,42 +57,46 @@ registers devices on it using spi_of_register_devices().
 > encode them into the formal binding.  There is simply just too many
 > different ways to manipulate chip select signals and so I don't feel
 > confident trying to define a *common* binding at this moment in time.
+> At some point in the future when we have a number of examples to
+> choose from then we can extend this binding with chip select related
+> properties.
+> 
+> As for the Linux internals, the 5200 SPI bus driver that I posted
+> exports a function that allows another driver to call in and
+> manipulated the CS lines before the transfer.  It isn't the prettiest
+> solution, but I'm not locked into the approach and that gives some
+> time to consider cleaner interfaces.
+> 
 
-Yes, I understand, that physically there can be many ways SPI chipselects 
-can be controlled. But I thought there could be a generic way to cover 
-them all by defining a separate entry on your SPI bus. Like
+I sort of hesitate to hijack this thread, but since we're discussing SPI
+and chip selects...
 
-+    SPI example for an MPC5200 SPI bus:
-+		spi@f00 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			compatible = "fsl,mpc5200b-spi","fsl,mpc5200-spi";
-+			reg = <0xf00 0x20>;
-+			interrupts = <2 13 0 2 14 0>;
-+			interrupt-parent = <&mpc5200_pic>;
-+			eth-switch-cs@0 {
-+				compatible = "oem,cs-type";
-+			};
-+
-+			ethernet-switch@0 {
-+				compatible = "micrel,ks8995m";
-+				linux,modalias = "ks8995";
-+				max-speed = <1000000>;
-+				reg = <0>;
-+				cs-parent = <&/.../spi@f00/eth-switch-cs@0>;
-+			};
-...
-+		};
+I have a driver for the SPI controller in the 440EPx.  This controller
+is very simple and does not have any internal support for a chip select.
+The controller seems to also be in the 440GR and 440EP, and may be in
+other AMCC CPUs too.
 
-Then whatever method is used to actually switch the CS, a driver should be 
-registered to handle eth-switch-cs@0, providing the required calls. 
-Without such a driver ethernet-switch@0 will not probe successfully. 
-Wouldn't this cover all possible cases? One could even consider actually 
-putting SPI devices on SPI chipselect busses, but that won't look very 
-elegant:-)
+All chip selects must be done using GPIO.  In fact, the board for which
+I developed this driver, a modified sequoia, actually uses 2 chip selects.
 
-Thanks
-Guennadi
+My problem was, and is, that there's no generic GPIO support for powerpc.
+At least, not that I'm aware of.  Please tell me if I'm wrong.
+
+So the driver has great gobs of GPIO code in it, most of which I took
+from u-boot.  The code is pretty generic, but some 440EPx-specific
+stuff may have crept in without my being aware of it.
+
+My real question is - should this code be in a platform-specific file
+such as sequoia.c, which could result in lots of duplicated code, or is
+it better to leave it in the driver for now until some day we hopefully
+get generic GPIO support for powerpc?
+
+I want to get this driver upstream ASAP.
+
 ---
-Guennadi Liakhovetski, Ph.D.
-Freelance Open-Source Software Developer
+Gary Jennejohn
+*********************************************************************
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: +49-8142-66989-0 Fax: +49-8142-66989-80  Email: office@denx.de
+*********************************************************************
