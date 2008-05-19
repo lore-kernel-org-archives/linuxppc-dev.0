@@ -1,20 +1,26 @@
-Return-Path: <runet@innovsys.com>
-Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
-	by ozlabs.org (Postfix) with ESMTP id 165BADDED8
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 May 2008 08:23:02 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: Oops with PREEMPT-RT on 2.6.25.4
-Date: Mon, 19 May 2008 17:23:25 -0500
-Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B0469029A@ismail.innsys.innovsys.com>
-In-Reply-To: <DCEAAC0833DD314AB0B58112AD99B93B04690293@ismail.innsys.innovsys.com>
-References: <DCEAAC0833DD314AB0B58112AD99B93B0469010C@ismail.innsys.innovsys.com>	<4831D527.2020907@freescale.com><DCEAAC0833DD314AB0B58112AD99B93B04690162@ismail.innsys.innovsys.com><4831ECF0.5090101@freescale.com><DCEAAC0833DD314AB0B58112AD99B93B04690239@ismail.innsys.innovsys.com><4831F364.8020702@freescale.com><DCEAAC0833DD314AB0B58112AD99B93B04690276@ismail.innsys.innovsys.com><4831F5F7.9050900@freescale.com>
-	<DCEAAC0833DD314AB0B58112AD99B93B04690293@ismail.innsys.innovsys.com>
-From: "Rune Torgersen" <runet@innovsys.com>
-To: "Scott Wood" <scottwood@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-	linux-ide@vger.kernel.org
+Return-Path: <glppd-linuxppc64-dev@m.gmane.org>
+Received: from ciao.gmane.org (main.gmane.org [80.91.229.2])
+	by ozlabs.org (Postfix) with ESMTP id 483F1DDFB3
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 May 2008 09:00:09 +1000 (EST)
+Received: from root by ciao.gmane.org with local (Exim 4.43)
+	id 1JyEKp-0002cw-2Q
+	for linuxppc-dev@ozlabs.org; Mon, 19 May 2008 23:00:03 +0000
+Received: from dogwood.cspi.com ([192.41.172.172])
+	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
+	id 1AlnuQ-0007hv-00
+	for <linuxppc-dev@ozlabs.org>; Mon, 19 May 2008 23:00:03 +0000
+Received: from ghannon by dogwood.cspi.com with local (Gmexim 0.1 (Debian))
+	id 1AlnuQ-0007hv-00
+	for <linuxppc-dev@ozlabs.org>; Mon, 19 May 2008 23:00:03 +0000
+To: linuxppc-dev@ozlabs.org
+From: Gary Hannon <ghannon@cspi.com>
+Subject: .dtb file for =?utf-8?b?bXBjODY0MV9ocGNu?= failing on recent
+	kernel/u-boot.
+Date: Mon, 19 May 2008 22:57:29 +0000 (UTC)
+Message-ID: <loom.20080519T223903-170@post.gmane.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Sender: news <news@ger.gmane.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,62 +30,79 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Rune Torgersen wrote:> Scott Wood wrote:
-> Of course I then ran headfirst into another one....
-> This one seems to happen when I attempt to read flash through an mtd
-> driver.=20
 
-Both if these is hitting a BUG_ON in kmap_atomic
-(include/asm-powerpc/highmem.h)
+Hi,
 
->=20
-> Oops: Exception in kernel mode, sig: 5 [#1]
-> PREEMPT Innovative Systems ApMax
-> Modules linked in:
-> NIP: c005e780 LR: c005e758 CTR: 00000000
-> REGS: ef2c1d20 TRAP: 0700   Not tainted  (2.6.25.4-rt1)
-> MSR: 00029032 <EE,ME,IR,DR>  CR: 48222482  XER: 20000000
-> TASK =3D ef2a1a90[98] 'S21initenv' THREAD: ef2c0000
-> GPR00: 3ffcf581 ef2c1dd0 ef2a1a90 00000000 c02cae8c 00000002 00000001
-> 3ffcf580 GPR08: 00000000 c0370000 00000000 c037000c 28222484 1009ecc0
-> 00000000 100a5838 GPR16: 10090000 10090000 00000000 00000000 10090000
-> ef2a7100 3ee38385 100955ac GPR24: 00000000 ef2a4ef0 00000000 c27dc700
-> c27dcb80 00000003 ef359040 c0334f88 NIP [c005e780]
-> do_wp_page+0x650/0xc2c=20
-> LR [c005e758] do_wp_page+0x628/0xc2c
-> Call Trace:
-> [ef2c1dd0] [c005e758] do_wp_page+0x628/0xc2c (unreliable)
-> [ef2c1e10] [c0012420] do_page_fault+0x338/0x4b4
-> [ef2c1f40] [c0010120] handle_page_fault+0xc/0x80
-> --- Exception: 301 at 0x100322e0
->     LR =3D 0x100322dc
-> Instruction dump:
-> 409e0594 4810f2e1 3d20c035 1fa3000f 8129b140 3bbd0003 57ab103a
-> 7c0b482e 7d6b4a14 540007fa 30e0ffff 7cc70110 <0f060000> 3d20c035
-> 3d40c035 8129b480 Oops: Exception in kernel mode, sig: 5 [#2]
-> PREEMPT Innovative Systems ApMax
-> Modules linked in:
-> NIP: c005db0c LR: c005dae4 CTR: 00000000
-> REGS: ef29fd00 TRAP: 0700   Tainted: G      D   (2.6.25.4-rt1)
-> MSR: 00029032 <EE,ME,IR,DR>  CR: 48002482  XER: 20000000
-> TASK =3D ef26e070[102] 'sed' THREAD: ef29e000
-> GPR00: 3ee2d581 ef29fdb0 ef26e070 00000000 c02cae8c 00000000 00000001
-> 3ee2d580 GPR08: 00000000 c0370000 00000000 c037000c 00000722 1009ecc0
-> 4802dfa4 4802d878 GPR16: 0014f73c 00000000 00000000 00000003 4802cce0
-> 00000000 00000001 02000000 GPR24: ef3592e0 0ffece1c ef3592e0 ef2a50fc
-> ef2a4df4 00000003 c27dcfe0 c27ff4c0 NIP [c005db0c]
-> __do_fault+0x1e0/0x804=20
-> LR [c005dae4] __do_fault+0x1b8/0x804
-> Call Trace:
-> [ef29fdb0] [c005dae4] __do_fault+0x1b8/0x804 (unreliable)
-> [ef29fe10] [c0012420] do_page_fault+0x338/0x4b4
-> [ef29ff40] [c0010120] handle_page_fault+0xc/0x80
-> --- Exception: 301 at 0x48017b10
->     LR =3D 0x48007ac8
-> Instruction dump:
-> 409e060c 4810ff55 3d20c035 1fa3000f 8129b140 3bbd0003 57ab103a
-> 7c0b482e 7d6b4a14 540007fa 30e0ffff 7cc70110 <0f060000> 3d20c035
-> 3d40c035 8129b480 _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+I'm trying to boot a recent (2.6.25.4) kernel with 
+a recent u-boot (1.3.3) and it's getting stuck very 
+early in the boot.
+
+I'm using
+
+../dtc -I dts -O dtb mpc8641_hpcn.dts > mpc8641_hpcn.dtb
+
+    in arch/powerpc/boot/dts/ to create the .dtb file.
+
+
+=> boot
+Speed: 100, full duplex
+Using eTSEC1 device
+TFTP from server 192.41.172.8; our IP address is 192.41.172.157
+Filename 'pluto.uImage'.
+Load address: 0x1000000
+Loading: #################################################################
+         #################################################################
+         ###############################
+done
+Bytes transferred = 2352548 (23e5a4 hex)
+Speed: 100, full duplex
+Using eTSEC1 device
+TFTP from server 192.41.172.8; our IP address is 192.41.172.157
+Filename 'pluto.dtb'.
+Load address: 0xc00000
+Loading: #
+done
+Bytes transferred = 8722 (2212 hex)
+## Booting kernel from Legacy Image at 01000000 ...
+   Image Name:   Linux-2.6.25.4
+   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+   Data Size:    2352484 Bytes =  2.2 MB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Verifying Checksum ... OK
+   Uncompressing Kernel Image ... OK
+WARNING: adjusting available memory to 10000000
+## Flattened Device Tree blob at 00c00000
+   Booting using the fdt blob at 0xc00000
+   Loading Device Tree to 007fd000, end 007ff211 ... OK
+WARNING: could not create /chosen FDT_ERR_NOSPACE.
+ERROR: /chosen node create failed - must RESET the board to recover.
+
+U-Boot 1.3.3 (May 19 2008 - 15:59:50)
+
+Freescale PowerPC
+CPU:
+    Core: E600 Core 0, Version: 0.2, (0x80040202)
+    System: Unknown, Version: 2.0, (0x80900120)
+    Clocks: CPU:1000 MHz, MPX: 400 MHz, DDR: 200 MHz, LBC:  50 MHz
+    L2: Enabled
+Board: MPC8641HPCN
+
+Results I get when booting are...
+
+.
+.
+.
+Continues in an infinite loop.
+
+I've not changed anything in the kernel or u-boot source.
+
+Do I need to add anything to u-boot's environment?
+Am I using the .dtb file incorrectly?
+Am I missing a flag on the dtc?
+
+Thanks for any pointers,
+
+Gary Hannon
+CSPI
+ghannon@cspi.com
