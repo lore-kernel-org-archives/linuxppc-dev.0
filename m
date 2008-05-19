@@ -1,15 +1,18 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Mon, 19 May 2008 10:57:58 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Remi Machet <rmachet@slac.stanford.edu>, Paul Mackerras <paulus@samba.org>,
-	Linux PPC <linuxppc-dev@ozlabs.org>
-Subject: Re: [PATCH 1/5 v2] powerpc: DTS file for the C2K
-Message-ID: <20080519005758.GC24125@yookeroo.seuss>
-References: <1210966129.14883.1.camel@pcds-ts102.slac.stanford.edu>
-	<20080519005342.GB24125@yookeroo.seuss>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080519005342.GB24125@yookeroo.seuss>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH 2/4 V5] MSI support on 83xx/85xx/86xx board
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Jason Jin <Jason.jin@freescale.com>
+In-Reply-To: <1210931447-16234-2-git-send-email-Jason.jin@freescale.com>
+References: <1210931447-16234-1-git-send-email-Jason.jin@freescale.com>
+	<1210931447-16234-2-git-send-email-Jason.jin@freescale.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-PKAdDnZrN7NWomiFzGas"
+Date: Mon, 19 May 2008 12:08:30 +1000
+Message-Id: <1211162910.7758.2.camel@localhost>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,38 +22,60 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, May 19, 2008 at 10:53:42AM +1000, David Gibson wrote:
-> On Fri, May 16, 2008 at 12:28:48PM -0700, Remi Machet wrote:
-> > Support for the C2K cPCI Single Board Computer from GEFanuc
 
-[snip]
-> [snip]
-> > +		/* Devices attached to the device controller */
-> > +		devicebus {
-> > +			compatible = "marvell,mv64306-devctrl";
-> > +			#address-cells = <1>;
-> > +			#size-cells = <1>;
-> 
-> This looks like it needs either a "reg" or a "ranges" property.  If
-> the address space of this "devicebus" is the same as the parent bus
-> you need an empty "ranges" property.  *No* ranges property means the
-> subordinate devices can't be directly accessed at all from the parent
-> bus.
+--=-PKAdDnZrN7NWomiFzGas
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Oh, one other comment here.  Is this another of these random
-peripheral busses with a bunch of registers controlling which chip
-selects appear at which address offsets and so forth (like ebc on 4xx
-or localbus on freescale)?  If so, the normal convention to describe
-such busses is *not* to have a 1:1 address mapping, but actually
-encode the addresses of the subordinate devices as <chipselect
-offset>, then have an appropriate "ranges" property to map those into
-the addresses on the parent bus (the ranges property can be filled in
-by the bootwrapper from the actual bridge configuration registers, if
-necessary).  The rationale is again to have the device tree describe
-hardware, not configuration as much as possible.
+On Fri, 2008-05-16 at 17:50 +0800, Jason Jin wrote:
+> This MSI driver can be used on 83xx/85xx/86xx board.
+> In this driver, virtual interrupt host and chip were
+> setup. There are 256 MSI interrupts in this host, Every 32
+> MSI interrupts cascaded to one IPIC/MPIC interrupt.
+> The chip was treated as edge sensitive and some necessary
+> functions were setup for this chip.
+>=20
+> Before using the MSI interrupt, PCI/PCIE device need to
+> ask for a MSI interrupt in the 256 MSI interrupts. A 256bit
+> bitmap show which MSI interrupt was used, reserve bit in
+> the bitmap can be used to force the device use some designate
+> MSI interrupt in the 256 MSI interrupts. Sometimes this is useful
+> for testing the all the MSI interrupts. The msi-available-ranges
+> property in the dts file was used for this purpose.
+>=20
+> Signed-off-by: Jason Jin <Jason.jin@freescale.com>
+> ---
+> In the V5 version:
+> Make the msi-availble-ranges optional,
+> remove the match function from the driver,
+> change the compatible according the change in dts.
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Looks good, MSI bits:
+
+Acked-by: Michael Ellerman <michael@ellerman.id.au>
+
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-PKAdDnZrN7NWomiFzGas
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBIMOEedSjSd0sB4dIRAlXZAJ9OeVlNVSnwqe0XKHTPEx3VluE2JQCgsyYO
+B9ruw2uDrSjmNTAu4m+kJeQ=
+=WlVv
+-----END PGP SIGNATURE-----
+
+--=-PKAdDnZrN7NWomiFzGas--
