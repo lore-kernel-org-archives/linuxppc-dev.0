@@ -1,18 +1,35 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH 2/4 V5] MSI support on 83xx/85xx/86xx board
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Jason Jin <Jason.jin@freescale.com>
-In-Reply-To: <1210931447-16234-2-git-send-email-Jason.jin@freescale.com>
-References: <1210931447-16234-1-git-send-email-Jason.jin@freescale.com>
-	<1210931447-16234-2-git-send-email-Jason.jin@freescale.com>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-PKAdDnZrN7NWomiFzGas"
-Date: Mon, 19 May 2008 12:08:30 +1000
-Message-Id: <1211162910.7758.2.camel@localhost>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: michael@ellerman.id.au
+Return-Path: <G.Chen@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 48741DDE06
+	for <linuxppc-dev@ozlabs.org>; Mon, 19 May 2008 13:02:25 +1000 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	m4J32IY1015667
+	for <linuxppc-dev@ozlabs.org>; Sun, 18 May 2008 20:02:19 -0700 (MST)
+Received: from zch01exm21.fsl.freescale.net (zch01exm21.ap.freescale.net
+	[10.192.129.205])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m4J32G5R000223
+	for <linuxppc-dev@ozlabs.org>; Sun, 18 May 2008 22:02:17 -0500 (CDT)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="US-ASCII"
+Subject: RE: [PATCH 3/4] [MMC] mmc_spi: add polling support for the card
+	detectline
+Date: Mon, 19 May 2008 11:02:13 +0800
+Message-ID: <58A20A281BAF1047B4EAE68DE5C0BDC2F16E6A@zch01exm21.fsl.freescale.net>
+In-Reply-To: <20080516165057.GC24196@polina.dev.rtsoft.ru>
+References: <20080516165057.GC24196@polina.dev.rtsoft.ru>
+From: "Chen Gong" <G.Chen@freescale.com>
+To: "Anton Vorontsov" <avorontsov@ru.mvista.com>,
+	"Kumar Gala" <galak@kernel.crashing.org>,
+	"David Brownell" <dbrownell@users.sourceforge.net>,
+	"Pierre Ossman" <drzeus-mmc@drzeus.cx>
+Cc: linuxppc-dev@ozlabs.org, Tabi Timur <timur@freescale.com>,
+	linux-kernel@vger.kernel.org, spi-devel-general@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,59 +40,27 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-PKAdDnZrN7NWomiFzGas
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-On Fri, 2008-05-16 at 17:50 +0800, Jason Jin wrote:
-> This MSI driver can be used on 83xx/85xx/86xx board.
-> In this driver, virtual interrupt host and chip were
-> setup. There are 256 MSI interrupts in this host, Every 32
-> MSI interrupts cascaded to one IPIC/MPIC interrupt.
-> The chip was treated as edge sensitive and some necessary
-> functions were setup for this chip.
+> -----Original Message-----
+> From: linuxppc-dev-bounces+b11801=3Dfreescale.com@ozlabs.org=20
+> [mailto:linuxppc-dev-bounces+b11801=3Dfreescale.com@ozlabs.org]=20
+> On Behalf Of Anton Vorontsov
+> Sent: 2008?5?17? 0:51
+> To: Kumar Gala; David Brownell; Pierre Ossman
+> Cc: linuxppc-dev@ozlabs.org;=20
+> spi-devel-general@lists.sourceforge.net;=20
+> linux-kernel@vger.kernel.org; Tabi Timur
+> Subject: [PATCH 3/4] [MMC] mmc_spi: add polling support for=20
+> the card detectline
 >=20
-> Before using the MSI interrupt, PCI/PCIE device need to
-> ask for a MSI interrupt in the 256 MSI interrupts. A 256bit
-> bitmap show which MSI interrupt was used, reserve bit in
-> the bitmap can be used to force the device use some designate
-> MSI interrupt in the 256 MSI interrupts. Sometimes this is useful
-> for testing the all the MSI interrupts. The msi-available-ranges
-> property in the dts file was used for this purpose.
+> Some boards do not use interrupts on the CD line, so we want=20
+> to poll the CD and see if there was a change. 1 second poll=20
+> interval seems resonable.
 >=20
-> Signed-off-by: Jason Jin <Jason.jin@freescale.com>
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 > ---
-> In the V5 version:
-> Make the msi-availble-ranges optional,
-> remove the match function from the driver,
-> change the compatible according the change in dts.
+>  drivers/mmc/host/mmc_spi.c  |   51=20
 
-Looks good, MSI bits:
-
-Acked-by: Michael Ellerman <michael@ellerman.id.au>
-
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-PKAdDnZrN7NWomiFzGas
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBIMOEedSjSd0sB4dIRAlXZAJ9OeVlNVSnwqe0XKHTPEx3VluE2JQCgsyYO
-B9ruw2uDrSjmNTAu4m+kJeQ=
-=WlVv
------END PGP SIGNATURE-----
-
---=-PKAdDnZrN7NWomiFzGas--
+I want to know whether every card working well ? Because I'm working
+For 83xx MMC-over-SPI support, the presented concrete methods I used as
+you do,
+but only 256M card seems good, 512M or 1G/2G card all have some problems
