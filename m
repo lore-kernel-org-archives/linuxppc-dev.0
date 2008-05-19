@@ -1,18 +1,26 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 48582DDEDF
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 May 2008 03:29:01 +1000 (EST)
-Date: Mon, 19 May 2008 21:28:58 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH] of/gpio: use dynamic base allocation
-Message-ID: <20080519172858.GA21832@polina.dev.rtsoft.ru>
-References: <20080429140524.GA14573@polina.dev.rtsoft.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <20080429140524.GA14573@polina.dev.rtsoft.ru>
-Cc: linuxppc-dev@ozlabs.org, David Miller <davem@davemloft.net>
-Reply-To: avorontsov@ru.mvista.com
+Return-Path: <garyj@denx.de>
+Received: from mout4.freenet.de (mout4.freenet.de [195.4.92.94])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 057C1DDE26
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 May 2008 03:30:17 +1000 (EST)
+Received: from [195.4.92.11] (helo=1.mx.freenet.de)
+	by mout4.freenet.de with esmtpa (ID gary.jennejohn@freenet.de) (port
+	25) (Exim 4.69 #19) id 1Jy9Bb-0003Fi-Je
+	for linuxppc-dev@ozlabs.org; Mon, 19 May 2008 19:30:11 +0200
+Received: from m95a5.m.pppool.de ([89.49.149.165]:37027
+	helo=peedub.jennejohn.org)
+	by 1.mx.freenet.de with esmtpa (ID gary.jennejohn@freenet.de) (port 25)
+	(Exim 4.69 #12) id 1Jy9Bb-0007yE-AW
+	for linuxppc-dev@ozlabs.org; Mon, 19 May 2008 19:30:11 +0200
+Date: Mon, 19 May 2008 19:30:10 +0200
+From: Gary Jennejohn <garyj@denx.de>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] Correct the size of reg in the spi@ entry to 7.
+Message-ID: <20080519193010.56e61532@peedub.jennejohn.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Reply-To: gary.jennejohn@freenet.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,83 +30,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Apr 29, 2008 at 06:05:24PM +0400, Anton Vorontsov wrote:
-> Since gpiolib-dynamic-gpio-number-allocation.patch -mm patch was recently
-> merged into Linus' tree (commit 8d0aab2f16c4fa170f32e7a74a52cd0122bbafef),
-> we can use dynamic GPIO base allocation now.
-> 
-> This, in turn, removes number of gpios per chip constraint.
-> 
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> ---
 
-Paul, could you please apply this for the powerpc-next?
+ This is needed because there is a one byte gap between SR and CDM.
 
-Thanks.
+Signed-off-by: Gary Jennejohn <garyj@denx.de>
+---
+ arch/powerpc/boot/dts/yosemite.dts |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
->  drivers/of/gpio.c |   38 +-------------------------------------
->  1 files changed, 1 insertions(+), 37 deletions(-)
-> 
-> diff --git a/drivers/of/gpio.c b/drivers/of/gpio.c
-> index 000681e..1c9cab8 100644
-> --- a/drivers/of/gpio.c
-> +++ b/drivers/of/gpio.c
-> @@ -137,38 +137,6 @@ int of_gpio_simple_xlate(struct of_gpio_chip *of_gc, struct device_node *np,
->  }
->  EXPORT_SYMBOL(of_gpio_simple_xlate);
->  
-> -/* Should be sufficient for now, later we'll use dynamic bases. */
-> -#if defined(CONFIG_PPC32) || defined(CONFIG_SPARC32)
-> -#define GPIOS_PER_CHIP 32
-> -#else
-> -#define GPIOS_PER_CHIP 64
-> -#endif
-> -
-> -static int of_get_gpiochip_base(struct device_node *np)
-> -{
-> -	struct device_node *gc = NULL;
-> -	int gpiochip_base = 0;
-> -
-> -	while ((gc = of_find_all_nodes(gc))) {
-> -		if (!of_get_property(gc, "gpio-controller", NULL))
-> -			continue;
-> -
-> -		if (gc != np) {
-> -			gpiochip_base += GPIOS_PER_CHIP;
-> -			continue;
-> -		}
-> -
-> -		of_node_put(gc);
-> -
-> -		if (gpiochip_base >= ARCH_NR_GPIOS)
-> -			return -ENOSPC;
-> -
-> -		return gpiochip_base;
-> -	}
-> -
-> -	return -ENOENT;
-> -}
-> -
->  /**
->   * of_mm_gpiochip_add - Add memory mapped GPIO chip (bank)
->   * @np:		device node of the GPIO chip
-> @@ -205,11 +173,7 @@ int of_mm_gpiochip_add(struct device_node *np,
->  	if (!mm_gc->regs)
->  		goto err1;
->  
-> -	gc->base = of_get_gpiochip_base(np);
-> -	if (gc->base < 0) {
-> -		ret = gc->base;
-> -		goto err1;
-> -	}
-> +	gc->base = -1;
->  
->  	if (!of_gc->xlate)
->  		of_gc->xlate = of_gpio_simple_xlate;
-> -- 
-> 1.5.5.1
-
+diff --git a/arch/powerpc/boot/dts/yosemite.dts b/arch/powerpc/boot/dts/yosemite.dts
+index 0d6d332..26ab1f3 100644
+--- a/arch/powerpc/boot/dts/yosemite.dts
++++ b/arch/powerpc/boot/dts/yosemite.dts
+@@ -200,7 +200,7 @@
+ 
+ 			spi@ef600900 {
+ 				compatible = "amcc,spi-440ep";
+-				reg = <ef600900 6>;
++				reg = <ef600900 7>;
+ 				interrupts = <8 4>;
+ 				interrupt-parent = <&UIC0>;
+ 			};
 -- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+1.5.3.6
+
+---
+Gary Jennejohn
+*********************************************************************
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: +49-8142-66989-0 Fax: +49-8142-66989-80  Email: office@denx.de
+*********************************************************************
