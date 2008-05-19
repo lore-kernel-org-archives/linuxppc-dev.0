@@ -1,21 +1,19 @@
-Return-Path: <mike.koss@ngc.com>
-Received: from xmrm0101.northgrum.com (xmrm0101.northgrum.com
-	[155.104.240.104]) by ozlabs.org (Postfix) with ESMTP id 8C7E1DDF50
+Return-Path: <kernelppc@gmail.com>
+Received: from fg-out-1718.google.com (fg-out-1718.google.com [72.14.220.155])
+	by ozlabs.org (Postfix) with ESMTP id 975B7DDF11
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 19 May 2008 23:29:48 +1000 (EST)
+	Tue, 20 May 2008 01:16:03 +1000 (EST)
+Received: by fg-out-1718.google.com with SMTP id d23so1682436fga.39
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 19 May 2008 08:16:01 -0700 (PDT)
+From: "mojtaba" <kernelppc@gmail.com>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: Instruction OCM
+Date: Mon, 19 May 2008 17:17:29 +0200
+Message-ID: <012401c8b9c3$74b947c0$5e2bd740$@com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: arch/powerpc, Xilinx, and mainline kernel support
-Date: Mon, 19 May 2008 08:14:41 -0500
-Message-ID: <EDAE140DF1B2FC42B5867C22CA0B333FFA5C0D@XMBIL132.northgrum.com>
-In-Reply-To: <20080516223422.C02A26B006F@mail34-dub.bigfish.com>
-References: <EDAE140DF1B2FC42B5867C22CA0B333FFA5C0B@XMBIL132.northgrum.com>
-	<fa686aa40805161526ie184ae6m29a3fc78d6676720@mail.gmail.com>
-	<20080516223422.C02A26B006F@mail34-dub.bigfish.com>
-From: "Koss, Mike (Mission Systems)" <mike.koss@ngc.com>
-To: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_0125_01C8B9D4.384217C0"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -26,74 +24,111 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-=20
+This is a multipart message in MIME format.
 
------Original Message-----
-From: Stephen Neuendorffer [mailto:stephen.neuendorffer@xilinx.com]=20
-Sent: Friday, May 16, 2008 6:34 PM
-To: Grant Likely; Koss, Mike (Mission Systems)
-Cc: linuxppc-embedded@ozlabs.org
-Subject: RE: arch/powerpc, Xilinx, and mainline kernel support
+------=_NextPart_000_0125_01C8B9D4.384217C0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+
+Dear all,
+
+I cannot run Linux when I have an instruction OCM in my design but, without
+instruction OCM everything is fine. I tried to do some debugging. It seems
+that the Linux memory management unit has a problem with that.  After
+entering the MMU initialization phase, it suddenly jumps to address
+0x00000700 it get stuck there. Is there anybody who have tried a design with
+instruction OCM? Do I need to do special configuration for the Linux kernel?
 
 
+Regards,
 
-> -----Original Message-----
-> From: linuxppc-embedded-bounces+stephen=3Dneuendorffer.name@ozlabs.org
-[mailto:linuxppc-embedded-
-> bounces+stephen=3Dneuendorffer.name@ozlabs.org] On Behalf Of Grant
-Likely
-> Sent: Friday, May 16, 2008 3:27 PM
-> To: Koss, Mike (Mission Systems)
-> Cc: linuxppc-embedded@ozlabs.org
-> Subject: Re: arch/powerpc, Xilinx, and mainline kernel support
->=20
-> On Fri, May 16, 2008 at 4:06 PM, Koss, Mike (Mission Systems)=20
-> <mike.koss@ngc.com> wrote:
-> > Is there any reason why the mainline 2.6.25.3 (and from what I could
-see .4)
-> > is missing the files to build for the Xilinx Virtex platform?
-> >
-> > Or in other words, I tried to build from 2.6.25.3 for the Xilinx
-Virtex
-> > under arch/powerpc (because arch/ppc actually crashes when once apps
-start
-> > to run) and it failed when trying to actually create the zImage. I
-hopped
-> > over to Xilinx's git server and noticed a bunch of missing entries
-in the
-> > boot/Makefile and source code to actually support the complete image
-build
-> > for a Xilinx Virtex PPC405.
-> >
-> > When is the Xilinx Virtex support going to be mainline official? I
-need to
-> > be able to grab a stable kernel and work from there rather than
-using the
-> > latest -rc that Xilinx is hosting on their git server.
->=20
-> Working on it.  Biggest problem is getting the device drivers in=20
-> shape.  However, other than Ethernet support, current arch/powerpc=20
-> (head of Linus' tree, not 2.6.25) should work for building virtex=20
-> kernels.
+Mojtaba
 
-> Mike,
->=20
-> What is your objection to using what is in the git tree, because it is
-based on=20
-> 24-rc8 and not 25, or something more fundamental?
-> Steve
 
-For the work I'm performing, just like any big distro, I need to be able
-to grab a 'stable' kernel version and work on only patches for it
-instead of just grabbing the next release. Especially with some of the
-rc's of late, there have been some simple headaches introduced. So yes,
-it is because its partially based on a -rc.
+------=_NextPart_000_0125_01C8B9D4.384217C0
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-In simplest terms, I'm getting ready to point-release my product and
-will have a branch for only maintaining that version of the kernel. It's
-to avoid things like what happened with the arch/ppc since I started on
-this ~1 year ago. I needed to rev the kernel from a -rc to a full
-point-release and then the kernel would boot but crash with real apps
-running.
+<html xmlns:v=3D"urn:schemas-microsoft-com:vml" =
+xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
+xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
+xmlns:m=3D"http://schemas.microsoft.com/office/2004/12/omml" =
+xmlns=3D"http://www.w3.org/TR/REC-html40">
 
--- Mike
+<head>
+<meta http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Dus-ascii">
+<meta name=3DGenerator content=3D"Microsoft Word 12 (filtered medium)">
+<style>
+<!--
+ /* Font Definitions */
+ @font-face
+	{font-family:Calibri;
+	panose-1:2 15 5 2 2 2 4 3 2 4;}
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0in;
+	margin-bottom:.0001pt;
+	font-size:11.0pt;
+	font-family:"Calibri","sans-serif";}
+a:link, span.MsoHyperlink
+	{mso-style-priority:99;
+	color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{mso-style-priority:99;
+	color:purple;
+	text-decoration:underline;}
+span.EmailStyle17
+	{mso-style-type:personal-compose;
+	font-family:"Calibri","sans-serif";
+	color:windowtext;}
+.MsoChpDefault
+	{mso-style-type:export-only;}
+@page Section1
+	{size:8.5in 11.0in;
+	margin:1.0in 1.0in 1.0in 1.0in;}
+div.Section1
+	{page:Section1;}
+-->
+</style>
+<!--[if gte mso 9]><xml>
+ <o:shapedefaults v:ext=3D"edit" spidmax=3D"1026" />
+</xml><![endif]--><!--[if gte mso 9]><xml>
+ <o:shapelayout v:ext=3D"edit">
+  <o:idmap v:ext=3D"edit" data=3D"1" />
+ </o:shapelayout></xml><![endif]-->
+</head>
+
+<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
+
+<div class=3DSection1>
+
+<p class=3DMsoNormal>Dear all,<o:p></o:p></p>
+
+<p class=3DMsoNormal>I cannot run Linux when I have an instruction OCM =
+in my design
+but, without instruction OCM everything is fine. I tried to do some =
+debugging.
+It seems that the Linux memory management unit has a problem with that. =
+&nbsp;After
+entering the MMU initialization phase, it suddenly jumps to address =
+0x00000700
+it get stuck there. Is there anybody who have tried a design with =
+instruction
+OCM? Do I need to do special configuration for the Linux kernel? =
+<o:p></o:p></p>
+
+<p class=3DMsoNormal>Regards,<o:p></o:p></p>
+
+<p class=3DMsoNormal>Mojtaba<o:p></o:p></p>
+
+</div>
+
+</body>
+
+</html>
+
+------=_NextPart_000_0125_01C8B9D4.384217C0--
