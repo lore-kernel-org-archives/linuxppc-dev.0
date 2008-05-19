@@ -1,19 +1,12 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 7D716DDED6
-	for <linuxppc-dev@ozlabs.org>; Mon, 19 May 2008 15:09:50 +1000 (EST)
-Date: Sun, 18 May 2008 22:09:44 -0700 (PDT)
-Message-Id: <20080518.220944.147901584.davem@davemloft.net>
-To: galak@kernel.crashing.org
-Subject: Re: [PATCH v2] lmb: Fix compile warning
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <Pine.LNX.4.64.0805182333550.10619@blarg.am.freescale.net>
-References: <1211136296-4572-2-git-send-email-galak@kernel.crashing.org>
-	<20080518.203116.199516667.davem@davemloft.net>
-	<Pine.LNX.4.64.0805182333550.10619@blarg.am.freescale.net>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, linux-kernel@vger.kernel.org
+Return-Path: <dgibson@ozlabs.org>
+Date: Mon, 19 May 2008 16:16:00 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Fix  __set_fixmap() for STRICT_MM_TYPECHECKS
+Message-ID: <20080519061559.GD25453@yookeroo.seuss>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,12 +16,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Kumar Gala <galak@kernel.crashing.org>
-Date: Sun, 18 May 2008 23:34:36 -0500 (CDT)
+__set_fixmap() in pgtable_32.c currently fails to compile if
+STRICT_MM_TYPECHECKS is defined.  This patch fixes it.
 
-> lib/lmb.c: In function 'lmb_dump_all':
-> lib/lmb.c:51: warning: format '%lx' expects type 'long unsigned int', but argument 2 has type 'u64'
-> 
-> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 
-Acked-by: David S. Miller <davem@davemloft.net>
+Index: working-2.6/arch/powerpc/mm/pgtable_32.c
+===================================================================
+--- working-2.6.orig/arch/powerpc/mm/pgtable_32.c	2008-05-19 16:13:02.000000000 +1000
++++ working-2.6/arch/powerpc/mm/pgtable_32.c	2008-05-19 16:13:09.000000000 +1000
+@@ -402,7 +402,7 @@ void __set_fixmap (enum fixed_addresses 
+ 		return;
+ 	}
+ 
+-	map_page(address, phys, flags);
++	map_page(address, phys, pgprot_val(flags));
+ 	fixmaps++;
+ }
+ 
+
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
