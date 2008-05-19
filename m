@@ -1,28 +1,24 @@
-Return-Path: <brking@linux.vnet.ibm.com>
-Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 66B74DE07D
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 May 2008 01:28:05 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e2.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m4JFRw7r008731
-	for <linuxppc-dev@ozlabs.org>; Mon, 19 May 2008 11:27:58 -0400
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m4JFRw8v152772
-	for <linuxppc-dev@ozlabs.org>; Mon, 19 May 2008 11:27:58 -0400
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m4JFRvcU021146
-	for <linuxppc-dev@ozlabs.org>; Mon, 19 May 2008 11:27:58 -0400
-Subject: [PATCH 1/1] ibmvscsi: Non SCSI error status fixup
-To: James.Bottomley@HansenPartnership.com
-From: Brian King <brking@linux.vnet.ibm.com>
-Date: Mon, 19 May 2008 10:27:56 -0500
-Message-Id: <12112108763801-patch-mail.ibm.com>
-Cc: sfr@canb.auug.org.au, linux-scsi@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	anton@samba.org, brking@linux.vnet.ibm.com,
-	rcjenn@linux.vnet.ibm.com, santil@linux.vnet.ibm.com
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.250])
+	by ozlabs.org (Postfix) with ESMTP id ECCFADDFCB
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 May 2008 01:57:23 +1000 (EST)
+Received: by an-out-0708.google.com with SMTP id c34so567564anc.78
+	for <linuxppc-dev@ozlabs.org>; Mon, 19 May 2008 08:57:22 -0700 (PDT)
+Message-ID: <fa686aa40805190857u317d3304ie75d11870e109fc5@mail.gmail.com>
+Date: Mon, 19 May 2008 09:57:21 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Guennadi Liakhovetski" <g.liakhovetski@gmx.de>
+Subject: Re: [PATCH 3/4] spi: Add OF binding support for SPI busses
+In-Reply-To: <Pine.LNX.4.64.0805191446530.27140@axis700.grange>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20080516193054.28030.35126.stgit@trillian.secretlab.ca>
+	<20080516193613.28030.13950.stgit@trillian.secretlab.ca>
+	<Pine.LNX.4.64.0805191446530.27140@axis700.grange>
+Cc: fabrizio.garetto@gmail.com, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, dbrownell@users.sourceforge.net,
+	spi-devel-general@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,42 +28,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Mon, May 19, 2008 at 7:17 AM, Guennadi Liakhovetski
+<g.liakhovetski@gmx.de> wrote:
+> On Fri, 16 May 2008, Grant Likely wrote:
+>
+>> +    However, the binding does not attempt to define the specific method for
+>> +    assigning chip select numbers.  Since SPI chip select configuration is
+>> +    flexible and non-standardized, it is left out of this binding with the
+>> +    assumption that board specific platform code will be used to manage
+>> +    chip selects.  Individual drivers can define additional properties to
+>> +    support describing the chip select layout.
+>
+> Yes, this looks like a problem to me. This means, SPI devices will need
+> two bindings - OF and platform?... Maybe define an spi_chipselect
+> OF-binding?
 
-Some versions of the Virtual I/O Server on Power
-return 0x99 in the non-SCSI error status field as success,
-rather than 0. This fixes the ibmvscsi driver to treat this
-response as success.
+Actually, spi devices have *neither*.  :-)  They bind to the SPI bus.
+Not the platform bus or of_platform bus.  But that is Linux internal
+details; this discussion is about device tree bindings.
 
-Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
----
+Note that I did say that drivers can define additional properties for
+supporting chip select changes as needed.  I'm just not attempting to
+encode them into the formal binding.  There is simply just too many
+different ways to manipulate chip select signals and so I don't feel
+confident trying to define a *common* binding at this moment in time.
+At some point in the future when we have a number of examples to
+choose from then we can extend this binding with chip select related
+properties.
 
- linux-2.6-bjking1/drivers/scsi/ibmvscsi/ibmvscsi.c |    2 +-
- linux-2.6-bjking1/drivers/scsi/ibmvscsi/viosrp.h   |    3 ++-
- 2 files changed, 3 insertions(+), 2 deletions(-)
+As for the Linux internals, the 5200 SPI bus driver that I posted
+exports a function that allows another driver to call in and
+manipulated the CS lines before the transfer.  It isn't the prettiest
+solution, but I'm not locked into the approach and that gives some
+time to consider cleaner interfaces.
 
-diff -puN drivers/scsi/ibmvscsi/viosrp.h~ibmvscsi_non_scsi_status_workaround drivers/scsi/ibmvscsi/viosrp.h
---- linux-2.6/drivers/scsi/ibmvscsi/viosrp.h~ibmvscsi_non_scsi_status_workaround	2008-05-19 10:01:00.000000000 -0500
-+++ linux-2.6-bjking1/drivers/scsi/ibmvscsi/viosrp.h	2008-05-19 10:01:33.000000000 -0500
-@@ -65,7 +65,8 @@ enum viosrp_crq_status {
- 	VIOSRP_VIOLATES_MAX_XFER = 0x2,
- 	VIOSRP_PARTNER_PANIC = 0x3,
- 	VIOSRP_DEVICE_BUSY = 0x8,
--	VIOSRP_ADAPTER_FAIL = 0x10
-+	VIOSRP_ADAPTER_FAIL = 0x10,
-+	VIOSRP_OK2 = 0x99,
- };
- 
- struct viosrp_crq {
-diff -puN drivers/scsi/ibmvscsi/ibmvscsi.c~ibmvscsi_non_scsi_status_workaround drivers/scsi/ibmvscsi/ibmvscsi.c
---- linux-2.6/drivers/scsi/ibmvscsi/ibmvscsi.c~ibmvscsi_non_scsi_status_workaround	2008-05-19 10:01:44.000000000 -0500
-+++ linux-2.6-bjking1/drivers/scsi/ibmvscsi/ibmvscsi.c	2008-05-19 10:02:24.000000000 -0500
-@@ -1348,7 +1348,7 @@ void ibmvscsi_handle_crq(struct viosrp_c
- 
- 	del_timer(&evt_struct->timer);
- 
--	if (crq->status != VIOSRP_OK && evt_struct->cmnd)
-+	if ((crq->status != VIOSRP_OK && crq->status != VIOSRP_OK2) && evt_struct->cmnd)
- 		evt_struct->cmnd->result = DID_ERROR << 16;
- 	if (evt_struct->done)
- 		evt_struct->done(evt_struct);
-_
+Cheers,
+g.
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
