@@ -1,22 +1,24 @@
-Return-Path: <timur@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id CFB25DDEF3
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 May 2008 06:17:47 +1000 (EST)
-Message-ID: <4831E046.6000001@freescale.com>
-Date: Mon, 19 May 2008 15:17:10 -0500
-From: Timur Tabi <timur@freescale.com>
+Return-Path: <gregory.haskins.ml@gmail.com>
+Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.182])
+	by ozlabs.org (Postfix) with ESMTP id 32B86DE247
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 May 2008 05:59:25 +1000 (EST)
+Received: by py-out-1112.google.com with SMTP id z59so1753386pyg.27
+	for <linuxppc-dev@ozlabs.org>; Mon, 19 May 2008 12:59:24 -0700 (PDT)
+Message-ID: <4831DBDC.8000008@gmail.com>
+Date: Mon, 19 May 2008 15:58:20 -0400
+From: Gregory Haskins <gregory.haskins.ml@gmail.com>
 MIME-Version: 1.0
-To: avorontsov@ru.mvista.com
-Subject: Re: [PATCH] CS4270 node is misplaced in the MPC8610 device tree
-References: <1210804193-8908-1-git-send-email-timur@freescale.com>	<4831C4F0.6060000@freescale.com>	<20080519184238.GA17046@polina.dev.rtsoft.ru>
-	<4831D312.2050304@freescale.com>
-In-Reply-To: <4831D312.2050304@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, Kumar Gala <kumar.gala@freescale.com>,
-	Sun York-R58495 <yorksun@freescale.com>
+To: Rune Torgersen <runet@innovsys.com>
+Subject: Re: Oops with PREEMPT-RT on 2.6.25.4
+References: <DCEAAC0833DD314AB0B58112AD99B93B0469010C@ismail.innsys.innovsys.com>
+	<4831D527.2020907@freescale.com>
+	<DCEAAC0833DD314AB0B58112AD99B93B04690162@ismail.innsys.innovsys.com>
+In-Reply-To: <DCEAAC0833DD314AB0B58112AD99B93B04690162@ismail.innsys.innovsys.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
+	linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-ide@vger.kernel.org
+Reply-To: gregory.haskins@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,36 +28,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Timur Tabi wrote:
-> Anton Vorontsov wrote:
+Rune Torgersen wrote:
+> Scott Wood wrote:
+>
+>> You're recursively entering lock_timer_base, which does a
+>> spin_lock_irqsave().  Either interrupts are enabled when they should
+>> not be, or an interrupt was supposed to be threaded that isn't.
 > 
->> Hm... this should be controlled by the PIXIS' BRDCFG0's I2CSPAN and
->> SERSEL bits:
+> Sort of figured. How do I figure out which one, and how to fix it?
+> I've never gotten any -rt patchsets to work on this CPU, and it always
+> seems to be related to the disk driver.
+> I've tried since 2.6.16 ppc.... (2.6.16, 2.6.18 on ppc, 2.6.24 and 25 on
+> powerpc)
 > 
-> Since these pins should not have changed from one kernel version to another, it
-> doesn't explain how my device "jumped" from I2C2 to I2C1.  I'm debugging this now.
+> Even though this is a custom board, I'm pretty sure I can get it to fail
+> on a pq2fads board with the same disk controller.
 
-I found the problem.  Your patch "86xx: mpc8610_hpcd: fix second serial port"
-fixes it.
+Im not sure if LOCKDEP is available for that architecture.  Have you 
+tried it?  Its pretty good at flushing these kinds of issues out 
+(assuming its available).
 
-The original code moved the I2C devices from I2C1 to I2C2.  On R1 boards, the
-default for I2CSPAN was 1 because the chip used on those boards would bridge the
-two buses together if I2CSPAN==1.  On R3 boards, a different chip is used, and
-I2CSPAN==1 means to use I2C2 instead of I2C1.  On R1 boards, the default for
-BRDCFG0 is 0xBD, but on R3 boards it's 0xB8.  So when
-mpc8610hpcd_set_monitor_port() wrote 0xBD to BRDCFG0, it moved the I2C devices
-from I2C1 to I2C2.
-
-I also had a hard time pinpointing this code because
-mpc8610hpcd_set_monitor_port() is called only when the DIU is enabled.  Since I
-don't have anything attached to my DIU port, I don't always enable the DIU.  So
-some of my kernels had DIU support, and some of them didn't!  Those kernels that
-have DIU enabled but not your patch will move the devices to I2C2.  I was
-running one of those kernels when I posted my patch.
-
-So in summary, this patch "CS4270 node is misplaced in the MPC8610 device tree"
-should not be applied.  The I2C devices should stay on I2C1.
-
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+-Greg
