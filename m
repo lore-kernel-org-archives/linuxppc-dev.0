@@ -1,20 +1,22 @@
-Return-Path: <rsc@pengutronix.de>
-Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
-	[83.236.181.26]) by ozlabs.org (Postfix) with ESMTP id B2206DDE02
+Return-Path: <dhlii@dlasys.net>
+Received: from outbound-mail-128.bluehost.com (outbound-mail-128.bluehost.com
+	[67.222.38.28]) by ozlabs.org (Postfix) with SMTP id 8AFFADDDDB
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 18 May 2008 22:21:00 +1000 (EST)
-Date: Sun, 18 May 2008 14:01:04 +0200
-From: Robert Schwebel <r.schwebel@pengutronix.de>
-To: Albrecht =?iso-8859-15?Q?Dre=DF?= <albrecht.dress@arcor.de>
-Subject: Re: MTD on Freescale 5200B - supported?
-Message-ID: <20080518120104.GR13814@pengutronix.de>
-References: <1211044665.4363.0@antares.localdomain>
-	<fa686aa40805171231xa067188y443ddced0ec42030@mail.gmail.com>
-	<1211055124.4363.2@antares.localdomain>
+	Mon, 19 May 2008 13:27:11 +1000 (EST)
+Message-ID: <4830F388.3060709@dlasys.net>
+Date: Sun, 18 May 2008 23:27:04 -0400
+From: "David H. Lynch Jr." <dhlii@dlasys.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-In-Reply-To: <1211055124.4363.2@antares.localdomain>
-Cc: linuxppc-embedded@ozlabs.org
+To: Yoshio Kashiwagi <kashiwagi@co-nss.co.jp>
+Subject: Re: Xilinx PowerPC
+References: <480BA36D.1080000@dlasys.net>	<fa686aa40804201314m27caf4fau72956df9dd5d350d@mail.gmail.com>	<480BA821.2030109@dlasys.net>
+	<fa686aa40804201548o503e9b19p4081cec653a1acd2@mail.gmail.com>	<480BD66B.90001@dlasys.net>
+	<JM200804230904046.2598203@co-nss.co.jp>	<482EFB8F.9090402@dlasys.net>
+	<JV200805181113103.2504562@co-nss.co.jp>
+In-Reply-To: <JV200805181113103.2504562@co-nss.co.jp>
+Content-Type: text/plain; charset=ISO-2022-JP
+Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Reply-To: dhlii@dlasys.net
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -25,21 +27,44 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Sat, May 17, 2008 at 10:12:04PM +0200, Albrecht Dreß wrote:
-> Yes, that information is useful, thanks!  However, actually the answer to my
-> question is that there is no MTD/NAND support in recent Linux kernels, right?
+I am preparing my own version of Yoshio's driver. Since most of my
+changes are re-ordering, renaming, or other items of small consequence,
+I will leave Yoshio as the author - unless he prefers otherwise.
 
-Linux supports MTD.
-Linux supports NAND.
-Linux supports MPC5200B.
-Linux does not support MTD+NAND+MPC5200B
+I hope to have it ready to submit as a patch in a few days.
+If Yoshio is unhappy with any of the changes I have made or chooses to
+submit his original code or some permutation I will withdrawl mine.
 
-It's just a matter of bringing things together on your MPC5200.
+While adding OF checksum offloading, ... would be nice,
+All I am looking to do is get something that can start its way into the
+kernel.
+This driver is working for me - with very light testing so far.
 
-rsc
+If no one else is willing to Shepard something in, then I will try.
+Hints, clues, etc would be very much appreciated.
+I presume that if this driver is acceptable here, the next step would be
+forwarding it to linux-netdev ?
+
+Yoshio Kashiwagi wrote:
+> David-san,
+>
+> This driver must add some corrections, for example, Checksum-offloading
+> is incomplete as you say it. As for me, it is very happy to obtain
+> your cooperation. Let me know if I can be of any work for it.
+>
+> Moreover, although I wrote the xps_ll_temac driver for u-boot of a very 
+> simple single SDMA descriptor, I have not got used and put in the
+> contribution way.
+>
+> Best Regards,
+> Yoshio Kashiwagi - Nissin Systems
+
 -- 
- Dipl.-Ing. Robert Schwebel | http://www.pengutronix.de
- Pengutronix - Linux Solutions for Science and Industry
-   Handelsregister:  Amtsgericht Hildesheim, HRA 2686
-     Hannoversche Str. 2, 31134 Hildesheim, Germany
-   Phone: +49-5121-206917-0 |  Fax: +49-5121-206917-9
+Dave Lynch 					  	    DLA Systems
+Software Development:  				         Embedded Linux
+717.627.3770 	       dhlii@dlasys.net 	  http://www.dlasys.net
+fax: 1.253.369.9244 			           Cell: 1.717.587.7774
+Over 25 years' experience in platforms, languages, and technologies too numerous to list.
+
+"Any intelligent fool can make things bigger and more complex... It takes a touch of genius - and a lot of courage to move in the opposite direction."
+Albert Einstein
