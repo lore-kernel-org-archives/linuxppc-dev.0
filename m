@@ -1,23 +1,32 @@
-Return-Path: <dargaud@lpsc.in2p3.fr>
-Received: from lpsc-mail.in2p3.fr (lpsc-mail.in2p3.fr [134.158.40.8])
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 5BE73DDEC6
-	for <linuxppc-dev@ozlabs.org>; Mon, 19 May 2008 21:56:23 +1000 (EST)
-Received: from LPSC0173W (lpsc0173w.in2p3.fr [134.158.40.173])
-	by lpsc-mail.in2p3.fr (8.13.1/8.13.1/In2p3) with SMTP id m4JBuHGf001300
-	for <linuxppc-dev@ozlabs.org>; Mon, 19 May 2008 13:56:18 +0200
-Message-ID: <040b01c8b9a7$589c3b90$ad289e86@LPSC0173W>
-From: "Guillaume Dargaud" <dargaud@lpsc.in2p3.fr>
-To: <linuxppc-dev@ozlabs.org>
-References: <02f401c8b6a9$b1e062e0$ad289e86@LPSC0173W><20080515183910.6B40A75007E@mail106-va3.bigfish.com>
-	<032c01c8b72d$0555cea0$ad289e86@LPSC0173W>
-	<20080516161713.9DAAD708056@mail93-wa4.bigfish.com>
-Subject: Re: Using GPIO
-Date: Mon, 19 May 2008 13:56:12 +0200
-MIME-Version: 1.0
-Content-Type: text/plain; format=flowed; charset="iso-8859-1";
-	reply-type=original
+	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id F1DA9DDE21
+	for <linuxppc-dev@ozlabs.org>; Mon, 19 May 2008 22:51:23 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m4JCpCAM003158
+	for <linuxppc-dev@ozlabs.org>; Mon, 19 May 2008 08:51:12 -0400
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m4JCpBDC081512
+	for <linuxppc-dev@ozlabs.org>; Mon, 19 May 2008 06:51:11 -0600
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m4JCpBNI016032
+	for <linuxppc-dev@ozlabs.org>; Mon, 19 May 2008 06:51:11 -0600
+Date: Mon, 19 May 2008 07:47:01 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: "Giuseppe Coviello" <cjg@cruxppc.org>
+Subject: Re: [PATCH] Sam440ep support
+Message-ID: <20080519074701.4cb15c86@zod.rchland.ibm.com>
+In-Reply-To: <a265241c0805060937m25921c56o6fb2b132a3f821d6@mail.gmail.com>
+References: <a265241c0805051123h595123edrd46bf65a8099c3c2@mail.gmail.com>
+	<a265241c0805060937m25921c56o6fb2b132a3f821d6@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,58 +36,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Thanks for the answer,
+On Tue, 6 May 2008 18:37:57 +0200
+"Giuseppe Coviello" <cjg@cruxppc.org> wrote:
 
-> Dts files are not used with arch/ppc.
-My question was more general, since arch/ppc will soon (?) disapear...
+> I've prepared another path to add the support for the sam440ep;
+> shortly I've merged arch/powerpc/boot/sam440ep.c in
+> arch/powerpc/boot/cuboot-sam440ep.c; I've inserted the code to make
+> the rtc works directly in arch/powerpc/platforms/44x/sam440ep.c (so
+> there isn't any arch/powerpc/sysdev/sam440ep.c anymore), and I've
+> cutted away the nasty hack (dma-mapping.h and memmalloc.c) to make the
+> sound works.
+> 
+>  arch/powerpc/boot/Makefile                  |    3 +-
+>  arch/powerpc/boot/cuboot-sam440ep.c         |   49 ++
+>  arch/powerpc/boot/dts/sam440ep.dts          |  292 +++++++
+>  arch/powerpc/configs/44x/sam440ep_defconfig | 1192 +++++++++++++++++++++++++++
+>  arch/powerpc/platforms/44x/Kconfig          |    9 +
+>  arch/powerpc/platforms/44x/Makefile         |    1 +
+>  arch/powerpc/platforms/44x/sam440ep.c       |   80 ++
+>  7 files changed, 1625 insertions(+), 1 deletions(-)
 
-> In arch/ppc, the drivers that are in the system depend on the
-> arch/ppc/platforms/4xx/xparameters/xparameters_ml405.h to setup the
-> addresses of the devices and their configuration.
-Yes, and I've taken care to define that.
+Patch looks fine, but you're missing a Signed-off-by line.  Please read
+section 12 of Documentation/SubmittingPatches and add that.
 
-> I looked at the ML405 setup in the git tree and it appears that it would
-> need to be added to arch/ppc/syslib/virtex_devices.c. The platform data
-> in virtex_devices.c must include the GPIO for it to be probed correctly.
-> It should be easy for you to add the data to make it work.
-
-Seems straightforward enough, but when I add the following:
-
-// 0 is LEDS_4BIT, 1 is LEDS_POSITIONS, 2 is PUSH_BUTTONS_POSITION
-#define XPAR_GPIO(num) { \
-    .name = "xilinx_gpio", \
-    .id = num, \
-    .num_resources = 3, \
-    .resource = (struct resource[]) { \
-        { \
-            .start = XPAR_GPIO_##num##_BASEADDR, \
-            .end = XPAR_GPIO_##num##_HIGHADDR, \
-            .flags = IORESOURCE_MEM, \
-        }, \
-        { \
-            .start = XPAR_INTC_0_GPIO_##num##_VEC_ID, \
-            .flags = IORESOURCE_IRQ, \
-        }, \
-    }, \
-}
-[...]
-      /* GPIO instances */
-#if defined(XPAR_GPIO_0_BASEADDR)
-      XPAR_GPIO(0),
-#endif
-#if defined(XPAR_GPIO_1_BASEADDR)
-      XPAR_GPIO(1),
-#endif
-#if defined(XPAR_GPIO_2_BASEADDR)
-      XPAR_GPIO(2),
-#endif
-
-Then the boot stops right after "Uncompressing Linux...done.
-Now booting the kernel"
-
-I've probably overlooked something obvious, but I'm pretty new in putting my 
-greasy fingers on delicate kernel internals...
-In particular I don't know what is this .num_resources value.
--- 
-Guillaume Dargaud
-http://www.gdargaud.net/
+josh
