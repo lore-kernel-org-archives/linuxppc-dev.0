@@ -1,20 +1,22 @@
-Return-Path: <runet@innovsys.com>
-Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
-	by ozlabs.org (Postfix) with ESMTP id EEB02DEAD8
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 May 2008 05:40:48 +1000 (EST)
+Return-Path: <timur@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id CFB25DDEF3
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 May 2008 06:17:47 +1000 (EST)
+Message-ID: <4831E046.6000001@freescale.com>
+Date: Mon, 19 May 2008 15:17:10 -0500
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: Oops with PREEMPT-RT on 2.6.25.4
-Date: Mon, 19 May 2008 14:41:10 -0500
-Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B04690162@ismail.innsys.innovsys.com>
-In-Reply-To: <4831D527.2020907@freescale.com>
-References: <DCEAAC0833DD314AB0B58112AD99B93B0469010C@ismail.innsys.innovsys.com>
-	<4831D527.2020907@freescale.com>
-From: "Rune Torgersen" <runet@innovsys.com>
-To: "Scott Wood" <scottwood@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-	linux-ide@vger.kernel.org
+To: avorontsov@ru.mvista.com
+Subject: Re: [PATCH] CS4270 node is misplaced in the MPC8610 device tree
+References: <1210804193-8908-1-git-send-email-timur@freescale.com>	<4831C4F0.6060000@freescale.com>	<20080519184238.GA17046@polina.dev.rtsoft.ru>
+	<4831D312.2050304@freescale.com>
+In-Reply-To: <4831D312.2050304@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, Kumar Gala <kumar.gala@freescale.com>,
+	Sun York-R58495 <yorksun@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,46 +26,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Scott Wood wrote:
-> Rune Torgersen wrote:
->> Hi
->> I get the following oops when trying to boot a arch/powerpc kernel
->> with preempt-rt installed (v2.6.25.4-rt1)
->> The board is using a Freescale 8280 as the main CPU and a Silicon
->> Image SII3124 SATA controller. The oops seems to happen on
->> fileaccess right after init starts.
-> [snip]
->> NIP [c0249618] rt_spin_lock_slowlock+0x9c/0x200
->> LR [c02495ec] rt_spin_lock_slowlock+0x70/0x200
->> Call Trace:
->> [ef29d600] [c02495ec] rt_spin_lock_slowlock+0x70/0x200 (unreliable)
->> [ef29d670] [c00277d0] lock_timer_base+0x2c/0x64
->> [ef29d690] [c00285e8] del_timer+0x2c/0x78
->> [ef29d6b0] [c019d108] scsi_delete_timer+0x1c/0x3c
->> [ef29d6d0] [c01992d0] scsi_done+0x18/0x4c
->> [ef29d6f0] [c01b19dc] ata_scsi_qc_complete+0x364/0x380
->> [ef29d720] [c01a8708] __ata_qc_complete+0xd8/0xec
->> [ef29d740] [c01b011c] ata_qc_complete_multiple+0xc4/0xec
->> [ef29d760] [c01bcaf4] sil24_interrupt+0x46c/0x52c
->> [ef29d7a0] [c0048954] handle_IRQ_event+0x64/0x100
->> [ef29d7d0] [c0048b30] __do_IRQ+0x140/0x1bc
->> [ef29d7f0] [c00166c4] apmax_int_irq_demux+0x8c/0xb0
->> [ef29d810] [c0006448] do_IRQ+0x68/0xa8
->> [ef29d820] [c0010388] ret_from_except+0x0/0x14
->> --- Exception: 501 at __spin_unlock_irqrestore+0x28/0x4c
->>     LR =3D __spin_unlock_irqrestore+0x20/0x4c
->> [ef29d8f0] [c0249600] rt_spin_lock_slowlock+0x84/0x200
->> [ef29d960] [c00277d0] lock_timer_base+0x2c/0x64
->=20
-> You're recursively entering lock_timer_base, which does a
-> spin_lock_irqsave().  Either interrupts are enabled when they should
-> not be, or an interrupt was supposed to be threaded that isn't.
+Timur Tabi wrote:
+> Anton Vorontsov wrote:
+> 
+>> Hm... this should be controlled by the PIXIS' BRDCFG0's I2CSPAN and
+>> SERSEL bits:
+> 
+> Since these pins should not have changed from one kernel version to another, it
+> doesn't explain how my device "jumped" from I2C2 to I2C1.  I'm debugging this now.
 
-Sort of figured. How do I figure out which one, and how to fix it?
-I've never gotten any -rt patchsets to work on this CPU, and it always
-seems to be related to the disk driver.
-I've tried since 2.6.16 ppc.... (2.6.16, 2.6.18 on ppc, 2.6.24 and 25 on
-powerpc)
+I found the problem.  Your patch "86xx: mpc8610_hpcd: fix second serial port"
+fixes it.
 
-Even though this is a custom board, I'm pretty sure I can get it to fail
-on a pq2fads board with the same disk controller.
+The original code moved the I2C devices from I2C1 to I2C2.  On R1 boards, the
+default for I2CSPAN was 1 because the chip used on those boards would bridge the
+two buses together if I2CSPAN==1.  On R3 boards, a different chip is used, and
+I2CSPAN==1 means to use I2C2 instead of I2C1.  On R1 boards, the default for
+BRDCFG0 is 0xBD, but on R3 boards it's 0xB8.  So when
+mpc8610hpcd_set_monitor_port() wrote 0xBD to BRDCFG0, it moved the I2C devices
+from I2C1 to I2C2.
+
+I also had a hard time pinpointing this code because
+mpc8610hpcd_set_monitor_port() is called only when the DIU is enabled.  Since I
+don't have anything attached to my DIU port, I don't always enable the DIU.  So
+some of my kernels had DIU support, and some of them didn't!  Those kernels that
+have DIU enabled but not your patch will move the devices to I2C2.  I was
+running one of those kernels when I posted my patch.
+
+So in summary, this patch "CS4270 node is misplaced in the MPC8610 device tree"
+should not be applied.  The I2C devices should stay on I2C1.
+
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
