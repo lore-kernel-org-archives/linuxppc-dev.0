@@ -1,31 +1,22 @@
-Return-Path: <Jason.Jin@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 17B10DDF87
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 May 2008 12:26:43 +1000 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
-	m4K2QU6D009050
-	for <linuxppc-dev@ozlabs.org>; Mon, 19 May 2008 19:26:31 -0700 (MST)
-Received: from zch01exm27.fsl.freescale.net (zch01exm27.ap.freescale.net
-	[10.192.129.223])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m4K2QTK0025847
-	for <linuxppc-dev@ozlabs.org>; Mon, 19 May 2008 21:26:30 -0500 (CDT)
-MIME-Version: 1.0
-Subject: RE: [PATCH 2/4 V5] MSI support on 83xx/85xx/86xx board
-Content-Type: text/plain;
-	charset="US-ASCII"
-Date: Tue, 20 May 2008 10:26:28 +0800
-Message-ID: <CC27DED0F8F39E48A7E75FD768688B7A8C1ED3@zch01exm27.fsl.freescale.net>
-In-Reply-To: <1211162910.7758.2.camel@localhost>
-References: <1210931447-16234-1-git-send-email-Jason.jin@freescale.com>
-	<1210931447-16234-2-git-send-email-Jason.jin@freescale.com>
-	<1211162910.7758.2.camel@localhost>
-From: "Jin Zhengxiong" <Jason.Jin@freescale.com>
-To: <michael@ellerman.id.au>
-Cc: linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTPS id EE513DE02C
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 May 2008 12:33:09 +1000 (EST)
+Subject: Re: [patch v2] LMB: Add basic spin locking to lmb
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: David Miller <davem@davemloft.net>
+In-Reply-To: <20080519.192215.193701293.davem@davemloft.net>
+References: <20080515.000203.225783838.davem@davemloft.net>
+	<48321DF9.6060807@am.sony.com> <48322191.6060909@am.sony.com>
+	<20080519.192215.193701293.davem@davemloft.net>
+Content-Type: text/plain
+Date: Mon, 19 May 2008 22:32:58 -0400
+Message-Id: <1211250778.8297.159.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, linux-kernel@vger.kernel.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,50 +26,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
- > -----Original Message-----
-> From: Michael Ellerman [mailto:michael@ellerman.id.au]=20
-> Sent: Monday, May 19, 2008 10:09 AM
-> To: Jin Zhengxiong
-> Cc: galak@kernel.crashing.org; linuxppc-dev@ozlabs.org;=20
-> segher@kernel.crashing.org
-> Subject: Re: [PATCH 2/4 V5] MSI support on 83xx/85xx/86xx board
->=20
-> On Fri, 2008-05-16 at 17:50 +0800, Jason Jin wrote:
-> > This MSI driver can be used on 83xx/85xx/86xx board.
-> > In this driver, virtual interrupt host and chip were setup.=20
-> There are=20
-> > 256 MSI interrupts in this host, Every 32 MSI interrupts=20
-> cascaded to=20
-> > one IPIC/MPIC interrupt.
-> > The chip was treated as edge sensitive and some necessary functions=20
-> > were setup for this chip.
-> >=20
-> > Before using the MSI interrupt, PCI/PCIE device need to ask=20
-> for a MSI=20
-> > interrupt in the 256 MSI interrupts. A 256bit bitmap show which MSI=20
-> > interrupt was used, reserve bit in the bitmap can be used=20
-> to force the=20
-> > device use some designate MSI interrupt in the 256 MSI interrupts.=20
-> > Sometimes this is useful for testing the all the MSI=20
-> interrupts. The=20
-> > msi-available-ranges property in the dts file was used for this=20
-> > purpose.
-> >=20
-> > Signed-off-by: Jason Jin <Jason.jin@freescale.com>
+
+On Mon, 2008-05-19 at 19:22 -0700, David Miller wrote:
+> From: Geoff Levand <geoffrey.levand@am.sony.com>
+> Date: Mon, 19 May 2008 17:55:45 -0700
+> 
+> > Add a spinlock to struct lmb to enforce concurrency in
+> > lmb_add(), lmb_remove(), lmb_analyze(), lmb_find(), and
+> > lmb_dump_all().
+> > 
+> > This locking is needed for SMP systems that access the lmb structure
+> > during hot memory add and remove operations after secondary cpus
+> > have been started.
+> > 
+> > Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 > > ---
-> > In the V5 version:
-> > Make the msi-availble-ranges optional, remove the match=20
-> function from=20
-> > the driver, change the compatible according the change in dts.
->=20
-> Looks good, MSI bits:
->=20
-> Acked-by: Michael Ellerman <michael@ellerman.id.au>
->=20
-> cheers
+> > 
+> > v2: o Add locking to lmb_find().
+> 
+> I'm not against this patch, but I'm pretty sure it's not
+> necessary.  Isn't memory hotplug already synchronized at
+> a higher level?
+> 
+> If not, it should be.
 
-Thanks, Michael.
+I think the core memory hotplug is... However, we used to not change the
+LMB when doing so (afaik, I'm travelling and not looking at the code
+right now). However, things like PS3 memory hotplug tries to keep LMB is
+sync for the sake of /dev/mem or similar and that happens before the
+memory is added to the core.
 
-Kumar, Could you please apply the MSI related patches. Thanks
-
-Jason=20
+Ben.
