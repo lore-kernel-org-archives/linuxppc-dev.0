@@ -1,24 +1,13 @@
-Return-Path: <phdm@macqel.be>
-Received: from mail.macqel.be (mail.macqel.be [194.78.208.39])
-	by ozlabs.org (Postfix) with ESMTP id 2B668DDF26
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 May 2008 20:58:55 +1000 (EST)
-Received: from localhost (localhost [127.0.0.1])
-	by mail.macqel.be (Postfix) with ESMTP id 51C5B150E37
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 May 2008 12:58:48 +0200 (CEST)
-Received: from mail.macqel.be ([127.0.0.1])
-	by localhost (mail.macqel.be [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 7-HRBK7HAuTG for <linuxppc-dev@ozlabs.org>;
-	Tue, 20 May 2008 12:58:45 +0200 (CEST)
-Received: from frolo.macqel.be (frolo.macqel [10.1.40.73])
-	by mail.macqel.be (Postfix) with ESMTP id 8ABB7150E64
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 May 2008 12:58:45 +0200 (CEST)
-Date: Tue, 20 May 2008 12:58:44 +0200
-From: Philippe De Muyter <phdm@macqel.be>
-To: linuxppc-dev@ozlabs.org
-Subject: ppc -> powerpc : where is 11 min rtc update gone ?
-Message-ID: <20080520105844.GA694@frolo.macqel>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Message-ID: <18482.45251.452257.145098@cargo.ozlabs.ibm.com>
+Date: Tue, 20 May 2008 21:06:43 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [git pull] Please pull powerpc.git merge branch
+Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,25 +17,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi everybody,
+Linus,
 
-I have a ARCH=powerpc linux-2.6.25-rc6 linux running with an i2c rtc chip,
-and synchronized to a ntp server.
+Please pull from the 'merge' branch of
 
-I noticed that my rtc chip does not get updated by the kernel, just like
-it would be on all other architectures (included ppc).
+git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
 
-Looking at the differences between ./arch/powerpc/kernel/time.c and
-./arch/ppc/kernel/time.c, I see that 
+to get a collection of small fixes and a defconfig update for
+powerpc, plus an update to MAINTAINERS for the Cell port.
 
-		/*
-		 * update the rtc when needed ...
+Thanks,
+Paul.
 
-code segement has disappeared
-		
-Is it expected to be done somewhere else (where ?) or is there another
-good reason for this removal ?
+ MAINTAINERS                            |   23 ++-
+ arch/powerpc/boot/.gitignore           |    8 -
+ arch/powerpc/boot/Makefile             |    6 +
+ arch/powerpc/boot/dts/mpc8377_mds.dts  |   18 ++
+ arch/powerpc/configs/chrp32_defconfig  |  164 +++++++++++++---------
+ arch/powerpc/configs/g5_defconfig      |  226 +++++++++++++++----------------
+ arch/powerpc/configs/iseries_defconfig |  146 +++++++++++++-------
+ arch/powerpc/configs/pmac32_defconfig  |  174 +++++++++++++++---------
+ arch/powerpc/configs/ppc64_defconfig   |  236 +++++++++++++++-----------------
+ arch/powerpc/configs/pseries_defconfig |  224 +++++++++++++++---------------
+ arch/powerpc/mm/hash_low_32.S          |    2 
+ lib/lmb.c                              |    3 
+ 12 files changed, 675 insertions(+), 555 deletions(-)
 
-Kind regards
+Adrian Bunk (1):
+      [POWERPC] powerpc/mm/hash_low_32.S: Remove CVS keyword
 
-Philippe
+Arnd Bergmann (1):
+      [POWERPC] Update Cell MAINTAINERS entry, add spufs entry
+
+Kumar Gala (4):
+      lmb: Fix compile warning
+      [POWERPC] Remove generated files on make clean
+      [POWERPC] Update arch/powerpc/boot/.gitignore
+      [POWERPC] Fix mpc8377_mds.dts DMA nodes to match spec
+
+Paul Mackerras (1):
+      [POWERPC] Update defconfigs for desktop/server systems
