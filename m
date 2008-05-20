@@ -1,12 +1,13 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Tue, 20 May 2008 16:33:25 +1000
+Date: Tue, 20 May 2008 17:19:11 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
-To: Jon Loeliger <jdl@freescale.com>
-Subject: libfdt: Seval cleanups to parameter checking (v2)
-Message-ID: <20080520063325.GQ22279@yookeroo.seuss>
+To: Jon Loeliger <jdl@freescale.com>, linuxppc-dev@ozlabs.org
+Subject: libfdt: Seval cleanups to parameter checking (v3)
+Message-ID: <20080520071911.GR22279@yookeroo.seuss>
+References: <20080520063325.GQ22279@yookeroo.seuss>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org
+In-Reply-To: <20080520063325.GQ22279@yookeroo.seuss>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,15 +40,18 @@ Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 ---
  libfdt/fdt.c             |   17 ++++++++++++-----
  libfdt/fdt_ro.c          |   26 ++++++++------------------
- libfdt/fdt_rw.c          |   23 ++++++++---------------
+ libfdt/fdt_rw.c          |   24 ++++++++----------------
  libfdt/fdt_sw.c          |   31 +++++++++++++++----------------
  libfdt/libfdt_internal.h |    1 +
- 5 files changed, 44 insertions(+), 54 deletions(-)
+ 5 files changed, 44 insertions(+), 55 deletions(-)
+
+
+Gah!  Dammit, missed a warning in the last version.  Third time lucky?
 
 Index: dtc/libfdt/fdt.c
 ===================================================================
---- dtc.orig/libfdt/fdt.c	2008-03-24 13:04:47.000000000 +1100
-+++ dtc/libfdt/fdt.c	2008-05-20 15:54:41.000000000 +1000
+--- dtc.orig/libfdt/fdt.c	2008-05-20 16:32:11.000000000 +1000
++++ dtc/libfdt/fdt.c	2008-05-20 17:07:58.000000000 +1000
 @@ -129,16 +129,23 @@ uint32_t fdt_next_tag(const void *fdt, i
  	return tag;
  }
@@ -79,8 +83,8 @@ Index: dtc/libfdt/fdt.c
  		offset = nextoffset;
 Index: dtc/libfdt/libfdt_internal.h
 ===================================================================
---- dtc.orig/libfdt/libfdt_internal.h	2008-03-24 13:04:47.000000000 +1100
-+++ dtc/libfdt/libfdt_internal.h	2008-05-20 15:46:41.000000000 +1000
+--- dtc.orig/libfdt/libfdt_internal.h	2008-05-20 16:32:11.000000000 +1000
++++ dtc/libfdt/libfdt_internal.h	2008-05-20 16:32:24.000000000 +1000
 @@ -66,6 +66,7 @@
  	}
  
@@ -91,8 +95,8 @@ Index: dtc/libfdt/libfdt_internal.h
  
 Index: dtc/libfdt/fdt_ro.c
 ===================================================================
---- dtc.orig/libfdt/fdt_ro.c	2008-03-24 13:04:47.000000000 +1100
-+++ dtc/libfdt/fdt_ro.c	2008-05-20 16:01:09.000000000 +1000
+--- dtc.orig/libfdt/fdt_ro.c	2008-05-20 16:32:11.000000000 +1000
++++ dtc/libfdt/fdt_ro.c	2008-05-20 17:07:58.000000000 +1000
 @@ -157,16 +157,12 @@ int fdt_path_offset(const void *fdt, con
  
  const char *fdt_get_name(const void *fdt, int nodeoffset, int *len)
@@ -138,8 +142,8 @@ Index: dtc/libfdt/fdt_ro.c
  
 Index: dtc/libfdt/fdt_rw.c
 ===================================================================
---- dtc.orig/libfdt/fdt_rw.c	2008-05-20 16:03:11.000000000 +1000
-+++ dtc/libfdt/fdt_rw.c	2008-05-20 16:13:32.000000000 +1000
+--- dtc.orig/libfdt/fdt_rw.c	2008-05-20 16:32:11.000000000 +1000
++++ dtc/libfdt/fdt_rw.c	2008-05-20 17:17:35.000000000 +1000
 @@ -172,8 +172,7 @@ int fdt_add_mem_rsv(void *fdt, uint64_t 
  	struct fdt_reserve_entry *re;
  	int err;
@@ -199,9 +203,11 @@ Index: dtc/libfdt/fdt_rw.c
  
  	err = _resize_property(fdt, nodeoffset, name, len, &prop);
  	if (err == -FDT_ERR_NOTFOUND)
-@@ -454,9 +449,7 @@ int fdt_pack(void *fdt)
+@@ -452,11 +447,8 @@ int fdt_open_into(const void *fdt, void 
+ int fdt_pack(void *fdt)
+ {
  	int mem_rsv_size;
- 	int err;
+-	int err;
  
 -	err = rw_check_header(fdt);
 -	if (err)
@@ -212,8 +218,8 @@ Index: dtc/libfdt/fdt_rw.c
  		* sizeof(struct fdt_reserve_entry);
 Index: dtc/libfdt/fdt_sw.c
 ===================================================================
---- dtc.orig/libfdt/fdt_sw.c	2008-05-20 16:27:48.000000000 +1000
-+++ dtc/libfdt/fdt_sw.c	2008-05-20 16:30:54.000000000 +1000
+--- dtc.orig/libfdt/fdt_sw.c	2008-05-20 16:32:11.000000000 +1000
++++ dtc/libfdt/fdt_sw.c	2008-05-20 17:07:58.000000000 +1000
 @@ -55,13 +55,21 @@
  
  #include "libfdt_internal.h"
