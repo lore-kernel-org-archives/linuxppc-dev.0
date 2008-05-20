@@ -1,17 +1,26 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Tue, 20 May 2008 15:10:54 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 0/4] minor fixes for 2.6.26
-Message-ID: <20080520051054.GN22279@yookeroo.seuss>
-References: <1211136296-4572-1-git-send-email-galak@kernel.crashing.org>
-	<0B367446-4628-4633-BF66-A0007BD9A98B@kernel.crashing.org>
-	<18482.2082.900892.368978@cargo.ozlabs.ibm.com>
-	<119050FE-2BF4-4A45-8723-7A08EF38B290@kernel.crashing.org>
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.247])
+	by ozlabs.org (Postfix) with ESMTP id E5299DE039
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 May 2008 15:13:50 +1000 (EST)
+Received: by an-out-0708.google.com with SMTP id c34so644215anc.78
+	for <linuxppc-dev@ozlabs.org>; Mon, 19 May 2008 22:13:48 -0700 (PDT)
+Message-ID: <fa686aa40805192213y485c4ba2u750748f8201e0377@mail.gmail.com>
+Date: Mon, 19 May 2008 23:13:48 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Guennadi Liakhovetski" <g.liakhovetski@gmx.de>
+Subject: Re: [PATCH 3/4] spi: Add OF binding support for SPI busses
+In-Reply-To: <Pine.LNX.4.64.0805191811510.29559@axis700.grange>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <119050FE-2BF4-4A45-8723-7A08EF38B290@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20080516193054.28030.35126.stgit@trillian.secretlab.ca>
+	<20080516193613.28030.13950.stgit@trillian.secretlab.ca>
+	<Pine.LNX.4.64.0805191446530.27140@axis700.grange>
+	<fa686aa40805190857u317d3304ie75d11870e109fc5@mail.gmail.com>
+	<Pine.LNX.4.64.0805191811510.29559@axis700.grange>
+Cc: fabrizio.garetto@gmail.com, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, dbrownell@users.sourceforge.net,
+	spi-devel-general@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,32 +30,112 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, May 19, 2008 at 11:52:31PM -0500, Kumar Gala wrote:
->
-> On May 19, 2008, at 6:07 PM, Paul Mackerras wrote:
->
->> Kumar Gala writes:
+On Mon, May 19, 2008 at 10:30 AM, Guennadi Liakhovetski
+<g.liakhovetski@gmx.de> wrote:
+> On Mon, 19 May 2008, Grant Likely wrote:
+>> But that is Linux internal
+>> details; this discussion is about device tree bindings.
 >>
->>>> Kumar Gala (4):
->>>>     lmb: Fix compile warning
->>>>     [POWERPC] Remove generated files on make clean
->>
->> I think that adding zImage.* to clean-files is a bad idea, because we
->> have zImage.lds.S, zImage.coff.lds.S and zImage.ps3.lds.S in
->> arch/powerpc/boot that we don't want deleted.  It would be OK for
->> compiling with a separate object directory but would be bad for
->> compiling in the source directory.
+>> Note that I did say that drivers can define additional properties for
+>> supporting chip select changes as needed.  I'm just not attempting to
+>> encode them into the formal binding.  There is simply just too many
+>> different ways to manipulate chip select signals and so I don't feel
+>> confident trying to define a *common* binding at this moment in time.
 >
-> We already had them in clean-files:
+> Yes, I understand, that physically there can be many ways SPI chipselects
+> can be controlled. But I thought there could be a generic way to cover
+> them all by defining a separate entry on your SPI bus. Like
 >
-> clean-files := $(zlib) $(zlibheader) $(zliblinuxheader) \
->                 empty.c zImage zImage.coff.lds zImage.ps3.lds zImage.lds
+> +    SPI example for an MPC5200 SPI bus:
+> +               spi@f00 {
+> +                       #address-cells = <1>;
+> +                       #size-cells = <0>;
+> +                       compatible = "fsl,mpc5200b-spi","fsl,mpc5200-spi";
+> +                       reg = <0xf00 0x20>;
+> +                       interrupts = <2 13 0 2 14 0>;
+> +                       interrupt-parent = <&mpc5200_pic>;
+> +                       eth-switch-cs@0 {
+> +                               compatible = "oem,cs-type";
+> +                       };
+> +
+> +                       ethernet-switch@0 {
+> +                               compatible = "micrel,ks8995m";
+> +                               linux,modalias = "ks8995";
+> +                               max-speed = <1000000>;
+> +                               reg = <0>;
+> +                               cs-parent = <&/.../spi@f00/eth-switch-cs@0>;
+> +                       };
+> ...
+> +               };
+>
+> Then whatever method is used to actually switch the CS, a driver should be
+> registered to handle eth-switch-cs@0, providing the required calls.
+> Without such a driver ethernet-switch@0 will not probe successfully.
+> Wouldn't this cover all possible cases? One could even consider actually
+> putting SPI devices on SPI chipselect busses, but that won't look very
+> elegant:-)
 
-Not quite.  Those are the zImage.lds files, Paul is talking about the
-zImage.lds.S files from which the former are generated.
+Hurrmmmm...
+
+I'm not so fond of this approach.  cs-parent doesn't seem to make much
+sense to me.  It might be better to have a cs-handler property on the
+SPI bus node instead of on the SPI slave nodes, but even then it
+leaves a number of questions about what it really means.  In some
+cases it would be overkill.  For example, if the SPI node simply had
+multiple GPIO lines then an extra cs-parent node wouldn't be needed at
+all.  Then there are the complex arrangements.  When setting CS
+requires inserting a special 'set cs' SPI message at the right time.
+Or worse; when setting CS requires /modifying/ the sent SPI message.
+Essentially, the binding would need to describe the ability to
+completely intercept and rewrite all SPI messages going through the CS
+scheme.
+
+I'm not saying it's not possible to do, but I am saying that I'd like
+to have a better feel for all the use cases before it is defined.  I'm
+not convinced that adding a cs-parent phandle will do that
+appropriately.  That being said, my gut feel is that the solution will
+be to support spi-bridge nodes that handle the complex CS
+configuration settings; the spi-bridge would be a child of the
+spi-master and the parent of the spi devices; and simple CS settings
+being handled with regular old GPIO bindings.  (Much like the last
+suggestion you make; except that I think that it *does* looks
+elegant.)  :-)
+
+example; here's an SPI bus that has 2 GPIOs for two bus CS lines and
+an SPI bridge that uses both CSes; one address for accessing the
+bridge's CS register and one CS to access the downstream devices.
+
++    SPI example for an MPC5200 SPI bus:
++               spi@f00 {
++                   #address-cells = <1>;
++                   #size-cells = <0>;
++                   compatible = "fsl,mpc5200b-spi","fsl,mpc5200-spi";
++                   reg = <0xf00 0x20>;
++                   interrupts = <2 13 0 2 14 0>;
++                   interrupt-parent = <&mpc5200_pic>;
++                   gpios = <&gpio1 0 0 &gpio1 1 0>;
++                   spi-bridge@0 {
++                       compatible = "oem,spi-bridge-type";
++                       reg = < 0 1 >;  // note: 2 SPI CS addresses;
+first one to access bridge registers
++
++                       ethernet-switch@0 {
++                           compatible = "micrel,ks8995m";
++                           linux,modalias = "ks8995";
++                           max-speed = <1000000>;
++                           reg = <0>;
++                       };
+...                     // and more SPI child nodes here...
++                   };
++               };
+
+But even this doesn't reflect the hardware layout well.  What if the
+SS lines are on SPI GPIO expanders on the same bus?  Then does it make
+sense for them to be layed out as spi bridges?
+
+Cheers,
+g.
 
 -- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
