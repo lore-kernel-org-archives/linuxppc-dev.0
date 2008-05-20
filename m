@@ -1,14 +1,17 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Tue, 20 May 2008 11:13:04 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Remi Machet <rmachet@slac.stanford.edu>
-Subject: Re: [PATCH 1/5 v3] powerpc: DTS file for the C2K
-Message-ID: <20080520011304.GG22279@yookeroo.seuss>
-References: <1211241624.19212.29.camel@pcds-ts102.slac.stanford.edu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1211241624.19212.29.camel@pcds-ts102.slac.stanford.edu>
-Cc: Linux PPC <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
+Return-Path: <segher@kernel.crashing.org>
+In-Reply-To: <20080520005401.GD22279@yookeroo.seuss>
+References: <1211136296-4572-1-git-send-email-galak@kernel.crashing.org>
+	<0B367446-4628-4633-BF66-A0007BD9A98B@kernel.crashing.org>
+	<18482.2082.900892.368978@cargo.ozlabs.ibm.com>
+	<20080520005401.GD22279@yookeroo.seuss>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <ec2c238ae4182d7546da3519fbf90158@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 0/4] minor fixes for 2.6.26
+Date: Tue, 20 May 2008 04:03:47 +0200
+To: David Gibson <david@gibson.dropbear.id.au>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,53 +21,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, May 19, 2008 at 05:00:23PM -0700, Remi Machet wrote:
-> Support for the C2K cPCI Single Board Computer from GEFanuc
-> (PowerPC MPC7448 with a Marvell MV64460 chipset)
-> All features of the board are not supported yet, but the board
-> boots, flash works, all Ethernet ports are working and PCI 
-> devices are all found (USB and SATA on PCI1 do not work yet).
-> 
-> Part 1 of 5: DTS file describing the board peripherals. As far as I know
-> all peripherals except the FPGA are listed in there (I did not included
-> the FPGA because a lot of work is needed there).
+>> I think that adding zImage.* to clean-files is a bad idea, because we
+>> have zImage.lds.S, zImage.coff.lds.S and zImage.ps3.lds.S in
+>> arch/powerpc/boot that we don't want deleted.  It would be OK for
+>> compiling with a separate object directory but would be bad for
+>> compiling in the source directory.
+>
+> Arguably this suggests we should rename either the lds files or the
+> zImages so that we *can* get a pattern to match.
 
-[snip]
-> +		ethernet-group@2000 {
-> +			#address-cells = <1>;
-> +			#size-cells = <0>;
-> +			compatible = "marvell,mv64360-eth-group";
-> +			reg = <0x2000 0x2000>;
-> +			PHY0: ethernet-phy@0 {
-> +				device_type = "ethernet-phy";
-> +				interrupts = <76>;	/* GPP 12 */
-> +				interrupt-parent = <&PIC>;
-> +				reg = <0>;
-> +			};
-> +			ethernet@0 {
-> +				device_type = "network";
-> +				compatible = "marvell,mv64360-eth";
-> +				reg = <0>;
-> +				interrupts = <32>;
-> +				interrupt-parent = <&PIC>;
-> +				phy = <&PHY0>;
-> +				local-mac-address = [ 00 00 00 00 00 00 ];
-> +			};
+Not really.  Just define a $(ALL_ZIMAGES) var and use that everywhere.
+I would be pretty upset if "make clean" decided to delete my 
+zImage.backup,
+etc.
 
-Not sure if this is new, or I just didn't notice it before.  Also not
-sure if this is your mistake, or a mistake in the binding for the
-marvell device here.
 
-The address in "reg" should be unique within the bus the device
-appears on.  So having both the PHY and the MAC devices with the same
-"reg" and same unit address here is bad.
-
-Having both the PHYs and the MACs as children of the ethernet-group
-node is possible, but the addresses must be encoded to distinguish
-them (e.g. MACs are 0x0, 0x1, 0x2, PHYS are 0x1000 0x1001 0x1002).
-
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Segher
