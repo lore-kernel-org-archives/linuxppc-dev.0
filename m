@@ -1,22 +1,19 @@
-Return-Path: <schwab@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id D33D9DDF30
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 May 2008 08:47:28 +1000 (EST)
-From: Andreas Schwab <schwab@suse.de>
-To: Trent Piepho <tpiepho@freescale.com>
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net (unknown [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id C5264DDF03
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 May 2008 08:53:32 +1000 (EST)
+Date: Tue, 20 May 2008 15:53:26 -0700 (PDT)
+Message-Id: <20080520.155326.195407196.davem@davemloft.net>
+To: scottwood@freescale.com
 Subject: Re: [PATCH] [POWERPC] Improve (in|out)_beXX() asm code
-References: <1211316025-29069-1-git-send-email-tpiepho@freescale.com>
-	<jeiqx83ab0.fsf@sykes.suse.de>
-	<Pine.LNX.4.64.0805201502000.7453@t2.domain.actdsltmp>
-Date: Wed, 21 May 2008 00:47:23 +0200
-In-Reply-To: <Pine.LNX.4.64.0805201502000.7453@t2.domain.actdsltmp> (Trent
-	Piepho's message of "Tue, 20 May 2008 15:11:02 -0700 (PDT)")
-Message-ID: <jeabik385g.fsf@sykes.suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <4833542E.3040608@freescale.com>
+References: <4833524C.3040207@freescale.com>
+	<20080520.153947.84346222.davem@davemloft.net>
+	<4833542E.3040608@freescale.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, tpiepho@freescale.com, alan@lxorguk.ukuu.org.uk,
 	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -27,22 +24,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Trent Piepho <tpiepho@freescale.com> writes:
+From: Scott Wood <scottwood@freescale.com>
+Date: Tue, 20 May 2008 17:43:58 -0500
 
-> It's the _le versions that have a problem, since we can't get gcc to just use
-> the register indexed mode.  It seems like an obvious thing to have a
-> constraint for, but I guess there weren't enough instructions that only come
-> in 'x' versions to bother with it.  There is a 'Z' constraint, "Memory operand
-> that is an indexed or indirect from a register", but I tried it and it can use
-> both "rb,ri" and "disp(rb)" forms.  Actually, I'm not sure how 'Z' is any
-> different than "m"?
+> David Miller wrote:
+> > The __volatile__ in the asm construct disallows movement of the
+> > inline asm relative to statements surrounding it.
+> > 
+> > The only reason barrier() in kernel.h needs a memory clobber is
+> > because of a bug in ancient versions of gcc.  In fact, I think
+> > that memory clobber might even be removable.
+> 
+> Current versions of GCC seem quite happy to move non-asm memory accesses 
+> around a volatile asm without a memory clobber; see the test Trent posted.
 
-'Z' will never emit a non-zero constant displacement.
-
-Andreas.
-
--- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+Indeed, and even the GCC manual is clear about this.
