@@ -1,20 +1,22 @@
-Return-Path: <laurentp@cse-semaphore.com>
-Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
-	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id 51141DE093
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 May 2008 23:00:42 +1000 (EST)
-From: Laurent Pinchart <laurentp@cse-semaphore.com>
-To: David Brownell <david-b@pacbell.net>
-Subject: Re: [RFC] GPIO-based flow control in the cpm_uart driver
-Date: Tue, 20 May 2008 15:00:35 +0200
-References: <200804151522.36884.laurentp@cse-semaphore.com>
-	<200804151547.44052.laurentp@cse-semaphore.com>
-	<200805191731.33193.david-b@pacbell.net>
-In-Reply-To: <200805191731.33193.david-b@pacbell.net>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1433265.Im7f4YOspb";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Message-Id: <200805201500.38236.laurentp@cse-semaphore.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <kumar.gala@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 7318ADDFF9
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 May 2008 23:08:31 +1000 (EST)
+Message-Id: <3AFD505F-CE8E-442A-9BE6-CF6425EE50FF@freescale.com>
+From: Kumar Gala <kumar.gala@freescale.com>
+To: Michael Ellerman <michael@ellerman.id.au>
+In-Reply-To: <f4219729e8da75f5176347d176430d4b8b0fcb8a.1211287582.git.michael@ellerman.id.au>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Mime-Version: 1.0 (Apple Message framework v919.2)
+Subject: Re: [PATCH] Add kernstart_addr to list of allowed symbols in prom_init
+Date: Tue, 20 May 2008 08:08:18 -0500
+References: <f4219729e8da75f5176347d176430d4b8b0fcb8a.1211287582.git.michael@ellerman.id.au>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	kamalesh@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,50 +26,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---nextPart1433265.Im7f4YOspb
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
 
-On Tuesday 20 May 2008 02:31, David Brownell wrote:
-> On Tuesday 15 April 2008, Laurent Pinchart wrote:
-> > Or maybe some kind of gpio_set_option() with flags specific to the=20
-> > controller ? This could be used to enable open-drain outputs or interna=
-l=20
-> > pull-ups for instance.
->=20
-> That presumes that the pin config is associated with the GPIO
-> controller, rather than being an independent modules...
->=20
-> In the cases that a platform has such an association, there
-> should be no problem just using a platform-specific code to
-> do the relevant magic.
+On May 20, 2008, at 7:48 AM, Michael Ellerman wrote:
 
-To call GPIO chip specific functions, the driver needs a way to get the GPI=
-O=20
-chip associated with the GPIO.
+> Since commit "85xx: Add support for relocatable kernel (and
+> booting at non-zero)" (37dd2badcfcec35f5e21a0926968d77a404f03c3),
+> PHYSICAL_START is #defined as kernstart_addr if RELOCATABLE
+> and FLATMEM is enabled.
+>
+> PHYSICAL_START is used in prom_init.c and so kernstart_addr
+> needs to be added to the list of allowed symbols that
+> prom_init.c can access.
+>
+> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 
-=2D-=20
-Laurent Pinchart
-CSE Semaphore Belgium
+Acked-by: Kumar Gala <galak@kernel.crashing.org>
 
-Chaussee de Bruxelles, 732A
-B-1410 Waterloo
-Belgium
-
-T +32 (2) 387 42 59
-=46 +32 (2) 387 42 75
-
---nextPart1433265.Im7f4YOspb
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
-
-iD8DBQBIMst28y9gWxC9vpcRAmkeAJ0YoTxw3K+QwU92Gn0KK7eXv43MpgCg2qc9
-c960OYGz2FYpxgYN+Y1V+IY=
-=VkdM
------END PGP SIGNATURE-----
-
---nextPart1433265.Im7f4YOspb--
+- k
