@@ -2,16 +2,23 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 508D7DDECA
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 May 2008 15:03:02 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id EF6C2DE349
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 May 2008 15:03:30 +1000 (EST)
+Message-Id: <FA9AA92E-8F05-4C34-A73E-CB2211B1852E@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v4] [POWERPC] Rework EXC_LEVEL_EXCEPTION_PROLOG code
-Date: Tue, 20 May 2008 00:02:46 -0500
-Message-Id: <1211259767-4796-2-git-send-email-galak@kernel.crashing.org>
-In-Reply-To: <1211259767-4796-1-git-send-email-galak@kernel.crashing.org>
-References: <1211259767-4796-1-git-send-email-galak@kernel.crashing.org>
-Cc: paulus@samba.org
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+In-Reply-To: <20080519210452.28e8805c@zod.rchland.ibm.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v919.2)
+Subject: Re: [PATCH v3 3/3] [POWERPC] 40x/Book-E: Save/restore volatile
+	exception registers
+Date: Tue, 20 May 2008 00:03:12 -0500
+References: <Pine.LNX.4.64.0805161404410.6286@blarg.am.freescale.net>
+	<Pine.LNX.4.64.0805161406100.6286@blarg.am.freescale.net>
+	<Pine.LNX.4.64.0805161407440.6286@blarg.am.freescale.net>
+	<20080519210452.28e8805c@zod.rchland.ibm.com>
+Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,152 +28,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-* Cleanup the code a bit my allocating an INT_FRAME on our exception
-  stack there by make references go from GPR11-INT_FRAME_SIZE(r8) to
-  just GPR11(r8)
-* simplify {lvl}_transfer_to_handler code by moving the copying of the
-  temp registers we use if we come from user space into the PROLOG
-* If the exception came from kernel mode copy thread_info flags,
-  preempt, and task pointer from the process thread_info.
+>> <snip>
+>
+>> --- a/arch/powerpc/kernel/entry_32.S
+>> +++ b/arch/powerpc/kernel/entry_32.S
+>
+> <snip>
+>
+>> +#ifdef CONFIG_40x
+>> 	.globl	ret_from_crit_exc
+>> ret_from_crit_exc:
+>> +	mfspr	r9,SPRN_SPRG3
+> 	lis 	r10,saved_ksp_limit@ha;
+> 	lwz	r10,saved_ksp_limit@l(r10);
+> 	tovirt(r9,r9);
+>> +	stw	r10,KSP_LIMIT(r9)
+> 	lis	r9, crit_srr0@ha;
+> 	lwz	r9, crit_srr0@l(r9);
+> 	lis	r10, crit_srr1@ha;
+> 	lwz	r10, crit_srr1@l(r10);
+>> +	mtspr	SPRN_SRR0,r9;
+>> +	mtspr	SPRN_SRR1,r10;
+>> 	RET_FROM_EXC_LEVEL(SPRN_CSRR0, SPRN_CSRR1, RFCI)
+>> +#endif /* CONFIG_40x */
+>
+> With the above changes, I no longer get kernel panics on returning  
+> from
+> critical exceptions.  Breakpoints and single stepping worked on my
+> 405GP board.
+>
+> Again, not stress tested but it's looking much better.
+>
+> josh
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
----
- arch/powerpc/kernel/entry_32.S   |   13 ---------
- arch/powerpc/kernel/head_booke.h |   54 ++++++++++++++++++++++++-------------
- 2 files changed, 35 insertions(+), 32 deletions(-)
+Thanks.  I've just posted v5 with the various fixes for 40x.  Can you  
+test those out to make sure they still work.
 
-diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
-index 888a364..c94aba5 100644
---- a/arch/powerpc/kernel/entry_32.S
-+++ b/arch/powerpc/kernel/entry_32.S
-@@ -44,29 +44,16 @@
- #endif
- 
- #ifdef CONFIG_BOOKE
--#include "head_booke.h"
--#define TRANSFER_TO_HANDLER_EXC_LEVEL(exc_level)	\
--	mtspr	exc_level##_SPRG,r8;			\
--	BOOKE_LOAD_EXC_LEVEL_STACK(exc_level);		\
--	lwz	r0,GPR10-INT_FRAME_SIZE(r8);		\
--	stw	r0,GPR10(r11);				\
--	lwz	r0,GPR11-INT_FRAME_SIZE(r8);		\
--	stw	r0,GPR11(r11);				\
--	mfspr	r8,exc_level##_SPRG
--
- 	.globl	mcheck_transfer_to_handler
- mcheck_transfer_to_handler:
--	TRANSFER_TO_HANDLER_EXC_LEVEL(MCHECK)
- 	b	transfer_to_handler_full
- 
- 	.globl	debug_transfer_to_handler
- debug_transfer_to_handler:
--	TRANSFER_TO_HANDLER_EXC_LEVEL(DEBUG)
- 	b	transfer_to_handler_full
- 
- 	.globl	crit_transfer_to_handler
- crit_transfer_to_handler:
--	TRANSFER_TO_HANDLER_EXC_LEVEL(CRIT)
- 	/* fall through */
- #endif
- 
-diff --git a/arch/powerpc/kernel/head_booke.h b/arch/powerpc/kernel/head_booke.h
-index 9eacf4c..b0874d2 100644
---- a/arch/powerpc/kernel/head_booke.h
-+++ b/arch/powerpc/kernel/head_booke.h
-@@ -72,18 +72,20 @@
- #define DEBUG_STACK_BASE	dbgirq_ctx
- #define DEBUG_SPRG		SPRN_SPRG6W
- 
-+#define EXC_LVL_FRAME_OVERHEAD	(THREAD_SIZE - INT_FRAME_SIZE)
-+
- #ifdef CONFIG_SMP
- #define BOOKE_LOAD_EXC_LEVEL_STACK(level)		\
- 	mfspr	r8,SPRN_PIR;				\
- 	slwi	r8,r8,2;				\
- 	addis	r8,r8,level##_STACK_BASE@ha;		\
- 	lwz	r8,level##_STACK_BASE@l(r8);		\
--	addi	r8,r8,THREAD_SIZE;
-+	addi	r8,r8,EXC_LVL_FRAME_OVERHEAD;
- #else
- #define BOOKE_LOAD_EXC_LEVEL_STACK(level)		\
- 	lis	r8,level##_STACK_BASE@ha;		\
- 	lwz	r8,level##_STACK_BASE@l(r8);		\
--	addi	r8,r8,THREAD_SIZE;
-+	addi	r8,r8,EXC_LVL_FRAME_OVERHEAD;
- #endif
- 
- /*
-@@ -97,22 +99,36 @@
- #define EXC_LEVEL_EXCEPTION_PROLOG(exc_level, exc_level_srr0, exc_level_srr1) \
- 	mtspr	exc_level##_SPRG,r8;					     \
- 	BOOKE_LOAD_EXC_LEVEL_STACK(exc_level);/* r8 points to the exc_level stack*/ \
--	stw	r10,GPR10-INT_FRAME_SIZE(r8);				     \
--	stw	r11,GPR11-INT_FRAME_SIZE(r8);				     \
--	mfcr	r10;			/* save CR in r10 for now	   */\
--	mfspr	r11,exc_level_srr1;	/* check whether user or kernel    */\
--	andi.	r11,r11,MSR_PR;						     \
--	mr	r11,r8;							     \
--	mfspr	r8,exc_level##_SPRG;					     \
--	beq	1f;							     \
--	/* COMING FROM USER MODE */					     \
-+	stw	r9,GPR9(r8);		/* save various registers	   */\
-+	mfcr	r9;			/* save CR in r9 for now	   */\
-+	stw	r10,GPR10(r8);						     \
-+	stw	r11,GPR11(r8);						     \
-+	stw	r9,_CCR(r8);		/* save CR on stack		   */\
-+	mfspr	r10,exc_level_srr1;	/* check whether user or kernel    */\
-+	andi.	r10,r10,MSR_PR;						     \
- 	mfspr	r11,SPRN_SPRG3;		/* if from user, start at top of   */\
- 	lwz	r11,THREAD_INFO-THREAD(r11); /* this thread's kernel stack */\
--	addi	r11,r11,THREAD_SIZE;					     \
--1:	subi	r11,r11,INT_FRAME_SIZE;	/* Allocate an exception frame     */\
--	stw	r10,_CCR(r11);          /* save various registers	   */\
--	stw	r12,GPR12(r11);						     \
-+	addi	r11,r11,EXC_LVL_FRAME_OVERHEAD;	/* allocate stack frame    */\
-+	beq	1f;							     \
-+	/* COMING FROM USER MODE */					     \
-+	stw	r9,_CCR(r11);		/* save CR			   */\
-+	lwz	r10,GPR10(r8);		/* copy regs from exception stack  */\
-+	lwz	r9,GPR9(r8);						     \
-+	stw	r10,GPR10(r11);						     \
-+	lwz	r10,GPR11(r8);						     \
- 	stw	r9,GPR9(r11);						     \
-+	stw	r10,GPR11(r11);						     \
-+	b	2f;							     \
-+	/* COMING FROM PRIV MODE */					     \
-+1:	lwz	r9,TI_FLAGS-EXC_LVL_FRAME_OVERHEAD(r11);		     \
-+	lwz	r10,TI_PREEMPT-EXC_LVL_FRAME_OVERHEAD(r11);		     \
-+	stw	r9,TI_FLAGS-EXC_LVL_FRAME_OVERHEAD(r8);			     \
-+	stw	r10,TI_PREEMPT-EXC_LVL_FRAME_OVERHEAD(r8);		     \
-+	lwz	r9,TI_TASK-EXC_LVL_FRAME_OVERHEAD(r11);			     \
-+	stw	r9,TI_TASK-EXC_LVL_FRAME_OVERHEAD(r8);			     \
-+	mr	r11,r8;							     \
-+2:	mfspr	r8,exc_level##_SPRG;					     \
-+	stw	r12,GPR12(r11);		/* save various registers	   */\
- 	mflr	r10;							     \
- 	stw	r10,_LINK(r11);						     \
- 	mfspr	r12,SPRN_DEAR;		/* save DEAR and ESR in the frame  */\
-@@ -255,8 +271,8 @@ label:
- 	lwz	r12,GPR12(r11);						      \
- 	mtspr	DEBUG_SPRG,r8;						      \
- 	BOOKE_LOAD_EXC_LEVEL_STACK(DEBUG); /* r8 points to the debug stack */ \
--	lwz	r10,GPR10-INT_FRAME_SIZE(r8);				      \
--	lwz	r11,GPR11-INT_FRAME_SIZE(r8);				      \
-+	lwz	r10,GPR10(r8);						      \
-+	lwz	r11,GPR11(r8);						      \
- 	mfspr	r8,DEBUG_SPRG;						      \
- 									      \
- 	RFDI;								      \
-@@ -308,8 +324,8 @@ label:
- 	lwz	r12,GPR12(r11);						      \
- 	mtspr	CRIT_SPRG,r8;						      \
- 	BOOKE_LOAD_EXC_LEVEL_STACK(CRIT); /* r8 points to the debug stack */  \
--	lwz	r10,GPR10-INT_FRAME_SIZE(r8);				      \
--	lwz	r11,GPR11-INT_FRAME_SIZE(r8);				      \
-+	lwz	r10,GPR10(r8);						      \
-+	lwz	r11,GPR11(r8);						      \
- 	mfspr	r8,CRIT_SPRG;						      \
- 									      \
- 	rfci;								      \
--- 
-1.5.4.5
+- k
