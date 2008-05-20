@@ -1,20 +1,34 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E865DDDF34
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 May 2008 23:23:58 +1000 (EST)
-Message-Id: <177599B6-6236-4292-A69B-CA13617A6576@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Jason Jin <Jason.jin@freescale.com>
-In-Reply-To: <1211270856-26579-3-git-send-email-Jason.jin@freescale.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: [PATCH 3/4 V4] Enable MSI support for MPC8610HPCD board
-Date: Tue, 20 May 2008 08:23:49 -0500
-References: <1211270856-26579-1-git-send-email-Jason.jin@freescale.com>
-	<1211270856-26579-2-git-send-email-Jason.jin@freescale.com>
-	<1211270856-26579-3-git-send-email-Jason.jin@freescale.com>
+	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 8F193DE8D5
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 May 2008 23:39:14 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m4KDZj0Y022004
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 May 2008 09:35:45 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m4KDd7H8095004
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 May 2008 07:39:07 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m4KDd7Xh025681
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 May 2008 07:39:07 -0600
+Date: Tue, 20 May 2008 08:34:50 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Giuseppe Coviello <cjg@cruxppc.org>
+Subject: Re: [PATCH] Sam440ep support
+Message-ID: <20080520083450.57ab279a@zod.rchland.ibm.com>
+In-Reply-To: <20080520075028.0b286c73@zod.rchland.ibm.com>
+References: <a265241c0805051123h595123edrd46bf65a8099c3c2@mail.gmail.com>
+	<a265241c0805060937m25921c56o6fb2b132a3f821d6@mail.gmail.com>
+	<20080519074701.4cb15c86@zod.rchland.ibm.com>
+	<1211210447.11958.10.camel@marquez.cjg.home>
+	<20080520075028.0b286c73@zod.rchland.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -25,26 +39,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> diff --git a/arch/powerpc/platforms/86xx/mpc8610_hpcd.c b/arch/ 
-> powerpc/platforms/86xx/mpc8610_hpcd.c
-> index dea1320..290d717 100644
-> --- a/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
-> +++ b/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
-> @@ -71,9 +71,13 @@ static void __init mpc86xx_hpcd_init_irq(void)
-> 	/* Alloc mpic structure and per isu has 16 INT entries. */
-> 	mpic1 = mpic_alloc(np, res.start,
-> 			MPIC_PRIMARY | MPIC_WANTS_RESET | MPIC_BIG_ENDIAN,
-> -			0, 256, " MPIC     ");
-> +			64, 256, " MPIC     ");
-> 	BUG_ON(mpic1 == NULL);
->
-> +	mpic_assign_isu(mpic1, 0, res.start + 0x10000);
-> +	mpic_assign_isu(mpic1, 1, res.start + 0x10800);
-> +	mpic_assign_isu(mpic1, 2, res.start + 0x11600);
-> +
+On Tue, 20 May 2008 07:50:28 -0500
+Josh Boyer <jwboyer@linux.vnet.ibm.com> wrote:
 
-I don't understand why you are breaking the interrupts up like this.
+> On Mon, 19 May 2008 17:20:47 +0200
+> Giuseppe Coviello <cjg@cruxppc.org> wrote:
+> 
+> 
+> > +			usb@ef601000 {
+> > +				compatible = "ohci-be";
+> > +				reg = <ef601000 80>;
+> > +				interrupts = <8 4 9 4>;
+> > +				interrupt-parent = < &UIC1 >;
+> 
+> Are you sure the trigger/level settings on those interrupts is
+> correct?
+> 
+> > +			};	
+> > +		};
+> > +
+> > +		PCI0: pci@ec000000 {
+> > +			device_type = "pci";
+> > +			#interrupt-cells = <1>;
+> > +			#size-cells = <2>;
+> > +			#address-cells = <3>;
+> > +			compatible = "ibm,plb440ep-pci", "ibm,plb-pci";
+> > +			primary;
+> > +			reg = <0 eec00000 8	/* Config space access */
+> > +			       0 eed00000 4	/* IACK */
+> > +			       0 eed00000 4	/* Special cycle */
+> > +			       0 ef400000 40>;	/* Internal registers */
+> > +
+> > +			/* Outbound ranges, one memory and one IO,
+> > +			 * later cannot be changed. Chip supports a second
+> > +			 * IO range but we don't use it for now
+> > +			 */
+> > +			ranges = <02000000 0 a0000000 0 a0000000 0 20000000
+> > +				  01000000 0 00000000 0 e8000000 0 00010000>;
+> > +
+> > +			/* Inbound 2GB range starting at 0 */
+> > +			dma-ranges = <42000000 0 0 0 0 0 80000000>;
+> 
+> You have no interrupt mapping for the PCI node.  How do you have
+> working PCI here?
 
-If you leave as it was, the MSIs would start at hw irq 176
+Also, if these questions result in changes to the DTS, could you please
+convert it to a dts-v1 format?  Otherwise I'll have to do it myself and
+it's cleaner if it comes in that way.
 
-- k
+josh
