@@ -1,16 +1,16 @@
 Return-Path: <runet@innovsys.com>
 Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
-	by ozlabs.org (Postfix) with ESMTP id AE4C9DE0E4
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 May 2008 00:40:04 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 6EEDEDDF99
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 May 2008 00:47:35 +1000 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="us-ascii"
-Subject: Oops in fs_enet driver with preempt-rt
-Date: Tue, 20 May 2008 09:40:30 -0500
-Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B046E728C@ismail.innsys.innovsys.com>
+Subject: Broken highmem support with preempt-rt
+Date: Tue, 20 May 2008 09:48:00 -0500
+Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B046E72B2@ismail.innsys.innovsys.com>
 From: "Rune Torgersen" <runet@innovsys.com>
-To: <linux-kernel@vger.kernel.org>, <linuxppc-dev@ozlabs.org>,
-	<netdev@vger.kernel.org>
+To: <linux-kernel@vger.kernel.org>,
+	<linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,70 +21,67 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 Hi
-I am trying to get preempt-rt (v2.6.25.4-rt1) to work on a Freescale
-8280 CPU (arch/powerpc)
+When booting v2.6.25.4-rt1 (PREEMPT-RT) on my 8280 CPU with 1 GB RAM, I
+get the following oopses.
+They both are caused by a BUG_ON in kmap_atomic
+(include/asm-powerpc/highmem.h).
 
-I get the follwing oops when trying to enable ethernet:
-(looks like a null pointer dereference in
-drivers/net/fs_enet/fs_enet-main.c:106)
+If I boot with mem=3D512M or mem=3D768M they do not appear.
 
-Unable to handle kernel paging request for data at address 0x00000000
-Faulting instruction address: 0xc0197efc
-Oops: Kernel access of bad area, sig: 11 [#1]
+Any help is greatly appreciated.
+
+
+Oops: Exception in kernel mode, sig: 5 [#1]
 PREEMPT Innovative Systems ApMax
 Modules linked in:
-NIP: c0197efc LR: c0197c48 CTR: c01986c4
-REGS: df84de90 TRAP: 0300   Not tainted  (2.6.25.4-rt1)
-MSR: 00009032 <EE,ME,IR,DR>  CR: 42004022  XER: 00000000
-DAR: 00000000, DSISR: 20000000
-TASK =3D df82ea70[7] 'sirq-net-rx/0' THREAD: df84c000
-GPR00: e105a350 df84df40 df82ea70 df37f000 00000011 c034ed90 c034ed70
-00000000
-GPR08: 00000000 e105a340 00000000 00000009 0000df80 ffffffff 0fffd000
-00000028
-GPR16: 00400558 00800000 ffffffff df3e71e0 00000011 00000000 00000000
-00000000
-GPR24: df37f000 00000000 00000000 00000000 fffb9e82 0000012c 00000011
-df37f5a0
-NIP [c0197efc] fs_enet_rx_napi+0x2f0/0x3ac
-LR [c0197c48] fs_enet_rx_napi+0x3c/0x3ac
+NIP: c005e780 LR: c005e758 CTR: 00000000
+REGS: ef2c1d20 TRAP: 0700   Not tainted  (2.6.25.4-rt1)
+MSR: 00029032 <EE,ME,IR,DR>  CR: 48222482  XER: 20000000
+TASK =3D ef2a1a90[98] 'S21initenv' THREAD: ef2c0000
+GPR00: 3ffcf581 ef2c1dd0 ef2a1a90 00000000 c02cae8c 00000002 00000001
+3ffcf580
+GPR08: 00000000 c0370000 00000000 c037000c 28222484 1009ecc0 00000000
+100a5838
+GPR16: 10090000 10090000 00000000 00000000 10090000 ef2a7100 3ee38385
+100955ac
+GPR24: 00000000 ef2a4ef0 00000000 c27dc700 c27dcb80 00000003 ef359040
+c0334f88
+NIP [c005e780] do_wp_page+0x650/0xc2c
+LR [c005e758] do_wp_page+0x628/0xc2c
 Call Trace:
-[df84df40] [c024a1b4] __spin_unlock+0x18/0x3c (unreliable)
-[df84df80] [c01d9d28] net_rx_action+0x84/0x1ac
-[df84dfa0] [c0022f18] ksoftirqd+0x158/0x25c
-[df84dfd0] [c0033fa0] kthread+0x4c/0x88
-[df84dff0] [c000fb34] kernel_thread+0x44/0x60
+[ef2c1dd0] [c005e758] do_wp_page+0x628/0xc2c (unreliable)
+[ef2c1e10] [c0012420] do_page_fault+0x338/0x4b4
+[ef2c1f40] [c0010120] handle_page_fault+0xc/0x80
+--- Exception: 301 at 0x100322e0
+    LR =3D 0x100322dc
 Instruction dump:
-73202000 3b7b0008 41820008 837f00bc 813f00a0 7f03c378 81290034 7d2903a6
-4e800421 7f96a000 409c00a8 7c0004ac <a01b0000> 0c000000 4c00012c
-5419043e
----[ end trace c548f7dabfe5b3de ]---
-
-
-0xc0197efc is in fs_enet_rx_napi (include/asm/io.h:124).
-119             DEF_MMIO_OUT(name, u##size, __stringify(insn)"%U0%X0
-%1,%0")
-120     #define DEF_MMIO_OUT_LE(name, size, insn) \
-121             DEF_MMIO_OUT(name, u##size, __stringify(insn)" %1,0,%2")
-122
-123     DEF_MMIO_IN_BE(in_8,     8, lbz);
-124     DEF_MMIO_IN_BE(in_be16, 16, lhz);
-125     DEF_MMIO_IN_BE(in_be32, 32, lwz);
-126     DEF_MMIO_IN_LE(in_le16, 16, lhbrx);
-127     DEF_MMIO_IN_LE(in_le32, 32, lwbrx);
-128
-
-0xc0197c48 is in fs_enet_rx_napi
-(drivers/net/fs_enet/fs_enet-main.c:106).
-101              * These get messed up if we get called due to a busy
-condition.
-102              */
-103             bdp =3D fep->cur_rx;
-104
-105             /* clear RX status bits for napi*/
-106             (*fep->ops->napi_clear_rx_event)(dev);
-107
-108             while (((sc =3D CBDR_SC(bdp)) & BD_ENET_RX_EMPTY) =3D=3D =
-0) {
-109                     curidx =3D bdp - fep->rx_bd_base;
-110
+409e0594 4810f2e1 3d20c035 1fa3000f 8129b140 3bbd0003 57ab103a 7c0b482e
+7d6b4a14 540007fa 30e0ffff 7cc70110 <0f060000> 3d20c035 3d40c035
+8129b480
+Oops: Exception in kernel mode, sig: 5 [#2]
+PREEMPT Innovative Systems ApMax
+Modules linked in:
+NIP: c005db0c LR: c005dae4 CTR: 00000000
+REGS: ef29fd00 TRAP: 0700   Tainted: G      D   (2.6.25.4-rt1)
+MSR: 00029032 <EE,ME,IR,DR>  CR: 48002482  XER: 20000000
+TASK =3D ef26e070[102] 'sed' THREAD: ef29e000
+GPR00: 3ee2d581 ef29fdb0 ef26e070 00000000 c02cae8c 00000000 00000001
+3ee2d580
+GPR08: 00000000 c0370000 00000000 c037000c 00000722 1009ecc0 4802dfa4
+4802d878
+GPR16: 0014f73c 00000000 00000000 00000003 4802cce0 00000000 00000001
+02000000
+GPR24: ef3592e0 0ffece1c ef3592e0 ef2a50fc ef2a4df4 00000003 c27dcfe0
+c27ff4c0
+NIP [c005db0c] __do_fault+0x1e0/0x804
+LR [c005dae4] __do_fault+0x1b8/0x804
+Call Trace:
+[ef29fdb0] [c005dae4] __do_fault+0x1b8/0x804 (unreliable)
+[ef29fe10] [c0012420] do_page_fault+0x338/0x4b4
+[ef29ff40] [c0010120] handle_page_fault+0xc/0x80
+--- Exception: 301 at 0x48017b10
+    LR =3D 0x48007ac8
+Instruction dump:
+409e060c 4810ff55 3d20c035 1fa3000f 8129b140 3bbd0003 57ab103a 7c0b482e
+7d6b4a14 540007fa 30e0ffff 7cc70110 <0f060000> 3d20c035 3d40c035
+8129b480
