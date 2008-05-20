@@ -1,13 +1,13 @@
 Return-Path: <runet@innovsys.com>
 Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
-	by ozlabs.org (Postfix) with ESMTP id 6C0BCDE8C2
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 May 2008 02:07:44 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 09AB8DE596
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 May 2008 02:13:33 +1000 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="us-ascii"
 Subject: RE: Oops in fs_enet driver with preempt-rt
-Date: Tue, 20 May 2008 11:08:11 -0500
-Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B046E73B2@ismail.innsys.innovsys.com>
+Date: Tue, 20 May 2008 11:14:01 -0500
+Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B046E73C6@ismail.innsys.innovsys.com>
 In-Reply-To: <4832F139.1020502@freescale.com>
 References: <DCEAAC0833DD314AB0B58112AD99B93B046E728C@ismail.innsys.innovsys.com>
 	<DCEAAC0833DD314AB0B58112AD99B93B046E72C3@ismail.innsys.innovsys.com>
@@ -45,5 +45,19 @@ Scott Wood wrote:
 >=20
 > -Scott
 
-Thanks!!
-That worked. Now I just have to get highmem support...
+Hmm.... ttyCPM1 output seems to be kinda garbled... Any ideas?
+Incomplete locking between printk and userland use of ttyCPM1 as
+console?
+
+kjour[  OK  ]   nal
+ stdrtiag. nCom it mnteivalr5 s cones
+dXT3EFS  n soa7,dint rnae jolrnau
+ElT3-Xs: founmed tilefystsm weth irdeoed ratadmod .
+ek/*    [  Removing /var/run/* and /var/locp... [  OK  ]
+Creating new /var/run/utmlogin /fastboot and /forcefsck...      OK  ]
+Removing possible /etc/noBringing up the loopback interface...  [  OK  ]
+OK  ]
+OK  ] Entering runlevel: 3 hostname to 9919_unit1_c
+Starting the i2c_8266 driver: i2
+_82c6: 6odume llcenie 'snspucifeed'itai ts nernkl.
+                                                  e[ OK ]
