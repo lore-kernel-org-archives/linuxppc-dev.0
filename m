@@ -1,15 +1,26 @@
-Return-Path: <rmachet@slac.stanford.edu>
-Subject: Re: [PATCH 1/5 v3] powerpc: DTS file for the C2K
-From: Remi Machet <rmachet@slac.stanford.edu>
-To: David Gibson <david@gibson.dropbear.id.au>
-In-Reply-To: <20080520011304.GG22279@yookeroo.seuss>
-References: <1211241624.19212.29.camel@pcds-ts102.slac.stanford.edu>
-	<20080520011304.GG22279@yookeroo.seuss>
-Content-Type: text/plain
-Date: Tue, 20 May 2008 09:38:08 -0700
-Message-Id: <1211301489.19212.32.camel@pcds-ts102.slac.stanford.edu>
-Mime-Version: 1.0
-Cc: Linux PPC <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 1719CDE58D
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 May 2008 02:41:40 +1000 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	m4KGfagH011770
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 May 2008 09:41:36 -0700 (MST)
+Message-ID: <4832FF80.5080408@freescale.com>
+Date: Tue, 20 May 2008 11:42:40 -0500
+From: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: .dtb file for mpc8641_hpcn failing on recent kernel/u-boot.
+References: <loom.20080519T223903-170@post.gmane.org>	<20080519180337.234b11b4.kim.phillips@freescale.com>
+	<4832FDE8.50902@freescale.com>
+In-Reply-To: <4832FDE8.50902@freescale.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,59 +30,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2008-05-20 at 11:13 +1000, David Gibson wrote:
-> On Mon, May 19, 2008 at 05:00:23PM -0700, Remi Machet wrote:
-> > Support for the C2K cPCI Single Board Computer from GEFanuc
-> > (PowerPC MPC7448 with a Marvell MV64460 chipset)
-> > All features of the board are not supported yet, but the board
-> > boots, flash works, all Ethernet ports are working and PCI 
-> > devices are all found (USB and SATA on PCI1 do not work yet).
-> > 
-> > Part 1 of 5: DTS file describing the board peripherals. As far as I know
-> > all peripherals except the FPGA are listed in there (I did not included
-> > the FPGA because a lot of work is needed there).
+Timur Tabi wrote:
+> Kim Phillips wrote:
+>> On Mon, 19 May 2008 22:57:29 +0000 (UTC)
+>> Gary Hannon <ghannon@cspi.com> wrote:
+>>
+>>
+>>> Am I missing a flag on the dtc?
+>> try adding -R 8 -S 0x3000 to the dtc command line.
 > 
-> [snip]
-> > +		ethernet-group@2000 {
-> > +			#address-cells = <1>;
-> > +			#size-cells = <0>;
-> > +			compatible = "marvell,mv64360-eth-group";
-> > +			reg = <0x2000 0x2000>;
-> > +			PHY0: ethernet-phy@0 {
-> > +				device_type = "ethernet-phy";
-> > +				interrupts = <76>;	/* GPP 12 */
-> > +				interrupt-parent = <&PIC>;
-> > +				reg = <0>;
-> > +			};
-> > +			ethernet@0 {
-> > +				device_type = "network";
-> > +				compatible = "marvell,mv64360-eth";
-> > +				reg = <0>;
-> > +				interrupts = <32>;
-> > +				interrupt-parent = <&PIC>;
-> > +				phy = <&PHY0>;
-> > +				local-mac-address = [ 00 00 00 00 00 00 ];
-> > +			};
-> 
-> Not sure if this is new, or I just didn't notice it before.  Also not
-> sure if this is your mistake, or a mistake in the binding for the
-> marvell device here.
-> 
-> The address in "reg" should be unique within the bus the device
-> appears on.  So having both the PHY and the MAC devices with the same
-> "reg" and same unit address here is bad.
-> 
-> Having both the PHYs and the MACs as children of the ethernet-group
-> node is possible, but the addresses must be encoded to distinguish
-> them (e.g. MACs are 0x0, 0x1, 0x2, PHYS are 0x1000 0x1001 0x1002).
-> 
-It was an attempt at getting rid of the mdio group since the PHY is
-effectively managed by the Ethernet hardware. The problem is that the
-reg field must contain those values ... if I change this, I must change
-the driver and other boards DTS files that depend on it which I would
-rather not do at the same time I am pushing this patch through.
+> Maybe we should be making this the default for dtc?  After all, it's needed for
+> any modern U-boot.
 
-I will put back the mdio group and add a reg field to it as you
-suggested previously.
+How about fixing u-boot's deficiencies in u-boot?  It knows better than 
+dtc how much extra space it's going to need.
 
-Remi
+-Scott
