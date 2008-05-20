@@ -1,24 +1,28 @@
-Return-Path: <g.liakhovetski@gmx.de>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id DD8EADE6FB
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 May 2008 01:26:42 +1000 (EST)
-Date: Tue, 20 May 2008 17:26:46 +0200 (CEST)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH 3/4] spi: Add OF binding support for SPI busses
-In-Reply-To: <fa686aa40805192213y485c4ba2u750748f8201e0377@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0805201650280.5283@axis700.grange>
-References: <20080516193054.28030.35126.stgit@trillian.secretlab.ca>
-	<20080516193613.28030.13950.stgit@trillian.secretlab.ca>
-	<Pine.LNX.4.64.0805191446530.27140@axis700.grange>
-	<fa686aa40805190857u317d3304ie75d11870e109fc5@mail.gmail.com>
-	<Pine.LNX.4.64.0805191811510.29559@axis700.grange>
-	<fa686aa40805192213y485c4ba2u750748f8201e0377@mail.gmail.com>
+Return-Path: <Thomas.Hommel@gefanuc.com>
+Received: from ext-ch1gw-6.online-age.net (ext-ch1gw-6.online-age.net
+	[64.37.194.14])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "ext-ch1gw.online-age.net",
+	Issuer "Savvis Communications Root CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 09548DDEF1
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 May 2008 01:32:39 +1000 (EST)
+Received: from int-ch1gw-3.online-age.net (int-ch1gw-3 [3.159.232.67])
+	by ext-ch1gw-6.online-age.net (8.13.6/8.13.6/20051111-SVVS-TLS-DNSBL)
+	with ESMTP id m4KF77pY001278
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 May 2008 11:07:07 -0400
+Received: from ALPMLEF02.e2k.ad.ge.com (int-ch1gw-3 [3.159.232.67])
+	by int-ch1gw-3.online-age.net (8.13.6/8.13.6/20050510-SVVS) with ESMTP
+	id m4KF75Dr024204
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 May 2008 11:07:06 -0400 (EDT)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: fabrizio.garetto@gmail.com, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, dbrownell@users.sourceforge.net,
-	spi-devel-general@lists.sourceforge.net
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: Configuring virtual memory layout
+Date: Tue, 20 May 2008 17:06:34 +0200
+Message-ID: <62DDBB9E5E23CC4A929EE46F9427CEAFB11319@BUDMLVEM04.e2k.ad.ge.com>
+From: "Hommel, Thomas (GE EntSol,
+	Intelligent Platforms)" <Thomas.Hommel@gefanuc.com>
+To: <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,106 +32,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 19 May 2008, Grant Likely wrote:
+Hello,
+I am trying to figure out how to configure the virtual memory layout in
+the kernel.
+To increase the size of the Vmalloc area, I have set KERNEL_START to
+0xa0000000 and have left LOWMEM_SIZE at 0x30000000. The other parameters
+in 'Advanced setup' are unchanged.
+This works fine with 512 MB of RAM. However, with 1 GB of RAM installed,
+the system shows odd behavior, crashes, faults, ... This seems to be due
+to the fact that it then uses 256 MB of high memory.
 
-> I'm not so fond of this approach.  cs-parent doesn't seem to make much
-> sense to me.  It might be better to have a cs-handler property on the
-> SPI bus node instead of on the SPI slave nodes, but even then it
-> leaves a number of questions about what it really means.  In some
-> cases it would be overkill.  For example, if the SPI node simply had
-> multiple GPIO lines then an extra cs-parent node wouldn't be needed at
-> all.
+I played around with HIGHMEM_START, but couldn't get a working setting.
 
-Right, it is optional.
+How do these parameters have to be configured correctly? Is there any
+documentation for that?
 
-> Then there are the complex arrangements.  When setting CS
-> requires inserting a special 'set cs' SPI message at the right time.
-> Or worse; when setting CS requires /modifying/ the sent SPI message.
-
-Hm, are there actually such SPI _controllers_ that use SPI data to toggle 
-chipselects? I.e., you would have to send your SPI client data (for the 
-RTC or whatever) plus some extra bytes or with some modifications, and 
-this extra information would then be intercepted by the SPI _controller_ 
-itself and only client data would be sent out? Isn't what you're 
-describing really a case of an SPI bridge, as you also call it below? In 
-which case, I think, it might make sense to cleanly differentiate these 
-two cases:
-
-1. SPI chipselect. Either controlled by an external (typically a GPIO) 
-signal or by the controller itself, in the latter case the controller has 
-to be configured with the required address
-
-2. SPI bridge. I don't know such configurations, so, I can only guess: the 
-SPI controller has a single SPI client, which acts like a bridge. It 
-receives data from the primary host, and in this data the target client 
-data and its address are encoded.
-
-Now, I can also imagine case 2 where the bridge is actually a part of the 
-host controller... Even though this doesn't make any sense to me.
-
-> Essentially, the binding would need to describe the ability to
-> completely intercept and rewrite all SPI messages going through the CS
-> scheme.
-> 
-> I'm not saying it's not possible to do, but I am saying that I'd like
-> to have a better feel for all the use cases before it is defined.  I'm
-> not convinced that adding a cs-parent phandle will do that
-> appropriately.  That being said, my gut feel is that the solution will
-> be to support spi-bridge nodes that handle the complex CS
-> configuration settings; the spi-bridge would be a child of the
-> spi-master and the parent of the spi devices; and simple CS settings
-> being handled with regular old GPIO bindings.  (Much like the last
-> suggestion you make; except that I think that it *does* looks
-> elegant.)  :-)
-
-Ok, elegance apart:-) You can use the SPI-bridge construct to also 
-describe simple SPI-chipselect configurations. But is it really a good 
-idea? Wouldn't it be better to handle these two cases separately? Using 
-"bridge" to describe CS's seems also confusing - imagine someone 
-implementing a new DTS, having to describe a bridge not having one doesn't 
-seem very intuitive:-)
-
-> example; here's an SPI bus that has 2 GPIOs for two bus CS lines and
-> an SPI bridge that uses both CSes; one address for accessing the
-> bridge's CS register and one CS to access the downstream devices.
-> 
-> +    SPI example for an MPC5200 SPI bus:
-> +               spi@f00 {
-> +                   #address-cells = <1>;
-> +                   #size-cells = <0>;
-> +                   compatible = "fsl,mpc5200b-spi","fsl,mpc5200-spi";
-> +                   reg = <0xf00 0x20>;
-> +                   interrupts = <2 13 0 2 14 0>;
-> +                   interrupt-parent = <&mpc5200_pic>;
-> +                   gpios = <&gpio1 0 0 &gpio1 1 0>;
-> +                   spi-bridge@0 {
-> +                       compatible = "oem,spi-bridge-type";
-> +                       reg = < 0 1 >;  // note: 2 SPI CS addresses; first one to access bridge registers
-> +
-> +                       ethernet-switch@0 {
-> +                           compatible = "micrel,ks8995m";
-> +                           linux,modalias = "ks8995";
-> +                           max-speed = <1000000>;
-> +                           reg = <0>;
-> +                       };
-> ...                     // and more SPI child nodes here...
-> +                   };
-> +               };
-> 
-> But even this doesn't reflect the hardware layout well.  What if the
-> SS lines are on SPI GPIO expanders on the same bus?  Then does it make
-> sense for them to be layed out as spi bridges?
-
-Well, in this case - yes, because addressing clients "behind" the expander 
-and the expander itself is done differently.
-
-On the whole, I think, it begins to look good - I think, it is better to 
-implement an imperfect but complete and consistent scheme and modify or 
-extend it in the future, than a perfect, but incomplete, and have to use 
-auxiliary means (platform bindings) to fill in the gaps.
-
-Thanks
-Guennadi
----
-Guennadi Liakhovetski, Ph.D.
-Freelance Open-Source Software Developer
+Thanks for your help
+Thomas
