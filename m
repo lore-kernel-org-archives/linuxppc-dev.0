@@ -1,23 +1,34 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <ossthema@de.ibm.com>
+Received: from mtagate2.de.ibm.com (mtagate2.de.ibm.com [195.212.29.151])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 62B7ADE35C
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 May 2008 23:16:49 +1000 (EST)
-Message-Id: <6907979B-054E-4133-8230-B47B7901F2A8@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: avorontsov@ru.mvista.com
-In-Reply-To: <20080520124138.GA20813@polina.dev.rtsoft.ru>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: [PATCH 1/7] [POWERPC] sysdev: implement FSL GTM support
-Date: Tue, 20 May 2008 08:16:39 -0500
-References: <20080519174558.GA26229@polina.dev.rtsoft.ru>
-	<20080519174651.GA28185@polina.dev.rtsoft.ru>
-	<AAEC7B21-11B1-4922-9726-70E43DA3829B@kernel.crashing.org>
-	<20080520124138.GA20813@polina.dev.rtsoft.ru>
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
-	Timur Tabi <timur@freescale.com>
+	(Client CN "mtagate2.de.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 11C35DDF12
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 May 2008 23:23:03 +1000 (EST)
+Received: from d12nrmr1607.megacenter.de.ibm.com
+	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
+	by mtagate2.de.ibm.com (8.13.8/8.13.8) with ESMTP id m4KDMwQb107176
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 May 2008 13:22:58 GMT
+Received: from d12av04.megacenter.de.ibm.com (d12av04.megacenter.de.ibm.com
+	[9.149.165.229])
+	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v8.7) with
+	ESMTP id m4KDMw1D3272830
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 May 2008 15:22:58 +0200
+Received: from d12av04.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av04.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id m4KDMvmb010289
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 May 2008 15:22:58 +0200
+From: Jan-Bernd Themann <ossthema@de.ibm.com>
+To: Brian King <brking@linux.vnet.ibm.com>
+Subject: Re: [PATCH 1/1] ehea: Fix use after free on reboot
+Date: Tue, 20 May 2008 14:22:55 +0100
+References: <12107765041509-patch-mail.ibm.com>
+In-Reply-To: <12107765041509-patch-mail.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Message-Id: <200805201522.56327.ossthema@de.ibm.com>
+Cc: tklein@de.ibm.com, jeff@garzik.org, hering2@de.ibm.com,
+	netdev@vger.kernel.org, linuxppc-dev@ozlabs.org, raisch@de.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,64 +38,75 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Wednesday 14 May 2008 16:48, Brian King wrote:
+> 
+> Fixes the following use after free oops:
+> 
+> ehea: Reboot: freeing all eHEA resources
+> Unable to handle kernel paging request for data at address 0x6b6b6b6b6b6b6c5b
+> Faulting instruction address: 0xd000000000354488
+> cpu 0x0: Vector: 300 (Data Access) at [c00000002ec6f310]
+>     pc: d000000000354488: .ehea_shutdown_single_port+0x50/0x78 [ehea]
+>     lr: d00000000035447c: .ehea_shutdown_single_port+0x44/0x78 [ehea]
+>     sp: c00000002ec6f590
+>    msr: 8000000000009032
+>    dar: 6b6b6b6b6b6b6c5b
+>  dsisr: 40000000
+>   current = 0xc0000000281412e0
+>   paca    = 0xc0000000006df300
+>     pid   = 10930, comm = reboot
+> enter ? for help
+> [c00000002ec6f590] d00000000035d64c .ehea_remove+0x44/0x124 [ehea] (unreliable)
+> [c00000002ec6f630] c000000000319f88 .of_platform_device_remove+0x40/0x58
+> [c00000002ec6f6a0] c000000000291018 .__device_release_driver+0xb0/0xf0
+> [c00000002ec6f730] c000000000291120 .driver_detach+0xc8/0xfc
+> [c00000002ec6f7c0] c00000000028fe24 .bus_remove_driver+0xb4/0x114
+> [c00000002ec6f850] c000000000291768 .driver_unregister+0x54/0x74
+> [c00000002ec6f8e0] c00000000031a0c8 .of_unregister_driver+0x14/0x28
+> [c00000002ec6f950] c000000000023ba0 .ibmebus_unregister_driver+0x10/0x24
+> [c00000002ec6f9c0] d000000000354180 .ehea_reboot_notifier+0x30/0x4c [ehea]
+> [c00000002ec6fa40] c0000000003c95a8 .notifier_call_chain+0x5c/0xcc
+> [c00000002ec6fae0] c000000000082cd4 .__blocking_notifier_call_chain+0x70/0xb0
+> [c00000002ec6fb90] c000000000075cf8 .kernel_restart_prepare+0x24/0x58
+> [c00000002ec6fc10] c000000000075f0c .kernel_restart+0x20/0x6c
+> [c00000002ec6fc90] c000000000078674 .sys_reboot+0x1d4/0x290
+> [c00000002ec6fe30] c0000000000086ac syscall_exit+0x0/0x40
+> --- Exception: c01 (System Call) at 000000000ff63a40
+> SP (ffceea50) is in userspace
+> 
+> Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
+> ---
+> 
+>  linux-2.6-bjking1/drivers/net/ehea/ehea_main.c |    3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+> 
+> diff -puN drivers/net/ehea/ehea_main.c~ehea_useafter_free_fix drivers/net/ehea/ehea_main.c
+> --- linux-2.6/drivers/net/ehea/ehea_main.c~ehea_useafter_free_fix	2008-05-14 09:38:10.000000000 -0500
+> +++ linux-2.6-bjking1/drivers/net/ehea/ehea_main.c	2008-05-14 09:38:10.000000000 -0500
+> @@ -3177,11 +3177,12 @@ out_err:
+> 
+>  static void ehea_shutdown_single_port(struct ehea_port *port)
+>  {
+> +	struct ehea_adapter *adapter = port->adapter;
+>  	unregister_netdev(port->netdev);
+>  	ehea_unregister_port(port);
+>  	kfree(port->mc_list);
+>  	free_netdev(port->netdev);
+> -	port->adapter->active_ports--;
+> +	adapter->active_ports--;
+>  }
+> 
+>  static int ehea_setup_ports(struct ehea_adapter *adapter)
+> _
+> --
+> To unsubscribe from this list: send the line "unsubscribe netdev" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
 
-On May 20, 2008, at 7:41 AM, Anton Vorontsov wrote:
+The patch looks good. 
 
-> On Tue, May 20, 2008 at 01:04:55AM -0500, Kumar Gala wrote:
->>
->> On May 19, 2008, at 12:46 PM, Anton Vorontsov wrote:
->>
->>> GTM stands for General-purpose Timers Module and able to generate
->>> timer{1,2,3,4} interrupts. These timers are used by the drivers that
->>> need time precise interrupts (like for USB transactions scheduling  
->>> for
->>> the Freescale USB Host controller as found in some QE and CPM  
->>> chips),
->>> or these timers could be used as wakeup events from the CPU deep- 
->>> sleep
->>> mode.
->>>
->>> Things unimplemented:
->>> 1. Cascaded (32 bit) timers (1-2, 3-4).
->>>  This is straightforward to implement when needed, two timers should
->>>  be marked as "requested" and configured as appropriate.
->>> 2. Super-cascaded (64 bit) timers (1-2-3-4).
->>>  This is also straightforward to implement when needed, all timers
->>>  should be marked as "requested" and configured as appropriate.
->>>
->>> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
->>> ---
->>> Documentation/powerpc/booting-without-of.txt |   37 +++-
->>> arch/powerpc/Kconfig                         |    5 +
->>> arch/powerpc/sysdev/Makefile                 |    1 +
->>> arch/powerpc/sysdev/fsl_gtm.c                |  424 +++++++++++++++ 
->>> ++
->>> +++++++++
->>> include/asm-powerpc/fsl_gtm.h                |   47 +++
->>> 5 files changed, 513 insertions(+), 1 deletions(-)
->>> create mode 100644 arch/powerpc/sysdev/fsl_gtm.c
->>> create mode 100644 include/asm-powerpc/fsl_gtm.h
->>
->>
->>> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
->>> index 3934e26..e5d3366 100644
->>> --- a/arch/powerpc/Kconfig
->>> +++ b/arch/powerpc/Kconfig
->>> @@ -538,6 +538,11 @@ config FSL_LBC
->>> 	help
->>> 	  Freescale Localbus support
->>>
->>> +config FSL_GTM
->>> +	bool
->>
->> I'd prefer something like:
->>
->> depends on PPC_83xx || QUICC_ENGINE || CPM2
->
-> Btw, this is silent config, selected by the board's Kconfig
-> (same as QE block, for example). So "depends on" here is just
-> no-op, since select disregards dependencies. Still want this?
+Acked-by: Jan-Bernd Themann <themann@de.ibm.com>
 
-I do, its at least documentation if its not used.
-
-- k
+Thanks,
+Jan-Bernd
