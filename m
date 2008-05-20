@@ -1,18 +1,14 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH 1/1] ibmvscsi: Non SCSI error status fixup
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Dave Boutcher <boutcher@cs.umn.edu>
-In-Reply-To: <18481.41759.969242.972595@gargle.gargle.HOWL>
-References: <12112108763801-patch-mail.ibm.com>
-	<18481.41759.969242.972595@gargle.gargle.HOWL>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-L5gvyCOdoAj7bRlE13sR"
-Date: Tue, 20 May 2008 11:08:08 +1000
-Message-Id: <1211245688.12970.0.camel@localhost>
-Mime-Version: 1.0
-Cc: Brian King <brking@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org
-Reply-To: michael@ellerman.id.au
+Return-Path: <dgibson@ozlabs.org>
+Date: Tue, 20 May 2008 11:13:04 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Remi Machet <rmachet@slac.stanford.edu>
+Subject: Re: [PATCH 1/5 v3] powerpc: DTS file for the C2K
+Message-ID: <20080520011304.GG22279@yookeroo.seuss>
+References: <1211241624.19212.29.camel@pcds-ts102.slac.stanford.edu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1211241624.19212.29.camel@pcds-ts102.slac.stanford.edu>
+Cc: Linux PPC <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,46 +18,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Mon, May 19, 2008 at 05:00:23PM -0700, Remi Machet wrote:
+> Support for the C2K cPCI Single Board Computer from GEFanuc
+> (PowerPC MPC7448 with a Marvell MV64460 chipset)
+> All features of the board are not supported yet, but the board
+> boots, flash works, all Ethernet ports are working and PCI 
+> devices are all found (USB and SATA on PCI1 do not work yet).
+> 
+> Part 1 of 5: DTS file describing the board peripherals. As far as I know
+> all peripherals except the FPGA are listed in there (I did not included
+> the FPGA because a lot of work is needed there).
 
---=-L5gvyCOdoAj7bRlE13sR
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+[snip]
+> +		ethernet-group@2000 {
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +			compatible = "marvell,mv64360-eth-group";
+> +			reg = <0x2000 0x2000>;
+> +			PHY0: ethernet-phy@0 {
+> +				device_type = "ethernet-phy";
+> +				interrupts = <76>;	/* GPP 12 */
+> +				interrupt-parent = <&PIC>;
+> +				reg = <0>;
+> +			};
+> +			ethernet@0 {
+> +				device_type = "network";
+> +				compatible = "marvell,mv64360-eth";
+> +				reg = <0>;
+> +				interrupts = <32>;
+> +				interrupt-parent = <&PIC>;
+> +				phy = <&PHY0>;
+> +				local-mac-address = [ 00 00 00 00 00 00 ];
+> +			};
 
-On Mon, 2008-05-19 at 10:56 -0500, Dave Boutcher wrote:
-> On Mon, 19 May 2008 10:27:56 -0500, Brian King <brking@linux.vnet.ibm.com=
-> said:
-> >=20
-> > Some versions of the Virtual I/O Server on Power
-> > return 0x99 in the non-SCSI error status field as success,
-> > rather than 0. This fixes the ibmvscsi driver to treat this
-> > response as success.
->=20
-> Yeah....0x99...that's an intuitive value for success.
+Not sure if this is new, or I just didn't notice it before.  Also not
+sure if this is your mistake, or a mistake in the binding for the
+marvell device here.
 
-Hopefully there are no versions that return 0x99 for an error? :)
+The address in "reg" should be unique within the bus the device
+appears on.  So having both the PHY and the MAC devices with the same
+"reg" and same unit address here is bad.
 
-cheers
+Having both the PHYs and the MACs as children of the ethernet-group
+node is possible, but the addresses must be encoded to distinguish
+them (e.g. MACs are 0x0, 0x1, 0x2, PHYS are 0x1000 0x1001 0x1002).
 
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-L5gvyCOdoAj7bRlE13sR
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD4DBQBIMiR4dSjSd0sB4dIRAofBAJ0R/N+dI3Caoi90uWFds1UcvKGgVQCYlzq2
-18Dexvr0XL1KAZ3oOvULsw==
-=olCB
------END PGP SIGNATURE-----
-
---=-L5gvyCOdoAj7bRlE13sR--
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
