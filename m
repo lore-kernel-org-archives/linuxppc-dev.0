@@ -1,22 +1,18 @@
-Return-Path: <rostedt@goodmis.org>
-Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
-	[71.74.56.125]) by ozlabs.org (Postfix) with ESMTP id 77A19DDFEB
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 May 2008 00:52:00 +1000 (EST)
-Date: Tue, 20 May 2008 10:51:58 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 2/2] ftrace: support for PowerPC
-In-Reply-To: <1211293059.8297.166.camel@pasglop>
-Message-ID: <Pine.LNX.4.58.0805201051210.2210@gandalf.stny.rr.com>
-References: <20080515034942.109223655@goodmis.org>
-	<20080515035918.896765954@goodmis.org>
-	<1211292277.7960.8.camel@localhost> <1211293059.8297.166.camel@pasglop>
+Return-Path: <runet@innovsys.com>
+Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
+	by ozlabs.org (Postfix) with ESMTP id 8B3E4DDF83
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 May 2008 00:52:52 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: proski@gnu.org, a.p.zijlstra@chello.nl, pq@iki.fi,
-	linux-kernel@vger.kernel.org,
-	Steven Rostedt <srostedt@redhat.com>, linuxppc-dev@ozlabs.org,
-	sandmann@redhat.com, paulus@samba.org, Ingo Molnar <mingo@elte.hu>
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: Oops in fs_enet driver with preempt-rt
+Date: Tue, 20 May 2008 09:53:14 -0500
+Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B046E72C3@ismail.innsys.innovsys.com>
+In-Reply-To: <DCEAAC0833DD314AB0B58112AD99B93B046E728C@ismail.innsys.innovsys.com>
+References: <DCEAAC0833DD314AB0B58112AD99B93B046E728C@ismail.innsys.innovsys.com>
+From: "Rune Torgersen" <runet@innovsys.com>
+To: <linux-kernel@vger.kernel.org>, <linuxppc-dev@ozlabs.org>,
+	<netdev@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,14 +22,72 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Rune Torgersen wrote:
+> Hi
+> I am trying to get preempt-rt (v2.6.25.4-rt1) to work on a Freescale
+> 8280 CPU (arch/powerpc)=20
+>=20
+> I get the follwing oops when trying to enable ethernet:
+> (looks like a null pointer dereference in
+> drivers/net/fs_enet/fs_enet-main.c:106)
 
-On Tue, 20 May 2008, Benjamin Herrenschmidt wrote:
+And if I disable NAPI I get this one instead:
 
-> > Why do we not want to trace early boot? Just because it's not useful?
->
-> Not running at the linked address... might be causing trouble.
+Bringing up the eth1 interface...Unable to handle kernel paging request
+for data at address 0x00000000
+Faulting instruction address: 0xc019706c
+Oops: Kernel access of bad area, sig: 11 [#1]
+PREEMPT Innovative Systems ApMax
+Modules linked in:
+NIP: c019706c LR: c0196d84 CTR: c0198790
+REGS: ef2c3cb0 TRAP: 0300   Not tainted  (2.6.25.4-rt1)
+MSR: 00009032 <EE,ME,IR,DR>  CR: 42004222  XER: 00000000
+DAR: 00000000, DSISR: 20000000
+TASK =3D ef2ac590[114] 'ifconfig' THREAD: ef2c2000
+GPR00: 00000000 ef2c3d60 ef2ac590 ef37f000 00000008 00000000 ef2c3d5c
+0000008c
+GPR08: ef2c3d38 00000008 ef2c3d40 00000001 22000222 10021454 00000000
+100a37b0
+GPR16: 10090000 ef3e71e0 ef3e71e0 00000000 10070000 00000008 100192c0
+00008914
+GPR24: ef37f000 ef37f5a0 00000000 c0196d34 00000000 ef37f5a0 fffffff4
+ef2973a0
+NIP [c019706c] fs_enet_interrupt+0x338/0x5f4
+LR [c0196d84] fs_enet_interrupt+0x50/0x5f4
+Call Trace:
+[ef2c3d60] [c024a270] __spin_unlock_irqrestore+0x20/0x4c (unreliable)
+[ef2c3db0] [c0049a04] request_irq+0xb8/0xfc
+[ef2c3de0] [c0198044] fs_enet_open+0x8c/0x210
+[ef2c3e00] [c01d9b4c] dev_open+0x80/0xe8
+[ef2c3e10] [c01d89ac] dev_change_flags+0xc8/0x19c
+[ef2c3e30] [c021bfb0] devinet_ioctl+0x284/0x6f0
+[ef2c3e90] [c021c8fc] inet_ioctl+0xc0/0xf4
+[ef2c3ea0] [c01cbec4] sock_ioctl+0x200/0x23c
+[ef2c3ec0] [c00810c0] vfs_ioctl+0x44/0xa8
+[ef2c3ee0] [c0081520] do_vfs_ioctl+0x3fc/0x440
+[ef2c3f10] [c00815a4] sys_ioctl+0x40/0x70
+[ef2c3f40] [c000fcf0] ret_from_syscall+0x0/0x38
+--- Exception: c01 at 0xff6a37c
+    LR =3D 0xffecd58
+Instruction dump:
+7c0004ac b01c0000 72e02000 3b9c0008 41820008 839d00bc 813d00a0 7f03c378
+81290034 7d2903a6 4e800421 7c0004ac <a01c0000> 0c000000 4c00012c
+5417043e
+---[ end trace 61ff5e5c97ddf707 ]---
 
-I figured it was something like that, so I didn't look too deep into it,
-and decided that it was best just not to trace it.
+Seems to be caused by line 471 in fs_enet_main:
 
--- Steve
+0xc0196d84 is in fs_enet_interrupt
+(drivers/net/fs_enet/fs_enet-main.c:473).
+468                     if (fpi->use_napi)
+469                             int_clr_events &=3D ~fep->ev_napi_rx;
+470
+471                     (*fep->ops->clear_int_events)(dev,
+int_clr_events);
+472
+473                     if (int_events & fep->ev_err)
+474                             (*fep->ops->ev_error)(dev, int_events);
+475
+476                     if (int_events & fep->ev_rx) {
+477                             if (!fpi->use_napi)
+(gdb)    =20
