@@ -1,28 +1,23 @@
-Return-Path: <Thomas.Hommel@gefanuc.com>
-Received: from ext-ch1gw-6.online-age.net (ext-ch1gw-6.online-age.net
-	[64.37.194.14])
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "ext-ch1gw.online-age.net",
-	Issuer "Savvis Communications Root CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 09548DDEF1
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 May 2008 01:32:39 +1000 (EST)
-Received: from int-ch1gw-3.online-age.net (int-ch1gw-3 [3.159.232.67])
-	by ext-ch1gw-6.online-age.net (8.13.6/8.13.6/20051111-SVVS-TLS-DNSBL)
-	with ESMTP id m4KF77pY001278
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 May 2008 11:07:07 -0400
-Received: from ALPMLEF02.e2k.ad.ge.com (int-ch1gw-3 [3.159.232.67])
-	by int-ch1gw-3.online-age.net (8.13.6/8.13.6/20050510-SVVS) with ESMTP
-	id m4KF75Dr024204
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 May 2008 11:07:06 -0400 (EDT)
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 06A27DE350
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 May 2008 01:41:07 +1000 (EST)
+Message-ID: <4832F139.1020502@freescale.com>
+Date: Tue, 20 May 2008 10:41:45 -0500
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: Configuring virtual memory layout
-Date: Tue, 20 May 2008 17:06:34 +0200
-Message-ID: <62DDBB9E5E23CC4A929EE46F9427CEAFB11319@BUDMLVEM04.e2k.ad.ge.com>
-From: "Hommel, Thomas (GE EntSol,
-	Intelligent Platforms)" <Thomas.Hommel@gefanuc.com>
-To: <linuxppc-dev@ozlabs.org>
+To: Rune Torgersen <runet@innovsys.com>
+Subject: Re: Oops in fs_enet driver with preempt-rt
+References: <DCEAAC0833DD314AB0B58112AD99B93B046E728C@ismail.innsys.innovsys.com>
+	<DCEAAC0833DD314AB0B58112AD99B93B046E72C3@ismail.innsys.innovsys.com>
+In-Reply-To: <DCEAAC0833DD314AB0B58112AD99B93B046E72C3@ismail.innsys.innovsys.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,20 +27,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello,
-I am trying to figure out how to configure the virtual memory layout in
-the kernel.
-To increase the size of the Vmalloc area, I have set KERNEL_START to
-0xa0000000 and have left LOWMEM_SIZE at 0x30000000. The other parameters
-in 'Advanced setup' are unchanged.
-This works fine with 512 MB of RAM. However, with 1 GB of RAM installed,
-the system shows odd behavior, crashes, faults, ... This seems to be due
-to the fact that it then uses 256 MB of high memory.
+Rune Torgersen wrote:
+> 0xc0196d84 is in fs_enet_interrupt
+> (drivers/net/fs_enet/fs_enet-main.c:473).
+> 468                     if (fpi->use_napi)
+> 469                             int_clr_events &= ~fep->ev_napi_rx;
+> 470
+> 471                     (*fep->ops->clear_int_events)(dev,
+> int_clr_events);
+> 472
+> 473                     if (int_events & fep->ev_err)
+> 474                             (*fep->ops->ev_error)(dev, int_events);
+> 475
+> 476                     if (int_events & fep->ev_rx) {
+> 477                             if (!fpi->use_napi)
+> (gdb)     
 
-I played around with HIGHMEM_START, but couldn't get a working setting.
+Do you have shared interrupt debugging turned on?  That breaks this 
+driver, and a patch to remove the shared flag was nacked in favor of 
+actually fixing the driver, which I haven't gotten around to.
 
-How do these parameters have to be configured correctly? Is there any
-documentation for that?
-
-Thanks for your help
-Thomas
+-Scott
