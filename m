@@ -1,19 +1,14 @@
-Return-Path: <david-b@pacbell.net>
-Received: from smtp116.sbc.mail.sp1.yahoo.com (smtp116.sbc.mail.sp1.yahoo.com
-	[69.147.64.89]) by ozlabs.org (Postfix) with SMTP id 6DF03DDF42
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 May 2008 10:45:28 +1000 (EST)
-From: David Brownell <david-b@pacbell.net>
-To: Laurent Pinchart <laurentp@cse-semaphore.com>
-Subject: Re: [RFC] GPIO-based flow control in the cpm_uart driver
-Date: Mon, 19 May 2008 17:31:33 -0700
-References: <200804151522.36884.laurentp@cse-semaphore.com>
-	<20080415134007.GA17096@polina.dev.rtsoft.ru>
-	<200804151547.44052.laurentp@cse-semaphore.com>
-In-Reply-To: <200804151547.44052.laurentp@cse-semaphore.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200805191731.33193.david-b@pacbell.net>
+Return-Path: <jdl@jdl.com>
+Received: from jdl.com (jdl.com [208.123.74.7])
+	by ozlabs.org (Postfix) with ESMTP id CC5B0DDF58
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 May 2008 10:53:21 +1000 (EST)
+To: David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: DTC patches 
+In-reply-to: <20080520002225.GC22279@yookeroo.seuss> 
+References: <E1JyAwJ-0004Fz-9A@jdl.com> <20080520002225.GC22279@yookeroo.seuss>
+Date: Mon, 19 May 2008 19:53:14 -0500
+From: Jon Loeliger <jdl@jdl.com>
+Message-Id: <E1JyG6M-0004up-Fl@jdl.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -24,16 +19,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tuesday 15 April 2008, Laurent Pinchart wrote:
-> Or maybe some kind of gpio_set_option() with flags specific to the 
-> controller ? This could be used to enable open-drain outputs or internal 
-> pull-ups for instance.
+> On Mon, May 19, 2008 at 02:22:31PM -0500, Jon Loeliger wrote:
+>
+> This leaves one outstanding dtc patch from me; the v0 to v1 conversion
+> program.
 
-That presumes that the pin config is associated with the GPIO
-controller, rather than being an independent modules...
+Ah, I wasn't sure if we wanted to include that in
+the mess or not.  There's a theory that says we've
+converted them all and don't need to do it ever again. :-)
 
-In the cases that a platform has such an association, there
-should be no problem just using a platform-specific code to
-do the relevant magic.
-
-- Dave
+jdl
