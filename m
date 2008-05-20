@@ -1,15 +1,17 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 9BEDBDDEF0
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 May 2008 15:04:08 +1000 (EST)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v4] [POWERPC] Move to runtime allocated exception stacks
-Date: Tue, 20 May 2008 00:02:45 -0500
-Message-Id: <1211259767-4796-1-git-send-email-galak@kernel.crashing.org>
-Cc: paulus@samba.org
+Return-Path: <dgibson@ozlabs.org>
+Date: Tue, 20 May 2008 15:10:54 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 0/4] minor fixes for 2.6.26
+Message-ID: <20080520051054.GN22279@yookeroo.seuss>
+References: <1211136296-4572-1-git-send-email-galak@kernel.crashing.org>
+	<0B367446-4628-4633-BF66-A0007BD9A98B@kernel.crashing.org>
+	<18482.2082.900892.368978@cargo.ozlabs.ibm.com>
+	<119050FE-2BF4-4A45-8723-7A08EF38B290@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <119050FE-2BF4-4A45-8723-7A08EF38B290@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,285 +21,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-For the additonal exception levels (critical, debug, machine check) on
-40x/book-e we were using "static" allocations of the stack in the
-associated head.S.
+On Mon, May 19, 2008 at 11:52:31PM -0500, Kumar Gala wrote:
+>
+> On May 19, 2008, at 6:07 PM, Paul Mackerras wrote:
+>
+>> Kumar Gala writes:
+>>
+>>>> Kumar Gala (4):
+>>>>     lmb: Fix compile warning
+>>>>     [POWERPC] Remove generated files on make clean
+>>
+>> I think that adding zImage.* to clean-files is a bad idea, because we
+>> have zImage.lds.S, zImage.coff.lds.S and zImage.ps3.lds.S in
+>> arch/powerpc/boot that we don't want deleted.  It would be OK for
+>> compiling with a separate object directory but would be bad for
+>> compiling in the source directory.
+>
+> We already had them in clean-files:
+>
+> clean-files := $(zlib) $(zlibheader) $(zliblinuxheader) \
+>                 empty.c zImage zImage.coff.lds zImage.ps3.lds zImage.lds
 
-Move to a runtime allocation to make the code a bit easier to read as
-we mimic how we handle IRQ stacks.  Its also a bit easier to setup the
-stack with a "dummy" thread_info in C code.
+Not quite.  Those are the zImage.lds files, Paul is talking about the
+zImage.lds.S files from which the former are generated.
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
----
-
-Fixed 40x handling based on Josh's feedback and help.
-
-- k
-
- arch/powerpc/kernel/head_40x.S       |   19 +++++--------------
- arch/powerpc/kernel/head_44x.S       |    9 ---------
- arch/powerpc/kernel/head_booke.h     |   29 +++++++++++------------------
- arch/powerpc/kernel/head_fsl_booke.S |    9 ---------
- arch/powerpc/kernel/irq.c            |   33 +++++++++++++++++++++++++++++++++
- arch/powerpc/kernel/setup_32.c       |   24 ++++++++++++++++++++++++
- include/asm-powerpc/irq.h            |   13 +++++++++++++
- 7 files changed, 86 insertions(+), 50 deletions(-)
-
-diff --git a/arch/powerpc/kernel/head_40x.S b/arch/powerpc/kernel/head_40x.S
-index 8552e67..8ef77e3 100644
---- a/arch/powerpc/kernel/head_40x.S
-+++ b/arch/powerpc/kernel/head_40x.S
-@@ -148,14 +148,15 @@ _ENTRY(crit_r11)
- 	mfcr	r10;			/* save CR in r10 for now	   */\
- 	mfspr	r11,SPRN_SRR3;		/* check whether user or kernel    */\
- 	andi.	r11,r11,MSR_PR;						     \
--	lis	r11,critical_stack_top@h;				     \
--	ori	r11,r11,critical_stack_top@l;				     \
-+	lis	r11,critirq_ctx@ha;					     \
-+	tophys(r11,r11);						     \
-+	lwz	r11,critirq_ctx@l(r11);					     \
- 	beq	1f;							     \
- 	/* COMING FROM USER MODE */					     \
- 	mfspr	r11,SPRN_SPRG3;		/* if from user, start at top of   */\
- 	lwz	r11,THREAD_INFO-THREAD(r11); /* this thread's kernel stack */\
--	addi	r11,r11,THREAD_SIZE;					     \
--1:	subi	r11,r11,INT_FRAME_SIZE;	/* Allocate an exception frame     */\
-+1:	addi	r11,r11,THREAD_SIZE;					     \
-+	subi	r11,r11,INT_FRAME_SIZE;	/* Allocate an exception frame     */\
- 	tophys(r11,r11);						     \
- 	stw	r10,_CCR(r11);          /* save various registers	   */\
- 	stw	r12,GPR12(r11);						     \
-@@ -996,16 +997,6 @@ empty_zero_page:
- swapper_pg_dir:
- 	.space	PGD_TABLE_SIZE
- 
--
--/* Stack for handling critical exceptions from kernel mode */
--	.section .bss
--        .align 12
--exception_stack_bottom:
--	.space	4096
--critical_stack_top:
--	.globl	exception_stack_top
--exception_stack_top:
--
- /* Room for two PTE pointers, usually the kernel and current user pointers
-  * to their respective root page table.
-  */
-diff --git a/arch/powerpc/kernel/head_44x.S b/arch/powerpc/kernel/head_44x.S
-index c2b9dc4..47ea8af 100644
---- a/arch/powerpc/kernel/head_44x.S
-+++ b/arch/powerpc/kernel/head_44x.S
-@@ -737,15 +737,6 @@ empty_zero_page:
- swapper_pg_dir:
- 	.space	PGD_TABLE_SIZE
- 
--/* Reserved 4k for the critical exception stack & 4k for the machine
-- * check stack per CPU for kernel mode exceptions */
--	.section .bss
--        .align 12
--exception_stack_bottom:
--	.space	BOOKE_EXCEPTION_STACK_SIZE
--	.globl	exception_stack_top
--exception_stack_top:
--
- /*
-  * Room for two PTE pointers, usually the kernel and current user pointers
-  * to their respective root page table.
-diff --git a/arch/powerpc/kernel/head_booke.h b/arch/powerpc/kernel/head_booke.h
-index 721faef..9eacf4c 100644
---- a/arch/powerpc/kernel/head_booke.h
-+++ b/arch/powerpc/kernel/head_booke.h
-@@ -43,9 +43,7 @@
- 	SAVE_2GPRS(7, r11)
- 
- /* To handle the additional exception priority levels on 40x and Book-E
-- * processors we allocate a 4k stack per additional priority level. The various
-- * head_xxx.S files allocate space (exception_stack_top) for each priority's
-- * stack times the number of CPUs
-+ * processors we allocate a stack per additional priority level.
-  *
-  * On 40x critical is the only additional level
-  * On 44x/e500 we have critical and machine check
-@@ -61,36 +59,31 @@
-  * going to critical or their own debug level we aren't currently
-  * providing configurations that micro-optimize space usage.
-  */
--#ifdef CONFIG_44x
--#define NUM_EXCEPTION_LVLS	2
--#else
--#define NUM_EXCEPTION_LVLS	3
--#endif
--#define BOOKE_EXCEPTION_STACK_SIZE	(4096 * NUM_EXCEPTION_LVLS)
- 
- /* CRIT_SPRG only used in critical exception handling */
- #define CRIT_SPRG	SPRN_SPRG2
- /* MCHECK_SPRG only used in machine check exception handling */
- #define MCHECK_SPRG	SPRN_SPRG6W
- 
--#define MCHECK_STACK_TOP	(exception_stack_top - 4096)
--#define CRIT_STACK_TOP		(exception_stack_top)
-+#define MCHECK_STACK_BASE	mcheckirq_ctx
-+#define CRIT_STACK_BASE		critirq_ctx
- 
- /* only on e200 for now */
--#define DEBUG_STACK_TOP		(exception_stack_top - 8192)
-+#define DEBUG_STACK_BASE	dbgirq_ctx
- #define DEBUG_SPRG		SPRN_SPRG6W
- 
- #ifdef CONFIG_SMP
- #define BOOKE_LOAD_EXC_LEVEL_STACK(level)		\
- 	mfspr	r8,SPRN_PIR;				\
--	mulli	r8,r8,BOOKE_EXCEPTION_STACK_SIZE;	\
--	neg	r8,r8;					\
--	addis	r8,r8,level##_STACK_TOP@ha;		\
--	addi	r8,r8,level##_STACK_TOP@l
-+	slwi	r8,r8,2;				\
-+	addis	r8,r8,level##_STACK_BASE@ha;		\
-+	lwz	r8,level##_STACK_BASE@l(r8);		\
-+	addi	r8,r8,THREAD_SIZE;
- #else
- #define BOOKE_LOAD_EXC_LEVEL_STACK(level)		\
--	lis	r8,level##_STACK_TOP@h;			\
--	ori	r8,r8,level##_STACK_TOP@l
-+	lis	r8,level##_STACK_BASE@ha;		\
-+	lwz	r8,level##_STACK_BASE@l(r8);		\
-+	addi	r8,r8,THREAD_SIZE;
- #endif
- 
- /*
-diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
-index e581524..503f860 100644
---- a/arch/powerpc/kernel/head_fsl_booke.S
-+++ b/arch/powerpc/kernel/head_fsl_booke.S
-@@ -1080,15 +1080,6 @@ empty_zero_page:
- swapper_pg_dir:
- 	.space	PGD_TABLE_SIZE
- 
--/* Reserved 4k for the critical exception stack & 4k for the machine
-- * check stack per CPU for kernel mode exceptions */
--	.section .bss
--	.align 12
--exception_stack_bottom:
--	.space	BOOKE_EXCEPTION_STACK_SIZE * NR_CPUS
--	.globl	exception_stack_top
--exception_stack_top:
--
- /*
-  * Room for two PTE pointers, usually the kernel and current user pointers
-  * to their respective root page table.
-diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-index 2f73f70..b519975 100644
---- a/arch/powerpc/kernel/irq.c
-+++ b/arch/powerpc/kernel/irq.c
-@@ -356,9 +356,42 @@ void __init init_IRQ(void)
- {
- 	if (ppc_md.init_IRQ)
- 		ppc_md.init_IRQ();
-+
-+	exc_lvl_ctx_init();
-+
- 	irq_ctx_init();
- }
- 
-+#if defined(CONFIG_BOOKE) || defined(CONFIG_40x)
-+struct thread_info   *critirq_ctx[NR_CPUS] __read_mostly;
-+struct thread_info    *dbgirq_ctx[NR_CPUS] __read_mostly;
-+struct thread_info *mcheckirq_ctx[NR_CPUS] __read_mostly;
-+
-+void exc_lvl_ctx_init(void)
-+{
-+	struct thread_info *tp;
-+	int i;
-+
-+	for_each_possible_cpu(i) {
-+		memset((void *)critirq_ctx[i], 0, THREAD_SIZE);
-+		tp = critirq_ctx[i];
-+		tp->cpu = i;
-+		tp->preempt_count = 0;
-+
-+#ifdef CONFIG_BOOKE
-+		memset((void *)dbgirq_ctx[i], 0, THREAD_SIZE);
-+		tp = dbgirq_ctx[i];
-+		tp->cpu = i;
-+		tp->preempt_count = 0;
-+
-+		memset((void *)mcheckirq_ctx[i], 0, THREAD_SIZE);
-+		tp = mcheckirq_ctx[i];
-+		tp->cpu = i;
-+		tp->preempt_count = HARDIRQ_OFFSET;
-+#endif
-+	}
-+}
-+#endif
- 
- #ifdef CONFIG_IRQSTACKS
- struct thread_info *softirq_ctx[NR_CPUS] __read_mostly;
-diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
-index 5112a4a..bef0be3 100644
---- a/arch/powerpc/kernel/setup_32.c
-+++ b/arch/powerpc/kernel/setup_32.c
-@@ -248,6 +248,28 @@ static void __init irqstack_early_init(void)
- #define irqstack_early_init()
- #endif
- 
-+#if defined(CONFIG_BOOKE) || defined(CONFIG_40x)
-+static void __init exc_lvl_early_init(void)
-+{
-+	unsigned int i;
-+
-+	/* interrupt stacks must be in lowmem, we get that for free on ppc32
-+	 * as the lmb is limited to lowmem by LMB_REAL_LIMIT */
-+	for_each_possible_cpu(i) {
-+		critirq_ctx[i] = (struct thread_info *)
-+			__va(lmb_alloc(THREAD_SIZE, THREAD_SIZE));
-+#ifdef CONFIG_BOOKE
-+		dbgirq_ctx[i] = (struct thread_info *)
-+			__va(lmb_alloc(THREAD_SIZE, THREAD_SIZE));
-+		mcheckirq_ctx[i] = (struct thread_info *)
-+			__va(lmb_alloc(THREAD_SIZE, THREAD_SIZE));
-+#endif
-+	}
-+}
-+#else
-+#define exc_lvl_early_init()
-+#endif
-+
- /* Warning, IO base is not yet inited */
- void __init setup_arch(char **cmdline_p)
- {
-@@ -305,6 +327,8 @@ void __init setup_arch(char **cmdline_p)
- 	init_mm.end_data = (unsigned long) _edata;
- 	init_mm.brk = klimit;
- 
-+	exc_lvl_early_init();
-+
- 	irqstack_early_init();
- 
- 	/* set up the bootmem stuff with available memory */
-diff --git a/include/asm-powerpc/irq.h b/include/asm-powerpc/irq.h
-index 5089deb..1ef8e30 100644
---- a/include/asm-powerpc/irq.h
-+++ b/include/asm-powerpc/irq.h
-@@ -619,6 +619,19 @@ struct pt_regs;
- 
- #define __ARCH_HAS_DO_SOFTIRQ
- 
-+#if defined(CONFIG_BOOKE) || defined(CONFIG_40x)
-+/*
-+ * Per-cpu stacks for handling critical, debug and machine check
-+ * level interrupts.
-+ */
-+extern struct thread_info *critirq_ctx[NR_CPUS];
-+extern struct thread_info *dbgirq_ctx[NR_CPUS];
-+extern struct thread_info *mcheckirq_ctx[NR_CPUS];
-+extern void exc_lvl_ctx_init(void);
-+#else
-+#define exc_lvl_ctx_init()
-+#endif
-+
- #ifdef CONFIG_IRQSTACKS
- /*
-  * Per-cpu stacks for handling hard and soft interrupts.
 -- 
-1.5.4.5
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
