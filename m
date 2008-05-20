@@ -1,18 +1,24 @@
-Return-Path: <runet@innovsys.com>
-Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
-	by ozlabs.org (Postfix) with ESMTP id 8B3E4DDF83
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 May 2008 00:52:52 +1000 (EST)
+Return-Path: <g.liakhovetski@gmx.de>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id DD8EADE6FB
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 May 2008 01:26:42 +1000 (EST)
+Date: Tue, 20 May 2008 17:26:46 +0200 (CEST)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH 3/4] spi: Add OF binding support for SPI busses
+In-Reply-To: <fa686aa40805192213y485c4ba2u750748f8201e0377@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0805201650280.5283@axis700.grange>
+References: <20080516193054.28030.35126.stgit@trillian.secretlab.ca>
+	<20080516193613.28030.13950.stgit@trillian.secretlab.ca>
+	<Pine.LNX.4.64.0805191446530.27140@axis700.grange>
+	<fa686aa40805190857u317d3304ie75d11870e109fc5@mail.gmail.com>
+	<Pine.LNX.4.64.0805191811510.29559@axis700.grange>
+	<fa686aa40805192213y485c4ba2u750748f8201e0377@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: Oops in fs_enet driver with preempt-rt
-Date: Tue, 20 May 2008 09:53:14 -0500
-Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B046E72C3@ismail.innsys.innovsys.com>
-In-Reply-To: <DCEAAC0833DD314AB0B58112AD99B93B046E728C@ismail.innsys.innovsys.com>
-References: <DCEAAC0833DD314AB0B58112AD99B93B046E728C@ismail.innsys.innovsys.com>
-From: "Rune Torgersen" <runet@innovsys.com>
-To: <linux-kernel@vger.kernel.org>, <linuxppc-dev@ozlabs.org>,
-	<netdev@vger.kernel.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: fabrizio.garetto@gmail.com, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, dbrownell@users.sourceforge.net,
+	spi-devel-general@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,72 +28,106 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Rune Torgersen wrote:
-> Hi
-> I am trying to get preempt-rt (v2.6.25.4-rt1) to work on a Freescale
-> 8280 CPU (arch/powerpc)=20
->=20
-> I get the follwing oops when trying to enable ethernet:
-> (looks like a null pointer dereference in
-> drivers/net/fs_enet/fs_enet-main.c:106)
+On Mon, 19 May 2008, Grant Likely wrote:
 
-And if I disable NAPI I get this one instead:
+> I'm not so fond of this approach.  cs-parent doesn't seem to make much
+> sense to me.  It might be better to have a cs-handler property on the
+> SPI bus node instead of on the SPI slave nodes, but even then it
+> leaves a number of questions about what it really means.  In some
+> cases it would be overkill.  For example, if the SPI node simply had
+> multiple GPIO lines then an extra cs-parent node wouldn't be needed at
+> all.
 
-Bringing up the eth1 interface...Unable to handle kernel paging request
-for data at address 0x00000000
-Faulting instruction address: 0xc019706c
-Oops: Kernel access of bad area, sig: 11 [#1]
-PREEMPT Innovative Systems ApMax
-Modules linked in:
-NIP: c019706c LR: c0196d84 CTR: c0198790
-REGS: ef2c3cb0 TRAP: 0300   Not tainted  (2.6.25.4-rt1)
-MSR: 00009032 <EE,ME,IR,DR>  CR: 42004222  XER: 00000000
-DAR: 00000000, DSISR: 20000000
-TASK =3D ef2ac590[114] 'ifconfig' THREAD: ef2c2000
-GPR00: 00000000 ef2c3d60 ef2ac590 ef37f000 00000008 00000000 ef2c3d5c
-0000008c
-GPR08: ef2c3d38 00000008 ef2c3d40 00000001 22000222 10021454 00000000
-100a37b0
-GPR16: 10090000 ef3e71e0 ef3e71e0 00000000 10070000 00000008 100192c0
-00008914
-GPR24: ef37f000 ef37f5a0 00000000 c0196d34 00000000 ef37f5a0 fffffff4
-ef2973a0
-NIP [c019706c] fs_enet_interrupt+0x338/0x5f4
-LR [c0196d84] fs_enet_interrupt+0x50/0x5f4
-Call Trace:
-[ef2c3d60] [c024a270] __spin_unlock_irqrestore+0x20/0x4c (unreliable)
-[ef2c3db0] [c0049a04] request_irq+0xb8/0xfc
-[ef2c3de0] [c0198044] fs_enet_open+0x8c/0x210
-[ef2c3e00] [c01d9b4c] dev_open+0x80/0xe8
-[ef2c3e10] [c01d89ac] dev_change_flags+0xc8/0x19c
-[ef2c3e30] [c021bfb0] devinet_ioctl+0x284/0x6f0
-[ef2c3e90] [c021c8fc] inet_ioctl+0xc0/0xf4
-[ef2c3ea0] [c01cbec4] sock_ioctl+0x200/0x23c
-[ef2c3ec0] [c00810c0] vfs_ioctl+0x44/0xa8
-[ef2c3ee0] [c0081520] do_vfs_ioctl+0x3fc/0x440
-[ef2c3f10] [c00815a4] sys_ioctl+0x40/0x70
-[ef2c3f40] [c000fcf0] ret_from_syscall+0x0/0x38
---- Exception: c01 at 0xff6a37c
-    LR =3D 0xffecd58
-Instruction dump:
-7c0004ac b01c0000 72e02000 3b9c0008 41820008 839d00bc 813d00a0 7f03c378
-81290034 7d2903a6 4e800421 7c0004ac <a01c0000> 0c000000 4c00012c
-5417043e
----[ end trace 61ff5e5c97ddf707 ]---
+Right, it is optional.
 
-Seems to be caused by line 471 in fs_enet_main:
+> Then there are the complex arrangements.  When setting CS
+> requires inserting a special 'set cs' SPI message at the right time.
+> Or worse; when setting CS requires /modifying/ the sent SPI message.
 
-0xc0196d84 is in fs_enet_interrupt
-(drivers/net/fs_enet/fs_enet-main.c:473).
-468                     if (fpi->use_napi)
-469                             int_clr_events &=3D ~fep->ev_napi_rx;
-470
-471                     (*fep->ops->clear_int_events)(dev,
-int_clr_events);
-472
-473                     if (int_events & fep->ev_err)
-474                             (*fep->ops->ev_error)(dev, int_events);
-475
-476                     if (int_events & fep->ev_rx) {
-477                             if (!fpi->use_napi)
-(gdb)    =20
+Hm, are there actually such SPI _controllers_ that use SPI data to toggle 
+chipselects? I.e., you would have to send your SPI client data (for the 
+RTC or whatever) plus some extra bytes or with some modifications, and 
+this extra information would then be intercepted by the SPI _controller_ 
+itself and only client data would be sent out? Isn't what you're 
+describing really a case of an SPI bridge, as you also call it below? In 
+which case, I think, it might make sense to cleanly differentiate these 
+two cases:
+
+1. SPI chipselect. Either controlled by an external (typically a GPIO) 
+signal or by the controller itself, in the latter case the controller has 
+to be configured with the required address
+
+2. SPI bridge. I don't know such configurations, so, I can only guess: the 
+SPI controller has a single SPI client, which acts like a bridge. It 
+receives data from the primary host, and in this data the target client 
+data and its address are encoded.
+
+Now, I can also imagine case 2 where the bridge is actually a part of the 
+host controller... Even though this doesn't make any sense to me.
+
+> Essentially, the binding would need to describe the ability to
+> completely intercept and rewrite all SPI messages going through the CS
+> scheme.
+> 
+> I'm not saying it's not possible to do, but I am saying that I'd like
+> to have a better feel for all the use cases before it is defined.  I'm
+> not convinced that adding a cs-parent phandle will do that
+> appropriately.  That being said, my gut feel is that the solution will
+> be to support spi-bridge nodes that handle the complex CS
+> configuration settings; the spi-bridge would be a child of the
+> spi-master and the parent of the spi devices; and simple CS settings
+> being handled with regular old GPIO bindings.  (Much like the last
+> suggestion you make; except that I think that it *does* looks
+> elegant.)  :-)
+
+Ok, elegance apart:-) You can use the SPI-bridge construct to also 
+describe simple SPI-chipselect configurations. But is it really a good 
+idea? Wouldn't it be better to handle these two cases separately? Using 
+"bridge" to describe CS's seems also confusing - imagine someone 
+implementing a new DTS, having to describe a bridge not having one doesn't 
+seem very intuitive:-)
+
+> example; here's an SPI bus that has 2 GPIOs for two bus CS lines and
+> an SPI bridge that uses both CSes; one address for accessing the
+> bridge's CS register and one CS to access the downstream devices.
+> 
+> +    SPI example for an MPC5200 SPI bus:
+> +               spi@f00 {
+> +                   #address-cells = <1>;
+> +                   #size-cells = <0>;
+> +                   compatible = "fsl,mpc5200b-spi","fsl,mpc5200-spi";
+> +                   reg = <0xf00 0x20>;
+> +                   interrupts = <2 13 0 2 14 0>;
+> +                   interrupt-parent = <&mpc5200_pic>;
+> +                   gpios = <&gpio1 0 0 &gpio1 1 0>;
+> +                   spi-bridge@0 {
+> +                       compatible = "oem,spi-bridge-type";
+> +                       reg = < 0 1 >;  // note: 2 SPI CS addresses; first one to access bridge registers
+> +
+> +                       ethernet-switch@0 {
+> +                           compatible = "micrel,ks8995m";
+> +                           linux,modalias = "ks8995";
+> +                           max-speed = <1000000>;
+> +                           reg = <0>;
+> +                       };
+> ...                     // and more SPI child nodes here...
+> +                   };
+> +               };
+> 
+> But even this doesn't reflect the hardware layout well.  What if the
+> SS lines are on SPI GPIO expanders on the same bus?  Then does it make
+> sense for them to be layed out as spi bridges?
+
+Well, in this case - yes, because addressing clients "behind" the expander 
+and the expander itself is done differently.
+
+On the whole, I think, it begins to look good - I think, it is better to 
+implement an imperfect but complete and consistent scheme and modify or 
+extend it in the future, than a perfect, but incomplete, and have to use 
+auxiliary means (platform bindings) to fill in the gaps.
+
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski, Ph.D.
+Freelance Open-Source Software Developer
