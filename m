@@ -4,16 +4,16 @@ Received: from az33egw02.freescale.net (az33egw02.freescale.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "az33egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 19DC7DDDEE
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 May 2008 08:06:03 +1000 (EST)
-Date: Tue, 20 May 2008 15:00:45 -0700 (PDT)
+	by ozlabs.org (Postfix) with ESMTPS id 3675CDE133
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 May 2008 08:16:13 +1000 (EST)
+Date: Tue, 20 May 2008 15:11:02 -0700 (PDT)
 From: Trent Piepho <tpiepho@freescale.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Andreas Schwab <schwab@suse.de>
 Subject: Re: [PATCH] [POWERPC] Improve (in|out)_beXX() asm code
-In-Reply-To: <1211318219.8297.177.camel@pasglop>
-Message-ID: <Pine.LNX.4.64.0805201425250.7453@t2.domain.actdsltmp>
+In-Reply-To: <jeiqx83ab0.fsf@sykes.suse.de>
+Message-ID: <Pine.LNX.4.64.0805201502000.7453@t2.domain.actdsltmp>
 References: <1211316025-29069-1-git-send-email-tpiepho@freescale.com>
-	<1211318219.8297.177.camel@pasglop>
+	<jeiqx83ab0.fsf@sykes.suse.de>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
@@ -27,64 +27,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 20 May 2008, Benjamin Herrenschmidt wrote:
-> On Tue, 2008-05-20 at 13:40 -0700, Trent Piepho wrote:
->> There was some discussion on a Freescale list if the powerpc I/O accessors
->> should be strictly ordered w.r.t.  normal memory.  Currently they are not.  It
->> does not appear as if any other architecture's I/O accessors are strictly
->> ordered in this manner.  memory-barriers.txt explicitly states that the I/O
->> space (inb, outw, etc.) are NOT strictly ordered w.r.t. normal memory
->> accesses and it's implied the other I/O accessors (e.g., writel) are the same.
->>
->> However, it is somewhat harder to program for this model, and there are almost
->> certainly a number of drivers using coherent DMA which have subtle bugs because
->> the do not include the necessary barriers.
->>
->> But clearly and change to this would be a subject for a different patch.
+On Wed, 21 May 2008, Andreas Schwab wrote:
+> Trent Piepho <tpiepho@freescale.com> writes:
 >
-> The current accessors should provide all the necessary ordering
-> guarantees...
+>> For the LE versions, eventually they boil down to an asm that will look
+>> something like this:
+>> asm("sync; stwbrx %1,0,%2" : "=m" (*addr) : "r" (val), "r" (addr));
+>>
+>> While not perfect, this appears to be the best one can do.  The issue is
+>> that the "stwbrx" instruction only comes in an indexed, or 'x', version, in
+>> which the address is represented by the sum of two registers (the "0,%2").
+>> Unfortunately, gcc doesn't have a constraint for an indexed memory
+>> reference.
+>
+> There is the "Z" constraint, which matches either an indirect or an
+> indexed memory address.  That should fit here.
 
-Depends on what you define as "necessary".  It's seem clear that I/O accessors
-_no not_ need to be strictly ordered with respect to normal memory accesses,
-by what's defined in memory-barriers.txt.  So if by "necessary" you mean what
-the Linux standard for I/O accessors requires (and what other archs provide),
-then yes, they have the necessary ordering guarantees.
+This came up on the Freescale list.  I should have put what I wrote there into
+my patch descrition:
 
-But, if you want them to be strictly ordered w.r.t to normal memory, that's
-not the case.
-
-For example, in something like:
-
-u32 *dmabuf = kmalloc(...);
-...
-dmabuf[0] = 1;
-out_be32(&regs->dmactl, DMA_SEND_BUFFER);
-dmabuf[0] = 2;
-out_be32(&regs->dmactl, DMA_SEND_BUFFER);
-
-gcc might decide to optimize this code to:
-
-out_be32(&regs->dmactl, DMA_SEND_BUFFER);
-out_be32(&regs->dmactl, DMA_SEND_BUFFER);
-dmabuf[0] = 2;
-
-gcc will often not do this optimization, because there might be aliasing
-between "&regs->dmact" and "dmabuf", but it _can_ do it.  gcc can't optimize
-the two identical out_be32's into one, or re-order them if they were to
-different registers, but it can move the normal memory accesses around them.
-
-Here's a quick hack I stuck in a driver to test.  compile with -save-temps and
-check the resulting asm.  gcc will do the optimization I described above.
-
-static void __iomem *baz = (void*)0x1234;
-static struct bar {
-     u32 bar[256];
-} bar;
-
-void foo(void) {
-     bar.bar[0] = 44;
-     out_be32(baz+100, 200);
-     bar.bar[0] = 45;
-     out_be32(baz+101, 201);
-}
+It's the _le versions that have a problem, since we can't get gcc to just use
+the register indexed mode.  It seems like an obvious thing to have a
+constraint for, but I guess there weren't enough instructions that only come
+in 'x' versions to bother with it.  There is a 'Z' constraint, "Memory operand
+that is an indexed or indirect from a register", but I tried it and it can use
+both "rb,ri" and "disp(rb)" forms.  Actually, I'm not sure how 'Z' is any
+different than "m"?
