@@ -1,16 +1,22 @@
-Return-Path: <runet@innovsys.com>
-Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
-	by ozlabs.org (Postfix) with ESMTP id 6EEDEDDF99
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 May 2008 00:47:35 +1000 (EST)
+Return-Path: <rostedt@goodmis.org>
+Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
+	[71.74.56.125]) by ozlabs.org (Postfix) with ESMTP id 77A19DDFEB
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 May 2008 00:52:00 +1000 (EST)
+Date: Tue, 20 May 2008 10:51:58 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 2/2] ftrace: support for PowerPC
+In-Reply-To: <1211293059.8297.166.camel@pasglop>
+Message-ID: <Pine.LNX.4.58.0805201051210.2210@gandalf.stny.rr.com>
+References: <20080515034942.109223655@goodmis.org>
+	<20080515035918.896765954@goodmis.org>
+	<1211292277.7960.8.camel@localhost> <1211293059.8297.166.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: Broken highmem support with preempt-rt
-Date: Tue, 20 May 2008 09:48:00 -0500
-Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B046E72B2@ismail.innsys.innovsys.com>
-From: "Rune Torgersen" <runet@innovsys.com>
-To: <linux-kernel@vger.kernel.org>,
-	<linuxppc-dev@ozlabs.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: proski@gnu.org, a.p.zijlstra@chello.nl, pq@iki.fi,
+	linux-kernel@vger.kernel.org,
+	Steven Rostedt <srostedt@redhat.com>, linuxppc-dev@ozlabs.org,
+	sandmann@redhat.com, paulus@samba.org, Ingo Molnar <mingo@elte.hu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,68 +26,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi
-When booting v2.6.25.4-rt1 (PREEMPT-RT) on my 8280 CPU with 1 GB RAM, I
-get the following oopses.
-They both are caused by a BUG_ON in kmap_atomic
-(include/asm-powerpc/highmem.h).
 
-If I boot with mem=3D512M or mem=3D768M they do not appear.
+On Tue, 20 May 2008, Benjamin Herrenschmidt wrote:
 
-Any help is greatly appreciated.
+> > Why do we not want to trace early boot? Just because it's not useful?
+>
+> Not running at the linked address... might be causing trouble.
 
+I figured it was something like that, so I didn't look too deep into it,
+and decided that it was best just not to trace it.
 
-Oops: Exception in kernel mode, sig: 5 [#1]
-PREEMPT Innovative Systems ApMax
-Modules linked in:
-NIP: c005e780 LR: c005e758 CTR: 00000000
-REGS: ef2c1d20 TRAP: 0700   Not tainted  (2.6.25.4-rt1)
-MSR: 00029032 <EE,ME,IR,DR>  CR: 48222482  XER: 20000000
-TASK =3D ef2a1a90[98] 'S21initenv' THREAD: ef2c0000
-GPR00: 3ffcf581 ef2c1dd0 ef2a1a90 00000000 c02cae8c 00000002 00000001
-3ffcf580
-GPR08: 00000000 c0370000 00000000 c037000c 28222484 1009ecc0 00000000
-100a5838
-GPR16: 10090000 10090000 00000000 00000000 10090000 ef2a7100 3ee38385
-100955ac
-GPR24: 00000000 ef2a4ef0 00000000 c27dc700 c27dcb80 00000003 ef359040
-c0334f88
-NIP [c005e780] do_wp_page+0x650/0xc2c
-LR [c005e758] do_wp_page+0x628/0xc2c
-Call Trace:
-[ef2c1dd0] [c005e758] do_wp_page+0x628/0xc2c (unreliable)
-[ef2c1e10] [c0012420] do_page_fault+0x338/0x4b4
-[ef2c1f40] [c0010120] handle_page_fault+0xc/0x80
---- Exception: 301 at 0x100322e0
-    LR =3D 0x100322dc
-Instruction dump:
-409e0594 4810f2e1 3d20c035 1fa3000f 8129b140 3bbd0003 57ab103a 7c0b482e
-7d6b4a14 540007fa 30e0ffff 7cc70110 <0f060000> 3d20c035 3d40c035
-8129b480
-Oops: Exception in kernel mode, sig: 5 [#2]
-PREEMPT Innovative Systems ApMax
-Modules linked in:
-NIP: c005db0c LR: c005dae4 CTR: 00000000
-REGS: ef29fd00 TRAP: 0700   Tainted: G      D   (2.6.25.4-rt1)
-MSR: 00029032 <EE,ME,IR,DR>  CR: 48002482  XER: 20000000
-TASK =3D ef26e070[102] 'sed' THREAD: ef29e000
-GPR00: 3ee2d581 ef29fdb0 ef26e070 00000000 c02cae8c 00000000 00000001
-3ee2d580
-GPR08: 00000000 c0370000 00000000 c037000c 00000722 1009ecc0 4802dfa4
-4802d878
-GPR16: 0014f73c 00000000 00000000 00000003 4802cce0 00000000 00000001
-02000000
-GPR24: ef3592e0 0ffece1c ef3592e0 ef2a50fc ef2a4df4 00000003 c27dcfe0
-c27ff4c0
-NIP [c005db0c] __do_fault+0x1e0/0x804
-LR [c005dae4] __do_fault+0x1b8/0x804
-Call Trace:
-[ef29fdb0] [c005dae4] __do_fault+0x1b8/0x804 (unreliable)
-[ef29fe10] [c0012420] do_page_fault+0x338/0x4b4
-[ef29ff40] [c0010120] handle_page_fault+0xc/0x80
---- Exception: 301 at 0x48017b10
-    LR =3D 0x48007ac8
-Instruction dump:
-409e060c 4810ff55 3d20c035 1fa3000f 8129b140 3bbd0003 57ab103a 7c0b482e
-7d6b4a14 540007fa 30e0ffff 7cc70110 <0f060000> 3d20c035 3d40c035
-8129b480
+-- Steve
