@@ -1,21 +1,21 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 07671DE335
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 May 2008 22:41:40 +1000 (EST)
-Date: Tue, 20 May 2008 16:41:38 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 1/7] [POWERPC] sysdev: implement FSL GTM support
-Message-ID: <20080520124138.GA20813@polina.dev.rtsoft.ru>
-References: <20080519174558.GA26229@polina.dev.rtsoft.ru>
-	<20080519174651.GA28185@polina.dev.rtsoft.ru>
-	<AAEC7B21-11B1-4922-9726-70E43DA3829B@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <AAEC7B21-11B1-4922-9726-70E43DA3829B@kernel.crashing.org>
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
-	Timur Tabi <timur@freescale.com>
-Reply-To: avorontsov@ru.mvista.com
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [BUILD_FAILURE] linux-next: Tree for May 20 - build failure on
+	powerpc
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+In-Reply-To: <4832AE2B.2060208@linux.vnet.ibm.com>
+References: <20080520202706.58791923.sfr@canb.auug.org.au>
+	<4832AE2B.2060208@linux.vnet.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-LLFHNlZaP4xOX1zKXEa+"
+Date: Tue, 20 May 2008 22:44:37 +1000
+Message-Id: <1211287477.7960.3.camel@localhost>
+Mime-Version: 1.0
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+	Paul Mackerras <paulus@samba.org>,
+	LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,58 +25,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, May 20, 2008 at 01:04:55AM -0500, Kumar Gala wrote:
->
-> On May 19, 2008, at 12:46 PM, Anton Vorontsov wrote:
->
->> GTM stands for General-purpose Timers Module and able to generate
->> timer{1,2,3,4} interrupts. These timers are used by the drivers that
->> need time precise interrupts (like for USB transactions scheduling for
->> the Freescale USB Host controller as found in some QE and CPM chips),
->> or these timers could be used as wakeup events from the CPU deep-sleep
->> mode.
->>
->> Things unimplemented:
->> 1. Cascaded (32 bit) timers (1-2, 3-4).
->>   This is straightforward to implement when needed, two timers should
->>   be marked as "requested" and configured as appropriate.
->> 2. Super-cascaded (64 bit) timers (1-2-3-4).
->>   This is also straightforward to implement when needed, all timers
->>   should be marked as "requested" and configured as appropriate.
->>
->> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
->> ---
->> Documentation/powerpc/booting-without-of.txt |   37 +++-
->> arch/powerpc/Kconfig                         |    5 +
->> arch/powerpc/sysdev/Makefile                 |    1 +
->> arch/powerpc/sysdev/fsl_gtm.c                |  424 +++++++++++++++++ 
->> +++++++++
->> include/asm-powerpc/fsl_gtm.h                |   47 +++
->> 5 files changed, 513 insertions(+), 1 deletions(-)
->> create mode 100644 arch/powerpc/sysdev/fsl_gtm.c
->> create mode 100644 include/asm-powerpc/fsl_gtm.h
->
->
->> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
->> index 3934e26..e5d3366 100644
->> --- a/arch/powerpc/Kconfig
->> +++ b/arch/powerpc/Kconfig
->> @@ -538,6 +538,11 @@ config FSL_LBC
->> 	help
->> 	  Freescale Localbus support
->>
->> +config FSL_GTM
->> +	bool
->
-> I'd prefer something like:
->
-> depends on PPC_83xx || QUICC_ENGINE || CPM2
 
-Btw, this is silent config, selected by the board's Kconfig
-(same as QE block, for example). So "depends on" here is just
-no-op, since select disregards dependencies. Still want this?
+--=-LLFHNlZaP4xOX1zKXEa+
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+On Tue, 2008-05-20 at 16:25 +0530, Kamalesh Babulal wrote:
+> Hi Stephen,
+>=20
+> The next-20080520 kernel build fails on powerpc, when build the randconfi=
+g with
+> build error message
+
+>   CC      arch/powerpc/kernel/prom_init.o
+>   CALL    arch/powerpc/kernel/prom_init_check.sh
+> Error: External symbol 'kernstart_addr' referenced from prom_init.c
+> make[1]: *** [prom_init_check] Error 1
+> make: *** [arch/powerpc/kernel] Error 2
+
+It's broken in upstream actually, for RELOCATABLE && FLATMEM.
+
+Patch on the way.
+
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-LLFHNlZaP4xOX1zKXEa+
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBIMse1dSjSd0sB4dIRAsJJAJ0bhuE4VKu6SoIC/KnVad/0DrzUIwCcCw8d
+uHZwZIlAg6VikNCmCg1jWdo=
+=gDK1
+-----END PGP SIGNATURE-----
+
+--=-LLFHNlZaP4xOX1zKXEa+--
