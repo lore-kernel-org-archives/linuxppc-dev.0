@@ -1,20 +1,14 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Tue, 20 May 2008 12:45:41 +1000
+Date: Tue, 20 May 2008 13:02:35 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 0/4] minor fixes for 2.6.26
-Message-ID: <20080520024541.GI22279@yookeroo.seuss>
-References: <1211136296-4572-1-git-send-email-galak@kernel.crashing.org>
-	<0B367446-4628-4633-BF66-A0007BD9A98B@kernel.crashing.org>
-	<18482.2082.900892.368978@cargo.ozlabs.ibm.com>
-	<20080520005401.GD22279@yookeroo.seuss>
-	<ec2c238ae4182d7546da3519fbf90158@kernel.crashing.org>
-	<20080520020856.GH22279@yookeroo.seuss>
-	<520c600cfeec1e96d6b4253e2ed9e005@kernel.crashing.org>
+To: Jon Loeliger <jdl@jdl.com>
+Subject: Re: dtc: Add program to convert dts files from v0 to v1
+Message-ID: <20080520030235.GK22279@yookeroo.seuss>
+References: <20080515063912.GA30996@yookeroo.seuss> <E1JyHVG-00058U-CA@jdl.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <520c600cfeec1e96d6b4253e2ed9e005@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+In-Reply-To: <E1JyHVG-00058U-CA@jdl.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,35 +18,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, May 20, 2008 at 04:22:40AM +0200, Segher Boessenkool wrote:
->>>> Arguably this suggests we should rename either the lds files or the
->>>> zImages so that we *can* get a pattern to match.
->>>
->>> Not really.  Just define a $(ALL_ZIMAGES) var and use that everywhere.
->>> I would be pretty upset if "make clean" decided to delete my
->>> zImage.backup,
->>> etc.
->>
->> That won't work for .gitignore.
->
-> Sure, * is fine in .gitignore (and then un-ignore the few files you
-> don't want ignored).  .gitignore is just a convenience thing, after
-> all.
->
->> Besides it's hard to generate, since
->> zImage.<allsortsofthings> can be generated based on dts names.
->
-> Tricky.  But if make can generate the name _at all_ (and it can),
-> it can do it here, too.  It just needs some fairy dust sprinkling.
->
->> Oh, and variables like that are usually a bad idea for clean rules,
->> because if new things have just been added/removed from the list, it
->> will fail to clean up things built before the makefile change was
->> made.
->
-> Yes.  OTOH, using xx* in "make clean" is an even worse idea.
+On Mon, May 19, 2008 at 09:23:02PM -0500, Jon Loeliger wrote:
+> > This patch adds a new utility program, convert-dtsv0, to the dtc
+> > sources.  This program will convert dts files from v0 to v1,
+> > preserving comments and spacing.  It also includes some heuristics to
+> > guess an appropriate base to use in the v1 output (so it will use hex
+> > for the contents of reg properties and decimal for clock-frequency
+> > properties, for example).  They're limited and imperfect, but not
+> > terrible.
+> > 
+> > The guts of the converter program is a modified version of the lexer
+> > from dtc itself.
+> > 
+> > Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+> 
+> Applied.
+> 
+> For the record, I'd like to eventually retire this program
+> as well as support for /dts-v0/.
 
-Well, yeah, hence with the name-changing...
+Noted.  I think having this program available will help speed up the
+arrival of the day we can do that, though.
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
