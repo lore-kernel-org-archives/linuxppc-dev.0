@@ -1,16 +1,24 @@
-Return-Path: <bunk@kernel.org>
-Received: from smtp4.pp.htv.fi (smtp4.pp.htv.fi [213.243.153.38])
-	by ozlabs.org (Postfix) with ESMTP id A95C1DEB4E
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 May 2008 03:40:45 +1000 (EST)
-Date: Wed, 21 May 2008 20:38:28 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Grant Likely <grant.likely@secretlab.ca>, Paul Mackerras <paulus@samba.org>
-Subject: [2.6 patch] powerpc/boot/Makefile CONFIG_ variable fixes
-Message-ID: <20080521173828.GA15355@cs181133002.pp.htv.fi>
+Return-Path: <g.liakhovetski@gmx.de>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id 9130ADDE20
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 May 2008 03:50:43 +1000 (EST)
+Date: Wed, 21 May 2008 19:51:00 +0200 (CEST)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH 2/4] [OF] spi_of: add support for dedicated SPI
+	constructors
+In-Reply-To: <fa686aa40805211005h58ea66dfl792eae460d4ea3d@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0805211940060.5386@axis700.grange>
+References: <20080521154103.GA32577@polina.dev.rtsoft.ru>
+	<20080521154139.GB4566@polina.dev.rtsoft.ru>
+	<Pine.LNX.4.64.0805211754300.5386@axis700.grange>
+	<20080521161039.GA9050@polina.dev.rtsoft.ru>
+	<Pine.LNX.4.64.0805211820460.5386@axis700.grange>
+	<20080521164841.GA17813@polina.dev.rtsoft.ru>
+	<fa686aa40805211005h58ea66dfl792eae460d4ea3d@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Cc: linuxppc-dev@ozlabs.org, "Robert P. J. Day" <rpjday@crashcourse.ca>,
-	linux-kernel@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Gary Jennejohn <garyj@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,38 +28,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch corrects the names of two CONFIG_ variables.
+On Wed, 21 May 2008, Grant Likely wrote:
 
-Note that the CONFIG_MPC86XADS fix uncovers another bug
-(with mpc866_ads_defconfig) that will require fixing:
+> I concede that sometimes platform code just has to pass data to the
+> driver that cannot be described in the device tree.  callback pointers
+> being the most significant example and we do need a sane way to do so.
 
-<--  snip  -->
+Sorry, I just cannot understand. So far my understanding was, that OF 
+bindings were there to _completely_ describe hardware, that cannot be 
+autoconfigured or probed. So a _generic_ driver gets all information it 
+needs from the device tree and needs no additional information to handle 
+the hardware.
 
-...
-arch/powerpc/boot/dtc -O dtb -o arch/powerpc/boot/mpc866ads.dtb -b 0  /home/bunk/linux/kernel-2.6/git/linux-2.6/arch/powerpc/boot/dts/mpc866ads.dts
-DTC: dts->dtb  on file "/home/bunk/linux/kernel-2.6/git/linux-2.6/arch/powerpc/boot/dts/mpc866ads.dts"
-  WRAP    arch/powerpc/boot/cuImage.mpc866ads
-powerpc64-linux-ld: arch/powerpc/boot/cuboot-mpc866ads.o: No such file: No such file or directory
-make[2]: *** [arch/powerpc/boot/cuImage.mpc866ads] Error 1
+Now if a driver needs additional information from "platform code" what's 
+the purpose of partial data in the device tree at all? Just use board 
+information as usual.
 
-<--  snip  -->
+What good is an OF-binding if it doesn't provide complete information?
 
-Reported-by: Robert P. J. Day <rpjday@crashcourse.ca>
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
-
+Thanks
+Guennadi
 ---
-9a0137fa7d60e7ee62ae4e08e3e5b7d94b66debf diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-index 7822d25..cfb6983 100644
---- a/arch/powerpc/boot/Makefile
-+++ b/arch/powerpc/boot/Makefile
-@@ -221,8 +221,8 @@ image-$(CONFIG_WARP)			+= cuImage.warp
- image-$(CONFIG_YOSEMITE)		+= cuImage.yosemite
- 
- # Board ports in arch/powerpc/platform/8xx/Kconfig
--image-$(CONFIG_PPC_MPC86XADS)		+= cuImage.mpc866ads
--image-$(CONFIG_PPC_MPC885ADS)		+= cuImage.mpc885ads
-+image-$(CONFIG_MPC86XADS)		+= cuImage.mpc866ads
-+image-$(CONFIG_MPC885ADS)		+= cuImage.mpc885ads
- image-$(CONFIG_PPC_EP88XC)		+= dtbImage.ep88xc
- image-$(CONFIG_PPC_ADDER875)		+= cuImage.adder875-uboot \
- 					   dtbImage.adder875-redboot
+Guennadi Liakhovetski, Ph.D.
+Freelance Open-Source Software Developer
