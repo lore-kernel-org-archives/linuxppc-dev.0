@@ -1,25 +1,22 @@
-Return-Path: <schwab@suse.de>
-Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
+Return-Path: <jochen@scram.de>
+Received: from mail.scram.de (mail0.scram.de [78.47.204.202])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 87BFBDDF3A
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 May 2008 18:04:02 +1000 (EST)
-From: Andreas Schwab <schwab@suse.de>
-To: Trent Piepho <tpiepho@freescale.com>
-Subject: Re: [PATCH] [POWERPC] Improve (in|out)_beXX() asm code
-References: <1211316025-29069-1-git-send-email-tpiepho@freescale.com>
-	<jeiqx83ab0.fsf@sykes.suse.de>
-	<Pine.LNX.4.64.0805201502000.7453@t2.domain.actdsltmp>
-	<jeabik385g.fsf@sykes.suse.de>
-	<Pine.LNX.4.64.0805201612240.7453@t2.domain.actdsltmp>
-Date: Wed, 21 May 2008 10:03:54 +0200
-In-Reply-To: <Pine.LNX.4.64.0805201612240.7453@t2.domain.actdsltmp> (Trent
-	Piepho's message of "Tue, 20 May 2008 16:14:49 -0700 (PDT)")
-Message-ID: <je3aocdqxh.fsf@sykes.suse.de>
+	(Client CN "mail.scram.de", Issuer "scram e.V. CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id AD46DDDF42
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 May 2008 20:31:54 +1000 (EST)
+Message-ID: <4833FA0C.5090800@scram.de>
+Date: Wed, 21 May 2008 12:31:40 +0200
+From: Jochen Friedrich <jochen@scram.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
-	linux-kernel@vger.kernel.org
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: [PATCH] [POWERPC] Add i2c pins to dts and board setup
+Content-Type: text/plain; charset=ISO-8859-15
+Cc: "Kernel, Linux" <linux-kernel@vger.kernel.org>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>, Linux I2C <i2c@lm-sensors.org>,
+	Scott Wood <scottwood@freescale.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Jean Delvare <khali@linux-fr.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,30 +26,178 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Trent Piepho <tpiepho@freescale.com> writes:
+Initialize I2C pins on boards with CPM1/CPM2 controllers.
 
-> On Wed, 21 May 2008, Andreas Schwab wrote:
->> Trent Piepho <tpiepho@freescale.com> writes:
->>
->>> It's the _le versions that have a problem, since we can't get gcc to just use
->>> the register indexed mode.  It seems like an obvious thing to have a
->>> constraint for, but I guess there weren't enough instructions that only come
->>> in 'x' versions to bother with it.  There is a 'Z' constraint, "Memory operand
->>> that is an indexed or indirect from a register", but I tried it and it can use
->>> both "rb,ri" and "disp(rb)" forms.  Actually, I'm not sure how 'Z' is any
->>> different than "m"?
->>
->> 'Z' will never emit a non-zero constant displacement.
->
-> It's too bad gas doesn't appear to be smart enough to turn:
->         stwbrx 0, 0(3)   -or-   stwbr 0, 0(3)
+Signed-off-by: Jochen Friedrich <jochen@scram.de>
+---
+ Documentation/powerpc/booting-without-of.txt |   39 ++++++++++++++++++++++++++
+ arch/powerpc/boot/dts/mpc8272ads.dts         |   11 +++++++
+ arch/powerpc/boot/dts/mpc866ads.dts          |   11 +++++++
+ arch/powerpc/boot/dts/mpc885ads.dts          |   11 +++++++
+ arch/powerpc/platforms/82xx/mpc8272_ads.c    |    4 ++
+ arch/powerpc/platforms/8xx/mpc86xads_setup.c |    4 ++
+ arch/powerpc/platforms/8xx/mpc885ads_setup.c |    3 ++
+ 7 files changed, 83 insertions(+), 0 deletions(-)
 
-Use the %y modifier when substituting the operand.
+diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
+index 1d2a772..3fc4eb2 100644
+--- a/Documentation/powerpc/booting-without-of.txt
++++ b/Documentation/powerpc/booting-without-of.txt
+@@ -2132,6 +2132,45 @@ platforms are moved over to use the flattened-device-tree model.
+ 		};
+ 	};
 
-Andreas.
++   ix) I2C
++
++   The I2C controller is expressed as a bus under the CPM node.
++
++   Properties:
++   - compatible : "fsl,cpm1-i2c", "fsl,cpm2-i2c"
++   - reg : On CPM2 devices, the second resource doesn't specify the I2C
++     Parameter RAM itself, but the I2C_BASE field of the CPM2 Parameter RAM
++     (typically 0x8afc 0x2).
++   - #address-cells : Should be one. The cell is the i2c device address with
++     the r/w bit set to zero.
++   - #size-cells : Should be zero.
++   - linux,i2c-index : Can be used to hard code an i2c bus nummer.
++   - linux,i2c-class : Can be used to override the i2c class. The class is used
++     by old style i2c device drivers to find a bus in a specific context like
++     system management, video or sound. By default, I2C_CLASS_HWMON (1) is
++     being used. The definition of the classes can be found in
++     include/i2c/i2c.h
++   - bus-frequency : Can be used to set the i2c bus frequency. If unspecified,
++     a default frequency of 60kHz is being used.
++
++   Example, based on mpc823:
++
++	i2c@860 {
++		compatible = "fsl,mpc823-i2c",
++			     "fsl,cpm1-i2c";
++		reg = <0x860 0x20 0x3c80 0x30>;
++		interrupts = <16>;
++		interrupt-parent = <&CPM_PIC>;
++		fsl,cpm-command = <0x10>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		rtc@68 {
++			compatible = "dallas,ds1307";
++			reg = <0x68>;
++		};
++	};
++
+    m) Chipselect/Local Bus
 
+    Properties:
+diff --git a/arch/powerpc/boot/dts/mpc8272ads.dts b/arch/powerpc/boot/dts/mpc8272ads.dts
+index 46e2da3..d27f8a7 100644
+--- a/arch/powerpc/boot/dts/mpc8272ads.dts
++++ b/arch/powerpc/boot/dts/mpc8272ads.dts
+@@ -217,6 +217,17 @@
+ 				linux,network-index = <1>;
+ 				fsl,cpm-command = <0x16200300>;
+ 			};
++
++			i2c@11860 {
++				compatible = "fsl,mpc8272-i2c",
++					     "fsl,cpm2-i2c";
++				reg = <0x11860 0x20 0x8afc 0x2>;
++				interrupts = <1 8>;
++				interrupt-parent = <&PIC>;
++				fsl,cpm-command = <0x29600000>;
++				#address-cells = <1>;
++				#size-cells = <0>;
++			};
+ 		};
+
+ 		PIC: interrupt-controller@10c00 {
+diff --git a/arch/powerpc/boot/dts/mpc866ads.dts b/arch/powerpc/boot/dts/mpc866ads.dts
+index 765e43c..bd70065 100644
+--- a/arch/powerpc/boot/dts/mpc866ads.dts
++++ b/arch/powerpc/boot/dts/mpc866ads.dts
+@@ -171,6 +171,17 @@
+ 				fsl,cpm-command = <0000>;
+ 				linux,network-index = <1>;
+ 			};
++
++			i2c@860 {
++				compatible = "fsl,mpc866-i2c",
++					     "fsl,cpm1-i2c";
++				reg = <0x860 0x20 0x3c80 0x30>;
++				interrupts = <16>;
++				interrupt-parent = <&CPM_PIC>;
++				fsl,cpm-command = <0x10>;
++				#address-cells = <1>;
++				#size-cells = <0>;
++			};
+ 		};
+ 	};
+
+diff --git a/arch/powerpc/boot/dts/mpc885ads.dts b/arch/powerpc/boot/dts/mpc885ads.dts
+index 9895043..b123e9f 100644
+--- a/arch/powerpc/boot/dts/mpc885ads.dts
++++ b/arch/powerpc/boot/dts/mpc885ads.dts
+@@ -215,6 +215,17 @@
+ 				fsl,cpm-command = <0x80>;
+ 				linux,network-index = <2>;
+ 			};
++
++			i2c@860 {
++				compatible = "fsl,mpc885-i2c",
++					     "fsl,cpm1-i2c";
++				reg = <0x860 0x20 0x3c80 0x30>;
++				interrupts = <16>;
++				interrupt-parent = <&CPM_PIC>;
++				fsl,cpm-command = <0x10>;
++				#address-cells = <1>;
++				#size-cells = <0>;
++			};
+ 		};
+ 	};
+
+diff --git a/arch/powerpc/platforms/82xx/mpc8272_ads.c b/arch/powerpc/platforms/82xx/mpc8272_ads.c
+index 7d30187..8054c68 100644
+--- a/arch/powerpc/platforms/82xx/mpc8272_ads.c
++++ b/arch/powerpc/platforms/82xx/mpc8272_ads.c
+@@ -96,6 +96,10 @@ static struct cpm_pin mpc8272_ads_pins[] = {
+ 	{1, 31, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
+ 	{2, 16, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
+ 	{2, 17, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
++
++	/* I2C */
++	{3, 14, CPM_PIN_INPUT | CPM_PIN_SECONDARY | CPM_PIN_OPENDRAIN},
++	{3, 15, CPM_PIN_INPUT | CPM_PIN_SECONDARY | CPM_PIN_OPENDRAIN},
+ };
+
+ static void __init init_ioports(void)
+diff --git a/arch/powerpc/platforms/8xx/mpc86xads_setup.c b/arch/powerpc/platforms/8xx/mpc86xads_setup.c
+index c028a5b..caaec29 100644
+--- a/arch/powerpc/platforms/8xx/mpc86xads_setup.c
++++ b/arch/powerpc/platforms/8xx/mpc86xads_setup.c
+@@ -65,6 +65,10 @@ static struct cpm_pin mpc866ads_pins[] = {
+ 	{CPM_PORTD, 13, CPM_PIN_OUTPUT},
+ 	{CPM_PORTD, 14, CPM_PIN_OUTPUT},
+ 	{CPM_PORTD, 15, CPM_PIN_OUTPUT},
++
++	/* I2C */
++	{CPM_PORTB, 26, CPM_PIN_INPUT | CPM_PIN_OPENDRAIN},
++	{CPM_PORTB, 27, CPM_PIN_INPUT | CPM_PIN_OPENDRAIN},
+ };
+
+ static void __init init_ioports(void)
+diff --git a/arch/powerpc/platforms/8xx/mpc885ads_setup.c b/arch/powerpc/platforms/8xx/mpc885ads_setup.c
+index 6e7ded0..45ed6cd 100644
+--- a/arch/powerpc/platforms/8xx/mpc885ads_setup.c
++++ b/arch/powerpc/platforms/8xx/mpc885ads_setup.c
+@@ -158,6 +158,9 @@ static struct cpm_pin mpc885ads_pins[] = {
+ 	{CPM_PORTE, 28, CPM_PIN_OUTPUT},
+ 	{CPM_PORTE, 29, CPM_PIN_OUTPUT},
+ #endif
++	/* I2C */
++	{CPM_PORTB, 26, CPM_PIN_INPUT | CPM_PIN_OPENDRAIN},
++	{CPM_PORTB, 27, CPM_PIN_INPUT | CPM_PIN_OPENDRAIN},
+ };
+
+ static void __init init_ioports(void)
 -- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+1.5.5.1
