@@ -1,24 +1,15 @@
-Return-Path: <stephen.neuendorffer@xilinx.com>
-Received: from outbound7-dub-R.bigfish.com (outbound-dub.frontbridge.com
-	[213.199.154.16])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id D5783DDF0C
+Return-Path: <jiehanca@yahoo.com.cn>
+Received: from web15105.mail.cnb.yahoo.com (web15105.mail.cnb.yahoo.com
+	[202.165.103.74]) by ozlabs.org (Postfix) with SMTP id 166A8DE2CE
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 21 May 2008 07:26:28 +1000 (EST)
+	Thu, 22 May 2008 04:29:08 +1000 (EST)
+Date: Thu, 22 May 2008 02:22:26 +0800 (CST)
+From: jie han <jiehanca@yahoo.com.cn>
+Subject: Help to setup  non-zero PPC_MEMSTART on PPC440
+To: linuxppc-embedded@ozlabs.org
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Subject: RE: Instruction OCM
-Date: Tue, 20 May 2008 14:26:15 -0700
-In-reply-to: <200805201511.25957.temerkhanov@yandex.ru>
-References: <012401c8b9c3$74b947c0$5e2bd740$@com>
-	<4831CCA2.6000107@yandex.ru><016b01c8ba5a$9a621000$cf263000$@com>
-	<200805201511.25957.temerkhanov@yandex.ru>
-From: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
-To: <temerkhanov@cifronik.ru>, "mojtaba" <kernelppc@gmail.com>,
-	<linuxppc-embedded@ozlabs.org>, "Grant Likely" <grant.likely@secretlab.ca>
-Message-Id: <20080520212616.B378E3A006D@mail99-dub.bigfish.com>
+Content-Type: multipart/alternative; boundary="0-1897498678-1211394146=:91590"
+Message-ID: <702557.91590.qm@web15105.mail.cnb.yahoo.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -29,72 +20,37 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+--0-1897498678-1211394146=:91590
+Content-Type: text/plain; charset=us-ascii
 
-Ah yes, I forgot about that little detail with the OCM.
+Hi 
+I have a custom embedded system with a 440GP derived CPU that places the
+memory starting at 0x10000000 which requires a non-zero PPC_MEMSTART.
+I use denx linux kernel version is 2.6.24-rc8.build ARCH=powerpc. 
+I set PPC_MEMSTART = 0x10000000(include/asm-powerpc/page_32.h)
+I get boot linux message as follow:
+RAMDISK driver initialized: 16 RAM disks of 8192K size 1024 blocksize
+RAMDISK: Compressed image found at block 0
+VFS: Mounted root (ext2 filesystem) readonly.
+Freeing unused kernel memory: 128k init
+init has generated signal 4 but has no handler for it
+kernel panic - no syncing: Attempted to kill init!
+Rebooting in 180 seconds..
 
-It would be slick if these mappings were generated based on memory nodes
-in the device tree for ARCH=3Dpowerpc.
+How do I fix it?Do I miss anything?Thanks for your help ahead.
 
-Steve
+Sincerely,
 
-> -----Original Message-----
-> From: linuxppc-embedded-bounces+stephen=3Dneuendorffer.name@ozlabs.org
-[mailto:linuxppc-embedded-
-> bounces+stephen=3Dneuendorffer.name@ozlabs.org] On Behalf Of Temerkhanov
-> Sent: Tuesday, May 20, 2008 4:11 AM
-> To: mojtaba; linuxppc-embedded@ozlabs.org
-> Subject: Re: Instruction OCM
-> =
-
-> On Tuesday 20 May 2008 13:19:26 mojtaba wrote:
-> > Thank you for your email. But what is the solution to that? I have
-seen
-> > this in a thesis:
-> >
-> > "when using the OCM buses to connect memory, we can only use virtual
-memory
-> > as long as the virtual address is the same as the physical address,
-which
-> > is conceptually
-> > the same as using a system without MMU. Therefore porting Linux to a
-> > system based on an OCM memory system is not possible"
-> >
-> > http://ce.et.tudelft.nl/publicationfiles/1367_700_thesis.pdf
-> >
-> > Is that right? What do you suggest?
-> >
-> =
-
-> =
-
-> Getting OCM-based devices (and even memory) to work in Linux is
-possible. All
-> you need is to setup a mapping with virtual addresses equal to
-physical (some
-> info can be found here:
->
-http://courses.ece.uiuc.edu/ece412/MP_Files/mp2/20060623-XUP-Linux-Tutor
-ial-REVISION-FINAL.pdf)
-> =
-
-> Furthermore, if you really need to get the code running from OCM, I'd
-suggest
-> to setup such MMU mapping for OCM region very early - it can be done
-in
-> initial_mmu function at head_4xx.S. Look at line 936 (#if
-> defined(CONFIG_SERIAL_TEXT_DEBUG) && defined(SERIAL_DEBUG_IO_BASE))
->  - that's very good point to start.
-> =
-
-> Regards, Sergey Temerkhanov
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+Jie
 
 
-This email and any attachments are intended for the sole use of the named r=
-ecipient(s) and contain(s) confidential information that may be proprietary=
-, privileged or copyrighted under applicable law. If you are not the intend=
-ed recipient, do not read, copy, or forward this email message or any attac=
-hments. Delete this email message and any attachments immediately.
+
+      
+--0-1897498678-1211394146=:91590
+Content-Type: text/html; charset=us-ascii
+
+<html><head><style type="text/css"><!-- DIV {margin:0px;} --></style></head><body><div style="font-family:times new roman, new york, times, serif;font-size:12pt"><pre class="content">Hi <br>I have a custom embedded system with a 440GP derived CPU that places the<br>memory starting at 0x10000000 which requires a non-zero PPC_MEMSTART.<br>I use denx linux kernel version is 2.6.24-rc8.build ARCH=powerpc. <br>I set PPC_MEMSTART = 0x10000000(include/asm-powerpc/page_32.h)<br>I get boot linux message as follow:<br>RAMDISK driver initialized: 16 RAM disks of 8192K size 1024 blocksize<br>RAMDISK: Compressed image found at block 0<br>VFS: Mounted root (ext2 filesystem) readonly.<br>Freeing unused kernel memory: 128k init<br>init has generated signal 4 but has no handler for it<br>kernel panic - no syncing: Attempted to kill init!<br>Rebooting in 180 seconds..<br><br>How do I fix it?Do I miss anything?Thanks for your help
+ ahead.<br><br>Sincerely,<br><br>Jie<br></pre></div><br>
+
+      </body></html>
+--0-1897498678-1211394146=:91590--
