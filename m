@@ -1,27 +1,30 @@
-Return-Path: <tpiepho@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 5AD7EDDF88
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 May 2008 06:31:43 +1000 (EST)
-Date: Wed, 21 May 2008 13:25:52 -0700 (PDT)
-From: Trent Piepho <tpiepho@freescale.com>
-To: Andreas Schwab <schwab@suse.de>
-Subject: Re: [PATCH] [POWERPC] Improve (in|out)_beXX() asm code
-In-Reply-To: <je3aocdqxh.fsf@sykes.suse.de>
-Message-ID: <Pine.LNX.4.64.0805211300590.5706@t2.domain.actdsltmp>
-References: <1211316025-29069-1-git-send-email-tpiepho@freescale.com>
-	<jeiqx83ab0.fsf@sykes.suse.de>
-	<Pine.LNX.4.64.0805201502000.7453@t2.domain.actdsltmp>
-	<jeabik385g.fsf@sykes.suse.de>
-	<Pine.LNX.4.64.0805201612240.7453@t2.domain.actdsltmp>
-	<je3aocdqxh.fsf@sykes.suse.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
-	linux-kernel@vger.kernel.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id CE7EEDE607
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 May 2008 06:35:04 +1000 (EST)
+Subject: Re: [PATCH 1/2] Add thread_info_cache_init() to all archs
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20080521114147.59ca3551.akpm@linux-foundation.org>
+References: <20080410032354.90CB1DDF0F@ozlabs.org>
+	<20080413171953.bde5e9ac.akpm@linux-foundation.org>
+	<1208133506.6958.82.camel@pasglop>
+	<20080413191338.9776ebd0.akpm@linux-foundation.org>
+	<1208491086.6958.381.camel@pasglop>
+	<20080417211905.8ff769fa.akpm@linux-foundation.org>
+	<1208501061.6958.394.camel@pasglop> <1211392585.8297.218.camel@pasglop>
+	<20080521114147.59ca3551.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Wed, 21 May 2008 15:44:41 -0400
+Message-Id: <1211399081.8297.234.camel@pasglop>
+Mime-Version: 1.0
+Cc: Linux-Arch <linux-arch@vger.kernel.org>, linux-m32r@ml.linux-m32r.org,
+	Luke Browning <LukeBrowning@us.ibm.com>, takata@linux-m32r.org,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,33 +34,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 21 May 2008, Andreas Schwab wrote:
-> Trent Piepho <tpiepho@freescale.com> writes:
->> On Wed, 21 May 2008, Andreas Schwab wrote:
->>> Trent Piepho <tpiepho@freescale.com> writes:
->>>> It's the _le versions that have a problem, since we can't get gcc to just use
->>>> the register indexed mode.  It seems like an obvious thing to have a
->>>> constraint for, but I guess there weren't enough instructions that only come
->>>> in 'x' versions to bother with it.  There is a 'Z' constraint, "Memory operand
->>>> that is an indexed or indirect from a register", but I tried it and it can use
->>>> both "rb,ri" and "disp(rb)" forms.  Actually, I'm not sure how 'Z' is any
->>>> different than "m"?
->>>
->>> 'Z' will never emit a non-zero constant displacement.
->>
->> It's too bad gas doesn't appear to be smart enough to turn:
->>         stwbrx 0, 0(3)   -or-   stwbr 0, 0(3)
->
-> Use the %y modifier when substituting the operand.
 
-Of course, the undocumented y modifier!  "Print AltiVec or SPE memory operand"
-Why didn't I think of that?
+On Wed, 2008-05-21 at 11:41 -0700, Andrew Morton wrote:
+> 
+> yup, gcc bug.  Discussed recently on lkml, "Subject: Re: huge gcc
+> 4.1.{0,1} __weak problem".  I don't think anything ended up happening
+> about it though.
 
-That appears to work.  I can get gcc to to emit 0,reg and reg,reg but not
-disp(reg).  It won't try to use an "update" address either, though it will
-with an "m" constraint.
+Hrm... do you think we should work around ? ie. move the stubs to a
+separate .c file ?
 
-But, gcc 4.0.2 can't handle the 'Z' constraint.  It looks like it's not
-supported.  Other than this, I can build a kernel with 4.0.2 that appears to
-work.  Is it ok to break compatibility with 4.0.2, or should I put in a gcc
-version check?
+Ben.
