@@ -2,23 +2,24 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 15052DE020
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 May 2008 06:41:23 +1000 (EST)
-Subject: Re: [PATCH] [POWERPC] Improve (in|out)_beXX() asm code
+	by ozlabs.org (Postfix) with ESMTPS id 10A74DE763
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 May 2008 06:44:51 +1000 (EST)
+Subject: Re: [patch 2/2] powerpc: optimise smp_wmb
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Trent Piepho <tpiepho@freescale.com>
-In-Reply-To: <Pine.LNX.4.64.0805211238440.5706@t2.domain.actdsltmp>
-References: <1211316025-29069-1-git-send-email-tpiepho@freescale.com>
-	<1211318219.8297.177.camel@pasglop>
-	<Pine.LNX.4.64.0805201425250.7453@t2.domain.actdsltmp>
-	<1211378410.8297.192.camel@pasglop>
-	<Pine.LNX.4.64.0805211238440.5706@t2.domain.actdsltmp>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+In-Reply-To: <7dc38d9080603be9c25b8f649e5df0a0@kernel.crashing.org>
+References: <20080521141056.GC8897@wotan.suse.de>
+	<20080521141231.GD8897@wotan.suse.de>
+	<1211383592.8297.195.camel@pasglop>
+	<20080521153420.GG8897@wotan.suse.de>
+	<1211384580.8297.199.camel@pasglop>
+	<20080521160146.GI8897@wotan.suse.de>
+	<7dc38d9080603be9c25b8f649e5df0a0@kernel.crashing.org>
 Content-Type: text/plain
-Date: Wed, 21 May 2008 16:41:12 -0400
-Message-Id: <1211402472.8297.244.camel@pasglop>
+Date: Wed, 21 May 2008 16:44:45 -0400
+Message-Id: <1211402685.8297.247.camel@pasglop>
 Mime-Version: 1.0
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
-	linux-kernel@vger.kernel.org
+Cc: Nick Piggin <npiggin@suse.de>, linuxppc-dev@ozlabs.org, paulus@samba.org
 Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -30,25 +31,25 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Wed, 2008-05-21 at 12:44 -0700, Trent Piepho wrote:
+On Wed, 2008-05-21 at 22:12 +0200, Segher Boessenkool wrote:
+> No idea about POWER6; for CBE, the backend works similar to the
+> 970 one.
 > 
-> Someone should update memory-barriers.txt, because it doesn't say
-> that, and
-> all I/O accessors for all the arches, because none of them are.
+> Given that the architecture says to use lwsync for cases like this,
+> it would be very surprising if it performed (much) worse than eieio,
+> eh? ;-)  So I think your patch is a win; just wanted to clarify on
+> your five-time slowdown number.
 
-There have been long discussions about that. The end result was that
-being too weakly ordered is just asking for trouble because the majority
-of drivers are written & tested on x86 which is in order.
+It makes sense to use lwsync rather than eieio for smb_wmb() as this is
+not supposed to be used to order with cache inhibited storage. It's
+really a data barrier used by the kernel for normal cacheable storage.
 
-If you look at our accessors, minus that gcc problem you found, the
-barriers in there should pretty much guarantee ordering in the cases
-that matter, which are basically MMIO read followed by memory accesses
-and memory writes followed by MMIO. In fact, MMIO read are fully
-sychronous.
+The main question is do we care if the downgrade to sync on power3 hurts
+performances (and does it ?) and what do we do for 32 bits as currently,
+no 32 bits implementation has lwsync afaik (though that might not be
+true for long).
 
-> No, it's compiled with a normal kernel build, which includes
-> -fno-strict-aliasing
-
-Ok, so there is a very bad bug indeed, we need to fix that.
+Also, we don't, I think, have verified that they all properly ignore the
+added bit and behave as sync rather than program checking..
 
 Ben.
