@@ -1,20 +1,28 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id E5817DEA1E
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 May 2008 04:47:53 +1000 (EST)
-Date: Wed, 21 May 2008 22:47:52 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Kumar Gala <galak@kernel.crashing.org>,
-	David Brownell <dbrownell@users.sourceforge.net>,
-	Pierre Ossman <drzeus-mmc@drzeus.cx>
-Subject: [PATCH 2/2] mmc_spi: add support for card-detection polling
-Message-ID: <20080521184752.GB32052@polina.dev.rtsoft.ru>
-References: <20080521184713.GA30284@polina.dev.rtsoft.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <20080521184713.GA30284@polina.dev.rtsoft.ru>
-Cc: linuxppc-dev@ozlabs.org, spi-devel-general@lists.sourceforge.net,
-	linux-kernel@vger.kernel.org, Timur Tabi <timur@freescale.com>
+Return-Path: <sam@ravnborg.org>
+Received: from pasmtpA.tele.dk (pasmtpa.tele.dk [80.160.77.114])
+	by ozlabs.org (Postfix) with ESMTP id 189BDDE16B
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 May 2008 05:06:23 +1000 (EST)
+Date: Wed, 21 May 2008 21:06:59 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 1/2] Add thread_info_cache_init() to all archs
+Message-ID: <20080521190659.GB12638@uranus.ravnborg.org>
+References: <20080410032354.90CB1DDF0F@ozlabs.org>
+	<20080413171953.bde5e9ac.akpm@linux-foundation.org>
+	<1208133506.6958.82.camel@pasglop>
+	<20080413191338.9776ebd0.akpm@linux-foundation.org>
+	<1208491086.6958.381.camel@pasglop>
+	<20080417211905.8ff769fa.akpm@linux-foundation.org>
+	<1208501061.6958.394.camel@pasglop>
+	<1211392585.8297.218.camel@pasglop>
+	<20080521114147.59ca3551.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080521114147.59ca3551.akpm@linux-foundation.org>
+Cc: Linux-Arch <linux-arch@vger.kernel.org>, linux-m32r@ml.linux-m32r.org,
+	takata@linux-m32r.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Luke Browning <LukeBrowning@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,114 +32,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-If platform_data lacks init() callback (solely used to request
-card-detect interrupt), we mark the host as MMC_CAP_NEEDS_POLL.
+On Wed, May 21, 2008 at 11:41:47AM -0700, Andrew Morton wrote:
+> On Wed, 21 May 2008 13:56:25 -0400 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+> 
+> > 
+> > On Fri, 2008-04-18 at 16:44 +1000, Benjamin Herrenschmidt wrote:
+> > > > > so what
+> > > > > about the patch below ?
+> > > > 
+> > > > I like it, but the compiler won't ;)
+> > > > 
+> > > > > If you're ok, I'll re-send with appropriate sob
+> > > > > & adapted powerpc part.
+> > > > 
+> > > > Sure.
+> > > > 
+> > > > > +void __init __attribute__((weak) thread_info_cache_init(void)
+> > > >
+> > 
+> > Back to this old subject...
+> > 
+> > I'm having reports that this is not working...
+> > 
+> > gcc is seeing the empty weak function and is optimizing it out
+> > before it gets a chance to link to the arch provided one.
+> > 
+> > This would affect that and the other one next to it..
+> > 
+> > That seems pretty bad... it causes nasty crashes as we end up having no
+> > idea what the compiler decided to generate... I suppose we could keep
+> > the weak stubs out of the file where they are called but that sucks.
+> > 
+> > ie. This is some form of gcc 4.1.1
+> > 
+> > Is that a known problem ? A gcc issue ? Not sure what is expected from
+> > those weak functions.
+> 
+> yup, gcc bug.  Discussed recently on lkml, "Subject: Re: huge gcc
+> 4.1.{0,1} __weak problem".  I don't think anything ended up happening
+> about it though.
 
-get_cd() host operation provided to optimize polling.
+It was discussed to add some run-time checks for this issue.
+But the examples given were a bit fluffy so I never integrated anything
+i kbuild to detect this.
 
-p.s. Since mmc_host_ops no longer the same for every instance of
-mmc_spi, struct mmc_host_ops can't be const and should be allocated
-dynamically.
+As this is only a bug for const weak functions they could be made non-const
+if they are seldomly used?
 
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
- drivers/mmc/host/mmc_spi.c  |   31 +++++++++++++++++++++----------
- include/linux/spi/mmc_spi.h |    6 ++++++
- 2 files changed, 27 insertions(+), 10 deletions(-)
-
-diff --git a/drivers/mmc/host/mmc_spi.c b/drivers/mmc/host/mmc_spi.c
-index 3550858..667855a 100644
---- a/drivers/mmc/host/mmc_spi.c
-+++ b/drivers/mmc/host/mmc_spi.c
-@@ -115,6 +115,7 @@ struct scratch {
- 
- struct mmc_spi_host {
- 	struct mmc_host		*mmc;
-+	struct mmc_host_ops	mmc_spi_ops;
- 	struct spi_device	*spi;
- 
- 	unsigned char		power_mode;
-@@ -1131,13 +1132,12 @@ static int mmc_spi_get_ro(struct mmc_host *mmc)
- 	return 0;
- }
- 
-+static int mmc_spi_get_cd(struct mmc_host *mmc)
-+{
-+	struct mmc_spi_host *host = mmc_priv(mmc);
- 
--static const struct mmc_host_ops mmc_spi_ops = {
--	.request	= mmc_spi_request,
--	.set_ios	= mmc_spi_set_ios,
--	.get_ro		= mmc_spi_get_ro,
--};
--
-+	return host->pdata->get_cd(mmc->parent);
-+}
- 
- /****************************************************************************/
- 
-@@ -1236,8 +1236,12 @@ static int mmc_spi_probe(struct spi_device *spi)
- 	mmc = mmc_alloc_host(sizeof(*host), &spi->dev);
- 	if (!mmc)
- 		goto nomem;
-+	host = mmc_priv(mmc);
- 
--	mmc->ops = &mmc_spi_ops;
-+	host->mmc_spi_ops.request = mmc_spi_request,
-+	host->mmc_spi_ops.set_ios = mmc_spi_set_ios,
-+	host->mmc_spi_ops.get_ro = mmc_spi_get_ro,
-+	mmc->ops = &host->mmc_spi_ops;
- 	mmc->max_blk_size = MMC_SPI_BLOCKSIZE;
- 
- 	/* As long as we keep track of the number of successfully
-@@ -1256,7 +1260,6 @@ static int mmc_spi_probe(struct spi_device *spi)
- 	mmc->f_min = 400000;
- 	mmc->f_max = spi->max_speed_hz;
- 
--	host = mmc_priv(mmc);
- 	host->mmc = mmc;
- 	host->spi = spi;
- 
-@@ -1323,13 +1326,21 @@ static int mmc_spi_probe(struct spi_device *spi)
- 	if (status != 0)
- 		goto fail_add_host;
- 
--	dev_info(&spi->dev, "SD/MMC host %s%s%s%s\n",
-+	if (host->pdata && !host->pdata->init)
-+		mmc->caps |= MMC_CAP_NEEDS_POLL;
-+
-+	if (host->pdata && host->pdata->get_cd)
-+		host->mmc_spi_ops.get_cd = mmc_spi_get_cd;
-+
-+	dev_info(&spi->dev, "SD/MMC host %s%s%s%s%s\n",
- 			mmc->class_dev.bus_id,
- 			host->dma_dev ? "" : ", no DMA",
- 			(host->pdata && host->pdata->get_ro)
- 				? "" : ", no WP",
- 			(host->pdata && host->pdata->setpower)
--				? "" : ", no poweroff");
-+				? "" : ", no poweroff",
-+			(mmc->caps & MMC_CAP_NEEDS_POLL)
-+				? ", cd polling" : "");
- 	return 0;
- 
- fail_add_host:
-diff --git a/include/linux/spi/mmc_spi.h b/include/linux/spi/mmc_spi.h
-index d5ca78b..915faf3 100644
---- a/include/linux/spi/mmc_spi.h
-+++ b/include/linux/spi/mmc_spi.h
-@@ -23,6 +23,12 @@ struct mmc_spi_platform_data {
- 	/* sense switch on sd cards */
- 	int (*get_ro)(struct device *);
- 
-+	/*
-+	 * if board does not use CD interrupts, driver can poll the CD
-+	 * line using this function.
-+	 */
-+	int (*get_cd)(struct device *);
-+
- 	/* how long to debounce card detect, in msecs */
- 	u16 detect_delay;
- 
--- 
-1.5.5.1
+	Sam
