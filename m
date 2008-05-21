@@ -1,32 +1,21 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
-	[140.211.169.13])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id F3E60DDF98
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 May 2008 07:09:39 +1000 (EST)
-Date: Wed, 21 May 2008 13:52:30 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: benh@kernel.crashing.org
-Subject: Re: [PATCH 1/2] Add thread_info_cache_init() to all archs
-Message-Id: <20080521135230.69c04ab4.akpm@linux-foundation.org>
-In-Reply-To: <1211399081.8297.234.camel@pasglop>
-References: <20080410032354.90CB1DDF0F@ozlabs.org>
-	<20080413171953.bde5e9ac.akpm@linux-foundation.org>
-	<1208133506.6958.82.camel@pasglop>
-	<20080413191338.9776ebd0.akpm@linux-foundation.org>
-	<1208491086.6958.381.camel@pasglop>
-	<20080417211905.8ff769fa.akpm@linux-foundation.org>
-	<1208501061.6958.394.camel@pasglop>
-	<1211392585.8297.218.camel@pasglop>
-	<20080521114147.59ca3551.akpm@linux-foundation.org>
-	<1211399081.8297.234.camel@pasglop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linux-arch@vger.kernel.org, linux-m32r@ml.linux-m32r.org,
-	LukeBrowning@us.ibm.com, takata@linux-m32r.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 73953DE7AE
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 May 2008 07:13:03 +1000 (EST)
+Message-Id: <1941C6C3-9883-4015-91A6-35F5966AA1ED@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Rune Torgersen <runet@innovsys.com>
+In-Reply-To: <DCEAAC0833DD314AB0B58112AD99B93B046E7AF5@ismail.innsys.innovsys.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v919.2)
+Subject: Re: 1 GB lowmem
+Date: Wed, 21 May 2008 16:12:40 -0500
+References: <DCEAAC0833DD314AB0B58112AD99B93B046E79B3@ismail.innsys.innovsys.com>
+	<DCEAAC0833DD314AB0B58112AD99B93B046E7AA0@ismail.innsys.innovsys.com>
+	<DCEAAC0833DD314AB0B58112AD99B93B046E7AF5@ismail.innsys.innovsys.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,25 +25,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 21 May 2008 15:44:41 -0400
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-> 
-> On Wed, 2008-05-21 at 11:41 -0700, Andrew Morton wrote:
-> > 
-> > yup, gcc bug.  Discussed recently on lkml, "Subject: Re: huge gcc
-> > 4.1.{0,1} __weak problem".  I don't think anything ended up happening
-> > about it though.
-> 
-> Hrm... do you think we should work around ? ie. move the stubs to a
-> separate .c file ?
-> 
+On May 21, 2008, at 3:55 PM, Rune Torgersen wrote:
 
-istr that sticking an asm(""); in the weak function was a reliable
-workaround.  If we are going to to that it should be via
+> Rune Torgersen wrote:
+>> linuxppc-dev-bounces+runet=innovsys.com@ozlabs.org wrote:
+>>> Hi
+>>>
+>>> I am trying to enable 1 GB of lowmem on a Freescale 8280.
+>>> In arch/ppc this was easilly done by:
+>>> CONFIG_ADVANCED_OPTIONS=y
+>>> CONFIG_HIGHMEM_START=0xfe000000
+>>> CONFIG_LOWMEM_SIZE_BOOL=y
+>>> CONFIG_LOWMEM_SIZE=0x40000000
+>>> CONFIG_KERNEL_START_BOOL=y
+>>> CONFIG_KERNEL_START=0xa0000000
+>>>
+>>> This does not work in arch/powerpc. CPU hangs as soon as init  
+>>> starts.
+>>> Any ideas what to look at, what to change?
+>>>
+>>> The reason I want to do this is because I cannot get highmem support
+>>> to work when using CONFIG_PREEMPT_RT.
+>>> (hitting a bug_on in kmap_atomic)
+>>
+>> Scratch that. 1 GB lowmem works with vanilla 2.6.25.4, but
+>> not at all with 2.6.25.4-rt[13]
+>
+> Argh... Found it. Had to set CONFIG_TASK_SIZE to 0x80000000. Now it
+> works in both vaniulla an d RT kernel.
 
-/* comment goes here */
-#define gcc_screws_up_weak_stuff() asm("")
+We should really add some sanity check on CONFIG_TASK_SIZE vs  
+KERNEL_START.
 
-but that approach didn't seem very popular.  It's a _bit_ fragile I
-guess, but it's pretty easy to grep for missed workarounds.
+- k
