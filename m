@@ -1,33 +1,21 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 87002DE172
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 May 2008 01:10:17 +1000 (EST)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
-	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
-	m4LFACVS003627
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 May 2008 08:10:12 -0700 (MST)
-Received: from ld0162-tx32.am.freescale.net (ld0162-tx32.am.freescale.net
-	[10.82.19.112])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id m4LFA3SI006233
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 May 2008 10:10:08 -0500 (CDT)
-Date: Wed, 21 May 2008 10:10:03 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Jochen Friedrich <jochen@scram.de>
-Subject: Re: [PATCH] [POWERPC] Add i2c pins to dts and board setup
-Message-ID: <20080521151003.GA13858@ld0162-tx32.am.freescale.net>
-References: <4833FA0C.5090800@scram.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4833FA0C.5090800@scram.de>
-Cc: "Kernel, Linux" <linux-kernel@vger.kernel.org>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>, Linux I2C <i2c@lm-sensors.org>,
-	Jean Delvare <khali@linux-fr.org>,
-	Andrew Morton <akpm@linux-foundation.org>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 0AB39DDF4E
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 May 2008 01:19:31 +1000 (EST)
+Date: Wed, 21 May 2008 19:19:29 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH 3/4] spi: Add OF binding support for SPI busses
+Message-ID: <20080521151928.GA28857@polina.dev.rtsoft.ru>
+References: <20080516193054.28030.35126.stgit@trillian.secretlab.ca>
+	<20080516193613.28030.13950.stgit@trillian.secretlab.ca>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <20080516193613.28030.13950.stgit@trillian.secretlab.ca>
+Cc: fabrizio.garetto@gmail.com, linuxppc-dev@ozlabs.org,
+	dbrownell@users.sourceforge.net, linux-kernel@vger.kernel.org,
+	spi-devel-general@lists.sourceforge.net
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,25 +25,77 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, May 21, 2008 at 12:31:40PM +0200, Jochen Friedrich wrote:
-> +   - linux,i2c-index : Can be used to hard code an i2c bus nummer.
+On Fri, May 16, 2008 at 01:36:13PM -0600, Grant Likely wrote:
+> From: Grant Likely <grant.likely@secretlab.ca>
+> 
+> This patch adds support for populating an SPI bus based on data in the
+> OF device tree.  This is useful for powerpc platforms which use the
+> device tree instead of discrete code for describing platform layout.
+> 
+> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+> ---
+[...]
+> diff --git a/drivers/spi/spi_of.c b/drivers/spi/spi_of.c
+> new file mode 100644
+> index 0000000..b5ae434
+> --- /dev/null
+> +++ b/drivers/spi/spi_of.c
+> @@ -0,0 +1,86 @@
+> +/*
 
-s/nummer/number/
+I think better placement for this is drivers/of, no?
 
-Why do we need this?
+> + * SPI OF support routines
+> + * Copyright (C) 2008 Secret Lab Technologies Ltd.
+> + *
+> + * Support routines for deriving SPI device attachments from the device
+> + * tree.
+> + */
+> +
+> +#include <linux/of.h>
+> +#include <linux/device.h>
+> +#include <linux/spi/spi.h>
+> +#include <linux/spi/spi_of.h>
+> +
+> +/**
+> + * spi_of_register_devices - Register child devices onto the SPI bus
+> + * @master:	Pointer to spi_master device
+> + * @np:		parent node of SPI device nodes
+> + *
+> + * Registers an spi_device for each child node of 'np' which has a 'reg'
+> + * property.
+> + */
+> +void spi_of_register_devices(struct spi_master *master, struct device_node *np)
+> +{
+> +	struct spi_device *spi;
+> +	struct device_node *nc;
+> +	const u32 *prop;
+> +	const char *sprop;
+> +	int rc;
+> +	int len;
+> +
+> +	for_each_child_of_node(np, nc) {
+> +		/* Alloc an spi_device */
+> +		spi = spi_alloc_device(master);
+> +		if (!spi) {
+> +			dev_err(&master->dev, "spi_device alloc error for %s\n",
+> +				np->full_name);
+> +			continue;
+> +		}
+> +
+> +		/* Device address */
+> +		prop = of_get_property(nc, "reg", &len);
+> +		if (!prop || len < sizeof(*prop)) {
+> +			dev_err(&master->dev, "%s has no 'reg' property\n",
+> +				np->full_name);
 
-> +   - linux,i2c-class : Can be used to override the i2c class. The class is used
-> +     by old style i2c device drivers to find a bus in a specific context like
-> +     system management, video or sound. By default, I2C_CLASS_HWMON (1) is
-> +     being used. The definition of the classes can be found in
-> +     include/i2c/i2c.h
+Should be nc->full_name.
 
-It'd be better to just convert any needed old-style drivers than add this
-to the device tree.
+> +			continue;
+> +		}
+[...]
 
-> +   - bus-frequency : Can be used to set the i2c bus frequency. If unspecified,
-> +     a default frequency of 60kHz is being used.
-
-clock-frequency is the standard name for such things.
-
--Scott
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
