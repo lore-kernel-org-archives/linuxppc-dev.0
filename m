@@ -1,26 +1,30 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <scottwood@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 507A4DE0D0
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 May 2008 08:07:10 +1000 (EST)
-In-Reply-To: <1211402685.8297.247.camel@pasglop>
-References: <20080521141056.GC8897@wotan.suse.de>
-	<20080521141231.GD8897@wotan.suse.de>
-	<1211383592.8297.195.camel@pasglop>
-	<20080521153420.GG8897@wotan.suse.de>
-	<1211384580.8297.199.camel@pasglop>
-	<20080521160146.GI8897@wotan.suse.de>
-	<7dc38d9080603be9c25b8f649e5df0a0@kernel.crashing.org>
-	<1211402685.8297.247.camel@pasglop>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <b88b9efaffd17fa5b53f1d8070a6844c@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [patch 2/2] powerpc: optimise smp_wmb
-Date: Thu, 22 May 2008 00:07:00 +0200
-To: benh@kernel.crashing.org
-Cc: Nick Piggin <npiggin@suse.de>, linuxppc-dev@ozlabs.org, paulus@samba.org
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 92DFFDDFBC
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 May 2008 08:11:22 +1000 (EST)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	m4LMBGmb003673
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 May 2008 15:11:17 -0700 (MST)
+Received: from ld0162-tx32.am.freescale.net (ld0162-tx32.am.freescale.net
+	[10.82.19.112])
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id m4LMBGrA007076
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 May 2008 17:11:16 -0500 (CDT)
+Date: Wed, 21 May 2008 17:11:15 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] [POWERPC] mpic: deal with bogus NIRQ in Feature Reporting
+	Register
+Message-ID: <20080521221115.GB5156@ld0162-tx32.am.freescale.net>
+References: <Pine.LNX.4.64.0805211557380.31707@blarg.am.freescale.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.64.0805211557380.31707@blarg.am.freescale.net>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,34 +34,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> The main question is do we care if the downgrade to sync on power3 
-> hurts
-> performances (and does it ?) and what do we do for 32 bits as 
-> currently,
-> no 32 bits implementation has lwsync afaik (though that might not be
-> true for long).
+On Wed, May 21, 2008 at 03:57:55PM -0500, Kumar Gala wrote:
+> Some chips (like the SoCs from Freescale) report the wrong value in NIRQ
+> and this causes issues if its doesn't match or exceed the value of
+> irq_count.
 
-Some time ago, I benchmarked (*) a loop of "stw;sync" vs. "stw;eieio"
-on a 750 (yeah, great micro-benchmark, heh); and the sync version
-was a factor ~100 slower.
+Is it really wrong, or just not accounting for the gap between external
+and internal interrupts?
 
-> Also, we don't, I think, have verified that they all properly ignore 
-> the
-> added bit and behave as sync rather than program checking..
-
-The architecture books don't have a programming note about this
-(like they do in similar cases), so either a) it works fine on
-every implementation; or b) someone forgot to add such a note.
-
-We shouldn't use lwsync on 32-bit (it's an awful performance hit
-on "classic" cpus, and who knows what it does on embedded cpus
-(bookE *shudder*)).  For POWER3 and *star, i.e., all 64-bit?  Perhaps
-it'll be okay there, but if as you suggest some 32-bit CPUs will add
-proper lwsync support soonish, maybe a feature fixup or some such is
-in order.
-
-
-Segher
-
-
-(*) Not on purpose.
+-Scott
