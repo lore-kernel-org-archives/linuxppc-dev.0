@@ -1,24 +1,33 @@
-Return-Path: <khali@linux-fr.org>
-Received: from services.gcu-squad.org (zone0.gcu-squad.org [212.85.147.21])
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 8F717DDF35
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 May 2008 01:10:05 +1000 (EST)
-Date: Wed, 21 May 2008 17:09:25 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Wolfram Sang <w.sang@pengutronix.de>
-Subject: Re: [PATCH] i2c: adds support for i2c bus on Freescale CPM1/CPM2
-	controllers
-Message-ID: <20080521170925.67c63326@hyperion.delvare>
-In-Reply-To: <20080521143307.GD4271@pengutronix.de>
-References: <4833FCCA.4080707@scram.de> <20080521143307.GD4271@pengutronix.de>
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 87002DE172
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 May 2008 01:10:17 +1000 (EST)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
+	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	m4LFACVS003627
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 May 2008 08:10:12 -0700 (MST)
+Received: from ld0162-tx32.am.freescale.net (ld0162-tx32.am.freescale.net
+	[10.82.19.112])
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id m4LFA3SI006233
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 May 2008 10:10:08 -0500 (CDT)
+Date: Wed, 21 May 2008 10:10:03 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Jochen Friedrich <jochen@scram.de>
+Subject: Re: [PATCH] [POWERPC] Add i2c pins to dts and board setup
+Message-ID: <20080521151003.GA13858@ld0162-tx32.am.freescale.net>
+References: <4833FA0C.5090800@scram.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4833FA0C.5090800@scram.de>
 Cc: "Kernel, Linux" <linux-kernel@vger.kernel.org>,
 	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Linux I2C <i2c@lm-sensors.org>, Scott Wood <scottwood@freescale.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Boris Shteinbock <bshtein@yahoo.com>
+	Paul Mackerras <paulus@samba.org>, Linux I2C <i2c@lm-sensors.org>,
+	Jean Delvare <khali@linux-fr.org>,
+	Andrew Morton <akpm@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,49 +37,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 21 May 2008 16:33:07 +0200, Wolfram Sang wrote:
-> Hi Jochen,
-> 
-> On Wed, May 21, 2008 at 12:43:22PM +0200, Jochen Friedrich wrote:
-> > This driver uses the port of 2.4 code from Vitaly Bordug
-> > <vitb@kernel.crashing.org> and the actual algorithm used by the i2c
-> > driver of the DBox code on cvs.tuxboc.org from Felix Domke
-> > (tmbinc@gmx.net) and Gillem (htoa@gmx.net) converted to an
-> > of_platform_driver. Tested on CPM1 (MPC823 on dbox2 hardware) and
-> > CPM2 (MPC8272).
-> > 
-> > Signed-off-by: Jochen Friedrich <jochen@scram.de>
-> > ---
-> Works on MPC8260.
-> 
-> Tested-by: Wolfram Sang <w.sang@pengutronix.de>
-> 
-> >  drivers/i2c/busses/Kconfig   |   10 +
-> >  drivers/i2c/busses/Makefile  |    1 +
-> >  drivers/i2c/busses/i2c-cpm.c |  745 ++++++++++++++++++++++++++++++++++++++++++
-> >  3 files changed, 756 insertions(+), 0 deletions(-)
-> >  create mode 100644 drivers/i2c/busses/i2c-cpm.c
-> > 
-> > Changes since last version:
-> > - fixed copy and paste bug (I2COM_MASTER -> I2COM_START)
-> > - changed dev_err() to dev_dbg() for NACK
-> > - changed dev_dbg() to dev_err() for Timeout
-> > - added explanation for brg formular
-> Typo: formula
-> 
-> > - added "bus-frequency" OF attribute to be able to override i2c clock
-> \o/ Cool feature. Worked nicely.
-> 
-> > - support for numbered adapter (it was already documented in
-> >   my booting-without-of patch but not yet implemented)
-> > - finally changed i2c "pseudo address" 0xfe to 0x7f << 1
-> > - get rid of the "fsl,cpm-i2c" name. This logic was screwed
-> > - fixed the error patch for request_irq failure
->
-> path instead of patch? But well, I assume typos in this section do not
-> matter much anyhow as they are not imported into git. Am I right, Jean?
+On Wed, May 21, 2008 at 12:31:40PM +0200, Jochen Friedrich wrote:
+> +   - linux,i2c-index : Can be used to hard code an i2c bus nummer.
 
-Yes you are.
+s/nummer/number/
 
--- 
-Jean Delvare
+Why do we need this?
+
+> +   - linux,i2c-class : Can be used to override the i2c class. The class is used
+> +     by old style i2c device drivers to find a bus in a specific context like
+> +     system management, video or sound. By default, I2C_CLASS_HWMON (1) is
+> +     being used. The definition of the classes can be found in
+> +     include/i2c/i2c.h
+
+It'd be better to just convert any needed old-style drivers than add this
+to the device tree.
+
+> +   - bus-frequency : Can be used to set the i2c bus frequency. If unspecified,
+> +     a default frequency of 60kHz is being used.
+
+clock-frequency is the standard name for such things.
+
+-Scott
