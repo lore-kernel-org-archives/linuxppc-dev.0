@@ -1,18 +1,21 @@
-Return-Path: <runet@innovsys.com>
-Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
-	by ozlabs.org (Postfix) with ESMTP id 2A21DDF6BB
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 May 2008 07:01:24 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: 1 GB lowmem
-Date: Wed, 21 May 2008 15:55:59 -0500
-Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B046E7AF5@ismail.innsys.innovsys.com>
-In-Reply-To: <DCEAAC0833DD314AB0B58112AD99B93B046E7AA0@ismail.innsys.innovsys.com>
-References: <DCEAAC0833DD314AB0B58112AD99B93B046E79B3@ismail.innsys.innovsys.com>
-	<DCEAAC0833DD314AB0B58112AD99B93B046E7AA0@ismail.innsys.innovsys.com>
-From: "Rune Torgersen" <runet@innovsys.com>
-To: <linuxppc-dev@ozlabs.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 1B20CDF9DE
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 May 2008 07:02:03 +1000 (EST)
+Subject: Re: [PATCH v2] [POWERPC] mpic: deal with bogus NIRQ in Feature
+	Reporting Register
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <Pine.LNX.4.64.0805211559110.31758@blarg.am.freescale.net>
+References: <Pine.LNX.4.64.0805211559110.31758@blarg.am.freescale.net>
+Content-Type: text/plain
+Date: Wed, 21 May 2008 17:01:48 -0400
+Message-Id: <1211403708.8297.251.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,29 +25,60 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Rune Torgersen wrote:
-> linuxppc-dev-bounces+runet=3Dinnovsys.com@ozlabs.org wrote:
->> Hi
->>=20
->> I am trying to enable 1 GB of lowmem on a Freescale 8280.
->> In arch/ppc this was easilly done by:
->> CONFIG_ADVANCED_OPTIONS=3Dy
->> CONFIG_HIGHMEM_START=3D0xfe000000
->> CONFIG_LOWMEM_SIZE_BOOL=3Dy
->> CONFIG_LOWMEM_SIZE=3D0x40000000
->> CONFIG_KERNEL_START_BOOL=3Dy
->> CONFIG_KERNEL_START=3D0xa0000000
->>=20
->> This does not work in arch/powerpc. CPU hangs as soon as init starts.
->> Any ideas what to look at, what to change?
->>=20
->> The reason I want to do this is because I cannot get highmem support
->> to work when using CONFIG_PREEMPT_RT.
->> (hitting a bug_on in kmap_atomic)
->=20
-> Scratch that. 1 GB lowmem works with vanilla 2.6.25.4, but
-> not at all with 2.6.25.4-rt[13]
 
-Argh... Found it. Had to set CONFIG_TASK_SIZE to 0x80000000. Now it
-works in both vaniulla an d RT kernel.
-Highmem still doesn't work.
+On Wed, 2008-05-21 at 15:59 -0500, Kumar Gala wrote:
+> Some chips (like the SoCs from Freescale) report the wrong value in NIRQ
+> and this causes issues if its doesn't match or exceed the value of
+> irq_count.
+> 
+> Add a flag that board code can set to just use irq_count instead of
+> FRR[NIRQ].  Eventually we'll add a device tree property with the number
+> of sources.
+> 
+> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+
+> ---
+> 
+> Screw up with git on the first version.
+> 
+> - k
+> 
+>  arch/powerpc/sysdev/mpic.c |    9 ++++++---
+>  include/asm-powerpc/mpic.h |    2 ++
+>  2 files changed, 8 insertions(+), 3 deletions(-)
+> 
+> diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
+> index 8619f2a..12e285d 100644
+> --- a/arch/powerpc/sysdev/mpic.c
+> +++ b/arch/powerpc/sysdev/mpic.c
+> @@ -1144,9 +1144,12 @@ struct mpic * __init mpic_alloc(struct device_node *node,
+>  	mpic->num_cpus = ((greg_feature & MPIC_GREG_FEATURE_LAST_CPU_MASK)
+>  			  >> MPIC_GREG_FEATURE_LAST_CPU_SHIFT) + 1;
+>  	if (isu_size == 0)
+> -		mpic->num_sources =
+> -			((greg_feature & MPIC_GREG_FEATURE_LAST_SRC_MASK)
+> -			 >> MPIC_GREG_FEATURE_LAST_SRC_SHIFT) + 1;
+> +		if (flags & MPIC_BROKEN_FRR_NIRQS)
+> +			mpic->num_sources = mpic->irq_count;
+> +		else
+> +			mpic->num_sources =
+> +				((greg_feature & MPIC_GREG_FEATURE_LAST_SRC_MASK)
+> +				 >> MPIC_GREG_FEATURE_LAST_SRC_SHIFT) + 1;
+> 
+>  	/* Map the per-CPU registers */
+>  	for (i = 0; i < mpic->num_cpus; i++) {
+> diff --git a/include/asm-powerpc/mpic.h b/include/asm-powerpc/mpic.h
+> index 943c5a3..6802570 100644
+> --- a/include/asm-powerpc/mpic.h
+> +++ b/include/asm-powerpc/mpic.h
+> @@ -353,6 +353,8 @@ struct mpic
+>  #define MPIC_ENABLE_MCK			0x00000200
+>  /* Disable bias among target selection, spread interrupts evenly */
+>  #define MPIC_NO_BIAS			0x00000400
+> +/* Ignore NIRQS as reported by FRR */
+> +#define MPIC_BROKEN_FRR_NIRQS		0x00000800
+> 
+>  /* MPIC HW modification ID */
+>  #define MPIC_REGSET_MASK		0xf0000000
