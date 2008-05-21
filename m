@@ -1,20 +1,23 @@
-Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from outbound5-dub-R.bigfish.com (outbound-dub.frontbridge.com
-	[213.199.154.16])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id C40B9DDFDF
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 May 2008 02:42:05 +1000 (EST)
-Message-ID: <483450D3.7050900@am.sony.com>
-Date: Wed, 21 May 2008 09:41:55 -0700
-From: Geoff Levand <geoffrey.levand@am.sony.com>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 04BC8DE6DA
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 May 2008 02:48:42 +1000 (EST)
+Date: Wed, 21 May 2008 20:48:41 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Subject: Re: [PATCH 2/4] [OF] spi_of: add support for dedicated SPI
+	constructors
+Message-ID: <20080521164841.GA17813@polina.dev.rtsoft.ru>
+References: <20080521154103.GA32577@polina.dev.rtsoft.ru>
+	<20080521154139.GB4566@polina.dev.rtsoft.ru>
+	<Pine.LNX.4.64.0805211754300.5386@axis700.grange>
+	<20080521161039.GA9050@polina.dev.rtsoft.ru>
+	<Pine.LNX.4.64.0805211820460.5386@axis700.grange>
 MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [patch v2] PS3: Fix memory hotplug
-References: <4829C07A.4040407@am.sony.com> <482C9897.90709@am.sony.com>
-In-Reply-To: <482C9897.90709@am.sony.com>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <Pine.LNX.4.64.0805211820460.5386@axis700.grange>
+Cc: linuxppc-dev@ozlabs.org, Gary Jennejohn <garyj@denx.de>
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,45 +27,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Geoff Levand wrote:
-> A change was made to walk_memory_resource() in commit
-> 4b119e21d0c66c22e8ca03df05d9de623d0eb50f that added a
-> check of find_lmb().  Add the coresponding lmb_add()
-> call to ps3_mm_add_memory() so that that check will
-> succeed.
+On Wed, May 21, 2008 at 06:24:58PM +0200, Guennadi Liakhovetski wrote:
+> On Wed, 21 May 2008, Anton Vorontsov wrote:
 > 
-> This fixes the condition where the PS3 boots up with
-> only the 128 MiB of boot memory.
+> > On Wed, May 21, 2008 at 05:56:33PM +0200, Guennadi Liakhovetski wrote:
+> > > 
+> > > Hm, I might well misunderstand something here, but it looks to me like you 
+> > > are again trying to use both OF _and_ platform (spi_board_info) bindings 
+> > > for your SPI setup?
+> > 
+> > Yes, you didn't misunderstand. ;-)
+> > 
+> > > And this is exactly what we are trying to avoid in 
+> > > Grant's series of patches...
+> > 
+> > I didn't find other way... The show stopper is "master" argument,
+> > drivers don't know about masters (and should not, since if they should,
+> > then this implies that masters should be registered prior to devices,
+> > and that complicates everything).
+> > 
+> > What is the problem with board infos, btw? I missed that part. Board
 > 
-> Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
-> ---
-> 
-> v2: Add call to lmb_analyze().
-> 
->  arch/powerpc/platforms/ps3/mm.c |    3 +++
->  1 file changed, 3 insertions(+)
-> 
-> --- a/arch/powerpc/platforms/ps3/mm.c
-> +++ b/arch/powerpc/platforms/ps3/mm.c
-> @@ -317,6 +317,9 @@ static int __init ps3_mm_add_memory(void
->  		return result;
->  	}
->  
-> +	lmb_add(start_addr, map.r1.size);
-> +	lmb_analyze();
-> +
->  	result = online_pages(start_pfn, nr_pages);
->  
->  	if (result)
-> 
+> In short: board infos are not bad as such. I find it bad if you have to 
+> use both OF and platform bindings to describe _one_ piece of hardware.
 
-Hi Paul,
+This particular discussion isn't about describing hardware (since
+we're describing it via device tree), but about implementation
+details, such as:
 
-Could you please merge this one in for 2.6.26.  Without it the
-system boots with just 128 of the total 256 MiB of memory.
+1. Passing platform_data to the drivers;
+2. Creating "SPI Linux devices" from the OF description.
 
-There is the concurrency problem as Ben commented on, but I
-think not having the 128 MiB of memory is worse than having the
-potential race, which we can work on as a separate fix.
+I see there ways:
 
--Geoff
+1. Grant Likely's approach (works great for simple drivers which don't
+   need SPI platform_data).
+2. Old board infos approach, there we can do whatever we want.
+3. Implementing OF bindings for the every SPI driver that needs
+   platform_data.
+
+I could do "3", let's see what it will look like...
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
