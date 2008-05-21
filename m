@@ -1,30 +1,24 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from gv-out-0910.google.com (gv-out-0910.google.com [216.239.58.189])
-	by ozlabs.org (Postfix) with ESMTP id 74F94DE4F2
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 May 2008 06:07:19 +1000 (EST)
-Received: by gv-out-0910.google.com with SMTP id y18so629270gvf.14
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 May 2008 13:07:13 -0700 (PDT)
-Message-ID: <fa686aa40805211307keb43bd6n1a2cc4e7e5a2d408@mail.gmail.com>
-Date: Wed, 21 May 2008 14:07:12 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Guennadi Liakhovetski" <g.liakhovetski@gmx.de>
-Subject: Re: [PATCH 2/4] [OF] spi_of: add support for dedicated SPI
-	constructors
-In-Reply-To: <Pine.LNX.4.64.0805212157580.5386@axis700.grange>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20080521154103.GA32577@polina.dev.rtsoft.ru>
-	<20080521161039.GA9050@polina.dev.rtsoft.ru>
-	<Pine.LNX.4.64.0805211820460.5386@axis700.grange>
-	<20080521164841.GA17813@polina.dev.rtsoft.ru>
-	<fa686aa40805211005h58ea66dfl792eae460d4ea3d@mail.gmail.com>
-	<Pine.LNX.4.64.0805211940060.5386@axis700.grange>
-	<fa686aa40805211206g5f23d3dax3e33c5aebe7aa4f1@mail.gmail.com>
-	<Pine.LNX.4.64.0805212115310.5386@axis700.grange>
-	<fa686aa40805211253l173cd68v77f40cf70ff6b949@mail.gmail.com>
-	<Pine.LNX.4.64.0805212157580.5386@axis700.grange>
-Cc: linuxppc-dev@ozlabs.org, Gary Jennejohn <garyj@denx.de>
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id E2784DE1A9
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 May 2008 06:12:15 +1000 (EST)
+In-Reply-To: <20080521160146.GI8897@wotan.suse.de>
+References: <20080521141056.GC8897@wotan.suse.de>
+	<20080521141231.GD8897@wotan.suse.de>
+	<1211383592.8297.195.camel@pasglop>
+	<20080521153420.GG8897@wotan.suse.de>
+	<1211384580.8297.199.camel@pasglop>
+	<20080521160146.GI8897@wotan.suse.de>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <7dc38d9080603be9c25b8f649e5df0a0@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [patch 2/2] powerpc: optimise smp_wmb
+Date: Wed, 21 May 2008 22:12:03 +0200
+To: Nick Piggin <npiggin@suse.de>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,36 +28,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, May 21, 2008 at 2:00 PM, Guennadi Liakhovetski
-<g.liakhovetski@gmx.de> wrote:
-> On Wed, 21 May 2008, Grant Likely wrote:
->
->> On Wed, May 21, 2008 at 1:20 PM, Guennadi Liakhovetski
->> <g.liakhovetski@gmx.de> wrote:
->> >
->> > Right again - _rare_ corner cases. Whereas we are talking about _all_ SPI
->> > busses, maybe apart from those, where the controller itself switches CSs
->> > in a well-defined way, and the driver doesn't need any additional
->> > information to handle this.
->>
->> Ah, I see where we are crossing our wires.  I was talking about the
->> case of registering spi devices.  I agree that the spi bus should not
->> need any additional information.
->
-> No, sorry for not making it clear. I wrote "busses" because on those
-> controllers, that control CS themselves _devices_ don't need any
-> additional info. But I meant, that describing SPI _devices_ should be done
-> in only one way or another - either using fdt, or platform data, not both.
+>> From memory, I measured lwsync is 5 times faster than eieio on
+> a dual G5. This was on a simple microbenchmark that made use of
+> smp_wmb for store ordering, but it did not involve any IO access
+> (which presumably would disadvantage eieio further).
 
-Yes, I agree with that too... with the one caveat that platform code
-should have some method to supplement the data in the device tree
-*only when it is absolutely necessary to do so*.  (note: I say
-'platform code' here, not 'platform data'.  They are two different
-things)  I make no claims on what that method should be at this time.
+This is very much specific to your particular benchmark.
 
-Cheers,
-g.
+On the 970, there are two differences between lwsync and eieio:
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+1) lwsync cannot issue before all previous loads are done; eieio
+does not have this restriction.
+
+Then, they both fly through the execution core, it doesn't wait
+for the barrier insn to complete in the storage system.  In both
+cases, a barrier is inserted into both the L2 queues and the
+non-cacheable queues.  These barriers are both removed at the
+same time, that is, when both are the oldest in their queue and
+have done their thing.
+
+2) For eieio, the non-cacheable unit waits for all previous
+(non-cacheable) stores to complete, and then arbitrates for the
+bus and sends an EIEIO transaction.
+
+Your benchmark doesn't do non-cacheable stores, so it would seem
+the five-time slowdown is caused by that bus arbitration (and the
+bus transaction).  Maybe your cacheable stores hit the bus as well,
+that would make this worse.  Your benchmark also doesn't see the
+negative effects from 1).
+
+In "real" code, I expect 2) to be pretty much invisible (the store
+queues will never be completely filled up), but 1) shouldn't be very
+bad either.  So it's a wash.  But only a real benchmark will tell.
+
+> Given the G5 speedup, I'd be surprised if there is not an improvment
+> on POWER4 and 5 as well,
+
+The 970 storage subsystem and the POWER4 one are very different.
+Or maybe these queues are just about the last thing that _is_
+identical, I dunno, there aren't public POWER4 docs for this ;-)
+
+> although no idea about POWER6 or cell...
+
+No idea about POWER6; for CBE, the backend works similar to the
+970 one.
+
+Given that the architecture says to use lwsync for cases like this,
+it would be very surprising if it performed (much) worse than eieio,
+eh? ;-)  So I think your patch is a win; just wanted to clarify on
+your five-time slowdown number.
+
+HTH,
+
+
+Segher
