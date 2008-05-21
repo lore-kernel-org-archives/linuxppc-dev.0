@@ -1,21 +1,32 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <akpm@linux-foundation.org>
+Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
+	[140.211.169.13])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 1B20CDF9DE
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 May 2008 07:02:03 +1000 (EST)
-Subject: Re: [PATCH v2] [POWERPC] mpic: deal with bogus NIRQ in Feature
-	Reporting Register
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <Pine.LNX.4.64.0805211559110.31758@blarg.am.freescale.net>
-References: <Pine.LNX.4.64.0805211559110.31758@blarg.am.freescale.net>
-Content-Type: text/plain
-Date: Wed, 21 May 2008 17:01:48 -0400
-Message-Id: <1211403708.8297.251.camel@pasglop>
+	(Client CN "smtp.linux-foundation.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id F3E60DDF98
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 May 2008 07:09:39 +1000 (EST)
+Date: Wed, 21 May 2008 13:52:30 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: benh@kernel.crashing.org
+Subject: Re: [PATCH 1/2] Add thread_info_cache_init() to all archs
+Message-Id: <20080521135230.69c04ab4.akpm@linux-foundation.org>
+In-Reply-To: <1211399081.8297.234.camel@pasglop>
+References: <20080410032354.90CB1DDF0F@ozlabs.org>
+	<20080413171953.bde5e9ac.akpm@linux-foundation.org>
+	<1208133506.6958.82.camel@pasglop>
+	<20080413191338.9776ebd0.akpm@linux-foundation.org>
+	<1208491086.6958.381.camel@pasglop>
+	<20080417211905.8ff769fa.akpm@linux-foundation.org>
+	<1208501061.6958.394.camel@pasglop>
+	<1211392585.8297.218.camel@pasglop>
+	<20080521114147.59ca3551.akpm@linux-foundation.org>
+	<1211399081.8297.234.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: benh@kernel.crashing.org
+Content-Type: text/plain; charset=US-ASCII
+Cc: linux-arch@vger.kernel.org, linux-m32r@ml.linux-m32r.org,
+	LukeBrowning@us.ibm.com, takata@linux-m32r.org,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,60 +36,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Wed, 21 May 2008 15:44:41 -0400
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-On Wed, 2008-05-21 at 15:59 -0500, Kumar Gala wrote:
-> Some chips (like the SoCs from Freescale) report the wrong value in NIRQ
-> and this causes issues if its doesn't match or exceed the value of
-> irq_count.
 > 
-> Add a flag that board code can set to just use irq_count instead of
-> FRR[NIRQ].  Eventually we'll add a device tree property with the number
-> of sources.
+> On Wed, 2008-05-21 at 11:41 -0700, Andrew Morton wrote:
+> > 
+> > yup, gcc bug.  Discussed recently on lkml, "Subject: Re: huge gcc
+> > 4.1.{0,1} __weak problem".  I don't think anything ended up happening
+> > about it though.
 > 
-> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+> Hrm... do you think we should work around ? ie. move the stubs to a
+> separate .c file ?
+> 
 
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+istr that sticking an asm(""); in the weak function was a reliable
+workaround.  If we are going to to that it should be via
 
-> ---
-> 
-> Screw up with git on the first version.
-> 
-> - k
-> 
->  arch/powerpc/sysdev/mpic.c |    9 ++++++---
->  include/asm-powerpc/mpic.h |    2 ++
->  2 files changed, 8 insertions(+), 3 deletions(-)
-> 
-> diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
-> index 8619f2a..12e285d 100644
-> --- a/arch/powerpc/sysdev/mpic.c
-> +++ b/arch/powerpc/sysdev/mpic.c
-> @@ -1144,9 +1144,12 @@ struct mpic * __init mpic_alloc(struct device_node *node,
->  	mpic->num_cpus = ((greg_feature & MPIC_GREG_FEATURE_LAST_CPU_MASK)
->  			  >> MPIC_GREG_FEATURE_LAST_CPU_SHIFT) + 1;
->  	if (isu_size == 0)
-> -		mpic->num_sources =
-> -			((greg_feature & MPIC_GREG_FEATURE_LAST_SRC_MASK)
-> -			 >> MPIC_GREG_FEATURE_LAST_SRC_SHIFT) + 1;
-> +		if (flags & MPIC_BROKEN_FRR_NIRQS)
-> +			mpic->num_sources = mpic->irq_count;
-> +		else
-> +			mpic->num_sources =
-> +				((greg_feature & MPIC_GREG_FEATURE_LAST_SRC_MASK)
-> +				 >> MPIC_GREG_FEATURE_LAST_SRC_SHIFT) + 1;
-> 
->  	/* Map the per-CPU registers */
->  	for (i = 0; i < mpic->num_cpus; i++) {
-> diff --git a/include/asm-powerpc/mpic.h b/include/asm-powerpc/mpic.h
-> index 943c5a3..6802570 100644
-> --- a/include/asm-powerpc/mpic.h
-> +++ b/include/asm-powerpc/mpic.h
-> @@ -353,6 +353,8 @@ struct mpic
->  #define MPIC_ENABLE_MCK			0x00000200
->  /* Disable bias among target selection, spread interrupts evenly */
->  #define MPIC_NO_BIAS			0x00000400
-> +/* Ignore NIRQS as reported by FRR */
-> +#define MPIC_BROKEN_FRR_NIRQS		0x00000800
-> 
->  /* MPIC HW modification ID */
->  #define MPIC_REGSET_MASK		0xf0000000
+/* comment goes here */
+#define gcc_screws_up_weak_stuff() asm("")
+
+but that approach didn't seem very popular.  It's a _bit_ fragile I
+guess, but it's pretty easy to grep for missed workarounds.
