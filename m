@@ -1,31 +1,25 @@
-Return-Path: <kamalesh@linux.vnet.ibm.com>
-Received: from e23smtp03.au.ibm.com (E23SMTP03.au.ibm.com [202.81.18.172])
+Return-Path: <schwab@suse.de>
+Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp03.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 90D0BDDF4D
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 May 2008 16:51:18 +1000 (EST)
-Received: from sd0109e.au.ibm.com (d23rh905.au.ibm.com [202.81.18.225])
-	by e23smtp03.au.ibm.com (8.13.1/8.13.1) with ESMTP id m4L6oQxC017585
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 May 2008 16:50:26 +1000
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
-	by sd0109e.au.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m4L6tOX1282062
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 May 2008 16:55:24 +1000
-Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
-	by d23av02.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m4L6pGZj021028
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 May 2008 16:51:16 +1000
-Message-ID: <4833C661.2040800@linux.vnet.ibm.com>
-Date: Wed, 21 May 2008 12:21:13 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 87BFBDDF3A
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 May 2008 18:04:02 +1000 (EST)
+From: Andreas Schwab <schwab@suse.de>
+To: Trent Piepho <tpiepho@freescale.com>
+Subject: Re: [PATCH] [POWERPC] Improve (in|out)_beXX() asm code
+References: <1211316025-29069-1-git-send-email-tpiepho@freescale.com>
+	<jeiqx83ab0.fsf@sykes.suse.de>
+	<Pine.LNX.4.64.0805201502000.7453@t2.domain.actdsltmp>
+	<jeabik385g.fsf@sykes.suse.de>
+	<Pine.LNX.4.64.0805201612240.7453@t2.domain.actdsltmp>
+Date: Wed, 21 May 2008 10:03:54 +0200
+In-Reply-To: <Pine.LNX.4.64.0805201612240.7453@t2.domain.actdsltmp> (Trent
+	Piepho's message of "Tue, 20 May 2008 16:14:49 -0700 (PDT)")
+Message-ID: <je3aocdqxh.fsf@sykes.suse.de>
 MIME-Version: 1.0
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH] Add kernstart_addr to list of allowed symbols in prom_init
-References: <f4219729e8da75f5176347d176430d4b8b0fcb8a.1211287582.git.michael@ellerman.id.au>
-In-Reply-To: <f4219729e8da75f5176347d176430d4b8b0fcb8a.1211287582.git.michael@ellerman.id.au>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, Kumar Gala <kumar.gala@freescale.com>,
-	Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain; charset=iso-8859-1
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,46 +29,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Michael Ellerman wrote:
-> Since commit "85xx: Add support for relocatable kernel (and
-> booting at non-zero)" (37dd2badcfcec35f5e21a0926968d77a404f03c3),
-> PHYSICAL_START is #defined as kernstart_addr if RELOCATABLE
-> and FLATMEM is enabled.
-> 
-> PHYSICAL_START is used in prom_init.c and so kernstart_addr
-> needs to be added to the list of allowed symbols that
-> prom_init.c can access.
-> 
-> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
-> ---
-> 
-> Not sure if anyone is building this config in practice, but it
-> is broken in 26 without this patch.
-> 
->  arch/powerpc/kernel/prom_init_check.sh |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/prom_init_check.sh b/arch/powerpc/kernel/prom_init_check.sh
-> index 8e24fc1..31729a9 100644
-> --- a/arch/powerpc/kernel/prom_init_check.sh
-> +++ b/arch/powerpc/kernel/prom_init_check.sh
-> @@ -20,7 +20,7 @@ WHITELIST="add_reloc_offset __bss_start __bss_stop copy_and_flush
->  _end enter_prom memcpy memset reloc_offset __secondary_hold
->  __secondary_hold_acknowledge __secondary_hold_spinloop __start
->  strcmp strcpy strlcpy strlen strncmp strstr logo_linux_clut224
-> -reloc_got2"
-> +reloc_got2 kernstart_addr"
-> 
->  NM="$1"
->  OBJ="$2"
-Hi Michael,
+Trent Piepho <tpiepho@freescale.com> writes:
 
-Thanks, the patch fixes the build failure.
+> On Wed, 21 May 2008, Andreas Schwab wrote:
+>> Trent Piepho <tpiepho@freescale.com> writes:
+>>
+>>> It's the _le versions that have a problem, since we can't get gcc to just use
+>>> the register indexed mode.  It seems like an obvious thing to have a
+>>> constraint for, but I guess there weren't enough instructions that only come
+>>> in 'x' versions to bother with it.  There is a 'Z' constraint, "Memory operand
+>>> that is an indexed or indirect from a register", but I tried it and it can use
+>>> both "rb,ri" and "disp(rb)" forms.  Actually, I'm not sure how 'Z' is any
+>>> different than "m"?
+>>
+>> 'Z' will never emit a non-zero constant displacement.
+>
+> It's too bad gas doesn't appear to be smart enough to turn:
+>         stwbrx 0, 0(3)   -or-   stwbr 0, 0(3)
 
-Tested-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Use the %y modifier when substituting the operand.
+
+Andreas.
 
 -- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
