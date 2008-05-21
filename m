@@ -1,28 +1,28 @@
-Return-Path: <sam@ravnborg.org>
-Received: from pasmtpA.tele.dk (pasmtpa.tele.dk [80.160.77.114])
-	by ozlabs.org (Postfix) with ESMTP id 189BDDE16B
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 May 2008 05:06:23 +1000 (EST)
-Date: Wed, 21 May 2008 21:06:59 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/2] Add thread_info_cache_init() to all archs
-Message-ID: <20080521190659.GB12638@uranus.ravnborg.org>
-References: <20080410032354.90CB1DDF0F@ozlabs.org>
-	<20080413171953.bde5e9ac.akpm@linux-foundation.org>
-	<1208133506.6958.82.camel@pasglop>
-	<20080413191338.9776ebd0.akpm@linux-foundation.org>
-	<1208491086.6958.381.camel@pasglop>
-	<20080417211905.8ff769fa.akpm@linux-foundation.org>
-	<1208501061.6958.394.camel@pasglop>
-	<1211392585.8297.218.camel@pasglop>
-	<20080521114147.59ca3551.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080521114147.59ca3551.akpm@linux-foundation.org>
-Cc: Linux-Arch <linux-arch@vger.kernel.org>, linux-m32r@ml.linux-m32r.org,
-	takata@linux-m32r.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Luke Browning <LukeBrowning@us.ibm.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from ti-out-0910.google.com (ti-out-0910.google.com [209.85.142.189])
+	by ozlabs.org (Postfix) with ESMTP id 7253CDE1C3
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 May 2008 05:06:34 +1000 (EST)
+Received: by ti-out-0910.google.com with SMTP id w7so1850762tib.13
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 May 2008 12:06:32 -0700 (PDT)
+Message-ID: <fa686aa40805211206g5f23d3dax3e33c5aebe7aa4f1@mail.gmail.com>
+Date: Wed, 21 May 2008 13:06:30 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Guennadi Liakhovetski" <g.liakhovetski@gmx.de>
+Subject: Re: [PATCH 2/4] [OF] spi_of: add support for dedicated SPI
+	constructors
+In-Reply-To: <Pine.LNX.4.64.0805211940060.5386@axis700.grange>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20080521154103.GA32577@polina.dev.rtsoft.ru>
+	<20080521154139.GB4566@polina.dev.rtsoft.ru>
+	<Pine.LNX.4.64.0805211754300.5386@axis700.grange>
+	<20080521161039.GA9050@polina.dev.rtsoft.ru>
+	<Pine.LNX.4.64.0805211820460.5386@axis700.grange>
+	<20080521164841.GA17813@polina.dev.rtsoft.ru>
+	<fa686aa40805211005h58ea66dfl792eae460d4ea3d@mail.gmail.com>
+	<Pine.LNX.4.64.0805211940060.5386@axis700.grange>
+Cc: linuxppc-dev@ozlabs.org, Gary Jennejohn <garyj@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,51 +32,79 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, May 21, 2008 at 11:41:47AM -0700, Andrew Morton wrote:
-> On Wed, 21 May 2008 13:56:25 -0400 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-> 
-> > 
-> > On Fri, 2008-04-18 at 16:44 +1000, Benjamin Herrenschmidt wrote:
-> > > > > so what
-> > > > > about the patch below ?
-> > > > 
-> > > > I like it, but the compiler won't ;)
-> > > > 
-> > > > > If you're ok, I'll re-send with appropriate sob
-> > > > > & adapted powerpc part.
-> > > > 
-> > > > Sure.
-> > > > 
-> > > > > +void __init __attribute__((weak) thread_info_cache_init(void)
-> > > >
-> > 
-> > Back to this old subject...
-> > 
-> > I'm having reports that this is not working...
-> > 
-> > gcc is seeing the empty weak function and is optimizing it out
-> > before it gets a chance to link to the arch provided one.
-> > 
-> > This would affect that and the other one next to it..
-> > 
-> > That seems pretty bad... it causes nasty crashes as we end up having no
-> > idea what the compiler decided to generate... I suppose we could keep
-> > the weak stubs out of the file where they are called but that sucks.
-> > 
-> > ie. This is some form of gcc 4.1.1
-> > 
-> > Is that a known problem ? A gcc issue ? Not sure what is expected from
-> > those weak functions.
-> 
-> yup, gcc bug.  Discussed recently on lkml, "Subject: Re: huge gcc
-> 4.1.{0,1} __weak problem".  I don't think anything ended up happening
-> about it though.
+On Wed, May 21, 2008 at 11:51 AM, Guennadi Liakhovetski
+<g.liakhovetski@gmx.de> wrote:
+> On Wed, 21 May 2008, Grant Likely wrote:
+>
+>> I concede that sometimes platform code just has to pass data to the
+>> driver that cannot be described in the device tree.  callback pointers
+>> being the most significant example and we do need a sane way to do so.
+>
+> Sorry, I just cannot understand. So far my understanding was, that OF
+> bindings were there to _completely_ describe hardware, that cannot be
+> autoconfigured or probed.
 
-It was discussed to add some run-time checks for this issue.
-But the examples given were a bit fluffy so I never integrated anything
-i kbuild to detect this.
+Correct, they describe the hardware... to a level sufficient to
+identify it usefully and uniquely to an operating system.
 
-As this is only a bug for const weak functions they could be made non-const
-if they are seldomly used?
+> So a _generic_ driver gets all information it
+> needs from the device tree and needs no additional information to handle
+> the hardware.
 
-	Sam
+Also correct.
+
+>
+> Now if a driver needs additional information from "platform code" what's
+> the purpose of partial data in the device tree at all? Just use board
+> information as usual.
+
+(Note; it must be said that I think the situation is *rare* and should
+be avoided)
+
+If some behaviour is entirely board specific and doesn't have any
+possibility of being duplicated on other boards, then it makes sense
+for the code implementing that behaviour to live with the platform
+code.  For example; consider the example of the ads7846 device driver.
+ It needs a pointer to a function that will tell it whether or not the
+pen is down.  This is entirely a board specific kind of thing; it
+might happen via a GPIO or a key press or a phase of the moon.  The
+device doesn't care; but the driver needs a way to test the state.
+
+The driver needs some method to obtain the pointer to the function.
+It cannot be encoded in the device tree because it is a function
+pointer, not raw 'data'.  The device tree may have some data that
+tells the platform code how it is wired up; but the pointer itself
+cannot be encoded into the device tree.  I see two obvious ways to do
+this.  (note: platform code cannot simply export the function because
+it might be a multiplatform kernel with multiple platforms defining
+the same function).
+
+1) Pass it in a data structure passed with the device structure
+2) Make the device driver call out to a lookup function that returns
+the function pointer.
+
+Option 1) is basically some form of pdata scheme.  Option 2 requires
+the driver to use some API to go looking for the relevant function.
+I'm not convinced yet on which method is the best; but I cannot say
+that platform code must never pass data to drivers that is not
+directly encoded into the device tree.
+
+Besides, we must always account for the situation where the provided
+device tree has a bug or the hardware has a quirk and platform code
+needs to do something to fix it up.  Or if you prefer: 99% of the time
+everything is handled with common code reading the device tree
+directly; but in the 1% of the time where that does not work (due to
+bugs or quirks) we have options to insert workaround code.
+
+>
+> What good is an OF-binding if it doesn't provide complete information?
+
+It still increases the amount of common code even if there are rare
+corner cases that require board specific code.
+
+Cheers,
+g.
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
