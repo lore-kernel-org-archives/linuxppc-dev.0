@@ -1,31 +1,22 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
-	[140.211.169.13])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 4678CDE790
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 May 2008 04:42:04 +1000 (EST)
-Date: Wed, 21 May 2008 11:41:47 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: benh@kernel.crashing.org
-Subject: Re: [PATCH 1/2] Add thread_info_cache_init() to all archs
-Message-Id: <20080521114147.59ca3551.akpm@linux-foundation.org>
-In-Reply-To: <1211392585.8297.218.camel@pasglop>
-References: <20080410032354.90CB1DDF0F@ozlabs.org>
-	<20080413171953.bde5e9ac.akpm@linux-foundation.org>
-	<1208133506.6958.82.camel@pasglop>
-	<20080413191338.9776ebd0.akpm@linux-foundation.org>
-	<1208491086.6958.381.camel@pasglop>
-	<20080417211905.8ff769fa.akpm@linux-foundation.org>
-	<1208501061.6958.394.camel@pasglop>
-	<1211392585.8297.218.camel@pasglop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Linux-Arch <linux-arch@vger.kernel.org>, linux-m32r@ml.linux-m32r.org,
-	Luke Browning <LukeBrowning@us.ibm.com>, takata@linux-m32r.org,
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id AAA69DEA1E
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 May 2008 04:47:15 +1000 (EST)
+Date: Wed, 21 May 2008 22:47:13 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Pierre Ossman <drzeus-mmc@drzeus.cx>
+Subject: Re: [PATCH 3/4] [MMC] mmc_spi: add polling support for the card
+	detect line
+Message-ID: <20080521184713.GA30284@polina.dev.rtsoft.ru>
+References: <20080516165057.GC24196@polina.dev.rtsoft.ru>
+	<20080517133633.5aa26938@mjolnir.drzeus.cx>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <20080517133633.5aa26938@mjolnir.drzeus.cx>
+Cc: David Brownell <dbrownell@users.sourceforge.net>,
 	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>
+	spi-devel-general@lists.sourceforge.net, Timur Tabi <timur@freescale.com>
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,41 +26,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 21 May 2008 13:56:25 -0400 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+On Sat, May 17, 2008 at 01:36:33PM +0200, Pierre Ossman wrote:
+> On Fri, 16 May 2008 20:50:57 +0400
+> Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
+> 
+> > Some boards do not use interrupts on the CD line, so we want to poll
+> > the CD and see if there was a change. 1 second poll interval seems
+> > resonable.
+> > 
+> 
+> The idea isn't bad, but I'm not sure about the mechanism.
+> 
+> To poll a MMC slot, you do not really need a card detect at all. The
+> MMC layer can just shoot off some requests and see if anything
+> responds.  The PXA driver (if my memory serves me right) already does
+> this. So the best idea there would be to add this feature to the MMC
+> core and let the host indicate that it needs it via MMC_CAP_NEEDS_POLL
+> or something like that.
+> 
+> The card detection pin then becomes an optimisation, something that is
+> also useful in other ways. Have the host driver check the card detection
+> pin at the start of every request, and quickly fail it if there is no
+> card present.
 
-> 
-> On Fri, 2008-04-18 at 16:44 +1000, Benjamin Herrenschmidt wrote:
-> > > > so what
-> > > > about the patch below ?
-> > > 
-> > > I like it, but the compiler won't ;)
-> > > 
-> > > > If you're ok, I'll re-send with appropriate sob
-> > > > & adapted powerpc part.
-> > > 
-> > > Sure.
-> > > 
-> > > > +void __init __attribute__((weak) thread_info_cache_init(void)
-> > >
-> 
-> Back to this old subject...
-> 
-> I'm having reports that this is not working...
-> 
-> gcc is seeing the empty weak function and is optimizing it out
-> before it gets a chance to link to the arch provided one.
-> 
-> This would affect that and the other one next to it..
-> 
-> That seems pretty bad... it causes nasty crashes as we end up having no
-> idea what the compiler decided to generate... I suppose we could keep
-> the weak stubs out of the file where they are called but that sucks.
-> 
-> ie. This is some form of gcc 4.1.1
-> 
-> Is that a known problem ? A gcc issue ? Not sure what is expected from
-> those weak functions.
+Calling get_cd() for every request smells like overhead, especially given
+that that get_cd() could ask for GPIO status via relatively slow bus (like
+I2C GPIO expanders). So, polling seems most reasonable solution here, no
+need to call it very often.
 
-yup, gcc bug.  Discussed recently on lkml, "Subject: Re: huge gcc
-4.1.{0,1} __weak problem".  I don't think anything ended up happening
-about it though.
+How about these patches? Tested with and without get_cd() optimization.
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
