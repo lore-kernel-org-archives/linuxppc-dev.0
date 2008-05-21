@@ -1,19 +1,33 @@
-Return-Path: <Shengping.Liu@windriver.com>
-Received: from mail.wrs.com (mail.windriver.com [147.11.1.11])
-	by ozlabs.org (Postfix) with ESMTP id 4CBA7DDF81
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 May 2008 13:27:26 +1000 (EST)
-Message-ID: <4833875A.9090006@windriver.com>
-Date: Wed, 21 May 2008 11:22:18 +0900
-From: Andrew Liu <shengping.liu@windriver.com>
+Return-Path: <Jason.Jin@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 176D2DDF8F
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 May 2008 13:29:31 +1000 (EST)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
+	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
+	m4L3TNJd010538
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 May 2008 20:29:23 -0700 (MST)
+Received: from zch01exm27.fsl.freescale.net (zch01exm27.ap.freescale.net
+	[10.192.129.223])
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id m4L3TLS2020831
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 May 2008 22:29:21 -0500 (CDT)
 MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] [POWERPC] Uniformly use memstart_addr variable as the
-	start address of physical memory in powerpc branch
-References: <48337D1C.2070108@windriver.com>
-	<BEDAF2CE-73A5-4FE4-848B-936B7D675131@kernel.crashing.org>
-In-Reply-To: <BEDAF2CE-73A5-4FE4-848B-936B7D675131@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Content-Type: text/plain;
+	charset="US-ASCII"
+Subject: RE: [PATCH 3/4 V4] Enable MSI support for MPC8610HPCD board
+Date: Wed, 21 May 2008 11:29:19 +0800
+Message-ID: <CC27DED0F8F39E48A7E75FD768688B7A91586D@zch01exm27.fsl.freescale.net>
+In-Reply-To: <177599B6-6236-4292-A69B-CA13617A6576@kernel.crashing.org>
+References: <1211270856-26579-1-git-send-email-Jason.jin@freescale.com>
+	<1211270856-26579-2-git-send-email-Jason.jin@freescale.com>
+	<1211270856-26579-3-git-send-email-Jason.jin@freescale.com>
+	<177599B6-6236-4292-A69B-CA13617A6576@kernel.crashing.org>
+From: "Jin Zhengxiong" <Jason.Jin@freescale.com>
+To: "Kumar Gala" <galak@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,43 +37,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+=20
 
-Kumar Gala wrote:
-> 
-> On May 20, 2008, at 8:38 PM, Andrew Liu wrote:
-> 
->> [POWERPC]: Uniformly use memstart_addr as the start address of RAM
->>
->> The variable: memstart_addr whose initial value is got from dts file
->> is used as the start address of physical memory in PowerPC ARCH,
->> although it is used in functions: mapin_ram(pgtable_32.c) and
->> cam_mapin_ram(fsl_booke_mmu.c), however, in function: mmu_mapin_ram
->> (ppc_mmu_32.c), use 0 as the start address of physical memory, so
->> it is necessary to unify them: in mmu_mapin_ram, use memstart_addr
->> as the start address of physical memory, instead of 0.
->>
->> Signed-off-by: Andrew Liu <shengping.liu@windriver.com>
->> ---
-> 
-> Do you have a case where this is non-zero for ppc_mmu_32?  I left these 
-> alone because I wasn't aware of one (or if its reasonable).
-> 
+> -----Original Message-----
+> From: Kumar Gala [mailto:galak@kernel.crashing.org]=20
+> Sent: Tuesday, May 20, 2008 9:24 PM
+> To: Jin Zhengxiong
+> Cc: linuxppc-dev@ozlabs.org
+> Subject: Re: [PATCH 3/4 V4] Enable MSI support for MPC8610HPCD board
+>=20
+> > diff --git a/arch/powerpc/platforms/86xx/mpc8610_hpcd.c b/arch/=20
+> > powerpc/platforms/86xx/mpc8610_hpcd.c
+> > index dea1320..290d717 100644
+> > --- a/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
+> > +++ b/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
+> > @@ -71,9 +71,13 @@ static void __init mpc86xx_hpcd_init_irq(void)
+> > 	/* Alloc mpic structure and per isu has 16 INT entries. */
+> > 	mpic1 =3D mpic_alloc(np, res.start,
+> > 			MPIC_PRIMARY | MPIC_WANTS_RESET |=20
+> MPIC_BIG_ENDIAN,
+> > -			0, 256, " MPIC     ");
+> > +			64, 256, " MPIC     ");
+> > 	BUG_ON(mpic1 =3D=3D NULL);
+> >
+> > +	mpic_assign_isu(mpic1, 0, res.start + 0x10000);
+> > +	mpic_assign_isu(mpic1, 1, res.start + 0x10800);
+> > +	mpic_assign_isu(mpic1, 2, res.start + 0x11600);
+> > +
+>=20
+> I don't understand why you are breaking the interrupts up like this.
+>=20
+> If you leave as it was, the MSIs would start at hw irq 176
 
-No.
-I submitted this patch just because in ppc branch, PPC_MEMSTART is used as 
-the start address of physical memory uniformly, however, in powerpc branch, 
-use memstart_addr and 0, although, almost for all boards which are in powerpc,
-they are equal, from the aspect of code consistency, I think it is necessary to
-unify them.
+If the ISU size is 0, mpic will only initialize the interrupt source num
+reading from
+Feature Reporting Register(FRR), For 8610 it's 104, for 8572 it is 108,
+As the address
+space of the interrupt source configuration register is not
+continuous(between 0xa00-0x1600),
+ with ISU=3D0, actually only the 16 externel interrupts and 64 internal
+interrupts were initialized.
+the Messaging interrupts and MSI interrupts were not intialized.=20
 
-You know we can't make sure in future the start address of all incoming 
-boards' RAM is 0, especially, in AMP system, different cpu uses the different RAM area, 
-definitely, the start address of some is not 0.
+With the original code. the Messaging interrupts would start at hwirq
+176 and the MSIs would=20
+start at hwirq 224.=20
+By setting the ISU=3D64, the Messaging interrupts would start at 128 and
+the MSIs start at 176.=20
+And all the interrupt sources will be initialized.
 
-BRs,
-Andrew
-
-
-> - k
-> 
-> 
+Jason =20
