@@ -1,21 +1,28 @@
-Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from outbound5-wa4-R.bigfish.com (outbound-wa4.frontbridge.com
-	[216.32.181.16])
+Return-Path: <scottwood@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id F33C2DE695
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 May 2008 04:31:50 +1000 (EST)
-Message-ID: <48346A88.40608@am.sony.com>
-Date: Wed, 21 May 2008 11:31:36 -0700
-From: Geoff Levand <geoffrey.levand@am.sony.com>
-MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: PS3: Fix memory hotplug
-References: <4829C07A.4040407@am.sony.com>	<1210834125.8297.80.camel@pasglop>
-	<18476.1203.459931.530585@cargo.ozlabs.ibm.com>
-In-Reply-To: <18476.1203.459931.530585@cargo.ozlabs.ibm.com>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: davem@davemloft.net, "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 69271DE75C
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 May 2008 04:41:19 +1000 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	m4LIfDZf024762
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 May 2008 11:41:14 -0700 (MST)
+Received: from ld0162-tx32.am.freescale.net (ld0162-tx32.am.freescale.net
+	[10.82.19.112])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m4LIfD8w011990
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 May 2008 13:41:13 -0500 (CDT)
+Date: Wed, 21 May 2008 13:41:13 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: galak@kernel.crashing.org
+Subject: [PATCH] Add cuImage.mpc866ads to the bootwrapper as a cuboot-8xx
+	target.
+Message-ID: <20080521184113.GB3583@ld0162-tx32.am.freescale.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, bunk@kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,42 +32,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Paul Mackerras wrote:
-> Benjamin Herrenschmidt writes:
-> 
->> When you do an lmb_add you should probably also do an lmb_analyze to
->> update the total memory count etc...
->> 
->> That leads to some interesting issues such as the LMB stuff wasn't
->> really meant to be dynamically modified after boot, and thus the kernel
->> has no locks in there. That can be an issue...
->> 
->> Paul, any thoughts here ? Should we add a lock ? That would mean being
->> careful as the LMB stuff can be called very early, and spinlock wants
->> things like PACA and possibly lockdep to be around.. 
-> 
-> Either that, or we give in and use iomem_resource to track where
-> system RAM is, as well as the other things in the physical address
-> space, like other architectures do...
+As pointed out by Adrian Bunk.
 
-The generic hot plug routines already use iomem_resource
-(mm/memory_hotplug.c).  Both __add_pages() and add_memory()
-add the new mem to iomem_resource, and so it seems there
-is no need for the powerpc specific walk_memory_resource(),
-since the generic one does its check with iomem_resource.
+Signed-off-by: Scott Wood <scottwood@freescale.com>
+---
+ arch/powerpc/boot/wrapper |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-I need to look a little closer at how the pSeries does
-its memory hot plug, but I think removing the powerpc
-specific walk_memory_resource() won't effect pSeries since
-it seems to have its own hot plug routines that do their
-own thing entirely with lmb.
-
-It doesn't seem that it would be difficult to make the
-pSeries hot plug code to use iomem_resource, but some of the
-generic hot plug routines cannot be called until fairly
-late in the startup.
-
-The other thing to do then would be to change the other
-powerpc startup code to use iomem_resource instead of lmb.
-
--Geoff
+diff --git a/arch/powerpc/boot/wrapper b/arch/powerpc/boot/wrapper
+index d6c96d9..3b59e33 100755
+--- a/arch/powerpc/boot/wrapper
++++ b/arch/powerpc/boot/wrapper
+@@ -159,7 +159,7 @@ cuboot*)
+     binary=y
+     gzip=
+     case "$platform" in
+-    *-mpc885ads|*-adder875*|*-ep88xc)
++    *-mpc866ads|*-mpc885ads|*-adder875*|*-ep88xc)
+         platformo=$object/cuboot-8xx.o
+         ;;
+     *5200*|*-motionpro)
+-- 
+1.5.3
