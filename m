@@ -1,28 +1,31 @@
-Return-Path: <scottwood@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
+Return-Path: <akpm@linux-foundation.org>
+Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
+	[140.211.169.13])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 69271DE75C
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 May 2008 04:41:19 +1000 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	m4LIfDZf024762
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 May 2008 11:41:14 -0700 (MST)
-Received: from ld0162-tx32.am.freescale.net (ld0162-tx32.am.freescale.net
-	[10.82.19.112])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m4LIfD8w011990
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 May 2008 13:41:13 -0500 (CDT)
-Date: Wed, 21 May 2008 13:41:13 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: galak@kernel.crashing.org
-Subject: [PATCH] Add cuImage.mpc866ads to the bootwrapper as a cuboot-8xx
-	target.
-Message-ID: <20080521184113.GB3583@ld0162-tx32.am.freescale.net>
+	(Client CN "smtp.linux-foundation.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 4678CDE790
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 May 2008 04:42:04 +1000 (EST)
+Date: Wed, 21 May 2008 11:41:47 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: benh@kernel.crashing.org
+Subject: Re: [PATCH 1/2] Add thread_info_cache_init() to all archs
+Message-Id: <20080521114147.59ca3551.akpm@linux-foundation.org>
+In-Reply-To: <1211392585.8297.218.camel@pasglop>
+References: <20080410032354.90CB1DDF0F@ozlabs.org>
+	<20080413171953.bde5e9ac.akpm@linux-foundation.org>
+	<1208133506.6958.82.camel@pasglop>
+	<20080413191338.9776ebd0.akpm@linux-foundation.org>
+	<1208491086.6958.381.camel@pasglop>
+	<20080417211905.8ff769fa.akpm@linux-foundation.org>
+	<1208501061.6958.394.camel@pasglop>
+	<1211392585.8297.218.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, bunk@kernel.org
+Content-Type: text/plain; charset=US-ASCII
+Cc: Linux-Arch <linux-arch@vger.kernel.org>, linux-m32r@ml.linux-m32r.org,
+	Luke Browning <LukeBrowning@us.ibm.com>, takata@linux-m32r.org,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,25 +35,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-As pointed out by Adrian Bunk.
+On Wed, 21 May 2008 13:56:25 -0400 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-Signed-off-by: Scott Wood <scottwood@freescale.com>
----
- arch/powerpc/boot/wrapper |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> On Fri, 2008-04-18 at 16:44 +1000, Benjamin Herrenschmidt wrote:
+> > > > so what
+> > > > about the patch below ?
+> > > 
+> > > I like it, but the compiler won't ;)
+> > > 
+> > > > If you're ok, I'll re-send with appropriate sob
+> > > > & adapted powerpc part.
+> > > 
+> > > Sure.
+> > > 
+> > > > +void __init __attribute__((weak) thread_info_cache_init(void)
+> > >
+> 
+> Back to this old subject...
+> 
+> I'm having reports that this is not working...
+> 
+> gcc is seeing the empty weak function and is optimizing it out
+> before it gets a chance to link to the arch provided one.
+> 
+> This would affect that and the other one next to it..
+> 
+> That seems pretty bad... it causes nasty crashes as we end up having no
+> idea what the compiler decided to generate... I suppose we could keep
+> the weak stubs out of the file where they are called but that sucks.
+> 
+> ie. This is some form of gcc 4.1.1
+> 
+> Is that a known problem ? A gcc issue ? Not sure what is expected from
+> those weak functions.
 
-diff --git a/arch/powerpc/boot/wrapper b/arch/powerpc/boot/wrapper
-index d6c96d9..3b59e33 100755
---- a/arch/powerpc/boot/wrapper
-+++ b/arch/powerpc/boot/wrapper
-@@ -159,7 +159,7 @@ cuboot*)
-     binary=y
-     gzip=
-     case "$platform" in
--    *-mpc885ads|*-adder875*|*-ep88xc)
-+    *-mpc866ads|*-mpc885ads|*-adder875*|*-ep88xc)
-         platformo=$object/cuboot-8xx.o
-         ;;
-     *5200*|*-motionpro)
--- 
-1.5.3
+yup, gcc bug.  Discussed recently on lkml, "Subject: Re: huge gcc
+4.1.{0,1} __weak problem".  I don't think anything ended up happening
+about it though.
