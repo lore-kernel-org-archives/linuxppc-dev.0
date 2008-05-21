@@ -1,23 +1,17 @@
-Return-Path: <npiggin@suse.de>
-Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 176C0DDF5A
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 May 2008 01:47:07 +1000 (EST)
-Date: Wed, 21 May 2008 17:47:02 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [patch 2/2] powerpc: optimise smp_wmb
-Message-ID: <20080521154701.GH8897@wotan.suse.de>
-References: <20080521141056.GC8897@wotan.suse.de>
-	<20080521141231.GD8897@wotan.suse.de>
-	<1211383592.8297.195.camel@pasglop>
-	<20080521153420.GG8897@wotan.suse.de>
-	<1211384580.8297.199.camel@pasglop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1211384580.8297.199.camel@pasglop>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Return-Path: <g.liakhovetski@gmx.de>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id E7A43DE29F
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 May 2008 01:54:05 +1000 (EST)
+Date: Wed, 21 May 2008 17:54:20 +0200 (CEST)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: Re: [RFC/DRAFT] SPI OF bindings, MMC-over-SPI, chip-selects and so on
+In-Reply-To: <20080521154103.GA32577@polina.dev.rtsoft.ru>
+Message-ID: <Pine.LNX.4.64.0805211751160.5386@axis700.grange>
+References: <20080521154103.GA32577@polina.dev.rtsoft.ru>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Gary Jennejohn <garyj@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,35 +21,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, May 21, 2008 at 11:43:00AM -0400, Benjamin Herrenschmidt wrote:
+On Wed, 21 May 2008, Anton Vorontsov wrote:
+
+> This is just a bait for further discussion of OF/SPI, chip-selects,
+> e.t.c.
 > 
-> On Wed, 2008-05-21 at 17:34 +0200, Nick Piggin wrote:
-> > On Wed, May 21, 2008 at 11:26:32AM -0400, Benjamin Herrenschmidt wrote:
-> > > 
-> > > On Wed, 2008-05-21 at 16:12 +0200, Nick Piggin wrote:
-> > > > lwsync is the recommended method of store/store ordering on caching enabled
-> > > > memory. For those subarchs which have lwsync, use it rather than eieio for
-> > > > smp_wmb.
-> > > 
-> > > Yuck... existence of lwsync depends on the processor at boot time...
-> > 
-> > Not according to the __stringify(LWSYNC) that I just removed. At least,
-> > presumably it is always present on 64 bit processors, and 32 bit ones
-> > will be no worse off as they'll continue just using eieio.
-> 
-> No, it doesn't exist on power3, but it degrades into a sync
+> I've converted the spi_mpc83xx to the OF driver (using Grant's
+> SPI_MASTER_OF work + some additions), and implemented MMC-over-SPI
+> bindings. This stuff extensively using GPIOs, and I think this will
+> work for the "bridged SPI" too, since the SPI bridge could be
+> represented as GPIO controller (inside the SPI controller node).
 
-OK, but I just don't understand what the problem is... your synch.h has
+Yes, but do you really _want_ to represent them as GPIOs? Firstly they are 
+not really "G" P, secondly, they are not even "I", rather only "O". And do 
+you really want to register your SPI CS lines to the whole system for 
+everyone's (ab)use?...
 
-#ifdef __powerpc64__
-#define __SUBARCH_HAS_LWSYNC
-#endif
-
-#ifdef __SUBARCH_HAS_LWSYNC
-#    define LWSYNC      lwsync
-#else
-#    define LWSYNC      sync
-#endif
-
-
-And LWSYNC is then used for rmb()... how was that OK but this not?
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski, Ph.D.
+Freelance Open-Source Software Developer
