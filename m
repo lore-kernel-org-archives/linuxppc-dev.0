@@ -1,30 +1,25 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.29])
-	by ozlabs.org (Postfix) with ESMTP id D8331DEC91
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 May 2008 05:33:40 +1000 (EST)
-Received: by yw-out-2324.google.com with SMTP id 5so1689297ywh.39
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 May 2008 12:33:31 -0700 (PDT)
-Message-ID: <fa686aa40805211233h72a258bpf8c945b9f662d6ee@mail.gmail.com>
-Date: Wed, 21 May 2008 13:33:31 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Segher Boessenkool" <segher@kernel.crashing.org>
-Subject: Re: [PATCH 3/4] spi: Add OF binding support for SPI busses
-In-Reply-To: <716a0f1b6c9a544b480c06a329072483@kernel.crashing.org>
+Return-Path: <tpiepho@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 04993DE19C
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 May 2008 05:49:57 +1000 (EST)
+Date: Wed, 21 May 2008 12:44:07 -0700 (PDT)
+From: Trent Piepho <tpiepho@freescale.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] [POWERPC] Improve (in|out)_beXX() asm code
+In-Reply-To: <1211378410.8297.192.camel@pasglop>
+Message-ID: <Pine.LNX.4.64.0805211238440.5706@t2.domain.actdsltmp>
+References: <1211316025-29069-1-git-send-email-tpiepho@freescale.com>
+	<1211318219.8297.177.camel@pasglop>
+	<Pine.LNX.4.64.0805201425250.7453@t2.domain.actdsltmp>
+	<1211378410.8297.192.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20080516193054.28030.35126.stgit@trillian.secretlab.ca>
-	<20080516193613.28030.13950.stgit@trillian.secretlab.ca>
-	<Pine.LNX.4.64.0805191446530.27140@axis700.grange>
-	<fa686aa40805190857u317d3304ie75d11870e109fc5@mail.gmail.com>
-	<Pine.LNX.4.64.0805191811510.29559@axis700.grange>
-	<fa686aa40805192213y485c4ba2u750748f8201e0377@mail.gmail.com>
-	<Pine.LNX.4.64.0805201650280.5283@axis700.grange>
-	<716a0f1b6c9a544b480c06a329072483@kernel.crashing.org>
-Cc: dbrownell@users.sourceforge.net, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, fabrizio.garetto@gmail.com,
-	spi-devel-general@lists.sourceforge.net,
-	Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,37 +29,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, May 21, 2008 at 1:11 PM, Segher Boessenkool
-<segher@kernel.crashing.org> wrote:
->> Ok, elegance apart:-) You can use the SPI-bridge construct to also
->> describe simple SPI-chipselect configurations. But is it really a good
->> idea? Wouldn't it be better to handle these two cases separately?
+On Wed, 21 May 2008, Benjamin Herrenschmidt wrote:
+>> Depends on what you define as "necessary".  It's seem clear that I/O accessors
+>> _no not_ need to be strictly ordered with respect to normal memory accesses,
+>> by what's defined in memory-barriers.txt.  So if by "necessary" you mean what
+>> the Linux standard for I/O accessors requires (and what other archs provide),
+>> then yes, they have the necessary ordering guarantees.
+>>
+>> But, if you want them to be strictly ordered w.r.t to normal memory, that's
+>> not the case.
 >
-> It would be best to handle all these things that are specific to
-> a certain SPI controller (like how CSs work) in the binding for
-> that SPI controller, and not try to shoehorn all of this into some
-> artificial generic framework.
+> They should be.
+
+Someone should update memory-barriers.txt, because it doesn't say that, and
+all I/O accessors for all the arches, because none of them are.
+
+>> Here's a quick hack I stuck in a driver to test.  compile with -save-temps and
+>> check the resulting asm.  gcc will do the optimization I described above.
+>>
+>> static void __iomem *baz = (void*)0x1234;
+>> static struct bar {
+>>      u32 bar[256];
+>> } bar;
+>>
+>> void foo(void) {
+>>      bar.bar[0] = 44;
+>>      out_be32(baz+100, 200);
+>>      bar.bar[0] = 45;
+>>      out_be32(baz+101, 201);
+>> }
 >
-> If you can have identical addresses on the SPI bus going to different
-> devices based on which CS is asserted, you'll have to make the CS part
-> of the "reg".  Example:
->
-> spi-controller {
->        #address-cells = 2;
->        #size-cells = 0;
->        some-device@0,f000 { reg = < 0 f000 >; } // CS 0, SPI address f000
->        some-device@1,f000 { reg = < 1 f000 >; } // CS 1, SPI address f000
->        some-device@1,ff00 { reg = < 1 ff00 >; } // CS 1, SPI address ff00
-> }
+> Have you removed -fno-strict-aliasing ? Just don't do that.
 
-For SPI the CS # *is* the address.  :-)
-
-Unlike I2C, SPI doesn't impose any protocol on the data.  It is all
-anonymous data out, anonymous data in, a clock and a chip select.
-
-Cheers,
-g.
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+No, it's compiled with a normal kernel build, which includes
+-fno-strict-aliasing.
