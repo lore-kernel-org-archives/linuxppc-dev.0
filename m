@@ -1,21 +1,17 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
+Return-Path: <alan@lxorguk.ukuu.org.uk>
+Received: from lxorguk.ukuu.org.uk (earthlight.etchedpixels.co.uk
+	[81.2.110.250])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 79D15DE2D3
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 May 2008 07:20:48 +1000 (EST)
-Message-ID: <4835E3E3.4050004@freescale.com>
-Date: Thu, 22 May 2008 16:21:39 -0500
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Suvidh Kankariya <suvidh.kankariya@ntigo.com>
-Subject: Re: adding external interrupt support for MPC8313e bsp
-References: <4835DA6E.2020709@ntigo.com>
-In-Reply-To: <4835DA6E.2020709@ntigo.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id AF850DE070
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 May 2008 08:11:34 +1000 (EST)
+Date: Thu, 22 May 2008 22:59:00 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Subject: [PATCH] generic rtc and nvram: Push the BKL down
+Message-ID: <20080522225900.469bf807@core>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,26 +21,230 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Suvidh Kankariya wrote:
-> I have mpc8313e local bus connected to a external UART. and the 
-> interrupt is connected to EXT_INT2.
-> I am able to communicate to UART if I disable IRQ i.e IRQ = 0 in port 
-> structure.
-> 
-> I am not able to understand how to tell kernel to use external IRQ -2.
-> Should I put the external interrupts in device tree and if so how?
+Switch the ioctl handlers to unlocked_ioctl and push lock_kernel into the
+driver instead.
 
-Yes, you should put them in the device tree in the interrupts property 
-of the node corresponding to the device that is using the interrupt. 
-The first cell should be 18 (decimal) for IRQ2 (see the IPIC section of 
-the user manual for other external IRQs).  The second cell is defined 
-the same as the PQ1/CPM2 PIC described in 
-Documentation/booting-without-of.txt (2 for falling edge, 8 for active low).
+Signed-off-by: Alan Cox <alan@redhat.com>
 
-> or can I use the interrupt directly in the driver  and in that case do I 
-> need to map the interrupt.
-
-Yes, if you don't put it in the device tree you need to call 
-irq_create_mapping().  Using the device tree is recommended.
-
--Scott
+diff --git a/drivers/char/generic_nvram.c b/drivers/char/generic_nvram.c
+index 2398e86..8886e51 100644
+--- a/drivers/char/generic_nvram.c
++++ b/drivers/char/generic_nvram.c
+@@ -20,7 +20,8 @@
+ #include <linux/fcntl.h>
+ #include <linux/init.h>
+ #include <linux/smp_lock.h>
+-#include <asm/uaccess.h>
++#include <linux/uaccess.h>
++#include <linux/smp_lock.h>
+ #include <asm/nvram.h>
+ #ifdef CONFIG_PPC_PMAC
+ #include <asm/machdep.h>
+@@ -85,25 +86,33 @@ static ssize_t write_nvram(struct file *file, const char __user *buf,
+ 	return p - buf;
+ }
+ 
+-static int nvram_ioctl(struct inode *inode, struct file *file,
+-	unsigned int cmd, unsigned long arg)
++static long nvram_ioctl(struct file *file, unsigned int cmd,
++							unsigned long arg)
+ {
++	int ret = 0;
+ 	switch(cmd) {
+ #ifdef CONFIG_PPC_PMAC
+ 	case OBSOLETE_PMAC_NVRAM_GET_OFFSET:
++		/* FIXME: should be rate limited */
+ 		printk(KERN_WARNING "nvram: Using obsolete PMAC_NVRAM_GET_OFFSET ioctl\n");
+ 	case IOC_NVRAM_GET_OFFSET: {
+ 		int part, offset;
+ 
+-		if (!machine_is(powermac))
+-			return -EINVAL;
+-		if (copy_from_user(&part, (void __user*)arg, sizeof(part)) != 0)
+-			return -EFAULT;
+-		if (part < pmac_nvram_OF || part > pmac_nvram_NR)
+-			return -EINVAL;
++		if (!machine_is(powermac)) {
++			ret = -EINVAL;
++			break;
++		}
++		if (copy_from_user(&part, (void __user*)arg, sizeof(part)) != 0) {
++			ret = -EFAULT;
++			break;
++		}
++		if (part < pmac_nvram_OF || part > pmac_nvram_NR) {
++			ret = -EINVAL;
++			break;
++		}
+ 		offset = pmac_get_partition(part);
+ 		if (copy_to_user((void __user*)arg, &offset, sizeof(offset)) != 0)
+-			return -EFAULT;
++			ret = -EFAULT;
+ 		break;
+ 	}
+ #endif /* CONFIG_PPC_PMAC */
+@@ -111,10 +120,10 @@ static int nvram_ioctl(struct inode *inode, struct file *file,
+ 		nvram_sync();
+ 		break;
+ 	default:
+-		return -EINVAL;
++		ret = -ENOTTY;
+ 	}
+-
+-	return 0;
++	unlock_kernel();
++	return ret;
+ }
+ 
+ const struct file_operations nvram_fops = {
+@@ -122,7 +131,7 @@ const struct file_operations nvram_fops = {
+ 	.llseek		= nvram_llseek,
+ 	.read		= read_nvram,
+ 	.write		= write_nvram,
+-	.ioctl		= nvram_ioctl,
++	.unlocked_ioctl	= nvram_ioctl,
+ };
+ 
+ static struct miscdevice nvram_dev = {
+diff --git a/drivers/char/genrtc.c b/drivers/char/genrtc.c
+index 69f0a29..503c9c5 100644
+--- a/drivers/char/genrtc.c
++++ b/drivers/char/genrtc.c
+@@ -52,8 +52,9 @@
+ #include <linux/poll.h>
+ #include <linux/proc_fs.h>
+ #include <linux/workqueue.h>
++#include <linux/smp_lock.h>
++#include <linux/uaccess.h>
+ 
+-#include <asm/uaccess.h>
+ #include <asm/system.h>
+ #include <asm/rtc.h>
+ 
+@@ -260,74 +261,89 @@ static inline int gen_set_rtc_irq_bit(unsigned char bit)
+ #endif
+ }
+ 
+-static int gen_rtc_ioctl(struct inode *inode, struct file *file,
+-			 unsigned int cmd, unsigned long arg)
++static long gen_rtc_ioctl(struct file *file, unsigned int cmd,
++						unsigned long arg)
+ {
+ 	struct rtc_time wtime;
+ 	struct rtc_pll_info pll;
+ 	void __user *argp = (void __user *)arg;
++	int ret = 0;
++
++	lock_kernel();
+ 
+ 	switch (cmd) {
+ 
+ 	case RTC_PLL_GET:
+-	    if (get_rtc_pll(&pll))
+-	 	    return -EINVAL;
+-	    else
+-		    return copy_to_user(argp, &pll, sizeof pll) ? -EFAULT : 0;
+-
++		if (get_rtc_pll(&pll))
++			ret = -EINVAL;
++		else
++			ret = copy_to_user(argp, &pll, sizeof pll)
++							? -EFAULT : 0;
++		break;
+ 	case RTC_PLL_SET:
+ 		if (!capable(CAP_SYS_TIME))
+-			return -EACCES;
+-		if (copy_from_user(&pll, argp, sizeof(pll)))
+-			return -EFAULT;
+-	    return set_rtc_pll(&pll);
++			ret = -EACCES;
++		else if (copy_from_user(&pll, argp, sizeof(pll)))
++			ret = -EFAULT;
++		else
++			ret = set_rtc_pll(&pll);
++		break;
+ 
+ 	case RTC_UIE_OFF:	/* disable ints from RTC updates.	*/
+ 		gen_clear_rtc_irq_bit(RTC_UIE);
+-		return 0;
++		break;
+ 
+ 	case RTC_UIE_ON:	/* enable ints for RTC updates.	*/
+-	        return gen_set_rtc_irq_bit(RTC_UIE);
++	        ret = gen_set_rtc_irq_bit(RTC_UIE);
++		break;
+ 
+ 	case RTC_RD_TIME:	/* Read the time/date from RTC	*/
+ 		/* this doesn't get week-day, who cares */
+ 		memset(&wtime, 0, sizeof(wtime));
+ 		get_rtc_time(&wtime);
+ 
+-		return copy_to_user(argp, &wtime, sizeof(wtime)) ? -EFAULT : 0;
+-
++		ret = copy_to_user(argp, &wtime, sizeof(wtime))
++							? -EFAULT : 0;
++		break;
+ 	case RTC_SET_TIME:	/* Set the RTC */
+-	    {
++	{
+ 		int year;
+ 		unsigned char leap_yr;
+ 
+-		if (!capable(CAP_SYS_TIME))
+-			return -EACCES;
+-
+-		if (copy_from_user(&wtime, argp, sizeof(wtime)))
+-			return -EFAULT;
++		if (!capable(CAP_SYS_TIME)) {
++			ret = -EACCES;
++			break;
++		}
++		if (copy_from_user(&wtime, argp, sizeof(wtime))) {
++			ret = -EFAULT;
++			break;
++		}
+ 
+ 		year = wtime.tm_year + 1900;
+ 		leap_yr = ((!(year % 4) && (year % 100)) ||
+ 			   !(year % 400));
+ 
++		ret = -EINVAL;
+ 		if ((wtime.tm_mon < 0 || wtime.tm_mon > 11) || (wtime.tm_mday < 1))
+-			return -EINVAL;
++			break;
+ 
+ 		if (wtime.tm_mday < 0 || wtime.tm_mday >
+ 		    (days_in_mo[wtime.tm_mon] + ((wtime.tm_mon == 1) && leap_yr)))
+-			return -EINVAL;
++			break;
+ 
+ 		if (wtime.tm_hour < 0 || wtime.tm_hour >= 24 ||
+ 		    wtime.tm_min < 0 || wtime.tm_min >= 60 ||
+ 		    wtime.tm_sec < 0 || wtime.tm_sec >= 60)
+-			return -EINVAL;
++			break;
+ 
+-		return set_rtc_time(&wtime);
+-	    }
++		ret = set_rtc_time(&wtime);
++		break;
+ 	}
+-
+-	return -EINVAL;
++	default:
++		ret = -ENOTTY;
++	}
++	unlock_kernel();
++	return ret;
+ }
+ 
+ /*
+@@ -476,7 +492,7 @@ static const struct file_operations gen_rtc_fops = {
+ 	.read		= gen_rtc_read,
+ 	.poll		= gen_rtc_poll,
+ #endif
+-	.ioctl		= gen_rtc_ioctl,
++	.unlocked_ioctl	= gen_rtc_ioctl,
+ 	.open		= gen_rtc_open,
+ 	.release	= gen_rtc_release,
+ };
