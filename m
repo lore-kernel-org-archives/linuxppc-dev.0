@@ -1,16 +1,19 @@
-Return-Path: <CFRIESEN@nortel.com>
-Received: from zcars04e.nortel.com (zcars04e.nortel.com [47.129.242.56])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "zcars04e.nortel.com", Issuer "NORTEL" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 73C00DDFE5
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 May 2008 03:22:44 +1000 (EST)
-Message-ID: <4835ABDB.8020901@nortel.com>
-Date: Thu, 22 May 2008 11:22:35 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
+Return-Path: <bart.vanassche@gmail.com>
+Received: from fk-out-0910.google.com (fk-out-0910.google.com [209.85.128.191])
+	by ozlabs.org (Postfix) with ESMTP id 8B427DDFFC
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 May 2008 03:50:12 +1000 (EST)
+Received: by fk-out-0910.google.com with SMTP id e30so200123fke.9
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 May 2008 10:50:08 -0700 (PDT)
+Message-ID: <e2e108260805221050s3ee280an8155898c216c334c@mail.gmail.com>
+Date: Thu, 22 May 2008 19:50:08 +0200
+From: "Bart Van Assche" <bart.vanassche@gmail.com>
+To: "Chris Friesen" <cfriesen@nortel.com>
+Subject: Re: section mismatch warnings in current git head for powerpc
+In-Reply-To: <4835ABDB.8020901@nortel.com>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: section mismatch warnings in current git head for powerpc
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
+References: <4835ABDB.8020901@nortel.com>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,34 +23,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I got the following warnings when building current git head for powerpc 
-64bit:
+On Thu, May 22, 2008 at 7:22 PM, Chris Friesen <cfriesen@nortel.com> wrote:
+> I got the following warnings when building current git head for powerpc
+> 64bit:
 
+Something that should be fixed, but not something to worry about.
+Similar warnings appear when building the kernel for x86_64. See also
+http://lkml.org/lkml/2008/4/13/98, http://lkml.org/lkml/2008/4/17/202
+and http://bugzilla.kernel.org/show_bug.cgi?id=9974.
 
-   LD      net/ipv4/built-in.o
-   LD      drivers/scsi/built-in.o
-   LD      net/built-in.o
-   LD      drivers/built-in.o
-   LD      vmlinux.o
-   MODPOST vmlinux.o
-WARNING: vmlinux.o(.text+0x73bc): Section mismatch in reference from the 
-function .start_secondary_prolog() to the function 
-.devinit.text:.start_secondary()
-The function .start_secondary_prolog() references
-the function __devinit .start_secondary().
-This is often because .start_secondary_prolog lacks a __devinit
-annotation or the annotation of .start_secondary is wrong.
-
-WARNING: vmlinux.o(.text+0x260a8): Section mismatch in reference from 
-the function .pci_dn_reconfig_notifier() to the function 
-.devinit.text:.update_dn_pci_info()
-The function .pci_dn_reconfig_notifier() references
-the function __devinit .update_dn_pci_info().
-This is often because .pci_dn_reconfig_notifier lacks a __devinit
-annotation or the annotation of .update_dn_pci_info is wrong.
-
-
-Is this anything to worry about?
-
-Thanks,
-Chris
+Bart.
