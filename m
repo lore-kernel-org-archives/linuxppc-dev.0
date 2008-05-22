@@ -1,23 +1,15 @@
 Return-Path: <runet@innovsys.com>
 Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
-	by ozlabs.org (Postfix) with ESMTP id 16853DDDDB
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 May 2008 00:13:32 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 99C73DE16D
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 May 2008 00:14:19 +1000 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="us-ascii"
-Subject: RE: 1 GB lowmem
-Date: Thu, 22 May 2008 09:13:46 -0500
-Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B046E7C6C@ismail.innsys.innovsys.com>
-In-Reply-To: <133B6911-6594-4366-9A0E-DF2604DFDA4C@kernel.crashing.org>
-References: <DCEAAC0833DD314AB0B58112AD99B93B046E79B3@ismail.innsys.innovsys.com>
-	<DCEAAC0833DD314AB0B58112AD99B93B046E7AA0@ismail.innsys.innovsys.com>
-	<DCEAAC0833DD314AB0B58112AD99B93B046E7AF5@ismail.innsys.innovsys.com>
-	<1941C6C3-9883-4015-91A6-35F5966AA1ED@kernel.crashing.org>
-	<DCEAAC0833DD314AB0B58112AD99B93B046E7B25@ismail.innsys.innovsys.com>
-	<133B6911-6594-4366-9A0E-DF2604DFDA4C@kernel.crashing.org>
+Subject: FW: 1 GB lowmem
+Date: Thu, 22 May 2008 09:14:58 -0500
+Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B046E7C6E@ismail.innsys.innovsys.com>
 From: "Rune Torgersen" <runet@innovsys.com>
-To: "Kumar Gala" <galak@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org
+To: <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
