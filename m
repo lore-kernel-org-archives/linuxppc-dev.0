@@ -1,19 +1,16 @@
-Return-Path: <djiang@mvista.com>
-Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
-	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id 9A359DDFFD
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 May 2008 02:46:46 +1000 (EST)
-Message-ID: <48359B96.2020303@mvista.com>
-Date: Thu, 22 May 2008 09:13:10 -0700
-From: Dave Jiang <djiang@mvista.com>
+Return-Path: <CFRIESEN@nortel.com>
+Received: from zcars04e.nortel.com (zcars04e.nortel.com [47.129.242.56])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "zcars04e.nortel.com", Issuer "NORTEL" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 73C00DDFE5
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 May 2008 03:22:44 +1000 (EST)
+Message-ID: <4835ABDB.8020901@nortel.com>
+Date: Thu, 22 May 2008 11:22:35 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
 MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] edac: mpc85xx - Fix building as a module
-References: <Pine.LNX.4.64.0805212326000.32442@blarg.am.freescale.net>
-In-Reply-To: <Pine.LNX.4.64.0805212326000.32442@blarg.am.freescale.net>
+To: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Subject: section mismatch warnings in current git head for powerpc
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org,
-	bluesmoke-devel@lists.sourceforge.net,
-	linux-kernel@vger.kernel.org, dougthompson@xmission.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,52 +20,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Acked-by: Dave Jiang <djiang@mvista.com>
-
-Kumar Gala wrote:
-> including of <asm/mpc85xx.h> causes build problems since it doesn't exist.
-> 
-> Also removed warning:
-> drivers/edac/mpc85xx_edac.c:45: warning: 'mpc85xx_ctl_name' defined but not used
-> 
-> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
-> ---
-> 
-> This is a fix for 2.6.26.
-> 
-> - k
-> 
->  drivers/edac/mpc85xx_edac.c |    3 ---
->  1 files changed, 0 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/edac/mpc85xx_edac.c b/drivers/edac/mpc85xx_edac.c
-> index 065732d..d49361b 100644
-> --- a/drivers/edac/mpc85xx_edac.c
-> +++ b/drivers/edac/mpc85xx_edac.c
-> @@ -20,7 +20,6 @@
-> 
->  #include <linux/of_platform.h>
->  #include <linux/of_device.h>
-> -#include <asm/mpc85xx.h>
->  #include "edac_module.h"
->  #include "edac_core.h"
->  #include "mpc85xx_edac.h"
-> @@ -43,8 +42,6 @@ static u32 orig_pci_err_en;
->  static u32 orig_l2_err_disable;
->  static u32 orig_hid1;
-> 
-> -static const char *mpc85xx_ctl_name = "MPC85xx";
-> -
->  /************************ MC SYSFS parts ***********************************/
-> 
->  static ssize_t mpc85xx_mc_inject_data_hi_show(struct mem_ctl_info *mci,
+I got the following warnings when building current git head for powerpc 
+64bit:
 
 
--- 
+   LD      net/ipv4/built-in.o
+   LD      drivers/scsi/built-in.o
+   LD      net/built-in.o
+   LD      drivers/built-in.o
+   LD      vmlinux.o
+   MODPOST vmlinux.o
+WARNING: vmlinux.o(.text+0x73bc): Section mismatch in reference from the 
+function .start_secondary_prolog() to the function 
+.devinit.text:.start_secondary()
+The function .start_secondary_prolog() references
+the function __devinit .start_secondary().
+This is often because .start_secondary_prolog lacks a __devinit
+annotation or the annotation of .start_secondary is wrong.
 
-------------------------------------------------------
-Dave Jiang
-Software Engineer
-MontaVista Software, Inc.
-http://www.mvista.com
-------------------------------------------------------
+WARNING: vmlinux.o(.text+0x260a8): Section mismatch in reference from 
+the function .pci_dn_reconfig_notifier() to the function 
+.devinit.text:.update_dn_pci_info()
+The function .pci_dn_reconfig_notifier() references
+the function __devinit .update_dn_pci_info().
+This is often because .pci_dn_reconfig_notifier lacks a __devinit
+annotation or the annotation of .update_dn_pci_info is wrong.
+
+
+Is this anything to worry about?
+
+Thanks,
+Chris
