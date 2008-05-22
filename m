@@ -2,19 +2,20 @@ Return-Path: <jeff@garzik.org>
 Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 6224DDDFA8
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 May 2008 20:05:35 +1000 (EST)
-Message-ID: <4835452F.1010708@garzik.org>
-Date: Thu, 22 May 2008 06:04:31 -0400
+	by ozlabs.org (Postfix) with ESMTPS id 38C6FDDFCF
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 May 2008 20:27:23 +1000 (EST)
+Message-ID: <48354A7E.5070105@garzik.org>
+Date: Thu, 22 May 2008 06:27:10 -0400
 From: Jeff Garzik <jeff@garzik.org>
 MIME-Version: 1.0
-To: Brian King <brking@linux.vnet.ibm.com>
-Subject: Re: [PATCH 1/1] ehea: Fix use after free on reboot
-References: <12107765041509-patch-mail.ibm.com>
-In-Reply-To: <12107765041509-patch-mail.ibm.com>
+To: Julia Lawall <julia@diku.dk>
+Subject: Re: [PATCH 4/6] drivers/net/fs_enet: remove null pointer dereference
+References: <Pine.LNX.4.64.0805121537590.3694@ask.diku.dk>
+In-Reply-To: <Pine.LNX.4.64.0805121537590.3694@ask.diku.dk>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: tklein@de.ibm.com, netdev@vger.kernel.org, raisch@de.ibm.com,
-	linuxppc-dev@ozlabs.org, hering2@de.ibm.com
+Cc: netdev@vger.kernel.org, kernel-janitors@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	vbordug@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,41 +25,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Brian King wrote:
-> Fixes the following use after free oops:
+Julia Lawall wrote:
+> From: Julia Lawall <julia@diku.dk>
 > 
-> ehea: Reboot: freeing all eHEA resources
-> Unable to handle kernel paging request for data at address 0x6b6b6b6b6b6b6c5b
-> Faulting instruction address: 0xd000000000354488
-> cpu 0x0: Vector: 300 (Data Access) at [c00000002ec6f310]
->     pc: d000000000354488: .ehea_shutdown_single_port+0x50/0x78 [ehea]
->     lr: d00000000035447c: .ehea_shutdown_single_port+0x44/0x78 [ehea]
->     sp: c00000002ec6f590
->    msr: 8000000000009032
->    dar: 6b6b6b6b6b6b6c5b
->  dsisr: 40000000
->   current = 0xc0000000281412e0
->   paca    = 0xc0000000006df300
->     pid   = 10930, comm = reboot
-> enter ? for help
-> [c00000002ec6f590] d00000000035d64c .ehea_remove+0x44/0x124 [ehea] (unreliable)
-> [c00000002ec6f630] c000000000319f88 .of_platform_device_remove+0x40/0x58
-> [c00000002ec6f6a0] c000000000291018 .__device_release_driver+0xb0/0xf0
-> [c00000002ec6f730] c000000000291120 .driver_detach+0xc8/0xfc
-> [c00000002ec6f7c0] c00000000028fe24 .bus_remove_driver+0xb4/0x114
-> [c00000002ec6f850] c000000000291768 .driver_unregister+0x54/0x74
-> [c00000002ec6f8e0] c00000000031a0c8 .of_unregister_driver+0x14/0x28
-> [c00000002ec6f950] c000000000023ba0 .ibmebus_unregister_driver+0x10/0x24
-> [c00000002ec6f9c0] d000000000354180 .ehea_reboot_notifier+0x30/0x4c [ehea]
-> [c00000002ec6fa40] c0000000003c95a8 .notifier_call_chain+0x5c/0xcc
-> [c00000002ec6fae0] c000000000082cd4 .__blocking_notifier_call_chain+0x70/0xb0
-> [c00000002ec6fb90] c000000000075cf8 .kernel_restart_prepare+0x24/0x58
-> [c00000002ec6fc10] c000000000075f0c .kernel_restart+0x20/0x6c
-> [c00000002ec6fc90] c000000000078674 .sys_reboot+0x1d4/0x290
-> [c00000002ec6fe30] c0000000000086ac syscall_exit+0x0/0x40
-> --- Exception: c01 (System Call) at 000000000ff63a40
-> SP (ffceea50) is in userspace
+> The following code appears in the function fs_init_instance in the file drivers/net/fs_enet/fs_enet-main.c.
 > 
-> Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
+> 	if (fep->ops == NULL) {
+> 		printk(KERN_ERR DRV_MODULE_NAME
+> 		       ": %s No matching ops found (%d).\n",
+> 		       ndev->name, fpi->fs_no);
+> 		err = -EINVAL;
+> 		goto err;
+> 	}
+> 
+> This code implies that at the point of err, fep->ops can be NULL, so an
+> extra test is needed before dereferencing this value.
+> 
+> 
+> This problem was found using the following semantic match
+> (http://www.emn.fr/x-info/coccinelle/)
+> 
+> // <smpl>
+> @@
+> expression E, E1;
+> identifier f;
+> statement S1,S2,S3;
+> @@
+> 
+> * if (E == NULL)
+> {
+>   ... when != if (E == NULL) S1 else S2
+>       when != E = E1
+> * E->f
+>   ... when any
+>   return ...;
+> }
+> else S3
+> // </smpl>
+> 
+> Signed-off-by: Julia Lawall <julia@diku.dk>
 
 applied
