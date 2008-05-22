@@ -1,19 +1,23 @@
-Return-Path: <runet@innovsys.com>
-Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
-	by ozlabs.org (Postfix) with ESMTP id A192FDE106
+Return-Path: <dhlii@dlasys.net>
+Received: from outbound-mail-124.bluehost.com (outbound-mail-124.bluehost.com
+	[67.222.38.24]) by ozlabs.org (Postfix) with SMTP id 49FE2DE0C1
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 23 May 2008 08:36:55 +1000 (EST)
+	Fri, 23 May 2008 09:06:48 +1000 (EST)
+Message-ID: <4835FC73.5080102@dlasys.net>
+Date: Thu, 22 May 2008 19:06:27 -0400
+From: "David H. Lynch Jr." <dhlii@dlasys.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: Question about "native" compiling
-Date: Thu, 22 May 2008 17:25:28 -0500
-Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B046E8024@ismail.innsys.innovsys.com>
-In-Reply-To: <OF2C9C3CB1.4A6FAC88-ON88257451.00760B81-88257451.00761D72@selinc.com>
-References: <OF2C9C3CB1.4A6FAC88-ON88257451.00760B81-88257451.00761D72@selinc.com>
-From: "Rune Torgersen" <runet@innovsys.com>
-To: <Bruce_Leonard@selinc.com>,
-	<linuxppc-embedded@ozlabs.org>
+To: linuxppc-embedded <linuxppc-embedded@ozlabs.org>,
+	Shanyuan Gao <sygao.research@gmail.com>,
+	John Bonesio <john.bonesio@xilinx.com>,
+	Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>,
+	Yoshio Kashiwagi <kashiwagi@co-nss.co.jp>,
+	"A. Nolson" <alohanono@gmail.com>,
+	Thomas Werne <thomas.a.werne@jpl.nasa.gov>,
+	Grant Likely <grant.likely@secretlab.ca>
+Subject: APU FPU in Virtex ppc405 
+Content-Type: text/plain; charset=ISO-8859-1
+Reply-To: dhlii@dlasys.net
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -24,40 +28,19 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-linuxppc-embedded-bounces+runet=3Dinnovsys.com@ozlabs.org wrote:
-> Hi all,
->=20
-> I apologize if the list finds this off topic, but I'm at a
-> loss of who to
-> ask the question and thought this would be a good place to
-> start.  Our
-> target is an MPC8347E PowerQUICC II Pro, and we're using the
-> latest kernel
-> (2.6.25).  We started this project by building on x86 and doing
-> cross-compiling to the powerpc target.  As the project
-> progressed and we
-> started adding applications we found that we couldn't cross-compile
-> postgress among other things.  So we switched to native
-> compilation on the
-> target.  Problem is, it's extreamly slow.  Now our idea is to get our
-> hands on a PowerPC based Mac, load it up with Ubuntu and do
-> native builds
-> on that.  The question is, which Mac to get?  The concern is
-> this: a G5 is
-> 64-bit but the 8347E is 32-bit.  If we do our compiles on a G5 is it
-> really a 'native' compile or is it a cross-compile and we're
-> back in the
-> same boat as we were with the x86?  Should we use a G4 instead?
->=20
-> Thanks for any advice or pointers to other places where I can find
-> information.=20
+   Were the issues associated with getting the Xilinx Floating point APU
+working with Linux completely resolved ?
+    Is there a git tree or patch collection with the appropriate patches
+etc ?
 
-We use a dual G5 to do the exact same thing.
-We have a compiler buildt on our target board (Freescale 8280), and on
-the G5 we make sure that this compiler is being used (by chrooting into
-a copy of the filesystem used on the target).=20
-Then we compile all our apps .=20
-Only thing we have to do speciial, is to add
---build=3Dpowerpc-unknown-linux-gnu --host=3Dpowerpc-unknown-linux-gnu =
-to
-the ./configure cammand line.
+
+
+-- 
+Dave Lynch 					  	    DLA Systems
+Software Development:  				         Embedded Linux
+717.627.3770 	       dhlii@dlasys.net 	  http://www.dlasys.net
+fax: 1.253.369.9244 			           Cell: 1.717.587.7774
+Over 25 years' experience in platforms, languages, and technologies too numerous to list.
+
+"Any intelligent fool can make things bigger and more complex... It takes a touch of genius - and a lot of courage to move in the opposite direction."
+Albert Einstein
