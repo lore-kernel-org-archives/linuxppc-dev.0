@@ -1,16 +1,21 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Thu, 22 May 2008 10:26:39 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Remi Machet <rmachet@slac.stanford.edu>
-Subject: Re: [PATCH 1/5 v3] powerpc: DTS file for the C2K
-Message-ID: <20080522002639.GA19077@yookeroo.seuss>
-References: <1211241624.19212.29.camel@pcds-ts102.slac.stanford.edu>
-	<20080520011304.GG22279@yookeroo.seuss>
-	<1211301489.19212.32.camel@pcds-ts102.slac.stanford.edu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1211301489.19212.32.camel@pcds-ts102.slac.stanford.edu>
-Cc: Linux PPC <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id D615CDDFC2
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 May 2008 12:07:14 +1000 (EST)
+Message-Id: <202DEFA2-B49B-4FBB-998C-550777C0EAC8@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Scott Wood <scottwood@freescale.com>
+In-Reply-To: <20080521221115.GB5156@ld0162-tx32.am.freescale.net>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v919.2)
+Subject: Re: [PATCH] [POWERPC] mpic: deal with bogus NIRQ in Feature Reporting
+	Register
+Date: Wed, 21 May 2008 21:06:59 -0500
+References: <Pine.LNX.4.64.0805211557380.31707@blarg.am.freescale.net>
+	<20080521221115.GB5156@ld0162-tx32.am.freescale.net>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,71 +25,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, May 20, 2008 at 09:38:08AM -0700, Remi Machet wrote:
-> On Tue, 2008-05-20 at 11:13 +1000, David Gibson wrote:
-> > On Mon, May 19, 2008 at 05:00:23PM -0700, Remi Machet wrote:
-> > > Support for the C2K cPCI Single Board Computer from GEFanuc
-> > > (PowerPC MPC7448 with a Marvell MV64460 chipset)
-> > > All features of the board are not supported yet, but the board
-> > > boots, flash works, all Ethernet ports are working and PCI 
-> > > devices are all found (USB and SATA on PCI1 do not work yet).
-> > > 
-> > > Part 1 of 5: DTS file describing the board peripherals. As far as I know
-> > > all peripherals except the FPGA are listed in there (I did not included
-> > > the FPGA because a lot of work is needed there).
-> > 
-> > [snip]
-> > > +		ethernet-group@2000 {
-> > > +			#address-cells = <1>;
-> > > +			#size-cells = <0>;
-> > > +			compatible = "marvell,mv64360-eth-group";
-> > > +			reg = <0x2000 0x2000>;
-> > > +			PHY0: ethernet-phy@0 {
-> > > +				device_type = "ethernet-phy";
-> > > +				interrupts = <76>;	/* GPP 12 */
-> > > +				interrupt-parent = <&PIC>;
-> > > +				reg = <0>;
-> > > +			};
-> > > +			ethernet@0 {
-> > > +				device_type = "network";
-> > > +				compatible = "marvell,mv64360-eth";
-> > > +				reg = <0>;
-> > > +				interrupts = <32>;
-> > > +				interrupt-parent = <&PIC>;
-> > > +				phy = <&PHY0>;
-> > > +				local-mac-address = [ 00 00 00 00 00 00 ];
-> > > +			};
-> > 
-> > Not sure if this is new, or I just didn't notice it before.  Also not
-> > sure if this is your mistake, or a mistake in the binding for the
-> > marvell device here.
-> > 
-> > The address in "reg" should be unique within the bus the device
-> > appears on.  So having both the PHY and the MAC devices with the same
-> > "reg" and same unit address here is bad.
-> > 
-> > Having both the PHYs and the MACs as children of the ethernet-group
-> > node is possible, but the addresses must be encoded to distinguish
-> > them (e.g. MACs are 0x0, 0x1, 0x2, PHYS are 0x1000 0x1001 0x1002).
-> > 
-> It was an attempt at getting rid of the mdio group since the PHY is
-> effectively managed by the Ethernet hardware. The problem is that the
-> reg field must contain those values ... if I change this, I must change
-> the driver and other boards DTS files that depend on it which I would
-> rather not do at the same time I am pushing this patch through.
 
-Right.  Getting rid of the mdio node isn't an inherently bad idea, but
-it constitutes a change in the binding, so as you've noticed it would
-need the drivers to change, and can't just be done for one board
-unilaterally.
+On May 21, 2008, at 5:11 PM, Scott Wood wrote:
 
-> I will put back the mdio group and add a reg field to it as you
-> suggested previously.
+> On Wed, May 21, 2008 at 03:57:55PM -0500, Kumar Gala wrote:
+>> Some chips (like the SoCs from Freescale) report the wrong value in  
+>> NIRQ
+>> and this causes issues if its doesn't match or exceed the value of
+>> irq_count.
+>
+> Is it really wrong, or just not accounting for the gap between  
+> external
+> and internal interrupts?
 
-Ok.
+I consider it wrong by my interpretation of the open-pic spec.
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+The spec says:
+
+Num IRQ Sources:  The number of highest IRQ source supported.  For  
+instance, in a 32 source
+implementation, this value will be 31.  This allows support of a  
+maximum of 2048 interrupt sources.
+
+(Interrupt Sources are in the 0x10000 to 0x1ffff range).
+
+So for something like 8572, the top most interrupt source is at  
+0x1CE0.  So I'd take that to mean NIRQs should be 231. (0x1CE0 / 0x20  
+- 1).  NIRQS reports 107.
+
+- k
