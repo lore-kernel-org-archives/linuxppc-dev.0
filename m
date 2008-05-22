@@ -1,24 +1,27 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D7B19DE173
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 May 2008 00:25:21 +1000 (EST)
-Subject: Re: [PATCH] [POWERPC] Improve (in|out)_beXX() asm code
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: David Miller <davem@davemloft.net>
-In-Reply-To: <20080520.155326.195407196.davem@davemloft.net>
-References: <4833524C.3040207@freescale.com>
-	<20080520.153947.84346222.davem@davemloft.net>
-	<4833542E.3040608@freescale.com>
-	<20080520.155326.195407196.davem@davemloft.net>
-Content-Type: text/plain
-Date: Fri, 23 May 2008 00:24:43 -0400
-Message-Id: <1211516683.8297.271.camel@pasglop>
-Mime-Version: 1.0
-Cc: scottwood@freescale.com, linuxppc-dev@ozlabs.org, tpiepho@freescale.com,
-	alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
-Reply-To: benh@kernel.crashing.org
+Return-Path: <rider4ever@gmail.com>
+Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.29])
+	by ozlabs.org (Postfix) with ESMTP id 89463DDF63
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 May 2008 00:28:17 +1000 (EST)
+Received: by yw-out-2324.google.com with SMTP id 5so41660ywh.39
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 May 2008 07:28:11 -0700 (PDT)
+Message-ID: <ed84ed090805220728r3dc3c248l196b6e0298e78b70@mail.gmail.com>
+Date: Thu, 22 May 2008 16:28:11 +0200
+From: Fabri <rider4ever@gmail.com>
+To: "Grant Likely" <grant.likely@secretlab.ca>
+Subject: Re: MPC5200b MMC over SPI into PSC6
+In-Reply-To: <fa686aa40805090820s66801309j161adfcbc360fc42@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <481F4DFD.1000702@libero.it> <4821A551.3060205@libero.it>
+	<fa686aa40805070934t77f8b2b0y2799814b4f131bc8@mail.gmail.com>
+	<482317E2.7000308@libero.it>
+	<fa686aa40805080832l2492c46l400986472e985d9a@mail.gmail.com>
+	<ed84ed090805090640w11dcfc57r1303ac4fceb482cb@mail.gmail.com>
+	<ed84ed090805090651g65ab474fk13d549e7166c3f1c@mail.gmail.com>
+	<fa686aa40805090706q572b44e9n2b39a6808562b2ad@mail.gmail.com>
+	<ed84ed090805090802s177f9d47r4be59b5a47138d2a@mail.gmail.com>
+	<fa686aa40805090820s66801309j161adfcbc360fc42@mail.gmail.com>
+Cc: linuxppc-dev@ozlabs.org, Fabio Tosetto <tosettofabio83@libero.it>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,35 +31,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+> Doesn't look like you are passing a kernel parameters line.  The
+> kernel probably is booting, but doesn't know where to output the
+> console.  Try adding "console=ttyPSC0,115200".
 
-On Tue, 2008-05-20 at 15:53 -0700, David Miller wrote:
-> From: Scott Wood <scottwood@freescale.com>
-> Date: Tue, 20 May 2008 17:43:58 -0500
-> 
-> > David Miller wrote:
-> > > The __volatile__ in the asm construct disallows movement of the
-> > > inline asm relative to statements surrounding it.
-> > > 
-> > > The only reason barrier() in kernel.h needs a memory clobber is
-> > > because of a bug in ancient versions of gcc.  In fact, I think
-> > > that memory clobber might even be removable.
-> > 
-> > Current versions of GCC seem quite happy to move non-asm memory accesses 
-> > around a volatile asm without a memory clobber; see the test Trent posted.
-> 
-> Indeed, and even the GCC manual is clear about this.
+Hi Grant,
+I've tried to add that with this commands
 
-So what is the scope of that problem ?
+=> bootargs debug console=ttyPSC0,115200 root=/dev/ram
+=> saveenv
 
-IE. Take an x86 version of that test, writing to memory, doing a writel
-to some MMIO, then another memory write, can those be re-ordered with
-the current x86 version of writel ?
+but the result is not so different. It still stops after printing these lines
 
-static inline void writel(unsigned int b, volatile void __iomem *addr)
-{
-	*(volatile unsigned int __force *)addr = b;
-}
+>Linux/PowerPC load: debug console=ttyPSC0,115200 root=/dev/ram
+>Finalizing device tree... flat tree at 0x75e300
 
-This is becoming a serious issue...
-
-Ben.
+What should I see after that, in case of successful boot?
+Thanks for your help.
