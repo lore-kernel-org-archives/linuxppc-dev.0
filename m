@@ -1,17 +1,21 @@
-Return-Path: <suvidh.kankariya@ntigo.com>
-Received: from nti1.com (unknown [65.243.248.10])
-	by ozlabs.org (Postfix) with ESMTP id 08084DE270
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 May 2008 06:49:51 +1000 (EST)
-Received: from [65.243.248.64] (host64.networktechinc.com [65.243.248.64] (may
-	be forged)) by nti1.com (8.14.1/8.14.1) with ESMTP id m4MKeEuB006337
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 May 2008 16:40:17 -0400 (EDT)
-Message-ID: <4835DA6E.2020709@ntigo.com>
-Date: Thu, 22 May 2008 16:41:18 -0400
-From: Suvidh Kankariya <suvidh.kankariya@ntigo.com>
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 69F01DE08A
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 May 2008 07:15:05 +1000 (EST)
+Message-ID: <4835E295.3080801@freescale.com>
+Date: Thu, 22 May 2008 16:16:05 -0500
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: adding external interrupt support for MPC8313e bsp
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Ron Madrid <ron_madrid@sbcglobal.net>
+Subject: Re: JFFS2 FS not writeable
+References: <606394.37977.qm@web83507.mail.sp1.yahoo.com>
+In-Reply-To: <606394.37977.qm@web83507.mail.sp1.yahoo.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,25 +25,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
-I have mpc8313e local bus connected to a external UART. and the 
-interrupt is connected to EXT_INT2.
-I am able to communicate to UART if I disable IRQ i.e IRQ = 0 in port 
-structure.
+Ron Madrid wrote:
+> I'm trying to make new directories, create files, save
+> changes to files, etc. and when I reboot my changes
+> are not being saved.  I'm sorry if this is vague, but
+> I haven't run into this problem before in previous
+> kernels.  I'm using 2.6.25 and my configuration is
+> very similar to mpc8313erdb_defconfig, with changes to
+> include NAND support as my flash device is a NAND. 
+> Also, my dts is very similar to mpc8313erdb.dts as
+> well.  I don't know where to start looking for the
+> problem as there is no error.  Here is what is printed
+> on boot.
 
-I am not able to understand how to tell kernel to use external IRQ -2.
-Should I put the external interrupts in device tree and if so how?
+Try head-of-tree; there have been several fixes to the eLBC FCM NAND driver.
 
-or can I use the interrupt directly in the driver  and in that case do I 
-need to map the interrupt.
-
-
-
-Any help or pointer is highly appreciated.
-
-Thanks in advance.
-
-
-Suvidh
-
- 
+-Scott
