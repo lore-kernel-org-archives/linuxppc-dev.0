@@ -1,20 +1,16 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 18DADDE290
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 May 2008 04:18:22 +1000 (EST)
-Date: Thu, 22 May 2008 22:18:21 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Kumar Gala <galak@kernel.crashing.org>,
-	David Brownell <dbrownell@users.sourceforge.net>,
-	Pierre Ossman <drzeus-mmc@drzeus.cx>
-Subject: [PATCH 1/3] mmc: add support for card-detection polling
-Message-ID: <20080522181821.GA6104@polina.dev.rtsoft.ru>
-References: <20080522181713.GA26918@polina.dev.rtsoft.ru>
+Return-Path: <rostedt@goodmis.org>
+Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
+	[71.74.56.122]) by ozlabs.org (Postfix) with ESMTP id 1A24EDE29C
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 May 2008 04:18:19 +1000 (EST)
+Date: Thu, 22 May 2008 14:18:17 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] rcupreempt: remove export of rcu_batches_completed_bh
+Message-ID: <Pine.LNX.4.58.0805221415330.14724@gandalf.stny.rr.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <20080522181713.GA26918@polina.dev.rtsoft.ru>
-Cc: linuxppc-dev@ozlabs.org, spi-devel-general@lists.sourceforge.net,
-	linux-kernel@vger.kernel.org, Timur Tabi <timur@freescale.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@elte.hu>,
+	"Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,98 +20,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Some hosts (and boards that use mmc_spi) do not use interrupts on the CD
-line, so they can't trigger mmc_detect_change. We want to poll the card
-and see if there was a change. 1 second poll interval seems resonable.
 
-This patch also implements .get_cd() host operation, that could be used
-by the hosts that are able to report card-detect status without need to
-talk MMC.
+In rcupreempt, rcu_batches_completed_bh is defined as a static inline in
+the header file. This does not need to be exported, and not only that,
+this breaks my PPC build.
 
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- drivers/mmc/core/core.c  |   12 +++++++++---
- include/linux/mmc/host.h |    8 ++++++++
- 2 files changed, 17 insertions(+), 3 deletions(-)
+ kernel/rcupreempt.c |    2 --
+ 1 file changed, 2 deletions(-)
 
-diff --git a/drivers/mmc/core/core.c b/drivers/mmc/core/core.c
-index 01ced4c..ede5d1e 100644
---- a/drivers/mmc/core/core.c
-+++ b/drivers/mmc/core/core.c
-@@ -638,6 +638,9 @@ void mmc_rescan(struct work_struct *work)
- 		 */
- 		mmc_bus_put(host);
- 
-+		if (host->ops->get_cd && host->ops->get_cd(host) == 0)
-+			goto out;
-+
- 		mmc_claim_host(host);
- 
- 		mmc_power_up(host);
-@@ -652,7 +655,7 @@ void mmc_rescan(struct work_struct *work)
- 		if (!err) {
- 			if (mmc_attach_sdio(host, ocr))
- 				mmc_power_off(host);
--			return;
-+			goto out;
- 		}
- 
- 		/*
-@@ -662,7 +665,7 @@ void mmc_rescan(struct work_struct *work)
- 		if (!err) {
- 			if (mmc_attach_sd(host, ocr))
- 				mmc_power_off(host);
--			return;
-+			goto out;
- 		}
- 
- 		/*
-@@ -672,7 +675,7 @@ void mmc_rescan(struct work_struct *work)
- 		if (!err) {
- 			if (mmc_attach_mmc(host, ocr))
- 				mmc_power_off(host);
--			return;
-+			goto out;
- 		}
- 
- 		mmc_release_host(host);
-@@ -683,6 +686,9 @@ void mmc_rescan(struct work_struct *work)
- 
- 		mmc_bus_put(host);
- 	}
-+out:
-+	if (host->caps & MMC_CAP_NEEDS_POLL)
-+		mmc_schedule_delayed_work(&host->detect, HZ);
+Index: linux-tip.git/kernel/rcupreempt.c
+===================================================================
+--- linux-tip.git.orig/kernel/rcupreempt.c	2008-05-22 11:12:30.000000000 -0700
++++ linux-tip.git/kernel/rcupreempt.c	2008-05-22 11:12:33.000000000 -0700
+@@ -217,8 +217,6 @@ long rcu_batches_completed(void)
  }
- 
- void mmc_start_host(struct mmc_host *host)
-diff --git a/include/linux/mmc/host.h b/include/linux/mmc/host.h
-index 7ab962f..f2e9885 100644
---- a/include/linux/mmc/host.h
-+++ b/include/linux/mmc/host.h
-@@ -51,8 +51,15 @@ struct mmc_ios {
- 
- struct mmc_host_ops {
- 	void	(*request)(struct mmc_host *host, struct mmc_request *req);
-+	/*
-+	 * Avoid calling these three functions too often or in a "fast path",
-+	 * since underlaying controller might implement them in an expensive
-+	 * and/or slow way.
-+	 */
- 	void	(*set_ios)(struct mmc_host *host, struct mmc_ios *ios);
- 	int	(*get_ro)(struct mmc_host *host);
-+	int	(*get_cd)(struct mmc_host *host);
-+
- 	void	(*enable_sdio_irq)(struct mmc_host *host, int enable);
- };
- 
-@@ -94,6 +101,7 @@ struct mmc_host {
- #define MMC_CAP_SD_HIGHSPEED	(1 << 3)	/* Can do SD high-speed timing */
- #define MMC_CAP_SDIO_IRQ	(1 << 4)	/* Can signal pending SDIO IRQs */
- #define MMC_CAP_SPI		(1 << 5)	/* Talks only SPI protocols */
-+#define MMC_CAP_NEEDS_POLL	(1 << 6)	/* Needs polling for card-detection */
- 
- 	/* host specific block data */
- 	unsigned int		max_seg_size;	/* see blk_queue_max_segment_size */
--- 
-1.5.5.1
+ EXPORT_SYMBOL_GPL(rcu_batches_completed);
+
+-EXPORT_SYMBOL_GPL(rcu_batches_completed_bh);
+-
+ void __rcu_read_lock(void)
+ {
+ 	int idx;
