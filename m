@@ -1,20 +1,23 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 14671DE272
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 May 2008 04:18:24 +1000 (EST)
-Date: Thu, 22 May 2008 22:18:23 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Kumar Gala <galak@kernel.crashing.org>,
-	David Brownell <dbrownell@users.sourceforge.net>,
-	Pierre Ossman <drzeus-mmc@drzeus.cx>
-Subject: [PATCH 2/3] mmc_spi: add support for card-detection polling
-Message-ID: <20080522181823.GB6104@polina.dev.rtsoft.ru>
-References: <20080522181713.GA26918@polina.dev.rtsoft.ru>
+Return-Path: <rostedt@goodmis.org>
+Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
+	[71.74.56.123]) by ozlabs.org (Postfix) with ESMTP id 2A096DE288
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 May 2008 04:31:13 +1000 (EST)
+Date: Thu, 22 May 2008 14:31:07 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: [PATCH] ftrace: powerpc clean ups
+In-Reply-To: <1211292277.7960.8.camel@localhost>
+Message-ID: <Pine.LNX.4.58.0805221429020.18018@gandalf.stny.rr.com>
+References: <20080515034942.109223655@goodmis.org>
+	<20080515035918.896765954@goodmis.org>
+	<1211292277.7960.8.camel@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <20080522181713.GA26918@polina.dev.rtsoft.ru>
-Cc: linuxppc-dev@ozlabs.org, spi-devel-general@lists.sourceforge.net,
-	linux-kernel@vger.kernel.org, Timur Tabi <timur@freescale.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: proski@gnu.org, a.p.zijlstra@chello.nl,
+	Soeren Sandmann Pedersen <sandmann@redhat.com>,
+	Pekka Paalanen <pq@iki.fi>, LKML <linux-kernel@vger.kernel.org>,
+	linuxppc-dev@ozlabs.org, Steven Rostedt <srostedt@redhat.com>,
+	paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,79 +27,131 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-If platform_data lacks init() callback (solely used to request
-card-detect interrupt), we mark the host as MMC_CAP_NEEDS_POLL.
 
-get_cd() host operation provided to optimize polling.
+This patch cleans up the ftrace code in PowerPC based on the comments from
+Michael Ellerman.
 
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- drivers/mmc/host/mmc_spi.c  |   18 ++++++++++++++++--
- include/linux/spi/mmc_spi.h |    6 ++++++
- 2 files changed, 22 insertions(+), 2 deletions(-)
+ -0700                           |binary
+ arch/powerpc/kernel/entry_32.S  |   11 ++---------
+ arch/powerpc/kernel/ftrace.c    |    8 +++++++-
+ arch/powerpc/kernel/ppc_ksyms.c |    5 +++++
+ arch/powerpc/kernel/setup_32.c  |    5 -----
+ arch/powerpc/kernel/setup_64.c  |    5 -----
+ include/asm-powerpc/ftrace.h    |    6 ++++++
+ 6 files changed, 20 insertions(+), 20 deletions(-)
 
-diff --git a/drivers/mmc/host/mmc_spi.c b/drivers/mmc/host/mmc_spi.c
-index 3550858..f0f86b1 100644
---- a/drivers/mmc/host/mmc_spi.c
-+++ b/drivers/mmc/host/mmc_spi.c
-@@ -1131,11 +1131,20 @@ static int mmc_spi_get_ro(struct mmc_host *mmc)
- 	return 0;
- }
- 
-+static int mmc_spi_get_cd(struct mmc_host *mmc)
-+{
-+	struct mmc_spi_host *host = mmc_priv(mmc);
+Index: linux-tip.git/arch/powerpc/kernel/entry_32.S
+===================================================================
+--- linux-tip.git.orig/arch/powerpc/kernel/entry_32.S	2008-05-22 09:17:51.000000000 -0700
++++ linux-tip.git/arch/powerpc/kernel/entry_32.S	2008-05-22 09:18:21.000000000 -0700
+@@ -1129,18 +1129,11 @@ _GLOBAL(_mcount)
+ 	stw	r5, 8(r1)
+
+ 	LOAD_REG_ADDR(r5, ftrace_trace_function)
+-#if 0
+-	mtctr	r3
+-	mr	r1, r5
+-	bctrl
+-#endif
+ 	lwz	r5,0(r5)
+-#if 1
 +
-+	if (host->pdata && host->pdata->get_cd)
-+		return host->pdata->get_cd(mmc->parent);
-+	return -ENOSYS;
-+}
- 
- static const struct mmc_host_ops mmc_spi_ops = {
- 	.request	= mmc_spi_request,
- 	.set_ios	= mmc_spi_set_ios,
- 	.get_ro		= mmc_spi_get_ro,
-+	.get_cd		= mmc_spi_get_cd,
- };
- 
- 
-@@ -1323,13 +1332,18 @@ static int mmc_spi_probe(struct spi_device *spi)
- 	if (status != 0)
- 		goto fail_add_host;
- 
--	dev_info(&spi->dev, "SD/MMC host %s%s%s%s\n",
-+	if (host->pdata && !host->pdata->init)
-+		mmc->caps |= MMC_CAP_NEEDS_POLL;
+ 	mtctr	r5
+ 	bctrl
+-#else
+-	bl	ftrace_stub
+-#endif
 +
-+	dev_info(&spi->dev, "SD/MMC host %s%s%s%s%s\n",
- 			mmc->class_dev.bus_id,
- 			host->dma_dev ? "" : ", no DMA",
- 			(host->pdata && host->pdata->get_ro)
- 				? "" : ", no WP",
- 			(host->pdata && host->pdata->setpower)
--				? "" : ", no poweroff");
-+				? "" : ", no poweroff",
-+			(mmc->caps & MMC_CAP_NEEDS_POLL)
-+				? ", cd polling" : "");
- 	return 0;
- 
- fail_add_host:
-diff --git a/include/linux/spi/mmc_spi.h b/include/linux/spi/mmc_spi.h
-index d5ca78b..23c6923 100644
---- a/include/linux/spi/mmc_spi.h
-+++ b/include/linux/spi/mmc_spi.h
-@@ -23,6 +23,12 @@ struct mmc_spi_platform_data {
- 	/* sense switch on sd cards */
- 	int (*get_ro)(struct device *);
- 
+ 	nop
+
+ 	lwz	r6, 8(r1)
+Index: linux-tip.git/arch/powerpc/kernel/ftrace.c
+===================================================================
+--- linux-tip.git.orig/arch/powerpc/kernel/ftrace.c	2008-05-22 09:19:12.000000000 -0700
++++ linux-tip.git/arch/powerpc/kernel/ftrace.c	2008-05-22 09:29:45.000000000 -0700
+@@ -51,10 +51,16 @@ notrace unsigned char *ftrace_call_repla
+ {
+ 	static unsigned int op;
+
 +	/*
-+	 * If board does not use CD interrupts, driver can optimize polling
-+	 * using this function.
++	 * It would be nice to just use create_function_call, but that will
++	 * update the code itself. Here we need to just return the
++	 * instruction that is going to be modified, without modifying the
++	 * code.
 +	 */
-+	int (*get_cd)(struct device *);
+ 	addr = GET_ADDR(addr);
+
+ 	/* Set to "bl addr" */
+-	op = 0x48000001 | (ftrace_calc_offset(ip, addr) & 0x03fffffe);
++	op = 0x48000001 | (ftrace_calc_offset(ip, addr) & 0x03fffffc);
+
+ 	/*
+ 	 * No locking needed, this must be called via kstop_machine
+Index: linux-tip.git/arch/powerpc/kernel/ppc_ksyms.c
+===================================================================
+--- linux-tip.git.orig/arch/powerpc/kernel/ppc_ksyms.c	2008-05-22 09:37:28.000000000 -0700
++++ linux-tip.git/arch/powerpc/kernel/ppc_ksyms.c	2008-05-22 11:07:36.000000000 -0700
+@@ -43,6 +43,7 @@
+ #include <asm/div64.h>
+ #include <asm/signal.h>
+ #include <asm/dcr.h>
++#include <asm/ftrace.h>
+
+ #ifdef CONFIG_PPC32
+ extern void transfer_to_handler(void);
+@@ -68,6 +69,10 @@ EXPORT_SYMBOL(single_step_exception);
+ EXPORT_SYMBOL(sys_sigreturn);
+ #endif
+
++#ifdef CONFIG_FTRACE
++EXPORT_SYMBOL(_mcount);
++#endif
 +
- 	/* how long to debounce card detect, in msecs */
- 	u16 detect_delay;
- 
--- 
-1.5.5.1
+ EXPORT_SYMBOL(strcpy);
+ EXPORT_SYMBOL(strncpy);
+ EXPORT_SYMBOL(strcat);
+Index: linux-tip.git/arch/powerpc/kernel/setup_64.c
+===================================================================
+--- linux-tip.git.orig/arch/powerpc/kernel/setup_64.c	2008-05-22 09:35:30.000000000 -0700
++++ linux-tip.git/arch/powerpc/kernel/setup_64.c	2008-05-22 11:25:30.000000000 -0700
+@@ -85,11 +85,6 @@ struct ppc64_caches ppc64_caches = {
+ };
+ EXPORT_SYMBOL_GPL(ppc64_caches);
+
+-#ifdef CONFIG_FTRACE
+-extern void _mcount(void);
+-EXPORT_SYMBOL(_mcount);
+-#endif
+-
+ /*
+  * These are used in binfmt_elf.c to put aux entries on the stack
+  * for each elf executable being started.
+Index: linux-tip.git/include/asm-powerpc/ftrace.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-tip.git/include/asm-powerpc/ftrace.h	2008-05-22 09:39:39.000000000 -0700
+@@ -0,0 +1,6 @@
++#ifndef _ASM_POWERPC_FTRACE
++#define _ASM_POWERPC_FTRACE
++
++extern void _mcount(void);
++
++#endif
+Index: linux-tip.git/arch/powerpc/kernel/setup_32.c
+===================================================================
+--- linux-tip.git.orig/arch/powerpc/kernel/setup_32.c	2008-05-22 09:35:30.000000000 -0700
++++ linux-tip.git/arch/powerpc/kernel/setup_32.c	2008-05-22 11:25:39.000000000 -0700
+@@ -47,11 +47,6 @@
+ #include <asm/kgdb.h>
+ #endif
+
+-#ifdef CONFIG_FTRACE
+-extern void _mcount(void);
+-EXPORT_SYMBOL(_mcount);
+-#endif
+-
+ extern void bootx_init(unsigned long r4, unsigned long phys);
+
+ int boot_cpuid;
