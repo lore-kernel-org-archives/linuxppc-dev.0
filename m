@@ -1,21 +1,21 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D615CDDFC2
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 May 2008 12:07:14 +1000 (EST)
-Message-Id: <202DEFA2-B49B-4FBB-998C-550777C0EAC8@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Scott Wood <scottwood@freescale.com>
-In-Reply-To: <20080521221115.GB5156@ld0162-tx32.am.freescale.net>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: [PATCH] [POWERPC] mpic: deal with bogus NIRQ in Feature Reporting
-	Register
-Date: Wed, 21 May 2008 21:06:59 -0500
-References: <Pine.LNX.4.64.0805211557380.31707@blarg.am.freescale.net>
-	<20080521221115.GB5156@ld0162-tx32.am.freescale.net>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <david-b@pacbell.net>
+Received: from smtp105.sbc.mail.mud.yahoo.com (smtp105.sbc.mail.mud.yahoo.com
+	[68.142.198.204]) by ozlabs.org (Postfix) with SMTP id 44C51DDFA5
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 May 2008 13:45:08 +1000 (EST)
+From: David Brownell <david-b@pacbell.net>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH 2/4] spi: split up spi_new_device() to allow two stage
+	registration.
+Date: Wed, 21 May 2008 17:17:13 -0700
+References: <20080516193054.28030.35126.stgit@trillian.secretlab.ca>
+	<20080516193608.28030.34968.stgit@trillian.secretlab.ca>
+In-Reply-To: <20080516193608.28030.34968.stgit@trillian.secretlab.ca>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200805211717.13206.david-b@pacbell.net>
+Cc: linuxppc-dev@ozlabs.org, fabrizio.garetto@gmail.com,
+	linux-kernel@vger.kernel.org, spi-devel-general@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,32 +25,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Friday 16 May 2008, Grant Likely wrote:
+> 
+> This patch splits the allocation and registration portions of code out
+> of spi_new_device() and creates three new functions; spi_alloc_device(),
+> spi_register_device(), and spi_device_release(). 
 
-On May 21, 2008, at 5:11 PM, Scott Wood wrote:
+I have no problem with the first two, but why the last?
 
-> On Wed, May 21, 2008 at 03:57:55PM -0500, Kumar Gala wrote:
->> Some chips (like the SoCs from Freescale) report the wrong value in  
->> NIRQ
->> and this causes issues if its doesn't match or exceed the value of
->> irq_count.
->
-> Is it really wrong, or just not accounting for the gap between  
-> external
-> and internal interrupts?
+If the devices are always allocated by spi_alloc_device() as
+they should be -- probably through an intermediary -- the
+only public function necessary for that cleanup should be
+the existing spi_dev_put().
 
-I consider it wrong by my interpretation of the open-pic spec.
-
-The spec says:
-
-Num IRQ Sources:  The number of highest IRQ source supported.  For  
-instance, in a 32 source
-implementation, this value will be 31.  This allows support of a  
-maximum of 2048 interrupt sources.
-
-(Interrupt Sources are in the 0x10000 to 0x1ffff range).
-
-So for something like 8572, the top most interrupt source is at  
-0x1CE0.  So I'd take that to mean NIRQs should be 231. (0x1CE0 / 0x20  
-- 1).  NIRQS reports 107.
-
-- k
+- Dave
