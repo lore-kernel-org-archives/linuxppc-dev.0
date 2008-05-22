@@ -1,20 +1,22 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <Bruce_Leonard@selinc.com>
+Received: from tesla.selinc.com (tesla.selinc.com [12.110.71.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 77A2EDE100
+	(Client CN "tesla.selinc.com", Issuer "RSA Data Security,
+	Inc." (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 9F0AFDE51C
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 23 May 2008 00:19:22 +1000 (EST)
-Message-Id: <F6DD85B3-8DBE-4753-872A-B204BAFF7862@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: sandeep malik <malik_mca2000@yahoo.co.in>
-In-Reply-To: <759615.89060.qm@web8413.mail.in.yahoo.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: Help needed in debugging the crash  of kernel stack overflow
-Date: Thu, 22 May 2008 09:19:15 -0500
-References: <759615.89060.qm@web8413.mail.in.yahoo.com>
-Cc: linuxppc-embedded@ozlabs.org
+	Fri, 23 May 2008 07:44:38 +1000 (EST)
+Received: from edison2.selinc.com (edison2.selinc.com [12.110.71.8])
+	by tesla.selinc.com (8.12.11.20060308/8.12.11) with ESMTP id
+	m4MLUEuE016704
+	for <linuxppc-embedded@ozlabs.org>; Thu, 22 May 2008 14:30:15 -0700
+To: linuxppc-embedded@ozlabs.org
+Subject: Question about "native" compiling
+MIME-Version: 1.0
+Message-ID: <OF2C9C3CB1.4A6FAC88-ON88257451.00760B81-88257451.00761D72@selinc.com>
+From: Bruce_Leonard@selinc.com
+Date: Thu, 22 May 2008 14:30:07 -0700
+Content-Type: text/plain; charset="US-ASCII"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -25,40 +27,23 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On May 22, 2008, at 8:08 AM, sandeep malik wrote:
+Hi all,
 
-> Hi,
->
-> We are using MSC7120 (e300 based) board running Montavista Linux  
-> 2.4. We are observing a random crash with the following dump:
->
-> Kernel stack overflow in process c5b22000, r1=c5b22460
-> NIP: 00000000 XER: 20000000 LR: 00000000 SP: C5B22460 REGS: c5b223b0  
-> TRAP: 0400    Tainted: P
-> MSR: 20001032 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 11
-> TASK = c5b22000[175] 'insmod' Last syscall: -1
-> last math 00000000 last altivec 00000000
-> GPR00: 00000000 C5B22460 C5B22000 C5B22470 00000000 20001032  
-> 00000000 00000000
-> GPR08: F0000700 00000000 00000008 00000001 24224482 1033BB30  
-> 00000000 00000000
-> GPR16: 00000000 00000000 00000000 00000001 00001032 05B22460  
-> 00000000 00000000
-> GPR24: 00000000 00000200 C7B09400 C016A240 C5B23D80 00000010  
-> 00000000 C7B09400
-> Call backtrace:
-> 70536574 34205220 00000000 00000000 00000000 55555555 55555555
-> 55555555 55555555 55555555 55515555 55555555 55555555 55515555
-> 55555555 55555555 494C450A 66363531 4F4E455F 35382054 38383053
-> 20542056 43686563 53797353 35632052 70383830 74205670 0A636230
-> 436D640A 38383053 24108028 C5C740C8 C00059AC
-> Kernel panic: kernel stack overflow
-> In interrupt handler - not syncing
->
-> Any idea what might be going wrong or how to approach this problem  
-> as it is not getting reproduced and the behaviour is very random.  
-> Any pointers will be helpful.
+I apologize if the list finds this off topic, but I'm at a loss of who to 
+ask the question and thought this would be a good place to start.  Our 
+target is an MPC8347E PowerQUICC II Pro, and we're using the latest kernel 
+(2.6.25).  We started this project by building on x86 and doing 
+cross-compiling to the powerpc target.  As the project progressed and we 
+started adding applications we found that we couldn't cross-compile 
+postgress among other things.  So we switched to native compilation on the 
+target.  Problem is, it's extreamly slow.  Now our idea is to get our 
+hands on a PowerPC based Mac, load it up with Ubuntu and do native builds 
+on that.  The question is, which Mac to get?  The concern is this: a G5 is 
+64-bit but the 8347E is 32-bit.  If we do our compiles on a G5 is it 
+really a 'native' compile or is it a cross-compile and we're back in the 
+same boat as we were with the x86?  Should we use a G4 instead?
 
-You really need to take these up with MontaVista.
+Thanks for any advice or pointers to other places where I can find 
+information.
 
-- k
+Bruce
