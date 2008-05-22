@@ -1,20 +1,20 @@
-Return-Path: <htejun@gmail.com>
-Received: from wf-out-1314.google.com (wf-out-1314.google.com [209.85.200.169])
-	by ozlabs.org (Postfix) with ESMTP id ADCDADDFBA
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 May 2008 17:30:17 +1000 (EST)
-Received: by wf-out-1314.google.com with SMTP id 24so2582875wfg.15
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 May 2008 00:29:52 -0700 (PDT)
-Message-ID: <483520E9.2090201@gmail.com>
-Date: Thu, 22 May 2008 16:29:45 +0900
-From: Tejun Heo <htejun@gmail.com>
+Return-Path: <jeff@garzik.org>
+Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 6224DDDFA8
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 May 2008 20:05:35 +1000 (EST)
+Message-ID: <4835452F.1010708@garzik.org>
+Date: Thu, 22 May 2008 06:04:31 -0400
+From: Jeff Garzik <jeff@garzik.org>
 MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] Add port multiplier (PMP) support in sata_fsl driver
-References: <Pine.LNX.4.64.0805200015010.5318@blarg.am.freescale.net>
-In-Reply-To: <Pine.LNX.4.64.0805200015010.5318@blarg.am.freescale.net>
+To: Brian King <brking@linux.vnet.ibm.com>
+Subject: Re: [PATCH 1/1] ehea: Fix use after free on reboot
+References: <12107765041509-patch-mail.ibm.com>
+In-Reply-To: <12107765041509-patch-mail.ibm.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, jgarzik@pobox.com, ashish.kalra@freescale.com,
-	linux-ide@vger.kernel.org
+Cc: tklein@de.ibm.com, netdev@vger.kernel.org, raisch@de.ibm.com,
+	linuxppc-dev@ozlabs.org, hering2@de.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,116 +24,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
-> From: Ashish Kalra <ashish.kalra@freescale.com>
+Brian King wrote:
+> Fixes the following use after free oops:
 > 
-> PMP support for sata_fsl driver.
+> ehea: Reboot: freeing all eHEA resources
+> Unable to handle kernel paging request for data at address 0x6b6b6b6b6b6b6c5b
+> Faulting instruction address: 0xd000000000354488
+> cpu 0x0: Vector: 300 (Data Access) at [c00000002ec6f310]
+>     pc: d000000000354488: .ehea_shutdown_single_port+0x50/0x78 [ehea]
+>     lr: d00000000035447c: .ehea_shutdown_single_port+0x44/0x78 [ehea]
+>     sp: c00000002ec6f590
+>    msr: 8000000000009032
+>    dar: 6b6b6b6b6b6b6c5b
+>  dsisr: 40000000
+>   current = 0xc0000000281412e0
+>   paca    = 0xc0000000006df300
+>     pid   = 10930, comm = reboot
+> enter ? for help
+> [c00000002ec6f590] d00000000035d64c .ehea_remove+0x44/0x124 [ehea] (unreliable)
+> [c00000002ec6f630] c000000000319f88 .of_platform_device_remove+0x40/0x58
+> [c00000002ec6f6a0] c000000000291018 .__device_release_driver+0xb0/0xf0
+> [c00000002ec6f730] c000000000291120 .driver_detach+0xc8/0xfc
+> [c00000002ec6f7c0] c00000000028fe24 .bus_remove_driver+0xb4/0x114
+> [c00000002ec6f850] c000000000291768 .driver_unregister+0x54/0x74
+> [c00000002ec6f8e0] c00000000031a0c8 .of_unregister_driver+0x14/0x28
+> [c00000002ec6f950] c000000000023ba0 .ibmebus_unregister_driver+0x10/0x24
+> [c00000002ec6f9c0] d000000000354180 .ehea_reboot_notifier+0x30/0x4c [ehea]
+> [c00000002ec6fa40] c0000000003c95a8 .notifier_call_chain+0x5c/0xcc
+> [c00000002ec6fae0] c000000000082cd4 .__blocking_notifier_call_chain+0x70/0xb0
+> [c00000002ec6fb90] c000000000075cf8 .kernel_restart_prepare+0x24/0x58
+> [c00000002ec6fc10] c000000000075f0c .kernel_restart+0x20/0x6c
+> [c00000002ec6fc90] c000000000078674 .sys_reboot+0x1d4/0x290
+> [c00000002ec6fe30] c0000000000086ac syscall_exit+0x0/0x40
+> --- Exception: c01 (System Call) at 000000000ff63a40
+> SP (ffceea50) is in userspace
 > 
-> Signed-off-by: Ashish Kalra <ashish.kalra@freescale.com>
-> ---
-> Jeff,
-> 
-> The following commit (4c9bf4e799ce06a7378f1196587084802a414c03):
-> libata: replace tf_read with qc_fill_rtf for non-SFF drivers
+> Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
 
-Heh.. I tried not to break anything and theoretically it shouldn't have. 
-  Oh well, there's theory and there's reality.  Sorry about the trouble.
-
-> Broke the sata_fsl.c driver in 2.6.26.  I know the following patch fixes
-> the issue, it clearly also adds port multipler support.  I'm not sure if
-> you are willing to take that as part of 2.6.26 or not, but the current
-> 2.6.26 driver is broken.
-
-Would it be possible to break the patch into two pieces?  One to fix the 
-problem and the other to add PMP support?
-
-> @@ -771,7 +803,8 @@ try_offline_again:
->  		ata_port_printk(ap, KERN_WARNING,
->  				"No Device OR PHYRDY change,Hstatus = 0x%x\n",
->  				ioread32(hcr_base + HSTATUS));
-> -		goto err;
-> +		*class = ATA_DEV_NONE;
-> +		goto out;
->  	}
-> 
->  	/*
-> @@ -783,7 +816,8 @@ try_offline_again:
-> 
->  	if ((temp & 0xFF) != 0x18) {
->  		ata_port_printk(ap, KERN_WARNING, "No Signature Update\n");
-> -		goto err;
-> +		*class = ATA_DEV_NONE;
-> +		goto out;
-
-Is setting class to ATA_DEV_NONE necessary?  What happens if you drop 
-the above two chunks?
-
-Also, it looks to me that currently sata_fsl_softreset() does both hard 
-and soft resets.  Is it possible to split it into sata_fsl_hardreset() 
-and softreset()?
-
-> @@ -926,42 +975,28 @@ static void sata_fsl_error_intr(struct ata_port *ap)
->  	sata_fsl_scr_read(ap, SCR_ERROR, &SError);
->  	if (unlikely(SError & 0xFFFF0000)) {
->  		sata_fsl_scr_write(ap, SCR_ERROR, SError);
-> -		err_mask |= AC_ERR_ATA_BUS;
->  	}
-> 
->  	DPRINTK("error_intr,hStat=0x%x,CE=0x%x,DE =0x%x,SErr=0x%x\n",
->  		hstatus, cereg, ioread32(hcr_base + DE), SError);
-> 
-> -	/* handle single device errors */
-> -	if (cereg) {
-> -		/*
-> -		 * clear the command error, also clears queue to the device
-> -		 * in error, and we can (re)issue commands to this device.
-> -		 * When a device is in error all commands queued into the
-> -		 * host controller and at the device are considered aborted
-> -		 * and the queue for that device is stopped. Now, after
-> -		 * clearing the device error, we can issue commands to the
-> -		 * device to interrogate it to find the source of the error.
-> -		 */
-> -		dereg = ioread32(hcr_base + DE);
-> -		iowrite32(dereg, hcr_base + DE);
-> -		iowrite32(cereg, hcr_base + CE);
-> +	/* handle fatal errors */
-> +	if (hstatus & FATAL_ERROR_DECODE) {
-> +		ehi->err_mask |= AC_ERR_ATA_BUS;
-> +		ehi->action |= ATA_EH_SOFTRESET;
-> 
-> -		DPRINTK("single device error, CE=0x%x, DE=0x%x\n",
-> -			ioread32(hcr_base + CE), ioread32(hcr_base + DE));
->  		/*
-> -		 * We should consider this as non fatal error, and TF must
-> -		 * be updated as done below.
-> +		 * Ignore serror in case of fatal errors as we always want
-> +		 * to do a soft-reset of the FSL SATA controller. Analyzing
-> +		 * serror may cause libata to schedule a hard-reset action,
-> +		 * and hard-reset currently does not do controller
-> +		 * offline/online, causing command timeouts and leads to an
-> +		 * un-recoverable state, hence make libATA ignore
-> +		 * autopsy in case of fatal errors.
->  		 */
-> 
-> -		err_mask |= AC_ERR_DEV;
-> -	}
-> +		ehi->flags |= ATA_EHI_NO_AUTOPSY;
-
-This is really fishy.  NO_AUTOPSY isn't for stuff like this and libata 
-EH as of the current #usptream and #upstream-fixes default to hardreset, 
-so it will hardreset no matter what you do.
-
-What do you mean by hardreset does'nt do controller offline/online?  Is 
-this PHY sequence in sata_fsl_softreset()?  I think what should be done 
-is...
-
-* Separate out PHY diddling from sata_fsl_softreset() into 
-sata_fsl_hardreset().
-
-* If sata_fsl_hardreset() alone doesn't leave the controller in usable 
-state.  Return -EAGAIN from it to request follow-up SRST on success.
-
-Thanks.
-
--- 
-tejun
+applied
