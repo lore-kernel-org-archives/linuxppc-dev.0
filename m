@@ -1,18 +1,23 @@
-Return-Path: <tosettofabio83@libero.it>
-Received: from polito.it (unknown [130.192.3.44])
-	by ozlabs.org (Postfix) with ESMTP id 0184BDE00D
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 May 2008 20:43:00 +1000 (EST)
-Message-ID: <48354E2B.8010003@libero.it>
-Date: Thu, 22 May 2008 12:42:51 +0200
-From: Fabio Tosetto <tosettofabio83@libero.it>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id B8419DE066
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 May 2008 22:38:40 +1000 (EST)
+Date: Thu, 22 May 2008 16:38:38 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Chen Gong <G.Chen@freescale.com>
+Subject: Re: [PATCH 3/4] [MMC] mmc_spi: add polling support for the card
+	detectline
+Message-ID: <20080522123838.GA27149@polina.dev.rtsoft.ru>
+References: <20080516165057.GC24196@polina.dev.rtsoft.ru>
+	<58A20A281BAF1047B4EAE68DE5C0BDC2F16E6A@zch01exm21.fsl.freescale.net>
 MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: SD-MMC over SPI on PSC6
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Cc: dbrownell@users.sourceforge.net, garyj@denx.de,
-	linux-kernel@vger.kernel.org,
-	spi-devel-general@lists.sourceforge.net, g.liakhovetski@gmx.de,
-	drzeus-mmc@drzeus.cx
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <58A20A281BAF1047B4EAE68DE5C0BDC2F16E6A@zch01exm21.fsl.freescale.net>
+Cc: David Brownell <dbrownell@users.sourceforge.net>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	spi-devel-general@lists.sourceforge.net, Tabi Timur <timur@freescale.com>,
+	Pierre Ossman <drzeus-mmc@drzeus.cx>
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,69 +27,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello, I have an embedded system with an on-board processor powerpc 
-MPC5200B
-and Linux kernel 2.6.22,
-I must turn over to MMC SPI on the PSC6.
+On Mon, May 19, 2008 at 11:02:13AM +0800, Chen Gong wrote:
+> 
+> > -----Original Message-----
+> > From: linuxppc-dev-bounces+b11801=freescale.com@ozlabs.org 
+> > [mailto:linuxppc-dev-bounces+b11801=freescale.com@ozlabs.org] 
+> > On Behalf Of Anton Vorontsov
+> > Sent: 2008?5?17? 0:51
+> > To: Kumar Gala; David Brownell; Pierre Ossman
+> > Cc: linuxppc-dev@ozlabs.org; 
+> > spi-devel-general@lists.sourceforge.net; 
+> > linux-kernel@vger.kernel.org; Tabi Timur
+> > Subject: [PATCH 3/4] [MMC] mmc_spi: add polling support for 
+> > the card detectline
+> > 
+> > Some boards do not use interrupts on the CD line, so we want 
+> > to poll the CD and see if there was a change. 1 second poll 
+> > interval seems resonable.
+> > 
+> > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> > ---
+> >  drivers/mmc/host/mmc_spi.c  |   51 
+> 
+> I want to know whether every card working well ? Because I'm working
+> For 83xx MMC-over-SPI support, the presented concrete methods I used as
+> you do,
+> but only 256M card seems good, 512M or 1G/2G card all have some problems
 
-The MMC over SPI is connected to MPC5200b, here's how:
+So far I don't have cards larger than 256M. Will try to get one though.
 
-  MPC5200B
-----------------                                        
-                       
-|                                                                 
-|------------------
-         PSC1_2 |--->------------Chip_Select (out)---------|      
-                       
-|                                                                 |
-                       |                        
-                                         |     SD CARD
-         ETH_17 |---<------------IRQ (in)------------------|   MMC over SPI
-                       |                                                
-                 |
-                       
-|                                                                 |
-         PSC6_0 |---<------------SPI_RXD (in)------------|
-                       
-|                                                                 |
-                       
-|                                                                 |
-         PSC6_2 |--->------------SPI_TXD (out)-----------|
-                       |                                                 
-                |
-                       |                                                 
-                |
-         PSC6_3 |--->------------SPI_CLK (out)-----------|
-                       
-|                                                                 
-|------------------
-----------------
+Thanks,
 
-Now on the menuconfig enabling these options:
-
-$ make ARCH=powerpc CROSS_COMPILE=powerpc-linux-gnu- menuconfig
-
-Platform support  --->
-   [*] MPC5200 (L25R) bugfix support
-   [*] Freescale Lite5200 Eval Board
-
-Device Drivers  ---> SPI Support --->
-   [*] SPI support
-  <*> Freescale MPC52xx PSC SPI controller
-
-Now I have applied those patch:
-http://www.mail-archive.com/spi-devel-general@lists.sourceforge.net/msg00150.html
-
-Now on the menuconfig enabling these options:
-
-$ make ARCH=powerpc CROSS_COMPILE=powerpc-linux-gnu- menuconfig
-
-Device Drivers  --->  MMC/SD card support --->
- [*] MMC debugging
-<*> MMC block device driver
-<*> MMC host test driver
-<*> MMC/SD over SPI
-
-Is correct applied those patch and enable those options into menuconfig?
-
-thanks Fabio
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
