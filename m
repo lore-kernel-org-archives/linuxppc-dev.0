@@ -1,36 +1,20 @@
-Return-Path: <G.Chen@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 1EACEDDE09
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 May 2008 23:45:13 +1000 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	m4MDj42m012013
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 May 2008 06:45:05 -0700 (MST)
-Received: from zch01exm21.fsl.freescale.net (zch01exm21.ap.freescale.net
-	[10.192.129.205])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id m4MDj2w6022007
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 May 2008 08:45:03 -0500 (CDT)
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 5E1B7DDD04
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 May 2008 00:12:18 +1000 (EST)
+Date: Thu, 22 May 2008 09:28:34 -0500
+From: Olof Johansson <olof@lixom.net>
+To: Nate Case <ncase@xes-inc.com>
+Subject: Re: [PATCH 2/2] USB: isp1760: Support board-specific hardware
+	configurations
+Message-ID: <20080522142834.GA14072@lixom.net>
+References: <1211405331.13845.628.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Subject: RE: [PATCH 3/4] [MMC] mmc_spi: add polling support for the
-	carddetectline
-Date: Thu, 22 May 2008 21:44:57 +0800
-Message-ID: <58A20A281BAF1047B4EAE68DE5C0BDC2F176EF@zch01exm21.fsl.freescale.net>
-In-Reply-To: <20080522123838.GA27149@polina.dev.rtsoft.ru>
-References: <20080516165057.GC24196@polina.dev.rtsoft.ru>
-	<58A20A281BAF1047B4EAE68DE5C0BDC2F16E6A@zch01exm21.fsl.freescale.net>
-	<20080522123838.GA27149@polina.dev.rtsoft.ru>
-From: "Chen Gong" <G.Chen@freescale.com>
-To: <avorontsov@ru.mvista.com>
-Cc: David Brownell <dbrownell@users.sourceforge.net>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	spi-devel-general@lists.sourceforge.net, Tabi Timur <timur@freescale.com>,
-	Pierre Ossman <drzeus-mmc@drzeus.cx>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1211405331.13845.628.camel@localhost.localdomain>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
+	Sebastian Siewior <bigeasy@linutronix.de>,
+	Greg Kroah-Hartman <gregkh@suse.de>, linux-usb@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -40,57 +24,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-=20
+On Wed, May 21, 2008 at 04:28:51PM -0500, Nate Case wrote:
+> This adds support for hardware configurations that don't match the
+> chip default register settings (e.g., 16-bit data bus, DACK and
+> DREQ pulled down instead of up, analog overcurrent mode).
+> 
+> These settings are passed in via the OF device tree.  The PCI
+> interface still assumes the same default values.
 
-> -----Original Message-----
-> From: Anton Vorontsov [mailto:avorontsov@ru.mvista.com]=20
-> Sent: 2008?5?22? 20:39
-> To: Chen Gong
-> Cc: Kumar Gala; David Brownell; Pierre Ossman;=20
-> linuxppc-dev@ozlabs.org;=20
-> spi-devel-general@lists.sourceforge.net;=20
-> linux-kernel@vger.kernel.org; Tabi Timur
-> Subject: Re: [PATCH 3/4] [MMC] mmc_spi: add polling support=20
-> for the carddetectline
->=20
-> On Mon, May 19, 2008 at 11:02:13AM +0800, Chen Gong wrote:
-> >=20
-> > > -----Original Message-----
-> > > From: linuxppc-dev-bounces+b11801=3Dfreescale.com@ozlabs.org
-> > > [mailto:linuxppc-dev-bounces+b11801=3Dfreescale.com@ozlabs.org]
-> > > On Behalf Of Anton Vorontsov
-> > > Sent: 2008?5?17? 0:51
-> > > To: Kumar Gala; David Brownell; Pierre Ossman
-> > > Cc: linuxppc-dev@ozlabs.org;
-> > > spi-devel-general@lists.sourceforge.net;
-> > > linux-kernel@vger.kernel.org; Tabi Timur
-> > > Subject: [PATCH 3/4] [MMC] mmc_spi: add polling support=20
-> for the card=20
-> > > detectline
-> > >=20
-> > > Some boards do not use interrupts on the CD line, so we=20
-> want to poll=20
-> > > the CD and see if there was a change. 1 second poll=20
-> interval seems=20
-> > > resonable.
-> > >=20
-> > > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> > > ---
-> > >  drivers/mmc/host/mmc_spi.c  |   51=20
-> >=20
-> > I want to know whether every card working well ? Because=20
-> I'm working=20
-> > For 83xx MMC-over-SPI support, the presented concrete=20
-> methods I used=20
-> > as you do, but only 256M card seems good, 512M or 1G/2G=20
-> card all have=20
-> > some problems
->=20
-> So far I don't have cards larger than 256M. Will try to get=20
-> one though.
->=20
-Thanks, if you have any new test report pls contact me.
+Nice! I'll give this a spin on Electra as well, it should make it work
+there.
 
-BTW, a fews days ago Joakim Tjernlund made a heavy fix for=20
-spi_mpc83xx.c to resolve clock glitch. But it looks no any impact
-for me, but maybe it has positive effect for you.
+A couple of comments on the OF interface:
+
+> @@ -55,8 +57,34 @@ static int of_isp1760_probe(struct of_device *dev,
+>  	virq = irq_create_of_mapping(oirq.controller, oirq.specifier,
+>  			oirq.size);
+>  
+> +	prop = of_get_property(dp, "port1-disable", NULL);
+> +	if (prop && *prop != 0)
+> +		devflags |= ISP1760_FLAG_PORT1_DIS;
+
+It should be sufficient to add the property without a value, and just
+check for the presence of it. The cpu nodes have properties like this if
+you want something to compare with.
+
+> +
+> +	/* Some systems wire up only 16 of the 32 data lines */
+> +	prop = of_get_property(dp, "bus-width", NULL);
+> +	if (prop && *prop == 16)
+> +		devflags |= ISP1760_FLAG_BUS_WIDTH_16;
+
+This is the obvious exception, here you'll have to check the value.
+
+I'm not sure if the DT police will complain of the overloaded bus-width
+property name and would prefer a custom one.
+
+
+-Olof
