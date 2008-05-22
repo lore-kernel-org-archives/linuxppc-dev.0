@@ -1,23 +1,27 @@
-Return-Path: <dhlii@dlasys.net>
-Received: from outbound-mail-124.bluehost.com (outbound-mail-124.bluehost.com
-	[67.222.38.24]) by ozlabs.org (Postfix) with SMTP id 49FE2DE0C1
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.244])
+	by ozlabs.org (Postfix) with ESMTP id B2D05DE085
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 23 May 2008 09:06:48 +1000 (EST)
-Message-ID: <4835FC73.5080102@dlasys.net>
-Date: Thu, 22 May 2008 19:06:27 -0400
-From: "David H. Lynch Jr." <dhlii@dlasys.net>
+	Fri, 23 May 2008 09:14:25 +1000 (EST)
+Received: by an-out-0708.google.com with SMTP id c34so70028anc.78
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 22 May 2008 16:14:23 -0700 (PDT)
+Message-ID: <fa686aa40805221614k138ff4d8s810579c631c105ba@mail.gmail.com>
+Date: Thu, 22 May 2008 17:14:23 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: dhlii@dlasys.net
+Subject: Re: APU FPU in Virtex ppc405
+In-Reply-To: <4835FC73.5080102@dlasys.net>
 MIME-Version: 1.0
-To: linuxppc-embedded <linuxppc-embedded@ozlabs.org>,
-	Shanyuan Gao <sygao.research@gmail.com>,
-	John Bonesio <john.bonesio@xilinx.com>,
-	Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>,
-	Yoshio Kashiwagi <kashiwagi@co-nss.co.jp>,
-	"A. Nolson" <alohanono@gmail.com>,
-	Thomas Werne <thomas.a.werne@jpl.nasa.gov>,
-	Grant Likely <grant.likely@secretlab.ca>
-Subject: APU FPU in Virtex ppc405 
 Content-Type: text/plain; charset=ISO-8859-1
-Reply-To: dhlii@dlasys.net
+References: <4835FC73.5080102@dlasys.net>
+Cc: John Bonesio <john.bonesio@xilinx.com>,
+	Thomas Werne <thomas.a.werne@jpl.nasa.gov>,
+	"A. Nolson" <alohanono@gmail.com>,
+	Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>,
+	Shanyuan Gao <sygao.research@gmail.com>,
+	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -28,19 +32,19 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-   Were the issues associated with getting the Xilinx Floating point APU
-working with Linux completely resolved ?
-    Is there a git tree or patch collection with the appropriate patches
-etc ?
+On Thu, May 22, 2008 at 5:06 PM, David H. Lynch Jr. <dhlii@dlasys.net> wrote:
+>   Were the issues associated with getting the Xilinx Floating point APU
+> working with Linux completely resolved ?
+>    Is there a git tree or patch collection with the appropriate patches
+> etc ?
 
+I had it working at one point ages ago, but that project ended up
+dropping the work and I haven't touched it since.  I think I posted
+the patches but I don't have a link to them easily at hand.
 
+Cheers,
+g.
 
 -- 
-Dave Lynch 					  	    DLA Systems
-Software Development:  				         Embedded Linux
-717.627.3770 	       dhlii@dlasys.net 	  http://www.dlasys.net
-fax: 1.253.369.9244 			           Cell: 1.717.587.7774
-Over 25 years' experience in platforms, languages, and technologies too numerous to list.
-
-"Any intelligent fool can make things bigger and more complex... It takes a touch of genius - and a lot of courage to move in the opposite direction."
-Albert Einstein
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
