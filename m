@@ -1,21 +1,14 @@
-Return-Path: <david-b@pacbell.net>
-Received: from smtp105.sbc.mail.mud.yahoo.com (smtp105.sbc.mail.mud.yahoo.com
-	[68.142.198.204]) by ozlabs.org (Postfix) with SMTP id 13FBADDFA5
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 May 2008 13:45:09 +1000 (EST)
-From: David Brownell <david-b@pacbell.net>
-To: "Grant Likely" <grant.likely@secretlab.ca>
-Subject: Re: [PATCH 3/4] spi: Add OF binding support for SPI busses
-Date: Wed, 21 May 2008 18:16:10 -0700
-References: <20080516193054.28030.35126.stgit@trillian.secretlab.ca>
-	<20080516224916.GA16702@zarina>
-	<fa686aa40805162202m336aade4qd6cfa5b17d6f3892@mail.gmail.com>
-In-Reply-To: <fa686aa40805162202m336aade4qd6cfa5b17d6f3892@mail.gmail.com>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200805211816.10753.david-b@pacbell.net>
-Cc: linuxppc-dev@ozlabs.org, spi-devel-general@lists.sourceforge.net,
-	fabrizio.garetto@gmail.com, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18484.60888.981390.893747@cargo.ozlabs.ibm.com>
+Date: Thu, 22 May 2008 13:51:52 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: luisgpm@linux.vnet.ibm.com
+Subject: Re: [RFC] 4xx hardware watchpoint support
+In-Reply-To: <1211391577.6232.15.camel@gargoyle>
+References: <1211391577.6232.15.camel@gargoyle>
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, Roland McGrath <roland@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,30 +18,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Friday 16 May 2008, Grant Likely wrote:
-> In my mind; platform_data and the device tree are all about the same
-> thing: representation.  In other words, how to describe the
-> configuration of the hardware independent of the driver itself.
+Luis Machado writes:
 
-Platform_data isn't what I'd call independent of drivers.
+> This is a patch that has been sitting idle for quite some time. I
+> decided to move it further because it is something useful. It was
+> originally written by Michel Darneille, based off of 2.6.16.
+> 
+> The original patch, though, was not compatible with the current DABR
+> logic. DABR's are used to implement hardware watchpoint support for
+> ppc64 processors (i.e. 970, Power5 etc). 4xx's have a different
+> debugging register layout and needs to be handled differently (they two
+> registers: DAC and DBCR0).
 
-The reason the data is there in the first place is that
-the driver needs it ... and chose not to hard-wire it.
+Yes, they are different, but they do essentially the same thing, so I
+think we should try and unify the handling of the two.  Maybe you
+could rename set_dabr() to set_hw_watchpoint() or something and make
+it set DABR on 64-bit and "classic" 32-bit processors, and DAC on
+4xx/Book E processors.
 
+Likewise, I don't think we need both a "dabr" field and a "dac" field
+in the thread_struct - one should do.  Rename "dabr" to something else
+if you feel that the "dabr" name is too ppc64-specific.  And I don't
+think we need both __debugger_dabr_match and __debugger_dac_match.
 
-> One of the things I find rather interesting is just how frequently
-> drivers using platform data structures have a big block of code which
-> simply copy pdata fields into identically named fields in the device
-> private data... 
+> 5) This is something i'm worried about for future features. We currently
+> have a way to support only Hardware Watchpoints, but not Hardware
+> Breakpoints (on 64-bit processors that have a IABR register or 32-bit
+> processors carrying the IAC register). Looking at the code, we don't
+> differentiate a watchpoint from a breakpoint request. A ptrace call has
+> currently 3 arguments: REQUEST, ADDR and DATA. We use REQUEST and DATA
+> to set a hardware watchpoint. Maybe we could use the ADDR parameter to
+> set a hardware breakpoint? Or use it to tell the kernel whether we want
+> a hardware watchpoint or hardware breakpoint and then pass the address
+> of the instruction/data through the DATA parameter? What do you think?
 
-... because platform data was designed as a partial template
-for that driver, letting it do that.  (Sometimes without even
-doing scale conversions.)  As drivers grow functionally, they
-sometimes end up needing more platform data fields, to expose
-data that previously didn't matter.
+I would think there would be a different REQUEST value to mean "set a
+hardware breakpoint".  Roland McGrath (cc'd) might be able to tell us
+what other architectures do.
 
-Whether that data can usefully be stored in flash (or ROM)
-and handed out through the bootloader is something of a
-manufacturing issue.
-
-- Dave
+Paul.
