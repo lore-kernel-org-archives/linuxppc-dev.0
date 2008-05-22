@@ -1,22 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 9B7A3DDFC2
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 May 2008 01:22:47 +1000 (EST)
-Subject: Re: Badness seen on 2.6.26-rc2 with lockdep enabled
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: balbir@linux.vnet.ibm.com
-In-Reply-To: <482ADEE0.7090301@linux.vnet.ibm.com>
-References: <482ADEE0.7090301@linux.vnet.ibm.com>
-Content-Type: text/plain
-Date: Thu, 22 May 2008 11:20:41 -0400
-Message-Id: <1211469641.8297.278.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org,
-	linux kernel mailing list <linux-kernel@vger.kernel.org>,
-	Paul Mackerras <pmac@au1.ibm.com>
-Reply-To: benh@kernel.crashing.org
+Return-Path: <djiang@mvista.com>
+Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
+	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id 9A359DDFFD
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 May 2008 02:46:46 +1000 (EST)
+Message-ID: <48359B96.2020303@mvista.com>
+Date: Thu, 22 May 2008 09:13:10 -0700
+From: Dave Jiang <djiang@mvista.com>
+MIME-Version: 1.0
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] edac: mpc85xx - Fix building as a module
+References: <Pine.LNX.4.64.0805212326000.32442@blarg.am.freescale.net>
+In-Reply-To: <Pine.LNX.4.64.0805212326000.32442@blarg.am.freescale.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org,
+	bluesmoke-devel@lists.sourceforge.net,
+	linux-kernel@vger.kernel.org, dougthompson@xmission.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,47 +23,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Acked-by: Dave Jiang <djiang@mvista.com>
 
-On Wed, 2008-05-14 at 18:15 +0530, Balbir Singh wrote:
-> I see the following error on my power box at boot up.
-
-Could be RTAS playing with interrupt enabling without proper
-lockdep notifications. I'll have a look when I'm back.
-
-> RTAS: event: 14, Type: Platform Error, Severity: 2
-> ------------[ cut here ]------------
-> Badness at kernel/lockdep.c:2680
-> NIP: c0000000000ae538 LR: c0000000000ae51c CTR: 0000000000000000
-> REGS: c0000000e7b139a0 TRAP: 0700   Not tainted  (2.6.26-rc2-mm1)
-> MSR: 8000000000029032 <EE,ME,IR,DR>  CR: 24000042  XER: 20000000
-> TASK = c0000000e7644620[411] 'rtasd' THREAD: c0000000e7b10000 CPU: 1
-> GPR00: 0000000000000000 c0000000e7b13c20 c000000000a55ef0 0000000000000001
-> GPR04: 0000000000000001 c00000000004bfb8 2d37313000000000 2d37313031303438
-> GPR08: 3644442000000000 c000000000ea3018 0000000000000020 0000000000000001
-> GPR12: 3644442000000000 c000000000a94600 0000000000000000 0000000000000000
-> GPR16: 0000000000000000 0000000000000000 4000000001c00000 c00000000086f400
-> GPR20: 0000000000000000 0000000000000001 00000000000000e4 000000000246f400
-> GPR24: c000000000a9c498 0000000000000008 c00000000004bfb8 c00000000087a5d8
-> GPR28: c00000000092cd48 0000000000000001 c0000000009bb738 c0000000e7b13c20
-> NIP [c0000000000ae538] .check_flags+0x9c/0x174
-> LR [c0000000000ae51c] .check_flags+0x80/0x174
-> Call Trace:
-> [c0000000e7b13c20] [c00000000004bc70] .pSeries_log_error+0x5c/0x400 (unreliable)
-> [c0000000e7b13ca0] [c0000000000b35c0] .lock_release+0x80/0x204
-> [c0000000e7b13d50] [c0000000005cfcf8] ._spin_unlock_irqrestore+0x34/0x94
-> [c0000000e7b13de0] [c00000000004bfb8] .pSeries_log_error+0x3a4/0x400
-> [c0000000e7b13ef0] [c00000000004c218] .rtasd+0x98/0x100
-> [c0000000e7b13f90] [c00000000002848c] .kernel_thread+0x4c/0x68
-> Instruction dump:
-> e92d01b0 8009085c 2f800000 40be002c 481f1b9d 60000000 2fa30000 419e00c4
-> e93e80f8 80090000 2f800000 409e00b4 <0fe00000> 480000ac 78290464 80090014
-> possible reason: unannotated irqs-on.
-> irq event stamp: 30
-> hardirqs last  enabled at (29): [<c0000000000b1d98>] .trace_hardirqs_on+0x1c/0x3
-> 0
-> hardirqs last disabled at (30): [<c0000000000aebac>] .trace_hardirqs_off+0x1c/0x
-> 30
-> softirqs last  enabled at (28): [<c00000000008bd08>] .__do_softirq+0x180/0x1a8
-> softirqs last disabled at (21): [<c000000000028124>] .call_do_softirq+0x14/0x24
+Kumar Gala wrote:
+> including of <asm/mpc85xx.h> causes build problems since it doesn't exist.
 > 
+> Also removed warning:
+> drivers/edac/mpc85xx_edac.c:45: warning: 'mpc85xx_ctl_name' defined but not used
 > 
+> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+> ---
+> 
+> This is a fix for 2.6.26.
+> 
+> - k
+> 
+>  drivers/edac/mpc85xx_edac.c |    3 ---
+>  1 files changed, 0 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/edac/mpc85xx_edac.c b/drivers/edac/mpc85xx_edac.c
+> index 065732d..d49361b 100644
+> --- a/drivers/edac/mpc85xx_edac.c
+> +++ b/drivers/edac/mpc85xx_edac.c
+> @@ -20,7 +20,6 @@
+> 
+>  #include <linux/of_platform.h>
+>  #include <linux/of_device.h>
+> -#include <asm/mpc85xx.h>
+>  #include "edac_module.h"
+>  #include "edac_core.h"
+>  #include "mpc85xx_edac.h"
+> @@ -43,8 +42,6 @@ static u32 orig_pci_err_en;
+>  static u32 orig_l2_err_disable;
+>  static u32 orig_hid1;
+> 
+> -static const char *mpc85xx_ctl_name = "MPC85xx";
+> -
+>  /************************ MC SYSFS parts ***********************************/
+> 
+>  static ssize_t mpc85xx_mc_inject_data_hi_show(struct mem_ctl_info *mci,
+
+
+-- 
+
+------------------------------------------------------
+Dave Jiang
+Software Engineer
+MontaVista Software, Inc.
+http://www.mvista.com
+------------------------------------------------------
