@@ -1,31 +1,33 @@
-Return-Path: <renaud.barbier@ge.com>
-Received: from ext-nj2ut-2.online-age.net (ext-nj2ut-2.online-age.net
-	[64.14.54.231])
+Return-Path: <paulmck@paulmck-laptop.linux.vnet.ibm.com>
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "ext-nj2ut.online-age.net",
-	Issuer "Savvis Communications Root CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 5B508DE1AD
-	for <linuxppc-dev@ozlabs.org>; Sat, 24 May 2008 00:09:31 +1000 (EST)
-Received: from int-nj2ut-6.online-age.net (int-nj2ut-6.online-age.net
-	[3.159.237.75])
-	by ext-nj2ut-2.online-age.net (8.13.6/8.13.6/20051114-SVVS-TLS-DNSBL)
-	with ESMTP id m4NE2Skg030063
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 May 2008 10:02:28 -0400
-Received: from alpmlip01.e2k.ad.ge.com (int-nj2ut-6.online-age.net
-	[3.159.237.75])
-	by int-nj2ut-6.online-age.net (8.13.6/8.13.6/20050510-SVVS) with ESMTP
-	id m4NE2Stw012066
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 May 2008 10:02:28 -0400
-Received: from [3.26.68.208] (coniston.ramix-uk.cho.ge.com [3.26.68.208])
-	by doyen.ramix-uk.cho.ge.com (Postfix) with ESMTP id EC9B9410F5
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 May 2008 15:02:26 +0100 (BST)
-Message-ID: <4836CE70.3030000@ge.com>
-Date: Fri, 23 May 2008 15:02:24 +0100
-From: Renaud Barbier <renaud.barbier@ge.com>
+	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 02900DE0BC
+	for <linuxppc-dev@ozlabs.org>; Sat, 24 May 2008 00:14:29 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e33.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m4NEELMD001775
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 May 2008 10:14:21 -0400
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m4NEE631034162
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 May 2008 08:14:21 -0600
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m4NEE5Zx019882
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 May 2008 08:14:05 -0600
+Date: Fri, 23 May 2008 07:14:03 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [PATCH] rcupreempt: remove export of rcu_batches_completed_bh
+Message-ID: <20080523141403.GA8798@linux.vnet.ibm.com>
+References: <Pine.LNX.4.58.0805221415330.14724@gandalf.stny.rr.com>
 MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: 405EP PCI arbiter bit
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.58.0805221415330.14724@gandalf.stny.rr.com>
+Cc: linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@elte.hu>, paulus@samba.org,
+	LKML <linux-kernel@vger.kernel.org>
+Reply-To: paulmck@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,20 +37,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello,
-I noticed that on my  405EP board (made in-house), the PCI Arbiter bit 
-is not set
-in the CPC0_PCI register even though CPC0_PCI[PAE] bit 5 is set in the 
-serial EEPROM.
-Other registers (PLL,...) bits are set correctly and got their value 
-from the IIC.
+On Thu, May 22, 2008 at 02:18:17PM -0400, Steven Rostedt wrote:
+> 
+> In rcupreempt, rcu_batches_completed_bh is defined as a static inline in
+> the header file. This does not need to be exported, and not only that,
+> this breaks my PPC build.
 
-I check the value of I2C and CPC0_PCI[PAE] bits under U-boot and nothing 
-in the code
-seems to clear this register bit(CPC0_PCI[PAE]).
+Good catch!!!
 
-Is there any errata regarding these CPU I have missed or should I keep 
-investigating
-the hardware side?
+Reviewed-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 
-thanks.
+> Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+> ---
+>  kernel/rcupreempt.c |    2 --
+>  1 file changed, 2 deletions(-)
+> 
+> Index: linux-tip.git/kernel/rcupreempt.c
+> ===================================================================
+> --- linux-tip.git.orig/kernel/rcupreempt.c	2008-05-22 11:12:30.000000000 -0700
+> +++ linux-tip.git/kernel/rcupreempt.c	2008-05-22 11:12:33.000000000 -0700
+> @@ -217,8 +217,6 @@ long rcu_batches_completed(void)
+>  }
+>  EXPORT_SYMBOL_GPL(rcu_batches_completed);
+> 
+> -EXPORT_SYMBOL_GPL(rcu_batches_completed_bh);
+> -
+>  void __rcu_read_lock(void)
+>  {
+>  	int idx;
+> 
