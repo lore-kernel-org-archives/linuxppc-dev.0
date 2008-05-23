@@ -1,16 +1,20 @@
-Return-Path: <Emilian.Medve@freescale.com>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 0A8FADE4CE
+	for <linuxppc-dev@ozlabs.org>; Sat, 24 May 2008 00:24:51 +1000 (EST)
+Date: Fri, 23 May 2008 09:42:00 -0500
+From: Olof Johansson <olof@lixom.net>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [PATCH 07/12] pcmcia: use linux/of_{device,platform}.h instead
+	of asm
+Message-ID: <20080523144200.GA2103@lixom.net>
+References: <20080523161627.a75d5010.sfr@canb.auug.org.au>
+	<20080523163108.2762a15a.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Subject: RE: [PATCH] [POWERPC] Fix return value check logic
-Date: Fri, 23 May 2008 07:19:26 -0700
-Message-ID: <598D5675D34BE349929AF5EDE9B03E2701F4828E@az33exm24.fsl.freescale.net>
-In-Reply-To: <1211505190.7671.6.camel@localhost>
-References: <1211485762-29637-1-git-send-email-Emilian.Medve@Freescale.com>
-	<1211505190.7671.6.camel@localhost>
-From: "Medve Emilian" <Emilian.Medve@freescale.com>
-To: <michael@ellerman.id.au>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080523163108.2762a15a.sfr@canb.auug.org.au>
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, linux-pcmcia@lists.infradead.org,
+	vbordug@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,15 +24,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello Michael,
+On Fri, May 23, 2008 at 04:31:08PM +1000, Stephen Rothwell wrote:
+> 
+> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 
+Acked-by: Olof Johansson <olof@lixom.net>
 
-> That won't work if CONFIG_DEBUG_FS is not defined, because in=20
-> that case
-> debugfs_create_file() returns -ENODEV.
-
-Will respin.
-
-
-Thanks,
-Emil.
+> ---
+>  drivers/pcmcia/electra_cf.c  |    2 +-
+>  drivers/pcmcia/m8xx_pcmcia.c |    4 ++--
+>  2 files changed, 3 insertions(+), 3 deletions(-)
