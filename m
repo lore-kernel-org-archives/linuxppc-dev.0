@@ -1,23 +1,20 @@
-Return-Path: <npiggin@suse.de>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 73349DDFBA
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 May 2008 16:25:16 +1000 (EST)
-Date: Fri, 23 May 2008 08:25:11 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: kniht@linux.vnet.ibm.com
-Subject: Re: [PATCH 1/6 v2] allow arch specific function for allocating
-	gigantic pages
-Message-ID: <20080523062511.GA10687@wotan.suse.de>
-References: <4829CAC3.30900@us.ibm.com> <4829CDA8.9070106@us.ibm.com>
-Mime-Version: 1.0
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4829CDA8.9070106@us.ibm.com>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, linux-kernel@vger.kernel.org,
-	Linux Memory Management List <linux-mm@kvack.org>,
-	Andi Kleen <andi@firstfloor.org>, Paul Mackerras <paulus@samba.org>,
-	Nishanth Aravamudan <nacc@us.ibm.com>
+Message-ID: <18486.26325.220602.226442@cargo.ozlabs.ibm.com>
+Date: Fri, 23 May 2008 16:40:21 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Nick Piggin <npiggin@suse.de>
+Subject: Re: [patch 1/2] powerpc: rmb fix
+In-Reply-To: <20080523054846.GA4520@wotan.suse.de>
+References: <20080521141056.GC8897@wotan.suse.de>
+	<1211383623.8297.197.camel@pasglop>
+	<20080521153247.GF8897@wotan.suse.de>
+	<18486.10385.934128.122054@cargo.ozlabs.ibm.com>
+	<20080523044052.GA13071@wotan.suse.de>
+	<18486.19905.421960.700640@cargo.ozlabs.ibm.com>
+	<20080523054846.GA4520@wotan.suse.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,117 +24,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, May 13, 2008 at 12:19:36PM -0500, Jon Tollefson wrote:
-> Allow alloc_bm_huge_page() to be overridden by architectures that can't
-> always use bootmem. This requires huge_boot_pages to be available for
-> use by this function. The 16G pages on ppc64 have to be reserved prior
-> to boot-time. The location of these pages are indicated in the device
-> tree.
+Nick Piggin writes:
 
-That looks fine. I wonder if we should call it something else now?
-Anyway, nevermind naming for the moment.
+> Anyway, even if there were zero, then the point is still that you
+> implement that API, so you should either strongly order your
+> __raw_ and _relaxed then you can weaken your rmb, or you have to
+> strengthen your rmb to match your weak read ops.
+> 
+> Saying it doesn't matter because there are no drivers is likely to
+> cause more headaches in future...
 
+Well, it seems that rmb is used in several ways:
 
-> A BUG_ON in huge_add_hstate is commented out in order to allow 64K huge
-> pages to continue to work on power.
+(1) to order reads from normal memory w.r.t. each other
+(2) to order readl et al. w.r.t. reads from normal memory
+(3) to order readl_relaxed et al. w.r.t. reads from normal memory
 
-Fine. I'll remove the BUG_ON completely from where it was
-introduced.
+and I want to get a feeling for how prevalent each type of use is.
 
+Now, the instances of (1) can presumably be converted to smb_rmb().
+The instances of (2) aren't necessary on powerpc because readl
+etc. are fully synchronous -- but that mightn't be true on other
+platforms.  And for the instances of (3), powerpc needs to use sync,
+as you say.
 
-> Signed-off-by: Jon Tollefson <kniht@linux.vnet.ibm.com>
-> ---
-> 
-> include/linux/hugetlb.h |   10 ++++++++++
-> mm/hugetlb.c            |   15 ++++++---------
-> 2 files changed, 16 insertions(+), 9 deletions(-)
-> 
-> 
-> diff --git a/include/linux/hugetlb.h b/include/linux/hugetlb.h
-> index 8c47ca7..b550ec7 100644
-> --- a/include/linux/hugetlb.h
-> +++ b/include/linux/hugetlb.h
-> @@ -35,6 +35,7 @@ void hugetlb_unreserve_pages(struct inode *inode, long 
-> offset, long freed);
-> extern unsigned long hugepages_treat_as_movable;
-> extern const unsigned long hugetlb_zero, hugetlb_infinity;
-> extern int sysctl_hugetlb_shm_group;
-> +extern struct list_head huge_boot_pages;
-> 
-> /* arch callbacks */
-> 
-> @@ -205,6 +206,14 @@ struct hstate {
-> 	unsigned int surplus_huge_pages_node[MAX_NUMNODES];
-> };
-> 
-> +struct huge_bm_page {
-> +	struct list_head list;
-> +	struct hstate *hstate;
-> +};
-> +
-> +/* arch callback */
-> +int alloc_bm_huge_page(struct hstate *h);
-> +
-> void __init huge_add_hstate(unsigned order);
-> struct hstate *size_to_hstate(unsigned long size);
-> 
-> @@ -256,6 +265,7 @@ extern unsigned long 
-> sysctl_overcommit_huge_pages[HUGE_MAX_HSTATE];
-> 
-> #else
-> struct hstate {};
-> +#define alloc_bm_huge_page(h) NULL
-> #define hstate_file(f) NULL
-> #define hstate_vma(v) NULL
-> #define hstate_inode(i) NULL
-> diff --git a/mm/hugetlb.c b/mm/hugetlb.c
-> index 5273f6c..efb5805 100644
-> --- a/mm/hugetlb.c
-> +++ b/mm/hugetlb.c
-> @@ -27,6 +27,7 @@ unsigned long max_huge_pages[HUGE_MAX_HSTATE];
-> unsigned long sysctl_overcommit_huge_pages[HUGE_MAX_HSTATE];
-> static gfp_t htlb_alloc_mask = GFP_HIGHUSER;
-> unsigned long hugepages_treat_as_movable;
-> +struct list_head huge_boot_pages;
-> 
-> static int max_hstate = 0;
-> 
-> @@ -533,14 +534,8 @@ static struct page *alloc_huge_page(struct 
-> vm_area_struct *vma,
-> 	return page;
-> }
-> 
-> -static __initdata LIST_HEAD(huge_boot_pages);
-> -
-> -struct huge_bm_page {
-> -	struct list_head list;
-> -	struct hstate *hstate;
-> -};
-> -
-> -static int __init alloc_bm_huge_page(struct hstate *h)
-> +/* Can be overriden by architectures */
-> +__attribute__((weak)) int alloc_bm_huge_page(struct hstate *h)
-> {
-> 	struct huge_bm_page *m;
-> 	int nr_nodes = nodes_weight(node_online_map);
-> @@ -583,6 +578,8 @@ static void __init hugetlb_init_hstate(struct hstate *h)
-> 	unsigned long i;
-> 
-> 	/* Don't reinitialize lists if they have been already init'ed */
-> +	if (!huge_boot_pages.next)
-> +		INIT_LIST_HEAD(&huge_boot_pages);
-> 	if (!h->hugepage_freelists[0].next) {
-> 		for (i = 0; i < MAX_NUMNODES; ++i)
-> 			INIT_LIST_HEAD(&h->hugepage_freelists[i]);
-> @@ -664,7 +661,7 @@ void __init huge_add_hstate(unsigned order)
-> 		return;
-> 	}
-> 	BUG_ON(max_hstate >= HUGE_MAX_HSTATE);
-> -	BUG_ON(order < HPAGE_SHIFT - PAGE_SHIFT);
-> +/*	BUG_ON(order < HPAGE_SHIFT - PAGE_SHIFT);*/
-> 	h = &hstates[max_hstate++];
-> 	h->order = order;
-> 	h->mask = ~((1ULL << (order + PAGE_SHIFT)) - 1);
-> 
-> 
-> 
+If the instances of (2) have to stay, then I would rather try to work
+out some way that rmb doesn't have to be a sync, or at least doesn't
+always have to be a sync.  And that might mean redefining the meaning
+of rmb so that the instances of (3) have to be changed to something
+else.  Since (3) seems to be rarer than (2), it would presumably be
+(3) that we would change rather than (2).
+
+Paul.
