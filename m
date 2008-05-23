@@ -1,15 +1,24 @@
-Return-Path: <runet@innovsys.com>
-Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
-	by ozlabs.org (Postfix) with ESMTP id 99C73DE16D
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 May 2008 00:14:19 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: FW: 1 GB lowmem
-Date: Thu, 22 May 2008 09:14:58 -0500
-Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B046E7C6E@ismail.innsys.innovsys.com>
-From: "Rune Torgersen" <runet@innovsys.com>
-To: <linuxppc-dev@ozlabs.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id D7B19DE173
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 May 2008 00:25:21 +1000 (EST)
+Subject: Re: [PATCH] [POWERPC] Improve (in|out)_beXX() asm code
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: David Miller <davem@davemloft.net>
+In-Reply-To: <20080520.155326.195407196.davem@davemloft.net>
+References: <4833524C.3040207@freescale.com>
+	<20080520.153947.84346222.davem@davemloft.net>
+	<4833542E.3040608@freescale.com>
+	<20080520.155326.195407196.davem@davemloft.net>
+Content-Type: text/plain
+Date: Fri, 23 May 2008 00:24:43 -0400
+Message-Id: <1211516683.8297.271.camel@pasglop>
+Mime-Version: 1.0
+Cc: scottwood@freescale.com, linuxppc-dev@ozlabs.org, tpiepho@freescale.com,
+	alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,40 +28,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
-> On May 21, 2008, at 4:24 PM, Rune Torgersen wrote:
->=20
->> Kumar Gala wrote:
->>> On May 21, 2008, at 3:55 PM, Rune Torgersen wrote:
->>>> Argh... Found it. Had to set CONFIG_TASK_SIZE to 0x80000000. Now it
->>>> works in both vaniulla an d RT kernel.
->>>=20
->>> We should really add some sanity check on CONFIG_TASK_SIZE vs
->>> KERNEL_START.
->>=20
->> Something like this?
->> Wording sould probablyy be a bit different/cleare.
->>=20
->> diff --git a/include/asm-powerpc/processor.h
->> b/include/asm-powerpc/processor.h
->> index fd98ca9..72e0e3f 100644
->> --- a/include/asm-powerpc/processor.h
->> +++ b/include/asm-powerpc/processor.h
->> @@ -81,6 +81,10 @@ extern struct task_struct *last_task_used_altivec;
->> extern struct task_struct *last_task_used_spe;
->>=20
->> #ifdef CONFIG_PPC32
->> +
->> +#if CONFIG_TASK_SIZE > CONFIG_KERNEL_START
->> +#error User TASK_SIZE overlaps with KERNEL_START address
->> +#endif
->> #define TASK_SIZE      (CONFIG_TASK_SIZE)
->>=20
->> /* This decides where the kernel will search for a free chunk of vm
->>=20
->=20
-> something like that would be good.  is there really anything PPC32
-> specific about it?=20
->=20
-Probably not. Could this be done in the Kconfig file instead?. Don't
-know if Kconfig supports doing a comparison.
+
+On Tue, 2008-05-20 at 15:53 -0700, David Miller wrote:
+> From: Scott Wood <scottwood@freescale.com>
+> Date: Tue, 20 May 2008 17:43:58 -0500
+> 
+> > David Miller wrote:
+> > > The __volatile__ in the asm construct disallows movement of the
+> > > inline asm relative to statements surrounding it.
+> > > 
+> > > The only reason barrier() in kernel.h needs a memory clobber is
+> > > because of a bug in ancient versions of gcc.  In fact, I think
+> > > that memory clobber might even be removable.
+> > 
+> > Current versions of GCC seem quite happy to move non-asm memory accesses 
+> > around a volatile asm without a memory clobber; see the test Trent posted.
+> 
+> Indeed, and even the GCC manual is clear about this.
+
+So what is the scope of that problem ?
+
+IE. Take an x86 version of that test, writing to memory, doing a writel
+to some MMIO, then another memory write, can those be re-ordered with
+the current x86 version of writel ?
+
+static inline void writel(unsigned int b, volatile void __iomem *addr)
+{
+	*(volatile unsigned int __force *)addr = b;
+}
+
+This is becoming a serious issue...
+
+Ben.
