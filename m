@@ -1,17 +1,18 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 7FC07DE052
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 May 2008 16:43:25 +1000 (EST)
-Date: Fri, 23 May 2008 16:37:58 +1000
+	by ozlabs.org (Postfix) with ESMTP id 9C5FBDE0B2
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 May 2008 16:43:28 +1000 (EST)
+Date: Fri, 23 May 2008 16:39:58 +1000
 From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Sylvain Munaut <tnt@246tNt.com>
-Subject: [PATCH 10/12] ohci-ppc-of: use linux/of_platform.h instead of asm
-Message-Id: <20080523163758.4edcdef4.sfr@canb.auug.org.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH 11/12] platinumfb: use linux/of_{device,platform}.h instead
+	of asm
+Message-Id: <20080523163958.c4236156.sfr@canb.auug.org.au>
 In-Reply-To: <20080523161627.a75d5010.sfr@canb.auug.org.au>
 References: <20080523161627.a75d5010.sfr@canb.auug.org.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>, Greg KH <greg@kroah.com>
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,23 +25,27 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
- drivers/usb/host/ohci-ppc-of.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/video/platinumfb.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/usb/host/ohci-ppc-of.c b/drivers/usb/host/ohci-ppc-of.c
-index 50e55db..7ac5326 100644
---- a/drivers/usb/host/ohci-ppc-of.c
-+++ b/drivers/usb/host/ohci-ppc-of.c
-@@ -14,8 +14,8 @@
-  */
- 
- #include <linux/signal.h>
+diff --git a/drivers/video/platinumfb.c b/drivers/video/platinumfb.c
+index cbe71a5..03b3670 100644
+--- a/drivers/video/platinumfb.c
++++ b/drivers/video/platinumfb.c
+@@ -31,11 +31,11 @@
+ #include <linux/fb.h>
+ #include <linux/init.h>
+ #include <linux/nvram.h>
++#include <linux/of_device.h>
 +#include <linux/of_platform.h>
- 
--#include <asm/of_platform.h>
+ #include <asm/io.h>
  #include <asm/prom.h>
+ #include <asm/pgtable.h>
+-#include <asm/of_device.h>
+-#include <asm/of_platform.h>
  
- 
+ #include "macmodes.h"
+ #include "platinumfb.h"
 -- 
 1.5.5.1
 
