@@ -1,24 +1,17 @@
-Return-Path: <npiggin@suse.de>
-Received: from mx2.suse.de (ns2.suse.de [195.135.220.15])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 2409FDE093
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 May 2008 15:48:53 +1000 (EST)
-Date: Fri, 23 May 2008 07:48:47 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [patch 1/2] powerpc: rmb fix
-Message-ID: <20080523054846.GA4520@wotan.suse.de>
-References: <20080521141056.GC8897@wotan.suse.de>
-	<1211383623.8297.197.camel@pasglop>
-	<20080521153247.GF8897@wotan.suse.de>
-	<18486.10385.934128.122054@cargo.ozlabs.ibm.com>
-	<20080523044052.GA13071@wotan.suse.de>
-	<18486.19905.421960.700640@cargo.ozlabs.ibm.com>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH] powerpc ptrace block-step
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Roland McGrath <roland@redhat.com>
+In-Reply-To: <20080502065145.B4FCA26FA07@magilla.localdomain>
+References: <20080502065145.B4FCA26FA07@magilla.localdomain>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-iHwnAWsEKcqsWYj/xk/p"
+Date: Fri, 23 May 2008 16:21:44 +1000
+Message-Id: <1211523704.27274.8.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <18486.19905.421960.700640@cargo.ozlabs.ibm.com>
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,23 +21,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, May 23, 2008 at 02:53:21PM +1000, Paul Mackerras wrote:
-> Nick Piggin writes:
-> 
-> > There don't seem to actually be read*_relaxed calls that also use rmb
-> > in the same file (although there is no reason why they might not appear).
-> > But I must be thinking of are the raw_read accessors. They aren't ordered
-> > on powerpc, and a few drivers appear to hope rmb() will order them.
-> 
-> Which drivers?
 
-net/macb.c, net/sfc/falcon_io.c... hmm, I thought there was a couple
-more but maybe I was thinking of write side.
+--=-iHwnAWsEKcqsWYj/xk/p
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Anyway, even if there were zero, then the point is still that you
-implement that API, so you should either strongly order your
-__raw_ and _relaxed then you can weaken your rmb, or you have to
-strengthen your rmb to match your weak read ops.
+On Thu, 2008-05-01 at 23:51 -0700, Roland McGrath wrote:
+> I didn't test the booke variant of this (I don't have that hardware).
+> I only tested it on a Mac G5 (ppc64, 970FX).
+>=20
+> There is a test program at:
+>=20
+> http://sources.redhat.com/cgi-bin/cvsweb.cgi/~checkout~/tests/ptrace-test=
+s/tests/block-step.c?cvsroot=3Dsystemtap
+>=20
+> To build that program for powerpc, remove the && 0 from this line:
+>=20
+> # elif defined __powerpc__  && 0	/* XXX not upstream yet */
+>=20
+> and compile with -D_GNU_SOURCE.
 
-Saying it doesn't matter because there are no drivers is likely to
-cause more headaches in future...
+I ran this on a power3 and it worked fine, by which I mean the testcase
+didn't hit any assertions AFAICT and returned 0.
+
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-iHwnAWsEKcqsWYj/xk/p
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBINmJ4dSjSd0sB4dIRAmW1AJ9BqXtvXjQZtnGStTA/2fyC14pWRQCgvUMq
+pXjg/k5vdZofxuhQS3KS5dw=
+=SOrn
+-----END PGP SIGNATURE-----
+
+--=-iHwnAWsEKcqsWYj/xk/p--
