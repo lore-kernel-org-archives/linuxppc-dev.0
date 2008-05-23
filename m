@@ -1,12 +1,12 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id C18F2DDFF7
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 May 2008 16:43:07 +1000 (EST)
-Date: Fri, 23 May 2008 16:20:05 +1000
+	by ozlabs.org (Postfix) with ESMTP id 94647DDFE3
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 May 2008 16:43:08 +1000 (EST)
+Date: Fri, 23 May 2008 16:22:42 +1000
 From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Olof Johansson <olof@lixom.net>
-Subject: [PATCH 02/12] pasemi-rng: use linux/of_platform.h instead of asm
-Message-Id: <20080523162005.5b893a90.sfr@canb.auug.org.au>
+To: Corey Minyard <cminyard@mvista.com>
+Subject: [PATCH 03/12] ipmi: use linux/of_{device,platform}.h instead of asm
+Message-Id: <20080523162242.a040604a.sfr@canb.auug.org.au>
 In-Reply-To: <20080523161627.a75d5010.sfr@canb.auug.org.au>
 References: <20080523161627.a75d5010.sfr@canb.auug.org.au>
 Mime-Version: 1.0
@@ -24,25 +24,26 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
- drivers/char/hw_random/pasemi-rng.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/char/ipmi/ipmi_si_intf.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/char/hw_random/pasemi-rng.c b/drivers/char/hw_random/pasemi-rng.c
-index 6d50e9b..7fa61dd 100644
---- a/drivers/char/hw_random/pasemi-rng.c
-+++ b/drivers/char/hw_random/pasemi-rng.c
-@@ -24,7 +24,7 @@
- #include <linux/platform_device.h>
- #include <linux/hw_random.h>
- #include <linux/delay.h>
--#include <asm/of_platform.h>
-+#include <linux/of_platform.h>
- #include <asm/io.h>
+diff --git a/drivers/char/ipmi/ipmi_si_intf.c b/drivers/char/ipmi/ipmi_si_intf.c
+index 1926883..f52931e 100644
+--- a/drivers/char/ipmi/ipmi_si_intf.c
++++ b/drivers/char/ipmi/ipmi_si_intf.c
+@@ -66,8 +66,8 @@
+ #include <linux/ctype.h>
  
- #define SDCRNG_CTL_REG			0x00
+ #ifdef CONFIG_PPC_OF
+-#include <asm/of_device.h>
+-#include <asm/of_platform.h>
++#include <linux/of_device.h>
++#include <linux/of_platform.h>
+ #endif
+ 
+ #define PFX "ipmi_si: "
 -- 
 1.5.5.1
-
 
 -- 
 Cheers,
