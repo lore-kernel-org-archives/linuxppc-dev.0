@@ -1,22 +1,21 @@
-Return-Path: <sygao.research@gmail.com>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.242])
-	by ozlabs.org (Postfix) with ESMTP id 9C935DE010
+Return-Path: <john.bonesio@xilinx.com>
+Received: from outbound5-dub-R.bigfish.com (outbound-dub.frontbridge.com
+	[213.199.154.16])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id BDEEEDE00F
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 23 May 2008 09:47:48 +1000 (EST)
-Received: by an-out-0708.google.com with SMTP id c34so72924anc.78
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 22 May 2008 16:47:47 -0700 (PDT)
+	Fri, 23 May 2008 11:09:15 +1000 (EST)
+Subject: Re: APU FPU in Virtex ppc405
+From: John Bonesio <john.bonesio@xilinx.com>
+To: dhlii@dlasys.net
 In-Reply-To: <4835FC73.5080102@dlasys.net>
 References: <4835FC73.5080102@dlasys.net>
-Mime-Version: 1.0 (Apple Message framework v753)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <B73A6511-C11B-43C3-A42E-53D8816CF608@gmail.com>
-From: Shanyuan Gao <sygao.research@gmail.com>
-Subject: Re: APU FPU in Virtex ppc405 
-Date: Thu, 22 May 2008 19:47:39 -0400
-To: dhlii@dlasys.net
-Cc: John Bonesio <john.bonesio@xilinx.com>,
-	Thomas Werne <thomas.a.werne@jpl.nasa.gov>,
+Content-Type: text/plain
+Date: Thu, 22 May 2008 18:09:08 -0700
+Mime-Version: 1.0
+Message-Id: <20080523010910.1976B408066@mail161-dub.bigfish.com>
+Cc: Thomas Werne <thomas.a.werne@jpl.nasa.gov>,
 	"A. Nolson" <alohanono@gmail.com>,
 	Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>,
 	Shanyuan Gao <sygao.research@gmail.com>,
@@ -31,41 +30,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Yes, it's working under Linux.  Just do as John, Steve, and Yoshio  
-suggest.  That should work then.  My problem was that our own cross- 
-tool was not working correctly.  But we will fix it in next couple of  
-weeks.
+My understanding is that with the fpu on the ppc405 (not ppc440), the
+processor clock rate had to be reduced for the fpu to work. This ended
+up negating much of the performance benefits of using the fpu.
 
-I did very primitive changes and didn't have a patch.  In next few  
-weeks we might want to go for powerpc tree then, so  I will try to do  
-it all over again.
+I don't know the specifics offhand, but Xilinx answer records can be
+searched. Hopefully I'm wrong, and there can still be a benefit to using
+the ppc405 fpu.
 
-
-
-Shan
+- John
 
 
-On May 22, 2008, at 7:06 PM, David H. Lynch Jr. wrote:
-
->    Were the issues associated with getting the Xilinx Floating  
-> point APU
+On Thu, 2008-05-22 at 19:06 -0400, David H. Lynch Jr. wrote:
+>    Were the issues associated with getting the Xilinx Floating point APU
 > working with Linux completely resolved ?
->     Is there a git tree or patch collection with the appropriate  
-> patches
+>     Is there a git tree or patch collection with the appropriate patches
 > etc ?
->
->
->
-> -- 
-> Dave Lynch 					  	    DLA Systems
-> Software Development:  				         Embedded Linux
-> 717.627.3770 	       dhlii@dlasys.net 	  http://www.dlasys.net
-> fax: 1.253.369.9244 			           Cell: 1.717.587.7774
-> Over 25 years' experience in platforms, languages, and technologies  
-> too numerous to list.
->
-> "Any intelligent fool can make things bigger and more complex... It  
-> takes a touch of genius - and a lot of courage to move in the  
-> opposite direction."
-> Albert Einstein
->
+> 
+> 
+> 
+
+________________________________________________________________________
+
+John Bonesio
+Commercial Linux Solutions
+john.bonesio@xilinx.com
+(408) 879-5569
+
+This email and any attachments are intended for the sole use of the named recipient(s) and contain(s) confidential information that may be proprietary, privileged or copyrighted under applicable law. If you are not the intended recipient, do not read, copy, or forward this email message or any attachments. Delete this email message and any attachments immediately.
