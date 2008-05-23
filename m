@@ -1,18 +1,17 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 9C5FBDE0B2
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 May 2008 16:43:28 +1000 (EST)
-Date: Fri, 23 May 2008 16:39:58 +1000
+	by ozlabs.org (Postfix) with ESMTP id 1EF95DE156
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 May 2008 16:43:31 +1000 (EST)
+Date: Fri, 23 May 2008 16:42:56 +1000
 From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 11/12] platinumfb: use linux/of_{device,platform}.h instead
-	of asm
-Message-Id: <20080523163958.c4236156.sfr@canb.auug.org.au>
+To: wim@iguana.be
+Subject: [PATCH 12/12] mpc5200_wdt: use linux/of_platform.h instead of asm
+Message-Id: <20080523164256.3cd3b613.sfr@canb.auug.org.au>
 In-Reply-To: <20080523161627.a75d5010.sfr@canb.auug.org.au>
 References: <20080523161627.a75d5010.sfr@canb.auug.org.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>, paulus@samba.org
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, Domen Puncer <domen.puncer@telargo.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,27 +24,22 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
- drivers/video/platinumfb.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/watchdog/mpc5200_wdt.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/video/platinumfb.c b/drivers/video/platinumfb.c
-index cbe71a5..03b3670 100644
---- a/drivers/video/platinumfb.c
-+++ b/drivers/video/platinumfb.c
-@@ -31,11 +31,11 @@
- #include <linux/fb.h>
- #include <linux/init.h>
- #include <linux/nvram.h>
-+#include <linux/of_device.h>
-+#include <linux/of_platform.h>
- #include <asm/io.h>
- #include <asm/prom.h>
- #include <asm/pgtable.h>
--#include <asm/of_device.h>
+diff --git a/drivers/watchdog/mpc5200_wdt.c b/drivers/watchdog/mpc5200_wdt.c
+index 80a91d4..77c1c2a 100644
+--- a/drivers/watchdog/mpc5200_wdt.c
++++ b/drivers/watchdog/mpc5200_wdt.c
+@@ -4,7 +4,7 @@
+ #include <linux/watchdog.h>
+ #include <linux/io.h>
+ #include <linux/spinlock.h>
 -#include <asm/of_platform.h>
++#include <linux/of_platform.h>
+ #include <asm/uaccess.h>
+ #include <asm/mpc52xx.h>
  
- #include "macmodes.h"
- #include "platinumfb.h"
 -- 
 1.5.5.1
 
