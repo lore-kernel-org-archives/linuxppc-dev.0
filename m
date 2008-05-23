@@ -1,20 +1,16 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18486.26325.220602.226442@cargo.ozlabs.ibm.com>
-Date: Fri, 23 May 2008 16:40:21 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Nick Piggin <npiggin@suse.de>
-Subject: Re: [patch 1/2] powerpc: rmb fix
-In-Reply-To: <20080523054846.GA4520@wotan.suse.de>
-References: <20080521141056.GC8897@wotan.suse.de>
-	<1211383623.8297.197.camel@pasglop>
-	<20080521153247.GF8897@wotan.suse.de>
-	<18486.10385.934128.122054@cargo.ozlabs.ibm.com>
-	<20080523044052.GA13071@wotan.suse.de>
-	<18486.19905.421960.700640@cargo.ozlabs.ibm.com>
-	<20080523054846.GA4520@wotan.suse.de>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 2B810DDFE3
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 May 2008 16:43:07 +1000 (EST)
+Date: Fri, 23 May 2008 16:16:27 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: [PATCH 01/12] pata_mpc52xx: use linux/of_platform.h instead of asm
+Message-Id: <20080523161627.a75d5010.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, Tejun Heo <htejun@gmail.com>,
+	Sylvain Munaut <tnt@246tNt.com>, Jeff Garzik <jeff@garzik.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,35 +20,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Nick Piggin writes:
 
-> Anyway, even if there were zero, then the point is still that you
-> implement that API, so you should either strongly order your
-> __raw_ and _relaxed then you can weaken your rmb, or you have to
-> strengthen your rmb to match your weak read ops.
-> 
-> Saying it doesn't matter because there are no drivers is likely to
-> cause more headaches in future...
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ drivers/ata/pata_mpc52xx.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Well, it seems that rmb is used in several ways:
+I am not sure who wants to take this.
 
-(1) to order reads from normal memory w.r.t. each other
-(2) to order readl et al. w.r.t. reads from normal memory
-(3) to order readl_relaxed et al. w.r.t. reads from normal memory
+diff --git a/drivers/ata/pata_mpc52xx.c b/drivers/ata/pata_mpc52xx.c
+index bc79df6..a9e8273 100644
+--- a/drivers/ata/pata_mpc52xx.c
++++ b/drivers/ata/pata_mpc52xx.c
+@@ -16,10 +16,10 @@
+ #include <linux/slab.h>
+ #include <linux/delay.h>
+ #include <linux/libata.h>
++#include <linux/of_platform.h>
+ 
+ #include <asm/types.h>
+ #include <asm/prom.h>
+-#include <asm/of_platform.h>
+ #include <asm/mpc52xx.h>
+ 
+ 
+-- 
+1.5.5.1
 
-and I want to get a feeling for how prevalent each type of use is.
-
-Now, the instances of (1) can presumably be converted to smb_rmb().
-The instances of (2) aren't necessary on powerpc because readl
-etc. are fully synchronous -- but that mightn't be true on other
-platforms.  And for the instances of (3), powerpc needs to use sync,
-as you say.
-
-If the instances of (2) have to stay, then I would rather try to work
-out some way that rmb doesn't have to be a sync, or at least doesn't
-always have to be a sync.  And that might mean redefining the meaning
-of rmb so that the instances of (3) have to be changed to something
-else.  Since (3) seems to be rarer than (2), it would presumably be
-(3) that we would change rather than (2).
-
-Paul.
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
