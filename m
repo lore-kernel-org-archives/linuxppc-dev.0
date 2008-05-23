@@ -1,22 +1,9 @@
-Return-Path: <david-b@pacbell.net>
-Received: from smtp123.sbc.mail.sp1.yahoo.com (smtp123.sbc.mail.sp1.yahoo.com
-	[69.147.64.96]) by ozlabs.org (Postfix) with SMTP id 40DA5DE04A
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 May 2008 13:37:23 +1000 (EST)
-From: David Brownell <david-b@pacbell.net>
-To: spi-devel-general@lists.sourceforge.net
-Subject: Re: [spi-devel-general] [PATCH 3/4] spi: Add OF binding support for
-	SPI busses
-Date: Thu, 22 May 2008 19:26:23 -0700
-References: <20080516193054.28030.35126.stgit@trillian.secretlab.ca>
-	<716a0f1b6c9a544b480c06a329072483@kernel.crashing.org>
-	<fa686aa40805211233h72a258bpf8c945b9f662d6ee@mail.gmail.com>
-In-Reply-To: <fa686aa40805211233h72a258bpf8c945b9f662d6ee@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200805221926.24112.david-b@pacbell.net>
-Cc: fabrizio.garetto@gmail.com, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Return-Path: <michael@ozlabs.org>
+To: <linuxppc-dev@ozlabs.org>
+Message-Id: <f72407c637eb1c118888d9f7db0eddf77257467b.1211516494.git.michael@ellerman.id.au>
+From: Michael Ellerman <michael@ellerman.id.au>
+Subject: [PATCH 1/1] Merge Axon MSI trigger debugging
+Date: Fri, 23 May 2008 14:21:30 +1000 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,26 +13,110 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 21 May 2008, Grant Likely wrote:
-> > spi-controller {
-> >        #address-cells = 2;
-> >        #size-cells = 0;
-> >        some-device@0,f000 { reg = < 0 f000 >; } // CS 0, SPI address f000
-> >        some-device@1,f000 { reg = < 1 f000 >; } // CS 1, SPI address f000
-> >        some-device@1,ff00 { reg = < 1 ff00 >; } // CS 1, SPI address ff00
-> > }
-> 
-> For SPI the CS # *is* the address.  :-)
-> 
-> Unlike I2C, SPI doesn't impose any protocol on the data.  It is all
-> anonymous data out, anonymous data in, a clock and a chip select.
+This patch adds some debugging code to the Axon MSI driver. It creates
+a file per MSIC in /sys/kernel/debug/powerpc, which allows the user to
+trigger a fake MSI interrupt by writing to the file.
 
-Very true ... but then there are SPI chips which embed addressing.
+This can be used to test some of the MSI generation path. In particular
+that the MSIC recognises a write to the MSI address, generates an
+interrupt and writes the MSI packet into the ring buffer.
 
-I have in mind the mcp23s08 (and mcp23s17) GPIO expanders, which
-support up to four chips wired in parallel on a given chipselect.
-The devices are distinguished by how two address pins are wired;
-and two bits in the command byte must match them.  (I think they
-just recycled an I2C design into the SPI world.)
+All the code is inside #ifdef DEBUG so it causes no harm unless it's
+enabled.
 
-- Dave
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+---
+ arch/powerpc/platforms/cell/axon_msi.c |   58 ++++++++++++++++++++++++++++++++
+ 1 files changed, 58 insertions(+), 0 deletions(-)
+
+diff --git a/arch/powerpc/platforms/cell/axon_msi.c b/arch/powerpc/platforms/cell/axon_msi.c
+index c39f5c2..8b055bc 100644
+--- a/arch/powerpc/platforms/cell/axon_msi.c
++++ b/arch/powerpc/platforms/cell/axon_msi.c
+@@ -14,6 +14,7 @@
+ #include <linux/pci.h>
+ #include <linux/msi.h>
+ #include <linux/of_platform.h>
++#include <linux/debugfs.h>
+ 
+ #include <asm/dcr.h>
+ #include <asm/machdep.h>
+@@ -69,8 +70,19 @@ struct axon_msic {
+ 	dma_addr_t fifo_phys;
+ 	dcr_host_t dcr_host;
+ 	u32 read_offset;
++#ifdef DEBUG
++	u32 __iomem *trigger;
++#endif
+ };
+ 
++#ifdef DEBUG
++void axon_msi_debug_setup(struct device_node *dn, struct axon_msic *msic);
++#else
++static inline void axon_msi_debug_setup(struct device_node *dn,
++					struct axon_msic *msic) { }
++#endif
++
++
+ static void msic_dcr_write(struct axon_msic *msic, unsigned int dcr_n, u32 val)
+ {
+ 	pr_debug("axon_msi: dcr_write(0x%x, 0x%x)\n", val, dcr_n);
+@@ -381,6 +393,8 @@ static int axon_msi_probe(struct of_device *device,
+ 	ppc_md.teardown_msi_irqs = axon_msi_teardown_msi_irqs;
+ 	ppc_md.msi_check_device = axon_msi_check_device;
+ 
++	axon_msi_debug_setup(dn, msic);
++
+ 	printk(KERN_DEBUG "axon_msi: setup MSIC on %s\n", dn->full_name);
+ 
+ 	return 0;
+@@ -418,3 +432,47 @@ static int __init axon_msi_init(void)
+ 	return of_register_platform_driver(&axon_msi_driver);
+ }
+ subsys_initcall(axon_msi_init);
++
++
++#ifdef DEBUG
++static int msic_set(void *data, u64 val)
++{
++	struct axon_msic *msic = data;
++	out_le32(msic->trigger, val);
++	return 0;
++}
++
++static int msic_get(void *data, u64 *val)
++{
++	*val = 0;
++	return 0;
++}
++
++DEFINE_SIMPLE_ATTRIBUTE(fops_msic, msic_get, msic_set, "%llu\n");
++
++void axon_msi_debug_setup(struct device_node *dn, struct axon_msic *msic)
++{
++	char name[8];
++	u64 addr;
++
++	addr = of_translate_address(dn, of_get_property(dn, "reg", NULL));
++	if (addr == OF_BAD_ADDR) {
++		pr_debug("axon_msi: couldn't translate reg property\n");
++		return;
++	}
++
++	msic->trigger = ioremap(addr, 0x4);
++	if (!msic->trigger) {
++		pr_debug("axon_msi: ioremap failed\n");
++		return;
++	}
++
++	snprintf(name, sizeof(name), "msic_%d", of_node_to_nid(dn));
++
++	if (!debugfs_create_file(name, 0600, powerpc_debugfs_root,
++				 msic, &fops_msic)) {
++		pr_debug("axon_msi: debugfs_create_file failed!\n");
++		return;
++	}
++}
++#endif /* DEBUG */
+-- 
+1.5.5
