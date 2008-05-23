@@ -1,21 +1,20 @@
 Return-Path: <david-b@pacbell.net>
 Received: from smtp123.sbc.mail.sp1.yahoo.com (smtp123.sbc.mail.sp1.yahoo.com
-	[69.147.64.96]) by ozlabs.org (Postfix) with SMTP id 38390DE04A
+	[69.147.64.96]) by ozlabs.org (Postfix) with SMTP id 3BABCDE04C
 	for <linuxppc-dev@ozlabs.org>; Fri, 23 May 2008 13:37:20 +1000 (EST)
 From: David Brownell <david-b@pacbell.net>
-To: avorontsov@ru.mvista.com
-Subject: Re: [PATCH 3/4] spi: Add OF binding support for SPI busses
-Date: Thu, 22 May 2008 19:05:32 -0700
-References: <20080516193054.28030.35126.stgit@trillian.secretlab.ca>
-	<20080516193613.28030.13950.stgit@trillian.secretlab.ca>
-	<20080521151928.GA28857@polina.dev.rtsoft.ru>
-In-Reply-To: <20080521151928.GA28857@polina.dev.rtsoft.ru>
+To: Fabio Tosetto <tosettofabio83@libero.it>
+Subject: Re: SD-MMC over SPI on PSC6
+Date: Thu, 22 May 2008 19:02:45 -0700
+References: <48354E2B.8010003@libero.it>
+In-Reply-To: <48354E2B.8010003@libero.it>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="us-ascii"
-Message-Id: <200805221905.32288.david-b@pacbell.net>
-Cc: linuxppc-dev@ozlabs.org, fabrizio.garetto@gmail.com,
-	linux-kernel@vger.kernel.org, spi-devel-general@lists.sourceforge.net
+Message-Id: <200805221902.45578.david-b@pacbell.net>
+Cc: garyj@denx.de, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	spi-devel-general@lists.sourceforge.net, g.liakhovetski@gmx.de,
+	drzeus-mmc@drzeus.cx
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,9 +24,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 21 May 2008, Anton Vorontsov wrote:
-> > +++ b/drivers/spi/spi_of.c
-> 
-> I think better placement for this is drivers/of, no?
+On Thursday 22 May 2008, Fabio Tosetto wrote:
+> <*> MMC host test driver
 
-Yes please.
+Unwise unless you really want to trash every MMC or SD card
+you insert ...
+
+
+You might consider not crossposting to such a large proportion
+of the free world, by the way.
