@@ -1,22 +1,30 @@
-Return-Path: <segher@kernel.crashing.org>
+Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id BE4B2DDF2E
-	for <linuxppc-dev@ozlabs.org>; Sat, 24 May 2008 08:11:15 +1000 (EST)
-In-Reply-To: <20080523163903.GF16137@polina.dev.rtsoft.ru>
-References: <20080523163811.GA12181@polina.dev.rtsoft.ru>
-	<20080523163903.GF16137@polina.dev.rtsoft.ru>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <25787c450a6a7e79435877a358ab819a@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 6/7] [POWERPC] booting-without-of: add FHCI USB, FSL MCU,
-	FSL UPM and GPIO LEDs bindings
-Date: Sat, 24 May 2008 00:10:56 +0200
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
-	Timur Tabi <timur@freescale.com>
+	by ozlabs.org (Postfix) with ESMTPS id B8DDEDE13B
+	for <linuxppc-dev@ozlabs.org>; Sat, 24 May 2008 08:48:24 +1000 (EST)
+Subject: Re: MMIO and gcc re-ordering (Was: [PATCH] [POWERPC]
+	Improve	(in|out)_beXX() asm code)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Scott Wood <scottwood@freescale.com>
+In-Reply-To: <4837339F.9060407@freescale.com>
+References: <4833524C.3040207@freescale.com>
+	<20080520.153947.84346222.davem@davemloft.net>
+	<4833542E.3040608@freescale.com>
+	<20080520.155326.195407196.davem@davemloft.net>
+	<1211516683.8297.271.camel@pasglop>
+	<Pine.LNX.4.64.0805221553400.8205@t2.domain.actdsltmp>
+	<1211546197.8297.308.camel@pasglop> <1211547016.8297.310.camel@pasglop>
+	<4837339F.9060407@freescale.com>
+Content-Type: text/plain
+Date: Fri, 23 May 2008 18:47:32 -0400
+Message-Id: <1211582852.8297.347.camel@pasglop>
+Mime-Version: 1.0
+Cc: linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
+	linuxppc-dev@ozlabs.org, Linus Torvalds <torvalds@linux-foundation.org>,
+	Trent Piepho <tpiepho@freescale.com>, alan@lxorguk.ukuu.org.uk
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,47 +34,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> +      - fsl,fullspeed-clock : specifies the full speed USB clock 
-> source in
-> +        "clk<num>" or "brg<num>" format.
-> +      - fsl,lowspeed-clock : specifies the low speed USB clock source 
-> in
-> +        "clk<num>" or "brg<num>" format.
 
-What format is "<num>" in?
+On Fri, 2008-05-23 at 16:14 -0500, Scott Wood wrote:
 
-> +      - fsl,usb-mode : should be "host".
+> As Trent pointed out, if you change to eieio in the accessors, that'd 
+> require drivers to also use mmiowb() before spin_unlock(), which fewer 
+> drivers currently do.
 
-If that's the only possible value, this property is unnecessary,
-no?  It probably would make sense to make this optional (and default
-to "host") anyway.
+No, this is a totally different issue. And we keep track of the need
+for a sync in spin_unlock already.
 
-> +      - linux,hub-power-budget : optional, USB power budget for the 
-> root hub
-> +        in mA.
-
-Why is this linux-specific?
-
-> +    w) Freescale MCU with MPC8349E-mITX compatible firmware
-> +
-> +    Required properties:
-> +      - compatible : "fsl,<mcu-chip>-<board>", "fsl,mcu-mpc8349emitx";
-> +      - reg : should specify I2C address (0x0a).
-> +      - #address-cells : should be 0.
-> +      - #size-cells : should be 0.
-
-> +    x) Freescale Localbus UPM programmed to work with NAND flash
-
-Similar here, except this one is never a GPIO controller.
-
-If the point to have #a = #s = 0 is to not have a unit-address
-in the child nodes: you should do that simply by not specifying
-a "reg" in the child nodes.
-
-> +    y) LEDs on GPIOs
-
-This one is so full of "linux," stuff that I won't review it --
-I wouldn't know where to start, sorry.
-
-
-Segher
+Ben.
