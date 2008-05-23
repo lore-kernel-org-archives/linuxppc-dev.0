@@ -1,18 +1,22 @@
-Return-Path: <axboe@kernel.dk>
-Received: from kernel.dk (brick.kernel.dk [87.55.233.238])
-	by ozlabs.org (Postfix) with ESMTP id 4F006DE22E
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 May 2008 17:00:57 +1000 (EST)
-Date: Fri, 23 May 2008 08:39:10 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 26CE6DE225
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 May 2008 17:11:07 +1000 (EST)
+Message-Id: <F06C1CB1-2A8E-4084-B6EA-7D1D8875E93E@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
 To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH] [POWERPC] iSeries: remove unused mail address
-Message-ID: <20080523063909.GO7712@kernel.dk>
-References: <20080523114146.7f96ca09.sfr@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080523114146.7f96ca09.sfr@canb.auug.org.au>
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>, paulus@samba.org,
-	LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080523162854.2e6ea8f0.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Mime-Version: 1.0 (Apple Message framework v919.2)
+Subject: Re: [PATCH 06/12] net: use linux/of_{device,
+	platform}.h instead of asm
+Date: Fri, 23 May 2008 02:09:56 -0500
+References: <20080523161627.a75d5010.sfr@canb.auug.org.au>
+	<20080523162854.2e6ea8f0.sfr@canb.auug.org.au>
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, Jeff Garzik <jeff@garzik.org>,
+	netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,22 +26,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, May 23 2008, Stephen Rothwell wrote:
-> I don't use my IBM email address normally and people can find me in
-> CREDITS.
-> 
+
+On May 23, 2008, at 1:28 AM, Stephen Rothwell wrote:
+
+>
 > Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 > ---
->  drivers/block/viodasd.c |    2 +-
->  drivers/cdrom/viocd.c   |    2 +-
->  drivers/char/viocons.c  |    2 +-
->  drivers/char/viotape.c  |    2 +-
->  4 files changed, 4 insertions(+), 4 deletions(-)
-> 
-> Jens, I assume that this is trivial enough that it can be sent via the
-> powerpc tree.
+> drivers/net/fs_enet/fs_enet-main.c |    2 +-
+> drivers/net/fs_enet/mac-scc.c      |    2 +-
+> drivers/net/fs_enet/mii-fec.c      |    2 +-
+> drivers/net/ibm_newemac/core.h     |    2 +-
+> drivers/net/ucc_geth.c             |    2 +-
+> drivers/net/ucc_geth_mii.c         |    2 +-
+> 6 files changed, 6 insertions(+), 6 deletions(-)
 
-Of course :-)
+Acked-by: Kumar Gala <galak@kernel.crashing.org>
 
--- 
-Jens Axboe
+- k
