@@ -1,20 +1,19 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D69C6DDFC6
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	by ozlabs.org (Postfix) with ESMTP id E4129DE0E9
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 23 May 2008 16:39:29 +1000 (EST)
-Message-Id: <4B12DBAE-BB24-4114-BFEB-FF369E461622@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Bruce_Leonard@selinc.com
-In-Reply-To: <OF2C9C3CB1.4A6FAC88-ON88257451.00760B81-88257451.00761D72@selinc.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: Question about "native" compiling
-Date: Fri, 23 May 2008 01:39:22 -0500
-References: <OF2C9C3CB1.4A6FAC88-ON88257451.00760B81-88257451.00761D72@selinc.com>
-Cc: linuxppc-embedded@ozlabs.org
+	Fri, 23 May 2008 19:16:30 +1000 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1JzTNy-0005ho-Np
+	for linuxppc-embedded@ozlabs.org; Fri, 23 May 2008 02:16:26 -0700
+Message-ID: <17421912.post@talk.nabble.com>
+Date: Fri, 23 May 2008 02:16:26 -0700 (PDT)
+From: Misbah khan <misbah_khan@engineer.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: Building Cross Compiler for MPC8260ADS
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -26,36 +25,45 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-On May 22, 2008, at 4:30 PM, Bruce_Leonard@selinc.com wrote:
+Hi all
 
-> Hi all,
->
-> I apologize if the list finds this off topic, but I'm at a loss of  
-> who to
-> ask the question and thought this would be a good place to start.  Our
-> target is an MPC8347E PowerQUICC II Pro, and we're using the latest  
-> kernel
-> (2.6.25).  We started this project by building on x86 and doing
-> cross-compiling to the powerpc target.  As the project progressed  
-> and we
-> started adding applications we found that we couldn't cross-compile
-> postgress among other things.  So we switched to native compilation  
-> on the
-> target.  Problem is, it's extreamly slow.  Now our idea is to get our
-> hands on a PowerPC based Mac, load it up with Ubuntu and do native  
-> builds
-> on that.  The question is, which Mac to get?  The concern is this: a  
-> G5 is
-> 64-bit but the 8347E is 32-bit.  If we do our compiles on a G5 is it
-> really a 'native' compile or is it a cross-compile and we're back in  
-> the
-> same boat as we were with the x86?  Should we use a G4 instead?
->
-> Thanks for any advice or pointers to other places where I can find
-> information.
+I need to built the cross compiler for MPC8260ADS to compile it for target
+board. The u-boot which i am using is version 1.1.6. I need to make the
+u-boot configuration and flash the image. I already have a ppc crosscompiler
+but it is giving this error message :-
 
-Do you plan on running the same Ubuntu install (for ppc32) on the  
-8347e?  If not you'll need to be careful to ensure libraries, etc are  
-the same or compatible.
+make: powerpc-linux-gcc: Command not found
+for dir in tools examples post post/cpu ; do make -C $dir _depend ; done
+make[1]: powerpc-linux-gcc: Command not found
+make[1]: Entering directory `/cashel/home/spx/misbah/u-boot-1.1.6/tools'
+ln -s ../common/environment.c environment.c
+ln -s ../lib_generic/crc32.c crc32.c
+make[1]: Leaving directory `/cashel/home/spx/misbah/u-boot-1.1.6/tools'
+make[1]: powerpc-linux-gcc: Command not found
+make[1]: Entering directory `/cashel/home/spx/misbah/u-boot-1.1.6/tools'
+make[1]: Nothing to be done for `_depend'.
+make[1]: Leaving directory `/cashel/home/spx/misbah/u-boot-1.1.6/tools'
+make[1]: powerpc-linux-gcc: Command not found
+make[1]: Entering directory `/cashel/home/spx/misbah/u-boot-1.1.6/examples'
+/bin/sh: powerpc-linux-gcc: command not found
+dirname: too few arguments
+Try `dirname --help' for more information.
+/bin/sh: powerpc-linux-gcc: command not found
+dirname: too few arguments
+Try `dirname --help' for more information.
+/bin/sh: powerpc-linux-gcc: command not found
+/bin/sh: powerpc-linux-gcc: command not found
+/bin/sh: powerpc-linux-gcc: command not found
 
-- k
+
+
+Can any one tell me How to get the Cross compiler for MPC8260ADS and how to
+built it ...
+
+Please do share your experience in this regard ...
+
+Thanks in Advance 
+Misbah <><
+-- 
+View this message in context: http://www.nabble.com/Building-Cross-Compiler-for-MPC8260ADS-tp17421912p17421912.html
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
