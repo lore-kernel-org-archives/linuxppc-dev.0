@@ -1,11 +1,15 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 8FC8ADE181
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 May 2008 22:14:19 +1000 (EST)
+Date: Fri, 23 May 2008 16:14:17 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: [PATCH] [POWERPC] booting-without-of: fix GPIO section mis-numbering
+Message-ID: <20080523121417.GA8300@polina.dev.rtsoft.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18486.37948.843161.645634@cargo.ozlabs.ibm.com>
-Date: Fri, 23 May 2008 19:54:04 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: linuxppc-dev@ozlabs.org
-Subject: New commits in powerpc.git powerpc-next branch
+Content-Type: text/plain; charset=utf8
+Cc: David Brownell <david-b@pacbell.net>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,22 +19,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I have pushed the following commits to the powerpc-next and master
-branches of the powerpc.git repository.  I have also pulled in Linus'
-tree plus the 5 commits that I have put on the merge branch and asked
-Linus to pull.
+"Specifying GPIO information for devices" should be IX-th section,
+not VIII-th.
 
-Paul.
+Thanks to David Brownell for noticing.
 
-Anton Vorontsov (1):
-      [POWERPC] of/gpio: Use dynamic base allocation
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
+ Documentation/powerpc/booting-without-of.txt |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-Kumar Gala (1):
-      [POWERPC] mpic: Deal with bogus NIRQ in Feature Reporting Register
-
-Michael Ellerman (2):
-      [POWERPC] Add debugging trigger to Axon MSI code
-      [POWERPC] Remove unnecessary cast in arch_deref_entry_point()
-
-Roland McGrath (1):
-      [POWERPC] Tweak VDSO linker script to avoid upsetting old binutils
+diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
+index 1d2a772..0f83d43 100644
+--- a/Documentation/powerpc/booting-without-of.txt
++++ b/Documentation/powerpc/booting-without-of.txt
+@@ -88,7 +88,7 @@ Table of Contents
+     3) OpenPIC Interrupt Controllers
+     4) ISA Interrupt Controllers
+ 
+-  VIII - Specifying GPIO information for devices
++  IX - Specifying GPIO information for devices
+     1) gpios property
+     2) gpio-controller nodes
+ 
+@@ -3477,8 +3477,8 @@ encodings listed below:
+ 	2 =  high to low edge sensitive type enabled
+ 	3 =  low to high edge sensitive type enabled
+ 
+-VIII - Specifying GPIO information for devices
+-==============================================
++IX - Specifying GPIO information for devices
++============================================
+ 
+ 1) gpios property
+ -----------------
+-- 
+1.5.5.1
