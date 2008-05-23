@@ -1,9 +1,9 @@
 Return-Path: <michael@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
-Message-Id: <f72407c637eb1c118888d9f7db0eddf77257467b.1211516494.git.michael@ellerman.id.au>
+Message-Id: <d0ac8dd211078f7a616bdf3b1e4e9144a576271f.1211516524.git.michael@ellerman.id.au>
 From: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH 1/1] Merge Axon MSI trigger debugging
-Date: Fri, 23 May 2008 14:21:30 +1000 (EST)
+Subject: [PATCH] Remove unnecessary cast in arch_deref_entry_point()
+Date: Fri, 23 May 2008 14:22:21 +1000 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -13,110 +13,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch adds some debugging code to the Axon MSI driver. It creates
-a file per MSIC in /sys/kernel/debug/powerpc, which allows the user to
-trigger a fake MSI interrupt by writing to the file.
-
-This can be used to test some of the MSI generation path. In particular
-that the MSIC recognises a write to the MSI address, generates an
-interrupt and writes the MSI packet into the ring buffer.
-
-All the code is inside #ifdef DEBUG so it causes no harm unless it's
-enabled.
+func_descr_t->entry is already an unsigned long. Mea culpa.
 
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
- arch/powerpc/platforms/cell/axon_msi.c |   58 ++++++++++++++++++++++++++++++++
- 1 files changed, 58 insertions(+), 0 deletions(-)
+ arch/powerpc/kernel/kprobes.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/platforms/cell/axon_msi.c b/arch/powerpc/platforms/cell/axon_msi.c
-index c39f5c2..8b055bc 100644
---- a/arch/powerpc/platforms/cell/axon_msi.c
-+++ b/arch/powerpc/platforms/cell/axon_msi.c
-@@ -14,6 +14,7 @@
- #include <linux/pci.h>
- #include <linux/msi.h>
- #include <linux/of_platform.h>
-+#include <linux/debugfs.h>
- 
- #include <asm/dcr.h>
- #include <asm/machdep.h>
-@@ -69,8 +70,19 @@ struct axon_msic {
- 	dma_addr_t fifo_phys;
- 	dcr_host_t dcr_host;
- 	u32 read_offset;
-+#ifdef DEBUG
-+	u32 __iomem *trigger;
-+#endif
- };
- 
-+#ifdef DEBUG
-+void axon_msi_debug_setup(struct device_node *dn, struct axon_msic *msic);
-+#else
-+static inline void axon_msi_debug_setup(struct device_node *dn,
-+					struct axon_msic *msic) { }
-+#endif
-+
-+
- static void msic_dcr_write(struct axon_msic *msic, unsigned int dcr_n, u32 val)
+diff --git a/arch/powerpc/kernel/kprobes.c b/arch/powerpc/kernel/kprobes.c
+index c176c51..23545a2 100644
+--- a/arch/powerpc/kernel/kprobes.c
++++ b/arch/powerpc/kernel/kprobes.c
+@@ -498,7 +498,7 @@ int __kprobes kprobe_exceptions_notify(struct notifier_block *self,
+ #ifdef CONFIG_PPC64
+ unsigned long arch_deref_entry_point(void *entry)
  {
- 	pr_debug("axon_msi: dcr_write(0x%x, 0x%x)\n", val, dcr_n);
-@@ -381,6 +393,8 @@ static int axon_msi_probe(struct of_device *device,
- 	ppc_md.teardown_msi_irqs = axon_msi_teardown_msi_irqs;
- 	ppc_md.msi_check_device = axon_msi_check_device;
- 
-+	axon_msi_debug_setup(dn, msic);
-+
- 	printk(KERN_DEBUG "axon_msi: setup MSIC on %s\n", dn->full_name);
- 
- 	return 0;
-@@ -418,3 +432,47 @@ static int __init axon_msi_init(void)
- 	return of_register_platform_driver(&axon_msi_driver);
+-	return (unsigned long)(((func_descr_t *)entry)->entry);
++	return ((func_descr_t *)entry)->entry;
  }
- subsys_initcall(axon_msi_init);
-+
-+
-+#ifdef DEBUG
-+static int msic_set(void *data, u64 val)
-+{
-+	struct axon_msic *msic = data;
-+	out_le32(msic->trigger, val);
-+	return 0;
-+}
-+
-+static int msic_get(void *data, u64 *val)
-+{
-+	*val = 0;
-+	return 0;
-+}
-+
-+DEFINE_SIMPLE_ATTRIBUTE(fops_msic, msic_get, msic_set, "%llu\n");
-+
-+void axon_msi_debug_setup(struct device_node *dn, struct axon_msic *msic)
-+{
-+	char name[8];
-+	u64 addr;
-+
-+	addr = of_translate_address(dn, of_get_property(dn, "reg", NULL));
-+	if (addr == OF_BAD_ADDR) {
-+		pr_debug("axon_msi: couldn't translate reg property\n");
-+		return;
-+	}
-+
-+	msic->trigger = ioremap(addr, 0x4);
-+	if (!msic->trigger) {
-+		pr_debug("axon_msi: ioremap failed\n");
-+		return;
-+	}
-+
-+	snprintf(name, sizeof(name), "msic_%d", of_node_to_nid(dn));
-+
-+	if (!debugfs_create_file(name, 0600, powerpc_debugfs_root,
-+				 msic, &fops_msic)) {
-+		pr_debug("axon_msi: debugfs_create_file failed!\n");
-+		return;
-+	}
-+}
-+#endif /* DEBUG */
+ #endif
+ 
 -- 
 1.5.5
