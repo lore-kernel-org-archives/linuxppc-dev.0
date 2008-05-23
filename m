@@ -1,24 +1,22 @@
-Return-Path: <John.Linn@xilinx.com>
-Received: from outbound2-sin-R.bigfish.com (outbound-sin.frontbridge.com
-	[207.46.51.80])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 2A51ADEF45
+Return-Path: <mike.koss@ngc.com>
+Received: from xmrm0101.northgrum.com (xmrm0101.northgrum.com
+	[155.104.240.104]) by ozlabs.org (Postfix) with ESMTP id 3E7EBDE074
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 24 May 2008 02:52:16 +1000 (EST)
+	Sat, 24 May 2008 03:13:39 +1000 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="us-ascii"
 Subject: RE: arch/powerpc, Xilinx, and mainline kernel support
-Date: Fri, 23 May 2008 10:52:11 -0600
-In-Reply-To: <EDAE140DF1B2FC42B5867C22CA0B333FFA5C22@XMBIL132.northgrum.com>
+Date: Fri, 23 May 2008 12:13:21 -0500
+Message-ID: <EDAE140DF1B2FC42B5867C22CA0B333FFA5C23@XMBIL132.northgrum.com>
+In-Reply-To: <20080523165213.C4798191004D@mail152-sin.bigfish.com>
 References: <EDAE140DF1B2FC42B5867C22CA0B333FFA5C0B@XMBIL132.northgrum.com><fa686aa40805161526ie184ae6m29a3fc78d6676720@mail.gmail.com><20080516223422.C02A26B006F@mail34-dub.bigfish.com>
 	<EDAE140DF1B2FC42B5867C22CA0B333FFA5C22@XMBIL132.northgrum.com>
-From: "John Linn" <John.Linn@xilinx.com>
-To: "Koss, Mike (Mission Systems)" <mike.koss@ngc.com>,
+	<20080523165213.C4798191004D@mail152-sin.bigfish.com>
+From: "Koss, Mike (Mission Systems)" <mike.koss@ngc.com>
+To: "John Linn" <John.Linn@xilinx.com>,
 	"Stephen Neuendorffer" <stephenn@xilinx.com>,
 	"Grant Likely" <grant.likely@secretlab.ca>
-Message-Id: <20080523165213.C4798191004D@mail152-sin.bigfish.com>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -29,6 +27,20 @@ List-Post: <mailto:linuxppc-embedded@ozlabs.org>
 List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
+
+Yeah, I wasn't saying "hey! We need to support old/deprecated cores!".
+Rather I was stating that it would be nice to know which cores are
+supported currently: SystemACE, MPMC3/4, XPS_LL_TEMAC, SDMA, etc. Just
+so this sort of thing doesn't happen again to the next person who tries
+it. If I get time this weekend, I may try and extract that information
+from the tcl and post a patch for the README.
+
+-----Original Message-----
+From: John Linn [mailto:John.Linn@xilinx.com]=20
+Sent: Friday, May 23, 2008 12:52 PM
+To: Koss, Mike (Mission Systems); Stephen Neuendorffer; Grant Likely
+Cc: linuxppc-embedded@ozlabs.org
+Subject: RE: arch/powerpc, Xilinx, and mainline kernel support
 
 Hi Mike,
 
@@ -71,8 +83,7 @@ that works or not, yet.
 -- Mike
 
 -----Original Message-----
-From: Stephen Neuendorffer [mailto:stephen.neuendorffer@xilinx.com] =
-
+From: Stephen Neuendorffer [mailto:stephen.neuendorffer@xilinx.com]
 Sent: Friday, May 16, 2008 6:34 PM
 To: Grant Likely; Koss, Mike (Mission Systems)
 Cc: linuxppc-embedded@ozlabs.org
@@ -89,10 +100,8 @@ Likely
 > To: Koss, Mike (Mission Systems)
 > Cc: linuxppc-embedded@ozlabs.org
 > Subject: Re: arch/powerpc, Xilinx, and mainline kernel support
-> =
-
-> On Fri, May 16, 2008 at 4:06 PM, Koss, Mike (Mission Systems) =
-
+>=20
+> On Fri, May 16, 2008 at 4:06 PM, Koss, Mike (Mission Systems)=20
 > <mike.koss@ngc.com> wrote:
 > > Is there any reason why the mainline 2.6.25.3 (and from what I could
 see .4)
@@ -115,14 +124,10 @@ need to
 > > be able to grab a stable kernel and work from there rather than
 using the
 > > latest -rc that Xilinx is hosting on their git server.
-> =
-
-> Working on it.  Biggest problem is getting the device drivers in =
-
-> shape.  However, other than Ethernet support, current arch/powerpc =
-
-> (head of Linus' tree, not 2.6.25) should work for building virtex =
-
+>=20
+> Working on it.  Biggest problem is getting the device drivers in=20
+> shape.  However, other than Ethernet support, current arch/powerpc=20
+> (head of Linus' tree, not 2.6.25) should work for building virtex=20
 > kernels.
 
 Mike,
@@ -147,8 +152,9 @@ Linuxppc-embedded@ozlabs.org
 https://ozlabs.org/mailman/listinfo/linuxppc-embedded
 
 
-This email and any attachments are intended for the sole use of the named r=
-ecipient(s) and contain(s) confidential information that may be proprietary=
-, privileged or copyrighted under applicable law. If you are not the intend=
-ed recipient, do not read, copy, or forward this email message or any attac=
-hments. Delete this email message and any attachments immediately.
+This email and any attachments are intended for the sole use of the
+named recipient(s) and contain(s) confidential information that may be
+proprietary, privileged or copyrighted under applicable law. If you are
+not the intended recipient, do not read, copy, or forward this email
+message or any attachments. Delete this email message and any
+attachments immediately.
