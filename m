@@ -1,13 +1,11 @@
 Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <18486.37935.242555.465662@cargo.ozlabs.ibm.com>
-Date: Fri, 23 May 2008 19:53:51 +1000
+Message-ID: <18486.37948.843161.645634@cargo.ozlabs.ibm.com>
+Date: Fri, 23 May 2008 19:54:04 +1000
 From: Paul Mackerras <paulus@samba.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [git pull] Please pull powerpc.git merge branch
-Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
-	linux-kernel@vger.kernel.org
+To: linuxppc-dev@ozlabs.org
+Subject: New commits in powerpc.git powerpc-next branch
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,38 +15,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Linus,
+I have pushed the following commits to the powerpc-next and master
+branches of the powerpc.git repository.  I have also pulled in Linus'
+tree plus the 5 commits that I have put on the merge branch and asked
+Linus to pull.
 
-Please pull from the 'merge' branch of
-
-git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
-
-to get some more small bug and warning fixes for powerpc (and one
-commit that just updates some comments).
-
-Thanks,
 Paul.
 
- arch/powerpc/kernel/prom_init_check.sh |    2 +-
- arch/powerpc/mm/pgtable_32.c           |    2 +-
- arch/powerpc/platforms/ps3/mm.c        |    3 +++
- arch/powerpc/sysdev/mpic.c             |   20 +++-----------------
- drivers/block/viodasd.c                |    2 +-
- drivers/cdrom/viocd.c                  |    2 +-
- drivers/char/viocons.c                 |    2 +-
- drivers/char/viotape.c                 |    2 +-
- include/asm-powerpc/mpic.h             |    3 +--
- 9 files changed, 13 insertions(+), 25 deletions(-)
+Anton Vorontsov (1):
+      [POWERPC] of/gpio: Use dynamic base allocation
 
-David Gibson (1):
-      [POWERPC] Fix __set_fixmap() for STRICT_MM_TYPECHECKS
+Kumar Gala (1):
+      [POWERPC] mpic: Deal with bogus NIRQ in Feature Reporting Register
 
-Geoff Levand (1):
-      [POWERPC] PS3: Fix memory hotplug
+Michael Ellerman (2):
+      [POWERPC] Add debugging trigger to Axon MSI code
+      [POWERPC] Remove unnecessary cast in arch_deref_entry_point()
 
-Michael Ellerman (1):
-      [POWERPC] Add kernstart_addr to list of allowed symbols in prom_init
-
-Stephen Rothwell (2):
-      [POWERPC] mpic: Fix use of uninitialized variable
-      [POWERPC] iSeries: Remove unused mail address
+Roland McGrath (1):
+      [POWERPC] Tweak VDSO linker script to avoid upsetting old binutils
