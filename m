@@ -1,12 +1,17 @@
-Return-Path: <runet@innovsys.com>
-Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
-	by ozlabs.org (Postfix) with ESMTP id 42895DED46
-	for <linuxppc-dev@ozlabs.org>; Sat, 24 May 2008 01:58:29 +1000 (EST)
-Subject: [PATCH]: Check that TASK_SIZE does not overlap KERNEL_START
-To: <linuxppc-dev@ozlabs.org>
-Message-Id: <20080523155915.9ABF15AF36@innovsys.com>
-Date: Fri, 23 May 2008 10:59:15 -0500 (CDT)
-From: runet@innovsys.com (Rune Torgersen)
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 7D117DE9C3
+	for <linuxppc-dev@ozlabs.org>; Sat, 24 May 2008 02:38:12 +1000 (EST)
+Date: Fri, 23 May 2008 20:38:11 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: [PATCH 0/7] Patches for Kumar's powerpc-next tree
+Message-ID: <20080523163811.GA12181@polina.dev.rtsoft.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf8
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
+	Timur Tabi <timur@freescale.com>
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,26 +21,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Make sure CONFIG_TASK_SIZE does not overlap CONFIG_KERNEL_START
-This could happen when overriding settings to get 1GB lowmem, and would lead
-to userland mysteriousely hanging.
+Hi Kumar,
 
-This setting is only used by PPC32.
+Here is updated series, with your comments addressed. Patches are
+rebased on top of your current powerpc-next branch.
 
-Signed-off-by Rune Torgersen <runet@innovsys.com>
+[PATCH 1/7] [POWERPC] sysdev: implement FSL GTM support
+- added "depends on" to the Kconfig
+- reverted to arch_initcall
+- added Context: tip to the documentation
+- reset_timer -> set_timer
+  reset_utimer -> set_exact_timer + improved kerneldoc
+- put_timer now stops the timer
 
-diff --git a/include/asm-powerpc/processor.h b/include/asm-powerpc/processor.h
-index fd98ca9..72e0e3f 100644
---- a/include/asm-powerpc/processor.h
-+++ b/include/asm-powerpc/processor.h
-@@ -81,6 +81,10 @@ extern struct task_struct *last_task_used_altivec;
- extern struct task_struct *last_task_used_spe;
- 
- #ifdef CONFIG_PPC32
-+
-+#if CONFIG_TASK_SIZE > CONFIG_KERNEL_START
-+#error User TASK_SIZE overlaps with KERNEL_START address
-+#endif
- #define TASK_SIZE	(CONFIG_TASK_SIZE)
- 
- /* This decides where the kernel will search for a free chunk of vm
+[PATCH 2/7] [POWERPC] QE: add support for QE USB clocks routing
+[PATCH 3/7] [POWERPC] QE: prepare QE PIO code for GPIO LIB support
+[PATCH 4/7] [POWERPC] QE: implement support for the GPIO LIB API
+^ reverted to arch_initcall
+
+[PATCH 5/7] [POWERPC] 83xx: new board support: MPC8360E-RDK
+[PATCH 6/7] [POWERPC] booting-without-of: add FHCI USB, FSL MCU, FSL UPM and GPIO LEDs bindings
+[PATCH 7/7] [POWERPC] qe_lib: switch to the cpm_muram implementation
+^ now it doesn't touch ucc_{slow,fast}.c
+
+Thanks,
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
