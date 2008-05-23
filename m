@@ -1,19 +1,22 @@
-Return-Path: <laurentp@cse-semaphore.com>
-Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
-	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id BB1DBDECDD
+Return-Path: <mike.koss@ngc.com>
+Received: from xmrm0101.northgrum.com (xmrm0101.northgrum.com
+	[155.104.240.104]) by ozlabs.org (Postfix) with ESMTP id 33487DDF84
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 24 May 2008 01:06:47 +1000 (EST)
-From: Laurent Pinchart <laurentp@cse-semaphore.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: linux powerpc and device trees
-Date: Fri, 23 May 2008 17:06:41 +0200
-References: <BAY101-W39CE5CDB63DCE2DC056AAFBEC10@phx.gbl>
-In-Reply-To: <BAY101-W39CE5CDB63DCE2DC056AAFBEC10@phx.gbl>
+	Sat, 24 May 2008 01:09:45 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart8913353.FWuAmkRZoc";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Message-Id: <200805231706.43614.laurentp@cse-semaphore.com>
-Cc: - Reyneke <reynekejunk@hotmail.com>
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: arch/powerpc, Xilinx, and mainline kernel support
+Date: Fri, 23 May 2008 10:09:27 -0500
+Message-ID: <EDAE140DF1B2FC42B5867C22CA0B333FFA5C22@XMBIL132.northgrum.com>
+In-Reply-To: <20080516223422.C02A26B006F@mail34-dub.bigfish.com>
+References: <EDAE140DF1B2FC42B5867C22CA0B333FFA5C0B@XMBIL132.northgrum.com>
+	<fa686aa40805161526ie184ae6m29a3fc78d6676720@mail.gmail.com>
+	<20080516223422.C02A26B006F@mail34-dub.bigfish.com>
+From: "Koss, Mike (Mission Systems)" <mike.koss@ngc.com>
+To: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>,
+	"Grant Likely" <grant.likely@secretlab.ca>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -24,103 +27,84 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---nextPart8913353.FWuAmkRZoc
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+So yesterday, we got a chance to checkout Linus' main (2.26.26-rc3) and
+it appears to not have all the necessary updates to build for the
+Generic Xilinx Virtex either.
 
-Hi Jan,
+For now, I've decided to work from the Xilinx git-tree.
 
-On Friday 23 May 2008 16:53, - Reyneke wrote:
+We also gave the EDK bsp->dts generator a spin, and I have a comment on
+it: documentation. It would be nice to have some kind of simple README
+that explains what it is and what it supports. The current README talks
+about using the old python script. I fired up the bsp against my EDK 9.1
+MPMC(2) based system and it bombed out when it reached the MPMC2
+definition. So I dug through the tcl and found it that it was only
+supporting the MPMC3.
+
+I'm still working on my EDK 9.2 MPMC3 system, so I can't check to see if
+that works or not, yet.
+
+-- Mike
+
+-----Original Message-----
+From: Stephen Neuendorffer [mailto:stephen.neuendorffer@xilinx.com]=20
+Sent: Friday, May 16, 2008 6:34 PM
+To: Grant Likely; Koss, Mike (Mission Systems)
+Cc: linuxppc-embedded@ozlabs.org
+Subject: RE: arch/powerpc, Xilinx, and mainline kernel support
+
+
+
+> -----Original Message-----
+> From: linuxppc-embedded-bounces+stephen=3Dneuendorffer.name@ozlabs.org
+[mailto:linuxppc-embedded-
+> bounces+stephen=3Dneuendorffer.name@ozlabs.org] On Behalf Of Grant
+Likely
+> Sent: Friday, May 16, 2008 3:27 PM
+> To: Koss, Mike (Mission Systems)
+> Cc: linuxppc-embedded@ozlabs.org
+> Subject: Re: arch/powerpc, Xilinx, and mainline kernel support
 >=20
-> Hi All,
+> On Fri, May 16, 2008 at 4:06 PM, Koss, Mike (Mission Systems)=20
+> <mike.koss@ngc.com> wrote:
+> > Is there any reason why the mainline 2.6.25.3 (and from what I could
+see .4)
+> > is missing the files to build for the Xilinx Virtex platform?
+> >
+> > Or in other words, I tried to build from 2.6.25.3 for the Xilinx
+Virtex
+> > under arch/powerpc (because arch/ppc actually crashes when once apps
+start
+> > to run) and it failed when trying to actually create the zImage. I
+hopped
+> > over to Xilinx's git server and noticed a bunch of missing entries
+in the
+> > boot/Makefile and source code to actually support the complete image
+build
+> > for a Xilinx Virtex PPC405.
+> >
+> > When is the Xilinx Virtex support going to be mainline official? I
+need to
+> > be able to grab a stable kernel and work from there rather than
+using the
+> > latest -rc that Xilinx is hosting on their git server.
 >=20
-> I am busy with a platform move from the arch/ppc to arch/powerpc tree of =
-the=20
-linux kernel. Being relatively new to device trees, I'm trying to ensure I=
-=20
-have all the steps covered. The platform is very similar to the AMCC Sequio=
-a=20
-(440EPx) and that board has been used as reference for the code changes=20
-required. Kernel version is 2.6.25, using u-boot 1.2.0 (CONFIG_OF_xxx=20
-enabled, debug output on).
->=20
-> My understanding of the whole powerpc branch boot process is as follows:
->=20
-> 1. Add platform to arch/powerpc/platforms/4xx
-> 2. Create a .dts in arch/powerpc/boot/dts
-> 3. Setup .config and compile uImage
-> 4. Compile device tree blob using dtc
-> 5. As test, tftp uImage, RootFS, and deviceblob to system memory
-> 6. Use u-boot's bootm command to boot kernel
->=20
-> Every seems OK, until you get to the boot part. The boot hangs:
->=20
-> Verifying Checksum ... OK
-> Booting using flat device tree at 0x3000000
-> ## initrd at 0x02000040 ... 0x027FEDF7 (len=3D8383928=3D0x7FEDB8)
-> Loading Ramdisk to 0f332000, end 0fb30db8 ... OK
-> ## Transferring control to Linux (at address 00000000) ...
->=20
->=20
-> Using various diagnostics like BDI, ft_dump_blob etc I can see that u-boot
-> does what I expect it to do, and the device tree blob looks valid. Tracing
-> into the kernel init all looks fine until you hit MMU_init - at this point
-> it looks like the total memory is calculated as 0. Evaluating the .dts fi=
-le
-> the following lines are immediately suspect:   =20
->=20
-> memory {
-> device_type =3D "memory";
-> reg =3D ; /* Filled in by zImage */
-> };
->=20
-> This is where I am unclear as to how to prepare the device tree. Is step =
-(4)
-> correct since I'm using uImage? Where is the memory information suppose to
-> come from? Previously U-boot passes this kind of data to the kernel via
-> bd_t - how does it work now using device trees?  =20
+> Working on it.  Biggest problem is getting the device drivers in=20
+> shape.  However, other than Ethernet support, current arch/powerpc=20
+> (head of Linus' tree, not 2.6.25) should work for building virtex=20
+> kernels.
 
-U-Boot has to fill the device tree. This is done in the ft_board_setup()=20
-function that every board has to implement. Here is what mine looks like (f=
-or=20
-an MPC8248).
+Mike,
 
-void ft_board_setup(void *blob, bd_t *bd)
-{
-        DECLARE_GLOBAL_DATA_PTR;
+What is your objection to using what is in the git tree, because it is
+based on 24-rc8 and not 25, or something more fundamental?
 
-        ft_cpu_setup(blob, bd);
-        fdt_fixup_ethernet(blob, bd);
-        fdt_fixup_memory(blob, (u64)bd->bi_memstart, (u64)bd->bi_memsize);
+Steve
 
-        do_fixup_by_compat_u32(blob, "fsl,cpm-brg", "clock-frequency",
-                gd->brg_clk, 1);
-}
 
-Best regards,
-
-=2D-=20
-Laurent Pinchart
-CSE Semaphore Belgium
-
-Chaussee de Bruxelles, 732A
-B-1410 Waterloo
-Belgium
-
-T +32 (2) 387 42 59
-=46 +32 (2) 387 42 75
-
---nextPart8913353.FWuAmkRZoc
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
-
-iD8DBQBINt2D8y9gWxC9vpcRAsQLAJwNGOdneiClMx1P0MQQNFUe0V5wmQCg0Ae3
-O4f3iFInUY09bpDej71ELec=
-=Prjm
------END PGP SIGNATURE-----
-
---nextPart8913353.FWuAmkRZoc--
+This email and any attachments are intended for the sole use of the
+named recipient(s) and contain(s) confidential information that may be
+proprietary, privileged or copyrighted under applicable law. If you are
+not the intended recipient, do not read, copy, or forward this email
+message or any attachments. Delete this email message and any
+attachments immediately.
