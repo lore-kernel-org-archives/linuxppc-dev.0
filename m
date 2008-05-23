@@ -1,22 +1,22 @@
-Return-Path: <npiggin@suse.de>
-Received: from mx1.suse.de (mail.suse.de [195.135.220.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 75C80DE019
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 May 2008 14:40:58 +1000 (EST)
-Date: Fri, 23 May 2008 06:40:52 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [patch 1/2] powerpc: rmb fix
-Message-ID: <20080523044052.GA13071@wotan.suse.de>
-References: <20080521141056.GC8897@wotan.suse.de>
-	<1211383623.8297.197.camel@pasglop>
-	<20080521153247.GF8897@wotan.suse.de>
-	<18486.10385.934128.122054@cargo.ozlabs.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <18486.10385.934128.122054@cargo.ozlabs.ibm.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.245])
+	by ozlabs.org (Postfix) with ESMTP id 62668DE038
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 May 2008 14:44:07 +1000 (EST)
+Received: by an-out-0708.google.com with SMTP id c34so98843anc.78
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 May 2008 21:44:06 -0700 (PDT)
+Message-ID: <fa686aa40805222144i7026cf57r3382635853140c83@mail.gmail.com>
+Date: Thu, 22 May 2008 22:44:06 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Kumar Gala" <galak@kernel.crashing.org>
+Subject: Re: [PATCH] [POWERPC] Add the PC speaker only when requested so
+In-Reply-To: <41365E63-56F5-4057-9F4A-BE986969466C@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <1211496016-30311-1-git-send-email-Emilian.Medve@Freescale.com>
+	<fa686aa40805221627u4c4580bane16f3c3e23c8e9f5@mail.gmail.com>
+	<41365E63-56F5-4057-9F4A-BE986969466C@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,30 +26,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, May 23, 2008 at 12:14:41PM +1000, Paul Mackerras wrote:
-> Nick Piggin writes:
-> 
-> > More than one device driver does raw/relaxed io accessors and expects the
-> > *mb functions to order them.
-> 
-> Can you point us at an example?
+On Thu, May 22, 2008 at 9:34 PM, Kumar Gala <galak@kernel.crashing.org> wrote:
+>
+> On May 22, 2008, at 6:27 PM, Grant Likely wrote:
+>
+>> On Thu, May 22, 2008 at 4:40 PM, Emil Medve <Emilian.Medve@freescale.com>
+>> wrote:
+>>>
+>>> This will cause this minor boot-time debugging error message to go away:
+>>>
+>>> [    1.316451] calling  add_pcspkr+0x0/0x84
+>>> [    1.316478] initcall add_pcspkr+0x0/0x84 returned -19 after 0 msecs
+>>
+>> What situation are you hitting this in?  The code should only run if
+>> there is a "pnpPNP,100" compatible node in the device tree.
+>
+> The code always runs, the -19 is from the fact that the code returns -ENODEV
+> when it doesn't find the device in the tree.
+>
+> I don't see any reason we should be ALWAYS be probing for a PC speaker.
+>  Seems like a reasonable patch.
 
-Uh, I might be getting confused because the semantics are completely
-different eg. between powerpc and ia64.
+Fair enough; I was just wondering if it was a complete fix.  But now
+that I dig into the code I see that the calling...initcall returned...
+messages are just debug stuff that isn't always turned on.
 
-There don't seem to actually be read*_relaxed calls that also use rmb
-in the same file (although there is no reason why they might not appear).
-But I must be thinking of are the raw_read accessors. They aren't ordered
-on powerpc, and a few drivers appear to hope rmb() will order them.
+I have no problem with the patch.
+
+>
+>> Also, where is CONFIG_PCSPKR_PLATFORM defined?  I don't see it
+>> anywhere in powerpc code and only a reference to it in an x86
+>> Makefile.  As it stands, it looks like this patch unconditionally
+>> disables the pcspkr code.
+>
+> Its defined in init/Kconfig.
+
+Apparently my grep-foo isn't what it used to be...
+
+Cheers,
+g.
 
 
- 
-> I don't think the semantics of the raw accessors are particularly well
-> defined (it's not even defined what endianness the data comes back in)
-> so I'd be surprised if there was any real definition of their
-> behaviour w.r.t. barriers.
 
-I think it is fair to say the intention of the _relaxed variants is
-that they require memory barriers for ordering. No idea about raw read
-or write but it appears that at least on powerpc and alpha they are
-unordered.
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
