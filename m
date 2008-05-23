@@ -1,17 +1,18 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH] [POWERPC] Fix return value check logic
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Emil Medve <Emilian.Medve@Freescale.com>
-In-Reply-To: <1211485762-29637-1-git-send-email-Emilian.Medve@Freescale.com>
-References: <1211485762-29637-1-git-send-email-Emilian.Medve@Freescale.com>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-Qicx5JNaaF7hr9NmJIav"
-Date: Fri, 23 May 2008 11:13:10 +1000
-Message-Id: <1211505190.7671.6.camel@localhost>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 641E4DE017
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 May 2008 11:41:58 +1000 (EST)
+Date: Fri, 23 May 2008 11:41:46 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: paulus@samba.org
+Subject: [PATCH] [POWERPC] iSeries: remove unused mail address
+Message-Id: <20080523114146.7f96ca09.sfr@canb.auug.org.au>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, linuxppc-embedded@ozlabs.org
-Reply-To: michael@ellerman.id.au
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Fri__23_May_2008_11_41_46_+1000_gGIs4G2SIQALW4Gr"
+Cc: axboe@kernel.dk, ppc-dev <linuxppc-dev@ozlabs.org>,
+	LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,74 +22,94 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
---=-Qicx5JNaaF7hr9NmJIav
-Content-Type: text/plain
+--Signature=_Fri__23_May_2008_11_41_46_+1000_gGIs4G2SIQALW4Gr
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, 2008-05-22 at 14:49 -0500, Emil Medve wrote:
-> debugfs_create_file() return a non-NULL (non-zero) value in case of succe=
-ss
->=20
-> This fixes this non-critical boot-time debuging error message:
->=20
-> [    1.316386] calling  irq_debugfs_init+0x0/0x50
-> [    1.316399] initcall irq_debugfs_init+0x0/0x50 returned -12 after 0 ms=
-ecs
-> [    1.316411] initcall irq_debugfs_init+0x0/0x50 returned with error cod=
-e -12
->=20
-> Signed-off-by: Emil Medve <Emilian.Medve@Freescale.com>
-> ---
->=20
-> $ scripts/checkpatch.pl 0001--POWERPC-Fix-return-value-check-logic.patch=20
-> total: 0 errors, 0 warnings, 8 lines checked
->=20
-> 0001--POWERPC-Fix-return-value-check-logic.patch has no obvious style pro=
-blems and is ready for submission.
->=20
->  arch/powerpc/kernel/irq.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
->=20
-> diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-> index 2f73f70..bcc249d 100644
-> --- a/arch/powerpc/kernel/irq.c
-> +++ b/arch/powerpc/kernel/irq.c
-> @@ -1073,7 +1073,7 @@ static const struct file_operations virq_debug_fops=
- =3D {
->  static int __init irq_debugfs_init(void)
->  {
->  	if (debugfs_create_file("virq_mapping", S_IRUGO, powerpc_debugfs_root,
-> -				 NULL, &virq_debug_fops))
-> +				 NULL, &virq_debug_fops) =3D=3D NULL)
->  		return -ENOMEM;
+I don't use my IBM email address normally and people can find me in
+CREDITS.
 
-That won't work if CONFIG_DEBUG_FS is not defined, because in that case
-debugfs_create_file() returns -ENODEV. I guess the whole virq debug code
-should be wrapped in #ifdef CONFIG_DEBUG_FS.
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ drivers/block/viodasd.c |    2 +-
+ drivers/cdrom/viocd.c   |    2 +-
+ drivers/char/viocons.c  |    2 +-
+ drivers/char/viotape.c  |    2 +-
+ 4 files changed, 4 insertions(+), 4 deletions(-)
 
-cheers
+Jens, I assume that this is trivial enough that it can be sent via the
+powerpc tree.
+
+diff --git a/drivers/block/viodasd.c b/drivers/block/viodasd.c
+index ebfe038..f1c8feb 100644
+--- a/drivers/block/viodasd.c
++++ b/drivers/block/viodasd.c
+@@ -3,7 +3,7 @@
+  *  Authors: Dave Boutcher <boutcher@us.ibm.com>
+  *           Ryan Arnold <ryanarn@us.ibm.com>
+  *           Colin Devilbiss <devilbis@us.ibm.com>
+- *           Stephen Rothwell <sfr@au1.ibm.com>
++ *           Stephen Rothwell
+  *
+  * (C) Copyright 2000-2004 IBM Corporation
+  *
+diff --git a/drivers/cdrom/viocd.c b/drivers/cdrom/viocd.c
+index 5245a4a..9d0dfe6 100644
+--- a/drivers/cdrom/viocd.c
++++ b/drivers/cdrom/viocd.c
+@@ -6,7 +6,7 @@
+  *  Authors: Dave Boutcher <boutcher@us.ibm.com>
+  *           Ryan Arnold <ryanarn@us.ibm.com>
+  *           Colin Devilbiss <devilbis@us.ibm.com>
+- *           Stephen Rothwell <sfr@au1.ibm.com>
++ *           Stephen Rothwell
+  *
+  * (C) Copyright 2000-2004 IBM Corporation
+  *
+diff --git a/drivers/char/viocons.c b/drivers/char/viocons.c
+index 3d3e1c2..65fb848 100644
+--- a/drivers/char/viocons.c
++++ b/drivers/char/viocons.c
+@@ -7,7 +7,7 @@
+  *  Authors: Dave Boutcher <boutcher@us.ibm.com>
+  *           Ryan Arnold <ryanarn@us.ibm.com>
+  *           Colin Devilbiss <devilbis@us.ibm.com>
+- *           Stephen Rothwell <sfr@au1.ibm.com>
++ *           Stephen Rothwell
+  *
+  * (C) Copyright 2000, 2001, 2002, 2003, 2004 IBM Corporation
+  *
+diff --git a/drivers/char/viotape.c b/drivers/char/viotape.c
+index 58aad63..c39ddaf 100644
+--- a/drivers/char/viotape.c
++++ b/drivers/char/viotape.c
+@@ -6,7 +6,7 @@
+  *  Authors: Dave Boutcher <boutcher@us.ibm.com>
+  *           Ryan Arnold <ryanarn@us.ibm.com>
+  *           Colin Devilbiss <devilbis@us.ibm.com>
+- *           Stephen Rothwell <sfr@au1.ibm.com>
++ *           Stephen Rothwell
+  *
+  * (C) Copyright 2000-2004 IBM Corporation
+  *
+--=20
+1.5.5.1
 
 --=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-Qicx5JNaaF7hr9NmJIav
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+--Signature=_Fri__23_May_2008_11_41_46_+1000_gGIs4G2SIQALW4Gr
+Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.6 (GNU/Linux)
 
-iD8DBQBINhomdSjSd0sB4dIRAllQAKCaj8JYxpSZsrRDFinO3BZEVj736gCgu6DW
-9PzEOU8mcCKjN8yR2Z+SL0k=
-=C1vG
+iD8DBQFINiDeTgG2atn1QN8RAi/yAKCPvAIV6N8hB4Qa84dRfyTkQUmmBQCcC2QL
+9GSe2Yvt1jL5F5qxRSuLWtk=
+=CHux
 -----END PGP SIGNATURE-----
 
---=-Qicx5JNaaF7hr9NmJIav--
+--Signature=_Fri__23_May_2008_11_41_46_+1000_gGIs4G2SIQALW4Gr--
