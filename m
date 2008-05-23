@@ -1,20 +1,26 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: RE: [PATCH] [POWERPC] Fix return value check logic
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Medve Emilian <Emilian.Medve@freescale.com>
-In-Reply-To: <598D5675D34BE349929AF5EDE9B03E2701F48298@az33exm24.fsl.freescale.net>
-References: <1211485762-29637-1-git-send-email-Emilian.Medve@Freescale.com>
-	<1211505190.7671.6.camel@localhost>
-	<598D5675D34BE349929AF5EDE9B03E2701F4828E@az33exm24.fsl.freescale.net>
-	<598D5675D34BE349929AF5EDE9B03E2701F48298@az33exm24.fsl.freescale.net>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-muIyDinwju9bJagU6ZOn"
-Date: Sat, 24 May 2008 00:52:05 +1000
-Message-Id: <1211554325.16348.8.camel@localhost>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, linuxppc-embedded@ozlabs.org
-Reply-To: michael@ellerman.id.au
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 1DEAADE055
+	for <linuxppc-dev@ozlabs.org>; Sat, 24 May 2008 01:42:07 +1000 (EST)
+Date: Fri, 23 May 2008 19:42:04 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Pierre Ossman <drzeus-mmc@drzeus.cx>
+Subject: Re: [PATCH 3/4] [MMC] mmc_spi: add polling support for the card
+	detect line
+Message-ID: <20080523154204.GA19803@polina.dev.rtsoft.ru>
+References: <20080516165057.GC24196@polina.dev.rtsoft.ru>
+	<20080517133633.5aa26938@mjolnir.drzeus.cx>
+	<20080521184713.GA30284@polina.dev.rtsoft.ru>
+	<20080521212831.523f344b@mjolnir.drzeus.cx>
+	<20080522181713.GA26918@polina.dev.rtsoft.ru>
+	<20080522213432.4a50629b@mjolnir.drzeus.cx>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <20080522213432.4a50629b@mjolnir.drzeus.cx>
+Cc: David Brownell <dbrownell@users.sourceforge.net>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	spi-devel-general@lists.sourceforge.net, Timur Tabi <timur@freescale.com>
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,50 +30,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thu, May 22, 2008 at 09:34:32PM +0200, Pierre Ossman wrote:
+[...]
+> > Ok. How about this version?
+> > 
+> 
+> Perfect. Unless there is some way you can pass flags in platform data?
+> Using the lack of an init() to determine the need for polling is a bit
+> circumstantial.
 
---=-muIyDinwju9bJagU6ZOn
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Aha, that's an idea, thanks. Implemented in the updated patches.
 
-On Fri, 2008-05-23 at 07:39 -0700, Medve Emilian wrote:
-> Hello Michael,
->=20
->=20
-> > > That won't work if CONFIG_DEBUG_FS is not defined, because in=20
-> > > that case
-> > > debugfs_create_file() returns -ENODEV.
-> >=20
-> > Will respin.
->=20
-> At a second glance in arch/powerpc/Kconfig.debug, VIRQ_DEBUG depends on
-> DEBUG_FS so I think that the patch should work as is.
+p.s.
+I think, in case of capabilities, it's users' responsibility to not
+issue bogus flags, so mmc_spi doesn't mask anything, it just passes
+platform's caps. This also avoids drivers update when (if) new caps
+will be implemented.
 
-You're right, thanks for checking. In that case:
-
-Acked-by: Michael Ellerman <michael@ellerman.id.au>
-
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-muIyDinwju9bJagU6ZOn
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBINtoVdSjSd0sB4dIRAv7RAJ0Tt8XGDOCOaj3va1d/EYBoJL5QywCgufBF
-wRUMzFdRM/PHTVVVIje1f5s=
-=lK8v
------END PGP SIGNATURE-----
-
---=-muIyDinwju9bJagU6ZOn--
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
