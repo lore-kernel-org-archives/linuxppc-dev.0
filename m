@@ -1,19 +1,20 @@
-Return-Path: <Bruce_Leonard@selinc.com>
-Received: from tesla.selinc.com (tesla.selinc.com [12.110.71.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "tesla.selinc.com", Issuer "RSA Data Security,
-	Inc." (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id D370DDDDDB
+Return-Path: <jwboyer@gmail.com>
+Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.183])
+	by ozlabs.org (Postfix) with ESMTP id 83AADDE4EF
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 24 May 2008 03:22:28 +1000 (EST)
-In-Reply-To: <4B12DBAE-BB24-4114-BFEB-FF369E461622@kernel.crashing.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: Question about "native" compiling
-MIME-Version: 1.0
-Message-ID: <OF09440A2B.3690B6A9-ON88257452.005F3D86-88257452.005F6B55@selinc.com>
-From: Bruce_Leonard@selinc.com
-Date: Fri, 23 May 2008 10:22:13 -0700
-Content-Type: text/plain; charset="US-ASCII"
+	Sat, 24 May 2008 03:49:45 +1000 (EST)
+Received: by py-out-1112.google.com with SMTP id z59so437527pyg.27
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri, 23 May 2008 10:49:44 -0700 (PDT)
+Date: Fri, 23 May 2008 12:49:40 -0500
+From: Josh Boyer <jwboyer@gmail.com>
+To: - Reyneke <reynekejunk@hotmail.com>
+Subject: Re: linux powerpc and device trees
+Message-ID: <20080523124940.20e51d22@vader.jdub.homelinux.org>
+In-Reply-To: <BAY101-W39CE5CDB63DCE2DC056AAFBEC10@phx.gbl>
+References: <BAY101-W39CE5CDB63DCE2DC056AAFBEC10@phx.gbl>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -25,8 +26,19 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Thanks Kumar and everyone else who responded.  You've all been a great 
-deal of help and I really appreciate it.  We're going to go with the G5. 
-Thanks again.
+On Fri, 23 May 2008 14:53:44 +0000
+- Reyneke <reynekejunk@hotmail.com> wrote:
 
-Bruce
+> memory {
+> device_type = "memory";
+> reg = ; /* Filled in by zImage */
+> };
+> 
+> This is where I am unclear as to how to prepare the device tree. Is step (4) correct since I'm using uImage? Where is the memory information suppose to come from? Previously U-boot passes this kind of data to the kernel via bd_t - how does it work now using device trees?
+
+As others have noted, U-Boot can fill in the device tree parts that are
+missing if your version of U-Boot is FDT capable.  If not, you need to
+use a cuImage wrapper to do that part for you.  See
+arch/powerpc/boot/cuboot-sequoia.c for examples.
+
+josh
