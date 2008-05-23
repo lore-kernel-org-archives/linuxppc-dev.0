@@ -2,17 +2,17 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 0A357DE6CA
-	for <linuxppc-dev@ozlabs.org>; Sat, 24 May 2008 03:56:13 +1000 (EST)
-Message-Id: <AF83CB69-4BBA-4AA2-A0BB-46987B9E6995@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id 81D59DE760
+	for <linuxppc-dev@ozlabs.org>; Sat, 24 May 2008 03:56:16 +1000 (EST)
+Message-Id: <6C9CC80B-8422-4612-BDFF-22DC245F2179@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Rune Torgersen <runet@innovsys.com>
-In-Reply-To: <20080523155915.9ABF15AF36@innovsys.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+In-Reply-To: <20080523141541.GA16217@polina.dev.rtsoft.ru>
+Content-Type: text/plain; charset=WINDOWS-1252; format=flowed; delsp=yes
 Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: [PATCH]: Check that TASK_SIZE does not overlap KERNEL_START
-Date: Fri, 23 May 2008 12:55:07 -0500
-References: <20080523155915.9ABF15AF36@innovsys.com>
+Subject: Re: [PATCH] [POWERPC] mpic: fix ambiguous else statement
+Date: Fri, 23 May 2008 12:56:08 -0500
+References: <20080523141541.GA16217@polina.dev.rtsoft.ru>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -24,19 +24,24 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On May 23, 2008, at 10:59 AM, Rune Torgersen wrote:
+On May 23, 2008, at 9:15 AM, Anton Vorontsov wrote:
 
-> Make sure CONFIG_TASK_SIZE does not overlap CONFIG_KERNEL_START
-> This could happen when overriding settings to get 1GB lowmem, and  
-> would lead
-> to userland mysteriousely hanging.
+> This patch fixes following warning introduced by
+> commit 475ca391b490a683d66bf19999a8a7a24913f139 (mpic: Deal with =20
+> bogus NIRQ
+> in Feature Reporting Register):
 >
-> This setting is only used by PPC32.
->
-> Signed-off-by Rune Torgersen <runet@innovsys.com>
+>  CC      arch/powerpc/sysdev/mpic.o
+> arch/powerpc/sysdev/mpic.c: In function =E2=80=98mpic_alloc=E2=80=99:
+> arch/powerpc/sysdev/mpic.c:1146: warning: suggest explicit braces to =20=
 
-you seem to have lost a colon.
+> avoid ambiguous =E2=80=98else=E2=80=99
+>
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 
 Acked-by: Kumar Gala <galak@kernel.crashing.org>
+
+as pointed at to me if you set LANG=3DC in your environment gcc will =20
+stop spitting out the funny chars.
 
 - k
