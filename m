@@ -1,23 +1,22 @@
-Return-Path: <ncase@xes-inc.com>
-Received: from xes-mad.com (xes-mad.com [216.165.139.214])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 1404BDE026
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 May 2008 13:28:58 +1000 (EST)
-Subject: Re: [PATCH 2/2] USB: isp1760: Support board-specific hardware
-	configurations
-From: Nathaniel Case <ncase@xes-inc.com>
-To: Sebastian Siewior <sebastian@breakpoint.cc>
-In-Reply-To: <20080522153555.GB26410@Chamillionaire.breakpoint.cc>
-References: <1211405331.13845.628.camel@localhost.localdomain>
-	<20080522153555.GB26410@Chamillionaire.breakpoint.cc>
-Content-Type: text/plain
-Date: Thu, 22 May 2008 22:28:37 -0500
-Message-Id: <1211513317.22457.14.camel@satellite>
-Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
-	Sebastian Siewior <bigeasy@linutronix.de>,
-	Greg Kroah-Hartman <gregkh@suse.de>, linux-usb@vger.kernel.org
+	by ozlabs.org (Postfix) with ESMTPS id E2761DE03C
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 May 2008 13:31:56 +1000 (EST)
+Message-Id: <0855C418-66AB-4335-A677-371E5DC08B5C@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: "Jin Zhengxiong" <Jason.Jin@freescale.com>
+In-Reply-To: <CC27DED0F8F39E48A7E75FD768688B7A915AB8@zch01exm27.fsl.freescale.net>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v919.2)
+Subject: Re: [PATCH v2] [POWERPC] mpic: deal with bogus NIRQ in
+	FeatureReporting Register
+Date: Thu, 22 May 2008 22:31:43 -0500
+References: <Pine.LNX.4.64.0805211559110.31758@blarg.am.freescale.net>
+	<1211403708.8297.251.camel@pasglop>
+	<CC27DED0F8F39E48A7E75FD768688B7A915AB8@zch01exm27.fsl.freescale.net>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,31 +26,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2008-05-22 at 17:35 +0200, Sebastian Siewior wrote:
-> If you don't mind, I would prefer having ISP1760_FLAG_BUS_WIDTH_32 and
-> or conditionally HW_DATA_BUS_32BIT.
 
-It doesn't matter much to me -- I just reasoned that a 32-bit bus width
-was the norm since it's the hardware default and so having a flags=0
-would be desirable for that case.  Did you have something else in mind?
+On May 22, 2008, at 9:15 PM, Jin Zhengxiong wrote:
 
-> Why do you have to read the chip id here? Is this a dummy read to ensure
-> something?
+> Hi, Kumar,
+>
+> So I should  change the MSI hwirq num according to this change, The
+> patches
+> will be send after this changes updated to your tree. How about  
+> applying
+> the MSI
+> driver firstly?
 
-The idea is to force the data bus lines to change states to protect
-against a false success.  E.g., you read back 0xdeadbabe but it was due
-to the line states from the previous write rather than coming from the
-chip itself (I've seen this when you get the bus chip select or timing
-configuration wrong). 
+I've asked Paul to pick up this patch for powerpc-next.  If you can  
+rework the MSI patches with this patch applied and just change the  
+board support for mpc85xx_ds and 8610 to set the flag.
 
-> I'm sorry, you can't solve this way. My ISP1760 claims to be an ISP1761
-> this way :) So I end up with one functional port... The only way to
-> distinguish between 1760 & 1761 would be at the probing level.
-
-Yikes -- you're right.  I would have never guessed that the 1760 would
-have returned 0x1761, but sure enough that's what the datasheet says.
-
-Thanks for the feedback.
-
---
-Nate Case <ncase@xes-inc.com>
+- k
