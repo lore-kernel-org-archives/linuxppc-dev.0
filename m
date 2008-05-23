@@ -1,16 +1,16 @@
 Return-Path: <michael@ellerman.id.au>
-Subject: Re: section mismatch warnings in current git head for powerpc
+Subject: Re: [PATCH] [POWERPC] Fix return value check logic
 From: Michael Ellerman <michael@ellerman.id.au>
-To: Chris Friesen <cfriesen@nortel.com>
-In-Reply-To: <4835ABDB.8020901@nortel.com>
-References: <4835ABDB.8020901@nortel.com>
+To: Emil Medve <Emilian.Medve@Freescale.com>
+In-Reply-To: <1211485762-29637-1-git-send-email-Emilian.Medve@Freescale.com>
+References: <1211485762-29637-1-git-send-email-Emilian.Medve@Freescale.com>
 Content-Type: multipart/signed; micalg=pgp-sha1;
 	protocol="application/pgp-signature";
-	boundary="=-6pCvLfZbrGyP8YZ2QDAm"
-Date: Fri, 23 May 2008 11:02:39 +1000
-Message-Id: <1211504559.7671.2.camel@localhost>
+	boundary="=-Qicx5JNaaF7hr9NmJIav"
+Date: Fri, 23 May 2008 11:13:10 +1000
+Message-Id: <1211505190.7671.6.camel@localhost>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, linuxppc-embedded@ozlabs.org
 Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -22,44 +22,50 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-6pCvLfZbrGyP8YZ2QDAm
-Content-Type: text/plain; charset=utf-8
+--=-Qicx5JNaaF7hr9NmJIav
+Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, 2008-05-22 at 11:22 -0600, Chris Friesen wrote:
-> I got the following warnings when building current git head for powerpc=20
-> 64bit:
+On Thu, 2008-05-22 at 14:49 -0500, Emil Medve wrote:
+> debugfs_create_file() return a non-NULL (non-zero) value in case of succe=
+ss
 >=20
+> This fixes this non-critical boot-time debuging error message:
 >=20
->    LD      net/ipv4/built-in.o
->    LD      drivers/scsi/built-in.o
->    LD      net/built-in.o
->    LD      drivers/built-in.o
->    LD      vmlinux.o
->    MODPOST vmlinux.o
-> WARNING: vmlinux.o(.text+0x73bc): Section mismatch in reference from the=20
-> function .start_secondary_prolog() to the function=20
-> .devinit.text:.start_secondary()
-> The function .start_secondary_prolog() references
-> the function __devinit .start_secondary().
-> This is often because .start_secondary_prolog lacks a __devinit
-> annotation or the annotation of .start_secondary is wrong.
+> [    1.316386] calling  irq_debugfs_init+0x0/0x50
+> [    1.316399] initcall irq_debugfs_init+0x0/0x50 returned -12 after 0 ms=
+ecs
+> [    1.316411] initcall irq_debugfs_init+0x0/0x50 returned with error cod=
+e -12
+>=20
+> Signed-off-by: Emil Medve <Emilian.Medve@Freescale.com>
+> ---
+>=20
+> $ scripts/checkpatch.pl 0001--POWERPC-Fix-return-value-check-logic.patch=20
+> total: 0 errors, 0 warnings, 8 lines checked
+>=20
+> 0001--POWERPC-Fix-return-value-check-logic.patch has no obvious style pro=
+blems and is ready for submission.
+>=20
+>  arch/powerpc/kernel/irq.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+>=20
+> diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+> index 2f73f70..bcc249d 100644
+> --- a/arch/powerpc/kernel/irq.c
+> +++ b/arch/powerpc/kernel/irq.c
+> @@ -1073,7 +1073,7 @@ static const struct file_operations virq_debug_fops=
+ =3D {
+>  static int __init irq_debugfs_init(void)
+>  {
+>  	if (debugfs_create_file("virq_mapping", S_IRUGO, powerpc_debugfs_root,
+> -				 NULL, &virq_debug_fops))
+> +				 NULL, &virq_debug_fops) =3D=3D NULL)
+>  		return -ENOMEM;
 
-start_secondary_prolog() is in asm, so I don't know what you're supposed
-to do with that.
-
-> WARNING: vmlinux.o(.text+0x260a8): Section mismatch in reference from=20
-> the function .pci_dn_reconfig_notifier() to the function=20
-> .devinit.text:.update_dn_pci_info()
-> The function .pci_dn_reconfig_notifier() references
-> the function __devinit .update_dn_pci_info().
-> This is often because .pci_dn_reconfig_notifier lacks a __devinit
-> annotation or the annotation of .update_dn_pci_info is wrong.
-
-I think =EF=BB=BFpci_dn_reconfig_notifier() could be __devinit, but it's no=
-t
-clear because the code that calls it is not __devinit or conditional on
-HOTPLUG, eventhough in practice I think it is only used for hotplug.
+That won't work if CONFIG_DEBUG_FS is not defined, because in that case
+debugfs_create_file() returns -ENODEV. I guess the whole virq debug code
+should be wrapped in #ifdef CONFIG_DEBUG_FS.
 
 cheers
 
@@ -73,16 +79,16 @@ phone: +61 2 6212 1183 (tie line 70 21183)
 We do not inherit the earth from our ancestors,
 we borrow it from our children. - S.M.A.R.T Person
 
---=-6pCvLfZbrGyP8YZ2QDAm
+--=-Qicx5JNaaF7hr9NmJIav
 Content-Type: application/pgp-signature; name=signature.asc
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.6 (GNU/Linux)
 
-iD8DBQBINhevdSjSd0sB4dIRAkPIAJsF0e4y9HSU1+BVgceA5RAzvY+TPwCeI+IL
-3DIIOHkG83GiuAoTgK2ycgA=
-=RgT4
+iD8DBQBINhomdSjSd0sB4dIRAllQAKCaj8JYxpSZsrRDFinO3BZEVj736gCgu6DW
+9PzEOU8mcCKjN8yR2Z+SL0k=
+=C1vG
 -----END PGP SIGNATURE-----
 
---=-6pCvLfZbrGyP8YZ2QDAm--
+--=-Qicx5JNaaF7hr9NmJIav--
