@@ -1,24 +1,23 @@
-Return-Path: <jochen@scram.de>
-Received: from mail.scram.de (mail0.scram.de [78.47.204.202])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.scram.de", Issuer "scram e.V. CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id C7122DE0F4
-	for <linuxppc-dev@ozlabs.org>; Sun, 25 May 2008 00:32:56 +1000 (EST)
-Message-ID: <48382710.9030700@scram.de>
-Date: Sat, 24 May 2008 16:32:48 +0200
-From: Jochen Friedrich <jochen@scram.de>
+Return-Path: <david-b@pacbell.net>
+Received: from smtp121.sbc.mail.sp1.yahoo.com (smtp121.sbc.mail.sp1.yahoo.com
+	[69.147.64.94]) by ozlabs.org (Postfix) with SMTP id 4DC72DDFB5
+	for <linuxppc-dev@ozlabs.org>; Sun, 25 May 2008 02:50:45 +1000 (EST)
+From: David Brownell <david-b@pacbell.net>
+To: "Grant Likely" <grant.likely@secretlab.ca>
+Subject: Re: [spi-devel-general] [PATCH 3/4] spi: Add OF binding support for
+	SPI busses
+Date: Sat, 24 May 2008 00:13:27 -0700
+References: <20080516193054.28030.35126.stgit@trillian.secretlab.ca>
+	<200805221926.24112.david-b@pacbell.net>
+	<fa686aa40805232325w65d4f706i50798121a8cce263@mail.gmail.com>
+In-Reply-To: <fa686aa40805232325w65d4f706i50798121a8cce263@mail.gmail.com>
 MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [RFC PATCH 2/2] mmc: add OpenFirmware bindings for the mmc_spi
-	driver
-References: <20080523182754.GA26891@polina.dev.rtsoft.ru>	<20080523182842.GB469@polina.dev.rtsoft.ru>
-	<fa686aa40805232219x7e888d80y394958f1c0a0fad0@mail.gmail.com>
-In-Reply-To: <fa686aa40805232219x7e888d80y394958f1c0a0fad0@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: David Brownell <dbrownell@users.sourceforge.net>,
-	Gary Jennejohn <garyj@denx.de>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
-	Pierre Ossman <drzeus-mmc@drzeus.cx>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200805240013.28044.david-b@pacbell.net>
+Cc: fabrizio.garetto@gmail.com, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, spi-devel-general@lists.sourceforge.net,
+	Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,29 +27,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Grant,
+On Friday 23 May 2008, Grant Likely wrote:
+> Very good point.  Okay, so we cannot assume any correlation between
+> the number of CS lines and the number of child nodes to the SPI bus.
 
->> +      - compatible : should be "linux,mmc-spi".
->> +      - linux,modalias  - should be "of_mmc_spi".
-> 
-> I'm not even sure if the whole linux,modalias is even a good idea.  I
-> had kind of thrown it in there as a convenient way to override
-> compatible when needed, but I haven't really thought it out very well
-> and I think it is rather a hack.
-> 
-> The real problem is we don't yet have good method (or place) to apply
-> a translation table from compatible values to modaliases.  Ideally,
-> the translations should be part of the drivers themselves, but that
-> causes a chicken and egg problem of needing to load the driver to get
-> access to the table to know if it is the correct driver... Of course,
-> I'm really not very familiar with the whole module autoloading
-> mechanism.  Regardless; binding should be based on compatible, not on
-> a hacky and bogus linux,modalias property.
+That wasn't what I was implying ... all the devices hooked
+up to a given chipselect should be viewed as a single (albeit
+composite) child node.
 
-i2c exactly has the same problem. Here the compatible entry is used
-in drivers/of/of_i2c.c and mangled into a name to be used as modalias.
-It's still sort of hackish, but it seems to be a compromise acceptable
-by both OF and i2c folks.
+Now, the driver for that child node may want to expose lots
+of substructure.  But that's no different from any other
+complex device, whose protocol happens to embed some notion
+of component addressing.
 
-Thanks,
-Jochen
+It's just that in the case I mentioned, that addressing is
+a bit more externally visible than it is in some other cases.
+
+- Dave
