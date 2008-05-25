@@ -1,21 +1,24 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.183])
-	by ozlabs.org (Postfix) with ESMTP id 83AADDE4EF
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	by ozlabs.org (Postfix) with ESMTP id 611C4DE00D
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 24 May 2008 03:49:45 +1000 (EST)
-Received: by py-out-1112.google.com with SMTP id z59so437527pyg.27
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 23 May 2008 10:49:44 -0700 (PDT)
-Date: Fri, 23 May 2008 12:49:40 -0500
-From: Josh Boyer <jwboyer@gmail.com>
-To: - Reyneke <reynekejunk@hotmail.com>
-Subject: Re: linux powerpc and device trees
-Message-ID: <20080523124940.20e51d22@vader.jdub.homelinux.org>
-In-Reply-To: <BAY101-W39CE5CDB63DCE2DC056AAFBEC10@phx.gbl>
-References: <BAY101-W39CE5CDB63DCE2DC056AAFBEC10@phx.gbl>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-embedded@ozlabs.org
+	Sun, 25 May 2008 15:35:26 +1000 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1K08t8-0006sw-Ql
+	for linuxppc-embedded@ozlabs.org; Sat, 24 May 2008 22:35:22 -0700
+Message-ID: <17454696.post@talk.nabble.com>
+Date: Sat, 24 May 2008 22:35:22 -0700 (PDT)
+From: swamydp <swamydp@gmail.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: RE: linux 2.6 hangs at __delay function on Viretx 4 board
+In-Reply-To: <20080516162807.2132E181804D@mail89-sin.bigfish.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+References: <17222725.post@talk.nabble.com>
+	<20080514150139.E258D8D006F@mail70-va3.bigfish.com>
+	<17276753.post@talk.nabble.com>
+	<20080516162807.2132E181804D@mail89-sin.bigfish.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -26,19 +29,43 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Fri, 23 May 2008 14:53:44 +0000
-- Reyneke <reynekejunk@hotmail.com> wrote:
 
-> memory {
-> device_type = "memory";
-> reg = ; /* Filled in by zImage */
-> };
-> 
-> This is where I am unclear as to how to prepare the device tree. Is step (4) correct since I'm using uImage? Where is the memory information suppose to come from? Previously U-boot passes this kind of data to the kernel via bd_t - how does it work now using device trees?
+Hi John
 
-As others have noted, U-Boot can fill in the device tree parts that are
-missing if your version of U-Boot is FDT capable.  If not, you need to
-use a cuImage wrapper to do that part for you.  See
-arch/powerpc/boot/cuboot-sequoia.c for examples.
+Sorry for getting back late. 
 
-josh
+I have been debugging further using the UART to send output directly to
+serial post. Now I see that just after entering start_kernel, a ITLB miss
+exception occurs and linux hangs at that point. 
+
+Looks like the kernel is probably not running at all yet, may stuck in
+early initialization.
+
+>> Yes
+
+1. Has the kernel ever ran on this board or is this development to get
+it running?
+
+>> No. This is a new board and I am trying to build a simple EDK system with
+>> only
+PPC, UART, PIC as the devices.
+ 
+2. Not sure on the tools you are using to build it.  You mention the
+EDK, but you must not be using it's compiler as it's not configured in
+the EDK to build Linux. 
+
+>> EDK 9.2 version, XMD for debug. Kernel 2.6 version is built in linux
+>> machine and zImage.elf is downloaded
+to the board.
+
+Thanks for the UART suggestion, works well. Any suggestions as to what might
+be wrong in start_kernel function ? I will continue debugging meanwhile.
+
+Thanks
+swamy
+
+
+
+-- 
+View this message in context: http://www.nabble.com/linux-2.6-hangs-at-__delay-function-on-Viretx-4-board-tp17222725p17454696.html
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
