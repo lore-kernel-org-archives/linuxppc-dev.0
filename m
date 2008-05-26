@@ -1,19 +1,19 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id DFA1ADDFE0
-	for <linuxppc-dev@ozlabs.org>; Mon, 26 May 2008 21:49:17 +1000 (EST)
-Date: Mon, 26 May 2008 15:49:15 +0400
+	by ozlabs.org (Postfix) with ESMTP id 48320DE07B
+	for <linuxppc-dev@ozlabs.org>; Mon, 26 May 2008 21:58:28 +1000 (EST)
+Date: Mon, 26 May 2008 15:58:26 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Grant Likely <grant.likely@secretlab.ca>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
 Subject: Re: [RFC PATCH 2/2] mmc: add OpenFirmware bindings for the mmc_spi
 	driver
-Message-ID: <20080526114914.GA26288@polina.dev.rtsoft.ru>
+Message-ID: <20080526115826.GB26288@polina.dev.rtsoft.ru>
 References: <20080523182754.GA26891@polina.dev.rtsoft.ru>
 	<20080523182842.GB469@polina.dev.rtsoft.ru>
-	<fa686aa40805232219x7e888d80y394958f1c0a0fad0@mail.gmail.com>
+	<20080524123527.04794974.sfr@canb.auug.org.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf8
-In-Reply-To: <fa686aa40805232219x7e888d80y394958f1c0a0fad0@mail.gmail.com>
+In-Reply-To: <20080524123527.04794974.sfr@canb.auug.org.au>
 Cc: David Brownell <dbrownell@users.sourceforge.net>,
 	Gary Jennejohn <garyj@denx.de>, linux-kernel@vger.kernel.org,
 	linuxppc-dev@ozlabs.org, Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
@@ -28,123 +28,63 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, May 23, 2008 at 11:19:28PM -0600, Grant Likely wrote:
-> Yup, I like this approach better.  I had been thinking about putting
-> this all in the same file (drivers/mmc/host/mmc_spi.c) instead of
-> exporting the probe/remove symbols and by using clear comment blocks
-> to divide the sections, but I've got no issues with this approach.
+On Sat, May 24, 2008 at 12:35:27PM +1000, Stephen Rothwell wrote:
+> Hi Anton,
 > 
-> This is good work.  Some comments below.  (I won't repeat Stephen's comments)
-
-Thanks!
-
-> On Fri, May 23, 2008 at 12:28 PM, Anton Vorontsov
-> <avorontsov@ru.mvista.com> wrote:
-> > This patch depends on the Grant Likely's SPI patches, so this is
-> > for RFC only.
+> On Fri, 23 May 2008 22:28:42 +0400 Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
 > >
-> > Also, later we'll able to remove OF_GPIO dependency.
-> >
-> > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> > ---
-> >  Documentation/powerpc/booting-without-of.txt |   24 ++++
-> >  drivers/mmc/host/Kconfig                     |    7 ++
-> >  drivers/mmc/host/Makefile                    |    2 +-
-> >  drivers/mmc/host/of_mmc_spi.c                |  151 ++++++++++++++++++++++++++
-> >  4 files changed, 183 insertions(+), 1 deletions(-)
-> >  create mode 100644 drivers/mmc/host/of_mmc_spi.c
-> >
-> > diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
-> > index 423cb2b..7d0ef80 100644
-> > --- a/Documentation/powerpc/booting-without-of.txt
-> > +++ b/Documentation/powerpc/booting-without-of.txt
-> > @@ -3151,7 +3151,31 @@ platforms are moved over to use the flattened-device-tree model.
-> >                        };
-> >                };
-> >
-> > +    ...) MMC-over-SPI
-> >
-> > +      Required properties:
-> > +      - #address-cells : should be 0.
-> > +      - #size-cells : should be 0.
+> > +++ b/drivers/mmc/host/of_mmc_spi.c
 > 
-> Are these properties required at all?  Will this node have any children.
-
-Yeah, my weakness for #a/#s, I always insert it where unnecessary. :-)
-Will fix.
-
-> > +      - compatible : should be "linux,mmc-spi".
-> > +      - linux,modalias  - should be "of_mmc_spi".
-> 
-> I'm not even sure if the whole linux,modalias is even a good idea.  I
-> had kind of thrown it in there as a convenient way to override
-> compatible when needed, but I haven't really thought it out very well
-> and I think it is rather a hack.
-> 
-> The real problem is we don't yet have good method (or place) to apply
-> a translation table from compatible values to modaliases.  Ideally,
-> the translations should be part of the drivers themselves, but that
-> causes a chicken and egg problem of needing to load the driver to get
-> access to the table to know if it is the correct driver... Of course,
-> I'm really not very familiar with the whole module autoloading
-> mechanism.  Regardless; binding should be based on compatible, not on
-> a hacky and bogus linux,modalias property.
-
-I fully agree. Though, I just tried to use your spi_of with a belief
-that you'll implement compatible->modalias translation in spi_of. :-)
-
-> > +      - reg : should specify SPI address (chip-select number).
-> > +      - max-speed : (optional) maximum frequency for this device (Hz).
-> > +      - linux,mmc-ocr-mask : (optional) Linux-specific MMC OCR mask
-> > +        (slot voltage).
-> 
-> Should this property be better defined?
-
-Yes, will do. Was a bit lazy to do this for the RFC.
-
-[...]
-> > +static int mmc_get_cd(struct device *dev)
-> > +{
-> > +       struct of_mmc_spi *oms = dev->archdata.of_node->data;
-> > +
-> > +       return gpio_get_value(oms->cd_gpio);
-> > +}
-> > +
 > > +static int of_mmc_spi_probe(struct spi_device *spi)
-> > +{
-> > +       int ret = -EINVAL;
-> > +       struct device_node *np = spi->dev.archdata.of_node;
-> > +       struct device *dev = &spi->dev;
-> > +       struct of_mmc_spi *oms = kzalloc(sizeof(*oms), GFP_KERNEL);
-> > +       const u32 *ocr_mask;
-> > +       int size;
-> > +
-> > +       if (!oms)
-> > +               return -ENOMEM;
-> > +
-> > +       /* Somebody occupied node's data? */
-> > +       WARN_ON(spi->dev.archdata.of_node->data);
 > 
-> Perhaps bail at this point to avoid corruption?  Would it be better to
-> use container_of() instead for getting a pointer back to the private
-> structure from the pdata pointer?
+> > +	/*
+> > +	 * mmc_spi_probe will use drvdata, so we can't use it. Use node's
+> > +	 * data instead.
+> > +	 */
+> > +	spi->dev.archdata.of_node->data = oms;
+> 
+> If you delay this assignment, you may not have to clean it up in the
+> error path.
 
-Using platform_data with container_of isn't always safe (e.g. for
-platform bus we can't use it, this is done so that board's platform_data
-definitions could be made __initdata).
+No, if I delay it I'll have to clean it up anyway, just a bit later
+(after mmc_spi_probe() fail).
 
-David, would you [not] suggest us to use platform_data with
-container_of, that is, are there any plans to make SPI core copy
-the platform_data instead of passing a pointer directly?
+> > +	ocr_mask = of_get_property(np, "linux,mmc-ocr-mask", &size);
+> 
+> You should really explicitly include linux/of.h to use of_get_property etc
 
+Thanks, will do.
+
+> > +int __devexit of_mmc_spi_remove(struct spi_device *spi)
+> > +{
+> > +	struct of_mmc_spi *oms = spi->dev.archdata.of_node->data;
+> > +	int ret;
 > > +
-> > +       /*
-> > +        * mmc_spi_probe will use drvdata, so we can't use it. Use node's
-> > +        * data instead.
-> > +        */
-> > +       spi->dev.archdata.of_node->data = oms;
-> > +
-[...]
+> > +	ret = mmc_spi_remove(spi);
+> > +	if (ret)
+> > +		return ret;
+> 
+> Maybe you should do this last so that you don't leak more than necessary
+> if mmc_spi_remove fails. (I don't know what state mmc_spi_remove leaves
+> stuff in if it fails ...)
+
+If I do this last, then of_mmc_spi_remove() would be not safe to call
+multiple times on non-fatal errors (e.g. when mmc_spi_remove() returns
+-EBUSY (despite that currently mmc_spi_remove can't fail)).
+
+Also, if I do this last, then there will be a potential use-after-free
+in the mmc_spi driver.
+
+> > +static struct spi_driver of_mmc_spi_driver = {
+> > +	.driver = {
+> > +		.name = "of_mmc_spi",
+> > +		.bus = &spi_bus_type,
+> 
+> This is initialised by spi_register_driver().
+
+This was straight copy from the mmc_spi.c. Will fix.
+
+Thanks,
 
 -- 
 Anton Vorontsov
