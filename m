@@ -1,27 +1,26 @@
 Return-Path: <markn@au1.ibm.com>
-Received: from e23smtp06.au.ibm.com (E23SMTP06.au.ibm.com [202.81.18.175])
+Received: from e23smtp02.au.ibm.com (E23SMTP02.au.ibm.com [202.81.18.163])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp06.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id A219DDDFB7
+	(Client CN "e23smtp02.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 65273DDFAF
 	for <linuxppc-dev@ozlabs.org>; Mon, 26 May 2008 14:19:33 +1000 (EST)
 Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.18.234])
-	by e23smtp06.au.ibm.com (8.13.1/8.13.1) with ESMTP id m4Q4J4xn020938
-	for <linuxppc-dev@ozlabs.org>; Mon, 26 May 2008 14:19:04 +1000
+	by e23smtp02.au.ibm.com (8.13.1/8.13.1) with ESMTP id m4Q4JPJn015542
+	for <linuxppc-dev@ozlabs.org>; Mon, 26 May 2008 14:19:25 +1000
 Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
 	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m4Q4JIi61560608
-	for <linuxppc-dev@ozlabs.org>; Mon, 26 May 2008 14:19:18 +1000
+	m4Q4JHd74403312
+	for <linuxppc-dev@ozlabs.org>; Mon, 26 May 2008 14:19:17 +1000
 Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
 	by d23av01.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m4Q4JWl5024987
-	for <linuxppc-dev@ozlabs.org>; Mon, 26 May 2008 14:19:32 +1000
-Message-Id: <20080526041944.417536131@au1.ibm.com>
+	m4Q4JV3a024950
+	for <linuxppc-dev@ozlabs.org>; Mon, 26 May 2008 14:19:31 +1000
+Message-Id: <20080526041943.144815580@au1.ibm.com>
 References: <20080526041430.324464061@au1.ibm.com>
-Date: Mon, 26 May 2008 14:14:36 +1000
+Date: Mon, 26 May 2008 14:14:33 +1000
 From: markn@au1.ibm.com
 To: linuxppc-dev@ozlabs.org
-Subject: [patch 6/6] Add DMA_ATTR_STRONG_ORDERING dma attribute and use in
-	Cell IOMMU code
+Subject: [patch 3/6] dma: use the struct dma_attrs in iommu code
 Cc: Mark Nelson <markn@au1.ibm.com>, arnd@arndb.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -32,194 +31,203 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Introduce a new dma attriblue DMA_ATTR_STRONG_ORDERING to use strong ordering
-on DMA mappings in the Cell processor. Add the code to the Cell's IOMMU
-implementation to use this.
-
-The current Cell IOMMU implementation sets the IOPTE_SO_RW bits in all IOTPEs
-(for both the dynamic and fixed mappings) which enforces strong ordering of
-both reads and writes. This patch makes the default behaviour weak ordering
-(the IOPTE_SO_RW bits not set) and to request a strongly ordered mapping the
-new DMA_ATTR_STRONG_ORDERING needs to be used.
-
-Dynamic mappings can be weakly or strongly ordered on an individual basis
-but the fixed mapping is always weakly ordered.
+Update iommu_alloc() to take the struct dma_attrs and pass them on to
+tce_build(). This change propagates down to the tce_build functions of
+all the platforms.
 
 Signed-off-by: Mark Nelson <markn@au1.ibm.com>
 ---
- Documentation/DMA-attributes.txt    |   12 ++++
- arch/powerpc/platforms/cell/iommu.c |   93 +++++++++++++++++++++++++++++++++---
- include/linux/dma-attrs.h           |    1 
- 3 files changed, 99 insertions(+), 7 deletions(-)
+ arch/powerpc/kernel/iommu.c            |   13 ++++++++-----
+ arch/powerpc/platforms/cell/iommu.c    |    5 +++--
+ arch/powerpc/platforms/iseries/iommu.c |    3 ++-
+ arch/powerpc/platforms/pasemi/iommu.c  |    3 ++-
+ arch/powerpc/platforms/pseries/iommu.c |   13 ++++++++-----
+ arch/powerpc/sysdev/dart_iommu.c       |    3 ++-
+ include/asm-powerpc/machdep.h          |    3 ++-
+ 7 files changed, 27 insertions(+), 16 deletions(-)
 
+Index: upstream/arch/powerpc/kernel/iommu.c
+===================================================================
+--- upstream.orig/arch/powerpc/kernel/iommu.c
++++ upstream/arch/powerpc/kernel/iommu.c
+@@ -186,7 +186,8 @@ static unsigned long iommu_range_alloc(s
+ static dma_addr_t iommu_alloc(struct device *dev, struct iommu_table *tbl,
+ 			      void *page, unsigned int npages,
+ 			      enum dma_data_direction direction,
+-			      unsigned long mask, unsigned int align_order)
++			      unsigned long mask, unsigned int align_order,
++			      struct dma_attrs *attrs)
+ {
+ 	unsigned long entry, flags;
+ 	dma_addr_t ret = DMA_ERROR_CODE;
+@@ -205,7 +206,7 @@ static dma_addr_t iommu_alloc(struct dev
+ 
+ 	/* Put the TCEs in the HW table */
+ 	ppc_md.tce_build(tbl, entry, npages, (unsigned long)page & IOMMU_PAGE_MASK,
+-			 direction);
++			 direction, attrs);
+ 
+ 
+ 	/* Flush/invalidate TLB caches if necessary */
+@@ -336,7 +337,8 @@ int iommu_map_sg(struct device *dev, str
+ 			    npages, entry, dma_addr);
+ 
+ 		/* Insert into HW table */
+-		ppc_md.tce_build(tbl, entry, npages, vaddr & IOMMU_PAGE_MASK, direction);
++		ppc_md.tce_build(tbl, entry, npages, vaddr & IOMMU_PAGE_MASK,
++				 direction, attrs);
+ 
+ 		/* If we are in an open segment, try merging */
+ 		if (segstart != s) {
+@@ -573,7 +575,8 @@ dma_addr_t iommu_map_single(struct devic
+ 			align = PAGE_SHIFT - IOMMU_PAGE_SHIFT;
+ 
+ 		dma_handle = iommu_alloc(dev, tbl, vaddr, npages, direction,
+-					 mask >> IOMMU_PAGE_SHIFT, align);
++					 mask >> IOMMU_PAGE_SHIFT, align,
++					 attrs);
+ 		if (dma_handle == DMA_ERROR_CODE) {
+ 			if (printk_ratelimit())  {
+ 				printk(KERN_INFO "iommu_alloc failed, "
+@@ -642,7 +645,7 @@ void *iommu_alloc_coherent(struct device
+ 	nio_pages = size >> IOMMU_PAGE_SHIFT;
+ 	io_order = get_iommu_order(size);
+ 	mapping = iommu_alloc(dev, tbl, ret, nio_pages, DMA_BIDIRECTIONAL,
+-			      mask >> IOMMU_PAGE_SHIFT, io_order);
++			      mask >> IOMMU_PAGE_SHIFT, io_order, NULL);
+ 	if (mapping == DMA_ERROR_CODE) {
+ 		free_pages((unsigned long)ret, order);
+ 		return NULL;
 Index: upstream/arch/powerpc/platforms/cell/iommu.c
 ===================================================================
 --- upstream.orig/arch/powerpc/platforms/cell/iommu.c
 +++ upstream/arch/powerpc/platforms/cell/iommu.c
-@@ -194,11 +194,13 @@ static void tce_build_cell(struct iommu_
- 	const unsigned long prot = 0xc48;
- 	base_pte =
- 		((prot << (52 + 4 * direction)) & (IOPTE_PP_W | IOPTE_PP_R))
--		| IOPTE_M | IOPTE_SO_RW | (window->ioid & IOPTE_IOID_Mask);
-+		| IOPTE_M | (window->ioid & IOPTE_IOID_Mask);
- #else
--	base_pte = IOPTE_PP_W | IOPTE_PP_R | IOPTE_M | IOPTE_SO_RW |
-+	base_pte = IOPTE_PP_W | IOPTE_PP_R | IOPTE_M |
- 		(window->ioid & IOPTE_IOID_Mask);
- #endif
-+	if (unlikely(dma_get_attr(DMA_ATTR_STRONG_ORDERING, attrs)))
-+		base_pte |= IOPTE_SO_RW;
- 
- 	io_pte = (unsigned long *)tbl->it_base + (index - tbl->it_offset);
- 
-@@ -539,7 +541,6 @@ static struct cbe_iommu *cell_iommu_for_
- static unsigned long cell_dma_direct_offset;
- 
- static unsigned long dma_iommu_fixed_base;
--struct dma_mapping_ops dma_iommu_fixed_ops;
- 
- static struct iommu_table *cell_get_iommu_table(struct device *dev)
- {
-@@ -563,6 +564,85 @@ static struct iommu_table *cell_get_iomm
- 	return &window->table;
+@@ -173,7 +173,8 @@ static void invalidate_tce_cache(struct 
  }
  
-+static void *dma_fixed_alloc_coherent(struct device *dev, size_t size,
-+				      dma_addr_t *dma_handle, gfp_t flag)
-+{
-+	return dma_direct_ops.alloc_coherent(dev, size, dma_handle, flag);
-+}
-+
-+static void dma_fixed_free_coherent(struct device *dev, size_t size,
-+				    void *vaddr, dma_addr_t dma_handle)
-+{
-+	dma_direct_ops.free_coherent(dev, size, vaddr, dma_handle);
-+}
-+
-+static dma_addr_t dma_fixed_map_single(struct device *dev, void *ptr,
-+				       size_t size,
-+				       enum dma_data_direction direction,
-+				       struct dma_attrs *attrs)
-+{
-+	if (dma_get_attr(DMA_ATTR_STRONG_ORDERING, attrs))
-+		return iommu_map_single(dev, cell_get_iommu_table(dev), ptr,
-+					size, device_to_mask(dev), direction,
-+					attrs);
-+	else
-+		return dma_direct_ops.map_single(dev, ptr, size, direction,
-+						 attrs);
-+}
-+
-+static void dma_fixed_unmap_single(struct device *dev, dma_addr_t dma_addr,
-+				   size_t size,
-+				   enum dma_data_direction direction,
-+				   struct dma_attrs *attrs)
-+{
-+	if (dma_get_attr(DMA_ATTR_STRONG_ORDERING, attrs))
-+		iommu_unmap_single(cell_get_iommu_table(dev), dma_addr, size,
-+				   direction, attrs);
-+	else
-+		dma_direct_ops.unmap_single(dev, dma_addr, size, direction,
-+					    attrs);
-+}
-+
-+static int dma_fixed_map_sg(struct device *dev, struct scatterlist *sg,
-+			   int nents, enum dma_data_direction direction,
-+			   struct dma_attrs *attrs)
-+{
-+	if (dma_get_attr(DMA_ATTR_STRONG_ORDERING, attrs))
-+		return iommu_map_sg(dev, cell_get_iommu_table(dev), sg, nents,
-+				    device_to_mask(dev), direction, attrs);
-+	else
-+		return dma_direct_ops.map_sg(dev, sg, nents, direction, attrs);
-+}
-+
-+static void dma_fixed_unmap_sg(struct device *dev, struct scatterlist *sg,
-+			       int nents, enum dma_data_direction direction,
-+			       struct dma_attrs *attrs)
-+{
-+	if (dma_get_attr(DMA_ATTR_STRONG_ORDERING, attrs))
-+		iommu_unmap_sg(cell_get_iommu_table(dev), sg, nents, direction,
-+			       attrs);
-+	else
-+		dma_direct_ops.unmap_sg(dev, sg, nents, direction, attrs);
-+}
-+
-+static int dma_fixed_dma_supported(struct device *dev, u64 mask)
-+{
-+	return mask == DMA_64BIT_MASK;
-+}
-+
-+static int dma_set_mask_and_switch(struct device *dev, u64 dma_mask);
-+
-+struct dma_mapping_ops dma_iommu_fixed_ops = {
-+	.alloc_coherent = dma_fixed_alloc_coherent,
-+	.free_coherent  = dma_fixed_free_coherent,
-+	.map_single     = dma_fixed_map_single,
-+	.unmap_single   = dma_fixed_unmap_single,
-+	.map_sg         = dma_fixed_map_sg,
-+	.unmap_sg       = dma_fixed_unmap_sg,
-+	.dma_supported  = dma_fixed_dma_supported,
-+	.set_dma_mask   = dma_set_mask_and_switch,
-+};
-+
- static void cell_dma_dev_setup_fixed(struct device *dev);
+ static void tce_build_cell(struct iommu_table *tbl, long index, long npages,
+-		unsigned long uaddr, enum dma_data_direction direction)
++		unsigned long uaddr, enum dma_data_direction direction,
++		struct dma_attrs *attrs)
+ {
+ 	int i;
+ 	unsigned long *io_pte, base_pte;
+@@ -519,7 +520,7 @@ cell_iommu_setup_window(struct cbe_iommu
  
- static void cell_dma_dev_setup(struct device *dev)
-@@ -919,9 +999,11 @@ static void cell_iommu_setup_fixed_ptab(
+ 	__set_bit(0, window->table.it_map);
+ 	tce_build_cell(&window->table, window->table.it_offset, 1,
+-		       (unsigned long)iommu->pad_page, DMA_TO_DEVICE);
++		       (unsigned long)iommu->pad_page, DMA_TO_DEVICE, NULL);
+ 	window->table.it_hint = window->table.it_blocksize;
  
- 	pr_debug("iommu: mapping 0x%lx pages from 0x%lx\n", fsize, fbase);
+ 	return window;
+Index: upstream/arch/powerpc/platforms/iseries/iommu.c
+===================================================================
+--- upstream.orig/arch/powerpc/platforms/iseries/iommu.c
++++ upstream/arch/powerpc/platforms/iseries/iommu.c
+@@ -42,7 +42,8 @@
+ #include <asm/iseries/iommu.h>
  
--	base_pte = IOPTE_PP_W | IOPTE_PP_R | IOPTE_M | IOPTE_SO_RW
-+	base_pte = IOPTE_PP_W | IOPTE_PP_R | IOPTE_M
- 		    | (cell_iommu_get_ioid(np) & IOPTE_IOID_Mask);
+ static void tce_build_iSeries(struct iommu_table *tbl, long index, long npages,
+-		unsigned long uaddr, enum dma_data_direction direction)
++		unsigned long uaddr, enum dma_data_direction direction,
++		struct dma_attrs *attrs)
+ {
+ 	u64 rc;
+ 	u64 tce, rpn;
+Index: upstream/arch/powerpc/platforms/pasemi/iommu.c
+===================================================================
+--- upstream.orig/arch/powerpc/platforms/pasemi/iommu.c
++++ upstream/arch/powerpc/platforms/pasemi/iommu.c
+@@ -85,7 +85,8 @@ static int iommu_table_iobmap_inited;
  
-+	pr_info("IOMMU: Using weak ordering for fixed mapping\n");
-+
- 	for (uaddr = 0; uaddr < fsize; uaddr += (1 << 24)) {
- 		/* Don't touch the dynamic region */
- 		ioaddr = uaddr + fbase;
-@@ -1037,9 +1119,6 @@ static int __init cell_iommu_fixed_mappi
- 		cell_iommu_setup_window(iommu, np, dbase, dsize, 0);
+ static void iobmap_build(struct iommu_table *tbl, long index,
+ 			 long npages, unsigned long uaddr,
+-			 enum dma_data_direction direction)
++			 enum dma_data_direction direction,
++			 struct dma_attrs *attrs)
+ {
+ 	u32 *ip;
+ 	u32 rpn;
+Index: upstream/arch/powerpc/platforms/pseries/iommu.c
+===================================================================
+--- upstream.orig/arch/powerpc/platforms/pseries/iommu.c
++++ upstream/arch/powerpc/platforms/pseries/iommu.c
+@@ -50,7 +50,8 @@
+ 
+ static void tce_build_pSeries(struct iommu_table *tbl, long index,
+ 			      long npages, unsigned long uaddr,
+-			      enum dma_data_direction direction)
++			      enum dma_data_direction direction,
++			      struct dma_attrs *attrs)
+ {
+ 	u64 proto_tce;
+ 	u64 *tcep;
+@@ -95,7 +96,8 @@ static unsigned long tce_get_pseries(str
+ 
+ static void tce_build_pSeriesLP(struct iommu_table *tbl, long tcenum,
+ 				long npages, unsigned long uaddr,
+-				enum dma_data_direction direction)
++				enum dma_data_direction direction,
++				struct dma_attrs *attrs)
+ {
+ 	u64 rc;
+ 	u64 proto_tce, tce;
+@@ -127,7 +129,8 @@ static DEFINE_PER_CPU(u64 *, tce_page) =
+ 
+ static void tce_buildmulti_pSeriesLP(struct iommu_table *tbl, long tcenum,
+ 				     long npages, unsigned long uaddr,
+-				     enum dma_data_direction direction)
++				     enum dma_data_direction direction,
++				     struct dma_attrs *attrs)
+ {
+ 	u64 rc;
+ 	u64 proto_tce;
+@@ -137,7 +140,7 @@ static void tce_buildmulti_pSeriesLP(str
+ 
+ 	if (npages == 1)
+ 		return tce_build_pSeriesLP(tbl, tcenum, npages, uaddr,
+-					   direction);
++					   direction, attrs);
+ 
+ 	tcep = __get_cpu_var(tce_page);
+ 
+@@ -149,7 +152,7 @@ static void tce_buildmulti_pSeriesLP(str
+ 		/* If allocation fails, fall back to the loop implementation */
+ 		if (!tcep)
+ 			return tce_build_pSeriesLP(tbl, tcenum, npages,
+-						   uaddr, direction);
++						   uaddr, direction, attrs);
+ 		__get_cpu_var(tce_page) = tcep;
  	}
  
--	dma_iommu_fixed_ops = dma_direct_ops;
--	dma_iommu_fixed_ops.set_dma_mask = dma_set_mask_and_switch;
--
- 	dma_iommu_ops.set_dma_mask = dma_set_mask_and_switch;
- 	set_pci_dma_ops(&dma_iommu_ops);
- 
-Index: upstream/Documentation/DMA-attributes.txt
+Index: upstream/arch/powerpc/sysdev/dart_iommu.c
 ===================================================================
---- upstream.orig/Documentation/DMA-attributes.txt
-+++ upstream/Documentation/DMA-attributes.txt
-@@ -22,3 +22,15 @@ ready and available in memory.  The DMA 
- could race with data DMA.  Mapping the memory used for completion
- indications with DMA_ATTR_WRITE_BARRIER would prevent the race.
+--- upstream.orig/arch/powerpc/sysdev/dart_iommu.c
++++ upstream/arch/powerpc/sysdev/dart_iommu.c
+@@ -149,7 +149,8 @@ static void dart_flush(struct iommu_tabl
  
-+
-+DMA_ATTR_STRONG_ORDERING
-+----------------------
-+
-+DMA_ATTR_STRONG_ORDERING specifies that previous reads and writes are
-+performed in the order in which they're received by the IOMMU; thus
-+reads and writes may not pass each other.
-+
-+Platforms that are strongly ordered by default will ignore this new
-+attribute but platforms that are weakly ordered by default should not
-+ignore this new attribute. Instead, they should return an error if a
-+strongly ordered mapping cannot be used when one is requested.
-Index: upstream/include/linux/dma-attrs.h
+ static void dart_build(struct iommu_table *tbl, long index,
+ 		       long npages, unsigned long uaddr,
+-		       enum dma_data_direction direction)
++		       enum dma_data_direction direction,
++		       struct dma_attrs *attrs)
+ {
+ 	unsigned int *dp;
+ 	unsigned int rpn;
+Index: upstream/include/asm-powerpc/machdep.h
 ===================================================================
---- upstream.orig/include/linux/dma-attrs.h
-+++ upstream/include/linux/dma-attrs.h
-@@ -12,6 +12,7 @@
-  */
- enum dma_attr {
- 	DMA_ATTR_WRITE_BARRIER,
-+	DMA_ATTR_STRONG_ORDERING,
- 	DMA_ATTR_MAX,
- };
- 
+--- upstream.orig/include/asm-powerpc/machdep.h
++++ upstream/include/asm-powerpc/machdep.h
+@@ -80,7 +80,8 @@ struct machdep_calls {
+ 				     long index,
+ 				     long npages,
+ 				     unsigned long uaddr,
+-				     enum dma_data_direction direction);
++				     enum dma_data_direction direction,
++				     struct dma_attrs *attrs);
+ 	void		(*tce_free)(struct iommu_table *tbl,
+ 				    long index,
+ 				    long npages);
 
 -- 
