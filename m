@@ -1,19 +1,29 @@
-Return-Path: <stelian@popies.net>
-Received: from sd-11162.dedibox.fr (sd-11162.dedibox.fr [88.191.70.230])
-	by ozlabs.org (Postfix) with ESMTP id CDE1CDDFD2
-	for <linuxppc-dev@ozlabs.org>; Mon, 26 May 2008 20:02:06 +1000 (EST)
-Subject: Re: [PATCH 04/12] hwmon: use linux/of_platform.h instead of asm
-From: Stelian Pop <stelian@popies.net>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-In-Reply-To: <20080523162550.21eb90f2.sfr@canb.auug.org.au>
-References: <20080523161627.a75d5010.sfr@canb.auug.org.au>
-	<20080523162550.21eb90f2.sfr@canb.auug.org.au>
+Return-Path: <olaf@aepfle.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id B6126DDFBD
+	for <linuxppc-dev@ozlabs.org>; Mon, 26 May 2008 21:11:19 +1000 (EST)
+Received: from mail01.m-online.net (mail.m-online.net [192.168.3.149])
+	by mail-out.m-online.net (Postfix) with ESMTP id 3094421D7DA
+	for <linuxppc-dev@ozlabs.org>; Mon, 26 May 2008 13:11:36 +0200 (CEST)
+Received: from localhost (unknown [192.168.1.157])
+	by mail.m-online.net (Postfix) with ESMTP id DD9629009D
+	for <linuxppc-dev@ozlabs.org>; Mon, 26 May 2008 13:11:17 +0200 (CEST)
+Received: from localhost ([192.168.3.149])
+	by localhost (scanner1.m-online.net [192.168.1.157]) (amavisd-new,
+	port 10024) with ESMTP id wLqg1uyc4tWr for <linuxppc-dev@ozlabs.org>;
+	Mon, 26 May 2008 13:11:17 +0200 (CEST)
+Received: from ibook.aepfle.de (DSL01.83.171.157.190.ip-pool.NEFkom.net
+	[83.171.157.190]) by mail.mnet-online.de (Postfix) with ESMTP
+	for <linuxppc-dev@ozlabs.org>; Mon, 26 May 2008 13:11:17 +0200 (CEST)
+Date: Mon, 26 May 2008 13:11:16 +0200
+From: Olaf Hering <olaf@aepfle.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: missing current-speed property prevents autoconsole on pegasos
+Message-ID: <20080526111116.GA2493@aepfle.de>
+References: <20080423152206.GA10935@aepfle.de>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Date: Mon, 26 May 2008 11:42:20 +0200
-Message-Id: <1211794940.6019.19.camel@galileo>
-Mime-Version: 1.0
-Cc: "Mark M. Hoffman" <mhoffman@lightlink.com>,
-	ppc-dev <linuxppc-dev@ozlabs.org>
+In-Reply-To: <20080423152206.GA10935@aepfle.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,37 +33,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+On Wed, Apr 23, Olaf Hering wrote:
 
-Le vendredi 23 mai 2008 à 16:25 +1000, Stephen Rothwell a écrit :
-> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 
-Acked-by: Stelian Pop <stelian@popies.net>
+Ping.
 
-Thanks,
 
-Stelian.
-
-> ---
->  drivers/hwmon/ams/ams-core.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
+> Pegasos2 has no current-speed property in
+> /pci@80000000/isa@C/serial@i2F8. As a result, console=ttyS0,115200 is
+> still required unless the patch below is used.
 > 
-> diff --git a/drivers/hwmon/ams/ams-core.c b/drivers/hwmon/ams/ams-core.c
-> index a112a03..fbefa82 100644
-> --- a/drivers/hwmon/ams/ams-core.c
-> +++ b/drivers/hwmon/ams/ams-core.c
-> @@ -23,8 +23,8 @@
->  #include <linux/types.h>
->  #include <linux/errno.h>
->  #include <linux/init.h>
-> +#include <linux/of_platform.h>
->  #include <asm/pmac_pfunc.h>
-> -#include <asm/of_platform.h>
->  
->  #include "ams.h"
->  
-> -- 
-> 1.5.5.1
+> What is the correct way to restore console detection on pegasos2?
 > 
--- 
-Stelian Pop <stelian@popies.net>
+> Index: linux-2.6.25-pegasos/arch/powerpc/platforms/chrp/setup.c
+> ===================================================================
+> --- linux-2.6.25-pegasos.orig/arch/powerpc/platforms/chrp/setup.c
+> +++ linux-2.6.25-pegasos/arch/powerpc/platforms/chrp/setup.c
+> @@ -302,7 +305,7 @@ static void chrp_init_early(void)
+>         if (!property)
+>                 goto out_put;
+>         if (!strcmp(property, "failsafe") || !strcmp(property, "serial"))
+> -               add_preferred_console("ttyS", 0, NULL);
+> +               add_preferred_console("ttyS", 0, "115200");
+>  out_put:
+>         of_node_put(node);
+>  }
+> 
+> 
