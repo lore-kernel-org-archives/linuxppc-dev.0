@@ -1,20 +1,22 @@
-Return-Path: <dargaud@lpsc.in2p3.fr>
-Received: from lpsc-mail.in2p3.fr (lpsc-mail.in2p3.fr [134.158.40.8])
+Return-Path: <biswa.nayak@wipro.com>
+Received: from wipro-blr-out02.wipro.com (wipro-blr-out02.wipro.com
+	[203.91.198.75])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 9C5A9DE1F5
-	for <linuxppc-dev@ozlabs.org>; Tue, 27 May 2008 01:43:53 +1000 (EST)
-Received: from LPSC0173W (lpsc0173w.in2p3.fr [134.158.40.173])
-	by lpsc-mail.in2p3.fr (8.13.1/8.13.1/In2p3) with SMTP id m4QFhlNE019854
-	for <linuxppc-dev@ozlabs.org>; Mon, 26 May 2008 17:43:48 +0200
-Message-ID: <0b5701c8bf47$49219520$ad289e86@LPSC0173W>
-From: "Guillaume Dargaud" <dargaud@lpsc.in2p3.fr>
-To: <linuxppc-dev@ozlabs.org>
-Subject: Still struggling with Xilinx GPIO...
-Date: Mon, 26 May 2008 17:43:38 +0200
+	by ozlabs.org (Postfix) with ESMTPS id 34F67DDF73
+	for <linuxppc-dev@ozlabs.org>; Tue, 27 May 2008 02:28:30 +1000 (EST)
+Received: from blr-ec-bh02.wipro.com (unknown [10.201.50.92])
+	by wipro-blr-out02.wipro.com (Symantec Mail Security) with ESMTP id
+	0614C558002
+	for <linuxppc-dev@ozlabs.org>; Mon, 26 May 2008 21:28:53 +0530 (IST)
 MIME-Version: 1.0
-Content-Type: text/plain; format=flowed; charset="iso-8859-1";
-	reply-type=original
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: Icecube/lite5200 board does not boot in linux-2.6.25.x
+Date: Mon, 26 May 2008 21:28:51 +0530
+Message-ID: <4F36B0A4CDAD6F46A61B2B32C33DC69C062BEA16@BLR-EC-MBX03.wipro.com>
+From: <biswa.nayak@wipro.com>
+To: <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,212 +26,218 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I still haven't managed to figure out how to use the Xilinx GPIO from 
-usermode.
+Hi
+I am trying to boot Freescale Icecube/Lite5200 board using
+Linux-2.6.25.x,
+but nothing gets printed on to the serial console after the
+uncompressing kernel and ramdisk messages.
 
-The program gpio_test found at 
-http://www.itee.uq.edu.au/~listarch/microblaze-uclinux/archive/2004/05/msg00004.html 
-and slightly modified as this:
+The same board boots up cleanly with Linux-2.6.24.7. 
+But anything after linux-2.6.25 does not work at all. 
+I am using ELDK-4.1 as my toolchain.
 
-#include <stdio.h>
-#include <fcntl.h>
-#include <errno.h>
-#include <string.h>
+Using BDI2000 device I dumped the '__log_buf' section
+to find out whether there is any activity that goes behind the scene
+and found out that the system crashes with below log messages.
 
-#include <linux/types.h>
-#include <sys/ioctl.h>
+Sorry for the huge log pasted below. 
+Is there something much different in 2.6.25 from 2.6.24.7 that makes
+this to fail?
 
-#include <xgpio_ioctl.h>
+Any help would be hugely appreciated
 
-#define GPIO_DEV "/dev/xgpio"
-
-void usage(int argc, char *argv[])
-{
-        fprintf(stderr,"usage: %s hexval\n\n", argv[0]);
-        fprintf(stderr,"\n");
-        fprintf(stderr,"Puts the input hexval onto the LEDs, and\n");
-        fprintf(stderr,"displays the current value on the DIP switches\n");
-        fprintf(stderr,"\n");
-        fprintf(stderr,"try  gpio_test FC\n\n");
-
-}
-
-void dump_dipsw(int val)
-{
-        int i;
-        val = (val & 0x000000FF);
-
-        printf("DIP SW: ");
-        for(i=0;i<8;i++)
-        {
-                printf("%i",val & 0x01);
-                val >>= 1;
-        }
-        printf("\n");
-}
-
-/* Turn 4 LSB of X into 8 bit LED segment code */
-unsigned char nyb_hex2led(int x)
-{
-        unsigned char led_tab[] = {
-                0xFC, 0x60, 0xDA, 0xF2,
-                0x66, 0xB6, 0xBE, 0xE0,
-                0xFE, 0xF6, 0xEE, 0x3E,
-                0x9C, 0x7A, 0x9E, 0x8E};
-
-        return led_tab[x & 0xF];
-}
-
-/* Turn 8 LSB of x into 2 times 8 bit LED segment codes */
-unsigned short hex2led(int x)
-{
-        return (nyb_hex2led(x & 0xF) << 8) | (nyb_hex2led((x >> 4) & 0xF));
-}
-
-int main(int argc, char *argv[])
-{
-        /* Open the device */
-        int fd = open(GPIO_DEV, O_RDWR);
-
-        struct xgpio_ioctl_data gpio_ioctl;
-        // struct ibm_gpio_ioctl_data gpio_ioctl;
-//      int     result;
-//      int command;
-
-        if(fd==-1) {
-                fprintf(stderr,"Unable to open %s\n", GPIO_DEV);
-                return -1;
-        }
-
-/*
-        if(argc!=2)
-        {
-                usage();
-                exit(1);
-        }
-*/
-        gpio_ioctl.chan=0;
-
-        /* Set the tristates */
-        gpio_ioctl.mask=0x000000FF;
-        ioctl(fd, XGPIO_TRISTATE,(void *)&gpio_ioctl);
-
-        /* Get output data from command line if provided */
-
-        if(argc==2)
-                sscanf(argv[1],"%x",&(gpio_ioctl.data));
-        else
-                gpio_ioctl.data=time(NULL);
-
-        /* Convert binary (16 LSB) into LED segment codes and shift into
-           position on gpio */
-        gpio_ioctl.data=hex2led(gpio_ioctl.data & 0xFF)<<8;
-
-        ioctl(fd, XGPIO_OUT,(void *)&gpio_ioctl);
-
-        /* Read some data */
-        ioctl(fd, XGPIO_IN,(void *)&gpio_ioctl);
-
-        dump_dipsw(gpio_ioctl.data);
-
-        return 0;
-}
+Thanks
+Biswa
 
 
-...crashes in flames when run:
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3DBDI log=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+icecube>md 0x0019f684
+0019f684 : 3c353e4c 696e7578 20766572 73696f6e  <5>Linux version
+0019f694 : 20322e36 2e32352e 34202877 6970726f   2.6.25.4 (wipro
+0019f6a4 : 406c6f63 616c686f 73742e6c 6f63616c  @localhost.local
+0019f6b4 : 646f6d61 696e2920 28676363 20766572  domain) (gcc ver
+0019f6c4 : 73696f6e 20342e30 2e302028 44454e58  sion 4.0.0 (DENX
+0019f6d4 : 20454c44 4b20342e 3120342e 302e3029   ELDK 4.1 4.0.0)
+0019f6e4 : 29202331 204d6f6e 204d6179 20323620  ) #1 Mon May 26
+0019f6f4 : 32313a30 353a3237 20495354 20323030  21:05:27 IST 200
+0019f704 : 380a3c37 3e456e74 6572696e 67206164  8.<7>Entering ad
+0019f714 : 645f6163 74697665 5f72616e 67652830  d_active_range(0
+0019f724 : 2c20302c 20313633 38342920 3020656e  , 0, 16384) 0 en
+0019f734 : 74726965 73206f66 20323536 20757365  tries of 256 use
+0019f744 : 640a3c34 3e5a6f6e 65205046 4e207261  d.<4>Zone PFN ra
+0019f754 : 6e676573 3a0a3c34 3e202044 4d412020  nges:.<4>  DMA
+0019f764 : 20202020 20202020 20202030 202d3e20             0 ->
+0019f774 : 20202031 36333834 0a3c343e 20204e6f     16384.<4>  No
+icecube>md 0x0019f775
+0019f775 : 20203136 3338340a 3c343e20 204e6f72    16384.<4>  Nor
+0019f785 : 6d616c20 20202020 20313633 3834202d  mal      16384 -
+0019f795 : 3e202020 20313633 38340a3c 343e4d6f  >    16384.<4>Mo
+0019f7a5 : 7661626c 65207a6f 6e652073 74617274  vable zone start
+0019f7b5 : 2050464e 20666f72 20656163 68206e6f   PFN for each no
+0019f7c5 : 64650a3c 343e6561 726c795f 6e6f6465  de.<4>early_node
+0019f7d5 : 5f6d6170 5b315d20 61637469 76652050  _map[1] active P
+0019f7e5 : 464e2072 616e6765 730a3c34 3e202020  FN ranges.<4>
+0019f7f5 : 20303a20 20202020 20202030 202d3e20   0:        0 ->
+0019f805 : 20202031 36333834 0a3c373e 4f6e206e     16384.<7>On n
+0019f815 : 6f646520 3020746f 74616c70 61676573  ode 0 totalpages
+0019f825 : 3a203136 3338340a 3c373e20 20444d41  : 16384.<7>  DMA
+0019f835 : 207a6f6e 653a2031 32382070 61676573   zone: 128 pages
+0019f845 : 20757365 6420666f 72206d65 6d6d6170   used for memmap
+0019f855 : 0a3c373e 2020444d 41207a6f 6e653a20  .<7>  DMA zone:
+0019f865 : 30207061 67657320 72657365 72766564  0 pages reserved
+icecube>md 0x0019f865
+0019f865 : 30207061 67657320 72657365 72766564  0 pages reserved
+0019f875 : 0a3c373e 2020444d 41207a6f 6e653a20  .<7>  DMA zone:
+0019f885 : 31363235 36207061 6765732c 204c4946  16256 pages, LIF
+0019f895 : 4f206261 7463683a 330a3c37 3e20204e  O batch:3.<7>  N
+0019f8a5 : 6f726d61 6c207a6f 6e653a20 30207061  ormal zone: 0 pa
+0019f8b5 : 67657320 75736564 20666f72 206d656d  ges used for mem
+0019f8c5 : 6d61700a 3c373e20 204d6f76 61626c65  map.<7>  Movable
+0019f8d5 : 207a6f6e 653a2030 20706167 65732075   zone: 0 pages u
+0019f8e5 : 73656420 666f7220 6d656d6d 61700a3c  sed for memmap.<
+0019f8f5 : 343e4275 696c7420 31207a6f 6e656c69  4>Built 1 zoneli
+0019f905 : 73747320 696e205a 6f6e6520 6f726465  sts in Zone orde
+0019f915 : 722c206d 6f62696c 69747920 67726f75  r, mobility grou
+0019f925 : 70696e67 206f6e2e 2020546f 74616c20  ping on.  Total
+0019f935 : 70616765 733a2031 36323536 0a3c353e  pages: 16256.<5>
+0019f945 : 4b65726e 656c2063 6f6d6d61 6e64206c  Kernel command l
+0019f955 : 696e653a 20636f6e 736f6c65 3d747479  ine: console=3Dtty
+icecube>md 0x0019f956
+0019f956 : 6e653a20 636f6e73 6f6c653d 74747950  ne: console=3DttyP
+0019f966 : 53433020 726f6f74 3d2f6465 762f7261  SC0 root=3D/dev/ra
+0019f976 : 6d207277 0a3c343e 50494420 68617368  m rw.<4>PID hash
+0019f986 : 20746162 6c652065 6e747269 65733a20   table entries:
+0019f996 : 32353620 286f7264 65723a20 382c2031  256 (order: 8, 1
+0019f9a6 : 30323420 62797465 73290a3c 343e436f  024 bytes).<4>Co
+0019f9b6 : 6e736f6c 653a2063 6f6c6f75 72206475  nsole: colour du
+0019f9c6 : 6d6d7920 64657669 63652038 30783235  mmy device 80x25
+0019f9d6 : 0a3c343e 4f6f7073 3a206b65 726e656c  .<4>Oops: kernel
+0019f9e6 : 20616363 65737320 6f662062 61642061   access of bad a
+0019f9f6 : 7265612c 20736967 3a203131 205b2331  rea, sig: 11 [#1
+0019fa06 : 5d0a3c34 3e4e4950 3a206330 31303161  ].<4>NIP: c0101a
+0019fa16 : 3763204c 523a2063 30313032 31623420  7c LR: c01021b4
+0019fa26 : 4354523a 20633031 30323063 300a3c34  CTR: c01020c0.<4
+0019fa36 : 3e524547 533a2063 30313833 65303020  >REGS: c0183e00
+0019fa46 : 54524150 3a203033 30302020 204e6f74  TRAP: 0300   Not
+icecube>md 0x0019fa47
+0019fa47 : 5241503a 20303330 30202020 4e6f7420  RAP: 0300   Not
+0019fa57 : 7461696e 74656420 2028322e 362e3235  tainted  (2.6.25
+0019fa67 : 2e34290a 3c343e4d 53523a20 30303030  .4).<4>MSR: 0000
+0019fa77 : 31303332 203c4d45 2c49522c 44523e20  1032 <ME,IR,DR>
+0019fa87 : 2043523a 20323830 30303034 34202058   CR: 28000044  X
+0019fa97 : 45523a20 32303030 30303030 0a3c343e  ER: 20000000.<4>
+0019faa7 : 4441523a 20303030 30303031 342c2044  DAR: 00000014, D
+0019fab7 : 53495352 3a203230 30303030 30300a3c  SISR: 20000000.<
+0019fac7 : 343e5441 534b203d 20633031 36633833  4>TASK =3D c016c83
+0019fad7 : 305b305d 20277377 61707065 72272054  0[0] 'swapper' T
+0019fae7 : 48524541 443a2063 30313832 3030300a  HREAD: c0182000.
+0019faf7 : 3c363e47 50523030 3a206330 31303231  <6>GPR00: c01021
+0019fb07 : 62342063 30313833 65623020 63303136  b4 c0183eb0 c016
+0019fb17 : 63383330 20633031 61396239 34203030  c830 c01a9b94 00
+0019fb27 : 30303033 30302030 30303032 35383020  000300 00002580
+0019fb37 : 30303030 30303030 20303031 66373861  00000000 001f78a
+icecube>md 0x0019fb38
+0019fb38 : 30303030 30303020 30303166 37386134  0000000 001f78a4
+0019fb48 : 200a3c36 3e475052 30383a20 30303030   .<6>GPR08: 0000
+0019fb58 : 30303665 20633031 61303030 30206330  006e c01a0000 c0
+0019fb68 : 31333030 30302030 30303030 30303020  130000 00000000
+0019fb78 : 38343030 30303432 20666466 63666466  84000042 fdfcfdf
+0019fb88 : 66203033 66623930 30302030 34303761  f 03fb9000 0407a
+0019fb98 : 30303020 0a3c363e 47505231 363a2063  000 .<6>GPR16: c
+0019fba8 : 33383131 64613820 30303030 30346162  3811da8 000004ab
+0019fbb8 : 20303030 30303030 31203030 30303030   00000001 000000
+0019fbc8 : 30302030 33666234 31623420 30336634  00 03fb41b4 03f4
+0019fbd8 : 39626130 20303030 30303030 33203030  9ba0 00000003 00
+0019fbe8 : 30303030 6437200a 3c363e47 50523234  0000d7 .<6>GPR24
+0019fbf8 : 3a203030 30303030 30372030 30303030  : 00000007 00000
+0019fc08 : 30313320 30303030 39303332 20663030  013 00009032 f00
+0019fc18 : 30323030 30206330 31383030 30302030  02000 c0180000 0
+0019fc28 : 30346334 62343020 63303161 39623934  04c4b40 c01a9b94
+icecube>md 0x0019fc29
+0019fc29 : 34633462 34302063 30316139 62393420  4c4b40 c01a9b94
+0019fc39 : 30303030 31323865 200a3c34 3e4e4950  0000128e .<4>NIP
+0019fc49 : 205b6330 31303161 37635d20 6d706335   [c0101a7c] mpc5
+0019fc59 : 3278785f 75617274 5f74785f 656d7074  2xx_uart_tx_empt
+0019fc69 : 792b3078 31342f30 7833630a 3c343e4c  y+0x14/0x3c.<4>L
+0019fc79 : 52205b63 30313032 3162345d 206d7063  R [c01021b4] mpc
+0019fc89 : 35327878 5f756172 745f7365 745f7465  52xx_uart_set_te
+0019fc99 : 726d696f 732b3078 66342f30 78313934  rmios+0xf4/0x194
+0019fca9 : 0a3c343e 43616c6c 20547261 63653a0a  .<4>Call Trace:.
+0019fcb9 : 3c343e5b 63303138 33656230 5d205b30  <4>[c0183eb0] [0
+0019fcc9 : 30303032 3538305d 20307832 35383020  0002580] 0x2580
+0019fcd9 : 28756e72 656c6961 626c6529 0a3c343e  (unreliable).<4>
+0019fce9 : 5b633031 38336563 305d205b 63303130  [c0183ec0] [c010
+0019fcf9 : 32316234 5d206d70 63353278 785f7561  21b4] mpc52xx_ua
+0019fd09 : 72745f73 65745f74 65726d69 6f732b30  rt_set_termios+0
+0019fd19 : 7866342f 30783139 340a3c34 3e5b6330  xf4/0x194.<4>[c0
+icecube>md 0x0019fd20
+0019fd20 : 39340a3c 343e5b63 30313833 6566305d  94.<4>[c0183ef0]
+0019fd30 : 205b6330 31393564 66385d20 75617274   [c0195df8] uart
+0019fd40 : 5f736574 5f6f7074 696f6e73 2b307864  _set_options+0xd
+0019fd50 : 632f3078 3138340a 3c343e5b 63303138  c/0x184.<4>[c018
+0019fd60 : 33663430 5d205b63 30313936 3039345d  3f40] [c0196094]
+0019fd70 : 206d7063 35327878 5f636f6e 736f6c65   mpc52xx_console
+0019fd80 : 5f736574 75702b30 78313038 2f307831  _setup+0x108/0x1
+0019fd90 : 63340a3c 343e5b63 30313833 6637305d  c4.<4>[c0183f70]
+0019fda0 : 205b6330 30316136 30635d20 72656769   [c001a60c] regi
+0019fdb0 : 73746572 5f636f6e 736f6c65 2b307832  ster_console+0x2
+0019fdc0 : 38342f30 78326534 0a3c343e 5b633031  84/0x2e4.<4>[c01
+0019fdd0 : 38336661 305d205b 63303139 35656238  83fa0] [c0195eb8
+0019fde0 : 5d206d70 63353278 785f636f 6e736f6c  ] mpc52xx_consol
+0019fdf0 : 655f696e 69742b30 7831382f 30783263  e_init+0x18/0x2c
+0019fe00 : 0a3c343e 5b633031 38336662 305d205b  .<4>[c0183fb0] [
+0019fe10 : 63303139 34666630 5d20636f 6e736f6c  c0194ff0] consol
+icecube>md 0x0019fe12
+0019fe12 : 31393466 66305d20 636f6e73 6f6c655f  194ff0] console_
+0019fe22 : 696e6974 2b307835 302f3078 36630a3c  init+0x50/0x6c.<
+0019fe32 : 343e5b63 30313833 6663305d 205b6330  4>[c0183fc0] [c0
+0019fe42 : 31383436 62305d20 73746172 745f6b65  1846b0] start_ke
+0019fe52 : 726e656c 2b307831 61382f30 78326234  rnel+0x1a8/0x2b4
+0019fe62 : 0a3c343e 5b633031 38336666 305d205b  .<4>[c0183ff0] [
+0019fe72 : 30303030 33326330 5d203078 33326330  000032c0] 0x32c0
+0019fe82 : 0a3c343e 496e7374 72756374 696f6e20  .<4>Instruction
+0019fe92 : 64756d70 3a0a3c34 3e383038 39303036  dump:.<4>8089006
+0019fea2 : 34203766 38336533 37382033 38613030  4 7f83e378 38a00
+0019feb2 : 30326320 34626630 65326431 20346266  02c 4bf0e2d1 4bf
+0019fec2 : 66666662 30203465 38303030 32302034  fffb0 4e800020 4
+0019fed2 : 65383030 30323020 37633038 30326136  e800020 7c0802a6
+0019fee2 : 200a3c34 3e393432 31666666 30203364   .<4>9421fff0 3d
+0019fef2 : 32306330 31612039 30303130 30313420  20c01a 90010014
+0019ff02 : 38313639 63366663 203c3831 36623030  8169c6fc <816b00
+icecube>md 0x0019ff03
+0019ff03 : 31363963 36666320 3c383136 62303031  169c6fc <816b001
+0019ff13 : 343e2037 64363930 33613620 34653830  4> 7d6903a6 4e80
+0019ff23 : 30343231 20333132 33666666 66200a3c  0421 3123ffff .<
+0019ff33 : 303e4b65 726e656c 2070616e 6963202d  0>Kernel panic -
+0019ff43 : 206e6f74 2073796e 63696e67 3a204174   not syncing: At
+0019ff53 : 74656d70 74656420 746f206b 696c6c20  tempted to kill
+0019ff63 : 74686520 69646c65 20746173 6b210a3c  the idle task!.<
+0019ff73 : 303e5265 626f6f74 696e6720 696e2031  0>Rebooting in 1
+0019ff83 : 38302073 65636f6e 64732e2e 00000000  80 seconds......
+0019ff93 : 00000000 00000000 00000000 00000000  ................
+0019ffa3 : 00000000 00000000 00000000 00000000  ................
+0019ffb3 : 00000000 00000000 00000000 00000000  ................
+0019ffc3 : 00000000 00000000 00000000 00000000  ................
+0019ffd3 : 00000000 00000000 00000000 00000000  ................
+0019ffe3 : 00000000 00000000 00000000 00000000  ................
+0019fff3 : 00000000 00000000 00000000 00000000  ................
 
-# gpio_test FC
-[ 1366.864955] Oops: kernel access of bad area, sig: 11 [#5]
-[ 1366.867560] NIP: c0108d50 LR: c00e68c4 CTR: 00000000
-[ 1366.867560] REGS: c752fde0 TRAP: 0300   Tainted: G      D   (2.6.25-rc9)
-[ 1366.867560] MSR: 00029030 <EE,ME,IR,DR>  CR: 93000033  XER: e000007f
-[ 1366.867560] DEAR: c8fffffc, ESR: 00000000
-[ 1366.867560] TASK = c7c37030[202] 'gpio_test' THREAD: c752e000
-[ 1366.867560] GPR00: 00000000 c752fe90 c7c37030 c8fffffc 00000056 0000000c 
-c752feb0 00000000
-[ 1366.867560] GPR08: 00000000 11111111 ffffffe7 c7c5866c 00000000 10018dec 
-ffff8432 ffdf1d0f
-[ 1366.867560] GPR16: ffffffff ffffffff ffffffff ffffffff ffffffff 00000000 
-100af244 10000858
-[ 1366.867560] GPR24: 10000c00 00000002 10000478 800c5a03 c7c58000 c7c5866c 
-800c5a03 c0200000
-[ 1366.867560] NIP [c0108d50] XIo_In32+0x4/0xc
-[ 1366.867560] LR [c00e68c4] XGpio_GetDataDirection+0x84/0xac
-[ 1366.867560] Call Trace:
-[ 1366.867560] [c752fe90] [c00e66a8] xgpio_getinst+0x48/0xb0 (unreliable)
-[ 1366.867560] [c752fea0] [c00e6a8c] xgpio_ioctl+0x1a0/0x1fc
-[ 1366.867560] [c752fed0] [c006740c] vfs_ioctl+0x6c/0x84
-[ 1366.867560] [c752fee0] [c006778c] do_vfs_ioctl+0x368/0x39c
-[ 1366.867560] [c752ff10] [c0067800] sys_ioctl+0x40/0x70
-[ 1366.867560] [c752ff40] [c0002770] ret_from_syscall+0x0/0x3c
-[ 1366.867560] Instruction dump:
-[ 1366.867560] 7c634b78 7c031b78 4e800020 7c0006ac 88630000 5463063e 
-4e800020 7c0006ac
-[ 1366.867560] a0630000 5463043e 4e800020 7c0006ac <80630000> 4e800020 
-7c0006ac 7c601e2c
-Segmentation fault
 
 
-# dmesg | grep gpio
-[    0.120666] Registering device xilinx_gpio:0
-[    0.121672] Registering device xilinx_gpio:1
-[    0.122682] Registering device xilinx_gpio:2
-[    0.292352] xgpio0 #0 at 0x81400000 mapped to 0xC9000000 device: 10,185 
-using IRQ#7
-[    0.293805] xgpio1 #1 at 0x81420000 mapped to 0xC9020000 device: 10,186 
-using IRQ#6
-[    0.295062] xgpio2 #2 at 0x81440000 mapped to 0xC9040000 device: 10,187 
-using IRQ#5
-[ 1366.867560] TASK = c7c37030[202] 'gpio_test' THREAD: c752e000
-[ 1366.867560] [c752fe90] [c00e66a8] xgpio_getinst+0x48/0xb0 (unreliable)
-[ 1366.867560] [c752fea0] [c00e6a8c] xgpio_ioctl+0x1a0/0x1fc
-
-
-
-Another program using a different strategy also fails:
-
-#include <fcntl.h>
-#include <stdio.h>
-
-int main (int argc, char *argv[]) {
- if (argc==2 || argc==3) {
-
-  int fd = open(argv[1], O_RDWR | O_NDELAY );
-  if (fd < 0) {
-     fprintf(stderr, "GPIO OPEN FAIL\n");
-     return -1;
-  }
-
-  unsigned long buff = 0;
-  if (argc==2) {
-   if (read(fd, &buff, 4) != 4)
-      fprintf(stderr, "GPIO READ ERROR\n");
-   else printf( "%x\n", buff);
-  } else {
-   buff=atoi(argv[2]);
-   if (write(fd, &buff, 4) != 4)
-      fprintf(stderr, "GPIO WRITE ERROR value %x\n", buff);
-   else printf( "Written %x successfully\n", buff);
-  }
-
-  close(fd);
- } else {
-  fprintf(stderr, "Usage: %s device [value] to read or write data to gpio 
-device\n", argv[0]);
-  return 1;
- }
-
- return 0;
-}
-
-
-# GpioReadWrite /dev/xgpio
-GPIO READ ERROR
-# GpioReadWrite /dev/xgpio 7
-GPIO WRITE ERROR value 0
-
-I wanted to avoid writing a kernel module, but apparently I've ran out of 
-options...
--- 
-Guillaume Dargaud
-http://www.gdargaud.net/
+Please do not print this email unless it is absolutely necessary. =0A=
+=0A=
+The information contained in this electronic message and any attachments to=
+ this message are intended for the exclusive use of the addressee(s) and may=
+ contain proprietary, confidential or privileged information. If you are not=
+ the intended recipient, you should not disseminate, distribute or copy this=
+ e-mail. Please notify the sender immediately and destroy all copies of this=
+ message and any attachments. =0A=
+=0A=
+WARNING: Computer viruses can be transmitted via email. The recipient should=
+ check this email and any attachments for the presence of viruses. The compa=
+ny accepts no liability for any damage caused by any virus transmitted by th=
+is email. =0A=
+=0A=
+www.wipro.com
