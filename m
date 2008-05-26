@@ -1,29 +1,24 @@
-Return-Path: <olaf@aepfle.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id B6126DDFBD
-	for <linuxppc-dev@ozlabs.org>; Mon, 26 May 2008 21:11:19 +1000 (EST)
-Received: from mail01.m-online.net (mail.m-online.net [192.168.3.149])
-	by mail-out.m-online.net (Postfix) with ESMTP id 3094421D7DA
-	for <linuxppc-dev@ozlabs.org>; Mon, 26 May 2008 13:11:36 +0200 (CEST)
-Received: from localhost (unknown [192.168.1.157])
-	by mail.m-online.net (Postfix) with ESMTP id DD9629009D
-	for <linuxppc-dev@ozlabs.org>; Mon, 26 May 2008 13:11:17 +0200 (CEST)
-Received: from localhost ([192.168.3.149])
-	by localhost (scanner1.m-online.net [192.168.1.157]) (amavisd-new,
-	port 10024) with ESMTP id wLqg1uyc4tWr for <linuxppc-dev@ozlabs.org>;
-	Mon, 26 May 2008 13:11:17 +0200 (CEST)
-Received: from ibook.aepfle.de (DSL01.83.171.157.190.ip-pool.NEFkom.net
-	[83.171.157.190]) by mail.mnet-online.de (Postfix) with ESMTP
-	for <linuxppc-dev@ozlabs.org>; Mon, 26 May 2008 13:11:17 +0200 (CEST)
-Date: Mon, 26 May 2008 13:11:16 +0200
-From: Olaf Hering <olaf@aepfle.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: missing current-speed property prevents autoconsole on pegasos
-Message-ID: <20080526111116.GA2493@aepfle.de>
-References: <20080423152206.GA10935@aepfle.de>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id DFA1ADDFE0
+	for <linuxppc-dev@ozlabs.org>; Mon, 26 May 2008 21:49:17 +1000 (EST)
+Date: Mon, 26 May 2008 15:49:15 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [RFC PATCH 2/2] mmc: add OpenFirmware bindings for the mmc_spi
+	driver
+Message-ID: <20080526114914.GA26288@polina.dev.rtsoft.ru>
+References: <20080523182754.GA26891@polina.dev.rtsoft.ru>
+	<20080523182842.GB469@polina.dev.rtsoft.ru>
+	<fa686aa40805232219x7e888d80y394958f1c0a0fad0@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20080423152206.GA10935@aepfle.de>
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <fa686aa40805232219x7e888d80y394958f1c0a0fad0@mail.gmail.com>
+Cc: David Brownell <dbrownell@users.sourceforge.net>,
+	Gary Jennejohn <garyj@denx.de>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
+	Pierre Ossman <drzeus-mmc@drzeus.cx>
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,30 +28,125 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Apr 23, Olaf Hering wrote:
-
-
-Ping.
-
-
-> Pegasos2 has no current-speed property in
-> /pci@80000000/isa@C/serial@i2F8. As a result, console=ttyS0,115200 is
-> still required unless the patch below is used.
+On Fri, May 23, 2008 at 11:19:28PM -0600, Grant Likely wrote:
+> Yup, I like this approach better.  I had been thinking about putting
+> this all in the same file (drivers/mmc/host/mmc_spi.c) instead of
+> exporting the probe/remove symbols and by using clear comment blocks
+> to divide the sections, but I've got no issues with this approach.
 > 
-> What is the correct way to restore console detection on pegasos2?
+> This is good work.  Some comments below.  (I won't repeat Stephen's comments)
+
+Thanks!
+
+> On Fri, May 23, 2008 at 12:28 PM, Anton Vorontsov
+> <avorontsov@ru.mvista.com> wrote:
+> > This patch depends on the Grant Likely's SPI patches, so this is
+> > for RFC only.
+> >
+> > Also, later we'll able to remove OF_GPIO dependency.
+> >
+> > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> > ---
+> >  Documentation/powerpc/booting-without-of.txt |   24 ++++
+> >  drivers/mmc/host/Kconfig                     |    7 ++
+> >  drivers/mmc/host/Makefile                    |    2 +-
+> >  drivers/mmc/host/of_mmc_spi.c                |  151 ++++++++++++++++++++++++++
+> >  4 files changed, 183 insertions(+), 1 deletions(-)
+> >  create mode 100644 drivers/mmc/host/of_mmc_spi.c
+> >
+> > diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
+> > index 423cb2b..7d0ef80 100644
+> > --- a/Documentation/powerpc/booting-without-of.txt
+> > +++ b/Documentation/powerpc/booting-without-of.txt
+> > @@ -3151,7 +3151,31 @@ platforms are moved over to use the flattened-device-tree model.
+> >                        };
+> >                };
+> >
+> > +    ...) MMC-over-SPI
+> >
+> > +      Required properties:
+> > +      - #address-cells : should be 0.
+> > +      - #size-cells : should be 0.
 > 
-> Index: linux-2.6.25-pegasos/arch/powerpc/platforms/chrp/setup.c
-> ===================================================================
-> --- linux-2.6.25-pegasos.orig/arch/powerpc/platforms/chrp/setup.c
-> +++ linux-2.6.25-pegasos/arch/powerpc/platforms/chrp/setup.c
-> @@ -302,7 +305,7 @@ static void chrp_init_early(void)
->         if (!property)
->                 goto out_put;
->         if (!strcmp(property, "failsafe") || !strcmp(property, "serial"))
-> -               add_preferred_console("ttyS", 0, NULL);
-> +               add_preferred_console("ttyS", 0, "115200");
->  out_put:
->         of_node_put(node);
->  }
+> Are these properties required at all?  Will this node have any children.
+
+Yeah, my weakness for #a/#s, I always insert it where unnecessary. :-)
+Will fix.
+
+> > +      - compatible : should be "linux,mmc-spi".
+> > +      - linux,modalias  - should be "of_mmc_spi".
 > 
+> I'm not even sure if the whole linux,modalias is even a good idea.  I
+> had kind of thrown it in there as a convenient way to override
+> compatible when needed, but I haven't really thought it out very well
+> and I think it is rather a hack.
 > 
+> The real problem is we don't yet have good method (or place) to apply
+> a translation table from compatible values to modaliases.  Ideally,
+> the translations should be part of the drivers themselves, but that
+> causes a chicken and egg problem of needing to load the driver to get
+> access to the table to know if it is the correct driver... Of course,
+> I'm really not very familiar with the whole module autoloading
+> mechanism.  Regardless; binding should be based on compatible, not on
+> a hacky and bogus linux,modalias property.
+
+I fully agree. Though, I just tried to use your spi_of with a belief
+that you'll implement compatible->modalias translation in spi_of. :-)
+
+> > +      - reg : should specify SPI address (chip-select number).
+> > +      - max-speed : (optional) maximum frequency for this device (Hz).
+> > +      - linux,mmc-ocr-mask : (optional) Linux-specific MMC OCR mask
+> > +        (slot voltage).
+> 
+> Should this property be better defined?
+
+Yes, will do. Was a bit lazy to do this for the RFC.
+
+[...]
+> > +static int mmc_get_cd(struct device *dev)
+> > +{
+> > +       struct of_mmc_spi *oms = dev->archdata.of_node->data;
+> > +
+> > +       return gpio_get_value(oms->cd_gpio);
+> > +}
+> > +
+> > +static int of_mmc_spi_probe(struct spi_device *spi)
+> > +{
+> > +       int ret = -EINVAL;
+> > +       struct device_node *np = spi->dev.archdata.of_node;
+> > +       struct device *dev = &spi->dev;
+> > +       struct of_mmc_spi *oms = kzalloc(sizeof(*oms), GFP_KERNEL);
+> > +       const u32 *ocr_mask;
+> > +       int size;
+> > +
+> > +       if (!oms)
+> > +               return -ENOMEM;
+> > +
+> > +       /* Somebody occupied node's data? */
+> > +       WARN_ON(spi->dev.archdata.of_node->data);
+> 
+> Perhaps bail at this point to avoid corruption?  Would it be better to
+> use container_of() instead for getting a pointer back to the private
+> structure from the pdata pointer?
+
+Using platform_data with container_of isn't always safe (e.g. for
+platform bus we can't use it, this is done so that board's platform_data
+definitions could be made __initdata).
+
+David, would you [not] suggest us to use platform_data with
+container_of, that is, are there any plans to make SPI core copy
+the platform_data instead of passing a pointer directly?
+
+> > +
+> > +       /*
+> > +        * mmc_spi_probe will use drvdata, so we can't use it. Use node's
+> > +        * data instead.
+> > +        */
+> > +       spi->dev.archdata.of_node->data = oms;
+> > +
+[...]
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
