@@ -1,26 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 70BEFDDEFD
-	for <linuxppc-dev@ozlabs.org>; Tue, 27 May 2008 12:16:15 +1000 (EST)
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net (unknown [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id 409D1DDF88
+	for <linuxppc-dev@ozlabs.org>; Tue, 27 May 2008 12:28:17 +1000 (EST)
+Date: Mon, 26 May 2008 19:28:12 -0700 (PDT)
+Message-Id: <20080526.192812.184590464.davem@davemloft.net>
+To: benh@kernel.crashing.org
 Subject: Re: MMIO and gcc re-ordering issue
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: David Miller <davem@davemloft.net>
-In-Reply-To: <20080526.184047.88207142.davem@davemloft.net>
-References: <1211516683.8297.271.camel@pasglop>
-	<Pine.LNX.4.64.0805221553400.8205@t2.domain.actdsltmp>
-	<1211852026.3286.36.camel@pasglop>
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1211854540.3286.42.camel@pasglop>
+References: <1211852026.3286.36.camel@pasglop>
 	<20080526.184047.88207142.davem@davemloft.net>
-Content-Type: text/plain
-Date: Tue, 27 May 2008 12:15:40 +1000
-Message-Id: <1211854540.3286.42.camel@pasglop>
+	<1211854540.3286.42.camel@pasglop>
 Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
 	linuxppc-dev@ozlabs.org, scottwood@freescale.com,
 	torvalds@linux-foundation.org, tpiepho@freescale.com,
 	alan@lxorguk.ukuu.org.uk
-Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,43 +26,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Tue, 27 May 2008 12:15:40 +1000
 
-On Mon, 2008-05-26 at 18:40 -0700, David Miller wrote:
+> Some of them. USB comes to mind. I'd be happy to make it "the rule" and
+> document that MMIO vs. coherent access aren't implicitely ordered. I
+> would still keep them ordered on powerpc for a little while tho until
+> I'm happy enough with driver auditing.
 > 
-> > Quick summary: gcc is happily re-ordering readl/writel vs. surrounding
-> > memory accesses (and thus accesses to DMA coherent memory) which is
-> > obviously a _BAD_THING_.
-> > 
-> > This is on all archs. Quick fix is to stick a "memory" clobber in all arch
-> > implementations of readl/writel/... (ie, making them a barrier()).
-> > 
-> > However, I'm using that as an excuse to bring back my pet subject, which
-> > is basically, should we instead just finally mandate the use of explicit
-> > rmb/wmb/mb's (which boils down to barrier() on x86) to drivers who want
-> > to order memory consistent accesses vs. MMIO ?
-> 
-> This is basically what drivers are effectively doing.
+> But heh, it's you who was telling me that it would be a bad engineering
+> decision and we had to make everybody look like x86 & fully ordered :-)
+> I decided to agree back then and stuck all those nasty heavy barriers
+> in the powerpc variants of readl/writel/...
 
-Some of them. USB comes to mind. I'd be happy to make it "the rule" and
-document that MMIO vs. coherent access aren't implicitely ordered. I
-would still keep them ordered on powerpc for a little while tho until
-I'm happy enough with driver auditing.
+I still believe this.
 
-But heh, it's you who was telling me that it would be a bad engineering
-decision and we had to make everybody look like x86 & fully ordered :-)
-I decided to agree back then and stuck all those nasty heavy barriers
-in the powerpc variants of readl/writel/...
+It's just another complicated thing for driver authors to get wrong.
+The other side of the coin is of course the cost.
 
-Now, however, that x86 -is- also affected by the problem to some extent
-(ie. compiler re-ordering, not CPU but similar), this  is why I'm asking
-what's people opinion is.
-
-I'm happy to do patches updating memory-barriers.txt and others, and
-do some driver auditing (though I won't do all of them), if the general
-opinion is that it's the right direction to go.
-
-If not, then shouldn't we remove the existing spurrious wmb/rmb/mb from
-drivers and slap a "memory" clobber on all archs readl/writel/... ?
-
-Cheers,
-Ben.
+The only thing I am absolutely sure of is that we should make a
+decision fast, document it, and just stick to it.
