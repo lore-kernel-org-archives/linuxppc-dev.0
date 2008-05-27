@@ -1,20 +1,28 @@
-Return-Path: <jochen@scram.de>
-Received: from mail.scram.de (mail0.scram.de [78.47.204.202])
+Return-Path: <torvalds@linux-foundation.org>
+Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
+	[140.211.169.13])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.scram.de", Issuer "scram e.V. CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 72817DE071
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 May 2008 01:35:28 +1000 (EST)
-Message-ID: <483C2A33.1020309@scram.de>
-Date: Tue, 27 May 2008 17:35:15 +0200
-From: Jochen Friedrich <jochen@scram.de>
+	(Client CN "smtp.linux-foundation.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 82968DDDF3
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 May 2008 01:36:19 +1000 (EST)
+Date: Tue, 27 May 2008 08:35:29 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: MMIO and gcc re-ordering issue
+In-Reply-To: <1211859542.3286.46.camel@pasglop>
+Message-ID: <alpine.LFD.1.10.0805270833060.2958@woody.linux-foundation.org>
+References: <1211852026.3286.36.camel@pasglop>
+	<20080526.184047.88207142.davem@davemloft.net>
+	<1211854540.3286.42.camel@pasglop>
+	<20080526.192812.184590464.davem@davemloft.net>
+	<1211859542.3286.46.camel@pasglop>
 MIME-Version: 1.0
-To: Laurent Pinchart <laurentp@cse-semaphore.com>
-Subject: Re: How to set device's platform_data field for OF-described I2C
-	devices ?
-References: <200805271348.06470.laurentp@cse-semaphore.com>
-In-Reply-To: <200805271348.06470.laurentp@cse-semaphore.com>
-Content-Type: text/plain; charset=ISO-8859-15
-Cc: linuxppc-dev@ozlabs.org, Linux I2C <i2c@lm-sensors.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
+	tpiepho@freescale.com, linuxppc-dev@ozlabs.org,
+	scottwood@freescale.com, David Miller <davem@davemloft.net>,
+	alan@lxorguk.ukuu.org.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,28 +32,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Laurent,
 
-> I'm running into a small issue with the pca953x I2C GPIO driver. The driver 
-> requires platform data (to set the GPIO base number among other information). 
-> As the device is automatically instantiated from the OF device tree, I can't 
-> find a way to add platform data in the process.
 
-Platform data really is a problem for devices loaded by OF device trees (see the
-discussion at http://ozlabs.org/pipermail/linuxppc-dev/2008-May/056728.html and
-in particular http://ozlabs.org/pipermail/linuxppc-dev/2008-May/056752.html).
+On Tue, 27 May 2008, Benjamin Herrenschmidt wrote:
+> 
+> Yes. As it is today, tg3 for example is potentially broken on all archs
+> with newer gcc unless we either add "memory" clobber to readl/writel or
+> stick some wmb's in there (just a random driver I picked).
+> 
+> So Linus, what is your take on that matter ?
 
-In case of this particular chip it might be feasible to support the new libgpio
-API to get a GPIO base number dynamically and use some defaults for the other
-platform data to enable the chip to be used without platform data.
+Let's just serialize the damn things, and add a memory clobber to them.
 
-Otherwise, you could only bypass the OF bindings totally and add the device
-manually from platform code with the platform data filled in.
+Expecting people to fix up all drivers is simply not going to happen. And 
+serializing things shouldn't be *that* expensive. People who cannot take 
+the expense can continue to use the magic __raw_writel() etc stuff.
 
-> What's the best way to specify platform data for OF-described I2C devices ?
-
-This depends on the data. For example function pointers can't be described in the
-device tree, at all.
-
-Thanks,
-Jochen
+			Linus
