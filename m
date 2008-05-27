@@ -1,16 +1,19 @@
-Return-Path: <laurentp@cse-semaphore.com>
-Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
-	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id 779DBDDF82
-	for <linuxppc-dev@ozlabs.org>; Tue, 27 May 2008 21:48:09 +1000 (EST)
-From: Laurent Pinchart <laurentp@cse-semaphore.com>
-To: Linux I2C <i2c@lm-sensors.org>
-Subject: How to set device's platform_data field for OF-described I2C devices ?
-Date: Tue, 27 May 2008 13:47:59 +0200
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 0306FDDE1E
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 May 2008 00:38:59 +1000 (EST)
+Date: Tue, 27 May 2008 18:38:57 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 0/7] Patches for Kumar's powerpc-next tree
+Message-ID: <20080527143857.GA3041@polina.dev.rtsoft.ru>
+References: <20080523163811.GA12181@polina.dev.rtsoft.ru>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1578720.ZKAOKRFCBV";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Message-Id: <200805271348.06470.laurentp@cse-semaphore.com>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <20080523163811.GA12181@polina.dev.rtsoft.ru>
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
+	Timur Tabi <timur@freescale.com>
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,46 +23,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---nextPart1578720.ZKAOKRFCBV
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Fri, May 23, 2008 at 08:38:11PM +0400, Anton Vorontsov wrote:
+> Hi Kumar,
+> 
+> Here is updated series, with your comments addressed. Patches are
+> rebased on top of your current powerpc-next branch.
 
-Hi everybody,
+Are there any issues with this series? If not, Kumar, could you please
+apply this except this patch:
 
-I'm running into a small issue with the pca953x I2C GPIO driver. The driver=
-=20
-requires platform data (to set the GPIO base number among other information=
-).=20
-As the device is automatically instantiated from the OF device tree, I can'=
-t=20
-find a way to add platform data in the process.
+> [PATCH 6/7] [POWERPC] booting-without-of: add FHCI USB, FSL MCU, FSL UPM and GPIO LEDs bindings
 
-What's the best way to specify platform data for OF-described I2C devices ?
+It'll need more discussion, obviously.
 
-Best regards,
+Thanks,
 
-=2D-=20
-Laurent Pinchart
-CSE Semaphore Belgium
-
-Chaussee de Bruxelles, 732A
-B-1410 Waterloo
-Belgium
-
-T +32 (2) 387 42 59
-=46 +32 (2) 387 42 75
-
---nextPart1578720.ZKAOKRFCBV
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
-
-iD8DBQBIO/T28y9gWxC9vpcRAqTZAKCuNgeopQtdva+DnU6JxckNmT8P/ACg3nUz
-YZCp2UZyA0Ab1h+SxMEQ6aA=
-=rmXC
------END PGP SIGNATURE-----
-
---nextPart1578720.ZKAOKRFCBV--
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
