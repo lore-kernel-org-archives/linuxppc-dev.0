@@ -1,21 +1,32 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 9D029DE0D2
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 May 2008 04:06:48 +1000 (EST)
-Message-ID: <483C4DF6.8060006@freescale.com>
-Date: Tue, 27 May 2008 13:07:50 -0500
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <rdreier@cisco.com>
+Received: from sj-iport-3.cisco.com (sj-iport-3.cisco.com [171.71.176.72])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "sj-iport-3.cisco.com", Issuer "Cisco SSCA" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id D827ADE183
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 May 2008 04:07:37 +1000 (EST)
+From: Roland Dreier <rdreier@cisco.com>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Subject: Re: MMIO and gcc re-ordering issue
+References: <1211852026.3286.36.camel@pasglop>
+	<20080526.184047.88207142.davem@davemloft.net>
+	<1211854540.3286.42.camel@pasglop>
+	<20080526.192812.184590464.davem@davemloft.net>
+	<20080526204233.75b71bb8@infradead.org>
+	<1211872130.3286.64.camel@pasglop> <adaprr721c6.fsf@cisco.com>
+	<1211906268.3435.44.camel@localhost.localdomain>
+	<adad4n71wb3.fsf@cisco.com>
+	<1211910825.7160.1.camel@localhost.localdomain>
+Date: Tue, 27 May 2008 11:07:05 -0700
+In-Reply-To: <1211910825.7160.1.camel@localhost.localdomain> (James
+	Bottomley's message of "Tue, 27 May 2008 12:53:45 -0500")
+Message-ID: <adamymbvcxi.fsf@cisco.com>
 MIME-Version: 1.0
-To: Ron Madrid <ron_madrid@sbcglobal.net>
-Subject: Re: JFFS2 FS not writeable
-References: <661239.31265.qm@web83508.mail.sp1.yahoo.com>
-In-Reply-To: <661239.31265.qm@web83508.mail.sp1.yahoo.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
+	tpiepho@freescale.com, linuxppc-dev@ozlabs.org,
+	scottwood@freescale.com, torvalds@linux-foundation.org,
+	David Miller <davem@davemloft.net>, alan@lxorguk.ukuu.org.uk,
+	Arjan van de Ven <arjan@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,22 +36,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Ron Madrid wrote:
-> I have tried the latest code and now, I'm able to
-> write a limited amount.  After which when I reboot,
-> more than 100 contiguous blocks have been marked bad,
-> through the end of the device (according to the dts). 
-> Is this something that has been seen before?
+ > Um, OK, you've said write twice now ... I was assuming you meant read.
+ > Even on an x86, writes are posted, so there's no way a spin lock could
+ > serialise a write without an intervening read to flush the posting
+ > (that's why only reads have a relaxed version on altix).  Or is there
+ > something else I'm missing?
 
-Yes, but not with the latest code.
+Writes are posted yes, but not reordered arbitrarily.  If I have code like:
 
- > My NAND device is a large page.
+	spin_lock(&mmio_lock);
+	writel(val1, reg1);
+	writel(val2, reg2);
+	spin_unlock(&mmio_lock);
 
-I've only had small page devices to test on, so it's quite likely that 
-there's a large page bug in the driver somewhere.
+then I have a reasonable expectation that if two CPUs run this at the
+same time, their writes to reg1/reg2 won't be interleaved with each
+other (because the whole section is inside a spinlock).  And Altix
+violates that expectation.
 
-If your erase block size is not 128K, try the latest set_addr patch in 
-the mtd-2.6.22.1 branch of u-boot-nand-flash (I still need to send it 
-out for Linux).
-
--Scott
+ - R.
