@@ -2,8 +2,8 @@ Return-Path: <rdreier@cisco.com>
 Received: from sj-iport-3.cisco.com (sj-iport-3.cisco.com [171.71.176.72])
 	(using TLSv1 with cipher RC4-SHA (128/128 bits))
 	(Client CN "sj-iport-3.cisco.com", Issuer "Cisco SSCA" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id D827ADE183
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 May 2008 04:07:37 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 31741DE638
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 May 2008 04:17:10 +1000 (EST)
 From: Roland Dreier <rdreier@cisco.com>
 To: James Bottomley <James.Bottomley@HansenPartnership.com>
 Subject: Re: MMIO and gcc re-ordering issue
@@ -16,10 +16,11 @@ References: <1211852026.3286.36.camel@pasglop>
 	<1211906268.3435.44.camel@localhost.localdomain>
 	<adad4n71wb3.fsf@cisco.com>
 	<1211910825.7160.1.camel@localhost.localdomain>
-Date: Tue, 27 May 2008 11:07:05 -0700
-In-Reply-To: <1211910825.7160.1.camel@localhost.localdomain> (James
-	Bottomley's message of "Tue, 27 May 2008 12:53:45 -0500")
-Message-ID: <adamymbvcxi.fsf@cisco.com>
+	<adamymbvcxi.fsf@cisco.com>
+Date: Tue, 27 May 2008 11:17:04 -0700
+In-Reply-To: <adamymbvcxi.fsf@cisco.com> (Roland Dreier's message of "Tue, 27
+	May 2008 11:07:05 -0700")
+Message-ID: <adaej7nvcgv.fsf@cisco.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
@@ -36,22 +37,6 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
- > Um, OK, you've said write twice now ... I was assuming you meant read.
- > Even on an x86, writes are posted, so there's no way a spin lock could
- > serialise a write without an intervening read to flush the posting
- > (that's why only reads have a relaxed version on altix).  Or is there
- > something else I'm missing?
+ > Writes are posted yes, but not reordered arbitrarily.
 
-Writes are posted yes, but not reordered arbitrarily.  If I have code like:
-
-	spin_lock(&mmio_lock);
-	writel(val1, reg1);
-	writel(val2, reg2);
-	spin_unlock(&mmio_lock);
-
-then I have a reasonable expectation that if two CPUs run this at the
-same time, their writes to reg1/reg2 won't be interleaved with each
-other (because the whole section is inside a spinlock).  And Altix
-violates that expectation.
-
- - R.
+on standard x86 I mean here...
