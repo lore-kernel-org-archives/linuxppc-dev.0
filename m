@@ -1,26 +1,29 @@
-Return-Path: <corbet@lwn.net>
-Received: from vena.lwn.net (vena.lwn.net [206.168.112.25])
-	by ozlabs.org (Postfix) with ESMTP id E40B8DE06E
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 May 2008 01:34:48 +1000 (EST)
-Date: Tue, 27 May 2008 09:28:30 -0600
-From: Jonathan Corbet <corbet@lwn.net>
+Return-Path: <rdreier@cisco.com>
+Received: from sj-iport-1.cisco.com (sj-iport-1.cisco.com [171.71.176.70])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "sj-iport-1.cisco.com", Issuer "Cisco SSCA" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 8116BDE149
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 May 2008 01:50:23 +1000 (EST)
+From: Roland Dreier <rdreier@cisco.com>
 To: benh@kernel.crashing.org
 Subject: Re: MMIO and gcc re-ordering issue
-Message-ID: <20080527092830.3535ee7b@bike.lwn.net>
-In-Reply-To: <1211852026.3286.36.camel@pasglop>
-References: <4833524C.3040207@freescale.com>
-	<20080520.153947.84346222.davem@davemloft.net>
-	<4833542E.3040608@freescale.com>
-	<20080520.155326.195407196.davem@davemloft.net>
-	<1211516683.8297.271.camel@pasglop>
-	<Pine.LNX.4.64.0805221553400.8205@t2.domain.actdsltmp>
-	<1211852026.3286.36.camel@pasglop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Linux Arch list <linux-arch@vger.kernel.org>, linux-kernel@vger.kernel.org,
-	Trent Piepho <tpiepho@freescale.com>, linuxppc-dev@ozlabs.org,
-	scottwood@freescale.com, Linus Torvalds <torvalds@linux-foundation.org>,
-	David Miller <davem@davemloft.net>, alan@lxorguk.ukuu.org.uk
+References: <1211852026.3286.36.camel@pasglop>
+	<20080526.184047.88207142.davem@davemloft.net>
+	<1211854540.3286.42.camel@pasglop>
+	<20080526.192812.184590464.davem@davemloft.net>
+	<20080526204233.75b71bb8@infradead.org>
+	<1211872130.3286.64.camel@pasglop>
+Date: Tue, 27 May 2008 08:50:17 -0700
+In-Reply-To: <1211872130.3286.64.camel@pasglop> (Benjamin Herrenschmidt's
+	message of "Tue, 27 May 2008 17:08:50 +1000")
+Message-ID: <adaprr721c6.fsf@cisco.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
+	David Miller <davem@davemloft.net>, linuxppc-dev@ozlabs.org,
+	scottwood@freescale.com, torvalds@linux-foundation.org,
+	tpiepho@freescale.com, alan@lxorguk.ukuu.org.uk,
+	Arjan van de Ven <arjan@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,18 +33,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 27 May 2008 11:33:46 +1000
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+ > Though it's my understanding that at least ia64 does require the
+ > explicit barriers anyway, so we are still in a dodgy situation here
+ > where it's not clear what drivers should do and we end up with
+ > possibly excessive barriers on powerpc where I end up with both
+ > the wmb/rmb/mb that were added for ia64 -and- the ones I have in
+ > readl/writel to make them look synchronous... Not nice.
 
-> However, I'm using that as an excuse to bring back my pet subject,
-> which is basically, should we instead just finally mandate the use of
-> explicit rmb/wmb/mb's (which boils down to barrier() on x86) to
-> drivers who want to order memory consistent accesses vs. MMIO ?
+ia64 is a disaster with a slightly different ordering problem -- the
+mmiowb() issue.  I know Ben knows far too much about this, but for big
+SGI boxes, you sometimes need mmiowb() to avoid problems with driver
+code that does totally sane stuff like
 
-To me this seems like asking for a long series of weird bugs in
-drivers.  Is the cost of a barrier in an MMIO operation so high that we
-can't afford to just put them in?  Alan's suggestion of no-barrier
-versions for people who know what they're doing (and who think there's a
-reason to care) seems like a better way to go to me.
+	spin_lock(&mmio_lock);
+	writel(val1, reg1);
+	writel(val2, reg2);
+	spin_unlock(&mmio_lock);
 
-jon
+If that snippet is called on two CPUs at the same time, then the device
+might see a sequence like
+
+	CPU1 -- write reg1
+	CPU2 -- write reg1
+	CPU1 -- write reg2
+	CPU2 -- write reg2
+
+in spite of the fact that everything is totally ordered on the CPUs by
+the spin lock.
+
+The reason this is such a disaster is because the code looks right,
+makes sense, and works fine on 99.99% of all systems out there.  So I
+would bet that 99% of our drivers have missing mmiowb() "bugs" -- no one
+has plugged the hardware into an Altix box and cared enough to stress
+test it.
+
+However for the issue at hand, my expectation as a driver writer is that
+readl()/writel() are ordered with respect to MMIO operations, but not
+necessarily with respect to normal writes to coherent CPU memory.  And
+I've included explicit wmb()s in code I've written like
+drivers/infiniband/hw/mthca.
+
+ - R.
