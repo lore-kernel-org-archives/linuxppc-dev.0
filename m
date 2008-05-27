@@ -1,29 +1,16 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 0162DDDFD1
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 May 2008 04:33:07 +1000 (EST)
-Message-ID: <483C5414.6050308@freescale.com>
-Date: Tue, 27 May 2008 13:33:56 -0500
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <ron_madrid@sbcglobal.net>
+Received: from web83511.mail.sp1.yahoo.com (web83511.mail.sp1.yahoo.com
+	[216.252.120.167]) by ozlabs.org (Postfix) with SMTP id 07C21DDF9B
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 May 2008 06:26:17 +1000 (EST)
+Date: Tue, 27 May 2008 13:26:16 -0700 (PDT)
+From: Ron Madrid <ron_madrid@sbcglobal.net>
+Subject: Re: JFFS2 FS not writeable
+To: Scott Wood <scottwood@freescale.com>
+In-Reply-To: <483C4DF6.8060006@freescale.com>
 MIME-Version: 1.0
-To: Trent Piepho <tpiepho@freescale.com>
-Subject: Re: MMIO and gcc re-ordering issue
-References: <1211852026.3286.36.camel@pasglop>
-	<20080526.184047.88207142.davem@davemloft.net>
-	<1211854540.3286.42.camel@pasglop>
-	<20080526.192812.184590464.davem@davemloft.net>
-	<1211859542.3286.46.camel@pasglop>
-	<alpine.LFD.1.10.0805270833060.2958@woody.linux-foundation.org>
-	<Pine.LNX.4.64.0805271043150.7453@t2.domain.actdsltmp>
-In-Reply-To: <Pine.LNX.4.64.0805271043150.7453@t2.domain.actdsltmp>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Linus Torvalds <torvalds@linux-foundation.org>,
-	David Miller <davem@davemloft.net>, alan@lxorguk.ukuu.org.uk
+Content-Type: text/plain; charset=iso-8859-1
+Message-ID: <850932.26140.qm@web83511.mail.sp1.yahoo.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,24 +20,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Trent Piepho wrote:
-> Is there an issue with anything _besides_ coherent DMA?
+In which function should I start searching for this
+problem?  What would cause a block to be marked bad?
+
+Ron
+--- Scott Wood <scottwood@freescale.com> wrote:
+
+> Ron Madrid wrote:
+> > I have tried the latest code and now, I'm able to
+> > write a limited amount.  After which when I
+> reboot,
+> > more than 100 contiguous blocks have been marked
+> bad,
+> > through the end of the device (according to the
+> dts). 
+> > Is this something that has been seen before?
 > 
-> Could one have a special version of the accessors for drivers that
-> want to assume they are strictly ordered vs coherent DMA memory?
-> That would be much easier to get right, without slowing _everything_
-> down.
-
-It's better to be safe by default and then optimize the fast paths than 
-to be relaxed by default and hang the machine in some piece of code that 
-runs once a month.  "Premature optimization is the root of all evil", 
-and what not.
-
-> One could even go as far as to allow a driver to "#define 
-> WANT_STRICT_IO" and then it would get the strict versions.  Add that
-> to any driver that uses DMA and then worry about vetting those
-> drivers.
-
-See above -- if you must have a #define, then it should be WANT_RELAXED_IO.
-
--Scott
+> Yes, but not with the latest code.
+> 
+>  > My NAND device is a large page.
+> 
+> I've only had small page devices to test on, so it's
+> quite likely that 
+> there's a large page bug in the driver somewhere.
+> 
+> If your erase block size is not 128K, try the latest
+> set_addr patch in 
+> the mtd-2.6.22.1 branch of u-boot-nand-flash (I
+> still need to send it 
+> out for Linux).
+> 
+> -Scott
+> 
