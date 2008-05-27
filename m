@@ -1,21 +1,20 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 11A15DDF65
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 May 2008 01:16:30 +1000 (EST)
-Date: Tue, 27 May 2008 19:16:28 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 4/7] [POWERPC] QE: implement support for the GPIO LIB API
-Message-ID: <20080527151628.GA11517@polina.dev.rtsoft.ru>
-References: <20080523163811.GA12181@polina.dev.rtsoft.ru>
-	<20080523163900.GD16137@polina.dev.rtsoft.ru>
-	<8E7E138E-E6D7-45FA-885F-380A82ECEC63@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <8E7E138E-E6D7-45FA-885F-380A82ECEC63@kernel.crashing.org>
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
-	Timur Tabi <timur@freescale.com>
-Reply-To: avorontsov@ru.mvista.com
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id D2A45DDFCC
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 May 2008 01:29:22 +1000 (EST)
+Message-Id: <7BF8FE6B-8BDD-4DC3-953E-E023C38EBA87@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: David Gibson <david@gibson.dropbear.id.au>
+In-Reply-To: <20080226003955.GA24382@localhost.localdomain>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v919.2)
+Subject: Re: [PATCH] Add support for binary includes.
+Date: Tue, 27 May 2008 10:27:57 -0500
+References: <20080220191941.GA2062@ld0162-tx32.am.freescale.net>
+	<20080226003955.GA24382@localhost.localdomain>
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org, jdl@jdl.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,33 +24,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, May 27, 2008 at 10:04:20AM -0500, Kumar Gala wrote:
->
-> On May 23, 2008, at 11:39 AM, Anton Vorontsov wrote:
->
->> This is needed to access QE GPIOs via Linux GPIO API.
+
+On Feb 25, 2008, at 6:39 PM, David Gibson wrote:
+
+> On Wed, Feb 20, 2008 at 01:19:41PM -0600, Scott Wood wrote:
+>> A property's data can be populated with a file's contents
+>> as follows:
 >>
->> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
->> Acked-By: Timur Tabi <timur@freescale.com>
->> ---
->> Documentation/powerpc/booting-without-of.txt |   27 +++++
->> arch/powerpc/sysdev/qe_lib/Kconfig           |    9 ++
->> arch/powerpc/sysdev/qe_lib/Makefile          |    1 +
->> arch/powerpc/sysdev/qe_lib/gpio.c            |  148 +++++++++++++++++ 
->> +++++++++
->> include/asm-powerpc/qe.h                     |    2 +
->> 5 files changed, 187 insertions(+), 0 deletions(-)
->> create mode 100644 arch/powerpc/sysdev/qe_lib/gpio.c
+>> node {
+>> 	prop = /incbin/("path/to/data");
+>> };
+>>
+>> A subset of a file can be included by passing start and size  
+>> parameters.
+>> For example, to include bytes 8 through 23:
+>>
+>> node {
+>> 	prop = /incbin/("path/to/data", 8, 16);
+>> };
+>>
+>> As with /include/, non-absolute paths are looked for in the directory
+>> of the source file that includes them.
 >
-> didn't we talk about putting this is drivers/gpio/ ?
+> Well, while I discuss the syntax with Jon, here's some comments on the
+> implementation.
 
-:-)
+have we made any progress on the syntax?
 
-Yes, we did. And David Brownell politely suggested to not do this,
-and instead leave it in arch/ as do all other arches for their SOC
-GPIOs.
-
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+- k
