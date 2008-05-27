@@ -1,25 +1,16 @@
-Return-Path: <alan@lxorguk.ukuu.org.uk>
-Received: from lxorguk.ukuu.org.uk (earthlight.etchedpixels.co.uk
-	[81.2.110.250])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E3EBADDF78
-	for <linuxppc-dev@ozlabs.org>; Tue, 27 May 2008 18:41:18 +1000 (EST)
-Date: Tue, 27 May 2008 09:24:30 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: David Miller <davem@davemloft.net>
-Subject: Re: MMIO and gcc re-ordering issue
-Message-ID: <20080527092430.6380d962@core>
-In-Reply-To: <20080526.192812.184590464.davem@davemloft.net>
-References: <1211852026.3286.36.camel@pasglop>
-	<20080526.184047.88207142.davem@davemloft.net>
-	<1211854540.3286.42.camel@pasglop>
-	<20080526.192812.184590464.davem@davemloft.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, scottwood@freescale.com,
-	torvalds@linux-foundation.org, tpiepho@freescale.com
+Return-Path: <laurentp@cse-semaphore.com>
+Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
+	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id 779DBDDF82
+	for <linuxppc-dev@ozlabs.org>; Tue, 27 May 2008 21:48:09 +1000 (EST)
+From: Laurent Pinchart <laurentp@cse-semaphore.com>
+To: Linux I2C <i2c@lm-sensors.org>
+Subject: How to set device's platform_data field for OF-described I2C devices ?
+Date: Tue, 27 May 2008 13:47:59 +0200
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart1578720.ZKAOKRFCBV";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
+Message-Id: <200805271348.06470.laurentp@cse-semaphore.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,16 +20,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> It's just another complicated thing for driver authors to get wrong.
-> The other side of the coin is of course the cost.
-> 
-> The only thing I am absolutely sure of is that we should make a
-> decision fast, document it, and just stick to it.
+--nextPart1578720.ZKAOKRFCBV
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-It's unfortunate that the __read/___write versions have other different
-semantics. The default should definitely be ordered but having un-ordered
-ones as an option would be good for zapping the hot paths that matter.
+Hi everybody,
 
-Most I/O paths aren't even worth the thinking time for non-ordered I/O.
+I'm running into a small issue with the pca953x I2C GPIO driver. The driver=
+=20
+requires platform data (to set the GPIO base number among other information=
+).=20
+As the device is automatically instantiated from the OF device tree, I can'=
+t=20
+find a way to add platform data in the process.
 
-Alan
+What's the best way to specify platform data for OF-described I2C devices ?
+
+Best regards,
+
+=2D-=20
+Laurent Pinchart
+CSE Semaphore Belgium
+
+Chaussee de Bruxelles, 732A
+B-1410 Waterloo
+Belgium
+
+T +32 (2) 387 42 59
+=46 +32 (2) 387 42 75
+
+--nextPart1578720.ZKAOKRFCBV
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
+
+iD8DBQBIO/T28y9gWxC9vpcRAqTZAKCuNgeopQtdva+DnU6JxckNmT8P/ACg3nUz
+YZCp2UZyA0Ab1h+SxMEQ6aA=
+=rmXC
+-----END PGP SIGNATURE-----
+
+--nextPart1578720.ZKAOKRFCBV--
