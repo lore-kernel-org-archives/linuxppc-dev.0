@@ -1,33 +1,19 @@
-Return-Path: <Haavard.Skinnemoen@atmel.com>
-Received: from bagnes.atmel.com (smtpeu1.atmel.com [195.65.72.27])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+Return-Path: <dargaud@lpsc.in2p3.fr>
+Received: from lpsc-mail.in2p3.fr (lpsc-mail.in2p3.fr [134.158.40.8])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 381D6DDF49
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 May 2008 18:59:21 +1000 (EST)
-Date: Wed, 28 May 2008 10:36:48 +0200
-From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-To: benh@kernel.crashing.org
-Subject: Re: MMIO and gcc re-ordering issue
-Message-ID: <20080528103648.54eb8734@hskinnemo-gx745.norway.atmel.com>
-In-Reply-To: <1211926636.3286.100.camel@pasglop>
-References: <1211852026.3286.36.camel@pasglop>
-	<20080526.184047.88207142.davem@davemloft.net>
-	<1211854540.3286.42.camel@pasglop>
-	<20080526.192812.184590464.davem@davemloft.net>
-	<1211859542.3286.46.camel@pasglop>
-	<alpine.LFD.1.10.0805270833060.2958@woody.linux-foundation.org>
-	<1211922621.3286.80.camel@pasglop>
-	<alpine.LFD.1.10.0805271421570.2958@woody.linux-foundation.org>
-	<1211924335.3286.89.camel@pasglop>
-	<20080527214241.GA22636@parisc-linux.org>
-	<1211926636.3286.100.camel@pasglop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linux-arch@vger.kernel.org, Matthew Wilcox <matthew@wil.cx>,
-	linux-kernel@vger.kernel.org, tpiepho@freescale.com,
-	linuxppc-dev@ozlabs.org, scottwood@freescale.com,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	David Miller <davem@davemloft.net>, alan@lxorguk.ukuu.org.uk
+	by ozlabs.org (Postfix) with ESMTPS id BDFFADDF5E
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 May 2008 19:51:22 +1000 (EST)
+Message-ID: <052501c8c0a8$5e3cc9e0$ad289e86@LPSC0173W>
+From: "Guillaume Dargaud" <dargaud@lpsc.in2p3.fr>
+To: "John Bonesio" <john.bonesio@xilinx.com>
+References: <0b5701c8bf47$49219520$ad289e86@LPSC0173W>
+	<20080527164222.E226818D0062@mail151-sin.bigfish.com>
+Subject: Re: Still struggling with Xilinx GPIO...
+Date: Wed, 28 May 2008 11:51:09 +0200
+MIME-Version: 1.0
+Content-Type: text/plain; format=flowed; charset="utf-8"; reply-type=original
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,21 +23,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-> > > I'm happy to say that __raw is purely about ordering and make them
-> > > byteswap on powerpc tho (ie, make them little endian like the non-raw
-> > > counterpart).  
-> > 
-> > That would break a lot of drivers.  
-> 
-> How many actually use __raw_ * ?
+Hi John,
 
-I do -- in all the drivers for on-chip peripherals that are shared
-between AT91 ARM (LE) and AVR32 (BE). Since everything goes on inside
-the chip, we must use LE accesses on ARM and BE accesses on AVR32.
+> Try using channel 1. It may be set up where the first channel is 1 and not 
+> 0.
 
-Currently, this is the only interface I know that can do native-endian
-accesses, so if you take it away, I'm gonna need an alternative
-interface that doesn't do byteswapping.
+Not sure what you mean...
 
-Haavard
+I'm actually not clear how many devices I should have:
+
+$ grep "GPIO.*BASEADDR" 
+arch/ppc/platforms/4xx/xparameters/xparameters_ml405.h
+#define XPAR_GPIO_0_BASEADDR XPAR_LEDS_4BIT_BASEADDR
+#define XPAR_GPIO_1_BASEADDR XPAR_LEDS_POSITIONS_BASEADDR
+#define XPAR_GPIO_2_BASEADDR XPAR_PUSH_BUTTONS_POSITION_BASEADDR
+
+But depending on the examples I look at, they define either:
+
+crw-rw-rw-    1 root     root      10, 185 May 26 13:49 xgpio
+or:
+crw-rw-rw-    1 root     root      10, 185 May 26 13:18 xgpio0
+crw-rw-rw-    1 root     root      10, 186 May 26 13:18 xgpio1
+crw-rw-rw-    1 root     root      10, 187 May 26 13:18 xgpio2
+
+If that is the former, I see the code uses:
+ gpio_ioctl.chan=0;
+And I guess that's what you are refering to, right ?
+
+Putting 1 gives me a working program, but no LED lights up and the buttons 
+are always shown at 0.
+Putting 0 gives a nice core dump as in my previous msg.
+Putting 2 locks up the system.
+
+And... I don't see how the code manages to read/wite all 3 GPIOs with only 
+two IOCTL calls. Shouldn't they be 3 different calls using different 
+addresses ?!? Argh, this complete lack of documentation in maddening. Not 
+everything can be understood from reading the source.
+
+Thanks.
+-- 
+Guillaume Dargaud
+http://www.gdargaud.net/
