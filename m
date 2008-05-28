@@ -1,19 +1,16 @@
-Return-Path: <mroos@linux.ee>
-Received: from smtp2.it.da.ut.ee (smtp2.it.da.ut.ee [193.40.5.67])
-	by ozlabs.org (Postfix) with ESMTP id 405BEDDF62
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 May 2008 03:57:04 +1000 (EST)
-Date: Wed, 28 May 2008 20:57:01 +0300 (EEST)
-From: Meelis Roos <mroos@linux.ee>
-Sender: mroos@math.ut.ee
-To: Tony Breeds <tony@bakeyournoodle.com>
-Subject: Re: PPC PReP link failure - copy_page, empty_zero_page
-In-Reply-To: <20080528005346.GK20457@bakeyournoodle.com>
-Message-ID: <Pine.SOC.4.64.0805282056290.15441@math.ut.ee>
-References: <Pine.SOC.4.64.0805272022260.869@math.ut.ee>
-	<20080528005346.GK20457@bakeyournoodle.com>
+Return-Path: <ron_madrid@sbcglobal.net>
+Received: from web83512.mail.sp1.yahoo.com (web83512.mail.sp1.yahoo.com
+	[216.252.120.168]) by ozlabs.org (Postfix) with SMTP id 9461DDDF65
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 May 2008 04:39:20 +1000 (EST)
+Date: Wed, 28 May 2008 11:39:18 -0700 (PDT)
+From: Ron Madrid <ron_madrid@sbcglobal.net>
+Subject: Re: JFFS2 FS not writeable
+To: Scott Wood <scottwood@freescale.com>
+In-Reply-To: <483C771A.7050003@freescale.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Linux Kernel list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=iso-8859-1
+Message-ID: <80364.25515.qm@web83512.mail.sp1.yahoo.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,14 +20,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> > ERROR: "copy_page" [fs/fuse/fuse.ko] undefined!
-> > ERROR: "empty_zero_page" [fs/ext4/ext4dev.ko] undefined!
-> 
-> Try that patch at: http://patchwork.ozlabs.org/linuxppc/patch?id=18710
-> 
-> Fixes it for me.
+--- Scott Wood <scottwood@freescale.com> wrote:
+> You may want to try increasing the OR[SCY] field or
+> other timing 
+> parameters associated with the NAND flash.
 
-Yes, this fixes it, thanks! Hopefully it is merged before 2.6.26.
+So are you saying that when this happened in the past
+it was a timing issue?  This change would need to
+happen in u-boot correct?
 
--- 
-Meelis Roos (mroos@linux.ee)
+Ron
