@@ -1,22 +1,20 @@
-Return-Path: <john.bonesio@xilinx.com>
-Received: from outbound6-sin-R.bigfish.com (outbound-sin.frontbridge.com
-	[207.46.51.80])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 0C3DEDDF57
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 May 2008 02:09:41 +1000 (EST)
-Subject: Re: Still struggling with Xilinx GPIO...
-From: John Bonesio <john.bonesio@xilinx.com>
-To: Guillaume Dargaud <dargaud@lpsc.in2p3.fr>
-In-Reply-To: <052501c8c0a8$5e3cc9e0$ad289e86@LPSC0173W>
-References: <0b5701c8bf47$49219520$ad289e86@LPSC0173W>
-	<20080527164222.E226818D0062@mail151-sin.bigfish.com>
-	<052501c8c0a8$5e3cc9e0$ad289e86@LPSC0173W>
-Content-Type: text/plain
-Date: Wed, 28 May 2008 09:09:34 -0700
-Mime-Version: 1.0
-Message-Id: <20080528160936.B0BCE1A48079@mail63-sin.bigfish.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <ntl@pobox.com>
+Received: from sasl.smtp.pobox.com (a-sasl-fastnet.sasl.smtp.pobox.com
+	[207.106.133.19]) by ozlabs.org (Postfix) with ESMTP id 23DD7DDF4D
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 May 2008 03:01:27 +1000 (EST)
+Date: Wed, 28 May 2008 11:44:05 -0500
+From: Nathan Lynch <ntl@pobox.com>
+To: Hannes Hering <hannes.hering@linux.vnet.ibm.com>
+Subject: Re: [PATCH 2/3] [2.6.26] ehea: Add dependency to Kconfig
+Message-ID: <20080528164405.GA4836@localdomain>
+References: <200805071443.20192.hannes.hering@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200805071443.20192.hannes.hering@linux.vnet.ibm.com>
+Cc: tklein@de.ibm.com, jeff@garzik.org, themann@de.ibm.com,
+	netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+	ossrosch@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org,
+	raisch@de.ibm.com, ossthema@de.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,90 +24,118 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Guillaume,
+Hello,
 
-gpio_ioctl.chan = x;
-
-That's what determines which gpio device gets used. Since using 1 at
-least doesn't give you a core dump, I would guess that 1 is the correct
-value to use there.
-
-So the next thing to check is to make sure that the ioctl command codes
-being used are right.
-
-The only way I know how to do this is to look in the linux kernel source
-for the gpio device. Try looking here:
-    linux/drivers/char/xilinx_gpio
-
-Then you find the routine that is handling the ioctl commands. It'll
-probably be called xgpio_ioctl. In this routine you'll see something
-like:
-    switch(cmd) {
-    case XGPIO_IN:
-        ...
-
-The value for XGPIO_IN is defined in a header file (probably). The
-header file might be called xgpio_ioctl.h.
-
-So here's the key:
-    Make sure the value for XGPIO_IN used in the user application is the
-same as the one used in the kernel.
-
-At one point I had see a case where the values in the kernel had
-changed, but the user application was still trying to use the old
-values.
-
-Hope this helps,
-
-- John
-
-
-
-On Wed, 2008-05-28 at 11:51 +0200, Guillaume Dargaud wrote:
-> Hi John,
+Hannes Hering wrote:
+> The new ehea memory hot plug implementation depends on MEMORY_HOTPLUG.
 > 
-> > Try using channel 1. It may be set up where the first channel is 1 and not 
-> > 0.
+> Signed-off-by: Hannes Hering <hering2@de.ibm.com>
+> ---
 > 
-> Not sure what you mean...
-> 
-> I'm actually not clear how many devices I should have:
-> 
-> $ grep "GPIO.*BASEADDR" 
-> arch/ppc/platforms/4xx/xparameters/xparameters_ml405.h
-> #define XPAR_GPIO_0_BASEADDR XPAR_LEDS_4BIT_BASEADDR
-> #define XPAR_GPIO_1_BASEADDR XPAR_LEDS_POSITIONS_BASEADDR
-> #define XPAR_GPIO_2_BASEADDR XPAR_PUSH_BUTTONS_POSITION_BASEADDR
-> 
-> But depending on the examples I look at, they define either:
-> 
-> crw-rw-rw-    1 root     root      10, 185 May 26 13:49 xgpio
-> or:
-> crw-rw-rw-    1 root     root      10, 185 May 26 13:18 xgpio0
-> crw-rw-rw-    1 root     root      10, 186 May 26 13:18 xgpio1
-> crw-rw-rw-    1 root     root      10, 187 May 26 13:18 xgpio2
-> 
-> If that is the former, I see the code uses:
->  gpio_ioctl.chan=0;
-> And I guess that's what you are refering to, right ?
-> 
-> Putting 1 gives me a working program, but no LED lights up and the buttons 
-> are always shown at 0.
-> Putting 0 gives a nice core dump as in my previous msg.
-> Putting 2 locks up the system.
-> 
-> And... I don't see how the code manages to read/wite all 3 GPIOs with only 
-> two IOCTL calls. Shouldn't they be 3 different calls using different 
-> addresses ?!? Argh, this complete lack of documentation in maddening. Not 
-> everything can be understood from reading the source.
-> 
-> Thanks.
+> diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
+> index f90a86b..181cd86 100644
+> --- a/drivers/net/Kconfig
+> +++ b/drivers/net/Kconfig
+> @@ -2440,7 +2440,7 @@ config CHELSIO_T3
+>  
+>  config EHEA
+>  	tristate "eHEA Ethernet support"
+> -	depends on IBMEBUS && INET && SPARSEMEM
+> +	depends on IBMEBUS && INET && SPARSEMEM && MEMORY_HOTPLUG
+>  	select INET_LRO
+>  	---help---
+>  	  This driver supports the IBM pSeries eHEA ethernet adapter.
 
-________________________________________________________________________
+I disagree with this change.
 
-John Bonesio
-Commercial Linux Solutions
-john.bonesio@xilinx.com
-(408) 879-5569
+It makes it impossible to build the ehea driver without memory hotplug
+enabled.  Presumably, this commit was intended to work around a build
+break of this sort (with EHEA=m and MEMORY_HOTPLUG=n):
 
-This email and any attachments are intended for the sole use of the named recipient(s) and contain(s) confidential information that may be proprietary, privileged or copyrighted under applicable law. If you are not the intended recipient, do not read, copy, or forward this email message or any attachments. Delete this email message and any attachments immediately.
+drivers/net/ehea/ehea_qmr.c: In function 'ehea_create_busmap':
+drivers/net/ehea/ehea_qmr.c:635: error: implicit declaration of function 'walk_memory_resource'
+
+(some indication of this should have been in the commit message, btw)
+
+I think this was the wrong way to fix the issue.  EHEA=m and
+MEMORY_HOTPLUG=n is a valid configuration for machines I test.
+
+Any thoughts on the following, which makes walk_memory_resource()
+available regardless of MEMORY_HOTPLUG's setting?  I've tested it on a
+JS22 (Power6 blade).
+
+---
+
+ arch/powerpc/mm/mem.c          |    3 +--
+ drivers/net/Kconfig            |    2 +-
+ include/linux/memory_hotplug.h |   16 ++++++++--------
+ 3 files changed, 10 insertions(+), 11 deletions(-)
+
+diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+index f67e118..51f82d8 100644
+--- a/arch/powerpc/mm/mem.c
++++ b/arch/powerpc/mm/mem.c
+@@ -151,6 +151,7 @@ out:
+ 	return ret;
+ }
+ #endif /* CONFIG_MEMORY_HOTREMOVE */
++#endif /* CONFIG_MEMORY_HOTPLUG */
+ 
+ /*
+  * walk_memory_resource() needs to make sure there is no holes in a given
+@@ -184,8 +185,6 @@ walk_memory_resource(unsigned long start_pfn, unsigned long nr_pages, void *arg,
+ }
+ EXPORT_SYMBOL_GPL(walk_memory_resource);
+ 
+-#endif /* CONFIG_MEMORY_HOTPLUG */
+-
+ void show_mem(void)
+ {
+ 	unsigned long total = 0, reserved = 0;
+diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
+index dd0ec9e..f4182cf 100644
+--- a/drivers/net/Kconfig
++++ b/drivers/net/Kconfig
+@@ -2426,7 +2426,7 @@ config CHELSIO_T3
+ 
+ config EHEA
+ 	tristate "eHEA Ethernet support"
+-	depends on IBMEBUS && INET && SPARSEMEM && MEMORY_HOTPLUG
++	depends on IBMEBUS && INET && SPARSEMEM
+ 	select INET_LRO
+ 	---help---
+ 	  This driver supports the IBM pSeries eHEA ethernet adapter.
+diff --git a/include/linux/memory_hotplug.h b/include/linux/memory_hotplug.h
+index 73e3586..ea9f5ad 100644
+--- a/include/linux/memory_hotplug.h
++++ b/include/linux/memory_hotplug.h
+@@ -77,14 +77,6 @@ extern int __add_pages(struct zone *zone, unsigned long start_pfn,
+ extern int __remove_pages(struct zone *zone, unsigned long start_pfn,
+ 	unsigned long nr_pages);
+ 
+-/*
+- * Walk through all memory which is registered as resource.
+- * arg is (start_pfn, nr_pages, private_arg_pointer)
+- */
+-extern int walk_memory_resource(unsigned long start_pfn,
+-			unsigned long nr_pages, void *arg,
+-			int (*func)(unsigned long, unsigned long, void *));
+-
+ #ifdef CONFIG_NUMA
+ extern int memory_add_physaddr_to_nid(u64 start);
+ #else
+@@ -199,6 +191,14 @@ static inline void register_page_bootmem_info_node(struct pglist_data *pgdat)
+ 
+ #endif /* ! CONFIG_MEMORY_HOTPLUG */
+ 
++/*
++ * Walk through all memory which is registered as resource.
++ * arg is (start_pfn, nr_pages, private_arg_pointer)
++ */
++extern int walk_memory_resource(unsigned long start_pfn,
++			unsigned long nr_pages, void *arg,
++			int (*func)(unsigned long, unsigned long, void *));
++
+ extern int add_memory(int nid, u64 start, u64 size);
+ extern int arch_add_memory(int nid, u64 start, u64 size);
+ extern int remove_memory(u64 start, u64 size);
