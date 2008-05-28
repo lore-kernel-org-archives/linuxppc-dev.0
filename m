@@ -1,12 +1,17 @@
 Return-Path: <tony@bakeyournoodle.com>
 Received: from pythia.bakeyournoodle.com (pythia.bakeyournoodle.com
-	[203.82.209.197]) by ozlabs.org (Postfix) with ESMTP id 55D69DDF68
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 May 2008 10:52:23 +1000 (EST)
-To: Paul Mackerras <paulus@samba.org>, <linuxppc-dev@ozlabs.org>
-Message-Id: <46cdc66d103b6a35a4958961a0970e1554d6d590.1211935894.git.tony@bakeyournoodle.com>
-From: Tony Breeds <tony@bakeyournoodle.com>
-Subject: [PATCH] [PPC] Export emty_zero_page and copy_page on ppc
-Date: Wed, 28 May 2008 10:52:19 +1000 (EST)
+	[203.82.209.197]) by ozlabs.org (Postfix) with ESMTP id 749B1DDF70
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 May 2008 10:53:47 +1000 (EST)
+Date: Wed, 28 May 2008 10:53:47 +1000
+To: Meelis Roos <mroos@linux.ee>
+Subject: Re: PPC PReP link failure - copy_page, empty_zero_page
+Message-ID: <20080528005346.GK20457@bakeyournoodle.com>
+References: <Pine.SOC.4.64.0805272022260.869@math.ut.ee>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <Pine.SOC.4.64.0805272022260.869@math.ut.ee>
+From: tony@bakeyournoodle.com (Tony Breeds)
+Cc: linuxppc-dev@ozlabs.org, Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,36 +21,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Currently ext4 and fuse fail to link if modular:
-ERROR: "copy_page" [fs/fuse/fuse.ko] undefined!
-ERROR: "empty_zero_page" [fs/ext4/ext4dev.ko] undefined!
-make[3]: *** [__modpost] Error 1
-make[2]: *** [modules] Error 2
-make[1]: *** [sub-make] Error 2
+On Tue, May 27, 2008 at 08:25:43PM +0300, Meelis Roos wrote:
+> While compiling the current kernel on prep ppc:
+> 
+>   MODPOST 703 modules
+> ERROR: "copy_page" [fs/fuse/fuse.ko] undefined!
+> ERROR: "empty_zero_page" [fs/ext4/ext4dev.ko] undefined!
 
-While arch ppc exists it may as well compile.
+Try that patch at: http://patchwork.ozlabs.org/linuxppc/patch?id=18710
 
-Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
----
-Should be safe for 2.6.26.
+Fixes it for me.
 
- arch/ppc/kernel/ppc_ksyms.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+Yours Tony
 
-diff --git a/arch/ppc/kernel/ppc_ksyms.c b/arch/ppc/kernel/ppc_ksyms.c
-index 602c268..5d529bc 100644
---- a/arch/ppc/kernel/ppc_ksyms.c
-+++ b/arch/ppc/kernel/ppc_ksyms.c
-@@ -60,8 +60,10 @@ long long __ashrdi3(long long, int);
- long long __ashldi3(long long, int);
- long long __lshrdi3(long long, int);
- 
-+EXPORT_SYMBOL(empty_zero_page);
- EXPORT_SYMBOL(clear_pages);
- EXPORT_SYMBOL(clear_user_page);
-+EXPORT_SYMBOL(copy_page);
- EXPORT_SYMBOL(transfer_to_handler);
- EXPORT_SYMBOL(do_IRQ);
- EXPORT_SYMBOL(machine_check_exception);
--- 
-1.5.5.1
+  linux.conf.au    http://www.marchsouth.org/
+  Jan 19 - 24 2009 The Australian Linux Technical Conference!
