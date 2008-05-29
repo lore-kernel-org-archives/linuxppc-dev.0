@@ -1,18 +1,16 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Thu, 29 May 2008 10:02:27 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Jon Loeliger <jdl@freescale.com>, Kumar Gala <galak@kernel.crashing.org>,
-	Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org, jdl@jdl.com
-Subject: Re: [PATCH] Add support for binary includes.
-Message-ID: <20080529000227.GB10260@yookeroo.seuss>
-References: <20080220191941.GA2062@ld0162-tx32.am.freescale.net>
-	<20080226003955.GA24382@localhost.localdomain>
-	<7BF8FE6B-8BDD-4DC3-953E-E023C38EBA87@kernel.crashing.org>
-	<483C4C04.9020408@freescale.com>
-	<20080528235859.GA10260@yookeroo.seuss>
+Return-Path: <ron_madrid@sbcglobal.net>
+Received: from web83511.mail.sp1.yahoo.com (web83511.mail.sp1.yahoo.com
+	[216.252.120.167]) by ozlabs.org (Postfix) with SMTP id 12EA3DDE98
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 May 2008 10:32:51 +1000 (EST)
+Date: Wed, 28 May 2008 17:32:49 -0700 (PDT)
+From: Ron Madrid <ron_madrid@sbcglobal.net>
+Subject: Re: JFFS2 FS not writeable
+To: Scott Wood <scottwood@freescale.com>
+In-Reply-To: <483DA7AB.4090009@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080528235859.GA10260@yookeroo.seuss>
+Content-Type: text/plain; charset=iso-8859-1
+Message-ID: <282240.86566.qm@web83511.mail.sp1.yahoo.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,49 +20,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, May 29, 2008 at 09:58:59AM +1000, David Gibson wrote:
-> On Tue, May 27, 2008 at 12:59:32PM -0500, Jon Loeliger wrote:
-> > Kumar Gala wrote:
-> >>
-> >> On Feb 25, 2008, at 6:39 PM, David Gibson wrote:
-> >>
-> >>> On Wed, Feb 20, 2008 at 01:19:41PM -0600, Scott Wood wrote:
-> >>>> A property's data can be populated with a file's contents
-> >>>> as follows:
-> >>>>
-> >>>> node {
-> >>>>     prop = /incbin/("path/to/data");
-> >>>> };
-> >>>>
-> >>>> A subset of a file can be included by passing start and size parameters.
-> >>>> For example, to include bytes 8 through 23:
-> >>>>
-> >>>> node {
-> >>>>     prop = /incbin/("path/to/data", 8, 16);
-> >>>> };
-> >>>>
-> >>>> As with /include/, non-absolute paths are looked for in the directory
-> >>>> of the source file that includes them.
-> >
-> > That issue was resolved, I believe.
-> >
-> >>> Well, while I discuss the syntax with Jon, here's some comments on the
-> >>> implementation.
-> >>
-> >> have we made any progress on the syntax?
-> >
-> > My last suggestions garnered a "I like that even less." response,
-> > so as far as I know, we're still waiting for a good proposal here.
-> 
-> A while back I sent out a spiel explaining more clearly why I didn't
-> like it, and where I thought we should go with this, but I don't think
-> anyone noticed it at the time.  I'll resend.
+So I found something that looks suspicious to me. 
+This may not be a fsl_elbc_nand.c problem, but a more
+general problem.
 
-See
-http://www.nabble.com/Re%3A--PATCH--Add-support-for-binary-includes.-p16149085.html
+Shortly after mounting the root filesystem, which is a
+jffs2 on a large page NAND device (my board is based
+on the MPC8313) the kernel appears to read the device
+starting just past the point defined by the 0x1985 . .
+. markers in the jffs2 filesystem, through the end of
+the device as defined by the dtb.  More specifically
+in my device, the file system is approximately
+0x200000 and resides at 0x400000 with the end of the
+device being 0x2000000.  As it does this it is then
+writing the oob data into these blocks (0x600000 -
+0x1fe0000).   The value that it was writing into the
+first 4 bytes of the oob are 0xff198520.  This was
+problematic as the 0x20 was being placed into the
+large page NAND device bad block location (0x0). 
+Given that there is a 0xff at the msb of the oob data,
+could this possibly be a byte swapping issue?  I don't
+see though how this could be a problem in the large
+page NAND but not the small page NAND.  I verified
+this by writing 0xffffffff in to the first 4 bytes of
+the oob data to ensure that 0xff was written into the
+bad block location.
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+In the function fsl_elbc_write_buf:
+(*(unsigned int *)buf) = 0xffffffff;
+
+I know that this isn't a fix, but I don't know where
+this problem comes from and also I don't know the
+exact flow of the NAND device processes.
+
+I would be more than happy to investigate further and
+provide a patch if someone could point me in the right
+direction.
+
+Let me know if I'm off base here, but I think this is
+where my problem is.
+
+Ron Madrid
