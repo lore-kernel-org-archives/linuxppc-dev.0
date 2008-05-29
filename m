@@ -1,32 +1,30 @@
-Return-Path: <panto@embeddedalley.com>
-Received: from postoffice.embeddedalley.com (cpe-089228.fiber.wadsnet.net
-	[65.114.89.228]) by ozlabs.org (Postfix) with SMTP id BA168DDE1B
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 May 2008 21:12:35 +1000 (EST)
-Message-Id: <4B443E30-4B6C-4E37-A038-AB05214EE78C@embeddedalley.com>
-From: Pantelis Antoniou <panto@embeddedalley.com>
-To: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-In-Reply-To: <20080528103648.54eb8734@hskinnemo-gx745.norway.atmel.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v924)
-Subject: Re: MMIO and gcc re-ordering issue
-Date: Thu, 29 May 2008 14:05:48 +0300
-References: <1211852026.3286.36.camel@pasglop>
-	<20080526.184047.88207142.davem@davemloft.net>
-	<1211854540.3286.42.camel@pasglop>
-	<20080526.192812.184590464.davem@davemloft.net>
-	<1211859542.3286.46.camel@pasglop>
-	<alpine.LFD.1.10.0805270833060.2958@woody.linux-foundation.org>
-	<1211922621.3286.80.camel@pasglop>
-	<alpine.LFD.1.10.0805271421570.2958@woody.linux-foundation.org>
-	<1211924335.3286.89.camel@pasglop>
-	<20080527214241.GA22636@parisc-linux.org>
-	<1211926636.3286.100.camel@pasglop>
-	<20080528103648.54eb8734@hskinnemo-gx745.norway.atmel.com>
-Cc: linux-arch@vger.kernel.org, Matthew Wilcox <matthew@wil.cx>,
-	linux-kernel@vger.kernel.org, tpiepho@freescale.com,
-	linuxppc-dev@ozlabs.org, scottwood@freescale.com,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	David Miller <davem@davemloft.net>, alan@lxorguk.ukuu.org.uk
+Return-Path: <LeoLi@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id BCED1DDFBE
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 May 2008 23:12:58 +1000 (EST)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by de01egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	m4TDClpV022602
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 May 2008 06:12:47 -0700 (MST)
+Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
+	[10.192.129.221])
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id m4TDCikG024185
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 May 2008 08:12:46 -0500 (CDT)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="ISO-8859-15"
+Subject: RE: USB @ MPC834x
+Date: Thu, 29 May 2008 21:12:43 +0800
+Message-ID: <989B956029373F45A0B8AF02970818900250DA70@zch01exm26.fsl.freescale.net>
+In-Reply-To: <483E7C73.3060701@matrix-vision.de>
+References: <483E7C73.3060701@matrix-vision.de>
+From: "Li Yang" <LeoLi@freescale.com>
+To: "Andre Schwarz" <andre.schwarz@matrix-vision.de>,
+	"Wood Scott" <scottwood@freescale.com>
+Cc: linux-ppc list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,37 +34,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+> -----Original Message-----
+> From: Andre Schwarz [mailto:andre.schwarz@matrix-vision.de]=20
+> Sent: Thursday, May 29, 2008 5:51 PM
+> To: Wood Scott; Li Yang
+> Cc: linux-ppc list
+> Subject: USB @ MPC834x
+>=20
+> Scott, Li,
+>=20
+> I'm sorry to bother you again ... but after bringing up all=20
+> parts of my
+> MPC8343 based board the not working USB is the last pending problem.
+> Actually I'm running on 2.6.25 with a custom board.
+>=20
+> Since USB is different for MPC8349/7/3 (depending on package) there
+> _could_ be a configuration problem.
+> Maybe you can help me out or give some hints at last.
+>=20
+> Situation:
+> MPC8343A with ULPI-PHY (USB3300 from SMSC) connected the same=20
+> way as on
+> the Freescale "MPC8349EA_MDS_PB-TBGA" Board, i.e. using ULPI=20
+> mode of the
+> USB dual role module.
+>=20
+>=20
+> Do you know if this PHY has ever been running on any Freescale board ?
 
-On 28 =CE=9C=CE=B1=CF=8A 2008, at 11:36 =CE=A0=CE=9C, Haavard Skinnemoen =
-wrote:
+Yes, this PHY is used on several reference boards.
 
-> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
->>>> I'm happy to say that __raw is purely about ordering and make them
->>>> byteswap on powerpc tho (ie, make them little endian like the non-=20=
+> Do you know of _any_ MPC8343 based board running USB with an OTG PHY ?
+> Or has it always been a 8349 thus having both ports available ?
+>=20
+>=20
+> There are quite a few things that make me wonder :
+>=20
+> Regarding to MPC8343EA manual I only have DR_D0..D7 pins available for
+> the DualRole module.
+> The port is labeled "Port1" - it's the only one that is bonded inside
+> the small package.
+>=20
+> On the Freescale schematics the pins DR_D0..D7 are labeld "Port0".
 
->>>> raw
->>>> counterpart).
->>>
->>> That would break a lot of drivers.
->>
->> How many actually use __raw_ * ?
->
-> I do -- in all the drivers for on-chip peripherals that are shared
-> between AT91 ARM (LE) and AVR32 (BE). Since everything goes on inside
-> the chip, we must use LE accesses on ARM and BE accesses on AVR32.
->
-> Currently, this is the only interface I know that can do native-endian
-> accesses, so if you take it away, I'm gonna need an alternative
-> interface that doesn't do byteswapping.
->
-> Haavard
+There is some confusion between the board port and chip port.  But as =
+MPC8343/7/9 share the same UM, it should be the same as 8349.
 
-I certainly do too.
-
-Quite a lot of SoC specific drivers use __raw for accessing their
-on-chip peripherals.
-
-Please don't change the __raw semantics, you'll end up breaking almost
-everything that's BE.
-
--- Pantelis
+- Leo
