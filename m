@@ -1,23 +1,12 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id 0E022DE172
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 May 2008 17:10:32 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: benh@kernel.crashing.org
-Subject: Re: MMIO and gcc re-ordering issue
-Date: Thu, 29 May 2008 09:10:06 +0200
-References: <1211852026.3286.36.camel@pasglop>
-	<alpine.LFD.1.10.0805271451100.2958@woody.linux-foundation.org>
-	<1211926779.3286.104.camel@pasglop>
-In-Reply-To: <1211926779.3286.104.camel@pasglop>
+Return-Path: <dgibson@ozlabs.org>
+Date: Thu, 29 May 2008 16:16:21 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Jon Loeliger <jdl@freescale.com>
+Subject: dtc: Remove some small bashisms from test scripts
+Message-ID: <20080529061621.GA7220@yookeroo.seuss>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Message-Id: <200805290910.07207.arnd@arndb.de>
-Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
-	tpiepho@freescale.com, linuxppc-dev@ozlabs.org, scottwood@freescale.com,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	David Miller <davem@davemloft.net>, alan@lxorguk.ukuu.org.uk
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,21 +16,55 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 28 May 2008, Benjamin Herrenschmidt wrote:
-> On Tue, 2008-05-27 at 14:55 -0700, Linus Torvalds wrote:
-> > 
-> > On Wed, 28 May 2008, Benjamin Herrenschmidt wrote:
-> > > 
-> > > A problem with __raw_ though is that they -also- don't do byteswap,
-> > 
-> > Well, that's why there is __readl() and __raw_readl(), no?
-> 
-> As I replied to somebody else, __readl() is news to me :-) we dont' have
-> those on powerpc.
-> 
+Some of the helper scripts used to run testcases contain some
+constructs that are bashisms.  Or at least which don't work on dash,
+the minimal shell used as /bin/sh on recent Ubuntu systems.
 
-It's not exactly a well-established interface. Only five architectures
-define these functions, and there is not a single user in the kernel
-source outside of these architecture's io.h files.
+This patch removes these constructs so that the testsuite will pass
+"out of the box" on systems where /bin/sh is dash.
 
-	Arnd <><
+Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+
+Index: dtc/tests/dtc-checkfails.sh
+===================================================================
+--- dtc.orig/tests/dtc-checkfails.sh	2008-05-29 14:51:19.000000000 +1000
++++ dtc/tests/dtc-checkfails.sh	2008-05-29 16:12:14.000000000 +1000
+@@ -1,6 +1,6 @@
+ #! /bin/sh
+ 
+-. tests.sh
++. ./tests.sh
+ 
+ for x; do
+     shift
+Index: dtc/tests/dtc-fatal.sh
+===================================================================
+--- dtc.orig/tests/dtc-fatal.sh	2008-05-29 14:56:51.000000000 +1000
++++ dtc/tests/dtc-fatal.sh	2008-05-29 16:12:31.000000000 +1000
+@@ -1,6 +1,6 @@
+ #! /bin/sh
+ 
+-. tests.sh
++. ./tests.sh
+ 
+ verbose_run $VALGRIND "$DTC" -o/dev/null "$@"
+ ret="$?"
+Index: dtc/tests/tests.sh
+===================================================================
+--- dtc.orig/tests/tests.sh	2008-05-29 16:11:15.000000000 +1000
++++ dtc/tests/tests.sh	2008-05-29 16:11:21.000000000 +1000
+@@ -23,7 +23,7 @@ verbose_run () {
+ verbose_run_log () {
+     LOG="$1"
+     shift
+-    "$@" &> "$LOG"
++    "$@" > "$LOG" 2>&1
+     ret=$?
+     if [ -z "$QUIET_TEST" ]; then
+ 	cat "$LOG" >&2
+
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
