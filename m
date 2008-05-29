@@ -1,32 +1,19 @@
-Return-Path: <mohan@in.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+Return-Path: <kim.phillips@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id A978EDE081
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 May 2008 05:14:03 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e36.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m4TJDxdL009937
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 May 2008 15:13:59 -0400
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m4TJDxw4066906
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 May 2008 13:13:59 -0600
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m4TJDxtj025873
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 May 2008 13:13:59 -0600
-Date: Fri, 30 May 2008 00:43:55 +0530
-From: Mohan Kumar M <mohan@in.ibm.com>
-To: ppcdev <linuxppc-dev@ozlabs.org>
-Subject: [RFC PATCH 1/4] Extract list of relocation offsets
-Message-ID: <20080529191355.GA15762@in.ibm.com>
-References: <20080529190809.GA15388@in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080529190809.GA15388@in.ibm.com>
-Cc: paulus@samba.org
-Reply-To: mohan@in.ibm.com
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 53976DE0C9
+	for <linuxppc-dev@ozlabs.org>; Fri, 30 May 2008 05:15:08 +1000 (EST)
+Date: Thu, 29 May 2008 14:12:50 -0500
+From: Kim Phillips <kim.phillips@freescale.com>
+To: linux-crypto@vger.kernel.org
+Subject: [PATCH 2/2] talitos: Freescale integrated security engine (SEC) driver
+Message-Id: <20080529141250.0946b02c.kim.phillips@freescale.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, mr.scada@gmail.com, herbert@gondor.apana.org.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,885 +23,1629 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Extract list of relocation offsets
+Add support for the SEC available on a wide range of PowerQUICC devices,
+e.g. MPC8349E, MPC8548E.
 
-Extract list of offsets in the vmlinux file for which the relocation
-delta has to be patched. Currently only following type of relocation
-types are considered: R_PPC64_ADDR16_HI, R_PPC64_TOC and R_PPC64_ADDR64
+this initial version supports authenc(hmac(sha1),cbc(aes)) for use with IPsec.
 
-The offsets are sorted according to the relocation type and this
-information is appended to the normal vmlinux file by using the patch
-relocation_build.patch
-
-Signed-off-by: Mohan Kumar M <mohan@in.ibm.com>
+Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
 ---
-Index: linux-2.6.26-rc3/arch/powerpc/relocs.c
-===================================================================
+ drivers/crypto/Kconfig   |   15 +
+ drivers/crypto/Makefile  |    1 +
+ drivers/crypto/talitos.c | 1373 ++++++++++++++++++++++++++++++++++++++++++++++
+ drivers/crypto/talitos.h |  191 +++++++
+ 4 files changed, 1580 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/crypto/talitos.c
+ create mode 100644 drivers/crypto/talitos.h
+
+diff --git a/drivers/crypto/Kconfig b/drivers/crypto/Kconfig
+index 43b71b6..98d96df 100644
+--- a/drivers/crypto/Kconfig
++++ b/drivers/crypto/Kconfig
+@@ -174,4 +174,19 @@ config CRYPTO_DEV_HIFN_795X_RNG
+ 	  Select this option if you want to enable the random number generator
+ 	  on the HIFN 795x crypto adapters.
+ 
++config CRYPTO_DEV_TALITOS
++	tristate "Talitos Freescale Security Engine (SEC)"
++	select CRYPTO_ALGAPI
++	select CRYPTO_AUTHENC
++	depends on FSL_SOC
++	help
++	  Say 'Y' here to use the Freescale Security Engine (SEC)
++	  to offload cryptographic algorithm computation.
++
++	  The Freescale SEC is present on PowerQUICC 'E' processors, such
++	  as the MPC8349E and MPC8548E.
++
++	  To compile this driver as a module, choose M here: the module
++	  will be called talitos.
++
+ endif # CRYPTO_HW
+diff --git a/drivers/crypto/Makefile b/drivers/crypto/Makefile
+index c0327f0..d29d2cd 100644
+--- a/drivers/crypto/Makefile
++++ b/drivers/crypto/Makefile
+@@ -2,3 +2,4 @@ obj-$(CONFIG_CRYPTO_DEV_PADLOCK_AES) += padlock-aes.o
+ obj-$(CONFIG_CRYPTO_DEV_PADLOCK_SHA) += padlock-sha.o
+ obj-$(CONFIG_CRYPTO_DEV_GEODE) += geode-aes.o
+ obj-$(CONFIG_CRYPTO_DEV_HIFN_795X) += hifn_795x.o
++obj-$(CONFIG_CRYPTO_DEV_TALITOS) += talitos.o
+diff --git a/drivers/crypto/talitos.c b/drivers/crypto/talitos.c
+new file mode 100644
+index 0000000..dfa323f
 --- /dev/null
-+++ linux-2.6.26-rc3/arch/powerpc/relocs.c
-@@ -0,0 +1,865 @@
-+#include <stdio.h>
-+#include <stdarg.h>
-+#include <stdlib.h>
-+#include <stdint.h>
-+#include <string.h>
-+#include <errno.h>
-+#include <unistd.h>
-+#include <elf.h>
-+#include <byteswap.h>
-+#define USE_BSD
-+#include <endian.h>
++++ b/drivers/crypto/talitos.c
+@@ -0,0 +1,1373 @@
++/*
++ * talitos - Freescale Integrated Security Engine (SEC) device driver
++ *
++ * Copyright (c) 2008 Freescale Semiconductor, Inc.
++ *
++ * Scatterlist Crypto API glue code copied from files with the following:
++ * Copyright (c) 2006-2007 Herbert Xu <herbert@gondor.apana.org.au>
++ *
++ * Crypto algorithm registration code copied from hifn driver:
++ * 2007+ Copyright (c) Evgeniy Polyakov <johnpol@2ka.mipt.ru>
++ * All rights reserved.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
++ */
 +
-+#define MAX_SHDRS 100
-+static Elf64_Ehdr ehdr;
-+static Elf64_Shdr shdr[MAX_SHDRS];
-+static Elf64_Sym  *symtab[MAX_SHDRS];
-+static Elf64_Rel  *reltab[MAX_SHDRS];
-+static Elf64_Rela  *reltaba[MAX_SHDRS];
-+static char *strtab[MAX_SHDRS];
-+static unsigned long reloc_count, reloc_idx;
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/mod_devicetable.h>
++#include <linux/device.h>
++#include <linux/interrupt.h>
++#include <linux/crypto.h>
++#include <linux/hw_random.h>
++#include <linux/of_platform.h>
++#include <linux/dma-mapping.h>
++#include <linux/io.h>
++#include <linux/spinlock.h>
++#include <linux/rtnetlink.h>
 +
-+struct reloc_info {
-+	unsigned int rel_type;
-+	unsigned long long offset;
++#include <crypto/algapi.h>
++#include <crypto/aes.h>
++#include <crypto/sha.h>
++#include <crypto/aead.h>
++#include <crypto/authenc.h>
++
++#include "talitos.h"
++
++#define TALITOS_TIMEOUT 100000
++#define TALITOS_MAX_DATA_LEN 65535
++
++#define DESC_TYPE(desc_hdr) ((be32_to_cpu(desc_hdr) >> 3) & 0x1f)
++#define PRIMARY_EU(desc_hdr) ((be32_to_cpu(desc_hdr) >> 28) & 0xf)
++#define SECONDARY_EU(desc_hdr) ((be32_to_cpu(desc_hdr) >> 16) & 0xf)
++
++/* descriptor pointer entry */
++struct talitos_ptr {
++	__be16 len;	/* length */
++	u8 j_extent;	/* jump to sg link table and/or extent */
++	u8 eptr;	/* extended address */
++	__be32 ptr;	/* address */
 +};
 +
-+static struct reloc_info *relocs;
++/* descriptor */
++struct talitos_desc {
++	__be32 hdr;			/* header high bits */
++	__be32 hdr_lo;			/* header low bits */
++	struct talitos_ptr ptr[7];	/* ptr/len pair array */
++};
++
++/**
++ * talitos_request - descriptor submission request
++ * @desc: descriptor pointer (kernel virtual)
++ * @dma_desc: descriptor's physical bus address
++ * @callback: whom to call when descriptor processing is done
++ * @context: caller context (optional)
++ */
++struct talitos_request {
++	struct talitos_desc *desc;
++	dma_addr_t dma_desc;
++	void (*callback) (struct device *dev, struct talitos_desc *desc,
++	                  void *context, int error);
++	void *context;
++};
++
++struct talitos_private {
++	struct device *dev;
++	struct of_device *ofdev;
++	void __iomem *reg;
++	int irq;
++
++	/* SEC version geometry (from device tree node) */
++	unsigned int num_channels;
++	unsigned int chfifo_len;
++	unsigned int exec_units;
++	unsigned int desc_types;
++
++	/* next channel to be assigned next incoming descriptor */
++	atomic_t last_chan;
++
++	/* interrupt (channel done and error) status */
++	u32 status, status_lo;
++
++	/* per-channel request fifo */
++	struct talitos_request **fifo;
++
++	/*
++	 * length of the request fifo
++	 * fifo_len is chfifo_len rounded up to next power of 2
++	 * so we can use bitwise ops to wrap
++	 */
++	unsigned int fifo_len;
++
++	/* per-channel index to next free descriptor request */
++	int *head;
++
++	/* per-channel index to next in-progress/done descriptor request */
++	int *tail;
++
++	/* per-channel request submission (head) and release (tail) locks */
++	spinlock_t *head_lock;
++	spinlock_t *tail_lock;
++
++	/* request callback tasklet */
++	struct tasklet_struct done_task;
++	struct tasklet_struct error_task;
++
++	/* list of registered algorithms */
++	struct list_head alg_list;
++};
 +
 +/*
-+ * Following symbols have been audited. There values are constant and do
-+ * not change if bzImage is loaded at a different physical address than
-+ * the address for which it has been compiled. Don't warn user about
-+ * absolute relocations present w.r.t these symbols.
++ * map virtual single (contiguous) pointer to h/w descriptor pointer
 + */
-+static const char* safe_abs_relocs[] = {
-+		"__kernel_vsyscall",
-+		"__kernel_rt_sigreturn",
-+		"__kernel_sigreturn",
-+		"SYSENTER_RETURN",
++static void map_single_talitos_ptr(struct device *dev,
++				   struct talitos_ptr *talitos_ptr,
++				   unsigned short len, void *data,
++				   unsigned char extent,
++				   enum dma_data_direction dir)
++{
++	talitos_ptr->len = cpu_to_be16(len);
++	talitos_ptr->ptr = cpu_to_be32(dma_map_single(dev, data, len, dir));
++	talitos_ptr->j_extent = extent;
++}
++
++/*
++ * unmap bus single (contiguous) h/w descriptor pointer
++ */
++static void unmap_single_talitos_ptr(struct device *dev,
++				     struct talitos_ptr *talitos_ptr,
++				     enum dma_data_direction dir)
++{
++	dma_unmap_single(dev, be32_to_cpu(talitos_ptr->ptr),
++			 be16_to_cpu(talitos_ptr->len), dir);
++}
++
++static int reset_channel(struct device *dev, int ch)
++{
++	struct talitos_private *priv = dev_get_drvdata(dev);
++	unsigned int timeout = TALITOS_TIMEOUT;
++
++	setbits32(priv->reg + TALITOS_CCCR(ch), TALITOS_CCCR_RESET);
++
++	while ((in_be32(priv->reg + TALITOS_CCCR(ch)) & TALITOS_CCCR_RESET)
++	       && --timeout)
++		cpu_relax();
++
++	if (timeout == 0) {
++		dev_err(dev, "failed to reset channel %d\n", ch);
++		return -EIO;
++	}
++
++	/* set done writeback and IRQ */
++	setbits32(priv->reg + TALITOS_CCCR_LO(ch), TALITOS_CCCR_LO_CDWE |
++		  TALITOS_CCCR_LO_CDIE);
++
++	return 0;
++}
++
++static int reset_device(struct device *dev)
++{
++	struct talitos_private *priv = dev_get_drvdata(dev);
++	unsigned int timeout = TALITOS_TIMEOUT;
++
++	setbits32(priv->reg + TALITOS_MCR, TALITOS_MCR_SWR);
++
++	while ((in_be32(priv->reg + TALITOS_MCR) & TALITOS_MCR_SWR)
++	       && --timeout)
++		cpu_relax();
++
++	if (timeout == 0) {
++		dev_err(dev, "failed to reset device\n");
++		return -EIO;
++	}
++
++	return 0;
++}
++
++/*
++ * Reset and initialize the device
++ */
++static int init_device(struct device *dev)
++{
++	struct talitos_private *priv = dev_get_drvdata(dev);
++	int ch, err;
++
++	/*
++	 * Master reset
++	 * errata documentation: warning: certain SEC interrupts
++	 * are not fully cleared by writing the MCR:SWR bit,
++	 * set bit twice to completely reset
++	 */
++	err = reset_device(dev);
++	if (err)
++		return err;
++
++	err = reset_device(dev);
++	if (err)
++		return err;
++
++	/* reset channels */
++	for (ch = 0; ch < priv->num_channels; ch++) {
++		err = reset_channel(dev, ch);
++		if (err)
++			return err;
++	}
++
++	/* enable channel done and error interrupts */
++	setbits32(priv->reg + TALITOS_IMR, TALITOS_IMR_INIT);
++	setbits32(priv->reg + TALITOS_IMR_LO, TALITOS_IMR_LO_INIT);
++
++	return 0;
++}
++
++/**
++ * talitos_submit - submits a descriptor to the device for processing
++ * @dev:	the SEC device to be used
++ * @desc:	the descriptor to be processed by the device
++ * @callback:	whom to call when processing is complete
++ * @context:	a handle for use by caller (optional)
++ *
++ * desc must contain valid dma-mapped (bus physical) address pointers.
++ * callback must check err and feedback in descriptor header
++ * for device processing status.
++ */
++static int talitos_submit(struct device *dev, struct talitos_desc *desc,
++			  void (*callback)(struct device *dev,
++					   struct talitos_desc *desc,
++					   void *context, int error),
++			  void *context)
++{
++	struct talitos_private *priv = dev_get_drvdata(dev);
++	struct talitos_request *request;
++	unsigned long flags, ch;
++	int head;
++
++	/* select done notification */
++	desc->hdr |= DESC_HDR_DONE_NOTIFY;
++
++	/* emulate SEC's round-robin channel fifo polling scheme */
++	ch = atomic_inc_return(&priv->last_chan) & (priv->num_channels - 1);
++
++	spin_lock_irqsave(&priv->head_lock[ch], flags);
++
++	head = priv->head[ch];
++	request = &priv->fifo[ch][head];
++
++	if (request->desc) {
++		/* request queue is full */
++		spin_unlock_irqrestore(&priv->head_lock[ch], flags);
++		return -EAGAIN;
++	}
++
++	/* map descriptor and save caller data */
++	request->dma_desc = dma_map_single(dev, desc, sizeof(*desc),
++					   DMA_BIDIRECTIONAL);
++	request->callback = callback;
++	request->context = context;
++
++	/* increment fifo head */
++	priv->head[ch] = (priv->head[ch] + 1) & (priv->fifo_len - 1);
++
++	smp_wmb();
++	request->desc = desc;
++
++	/* GO! */
++	wmb();
++	out_be32(priv->reg + TALITOS_FF_LO(ch), request->dma_desc);
++
++	spin_unlock_irqrestore(&priv->head_lock[ch], flags);
++
++	return -EINPROGRESS;
++}
++
++/*
++ * process what was done, notify callback of error if not
++ */
++static void flush_channel(struct device *dev, int ch, int error, int reset_ch)
++{
++	struct talitos_private *priv = dev_get_drvdata(dev);
++	struct talitos_request *request, saved_req;
++	unsigned long flags;
++	int tail, status;
++
++	spin_lock_irqsave(&priv->tail_lock[ch], flags);
++
++	tail = priv->tail[ch];
++	while (priv->fifo[ch][tail].desc) {
++		request = &priv->fifo[ch][tail];
++
++		/* descriptors with their done bits set don't get the error */
++		rmb();
++		status = ((request->desc->hdr & DESC_HDR_DONE)
++			  == DESC_HDR_DONE) ? 0 : error;
++
++		dma_unmap_single(dev, request->dma_desc,
++			sizeof(struct talitos_desc), DMA_BIDIRECTIONAL);
++
++		/* copy entries so we can call callback outside lock */
++		saved_req.desc = request->desc;
++		saved_req.callback = request->callback;
++		saved_req.context = request->context;
++
++		/* release request entry in fifo */
++		smp_wmb();
++		request->desc = NULL;
++
++		/* increment fifo tail */
++		priv->tail[ch] = (tail + 1) & (priv->fifo_len - 1);
++
++		spin_unlock_irqrestore(&priv->tail_lock[ch], flags);
++		saved_req.callback(dev, saved_req.desc, saved_req.context,
++				   status);
++		/* channel may resume processing in single desc error case */
++		if (error && !reset_ch && status == error)
++			return;
++		spin_lock_irqsave(&priv->tail_lock[ch], flags);
++		tail = priv->tail[ch];
++	}
++
++	spin_unlock_irqrestore(&priv->tail_lock[ch], flags);
++}
++
++/*
++ * process completed requests for channels that have done status
++ */
++static void talitos_done(unsigned long data)
++{
++	struct device *dev = (struct device *)data;
++	struct talitos_private *priv = dev_get_drvdata(dev);
++	int ch;
++
++	for (ch = 0; ch < priv->num_channels; ch++)
++		if (priv->status & (1 << (ch * 2)))
++			flush_channel(dev, ch, 0, 0);
++}
++
++/*
++ * locate current (offending) descriptor
++ */
++static struct talitos_desc *current_desc(struct device *dev, int ch)
++{
++	struct talitos_private *priv = dev_get_drvdata(dev);
++	int tail = priv->tail[ch];
++	dma_addr_t cur_desc;
++
++	cur_desc = in_be32(priv->reg + TALITOS_CDPR_LO(ch));
++
++	while (priv->fifo[ch][tail].dma_desc != cur_desc) {
++		tail = (tail + 1) & (priv->fifo_len - 1);
++		if (tail == priv->tail[ch]) {
++			dev_err(dev, "couldn't locate current descriptor\n");
++			return NULL;
++		}
++	}
++
++	return priv->fifo[ch][tail].desc;
++}
++
++/*
++ * user diagnostics; report root cause of error based on execution unit status
++ */
++static void report_eu_error(struct device *dev, int ch, struct talitos_desc *desc)
++{
++	struct talitos_private *priv = dev_get_drvdata(dev);
++	int i;
++
++	switch (desc->hdr & DESC_HDR_SEL0_MASK) {
++	case DESC_HDR_SEL0_AFEU:
++		dev_err(dev, "AFEUISR 0x%08x_%08x\n",
++			in_be32(priv->reg + TALITOS_AFEUISR),
++			in_be32(priv->reg + TALITOS_AFEUISR_LO));
++		break;
++	case DESC_HDR_SEL0_DEU:
++		dev_err(dev, "DEUISR 0x%08x_%08x\n",
++			in_be32(priv->reg + TALITOS_DEUISR),
++			in_be32(priv->reg + TALITOS_DEUISR_LO));
++		break;
++	case DESC_HDR_SEL0_MDEUA:
++	case DESC_HDR_SEL0_MDEUB:
++		dev_err(dev, "MDEUISR 0x%08x_%08x\n",
++			in_be32(priv->reg + TALITOS_MDEUISR),
++			in_be32(priv->reg + TALITOS_MDEUISR_LO));
++		break;
++	case DESC_HDR_SEL0_RNG:
++		dev_err(dev, "RNGUISR 0x%08x_%08x\n",
++			in_be32(priv->reg + TALITOS_RNGUISR),
++			in_be32(priv->reg + TALITOS_RNGUISR_LO));
++		break;
++	case DESC_HDR_SEL0_PKEU:
++		dev_err(dev, "PKEUISR 0x%08x_%08x\n",
++			in_be32(priv->reg + TALITOS_PKEUISR),
++			in_be32(priv->reg + TALITOS_PKEUISR_LO));
++		break;
++	case DESC_HDR_SEL0_AESU:
++		dev_err(dev, "AESUISR 0x%08x_%08x\n",
++			in_be32(priv->reg + TALITOS_AESUISR),
++			in_be32(priv->reg + TALITOS_AESUISR_LO));
++		break;
++	case DESC_HDR_SEL0_CRCU:
++		dev_err(dev, "CRCUISR 0x%08x_%08x\n",
++			in_be32(priv->reg + TALITOS_CRCUISR),
++			in_be32(priv->reg + TALITOS_CRCUISR_LO));
++		break;
++	case DESC_HDR_SEL0_KEU:
++		dev_err(dev, "KEUISR 0x%08x_%08x\n",
++			in_be32(priv->reg + TALITOS_KEUISR),
++			in_be32(priv->reg + TALITOS_KEUISR_LO));
++		break;
++	}
++
++	switch (desc->hdr & DESC_HDR_SEL1_MASK) {
++		case DESC_HDR_SEL1_MDEUA:
++		case DESC_HDR_SEL1_MDEUB:
++			dev_err(dev, "MDEUISR 0x%08x_%08x\n",
++				in_be32(priv->reg + TALITOS_MDEUISR),
++				in_be32(priv->reg + TALITOS_MDEUISR_LO));
++			break;
++		case DESC_HDR_SEL1_CRCU:
++			dev_err(dev, "CRCUISR 0x%08x_%08x\n",
++				in_be32(priv->reg + TALITOS_CRCUISR),
++				in_be32(priv->reg + TALITOS_CRCUISR_LO));
++			break;
++	}
++
++	for (i = 0; i < 8; i++)
++		dev_err(dev, "DESCBUF 0x%08x_%08x\n",
++			in_be32(priv->reg + TALITOS_DESCBUF(ch) + 8*i),
++			in_be32(priv->reg + TALITOS_DESCBUF_LO(ch) + 8*i));
++}
++
++/*
++ * recover from error interrupts
++ */
++static void talitos_error(unsigned long data)
++{
++	struct device *dev = (struct device *)data;
++	struct talitos_private *priv = dev_get_drvdata(dev);
++	unsigned int timeout = TALITOS_TIMEOUT;
++	int ch, error, reset_dev = 0, reset_ch = 0;
++	u32 v, v_lo;
++
++	for (ch = 0; ch < priv->num_channels; ch++) {
++		/* skip channels without errors */
++		if (!(priv->status & (1 << (ch * 2 + 1))))
++			continue;
++
++		error = -EINVAL;
++
++		v = in_be32(priv->reg + TALITOS_CCPSR(ch));
++		v_lo = in_be32(priv->reg + TALITOS_CCPSR_LO(ch));
++
++		if (v_lo & TALITOS_CCPSR_LO_DOF) {
++			dev_err(dev, "double fetch fifo overflow error\n");
++			error = -EAGAIN;
++			reset_ch = 1;
++		}
++		if (v_lo & TALITOS_CCPSR_LO_SOF) {
++			/* h/w dropped descriptor */
++			dev_err(dev, "single fetch fifo overflow error\n");
++			error = -EAGAIN;
++		}
++		if (v_lo & TALITOS_CCPSR_LO_MDTE)
++			dev_err(dev, "master data transfer error\n");
++		if (v_lo & TALITOS_CCPSR_LO_SGDLZ)
++			dev_err(dev, "s/g data length zero error\n");
++		if (v_lo & TALITOS_CCPSR_LO_FPZ)
++			dev_err(dev, "fetch pointer zero error\n");
++		if (v_lo & TALITOS_CCPSR_LO_IDH)
++			dev_err(dev, "illegal descriptor header error\n");
++		if (v_lo & TALITOS_CCPSR_LO_IEU)
++			dev_err(dev, "invalid execution unit error\n");
++		if (v_lo & TALITOS_CCPSR_LO_EU)
++			report_eu_error(dev, ch, current_desc(dev, ch));
++		if (v_lo & TALITOS_CCPSR_LO_GB)
++			dev_err(dev, "gather boundary error\n");
++		if (v_lo & TALITOS_CCPSR_LO_GRL)
++			dev_err(dev, "gather return/length error\n");
++		if (v_lo & TALITOS_CCPSR_LO_SB)
++			dev_err(dev, "scatter boundary error\n");
++		if (v_lo & TALITOS_CCPSR_LO_SRL)
++			dev_err(dev, "scatter return/length error\n");
++
++		flush_channel(dev, ch, error, reset_ch);
++
++		if (reset_ch) {
++			reset_channel(dev, ch);
++		} else {
++			setbits32(priv->reg + TALITOS_CCCR(ch),
++				  TALITOS_CCCR_CONT);
++			setbits32(priv->reg + TALITOS_CCCR_LO(ch), 0);
++			while ((in_be32(priv->reg + TALITOS_CCCR(ch)) &
++			       TALITOS_CCCR_CONT) && --timeout)
++				cpu_relax();
++			if (timeout == 0) {
++				dev_err(dev, "failed to restart channel %d\n",
++					ch);
++				reset_dev = 1;
++			}
++		}
++	}
++	if (reset_dev || priv->status & ~TALITOS_ISR_CHERR) {
++		dev_err(dev, "done overflow or internal time out error: "
++		        "ISR 0x%08x_%08x\n", priv->status, priv->status_lo);
++
++		/* purge request queues */
++		for (ch = 0; ch < priv->num_channels; ch++)
++			flush_channel(dev, ch, -EIO, 1);
++
++		/* reset and reinitialize the device */
++		init_device(dev);
++	}
++}
++
++static irqreturn_t talitos_interrupt(int irq, void *data)
++{
++	struct device *dev = data;
++	struct talitos_private *priv = dev_get_drvdata(dev);
++
++	priv->status = in_be32(priv->reg + TALITOS_ISR);
++	priv->status_lo = in_be32(priv->reg + TALITOS_ISR_LO);
++
++	if (unlikely(priv->status & ~TALITOS_ISR_CHDONE)) {
++		talitos_error((unsigned long)data);
++		/* ack */
++		out_be32(priv->reg + TALITOS_ICR, priv->status);
++		out_be32(priv->reg + TALITOS_ICR_LO, priv->status_lo);
++	}
++	else
++	{
++		/* ack */
++		out_be32(priv->reg + TALITOS_ICR, priv->status);
++		out_be32(priv->reg + TALITOS_ICR_LO, priv->status_lo);
++
++		if (likely(priv->status & TALITOS_ISR_CHDONE))
++			tasklet_schedule(&priv->done_task);
++	}
++
++	return (priv->status || priv->status_lo) ? IRQ_HANDLED : IRQ_NONE;
++}
++
++/*
++ * crypto alg
++ */
++#define TALITOS_CRA_PRIORITY		3000
++#define TALITOS_MAX_KEY_SIZE		64
++#define TALITOS_MAX_AUTH_SIZE		20
++#define TALITOS_AES_MIN_BLOCK_SIZE	16
++#define TALITOS_AES_IV_LENGTH		16
++
++struct talitos_ctx {
++	struct device *dev;
++	__be32 desc_hdr_template;
++	u8 key[TALITOS_MAX_KEY_SIZE];
++	unsigned int keylen;
++	unsigned int enckeylen;
++	unsigned int authkeylen;
++	unsigned int authsize;
 +};
 +
-+static int is_safe_abs_reloc(const char* sym_name)
++static int aes_cbc_sha1_hmac_authenc_setauthsize(struct crypto_aead *authenc,
++						 unsigned int authsize)
 +{
-+	int i, array_size;
++	struct talitos_ctx *ctx = crypto_aead_ctx(authenc);
 +
-+	array_size = sizeof(safe_abs_relocs)/sizeof(char*);
++	ctx->authsize = authsize;
 +
-+	for(i = 0; i < array_size; i++) {
-+		if (!strcmp(sym_name, safe_abs_relocs[i]))
-+			/* Match found */
-+			return 1;
-+	}
-+	if (strncmp(sym_name, "__crc_", 6) == 0)
-+		return 1;
 +	return 0;
 +}
 +
-+static void die(char *fmt, ...)
++static int aes_cbc_sha1_hmac_authenc_setkey(struct crypto_aead *authenc,
++					    const u8 *key, unsigned int keylen)
 +{
-+	va_list ap;
-+	va_start(ap, fmt);
-+	vfprintf(stderr, fmt, ap);
-+	va_end(ap);
-+	exit(1);
++	struct talitos_ctx *ctx = crypto_aead_ctx(authenc);
++	struct rtattr *rta = (void *)key;
++	struct crypto_authenc_key_param *param;
++	unsigned int authkeylen;
++	unsigned int enckeylen;
++
++	if (!RTA_OK(rta, keylen))
++		goto badkey;
++
++	if (rta->rta_type != CRYPTO_AUTHENC_KEYA_PARAM)
++		goto badkey;
++
++	if (RTA_PAYLOAD(rta) < sizeof(*param))
++		goto badkey;
++
++	param = RTA_DATA(rta);
++	enckeylen = be32_to_cpu(param->enckeylen);
++
++	key += RTA_ALIGN(rta->rta_len);
++	keylen -= RTA_ALIGN(rta->rta_len);
++
++	if (keylen < enckeylen)
++		goto badkey;
++
++	authkeylen = keylen - enckeylen;
++
++	if (keylen > TALITOS_MAX_KEY_SIZE)
++		goto badkey;
++
++	memcpy(&ctx->key, key, keylen);
++
++	ctx->keylen = keylen;
++	ctx->enckeylen = enckeylen;
++	ctx->authkeylen = authkeylen;
++
++	return 0;
++
++badkey:
++	crypto_aead_set_flags(authenc, CRYPTO_TFM_RES_BAD_KEY_LEN);
++	return -EINVAL;
 +}
 +
-+static const char *sym_type(unsigned type)
++/*
++ * ipsec_esp_edesc - s/w-extended ipsec_esp descriptor
++ * @src_nents: number of segments in input scatterlist
++ * @dst_nents: number of segments in output scatterlist
++ * @dma_len: length of dma mapped link_tbl space
++ * @dma_link_tbl: bus physical address of link_tbl
++ * @desc: h/w descriptor
++ * @link_tbl: input and output h/w link tables (if {src,dst}_nents > 1)
++ *
++ * if decrypting (with authcheck), or either one of src_nents or dst_nents
++ * is greater than 1, an integrity check value is concatenated to the end
++ * of link_tbl data
++ */
++struct ipsec_esp_edesc {
++	int src_nents;
++	int dst_nents;
++	int dma_len;
++	dma_addr_t dma_link_tbl;
++	struct talitos_desc desc;
++	struct talitos_ptr link_tbl[0];
++};
++
++static void ipsec_esp_unmap(struct device *dev,
++			    struct ipsec_esp_edesc *edesc,
++			    struct aead_request *areq)
 +{
-+	static const char *type_name[] = {
-+#define SYM_TYPE(X) [X] = #X
-+		SYM_TYPE(STT_NOTYPE),
-+		SYM_TYPE(STT_OBJECT),
-+		SYM_TYPE(STT_FUNC),
-+		SYM_TYPE(STT_SECTION),
-+		SYM_TYPE(STT_FILE),
-+		SYM_TYPE(STT_COMMON),
-+		SYM_TYPE(STT_TLS),
-+#undef SYM_TYPE
-+	};
-+	const char *s_type = "unknown sym type name";
-+	if (type < sizeof(type_name)/sizeof(type_name[0])) {
-+		s_type = type_name[type];
-+	}
-+	return s_type;
-+}
++	unmap_single_talitos_ptr(dev, &edesc->desc.ptr[3], DMA_TO_DEVICE);
++	unmap_single_talitos_ptr(dev, &edesc->desc.ptr[2], DMA_TO_DEVICE);
++	unmap_single_talitos_ptr(dev, &edesc->desc.ptr[0], DMA_TO_DEVICE);
 +
-+static const char *sym_bind(unsigned bind)
-+{
-+	static const char *bind_name[] = {
-+#define SYM_BIND(X) [X] = #X
-+		SYM_BIND(STB_LOCAL),
-+		SYM_BIND(STB_GLOBAL),
-+		SYM_BIND(STB_WEAK),
-+#undef SYM_BIND
-+	};
-+	const char *s_bind = "unknown sym bind name";
-+	if (bind < sizeof(bind_name)/sizeof(bind_name[0])) {
-+		s_bind = bind_name[bind];
-+	}
-+	return s_bind;
-+}
++	dma_unmap_sg(dev, areq->assoc, 1, DMA_TO_DEVICE);
 +
-+static const char *sym_visibility(unsigned visibility)
-+{
-+	static const char *visibility_name[] = {
-+#define SYM_VISIBILITY(X) [X] = #X
-+		SYM_VISIBILITY(STV_DEFAULT),
-+		SYM_VISIBILITY(STV_INTERNAL),
-+		SYM_VISIBILITY(STV_HIDDEN),
-+		SYM_VISIBILITY(STV_PROTECTED),
-+#undef SYM_VISIBILITY
-+	};
-+	const char *name = "unknown sym visibility name";
-+	if (visibility < sizeof(visibility_name)/sizeof(visibility_name[0])) {
-+		name = visibility_name[visibility];
-+	}
-+	return name;
-+}
-+
-+static const char *rel_type(unsigned type)
-+{
-+	static const char *type_name[] = {
-+#define REL_TYPE(X) [X] = #X
-+		REL_TYPE(R_PPC64_NONE),
-+		REL_TYPE(R_PPC64_ADDR32),
-+		REL_TYPE(R_PPC64_ADDR24),
-+		REL_TYPE(R_PPC64_ADDR16),
-+		REL_TYPE(R_PPC64_ADDR16_LO),
-+		REL_TYPE(R_PPC64_ADDR16_HI),
-+		REL_TYPE(R_PPC64_ADDR16_HA),
-+		REL_TYPE(R_PPC64_ADDR14	),
-+		REL_TYPE(R_PPC64_ADDR14_BRTAKEN),
-+		REL_TYPE(R_PPC64_ADDR14_BRNTAKEN),
-+		REL_TYPE(R_PPC64_REL24),
-+		REL_TYPE(R_PPC64_REL14),
-+		REL_TYPE(R_PPC64_REL14_BRTAKEN),
-+		REL_TYPE(R_PPC64_REL14_BRNTAKEN),
-+		REL_TYPE(R_PPC64_GOT16),
-+		REL_TYPE(R_PPC64_GOT16_LO),
-+		REL_TYPE(R_PPC64_GOT16_HI),
-+		REL_TYPE(R_PPC64_GOT16_HA),
-+		REL_TYPE(R_PPC64_COPY),
-+		REL_TYPE(R_PPC64_GLOB_DAT),
-+		REL_TYPE(R_PPC64_JMP_SLOT),
-+		REL_TYPE(R_PPC64_RELATIVE),
-+		REL_TYPE(R_PPC64_UADDR32),
-+		REL_TYPE(R_PPC64_UADDR16),
-+		REL_TYPE(R_PPC64_REL32),
-+		REL_TYPE(R_PPC64_PLT32),
-+		REL_TYPE(R_PPC64_PLTREL32),
-+		REL_TYPE(R_PPC64_PLT16_LO),
-+		REL_TYPE(R_PPC64_PLT16_HI),
-+		REL_TYPE(R_PPC64_PLT16_HA),
-+		REL_TYPE(R_PPC64_SECTOFF),
-+		REL_TYPE(R_PPC64_SECTOFF_LO),
-+		REL_TYPE(R_PPC64_SECTOFF_HI),
-+		REL_TYPE(R_PPC64_SECTOFF_HA),
-+		REL_TYPE(R_PPC64_ADDR30),
-+		REL_TYPE(R_PPC64_ADDR64),
-+		REL_TYPE(R_PPC64_ADDR16_HIGHER),
-+		REL_TYPE(R_PPC64_ADDR16_HIGHERA),
-+		REL_TYPE(R_PPC64_ADDR16_HIGHEST),
-+		REL_TYPE(R_PPC64_ADDR16_HIGHESTA),
-+		REL_TYPE(R_PPC64_UADDR64),
-+		REL_TYPE(R_PPC64_REL64),
-+		REL_TYPE(R_PPC64_PLT64),
-+		REL_TYPE(R_PPC64_PLTREL64),
-+		REL_TYPE(R_PPC64_TOC16),
-+		REL_TYPE(R_PPC64_TOC16_LO),
-+		REL_TYPE(R_PPC64_TOC16_HI),
-+		REL_TYPE(R_PPC64_TOC16_HA),
-+		REL_TYPE(R_PPC64_TOC),
-+		REL_TYPE(R_PPC64_PLTGOT16),
-+		REL_TYPE(R_PPC64_PLTGOT16_LO),
-+		REL_TYPE(R_PPC64_PLTGOT16_HI),
-+		REL_TYPE(R_PPC64_PLTGOT16_HA),
-+		REL_TYPE(R_PPC64_ADDR16_DS),
-+		REL_TYPE(R_PPC64_ADDR16_LO_DS),
-+		REL_TYPE(R_PPC64_GOT16_DS),
-+		REL_TYPE(R_PPC64_GOT16_LO_DS),
-+		REL_TYPE(R_PPC64_PLT16_LO_DS),
-+		REL_TYPE(R_PPC64_SECTOFF_DS),
-+		REL_TYPE(R_PPC64_SECTOFF_LO_DS),
-+		REL_TYPE(R_PPC64_TOC16_DS),
-+		REL_TYPE(R_PPC64_TOC16_LO_DS),
-+		REL_TYPE(R_PPC64_PLTGOT16_DS),
-+		REL_TYPE(R_PPC64_PLTGOT16_LO_DS),
-+		REL_TYPE(R_PPC64_TLS),
-+		REL_TYPE(R_PPC64_DTPMOD64),
-+		REL_TYPE(R_PPC64_TPREL16),
-+		REL_TYPE(R_PPC64_TPREL16_LO),
-+		REL_TYPE(R_PPC64_TPREL16_HI),
-+		REL_TYPE(R_PPC64_TPREL16_HA),
-+		REL_TYPE(R_PPC64_TPREL64),
-+		REL_TYPE(R_PPC64_DTPREL16),
-+		REL_TYPE(R_PPC64_DTPREL16_LO),
-+		REL_TYPE(R_PPC64_DTPREL16_HI),
-+		REL_TYPE(R_PPC64_DTPREL16_HA),
-+		REL_TYPE(R_PPC64_DTPREL64),
-+		REL_TYPE(R_PPC64_GOT_TLSGD16),
-+		REL_TYPE(R_PPC64_GOT_TLSGD16_LO),
-+		REL_TYPE(R_PPC64_GOT_TLSGD16_HI),
-+		REL_TYPE(R_PPC64_GOT_TLSGD16_HA),
-+		REL_TYPE(R_PPC64_GOT_TLSLD16),
-+		REL_TYPE(R_PPC64_GOT_TLSLD16_LO),
-+		REL_TYPE(R_PPC64_GOT_TLSLD16_HI),
-+		REL_TYPE(R_PPC64_GOT_TLSLD16_HA),
-+		REL_TYPE(R_PPC64_GOT_TPREL16_DS),
-+		REL_TYPE(R_PPC64_GOT_TPREL16_LO_DS),
-+		REL_TYPE(R_PPC64_GOT_TPREL16_HI),
-+		REL_TYPE(R_PPC64_GOT_TPREL16_HA),
-+		REL_TYPE(R_PPC64_GOT_DTPREL16_DS),
-+		REL_TYPE(R_PPC64_GOT_DTPREL16_LO_DS),
-+		REL_TYPE(R_PPC64_GOT_DTPREL16_HI),
-+		REL_TYPE(R_PPC64_GOT_DTPREL16_HA),
-+		REL_TYPE(R_PPC64_TPREL16_DS),
-+		REL_TYPE(R_PPC64_TPREL16_LO_DS),
-+		REL_TYPE(R_PPC64_TPREL16_HIGHER),
-+		REL_TYPE(R_PPC64_TPREL16_HIGHERA),
-+		REL_TYPE(R_PPC64_TPREL16_HIGHEST),
-+		REL_TYPE(R_PPC64_TPREL16_HIGHESTA),
-+		REL_TYPE(R_PPC64_DTPREL16_DS),
-+		REL_TYPE(R_PPC64_DTPREL16_LO_DS),
-+		REL_TYPE(R_PPC64_DTPREL16_HIGHER),
-+		REL_TYPE(R_PPC64_DTPREL16_HIGHERA),
-+		REL_TYPE(R_PPC64_DTPREL16_HIGHEST),
-+		REL_TYPE(R_PPC64_DTPREL16_HIGHESTA),
-+#undef REL_TYPE
-+	};
-+	const char *name = "unknown type rel type name";
-+	if (type < sizeof(type_name)/sizeof(type_name[0])) {
-+		name = type_name[type];
-+	}
-+	return name;
-+}
-+
-+static const char *sec_name(unsigned shndx)
-+{
-+	const char *sec_strtab;
-+	const char *name;
-+	sec_strtab = strtab[ehdr.e_shstrndx];
-+	name = "<noname>";
-+	if (shndx < ehdr.e_shnum) {
-+		name = sec_strtab + shdr[shndx].sh_name;
-+	}
-+	else if (shndx == SHN_ABS) {
-+		name = "ABSOLUTE";
-+	}
-+	else if (shndx == SHN_COMMON) {
-+		name = "COMMON";
-+	}
-+	return name;
-+}
-+
-+static const char *sym_name(const char *sym_strtab, Elf64_Sym *sym)
-+{
-+	const char *name;
-+	name = "<noname>";
-+	if (sym->st_name) {
-+		name = sym_strtab + sym->st_name;
-+	}
-+	else {
-+		name = sec_name(shdr[sym->st_shndx].sh_name);
-+	}
-+	return name;
-+}
-+
-+
-+
-+#if BYTE_ORDER == BIG_ENDIAN
-+#define be16_to_cpu(val) (val)
-+#define be32_to_cpu(val) (val)
-+#define be64_to_cpu(val) (val)
-+#endif
-+#if BYTE_ORDER == LITTLE_ENDIAN
-+#define be16_to_cpu(val) bswap_16(val)
-+#define be32_to_cpu(val) bswap_32(val)
-+#define be64_to_cpu(val) bswap_64(val)
-+#endif
-+
-+static uint16_t elf16_to_cpu(uint16_t val)
-+{
-+	return be16_to_cpu(val);
-+}
-+
-+static uint32_t elf32_to_cpu(uint32_t val)
-+{
-+	return be32_to_cpu(val);
-+}
-+
-+static uint64_t elf64_to_cpu(uint64_t val)
-+{
-+	return be64_to_cpu(val);
-+}
-+
-+static void read_ehdr(FILE *fp)
-+{
-+	if (fread(&ehdr, sizeof(ehdr), 1, fp) != 1) {
-+		die("Cannot read ELF header: %s\n",
-+			strerror(errno));
-+	}
-+	if (memcmp(ehdr.e_ident, ELFMAG, 4) != 0) {
-+		die("No ELF magic\n");
-+	}
-+	if (ehdr.e_ident[EI_CLASS] != ELFCLASS64) {
-+		die("Not a 64 bit executable\n");
-+	}
-+	if (ehdr.e_ident[EI_DATA] != ELFDATA2MSB) {
-+		die("Not a MSB ELF executable\n");
-+	}
-+	if (ehdr.e_ident[EI_VERSION] != EV_CURRENT) {
-+		die("Unknown ELF version\n");
-+	}
-+	/* Convert the fields to native endian */
-+	ehdr.e_type      = elf16_to_cpu(ehdr.e_type);
-+	ehdr.e_machine   = elf16_to_cpu(ehdr.e_machine);
-+	ehdr.e_version   = elf32_to_cpu(ehdr.e_version);
-+	ehdr.e_entry     = elf64_to_cpu(ehdr.e_entry);
-+	ehdr.e_phoff     = elf64_to_cpu(ehdr.e_phoff);
-+	ehdr.e_shoff     = elf64_to_cpu(ehdr.e_shoff);
-+	ehdr.e_flags     = elf32_to_cpu(ehdr.e_flags);
-+	ehdr.e_ehsize    = elf16_to_cpu(ehdr.e_ehsize);
-+	ehdr.e_phentsize = elf16_to_cpu(ehdr.e_phentsize);
-+	ehdr.e_phnum     = elf16_to_cpu(ehdr.e_phnum);
-+	ehdr.e_shentsize = elf16_to_cpu(ehdr.e_shentsize);
-+	ehdr.e_shnum     = elf16_to_cpu(ehdr.e_shnum);
-+	ehdr.e_shstrndx  = elf16_to_cpu(ehdr.e_shstrndx);
-+
-+	if ((ehdr.e_type != ET_EXEC) && (ehdr.e_type != ET_DYN)) {
-+		die("Unsupported ELF header type\n");
-+	}
-+	if (ehdr.e_machine != EM_PPC64) {
-+		die("Not for PPC64\n");
-+	}
-+	if (ehdr.e_version != EV_CURRENT) {
-+		die("Unknown ELF version\n");
-+	}
-+	if (ehdr.e_ehsize != sizeof(Elf64_Ehdr)) {
-+		die("Bad Elf header size\n");
-+	}
-+	if (ehdr.e_phentsize != sizeof(Elf64_Phdr)) {
-+		die("Bad program header entry\n");
-+	}
-+	if (ehdr.e_shentsize != sizeof(Elf64_Shdr)) {
-+		die("Bad section header entry\n");
-+	}
-+	if (ehdr.e_shstrndx >= ehdr.e_shnum) {
-+		die("String table index out of bounds\n");
-+	}
-+}
-+
-+static void read_shdrs(FILE *fp)
-+{
-+	int i;
-+	if (ehdr.e_shnum > MAX_SHDRS) {
-+		die("%d section headers supported: %d\n",
-+			ehdr.e_shnum, MAX_SHDRS);
-+	}
-+	if (fseek(fp, ehdr.e_shoff, SEEK_SET) < 0) {
-+		die("Seek to %d failed: %s\n",
-+			ehdr.e_shoff, strerror(errno));
-+	}
-+	if (fread(&shdr, sizeof(shdr[0]), ehdr.e_shnum, fp) != ehdr.e_shnum) {
-+		die("Cannot read ELF section headers: %s\n",
-+			strerror(errno));
-+	}
-+	for(i = 0; i < ehdr.e_shnum; i++) {
-+		shdr[i].sh_name      = elf32_to_cpu(shdr[i].sh_name);
-+		shdr[i].sh_type      = elf32_to_cpu(shdr[i].sh_type);
-+		shdr[i].sh_flags     = elf64_to_cpu(shdr[i].sh_flags);
-+		shdr[i].sh_addr      = elf64_to_cpu(shdr[i].sh_addr);
-+		shdr[i].sh_offset    = elf64_to_cpu(shdr[i].sh_offset);
-+		shdr[i].sh_size      = elf64_to_cpu(shdr[i].sh_size);
-+		shdr[i].sh_link      = elf32_to_cpu(shdr[i].sh_link);
-+		shdr[i].sh_info      = elf32_to_cpu(shdr[i].sh_info);
-+		shdr[i].sh_addralign = elf64_to_cpu(shdr[i].sh_addralign);
-+		shdr[i].sh_entsize   = elf64_to_cpu(shdr[i].sh_entsize);
-+	}
-+
-+}
-+
-+static void read_strtabs(FILE *fp)
-+{
-+	int i;
-+	for(i = 0; i < ehdr.e_shnum; i++) {
-+		if (shdr[i].sh_type != SHT_STRTAB) {
-+			continue;
-+		}
-+		strtab[i] = malloc(shdr[i].sh_size);
-+		if (!strtab[i]) {
-+			die("malloc of %d bytes for strtab failed\n",
-+				shdr[i].sh_size);
-+		}
-+		if (fseek(fp, shdr[i].sh_offset, SEEK_SET) < 0) {
-+			die("Seek to %d failed: %s\n",
-+				shdr[i].sh_offset, strerror(errno));
-+		}
-+		if (fread(strtab[i], 1, shdr[i].sh_size, fp) != shdr[i].sh_size) {
-+			die("Cannot read symbol table: %s\n",
-+				strerror(errno));
-+		}
-+	}
-+}
-+
-+static void read_symtabs(FILE *fp)
-+{
-+	int i,j;
-+	for(i = 0; i < ehdr.e_shnum; i++) {
-+		if (shdr[i].sh_type != SHT_SYMTAB) {
-+			continue;
-+		}
-+		symtab[i] = malloc(shdr[i].sh_size);
-+		if (!symtab[i]) {
-+			die("malloc of %d bytes for symtab failed\n",
-+				shdr[i].sh_size);
-+		}
-+		if (fseek(fp, shdr[i].sh_offset, SEEK_SET) < 0) {
-+			die("Seek to %d failed: %s\n",
-+				shdr[i].sh_offset, strerror(errno));
-+		}
-+		if (fread(symtab[i], 1, shdr[i].sh_size, fp) != shdr[i].sh_size) {
-+			die("Cannot read symbol table: %s\n",
-+				strerror(errno));
-+		}
-+		for(j = 0; j < shdr[i].sh_size/sizeof(symtab[i][0]); j++) {
-+			symtab[i][j].st_name  = elf32_to_cpu(symtab[i][j].st_name);
-+			symtab[i][j].st_value = elf64_to_cpu(symtab[i][j].st_value);
-+			symtab[i][j].st_size  = elf64_to_cpu(symtab[i][j].st_size);
-+			symtab[i][j].st_shndx = elf16_to_cpu(symtab[i][j].st_shndx);
-+		}
-+	}
-+}
-+
-+
-+static void read_relocs(FILE *fp)
-+{
-+	int i,j;
-+	void *relp;
-+
-+	for(i = 0; i < ehdr.e_shnum; i++) {
-+		if (shdr[i].sh_type != SHT_REL && shdr[i].sh_type != SHT_RELA)
-+			continue;
-+
-+		if (shdr[i].sh_type == SHT_REL) {
-+			reltab[i] = malloc(shdr[i].sh_size);
-+			if (!reltab[i]) {
-+				die("malloc of %d bytes for relocs failed\n",
-+					shdr[i].sh_size);
-+			}
-+			relp = reltab[i];
-+		} else {
-+			reltaba[i] = malloc(shdr[i].sh_size);
-+			if (!reltaba[i]) {
-+				die("malloc of %d bytes for relocs failed\n",
-+					shdr[i].sh_size);
-+			}
-+			relp = reltaba[i];
-+		}
-+
-+		if (fseek(fp, shdr[i].sh_offset, SEEK_SET) < 0) {
-+			die("Seek to %d failed: %s\n",
-+				shdr[i].sh_offset, strerror(errno));
-+		}
-+		if (fread(relp, 1, shdr[i].sh_size, fp) != shdr[i].sh_size) {
-+			die("Cannot read symbol table: %s\n",
-+				strerror(errno));
-+		}
-+
-+		if (shdr[i].sh_type == SHT_REL)
-+			for(j = 0; j < shdr[i].sh_size/sizeof(reltab[0][0]); j++) {
-+				reltab[i][j].r_offset = elf64_to_cpu(reltab[i][j].r_offset);
-+				reltab[i][j].r_info   = elf64_to_cpu(reltab[i][j].r_info);
-+			}
-+		else
-+			for(j = 0; j < shdr[i].sh_size/sizeof(reltaba[0][0]); j++) {
-+				reltaba[i][j].r_offset = elf64_to_cpu(reltaba[i][j].r_offset);
-+				reltaba[i][j].r_info   = elf64_to_cpu(reltaba[i][j].r_info);
-+				reltaba[i][j].r_addend   = elf64_to_cpu(reltaba[i][j].r_addend);
-+			}
-+	}
-+}
-+
-+
-+static void print_absolute_symbols(void)
-+{
-+	int i;
-+	printf("Absolute symbols\n");
-+	printf(" Num:  Value            Size  Type       Bind        Visibility  Name\n");
-+	for(i = 0; i < ehdr.e_shnum; i++) {
-+		char *sym_strtab;
-+		Elf64_Sym *sh_symtab;
-+		int j;
-+		if (shdr[i].sh_type != SHT_SYMTAB) {
-+			continue;
-+		}
-+		sh_symtab = symtab[i];
-+		sym_strtab = strtab[shdr[i].sh_link];
-+		for(j = 0; j < shdr[i].sh_size/sizeof(symtab[0][0]); j++) {
-+			Elf64_Sym *sym;
-+			const char *name;
-+			sym = &symtab[i][j];
-+			name = sym_name(sym_strtab, sym);
-+			if (sym->st_shndx != SHN_ABS) {
-+				continue;
-+			}
-+			printf("type:[%s]\n",
-+				sym_type(ELF64_ST_TYPE(sym->st_info)));
-+			printf("%5d %016llx %5d type:%s bind:%10s %12s %s %s\n", \
-+				j, sym->st_value, sym->st_size, \
-+				sym_type(ELF64_ST_TYPE(sym->st_info)), \
-+				sym_bind(ELF64_ST_BIND(sym->st_info)), \
-+				sym_visibility(ELF64_ST_VISIBILITY(sym->st_other)), \
-+				name);
-+		}
-+	}
-+	printf("\n");
-+}
-+
-+static void print_absolute_relocs(void)
-+{
-+	int i, printed = 0;
-+	int nr, sh_type;
-+
-+	for(i = 0; i < ehdr.e_shnum; i++) {
-+		char *sym_strtab;
-+		Elf64_Sym *sh_symtab;
-+		unsigned sec_applies, sec_symtab;
-+		int j;
-+		if (shdr[i].sh_type != SHT_REL && shdr[i].sh_type != SHT_RELA) {
-+			continue;
-+		}
-+		sec_symtab  = shdr[i].sh_link;
-+		sec_applies = shdr[i].sh_info;
-+		if (!(shdr[sec_applies].sh_flags & SHF_ALLOC)) {
-+			continue;
-+		}
-+		if (shdr[i].sh_type == SHT_REL) {
-+			sh_type = SHT_REL;
-+			nr = shdr[i].sh_size/sizeof(reltab[0][0]);
-+		} else {
-+			sh_type = SHT_RELA;
-+			nr = shdr[i].sh_size/sizeof(reltaba[0][0]);
-+		}
-+
-+		sh_symtab = symtab[sec_symtab];
-+		sym_strtab = strtab[shdr[sec_symtab].sh_link];
-+
-+		for(j = 0; j < nr; j++) {
-+			Elf64_Rel *rel;
-+			Elf64_Rela *rela;
-+			Elf64_Sym *sym;
-+			const char *name;
-+
-+			if (sh_type == SHT_REL) {
-+				rel = &reltab[i][j];
-+				sym = &sh_symtab[ELF64_R_SYM(rel->r_info)];
-+			} else {
-+				rela = &reltaba[i][j];
-+				sym = &sh_symtab[ELF64_R_SYM(rela->r_info)];
-+			}
-+
-+			name = sym_name(sym_strtab, sym);
-+			if (sym->st_shndx != SHN_ABS) {
-+				continue;
-+			}
-+
-+			/* Absolute symbols are not relocated if vmlinux is
-+			 * loaded at a non-compiled address. Display a warning
-+			 * to user at compile time about the absolute
-+			 * relocations present.
-+			 *
-+			 * User need to audit the code to make sure
-+			 * some symbols which should have been section
-+			 * relative have not become absolute because of some
-+			 * linker optimization or wrong programming usage.
-+			 *
-+			 * Before warning check if this absolute symbol
-+			 * relocation is harmless.
-+			 */
-+			if (is_safe_abs_reloc(name))
-+				continue;
-+
-+			if (!printed) {
-+				printf("WARNING: Absolute relocations"
-+					" present\n");
-+				printf("Offset           Info             Type           Sym.Value        "
-+					"Sym.Name\n");
-+				printed = 1;
-+			}
-+
-+			if (sh_type == SHT_REL)
-+				printf("%016llx %016llx %10s %016llx  %s\n",
-+					rel->r_offset,
-+					rel->r_info,
-+					rel_type(ELF64_R_TYPE(rel->r_info)),
-+					sym->st_value,
-+					name);
-+			else
-+				printf("%016llx %016llx %10s %016llx  %s\n",
-+					rela->r_offset,
-+					rela->r_info,
-+					rel_type(ELF64_R_TYPE(rela->r_info)),
-+					sym->st_value,
-+					name);
-+		}
-+	}
-+
-+	if (printed)
-+		printf("\n");
-+}
-+
-+static void walk_relocs(void (*visit)(void *relp, Elf64_Sym *sym, int sh_type))
-+{
-+	int i;
-+	/* Walk through the relocations */
-+	for(i = 0; i < ehdr.e_shnum; i++) {
-+		char *sym_strtab;
-+		Elf64_Sym *sh_symtab;
-+		unsigned sec_applies, sec_symtab;
-+		int j, nr_entries, sh_type;
-+		if (shdr[i].sh_type != SHT_REL && shdr[i].sh_type != SHT_RELA) {
-+			continue;
-+		}
-+		sec_symtab  = shdr[i].sh_link;
-+		sec_applies = shdr[i].sh_info;
-+		if (!(shdr[sec_applies].sh_flags & SHF_ALLOC)) {
-+			continue;
-+		}
-+		sh_symtab = symtab[sec_symtab];
-+		sym_strtab = strtab[shdr[sec_symtab].sh_link];
-+		if (shdr[i].sh_type == SHT_REL) {
-+			sh_type = SHT_REL;
-+			nr_entries = shdr[i].sh_size/sizeof(reltab[0][0]);
-+		} else {
-+			sh_type = SHT_RELA;
-+			nr_entries = shdr[i].sh_size/sizeof(reltaba[0][0]);
-+		}
-+
-+		for(j = 0; j < nr_entries; j++) {
-+			Elf64_Rel *rel;
-+			Elf64_Rela *rela;
-+			Elf64_Sym *sym;
-+			void *relp;
-+			unsigned r_type;
-+
-+			if (sh_type == SHT_REL) {
-+				rel = &reltab[i][j];
-+				sym = &sh_symtab[ELF64_R_SYM(rel->r_info)];
-+				r_type = ELF64_R_TYPE(rel->r_info);
-+				relp = rel;
-+			} else {
-+				rela = &reltaba[i][j];
-+				sym = &sh_symtab[ELF64_R_SYM(rela->r_info)];
-+				r_type = ELF64_R_TYPE(rela->r_info);
-+				relp = rela;
-+			}
-+			/* Don't visit relocations to absolute symbols */
-+			if (sym->st_shndx == SHN_ABS) {
-+				continue;
-+			}
-+			/* PC relative relocations don't need to be adjusted */
-+			switch (r_type) {
-+				case R_PPC64_ADDR32:
-+				case R_PPC64_ADDR16:
-+				case R_PPC64_ADDR16_HI:
-+				case R_PPC64_ADDR24:
-+				case R_PPC64_ADDR64:
-+				case R_PPC64_TOC:
-+					/* Visit relocations that need to be adjusted */
-+					visit(relp, sym, sh_type);
-+					break;
-+				case R_PPC64_ADDR16_LO:
-+				case R_PPC64_REL24:
-+				case R_PPC64_REL64:
-+				case R_PPC64_TOC16:
-+				case R_PPC64_ADDR16_LO_DS:
-+				case R_PPC64_ADDR16_HIGHEST:
-+				case R_PPC64_ADDR16_HIGHER:
-+				case R_PPC64_GOT16_DS:
-+				case R_PPC64_TOC16_DS:
-+				case R_PPC64_REL14:
-+				default:
-+					break;
-+			}
-+		}
-+	}
-+}
-+
-+static void count_reloc(void *relp, Elf64_Sym *sym, int sh_type)
-+{
-+	reloc_count += 1;
-+}
-+
-+static void collect_reloc(void *relp, Elf64_Sym *sym, int sh_type)
-+{
-+	Elf64_Rel *rel;
-+	Elf64_Rela *rela;
-+
-+	/* Remember the address that needs to be adjusted. */
-+	if (sh_type == SHT_REL) {
-+		rel = (Elf64_Rel *)relp;
-+		relocs[reloc_idx].offset = rel->r_offset;
-+		relocs[reloc_idx++].rel_type = ELF64_R_TYPE(rel->r_info);
++	if (areq->src != areq->dst) {
++		dma_unmap_sg(dev, areq->src, edesc->src_nents ? : 1,
++			     DMA_TO_DEVICE);
++		dma_unmap_sg(dev, areq->dst, edesc->dst_nents ? : 1,
++			     DMA_FROM_DEVICE);
 +	} else {
-+		rela = (Elf64_Rela *)relp;
-+		relocs[reloc_idx].offset = rela->r_offset;
-+		relocs[reloc_idx++].rel_type = ELF64_R_TYPE(rela->r_info);
++		dma_unmap_sg(dev, areq->src, edesc->src_nents ? : 1,
++			     DMA_BIDIRECTIONAL);
 +	}
++
++	if (edesc->dma_len)
++		dma_unmap_single(dev, edesc->dma_link_tbl, edesc->dma_len,
++				 DMA_BIDIRECTIONAL);
 +}
 +
-+static int cmp_relocs(const void *va, const void *vb)
++/*
++ * ipsec_esp descriptor callbacks
++ */
++static void ipsec_esp_encrypt_done(struct device *dev,
++				   struct talitos_desc *desc, void *context,
++				   int err)
 +{
-+	const struct reloc_info *a, *b;
-+	a = va; b = vb;
-+	return (a->rel_type == b->rel_type)? 0 : (a->rel_type > b->rel_type)? 1 : -1;
++	struct aead_request *areq = context;
++	struct ipsec_esp_edesc *edesc =
++		 container_of(desc, struct ipsec_esp_edesc, desc);
++	struct crypto_aead *authenc = crypto_aead_reqtfm(areq);
++	struct talitos_ctx *ctx = crypto_aead_ctx(authenc);
++	struct scatterlist *sg;
++	void *icvdata;
++
++	ipsec_esp_unmap(dev, edesc, areq);
++
++	/* copy the generated ICV to dst */
++	if (edesc->dma_len) {
++		icvdata = &edesc->link_tbl[edesc->src_nents +
++					   edesc->dst_nents + 1];
++		sg = sg_last(areq->dst, edesc->dst_nents);
++		memcpy((char *)sg_virt(sg) + sg->length - ctx->authsize,
++		       icvdata, ctx->authsize);
++	}
++
++	kfree(edesc);
++
++	aead_request_complete(areq, err);
 +}
 +
-+static void emit_relocs(int as_text)
++static void ipsec_esp_decrypt_done(struct device *dev,
++				   struct talitos_desc *desc, void *context,
++				   int err)
 +{
-+	int i;
-+	int prev_r_type;
-+	/* Count how many relocations I have and allocate space for them. */
-+	reloc_count = 0;
-+	walk_relocs(count_reloc);
-+	relocs = malloc(reloc_count * sizeof(relocs[0]));
-+	if (!relocs) {
-+		die("malloc of %d entries for relocs failed\n",
-+			reloc_count);
++	struct aead_request *req = context;
++	struct ipsec_esp_edesc *edesc =
++		 container_of(desc, struct ipsec_esp_edesc, desc);
++	struct crypto_aead *authenc = crypto_aead_reqtfm(req);
++	struct talitos_ctx *ctx = crypto_aead_ctx(authenc);
++	struct scatterlist *sg;
++	void *icvdata;
++
++	ipsec_esp_unmap(dev, edesc, req);
++
++	if (!err) {
++		/* auth check */
++		if (edesc->dma_len)
++			icvdata = &edesc->link_tbl[edesc->src_nents +
++						   edesc->dst_nents + 1];
++		else
++			icvdata = &edesc->link_tbl[0];
++
++		sg = sg_last(req->dst, edesc->dst_nents ? : 1);
++		err = memcmp(icvdata, (char *)sg_virt(sg) + sg->length -
++			     ctx->authsize, ctx->authsize) ? -EBADMSG : 0;
 +	}
-+	/* Collect up the relocations */
-+	reloc_idx = 0;
-+	walk_relocs(collect_reloc);
 +
-+	/* Order the relocations for more efficient processing */
-+	qsort(relocs, reloc_count, sizeof(relocs[0]), cmp_relocs);
++	kfree(edesc);
 +
-+	/* Print the relocations */
-+	if (as_text) {
-+		/* Print the relocations in a form suitable that
-+		 * gas will like.
-+		 */
-+		printf(".section \".data.reloc\",\"a\"\n");
-+		printf(".balign 4\n");
-+
-+		printf("\t .long 0x%016llx\n", relocs[0].offset);
-+		prev_r_type = relocs[0].rel_type;
-+
-+		for(i = 1; i < reloc_count; i++) {
-+			if (prev_r_type != relocs[i].rel_type && prev_r_type == R_PPC64_ADDR16_HI) {
-+				printf("\t .long 0xffffffffffffffff\n");
-+				prev_r_type = relocs[i].rel_type;
-+			}
-+			printf("\t .long 0x%016llx\n", relocs[i].offset);
-+		}
-+		printf("\n");
-+	}
-+	else {
-+		unsigned char buf[8];
-+		buf[0] = buf[1] = buf[2] = buf[3] = 0;
-+		buf[4] = buf[5] = buf[6] = buf[7] = 0;
-+
-+		/* Print a stop */
-+		printf("%c%c%c%c", buf[0], buf[1], buf[2], buf[3]);
-+		printf("%c%c%c%c", buf[4], buf[5], buf[6], buf[7]);
-+
-+		buf[7] = (relocs[0].offset >>  0) & 0xff;
-+		buf[6] = (relocs[0].offset >>  8) & 0xff;
-+		buf[5] = (relocs[0].offset >> 16) & 0xff;
-+		buf[4] = (relocs[0].offset >> 24) & 0xff;
-+		buf[3] = (relocs[0].offset >> 32) & 0xff;
-+		buf[2] = (relocs[0].offset >> 40) & 0xff;
-+		buf[1] = (relocs[0].offset >> 48) & 0xff;
-+		buf[0] = (relocs[0].offset >> 56) & 0xff;
-+		printf("%c%c%c%c", buf[0], buf[1], buf[2], buf[3]);
-+		printf("%c%c%c%c", buf[4], buf[5], buf[6], buf[7]);
-+
-+		prev_r_type = relocs[0].rel_type;
-+
-+		/* Now print each relocation */
-+		for(i = 1; i < reloc_count; i++) {
-+			if (prev_r_type != relocs[i].rel_type && prev_r_type == R_PPC64_ADDR16_HI) {
-+				printf("%c%c%c%c", 0xff, 0xff, 0xff, 0xff);
-+				printf("%c%c%c%c", 0xff, 0xff, 0xff, 0xff);
-+				prev_r_type = relocs[i].rel_type;
-+			}
-+			buf[7] = (relocs[i].offset >>  0) & 0xff;
-+			buf[6] = (relocs[i].offset >>  8) & 0xff;
-+			buf[5] = (relocs[i].offset >> 16) & 0xff;
-+			buf[4] = (relocs[i].offset >> 24) & 0xff;
-+			buf[3] = (relocs[i].offset >> 32) & 0xff;
-+			buf[2] = (relocs[i].offset >> 40) & 0xff;
-+			buf[1] = (relocs[i].offset >> 48) & 0xff;
-+			buf[0] = (relocs[i].offset >> 56) & 0xff;
-+			printf("%c%c%c%c", buf[0], buf[1], buf[2], buf[3]);
-+			printf("%c%c%c%c", buf[4], buf[5], buf[6], buf[7]);
-+		}
-+		buf[0] = buf[1] = buf[2] = buf[3] = 0;
-+		buf[4] = buf[5] = buf[6] = buf[7] = 0;
-+	}
++	aead_request_complete(req, err);
 +}
 +
-+static void usage(void)
++/*
++ * convert scatterlist to SEC h/w link table format
++ * stop at cryptlen bytes
++ */
++static void sg_to_link_tbl(struct scatterlist *sg, int sg_count,
++			   int cryptlen, struct talitos_ptr *link_tbl_ptr)
 +{
-+	die("relocs [--abs-syms |--abs-relocs | --text] vmlinux\n");
++	while (cryptlen > 0) {
++		link_tbl_ptr->ptr = cpu_to_be32(sg_dma_address(sg));
++		link_tbl_ptr->len = cpu_to_be16(sg_dma_len(sg));
++		link_tbl_ptr->j_extent = 0;
++		link_tbl_ptr++;
++		cryptlen -= sg_dma_len(sg);
++		sg = sg_next(sg);
++	}
++
++	/* adjust (decrease) last entry's len to cryptlen */
++	link_tbl_ptr--;
++	link_tbl_ptr->len = cpu_to_be16(be16_to_cpu(link_tbl_ptr->len)
++					+ cryptlen);
++
++	/* tag end of link table */
++	link_tbl_ptr->j_extent = DESC_PTR_LNKTBL_RETURN;
 +}
 +
-+int main(int argc, char **argv)
++/*
++ * fill in and submit ipsec_esp descriptor
++ */
++static int ipsec_esp(struct ipsec_esp_edesc *edesc, struct aead_request *areq,
++		     u8 *giv, u64 seq,
++		     void (*callback) (struct device *dev,
++				       struct talitos_desc *desc,
++				       void *context, int error))
 +{
-+	int show_absolute_syms, show_absolute_relocs;
-+	int as_text;
-+	const char *fname;
-+	FILE *fp;
-+	int i;
++	struct crypto_aead *aead = crypto_aead_reqtfm(areq);
++	struct talitos_ctx *ctx = crypto_aead_ctx(aead);
++	struct device *dev = ctx->dev;
++	struct talitos_desc *desc = &edesc->desc;
++	unsigned int cryptlen = areq->cryptlen;
++	unsigned int authsize = ctx->authsize;
++	unsigned int ivsize;
++	int sg_count;
 +
-+	show_absolute_syms = 0;
-+	show_absolute_relocs = 0;
-+	as_text = 0;
-+	fname = NULL;
-+	for(i = 1; i < argc; i++) {
-+		char *arg = argv[i];
-+		if (*arg == '-') {
-+			if (strcmp(argv[1], "--abs-syms") == 0) {
-+				show_absolute_syms = 1;
-+				continue;
-+			}
++	/* hmac key */
++	map_single_talitos_ptr(dev, &desc->ptr[0], ctx->authkeylen, &ctx->key,
++			       0, DMA_TO_DEVICE);
++	/* hmac data */
++	map_single_talitos_ptr(dev, &desc->ptr[1], sg_virt(areq->src) -
++			       sg_virt(areq->assoc), sg_virt(areq->assoc), 0,
++			       DMA_TO_DEVICE);
++	/* cipher iv */
++	ivsize = crypto_aead_ivsize(aead);
++	map_single_talitos_ptr(dev, &desc->ptr[2], ivsize, giv ?: areq->iv, 0,
++			       DMA_TO_DEVICE);
 +
-+			if (strcmp(argv[1], "--abs-relocs") == 0) {
-+				show_absolute_relocs = 1;
-+				continue;
-+			}
-+			else if (strcmp(argv[1], "--text") == 0) {
-+				as_text = 1;
-+				continue;
-+			}
++	/* cipher key */
++	map_single_talitos_ptr(dev, &desc->ptr[3], ctx->enckeylen,
++			       (char *)&ctx->key + ctx->authkeylen, 0,
++			       DMA_TO_DEVICE);
++
++	/*
++	 * cipher in
++	 * map and adjust cipher len to aead request cryptlen.
++	 * extent is bytes of HMAC postpended to ciphertext,
++	 * typically 12 for ipsec
++	 */
++	desc->ptr[4].len = cpu_to_be16(cryptlen);
++	desc->ptr[4].j_extent = authsize;
++
++	if (areq->src == areq->dst)
++		sg_count = dma_map_sg(dev, areq->src, edesc->src_nents ? : 1,
++				      DMA_BIDIRECTIONAL);
++	else
++		sg_count = dma_map_sg(dev, areq->src, edesc->src_nents ? : 1,
++				      DMA_TO_DEVICE);
++
++	if (sg_count == 1) {
++		desc->ptr[4].ptr = cpu_to_be32(sg_dma_address(areq->src));
++	} else {
++		sg_to_link_tbl(areq->src, sg_count, cryptlen,
++			       &edesc->link_tbl[0]);
++		desc->ptr[4].j_extent |= DESC_PTR_LNKTBL_JUMP;
++		desc->ptr[4].ptr = cpu_to_be32(edesc->dma_link_tbl);
++		dma_sync_single_for_device(ctx->dev, edesc->dma_link_tbl,
++					   edesc->dma_len, DMA_BIDIRECTIONAL);
++	}
++
++	/* cipher out */
++	desc->ptr[5].len = cpu_to_be16(cryptlen);
++	desc->ptr[5].j_extent = authsize;
++
++	if (areq->src != areq->dst) {
++		sg_count = dma_map_sg(dev, areq->dst, edesc->dst_nents ? : 1,
++				      DMA_FROM_DEVICE);
++	}
++
++	if (sg_count == 1) {
++		desc->ptr[5].ptr = cpu_to_be32(sg_dma_address(areq->dst));
++	} else {
++		struct talitos_ptr *link_tbl_ptr =
++			&edesc->link_tbl[edesc->src_nents];
++		struct scatterlist *sg;
++
++		desc->ptr[5].ptr = cpu_to_be32((struct talitos_ptr *)
++					       edesc->dma_link_tbl +
++					       edesc->src_nents);
++		if (areq->src == areq->dst) {
++			memcpy(link_tbl_ptr, &edesc->link_tbl[0],
++			       edesc->src_nents * sizeof(struct talitos_ptr));
++		} else {
++			sg_to_link_tbl(areq->dst, sg_count, cryptlen,
++				       link_tbl_ptr);
 +		}
-+		else if (!fname) {
-+			fname = arg;
-+			continue;
-+		}
-+		usage();
++		link_tbl_ptr += sg_count - 1;
++
++		/* handle case where sg_last contains the ICV exclusively */
++		sg = sg_last(areq->dst, edesc->dst_nents);
++		if (sg->length == ctx->authsize)
++			link_tbl_ptr--;
++
++		link_tbl_ptr->j_extent = 0;
++		link_tbl_ptr++;
++		link_tbl_ptr->j_extent = DESC_PTR_LNKTBL_RETURN;
++		link_tbl_ptr->len = cpu_to_be16(authsize);
++
++		/* icv data follows link tables */
++		link_tbl_ptr->ptr = cpu_to_be32((struct talitos_ptr *)
++						edesc->dma_link_tbl +
++					        edesc->src_nents +
++						edesc->dst_nents + 1);
++
++		desc->ptr[5].j_extent |= DESC_PTR_LNKTBL_JUMP;
++		dma_sync_single_for_device(ctx->dev, edesc->dma_link_tbl,
++					   edesc->dma_len, DMA_BIDIRECTIONAL);
 +	}
-+	if (!fname) {
-+		usage();
++
++	/* optional iv out - entry points use random IVs instead */
++	desc->ptr[6].len = 0;
++
++	return talitos_submit(dev, desc, callback, areq);
++}
++
++
++/*
++ * derive number of elements in scatterlist
++ */
++static int sg_count(struct scatterlist *sg_list, int nbytes)
++{
++	struct scatterlist *sg = sg_list;
++	int sg_nents = 0;
++
++	while (nbytes) {
++		sg_nents++;
++		nbytes -= sg->length;
++		sg = sg_next(sg);
 +	}
-+	fp = fopen(fname, "r");
-+	if (!fp) {
-+		die("Cannot open %s: %s\n",
-+			fname, strerror(errno));
++
++	return sg_nents;
++}
++
++/*
++ * allocate and map the ipsec_esp extended descriptor
++ */
++static struct ipsec_esp_edesc *ipsec_esp_edesc_alloc(struct aead_request *areq,
++						     int icv_stashing)
++{
++	struct crypto_aead *authenc = crypto_aead_reqtfm(areq);
++	struct talitos_ctx *ctx = crypto_aead_ctx(authenc);
++	struct ipsec_esp_edesc *edesc;
++	int src_nents, dst_nents, alloc_len, dma_len;
++
++	if (areq->cryptlen + ctx->authsize > TALITOS_MAX_DATA_LEN) {
++		dev_err(ctx->dev, "cryptlen exceeds h/w max limit\n");
++		return ERR_PTR(-EINVAL);
 +	}
-+	read_ehdr(fp);
-+	read_shdrs(fp);
-+	read_strtabs(fp);
-+	read_symtabs(fp);
-+	read_relocs(fp);
-+	if (show_absolute_syms) {
-+		print_absolute_symbols();
-+		return 0;
++
++	src_nents = sg_count(areq->src, areq->cryptlen + ctx->authsize);
++	src_nents = (src_nents == 1) ? 0 : src_nents;
++
++	if (areq->dst == areq->src) {
++		dst_nents = src_nents;
++	} else {
++		dst_nents = sg_count(areq->dst, areq->cryptlen + ctx->authsize);
++		dst_nents = (dst_nents == 1) ? 0 : src_nents;
 +	}
-+	if (show_absolute_relocs) {
-+		print_absolute_relocs();
-+		return 0;
++
++	/*
++	 * allocate space for base edesc plus the link tables,
++	 * allowing for a separate entry for the generated ICV (+ 1),
++	 * and the ICV data itself
++	 */
++	alloc_len = sizeof(struct ipsec_esp_edesc);
++	if (src_nents || dst_nents) {
++		dma_len = (src_nents + dst_nents + 1) *
++				 sizeof(struct talitos_ptr) + ctx->authsize;
++		alloc_len += dma_len;
++	} else {
++		dma_len = 0;
++		alloc_len += icv_stashing ? ctx->authsize : 0;
 +	}
-+	emit_relocs(as_text);
++
++	edesc = kmalloc(alloc_len, GFP_DMA);
++	if (!edesc) {
++		dev_err(ctx->dev, "could not allocate edescriptor\n");
++		return ERR_PTR(-ENOMEM);
++	}
++
++	edesc->src_nents = src_nents;
++	edesc->dst_nents = dst_nents;
++	edesc->dma_len = dma_len;
++	edesc->dma_link_tbl = dma_map_single(ctx->dev, &edesc->link_tbl[0],
++					     edesc->dma_len, DMA_BIDIRECTIONAL);
++
++	return edesc;
++}
++
++static int aes_cbc_sha1_hmac_authenc_encrypt(struct aead_request *req)
++{
++	struct crypto_aead *authenc = crypto_aead_reqtfm(req);
++	struct talitos_ctx *ctx = crypto_aead_ctx(authenc);
++	struct ipsec_esp_edesc *edesc;
++
++	/* allocate extended descriptor */
++	edesc = ipsec_esp_edesc_alloc(req, 0);
++	if (IS_ERR(edesc))
++		return PTR_ERR(edesc);
++
++	/* set encrypt */
++	edesc->desc.hdr = ctx->desc_hdr_template | DESC_HDR_MODE0_AESU_ENC;
++
++	return ipsec_esp(edesc, req, NULL, 0, ipsec_esp_encrypt_done);
++}
++
++static int aes_cbc_sha1_hmac_authenc_decrypt(struct aead_request *req)
++{
++	struct crypto_aead *authenc = crypto_aead_reqtfm(req);
++	struct talitos_ctx *ctx = crypto_aead_ctx(authenc);
++	unsigned int authsize = ctx->authsize;
++	struct ipsec_esp_edesc *edesc;
++	struct scatterlist *sg;
++	void *icvdata;
++
++	req->cryptlen -= authsize;
++
++	/* allocate extended descriptor */
++	edesc = ipsec_esp_edesc_alloc(req, 1);
++	if (IS_ERR(edesc))
++		return PTR_ERR(edesc);
++
++	/* stash incoming ICV for later cmp with ICV generated by the h/w */
++	if (edesc->dma_len)
++		icvdata = &edesc->link_tbl[edesc->src_nents +
++					   edesc->dst_nents + 1];
++	else
++		icvdata = &edesc->link_tbl[0];
++
++	sg = sg_last(req->src, edesc->src_nents ? : 1);
++
++	memcpy(icvdata, (char *)sg_virt(sg) + sg->length - ctx->authsize,
++	       ctx->authsize);
++
++	/* decrypt */
++	edesc->desc.hdr = ctx->desc_hdr_template | DESC_HDR_DIR_INBOUND;
++
++	return ipsec_esp(edesc, req, NULL, 0, ipsec_esp_decrypt_done);
++}
++
++static int aes_cbc_sha1_hmac_authenc_givencrypt(
++	struct aead_givcrypt_request *req)
++{
++	struct aead_request *areq = &req->areq;
++	struct crypto_aead *authenc = crypto_aead_reqtfm(areq);
++	struct talitos_ctx *ctx = crypto_aead_ctx(authenc);
++	struct ipsec_esp_edesc *edesc;
++
++	/* allocate extended descriptor */
++	edesc = ipsec_esp_edesc_alloc(areq, 0);
++	if (IS_ERR(edesc))
++		return PTR_ERR(edesc);
++
++	/* set encrypt */
++	edesc->desc.hdr = ctx->desc_hdr_template | DESC_HDR_MODE0_AESU_ENC;
++
++	/* get random IV */
++	get_random_bytes(req->giv, crypto_aead_ivsize(authenc));
++
++	return ipsec_esp(edesc, areq, req->giv, req->seq,
++			 ipsec_esp_encrypt_done);
++}
++
++struct talitos_alg_template {
++	char name[CRYPTO_MAX_ALG_NAME];
++	char driver_name[CRYPTO_MAX_ALG_NAME];
++	unsigned int blocksize;
++	struct aead_alg aead;
++	struct device *dev;
++	__be32 desc_hdr_template;
++};
++
++static struct talitos_alg_template driver_algs[] = {
++	/* single-pass ipsec_esp descriptor */
++	{
++		.name = "authenc(hmac(sha1),cbc(aes))",
++		.driver_name = "authenc(hmac(sha1-talitos),cbc(aes-talitos))",
++		.blocksize = TALITOS_AES_MIN_BLOCK_SIZE,
++		.aead = {
++			.setkey = aes_cbc_sha1_hmac_authenc_setkey,
++			.setauthsize = aes_cbc_sha1_hmac_authenc_setauthsize,
++			.encrypt = aes_cbc_sha1_hmac_authenc_encrypt,
++			.decrypt = aes_cbc_sha1_hmac_authenc_decrypt,
++			.givencrypt = aes_cbc_sha1_hmac_authenc_givencrypt,
++			.geniv = "<built-in>",
++			.ivsize = TALITOS_AES_IV_LENGTH,
++			.maxauthsize = TALITOS_MAX_AUTH_SIZE,
++			},
++		.desc_hdr_template = DESC_HDR_TYPE_IPSEC_ESP |
++			             DESC_HDR_SEL0_AESU |
++		                     DESC_HDR_MODE0_AESU_CBC |
++		                     DESC_HDR_SEL1_MDEUA |
++		                     DESC_HDR_MODE1_MDEU_INIT |
++		                     DESC_HDR_MODE1_MDEU_PAD |
++		                     DESC_HDR_MODE1_MDEU_SHA1_HMAC,
++	}
++};
++
++struct talitos_crypto_alg {
++	struct list_head entry;
++	struct device *dev;
++	__be32 desc_hdr_template;
++	struct crypto_alg crypto_alg;
++};
++
++static int talitos_cra_init(struct crypto_tfm *tfm)
++{
++	struct crypto_alg *alg = tfm->__crt_alg;
++	struct talitos_crypto_alg *talitos_alg =
++		 container_of(alg, struct talitos_crypto_alg, crypto_alg);
++	struct talitos_ctx *ctx = crypto_tfm_ctx(tfm);
++
++	/* update context with ptr to dev */
++	ctx->dev = talitos_alg->dev;
++	/* copy descriptor header template value */
++	ctx->desc_hdr_template = talitos_alg->desc_hdr_template;
++
 +	return 0;
 +}
++
++static int __devexit talitos_remove(struct of_device *ofdev)
++{
++	struct device *dev = &ofdev->dev;
++	struct talitos_private *priv = dev_get_drvdata(dev);
++	struct talitos_crypto_alg *t_alg, *n;
++	int i;
++
++	list_for_each_entry_safe(t_alg, n, &priv->alg_list, entry) {
++		crypto_unregister_alg(&t_alg->crypto_alg);
++		list_del(&t_alg->entry);
++		kfree(t_alg);
++	}
++
++	kfree(priv->tail);
++	kfree(priv->head);
++
++	if (priv->fifo)
++		for (i = 0; i < priv->num_channels; i++)
++			kfree(priv->fifo[i]);
++
++	kfree(priv->fifo);
++	kfree(priv->head_lock);
++	kfree(priv->tail_lock);
++
++	if (priv->irq != NO_IRQ) {
++		free_irq(priv->irq, dev);
++		irq_dispose_mapping(priv->irq);
++	}
++
++	tasklet_kill(&priv->done_task);
++	tasklet_kill(&priv->error_task);
++
++	iounmap(priv->reg);
++
++	dev_set_drvdata(dev, NULL);
++
++	kfree(priv);
++
++	return 0;
++}
++
++static struct talitos_crypto_alg *talitos_alg_alloc(struct device *dev,
++						    struct talitos_alg_template
++						           *template)
++{
++	struct talitos_crypto_alg *t_alg;
++	struct crypto_alg *alg;
++
++	t_alg = kzalloc(sizeof(struct talitos_crypto_alg), GFP_KERNEL);
++	if (!t_alg)
++		return ERR_PTR(-ENOMEM);
++
++	alg = &t_alg->crypto_alg;
++
++	snprintf(alg->cra_name, CRYPTO_MAX_ALG_NAME, "%s", template->name);
++	snprintf(alg->cra_driver_name, CRYPTO_MAX_ALG_NAME, "%s",
++		 template->driver_name);
++	alg->cra_module = THIS_MODULE;
++	alg->cra_init = talitos_cra_init;
++	alg->cra_priority = TALITOS_CRA_PRIORITY;
++	alg->cra_flags = CRYPTO_ALG_TYPE_AEAD | CRYPTO_ALG_ASYNC;
++	alg->cra_blocksize = template->blocksize;
++	alg->cra_alignmask = 0;
++	alg->cra_type = &crypto_aead_type;
++	alg->cra_ctxsize = sizeof(struct talitos_ctx);
++	alg->cra_u.aead = template->aead;
++
++	t_alg->desc_hdr_template = template->desc_hdr_template;
++	t_alg->dev = dev;
++
++	return t_alg;
++}
++
++/*
++ * given the alg's descriptor header template, determine whether descriptor
++ * type and primary/secondary execution units required match the hw
++ * capabilities description provided in the device tree node.
++ */
++static int hw_supports(struct device *dev, __be32 desc_hdr_template)
++{
++	struct talitos_private *priv = dev_get_drvdata(dev);
++	int ret;
++
++	ret = (1 << DESC_TYPE(desc_hdr_template) & priv->desc_types) &&
++	      (1 << PRIMARY_EU(desc_hdr_template) & priv->exec_units);
++
++	if (SECONDARY_EU(desc_hdr_template))
++		ret = ret && (1 << SECONDARY_EU(desc_hdr_template)
++		              & priv->exec_units);
++
++	return ret;
++}
++
++static int talitos_probe(struct of_device *ofdev,
++			 const struct of_device_id *match)
++{
++	struct device *dev = &ofdev->dev;
++	struct device_node *np = ofdev->node;
++	struct talitos_private *priv;
++	const unsigned int *prop;
++	int i, err;
++
++	priv = kzalloc(sizeof(struct talitos_private), GFP_KERNEL);
++	if (!priv)
++		return -ENOMEM;
++
++	dev_set_drvdata(dev, priv);
++
++	priv->ofdev = ofdev;
++
++	tasklet_init(&priv->done_task, talitos_done, (unsigned long)dev);
++	tasklet_init(&priv->error_task, talitos_error, (unsigned long)dev);
++
++	priv->irq = irq_of_parse_and_map(np, 0);
++
++	if (priv->irq == NO_IRQ) {
++		dev_err(dev, "failed to map irq\n");
++		err = -EINVAL;
++		goto err_out;
++	}
++
++	/* get the irq line */
++	err = request_irq(priv->irq, talitos_interrupt, 0,
++			  dev_driver_string(dev), dev);
++	if (err) {
++		dev_err(dev, "failed to request irq %d\n", priv->irq);
++		irq_dispose_mapping(priv->irq);
++		priv->irq = NO_IRQ;
++		goto err_out;
++	}
++
++	priv->reg = of_iomap(np, 0);
++	if (!priv->reg) {
++		dev_err(dev, "failed to of_iomap\n");
++		err = -ENOMEM;
++		goto err_out;
++	}
++
++	/* get SEC version capabilities from device tree */
++	prop = of_get_property(np, "fsl,num-channels", NULL);
++	if (prop)
++		priv->num_channels = *prop;
++
++	prop = of_get_property(np, "fsl,channel-fifo-len", NULL);
++	if (prop)
++		priv->chfifo_len = *prop;
++
++	prop = of_get_property(np, "fsl,exec-units-mask", NULL);
++	if (prop)
++		priv->exec_units = *prop;
++
++	prop = of_get_property(np, "fsl,descriptor-types-mask", NULL);
++	if (prop)
++		priv->desc_types = *prop;
++
++	if (!is_power_of_2(priv->num_channels) || !priv->chfifo_len ||
++	    !priv->exec_units || !priv->desc_types) {
++		dev_err(dev, "invalid property data in device tree node\n");
++		err = -EINVAL;
++		goto err_out;
++	}
++
++	of_node_put(np);
++	np = NULL;
++
++	priv->head_lock = kmalloc(sizeof(spinlock_t) * priv->num_channels,
++				  GFP_KERNEL);
++	priv->tail_lock = kmalloc(sizeof(spinlock_t) * priv->num_channels,
++				  GFP_KERNEL);
++	if (!priv->head_lock || !priv->tail_lock) {
++		dev_err(dev, "failed to allocate fifo locks\n");
++		err = -ENOMEM;
++		goto err_out;
++	}
++
++	for (i = 0; i < priv->num_channels; i++) {
++		spin_lock_init(&priv->head_lock[i]);
++		spin_lock_init(&priv->tail_lock[i]);
++	}
++
++	priv->fifo = kmalloc(sizeof(struct talitos_request *) *
++			     priv->num_channels, GFP_KERNEL);
++	if (!priv->fifo) {
++		dev_err(dev, "failed to allocate request fifo\n");
++		err = -ENOMEM;
++		goto err_out;
++	}
++
++	priv->fifo_len = roundup_pow_of_two(priv->chfifo_len);
++
++	for (i = 0; i < priv->num_channels; i++) {
++		priv->fifo[i] = kzalloc(sizeof(struct talitos_request) *
++					priv->fifo_len, GFP_KERNEL);
++		if (!priv->fifo[i]) {
++			dev_err(dev, "failed to allocate request fifo %d\n", i);
++			err = -ENOMEM;
++			goto err_out;
++		}
++	}
++
++	priv->head = kzalloc(sizeof(int) * priv->num_channels, GFP_KERNEL);
++	priv->tail = kzalloc(sizeof(int) * priv->num_channels, GFP_KERNEL);
++	if (!priv->head || !priv->tail) {
++		dev_err(dev, "failed to allocate request index space\n");
++		err = -ENOMEM;
++		goto err_out;
++	}
++
++	/* reset and initialize the h/w */
++	err = init_device(dev);
++	if (err) {
++		dev_err(dev, "failed to initialize device\n");
++		goto err_out;
++	}
++
++	/* register crypto algorithms the device supports */
++	INIT_LIST_HEAD(&priv->alg_list);
++
++	for (i = 0; i < ARRAY_SIZE(driver_algs); i++) {
++		if (hw_supports(dev, driver_algs[i].desc_hdr_template)) {
++			struct talitos_crypto_alg *t_alg;
++
++			t_alg = talitos_alg_alloc(dev, &driver_algs[i]);
++			if (IS_ERR(t_alg)) {
++				err = PTR_ERR(t_alg);
++				goto err_out;
++			}
++
++			err = crypto_register_alg(&t_alg->crypto_alg);
++			if (err) {
++				dev_err(dev, "%s alg registration failed\n",
++					t_alg->crypto_alg.cra_driver_name);
++				kfree(t_alg);
++			} else {
++				list_add_tail(&t_alg->entry, &priv->alg_list);
++				dev_info(dev, "%s\n",
++					 t_alg->crypto_alg.cra_driver_name);
++			}
++		}
++	}
++
++	return 0;
++
++err_out:
++	talitos_remove(ofdev);
++	if (np)
++		of_node_put(np);
++
++	return err;
++}
++
++static struct of_device_id talitos_match[] = {
++	{
++		.compatible = "fsl,sec2.0",
++	},
++	{},
++};
++MODULE_DEVICE_TABLE(of, talitos_match);
++
++static struct of_platform_driver talitos_driver = {
++	.name = "talitos",
++	.match_table = talitos_match,
++	.probe = talitos_probe,
++	.remove = __devexit_p(talitos_remove),
++};
++
++static int __init talitos_init(void)
++{
++	return of_register_platform_driver(&talitos_driver);
++}
++module_init(talitos_init);
++
++static void __exit talitos_exit(void)
++{
++	of_unregister_platform_driver(&talitos_driver);
++}
++module_exit(talitos_exit);
++
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Kim Phillips <kim.phillips@freescale.com>");
++MODULE_DESCRIPTION("Freescale integrated security engine (SEC) driver");
+diff --git a/drivers/crypto/talitos.h b/drivers/crypto/talitos.h
+new file mode 100644
+index 0000000..989763d
+--- /dev/null
++++ b/drivers/crypto/talitos.h
+@@ -0,0 +1,191 @@
++/*
++ * Freescale SEC (talitos) device register and descriptor header defines
++ *
++ * Copyright (c) 2006-2008 Freescale Semiconductor, Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions
++ * are met:
++ *
++ * 1. Redistributions of source code must retain the above copyright
++ *    notice, this list of conditions and the following disclaimer.
++ * 2. Redistributions in binary form must reproduce the above copyright
++ *    notice, this list of conditions and the following disclaimer in the
++ *    documentation and/or other materials provided with the distribution.
++ * 3. The name of the author may not be used to endorse or promote products
++ *    derived from this software without specific prior written permission.
++ *
++ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
++ * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
++ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
++ * IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
++ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
++ * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
++ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
++ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
++ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ *
++ */
++
++#define TALITOS_TIMEOUT 100000
++
++/*
++ * TALITOS_xxx_LO addresses point to the low data bits (32-63) of the register
++ */
++
++/* global register offset addresses */
++#define TALITOS_MCR			0x1030  /* master control register */
++#define TALITOS_MCR_LO			0x1038
++#define   TALITOS_MCR_SWR		0x1     /* s/w reset */
++#define TALITOS_IMR			0x1008  /* interrupt mask register */
++#define   TALITOS_IMR_INIT		0x10fff /* enable channel IRQs */
++#define TALITOS_IMR_LO			0x100C
++#define   TALITOS_IMR_LO_INIT		0x0     /* disable execution unit IRQs*/
++#define TALITOS_ISR			0x1010  /* interrupt status register */
++#define   TALITOS_ISR_CHERR		0xaa    /* channel errors mask */
++#define   TALITOS_ISR_CHDONE		0x55    /* channel done mask */
++#define TALITOS_ISR_LO			0x1014
++#define TALITOS_ICR			0x1018  /* interrupt clear register */
++#define TALITOS_ICR_LO			0x101C
++
++/* channel register address stride */
++#define TALITOS_CH_STRIDE		0x100
++
++/* channel configuration register  */
++#define TALITOS_CCCR(ch)		(ch * TALITOS_CH_STRIDE + 0x1108)
++#define   TALITOS_CCCR_CONT		0x2    /* channel continue */
++#define   TALITOS_CCCR_RESET		0x1    /* channel reset */
++#define TALITOS_CCCR_LO(ch)		(ch * TALITOS_CH_STRIDE + 0x110c)
++#define   TALITOS_CCCR_LO_CDWE		0x10   /* chan. done writeback enab. */
++#define   TALITOS_CCCR_LO_NT		0x4    /* notification type */
++#define   TALITOS_CCCR_LO_CDIE		0x2    /* channel done IRQ enable */
++
++/* CCPSR: channel pointer status register */
++#define TALITOS_CCPSR(ch)		(ch * TALITOS_CH_STRIDE + 0x1110)
++#define TALITOS_CCPSR_LO(ch)		(ch * TALITOS_CH_STRIDE + 0x1114)
++#define   TALITOS_CCPSR_LO_DOF		0x8000 /* double FF write oflow error */
++#define   TALITOS_CCPSR_LO_SOF		0x4000 /* single FF write oflow error */
++#define   TALITOS_CCPSR_LO_MDTE		0x2000 /* master data transfer error */
++#define   TALITOS_CCPSR_LO_SGDLZ	0x1000 /* s/g data len zero error */
++#define   TALITOS_CCPSR_LO_FPZ		0x0800 /* fetch ptr zero error */
++#define   TALITOS_CCPSR_LO_IDH		0x0400 /* illegal desc hdr error */
++#define   TALITOS_CCPSR_LO_IEU		0x0200 /* invalid EU error */
++#define   TALITOS_CCPSR_LO_EU		0x0100 /* EU error detected */
++#define   TALITOS_CCPSR_LO_GB		0x0080 /* gather boundary error */
++#define   TALITOS_CCPSR_LO_GRL		0x0040 /* gather return/length error */
++#define   TALITOS_CCPSR_LO_SB		0x0020 /* scatter boundary error */
++#define   TALITOS_CCPSR_LO_SRL		0x0010 /* scatter return/length error */
++
++/* channel fetch fifo register */
++#define TALITOS_FF(ch)			(ch * TALITOS_CH_STRIDE + 0x1148)
++#define TALITOS_FF_LO(ch)		(ch * TALITOS_CH_STRIDE + 0x114c)
++
++/* current descriptor pointer register */
++#define TALITOS_CDPR(ch)		(ch * TALITOS_CH_STRIDE + 0x1140)
++#define TALITOS_CDPR_LO(ch)		(ch * TALITOS_CH_STRIDE + 0x1144)
++
++/* descriptor buffer register */
++#define TALITOS_DESCBUF(ch)		(ch * TALITOS_CH_STRIDE + 0x1180)
++#define TALITOS_DESCBUF_LO(ch)		(ch * TALITOS_CH_STRIDE + 0x1184)
++
++/* gather link table */
++#define TALITOS_GATHER(ch)		(ch * TALITOS_CH_STRIDE + 0x11c0)
++#define TALITOS_GATHER_LO(ch)		(ch * TALITOS_CH_STRIDE + 0x11c4)
++
++/* scatter link table */
++#define TALITOS_SCATTER(ch)		(ch * TALITOS_CH_STRIDE + 0x11e0)
++#define TALITOS_SCATTER_LO(ch)		(ch * TALITOS_CH_STRIDE + 0x11e4)
++
++/* execution unit interrupt status registers */
++#define TALITOS_DEUISR			0x2030 /* DES unit */
++#define TALITOS_DEUISR_LO		0x2034
++#define TALITOS_AESUISR			0x4030 /* AES unit */
++#define TALITOS_AESUISR_LO		0x4034
++#define TALITOS_MDEUISR			0x6030 /* message digest unit */
++#define TALITOS_MDEUISR_LO		0x6034
++#define TALITOS_AFEUISR			0x8030 /* arc4 unit */
++#define TALITOS_AFEUISR_LO		0x8034
++#define TALITOS_RNGUISR			0xa030 /* random number unit */
++#define TALITOS_RNGUISR_LO		0xa034
++#define TALITOS_PKEUISR			0xc030 /* public key unit */
++#define TALITOS_PKEUISR_LO		0xc034
++#define TALITOS_KEUISR			0xe030 /* kasumi unit */
++#define TALITOS_KEUISR_LO		0xe034
++#define TALITOS_CRCUISR			0xf030 /* cyclic redundancy check unit*/
++#define TALITOS_CRCUISR_LO		0xf034
++
++/*
++ * talitos descriptor header (hdr) bits
++ */
++
++/* written back when done */
++#define DESC_HDR_DONE			__constant_cpu_to_be32(0xff000000)
++
++/* primary execution unit select */
++#define	DESC_HDR_SEL0_MASK		__constant_cpu_to_be32(0xf0000000)
++#define	DESC_HDR_SEL0_AFEU		__constant_cpu_to_be32(0x10000000)
++#define	DESC_HDR_SEL0_DEU		__constant_cpu_to_be32(0x20000000)
++#define	DESC_HDR_SEL0_MDEUA		__constant_cpu_to_be32(0x30000000)
++#define	DESC_HDR_SEL0_MDEUB		__constant_cpu_to_be32(0xb0000000)
++#define	DESC_HDR_SEL0_RNG		__constant_cpu_to_be32(0x40000000)
++#define	DESC_HDR_SEL0_PKEU		__constant_cpu_to_be32(0x50000000)
++#define	DESC_HDR_SEL0_AESU		__constant_cpu_to_be32(0x60000000)
++#define	DESC_HDR_SEL0_KEU		__constant_cpu_to_be32(0x70000000)
++#define	DESC_HDR_SEL0_CRCU		__constant_cpu_to_be32(0x80000000)
++
++/* primary execution unit mode (MODE0) and derivatives */
++#define	DESC_HDR_MODE0_AESU_CBC		__constant_cpu_to_be32(0x00200000)
++#define	DESC_HDR_MODE0_AESU_ENC		__constant_cpu_to_be32(0x00100000)
++#define	DESC_HDR_MODE0_DEU_CBC		__constant_cpu_to_be32(0x00400000)
++#define	DESC_HDR_MODE0_DEU_3DES		__constant_cpu_to_be32(0x00200000)
++#define	DESC_HDR_MODE0_DEU_ENC		__constant_cpu_to_be32(0x00100000)
++#define	DESC_HDR_MODE0_MDEU_INIT	__constant_cpu_to_be32(0x01000000)
++#define	DESC_HDR_MODE0_MDEU_HMAC	__constant_cpu_to_be32(0x00800000)
++#define	DESC_HDR_MODE0_MDEU_PAD		__constant_cpu_to_be32(0x00400000)
++#define	DESC_HDR_MODE0_MDEU_MD5		__constant_cpu_to_be32(0x00200000)
++#define	DESC_HDR_MODE0_MDEU_SHA256	__constant_cpu_to_be32(0x00100000)
++#define	DESC_HDR_MODE0_MDEU_SHA1	__constant_cpu_to_be32(0x00000000)
++#define	DESC_HDR_MODE0_MDEU_MD5_HMAC	(DESC_HDR_MODE0_MDEU_MD5 | \
++					 DESC_HDR_MODE0_MDEU_HMAC)
++#define	DESC_HDR_MODE0_MDEU_SHA256_HMAC	(DESC_HDR_MODE0_MDEU_SHA256 | \
++					 DESC_HDR_MODE0_MDEU_HMAC)
++#define	DESC_HDR_MODE0_MDEU_SHA1_HMAC	(DESC_HDR_MODE0_MDEU_SHA1 | \
++					 DESC_HDR_MODE0_MDEU_HMAC)
++
++/* secondary execution unit select (SEL1) */
++#define	DESC_HDR_SEL1_MASK		__constant_cpu_to_be32(0x000f0000)
++#define	DESC_HDR_SEL1_MDEUA		__constant_cpu_to_be32(0x00030000)
++#define	DESC_HDR_SEL1_MDEUB		__constant_cpu_to_be32(0x000b0000)
++#define	DESC_HDR_SEL1_CRCU		__constant_cpu_to_be32(0x00080000)
++
++/* secondary execution unit mode (MODE1) and derivatives */
++#define	DESC_HDR_MODE1_MDEU_INIT	__constant_cpu_to_be32(0x00001000)
++#define	DESC_HDR_MODE1_MDEU_HMAC	__constant_cpu_to_be32(0x00000800)
++#define	DESC_HDR_MODE1_MDEU_PAD		__constant_cpu_to_be32(0x00000400)
++#define	DESC_HDR_MODE1_MDEU_MD5		__constant_cpu_to_be32(0x00000200)
++#define	DESC_HDR_MODE1_MDEU_SHA256	__constant_cpu_to_be32(0x00000100)
++#define	DESC_HDR_MODE1_MDEU_SHA1	__constant_cpu_to_be32(0x00000000)
++#define	DESC_HDR_MODE1_MDEU_MD5_HMAC	(DESC_HDR_MODE1_MDEU_MD5 | \
++					 DESC_HDR_MODE1_MDEU_HMAC)
++#define	DESC_HDR_MODE1_MDEU_SHA256_HMAC	(DESC_HDR_MODE1_MDEU_SHA256 | \
++					 DESC_HDR_MODE1_MDEU_HMAC)
++#define	DESC_HDR_MODE1_MDEU_SHA1_HMAC	(DESC_HDR_MODE1_MDEU_SHA1 | \
++					 DESC_HDR_MODE1_MDEU_HMAC)
++
++/* direction of overall data flow (DIR) */
++#define	DESC_HDR_DIR_INBOUND		__constant_cpu_to_be32(0x00000002)
++
++/* request done notification (DN) */
++#define	DESC_HDR_DONE_NOTIFY		__constant_cpu_to_be32(0x00000001)
++
++/* descriptor types */
++#define DESC_HDR_TYPE_AESU_CTR_NONSNOOP		__constant_cpu_to_be32(0 << 3)
++#define DESC_HDR_TYPE_IPSEC_ESP			__constant_cpu_to_be32(1 << 3)
++#define DESC_HDR_TYPE_COMMON_NONSNOOP_NO_AFEU	__constant_cpu_to_be32(2 << 3)
++#define DESC_HDR_TYPE_HMAC_SNOOP_NO_AFEU	__constant_cpu_to_be32(4 << 3)
++
++/* link table extent field bits */
++#define DESC_PTR_LNKTBL_JUMP			0x80
++#define DESC_PTR_LNKTBL_RETURN			0x02
++#define DESC_PTR_LNKTBL_NEXT			0x01
+-- 
+1.5.5.1.125.gc697a
