@@ -1,21 +1,16 @@
-Return-Path: <dhlii@dlasys.net>
-Received: from outbound-mail-104.bluehost.com (outbound-mail-104.bluehost.com
-	[69.89.22.14]) by ozlabs.org (Postfix) with SMTP id 6D66DDDE0D
+Return-Path: <huubeikens@hotmail.com>
+Received: from bay0-omc2-s7.bay0.hotmail.com (bay0-omc2-s7.bay0.hotmail.com
+	[65.54.246.143]) by ozlabs.org (Postfix) with ESMTP id 74EBCDDF52
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 29 May 2008 16:47:16 +1000 (EST)
-Message-ID: <483E4FD7.3050401@dlasys.net>
-Date: Thu, 29 May 2008 02:40:23 -0400
-From: "David H. Lynch Jr." <dhlii@dlasys.net>
+	Thu, 29 May 2008 21:03:17 +1000 (EST)
+Message-ID: <BAY122-W428F4FD4AED8DAED5968A1DABF0@phx.gbl>
+Content-Type: multipart/alternative;
+	boundary="_8a6f6790-5aee-4ecc-ae3d-a4920ab76f4a_"
+From: Huub Eikens <huubeikens@hotmail.com>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: USB Host Controller driver for the MPC8270 processor
+Date: Thu, 29 May 2008 11:03:16 +0000
 MIME-Version: 1.0
-To: rodolfo <rodolfo@lesc.ufc.br>
-Subject: Re: Cross toolchain for ppc405 (virtex-4)
-References: <20080528193344.065CF7A8089@mail218-va3.bigfish.com>
-	<635aaa73efeab32f524e372289dc2a9f@lesc.ufc.br>
-In-Reply-To: <635aaa73efeab32f524e372289dc2a9f@lesc.ufc.br>
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-embedded@ozlabs.org, John Linn <John.Linn@xilinx.com>,
-	Mirek23 <miroslaw.dach@psi.ch>
-Reply-To: dhlii@dlasys.net
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -26,48 +21,70 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I am not sure if this answers your question but to build a 2.6 Linux
-kernel using the buildroot uclibc ppc cross compiler you would issue the
-following make command
+--_8a6f6790-5aee-4ecc-ae3d-a4920ab76f4a_
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-make ARCH=ppc CROSS_COMPILE=powerpc-linux-uclibc-
+Hi,
+=20
+I am in need of a USB Host Controller device for the Freescale MPC8270 for =
+the 2.4 linux kernel (ELDK 3.1.1). On internet I found one, but this is onl=
+y for version 2.6:
+http://cpm2usb.sourceforge.net/
 
-If you were using the crosstools compiler rather than buildroot, the
-CROSS_COMPILE value would change.
-For older version of GCC it might require a full path to the crosscompiler.
+I have a few options:
+1. backport this driver to 2.4.25 kernel. I would like to know if this is f=
+easible or not. I get the feeling that this will take a lot of time.
+2. upgrade my kernel to 2.6.x. This is not preferable for me since I depend=
+ on sw modules writen by external partners. If I upgrade, I really really n=
+eed to be sure that this driver
+is stable and reliable.
+3. Use an external USB Host Controller. Can anyone advise me on which contr=
+oller to choose that runs stable and reliable on the 2.4.25 kernel (ELDK 3.=
+1.1)?
 
-If you are building a BSP in the powerpc tree use ARCH=powerpc
+Kind regards,
+=20
+Huub Eikens
 
-I am fairly certain that when you are building a Linux kernel it is
-irrelevant whether you use a glibc or uclibc or ... compiler.
-The kernel is not going to link against any standard C library, those
-library functions the kernel uses must be coded in the kernel.
+_________________________________________________________________
+De leukste online filmpjes vind je op MSN Video!
+http://video.msn.com/video.aspx?mkt=3Dnl-nl=
 
-However, when you are cross compiling applications for your target it is
-a good idea to stick to the same standard C library and associated cross
-compiler.
+--_8a6f6790-5aee-4ecc-ae3d-a4920ab76f4a_
+Content-Type: text/html; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-rodolfo wrote:
-> I'm sorry.
->
-> I want build kernel linux 2.6 for ml403. 
-> Did I have to change the predefined compiler flags for ppc_4xx? The default
-> value is -mcpu=403.
->
-> On Wed, 28 May 2008 13:32:51 -0600, "John Linn" <John.Linn@xilinx.com>
-> wrote:
->   
->> I don't know, I'm not familiar with what you are doing and it's not clear
->> from the message.
->>  
->> -- John
->>     
--- 
-Dave Lynch 					  	    DLA Systems
-Software Development:  				         Embedded Linux
-717.627.3770 	       dhlii@dlasys.net 	  http://www.dlasys.net
-fax: 1.253.369.9244 			           Cell: 1.717.587.7774
-Over 25 years' experience in platforms, languages, and technologies too numerous to list.
+<html>
+<head>
+<style>
+.hmmessage P
+{
+margin:0px;
+padding:0px
+}
+body.hmmessage
+{
+FONT-SIZE: 10pt;
+FONT-FAMILY:Tahoma
+}
+</style>
+</head>
+<body class=3D'hmmessage'><div style=3D"text-align: left;"><pre>Hi,<br> <br=
+>I am in need of a USB Host Controller device for the Freescale MPC8270 for=
+ the 2.4 linux kernel (ELDK 3.1.1). On internet I found one, but this is on=
+ly for version 2.6:<br><a href=3D"http://cpm2usb.sourceforge.net/" target=
+=3D"_blank">http://cpm2usb.sourceforge.net/</a><br><br>I have a few options=
+:<br>1. backport this driver to 2.4.25 kernel. I would like to know if this=
+ is feasible or not. I get the feeling that this will take a lot of time.<b=
+r>2. upgrade my kernel to 2.6.x. This is not preferable for me since I depe=
+nd on sw modules writen by external partners. If I upgrade, I really really=
+ need to be sure that this driver<br>is stable and reliable.<br>3. Use an e=
+xternal USB Host Controller. Can anyone advise me on which controller to ch=
+oose that runs stable and reliable on the 2.4.25 kernel (ELDK 3.1.1)?<br><b=
+r>Kind regards,<br> <br>Huub Eikens<br></pre></div><br /><hr />Chat met al =
+je vrienden. <a href=3D'https://www.invite2messenger.nl/Default.aspx' targe=
+t=3D'_new'>Voeg ze nu allemaal toe aan Messenger!</a></body>
+</html>=
 
-"Any intelligent fool can make things bigger and more complex... It takes a touch of genius - and a lot of courage to move in the opposite direction."
-Albert Einstein
+--_8a6f6790-5aee-4ecc-ae3d-a4920ab76f4a_--
