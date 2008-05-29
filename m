@@ -1,12 +1,12 @@
 Return-Path: <michael@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
-Message-Id: <04ad14b4b4580d635c001cec3ec1d9121f4055f4.1212042061.git.michael@ellerman.id.au>
+Message-Id: <17f99785c873d7c70807f0ed33fb42466a6f9a4b.1212042061.git.michael@ellerman.id.au>
 In-Reply-To: <33bba4965d9907a8a93e9f92fd5c3874a6e21f90.1212042061.git.michael@ellerman.id.au>
 References: <33bba4965d9907a8a93e9f92fd5c3874a6e21f90.1212042061.git.michael@ellerman.id.au>
 From: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH 5/6] Add tests for the code patching code,
-	and introduce checking functions
-Date: Thu, 29 May 2008 16:21:00 +1000 (EST)
+Subject: [PATCH 6/6] Add PPC_NOP_INSTR,
+	a hash define for the preferred nop instruction
+Date: Thu, 29 May 2008 16:21:01 +1000 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,209 +16,84 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Some code I am working on wants to check that the code it's patching is
-what it expects, so add three functions which check the passed instruction
-to see what it is.
-
-Add some tests for those routines, and also test the results of the existing
-create_branch() function using the new routines.
-
-It would be nice to have the test code enabled automatically for debug
-kernels, but distros turn on DEBUG_KERNEL so we don't really have a config
-symbol we can tie it off.
+A bunch of code has hard-coded the value for a "nop" instruction, it
+would be nice to have a #define for it.
 
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
- arch/powerpc/Kconfig.debug          |    5 +
- arch/powerpc/lib/code-patching.c    |  140 +++++++++++++++++++++++++++++++++++
- include/asm-powerpc/code-patching.h |    4 +
- 3 files changed, 149 insertions(+), 0 deletions(-)
+ arch/powerpc/kernel/cputable.c      |    3 ++-
+ arch/powerpc/kernel/crash_dump.c    |    2 +-
+ arch/powerpc/kernel/module_64.c     |    3 ++-
+ include/asm-powerpc/code-patching.h |    2 ++
+ 4 files changed, 7 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/Kconfig.debug b/arch/powerpc/Kconfig.debug
-index a7d24e6..dc58939 100644
---- a/arch/powerpc/Kconfig.debug
-+++ b/arch/powerpc/Kconfig.debug
-@@ -57,6 +57,11 @@ config KGDB
- 	  debugger.  See <http://kgdb.sourceforge.net/> for more information.
- 	  Unless you are intending to debug the kernel, say N here.
+diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
+index e44d553..887e190 100644
+--- a/arch/powerpc/kernel/cputable.c
++++ b/arch/powerpc/kernel/cputable.c
+@@ -17,6 +17,7 @@
+ #include <linux/module.h>
  
-+config CODE_PATCHING_SELFTEST
-+	bool "Run self-tests of the code-patching code."
-+	depends on DEBUG_KERNEL
-+	default n
-+
- choice
- 	prompt "Serial Port"
- 	depends on KGDB
-diff --git a/arch/powerpc/lib/code-patching.c b/arch/powerpc/lib/code-patching.c
-index 2905c51..13e29eb 100644
---- a/arch/powerpc/lib/code-patching.c
-+++ b/arch/powerpc/lib/code-patching.c
-@@ -8,6 +8,7 @@
-  */
+ #include <asm/oprofile_impl.h>
++#include <asm/code-patching.h>
+ #include <asm/cputable.h>
+ #include <asm/prom.h>		/* for PTRRELOC on ARCH=ppc */
  
- #include <linux/kernel.h>
-+#include <linux/init.h>
- #include <asm/code-patching.h>
+@@ -1613,7 +1614,7 @@ void do_feature_fixups(unsigned long value, void *fixup_start, void *fixup_end)
+ 		pend = ((unsigned int *)fcur) + (fcur->end_off / 4);
  
- 
-@@ -42,3 +43,142 @@ unsigned int create_branch(unsigned long addr, unsigned long target, int flags)
- 
- 	return instruction;
+ 		for (p = pstart; p < pend; p++) {
+-			*p = 0x60000000u;
++			*p = PPC_NOP_INSTR;
+ 			asm volatile ("dcbst 0, %0" : : "r" (p));
+ 		}
+ 		asm volatile ("sync" : : : "memory");
+diff --git a/arch/powerpc/kernel/crash_dump.c b/arch/powerpc/kernel/crash_dump.c
+index ee2dac5..2f5e04f 100644
+--- a/arch/powerpc/kernel/crash_dump.c
++++ b/arch/powerpc/kernel/crash_dump.c
+@@ -42,7 +42,7 @@ static void __init create_trampoline(unsigned long addr)
+ 	 * branch to "addr" we jump to ("addr" + 32 MB). Although it requires
+ 	 * two instructions it doesn't require any registers.
+ 	 */
+-	patch_instruction(addr, 0x60000000); /* nop */
++	patch_instruction(addr, PPC_NOP_INSTR); /* nop */
+ 	patch_branch(addr + 4, addr + PHYSICAL_START, 0);
  }
-+
-+int instr_is_branch_iform(unsigned int instr)
-+{
-+	unsigned int opcode;
-+
-+	opcode = (instr >> 26) & 0x3F;
-+
-+	return opcode == 18;
-+}
-+
-+int instr_is_bl(unsigned int instr)
-+{
-+	return instr_is_branch_iform(instr) &&
-+	       ((instr & BRANCH_SET_LINK) == 1) &&
-+	       ((instr & BRANCH_ABSOLUTE) == 0);
-+}
-+
-+int instr_is_branch_to_addr(unsigned int *instr, unsigned long addr)
-+{
-+	signed long imm;
-+
-+	if (!instr_is_branch_iform(*instr))
-+		return 0;
-+
-+	imm = *instr & 0x3FFFFFC;
-+
-+	/* If the top bit of the immediate value is set this is negative */
-+	if (imm & 0x2000000)
-+		imm -= 0x4000000;
-+
-+	if ((*instr & BRANCH_ABSOLUTE) == 0)
-+		imm += (unsigned long)instr;
-+
-+	return (unsigned long)imm == addr;
-+}
-+
-+#ifdef CONFIG_CODE_PATCHING_SELFTEST
-+
-+static void __init test_trampoline(void)
-+{
-+	asm ("nop;\n");
-+}
-+
-+#define check(x)	\
-+	if (!(x)) printk("code-patching: test failed at line %d\n", __LINE__);
-+
-+static int __init test_code_patching(void)
-+{
-+	unsigned long addr, dest;
-+	unsigned int instr;
-+
-+	addr = (unsigned long)&instr;
-+
-+	printk(KERN_DEBUG "Running code patching self-tests ...\n");
-+
-+	/* The simplest case, branch to self, no flags */
-+	check(instr_is_branch_iform(0x48000000));
-+	/* All bits of target set, and flags */
-+	check(instr_is_branch_iform(0x4bffffff));
-+	/* High bit of opcode set, which is wrong */
-+	check(!instr_is_branch_iform(0xcbffffff));
-+	/* Middle bits of opcode set, which is wrong */
-+	check(!instr_is_branch_iform(0x7bffffff));
-+
-+	/* Simplest case, branch to self, with link */
-+	check(instr_is_bl(0x48000001));
-+	/* All bits of targets set, and link */
-+	check(instr_is_bl(0x4bfffffd));
-+	/* Some bits of targets set, and link */
-+	check(instr_is_bl(0x4bff00fd));
-+	/* All bits of targets set, no flags, ie. link is false */
-+	check(!instr_is_bl(0x4bfffffc));
-+	/* Must be a valid branch to start with */
-+	check(!instr_is_bl(0x7bfffffd));
-+
-+	/* Absolute branch to 0x100 */
-+	instr = 0x48000103;
-+	check(instr_is_branch_to_addr(&instr, 0x100));
-+	/* Absolute branch to 0x420fc */
-+	instr = 0x480420ff;
-+	check(instr_is_branch_to_addr(&instr, 0x420fc));
-+
-+	/* Maximum positive relative branch, + 20MB - 4B */
-+	instr = 0x49fffffc;
-+	check(instr_is_branch_to_addr(&instr, addr + 0x1FFFFFC));
-+
-+	/* Smallest negative relative branch, - 4B */
-+	instr = 0x4bfffffc;
-+	check(instr_is_branch_to_addr(&instr, addr - 4));
-+
-+	/* Largest negative relative branch, - 32 MB */
-+	instr = 0x4a000000;
-+	check(instr_is_branch_to_addr(&instr, addr - 0x2000000));
-+
-+
-+	/* Branch to self, with link */
-+	instr = create_branch(addr, addr, BRANCH_SET_LINK);
-+	check(instr_is_branch_to_addr(&instr, addr));
-+	check(instr_is_bl(instr));
-+
-+	/* Branch to self - 0x100, with link */
-+	instr = create_branch(addr, addr - 0x100, BRANCH_SET_LINK);
-+	check(instr_is_branch_to_addr(&instr, addr - 0x100));
-+	check(instr_is_bl(instr));
-+
-+	/* Branch to self + 0x100, no link */
-+	instr = create_branch(addr, addr + 0x100, 0);
-+	check(instr_is_branch_to_addr(&instr, addr + 0x100));
-+	check(!instr_is_bl(instr));
-+
-+	/* Maximum relative negative offset, - 32 MB */
-+	instr = create_branch(addr, addr - 0x2000000, BRANCH_SET_LINK);
-+	check(instr_is_branch_to_addr(&instr, addr - 0x2000000));
-+	check(instr_is_bl(instr));
-+
-+	/* Out of range relative negative offset, - 32 MB + 4*/
-+	instr = create_branch(addr, addr - 0x2000004, BRANCH_SET_LINK);
-+	check(instr == 0);
-+
-+	/* Out of range relative positive offset, + 32 MB */
-+	instr = create_branch(addr, addr + 0x2000000, BRANCH_SET_LINK);
-+	check(instr == 0);
-+
-+	/* Unaligned target */
-+	instr = create_branch(addr, addr + 3, BRANCH_SET_LINK);
-+	check(instr == 0);
-+
-+	/* Check we can create a function call */
-+	addr = ppc_function_entry(test_trampoline);
-+	dest = ppc_function_entry(test_code_patching);
-+	instr = create_branch(addr, dest, BRANCH_SET_LINK);
-+	patch_instruction(addr, instr);
-+	check(instr_is_branch_to_addr((unsigned int *)addr, dest));
-+
-+	return 0;
-+}
-+late_initcall(test_code_patching);
-+
-+#endif /* CONFIG_CODE_PATCHING_SELFTEST */
+ 
+diff --git a/arch/powerpc/kernel/module_64.c b/arch/powerpc/kernel/module_64.c
+index 3a82b02..d5e569a 100644
+--- a/arch/powerpc/kernel/module_64.c
++++ b/arch/powerpc/kernel/module_64.c
+@@ -24,6 +24,7 @@
+ #include <asm/module.h>
+ #include <asm/uaccess.h>
+ #include <asm/firmware.h>
++#include <asm/code-patching.h>
+ #include <linux/sort.h>
+ 
+ #include "setup.h"
+@@ -346,7 +347,7 @@ static unsigned long stub_for_addr(Elf64_Shdr *sechdrs,
+    restore r2. */
+ static int restore_r2(u32 *instruction, struct module *me)
+ {
+-	if (*instruction != 0x60000000) {
++	if (*instruction != PPC_NOP_INSTR) {
+ 		printk("%s: Expect noop after relocate, got %08x\n",
+ 		       me->name, *instruction);
+ 		return 0;
 diff --git a/include/asm-powerpc/code-patching.h b/include/asm-powerpc/code-patching.h
-index 0213a48..8b54373 100644
+index 8b54373..f33d16e 100644
 --- a/include/asm-powerpc/code-patching.h
 +++ b/include/asm-powerpc/code-patching.h
-@@ -25,6 +25,10 @@ unsigned int create_branch(unsigned long addr, unsigned long target, int flags);
- void patch_branch(unsigned long addr, unsigned long target, int flags);
- void patch_instruction(unsigned long addr, unsigned int instr);
+@@ -12,6 +12,8 @@
  
-+int instr_is_branch_iform(unsigned int instr);
-+int instr_is_bl(unsigned int instr);
-+int instr_is_branch_to_addr(unsigned int *instr, unsigned long addr);
+ #include <asm/types.h>
+ 
++#define PPC_NOP_INSTR	0x60000000
 +
- static inline unsigned long ppc_function_entry(void *func)
- {
- #ifdef CONFIG_PPC64
+ /* Flags for create_branch:
+  * "b"   == create_branch(addr, target, 0);
+  * "ba"  == create_branch(addr, target, BRANCH_ABSOLUTE);
 -- 
 1.5.5
