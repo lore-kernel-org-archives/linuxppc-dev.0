@@ -1,40 +1,10 @@
-Return-Path: <markn@au1.ibm.com>
-Received: from e23smtp05.au.ibm.com (E23SMTP05.au.ibm.com [202.81.18.174])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp05.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 07613DDDE6
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 May 2008 12:25:56 +1000 (EST)
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.18.234])
-	by e23smtp05.au.ibm.com (8.13.1/8.13.1) with ESMTP id m4T2PNpG019181
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 May 2008 12:25:23 +1000
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
-	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m4T2Me622232562
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 May 2008 12:24:25 +1000
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
-	by d23av03.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m4T1sJKT013290
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 May 2008 11:54:19 +1000
-Received: from ozlabs.au.ibm.com ([9.190.163.12])
-	by d23av03.au.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	m4T1sIfZ012796
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 May 2008 11:54:18 +1000
-Received: from ubrain.ozlabs.ibm.com (haven.au.ibm.com [9.190.164.82])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.au.ibm.com (Postfix) with ESMTP id A1B6C73607
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 May 2008 11:53:22 +1000 (EST)
-From: Mark Nelson <markn@au1.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [RFC] POWERPC: Merge 32 and 64-bit dma code
-Date: Thu, 29 May 2008 11:53:31 +1000
-References: <Pine.LNX.4.64.0804301815020.12768@monty.am.freescale.net>
-	<200805231806.50551.markn@au1.ibm.com>
-In-Reply-To: <200805231806.50551.markn@au1.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200805291153.31305.markn@au1.ibm.com>
+Return-Path: <benh@ozlabs.org>
+To: Paul Mackerras <paulus@samba.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Thu, 29 May 2008 15:51:45 +1000
+Subject: [PATCH] [POWERPC] Free a PTE bit on ppc64 with 64K pages
+Message-Id: <20080529055401.9B758DDDE7@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -44,68 +14,159 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 23 May 2008 06:06:50 pm Mark Nelson wrote:
-> On Thu, 1 May 2008 09:36:43 am Becky Bruce wrote:
-> > 
-> > I essentially adopt the 64-bit dma code, with some changes to support
-> > 32-bit systems, including HIGHMEM.  dma functions on 32-bit are now
-> > invoked via accessor functions which call the correct op for a device based
-> > on archdata dma_ops.  Currently, this defaults to dma_direct_ops, but this
-> > structure will make it easier to do iommu/swiotlb on 32-bit going
-> > forward.
-> > 
-> > In addition, the dma_map/unmap_page functions are added to dma_ops on
-> > HIGHMEM-enabled configs because we can't just fall back on map/unmap_single
-> > when HIGHMEM is enabled.  Adding these to dma_ops makes it cleaner to
-> > substitute different functionality once we have iommu/swiotlb support.
-> > 
-> > This code conflicts with the dma_attrs code that Mark Nelson just pushed.
-> > At this point, I'm just looking for some review, and suggestions on how 
-> > this code might be improved.  I'll uprev it to work with Mark's code once
-> > that goes in.
-> 
-> The last patch of my series may be in question so it could end up that this
-> patch makes it in first. It shouldn't be too hard to respin my patches after
-> your merge so no worries there though.
-> 
-> > 
-> > There will be other patches that precede this one - I plan to duplicate 
-> > dma_mapping.h into include/asm-ppc to avoid breakage there.  There will 
-> > also be a patch to rename dma_64.c to dma.c, and a series of patches to 
-> > modify drivers that pass NULL dev pointers.
-> > 
-> > Dma experts, please review this when you can - I was a dma newbie 
-> > until very recently, and the odds that I'm missing some subtlety 
-> > in this merge are fairly high.
-> > 
-> 
-> I'm far from a DMA expert but this all looks sane to me - I can't really
-> comment on the 32bit side of things but I don't think it's going to break
-> anything on 64bit (it compiles fine on cell and pseries).
-> 
-> I'll try and test boot it on Monday.
+This patch frees a PTE bit when using 64K pages on ppc64. This is done
+by getting rid of the separate _PAGE_HASHPTE bit. Instead, we just test
+if any of the 16 sub-page bits is set. For non-combo pages (ie. real
+64K pages), we set SUB0 and the location encoding in that field.
 
-Not quite Monday, but it boots fine on the QS22 and QS21 Cell blades
-and on a Power6 box.
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
 
-Mark.
+Please review and make sure I didn't miss something ... 
 
-> 
-> We should get BenH to look at it but he's travelling at the moment...
-> 
-> Mark.
-> 
-> > Cheers,
-> > Becky
-> > 
-> >  ---
-> >  arch/powerpc/kernel/Makefile      |    4 +-
-> >  arch/powerpc/kernel/dma_64.c      |   80 ++++++++++++++++++-
-> >  arch/powerpc/kernel/pci-common.c  |   53 +++++++++++++
-> >  arch/powerpc/kernel/pci_32.c      |    7 ++
-> >  arch/powerpc/kernel/pci_64.c      |   49 ------------
-> >  include/asm-powerpc/dma-mapping.h |  156 +++++++++----------------------------
-> >  include/asm-powerpc/machdep.h     |    5 +-
-> >  include/asm-powerpc/pci.h         |   14 ++--
-> >  8 files changed, 186 insertions(+), 182 deletions(-)
-> <snip>
+The freed bit is intended to be used as _PAGE_SPECIAL in order
+to support fast get_user_pages().
+
+Test booted with 64K pages on G5, power5 and power6
+
+ arch/powerpc/mm/hash_low_64.S       |   12 ++++++------
+ arch/powerpc/mm/hugetlbpage.c       |    5 ++---
+ include/asm-powerpc/pgtable-4k.h    |    2 ++
+ include/asm-powerpc/pgtable-64k.h   |   18 ++++++++++++++++--
+ include/asm-powerpc/pgtable-ppc64.h |    1 -
+ 5 files changed, 26 insertions(+), 12 deletions(-)
+
+--- linux-work.orig/arch/powerpc/mm/hash_low_64.S	2008-05-29 12:10:47.000000000 +1000
++++ linux-work/arch/powerpc/mm/hash_low_64.S	2008-05-29 12:56:16.000000000 +1000
+@@ -388,7 +388,7 @@ _GLOBAL(__hash_page_4K)
+ 	 */
+ 	rlwinm	r30,r4,32-9+7,31-7,31-7	/* _PAGE_RW -> _PAGE_DIRTY */
+ 	or	r30,r30,r31
+-	ori	r30,r30,_PAGE_BUSY | _PAGE_ACCESSED | _PAGE_HASHPTE
++	ori	r30,r30,_PAGE_BUSY | _PAGE_ACCESSED
+ 	oris	r30,r30,_PAGE_COMBO@h
+ 	/* Write the linux PTE atomically (setting busy) */
+ 	stdcx.	r30,0,r6
+@@ -468,7 +468,7 @@ END_FTR_SECTION(CPU_FTR_NOEXECUTE|CPU_FT
+ 	 * go to out-of-line code to try to modify the HPTE. We look for
+ 	 * the bit at (1 >> (index + 32))
+ 	 */
+-	andi.	r0,r31,_PAGE_HASHPTE
++	rldicl.	r0,r31,64-12,48
+ 	li	r26,0			/* Default hidx */
+ 	beq	htab_insert_pte
+ 
+@@ -726,7 +726,7 @@ END_FTR_SECTION_IFCLR(CPU_FTR_CI_LARGE_P
+ 	 */
+ 	rlwinm	r30,r4,32-9+7,31-7,31-7	/* _PAGE_RW -> _PAGE_DIRTY */
+ 	or	r30,r30,r31
+-	ori	r30,r30,_PAGE_BUSY | _PAGE_ACCESSED | _PAGE_HASHPTE
++	ori	r30,r30,_PAGE_BUSY | _PAGE_ACCESSED
+ 	/* Write the linux PTE atomically (setting busy) */
+ 	stdcx.	r30,0,r6
+ 	bne-	1b
+@@ -794,17 +794,17 @@ END_FTR_SECTION(CPU_FTR_NOEXECUTE|CPU_FT
+ 	/* Check if we may already be in the hashtable, in this case, we
+ 	 * go to out-of-line code to try to modify the HPTE
+ 	 */
+-	andi.	r0,r31,_PAGE_HASHPTE
++	rldicl.	r0,r31,64-12,48
+ 	bne	ht64_modify_pte
+ 
+ ht64_insert_pte:
+ 	/* Clear hpte bits in new pte (we also clear BUSY btw) and
+-	 * add _PAGE_HASHPTE
++	 * add _PAGE_HPTE_SUB0
+ 	 */
+ 	lis	r0,_PAGE_HPTEFLAGS@h
+ 	ori	r0,r0,_PAGE_HPTEFLAGS@l
+ 	andc	r30,r30,r0
+-	ori	r30,r30,_PAGE_HASHPTE
++	oris	r30,r30,_PAGE_HPTE_SUB0@h
+ 
+ 	/* Phyical address in r5 */
+ 	rldicl	r5,r31,64-PTE_RPN_SHIFT,PTE_RPN_SHIFT
+Index: linux-work/arch/powerpc/mm/hugetlbpage.c
+===================================================================
+--- linux-work.orig/arch/powerpc/mm/hugetlbpage.c	2008-05-29 12:16:25.000000000 +1000
++++ linux-work/arch/powerpc/mm/hugetlbpage.c	2008-05-29 12:18:51.000000000 +1000
+@@ -458,8 +458,7 @@ int hash_huge_page(struct mm_struct *mm,
+ 		old_pte = pte_val(*ptep);
+ 		if (old_pte & _PAGE_BUSY)
+ 			goto out;
+-		new_pte = old_pte | _PAGE_BUSY |
+-			_PAGE_ACCESSED | _PAGE_HASHPTE;
++		new_pte = old_pte | _PAGE_BUSY | _PAGE_ACCESSED;
+ 	} while(old_pte != __cmpxchg_u64((unsigned long *)ptep,
+ 					 old_pte, new_pte));
+ 
+@@ -499,7 +498,7 @@ repeat:
+ 			      HPTES_PER_GROUP) & ~0x7UL;
+ 
+ 		/* clear HPTE slot informations in new PTE */
+-		new_pte = (new_pte & ~_PAGE_HPTEFLAGS) | _PAGE_HASHPTE;
++		new_pte = (new_pte & ~_PAGE_HPTEFLAGS) | _PAGE_HUGE_HPTE;
+ 
+ 		/* Add in WIMG bits */
+ 		/* XXX We should store these in the pte */
+Index: linux-work/include/asm-powerpc/pgtable-4k.h
+===================================================================
+--- linux-work.orig/include/asm-powerpc/pgtable-4k.h	2008-05-29 12:07:09.000000000 +1000
++++ linux-work/include/asm-powerpc/pgtable-4k.h	2008-05-29 12:17:36.000000000 +1000
+@@ -41,6 +41,8 @@
+ #define PGDIR_MASK	(~(PGDIR_SIZE-1))
+ 
+ /* PTE bits */
++#define _PAGE_HASHPTE	0x0400 /* software: pte has an associated HPTE */
++#define _PAGE_HUGE_HPTE	_PAGE_HASHPTE
+ #define _PAGE_SECONDARY 0x8000 /* software: HPTE is in secondary group */
+ #define _PAGE_GROUP_IX  0x7000 /* software: HPTE index within group */
+ #define _PAGE_F_SECOND  _PAGE_SECONDARY
+Index: linux-work/include/asm-powerpc/pgtable-64k.h
+===================================================================
+--- linux-work.orig/include/asm-powerpc/pgtable-64k.h	2008-05-29 12:06:37.000000000 +1000
++++ linux-work/include/asm-powerpc/pgtable-64k.h	2008-05-29 12:17:45.000000000 +1000
+@@ -75,6 +75,21 @@ static inline struct subpage_prot_table 
+ #define _PAGE_COMBO	0x10000000 /* this is a combo 4k page */
+ #define _PAGE_4K_PFN	0x20000000 /* PFN is for a single 4k page */
+ 
++/* For 64K page, we don't have a separate _PAGE_HASHPTE bit. Instead,
++ * we set that to be the whole sub-bits mask. The C code will only
++ * test this, so a multi-bit mask will work. For combo pages, this
++ * is equivalent as effectively, the old _PAGE_HASHPTE was an OR of
++ * all the sub bits. For real 64k pages, we now have the assembly set
++ * _PAGE_HPTE_SUB0 in addition to setting the HIDX bits which overlap
++ * that mask. This is fine as long as the HIDX bits are never set on
++ * a PTE that isn't hashed, which is the case today.
++ *
++ * A little nit is for the huge page C code, which does the hashing
++ * in C, we need to provide which bit to use.
++ */
++#define _PAGE_HASHPTE	_PAGE_HPTE_SUB
++#define _PAGE_HUGE_HPTE	_PAGE_HPTE_SUB0
++
+ /* Note the full page bits must be in the same location as for normal
+  * 4k pages as the same asssembly will be used to insert 64K pages
+  * wether the kernel has CONFIG_PPC_64K_PAGES or not
+@@ -83,8 +98,7 @@ static inline struct subpage_prot_table 
+ #define _PAGE_F_GIX     0x00007000 /* full page: hidx bits */
+ 
+ /* PTE flags to conserve for HPTE identification */
+-#define _PAGE_HPTEFLAGS (_PAGE_BUSY | _PAGE_HASHPTE | _PAGE_HPTE_SUB |\
+-                         _PAGE_COMBO)
++#define _PAGE_HPTEFLAGS (_PAGE_BUSY | _PAGE_HASHPTE | _PAGE_COMBO)
+ 
+ /* Shift to put page number into pte.
+  *
+Index: linux-work/include/asm-powerpc/pgtable-ppc64.h
+===================================================================
+--- linux-work.orig/include/asm-powerpc/pgtable-ppc64.h	2008-05-29 12:06:55.000000000 +1000
++++ linux-work/include/asm-powerpc/pgtable-ppc64.h	2008-05-29 12:06:58.000000000 +1000
+@@ -91,7 +91,6 @@
+ #define _PAGE_DIRTY	0x0080 /* C: page changed */
+ #define _PAGE_ACCESSED	0x0100 /* R: page referenced */
+ #define _PAGE_RW	0x0200 /* software: user write access allowed */
+-#define _PAGE_HASHPTE	0x0400 /* software: pte has an associated HPTE */
+ #define _PAGE_BUSY	0x0800 /* software: PTE & hash are busy */
+ 
+ #define _PAGE_BASE	(_PAGE_PRESENT | _PAGE_ACCESSED | _PAGE_COHERENT)
