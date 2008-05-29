@@ -1,28 +1,28 @@
-Return-Path: <jes@trained-monkey.org>
-Received: from jaguar.mkp.net (jaguar.mkp.net [192.139.46.146])
-	by ozlabs.org (Postfix) with ESMTP id 89DB1DDDCA
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 May 2008 01:12:29 +1000 (EST)
-Sender: jes@jaguar.mkp.net
-To: Roland Dreier <rdreier@cisco.com>
-Subject: Re: MMIO and gcc re-ordering issue
-References: <1211852026.3286.36.camel@pasglop>
-	<20080526.184047.88207142.davem@davemloft.net>
-	<1211854540.3286.42.camel@pasglop>
-	<20080526.192812.184590464.davem@davemloft.net>
-	<20080526204233.75b71bb8@infradead.org>
-	<1211872130.3286.64.camel@pasglop> <adaprr721c6.fsf@cisco.com>
-	<1211922696.3286.82.camel@pasglop> <adaiqwzsa83.fsf@cisco.com>
-From: Jes Sorensen <jes@sgi.com>
-Date: 29 May 2008 10:47:18 -0400
-In-Reply-To: <adaiqwzsa83.fsf@cisco.com>
-Message-ID: <yq0iqwxrwuh.fsf@jaguar.mkp.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
-	David Miller <davem@davemloft.net>, linuxppc-dev@ozlabs.org,
-	scottwood@freescale.com, torvalds@linux-foundation.org,
-	tpiepho@freescale.com, alan@lxorguk.ukuu.org.uk,
-	Arjan van de Ven <arjan@infradead.org>
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 9FA1EDE15E
+	for <linuxppc-dev@ozlabs.org>; Fri, 30 May 2008 01:47:07 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m4TFl28F031815
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 May 2008 11:47:02 -0400
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m4TFksIh058458
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 May 2008 09:46:59 -0600
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m4TFksTb026904
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 May 2008 09:46:54 -0600
+Date: Thu, 29 May 2008 10:40:36 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: paulus@samba.org, linuxppc-dev@ozlabs.org
+Subject: Please pull 'next' branch of 4xx tree
+Message-ID: <20080529104036.43e1345d@zod.rchland.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,59 +32,60 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>>>> "Roland" == Roland Dreier <rdreier@cisco.com> writes:
+Hi Paul,
 
->> This is a different issue. We deal with it on powerpc by having
->> writel set a per-cpu flag and spin_unlock() test it, and do the
->> barrier if needed there.
+Please pull from:
 
-Roland> Cool... I assume you do this for mutex_unlock() etc?
+ master.kernel.org:/pub/scm/linux/kernel/git/jwboyer/powerpc-4xx.git next
 
-Roland> Is there any reason why ia64 can't do this too so we can kill
-Roland> mmiowb and save everyone a lot of hassle?  (mips, sh and frv
-Roland> have non-empty mmiowb() definitions too but I'd guess that
-Roland> these are all bugs based on misunderstandings of the mmiowb()
-Roland> semantics...)
+to pick up some of the initial changes for 2.6.27 in the 4xx tree.
+They include some PIKA Warp updates, a DCR infrastructure rework, and
+David's large dts conversion patch (which accounts for most of the
+large diffstat).
 
-Hi Roland,
+I'll have some more updates a bit later, but I'd like to get these into
+your next branch now as they've been sitting in mine for a while to get
+testing coverage.
 
-Thats not going to solve the problem on Altix. On Altix the issue is
-that there can be multiple paths through the NUMA fabric from cpuX to
-PCI bridge Y. 
+josh
 
-Consider this uber-cool<tm> ascii art - NR is my abbrevation for NUMA
-router:
+David Gibson (1):
+      [POWERPC] Convert remaining dts-v0 files to v1
 
-        -------         -------
-        |cpu X|         |cpu Y|
-        -------         -------
-         |   \____  ____/    |
-         |        \/         |
-         |    ____/\____     |
-         |   /          \    |
-         -----          ------
-         |NR 1|         |NR 2|
-         ------         ------
-              \         /
-               \       /
-                -------
-                | PCI |
-                -------
+Josh Boyer (2):
+      [POWERPC] 4xx: Fix PCI mem in rainier DTS
+      [POWERPC] 4xx: Fix compiler warning on DCR_NATIVE only builds
 
-The problem is that your two writel's, despite being both issued on
-cpu X, due to the spin lock, in your example, can end up with the
-first one going through NR 1 and the second one going through NR 2. If
-there's contention on NR 1, the write going via NR 2 may hit the PCI
-bridge prior to the one going via NR 1.
+Sean MacLennan (2):
+      [POWERPC] PIKA Warp: Update DTS to support Rev B boards
+      [POWERPC] PIKA Warp: Update platform code to support Rev B boards
 
-Of course, the bigger the system, the worse the problem....
+Stephen Neuendorffer (1):
+      [POWERPC] Refactor DCR code
 
-The only way to guarantee ordering in the above setup, is to either
-make writel() fully ordered or adding the mmiowb()'s inbetween the two
-writel's. On Altix you have to go and read from the PCI brige to
-ensure all writes to it have been flushed, which is also what mmiowb()
-is doing. If writel() was to guarantee this ordering, it would make
-every writel() call extremely expensive :-(
-
-Cheers,
-Jes
+ arch/powerpc/boot/cuboot-warp.c        |   47 +++++-
+ arch/powerpc/boot/dts/bamboo.dts       |  142 ++++++++--------
+ arch/powerpc/boot/dts/canyonlands.dts  |  222 ++++++++++++------------
+ arch/powerpc/boot/dts/ebony.dts        |  164 +++++++++---------
+ arch/powerpc/boot/dts/ep405.dts        |  100 ++++++------
+ arch/powerpc/boot/dts/glacier.dts      |  262 ++++++++++++++--------------
+ arch/powerpc/boot/dts/haleakala.dts    |  136 ++++++++--------
+ arch/powerpc/boot/dts/holly.dts        |  122 +++++++-------
+ arch/powerpc/boot/dts/katmai.dts       |  210 ++++++++++++-----------
+ arch/powerpc/boot/dts/kilauea.dts      |  182 ++++++++++----------
+ arch/powerpc/boot/dts/makalu.dts       |  182 ++++++++++----------
+ arch/powerpc/boot/dts/ps3.dts          |   16 +-
+ arch/powerpc/boot/dts/rainier.dts      |  163 +++++++++---------
+ arch/powerpc/boot/dts/sequoia.dts      |  172 ++++++++++---------
+ arch/powerpc/boot/dts/taishan.dts      |  212 ++++++++++++------------
+ arch/powerpc/boot/dts/walnut.dts       |  118 +++++++-------
+ arch/powerpc/boot/dts/warp.dts         |  145 +++++++++-------
+ arch/powerpc/boot/dts/yosemite.dts     |  146 ++++++++--------
+ arch/powerpc/platforms/44x/warp-nand.c |   49 ++++--
+ arch/powerpc/platforms/44x/warp.c      |  293 ++++++++++++++++++++++++++------
+ arch/powerpc/sysdev/dcr.c              |  156 +++++++++++++----
+ include/asm-powerpc/dcr-generic.h      |   49 ++++++
+ include/asm-powerpc/dcr-mmio.h         |   20 ++-
+ include/asm-powerpc/dcr-native.h       |   16 +-
+ include/asm-powerpc/dcr.h              |   39 ++++-
+ 25 files changed, 1928 insertions(+), 1435 deletions(-)
