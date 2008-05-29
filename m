@@ -1,20 +1,21 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH 4/6] Add ppc_function_entry() which gets the entry
-	point for a function
-From: Michael Ellerman <michael@ellerman.id.au>
-To: benh@kernel.crashing.org
-In-Reply-To: <1212043037.8888.48.camel@pasglop>
-References: <33bba4965d9907a8a93e9f92fd5c3874a6e21f90.1212042061.git.michael@ellerman.id.au>
-	<95ea86b673d9f1093abe4a54bc4ecc34a4ebcfac.1212042061.git.michael@ellerman.id.au>
-	<1212043037.8888.48.camel@pasglop>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-uUB5cvU52QWJVLkcFfpK"
-Date: Thu, 29 May 2008 16:57:46 +1000
-Message-Id: <1212044266.22344.9.camel@localhost>
-Mime-Version: 1.0
+Return-Path: <temerkhanov@yandex.ru>
+Received: from smtp7.yandex.ru (smtp7.yandex.ru [213.180.200.45])
+	by ozlabs.org (Postfix) with ESMTP id E80FFDE124
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 May 2008 17:10:04 +1000 (EST)
+Received: from ppp91-78-89-159.pppoe.mtu-net.ru ([91.78.89.159]:16218 "EHLO
+	[10.0.0.10]" smtp-auth: "temerkhanov" TLS-CIPHER: <none> TLS-PEER-CN1:
+	<none>) by mail.yandex.ru with ESMTP id S738636AbYE2HD5 (ORCPT
+	<rfc822;linuxppc-dev@ozlabs.org>); Thu, 29 May 2008 11:03:57 +0400
+Message-ID: <483E555C.9050703@yandex.ru>
+Date: Thu, 29 May 2008 11:03:56 +0400
+From: Sergey Temerkhanov <temerkhanov@yandex.ru>
+MIME-Version: 1.0
+To: vencent2006 <vencent2006@163.com>
+Subject: Re: May I ask some questions?
+References: <12692943.1528961211977480208.JavaMail.coremail@bj163app110.163.com>
+In-Reply-To: <12692943.1528961211977480208.JavaMail.coremail@bj163app110.163.com>
+Content-Type: text/plain; charset=x-gbk; format=flowed
 Cc: linuxppc-dev@ozlabs.org
-Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,55 +25,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+vencent2006 wrote:
+> I am Michael from China.A few days ago, I was supposed to debug 
+> executable.elf with xmd while some problems happened.It said like that:
+> xmd% dow executable.elf
+> Failed to download ELF file
+> ERROR(1053):UNABLE TO READ ELF FILE.THE ELF FILE
+> MAYBE CORRUPTED
+> :executable.elf
+You need to install updates for EDK. xmd 9.1 without updates is known to 
+have broken ELF loader
 
---=-uUB5cvU52QWJVLkcFfpK
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> I wanna ask u to point out what causes this problem.
+> There is another question about "xparameters.h" and
+> "xparameters_ml300.h". When I have generated BSP, there are two 
+> "xparameters.h" files in project which
+> have the same name while different size(eg: one is 22k ,the other is 
+> 4k). Which one is the proper?
+> And when I add "xparameters.h" and "xparameters_ml300.h" to the 
+> kernel, some compiling
+> error occurs.
+> eg:
+> arch/ppc/syslib/virtex_devices.c:116: error: 
+> 'XPAR_UARTNS550_0_CLOCK_FREQ_HZ' undeclared here (not in a function)
+> arch/ppc/syslib/virtex_devices.c:119: error: 
+> 'XPAR_UARTNS550_1_CLOCK_FREQ_HZ' undeclared here (not in a function)
+> I don't understand where to define them and whether i need them or not.
+> my eldk is:eldk/4.2/ppc-linux-x86
+> using Xilinx EDK/ISE 9.1
+> Linux 2.6.24
+These macros must be defined in xparameters_ml300.h. You need them as 
+they define base frequency for UARTNS550 and proper configuration of 
+baud rates depends on it
 
-On Thu, 2008-05-29 at 16:37 +1000, Benjamin Herrenschmidt wrote:
-> On Thu, 2008-05-29 at 16:20 +1000, Michael Ellerman wrote:
-> > Because function pointers point to different things on 32-bit vs
-> > 64-bit,
-> > add a macro that deals with dereferencing the OPD on 64-bit. The soon
-> > to
-> > be merged ftrace wants this, as well as other code I am working on.
-> >=20
-> > Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
->=20
-> Should we be smarter and also compare if the TOC pointer is the same
-> between the source and target and if not, warn loudly ?
-
-> Or we just don't care ?
-
-I think currently only the module loader worries about changing TOC
-pointers, but perhaps we should think about it in other places too. What
-do you do on 32-bit though?
-
-Still, I think that would be a new separate macro, so this stands on its
-own IMHO.
-
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-uUB5cvU52QWJVLkcFfpK
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBIPlPqdSjSd0sB4dIRAnpxAKCB8NDlRDuTzO13o2YhiPgz+y/RhACgvVwd
-0XEFH6EhEKmR5zss2PEdMcE=
-=7tc0
------END PGP SIGNATURE-----
-
---=-uUB5cvU52QWJVLkcFfpK--
+>
+> --
+>
+>
+> ------------------------------------------------------------------------
+> 眼睛干涩？润洁一下！清凉配方，多重营养，缓解眼疲劳 
+> <http://popme.163.com/link/004304_0515_8953.html>
+> ------------------------------------------------------------------------
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
