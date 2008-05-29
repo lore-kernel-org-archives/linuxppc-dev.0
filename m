@@ -1,34 +1,14 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id AB5FADDF44
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 May 2008 08:07:36 +1000 (EST)
-Subject: Re: MMIO and gcc re-ordering issue
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Trent Piepho <tpiepho@freescale.com>
-In-Reply-To: <Pine.LNX.4.64.0805291442420.18832@t2.domain.actdsltmp>
-References: <1211852026.3286.36.camel@pasglop>
-	<20080526.184047.88207142.davem@davemloft.net>
-	<1211854540.3286.42.camel@pasglop>
-	<20080526.192812.184590464.davem@davemloft.net>
-	<20080526204233.75b71bb8@infradead.org>
-	<1211872130.3286.64.camel@pasglop>
-	<adaprr721c6.fsf@cisco.com> <1211922696.3286.82.camel@pasglop>
-	<adaiqwzsa83.fsf@cisco.com>  <yq0iqwxrwuh.fsf@jaguar.mkp.net>
-	<1212097223.8888.55.camel@pasglop>
-	<Pine.LNX.4.64.0805291442420.18832@t2.domain.actdsltmp>
-Content-Type: text/plain
-Date: Fri, 30 May 2008 08:05:39 +1000
-Message-Id: <1212098739.8888.58.camel@pasglop>
-Mime-Version: 1.0
-Cc: linux-arch@vger.kernel.org, Roland Dreier <rdreier@cisco.com>,
-	Jes Sorensen <jes@sgi.com>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, scottwood@freescale.com,
-	torvalds@linux-foundation.org,
-	David Miller <davem@davemloft.net>, alan@lxorguk.ukuu.org.uk,
-	Arjan van de Ven <arjan@infradead.org>
-Reply-To: benh@kernel.crashing.org
+Return-Path: <ron_madrid@sbcglobal.net>
+Received: from web83508.mail.sp1.yahoo.com (web83508.mail.sp1.yahoo.com
+	[216.252.120.164]) by ozlabs.org (Postfix) with SMTP id 2C578DE082
+	for <linuxppc-dev@ozlabs.org>; Fri, 30 May 2008 08:21:44 +1000 (EST)
+Date: Thu, 29 May 2008 15:21:43 -0700 (PDT)
+From: Ron Madrid <ron_madrid@sbcglobal.net>
+Subject: JFFS2 problem, still
+To: linuxppc-dev@ozlabs.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Message-ID: <778673.50038.qm@web83508.mail.sp1.yahoo.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,18 +18,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2008-05-29 at 14:48 -0700, Trent Piepho wrote:
+Ok, so I feel as though now I have a little more
+insight to this problem.  Here's a brief rundown.  I
+am using u-boot to boot the latest linux kernel from a
+large page NAND device (trivial) with the rootfs also
+on the same NAND device.  In my dts the fs is defined
+as being located at 0x400000 (within the device) and
+is 0x1c00000 in size.  The image for the fs that I
+burn into the device is 0x240000 in size.
 
-> I wrote a JTAG over gpio driver for the powerpc MPC8572DS platform.  With the
-> non-raw io accessors, the JTAG clock can run at almost ~9.5 MHz.  Using raw
-> versions (which I had to write since powerpc doesn't have any), the clock
-> speed increases to about 28 MHz.  So it can make a very significant different.
+During the boot of linux, after the jffs2 rootfs is
+mounted it appears that linux attempts to put the
+magic number 0x1985xxxx into the beginning of each
+block following the end of the file system through the
+end of the device, as if to format the NAND flash for
+future use by the jffs2 fs.
 
-Yes, sync's can hurt a lot. This is why I initially tried to get more
-relaxed semantics.
+Am I correct so far?
 
-We could implement something like __ variants and do something that
-would still have eieio's but not sync's for example (ie. MMIOs are still
-ordered vs. each other but not vs. coherent memory).
+Here's the error that I'm seeing.  Instead of writing
+this data into the NAND blocks, it's being written
+into the spare region of the flash, designated for
+ECC, bad block marker, and so on.  This is causing a
+large problem as now my blocks are being marked as
+bad.
 
-Ben.
+So my second question is, where is the code that
+performs this "formatting" of the NAND device
+immediately after mounting of the rootfs?
+
+Ron Madrid
