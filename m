@@ -1,16 +1,28 @@
-Return-Path: <huubeikens@hotmail.com>
-Received: from bay0-omc2-s7.bay0.hotmail.com (bay0-omc2-s7.bay0.hotmail.com
-	[65.54.246.143]) by ozlabs.org (Postfix) with ESMTP id 74EBCDDF52
+Return-Path: <glppe-linuxppc-embedded-2@m.gmane.org>
+Received: from ciao.gmane.org (main.gmane.org [80.91.229.2])
+	by ozlabs.org (Postfix) with ESMTP id 7E8D6DDF0A
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 29 May 2008 21:03:17 +1000 (EST)
-Message-ID: <BAY122-W428F4FD4AED8DAED5968A1DABF0@phx.gbl>
-Content-Type: multipart/alternative;
-	boundary="_8a6f6790-5aee-4ecc-ae3d-a4920ab76f4a_"
-From: Huub Eikens <huubeikens@hotmail.com>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: USB Host Controller driver for the MPC8270 processor
-Date: Thu, 29 May 2008 11:03:16 +0000
-MIME-Version: 1.0
+	Thu, 29 May 2008 21:30:54 +1000 (EST)
+Received: from list by ciao.gmane.org with local (Exim 4.43)
+	id 1K1gLD-0003nX-PO
+	for linuxppc-embedded@ozlabs.org; Thu, 29 May 2008 11:30:43 +0000
+Received: from p5497e4c6.dip.t-dialin.net ([84.151.228.198])
+	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
+	id 1AlnuQ-0007hv-00
+	for <linuxppc-embedded@ozlabs.org>; Thu, 29 May 2008 11:30:43 +0000
+Received: from dzu by p5497e4c6.dip.t-dialin.net with local (Gmexim 0.1
+	(Debian)) id 1AlnuQ-0007hv-00
+	for <linuxppc-embedded@ozlabs.org>; Thu, 29 May 2008 11:30:43 +0000
+To: linuxppc-embedded@ozlabs.org
+From: Detlev Zundel <dzu@denx.de>
+Subject: Re: Cross toolchain for ppc405 (virtex-4)
+Date: Thu, 29 May 2008 13:29:32 +0200
+Message-ID: <m23ao1gxgj.fsf@ohwell.denx.de>
+References: <17515929.post@talk.nabble.com>
+	<20080528171751.D545CBD8071@mail116-sin.bigfish.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Sender: news <news@ger.gmane.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -21,70 +33,18 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---_8a6f6790-5aee-4ecc-ae3d-a4920ab76f4a_
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
 Hi,
-=20
-I am in need of a USB Host Controller device for the Freescale MPC8270 for =
-the 2.4 linux kernel (ELDK 3.1.1). On internet I found one, but this is onl=
-y for version 2.6:
-http://cpm2usb.sourceforge.net/
 
-I have a few options:
-1. backport this driver to 2.4.25 kernel. I would like to know if this is f=
-easible or not. I get the feeling that this will take a lot of time.
-2. upgrade my kernel to 2.6.x. This is not preferable for me since I depend=
- on sw modules writen by external partners. If I upgrade, I really really n=
-eed to be sure that this driver
-is stable and reliable.
-3. Use an external USB Host Controller. Can anyone advise me on which contr=
-oller to choose that runs stable and reliable on the 2.4.25 kernel (ELDK 3.=
-1.1)?
+> I'm not sure on what version of gcc and glibc it's using, but I have been using
+> ELDK 4.1 from denx.com. There are newer versions.
 
-Kind regards,
-=20
-Huub Eikens
+The more recent ELDK 4.2 supports 405s and its crosstoolchain uses
+binutils 2.17.50.0.12, gcc 4.2.2, glibc 2.6 and gdb 6.7.
 
-_________________________________________________________________
-De leukste online filmpjes vind je op MSN Video!
-http://video.msn.com/video.aspx?mkt=3Dnl-nl=
+Cheers
+  Detlev
 
---_8a6f6790-5aee-4ecc-ae3d-a4920ab76f4a_
-Content-Type: text/html; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
-<html>
-<head>
-<style>
-.hmmessage P
-{
-margin:0px;
-padding:0px
-}
-body.hmmessage
-{
-FONT-SIZE: 10pt;
-FONT-FAMILY:Tahoma
-}
-</style>
-</head>
-<body class=3D'hmmessage'><div style=3D"text-align: left;"><pre>Hi,<br> <br=
->I am in need of a USB Host Controller device for the Freescale MPC8270 for=
- the 2.4 linux kernel (ELDK 3.1.1). On internet I found one, but this is on=
-ly for version 2.6:<br><a href=3D"http://cpm2usb.sourceforge.net/" target=
-=3D"_blank">http://cpm2usb.sourceforge.net/</a><br><br>I have a few options=
-:<br>1. backport this driver to 2.4.25 kernel. I would like to know if this=
- is feasible or not. I get the feeling that this will take a lot of time.<b=
-r>2. upgrade my kernel to 2.6.x. This is not preferable for me since I depe=
-nd on sw modules writen by external partners. If I upgrade, I really really=
- need to be sure that this driver<br>is stable and reliable.<br>3. Use an e=
-xternal USB Host Controller. Can anyone advise me on which controller to ch=
-oose that runs stable and reliable on the 2.4.25 kernel (ELDK 3.1.1)?<br><b=
-r>Kind regards,<br> <br>Huub Eikens<br></pre></div><br /><hr />Chat met al =
-je vrienden. <a href=3D'https://www.invite2messenger.nl/Default.aspx' targe=
-t=3D'_new'>Voeg ze nu allemaal toe aan Messenger!</a></body>
-</html>=
-
---_8a6f6790-5aee-4ecc-ae3d-a4920ab76f4a_--
+--
+DENX Software Engineering GmbH,      MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich,  Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-40 Fax: (+49)-8142-66989-80 Email: dzu@denx.de
