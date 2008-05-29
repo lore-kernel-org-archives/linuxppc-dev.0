@@ -1,18 +1,32 @@
-Return-Path: <kim.phillips@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
+Return-Path: <mohan@in.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 121C8DE080
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 May 2008 05:13:05 +1000 (EST)
-Date: Thu, 29 May 2008 14:12:46 -0500
-From: Kim Phillips <kim.phillips@freescale.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 1/2] update crypto node definition and device tree instances
-Message-Id: <20080529141246.b9cea683.kim.phillips@freescale.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id A978EDE081
+	for <linuxppc-dev@ozlabs.org>; Fri, 30 May 2008 05:14:03 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e36.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m4TJDxdL009937
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 May 2008 15:13:59 -0400
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m4TJDxw4066906
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 May 2008 13:13:59 -0600
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m4TJDxtj025873
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 May 2008 13:13:59 -0600
+Date: Fri, 30 May 2008 00:43:55 +0530
+From: Mohan Kumar M <mohan@in.ibm.com>
+To: ppcdev <linuxppc-dev@ozlabs.org>
+Subject: [RFC PATCH 1/4] Extract list of relocation offsets
+Message-ID: <20080529191355.GA15762@in.ibm.com>
+References: <20080529190809.GA15388@in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080529190809.GA15388@in.ibm.com>
+Cc: paulus@samba.org
+Reply-To: mohan@in.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,778 +36,885 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-delete obsolete device-type property, delete model property
-(use compatible property instead), prepend "fsl," to Freescale
-specific properties. Add nodes to device trees that are missing them,
-and fix broken property values in other trees.
+Extract list of relocation offsets
 
-Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
+Extract list of offsets in the vmlinux file for which the relocation
+delta has to be patched. Currently only following type of relocation
+types are considered: R_PPC64_ADDR16_HI, R_PPC64_TOC and R_PPC64_ADDR64
+
+The offsets are sorted according to the relocation type and this
+information is appended to the normal vmlinux file by using the patch
+relocation_build.patch
+
+Signed-off-by: Mohan Kumar M <mohan@in.ibm.com>
 ---
- Documentation/powerpc/booting-without-of.txt |   51 +++++++++++++-------------
- arch/powerpc/boot/dts/mpc8272ads.dts         |   21 ++++-------
- arch/powerpc/boot/dts/mpc8313erdb.dts        |   15 +++-----
- arch/powerpc/boot/dts/mpc8315erdb.dts        |   15 ++++----
- arch/powerpc/boot/dts/mpc832x_mds.dts        |   15 +++-----
- arch/powerpc/boot/dts/mpc832x_rdb.dts        |   15 +++-----
- arch/powerpc/boot/dts/mpc8349emitx.dts       |   12 +++----
- arch/powerpc/boot/dts/mpc8349emitxgp.dts     |   12 +++----
- arch/powerpc/boot/dts/mpc834x_mds.dts        |   15 +++-----
- arch/powerpc/boot/dts/mpc836x_mds.dts        |   13 +++----
- arch/powerpc/boot/dts/mpc8377_mds.dts        |   13 +++----
- arch/powerpc/boot/dts/mpc8377_rdb.dts        |   14 +++----
- arch/powerpc/boot/dts/mpc8378_mds.dts        |   13 +++----
- arch/powerpc/boot/dts/mpc8378_rdb.dts        |   14 +++----
- arch/powerpc/boot/dts/mpc8379_mds.dts        |   13 +++----
- arch/powerpc/boot/dts/mpc8379_rdb.dts        |   14 +++----
- arch/powerpc/boot/dts/mpc8541cds.dts         |   11 ++++++
- arch/powerpc/boot/dts/mpc8544ds.dts          |   11 ++++++
- arch/powerpc/boot/dts/mpc8548cds.dts         |   11 ++++++
- arch/powerpc/boot/dts/mpc8555cds.dts         |   11 ++++++
- arch/powerpc/boot/dts/mpc8568mds.dts         |   14 +++----
- arch/powerpc/boot/dts/mpc8572ds.dts          |   12 ++++++
- arch/powerpc/boot/dts/sbc8349.dts            |   14 +++-----
- arch/powerpc/boot/dts/sbc8548.dts            |   11 ++++++
- arch/powerpc/boot/dts/tqm8541.dts            |   11 ++++++
- arch/powerpc/boot/dts/tqm8555.dts            |   11 ++++++
- 26 files changed, 213 insertions(+), 169 deletions(-)
-
-diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
-index c67d2f5..b52d104 100644
---- a/Documentation/powerpc/booting-without-of.txt
-+++ b/Documentation/powerpc/booting-without-of.txt
-@@ -1474,9 +1474,8 @@ platforms are moved over to use the flattened-device-tree model.
- 
-    Required properties:
- 
--    - device_type : Should be "crypto"
--    - model : Model of the device.  Should be "SEC1" or "SEC2"
--    - compatible : Should be "talitos"
-+    - compatible : Should contain entries for all compatible SEC versions,
-+      high to low, e.g., "fsl,sec2.1", "fsl,sec2.0"
-     - reg : Offset and length of the register set for the device
-     - interrupts : <a b> where a is the interrupt number and b is a
-       field that represents an encoding of the sense and level
-@@ -1485,27 +1484,29 @@ platforms are moved over to use the flattened-device-tree model.
-       controller you have.
-     - interrupt-parent : the phandle for the interrupt controller that
-       services interrupts for this device.
--    - num-channels : An integer representing the number of channels
-+    - fsl,num-channels : An integer representing the number of channels
-       available.
--    - channel-fifo-len : An integer representing the number of
-+    - fsl,channel-fifo-len : An integer representing the number of
-       descriptor pointers each channel fetch fifo can hold.
--    - exec-units-mask : The bitmask representing what execution units
-+    - fsl,exec-units-mask : The bitmask representing what execution units
-       (EUs) are available. It's a single 32-bit cell. EU information
-       should be encoded following the SEC's Descriptor Header Dword
-       EU_SEL0 field documentation, i.e. as follows:
- 
--        bit 0 = reserved - should be 0
--        bit 1 = set if SEC has the ARC4 EU (AFEU)
--        bit 2 = set if SEC has the DES/3DES EU (DEU)
--        bit 3 = set if SEC has the message digest EU (MDEU)
--        bit 4 = set if SEC has the random number generator EU (RNG)
--        bit 5 = set if SEC has the public key EU (PKEU)
--        bit 6 = set if SEC has the AES EU (AESU)
--        bit 7 = set if SEC has the Kasumi EU (KEU)
-+        bit 0  = reserved - should be 0
-+        bit 1  = set if SEC has the ARC4 EU (AFEU)
-+        bit 2  = set if SEC has the DES/3DES EU (DEU)
-+        bit 3  = set if SEC has the message digest EU (MDEU/MDEU-A)
-+        bit 4  = set if SEC has the random number generator EU (RNG)
-+        bit 5  = set if SEC has the public key EU (PKEU)
-+        bit 6  = set if SEC has the AES EU (AESU)
-+        bit 7  = set if SEC has the Kasumi EU (KEU)
-+        bit 8  = set if SEC has the CRC EU (CRCU)
-+        bit 11 = set if SEC has the message digest EU extended alg set (MDEU-B)
- 
--      bits 8 through 31 are reserved for future SEC EUs.
-+      remaining bits are reserved for future SEC EUs.
- 
--    - descriptor-types-mask : The bitmask representing what descriptors
-+    - fsl,descriptor-types-mask : The bitmask representing what descriptors
-       are available. It's a single 32-bit cell. Descriptor type
-       information should be encoded following the SEC's Descriptor
-       Header Dword DESC_TYPE field documentation, i.e. as follows:
-@@ -1529,16 +1530,14 @@ platforms are moved over to use the flattened-device-tree model.
- 
-        /* MPC8548E */
-        crypto@30000 {
--               device_type = "crypto";
--               model = "SEC2";
--               compatible = "talitos";
--               reg = <30000 10000>;
--               interrupts = <1d 3>;
--               interrupt-parent = <40000>;
--               num-channels = <4>;
--               channel-fifo-len = <18>;
--               exec-units-mask = <000000fe>;
--               descriptor-types-mask = <012b0ebf>;
-+               compatible = "fsl,sec2.1", "fsl,sec2.0";
-+               reg = <0x30000 0x10000>;
-+               interrupts = <29 2>;
-+               interrupt-parent = <&mpic>;
-+               fsl,num-channels = <4>;
-+               fsl,channel-fifo-len = <24>;
-+               fsl,exec-units-mask = <0xfe>;
-+               fsl,descriptor-types-mask = <0x12b0ebf>;
-        };
- 
-    h) Board Control and Status (BCSR)
-diff --git a/arch/powerpc/boot/dts/mpc8272ads.dts b/arch/powerpc/boot/dts/mpc8272ads.dts
-index 46e2da3..9a3881d 100644
---- a/arch/powerpc/boot/dts/mpc8272ads.dts
-+++ b/arch/powerpc/boot/dts/mpc8272ads.dts
-@@ -226,22 +226,15 @@
- 			compatible = "fsl,mpc8272-pic", "fsl,cpm2-pic";
- 		};
- 
--/* May need to remove if on a part without crypto engine */
- 		crypto@30000 {
--			device_type = "crypto";
--			model = "SEC2";
--			compatible = "fsl,mpc8272-talitos-sec2",
--			             "fsl,talitos-sec2",
--			             "fsl,talitos",
--			             "talitos";
--			reg = <0x30000 0x10000>;
--			interrupts = <11 8>;
-+			compatible = "fsl,sec1.0";
-+			reg = <0x40000 0x13000>;
-+			interrupts = <47 0x8>;
- 			interrupt-parent = <&PIC>;
--			num-channels = <4>;
--			channel-fifo-len = <24>;
--			exec-units-mask = <0x7e>;
--/* desc mask is for rev1.x, we need runtime fixup for >=2.x */
--			descriptor-types-mask = <0x1010ebf>;
-+			fsl,num-channels = <4>;
-+			fsl,channel-fifo-len = <24>;
-+			fsl,exec-units-mask = <0x7e>;
-+			fsl,descriptor-types-mask = <0x1010415>;
- 		};
- 	};
- 
-diff --git a/arch/powerpc/boot/dts/mpc8313erdb.dts b/arch/powerpc/boot/dts/mpc8313erdb.dts
-index e1f0dca..03edb86 100644
---- a/arch/powerpc/boot/dts/mpc8313erdb.dts
-+++ b/arch/powerpc/boot/dts/mpc8313erdb.dts
-@@ -219,17 +219,14 @@
- 		};
- 
- 		crypto@30000 {
--			device_type = "crypto";
--			model = "SEC2";
--			compatible = "talitos";
--			reg = <0x30000 0x7000>;
-+			compatible = "fsl,sec2.2", "fsl,sec2.1", "fsl,sec2.0";
-+			reg = <0x30000 0x10000>;
- 			interrupts = <11 0x8>;
- 			interrupt-parent = <&ipic>;
--			/* Rev. 2.2 */
--			num-channels = <1>;
--			channel-fifo-len = <24>;
--			exec-units-mask = <0x0000004c>;
--			descriptor-types-mask = <0x0122003f>;
-+			fsl,num-channels = <1>;
-+			fsl,channel-fifo-len = <24>;
-+			fsl,exec-units-mask = <0x4c>;
-+			fsl,descriptor-types-mask = <0x0122003f>;
- 		};
- 
- 		/* IPIC
-diff --git a/arch/powerpc/boot/dts/mpc8315erdb.dts b/arch/powerpc/boot/dts/mpc8315erdb.dts
-index d7a1ece..e433303 100644
---- a/arch/powerpc/boot/dts/mpc8315erdb.dts
-+++ b/arch/powerpc/boot/dts/mpc8315erdb.dts
-@@ -206,17 +206,16 @@
- 		};
- 
- 		crypto@30000 {
--			model = "SEC3";
--			device_type = "crypto";
--			compatible = "talitos";
-+			compatible = "fsl,sec3.3", "fsl,sec3.1", "fsl,sec3.0",
-+				     "fsl,sec2.4", "fsl,sec2.2", "fsl,sec2.1",
-+				     "fsl,sec2.0";
- 			reg = <0x30000 0x10000>;
- 			interrupts = <11 0x8>;
- 			interrupt-parent = <&ipic>;
--			/* Rev. 3.0 geometry */
--			num-channels = <4>;
--			channel-fifo-len = <24>;
--			exec-units-mask = <0x000001fe>;
--			descriptor-types-mask = <0x03ab0ebf>;
-+			fsl,num-channels = <4>;
-+			fsl,channel-fifo-len = <24>;
-+			fsl,exec-units-mask = <0x97c>;
-+			fsl,descriptor-types-mask = <0x3ab0abf>;
- 		};
- 
- 		sata@18000 {
-diff --git a/arch/powerpc/boot/dts/mpc832x_mds.dts b/arch/powerpc/boot/dts/mpc832x_mds.dts
-index 539e02f..5462845 100644
---- a/arch/powerpc/boot/dts/mpc832x_mds.dts
-+++ b/arch/powerpc/boot/dts/mpc832x_mds.dts
-@@ -115,17 +115,14 @@
- 		};
- 
- 		crypto@30000 {
--			device_type = "crypto";
--			model = "SEC2";
--			compatible = "talitos";
--			reg = <0x30000 0x7000>;
-+			compatible = "fsl,sec2.2", "fsl,sec2.1", "fsl,sec2.0";
-+			reg = <0x30000 0x10000>;
- 			interrupts = <11 0x8>;
- 			interrupt-parent = <&ipic>;
--			/* Rev. 2.2 */
--			num-channels = <1>;
--			channel-fifo-len = <24>;
--			exec-units-mask = <0x0000004c>;
--			descriptor-types-mask = <0x0122003f>;
-+			fsl,num-channels = <1>;
-+			fsl,channel-fifo-len = <24>;
-+			fsl,exec-units-mask = <0x4c>;
-+			fsl,descriptor-types-mask = <0x0122003f>;
- 		};
- 
- 		ipic: pic@700 {
-diff --git a/arch/powerpc/boot/dts/mpc832x_rdb.dts b/arch/powerpc/boot/dts/mpc832x_rdb.dts
-index 179c81c..7fb50ab 100644
---- a/arch/powerpc/boot/dts/mpc832x_rdb.dts
-+++ b/arch/powerpc/boot/dts/mpc832x_rdb.dts
-@@ -93,17 +93,14 @@
- 		};
- 
- 		crypto@30000 {
--			device_type = "crypto";
--			model = "SEC2";
--			compatible = "talitos";
--			reg = <0x30000 0x7000>;
-+			compatible = "fsl,sec2.2", "fsl,sec2.1", "fsl,sec2.0";
-+			reg = <0x30000 0x10000>;
- 			interrupts = <11 0x8>;
- 			interrupt-parent = <&pic>;
--			/* Rev. 2.2 */
--			num-channels = <1>;
--			channel-fifo-len = <24>;
--			exec-units-mask = <0x0000004c>;
--			descriptor-types-mask = <0x0122003f>;
-+			fsl,num-channels = <1>;
-+			fsl,channel-fifo-len = <24>;
-+			fsl,exec-units-mask = <0x4c>;
-+			fsl,descriptor-types-mask = <0x0122003f>;
- 		};
- 
- 		pic:pic@700 {
-diff --git a/arch/powerpc/boot/dts/mpc8349emitx.dts b/arch/powerpc/boot/dts/mpc8349emitx.dts
-index 9426676..f7a850c 100644
---- a/arch/powerpc/boot/dts/mpc8349emitx.dts
-+++ b/arch/powerpc/boot/dts/mpc8349emitx.dts
-@@ -178,16 +178,14 @@
- 		};
- 
- 		crypto@30000 {
--			device_type = "crypto";
--			model = "SEC2";
--			compatible = "talitos";
-+			compatible = "fsl,sec2.0";
- 			reg = <0x30000 0x10000>;
- 			interrupts = <11 0x8>;
- 			interrupt-parent = <&ipic>;
--			num-channels = <4>;
--			channel-fifo-len = <24>;
--			exec-units-mask = <0x0000007e>;
--			descriptor-types-mask = <0x01010ebf>;
-+			fsl,num-channels = <4>;
-+			fsl,channel-fifo-len = <24>;
-+			fsl,exec-units-mask = <0x7e>;
-+			fsl,descriptor-types-mask = <0x01010ebf>;
- 		};
- 
- 		ipic: pic@700 {
-diff --git a/arch/powerpc/boot/dts/mpc8349emitxgp.dts b/arch/powerpc/boot/dts/mpc8349emitxgp.dts
-index f81d735..b866b47 100644
---- a/arch/powerpc/boot/dts/mpc8349emitxgp.dts
-+++ b/arch/powerpc/boot/dts/mpc8349emitxgp.dts
-@@ -151,16 +151,14 @@
- 		};
- 
- 		crypto@30000 {
--			device_type = "crypto";
--			model = "SEC2";
--			compatible = "talitos";
-+			compatible = "fsl,sec2.0";
- 			reg = <0x30000 0x10000>;
- 			interrupts = <11 0x8>;
- 			interrupt-parent = <&ipic>;
--			num-channels = <4>;
--			channel-fifo-len = <24>;
--			exec-units-mask = <0x0000007e>;
--			descriptor-types-mask = <0x01010ebf>;
-+			fsl,num-channels = <4>;
-+			fsl,channel-fifo-len = <24>;
-+			fsl,exec-units-mask = <0x7e>;
-+			fsl,descriptor-types-mask = <0x01010ebf>;
- 		};
- 
- 		ipic: pic@700 {
-diff --git a/arch/powerpc/boot/dts/mpc834x_mds.dts b/arch/powerpc/boot/dts/mpc834x_mds.dts
-index 0199c5c..e0d0753 100644
---- a/arch/powerpc/boot/dts/mpc834x_mds.dts
-+++ b/arch/powerpc/boot/dts/mpc834x_mds.dts
-@@ -193,20 +193,15 @@
- 			interrupt-parent = <&ipic>;
- 		};
- 
--		/* May need to remove if on a part without crypto engine */
- 		crypto@30000 {
--			device_type = "crypto";
--			model = "SEC2";
--			compatible = "talitos";
-+			compatible = "fsl,sec2.0";
- 			reg = <0x30000 0x10000>;
- 			interrupts = <11 0x8>;
- 			interrupt-parent = <&ipic>;
--			num-channels = <4>;
--			channel-fifo-len = <24>;
--			exec-units-mask = <0x0000007e>;
--			/* desc mask is for rev2.0,
--			 * we need runtime fixup for >2.0 */
--			descriptor-types-mask = <0x01010ebf>;
-+			fsl,num-channels = <4>;
-+			fsl,channel-fifo-len = <24>;
-+			fsl,exec-units-mask = <0x7e>;
-+			fsl,descriptor-types-mask = <0x01010ebf>;
- 		};
- 
- 		/* IPIC
-diff --git a/arch/powerpc/boot/dts/mpc836x_mds.dts b/arch/powerpc/boot/dts/mpc836x_mds.dts
-index 8160ff2..69e6564 100644
---- a/arch/powerpc/boot/dts/mpc836x_mds.dts
-+++ b/arch/powerpc/boot/dts/mpc836x_mds.dts
-@@ -119,17 +119,14 @@
- 		};
- 
- 		crypto@30000 {
--			device_type = "crypto";
--			model = "SEC2";
--			compatible = "talitos";
-+			compatible = "fsl,sec2.0";
- 			reg = <0x30000 0x10000>;
- 			interrupts = <11 0x8>;
- 			interrupt-parent = <&ipic>;
--			num-channels = <4>;
--			channel-fifo-len = <24>;
--			exec-units-mask = <0x0000007e>;
--			/* desc mask is for rev1.x, we need runtime fixup for >=2.x */
--			descriptor-types-mask = <0x01010ebf>;
-+			fsl,num-channels = <4>;
-+			fsl,channel-fifo-len = <24>;
-+			fsl,exec-units-mask = <0x7e>;
-+			fsl,descriptor-types-mask = <0x01010ebf>;
- 		};
- 
- 		ipic: pic@700 {
-diff --git a/arch/powerpc/boot/dts/mpc8377_mds.dts b/arch/powerpc/boot/dts/mpc8377_mds.dts
-index fea5925..76149b7 100644
---- a/arch/powerpc/boot/dts/mpc8377_mds.dts
-+++ b/arch/powerpc/boot/dts/mpc8377_mds.dts
-@@ -234,16 +234,15 @@
- 		};
- 
- 		crypto@30000 {
--			model = "SEC3";
--			compatible = "talitos";
-+			compatible = "fsl,sec3.0", "fsl,sec2.4", "fsl,sec2.2",
-+				     "fsl,sec2.1", "fsl,sec2.0";
- 			reg = <0x30000 0x10000>;
- 			interrupts = <11 0x8>;
- 			interrupt-parent = <&ipic>;
--			/* Rev. 3.0 geometry */
--			num-channels = <4>;
--			channel-fifo-len = <24>;
--			exec-units-mask = <0x000001fe>;
--			descriptor-types-mask = <0x03ab0ebf>;
-+			fsl,num-channels = <4>;
-+			fsl,channel-fifo-len = <24>;
-+			fsl,exec-units-mask = <0x9fe>;
-+			fsl,descriptor-types-mask = <0x3ab0ebf>;
- 		};
- 
- 		sdhc@2e000 {
-diff --git a/arch/powerpc/boot/dts/mpc8377_rdb.dts b/arch/powerpc/boot/dts/mpc8377_rdb.dts
-index 5bc09ad..58d2472 100644
---- a/arch/powerpc/boot/dts/mpc8377_rdb.dts
-+++ b/arch/powerpc/boot/dts/mpc8377_rdb.dts
-@@ -219,17 +219,15 @@
- 		};
- 
- 		crypto@30000 {
--			model = "SEC3";
--			device_type = "crypto";
--			compatible = "talitos";
-+			compatible = "fsl,sec3.0", "fsl,sec2.4", "fsl,sec2.2",
-+				     "fsl,sec2.1", "fsl,sec2.0";
- 			reg = <0x30000 0x10000>;
- 			interrupts = <11 0x8>;
- 			interrupt-parent = <&ipic>;
--			/* Rev. 3.0 geometry */
--			num-channels = <4>;
--			channel-fifo-len = <24>;
--			exec-units-mask = <0x000001fe>;
--			descriptor-types-mask = <0x03ab0ebf>;
-+			fsl,num-channels = <4>;
-+			fsl,channel-fifo-len = <24>;
-+			fsl,exec-units-mask = <0x9fe>;
-+			fsl,descriptor-types-mask = <0x3ab0ebf>;
- 		};
- 
- 		sata@18000 {
-diff --git a/arch/powerpc/boot/dts/mpc8378_mds.dts b/arch/powerpc/boot/dts/mpc8378_mds.dts
-index 1d6ea08..07a69a6 100644
---- a/arch/powerpc/boot/dts/mpc8378_mds.dts
-+++ b/arch/powerpc/boot/dts/mpc8378_mds.dts
-@@ -234,16 +234,15 @@
- 		};
- 
- 		crypto@30000 {
--			model = "SEC3";
--			compatible = "talitos";
-+			compatible = "fsl,sec3.0", "fsl,sec2.4", "fsl,sec2.2",
-+				     "fsl,sec2.1", "fsl,sec2.0";
- 			reg = <0x30000 0x10000>;
- 			interrupts = <11 0x8>;
- 			interrupt-parent = <&ipic>;
--			/* Rev. 3.0 geometry */
--			num-channels = <4>;
--			channel-fifo-len = <24>;
--			exec-units-mask = <0x000001fe>;
--			descriptor-types-mask = <0x03ab0ebf>;
-+			fsl,num-channels = <4>;
-+			fsl,channel-fifo-len = <24>;
-+			fsl,exec-units-mask = <0x9fe>;
-+			fsl,descriptor-types-mask = <0x3ab0ebf>;
- 		};
- 
- 		sdhc@2e000 {
-diff --git a/arch/powerpc/boot/dts/mpc8378_rdb.dts b/arch/powerpc/boot/dts/mpc8378_rdb.dts
-index 711f9a3..6f845d3 100644
---- a/arch/powerpc/boot/dts/mpc8378_rdb.dts
-+++ b/arch/powerpc/boot/dts/mpc8378_rdb.dts
-@@ -219,17 +219,15 @@
- 		};
- 
- 		crypto@30000 {
--			model = "SEC3";
--			device_type = "crypto";
--			compatible = "talitos";
-+			compatible = "fsl,sec3.0", "fsl,sec2.4", "fsl,sec2.2",
-+				     "fsl,sec2.1", "fsl,sec2.0";
- 			reg = <0x30000 0x10000>;
- 			interrupts = <11 0x8>;
- 			interrupt-parent = <&ipic>;
--			/* Rev. 3.0 geometry */
--			num-channels = <4>;
--			channel-fifo-len = <24>;
--			exec-units-mask = <0x000001fe>;
--			descriptor-types-mask = <0x03ab0ebf>;
-+			fsl,num-channels = <4>;
-+			fsl,channel-fifo-len = <24>;
-+			fsl,exec-units-mask = <0x9fe>;
-+			fsl,descriptor-types-mask = <0x3ab0ebf>;
- 		};
- 
- 		/* IPIC
-diff --git a/arch/powerpc/boot/dts/mpc8379_mds.dts b/arch/powerpc/boot/dts/mpc8379_mds.dts
-index 6f78a9f..4d3bab0 100644
---- a/arch/powerpc/boot/dts/mpc8379_mds.dts
-+++ b/arch/powerpc/boot/dts/mpc8379_mds.dts
-@@ -234,16 +234,15 @@
- 		};
- 
- 		crypto@30000 {
--			model = "SEC3";
--			compatible = "talitos";
-+			compatible = "fsl,sec3.0", "fsl,sec2.4", "fsl,sec2.2",
-+				     "fsl,sec2.1", "fsl,sec2.0";
- 			reg = <0x30000 0x10000>;
- 			interrupts = <11 0x8>;
- 			interrupt-parent = <&ipic>;
--			/* Rev. 3.0 geometry */
--			num-channels = <4>;
--			channel-fifo-len = <24>;
--			exec-units-mask = <0x000001fe>;
--			descriptor-types-mask = <0x03ab0ebf>;
-+			fsl,num-channels = <4>;
-+			fsl,channel-fifo-len = <24>;
-+			fsl,exec-units-mask = <0x9fe>;
-+			fsl,descriptor-types-mask = <0x3ab0ebf>;
- 		};
- 
- 		sdhc@2e000 {
-diff --git a/arch/powerpc/boot/dts/mpc8379_rdb.dts b/arch/powerpc/boot/dts/mpc8379_rdb.dts
-index c11ceb7..71619c4 100644
---- a/arch/powerpc/boot/dts/mpc8379_rdb.dts
-+++ b/arch/powerpc/boot/dts/mpc8379_rdb.dts
-@@ -219,17 +219,15 @@
- 		};
- 
- 		crypto@30000 {
--			model = "SEC3";
--			device_type = "crypto";
--			compatible = "talitos";
-+			compatible = "fsl,sec3.0", "fsl,sec2.4", "fsl,sec2.2",
-+				     "fsl,sec2.1", "fsl,sec2.0";
- 			reg = <0x30000 0x10000>;
- 			interrupts = <11 0x8>;
- 			interrupt-parent = <&ipic>;
--			/* Rev. 3.0 geometry */
--			num-channels = <4>;
--			channel-fifo-len = <24>;
--			exec-units-mask = <0x000001fe>;
--			descriptor-types-mask = <0x03ab0ebf>;
-+			fsl,num-channels = <4>;
-+			fsl,channel-fifo-len = <24>;
-+			fsl,exec-units-mask = <0x9fe>;
-+			fsl,descriptor-types-mask = <0x3ab0ebf>;
- 		};
- 
- 		sata@18000 {
-diff --git a/arch/powerpc/boot/dts/mpc8541cds.dts b/arch/powerpc/boot/dts/mpc8541cds.dts
-index 663c7c5..14e9927 100644
---- a/arch/powerpc/boot/dts/mpc8541cds.dts
-+++ b/arch/powerpc/boot/dts/mpc8541cds.dts
-@@ -147,6 +147,17 @@
- 			interrupt-parent = <&mpic>;
- 		};
- 
-+		crypto@30000 {
-+			compatible = "fsl,sec2.0";
-+			reg = <0x30000 0x10000>;
-+			interrupts = <45 2>;
-+			interrupt-parent = <&mpic>;
-+			fsl,num-channels = <4>;
-+			fsl,channel-fifo-len = <24>;
-+			fsl,exec-units-mask = <0x7e>;
-+			fsl,descriptor-types-mask = <0x01010ebf>;
-+		};
+Index: linux-2.6.26-rc3/arch/powerpc/relocs.c
+===================================================================
+--- /dev/null
++++ linux-2.6.26-rc3/arch/powerpc/relocs.c
+@@ -0,0 +1,865 @@
++#include <stdio.h>
++#include <stdarg.h>
++#include <stdlib.h>
++#include <stdint.h>
++#include <string.h>
++#include <errno.h>
++#include <unistd.h>
++#include <elf.h>
++#include <byteswap.h>
++#define USE_BSD
++#include <endian.h>
 +
- 		mpic: pic@40000 {
- 			clock-frequency = <0>;
- 			interrupt-controller;
-diff --git a/arch/powerpc/boot/dts/mpc8544ds.dts b/arch/powerpc/boot/dts/mpc8544ds.dts
-index 1cfd970..f7a2a2e 100644
---- a/arch/powerpc/boot/dts/mpc8544ds.dts
-+++ b/arch/powerpc/boot/dts/mpc8544ds.dts
-@@ -209,6 +209,17 @@
- 			fsl,has-rstcr;
- 		};
- 
-+		crypto@30000 {
-+			compatible = "fsl,sec2.1", "fsl,sec2.0";
-+			reg = <0x30000 0x10000>;
-+			interrupts = <45 2>;
-+			interrupt-parent = <&mpic>;
-+			fsl,num-channels = <4>;
-+			fsl,channel-fifo-len = <24>;
-+			fsl,exec-units-mask = <0xfe>;
-+			fsl,descriptor-types-mask = <0x12b0ebf>;
-+		};
++#define MAX_SHDRS 100
++static Elf64_Ehdr ehdr;
++static Elf64_Shdr shdr[MAX_SHDRS];
++static Elf64_Sym  *symtab[MAX_SHDRS];
++static Elf64_Rel  *reltab[MAX_SHDRS];
++static Elf64_Rela  *reltaba[MAX_SHDRS];
++static char *strtab[MAX_SHDRS];
++static unsigned long reloc_count, reloc_idx;
 +
- 		mpic: pic@40000 {
- 			clock-frequency = <0>;
- 			interrupt-controller;
-diff --git a/arch/powerpc/boot/dts/mpc8548cds.dts b/arch/powerpc/boot/dts/mpc8548cds.dts
-index fa298a8..8410588 100644
---- a/arch/powerpc/boot/dts/mpc8548cds.dts
-+++ b/arch/powerpc/boot/dts/mpc8548cds.dts
-@@ -207,6 +207,17 @@
- 			fsl,has-rstcr;
- 		};
- 
-+		crypto@30000 {
-+			compatible = "fsl,sec2.1", "fsl,sec2.0";
-+			reg = <0x30000 0x10000>;
-+			interrupts = <45 2>;
-+			interrupt-parent = <&mpic>;
-+			fsl,num-channels = <4>;
-+			fsl,channel-fifo-len = <24>;
-+			fsl,exec-units-mask = <0xfe>;
-+			fsl,descriptor-types-mask = <0x12b0ebf>;
-+		};
++struct reloc_info {
++	unsigned int rel_type;
++	unsigned long long offset;
++};
 +
- 		mpic: pic@40000 {
- 			clock-frequency = <0>;
- 			interrupt-controller;
-diff --git a/arch/powerpc/boot/dts/mpc8555cds.dts b/arch/powerpc/boot/dts/mpc8555cds.dts
-index b025c56..39e6730 100644
---- a/arch/powerpc/boot/dts/mpc8555cds.dts
-+++ b/arch/powerpc/boot/dts/mpc8555cds.dts
-@@ -147,6 +147,17 @@
- 			interrupt-parent = <&mpic>;
- 		};
- 
-+		crypto@30000 {
-+			compatible = "fsl,sec2.0";
-+			reg = <0x30000 0x10000>;
-+			interrupts = <45 2>;
-+			interrupt-parent = <&mpic>;
-+			fsl,num-channels = <4>;
-+			fsl,channel-fifo-len = <24>;
-+			fsl,exec-units-mask = <0x7e>;
-+			fsl,descriptor-types-mask = <0x01010ebf>;
-+		};
++static struct reloc_info *relocs;
 +
- 		mpic: pic@40000 {
- 			clock-frequency = <0>;
- 			interrupt-controller;
-diff --git a/arch/powerpc/boot/dts/mpc8568mds.dts b/arch/powerpc/boot/dts/mpc8568mds.dts
-index a025a8e..7e4e5c5 100644
---- a/arch/powerpc/boot/dts/mpc8568mds.dts
-+++ b/arch/powerpc/boot/dts/mpc8568mds.dts
-@@ -189,16 +189,14 @@
- 		};
- 
- 		crypto@30000 {
--			device_type = "crypto";
--			model = "SEC2";
--			compatible = "talitos";
--			reg = <0x30000 0xf000>;
-+			compatible = "fsl,sec2.1", "fsl,sec2.0";
-+			reg = <0x30000 0x10000>;
- 			interrupts = <45 2>;
- 			interrupt-parent = <&mpic>;
--			num-channels = <4>;
--			channel-fifo-len = <24>;
--			exec-units-mask = <0xfe>;
--			descriptor-types-mask = <0x12b0ebf>;
-+			fsl,num-channels = <4>;
-+			fsl,channel-fifo-len = <24>;
-+			fsl,exec-units-mask = <0xfe>;
-+			fsl,descriptor-types-mask = <0x12b0ebf>;
- 		};
- 
- 		mpic: pic@40000 {
-diff --git a/arch/powerpc/boot/dts/mpc8572ds.dts b/arch/powerpc/boot/dts/mpc8572ds.dts
-index 174d51a..5320215 100644
---- a/arch/powerpc/boot/dts/mpc8572ds.dts
-+++ b/arch/powerpc/boot/dts/mpc8572ds.dts
-@@ -237,6 +237,18 @@
- 			interrupt-parent = <&mpic>;
- 		};
- 
-+		crypto@30000 {
-+			compatible = "fsl,sec3.0", "fsl,sec2.4", "fsl,sec2.2",
-+				     "fsl,sec2.1", "fsl,sec2.0";
-+			reg = <0x30000 0x10000>;
-+			interrupts = <45 2 58 2>;
-+			interrupt-parent = <&mpic>;
-+			fsl,num-channels = <4>;
-+			fsl,channel-fifo-len = <24>;
-+			fsl,exec-units-mask = <0x9fe>;
-+			fsl,descriptor-types-mask = <0x3ab0ebf>;
-+		};
++/*
++ * Following symbols have been audited. There values are constant and do
++ * not change if bzImage is loaded at a different physical address than
++ * the address for which it has been compiled. Don't warn user about
++ * absolute relocations present w.r.t these symbols.
++ */
++static const char* safe_abs_relocs[] = {
++		"__kernel_vsyscall",
++		"__kernel_rt_sigreturn",
++		"__kernel_sigreturn",
++		"SYSENTER_RETURN",
++};
 +
- 		mpic: pic@40000 {
- 			clock-frequency = <0>;
- 			interrupt-controller;
-diff --git a/arch/powerpc/boot/dts/sbc8349.dts b/arch/powerpc/boot/dts/sbc8349.dts
-index 3839d4b..6013ed8 100644
---- a/arch/powerpc/boot/dts/sbc8349.dts
-+++ b/arch/powerpc/boot/dts/sbc8349.dts
-@@ -186,19 +186,15 @@
- 			interrupt-parent = <&ipic>;
- 		};
- 
--		/* May need to remove if on a part without crypto engine */
- 		crypto@30000 {
--			model = "SEC2";
--			compatible = "talitos";
-+			compatible = "fsl,sec2.0";
- 			reg = <0x30000 0x10000>;
- 			interrupts = <11 0x8>;
- 			interrupt-parent = <&ipic>;
--			num-channels = <4>;
--			channel-fifo-len = <24>;
--			exec-units-mask = <0x0000007e>;
--			/* desc mask is for rev2.0,
--			 * we need runtime fixup for >2.0 */
--			descriptor-types-mask = <0x01010ebf>;
-+			fsl,num-channels = <4>;
-+			fsl,channel-fifo-len = <24>;
-+			fsl,exec-units-mask = <0x7e>;
-+			fsl,descriptor-types-mask = <0x01010ebf>;
- 		};
- 
- 		/* IPIC
-diff --git a/arch/powerpc/boot/dts/sbc8548.dts b/arch/powerpc/boot/dts/sbc8548.dts
-index 22d9671..f358bac 100644
---- a/arch/powerpc/boot/dts/sbc8548.dts
-+++ b/arch/powerpc/boot/dts/sbc8548.dts
-@@ -262,6 +262,17 @@
- 			fsl,has-rstcr;
- 		};
- 
-+		crypto@30000 {
-+			compatible = "fsl,sec2.1", "fsl,sec2.0";
-+			reg = <0x30000 0x10000>;
-+			interrupts = <45 2>;
-+			interrupt-parent = <&mpic>;
-+			fsl,num-channels = <4>;
-+			fsl,channel-fifo-len = <24>;
-+			fsl,exec-units-mask = <0xfe>;
-+			fsl,descriptor-types-mask = <0x12b0ebf>;
-+		};
++static int is_safe_abs_reloc(const char* sym_name)
++{
++	int i, array_size;
 +
- 		mpic: pic@40000 {
- 			interrupt-controller;
- 			#address-cells = <0>;
-diff --git a/arch/powerpc/boot/dts/tqm8541.dts b/arch/powerpc/boot/dts/tqm8541.dts
-index 9e01093..ea3ea92 100644
---- a/arch/powerpc/boot/dts/tqm8541.dts
-+++ b/arch/powerpc/boot/dts/tqm8541.dts
-@@ -158,6 +158,17 @@
- 			interrupt-parent = <&mpic>;
- 		};
- 
-+		crypto@30000 {
-+			compatible = "fsl,sec2.0";
-+			reg = <0x30000 0x10000>;
-+			interrupts = <45 2>;
-+			interrupt-parent = <&mpic>;
-+			fsl,num-channels = <4>;
-+			fsl,channel-fifo-len = <24>;
-+			fsl,exec-units-mask = <0x7e>;
-+			fsl,descriptor-types-mask = <0x01010ebf>;
-+		};
++	array_size = sizeof(safe_abs_relocs)/sizeof(char*);
 +
- 		mpic: pic@40000 {
- 			interrupt-controller;
- 			#address-cells = <0>;
-diff --git a/arch/powerpc/boot/dts/tqm8555.dts b/arch/powerpc/boot/dts/tqm8555.dts
-index a20eb06..e464684 100644
---- a/arch/powerpc/boot/dts/tqm8555.dts
-+++ b/arch/powerpc/boot/dts/tqm8555.dts
-@@ -158,6 +158,17 @@
- 			interrupt-parent = <&mpic>;
- 		};
- 
-+		crypto@30000 {
-+			compatible = "fsl,sec2.0";
-+			reg = <0x30000 0x10000>;
-+			interrupts = <45 2>;
-+			interrupt-parent = <&mpic>;
-+			fsl,num-channels = <4>;
-+			fsl,channel-fifo-len = <24>;
-+			fsl,exec-units-mask = <0x7e>;
-+			fsl,descriptor-types-mask = <0x01010ebf>;
-+		};
++	for(i = 0; i < array_size; i++) {
++		if (!strcmp(sym_name, safe_abs_relocs[i]))
++			/* Match found */
++			return 1;
++	}
++	if (strncmp(sym_name, "__crc_", 6) == 0)
++		return 1;
++	return 0;
++}
 +
- 		mpic: pic@40000 {
- 			interrupt-controller;
- 			#address-cells = <0>;
--- 
-1.5.5.1.125.gc697a
++static void die(char *fmt, ...)
++{
++	va_list ap;
++	va_start(ap, fmt);
++	vfprintf(stderr, fmt, ap);
++	va_end(ap);
++	exit(1);
++}
++
++static const char *sym_type(unsigned type)
++{
++	static const char *type_name[] = {
++#define SYM_TYPE(X) [X] = #X
++		SYM_TYPE(STT_NOTYPE),
++		SYM_TYPE(STT_OBJECT),
++		SYM_TYPE(STT_FUNC),
++		SYM_TYPE(STT_SECTION),
++		SYM_TYPE(STT_FILE),
++		SYM_TYPE(STT_COMMON),
++		SYM_TYPE(STT_TLS),
++#undef SYM_TYPE
++	};
++	const char *s_type = "unknown sym type name";
++	if (type < sizeof(type_name)/sizeof(type_name[0])) {
++		s_type = type_name[type];
++	}
++	return s_type;
++}
++
++static const char *sym_bind(unsigned bind)
++{
++	static const char *bind_name[] = {
++#define SYM_BIND(X) [X] = #X
++		SYM_BIND(STB_LOCAL),
++		SYM_BIND(STB_GLOBAL),
++		SYM_BIND(STB_WEAK),
++#undef SYM_BIND
++	};
++	const char *s_bind = "unknown sym bind name";
++	if (bind < sizeof(bind_name)/sizeof(bind_name[0])) {
++		s_bind = bind_name[bind];
++	}
++	return s_bind;
++}
++
++static const char *sym_visibility(unsigned visibility)
++{
++	static const char *visibility_name[] = {
++#define SYM_VISIBILITY(X) [X] = #X
++		SYM_VISIBILITY(STV_DEFAULT),
++		SYM_VISIBILITY(STV_INTERNAL),
++		SYM_VISIBILITY(STV_HIDDEN),
++		SYM_VISIBILITY(STV_PROTECTED),
++#undef SYM_VISIBILITY
++	};
++	const char *name = "unknown sym visibility name";
++	if (visibility < sizeof(visibility_name)/sizeof(visibility_name[0])) {
++		name = visibility_name[visibility];
++	}
++	return name;
++}
++
++static const char *rel_type(unsigned type)
++{
++	static const char *type_name[] = {
++#define REL_TYPE(X) [X] = #X
++		REL_TYPE(R_PPC64_NONE),
++		REL_TYPE(R_PPC64_ADDR32),
++		REL_TYPE(R_PPC64_ADDR24),
++		REL_TYPE(R_PPC64_ADDR16),
++		REL_TYPE(R_PPC64_ADDR16_LO),
++		REL_TYPE(R_PPC64_ADDR16_HI),
++		REL_TYPE(R_PPC64_ADDR16_HA),
++		REL_TYPE(R_PPC64_ADDR14	),
++		REL_TYPE(R_PPC64_ADDR14_BRTAKEN),
++		REL_TYPE(R_PPC64_ADDR14_BRNTAKEN),
++		REL_TYPE(R_PPC64_REL24),
++		REL_TYPE(R_PPC64_REL14),
++		REL_TYPE(R_PPC64_REL14_BRTAKEN),
++		REL_TYPE(R_PPC64_REL14_BRNTAKEN),
++		REL_TYPE(R_PPC64_GOT16),
++		REL_TYPE(R_PPC64_GOT16_LO),
++		REL_TYPE(R_PPC64_GOT16_HI),
++		REL_TYPE(R_PPC64_GOT16_HA),
++		REL_TYPE(R_PPC64_COPY),
++		REL_TYPE(R_PPC64_GLOB_DAT),
++		REL_TYPE(R_PPC64_JMP_SLOT),
++		REL_TYPE(R_PPC64_RELATIVE),
++		REL_TYPE(R_PPC64_UADDR32),
++		REL_TYPE(R_PPC64_UADDR16),
++		REL_TYPE(R_PPC64_REL32),
++		REL_TYPE(R_PPC64_PLT32),
++		REL_TYPE(R_PPC64_PLTREL32),
++		REL_TYPE(R_PPC64_PLT16_LO),
++		REL_TYPE(R_PPC64_PLT16_HI),
++		REL_TYPE(R_PPC64_PLT16_HA),
++		REL_TYPE(R_PPC64_SECTOFF),
++		REL_TYPE(R_PPC64_SECTOFF_LO),
++		REL_TYPE(R_PPC64_SECTOFF_HI),
++		REL_TYPE(R_PPC64_SECTOFF_HA),
++		REL_TYPE(R_PPC64_ADDR30),
++		REL_TYPE(R_PPC64_ADDR64),
++		REL_TYPE(R_PPC64_ADDR16_HIGHER),
++		REL_TYPE(R_PPC64_ADDR16_HIGHERA),
++		REL_TYPE(R_PPC64_ADDR16_HIGHEST),
++		REL_TYPE(R_PPC64_ADDR16_HIGHESTA),
++		REL_TYPE(R_PPC64_UADDR64),
++		REL_TYPE(R_PPC64_REL64),
++		REL_TYPE(R_PPC64_PLT64),
++		REL_TYPE(R_PPC64_PLTREL64),
++		REL_TYPE(R_PPC64_TOC16),
++		REL_TYPE(R_PPC64_TOC16_LO),
++		REL_TYPE(R_PPC64_TOC16_HI),
++		REL_TYPE(R_PPC64_TOC16_HA),
++		REL_TYPE(R_PPC64_TOC),
++		REL_TYPE(R_PPC64_PLTGOT16),
++		REL_TYPE(R_PPC64_PLTGOT16_LO),
++		REL_TYPE(R_PPC64_PLTGOT16_HI),
++		REL_TYPE(R_PPC64_PLTGOT16_HA),
++		REL_TYPE(R_PPC64_ADDR16_DS),
++		REL_TYPE(R_PPC64_ADDR16_LO_DS),
++		REL_TYPE(R_PPC64_GOT16_DS),
++		REL_TYPE(R_PPC64_GOT16_LO_DS),
++		REL_TYPE(R_PPC64_PLT16_LO_DS),
++		REL_TYPE(R_PPC64_SECTOFF_DS),
++		REL_TYPE(R_PPC64_SECTOFF_LO_DS),
++		REL_TYPE(R_PPC64_TOC16_DS),
++		REL_TYPE(R_PPC64_TOC16_LO_DS),
++		REL_TYPE(R_PPC64_PLTGOT16_DS),
++		REL_TYPE(R_PPC64_PLTGOT16_LO_DS),
++		REL_TYPE(R_PPC64_TLS),
++		REL_TYPE(R_PPC64_DTPMOD64),
++		REL_TYPE(R_PPC64_TPREL16),
++		REL_TYPE(R_PPC64_TPREL16_LO),
++		REL_TYPE(R_PPC64_TPREL16_HI),
++		REL_TYPE(R_PPC64_TPREL16_HA),
++		REL_TYPE(R_PPC64_TPREL64),
++		REL_TYPE(R_PPC64_DTPREL16),
++		REL_TYPE(R_PPC64_DTPREL16_LO),
++		REL_TYPE(R_PPC64_DTPREL16_HI),
++		REL_TYPE(R_PPC64_DTPREL16_HA),
++		REL_TYPE(R_PPC64_DTPREL64),
++		REL_TYPE(R_PPC64_GOT_TLSGD16),
++		REL_TYPE(R_PPC64_GOT_TLSGD16_LO),
++		REL_TYPE(R_PPC64_GOT_TLSGD16_HI),
++		REL_TYPE(R_PPC64_GOT_TLSGD16_HA),
++		REL_TYPE(R_PPC64_GOT_TLSLD16),
++		REL_TYPE(R_PPC64_GOT_TLSLD16_LO),
++		REL_TYPE(R_PPC64_GOT_TLSLD16_HI),
++		REL_TYPE(R_PPC64_GOT_TLSLD16_HA),
++		REL_TYPE(R_PPC64_GOT_TPREL16_DS),
++		REL_TYPE(R_PPC64_GOT_TPREL16_LO_DS),
++		REL_TYPE(R_PPC64_GOT_TPREL16_HI),
++		REL_TYPE(R_PPC64_GOT_TPREL16_HA),
++		REL_TYPE(R_PPC64_GOT_DTPREL16_DS),
++		REL_TYPE(R_PPC64_GOT_DTPREL16_LO_DS),
++		REL_TYPE(R_PPC64_GOT_DTPREL16_HI),
++		REL_TYPE(R_PPC64_GOT_DTPREL16_HA),
++		REL_TYPE(R_PPC64_TPREL16_DS),
++		REL_TYPE(R_PPC64_TPREL16_LO_DS),
++		REL_TYPE(R_PPC64_TPREL16_HIGHER),
++		REL_TYPE(R_PPC64_TPREL16_HIGHERA),
++		REL_TYPE(R_PPC64_TPREL16_HIGHEST),
++		REL_TYPE(R_PPC64_TPREL16_HIGHESTA),
++		REL_TYPE(R_PPC64_DTPREL16_DS),
++		REL_TYPE(R_PPC64_DTPREL16_LO_DS),
++		REL_TYPE(R_PPC64_DTPREL16_HIGHER),
++		REL_TYPE(R_PPC64_DTPREL16_HIGHERA),
++		REL_TYPE(R_PPC64_DTPREL16_HIGHEST),
++		REL_TYPE(R_PPC64_DTPREL16_HIGHESTA),
++#undef REL_TYPE
++	};
++	const char *name = "unknown type rel type name";
++	if (type < sizeof(type_name)/sizeof(type_name[0])) {
++		name = type_name[type];
++	}
++	return name;
++}
++
++static const char *sec_name(unsigned shndx)
++{
++	const char *sec_strtab;
++	const char *name;
++	sec_strtab = strtab[ehdr.e_shstrndx];
++	name = "<noname>";
++	if (shndx < ehdr.e_shnum) {
++		name = sec_strtab + shdr[shndx].sh_name;
++	}
++	else if (shndx == SHN_ABS) {
++		name = "ABSOLUTE";
++	}
++	else if (shndx == SHN_COMMON) {
++		name = "COMMON";
++	}
++	return name;
++}
++
++static const char *sym_name(const char *sym_strtab, Elf64_Sym *sym)
++{
++	const char *name;
++	name = "<noname>";
++	if (sym->st_name) {
++		name = sym_strtab + sym->st_name;
++	}
++	else {
++		name = sec_name(shdr[sym->st_shndx].sh_name);
++	}
++	return name;
++}
++
++
++
++#if BYTE_ORDER == BIG_ENDIAN
++#define be16_to_cpu(val) (val)
++#define be32_to_cpu(val) (val)
++#define be64_to_cpu(val) (val)
++#endif
++#if BYTE_ORDER == LITTLE_ENDIAN
++#define be16_to_cpu(val) bswap_16(val)
++#define be32_to_cpu(val) bswap_32(val)
++#define be64_to_cpu(val) bswap_64(val)
++#endif
++
++static uint16_t elf16_to_cpu(uint16_t val)
++{
++	return be16_to_cpu(val);
++}
++
++static uint32_t elf32_to_cpu(uint32_t val)
++{
++	return be32_to_cpu(val);
++}
++
++static uint64_t elf64_to_cpu(uint64_t val)
++{
++	return be64_to_cpu(val);
++}
++
++static void read_ehdr(FILE *fp)
++{
++	if (fread(&ehdr, sizeof(ehdr), 1, fp) != 1) {
++		die("Cannot read ELF header: %s\n",
++			strerror(errno));
++	}
++	if (memcmp(ehdr.e_ident, ELFMAG, 4) != 0) {
++		die("No ELF magic\n");
++	}
++	if (ehdr.e_ident[EI_CLASS] != ELFCLASS64) {
++		die("Not a 64 bit executable\n");
++	}
++	if (ehdr.e_ident[EI_DATA] != ELFDATA2MSB) {
++		die("Not a MSB ELF executable\n");
++	}
++	if (ehdr.e_ident[EI_VERSION] != EV_CURRENT) {
++		die("Unknown ELF version\n");
++	}
++	/* Convert the fields to native endian */
++	ehdr.e_type      = elf16_to_cpu(ehdr.e_type);
++	ehdr.e_machine   = elf16_to_cpu(ehdr.e_machine);
++	ehdr.e_version   = elf32_to_cpu(ehdr.e_version);
++	ehdr.e_entry     = elf64_to_cpu(ehdr.e_entry);
++	ehdr.e_phoff     = elf64_to_cpu(ehdr.e_phoff);
++	ehdr.e_shoff     = elf64_to_cpu(ehdr.e_shoff);
++	ehdr.e_flags     = elf32_to_cpu(ehdr.e_flags);
++	ehdr.e_ehsize    = elf16_to_cpu(ehdr.e_ehsize);
++	ehdr.e_phentsize = elf16_to_cpu(ehdr.e_phentsize);
++	ehdr.e_phnum     = elf16_to_cpu(ehdr.e_phnum);
++	ehdr.e_shentsize = elf16_to_cpu(ehdr.e_shentsize);
++	ehdr.e_shnum     = elf16_to_cpu(ehdr.e_shnum);
++	ehdr.e_shstrndx  = elf16_to_cpu(ehdr.e_shstrndx);
++
++	if ((ehdr.e_type != ET_EXEC) && (ehdr.e_type != ET_DYN)) {
++		die("Unsupported ELF header type\n");
++	}
++	if (ehdr.e_machine != EM_PPC64) {
++		die("Not for PPC64\n");
++	}
++	if (ehdr.e_version != EV_CURRENT) {
++		die("Unknown ELF version\n");
++	}
++	if (ehdr.e_ehsize != sizeof(Elf64_Ehdr)) {
++		die("Bad Elf header size\n");
++	}
++	if (ehdr.e_phentsize != sizeof(Elf64_Phdr)) {
++		die("Bad program header entry\n");
++	}
++	if (ehdr.e_shentsize != sizeof(Elf64_Shdr)) {
++		die("Bad section header entry\n");
++	}
++	if (ehdr.e_shstrndx >= ehdr.e_shnum) {
++		die("String table index out of bounds\n");
++	}
++}
++
++static void read_shdrs(FILE *fp)
++{
++	int i;
++	if (ehdr.e_shnum > MAX_SHDRS) {
++		die("%d section headers supported: %d\n",
++			ehdr.e_shnum, MAX_SHDRS);
++	}
++	if (fseek(fp, ehdr.e_shoff, SEEK_SET) < 0) {
++		die("Seek to %d failed: %s\n",
++			ehdr.e_shoff, strerror(errno));
++	}
++	if (fread(&shdr, sizeof(shdr[0]), ehdr.e_shnum, fp) != ehdr.e_shnum) {
++		die("Cannot read ELF section headers: %s\n",
++			strerror(errno));
++	}
++	for(i = 0; i < ehdr.e_shnum; i++) {
++		shdr[i].sh_name      = elf32_to_cpu(shdr[i].sh_name);
++		shdr[i].sh_type      = elf32_to_cpu(shdr[i].sh_type);
++		shdr[i].sh_flags     = elf64_to_cpu(shdr[i].sh_flags);
++		shdr[i].sh_addr      = elf64_to_cpu(shdr[i].sh_addr);
++		shdr[i].sh_offset    = elf64_to_cpu(shdr[i].sh_offset);
++		shdr[i].sh_size      = elf64_to_cpu(shdr[i].sh_size);
++		shdr[i].sh_link      = elf32_to_cpu(shdr[i].sh_link);
++		shdr[i].sh_info      = elf32_to_cpu(shdr[i].sh_info);
++		shdr[i].sh_addralign = elf64_to_cpu(shdr[i].sh_addralign);
++		shdr[i].sh_entsize   = elf64_to_cpu(shdr[i].sh_entsize);
++	}
++
++}
++
++static void read_strtabs(FILE *fp)
++{
++	int i;
++	for(i = 0; i < ehdr.e_shnum; i++) {
++		if (shdr[i].sh_type != SHT_STRTAB) {
++			continue;
++		}
++		strtab[i] = malloc(shdr[i].sh_size);
++		if (!strtab[i]) {
++			die("malloc of %d bytes for strtab failed\n",
++				shdr[i].sh_size);
++		}
++		if (fseek(fp, shdr[i].sh_offset, SEEK_SET) < 0) {
++			die("Seek to %d failed: %s\n",
++				shdr[i].sh_offset, strerror(errno));
++		}
++		if (fread(strtab[i], 1, shdr[i].sh_size, fp) != shdr[i].sh_size) {
++			die("Cannot read symbol table: %s\n",
++				strerror(errno));
++		}
++	}
++}
++
++static void read_symtabs(FILE *fp)
++{
++	int i,j;
++	for(i = 0; i < ehdr.e_shnum; i++) {
++		if (shdr[i].sh_type != SHT_SYMTAB) {
++			continue;
++		}
++		symtab[i] = malloc(shdr[i].sh_size);
++		if (!symtab[i]) {
++			die("malloc of %d bytes for symtab failed\n",
++				shdr[i].sh_size);
++		}
++		if (fseek(fp, shdr[i].sh_offset, SEEK_SET) < 0) {
++			die("Seek to %d failed: %s\n",
++				shdr[i].sh_offset, strerror(errno));
++		}
++		if (fread(symtab[i], 1, shdr[i].sh_size, fp) != shdr[i].sh_size) {
++			die("Cannot read symbol table: %s\n",
++				strerror(errno));
++		}
++		for(j = 0; j < shdr[i].sh_size/sizeof(symtab[i][0]); j++) {
++			symtab[i][j].st_name  = elf32_to_cpu(symtab[i][j].st_name);
++			symtab[i][j].st_value = elf64_to_cpu(symtab[i][j].st_value);
++			symtab[i][j].st_size  = elf64_to_cpu(symtab[i][j].st_size);
++			symtab[i][j].st_shndx = elf16_to_cpu(symtab[i][j].st_shndx);
++		}
++	}
++}
++
++
++static void read_relocs(FILE *fp)
++{
++	int i,j;
++	void *relp;
++
++	for(i = 0; i < ehdr.e_shnum; i++) {
++		if (shdr[i].sh_type != SHT_REL && shdr[i].sh_type != SHT_RELA)
++			continue;
++
++		if (shdr[i].sh_type == SHT_REL) {
++			reltab[i] = malloc(shdr[i].sh_size);
++			if (!reltab[i]) {
++				die("malloc of %d bytes for relocs failed\n",
++					shdr[i].sh_size);
++			}
++			relp = reltab[i];
++		} else {
++			reltaba[i] = malloc(shdr[i].sh_size);
++			if (!reltaba[i]) {
++				die("malloc of %d bytes for relocs failed\n",
++					shdr[i].sh_size);
++			}
++			relp = reltaba[i];
++		}
++
++		if (fseek(fp, shdr[i].sh_offset, SEEK_SET) < 0) {
++			die("Seek to %d failed: %s\n",
++				shdr[i].sh_offset, strerror(errno));
++		}
++		if (fread(relp, 1, shdr[i].sh_size, fp) != shdr[i].sh_size) {
++			die("Cannot read symbol table: %s\n",
++				strerror(errno));
++		}
++
++		if (shdr[i].sh_type == SHT_REL)
++			for(j = 0; j < shdr[i].sh_size/sizeof(reltab[0][0]); j++) {
++				reltab[i][j].r_offset = elf64_to_cpu(reltab[i][j].r_offset);
++				reltab[i][j].r_info   = elf64_to_cpu(reltab[i][j].r_info);
++			}
++		else
++			for(j = 0; j < shdr[i].sh_size/sizeof(reltaba[0][0]); j++) {
++				reltaba[i][j].r_offset = elf64_to_cpu(reltaba[i][j].r_offset);
++				reltaba[i][j].r_info   = elf64_to_cpu(reltaba[i][j].r_info);
++				reltaba[i][j].r_addend   = elf64_to_cpu(reltaba[i][j].r_addend);
++			}
++	}
++}
++
++
++static void print_absolute_symbols(void)
++{
++	int i;
++	printf("Absolute symbols\n");
++	printf(" Num:  Value            Size  Type       Bind        Visibility  Name\n");
++	for(i = 0; i < ehdr.e_shnum; i++) {
++		char *sym_strtab;
++		Elf64_Sym *sh_symtab;
++		int j;
++		if (shdr[i].sh_type != SHT_SYMTAB) {
++			continue;
++		}
++		sh_symtab = symtab[i];
++		sym_strtab = strtab[shdr[i].sh_link];
++		for(j = 0; j < shdr[i].sh_size/sizeof(symtab[0][0]); j++) {
++			Elf64_Sym *sym;
++			const char *name;
++			sym = &symtab[i][j];
++			name = sym_name(sym_strtab, sym);
++			if (sym->st_shndx != SHN_ABS) {
++				continue;
++			}
++			printf("type:[%s]\n",
++				sym_type(ELF64_ST_TYPE(sym->st_info)));
++			printf("%5d %016llx %5d type:%s bind:%10s %12s %s %s\n", \
++				j, sym->st_value, sym->st_size, \
++				sym_type(ELF64_ST_TYPE(sym->st_info)), \
++				sym_bind(ELF64_ST_BIND(sym->st_info)), \
++				sym_visibility(ELF64_ST_VISIBILITY(sym->st_other)), \
++				name);
++		}
++	}
++	printf("\n");
++}
++
++static void print_absolute_relocs(void)
++{
++	int i, printed = 0;
++	int nr, sh_type;
++
++	for(i = 0; i < ehdr.e_shnum; i++) {
++		char *sym_strtab;
++		Elf64_Sym *sh_symtab;
++		unsigned sec_applies, sec_symtab;
++		int j;
++		if (shdr[i].sh_type != SHT_REL && shdr[i].sh_type != SHT_RELA) {
++			continue;
++		}
++		sec_symtab  = shdr[i].sh_link;
++		sec_applies = shdr[i].sh_info;
++		if (!(shdr[sec_applies].sh_flags & SHF_ALLOC)) {
++			continue;
++		}
++		if (shdr[i].sh_type == SHT_REL) {
++			sh_type = SHT_REL;
++			nr = shdr[i].sh_size/sizeof(reltab[0][0]);
++		} else {
++			sh_type = SHT_RELA;
++			nr = shdr[i].sh_size/sizeof(reltaba[0][0]);
++		}
++
++		sh_symtab = symtab[sec_symtab];
++		sym_strtab = strtab[shdr[sec_symtab].sh_link];
++
++		for(j = 0; j < nr; j++) {
++			Elf64_Rel *rel;
++			Elf64_Rela *rela;
++			Elf64_Sym *sym;
++			const char *name;
++
++			if (sh_type == SHT_REL) {
++				rel = &reltab[i][j];
++				sym = &sh_symtab[ELF64_R_SYM(rel->r_info)];
++			} else {
++				rela = &reltaba[i][j];
++				sym = &sh_symtab[ELF64_R_SYM(rela->r_info)];
++			}
++
++			name = sym_name(sym_strtab, sym);
++			if (sym->st_shndx != SHN_ABS) {
++				continue;
++			}
++
++			/* Absolute symbols are not relocated if vmlinux is
++			 * loaded at a non-compiled address. Display a warning
++			 * to user at compile time about the absolute
++			 * relocations present.
++			 *
++			 * User need to audit the code to make sure
++			 * some symbols which should have been section
++			 * relative have not become absolute because of some
++			 * linker optimization or wrong programming usage.
++			 *
++			 * Before warning check if this absolute symbol
++			 * relocation is harmless.
++			 */
++			if (is_safe_abs_reloc(name))
++				continue;
++
++			if (!printed) {
++				printf("WARNING: Absolute relocations"
++					" present\n");
++				printf("Offset           Info             Type           Sym.Value        "
++					"Sym.Name\n");
++				printed = 1;
++			}
++
++			if (sh_type == SHT_REL)
++				printf("%016llx %016llx %10s %016llx  %s\n",
++					rel->r_offset,
++					rel->r_info,
++					rel_type(ELF64_R_TYPE(rel->r_info)),
++					sym->st_value,
++					name);
++			else
++				printf("%016llx %016llx %10s %016llx  %s\n",
++					rela->r_offset,
++					rela->r_info,
++					rel_type(ELF64_R_TYPE(rela->r_info)),
++					sym->st_value,
++					name);
++		}
++	}
++
++	if (printed)
++		printf("\n");
++}
++
++static void walk_relocs(void (*visit)(void *relp, Elf64_Sym *sym, int sh_type))
++{
++	int i;
++	/* Walk through the relocations */
++	for(i = 0; i < ehdr.e_shnum; i++) {
++		char *sym_strtab;
++		Elf64_Sym *sh_symtab;
++		unsigned sec_applies, sec_symtab;
++		int j, nr_entries, sh_type;
++		if (shdr[i].sh_type != SHT_REL && shdr[i].sh_type != SHT_RELA) {
++			continue;
++		}
++		sec_symtab  = shdr[i].sh_link;
++		sec_applies = shdr[i].sh_info;
++		if (!(shdr[sec_applies].sh_flags & SHF_ALLOC)) {
++			continue;
++		}
++		sh_symtab = symtab[sec_symtab];
++		sym_strtab = strtab[shdr[sec_symtab].sh_link];
++		if (shdr[i].sh_type == SHT_REL) {
++			sh_type = SHT_REL;
++			nr_entries = shdr[i].sh_size/sizeof(reltab[0][0]);
++		} else {
++			sh_type = SHT_RELA;
++			nr_entries = shdr[i].sh_size/sizeof(reltaba[0][0]);
++		}
++
++		for(j = 0; j < nr_entries; j++) {
++			Elf64_Rel *rel;
++			Elf64_Rela *rela;
++			Elf64_Sym *sym;
++			void *relp;
++			unsigned r_type;
++
++			if (sh_type == SHT_REL) {
++				rel = &reltab[i][j];
++				sym = &sh_symtab[ELF64_R_SYM(rel->r_info)];
++				r_type = ELF64_R_TYPE(rel->r_info);
++				relp = rel;
++			} else {
++				rela = &reltaba[i][j];
++				sym = &sh_symtab[ELF64_R_SYM(rela->r_info)];
++				r_type = ELF64_R_TYPE(rela->r_info);
++				relp = rela;
++			}
++			/* Don't visit relocations to absolute symbols */
++			if (sym->st_shndx == SHN_ABS) {
++				continue;
++			}
++			/* PC relative relocations don't need to be adjusted */
++			switch (r_type) {
++				case R_PPC64_ADDR32:
++				case R_PPC64_ADDR16:
++				case R_PPC64_ADDR16_HI:
++				case R_PPC64_ADDR24:
++				case R_PPC64_ADDR64:
++				case R_PPC64_TOC:
++					/* Visit relocations that need to be adjusted */
++					visit(relp, sym, sh_type);
++					break;
++				case R_PPC64_ADDR16_LO:
++				case R_PPC64_REL24:
++				case R_PPC64_REL64:
++				case R_PPC64_TOC16:
++				case R_PPC64_ADDR16_LO_DS:
++				case R_PPC64_ADDR16_HIGHEST:
++				case R_PPC64_ADDR16_HIGHER:
++				case R_PPC64_GOT16_DS:
++				case R_PPC64_TOC16_DS:
++				case R_PPC64_REL14:
++				default:
++					break;
++			}
++		}
++	}
++}
++
++static void count_reloc(void *relp, Elf64_Sym *sym, int sh_type)
++{
++	reloc_count += 1;
++}
++
++static void collect_reloc(void *relp, Elf64_Sym *sym, int sh_type)
++{
++	Elf64_Rel *rel;
++	Elf64_Rela *rela;
++
++	/* Remember the address that needs to be adjusted. */
++	if (sh_type == SHT_REL) {
++		rel = (Elf64_Rel *)relp;
++		relocs[reloc_idx].offset = rel->r_offset;
++		relocs[reloc_idx++].rel_type = ELF64_R_TYPE(rel->r_info);
++	} else {
++		rela = (Elf64_Rela *)relp;
++		relocs[reloc_idx].offset = rela->r_offset;
++		relocs[reloc_idx++].rel_type = ELF64_R_TYPE(rela->r_info);
++	}
++}
++
++static int cmp_relocs(const void *va, const void *vb)
++{
++	const struct reloc_info *a, *b;
++	a = va; b = vb;
++	return (a->rel_type == b->rel_type)? 0 : (a->rel_type > b->rel_type)? 1 : -1;
++}
++
++static void emit_relocs(int as_text)
++{
++	int i;
++	int prev_r_type;
++	/* Count how many relocations I have and allocate space for them. */
++	reloc_count = 0;
++	walk_relocs(count_reloc);
++	relocs = malloc(reloc_count * sizeof(relocs[0]));
++	if (!relocs) {
++		die("malloc of %d entries for relocs failed\n",
++			reloc_count);
++	}
++	/* Collect up the relocations */
++	reloc_idx = 0;
++	walk_relocs(collect_reloc);
++
++	/* Order the relocations for more efficient processing */
++	qsort(relocs, reloc_count, sizeof(relocs[0]), cmp_relocs);
++
++	/* Print the relocations */
++	if (as_text) {
++		/* Print the relocations in a form suitable that
++		 * gas will like.
++		 */
++		printf(".section \".data.reloc\",\"a\"\n");
++		printf(".balign 4\n");
++
++		printf("\t .long 0x%016llx\n", relocs[0].offset);
++		prev_r_type = relocs[0].rel_type;
++
++		for(i = 1; i < reloc_count; i++) {
++			if (prev_r_type != relocs[i].rel_type && prev_r_type == R_PPC64_ADDR16_HI) {
++				printf("\t .long 0xffffffffffffffff\n");
++				prev_r_type = relocs[i].rel_type;
++			}
++			printf("\t .long 0x%016llx\n", relocs[i].offset);
++		}
++		printf("\n");
++	}
++	else {
++		unsigned char buf[8];
++		buf[0] = buf[1] = buf[2] = buf[3] = 0;
++		buf[4] = buf[5] = buf[6] = buf[7] = 0;
++
++		/* Print a stop */
++		printf("%c%c%c%c", buf[0], buf[1], buf[2], buf[3]);
++		printf("%c%c%c%c", buf[4], buf[5], buf[6], buf[7]);
++
++		buf[7] = (relocs[0].offset >>  0) & 0xff;
++		buf[6] = (relocs[0].offset >>  8) & 0xff;
++		buf[5] = (relocs[0].offset >> 16) & 0xff;
++		buf[4] = (relocs[0].offset >> 24) & 0xff;
++		buf[3] = (relocs[0].offset >> 32) & 0xff;
++		buf[2] = (relocs[0].offset >> 40) & 0xff;
++		buf[1] = (relocs[0].offset >> 48) & 0xff;
++		buf[0] = (relocs[0].offset >> 56) & 0xff;
++		printf("%c%c%c%c", buf[0], buf[1], buf[2], buf[3]);
++		printf("%c%c%c%c", buf[4], buf[5], buf[6], buf[7]);
++
++		prev_r_type = relocs[0].rel_type;
++
++		/* Now print each relocation */
++		for(i = 1; i < reloc_count; i++) {
++			if (prev_r_type != relocs[i].rel_type && prev_r_type == R_PPC64_ADDR16_HI) {
++				printf("%c%c%c%c", 0xff, 0xff, 0xff, 0xff);
++				printf("%c%c%c%c", 0xff, 0xff, 0xff, 0xff);
++				prev_r_type = relocs[i].rel_type;
++			}
++			buf[7] = (relocs[i].offset >>  0) & 0xff;
++			buf[6] = (relocs[i].offset >>  8) & 0xff;
++			buf[5] = (relocs[i].offset >> 16) & 0xff;
++			buf[4] = (relocs[i].offset >> 24) & 0xff;
++			buf[3] = (relocs[i].offset >> 32) & 0xff;
++			buf[2] = (relocs[i].offset >> 40) & 0xff;
++			buf[1] = (relocs[i].offset >> 48) & 0xff;
++			buf[0] = (relocs[i].offset >> 56) & 0xff;
++			printf("%c%c%c%c", buf[0], buf[1], buf[2], buf[3]);
++			printf("%c%c%c%c", buf[4], buf[5], buf[6], buf[7]);
++		}
++		buf[0] = buf[1] = buf[2] = buf[3] = 0;
++		buf[4] = buf[5] = buf[6] = buf[7] = 0;
++	}
++}
++
++static void usage(void)
++{
++	die("relocs [--abs-syms |--abs-relocs | --text] vmlinux\n");
++}
++
++int main(int argc, char **argv)
++{
++	int show_absolute_syms, show_absolute_relocs;
++	int as_text;
++	const char *fname;
++	FILE *fp;
++	int i;
++
++	show_absolute_syms = 0;
++	show_absolute_relocs = 0;
++	as_text = 0;
++	fname = NULL;
++	for(i = 1; i < argc; i++) {
++		char *arg = argv[i];
++		if (*arg == '-') {
++			if (strcmp(argv[1], "--abs-syms") == 0) {
++				show_absolute_syms = 1;
++				continue;
++			}
++
++			if (strcmp(argv[1], "--abs-relocs") == 0) {
++				show_absolute_relocs = 1;
++				continue;
++			}
++			else if (strcmp(argv[1], "--text") == 0) {
++				as_text = 1;
++				continue;
++			}
++		}
++		else if (!fname) {
++			fname = arg;
++			continue;
++		}
++		usage();
++	}
++	if (!fname) {
++		usage();
++	}
++	fp = fopen(fname, "r");
++	if (!fp) {
++		die("Cannot open %s: %s\n",
++			fname, strerror(errno));
++	}
++	read_ehdr(fp);
++	read_shdrs(fp);
++	read_strtabs(fp);
++	read_symtabs(fp);
++	read_relocs(fp);
++	if (show_absolute_syms) {
++		print_absolute_symbols();
++		return 0;
++	}
++	if (show_absolute_relocs) {
++		print_absolute_relocs();
++		return 0;
++	}
++	emit_relocs(as_text);
++	return 0;
++}
