@@ -1,19 +1,19 @@
-Return-Path: <laurentp@cse-semaphore.com>
-Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
-	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id 55645DDF2F
+Return-Path: <adams.ppc@gmail.com>
+Received: from hu-out-0506.google.com (hu-out-0506.google.com [72.14.214.238])
+	by ozlabs.org (Postfix) with ESMTP id 71529DDF45
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 29 May 2008 22:14:31 +1000 (EST)
-From: Laurent Pinchart <laurentp@cse-semaphore.com>
+	Fri, 30 May 2008 07:24:03 +1000 (EST)
+Received: by hu-out-0506.google.com with SMTP id 34so1248726hue.9
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 29 May 2008 14:24:01 -0700 (PDT)
+Message-ID: <4a21eaea0805291423t7e44eae9xbf4c78818d794742@mail.gmail.com>
+Date: Thu, 29 May 2008 15:23:59 -0600
+From: "bhanu jampala" <adams.ppc@gmail.com>
 To: linuxppc-embedded@ozlabs.org
-Subject: Re: USB Host Controller driver for the MPC8270 processor
-Date: Thu, 29 May 2008 14:14:23 +0200
-References: <BAY122-W428F4FD4AED8DAED5968A1DABF0@phx.gbl>
-In-Reply-To: <BAY122-W428F4FD4AED8DAED5968A1DABF0@phx.gbl>
+Subject: platform drivers
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart28220191.fMzIght3ui";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Message-Id: <200805291414.26798.laurentp@cse-semaphore.com>
-Cc: Huub Eikens <huubeikens@hotmail.com>
+Content-Type: multipart/alternative;
+	boundary="----=_Part_3275_17986220.1212096239324"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -24,75 +24,46 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---nextPart28220191.fMzIght3ui
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+------=_Part_3275_17986220.1212096239324
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
-Hi Huub,
+Hi Guys,
 
-On Thursday 29 May 2008 13:03, Huub Eikens wrote:
-> Hi,
-> =20
-> I am in need of a USB Host Controller device for the Freescale MPC8270 for
-> the 2.4 linux kernel (ELDK 3.1.1). On internet I found one, but this is o=
-nly
-> for version 2.6: =20
-> http://cpm2usb.sourceforge.net/
->=20
-> I have a few options:
-> 1. backport this driver to 2.4.25 kernel. I would like to know if this is
-> feasible or not. I get the feeling that this will take a lot of time.=20
-> 2. upgrade my kernel to 2.6.x. This is not preferable for me since I depe=
-nd
-> on sw modules writen by external partners. If I upgrade, I really really
-> need to be sure that this driver is stable and reliable.
-> 3. Use an external USB Host Controller. Can anyone advise me on which
-> controller to choose that runs stable and reliable on the 2.4.25 kernel
-> (ELDK 3.1.1)?
+I am running the basic PPC Linux on my PPC8270 BRD.
+I have to write couple of driver on top of it finish the complete Linux
+port.
 
-I'd go for option 3. The CPM2 USB host controller is definitely not reliabl=
-e.=20
-It relies on software to prepare SOF tokens, and doesn't do much in hardwar=
-e.
+I have a external chips which controls simple switching, LCD control and
+watch dog setup.
+I need to write drivers for all of these devices.
 
-After some experimentation with the FHCI driver posted on linux-ppc by =20
-Anton Vorontsov I found out that the driver would eat around 40% of my CPU=
-=20
-time, and some SOF tokens would be incorrectly sent.
+I have written couple of driver before this, But, this is my first time to
+port a BSP to Linux.
+What is driver model that I can use to write on a platform like these.
+Will the platform drivers make some sense?
 
-The CPM3 (aka QE) shouldn't have the same SOF issue, as it prepares SOF tok=
-en=20
-without any software intervention, but I doubt it would perform much better=
-=20
-in term of CPU time.
+I have read though some of the docs in 'driver-models' folder. I have a fiar
+understanding about the Platform drivers.
+I wrote one just to see how it works. But, I am not much clean on the
+application of these driver models.
 
-If you can go for an OHCI/UHCI/EHCI based controller that would be much=20
-better.
+I have plans to submit my code to PPC kernel tree so please let me know what
+is more appropriate.
 
-Best regards,
+-Adams
 
-=2D-=20
-Laurent Pinchart
-CSE Semaphore Belgium
+------=_Part_3275_17986220.1212096239324
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Chaussee de Bruxelles, 732A
-B-1410 Waterloo
-Belgium
+<br>Hi Guys,<br>
+<br>I am running the basic PPC Linux on my PPC8270 BRD.<br>I have to write couple of driver on top of it finish the complete Linux port.<br><br>I have a external chips which controls simple switching, LCD control and watch dog setup.<br>
+I need to write drivers for all of these devices.<br><br>I have written couple of driver before this, But, this is my first time to port a BSP to Linux.<br>What is driver model that I can use to write on a platform like these.<br>
+Will the platform drivers make some sense?<br><br>
+I have read though some of the docs in &#39;driver-models&#39; folder. I have a fiar understanding about the Platform drivers.<br>I wrote one just to see how it works. But, I am not much clean on the application of these driver models.<br>
+<br>I have plans to submit my code to PPC kernel tree so please let me know what is more appropriate.<br><br>-Adams<br>
 
-T +32 (2) 387 42 59
-=46 +32 (2) 387 42 75
-
---nextPart28220191.fMzIght3ui
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
-
-iD8DBQBIPp4i8y9gWxC9vpcRArJBAKCJeqBReTvuGBsr8iOoBIDhR663BgCfYzoY
-kiP7HkzGNCrn7YAzF8dIopc=
-=KtcC
------END PGP SIGNATURE-----
-
---nextPart28220191.fMzIght3ui--
+------=_Part_3275_17986220.1212096239324--
