@@ -1,12 +1,25 @@
-Return-Path: <jdl@jdl.com>
-To: David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: dtc: Remove some small bashisms from test scripts 
-In-reply-to: <20080529061621.GA7220@yookeroo.seuss> 
-References: <20080529061621.GA7220@yookeroo.seuss>
-Date: Thu, 29 May 2008 08:19:46 -0500
-From: Jon Loeliger <jdl@jdl.com>
-Message-Id: <E1K1i2k-0006Cc-EC@jdl.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <jdl@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 33CBBDDEFA
+	for <linuxppc-dev@ozlabs.org>; Fri, 30 May 2008 00:05:54 +1000 (EST)
+Message-ID: <483EB7ED.2010909@freescale.com>
+Date: Thu, 29 May 2008 09:04:29 -0500
+From: Jon Loeliger <jdl@freescale.com>
+MIME-Version: 1.0
+To: Jon Loeliger <jdl@freescale.com>, Kumar Gala <galak@kernel.crashing.org>,
+	Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org, jdl@jdl.com
+Subject: Re: [PATCH] Add support for binary includes.
+References: <20080220191941.GA2062@ld0162-tx32.am.freescale.net>
+	<20080226003955.GA24382@localhost.localdomain>
+	<7BF8FE6B-8BDD-4DC3-953E-E023C38EBA87@kernel.crashing.org>
+	<483C4C04.9020408@freescale.com>
+	<20080528235859.GA10260@yookeroo.seuss>
+In-Reply-To: <20080528235859.GA10260@yookeroo.seuss>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,15 +29,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> Some of the helper scripts used to run testcases contain some
-> constructs that are bashisms.  Or at least which don't work on dash,
-> the minimal shell used as /bin/sh on recent Ubuntu systems.
-> 
-> This patch removes these constructs so that the testsuite will pass
-> "out of the box" on systems where /bin/sh is dash.
-> 
-> Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+David Gibson wrote:
 
-Applied.
+> A while back I sent out a spiel explaining more clearly why I didn't
+> like it, and where I thought we should go with this, but I don't think
+> anyone noticed it at the time.  I'll resend.
+
+Thanks.
+
+> I started working towards a version of this I liked, but was
+> sidetracked by a combination of my own other work, and the fact that
+> Jon's been busy meaning there's a rather large lag on merging dtc
+> patches.
+
+I believe I am fully caught up at this point.
 
 jdl
