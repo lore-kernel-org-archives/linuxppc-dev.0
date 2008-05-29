@@ -1,35 +1,31 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from over.ny.us.ibm.com (over.ny.us.ibm.com [32.97.182.150])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "over.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 98BA6DDED2
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 May 2008 07:01:11 +1000 (EST)
-Received: from e1.ny.us.ibm.com ([192.168.1.101])
-	by pokfb.esmtp.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	m4TKne1F013711
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 May 2008 16:49:40 -0400
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e1.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m4TKf2lO006894
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 May 2008 16:41:02 -0400
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m4TKf2JW136894
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 May 2008 16:41:02 -0400
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m4TKf1xF005025
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 May 2008 16:41:01 -0400
-Date: Thu, 29 May 2008 15:34:41 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH v4] [POWERPC] Move to runtime allocated exception stacks
-Message-ID: <20080529153441.0718e499@zod.rchland.ibm.com>
-In-Reply-To: <1211259767-4796-1-git-send-email-galak@kernel.crashing.org>
-References: <1211259767-4796-1-git-send-email-galak@kernel.crashing.org>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id B30AFDDECF
+	for <linuxppc-dev@ozlabs.org>; Fri, 30 May 2008 07:41:06 +1000 (EST)
+Subject: Re: MMIO and gcc re-ordering issue
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Jes Sorensen <jes@sgi.com>
+In-Reply-To: <yq0iqwxrwuh.fsf@jaguar.mkp.net>
+References: <1211852026.3286.36.camel@pasglop>
+	<20080526.184047.88207142.davem@davemloft.net>
+	<1211854540.3286.42.camel@pasglop>
+	<20080526.192812.184590464.davem@davemloft.net>
+	<20080526204233.75b71bb8@infradead.org>
+	<1211872130.3286.64.camel@pasglop>
+	<adaprr721c6.fsf@cisco.com> <1211922696.3286.82.camel@pasglop>
+	<adaiqwzsa83.fsf@cisco.com>  <yq0iqwxrwuh.fsf@jaguar.mkp.net>
+Content-Type: text/plain
+Date: Fri, 30 May 2008 07:40:23 +1000
+Message-Id: <1212097223.8888.55.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Cc: linux-arch@vger.kernel.org, Roland Dreier <rdreier@cisco.com>,
+	linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
+	linuxppc-dev@ozlabs.org, scottwood@freescale.com,
+	torvalds@linux-foundation.org, tpiepho@freescale.com,
+	alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,26 +35,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 20 May 2008 00:02:45 -0500
-Kumar Gala <galak@kernel.crashing.org> wrote:
-
-> For the additonal exception levels (critical, debug, machine check) on
-> 40x/book-e we were using "static" allocations of the stack in the
-> associated head.S.
+On Thu, 2008-05-29 at 10:47 -0400, Jes Sorensen wrote:
 > 
-> Move to a runtime allocation to make the code a bit easier to read as
-> we mimic how we handle IRQ stacks.  Its also a bit easier to setup the
-> stack with a "dummy" thread_info in C code.
-> 
-> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
-> ---
-> 
-> Fixed 40x handling based on Josh's feedback and help.
+> The only way to guarantee ordering in the above setup, is to either
+> make writel() fully ordered or adding the mmiowb()'s inbetween the two
+> writel's. On Altix you have to go and read from the PCI brige to
+> ensure all writes to it have been flushed, which is also what mmiowb()
+> is doing. If writel() was to guarantee this ordering, it would make
+> every writel() call extremely expensive :-(
 
-I tested this series on 44x and 40x today.  Both boot up and function
-normally.  GDB is able to set breakpoints, single step, and operate as
-well as it normally does.
+Interesting. I've always been taught by ia64 people that mmiowb() was
+intended to be used solely between writel() and spin_unlock().
 
-Again, no hard stress testing but it does appear to work.
+I think in the above case, you really should make writel() ordered.
+Anything else is asking for trouble, for the exact same reasons that I
+made it fully ordered on powerpc at least vs. previous stores. I only
+kept it relaxed vs. subsequent cacheable stores (ie, spin_unlock), for
+which I use the trick mentioned before.
 
-josh
+Yes, this has some cost (can be fairly significant on powerpc too) but
+I think it's a very basic assumption from drivers that consecutive
+writel's, especially issued by the same CPU, will get to the device
+in order.
+
+If this is a performance problem, then provide relaxed variants and
+use them in selected drivers.
+
+Cheers,
+Ben.
