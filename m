@@ -1,19 +1,12 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Fri, 30 May 2008 11:34:18 +1000
+Date: Fri, 30 May 2008 11:36:00 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
 To: Jon Loeliger <jdl@freescale.com>
-Subject: Re: [PATCH] Add support for binary includes.
-Message-ID: <20080530013418.GC26816@yookeroo.seuss>
-References: <20080220191941.GA2062@ld0162-tx32.am.freescale.net>
-	<20080226003955.GA24382@localhost.localdomain>
-	<7BF8FE6B-8BDD-4DC3-953E-E023C38EBA87@kernel.crashing.org>
-	<483C4C04.9020408@freescale.com>
-	<20080528235859.GA10260@yookeroo.seuss>
-	<483EB7ED.2010909@freescale.com>
+Subject: dtc: Add a testcase for 'reg' or 'ranges' in /
+Message-ID: <20080530013600.GD26816@yookeroo.seuss>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <483EB7ED.2010909@freescale.com>
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org, jdl@jdl.com
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,75 +16,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, May 29, 2008 at 09:04:29AM -0500, Jon Loeliger wrote:
-> David Gibson wrote:
->
->> A while back I sent out a spiel explaining more clearly why I didn't
->> like it, and where I thought we should go with this, but I don't think
->> anyone noticed it at the time.  I'll resend.
->
-> Thanks.
-
-Actually realised that spiel was in the same mail as by "I like this
-even less" comment - same one I sent a pointer to an archive for.  I'd
-been hoping for some kind of response from you.
-
->> I started working towards a version of this I liked, but was
->> sidetracked by a combination of my own other work, and the fact that
->> Jon's been busy meaning there's a rather large lag on merging dtc
->> patches.
->
-> I believe I am fully caught up at this point.
-
-Not quite, this one slipped through the cracks:
-
-dtc: Fix some printf() format warnings when compiling 64-bit
-
-Currently, dtc generates a few gcc build warnings if built for a
-64-bit target, due to the altered type of uint64_t and size_t.  This
-patch fixes the warnings (without generating new warnings for 32-bit).
+This patch adds an extra testcase to dtc to ensure that the
+"reg_format" and "ranges_format" checks trigger as they should if a
+'reg' or 'ranges' property appears in the root node.
 
 Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 
-Index: dtc/tests/dtbs_equal_ordered.c
+Index: dtc/tests/reg-ranges-root.dts
 ===================================================================
---- dtc.orig/tests/dtbs_equal_ordered.c	2008-05-20 13:06:50.000000000 +1000
-+++ dtc/tests/dtbs_equal_ordered.c	2008-05-20 13:07:41.000000000 +1000
-@@ -49,7 +49,10 @@ void compare_mem_rsv(const void *fdt1, c
- 		if ((addr1 != addr2) || (size1 != size2))
- 			FAIL("Mismatch in reserve entry %d: "
- 			     "(0x%llx, 0x%llx) != (0x%llx, 0x%llx)", i,
--			     addr1, size1, addr2, size2);
-+			     (unsigned long long)addr1,
-+			     (unsigned long long)size1,
-+			     (unsigned long long)addr2,
-+			     (unsigned long long)size2);
- 	}
- }
- 
-Index: dtc/tests/references.c
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ dtc/tests/reg-ranges-root.dts	2008-05-29 17:01:39.000000000 +1000
+@@ -0,0 +1,8 @@
++/dts-v1/;
++
++/ {
++	#address-cells = <1>;
++	#size-cells = <1>;
++	reg = <0x1000 0x10>;
++	ranges = <0x1000 0x2000 0x1000>;
++};
+Index: dtc/tests/run_tests.sh
 ===================================================================
---- dtc.orig/tests/references.c	2008-05-20 13:05:21.000000000 +1000
-+++ dtc/tests/references.c	2008-05-20 13:05:53.000000000 +1000
-@@ -38,7 +38,7 @@ void check_ref(const void *fdt, int node
- 	if (!p)
- 		FAIL("fdt_getprop(%d, \"ref\"): %s", node, fdt_strerror(len));
- 	if (len != sizeof(*p))
--		FAIL("'ref' in node at %d has wrong size (%d instead of %d)",
-+		FAIL("'ref' in node at %d has wrong size (%d instead of %zd)",
- 		     node, len, sizeof(*p));
- 	ref = fdt32_to_cpu(*p);
- 	if (ref != checkref)
-@@ -49,7 +49,7 @@ void check_ref(const void *fdt, int node
- 	if (!p)
- 		FAIL("fdt_getprop(%d, \"lref\"): %s", node, fdt_strerror(len));
- 	if (len != sizeof(*p))
--		FAIL("'lref' in node at %d has wrong size (%d instead of %d)",
-+		FAIL("'lref' in node at %d has wrong size (%d instead of %zd)",
- 		     node, len, sizeof(*p));
- 	ref = fdt32_to_cpu(*p);
- 	if (ref != checkref)
-
+--- dtc.orig/tests/run_tests.sh	2008-05-29 17:01:36.000000000 +1000
++++ dtc/tests/run_tests.sh	2008-05-29 17:01:39.000000000 +1000
+@@ -249,6 +249,7 @@ dtc_tests () {
+     run_sh_test dtc-checkfails.sh device_type_is_string model_is_string status_is_string -- -I dts -O dtb bad-string-props.dts
+     run_sh_test dtc-checkfails.sh reg_format ranges_format -- -I dts -O dtb bad-reg-ranges.dts
+     run_sh_test dtc-checkfails.sh ranges_format -- -I dts -O dtb bad-empty-ranges.dts
++    run_sh_test dtc-checkfails.sh reg_format ranges_format -- -I dts -O dtb reg-ranges-root.dts
+     run_sh_test dtc-checkfails.sh avoid_default_addr_size -- -I dts -O dtb default-addr-size.dts
+     run_sh_test dtc-checkfails.sh obsolete_chosen_interrupt_controller -- -I dts -O dtb obsolete-chosen-interrupt-controller.dts
+     run_sh_test dtc-checkfails.sh node_name_chars -- -I dtb -O dtb bad_node_char.dtb
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
