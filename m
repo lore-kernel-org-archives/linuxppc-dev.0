@@ -1,15 +1,17 @@
-Return-Path: <Haavard.Skinnemoen@atmel.com>
-Received: from bagnes.atmel.com (smtpeu1.atmel.com [195.65.72.27])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 35A4CDDE17
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 May 2008 18:27:36 +1000 (EST)
-Date: Fri, 30 May 2008 10:27:06 +0200
-From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-To: benh@kernel.crashing.org
+Return-Path: <geert@linux-m68k.org>
+Received: from yorgi.telenet-ops.be (yorgi.telenet-ops.be [195.130.133.69])
+	by ozlabs.org (Postfix) with ESMTP id 50306DDE24
+	for <linuxppc-dev@ozlabs.org>; Fri, 30 May 2008 19:22:36 +1000 (EST)
+Received: from winston.telenet-ops.be (winston.telenet-ops.be [195.130.137.75])
+	by yorgi.telenet-ops.be (Postfix) with ESMTP id 12B84681554
+	for <linuxppc-dev@ozlabs.org>; Fri, 30 May 2008 11:22:34 +0200 (CEST)
+Date: Fri, 30 May 2008 11:22:19 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Sender: geert@linux-m68k.org
+To: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
 Subject: Re: MMIO and gcc re-ordering issue
-Message-ID: <20080530102706.56fca248@siona.local>
-In-Reply-To: <1212132267.15633.69.camel@pasglop>
+In-Reply-To: <20080530102706.56fca248@siona.local>
+Message-ID: <Pine.LNX.4.64.0805301120510.26332@anakin>
 References: <1211852026.3286.36.camel@pasglop>
 	<20080526.184047.88207142.davem@davemloft.net>
 	<1211854540.3286.42.camel@pasglop>
@@ -25,8 +27,9 @@ References: <1211852026.3286.36.camel@pasglop>
 	<1212110003.15633.0.camel@pasglop>
 	<20080530080700.773a82cc@siona.local>
 	<1212132267.15633.69.camel@pasglop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	<20080530102706.56fca248@siona.local>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Cc: linux-arch@vger.kernel.org, Matthew Wilcox <matthew@wil.cx>,
 	linux-kernel@vger.kernel.org, tpiepho@freescale.com,
 	linuxppc-dev@ozlabs.org, scottwood@freescale.com,
@@ -41,29 +44,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 30 May 2008 17:24:27 +1000
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-> On Fri, 2008-05-30 at 08:07 +0200, Haavard Skinnemoen wrote:
-> > I think the drivers I've written have the necessary barriers (or dma
-> > ops with implicit barriers) that they don't actually depend on any
-> > DMA vs. MMIO ordering guarantees. I hope MMIO vs. MMIO ordering is
-> > guaranteed though?
-> 
-> Only to the same address I'd say.
+On Fri, 30 May 2008, Haavard Skinnemoen wrote:
+> Maybe we need another interface that does not do byteswapping but
+> provides stronger ordering guarantees?
 
-Right, I sort of suspected that.
+The byte swapping depends on the device/bus.
 
-Now, I'm pretty sure the architectures that can actually run those
-drivers (ARM9 and AVR32 AP7) provide stronger guarantees than that, and
-I suspect the same is true on most other embedded architectures that
-use __raw_* in their drivers. So I don't think adding barriers is the
-right thing to do because they won't do anything useful in practice, so
-it's hard to tell whether they are used "correctly". And it will hurt
-performance at least on AVR32 since wmb() evaluates to a "sync"
-instruction, which flushes the write buffer to RAM. Since MMIO writes
-are unbuffered, that's pure overhead.
+So what happened to the old idea of putting the accessor function pointers
+in the device/bus structure?
 
-Maybe we need another interface that does not do byteswapping but
-provides stronger ordering guarantees?
+Gr{oetje,eeting}s,
 
-Haavard
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
