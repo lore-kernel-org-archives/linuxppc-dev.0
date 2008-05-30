@@ -1,15 +1,15 @@
 Return-Path: <avorontsov@ru.mvista.com>
-Date: Fri, 30 May 2008 16:50:57 +0400
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 227CFDE1DC
+	for <linuxppc-dev@ozlabs.org>; Fri, 30 May 2008 22:51:35 +1000 (EST)
+Date: Fri, 30 May 2008 16:51:33 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Wolfgang Grandegger <wg@grandegger.com>
-Subject: Re: [PATCH] [NAND] driver extension to support NAND on TQM85xx modules
-Message-ID: <20080530125057.GB13407@polina.dev.rtsoft.ru>
-References: <1212129392-27589-1-git-send-email-wg@grandegger.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: [PATCH] [OF] of_gpio: should use new <linux/gpio.h> header
+Message-ID: <20080530125133.GA20303@polina.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf8
-In-Reply-To: <1212129392-27589-1-git-send-email-wg@grandegger.com>
-Cc: Linuxppc-dev@ozlabs.org
-Reply-To: avorontsov@ru.mvista.com
+Cc: linuxppc-dev@ozlabs.org, David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,34 +19,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, May 30, 2008 at 08:36:32AM +0200, Wolfgang Grandegger wrote:
-> This patch extends the FSL UPM NAND driver from Anton Vorontsov to
-> support for the TQM85xx modules. Unfortunately, the hardware does
-> not support the R/B pins of the NAND chip and therefore the specified
-> maximum delay time must used. It therefore re-introduces the chip-delay
-> property.
-> 
-> Note: this patch is based on a patch Anton Vorontsov posted to this list:
->       See http://ozlabs.org/pipermail/linuxppc-dev/2008-April/055587.html.
->       It should show up mainstream soon. 
+From: Wolfgang Grandegger <wg@grandegger.com>
 
-Personally, I like this patch. But OF people should approve "chip-delay"
-property. Though, the whole UPM NAND bindings are in the air still.
+Since commit 7560fa60fcdcdb0da662f6a9fad9064b554ef46c (gpio: <linux/gpio.h>
+and "no GPIO support here" stubs) drivers can use GPIOs if they're available,
+but don't require them.
 
-> --- a/include/linux/of_gpio.h
-> +++ b/include/linux/of_gpio.h
-> @@ -15,7 +15,7 @@
->  #define __LINUX_OF_GPIO_H
->  
->  #include <linux/errno.h>
-> -#include <asm/gpio.h>
-> +#include <linux/gpio.h>
+This patch actually enables this feature.
 
-This should be done separately.
+Signed-off-by: Wolfgang Grandegger <wg@grandegger.com>
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
+ include/linux/of_gpio.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Thanks,
-
+diff --git a/include/linux/of_gpio.h b/include/linux/of_gpio.h
+index 2ee97e9..67db101 100644
+--- a/include/linux/of_gpio.h
++++ b/include/linux/of_gpio.h
+@@ -15,7 +15,7 @@
+ #define __LINUX_OF_GPIO_H
+ 
+ #include <linux/errno.h>
+-#include <asm/gpio.h>
++#include <linux/gpio.h>
+ 
+ #ifdef CONFIG_OF_GPIO
+ 
 -- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+1.5.5.1
