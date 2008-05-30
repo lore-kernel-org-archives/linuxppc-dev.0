@@ -1,28 +1,20 @@
-Return-Path: <johnpol@2ka.mipt.ru>
-Received: from 2ka.mipt.ru (relay.2ka.mipt.ru [194.85.82.65])
-	by ozlabs.org (Postfix) with ESMTP id 6E317DDED8
-	for <linuxppc-dev@ozlabs.org>; Sat, 31 May 2008 07:12:20 +1000 (EST)
-Date: Sat, 31 May 2008 01:12:08 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id EDF98DE145
+	for <linuxppc-dev@ozlabs.org>; Sat, 31 May 2008 07:28:59 +1000 (EST)
+In-Reply-To: <20080529141246.b9cea683.kim.phillips@freescale.com>
+References: <20080529141246.b9cea683.kim.phillips@freescale.com>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <52e09c438efa8ff0e415d820ba4beddc@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 1/2] update crypto node definition and device tree
+	instances
+Date: Fri, 30 May 2008 23:28:38 +0200
 To: Kim Phillips <kim.phillips@freescale.com>
-Subject: Re: [PATCH 2/2] talitos: Freescale integrated security engine (SEC)
-	driver
-Message-ID: <20080530211204.GA15768@2ka.mipt.ru>
-References: <20080529141250.0946b02c.kim.phillips@freescale.com>
-	<20080530180904.GA18945@2ka.mipt.ru>
-	<20080530143614.1e675228.kim.phillips@freescale.com>
-	<4840585D.8050805@freescale.com>
-	<20080530151638.087970ab.kim.phillips@freescale.com>
-	<4840615F.4070103@freescale.com>
-	<20080530153505.21eb1ec4.kim.phillips@freescale.com>
-	<48406562.4010306@freescale.com>
-	<20080530154820.6e56b625.kim.phillips@freescale.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080530154820.6e56b625.kim.phillips@freescale.com>
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
-	mr.scada@gmail.com, linux-crypto@vger.kernel.org,
-	herbert@gondor.apana.org.au
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,15 +24,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, May 30, 2008 at 03:48:20PM -0500, Kim Phillips (kim.phillips@freescale.com) wrote:
-> sorry, by ISR I meant interrupt status registers.  but I can't tell
-> where the suspected simultaneous accesses are.  Evgeniy, can you point
-> out the register accesses you're talking about?
+Nice cleanup!  Just one thing...
 
-priv->status is accessed from tasklets, although readonly, but that rises
-a red flag... Also callback invocation tasklet drops the lock around
-callback, during that time cached status and priv itself (and tail like
-in two simultaneous flushes) could change (or not?)
+> +    - compatible : Should contain entries for all compatible SEC 
+> versions,
+> +      high to low, e.g., "fsl,sec2.1", "fsl,sec2.0"
 
--- 
-	Evgeniy Polyakov
+*All* compatible versions?  That's not really correct -- for
+example that would include *future* versions!
+
+The first entry should describe the exact device version.  If
+there are more entries, they should be for device versions where
+the driver for that device version can be reasonably expected to
+do something useful with this newer device (reduced functionality,
+perhaps).  Listing *all* compatible devices is a) infeasible,
+b) not useful, and c) insane :-)
+
+Say you have a 3.3 device, and all 3.x devices have the same
+programming interface; also, the 2.x interface works with reduced
+functionality, and 1.x isn't useful at all; in that case, you would
+list 3.3, 3.0, 2.0.  The driver that knows about 3.x would probe
+for 3.0, while an older driver would probe for 2.0.  The driver
+doesn't need to probe for 3.3, since devices implementing 3.3
+should show they are compatible with 3.0 (and the binding should
+say they should show this).
+
+Also, the binding should explicitly list all defined compatible
+entries (and what they mean), not just give a few examples.
+
+
+Segher
