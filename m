@@ -1,19 +1,26 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 551ACDE4BE
-	for <linuxppc-dev@ozlabs.org>; Sat, 31 May 2008 02:06:29 +1000 (EST)
-Message-Id: <9079D868-FA0E-4CC9-97DE-BF0EB1085559@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: "Bryan O'Donoghue" <bodonoghue@codehermit.ie>
-In-Reply-To: <20080508134700.4313e967@neuromancer.mindspace>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: [PATCH][v2] Add support for Analogue & Micro ASP837E board
-Date: Fri, 30 May 2008 11:06:13 -0500
-References: <20080508134700.4313e967@neuromancer.mindspace>
-Cc: linuxppc-dev@ozlabs.org, Stephen Rothwell <sfr@canb.auug.org.au>
+Return-Path: <jbarnes@virtuousgeek.org>
+Received: from outbound-mail-18.bluehost.com (outbound-mail-18.bluehost.com
+	[69.89.20.233]) by ozlabs.org (Postfix) with SMTP id 8A1ABDDF93
+	for <linuxppc-dev@ozlabs.org>; Sat, 31 May 2008 03:28:36 +1000 (EST)
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Jes Sorensen <jes@sgi.com>
+Subject: Re: MMIO and gcc re-ordering issue
+Date: Fri, 30 May 2008 10:21:00 -0700
+References: <1211852026.3286.36.camel@pasglop>
+	<1212073289.3428.30.camel@localhost.localdomain>
+	<483FCA94.1060506@sgi.com>
+In-Reply-To: <483FCA94.1060506@sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200805301021.00883.jbarnes@virtuousgeek.org>
+Cc: linux-arch@vger.kernel.org, Roland Dreier <rdreier@cisco.com>,
+	linux-kernel@vger.kernel.org, Jeremy Higdon <jeremy@sgi.com>,
+	David Miller <davem@davemloft.net>,
+	James Bottomley <James.Bottomley@hansenpartnership.com>,
+	linuxppc-dev@ozlabs.org, scottwood@freescale.com,
+	torvalds@linux-foundation.org, tpiepho@freescale.com,
+	alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,37 +30,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Friday, May 30, 2008 2:36 am Jes Sorensen wrote:
+> James Bottomley wrote:
+> >> The only way to guarantee ordering in the above setup, is to either
+> >> make writel() fully ordered or adding the mmiowb()'s inbetween the two
+> >> writel's. On Altix you have to go and read from the PCI brige to
+> >> ensure all writes to it have been flushed, which is also what mmiowb()
+> >> is doing. If writel() was to guarantee this ordering, it would make
+> >> every writel() call extremely expensive :-(
+> >
+> > So if a read from the bridge achieves the same effect, can't we just put
+> > one after the writes within the spinlock (an unrelaxed one).  That way
+> > this whole sequence will look like a well understood PCI posting flush
+> > rather than have to muck around with little understood (at least by most
+> > driver writers) io barriers?
+>
+> Hmmm,
+>
+> I think mmiowb() does some sort of status read from the bridge, I am not
+> sure if it's enough to just do a regular readl().
+>
+> I'm adding Jeremy to the list, he should know for sure.
 
-On May 8, 2008, at 7:47 AM, Bryan O'Donoghue wrote:
+I think a read from the target host bridge is enough.  What mmiowb() does 
+though is to read a *local* host bridge register, which contains a count of 
+the number of PIO ops still "in flight" on their way to their target bridge.  
+When it reaches 0, all PIOs have arrived at the target host bridge (they 
+still may be bufferd), so ordering is guaranteed.
 
-> Greetings.
->
-> Attached is a patchset to support the  ASP8347E.
->
-> http://www.analogue-micro.com/ASP8347.html. Due to the fact that the  
-> board
-> shipped with a root filesystem that requires devfs, you have to run  
-> a different
-> rootfs with all current kernels. I've been using the 8xx root fs  
-> from the ELDK
-> via NFS, for this.
->
-> v2 implements all changes - bar ethernet aliases in the dts, as  
-> suggested
-> by Stephen Rothwell and Kumar Gala, to date.
->
-> Please apply.
->
-> Cheers,
-> Bryan
->
-> Signed-off-by: Bryan O'Donoghue <bodonoghue@codehermit.ie>
-> ---
-
-applied to powerpc-next.
-
-I had to make a few changes to this patch.  In the future please make  
-sure the commit message
-is before the ---.  Also, look at running scripts/checkpatch.pl.
-
-- k
+Jesse
