@@ -1,12 +1,36 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Fri, 30 May 2008 11:36:00 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Jon Loeliger <jdl@freescale.com>
-Subject: dtc: Add a testcase for 'reg' or 'ranges' in /
-Message-ID: <20080530013600.GD26816@yookeroo.seuss>
+Return-Path: <tpiepho@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 183D1DDE1F
+	for <linuxppc-dev@ozlabs.org>; Fri, 30 May 2008 11:55:24 +1000 (EST)
+Date: Thu, 29 May 2008 18:53:12 -0700 (PDT)
+From: Trent Piepho <tpiepho@freescale.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: MMIO and gcc re-ordering issue
+In-Reply-To: <1212098739.8888.58.camel@pasglop>
+Message-ID: <Pine.LNX.4.64.0805291840430.18973@t2.domain.actdsltmp>
+References: <1211852026.3286.36.camel@pasglop>
+	<20080526.184047.88207142.davem@davemloft.net>
+	<1211854540.3286.42.camel@pasglop>
+	<20080526.192812.184590464.davem@davemloft.net>
+	<20080526204233.75b71bb8@infradead.org>
+	<1211872130.3286.64.camel@pasglop>
+	<adaprr721c6.fsf@cisco.com> <1211922696.3286.82.camel@pasglop>
+	<adaiqwzsa83.fsf@cisco.com>  <yq0iqwxrwuh.fsf@jaguar.mkp.net>
+	<1212097223.8888.55.camel@pasglop>
+	<Pine.LNX.4.64.0805291442420.18832@t2.domain.actdsltmp>
+	<1212098739.8888.58.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Cc: linux-arch@vger.kernel.org, Roland Dreier <rdreier@cisco.com>,
+	Jes Sorensen <jes@sgi.com>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, scottwood@freescale.com,
+	torvalds@linux-foundation.org,
+	David Miller <davem@davemloft.net>, alan@lxorguk.ukuu.org.uk,
+	Arjan van de Ven <arjan@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,40 +40,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch adds an extra testcase to dtc to ensure that the
-"reg_format" and "ranges_format" checks trigger as they should if a
-'reg' or 'ranges' property appears in the root node.
+On Fri, 30 May 2008, Benjamin Herrenschmidt wrote:
+> On Thu, 2008-05-29 at 14:48 -0700, Trent Piepho wrote:
+>
+>> I wrote a JTAG over gpio driver for the powerpc MPC8572DS platform.  With the
+>> non-raw io accessors, the JTAG clock can run at almost ~9.5 MHz.  Using raw
+>> versions (which I had to write since powerpc doesn't have any), the clock
+>> speed increases to about 28 MHz.  So it can make a very significant different.
+>
+> Yes, sync's can hurt a lot. This is why I initially tried to get more
+> relaxed semantics.
+>
+> We could implement something like __ variants and do something that
+> would still have eieio's but not sync's for example (ie. MMIOs are still
+> ordered vs. each other but not vs. coherent memory).
 
-Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+The problem current with the raw variants is that not all archs have them. 
+And for those that do, there is no defined semantics.  Each arch is different
+as to what ordering they have (and endianness too).
 
-Index: dtc/tests/reg-ranges-root.dts
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ dtc/tests/reg-ranges-root.dts	2008-05-29 17:01:39.000000000 +1000
-@@ -0,0 +1,8 @@
-+/dts-v1/;
-+
-+/ {
-+	#address-cells = <1>;
-+	#size-cells = <1>;
-+	reg = <0x1000 0x10>;
-+	ranges = <0x1000 0x2000 0x1000>;
-+};
-Index: dtc/tests/run_tests.sh
-===================================================================
---- dtc.orig/tests/run_tests.sh	2008-05-29 17:01:36.000000000 +1000
-+++ dtc/tests/run_tests.sh	2008-05-29 17:01:39.000000000 +1000
-@@ -249,6 +249,7 @@ dtc_tests () {
-     run_sh_test dtc-checkfails.sh device_type_is_string model_is_string status_is_string -- -I dts -O dtb bad-string-props.dts
-     run_sh_test dtc-checkfails.sh reg_format ranges_format -- -I dts -O dtb bad-reg-ranges.dts
-     run_sh_test dtc-checkfails.sh ranges_format -- -I dts -O dtb bad-empty-ranges.dts
-+    run_sh_test dtc-checkfails.sh reg_format ranges_format -- -I dts -O dtb reg-ranges-root.dts
-     run_sh_test dtc-checkfails.sh avoid_default_addr_size -- -I dts -O dtb default-addr-size.dts
-     run_sh_test dtc-checkfails.sh obsolete_chosen_interrupt_controller -- -I dts -O dtb obsolete-chosen-interrupt-controller.dts
-     run_sh_test dtc-checkfails.sh node_name_chars -- -I dtb -O dtb bad_node_char.dtb
-
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+If you want to write a driver that is (or might be one day) multi-platform,
+there aren't any less ordered accessors one can use.  A lot of drivers don't
+even use coherent DMA, and could use less strictly ordered semantics quite
+trivially.  Except there aren't any.
