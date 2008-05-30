@@ -1,35 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 609E7DDEF2
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 May 2008 11:13:56 +1000 (EST)
-Subject: Re: MMIO and gcc re-ordering issue
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-In-Reply-To: <20080528103648.54eb8734@hskinnemo-gx745.norway.atmel.com>
-References: <1211852026.3286.36.camel@pasglop>
-	<20080526.184047.88207142.davem@davemloft.net>
-	<1211854540.3286.42.camel@pasglop>
-	<20080526.192812.184590464.davem@davemloft.net>
-	<1211859542.3286.46.camel@pasglop>
-	<alpine.LFD.1.10.0805270833060.2958@woody.linux-foundation.org>
-	<1211922621.3286.80.camel@pasglop>
-	<alpine.LFD.1.10.0805271421570.2958@woody.linux-foundation.org>
-	<1211924335.3286.89.camel@pasglop>
-	<20080527214241.GA22636@parisc-linux.org>
-	<1211926636.3286.100.camel@pasglop>
-	<20080528103648.54eb8734@hskinnemo-gx745.norway.atmel.com>
-Content-Type: text/plain
-Date: Fri, 30 May 2008 11:13:23 +1000
-Message-Id: <1212110003.15633.0.camel@pasglop>
-Mime-Version: 1.0
-Cc: linux-arch@vger.kernel.org, Matthew Wilcox <matthew@wil.cx>,
-	linux-kernel@vger.kernel.org, tpiepho@freescale.com,
-	linuxppc-dev@ozlabs.org, scottwood@freescale.com,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	David Miller <davem@davemloft.net>, alan@lxorguk.ukuu.org.uk
-Reply-To: benh@kernel.crashing.org
+Return-Path: <dgibson@ozlabs.org>
+Date: Fri, 30 May 2008 11:34:18 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Jon Loeliger <jdl@freescale.com>
+Subject: Re: [PATCH] Add support for binary includes.
+Message-ID: <20080530013418.GC26816@yookeroo.seuss>
+References: <20080220191941.GA2062@ld0162-tx32.am.freescale.net>
+	<20080226003955.GA24382@localhost.localdomain>
+	<7BF8FE6B-8BDD-4DC3-953E-E023C38EBA87@kernel.crashing.org>
+	<483C4C04.9020408@freescale.com>
+	<20080528235859.GA10260@yookeroo.seuss>
+	<483EB7ED.2010909@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <483EB7ED.2010909@freescale.com>
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org, jdl@jdl.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,15 +23,78 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thu, May 29, 2008 at 09:04:29AM -0500, Jon Loeliger wrote:
+> David Gibson wrote:
+>
+>> A while back I sent out a spiel explaining more clearly why I didn't
+>> like it, and where I thought we should go with this, but I don't think
+>> anyone noticed it at the time.  I'll resend.
+>
+> Thanks.
 
-> I do -- in all the drivers for on-chip peripherals that are shared
-> between AT91 ARM (LE) and AVR32 (BE). Since everything goes on inside
-> the chip, we must use LE accesses on ARM and BE accesses on AVR32.
-> 
-> Currently, this is the only interface I know that can do native-endian
-> accesses, so if you take it away, I'm gonna need an alternative
-> interface that doesn't do byteswapping.
+Actually realised that spiel was in the same mail as by "I like this
+even less" comment - same one I sent a pointer to an archive for.  I'd
+been hoping for some kind of response from you.
 
-Are you aware that these also don't provide any ordering guarantee ?
+>> I started working towards a version of this I liked, but was
+>> sidetracked by a combination of my own other work, and the fact that
+>> Jon's been busy meaning there's a rather large lag on merging dtc
+>> patches.
+>
+> I believe I am fully caught up at this point.
 
-Ben.
+Not quite, this one slipped through the cracks:
+
+dtc: Fix some printf() format warnings when compiling 64-bit
+
+Currently, dtc generates a few gcc build warnings if built for a
+64-bit target, due to the altered type of uint64_t and size_t.  This
+patch fixes the warnings (without generating new warnings for 32-bit).
+
+Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+
+Index: dtc/tests/dtbs_equal_ordered.c
+===================================================================
+--- dtc.orig/tests/dtbs_equal_ordered.c	2008-05-20 13:06:50.000000000 +1000
++++ dtc/tests/dtbs_equal_ordered.c	2008-05-20 13:07:41.000000000 +1000
+@@ -49,7 +49,10 @@ void compare_mem_rsv(const void *fdt1, c
+ 		if ((addr1 != addr2) || (size1 != size2))
+ 			FAIL("Mismatch in reserve entry %d: "
+ 			     "(0x%llx, 0x%llx) != (0x%llx, 0x%llx)", i,
+-			     addr1, size1, addr2, size2);
++			     (unsigned long long)addr1,
++			     (unsigned long long)size1,
++			     (unsigned long long)addr2,
++			     (unsigned long long)size2);
+ 	}
+ }
+ 
+Index: dtc/tests/references.c
+===================================================================
+--- dtc.orig/tests/references.c	2008-05-20 13:05:21.000000000 +1000
++++ dtc/tests/references.c	2008-05-20 13:05:53.000000000 +1000
+@@ -38,7 +38,7 @@ void check_ref(const void *fdt, int node
+ 	if (!p)
+ 		FAIL("fdt_getprop(%d, \"ref\"): %s", node, fdt_strerror(len));
+ 	if (len != sizeof(*p))
+-		FAIL("'ref' in node at %d has wrong size (%d instead of %d)",
++		FAIL("'ref' in node at %d has wrong size (%d instead of %zd)",
+ 		     node, len, sizeof(*p));
+ 	ref = fdt32_to_cpu(*p);
+ 	if (ref != checkref)
+@@ -49,7 +49,7 @@ void check_ref(const void *fdt, int node
+ 	if (!p)
+ 		FAIL("fdt_getprop(%d, \"lref\"): %s", node, fdt_strerror(len));
+ 	if (len != sizeof(*p))
+-		FAIL("'lref' in node at %d has wrong size (%d instead of %d)",
++		FAIL("'lref' in node at %d has wrong size (%d instead of %zd)",
+ 		     node, len, sizeof(*p));
+ 	ref = fdt32_to_cpu(*p);
+ 	if (ref != checkref)
+
+
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
