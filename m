@@ -1,15 +1,22 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 227CFDE1DC
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 May 2008 22:51:35 +1000 (EST)
-Date: Fri, 30 May 2008 16:51:33 +0400
+	by ozlabs.org (Postfix) with ESMTP id D6F1DDE220
+	for <linuxppc-dev@ozlabs.org>; Fri, 30 May 2008 23:03:51 +1000 (EST)
+Date: Fri, 30 May 2008 17:03:50 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] [OF] of_gpio: should use new <linux/gpio.h> header
-Message-ID: <20080530125133.GA20303@polina.dev.rtsoft.ru>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 4/7] [POWERPC] QE: implement support for the GPIO LIB API
+Message-ID: <20080530130350.GA23252@polina.dev.rtsoft.ru>
+References: <20080523163811.GA12181@polina.dev.rtsoft.ru>
+	<20080523163900.GD16137@polina.dev.rtsoft.ru>
+	<8E7E138E-E6D7-45FA-885F-380A82ECEC63@kernel.crashing.org>
+	<20080527151628.GA11517@polina.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf8
-Cc: linuxppc-dev@ozlabs.org, David Miller <davem@davemloft.net>
+In-Reply-To: <20080527151628.GA11517@polina.dev.rtsoft.ru>
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
+	Timur Tabi <timur@freescale.com>
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,32 +26,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Wolfgang Grandegger <wg@grandegger.com>
+On Tue, May 27, 2008 at 07:16:28PM +0400, Anton Vorontsov wrote:
+> On Tue, May 27, 2008 at 10:04:20AM -0500, Kumar Gala wrote:
+> >
+> > On May 23, 2008, at 11:39 AM, Anton Vorontsov wrote:
+> >
+> >> This is needed to access QE GPIOs via Linux GPIO API.
+> >>
+> >> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> >> Acked-By: Timur Tabi <timur@freescale.com>
+> >> ---
+> >> Documentation/powerpc/booting-without-of.txt |   27 +++++
+> >> arch/powerpc/sysdev/qe_lib/Kconfig           |    9 ++
+> >> arch/powerpc/sysdev/qe_lib/Makefile          |    1 +
+> >> arch/powerpc/sysdev/qe_lib/gpio.c            |  148 +++++++++++++++++ 
+> >> +++++++++
+> >> include/asm-powerpc/qe.h                     |    2 +
+> >> 5 files changed, 187 insertions(+), 0 deletions(-)
+> >> create mode 100644 arch/powerpc/sysdev/qe_lib/gpio.c
+> >
+> > didn't we talk about putting this is drivers/gpio/ ?
+> 
+> :-)
+> 
+> Yes, we did. And David Brownell politely suggested to not do this,
+> and instead leave it in arch/ as do all other arches for their SOC
+> GPIOs.
 
-Since commit 7560fa60fcdcdb0da662f6a9fad9064b554ef46c (gpio: <linux/gpio.h>
-and "no GPIO support here" stubs) drivers can use GPIOs if they're available,
-but don't require them.
+Ping?
 
-This patch actually enables this feature.
-
-Signed-off-by: Wolfgang Grandegger <wg@grandegger.com>
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
- include/linux/of_gpio.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/include/linux/of_gpio.h b/include/linux/of_gpio.h
-index 2ee97e9..67db101 100644
---- a/include/linux/of_gpio.h
-+++ b/include/linux/of_gpio.h
-@@ -15,7 +15,7 @@
- #define __LINUX_OF_GPIO_H
- 
- #include <linux/errno.h>
--#include <asm/gpio.h>
-+#include <linux/gpio.h>
- 
- #ifdef CONFIG_OF_GPIO
- 
 -- 
-1.5.5.1
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
