@@ -1,20 +1,20 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <jgarzik@pobox.com>
+Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 0B3B0DEB62
-	for <linuxppc-dev@ozlabs.org>; Sat, 31 May 2008 07:49:29 +1000 (EST)
-In-Reply-To: <1212180199-968-2-git-send-email-galak@kernel.crashing.org>
-References: <1212180199-968-1-git-send-email-galak@kernel.crashing.org>
-	<1212180199-968-2-git-send-email-galak@kernel.crashing.org>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <165963514fdb3980898f3babaad546a9@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] [POWERPC] 85xx: Add next-level-cache property
-Date: Fri, 30 May 2008 23:49:19 +0200
+	by ozlabs.org (Postfix) with ESMTPS id E124CDDE00
+	for <linuxppc-dev@ozlabs.org>; Sat, 31 May 2008 08:11:54 +1000 (EST)
+Message-ID: <48407BA2.5050103@pobox.com>
+Date: Fri, 30 May 2008 18:11:46 -0400
+From: Jeff Garzik <jgarzik@pobox.com>
+MIME-Version: 1.0
 To: Kumar Gala <galak@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] Add port multiplier (PMP) support in sata_fsl driver
+References: <Pine.LNX.4.64.0805200015010.5318@blarg.am.freescale.net>
+In-Reply-To: <Pine.LNX.4.64.0805200015010.5318@blarg.am.freescale.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, htejun@gmail.com, ashish.kalra@freescale.com,
+	linux-ide@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,13 +24,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> Added next-level-cache to the L1 and a reference to the new L2 label.
+Kumar Gala wrote:
+> From: Ashish Kalra <ashish.kalra@freescale.com>
+> 
+> PMP support for sata_fsl driver.
+> 
+> Signed-off-by: Ashish Kalra <ashish.kalra@freescale.com>
+> ---
+> Jeff,
+> 
+> The following commit (4c9bf4e799ce06a7378f1196587084802a414c03):
+> libata: replace tf_read with qc_fill_rtf for non-SFF drivers
+> 
+> Broke the sata_fsl.c driver in 2.6.26.  I know the following patch fixes
+> the issue, it clearly also adds port multipler support.  I'm not sure if
+> you are willing to take that as part of 2.6.26 or not, but the current
+> 2.6.26 driver is broken.
+> 
+> On boot with debug enabled we get something like (w/o this patch):
+> 
+> spurious interrupt!!, CC = 0x1
+> interrupt status 0x1
+> xx_scr_read, reg_in = 1
+> spurious interrupt!!, CC = 0x1
+> interrupt status 0x1
+> xx_scr_read, reg_in = 1
+> spurious interrupt!!, CC = 0x1
+> interrupt status 0x1
+> xx_scr_read, reg_in = 1
+> 
+> .. continues for ever.
+> 
+> - k
+> 
+>  drivers/ata/sata_fsl.c |  224 +++++++++++++++++++++++++++++++++++-------------
+>  1 files changed, 163 insertions(+), 61 deletions(-)
+> 
 
-Where is this property defined?  I can't find it.
-
-The PowerPC binding defines an "l2-cache" property for this (it
-points from CPU node to L2 cache node, from L2 cache node to L3
-cache node, from L3 cache node to L4 cache node, etc.)
-
-
-Segher
+applied
