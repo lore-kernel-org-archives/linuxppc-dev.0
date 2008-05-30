@@ -1,18 +1,19 @@
-Return-Path: <olof@lixom.net>
-Received: from elcamino.pasemi.com (elcamino.pasemi.com [67.155.108.98])
-	by ozlabs.org (Postfix) with ESMTP id 74F53DDF44
-	for <linuxppc-dev@ozlabs.org>; Sat, 31 May 2008 01:07:35 +1000 (EST)
-Message-Id: <D7F52691-1110-4C82-8308-41C8919FEAAB@lixom.net>
-From: Olof Johansson <olof@lixom.net>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-In-Reply-To: <20080530152501.214c2380.sfr@canb.auug.org.au>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 41427DE414
+	for <linuxppc-dev@ozlabs.org>; Sat, 31 May 2008 01:51:22 +1000 (EST)
+Message-Id: <0536722F-08DA-4E93-BCF7-2B3E32316C2E@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Timur Tabi <timur@freescale.com>
+In-Reply-To: <1210891570-9074-1-git-send-email-timur@freescale.com>
 Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v924)
-Subject: Re: [PATCH 2.6.26] electra_cf: Add MODULE_DEVICE_TABLE()
-Date: Fri, 30 May 2008 10:07:30 -0500
-References: <20080529200542.GA20002@lixom.net>
-	<20080530152501.214c2380.sfr@canb.auug.org.au>
-Cc: linuxppc-dev@ozlabs.org, pasemi-linux@ozlabs.org
+Mime-Version: 1.0 (Apple Message framework v919.2)
+Subject: Re: [PATCH] Add CS4270 i2c data to fsl_soc.c
+Date: Fri, 30 May 2008 10:51:10 -0500
+References: <1210891570-9074-1-git-send-email-timur@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,36 +23,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
 
-On May 30, 2008, at 12:25 AM, Stephen Rothwell wrote:
+On May 15, 2008, at 5:46 PM, Timur Tabi wrote:
 
-> On Thu, 29 May 2008 15:05:44 -0500 Olof Johansson <olof@lixom.net>  
-> wrote:
->>
->> electra_cf: Add MODULE_DEVICE_TABLE()
->>
->> Add a module device table to electra_cf so that modules can be
->> auto-probed/loaded.
->>
->> [will be included in git pull request later today]
+> The i2c_devices[] array in fsl_soc.c lists all the I2C nodes that  
+> are supported
+> on Freescale boards.  Add an entry for the Cirrus Logic CS4270 so  
+> that a
+> new-style CS4270 driver will work.
 >
-> No Signed-off-by?
+> Signed-off-by: Timur Tabi <timur@freescale.com>
+> ---
+> arch/powerpc/sysdev/fsl_soc.c |    1 +
+> 1 files changed, 1 insertions(+), 0 deletions(-)
 
-It's signed off in my git tree, I normally remove the s-o-b on the  
-postings to avoid having to rebase  if Paul picks it up by mistake  
-from patchwork instead. Kumar usually does that as well.
+applied.
 
->> diff --git a/drivers/pcmcia/electra_cf.c b/drivers/pcmcia/ 
->> electra_cf.c
->> index 0a6cea1..52d0aa8 100644
->> --- a/drivers/pcmcia/electra_cf.c
->> +++ b/drivers/pcmcia/electra_cf.c
->> @@ -352,6 +352,7 @@ static struct of_device_id electra_cf_match[] = {
->
-> While you are here, want to make that const?
-
-I'll do that for .27, thanks for pointing it out.
-
-
--Olof
+- k
