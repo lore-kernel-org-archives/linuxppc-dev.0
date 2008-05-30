@@ -1,19 +1,19 @@
-Return-Path: <johnzhouzj@gmail.com>
-Received: from ti-out-0910.google.com (ti-out-0910.google.com [209.85.142.184])
-	by ozlabs.org (Postfix) with ESMTP id B3648DDEEE
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	by ozlabs.org (Postfix) with ESMTP id E2F54DE373
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 30 May 2008 11:14:51 +1000 (EST)
-Received: by ti-out-0910.google.com with SMTP id w7so2792940tib.13
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 29 May 2008 18:14:50 -0700 (PDT)
-Message-ID: <966933c00805291814s12439a96q57fabe77ff1139ec@mail.gmail.com>
-Date: Fri, 30 May 2008 09:14:50 +0800
-From: "John Zhou" <johnzhouzj@gmail.com>
+	Fri, 30 May 2008 19:46:33 +1000 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1K21Bu-0005tT-Lj
+	for linuxppc-embedded@ozlabs.org; Fri, 30 May 2008 02:46:30 -0700
+Message-ID: <17555236.post@talk.nabble.com>
+Date: Fri, 30 May 2008 02:46:30 -0700 (PDT)
+From: Misbah khan <misbah_khan@engineer.com>
 To: linuxppc-embedded@ozlabs.org
-Subject: Question on PowerPC's JTAG instruction
+Subject: Block driver Concern.
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_5300_13445732.1212110090279"
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -24,62 +24,32 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-------=_Part_5300_13445732.1212110090279
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 
-Hi,
+Hi all ...
 
-We want to design a tool to speed up our hardware diagnostics via JTAG
-port.
+I have devloped a test block driver on the host system. The driver is
+expected to create 16 partitions on the disc and i am using a character
+driver to read and write into the partitions where in i am using the request
+function of the block driver.
 
-So we have question to ask for your help:
+The concern is that , after inserting the driver only one partition gets
+created and not the all 16 
 
-1. How do we access PowerPC's internal GPRs and SPRs etc. via JTAG
-instruction?
 
-We'v gone through IEEE.1149.1.   There are no standard JTAG instruction to
-access CPU's data bus, including internal or external data bus. Do we must
-need private JTAG instruction to access CPU's internal resource? if it is,
-could you share the documents with us?
+There are few question that remained unanswered till now for me :-
+1. How could we write a bulk of data to the partitions created by the device
+?
+2. While inserting the device How is it possible to create 16 partitions
+having the same major no.
+3. How do in real case we use to write/read blocks of data to/from the disc
+(I have used a char driver to test )??
 
-2. For 'BSDL' usage, you know, we have many components on one board and much
-more signals are processed specically. So, how to integrate PowerPC's BSDL
-with other components' 'BSDL'?  Could you give us any hints on it? or any
-document is also welcome!
+If any of you have worked on Block drivers or have knowledge/Experiance then
+please do share it with me .
 
-Your any help is appreciated!
-
-John Zhou
-
-------=_Part_5300_13445732.1212110090279
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-Hi,<br><div dir="ltr" align="left"><font face="Arial"><font color="#0000ff"><font size="2"><span class="937200610-29052008"><br>We want to design a tool to speed up our hardware 
-diagnostics via JTAG port.&nbsp; </span></font></font></font></div>
-<div dir="ltr" align="left"><font face="Arial"><font color="#0000ff"><font size="2"><span class="937200610-29052008"></span></font></font></font>&nbsp;</div>
-<div dir="ltr" align="left"><font face="Arial"><font color="#0000ff"><font size="2"><span class="937200610-29052008">So w<span class="937200610-29052008">e have question to 
-ask for your help:</span></span></font></font></font></div>
-<div dir="ltr" align="left"><font face="Arial"><font color="#0000ff"><font size="2"><span class="937200610-29052008"></span></font></font></font>&nbsp;</div>
-<div dir="ltr" align="left"><font face="Arial"><font color="#0000ff"><font size="2"><span class="937200610-29052008">1. How do we access PowerPC&#39;s internal GPRs and SPRs 
-etc. via JTAG instruction?&nbsp; </span></font></font></font></div>
-<div dir="ltr" align="left"><font face="Arial"><font color="#0000ff"><font size="2"><span class="937200610-29052008"></span></font></font></font>&nbsp;</div>
-<div dir="ltr" align="left"><font face="Arial"><font color="#0000ff"><font size="2"><span class="937200610-29052008">We&#39;v gone through IEEE.1149.1.&nbsp;&nbsp; There are no&nbsp;standard 
-JTAG instruction to access&nbsp;CPU&#39;s data bus, including internal or external data 
-bus. Do we must need private JTAG instruction to access CPU&#39;s internal resource? 
-if it is, could you&nbsp;share&nbsp;the documents&nbsp;with 
-us?</span></font></font></font></div>
-<div dir="ltr" align="left"><font face="Arial"><font color="#0000ff"><font size="2"><span class="937200610-29052008"></span></font></font></font>&nbsp;</div>
-<div dir="ltr" align="left"><font face="Arial"><font color="#0000ff"><font size="2"><span class="937200610-29052008">2. For &#39;BSDL&#39; usage, you know, we have many components 
-on one board and much more signals are processed specically. So, how to 
-integrate PowerPC&#39;s BSDL with other components&#39; &#39;BSDL&#39;?&nbsp; Could you give us any 
-hints on it? or any document is also welcome!</span></font></font></font></div>
-<div dir="ltr" align="left"><font face="Arial"><font color="#0000ff"><font size="2"><span class="937200610-29052008"></span></font></font></font>&nbsp;</div>
-<div dir="ltr" align="left"><font color="#0000ff" face="Arial" size="2">Your any help is 
-appreciated!<br><br></font></div><font color="#0000ff"><font size="2"><font face="Arial">John Zhou<br></font></font></font><div dir="ltr" align="left"><font color="#0000ff" face="Arial" size="2"><span class="937200610-29052008"></span></font> <br>
-</div><br>
-
-------=_Part_5300_13445732.1212110090279--
+Thank You 
+Misbah <><
+2.  
+-- 
+View this message in context: http://www.nabble.com/Block-driver-Concern.-tp17555236p17555236.html
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
