@@ -1,19 +1,19 @@
-Return-Path: <adams.ppc@gmail.com>
-Received: from hu-out-0506.google.com (hu-out-0506.google.com [72.14.214.238])
-	by ozlabs.org (Postfix) with ESMTP id 71529DDF45
+Return-Path: <johnzhouzj@gmail.com>
+Received: from ti-out-0910.google.com (ti-out-0910.google.com [209.85.142.184])
+	by ozlabs.org (Postfix) with ESMTP id B3648DDEEE
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 30 May 2008 07:24:03 +1000 (EST)
-Received: by hu-out-0506.google.com with SMTP id 34so1248726hue.9
+	Fri, 30 May 2008 11:14:51 +1000 (EST)
+Received: by ti-out-0910.google.com with SMTP id w7so2792940tib.13
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 29 May 2008 14:24:01 -0700 (PDT)
-Message-ID: <4a21eaea0805291423t7e44eae9xbf4c78818d794742@mail.gmail.com>
-Date: Thu, 29 May 2008 15:23:59 -0600
-From: "bhanu jampala" <adams.ppc@gmail.com>
+	Thu, 29 May 2008 18:14:50 -0700 (PDT)
+Message-ID: <966933c00805291814s12439a96q57fabe77ff1139ec@mail.gmail.com>
+Date: Fri, 30 May 2008 09:14:50 +0800
+From: "John Zhou" <johnzhouzj@gmail.com>
 To: linuxppc-embedded@ozlabs.org
-Subject: platform drivers
+Subject: Question on PowerPC's JTAG instruction
 MIME-Version: 1.0
 Content-Type: multipart/alternative;
-	boundary="----=_Part_3275_17986220.1212096239324"
+	boundary="----=_Part_5300_13445732.1212110090279"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -24,46 +24,62 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-------=_Part_3275_17986220.1212096239324
+------=_Part_5300_13445732.1212110090279
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
-Hi Guys,
+Hi,
 
-I am running the basic PPC Linux on my PPC8270 BRD.
-I have to write couple of driver on top of it finish the complete Linux
+We want to design a tool to speed up our hardware diagnostics via JTAG
 port.
 
-I have a external chips which controls simple switching, LCD control and
-watch dog setup.
-I need to write drivers for all of these devices.
+So we have question to ask for your help:
 
-I have written couple of driver before this, But, this is my first time to
-port a BSP to Linux.
-What is driver model that I can use to write on a platform like these.
-Will the platform drivers make some sense?
+1. How do we access PowerPC's internal GPRs and SPRs etc. via JTAG
+instruction?
 
-I have read though some of the docs in 'driver-models' folder. I have a fiar
-understanding about the Platform drivers.
-I wrote one just to see how it works. But, I am not much clean on the
-application of these driver models.
+We'v gone through IEEE.1149.1.   There are no standard JTAG instruction to
+access CPU's data bus, including internal or external data bus. Do we must
+need private JTAG instruction to access CPU's internal resource? if it is,
+could you share the documents with us?
 
-I have plans to submit my code to PPC kernel tree so please let me know what
-is more appropriate.
+2. For 'BSDL' usage, you know, we have many components on one board and much
+more signals are processed specically. So, how to integrate PowerPC's BSDL
+with other components' 'BSDL'?  Could you give us any hints on it? or any
+document is also welcome!
 
--Adams
+Your any help is appreciated!
 
-------=_Part_3275_17986220.1212096239324
+John Zhou
+
+------=_Part_5300_13445732.1212110090279
 Content-Type: text/html; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
-<br>Hi Guys,<br>
-<br>I am running the basic PPC Linux on my PPC8270 BRD.<br>I have to write couple of driver on top of it finish the complete Linux port.<br><br>I have a external chips which controls simple switching, LCD control and watch dog setup.<br>
-I need to write drivers for all of these devices.<br><br>I have written couple of driver before this, But, this is my first time to port a BSP to Linux.<br>What is driver model that I can use to write on a platform like these.<br>
-Will the platform drivers make some sense?<br><br>
-I have read though some of the docs in &#39;driver-models&#39; folder. I have a fiar understanding about the Platform drivers.<br>I wrote one just to see how it works. But, I am not much clean on the application of these driver models.<br>
-<br>I have plans to submit my code to PPC kernel tree so please let me know what is more appropriate.<br><br>-Adams<br>
+Hi,<br><div dir="ltr" align="left"><font face="Arial"><font color="#0000ff"><font size="2"><span class="937200610-29052008"><br>We want to design a tool to speed up our hardware 
+diagnostics via JTAG port.&nbsp; </span></font></font></font></div>
+<div dir="ltr" align="left"><font face="Arial"><font color="#0000ff"><font size="2"><span class="937200610-29052008"></span></font></font></font>&nbsp;</div>
+<div dir="ltr" align="left"><font face="Arial"><font color="#0000ff"><font size="2"><span class="937200610-29052008">So w<span class="937200610-29052008">e have question to 
+ask for your help:</span></span></font></font></font></div>
+<div dir="ltr" align="left"><font face="Arial"><font color="#0000ff"><font size="2"><span class="937200610-29052008"></span></font></font></font>&nbsp;</div>
+<div dir="ltr" align="left"><font face="Arial"><font color="#0000ff"><font size="2"><span class="937200610-29052008">1. How do we access PowerPC&#39;s internal GPRs and SPRs 
+etc. via JTAG instruction?&nbsp; </span></font></font></font></div>
+<div dir="ltr" align="left"><font face="Arial"><font color="#0000ff"><font size="2"><span class="937200610-29052008"></span></font></font></font>&nbsp;</div>
+<div dir="ltr" align="left"><font face="Arial"><font color="#0000ff"><font size="2"><span class="937200610-29052008">We&#39;v gone through IEEE.1149.1.&nbsp;&nbsp; There are no&nbsp;standard 
+JTAG instruction to access&nbsp;CPU&#39;s data bus, including internal or external data 
+bus. Do we must need private JTAG instruction to access CPU&#39;s internal resource? 
+if it is, could you&nbsp;share&nbsp;the documents&nbsp;with 
+us?</span></font></font></font></div>
+<div dir="ltr" align="left"><font face="Arial"><font color="#0000ff"><font size="2"><span class="937200610-29052008"></span></font></font></font>&nbsp;</div>
+<div dir="ltr" align="left"><font face="Arial"><font color="#0000ff"><font size="2"><span class="937200610-29052008">2. For &#39;BSDL&#39; usage, you know, we have many components 
+on one board and much more signals are processed specically. So, how to 
+integrate PowerPC&#39;s BSDL with other components&#39; &#39;BSDL&#39;?&nbsp; Could you give us any 
+hints on it? or any document is also welcome!</span></font></font></font></div>
+<div dir="ltr" align="left"><font face="Arial"><font color="#0000ff"><font size="2"><span class="937200610-29052008"></span></font></font></font>&nbsp;</div>
+<div dir="ltr" align="left"><font color="#0000ff" face="Arial" size="2">Your any help is 
+appreciated!<br><br></font></div><font color="#0000ff"><font size="2"><font face="Arial">John Zhou<br></font></font></font><div dir="ltr" align="left"><font color="#0000ff" face="Arial" size="2"><span class="937200610-29052008"></span></font> <br>
+</div><br>
 
-------=_Part_3275_17986220.1212096239324--
+------=_Part_5300_13445732.1212110090279--
