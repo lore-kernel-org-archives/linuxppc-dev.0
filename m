@@ -1,33 +1,15 @@
-Return-Path: <tpiepho@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 10C37DDE45
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 May 2008 08:27:31 +1000 (EST)
-Date: Thu, 29 May 2008 15:25:31 -0700 (PDT)
-From: Trent Piepho <tpiepho@freescale.com>
-To: Roland Dreier <rdreier@cisco.com>
-Subject: Re: MMIO and gcc re-ordering issue
-In-Reply-To: <adawslcojdg.fsf@cisco.com>
-Message-ID: <Pine.LNX.4.64.0805291517140.18832@t2.domain.actdsltmp>
-References: <1211852026.3286.36.camel@pasglop>
-	<20080526.184047.88207142.davem@davemloft.net>
-	<1211854540.3286.42.camel@pasglop>
-	<20080526.192812.184590464.davem@davemloft.net>
-	<20080526204233.75b71bb8@infradead.org>
-	<1211872130.3286.64.camel@pasglop>
-	<adaprr721c6.fsf@cisco.com> <1211922696.3286.82.camel@pasglop>
-	<adaiqwzsa83.fsf@cisco.com> <yq0iqwxrwuh.fsf@jaguar.mkp.net>
-	<adawslcojdg.fsf@cisco.com>
+Return-Path: <dgibson@ozlabs.org>
+Date: Fri, 30 May 2008 11:01:17 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Kim Phillips <kim.phillips@freescale.com>
+Subject: Re: [PATCH 1/2] update crypto node definition and device tree
+	instances
+Message-ID: <20080530010117.GA26816@yookeroo.seuss>
+References: <20080529141246.b9cea683.kim.phillips@freescale.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-Cc: linux-arch@vger.kernel.org, Jes Sorensen <jes@sgi.com>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	scottwood@freescale.com, torvalds@linux-foundation.org,
-	David Miller <davem@davemloft.net>, alan@lxorguk.ukuu.org.uk,
-	Arjan van de Ven <arjan@infradead.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080529141246.b9cea683.kim.phillips@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,26 +19,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 29 May 2008, Roland Dreier wrote:
-> > The problem is that your two writel's, despite being both issued on
-> > cpu X, due to the spin lock, in your example, can end up with the
-> > first one going through NR 1 and the second one going through NR 2. If
-> > there's contention on NR 1, the write going via NR 2 may hit the PCI
-> > bridge prior to the one going via NR 1.
->
-> Really??  I can't see how you can expect any drivers to work reliably if
-> simple code like
->
-> 	writel(reg1);
-> 	writel(reg2);
->
-> might end up with the write to reg2 hitting the device before the write
-> to reg1.  Almost all MMIO stuff has ordering requirements and will
+On Thu, May 29, 2008 at 02:12:46PM -0500, Kim Phillips wrote:
+> delete obsolete device-type property, delete model property
+> (use compatible property instead), prepend "fsl," to Freescale
+> specific properties. Add nodes to device trees that are missing them,
+> and fix broken property values in other trees.
 
-This is how powerpc is natively (the linux accessors have extra ordering to
-not allow this of course), and there are non-Linux drivers that are written
-for this ordering model.
+Hurrah, that broken binding has finally been fixed.
 
-I think what makes altix so hard is that writes to the _same_ register may be
-be re-ordered.  Re-ordering writes to the same address is much less common
-than allowing writes to different addresses to be re-ordered.
+> Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
+
+Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
