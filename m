@@ -1,21 +1,25 @@
-Return-Path: <johnpol@2ka.mipt.ru>
-Received: from 2ka.mipt.ru (relay.2ka.mipt.ru [194.85.82.65])
-	by ozlabs.org (Postfix) with ESMTP id EC573DE472
-	for <linuxppc-dev@ozlabs.org>; Sat, 31 May 2008 06:13:58 +1000 (EST)
-Date: Sat, 31 May 2008 00:13:52 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Return-Path: <kim.phillips@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 3BC69DDF70
+	for <linuxppc-dev@ozlabs.org>; Sat, 31 May 2008 06:18:19 +1000 (EST)
+Date: Fri, 30 May 2008 15:16:38 -0500
+From: Kim Phillips <kim.phillips@freescale.com>
 To: Scott Wood <scottwood@freescale.com>
 Subject: Re: [PATCH 2/2] talitos: Freescale integrated security engine (SEC)
 	driver
-Message-ID: <20080530201352.GA26698@2ka.mipt.ru>
+Message-Id: <20080530151638.087970ab.kim.phillips@freescale.com>
+In-Reply-To: <4840585D.8050805@freescale.com>
 References: <20080529141250.0946b02c.kim.phillips@freescale.com>
 	<20080530180904.GA18945@2ka.mipt.ru>
 	<20080530143614.1e675228.kim.phillips@freescale.com>
 	<4840585D.8050805@freescale.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4840585D.8050805@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, mr.scada@gmail.com, linux-crypto@vger.kernel.org,
+Content-Type: text/plain; charset=US-ASCII
+Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>, linuxppc-dev@ozlabs.org,
+	mr.scada@gmail.com, linux-crypto@vger.kernel.org,
 	herbert@gondor.apana.org.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -26,19 +30,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, May 30, 2008 at 02:41:17PM -0500, Scott Wood (scottwood@freescale.com) wrote:
-> >>Don't you want to protect against simultaneous access to register space
-> >>from different CPUs? Or it is single processor board only?
-> >
-> >Doesn't linux mask the IRQ line for the interrupt currently being
-> >serviced, and on all processors?
+On Fri, 30 May 2008 14:41:17 -0500
+Scott Wood <scottwood@freescale.com> wrote:
+
+> Kim Phillips wrote:
+> > On Fri, 30 May 2008 22:09:04 +0400
+> > Evgeniy Polyakov <johnpol@2ka.mipt.ru> wrote:
+> >> Don't you want to protect against simultaneous access to register space
+> >> from different CPUs? Or it is single processor board only?
+> > 
+> > Doesn't linux mask the IRQ line for the interrupt currently being
+> > serviced, and on all processors?
 > 
 > Yes.  Could there be interference from non-interrupt driver code on 
 > another cpu (or interrupted code), though?
 
-Yes, that register space can be assigned from non-interrupt path on
-different cpu. I saw spin_lock_irqsave() is used in some other places,
-but not in interrupt handler itself.
+not that I can see - the fetch fifo register writes are protected with
+per-channel spinlocks.
 
--- 
-	Evgeniy Polyakov
+Kim
