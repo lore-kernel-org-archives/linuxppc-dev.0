@@ -1,16 +1,33 @@
-Return-Path: <timur@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <kim.phillips@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
+	(Client CN "de01egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 0E827DDFF2
-	for <linuxppc-dev@ozlabs.org>; Sat, 31 May 2008 08:12:12 +1000 (EST)
-From: Timur Tabi <timur@freescale.com>
-To: linuxppc-dev@ozlabs.org, galak@kernel.crashing.org
-Subject: [PATCH] Fix DMA nodes in the MPC8610 HPCD device tree
-Date: Fri, 30 May 2008 17:12:05 -0500
-Message-Id: <1212185525-20944-1-git-send-email-timur@freescale.com>
+	by ozlabs.org (Postfix) with ESMTPS id 10635DE304
+	for <linuxppc-dev@ozlabs.org>; Sat, 31 May 2008 08:21:17 +1000 (EST)
+Date: Fri, 30 May 2008 17:19:30 -0500
+From: Kim Phillips <kim.phillips@freescale.com>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Subject: Re: [PATCH 2/2] talitos: Freescale integrated security engine (SEC)
+	driver
+Message-Id: <20080530171930.61965d59.kim.phillips@freescale.com>
+In-Reply-To: <20080530211204.GA15768@2ka.mipt.ru>
+References: <20080529141250.0946b02c.kim.phillips@freescale.com>
+	<20080530180904.GA18945@2ka.mipt.ru>
+	<20080530143614.1e675228.kim.phillips@freescale.com>
+	<4840585D.8050805@freescale.com>
+	<20080530151638.087970ab.kim.phillips@freescale.com>
+	<4840615F.4070103@freescale.com>
+	<20080530153505.21eb1ec4.kim.phillips@freescale.com>
+	<48406562.4010306@freescale.com>
+	<20080530154820.6e56b625.kim.phillips@freescale.com>
+	<20080530211204.GA15768@2ka.mipt.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
+	mr.scada@gmail.com, linux-crypto@vger.kernel.org,
+	herbert@gondor.apana.org.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,64 +37,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The node for DMA2 in the MPC8610 HPCD device tree has the wrong compatible
-properties.  This breaks the DMA driver and the sound driver.
+On Sat, 31 May 2008 01:12:08 +0400
+Evgeniy Polyakov <johnpol@2ka.mipt.ru> wrote:
 
-Signed-off-by: Timur Tabi <timur@freescale.com>
----
+> On Fri, May 30, 2008 at 03:48:20PM -0500, Kim Phillips (kim.phillips@freescale.com) wrote:
+> > sorry, by ISR I meant interrupt status registers.  but I can't tell
+> > where the suspected simultaneous accesses are.  Evgeniy, can you point
+> > out the register accesses you're talking about?
+> 
+> priv->status is accessed from tasklets, although readonly, but that rises
+> a red flag... Also callback invocation tasklet drops the lock around
 
-I have no idea how I let this bug slip in, but this is a must-fix for 2.6.26.
+ok, I see what you are saying now; if a channel gets done during
+talitos_done processing, it'll trigger an interrupt and reset
+priv->status, leaving the tasklet in the dark as to which channel has
+done status, depending on how many channel dones it has already
+processed.  I think the only solution here is to call flush_channel on
+each channel, regardless of the bits in the interrupt status - I'll
+send out a patch shortly.
 
- arch/powerpc/boot/dts/mpc8610_hpcd.dts |   10 +++++-----
- 1 files changed, 5 insertions(+), 5 deletions(-)
+> callback, during that time cached status and priv itself (and tail like
+> in two simultaneous flushes) could change (or not?)
 
-diff --git a/arch/powerpc/boot/dts/mpc8610_hpcd.dts b/arch/powerpc/boot/dts/mpc8610_hpcd.dts
-index 08a780d..fa9b6bb 100644
---- a/arch/powerpc/boot/dts/mpc8610_hpcd.dts
-+++ b/arch/powerpc/boot/dts/mpc8610_hpcd.dts
-@@ -251,14 +251,14 @@
- 		dma@c300 {
- 			#address-cells = <1>;
- 			#size-cells = <1>;
--			compatible = "fsl,mpc8610-dma", "fsl,mpc8540-dma";
-+			compatible = "fsl,mpc8610-dma", "fsl,eloplus-dma";
- 			cell-index = <1>;
- 			reg = <0xc300 0x4>; /* DMA general status register */
- 			ranges = <0x0 0xc100 0x200>;
- 
- 			dma-channel@0 {
- 				compatible = "fsl,mpc8610-dma-channel",
--					"fsl,mpc8540-dma-channel";
-+					"fsl,eloplus-dma-channel";
- 				cell-index = <0>;
- 				reg = <0x0 0x80>;
- 				interrupt-parent = <&mpic>;
-@@ -266,7 +266,7 @@
- 			};
- 			dma-channel@1 {
- 				compatible = "fsl,mpc8610-dma-channel",
--					"fsl,mpc8540-dma-channel";
-+					"fsl,eloplus-dma-channel";
- 				cell-index = <1>;
- 				reg = <0x80 0x80>;
- 				interrupt-parent = <&mpic>;
-@@ -274,7 +274,7 @@
- 			};
- 			dma-channel@2 {
- 				compatible = "fsl,mpc8610-dma-channel",
--					"fsl,mpc8540-dma-channel";
-+					"fsl,eloplus-dma-channel";
- 				cell-index = <2>;
- 				reg = <0x100 0x80>;
- 				interrupt-parent = <&mpic>;
-@@ -282,7 +282,7 @@
- 			};
- 			dma-channel@3 {
- 				compatible = "fsl,mpc8610-dma-channel",
--					"fsl,mpc8540-dma-channel";
-+					"fsl,eloplus-dma-channel";
- 				cell-index = <3>;
- 				reg = <0x180 0x80>;
- 				interrupt-parent = <&mpic>;
--- 
-1.5.5
+I think you're talking about a different 'status' here; flush_channel's
+local 'status' doesn't resemble priv->status bits in any way, it looks
+at the descriptor header writeback bits for done status, on a per
+descriptor basis.  It forwards this descriptor done vs. error status to
+the callback.
+
+priv itself won't change; it's uniquely associated to the device.
+
+Kim
