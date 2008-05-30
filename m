@@ -1,33 +1,21 @@
-Return-Path: <kim.phillips@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
+Return-Path: <ben@somanetworks.com>
+Received: from mail.somanetworks.com (ldap.somanetworks.com [216.126.67.42])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "mail.somanetworks.com",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 10635DE304
-	for <linuxppc-dev@ozlabs.org>; Sat, 31 May 2008 08:21:17 +1000 (EST)
-Date: Fri, 30 May 2008 17:19:30 -0500
-From: Kim Phillips <kim.phillips@freescale.com>
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Subject: Re: [PATCH 2/2] talitos: Freescale integrated security engine (SEC)
-	driver
-Message-Id: <20080530171930.61965d59.kim.phillips@freescale.com>
-In-Reply-To: <20080530211204.GA15768@2ka.mipt.ru>
-References: <20080529141250.0946b02c.kim.phillips@freescale.com>
-	<20080530180904.GA18945@2ka.mipt.ru>
-	<20080530143614.1e675228.kim.phillips@freescale.com>
-	<4840585D.8050805@freescale.com>
-	<20080530151638.087970ab.kim.phillips@freescale.com>
-	<4840615F.4070103@freescale.com>
-	<20080530153505.21eb1ec4.kim.phillips@freescale.com>
-	<48406562.4010306@freescale.com>
-	<20080530154820.6e56b625.kim.phillips@freescale.com>
-	<20080530211204.GA15768@2ka.mipt.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
-	mr.scada@gmail.com, linux-crypto@vger.kernel.org,
-	herbert@gondor.apana.org.au
+	by ozlabs.org (Postfix) with ESMTPS id 690F6DE944
+	for <linuxppc-dev@ozlabs.org>; Sat, 31 May 2008 08:22:52 +1000 (EST)
+Received: from odo.yyz.somanetworks.com (HELO [10.11.11.50])
+	(ben@[10.11.11.50]) (envelope-sender <ben@somanetworks.com>)
+	by mail.somanetworks.com (qmail-ldap-1.03) with RC4-MD5 encrypted SMTP
+	for <linuxppc-dev@ozlabs.org>; 30 May 2008 22:16:08 -0000
+Message-ID: <48407CA8.3030301@somanetworks.com>
+Date: Fri, 30 May 2008 18:16:08 -0400
+From: Ben Gamsa <ben@somanetworks.com>
+MIME-Version: 1.0
+To: linuxppc-dev@ozlabs.org
+Subject: Problems changing ethernet phy settings with LXT973 (and 8555)
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,34 +25,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, 31 May 2008 01:12:08 +0400
-Evgeniy Polyakov <johnpol@2ka.mipt.ru> wrote:
+I'm not sure if this is the right place to post, but it's one of the few
+places that seems relevant (the other I think would be linuxppc-embedded).
 
-> On Fri, May 30, 2008 at 03:48:20PM -0500, Kim Phillips (kim.phillips@freescale.com) wrote:
-> > sorry, by ISR I meant interrupt status registers.  but I can't tell
-> > where the suspected simultaneous accesses are.  Evgeniy, can you point
-> > out the register accesses you're talking about?
-> 
-> priv->status is accessed from tasklets, although readonly, but that rises
-> a red flag... Also callback invocation tasklet drops the lock around
+Our board is using an 8555 with an LXT973 dual-phy chip hooked up to TSEC0
+and TSEC1.
 
-ok, I see what you are saying now; if a channel gets done during
-talitos_done processing, it'll trigger an interrupt and reset
-priv->status, leaving the tasklet in the dark as to which channel has
-done status, depending on how many channel dones it has already
-processed.  I think the only solution here is to call flush_channel on
-each channel, regardless of the bits in the interrupt status - I'll
-send out a patch shortly.
+We're currently using 2.6.20 but I don't see any major changes in the 2.6.25
+release in the area of the phy driver.  We're using the gianfar driver, with
+the generic phy driver.  When the phy driver writes to BMCR to turn off
+auto-negotiation and set the speed and duplex, it appears that none of the
+writes except the RESET bit take effect.  Reading back the register
+immediately shows the RESET bit set, but none of the other changes (later
+the RESET bit is cleared, but again, none of the changes are visible).
 
-> callback, during that time cached status and priv itself (and tail like
-> in two simultaneous flushes) could change (or not?)
+One possibility was that the LXT973 was wired up to come up in hardware
+control mode, where it's supposed to ignore all writes (I'm not sure if
+there is supposed to be an exception for the RESET bit or not in this case),
+but that appears not to be the case.
 
-I think you're talking about a different 'status' here; flush_channel's
-local 'status' doesn't resemble priv->status bits in any way, it looks
-at the descriptor header writeback bits for done status, on a per
-descriptor basis.  It forwards this descriptor done vs. error status to
-the callback.
+I was wondering if anyone has any idea as to what might be the source of
+this problem, or if anyone has any suggestions as to avenues of investigation
+to track it down.
 
-priv itself won't change; it's uniquely associated to the device.
-
-Kim
+-- 
+Ben Gamsa             ben@somanetworks.com
+SOMA Networks, Inc.   312 Adelaide St. W. Suite 600 Toronto, Ontario, M5V1R2
