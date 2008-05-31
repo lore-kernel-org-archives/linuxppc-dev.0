@@ -1,24 +1,22 @@
 Return-Path: <root@ucw.cz>
 Received: from spitz.ucw.cz (gprs189-60.eurotel.cz [160.218.189.60])
-	by ozlabs.org (Postfix) with ESMTP id 319C2DDE01
-	for <linuxppc-dev@ozlabs.org>; Mon,  2 Jun 2008 00:45:07 +1000 (EST)
-Date: Sat, 31 May 2008 10:14:51 +0200
+	by ozlabs.org (Postfix) with ESMTP id 5E386DDF46
+	for <linuxppc-dev@ozlabs.org>; Mon,  2 Jun 2008 00:45:18 +1000 (EST)
+Date: Sat, 31 May 2008 10:04:27 +0200
 From: Pavel Machek <pavel@ucw.cz>
-To: Jes Sorensen <jes@sgi.com>
+To: Roland Dreier <rdreier@cisco.com>
 Subject: Re: MMIO and gcc re-ordering issue
-Message-ID: <20080531081450.GI5405@ucw.cz>
-References: <1211854540.3286.42.camel@pasglop>
+Message-ID: <20080531080427.GH5405@ucw.cz>
+References: <1211852026.3286.36.camel@pasglop>
+	<20080526.184047.88207142.davem@davemloft.net>
+	<1211854540.3286.42.camel@pasglop>
 	<20080526.192812.184590464.davem@davemloft.net>
 	<20080526204233.75b71bb8@infradead.org>
 	<1211872130.3286.64.camel@pasglop> <adaprr721c6.fsf@cisco.com>
-	<1211922696.3286.82.camel@pasglop> <adaiqwzsa83.fsf@cisco.com>
-	<yq0iqwxrwuh.fsf@jaguar.mkp.net>
-	<1212097223.8888.55.camel@pasglop> <483FCD5C.208@sgi.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <483FCD5C.208@sgi.com>
-Cc: linux-arch@vger.kernel.org, Roland Dreier <rdreier@cisco.com>,
-	linux-kernel@vger.kernel.org, Jeremy Higdon <jeremy@sgi.com>,
+In-Reply-To: <adaprr721c6.fsf@cisco.com>
+Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
 	David Miller <davem@davemloft.net>, linuxppc-dev@ozlabs.org,
 	scottwood@freescale.com, torvalds@linux-foundation.org,
 	tpiepho@freescale.com, alan@lxorguk.ukuu.org.uk,
@@ -34,77 +32,42 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Hi!
 
-> >>The only way to guarantee ordering in the above setup, 
-> >>is to either
-> >>make writel() fully ordered or adding the mmiowb()'s 
-> >>inbetween the two
-> >>writel's. On Altix you have to go and read from the 
-> >>PCI brige to
-> >>ensure all writes to it have been flushed, which is 
-> >>also what mmiowb()
-> >>is doing. If writel() was to guarantee this ordering, 
-> >>it would make
-> >>every writel() call extremely expensive :-(
-> >
-> >Interesting. I've always been taught by ia64 people 
-> >that mmiowb() was
-> >intended to be used solely between writel() and 
-> >spin_unlock().
-> >
-> >I think in the above case, you really should make 
-> >writel() ordered.
-> >Anything else is asking for trouble, for the exact same 
-> >reasons that I
-> >made it fully ordered on powerpc at least vs. previous 
-> >stores. I only
-> >kept it relaxed vs. subsequent cacheable stores (ie, 
-> >spin_unlock), for
-> >which I use the trick mentioned before.
+>  > Though it's my understanding that at least ia64 does require the
+>  > explicit barriers anyway, so we are still in a dodgy situation here
+>  > where it's not clear what drivers should do and we end up with
+>  > possibly excessive barriers on powerpc where I end up with both
+>  > the wmb/rmb/mb that were added for ia64 -and- the ones I have in
+>  > readl/writel to make them look synchronous... Not nice.
 > 
-> Hmmm I hope I didn't mess up the description of this and 
-> added to the
-> confusion.
+> ia64 is a disaster with a slightly different ordering problem -- the
+> mmiowb() issue.  I know Ben knows far too much about this, but for big
+> SGI boxes, you sometimes need mmiowb() to avoid problems with driver
+> code that does totally sane stuff like
 > 
-> The net result of that would be to kill performance 
-> completely, I really
-> don't like that idea.... Having each writel() go out and 
-> poll the PCI
-> bridge is going to make every driver used on Altix slow 
-> as a dog.
+> 	spin_lock(&mmio_lock);
+> 	writel(val1, reg1);
+> 	writel(val2, reg2);
+> 	spin_unlock(&mmio_lock);
 > 
-> In addition it's still not going to solve the problem 
-> for userland
-> mapped stuff such as infinibug.
+> If that snippet is called on two CPUs at the same time, then the device
+> might see a sequence like
 > 
-> >Yes, this has some cost (can be fairly significant on 
-> >powerpc too) but
-> >I think it's a very basic assumption from drivers that 
-> >consecutive
-> >writel's, especially issued by the same CPU, will get 
-> >to the device
-> >in order.
+> 	CPU1 -- write reg1
+> 	CPU2 -- write reg1
+> 	CPU1 -- write reg2
+> 	CPU2 -- write reg2
 > 
-> In this case the cost is more than just significant, 
-> it's pretty
-> crippling.
+> in spite of the fact that everything is totally ordered on the CPUs by
+> the spin lock.
 > 
-> >If this is a performance problem, then provide relaxed 
-> >variants and
-> >use them in selected drivers.
-> 
-> We'd have to make major changes to drivers like e1000, 
-> tg3, mptsas, the
-> qla2/3/4xxx and a bunch of others to get performance 
-> back. I really
-> think the code maintenance issue there will get far 
-> worse than what we
-> have today :(
+> The reason this is such a disaster is because the code looks right,
+> makes sense, and works fine on 99.99% of all systems out there.  So I
+> would bet that 99% of our drivers have missing mmiowb() "bugs" -- no one
+> has plugged the hardware into an Altix box and cared enough to stress
+> test it.
 
-Still better than changing semantics of writel for _all_ drivers.
-
-If you are really sure driver does not depend on writel order, it is
-just a sed/// command, so I don't see any big code maintenance
-issues...
+Yes, ia64 is a disaster, and needs its spinlock implementation fixed
+:-).
 							Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
