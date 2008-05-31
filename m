@@ -1,26 +1,17 @@
-Return-Path: <prvs=SRane/00368e2d9d@alphion.com>
-Received: from mx1.alphion.com (unknown [66.147.184.83])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 5B0FEDE3BF
+Return-Path: <zhulida@hotmail.com>
+Received: from bay0-omc2-s11.bay0.hotmail.com (bay0-omc2-s11.bay0.hotmail.com
+	[65.54.246.147]) by ozlabs.org (Postfix) with ESMTP id 44334DDE22
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 31 May 2008 01:34:47 +1000 (EST)
-Received: from MailerDaemon by mx1.alphion.com with local-bsmtp (Exim 4.63)
-	(envelope-from <SRane@alphion.com>) id 1K26ct-0000BZ-DY
-	for linuxppc-embedded@ozlabs.org; Fri, 30 May 2008 11:34:43 -0400
-Received: from [172.16.3.22] (port=3391 helo=MX2.AlphionCorp.local)
-	by mx1.alphion.com with esmtp (Exim 4.63)
-	(envelope-from <SRane@alphion.com>) id 1K26cs-0000BU-4i
-	for linuxppc-embedded@ozlabs.org; Fri, 30 May 2008 11:34:42 -0400
-MIME-Version: 1.0
+	Sat, 31 May 2008 18:31:33 +1000 (EST)
+Message-ID: <BAY124-W49CC670970046CAE18FB33A8B90@phx.gbl>
 Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C8C26A.ADE6D56D"
-Subject: RE: ABI Document
-Date: Fri, 30 May 2008 11:34:01 -0400
-Message-ID: <73FA539107892C4C8C7A5ACA10C161C803A810@MX2.AlphionCorp.local>
-References: <73FA539107892C4C8C7A5ACA10C161C803A80F@MX2.AlphionCorp.local>
-From: "Sachin Rane" <SRane@alphion.com>
+	boundary="_b57ef365-80b9-45f5-a9b3-fdb5636b579d_"
+From: =?gb2312?B?1uzA+7Tv?= <zhulida@hotmail.com>
 To: <linuxppc-embedded@ozlabs.org>
+Subject: FW: Error occured when appended FPGA image in the section of
+	.init.text then bootup
+Date: Sat, 31 May 2008 16:31:31 +0800
+MIME-Version: 1.0
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -31,92 +22,43 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
-
-------_=_NextPart_001_01C8C26A.ADE6D56D
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
-Hi,
-=20
-I got the document from following link:
-http://refspecs.linux-foundation.org/elf/elfspec_ppc.pdf
-
-Thanks and Regards,
-Sachin Rane
-
-________________________________
-
-From: Sachin Rane
-Sent: Fri 5/30/2008 10:18 AM
-To: linuxppc-embedded@ozlabs.org
-Subject: ABI Document
+--_b57ef365-80b9-45f5-a9b3-fdb5636b579d_
+Content-Type: text/plain; charset="gb2312"
+Content-Transfer-Encoding: 8bit
 
 
-Hi,
+Hi all.   These days , I haved been troubled by a trouble. As I am a new boy who play with linux and PowPc603e(MPC8247). I have no ideal to solve it. 
+   The request below give rise to the problem.I have some boards equiped with MPC8247 and FPGA without storage media which used as a PCI interface. So when the linux bootup before initialize the PCI, the code of FPGA will download. I append the FPGA code file in the Kernel section '.init.text'. when linux bootup firstly it check the board type(different board type would download different code), and download fpga code. More board types lead to more FPGA code. I append them all in the section of '.init.text'.  when the total size of the code reach out 2M. The error occured. I read the '__log_buf' the kernel access some bad area. As the powerpce603 will map 16M address use two bat, how and why the problem occured, and how to solved it .
+  I kown it can download in the bootloader who read the FPGA image in the flash.But when the the flash is blank and the systerm boot from the tftp using a Muti-file image, another proble will occured.
+ 
+                                    You advice will helpful! Sorry for my poor english! 
+_________________________________________________________________
+用手机MSN聊天写邮件看空间，无限沟通，分享精彩！
+http://mobile.msn.com.cn/
+--_b57ef365-80b9-45f5-a9b3-fdb5636b579d_
+Content-Type: text/html; charset="gb2312"
+Content-Transfer-Encoding: 8bit
 
-We are using AMCC 440GX processor on our custom boards.
-As per my understanding PPC440GX is 32-bit processor.
-I am looking for document 'SYSTEM V APPLICATION BINARY INTERFACE PowerPC =
-Processor Supplement'.
-I have got html document from Internet but its formatting is disturbed.
-The link for the PDF document is not working. The author of the document =
-is ''Kari Karhi, IBM'
-
-On Internet I could see PPC 64-bit  related documents but couldn't find =
-it for 32-bit.
-
-I am looking for information regarding PPC440 register usage and =
-function calling.
-
-Will you send me the document if it is present in your repository?
-
-Thanks.
-
-Reagdrs,
-Sachin Rane
-
-------_=_NextPart_001_01C8C26A.ADE6D56D
-Content-Type: text/html;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
-<HTML dir=3Dltr><HEAD>=0A=
-<META http-equiv=3DContent-Type content=3D"text/html; charset=3Dunicode">=0A=
-<META content=3D"MSHTML 6.00.6000.16643" name=3DGENERATOR></HEAD>=0A=
-<BODY>=0A=
-<DIV id=3DidOWAReplyText52999 dir=3Dltr>=0A=
-<DIV dir=3Dltr><FONT face=3DArial color=3D#000000 =
-size=3D2>Hi,</FONT></DIV>=0A=
-<DIV dir=3Dltr><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>=0A=
-<DIV dir=3Dltr><FONT face=3DArial size=3D2>I got the document from =
-following link:</FONT></DIV>=0A=
-<DIV dir=3Dltr><A =
-href=3D"http://refspecs.linux-foundation.org/elf/elfspec_ppc.pdf">http://=
-refspecs.linux-foundation.org/elf/elfspec_ppc.pdf</A><BR><BR>Thanks and =
-Regards,<BR>Sachin Rane</DIV></DIV>=0A=
-<DIV dir=3Dltr><BR>=0A=
-<HR tabIndex=3D-1>=0A=
-<FONT face=3DTahoma size=3D2><B>From:</B> Sachin Rane<BR><B>Sent:</B> =
-Fri 5/30/2008 10:18 AM<BR><B>To:</B> =
-linuxppc-embedded@ozlabs.org<BR><B>Subject:</B> ABI =
-Document<BR></FONT><BR></DIV>=0A=
-<DIV dir=3Dltr>=0A=
-<DIV><FONT face=3DArial color=3D#000000 size=3D2>=0A=
-<DIV>Hi,<BR><BR>We are using AMCC 440GX processor on our custom =
-boards.<BR>As per my understanding PPC440GX is 32-bit processor.<BR>I am =
-looking for document 'SYSTEM V APPLICATION BINARY INTERFACE PowerPC =
-Processor Supplement'.</DIV>=0A=
-<DIV>I have got html document&nbsp;from Internet but its formatting is =
-disturbed.</DIV>=0A=
-<DIV>The&nbsp;link for the PDF document is not working. The =
-author&nbsp;of the document&nbsp;is ''<STRONG><EM>Kari Karhi, =
-IBM'</EM></STRONG><BR></DIV>=0A=
-<DIV>On Internet I could see PPC 64-bit&nbsp; related documents but =
-couldn't find it for 32-bit.<BR><BR>I am looking for information =
-regarding PPC440 register usage and function calling.<BR><BR>Will you =
-send me the document if it is present in your =
-repository?<BR><BR>Thanks.<BR><BR>Reagdrs,<BR>Sachin =
-Rane</DIV></FONT></DIV></DIV></BODY></HTML>
-------_=_NextPart_001_01C8C26A.ADE6D56D--
+<html>
+<head>
+<style>
+.hmmessage P
+{
+margin:0px;
+padding:0px
+}
+body.hmmessage
+{
+FONT-SIZE: 9pt;
+FONT-FAMILY:Tahoma
+}
+</style>
+</head>
+<body class='hmmessage'>
+<BLOCKQUOTE><FONT size=4>Hi all.<BR>&nbsp;&nbsp; </FONT><FONT size=4>These days , I haved been troubled by a trouble. As I am a new boy who play with linux and PowPc603e(MPC8247). I have no ideal to solve it.</FONT> 
+<P align=left><FONT size=4>&nbsp;&nbsp; </FONT><FONT size=4>The request below give rise to the problem.<BR>I have some boards equiped with MPC8247 and FPGA without storage media which used as a PCI interface. So when the linux bootup before initialize the PCI, the code of FPGA will download. I append the FPGA code file in the Kernel section '.init.text'. when linux bootup firstly it check the board type(different board type would download different code), and download fpga code. More board types lead to more FPGA code. I append them all in the section of '.init.text'.&nbsp; when the total size of the code reach out 2M. The error occured. I read the '__log_buf' the kernel access some bad area. As the powerpce603 will map 16M address use two bat, how and&nbsp;why the problem occured, and how to solved it .</FONT></P>
+<P align=left><FONT size=4>&nbsp; </FONT><FONT size=4>I kown it can download in the bootloader who read the FPGA image in the flash.But when the the flash is blank and the systerm boot from the tftp using a Muti-file image, another proble will occured.</FONT></P>
+<P align=left><FONT size=4>&nbsp;</FONT></P>
+<P align=left><FONT size=4>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; You advice will helpful! Sorry for my poor english!</FONT></P><FONT size=4>&nbsp;<BR></FONT></BLOCKQUOTE><br /><hr />Windows Live Writer，支持离线撰写博客内容，随时随地想写就写。 <a href='http://get.live.cn/product/writer.html' target='_new'>立即使用！</a></body>
+</html>
+--_b57ef365-80b9-45f5-a9b3-fdb5636b579d_--
