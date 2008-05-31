@@ -1,26 +1,29 @@
-Return-Path: <jeremy@classic.engr.sgi.com>
-Received: from relay.sgi.com (relay1.sgi.com [192.48.171.29])
-	by ozlabs.org (Postfix) with ESMTP id BE753DDE28
-	for <linuxppc-dev@ozlabs.org>; Sat, 31 May 2008 17:57:21 +1000 (EST)
-Date: Sat, 31 May 2008 00:57:18 -0700
-From: Jeremy Higdon <jeremy@sgi.com>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: MMIO and gcc re-ordering issue
-Message-ID: <20080531075718.GD108600@sgi.com>
-References: <1211852026.3286.36.camel@pasglop>
-	<1212073289.3428.30.camel@localhost.localdomain>
-	<483FCA94.1060506@sgi.com>
-	<200805301021.00883.jbarnes@virtuousgeek.org>
+Return-Path: <johnpol@2ka.mipt.ru>
+Received: from 2ka.mipt.ru (relay.2ka.mipt.ru [194.85.82.65])
+	by ozlabs.org (Postfix) with ESMTP id F0C68DDE3A
+	for <linuxppc-dev@ozlabs.org>; Sat, 31 May 2008 19:59:14 +1000 (EST)
+Date: Sat, 31 May 2008 13:59:02 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Kim Phillips <kim.phillips@freescale.com>
+Subject: Re: [PATCH 2/2] talitos: Freescale integrated security engine (SEC)
+	driver
+Message-ID: <20080531095901.GA16281@2ka.mipt.ru>
+References: <20080530180904.GA18945@2ka.mipt.ru>
+	<20080530143614.1e675228.kim.phillips@freescale.com>
+	<4840585D.8050805@freescale.com>
+	<20080530151638.087970ab.kim.phillips@freescale.com>
+	<4840615F.4070103@freescale.com>
+	<20080530153505.21eb1ec4.kim.phillips@freescale.com>
+	<48406562.4010306@freescale.com>
+	<20080530154820.6e56b625.kim.phillips@freescale.com>
+	<20080530211204.GA15768@2ka.mipt.ru>
+	<20080530171930.61965d59.kim.phillips@freescale.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200805301021.00883.jbarnes@virtuousgeek.org>
-Cc: linux-arch@vger.kernel.org, Roland Dreier <rdreier@cisco.com>,
-	Jes Sorensen <jes@sgi.com>, linux-kernel@vger.kernel.org,
-	David Miller <davem@davemloft.net>,
-	James Bottomley <James.Bottomley@hansenpartnership.com>,
-	linuxppc-dev@ozlabs.org, scottwood@freescale.com,
-	torvalds@linux-foundation.org, tpiepho@freescale.com,
-	alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
+In-Reply-To: <20080530171930.61965d59.kim.phillips@freescale.com>
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
+	mr.scada@gmail.com, linux-crypto@vger.kernel.org,
+	herbert@gondor.apana.org.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,43 +33,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, May 30, 2008 at 10:21:00AM -0700, Jesse Barnes wrote:
-> On Friday, May 30, 2008 2:36 am Jes Sorensen wrote:
-> > James Bottomley wrote:
-> > >> The only way to guarantee ordering in the above setup, is to either
-> > >> make writel() fully ordered or adding the mmiowb()'s inbetween the two
-> > >> writel's. On Altix you have to go and read from the PCI brige to
-> > >> ensure all writes to it have been flushed, which is also what mmiowb()
-> > >> is doing. If writel() was to guarantee this ordering, it would make
-> > >> every writel() call extremely expensive :-(
-> > >
-> > > So if a read from the bridge achieves the same effect, can't we just put
-> > > one after the writes within the spinlock (an unrelaxed one).  That way
+Hi.
 
-A relaxed readX would be sufficient.  It's the next lowest cost way (after
-mmiowb) of ensuring write ordering between CPUs.  Regular readX is the
-most expensive method (well, we could probably come up with something worse,
-but we'd have to work at it  :).
+On Fri, May 30, 2008 at 05:19:30PM -0500, Kim Phillips (kim.phillips@freescale.com) wrote:
+> ok, I see what you are saying now; if a channel gets done during
+> talitos_done processing, it'll trigger an interrupt and reset
+> priv->status, leaving the tasklet in the dark as to which channel has
+> done status, depending on how many channel dones it has already
+> processed.  I think the only solution here is to call flush_channel on
+> each channel, regardless of the bits in the interrupt status - I'll
+> send out a patch shortly.
 
-> > > this whole sequence will look like a well understood PCI posting flush
-> > > rather than have to muck around with little understood (at least by most
-> > > driver writers) io barriers?
-> >
-> > Hmmm,
-> >
-> > I think mmiowb() does some sort of status read from the bridge, I am not
-> > sure if it's enough to just do a regular readl().
-> >
-> > I'm adding Jeremy to the list, he should know for sure.
+Out of curiosity, what is number of channels? I had simialar issue with
+HIFN crypto driver and limited number of descriptor to 80 iirc, since
+with that number HIFN traversal did not show perfromance degradataion on
+Ghz x86.
+
+> > callback, during that time cached status and priv itself (and tail like
+> > in two simultaneous flushes) could change (or not?)
 > 
-> I think a read from the target host bridge is enough.  What mmiowb() does 
-> though is to read a *local* host bridge register, which contains a count of 
-> the number of PIO ops still "in flight" on their way to their target bridge.  
-> When it reaches 0, all PIOs have arrived at the target host bridge (they 
-> still may be bufferd), so ordering is guaranteed.
+> I think you're talking about a different 'status' here; flush_channel's
+> local 'status' doesn't resemble priv->status bits in any way, it looks
+> at the descriptor header writeback bits for done status, on a per
+> descriptor basis.  It forwards this descriptor done vs. error status to
+> the callback.
+> 
+> priv itself won't change; it's uniquely associated to the device.
 
+I meant descriptor hdr value accessed via it - can it be checked in
+tasklet under the lock and in submit path without? Can they correlate
+somehow?
 
-Note that is the main advantage over a read.  There is no round trip across
-the NUMA fabric.
-
-jeremy
+-- 
+	Evgeniy Polyakov
