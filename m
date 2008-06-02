@@ -1,26 +1,16 @@
-Return-Path: <root@ucw.cz>
-Received: from spitz.ucw.cz (gprs189-60.eurotel.cz [160.218.189.60])
-	by ozlabs.org (Postfix) with ESMTP id 5E386DDF46
-	for <linuxppc-dev@ozlabs.org>; Mon,  2 Jun 2008 00:45:18 +1000 (EST)
-Date: Sat, 31 May 2008 10:04:27 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Roland Dreier <rdreier@cisco.com>
-Subject: Re: MMIO and gcc re-ordering issue
-Message-ID: <20080531080427.GH5405@ucw.cz>
-References: <1211852026.3286.36.camel@pasglop>
-	<20080526.184047.88207142.davem@davemloft.net>
-	<1211854540.3286.42.camel@pasglop>
-	<20080526.192812.184590464.davem@davemloft.net>
-	<20080526204233.75b71bb8@infradead.org>
-	<1211872130.3286.64.camel@pasglop> <adaprr721c6.fsf@cisco.com>
-Mime-Version: 1.0
+Return-Path: <dgibson@ozlabs.org>
+Date: Mon, 2 Jun 2008 12:03:52 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Wolfgang Grandegger <wg@grandegger.com>
+Subject: Re: [PATCH 1/4] [POWERPC] 85xx: add board support for the TQM8548
+	modules
+Message-ID: <20080602020352.GB19393@yookeroo.seuss>
+References: <1212130188-28835-1-git-send-email-wg@grandegger.com>
+	<1212130188-28835-2-git-send-email-wg@grandegger.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <adaprr721c6.fsf@cisco.com>
-Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
-	David Miller <davem@davemloft.net>, linuxppc-dev@ozlabs.org,
-	scottwood@freescale.com, torvalds@linux-foundation.org,
-	tpiepho@freescale.com, alan@lxorguk.ukuu.org.uk,
-	Arjan van de Ven <arjan@infradead.org>
+In-Reply-To: <1212130188-28835-2-git-send-email-wg@grandegger.com>
+Cc: Linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,45 +20,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi!
+On Fri, May 30, 2008 at 08:49:45AM +0200, Wolfgang Grandegger wrote:
+> This patch adds support for the TQM8548 modules from TQ-Components
+> GmbH (http://www.tqc.de).
 
->  > Though it's my understanding that at least ia64 does require the
->  > explicit barriers anyway, so we are still in a dodgy situation here
->  > where it's not clear what drivers should do and we end up with
->  > possibly excessive barriers on powerpc where I end up with both
->  > the wmb/rmb/mb that were added for ia64 -and- the ones I have in
->  > readl/writel to make them look synchronous... Not nice.
-> 
-> ia64 is a disaster with a slightly different ordering problem -- the
-> mmiowb() issue.  I know Ben knows far too much about this, but for big
-> SGI boxes, you sometimes need mmiowb() to avoid problems with driver
-> code that does totally sane stuff like
-> 
-> 	spin_lock(&mmio_lock);
-> 	writel(val1, reg1);
-> 	writel(val2, reg2);
-> 	spin_unlock(&mmio_lock);
-> 
-> If that snippet is called on two CPUs at the same time, then the device
-> might see a sequence like
-> 
-> 	CPU1 -- write reg1
-> 	CPU2 -- write reg1
-> 	CPU1 -- write reg2
-> 	CPU2 -- write reg2
-> 
-> in spite of the fact that everything is totally ordered on the CPUs by
-> the spin lock.
-> 
-> The reason this is such a disaster is because the code looks right,
-> makes sense, and works fine on 99.99% of all systems out there.  So I
-> would bet that 99% of our drivers have missing mmiowb() "bugs" -- no one
-> has plugged the hardware into an Altix box and cared enough to stress
-> test it.
+[snip]
+> index 0000000..d09250a
+> --- /dev/null
+> +++ b/arch/powerpc/boot/dts/tqm8548.dts
+> @@ -0,0 +1,370 @@
+> +/*
+> + * TQM8548 Device Tree Source
+> + *
+> + * Copyright 2006 Freescale Semiconductor Inc.
+> + * Copyright 2008 Wolfgang Grandegger <wg@denx.de>
+> + *
+> + * This program is free software; you can redistribute  it and/or modify it
+> + * under  the terms of  the GNU General  Public License as published by the
+> + * Free Software Foundation;  either version 2 of the  License, or (at your
+> + * option) any later version.
+> + */
+> +
+> +/dts-v1/;
 
-Yes, ia64 is a disaster, and needs its spinlock implementation fixed
-:-).
-							Pavel
+[snip]
+> +		i2c@3000 {
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +			cell-index = <0>;
+[...]
+> +		enet0: ethernet@24000 {
+> +			cell-index = <0>;
+[...]
+> +		serial0: serial@4500 {
+> +			cell-index = <0>;
+[...]
+> +	pci0: pci@e0008000 {
+> +		cell-index = <0>;
+
+You have a whole lot of 'cell-index' properties through both these
+trees, and they all look wrong.  cell-index is a hack, which should be
+avoided wherever practical - it should only be used when the index is
+used to offset into some global register block, never simply to
+differentiate (use reg for that) or name the devices (use aliases for
+that).
+
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
