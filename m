@@ -2,21 +2,24 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id DDDD1DDDE9
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Jun 2008 09:07:15 +1000 (EST)
-Message-Id: <4ECB0A32-6194-4AD3-87F6-9FE1DD0DE1F6@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id 59FDCDDE21
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Jun 2008 09:08:03 +1000 (EST)
+Message-Id: <095F258F-72DD-4F27-A457-A57D9FAA1E76@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-In-Reply-To: <7c624bb773b7c8df8357a3b151e2d9fa@kernel.crashing.org>
+To: Jeff Garzik <jeff@garzik.org>
+In-Reply-To: <48445851.4090105@garzik.org>
 Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Mime-Version: 1.0 (Apple Message framework v924)
-Subject: Re: [PATCH] [POWERPC] Cleanup mpic nodes in .dts
-Date: Mon, 2 Jun 2008 18:07:09 -0500
-References: <1212180199-968-1-git-send-email-galak@kernel.crashing.org>
-	<701fe7d26b27ceaffae6e3b77bf94cf7@kernel.crashing.org>
-	<4E62E532-1E3D-4109-B6C4-152F39567CA8@kernel.crashing.org>
-	<7c624bb773b7c8df8357a3b151e2d9fa@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] phylib: Don't allow core of phylib to build as a module
+Date: Mon, 2 Jun 2008 18:07:52 -0500
+References: <Pine.LNX.4.64.0806021019540.22439@blarg.am.freescale.net>
+	<484419EE.5040503@garzik.org>
+	<1E4EB64C-0618-497E-AABC-74EB7D74B97F@kernel.crashing.org>
+	<48442239.7090906@garzik.org>
+	<BF15FEBB-4876-4B16-915B-1D21BF989DA8@kernel.crashing.org>
+	<83820D83-487C-4586-9867-F4226A87A276@freescale.com>
+	<48445851.4090105@garzik.org>
+Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,50 +30,18 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Jun 2, 2008, at 11:32 AM, Segher Boessenkool wrote:
+On Jun 2, 2008, at 3:30 PM, Jeff Garzik wrote:
 
->>>> Removed clock-frequency and big-endian props as they aren't  
->>>> specified
->>>> anywhere.
->>>
->>> If you remove "big-endian", you'll have to provide some other way
->>> to get that information (like, some new "compatible" value).
->>
->> I'm all for "big-endian" but we don't spec this anywhere and aren't  
->> using it right now.  So until we have an real need to start an  
->> extended mpic definition I'm getting rid of it.
+> Andy Fleming wrote:
+>> I'm partial to the select-it-if-you-need-it paradigm.
 >
-> If we would remove everything insufficiently documented, not much  
-> would
-> be left.  This doesn't seem very productive to me.  Could you instead
-> just add some TODO somewhere?
-
-we were already inconsistent here so I've made all things equal and  
-baselined.
-
->>> Dunno if we need "clock-frequency".
->>
->> Not used today.
 >
-> Sure, the kernel might not use it today, but that's no reason to  
-> remove
-> stuff from the device tree.
->
-> I'm not against removing "clock-frequency" though, it's not well- 
-> defined,
-> and what would it be useful for anyway?
+> AFAICS this can all be solved by the platform Kconfig ensuring that  
+> phylib=y
 
-As Scott pointed it it could be used for the frequency of the timers  
-that exist in OpenPIC.
-
->>> This patch also removes "built-in" properties.  I'm all for that,
->>> but the patch description didn't say it does.
->>>
->> will add that to the commit message.
->
-> Thanks.
-
-I'm sticking to removing the cruft and if/when we need it some can add  
-it properly.
+I don't care for this as it means making sure each platform/board port  
+gets it right.  I think we'd be better off with a small stub that is  
+always built into the kernel for phy_read/phy_write, etc or the  
+function pointer indirection mechanism.
 
 - k
