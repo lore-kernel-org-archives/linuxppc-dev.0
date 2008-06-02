@@ -1,20 +1,14 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 1E129DDF0A
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Jun 2008 02:19:25 +1000 (EST)
-Message-Id: <4E62E532-1E3D-4109-B6C4-152F39567CA8@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-In-Reply-To: <701fe7d26b27ceaffae6e3b77bf94cf7@kernel.crashing.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v924)
-Subject: Re: [PATCH] [POWERPC] Cleanup mpic nodes in .dts
-Date: Mon, 2 Jun 2008 11:19:14 -0500
-References: <1212180199-968-1-git-send-email-galak@kernel.crashing.org>
-	<701fe7d26b27ceaffae6e3b77bf94cf7@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <stephen.neuendorffer@xilinx.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Subject: RE: Generating a FDT from an MHS file
+Date: Mon, 2 Jun 2008 09:19:25 -0700
+In-Reply-To: <1212422884.16879.6.camel@Phoebe>
+References: <1212422884.16879.6.camel@Phoebe>
+From: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
+To: "Jacob Holladay Poteet" <txtbox@gmail.com>,
+	<Linuxppc-dev@ozlabs.org>
+Message-ID: <20080602161927.317FEE80051@mail145-sin.bigfish.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,25 +19,51 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On May 30, 2008, at 4:42 PM, Segher Boessenkool wrote:
+git.xilinx.com has a gen-mhs-devtree.git repository.  This contains an
+EDK BSP called 'fdt' which generates the device tree for an EDK design.
+The easiest way to use this is to check it out, and then point the EDK
+user repository at the edk_lib directory (under project->project
+options->project peripheral repository), which will then allow you to
+select 'fdt' under software->software platform settings->OS.
 
->> Removed clock-frequency and big-endian props as they aren't specified
->> anywhere.
->
-> If you remove "big-endian", you'll have to provide some other way
-> to get that information (like, some new "compatible" value).
+Let me know how things go...
 
-I'm all for "big-endian" but we don't spec this anywhere and aren't  
-using it right now.  So until we have an real need to start an  
-extended mpic definition I'm getting rid of it.
+Steve
 
-> Dunno if we need "clock-frequency".
+> -----Original Message-----
+> From: linuxppc-dev-bounces+stephen.neuendorffer=3Dxilinx.com@ozlabs.org
+[mailto:linuxppc-dev-
+> bounces+stephen.neuendorffer=3Dxilinx.com@ozlabs.org] On Behalf Of Jacob
+Holladay Poteet
+> Sent: Monday, June 02, 2008 9:08 AM
+> To: Linuxppc-dev@ozlabs.org
+> Subject: Generating a FDT from an MHS file
+> =
 
-Not used today.
+> I'm going to be spending most of this week bringing myself up to speed
+> on how to use these mhs tools (as part of a larger project on partial
+> reconfiguration on Xilinx PPC Virtex boards). For now, can someone
+help
+> me understand how to run the fdt part of the program? I'd like to
+> generate an FDT from an MHS file.
+> =
 
-> This patch also removes "built-in" properties.  I'm all for that,
-> but the patch description didn't say it does.
->
-will add that to the commit message.
+>  I'm reading as much as I can independently, but I'd definitely
+> appreciate some guidance to help me off the ground.
+> =
 
-- k
+> Thanks,
+> Jake Poteet
+> =
+
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+
+
+This email and any attachments are intended for the sole use of the named r=
+ecipient(s) and contain(s) confidential information that may be proprietary=
+, privileged or copyrighted under applicable law. If you are not the intend=
+ed recipient, do not read, copy, or forward this email message or any attac=
+hments. Delete this email message and any attachments immediately.
