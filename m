@@ -1,15 +1,15 @@
-Return-Path: <rmk+linuxppc-dev=ozlabs.org@arm.linux.org.uk>
-Received: from caramon.arm.linux.org.uk (caramon.arm.linux.org.uk
-	[78.32.30.218])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <Haavard.Skinnemoen@atmel.com>
+Received: from bagnes.atmel.com (smtpeu1.atmel.com [195.65.72.27])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 1A841DDEEC
-	for <linuxppc-dev@ozlabs.org>; Mon,  2 Jun 2008 17:53:36 +1000 (EST)
-Date: Mon, 2 Jun 2008 08:24:03 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
+	by ozlabs.org (Postfix) with ESMTPS id C475FDDEF4
+	for <linuxppc-dev@ozlabs.org>; Mon,  2 Jun 2008 18:18:53 +1000 (EST)
+Date: Mon, 2 Jun 2008 10:11:02 +0200
+From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
 Subject: Re: MMIO and gcc re-ordering issue
-Message-ID: <20080602072403.GA20222@flint.arm.linux.org.uk>
+Message-ID: <20080602101102.0d8979c5@hskinnemo-gx745.norway.atmel.com>
+In-Reply-To: <Pine.LNX.4.64.0805301120510.26332@anakin>
 References: <1211852026.3286.36.camel@pasglop>
 	<20080526.184047.88207142.davem@davemloft.net>
 	<1211854540.3286.42.camel@pasglop>
@@ -19,15 +19,20 @@ References: <1211852026.3286.36.camel@pasglop>
 	<1211922621.3286.80.camel@pasglop>
 	<alpine.LFD.1.10.0805271421570.2958@woody.linux-foundation.org>
 	<1211924335.3286.89.camel@pasglop>
-	<alpine.LFD.1.10.0805271451100.2958@woody.linux-foundation.org>
+	<20080527214241.GA22636@parisc-linux.org>
+	<1211926636.3286.100.camel@pasglop>
+	<20080528103648.54eb8734@hskinnemo-gx745.norway.atmel.com>
+	<1212110003.15633.0.camel@pasglop>
+	<20080530080700.773a82cc@siona.local>
+	<1212132267.15633.69.camel@pasglop>
+	<20080530102706.56fca248@siona.local>
+	<Pine.LNX.4.64.0805301120510.26332@anakin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <alpine.LFD.1.10.0805271451100.2958@woody.linux-foundation.org>
-Sender: Russell King <rmk@arm.linux.org.uk>
-Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
-	tpiepho@freescale.com, linuxppc-dev@ozlabs.org,
-	scottwood@freescale.com, David Miller <davem@davemloft.net>,
-	alan@lxorguk.ukuu.org.uk
+Content-Type: text/plain; charset=US-ASCII
+Cc: linux-arch@vger.kernel.org, Matthew Wilcox <matthew@wil.cx>,
+	linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
+	linuxppc-dev@ozlabs.org, tpiepho@freescale.com, scottwood@freescale.com,
+	Torvalds <torvalds@linux-foundation.org>, Linus, alan@lxorguk.ukuu.org.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,37 +42,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, May 27, 2008 at 02:55:56PM -0700, Linus Torvalds wrote:
+Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+> On Fri, 30 May 2008, Haavard Skinnemoen wrote:
+> > Maybe we need another interface that does not do byteswapping but
+> > provides stronger ordering guarantees?
 > 
-> 
-> On Wed, 28 May 2008, Benjamin Herrenschmidt wrote:
-> > 
-> > A problem with __raw_ though is that they -also- don't do byteswap,
-> 
-> Well, that's why there is __readl() and __raw_readl(), no?
-> 
-> Neither does ordering, and __raw_readl() doesn't do byte-swap.
+> The byte swapping depends on the device/bus.
 
-This is where the lack of documentation causes arch maintainers a big
-problem.  None of the semantics of __raw_readl vs __readl vs readl are
-documented _anywhere_.  If you look at x86 as a template, there's no
-comments there about what the different variants are supposed to do
-or not do.
+Of course. But isn't it reasonable to assume that a device integrated
+on the same silicon as the CPU is connected to a somewhat sane bus
+which doesn't require any byte swapping?
 
-So it's left up to arch maintainers to literally guess what should be
-done.  That's precisely what I did when I implemented ARMs __raw_readl
-and friends.  I guessed.
+> So what happened to the old idea of putting the accessor function pointers
+> in the device/bus structure?
 
-And it was only after I read a few mails on lkml which suggested that
-readl and friends should always be LE that ARMs readl implementation
-started to use le32_to_cpu()... before that it had always been native
-endian.  Again, lack of documentation...
+Don't know. I think it sounds like overkill to replace a simple load or
+store with an indirect function call.
 
-So, can the semantics of what's expected from these IO accessor
-functions be documented somewhere.  Please?  Before this thread gets
-lost in the depths of time?
-
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+Haavard
