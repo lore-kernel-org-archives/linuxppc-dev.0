@@ -1,33 +1,34 @@
-Return-Path: <kim.phillips@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id CA920DDF4F
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Jun 2008 00:29:00 +1000 (EST)
-Date: Mon, 2 Jun 2008 09:27:01 -0500
-From: Kim Phillips <kim.phillips@freescale.com>
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Subject: Re: [PATCH 2/2] talitos: Freescale integrated security engine (SEC)
-	driver
-Message-Id: <20080602092701.9d0d56e8.kim.phillips@freescale.com>
-In-Reply-To: <20080531095901.GA16281@2ka.mipt.ru>
-References: <20080530180904.GA18945@2ka.mipt.ru>
-	<20080530143614.1e675228.kim.phillips@freescale.com>
-	<4840585D.8050805@freescale.com>
-	<20080530151638.087970ab.kim.phillips@freescale.com>
-	<4840615F.4070103@freescale.com>
-	<20080530153505.21eb1ec4.kim.phillips@freescale.com>
-	<48406562.4010306@freescale.com>
-	<20080530154820.6e56b625.kim.phillips@freescale.com>
-	<20080530211204.GA15768@2ka.mipt.ru>
-	<20080530171930.61965d59.kim.phillips@freescale.com>
-	<20080531095901.GA16281@2ka.mipt.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
-	mr.scada@gmail.com, linux-crypto@vger.kernel.org,
-	herbert@gondor.apana.org.au
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 7FE50DDFD3
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Jun 2008 01:55:10 +1000 (EST)
+Date: Mon, 2 Jun 2008 10:48:12 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+Subject: Re: MMIO and gcc re-ordering issue
+Message-ID: <20080602154812.GB2734@loki.buserror.net>
+References: <1211924335.3286.89.camel@pasglop>
+	<20080527214241.GA22636@parisc-linux.org>
+	<1211926636.3286.100.camel@pasglop>
+	<20080528103648.54eb8734@hskinnemo-gx745.norway.atmel.com>
+	<1212110003.15633.0.camel@pasglop>
+	<20080530080700.773a82cc@siona.local>
+	<1212132267.15633.69.camel@pasglop>
+	<20080530102706.56fca248@siona.local>
+	<Pine.LNX.4.64.0805301120510.26332@anakin>
+	<20080602101102.0d8979c5@hskinnemo-gx745.norway.atmel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080602101102.0d8979c5@hskinnemo-gx745.norway.atmel.com>
+Cc: linux-arch@vger.kernel.org, Matthew Wilcox <matthew@wil.cx>,
+	linux-kernel@vger.kernel.org, tpiepho@freescale.com,
+	linuxppc-dev@ozlabs.org, Geert Uytterhoeven <geert@linux-m68k.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	David Miller <davem@davemloft.net>, alan@lxorguk.ukuu.org.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,46 +38,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, 31 May 2008 13:59:02 +0400
-Evgeniy Polyakov <johnpol@2ka.mipt.ru> wrote:
-
-> Hi.
-> 
-> On Fri, May 30, 2008 at 05:19:30PM -0500, Kim Phillips (kim.phillips@freescale.com) wrote:
-> > ok, I see what you are saying now; if a channel gets done during
-> > talitos_done processing, it'll trigger an interrupt and reset
-> > priv->status, leaving the tasklet in the dark as to which channel has
-> > done status, depending on how many channel dones it has already
-> > processed.  I think the only solution here is to call flush_channel on
-> > each channel, regardless of the bits in the interrupt status - I'll
-> > send out a patch shortly.
-> 
-> Out of curiosity, what is number of channels? I had simialar issue with
-
-typically four but some parts only have one.
-
-> HIFN crypto driver and limited number of descriptor to 80 iirc, since
-> with that number HIFN traversal did not show perfromance degradataion on
-> Ghz x86.
-
-ok, I've been focusing on correctness for the time being.
-
-> > > callback, during that time cached status and priv itself (and tail like
-> > > in two simultaneous flushes) could change (or not?)
+On Mon, Jun 02, 2008 at 10:11:02AM +0200, Haavard Skinnemoen wrote:
+> Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+> > On Fri, 30 May 2008, Haavard Skinnemoen wrote:
+> > > Maybe we need another interface that does not do byteswapping but
+> > > provides stronger ordering guarantees?
 > > 
-> > I think you're talking about a different 'status' here; flush_channel's
-> > local 'status' doesn't resemble priv->status bits in any way, it looks
-> > at the descriptor header writeback bits for done status, on a per
-> > descriptor basis.  It forwards this descriptor done vs. error status to
-> > the callback.
-> > 
-> > priv itself won't change; it's uniquely associated to the device.
+> > The byte swapping depends on the device/bus.
 > 
-> I meant descriptor hdr value accessed via it - can it be checked in
-> tasklet under the lock and in submit path without? Can they correlate
-> somehow?
+> Of course. But isn't it reasonable to assume that a device integrated
+> on the same silicon as the CPU is connected to a somewhat sane bus
+> which doesn't require any byte swapping?
 
-I believe the check for a non-null request->desc (under lock) before
-the hdr value is accessed ensures this doesn't happen.
+No, unfortunately. :-(
 
-Kim
+See the end of drivers/dma/fsldma.h.  Likewise with Freescale's PCI host
+bridges; for some reason the bus itself being little endian led to the host
+bridge control registers also being little endian.
+
+-Scott
