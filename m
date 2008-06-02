@@ -1,21 +1,27 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 130CADEC52
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Jun 2008 06:50:22 +1000 (EST)
-In-Reply-To: <4E62E532-1E3D-4109-B6C4-152F39567CA8@kernel.crashing.org>
-References: <1212180199-968-1-git-send-email-galak@kernel.crashing.org>
-	<701fe7d26b27ceaffae6e3b77bf94cf7@kernel.crashing.org>
-	<4E62E532-1E3D-4109-B6C4-152F39567CA8@kernel.crashing.org>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <7c624bb773b7c8df8357a3b151e2d9fa@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] [POWERPC] Cleanup mpic nodes in .dts
-Date: Mon, 2 Jun 2008 18:32:18 +0200
-To: Kumar Gala <galak@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <jeremy@classic.engr.sgi.com>
+Received: from relay.sgi.com (netops-testserver-3-out.sgi.com [192.48.171.28])
+	by ozlabs.org (Postfix) with ESMTP id 5D195DDE0D
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Jun 2008 07:02:20 +1000 (EST)
+Date: Mon, 2 Jun 2008 14:02:13 -0700
+From: Jeremy Higdon <jeremy@sgi.com>
+To: Jes Sorensen <jes@sgi.com>
+Subject: Re: MMIO and gcc re-ordering issue
+Message-ID: <20080602210213.GA116363@sgi.com>
+References: <1211854540.3286.42.camel@pasglop>
+	<20080526.192812.184590464.davem@davemloft.net>
+	<20080526204233.75b71bb8@infradead.org>
+	<1211872130.3286.64.camel@pasglop> <adaprr721c6.fsf@cisco.com>
+	<1211922696.3286.82.camel@pasglop> <adaiqwzsa83.fsf@cisco.com>
+	<yq0iqwxrwuh.fsf@jaguar.mkp.net>
+	<20080531075242.GC108600@sgi.com> <4843C3D7.7000609@sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4843C3D7.7000609@sgi.com>
+Cc: linux-arch@vger.kernel.org, Roland Dreier <rdreier@cisco.com>,
+	linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
+	linuxppc-dev@ozlabs.org, scottwood@freescale.com,
+	torvalds@linux-foundation.org, tpiepho@freescale.com,
+	alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,37 +31,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>> Removed clock-frequency and big-endian props as they aren't specified
->>> anywhere.
->>
->> If you remove "big-endian", you'll have to provide some other way
->> to get that information (like, some new "compatible" value).
->
-> I'm all for "big-endian" but we don't spec this anywhere and aren't 
-> using it right now.  So until we have an real need to start an 
-> extended mpic definition I'm getting rid of it.
-
-If we would remove everything insufficiently documented, not much would
-be left.  This doesn't seem very productive to me.  Could you instead
-just add some TODO somewhere?
-
->> Dunno if we need "clock-frequency".
->
-> Not used today.
-
-Sure, the kernel might not use it today, but that's no reason to remove
-stuff from the device tree.
-
-I'm not against removing "clock-frequency" though, it's not 
-well-defined,
-and what would it be useful for anyway?
-
->> This patch also removes "built-in" properties.  I'm all for that,
->> but the patch description didn't say it does.
->>
-> will add that to the commit message.
-
-Thanks.
+On Mon, Jun 02, 2008 at 11:56:39AM +0200, Jes Sorensen wrote:
+> Jeremy Higdon wrote:
+> >We don't actually have that problem on the Altix.  All writes issued
+> >by CPU X will be ordered with respect to each other.  But writes by
+> >CPU X and CPU Y will not be, unless an mmiowb() is done by the
+> >original CPU before the second CPU writes.  I.e.
+> >
+> >	CPU X	writel
+> >	CPU X	writel
+> >	CPU X	mmiowb
+> >
+> >	CPU Y	writel
+> >	...
+> >
+> >Note that this implies some sort of locking.  Also note that if in
+> >the above, CPU Y did the mmiowb, that would not work.
+> 
+> Hmmm,
+> 
+> Then it's less bad than I thought - my apologies for the confusion.
+> 
+> Would we be able to use Ben's trick of setting a per cpu flag in
+> writel() then and checking that in spin unlock issuing the mmiowb()
+> there if needed?
 
 
-Segher
+Yes, that should work fine.  You will get more mmiowb's than you
+need, since some drivers, such as Fusion, don't need them.  On the
+Origins (older SGI MIPS-based Numa), the 'sync' instruction had
+the same effect as mmiowb() with respect to mmio write ordering,
+and it was issued unconditionally in the spin unlock.  It was
+cheaper than mmiowb, however.
+
+If it matters, we could invent and use writel_relaxed() to get
+performance back in drivers we care about....
+
+jeremy
