@@ -1,19 +1,31 @@
-Return-Path: <huubeikens@hotmail.com>
-Received: from bay0-omc2-s5.bay0.hotmail.com (bay0-omc2-s5.bay0.hotmail.com
-	[65.54.246.141]) by ozlabs.org (Postfix) with ESMTP id B34A0DDEF6
+Return-Path: <LeoLi@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id EED9FDDE1A
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  2 Jun 2008 19:27:13 +1000 (EST)
-Message-ID: <BAY122-W337F19C2D451B0405A1391DABB0@phx.gbl>
-Content-Type: multipart/alternative;
-	boundary="_34fdc470-abe1-4949-8ed0-6d9768e31280_"
-From: Huub Eikens <huubeikens@hotmail.com>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: USB Host-to-Serial or USB Host-to-Ethernet
-Date: Mon, 2 Jun 2008 09:22:07 +0000
-In-Reply-To: <200805291414.26798.laurentp@cse-semaphore.com>
-References: <BAY122-W428F4FD4AED8DAED5968A1DABF0@phx.gbl>
-	<200805291414.26798.laurentp@cse-semaphore.com>
+	Mon,  2 Jun 2008 19:42:11 +1000 (EST)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	m529g5Cr027583
+	for <linuxppc-embedded@ozlabs.org>; Mon, 2 Jun 2008 02:42:05 -0700 (MST)
+Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
+	[10.192.129.221])
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id m529g2wn026746
+	for <linuxppc-embedded@ozlabs.org>; Mon, 2 Jun 2008 04:42:03 -0500 (CDT)
 MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: RE: USB Host-to-Serial or USB Host-to-Ethernet
+Date: Mon, 2 Jun 2008 17:42:01 +0800
+Message-ID: <989B956029373F45A0B8AF02970818900250DC6C@zch01exm26.fsl.freescale.net>
+In-Reply-To: <BAY122-W337F19C2D451B0405A1391DABB0@phx.gbl>
+References: <BAY122-W428F4FD4AED8DAED5968A1DABF0@phx.gbl><200805291414.26798.laurentp@cse-semaphore.com>
+	<BAY122-W337F19C2D451B0405A1391DABB0@phx.gbl>
+From: "Li Yang" <LeoLi@freescale.com>
+To: "Huub Eikens" <huubeikens@hotmail.com>, <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -24,76 +36,32 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---_34fdc470-abe1-4949-8ed0-6d9768e31280_
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+> -----Original Message-----
+> From:=20
+> linuxppc-embedded-bounces+leoli=3Dfreescale.com@ozlabs.org=20
+> [mailto:linuxppc-embedded-bounces+leoli=3Dfreescale.com@ozlabs.o
+> rg] On Behalf Of Huub Eikens
+> Sent: Monday, June 02, 2008 5:22 PM
+> To: linuxppc-embedded@ozlabs.org
+> Subject: USB Host-to-Serial or USB Host-to-Ethernet
+>=20
+> Hi,
+> =20
+> I have platform based on the Freescale MPC8270 processor that=20
+> runs on linux 2.4.25. On it I want to mount a memory stick.=20
+> Due to hardware (layout) restrictions , I cannot use an=20
+> external USB Host Controller. Also, I cannot use the on-chip=20
+> USB Host Controller since there is no driver available that=20
+> is reliable and has good performance.
+> =20
+> Therefor, I am exploring the possibility of doing a=20
+> USB-to-Serial or USB-to-ethernet. Does anyone know which chip=20
+> to use for which a driver exists for linux 2.4.25? Note that=20
+> such a chip must act as a USB Host (!).=20
 
-Hi,
-=20
-I have platform based on the Freescale MPC8270 processor that runs on linux=
- 2.4.25. On it I want to mount a memory stick. Due to hardware (layout) res=
-trictions , I cannot use an external USB Host Controller. Also, I cannot us=
-e the on-chip USB Host Controller since there is no driver available that i=
-s reliable and has good performance.
-=20
-Therefor, I am exploring the possibility of doing a USB-to-Serial or USB-to=
--ethernet. Does anyone know which chip to use for which a driver exists for=
- linux 2.4.25? Note that such a chip must act as a USB Host (!).=20
-=20
-Also please note that I cannot migrate to linux version 2.6 since I am depe=
-ndent on external SW components that cannot be migrated that easy.
-=20
-Thanks in advance,
-=20
-Huub Eikens
-=20
-=20
-_________________________________________________________________
-De mooiste afbeeldingen van Angelina Jolie vind je met Live Search
-http://search.live.com/images/results.aspx?q=3Dangelina%20jolie&FORM=3DMIIN=
-TM=
+Can you use a PCI USB card?  I don't quite understand how USB-to-serial =
+or USB-to-ethernet can help you mount a USB memory stick.  Unless you =
+want USB memory stick to be mounted on another system and exported with =
+NFS.
 
---_34fdc470-abe1-4949-8ed0-6d9768e31280_
-Content-Type: text/html; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
-<html>
-<head>
-<style>
-.hmmessage P
-{
-margin:0px;
-padding:0px
-}
-body.hmmessage
-{
-FONT-SIZE: 10pt;
-FONT-FAMILY:Tahoma
-}
-</style>
-</head>
-<body class=3D'hmmessage'>Hi,<BR>
-&nbsp;<BR>
-I have platform based on the&nbsp;Freescale MPC8270 processor that runs on =
-linux 2.4.25. On it I want to mount a memory stick. Due to hardware (layout=
-) restrictions , I cannot use an external USB Host Controller. Also, I cann=
-ot use the&nbsp;on-chip USB Host Controller&nbsp;since there is no driver a=
-vailable that is reliable and has good performance.<BR>
-&nbsp;<BR>
-Therefor, I am exploring the possibility of doing a USB-to-Serial or USB-to=
--ethernet. Does anyone know which chip to use for which a driver exists for=
- linux 2.4.25? Note that such a chip must act as a USB Host (!). <BR>
-&nbsp;<BR>
-Also please note that I cannot migrate to linux version 2.6 since I am depe=
-ndent on external&nbsp;SW components that cannot be migrated that easy.<BR>
-&nbsp;<BR>
-Thanks in advance,<BR>
-&nbsp;<BR>
-Huub Eikens<BR>
-&nbsp;<BR>
-&nbsp;<BR><br /><hr />Plan je evenement, nodig mensen uit en deel je foto's=
- <a href=3D'http://events.live.com' target=3D'_new'>met Windows Live Events=
-</a></body>
-</html>=
-
---_34fdc470-abe1-4949-8ed0-6d9768e31280_--
+- Leo
