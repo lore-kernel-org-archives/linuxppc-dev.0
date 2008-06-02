@@ -2,20 +2,21 @@ Return-Path: <jeff@garzik.org>
 Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 7B0FADE2CC
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Jun 2008 06:30:01 +1000 (EST)
-Message-ID: <48445814.4030004@garzik.org>
-Date: Mon, 02 Jun 2008 16:29:08 -0400
+	by ozlabs.org (Postfix) with ESMTPS id 21295DE2CC
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Jun 2008 06:30:33 +1000 (EST)
+Message-ID: <48445851.4090105@garzik.org>
+Date: Mon, 02 Jun 2008 16:30:09 -0400
 From: Jeff Garzik <jeff@garzik.org>
 MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
+To: Andy Fleming <afleming@freescale.com>
 Subject: Re: [PATCH] phylib: Don't allow core of phylib to build as a module
 References: <Pine.LNX.4.64.0806021019540.22439@blarg.am.freescale.net>
 	<484419EE.5040503@garzik.org>
 	<1E4EB64C-0618-497E-AABC-74EB7D74B97F@kernel.crashing.org>
 	<48442239.7090906@garzik.org>
-	<B2D5CE7E-3635-4C18-BD99-E0B5B0BBC70B@kernel.crashing.org>
-In-Reply-To: <B2D5CE7E-3635-4C18-BD99-E0B5B0BBC70B@kernel.crashing.org>
+	<BF15FEBB-4876-4B16-915B-1D21BF989DA8@kernel.crashing.org>
+	<83820D83-487C-4586-9867-F4226A87A276@freescale.com>
+In-Reply-To: <83820D83-487C-4586-9867-F4226A87A276@freescale.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -27,60 +28,10 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
-> 
-> On Jun 2, 2008, at 11:39 AM, Jeff Garzik wrote:
-> 
->> Kumar Gala wrote:
->>> On Jun 2, 2008, at 11:03 AM, Jeff Garzik wrote:
->>>> Kumar Gala wrote:
->>>>> The core portions of the phylib aren't capable of being used as
->>>>> a module.  This isn't really any different than something like i2c
->>>>> in that the bus driver and core need to be built into the kernel.
->>>>> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
->>>>> ---
->>>>> Jeff, please consider this for 2.6.26 as w/o it we get build issues
->>>>> if phylib is config'd as a module on ppc.
->>>>> drivers/net/phy/Kconfig |    2 +-
->>>>> 1 files changed, 1 insertions(+), 1 deletions(-)
->>>>> diff --git a/drivers/net/phy/Kconfig b/drivers/net/phy/Kconfig
->>>>> index 6eb2d31..ab04cc7 100644
->>>>> --- a/drivers/net/phy/Kconfig
->>>>> +++ b/drivers/net/phy/Kconfig
->>>>> @@ -3,7 +3,7 @@
->>>>> #
->>>>> menuconfig PHYLIB
->>>>> -    tristate "PHY Device support and infrastructure"
->>>>> +    bool "PHY Device support and infrastructure"
->>>>>    depends on !S390
->>>>>    depends on NET_ETHERNET
->>>>
->>>> What are the issues?
->>>>
->>>> The core _should_ be able to be built as a module.
->>> The core provides functions like phy_read/phy_write.  Andy has 
->>> recently introduced board level workaround/fixups.  The problem is 
->>> these workarounds tend to use phy_read/phy_write and the 
->>> board/platform code is not built as modules.
->>> So we get errors like:
->>> arch/powerpc/platforms/built-in.o: In function `mpc8568_mds_phy_fixups':
->>> /home/galak/git/master/powerpc/arch/powerpc/platforms/85xx/mpc85xx_mds.c:99: 
->>> undefined reference to `phy_write'
->>> /home/galak/git/master/powerpc/arch/powerpc/platforms/85xx/mpc85xx_mds.c:104: 
->>> undefined reference to `phy_read'
->>
->> The whole world isn't embedded ppc, we use this stuff elsewhere too.
->>
->> You guys need to figure out something that doesn't require phylib be 
->> built-in on ALL platforms, but only the platforms that require it.
-> 
-> I wasn't suggesting we build it always, just not let it be built as a 
-> module.
+Andy Fleming wrote:
+> I'm partial to the select-it-if-you-need-it paradigm.
 
-I was saying, you are requiring everyone to bloat their kernel with 
-phylib, if they enable phylib, because of your particular platform details.
 
-That is not a path we want to follow -- limiting everyone else because 
-of one case is not acceptable.
+AFAICS this can all be solved by the platform Kconfig ensuring that phylib=y
 
 	Jeff
