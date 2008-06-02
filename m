@@ -1,33 +1,22 @@
-Return-Path: <kim.phillips@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 7A83ADE674
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Jun 2008 05:26:12 +1000 (EST)
-Date: Mon, 2 Jun 2008 14:06:03 -0500
-From: Kim Phillips <kim.phillips@freescale.com>
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Subject: Re: [PATCH 2/2] talitos: Freescale integrated security engine (SEC)
-	driver
-Message-Id: <20080602140603.02d5f40f.kim.phillips@freescale.com>
-In-Reply-To: <20080602175751.GA7807@2ka.mipt.ru>
-References: <4840615F.4070103@freescale.com>
-	<20080530153505.21eb1ec4.kim.phillips@freescale.com>
-	<48406562.4010306@freescale.com>
-	<20080530154820.6e56b625.kim.phillips@freescale.com>
-	<20080530211204.GA15768@2ka.mipt.ru>
-	<20080530171930.61965d59.kim.phillips@freescale.com>
-	<20080531095901.GA16281@2ka.mipt.ru>
-	<20080602092701.9d0d56e8.kim.phillips@freescale.com>
-	<20080602160012.GB32511@2ka.mipt.ru>
-	<20080602115021.cdda8647.kim.phillips@freescale.com>
-	<20080602175751.GA7807@2ka.mipt.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
-	mr.scada@gmail.com, linux-crypto@vger.kernel.org,
-	herbert@gondor.apana.org.au
+	by ozlabs.org (Postfix) with ESMTPS id A2ABBDE6E3
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Jun 2008 05:30:32 +1000 (EST)
+Message-Id: <BF15FEBB-4876-4B16-915B-1D21BF989DA8@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Jeff Garzik <jeff@garzik.org>
+In-Reply-To: <48442239.7090906@garzik.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v924)
+Subject: Re: [PATCH] phylib: Don't allow core of phylib to build as a module
+Date: Mon, 2 Jun 2008 14:30:19 -0500
+References: <Pine.LNX.4.64.0806021019540.22439@blarg.am.freescale.net>
+	<484419EE.5040503@garzik.org>
+	<1E4EB64C-0618-497E-AABC-74EB7D74B97F@kernel.crashing.org>
+	<48442239.7090906@garzik.org>
+Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,31 +26,68 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2 Jun 2008 21:57:51 +0400
-Evgeniy Polyakov <johnpol@2ka.mipt.ru> wrote:
 
-> On Mon, Jun 02, 2008 at 11:50:21AM -0500, Kim Phillips (kim.phillips@freescale.com) wrote:
-> > > But can it be changed? You write to it without lock, but read under the
-> > > one (different for each channel though), so it attracted attention.
-> > 
-> > can you point where in the code your concern is?
-> 
-> talitos_submit() writes to hdr (initially I think?) without locks.
+On Jun 2, 2008, at 11:39 AM, Jeff Garzik wrote:
 
-ok, the desc whose hdr is being written was allocated by
-talitos_submit's caller, and it hasn't been made part of the circular
-buffer at that point.  It becomes a part of the buffer (eligible for
-contention with the consumer side) when desc is assigned.
+> Kumar Gala wrote:
+>> On Jun 2, 2008, at 11:03 AM, Jeff Garzik wrote:
+>>> Kumar Gala wrote:
+>>>> The core portions of the phylib aren't capable of being used as
+>>>> a module.  This isn't really any different than something like i2c
+>>>> in that the bus driver and core need to be built into the kernel.
+>>>> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+>>>> ---
+>>>> Jeff, please consider this for 2.6.26 as w/o it we get build issues
+>>>> if phylib is config'd as a module on ppc.
+>>>> drivers/net/phy/Kconfig |    2 +-
+>>>> 1 files changed, 1 insertions(+), 1 deletions(-)
+>>>> diff --git a/drivers/net/phy/Kconfig b/drivers/net/phy/Kconfig
+>>>> index 6eb2d31..ab04cc7 100644
+>>>> --- a/drivers/net/phy/Kconfig
+>>>> +++ b/drivers/net/phy/Kconfig
+>>>> @@ -3,7 +3,7 @@
+>>>> #
+>>>> menuconfig PHYLIB
+>>>> -    tristate "PHY Device support and infrastructure"
+>>>> +    bool "PHY Device support and infrastructure"
+>>>>    depends on !S390
+>>>>    depends on NET_ETHERNET
+>>>
+>>> What are the issues?
+>>>
+>>> The core _should_ be able to be built as a module.
+>> The core provides functions like phy_read/phy_write.  Andy has  
+>> recently introduced board level workaround/fixups.  The problem is  
+>> these workarounds tend to use phy_read/phy_write and the board/ 
+>> platform code is not built as modules.
+>> So we get errors like:
+>> arch/powerpc/platforms/built-in.o: In function  
+>> `mpc8568_mds_phy_fixups':
+>> /home/galak/git/master/powerpc/arch/powerpc/platforms/85xx/ 
+>> mpc85xx_mds.c:99: undefined reference to `phy_write'
+>> /home/galak/git/master/powerpc/arch/powerpc/platforms/85xx/ 
+>> mpc85xx_mds.c:104: undefined reference to `phy_read'
+>
+> The whole world isn't embedded ppc, we use this stuff elsewhere too.
+>
+> You guys need to figure out something that doesn't require phylib be  
+> built-in on ALL platforms, but only the platforms that require it.
+>
+> Or, update the platform to not require built-in -- convert the board  
+> code to function pointers, and execute them later on somehow, for  
+> example.
 
-> It is read in flush_channel() under tail lock, but then it is dropped,
-> so I rised a question, if it can be modified during that time, since if
-> it can, status value, calculated from it, can be different and thus
-> error check result can be false. Or this is not an issue?
+If you really think the core of the phylib should be able to be built  
+as a module than we could possibly add function pointers to phy_dev to  
+do the real phy_read()/phy_write() and change phy_read/_write to look  
+like:
 
-it would be an issue if flush_cannel didn't save off the data required
-to call the callback with in saved_req.  flush_channel does this on
-purpose to be able to call the callback outside of lock (as is
-commented).  Note desc gets assigned NULL prior to releasing the lock,
-after copying its contents to saved_req.
+int phy_read(struct phy_device *phydev, u16 regnum) {
+	return phydev->read(phydev, regnum);
+}
 
-Kim
+int phy_write(struct phy_device *phydev, u16 regnum, u16 val) {
+	return phydev->write(phydev, regnum, val);
+}
+
+- k
