@@ -1,22 +1,31 @@
-Return-Path: <ntl@pobox.com>
-Received: from sasl.smtp.pobox.com (a-sasl-fastnet.sasl.smtp.pobox.com
-	[207.106.133.19]) by ozlabs.org (Postfix) with ESMTP id A18E6DDF00
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Jun 2008 07:26:57 +1000 (EST)
-Date: Mon, 2 Jun 2008 16:26:32 -0500
-From: Nathan Lynch <ntl@pobox.com>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] [POWERPC] 85xx: Add next-level-cache property
-Message-ID: <20080602212632.GA7475@localdomain>
-References: <1212180199-968-1-git-send-email-galak@kernel.crashing.org>
-	<1212180199-968-2-git-send-email-galak@kernel.crashing.org>
-	<165963514fdb3980898f3babaad546a9@kernel.crashing.org>
-	<8945FFBA-5552-4CF4-B185-8FDD7885B744@kernel.crashing.org>
-	<fe9c3824f2fd9c5013ae3eb037a017e9@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <fe9c3824f2fd9c5013ae3eb037a017e9@kernel.crashing.org>
-Cc: ppc-dev list <linuxppc-dev@ozlabs.org>,
-	Yoder Stuart <stuart.yoder@freescale.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 17363DDEED
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Jun 2008 07:54:30 +1000 (EST)
+Subject: Re: MMIO and gcc re-ordering issue
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <20080602103643.GA21285@elte.hu>
+References: <1211852026.3286.36.camel@pasglop>
+	<20080526.184047.88207142.davem@davemloft.net>
+	<1211854540.3286.42.camel@pasglop>
+	<20080526.192812.184590464.davem@davemloft.net>
+	<1211859542.3286.46.camel@pasglop>
+	<alpine.LFD.1.10.0805270833060.2958@woody.linux-foundation.org>
+	<alpine.LFD.1.10.0805270943100.2958@woody.linux-foundation.org>
+	<alpine.LFD.1.10.0805271028520.2958@woody.linux-foundation.org>
+	<20080602103643.GA21285@elte.hu>
+Content-Type: text/plain
+Date: Tue, 03 Jun 2008 07:53:24 +1000
+Message-Id: <1212443604.26672.7.camel@pasglop>
+Mime-Version: 1.0
+Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
+	tpiepho@freescale.com, linuxppc-dev@ozlabs.org, scottwood@freescale.com,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	David Miller <davem@davemloft.net>, alan@lxorguk.ukuu.org.uk
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,39 +35,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Segher Boessenkool wrote:
->>>
->>> The PowerPC binding defines an "l2-cache" property for this (it
->>> points from CPU node to L2 cache node, from L2 cache node to L3
->>> cache node, from L3 cache node to L4 cache node, etc.)
->>
->> So looking at the PPC binding its not terrible clear about "l3-cache"  
->> being a valid property.
->
-> It isn't.  The property is called "l2-cache" at every level.
->
->> I believe the discussion w/ePAPR was to create something a bit more  
->> generic and clarify/update the PPC binding.
->
-> Nasty.  Sure, "l2-cache" isn't the nicest name to point to deeper
-> cache levels, but introducing a new property with (substantially)
-> the same semantics is worse.
+On Mon, 2008-06-02 at 12:36 +0200, Ingo Molnar wrote:
+> The patch passed initial light testing in -tip (~30 successful random 
+> self-builds and bootups on various mixed 32-bit/64-bit boxes) but
+> it's 
+> still v2.6.27 material IMO.
 
-The semantics appear to be identical, even.
+I think adding the "memory" clobber should be .26 and even -stable. We
+know for sure newer gcc will re-order things, we know it for sure some
+drivers will break in subtle ways because of that, ad we know as well
+that sticking "memory" clobber in there will fix that breakage we know
+about ... So I don't see the point of waiting.
 
-
-> There really shouldn't be a new property name until new functionality
-> is introduced.  For example, it could allow to describe more than one
-> cache at each level (the current binding already allows more than one
-> parent for each cache, but only one child; and cache hierarchies like
-> that actually exist).
->
->> I'm going to stick with the new binding as we don't use this linking  
->> currently.
->
-> Dunno what's the best thing to do here.  If you don't need the
-> functionality yet, it might be best to postpone putting either
-> property in there.  Sigh, what a mess.
-
-Does existing practice count for anything?  IBM pseries firmware uses
-the l2-cache property as described in the PowerPC binding.
+Ben.
