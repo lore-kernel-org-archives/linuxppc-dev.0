@@ -1,33 +1,20 @@
-Return-Path: <kim.phillips@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id BFE27DDF92
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Jun 2008 02:52:13 +1000 (EST)
-Date: Mon, 2 Jun 2008 11:50:21 -0500
-From: Kim Phillips <kim.phillips@freescale.com>
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Subject: Re: [PATCH 2/2] talitos: Freescale integrated security engine (SEC)
-	driver
-Message-Id: <20080602115021.cdda8647.kim.phillips@freescale.com>
-In-Reply-To: <20080602160012.GB32511@2ka.mipt.ru>
-References: <4840585D.8050805@freescale.com>
-	<20080530151638.087970ab.kim.phillips@freescale.com>
-	<4840615F.4070103@freescale.com>
-	<20080530153505.21eb1ec4.kim.phillips@freescale.com>
-	<48406562.4010306@freescale.com>
-	<20080530154820.6e56b625.kim.phillips@freescale.com>
-	<20080530211204.GA15768@2ka.mipt.ru>
-	<20080530171930.61965d59.kim.phillips@freescale.com>
-	<20080531095901.GA16281@2ka.mipt.ru>
-	<20080602092701.9d0d56e8.kim.phillips@freescale.com>
-	<20080602160012.GB32511@2ka.mipt.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
-	mr.scada@gmail.com, linux-crypto@vger.kernel.org,
-	herbert@gondor.apana.org.au
+Return-Path: <adrian.bunk@movial.fi>
+Received: from smtp4.pp.htv.fi (smtp4.pp.htv.fi [213.243.153.38])
+	by ozlabs.org (Postfix) with ESMTP id 70EC8DDE21
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Jun 2008 03:18:02 +1000 (EST)
+Date: Mon, 2 Jun 2008 19:54:22 +0300
+From: Adrian Bunk <adrian.bunk@movial.fi>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] phylib: Don't allow core of phylib to build as a module
+Message-ID: <20080602165422.GA22051@cs181133002.pp.htv.fi>
+References: <Pine.LNX.4.64.0806021019540.22439@blarg.am.freescale.net>
+	<484419EE.5040503@garzik.org>
+	<1E4EB64C-0618-497E-AABC-74EB7D74B97F@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <1E4EB64C-0618-497E-AABC-74EB7D74B97F@kernel.crashing.org>
+Cc: netdev@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,28 +24,60 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2 Jun 2008 20:00:12 +0400
-Evgeniy Polyakov <johnpol@2ka.mipt.ru> wrote:
+On Mon, Jun 02, 2008 at 11:25:14AM -0500, Kumar Gala wrote:
+>
+> On Jun 2, 2008, at 11:03 AM, Jeff Garzik wrote:
+>
+>> Kumar Gala wrote:
+>>> The core portions of the phylib aren't capable of being used as
+>>> a module.  This isn't really any different than something like i2c
+>>> in that the bus driver and core need to be built into the kernel.
+>>> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+>>> ---
+>>> Jeff, please consider this for 2.6.26 as w/o it we get build issues
+>>> if phylib is config'd as a module on ppc.
+>>> drivers/net/phy/Kconfig |    2 +-
+>>> 1 files changed, 1 insertions(+), 1 deletions(-)
+>>> diff --git a/drivers/net/phy/Kconfig b/drivers/net/phy/Kconfig
+>>> index 6eb2d31..ab04cc7 100644
+>>> --- a/drivers/net/phy/Kconfig
+>>> +++ b/drivers/net/phy/Kconfig
+>>> @@ -3,7 +3,7 @@
+>>> #
+>>> menuconfig PHYLIB
+>>> -	tristate "PHY Device support and infrastructure"
+>>> +	bool "PHY Device support and infrastructure"
+>>> 	depends on !S390
+>>> 	depends on NET_ETHERNET
+>>
+>> What are the issues?
+>>
+>> The core _should_ be able to be built as a module.
+>
+> The core provides functions like phy_read/phy_write.  Andy has recently 
+> introduced board level workaround/fixups.  The problem is these 
+> workarounds tend to use phy_read/phy_write and the board/platform code is 
+> not built as modules.
+>
+> So we get errors like:
+>
+> arch/powerpc/platforms/built-in.o: In function `mpc8568_mds_phy_fixups':
+> /home/galak/git/master/powerpc/arch/powerpc/platforms/85xx/ 
+> mpc85xx_mds.c:99: undefined reference to `phy_write'
+>...
 
-> On Mon, Jun 02, 2008 at 09:27:01AM -0500, Kim Phillips (kim.phillips@freescale.com) wrote:
-> > > I meant descriptor hdr value accessed via it - can it be checked in
-> > > tasklet under the lock and in submit path without? Can they correlate
-> > > somehow?
-> > 
-> > I believe the check for a non-null request->desc (under lock) before
-> > the hdr value is accessed ensures this doesn't happen.
-> 
-> But can it be changed? You write to it without lock, but read under the
-> one (different for each channel though), so it attracted attention.
+At first glance PHYLIB=n might also cause similar problems.
 
-can you point where in the code your concern is?
+Please send me the failing .config and I'll cook up a fix.
 
-desc is assigned under head lock and cleared under tail lock, both after
-an smp_wmb.  hdr data is assigned before desc is written, and read
-after desc is found to be !NULL (i.e, hdr access is governed by if
-(desc)). head and tail indices get advanced each within their
-corresponding locks.  So afaict there shouldn't be a case where data
-pointed to by desc can be accessed by both the consumer and the
-producer at any one point in time.  Does that help?
+> - k
 
-Kim
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
