@@ -1,34 +1,17 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 7FE50DDFD3
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Jun 2008 01:55:10 +1000 (EST)
-Date: Mon, 2 Jun 2008 10:48:12 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-Subject: Re: MMIO and gcc re-ordering issue
-Message-ID: <20080602154812.GB2734@loki.buserror.net>
-References: <1211924335.3286.89.camel@pasglop>
-	<20080527214241.GA22636@parisc-linux.org>
-	<1211926636.3286.100.camel@pasglop>
-	<20080528103648.54eb8734@hskinnemo-gx745.norway.atmel.com>
-	<1212110003.15633.0.camel@pasglop>
-	<20080530080700.773a82cc@siona.local>
-	<1212132267.15633.69.camel@pasglop>
-	<20080530102706.56fca248@siona.local>
-	<Pine.LNX.4.64.0805301120510.26332@anakin>
-	<20080602101102.0d8979c5@hskinnemo-gx745.norway.atmel.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id B63EEDDF08
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Jun 2008 01:58:40 +1000 (EST)
+Date: Mon, 2 Jun 2008 10:58:05 -0500 (CDT)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Jeff Garzik <jeff@garzik.org>
+Subject: [PATCH] phylib: Don't allow core of phylib to build as a module
+Message-ID: <Pine.LNX.4.64.0806021019540.22439@blarg.am.freescale.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080602101102.0d8979c5@hskinnemo-gx745.norway.atmel.com>
-Cc: linux-arch@vger.kernel.org, Matthew Wilcox <matthew@wil.cx>,
-	linux-kernel@vger.kernel.org, tpiepho@freescale.com,
-	linuxppc-dev@ozlabs.org, Geert Uytterhoeven <geert@linux-m68k.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	David Miller <davem@davemloft.net>, alan@lxorguk.ukuu.org.uk
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,22 +21,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Jun 02, 2008 at 10:11:02AM +0200, Haavard Skinnemoen wrote:
-> Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-> > On Fri, 30 May 2008, Haavard Skinnemoen wrote:
-> > > Maybe we need another interface that does not do byteswapping but
-> > > provides stronger ordering guarantees?
-> > 
-> > The byte swapping depends on the device/bus.
-> 
-> Of course. But isn't it reasonable to assume that a device integrated
-> on the same silicon as the CPU is connected to a somewhat sane bus
-> which doesn't require any byte swapping?
+The core portions of the phylib aren't capable of being used as
+a module.  This isn't really any different than something like i2c
+in that the bus driver and core need to be built into the kernel.
 
-No, unfortunately. :-(
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
 
-See the end of drivers/dma/fsldma.h.  Likewise with Freescale's PCI host
-bridges; for some reason the bus itself being little endian led to the host
-bridge control registers also being little endian.
+Jeff, please consider this for 2.6.26 as w/o it we get build issues
+if phylib is config'd as a module on ppc.
 
--Scott
+ drivers/net/phy/Kconfig |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/net/phy/Kconfig b/drivers/net/phy/Kconfig
+index 6eb2d31..ab04cc7 100644
+--- a/drivers/net/phy/Kconfig
++++ b/drivers/net/phy/Kconfig
+@@ -3,7 +3,7 @@
+ #
+
+ menuconfig PHYLIB
+-	tristate "PHY Device support and infrastructure"
++	bool "PHY Device support and infrastructure"
+ 	depends on !S390
+ 	depends on NET_ETHERNET
+ 	help
+-- 
+1.5.4.5
