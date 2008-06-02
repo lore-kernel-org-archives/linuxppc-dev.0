@@ -1,15 +1,29 @@
-Return-Path: <viro@ftp.linux.org.uk>
-Received: from ZenIV.linux.org.uk (zeniv.linux.org.uk [195.92.253.2])
+Return-Path: <mingo@elte.hu>
+Received: from mx2.mail.elte.hu (mx2.mail.elte.hu [157.181.151.9])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 9A8B9DDF24
-	for <linuxppc-dev@ozlabs.org>; Mon,  2 Jun 2008 19:59:07 +1000 (EST)
-To: torvalds@linux-foundation.org
-Subject: [PATCH] mpc52xx_gpio iomem annotations
-Message-Id: <E1K36og-0007Yp-He@ZenIV.linux.org.uk>
-From: Al Viro <viro@ftp.linux.org.uk>
-Date: Mon, 02 Jun 2008 10:59:02 +0100
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+	by ozlabs.org (Postfix) with ESMTPS id D3469DDE41
+	for <linuxppc-dev@ozlabs.org>; Mon,  2 Jun 2008 20:37:57 +1000 (EST)
+Date: Mon, 2 Jun 2008 12:36:43 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: MMIO and gcc re-ordering issue
+Message-ID: <20080602103643.GA21285@elte.hu>
+References: <1211852026.3286.36.camel@pasglop>
+	<20080526.184047.88207142.davem@davemloft.net>
+	<1211854540.3286.42.camel@pasglop>
+	<20080526.192812.184590464.davem@davemloft.net>
+	<1211859542.3286.46.camel@pasglop>
+	<alpine.LFD.1.10.0805270833060.2958@woody.linux-foundation.org>
+	<alpine.LFD.1.10.0805270943100.2958@woody.linux-foundation.org>
+	<alpine.LFD.1.10.0805271028520.2958@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <alpine.LFD.1.10.0805271028520.2958@woody.linux-foundation.org>
+Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
+	tpiepho@freescale.com, linuxppc-dev@ozlabs.org,
+	scottwood@freescale.com, David Miller <davem@davemloft.net>,
+	alan@lxorguk.ukuu.org.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,72 +34,33 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
----
-diff --git a/arch/powerpc/platforms/52xx/mpc52xx_gpio.c b/arch/powerpc/platforms/52xx/mpc52xx_gpio.c
-index 48da5df..8a455eb 100644
---- a/arch/powerpc/platforms/52xx/mpc52xx_gpio.c
-+++ b/arch/powerpc/platforms/52xx/mpc52xx_gpio.c
-@@ -100,7 +100,7 @@ static int mpc52xx_wkup_gpio_dir_in(struct gpio_chip *gc, unsigned int gpio)
- 	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
- 	struct mpc52xx_gpiochip *chip = container_of(mm_gc,
- 			struct mpc52xx_gpiochip, mmchip);
--	struct mpc52xx_gpio_wkup *regs = mm_gc->regs;
-+	struct mpc52xx_gpio_wkup __iomem *regs = mm_gc->regs;
- 	unsigned long flags;
- 
- 	spin_lock_irqsave(&gpio_lock, flags);
-@@ -122,7 +122,7 @@ static int
- mpc52xx_wkup_gpio_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
- {
- 	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
--	struct mpc52xx_gpio_wkup *regs = mm_gc->regs;
-+	struct mpc52xx_gpio_wkup __iomem *regs = mm_gc->regs;
- 	struct mpc52xx_gpiochip *chip = container_of(mm_gc,
- 			struct mpc52xx_gpiochip, mmchip);
- 	unsigned long flags;
-@@ -150,7 +150,7 @@ static int __devinit mpc52xx_wkup_gpiochip_probe(struct of_device *ofdev,
- 					const struct of_device_id *match)
- {
- 	struct mpc52xx_gpiochip *chip;
--	struct mpc52xx_gpio_wkup *regs;
-+	struct mpc52xx_gpio_wkup __iomem *regs;
- 	struct of_gpio_chip *ofchip;
- 	int ret;
- 
-@@ -260,7 +260,7 @@ static int mpc52xx_simple_gpio_dir_in(struct gpio_chip *gc, unsigned int gpio)
- 	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
- 	struct mpc52xx_gpiochip *chip = container_of(mm_gc,
- 			struct mpc52xx_gpiochip, mmchip);
--	struct mpc52xx_gpio *regs = mm_gc->regs;
-+	struct mpc52xx_gpio __iomem *regs = mm_gc->regs;
- 	unsigned long flags;
- 
- 	spin_lock_irqsave(&gpio_lock, flags);
-@@ -284,7 +284,7 @@ mpc52xx_simple_gpio_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
- 	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
- 	struct mpc52xx_gpiochip *chip = container_of(mm_gc,
- 			struct mpc52xx_gpiochip, mmchip);
--	struct mpc52xx_gpio *regs = mm_gc->regs;
-+	struct mpc52xx_gpio __iomem *regs = mm_gc->regs;
- 	unsigned long flags;
- 
- 	spin_lock_irqsave(&gpio_lock, flags);
-@@ -312,7 +312,7 @@ static int __devinit mpc52xx_simple_gpiochip_probe(struct of_device *ofdev,
- {
- 	struct mpc52xx_gpiochip *chip;
- 	struct of_gpio_chip *ofchip;
--	struct mpc52xx_gpio *regs;
-+	struct mpc52xx_gpio __iomem *regs;
- 	int ret;
- 
- 	chip = kzalloc(sizeof(*chip), GFP_KERNEL);
-@@ -387,7 +387,7 @@ mpc52xx_gpt_gpio_set(struct gpio_chip *gc, unsigned int gpio, int val)
- static int mpc52xx_gpt_gpio_dir_in(struct gpio_chip *gc, unsigned int gpio)
- {
- 	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
--	struct mpc52xx_gpt *regs = mm_gc->regs;
-+	struct mpc52xx_gpt __iomem *regs = mm_gc->regs;
- 
- 	out_be32(&regs->mode, 0x04);
- 
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+
+> > Here's a UNTESTED patch for x86 that may or may not compile and 
+> > work, and which serializes (on a compiler level) the IO accesses 
+> > against regular memory accesses.
+> 
+> Ok, so it at least boots on x86-32. Thus probably on x86-64 too (since 
+> the code is now shared). I didn't look at whether it generates much 
+> bigger code due to the potential extra serialization, but some of the 
+> code generation I looked at looked fine.
+> 
+> IOW, it doesn't at least create any _obviously_ worse code, and it 
+> should be arguably safer than assuming the compiler does volatile 
+> accesses the way we want it to.
+
+ok, to pursue this topic of making readl*/writel*() more robust i picked 
+up your patch into -tip and created a new topic branch for it: 
+tip/x86/mmio.
+
+The patch passed initial light testing in -tip (~30 successful random 
+self-builds and bootups on various mixed 32-bit/64-bit boxes) but it's 
+still v2.6.27 material IMO.
+
+Failures in this area are subtle so there's no good way to tell whether 
+it works as intended - we need wider testing. I've also added the 
+tip/x86/mmio topic to tip/auto-x86-next rules as well so these changes 
+will be picked up by tomorrow's linux-next tree as well, and by the next 
+-mm iteration.
+
+	Ingo
