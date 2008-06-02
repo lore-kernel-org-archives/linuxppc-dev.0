@@ -1,16 +1,24 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Mon, 2 Jun 2008 12:03:52 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Wolfgang Grandegger <wg@grandegger.com>
-Subject: Re: [PATCH 1/4] [POWERPC] 85xx: add board support for the TQM8548
-	modules
-Message-ID: <20080602020352.GB19393@yookeroo.seuss>
-References: <1212130188-28835-1-git-send-email-wg@grandegger.com>
-	<1212130188-28835-2-git-send-email-wg@grandegger.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1212130188-28835-2-git-send-email-wg@grandegger.com>
-Cc: Linuxppc-dev@ozlabs.org
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH] ftrace: powerpc clean ups
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Steven Rostedt <rostedt@goodmis.org>
+In-Reply-To: <Pine.LNX.4.58.0805221429020.18018@gandalf.stny.rr.com>
+References: <20080515034942.109223655@goodmis.org>
+	<20080515035918.896765954@goodmis.org>
+	<1211292277.7960.8.camel@localhost>
+	<Pine.LNX.4.58.0805221429020.18018@gandalf.stny.rr.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-vUkyxTTM+CreoaEPRw+2"
+Date: Mon, 02 Jun 2008 12:15:07 +1000
+Message-Id: <1212372907.14511.18.camel@localhost>
+Mime-Version: 1.0
+Cc: proski@gnu.org, a.p.zijlstra@chello.nl,
+	Soeren Sandmann Pedersen <sandmann@redhat.com>,
+	Pekka Paalanen <pq@iki.fi>, LKML <linux-kernel@vger.kernel.org>,
+	linuxppc-dev@ozlabs.org, Steven Rostedt <srostedt@redhat.com>,
+	paulus@samba.org, Ingo Molnar <mingo@elte.hu>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,53 +28,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, May 30, 2008 at 08:49:45AM +0200, Wolfgang Grandegger wrote:
-> This patch adds support for the TQM8548 modules from TQ-Components
-> GmbH (http://www.tqc.de).
 
-[snip]
-> index 0000000..d09250a
-> --- /dev/null
-> +++ b/arch/powerpc/boot/dts/tqm8548.dts
-> @@ -0,0 +1,370 @@
-> +/*
-> + * TQM8548 Device Tree Source
-> + *
-> + * Copyright 2006 Freescale Semiconductor Inc.
-> + * Copyright 2008 Wolfgang Grandegger <wg@denx.de>
-> + *
-> + * This program is free software; you can redistribute  it and/or modify it
-> + * under  the terms of  the GNU General  Public License as published by the
-> + * Free Software Foundation;  either version 2 of the  License, or (at your
-> + * option) any later version.
-> + */
-> +
-> +/dts-v1/;
+--=-vUkyxTTM+CreoaEPRw+2
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-[snip]
-> +		i2c@3000 {
-> +			#address-cells = <1>;
-> +			#size-cells = <0>;
-> +			cell-index = <0>;
-[...]
-> +		enet0: ethernet@24000 {
-> +			cell-index = <0>;
-[...]
-> +		serial0: serial@4500 {
-> +			cell-index = <0>;
-[...]
-> +	pci0: pci@e0008000 {
-> +		cell-index = <0>;
+On Thu, 2008-05-22 at 14:31 -0400, Steven Rostedt wrote:
+> This patch cleans up the ftrace code in PowerPC based on the comments fro=
+m
+> Michael Ellerman.
 
-You have a whole lot of 'cell-index' properties through both these
-trees, and they all look wrong.  cell-index is a hack, which should be
-avoided wherever practical - it should only be used when the index is
-used to offset into some global register block, never simply to
-differentiate (use reg for that) or name the devices (use aliases for
-that).
+Hi Steven,
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Thanks for that.
+
+I posted some patches last week, also in my git tree[1], that should
+allow you to use create_branch() in your code (and also facilitate some
+other things I wanted to do). I also added a #define for NOP also.
+
+If/when my patches go into powerpc-next I'll do a patch against
+linux-next for ftrace to use them.
+
+cheers
+
+[1]: http://git.kernel.org/?p=3Dlinux/kernel/git/mpe/linux-2.6.git;a=3Dsumm=
+ary
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-vUkyxTTM+CreoaEPRw+2
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBIQ1erdSjSd0sB4dIRAp5HAJ0crqf+Y5Gk6KWHN2t/WDt3rFhEAwCdExPN
+UkDm5XeSipwInpy82KDTHqU=
+=p+P1
+-----END PGP SIGNATURE-----
+
+--=-vUkyxTTM+CreoaEPRw+2--
