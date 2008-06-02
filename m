@@ -1,17 +1,22 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id EBFAEDE19D
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Jun 2008 04:24:23 +1000 (EST)
-Date: Mon, 2 Jun 2008 22:24:22 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [RFC PATCH] booting-without-of: add FHCI USB, FSL MCU, FSL UPM and
-	GPIO LEDs bindings
-Message-ID: <20080602182422.GA8620@polina.dev.rtsoft.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Arnd Bergmann <arnd@arndb.de>,
-	David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 30E75DE332
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Jun 2008 05:19:58 +1000 (EST)
+Message-Id: <B2D5CE7E-3635-4C18-BD99-E0B5B0BBC70B@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Jeff Garzik <jeff@garzik.org>
+In-Reply-To: <48442239.7090906@garzik.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v924)
+Subject: Re: [PATCH] phylib: Don't allow core of phylib to build as a module
+Date: Mon, 2 Jun 2008 14:19:39 -0500
+References: <Pine.LNX.4.64.0806021019540.22439@blarg.am.freescale.net>
+	<484419EE.5040503@garzik.org>
+	<1E4EB64C-0618-497E-AABC-74EB7D74B97F@kernel.crashing.org>
+	<48442239.7090906@garzik.org>
+Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,156 +26,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi all,
 
-Here are the notorious bindings. I believe I addressed Segher's comments.
+On Jun 2, 2008, at 11:39 AM, Jeff Garzik wrote:
 
-Major changes are in the LEDs bindings, I removed all the cruft and now
-using "aliases" mechanism to determine LEDs' trigger.
+> Kumar Gala wrote:
+>> On Jun 2, 2008, at 11:03 AM, Jeff Garzik wrote:
+>>> Kumar Gala wrote:
+>>>> The core portions of the phylib aren't capable of being used as
+>>>> a module.  This isn't really any different than something like i2c
+>>>> in that the bus driver and core need to be built into the kernel.
+>>>> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+>>>> ---
+>>>> Jeff, please consider this for 2.6.26 as w/o it we get build issues
+>>>> if phylib is config'd as a module on ppc.
+>>>> drivers/net/phy/Kconfig |    2 +-
+>>>> 1 files changed, 1 insertions(+), 1 deletions(-)
+>>>> diff --git a/drivers/net/phy/Kconfig b/drivers/net/phy/Kconfig
+>>>> index 6eb2d31..ab04cc7 100644
+>>>> --- a/drivers/net/phy/Kconfig
+>>>> +++ b/drivers/net/phy/Kconfig
+>>>> @@ -3,7 +3,7 @@
+>>>> #
+>>>> menuconfig PHYLIB
+>>>> -    tristate "PHY Device support and infrastructure"
+>>>> +    bool "PHY Device support and infrastructure"
+>>>>    depends on !S390
+>>>>    depends on NET_ETHERNET
+>>>
+>>> What are the issues?
+>>>
+>>> The core _should_ be able to be built as a module.
+>> The core provides functions like phy_read/phy_write.  Andy has  
+>> recently introduced board level workaround/fixups.  The problem is  
+>> these workarounds tend to use phy_read/phy_write and the board/ 
+>> platform code is not built as modules.
+>> So we get errors like:
+>> arch/powerpc/platforms/built-in.o: In function  
+>> `mpc8568_mds_phy_fixups':
+>> /home/galak/git/master/powerpc/arch/powerpc/platforms/85xx/ 
+>> mpc85xx_mds.c:99: undefined reference to `phy_write'
+>> /home/galak/git/master/powerpc/arch/powerpc/platforms/85xx/ 
+>> mpc85xx_mds.c:104: undefined reference to `phy_read'
+>
+> The whole world isn't embedded ppc, we use this stuff elsewhere too.
+>
+> You guys need to figure out something that doesn't require phylib be  
+> built-in on ALL platforms, but only the platforms that require it.
 
-Comments, suggestions?
+I wasn't suggesting we build it always, just not let it be built as a  
+module.
 
-Thanks,
+> Or, update the platform to not require built-in -- convert the board  
+> code to function pointers, and execute them later on somehow, for  
+> example.
 
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
- Documentation/powerpc/booting-without-of.txt |  117 ++++++++++++++++++++++++++
- 1 files changed, 117 insertions(+), 0 deletions(-)
-
-diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
-index 1ad903a..2a452c3 100644
---- a/Documentation/powerpc/booting-without-of.txt
-+++ b/Documentation/powerpc/booting-without-of.txt
-@@ -62,6 +62,10 @@ Table of Contents
-       s) Freescale on board FPGA
-       t) Freescael MSI interrupt controller
-       u) Freescale General-purpose Timers Module
-+      v) Freescale QUICC Engine USB Controller
-+      w) Freescale MCU with MPC8349E-mITX compatible firmware
-+      x) Freescale Localbus UPM programmed to work with NAND flash
-+      y) LEDs on GPIOs
- 
-   VII - Marvell Discovery mv64[345]6x System Controller chips
-     1) The /system-controller node
-@@ -2970,6 +2974,119 @@ platforms are moved over to use the flattened-device-tree model.
-     	clock-frequency = <0>;
-     };
- 
-+    v) Freescale QUICC Engine USB Controller
-+
-+    Required properties:
-+      - compatible : should be "fsl,<chip>-qe-usb", "fsl,mpc8323-qe-usb";
-+      - reg : the first two cells should contain usb registers location and
-+        length, the next two two cells should contain PRAM location and
-+        length.
-+      - interrupts : should contain USB interrupt.
-+      - interrupt-parent : interrupt source phandle.
-+      - fsl,fullspeed-clock : specifies the full speed USB clock source:
-+        "none": clock source is disabled
-+        "brg1" through "brg16": clock source is BRG1-BRG16, respectively
-+        "clk1" through "clk24": clock source is CLK1-CLK24, respectively
-+      - fsl,lowspeed-clock : specifies the low speed USB clock source:
-+        "none": clock source is disabled
-+        "brg1" through "brg16": clock source is BRG1-BRG16, respectively
-+        "clk1" through "clk24": clock source is CLK1-CLK24, respectively
-+      - hub-power-budget : optional, USB power budget for the root hub, in mA.
-+      - gpios : should specify GPIOs in this order: USBOE, USBTP, USBTN, USBRP,
-+        USBRN, SPEED (optional), and POWER (optional).
-+
-+    Example:
-+
-+	usb@6c0 {
-+		compatible = "fsl,mpc8360-qe-usb", "fsl,mpc8323-qe-usb";
-+		reg = <0x6c0 0x40 0x8b00 0x100>;
-+		interrupts = <11>;
-+		interrupt-parent = <&qeic>;
-+		fsl,fullspeed-clock = "clk21";
-+		gpios = <&qe_pio_b  2 0 /* USBOE */
-+			 &qe_pio_b  3 0 /* USBTP */
-+			 &qe_pio_b  8 0 /* USBTN */
-+			 &qe_pio_b  9 0 /* USBRP */
-+			 &qe_pio_b 11 0 /* USBRN */
-+			 &qe_pio_e 20 0 /* SPEED */
-+			 &qe_pio_e 21 0 /* POWER */>;
-+	};
-+
-+    w) Freescale MCU with MPC8349E-mITX compatible firmware
-+
-+    Required properties:
-+      - compatible : "fsl,<mcu-chip>-<board>", "fsl,mcu-mpc8349emitx";
-+      - reg : should specify I2C address (0x0a).
-+      - #gpio-cells : should be 2.
-+      - gpio-controller : should be present;
-+
-+    Example:
-+
-+	mcu_pio: mcu@0a {
-+		#gpio-cells = <2>;
-+		compatible = "fsl,mc9s08qg8-mpc8349emitx",
-+			     "fsl,mcu-mpc8349emitx";
-+		reg = <0x0a>;
-+		gpio-controller;
-+	};
-+
-+    x) Freescale Localbus UPM programmed to work with NAND flash
-+
-+      Required properties:
-+      - compatible : "fsl,upm-nand".
-+      - reg : should specify localbus chip select and size used for the chip.
-+      - fsl,upm-addr-offset : UPM pattern offset for the address latch.
-+      - fsl,upm-cmd-offset : UPM pattern offset for the command latch.
-+      - gpios : may specify optional GPIO connected to the Ready-Not-Busy pin.
-+
-+      Example:
-+
-+	upm@1,0 {
-+		compatible = "fsl,upm-nand";
-+		reg = <1 0 1>;
-+		fsl,upm-addr-offset = <16>;
-+		fsl,upm-cmd-offset = <8>;
-+		gpios = <&qe_pio_e 18 0>;
-+
-+		flash {
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			compatible = "stmicro,NAND512W3A2BN6E";
-+
-+			partition@0 {
-+				...
-+			};
-+		};
-+	};
-+
-+    y) LEDs on GPIOs
-+
-+    Required properties:
-+      - compatible : should be "gpio-led".
-+      - gpios : should specify LED GPIO.
-+
-+    Example:
-+
-+	pwr_led: led@0 {
-+		compatible = "gpio-led";
-+		gpios = <&mcu_pio 0 1>;
-+	};
-+
-+	hdd_led: led@1 {
-+		compatible = "gpio-led";
-+		gpios = <&mcu_pio 1 0>;
-+	};
-+
-+    To specify "purpose" of the LED, "aliases" mechanism is used. Defined
-+    aliases are: "led-power", "led-ide-disk" and "led-nand-disk".
-+
-+    Example:
-+
-+	aliases {
-+		led-power = &pwr_led;
-+		led-ide-disk = &hdd_led;
-+	};
-+
- VII - Marvell Discovery mv64[345]6x System Controller chips
- ===========================================================
- 
--- 
-1.5.5.1
+- k
