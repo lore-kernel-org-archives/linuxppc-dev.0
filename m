@@ -1,11 +1,16 @@
-Return-Path: <benh@ozlabs.org>
-To: Paul Mackerras <paulus@samba.org>
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Mon, 02 Jun 2008 16:22:59 +1000
-Subject: [PATCH] [POWERPC] Fix incorrect enabling of VMX when building signal
-	or user context
-Message-Id: <20080602062521.C2967DDE0A@ozlabs.org>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <wg@grandegger.com>
+Message-ID: <484393CC.3080709@grandegger.com>
+Date: Mon, 02 Jun 2008 08:31:40 +0200
+From: Wolfgang Grandegger <wg@grandegger.com>
+MIME-Version: 1.0
+To: Wolfgang Grandegger <wg@grandegger.com>,  Linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 1/4] [POWERPC] 85xx: add board support for the TQM8548
+	modules
+References: <1212130188-28835-1-git-send-email-wg@grandegger.com>
+	<1212130188-28835-2-git-send-email-wg@grandegger.com>
+	<20080602020352.GB19393@yookeroo.seuss>
+In-Reply-To: <20080602020352.GB19393@yookeroo.seuss>
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,45 +20,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-When building a signal or a ucontext, we can incorrectly set the MSR_VEC
-bit of the kernel pt_regs->msr before returning to userspace if the task
--ever- used VMX.
+David Gibson wrote:
+> On Fri, May 30, 2008 at 08:49:45AM +0200, Wolfgang Grandegger wrote:
+>> This patch adds support for the TQM8548 modules from TQ-Components
+>> GmbH (http://www.tqc.de).
+> 
+> [snip]
+>> index 0000000..d09250a
+>> --- /dev/null
+>> +++ b/arch/powerpc/boot/dts/tqm8548.dts
+>> @@ -0,0 +1,370 @@
+>> +/*
+>> + * TQM8548 Device Tree Source
+>> + *
+>> + * Copyright 2006 Freescale Semiconductor Inc.
+>> + * Copyright 2008 Wolfgang Grandegger <wg@denx.de>
+>> + *
+>> + * This program is free software; you can redistribute  it and/or modify it
+>> + * under  the terms of  the GNU General  Public License as published by the
+>> + * Free Software Foundation;  either version 2 of the  License, or (at your
+>> + * option) any later version.
+>> + */
+>> +
+>> +/dts-v1/;
+> 
+> [snip]
+>> +		i2c@3000 {
+>> +			#address-cells = <1>;
+>> +			#size-cells = <0>;
+>> +			cell-index = <0>;
+> [...]
+>> +		enet0: ethernet@24000 {
+>> +			cell-index = <0>;
+> [...]
+>> +		serial0: serial@4500 {
+>> +			cell-index = <0>;
+> [...]
+>> +	pci0: pci@e0008000 {
+>> +		cell-index = <0>;
+> 
+> You have a whole lot of 'cell-index' properties through both these
+> trees, and they all look wrong.  cell-index is a hack, which should be
+> avoided wherever practical - it should only be used when the index is
+> used to offset into some global register block, never simply to
+> differentiate (use reg for that) or name the devices (use aliases for
+> that).
 
-This can lead to funny result if that stack used it in the past, then
-"lost" it (ie. it wasn't enabled after a context switch for example) and
-then called get_context. It can end up with VMX enabled and the registers
-containing values from some other task.
+OK, I can remove them from the TQM85*.dts files but I think the problem
+is more general. It seems to be frequently used for similar purposes,
+also in the code, at least in 2.6.26-rc4:
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
+  $ cd linux-2.6/arch/powerpc/boot/dts
+  $ grep -l 'cell-index' *.dts | wc -l
+  58
 
- arch/powerpc/kernel/signal_64.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
-
---- linux-work.orig/arch/powerpc/kernel/signal_64.c	2008-06-02 16:14:10.000000000 +1000
-+++ linux-work/arch/powerpc/kernel/signal_64.c	2008-06-02 16:18:39.000000000 +1000
-@@ -87,6 +87,7 @@ static long setup_sigcontext(struct sigc
- #ifdef CONFIG_ALTIVEC
- 	elf_vrreg_t __user *v_regs = (elf_vrreg_t __user *)(((unsigned long)sc->vmx_reserve + 15) & ~0xful);
- #endif
-+	unsigned long msr = regs->msr;
- 	long err = 0;
- 
- 	flush_fp_to_thread(current);
-@@ -102,7 +103,7 @@ static long setup_sigcontext(struct sigc
- 		/* set MSR_VEC in the MSR value in the frame to indicate that sc->v_reg)
- 		 * contains valid data.
- 		 */
--		regs->msr |= MSR_VEC;
-+		msr |= MSR_VEC;
- 	}
- 	/* We always copy to/from vrsave, it's 0 if we don't have or don't
- 	 * use altivec.
-@@ -114,6 +115,7 @@ static long setup_sigcontext(struct sigc
- 	err |= __put_user(&sc->gp_regs, &sc->regs);
- 	WARN_ON(!FULL_REGS(regs));
- 	err |= __copy_to_user(&sc->gp_regs, regs, GP_REGS_SIZE);
-+	err |= __put_user(msr, &sc->gp_regs[PT_MSR]);
- 	err |= __copy_to_user(&sc->fp_regs, &current->thread.fpr, FP_REGS_SIZE);
- 	err |= __put_user(signr, &sc->signal);
- 	err |= __put_user(handler, &sc->handler);
+Wolfgang
