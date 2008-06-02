@@ -1,13 +1,13 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 39155DDEEC
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Jun 2008 03:38:38 +1000 (EST)
-Date: Mon, 2 Jun 2008 21:38:36 +0400
+	by ozlabs.org (Postfix) with ESMTP id 3B98EDDF07
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Jun 2008 03:38:40 +1000 (EST)
+Date: Mon, 2 Jun 2008 21:38:38 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Kumar Gala <galak@kernel.crashing.org>,
 	Wim Van Sebroeck <wim@iguana.be>
-Subject: [PATCH 1/8] [WATCHDOG] mpc83xx_wdt: fix checkpatch issues
-Message-ID: <20080602173836.GA30705@polina.dev.rtsoft.ru>
+Subject: [PATCH 2/8] [WATCHDOG] mpc83xx_wdt: convert to the OF platform driver
+Message-ID: <20080602173838.GB30705@polina.dev.rtsoft.ru>
 References: <20080602173726.GA24556@polina.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf8
@@ -24,75 +24,141 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Quite tired of these warnings ;-), checkpatch spitting them when
-seeing the rename patch.
-
-WARNING: Use #include <linux/io.h> instead of <asm/io.h>
-#25: FILE: watchdog/mpc83xx_wdt.c:25:
-+#include <asm/io.h>
-
-WARNING: Use #include <linux/uaccess.h> instead of <asm/uaccess.h>
-#26: FILE: watchdog/mpc83xx_wdt.c:26:
-+#include <asm/uaccess.h>
-
-WARNING: line over 80 characters
-#45: FILE: watchdog/mpc83xx_wdt.c:45:
-+MODULE_PARM_DESC(timeout, "Watchdog timeout in ticks. (0<timeout<65536, default=65535");
-
-WARNING: line over 80 characters
-#49: FILE: watchdog/mpc83xx_wdt.c:49:
-+MODULE_PARM_DESC(reset, "Watchdog Interrupt/Reset Mode. 0 = interrupt, 1 = reset");
-
-WARNING: space prohibited between function name and open parenthesis '('
-#164: FILE: watchdog/mpc83xx_wdt.c:164:
-+       wd_base = ioremap(r->start, sizeof (struct mpc83xx_wdt));
-
-total: 0 errors, 5 warnings, 230 lines checked
+This patch simply converts mpc83xx_wdt to the OF platform driver so we
+can directly work with the device tree without passing various stuff
+through platform data.
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+Acked-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
- drivers/watchdog/mpc83xx_wdt.c |   12 +++++++-----
- 1 files changed, 7 insertions(+), 5 deletions(-)
+ drivers/watchdog/mpc83xx_wdt.c |   62 +++++++++++++++++++--------------------
+ 1 files changed, 30 insertions(+), 32 deletions(-)
 
 diff --git a/drivers/watchdog/mpc83xx_wdt.c b/drivers/watchdog/mpc83xx_wdt.c
-index b16c5cd..6905712 100644
+index 6905712..127d85e 100644
 --- a/drivers/watchdog/mpc83xx_wdt.c
 +++ b/drivers/watchdog/mpc83xx_wdt.c
-@@ -22,8 +22,8 @@
- #include <linux/platform_device.h>
+@@ -19,11 +19,12 @@
+ #include <linux/init.h>
+ #include <linux/kernel.h>
+ #include <linux/miscdevice.h>
+-#include <linux/platform_device.h>
++#include <linux/of_platform.h>
  #include <linux/module.h>
  #include <linux/watchdog.h>
--#include <asm/io.h>
--#include <asm/uaccess.h>
-+#include <linux/io.h>
-+#include <linux/uaccess.h>
+ #include <linux/io.h>
+ #include <linux/uaccess.h>
++#include <sysdev/fsl_soc.h>
  
  struct mpc83xx_wdt {
  	__be32 res0;
-@@ -42,11 +42,13 @@ static struct mpc83xx_wdt __iomem *wd_base;
+@@ -149,53 +150,42 @@ static struct miscdevice mpc83xx_wdt_miscdev = {
+ 	.fops	= &mpc83xx_wdt_fops,
+ };
  
- static u16 timeout = 0xffff;
- module_param(timeout, ushort, 0);
--MODULE_PARM_DESC(timeout, "Watchdog timeout in ticks. (0<timeout<65536, default=65535");
-+MODULE_PARM_DESC(timeout, "Watchdog timeout in ticks. "
-+		 "(0<timeout<65536, default=65535");
+-static int __devinit mpc83xx_wdt_probe(struct platform_device *dev)
++static int __devinit mpc83xx_wdt_probe(struct of_device *ofdev,
++				       const struct of_device_id *match)
+ {
+-	struct resource *r;
+ 	int ret;
+-	unsigned int *freq = dev->dev.platform_data;
++	u32 freq = fsl_get_sys_freq();
  
- static int reset = 1;
- module_param(reset, bool, 0);
--MODULE_PARM_DESC(reset, "Watchdog Interrupt/Reset Mode. 0 = interrupt, 1 = reset");
-+MODULE_PARM_DESC(reset, "Watchdog Interrupt/Reset Mode. "
-+		 "0 = interrupt, 1 = reset");
+-	/* get a pointer to the register memory */
+-	r = platform_get_resource(dev, IORESOURCE_MEM, 0);
++	if (!freq || freq == -1)
++		return -EINVAL;
  
- /*
-  * We always prescale, but if someone really doesn't want to they can set this
-@@ -161,7 +163,7 @@ static int __devinit mpc83xx_wdt_probe(struct platform_device *dev)
- 		goto err_out;
+-	if (!r) {
+-		ret = -ENODEV;
+-		goto err_out;
+-	}
+-
+-	wd_base = ioremap(r->start, sizeof(struct mpc83xx_wdt));
+-
+-	if (wd_base == NULL) {
+-		ret = -ENOMEM;
+-		goto err_out;
+-	}
++	wd_base = of_iomap(ofdev->node, 0);
++	if (!wd_base)
++		return -ENOMEM;
+ 
+ 	ret = misc_register(&mpc83xx_wdt_miscdev);
+ 	if (ret) {
+-		printk(KERN_ERR "cannot register miscdev on minor=%d "
+-				"(err=%d)\n",
+-				WATCHDOG_MINOR, ret);
++		pr_err("cannot register miscdev on minor=%d (err=%d)\n",
++			WATCHDOG_MINOR, ret);
+ 		goto err_unmap;
  	}
  
--	wd_base = ioremap(r->start, sizeof (struct mpc83xx_wdt));
-+	wd_base = ioremap(r->start, sizeof(struct mpc83xx_wdt));
+ 	/* Calculate the timeout in seconds */
+ 	if (prescale)
+-		timeout_sec = (timeout * 0x10000) / (*freq);
++		timeout_sec = (timeout * 0x10000) / freq;
+ 	else
+-		timeout_sec = timeout / (*freq);
++		timeout_sec = timeout / freq;
  
- 	if (wd_base == NULL) {
- 		ret = -ENOMEM;
+-	printk(KERN_INFO "WDT driver for MPC83xx initialized. "
+-		"mode:%s timeout=%d (%d seconds)\n",
+-		reset ? "reset":"interrupt", timeout, timeout_sec);
++	pr_info("WDT driver for MPC83xx initialized. mode:%s timeout=%d "
++		"(%d seconds)\n", reset ? "reset" : "interrupt", timeout,
++		timeout_sec);
+ 	return 0;
+-
+ err_unmap:
+ 	iounmap(wd_base);
+-err_out:
+ 	return ret;
+ }
+ 
+-static int __devexit mpc83xx_wdt_remove(struct platform_device *dev)
++static int __devexit mpc83xx_wdt_remove(struct of_device *ofdev)
+ {
+ 	misc_deregister(&mpc83xx_wdt_miscdev);
+ 	iounmap(wd_base);
+@@ -203,7 +193,16 @@ static int __devexit mpc83xx_wdt_remove(struct platform_device *dev)
+ 	return 0;
+ }
+ 
+-static struct platform_driver mpc83xx_wdt_driver = {
++static const struct of_device_id mpc83xx_wdt_match[] = {
++	{
++		.compatible = "mpc83xx_wdt",
++	},
++	{},
++};
++MODULE_DEVICE_TABLE(of, mpc83xx_wdt_match);
++
++static struct of_platform_driver mpc83xx_wdt_driver = {
++	.match_table	= mpc83xx_wdt_match,
+ 	.probe		= mpc83xx_wdt_probe,
+ 	.remove		= __devexit_p(mpc83xx_wdt_remove),
+ 	.driver		= {
+@@ -214,12 +213,12 @@ static struct platform_driver mpc83xx_wdt_driver = {
+ 
+ static int __init mpc83xx_wdt_init(void)
+ {
+-	return platform_driver_register(&mpc83xx_wdt_driver);
++	return of_register_platform_driver(&mpc83xx_wdt_driver);
+ }
+ 
+ static void __exit mpc83xx_wdt_exit(void)
+ {
+-	platform_driver_unregister(&mpc83xx_wdt_driver);
++	of_unregister_platform_driver(&mpc83xx_wdt_driver);
+ }
+ 
+ module_init(mpc83xx_wdt_init);
+@@ -229,4 +228,3 @@ MODULE_AUTHOR("Dave Updegraff, Kumar Gala");
+ MODULE_DESCRIPTION("Driver for watchdog timer in MPC83xx uProcessor");
+ MODULE_LICENSE("GPL");
+ MODULE_ALIAS_MISCDEV(WATCHDOG_MINOR);
+-MODULE_ALIAS("platform:mpc83xx_wdt");
 -- 
 1.5.5.1
