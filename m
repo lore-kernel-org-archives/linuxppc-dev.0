@@ -1,38 +1,27 @@
-Return-Path: <Haavard.Skinnemoen@atmel.com>
-Received: from bagnes.atmel.com (smtpeu1.atmel.com [195.65.72.27])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C475FDDEF4
-	for <linuxppc-dev@ozlabs.org>; Mon,  2 Jun 2008 18:18:53 +1000 (EST)
-Date: Mon, 2 Jun 2008 10:11:02 +0200
-From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: MMIO and gcc re-ordering issue
-Message-ID: <20080602101102.0d8979c5@hskinnemo-gx745.norway.atmel.com>
-In-Reply-To: <Pine.LNX.4.64.0805301120510.26332@anakin>
-References: <1211852026.3286.36.camel@pasglop>
-	<20080526.184047.88207142.davem@davemloft.net>
-	<1211854540.3286.42.camel@pasglop>
-	<20080526.192812.184590464.davem@davemloft.net>
-	<1211859542.3286.46.camel@pasglop>
-	<alpine.LFD.1.10.0805270833060.2958@woody.linux-foundation.org>
-	<1211922621.3286.80.camel@pasglop>
-	<alpine.LFD.1.10.0805271421570.2958@woody.linux-foundation.org>
-	<1211924335.3286.89.camel@pasglop>
-	<20080527214241.GA22636@parisc-linux.org>
-	<1211926636.3286.100.camel@pasglop>
-	<20080528103648.54eb8734@hskinnemo-gx745.norway.atmel.com>
-	<1212110003.15633.0.camel@pasglop>
-	<20080530080700.773a82cc@siona.local>
-	<1212132267.15633.69.camel@pasglop>
-	<20080530102706.56fca248@siona.local>
-	<Pine.LNX.4.64.0805301120510.26332@anakin>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linux-arch@vger.kernel.org, Matthew Wilcox <matthew@wil.cx>,
-	linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
-	linuxppc-dev@ozlabs.org, tpiepho@freescale.com, scottwood@freescale.com,
-	Torvalds <torvalds@linux-foundation.org>, Linus, alan@lxorguk.ukuu.org.uk
+Return-Path: <andre.schwarz@matrix-vision.de>
+Received: from p15137414.pureserver.info (matrixvision.de [217.160.213.229])
+	by ozlabs.org (Postfix) with ESMTP id C8357DDEED
+	for <linuxppc-dev@ozlabs.org>; Mon,  2 Jun 2008 18:19:44 +1000 (EST)
+Received: from pandora.intern.matrix-vision.de (g1.matrix-vision.com
+	[217.7.222.190])
+	by p15137414.pureserver.info (Postfix) with ESMTP id 837B03CC040
+	for <linuxppc-dev@ozlabs.org>; Mon,  2 Jun 2008 10:19:40 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+	by pandora.intern.matrix-vision.de (Postfix) with ESMTP id 686C1E3C09
+	for <linuxppc-dev@ozlabs.org>; Mon,  2 Jun 2008 10:19:22 +0200 (CEST)
+Received: from hegemone (hegemone.intern.matrix-vision.de [192.168.5.77])
+	by pandora.intern.matrix-vision.de (Postfix) with ESMTP id 33464E3C09
+	for <linuxppc-dev@ozlabs.org>; Mon,  2 Jun 2008 10:19:22 +0200 (CEST)
+Received: from [192.168.65.5] (unknown [192.168.65.5])
+	by hegemone (Postfix) with ESMTP id F055E526
+	for <linuxppc-dev@ozlabs.org>; Mon,  2 Jun 2008 10:18:58 +0200 (CEST)
+Message-ID: <4843AD1C.4010901@matrix-vision.de>
+Date: Mon, 02 Jun 2008 10:19:40 +0200
+From: Andre Schwarz <andre.schwarz@matrix-vision.de>
+MIME-Version: 1.0
+To: linux-ppc list <linuxppc-dev@ozlabs.org>
+Subject: slow MMC over SPI
+Content-Type: text/plain; charset=ISO-8859-15
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -42,21 +31,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-> On Fri, 30 May 2008, Haavard Skinnemoen wrote:
-> > Maybe we need another interface that does not do byteswapping but
-> > provides stronger ordering guarantees?
-> 
-> The byte swapping depends on the device/bus.
+All,
 
-Of course. But isn't it reasonable to assume that a device integrated
-on the same silicon as the CPU is connected to a somewhat sane bus
-which doesn't require any byte swapping?
+has anybody made some investigations about performance of a SD/MMC card
+on SPI ?
 
-> So what happened to the old idea of putting the accessor function pointers
-> in the device/bus structure?
+Actually I'm using various cards (different speed classes) on an SPI bus
+of a MPC8343 cpu.
+Everything is working fine basically, i.e. card is detected properly and
+block device can be mounted and used.
 
-Don't know. I think it sounds like overkill to replace a simple load or
-store with an indirect function call.
+SPI clock is adjusted to the card's capabilities and is running quite
+fast (>30MHz).
 
-Haavard
+But between consecutive reads/writes there's a fixed gap of 2us thus
+yielding a poor performance of approx. 300KBytes/sec.
+The spi bus is utilized only ~10%.
+
+Any ideas where this comes from ?
+Ist it a fixed delay regarding to some kind of spec or is it possibly a
+spi driver/mmc layer issue ?
+
+
+regards,
+Andre Schwarz
+
+MATRIX VISION GmbH, Talstraße 16, DE-71570 Oppenweiler  - Registergericht: Amtsgericht Stuttgart, HRB 271090
+Geschäftsführer: Gerhard Thullner, Werner Armingeon, Uwe Furtner
