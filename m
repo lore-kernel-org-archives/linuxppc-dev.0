@@ -1,14 +1,20 @@
-Return-Path: <stephen.neuendorffer@xilinx.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Subject: RE: Generating a FDT from an MHS file
-Date: Mon, 2 Jun 2008 09:19:25 -0700
-In-Reply-To: <1212422884.16879.6.camel@Phoebe>
-References: <1212422884.16879.6.camel@Phoebe>
-From: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
-To: "Jacob Holladay Poteet" <txtbox@gmail.com>,
-	<Linuxppc-dev@ozlabs.org>
-Message-ID: <20080602161927.317FEE80051@mail145-sin.bigfish.com>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 124A4DDF20
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Jun 2008 02:25:29 +1000 (EST)
+Message-Id: <1E4EB64C-0618-497E-AABC-74EB7D74B97F@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Jeff Garzik <jeff@garzik.org>
+In-Reply-To: <484419EE.5040503@garzik.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v924)
+Subject: Re: [PATCH] phylib: Don't allow core of phylib to build as a module
+Date: Mon, 2 Jun 2008 11:25:14 -0500
+References: <Pine.LNX.4.64.0806021019540.22439@blarg.am.freescale.net>
+	<484419EE.5040503@garzik.org>
+Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,51 +25,87 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-git.xilinx.com has a gen-mhs-devtree.git repository.  This contains an
-EDK BSP called 'fdt' which generates the device tree for an EDK design.
-The easiest way to use this is to check it out, and then point the EDK
-user repository at the edk_lib directory (under project->project
-options->project peripheral repository), which will then allow you to
-select 'fdt' under software->software platform settings->OS.
+On Jun 2, 2008, at 11:03 AM, Jeff Garzik wrote:
 
-Let me know how things go...
+> Kumar Gala wrote:
+>> The core portions of the phylib aren't capable of being used as
+>> a module.  This isn't really any different than something like i2c
+>> in that the bus driver and core need to be built into the kernel.
+>> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+>> ---
+>> Jeff, please consider this for 2.6.26 as w/o it we get build issues
+>> if phylib is config'd as a module on ppc.
+>> drivers/net/phy/Kconfig |    2 +-
+>> 1 files changed, 1 insertions(+), 1 deletions(-)
+>> diff --git a/drivers/net/phy/Kconfig b/drivers/net/phy/Kconfig
+>> index 6eb2d31..ab04cc7 100644
+>> --- a/drivers/net/phy/Kconfig
+>> +++ b/drivers/net/phy/Kconfig
+>> @@ -3,7 +3,7 @@
+>> #
+>> menuconfig PHYLIB
+>> -	tristate "PHY Device support and infrastructure"
+>> +	bool "PHY Device support and infrastructure"
+>> 	depends on !S390
+>> 	depends on NET_ETHERNET
+>
+> What are the issues?
+>
+> The core _should_ be able to be built as a module.
 
-Steve
+The core provides functions like phy_read/phy_write.  Andy has  
+recently introduced board level workaround/fixups.  The problem is  
+these workarounds tend to use phy_read/phy_write and the board/ 
+platform code is not built as modules.
 
-> -----Original Message-----
-> From: linuxppc-dev-bounces+stephen.neuendorffer=3Dxilinx.com@ozlabs.org
-[mailto:linuxppc-dev-
-> bounces+stephen.neuendorffer=3Dxilinx.com@ozlabs.org] On Behalf Of Jacob
-Holladay Poteet
-> Sent: Monday, June 02, 2008 9:08 AM
-> To: Linuxppc-dev@ozlabs.org
-> Subject: Generating a FDT from an MHS file
-> =
+So we get errors like:
 
-> I'm going to be spending most of this week bringing myself up to speed
-> on how to use these mhs tools (as part of a larger project on partial
-> reconfiguration on Xilinx PPC Virtex boards). For now, can someone
-help
-> me understand how to run the fdt part of the program? I'd like to
-> generate an FDT from an MHS file.
-> =
+arch/powerpc/platforms/built-in.o: In function `mpc8568_mds_phy_fixups':
+/home/galak/git/master/powerpc/arch/powerpc/platforms/85xx/ 
+mpc85xx_mds.c:99: undefined reference to `phy_write'
+/home/galak/git/master/powerpc/arch/powerpc/platforms/85xx/ 
+mpc85xx_mds.c:104: undefined reference to `phy_read'
+/home/galak/git/master/powerpc/arch/powerpc/platforms/85xx/ 
+mpc85xx_mds.c:110: undefined reference to `phy_write'
+/home/galak/git/master/powerpc/arch/powerpc/platforms/85xx/ 
+mpc85xx_mds.c:115: undefined reference to `phy_write'
+/home/galak/git/master/powerpc/arch/powerpc/platforms/85xx/ 
+mpc85xx_mds.c:120: undefined reference to `phy_read'
+/home/galak/git/master/powerpc/arch/powerpc/platforms/85xx/ 
+mpc85xx_mds.c:125: undefined reference to `phy_read'
+/home/galak/git/master/powerpc/arch/powerpc/platforms/85xx/ 
+mpc85xx_mds.c:132: undefined reference to `phy_write'
+/home/galak/git/master/powerpc/arch/powerpc/platforms/85xx/ 
+mpc85xx_mds.c:138: undefined reference to `phy_read'
+/home/galak/git/master/powerpc/arch/powerpc/platforms/85xx/ 
+mpc85xx_mds.c:144: undefined reference to `phy_write'
+arch/powerpc/platforms/built-in.o: In function  
+`mpc8568_fixup_125_clock':
+/home/galak/git/master/powerpc/arch/powerpc/platforms/85xx/ 
+mpc85xx_mds.c:68: undefined reference to `phy_read'
+/home/galak/git/master/powerpc/arch/powerpc/platforms/85xx/ 
+mpc85xx_mds.c:73: undefined reference to `phy_write'
+/home/galak/git/master/powerpc/arch/powerpc/platforms/85xx/ 
+mpc85xx_mds.c:78: undefined reference to `phy_write'
+/home/galak/git/master/powerpc/arch/powerpc/platforms/85xx/ 
+mpc85xx_mds.c:83: undefined reference to `phy_read'
+/home/galak/git/master/powerpc/arch/powerpc/platforms/85xx/ 
+mpc85xx_mds.c:88: undefined reference to `phy_write'
+arch/powerpc/platforms/built-in.o: In function `board_fixups':
+/home/galak/git/master/powerpc/arch/powerpc/platforms/85xx/ 
+mpc85xx_mds.c:246: undefined reference to `phy_register_fixup_for_id'
+/home/galak/git/master/powerpc/arch/powerpc/platforms/85xx/ 
+mpc85xx_mds.c:247: undefined reference to `phy_register_fixup_for_id'
+/home/galak/git/master/powerpc/arch/powerpc/platforms/85xx/ 
+mpc85xx_mds.c:251: undefined reference to `phy_register_fixup_for_id'
+/home/galak/git/master/powerpc/arch/powerpc/platforms/85xx/ 
+mpc85xx_mds.c:246: undefined reference to `phy_register_fixup_for_id'
+/home/galak/git/master/powerpc/arch/powerpc/platforms/85xx/ 
+mpc85xx_mds.c:247: undefined reference to `phy_register_fixup_for_id'
+arch/powerpc/platforms/built-in.o:/home/galak/git/master/powerpc/arch/ 
+powerpc/platforms/85xx/mpc85xx_mds.c:251: more undefined references to  
+`phy_register_fixup_for_id' follow
+make: *** [.tmp_vmlinux1] Error 1
 
->  I'm reading as much as I can independently, but I'd definitely
-> appreciate some guidance to help me off the ground.
-> =
 
-> Thanks,
-> Jake Poteet
-> =
-
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
-
-
-This email and any attachments are intended for the sole use of the named r=
-ecipient(s) and contain(s) confidential information that may be proprietary=
-, privileged or copyrighted under applicable law. If you are not the intend=
-ed recipient, do not read, copy, or forward this email message or any attac=
-hments. Delete this email message and any attachments immediately.
+- k
