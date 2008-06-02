@@ -1,29 +1,25 @@
-Return-Path: <mingo@elte.hu>
-Received: from mx2.mail.elte.hu (mx2.mail.elte.hu [157.181.151.9])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D3469DDE41
-	for <linuxppc-dev@ozlabs.org>; Mon,  2 Jun 2008 20:37:57 +1000 (EST)
-Date: Mon, 2 Jun 2008 12:36:43 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: MMIO and gcc re-ordering issue
-Message-ID: <20080602103643.GA21285@elte.hu>
-References: <1211852026.3286.36.camel@pasglop>
-	<20080526.184047.88207142.davem@davemloft.net>
-	<1211854540.3286.42.camel@pasglop>
-	<20080526.192812.184590464.davem@davemloft.net>
-	<1211859542.3286.46.camel@pasglop>
-	<alpine.LFD.1.10.0805270833060.2958@woody.linux-foundation.org>
-	<alpine.LFD.1.10.0805270943100.2958@woody.linux-foundation.org>
-	<alpine.LFD.1.10.0805271028520.2958@woody.linux-foundation.org>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id AC0A4DDF00
+	for <linuxppc-dev@ozlabs.org>; Mon,  2 Jun 2008 22:53:40 +1000 (EST)
+Date: Mon, 2 Jun 2008 16:53:37 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Pierre Ossman <drzeus-mmc@drzeus.cx>
+Subject: Re: [RFC PATCH 1/2] mmc_spi: export probe and remove functions
+Message-ID: <20080602125337.GA2872@polina.dev.rtsoft.ru>
+References: <20080523182754.GA26891@polina.dev.rtsoft.ru>
+	<20080523182834.GA469@polina.dev.rtsoft.ru>
+	<20080526141836.72db0623@mjolnir.drzeus.cx>
+	<20080526122533.GA9595@polina.dev.rtsoft.ru>
+	<20080526131009.GA19861@polina.dev.rtsoft.ru>
+	<20080601121841.0392b01c@mjolnir.drzeus.cx>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <alpine.LFD.1.10.0805271028520.2958@woody.linux-foundation.org>
-Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
-	tpiepho@freescale.com, linuxppc-dev@ozlabs.org,
-	scottwood@freescale.com, David Miller <davem@davemloft.net>,
-	alan@lxorguk.ukuu.org.uk
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <20080601121841.0392b01c@mjolnir.drzeus.cx>
+Cc: David Brownell <dbrownell@users.sourceforge.net>,
+	Gary Jennejohn <garyj@denx.de>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,34 +29,78 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
-
-> > Here's a UNTESTED patch for x86 that may or may not compile and 
-> > work, and which serializes (on a compiler level) the IO accesses 
-> > against regular memory accesses.
+On Sun, Jun 01, 2008 at 12:18:41PM +0200, Pierre Ossman wrote:
+> On Mon, 26 May 2008 17:10:09 +0400
+> Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
 > 
-> Ok, so it at least boots on x86-32. Thus probably on x86-64 too (since 
-> the code is now shared). I didn't look at whether it generates much 
-> bigger code due to the potential extra serialization, but some of the 
-> code generation I looked at looked fine.
+> > 
+> > Btw, this isn't actually drivers encapsulating. This is about making
+> > mmc_spi export some "library" function which could be used by other
+> > bindings.
+> > 
+> > Think of usb_add_hcd() used by various drivers' bindings for e.g.
+> > drivers/usb/host/ehci-*.c. Though usb_add_hcd() is more generic
+> > than just "EHCI" bindings, but only because there is nothing to
+> > share between them. (for MMC over SPI bindings all we want to do is fill
+> > the platform data).
+> > 
 > 
-> IOW, it doesn't at least create any _obviously_ worse code, and it 
-> should be arguably safer than assuming the compiler does volatile 
-> accesses the way we want it to.
+> There's a big difference.
 
-ok, to pursue this topic of making readl*/writel*() more robust i picked 
-up your patch into -tip and created a new topic branch for it: 
-tip/x86/mmio.
+This depends on the perception. :-)
 
-The patch passed initial light testing in -tip (~30 successful random 
-self-builds and bootups on various mixed 32-bit/64-bit boxes) but it's 
-still v2.6.27 material IMO.
+> usb_add_hcd() is designed specifically to be called by other, real probe
+> functions.
 
-Failures in this area are subtle so there's no good way to tell whether 
-it works as intended - we need wider testing. I've also added the 
-tip/x86/mmio topic to tip/auto-x86-next rules as well so these changes 
-will be picked up by tomorrow's linux-next tree as well, and by the next 
--mm iteration.
+Yes, by convention (or better, by design).
 
-	Ingo
+> mmc_spi_probe() _is_ a probe function. 
+
+Yes, so far.
+
+> Also exporting it as a library function is very confusing.
+
+No, if designed/documented properly.
+
+Just imagine this (100% similarity to USB code):
+
+mmc_spi_create_hcd(&mmc_spi_driver, dev, dev->bus_id);
+mmc_spi_add_hcd(dev, irq, irqflags);
+
+> > Maybe something like this? I don't like it so much, but given that
+> > you don't like to export functions from mmc_spi, we'll have to place
+> > some calls into the driver itself. :-/ And there is no easy way to do
+> > generic callbacks, since that way we'll have implement "mmc_spi
+> > callbacks subsystem". :-)
+> 
+> That's not a callback, but an explicit call to another module.
+> 
+> 
+> All of this work looks a bit like trying to wedge a square piece into a
+> round hole. It looks to me that the kernel needs a bit of restructuring
+> to handle it. You can't really export every probe function of every
+> platform device so that you can add OF hooks to it.
+> 
+> From what I can tell, the OF stuff behaves very much like the PNP
+> system on PCs. The information relayed is a bit more versatile though.
+> Perhaps what is needed is a more advanced "platform" bus that is
+> modeled after the PNP bus, but with the extra ability of handling the
+> stuff currently crammed into the platform structures. mmc_spi would
+> then be extended to be driver for the "platform" bus and we could have
+> generic calls like platform_get_pin(dev, "ro");.
+
+platform_get_pin()? Um, maybe platform_get_gpio(), as _irq()? Yes,
+this is doable (and someday this should be done). But this way we can
+pass only GPIOs and then teach mmc_spi to work with them directly
+(in addition to callbacks).
+
+But this is not enough, there is still no way to pass real platform data,
+such as: caps and ocr_mask. Any idea how to deliver these?
+
+
+Thanks,
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
