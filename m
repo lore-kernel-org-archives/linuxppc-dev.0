@@ -1,27 +1,29 @@
-Return-Path: <andre.schwarz@matrix-vision.de>
-Received: from p15137414.pureserver.info (matrixvision.de [217.160.213.229])
-	by ozlabs.org (Postfix) with ESMTP id C8357DDEED
-	for <linuxppc-dev@ozlabs.org>; Mon,  2 Jun 2008 18:19:44 +1000 (EST)
-Received: from pandora.intern.matrix-vision.de (g1.matrix-vision.com
-	[217.7.222.190])
-	by p15137414.pureserver.info (Postfix) with ESMTP id 837B03CC040
-	for <linuxppc-dev@ozlabs.org>; Mon,  2 Jun 2008 10:19:40 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
-	by pandora.intern.matrix-vision.de (Postfix) with ESMTP id 686C1E3C09
-	for <linuxppc-dev@ozlabs.org>; Mon,  2 Jun 2008 10:19:22 +0200 (CEST)
-Received: from hegemone (hegemone.intern.matrix-vision.de [192.168.5.77])
-	by pandora.intern.matrix-vision.de (Postfix) with ESMTP id 33464E3C09
-	for <linuxppc-dev@ozlabs.org>; Mon,  2 Jun 2008 10:19:22 +0200 (CEST)
-Received: from [192.168.65.5] (unknown [192.168.65.5])
-	by hegemone (Postfix) with ESMTP id F055E526
-	for <linuxppc-dev@ozlabs.org>; Mon,  2 Jun 2008 10:18:58 +0200 (CEST)
-Message-ID: <4843AD1C.4010901@matrix-vision.de>
-Date: Mon, 02 Jun 2008 10:19:40 +0200
-From: Andre Schwarz <andre.schwarz@matrix-vision.de>
+Return-Path: <jes@sgi.com>
+Received: from relay.sgi.com (relay1.sgi.com [192.48.171.29])
+	by ozlabs.org (Postfix) with ESMTP id DA249DDE03
+	for <linuxppc-dev@ozlabs.org>; Mon,  2 Jun 2008 19:48:18 +1000 (EST)
+Message-ID: <4843C1DB.4080500@sgi.com>
+Date: Mon, 02 Jun 2008 11:48:11 +0200
+From: Jes Sorensen <jes@sgi.com>
 MIME-Version: 1.0
-To: linux-ppc list <linuxppc-dev@ozlabs.org>
-Subject: slow MMC over SPI
-Content-Type: text/plain; charset=ISO-8859-15
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: MMIO and gcc re-ordering issue
+References: <1211854540.3286.42.camel@pasglop>
+	<20080526.192812.184590464.davem@davemloft.net>
+	<20080526204233.75b71bb8@infradead.org>
+	<1211872130.3286.64.camel@pasglop> <adaprr721c6.fsf@cisco.com>
+	<1211922696.3286.82.camel@pasglop> <adaiqwzsa83.fsf@cisco.com>
+	<yq0iqwxrwuh.fsf@jaguar.mkp.net>
+	<1212097223.8888.55.camel@pasglop> <483FCD5C.208@sgi.com>
+	<20080531081450.GI5405@ucw.cz>
+In-Reply-To: <20080531081450.GI5405@ucw.cz>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linux-arch@vger.kernel.org, Roland Dreier <rdreier@cisco.com>,
+	linux-kernel@vger.kernel.org, Jeremy Higdon <jeremy@sgi.com>,
+	David Miller <davem@davemloft.net>, linuxppc-dev@ozlabs.org,
+	scottwood@freescale.com, torvalds@linux-foundation.org,
+	tpiepho@freescale.com, alan@lxorguk.ukuu.org.uk,
+	Arjan van de Ven <arjan@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,30 +33,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-All,
+Pavel Machek wrote:
+> Still better than changing semantics of writel for _all_ drivers.
+> 
+> If you are really sure driver does not depend on writel order, it is
+> just a sed/// command, so I don't see any big code maintenance
+> issues...
 
-has anybody made some investigations about performance of a SD/MMC card
-on SPI ?
+This isn't changing the semantics for all drivers, it means it leaves
+it up to us to fix the drivers that hit the problem. Whereas the other
+way round we'd have to make some fairly big modifications to a large
+number of drivers, which the driver maintainers are likely to be
+reluctant to accept and maintain. It will be a constant chase to keep
+that in order.
 
-Actually I'm using various cards (different speed classes) on an SPI bus
-of a MPC8343 cpu.
-Everything is working fine basically, i.e. card is detected properly and
-block device can be mounted and used.
-
-SPI clock is adjusted to the card's capabilities and is running quite
-fast (>30MHz).
-
-But between consecutive reads/writes there's a fixed gap of 2us thus
-yielding a poor performance of approx. 300KBytes/sec.
-The spi bus is utilized only ~10%.
-
-Any ideas where this comes from ?
-Ist it a fixed delay regarding to some kind of spec or is it possibly a
-spi driver/mmc layer issue ?
-
-
-regards,
-Andre Schwarz
-
-MATRIX VISION GmbH, Talstraße 16, DE-71570 Oppenweiler  - Registergericht: Amtsgericht Stuttgart, HRB 271090
-Geschäftsführer: Gerhard Thullner, Werner Armingeon, Uwe Furtner
+Cheers
+Jes
