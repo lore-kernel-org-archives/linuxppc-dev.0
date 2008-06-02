@@ -1,20 +1,19 @@
-Return-Path: <adrian.bunk@movial.fi>
-Received: from smtp4.pp.htv.fi (smtp4.pp.htv.fi [213.243.153.38])
-	by ozlabs.org (Postfix) with ESMTP id 70EC8DDE21
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Jun 2008 03:18:02 +1000 (EST)
-Date: Mon, 2 Jun 2008 19:54:22 +0300
-From: Adrian Bunk <adrian.bunk@movial.fi>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] phylib: Don't allow core of phylib to build as a module
-Message-ID: <20080602165422.GA22051@cs181133002.pp.htv.fi>
-References: <Pine.LNX.4.64.0806021019540.22439@blarg.am.freescale.net>
-	<484419EE.5040503@garzik.org>
-	<1E4EB64C-0618-497E-AABC-74EB7D74B97F@kernel.crashing.org>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 6D185DDDFC
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Jun 2008 03:37:29 +1000 (EST)
+Date: Mon, 2 Jun 2008 21:37:26 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Kumar Gala <galak@kernel.crashing.org>,
+	Wim Van Sebroeck <wim@iguana.be>
+Subject: [PATCH 0/8 v4] mpc83xx_wdt rework, support for mpc8610 and mpc8xx
+Message-ID: <20080602173726.GA24556@polina.dev.rtsoft.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <1E4EB64C-0618-497E-AABC-74EB7D74B97F@kernel.crashing.org>
-Cc: netdev@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
-	linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=utf8
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Scott Wood <scottwood@freescale.com>,
+	Andrew Morton <akpm@linux-foundation.org>
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,60 +23,55 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Jun 02, 2008 at 11:25:14AM -0500, Kumar Gala wrote:
->
-> On Jun 2, 2008, at 11:03 AM, Jeff Garzik wrote:
->
->> Kumar Gala wrote:
->>> The core portions of the phylib aren't capable of being used as
->>> a module.  This isn't really any different than something like i2c
->>> in that the bus driver and core need to be built into the kernel.
->>> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
->>> ---
->>> Jeff, please consider this for 2.6.26 as w/o it we get build issues
->>> if phylib is config'd as a module on ppc.
->>> drivers/net/phy/Kconfig |    2 +-
->>> 1 files changed, 1 insertions(+), 1 deletions(-)
->>> diff --git a/drivers/net/phy/Kconfig b/drivers/net/phy/Kconfig
->>> index 6eb2d31..ab04cc7 100644
->>> --- a/drivers/net/phy/Kconfig
->>> +++ b/drivers/net/phy/Kconfig
->>> @@ -3,7 +3,7 @@
->>> #
->>> menuconfig PHYLIB
->>> -	tristate "PHY Device support and infrastructure"
->>> +	bool "PHY Device support and infrastructure"
->>> 	depends on !S390
->>> 	depends on NET_ETHERNET
->>
->> What are the issues?
->>
->> The core _should_ be able to be built as a module.
->
-> The core provides functions like phy_read/phy_write.  Andy has recently 
-> introduced board level workaround/fixups.  The problem is these 
-> workarounds tend to use phy_read/phy_write and the board/platform code is 
-> not built as modules.
->
-> So we get errors like:
->
-> arch/powerpc/platforms/built-in.o: In function `mpc8568_mds_phy_fixups':
-> /home/galak/git/master/powerpc/arch/powerpc/platforms/85xx/ 
-> mpc85xx_mds.c:99: undefined reference to `phy_write'
->...
+Hi all,
 
-At first glance PHYLIB=n might also cause similar problems.
+No comments on the previous version for two weeks... resending once
+again.
 
-Please send me the failing .config and I'll cook up a fix.
+Changes since v3:
 
-> - k
+- None. Simply resending, plus adding Andrew Morton and linux-kernel
+  to Cc, since I'm constantly getting bounces from Wim Van Sebroeck's
+  email:
 
-cu
-Adrian
+  - - - -
+  <wim@iguana.be>:
+  213.249.96.99 does not like recipient.
+  Remote host said: 450 Client host rejected: cannot find your hostname, [85.21.88.2]
+  Giving up on 213.249.96.99.
+  I'm not going to try again; this message has been in the queue too long.
+  - - - -
+
+  Not sure whose fault is it though.
+
+  Andrew, if Wim will not get this series and there will no objections,
+  could you please pick [WATCHDOG] ones?
+
+Changes since v2:
+
+- New patch to fix current driver's checkpatch issues;
+- New patch supporting MPC8xx watchdogs;
+- Removed MODULE_ALIAS("platform:mpc83xx_wdt"), since this driver is no
+  longer on the platform bus;
+- When renaming the driver also mention what kind of CPUs we support.
+  Also give a pointer for BookE watchdog driver. Though BookE users will
+  not see the MPC8xxx driver at all, because we're explicitly listing the
+  CPU families in "depends on". But this tip might be useful for
+  developers.
+- Scott Wood noticed that we don't need device_type anymore. I thought
+  that OpenFirmware defines this type, but google didn't prove that.
+  So I just removed the device_type.
+
+Changes since v1:
+
+- Scott Wood asked for mpc83xx_wdt on multiplatform kernels. Done via
+  OF platform driver;
+- Kumar Gala asked for mpc83xx_wdt -> mpc8xxx_wdt rename. Done in two
+  steps;
+- Segher Boessenkool noticed a negligence in the wdt device tree node.
+  Fixed by removing mpc83xx_wdt compatible entry.
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
