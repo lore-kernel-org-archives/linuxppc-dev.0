@@ -1,25 +1,21 @@
-Return-Path: <cbouatmailru@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.169])
-	by ozlabs.org (Postfix) with ESMTP id 05414DEBB4
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Jun 2008 06:49:50 +1000 (EST)
-Received: by ug-out-1314.google.com with SMTP id j3so320175ugf.0
-	for <linuxppc-dev@ozlabs.org>; Mon, 02 Jun 2008 13:49:48 -0700 (PDT)
-Date: Tue, 3 Jun 2008 00:49:43 +0400
-From: Anton Vorontsov <cbouatmailru@gmail.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH 1/8] [WATCHDOG] mpc83xx_wdt: fix checkpatch issues
-Message-ID: <20080602204943.GA7255@zarina>
-References: <20080602173726.GA24556@polina.dev.rtsoft.ru>
-	<20080602173836.GA30705@polina.dev.rtsoft.ru>
-	<20080602204318.4cb77070@core>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <20080602204318.4cb77070@core>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Wim Van Sebroeck <wim@iguana.be>,
-	Scott Wood <scottwood@freescale.com>,
-	Andrew Morton <akpm@linux-foundation.org>, Jochen@ozlabs.org
-Reply-To: cbouatmailru@gmail.com
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 130CADEC52
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Jun 2008 06:50:22 +1000 (EST)
+In-Reply-To: <4E62E532-1E3D-4109-B6C4-152F39567CA8@kernel.crashing.org>
+References: <1212180199-968-1-git-send-email-galak@kernel.crashing.org>
+	<701fe7d26b27ceaffae6e3b77bf94cf7@kernel.crashing.org>
+	<4E62E532-1E3D-4109-B6C4-152F39567CA8@kernel.crashing.org>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <7c624bb773b7c8df8357a3b151e2d9fa@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] [POWERPC] Cleanup mpic nodes in .dts
+Date: Mon, 2 Jun 2008 18:32:18 +0200
+To: Kumar Gala <galak@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,23 +25,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Jun 02, 2008 at 08:43:18PM +0100, Alan Cox wrote:
-> On Mon, 2 Jun 2008 21:38:36 +0400
-> Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
-> 
-> > Quite tired of these warnings ;-), checkpatch spitting them when
-> > seeing the rename patch.
-> 
-> I've already sent the maintainer a complete overhaul of watchdog via
-> checkpatch.
+>>> Removed clock-frequency and big-endian props as they aren't specified
+>>> anywhere.
+>>
+>> If you remove "big-endian", you'll have to provide some other way
+>> to get that information (like, some new "compatible" value).
+>
+> I'm all for "big-endian" but we don't spec this anywhere and aren't 
+> using it right now.  So until we have an real need to start an 
+> extended mpic definition I'm getting rid of it.
 
-Oh, I see it now, thanks. I've just read Wim's comments there, and I
-think I'll have to wait for git-watchdog update and then will rebase my
-work on top.
+If we would remove everything insufficiently documented, not much would
+be left.  This doesn't seem very productive to me.  Could you instead
+just add some TODO somewhere?
 
-Thanks,
+>> Dunno if we need "clock-frequency".
+>
+> Not used today.
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+Sure, the kernel might not use it today, but that's no reason to remove
+stuff from the device tree.
+
+I'm not against removing "clock-frequency" though, it's not 
+well-defined,
+and what would it be useful for anyway?
+
+>> This patch also removes "built-in" properties.  I'm all for that,
+>> but the patch description didn't say it does.
+>>
+> will add that to the commit message.
+
+Thanks.
+
+
+Segher
