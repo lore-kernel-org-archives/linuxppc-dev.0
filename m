@@ -1,27 +1,17 @@
-Return-Path: <torvalds@linux-foundation.org>
-Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
-	[140.211.169.13])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id D571CDE9D1
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Jun 2008 00:47:56 +1000 (EST)
-Date: Tue, 3 Jun 2008 07:47:26 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: Re: MMIO and gcc re-ordering issue
-In-Reply-To: <200806031416.18195.nickpiggin@yahoo.com.au>
-Message-ID: <alpine.LFD.1.10.0806030746190.3473@woody.linux-foundation.org>
-References: <1211852026.3286.36.camel@pasglop>
-	<alpine.LFD.1.10.0805271451100.2958@woody.linux-foundation.org>
-	<20080602072403.GA20222@flint.arm.linux.org.uk>
-	<200806031416.18195.nickpiggin@yahoo.com.au>
+Return-Path: <madhvesh.s@ap.sony.com>
+Received: from VA3EHSOBE003.bigfish.com (outbound-va3.frontbridge.com
+	[216.32.180.16]) by ozlabs.org (Postfix) with ESMTP id 344A6DE284
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Jun 2008 00:48:19 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linux-arch@vger.kernel.org, Russell King <rmk+lkml@arm.linux.org.uk>,
-	linux-kernel@vger.kernel.org, tpiepho@freescale.com,
-	linuxppc-dev@ozlabs.org, scottwood@freescale.com,
-	David Miller <davem@davemloft.net>, alan@lxorguk.ukuu.org.uk
+Content-Type: text/plain; charset="us-ascii"
+Subject: RE: [RFC] Kprobes for book-e
+Date: Tue, 3 Jun 2008 20:18:01 +0530
+Message-ID: <7B7EF7F090B9804A830ACC82F2CDE95D2609F3@insardxms01.ap.sony.com>
+From: "Sulibhavi, Madhvesh" <madhvesh.s@ap.sony.com>
+To: "Kumar Gala" <galak@kernel.crashing.org>,
+	"Josh Boyer" <jwboyer@linux.vnet.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, rsmadhvesh@vsnl.net,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,19 +21,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+> -----Original Message-----
+> From: Kumar Gala [mailto:galak@kernel.crashing.org]=20
+> Sent: Tuesday, June 03, 2008 8:08 PM
+> To: Josh Boyer
+> Cc: Sulibhavi, Madhvesh; linuxppc-dev@ozlabs.org;=20
+> rsmadhvesh@vsnl.net; Paul Mackerras
+> Subject: Re: [RFC] Kprobes for book-e
+>=20
+
+> This looks like the binutils problem that cell was having and I =20
+> believe Alan Modra fixed:
+>=20
+> http://sourceware.org/ml/binutils/2008-05/msg00008.html
+>=20
+Thanks, is it posible to get latest binutils binary which
+is applied with this fix? If i just upgrade binutils, will
+it solve this problem or i have to rebuild gcc etc etc..
+
+-madhvesh
 
 
-On Tue, 3 Jun 2008, Nick Piggin wrote:
-> 
-> Linus: on x86, memory operations to wc and wc+ memory are not ordered
-> with one another, or operations to other memory types (ie. load/load
-> and store/store reordering is allowed). Also, as you know, store/load
-> reordering is explicitly allowed as well, which covers all memory
-> types. So perhaps it is not quite true to say readl/writel is strongly
-> ordered by default even on x86. You would have to put in some
-> mfence instructions in them to make it so.
-
-Well, you have to ask for WC/WC+ anyway, so it's immaterial. A driver that 
-does that needs to be aware of it. IOW, it's a non-issue, imnsho.
-
-			Linus
+-------------------------------------------------------------------
+This email is confidential and intended only for the use of the =
+individual or entity named above and may contain information that is =
+privileged. If you are not the intended recipient, you are notified that =
+any dissemination, distribution or copying of this email is strictly =
+prohibited. If you have received this email in error, please notify us =
+immediately by return email or telephone and destroy the original =
+message. - This mail is sent via Sony Asia Pacific Mail Gateway.
+-------------------------------------------------------------------
