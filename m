@@ -1,20 +1,23 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D362CDE04F
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Jun 2008 01:47:36 +1000 (EST)
-Message-Id: <6B1BFC35-0E39-41D9-A4A8-66415302155F@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: "Sulibhavi, Madhvesh" <madhvesh.s@ap.sony.com>
-In-Reply-To: <7B7EF7F090B9804A830ACC82F2CDE95D260869@insardxms01.ap.sony.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v924)
-Subject: Re: [RFC] Kprobes for book-e
-Date: Tue, 3 Jun 2008 10:46:28 -0500
-References: <7B7EF7F090B9804A830ACC82F2CDE95D260869@insardxms01.ap.sony.com>
-Cc: linuxppc-dev@ozlabs.org, rsmadhvesh@vsnl.net,
-	Paul Mackerras <paulus@samba.org>
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 260FDDDF02
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Jun 2008 01:57:11 +1000 (EST)
+Message-ID: <484569CB.9090104@freescale.com>
+Date: Tue, 03 Jun 2008 10:56:59 -0500
+From: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [RFC] Make board force selection of PHYLIB
+References: <Pine.LNX.4.64.0806021019540.22439@blarg.am.freescale.net>	<484419EE.5040503@garzik.org>	<1E4EB64C-0618-497E-AABC-74EB7D74B97F@kernel.crashing.org>	<48442239.7090906@garzik.org>	<BF15FEBB-4876-4B16-915B-1D21BF989DA8@kernel.crashing.org>	<83820D83-487C-4586-9867-F4226A87A276@freescale.com>	<48445851.4090105@garzik.org>	<095F258F-72DD-4F27-A457-A57D9FAA1E76@kernel.crashing.org>	<48448020.5020407@freescale.com>	<Pine.LNX.4.64.0806030945540.21537@blarg.am.freescale.net>	<48455EEA.3040909@freescale.com>	<57B740A4-A3E0-4D93-A5D9-77B14C6E9E92@kernel.crashing.org>	<484560C0.2080607@freescale.com>	<F70B6328-5DF2-4CCC-9AAF-DD49BDA267A5@kernel.crashing.org>	<484564EA.8050706@freescale.com>
+	<F7DB0156-66BA-4E52-9CA6-F1405E3D31C6@kernel.crashing.org>
+In-Reply-To: <F7DB0156-66BA-4E52-9CA6-F1405E3D31C6@kernel.crashing.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org,
+	Jeff Garzik <jeff@garzik.org>, adrian.bunk@movial.fi
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,110 +27,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Kumar Gala wrote:
+> I see.  However, I don't like the idea I have to build in the PHYLIB
+> if I don't need it at all.
 
-On Jun 3, 2008, at 3:23 AM, Sulibhavi, Madhvesh wrote:
+Understood, but in practice I don't think the 10K or so matters that
+much on a typical 85xx board, and if the user really needs to trim
+things down, they always have the option of manually ripping the phy
+stuff out.
 
-> Kumar Gala wrote on Tuesday, June 03, 2008 11:01 AM
->> This is a patch that adds kprobes support for book-e style debug.   
->> Its
->> based on the patch posted by Madhvesh and assumes the
->> exception cleanup
->> that I've already posted.
->
-> Thanks for your forward port of my previous kprobes patches.
-> Few months back i did a port to 2.6.22.y but using ppc arch.
-> As part of 2.6.22 port, i had to retain the debug exception handling
-> fixes in DebugException and head_booke.h. I have to look into
-> exception cleanup fixes posted by you.
->
-> ....
->>
->
->> @@ -124,6 +147,10 @@ static void __kprobes
->> set_current_kprobe(struct kprobe *p, struct pt_regs *regs,
->> 				struct kprobe_ctlblk *kcb)
->> {
->> 	__get_cpu_var(current_kprobe) = p;
->> +#ifdef CONFIG_BOOKE
->> +	regs->msr |= (MSR_EE); /* Turn on 'External Interrupt' bits */
->> +	regs->msr |= (MSR_CE); /* Turn on 'Critical Interrupt' bits */
->> +#endif
->> 	kcb->kprobe_saved_msr = regs->msr;
->> }
->
-> I think the block code under CONFIG_BOOKE may not
-> be required now if exception cleanup fixes address the stack
-> problem which i had explained in my port. I have to look into
-> exception fix patches and confirm about these changes. Can
-> you please provide me the thread where exception cleanup
-> is posted as i haven't tracked the list from long time.
+> It seems like the type of breakage you are talking about exists today
+> all over the place.
 
-http://ozlabs.org/pipermail/linuxppc-dev/2008-May/056457.html
+It exists in a few places, but it's not that common, and often it's 
+obvious what went wrong when the module won't load because some kernel 
+hook didn't get built.  It's not a huge deal, but I'd rather avoid 
+introducing another instance.
 
-What was the original thinking about why you had to enable MSR_EE and  
-MSR_CE?
-
->> --- a/arch/powerpc/kernel/traps.c
->> +++ b/arch/powerpc/kernel/traps.c
->> @@ -1030,10 +1030,34 @@ void SoftwareEmulation(struct pt_regs *regs)
->>
->> #if defined(CONFIG_40x) || defined(CONFIG_BOOKE)
->>
->> -void DebugException(struct pt_regs *regs, unsigned long  
->> debug_status)
->> +void __kprobes DebugException(struct pt_regs *regs, unsigned
->> long debug_status)
->> {
->> 	if (debug_status & DBSR_IC) {	/* instruction completion */
->> 		regs->msr &= ~MSR_DE;
->> +
->> +#ifdef CONFIG_KPROBES
->> +		/* Disable instruction completion */
->> +		mtspr(SPRN_DBCR0, mfspr(SPRN_DBCR0) & ~DBCR0_IC);
->> +		/* Clear the instruction completion event */
->> +		mtspr(SPRN_DBSR, DBSR_IC);
->> +
->> +		/*
->> +		 * On Book E and perhaps other processsors,
->> singlestep is
->> +		 * handled on the critical exception stack.  This causes
->> +		 * current_thread_info() to fail, since it locates the
->> +		 * thread_info by masking off the low bits of
->> the current
->> +		 * stack pointer.  We work around this issue by copying
->> +		 * the thread_info from the kernel stack before calling
->> +		 * kprobe_post_handler, and copying it back afterwards.
->> +		 * On most processors the copy is avoided since
->> +		 * exception_thread_info == thread_info.
->> +		 */
->
-> The above comment will not be valid now as stack copy is removed.
-
-Agreed, I think I can simplify down the code here and remove the  
-CONFIG_KPROBES.
-
-> Below is the other change what i have in my kprobes ported code.
->
-> @@ -180,9 +180,7 @@ void __kprobes arch_disarm_kprobe(struct
->
-> void __kprobes arch_remove_kprobe(struct kprobe *p)
-> {
-> -       mutex_lock(&kprobe_mutex);
->        free_insn_slot(p->ainsn.insn,0);
-> -       mutex_unlock(&kprobe_mutex);
-> }
->
-> This change is mainly to fix some build issues while working
-> with lttng patches. I think this is coming from sched-devel git
-> posted from here http://lkml.org/lkml/2008/4/9/159
-> So the above changes are not required as mainline tree
-> still uses global mutex. This needs to be addressed in future.
->
-> Kumar, i would like to test the updated kprobes patches on my
-> ebony target using latest kernel. But i am facing build issues using
-> 2.6.26.rc3 for powerpc arch while using the ebony configuration.
-> I tried it using paulus git tree, but could not succeed. If you have
-> any ideas on any stable version of latest tree where ebony config
-> can be built using powerpc arch, please let me know.
-
-- k
+-Scott
