@@ -1,24 +1,27 @@
-Return-Path: <nickpiggin@yahoo.com.au>
-Received: from smtp119.mail.mud.yahoo.com (smtp119.mail.mud.yahoo.com
-	[209.191.84.76]) by ozlabs.org (Postfix) with SMTP id 9F519DDE02
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Jun 2008 14:33:26 +1000 (EST)
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Jes Sorensen <jes@sgi.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id A5C3EDDE21
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Jun 2008 14:34:01 +1000 (EST)
 Subject: Re: MMIO and gcc re-ordering issue
-Date: Tue, 3 Jun 2008 14:33:11 +1000
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+In-Reply-To: <200806031416.18195.nickpiggin@yahoo.com.au>
 References: <1211852026.3286.36.camel@pasglop>
-	<20080531075242.GC108600@sgi.com> <4843C3D7.7000609@sgi.com>
-In-Reply-To: <4843C3D7.7000609@sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200806031433.12460.nickpiggin@yahoo.com.au>
-Cc: linux-arch@vger.kernel.org, Roland Dreier <rdreier@cisco.com>,
-	linux-kernel@vger.kernel.org, Jeremy Higdon <jeremy@sgi.com>,
-	David Miller <davem@davemloft.net>, linuxppc-dev@ozlabs.org,
-	scottwood@freescale.com, torvalds@linux-foundation.org,
-	tpiepho@freescale.com, alan@lxorguk.ukuu.org.uk,
-	Arjan van de Ven <arjan@infradead.org>
+	<alpine.LFD.1.10.0805271451100.2958@woody.linux-foundation.org>
+	<20080602072403.GA20222@flint.arm.linux.org.uk>
+	<200806031416.18195.nickpiggin@yahoo.com.au>
+Content-Type: text/plain
+Date: Tue, 03 Jun 2008 14:32:31 +1000
+Message-Id: <1212467551.9496.23.camel@pasglop>
+Mime-Version: 1.0
+Cc: linux-arch@vger.kernel.org, Russell King <rmk+lkml@arm.linux.org.uk>,
+	linux-kernel@vger.kernel.org, tpiepho@freescale.com,
+	linuxppc-dev@ozlabs.org, scottwood@freescale.com,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	David Miller <davem@davemloft.net>, alan@lxorguk.ukuu.org.uk
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,59 +31,73 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Monday 02 June 2008 19:56, Jes Sorensen wrote:
-> Jeremy Higdon wrote:
-> > We don't actually have that problem on the Altix.  All writes issued
-> > by CPU X will be ordered with respect to each other.  But writes by
-> > CPU X and CPU Y will not be, unless an mmiowb() is done by the
-> > original CPU before the second CPU writes.  I.e.
-> >
-> > 	CPU X	writel
-> > 	CPU X	writel
-> > 	CPU X	mmiowb
-> >
-> > 	CPU Y	writel
-> > 	...
-> >
-> > Note that this implies some sort of locking.  Also note that if in
-> > the above, CPU Y did the mmiowb, that would not work.
->
-> Hmmm,
->
-> Then it's less bad than I thought - my apologies for the confusion.
->
-> Would we be able to use Ben's trick of setting a per cpu flag in
-> writel() then and checking that in spin unlock issuing the mmiowb()
-> there if needed?
 
-Yes you could, but your writels would still not be strongly ordered
-within (or outside) spinlock regions, which is what Linus wants (and
-I kind of agree with).
+> This whole thread also ties in with my posts about mmiowb (which IMO
+> should go away).
+> 
+> readl/writel:  strongly ordered wrt one another and other stores
+>                to cacheable RAM, byteswapping
+> __readl/__writel:  not ordered (needs mb/rmb/wmb to order with
+>                    other readl/writel and cacheable operations, or
+>                    io_*mb to order with one another)
+> raw_readl/raw_writel:  strongly ordered, no byteswapping
+> __raw_readl/__raw_writel:  not ordered, no byteswapping
+> 
+> then get rid of *relaxed* variants.
 
-This comes back to my posting about mmiowb and io_*mb barriers etc.
+In addition, some archs like powerpc also provide readl_be/writel_be as
+being defined as big endian (ie. byteswap on LE archs, no byteswap on BE
+archs).
 
-Despite what you say, what you've done really _does_ change the semantics
-of wmb() for all drivers. It is a really sad situation we've got ourselves
-into somehow, AFAIKS in the hope of trying to save ourselves a tiny bit
-of work upfront :( (this is not just the sgi folk with mmiowb I'm talking
-about, but the whole random undefinedness of ordering and io barriers).
+As of today, powerpc lacks the raw_readl/raw_writel and __readl/__writel
+variants (ie, we only provide fully ordered + byteswap and no ordering +
+no byteswap variants).
 
-The right way to make any change is never to weaken the postcondition of
-an existing interface *unless* you are willing to audit the entire tree
-and fix it. Impossible for drivers, so the correct thing to do is introduce
-a new interface, and move things over at an easier pace. Not rocket science.
+If we agree on the above semantics, I'll do a patch providing the
+missing ones.
 
-The argument that "Altix only uses a few drivers so this way we can just
-fix these up rather than make big modifications to large numbers of drivers"
-is bogus. It is far worse even for Altix if you make incompatible changes,
-because you first *break* every driver on your platform, then you have to
-audit and fix them. If you make compatible changes, then you have to do
-exactly the same audits to move them over to the new API, but you go from
-slower->faster rather than broken->non broken. As a bonus, you haven't
-got random broken stuff all over the tree that you forgot to audit.
+> Linus: on x86, memory operations to wc and wc+ memory are not ordered
+> with one another, or operations to other memory types (ie. load/load
+> and store/store reordering is allowed). Also, as you know, store/load
+> reordering is explicitly allowed as well, which covers all memory
+> types. So perhaps it is not quite true to say readl/writel is strongly
+> ordered by default even on x86. You would have to put in some
+> mfence instructions in them to make it so.
+> 
+> So, what *exact* definition are you going to mandate for readl/writel?
+> Anything less than strict ordering then we also need to ensure drivers
+> use the correct barriers (to implement strict ordering, we could either
+> put mfence instructions in, or explicitly disallow readl/writel to be
+> used on wc/wc+ memory).
 
-I don't know how there is still so much debate about this :(
+The ordering guarantees that I provide on powerpc for "ordered" variants
+are:
 
-I have a proposal: I am a neutral party here, not being an arch maintainer,
-so I'll take input and write up a backward compatible API specification
-and force everybody to conform to it ;)
+	- cacheable store + writel stays ordered (ie, write to some
+          DMA stuff and then a register to trigger the DMA).
+
+	- readl + cacheable read stays ordered (ie. read some status
+          register, for example, after an interrupt, and then read the
+          resulting data in memory).
+
+	- any of these ordered vs. spin_lock and spin_unlock (with the
+          exception that stores done before the spin_lock 
+          could potentially leak into the lock).
+
+	- readl is synchronous (ie, makes the CPU think the
+          data was actually used before executing subsequent
+          instructions, thus waits for the data to come back,
+          for example to ensure that a read used to push out
+          post buffers followed by a delay will indeed happen
+          with the right delay).
+
+We don't provide meaningless ones like writel + cacheable store for
+example. (PCI posting would defeat it anyway).
+
+> The other way we can go is just say that they have x86 semantics,
+> although that would be a bit sad IMO: we should have strong ops, in
+> which case driver writers never need to use a single barrier provided
+> they have locking right, and weak ops, in which case they should match
+> up with the weak Linux memory ordering model for system RAM.
+
+Ben.
