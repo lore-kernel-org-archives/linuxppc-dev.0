@@ -1,19 +1,17 @@
-Return-Path: <afleming@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 1BA57DEED1
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Jun 2008 04:11:41 +1000 (EST)
-Message-Id: <BC4BFA45-2CD1-4834-AEFB-58D1133B7F22@freescale.com>
-From: Andy Fleming <afleming@freescale.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id E79B1DF00F
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Jun 2008 04:23:59 +1000 (EST)
+Message-Id: <C370EEA4-D32D-48A6-A92B-7C21F6F17BF5@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
 To: Adrian Bunk <bunk@stusta.de>
 In-Reply-To: <20080603170022.GE9605@cs181133002.pp.htv.fi>
 Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v919.2)
+Mime-Version: 1.0 (Apple Message framework v924)
 Subject: Re: [RFC] Make board force selection of PHYLIB
-Date: Tue, 3 Jun 2008 13:11:21 -0500
+Date: Tue, 3 Jun 2008 13:23:44 -0500
 References: <Pine.LNX.4.64.0806021019540.22439@blarg.am.freescale.net>
 	<484419EE.5040503@garzik.org>
 	<1E4EB64C-0618-497E-AABC-74EB7D74B97F@kernel.crashing.org>
@@ -37,7 +35,7 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Jun 3, 2008, at 12:00, Adrian Bunk wrote:
+On Jun 3, 2008, at 12:00 PM, Adrian Bunk wrote:
 
 > On Tue, Jun 03, 2008 at 09:47:19AM -0500, Kumar Gala wrote:
 >> How is this as a fix.
@@ -66,9 +64,9 @@ On Jun 3, 2008, at 12:00, Adrian Bunk wrote:
 > - let MPC85xx_MDS unconditionally select PHYLIB or
 > - move the fixups to the gianfar driver
 
-Just to reiterate the point:  The fixups are not only not gianfar- 
-specific, they may not involve gianfar at all.  The 8568 has *two*  
-types of built-in ethernet controllers, which use 4 PHYs (of one  
-type).  The fixups are purely PHY-specific for this board.
+I'm ok w/unconditionally selecting PHYLIB for MPC85xx_MDS as that  
+seems to be the best solution at this point.
 
-Andy
+I'll workup a patch and send it via the powerpc.git tree.
+
+- k
