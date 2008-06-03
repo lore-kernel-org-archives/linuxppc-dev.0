@@ -1,27 +1,36 @@
-Return-Path: <jose.franca@nsn.com>
-Received: from demumfd001.nsn-inter.net (demumfd001.nsn-inter.net
-	[217.115.75.233])
+Return-Path: <afleming@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 91C12DE986
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Jun 2008 04:02:10 +1000 (EST)
-Received: from demuprx016.emea.nsn-intra.net ([10.150.129.55])
-	by demumfd001.nsn-inter.net (8.12.11.20060308/8.12.11) with ESMTP id
-	m53I2181017485
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
-	for <linuxppc-dev@ozlabs.org>; Tue, 3 Jun 2008 20:02:01 +0200
-Received: from demuexc023.nsn-intra.net (webmail.nsn-intra.net [10.150.128.36])
-	by demuprx016.emea.nsn-intra.net (8.12.11.20060308/8.12.11) with ESMTP
-	id m53I1upU011104
-	for <linuxppc-dev@ozlabs.org>; Tue, 3 Jun 2008 20:02:01 +0200
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C8C5A3.EAD71A09"
-Subject: Invalidate_dcache_range causes crash in non-cacheable area
-Date: Tue, 3 Jun 2008 19:01:21 +0100
-Message-ID: <56DEE2D3217CD946B290399093C8FA7C2DF3FC@PTLIEXC001.nsn-intra.net>
-From: "Franca, Jose (NSN - PT/Portugal - MiniMD)" <jose.franca@nsn.com>
-To: <linuxppc-dev@ozlabs.org>
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 03FDCDEF9D
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Jun 2008 04:08:31 +1000 (EST)
+Message-Id: <A11F2602-7EC9-4840-9021-29CDD39AF577@freescale.com>
+From: Andy Fleming <afleming@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <F70B6328-5DF2-4CCC-9AAF-DD49BDA267A5@kernel.crashing.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v919.2)
+Subject: Re: [RFC] Make board force selection of PHYLIB
+Date: Tue, 3 Jun 2008 13:07:55 -0500
+References: <Pine.LNX.4.64.0806021019540.22439@blarg.am.freescale.net>
+	<484419EE.5040503@garzik.org>
+	<1E4EB64C-0618-497E-AABC-74EB7D74B97F@kernel.crashing.org>
+	<48442239.7090906@garzik.org>
+	<BF15FEBB-4876-4B16-915B-1D21BF989DA8@kernel.crashing.org>
+	<83820D83-487C-4586-9867-F4226A87A276@freescale.com>
+	<48445851.4090105@garzik.org>
+	<095F258F-72DD-4F27-A457-A57D9FAA1E76@kernel.crashing.org>
+	<48448020.5020407@freescale.com>
+	<Pine.LNX.4.64.0806030945540.21537@blarg.am.freescale.net>
+	<48455EEA.3040909@freescale.com>
+	<57B740A4-A3E0-4D93-A5D9-77B14C6E9E92@kernel.crashing.org>
+	<484560C0.2080607@freescale.com>
+	<F70B6328-5DF2-4CCC-9AAF-DD49BDA267A5@kernel.crashing.org>
+Cc: Scott Wood <scottwood@freescale.com>, netdev@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Jeff Garzik <jeff@garzik.org>,
+	adrian.bunk@movial.fi
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,66 +40,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
 
-------_=_NextPart_001_01C8C5A3.EAD71A09
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+On Jun 3, 2008, at 10:31, Kumar Gala wrote:
 
-Hello Community!
+>
+> On Jun 3, 2008, at 10:18 AM, Scott Wood wrote:
+>>
+>> If you just #ifdef PHYLIB, then things will break if the user does  
+>> this:
+>> make config, GIANFAR=PHYLIB=n
+>> make zImage
+>> make config, GIANFAR=PHYLIB=m
+>> make modules
+>>
+>> And the cause of the failure will not be something that obviously  
+>> points to a build problem, such as unresolved symbols.
+>
+> what you are suggesting will not break with my patch.
+>
+> The second case will for PHYLIB=y w/the select.
+>
+>> I'd rather just unconditionally select PHYLIB on platforms that  
+>> need to do fixups.
+>
+> But you don't need fix ups for the phy if you don't have the enet  
+> driver that the phy is connected to in your system.
+>
+> (But I do understand the desire to be generous, but I think we can  
+> get this right).
 
-	I'm using 8MB of memory for DMA and that space is configured has
-non-cacheable. At a certain point in the code, data is copied to be
-processed from that area. In the function that copies, there was an
-invalidate_dcache_range for the all DMA area. This function crashed my
-load in some particular scenario of heavy traffic. Why? Shouldn't
-invalidate_dcache_range be neutral when the range is configured as
-non-cacheable? I think that the memory is properly alined... Has anyone
-else had this problem?
 
-
-Best regards
-Filipe.
-
-
-------_=_NextPart_001_01C8C5A3.EAD71A09
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
-<HTML>
-<HEAD>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Dus-ascii">
-<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
-6.5.7653.14">
-<TITLE>Invalidate_dcache_range causes crash in non-cacheable =
-area</TITLE>
-</HEAD>
-<BODY>
-<!-- Converted from text/rtf format -->
-
-<P><FONT SIZE=3D2 FACE=3D"Arial">Hello Community!</FONT>
-</P>
-
-<P>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <FONT SIZE=3D2 =
-FACE=3D"Arial">I'm using 8MB of memory for DMA and that space is =
-configured has non-cacheable. At a certain point in the code, data is =
-copied to be processed from that area. In the function that copies, =
-there was an&nbsp; invalidate_dcache_range for the all DMA area. This =
-function crashed my load in some particular scenario of heavy traffic. =
-Why? Shouldn't invalidate_dcache_range be neutral when the range is =
-configured as non-cacheable? I think that the memory is properly =
-alined&#8230; Has anyone else had this problem?</FONT></P>
-<BR>
-
-<P><FONT SIZE=3D2 FACE=3D"Arial">Best regards</FONT>
-
-<BR><FONT SIZE=3D2 FACE=3D"Arial">Filipe.</FONT>
-</P>
-
-</BODY>
-</HTML>
-------_=_NextPart_001_01C8C5A3.EAD71A09--
+Nonono.  You can't make that code depend on GIANFAR.  Remember, the  
+8568 has eTSECs *and* UCCs.  I'm in favor of selecting the PHYLIB  
+unconditionally.  But if you really hate that, then at least select it  
+based on *either* of those drivers being enabled.
