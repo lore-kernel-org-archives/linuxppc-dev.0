@@ -1,17 +1,17 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E5618DE2D6
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Jun 2008 01:14:47 +1000 (EST)
-Message-Id: <57B740A4-A3E0-4D93-A5D9-77B14C6E9E92@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Scott Wood <scottwood@freescale.com>
-In-Reply-To: <48455EEA.3040909@freescale.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v924)
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id A63E5DE7D7
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Jun 2008 01:18:34 +1000 (EST)
+Message-ID: <484560C0.2080607@freescale.com>
+Date: Tue, 03 Jun 2008 10:18:24 -0500
+From: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
+To: Kumar Gala <galak@kernel.crashing.org>
 Subject: Re: [RFC] Make board force selection of PHYLIB
-Date: Tue, 3 Jun 2008 10:14:33 -0500
 References: <Pine.LNX.4.64.0806021019540.22439@blarg.am.freescale.net>
 	<484419EE.5040503@garzik.org>
 	<1E4EB64C-0618-497E-AABC-74EB7D74B97F@kernel.crashing.org>
@@ -23,6 +23,9 @@ References: <Pine.LNX.4.64.0806021019540.22439@blarg.am.freescale.net>
 	<48448020.5020407@freescale.com>
 	<Pine.LNX.4.64.0806030945540.21537@blarg.am.freescale.net>
 	<48455EEA.3040909@freescale.com>
+	<57B740A4-A3E0-4D93-A5D9-77B14C6E9E92@kernel.crashing.org>
+In-Reply-To: <57B740A4-A3E0-4D93-A5D9-77B14C6E9E92@kernel.crashing.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Cc: netdev@vger.kernel.org, adrian.bunk@movial.fi,
 	Jeff Garzik <jeff@garzik.org>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -34,36 +37,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Kumar Gala wrote:
+> On Jun 3, 2008, at 10:10 AM, Scott Wood wrote:
+>> I'd rather avoid adding another case where the kernel needs to know 
+>> what modules are being built, though, especially if the result of 
+>> changing the .config and building modules is a mysterious runtime 
+>> failure (due to a missing platform fixup) rather than compile- or 
+>> insertion-time.
+> 
+> I don't follow what you are getting at here.  Is this something more 
+> than #ifdef PHYLIB in the platform code?
 
-On Jun 3, 2008, at 10:10 AM, Scott Wood wrote:
+If you just #ifdef PHYLIB, then things will break if the user does this:
+make config, GIANFAR=PHYLIB=n
+make zImage
+make config, GIANFAR=PHYLIB=m
+make modules
 
-> Kumar Gala wrote:
->> How is this as a fix.
->> - k
->> diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/ 
->> platforms/85xx/Kconfig
->> index 7ff29d5..9e5c884 100644
->> --- a/arch/powerpc/platforms/85xx/Kconfig
->> +++ b/arch/powerpc/platforms/85xx/Kconfig
->> @@ -34,6 +34,7 @@ config MPC85xx_MDS
->> 	bool "Freescale MPC85xx MDS"
->> 	select DEFAULT_UIMAGE
->> 	select QUICC_ENGINE
->> +	select PHYLIB if GIANFAR=m
->> 	help
->> 	  This option enables support for the MPC85xx MDS board
->
-> I assume you'll also ifdef-protect the phy calls in the platform code?
+And the cause of the failure will not be something that obviously points 
+to a build problem, such as unresolved symbols.
 
-yes this needs to get done.
+I'd rather just unconditionally select PHYLIB on platforms that need to 
+do fixups.
 
-> I'd rather avoid adding another case where the kernel needs to know  
-> what modules are being built, though, especially if the result of  
-> changing the .config and building modules is a mysterious runtime  
-> failure (due to a missing platform fixup) rather than compile- or  
-> insertion-time.
-
-I don't follow what you are getting at here.  Is this something more  
-than #ifdef PHYLIB in the platform code?
-
-- k
+-Scott
