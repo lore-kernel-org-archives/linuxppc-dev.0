@@ -1,28 +1,27 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 9D29ADDDFC
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Jun 2008 08:27:40 +1000 (EST)
-Subject: Re: MMIO and gcc re-ordering issue
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Trent Piepho <tpiepho@freescale.com>
-In-Reply-To: <Pine.LNX.4.64.0806031154050.3242@t2.domain.actdsltmp>
-References: <1211852026.3286.36.camel@pasglop>
-	<alpine.LFD.1.10.0805271451100.2958@woody.linux-foundation.org>
-	<20080602072403.GA20222@flint.arm.linux.org.uk>
-	<200806031416.18195.nickpiggin@yahoo.com.au>
-	<Pine.LNX.4.64.0806031154050.3242@t2.domain.actdsltmp>
-Content-Type: text/plain
-Date: Wed, 04 Jun 2008 08:26:58 +1000
-Message-Id: <1212532018.9496.49.camel@pasglop>
-Mime-Version: 1.0
-Cc: linux-arch@vger.kernel.org, Nick Piggin <nickpiggin@yahoo.com.au>,
-	Russell King <rmk+lkml@arm.linux.org.uk>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	scottwood@freescale.com, Linus Torvalds <torvalds@linux-foundation.org>,
-	David Miller <davem@davemloft.net>, alan@lxorguk.ukuu.org.uk
-Reply-To: benh@kernel.crashing.org
+Return-Path: <ntl@pobox.com>
+Received: from sasl.smtp.pobox.com (a-sasl-fastnet.sasl.smtp.pobox.com
+	[207.106.133.19]) by ozlabs.org (Postfix) with ESMTP id 6827FDE015
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Jun 2008 08:31:16 +1000 (EST)
+Date: Tue, 3 Jun 2008 17:30:54 -0500
+From: Nathan Lynch <ntl@pobox.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: [PATCH 1/2] make walk_memory_resource available with MEMORY_HOTPLUG=n
+Message-ID: <20080603223054.GC7475@localdomain>
+References: <200805071443.20192.hannes.hering@linux.vnet.ibm.com>
+	<20080528164405.GA4836@localdomain>
+	<200806031007.40162.hannes.hering@linux.vnet.ibm.com>
+	<20080603204908.GB7475@localdomain>
+	<1212527335.23656.2.camel@badari-desktop>
+	<4845B382.20205@garzik.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4845B382.20205@garzik.org>
+Cc: tklein@de.ibm.com, Jeff Garzik <jeff@garzik.org>, themann@de.ibm.com,
+	Hannes Hering <hannes.hering@linux.vnet.ibm.com>,
+	netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+	ossrosch@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org,
+	raisch@de.ibm.com, Badari Pulavarty <pbadari@us.ibm.com>,
+	ossthema@de.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,50 +31,81 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2008-06-03 at 12:43 -0700, Trent Piepho wrote:
-> 
-> Byte-swapping vs not byte-swapping is not usually what the programmer wants. 
-> Usually your device's registers are defined as being big-endian or
-> little-endian and you want whatever is needed to give you that.
+The ehea driver was recently changed[1] to use walk_memory_resource() to
+detect the system's memory layout.  However, walk_memory_resource() is
+available only when memory hotplug is enabled.  So CONFIG_EHEA was
+made to depend on MEMORY_HOTPLUG [2], but it is inappropriate for a
+network driver to have such a dependency.
 
-Yes, which is why I (and some other archs) have writel_be/readl_be.
+Make the declaration of walk_memory_resource() and its powerpc
+implementation (ehea is powerpc-specific) unconditionally available.
 
-The standard writel/readl being LE.
+[1] 48cfb14f8b89d4d5b3df6c16f08b258686fb12ad
+    "ehea: Add DLPAR memory remove support"
 
-However, the "raw" variants are defined to be native endian, which is of
-some use to -some- archs apparently where they have SoC device whose
-endianness follow the core.
+[2] fb7b6ca2b6b7c23b52be143bdd5f55a23b9780c8
+    "ehea: Add dependency to Kconfig"
 
-> I believe that on some archs that can be either byte order, some built-in
-> devices will change their registers to match, and so you want "native endian"
-> or no swapping for these.  Though that's definitely in the minority.
-> 
-> An accessors that always byte-swaps regardless of the endianness of the host
-> is never something I've seen a driver want.
-> 
-> IOW, there are four ways one can defined endianness/swapping:
-> 1) Little-endian
-> 2) Big-endian
-> 3) Native-endian aka non-byte-swapping
-> 4) Foreign-endian aka byte-swapping
-> 
-> 1 and 2 are by far the most used.  Some code wants 3.  No one wants 4.  Yet
-> our API is providing 3 & 4, the two which are the least useful.
+Signed-off-by: Nathan Lynch <ntl@pobox.com>
+---
+ arch/powerpc/mm/mem.c          |    3 +--
+ include/linux/memory_hotplug.h |   16 ++++++++--------
+ 2 files changed, 9 insertions(+), 10 deletions(-)
 
-No, we don't provide 4, it was something unclear with nick.
-
-We provide 1. (writel/readl and __variants), some archs provide 2
-(writel_be/readl_be, tho I don't have __variants, I suppose I could),
-and everybody provides 3. though in some cases (like us) only in the
-form of __variants (ie, non ordered, like __raw_readl/__raw_writel).
-
-Nick's proposal is to plug those gaps, though it's, I believe, missing
-the _be variants.
-
-> Is it enough to provide only "all or none" for ordering strictness?  For
-> instance on powerpc, one can get a speedup by dropping strict ordering for IO
-> vs cacheable memory, but still keeping ordering for IO vs IO and IO vs locks. 
-> This is much easier to program for than no ordering at all.  In fact, if one
-> doesn't use coherent DMA, it's basically the same as fully strict ordering.
-
-Ben.
+diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+index f67e118..51f82d8 100644
+--- a/arch/powerpc/mm/mem.c
++++ b/arch/powerpc/mm/mem.c
+@@ -151,6 +151,7 @@ out:
+ 	return ret;
+ }
+ #endif /* CONFIG_MEMORY_HOTREMOVE */
++#endif /* CONFIG_MEMORY_HOTPLUG */
+ 
+ /*
+  * walk_memory_resource() needs to make sure there is no holes in a given
+@@ -184,8 +185,6 @@ walk_memory_resource(unsigned long start_pfn, unsigned long nr_pages, void *arg,
+ }
+ EXPORT_SYMBOL_GPL(walk_memory_resource);
+ 
+-#endif /* CONFIG_MEMORY_HOTPLUG */
+-
+ void show_mem(void)
+ {
+ 	unsigned long total = 0, reserved = 0;
+diff --git a/include/linux/memory_hotplug.h b/include/linux/memory_hotplug.h
+index 73e3586..ea9f5ad 100644
+--- a/include/linux/memory_hotplug.h
++++ b/include/linux/memory_hotplug.h
+@@ -77,14 +77,6 @@ extern int __add_pages(struct zone *zone, unsigned long start_pfn,
+ extern int __remove_pages(struct zone *zone, unsigned long start_pfn,
+ 	unsigned long nr_pages);
+ 
+-/*
+- * Walk through all memory which is registered as resource.
+- * arg is (start_pfn, nr_pages, private_arg_pointer)
+- */
+-extern int walk_memory_resource(unsigned long start_pfn,
+-			unsigned long nr_pages, void *arg,
+-			int (*func)(unsigned long, unsigned long, void *));
+-
+ #ifdef CONFIG_NUMA
+ extern int memory_add_physaddr_to_nid(u64 start);
+ #else
+@@ -199,6 +191,14 @@ static inline void register_page_bootmem_info_node(struct pglist_data *pgdat)
+ 
+ #endif /* ! CONFIG_MEMORY_HOTPLUG */
+ 
++/*
++ * Walk through all memory which is registered as resource.
++ * arg is (start_pfn, nr_pages, private_arg_pointer)
++ */
++extern int walk_memory_resource(unsigned long start_pfn,
++			unsigned long nr_pages, void *arg,
++			int (*func)(unsigned long, unsigned long, void *));
++
+ extern int add_memory(int nid, u64 start, u64 size);
+ extern int arch_add_memory(int nid, u64 start, u64 size);
+ extern int remove_memory(u64 start, u64 size);
+-- 
+1.5.5
