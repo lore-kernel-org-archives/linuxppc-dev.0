@@ -1,17 +1,33 @@
-Return-Path: <andre.schwarz@matrix-vision.de>
-Received: from p15137414.pureserver.info (matrixvision.de [217.160.213.229])
-	by ozlabs.org (Postfix) with ESMTP id E60B5DDE08
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Jun 2008 17:39:28 +1000 (EST)
-Message-ID: <4844F52D.8050203@matrix-vision.de>
-Date: Tue, 03 Jun 2008 09:39:25 +0200
-From: =?ISO-8859-15?Q?Andr=E9_Schwarz?= <andre.schwarz@matrix-vision.de>
-MIME-Version: 1.0
-To: Fabio Tosetto <tosettofabio83@libero.it>
-Subject: Re: slow MMC over SPI
-References: <4843AD1C.4010901@matrix-vision.de> <4844DC96.6060807@libero.it>
-In-Reply-To: <4844DC96.6060807@libero.it>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Cc: linux-ppc list <linuxppc-dev@ozlabs.org>
+Return-Path: <Haavard.Skinnemoen@atmel.com>
+Received: from bagnes.atmel.com (smtpeu1.atmel.com [195.65.72.27])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 94D4CDDE24
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Jun 2008 17:46:58 +1000 (EST)
+Date: Tue, 3 Jun 2008 09:46:46 +0200
+From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: MMIO and gcc re-ordering issue
+Message-ID: <20080603094646.0dbf2911@hskinnemo-gx745.norway.atmel.com>
+In-Reply-To: <20080602154812.GB2734@loki.buserror.net>
+References: <1211924335.3286.89.camel@pasglop>
+	<20080527214241.GA22636@parisc-linux.org>
+	<1211926636.3286.100.camel@pasglop>
+	<20080528103648.54eb8734@hskinnemo-gx745.norway.atmel.com>
+	<1212110003.15633.0.camel@pasglop>
+	<20080530080700.773a82cc@siona.local>
+	<1212132267.15633.69.camel@pasglop>
+	<20080530102706.56fca248@siona.local>
+	<Pine.LNX.4.64.0805301120510.26332@anakin>
+	<20080602101102.0d8979c5@hskinnemo-gx745.norway.atmel.com>
+	<20080602154812.GB2734@loki.buserror.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linux-arch@vger.kernel.org, Matthew Wilcox <matthew@wil.cx>,
+	linux-kernel@vger.kernel.org, tpiepho@freescale.com,
+	linuxppc-dev@ozlabs.org, Geert Uytterhoeven <geert@linux-m68k.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	David Miller <davem@davemloft.net>, alan@lxorguk.ukuu.org.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,69 +37,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Fabio,
+Scott Wood <scottwood@freescale.com> wrote:
+> On Mon, Jun 02, 2008 at 10:11:02AM +0200, Haavard Skinnemoen wrote:
+> > Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+> > > On Fri, 30 May 2008, Haavard Skinnemoen wrote:
+> > > > Maybe we need another interface that does not do byteswapping but
+> > > > provides stronger ordering guarantees?
+> > > 
+> > > The byte swapping depends on the device/bus.
+> > 
+> > Of course. But isn't it reasonable to assume that a device integrated
+> > on the same silicon as the CPU is connected to a somewhat sane bus
+> > which doesn't require any byte swapping?
+> 
+> No, unfortunately. :-(
 
-I'm running on a MPC8343.
-The SD-Card is connected on the spi hardware controller.
+Ok, I guess I was being naive.
 
+> See the end of drivers/dma/fsldma.h.  Likewise with Freescale's PCI host
+> bridges; for some reason the bus itself being little endian led to the host
+> bridge control registers also being little endian.
 
-regards,
-Andr=E9
+Right. But still, isn't it better to handle it on a case-by-case basis
+in the drivers? In some cases, it's best to explicitly use a certain
+byte order, in others it's best to use whatever is native to the CPU.
 
-Fabio Tosetto schrieb:
-> Hello,
->=20
-> I am trying to enable the SD over SPI on a emebedded system with one
-> processor powerpc mpc5200b; you have enabled mmc over spi into a native=
-=20
-> spi or psc spi?
->=20
-> regards,
-> Fabio
->=20
-> Andre Schwarz ha scritto:
->> All,
->>
->> has anybody made some investigations about performance of a SD/MMC car=
-d
->> on SPI ?
->>
->> Actually I'm using various cards (different speed classes) on an SPI b=
-us
->> of a MPC8343 cpu.
->> Everything is working fine basically, i.e. card is detected properly a=
-nd
->> block device can be mounted and used.
->>
->> SPI clock is adjusted to the card's capabilities and is running quite
->> fast (>30MHz).
->>
->> But between consecutive reads/writes there's a fixed gap of 2us thus
->> yielding a poor performance of approx. 300KBytes/sec.
->> The spi bus is utilized only ~10%.
->>
->> Any ideas where this comes from ?
->> Ist it a fixed delay regarding to some kind of spec or is it possibly =
-a
->> spi driver/mmc layer issue ?
->>
->>
->> regards,
->> Andre Schwarz
->>
->> MATRIX VISION GmbH, Talstra=DFe 16, DE-71570 Oppenweiler  -=20
->> Registergericht: Amtsgericht Stuttgart, HRB 271090
->> Gesch=E4ftsf=FChrer: Gerhard Thullner, Werner Armingeon, Uwe Furtner
->> _______________________________________________
->> Linuxppc-dev mailing list
->> Linuxppc-dev@ozlabs.org
->> https://ozlabs.org/mailman/listinfo/linuxppc-dev
->> .
->>
->>  =20
->=20
-
-
-MATRIX VISION GmbH, Talstra=DFe 16, DE-71570 Oppenweiler  - Registergeric=
-ht: Amtsgericht Stuttgart, HRB 271090
-Gesch=E4ftsf=FChrer: Gerhard Thullner, Werner Armingeon, Uwe Furtner
+Haavard
