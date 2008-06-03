@@ -1,27 +1,25 @@
-Return-Path: <benh@kernel.crashing.org>
+Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id A5C3EDDE21
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Jun 2008 14:34:01 +1000 (EST)
-Subject: Re: MMIO and gcc re-ordering issue
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-In-Reply-To: <200806031416.18195.nickpiggin@yahoo.com.au>
-References: <1211852026.3286.36.camel@pasglop>
-	<alpine.LFD.1.10.0805271451100.2958@woody.linux-foundation.org>
-	<20080602072403.GA20222@flint.arm.linux.org.uk>
-	<200806031416.18195.nickpiggin@yahoo.com.au>
-Content-Type: text/plain
-Date: Tue, 03 Jun 2008 14:32:31 +1000
-Message-Id: <1212467551.9496.23.camel@pasglop>
-Mime-Version: 1.0
-Cc: linux-arch@vger.kernel.org, Russell King <rmk+lkml@arm.linux.org.uk>,
-	linux-kernel@vger.kernel.org, tpiepho@freescale.com,
-	linuxppc-dev@ozlabs.org, scottwood@freescale.com,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	David Miller <davem@davemloft.net>, alan@lxorguk.ukuu.org.uk
-Reply-To: benh@kernel.crashing.org
+	by ozlabs.org (Postfix) with ESMTPS id 92106DDE1F
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Jun 2008 14:55:25 +1000 (EST)
+Message-Id: <9B953237-99D2-4593-9A29-242424CDDB29@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Sam Ravnborg <sam@ravnborg.org>
+In-Reply-To: <20080508202200.GA12578@uranus.ravnborg.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Mime-Version: 1.0 (Apple Message framework v924)
+Subject: Re: How to link a .o with all modules
+Date: Mon, 2 Jun 2008 23:55:19 -0500
+References: <6C8AB345-2DA0-460D-B7C8-262463247DDE@kernel.crashing.org>
+	<20080504192434.GA23752@uranus.ravnborg.org>
+	<D346E2E4-26C3-482E-ABBF-AF1EE97E91CD@kernel.crashing.org>
+	<20080505204449.GA9446@uranus.ravnborg.org>
+	<5DD68A6B-45FD-4163-BDF5-356C70A00676@kernel.crashing.org>
+	<20080508202200.GA12578@uranus.ravnborg.org>
+Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>,
+	lkml List <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,72 +30,64 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-> This whole thread also ties in with my posts about mmiowb (which IMO
-> should go away).
-> 
-> readl/writel:  strongly ordered wrt one another and other stores
->                to cacheable RAM, byteswapping
-> __readl/__writel:  not ordered (needs mb/rmb/wmb to order with
->                    other readl/writel and cacheable operations, or
->                    io_*mb to order with one another)
-> raw_readl/raw_writel:  strongly ordered, no byteswapping
-> __raw_readl/__raw_writel:  not ordered, no byteswapping
-> 
-> then get rid of *relaxed* variants.
+On May 8, 2008, at 3:22 PM, Sam Ravnborg wrote:
 
-In addition, some archs like powerpc also provide readl_be/writel_be as
-being defined as big endian (ie. byteswap on LE archs, no byteswap on BE
-archs).
+> On Thu, May 08, 2008 at 09:16:10AM -0500, Kumar Gala wrote:
+>>
+>> On May 5, 2008, at 3:44 PM, Sam Ravnborg wrote:
+>>
+>>>>>
+>>>>>
+>>>>> Let me know if this does address your question.
+>>>>
+>>>> The problem is MODPOST complains about undefined symbols:
+>>>>
+>>>> MODPOST 24 modules
+>>>> ERROR: "_restgpr_20_x" [net/key/af_key.ko] undefined!
+>>>> ERROR: "_restgpr_25_x" [net/key/af_key.ko] undefined!
+>>>> ERROR: "_restgpr_30_x" [net/key/af_key.ko] undefined!
+>>>
+>>> I need a bit more context to try to analyse this.
+>>> Where did you expect _restgpr_20_x to be defined.
+>>> If in vmlinux then were they present in the
+>>> Module.symvers file?
+>>
+>> No they aren't there since we I'm not EXPORT_SYMBOL() them.  Should I
+>> also be doing EXPORT_SYMBOL?
+>
+> So modpost claim it cannot find the symbols.
+>
+>>
+>>> If in the linked in .o file - could you
+>>> see the symbols using objdump.
+>>
+>> Yes.
+>>
+>> readelf -a:
+>>
+>> ...
+>> Symbol table '.symtab' contains 113 entries:
+>>   Num:    Value  Size Type    Bind   Vis      Ndx Name
+>> ...
+>>     5: 00000000     0 FUNC    GLOBAL DEFAULT    1 _savegpr_14
+>>     6: 00000000     0 FUNC    GLOBAL DEFAULT    1 _save32gpr_14
+>> ...
+>
+> Strange.
+>
+> I did not look closer.
+> But it looks like the linker failed to resolve these symbols
+> in the final link somehow - despite the symbols are present in
+> the linked in .o file.
+>
+> Can you try to drop me the output of the relocation records for the
+> finally linked .o file (the one with your .o file linked in).
+>
+> objdump -r IIRC
 
-As of today, powerpc lacks the raw_readl/raw_writel and __readl/__writel
-variants (ie, we only provide fully ordered + byteswap and no ordering +
-no byteswap variants).
 
-If we agree on the above semantics, I'll do a patch providing the
-missing ones.
+Sam,
 
-> Linus: on x86, memory operations to wc and wc+ memory are not ordered
-> with one another, or operations to other memory types (ie. load/load
-> and store/store reordering is allowed). Also, as you know, store/load
-> reordering is explicitly allowed as well, which covers all memory
-> types. So perhaps it is not quite true to say readl/writel is strongly
-> ordered by default even on x86. You would have to put in some
-> mfence instructions in them to make it so.
-> 
-> So, what *exact* definition are you going to mandate for readl/writel?
-> Anything less than strict ordering then we also need to ensure drivers
-> use the correct barriers (to implement strict ordering, we could either
-> put mfence instructions in, or explicitly disallow readl/writel to be
-> used on wc/wc+ memory).
+Didn't see any feedback from the relocation records.
 
-The ordering guarantees that I provide on powerpc for "ordered" variants
-are:
-
-	- cacheable store + writel stays ordered (ie, write to some
-          DMA stuff and then a register to trigger the DMA).
-
-	- readl + cacheable read stays ordered (ie. read some status
-          register, for example, after an interrupt, and then read the
-          resulting data in memory).
-
-	- any of these ordered vs. spin_lock and spin_unlock (with the
-          exception that stores done before the spin_lock 
-          could potentially leak into the lock).
-
-	- readl is synchronous (ie, makes the CPU think the
-          data was actually used before executing subsequent
-          instructions, thus waits for the data to come back,
-          for example to ensure that a read used to push out
-          post buffers followed by a delay will indeed happen
-          with the right delay).
-
-We don't provide meaningless ones like writel + cacheable store for
-example. (PCI posting would defeat it anyway).
-
-> The other way we can go is just say that they have x86 semantics,
-> although that would be a bit sad IMO: we should have strong ops, in
-> which case driver writers never need to use a single barrier provided
-> they have locking right, and weak ops, in which case they should match
-> up with the weak Linux memory ordering model for system RAM.
-
-Ben.
+- k
