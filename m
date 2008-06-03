@@ -1,21 +1,17 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 27820DDF2F
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Jun 2008 15:50:46 +1000 (EST)
-Message-Id: <92D6E129-1819-4E7B-ABA0-50B8FD7079CE@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: ananth@in.ibm.com
-In-Reply-To: <20080603054846.GC31747@in.ibm.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v924)
-Subject: Re: [RFC] Kprobes for book-e
-Date: Tue, 3 Jun 2008 00:50:06 -0500
-References: <Pine.LNX.4.64.0806030027340.27857@blarg.am.freescale.net>
-	<20080603054846.GC31747@in.ibm.com>
-Cc: madhvesh.s@ap.sony.com, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>, rsmadhvesh@vsnl.net
+Return-Path: <tosettofabio83@libero.it>
+Received: from polito.it (unknown [130.192.3.44])
+	by ozlabs.org (Postfix) with ESMTP id B9488DDF18
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Jun 2008 15:54:47 +1000 (EST)
+Message-ID: <4844DC96.6060807@libero.it>
+Date: Tue, 03 Jun 2008 07:54:30 +0200
+From: Fabio Tosetto <tosettofabio83@libero.it>
+MIME-Version: 1.0
+To: Andre Schwarz <andre.schwarz@matrix-vision.de>
+Subject: Re: slow MMC over SPI
+References: <4843AD1C.4010901@matrix-vision.de>
+In-Reply-To: <4843AD1C.4010901@matrix-vision.de>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Cc: linux-ppc list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,38 +21,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hello,
 
-On Jun 3, 2008, at 12:48 AM, Ananth N Mavinakayanahalli wrote:
+I am trying to enable the SD over SPI on a emebedded system with one
+processor powerpc mpc5200b; you have enabled mmc over spi into a native 
+spi or psc spi?
 
-> On Tue, Jun 03, 2008 at 12:30:51AM -0500, Kumar Gala wrote:
->> This is a patch that adds kprobes support for book-e style debug.   
->> Its
->> based on the patch posted by Madhvesh and assumes the exception  
->> cleanup
->> that I've already posted.
->>
->> Post to get any feedback.  The code needs some cleaning up but  
->> wanted to
->> see if there were any initial comments.
->>
->> - k
+regards,
+Fabio
+
+Andre Schwarz ha scritto:
+> All,
 >
-> ...
+> has anybody made some investigations about performance of a SD/MMC card
+> on SPI ?
 >
->> @@ -53,7 +68,8 @@ int __kprobes arch_prepare_kprobe(struct kprobe *p)
->> 		ret = -EINVAL;
->> 	}
->>
->> -	/* insn must be on a special executable page on ppc64 */
->> +	/* insn must be on a special executable page on ppc64.  This is
->> +	 * explicitly required on ppc32 (right now), but it doesn't hurt */
-> 	^^^^^^^^
-> 	not required?
-
-yes.  that should be 'not required'..
-
-> I don't have much (any) knowledge about Book-E details, but the  
-> generic
-> powerpc changes look fine to me.
-
-- k
+> Actually I'm using various cards (different speed classes) on an SPI bus
+> of a MPC8343 cpu.
+> Everything is working fine basically, i.e. card is detected properly and
+> block device can be mounted and used.
+>
+> SPI clock is adjusted to the card's capabilities and is running quite
+> fast (>30MHz).
+>
+> But between consecutive reads/writes there's a fixed gap of 2us thus
+> yielding a poor performance of approx. 300KBytes/sec.
+> The spi bus is utilized only ~10%.
+>
+> Any ideas where this comes from ?
+> Ist it a fixed delay regarding to some kind of spec or is it possibly a
+> spi driver/mmc layer issue ?
+>
+>
+> regards,
+> Andre Schwarz
+>
+> MATRIX VISION GmbH, Talstraße 16, DE-71570 Oppenweiler  - Registergericht: Amtsgericht Stuttgart, HRB 271090
+> Geschäftsführer: Gerhard Thullner, Werner Armingeon, Uwe Furtner
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+> .
+>
+>   
