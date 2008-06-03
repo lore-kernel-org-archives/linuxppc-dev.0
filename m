@@ -1,17 +1,16 @@
-Return-Path: <madhvesh.s@ap.sony.com>
-Received: from VA3EHSOBE003.bigfish.com (outbound-va3.frontbridge.com
-	[216.32.180.16]) by ozlabs.org (Postfix) with ESMTP id 344A6DE284
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Jun 2008 00:48:19 +1000 (EST)
+Return-Path: <tmorrison@empirix.com>
+Received: from empbedex1.empirix.com (empbedex1.empirix.com [12.38.203.54])
+	by ozlabs.org (Postfix) with ESMTP id 19D59DDDF3
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Jun 2008 00:53:25 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Subject: RE: [RFC] Kprobes for book-e
-Date: Tue, 3 Jun 2008 20:18:01 +0530
-Message-ID: <7B7EF7F090B9804A830ACC82F2CDE95D2609F3@insardxms01.ap.sony.com>
-From: "Sulibhavi, Madhvesh" <madhvesh.s@ap.sony.com>
-To: "Kumar Gala" <galak@kernel.crashing.org>,
-	"Josh Boyer" <jwboyer@linux.vnet.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, rsmadhvesh@vsnl.net,
-	Paul Mackerras <paulus@samba.org>
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C8C587.E30BB409"
+Subject: uboot version for 8572CDS
+Date: Tue, 3 Jun 2008 10:41:24 -0400
+Message-ID: <BD261180E6D35F4D9D32F3E44FD3D9010D361E25@EMPBEDEX.empirix.com>
+From: "Morrison, Tom" <tmorrison@empirix.com>
+To: <linuxppc-dev@ozlabs.org>
+Cc: wd@denx.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,33 +20,236 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: Kumar Gala [mailto:galak@kernel.crashing.org]=20
-> Sent: Tuesday, June 03, 2008 8:08 PM
-> To: Josh Boyer
-> Cc: Sulibhavi, Madhvesh; linuxppc-dev@ozlabs.org;=20
-> rsmadhvesh@vsnl.net; Paul Mackerras
-> Subject: Re: [RFC] Kprobes for book-e
->=20
+This is a multi-part message in MIME format.
 
-> This looks like the binutils problem that cell was having and I =20
-> believe Alan Modra fixed:
->=20
-> http://sourceware.org/ml/binutils/2008-05/msg00008.html
->=20
-Thanks, is it posible to get latest binutils binary which
-is applied with this fix? If i just upgrade binutils, will
-it solve this problem or i have to rebuild gcc etc etc..
+------_=_NextPart_001_01C8C587.E30BB409
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
--madhvesh
+I am wondering if there is a development branch that contains=20
+
+support for the Freescale 8572CDS...Looking in the latest uboot
+
+version (1.3.3) there is support for sbc8641 & sbc8548 - but
+
+no specific support for a sbc8572?=20
+
+=20
+
+Tom Morrison
+Principal Software Engineer
+
+EMPIRIX=20
+20 Crosby Drive - Bedford, MA  01730
+p: 781.266.3567 f: 781.266.3670=20
+email: tmorrison@empirix.com <mailto:tmorrison@empirix.com> =20
+www.empirix.com <http://www.empirix.com/>=20
 
 
--------------------------------------------------------------------
-This email is confidential and intended only for the use of the =
-individual or entity named above and may contain information that is =
-privileged. If you are not the intended recipient, you are notified that =
-any dissemination, distribution or copying of this email is strictly =
-prohibited. If you have received this email in error, please notify us =
-immediately by return email or telephone and destroy the original =
-message. - This mail is sent via Sony Asia Pacific Mail Gateway.
--------------------------------------------------------------------
+
+
+=20
+
+
+------_=_NextPart_001_01C8C587.E30BB409
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
+xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
+xmlns:st1=3D"urn:schemas-microsoft-com:office:smarttags" =
+xmlns=3D"http://www.w3.org/TR/REC-html40">
+
+<head>
+<meta http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Dus-ascii">
+<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
+<o:SmartTagType =
+namespaceuri=3D"urn:schemas-microsoft-com:office:smarttags"
+ name=3D"PostalCode"/>
+<o:SmartTagType =
+namespaceuri=3D"urn:schemas-microsoft-com:office:smarttags"
+ name=3D"State"/>
+<o:SmartTagType =
+namespaceuri=3D"urn:schemas-microsoft-com:office:smarttags"
+ name=3D"Street"/>
+<o:SmartTagType =
+namespaceuri=3D"urn:schemas-microsoft-com:office:smarttags"
+ name=3D"City"/>
+<o:SmartTagType =
+namespaceuri=3D"urn:schemas-microsoft-com:office:smarttags"
+ name=3D"address"/>
+<o:SmartTagType =
+namespaceuri=3D"urn:schemas-microsoft-com:office:smarttags"
+ name=3D"place"/>
+<!--[if !mso]>
+<style>
+st1\:*{behavior:url(#default#ieooui) }
+</style>
+<![endif]-->
+<style>
+<!--
+ /* Font Definitions */
+ @font-face
+	{font-family:Verdana;
+	panose-1:2 11 6 4 3 5 4 4 2 4;}
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0in;
+	margin-bottom:.0001pt;
+	font-size:12.0pt;
+	font-family:"Times New Roman";}
+a:link, span.MsoHyperlink
+	{color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{color:purple;
+	text-decoration:underline;}
+p
+	{mso-margin-top-alt:auto;
+	margin-right:0in;
+	mso-margin-bottom-alt:auto;
+	margin-left:0in;
+	font-size:12.0pt;
+	font-family:"Times New Roman";}
+span.EmailStyle17
+	{mso-style-type:personal-compose;
+	font-family:Arial;
+	color:windowtext;}
+@page Section1
+	{size:8.5in 11.0in;
+	margin:1.0in 1.25in 1.0in 1.25in;}
+div.Section1
+	{page:Section1;}
+-->
+</style>
+
+</head>
+
+<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
+
+<div class=3DSection1>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>I am wondering if there is a development branch that =
+contains
+<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>support for the Freescale 8572CDS&#8230;Looking in =
+the
+latest uboot<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>version (1.3.3) there is support for sbc8641 &amp; =
+sbc8548 &#8211;
+but<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>no specific support for a sbc8572? =
+<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p style=3D'margin-bottom:12.0pt'><strong><b><font size=3D2 color=3Dnavy
+face=3DVerdana><span =
+style=3D'font-size:10.0pt;font-family:Verdana;color:navy'>Tom
+Morrison</span></font></b></strong><font size=3D2 color=3Dnavy =
+face=3DVerdana><span
+style=3D'font-size:10.0pt;font-family:Verdana;color:navy'><br>
+</span></font><font color=3Dnavy><span style=3D'color:navy'>Principal =
+Software
+Engineer</span></font><o:p></o:p></p>
+
+<p style=3D'margin-bottom:12.0pt'><strong><b><font size=3D2 color=3Dnavy
+face=3DVerdana><span =
+style=3D'font-size:10.0pt;font-family:Verdana;color:navy'>EMPIRIX</span><=
+/font></b></strong><font
+size=3D2 color=3Dnavy face=3DVerdana><span =
+style=3D'font-size:10.0pt;font-family:Verdana;
+color:navy'> </span></font><font color=3Dnavy><span =
+style=3D'color:navy'><br>
+<u1:Street u2:st=3D"on"><u1:address u2:st=3D"on"><st1:Street =
+w:st=3D"on"><st1:address
+ w:st=3D"on">20 Crosby =
+Drive</u1:address></u1:Street></st1:address></st1:Street> =
+</span></font><b><font
+color=3D"#ff6600"><span =
+style=3D'color:#FF6600;font-weight:bold'>-</span></font></b><font
+size=3D2 color=3Dnavy face=3DVerdana><span =
+style=3D'font-size:10.0pt;font-family:Verdana;
+color:navy'> <u1:place u2:st=3D"on"><u1:City u2:st=3D"on"><st1:place =
+w:st=3D"on"><st1:City
+ w:st=3D"on">Bedford</u1:City></st1:City>, <u1:State =
+u2:st=3D"on"><st1:State w:st=3D"on">MA</u1:State></st1:State><b><font
+ size=3D3 color=3Dblack face=3D"Times New Roman"><span =
+style=3D'font-size:12.0pt;
+ font-family:"Times New =
+Roman";color:black;font-weight:bold'>&nbsp;</span></font></b><font
+ size=3D3 color=3Dblack face=3D"Times New Roman"><span =
+style=3D'font-size:12.0pt;
+ font-family:"Times New Roman";color:black'>&nbsp;<u1:PostalCode =
+u2:st=3D"on"></span></font><st1:PostalCode
+ =
+w:st=3D"on">01730</u1:PostalCode></u1:place></st1:PostalCode></st1:place>=
+</span></font><br>
+<b><font color=3D"#ff6600"><span =
+style=3D'color:#FF6600;font-weight:bold'>p:</span></font></b><font
+color=3D"#ff6600"><span style=3D'color:#FF6600'> </span></font><font =
+size=3D2
+color=3Dnavy face=3DVerdana><span =
+style=3D'font-size:10.0pt;font-family:Verdana;
+color:navy'>781.266.3567 </span></font><b><font size=3D2 =
+color=3D"#ff6600"
+face=3DVerdana><span =
+style=3D'font-size:10.0pt;font-family:Verdana;color:#FF6600;
+font-weight:bold'>f:</span></font></b> <font size=3D2 color=3Dnavy =
+face=3DVerdana><span
+style=3D'font-size:10.0pt;font-family:Verdana;color:navy'>781.266.3670 =
+</span></font><b><span
+style=3D'font-weight:bold'><br>
+</span></b><b><font size=3D2 color=3D"#ff6600" face=3DVerdana><span =
+style=3D'font-size:
+10.0pt;font-family:Verdana;color:#FF6600;font-weight:bold'>email:</span><=
+/font></b>
+<u><font size=3D2 color=3Dblue face=3DVerdana><span =
+style=3D'font-size:10.0pt;
+font-family:Verdana;color:blue'><a =
+href=3D"mailto:tmorrison@empirix.com"><font
+size=3D3><span =
+style=3D'font-size:12.0pt'>tmorrison@empirix.com</span></font></a></span>=
+</font></u><font
+size=3D2 color=3Dnavy face=3DVerdana><span =
+style=3D'font-size:10.0pt;font-family:Verdana;
+color:navy'> </span></font><font size=3D2 color=3D"#ff6600" =
+face=3DVerdana><span
+style=3D'font-size:10.0pt;font-family:Verdana;color:#FF6600'><br>
+<a href=3D"http://www.empirix.com/"><font size=3D3><span =
+style=3D'font-size:12.0pt'>www.empirix.com</span></font></a></span></font=
+><font
+size=3D2 color=3Dnavy face=3DVerdana><span =
+style=3D'font-size:10.0pt;font-family:Verdana;
+color:navy'><br>
+<br>
+<br>
+<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
+style=3D'font-size:
+12.0pt'><o:p>&nbsp;</o:p></span></font></p>
+
+</div>
+
+</body>
+
+</html>
+
+------_=_NextPart_001_01C8C587.E30BB409--
