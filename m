@@ -1,19 +1,19 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	by ozlabs.org (Postfix) with ESMTP id 61F9EDDF00
+Return-Path: <ludovic.desroches@gmail.com>
+Received: from po-out-1718.google.com (po-out-1718.google.com [72.14.252.155])
+	by ozlabs.org (Postfix) with ESMTP id 67A31DDDF3
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  3 Jun 2008 07:37:30 +1000 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1K3HiY-0002jU-Ek
-	for linuxppc-embedded@ozlabs.org; Mon, 02 Jun 2008 14:37:26 -0700
-Message-ID: <17611404.post@talk.nabble.com>
-Date: Mon, 2 Jun 2008 14:37:26 -0700 (PDT)
-From: khollan <khollan@daktronics.com>
+	Tue,  3 Jun 2008 17:23:09 +1000 (EST)
+Received: by po-out-1718.google.com with SMTP id y22so4205294pof.4
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 03 Jun 2008 00:23:08 -0700 (PDT)
+Message-ID: <388e90610806030023x4a2c1077hfbabb49b95853bd0@mail.gmail.com>
+Date: Tue, 3 Jun 2008 09:23:07 +0200
+From: "Ludovic Desroches" <ludovic.desroches@gmail.com>
 To: linuxppc-embedded@ozlabs.org
-Subject: XLlTemac port forwarding probelm?
+Subject: How accessing to my IP registers from Linux
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/alternative;
+	boundary="----=_Part_2599_25089911.1212477787610"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -24,25 +24,73 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+------=_Part_2599_25089911.1212477787610
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Hi everyone,
+Hi,
 
-I'm using my custom Xilinx board as a gateway for a networked webcam.  The
-board is based on the ml410.  Basically eth1 is connected to the outside
-world and eth0 is connected to the webcam.  I'm port forwarding port 80 with
-iptables.  I can connect to the webcams web server by going to the IP
-address of the Xilinx board just fine, but here comes my problem...
 
-After the first initial load, which is relatively fast, all subsequent
-refreshes become ungodly slow.  If I ifconfig down eth1 and bring it back up
-the next refresh is fast again.  
 
-I'm using Xilinx's Local Link Mac with the Fifo interface instead of DMA. 
-Any ideas of whats going on?
+I have put xilinx kernel on my board : a memec FX12 based on a Virtex 4 FX.
+Everything thing is OK, I have my serial console, Ethernet is also OK.
+
+I have to make some drivers. For example one for the LCD screen. It is my
+first driver so I want to try with something easier like LEDs. I know there
+is a driver from Xilinx but I want to do it by myself. Moreover it is only =
+a
+file to adapt Xilinx standelone driver for Kernel.
+
+
+
+I try to read and to write the registers of my GPIO IP which is working, I
+have made some tests in standelone. How accessing to these registers ?
+
+I have tried with this for example but without success :
+
+ptr =3D ioremap_nocache(0x70001e00,0x00000004);
+printk("GPIO_DATA (readl): %u\n",readl(ptr));
+
+
+
+readl, outl, ioread32 : same result.
+
+
 
 Thanks
 
-Kevin
--- 
-View this message in context: http://www.nabble.com/XLlTemac-port-forwarding-probelm--tp17611404p17611404.html
-Sent from the linuxppc-embedded mailing list archive at Nabble.com.
+
+
+Best Regards
+
+--=20
+Ludovic Desroches
+Ing=E9nieur ESIEE 2008
+mobile : 06 19 21 02 08
+http://www.odulo.net
+
+------=_Part_2599_25089911.1212477787610
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+<p>Hi,</p><p>&nbsp;</p><p>I have put xilinx kernel on my board : a memec
+FX12 based on a Virtex 4 FX. Everything thing is OK, I have my serial
+console, Ethernet is also OK.</p><p>I have to make some drivers. For
+example one for the LCD screen. It is my first driver so I want to try
+with something easier like LEDs. I know there is a driver from Xilinx
+but I want to do it by myself. Moreover it is only a file to adapt
+Xilinx standelone driver for Kernel.</p><p>&nbsp;</p><p>I try to read and t=
+o
+write the registers of my GPIO IP which is working, I have made some
+tests in standelone. How accessing to these registers ? </p><p>I have tried=
+ with this for example but without success :</p><blockquote><p>ptr =3D iore=
+map_nocache(0x70001e00,0x00000004);<br>printk(&quot;GPIO_DATA (readl): %u\n=
+&quot;,readl(ptr)); </p>
+<p>&nbsp;</p></blockquote><p>readl, outl, ioread32 : same result.</p><p>&nb=
+sp;</p><p>Thanks</p><p>&nbsp;</p><p>Best Regards</p><br>-- <br>Ludovic Desr=
+oches<br>Ing=E9nieur ESIEE 2008<br>mobile : 06 19 21 02 08<br><a href=3D"ht=
+tp://www.odulo.net">http://www.odulo.net</a>
+
+------=_Part_2599_25089911.1212477787610--
