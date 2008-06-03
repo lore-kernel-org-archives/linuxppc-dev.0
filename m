@@ -1,18 +1,22 @@
-Return-Path: <wg@grandegger.com>
-Message-ID: <4845181E.8040603@grandegger.com>
-Date: Tue, 03 Jun 2008 12:08:30 +0200
-From: Wolfgang Grandegger <wg@grandegger.com>
+Return-Path: <marc.pignat@hevs.ch>
+Received: from mail.hevs.ch (mail.hevs.ch [153.109.23.10])
+	by ozlabs.org (Postfix) with ESMTP id 7612FDDFBA
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Jun 2008 20:42:53 +1000 (EST)
+From: Marc Pignat <marc.pignat@hevs.ch>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: Re: [PATCH 3/3] mmc: change .get_ro() callback semantics
+Date: Tue, 3 Jun 2008 12:07:49 +0200
+References: <20080523154204.GA19803@polina.dev.rtsoft.ru>
+	<20080523154347.GC24862@polina.dev.rtsoft.ru>
+In-Reply-To: <20080523154347.GC24862@polina.dev.rtsoft.ru>
 MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 1/4] [POWERPC] 85xx: add board support for the TQM8548
-	modules
-References: <1212130188-28835-1-git-send-email-wg@grandegger.com>
-	<1212130188-28835-2-git-send-email-wg@grandegger.com>
-	<20080602020352.GB19393@yookeroo.seuss>
-	<479BA7CE-CD12-4935-87EB-E69025D408E6@kernel.crashing.org>
-In-Reply-To: <479BA7CE-CD12-4935-87EB-E69025D408E6@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+Content-Type: text/plain;
+  charset="utf-8"
+Message-Id: <200806031207.49843.marc.pignat@hevs.ch>
+Cc: David Brownell <dbrownell@users.sourceforge.net>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	spi-devel-general@lists.sourceforge.net, Timur Tabi <timur@freescale.com>,
+	Pierre Ossman <drzeus-mmc@drzeus.cx>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,61 +26,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
-> 
-> On Jun 1, 2008, at 9:03 PM, David Gibson wrote:
-> 
->> On Fri, May 30, 2008 at 08:49:45AM +0200, Wolfgang Grandegger wrote:
->>> This patch adds support for the TQM8548 modules from TQ-Components
->>> GmbH (http://www.tqc.de).
->>
->> [snip]
->>> index 0000000..d09250a
->>> --- /dev/null
->>> +++ b/arch/powerpc/boot/dts/tqm8548.dts
->>> @@ -0,0 +1,370 @@
->>> +/*
->>> + * TQM8548 Device Tree Source
->>> + *
->>> + * Copyright 2006 Freescale Semiconductor Inc.
->>> + * Copyright 2008 Wolfgang Grandegger <wg@denx.de>
->>> + *
->>> + * This program is free software; you can redistribute  it and/or
->>> modify it
->>> + * under  the terms of  the GNU General  Public License as published
->>> by the
->>> + * Free Software Foundation;  either version 2 of the  License, or
->>> (at your
->>> + * option) any later version.
->>> + */
->>> +
->>> +/dts-v1/;
->>
->> [snip]
->>> +        i2c@3000 {
->>> +            #address-cells = <1>;
->>> +            #size-cells = <0>;
->>> +            cell-index = <0>;
->> [...]
->>> +        enet0: ethernet@24000 {
->>> +            cell-index = <0>;
->> [...]
->>> +        serial0: serial@4500 {
->>> +            cell-index = <0>;
->> [...]
->>> +    pci0: pci@e0008000 {
->>> +        cell-index = <0>;
->>
->> You have a whole lot of 'cell-index' properties through both these
->> trees, and they all look wrong.  cell-index is a hack, which should be
->> avoided wherever practical - it should only be used when the index is
->> used to offset into some global register block, never simply to
->> differentiate (use reg for that) or name the devices (use aliases for
->> that).
-> 
-> this is why FSL device tree's have cell-index.  We have global control
-> registers that need to know such things.
+Hi all!
 
-Should I remove them or not? OF is still a mystery for me :-(.
+On Friday 23 May 2008, Anton Vorontsov wrote:
+> get_ro() callback must return values >= 0 for its logical state, and
+...
+>  static void pxamci_set_ios(struct mmc_host *mmc, struct mmc_ios *ios)
+> diff --git a/include/linux/mmc/host.h b/include/linux/mmc/host.h
+> index f2e9885..ef3b773 100644
+> --- a/include/linux/mmc/host.h
+> +++ b/include/linux/mmc/host.h
+> @@ -55,6 +55,9 @@ struct mmc_host_ops {
+>  	 * Avoid calling these three functions too often or in a "fast path",
+>  	 * since underlaying controller might implement them in an expensive
+>  	 * and/or slow way.
+> +	 *
+> +	 * .get_ro and .get_cd should return >= 0 for their logical values,
+> +	 * or negative errno value in case of error.
+>  	 */
 
-Wolfgang.
+I would suggest to use something more strict (bulletproof), something like:
+
+/*
+ * get_ro will return:
+ *   0 for a read/write card
+ *   1 for a read-only card 
+ *   -ENOSYS when not supported
+ *   or a negative errno when something bad happened
+ * 
+ * get_cd will return:
+ *   0 for a absent card
+ *   1 for a present card 
+ *   -ENOSYS when not supported
+ *   or a negative errno when something bad happened
+ */
+
+I think we have missed one important information: which context these callbacks
+can rely on (hard_irq, soft_irq, ...).
+
+
+
+Best regards
+
+Marc
