@@ -1,16 +1,31 @@
-Return-Path: <madhvesh.s@ap.sony.com>
-Received: from SG2EHSOBE006.bigfish.com (outbound-sin.frontbridge.com
-	[207.46.51.80]) by ozlabs.org (Postfix) with ESMTP id 10579DE51C
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Jun 2008 01:02:16 +1000 (EST)
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 28AD0DE0CB
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Jun 2008 01:11:10 +1000 (EST)
+Message-ID: <48455EEA.3040909@freescale.com>
+Date: Tue, 03 Jun 2008 10:10:34 -0500
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Subject: RE: [RFC] Kprobes for book-e
-Date: Tue, 3 Jun 2008 20:31:58 +0530
-Message-ID: <7B7EF7F090B9804A830ACC82F2CDE95D2609F4@insardxms01.ap.sony.com>
-From: "Sulibhavi, Madhvesh" <madhvesh.s@ap.sony.com>
-To: "Josh Boyer" <jwboyer@linux.vnet.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, rsmadhvesh@vsnl.net,
-	Paul Mackerras <paulus@samba.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [RFC] Make board force selection of PHYLIB
+References: <Pine.LNX.4.64.0806021019540.22439@blarg.am.freescale.net>
+	<484419EE.5040503@garzik.org>
+	<1E4EB64C-0618-497E-AABC-74EB7D74B97F@kernel.crashing.org>
+	<48442239.7090906@garzik.org>
+	<BF15FEBB-4876-4B16-915B-1D21BF989DA8@kernel.crashing.org>
+	<83820D83-487C-4586-9867-F4226A87A276@freescale.com>
+	<48445851.4090105@garzik.org>
+	<095F258F-72DD-4F27-A457-A57D9FAA1E76@kernel.crashing.org>
+	<48448020.5020407@freescale.com>
+	<Pine.LNX.4.64.0806030945540.21537@blarg.am.freescale.net>
+In-Reply-To: <Pine.LNX.4.64.0806030945540.21537@blarg.am.freescale.net>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: netdev@vger.kernel.org, adrian.bunk@movial.fi,
+	Jeff Garzik <jeff@garzik.org>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,37 +35,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: Josh Boyer [mailto:jwboyer@linux.vnet.ibm.com]=20
-> Sent: Tuesday, June 03, 2008 8:17 PM
-> To: Sulibhavi, Madhvesh
-> Cc: Kumar Gala; linuxppc-dev@ozlabs.org; rsmadhvesh@vsnl.net;=20
-> Paul Mackerras
-> Subject: Re: [RFC] Kprobes for book-e
-> A newer binutils should work just fine.  Also, and older one would
-> likely work too.  I use either 2.15 or 2.18.
+Kumar Gala wrote:
+> How is this as a fix.
+> 
+> - k
+> 
+> diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/platforms/85xx/Kconfig
+> index 7ff29d5..9e5c884 100644
+> --- a/arch/powerpc/platforms/85xx/Kconfig
+> +++ b/arch/powerpc/platforms/85xx/Kconfig
+> @@ -34,6 +34,7 @@ config MPC85xx_MDS
+>  	bool "Freescale MPC85xx MDS"
+>  	select DEFAULT_UIMAGE
+>  	select QUICC_ENGINE
+> +	select PHYLIB if GIANFAR=m
+>  	help
+>  	  This option enables support for the MPC85xx MDS board
 
-thanks,  will try with any one of this
->=20
-> josh
->=20
-> P.S.  You should really get rid of that disclaimer message at the
-> bottom of your emails.  You're sending to a public list so it makes no
-> sense.
-This message is annoying for anyone. I don't have much
-control on its removal and in some lists, it was accepted=20
-and i just used..
-I will have to switch my replies..
+I assume you'll also ifdef-protect the phy calls in the platform code?
 
--madhvesh
+I'd rather avoid adding another case where the kernel needs to know what 
+modules are being built, though, especially if the result of changing 
+the .config and building modules is a mysterious runtime failure (due to 
+a missing platform fixup) rather than compile- or insertion-time.
 
-
--------------------------------------------------------------------
-This email is confidential and intended only for the use of the =
-individual or entity named above and may contain information that is =
-privileged. If you are not the intended recipient, you are notified that =
-any dissemination, distribution or copying of this email is strictly =
-prohibited. If you have received this email in error, please notify us =
-immediately by return email or telephone and destroy the original =
-message. - This mail is sent via Sony Asia Pacific Mail Gateway.
--------------------------------------------------------------------
+-Scott
