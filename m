@@ -1,31 +1,20 @@
-Return-Path: <willy@parisc-linux.org>
-Received: from mail.parisc-linux.org (palinux.external.hp.com [192.25.206.14])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.parisc-linux.org",
-	Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 591CFDDFE6
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Jun 2008 07:35:05 +1000 (EST)
-Date: Tue, 3 Jun 2008 15:35:01 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Trent Piepho <tpiepho@freescale.com>
-Subject: Re: MMIO and gcc re-ordering issue
-Message-ID: <20080603213501.GD3549@parisc-linux.org>
-References: <1211852026.3286.36.camel@pasglop>
-	<alpine.LFD.1.10.0805271451100.2958@woody.linux-foundation.org>
-	<20080602072403.GA20222@flint.arm.linux.org.uk>
-	<200806031416.18195.nickpiggin@yahoo.com.au>
-	<alpine.LFD.1.10.0806030746190.3473@woody.linux-foundation.org>
-	<Pine.LNX.4.64.0806031130130.3242@t2.domain.actdsltmp>
-	<20080603185541.GB3549@parisc-linux.org>
-	<Pine.LNX.4.64.0806031253180.3242@t2.domain.actdsltmp>
+Return-Path: <stephen.neuendorffer@xilinx.com>
+Received: from WA4EHSOBE004.bigfish.com (outbound-wa4.frontbridge.com
+	[216.32.181.16]) by ozlabs.org (Postfix) with ESMTP id AF50EDE183
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Jun 2008 07:42:36 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.64.0806031253180.3242@t2.domain.actdsltmp>
-Cc: linux-arch@vger.kernel.org, Nick Piggin <nickpiggin@yahoo.com.au>,
-	Russell King <rmk+lkml@arm.linux.org.uk>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	scottwood@freescale.com, Linus Torvalds <torvalds@linux-foundation.org>,
-	David Miller <davem@davemloft.net>, alan@lxorguk.ukuu.org.uk
+Content-Type: text/plain; charset="us-ascii"
+Subject: RE: [PATCH] [POWERPC] Xilinx: add compatibility for 'simple-bus'.
+Date: Tue, 3 Jun 2008 14:41:59 -0700
+In-Reply-To: <1210271125-11559-1-git-send-email-stephen.neuendorffer@xilinx.com>
+References: <20080508161529.65566FB805F@mail185-va3.bigfish.com>
+	<1210271125-11559-1-git-send-email-stephen.neuendorffer@xilinx.com>
+From: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
+To: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>,
+	<dwg@au1.ibm.com>, <jwboyer@linux.vnet.ibm.com>,
+	<grant.likely@secretlab.ca>, <linuxppc-dev@ozlabs.org>
+Message-ID: <20080603214232.E0A8D1488061@mail55-wa4.bigfish.com>
+Cc: git <git@xilinx.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,38 +24,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Jun 03, 2008 at 12:57:56PM -0700, Trent Piepho wrote:
-> On Tue, 3 Jun 2008, Matthew Wilcox wrote:
-> >On Tue, Jun 03, 2008 at 11:47:00AM -0700, Trent Piepho wrote:
-> >>On Tue, 3 Jun 2008, Linus Torvalds wrote:
-> >>>On Tue, 3 Jun 2008, Nick Piggin wrote:
-> >>>>
-> >>>>Linus: on x86, memory operations to wc and wc+ memory are not ordered
-> >>>>with one another, or operations to other memory types (ie. load/load
-> >>>>and store/store reordering is allowed). Also, as you know, store/load
-> >>>>reordering is explicitly allowed as well, which covers all memory
-> >>>>types. So perhaps it is not quite true to say readl/writel is strongly
-> >>>>ordered by default even on x86. You would have to put in some
-> >>>>mfence instructions in them to make it so.
-> >>
-> >>So on x86, these could be re-ordered?
-> >>
-> >>writel(START_OPERATION, CONTROL_REGISTER);
-> >>status = readl(STATUS_REGISTER);
-> >
-> >You wouldn't ask for write-combining memory mapping for control or
-> >status registers.
-> 
-> But Nick said, "store/load reordering is explicitly allowed as well, which
-> covers *all* memory types."
 
-Then Nick is confused.  PCI only defines one way to flush posted writes
-to a device -- doing a read from it.  There's no way that reads can
-be allowed to pass writes (unless you've asked for it, like with write
-combining).
+It appears that this turns out to interact badly with the probing of
+PPC_UDBG_16550, which is always enabled on PPC405 (and apparently
+found!) even though Virtex devices don't have them.
 
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+Steve
+
+> -----Original Message-----
+> From: Stephen Neuendorffer [mailto:stephen.neuendorffer@xilinx.com]
+> Sent: Thursday, May 08, 2008 11:25 AM
+> To: dwg@au1.ibm.com; jwboyer@linux.vnet.ibm.com;
+grant.likely@secretlab.ca; linuxppc-dev@ozlabs.org
+> Cc: Stephen Neuendorffer
+> Subject: [PATCH] [POWERPC] Xilinx: add compatibility for 'simple-bus'.
+> =
+
+> ePAPR drafts propose 'simple-bus' as a generic compatibility type for
+> busses which cannot be probed for devices.  In addition, the Xilinx
+> versions of these IPs seem to be proliferating.  Hence, in the future
+> let's prefer to use the standard names.  I've left the old names in
+> for short term backward compatibility for existing device trees.
+> =
+
+> Signed-off-by: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
+> ---
+>  arch/powerpc/platforms/40x/virtex.c |    1 +
+>  1 files changed, 1 insertions(+), 0 deletions(-)
+> =
+
+> diff --git a/arch/powerpc/platforms/40x/virtex.c
+b/arch/powerpc/platforms/40x/virtex.c
+> index 6c72994..b1ab7b8 100644
+> --- a/arch/powerpc/platforms/40x/virtex.c
+> +++ b/arch/powerpc/platforms/40x/virtex.c
+> @@ -16,6 +16,7 @@
+>  #include <asm/xilinx_intc.h>
+> =
+
+>  static struct of_device_id xilinx_of_bus_ids[] __initdata =3D {
+> +	{ .compatible =3D "simple-bus", },
+>  	{ .compatible =3D "xlnx,plb-v46-1.00.a", },
+>  	{ .compatible =3D "xlnx,plb-v46-1.02.a", },
+>  	{ .compatible =3D "xlnx,plb-v34-1.01.a", },
+> --
+> 1.5.3.4
+> =
+
+
+
+This email and any attachments are intended for the sole use of the named r=
+ecipient(s) and contain(s) confidential information that may be proprietary=
+, privileged or copyrighted under applicable law. If you are not the intend=
+ed recipient, do not read, copy, or forward this email message or any attac=
+hments. Delete this email message and any attachments immediately.
