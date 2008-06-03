@@ -1,20 +1,22 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Wed, 4 Jun 2008 08:39:05 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 1/4] [POWERPC] 85xx: add board support for the TQM8548
-	modules
-Message-ID: <20080603223905.GA22982@yookeroo.seuss>
-References: <1212130188-28835-1-git-send-email-wg@grandegger.com>
-	<1212130188-28835-2-git-send-email-wg@grandegger.com>
-	<20080602020352.GB19393@yookeroo.seuss>
-	<479BA7CE-CD12-4935-87EB-E69025D408E6@kernel.crashing.org>
-	<4845181E.8040603@grandegger.com>
-	<07AEED44-7DEB-46C1-B028-3EFA274CEB11@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <07AEED44-7DEB-46C1-B028-3EFA274CEB11@kernel.crashing.org>
-Cc: Linuxppc-dev@ozlabs.org
+Return-Path: <akpm@linux-foundation.org>
+Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
+	[140.211.169.13])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "smtp.linux-foundation.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 12BC3DE0D0
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Jun 2008 09:48:46 +1000 (EST)
+Date: Tue, 3 Jun 2008 16:48:30 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: avorontsov@ru.mvista.com
+Subject: Re: [PATCH 0/8 v4] mpc83xx_wdt rework, support for mpc8610 and mpc8xx
+Message-Id: <20080603164830.32457962.akpm@linux-foundation.org>
+In-Reply-To: <20080602173726.GA24556@polina.dev.rtsoft.ru>
+References: <20080602173726.GA24556@polina.dev.rtsoft.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: sfr@canb.auug.org.au, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	wim@iguana.be, scottwood@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,34 +26,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Jun 03, 2008 at 09:33:12AM -0500, Kumar Gala wrote:
-> On Jun 3, 2008, at 5:08 AM, Wolfgang Grandegger wrote:
->> Kumar Gala wrote:
->>> On Jun 1, 2008, at 9:03 PM, David Gibson wrote:
->>>> On Fri, May 30, 2008 at 08:49:45AM +0200, Wolfgang Grandegger wrote:
-[snip]
->>>> You have a whole lot of 'cell-index' properties through both these
->>>> trees, and they all look wrong.  cell-index is a hack, which  
->>>> should be
->>>> avoided wherever practical - it should only be used when the index  
->>>> is
->>>> used to offset into some global register block, never simply to
->>>> differentiate (use reg for that) or name the devices (use aliases  
->>>> for
->>>> that).
->>>
->>> this is why FSL device tree's have cell-index.  We have global  
->>> control
->>> registers that need to know such things.
->>
->> Should I remove them or not? OF is still a mystery for me :-(.
->
-> Don't remove them.
+On Mon, 2 Jun 2008 21:37:26 +0400
+Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
 
-Yes, they're ok, given this usage.
+> No comments on the previous version for two weeks... resending once
+> again.
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+I did all the rework to make the patches apply on top of all the
+pending watchdog work in Wim's tree and in -mm.  I haven't build tested
+it yet.
+
+
+I'll assume that
+
+ [PATCH 7/8] [POWERPC] fsl_soc: remove mpc83xx_wdt code
+
+and
+
+ [PATCH 8/8] [POWERPC] 86xx: mpc8610_hpcd: add watchdog node
+
+are dependent upon the preceding six patches.  This might be wrong.
+
+
+Please put the subsystem identifier (eg, "watchdog" and "powerpc")
+outside the [], for reasons which should be in
+Documentation/SubmittingPatches, which used to be there but which got
+lost.  Bascially the text inside [] is for temporary not-for-committing
+information such as "rfc", "2.6.24-rc4", "resend", etc and should be stripped
+by the email recipient before merging.
