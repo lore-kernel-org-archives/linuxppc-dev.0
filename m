@@ -1,23 +1,29 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 9A685DDEF0
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Jun 2008 09:20:14 +1000 (EST)
-Message-ID: <48448020.5020407@freescale.com>
-Date: Mon, 02 Jun 2008 18:20:00 -0500
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] phylib: Don't allow core of phylib to build as a module
-References: <Pine.LNX.4.64.0806021019540.22439@blarg.am.freescale.net>	<484419EE.5040503@garzik.org>	<1E4EB64C-0618-497E-AABC-74EB7D74B97F@kernel.crashing.org>	<48442239.7090906@garzik.org>	<BF15FEBB-4876-4B16-915B-1D21BF989DA8@kernel.crashing.org>	<83820D83-487C-4586-9867-F4226A87A276@freescale.com>	<48445851.4090105@garzik.org>
-	<095F258F-72DD-4F27-A457-A57D9FAA1E76@kernel.crashing.org>
-In-Reply-To: <095F258F-72DD-4F27-A457-A57D9FAA1E76@kernel.crashing.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: netdev@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
-	linuxppc-dev@ozlabs.org
+Return-Path: <johnpol@2ka.mipt.ru>
+Received: from 2ka.mipt.ru (relay.2ka.mipt.ru [194.85.82.65])
+	by ozlabs.org (Postfix) with ESMTP id D0739DDF51
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Jun 2008 11:24:20 +1000 (EST)
+Date: Tue, 3 Jun 2008 05:24:17 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Kim Phillips <kim.phillips@freescale.com>
+Subject: Re: [PATCH 2/2] talitos: Freescale integrated security engine (SEC)
+	driver
+Message-ID: <20080603012416.GA20254@2ka.mipt.ru>
+References: <48406562.4010306@freescale.com>
+	<20080530154820.6e56b625.kim.phillips@freescale.com>
+	<20080530211204.GA15768@2ka.mipt.ru>
+	<20080530171930.61965d59.kim.phillips@freescale.com>
+	<20080531095901.GA16281@2ka.mipt.ru>
+	<20080602092701.9d0d56e8.kim.phillips@freescale.com>
+	<20080602160012.GB32511@2ka.mipt.ru>
+	<20080602115021.cdda8647.kim.phillips@freescale.com>
+	<20080602175751.GA7807@2ka.mipt.ru>
+	<20080602140603.02d5f40f.kim.phillips@freescale.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080602140603.02d5f40f.kim.phillips@freescale.com>
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
+	mr.scada@gmail.com, linux-crypto@vger.kernel.org,
+	herbert@gondor.apana.org.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,27 +33,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
-> On Jun 2, 2008, at 3:30 PM, Jeff Garzik wrote:
-> 
->> Andy Fleming wrote:
->>> I'm partial to the select-it-if-you-need-it paradigm.
->>
->>
->> AFAICS this can all be solved by the platform Kconfig ensuring that 
->> phylib=y
-> 
-> I don't care for this as it means making sure each platform/board port 
-> gets it right.
+Hi.
 
-How is this different from any other kconfig dependency?  It's not too 
-hard to scan through your platform code and see what you call...
+On Mon, Jun 02, 2008 at 02:06:03PM -0500, Kim Phillips (kim.phillips@freescale.com) wrote:
+> it would be an issue if flush_cannel didn't save off the data required
+> to call the callback with in saved_req.  flush_channel does this on
+> purpose to be able to call the callback outside of lock (as is
+> commented).  Note desc gets assigned NULL prior to releasing the lock,
+> after copying its contents to saved_req.
 
-> I think we'd be better off with a small stub that is 
-> always built into the kernel for phy_read/phy_write, etc or the function 
-> pointer indirection mechanism.
+Excellent! It looks like there are no more issues and second version
+fixed found problem place.
 
-And then instead of build failures, you'd get a silent runtime failure 
-to apply the workaround if phylib is built as a module.
-
--Scott
+-- 
+	Evgeniy Polyakov
