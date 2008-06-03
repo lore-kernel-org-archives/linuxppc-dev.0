@@ -1,19 +1,16 @@
-Return-Path: <galak@kernel.crashing.org>
-Message-Id: <07AEED44-7DEB-46C1-B028-3EFA274CEB11@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Wolfgang Grandegger <wg@grandegger.com>
-In-Reply-To: <4845181E.8040603@grandegger.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v924)
-Subject: Re: [PATCH 1/4] [POWERPC] 85xx: add board support for the TQM8548
-	modules
-Date: Tue, 3 Jun 2008 09:33:12 -0500
-References: <1212130188-28835-1-git-send-email-wg@grandegger.com>
-	<1212130188-28835-2-git-send-email-wg@grandegger.com>
-	<20080602020352.GB19393@yookeroo.seuss>
-	<479BA7CE-CD12-4935-87EB-E69025D408E6@kernel.crashing.org>
-	<4845181E.8040603@grandegger.com>
-Cc: Linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <madhvesh.s@ap.sony.com>
+Received: from VA3EHSOBE004.bigfish.com (outbound-va3.frontbridge.com
+	[216.32.180.16]) by ozlabs.org (Postfix) with ESMTP id 5C771DE1E6
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Jun 2008 00:39:34 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Subject: RE: [RFC] Kprobes for book-e
+Date: Tue, 3 Jun 2008 20:09:13 +0530
+Message-ID: <7B7EF7F090B9804A830ACC82F2CDE95D2609F0@insardxms01.ap.sony.com>
+From: "Sulibhavi, Madhvesh" <madhvesh.s@ap.sony.com>
+To: "Josh Boyer" <jwboyer@linux.vnet.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, rsmadhvesh@vsnl.net,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,71 +20,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+> From: Josh Boyer [mailto:jwboyer@linux.vnet.ibm.com]=20
+> Sent: Tuesday, June 03, 2008 7:49 PM
+> To: Sulibhavi, Madhvesh
+> Cc: Kumar Gala; linuxppc-dev@ozlabs.org; rsmadhvesh@vsnl.net;=20
+> Paul Mackerras
+> Subject: Re: [RFC] Kprobes for book-e
+>=20
+> Um, weird.  What version of binutils and gcc are you using?
 
-On Jun 3, 2008, at 5:08 AM, Wolfgang Grandegger wrote:
+binutils-> 2.17.50
+gcc-> 4.1.2
 
-> Kumar Gala wrote:
->>
->> On Jun 1, 2008, at 9:03 PM, David Gibson wrote:
->>
->>> On Fri, May 30, 2008 at 08:49:45AM +0200, Wolfgang Grandegger wrote:
->>>> This patch adds support for the TQM8548 modules from TQ-Components
->>>> GmbH (http://www.tqc.de).
->>>
->>> [snip]
->>>> index 0000000..d09250a
->>>> --- /dev/null
->>>> +++ b/arch/powerpc/boot/dts/tqm8548.dts
->>>> @@ -0,0 +1,370 @@
->>>> +/*
->>>> + * TQM8548 Device Tree Source
->>>> + *
->>>> + * Copyright 2006 Freescale Semiconductor Inc.
->>>> + * Copyright 2008 Wolfgang Grandegger <wg@denx.de>
->>>> + *
->>>> + * This program is free software; you can redistribute  it and/or
->>>> modify it
->>>> + * under  the terms of  the GNU General  Public License as  
->>>> published
->>>> by the
->>>> + * Free Software Foundation;  either version 2 of the  License, or
->>>> (at your
->>>> + * option) any later version.
->>>> + */
->>>> +
->>>> +/dts-v1/;
->>>
->>> [snip]
->>>> +        i2c@3000 {
->>>> +            #address-cells = <1>;
->>>> +            #size-cells = <0>;
->>>> +            cell-index = <0>;
->>> [...]
->>>> +        enet0: ethernet@24000 {
->>>> +            cell-index = <0>;
->>> [...]
->>>> +        serial0: serial@4500 {
->>>> +            cell-index = <0>;
->>> [...]
->>>> +    pci0: pci@e0008000 {
->>>> +        cell-index = <0>;
->>>
->>> You have a whole lot of 'cell-index' properties through both these
->>> trees, and they all look wrong.  cell-index is a hack, which  
->>> should be
->>> avoided wherever practical - it should only be used when the index  
->>> is
->>> used to offset into some global register block, never simply to
->>> differentiate (use reg for that) or name the devices (use aliases  
->>> for
->>> that).
->>
->> this is why FSL device tree's have cell-index.  We have global  
->> control
->> registers that need to know such things.
->
-> Should I remove them or not? OF is still a mystery for me :-(.
+-madhvesh
 
-Don't remove them.
 
-- k
+-------------------------------------------------------------------
+This email is confidential and intended only for the use of the =
+individual or entity named above and may contain information that is =
+privileged. If you are not the intended recipient, you are notified that =
+any dissemination, distribution or copying of this email is strictly =
+prohibited. If you have received this email in error, please notify us =
+immediately by return email or telephone and destroy the original =
+message. - This mail is sent via Sony Asia Pacific Mail Gateway.
+-------------------------------------------------------------------
