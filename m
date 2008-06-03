@@ -1,24 +1,17 @@
-Return-Path: <nickpiggin@yahoo.com.au>
-Received: from smtp113.mail.mud.yahoo.com (smtp113.mail.mud.yahoo.com
-	[209.191.84.66]) by ozlabs.org (Postfix) with SMTP id 8F82DDDEFA
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Jun 2008 17:18:59 +1000 (EST)
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: MMIO and gcc re-ordering issue
-Date: Tue, 3 Jun 2008 17:18:42 +1000
-References: <1211852026.3286.36.camel@pasglop>
-	<200806031611.13817.nickpiggin@yahoo.com.au>
-	<18500.60032.989380.864674@cargo.ozlabs.ibm.com>
-In-Reply-To: <18500.60032.989380.864674@cargo.ozlabs.ibm.com>
+Return-Path: <andre.schwarz@matrix-vision.de>
+Received: from p15137414.pureserver.info (matrixvision.de [217.160.213.229])
+	by ozlabs.org (Postfix) with ESMTP id E60B5DDE08
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Jun 2008 17:39:28 +1000 (EST)
+Message-ID: <4844F52D.8050203@matrix-vision.de>
+Date: Tue, 03 Jun 2008 09:39:25 +0200
+From: =?ISO-8859-15?Q?Andr=E9_Schwarz?= <andre.schwarz@matrix-vision.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200806031718.43393.nickpiggin@yahoo.com.au>
-Cc: linux-arch@vger.kernel.org, Russell King <rmk+lkml@arm.linux.org.uk>,
-	linux-kernel@vger.kernel.org, tpiepho@freescale.com,
-	linuxppc-dev@ozlabs.org, scottwood@freescale.com,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	David Miller <davem@davemloft.net>, alan@lxorguk.ukuu.org.uk
+To: Fabio Tosetto <tosettofabio83@libero.it>
+Subject: Re: slow MMC over SPI
+References: <4843AD1C.4010901@matrix-vision.de> <4844DC96.6060807@libero.it>
+In-Reply-To: <4844DC96.6060807@libero.it>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Cc: linux-ppc list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,54 +21,69 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tuesday 03 June 2008 16:53, Paul Mackerras wrote:
-> Nick Piggin writes:
-> > So your readl can pass an earlier cacheable store or earlier writel?
->
-> No.  It's quite gross at the moment, it has a sync before the access
-> (i.e. a full mb()) and a twi; isync sequence after the access that
-> stalls execution until the data comes back.
+Fabio,
 
-OK.
+I'm running on a MPC8343.
+The SD-Card is connected on the spi hardware controller.
 
 
-> > > We don't provide meaningless ones like writel + cacheable store for
-> > > example. (PCI posting would defeat it anyway).
-> >
-> > What do you mean by meaningless? Ordering of writel followed by a
-> > cacheable store  is meaningful eg. for retaining io operations within
-> > locks. OK, you explicitly have some extra code for spin_unlock, but
-> > not for bit locks, mutexes, etc. It would make sense to have the
-> > default operations _very_ strongly ordered IMO, and then move drivers
-> > to be more relaxed when they are verified.
->
-> It's meaningless in the sense that nothing guarantees that the writel
-> has actually hit the device, even if we put a full mb() barrier in
-> between the writel and the cacheable write.  That would guarantee that
-> the writel had got to the PCI host bridge, and couldn't be reordered
-> with other accesses to the device, but not that the device had
-> actually seen it.
+regards,
+Andr=E9
 
-OK, but I think fits OK with our SMP ordering model for cacheable
-stores: no amount of barriers on CPU0 will guarantee that CPU1 has
-seen the store, you actually have to observe a causual effect
-of the store before you can say that.
+Fabio Tosetto schrieb:
+> Hello,
+>=20
+> I am trying to enable the SD over SPI on a emebedded system with one
+> processor powerpc mpc5200b; you have enabled mmc over spi into a native=
+=20
+> spi or psc spi?
+>=20
+> regards,
+> Fabio
+>=20
+> Andre Schwarz ha scritto:
+>> All,
+>>
+>> has anybody made some investigations about performance of a SD/MMC car=
+d
+>> on SPI ?
+>>
+>> Actually I'm using various cards (different speed classes) on an SPI b=
+us
+>> of a MPC8343 cpu.
+>> Everything is working fine basically, i.e. card is detected properly a=
+nd
+>> block device can be mounted and used.
+>>
+>> SPI clock is adjusted to the card's capabilities and is running quite
+>> fast (>30MHz).
+>>
+>> But between consecutive reads/writes there's a fixed gap of 2us thus
+>> yielding a poor performance of approx. 300KBytes/sec.
+>> The spi bus is utilized only ~10%.
+>>
+>> Any ideas where this comes from ?
+>> Ist it a fixed delay regarding to some kind of spec or is it possibly =
+a
+>> spi driver/mmc layer issue ?
+>>
+>>
+>> regards,
+>> Andre Schwarz
+>>
+>> MATRIX VISION GmbH, Talstra=DFe 16, DE-71570 Oppenweiler  -=20
+>> Registergericht: Amtsgericht Stuttgart, HRB 271090
+>> Gesch=E4ftsf=FChrer: Gerhard Thullner, Werner Armingeon, Uwe Furtner
+>> _______________________________________________
+>> Linuxppc-dev mailing list
+>> Linuxppc-dev@ozlabs.org
+>> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+>> .
+>>
+>>  =20
+>=20
 
 
-> I don't mind adding code to the mutex unlock to do the same as
-> spin_unlock, but I really don't want to have *two* sync instructions
-> for every MMIO write.  One is bad enough.
-
-So you can't provide iostore/store ordering without another sync
-after the writel store?
-
-I guess the problem with providing exceptions is that it makes it
-hard for people who absolutely don't know or care about ordering.
-I don't like having to think about it "hmm, we can allow this type
-of reordering... oh, unless some silly device does X...".
-
-If we come up with a sane set of weakly ordered accessors
-(including io_*mb()), it will make it easier to go through the
-important drivers and improve them. We don't have to enforce the
-the new semantics strictly until then if they'll slow you down
-too much in the meantime.
+MATRIX VISION GmbH, Talstra=DFe 16, DE-71570 Oppenweiler  - Registergeric=
+ht: Amtsgericht Stuttgart, HRB 271090
+Gesch=E4ftsf=FChrer: Gerhard Thullner, Werner Armingeon, Uwe Furtner
