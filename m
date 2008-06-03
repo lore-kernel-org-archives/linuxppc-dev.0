@@ -1,31 +1,33 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
+Return-Path: <borntraeger@de.ibm.com>
+Received: from mtagate5.de.ibm.com (mtagate5.de.ibm.com [195.212.29.154])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 97232DE06C
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Jun 2008 00:26:24 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e6.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m53ESOqg017968
-	for <linuxppc-dev@ozlabs.org>; Tue, 3 Jun 2008 10:28:24 -0400
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m53EPqHg228424
-	for <linuxppc-dev@ozlabs.org>; Tue, 3 Jun 2008 10:25:52 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m53EPqnk016331
-	for <linuxppc-dev@ozlabs.org>; Tue, 3 Jun 2008 10:25:52 -0400
-Date: Tue, 3 Jun 2008 09:18:58 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: "Sulibhavi, Madhvesh" <madhvesh.s@ap.sony.com>
-Subject: Re: [RFC] Kprobes for book-e
-Message-ID: <20080603091858.0b50ef02@zod.rchland.ibm.com>
-In-Reply-To: <7B7EF7F090B9804A830ACC82F2CDE95D2609E8@insardxms01.ap.sony.com>
-References: <7B7EF7F090B9804A830ACC82F2CDE95D2609E8@insardxms01.ap.sony.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, rsmadhvesh@vsnl.net,
-	Paul Mackerras <paulus@samba.org>
+	(Client CN "mtagate5.de.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 4008ADE123
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Jun 2008 22:45:22 +1000 (EST)
+Received: from d12nrmr1607.megacenter.de.ibm.com
+	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
+	by mtagate5.de.ibm.com (8.13.8/8.13.8) with ESMTP id m53CiOLt639122
+	for <linuxppc-dev@ozlabs.org>; Tue, 3 Jun 2008 12:44:24 GMT
+Received: from d12av03.megacenter.de.ibm.com (d12av03.megacenter.de.ibm.com
+	[9.149.165.213])
+	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v8.7) with
+	ESMTP id m53CiO9W3281018
+	for <linuxppc-dev@ozlabs.org>; Tue, 3 Jun 2008 14:44:24 +0200
+Received: from d12av03.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av03.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id m53CiNl7016501
+	for <linuxppc-dev@ozlabs.org>; Tue, 3 Jun 2008 14:44:23 +0200
+From: Christian Borntraeger <borntraeger@de.ibm.com>
+To: Linux PPC devel <linuxppc-dev@ozlabs.org>
+Subject: [RFC 0/3]: hvc_console rework for platform without hard irqs
+Date: Tue, 3 Jun 2008 14:44:21 +0200
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200806031444.21945.borntraeger@de.ibm.com>
+Cc: Virtualization Mailing List <virtualization@lists.osdl.org>,
+	Jeremy Fitzhardinge <jeremy@goop.org>,
+	Rusty Russell <rusty@rustcorp.com.au>, LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,92 +37,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 3 Jun 2008 19:40:55 +0530
-"Sulibhavi, Madhvesh" <madhvesh.s@ap.sony.com> wrote:
+This patch set if my first attempt to make virtio_console usable on s390.
+To do so, I had to change hvc_console, because s390 has no request_irq and
+no free_irq.
+I want to get feedback from the main users of hvc_console before I proceed.
 
-> Josh Boyer wrote on Tuesday, June 03, 2008 5:22 PM
-> > What build issues?  Ebony should build fine for 2.6.26-rc3, unless
-> > you're trying to apply this patchset to it without the other 
-> > patches it
-> > requires.
-> 
-> I am trying without kprobes patches. I get build error
-> as below
-> 
-> --------------------------------------------------------------
-> BFD: ./vmlinux.strip.28275: section .bss lma 0xc034f000 overlaps
-> previous sections
-> BFD: ./vmlinux.strip.28275: section `.text' can't be allocated in
-> segment 0
-> /usr/local/powerpc-linux/bin/powerpc-linux-objcopy:
-> ./vmlinux.strip.28275: Bad value
-> BFD: ./vmlinux.strip.28275: section .text lma 0xc0000000 overlaps
-> previous sections
-> BFD: ./vmlinux.strip.28275: section .ref.text lma 0xc024e000 overlaps
-> previous sections
-> BFD: ./vmlinux.strip.28275: section .devinit.text lma 0xc024f860
-> overlaps previous sections
-> BFD: ./vmlinux.strip.28275: section .devexit.text lma 0xc0253624
-> overlaps previous sections
-> BFD: ./vmlinux.strip.28275: section .rodata lma 0xc0254000 overlaps
-> previous sections
-> BFD: ./vmlinux.strip.28275: section .pci_fixup lma 0xc02ebcc8 overlaps
-> previous sections
-> BFD: ./vmlinux.strip.28275: section __ksymtab lma 0xc02ec280 overlaps
-> previous sections
-> BFD: ./vmlinux.strip.28275: section __ksymtab_gpl lma 0xc02f0c58
-> overlaps previous sections
-> BFD: ./vmlinux.strip.28275: section __kcrctab lma 0xc02f2620 overlaps
-> previous sections
-> BFD: ./vmlinux.strip.28275: section __kcrctab_gpl lma 0xc02f4b0c
-> overlaps previous sections
-> BFD: ./vmlinux.strip.28275: section __ksymtab_strings lma 0xc02f57f0
-> overlaps previous sections
-> BFD: ./vmlinux.strip.28275: section __param lma 0xc0302d74 overlaps
-> previous sections
-> BFD: ./vmlinux.strip.28275: section __ex_table lma 0xc0304000 overlaps
-> previous sections
-> BFD: ./vmlinux.strip.28275: section __bug_table lma 0xc0305780 overlaps
-> previous sections
-> BFD: ./vmlinux.strip.28275: section .init.text lma 0xc0309000 overlaps
-> previous sections
-> BFD: ./vmlinux.strip.28275: section .exit.text lma 0xc0321010 overlaps
-> previous sections
-> BFD: ./vmlinux.strip.28275: section .init.data lma 0xc0321bd4 overlaps
-> previous sections
-> BFD: ./vmlinux.strip.28275: section .init.setup lma 0xc03253e0 overlaps
-> previous sections
-> BFD: ./vmlinux.strip.28275: section .initcall.init lma 0xc032568c
-> overlaps previous sections
-> BFD: ./vmlinux.strip.28275: section .con_initcall.init lma 0xc03258c4
-> overlaps previous sections
-> BFD: ./vmlinux.strip.28275: section __ftr_fixup lma 0xc03258d0 overlaps
-> previous sections
-> BFD: ./vmlinux.strip.28275: section .machine.desc lma 0xc0326000
-> overlaps previous sections
-> BFD: ./vmlinux.strip.28275: section .data lma 0xc0327000 overlaps
-> previous sections
-> BFD: ./vmlinux.strip.28275: section .data.init_task lma 0xc0348000
-> overlaps previous sections
-> BFD: ./vmlinux.strip.28275: section .data.page_aligned lma 0xc034a000
-> overlaps previous sections
-> BFD: ./vmlinux.strip.28275: section .data.cacheline_aligned lma
-> 0xc034d000 overlaps previous sections
-> BFD: ./vmlinux.strip.28275: section .data.read_mostly lma 0xc034d100
-> overlaps previous sections
-> BFD: ./vmlinux.strip.28275: section .bss lma 0xc034f000 overlaps
-> previous sections
-> BFD: ./vmlinux.strip.28275: section `.text' can't be allocated in
-> segment 0
-> /usr/local/powerpc-linux/bin/powerpc-linux-objcopy:
-> ./vmlinux.strip.28275: Bad value
-> make[1]: *** [arch/powerpc/boot/treeImage.ebony] Error 1
-> rm arch/powerpc/boot/ebony.dtb
-> make: *** [zImage] Error 2
+The basic idea of this patch set is to remove the calls to request_irq and
+free_irq and replace them with backend specific callbacks.
 
-Um, weird.  What version of binutils and gcc are you using?
+Please see the descriptions of the patches for further details:
 
-I've heard of problems with binutils 2.17, but I have no idea why that
-would be.
-
-josh
+1/3: hvc_console: rework setup to replace irq functions with callbacks
+2/3: virtio_console: use virtqueue notification for hvc_console
+3/3: s390: use virtio_console for KVM on s390
