@@ -1,17 +1,24 @@
-Return-Path: <tosettofabio83@libero.it>
-Received: from polito.it (unknown [130.192.3.44])
-	by ozlabs.org (Postfix) with ESMTP id B9488DDF18
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Jun 2008 15:54:47 +1000 (EST)
-Message-ID: <4844DC96.6060807@libero.it>
-Date: Tue, 03 Jun 2008 07:54:30 +0200
-From: Fabio Tosetto <tosettofabio83@libero.it>
+Return-Path: <nickpiggin@yahoo.com.au>
+Received: from smtp118.mail.mud.yahoo.com (smtp118.mail.mud.yahoo.com
+	[209.191.84.167]) by ozlabs.org (Postfix) with SMTP id 5CEB3DDF73
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Jun 2008 16:11:28 +1000 (EST)
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: benh@kernel.crashing.org
+Subject: Re: MMIO and gcc re-ordering issue
+Date: Tue, 3 Jun 2008 16:11:13 +1000
+References: <1211852026.3286.36.camel@pasglop>
+	<200806031416.18195.nickpiggin@yahoo.com.au>
+	<1212467551.9496.23.camel@pasglop>
+In-Reply-To: <1212467551.9496.23.camel@pasglop>
 MIME-Version: 1.0
-To: Andre Schwarz <andre.schwarz@matrix-vision.de>
-Subject: Re: slow MMC over SPI
-References: <4843AD1C.4010901@matrix-vision.de>
-In-Reply-To: <4843AD1C.4010901@matrix-vision.de>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Cc: linux-ppc list <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain;
+  charset="utf-8"
+Message-Id: <200806031611.13817.nickpiggin@yahoo.com.au>
+Cc: linux-arch@vger.kernel.org, Russell King <rmk+lkml@arm.linux.org.uk>,
+	linux-kernel@vger.kernel.org, tpiepho@freescale.com,
+	linuxppc-dev@ozlabs.org, scottwood@freescale.com,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	David Miller <davem@davemloft.net>, alan@lxorguk.ukuu.org.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,47 +28,81 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello,
+On Tuesday 03 June 2008 14:32, Benjamin Herrenschmidt wrote:
+> > This whole thread also ties in with my posts about mmiowb (which IMO
+> > should go away).
+> >
+> > readl/writel:  strongly ordered wrt one another and other stores
+> >                to cacheable RAM, byteswapping
+> > __readl/__writel:  not ordered (needs mb/rmb/wmb to order with
+> >                    other readl/writel and cacheable operations, or
+> >                    io_*mb to order with one another)
+> > raw_readl/raw_writel:  strongly ordered, no byteswapping
+> > __raw_readl/__raw_writel:  not ordered, no byteswapping
+> >
+> > then get rid of *relaxed* variants.
+>
+> In addition, some archs like powerpc also provide readl_be/writel_be as
+> being defined as big endian (ie. byteswap on LE archs, no byteswap on BE
+> archs).
 
-I am trying to enable the SD over SPI on a emebedded system with one
-processor powerpc mpc5200b; you have enabled mmc over spi into a native 
-spi or psc spi?
+Sure.
 
-regards,
-Fabio
 
-Andre Schwarz ha scritto:
-> All,
+> As of today, powerpc lacks the raw_readl/raw_writel and __readl/__writel
+> variants (ie, we only provide fully ordered + byteswap and no ordering +
+> no byteswap variants).
 >
-> has anybody made some investigations about performance of a SD/MMC card
-> on SPI ?
+> If we agree on the above semantics, I'll do a patch providing the
+> missing ones.
+
+Let's see what Linus thinks...
+
+
+> > Linus: on x86, memory operations to wc and wc+ memory are not ordered
+> > with one another, or operations to other memory types (ie. load/load
+> > and store/store reordering is allowed). Also, as you know, store/load
+> > reordering is explicitly allowed as well, which covers all memory
+> > types. So perhaps it is not quite true to say readl/writel is strongly
+> > ordered by default even on x86. You would have to put in some
+> > mfence instructions in them to make it so.
+> >
+> > So, what *exact* definition are you going to mandate for readl/writel?
+> > Anything less than strict ordering then we also need to ensure drivers
+> > use the correct barriers (to implement strict ordering, we could either
+> > put mfence instructions in, or explicitly disallow readl/writel to be
+> > used on wc/wc+ memory).
 >
-> Actually I'm using various cards (different speed classes) on an SPI bus
-> of a MPC8343 cpu.
-> Everything is working fine basically, i.e. card is detected properly and
-> block device can be mounted and used.
+> The ordering guarantees that I provide on powerpc for "ordered" variants
+> are:
 >
-> SPI clock is adjusted to the card's capabilities and is running quite
-> fast (>30MHz).
+> 	- cacheable store + writel stays ordered (ie, write to some
+>           DMA stuff and then a register to trigger the DMA).
 >
-> But between consecutive reads/writes there's a fixed gap of 2us thus
-> yielding a poor performance of approx. 300KBytes/sec.
-> The spi bus is utilized only ~10%.
+> 	- readl + cacheable read stays ordered (ie. read some status
+>           register, for example, after an interrupt, and then read the
+>           resulting data in memory).
 >
-> Any ideas where this comes from ?
-> Ist it a fixed delay regarding to some kind of spec or is it possibly a
-> spi driver/mmc layer issue ?
+> 	- any of these ordered vs. spin_lock and spin_unlock (with the
+>           exception that stores done before the spin_lock
+>           could potentially leak into the lock).
 >
->
-> regards,
-> Andre Schwarz
->
-> MATRIX VISION GmbH, Talstraße 16, DE-71570 Oppenweiler  - Registergericht: Amtsgericht Stuttgart, HRB 271090
-> Geschäftsführer: Gerhard Thullner, Werner Armingeon, Uwe Furtner
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
-> .
->
->   
+> 	- readl is synchronous (ie, makes the CPU think the
+>           data was actually used before executing subsequent
+>           instructions, thus waits for the data to come back,
+>           for example to ensure that a read used to push out
+>           post buffers followed by a delay will indeed happen
+>           with the right delay).
+
+So your readl can pass an earlier cacheable store or earlier writel?
+
+
+> We don't provide meaningless ones like writel + cacheable store for
+> example. (PCI posting would defeat it anyway).
+
+What do you mean by meaningless? Ordering of writel followed by a
+cacheable store  is meaningful eg. for retaining io operations within
+locks. OK, you explicitly have some extra code for spin_unlock, but
+not for bit locks, mutexes, etc. It would make sense to have the
+default operations _very_ strongly ordered IMO, and then move drivers
+to be more relaxed when they are verified.
