@@ -1,27 +1,23 @@
-Return-Path: <bunk@stusta.de>
-Received: from smtp4.pp.htv.fi (smtp4.pp.htv.fi [213.243.153.38])
-	by ozlabs.org (Postfix) with ESMTP id 9228EDDDEC
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Jun 2008 03:27:28 +1000 (EST)
-Date: Tue, 3 Jun 2008 20:00:22 +0300
-From: Adrian Bunk <bunk@stusta.de>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [RFC] Make board force selection of PHYLIB
-Message-ID: <20080603170022.GE9605@cs181133002.pp.htv.fi>
-References: <Pine.LNX.4.64.0806021019540.22439@blarg.am.freescale.net>
-	<484419EE.5040503@garzik.org>
-	<1E4EB64C-0618-497E-AABC-74EB7D74B97F@kernel.crashing.org>
-	<48442239.7090906@garzik.org>
-	<BF15FEBB-4876-4B16-915B-1D21BF989DA8@kernel.crashing.org>
-	<83820D83-487C-4586-9867-F4226A87A276@freescale.com>
-	<48445851.4090105@garzik.org>
-	<095F258F-72DD-4F27-A457-A57D9FAA1E76@kernel.crashing.org>
-	<48448020.5020407@freescale.com>
-	<Pine.LNX.4.64.0806030945540.21537@blarg.am.freescale.net>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.179]) by ozlabs.org (Postfix) with ESMTP id B613CDDEE7
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Jun 2008 03:31:01 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [RFC 1/3] hvc_console: rework setup to replace irq functions with
+	callbacks (not word wrapped)
+Date: Tue, 3 Jun 2008 19:30:09 +0200
+References: <200806031444.21945.borntraeger@de.ibm.com>
+	<200806031449.14385.borntraeger@de.ibm.com>
+In-Reply-To: <200806031449.14385.borntraeger@de.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <Pine.LNX.4.64.0806030945540.21537@blarg.am.freescale.net>
-Cc: Scott Wood <scottwood@freescale.com>, netdev@vger.kernel.org,
-	Jeff Garzik <jeff@garzik.org>, linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200806031930.09556.arnd@arndb.de>
+Cc: Christian Borntraeger <borntraeger@de.ibm.com>,
+	Jeremy Fitzhardinge <jeremy@goop.org>,
+	Rusty Russell <rusty@rustcorp.com.au>, LKML <linux-kernel@vger.kernel.org>,
+	Virtualization Mailing List <virtualization@lists.osdl.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,38 +27,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Jun 03, 2008 at 09:47:19AM -0500, Kumar Gala wrote:
-> How is this as a fix.
-> 
-> - k
-> 
-> diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/platforms/85xx/Kconfig
-> index 7ff29d5..9e5c884 100644
-> --- a/arch/powerpc/platforms/85xx/Kconfig
-> +++ b/arch/powerpc/platforms/85xx/Kconfig
-> @@ -34,6 +34,7 @@ config MPC85xx_MDS
->  	bool "Freescale MPC85xx MDS"
->  	select DEFAULT_UIMAGE
->  	select QUICC_ENGINE
-> +	select PHYLIB if GIANFAR=m
->  	help
->  	  This option enables support for the MPC85xx MDS board
+On Tuesday 03 June 2008, Christian Borntraeger wrote:
 
-The .config you sent me as an example didn't have GIANFAR set, so it 
-couldn't help there.
+> @@ -42,22 +42,48 @@
+>   */
+>  #define HVC_ALLOC_TTY_ADAPTERS	8
+>  
+> +struct hvc_struct {
+> +	spinlock_t lock;
+> +	int index;
+> +	struct tty_struct *tty;
+> +	unsigned int count;
+> +	int do_wakeup;
+> +	char *outbuf;
+> +	int outbuf_size;
+> +	int n_outbuf;
+> +	uint32_t vtermno;
+> +	struct hv_ops *ops;
+> +	int data;
+> +	struct list_head next;
+> +	struct kref kref; /* ref count & hvc_struct lifetime */
+> +};
+>  
 
-How early do the fixups have to run?
+I don't see a reason to make this data structure known to other files,
+so why not leave it in hvc_console.c?
 
-I see two possible solutions:
-- let MPC85xx_MDS unconditionally select PHYLIB or
-- move the fixups to the gianfar driver
 
-cu
-Adrian
+> +
+> +#ifdef CONFIG_HVC_IRQ
+> +/* default notifier for irq based notification */
+> +extern int notifier_add_irq(struct hvc_struct *hp, int irq);
+> +extern void notifier_del_irq(struct hvc_struct *hp, int irq);
+> +#endif
+>  #endif // HVC_CONSOLE_H
 
--- 
+Please remove the #ifdef around the declarations.
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+h	Arnd <><
