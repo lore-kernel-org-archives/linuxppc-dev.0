@@ -1,30 +1,29 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <tpiepho@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E79B1DF00F
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Jun 2008 04:23:59 +1000 (EST)
-Message-Id: <C370EEA4-D32D-48A6-A92B-7C21F6F17BF5@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Adrian Bunk <bunk@stusta.de>
-In-Reply-To: <20080603170022.GE9605@cs181133002.pp.htv.fi>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v924)
-Subject: Re: [RFC] Make board force selection of PHYLIB
-Date: Tue, 3 Jun 2008 13:23:44 -0500
-References: <Pine.LNX.4.64.0806021019540.22439@blarg.am.freescale.net>
-	<484419EE.5040503@garzik.org>
-	<1E4EB64C-0618-497E-AABC-74EB7D74B97F@kernel.crashing.org>
-	<48442239.7090906@garzik.org>
-	<BF15FEBB-4876-4B16-915B-1D21BF989DA8@kernel.crashing.org>
-	<83820D83-487C-4586-9867-F4226A87A276@freescale.com>
-	<48445851.4090105@garzik.org>
-	<095F258F-72DD-4F27-A457-A57D9FAA1E76@kernel.crashing.org>
-	<48448020.5020407@freescale.com>
-	<Pine.LNX.4.64.0806030945540.21537@blarg.am.freescale.net>
-	<20080603170022.GE9605@cs181133002.pp.htv.fi>
-Cc: Scott Wood <scottwood@freescale.com>, netdev@vger.kernel.org,
-	Jeff Garzik <jeff@garzik.org>, linuxppc-dev@ozlabs.org
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id A095CDDFB1
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Jun 2008 04:47:52 +1000 (EST)
+Date: Tue, 3 Jun 2008 11:47:00 -0700 (PDT)
+From: Trent Piepho <tpiepho@freescale.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: MMIO and gcc re-ordering issue
+In-Reply-To: <alpine.LFD.1.10.0806030746190.3473@woody.linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0806031130130.3242@t2.domain.actdsltmp>
+References: <1211852026.3286.36.camel@pasglop>
+	<alpine.LFD.1.10.0805271451100.2958@woody.linux-foundation.org>
+	<20080602072403.GA20222@flint.arm.linux.org.uk>
+	<200806031416.18195.nickpiggin@yahoo.com.au>
+	<alpine.LFD.1.10.0806030746190.3473@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Cc: linux-arch@vger.kernel.org, Nick Piggin <nickpiggin@yahoo.com.au>,
+	Russell King <rmk+lkml@arm.linux.org.uk>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	scottwood@freescale.com, David Miller <davem@davemloft.net>,
+	alan@lxorguk.ukuu.org.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,39 +33,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Jun 3, 2008, at 12:00 PM, Adrian Bunk wrote:
-
-> On Tue, Jun 03, 2008 at 09:47:19AM -0500, Kumar Gala wrote:
->> How is this as a fix.
+On Tue, 3 Jun 2008, Linus Torvalds wrote:
+> On Tue, 3 Jun 2008, Nick Piggin wrote:
 >>
->> - k
->>
->> diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/ 
->> platforms/85xx/Kconfig
->> index 7ff29d5..9e5c884 100644
->> --- a/arch/powerpc/platforms/85xx/Kconfig
->> +++ b/arch/powerpc/platforms/85xx/Kconfig
->> @@ -34,6 +34,7 @@ config MPC85xx_MDS
->> 	bool "Freescale MPC85xx MDS"
->> 	select DEFAULT_UIMAGE
->> 	select QUICC_ENGINE
->> +	select PHYLIB if GIANFAR=m
->> 	help
->> 	  This option enables support for the MPC85xx MDS board
->
-> The .config you sent me as an example didn't have GIANFAR set, so it
-> couldn't help there.
->
-> How early do the fixups have to run?
->
-> I see two possible solutions:
-> - let MPC85xx_MDS unconditionally select PHYLIB or
-> - move the fixups to the gianfar driver
+>> Linus: on x86, memory operations to wc and wc+ memory are not ordered
+>> with one another, or operations to other memory types (ie. load/load
+>> and store/store reordering is allowed). Also, as you know, store/load
+>> reordering is explicitly allowed as well, which covers all memory
+>> types. So perhaps it is not quite true to say readl/writel is strongly
+>> ordered by default even on x86. You would have to put in some
+>> mfence instructions in them to make it so.
 
-I'm ok w/unconditionally selecting PHYLIB for MPC85xx_MDS as that  
-seems to be the best solution at this point.
+So on x86, these could be re-ordered?
 
-I'll workup a patch and send it via the powerpc.git tree.
+writel(START_OPERATION, CONTROL_REGISTER);
+status = readl(STATUS_REGISTER);
 
-- k
+> Well, you have to ask for WC/WC+ anyway, so it's immaterial. A driver that
+> does that needs to be aware of it. IOW, it's a non-issue, imnsho.
+
+You need to ask for coherent DMA memory too.
