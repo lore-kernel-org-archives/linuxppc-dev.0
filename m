@@ -1,20 +1,19 @@
-Return-Path: <dargaud@lpsc.in2p3.fr>
-Received: from lpsc-mail.in2p3.fr (lpsc-mail.in2p3.fr [134.158.40.8])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 525ADDE3AA
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Jun 2008 19:13:35 +1000 (EST)
-Received: from LPSC0173W (lpsc0173w.in2p3.fr [134.158.40.173])
-	by lpsc-mail.in2p3.fr (8.13.1/8.13.1/In2p3) with SMTP id m539DUDq009752
-	for <linuxppc-dev@ozlabs.org>; Tue, 3 Jun 2008 11:13:30 +0200
-Message-ID: <078101c8c55a$16c70790$ad289e86@LPSC0173W>
-From: "Guillaume Dargaud" <dargaud@lpsc.in2p3.fr>
-To: <linuxppc-dev@ozlabs.org>
-References: <24952919.541821212479475605.JavaMail.coremail@bj163app79.163.com>
-Subject: Re: problems with porting linux 2.6 kernel to xupv2p
-Date: Tue, 3 Jun 2008 11:13:24 +0200
+Return-Path: <wg@grandegger.com>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id D7649DE420
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Jun 2008 19:14:54 +1000 (EST)
+Message-ID: <48450B8B.9000702@grandegger.com>
+Date: Tue, 03 Jun 2008 11:14:51 +0200
+From: Wolfgang Grandegger <wg@grandegger.com>
 MIME-Version: 1.0
-Content-Type: text/plain; format=flowed; charset="GB2312"; reply-type=original
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: Re: [RFC PATCH] booting-without-of: add FHCI USB, FSL MCU, FSL UPM
+	and	GPIO LEDs bindings
+References: <20080602182422.GA8620@polina.dev.rtsoft.ru>
+In-Reply-To: <20080602182422.GA8620@polina.dev.rtsoft.ru>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>,
+	Arnd Bergmann <arnd@arndb.de>, Stephen Rothwell <sfr@canb.auug.org.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,8 +23,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Have you tried compiling the Xilinx git tree ? I'm now using it fine with an 
-ML405 board and I've seen options for xup in it:
-git clone git://git.xilinx.com/linux-2.6-xlnx.git-- 
-Guillaume Dargaud
-http://www.gdargaud.net/
+Anton Vorontsov wrote:
+> Hi all,
+> 
+> Here are the notorious bindings. I believe I addressed Segher's comments.
+> 
+> Major changes are in the LEDs bindings, I removed all the cruft and now
+> using "aliases" mechanism to determine LEDs' trigger.
+> 
+> Comments, suggestions?
+
+On what GIT tree is this patch based on?
+
+Wolfgang.
