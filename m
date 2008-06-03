@@ -1,33 +1,28 @@
-Return-Path: <tpiepho@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id F0FDDDDFC4
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Jun 2008 07:59:24 +1000 (EST)
-Date: Tue, 3 Jun 2008 14:58:33 -0700 (PDT)
-From: Trent Piepho <tpiepho@freescale.com>
-To: Matthew Wilcox <matthew@wil.cx>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 9D29ADDDFC
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Jun 2008 08:27:40 +1000 (EST)
 Subject: Re: MMIO and gcc re-ordering issue
-In-Reply-To: <20080603213501.GD3549@parisc-linux.org>
-Message-ID: <Pine.LNX.4.64.0806031444590.3242@t2.domain.actdsltmp>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Trent Piepho <tpiepho@freescale.com>
+In-Reply-To: <Pine.LNX.4.64.0806031154050.3242@t2.domain.actdsltmp>
 References: <1211852026.3286.36.camel@pasglop>
 	<alpine.LFD.1.10.0805271451100.2958@woody.linux-foundation.org>
 	<20080602072403.GA20222@flint.arm.linux.org.uk>
 	<200806031416.18195.nickpiggin@yahoo.com.au>
-	<alpine.LFD.1.10.0806030746190.3473@woody.linux-foundation.org>
-	<Pine.LNX.4.64.0806031130130.3242@t2.domain.actdsltmp>
-	<20080603185541.GB3549@parisc-linux.org>
-	<Pine.LNX.4.64.0806031253180.3242@t2.domain.actdsltmp>
-	<20080603213501.GD3549@parisc-linux.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	<Pine.LNX.4.64.0806031154050.3242@t2.domain.actdsltmp>
+Content-Type: text/plain
+Date: Wed, 04 Jun 2008 08:26:58 +1000
+Message-Id: <1212532018.9496.49.camel@pasglop>
+Mime-Version: 1.0
 Cc: linux-arch@vger.kernel.org, Nick Piggin <nickpiggin@yahoo.com.au>,
 	Russell King <rmk+lkml@arm.linux.org.uk>,
 	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
 	scottwood@freescale.com, Linus Torvalds <torvalds@linux-foundation.org>,
 	David Miller <davem@davemloft.net>, alan@lxorguk.ukuu.org.uk
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,40 +32,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 3 Jun 2008, Matthew Wilcox wrote:
-> On Tue, Jun 03, 2008 at 12:57:56PM -0700, Trent Piepho wrote:
->> On Tue, 3 Jun 2008, Matthew Wilcox wrote:
->>> On Tue, Jun 03, 2008 at 11:47:00AM -0700, Trent Piepho wrote:
->>>> On Tue, 3 Jun 2008, Linus Torvalds wrote:
->>>>> On Tue, 3 Jun 2008, Nick Piggin wrote:
->>>>>>
->>>>>> Linus: on x86, memory operations to wc and wc+ memory are not ordered
->>>>>> with one another, or operations to other memory types (ie. load/load
->>>>>> and store/store reordering is allowed). Also, as you know, store/load
->>>>>> reordering is explicitly allowed as well, which covers all memory
->>>>>> types. So perhaps it is not quite true to say readl/writel is strongly
->>>>>> ordered by default even on x86. You would have to put in some
->>>>>> mfence instructions in them to make it so.
->>>>
->>>> So on x86, these could be re-ordered?
->>>>
->>>> writel(START_OPERATION, CONTROL_REGISTER);
->>>> status = readl(STATUS_REGISTER);
->>>
->>> You wouldn't ask for write-combining memory mapping for control or
->>> status registers.
->>
->> But Nick said, "store/load reordering is explicitly allowed as well, which
->> covers *all* memory types."
->
-> Then Nick is confused.  PCI only defines one way to flush posted writes
-> to a device -- doing a read from it.  There's no way that reads can
-> be allowed to pass writes (unless you've asked for it, like with write
-> combining).
+On Tue, 2008-06-03 at 12:43 -0700, Trent Piepho wrote:
+> 
+> Byte-swapping vs not byte-swapping is not usually what the programmer wants. 
+> Usually your device's registers are defined as being big-endian or
+> little-endian and you want whatever is needed to give you that.
 
-But that requirement is for the PCI bridge, isn't it?  It doesn't matter if
-the bridge will flush all posted writes before allowing a read if the CPU
-decides to give the bridge the read before the write.  A powerpc CPU will
-certainly do this if you don't take any steps like telling it the memory is
-uncachable and guarded.  I didn't think it was allowed on x86 (except with
-WC), but Nick seemed to say it was.
+Yes, which is why I (and some other archs) have writel_be/readl_be.
+
+The standard writel/readl being LE.
+
+However, the "raw" variants are defined to be native endian, which is of
+some use to -some- archs apparently where they have SoC device whose
+endianness follow the core.
+
+> I believe that on some archs that can be either byte order, some built-in
+> devices will change their registers to match, and so you want "native endian"
+> or no swapping for these.  Though that's definitely in the minority.
+> 
+> An accessors that always byte-swaps regardless of the endianness of the host
+> is never something I've seen a driver want.
+> 
+> IOW, there are four ways one can defined endianness/swapping:
+> 1) Little-endian
+> 2) Big-endian
+> 3) Native-endian aka non-byte-swapping
+> 4) Foreign-endian aka byte-swapping
+> 
+> 1 and 2 are by far the most used.  Some code wants 3.  No one wants 4.  Yet
+> our API is providing 3 & 4, the two which are the least useful.
+
+No, we don't provide 4, it was something unclear with nick.
+
+We provide 1. (writel/readl and __variants), some archs provide 2
+(writel_be/readl_be, tho I don't have __variants, I suppose I could),
+and everybody provides 3. though in some cases (like us) only in the
+form of __variants (ie, non ordered, like __raw_readl/__raw_writel).
+
+Nick's proposal is to plug those gaps, though it's, I believe, missing
+the _be variants.
+
+> Is it enough to provide only "all or none" for ordering strictness?  For
+> instance on powerpc, one can get a speedup by dropping strict ordering for IO
+> vs cacheable memory, but still keeping ordering for IO vs IO and IO vs locks. 
+> This is much easier to program for than no ordering at all.  In fact, if one
+> doesn't use coherent DMA, it's basically the same as fully strict ordering.
+
+Ben.
