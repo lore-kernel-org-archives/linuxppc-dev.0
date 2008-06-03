@@ -1,30 +1,27 @@
-Return-Path: <torvalds@linux-foundation.org>
-Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
-	[140.211.169.13])
+Return-Path: <tpiepho@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id E8AA4DE9E0
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Jun 2008 05:08:18 +1000 (EST)
-Date: Tue, 3 Jun 2008 12:07:22 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Trent Piepho <tpiepho@freescale.com>
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id E157EDF029
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Jun 2008 05:44:17 +1000 (EST)
+Date: Tue, 3 Jun 2008 12:43:21 -0700 (PDT)
+From: Trent Piepho <tpiepho@freescale.com>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
 Subject: Re: MMIO and gcc re-ordering issue
-In-Reply-To: <Pine.LNX.4.64.0806031130130.3242@t2.domain.actdsltmp>
-Message-ID: <alpine.LFD.1.10.0806031153360.3473@woody.linux-foundation.org>
+In-Reply-To: <200806031416.18195.nickpiggin@yahoo.com.au>
+Message-ID: <Pine.LNX.4.64.0806031154050.3242@t2.domain.actdsltmp>
 References: <1211852026.3286.36.camel@pasglop>
 	<alpine.LFD.1.10.0805271451100.2958@woody.linux-foundation.org>
 	<20080602072403.GA20222@flint.arm.linux.org.uk>
 	<200806031416.18195.nickpiggin@yahoo.com.au>
-	<alpine.LFD.1.10.0806030746190.3473@woody.linux-foundation.org>
-	<Pine.LNX.4.64.0806031130130.3242@t2.domain.actdsltmp>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linux-arch@vger.kernel.org, Nick Piggin <nickpiggin@yahoo.com.au>,
-	Russell King <rmk+lkml@arm.linux.org.uk>,
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Cc: linux-arch@vger.kernel.org, Russell King <rmk+lkml@arm.linux.org.uk>,
 	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	scottwood@freescale.com, David Miller <davem@davemloft.net>,
-	alan@lxorguk.ukuu.org.uk
+	scottwood@freescale.com, Linus Torvalds <torvalds@linux-foundation.org>,
+	David Miller <davem@davemloft.net>, alan@lxorguk.ukuu.org.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,64 +31,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Tue, 3 Jun 2008, Nick Piggin wrote:
+> On Monday 02 June 2008 17:24, Russell King wrote:
+>> So, can the semantics of what's expected from these IO accessor
+>> functions be documented somewhere.  Please?  Before this thread gets
+>> lost in the depths of time?
+>
+> This whole thread also ties in with my posts about mmiowb (which IMO
+> should go away).
+>
+> readl/writel:  strongly ordered wrt one another and other stores
+>               to cacheable RAM, byteswapping
+> __readl/__writel:  not ordered (needs mb/rmb/wmb to order with
+>                   other readl/writel and cacheable operations, or
+>                   io_*mb to order with one another)
+> raw_readl/raw_writel:  strongly ordered, no byteswapping
+> __raw_readl/__raw_writel:  not ordered, no byteswapping
 
+Byte-swapping vs not byte-swapping is not usually what the programmer wants. 
+Usually your device's registers are defined as being big-endian or
+little-endian and you want whatever is needed to give you that.
 
-On Tue, 3 Jun 2008, Trent Piepho wrote:
+I believe that on some archs that can be either byte order, some built-in
+devices will change their registers to match, and so you want "native endian"
+or no swapping for these.  Though that's definitely in the minority.
 
-> On Tue, 3 Jun 2008, Linus Torvalds wrote:
-> > On Tue, 3 Jun 2008, Nick Piggin wrote:
-> > > 
-> > > Linus: on x86, memory operations to wc and wc+ memory are not ordered
-> > > with one another, or operations to other memory types (ie. load/load
-> > > and store/store reordering is allowed). Also, as you know, store/load
-> > > reordering is explicitly allowed as well, which covers all memory
-> > > types. So perhaps it is not quite true to say readl/writel is strongly
-> > > ordered by default even on x86. You would have to put in some
-> > > mfence instructions in them to make it so.
-> 
-> So on x86, these could be re-ordered?
-> 
-> writel(START_OPERATION, CONTROL_REGISTER);
-> status = readl(STATUS_REGISTER);
+An accessors that always byte-swaps regardless of the endianness of the host
+is never something I've seen a driver want.
 
-With both registers in a WC+ area, yes. The write may be in the WC buffers 
-until the WC buffers are flushed (short list: a fence, a serializing 
-instruction, a read-write to uncached memory, or an interrupt. There are 
-others, but those are the main ones).
+IOW, there are four ways one can defined endianness/swapping:
+1) Little-endian
+2) Big-endian
+3) Native-endian aka non-byte-swapping
+4) Foreign-endian aka byte-swapping
 
-But if the status register is in uncached memory (which is the only *sane* 
-thing to do), then it doesn't matter if the control register is in WC 
-memory. Because the status register read is itself serializing with the WC 
-buffer, it's actually fine.
+1 and 2 are by far the most used.  Some code wants 3.  No one wants 4.  Yet
+our API is providing 3 & 4, the two which are the least useful.
 
-So this is used for putting things like ring queues in WC memory, and fill 
-them up with writes, and get nice bursty write traffic with the CPU 
-automatically buffering it up (think "stdio.h on a really low level"). And 
-if you then have the command registers in UC memory or using IO port 
-accesses, reading and writing to them will automatically serialize.
-
-> > Well, you have to ask for WC/WC+ anyway, so it's immaterial. A driver that
-> > does that needs to be aware of it. IOW, it's a non-issue, imnsho.
-> 
-> You need to ask for coherent DMA memory too.
-
-Not on x86.
-
-And I don't care what anybody else says - x86 is *so* totally dominant, 
-that other architectures have to live with the fact that 99.9% of all 
-drivers are written for and tested on x86. As a result, anything else is 
-"theory".
-
-Are some drivers good and are careful? Yes. Are most? No, and even if they 
-were, people making changes would mostly test them on x86. Architectures 
-should strive to basically act as closely as possible to x86 semantics in 
-order to not get nasty surprises.
-
-And architectures that can't do that well enough *will* often find that 
-they need to fix drivers, and only a small small subset of all kernel 
-drivers will generally work out-of-the-box.
-
-If you're ready to do that, your architecture can do anything it damn well 
-pleases ;)
-
-			Linus
+Is it enough to provide only "all or none" for ordering strictness?  For
+instance on powerpc, one can get a speedup by dropping strict ordering for IO
+vs cacheable memory, but still keeping ordering for IO vs IO and IO vs locks. 
+This is much easier to program for than no ordering at all.  In fact, if one
+doesn't use coherent DMA, it's basically the same as fully strict ordering.
