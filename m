@@ -1,23 +1,24 @@
 Return-Path: <nickpiggin@yahoo.com.au>
-Received: from smtp117.mail.mud.yahoo.com (smtp117.mail.mud.yahoo.com
-	[209.191.84.166]) by ozlabs.org (Postfix) with SMTP id 61189DDDFC
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Jun 2008 14:23:12 +1000 (EST)
+Received: from smtp119.mail.mud.yahoo.com (smtp119.mail.mud.yahoo.com
+	[209.191.84.76]) by ozlabs.org (Postfix) with SMTP id 9F519DDE02
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Jun 2008 14:33:26 +1000 (EST)
 From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Jes Sorensen <jes@sgi.com>
 Subject: Re: MMIO and gcc re-ordering issue
-Date: Tue, 3 Jun 2008 14:16:17 +1000
+Date: Tue, 3 Jun 2008 14:33:11 +1000
 References: <1211852026.3286.36.camel@pasglop>
-	<alpine.LFD.1.10.0805271451100.2958@woody.linux-foundation.org>
-	<20080602072403.GA20222@flint.arm.linux.org.uk>
-In-Reply-To: <20080602072403.GA20222@flint.arm.linux.org.uk>
+	<20080531075242.GC108600@sgi.com> <4843C3D7.7000609@sgi.com>
+In-Reply-To: <4843C3D7.7000609@sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
-Message-Id: <200806031416.18195.nickpiggin@yahoo.com.au>
-Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
-	tpiepho@freescale.com, linuxppc-dev@ozlabs.org, scottwood@freescale.com,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	David Miller <davem@davemloft.net>, alan@lxorguk.ukuu.org.uk
+Message-Id: <200806031433.12460.nickpiggin@yahoo.com.au>
+Cc: linux-arch@vger.kernel.org, Roland Dreier <rdreier@cisco.com>,
+	linux-kernel@vger.kernel.org, Jeremy Higdon <jeremy@sgi.com>,
+	David Miller <davem@davemloft.net>, linuxppc-dev@ozlabs.org,
+	scottwood@freescale.com, torvalds@linux-foundation.org,
+	tpiepho@freescale.com, alan@lxorguk.ukuu.org.uk,
+	Arjan van de Ven <arjan@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,63 +28,59 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Monday 02 June 2008 17:24, Russell King wrote:
-> On Tue, May 27, 2008 at 02:55:56PM -0700, Linus Torvalds wrote:
-> > On Wed, 28 May 2008, Benjamin Herrenschmidt wrote:
-> > > A problem with __raw_ though is that they -also- don't do byteswap,
+On Monday 02 June 2008 19:56, Jes Sorensen wrote:
+> Jeremy Higdon wrote:
+> > We don't actually have that problem on the Altix.  All writes issued
+> > by CPU X will be ordered with respect to each other.  But writes by
+> > CPU X and CPU Y will not be, unless an mmiowb() is done by the
+> > original CPU before the second CPU writes.  I.e.
 > >
-> > Well, that's why there is __readl() and __raw_readl(), no?
+> > 	CPU X	writel
+> > 	CPU X	writel
+> > 	CPU X	mmiowb
 > >
-> > Neither does ordering, and __raw_readl() doesn't do byte-swap.
+> > 	CPU Y	writel
+> > 	...
+> >
+> > Note that this implies some sort of locking.  Also note that if in
+> > the above, CPU Y did the mmiowb, that would not work.
 >
-> This is where the lack of documentation causes arch maintainers a big
-> problem.  None of the semantics of __raw_readl vs __readl vs readl are
-> documented _anywhere_.  If you look at x86 as a template, there's no
-> comments there about what the different variants are supposed to do
-> or not do.
+> Hmmm,
 >
-> So it's left up to arch maintainers to literally guess what should be
-> done.  That's precisely what I did when I implemented ARMs __raw_readl
-> and friends.  I guessed.
+> Then it's less bad than I thought - my apologies for the confusion.
 >
-> And it was only after I read a few mails on lkml which suggested that
-> readl and friends should always be LE that ARMs readl implementation
-> started to use le32_to_cpu()... before that it had always been native
-> endian.  Again, lack of documentation...
->
-> So, can the semantics of what's expected from these IO accessor
-> functions be documented somewhere.  Please?  Before this thread gets
-> lost in the depths of time?
+> Would we be able to use Ben's trick of setting a per cpu flag in
+> writel() then and checking that in spin unlock issuing the mmiowb()
+> there if needed?
 
-This whole thread also ties in with my posts about mmiowb (which IMO
-should go away).
+Yes you could, but your writels would still not be strongly ordered
+within (or outside) spinlock regions, which is what Linus wants (and
+I kind of agree with).
 
-readl/writel:  strongly ordered wrt one another and other stores
-               to cacheable RAM, byteswapping
-__readl/__writel:  not ordered (needs mb/rmb/wmb to order with
-                   other readl/writel and cacheable operations, or
-                   io_*mb to order with one another)
-raw_readl/raw_writel:  strongly ordered, no byteswapping
-__raw_readl/__raw_writel:  not ordered, no byteswapping
+This comes back to my posting about mmiowb and io_*mb barriers etc.
 
-then get rid of *relaxed* variants.
+Despite what you say, what you've done really _does_ change the semantics
+of wmb() for all drivers. It is a really sad situation we've got ourselves
+into somehow, AFAIKS in the hope of trying to save ourselves a tiny bit
+of work upfront :( (this is not just the sgi folk with mmiowb I'm talking
+about, but the whole random undefinedness of ordering and io barriers).
 
-Linus: on x86, memory operations to wc and wc+ memory are not ordered
-with one another, or operations to other memory types (ie. load/load
-and store/store reordering is allowed). Also, as you know, store/load
-reordering is explicitly allowed as well, which covers all memory
-types. So perhaps it is not quite true to say readl/writel is strongly
-ordered by default even on x86. You would have to put in some
-mfence instructions in them to make it so.
+The right way to make any change is never to weaken the postcondition of
+an existing interface *unless* you are willing to audit the entire tree
+and fix it. Impossible for drivers, so the correct thing to do is introduce
+a new interface, and move things over at an easier pace. Not rocket science.
 
-So, what *exact* definition are you going to mandate for readl/writel?
-Anything less than strict ordering then we also need to ensure drivers
-use the correct barriers (to implement strict ordering, we could either
-put mfence instructions in, or explicitly disallow readl/writel to be
-used on wc/wc+ memory).
+The argument that "Altix only uses a few drivers so this way we can just
+fix these up rather than make big modifications to large numbers of drivers"
+is bogus. It is far worse even for Altix if you make incompatible changes,
+because you first *break* every driver on your platform, then you have to
+audit and fix them. If you make compatible changes, then you have to do
+exactly the same audits to move them over to the new API, but you go from
+slower->faster rather than broken->non broken. As a bonus, you haven't
+got random broken stuff all over the tree that you forgot to audit.
 
-The other way we can go is just say that they have x86 semantics,
-although that would be a bit sad IMO: we should have strong ops, in
-which case driver writers never need to use a single barrier provided
-they have locking right, and weak ops, in which case they should match
-up with the weak Linux memory ordering model for system RAM.
+I don't know how there is still so much debate about this :(
+
+I have a proposal: I am a neutral party here, not being an arch maintainer,
+so I'll take input and write up a backward compatible API specification
+and force everybody to conform to it ;)
