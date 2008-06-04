@@ -1,21 +1,15 @@
-Return-Path: <tur@semihalf.com>
-Received: from semihalf.com (semihalf.com [206.130.101.55])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 0D3F2DDEE0
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Jun 2008 23:00:33 +1000 (EST)
-Message-ID: <48468C5A.6030504@semihalf.com>
-Date: Wed, 04 Jun 2008 14:36:42 +0200
-From: Bartlomiej Sieka <tur@semihalf.com>
-MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>, Jon Loeliger <jdl@freescale.com>,
-	Kumar Gala <galak@kernel.crashing.org>, linuxppc-dev@ozlabs.org,
-	jdl@jdl.com
-Subject: Re: [PATCH] Add support for binary includes.
-References: <20080220191941.GA2062@ld0162-tx32.am.freescale.net>	<20080226003955.GA24382@localhost.localdomain>	<7BF8FE6B-8BDD-4DC3-953E-E023C38EBA87@kernel.crashing.org>	<483C4C04.9020408@freescale.com>	<20080528235859.GA10260@yookeroo.seuss>	<20080529000227.GB10260@yookeroo.seuss>	<48404D83.4070108@freescale.com>
-	<20080604041304.GD29085@yookeroo.seuss>
-In-Reply-To: <20080604041304.GD29085@yookeroo.seuss>
-Content-Type: text/plain; charset=ISO-8859-2; format=flowed
+Return-Path: <alessandro.zummo@towertech.it>
+Received: from mx0.towertech.it (mx0.towertech.it [213.215.222.73])
+	by ozlabs.org (Postfix) with SMTP id 26B5FDDF1A
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Jun 2008 23:20:03 +1000 (EST)
+Date: Wed, 4 Jun 2008 15:05:20 +0200
+From: Alessandro Zummo <alessandro.zummo@towertech.it>
+To: Andrew Morton <akpm@linux-foundation.org>, rtc-linux@googlegroups.com,
+	Jean Delvare <khali@linux-fr.org>, linuxppc-dev@ozlabs.org
+Subject: [PATCH] rtc-ds1374: Rename device to just "ds1374"
+Message-ID: <20080604150520.21b74355@i1501.lan.towertech.it>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,49 +19,65 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Gibson wrote:
-> On Fri, May 30, 2008 at 01:54:59PM -0500, Scott Wood wrote:
->> David Gibson wrote:
->>> What I don't like is the combination of the two.  Using the /word/
->>> form in (1) suggests that each /word/ is a lexically distinct symbol
->>> with functions in different contexts: consider /dts-v1/, /include/,
->>> /memreserve/ - they're all used only in their own distinct context.
->>> Use of /word/s in (2) would suggest that each /word/ is just an
->>> identifier for a different function, and should all be usable in a
->>> similar grammtical context - which won't be true of /memreserve/,
->>> /dts-v1/ and any other truly lexically distinct symbols we need to
->>> add.
->> I don't understand this conclusion -- I wouldn't expect to be able to  
->> use "for" or "while" at file scope of C code, just because I can use  
->> "struct", "int", or "sizeof" there.  The slashes are simply a way of  
->> creating reserved words, some of which happen to be function-like.
-> 
-> Heh, when I started revisiting this after my long hiatus doing other
-> things, I was thinking the same way.  I still have a few misgivings,
-> but then the nice thing about the slash-delimited reserved word thing
-> is that even if we come up with a new, nicer syntax it's not going to
-> hurt to keep the slash-form around for compatibility.
-> 
-> sizeof is an interesting example.  As you point out it's an example of
-> a function-like reserved word, which given our existing approach to
-> reserved words supports your syntax.  On the other hand, we may well
-> want a sizeof operator in dtc itself as part of our expression
-> support, and in that case, the "be like C" principle suggests it
-> should be rendered as "sizeof" rather than "/sizeof/".
-> 
-> But as I said that can be dealt with in the future without breaking
-> compatibility.  Objection withdrawn.
+From: Jean Delvare <khali@linux-fr.org>
 
-Hi,
 
-To add one more point to the discussion: the /incbin/ syntax is being
-used in the new image format of U-Boot (we're using dtc with original
-patch by Scott Wood, i.e.,
-http://www.nabble.com/-PATCH--Add-support-for-binary-includes.-td15596760.html).
+Change the name of the device from "rtc-ds1374" to just "ds1374", to
+match what all other RTC drivers do. I seem to remember that this name
+was chosen to avoid possible confusion with an older ds1374 driver,
+but that driver was removed 3 months ago.
 
-If possible, it would be good to have the original syntax preserved once
-the feature is merged into the mainline dtc. BTW: any idea on when this
-might happen?
+Signed-off-by: Jean Delvare <khali@linux-fr.org>
+Signed-off-by: Alessandro Zummo <a.zummo@towertech.it>
 
-Regards,
-Bartlomiej
+---
+Patch already sent on:
+ * 2008-04-30
+
+ arch/powerpc/sysdev/fsl_soc.c |    2 +-
+ drivers/of/of_i2c.c           |    1 -
+ drivers/rtc/rtc-ds1374.c      |    2 +-
+ 3 files changed, 2 insertions(+), 3 deletions(-)
+
+--- linux-2.6.26-rc0.orig/arch/powerpc/sysdev/fsl_soc.c	2008-04-29 22:55:32.000000000 +0200
++++ linux-2.6.26-rc0/arch/powerpc/sysdev/fsl_soc.c	2008-04-30 08:32:43.000000000 +0200
+@@ -432,7 +432,7 @@ static struct i2c_driver_device i2c_devi
+ 	{"dallas,ds1339",  "ds1339"},
+ 	{"dallas,ds1340",  "ds1340"},
+ 	{"stm,m41t00",     "m41t00"},
+-	{"dallas,ds1374",  "rtc-ds1374"},
++	{"dallas,ds1374",  "ds1374"},
+ };
+ 
+ static int __init of_find_i2c_driver(struct device_node *node,
+--- linux-2.6.26-rc0.orig/drivers/of/of_i2c.c	2008-04-29 07:41:15.000000000 +0200
++++ linux-2.6.26-rc0/drivers/of/of_i2c.c	2008-04-30 08:32:38.000000000 +0200
+@@ -21,7 +21,6 @@ struct i2c_driver_device {
+ };
+ 
+ static struct i2c_driver_device i2c_devices[] = {
+-	{ "dallas,ds1374", "rtc-ds1374" },
+ };
+ 
+ static int of_find_i2c_driver(struct device_node *node,
+--- linux-2.6.26-rc0.orig/drivers/rtc/rtc-ds1374.c	2008-04-29 23:07:07.000000000 +0200
++++ linux-2.6.26-rc0/drivers/rtc/rtc-ds1374.c	2008-04-30 08:32:33.000000000 +0200
+@@ -42,7 +42,7 @@
+ #define DS1374_REG_TCR		0x09 /* Trickle Charge */
+ 
+ static const struct i2c_device_id ds1374_id[] = {
+-	{ "rtc-ds1374", 0 },
++	{ "ds1374", 0 },
+ 	{ }
+ };
+ MODULE_DEVICE_TABLE(i2c, ds1374_id);
+
+
+--
+
+ Best regards,
+
+ Alessandro Zummo,
+  Tower Technologies - Torino, Italy
+
+  http://www.towertech.it
