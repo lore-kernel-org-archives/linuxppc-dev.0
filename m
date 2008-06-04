@@ -1,38 +1,17 @@
-Return-Path: <borntraeger@de.ibm.com>
-Received: from mtagate2.uk.ibm.com (mtagate2.uk.ibm.com [195.212.29.135])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate2.uk.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 22359DDF32
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Jun 2008 21:16:04 +1000 (EST)
-Received: from d06nrmr1407.portsmouth.uk.ibm.com
-	(d06nrmr1407.portsmouth.uk.ibm.com [9.149.38.185])
-	by mtagate2.uk.ibm.com (8.13.8/8.13.8) with ESMTP id m54BFjVI266530
-	for <linuxppc-dev@ozlabs.org>; Wed, 4 Jun 2008 11:15:45 GMT
-Received: from d06av03.portsmouth.uk.ibm.com (d06av03.portsmouth.uk.ibm.com
-	[9.149.37.213])
-	by d06nrmr1407.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v8.7) with
-	ESMTP id m54BFiH01528050
-	for <linuxppc-dev@ozlabs.org>; Wed, 4 Jun 2008 12:15:44 +0100
-Received: from d06av03.portsmouth.uk.ibm.com (loopback [127.0.0.1])
-	by d06av03.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id m54BFiYA023972
-	for <linuxppc-dev@ozlabs.org>; Wed, 4 Jun 2008 12:15:44 +0100
-From: Christian Borntraeger <borntraeger@de.ibm.com>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [RFC 1/3] hvc_console: rework setup to replace irq functions with
-	callbacks
-Date: Wed, 4 Jun 2008 13:15:42 +0200
-References: <200806031444.21945.borntraeger@de.ibm.com>
-	<200806031445.22561.borntraeger@de.ibm.com>
-	<200806041013.40692.rusty@rustcorp.com.au>
-In-Reply-To: <200806041013.40692.rusty@rustcorp.com.au>
+Return-Path: <avorontsov@ru.mvista.com>
+Date: Wed, 4 Jun 2008 15:58:19 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Wolfgang Grandegger <wg@grandegger.com>
+Subject: Re: [PATCH] [NAND] driver extension to support NAND on TQM85xx modules
+Message-ID: <20080604115819.GA2281@polina.dev.rtsoft.ru>
+References: <1212129392-27589-1-git-send-email-wg@grandegger.com>
+	<20080530125057.GB13407@polina.dev.rtsoft.ru>
+	<484665EC.30001@grandegger.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200806041315.42593.borntraeger@de.ibm.com>
-Cc: Linux PPC devel <linuxppc-dev@ozlabs.org>,
-	Jeremy Fitzhardinge <jeremy@goop.org>, LKML <linux-kernel@vger.kernel.org>,
-	Virtualization Mailing List <virtualization@lists.osdl.org>
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <484665EC.30001@grandegger.com>
+Cc: Linuxppc-dev@ozlabs.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -42,15 +21,79 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Am Mittwoch, 4. Juni 2008 schrieb Rusty Russell:
-> Two questions.  Is it possible to make the timer backoff a third kind of 
-> notifier?
+On Wed, Jun 04, 2008 at 11:52:44AM +0200, Wolfgang Grandegger wrote:
+> Hi Anton,
+> 
+> Anton Vorontsov wrote:
+> > On Fri, May 30, 2008 at 08:36:32AM +0200, Wolfgang Grandegger wrote:
+> >> This patch extends the FSL UPM NAND driver from Anton Vorontsov to
+> >> support for the TQM85xx modules. Unfortunately, the hardware does
+> >> not support the R/B pins of the NAND chip and therefore the specified
+> >> maximum delay time must used. It therefore re-introduces the chip-delay
+> >> property.
+> >>
+> >> Note: this patch is based on a patch Anton Vorontsov posted to this list:
+> >>       See http://ozlabs.org/pipermail/linuxppc-dev/2008-April/055587.html.
+> >>       It should show up mainstream soon. 
+> > 
+> > Personally, I like this patch. But OF people should approve "chip-delay"
+> > property. Though, the whole UPM NAND bindings are in the air still.
+> > 
+> >> --- a/include/linux/of_gpio.h
+> >> +++ b/include/linux/of_gpio.h
+> >> @@ -15,7 +15,7 @@
+> >>  #define __LINUX_OF_GPIO_H
+> >>  
+> >>  #include <linux/errno.h>
+> >> -#include <asm/gpio.h>
+> >> +#include <linux/gpio.h>
+> > 
+> > This should be done separately.
+> 
+> I have a technical question. 
 
-I can try. The timer handling code is sprinkled a bit in hvc_console but it 
-should be possible.
+> Do you understand
 
-> And is it possible to make the dependency static, rather than  
-> dynamic, or does someone need two options at runtime?
+Nope. According to NAND specs (Samsung and HYNIX), NAND should not
+assert "busy" when we're sending seq data. We should poll the R/B pin
+only after final "programm command".
 
-Not sure. Some drivers pass get the irq number from another component. If the 
-number is 0, the console is poll driven, otherwise irq driven.
+But I saw a chip that was asserting it in seqinput phase anyway, and not
+polling R/B did cause write errors. I can't recall if it was Samsung or
+HYNIX chip, surely not ST Micro though.
+
+> why the Linux NAND FSL UPM 
+> driver needs polling the R/B pin when writing out a sequence of bytes:
+> 
+> static void fun_write_buf(struct mtd_info *mtd, const uint8_t *buf, int len)
+> {
+> 	struct fsl_upm_nand *fun = to_fsl_upm_nand(mtd);
+> 	int i;
+> 
+> 	for (i = 0; i < len; i++) {
+> 		out_8(fun->chip.IO_ADDR_W, buf[i]);
+> 		fun_wait_rnb(fun);
+> 	}
+> }
+> 
+> We do not need that in the corresponding U-Boot driver. 
+
+This is probably because I "optimized" the driver without further
+testing it on other NAND chips.
+
+> On my board (not 
+> having the R/B pin connected) I need a small delay of approx. 100 ns
+> instead to get it working properly.
+
+This proves that we indeed need some R/B waiting (or delays in case of
+no R/B pin) in the write_buf.
+
+p.s. Other possibility though is that MTD subsystem issues some
+commands inbetween seqinput, for example, "read status" command is
+permitted, but NAND should not assert R/B pin for this command anyway.
+:-/
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
