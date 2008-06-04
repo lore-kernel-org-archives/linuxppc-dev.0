@@ -1,16 +1,27 @@
-Return-Path: <reynekejunk@hotmail.com>
-Received: from bay0-omc2-s2.bay0.hotmail.com (bay0-omc2-s2.bay0.hotmail.com
-	[65.54.246.138]) by ozlabs.org (Postfix) with ESMTP id ED057DDF78
+Return-Path: <glppe-linuxppc-embedded-2@m.gmane.org>
+Received: from ciao.gmane.org (main.gmane.org [80.91.229.2])
+	by ozlabs.org (Postfix) with ESMTP id 3FBD9DDDF0
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  5 Jun 2008 00:43:49 +1000 (EST)
-Message-ID: <BAY101-W2A5F2B80B271BD10DE9BBBEB50@phx.gbl>
-Content-Type: multipart/alternative;
-	boundary="_085e05ad-0c85-4a84-944b-00112108744b_"
-From: - Reyneke <reynekejunk@hotmail.com>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: FP and signal 4
-Date: Wed, 4 Jun 2008 14:43:48 +0000
-MIME-Version: 1.0
+	Thu,  5 Jun 2008 02:32:14 +1000 (EST)
+Received: from list by ciao.gmane.org with local (Exim 4.43)
+	id 1K3vu6-00016r-LQ
+	for linuxppc-embedded@ozlabs.org; Wed, 04 Jun 2008 16:32:02 +0000
+Received: from p5497cf09.dip.t-dialin.net ([84.151.207.9])
+	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
+	id 1AlnuQ-0007hv-00
+	for <linuxppc-embedded@ozlabs.org>; Wed, 04 Jun 2008 16:32:02 +0000
+Received: from dzu by p5497cf09.dip.t-dialin.net with local (Gmexim 0.1
+	(Debian)) id 1AlnuQ-0007hv-00
+	for <linuxppc-embedded@ozlabs.org>; Wed, 04 Jun 2008 16:32:02 +0000
+To: linuxppc-embedded@ozlabs.org
+From: Detlev Zundel <dzu@denx.de>
+Subject: Re: No console output when booting linux from uboot
+Date: Wed, 04 Jun 2008 18:30:50 +0200
+Message-ID: <m2hcc988n9.fsf@ohwell.denx.de>
+References: <A9D89E0D76AFF24B9441851F2AC72D7203B7D468@BANMLVEM05.e2k.ad.ge.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Sender: news <news@ger.gmane.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -21,62 +32,35 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---_085e05ad-0c85-4a84-944b-00112108744b_
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Hi Mike,
 
+> I am trying to boot linux kernel (2.6.23) from uboot (1.3.2) for my custom
+> board. The uboot works well, the kernel booting hit the start_kernel(). But
+> there is nothing output from console.
 
-Hi all,
+Do you provide a correct "console=..." parameter?
 
-Has anyone come across any floating point issues in the new powerpc kernel =
-branch with regards to 44x? I'm seeing programs (i.e. init/busybox) generat=
-ing signal 4 (illegal instruction) exceptions. If I compile a 2.6.25 kernel=
- with the CONFIG_MATH_EMULATION option set, then everything works OK.=20
+> With debugger, I saw that the printk() functions were called many times without
+> any console output. Tracing into the source code, I found that the printk()
+> called "con->write" operation...
+>
+> Can anyone guide me to solve this?
 
-Using a 440EPx (has a onchip FPU) with the ELDK 4.0 ppc_4xxFP toolchain for=
- all apps/kernel/fs.=20
+I have a hint concerning an incorrect conjecture from your side.
+Usually when start_kernel starts, the kernel knows nothing about
+consoles to output printk messages to, so in the early phases the
+printk's (like printk(KERN_NOTICE)) only end up in the internal ring
+buffer.  Its only later when the console is associated with a real
+device that everything gets sent there.
 
-Kind of follows on from this thread: http://ozlabs.org/pipermail/linuxppc-e=
-mbedded/2007-June/027363.html
+So you shouldn't really wonder why early printk's do not output
+anything, this is a red herring.  Debug the code responsible for the hw
+acting as your console according to the kernel command line.
 
+Cheers
+  Detlev
 
- Regards
-   Jan
-
-_________________________________________________________________
-
-http://clk.atdmt.com/UKM/go/msnnkmgl0010000009ukm/direct/01/=
-
---_085e05ad-0c85-4a84-944b-00112108744b_
-Content-Type: text/html; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
-<html>
-<head>
-<style>
-.hmmessage P
-{
-margin:0px;
-padding:0px
-}
-body.hmmessage
-{
-FONT-SIZE: 10pt;
-FONT-FAMILY:Tahoma
-}
-</style>
-</head>
-<body class=3D'hmmessage'>
-Hi all,<br><br>Has anyone come across any floating point issues in the new =
-powerpc kernel branch with regards to 44x? I'm seeing programs (i.e. init/b=
-usybox) generating signal 4 (illegal instruction) exceptions. If I compile =
-a 2.6.25 kernel with the CONFIG_MATH_EMULATION option set, then everything =
-works OK. <br><br>Using a 440EPx (has a onchip FPU) with the ELDK 4.0 ppc_4=
-xxFP toolchain for all apps/kernel/fs. <br><br>Kind of follows on from this=
- thread: http://ozlabs.org/pipermail/linuxppc-embedded/2007-June/027363.htm=
-l<br><br><br>&nbsp;Regards<br>&nbsp;&nbsp; Jan<br><br /><hr />Get fish-slap=
-ping on Messenger! <a href=3D'http://clk.atdmt.com/UKM/go/msnnkmgl001000000=
-8ukm/direct/01/' target=3D'_new'>Play Now</a></body>
-</html>=
-
---_085e05ad-0c85-4a84-944b-00112108744b_--
+-- 
+DENX Software Engineering GmbH,      MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich,  Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-40 Fax: (+49)-8142-66989-80 Email: dzu@denx.de
