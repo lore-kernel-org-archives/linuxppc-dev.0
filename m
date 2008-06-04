@@ -1,23 +1,20 @@
-Return-Path: <becky.bruce@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 7D148DDFC4
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Jun 2008 10:15:16 +1000 (EST)
-In-Reply-To: <200805291153.31305.markn@au1.ibm.com>
-References: <Pine.LNX.4.64.0804301815020.12768@monty.am.freescale.net>
-	<200805231806.50551.markn@au1.ibm.com>
-	<200805291153.31305.markn@au1.ibm.com>
-Mime-Version: 1.0 (Apple Message framework v753.1)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <2C2AC58A-E906-4BEC-B9F9-713782DE03E3@freescale.com>
-From: Becky Bruce <becky.bruce@freescale.com>
-Subject: Re: [RFC] POWERPC: Merge 32 and 64-bit dma code
-Date: Tue, 3 Jun 2008 19:18:24 -0500
-To: Mark Nelson <markn@au1.ibm.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id B47D4DDF5C
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Jun 2008 10:17:42 +1000 (EST)
+Date: Wed, 4 Jun 2008 04:17:39 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 0/8 v4] mpc83xx_wdt rework, support for mpc8610 and mpc8xx
+Message-ID: <20080604001739.GB24548@polina.dev.rtsoft.ru>
+References: <20080602173726.GA24556@polina.dev.rtsoft.ru>
+	<20080603164830.32457962.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <20080603164830.32457962.akpm@linux-foundation.org>
+Cc: sfr@canb.auug.org.au, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	wim@iguana.be, scottwood@freescale.com
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,86 +24,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Tue, Jun 03, 2008 at 04:48:30PM -0700, Andrew Morton wrote:
+> On Mon, 2 Jun 2008 21:37:26 +0400
+> Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
+> 
+> > No comments on the previous version for two weeks... resending once
+> > again.
+> 
+> I did all the rework to make the patches apply on top of all the
+> pending watchdog work in Wim's tree and in -mm.  I haven't build tested
+> it yet.
 
-On May 28, 2008, at 8:53 PM, Mark Nelson wrote:
+Thanks, I'll test it in run-time also.
 
-> On Fri, 23 May 2008 06:06:50 pm Mark Nelson wrote:
->> On Thu, 1 May 2008 09:36:43 am Becky Bruce wrote:
->>>
->>> I essentially adopt the 64-bit dma code, with some changes to  
->>> support
->>> 32-bit systems, including HIGHMEM.  dma functions on 32-bit are now
->>> invoked via accessor functions which call the correct op for a  
->>> device based
->>> on archdata dma_ops.  Currently, this defaults to dma_direct_ops,  
->>> but this
->>> structure will make it easier to do iommu/swiotlb on 32-bit going
->>> forward.
->>>
->>> In addition, the dma_map/unmap_page functions are added to  
->>> dma_ops on
->>> HIGHMEM-enabled configs because we can't just fall back on map/ 
->>> unmap_single
->>> when HIGHMEM is enabled.  Adding these to dma_ops makes it  
->>> cleaner to
->>> substitute different functionality once we have iommu/swiotlb  
->>> support.
->>>
->>> This code conflicts with the dma_attrs code that Mark Nelson just  
->>> pushed.
->>> At this point, I'm just looking for some review, and suggestions  
->>> on how
->>> this code might be improved.  I'll uprev it to work with Mark's  
->>> code once
->>> that goes in.
->>
->> The last patch of my series may be in question so it could end up  
->> that this
->> patch makes it in first. It shouldn't be too hard to respin my  
->> patches after
->> your merge so no worries there though.
+> I'll assume that
+> 
+>  [PATCH 7/8] [POWERPC] fsl_soc: remove mpc83xx_wdt code
+> 
+> and
+> 
+>  [PATCH 8/8] [POWERPC] 86xx: mpc8610_hpcd: add watchdog node
+> 
+> are dependent upon the preceding six patches.  This might be wrong.
 
-Either way, we'll deal with it.  Thanks!
+This is correct.
 
->>
->>>
->>> There will be other patches that precede this one - I plan to  
->>> duplicate
->>> dma_mapping.h into include/asm-ppc to avoid breakage there.   
->>> There will
->>> also be a patch to rename dma_64.c to dma.c, and a series of  
->>> patches to
->>> modify drivers that pass NULL dev pointers.
->>>
->>> Dma experts, please review this when you can - I was a dma newbie
->>> until very recently, and the odds that I'm missing some subtlety
->>> in this merge are fairly high.
->>>
->>
->> I'm far from a DMA expert but this all looks sane to me - I can't  
->> really
->> comment on the 32bit side of things but I don't think it's going  
->> to break
->> anything on 64bit (it compiles fine on cell and pseries).
->>
->> I'll try and test boot it on Monday.
->
-> Not quite Monday, but it boots fine on the QS22 and QS21 Cell blades
-> and on a Power6 box.
+> Please put the subsystem identifier (eg, "watchdog" and "powerpc")
+> outside the [], for reasons which should be in
+> Documentation/SubmittingPatches, which used to be there but which got
+> lost.  Bascially the text inside [] is for temporary not-for-committing
+> information such as "rfc", "2.6.24-rc4", "resend", etc and should be stripped
+> by the email recipient before merging.
 
+Yeah, I know. It is just hard to remember all the preferences.
 
-Thanks for the testing - that's great news.  Apologies for my slow  
-response - I was blissfully on vacation for a couple of weeks.
+For example, PowerPC maintainers asking to do patches with "[POWERPC]"
+identifier, this identifier purposely keeps intact for git-log.
 
->
-> Mark.
->
->>
->> We should get BenH to look at it but he's travelling at the moment...
-
-Yep, I'm going to have to start stalking him soon.  We've talked  
-about a few issues, but he hasn't done a full review yet, as he is  
-much in demand.
-
-Thanks!
--Becky
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
