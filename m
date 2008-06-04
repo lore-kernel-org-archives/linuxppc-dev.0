@@ -1,22 +1,19 @@
-Return-Path: <y-goto@jp.fujitsu.com>
-Received: from fgwmail7.fujitsu.co.jp (fgwmail7.fujitsu.co.jp [192.51.44.37])
-	by ozlabs.org (Postfix) with ESMTP id 19DB2DDD04
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Jun 2008 15:31:38 +1000 (EST)
-Date: Wed, 04 Jun 2008 14:27:16 +0900
-From: Yasunori Goto <y-goto@jp.fujitsu.com>
-To: Jeff Garzik <jeff@garzik.org>, Nathan Lynch <ntl@pobox.com>
-Subject: Re: [PATCH 2/2] ehea: remove dependency on MEMORY_HOTPLUG
-In-Reply-To: <4845C8D1.4080808@garzik.org>
-References: <20080603223128.GD7475@localdomain> <4845C8D1.4080808@garzik.org>
-Message-Id: <20080604142112.979F.E1E9C6FF@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Cc: tklein@de.ibm.com, themann@de.ibm.com,
-	Hannes Hering <hannes.hering@linux.vnet.ibm.com>,
-	netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-	ossrosch@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org,
-	raisch@de.ibm.com, Badari Pulavarty <pbadari@us.ibm.com>,
-	ossthema@de.ibm.com, Paul Mackerras <paulus@samba.org>
+Return-Path: <khali@linux-fr.org>
+Received: from services.gcu-squad.org (zone0.gcu-squad.org [212.85.147.21])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 3D18FDDE10
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Jun 2008 16:18:11 +1000 (EST)
+Date: Wed, 4 Jun 2008 08:17:53 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Jochen Friedrich <jochen@scram.de>
+Subject: Re: [PATCH] i2c: Add MAINTAINER entry for i2c-cpm.
+Message-ID: <20080604081753.6830aca8@hyperion.delvare>
+In-Reply-To: <4845A756.6010407@scram.de>
+References: <4845A756.6010407@scram.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, Linux I2C <i2c@lm-sensors.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,43 +23,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello.
-
-I'm working for memory hotplug. This patch looks good to me. 
-
-Acked-by: Yasunori Goto <y-goto@jp.fujitsu.com>
-
-Thanks.
-
-> Nathan Lynch wrote:
-> > Now that walk_memory_resource() is available regardless of
-> > MEMORY_HOTPLUG's setting, this dependency is not needed.
-> > 
-> > Signed-off-by: Nathan Lynch <ntl@pobox.com>
-> > ---
-> >  drivers/net/Kconfig |    2 +-
-> >  1 files changed, 1 insertions(+), 1 deletions(-)
-> > 
-> > diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
-> > index dd0ec9e..f4182cf 100644
-> > --- a/drivers/net/Kconfig
-> > +++ b/drivers/net/Kconfig
-> > @@ -2426,7 +2426,7 @@ config CHELSIO_T3
-> >  
-> >  config EHEA
-> >  	tristate "eHEA Ethernet support"
-> > -	depends on IBMEBUS && INET && SPARSEMEM && MEMORY_HOTPLUG
-> > +	depends on IBMEBUS && INET && SPARSEMEM
-> >  	select INET_LRO
+On Tue, 03 Jun 2008 22:19:34 +0200, Jochen Friedrich wrote:
+> Signed-off-by: Jochen Friedrich <jochen@scram.de>
+> ---
+>  MAINTAINERS |    7 +++++++
+>  1 files changed, 7 insertions(+), 0 deletions(-)
 > 
-> ACK, please send via appropriate target for memory hotplug stuff
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index 0a6d2ca..bdfc7bd 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -1659,6 +1659,13 @@ L:	linux-fbdev-devel@lists.sourceforge.net (moderated for non-subscribers)
+>  W:	http://linux-fbdev.sourceforge.net/
+>  S:	Maintained
+>  
+> +FREESCALE I2C CPM DRIVER
+> +P:	Jochen Friedrich
+> +M:	jochen@scram.de
+> +L:	linuxppc-dev@ozlabs.org
+> +L:	i2c@lm-sensors.org
+> +S:	Maintained
+> +
+>  FREESCALE DMA DRIVER
+>  P:	Li Yang
+>  M:	leoli@freescale.com
+
+Applied, thanks.
 
 -- 
-Yasunori Goto 
+Jean Delvare
