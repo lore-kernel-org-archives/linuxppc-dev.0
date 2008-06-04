@@ -1,27 +1,18 @@
-Return-Path: <torvalds@linux-foundation.org>
-Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
-	[140.211.169.13])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 8E9C0DDDF6
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Jun 2008 12:47:33 +1000 (EST)
-Date: Tue, 3 Jun 2008 19:46:44 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: Re: MMIO and gcc re-ordering issue
-In-Reply-To: <200806041205.45833.nickpiggin@yahoo.com.au>
-Message-ID: <alpine.LFD.1.10.0806031932370.3473@woody.linux-foundation.org>
-References: <1211852026.3286.36.camel@pasglop>
-	<Pine.LNX.4.64.0806031130130.3242@t2.domain.actdsltmp>
-	<alpine.LFD.1.10.0806031153360.3473@woody.linux-foundation.org>
-	<200806041205.45833.nickpiggin@yahoo.com.au>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linux-arch@vger.kernel.org, Russell King <rmk+lkml@arm.linux.org.uk>,
-	linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
-	linuxppc-dev@ozlabs.org, scottwood@freescale.com,
-	Trent Piepho <tpiepho@freescale.com>, alan@lxorguk.ukuu.org.uk
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18502.5368.786188.835122@cargo.ozlabs.ibm.com>
+Date: Wed, 4 Jun 2008 14:07:20 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 0/8 v4] mpc83xx_wdt rework, support for mpc8610 and mpc8xx
+In-Reply-To: <20080603173214.0bf71571.akpm@linux-foundation.org>
+References: <20080602173726.GA24556@polina.dev.rtsoft.ru>
+	<20080603164830.32457962.akpm@linux-foundation.org>
+	<20080604001739.GB24548@polina.dev.rtsoft.ru>
+	<20080603173214.0bf71571.akpm@linux-foundation.org>
+Cc: sfr@canb.auug.org.au, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	wim@iguana.be, scottwood@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,61 +22,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Andrew Morton writes:
 
-
-On Wed, 4 Jun 2008, Nick Piggin wrote:
+> On Wed, 4 Jun 2008 04:17:39 +0400
+> Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
 > 
-> Actually, according to the document I am looking at (the AMD one), a UC
-> store may pass a previous WC store.
+> > > Please put the subsystem identifier (eg, "watchdog" and "powerpc")
+> > > outside the [], for reasons which should be in
+> > > Documentation/SubmittingPatches, which used to be there but which got
+> > > lost.  Bascially the text inside [] is for temporary not-for-committing
+> > > information such as "rfc", "2.6.24-rc4", "resend", etc and should be stripped
+> > > by the email recipient before merging.
+> > 
+> > Yeah, I know. It is just hard to remember all the preferences.
+> > 
+> > For example, PowerPC maintainers asking to do patches with "[POWERPC]"
+> > identifier, this identifier purposely keeps intact for git-log.
+> 
+> Addition of "[powerpc]" if it was absent can be scripted.
+> 
+> However, the retaining of "[powerpc]" (etc) while not retaining "[rfc]"
+> (etc) is not practical.
+> 
+> Plus putting things into git with "[powerpc]" in the title is wrong. 
+> The chances are good that anyone who is taking such a patch off the
+> git-commits list (say, for a backport) will lose that part of the
+> title.  It should be "powerpc: "
 
-Hmm. Intel arch manyal, Vol 3, 10.3 (page 10-7 in my version):
+I think Anton is confusing two things: (a) what should be in the
+subject line of a patch posted to a mailing list, and (b) what should
+be in the headline of a commit put into a git tree that I pull from.
+As for (a), people can put whatever they like in [], and if people put
+"powerpc:" in the subject, I edit it out since my scripts put
+[POWERPC] in the git commit headline.  For (b), I ask git tree
+maintainers that I'm going to pull from to put [POWERPC] at the start
+of the headline for consistency with what I do.
 
-  "If the WC bufer is partially filled, the writes may be delayed until 
-   the next ocurrence of a serializing event; such as, an SFENCE or MFENCE 
-   instruction, CPUID execution, a read or write to uncached memory, ..."
+Looking at Linus' git tree, it's evident that some subsystems use the
+the "[SUBSYSTEM]" notation and some use "subsystem:".  If there is now
+an edict from on high that only "subsystem:" is acceptable, then I
+must have missed that memo.
 
-Any typos mine.
-
-Anyway, Intel certainly seems to document that WC memory is serialized by 
-any access to UC memory.
-
-But yes, I can well imagine that AMD is different, and I also heartily 
-would recommend rather being safe than sorry. Putting an explicit memory 
-barrier in between those accesses when you know it might make a difference 
-is just a good idea. 
-
-But basically, as far as I know the thing was designed to be invisible to 
-old software: that is the whole idea behind WC memory. So the design was 
-certainly intended to be that you can generally mark a framebuffer-like 
-structure WC without any software _ever_ caring, as long as you keep all 
-control ports in UC memory.
-
-Of course, because burst writes from the WC buffer are <i>so</i> much more 
-efficient on the PCI bus than dribbling them out one write at a time, it 
-didn't take long before all the graphics cards etc wanted to <i>also</i> 
-mark their command queues as WC memory, so that you could burst out the 
-commands to the ring buffers as fast as possible. So now you have both 
-your frame buffer *and* your command buffers mapped WC, and now ordering 
-really has to be ensured in software if you access both.
-
-[ And then there are the crazy people who mark *main memory* as WC, 
-  because they don't want to pollute the cache with all the data, and then 
-  you have the issue of cache coherency etc crap. Which only gets worse 
-  with SMP, especially if one processor thinks it has part of memory 
-  exclusively cached, and another one - or even the same one, 
-  through another aliasign address - ignores the cache protocol.
-
-  And you now get unhappy CPU's that think that there is a bug in the 
-  cache protocol and they get machine check faults.
-
-  So what started out as a "we can do accesses to the frame buffer more 
-  efficiently without anybody ever even having to know or care" has 
-  turned into a whole nightmare of people using it for other things, and 
-  then you very much _do_ have to care! ]
-
-And it doesn't surprise me if AMD then didn't get exactly the same 
-rules. 
-
-Oh, well.
-
-		Linus
+Paul.
