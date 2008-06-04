@@ -1,21 +1,19 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 4921ADDECF
+Return-Path: <John.Linn@xilinx.com>
+Received: from SG2EHSOBE006.bigfish.com (outbound-sin.frontbridge.com
+	[207.46.51.80]) by ozlabs.org (Postfix) with ESMTP id DA43CDDE0F
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  5 Jun 2008 04:41:39 +1000 (EST)
-Message-ID: <4846E1DC.9010104@freescale.com>
-Date: Wed, 04 Jun 2008 13:41:32 -0500
-From: Scott Wood <scottwood@freescale.com>
+	Thu,  5 Jun 2008 07:22:38 +1000 (EST)
 MIME-Version: 1.0
-To: matvejchikov@gmail.com
-Subject: Re: The 2.6.25 kernel dosen't run on pq2fads based board
-References: <8496f91a0806040525u7e137221sc4bea5466cde3161@mail.gmail.com>
-In-Reply-To: <8496f91a0806040525u7e137221sc4bea5466cde3161@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset="us-ascii"
+Subject: RE: linux 2.6 hangs at __delay function on Viretx 4 board
+Date: Wed, 4 Jun 2008 15:22:31 -0600
+In-Reply-To: <87tzg97f5l.fsf@macbook.be.48ers.dk>
+References: <17222725.post@talk.nabble.com><20080514150139.E258D8D006F@mail70-va3.bigfish.com><17276753.post@talk.nabble.com><20080516162807.2132E181804D@mail89-sin.bigfish.com><17454696.post@talk.nabble.com>
+	<17482754.post@talk.nabble.com><20080528140800
+From: John Linn <John.Linn@xilinx.com>
+To: "Peter Korsgaard" <jacmet@sunsite.dk>,
+	"swamydp" <swamydp@gmail.com>
+Message-ID: <20080604212233.37F44130004F@mail123-sin.bigfish.com>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -27,39 +25,61 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Matvejchikov Ilya wrote:
-> Hi all!
-> 
-> There is a problem with 2.6.25.4 kernel on the pq2fads based board.
+Hi Peter,
 
-Works for me using cuImage.
+Yes you need to enable UARTLITE as the console in the kernel
+configuration.
 
-> ## Booting kernel from Legacy Image at 00200000 ...
->    Image Name:   Linux-2.6.25.4
->    Image Type:   PowerPC Linux Kernel Image (gzip compressed)
->    Data Size:    1534783 Bytes =  1.5 MB
->    Load Address: 00000000
->    Entry Point:  00000000
->    Verifying Checksum ... OK
->    Uncompressing Kernel Image ... OK
-> ## Flattened Device Tree blob at 00800000
->    Booting using the fdt blob at 0x800000
->    Loading Device Tree to 007fe000, end 007fffff ... OK
+You have the command line syntax, ttyUL0, correct.
 
-I don't see FDT support for this board in current u-boot (I should 
-really get around to fixing that...), so I assume you're using a 
-modified u-boot?
+They have now changed the UART 16550 to be a free core in the EDK, not
+sure which version of the EDK that happened.
 
-> Xid mach(): done
-> MMU:enter
-> MMU:hw init
-> MMU:mapin
-> MMU:setio
-> MMU:exit
-> <<---- the reset was here :(
+Thanks,
+John
 
-Perhaps your u-boot isn't properly filling in the memory node.
+-----Original Message-----
+From: linuxppc-embedded-bounces+john.linn=3Dxilinx.com@ozlabs.org
+[mailto:linuxppc-embedded-bounces+john.linn=3Dxilinx.com@ozlabs.org] On
+Behalf Of Peter Korsgaard
+Sent: Wednesday, June 04, 2008 2:56 AM
+To: swamydp
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: linux 2.6 hangs at __delay function on Viretx 4 board
 
-Oh, and just in case -- if you're using binutils 2.17, it's buggy.
+>>>>> "swamydp" =3D=3D swamydp  <swamydp@gmail.com> writes:
 
--Scott
+ swamydp> Hi John
+
+ swamydp> I am using UARTLITE as serial console. I do not have license
+ swamydp> for UART 16550.  I have enabled the drivers for uartlite in
+ swamydp> menuconfig while configuring the kernel. I have tested all
+ swamydp> combinations for the kernel command line - tty0, ttyUL0,
+ swamydp> ttyl0, ttyS0 but could not get uartlite to output kernel
+ swamydp> printk messages.
+
+Correct syntax is console=3DttyUL0
+
+ swamydp> Since I am using uartlite , the following settings are
+ swamydp> turned off in menuconfig
+
+ swamydp> CONFIG_SERIAL_8250=3Dn
+ swamydp> CONFIG_SERIAL_8250_CONSOLE=3Dn
+
+Do you have console on uartlite (CONFIG_SERIAL_UARTLITE_CONSOLE)
+enabled?
+
+-- =
+
+Bye, Peter Korsgaard
+_______________________________________________
+Linuxppc-embedded mailing list
+Linuxppc-embedded@ozlabs.org
+https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+
+
+This email and any attachments are intended for the sole use of the named r=
+ecipient(s) and contain(s) confidential information that may be proprietary=
+, privileged or copyrighted under applicable law. If you are not the intend=
+ed recipient, do not read, copy, or forward this email message or any attac=
+hments. Delete this email message and any attachments immediately.
