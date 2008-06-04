@@ -1,27 +1,22 @@
-Return-Path: <glppe-linuxppc-embedded-2@m.gmane.org>
-Received: from ciao.gmane.org (main.gmane.org [80.91.229.2])
-	by ozlabs.org (Postfix) with ESMTP id CAA9BDE391
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 4921ADDECF
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  5 Jun 2008 02:44:03 +1000 (EST)
-Received: from list by ciao.gmane.org with local (Exim 4.43)
-	id 1K3w5d-0001jp-GK
-	for linuxppc-embedded@ozlabs.org; Wed, 04 Jun 2008 16:43:57 +0000
-Received: from p5497cf09.dip.t-dialin.net ([84.151.207.9])
-	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
-	id 1AlnuQ-0007hv-00
-	for <linuxppc-embedded@ozlabs.org>; Wed, 04 Jun 2008 16:43:57 +0000
-Received: from dzu by p5497cf09.dip.t-dialin.net with local (Gmexim 0.1
-	(Debian)) id 1AlnuQ-0007hv-00
-	for <linuxppc-embedded@ozlabs.org>; Wed, 04 Jun 2008 16:43:57 +0000
-To: linuxppc-embedded@ozlabs.org
-From: Detlev Zundel <dzu@denx.de>
-Subject: Re: Is the linux-2.6.25.4 compatible with freescale lite5200b?
-Date: Wed, 04 Jun 2008 18:42:45 +0200
-Message-ID: <m2d4mx883e.fsf@ohwell.denx.de>
-References: <70cc19fe0806031955v4478b886k94150ca9c9295a49@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Sender: news <news@ger.gmane.org>
+	Thu,  5 Jun 2008 04:41:39 +1000 (EST)
+Message-ID: <4846E1DC.9010104@freescale.com>
+Date: Wed, 04 Jun 2008 13:41:32 -0500
+From: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
+To: matvejchikov@gmail.com
+Subject: Re: The 2.6.25 kernel dosen't run on pq2fads based board
+References: <8496f91a0806040525u7e137221sc4bea5466cde3161@mail.gmail.com>
+In-Reply-To: <8496f91a0806040525u7e137221sc4bea5466cde3161@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -32,36 +27,39 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Henry,
+Matvejchikov Ilya wrote:
+> Hi all!
+> 
+> There is a problem with 2.6.25.4 kernel on the pq2fads based board.
 
-> I want to use Linux as the OS of freescale lite5200b develop board. Then I have
-> tried two version of kernel, 2.6.25.4 and 2.4.25.
-> We succeed in 2.4.25, failed in 2.6.25.4. We use the default config file for
-> the board, lite5200_defconfig, which would be found both in /arch/ppc/configs/.
+Works for me using cuImage.
 
-That's the problem.  The 5200 was never completely supported in
-ARCH=ppc.  You will need to switch to ARCH=powerpc (including all that
-new exciting flat device tree infrastructure) where the board should
-work.
+> ## Booting kernel from Legacy Image at 00200000 ...
+>    Image Name:   Linux-2.6.25.4
+>    Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+>    Data Size:    1534783 Bytes =  1.5 MB
+>    Load Address: 00000000
+>    Entry Point:  00000000
+>    Verifying Checksum ... OK
+>    Uncompressing Kernel Image ... OK
+> ## Flattened Device Tree blob at 00800000
+>    Booting using the fdt blob at 0x800000
+>    Loading Device Tree to 007fe000, end 007fffff ... OK
 
-In short (using bootwrapper only for demonstration purposes, in the long
-run you want to use fdt aware infrastructure):
+I don't see FDT support for this board in current u-boot (I should 
+really get around to fixing that...), so I assume you're using a 
+modified u-boot?
 
-export ARCH=powerpc
-make mpc5200_defconfig
-make zImage
-ls -l arch/powerpc/boot/cuImage.lite5200b
--rw-rw-r-- 1 dzu dzu 1587892 Jun  4 18:40 arch/powerpc/boot/cuImage.lite5200b
+> Xid mach(): done
+> MMU:enter
+> MMU:hw init
+> MMU:mapin
+> MMU:setio
+> MMU:exit
+> <<---- the reset was here :(
 
-Note that lite5200b does not have its own config any more but uses a
-common config + an individual device tree
-(arch/powerpc/boot/dts/lite5200b.dts). The zImage target above does all
-the magic...
+Perhaps your u-boot isn't properly filling in the memory node.
 
-Cheers
-  Detlev
+Oh, and just in case -- if you're using binutils 2.17, it's buggy.
 
---
-DENX Software Engineering GmbH,      MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich,  Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-40 Fax: (+49)-8142-66989-80 Email: dzu@denx.de
+-Scott
