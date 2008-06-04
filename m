@@ -1,24 +1,24 @@
 Return-Path: <glppe-linuxppc-embedded-2@m.gmane.org>
 Received: from ciao.gmane.org (main.gmane.org [80.91.229.2])
-	by ozlabs.org (Postfix) with ESMTP id 3FBD9DDDF0
+	by ozlabs.org (Postfix) with ESMTP id CAA9BDE391
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  5 Jun 2008 02:32:14 +1000 (EST)
+	Thu,  5 Jun 2008 02:44:03 +1000 (EST)
 Received: from list by ciao.gmane.org with local (Exim 4.43)
-	id 1K3vu6-00016r-LQ
-	for linuxppc-embedded@ozlabs.org; Wed, 04 Jun 2008 16:32:02 +0000
+	id 1K3w5d-0001jp-GK
+	for linuxppc-embedded@ozlabs.org; Wed, 04 Jun 2008 16:43:57 +0000
 Received: from p5497cf09.dip.t-dialin.net ([84.151.207.9])
 	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
 	id 1AlnuQ-0007hv-00
-	for <linuxppc-embedded@ozlabs.org>; Wed, 04 Jun 2008 16:32:02 +0000
+	for <linuxppc-embedded@ozlabs.org>; Wed, 04 Jun 2008 16:43:57 +0000
 Received: from dzu by p5497cf09.dip.t-dialin.net with local (Gmexim 0.1
 	(Debian)) id 1AlnuQ-0007hv-00
-	for <linuxppc-embedded@ozlabs.org>; Wed, 04 Jun 2008 16:32:02 +0000
+	for <linuxppc-embedded@ozlabs.org>; Wed, 04 Jun 2008 16:43:57 +0000
 To: linuxppc-embedded@ozlabs.org
 From: Detlev Zundel <dzu@denx.de>
-Subject: Re: No console output when booting linux from uboot
-Date: Wed, 04 Jun 2008 18:30:50 +0200
-Message-ID: <m2hcc988n9.fsf@ohwell.denx.de>
-References: <A9D89E0D76AFF24B9441851F2AC72D7203B7D468@BANMLVEM05.e2k.ad.ge.com>
+Subject: Re: Is the linux-2.6.25.4 compatible with freescale lite5200b?
+Date: Wed, 04 Jun 2008 18:42:45 +0200
+Message-ID: <m2d4mx883e.fsf@ohwell.denx.de>
+References: <70cc19fe0806031955v4478b886k94150ca9c9295a49@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: news <news@ger.gmane.org>
@@ -32,35 +32,36 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Mike,
+Hi Henry,
 
-> I am trying to boot linux kernel (2.6.23) from uboot (1.3.2) for my custom
-> board. The uboot works well, the kernel booting hit the start_kernel(). But
-> there is nothing output from console.
+> I want to use Linux as the OS of freescale lite5200b develop board. Then I have
+> tried two version of kernel, 2.6.25.4 and 2.4.25.
+> We succeed in 2.4.25, failed in 2.6.25.4. We use the default config file for
+> the board, lite5200_defconfig, which would be found both in /arch/ppc/configs/.
 
-Do you provide a correct "console=..." parameter?
+That's the problem.  The 5200 was never completely supported in
+ARCH=ppc.  You will need to switch to ARCH=powerpc (including all that
+new exciting flat device tree infrastructure) where the board should
+work.
 
-> With debugger, I saw that the printk() functions were called many times without
-> any console output. Tracing into the source code, I found that the printk()
-> called "con->write" operation...
->
-> Can anyone guide me to solve this?
+In short (using bootwrapper only for demonstration purposes, in the long
+run you want to use fdt aware infrastructure):
 
-I have a hint concerning an incorrect conjecture from your side.
-Usually when start_kernel starts, the kernel knows nothing about
-consoles to output printk messages to, so in the early phases the
-printk's (like printk(KERN_NOTICE)) only end up in the internal ring
-buffer.  Its only later when the console is associated with a real
-device that everything gets sent there.
+export ARCH=powerpc
+make mpc5200_defconfig
+make zImage
+ls -l arch/powerpc/boot/cuImage.lite5200b
+-rw-rw-r-- 1 dzu dzu 1587892 Jun  4 18:40 arch/powerpc/boot/cuImage.lite5200b
 
-So you shouldn't really wonder why early printk's do not output
-anything, this is a red herring.  Debug the code responsible for the hw
-acting as your console according to the kernel command line.
+Note that lite5200b does not have its own config any more but uses a
+common config + an individual device tree
+(arch/powerpc/boot/dts/lite5200b.dts). The zImage target above does all
+the magic...
 
 Cheers
   Detlev
 
--- 
+--
 DENX Software Engineering GmbH,      MD: Wolfgang Denk & Detlev Zundel
 HRB 165235 Munich,  Office: Kirchenstr.5, D-82194 Groebenzell, Germany
 Phone: (+49)-8142-66989-40 Fax: (+49)-8142-66989-80 Email: dzu@denx.de
