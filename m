@@ -1,29 +1,15 @@
-Return-Path: <jdl@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id B43C3DDEFE
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Jun 2008 00:27:59 +1000 (EST)
-Message-ID: <4846A60F.9020909@freescale.com>
-Date: Wed, 04 Jun 2008 09:26:23 -0500
-From: Jon Loeliger <jdl@freescale.com>
+Return-Path: <sr@denx.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id 90ACFDE17E
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Jun 2008 01:06:25 +1000 (EST)
+From: Stefan Roese <sr@denx.de>
+To: linuxppc-dev@ozlabs.org
+Subject: "cell-index" vs. "index" vs. no index in I2C device nodes
+Date: Wed, 4 Jun 2008 17:06:21 +0200
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>, Jon Loeliger <jdl@freescale.com>,
-	Kumar Gala <galak@kernel.crashing.org>, linuxppc-dev@ozlabs.org,
-	jdl@jdl.com
-Subject: Re: [PATCH] Add support for binary includes.
-References: <20080220191941.GA2062@ld0162-tx32.am.freescale.net>
-	<20080226003955.GA24382@localhost.localdomain>
-	<7BF8FE6B-8BDD-4DC3-953E-E023C38EBA87@kernel.crashing.org>
-	<483C4C04.9020408@freescale.com>
-	<20080528235859.GA10260@yookeroo.seuss>
-	<20080529000227.GB10260@yookeroo.seuss>
-	<48404D83.4070108@freescale.com>
-	<20080604041304.GD29085@yookeroo.seuss>
-In-Reply-To: <20080604041304.GD29085@yookeroo.seuss>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="utf-8"
+Message-Id: <200806041706.21557.sr@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,21 +19,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Gibson wrote:
+I'm wondering what is currently recommended in the I2C device tree nodes? The 
+current IBM I2C driver (i2c-ibm_iic.c) checks "index" and most FSL dts files 
+use "cell-index". Some 4xx dts files implement "cell-index" some have no 
+index at all.
 
-> But as I said that can be dealt with in the future without breaking
-> compatibility.  Objection withdrawn.
-> 
+So what should be used here. Please advise and I'll prepare a patch for it.
 
-And on that note, I officially implore Scott to
-re-submit his binary include patch!
+Thanks.
 
-> Sorry it's taken this long :(.
-
-No problem; no apology needed. [*1*]
-
-jdl
-
-
-[*1*] -- Or would this have been better?::-)
-      <Darth Vader Voice> Apology...accepted. </Darth Vader Voice>
+Best regards,
+Stefan
