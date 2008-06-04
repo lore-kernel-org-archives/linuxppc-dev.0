@@ -1,24 +1,24 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
-	[140.211.169.13])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id C9738DDDEF
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Jun 2008 10:32:29 +1000 (EST)
-Date: Tue, 3 Jun 2008 17:32:14 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: avorontsov@ru.mvista.com
-Subject: Re: [PATCH 0/8 v4] mpc83xx_wdt rework, support for mpc8610 and mpc8xx
-Message-Id: <20080603173214.0bf71571.akpm@linux-foundation.org>
-In-Reply-To: <20080604001739.GB24548@polina.dev.rtsoft.ru>
-References: <20080602173726.GA24556@polina.dev.rtsoft.ru>
-	<20080603164830.32457962.akpm@linux-foundation.org>
-	<20080604001739.GB24548@polina.dev.rtsoft.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: sfr@canb.auug.org.au, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	wim@iguana.be, scottwood@freescale.com
+Return-Path: <nickpiggin@yahoo.com.au>
+Received: from smtp115.mail.mud.yahoo.com (smtp115.mail.mud.yahoo.com
+	[209.191.84.164]) by ozlabs.org (Postfix) with SMTP id 2F93EDDE0E
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Jun 2008 12:00:26 +1000 (EST)
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Trent Piepho <tpiepho@freescale.com>
+Subject: Re: MMIO and gcc re-ordering issue
+Date: Wed, 4 Jun 2008 12:00:10 +1000
+References: <1211852026.3286.36.camel@pasglop>
+	<20080603213501.GD3549@parisc-linux.org>
+	<Pine.LNX.4.64.0806031444590.3242@t2.domain.actdsltmp>
+In-Reply-To: <Pine.LNX.4.64.0806031444590.3242@t2.domain.actdsltmp>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200806041200.11678.nickpiggin@yahoo.com.au>
+Cc: linux-arch@vger.kernel.org, Russell King <rmk+lkml@arm.linux.org.uk>,
+	Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, scottwood@freescale.com,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	David Miller <davem@davemloft.net>, alan@lxorguk.ukuu.org.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,29 +28,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 4 Jun 2008 04:17:39 +0400
-Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
+On Wednesday 04 June 2008 07:58, Trent Piepho wrote:
+> On Tue, 3 Jun 2008, Matthew Wilcox wrote:
+> > On Tue, Jun 03, 2008 at 12:57:56PM -0700, Trent Piepho wrote:
+> >> On Tue, 3 Jun 2008, Matthew Wilcox wrote:
+> >>> On Tue, Jun 03, 2008 at 11:47:00AM -0700, Trent Piepho wrote:
+> >>>> On Tue, 3 Jun 2008, Linus Torvalds wrote:
+> >>>>> On Tue, 3 Jun 2008, Nick Piggin wrote:
+> >>>>>> Linus: on x86, memory operations to wc and wc+ memory are not
+> >>>>>> ordered with one another, or operations to other memory types (ie.
+> >>>>>> load/load and store/store reordering is allowed). Also, as you know,
+> >>>>>> store/load reordering is explicitly allowed as well, which covers
+> >>>>>> all memory types. So perhaps it is not quite true to say
+> >>>>>> readl/writel is strongly ordered by default even on x86. You would
+> >>>>>> have to put in some mfence instructions in them to make it so.
+> >>>>
+> >>>> So on x86, these could be re-ordered?
+> >>>>
+> >>>> writel(START_OPERATION, CONTROL_REGISTER);
+> >>>> status = readl(STATUS_REGISTER);
+> >>>
+> >>> You wouldn't ask for write-combining memory mapping for control or
+> >>> status registers.
+> >>
+> >> But Nick said, "store/load reordering is explicitly allowed as well,
+> >> which covers *all* memory types."
+> >
+> > Then Nick is confused.  PCI only defines one way to flush posted writes
+> > to a device -- doing a read from it.  There's no way that reads can
+> > be allowed to pass writes (unless you've asked for it, like with write
+> > combining).
+>
+> But that requirement is for the PCI bridge, isn't it?  It doesn't matter if
+> the bridge will flush all posted writes before allowing a read if the CPU
+> decides to give the bridge the read before the write.  A powerpc CPU will
+> certainly do this if you don't take any steps like telling it the memory is
+> uncachable and guarded.  I didn't think it was allowed on x86 (except with
+> WC), but Nick seemed to say it was.
 
-> > Please put the subsystem identifier (eg, "watchdog" and "powerpc")
-> > outside the [], for reasons which should be in
-> > Documentation/SubmittingPatches, which used to be there but which got
-> > lost.  Bascially the text inside [] is for temporary not-for-committing
-> > information such as "rfc", "2.6.24-rc4", "resend", etc and should be stripped
-> > by the email recipient before merging.
-> 
-> Yeah, I know. It is just hard to remember all the preferences.
-> 
-> For example, PowerPC maintainers asking to do patches with "[POWERPC]"
-> identifier, this identifier purposely keeps intact for git-log.
+Ah sorry, not UC, I was confused. UC I think actually is strongly ordered
+WRT other UC and also cacheable operations.
 
-Addition of "[powerpc]" if it was absent can be scripted.
-
-However, the retaining of "[powerpc]" (etc) while not retaining "[rfc]"
-(etc) is not practical.
-
-Plus putting things into git with "[powerpc]" in the title is wrong. 
-The chances are good that anyone who is taking such a patch off the
-git-commits list (say, for a backport) will lose that part of the
-title.  It should be "powerpc: "
-
-(http://userweb.kernel.org/~akpm/dh.gif)
+WC is weakly ordered, anything goes.
