@@ -1,20 +1,26 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Wed, 4 Jun 2008 14:13:04 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH] Add support for binary includes.
-Message-ID: <20080604041304.GD29085@yookeroo.seuss>
-References: <20080220191941.GA2062@ld0162-tx32.am.freescale.net>
-	<20080226003955.GA24382@localhost.localdomain>
-	<7BF8FE6B-8BDD-4DC3-953E-E023C38EBA87@kernel.crashing.org>
-	<483C4C04.9020408@freescale.com>
-	<20080528235859.GA10260@yookeroo.seuss>
-	<20080529000227.GB10260@yookeroo.seuss>
-	<48404D83.4070108@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <48404D83.4070108@freescale.com>
-Cc: jdl@jdl.com, linuxppc-dev@ozlabs.org
+Return-Path: <akpm@linux-foundation.org>
+Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
+	[140.211.169.13])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "smtp.linux-foundation.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id C7A6CDDEED
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Jun 2008 14:15:46 +1000 (EST)
+Date: Tue, 3 Jun 2008 21:15:30 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH 0/8 v4] mpc83xx_wdt rework, support for mpc8610 and mpc8xx
+Message-Id: <20080603211530.d6b3755a.akpm@linux-foundation.org>
+In-Reply-To: <18502.5368.786188.835122@cargo.ozlabs.ibm.com>
+References: <20080602173726.GA24556@polina.dev.rtsoft.ru>
+	<20080603164830.32457962.akpm@linux-foundation.org>
+	<20080604001739.GB24548@polina.dev.rtsoft.ru>
+	<20080603173214.0bf71571.akpm@linux-foundation.org>
+	<18502.5368.786188.835122@cargo.ozlabs.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: sfr@canb.auug.org.au, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	wim@iguana.be, scottwood@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,68 +30,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, May 30, 2008 at 01:54:59PM -0500, Scott Wood wrote:
-> David Gibson wrote:
->> What I don't like is the combination of the two.  Using the /word/
->> form in (1) suggests that each /word/ is a lexically distinct symbol
->> with functions in different contexts: consider /dts-v1/, /include/,
->> /memreserve/ - they're all used only in their own distinct context.
->> Use of /word/s in (2) would suggest that each /word/ is just an
->> identifier for a different function, and should all be usable in a
->> similar grammtical context - which won't be true of /memreserve/,
->> /dts-v1/ and any other truly lexically distinct symbols we need to
->> add.
->
-> I don't understand this conclusion -- I wouldn't expect to be able to  
-> use "for" or "while" at file scope of C code, just because I can use  
-> "struct", "int", or "sizeof" there.  The slashes are simply a way of  
-> creating reserved words, some of which happen to be function-like.
+On Wed, 4 Jun 2008 14:07:20 +1000 Paul Mackerras <paulus@samba.org> wrote:
 
-Heh, when I started revisiting this after my long hiatus doing other
-things, I was thinking the same way.  I still have a few misgivings,
-but then the nice thing about the slash-delimited reserved word thing
-is that even if we come up with a new, nicer syntax it's not going to
-hurt to keep the slash-form around for compatibility.
+> Looking at Linus' git tree, it's evident that some subsystems use the
+> the "[SUBSYSTEM]" notation and some use "subsystem:".  If there is now
+> an edict from on high that only "subsystem:" is acceptable, then I
+> must have missed that memo.
 
-sizeof is an interesting example.  As you point out it's an example of
-a function-like reserved word, which given our existing approach to
-reserved words supports your syntax.  On the other hand, we may well
-want a sizeof operator in dtc itself as part of our expression
-support, and in that case, the "be like C" principle suggests it
-should be rendered as "sizeof" rather than "/sizeof/".
-
-But as I said that can be dealt with in the future without breaking
-compatibility.  Objection withdrawn.
-
-Sorry it's taken this long :(.
-
->> So, I like the notion of functions like this, but with identifiers
->> that aren't /word/s.  Re-invoking the "least surprise to C
->> programmers" principle, in general I think the identifiers should be
->> as C identifiers (i.e. [a-zA-Z_][a-zA-Z0-9_]*).
->
-> That would make it difficult to have function-like syntax outside of  
-> properties.
-
-Not really.  The only thing such identifiers are ambiguous with is
-node and property names, and we've already headed down the path of
-making lexical contexts in which node/property names are recognized be
-the exception.
-
-My plan for the future here was to have { } always be the thing that
-introduces a node/property name context.  That's roughly right for the
-existing node syntax - obviously there's a bit more complexity there,
-since we switch back to normal/expression context after a node/prop
-name, then back to node/prop name context after ';'.  Then for any
-expression operators that take node/prop names, I suggest we also use
-{ }, so if 'foo' is a node expression, then maybe 'foo{reg}' to
-extract the 'reg' property from the node represented by foo.
-
-I'll need a little finessing, but I think using a lexer context stack
-it shouldn't be too hard to handle.
-
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+I'm all edicted out.  Sometimes one just puts forth the reasoning and
+lets others decide whether it's worth bothering about.  I could understand
+that decision being "no" :)
