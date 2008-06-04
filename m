@@ -1,19 +1,16 @@
-Return-Path: <matvejchikov@gmail.com>
-Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.30])
-	by ozlabs.org (Postfix) with ESMTP id 416EDDDF8A
+Return-Path: <reynekejunk@hotmail.com>
+Received: from bay0-omc2-s2.bay0.hotmail.com (bay0-omc2-s2.bay0.hotmail.com
+	[65.54.246.138]) by ozlabs.org (Postfix) with ESMTP id ED057DDF78
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  4 Jun 2008 22:25:17 +1000 (EST)
-Received: by yw-out-2324.google.com with SMTP id 5so32148ywh.39
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 04 Jun 2008 05:25:07 -0700 (PDT)
-Message-ID: <8496f91a0806040525u7e137221sc4bea5466cde3161@mail.gmail.com>
-Date: Wed, 4 Jun 2008 16:25:07 +0400
-From: "Matvejchikov Ilya" <matvejchikov@gmail.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: The 2.6.25 kernel dosen't run on pq2fads based board
+	Thu,  5 Jun 2008 00:43:49 +1000 (EST)
+Message-ID: <BAY101-W2A5F2B80B271BD10DE9BBBEB50@phx.gbl>
+Content-Type: multipart/alternative;
+	boundary="_085e05ad-0c85-4a84-944b-00112108744b_"
+From: - Reyneke <reynekejunk@hotmail.com>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: FP and signal 4
+Date: Wed, 4 Jun 2008 14:43:48 +0000
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Reply-To: matvejchikov@gmail.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -24,45 +21,62 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi all!
+--_085e05ad-0c85-4a84-944b-00112108744b_
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-There is a problem with 2.6.25.4 kernel on the pq2fads based board.
-The board resets after "MMU:exit" called (early debuging is used).See
-the attached log:
 
-========
-## Booting kernel from Legacy Image at 00200000 ...
-   Image Name:   Linux-2.6.25.4
-   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
-   Data Size:    1534783 Bytes =  1.5 MB
-   Load Address: 00000000
-   Entry Point:  00000000
-   Verifying Checksum ... OK
-   Uncompressing Kernel Image ... OK
-## Flattened Device Tree blob at 00800000
-   Booting using the fdt blob at 0x800000
-   Loading Device Tree to 007fe000, end 007fffff ... OK
-Xid mach(): done
-MMU:enter
-MMU:hw init
-MMU:mapin
-MMU:setio
-MMU:exit
-<<---- the reset was here :(
+Hi all,
 
-U-Boot 1.3.3-dirty (Jun  2 2008 - 15:43:45)
+Has anyone come across any floating point issues in the new powerpc kernel =
+branch with regards to 44x? I'm seeing programs (i.e. init/busybox) generat=
+ing signal 4 (illegal instruction) exceptions. If I compile a 2.6.25 kernel=
+ with the CONFIG_MATH_EMULATION option set, then everything works OK.=20
 
-MPC8260 Reset Status: Check Stop, External Soft, External Hard
+Using a 440EPx (has a onchip FPU) with the ELDK 4.0 ppc_4xxFP toolchain for=
+ all apps/kernel/fs.=20
 
-MPC8260 Clock Configuration
- - Bus-to-Core Mult 4x, VCO Div 2, 60x Bus Freq  25-75 , Core Freq 100-300
- - dfbrg 1, corecnf 0x1a, busdf 4, cpmdf 1, plldf 1, pllmf 4, pcidf 3
- - vco_out  330000000, scc_clk   82500000, brg_clk   20625000
- - cpu_clk  264000000, cpm_clk  165000000, bus_clk   66000000
+Kind of follows on from this thread: http://ozlabs.org/pipermail/linuxppc-e=
+mbedded/2007-June/027363.html
 
-CPU:   MPC8260 (HiP4 Rev 14, Mask C.0 5K25A) at 264 MHz
-========
 
-Can anyone help me with this?
+ Regards
+   Jan
 
-Thanks.
+_________________________________________________________________
+
+http://clk.atdmt.com/UKM/go/msnnkmgl0010000009ukm/direct/01/=
+
+--_085e05ad-0c85-4a84-944b-00112108744b_
+Content-Type: text/html; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+<html>
+<head>
+<style>
+.hmmessage P
+{
+margin:0px;
+padding:0px
+}
+body.hmmessage
+{
+FONT-SIZE: 10pt;
+FONT-FAMILY:Tahoma
+}
+</style>
+</head>
+<body class=3D'hmmessage'>
+Hi all,<br><br>Has anyone come across any floating point issues in the new =
+powerpc kernel branch with regards to 44x? I'm seeing programs (i.e. init/b=
+usybox) generating signal 4 (illegal instruction) exceptions. If I compile =
+a 2.6.25 kernel with the CONFIG_MATH_EMULATION option set, then everything =
+works OK. <br><br>Using a 440EPx (has a onchip FPU) with the ELDK 4.0 ppc_4=
+xxFP toolchain for all apps/kernel/fs. <br><br>Kind of follows on from this=
+ thread: http://ozlabs.org/pipermail/linuxppc-embedded/2007-June/027363.htm=
+l<br><br><br>&nbsp;Regards<br>&nbsp;&nbsp; Jan<br><br /><hr />Get fish-slap=
+ping on Messenger! <a href=3D'http://clk.atdmt.com/UKM/go/msnnkmgl001000000=
+8ukm/direct/01/' target=3D'_new'>Play Now</a></body>
+</html>=
+
+--_085e05ad-0c85-4a84-944b-00112108744b_--
