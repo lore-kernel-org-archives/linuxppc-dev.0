@@ -1,29 +1,22 @@
-Return-Path: <jacmet@gmail.com>
-Received: from fg-out-1718.google.com (fg-out-1718.google.com [72.14.220.154])
-	by ozlabs.org (Postfix) with ESMTP id 6304BDDEE7
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	by ozlabs.org (Postfix) with ESMTP id 25C76DDE1A
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  4 Jun 2008 18:55:41 +1000 (EST)
-Received: by fg-out-1718.google.com with SMTP id d23so1326593fga.39
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 04 Jun 2008 01:55:39 -0700 (PDT)
-To: swamydp <swamydp@gmail.com>
-Subject: Re: linux 2.6 hangs at __delay function on Viretx 4 board
-References: <17222725.post@talk.nabble.com>
-	<20080514150139.E258D8D006F@mail70-va3.bigfish.com>
-	<17276753.post@talk.nabble.com>
-	<20080516162807.2132E181804D@mail89-sin.bigfish.com>
-	<17454696.post@talk.nabble.com> <17482754.post@talk.nabble.com>
-	<20080528140800.9ACE756007F@mail97-wa4.bigfish.com>
-	<17638198.post@talk.nabble.com>
-From: Peter Korsgaard <jacmet@sunsite.dk>
-Date: Wed, 04 Jun 2008 10:55:34 +0200
-In-Reply-To: <17638198.post@talk.nabble.com> (swamydp@gmail.com's message of
-	"Tue\, 3 Jun 2008 20\:00\:30 -0700 \(PDT\)")
-Message-ID: <87tzg97f5l.fsf@macbook.be.48ers.dk>
+	Wed,  4 Jun 2008 20:13:04 +1000 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1K3pzG-0001ux-Uj
+	for linuxppc-embedded@ozlabs.org; Wed, 04 Jun 2008 03:12:58 -0700
+Message-ID: <17643409.post@talk.nabble.com>
+Date: Wed, 4 Jun 2008 03:12:58 -0700 (PDT)
+From: gforgcc <narendra.ka@lntemsys.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: Help on MPC82XX USB Host controller Development using m82xx-hcd.
+In-Reply-To: <200803270956.12203.laurentp@cse-semaphore.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Sender: Peter Korsgaard <jacmet@gmail.com>
-Cc: linuxppc-embedded@ozlabs.org
+References: <16304553.post@talk.nabble.com>
+	<200803270956.12203.laurentp@cse-semaphore.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -34,27 +27,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
->>>>> "swamydp" == swamydp  <swamydp@gmail.com> writes:
 
- swamydp> Hi John
 
- swamydp> I am using UARTLITE as serial console. I do not have license
- swamydp> for UART 16550.  I have enabled the drivers for uartlite in
- swamydp> menuconfig while configuring the kernel. I have tested all
- swamydp> combinations for the kernel command line - tty0, ttyUL0,
- swamydp> ttyl0, ttyS0 but could not get uartlite to output kernel
- swamydp> printk messages.
 
-Correct syntax is console=ttyUL0
+Laurent Pinchart-4 wrote:
+> 
+> The cpm2usb project isn't maintained. If possible you should upgrade to a
+> more 
+> recent kernel and switch to the powerpc architecture where a new USB
+> driver 
+> called fhci is available.
+> 
+> The MPC872ADS is supported in recent kernels so switching shouldn't be too 
+> difficult.
+> 
+> 
 
- swamydp> Since I am using uartlite , the following settings are
- swamydp> turned off in menuconfig
+Hi Laurent,
+i have some basic queries, i have some knowledge on what is UHCI or OHCI,
+but can you please brief me what is FHCI and some info regarding this ?
+googling on this dint help me much.. :(
+we are using powerpc architecture with latest kernel 2.6.25.. and trying to
+implement the USB host controller driver and have similar problems.. 
 
- swamydp> CONFIG_SERIAL_8250=n
- swamydp> CONFIG_SERIAL_8250_CONSOLE=n
-
-Do you have console on uartlite (CONFIG_SERIAL_UARTLITE_CONSOLE)
-enabled?
-
+Thanks and Regards,
+Naren.
 -- 
-Bye, Peter Korsgaard
+View this message in context: http://www.nabble.com/Help-on-MPC82XX-USB-Host-controller-Development-using-m82xx-hcd.-tp16304553p17643409.html
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
