@@ -1,19 +1,28 @@
-Return-Path: <khali@linux-fr.org>
-Received: from services.gcu-squad.org (zone0.gcu-squad.org [212.85.147.21])
+Return-Path: <tpiepho@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 3D18FDDE10
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Jun 2008 16:18:11 +1000 (EST)
-Date: Wed, 4 Jun 2008 08:17:53 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Jochen Friedrich <jochen@scram.de>
-Subject: Re: [PATCH] i2c: Add MAINTAINER entry for i2c-cpm.
-Message-ID: <20080604081753.6830aca8@hyperion.delvare>
-In-Reply-To: <4845A756.6010407@scram.de>
-References: <4845A756.6010407@scram.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, Linux I2C <i2c@lm-sensors.org>
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 9D3E0DDDF6
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Jun 2008 16:39:59 +1000 (EST)
+Date: Tue, 3 Jun 2008 23:39:06 -0700 (PDT)
+From: Trent Piepho <tpiepho@freescale.com>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: Re: MMIO and gcc re-ordering issue
+In-Reply-To: <200806041225.50058.nickpiggin@yahoo.com.au>
+Message-ID: <Pine.LNX.4.64.0806032307580.3242@t2.domain.actdsltmp>
+References: <1211852026.3286.36.camel@pasglop>
+	<20080603213310.GC3549@parisc-linux.org>
+	<Pine.LNX.4.64.0806031439520.3242@t2.domain.actdsltmp>
+	<200806041225.50058.nickpiggin@yahoo.com.au>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linux-arch@vger.kernel.org, Russell King <rmk+lkml@arm.linux.org.uk>,
+	Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, scottwood@freescale.com,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	David Miller <davem@davemloft.net>, alan@lxorguk.ukuu.org.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,32 +32,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 03 Jun 2008 22:19:34 +0200, Jochen Friedrich wrote:
-> Signed-off-by: Jochen Friedrich <jochen@scram.de>
-> ---
->  MAINTAINERS |    7 +++++++
->  1 files changed, 7 insertions(+), 0 deletions(-)
-> 
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 0a6d2ca..bdfc7bd 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -1659,6 +1659,13 @@ L:	linux-fbdev-devel@lists.sourceforge.net (moderated for non-subscribers)
->  W:	http://linux-fbdev.sourceforge.net/
->  S:	Maintained
->  
-> +FREESCALE I2C CPM DRIVER
-> +P:	Jochen Friedrich
-> +M:	jochen@scram.de
-> +L:	linuxppc-dev@ozlabs.org
-> +L:	i2c@lm-sensors.org
-> +S:	Maintained
-> +
->  FREESCALE DMA DRIVER
->  P:	Li Yang
->  M:	leoli@freescale.com
+On Wed, 4 Jun 2008, Nick Piggin wrote:
+> On Wednesday 04 June 2008 07:44, Trent Piepho wrote:
+>> On Tue, 3 Jun 2008, Matthew Wilcox wrote:
+>
+>>> I don't understand why you keep talking about DMA.  Are you talking
+>>> about ordering between readX() and DMA?  PCI proides those guarantees.
+>>
+>> I guess you haven't been reading the whole thread.  The reason it started
+>> was because gcc can re-order powerpc (and everyone else's too) IO accesses
+>> vs accesses to cachable memory (but not spin-locks), which ends up only
+>> being a problem with coherent DMA.
+>
+> I don't think it is only a problem with coherent DMA.
+>
+> CPU0                         CPU1
+> mutex_lock(mutex);
+> writel(something, DATA_REG);
+> writel(GO, CTRL_REG);
+> started = 1;
+ 	(A)
+> mutex_unlock(mutex);
+>                             mutex_lock(mutex);
+ 	(B)
+>                             if (started)
+>                               /* oops, this can reach device before GO */
+>                               writel(STOP, CTRL_REG);
 
-Applied, thanks.
+The locks themselves should have (and do have) ordering operations to insure
+gcc and/or the cpu can't move a store or load outside the locked region. 
+Generally you need that to keep stores/loads to cacheable memory inside the
+critical area, much less I/O operations.  Otherwise all you have to do is
+replace writel(something, ...) with shared_data->something = ...  and there's
+an obvious problem.  In your example, gcc currently can and will move the GO
+operation to point A (if it can figure out that CTRL_REG and started aren't
+aliased), but that's not a problem.  If it could move it to B that would be a
+problem, but it can't.
 
--- 
-Jean Delvare
+Other than coherent DMA, I don't think there is any reason to care if I/O
+accessors are strongly ordered wrt load/stores to cacheable memory.  locking
+and streaming DMA sync operations already need to have ordering, so they don't
+require all I/O to be ordered wrt all cacheable memory.
