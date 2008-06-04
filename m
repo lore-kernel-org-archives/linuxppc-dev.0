@@ -1,17 +1,28 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Date: Wed, 4 Jun 2008 15:58:19 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Wolfgang Grandegger <wg@grandegger.com>
-Subject: Re: [PATCH] [NAND] driver extension to support NAND on TQM85xx modules
-Message-ID: <20080604115819.GA2281@polina.dev.rtsoft.ru>
-References: <1212129392-27589-1-git-send-email-wg@grandegger.com>
-	<20080530125057.GB13407@polina.dev.rtsoft.ru>
-	<484665EC.30001@grandegger.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <484665EC.30001@grandegger.com>
-Cc: Linuxppc-dev@ozlabs.org
-Reply-To: avorontsov@ru.mvista.com
+Return-Path: <alan@lxorguk.ukuu.org.uk>
+Received: from lxorguk.ukuu.org.uk (earthlight.etchedpixels.co.uk
+	[81.2.110.250])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 7B6F9DDE08
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Jun 2008 22:02:59 +1000 (EST)
+Date: Wed, 4 Jun 2008 12:47:14 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: MMIO and gcc re-ordering issue
+Message-ID: <20080604124714.55dbce65@core>
+In-Reply-To: <alpine.LFD.1.10.0806031932370.3473@woody.linux-foundation.org>
+References: <1211852026.3286.36.camel@pasglop>
+	<Pine.LNX.4.64.0806031130130.3242@t2.domain.actdsltmp>
+	<alpine.LFD.1.10.0806031153360.3473@woody.linux-foundation.org>
+	<200806041205.45833.nickpiggin@yahoo.com.au>
+	<alpine.LFD.1.10.0806031932370.3473@woody.linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Cc: Benjamin, Nick Piggin <nickpiggin@yahoo.com.au>,
+	Russell King <rmk+lkml@arm.linux.org.uk>, linux-kernel@vger.kernel.org,
+	Trent Piepho <tpiepho@freescale.com>, linuxppc-dev@ozlabs.org,
+	linux-arch@vger.kernel.org, scottwood@freescale.com,
+	David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,79 +32,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jun 04, 2008 at 11:52:44AM +0200, Wolfgang Grandegger wrote:
-> Hi Anton,
-> 
-> Anton Vorontsov wrote:
-> > On Fri, May 30, 2008 at 08:36:32AM +0200, Wolfgang Grandegger wrote:
-> >> This patch extends the FSL UPM NAND driver from Anton Vorontsov to
-> >> support for the TQM85xx modules. Unfortunately, the hardware does
-> >> not support the R/B pins of the NAND chip and therefore the specified
-> >> maximum delay time must used. It therefore re-introduces the chip-delay
-> >> property.
-> >>
-> >> Note: this patch is based on a patch Anton Vorontsov posted to this list:
-> >>       See http://ozlabs.org/pipermail/linuxppc-dev/2008-April/055587.html.
-> >>       It should show up mainstream soon. 
-> > 
-> > Personally, I like this patch. But OF people should approve "chip-delay"
-> > property. Though, the whole UPM NAND bindings are in the air still.
-> > 
-> >> --- a/include/linux/of_gpio.h
-> >> +++ b/include/linux/of_gpio.h
-> >> @@ -15,7 +15,7 @@
-> >>  #define __LINUX_OF_GPIO_H
-> >>  
-> >>  #include <linux/errno.h>
-> >> -#include <asm/gpio.h>
-> >> +#include <linux/gpio.h>
-> > 
-> > This should be done separately.
-> 
-> I have a technical question. 
+> Anyway, Intel certainly seems to document that WC memory is serialized by=
+=20
+> any access to UC memory.
 
-> Do you understand
+I don't believe that is actually true on Pentium Pro at least.
 
-Nope. According to NAND specs (Samsung and HYNIX), NAND should not
-assert "busy" when we're sending seq data. We should poll the R/B pin
-only after final "programm command".
+>   So what started out as a "we can do accesses to the frame buffer more=20
+>   efficiently without anybody ever even having to know or care" has=20
+>   turned into a whole nightmare of people using it for other things, and=
+=20
+>   then you very much _do_ have to care! ]
 
-But I saw a chip that was asserting it in seqinput phase anyway, and not
-polling R/B did cause write errors. I can't recall if it was Samsung or
-HYNIX chip, surely not ST Micro though.
+Notably graphics where 3Dfx lined the registers up specifically to make
+this work. We were also using it with I=C2=B2O where it gave a small
+performance gain.
 
-> why the Linux NAND FSL UPM 
-> driver needs polling the R/B pin when writing out a sequence of bytes:
-> 
-> static void fun_write_buf(struct mtd_info *mtd, const uint8_t *buf, int len)
-> {
-> 	struct fsl_upm_nand *fun = to_fsl_upm_nand(mtd);
-> 	int i;
-> 
-> 	for (i = 0; i < len; i++) {
-> 		out_8(fun->chip.IO_ADDR_W, buf[i]);
-> 		fun_wait_rnb(fun);
-> 	}
-> }
-> 
-> We do not need that in the corresponding U-Boot driver. 
-
-This is probably because I "optimized" the driver without further
-testing it on other NAND chips.
-
-> On my board (not 
-> having the R/B pin connected) I need a small delay of approx. 100 ns
-> instead to get it working properly.
-
-This proves that we indeed need some R/B waiting (or delays in case of
-no R/B pin) in the write_buf.
-
-p.s. Other possibility though is that MTD subsystem issues some
-commands inbetween seqinput, for example, "read status" command is
-permitted, but NAND should not assert R/B pin for this command anyway.
-:-/
-
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+Alan
