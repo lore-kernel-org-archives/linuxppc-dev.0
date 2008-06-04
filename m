@@ -1,18 +1,17 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id BB514DDF18
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Jun 2008 23:41:04 +1000 (EST)
-Message-Id: <B72B508B-D725-47DF-82AF-C7405EB61BBF@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Alessandro Zummo <alessandro.zummo@towertech.it>
-In-Reply-To: <20080604150520.21b74355@i1501.lan.towertech.it>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Mime-Version: 1.0 (Apple Message framework v924)
+Return-Path: <alessandro.zummo@towertech.it>
+Received: from mx0.towertech.it (mx0.towertech.it [213.215.222.73])
+	by ozlabs.org (Postfix) with SMTP id 875E4DDF89
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Jun 2008 23:45:02 +1000 (EST)
+Date: Wed, 4 Jun 2008 15:45:00 +0200
+From: Alessandro Zummo <alessandro.zummo@towertech.it>
+To: Kumar Gala <galak@kernel.crashing.org>
 Subject: Re: [PATCH] rtc-ds1374: Rename device to just "ds1374"
-Date: Wed, 4 Jun 2008 08:40:46 -0500
+Message-ID: <20080604154500.3c0c7e10@i1501.lan.towertech.it>
+In-Reply-To: <B72B508B-D725-47DF-82AF-C7405EB61BBF@kernel.crashing.org>
 References: <20080604150520.21b74355@i1501.lan.towertech.it>
+	<B72B508B-D725-47DF-82AF-C7405EB61BBF@kernel.crashing.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Cc: Jean Delvare <khali@linux-fr.org>, linuxppc-dev@ozlabs.org,
 	Andrew Morton <akpm@linux-foundation.org>, rtc-linux@googlegroups.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -24,22 +23,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Wed, 4 Jun 2008 08:40:46 -0500
+Kumar Gala <galak@kernel.crashing.org> wrote:
 
-On Jun 4, 2008, at 8:05 AM, Alessandro Zummo wrote:
+> > Signed-off-by: Jean Delvare <khali@linux-fr.org>
+> > Signed-off-by: Alessandro Zummo <a.zummo@towertech.it>
+> 
+> Acked-by: Kumar Gala <galak@kernel.crashing.org>
+> 
+> Is this for 2.6.26?  also which tree is this going via?
 
-> From: Jean Delvare <khali@linux-fr.org>
->
->
-> Change the name of the device from "rtc-ds1374" to just "ds1374", to
-> match what all other RTC drivers do. I seem to remember that this name
-> was chosen to avoid possible confusion with an older ds1374 driver,
-> but that driver was removed 3 months ago.
->
-> Signed-off-by: Jean Delvare <khali@linux-fr.org>
-> Signed-off-by: Alessandro Zummo <a.zummo@towertech.it>
+ directly via akpm, I'd say.
+ 
+-- 
 
-Acked-by: Kumar Gala <galak@kernel.crashing.org>
+ Best regards,
 
-Is this for 2.6.26?  also which tree is this going via?
+ Alessandro Zummo,
+  Tower Technologies - Torino, Italy
 
-- k
+  http://www.towertech.it
