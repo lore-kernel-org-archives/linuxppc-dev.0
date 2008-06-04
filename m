@@ -1,28 +1,38 @@
-Return-Path: <tpiepho@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
+Return-Path: <borntraeger@de.ibm.com>
+Received: from mtagate3.uk.ibm.com (mtagate3.uk.ibm.com [195.212.29.136])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 9D3E0DDDF6
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Jun 2008 16:39:59 +1000 (EST)
-Date: Tue, 3 Jun 2008 23:39:06 -0700 (PDT)
-From: Trent Piepho <tpiepho@freescale.com>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: Re: MMIO and gcc re-ordering issue
-In-Reply-To: <200806041225.50058.nickpiggin@yahoo.com.au>
-Message-ID: <Pine.LNX.4.64.0806032307580.3242@t2.domain.actdsltmp>
-References: <1211852026.3286.36.camel@pasglop>
-	<20080603213310.GC3549@parisc-linux.org>
-	<Pine.LNX.4.64.0806031439520.3242@t2.domain.actdsltmp>
-	<200806041225.50058.nickpiggin@yahoo.com.au>
+	(Client CN "mtagate3.uk.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 4DB24DDEE1
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Jun 2008 18:00:49 +1000 (EST)
+Received: from d06nrmr1407.portsmouth.uk.ibm.com
+	(d06nrmr1407.portsmouth.uk.ibm.com [9.149.38.185])
+	by mtagate3.uk.ibm.com (8.13.8/8.13.8) with ESMTP id m5480LR4323494
+	for <linuxppc-dev@ozlabs.org>; Wed, 4 Jun 2008 08:00:21 GMT
+Received: from d06av01.portsmouth.uk.ibm.com (d06av01.portsmouth.uk.ibm.com
+	[9.149.37.212])
+	by d06nrmr1407.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v8.7) with
+	ESMTP id m5480L21602352
+	for <linuxppc-dev@ozlabs.org>; Wed, 4 Jun 2008 09:00:21 +0100
+Received: from d06av01.portsmouth.uk.ibm.com (loopback [127.0.0.1])
+	by d06av01.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id m5480K5P028759
+	for <linuxppc-dev@ozlabs.org>; Wed, 4 Jun 2008 09:00:21 +0100
+From: Christian Borntraeger <borntraeger@de.ibm.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [RFC 1/3] hvc_console: rework setup to replace irq functions with
+	callbacks (not word wrapped)
+Date: Wed, 4 Jun 2008 10:00:16 +0200
+References: <200806031444.21945.borntraeger@de.ibm.com>
+	<200806031449.14385.borntraeger@de.ibm.com>
+	<200806031930.09556.arnd@arndb.de>
+In-Reply-To: <200806031930.09556.arnd@arndb.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linux-arch@vger.kernel.org, Russell King <rmk+lkml@arm.linux.org.uk>,
-	Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, scottwood@freescale.com,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	David Miller <davem@davemloft.net>, alan@lxorguk.ukuu.org.uk
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200806041000.16291.borntraeger@de.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, Jeremy Fitzhardinge <jeremy@goop.org>,
+	Rusty Russell <rusty@rustcorp.com.au>, LKML <linux-kernel@vger.kernel.org>,
+	Virtualization Mailing List <virtualization@lists.osdl.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,44 +42,11 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 4 Jun 2008, Nick Piggin wrote:
-> On Wednesday 04 June 2008 07:44, Trent Piepho wrote:
->> On Tue, 3 Jun 2008, Matthew Wilcox wrote:
->
->>> I don't understand why you keep talking about DMA.  Are you talking
->>> about ordering between readX() and DMA?  PCI proides those guarantees.
->>
->> I guess you haven't been reading the whole thread.  The reason it started
->> was because gcc can re-order powerpc (and everyone else's too) IO accesses
->> vs accesses to cachable memory (but not spin-locks), which ends up only
->> being a problem with coherent DMA.
->
-> I don't think it is only a problem with coherent DMA.
->
-> CPU0                         CPU1
-> mutex_lock(mutex);
-> writel(something, DATA_REG);
-> writel(GO, CTRL_REG);
-> started = 1;
- 	(A)
-> mutex_unlock(mutex);
->                             mutex_lock(mutex);
- 	(B)
->                             if (started)
->                               /* oops, this can reach device before GO */
->                               writel(STOP, CTRL_REG);
+Am Dienstag, 3. Juni 2008 schrieb Arnd Bergmann:
+> I don't see a reason to make this data structure known to other files,
+> so why not leave it in hvc_console.c?
 
-The locks themselves should have (and do have) ordering operations to insure
-gcc and/or the cpu can't move a store or load outside the locked region. 
-Generally you need that to keep stores/loads to cacheable memory inside the
-critical area, much less I/O operations.  Otherwise all you have to do is
-replace writel(something, ...) with shared_data->something = ...  and there's
-an obvious problem.  In your example, gcc currently can and will move the GO
-operation to point A (if it can figure out that CTRL_REG and started aren't
-aliased), but that's not a problem.  If it could move it to B that would be a
-problem, but it can't.
+Yes, Fixed. I moved it for a ealier version of this patch. Currently its not 
+necessary. Dont know if I need to move it again if I work on Rusty's ideas.
 
-Other than coherent DMA, I don't think there is any reason to care if I/O
-accessors are strongly ordered wrt load/stores to cacheable memory.  locking
-and streaming DMA sync operations already need to have ordering, so they don't
-require all I/O to be ordered wrt all cacheable memory.
+Christian
