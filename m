@@ -1,20 +1,18 @@
-Return-Path: <sr@denx.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id B5C58DDF0F
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Jun 2008 05:34:31 +1000 (EST)
-From: Stefan Roese <sr@denx.de>
-To: Jean Delvare <khali@linux-fr.org>
-Subject: Re: [PATCH] i2c-ibm_iic: Remove deprecated OCP style part of the
-	driver
-Date: Wed, 4 Jun 2008 21:33:18 +0200
-References: <1212592932-24031-1-git-send-email-sr@denx.de>
-	<20080604210400.0d7abb8e@hyperion.delvare>
-In-Reply-To: <20080604210400.0d7abb8e@hyperion.delvare>
+Return-Path: <kevdig@hypersurf.com>
+Received: from smtpauth.hypersurf.com (smtpauth.hypersurf.com [209.237.0.8])
+	by ozlabs.org (Postfix) with ESMTP id 2731EDDF4D
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Jun 2008 05:38:06 +1000 (EST)
+Received: from [192.168.1.37] (node20.74.251.72.1dial.com [72.251.74.20])
+	(authenticated bits=0)
+	by smtpauth.hypersurf.com (8.14.2/8.14.2) with ESMTP id m54JaMq9078411
+	for <linuxppc-dev@ozlabs.org>; Wed, 4 Jun 2008 12:37:58 -0700 (PDT)
+Message-ID: <4846EEAE.3000908@hypersurf.com>
+Date: Wed, 04 Jun 2008 12:36:14 -0700
+From: Kevin Diggs <kevdig@hypersurf.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200806042133.18215.sr@denx.de>
-Cc: linuxppc-dev@ozlabs.org, i2c@lm-sensors.org
+To: linuxppc-dev@ozlabs.org
+Subject: inline assembly
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,27 +22,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 04 June 2008, Jean Delvare wrote:
-> On Wed,  4 Jun 2008 17:22:12 +0200, Stefan Roese wrote:
-> > The deprecated OCP style driver part is used by the "old" arch/ppc
-> > platform. This platform is scheduled for removal in June/July this year.
-> > This patch now removes the OCP driver part from the IBM I2C driver.
-> >
-> > Signed-off-by: Stefan Roese <sr@denx.de>
-> > ---
-> >  drivers/i2c/busses/i2c-ibm_iic.c |  181
-> > -------------------------------------- 1 files changed, 0 insertions(+),
-> > 181 deletions(-)
->
-> Applied, queued for 2.6.27, thanks Stefan.
+Hi,
 
-Thanks. I'll post some smaller follow-up patches probably tomorrow.
+	When doing inline assembly, is there a way to get the compiler to 
+assign "extra" (one not specified for inputs and outputs) registers? In 
+the following:
 
-> BTW, would you happen to know if read-only EEPROMs such as SPD or EDID
-> can be found on the i2c-ibm_iic adapters?
+                 __asm__ __volatile__ (
+                         "addi 5,%1,-1\n"
+                         "andc 5,%1,5\n"
+                         "cntlzw 5,5\n"
+                         "subfic %0,5,31":
+                         "=r"(j):
+                         "r"(i)
+                 );
 
-Yes. Some PPC4xx boards are equipped with DIMM modules. Those SPD EEPROM's are 
-connected to the I2C bus controller by the i2c-ibm_iic driver.
+Can I get the compiler to choose a register for r5?
 
-Best regards,
-Stefan
+kevin
