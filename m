@@ -1,24 +1,36 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Fri, 6 Jun 2008 08:56:37 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Timur Tabi <timur@freescale.com>
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 24111DDF91
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jun 2008 09:49:03 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e4.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m55Nn00f014802
+	for <linuxppc-dev@ozlabs.org>; Thu, 5 Jun 2008 19:49:00 -0400
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m55Nn0f9193602
+	for <linuxppc-dev@ozlabs.org>; Thu, 5 Jun 2008 19:49:00 -0400
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m55NmxZd020519
+	for <linuxppc-dev@ozlabs.org>; Thu, 5 Jun 2008 19:49:00 -0400
+Date: Thu, 5 Jun 2008 18:48:36 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Sean MacLennan <smaclennan@pikatech.com>
 Subject: Re: "cell-index" vs. "index" vs. no index in I2C device nodes
-Message-ID: <20080605225637.GG30980@yookeroo.seuss>
-References: <48480987.1070701@freescale.com>
-	<fa686aa40806050900i40f0aa62o4bab3b8c7409b15f@mail.gmail.com>
-	<484810A3.5070301@freescale.com>
-	<20080605112122.0381a338@zod.rchland.ibm.com>
-	<48481373.8010706@freescale.com>
-	<20080605132735.3433f2af@zod.rchland.ibm.com>
-	<fa686aa40806051146h10d9add6ude64d59cedf08f7d@mail.gmail.com>
-	<20080605135625.562d1dbe@zod.rchland.ibm.com>
-	<fa686aa40806051214u6866cec0m66ea32275d8bd5cc@mail.gmail.com>
-	<48483B99.3010300@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <48483B99.3010300@freescale.com>
-Cc: Scott Wood <scottwood@freescale.com>, Stefan Roese <sr@denx.de>,
-	linuxppc-dev@ozlabs.org
+Message-ID: <20080605184836.5280e8f4@zod.rchland.ibm.com>
+In-Reply-To: <20080605173716.3fd28837@wally.pikatech.com>
+References: <200806041706.21557.sr@denx.de>
+	<20080604220555.658ab13e@vader.jdub.homelinux.org>
+	<20080604231641.786bb2dd@lappy.seanm.ca>
+	<200806050822.00797.sr@denx.de>
+	<20080605173716.3fd28837@wally.pikatech.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org, Jean
+	Delvare <khali@linux-fr.org>, Stefan Roese <sr@denx.de>,
+	Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,24 +40,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jun 05, 2008 at 02:16:41PM -0500, Timur Tabi wrote:
-> Grant Likely wrote:
-> 
-> > No; use an alias in the aliases node.  That is what aliases is designed
-> > for.  Something like 'index' is a reinvention of the wheel.
-> 
-> Do aliases work in reverse?  That is, if I have a pointer to a
-> device node, can I look up its alias directly?  Or do I have to scan
-> the aliases node and do a comparison of each phandle, one at a time,
-> until I find a match?  And when I find a match, will I need to do
-> sscanf() in order to extract the actual index value from the
-> property?
+On Thu, 5 Jun 2008 17:37:16 -0400
+Sean MacLennan <smaclennan@pikatech.com> wrote:
 
-Aliases aren't trivially reversible, but it shouldn't be too hard to
-write a helper function which will do the scan and parse you describe.
+> On Thu, 5 Jun 2008 08:22:00 +0200
+> "Stefan Roese" <sr@denx.de> wrote:
+> 
+> > So what should we do now? Currently I2C doesn't work at all on 4xx
+> > since the driver expects the "index" property and no dts sets this
+> > property. Personally I would like to move to using cell-index here,
+> > since this seems to be more common. But I could also life with
+> > removing the index property and using the "static index" if this is
+> > preferred and/or acceptable.
+> 
+> The warp DTS does ;)
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+I can't possibly see how.  It lacks the "index" property.
+
+josh
+> 
+> Cheers,
+>    Sean
