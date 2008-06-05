@@ -1,15 +1,17 @@
-Return-Path: <galak@kernel.crashing.org>
-Message-Id: <94160B3F-AA16-4A1A-AED1-F6238235316B@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Wolfgang Grandegger <wg@grandegger.com>
-In-Reply-To: <4847AE52.5000809@grandegger.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v924)
-Subject: Re: [PATCH v2 4/4] [POWERPC] 85xx: correct vendor prefix in DTS files
-	for TQM85xx modules
-Date: Thu, 5 Jun 2008 09:01:53 -0500
-References: <4847AE52.5000809@grandegger.com>
-Cc: Linuxppc-dev@ozlabs.org
+Return-Path: <vbarshak@ru.mvista.com>
+Received: from vaxon.spb.rtsoft.ru (unknown [212.176.242.38])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 2BB0BDDFF2
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jun 2008 00:07:16 +1000 (EST)
+Date: Thu, 5 Jun 2008 17:36:38 +0400
+From: Valentine Barshak <vbarshak@ru.mvista.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] PowerPC 44x: small warp-nand fix
+Message-ID: <20080605133638.GA18021@ru.mvista.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: sr@denx.de, smaclennan@pikatech.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,24 +21,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+The "ndfc-chip" device doesn't need any resources. All resources
+are handled by the "ndfc-nand" device. Registering the same memory
+resource twice causes "cat /proc/iomem" to go into an infinite loop
+displaying NDFC memory addresses.
 
-On Jun 5, 2008, at 4:13 AM, Wolfgang Grandegger wrote:
+Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
+---
+ arch/powerpc/platforms/44x/warp-nand.c |    3 +--
+ 1 files changed, 1 insertion(+), 2 deletions(-)
 
-> Like for the TQM5200, the vendor prefix "tqc," is now used for all
-> TQM85xx modules from TQ-Components GmbH (http://www.tqc.de) in the
-> corresponding DTS files.
->
-> Signed-off-by: Wolfgang Grandegger <wg@grandegger.com>
-> ---
-> arch/powerpc/boot/dts/tqm8540.dts          |    4 ++--
-> arch/powerpc/boot/dts/tqm8541.dts          |    4 ++--
-> arch/powerpc/boot/dts/tqm8548-bigflash.dts |    4 ++--
-> arch/powerpc/boot/dts/tqm8548.dts          |    4 ++--
-> arch/powerpc/boot/dts/tqm8555.dts          |    4 ++--
-> arch/powerpc/boot/dts/tqm8560.dts          |    4 ++--
-> arch/powerpc/platforms/85xx/tqm85xx.c      |   10 +++++-----
-
-any reason that tqm8548*.dts just dont have these changes to begin  
-with (since they are new)?
-
-- k
+--- linux-2.6.orig/arch/powerpc/platforms/44x/warp-nand.c	2008-04-25 22:04:50.000000000 +0400
++++ linux-2.6/arch/powerpc/platforms/44x/warp-nand.c	2008-06-05 17:24:06.000000000 +0400
+@@ -86,8 +86,7 @@ static struct platform_nand_chip warp_na
+ static struct platform_device warp_nand_device = {
+ 	.name = "ndfc-chip",
+ 	.id = 0,
+-	.num_resources = 1,
+-	.resource = &warp_ndfc,
++	.num_resources = 0,
+ 	.dev = {
+ 		.platform_data = &warp_nand_chip0,
+ 		.parent = &warp_ndfc_device.dev,
