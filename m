@@ -1,23 +1,28 @@
-Return-Path: <timur@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 4FCF2DE3E1
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jun 2008 02:33:09 +1000 (EST)
-Message-ID: <48481373.8010706@freescale.com>
-Date: Thu, 05 Jun 2008 11:25:23 -0500
-From: Timur Tabi <timur@freescale.com>
-MIME-Version: 1.0
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.248])
+	by ozlabs.org (Postfix) with ESMTP id 84C91DE77B
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jun 2008 02:35:43 +1000 (EST)
+Received: by an-out-0708.google.com with SMTP id c34so143680anc.78
+	for <linuxppc-dev@ozlabs.org>; Thu, 05 Jun 2008 09:35:42 -0700 (PDT)
+Message-ID: <fa686aa40806050935g63a8071co1bc52407c97108cc@mail.gmail.com>
+Date: Thu, 5 Jun 2008 10:35:42 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Timur Tabi" <timur@freescale.com>
 Subject: Re: "cell-index" vs. "index" vs. no index in I2C device nodes
-References: <200806041706.21557.sr@denx.de>	<4846B39F.3010601@freescale.com>	<20080604154351.GB10393@ld0162-tx32.am.freescale.net>	<20080604211942.2bddc860@zod.rchland.ibm.com>	<4848028B.5060105@freescale.com>	<fa686aa40806050839h55d8e358m93248414507f10e2@mail.gmail.com>	<48480987.1070701@freescale.com>	<fa686aa40806050900i40f0aa62o4bab3b8c7409b15f@mail.gmail.com>	<484810A3.5070301@freescale.com>
-	<20080605112122.0381a338@zod.rchland.ibm.com>
-In-Reply-To: <20080605112122.0381a338@zod.rchland.ibm.com>
+In-Reply-To: <484811DE.9@freescale.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: Scott Wood <scottwood@freescale.com>, Stefan Roese <sr@denx.de>,
-	linuxppc-dev@ozlabs.org
+References: <200806041706.21557.sr@denx.de>
+	<20080604220555.658ab13e@vader.jdub.homelinux.org>
+	<20080604231641.786bb2dd@lappy.seanm.ca>
+	<200806050822.00797.sr@denx.de> <4848036D.5060004@freescale.com>
+	<484809D1.2070300@scram.de> <48480B3C.9080101@freescale.com>
+	<fa686aa40806050910m2057966csc33b2a671c6265af@mail.gmail.com>
+	<484811DE.9@freescale.com>
+Cc: Stefan Roese <sr@denx.de>, linuxppc-dev@ozlabs.org,
+	Sean MacLennan <smaclennan@pikatech.com>,
+	Scott Wood <scottwood@freescale.com>, Jean Delvare <khali@linux-fr.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,17 +32,54 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Josh Boyer wrote:
+On Thu, Jun 5, 2008 at 10:18 AM, Timur Tabi <timur@freescale.com> wrote:
+> Grant Likely wrote:
+>
+>> multifunction@0 {
+>>         #size-cells = <1>;
+>>         #address-cells = <1>;
+>>         ranges = <0 0xe00000000 0x1000>;
+>>         i2c@0 {
+>>                 cell-index = <0>;
+>>                 regs = <0 0x100>;
+>>         }
+>>         i2c@100 {
+>>                 cell-index = <1>;
+>>                 regs = <0x100 0x100>;
+>>         }
+>> }
+>> multifunction@1 {
+>>         #size-cells = <1>;
+>>         #address-cells = <1>;
+>>         ranges = <0 0xe10000000 0x1000>;
+>>         i2c@0 {
+>>                 cell-index = <0>;
+>>                 regs = <0 0x100>;
+>>         }
+>>         i2c@100 {
+>>                 cell-index = <1>;
+>>                 regs = <0x100 0x100>;
+>>         }
+>> }
+>
+> What resources are being shared in this example?  Each I2C device has its own
+> address ranges.  I don't see how cell-index provides any useful info here.
 
-> And it does.  It does so by the unique "regs" properties and
-> unit-names.  You can assign the index that the i2c subsystem needs
-> based on probe order, like I already said.
+As I said; *assume* that the i2c devices have shared resources.  I
+didn't explicitly show them in the example, but assume that there are
+shared registers in the multifunction nodes.
 
-The probe order is not sufficient on platforms that specifically enumerate their
-I2C (or whatever) devices.  For instance, in order to do audio playback on an
-MPC8610, SSI1 needs to use DMA channel 0.  The SSI driver specifically needs to
-find the register addresses for DMA channel 0.
+cell-index provides details about which bits in the shared registers
+belong to the device, but since there are 2 identical multifunction
+devices in the system there are 2 sets of shared regs.  You cannot now
+use the values 0, 1, 2 and 3 for each cell index because '2' and '3'
+have no valid meaning on how to reference the shared resource.  So,
+cell-index isn't useful for enumerating the i2c busses at the system
+level.
+
+Cheers,
+g.
 
 -- 
-Timur Tabi
-Linux kernel developer at Freescale
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
