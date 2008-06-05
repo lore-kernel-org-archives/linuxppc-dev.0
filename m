@@ -1,24 +1,31 @@
-Return-Path: <hugh@veritas.com>
-Received: from extu-mxob-1.symantec.com (extu-mxob-1.symantec.com
-	[216.10.194.28])
+Return-Path: <kaloz@openwrt.org>
+Received: from arrakis.dune.hu (arrakis.dune.hu [195.56.146.235])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "extu-mxob-1.symantec.com",
-	Issuer "VeriSign Trust Network" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 3F39ADE049
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Jun 2008 22:32:49 +1000 (EST)
-Date: Thu, 5 Jun 2008 13:09:49 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-To: Olaf Hering <olaf@aepfle.de>
-Subject: Re: Linux 2.6.26-rc5 (G5 SATA broken)
-In-Reply-To: <20080605112436.GA4533@aepfle.de>
-Message-ID: <Pine.LNX.4.64.0806051255340.28792@blonde.site>
-References: <alpine.LFD.1.10.0806042018060.3473@woody.linux-foundation.org>
-	<20080605112436.GA4533@aepfle.de>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id AD8EADDF15
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Jun 2008 22:56:01 +1000 (EST)
+Received: from localhost (localhost [127.0.0.1])
+	by arrakis.dune.hu (Postfix) with ESMTP id 1C839784104
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Jun 2008 14:50:45 +0200 (CEST)
+Received: from arrakis.dune.hu ([127.0.0.1])
+	by localhost (arrakis.dune.hu [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id QCl1u5kuXT4b for <linuxppc-dev@ozlabs.org>;
+	Thu,  5 Jun 2008 14:50:39 +0200 (CEST)
+Received: from ecaz.afh.b-m.hu (firewall.ahiv.hu [195.228.168.220])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(No client certificate requested)
+	by arrakis.dune.hu (Postfix) with ESMTPSA id 0BE947840E2
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Jun 2008 14:50:39 +0200 (CEST)
+Date: Thu, 05 Jun 2008 14:50:41 +0200
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH v2] MTD support for the AMCC Taishan
+From: "Imre Kaloz" <kaloz@openwrt.org>
+Content-Type: text/plain; format=flowed; delsp=yes; charset=us-ascii
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Linus Torvalds <torvalds@linux-foundation.org>,
-	Jeff Garzik <jeff@garzik.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <200802081532.42717.sr@denx.de>
+	<12057617031716-git-send-email-kaloz@openwrt.org>
+Message-ID: <op.ub90mrl12s3iss@ecaz.afh.b-m.hu>
+In-Reply-To: <12057617031716-git-send-email-kaloz@openwrt.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,48 +35,150 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 5 Jun 2008, Olaf Hering wrote:
-> On Wed, Jun 04, Linus Torvalds wrote:
-> 
-> > Another week, another batch of mostly pretty small fixes. Hopefully the 
-> > regression list is shrinking, and we've fixed at least a couple of the 
-> > oopses on Arjan's list.
-> 
-> SATA on a dualcore G5 is broken, it happend between
-> c3b25b32e8bef526cca748e1ba023c6bdd705a99..53c8ba95402be65d412a806cda3430f0e72cd107
-> 
-> irq 18: nobody cared (try booting with the "irqpoll" option)
-> Disabling IRQ #18
-> 
-> ctrl alt del on the USB keyboard does not trigger a reboot.
-> Sometimes the cursor stops blinking, sometimes just nothing happens
-> after ctrl alt del.
-> 
-> Does 53c8ba95402be65d412a806cda3430f0e72cd107 work for others on G5?
+bump? :)
 
-I've been bisecting that on Quad G5 (sata_svw): irq 18: nobody cared ...,
-then later endless ata1.00: exception..., blah blah, ata1: EH complete.
-It comes down to:
+On Mon, 17 Mar 2008 14:48:23 +0100, Imre Kaloz <kaloz@openwrt.org> wrote:
 
-commit a57c1bade5a0ee5cd8b74502db9cbebb7f5780b2
-Author: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Date:   Thu May 29 22:10:58 2008 +0100
-libata-sff: Fix oops reported in kerneloops.org for pnp devices with no ctl
-
-And the patch I'm finding successful is below: I won't sign it off,
-for all I know it's reverting part of what Alan is trying to achieve;
-but I expect it'll help towards the right fix.
-
-Hugh
-
---- 2.6.26-rc5/drivers/ata/libata-sff.c	2008-06-05 07:18:07.000000000 +0100
-+++ linux/drivers/ata/libata-sff.c	2008-06-05 12:42:39.000000000 +0100
-@@ -278,7 +278,7 @@ static u8 ata_sff_irq_status(struct ata_
- 		    	return status;
- 	}
- 	/* Clear INTRQ latch */
--	status = ata_sff_check_status(ap);
-+	status = ap->ops->sff_check_status(ap);
- 	return status;
- }
- 
+> Signed-off-by: Imre Kaloz <kaloz@openwrt.org>
+> ---
+>  arch/powerpc/boot/dts/taishan.dts      |   29 +++++++++++-
+>  arch/powerpc/configs/taishan_defconfig |   79  
+> +++++++++++++++++++++++++++++++-
+>  2 files changed, 106 insertions(+), 2 deletions(-)
+>
+> diff --git a/arch/powerpc/boot/dts/taishan.dts  
+> b/arch/powerpc/boot/dts/taishan.dts
+> index 8278068..db102e9 100644
+> --- a/arch/powerpc/boot/dts/taishan.dts
+> +++ b/arch/powerpc/boot/dts/taishan.dts
+> @@ -174,7 +174,34 @@
+>  				interrupts = <5 4>;
+>  				interrupt-parent = <&UIC1>;
+> -				/* TODO: Add other EBC devices */
+> +				nor_flash@0,0 {
+> +					compatible = "cfi-flash";
+> +					bank-width = <4>;
+> +					device-width = <2>;
+> +					reg = <0 000000 4000000>;
+> +					#address-cells = <1>;
+> +					#size-cells = <1>;
+> +					partition@0 {
+> +						label = "kernel";
+> +						reg = <0 180000>;
+> +					};
+> +					partition@180000 {
+> +						label = "root";
+> +						reg = <180000 200000>;
+> +					};
+> +					partition@380000 {
+> +						label = "user";
+> +						reg = <380000 3bc0000>;
+> +					};
+> +					partition@3f40000 {
+> +						label = "env";
+> +						reg = <3f40000 80000>;
+> +					};
+> +					partition@3fc0000 {
+> +						label = "u-boot";
+> +						reg = <3fc0000 40000>;
+> +					};
+> +				};
+>  			};
+> diff --git a/arch/powerpc/configs/taishan_defconfig  
+> b/arch/powerpc/configs/taishan_defconfig
+> index 087aedc..e53c926 100644
+> --- a/arch/powerpc/configs/taishan_defconfig
+> +++ b/arch/powerpc/configs/taishan_defconfig
+> @@ -348,7 +348,83 @@ CONFIG_FW_LOADER=y
+>  # CONFIG_SYS_HYPERVISOR is not set
+>  CONFIG_CONNECTOR=y
+>  CONFIG_PROC_EVENTS=y
+> -# CONFIG_MTD is not set
+> +CONFIG_MTD=y
+> +# CONFIG_MTD_DEBUG is not set
+> +# CONFIG_MTD_CONCAT is not set
+> +CONFIG_MTD_PARTITIONS=y
+> +# CONFIG_MTD_REDBOOT_PARTS is not set
+> +CONFIG_MTD_CMDLINE_PARTS=y
+> +
+> +#
+> +# User Modules And Translation Layers
+> +#
+> +CONFIG_MTD_CHAR=y
+> +# CONFIG_MTD_BLKDEVS is not set
+> +# CONFIG_MTD_BLOCK is not set
+> +# CONFIG_MTD_BLOCK_RO is not set
+> +# CONFIG_FTL is not set
+> +# CONFIG_NFTL is not set
+> +# CONFIG_INFTL is not set
+> +# CONFIG_RFD_FTL is not set
+> +# CONFIG_SSFDC is not set
+> +# CONFIG_MTD_OOPS is not set
+> +
+> +#
+> +# RAM/ROM/Flash chip drivers
+> +#
+> +CONFIG_MTD_CFI=y
+> +# CONFIG_MTD_JEDECPROBE is not set
+> +CONFIG_MTD_GEN_PROBE=y
+> +# CONFIG_MTD_CFI_ADV_OPTIONS is not set
+> +CONFIG_MTD_MAP_BANK_WIDTH_1=y
+> +CONFIG_MTD_MAP_BANK_WIDTH_2=y
+> +CONFIG_MTD_MAP_BANK_WIDTH_4=y
+> +# CONFIG_MTD_MAP_BANK_WIDTH_8 is not set
+> +# CONFIG_MTD_MAP_BANK_WIDTH_16 is not set
+> +# CONFIG_MTD_MAP_BANK_WIDTH_32 is not set
+> +CONFIG_MTD_CFI_I1=y
+> +CONFIG_MTD_CFI_I2=y
+> +# CONFIG_MTD_CFI_I4 is not set
+> +# CONFIG_MTD_CFI_I8 is not set
+> +# CONFIG_MTD_CFI_INTELEXT is not set
+> +CONFIG_MTD_CFI_AMDSTD=y
+> +# CONFIG_MTD_CFI_STAA is not set
+> +CONFIG_MTD_CFI_UTIL=y
+> +# CONFIG_MTD_RAM is not set
+> +# CONFIG_MTD_ROM is not set
+> +# CONFIG_MTD_ABSENT is not set
+> +
+> +#
+> +# Mapping drivers for chip access
+> +#
+> +# CONFIG_MTD_COMPLEX_MAPPINGS is not set
+> +# CONFIG_MTD_PHYSMAP is not set
+> +CONFIG_MTD_PHYSMAP_OF=y
+> +# CONFIG_MTD_INTEL_VR_NOR is not set
+> +# CONFIG_MTD_PLATRAM is not set
+> +
+> +#
+> +# Self-contained MTD device drivers
+> +#
+> +# CONFIG_MTD_PMC551 is not set
+> +# CONFIG_MTD_SLRAM is not set
+> +# CONFIG_MTD_PHRAM is not set
+> +# CONFIG_MTD_MTDRAM is not set
+> +# CONFIG_MTD_BLOCK2MTD is not set
+> +
+> +#
+> +# Disk-On-Chip Device Drivers
+> +#
+> +# CONFIG_MTD_DOC2000 is not set
+> +# CONFIG_MTD_DOC2001 is not set
+> +# CONFIG_MTD_DOC2001PLUS is not set
+> +# CONFIG_MTD_NAND is not set
+> +# CONFIG_MTD_ONENAND is not set
+> +
+> +#
+> +# UBI - Unsorted block images
+> +#
+> +# CONFIG_MTD_UBI is not set
+>  CONFIG_OF_DEVICE=y
+>  # CONFIG_PARPORT is not set
+>  CONFIG_BLK_DEV=y
+> @@ -660,6 +736,7 @@ CONFIG_TMPFS=y
+>  # CONFIG_BEFS_FS is not set
+>  # CONFIG_BFS_FS is not set
+>  # CONFIG_EFS_FS is not set
+> +# CONFIG_JFFS2_FS is not set
+>  CONFIG_CRAMFS=y
+>  # CONFIG_VXFS_FS is not set
+>  # CONFIG_MINIX_FS is not set
