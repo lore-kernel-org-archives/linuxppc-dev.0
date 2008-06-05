@@ -1,34 +1,24 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
+Return-Path: <hugh@veritas.com>
+Received: from extu-mxob-1.symantec.com (extu-mxob-1.symantec.com
+	[216.10.194.28])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id CCDFCDE0F6
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Jun 2008 21:53:06 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e6.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m55Bt8rl020635
-	for <linuxppc-dev@ozlabs.org>; Thu, 5 Jun 2008 07:55:08 -0400
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m55BqgI0239908
-	for <linuxppc-dev@ozlabs.org>; Thu, 5 Jun 2008 07:52:42 -0400
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m55Bqgcm032756
-	for <linuxppc-dev@ozlabs.org>; Thu, 5 Jun 2008 07:52:42 -0400
-Date: Thu, 5 Jun 2008 06:52:25 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Stefan Roese <sr@denx.de>
-Subject: Re: "cell-index" vs. "index" vs. no index in I2C device nodes
-Message-ID: <20080605065225.739ec4a8@zod.rchland.ibm.com>
-In-Reply-To: <200806051045.42966.sr@denx.de>
-References: <200806041706.21557.sr@denx.de> <200806050822.00797.sr@denx.de>
-	<20080605094852.164f0bc7@hyperion.delvare>
-	<200806051045.42966.sr@denx.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Jean Delvare <khali@linux-fr.org>, Scott Wood <scottwood@freescale.com>,
-	Timur Tabi <timur@freescale.com>, linuxppc-dev@ozlabs.org,
-	Sean MacLennan <smaclennan@pikatech.com>
+	(Client CN "extu-mxob-1.symantec.com",
+	Issuer "VeriSign Trust Network" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 3F39ADE049
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Jun 2008 22:32:49 +1000 (EST)
+Date: Thu, 5 Jun 2008 13:09:49 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+To: Olaf Hering <olaf@aepfle.de>
+Subject: Re: Linux 2.6.26-rc5 (G5 SATA broken)
+In-Reply-To: <20080605112436.GA4533@aepfle.de>
+Message-ID: <Pine.LNX.4.64.0806051255340.28792@blonde.site>
+References: <alpine.LFD.1.10.0806042018060.3473@woody.linux-foundation.org>
+	<20080605112436.GA4533@aepfle.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Linus Torvalds <torvalds@linux-foundation.org>,
+	Jeff Garzik <jeff@garzik.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,46 +28,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 5 Jun 2008 10:45:42 +0200
-Stefan Roese <sr@denx.de> wrote:
-
-> On Thursday 05 June 2008, Jean Delvare wrote:
-> > > > Maybe it is time to remove the index, or maybe we should go back to
-> > > > using both a static and the index. But at the time we decided to
-> > > > enforce an index.
-> > >
-> > > So what should we do now? Currently I2C doesn't work at all on 4xx since
-> > > the driver expects the "index" property and no dts sets this property.
-> > > Personally I would like to move to using cell-index here, since this
-> > > seems to be more common. But I could also life with removing the index
-> > > property and using the "static index" if this is preferred and/or
-> > > acceptable.
-> > >
-> > > Please advise. Thanks.
-> >
-> > As far as I am concerned, it's really up to the maintainers and users
-> > of this platform. All I am asking for is that you do not call
-> > i2c_add_numbered_adapter() on an adapter with an automatically
-> > generated number. This function must only be used for adapter's those
-> > number is well defined. If an adapter doesn't have a well-defined
-> > number then use i2c_add_adapter() (but then you can no longer declare
-> > your I2C devices as part of the platform data.)
+On Thu, 5 Jun 2008, Olaf Hering wrote:
+> On Wed, Jun 04, Linus Torvalds wrote:
 > 
-> Full ack from me. So I suggest to use "cell-index" if available and otherwise 
-> use an incremented number, same as the FSL i2c driver does now:
+> > Another week, another batch of mostly pretty small fixes. Hopefully the 
+> > regression list is shrinking, and we've fixed at least a couple of the 
+> > oopses on Arjan's list.
 > 
-> http://ozlabs.org/pipermail/linuxppc-dev/2008-June/057254.html
+> SATA on a dualcore G5 is broken, it happend between
+> c3b25b32e8bef526cca748e1ba023c6bdd705a99..53c8ba95402be65d412a806cda3430f0e72cd107
 > 
-> If nobody objects I'll send a patch to add the cell-index to all 4xx dts files 
-> in a short while.
+> irq 18: nobody cared (try booting with the "irqpoll" option)
+> Disabling IRQ #18
+> 
+> ctrl alt del on the USB keyboard does not trigger a reboot.
+> Sometimes the cursor stops blinking, sometimes just nothing happens
+> after ctrl alt del.
+> 
+> Does 53c8ba95402be65d412a806cda3430f0e72cd107 work for others on G5?
 
-I have no large objections.  Though as Scott pointed out, this isn't
-really a proper use of "cell-index".  Something like:
+I've been bisecting that on Quad G5 (sata_svw): irq 18: nobody cared ...,
+then later endless ata1.00: exception..., blah blah, ata1: EH complete.
+It comes down to:
 
-"linux,i2c-index"
+commit a57c1bade5a0ee5cd8b74502db9cbebb7f5780b2
+Author: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Date:   Thu May 29 22:10:58 2008 +0100
+libata-sff: Fix oops reported in kerneloops.org for pnp devices with no ctl
 
-seems to be a more distinct definition of what this is.  But I have no
-idea how well that would go over, and it would probably need to be
-changed in all the fsl boards as well.
+And the patch I'm finding successful is below: I won't sign it off,
+for all I know it's reverting part of what Alan is trying to achieve;
+but I expect it'll help towards the right fix.
 
-josh
+Hugh
+
+--- 2.6.26-rc5/drivers/ata/libata-sff.c	2008-06-05 07:18:07.000000000 +0100
++++ linux/drivers/ata/libata-sff.c	2008-06-05 12:42:39.000000000 +0100
+@@ -278,7 +278,7 @@ static u8 ata_sff_irq_status(struct ata_
+ 		    	return status;
+ 	}
+ 	/* Clear INTRQ latch */
+-	status = ata_sff_check_status(ap);
++	status = ap->ops->sff_check_status(ap);
+ 	return status;
+ }
+ 
