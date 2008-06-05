@@ -1,19 +1,29 @@
-Return-Path: <marco.stornelli@coritel.it>
-Received: from nausicaa2.coritel.it
-	(host254-130-static.190-82-b.business.telecomitalia.it
-	[82.190.130.254]) by ozlabs.org (Postfix) with ESMTP id 24CC8DE0CD
+Return-Path: <glppe-linuxppc-embedded-2@m.gmane.org>
+Received: from ciao.gmane.org (main.gmane.org [80.91.229.2])
+	by ozlabs.org (Postfix) with ESMTP id 28273DE606
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  5 Jun 2008 22:30:59 +1000 (EST)
-Message-ID: <4847DCD8.2040102@coritel.it>
-Date: Thu, 05 Jun 2008 14:32:24 +0200
-From: Marco Stornelli <marco.stornelli@coritel.it>
-MIME-Version: 1.0
-To: Misbah khan <misbah_khan@engineer.com>
-Subject: Re: Concern regarding Booting up of linux board ...
-References: <17665078.post@talk.nabble.com> <17668657.post@talk.nabble.com>
-In-Reply-To: <17668657.post@talk.nabble.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+	Fri,  6 Jun 2008 00:23:23 +1000 (EST)
+Received: from list by ciao.gmane.org with local (Exim 4.43)
+	id 1K4GN5-0004vb-Hz
+	for linuxppc-embedded@ozlabs.org; Thu, 05 Jun 2008 14:23:19 +0000
+Received: from p5497cc9a.dip.t-dialin.net ([84.151.204.154])
+	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
+	id 1AlnuQ-0007hv-00
+	for <linuxppc-embedded@ozlabs.org>; Thu, 05 Jun 2008 14:23:19 +0000
+Received: from dzu by p5497cc9a.dip.t-dialin.net with local (Gmexim 0.1
+	(Debian)) id 1AlnuQ-0007hv-00
+	for <linuxppc-embedded@ozlabs.org>; Thu, 05 Jun 2008 14:23:19 +0000
+To: linuxppc-embedded@ozlabs.org
+From: Detlev Zundel <dzu@denx.de>
+Subject: Re: No console output when booting linux from uboot
+Date: Thu, 05 Jun 2008 16:22:04 +0200
+Message-ID: <m2od6g6jxv.fsf@ohwell.denx.de>
+References: <A9D89E0D76AFF24B9441851F2AC72D7203B7D468@BANMLVEM05.e2k.ad.ge.com>
+	<m2hcc988n9.fsf@ohwell.denx.de>
+	<A9D89E0D76AFF24B9441851F2AC72D7203BCB942@BANMLVEM05.e2k.ad.ge.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Sender: news <news@ger.gmane.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -24,75 +34,45 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Misbah khan ha scritto:
-> 
-> 
-> Misbah khan wrote:
->> Hi all ..
->>
->> we are using IMX-31 (ARM Core) processor with Linux 2.6 and redboot as
->> boot loader with jffs2 for NAND flash and facing the concerned problem :-
->>
->> The board is booting fine but it sometimes takes 21 sec to boot and
->> sometimes takes 31 sec to boot which is a concern for us actually it takes
->> usually 21 sec and 31 sec sometimes 
->>
->> If we remove the power after booting and again insert the power supply It
->> gives the following warning message related to jffs2 ....
->>
->> JFFS2 notice: (878) check_node_data: wrong data CRC in data node at
->> 0x011dec00: read 0x2464ba56, calculated 0x474915f8.
->> JFFS2 notice: (878) check_node_data: wrong data CRC in data node at
->> 0x0112be00: read 0x149efa32, calculated 0x8f32b0eb.
->> JFFS2 notice: (878) check_node_data: wrong data CRC in data node at
->> 0x0112ba00: read 0xdcfafeb2, calculated 0xb86eb888.
->> JFFS2 notice: (878) check_node_data: wrong data CRC in data node at
->> 0x013e8600: read 0x20bed1fc, calculated 0xe9509808.
->> JFFS2 notice: (878) check_node_data: wrong data CRC in data node at
->> 0x013e9200: read 0x6e4f40bd, calculated 0x28248aa4.
->> JFFS2 notice: (878) check_node_data: wrong data CRC in data node at
->> 0x013e8e00: read 0x6e4f40bd, calculated 0x59eaeede.
->> JFFS2 notice: (878) check_node_data: wrong data CRC in data node at
->> 0x011df000: read 0x6e4f40bd, calculated 0xbf916037.
->> JFFS2 notice: (878) check_node_data: wrong data CRC in data node at
->> 0x011dde00: read 0x6e4f40bd, calculated 0x946d0599.
->> JFFS2 notice: (878) check_node_data: wrong data CRC in data node at
->> 0x011dc800: read 0x6e4f40bd, calculated 0x1e890eaa.
->> JFFS2 notice: (759) check_node_data: wrong data CRC in data node at
->> 0x008c0200: read 0xd3ad877b, calculated 0xf4f0b5f9.
->> JFFS2 notice: (759) check_node_data: wrong data CRC in data node at
->> 0x0097b800: read 0x8d0623a1, calculated 0xefce6ce7.
->> JFFS2 notice: (759) check_node_data: wrong data CRC in data node at
->> 0x00965200: read 0x8d0623a1, calculated 0x92a2a227.
->>
->> Having never experienced this before i do believe that this could be the
->> jffs2 related concern hence just thinking of using YAFFS to increase the
->> booting effeciency ...
->>
->>
->> I would remain thankful if any of you could share your experience or
->> thaught regarding this ...
->>
->> Thank you 
->> Misbah <><
->>
-> 
-> 
-> Thank you for your reply ....
-> 
-> This is not related to ARM processor specific rather its a generic problem
-> related to booting of Board Hence need for your help ...
-> 
-> Misbah <><
-> 
-Ok but for this mailing list a generic problem related to booting of a 
-board is off-topic. You can certainly find a mailing list about JFFS2.
+Hi Mike,
 
--- 
-Marco Stornelli
-Embedded Software Engineer
-CoRiTeL - Consorzio di Ricerca sulle Telecomunicazioni
-http://www.coritel.it
+> Thanks. Now I am confusing with the way uboot passing parameters to
+> linux kernel:
+>
+> in Uboot 1.2.0: Kernel is entered through the following calling
+>         theKernel (linux_argc, linux_argv, linux_env, 0);
+> while in Uboot 1.3.0:
+>         (*kernel) (kbd, initrd_start, initrd_end, cmd_start, cmd_end);
+>
+> The linux kernel I used is designed with Uboot 1.2.0, while I used
+> 1.3.2. Will this be a problem for passing the parameters?
 
-marco.stornelli@coritel.it
-+39 06 72582838
+Hm, now you got me confused.  I cannot see the first version anywhere in
+u-boot or its history.  Even in 1.2.0 its either
+
+(*kernel) (kbd, initrd_start, initrd_end, cmd_start, cmd_end);
+
+or
+
+(*kernel) ((bd_t *)of_flat_tree, (ulong)kernel, 0, 0, 0);
+
+The first path is chosen when using the traditional 2 argument bootm
+command, the logic being that this is a non-fdt aware kernel.  The
+second path is chosen when using the newer three-argument version of
+bootm with the third argument being the flat device tree (needs
+CONFIG_OF_FLAT_TREE in U-Boot 1.2.0).
+
+So if you have anything differing from this, you have to conclude for
+yourself what the situation is.  When you have mainline U-Boot and Linux,
+i.e. comparable what I describe, we especially took care that we are
+backwards compatible.  So by using the two- or three parameter version,
+we effectively select between two kernel call conventions.  The
+situation stays the same in newer U-Boot versions.
+
+Cheers
+  Detlev 
+
+--
+DENX Software Engineering GmbH,      MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich,  Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-40 Fax: (+49)-8142-66989-80 Email: dzu@denx.de
