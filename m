@@ -1,33 +1,32 @@
-Return-Path: <laigui.qin@ge.com>
-Received: from ext-nj2ut-2.online-age.net (ext-nj2ut-2.online-age.net
-	[64.14.54.231])
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "ext-nj2ut.online-age.net",
-	Issuer "Savvis Communications Root CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 80746DDE21
+	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id F3BA9DDDE6
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  5 Jun 2008 11:57:42 +1000 (EST)
-Received: from int-nj2ut-6.online-age.net (int-nj2ut-6.online-age.net
-	[3.159.237.75])
-	by ext-nj2ut-2.online-age.net (8.13.6/8.13.6/20051114-SVVS-TLS-DNSBL)
-	with ESMTP id m551vaHv026026
-	for <linuxppc-embedded@ozlabs.org>; Wed, 4 Jun 2008 21:57:36 -0400
-Received: from cinmlef11.e2k.ad.ge.com (int-nj2ut-6.online-age.net
-	[3.159.237.75])
-	by int-nj2ut-6.online-age.net (8.13.6/8.13.6/20050510-SVVS) with ESMTP
-	id m551vZBo003715
-	for <linuxppc-embedded@ozlabs.org>; Wed, 4 Jun 2008 21:57:36 -0400
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: No console output when booting linux from uboot
-Date: Thu, 5 Jun 2008 07:25:20 +0530
-Message-ID: <A9D89E0D76AFF24B9441851F2AC72D7203BCB942@BANMLVEM05.e2k.ad.ge.com>
-In-Reply-To: <m2hcc988n9.fsf@ohwell.denx.de>
-References: <A9D89E0D76AFF24B9441851F2AC72D7203B7D468@BANMLVEM05.e2k.ad.ge.com>
-	<m2hcc988n9.fsf@ohwell.denx.de>
-From: "Qin, Laigui (GE EntSol, Security)" <laigui.qin@ge.com>
-To: "Detlev Zundel" <dzu@denx.de>, <linuxppc-embedded@ozlabs.org>
+	Thu,  5 Jun 2008 12:31:38 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e33.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m552VZeM024539
+	for <linuxppc-embedded@ozlabs.org>; Wed, 4 Jun 2008 22:31:35 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m552VYow079234
+	for <linuxppc-embedded@ozlabs.org>; Wed, 4 Jun 2008 20:31:35 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m552VYUj032646
+	for <linuxppc-embedded@ozlabs.org>; Wed, 4 Jun 2008 20:31:34 -0600
+Date: Wed, 4 Jun 2008 21:31:23 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: - Reyneke <reynekejunk@hotmail.com>
+Subject: Re: FP and signal 4
+Message-ID: <20080604213123.4e53f813@zod.rchland.ibm.com>
+In-Reply-To: <BAY101-W2A5F2B80B271BD10DE9BBBEB50@phx.gbl>
+References: <BAY101-W2A5F2B80B271BD10DE9BBBEB50@phx.gbl>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -38,63 +37,20 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Thanks. Now I am confusing with the way uboot passing parameters to
-linux kernel:
+On Wed, 4 Jun 2008 14:43:48 +0000
+- Reyneke <reynekejunk@hotmail.com> wrote:
 
-in Uboot 1.2.0: Kernel is entered through the following calling
-        theKernel (linux_argc, linux_argv, linux_env, 0);
-while in Uboot 1.3.0:
-        (*kernel) (kbd, initrd_start, initrd_end, cmd_start, cmd_end);
+> 
+> Hi all,
+> 
+> Has anyone come across any floating point issues in the new powerpc kernel branch with regards to 44x? I'm seeing programs (i.e. init/busybox) generating signal 4 (illegal instruction) exceptions. If I compile a 2.6.25 kernel with the CONFIG_MATH_EMULATION option set, then everything works OK. 
 
-The linux kernel I used is designed with Uboot 1.2.0, while I used
-1.3.2. Will this be a problem for passing the parameters?
+I've not seen that.
 
+> Using a 440EPx (has a onchip FPU) with the ELDK 4.0 ppc_4xxFP toolchain for all apps/kernel/fs. 
 
-Mike Qin
+440EPx should get the FPU enabled at runtime.  We use a virtual PVR to
+do the APU/FPU init.  What does your cpu node look like in your DTS
+file for your board?
 
-
------Original Message-----
-From: linuxppc-embedded-bounces+laigui.qin=3Dge.com@ozlabs.org
-[mailto:linuxppc-embedded-bounces+laigui.qin=3Dge.com@ozlabs.org] On
-Behalf Of Detlev Zundel
-Sent: Thursday, June 05, 2008 12:31 AM
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: No console output when booting linux from uboot
-
-Hi Mike,
-
-> I am trying to boot linux kernel (2.6.23) from uboot (1.3.2) for my=20
-> custom board. The uboot works well, the kernel booting hit the=20
-> start_kernel(). But there is nothing output from console.
-
-Do you provide a correct "console=3D..." parameter?
-
-> With debugger, I saw that the printk() functions were called many=20
-> times without any console output. Tracing into the source code, I=20
-> found that the printk() called "con->write" operation...
->
-> Can anyone guide me to solve this?
-
-I have a hint concerning an incorrect conjecture from your side.
-Usually when start_kernel starts, the kernel knows nothing about
-consoles to output printk messages to, so in the early phases the
-printk's (like printk(KERN_NOTICE)) only end up in the internal ring
-buffer.  Its only later when the console is associated with a real
-device that everything gets sent there.
-
-So you shouldn't really wonder why early printk's do not output
-anything, this is a red herring.  Debug the code responsible for the hw
-acting as your console according to the kernel command line.
-
-Cheers
-  Detlev
-
---=20
-DENX Software Engineering GmbH,      MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich,  Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-40 Fax: (+49)-8142-66989-80 Email: dzu@denx.de
-
-_______________________________________________
-Linuxppc-embedded mailing list
-Linuxppc-embedded@ozlabs.org
-https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+josh
