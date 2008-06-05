@@ -1,27 +1,20 @@
-Return-Path: <hugh@veritas.com>
-Received: from extu-mxob-2.symantec.com (extu-mxob-2.symantec.com
-	[216.10.194.135])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "extu-mxob-2.symantec.com",
-	Issuer "VeriSign Trust Network" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 2DEFFDE061
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Jun 2008 23:45:08 +1000 (EST)
-Date: Thu, 5 Jun 2008 14:44:39 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-To: Jeff Garzik <jeff@garzik.org>
-Subject: [PATCH] libata: fix G5 SATA broken on -rc5
-In-Reply-To: <20080605135444.7a1e5158@core>
-Message-ID: <Pine.LNX.4.64.0806051436180.5315@blonde.site>
-References: <alpine.LFD.1.10.0806042018060.3473@woody.linux-foundation.org>
-	<20080605112436.GA4533@aepfle.de>
-	<Pine.LNX.4.64.0806051255340.28792@blonde.site>
-	<20080605135444.7a1e5158@core>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Olaf Hering <olaf@aepfle.de>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 6EFB3DE061
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jun 2008 00:01:32 +1000 (EST)
+Message-Id: <08C844E9-A768-4EF0-83D5-61BA408B80C8@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Wolfgang Grandegger <wg@grandegger.com>
+In-Reply-To: <4847AD42.1000201@grandegger.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v924)
+Subject: Re: [PATCH v2 2/4] [POWERPC] 85xx: support for the TQM8548 module
+	using the big Flash
+Date: Thu, 5 Jun 2008 09:01:11 -0500
+References: <4847AD42.1000201@grandegger.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,25 +24,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Fix G5 SATA irq 18: nobody cared, reported on -rc5 by Olaf Hering:
-fixlet to a57c1bade5a0ee5cd8b74502db9cbebb7f5780b2 libata-sff:
-Fix oops reported in kerneloops.org for pnp devices with no ctl
-    
-Signed-off-by: Hugh Dickins <hugh@veritas.com>
-Acked-by: Alan Cox <alan@lxorguk.ukuu.org.uk>
----
 
- drivers/ata/libata-sff.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+On Jun 5, 2008, at 4:09 AM, Wolfgang Grandegger wrote:
 
---- 2.6.26-rc5/drivers/ata/libata-sff.c	2008-06-05 07:18:07.000000000 +0100
-+++ linux/drivers/ata/libata-sff.c	2008-06-05 12:42:39.000000000 +0100
-@@ -278,7 +278,7 @@ static u8 ata_sff_irq_status(struct ata_
- 		    	return status;
- 	}
- 	/* Clear INTRQ latch */
--	status = ata_sff_check_status(ap);
-+	status = ap->ops->sff_check_status(ap);
- 	return status;
- }
- 
+> Some TQM85xx boards could be equipped with up to 1 GiB (NOR) flash
+> memory and therefore a modified memory map is required and setup by
+> the board loader. This patch adds an appropriate DTS file.
+>
+> Signed-off-by: Wolfgang Grandegger <wg@grandegger.com>
+> ---
+> arch/powerpc/boot/dts/tqm8548-bigflash.dts |  368 +++++++++++++++++++ 
+> ++++++++++
+> 1 file changed, 368 insertions(+)
+> create mode 100644 arch/powerpc/boot/dts/tqm8548-bigflash.dts
+
+similar comments as to the base tqm8548.dts
+
+also is it not possible to deal w/the differences in u-boot itself?
+
+- k
