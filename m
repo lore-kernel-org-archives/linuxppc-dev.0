@@ -1,19 +1,21 @@
-Return-Path: <reynekejunk@hotmail.com>
-Received: from bay0-omc2-s38.bay0.hotmail.com (bay0-omc2-s38.bay0.hotmail.com
-	[65.54.246.174]) by ozlabs.org (Postfix) with ESMTP id 8FC2BDDF3A
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	by ozlabs.org (Postfix) with ESMTP id 01CC4DDF20
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  5 Jun 2008 17:50:53 +1000 (EST)
-Message-ID: <BAY101-W3227AB825957D1D453830CBEB40@phx.gbl>
-From: - Reyneke <reynekejunk@hotmail.com>
-To: Stefan Roese <sr@denx.de>, <linuxppc-embedded@ozlabs.org>
-Subject: RE: FP and signal 4
-Date: Thu, 5 Jun 2008 07:50:51 +0000
-In-Reply-To: <200806050659.30499.sr@denx.de>
-References: <BAY101-W2A5F2B80B271BD10DE9BBBEB50@phx.gbl>
-	<20080604213123.4e53f813@zod.rchland.ibm.com>
-	<200806050659.30499.sr@denx.de>
-Content-Type: text/plain; charset="iso-8859-1"
+	Thu,  5 Jun 2008 17:50:24 +1000 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1K4AEm-0006Ko-D5
+	for linuxppc-embedded@ozlabs.org; Thu, 05 Jun 2008 00:50:20 -0700
+Message-ID: <17664113.post@talk.nabble.com>
+Date: Thu, 5 Jun 2008 00:50:20 -0700 (PDT)
+From: PhilippeCurie <philippe.curie@exensor.se>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: USB Host Controller driver for the MPC8270 processor
+In-Reply-To: <BAY122-W428F4FD4AED8DAED5968A1DABF0@phx.gbl>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+References: <BAY122-W428F4FD4AED8DAED5968A1DABF0@phx.gbl>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -25,54 +27,52 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-Aaah - looks like that was it. Works OK now with CONFIG_MATH_EMULATION un-s=
-et. For the record - cpu node looks as follows:
+Hi Huub,
+
+I am sure you remember me from your time at Thales Huizen.  I am now working
+for Exensor Technology.
+
+Could you please contact me at philippe.curie@exensor.se ?
+
+Best Regards
 
 
-
-		cpu@0 {
-			device_type =3D "cpu";
-			model =3D "PowerPC,440EPx";
-			reg =3D ;
-			clock-frequency =3D ; /* Filled in by u-boot */
-			timebase-frequency =3D ; /* Filled in by u-boot */
-			i-cache-line-size =3D ;
-			d-cache-line-size =3D ;
-			i-cache-size =3D ;
-			d-cache-size =3D ;
-			dcr-controller;
-			dcr-access-method =3D "native";
-		};
-
-Thanks for the help.
+Philippe Curie
 
 
->
-> On Thursday 05 June 2008, Josh Boyer wrote:
->>> Has anyone come across any floating point issues in the new powerpc
->>> kernel branch with regards to 44x? I'm seeing programs (i.e.
->>> init/busybox) generating signal 4 (illegal instruction) exceptions. If =
-I
->>> compile a 2.6.25 kernel with the CONFIG_MATH_EMULATION option set, then
->>> everything works OK.
->>
->> I've not seen that.
->>
->>> Using a 440EPx (has a onchip FPU) with the ELDK 4.0 ppc_4xxFP toolchain
->>> for all apps/kernel/fs.
->>
->> 440EPx should get the FPU enabled at runtime. We use a virtual PVR to
->> do the APU/FPU init. What does your cpu node look like in your DTS
->> file for your board?
->
-> And please use the dtc "-b 0" option for creating the dtb file. Without i=
-t the
-> virtual PVR setup doesn't work.
->
-> Best regards,
-> Stefan
->
+Huub Eikens wrote:
+> 
+> Hi,
+>  
+> I am in need of a USB Host Controller device for the Freescale MPC8270 for
+> the 2.4 linux kernel (ELDK 3.1.1). On internet I found one, but this is
+> only for version 2.6:
+> http://cpm2usb.sourceforge.net/
+> 
+> I have a few options:
+> 1. backport this driver to 2.4.25 kernel. I would like to know if this is
+> feasible or not. I get the feeling that this will take a lot of time.
+> 2. upgrade my kernel to 2.6.x. This is not preferable for me since I
+> depend on sw modules writen by external partners. If I upgrade, I really
+> really need to be sure that this driver
+> is stable and reliable.
+> 3. Use an external USB Host Controller. Can anyone advise me on which
+> controller to choose that runs stable and reliable on the 2.4.25 kernel
+> (ELDK 3.1.1)?
+> 
+> Kind regards,
+>  
+> Huub Eikens
+> 
+> _________________________________________________________________
+> De leukste online filmpjes vind je op MSN Video!
+> http://video.msn.com/video.aspx?mkt=nl-nl
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> 
 
-_________________________________________________________________
-
-http://clk.atdmt.com/UKM/go/msnnkmgl0010000007ukm/direct/01/=
+-- 
+View this message in context: http://www.nabble.com/USB-Host-Controller-driver-for-the-MPC8270-processor-tp17533233p17664113.html
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
