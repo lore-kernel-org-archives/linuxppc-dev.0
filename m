@@ -1,29 +1,15 @@
-Return-Path: <glppe-linuxppc-embedded-2@m.gmane.org>
-Received: from ciao.gmane.org (main.gmane.org [80.91.229.2])
-	by ozlabs.org (Postfix) with ESMTP id 28273DE606
+Return-Path: <jdl@jdl.com>
+Received: from jdl.com (jdl.com [208.123.74.7])
+	by ozlabs.org (Postfix) with ESMTP id EBE3FDDFF4
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  6 Jun 2008 00:23:23 +1000 (EST)
-Received: from list by ciao.gmane.org with local (Exim 4.43)
-	id 1K4GN5-0004vb-Hz
-	for linuxppc-embedded@ozlabs.org; Thu, 05 Jun 2008 14:23:19 +0000
-Received: from p5497cc9a.dip.t-dialin.net ([84.151.204.154])
-	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
-	id 1AlnuQ-0007hv-00
-	for <linuxppc-embedded@ozlabs.org>; Thu, 05 Jun 2008 14:23:19 +0000
-Received: from dzu by p5497cc9a.dip.t-dialin.net with local (Gmexim 0.1
-	(Debian)) id 1AlnuQ-0007hv-00
-	for <linuxppc-embedded@ozlabs.org>; Thu, 05 Jun 2008 14:23:19 +0000
+	Fri,  6 Jun 2008 01:13:07 +1000 (EST)
 To: linuxppc-embedded@ozlabs.org
-From: Detlev Zundel <dzu@denx.de>
-Subject: Re: No console output when booting linux from uboot
-Date: Thu, 05 Jun 2008 16:22:04 +0200
-Message-ID: <m2od6g6jxv.fsf@ohwell.denx.de>
-References: <A9D89E0D76AFF24B9441851F2AC72D7203B7D468@BANMLVEM05.e2k.ad.ge.com>
-	<m2hcc988n9.fsf@ohwell.denx.de>
-	<A9D89E0D76AFF24B9441851F2AC72D7203BCB942@BANMLVEM05.e2k.ad.ge.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Sender: news <news@ger.gmane.org>
+Subject: Re: FP and signal 4
+In-Reply-To: <200806051029.36558.sr@denx.de>
+Date: Thu, 05 Jun 2008 09:28:01 -0500
+From: Jon Loeliger <jdl@jdl.com>
+Message-Id: <E1K4GRd-00057d-GL@jdl.com>
+Cc: sr@denx.de, reynekejunk@hotmail.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -34,45 +20,44 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Mike,
-
-> Thanks. Now I am confusing with the way uboot passing parameters to
-> linux kernel:
+Also sprach Zarathustra und Stefan Roese:
 >
-> in Uboot 1.2.0: Kernel is entered through the following calling
->         theKernel (linux_argc, linux_argv, linux_env, 0);
-> while in Uboot 1.3.0:
->         (*kernel) (kbd, initrd_start, initrd_end, cmd_start, cmd_end);
->
-> The linux kernel I used is designed with Uboot 1.2.0, while I used
-> 1.3.2. Will this be a problem for passing the parameters?
+> I hope "-b 0" is set by default in recent dtc versions.
 
-Hm, now you got me confused.  I cannot see the first version anywhere in
-u-boot or its history.  Even in 1.2.0 its either
+Und Git antwortete:
 
-(*kernel) (kbd, initrd_start, initrd_end, cmd_start, cmd_end);
+commit 548767f42eb00a2bac6f2a1361b7fd49f7b76908
+Author: David Gibson <david@gibson.dropbear.id.au>
+Date:   Fri May 16 13:22:57 2008 +1000
 
-or
-
-(*kernel) ((bd_t *)of_flat_tree, (ulong)kernel, 0, 0, 0);
-
-The first path is chosen when using the traditional 2 argument bootm
-command, the logic being that this is a non-fdt aware kernel.  The
-second path is chosen when using the newer three-argument version of
-bootm with the third argument being the flat device tree (needs
-CONFIG_OF_FLAT_TREE in U-Boot 1.2.0).
-
-So if you have anything differing from this, you have to conclude for
-yourself what the situation is.  When you have mainline U-Boot and Linux,
-i.e. comparable what I describe, we especially took care that we are
-backwards compatible.  So by using the two- or three parameter version,
-we effectively select between two kernel call conventions.  The
-situation stays the same in newer U-Boot versions.
-
-Cheers
-  Detlev 
-
---
-DENX Software Engineering GmbH,      MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich,  Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-40 Fax: (+49)-8142-66989-80 Email: dzu@denx.de
+    dtc: Rework handling of boot_cpuid_phys
+    
+    Currently, dtc will put the nonsense value 0xfeedbeef into the
+    boot_cpuid_phys field of an output blob, unless explicitly given
+    another value with the -b command line option.  As well as being a
+    totally unuseful default value, this also means that dtc won't
+    properly preserve the boot_cpuid_phys field in -I dtb -O dtb mode.
+    
+    This patch reworks things to improve the boot_cpuid handling.  The new
+    semantics are that the output's boot_cpuid_phys value is:
+        the value given on the command line if -b is used
+    otherwise
+        the value from the input, if in -I dtb mode
+    otherwise
+        0
+    
+    Implementation-wise we do the following:
+        - boot_cpuid_phys is added to struct boot_info, so that
+    structure now contains all of the blob's semantic information.
+        - dt_to_blob() and dt_to_asm() output the cpuid given in
+    boot_info
+        - dt_from_blob() fills in boot_info based on the input blob
+        - The other dt_from_*() functions just record 0, but we can
+    change this easily if e.g. we invent a way of specifying the boot cpu
+    in the source format.
+        - main() overrides the cpuid in the boot_info between input
+    and output if -b is given
+    
+    We add some testcases to check this new behaviour.
+    
+    Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
