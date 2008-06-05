@@ -1,35 +1,29 @@
-Return-Path: <scottwood@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 76938DE41C
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jun 2008 02:30:12 +1000 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
-	m55GRPnl016458
-	for <linuxppc-dev@ozlabs.org>; Thu, 5 Jun 2008 09:27:26 -0700 (MST)
-Received: from ld0162-tx32.am.freescale.net (ld0162-tx32.am.freescale.net
-	[10.82.19.112])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m55GRPnp008287
-	for <linuxppc-dev@ozlabs.org>; Thu, 5 Jun 2008 11:27:25 -0500 (CDT)
-Date: Thu, 5 Jun 2008 11:27:24 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Timur Tabi <timur@freescale.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.247])
+	by ozlabs.org (Postfix) with ESMTP id F3FF4DF271
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jun 2008 02:30:20 +1000 (EST)
+Received: by an-out-0708.google.com with SMTP id c34so143129anc.78
+	for <linuxppc-dev@ozlabs.org>; Thu, 05 Jun 2008 09:30:19 -0700 (PDT)
+Message-ID: <fa686aa40806050930r12827baod5d742959c982d0c@mail.gmail.com>
+Date: Thu, 5 Jun 2008 10:30:19 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Jochen Friedrich" <jochen@scram.de>
 Subject: Re: "cell-index" vs. "index" vs. no index in I2C device nodes
-Message-ID: <20080605162724.GA4150@ld0162-tx32.am.freescale.net>
-References: <200806041706.21557.sr@denx.de> <4846B39F.3010601@freescale.com>
-	<20080604154351.GB10393@ld0162-tx32.am.freescale.net>
-	<20080604211942.2bddc860@zod.rchland.ibm.com>
-	<4848028B.5060105@freescale.com>
-	<fa686aa40806050839h55d8e358m93248414507f10e2@mail.gmail.com>
-	<48480987.1070701@freescale.com>
-	<935d90b908261c8e5862caeeb1f396aa@kernel.crashing.org>
-	<48480FAC.3020406@freescale.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <48480FAC.3020406@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, Stefan Roese <sr@denx.de>
+In-Reply-To: <484812B9.3040300@scram.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <200806041706.21557.sr@denx.de>
+	<20080604220555.658ab13e@vader.jdub.homelinux.org>
+	<20080604231641.786bb2dd@lappy.seanm.ca>
+	<200806050822.00797.sr@denx.de> <4848036D.5060004@freescale.com>
+	<484809D1.2070300@scram.de> <48480B3C.9080101@freescale.com>
+	<fa686aa40806050910m2057966csc33b2a671c6265af@mail.gmail.com>
+	<484811DE.9@freescale.com> <484812B9.3040300@scram.de>
+Cc: Stefan Roese <sr@denx.de>, linuxppc-dev@ozlabs.org,
+	Sean MacLennan <smaclennan@pikatech.com>,
+	Scott Wood <scottwood@freescale.com>, Jean Delvare <khali@linux-fr.org>,
+	Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,15 +33,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jun 05, 2008 at 11:09:16AM -0500, Timur Tabi wrote:
-> The fabric driver doesn't have access to any I2C structures when it starts
-> looking for the codec driver.  The fabric driver is like an OF platform driver,
-> in that it's OF-aware and machine-specific.  By parsing the device tree (which
-> is the only tool I have to know how the board is laid out), the fabric driver
-> can determine that SSI1 is attached to a CS4270 on I2C bus #1, address 0x4F.
-> That's the only information it has.
+On Thu, Jun 5, 2008 at 10:22 AM, Jochen Friedrich <jochen@scram.de> wrote:
+> Hi Timur,
+>
+>> It's a little late for that.  I'm okay with coming up with a new property to
+>> provide system-level indexing, but it needs to be the same property name for
+>> each type of device.  I don't want linux,i2c-index and linux,dma-index and
+>> linux,ssi-index, etc.  I also don't understand why we need the linux, prefix,
+>> since device enumeration is not specific to Linux.
+>
+> Full ACK here.
 
-No, it's not.  It can determine that it's at address 0x4f on the i2c bus
-at 0xe0003100.  This is exactly how the ethernet phy lookup is done.
+NAK because there is already a mechanism that does what you want.  Its
+called the aliases node.
 
--Scott
+For the record, I'm making 2 arguments here:
+
+1) if you *do* need an enumerated index then use the aliases node.
+You don't need to invent a new property
+2) for i2c purposes, explicit enumeration is not needed or desired.
+All the necessary data is already present in the device tree in that
+i2c device nodes are children of i2c bus nodes.  The i2c bus numbers
+should be dynamically assigned.
+
+Cheers,
+g.
+
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
