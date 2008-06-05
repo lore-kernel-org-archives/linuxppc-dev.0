@@ -1,24 +1,30 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 798CCDE32C
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jun 2008 04:01:00 +1000 (EST)
-Date: Thu, 5 Jun 2008 22:00:58 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH] [RFC v3] OF: OpenFirmware bindings for the mmc_spi driver
-Message-ID: <20080605180058.GA21429@polina.dev.rtsoft.ru>
-References: <20080605161624.GA517@polina.dev.rtsoft.ru>
-	<fa686aa40806050945h5e61910flb63a8d00e1d2b0e8@mail.gmail.com>
-	<20080605172723.GA14514@polina.dev.rtsoft.ru>
-	<fa686aa40806051036x22cd6a2bkc58650f5e69960fe@mail.gmail.com>
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 8461DDEA55
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jun 2008 04:04:48 +1000 (EST)
+Message-ID: <48482AB6.7030506@freescale.com>
+Date: Thu, 05 Jun 2008 13:04:38 -0500
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <fa686aa40806051036x22cd6a2bkc58650f5e69960fe@mail.gmail.com>
-Cc: David Brownell <dbrownell@users.sourceforge.net>,
-	Gary Jennejohn <garyj@denx.de>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
-	Pierre Ossman <drzeus-mmc@drzeus.cx>
-Reply-To: avorontsov@ru.mvista.com
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: "cell-index" vs. "index" vs. no index in I2C device nodes
+References: <200806041706.21557.sr@denx.de> <4846B39F.3010601@freescale.com>
+	<20080604154351.GB10393@ld0162-tx32.am.freescale.net>
+	<20080604211942.2bddc860@zod.rchland.ibm.com>
+	<4848028B.5060105@freescale.com>
+	<fa686aa40806050839h55d8e358m93248414507f10e2@mail.gmail.com>
+	<48480987.1070701@freescale.com>
+	<935d90b908261c8e5862caeeb1f396aa@kernel.crashing.org>
+	<48480FAC.3020406@freescale.com>
+	<20080605162724.GA4150@ld0162-tx32.am.freescale.net>
+	<484827C5.6030108@freescale.com>
+In-Reply-To: <484827C5.6030108@freescale.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linuxppc-dev@ozlabs.org, Stefan Roese <sr@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,72 +34,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jun 05, 2008 at 11:36:09AM -0600, Grant Likely wrote:
-> On Thu, Jun 5, 2008 at 11:27 AM, Anton Vorontsov
-> <avorontsov@ru.mvista.com> wrote:
-> > On Thu, Jun 05, 2008 at 10:45:17AM -0600, Grant Likely wrote:
-> >> On Thu, Jun 5, 2008 at 10:16 AM, Anton Vorontsov
-> >> <avorontsov@ru.mvista.com> wrote:
-> >> > Here is v3. I'm out of ideas if you won't like it. :-)
-> >> >
-> >> > v3:
-> >> > - Now these bindings are using bus notifiers chain, thus we adhere to the
-> >> >  spi bus.
-> >> >
-> >> >  By the way, this scheme (IMO) looks good for I2C devices which needs
-> >> >  platform_data extracted from the device tree too (Cc'ing Jochen).
-> >> >
-> >> > - Plus changed the OF bindings themselves, implemented voltage-range
-> >> >  property. (Pierre, please take a look at vddrange_to_ocrmask(). I
-> >> >  wonder if you would like this in the MMC core instead, with a kernel
-> >> >  doc, of course.)
-> >> >
-> >> > v2:
-> >> > - Bindings were adhered to the MMC_SPI driver. Withdrawn by Pierre Ossman.
-> >>
-> >> Personally I think your v2 was better, and if I'm interpreting
-> >> Pierre's comments correctly I think his main point is that instead of
-> >> using the 'stock' probe/remove hooks for the spi mmc driver, the
-> >> driver should be mildly reworked to provide a common block of code
-> >> that can be used by both the OF and non-OF versions of the
-> >> probe/remove routines.  I also think that is the way to go.
-> >
-> > Well, I mentioned the usb_add_hcd()-alike approach for the mmc_spi
-> > host... The absence of enthusiasm I equaled to "no".
-> >
-> > Heh.
+Timur Tabi wrote:
+> Scott Wood wrote:
 > 
-> I'm allergic to USB HCD code; I was probably having convulsions under my desk.
-
-:-)
-
-Ok, I also mentioned drivers/ata/pata_of_platform.c (OF version is using
-common code from drivers/ata/pata_platform.c).
-
-Please look there, and tell me if this is what you have in mind. (ignore
-_probe in the __pata_platform_probe name. Imagine
-pata_platform_add_controller or something).
-
-> > p.s.
-> > Btw, you forgot another downside of v2 approach: struct spi_driver
-> > duplication... Not sure if everyone will be happy about it.
-> >
-> > Though, v2 is only version where we can make modular OF_MMC_SPI.
+>> No, it's not.  It can determine that it's at address 0x4f on the i2c bus
+>> at 0xe0003100.  This is exactly how the ethernet phy lookup is done.
 > 
-> I think we've got our wires crossed.  I'm not referring to the option
-> of an of_mmc_spi driver registering an mmc_spi device (which can then
-> be probed by the mmc_spi_driver).
+> But how does the fabric driver know whether e0003100 is I2C1 or I2C2?
 
-I'm not refrering to this option either.
+It shouldn't have to care.
 
-> I'm referring to refactoring the
-> probe/remove code so that common stuff is callable by both the mmc_spi
-> and of_mmc_spi drivers without the oddity of the of_mmc_spi probe hook
-> calling the mmc_spi probe hook.
+> And how does the codec driver, which sees only I2C information, know that it's
+> at e0003100?
 
-I understand this.
+This is an internal communications failure within the i2c layer, not 
+something that warrants expression in the device tree.  Some solutions, 
+in increasing order of desirability, are:
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+1. Assign the I2C bus number based on the adapter's register offset.
+2. Let the adapter provide a more helpful bus_id than a Linux-assigned 
+index.
+3. Create a way to look up an I2C device by its OF node.
+
+-Scott
