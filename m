@@ -1,22 +1,23 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from wr-out-0506.google.com (wr-out-0506.google.com [64.233.184.231])
-	by ozlabs.org (Postfix) with ESMTP id D82E3DEB67
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jun 2008 01:39:17 +1000 (EST)
-Received: by wr-out-0506.google.com with SMTP id 67so315969wri.3
-	for <linuxppc-dev@ozlabs.org>; Thu, 05 Jun 2008 08:39:16 -0700 (PDT)
-Message-ID: <fa686aa40806050839h55d8e358m93248414507f10e2@mail.gmail.com>
-Date: Thu, 5 Jun 2008 09:39:15 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Timur Tabi" <timur@freescale.com>
-Subject: Re: "cell-index" vs. "index" vs. no index in I2C device nodes
-In-Reply-To: <4848028B.5060105@freescale.com>
+Return-Path: <timur@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id C25F1DE1B7
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jun 2008 01:43:25 +1000 (EST)
+Message-ID: <48480987.1070701@freescale.com>
+Date: Thu, 05 Jun 2008 10:43:03 -0500
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <200806041706.21557.sr@denx.de> <4846B39F.3010601@freescale.com>
-	<20080604154351.GB10393@ld0162-tx32.am.freescale.net>
-	<20080604211942.2bddc860@zod.rchland.ibm.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: "cell-index" vs. "index" vs. no index in I2C device nodes
+References: <200806041706.21557.sr@denx.de> <4846B39F.3010601@freescale.com>	
+	<20080604154351.GB10393@ld0162-tx32.am.freescale.net>	
+	<20080604211942.2bddc860@zod.rchland.ibm.com>	
 	<4848028B.5060105@freescale.com>
+	<fa686aa40806050839h55d8e358m93248414507f10e2@mail.gmail.com>
+In-Reply-To: <fa686aa40806050839h55d8e358m93248414507f10e2@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
 	Stefan Roese <sr@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -28,29 +29,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jun 5, 2008 at 9:13 AM, Timur Tabi <timur@freescale.com> wrote:
-> Josh Boyer wrote:
->
->> From a device tree perspective, index and cell-index are both
->> incorrect.  The IIC macros don't share register blocks with anything,
->> are enumerated as unique instances per macro in the device tree, and
->> should be able to be distinguished by "regs" and/or unit address.
->
-> I think we should just expand the definition of cell-index to include standard
-> device enumeration for when it's needed.  The original definition is too
-> limited, IMHO.
+Grant Likely wrote:
 
-nak
+> if you need explicit indexing then use an alias.  My opinion however
+> is that explicit indexing is unnecessary and is just an artifact of
+> current i2c subsystem internals.  There is already enough information
+> in the device tree to match i2c devices with i2c busses without
+> resorting to indexes.
 
-if you need explicit indexing then use an alias.  My opinion however
-is that explicit indexing is unnecessary and is just an artifact of
-current i2c subsystem internals.  There is already enough information
-in the device tree to match i2c devices with i2c busses without
-resorting to indexes.
+Not for ALSA SoC V2 devices.  In ASoC V2, the "fabric" driver needs to identify
+the codec by its specific I2C bus and address number.  The codec driver is not
+an OF driver (normally), so it doesn't have access to any OF data.  It's just an
+I2C driver, so its given an I2C address and some number that represents an adapter.
 
-Cheers,
-g.
+Therefore, the fabric driver and the codec driver need to independently
+determine the I2C bus number, and they need to match.  The fabric driver parses
+the OF tree and looks up the cell-index property.  The codec driver uses the
+adapter->nr variable.  The patch I posted ensures that the two contain the same
+number.
 
 -- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Timur Tabi
+Linux kernel developer at Freescale
