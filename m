@@ -1,17 +1,21 @@
-Return-Path: <olaf@aepfle.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id AB946DE171
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Jun 2008 21:24:40 +1000 (EST)
-Date: Thu, 5 Jun 2008 13:24:36 +0200
-From: Olaf Hering <olaf@aepfle.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>, linuxppc-dev@ozlabs.org
-Subject: Re: Linux 2.6.26-rc5
-Message-ID: <20080605112436.GA4533@aepfle.de>
-References: <alpine.LFD.1.10.0806042018060.3473@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <alpine.LFD.1.10.0806042018060.3473@woody.linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Return-Path: <jwboyer@gmail.com>
+Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.30])
+	by ozlabs.org (Postfix) with ESMTP id A7F1DDDF91
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Jun 2008 21:27:36 +1000 (EST)
+Received: by yw-out-2324.google.com with SMTP id 5so289569ywh.39
+	for <linuxppc-dev@ozlabs.org>; Thu, 05 Jun 2008 04:27:35 -0700 (PDT)
+Date: Thu, 5 Jun 2008 06:27:26 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Stefan Roese <sr@denx.de>
+Subject: Re: [PATCH] i2c-ibm_iic: Enable driver for all PPC4xx variants in
+	arch/powerpc
+Message-ID: <20080605062726.1bf39860@vader.jdub.homelinux.org>
+In-Reply-To: <1212653453-26093-1-git-send-email-sr@denx.de>
+References: <1212653453-26093-1-git-send-email-sr@denx.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Sender: Josh Boyer <jwboyer@gmail.com>
+Cc: khali@linux-fr.org, linuxppc-dev@ozlabs.org, i2c@lm-sensors.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,22 +25,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jun 04, Linus Torvalds wrote:
+On Thu,  5 Jun 2008 10:10:53 +0200
+Stefan Roese <sr@denx.de> wrote:
 
-> Another week, another batch of mostly pretty small fixes. Hopefully the 
-> regression list is shrinking, and we've fixed at least a couple of the 
-> oopses on Arjan's list.
+> This patch enables the IBM I2C driver for all PPC4xx variants by adding
+> "ibm,iic" to the compatible list. This way all currently available
+> arch/powerpc 4xx ports can make use of this driver without any changes.
+> Additionally all "other" compatible entries are removed since they are
+> not needed anymore.
+> 
+> Currently all 4xx PPC's have the same compatible I2C macro. If at some
+> time an incompatibility is detected we can take care of this with an
+> additional property.
+> 
+> Signed-off-by: Stefan Roese <sr@denx.de>
 
-SATA on a dualcore G5 is broken, it happend between
-c3b25b32e8bef526cca748e1ba023c6bdd705a99..53c8ba95402be65d412a806cda3430f0e72cd107
+Acked-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 
-irq 18: nobody cared (try booting with the "irqpoll" option)
-Disabling IRQ #18
-
-
-ctrl alt del on the USB keyboard does not trigger a reboot.
-Sometimes the cursor stops blinking, sometimes just nothing happens
-after ctrl alt del.
-
-
-Does 53c8ba95402be65d412a806cda3430f0e72cd107 work for others on G5?
+josh
+> ---
+>  drivers/i2c/busses/i2c-ibm_iic.c |    6 +-----
+>  1 files changed, 1 insertions(+), 5 deletions(-)
+> 
+> diff --git a/drivers/i2c/busses/i2c-ibm_iic.c b/drivers/i2c/busses/i2c-ibm_iic.c
+> index 3a364a7..ed73801 100644
+> --- a/drivers/i2c/busses/i2c-ibm_iic.c
+> +++ b/drivers/i2c/busses/i2c-ibm_iic.c
+> @@ -807,11 +807,7 @@ static int __devexit iic_remove(struct of_device *ofdev)
+>  }
+>  
+>  static const struct of_device_id ibm_iic_match[] = {
+> -	{ .compatible = "ibm,iic-405ex", },
+> -	{ .compatible = "ibm,iic-405gp", },
+> -	{ .compatible = "ibm,iic-440gp", },
+> -	{ .compatible = "ibm,iic-440gpx", },
+> -	{ .compatible = "ibm,iic-440grx", },
+> +	{ .compatible = "ibm,iic", },
+>  	{}
+>  };
+>  
