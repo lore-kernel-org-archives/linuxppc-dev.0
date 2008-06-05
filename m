@@ -1,42 +1,29 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 39C31DEBF0
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jun 2008 04:41:32 +1000 (EST)
-Received: from d01relay06.pok.ibm.com (d01relay06.pok.ibm.com [9.56.227.116])
-	by e5.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m55IfT55004214
-	for <linuxppc-dev@ozlabs.org>; Thu, 5 Jun 2008 14:41:29 -0400
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by d01relay06.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m55IfMGS1540244
-	for <linuxppc-dev@ozlabs.org>; Thu, 5 Jun 2008 14:41:23 -0400
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m55IfIlC024723
-	for <linuxppc-dev@ozlabs.org>; Thu, 5 Jun 2008 12:41:19 -0600
-Date: Thu, 5 Jun 2008 13:40:57 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: "cell-index" vs. "index" vs. no index in I2C device nodes
-Message-ID: <20080605134057.346e1149@zod.rchland.ibm.com>
-In-Reply-To: <484831E6.8090509@freescale.com>
-References: <200806041706.21557.sr@denx.de> <4846B39F.3010601@freescale.com>
-	<20080604154351.GB10393@ld0162-tx32.am.freescale.net>
-	<20080604211942.2bddc860@zod.rchland.ibm.com>
-	<4848028B.5060105@freescale.com>
-	<fa686aa40806050839h55d8e358m93248414507f10e2@mail.gmail.com>
-	<48480987.1070701@freescale.com>
-	<fa686aa40806050900i40f0aa62o4bab3b8c7409b15f@mail.gmail.com>
-	<484810A3.5070301@freescale.com>
-	<20080605112122.0381a338@zod.rchland.ibm.com>
-	<48481373.8010706@freescale.com>
-	<20080605132735.3433f2af@zod.rchland.ibm.com>
-	<484831E6.8090509@freescale.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Scott Wood <scottwood@freescale.com>, Stefan Roese <sr@denx.de>,
-	linuxppc-dev@ozlabs.org
+Return-Path: <glikely@secretlab.ca>
+Received: from ag-out-0708.google.com (ag-out-0708.google.com [72.14.246.248])
+	by ozlabs.org (Postfix) with ESMTP id 3072CDDFE9
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jun 2008 04:42:51 +1000 (EST)
+Received: by ag-out-0708.google.com with SMTP id 8so2549231agc.0
+	for <linuxppc-dev@ozlabs.org>; Thu, 05 Jun 2008 11:42:50 -0700 (PDT)
+Message-ID: <fa686aa40806051142q61ba471fl772ed32586b70e5c@mail.gmail.com>
+Date: Thu, 5 Jun 2008 12:42:49 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: avorontsov@ru.mvista.com
+Subject: Re: [PATCH] [RFC v3] OF: OpenFirmware bindings for the mmc_spi driver
+In-Reply-To: <20080605183146.GA29092@polina.dev.rtsoft.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20080605161624.GA517@polina.dev.rtsoft.ru>
+	<fa686aa40806050945h5e61910flb63a8d00e1d2b0e8@mail.gmail.com>
+	<20080605172723.GA14514@polina.dev.rtsoft.ru>
+	<fa686aa40806051036x22cd6a2bkc58650f5e69960fe@mail.gmail.com>
+	<20080605180058.GA21429@polina.dev.rtsoft.ru>
+	<fa686aa40806051118y39cbf14fye5268c819d4bbbfc@mail.gmail.com>
+	<20080605183146.GA29092@polina.dev.rtsoft.ru>
+Cc: David Brownell <dbrownell@users.sourceforge.net>,
+	Gary Jennejohn <garyj@denx.de>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
+	Pierre Ossman <drzeus-mmc@drzeus.cx>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -46,68 +33,77 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 05 Jun 2008 13:35:18 -0500
-Timur Tabi <timur@freescale.com> wrote:
+On Thu, Jun 5, 2008 at 12:31 PM, Anton Vorontsov
+<avorontsov@ru.mvista.com> wrote:
+> On Thu, Jun 05, 2008 at 12:18:56PM -0600, Grant Likely wrote:
+>> On Thu, Jun 5, 2008 at 12:00 PM, Anton Vorontsov
+>> <avorontsov@ru.mvista.com> wrote:
+>> > On Thu, Jun 05, 2008 at 11:36:09AM -0600, Grant Likely wrote:
+>> >> On Thu, Jun 5, 2008 at 11:27 AM, Anton Vorontsov
+>> >> <avorontsov@ru.mvista.com> wrote:
+>> >> > Well, I mentioned the usb_add_hcd()-alike approach for the mmc_spi
+>> >> > host... The absence of enthusiasm I equaled to "no".
+>> >> >
+>> >> > Heh.
+>> >>
+>> >> I'm allergic to USB HCD code; I was probably having convulsions under my desk.
+>> >
+>> > :-)
+>> >
+>> > Ok, I also mentioned drivers/ata/pata_of_platform.c (OF version is using
+>> > common code from drivers/ata/pata_platform.c).
+>> >
+>> > Please look there, and tell me if this is what you have in mind. (ignore
+>> > _probe in the __pata_platform_probe name. Imagine
+>> > pata_platform_add_controller or something).
+>>
+>> Yes, I like that.  I've done something very similar for drivers with
+>> both of and non-of bindings.  For another example, this time all
+>> contained within a single .c file, see drivers/video/xilinxfb.c
+>
+> Ok, great. As I said previously, this is quite easy to do.
+>
+>> >> > p.s.
+>> >> > Btw, you forgot another downside of v2 approach: struct spi_driver
+>> >> > duplication... Not sure if everyone will be happy about it.
+>> >> >
+>> >> > Though, v2 is only version where we can make modular OF_MMC_SPI.
+>> >>
+>> >> I think we've got our wires crossed.  I'm not referring to the option
+>> >> of an of_mmc_spi driver registering an mmc_spi device (which can then
+>> >> be probed by the mmc_spi_driver).
+>> >
+>> > I'm not refrering to this option either.
+>>
+>> Okay, I'm confused then.  Where is the duplication of struct spi_driver?
+>
+> Here it is http://lkml.org/lkml/2008/5/23/299
+> + static struct spi_driver of_mmc_spi_driver = {
 
-> Josh Boyer wrote:
-> 
-> > I don't understand this statement.  Are your I2C macros hot-pluggable?
-> > Can you dynamically add/remove an I2C engine on your hardware somehow?
-> > Are you mucking about with the DTB and randomly moving around the I2C
-> > node blobs so they probe order differs from boot to boot?
-> > 
-> > If not, then the probe order will be static for every boot. 
-> 
-> You're making two assumptions:
-> 
-> 1) That every I2C adapter will be present in the device tree.  Some device trees
-> don't list I2C adapters if there are no devices on them.
+Right; I was going down the wrong thought path.  I have no problem with this.
 
-Which isn't a problem.
+BTW, while on that topic, I think it is reasonable to roll the members
+of of_mmc_spi into either the mmc_spi_platform_data or the
+mmc_spi_host structure.  It is just 2 integers and that would
+eliminate storing driver data pointers in seemingly random places.
 
-> 2) That the nodes in the device tree are put in order
+> And here http://lkml.org/lkml/2008/5/24/153 David Brownell says:
+>> The only thing that looks odd to me about this is that the wrapper
+>> is a spi_device rather than an of_device.  To me it makes more sense
+>> to just have an of_device setting up the right spi_device.  (Though
+>> maybe I missed some discussion about why that can't work.)
 
-Which isn't a problem.
+Yeah; I'm not fond of that approach.  It incurs runtime cost of
+multiple 'struct device' for a single device which is unnecessary.
 
-> Besides, let's say I have a pointer to a specific I2C device node in the tree.
-> How do I find out the bus number it's on?  With my way, it's easy:
-> 
-> iprop = of_get_property(of_get_parent(codec_np), "cell-index", NULL);
-> bus = *iprop;
-> 
-> With your way, I'll need to scan the entire device tree, poking inside each I2C
-> adapter node looking for my I2C device node while keeping track of the I2C adapters.
-> 
-> > You can
-> > assign the index 
-> 
-> Assign it to where?  When the fabric driver goes to find codec nodes, the only
-> information it has is the device tree.  So when I assign this index to some
-> random variable that you're talking about, my fabric driver will know nothing
-> about that.
+> I hope the bottom line is that we're now all happy to create another
+> spi_driver to handle "OF MMC-o-SPI" devices..?
 
-Your driver is sufficiently different then.  The i2c-ibm_iic driver
-keeps an index property in it's private device structure.
+Yes, I'm cool with it.
 
-> > using a static int that is incremented after each node
-> > is discovered and the ordering of the devices will never change.  Can
-> > you explain why something like that isn't possible or sufficient?
-> 
-> Yes, I just did.
+Cheers,
+g.
 
-Sort of.
-
-> > (And I'm talking about I2C, not DMA.  I don't care about DMA because
-> > this conversation will go off into the weeds if we start talking about
-> > cell-index and every possible device out there.)
-> 
-> But we are talking about every device.  It's the same problem for every device.
->  Making this problem I2C-specific is not going to solve anything.
-
-I've been driven to the point of not caring anymore.
-
-If you need a simple index property, then maybe Sean was right to just
-call the damn thing "index".  Overloading "cell-index", which already
-has a specific semantic associated with it, seems odd to me.
-
-josh
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
