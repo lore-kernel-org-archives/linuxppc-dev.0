@@ -1,19 +1,22 @@
-Return-Path: <wg@grandegger.com>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 64570DED19
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jun 2008 03:19:15 +1000 (EST)
-Message-ID: <48482011.5030704@grandegger.com>
-Date: Thu, 05 Jun 2008 19:19:13 +0200
-From: Wolfgang Grandegger <wg@grandegger.com>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 84FB1DE1BC
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jun 2008 03:27:25 +1000 (EST)
+Date: Thu, 5 Jun 2008 21:27:23 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH] [RFC v3] OF: OpenFirmware bindings for the mmc_spi driver
+Message-ID: <20080605172723.GA14514@polina.dev.rtsoft.ru>
+References: <20080605161624.GA517@polina.dev.rtsoft.ru>
+	<fa686aa40806050945h5e61910flb63a8d00e1d2b0e8@mail.gmail.com>
 MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH v2 1/4] [POWERPC] 85xx: add board support for the TQM8548
-	modules
-References: <4847AC75.8080405@grandegger.com>
-	<71165662-0864-4CDE-A1B3-29487253B85F@kernel.crashing.org>
-In-Reply-To: <71165662-0864-4CDE-A1B3-29487253B85F@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <fa686aa40806050945h5e61910flb63a8d00e1d2b0e8@mail.gmail.com>
+Cc: David Brownell <dbrownell@users.sourceforge.net>,
+	Gary Jennejohn <garyj@denx.de>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
+	Pierre Ossman <drzeus-mmc@drzeus.cx>
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,32 +26,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
+On Thu, Jun 05, 2008 at 10:45:17AM -0600, Grant Likely wrote:
+> On Thu, Jun 5, 2008 at 10:16 AM, Anton Vorontsov
+> <avorontsov@ru.mvista.com> wrote:
+> > Here is v3. I'm out of ideas if you won't like it. :-)
+> >
+> > v3:
+> > - Now these bindings are using bus notifiers chain, thus we adhere to the
+> >  spi bus.
+> >
+> >  By the way, this scheme (IMO) looks good for I2C devices which needs
+> >  platform_data extracted from the device tree too (Cc'ing Jochen).
+> >
+> > - Plus changed the OF bindings themselves, implemented voltage-range
+> >  property. (Pierre, please take a look at vddrange_to_ocrmask(). I
+> >  wonder if you would like this in the MMC core instead, with a kernel
+> >  doc, of course.)
+> >
+> > v2:
+> > - Bindings were adhered to the MMC_SPI driver. Withdrawn by Pierre Ossman.
 > 
-> On Jun 5, 2008, at 4:05 AM, Wolfgang Grandegger wrote:
-> 
->> [POWERPC] 85xx: add board support for the TQM8548 modules
->>
->> This patch adds support for the TQM8548 modules from TQ-Components
->> GmbH (http://www.tqc.de).
->>
->> Signed-off-by: Wolfgang Grandegger <wg@grandegger.com>
-[...deletions...]
->> ===================================================================
->> --- linux-2.6-galak.orig/arch/powerpc/boot/wrapper
->> +++ linux-2.6-galak/arch/powerpc/boot/wrapper
->> @@ -177,7 +177,7 @@ cuboot*)
->>    *-tqm8541|*-mpc8560*|*-tqm8560|*-tqm8555|*-ksi8560*)
->>        platformo=$object/cuboot-85xx-cpm2.o
->>        ;;
->> -    *-mpc85*|*-tqm8540|*-sbc85*)
->> +    *-mpc85*|*-tqm8540|*-tqm8548|*-sbc85*)
-> 
-> why not just *-tqm85*
+> Personally I think your v2 was better, and if I'm interpreting
+> Pierre's comments correctly I think his main point is that instead of
+> using the 'stock' probe/remove hooks for the spi mmc driver, the
+> driver should be mildly reworked to provide a common block of code
+> that can be used by both the OF and non-OF versions of the
+> probe/remove routines.  I also think that is the way to go.
 
-Hm, yes, *-tqm85* should cover all TQM85xx without CPM.
+Well, I mentioned the usb_add_hcd()-alike approach for the mmc_spi
+host... The absence of enthusiasm I equaled to "no".
 
-I just sent out v3 patches addressing this and all other issues. Hope
-they are OK now.
+Heh.
 
-Wolfgang.
+p.s.
+Btw, you forgot another downside of v2 approach: struct spi_driver
+duplication... Not sure if everyone will be happy about it.
+
+Though, v2 is only version where we can make modular OF_MMC_SPI.
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
