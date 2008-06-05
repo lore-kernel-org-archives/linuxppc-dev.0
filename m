@@ -1,24 +1,29 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Thu, 5 Jun 2008 21:00:31 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 1/4] [POWERPC] 85xx: add board support for the TQM8548
-	modules
-Message-ID: <20080605110031.GC30980@yookeroo.seuss>
-References: <1212130188-28835-2-git-send-email-wg@grandegger.com>
-	<20080602020352.GB19393@yookeroo.seuss>
-	<479BA7CE-CD12-4935-87EB-E69025D408E6@kernel.crashing.org>
-	<4845181E.8040603@grandegger.com>
-	<07AEED44-7DEB-46C1-B028-3EFA274CEB11@kernel.crashing.org>
-	<20080603223905.GA22982@yookeroo.seuss>
-	<484663DB.5000905@grandegger.com>
-	<02EC7209-F395-4C01-A445-E111E6E54A25@kernel.crashing.org>
-	<48478B1C.9040300@grandegger.com>
-	<EC50D666-4E20-462B-880F-502E61A76EFA@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <EC50D666-4E20-462B-880F-502E61A76EFA@kernel.crashing.org>
-Cc: Linuxppc-dev@ozlabs.org
+Return-Path: <sean.maclennan@pikatech.com>
+Received: from mail.pikatech.com (mail.pikatech.com [207.107.229.10])
+	by ozlabs.org (Postfix) with ESMTP id E7F4EDE11A
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jun 2008 08:45:41 +1000 (EST)
+Received: from [207.107.229.5] (helo=pks00005.kanatek.com)
+	by mail.pikatech.com with esmtp (Exim 4.51) id 1K4OAc-0005wS-Jc
+	for linuxppc-dev@ozlabs.org; Thu, 05 Jun 2008 18:42:58 -0400
+Date: Thu, 5 Jun 2008 18:45:09 -0400
+From: Sean MacLennan <smaclennan@pikatech.com>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: "cell-index" vs. "index" vs. no index in I2C device nodes
+Message-ID: <20080605184509.1e788220@wally.pikatech.com>
+In-Reply-To: <fa686aa40806051214u6866cec0m66ea32275d8bd5cc@mail.gmail.com>
+References: <200806041706.21557.sr@denx.de>
+	<fa686aa40806050839h55d8e358m93248414507f10e2@mail.gmail.com>
+	<48480987.1070701@freescale.com>
+	<fa686aa40806050900i40f0aa62o4bab3b8c7409b15f@mail.gmail.com>
+	<484810A3.5070301@freescale.com>
+	<20080605112122.0381a338@zod.rchland.ibm.com>
+	<48481373.8010706@freescale.com>
+	<20080605132735.3433f2af@zod.rchland.ibm.com>
+	<fa686aa40806051146h10d9add6ude64d59cedf08f7d@mail.gmail.com>
+	<20080605135625.562d1dbe@zod.rchland.ibm.com>
+	<fa686aa40806051214u6866cec0m66ea32275d8bd5cc@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,27 +33,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jun 05, 2008 at 02:43:59AM -0500, Kumar Gala wrote:
->>>>>
->>>> I'm puzzled. Could someone point me to some real code where cell- 
->>>> index
->>>> is used as a pointer into some global data. Sorry for my ignorance.
->>>
->>> http://ozlabs.org/pipermail/linuxppc-dev/2008-June/057254.html
->>
->> Yep, I saw that it's used for I2C (and SPI). But "cell-index" is also
->> defined for network, serial and PCI nodes, which are also assigned via
->> aliases.
->
-> Some of this is for the future.  There are other SoC registers (like on 
-> 85xx in GUTS) that need index information.
+On Thu, 5 Jun 2008 13:14:00 -0600
+"Grant Likely" <grant.likely@secretlab.ca> wrote:
 
-Likewise for 4xx (where the 'cell-index' notation originated), the
-index value is the number used throughout the user manual and
-(thereby) in power control registers and the like.
+> No; use an alias in the aliases node.  That is what aliases is
+> designed for.  Something like 'index' is a reinvention of the wheel.
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+If we really want to get rid of the index, I like the alias method. I
+mainly write drivers, so I don't know register addresses. I just read
+the spec and it says device A is on i2c bus 2. That is why I went with
+the index. Calling get_i2c_apapter(2) makes sense.
+
+However, calling get_i2c_adapter("IIC2"), just as a made up example,
+makes just as much sense.
+
+Cheers,
+   Sean
