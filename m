@@ -1,22 +1,24 @@
-Return-Path: <jochen@scram.de>
-Received: from mail.scram.de (mail0.scram.de [78.47.204.202])
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.scram.de", Issuer "scram e.V. CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 653B2DE9DE
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jun 2008 01:44:17 +1000 (EST)
-Message-ID: <484809D1.2070300@scram.de>
-Date: Thu, 05 Jun 2008 17:44:17 +0200
-From: Jochen Friedrich <jochen@scram.de>
-MIME-Version: 1.0
-To: Timur Tabi <timur@freescale.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id C5629DEA94
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jun 2008 01:46:33 +1000 (EST)
+In-Reply-To: <fa686aa40806050839h55d8e358m93248414507f10e2@mail.gmail.com>
+References: <200806041706.21557.sr@denx.de> <4846B39F.3010601@freescale.com>
+	<20080604154351.GB10393@ld0162-tx32.am.freescale.net>
+	<20080604211942.2bddc860@zod.rchland.ibm.com>
+	<4848028B.5060105@freescale.com>
+	<fa686aa40806050839h55d8e358m93248414507f10e2@mail.gmail.com>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <459415320e72f1bd92d036b29c80baae@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
 Subject: Re: "cell-index" vs. "index" vs. no index in I2C device nodes
-References: <200806041706.21557.sr@denx.de>	<20080604220555.658ab13e@vader.jdub.homelinux.org>	<20080604231641.786bb2dd@lappy.seanm.ca>	<200806050822.00797.sr@denx.de>
-	<4848036D.5060004@freescale.com>
-In-Reply-To: <4848036D.5060004@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Date: Thu, 5 Jun 2008 17:46:15 +0200
+To: "Grant Likely" <grant.likely@secretlab.ca>
 Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
-	Jean Delvare <khali@linux-fr.org>, Stefan Roese <sr@denx.de>,
-	Sean MacLennan <smaclennan@pikatech.com>
+	Stefan Roese <sr@denx.de>, Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,16 +28,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Timur,
+>> I think we should just expand the definition of cell-index to include 
+>> standard
+>> device enumeration for when it's needed.  The original definition is 
+>> too
+>> limited, IMHO.
+>
+> nak
+>
+> if you need explicit indexing then use an alias.  My opinion however
+> is that explicit indexing is unnecessary and is just an artifact of
+> current i2c subsystem internals.  There is already enough information
+> in the device tree to match i2c devices with i2c busses without
+> resorting to indexes.
 
-> In situations where it doesn't matter which I2C bus is #1 and which one is #2,
-> then I think the code should just initialize idx based on the order the nodes
-> are found in the tree.
-> 
-> In situations where it does matter, then we should use cell-index.
+Fully agreed.  Let me say it as well, it makes me feel powerful:
 
-that's what I did in i2c-cpm, as well. However, here I use the property
-"linux,i2c-index" instead (see http://patchwork.ozlabs.org/linuxppc/patch?id=18603).
+NAK
 
-Thanks,
-Jochen
+
+Segher
