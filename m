@@ -1,30 +1,23 @@
-Return-Path: <timur@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 037D7DE8F6
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jun 2008 02:40:52 +1000 (EST)
-Message-ID: <48481705.9080107@freescale.com>
-Date: Thu, 05 Jun 2008 11:40:37 -0500
-From: Timur Tabi <timur@freescale.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from wr-out-0506.google.com (wr-out-0506.google.com [64.233.184.228])
+	by ozlabs.org (Postfix) with ESMTP id 2AA22DE159
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jun 2008 02:45:18 +1000 (EST)
+Received: by wr-out-0506.google.com with SMTP id 67so345342wri.3
+	for <linuxppc-dev@ozlabs.org>; Thu, 05 Jun 2008 09:45:17 -0700 (PDT)
+Message-ID: <fa686aa40806050945h5e61910flb63a8d00e1d2b0e8@mail.gmail.com>
+Date: Thu, 5 Jun 2008 10:45:17 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Anton Vorontsov" <avorontsov@ru.mvista.com>
+Subject: Re: [PATCH] [RFC v3] OF: OpenFirmware bindings for the mmc_spi driver
+In-Reply-To: <20080605161624.GA517@polina.dev.rtsoft.ru>
 MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: "cell-index" vs. "index" vs. no index in I2C device nodes
-References: <200806041706.21557.sr@denx.de>	
-	<20080604220555.658ab13e@vader.jdub.homelinux.org>	
-	<20080604231641.786bb2dd@lappy.seanm.ca>	
-	<200806050822.00797.sr@denx.de>
-	<4848036D.5060004@freescale.com>	 <484809D1.2070300@scram.de>
-	<48480B3C.9080101@freescale.com>	
-	<fa686aa40806050910m2057966csc33b2a671c6265af@mail.gmail.com>	
-	<484811DE.9@freescale.com> <484812B9.3040300@scram.de>
-	<fa686aa40806050930r12827baod5d742959c982d0c@mail.gmail.com>
-In-Reply-To: <fa686aa40806050930r12827baod5d742959c982d0c@mail.gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: Stefan Roese <sr@denx.de>, linuxppc-dev@ozlabs.org,
-	Sean MacLennan <smaclennan@pikatech.com>,
-	Scott Wood <scottwood@freescale.com>, Jean Delvare <khali@linux-fr.org>
+References: <20080605161624.GA517@polina.dev.rtsoft.ru>
+Cc: David Brownell <dbrownell@users.sourceforge.net>,
+	Gary Jennejohn <garyj@denx.de>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
+	Pierre Ossman <drzeus-mmc@drzeus.cx>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,16 +27,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Grant Likely wrote:
+On Thu, Jun 5, 2008 at 10:16 AM, Anton Vorontsov
+<avorontsov@ru.mvista.com> wrote:
+> Here is v3. I'm out of ideas if you won't like it. :-)
+>
+> v3:
+> - Now these bindings are using bus notifiers chain, thus we adhere to the
+>  spi bus.
+>
+>  By the way, this scheme (IMO) looks good for I2C devices which needs
+>  platform_data extracted from the device tree too (Cc'ing Jochen).
+>
+> - Plus changed the OF bindings themselves, implemented voltage-range
+>  property. (Pierre, please take a look at vddrange_to_ocrmask(). I
+>  wonder if you would like this in the MMC core instead, with a kernel
+>  doc, of course.)
+>
+> v2:
+> - Bindings were adhered to the MMC_SPI driver. Withdrawn by Pierre Ossman.
 
-> 2) for i2c purposes, explicit enumeration is not needed or desired.
-> All the necessary data is already present in the device tree in that
-> i2c device nodes are children of i2c bus nodes.  The i2c bus numbers
-> should be dynamically assigned.
+Personally I think your v2 was better, and if I'm interpreting
+Pierre's comments correctly I think his main point is that instead of
+using the 'stock' probe/remove hooks for the spi mmc driver, the
+driver should be mildly reworked to provide a common block of code
+that can be used by both the OF and non-OF versions of the
+probe/remove routines.  I also think that is the way to go.
 
-NACK.  For ASoC driver, they cannot be dynamically assigned.  I2C1 must be
-labeled as such.
+Cheers,
+g.
+
 
 -- 
-Timur Tabi
-Linux kernel developer at Freescale
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
