@@ -1,24 +1,18 @@
-Return-Path: <kim.phillips@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 4ED83DEC30
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jun 2008 07:46:21 +1000 (EST)
-Date: Thu, 5 Jun 2008 16:44:15 -0500
-From: Kim Phillips <kim.phillips@freescale.com>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Subject: Re: [PATCH 2/2 v2] talitos: Freescale integrated security engine
-	(SEC) driver
-Message-Id: <20080605164415.d486a299.kim.phillips@freescale.com>
-In-Reply-To: <20080605052224.GA23150@gondor.apana.org.au>
-References: <20080530185830.60f4e1d4.kim.phillips@freescale.com>
-	<20080605052224.GA23150@gondor.apana.org.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>, linuxppc-dev@ozlabs.org,
-	linux-crypto@vger.kernel.org
+Return-Path: <dgibson@ozlabs.org>
+Date: Thu, 5 Jun 2008 20:57:07 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Stefan Roese <sr@denx.de>
+Subject: Re: "cell-index" vs. "index" vs. no index in I2C device nodes
+Message-ID: <20080605105707.GB30980@yookeroo.seuss>
+References: <200806041706.21557.sr@denx.de> <200806050822.00797.sr@denx.de>
+	<20080605094852.164f0bc7@hyperion.delvare>
+	<200806051045.42966.sr@denx.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200806051045.42966.sr@denx.de>
+Cc: Jean Delvare <khali@linux-fr.org>, Scott Wood <scottwood@freescale.com>,
+	Sean MacLennan <smaclennan@pikatech.com>,
+	Timur Tabi <timur@freescale.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,69 +22,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 5 Jun 2008 15:22:24 +1000
-Herbert Xu <herbert@gondor.apana.org.au> wrote:
-
-> On Fri, May 30, 2008 at 06:58:30PM -0500, Kim Phillips wrote:
+On Thu, Jun 05, 2008 at 10:45:42AM +0200, Stefan Roese wrote:
+> On Thursday 05 June 2008, Jean Delvare wrote:
+> > > > Maybe it is time to remove the index, or maybe we should go back to
+> > > > using both a static and the index. But at the time we decided to
+> > > > enforce an index.
+> > >
+> > > So what should we do now? Currently I2C doesn't work at all on 4xx since
+> > > the driver expects the "index" property and no dts sets this property.
+> > > Personally I would like to move to using cell-index here, since this
+> > > seems to be more common. But I could also life with removing the index
+> > > property and using the "static index" if this is preferred and/or
+> > > acceptable.
+> > >
+> > > Please advise. Thanks.
 > >
-> > +	/* get random IV */
-> > +	get_random_bytes(req->giv, crypto_aead_ivsize(authenc));
+> > As far as I am concerned, it's really up to the maintainers and users
+> > of this platform. All I am asking for is that you do not call
+> > i2c_add_numbered_adapter() on an adapter with an automatically
+> > generated number. This function must only be used for adapter's those
+> > number is well defined. If an adapter doesn't have a well-defined
+> > number then use i2c_add_adapter() (but then you can no longer declare
+> > your I2C devices as part of the platform data.)
 > 
-> Sorry but this is unworkable given our current RNG infrastructure.
-> Draining 16 bytes for every packet is going to make /dev/random
-> unuseable (if it wasn't already :).
+> Full ack from me. So I suggest to use "cell-index" if available and otherwise 
+> use an incremented number, same as the FSL i2c driver does now:
+> 
+> http://ozlabs.org/pipermail/linuxppc-dev/2008-June/057254.html
+> 
+> If nobody objects I'll send a patch to add the cell-index to all 4xx
+> dts files in a short while.
 
-it is :).  I'm working on it :).
+Do *not* add cell-index unless it is used to correlate to a global
+register somewhere.  Although, for the 4xx IIC adaptor, I think there
+usually will be shared registers, and a cell-index property.
 
-> Perhaps just use eseqiv (it should be pretty cheap sinec it just
-> tacks on an extra block to the encryption) for now until we have
-> a PRNG?
+The proper device tree mechanism for providing a standard numbering
+for similar devices is the /aliases node.  So instead, what you should
+do is:
+	- If a suitable alias exists pointing to this device, use that
+number
+	- Otherwise, if cell-index is present, use that (this is a
+fallback heuristic, not recommended practice)
+	- Otherwise, use i2c_add_adapter() instead of
+i2c_add_numbered_adapter()
 
-the h/w has a IV out feature we should probably be using.  How about
-something like this (UNTESTED):
+If a platform has a conventional way of numbering the i2c busses,
+which you want to represent in the device tree, you should add
+aliases, not cell-index.
 
-diff --git a/drivers/crypto/talitos.c b/drivers/crypto/talitos.c
-index cf2e6f3..5ebb0f1 100644
---- a/drivers/crypto/talitos.c
-+++ b/drivers/crypto/talitos.c
-@@ -566,6 +566,7 @@ struct talitos_ctx {
- 	struct device *dev;
- 	__be32 desc_hdr_template;
- 	u8 key[TALITOS_MAX_KEY_SIZE];
-+	u8 iv[TALITOS_AES_IV_LENGTH];
- 	unsigned int keylen;
- 	unsigned int enckeylen;
- 	unsigned int authkeylen;
-@@ -873,8 +874,9 @@ static int ipsec_esp(struct ipsec_esp_edesc *edesc, struct aead_request *areq,
- 					   edesc->dma_len, DMA_BIDIRECTIONAL);
- 	}
- 
--	/* optional iv out - entry points use random IVs instead */
--	desc->ptr[6].len = 0;
-+	/* iv out */
-+	map_single_talitos_ptr(dev, &desc->ptr[6], ivsize, ctx->iv, 0,
-+			       DMA_FROM_DEVICE);
- 
- 	return talitos_submit(dev, desc, callback, areq);
- }
-@@ -1020,8 +1022,7 @@ static int aes_cbc_sha1_hmac_authenc_givencrypt(
- 	/* set encrypt */
- 	edesc->desc.hdr = ctx->desc_hdr_template | DESC_HDR_MODE0_AESU_ENC;
- 
--	/* get random IV */
--	get_random_bytes(req->giv, crypto_aead_ivsize(authenc));
-+	memcpy(req->giv, ctx->iv, crypto_aead_ivsize(authenc));
- 
- 	return ipsec_esp(edesc, areq, req->giv, req->seq,
- 			 ipsec_esp_encrypt_done);
-@@ -1081,6 +1082,9 @@ static int talitos_cra_init(struct crypto_tfm *tfm)
- 	/* copy descriptor header template value */
- 	ctx->desc_hdr_template = talitos_alg->desc_hdr_template;
- 
-+	/* random first IV */
-+	get_random_bytes(ctx->iv, TALITOS_AES_IV_LENGTH);
-+
- 	return 0;
- }
- 
-Kim
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
