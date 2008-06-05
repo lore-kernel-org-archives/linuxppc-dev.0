@@ -1,11 +1,11 @@
 Return-Path: <wg@grandegger.com>
-Message-ID: <4847ADBD.4050508@grandegger.com>
-Date: Thu, 05 Jun 2008 11:11:25 +0200
+Message-ID: <4847AE52.5000809@grandegger.com>
+Date: Thu, 05 Jun 2008 11:13:54 +0200
 From: Wolfgang Grandegger <wg@grandegger.com>
 MIME-Version: 1.0
 To: Linuxppc-dev@ozlabs.org
-Subject: [PATCH v2 3/4] [POWERPC] 85xx: add local bus nodes for Flash and
-	CAN to tqm8560.dts
+Subject: [PATCH v2 4/4] [POWERPC] 85xx: correct vendor prefix in DTS files
+	for TQM85xx modules
 Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -16,93 +16,129 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Add local bus nodes for Flash and CAN to tqm8560.dts
+Like for the TQM5200, the vendor prefix "tqc," is now used for all
+TQM85xx modules from TQ-Components GmbH (http://www.tqc.de) in the
+corresponding DTS files.
 
 Signed-off-by: Wolfgang Grandegger <wg@grandegger.com>
 ---
- arch/powerpc/boot/dts/tqm8560.dts |   65 ++++++++++++++++++++++++++++++++++++++
- 1 file changed, 65 insertions(+)
+ arch/powerpc/boot/dts/tqm8540.dts          |    4 ++--
+ arch/powerpc/boot/dts/tqm8541.dts          |    4 ++--
+ arch/powerpc/boot/dts/tqm8548-bigflash.dts |    4 ++--
+ arch/powerpc/boot/dts/tqm8548.dts          |    4 ++--
+ arch/powerpc/boot/dts/tqm8555.dts          |    4 ++--
+ arch/powerpc/boot/dts/tqm8560.dts          |    4 ++--
+ arch/powerpc/platforms/85xx/tqm85xx.c      |   10 +++++-----
+ 7 files changed, 17 insertions(+), 17 deletions(-)
 
-Index: linux-2.6-galak/arch/powerpc/boot/dts/tqm8560.dts
+Index: linux-2.6/arch/powerpc/boot/dts/tqm8540.dts
 ===================================================================
---- linux-2.6-galak.orig/arch/powerpc/boot/dts/tqm8560.dts
-+++ linux-2.6-galak/arch/powerpc/boot/dts/tqm8560.dts
-@@ -2,6 +2,7 @@
-  * TQM 8560 Device Tree Source
-  *
-  * Copyright 2008 Freescale Semiconductor Inc.
-+ * Copyright 2008 Wolfgang Grandegger <wg@grandegger.com>
-  *
-  * This program is free software; you can redistribute  it and/or modify it
-  * under  the terms of  the GNU General  Public License as published by the
-@@ -223,6 +224,70 @@
- 		};
- 	};
+--- linux-2.6.orig/arch/powerpc/boot/dts/tqm8540.dts
++++ linux-2.6/arch/powerpc/boot/dts/tqm8540.dts
+@@ -12,8 +12,8 @@
+ /dts-v1/;
  
-+	localbus@e0005000 {
-+		compatible = "fsl,mpc8560-localbus", "fsl,pq3-localbus",
-+			     "simple-bus";
-+		#address-cells = <2>;
-+		#size-cells = <1>;
-+		reg = <0xe0005000 0x100>;	// BRx, ORx, etc.
-+
-+		ranges = <
-+			0 0x0 0xfc000000 0x04000000	// NOR FLASH bank 1
-+			1 0x0 0xf8000000 0x08000000	// NOR FLASH bank 0
-+			2 0x0 0xe3000000 0x00008000	// CAN (2 x i82527)
-+		>;
-+
-+		flash@1,0 {
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			compatible = "cfi-flash";
-+			reg = <1 0x0 0x8000000>;
-+			bank-width = <4>;
-+			device-width = <1>;
-+
-+			partition@0 {
-+				label = "kernel";
-+				reg = <0x00000000 0x00200000>;
-+			};
-+			partition@200000 {
-+				label = "root";
-+				reg = <0x00200000 0x00300000>;
-+			};
-+			partition@500000 {
-+				label = "user";
-+				reg = <0x00500000 0x07a00000>;
-+			};
-+			partition@7f00000 {
-+				label = "env1";
-+				reg = <0x07f00000 0x00040000>;
-+			};
-+			partition@7f40000 {
-+				label = "env2";
-+				reg = <0x07f40000 0x00040000>;
-+			};
-+			partition@7f80000 {
-+				label = "u-boot";
-+				reg = <0x07f80000 0x00080000>;
-+				read-only;
-+			};
-+		};
-+
-+		/* Note: CAN support needs be enabled in U-Boot */
-+		can0@2,0 {
-+			compatible = "intel,82527"; // Bosch CC770
-+			reg = <2 0x0 0x100>;
-+			interrupts = <4 0>;
-+			interrupt-parent = <&mpic>;
-+		};
-+
-+		can1@2,100 {
-+			compatible = "intel,82527"; // Bosch CC770
-+			reg = <2 0x100 0x100>;
-+			interrupts = <4 0>;
-+			interrupt-parent = <&mpic>;
-+		};
-+	};
-+
- 	pci0: pci@e0008000 {
- 		cell-index = <0>;
- 		#interrupt-cells = <1>;
+ / {
+-	model = "tqm,8540";
+-	compatible = "tqm,8540", "tqm,85xx";
++	model = "tqc,8540";
++	compatible = "tqc,8540", "tqc,85xx";
+ 	#address-cells = <1>;
+ 	#size-cells = <1>;
+ 
+Index: linux-2.6/arch/powerpc/boot/dts/tqm8541.dts
+===================================================================
+--- linux-2.6.orig/arch/powerpc/boot/dts/tqm8541.dts
++++ linux-2.6/arch/powerpc/boot/dts/tqm8541.dts
+@@ -12,8 +12,8 @@
+ /dts-v1/;
+ 
+ / {
+-	model = "tqm,8541";
+-	compatible = "tqm,8541", "tqm,85xx";
++	model = "tqc,8541";
++	compatible = "tqc,8541", "tqc,85xx";
+ 	#address-cells = <1>;
+ 	#size-cells = <1>;
+ 
+Index: linux-2.6/arch/powerpc/boot/dts/tqm8548-bigflash.dts
+===================================================================
+--- linux-2.6.orig/arch/powerpc/boot/dts/tqm8548-bigflash.dts
++++ linux-2.6/arch/powerpc/boot/dts/tqm8548-bigflash.dts
+@@ -13,8 +13,8 @@
+ /dts-v1/;
+ 
+ / {
+-	model = "tqm,8548";
+-	compatible = "tqm,8548", "tqm,85xx";
++	model = "tqc,8548";
++	compatible = "tqc,8548", "tqc,85xx";
+ 	#address-cells = <1>;
+ 	#size-cells = <1>;
+ 
+Index: linux-2.6/arch/powerpc/boot/dts/tqm8548.dts
+===================================================================
+--- linux-2.6.orig/arch/powerpc/boot/dts/tqm8548.dts
++++ linux-2.6/arch/powerpc/boot/dts/tqm8548.dts
+@@ -13,8 +13,8 @@
+ /dts-v1/;
+ 
+ / {
+-	model = "tqm,8548";
+-	compatible = "tqm,8548", "tqm,85xx";
++	model = "tqc,8548";
++	compatible = "tqc,8548", "tqc,85xx";
+ 	#address-cells = <1>;
+ 	#size-cells = <1>;
+ 
+Index: linux-2.6/arch/powerpc/boot/dts/tqm8555.dts
+===================================================================
+--- linux-2.6.orig/arch/powerpc/boot/dts/tqm8555.dts
++++ linux-2.6/arch/powerpc/boot/dts/tqm8555.dts
+@@ -12,8 +12,8 @@
+ /dts-v1/;
+ 
+ / {
+-	model = "tqm,8555";
+-	compatible = "tqm,8555", "tqm,85xx";
++	model = "tqc,8555";
++	compatible = "tqc,8555", "tqc,85xx";
+ 	#address-cells = <1>;
+ 	#size-cells = <1>;
+ 
+Index: linux-2.6/arch/powerpc/boot/dts/tqm8560.dts
+===================================================================
+--- linux-2.6.orig/arch/powerpc/boot/dts/tqm8560.dts
++++ linux-2.6/arch/powerpc/boot/dts/tqm8560.dts
+@@ -13,8 +13,8 @@
+ /dts-v1/;
+ 
+ / {
+-	model = "tqm,8560";
+-	compatible = "tqm,8560", "tqm,85xx";
++	model = "tqc,8560";
++	compatible = "tqc,8560", "tqc,85xx";
+ 	#address-cells = <1>;
+ 	#size-cells = <1>;
+ 
+Index: linux-2.6/arch/powerpc/platforms/85xx/tqm85xx.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/platforms/85xx/tqm85xx.c
++++ linux-2.6/arch/powerpc/platforms/85xx/tqm85xx.c
+@@ -175,11 +175,11 @@ static int __init tqm85xx_probe(void)
+ {
+ 	unsigned long root = of_get_flat_dt_root();
+ 
+-	if ((of_flat_dt_is_compatible(root, "tqm,8540")) ||
+-	    (of_flat_dt_is_compatible(root, "tqm,8541")) ||
+-	    (of_flat_dt_is_compatible(root, "tqm,8548")) ||
+-	    (of_flat_dt_is_compatible(root, "tqm,8555")) ||
+-	    (of_flat_dt_is_compatible(root, "tqm,8560")))
++	if ((of_flat_dt_is_compatible(root, "tqc,8540")) ||
++	    (of_flat_dt_is_compatible(root, "tqc,8541")) ||
++	    (of_flat_dt_is_compatible(root, "tqc,8548")) ||
++	    (of_flat_dt_is_compatible(root, "tqc,8555")) ||
++	    (of_flat_dt_is_compatible(root, "tqc,8560")))
+ 		return 1;
+ 
+ 	return 0;
