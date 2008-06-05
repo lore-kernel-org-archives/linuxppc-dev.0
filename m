@@ -1,29 +1,39 @@
-Return-Path: <timur@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 3205FDE2C1
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jun 2008 02:18:55 +1000 (EST)
-Message-ID: <484811DE.9@freescale.com>
-Date: Thu, 05 Jun 2008 11:18:38 -0500
-From: Timur Tabi <timur@freescale.com>
-MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
+	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 6B35BDE783
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jun 2008 02:21:59 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e33.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m55GLtuh020853
+	for <linuxppc-dev@ozlabs.org>; Thu, 5 Jun 2008 12:21:55 -0400
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m55GLsVh097054
+	for <linuxppc-dev@ozlabs.org>; Thu, 5 Jun 2008 10:21:54 -0600
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m55GLhTX029836
+	for <linuxppc-dev@ozlabs.org>; Thu, 5 Jun 2008 10:21:44 -0600
+Date: Thu, 5 Jun 2008 11:21:22 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Timur Tabi <timur@freescale.com>
 Subject: Re: "cell-index" vs. "index" vs. no index in I2C device nodes
-References: <200806041706.21557.sr@denx.de>	
-	<20080604220555.658ab13e@vader.jdub.homelinux.org>	
-	<20080604231641.786bb2dd@lappy.seanm.ca>	
-	<200806050822.00797.sr@denx.de>
-	<4848036D.5060004@freescale.com>	 <484809D1.2070300@scram.de>
-	<48480B3C.9080101@freescale.com>
-	<fa686aa40806050910m2057966csc33b2a671c6265af@mail.gmail.com>
-In-Reply-To: <fa686aa40806050910m2057966csc33b2a671c6265af@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Stefan Roese <sr@denx.de>, linuxppc-dev@ozlabs.org,
-	Sean MacLennan <smaclennan@pikatech.com>,
-	Scott Wood <scottwood@freescale.com>, Jean Delvare <khali@linux-fr.org>
+Message-ID: <20080605112122.0381a338@zod.rchland.ibm.com>
+In-Reply-To: <484810A3.5070301@freescale.com>
+References: <200806041706.21557.sr@denx.de> <4846B39F.3010601@freescale.com>
+	<20080604154351.GB10393@ld0162-tx32.am.freescale.net>
+	<20080604211942.2bddc860@zod.rchland.ibm.com>
+	<4848028B.5060105@freescale.com>
+	<fa686aa40806050839h55d8e358m93248414507f10e2@mail.gmail.com>
+	<48480987.1070701@freescale.com>
+	<fa686aa40806050900i40f0aa62o4bab3b8c7409b15f@mail.gmail.com>
+	<484810A3.5070301@freescale.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Scott Wood <scottwood@freescale.com>, Stefan Roese <sr@denx.de>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,46 +43,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Grant Likely wrote:
+On Thu, 05 Jun 2008 11:13:23 -0500
+Timur Tabi <timur@freescale.com> wrote:
 
-> multifunction@0 {
->         #size-cells = <1>;
->         #address-cells = <1>;
->         ranges = <0 0xe00000000 0x1000>;
->         i2c@0 {
->                 cell-index = <0>;
->                 regs = <0 0x100>;
->         }
->         i2c@100 {
->                 cell-index = <1>;
->                 regs = <0x100 0x100>;
->         }
-> }
-> multifunction@1 {
->         #size-cells = <1>;
->         #address-cells = <1>;
->         ranges = <0 0xe10000000 0x1000>;
->         i2c@0 {
->                 cell-index = <0>;
->                 regs = <0 0x100>;
->         }
->         i2c@100 {
->                 cell-index = <1>;
->                 regs = <0x100 0x100>;
->         }
-> }
+> Grant Likely wrote:
+> 
+> > That is still Linux internal artifacts leaking out.  Don't encode that
+> > data into the device tree.
+> 
+> The I2C bus number is *not* an internal artifact.  On Freescale parts, the one
+> I2C adapter is specifically designated I2C1, and the 2nd one is specifically
+> designated I2C2.  This is part of the silicon, and so the device tree should
+> specify it.
 
-What resources are being shared in this example?  Each I2C device has its own
-address ranges.  I don't see how cell-index provides any useful info here.
+And it does.  It does so by the unique "regs" properties and
+unit-names.  You can assign the index that the i2c subsystem needs
+based on probe order, like I already said.
 
-> cell-index must *not* be repurposed as a system level index.
+I don't know why Jean doesn't like that.  It's not a made up number.
 
-It's a little late for that.  I'm okay with coming up with a new property to
-provide system-level indexing, but it needs to be the same property name for
-each type of device.  I don't want linux,i2c-index and linux,dma-index and
-linux,ssi-index, etc.  I also don't understand why we need the linux, prefix,
-since device enumeration is not specific to Linux.
-
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+josh
