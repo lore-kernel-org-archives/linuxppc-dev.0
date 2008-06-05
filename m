@@ -1,21 +1,22 @@
-Return-Path: <sean.maclennan@pikatech.com>
-Received: from mail.pikatech.com (dns.pikatech.com [207.107.229.10])
-	by ozlabs.org (Postfix) with ESMTP id C1A3EDE4E6
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jun 2008 07:37:49 +1000 (EST)
-Date: Thu, 5 Jun 2008 17:37:16 -0400
-From: Sean MacLennan <smaclennan@pikatech.com>
-To: "Stefan Roese" <sr@denx.de>
-Subject: Re: "cell-index" vs. "index" vs. no index in I2C device nodes
-Message-ID: <20080605173716.3fd28837@wally.pikatech.com>
-In-Reply-To: <200806050822.00797.sr@denx.de>
-References: <200806041706.21557.sr@denx.de>
-	<20080604220555.658ab13e@vader.jdub.homelinux.org>
-	<20080604231641.786bb2dd@lappy.seanm.ca>
-	<200806050822.00797.sr@denx.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
-	Jean Delvare <khali@linux-fr.org>, Timur Tabi <timur@freescale.com>
+Return-Path: <jonsmirl@gmail.com>
+Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.178])
+	by ozlabs.org (Postfix) with ESMTP id 73CEADEB09
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jun 2008 07:38:50 +1000 (EST)
+Received: by wa-out-1112.google.com with SMTP id n7so487196wag.13
+	for <linuxppc-dev@ozlabs.org>; Thu, 05 Jun 2008 14:38:49 -0700 (PDT)
+Message-ID: <9e4733910806051438g2b0bdd8tc4fbfceecd8dc1ea@mail.gmail.com>
+Date: Thu, 5 Jun 2008 17:38:48 -0400
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: "Sascha Hauer" <s.hauer@pengutronix.de>
+Subject: Re: jffs2 and unaligned access
+In-Reply-To: <20080507132514.GF4326@pengutronix.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20080507102724.GE4326@pengutronix.de>
+	<1210157630.25560.884.camel@pmac.infradead.org>
+	<20080507132514.GF4326@pengutronix.de>
+Cc: linux-mtd@lists.infradead.org, David Woodhouse <dwmw2@infradead.org>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,17 +26,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 5 Jun 2008 08:22:00 +0200
-"Stefan Roese" <sr@denx.de> wrote:
+On 5/7/08, Sascha Hauer <s.hauer@pengutronix.de> wrote:
+> On Wed, May 07, 2008 at 11:53:49AM +0100, David Woodhouse wrote:
+>  > On Wed, 2008-05-07 at 12:27 +0200, Sascha Hauer wrote:
+>  > > memcpy_from/to_io() use word aligned accesses on the io side of memory.
+>  > > The MPC5200 local plus bus where our flashes are connected does not
+>  > > allow unaligned accesses, so we have to use the io versions of memcpy.
+>  >
+>  > But this region of flash is marked as suitable for execute-in-place,
+>  > otherwise the point() function wouldn't be working to give a direct
+>  > pointer to it. It sounds like we shouldn't be allowing that.
+>
+>
+> It actually is suitable for execute-in-place. It's the flash U-Boot
+>  starts from. The compiler will generate a proper alignment for you.
+>
+>
+>  >
+>  > Which in turn means that perhaps we should have a property in the
+>  > corresponding node in the device-tree which indicates that it's not
+>  > suitable for direct access?
+>
+>
+> So far we did not work with the device-tree flash binding but with the
+>  physmap-flash driver, but ok, this is subject to change anyway.
+>
+>  I gave it a quick try to disable direct accesses. It works, but has a
+>  1:10 performance impact on mounting a jffs2. At least it's a clean
+>  solution.
 
-> So what should we do now? Currently I2C doesn't work at all on 4xx
-> since the driver expects the "index" property and no dts sets this
-> property. Personally I would like to move to using cell-index here,
-> since this seems to be more common. But I could also life with
-> removing the index property and using the "static index" if this is
-> preferred and/or acceptable.
+How did this get resolved? The thread died without any final solution
+being proposed.
 
-The warp DTS does ;)
 
-Cheers,
-   Sean
+>
+>
+>  Sascha
+>
+>
+>
+>  --
+>  Pengutronix e.K. - Linux Solutions for Science and Industry
+>  -----------------------------------------------------------
+>  Kontakt-Informationen finden Sie im Header dieser Mail oder
+>  auf der Webseite -> http://www.pengutronix.de/impressum/ <-
+>
+
+
+-- 
+Jon Smirl
+jonsmirl@gmail.com
