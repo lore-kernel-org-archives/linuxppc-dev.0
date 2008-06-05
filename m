@@ -1,12 +1,16 @@
-Return-Path: <wg@grandegger.com>
-Message-ID: <4847AE52.5000809@grandegger.com>
-Date: Thu, 05 Jun 2008 11:13:54 +0200
-From: Wolfgang Grandegger <wg@grandegger.com>
-MIME-Version: 1.0
-To: Linuxppc-dev@ozlabs.org
-Subject: [PATCH v2 4/4] [POWERPC] 85xx: correct vendor prefix in DTS files
-	for TQM85xx modules
-Content-Type: text/plain; charset=ISO-8859-1
+Return-Path: <dhowells@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [66.187.233.31])
+	by ozlabs.org (Postfix) with ESMTP id 311CBDE0C6
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Jun 2008 20:45:22 +1000 (EST)
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <4846F0C0.80808@freescale.com>
+References: <4846F0C0.80808@freescale.com> <4846EEAE.3000908@hypersurf.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: inline assembly
+Date: Thu, 05 Jun 2008 11:44:51 +0100
+Message-ID: <11849.1212662691@redhat.com>
+Sender: dhowells@redhat.com
+Cc: linuxppc-dev@ozlabs.org, Kevin Diggs <kevdig@hypersurf.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,129 +20,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Like for the TQM5200, the vendor prefix "tqc," is now used for all
-TQM85xx modules from TQ-Components GmbH (http://www.tqc.de) in the
-corresponding DTS files.
+Scott Wood <scottwood@freescale.com> wrote:
 
-Signed-off-by: Wolfgang Grandegger <wg@grandegger.com>
----
- arch/powerpc/boot/dts/tqm8540.dts          |    4 ++--
- arch/powerpc/boot/dts/tqm8541.dts          |    4 ++--
- arch/powerpc/boot/dts/tqm8548-bigflash.dts |    4 ++--
- arch/powerpc/boot/dts/tqm8548.dts          |    4 ++--
- arch/powerpc/boot/dts/tqm8555.dts          |    4 ++--
- arch/powerpc/boot/dts/tqm8560.dts          |    4 ++--
- arch/powerpc/platforms/85xx/tqm85xx.c      |   10 +++++-----
- 7 files changed, 17 insertions(+), 17 deletions(-)
+> int tmp;
+> 
+> asm volatile("addi %1, %2, -1;"
+>              "andc %1, %2, %1;"
+>              "cntlzw %1, %1;"
+>              "subfic %0, %1, 31" : "=r" (j), "=&r" (tmp) : "r" (i));
 
-Index: linux-2.6/arch/powerpc/boot/dts/tqm8540.dts
-===================================================================
---- linux-2.6.orig/arch/powerpc/boot/dts/tqm8540.dts
-+++ linux-2.6/arch/powerpc/boot/dts/tqm8540.dts
-@@ -12,8 +12,8 @@
- /dts-v1/;
- 
- / {
--	model = "tqm,8540";
--	compatible = "tqm,8540", "tqm,85xx";
-+	model = "tqc,8540";
-+	compatible = "tqc,8540", "tqc,85xx";
- 	#address-cells = <1>;
- 	#size-cells = <1>;
- 
-Index: linux-2.6/arch/powerpc/boot/dts/tqm8541.dts
-===================================================================
---- linux-2.6.orig/arch/powerpc/boot/dts/tqm8541.dts
-+++ linux-2.6/arch/powerpc/boot/dts/tqm8541.dts
-@@ -12,8 +12,8 @@
- /dts-v1/;
- 
- / {
--	model = "tqm,8541";
--	compatible = "tqm,8541", "tqm,85xx";
-+	model = "tqc,8541";
-+	compatible = "tqc,8541", "tqc,85xx";
- 	#address-cells = <1>;
- 	#size-cells = <1>;
- 
-Index: linux-2.6/arch/powerpc/boot/dts/tqm8548-bigflash.dts
-===================================================================
---- linux-2.6.orig/arch/powerpc/boot/dts/tqm8548-bigflash.dts
-+++ linux-2.6/arch/powerpc/boot/dts/tqm8548-bigflash.dts
-@@ -13,8 +13,8 @@
- /dts-v1/;
- 
- / {
--	model = "tqm,8548";
--	compatible = "tqm,8548", "tqm,85xx";
-+	model = "tqc,8548";
-+	compatible = "tqc,8548", "tqc,85xx";
- 	#address-cells = <1>;
- 	#size-cells = <1>;
- 
-Index: linux-2.6/arch/powerpc/boot/dts/tqm8548.dts
-===================================================================
---- linux-2.6.orig/arch/powerpc/boot/dts/tqm8548.dts
-+++ linux-2.6/arch/powerpc/boot/dts/tqm8548.dts
-@@ -13,8 +13,8 @@
- /dts-v1/;
- 
- / {
--	model = "tqm,8548";
--	compatible = "tqm,8548", "tqm,85xx";
-+	model = "tqc,8548";
-+	compatible = "tqc,8548", "tqc,85xx";
- 	#address-cells = <1>;
- 	#size-cells = <1>;
- 
-Index: linux-2.6/arch/powerpc/boot/dts/tqm8555.dts
-===================================================================
---- linux-2.6.orig/arch/powerpc/boot/dts/tqm8555.dts
-+++ linux-2.6/arch/powerpc/boot/dts/tqm8555.dts
-@@ -12,8 +12,8 @@
- /dts-v1/;
- 
- / {
--	model = "tqm,8555";
--	compatible = "tqm,8555", "tqm,85xx";
-+	model = "tqc,8555";
-+	compatible = "tqc,8555", "tqc,85xx";
- 	#address-cells = <1>;
- 	#size-cells = <1>;
- 
-Index: linux-2.6/arch/powerpc/boot/dts/tqm8560.dts
-===================================================================
---- linux-2.6.orig/arch/powerpc/boot/dts/tqm8560.dts
-+++ linux-2.6/arch/powerpc/boot/dts/tqm8560.dts
-@@ -13,8 +13,8 @@
- /dts-v1/;
- 
- / {
--	model = "tqm,8560";
--	compatible = "tqm,8560", "tqm,85xx";
-+	model = "tqc,8560";
-+	compatible = "tqc,8560", "tqc,85xx";
- 	#address-cells = <1>;
- 	#size-cells = <1>;
- 
-Index: linux-2.6/arch/powerpc/platforms/85xx/tqm85xx.c
-===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/85xx/tqm85xx.c
-+++ linux-2.6/arch/powerpc/platforms/85xx/tqm85xx.c
-@@ -175,11 +175,11 @@ static int __init tqm85xx_probe(void)
- {
- 	unsigned long root = of_get_flat_dt_root();
- 
--	if ((of_flat_dt_is_compatible(root, "tqm,8540")) ||
--	    (of_flat_dt_is_compatible(root, "tqm,8541")) ||
--	    (of_flat_dt_is_compatible(root, "tqm,8548")) ||
--	    (of_flat_dt_is_compatible(root, "tqm,8555")) ||
--	    (of_flat_dt_is_compatible(root, "tqm,8560")))
-+	if ((of_flat_dt_is_compatible(root, "tqc,8540")) ||
-+	    (of_flat_dt_is_compatible(root, "tqc,8541")) ||
-+	    (of_flat_dt_is_compatible(root, "tqc,8548")) ||
-+	    (of_flat_dt_is_compatible(root, "tqc,8555")) ||
-+	    (of_flat_dt_is_compatible(root, "tqc,8560")))
- 		return 1;
- 
- 	return 0;
+Registers are usually assumed to be 'long' in size, so I'd recommend using
+that rather than 'int' for tmp, though I suspect it'll make little difference
+(except, perhaps on x86 where you can partially use registers).
+
+> However, it'd be better to let the compiler do more, by just using the
+> existing cntlzw() function.
+
+Look in include/asm-powerpc/bitops.h.  There are examples of the things you're
+trying to do:
+
+	static __inline__ __attribute__((const))
+	int __ilog2(unsigned long x)
+	{
+		int lz;
+
+		asm (PPC_CNTLZL "%0,%1" : "=r" (lz) : "r" (x));
+		return BITS_PER_LONG - 1 - lz;
+	}
+
+	static __inline__ int __ffs(unsigned long x)
+	{
+		return __ilog2(x & -x);
+	}
+
+Where:
+
+	asm-compat.h:79:#define PPC_CNTLZL	stringify_in_c(cntlzd)
+	asm-compat.h:100:#define PPC_CNTLZL	stringify_in_c(cntlzw)
+
+Depending on whether you're in 32-bit mode or 64-bit mode.
+
+David
