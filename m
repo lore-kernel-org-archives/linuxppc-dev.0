@@ -1,23 +1,26 @@
-Return-Path: <marc.pignat@hevs.ch>
-Received: from mail.hevs.ch (mail.hevs.ch [153.109.23.10])
-	by ozlabs.org (Postfix) with ESMTP id 99E6BDE220
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jun 2008 01:59:02 +1000 (EST)
-From: Marc Pignat <marc.pignat@hevs.ch>
-To: avorontsov@ru.mvista.com
-Subject: Re: [PATCH 3/3] mmc: change .get_ro() callback semantics
-Date: Thu, 5 Jun 2008 17:58:59 +0200
-References: <20080523154204.GA19803@polina.dev.rtsoft.ru>
-	<200806031207.49843.marc.pignat@hevs.ch>
-	<20080605144310.GA31596@polina.dev.rtsoft.ru>
-In-Reply-To: <20080605144310.GA31596@polina.dev.rtsoft.ru>
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.249])
+	by ozlabs.org (Postfix) with ESMTP id 367B3DE220
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jun 2008 02:00:06 +1000 (EST)
+Received: by an-out-0708.google.com with SMTP id c34so140340anc.78
+	for <linuxppc-dev@ozlabs.org>; Thu, 05 Jun 2008 09:00:05 -0700 (PDT)
+Message-ID: <fa686aa40806050900i40f0aa62o4bab3b8c7409b15f@mail.gmail.com>
+Date: Thu, 5 Jun 2008 10:00:04 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Timur Tabi" <timur@freescale.com>
+Subject: Re: "cell-index" vs. "index" vs. no index in I2C device nodes
+In-Reply-To: <48480987.1070701@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Message-Id: <200806051759.00202.marc.pignat@hevs.ch>
-Cc: David Brownell <dbrownell@users.sourceforge.net>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	spi-devel-general@lists.sourceforge.net, Timur Tabi <timur@freescale.com>,
-	Pierre Ossman <drzeus-mmc@drzeus.cx>
+Content-Type: text/plain; charset=ISO-8859-1
+References: <200806041706.21557.sr@denx.de> <4846B39F.3010601@freescale.com>
+	<20080604154351.GB10393@ld0162-tx32.am.freescale.net>
+	<20080604211942.2bddc860@zod.rchland.ibm.com>
+	<4848028B.5060105@freescale.com>
+	<fa686aa40806050839h55d8e358m93248414507f10e2@mail.gmail.com>
+	<48480987.1070701@freescale.com>
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
+	Stefan Roese <sr@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,66 +30,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thursday 05 June 2008, Anton Vorontsov wrote:
-> On Tue, Jun 03, 2008 at 12:07:49PM +0200, Marc Pignat wrote:
-> > Hi all!
-> > 
-> > On Friday 23 May 2008, Anton Vorontsov wrote:
-> > > get_ro() callback must return values >= 0 for its logical state, and
-> > ...
-> > >  static void pxamci_set_ios(struct mmc_host *mmc, struct mmc_ios *ios)
-> > > diff --git a/include/linux/mmc/host.h b/include/linux/mmc/host.h
-> > > index f2e9885..ef3b773 100644
-> > > --- a/include/linux/mmc/host.h
-> > > +++ b/include/linux/mmc/host.h
-> > > @@ -55,6 +55,9 @@ struct mmc_host_ops {
-> > >  	 * Avoid calling these three functions too often or in a "fast path",
-> > >  	 * since underlaying controller might implement them in an expensive
-> > >  	 * and/or slow way.
-> > > +	 *
-> > > +	 * .get_ro and .get_cd should return >= 0 for their logical values,
-> > > +	 * or negative errno value in case of error.
-> > >  	 */
-> > 
-> > I would suggest to use something more strict (bulletproof), something like:
-> > 
-> > /*
-> >  * get_ro will return:
-> >  *   0 for a read/write card
-> >  *   1 for a read-only card 
-> 
-> This isn't always practical. For example, host is using u8 register for
-> the status, so it might safely return u8 & mask, that will always fit
-> into int. Or very smart/adventurous authors might be aware that, for the
-> particular host, mask's bit isn't last, and safely do uXX & mask. :-)
-> 
-> The above is weak argument of course, since it is about optimization.
+On Thu, Jun 5, 2008 at 9:43 AM, Timur Tabi <timur@freescale.com> wrote:
+> Grant Likely wrote:
+>
+>> if you need explicit indexing then use an alias.  My opinion however
+>> is that explicit indexing is unnecessary and is just an artifact of
+>> current i2c subsystem internals.  There is already enough information
+>> in the device tree to match i2c devices with i2c busses without
+>> resorting to indexes.
+>
+> Not for ALSA SoC V2 devices.  In ASoC V2, the "fabric" driver needs to identify
+> the codec by its specific I2C bus and address number.  The codec driver is not
+> an OF driver (normally), so it doesn't have access to any OF data.  It's just an
+> I2C driver, so its given an I2C address and some number that represents an adapter.
+>
+> Therefore, the fabric driver and the codec driver need to independently
+> determine the I2C bus number, and they need to match.  The fabric driver parses
+> the OF tree and looks up the cell-index property.  The codec driver uses the
+> adapter->nr variable.  The patch I posted ensures that the two contain the same
+> number.
 
-Ack, we will gain at most 1-4 assembly instructions, in a function that
-is unlikely to be called more than once a second.
+That is still Linux internal artifacts leaking out.  Don't encode that
+data into the device tree.
 
-> 
-> As an counter-evidence, the strict scheme that you described probably
-> less error prone. But is it? To implement it we'll need something like
-> WARN_ON(ret > 0 && ret != 1) to catch erroneous users. Take a closer
-> look though, will it catch uXX & lastbit case? Nope. :-)
+Besides, the whole thing looks bass ackwards and doesn't match the
+Linux driver model.  'busses' should register 'devices'.  'drivers'
+should then bind to those 'devices'.  Where ASoC is concerned, the i2c
+bus should register its own child devices, which includes the codecs,
+and an ASoC codec driver should bind against it.  The fabric driver
+should then use the codec's exported API.
 
-WARN_ON(ret > 0 && ret != 1 || ret == INT_MIN) will do ;)
+Cheers,
+g.
 
-I agree with you once more, I never thinked about a runtime check.
-
-I don't really want to see a WARN_ON(foo) after each call to get_ro or get_cd.
-
-But I'm sure if we specify "give me a positive value when a card is detected",
-someone will write gpio & bit, and three years later, someone will fall in
-the (gpio & lastbit < 0 case).
-
-So we should specify: "give me 1 whan a card is present, 0 when not, -ENOSYS if
-you don't know and a negative errno when something else goes wrong".
-
-
-
-
-Best regards
-
-Marc
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
