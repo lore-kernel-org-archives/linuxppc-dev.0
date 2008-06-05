@@ -1,19 +1,24 @@
-Return-Path: <stephen.neuendorffer@xilinx.com>
-Received: from SG2EHSOBE005.bigfish.com (outbound-sin.frontbridge.com
-	[207.46.51.80]) by ozlabs.org (Postfix) with ESMTP id 3C6B4DEBE8
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jun 2008 01:50:16 +1000 (EST)
+Return-Path: <timur@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 0556CDEE4D
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jun 2008 01:50:41 +1000 (EST)
+Message-ID: <48480B3C.9080101@freescale.com>
+Date: Thu, 05 Jun 2008 10:50:20 -0500
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Subject: RE: 4xx support in arch/ppc is going away Real Soon Now
-Date: Thu, 5 Jun 2008 08:48:03 -0700
-In-Reply-To: <20080605101838.5b1d9233@zod.rchland.ibm.com>
-References: <20080605095253.7df9dbe0@zod.rchland.ibm.com><fa686aa40806050811t4ab2fbfk9eed34d0972376c4@mail.gmail.com>
-	<20080605101838.5b1d9233@zod.rchland.ibm.com>
-From: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
-To: "Josh Boyer" <jwboyer@linux.vnet.ibm.com>,
-	"Grant Likely" <grant.likely@secretlab.ca>
-Message-ID: <20080605154839.B87C5838078@mail206-sin.bigfish.com>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+To: Jochen Friedrich <jochen@scram.de>
+Subject: Re: "cell-index" vs. "index" vs. no index in I2C device nodes
+References: <200806041706.21557.sr@denx.de>	<20080604220555.658ab13e@vader.jdub.homelinux.org>	<20080604231641.786bb2dd@lappy.seanm.ca>	<200806050822.00797.sr@denx.de>
+	<4848036D.5060004@freescale.com> <484809D1.2070300@scram.de>
+In-Reply-To: <484809D1.2070300@scram.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Stefan Roese <sr@denx.de>, linuxppc-dev@ozlabs.org,
+	Sean MacLennan <smaclennan@pikatech.com>,
+	Scott Wood <scottwood@freescale.com>, Jean Delvare <khali@linux-fr.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,71 +28,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: linuxppc-dev-bounces+stephen.neuendorffer=3Dxilinx.com@ozlabs.org
-[mailto:linuxppc-dev-
-> bounces+stephen.neuendorffer=3Dxilinx.com@ozlabs.org] On Behalf Of Josh
-Boyer
-> Sent: Thursday, June 05, 2008 8:19 AM
-> To: Grant Likely
-> Cc: linuxppc-dev@ozlabs.org; Paul Mackerras
-> Subject: Re: 4xx support in arch/ppc is going away Real Soon Now
-> =
+Jochen Friedrich wrote:
+> Hi Timur,
+> 
+>> In situations where it doesn't matter which I2C bus is #1 and which one is #2,
+>> then I think the code should just initialize idx based on the order the nodes
+>> are found in the tree.
+>>
+>> In situations where it does matter, then we should use cell-index.
+> 
+> that's what I did in i2c-cpm, as well. However, here I use the property
+> "linux,i2c-index" instead (see http://patchwork.ozlabs.org/linuxppc/patch?id=18603).
 
-> On Thu, 5 Jun 2008 09:11:48 -0600
-> "Grant Likely" <grant.likely@secretlab.ca> wrote:
-> =
+Well, I just don't see the point of having two different properties that say the
+same thing.  I'm not an IEE 1275 purist, so I don't think we should be hampered
+by old node definitions.  I especially don't like having a property specifically
+for indexing I2C nodes that can't be used to enumerate other nodes.
 
-> > On Thu, Jun 5, 2008 at 8:52 AM, Josh Boyer
-<jwboyer@linux.vnet.ibm.com> wrote:
-> > > This commit (patch omitted due to size) is sitting in my local
-tree:
-> > >
-> > > commit 0d7efc1e80fc262bcc507a605482c5681e3f082a
-> > > Author: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-> > > Date:   Thu Jun 5 09:46:17 2008 -0500
-> > >
-> > >    ppc/4xx: Remove 4xx support from arch/ppc
-> > >
-> > >    Remove support for PPC 403, 405, and 440 processors from
-arch/ppc.  The
-> > >    arch/powerpc equivalents should be used.  Boards that are not
-ported yet
-> > >    will need to be ported to arch/powerpc to have continued
-support.
-> >
-> > This looks like unneeded churn.
-> =
+The DMA and SSI controllers on Freescale parts use cell-index to enumerate them.
+ It just seems dumb to invent a new property.
 
-> Excellent.  My prompting has succeeded.  Though now I won't get to be
-> on top of the "top contributors" list in the lwn.net pages like Kumar
-> was.  Oh well.
-> =
+Will there ever be a situation where a node will contain "cell-index" and
+"linux,i2c-index"?
 
-> > Paulus, Can we just kill all of arch/ppc for .27 right now?
-> =
-
-> Please.  Pretty please?
-> =
-
-> Acked-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-> =
-
-> josh
-
-For what it's worth, =
-
-
-Acked-by: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
-
-I'd like to see this happen soon so a few stacked patches we have can
-finally go in.
-
-Steve
-
-
-This email and any attachments are intended for the sole use of the named r=
-ecipient(s) and contain(s) confidential information that may be proprietary=
-, privileged or copyrighted under applicable law. If you are not the intend=
-ed recipient, do not read, copy, or forward this email message or any attac=
-hments. Delete this email message and any attachments immediately.
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
