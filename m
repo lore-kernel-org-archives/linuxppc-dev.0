@@ -1,24 +1,16 @@
-Return-Path: <becky.bruce@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id C5FEEDE0F1
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jun 2008 06:34:11 +1000 (EST)
-In-Reply-To: <48484CFD.9010608@freescale.com>
-References: <20080605095253.7df9dbe0@zod.rchland.ibm.com>	<20080605101838.5b1d9233@zod.rchland.ibm.com>	<20080605154839.B87C5838078@mail206-sin.bigfish.com>	<200806052212.29792.arnd@arndb.de>
-	<A5012017-D5C8-43AC-844A-E74B59E77D0C@lixom.net>
-	<48484CFD.9010608@freescale.com>
-Mime-Version: 1.0 (Apple Message framework v753.1)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <BC38AEE0-E2D9-40AD-8946-6C4B18AA4BF4@freescale.com>
-From: Becky Bruce <becky.bruce@freescale.com>
-Subject: Re: arch/ppc is going away Real Soon Now
-Date: Thu, 5 Jun 2008 15:37:27 -0500
-To: Scott Wood <scottwood@freescale.com>
-Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>
+Return-Path: <wg@grandegger.com>
+Message-ID: <48484EFE.5050101@grandegger.com>
+Date: Thu, 05 Jun 2008 22:39:26 +0200
+From: Wolfgang Grandegger <wg@grandegger.com>
+MIME-Version: 1.0
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH v3 2/4] [POWERPC] 85xx: add board support for the TQM8548
+	modules
+References: <48481E86.1060302@grandegger.com>
+	<4188A8A4-BDF9-4D23-A874-19C6A9A18E71@kernel.crashing.org>
+In-Reply-To: <4188A8A4-BDF9-4D23-A874-19C6A9A18E71@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,19 +20,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Kumar Gala wrote:
+> 
+>> ===================================================================
+>> --- /dev/null
+>> +++ linux-2.6-galak/arch/powerpc/boot/dts/tqm8548.dts
+>>
+> 
+>> +    memory {
+>> +        device_type = "memory";
+>> +        reg = <0x00000000 0x20000000>;
+>> +    };
+> 
+> is memory fixed on this board to 256M?
 
-On Jun 5, 2008, at 3:30 PM, Scott Wood wrote:
+Ah, no, actually I have a module with 512 MB but it can be ordered with
+less or more memory like the other TQM85xx modules as well. Does U-Boot
+fixup this value? Is it used by Linux?
 
-> Olof Johansson wrote:
->> On Jun 5, 2008, at 3:12 PM, Arnd Bergmann wrote:
->>> On Thursday 05 June 2008, Stephen Neuendorffer wrote:
->>>>> "Grant Likely" <grant.likely@secretlab.ca> wrote:
->>>>>
->>>>>> Paulus, Can we just kill all of arch/ppc for .27 right now?
->>>>>
->>>>> Acked-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
->>>> Acked-by: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
->>> Acked-by: Arnd Bergmann <arnd@arndb.de>
->> Acked-by: Olof Johansson <olof@lixom.net>
-> Acked-by: Scott Wood <scottwood@freescale.com>
-Acked-by: Becky Bruce <becky.bruce@freescale.com>
+> just let me know and I can fix when I commit it.
+
+That would be great... thanks.
+
+Wolfgang.
