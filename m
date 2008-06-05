@@ -1,32 +1,17 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 942D8DE116
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jun 2008 00:53:15 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e1.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m55ErBuW024127
-	for <linuxppc-dev@ozlabs.org>; Thu, 5 Jun 2008 10:53:11 -0400
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m55ErCDO169922
-	for <linuxppc-dev@ozlabs.org>; Thu, 5 Jun 2008 10:53:12 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m55ErBVX005697
-	for <linuxppc-dev@ozlabs.org>; Thu, 5 Jun 2008 10:53:11 -0400
-Received: from zod.rchland.ibm.com (wecm-9-67-183-229.wecm.ibm.com
-	[9.67.183.229])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	m55ErBlr005679
-	for <linuxppc-dev@ozlabs.org>; Thu, 5 Jun 2008 10:53:11 -0400
-Date: Thu, 5 Jun 2008 09:52:53 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id D7545DDF39
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jun 2008 01:08:21 +1000 (EST)
+Date: Thu, 5 Jun 2008 10:08:02 -0500 (CDT)
+From: Kumar Gala <galak@kernel.crashing.org>
 To: linuxppc-dev@ozlabs.org
-Subject: 4xx support in arch/ppc is going away Real Soon Now
-Message-ID: <20080605095253.7df9dbe0@zod.rchland.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Subject: [RFC][PATCH] powerpc/85xx: add DOZE/NAP support for e500 core
+Message-ID: <Pine.LNX.4.64.0806051006420.9352@blarg.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: r63238@freescale.com, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,160 +21,299 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This commit (patch omitted due to size) is sitting in my local tree:
+From: Dave Liu <r63238@freescale.com>
 
-commit 0d7efc1e80fc262bcc507a605482c5681e3f082a
-Author: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Date:   Thu Jun 5 09:46:17 2008 -0500
+The e500 core enter DOZE/NAP power-saving modes when the core go to
+cpu_idle routine.
 
-    ppc/4xx: Remove 4xx support from arch/ppc
-    
-    Remove support for PPC 403, 405, and 440 processors from arch/ppc.  The
-    arch/powerpc equivalents should be used.  Boards that are not ported yet
-    will need to be ported to arch/powerpc to have continued support.
-    
-    Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+The power management default running mode is DOZE, If the user
 
-I will push this to my -next branch in the next few days, and
-ask Paul to pull it.  The diffstat is below.
+echo 1 > /proc/sys/kernel/powersave-nap
 
-josh
+the system will change to NAP running mode.
 
- arch/ppc/4xx_io/Makefile                           |    6 -
- arch/ppc/4xx_io/serial_sicc.c                      | 2005 --------------------
- arch/ppc/Kconfig                                   |   73 +-
- arch/ppc/Kconfig.debug                             |    4 +-
- arch/ppc/Makefile                                  |    5 -
- arch/ppc/boot/common/ns16550.c                     |    3 -
- arch/ppc/boot/common/util.S                        |    9 -
- arch/ppc/boot/simple/Makefile                      |   61 -
- arch/ppc/boot/simple/embed_config.c                |  221 +---
- arch/ppc/boot/simple/misc-embedded.c               |    4 +-
- arch/ppc/boot/simple/misc.c                        |   23 -
- arch/ppc/boot/simple/openbios.c                    |  128 --
- arch/ppc/boot/simple/pibs.c                        |  104 -
- arch/ppc/boot/simple/rw4/ppc_40x.h                 |  664 -------
- arch/ppc/boot/simple/rw4/rw4_init.S                |   78 -
- arch/ppc/boot/simple/rw4/rw4_init_brd.S            | 1125 -----------
- arch/ppc/boot/simple/rw4/stb.h                     |  239 ---
- arch/ppc/boot/simple/uartlite_tty.c                |    1 -
- arch/ppc/configs/bamboo_defconfig                  |  944 ---------
- arch/ppc/configs/bubinga_defconfig                 |  592 ------
- arch/ppc/configs/cpci405_defconfig                 |  631 ------
- arch/ppc/configs/ebony_defconfig                   |  585 ------
- arch/ppc/configs/ep405_defconfig                   |  572 ------
- arch/ppc/configs/luan_defconfig                    |  668 -------
- arch/ppc/configs/ml300_defconfig                   |  739 -------
- arch/ppc/configs/ml403_defconfig                   |  740 --------
- arch/ppc/configs/ocotea_defconfig                  |  599 ------
- arch/ppc/configs/redwood5_defconfig                |  557 ------
- arch/ppc/configs/redwood6_defconfig                |  535 ------
- arch/ppc/configs/sycamore_defconfig                |  663 -------
- arch/ppc/configs/taishan_defconfig                 | 1077 -----------
- arch/ppc/configs/walnut_defconfig                  |  578 ------
- arch/ppc/kernel/Makefile                           |    2 -
- arch/ppc/kernel/asm-offsets.c                      |    2 +-
- arch/ppc/kernel/entry.S                            |   64 +-
- arch/ppc/kernel/head_44x.S                         |  769 --------
- arch/ppc/kernel/head_4xx.S                         | 1021 ----------
- arch/ppc/kernel/misc.S                             |   91 -
- arch/ppc/kernel/ppc_ksyms.c                        |    3 -
- arch/ppc/kernel/traps.c                            |   56 +-
- arch/ppc/mm/44x_mmu.c                              |  101 -
- arch/ppc/mm/4xx_mmu.c                              |  135 --
- arch/ppc/mm/Makefile                               |    2 -
- arch/ppc/mm/fault.c                                |    6 +-
- arch/ppc/mm/mmu_decl.h                             |    5 -
- arch/ppc/platforms/4xx/Kconfig                     |  285 ---
- arch/ppc/platforms/4xx/Makefile                    |   31 -
- arch/ppc/platforms/4xx/bamboo.c                    |  442 -----
- arch/ppc/platforms/4xx/bamboo.h                    |  133 --
- arch/ppc/platforms/4xx/bubinga.c                   |  265 ---
- arch/ppc/platforms/4xx/bubinga.h                   |   54 -
- arch/ppc/platforms/4xx/cpci405.c                   |  201 --
- arch/ppc/platforms/4xx/cpci405.h                   |   28 -
- arch/ppc/platforms/4xx/ebony.c                     |  334 ----
- arch/ppc/platforms/4xx/ebony.h                     |   97 -
- arch/ppc/platforms/4xx/ep405.c                     |  196 --
- arch/ppc/platforms/4xx/ep405.h                     |   52 -
- arch/ppc/platforms/4xx/ibm405ep.c                  |  141 --
- arch/ppc/platforms/4xx/ibm405ep.h                  |  145 --
- arch/ppc/platforms/4xx/ibm405gp.c                  |  120 --
- arch/ppc/platforms/4xx/ibm405gp.h                  |  148 --
- arch/ppc/platforms/4xx/ibm405gpr.c                 |  115 --
- arch/ppc/platforms/4xx/ibm405gpr.h                 |  148 --
- arch/ppc/platforms/4xx/ibm440ep.c                  |  220 ---
- arch/ppc/platforms/4xx/ibm440ep.h                  |   73 -
- arch/ppc/platforms/4xx/ibm440gp.c                  |  163 --
- arch/ppc/platforms/4xx/ibm440gp.h                  |   63 -
- arch/ppc/platforms/4xx/ibm440gx.c                  |  231 ---
- arch/ppc/platforms/4xx/ibm440gx.h                  |   71 -
- arch/ppc/platforms/4xx/ibm440sp.c                  |  129 --
- arch/ppc/platforms/4xx/ibm440sp.h                  |   61 -
- arch/ppc/platforms/4xx/ibmnp405h.c                 |  170 --
- arch/ppc/platforms/4xx/ibmnp405h.h                 |  154 --
- arch/ppc/platforms/4xx/ibmstb4.c                   |  122 --
- arch/ppc/platforms/4xx/ibmstb4.h                   |  235 ---
- arch/ppc/platforms/4xx/ibmstbx25.c                 |   66 -
- arch/ppc/platforms/4xx/ibmstbx25.h                 |  258 ---
- arch/ppc/platforms/4xx/luan.c                      |  371 ----
- arch/ppc/platforms/4xx/luan.h                      |   77 -
- arch/ppc/platforms/4xx/ocotea.c                    |  350 ----
- arch/ppc/platforms/4xx/ocotea.h                    |   94 -
- arch/ppc/platforms/4xx/ppc440spe.c                 |  146 --
- arch/ppc/platforms/4xx/ppc440spe.h                 |   63 -
- arch/ppc/platforms/4xx/redwood5.c                  |  120 --
- arch/ppc/platforms/4xx/redwood5.h                  |   52 -
- arch/ppc/platforms/4xx/redwood6.c                  |  156 --
- arch/ppc/platforms/4xx/redwood6.h                  |   53 -
- arch/ppc/platforms/4xx/sycamore.c                  |  272 ---
- arch/ppc/platforms/4xx/sycamore.h                  |   49 -
- arch/ppc/platforms/4xx/taishan.c                   |  395 ----
- arch/ppc/platforms/4xx/taishan.h                   |   67 -
- arch/ppc/platforms/4xx/virtex.h                    |   35 -
- arch/ppc/platforms/4xx/walnut.c                    |  246 ---
- arch/ppc/platforms/4xx/walnut.h                    |   52 -
- arch/ppc/platforms/4xx/xilinx_ml300.c              |  118 --
- arch/ppc/platforms/4xx/xilinx_ml403.c              |  120 --
- arch/ppc/platforms/4xx/xparameters/xparameters.h   |  104 -
- .../platforms/4xx/xparameters/xparameters_ml300.h  |  310 ---
- .../platforms/4xx/xparameters/xparameters_ml403.h  |  243 ---
- arch/ppc/platforms/4xx/yucca.c                     |  393 ----
- arch/ppc/platforms/4xx/yucca.h                     |  108 --
- arch/ppc/syslib/Makefile                           |   32 -
- arch/ppc/syslib/ibm440gp_common.c                  |   73 -
- arch/ppc/syslib/ibm440gp_common.h                  |   32 -
- arch/ppc/syslib/ibm440gx_common.c                  |  294 ---
- arch/ppc/syslib/ibm440gx_common.h                  |   58 -
- arch/ppc/syslib/ibm440sp_common.c                  |   68 -
- arch/ppc/syslib/ibm440sp_common.h                  |   23 -
- arch/ppc/syslib/ibm44x_common.c                    |  235 ---
- arch/ppc/syslib/ibm44x_common.h                    |   45 -
- arch/ppc/syslib/ibm_ocp.c                          |   10 -
- arch/ppc/syslib/ppc403_pic.c                       |  125 --
- arch/ppc/syslib/ppc405_pci.c                       |  170 --
- arch/ppc/syslib/ppc440spe_pcie.c                   |  441 -----
- arch/ppc/syslib/ppc440spe_pcie.h                   |  149 --
- arch/ppc/syslib/ppc4xx_dma.c                       |  710 -------
- arch/ppc/syslib/ppc4xx_pic.c                       |  284 ---
- arch/ppc/syslib/ppc4xx_setup.c                     |  271 ---
- arch/ppc/syslib/ppc4xx_sgdma.c                     |  464 -----
- arch/ppc/syslib/virtex_devices.c                   |  276 ---
- arch/ppc/syslib/virtex_devices.h                   |   35 -
- arch/ppc/syslib/xilinx_pic.c                       |  153 --
- arch/ppc/xmon/start.c                              |   15 -
- arch/ppc/xmon/xmon.c                               |   13 +-
- include/asm-ppc/ibm403.h                           |  478 -----
- include/asm-ppc/ibm405.h                           |  299 ---
- include/asm-ppc/ibm44x.h                           |  674 -------
- include/asm-ppc/ibm4xx.h                           |  124 --
- include/asm-ppc/ibm_ocp.h                          |  204 --
- include/asm-ppc/ibm_ocp_pci.h                      |   32 -
- include/asm-ppc/io.h                               |    7 +-
- include/asm-ppc/mmu_context.h                      |    5 -
- include/asm-ppc/ppc4xx_dma.h                       |  579 ------
- include/asm-ppc/ppc4xx_pic.h                       |   52 -
- include/asm-ppc/ppcboot.h                          |   24 +-
- include/asm-ppc/reg_booke.h                        |   98 +-
- include/asm-ppc/serial.h                           |    2 -
- 137 files changed, 33 insertions(+), 31956 deletions(-)
+---
+
+I'm post this for review feedback.  The one thing we plan on changing is
+the L1 cache flush code that is in idle_e500.S.
+
+- k
+
+ arch/powerpc/kernel/Makefile         |    1 +
+ arch/powerpc/kernel/cputable.c       |    2 -
+ arch/powerpc/kernel/entry_32.S       |    8 ++--
+ arch/powerpc/kernel/head_fsl_booke.S |   35 +++++++++++++++
+ arch/powerpc/kernel/idle_6xx.S       |    2 +-
+ arch/powerpc/kernel/idle_e500.S      |   79 ++++++++++++++++++++++++++++++++++
+ arch/powerpc/kernel/setup_32.c       |    5 ++
+ include/asm-powerpc/cputable.h       |    7 ++-
+ include/asm-powerpc/machdep.h        |    1 +
+ 9 files changed, 130 insertions(+), 10 deletions(-)
+ create mode 100644 arch/powerpc/kernel/idle_e500.S
+
+diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
+index 2346d27..0e8f928 100644
+--- a/arch/powerpc/kernel/Makefile
++++ b/arch/powerpc/kernel/Makefile
+@@ -38,6 +38,7 @@ obj-$(CONFIG_IBMVIO)		+= vio.o
+ obj-$(CONFIG_IBMEBUS)           += ibmebus.o
+ obj-$(CONFIG_GENERIC_TBSYNC)	+= smp-tbsync.o
+ obj-$(CONFIG_CRASH_DUMP)	+= crash_dump.o
++obj-$(CONFIG_E500)		+= idle_e500.o
+ obj-$(CONFIG_6xx)		+= idle_6xx.o l2cr_6xx.o cpu_setup_6xx.o
+ obj-$(CONFIG_TAU)		+= tau_6xx.o
+ obj-$(CONFIG_HIBERNATION)	+= swsusp.o suspend.o \
+diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
+index e44d553..4a187e5 100644
+--- a/arch/powerpc/kernel/cputable.c
++++ b/arch/powerpc/kernel/cputable.c
+@@ -1491,7 +1491,6 @@ static struct cpu_spec __initdata cpu_specs[] = {
+ 		.pvr_mask		= 0xffff0000,
+ 		.pvr_value		= 0x80200000,
+ 		.cpu_name		= "e500",
+-		/* xxx - galak: add CPU_FTR_MAYBE_CAN_DOZE */
+ 		.cpu_features		= CPU_FTRS_E500,
+ 		.cpu_user_features	= COMMON_USER_BOOKE |
+ 			PPC_FEATURE_HAS_SPE_COMP |
+@@ -1508,7 +1507,6 @@ static struct cpu_spec __initdata cpu_specs[] = {
+ 		.pvr_mask		= 0xffff0000,
+ 		.pvr_value		= 0x80210000,
+ 		.cpu_name		= "e500v2",
+-		/* xxx - galak: add CPU_FTR_MAYBE_CAN_DOZE */
+ 		.cpu_features		= CPU_FTRS_E500_2,
+ 		.cpu_user_features	= COMMON_USER_BOOKE |
+ 			PPC_FEATURE_HAS_SPE_COMP |
+diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
+index fe21674..ab2d62f 100644
+--- a/arch/powerpc/kernel/entry_32.S
++++ b/arch/powerpc/kernel/entry_32.S
+@@ -176,14 +176,14 @@ transfer_to_handler:
+ 	cmplw	r1,r9			/* if r1 <= ksp_limit */
+ 	ble-	stack_ovf		/* then the kernel stack overflowed */
+ 5:
+-#ifdef CONFIG_6xx
++#if defined(CONFIG_6xx) || defined(CONFIG_E500)
+ 	rlwinm	r9,r1,0,0,31-THREAD_SHIFT
+ 	tophys(r9,r9)			/* check local flags */
+ 	lwz	r12,TI_LOCAL_FLAGS(r9)
+ 	mtcrf	0x01,r12
+ 	bt-	31-TLF_NAPPING,4f
+ 	bt-	31-TLF_SLEEPING,7f
+-#endif /* CONFIG_6xx */
++#endif /* CONFIG_6xx || CONFIG_E500 */
+ 	.globl transfer_to_handler_cont
+ transfer_to_handler_cont:
+ 3:
+@@ -196,10 +196,10 @@ transfer_to_handler_cont:
+ 	SYNC
+ 	RFI				/* jump to handler, enable MMU */
+
+-#ifdef CONFIG_6xx
++#if defined (CONFIG_6xx) || defined(CONFIG_E500)
+ 4:	rlwinm	r12,r12,0,~_TLF_NAPPING
+ 	stw	r12,TI_LOCAL_FLAGS(r9)
+-	b	power_save_6xx_restore
++	b	power_save_ppc32_restore
+
+ 7:	rlwinm	r12,r12,0,~_TLF_SLEEPING
+ 	stw	r12,TI_LOCAL_FLAGS(r9)
+diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
+index 503f860..b46744f 100644
+--- a/arch/powerpc/kernel/head_fsl_booke.S
++++ b/arch/powerpc/kernel/head_fsl_booke.S
+@@ -39,6 +39,7 @@
+ #include <asm/thread_info.h>
+ #include <asm/ppc_asm.h>
+ #include <asm/asm-offsets.h>
++#include <asm/cache.h>
+ #include "head_booke.h"
+
+ /* As with the other PowerPC ports, it is expected that when code
+@@ -1066,6 +1067,40 @@ _GLOBAL(set_context)
+ 	blr
+
+ /*
++ * Flush all of d-cache, assume the cache size is 32K Bytes
++ * with 8 ways and PLRU replacement policy.
++ * We have to do load/flush in n KB continued space to
++ * guarante all of d-cache evict.
++ * It is enough to set n = cache-size * 13 / 8,
++ */
++_GLOBAL(flush_dcache_L1)
++	sync
++
++	/* Load counter to 0x680 cache lines and
++	 * load cache with datas
++	 */
++	li	r3,0x680
++	mtctr	r3
++	lis	r3,KERNELBASE@h
++1:
++	lwz	r4,0(r3)
++	addi	r3,r3,L1_CACHE_BYTES	/* Go to start of next cache line */
++	bdnz	1b
++	sync
++
++	/* Now flush those cache lines */
++	li	r3,0x680
++	mtctr	r3
++	lis	r3,KERNELBASE@h
++2:
++	dcbf	0,r3
++	addi	r3,r3,L1_CACHE_BYTES	/* Go to start of next cache line */
++	bdnz	2b
++	sync
++	blr
++
++
++/*
+  * We put a few things here that have to be page-aligned. This stuff
+  * goes at the beginning of the data segment, which is page-aligned.
+  */
+diff --git a/arch/powerpc/kernel/idle_6xx.S b/arch/powerpc/kernel/idle_6xx.S
+index 01bcd52..019b02d 100644
+--- a/arch/powerpc/kernel/idle_6xx.S
++++ b/arch/powerpc/kernel/idle_6xx.S
+@@ -153,7 +153,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
+  * address of current.  R11 points to the exception frame (physical
+  * address).  We have to preserve r10.
+  */
+-_GLOBAL(power_save_6xx_restore)
++_GLOBAL(power_save_ppc32_restore)
+ 	lwz	r9,_LINK(r11)		/* interrupted in ppc6xx_idle: */
+ 	stw	r9,_NIP(r11)		/* make it do a blr */
+
+diff --git a/arch/powerpc/kernel/idle_e500.S b/arch/powerpc/kernel/idle_e500.S
+new file mode 100644
+index 0000000..32eb29d
+--- /dev/null
++++ b/arch/powerpc/kernel/idle_e500.S
+@@ -0,0 +1,79 @@
++/*
++ * Copyright (C) 2008 Freescale Semiconductor, Inc. All rights reserved.
++ * Dave Liu <daveliu@freescale.com>
++ * copy from idle_6xx.S and modify for e500 based processor,
++ * implement the power_save function in idle.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ */
++
++#include <linux/threads.h>
++#include <asm/reg.h>
++#include <asm/page.h>
++#include <asm/cputable.h>
++#include <asm/thread_info.h>
++#include <asm/ppc_asm.h>
++#include <asm/asm-offsets.h>
++
++	.text
++
++_GLOBAL(e500_idle)
++	/* Check if we can nap or doze, put HID0 mask in r3 */
++	lis	r3,0
++BEGIN_FTR_SECTION
++	lis	r3,HID0_DOZE@h
++END_FTR_SECTION_IFSET(CPU_FTR_CAN_DOZE)
++
++BEGIN_FTR_SECTION
++	/* Now check if user enabled NAP mode */
++	lis	r4,powersave_nap@ha
++	lwz	r4,powersave_nap@l(r4)
++	cmpwi	0,r4,0
++	beq	1f
++	mflr	r7
++	bl	flush_dcache_L1
++	mtlr	r7
++	lis	r3,HID0_NAP@h
++END_FTR_SECTION_IFSET(CPU_FTR_CAN_NAP)
++1:
++	/* Go to NAP or DOZE now */
++	mfspr	r4,SPRN_HID0
++	rlwinm	r4,r4,0,~(HID0_DOZE|HID0_NAP|HID0_SLEEP)
++	or	r4,r4,r3
++	isync
++	mtspr	SPRN_HID0,r4
++	isync
++
++	rlwinm	r9,r1,0,0,31-THREAD_SHIFT	/* current thread_info */
++	lwz	r8,TI_LOCAL_FLAGS(r9)	/* set napping bit */
++	ori	r8,r8,_TLF_NAPPING	/* so when we take an exception */
++	stw	r8,TI_LOCAL_FLAGS(r9)	/* it will return to our caller */
++	mfmsr	r7
++	oris	r7,r7,MSR_WE@h
++	ori	r7,r7,MSR_EE
++	msync
++	mtmsr	r7
++	isync
++2:	b	2b
++
++/*
++ * Return from NAP/DOZE mode, restore some CPU specific registers,
++ * r2 containing physical address of current.
++ * r11 points to the exception frame (physical address).
++ * We have to preserve r10.
++ */
++_GLOBAL(power_save_ppc32_restore)
++	lwz	r9,_LINK(r11)		/* interrupted in e500_idle */
++	stw	r9,_NIP(r11)		/* make it do a blr */
++
++#ifdef CONFIG_SMP
++	mfspr	r12,SPRN_SPRG3
++	lwz	r11,TI_CPU(r12)		/* get cpu number * 4 */
++	slwi	r11,r11,2
++#else
++	li	r11,0
++#endif
++	b	transfer_to_handler_cont
+diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
+index bef0be3..9e83add 100644
+--- a/arch/powerpc/kernel/setup_32.c
++++ b/arch/powerpc/kernel/setup_32.c
+@@ -127,6 +127,11 @@ void __init machine_init(unsigned long dt_ptr, unsigned long phys)
+ 		ppc_md.power_save = ppc6xx_idle;
+ #endif
+
++#ifdef CONFIG_E500
++	if (cpu_has_feature(CPU_FTR_CAN_DOZE) ||
++	    cpu_has_feature(CPU_FTR_CAN_NAP))
++		ppc_md.power_save = e500_idle;
++#endif
+ 	if (ppc_md.progress)
+ 		ppc_md.progress("id mach(): done", 0x200);
+ }
+diff --git a/include/asm-powerpc/cputable.h b/include/asm-powerpc/cputable.h
+index 1e79673..a710a53 100644
+--- a/include/asm-powerpc/cputable.h
++++ b/include/asm-powerpc/cputable.h
+@@ -347,10 +347,11 @@ extern void do_feature_fixups(unsigned long value, void *fixup_start,
+ #define CPU_FTRS_E200	(CPU_FTR_USE_TB | CPU_FTR_SPE_COMP | \
+ 	    CPU_FTR_NODSISRALIGN | CPU_FTR_COHERENT_ICACHE | \
+ 	    CPU_FTR_UNIFIED_ID_CACHE)
+-#define CPU_FTRS_E500	(CPU_FTR_USE_TB | CPU_FTR_SPE_COMP | \
++#define CPU_FTRS_E500	(CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB | \
++	    CPU_FTR_SPE_COMP | CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_NODSISRALIGN)
++#define CPU_FTRS_E500_2	(CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB | \
++	    CPU_FTR_SPE_COMP | CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_BIG_PHYS | \
+ 	    CPU_FTR_NODSISRALIGN)
+-#define CPU_FTRS_E500_2	(CPU_FTR_USE_TB | CPU_FTR_SPE_COMP | \
+-	    CPU_FTR_BIG_PHYS | CPU_FTR_NODSISRALIGN)
+ #define CPU_FTRS_GENERIC_32	(CPU_FTR_COMMON | CPU_FTR_NODSISRALIGN)
+
+ /* 64-bit CPUs */
+diff --git a/include/asm-powerpc/machdep.h b/include/asm-powerpc/machdep.h
+index 54ed64d..9899226 100644
+--- a/include/asm-powerpc/machdep.h
++++ b/include/asm-powerpc/machdep.h
+@@ -262,6 +262,7 @@ struct machdep_calls {
+ #endif
+ };
+
++extern void e500_idle(void);
+ extern void power4_idle(void);
+ extern void power4_cpu_offline_powersave(void);
+ extern void ppc6xx_idle(void);
+-- 
+1.5.5.1
