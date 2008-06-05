@@ -1,29 +1,21 @@
-Return-Path: <sean.maclennan@pikatech.com>
-Received: from mail.pikatech.com (mail.pikatech.com [207.107.229.10])
-	by ozlabs.org (Postfix) with ESMTP id E7F4EDE11A
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jun 2008 08:45:41 +1000 (EST)
-Received: from [207.107.229.5] (helo=pks00005.kanatek.com)
-	by mail.pikatech.com with esmtp (Exim 4.51) id 1K4OAc-0005wS-Jc
-	for linuxppc-dev@ozlabs.org; Thu, 05 Jun 2008 18:42:58 -0400
-Date: Thu, 5 Jun 2008 18:45:09 -0400
-From: Sean MacLennan <smaclennan@pikatech.com>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: "cell-index" vs. "index" vs. no index in I2C device nodes
-Message-ID: <20080605184509.1e788220@wally.pikatech.com>
-In-Reply-To: <fa686aa40806051214u6866cec0m66ea32275d8bd5cc@mail.gmail.com>
-References: <200806041706.21557.sr@denx.de>
-	<fa686aa40806050839h55d8e358m93248414507f10e2@mail.gmail.com>
-	<48480987.1070701@freescale.com>
-	<fa686aa40806050900i40f0aa62o4bab3b8c7409b15f@mail.gmail.com>
-	<484810A3.5070301@freescale.com>
-	<20080605112122.0381a338@zod.rchland.ibm.com>
-	<48481373.8010706@freescale.com>
-	<20080605132735.3433f2af@zod.rchland.ibm.com>
-	<fa686aa40806051146h10d9add6ude64d59cedf08f7d@mail.gmail.com>
-	<20080605135625.562d1dbe@zod.rchland.ibm.com>
-	<fa686aa40806051214u6866cec0m66ea32275d8bd5cc@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Return-Path: <herbert@gondor.apana.org.au>
+Received: from arnor.apana.org.au (rhun.apana.org.au [64.62.148.172])
+	by ozlabs.org (Postfix) with ESMTP id 034E7DE025
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jun 2008 08:52:16 +1000 (EST)
+Date: Fri, 6 Jun 2008 08:52:07 +1000
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Kim Phillips <kim.phillips@freescale.com>
+Subject: Re: [PATCH 2/2 v2] talitos: Freescale integrated security engine
+	(SEC) driver
+Message-ID: <20080605225207.GA31016@gondor.apana.org.au>
+References: <20080530185830.60f4e1d4.kim.phillips@freescale.com>
+	<20080605052224.GA23150@gondor.apana.org.au>
+	<20080605164415.d486a299.kim.phillips@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080605164415.d486a299.kim.phillips@freescale.com>
+Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>, linuxppc-dev@ozlabs.org,
+	linux-crypto@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,19 +25,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 5 Jun 2008 13:14:00 -0600
-"Grant Likely" <grant.likely@secretlab.ca> wrote:
+On Thu, Jun 05, 2008 at 04:44:15PM -0500, Kim Phillips wrote:
+>
+> it is :).  I'm working on it :).
 
-> No; use an alias in the aliases node.  That is what aliases is
-> designed for.  Something like 'index' is a reinvention of the wheel.
+Good :)
+ 
+> the h/w has a IV out feature we should probably be using.  How about
+> something like this (UNTESTED):
 
-If we really want to get rid of the index, I like the alias method. I
-mainly write drivers, so I don't know register addresses. I just read
-the spec and it says device A is on i2c bus 2. That is why I went with
-the index. Calling get_i2c_apapter(2) makes sense.
+Looks great!
 
-However, calling get_i2c_adapter("IIC2"), just as a made up example,
-makes just as much sense.
-
-Cheers,
-   Sean
+Thanks,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
