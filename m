@@ -1,21 +1,15 @@
-Return-Path: <herbert@gondor.apana.org.au>
-Received: from arnor.apana.org.au (rhun.apana.org.au [64.62.148.172])
-	by ozlabs.org (Postfix) with ESMTP id 034E7DE025
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jun 2008 08:52:16 +1000 (EST)
-Date: Fri, 6 Jun 2008 08:52:07 +1000
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Kim Phillips <kim.phillips@freescale.com>
-Subject: Re: [PATCH 2/2 v2] talitos: Freescale integrated security engine
-	(SEC) driver
-Message-ID: <20080605225207.GA31016@gondor.apana.org.au>
-References: <20080530185830.60f4e1d4.kim.phillips@freescale.com>
-	<20080605052224.GA23150@gondor.apana.org.au>
-	<20080605164415.d486a299.kim.phillips@freescale.com>
+Return-Path: <roto@gmx.net>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id C0789DE00E
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jun 2008 08:58:15 +1000 (EST)
+Date: Fri, 6 Jun 2008 00:58:07 +0200
+From: Wolfgang Pfeiffer <roto@gmx.net>
+To: Jens Axboe <jens.axboe@oracle.com>
+Subject: git Linux 2.6.26-rc5 - 53c8ba9: seems OK after short use
+Message-ID: <20080605225807.GA3642@localhost>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080605164415.d486a299.kim.phillips@freescale.com>
-Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>, linuxppc-dev@ozlabs.org,
-	linux-crypto@vger.kernel.org
+Cc: linuxppc-dev@ozlabs.org, debian-powerpc@lists.debian.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,20 +19,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jun 05, 2008 at 04:44:15PM -0500, Kim Phillips wrote:
->
-> it is :).  I'm working on it :).
+Hi All
 
-Good :)
- 
-> the h/w has a IV out feature we should probably be using.  How about
-> something like this (UNTESTED):
+With these rather fresh sources, obtained via git: 
 
-Looks great!
+53c8ba9 Linux 2.6.26-rc5 
 
-Thanks,
+and after just about an hour of mild tests on 2 powerpc laptops: an
+older TiBookIV, a newer Powerbook5,8.
+
+CD-Burning seems to work again: at least on the Powerbook5,8 - with a
+real image burn. A simulated CD burn on the TiBookIV ended
+successfully.
+
+Sleep seems being OK, on both machines.
+
+Trackpad mouse pointer, on both machines, didn't disappear so far.
+
+I only realised yesterday, after months of using a kernel that I even
+uploaded for the rest of the world around Febr./March this year, that
+CD burning obviously was gone with v2.6.25-rc3-81-g7704a8b. So after a
+short test this burner issue seems gone with the new 2.6.26-rc5 .. :)
+
+And no, I won't upload this 2.6.26-rc5 package anywhere, probably ...
+
+Thanks a lot to the kernel guys ... :)
+
+HTH
+Wolfgang
 -- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+http://heelsbroke.blogspot.com/
+http://keyserver.mine.nu/pks/lookup?search=0xE3037113&fingerprint=on
