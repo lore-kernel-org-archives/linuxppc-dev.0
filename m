@@ -1,18 +1,15 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from ag-out-0708.google.com (ag-out-0708.google.com [72.14.246.251])
-	by ozlabs.org (Postfix) with ESMTP id 8BECEDF939
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jun 2008 06:27:51 +1000 (EST)
-Received: by ag-out-0708.google.com with SMTP id 8so2698694agc.0
-	for <linuxppc-dev@ozlabs.org>; Thu, 05 Jun 2008 13:27:49 -0700 (PDT)
-Message-ID: <fa686aa40806051327w1a9ac83ajb3a08deb716fb160@mail.gmail.com>
-Date: Thu, 5 Jun 2008 14:27:47 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Arnd Bergmann" <arnd@arndb.de>
-Subject: Re: arch/ppc is going away Real Soon Now
+Return-Path: <olof@lixom.net>
+Received: from elcamino.pasemi.com (elcamino.pasemi.com [67.155.108.98])
+	by ozlabs.org (Postfix) with ESMTP id 25732E03EB
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jun 2008 06:28:21 +1000 (EST)
+Message-Id: <A5012017-D5C8-43AC-844A-E74B59E77D0C@lixom.net>
+From: Olof Johansson <olof@lixom.net>
+To: Arnd Bergmann <arnd@arndb.de>
 In-Reply-To: <200806052212.29792.arnd@arndb.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Mime-Version: 1.0 (Apple Message framework v924)
+Subject: Re: arch/ppc is going away Real Soon Now
+Date: Thu, 5 Jun 2008 15:28:15 -0500
 References: <20080605095253.7df9dbe0@zod.rchland.ibm.com>
 	<20080605101838.5b1d9233@zod.rchland.ibm.com>
 	<20080605154839.B87C5838078@mail206-sin.bigfish.com>
@@ -27,18 +24,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jun 5, 2008 at 2:12 PM, Arnd Bergmann <arnd@arndb.de> wrote:
+
+On Jun 5, 2008, at 3:12 PM, Arnd Bergmann wrote:
+
 > On Thursday 05 June 2008, Stephen Neuendorffer wrote:
->> > "Grant Likely" <grant.likely@secretlab.ca> wrote:
->> >
->> > > Paulus, Can we just kill all of arch/ppc for .27 right now?
->> >
->> > Acked-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+>>> "Grant Likely" <grant.likely@secretlab.ca> wrote:
+>>>
+>>>> Paulus, Can we just kill all of arch/ppc for .27 right now?
+>>>
+>>> Acked-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 >> Acked-by: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
 > Acked-by: Arnd Bergmann <arnd@arndb.de>
-Acked-by: Grant Likely <grant.likely@secretlab.ca>
-
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Acked-by: Olof Johansson <olof@lixom.net>
