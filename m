@@ -1,30 +1,27 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 8461DDEA55
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jun 2008 04:04:48 +1000 (EST)
-Message-ID: <48482AB6.7030506@freescale.com>
-Date: Thu, 05 Jun 2008 13:04:38 -0500
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from ag-out-0708.google.com (ag-out-0708.google.com [72.14.246.240])
+	by ozlabs.org (Postfix) with ESMTP id B8C7DDF323
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jun 2008 04:18:57 +1000 (EST)
+Received: by ag-out-0708.google.com with SMTP id 8so2503269agc.0
+	for <linuxppc-dev@ozlabs.org>; Thu, 05 Jun 2008 11:18:56 -0700 (PDT)
+Message-ID: <fa686aa40806051118y39cbf14fye5268c819d4bbbfc@mail.gmail.com>
+Date: Thu, 5 Jun 2008 12:18:56 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: avorontsov@ru.mvista.com
+Subject: Re: [PATCH] [RFC v3] OF: OpenFirmware bindings for the mmc_spi driver
+In-Reply-To: <20080605180058.GA21429@polina.dev.rtsoft.ru>
 MIME-Version: 1.0
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: "cell-index" vs. "index" vs. no index in I2C device nodes
-References: <200806041706.21557.sr@denx.de> <4846B39F.3010601@freescale.com>
-	<20080604154351.GB10393@ld0162-tx32.am.freescale.net>
-	<20080604211942.2bddc860@zod.rchland.ibm.com>
-	<4848028B.5060105@freescale.com>
-	<fa686aa40806050839h55d8e358m93248414507f10e2@mail.gmail.com>
-	<48480987.1070701@freescale.com>
-	<935d90b908261c8e5862caeeb1f396aa@kernel.crashing.org>
-	<48480FAC.3020406@freescale.com>
-	<20080605162724.GA4150@ld0162-tx32.am.freescale.net>
-	<484827C5.6030108@freescale.com>
-In-Reply-To: <484827C5.6030108@freescale.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org, Stefan Roese <sr@denx.de>
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20080605161624.GA517@polina.dev.rtsoft.ru>
+	<fa686aa40806050945h5e61910flb63a8d00e1d2b0e8@mail.gmail.com>
+	<20080605172723.GA14514@polina.dev.rtsoft.ru>
+	<fa686aa40806051036x22cd6a2bkc58650f5e69960fe@mail.gmail.com>
+	<20080605180058.GA21429@polina.dev.rtsoft.ru>
+Cc: David Brownell <dbrownell@users.sourceforge.net>,
+	Gary Jennejohn <garyj@denx.de>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
+	Pierre Ossman <drzeus-mmc@drzeus.cx>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,26 +31,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Timur Tabi wrote:
-> Scott Wood wrote:
-> 
->> No, it's not.  It can determine that it's at address 0x4f on the i2c bus
->> at 0xe0003100.  This is exactly how the ethernet phy lookup is done.
-> 
-> But how does the fabric driver know whether e0003100 is I2C1 or I2C2?
+On Thu, Jun 5, 2008 at 12:00 PM, Anton Vorontsov
+<avorontsov@ru.mvista.com> wrote:
+> On Thu, Jun 05, 2008 at 11:36:09AM -0600, Grant Likely wrote:
+>> On Thu, Jun 5, 2008 at 11:27 AM, Anton Vorontsov
+>> <avorontsov@ru.mvista.com> wrote:
+>> > Well, I mentioned the usb_add_hcd()-alike approach for the mmc_spi
+>> > host... The absence of enthusiasm I equaled to "no".
+>> >
+>> > Heh.
+>>
+>> I'm allergic to USB HCD code; I was probably having convulsions under my desk.
+>
+> :-)
+>
+> Ok, I also mentioned drivers/ata/pata_of_platform.c (OF version is using
+> common code from drivers/ata/pata_platform.c).
+>
+> Please look there, and tell me if this is what you have in mind. (ignore
+> _probe in the __pata_platform_probe name. Imagine
+> pata_platform_add_controller or something).
 
-It shouldn't have to care.
+Yes, I like that.  I've done something very similar for drivers with
+both of and non-of bindings.  For another example, this time all
+contained within a single .c file, see drivers/video/xilinxfb.c
 
-> And how does the codec driver, which sees only I2C information, know that it's
-> at e0003100?
+>> > p.s.
+>> > Btw, you forgot another downside of v2 approach: struct spi_driver
+>> > duplication... Not sure if everyone will be happy about it.
+>> >
+>> > Though, v2 is only version where we can make modular OF_MMC_SPI.
+>>
+>> I think we've got our wires crossed.  I'm not referring to the option
+>> of an of_mmc_spi driver registering an mmc_spi device (which can then
+>> be probed by the mmc_spi_driver).
+>
+> I'm not refrering to this option either.
 
-This is an internal communications failure within the i2c layer, not 
-something that warrants expression in the device tree.  Some solutions, 
-in increasing order of desirability, are:
+Okay, I'm confused then.  Where is the duplication of struct spi_driver?
 
-1. Assign the I2C bus number based on the adapter's register offset.
-2. Let the adapter provide a more helpful bus_id than a Linux-assigned 
-index.
-3. Create a way to look up an I2C device by its OF node.
+Cheers,
+g.
 
--Scott
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
