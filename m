@@ -1,21 +1,19 @@
-Return-Path: <sr@denx.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.174]) by ozlabs.org (Postfix) with ESMTP id E1ECFDDF90
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	by ozlabs.org (Postfix) with ESMTP id 71C80DE29D
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  5 Jun 2008 18:29:41 +1000 (EST)
-From: Stefan Roese <sr@denx.de>
-To: - Reyneke <reynekejunk@hotmail.com>
-Subject: Re: FP and signal 4
-Date: Thu, 5 Jun 2008 10:29:36 +0200
-References: <BAY101-W2A5F2B80B271BD10DE9BBBEB50@phx.gbl>
-	<200806050659.30499.sr@denx.de>
-	<BAY101-W3227AB825957D1D453830CBEB40@phx.gbl>
-In-Reply-To: <BAY101-W3227AB825957D1D453830CBEB40@phx.gbl>
+	Thu,  5 Jun 2008 18:49:30 +1000 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1K4B9z-0008R9-Bo
+	for linuxppc-embedded@ozlabs.org; Thu, 05 Jun 2008 01:49:27 -0700
+Message-ID: <17665078.post@talk.nabble.com>
+Date: Thu, 5 Jun 2008 01:49:27 -0700 (PDT)
+From: Misbah khan <misbah_khan@engineer.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: Concern regarding Booting up of linux board ...
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200806051029.36558.sr@denx.de>
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -26,21 +24,54 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thursday 05 June 2008, - Reyneke wrote:
-> Aaah - looks like that was it. Works OK now with CONFIG_MATH_EMULATION
-> un-set.
 
-Great.
+Hi all ..
 
-I hope "-b 0" is set by default in recent dtc versions. If not we should 
-really do this (I already mentioned this to David Gibson before). This is a 
-nasty bug on 440EPx which was not so easy to find.
+we are using IMX-31 (ARM Core) processor with Linux 2.6 and redboot as boot
+loader with jffs2 for NAND flash and facing the concerned problem :-
 
-Best regards,
-Stefan
+The board is booting fine but it sometimes takes 21 sec to boot and
+sometimes takes 31 sec to boot which is a concern for us actually it takes
+usually 21 sec and 31 sec sometimes 
 
-=====================================================================
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: +49-8142-66989-0 Fax: +49-8142-66989-80  Email: office@denx.de
-=====================================================================
+If we remove the power after booting and again insert the power supply It
+gives the following warning message related to jffs2 ....
+
+JFFS2 notice: (878) check_node_data: wrong data CRC in data node at
+0x011dec00: read 0x2464ba56, calculated 0x474915f8.
+JFFS2 notice: (878) check_node_data: wrong data CRC in data node at
+0x0112be00: read 0x149efa32, calculated 0x8f32b0eb.
+JFFS2 notice: (878) check_node_data: wrong data CRC in data node at
+0x0112ba00: read 0xdcfafeb2, calculated 0xb86eb888.
+JFFS2 notice: (878) check_node_data: wrong data CRC in data node at
+0x013e8600: read 0x20bed1fc, calculated 0xe9509808.
+JFFS2 notice: (878) check_node_data: wrong data CRC in data node at
+0x013e9200: read 0x6e4f40bd, calculated 0x28248aa4.
+JFFS2 notice: (878) check_node_data: wrong data CRC in data node at
+0x013e8e00: read 0x6e4f40bd, calculated 0x59eaeede.
+JFFS2 notice: (878) check_node_data: wrong data CRC in data node at
+0x011df000: read 0x6e4f40bd, calculated 0xbf916037.
+JFFS2 notice: (878) check_node_data: wrong data CRC in data node at
+0x011dde00: read 0x6e4f40bd, calculated 0x946d0599.
+JFFS2 notice: (878) check_node_data: wrong data CRC in data node at
+0x011dc800: read 0x6e4f40bd, calculated 0x1e890eaa.
+JFFS2 notice: (759) check_node_data: wrong data CRC in data node at
+0x008c0200: read 0xd3ad877b, calculated 0xf4f0b5f9.
+JFFS2 notice: (759) check_node_data: wrong data CRC in data node at
+0x0097b800: read 0x8d0623a1, calculated 0xefce6ce7.
+JFFS2 notice: (759) check_node_data: wrong data CRC in data node at
+0x00965200: read 0x8d0623a1, calculated 0x92a2a227.
+
+Having never experienced this before i do believe that this could be the
+jffs2 related concern hence just thinking of using YAFFS to increase the
+booting effeciency ...
+
+
+I would remain thankful if any of you could share your experience or thaught
+regarding this ...
+
+Thank you 
+Misbah <><
+-- 
+View this message in context: http://www.nabble.com/Concern-regarding-Booting-up-of-linux-board-...-tp17665078p17665078.html
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
