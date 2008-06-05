@@ -1,28 +1,18 @@
-Return-Path: <timur@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 2FB3FDE5F4
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jun 2008 02:13:46 +1000 (EST)
-Message-ID: <484810A3.5070301@freescale.com>
-Date: Thu, 05 Jun 2008 11:13:23 -0500
-From: Timur Tabi <timur@freescale.com>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id C685DDEC76
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jun 2008 02:16:26 +1000 (EST)
+Date: Thu, 5 Jun 2008 20:16:24 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Pierre Ossman <drzeus-mmc@drzeus.cx>,
+	David Brownell <dbrownell@users.sourceforge.net>,
+	Grant Likely <grant.likely@secretlab.ca>
+Subject: [PATCH] [RFC v3] OF: OpenFirmware bindings for the mmc_spi driver
+Message-ID: <20080605161624.GA517@polina.dev.rtsoft.ru>
 MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: "cell-index" vs. "index" vs. no index in I2C device nodes
-References: <200806041706.21557.sr@denx.de> <4846B39F.3010601@freescale.com>	
-	<20080604154351.GB10393@ld0162-tx32.am.freescale.net>	
-	<20080604211942.2bddc860@zod.rchland.ibm.com>	
-	<4848028B.5060105@freescale.com>	
-	<fa686aa40806050839h55d8e358m93248414507f10e2@mail.gmail.com>	
-	<48480987.1070701@freescale.com>
-	<fa686aa40806050900i40f0aa62o4bab3b8c7409b15f@mail.gmail.com>
-In-Reply-To: <fa686aa40806050900i40f0aa62o4bab3b8c7409b15f@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
-	Stefan Roese <sr@denx.de>
+Content-Type: text/plain; charset=utf8
+Cc: Gary Jennejohn <garyj@denx.de>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,30 +22,308 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Grant Likely wrote:
+Here is v3. I'm out of ideas if you won't like it. :-)
 
-> That is still Linux internal artifacts leaking out.  Don't encode that
-> data into the device tree.
+v3:
+- Now these bindings are using bus notifiers chain, thus we adhere to the
+  spi bus.
 
-The I2C bus number is *not* an internal artifact.  On Freescale parts, the one
-I2C adapter is specifically designated I2C1, and the 2nd one is specifically
-designated I2C2.  This is part of the silicon, and so the device tree should
-specify it.
+  By the way, this scheme (IMO) looks good for I2C devices which needs
+  platform_data extracted from the device tree too (Cc'ing Jochen).
 
-> Besides, the whole thing looks bass ackwards and doesn't match the
-> Linux driver model.  'busses' should register 'devices'.  'drivers'
-> should then bind to those 'devices'.  Where ASoC is concerned, the i2c
-> bus should register its own child devices, which includes the codecs,
-> and an ASoC codec driver should bind against it.  The fabric driver
-> should then use the codec's exported API.
+- Plus changed the OF bindings themselves, implemented voltage-range
+  property. (Pierre, please take a look at vddrange_to_ocrmask(). I
+  wonder if you would like this in the MMC core instead, with a kernel
+  doc, of course.)
 
-Sorry, I don't really understand that.  The codec driver is just an I2C driver
-that registers callbacks with ASoC.  The fabric driver does not know what codec
-driver is present.  In many cases, there could be multiple codecs.  Sometimes
-they're the same type of codec, just at different I2C addresses.  Sometimes,
-they're completely different codecs.  So I could have any number of codec
-drivers loaded.  How would I know which exported API to call?
+v2:
+- Bindings were adhered to the MMC_SPI driver. Withdrawn by Pierre Ossman.
 
+v1:
+- Bindings were adhered to the OF SPI core. Withdrawn by OF people.
+
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
+ Documentation/powerpc/booting-without-of.txt |   21 +++
+ drivers/of/Kconfig                           |    8 +
+ drivers/of/Makefile                          |    1 +
+ drivers/of/of_mmc_spi.c                      |  210 ++++++++++++++++++++++++++
+ 4 files changed, 240 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/of/of_mmc_spi.c
+
+diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
+index 6e1711c..6c55f3f 100644
+--- a/Documentation/powerpc/booting-without-of.txt
++++ b/Documentation/powerpc/booting-without-of.txt
+@@ -3143,7 +3143,28 @@ platforms are moved over to use the flattened-device-tree model.
+ 			};
+ 		};
+ 
++    ...) MMC-over-SPI
+ 
++      Required properties:
++      - compatible : should be "mmc-spi".
++      - reg : should specify SPI address (chip-select number).
++      - max-speed : (optional) maximum frequency for this device (Hz).
++      - voltage-range : two cells are required, first cell specifies minimum
++        slot voltage (mV), second cell specifies maximum slot voltage (mV).
++      - gpios : (optional) may specify GPIOs in this order: Write-Protect GPIO,
++        Card-Detect GPIO.
++
++      Example:
++
++	mmc-slot@0 {
++		compatible = "mmc-spi";
++		reg = <0>;
++		max-speed = <50000000>;
++		/* Unregulated slot. */
++		voltage-range = <3300 3300>;
++		gpios = <&sdcsr_pio 1 0   /*  WP */
++			 &sdcsr_pio 0 1>; /* nCD */
++	};
+ 
+ VII - Marvell Discovery mv64[345]6x System Controller chips
+ ===========================================================
+diff --git a/drivers/of/Kconfig b/drivers/of/Kconfig
+index 3a7a11a..aadbfb3 100644
+--- a/drivers/of/Kconfig
++++ b/drivers/of/Kconfig
+@@ -13,3 +13,11 @@ config OF_I2C
+ 	depends on PPC_OF && I2C
+ 	help
+ 	  OpenFirmware I2C accessors
++
++config OF_MMC_SPI
++	bool "OpenFirmware bindings for MMC/SD over SPI"
++	depends on PPC_OF && SPI
++	default y if MMC_SPI
++	help
++	  Say Y here to enable OpenFirmware bindings for the MMC/SD over SPI
++	  driver.
+diff --git a/drivers/of/Makefile b/drivers/of/Makefile
+index 548772e..a7c44fc 100644
+--- a/drivers/of/Makefile
++++ b/drivers/of/Makefile
+@@ -2,3 +2,4 @@ obj-y = base.o
+ obj-$(CONFIG_OF_DEVICE) += device.o platform.o
+ obj-$(CONFIG_OF_GPIO)   += gpio.o
+ obj-$(CONFIG_OF_I2C)	+= of_i2c.o
++obj-$(CONFIG_OF_MMC_SPI)	+= of_mmc_spi.o
+diff --git a/drivers/of/of_mmc_spi.c b/drivers/of/of_mmc_spi.c
+new file mode 100644
+index 0000000..aa4e017
+--- /dev/null
++++ b/drivers/of/of_mmc_spi.c
+@@ -0,0 +1,210 @@
++/*
++ * OpenFirmware bindings for the MMC-over-SPI driver
++ *
++ * Copyright (c) MontaVista Software, Inc. 2008.
++ *
++ * Author: Anton Vorontsov <avorontsov@ru.mvista.com>
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ */
++
++#include <linux/init.h>
++#include <linux/device.h>
++#include <linux/notifier.h>
++#include <linux/gpio.h>
++#include <linux/of.h>
++#include <linux/of_gpio.h>
++#include <linux/of_platform.h>
++#include <linux/spi/spi.h>
++#include <linux/spi/mmc_spi.h>
++#include <linux/mmc/host.h>
++
++/*
++ * XXX: Place it somewhere in the generic MMC code?
++ */
++static int vdd_to_bitnum(int vdd)
++{
++	int bit;
++	const int max_bit = ilog2(MMC_VDD_35_36);
++
++	if (vdd < 1650 || vdd > 3600)
++		return -EINVAL;
++
++	if (vdd >= 1650 && vdd <= 1950)
++		return ilog2(MMC_VDD_165_195);
++
++	/* base 2000 mV, step 100 mV, bit's base 8 */
++	bit = (vdd - 2000) / 100 + 8;
++	if (bit > max_bit)
++		return max_bit;
++	return bit;
++}
++
++static int vddrange_to_ocrmask(int vdd_min, int vdd_max, unsigned int *mask)
++{
++	if (vdd_max < vdd_min)
++		return -EINVAL;
++
++	vdd_max = vdd_to_bitnum(vdd_max);
++	if (vdd_max < 0)
++		return -EINVAL;
++
++	vdd_min = vdd_to_bitnum(vdd_min);
++	if (vdd_min < 0)
++		return -EINVAL;
++
++	/* fill the mask, from max bit to min bit */
++	while (vdd_max >= vdd_min)
++		*mask |= 1 << vdd_max--;
++	return 0;
++}
++
++struct of_mmc_spi {
++	int wp_gpio;
++	int cd_gpio;
++	struct mmc_spi_platform_data mmc_pdata;
++};
++
++static struct of_mmc_spi *to_of_mmc_spi(struct device *dev)
++{
++	return container_of(dev->platform_data, struct of_mmc_spi, mmc_pdata);
++}
++
++static int mmc_get_ro(struct device *dev)
++{
++	struct of_mmc_spi *oms = to_of_mmc_spi(dev);
++
++	return gpio_get_value(oms->wp_gpio);
++}
++
++static int mmc_get_cd(struct device *dev)
++{
++	struct of_mmc_spi *oms = to_of_mmc_spi(dev);
++
++	return gpio_get_value(oms->cd_gpio);
++}
++
++static int of_mmc_spi_add(struct device *dev)
++{
++	int ret = -EINVAL;
++	struct device_node *np = dev->archdata.of_node;
++	struct of_mmc_spi *oms;
++	const u32 *voltage_range;
++	int size;
++
++	if (!np || !of_device_is_compatible(np, "mmc-spi"))
++		return NOTIFY_DONE;
++
++	oms = kzalloc(sizeof(*oms), GFP_KERNEL);
++	if (!oms)
++		return notifier_to_errno(-ENOMEM);
++
++	/* We don't support interrupts yet, let's poll. */
++	oms->mmc_pdata.caps |= MMC_CAP_NEEDS_POLL;
++
++	voltage_range = of_get_property(np, "voltage-range", &size);
++	if (!voltage_range || size < sizeof(*voltage_range) * 2) {
++		dev_err(dev, "OF: voltage-range unspecified\n");
++		goto err_ocr;
++	}
++
++	ret = vddrange_to_ocrmask(voltage_range[0], voltage_range[1],
++				  &oms->mmc_pdata.ocr_mask);
++	if (ret) {
++		dev_err(dev, "OF: specified voltage-range is invalid\n");
++		goto err_ocr;
++	}
++
++	oms->wp_gpio = of_get_gpio(np, 0);
++	if (gpio_is_valid(oms->wp_gpio)) {
++		ret = gpio_request(oms->wp_gpio, dev->bus_id);
++		if (ret < 0)
++			goto err_wp_gpio;
++		oms->mmc_pdata.get_ro = &mmc_get_ro;
++	}
++
++	oms->cd_gpio = of_get_gpio(np, 1);
++	if (gpio_is_valid(oms->cd_gpio)) {
++		ret = gpio_request(oms->cd_gpio, dev->bus_id);
++		if (ret < 0)
++			goto err_cd_gpio;
++		oms->mmc_pdata.get_cd = &mmc_get_cd;
++	}
++
++	dev->platform_data = &oms->mmc_pdata;
++
++	return NOTIFY_STOP;
++
++err_cd_gpio:
++	if (gpio_is_valid(oms->wp_gpio))
++		gpio_free(oms->wp_gpio);
++err_wp_gpio:
++err_ocr:
++	kfree(oms);
++	return notifier_to_errno(ret);
++}
++
++static int of_mmc_spi_del(struct device *dev)
++{
++	struct device_node *np = dev->archdata.of_node;
++	struct of_mmc_spi *oms;
++
++	if (!np || !of_device_is_compatible(np, "mmc-spi") ||
++			!dev->platform_data)
++		return NOTIFY_DONE;
++
++	oms = to_of_mmc_spi(dev);
++
++	if (gpio_is_valid(oms->cd_gpio))
++		gpio_free(oms->cd_gpio);
++	if (gpio_is_valid(oms->wp_gpio))
++		gpio_free(oms->wp_gpio);
++
++	kfree(oms);
++	return NOTIFY_STOP;
++}
++
++static int of_mmc_spi_notify(struct notifier_block *nb, unsigned long action,
++			     void *_dev)
++{
++	struct device *dev = _dev;
++
++	switch (action) {
++	case BUS_NOTIFY_ADD_DEVICE:
++		return of_mmc_spi_add(dev);
++	case BUS_NOTIFY_DEL_DEVICE:
++		return of_mmc_spi_del(dev);
++	};
++	return NOTIFY_DONE;
++}
++
++static struct notifier_block of_mmc_spi_notifier = {
++	.notifier_call = of_mmc_spi_notify,
++};
++
++/*
++ * Should be called early enough, but after SPI core initializes. So, we
++ * use subsys_initcall (as in the SPI core), and link order guaranties
++ * that we'll be called at the right time.
++ */
++static int __init of_mmc_spi_init(void)
++{
++	int ret;
++
++	ret = bus_register_notifier(&spi_bus_type, &of_mmc_spi_notifier);
++	if (ret) {
++		pr_err("%s: unable to register notifier on the spi bus\n",
++			__func__);
++		return ret;
++	}
++
++	return 0;
++}
++subsys_initcall(of_mmc_spi_init);
++
++MODULE_DESCRIPTION("OpenFirmware bindings for the MMC-over-SPI driver");
++MODULE_AUTHOR("Anton Vorontsov <avorontsov@ru.mvista.com>");
++MODULE_LICENSE("GPL");
 -- 
-Timur Tabi
-Linux kernel developer at Freescale
+1.5.5.1
