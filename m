@@ -1,12 +1,12 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id CED65DE3F0
-	for <linuxppc-dev@ozlabs.org>; Sat,  7 Jun 2008 05:24:46 +1000 (EST)
-Date: Fri, 6 Jun 2008 23:24:43 +0400
+	by ozlabs.org (Postfix) with ESMTP id 102ACDEB77
+	for <linuxppc-dev@ozlabs.org>; Sat,  7 Jun 2008 05:24:56 +1000 (EST)
+Date: Fri, 6 Jun 2008 23:24:54 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH 1/2] [POWERPC] 86xx: suspend support
-Message-ID: <20080606192443.GA20132@polina.dev.rtsoft.ru>
+Subject: [PATCH 2/2] [POWERPC] 86xx: mpc8610_hpcd: add wakeup-on-sw9 support
+Message-ID: <20080606192454.GB20132@polina.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf8
 Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
@@ -20,144 +20,148 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch adds suspend (standby, not suspend-to-ram) support for MPC86xx
-processors.
+On MPC8610HPCD there is a dedicated switch to wake up the board.
 
-In standby mode MPC86xx is able to wakeup only upon external interrupts
-(including sreset).
+The SW9 button is routed to IRQ8, but could be re-routed (via PIXIS)
+to sreset. Luckily, default is IRQ8.
 
-Signed-off-by: Scott Wood <scottwood@freescale.com>
-Signed-off-by: Jason Jin <Jason.jin@freescale.com>
+With 'no_console_suspend' kernel command line argument specified, the
+board is also able to wakeup upon the serial input.
+
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- arch/powerpc/Kconfig                          |    2 +-
- arch/powerpc/platforms/86xx/Makefile          |    1 +
- arch/powerpc/platforms/86xx/mpc86xx_suspend.c |   92 +++++++++++++++++++++++++
- 3 files changed, 94 insertions(+), 1 deletions(-)
- create mode 100644 arch/powerpc/platforms/86xx/mpc86xx_suspend.c
+ Documentation/powerpc/booting-without-of.txt |    4 ++
+ arch/powerpc/boot/dts/mpc8610_hpcd.dts       |    2 +
+ arch/powerpc/platforms/86xx/mpc8610_hpcd.c   |   45 +++++++++++++++++++++++--
+ 3 files changed, 47 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 2cde4e3..c45c71e 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -192,7 +192,7 @@ config ARCH_HIBERNATION_POSSIBLE
+diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
+index 6c55f3f..8fd0500 100644
+--- a/Documentation/powerpc/booting-without-of.txt
++++ b/Documentation/powerpc/booting-without-of.txt
+@@ -2896,11 +2896,15 @@ platforms are moved over to use the flattened-device-tree model.
+     - compatible : should be "fsl,fpga-pixis".
+     - reg : should contain the address and the lenght of the FPPGA register
+       set.
++    - interrupt-parent: the phandle for the interrupt controller.
++    - interrupts : should specify event IRQ.
  
- config ARCH_SUSPEND_POSSIBLE
- 	def_bool y
--	depends on ADB_PMU || PPC_EFIKA || PPC_LITE5200
-+	depends on ADB_PMU || PPC_EFIKA || PPC_LITE5200 || PPC_86xx
+     Example (MPC8610HPCD)
+ 	board-control@e8000000 {
+ 		compatible = "fsl,fpga-pixis";
+ 		reg = <0xe8000000 32>;
++		interrupt-parent = <&mpic>;
++		interrupts = <8 8>;
+ 	};
  
- config PPC_DCR_NATIVE
- 	bool
-diff --git a/arch/powerpc/platforms/86xx/Makefile b/arch/powerpc/platforms/86xx/Makefile
-index 1b9b4a9..a8557df 100644
---- a/arch/powerpc/platforms/86xx/Makefile
-+++ b/arch/powerpc/platforms/86xx/Makefile
-@@ -3,6 +3,7 @@
- #
+     t) Freescale MSI interrupt controller
+diff --git a/arch/powerpc/boot/dts/mpc8610_hpcd.dts b/arch/powerpc/boot/dts/mpc8610_hpcd.dts
+index 8dd8350..5952aa0 100644
+--- a/arch/powerpc/boot/dts/mpc8610_hpcd.dts
++++ b/arch/powerpc/boot/dts/mpc8610_hpcd.dts
+@@ -105,6 +105,8 @@
+ 			compatible = "fsl,fpga-pixis";
+ 			ranges = <0 3 0 0x20>;
+ 			reg = <3 0 0x20>;
++			interrupt-parent = <&mpic>;
++			interrupts = <8 8>;
  
- obj-$(CONFIG_SMP)		+= mpc86xx_smp.o
-+obj-$(CONFIG_SUSPEND)		+= mpc86xx_suspend.o
- obj-$(CONFIG_MPC8641_HPCN)	+= mpc86xx_hpcn.o
- obj-$(CONFIG_SBC8641D)		+= sbc8641d.o
- obj-$(CONFIG_MPC8610_HPCD)	+= mpc8610_hpcd.o
-diff --git a/arch/powerpc/platforms/86xx/mpc86xx_suspend.c b/arch/powerpc/platforms/86xx/mpc86xx_suspend.c
-new file mode 100644
-index 0000000..ce13e4c
---- /dev/null
-+++ b/arch/powerpc/platforms/86xx/mpc86xx_suspend.c
-@@ -0,0 +1,92 @@
-+/*
-+ * MPC86xx suspend (standby) support
-+ *
-+ * Copyright (C) 2008 Freescale Semiconductor, Inc. All rights reserved.
-+ *
-+ * Author: Jason Jin <jason.jin@freescale.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License version 2 as published
-+ * by the Free Software Foundation.
-+ */
-+
-+#include <linux/init.h>
-+#include <linux/types.h>
-+#include <linux/suspend.h>
-+#include <linux/of.h>
-+#include <linux/io.h>
-+#include <asm/prom.h>
-+#include <asm/reg.h>
-+#include <asm/mpc6xx.h>
-+
-+#define PMCSR_DEVSLEEP	0x00020000
-+
-+struct mpc86xx_pmc {
-+	__be32 devdisr;
-+	__be32 devdisr2;
-+	__be32 reserve1;
-+	__be32 reserve2;
-+	__be32 powmgtcsr;
-+};
-+
-+static struct mpc86xx_pmc __iomem *pmc_regs_86xx;
-+
-+static int mpc86xx_suspend_enter(suspend_state_t state)
+ 			sdcsr_pio: gpio-controller@a {
+ 				#gpio-cells = <2>;
+diff --git a/arch/powerpc/platforms/86xx/mpc8610_hpcd.c b/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
+index 83e8ffd..12612fa 100644
+--- a/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
++++ b/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
+@@ -24,6 +24,7 @@
+ #include <linux/seq_file.h>
+ #include <linux/fsl_ir.h>
+ #include <linux/gpio.h>
++#include <linux/interrupt.h>
+ #include <linux/of.h>
+ #include <linux/of_gpio.h>
+ 
+@@ -43,11 +44,14 @@
+ #include <sysdev/fsl_pci.h>
+ #include <sysdev/fsl_soc.h>
+ 
++#define PX_CSR_EVES		(1 << 2)
+ #define PX_BRDCFG0_DVISEL	(1 << 3)
+ #define PX_BRDCFG0_DLINK	(1 << 4)
+ #define PX_BRDCFG0_DIU_MASK	(PX_BRDCFG0_DVISEL | PX_BRDCFG0_DLINK)
+ #define PX_BRDCFG0_IRDAEN	(1 << 5)
+ 
++static struct device_node *pixis_node;
++static u8 __iomem *pixis_csr;
+ static u8 __iomem *pixis_bdcfg0;
+ static u8 __iomem *pixis_arch;
+ static u32 __iomem *clkdvdr;
+@@ -182,6 +186,37 @@ err:
+ 	of_node_put(irda);
+ }
+ 
++#ifdef CONFIG_SUSPEND
++static irqreturn_t sw9_irq(int irq, void *data)
 +{
-+	u32 tmp;
-+
-+	/* Disable power management. */
-+	tmp = mfmsr();
-+	mtmsr(tmp & ~MSR_POW);
-+
-+	/* Enable sleep mode, disable others. */
-+	tmp = mfspr(SPRN_HID0);
-+	mtspr(SPRN_HID0, (tmp & ~(HID0_DOZE | HID0_NAP)) | HID0_SLEEP);
-+	asm("sync");
-+
-+	/* Device power down. */
-+	setbits32(&pmc_regs_86xx->powmgtcsr, PMCSR_DEVSLEEP);
-+
-+	/* 86xx did not support deep sleep, let it enter standby mode. */
-+	mpc6xx_enter_standby();
-+
-+	clrbits32(&pmc_regs_86xx->powmgtcsr, PMCSR_DEVSLEEP);
-+
-+	return 0;
++	pr_debug("%s: PIXIS' event (sw9/wakeup) IRQ handled\n", __func__);
++	return IRQ_HANDLED;
 +}
 +
-+static int mpc86xx_suspend_valid(suspend_state_t state)
++static void __init mpc8610_suspend_init(void)
 +{
-+	if (state == PM_SUSPEND_STANDBY)
-+		return 1;
-+	return 0;
-+}
++	int irq;
 +
-+static struct platform_suspend_ops mpc86xx_suspend_ops = {
-+	.valid = mpc86xx_suspend_valid,
-+	.enter = mpc86xx_suspend_enter,
-+};
++	if (!pixis_node)
++		return;
 +
-+static int __init mpc86xx_pmc_init(void)
-+{
-+	void __iomem *guts;
-+	struct device_node *np;
-+
-+	np = of_find_compatible_node(NULL, NULL, "fsl,mpc8610-guts");
-+	if (!np) {
-+		np = of_find_compatible_node(NULL, NULL, "fsl,mpc8641-guts");
-+		if (!np)
-+			return -ENODEV;
++	irq = irq_of_parse_and_map(pixis_node, 0);
++	if (irq < 0 || irq == NO_IRQ) {
++		pr_err("%s: can't map pixis event IRQ.\n", __func__);
++		return;
 +	}
 +
-+	guts = of_iomap(np, 0);
-+	of_node_put(np);
-+	if (!guts)
-+		return -ENOMEM;
++	if (request_irq(irq, sw9_irq, 0, "sw9", NULL)) {
++		pr_err("%s: can't request pixis event IRQ.\n", __func__);
++		irq_dispose_mapping(irq);
++	}
 +
-+	pmc_regs_86xx = guts + 0x70;
-+
-+	suspend_set_ops(&mpc86xx_suspend_ops);
-+	return 0;
++	enable_irq_wake(irq);
 +}
-+module_init(mpc86xx_pmc_init);
++#else
++static inline void mpc8610_suspend_init(void) { }
++#endif /* CONFIG_SUSPEND */
++
+ static struct of_device_id __initdata mpc8610_ids[] = {
+ 	{ .compatible = "fsl,mpc8610-immr", },
+ 	{ .compatible = "simple-bus", },
+@@ -191,6 +226,7 @@ static struct of_device_id __initdata mpc8610_ids[] = {
+ static int __init mpc8610_declare_of_platform_devices(void)
+ {
+ 	mpc8610_ir_init();
++	mpc8610_suspend_init();
+ 
+ 	/* Without this call, the SSI device driver won't get probed. */
+ 	of_platform_bus_probe(NULL, mpc8610_ids, NULL);
+@@ -418,16 +454,17 @@ static void __init mpc86xx_hpcd_setup_arch(void)
+ 		return;
+ 	}
+ 
+-	np = of_find_compatible_node(NULL, NULL, "fsl,fpga-pixis");
+-	if (np) {
+-		of_address_to_resource(np, 0, &r);
+-		of_node_put(np);
++	pixis_node = of_find_compatible_node(NULL, NULL, "fsl,fpga-pixis");
++	if (pixis_node) {
++		of_address_to_resource(pixis_node, 0, &r);
++		of_node_put(pixis_node);
+ 		pixis = ioremap(r.start, 32);
+ 		if (!pixis) {
+ 			printk(KERN_ERR "Err: can't map FPGA cfg register!\n");
+ 			return;
+ 		}
+ 		pixis_bdcfg0 = pixis + 8;
++		pixis_csr = pixis + 3;
+ 		pixis_arch = pixis + 1;
+ 	} else
+ 		printk(KERN_ERR "Err: "
 -- 
 1.5.5.1
