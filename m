@@ -1,23 +1,17 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <gregkh@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E1E1ADDF61
-	for <linuxppc-dev@ozlabs.org>; Sat,  7 Jun 2008 07:39:39 +1000 (EST)
-In-Reply-To: <0E974259-7988-4E3F-81F6-3FDEA01BAC9A@kernel.crashing.org>
-References: <20080606143347.B35CC247FE@gemini.denx.de>
-	<A005B9E2-9A1D-4190-AB00-A7C880E4DBDB@kernel.crashing.org>
-	<1212766264.6788.4.camel@ld0161-tx32>
-	<0E974259-7988-4E3F-81F6-3FDEA01BAC9A@kernel.crashing.org>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <7bd636c4a22d485c857961e093468bb8@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: Default flats for running dtc from kernel build
-Date: Fri, 6 Jun 2008 23:39:15 +0200
-To: Kumar Gala <galak@kernel.crashing.org>
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Wolfgang Denk <wd@denx.de>
+	(Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 28E87DDEFF
+	for <linuxppc-dev@ozlabs.org>; Sat,  7 Jun 2008 08:57:58 +1000 (EST)
+Subject: patch usb-isp1760-assign-resource-fields-before-adding-hcd.patch
+	added to gregkh-2.6 tree
+To: ncase@xes-inc.com, bigeasy@linutronix.de, gregkh@suse.de,
+	linuxppc-dev@ozlabs.org
+From: <gregkh@suse.de>
+Date: Fri, 06 Jun 2008 15:52:15 -0700
+In-Reply-To: <1211405300.13845.627.camel@localhost.localdomain>
+Message-ID: <12127927354068@kroah.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,13 +21,63 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> DTS_FLAGS	?= -P 0x1000
->
-> 1k seems like more than enough default padding.
 
-Yes.  So why specify 4kB?
+This is a note to let you know that I've just added the patch titled
 
-/me hides
+     Subject: USB: isp1760: Assign resource fields before adding hcd
+
+to my gregkh-2.6 tree.  Its filename is
+
+     usb-isp1760-assign-resource-fields-before-adding-hcd.patch
+
+This tree can be found at 
+    http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
 
 
-Segher
+>From ncase@xes-inc.com  Fri Jun  6 15:07:08 2008
+From: Nate Case <ncase@xes-inc.com>
+Date: Wed, 21 May 2008 16:28:20 -0500
+Subject: USB: isp1760: Assign resource fields before adding hcd
+To: Sebastian Siewior <bigeasy@linutronix.de>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, linux-usb@vger.kernel.org, linuxppc-dev <linuxppc-dev@ozlabs.org>
+Message-ID: <1211405300.13845.627.camel@localhost.localdomain>
+
+
+This fixes the bogus "io mem 0x00000000" message printed
+during driver init due to hcd->rsrc_start being assigned after
+the call to usb_add_hcd().
+
+Signed-off-by: Nate Case <ncase@xes-inc.com>
+Acked-by: Sebastian Siewior <bigeasy@linutronix.de>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ drivers/usb/host/isp1760-hcd.c |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+--- a/drivers/usb/host/isp1760-hcd.c
++++ b/drivers/usb/host/isp1760-hcd.c
+@@ -2207,14 +2207,14 @@ struct usb_hcd *isp1760_register(u64 res
+ 		goto err_put;
+ 	}
+ 
+-	ret = usb_add_hcd(hcd, irq, irqflags);
+-	if (ret)
+-		goto err_unmap;
+-
+ 	hcd->irq = irq;
+ 	hcd->rsrc_start = res_start;
+ 	hcd->rsrc_len = res_len;
+ 
++	ret = usb_add_hcd(hcd, irq, irqflags);
++	if (ret)
++		goto err_unmap;
++
+ 	return hcd;
+ 
+ err_unmap:
+
+
+Patches currently in gregkh-2.6 which might be from ncase@xes-inc.com are
+
+usb.current/usb-isp1760-assign-resource-fields-before-adding-hcd.patch
