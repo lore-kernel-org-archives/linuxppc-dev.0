@@ -1,15 +1,18 @@
-Return-Path: <wg@grandegger.com>
-From: Wolfgang Grandegger <wg@grandegger.com>
-To: Linuxppc-dev@ozlabs.org
-Subject: [PATCH v4 4/4] [POWERPC] 85xx: add local bus nodes for Flash and CAN
-	to tqm8560.dts
-Date: Fri,  6 Jun 2008 13:50:06 +0200
-Message-Id: <1212753006-994-5-git-send-email-wg@grandegger.com>
-In-Reply-To: <1212753006-994-4-git-send-email-wg@grandegger.com>
-References: <1212753006-994-1-git-send-email-wg@grandegger.com>
-	<1212753006-994-2-git-send-email-wg@grandegger.com>
-	<1212753006-994-3-git-send-email-wg@grandegger.com>
-	<1212753006-994-4-git-send-email-wg@grandegger.com>
+Return-Path: <bunk@kernel.org>
+Received: from smtp6.pp.htv.fi (smtp6.pp.htv.fi [213.243.153.40])
+	by ozlabs.org (Postfix) with ESMTP id BABC4DE1F4
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jun 2008 21:54:30 +1000 (EST)
+Date: Fri, 6 Jun 2008 14:53:47 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: 4xx support in arch/ppc is going away Real Soon Now
+Message-ID: <20080606115347.GC472@cs181133002.pp.htv.fi>
+References: <20080605095253.7df9dbe0@zod.rchland.ibm.com>
+	<fa686aa40806050811t4ab2fbfk9eed34d0972376c4@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <fa686aa40806050811t4ab2fbfk9eed34d0972376c4@mail.gmail.com>
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,94 +22,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch adds local bus nodes for Flash and CAN to the DTS file
-of the TQM8560 module (tqm8560.dts).
+On Thu, Jun 05, 2008 at 09:11:48AM -0600, Grant Likely wrote:
+> On Thu, Jun 5, 2008 at 8:52 AM, Josh Boyer <jwboyer@linux.vnet.ibm.com> wrote:
+> > This commit (patch omitted due to size) is sitting in my local tree:
+> >
+> > commit 0d7efc1e80fc262bcc507a605482c5681e3f082a
+> > Author: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+> > Date:   Thu Jun 5 09:46:17 2008 -0500
+> >
+> >    ppc/4xx: Remove 4xx support from arch/ppc
+> >
+> >    Remove support for PPC 403, 405, and 440 processors from arch/ppc.  The
+> >    arch/powerpc equivalents should be used.  Boards that are not ported yet
+> >    will need to be ported to arch/powerpc to have continued support.
+> 
+> This looks like unneeded churn.
+> 
+> Paulus, Can we just kill all of arch/ppc for .27 right now?
 
-Signed-off-by: Wolfgang Grandegger <wg@grandegger.com>
----
- arch/powerpc/boot/dts/tqm8560.dts |   65 ++++++++++++++++++++++++++++++++++++++
- 1 file changed, 65 insertions(+)
+Is anyone already working on doing this and the cleanups that will then 
+be possible?
 
-Index: linux-2.6-galak/arch/powerpc/boot/dts/tqm8560.dts
-===================================================================
---- linux-2.6-galak.orig/arch/powerpc/boot/dts/tqm8560.dts
-+++ linux-2.6-galak/arch/powerpc/boot/dts/tqm8560.dts
-@@ -2,6 +2,7 @@
-  * TQM 8560 Device Tree Source
-  *
-  * Copyright 2008 Freescale Semiconductor Inc.
-+ * Copyright 2008 Wolfgang Grandegger <wg@grandegger.com>
-  *
-  * This program is free software; you can redistribute  it and/or modify it
-  * under  the terms of  the GNU General  Public License as published by the
-@@ -223,6 +224,70 @@
- 		};
- 	};
- 
-+	localbus@e0005000 {
-+		compatible = "fsl,mpc8560-localbus", "fsl,pq3-localbus",
-+			     "simple-bus";
-+		#address-cells = <2>;
-+		#size-cells = <1>;
-+		reg = <0xe0005000 0x100>;	// BRx, ORx, etc.
-+
-+		ranges = <
-+			0 0x0 0xfc000000 0x04000000	// NOR FLASH bank 1
-+			1 0x0 0xf8000000 0x08000000	// NOR FLASH bank 0
-+			2 0x0 0xe3000000 0x00008000	// CAN (2 x i82527)
-+		>;
-+
-+		flash@1,0 {
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			compatible = "cfi-flash";
-+			reg = <1 0x0 0x8000000>;
-+			bank-width = <4>;
-+			device-width = <1>;
-+
-+			partition@0 {
-+				label = "kernel";
-+				reg = <0x00000000 0x00200000>;
-+			};
-+			partition@200000 {
-+				label = "root";
-+				reg = <0x00200000 0x00300000>;
-+			};
-+			partition@500000 {
-+				label = "user";
-+				reg = <0x00500000 0x07a00000>;
-+			};
-+			partition@7f00000 {
-+				label = "env1";
-+				reg = <0x07f00000 0x00040000>;
-+			};
-+			partition@7f40000 {
-+				label = "env2";
-+				reg = <0x07f40000 0x00040000>;
-+			};
-+			partition@7f80000 {
-+				label = "u-boot";
-+				reg = <0x07f80000 0x00080000>;
-+				read-only;
-+			};
-+		};
-+
-+		/* Note: CAN support needs be enabled in U-Boot */
-+		can0@2,0 {
-+			compatible = "intel,82527"; // Bosch CC770
-+			reg = <2 0x0 0x100>;
-+			interrupts = <4 0>;
-+			interrupt-parent = <&mpic>;
-+		};
-+
-+		can1@2,100 {
-+			compatible = "intel,82527"; // Bosch CC770
-+			reg = <2 0x100 0x100>;
-+			interrupts = <4 0>;
-+			interrupt-parent = <&mpic>;
-+		};
-+	};
-+
- 	pci0: pci@e0008000 {
- 		cell-index = <0>;
- 		#interrupt-cells = <1>;
+Otherwise I'll be glad to contribute to it.   :)
+
+BTW:
+I remember Paul wanted to get PReP under arch/powerpc/ working -
+should this be done before the big ppc removal?
+
+> g.
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
