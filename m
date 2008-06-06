@@ -1,24 +1,18 @@
-Return-Path: <rdreier@cisco.com>
-Received: from sj-iport-2.cisco.com (sj-iport-2.cisco.com [171.71.176.71])
-	(using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "sj-iport-2.cisco.com", Issuer "Cisco SSCA" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 24207DE16A
-	for <linuxppc-dev@ozlabs.org>; Sat,  7 Jun 2008 04:22:36 +1000 (EST)
-From: Roland Dreier <rdreier@cisco.com>
-To: Joachim Fenkes <fenkes@de.ibm.com>
-Subject: Re: IB/ehca: Reject send WRs only for RESET, INIT and RTR state
-References: <200806061835.43802.fenkes@de.ibm.com>
-Date: Fri, 06 Jun 2008 11:22:32 -0700
-In-Reply-To: <200806061835.43802.fenkes@de.ibm.com> (Joachim Fenkes's message
-	of "Fri, 6 Jun 2008 18:35:43 +0200")
-Message-ID: <adalk1ictjr.fsf@cisco.com>
+Return-Path: <kevdig@hypersurf.com>
+Received: from smtpauth.hypersurf.com (smtpauth.hypersurf.com [209.237.0.8])
+	by ozlabs.org (Postfix) with ESMTP id C3E86DDFF9
+	for <linuxppc-dev@ozlabs.org>; Sat,  7 Jun 2008 04:45:45 +1000 (EST)
+Received: from [192.168.1.37] (node146.76.251.72.1dial.com [72.251.76.146])
+	(authenticated bits=0)
+	by smtpauth.hypersurf.com (8.14.2/8.14.2) with ESMTP id m56IheX5046361
+	for <linuxppc-dev@ozlabs.org>; Fri, 6 Jun 2008 11:45:36 -0700 (PDT)
+Message-ID: <48498550.7040004@hypersurf.com>
+Date: Fri, 06 Jun 2008 11:43:28 -0700
+From: Kevin Diggs <kevdig@hypersurf.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: LKML <linux-kernel@vger.kernel.org>, OF-EWG <ewg@lists.openfabrics.org>,
-	LinuxPPC-Dev <linuxppc-dev@ozlabs.org>,
-	Christoph Raisch <raisch@de.ibm.com>,
-	OF-General <general@lists.openfabrics.org>,
-	Stefan Roscher <stefan.roscher@de.ibm.com>
+To: linuxppc-dev@ozlabs.org
+Subject: 750GX
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,4 +22,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-thanks, applied.
+Hi,
+
+	In the 750GX data sheet (750GX_ds2-17-05.pdf), page 45 has Table 5-1 
+that describes the PLL range field. It goes something like this:
+
+	PLL_RNG	   range
+	  00	600 - 900
+	  01	900 - 1000
+	  10	500 - 600
+
+Anyone have any thoughts as to what the correct values are for 600 and 900?
+
+	I think I have this working. I was setting the range to 1 for all 
+frequencies because I did:
+
+	if(freq<600)
+
+instead of
+
+	if(freq<600000)
+
+when building my frequency table.
+
+	This cpufreq stuff definitely messes up the repeatability of my 
+bogomazes value.
+
+kevin
+
+P.S.:  I'd be interested in various theories as to what this does?
+
+P.P.S.:  On page 341 of the 750GX user manual It says:
+
+	"Turning the non selected PLL off results in a modest power savings ..."
+
+	Regarding what goes on in idle_6xx.S, wouldn't this likely save more 
+power than switching to a lower frequency (to clock mostly nothing since 
+the processor is going into doze or nap)?
