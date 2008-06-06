@@ -1,20 +1,21 @@
-Return-Path: <sr@denx.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id 86444DE0F3
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jun 2008 23:42:47 +1000 (EST)
-From: Stefan Roese <sr@denx.de>
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: "cell-index" vs. "index" vs. no index in I2C device nodes
-Date: Fri, 6 Jun 2008 15:42:38 +0200
-References: <48480987.1070701@freescale.com>
-	<20080605225637.GG30980@yookeroo.seuss>
-	<48493713.2070806@freescale.com>
-In-Reply-To: <48493713.2070806@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200806061542.38908.sr@denx.de>
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org
+Return-Path: <jwboyer@gmail.com>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.250])
+	by ozlabs.org (Postfix) with ESMTP id 3A356DE319
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jun 2008 23:56:17 +1000 (EST)
+Received: by an-out-0708.google.com with SMTP id c34so235343anc.78
+	for <linuxppc-dev@ozlabs.org>; Fri, 06 Jun 2008 06:56:15 -0700 (PDT)
+Date: Fri, 6 Jun 2008 08:56:01 -0500
+From: Josh Boyer <jwboyer@gmail.com>
+To: Adrian Bunk <bunk@kernel.org>
+Subject: Re: 4xx support in arch/ppc is going away Real Soon Now
+Message-ID: <20080606085601.623ef866@vader.jdub.homelinux.org>
+In-Reply-To: <20080606115347.GC472@cs181133002.pp.htv.fi>
+References: <20080605095253.7df9dbe0@zod.rchland.ibm.com>
+	<fa686aa40806050811t4ab2fbfk9eed34d0972376c4@mail.gmail.com>
+	<20080606115347.GC472@cs181133002.pp.htv.fi>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,15 +25,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Friday 06 June 2008, Timur Tabi wrote:
-> David Gibson wrote:
-> > Aliases aren't trivially reversible, but it shouldn't be too hard to
-> > write a helper function which will do the scan and parse you describe.
->
-> How about I submit a patch adding a function called
-> "of_get_aliased_index()"?
+On Fri, 6 Jun 2008 14:53:47 +0300
+Adrian Bunk <bunk@kernel.org> wrote:
 
-Would be very welcome. :)
+> On Thu, Jun 05, 2008 at 09:11:48AM -0600, Grant Likely wrote:
+> > On Thu, Jun 5, 2008 at 8:52 AM, Josh Boyer <jwboyer@linux.vnet.ibm.com> wrote:
+> > > This commit (patch omitted due to size) is sitting in my local tree:
+> > >
+> > > commit 0d7efc1e80fc262bcc507a605482c5681e3f082a
+> > > Author: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+> > > Date:   Thu Jun 5 09:46:17 2008 -0500
+> > >
+> > >    ppc/4xx: Remove 4xx support from arch/ppc
+> > >
+> > >    Remove support for PPC 403, 405, and 440 processors from arch/ppc.  The
+> > >    arch/powerpc equivalents should be used.  Boards that are not ported yet
+> > >    will need to be ported to arch/powerpc to have continued support.
+> > 
+> > This looks like unneeded churn.
+> > 
+> > Paulus, Can we just kill all of arch/ppc for .27 right now?
+> 
+> Is anyone already working on doing this and the cleanups that will then 
+> be possible?
+> 
+> Otherwise I'll be glad to contribute to it.   :)
 
-Best regards,
-Stefan
+I think we can handle it.  Thanks though.
+
+josh
