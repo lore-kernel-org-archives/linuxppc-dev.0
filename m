@@ -1,18 +1,30 @@
-Return-Path: <kevdig@hypersurf.com>
-Received: from smtpauth.hypersurf.com (smtpauth.hypersurf.com [209.237.0.8])
-	by ozlabs.org (Postfix) with ESMTP id C3E86DDFF9
-	for <linuxppc-dev@ozlabs.org>; Sat,  7 Jun 2008 04:45:45 +1000 (EST)
-Received: from [192.168.1.37] (node146.76.251.72.1dial.com [72.251.76.146])
-	(authenticated bits=0)
-	by smtpauth.hypersurf.com (8.14.2/8.14.2) with ESMTP id m56IheX5046361
-	for <linuxppc-dev@ozlabs.org>; Fri, 6 Jun 2008 11:45:36 -0700 (PDT)
-Message-ID: <48498550.7040004@hypersurf.com>
-Date: Fri, 06 Jun 2008 11:43:28 -0700
-From: Kevin Diggs <kevdig@hypersurf.com>
-MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: 750GX
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Return-Path: <jyoung5@us.ibm.com>
+Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 2423CDE38B
+	for <linuxppc-dev@ozlabs.org>; Sat,  7 Jun 2008 05:09:26 +1000 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e4.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m56J97OO025614
+	for <linuxppc-dev@ozlabs.org>; Fri, 6 Jun 2008 15:09:07 -0400
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	m56J97jL237372
+	for <linuxppc-dev@ozlabs.org>; Fri, 6 Jun 2008 15:09:07 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m56J975m014336
+	for <linuxppc-dev@ozlabs.org>; Fri, 6 Jun 2008 15:09:07 -0400
+Subject: [v4] Fix definitions for dbcr0, dbcr1, & dbcr2 register for bookE
+	processors
+From: Jerone Young <jyoung5@us.ibm.com>
+To: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain
+Date: Fri, 06 Jun 2008 14:09:05 -0500
+Message-Id: <1212779345.6876.17.camel@thinkpadL>
+Mime-Version: 1.0
+Cc: kvm-ppc <kvm-ppc@vger.kernel.org>
+Reply-To: jyoung5@us.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,40 +34,71 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+Updates: Placed everything in one conditional. Updated commit message.
 
-	In the 750GX data sheet (750GX_ds2-17-05.pdf), page 45 has Table 5-1 
-that describes the PLL range field. It goes something like this:
+This takes values from the PowerPC ISA BookIII-E specifications that are for DBCR0. Many of these values are different from those currently specified, which are for the ppc405. Also added some bookE definitions for DBCR1 & DBCR2.
 
-	PLL_RNG	   range
-	  00	600 - 900
-	  01	900 - 1000
-	  10	500 - 600
+Signed-off-by: Jerone Young <jyoung5@us.ibm.com>
 
-Anyone have any thoughts as to what the correct values are for 600 and 900?
-
-	I think I have this working. I was setting the range to 1 for all 
-frequencies because I did:
-
-	if(freq<600)
-
-instead of
-
-	if(freq<600000)
-
-when building my frequency table.
-
-	This cpufreq stuff definitely messes up the repeatability of my 
-bogomazes value.
-
-kevin
-
-P.S.:  I'd be interested in various theories as to what this does?
-
-P.P.S.:  On page 341 of the 750GX user manual It says:
-
-	"Turning the non selected PLL off results in a modest power savings ..."
-
-	Regarding what goes on in idle_6xx.S, wouldn't this likely save more 
-power than switching to a lower frequency (to clock mostly nothing since 
-the processor is going into doze or nap)?
+diff --git a/include/asm-powerpc/reg_booke.h b/include/asm-powerpc/reg_booke.h
+--- a/include/asm-powerpc/reg_booke.h
++++ b/include/asm-powerpc/reg_booke.h
+@@ -253,6 +253,7 @@
+ #define ESR_BO		0x00020000	/* Byte Ordering */
+ 
+ /* Bit definitions related to the DBCR0. */
++#if defined(CONFIG_40x)
+ #define DBCR0_EDM	0x80000000	/* External Debug Mode */
+ #define DBCR0_IDM	0x40000000	/* Internal Debug Mode */
+ #define DBCR0_RST	0x30000000	/* all the bits in the RST field */
+@@ -275,6 +276,50 @@
+ #define DBCR0_IA12T	0x00008000	/* Instr Addr 1-2 range Toggle */
+ #define DBCR0_IA34T	0x00004000	/* Instr Addr 3-4 range Toggle */
+ #define DBCR0_FT	0x00000001	/* Freeze Timers on debug event */
++#elif defined(CONFIG_BOOKE)
++#define DBCR0_EDM	0x80000000	/* External Debug Mode */
++#define DBCR0_IDM	0x40000000	/* Internal Debug Mode */
++/* DBCR0_RST* is 44x specific and not followed in fsl booke */
++#define DBCR0_RST	0x30000000	/* all the bits in the RST field */
++#define DBCR0_RST_SYSTEM 0x30000000	/* System Reset */
++#define DBCR0_RST_CHIP	0x20000000	/* Chip Reset */
++#define DBCR0_RST_CORE	0x10000000	/* Core Reset */
++#define DBCR0_RST_NONE	0x00000000	/* No Reset */
++#define DBCR0_ICMP	0x08000000	/* Instruction Completion */
++#define DBCR0_IC	DBCR0_ICMP
++#define DBCR0_BRT	0x04000000	/* Branch Taken */
++#define DBCR0_BR	DBCR0_BRT
++#define DBCR0_IRPT	0x02000000	/* Exception Debug Event */
++#define DBCR0_EDE	DBCR0_IRPT
++#define DBCR0_TDE	0x01000000	/* TRAP Debug Event */
++#define DBCR0_IAC1	0x00800000	/* Instr Addr compare 1 enable */
++#define DBCR0_IA1	DBCR0_IAC1
++#define DBCR0_IAC2	0x00400000	/* Instr Addr compare 2 enable */
++#define DBCR0_IA2	DBCR0_IAC2
++#define DBCR0_IAC3	0x00200000	/* Instr Addr compare 3 enable */
++#define DBCR0_IA3	DBCR0_IAC3
++#define DBCR0_IAC4	0x00100000	/* Instr Addr compare 4 enable */
++#define DBCR0_IA4	DBCR0_IAC4
++#define DBCR0_DAC1R	0x00080000	/* DAC 1 Read enable */
++#define DBCR0_DAC1W	0x00040000	/* DAC 1 Write enable */
++#define DBCR0_DAC2R	0x00020000	/* DAC 2 Read enable */
++#define DBCR0_DAC2W	0x00010000	/* DAC 2 Write enable */
++#define DBCR0_RET	0x00008000	/* Return Debug Event */
++#define DBCR0_FT	0x00000001	/* Freeze Timers on debug event */
++
++/* Bit definitions related to the DBCR1. */
++#define DBCR1_IAC12M	0x00800000	/* Instr Addr 1-2 range enable */
++#define DBCR1_IAC12MX	0x00C00000	/* Instr Addr 1-2 range eXclusive */
++#define DBCR1_IAC12AT	0x00010000	/* Instr Addr 1-2 range Toggle */
++#define DBCR1_IAC34M	0x00000080	/* Instr Addr 3-4 range enable */
++#define DBCR1_IAC34MX	0x000000C0	/* Instr Addr 3-4 range eXclusive */
++#define DBCR1_IAC34AT	0x00000001	/* Instr Addr 3-4 range Toggle */
++
++/* Bit definitions related to the DBCR2. */
++#define DBCR2_DAC12M	0x00800000	/* DAC 1-2 range enable */
++#define DBCR2_DAC12MX	0x00C00000	/* DAC 1-2 range eXclusive */
++#define DBCR2_DAC12A	0x00200000	/* DAC 1-2 Asynchronous */
++#endif
+ 
+ /* Bit definitions related to the TCR. */
+ #define TCR_WP(x)	(((x)&0x3)<<30)	/* WDT Period */
