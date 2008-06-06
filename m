@@ -1,15 +1,21 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Fri, 6 Jun 2008 13:59:11 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Wolfgang Grandegger <wg@grandegger.com>
-Subject: Re: [PATCH v3 1/4] [POWERPC] 85xx: correct vendor prefix in DTS
-	files for TQM85xx modules
-Message-ID: <20080606035911.GB6506@yookeroo.seuss>
-References: <48481DFE.6030405@grandegger.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <48481DFE.6030405@grandegger.com>
-Cc: Linuxppc-dev@ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id E8ED1DDF3D
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jun 2008 14:06:09 +1000 (EST)
+Subject: Re: [PATCH] [POWERPC] 4xx: PCIe driver now detects if a port is
+	disabled via the dev-tree
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Stefan Roese <sr@denx.de>
+In-Reply-To: <1212675749-29861-1-git-send-email-sr@denx.de>
+References: <1212675749-29861-1-git-send-email-sr@denx.de>
+Content-Type: text/plain
+Date: Fri, 06 Jun 2008 14:05:55 +1000
+Message-Id: <1212725155.12464.2.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,42 +25,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jun 05, 2008 at 07:10:22PM +0200, Wolfgang Grandegger wrote:
-> Like for the TQM5200, the vendor prefix "tqc," is now used for all
-> TQM85xx modules from TQ-Components GmbH (http://www.tqc.de) in the
-> corresponding DTS files.
+On Thu, 2008-06-05 at 16:22 +0200, Stefan Roese wrote:
+> This patch add a check to the PPC4xx PCIe driver to detect if the port
+> is disabled via the device-tree. This is needed for the AMCC Canyonlands
+> board which has an option to either select 2 PCIe ports or 1 PCIe port
+> and one SATA port. The SATA port and the 1st PCIe port pins are multiplexed
+> so we can't start both drivers.
 > 
-> Signed-off-by: Wolfgang Grandegger <wg@grandegger.com>
+> Signed-off-by: Stefan Roese <sr@denx.de>
+
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+
 > ---
->  arch/powerpc/boot/dts/tqm8540.dts     |    4 ++--
->  arch/powerpc/boot/dts/tqm8541.dts     |    4 ++--
->  arch/powerpc/boot/dts/tqm8555.dts     |    4 ++--
->  arch/powerpc/boot/dts/tqm8560.dts     |    4 ++--
->  arch/powerpc/platforms/85xx/tqm85xx.c |    8 ++++----
->  5 files changed, 12 insertions(+), 12 deletions(-)
+>  arch/powerpc/sysdev/ppc4xx_pci.c |    9 +++++++++
+>  1 files changed, 9 insertions(+), 0 deletions(-)
 > 
-> Index: linux-2.6-galak/arch/powerpc/boot/dts/tqm8540.dts
-> ===================================================================
-> --- linux-2.6-galak.orig/arch/powerpc/boot/dts/tqm8540.dts
-> +++ linux-2.6-galak/arch/powerpc/boot/dts/tqm8540.dts
-> @@ -12,8 +12,8 @@
->  /dts-v1/;
->  
->  / {
-> -	model = "tqm,8540";
-> -	compatible = "tqm,8540", "tqm,85xx";
-> +	model = "tqc,8540";
-> +	compatible = "tqc,8540", "tqc,85xx";
-
-Hrm.  compatible strings with "xx" type wildcards in them should be
-avoided.  Keeping them for compatibility with existing code or trees
-is fine, but given that you're changing the name anyway, you should
-get rid of the 85xx reference.  Either just dropping it, if it's not
-actually used, or replacing with a defined name or the specific model
-of the earliest board this series is compatible with.
-
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+> diff --git a/arch/powerpc/sysdev/ppc4xx_pci.c b/arch/powerpc/sysdev/ppc4xx_pci.c
+> index b4a54c5..76886cf 100644
+> --- a/arch/powerpc/sysdev/ppc4xx_pci.c
+> +++ b/arch/powerpc/sysdev/ppc4xx_pci.c
+> @@ -1634,6 +1634,15 @@ static void __init ppc4xx_probe_pciex_bridge(struct device_node *np)
+>  	}
+>  	port = &ppc4xx_pciex_ports[portno];
+>  	port->index = portno;
+> +
+> +	/*
+> +	 * Check if device is enabled
+> +	 */
+> +	if (!of_device_is_available(np)) {
+> +		printk(KERN_INFO "PCIE%d: Port disabled via device-tree\n", port->index);
+> +		return;
+> +	}
+> +
+>  	port->node = of_node_get(np);
+>  	pval = of_get_property(np, "sdr-base", NULL);
+>  	if (pval == NULL) {
