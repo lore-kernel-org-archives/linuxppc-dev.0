@@ -1,20 +1,28 @@
-Return-Path: <sr@denx.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id 6653BDE061
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jun 2008 18:39:56 +1000 (EST)
-From: Stefan Roese <sr@denx.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: arch/ppc is going away Real Soon Now
-Date: Fri, 6 Jun 2008 10:39:45 +0200
-References: <20080605095253.7df9dbe0@zod.rchland.ibm.com>
-	<1212726733.12464.23.camel@pasglop>
-	<331A97D9-074D-4985-ACD4-7910AC4B8F46@kernel.crashing.org>
-In-Reply-To: <331A97D9-074D-4985-ACD4-7910AC4B8F46@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200806061039.46078.sr@denx.de>
-Cc: Paul Mackerras <paulus@samba.org>, Arnd Bergmann <arnd@arndb.de>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 46D64DE059
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jun 2008 18:46:11 +1000 (EST)
+Subject: Re: "cell-index" vs. "index" vs. no index in I2C device nodes
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Jean Delvare <khali@linux-fr.org>
+In-Reply-To: <20080606082150.691da6a4@hyperion.delvare>
+References: <200806041706.21557.sr@denx.de>
+	<20080604220555.658ab13e@vader.jdub.homelinux.org>
+	<20080604231641.786bb2dd@lappy.seanm.ca>
+	<200806050822.00797.sr@denx.de>
+	<20080605094852.164f0bc7@hyperion.delvare>
+	<1212725783.12464.13.camel@pasglop>
+	<20080606082150.691da6a4@hyperion.delvare>
+Content-Type: text/plain
+Date: Fri, 06 Jun 2008 18:45:20 +1000
+Message-Id: <1212741920.12464.27.camel@pasglop>
+Mime-Version: 1.0
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
+	Stefan Roese <sr@denx.de>, Timur Tabi <timur@freescale.com>,
+	Sean MacLennan <smaclennan@pikatech.com>
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,24 +32,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Friday 06 June 2008, Kumar Gala wrote:
-> On Jun 5, 2008, at 11:32 PM, Benjamin Herrenschmidt wrote:
-> > On Thu, 2008-06-05 at 22:12 +0200, Arnd Bergmann wrote:
-> >> On Thursday 05 June 2008, Stephen Neuendorffer wrote:
-> >>>> "Grant Likely" <grant.likely@secretlab.ca> wrote:
-> >>>>> Paulus, Can we just kill all of arch/ppc for .27 right now?
-> >>>>
-> >>>> Acked-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-> >>>
-> >>> Acked-by: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
-> >>
-> >> Acked-by: Arnd Bergmann <arnd@arndb.de>
-> >
-> > Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->
-> Acked-by: Kumar Gala <galak@kernel.crashing.org>
+On Fri, 2008-06-06 at 08:21 +0200, Jean Delvare wrote:
+> We could certainly add a busname field to struct i2c_devinfo and
+> implement i2c_register_board_info_by_name() if it seems to be worth
+> the
+> extra code and memory. I am open to the idea if it solves a problem
+> with no other clean solution.
+> 
+> [1] radeonfb is notoriously bad at that ;)
 
-Acked-by: Stefan Roese <sr@denx.de>
+radeonfb is notoriously bad at many things :-)
 
-Best regards,
-Stefan
+Ben.
