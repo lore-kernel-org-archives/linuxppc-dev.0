@@ -1,20 +1,24 @@
-Return-Path: <bunk@kernel.org>
-Received: from smtp6.pp.htv.fi (smtp6.pp.htv.fi [213.243.153.40])
-	by ozlabs.org (Postfix) with ESMTP id 0198FDE5B3
-	for <linuxppc-dev@ozlabs.org>; Sat,  7 Jun 2008 03:59:21 +1000 (EST)
-Date: Fri, 6 Jun 2008 20:58:39 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: 4xx support in arch/ppc is going away Real Soon Now
-Message-ID: <20080606175839.GD2201@cs181133002.pp.htv.fi>
-References: <20080605095253.7df9dbe0@zod.rchland.ibm.com>
-	<fa686aa40806050811t4ab2fbfk9eed34d0972376c4@mail.gmail.com>
-	<20080606115347.GC472@cs181133002.pp.htv.fi>
-	<18505.10514.353016.230035@cargo.ozlabs.ibm.com>
+Return-Path: <rdreier@cisco.com>
+Received: from sj-iport-2.cisco.com (sj-iport-2.cisco.com [171.71.176.71])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "sj-iport-2.cisco.com", Issuer "Cisco SSCA" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 24207DE16A
+	for <linuxppc-dev@ozlabs.org>; Sat,  7 Jun 2008 04:22:36 +1000 (EST)
+From: Roland Dreier <rdreier@cisco.com>
+To: Joachim Fenkes <fenkes@de.ibm.com>
+Subject: Re: IB/ehca: Reject send WRs only for RESET, INIT and RTR state
+References: <200806061835.43802.fenkes@de.ibm.com>
+Date: Fri, 06 Jun 2008 11:22:32 -0700
+In-Reply-To: <200806061835.43802.fenkes@de.ibm.com> (Joachim Fenkes's message
+	of "Fri, 6 Jun 2008 18:35:43 +0200")
+Message-ID: <adalk1ictjr.fsf@cisco.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <18505.10514.353016.230035@cargo.ozlabs.ibm.com>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+Cc: LKML <linux-kernel@vger.kernel.org>, OF-EWG <ewg@lists.openfabrics.org>,
+	LinuxPPC-Dev <linuxppc-dev@ozlabs.org>,
+	Christoph Raisch <raisch@de.ibm.com>,
+	OF-General <general@lists.openfabrics.org>,
+	Stefan Roscher <stefan.roscher@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,34 +28,4 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Jun 06, 2008 at 10:09:54PM +1000, Paul Mackerras wrote:
-> Adrian Bunk writes:
-> 
-> > BTW:
-> > I remember Paul wanted to get PReP under arch/powerpc/ working -
-> > should this be done before the big ppc removal?
-> 
-> I have a PReP port for arch/powerpc that works for one machine, at
-> least. :)  The key part is the residual to device-tree converter that
-> I posted some time back with a request for people to test it on their
-> PReP machines, but I haven't heard back from anybody.  I'm going to
-> post the patch shortly anyway.
-
-Meelis Roos <mroos@linux.ee> has a Motorola Powerstack II Pro4000 and 
-recently reported (now fixed) 2.6.26-rc build problems with the rusty 
-ppc code.
-
-You might have luck asking him for testing, thereby doubling the number 
-of known-working machines.  :)
-
-> Paul.
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+thanks, applied.
