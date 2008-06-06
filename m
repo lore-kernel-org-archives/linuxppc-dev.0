@@ -1,17 +1,28 @@
-Return-Path: <gregkh@suse.de>
-Received: from mx2.suse.de (ns2.suse.de [195.135.220.15])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 3CA72DE1A8
-	for <linuxppc-dev@ozlabs.org>; Sat,  7 Jun 2008 08:58:16 +1000 (EST)
-Subject: patch usb-ohci-ppc-of-use-linux-of_platform.h-instead-of-asm.patch
-	added to gregkh-2.6 tree
-To: sfr@canb.auug.org.au, gregkh@suse.de, greg@kroah.com,
-	linuxppc-dev@ozlabs.org, tnt@246tNt.com
-From: <gregkh@suse.de>
-Date: Fri, 06 Jun 2008 15:52:29 -0700
-In-Reply-To: <20080523163758.4edcdef4.sfr@canb.auug.org.au>
-Message-ID: <12127927494073@kroah.org>
+Return-Path: <ntl@pobox.com>
+Received: from sasl.smtp.pobox.com (a-sasl-quonix.sasl.smtp.pobox.com
+	[208.72.237.25]) by ozlabs.org (Postfix) with ESMTP id 352EEDDEE7
+	for <linuxppc-dev@ozlabs.org>; Sat,  7 Jun 2008 09:23:03 +1000 (EST)
+Date: Fri, 6 Jun 2008 18:06:38 -0500
+From: Nathan Lynch <ntl@pobox.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH 1/2] make walk_memory_resource available with
+	MEMORY_HOTPLUG=n
+Message-ID: <20080606230638.GC6638@localdomain>
+References: <200805071443.20192.hannes.hering@linux.vnet.ibm.com>
+	<20080528164405.GA4836@localdomain>
+	<200806031007.40162.hannes.hering@linux.vnet.ibm.com>
+	<20080603204908.GB7475@localdomain>
+	<1212527335.23656.2.camel@badari-desktop>
+	<4845B382.20205@garzik.org> <20080603223054.GC7475@localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080603223054.GC7475@localdomain>
+Cc: tklein@de.ibm.com, Jeff Garzik <jeff@garzik.org>, themann@de.ibm.com,
+	Hannes Hering <hannes.hering@linux.vnet.ibm.com>,
+	netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+	ossrosch@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org,
+	raisch@de.ibm.com, Badari Pulavarty <pbadari@us.ibm.com>,
+	ossthema@de.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,51 +32,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Nathan Lynch wrote:
+> The ehea driver was recently changed[1] to use walk_memory_resource() to
+> detect the system's memory layout.  However, walk_memory_resource() is
+> available only when memory hotplug is enabled.  So CONFIG_EHEA was
+> made to depend on MEMORY_HOTPLUG [2], but it is inappropriate for a
+> network driver to have such a dependency.
+> 
+> Make the declaration of walk_memory_resource() and its powerpc
+> implementation (ehea is powerpc-specific) unconditionally available.
 
-This is a note to let you know that I've just added the patch titled
-
-     Subject: USB: ohci-ppc-of: use linux/of_platform.h instead of asm
-
-to my gregkh-2.6 tree.  Its filename is
-
-     usb-ohci-ppc-of-use-linux-of_platform.h-instead-of-asm.patch
-
-This tree can be found at 
-    http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
-
-
->From sfr@canb.auug.org.au  Fri Jun  6 15:16:28 2008
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Fri, 23 May 2008 16:37:58 +1000
-Subject: USB: ohci-ppc-of: use linux/of_platform.h instead of asm
-To: Sylvain Munaut <tnt@246tNt.com>
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>, Greg KH <greg@kroah.com>
-Message-ID: <20080523163758.4edcdef4.sfr@canb.auug.org.au>
-
-
-
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- drivers/usb/host/ohci-ppc-of.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
---- a/drivers/usb/host/ohci-ppc-of.c
-+++ b/drivers/usb/host/ohci-ppc-of.c
-@@ -14,8 +14,8 @@
-  */
- 
- #include <linux/signal.h>
-+#include <linux/of_platform.h>
- 
--#include <asm/of_platform.h>
- #include <asm/prom.h>
- 
- 
-
-
-Patches currently in gregkh-2.6 which might be from sfr@canb.auug.org.au are
-
-bad/battery-class-driver.patch
-usb/usb-ohci-ppc-of-use-linux-of_platform.h-instead-of-asm.patch
+Paul, can you take these two patches, or should I send them to akpm?
