@@ -1,30 +1,16 @@
-Return-Path: <jyoung5@us.ibm.com>
-Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 2423CDE38B
-	for <linuxppc-dev@ozlabs.org>; Sat,  7 Jun 2008 05:09:26 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e4.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m56J97OO025614
-	for <linuxppc-dev@ozlabs.org>; Fri, 6 Jun 2008 15:09:07 -0400
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m56J97jL237372
-	for <linuxppc-dev@ozlabs.org>; Fri, 6 Jun 2008 15:09:07 -0400
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
-	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m56J975m014336
-	for <linuxppc-dev@ozlabs.org>; Fri, 6 Jun 2008 15:09:07 -0400
-Subject: [v4] Fix definitions for dbcr0, dbcr1, & dbcr2 register for bookE
-	processors
-From: Jerone Young <jyoung5@us.ibm.com>
-To: linuxppc-dev <linuxppc-dev@ozlabs.org>
-Content-Type: text/plain
-Date: Fri, 06 Jun 2008 14:09:05 -0500
-Message-Id: <1212779345.6876.17.camel@thinkpadL>
-Mime-Version: 1.0
-Cc: kvm-ppc <kvm-ppc@vger.kernel.org>
-Reply-To: jyoung5@us.ibm.com
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id CED65DE3F0
+	for <linuxppc-dev@ozlabs.org>; Sat,  7 Jun 2008 05:24:46 +1000 (EST)
+Date: Fri, 6 Jun 2008 23:24:43 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: [PATCH 1/2] [POWERPC] 86xx: suspend support
+Message-ID: <20080606192443.GA20132@polina.dev.rtsoft.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf8
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
+	Timur Tabi <timur@freescale.com>, Jason Jin <Jason.jin@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,71 +20,144 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Updates: Placed everything in one conditional. Updated commit message.
+This patch adds suspend (standby, not suspend-to-ram) support for MPC86xx
+processors.
 
-This takes values from the PowerPC ISA BookIII-E specifications that are for DBCR0. Many of these values are different from those currently specified, which are for the ppc405. Also added some bookE definitions for DBCR1 & DBCR2.
+In standby mode MPC86xx is able to wakeup only upon external interrupts
+(including sreset).
 
-Signed-off-by: Jerone Young <jyoung5@us.ibm.com>
+Signed-off-by: Scott Wood <scottwood@freescale.com>
+Signed-off-by: Jason Jin <Jason.jin@freescale.com>
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
+ arch/powerpc/Kconfig                          |    2 +-
+ arch/powerpc/platforms/86xx/Makefile          |    1 +
+ arch/powerpc/platforms/86xx/mpc86xx_suspend.c |   92 +++++++++++++++++++++++++
+ 3 files changed, 94 insertions(+), 1 deletions(-)
+ create mode 100644 arch/powerpc/platforms/86xx/mpc86xx_suspend.c
 
-diff --git a/include/asm-powerpc/reg_booke.h b/include/asm-powerpc/reg_booke.h
---- a/include/asm-powerpc/reg_booke.h
-+++ b/include/asm-powerpc/reg_booke.h
-@@ -253,6 +253,7 @@
- #define ESR_BO		0x00020000	/* Byte Ordering */
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 2cde4e3..c45c71e 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -192,7 +192,7 @@ config ARCH_HIBERNATION_POSSIBLE
  
- /* Bit definitions related to the DBCR0. */
-+#if defined(CONFIG_40x)
- #define DBCR0_EDM	0x80000000	/* External Debug Mode */
- #define DBCR0_IDM	0x40000000	/* Internal Debug Mode */
- #define DBCR0_RST	0x30000000	/* all the bits in the RST field */
-@@ -275,6 +276,50 @@
- #define DBCR0_IA12T	0x00008000	/* Instr Addr 1-2 range Toggle */
- #define DBCR0_IA34T	0x00004000	/* Instr Addr 3-4 range Toggle */
- #define DBCR0_FT	0x00000001	/* Freeze Timers on debug event */
-+#elif defined(CONFIG_BOOKE)
-+#define DBCR0_EDM	0x80000000	/* External Debug Mode */
-+#define DBCR0_IDM	0x40000000	/* Internal Debug Mode */
-+/* DBCR0_RST* is 44x specific and not followed in fsl booke */
-+#define DBCR0_RST	0x30000000	/* all the bits in the RST field */
-+#define DBCR0_RST_SYSTEM 0x30000000	/* System Reset */
-+#define DBCR0_RST_CHIP	0x20000000	/* Chip Reset */
-+#define DBCR0_RST_CORE	0x10000000	/* Core Reset */
-+#define DBCR0_RST_NONE	0x00000000	/* No Reset */
-+#define DBCR0_ICMP	0x08000000	/* Instruction Completion */
-+#define DBCR0_IC	DBCR0_ICMP
-+#define DBCR0_BRT	0x04000000	/* Branch Taken */
-+#define DBCR0_BR	DBCR0_BRT
-+#define DBCR0_IRPT	0x02000000	/* Exception Debug Event */
-+#define DBCR0_EDE	DBCR0_IRPT
-+#define DBCR0_TDE	0x01000000	/* TRAP Debug Event */
-+#define DBCR0_IAC1	0x00800000	/* Instr Addr compare 1 enable */
-+#define DBCR0_IA1	DBCR0_IAC1
-+#define DBCR0_IAC2	0x00400000	/* Instr Addr compare 2 enable */
-+#define DBCR0_IA2	DBCR0_IAC2
-+#define DBCR0_IAC3	0x00200000	/* Instr Addr compare 3 enable */
-+#define DBCR0_IA3	DBCR0_IAC3
-+#define DBCR0_IAC4	0x00100000	/* Instr Addr compare 4 enable */
-+#define DBCR0_IA4	DBCR0_IAC4
-+#define DBCR0_DAC1R	0x00080000	/* DAC 1 Read enable */
-+#define DBCR0_DAC1W	0x00040000	/* DAC 1 Write enable */
-+#define DBCR0_DAC2R	0x00020000	/* DAC 2 Read enable */
-+#define DBCR0_DAC2W	0x00010000	/* DAC 2 Write enable */
-+#define DBCR0_RET	0x00008000	/* Return Debug Event */
-+#define DBCR0_FT	0x00000001	/* Freeze Timers on debug event */
-+
-+/* Bit definitions related to the DBCR1. */
-+#define DBCR1_IAC12M	0x00800000	/* Instr Addr 1-2 range enable */
-+#define DBCR1_IAC12MX	0x00C00000	/* Instr Addr 1-2 range eXclusive */
-+#define DBCR1_IAC12AT	0x00010000	/* Instr Addr 1-2 range Toggle */
-+#define DBCR1_IAC34M	0x00000080	/* Instr Addr 3-4 range enable */
-+#define DBCR1_IAC34MX	0x000000C0	/* Instr Addr 3-4 range eXclusive */
-+#define DBCR1_IAC34AT	0x00000001	/* Instr Addr 3-4 range Toggle */
-+
-+/* Bit definitions related to the DBCR2. */
-+#define DBCR2_DAC12M	0x00800000	/* DAC 1-2 range enable */
-+#define DBCR2_DAC12MX	0x00C00000	/* DAC 1-2 range eXclusive */
-+#define DBCR2_DAC12A	0x00200000	/* DAC 1-2 Asynchronous */
-+#endif
+ config ARCH_SUSPEND_POSSIBLE
+ 	def_bool y
+-	depends on ADB_PMU || PPC_EFIKA || PPC_LITE5200
++	depends on ADB_PMU || PPC_EFIKA || PPC_LITE5200 || PPC_86xx
  
- /* Bit definitions related to the TCR. */
- #define TCR_WP(x)	(((x)&0x3)<<30)	/* WDT Period */
+ config PPC_DCR_NATIVE
+ 	bool
+diff --git a/arch/powerpc/platforms/86xx/Makefile b/arch/powerpc/platforms/86xx/Makefile
+index 1b9b4a9..a8557df 100644
+--- a/arch/powerpc/platforms/86xx/Makefile
++++ b/arch/powerpc/platforms/86xx/Makefile
+@@ -3,6 +3,7 @@
+ #
+ 
+ obj-$(CONFIG_SMP)		+= mpc86xx_smp.o
++obj-$(CONFIG_SUSPEND)		+= mpc86xx_suspend.o
+ obj-$(CONFIG_MPC8641_HPCN)	+= mpc86xx_hpcn.o
+ obj-$(CONFIG_SBC8641D)		+= sbc8641d.o
+ obj-$(CONFIG_MPC8610_HPCD)	+= mpc8610_hpcd.o
+diff --git a/arch/powerpc/platforms/86xx/mpc86xx_suspend.c b/arch/powerpc/platforms/86xx/mpc86xx_suspend.c
+new file mode 100644
+index 0000000..ce13e4c
+--- /dev/null
++++ b/arch/powerpc/platforms/86xx/mpc86xx_suspend.c
+@@ -0,0 +1,92 @@
++/*
++ * MPC86xx suspend (standby) support
++ *
++ * Copyright (C) 2008 Freescale Semiconductor, Inc. All rights reserved.
++ *
++ * Author: Jason Jin <jason.jin@freescale.com>
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License version 2 as published
++ * by the Free Software Foundation.
++ */
++
++#include <linux/init.h>
++#include <linux/types.h>
++#include <linux/suspend.h>
++#include <linux/of.h>
++#include <linux/io.h>
++#include <asm/prom.h>
++#include <asm/reg.h>
++#include <asm/mpc6xx.h>
++
++#define PMCSR_DEVSLEEP	0x00020000
++
++struct mpc86xx_pmc {
++	__be32 devdisr;
++	__be32 devdisr2;
++	__be32 reserve1;
++	__be32 reserve2;
++	__be32 powmgtcsr;
++};
++
++static struct mpc86xx_pmc __iomem *pmc_regs_86xx;
++
++static int mpc86xx_suspend_enter(suspend_state_t state)
++{
++	u32 tmp;
++
++	/* Disable power management. */
++	tmp = mfmsr();
++	mtmsr(tmp & ~MSR_POW);
++
++	/* Enable sleep mode, disable others. */
++	tmp = mfspr(SPRN_HID0);
++	mtspr(SPRN_HID0, (tmp & ~(HID0_DOZE | HID0_NAP)) | HID0_SLEEP);
++	asm("sync");
++
++	/* Device power down. */
++	setbits32(&pmc_regs_86xx->powmgtcsr, PMCSR_DEVSLEEP);
++
++	/* 86xx did not support deep sleep, let it enter standby mode. */
++	mpc6xx_enter_standby();
++
++	clrbits32(&pmc_regs_86xx->powmgtcsr, PMCSR_DEVSLEEP);
++
++	return 0;
++}
++
++static int mpc86xx_suspend_valid(suspend_state_t state)
++{
++	if (state == PM_SUSPEND_STANDBY)
++		return 1;
++	return 0;
++}
++
++static struct platform_suspend_ops mpc86xx_suspend_ops = {
++	.valid = mpc86xx_suspend_valid,
++	.enter = mpc86xx_suspend_enter,
++};
++
++static int __init mpc86xx_pmc_init(void)
++{
++	void __iomem *guts;
++	struct device_node *np;
++
++	np = of_find_compatible_node(NULL, NULL, "fsl,mpc8610-guts");
++	if (!np) {
++		np = of_find_compatible_node(NULL, NULL, "fsl,mpc8641-guts");
++		if (!np)
++			return -ENODEV;
++	}
++
++	guts = of_iomap(np, 0);
++	of_node_put(np);
++	if (!guts)
++		return -ENOMEM;
++
++	pmc_regs_86xx = guts + 0x70;
++
++	suspend_set_ops(&mpc86xx_suspend_ops);
++	return 0;
++}
++module_init(mpc86xx_pmc_init);
+-- 
+1.5.5.1
