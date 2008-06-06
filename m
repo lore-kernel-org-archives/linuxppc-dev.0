@@ -1,28 +1,17 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from ag-out-0708.google.com (ag-out-0708.google.com [72.14.246.245])
-	by ozlabs.org (Postfix) with ESMTP id 1F09EDDF1D
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jun 2008 17:47:53 +1000 (EST)
-Received: by ag-out-0708.google.com with SMTP id 8so3054387agc.0
-	for <linuxppc-dev@ozlabs.org>; Fri, 06 Jun 2008 00:47:51 -0700 (PDT)
-Message-ID: <fa686aa40806060047n7b8b8e6flee193d46d4e3dd24@mail.gmail.com>
-Date: Fri, 6 Jun 2008 01:47:50 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Jean Delvare" <khali@linux-fr.org>
-Subject: Re: "cell-index" vs. "index" vs. no index in I2C device nodes
-In-Reply-To: <20080606082150.691da6a4@hyperion.delvare>
+Return-Path: <ludovic.desroches@gmail.com>
+Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.234])
+	by ozlabs.org (Postfix) with ESMTP id E9372DDF8D
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jun 2008 17:51:39 +1000 (EST)
+Received: by rv-out-0506.google.com with SMTP id f6so998063rvb.9
+	for <linuxppc-dev@ozlabs.org>; Fri, 06 Jun 2008 00:51:38 -0700 (PDT)
+Message-ID: <388e90610806060051w6826b028h464cd5bc321f75fe@mail.gmail.com>
+Date: Fri, 6 Jun 2008 09:51:37 +0200
+From: "Ludovic Desroches" <ludovic.desroches@gmail.com>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: Using GPIO
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <200806041706.21557.sr@denx.de>
-	<20080604220555.658ab13e@vader.jdub.homelinux.org>
-	<20080604231641.786bb2dd@lappy.seanm.ca>
-	<200806050822.00797.sr@denx.de>
-	<20080605094852.164f0bc7@hyperion.delvare>
-	<1212725783.12464.13.camel@pasglop>
-	<20080606082150.691da6a4@hyperion.delvare>
-Cc: linuxppc-dev@ozlabs.org, Sean MacLennan <smaclennan@pikatech.com>,
-	Scott Wood <scottwood@freescale.com>, Stefan Roese <sr@denx.de>,
-	Timur Tabi <timur@freescale.com>
+Content-Type: multipart/alternative;
+	boundary="----=_Part_5100_22927129.1212738697880"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,46 +21,82 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Jun 6, 2008 at 12:21 AM, Jean Delvare <khali@linux-fr.org> wrote:
-> Hi Ben,
+------=_Part_5100_22927129.1212738697880
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+Hi,
+
+I am also trying to use Xilinx GPIO driver on my board but I encounter some
+problems. I thought they will be resolved with this information but it
+doesn't.
+
+I use GPIO driver as built-in but during kernel boot but I don't see log
+about it contrary to Xemac driver for instance. First I wanted to create my
+gpio driver normally without using Xilinx one, with ioremap and writel/readl
+but I didn't write anything in the register, I don't know why. Then I tried
+to use Xilinx GPIO driver but I don't know why I don't hit xgpio_probe,
+xgpio_init returns 0 so it's OK.
+
+Do you have any idea ?
+
+Thanks
+
+Ludovic Desroches
+
+
+> arch/ppc/syslib/virtex_devices.c:
 >
-> On Fri, 06 Jun 2008 14:16:23 +1000, Benjamin Herrenschmidt wrote:
->> On Thu, 2008-06-05 at 09:48 +0200, Jean Delvare wrote:
->> > As far as I am concerned, it's really up to the maintainers and users
->> > of this platform. All I am asking for is that you do not call
->> > i2c_add_numbered_adapter() on an adapter with an automatically
->> > generated number. This function must only be used for adapter's those
->> > number is well defined. If an adapter doesn't have a well-defined
->> > number then use i2c_add_adapter() (but then you can no longer declare
->> > your I2C devices as part of the platform data.)
->>
->> Can't we just give those things -names- instead of numbers ?
+> >* // 0 is LEDS_4BIT, 1 is LEDS_POSITIONS, 2 is PUSH_BUTTONS_POSITION
+> *>* #define XPAR_GPIO(num) { \
+> *>*    .name = "xilinx_gpio", \
+> *>*    .id = num, \
+> *>*    .num_resources = 2, \
+> *That was a 2.
+> If anybody wants to make a patch out of those few lines of code, I couldn't
+> figure out how to do this with git... But I will use a more general GPIO
+> approach as soon as I can put my hands on our custom card.
 >
-> Good question. These i2c adapters already have names
-> (i2c_adapter.name), which are set by their respective drivers with more
-> or less grace depending on the driver [1]. What we don't have though is
-> the possibility to instantiate i2c devices by adapter name.
+> >*    .resource = (struct resource[]) { \
+> *>*        { \
+> *>*            .start = XPAR_GPIO_##num##_BASEADDR, \
+> *>*            .end = XPAR_GPIO_##num##_HIGHADDR, \
+> *>*            .flags = IORESOURCE_MEM, \
+> *>*        }, \
+> *>*        { \
+> *>*            .start = XPAR_INTC_0_GPIO_##num##_VEC_ID, \
+> *>*            .flags = IORESOURCE_IRQ, \
+> *>*        }, \
+> *>*    }, \
+> *>* }
+> *>* [...]
+> *>*      /* GPIO instances */
+> *>* #if defined(XPAR_GPIO_0_BASEADDR)
+> *>*      XPAR_GPIO(0),
+> *>* #endif
+> *>* #if defined(XPAR_GPIO_1_BASEADDR)
+> *>*      XPAR_GPIO(1),
+> *>* #endif
+> *>* #if defined(XPAR_GPIO_2_BASEADDR)
+> *>*      XPAR_GPIO(2),
+> *>* #endif
+> *
 >
-> We could certainly add a busname field to struct i2c_devinfo and
-> implement i2c_register_board_info_by_name() if it seems to be worth the
-> extra code and memory. I am open to the idea if it solves a problem
-> with no other clean solution.
+>
 
-Even this isn't necessary.  In arch/powerpc we don't really need to
-register the board info separately from the bus driver so we don't
-need to jump through hoops to match a board_info with an i2c bus.  The
-device tree data structure already links the i2c devices with the bus
-they are on, so an OF-aware i2c bus driver will match against a node
-in the device tree and then use all the child nodes to register i2c
-devices against itself.
+------=_Part_5100_22927129.1212738697880
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-This, of course, only applies to platform level i2c busses described
-in the device tree.  Plugin devices like PCI cards still can create
-their own i2c busses in the usual way.
+<div>Hi,<br><br>I am also trying to use Xilinx GPIO driver on my board but I encounter some problems. I thought they will be resolved with this information but it doesn&#39;t.<br><br>I use GPIO driver as built-in but during kernel boot but I don&#39;t see log about it contrary to Xemac driver for instance. First I wanted to create my gpio driver normally without using Xilinx one, with ioremap and writel/readl but I didn&#39;t write anything in the register, I don&#39;t know why. Then I tried to use Xilinx GPIO driver but I don&#39;t know why I don&#39;t hit xgpio_probe, xgpio_init returns 0 so it&#39;s OK.<br>
+<br>Do you have any idea ?<br><br>Thanks<br><br>Ludovic Desroches<br>&nbsp;</div><blockquote style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;" class="gmail_quote"><pre>arch/ppc/syslib/virtex_devices.c:<br>
+<br>&gt;<i> // 0 is LEDS_4BIT, 1 is LEDS_POSITIONS, 2 is PUSH_BUTTONS_POSITION<br></i>&gt;<i> #define XPAR_GPIO(num) { \<br></i>&gt;<i>    .name = &quot;xilinx_gpio&quot;, \<br></i>&gt;<i>    .id = num, \<br></i>&gt;<i>    .num_resources = 2, \<br>
+</i>That was a 2.<br>If anybody wants to make a patch out of those few lines of code, I couldn&#39;t <br>figure out how to do this with git... But I will use a more general GPIO <br>approach as soon as I can put my hands on our custom card.<br>
+<br>&gt;<i>    .resource = (struct resource[]) { \<br></i>&gt;<i>        { \<br></i>&gt;<i>            .start = XPAR_GPIO_##num##_BASEADDR, \<br></i>&gt;<i>            .end = XPAR_GPIO_##num##_HIGHADDR, \<br></i>&gt;<i>            .flags = IORESOURCE_MEM, \<br>
+</i>&gt;<i>        }, \<br></i>&gt;<i>        { \<br></i>&gt;<i>            .start = XPAR_INTC_0_GPIO_##num##_VEC_ID, \<br></i>&gt;<i>            .flags = IORESOURCE_IRQ, \<br></i>&gt;<i>        }, \<br></i>&gt;<i>    }, \<br>
+</i>&gt;<i> }<br></i>&gt;<i> [...]<br></i>&gt;<i>      /* GPIO instances */<br></i>&gt;<i> #if defined(XPAR_GPIO_0_BASEADDR)<br></i>&gt;<i>      XPAR_GPIO(0),<br></i>&gt;<i> #endif<br></i>&gt;<i> #if defined(XPAR_GPIO_1_BASEADDR)<br>
+</i>&gt;<i>      XPAR_GPIO(1),<br></i>&gt;<i> #endif<br></i>&gt;<i> #if defined(XPAR_GPIO_2_BASEADDR)<br></i>&gt;<i>      XPAR_GPIO(2),<br></i>&gt;<i> #endif<br></i></pre></blockquote><br clear="all"><br>
 
-Cheers,
-g.
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+------=_Part_5100_22927129.1212738697880--
