@@ -1,20 +1,18 @@
-Return-Path: <wg@grandegger.com>
+Return-Path: <wd@denx.de>
 Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 4FD48DE0F9
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jun 2008 20:10:04 +1000 (EST)
-Message-ID: <48490CF7.6050205@grandegger.com>
-Date: Fri, 06 Jun 2008 12:09:59 +0200
-From: Wolfgang Grandegger <wg@grandegger.com>
-MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>,
-	Wolfgang Grandegger <wg@grandegger.com>, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH v2 1/4] [POWERPC] 85xx: add board support for the	TQM8548
-	modules
-References: <4847AC75.8080405@grandegger.com>
-	<71165662-0864-4CDE-A1B3-29487253B85F@kernel.crashing.org>
-	<20080605225215.GF30980@yookeroo.seuss>
-In-Reply-To: <20080605225215.GF30980@yookeroo.seuss>
-Content-Type: text/plain; charset=ISO-8859-1
+	by ozlabs.org (Postfix) with ESMTP id 48ACDDE063
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jun 2008 21:19:06 +1000 (EST)
+To: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: arch/ppc is going away Real Soon Now
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 05 Jun 2008 15:37:27 CDT."
+	<BC38AEE0-E2D9-40AD-8946-6C4B18AA4BF4@freescale.com>
+Date: Fri, 06 Jun 2008 13:19:04 +0200
+Sender: wd@denx.de
+Message-Id: <20080606111904.9B1D1247CC@gemini.denx.de>
+Cc: Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,38 +22,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Gibson wrote:
-> On Thu, Jun 05, 2008 at 08:43:51AM -0500, Kumar Gala wrote:
->> On Jun 5, 2008, at 4:05 AM, Wolfgang Grandegger wrote:
-> [snip]
->>> +			timebase-frequency = <0>;	// from U-Boot
->>> +			bus-frequency = <0>;	// from U-Boot
->>> +			clock-frequency = <0>;	// from U-Boot
->> u-boot will add this for us so no need for them.
+In message <BC38AEE0-E2D9-40AD-8946-6C4B18AA4BF4@freescale.com> Becky Bruce wrote:
 > 
-> I think it's worth including them (with the comments) for
-> documentation purposes though.  Plus allowing the bootloader and
-> bootwrapper to just replace property values without resizing or
-> inserting is somewhat worthwhile of itself.
+> On Jun 5, 2008, at 3:30 PM, Scott Wood wrote:
+> 
+> > Olof Johansson wrote:
+> >> On Jun 5, 2008, at 3:12 PM, Arnd Bergmann wrote:
+> >>> On Thursday 05 June 2008, Stephen Neuendorffer wrote:
+> >>>>> "Grant Likely" <grant.likely@secretlab.ca> wrote:
+> >>>>>
+> >>>>>> Paulus, Can we just kill all of arch/ppc for .27 right now?
+> >>>>>
+> >>>>> Acked-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+> >>>> Acked-by: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
+> >>> Acked-by: Arnd Bergmann <arnd@arndb.de>
+> >> Acked-by: Olof Johansson <olof@lixom.net>
+> > Acked-by: Scott Wood <scottwood@freescale.com>
+> Acked-by: Becky Bruce <becky.bruce@freescale.com>
+Acked-by: Wolfgang Denk <wd@denx.de>
 
-I understand your point and while testing the new blob, I realized that
- the DTB image created with
-
- $ make ARCH=powerpc tqm8548.dtb
-
-does not work because work space is missing:
-
-  ## Flattened Device Tree blob at 00900000
-     Booting using the fdt blob at 0x900000
-     Loading Device Tree to 007fe000, end 007ff8e0 ... OK
-  WARNING: could not create /chosen FDT_ERR_NOSPACE.
-  ERROR: /chosen node create failed - must RESET the board to recover.
-
-As I see it, I have to define DTS_FLAGS manually
-
-  $ export DTS_FLAGS="-R4 -S0x3000"
-  $ make ARCH=powerpc tqm8548.dtb
-
-to get a working blob. Is that the intended behavior?
-
-Wolfgang.
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+The only solution is ... a balance of power. We  arm  our  side  with
+exactly  that  much  more.  A balance of power -- the trickiest, most
+difficult, dirtiest game of them all. But the only one that preserves
+both sides.
+	-- Kirk, "A Private Little War", stardate 4211.8
