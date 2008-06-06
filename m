@@ -1,17 +1,17 @@
 Return-Path: <gregkh@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+Received: from mx2.suse.de (ns2.suse.de [195.135.220.15])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 28E87DDEFF
-	for <linuxppc-dev@ozlabs.org>; Sat,  7 Jun 2008 08:57:58 +1000 (EST)
-Subject: patch usb-isp1760-assign-resource-fields-before-adding-hcd.patch
+	by ozlabs.org (Postfix) with ESMTPS id 3CA72DE1A8
+	for <linuxppc-dev@ozlabs.org>; Sat,  7 Jun 2008 08:58:16 +1000 (EST)
+Subject: patch usb-ohci-ppc-of-use-linux-of_platform.h-instead-of-asm.patch
 	added to gregkh-2.6 tree
-To: ncase@xes-inc.com, bigeasy@linutronix.de, gregkh@suse.de,
-	linuxppc-dev@ozlabs.org
+To: sfr@canb.auug.org.au, gregkh@suse.de, greg@kroah.com,
+	linuxppc-dev@ozlabs.org, tnt@246tNt.com
 From: <gregkh@suse.de>
-Date: Fri, 06 Jun 2008 15:52:15 -0700
-In-Reply-To: <1211405300.13845.627.camel@localhost.localdomain>
-Message-ID: <12127927354068@kroah.org>
+Date: Fri, 06 Jun 2008 15:52:29 -0700
+In-Reply-To: <20080523163758.4edcdef4.sfr@canb.auug.org.au>
+Message-ID: <12127927494073@kroah.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,60 +24,48 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 This is a note to let you know that I've just added the patch titled
 
-     Subject: USB: isp1760: Assign resource fields before adding hcd
+     Subject: USB: ohci-ppc-of: use linux/of_platform.h instead of asm
 
 to my gregkh-2.6 tree.  Its filename is
 
-     usb-isp1760-assign-resource-fields-before-adding-hcd.patch
+     usb-ohci-ppc-of-use-linux-of_platform.h-instead-of-asm.patch
 
 This tree can be found at 
     http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
 
 
->From ncase@xes-inc.com  Fri Jun  6 15:07:08 2008
-From: Nate Case <ncase@xes-inc.com>
-Date: Wed, 21 May 2008 16:28:20 -0500
-Subject: USB: isp1760: Assign resource fields before adding hcd
-To: Sebastian Siewior <bigeasy@linutronix.de>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, linux-usb@vger.kernel.org, linuxppc-dev <linuxppc-dev@ozlabs.org>
-Message-ID: <1211405300.13845.627.camel@localhost.localdomain>
+>From sfr@canb.auug.org.au  Fri Jun  6 15:16:28 2008
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Fri, 23 May 2008 16:37:58 +1000
+Subject: USB: ohci-ppc-of: use linux/of_platform.h instead of asm
+To: Sylvain Munaut <tnt@246tNt.com>
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, Greg KH <greg@kroah.com>
+Message-ID: <20080523163758.4edcdef4.sfr@canb.auug.org.au>
 
 
-This fixes the bogus "io mem 0x00000000" message printed
-during driver init due to hcd->rsrc_start being assigned after
-the call to usb_add_hcd().
 
-Signed-off-by: Nate Case <ncase@xes-inc.com>
-Acked-by: Sebastian Siewior <bigeasy@linutronix.de>
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/host/isp1760-hcd.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ drivers/usb/host/ohci-ppc-of.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/drivers/usb/host/isp1760-hcd.c
-+++ b/drivers/usb/host/isp1760-hcd.c
-@@ -2207,14 +2207,14 @@ struct usb_hcd *isp1760_register(u64 res
- 		goto err_put;
- 	}
+--- a/drivers/usb/host/ohci-ppc-of.c
++++ b/drivers/usb/host/ohci-ppc-of.c
+@@ -14,8 +14,8 @@
+  */
  
--	ret = usb_add_hcd(hcd, irq, irqflags);
--	if (ret)
--		goto err_unmap;
--
- 	hcd->irq = irq;
- 	hcd->rsrc_start = res_start;
- 	hcd->rsrc_len = res_len;
+ #include <linux/signal.h>
++#include <linux/of_platform.h>
  
-+	ret = usb_add_hcd(hcd, irq, irqflags);
-+	if (ret)
-+		goto err_unmap;
-+
- 	return hcd;
+-#include <asm/of_platform.h>
+ #include <asm/prom.h>
  
- err_unmap:
+ 
 
 
-Patches currently in gregkh-2.6 which might be from ncase@xes-inc.com are
+Patches currently in gregkh-2.6 which might be from sfr@canb.auug.org.au are
 
-usb.current/usb-isp1760-assign-resource-fields-before-adding-hcd.patch
+bad/battery-class-driver.patch
+usb/usb-ohci-ppc-of-use-linux-of_platform.h-instead-of-asm.patch
