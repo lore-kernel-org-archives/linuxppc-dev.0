@@ -1,26 +1,20 @@
-Return-Path: <jeff@garzik.org>
-Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 578D9DE7C6
-	for <linuxppc-dev@ozlabs.org>; Sat,  7 Jun 2008 03:48:52 +1000 (EST)
-Message-ID: <4849787C.8090506@garzik.org>
-Date: Fri, 06 Jun 2008 13:48:44 -0400
-From: Jeff Garzik <jeff@garzik.org>
+Return-Path: <bunk@kernel.org>
+Received: from smtp6.pp.htv.fi (smtp6.pp.htv.fi [213.243.153.40])
+	by ozlabs.org (Postfix) with ESMTP id 0198FDE5B3
+	for <linuxppc-dev@ozlabs.org>; Sat,  7 Jun 2008 03:59:21 +1000 (EST)
+Date: Fri, 6 Jun 2008 20:58:39 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: 4xx support in arch/ppc is going away Real Soon Now
+Message-ID: <20080606175839.GD2201@cs181133002.pp.htv.fi>
+References: <20080605095253.7df9dbe0@zod.rchland.ibm.com>
+	<fa686aa40806050811t4ab2fbfk9eed34d0972376c4@mail.gmail.com>
+	<20080606115347.GC472@cs181133002.pp.htv.fi>
+	<18505.10514.353016.230035@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] [POWERPC] 85xx: MPC85xx MDS - Unconditionally select
-	PHYLIB for board fixups
-References: <Pine.LNX.4.64.0806021019540.22439@blarg.am.freescale.net>
-	<484419EE.5040503@garzik.org>
-	<1E4EB64C-0618-497E-AABC-74EB7D74B97F@kernel.crashing.org>
-	<20080602165422.GA22051@cs181133002.pp.htv.fi>
-	<Pine.LNX.4.64.0806021423380.11043@blarg.am.freescale.net>
-	<Pine.LNX.4.64.0806061039390.13744@blarg.am.freescale.net>
-In-Reply-To: <Pine.LNX.4.64.0806061039390.13744@blarg.am.freescale.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org,
-	Adrian Bunk <adrian.bunk@movial.fi>
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <18505.10514.353016.230035@cargo.ozlabs.ibm.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,38 +24,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
-> The MPC85xx MDS board requires some board level tweaks of the PHYs that
-> either the eTSEC (gianfar) or UCC ethernet controllers are connected to.
+On Fri, Jun 06, 2008 at 10:09:54PM +1000, Paul Mackerras wrote:
+> Adrian Bunk writes:
 > 
-> Its possible to build the phylib as a module, however this breaks the
-> board level fix ups because phy_read and phy_write are not available
-> if we build as a module.
+> > BTW:
+> > I remember Paul wanted to get PReP under arch/powerpc/ working -
+> > should this be done before the big ppc removal?
 > 
-> So we unconditionally select PHYLIB to ensure its built into the kernel
-> if we are building in MPC85xx MDS support.  This was determined to be
-> the easiest soultion even though it prevents the user from removing
-> PHYLIB support if they decide they don't want it.
-> 
-> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
-> ---
-> 
-> will go via the powerpc.git tree for 2.6.26.
-> 
-> - k
-> 
->  arch/powerpc/platforms/85xx/Kconfig |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
-> 
-> diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/platforms/85xx/Kconfig
-> index 7ff29d5..ecbe580 100644
-> --- a/arch/powerpc/platforms/85xx/Kconfig
-> +++ b/arch/powerpc/platforms/85xx/Kconfig
-> @@ -34,6 +34,7 @@ config MPC85xx_MDS
->  	bool "Freescale MPC85xx MDS"
->  	select DEFAULT_UIMAGE
->  	select QUICC_ENGINE
-> +	select PHYLIB
->  	help
+> I have a PReP port for arch/powerpc that works for one machine, at
+> least. :)  The key part is the residual to device-tree converter that
+> I posted some time back with a request for people to test it on their
+> PReP machines, but I haven't heard back from anybody.  I'm going to
+> post the patch shortly anyway.
 
-ACK
+Meelis Roos <mroos@linux.ee> has a Motorola Powerstack II Pro4000 and 
+recently reported (now fixed) 2.6.26-rc build problems with the rusty 
+ppc code.
+
+You might have luck asking him for testing, thereby doubling the number 
+of known-working machines.  :)
+
+> Paul.
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
