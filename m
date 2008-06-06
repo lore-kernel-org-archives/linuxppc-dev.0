@@ -1,20 +1,35 @@
-Return-Path: <stephen.neuendorffer@xilinx.com>
-Received: from SG2EHSOBE001.bigfish.com (outbound-sin.frontbridge.com
-	[207.46.51.80]) by ozlabs.org (Postfix) with ESMTP id 4CEE6DE7EE
-	for <linuxppc-dev@ozlabs.org>; Sat,  7 Jun 2008 02:19:37 +1000 (EST)
+Return-Path: <fenkes@de.ibm.com>
+Received: from mtagate2.de.ibm.com (mtagate2.de.ibm.com [195.212.29.151])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mtagate2.de.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id CC023DE0A4
+	for <linuxppc-dev@ozlabs.org>; Sat,  7 Jun 2008 02:35:51 +1000 (EST)
+Received: from d12nrmr1607.megacenter.de.ibm.com
+	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
+	by mtagate2.de.ibm.com (8.13.8/8.13.8) with ESMTP id m56GZj4K143738
+	for <linuxppc-dev@ozlabs.org>; Fri, 6 Jun 2008 16:35:45 GMT
+Received: from d12av03.megacenter.de.ibm.com (d12av03.megacenter.de.ibm.com
+	[9.149.165.213])
+	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v9.0) with
+	ESMTP id m56GZj7N3719372
+	for <linuxppc-dev@ozlabs.org>; Fri, 6 Jun 2008 18:35:45 +0200
+Received: from d12av03.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av03.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id m56GZiU9016284
+	for <linuxppc-dev@ozlabs.org>; Fri, 6 Jun 2008 18:35:44 +0200
+From: Joachim Fenkes <fenkes@de.ibm.com>
+To: "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
+	LKML <linux-kernel@vger.kernel.org>,
+	"OF-General" <general@lists.openfabrics.org>,
+	Roland Dreier <rolandd@cisco.com>, "OF-EWG" <ewg@lists.openfabrics.org>
+Subject: IB/ehca: Reject send WRs only for RESET, INIT and RTR state
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Subject: RE: [PATCH] [POWERPC] Xilinx: add compatibility for 'simple-bus'.
-Date: Fri, 6 Jun 2008 09:16:49 -0700
-In-Reply-To: <fa686aa40806060829h52c5d27fvcec8c02c2eee3c7@mail.gmail.com>
-References: <20080508161529.65566FB805F@mail185-va3.bigfish.com>
-	<1210271125-11559-1-git-send-email-stephen.neuendorffer@xilinx.com>
-	<20080603214232.E0A8D1488061@mail55-wa4.bigfish.com>
-	<fa686aa40806060829h52c5d27fvcec8c02c2eee3c7@mail.gmail.com>
-From: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
-To: "Grant Likely" <grant.likely@secretlab.ca>
-Message-ID: <20080606161932.0650C1500054@mail96-sin.bigfish.com>
-Cc: linuxppc-dev@ozlabs.org, git <git@xilinx.com>, dwg@au1.ibm.com
+Date: Fri, 6 Jun 2008 18:35:43 +0200
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200806061835.43802.fenkes@de.ibm.com>
+Cc: Stefan Roscher <stefan.roscher@de.ibm.com>,
+	Christoph Raisch <raisch@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,97 +39,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
+---
+ drivers/infiniband/hw/ehca/ehca_reqs.c |    6 ++++--
+ 1 files changed, 4 insertions(+), 2 deletions(-)
 
-legacy_serial identifies a valid ns16550 on a simple-bus, but the
-legacy_serial driver doesn't understand the shift and offset flags
-necessary to get it to work, which results in no console.
-
-I think the easiest solution is to change the Kconfig so that
-PPC_UDBG_16550 is only selected based on !XILINX_VIRTEX.  I've done this
-in my tree, but I've been swamped with other things at the moment, so I
-haven't verified it.
-
-Or is legacy_serial just legacy at this point and can go away entirely?
-I got the impression from some of the earlier discussion that it wasn't
-preferred, at least....
-
-Steve
-
-> -----Original Message-----
-> From: glikely@secretlab.ca [mailto:glikely@secretlab.ca] On Behalf Of
-Grant Likely
-> Sent: Friday, June 06, 2008 8:29 AM
-> To: Stephen Neuendorffer
-> Cc: dwg@au1.ibm.com; jwboyer@linux.vnet.ibm.com;
-linuxppc-dev@ozlabs.org; git
-> Subject: Re: [PATCH] [POWERPC] Xilinx: add compatibility for
-'simple-bus'.
-> =
-
-> On Tue, Jun 3, 2008 at 3:41 PM, Stephen Neuendorffer
-> <stephen.neuendorffer@xilinx.com> wrote:
-> >
-> > It appears that this turns out to interact badly with the probing of
-> > PPC_UDBG_16550, which is always enabled on PPC405 (and apparently
-> > found!) even though Virtex devices don't have them.
-> =
-
-> What is the symptom?
-> =
-
-> g.
-> =
-
-> >
-> > Steve
-> >
-> >> -----Original Message-----
-> >> From: Stephen Neuendorffer [mailto:stephen.neuendorffer@xilinx.com]
-> >> Sent: Thursday, May 08, 2008 11:25 AM
-> >> To: dwg@au1.ibm.com; jwboyer@linux.vnet.ibm.com;
-> > grant.likely@secretlab.ca; linuxppc-dev@ozlabs.org
-> >> Cc: Stephen Neuendorffer
-> >> Subject: [PATCH] [POWERPC] Xilinx: add compatibility for
-'simple-bus'.
-> >>
-> >> ePAPR drafts propose 'simple-bus' as a generic compatibility type
-for
-> >> busses which cannot be probed for devices.  In addition, the Xilinx
-> >> versions of these IPs seem to be proliferating.  Hence, in the
-future
-> >> let's prefer to use the standard names.  I've left the old names in
-> >> for short term backward compatibility for existing device trees.
-> >>
-> >> Signed-off-by: Stephen Neuendorffer
-<stephen.neuendorffer@xilinx.com>
-> >> ---
-> >>  arch/powerpc/platforms/40x/virtex.c |    1 +
-> >>  1 files changed, 1 insertions(+), 0 deletions(-)
-> >>
-> >> diff --git a/arch/powerpc/platforms/40x/virtex.c
-> > b/arch/powerpc/platforms/40x/virtex.c
-> >> index 6c72994..b1ab7b8 100644
-> >> --- a/arch/powerpc/platforms/40x/virtex.c
-> >> +++ b/arch/powerpc/platforms/40x/virtex.c
-> >> @@ -16,6 +16,7 @@
-> >>  #include <asm/xilinx_intc.h>
-> >>
-> >>  static struct of_device_id xilinx_of_bus_ids[] __initdata =3D {
-> >> +     { .compatible =3D "simple-bus", },
-> >>       { .compatible =3D "xlnx,plb-v46-1.00.a", },
-> >>       { .compatible =3D "xlnx,plb-v46-1.02.a", },
-> >>       { .compatible =3D "xlnx,plb-v34-1.01.a", },
-> >> --
-> >> 1.5.3.4
-> =
-
-> --
-> Grant Likely, B.Sc., P.Eng.
-> Secret Lab Technologies Ltd.
-
-
-This email and any attachments are intended for the sole use of the named r=
-ecipient(s) and contain(s) confidential information that may be proprietary=
-, privileged or copyrighted under applicable law. If you are not the intend=
-ed recipient, do not read, copy, or forward this email message or any attac=
-hments. Delete this email message and any attachments immediately.
+diff --git a/drivers/infiniband/hw/ehca/ehca_reqs.c b/drivers/infiniband/hw/ehca/ehca_reqs.c
+index bbe0436..f093b00 100644
+--- a/drivers/infiniband/hw/ehca/ehca_reqs.c
++++ b/drivers/infiniband/hw/ehca/ehca_reqs.c
+@@ -421,8 +421,10 @@ int ehca_post_send(struct ib_qp *qp,
+ 	int ret = 0;
+ 	unsigned long flags;
+ 
+-	if (unlikely(my_qp->state != IB_QPS_RTS)) {
+-		ehca_err(qp->device, "QP not in RTS state  qpn=%x", qp->qp_num);
++	/* Reject WR if QP is in RESET, INIT or RTR state */
++	if (unlikely(my_qp->state < IB_QPS_RTS)) {
++		ehca_err(qp->device, "Invalid QP state  qp_state=%d qpn=%x",
++			 my_qp->state, qp->qp_num);
+ 		return -EINVAL;
+ 	}
+ 
+-- 
+1.5.5
