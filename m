@@ -1,26 +1,18 @@
-Return-Path: <khali@linux-fr.org>
-Received: from services.gcu-squad.org (zone0.gcu-squad.org [212.85.147.21])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 4693ADDF4D
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jun 2008 16:22:08 +1000 (EST)
-Date: Fri, 6 Jun 2008 08:21:50 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: benh@kernel.crashing.org
-Subject: Re: "cell-index" vs. "index" vs. no index in I2C device nodes
-Message-ID: <20080606082150.691da6a4@hyperion.delvare>
-In-Reply-To: <1212725783.12464.13.camel@pasglop>
-References: <200806041706.21557.sr@denx.de>
-	<20080604220555.658ab13e@vader.jdub.homelinux.org>
-	<20080604231641.786bb2dd@lappy.seanm.ca>
-	<200806050822.00797.sr@denx.de>
-	<20080605094852.164f0bc7@hyperion.delvare>
-	<1212725783.12464.13.camel@pasglop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
-	Stefan Roese <sr@denx.de>, Timur Tabi <timur@freescale.com>,
-	Sean MacLennan <smaclennan@pikatech.com>
+Return-Path: <wg@grandegger.com>
+Message-ID: <4848E90F.5090101@grandegger.com>
+Date: Fri, 06 Jun 2008 09:36:47 +0200
+From: Wolfgang Grandegger <wg@grandegger.com>
+MIME-Version: 1.0
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH v3 2/4] [POWERPC] 85xx: add board support for the TQM8548
+	modules
+References: <48481E86.1060302@grandegger.com>
+	<4188A8A4-BDF9-4D23-A874-19C6A9A18E71@kernel.crashing.org>
+	<48484EFE.5050101@grandegger.com>
+	<389E58E0-C885-4E8E-B311-C655F52FE23D@kernel.crashing.org>
+In-Reply-To: <389E58E0-C885-4E8E-B311-C655F52FE23D@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,31 +22,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Ben,
-
-On Fri, 06 Jun 2008 14:16:23 +1000, Benjamin Herrenschmidt wrote:
-> On Thu, 2008-06-05 at 09:48 +0200, Jean Delvare wrote:
-> > As far as I am concerned, it's really up to the maintainers and users
-> > of this platform. All I am asking for is that you do not call
-> > i2c_add_numbered_adapter() on an adapter with an automatically
-> > generated number. This function must only be used for adapter's those
-> > number is well defined. If an adapter doesn't have a well-defined
-> > number then use i2c_add_adapter() (but then you can no longer declare
-> > your I2C devices as part of the platform data.)
+Kumar Gala wrote:
 > 
-> Can't we just give those things -names- instead of numbers ?
+> On Jun 5, 2008, at 3:39 PM, Wolfgang Grandegger wrote:
+> 
+>> Kumar Gala wrote:
+>>>
+>>>> ===================================================================
+>>>> --- /dev/null
+>>>> +++ linux-2.6-galak/arch/powerpc/boot/dts/tqm8548.dts
+>>>>
+>>>
+>>>> +    memory {
+>>>> +        device_type = "memory";
+>>>> +        reg = <0x00000000 0x20000000>;
+>>>> +    };
+>>>
+>>> is memory fixed on this board to 256M?
+>>
+>> Ah, no, actually I have a module with 512 MB but it can be ordered with
+>> less or more memory like the other TQM85xx modules as well. Does U-Boot
+>> fixup this value? Is it used by Linux?
+> 
+> if u-boot determines the memory it will update this properly.  Linux
+> expects this to be set to know how much mem is in the system.
+> 
+> if you can try setting the 2nd value to 0x0 and see if it boots that
+> will let me know if its safe for me to change.
 
-Good question. These i2c adapters already have names
-(i2c_adapter.name), which are set by their respective drivers with more
-or less grace depending on the driver [1]. What we don't have though is
-the possibility to instantiate i2c devices by adapter name.
+It works with
 
-We could certainly add a busname field to struct i2c_devinfo and
-implement i2c_register_board_info_by_name() if it seems to be worth the
-extra code and memory. I am open to the idea if it solves a problem
-with no other clean solution.
+	memory {
+		device_type = "memory";
+		reg = <0x00000000 0x00000000>;	// size filled by U-Boot
+	};
 
-[1] radeonfb is notoriously bad at that ;)
+as well. With my previous definition Linux came up with 512 MB of memory
+as well and it was already obvious, that U-Boot fills in the right size
+value.
 
--- 
-Jean Delvare
+Wolfgang.
