@@ -4,20 +4,19 @@ Received: from de01egw02.freescale.net (de01egw02.freescale.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "de01egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id AC206DE57D
-	for <linuxppc-dev@ozlabs.org>; Sat,  7 Jun 2008 01:31:46 +1000 (EST)
-Subject: Re: Default flats for running dtc from kernel build
+	by ozlabs.org (Postfix) with ESMTPS id 6756FDE040
+	for <linuxppc-dev@ozlabs.org>; Sat,  7 Jun 2008 01:34:36 +1000 (EST)
+Subject: Re: arch/ppc is going away Real Soon Now
 From: Jon Loeliger <jdl@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <A005B9E2-9A1D-4190-AB00-A7C880E4DBDB@kernel.crashing.org>
-References: <20080606143347.B35CC247FE@gemini.denx.de>
-	<A005B9E2-9A1D-4190-AB00-A7C880E4DBDB@kernel.crashing.org>
+To: Wolfgang Denk <wd@denx.de>
+In-Reply-To: <20080606111904.9B1D1247CC@gemini.denx.de>
+References: <20080606111904.9B1D1247CC@gemini.denx.de>
 Content-Type: text/plain
-Date: Fri, 06 Jun 2008 10:31:04 -0500
-Message-Id: <1212766264.6788.4.camel@ld0161-tx32>
+Date: Fri, 06 Jun 2008 10:34:28 -0500
+Message-Id: <1212766468.6788.6.camel@ld0161-tx32>
 Mime-Version: 1.0
 Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Wolfgang Denk <wd@denx.de>
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,49 +26,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2008-06-06 at 09:51 -0500, Kumar Gala wrote:
-
-> >
-> > I will. But wouldn't it make sense to allow at least for  some  level
-> > of  compatibility with older versions of U-Boot? Adding these options
-> > as default would probably not hurt?
-> 
-> Agreed.  I didn't realize we could actually do this from the kernel  
-> build system.
-> 
-> I'm sure others will have their two cents to add.
-> 
-> But something like:
-> 
-> diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-> index c40fb82..52db85a 100644
-> --- a/arch/powerpc/boot/Makefile
-> +++ b/arch/powerpc/boot/Makefile
-> @@ -29,6 +29,8 @@ ifdef CONFIG_DEBUG_INFO
->   BOOTCFLAGS     += -g
->   endif
-> 
-> +DTS_FLAGS      ?= -R4 -S 0x3000
-> +
->   ifeq ($(call cc-option-yn, -fstack-protector),y)
->   BOOTCFLAGS     += -fno-stack-protector
->   endif
-
-Hrm.  Should we use -p <extra_space> instead of -S <total_space>?
-Seems someone added this DTC commit last November:
-
-        commit 2b7dc8dce549ad72ad437b254bf756d7ba4c2a5a
-        Author: Kumar Gala <galak@kernel.crashing.org>
-        Date:   Wed Nov 28 10:21:12 2007 -0600
-        
-            Add an option to pad the blob that is generated
-        
-            There are times when we need extra space in the blob and just want
-            to have it added on w/o know the exact size to make it.
-        
-            The padding and min size options are mutually exclusive.
-        
-            Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
-
-A thought,
-jdl
+On Fri, 2008-06-06 at 13:19 +0200, Wolfgang Denk wrote:
+> In message <BC38AEE0-E2D9-40AD-8946-6C4B18AA4BF4@freescale.com> Becky Bruce wrote:
+> > 
+> > On Jun 5, 2008, at 3:30 PM, Scott Wood wrote:
+> > 
+> > > Olof Johansson wrote:
+> > >> On Jun 5, 2008, at 3:12 PM, Arnd Bergmann wrote:
+> > >>> On Thursday 05 June 2008, Stephen Neuendorffer wrote:
+> > >>>>> "Grant Likely" <grant.likely@secretlab.ca> wrote:
+> > >>>>>
+> > >>>>>> Paulus, Can we just kill all of arch/ppc for .27 right now?
+> > >>>>>
+> > >>>>> Acked-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+> > >>>> Acked-by: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
+> > >>> Acked-by: Arnd Bergmann <arnd@arndb.de>
+> > >> Acked-by: Olof Johansson <olof@lixom.net>
+> > > Acked-by: Scott Wood <scottwood@freescale.com>
+> > Acked-by: Becky Bruce <becky.bruce@freescale.com>
+> Acked-by: Wolfgang Denk <wd@denx.de>
+Acked-by: Jon Loeliger <jdl@freescale.com>
