@@ -2,24 +2,20 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 16A74DDF57
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jun 2008 14:18:01 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id A8BE3DDF57
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jun 2008 14:18:31 +1000 (EST)
 Subject: Re: "cell-index" vs. "index" vs. no index in I2C device nodes
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Jean Delvare <khali@linux-fr.org>
-In-Reply-To: <20080605094852.164f0bc7@hyperion.delvare>
-References: <200806041706.21557.sr@denx.de>
-	<20080604220555.658ab13e@vader.jdub.homelinux.org>
-	<20080604231641.786bb2dd@lappy.seanm.ca>
-	<200806050822.00797.sr@denx.de>
-	<20080605094852.164f0bc7@hyperion.delvare>
+To: Scott Wood <scottwood@freescale.com>
+In-Reply-To: <20080604154351.GB10393@ld0162-tx32.am.freescale.net>
+References: <200806041706.21557.sr@denx.de> <4846B39F.3010601@freescale.com>
+	<20080604154351.GB10393@ld0162-tx32.am.freescale.net>
 Content-Type: text/plain
-Date: Fri, 06 Jun 2008 14:16:23 +1000
-Message-Id: <1212725783.12464.13.camel@pasglop>
+Date: Fri, 06 Jun 2008 14:13:43 +1000
+Message-Id: <1212725623.12464.9.camel@pasglop>
 Mime-Version: 1.0
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
-	Stefan Roese <sr@denx.de>, Timur Tabi <timur@freescale.com>,
-	Sean MacLennan <smaclennan@pikatech.com>
+Cc: linuxppc-dev@ozlabs.org, Stefan Roese <sr@denx.de>,
+	Timur Tabi <timur@freescale.com>
 Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -30,15 +26,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2008-06-05 at 09:48 +0200, Jean Delvare wrote:
-> As far as I am concerned, it's really up to the maintainers and users
-> of this platform. All I am asking for is that you do not call
-> i2c_add_numbered_adapter() on an adapter with an automatically
-> generated number. This function must only be used for adapter's those
-> number is well defined. If an adapter doesn't have a well-defined
-> number then use i2c_add_adapter() (but then you can no longer declare
-> your I2C devices as part of the platform data.)
+On Wed, 2008-06-04 at 10:43 -0500, Scott Wood wrote:
+> > I just posted a patch for the FSL I2C driver to check for cell-index.  I'm under
+> > the impression that cell-index is the standard for enumerating devices in the
+> > device tree.
+> 
+> No, it's the standard for correlating devices with portions of a shared
+> register block elsewhere.  Your use in the I2C node is merely a hack to
+> deal with Linux wanting to deal with indices rather than pointers,
+> combined with a lack of a decent way to look up a device struct from the
+> device node.
 
-Can't we just give those things -names- instead of numbers ?
+Totally agreed. cell-index should -only- be about correlating a given
+device in an ASIC with some shared register (an example coming to mind
+is clock control registers with one bit per cell) etc...
+
+For the rest, well, use aliases :-)
 
 Ben.
