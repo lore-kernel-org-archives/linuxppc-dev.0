@@ -1,25 +1,24 @@
-Return-Path: <benh@kernel.crashing.org>
+Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C7514DDDF7
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jun 2008 14:37:15 +1000 (EST)
-Subject: Re: Linux 2.6.26-rc5 (G5 SATA broken)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Hugh Dickins <hugh@veritas.com>
-In-Reply-To: <Pine.LNX.4.64.0806051255340.28792@blonde.site>
-References: <alpine.LFD.1.10.0806042018060.3473@woody.linux-foundation.org>
-	<20080605112436.GA4533@aepfle.de>
-	<Pine.LNX.4.64.0806051255340.28792@blonde.site>
-Content-Type: text/plain
-Date: Fri, 06 Jun 2008 14:36:46 +1000
-Message-Id: <1212727006.12464.25.camel@pasglop>
-Mime-Version: 1.0
-Cc: Olaf Hering <olaf@aepfle.de>, Jeff Garzik <jeff@garzik.org>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	linuxppc-dev@ozlabs.org, Linus Torvalds <torvalds@linux-foundation.org>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>
-Reply-To: benh@kernel.crashing.org
+	by ozlabs.org (Postfix) with ESMTPS id 6D92ADDFA2
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jun 2008 14:39:09 +1000 (EST)
+Message-Id: <331A97D9-074D-4985-ACD4-7910AC4B8F46@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: benh@kernel.crashing.org
+In-Reply-To: <1212726733.12464.23.camel@pasglop>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Mime-Version: 1.0 (Apple Message framework v924)
+Subject: Re: arch/ppc is going away Real Soon Now
+Date: Thu, 5 Jun 2008 23:38:49 -0500
+References: <20080605095253.7df9dbe0@zod.rchland.ibm.com>
+	<20080605101838.5b1d9233@zod.rchland.ibm.com>
+	<20080605154839.B87C5838078@mail206-sin.bigfish.com>
+	<200806052212.29792.arnd@arndb.de>
+	<1212726733.12464.23.camel@pasglop>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Arnd Bergmann <arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,14 +29,20 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-> I've been bisecting that on Quad G5 (sata_svw): irq 18: nobody cared ...,
-> then later endless ata1.00: exception..., blah blah, ata1: EH complete.
-> It comes down to:
+On Jun 5, 2008, at 11:32 PM, Benjamin Herrenschmidt wrote:
 
-Thanks for finding that !
+> On Thu, 2008-06-05 at 22:12 +0200, Arnd Bergmann wrote:
+>> On Thursday 05 June 2008, Stephen Neuendorffer wrote:
+>>>> "Grant Likely" <grant.likely@secretlab.ca> wrote:
+>>>>
+>>>>> Paulus, Can we just kill all of arch/ppc for .27 right now?
+>>>>
+>>>> Acked-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+>>> Acked-by: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
+>> Acked-by: Arnd Bergmann <arnd@arndb.de>
+>
+> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-/me likes when he wakes up in the morning to find a G5 bug ... and the
-fix in the same thread :-)
+Acked-by: Kumar Gala <galak@kernel.crashing.org>
 
-Cheers,
-Ben.
+- k
