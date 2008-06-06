@@ -1,33 +1,26 @@
-Return-Path: <jyoung5@us.ibm.com>
-Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
+Return-Path: <jeff@garzik.org>
+Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id E9099DE2DB
-	for <linuxppc-dev@ozlabs.org>; Sat,  7 Jun 2008 02:37:41 +1000 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e5.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m56Gba1G026960
-	for <linuxppc-dev@ozlabs.org>; Fri, 6 Jun 2008 12:37:36 -0400
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
-	m56GbZ6I200342
-	for <linuxppc-dev@ozlabs.org>; Fri, 6 Jun 2008 12:37:35 -0400
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m56GbZHA010039
-	for <linuxppc-dev@ozlabs.org>; Fri, 6 Jun 2008 12:37:35 -0400
-Received: from [9.53.41.205] (thinkpadL.austin.ibm.com [9.53.41.205])
-	by d01av01.pok.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	m56GbZo3010015
-	for <linuxppc-dev@ozlabs.org>; Fri, 6 Jun 2008 12:37:35 -0400
-Subject: [v3] Fix definitions for dbcr0, dbcr1, & dbcr2 register for bookE
-	processors
-From: Jerone Young <jyoung5@us.ibm.com>
-To: linuxppc-dev <linuxppc-dev@ozlabs.org>
-Content-Type: text/plain
-Date: Fri, 06 Jun 2008 11:37:34 -0500
-Message-Id: <1212770254.9674.2.camel@thinkpadL>
-Mime-Version: 1.0
-Reply-To: jyoung5@us.ibm.com
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 578D9DE7C6
+	for <linuxppc-dev@ozlabs.org>; Sat,  7 Jun 2008 03:48:52 +1000 (EST)
+Message-ID: <4849787C.8090506@garzik.org>
+Date: Fri, 06 Jun 2008 13:48:44 -0400
+From: Jeff Garzik <jeff@garzik.org>
+MIME-Version: 1.0
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] [POWERPC] 85xx: MPC85xx MDS - Unconditionally select
+	PHYLIB for board fixups
+References: <Pine.LNX.4.64.0806021019540.22439@blarg.am.freescale.net>
+	<484419EE.5040503@garzik.org>
+	<1E4EB64C-0618-497E-AABC-74EB7D74B97F@kernel.crashing.org>
+	<20080602165422.GA22051@cs181133002.pp.htv.fi>
+	<Pine.LNX.4.64.0806021423380.11043@blarg.am.freescale.net>
+	<Pine.LNX.4.64.0806061039390.13744@blarg.am.freescale.net>
+In-Reply-To: <Pine.LNX.4.64.0806061039390.13744@blarg.am.freescale.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org,
+	Adrian Bunk <adrian.bunk@movial.fi>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,75 +30,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Updates: Made names match BookeE names in BookeE spec, Added comment that DBCR0_RST* was not followed in fsl.
-         * Did not get a chance to add missing entries for other cases with DBCR1 & DBCR0 .. but if anyone
-           would like to add them, that would be awsome!
+Kumar Gala wrote:
+> The MPC85xx MDS board requires some board level tweaks of the PHYs that
+> either the eTSEC (gianfar) or UCC ethernet controllers are connected to.
+> 
+> Its possible to build the phylib as a module, however this breaks the
+> board level fix ups because phy_read and phy_write are not available
+> if we build as a module.
+> 
+> So we unconditionally select PHYLIB to ensure its built into the kernel
+> if we are building in MPC85xx MDS support.  This was determined to be
+> the easiest soultion even though it prevents the user from removing
+> PHYLIB support if they decide they don't want it.
+> 
+> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+> ---
+> 
+> will go via the powerpc.git tree for 2.6.26.
+> 
+> - k
+> 
+>  arch/powerpc/platforms/85xx/Kconfig |    1 +
+>  1 files changed, 1 insertions(+), 0 deletions(-)
+> 
+> diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/platforms/85xx/Kconfig
+> index 7ff29d5..ecbe580 100644
+> --- a/arch/powerpc/platforms/85xx/Kconfig
+> +++ b/arch/powerpc/platforms/85xx/Kconfig
+> @@ -34,6 +34,7 @@ config MPC85xx_MDS
+>  	bool "Freescale MPC85xx MDS"
+>  	select DEFAULT_UIMAGE
+>  	select QUICC_ENGINE
+> +	select PHYLIB
+>  	help
 
-Taken from the PowerPC ISA BookIII-E specifies that DBCR0 is different  for all others that are not ppc405 chips. So I have now chnaged the conditional to reflect this. Also added definitions needed for DBCR1 & DBCR2.
-
-Signed-off-by: Jerone Young <jyoung5@us.ibm.com>
-
-diff --git a/include/asm-powerpc/reg_booke.h b/include/asm-powerpc/reg_booke.h
---- a/include/asm-powerpc/reg_booke.h
-+++ b/include/asm-powerpc/reg_booke.h
-@@ -253,6 +253,7 @@
- #define ESR_BO		0x00020000	/* Byte Ordering */
- 
- /* Bit definitions related to the DBCR0. */
-+#if defined(CONFIG_40x)
- #define DBCR0_EDM	0x80000000	/* External Debug Mode */
- #define DBCR0_IDM	0x40000000	/* Internal Debug Mode */
- #define DBCR0_RST	0x30000000	/* all the bits in the RST field */
-@@ -275,6 +276,52 @@
- #define DBCR0_IA12T	0x00008000	/* Instr Addr 1-2 range Toggle */
- #define DBCR0_IA34T	0x00004000	/* Instr Addr 3-4 range Toggle */
- #define DBCR0_FT	0x00000001	/* Freeze Timers on debug event */
-+#elif defined(CONFIG_BOOKE)
-+#define DBCR0_EDM	0x80000000	/* External Debug Mode */
-+#define DBCR0_IDM	0x40000000	/* Internal Debug Mode */
-+/* DBCR0_RST* is 44x specific and not followed in fsl booke */
-+#define DBCR0_RST	0x30000000	/* all the bits in the RST field */
-+#define DBCR0_RST_SYSTEM 0x30000000	/* System Reset */
-+#define DBCR0_RST_CHIP	0x20000000	/* Chip Reset */
-+#define DBCR0_RST_CORE	0x10000000	/* Core Reset */
-+#define DBCR0_RST_NONE	0x00000000	/* No Reset */
-+#define DBCR0_ICMP	0x08000000	/* Instruction Completion */
-+#define DBCR0_IC	DBCR0_ICMP
-+#define DBCR0_BRT	0x04000000	/* Branch Taken */
-+#define DBCR0_BR	DBCR0_BRT
-+#define DBCR0_IRPT	0x02000000	/* Exception Debug Event */
-+#define DBCR0_EDE	DBCR0_IRPT
-+#define DBCR0_TDE	0x01000000	/* TRAP Debug Event */
-+#define DBCR0_IAC1	0x00800000	/* Instr Addr compare 1 enable */
-+#define DBCR0_IA1	DBCR0_IAC1
-+#define DBCR0_IAC2	0x00400000	/* Instr Addr compare 2 enable */
-+#define DBCR0_IA2	DBCR0_IAC2
-+#define DBCR0_IAC3	0x00200000	/* Instr Addr compare 3 enable */
-+#define DBCR0_IA3	DBCR0_IAC3
-+#define DBCR0_IAC4	0x00100000	/* Instr Addr compare 4 enable */
-+#define DBCR0_IA4	DBCR0_IAC4
-+#define DBCR0_DAC1R	0x00080000	/* DAC 1 Read enable */
-+#define DBCR0_DAC1W	0x00040000	/* DAC 1 Write enable */
-+#define DBCR0_DAC2R	0x00020000	/* DAC 2 Read enable */
-+#define DBCR0_DAC2W	0x00010000	/* DAC 2 Write enable */
-+#define DBCR0_RET	0x00008000	/* Return Debug Event */
-+#define DBCR0_FT	0x00000001	/* Freeze Timers on debug event */
-+#endif
-+
-+#if defined(CONFIG_BOOKE)
-+/* Bit definitions related to the DBCR1. */
-+#define DBCR1_IAC12M	0x00800000	/* Instr Addr 1-2 range enable */
-+#define DBCR1_IAC12MX	0x00C00000	/* Instr Addr 1-2 range eXclusive */
-+#define DBCR1_IAC12AT	0x00010000	/* Instr Addr 1-2 range Toggle */
-+#define DBCR1_IAC34M	0x00000080	/* Instr Addr 3-4 range enable */
-+#define DBCR1_IAC34MX	0x000000C0	/* Instr Addr 3-4 range eXclusive */
-+#define DBCR1_IAC34AT	0x00000001	/* Instr Addr 3-4 range Toggle */
-+
-+/* Bit definitions related to the DBCR2. */
-+#define DBCR2_DAC12M	0x00800000	/* DAC 1-2 range enable */
-+#define DBCR2_DAC12MX	0x00C00000	/* DAC 1-2 range eXclusive */
-+#define DBCR2_DAC12A	0x00200000	/* DAC 1-2 Asynchronous */
-+#endif
- 
- /* Bit definitions related to the TCR. */
- #define TCR_WP(x)	(((x)&0x3)<<30)	/* WDT Period */
+ACK
