@@ -1,33 +1,26 @@
-Return-Path: <jyoung5@us.ibm.com>
-Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
+Return-Path: <khali@linux-fr.org>
+Received: from services.gcu-squad.org (zone0.gcu-squad.org [212.85.147.21])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 63E85DDF12
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jun 2008 15:22:26 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e1.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m565MMIK027083
-	for <linuxppc-dev@ozlabs.org>; Fri, 6 Jun 2008 01:22:22 -0400
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	m565MMH5046938
-	for <linuxppc-dev@ozlabs.org>; Fri, 6 Jun 2008 01:22:22 -0400
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
-	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m565MMqa026177
-	for <linuxppc-dev@ozlabs.org>; Fri, 6 Jun 2008 01:22:22 -0400
-Subject: Re: [PATCH] [v2] Fix definitions for dbcr0, dbcr1, & dbcr2
-	register for bookE processors
-From: Jerone Young <jyoung5@us.ibm.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <ADF4F576-F9FF-4EAB-941D-2E4C903DC89B@kernel.crashing.org>
-References: <1212681419.6641.8.camel@thinkpadL>
-	<ADF4F576-F9FF-4EAB-941D-2E4C903DC89B@kernel.crashing.org>
-Content-Type: text/plain
-Date: Fri, 06 Jun 2008 00:22:21 -0500
-Message-Id: <1212729741.25190.4.camel@thinkpadL>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 4693ADDF4D
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jun 2008 16:22:08 +1000 (EST)
+Date: Fri, 6 Jun 2008 08:21:50 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: benh@kernel.crashing.org
+Subject: Re: "cell-index" vs. "index" vs. no index in I2C device nodes
+Message-ID: <20080606082150.691da6a4@hyperion.delvare>
+In-Reply-To: <1212725783.12464.13.camel@pasglop>
+References: <200806041706.21557.sr@denx.de>
+	<20080604220555.658ab13e@vader.jdub.homelinux.org>
+	<20080604231641.786bb2dd@lappy.seanm.ca>
+	<200806050822.00797.sr@denx.de>
+	<20080605094852.164f0bc7@hyperion.delvare>
+	<1212725783.12464.13.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
-Reply-To: jyoung5@us.ibm.com
+Content-Type: text/plain; charset=US-ASCII
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
+	Stefan Roese <sr@denx.de>, Timur Tabi <timur@freescale.com>,
+	Sean MacLennan <smaclennan@pikatech.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,109 +30,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2008-06-05 at 11:23 -0500, Kumar Gala wrote:
-> On Jun 5, 2008, at 10:56 AM, Jerone Young wrote:
-> 
-> > Update: Consolidated dbcr1 & dbcr2 under one define.
-> >
-> > Taken from the PowerPC ISA BookIII-E specifies that DBCR0 is different
-> > for all others that are not ppc405 chips. So I have now chnaged the
-> > conditional to reflect this. Also added definitions needed for DBCR1 &
-> > DBCR2.
-> >
-> > Signed-off-by: Jerone Young <jyoung5@us.ibm.com>
-> >
-> > diff --git a/include/asm-powerpc/reg_booke.h b/include/asm-powerpc/ 
-> > reg_booke.h
-> > --- a/include/asm-powerpc/reg_booke.h
-> > +++ b/include/asm-powerpc/reg_booke.h
-> > @@ -253,6 +253,7 @@
-> > #define ESR_BO		0x00020000	/* Byte Ordering */
-> >
-> > /* Bit definitions related to the DBCR0. */
-> > +#if defined(CONFIG_40x)
-> > #define DBCR0_EDM	0x80000000	/* External Debug Mode */
-> > #define DBCR0_IDM	0x40000000	/* Internal Debug Mode */
-> > #define DBCR0_RST	0x30000000	/* all the bits in the RST field */
-> > @@ -275,6 +276,44 @@
-> > #define DBCR0_IA12T	0x00008000	/* Instr Addr 1-2 range Toggle */
-> > #define DBCR0_IA34T	0x00004000	/* Instr Addr 3-4 range Toggle */
-> > #define DBCR0_FT	0x00000001	/* Freeze Timers on debug event */
-> > +#elif defined(CONFIG_BOOKE)
-> > +#define DBCR0_EDM	0x80000000	/* External Debug Mode */
-> > +#define DBCR0_IDM	0x40000000	/* Internal Debug Mode */
-> > +#define DBCR0_RST	0x30000000	/* all the bits in the RST field */
-> > +#define DBCR0_RST_SYSTEM 0x30000000	/* System Reset */
-> > +#define DBCR0_RST_CHIP	0x20000000	/* Chip Reset */
-> > +#define DBCR0_RST_CORE	0x10000000	/* Core Reset */
-> > +#define DBCR0_RST_NONE	0x00000000	/* No Reset */
-> 
-> Add a comment about these RST_ being 44x specific, fsl booke doesnt  
-> follow this.
-ok this can be done.
+Hi Ben,
 
+On Fri, 06 Jun 2008 14:16:23 +1000, Benjamin Herrenschmidt wrote:
+> On Thu, 2008-06-05 at 09:48 +0200, Jean Delvare wrote:
+> > As far as I am concerned, it's really up to the maintainers and users
+> > of this platform. All I am asking for is that you do not call
+> > i2c_add_numbered_adapter() on an adapter with an automatically
+> > generated number. This function must only be used for adapter's those
+> > number is well defined. If an adapter doesn't have a well-defined
+> > number then use i2c_add_adapter() (but then you can no longer declare
+> > your I2C devices as part of the platform data.)
 > 
-> >
-> > +#define DBCR0_IC	0x08000000	/* Instruction Completion */
-> > +#define DBCR0_BT	0x04000000	/* Branch Taken */
-> > +#define DBCR0_EDE	0x02000000	/* Exception Debug Event */
-> > +#define DBCR0_TDE	0x01000000	/* TRAP Debug Event */
-> > +#define DBCR0_IA1	0x00800000	/* Instr Addr compare 1 enable */
-> > +#define DBCR0_IA2	0x00400000	/* Instr Addr compare 2 enable */
-> > +#define DBCR0_IA3	0x00200000	/* Instr Addr compare 3 enable */
-> > +#define DBCR0_IA4	0x00100000	/* Instr Addr compare 4 enable */
-> 
-> Can we stick with orig book-e field names, ICMP, BRT, IRPT, TRAP,  
-> IAC1, IAC2, IAC3, IAC4.  These are also the names in the POWER 2.05  
-> ISA spec.
-> 
-I was sticking to what was already there. But yeah I can rename them so
-that they are better.
+> Can't we just give those things -names- instead of numbers ?
 
-> >
-> > +#define DBCR0_DAC1R	0x00080000	/* DAC 1 Read enable */
-> > +#define DBCR0_DAC1W	0x00040000	/* DAC 1 Write enable */
-> > +#define DBCR0_DAC2R	0x00020000	/* DAC 2 Read enable */
-> > +#define DBCR0_DAC2W	0x00010000	/* DAC 2 Write enable */
-> > +#define DBCR0_RET	0x00008000	/* Return Debug Event */
-> > +#define DBCR0_FT	0x00000001	/* Freeze Timers on debug event */
-> > +#endif
-> > +
-> > +#if defined(CONFIG_BOOKE)
-> > +/* Bit definitions related to the DBCR1. */
-> > +#define DBCR1_IA12	0x00800000	/* Instr Addr 1-2 range enable */
-> > +#define DBCR1_IA12X	0x00C00000	/* Instr Addr 1-2 range eXclusive */
-> > +#define DBCR1_IA12T	0x00010000	/* Instr Addr 1-2 range Toggle */
-> > +#define DBCR1_IA34	0x00000080	/* Instr Addr 3-4 range enable */
-> > +#define DBCR1_IA34X	0x000000C0	/* Instr Addr 3-4 range eXclusive */
-> > +#define DBCR1_IA34T	0x00000001	/* Instr Addr 3-4 range Toggle */
-> 
-> Is there a reason you don't have all the fields?
-> 
-> IAC1US, IAC1ER, etc..?
+Good question. These i2c adapters already have names
+(i2c_adapter.name), which are set by their respective drivers with more
+or less grace depending on the driver [1]. What we don't have though is
+the possibility to instantiate i2c devices by adapter name.
 
-I mainly just stuck to what was aleady defined for the 405 in dbcr0.
-Also for my own selfish reasons I didn't need these definitions :-).
+We could certainly add a busname field to struct i2c_devinfo and
+implement i2c_register_board_info_by_name() if it seems to be worth the
+extra code and memory. I am open to the idea if it solves a problem
+with no other clean solution.
 
-> 
-> >
-> > +
-> > +/* Bit definitions related to the DBCR2. */
-> > +#define DBCR2_DAC12	0x00800000	/* DAC 1-2 range enable */
-> > +#define DBCR2_DAC12X	0x00C00000	/* DAC 1-2 range eXclusive */
-> > +#define DBCR2_DAC12A	0x00200000	/* DAC 1-2 Asynchronous */
-> 
-> similar comment about matching 2.05 spec.
+[1] radeonfb is notoriously bad at that ;)
 
-I'll spin another patch and see if everyone likes the changes.
-
-
-> 
-> >
-> > +#endif
-> >
-> > /* Bit definitions related to the TCR. */
-> > #define TCR_WP(x)	(((x)&0x3)<<30)	/* WDT Period */
-> >
-> 
-> - k
+-- 
+Jean Delvare
