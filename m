@@ -1,17 +1,15 @@
-Return-Path: <ludovic.desroches@gmail.com>
-Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.234])
-	by ozlabs.org (Postfix) with ESMTP id E9372DDF8D
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jun 2008 17:51:39 +1000 (EST)
-Received: by rv-out-0506.google.com with SMTP id f6so998063rvb.9
-	for <linuxppc-dev@ozlabs.org>; Fri, 06 Jun 2008 00:51:38 -0700 (PDT)
-Message-ID: <388e90610806060051w6826b028h464cd5bc321f75fe@mail.gmail.com>
-Date: Fri, 6 Jun 2008 09:51:37 +0200
-From: "Ludovic Desroches" <ludovic.desroches@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: Using GPIO
+Return-Path: <wg@grandegger.com>
+Message-ID: <4848F133.20704@grandegger.com>
+Date: Fri, 06 Jun 2008 10:11:31 +0200
+From: Wolfgang Grandegger <wg@grandegger.com>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_5100_22927129.1212738697880"
+To: Wolfgang Grandegger <wg@grandegger.com>,  Linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH v3 1/4] [POWERPC] 85xx: correct vendor prefix in DTS	files
+	for TQM85xx modules
+References: <48481DFE.6030405@grandegger.com>
+	<20080606035911.GB6506@yookeroo.seuss>
+In-Reply-To: <20080606035911.GB6506@yookeroo.seuss>
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,82 +19,63 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-------=_Part_5100_22927129.1212738697880
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+David Gibson wrote:
+> On Thu, Jun 05, 2008 at 07:10:22PM +0200, Wolfgang Grandegger wrote:
+>> Like for the TQM5200, the vendor prefix "tqc," is now used for all
+>> TQM85xx modules from TQ-Components GmbH (http://www.tqc.de) in the
+>> corresponding DTS files.
+>>
+>> Signed-off-by: Wolfgang Grandegger <wg@grandegger.com>
+>> ---
+>>  arch/powerpc/boot/dts/tqm8540.dts     |    4 ++--
+>>  arch/powerpc/boot/dts/tqm8541.dts     |    4 ++--
+>>  arch/powerpc/boot/dts/tqm8555.dts     |    4 ++--
+>>  arch/powerpc/boot/dts/tqm8560.dts     |    4 ++--
+>>  arch/powerpc/platforms/85xx/tqm85xx.c |    8 ++++----
+>>  5 files changed, 12 insertions(+), 12 deletions(-)
+>>
+>> Index: linux-2.6-galak/arch/powerpc/boot/dts/tqm8540.dts
+>> ===================================================================
+>> --- linux-2.6-galak.orig/arch/powerpc/boot/dts/tqm8540.dts
+>> +++ linux-2.6-galak/arch/powerpc/boot/dts/tqm8540.dts
+>> @@ -12,8 +12,8 @@
+>>  /dts-v1/;
+>>  
+>>  / {
+>> -	model = "tqm,8540";
+>> -	compatible = "tqm,8540", "tqm,85xx";
+>> +	model = "tqc,8540";
+>> +	compatible = "tqc,8540", "tqc,85xx";
+> 
+> Hrm.  compatible strings with "xx" type wildcards in them should be
+> avoided.  Keeping them for compatibility with existing code or trees
+> is fine, but given that you're changing the name anyway, you should
+> get rid of the 85xx reference.  Either just dropping it, if it's not
+> actually used, or replacing with a defined name or the specific model
+> of the earliest board this series is compatible with.
 
-Hi,
+$ grep 85xx *.dts
+mpc8540ads.dts: compatible = "MPC8540ADS", "MPC85xxADS";
+mpc8541cds.dts: compatible = "MPC8541CDS", "MPC85xxCDS";
+mpc8544ds.dts:  compatible = "MPC8544DS", "MPC85xxDS";
+mpc8548cds.dts: compatible = "MPC8548CDS", "MPC85xxCDS";
+mpc8555cds.dts: compatible = "MPC8555CDS", "MPC85xxCDS";
+mpc8560ads.dts: compatible = "MPC8560ADS", "MPC85xxADS";
+mpc8568mds.dts: compatible = "MPC8568EMDS", "MPC85xxMDS";
+tqm8540.dts:    compatible = "tqc,8540", "tqc,85xx";
+tqm8541.dts:    compatible = "tqc,8541", "tqc,85xx";
+tqm8548-bigflash.dts:   compatible = "tqc,8548", "tqc,85xx";
+tqm8555.dts:    compatible = "tqc,8555", "tqc,85xx";
+tqm8560.dts:    compatible = "tqc,8560", "tqc,85xx";
 
-I am also trying to use Xilinx GPIO driver on my board but I encounter some
-problems. I thought they will be resolved with this information but it
-doesn't.
+The 85xx wildcard seems to be used for other devices as well. It's fine
+for me removing "tqc,85xx". Furthermore I just realize, that the "tqm"
+prefix is missing in the board names. The correct properties should then
+look like:
 
-I use GPIO driver as built-in but during kernel boot but I don't see log
-about it contrary to Xemac driver for instance. First I wanted to create my
-gpio driver normally without using Xilinx one, with ioremap and writel/readl
-but I didn't write anything in the register, I don't know why. Then I tried
-to use Xilinx GPIO driver but I don't know why I don't hit xgpio_probe,
-xgpio_init returns 0 so it's OK.
+	model = "tqc,tqm8540";
+	compatible = "tqc,tqm8540";
 
-Do you have any idea ?
+Going to prepare new patches now.
 
-Thanks
-
-Ludovic Desroches
-
-
-> arch/ppc/syslib/virtex_devices.c:
->
-> >* // 0 is LEDS_4BIT, 1 is LEDS_POSITIONS, 2 is PUSH_BUTTONS_POSITION
-> *>* #define XPAR_GPIO(num) { \
-> *>*    .name = "xilinx_gpio", \
-> *>*    .id = num, \
-> *>*    .num_resources = 2, \
-> *That was a 2.
-> If anybody wants to make a patch out of those few lines of code, I couldn't
-> figure out how to do this with git... But I will use a more general GPIO
-> approach as soon as I can put my hands on our custom card.
->
-> >*    .resource = (struct resource[]) { \
-> *>*        { \
-> *>*            .start = XPAR_GPIO_##num##_BASEADDR, \
-> *>*            .end = XPAR_GPIO_##num##_HIGHADDR, \
-> *>*            .flags = IORESOURCE_MEM, \
-> *>*        }, \
-> *>*        { \
-> *>*            .start = XPAR_INTC_0_GPIO_##num##_VEC_ID, \
-> *>*            .flags = IORESOURCE_IRQ, \
-> *>*        }, \
-> *>*    }, \
-> *>* }
-> *>* [...]
-> *>*      /* GPIO instances */
-> *>* #if defined(XPAR_GPIO_0_BASEADDR)
-> *>*      XPAR_GPIO(0),
-> *>* #endif
-> *>* #if defined(XPAR_GPIO_1_BASEADDR)
-> *>*      XPAR_GPIO(1),
-> *>* #endif
-> *>* #if defined(XPAR_GPIO_2_BASEADDR)
-> *>*      XPAR_GPIO(2),
-> *>* #endif
-> *
->
->
-
-------=_Part_5100_22927129.1212738697880
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-<div>Hi,<br><br>I am also trying to use Xilinx GPIO driver on my board but I encounter some problems. I thought they will be resolved with this information but it doesn&#39;t.<br><br>I use GPIO driver as built-in but during kernel boot but I don&#39;t see log about it contrary to Xemac driver for instance. First I wanted to create my gpio driver normally without using Xilinx one, with ioremap and writel/readl but I didn&#39;t write anything in the register, I don&#39;t know why. Then I tried to use Xilinx GPIO driver but I don&#39;t know why I don&#39;t hit xgpio_probe, xgpio_init returns 0 so it&#39;s OK.<br>
-<br>Do you have any idea ?<br><br>Thanks<br><br>Ludovic Desroches<br>&nbsp;</div><blockquote style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;" class="gmail_quote"><pre>arch/ppc/syslib/virtex_devices.c:<br>
-<br>&gt;<i> // 0 is LEDS_4BIT, 1 is LEDS_POSITIONS, 2 is PUSH_BUTTONS_POSITION<br></i>&gt;<i> #define XPAR_GPIO(num) { \<br></i>&gt;<i>    .name = &quot;xilinx_gpio&quot;, \<br></i>&gt;<i>    .id = num, \<br></i>&gt;<i>    .num_resources = 2, \<br>
-</i>That was a 2.<br>If anybody wants to make a patch out of those few lines of code, I couldn&#39;t <br>figure out how to do this with git... But I will use a more general GPIO <br>approach as soon as I can put my hands on our custom card.<br>
-<br>&gt;<i>    .resource = (struct resource[]) { \<br></i>&gt;<i>        { \<br></i>&gt;<i>            .start = XPAR_GPIO_##num##_BASEADDR, \<br></i>&gt;<i>            .end = XPAR_GPIO_##num##_HIGHADDR, \<br></i>&gt;<i>            .flags = IORESOURCE_MEM, \<br>
-</i>&gt;<i>        }, \<br></i>&gt;<i>        { \<br></i>&gt;<i>            .start = XPAR_INTC_0_GPIO_##num##_VEC_ID, \<br></i>&gt;<i>            .flags = IORESOURCE_IRQ, \<br></i>&gt;<i>        }, \<br></i>&gt;<i>    }, \<br>
-</i>&gt;<i> }<br></i>&gt;<i> [...]<br></i>&gt;<i>      /* GPIO instances */<br></i>&gt;<i> #if defined(XPAR_GPIO_0_BASEADDR)<br></i>&gt;<i>      XPAR_GPIO(0),<br></i>&gt;<i> #endif<br></i>&gt;<i> #if defined(XPAR_GPIO_1_BASEADDR)<br>
-</i>&gt;<i>      XPAR_GPIO(1),<br></i>&gt;<i> #endif<br></i>&gt;<i> #if defined(XPAR_GPIO_2_BASEADDR)<br></i>&gt;<i>      XPAR_GPIO(2),<br></i>&gt;<i> #endif<br></i></pre></blockquote><br clear="all"><br>
-
-------=_Part_5100_22927129.1212738697880--
+Wolfgang.
