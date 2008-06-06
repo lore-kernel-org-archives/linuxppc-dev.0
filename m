@@ -1,24 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 0045ADDFAE
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jun 2008 14:23:00 +1000 (EST)
+Return-Path: <smaclennan@pikatech.com>
+Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
+	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 9BDFDDDF52
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jun 2008 14:29:47 +1000 (EST)
+Date: Fri, 6 Jun 2008 00:29:44 -0400
+From: Sean MacLennan <smaclennan@pikatech.com>
+To: "Grant Likely" <grant.likely@secretlab.ca>
 Subject: Re: "cell-index" vs. "index" vs. no index in I2C device nodes
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Stefan Roese <sr@denx.de>
-In-Reply-To: <200806051045.42966.sr@denx.de>
-References: <200806041706.21557.sr@denx.de> <200806050822.00797.sr@denx.de>
-	<20080605094852.164f0bc7@hyperion.delvare>
-	<200806051045.42966.sr@denx.de>
-Content-Type: text/plain
-Date: Fri, 06 Jun 2008 14:17:37 +1000
-Message-Id: <1212725857.12464.16.camel@pasglop>
+Message-ID: <20080606002944.28ede529@lappy.seanm.ca>
+In-Reply-To: <fa686aa40806052107r4f5903e6t1e408dff4dfa4eed@mail.gmail.com>
+References: <200806041706.21557.sr@denx.de> <4846B39F.3010601@freescale.com>
+	<20080604154351.GB10393@ld0162-tx32.am.freescale.net>
+	<20080604211942.2bddc860@zod.rchland.ibm.com>
+	<20080605024140.GA30980@yookeroo.seuss>
+	<fa686aa40806052107r4f5903e6t1e408dff4dfa4eed@mail.gmail.com>
 Mime-Version: 1.0
-Cc: Jean Delvare <khali@linux-fr.org>, Scott Wood <scottwood@freescale.com>,
-	Sean MacLennan <smaclennan@pikatech.com>,
-	Timur Tabi <timur@freescale.com>, linuxppc-dev@ozlabs.org
-Reply-To: benh@kernel.crashing.org
+Content-Type: text/plain; charset=US-ASCII
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
+	Stefan Roese <sr@denx.de>, Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,22 +26,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2008-06-05 at 10:45 +0200, Stefan Roese wrote:
-> Full ack from me. So I suggest to use "cell-index" if available and
-> otherwise 
-> use an incremented number, same as the FSL i2c driver does now:
-> 
-> http://ozlabs.org/pipermail/linuxppc-dev/2008-June/057254.html
-> 
-> If nobody objects I'll send a patch to add the cell-index to all 4xx
-> dts files 
-> in a short while.
+On Thu, 5 Jun 2008 22:07:31 -0600
+"Grant Likely" <grant.likely@secretlab.ca> wrote:
 
-No, don't use cell-index. If you have a setup with 2 SOCs in
-SMP or something like the Axon bridge on cell where you can have
-multiple Axons in a system, cell-index will not be unique. They
-will give you the index -within-a-chip- as it is used, as I
-said in a separate mail, for things like power or clock control
-bits & pieces. It will not be system-wide unique.
+> The fallback is to just let the i2c layer auto-assign an ID.  The only
+> reason I can think of to want to assign a specific id to an i2c bus is
+> so that a userspace application can reference a specific bus.  The
+> drivers really shouldn't care.
 
-Ben.
+If we switch the iic driver to use i2c_add_adapter rather than
+i2c_add_numbered_adapter, this is exactly what it does. i2c will use
+the idr_ functions to assign a number.
+
+Cheers,
+   Sean
