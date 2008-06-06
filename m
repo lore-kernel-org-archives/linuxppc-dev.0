@@ -1,19 +1,40 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 6048ADDF78
-	for <linuxppc-dev@ozlabs.org>; Sat,  7 Jun 2008 05:36:07 +1000 (EST)
-Date: Fri, 6 Jun 2008 23:36:06 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 1/2] [POWERPC] 86xx: suspend support
-Message-ID: <20080606193605.GA22197@polina.dev.rtsoft.ru>
-References: <20080606192443.GA20132@polina.dev.rtsoft.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <20080606192443.GA20132@polina.dev.rtsoft.ru>
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
-	Timur Tabi <timur@freescale.com>, Jason Jin <Jason.jin@freescale.com>
-Reply-To: avorontsov@ru.mvista.com
+Return-Path: <pbadari@us.ibm.com>
+Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 65668DE2E1
+	for <linuxppc-dev@ozlabs.org>; Sat,  7 Jun 2008 05:43:59 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e6.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m56Jk2ob017071
+	for <linuxppc-dev@ozlabs.org>; Fri, 6 Jun 2008 15:46:02 -0400
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
+	m56JhZSJ207862
+	for <linuxppc-dev@ozlabs.org>; Fri, 6 Jun 2008 15:43:36 -0400
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m56JhYC9031623
+	for <linuxppc-dev@ozlabs.org>; Fri, 6 Jun 2008 15:43:35 -0400
+Subject: Re: [PATCH 1/2] make walk_memory_resource available with
+	MEMORY_HOTPLUG=n
+From: Badari Pulavarty <pbadari@us.ibm.com>
+To: Nathan Lynch <ntl@pobox.com>
+In-Reply-To: <20080603223054.GC7475@localdomain>
+References: <200805071443.20192.hannes.hering@linux.vnet.ibm.com>
+	<20080528164405.GA4836@localdomain>
+	<200806031007.40162.hannes.hering@linux.vnet.ibm.com>
+	<20080603204908.GB7475@localdomain>
+	<1212527335.23656.2.camel@badari-desktop> <4845B382.20205@garzik.org>
+	<20080603223054.GC7475@localdomain>
+Content-Type: text/plain
+Date: Fri, 06 Jun 2008 12:43:22 -0700
+Message-Id: <1212781402.23656.45.camel@badari-desktop>
+Mime-Version: 1.0
+Cc: tklein@de.ibm.com, Jeff Garzik <jeff@garzik.org>, themann@de.ibm.com,
+	Hannes Hering <hannes.hering@linux.vnet.ibm.com>,
+	netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+	ossrosch@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org,
+	raisch@de.ibm.com, Paul Mackerras <paulus@samba.org>, ossthema@de.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,155 +44,85 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Ugh...
 
-This should be From: Jason Jin <Jason.jin@freescale.com>, since
-I've made only few small cleanups, the code itself is almost intact.
-
-On Fri, Jun 06, 2008 at 11:24:43PM +0400, Anton Vorontsov wrote:
-> This patch adds suspend (standby, not suspend-to-ram) support for MPC86xx
-> processors.
+On Tue, 2008-06-03 at 17:30 -0500, Nathan Lynch wrote:
+> The ehea driver was recently changed[1] to use walk_memory_resource() to
+> detect the system's memory layout.  However, walk_memory_resource() is
+> available only when memory hotplug is enabled.  So CONFIG_EHEA was
+> made to depend on MEMORY_HOTPLUG [2], but it is inappropriate for a
+> network driver to have such a dependency.
 > 
-> In standby mode MPC86xx is able to wakeup only upon external interrupts
-> (including sreset).
+> Make the declaration of walk_memory_resource() and its powerpc
+> implementation (ehea is powerpc-specific) unconditionally available.
 > 
-> Signed-off-by: Scott Wood <scottwood@freescale.com>
-> Signed-off-by: Jason Jin <Jason.jin@freescale.com>
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> [1] 48cfb14f8b89d4d5b3df6c16f08b258686fb12ad
+>     "ehea: Add DLPAR memory remove support"
+> 
+> [2] fb7b6ca2b6b7c23b52be143bdd5f55a23b9780c8
+>     "ehea: Add dependency to Kconfig"
+> 
+> Signed-off-by: Nathan Lynch <ntl@pobox.com>
 > ---
->  arch/powerpc/Kconfig                          |    2 +-
->  arch/powerpc/platforms/86xx/Makefile          |    1 +
->  arch/powerpc/platforms/86xx/mpc86xx_suspend.c |   92 +++++++++++++++++++++++++
->  3 files changed, 94 insertions(+), 1 deletions(-)
->  create mode 100644 arch/powerpc/platforms/86xx/mpc86xx_suspend.c
+>  arch/powerpc/mm/mem.c          |    3 +--
+>  include/linux/memory_hotplug.h |   16 ++++++++--------
+>  2 files changed, 9 insertions(+), 10 deletions(-)
 > 
-> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> index 2cde4e3..c45c71e 100644
-> --- a/arch/powerpc/Kconfig
-> +++ b/arch/powerpc/Kconfig
-> @@ -192,7 +192,7 @@ config ARCH_HIBERNATION_POSSIBLE
->  
->  config ARCH_SUSPEND_POSSIBLE
->  	def_bool y
-> -	depends on ADB_PMU || PPC_EFIKA || PPC_LITE5200
-> +	depends on ADB_PMU || PPC_EFIKA || PPC_LITE5200 || PPC_86xx
->  
->  config PPC_DCR_NATIVE
->  	bool
-> diff --git a/arch/powerpc/platforms/86xx/Makefile b/arch/powerpc/platforms/86xx/Makefile
-> index 1b9b4a9..a8557df 100644
-> --- a/arch/powerpc/platforms/86xx/Makefile
-> +++ b/arch/powerpc/platforms/86xx/Makefile
-> @@ -3,6 +3,7 @@
->  #
->  
->  obj-$(CONFIG_SMP)		+= mpc86xx_smp.o
-> +obj-$(CONFIG_SUSPEND)		+= mpc86xx_suspend.o
->  obj-$(CONFIG_MPC8641_HPCN)	+= mpc86xx_hpcn.o
->  obj-$(CONFIG_SBC8641D)		+= sbc8641d.o
->  obj-$(CONFIG_MPC8610_HPCD)	+= mpc8610_hpcd.o
-> diff --git a/arch/powerpc/platforms/86xx/mpc86xx_suspend.c b/arch/powerpc/platforms/86xx/mpc86xx_suspend.c
-> new file mode 100644
-> index 0000000..ce13e4c
-> --- /dev/null
-> +++ b/arch/powerpc/platforms/86xx/mpc86xx_suspend.c
-> @@ -0,0 +1,92 @@
+> diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+> index f67e118..51f82d8 100644
+> --- a/arch/powerpc/mm/mem.c
+> +++ b/arch/powerpc/mm/mem.c
+> @@ -151,6 +151,7 @@ out:
+>  	return ret;
+>  }
+>  #endif /* CONFIG_MEMORY_HOTREMOVE */
+> +#endif /* CONFIG_MEMORY_HOTPLUG */
+> 
+>  /*
+>   * walk_memory_resource() needs to make sure there is no holes in a given
+> @@ -184,8 +185,6 @@ walk_memory_resource(unsigned long start_pfn, unsigned long nr_pages, void *arg,
+>  }
+>  EXPORT_SYMBOL_GPL(walk_memory_resource);
+> 
+> -#endif /* CONFIG_MEMORY_HOTPLUG */
+> -
+>  void show_mem(void)
+>  {
+>  	unsigned long total = 0, reserved = 0;
+> diff --git a/include/linux/memory_hotplug.h b/include/linux/memory_hotplug.h
+> index 73e3586..ea9f5ad 100644
+> --- a/include/linux/memory_hotplug.h
+> +++ b/include/linux/memory_hotplug.h
+> @@ -77,14 +77,6 @@ extern int __add_pages(struct zone *zone, unsigned long start_pfn,
+>  extern int __remove_pages(struct zone *zone, unsigned long start_pfn,
+>  	unsigned long nr_pages);
+> 
+> -/*
+> - * Walk through all memory which is registered as resource.
+> - * arg is (start_pfn, nr_pages, private_arg_pointer)
+> - */
+> -extern int walk_memory_resource(unsigned long start_pfn,
+> -			unsigned long nr_pages, void *arg,
+> -			int (*func)(unsigned long, unsigned long, void *));
+> -
+>  #ifdef CONFIG_NUMA
+>  extern int memory_add_physaddr_to_nid(u64 start);
+>  #else
+> @@ -199,6 +191,14 @@ static inline void register_page_bootmem_info_node(struct pglist_data *pgdat)
+> 
+>  #endif /* ! CONFIG_MEMORY_HOTPLUG */
+> 
 > +/*
-> + * MPC86xx suspend (standby) support
-> + *
-> + * Copyright (C) 2008 Freescale Semiconductor, Inc. All rights reserved.
-> + *
-> + * Author: Jason Jin <jason.jin@freescale.com>
-> + *
-> + * This program is free software; you can redistribute it and/or modify it
-> + * under the terms of the GNU General Public License version 2 as published
-> + * by the Free Software Foundation.
+> + * Walk through all memory which is registered as resource.
+> + * arg is (start_pfn, nr_pages, private_arg_pointer)
 > + */
+> +extern int walk_memory_resource(unsigned long start_pfn,
+> +			unsigned long nr_pages, void *arg,
+> +			int (*func)(unsigned long, unsigned long, void *));
 > +
-> +#include <linux/init.h>
-> +#include <linux/types.h>
-> +#include <linux/suspend.h>
-> +#include <linux/of.h>
-> +#include <linux/io.h>
-> +#include <asm/prom.h>
-> +#include <asm/reg.h>
-> +#include <asm/mpc6xx.h>
-> +
-> +#define PMCSR_DEVSLEEP	0x00020000
-> +
-> +struct mpc86xx_pmc {
-> +	__be32 devdisr;
-> +	__be32 devdisr2;
-> +	__be32 reserve1;
-> +	__be32 reserve2;
-> +	__be32 powmgtcsr;
-> +};
-> +
-> +static struct mpc86xx_pmc __iomem *pmc_regs_86xx;
-> +
-> +static int mpc86xx_suspend_enter(suspend_state_t state)
-> +{
-> +	u32 tmp;
-> +
-> +	/* Disable power management. */
-> +	tmp = mfmsr();
-> +	mtmsr(tmp & ~MSR_POW);
-> +
-> +	/* Enable sleep mode, disable others. */
-> +	tmp = mfspr(SPRN_HID0);
-> +	mtspr(SPRN_HID0, (tmp & ~(HID0_DOZE | HID0_NAP)) | HID0_SLEEP);
-> +	asm("sync");
-> +
-> +	/* Device power down. */
-> +	setbits32(&pmc_regs_86xx->powmgtcsr, PMCSR_DEVSLEEP);
-> +
-> +	/* 86xx did not support deep sleep, let it enter standby mode. */
-> +	mpc6xx_enter_standby();
-> +
-> +	clrbits32(&pmc_regs_86xx->powmgtcsr, PMCSR_DEVSLEEP);
-> +
-> +	return 0;
-> +}
-> +
-> +static int mpc86xx_suspend_valid(suspend_state_t state)
-> +{
-> +	if (state == PM_SUSPEND_STANDBY)
-> +		return 1;
-> +	return 0;
-> +}
-> +
-> +static struct platform_suspend_ops mpc86xx_suspend_ops = {
-> +	.valid = mpc86xx_suspend_valid,
-> +	.enter = mpc86xx_suspend_enter,
-> +};
-> +
-> +static int __init mpc86xx_pmc_init(void)
-> +{
-> +	void __iomem *guts;
-> +	struct device_node *np;
-> +
-> +	np = of_find_compatible_node(NULL, NULL, "fsl,mpc8610-guts");
-> +	if (!np) {
-> +		np = of_find_compatible_node(NULL, NULL, "fsl,mpc8641-guts");
-> +		if (!np)
-> +			return -ENODEV;
-> +	}
-> +
-> +	guts = of_iomap(np, 0);
-> +	of_node_put(np);
-> +	if (!guts)
-> +		return -ENOMEM;
-> +
-> +	pmc_regs_86xx = guts + 0x70;
-> +
-> +	suspend_set_ops(&mpc86xx_suspend_ops);
-> +	return 0;
-> +}
-> +module_init(mpc86xx_pmc_init);
-> -- 
-> 1.5.5.1
+>  extern int add_memory(int nid, u64 start, u64 size);
+>  extern int arch_add_memory(int nid, u64 start, u64 size);
+>  extern int remove_memory(u64 start, u64 size);
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+Sorry. I couldn't get back earlier.
+
+Acked-by: Badari Pulavarty <pbadari@us.ibm.com>
