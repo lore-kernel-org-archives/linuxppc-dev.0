@@ -1,20 +1,20 @@
-Return-Path: <neko@genesi-usa.com>
-Received: from gv-out-0910.google.com (gv-out-0910.google.com [216.239.58.189])
-	by ozlabs.org (Postfix) with ESMTP id 28794DDFC6
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jun 2008 19:53:26 +1000 (EST)
-Received: by gv-out-0910.google.com with SMTP id y18so321517gvf.14
-	for <linuxppc-dev@ozlabs.org>; Fri, 06 Jun 2008 02:53:17 -0700 (PDT)
-Message-ID: <48490909.4020901@genesi-usa.com>
-Date: Fri, 06 Jun 2008 10:53:13 +0100
-From: Matt Sealey <matt@genesi-usa.com>
+Return-Path: <wg@grandegger.com>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 4FD48DE0F9
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jun 2008 20:10:04 +1000 (EST)
+Message-ID: <48490CF7.6050205@grandegger.com>
+Date: Fri, 06 Jun 2008 12:09:59 +0200
+From: Wolfgang Grandegger <wg@grandegger.com>
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: cntlzw
-References: <4845A44D.20404@hypersurf.com> <4845A55E.2030503@freescale.com>
-In-Reply-To: <4845A55E.2030503@freescale.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Sender: Matt Sealey <neko@genesi-usa.com>
-Cc: linuxppc-dev@ozlabs.org, Kevin Diggs <kevdig@hypersurf.com>
+To: Kumar Gala <galak@kernel.crashing.org>,
+	Wolfgang Grandegger <wg@grandegger.com>, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH v2 1/4] [POWERPC] 85xx: add board support for the	TQM8548
+	modules
+References: <4847AC75.8080405@grandegger.com>
+	<71165662-0864-4CDE-A1B3-29487253B85F@kernel.crashing.org>
+	<20080605225215.GF30980@yookeroo.seuss>
+In-Reply-To: <20080605225215.GF30980@yookeroo.seuss>
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,29 +24,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-It's in the Compiler Writer's Guide with explanation; section 5-10.
-
-http://www-01.ibm.com/chips/techlib/techlib.nsf/techdocs/852569B20050FF7785256996007558C6
-
-There are lots of clever examples in there, it's definitely recommended
-reading (I should make a cheat sheet of chapter 5 though so I can pin it
-to my wall)
-
--- 
-Matt Sealey <matt@genesi-usa.com>
-Genesi, Manager, Developer Relations
-
-Scott Wood wrote:
-> Kevin Diggs wrote:
->> Hi,
->>
->>     x86 has bsf and bsr. PPC has cntlzw which I think is equivalent to 
->> bsr. Anyone know of a sneaky algorithm to do bsf?
+David Gibson wrote:
+> On Thu, Jun 05, 2008 at 08:43:51AM -0500, Kumar Gala wrote:
+>> On Jun 5, 2008, at 4:05 AM, Wolfgang Grandegger wrote:
+> [snip]
+>>> +			timebase-frequency = <0>;	// from U-Boot
+>>> +			bus-frequency = <0>;	// from U-Boot
+>>> +			clock-frequency = <0>;	// from U-Boot
+>> u-boot will add this for us so no need for them.
 > 
-> wordsize - 1 - cntlzw(x & ~(x - 1));
-> 
-> -Scott
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+> I think it's worth including them (with the comments) for
+> documentation purposes though.  Plus allowing the bootloader and
+> bootwrapper to just replace property values without resizing or
+> inserting is somewhat worthwhile of itself.
+
+I understand your point and while testing the new blob, I realized that
+ the DTB image created with
+
+ $ make ARCH=powerpc tqm8548.dtb
+
+does not work because work space is missing:
+
+  ## Flattened Device Tree blob at 00900000
+     Booting using the fdt blob at 0x900000
+     Loading Device Tree to 007fe000, end 007ff8e0 ... OK
+  WARNING: could not create /chosen FDT_ERR_NOSPACE.
+  ERROR: /chosen node create failed - must RESET the board to recover.
+
+As I see it, I have to define DTS_FLAGS manually
+
+  $ export DTS_FLAGS="-R4 -S0x3000"
+  $ make ARCH=powerpc tqm8548.dtb
+
+to get a working blob. Is that the intended behavior?
+
+Wolfgang.
