@@ -1,20 +1,18 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 88739DDEEF
-	for <linuxppc-dev@ozlabs.org>; Sat,  7 Jun 2008 21:44:40 +1000 (EST)
-Date: Sat, 7 Jun 2008 15:44:38 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: David Woodhouse <dwmw2@infradead.org>
-Subject: Re: [PATCH v2] [NAND] driver extension to support NAND on TQM85xx
-	modules
-Message-ID: <20080607114438.GA23329@polina.dev.rtsoft.ru>
-References: <4847A8DA.6010406@grandegger.com>
-	<1212825701.32207.403.camel@pmac.infradead.org>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <1212825701.32207.403.camel@pmac.infradead.org>
-Cc: linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org
-Reply-To: avorontsov@ru.mvista.com
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18506.31325.899081.47718@cargo.ozlabs.ibm.com>
+Date: Sat, 7 Jun 2008 22:09:01 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: "Grant Likely" <grant.likely@secretlab.ca>
+Subject: Re: 4xx support in arch/ppc is going away Real Soon Now
+In-Reply-To: <fa686aa40806060753i76b1d652ldd2bb99f5406dab@mail.gmail.com>
+References: <20080605095253.7df9dbe0@zod.rchland.ibm.com>
+	<fa686aa40806050811t4ab2fbfk9eed34d0972376c4@mail.gmail.com>
+	<20080606115347.GC472@cs181133002.pp.htv.fi>
+	<20080606085601.623ef866@vader.jdub.homelinux.org>
+	<fa686aa40806060753i76b1d652ldd2bb99f5406dab@mail.gmail.com>
+Cc: linuxppc-dev@ozlabs.org, Adrian Bunk <bunk@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,37 +22,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, Jun 07, 2008 at 09:01:41AM +0100, David Woodhouse wrote:
-> On Thu, 2008-06-05 at 10:50 +0200, Wolfgang Grandegger wrote:
-> > [NAND] driver extension to support NAND on TQM85xx modules
-> > 
-> > This patch extends the FSL UPM NAND driver from Anton Vorontsov to
-> > support NAND on the TQM85xx modules. Unfortunately, the hardware does
-> > not support the R/B pins of the NAND chip and therefore the specified
-> > maximum delay time must used. It therefore re-introduces the chip-delay
-> > property.
-> > 
-> > Note: this patch is based on various patches from  Anton Vorontsov posted
-> >       to this list:
-> > 
-> >       http://ozlabs.org/pipermail/linuxppc-dev/2008-April/055587.html.
-> 
-> Do you also want me to apply that patch (on which this one depends)?
-> It says 'Signed-off-by: not yet' ...
+Grant Likely writes:
 
-Well, I have no objections to applying that patch, feel free to add my
-sign off. But if OF people will NAK the bindings, I'll have to bother you
-once again with the update to that driver. :-/
+> BTW Paul, we agreed in your absence on IRC that you should take the
+> honors of committing the kill arch/ppc patch and the associated top
+> spot in LWN's top committers list... but there's a price.  You may
+> very well get mailed the bar tab from the ding-dong-arch-ppc-is-dead
+> party at OLS this year. >:-}
 
-I've tried to push the bindings several times already, and always there
-were [absolutely legitimate] issues. The last RFC is here (along with
-other new bindings):
+I'll happily pick up the bar tab, but only if you guys will pay my
+airfare (business class of course :) so I can get to OLS and be at
+that party. :D
 
-http://ozlabs.org/pipermail/linuxppc-dev/2008-June/057244.html
+> Oh, and we're going try to create the longest acked-by chain in Linux history.
 
-so far no comments.. Probably a good sign. :-)
+Cool :)
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+Paul.
