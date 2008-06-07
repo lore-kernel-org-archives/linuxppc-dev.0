@@ -1,24 +1,20 @@
-Return-Path: <jacmet@gmail.com>
-Received: from ik-out-1112.google.com (ik-out-1112.google.com [66.249.90.181])
-	by ozlabs.org (Postfix) with ESMTP id 2EEEADDE18
-	for <linuxppc-dev@ozlabs.org>; Sat,  7 Jun 2008 17:36:27 +1000 (EST)
-Received: by ik-out-1112.google.com with SMTP id c21so922473ika.1
-	for <linuxppc-dev@ozlabs.org>; Sat, 07 Jun 2008 00:36:25 -0700 (PDT)
-To: Sean MacLennan <smaclennan@pikatech.com>
-Subject: Re: arch/ppc is going away Real Soon Now
-References: <20080606111904.9B1D1247CC@gemini.denx.de>
-	<1212766468.6788.6.camel@ld0161-tx32>
-	<20080606171147.7961a6c3@lappy.seanm.ca>
-From: Peter Korsgaard <jacmet@sunsite.dk>
-Date: Sat, 07 Jun 2008 09:36:20 +0200
-In-Reply-To: <20080606171147.7961a6c3@lappy.seanm.ca> (Sean MacLennan's
-	message of "Fri\, 6 Jun 2008 17\:11\:47 -0400")
-Message-ID: <87lk1hbssr.fsf@macbook.be.48ers.dk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Sender: Peter Korsgaard <jacmet@gmail.com>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Wolfgang Denk <wd@denx.de>
+Return-Path: <SRS0+c25b18fbc1076e96b82a+1749+infradead.org+dwmw2@bombadil.srs.infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org [18.85.46.34])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 8A5F5DDE2A
+	for <linuxppc-dev@ozlabs.org>; Sat,  7 Jun 2008 18:01:47 +1000 (EST)
+Subject: Re: [PATCH v2] [NAND] driver extension to support NAND on TQM85xx
+	modules
+From: David Woodhouse <dwmw2@infradead.org>
+To: Wolfgang Grandegger <wg@grandegger.com>
+In-Reply-To: <4847A8DA.6010406@grandegger.com>
+References: <4847A8DA.6010406@grandegger.com>
+Content-Type: text/plain
+Date: Sat, 07 Jun 2008 09:01:41 +0100
+Message-Id: <1212825701.32207.403.camel@pmac.infradead.org>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,37 +24,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>>>> "Sean" == Sean MacLennan <smaclennan@pikatech.com> writes:
+On Thu, 2008-06-05 at 10:50 +0200, Wolfgang Grandegger wrote:
+> [NAND] driver extension to support NAND on TQM85xx modules
+> 
+> This patch extends the FSL UPM NAND driver from Anton Vorontsov to
+> support NAND on the TQM85xx modules. Unfortunately, the hardware does
+> not support the R/B pins of the NAND chip and therefore the specified
+> maximum delay time must used. It therefore re-introduces the chip-delay
+> property.
+> 
+> Note: this patch is based on various patches from  Anton Vorontsov posted
+>       to this list:
+> 
+>       http://ozlabs.org/pipermail/linuxppc-dev/2008-April/055587.html.
 
- Sean> On Fri, 06 Jun 2008 10:34:28 -0500
- Sean> "Jon Loeliger" <jdl@freescale.com> wrote:
+Do you also want me to apply that patch (on which this one depends)?
+It says 'Signed-off-by: not yet' ...
 
- >> On Fri, 2008-06-06 at 13:19 +0200, Wolfgang Denk wrote:
- >> > In message <BC38AEE0-E2D9-40AD-8946-6C4B18AA4BF4@freescale.com>
- >> > Becky Bruce wrote:
- >> > > 
- >> > > On Jun 5, 2008, at 3:30 PM, Scott Wood wrote:
- >> > > 
- >> > > > Olof Johansson wrote:
- >> > > >> On Jun 5, 2008, at 3:12 PM, Arnd Bergmann wrote:
- >> > > >>> On Thursday 05 June 2008, Stephen Neuendorffer wrote:
- >> > > >>>>> "Grant Likely" <grant.likely@secretlab.ca> wrote:
- >> > > >>>>>
- >> > > >>>>>> Paulus, Can we just kill all of arch/ppc for .27 right now?
- >> > > >>>>>
- >> > > >>>>> Acked-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
- >> > > >>>> Acked-by: Stephen Neuendorffer
- >> > > >>>> <stephen.neuendorffer@xilinx.com>
- >> > > >>> Acked-by: Arnd Bergmann <arnd@arndb.de>
- >> > > >> Acked-by: Olof Johansson <olof@lixom.net>
- >> > > > Acked-by: Scott Wood <scottwood@freescale.com>
- >> > > Acked-by: Becky Bruce <becky.bruce@freescale.com>
- >> > Acked-by: Wolfgang Denk <wd@denx.de>
- >> Acked-by: Jon Loeliger <jdl@freescale.com>
- > Acked-by: Sean MacLennan <smaclennan@pikatech.com>
-Acked-by: Peter Korsgaard <jacmet@sunsite.dk>
-
-</aol>
+You should probably comment on the removal of the OF_GPIO dependency. It
+looks fine, since the relevant functions all get stubbed out and will do
+the right thing, but it's worth a comment in the commit text.
 
 -- 
-Bye, Peter Korsgaard
+dwmw2
