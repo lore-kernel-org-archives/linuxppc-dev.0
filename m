@@ -1,21 +1,20 @@
-Return-Path: <sr@denx.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.171]) by ozlabs.org (Postfix) with ESMTP id 97BFDDDE25
-	for <linuxppc-dev@ozlabs.org>; Sat,  7 Jun 2008 20:07:27 +1000 (EST)
-From: Stefan Roese <sr@denx.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: arch/ppc is going away Real Soon Now
-Date: Sat, 7 Jun 2008 12:07:11 +0200
-References: <20080606111904.9B1D1247CC@gemini.denx.de>
-	<20080606171147.7961a6c3@lappy.seanm.ca>
-	<87lk1hbssr.fsf@macbook.be.48ers.dk>
-In-Reply-To: <87lk1hbssr.fsf@macbook.be.48ers.dk>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 88739DDEEF
+	for <linuxppc-dev@ozlabs.org>; Sat,  7 Jun 2008 21:44:40 +1000 (EST)
+Date: Sat, 7 Jun 2008 15:44:38 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: David Woodhouse <dwmw2@infradead.org>
+Subject: Re: [PATCH v2] [NAND] driver extension to support NAND on TQM85xx
+	modules
+Message-ID: <20080607114438.GA23329@polina.dev.rtsoft.ru>
+References: <4847A8DA.6010406@grandegger.com>
+	<1212825701.32207.403.camel@pmac.infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200806071207.12020.sr@denx.de>
-Cc: Paul Mackerras <paulus@samba.org>, Wolfgang Denk <wd@denx.de>,
-	Sean MacLennan <smaclennan@pikatech.com>
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <1212825701.32207.403.camel@pmac.infradead.org>
+Cc: linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,36 +24,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Saturday 07 June 2008, Peter Korsgaard wrote:
-> >>>>> "Sean" == Sean MacLennan <smaclennan@pikatech.com> writes:
->
->  Sean> On Fri, 06 Jun 2008 10:34:28 -0500
->
->  Sean> "Jon Loeliger" <jdl@freescale.com> wrote:
->  >> On Fri, 2008-06-06 at 13:19 +0200, Wolfgang Denk wrote:
->  >> > In message <BC38AEE0-E2D9-40AD-8946-6C4B18AA4BF4@freescale.com>
->  >> >
->  >> > Becky Bruce wrote:
->  >> > > On Jun 5, 2008, at 3:30 PM, Scott Wood wrote:
->  >> > > > Olof Johansson wrote:
->  >> > > >> On Jun 5, 2008, at 3:12 PM, Arnd Bergmann wrote:
->  >> > > >>> On Thursday 05 June 2008, Stephen Neuendorffer wrote:
->  >> > > >>>>> "Grant Likely" <grant.likely@secretlab.ca> wrote:
->  >> > > >>>>>> Paulus, Can we just kill all of arch/ppc for .27 right now?
->  >> > > >>>>>
->  >> > > >>>>> Acked-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
->  >> > > >>>> Acked-by: Stephen Neuendorffer
->  >> > > >>>> <stephen.neuendorffer@xilinx.com>
->  >> > > >>> Acked-by: Arnd Bergmann <arnd@arndb.de>
->  >> > > >> Acked-by: Olof Johansson <olof@lixom.net>
->  >> > > > Acked-by: Scott Wood <scottwood@freescale.com>
->  >> > > Acked-by: Becky Bruce <becky.bruce@freescale.com>
->  >> > Acked-by: Wolfgang Denk <wd@denx.de>
->  >> Acked-by: Jon Loeliger <jdl@freescale.com>
->  > Acked-by: Sean MacLennan <smaclennan@pikatech.com>
-> Acked-by: Peter Korsgaard <jacmet@sunsite.dk>
+On Sat, Jun 07, 2008 at 09:01:41AM +0100, David Woodhouse wrote:
+> On Thu, 2008-06-05 at 10:50 +0200, Wolfgang Grandegger wrote:
+> > [NAND] driver extension to support NAND on TQM85xx modules
+> > 
+> > This patch extends the FSL UPM NAND driver from Anton Vorontsov to
+> > support NAND on the TQM85xx modules. Unfortunately, the hardware does
+> > not support the R/B pins of the NAND chip and therefore the specified
+> > maximum delay time must used. It therefore re-introduces the chip-delay
+> > property.
+> > 
+> > Note: this patch is based on various patches from  Anton Vorontsov posted
+> >       to this list:
+> > 
+> >       http://ozlabs.org/pipermail/linuxppc-dev/2008-April/055587.html.
+> 
+> Do you also want me to apply that patch (on which this one depends)?
+> It says 'Signed-off-by: not yet' ...
 
-Acked-by: Stefan Roese <sr@denx.de>
+Well, I have no objections to applying that patch, feel free to add my
+sign off. But if OF people will NAK the bindings, I'll have to bother you
+once again with the update to that driver. :-/
 
-Best regards,
-Stefan
+I've tried to push the bindings several times already, and always there
+were [absolutely legitimate] issues. The last RFC is here (along with
+other new bindings):
+
+http://ozlabs.org/pipermail/linuxppc-dev/2008-June/057244.html
+
+so far no comments.. Probably a good sign. :-)
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
