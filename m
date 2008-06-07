@@ -2,26 +2,24 @@ Return-Path: <segher@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 66EE4DDE23
-	for <linuxppc-dev@ozlabs.org>; Sat,  7 Jun 2008 10:26:13 +1000 (EST)
-In-Reply-To: <20080605185948.3847436d@zod.rchland.ibm.com>
-References: <200806041706.21557.sr@denx.de>
-	<20080604220555.658ab13e@vader.jdub.homelinux.org>
-	<20080604231641.786bb2dd@lappy.seanm.ca>
-	<200806050822.00797.sr@denx.de>
-	<4848036D.5060004@freescale.com> <484809D1.2070300@scram.de>
-	<48480B3C.9080101@freescale.com>
-	<20080605185948.3847436d@zod.rchland.ibm.com>
+	by ozlabs.org (Postfix) with ESMTPS id C3670DDE0D
+	for <linuxppc-dev@ozlabs.org>; Sat,  7 Jun 2008 10:31:53 +1000 (EST)
+In-Reply-To: <20080606033756.GA6506@yookeroo.seuss>
+References: <200806041706.21557.sr@denx.de> <4846B39F.3010601@freescale.com>
+	<20080604154351.GB10393@ld0162-tx32.am.freescale.net>
+	<20080604211942.2bddc860@zod.rchland.ibm.com>
+	<20080605024140.GA30980@yookeroo.seuss>
+	<49648f3051f1ba1b39e67ec2ce08367c@kernel.crashing.org>
+	<20080606033756.GA6506@yookeroo.seuss>
 Mime-Version: 1.0 (Apple Message framework v623)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <6b441042e5a5ce2b880362bcbc4a25d8@kernel.crashing.org>
+Message-Id: <c441e44bd7793094a442e429f146c6e8@kernel.crashing.org>
 From: Segher Boessenkool <segher@kernel.crashing.org>
 Subject: Re: "cell-index" vs. "index" vs. no index in I2C device nodes
-Date: Sat, 7 Jun 2008 02:24:15 +0200
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Cc: Stefan Roese <sr@denx.de>, Scott@ozlabs.org, linuxppc-dev@ozlabs.org,
-	Sean MacLennan <smaclennan@pikatech.com>, Wood <scottwood@freescale.com>,
-	Jean Delvare <khali@linux-fr.org>, Timur Tabi <timur@freescale.com>
+Date: Sat, 7 Jun 2008 02:30:46 +0200
+To: David Gibson <dwg@au1.ibm.com>
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
+	Stefan Roese <sr@denx.de>, Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,28 +29,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> Well, I just don't see the point of having two different properties 
->> that say the
->> same thing.  I'm not an IEE 1275 purist, so I don't think we should 
->> be hampered
->> by old node definitions.  I especially don't like having a property 
->> specifically
->> for indexing I2C nodes that can't be used to enumerate other nodes.
+>>> Aliases can also provide a reasonable way of enumerating devices, if
+>>> "reg" isn't suitable on its own.
+>>
+>> Yes.  In almost all cases, drivers and subsystems do not need this at
+>> all though.  In OF, one device points to another by putting the 
+>> phandle
+>> of that pointed-to device in some property (and buses are represented
+>> by their parent bridge).  If the Linux subsystem wants to use an 
+>> integer
+>> for distinguishing between its various buses, that's fine, but it can
+>> just make up these numbers -- the numbers themselves have no actual
+>> meaning, only the relationships expressed via those numbers do.
 >
-> It's not about purity.  It's about overloading something that has
-> existing semantics just because you have one usecase that you _think_
-> needs it.
->
-> If everyone did that, this whole device tree concept is going to just
-> be one big cluster f*ck.
+> That's true.  However if all the system documentation uses a
+> particular numbering of the devices, it's convenient if we can use the
+> same numbering in Linux.
 
-One important way of preventing this overloading and death-by-complexity
-is to make most properties specific to a particular binding.  It is good
-if other bindings that need similar functionality can use similar
-properties, or sometimes even identical ones; but there are only a few
-properties that are defined for *every* node.
+Sure, it's convenient, and you can use aliases to get the naming you
+want accessible to the user.  The drivers shouldn't depend on this
+naming internally though, esp. since it doesn't really help anything.
 
-Trying to make stuff too generic just doesn't work.
+> Incidentally, another word on "cell-index".  Even for its intended
+> purpose, this was always a compromise.  The strictly correct way to
+> handle shared registers like this is for the node representing the
+> shared resource to have a table of phandles pointing back to the
+> devices controlled by the shared registers from which the appropriate
+> indices can derived.
+
+IMO, there is no really good (let alone "correct") way of handling
+this.
+
+> On at least some 4xx chips, however, the shared resources are
+> scattered around various places, but all use the same device
+> numbering.  Therefore it seemed expedient to encode that numbering in
+> a single place - 'cell-index' - rather than having several such
+> tables.
+
+Yeah, it seems to work out for those 4xx.  Other platforms would be
+well advised to consider the tradeoff for themselves though, many
+SoCs have an even more "wild" design than 4xx does ;-)
 
 
 Segher
