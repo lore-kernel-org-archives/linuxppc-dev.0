@@ -1,25 +1,28 @@
 Return-Path: <glppe-linuxppc-embedded-2@m.gmane.org>
 Received: from ciao.gmane.org (main.gmane.org [80.91.229.2])
-	by ozlabs.org (Postfix) with ESMTP id 8C5BDDDF08
+	by ozlabs.org (Postfix) with ESMTP id 9CCEFDDF61
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  7 Jun 2008 21:10:09 +1000 (EST)
+	Sat,  7 Jun 2008 21:15:09 +1000 (EST)
 Received: from root by ciao.gmane.org with local (Exim 4.43)
-	id 1K4wJ8-0001dn-Aq
-	for linuxppc-embedded@ozlabs.org; Sat, 07 Jun 2008 11:10:02 +0000
+	id 1K4wNy-0001rC-NR
+	for linuxppc-embedded@ozlabs.org; Sat, 07 Jun 2008 11:15:02 +0000
 Received: from p5497fe98.dip.t-dialin.net ([84.151.254.152])
 	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
 	id 1AlnuQ-0007hv-00
-	for <linuxppc-embedded@ozlabs.org>; Sat, 07 Jun 2008 11:10:02 +0000
+	for <linuxppc-embedded@ozlabs.org>; Sat, 07 Jun 2008 11:15:02 +0000
 Received: from dzu by p5497fe98.dip.t-dialin.net with local (Gmexim 0.1
 	(Debian)) id 1AlnuQ-0007hv-00
-	for <linuxppc-embedded@ozlabs.org>; Sat, 07 Jun 2008 11:10:02 +0000
+	for <linuxppc-embedded@ozlabs.org>; Sat, 07 Jun 2008 11:15:02 +0000
 To: linuxppc-embedded@ozlabs.org
 From: Detlev Zundel <dzu@denx.de>
-Subject: Re: The 2.6.25 kernel dosen't run on pq2fads based board
-Date: Sat, 07 Jun 2008 13:04:20 +0200
-Message-ID: <m2d4mt4ibv.fsf@ohwell.denx.de>
-References: <8496f91a0806040525u7e137221sc4bea5466cde3161@mail.gmail.com>
-	<8496f91a0806051204w619eed31uee4feb812702707b@mail.gmail.com>
+Subject: Re: No console output when booting linux from uboot
+Date: Sat, 07 Jun 2008 13:08:19 +0200
+Message-ID: <m28wxh4i58.fsf@ohwell.denx.de>
+References: <A9D89E0D76AFF24B9441851F2AC72D7203B7D468@BANMLVEM05.e2k.ad.ge.com>
+	<m2hcc988n9.fsf@ohwell.denx.de>
+	<A9D89E0D76AFF24B9441851F2AC72D7203BCB942@BANMLVEM05.e2k.ad.ge.com>
+	<m2od6g6jxv.fsf@ohwell.denx.de>
+	<A9D89E0D76AFF24B9441851F2AC72D7203C0DAAA@BANMLVEM05.e2k.ad.ge.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: news <news@ger.gmane.org>
@@ -33,12 +36,19 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Ilya,
+Hi Mike,
 
-> Solved. The problem was in zero-filled memory node in DTS file. U-boot
-> doesn't fix it and the kernel gots wrong value. Thanks to Scot Wood.
+> Sorry for the confusing. I just figured out my problem is not for the
+> Uboot version...
+>
+> As you suggested, I debuged the hw action related to serial driver
+> today. I add the "console=ttyS2" in my uboot bootargs and corrected some
+> part, but still no output yet. Is there other factors will affect the
+> console output, except the serial driver?
 
-So when do you post the patch for U-Boot? ;)
+Actually not that I can think of.  Depending on your driver, maybe the
+default baud rate is not correct?  Did you try a "console=ttyS2,115200"
+for example?
 
 Cheers
   Detlev
