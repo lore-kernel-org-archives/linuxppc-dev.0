@@ -1,21 +1,13 @@
-Return-Path: <wg@grandegger.com>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id A84A5DDF84
-	for <linuxppc-dev@ozlabs.org>; Mon,  9 Jun 2008 04:05:36 +1000 (EST)
-Message-ID: <484C1F6C.9000108@grandegger.com>
-Date: Sun, 08 Jun 2008 20:05:32 +0200
-From: Wolfgang Grandegger <wg@grandegger.com>
+Return-Path: <jonsmirl@gmail.com>
+Message-ID: <9e4733910806081208r1a8d0987j6eab0d73bc446640@mail.gmail.com>
+Date: Sun, 8 Jun 2008 15:08:33 -0400
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: "linuxppc-dev list" <Linuxppc-dev@ozlabs.org>,
+	"Sascha Hauer" <s.hauer@pengutronix.de>,
+	"Grant Likely" <grant.likely@secretlab.ca>
+Subject: Comments on device tree for pcm030
 MIME-Version: 1.0
-To: avorontsov@ru.mvista.com
-Subject: Re: [PATCH v2] [NAND] driver extension to support NAND on TQM85xx
-	modules
-References: <4847A8DA.6010406@grandegger.com>
-	<1212825701.32207.403.camel@pmac.infradead.org>
-	<20080607114438.GA23329@polina.dev.rtsoft.ru>
-In-Reply-To: <20080607114438.GA23329@polina.dev.rtsoft.ru>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org, David Woodhouse <dwmw2@infradead.org>,
-	linux-mtd@lists.infradead.org
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,37 +17,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Anton Vorontsov wrote:
-> On Sat, Jun 07, 2008 at 09:01:41AM +0100, David Woodhouse wrote:
->> On Thu, 2008-06-05 at 10:50 +0200, Wolfgang Grandegger wrote:
->>> [NAND] driver extension to support NAND on TQM85xx modules
->>>
->>> This patch extends the FSL UPM NAND driver from Anton Vorontsov to
->>> support NAND on the TQM85xx modules. Unfortunately, the hardware does
->>> not support the R/B pins of the NAND chip and therefore the specified
->>> maximum delay time must used. It therefore re-introduces the chip-delay
->>> property.
->>>
->>> Note: this patch is based on various patches from  Anton Vorontsov posted
->>>       to this list:
->>>
->>>       http://ozlabs.org/pipermail/linuxppc-dev/2008-April/055587.html.
->> Do you also want me to apply that patch (on which this one depends)?
->> It says 'Signed-off-by: not yet' ...
-> 
-> Well, I have no objections to applying that patch, feel free to add my
-> sign off. But if OF people will NAK the bindings, I'll have to bother you
-> once again with the update to that driver. :-/
-> 
-> I've tried to push the bindings several times already, and always there
-> were [absolutely legitimate] issues. The last RFC is here (along with
-> other new bindings):
-> 
-> http://ozlabs.org/pipermail/linuxppc-dev/2008-June/057244.html
-> 
-> so far no comments.. Probably a good sign. :-)
+Why not a compatible field in the top of the tree? Then you wouldn't
+need to list the boards in mpc5200_simple.c.
+	compatible = "phytec,pcm030","simple-mpc5200";
 
-I see. I think I should then also post the bindings (update of
-booting-without-of.txt) separately.
+Device tree has an entry for AC97 on PSC1. I don't think the Phytec
+module or carrier board has AC97 hardware.
 
-Wolfgang.
+The RTC chip says pcf8563, phytec doc says it is a pcf8564.
+
+There should be an i2c entry for the eeprom but I don't know the part
+number for it.
+
+What about the flash on the local bus?  Could we use something like
+this, or the same without the partition data?
+
+	lpb@ff000000 {
+		compatible = "fsl,lpb";
+		ranges = <0 ff000000 01000000>;
+		
+		flash@00000000 {
+			compatible = "cfi-flash";
+			reg = <00000000 01000000>;
+			bank-width = <2>;
+			#size-cells = <1>;
+			#address-cells = <1>;
+			partition@0 {
+				label = "ubootl";
+				reg = <00000000 00040000>;
+			};
+			partition@40000 {
+				label = "kernel";
+				reg = <00040000 001c0000>;
+			};
+			partition@200000 {
+				label = "jffs2";
+				reg = <00200000 00D00000>;
+			};
+			partition@f00000 {
+				label = "uboot";
+				reg = <00f00000 00040000>;
+			};
+			partition@f40000 {
+				label = "oftree";
+				reg = <00f40000 00040000>;
+			};
+			partition@f80000 {
+				label = "space";
+				reg = <00f80000 00080000>;
+			};
+		};
+	};
+
+-- 
+Jon Smirl
+jonsmirl@gmail.com
