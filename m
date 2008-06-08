@@ -1,22 +1,19 @@
-Return-Path: <bunk@kernel.org>
-Received: from smtp6.pp.htv.fi (smtp6.pp.htv.fi [213.243.153.40])
-	by ozlabs.org (Postfix) with ESMTP id 1545BDDEFE
-	for <linuxppc-dev@ozlabs.org>; Mon,  9 Jun 2008 02:16:09 +1000 (EST)
-Date: Sun, 8 Jun 2008 19:15:21 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Jochen Friedrich <jochen@scram.de>
-Subject: Re: arch/ppc is going away Real Soon Now
-Message-ID: <20080608161521.GB4048@cs181133002.pp.htv.fi>
-References: <20080606111904.9B1D1247CC@gemini.denx.de>
-	<20080606171147.7961a6c3@lappy.seanm.ca>
-	<87lk1hbssr.fsf@macbook.be.48ers.dk>
-	<200806071207.12020.sr@denx.de> <484BF346.8010704@scram.de>
+Return-Path: <wg@grandegger.com>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 21F06DDF46
+	for <linuxppc-dev@ozlabs.org>; Mon,  9 Jun 2008 04:01:54 +1000 (EST)
+Message-ID: <484C1E8F.4010900@grandegger.com>
+Date: Sun, 08 Jun 2008 20:01:51 +0200
+From: Wolfgang Grandegger <wg@grandegger.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <484BF346.8010704@scram.de>
-Cc: linuxppc-dev@ozlabs.org, Stefan Roese <sr@denx.de>,
-	Paul Mackerras <paulus@samba.org>, Wolfgang Denk <wd@denx.de>,
-	Sean MacLennan <smaclennan@pikatech.com>
+To: David Woodhouse <dwmw2@infradead.org>
+Subject: Re: [PATCH v2] [NAND] driver extension to support NAND on TQM85xx
+	modules
+References: <4847A8DA.6010406@grandegger.com>
+	<1212825701.32207.403.camel@pmac.infradead.org>
+In-Reply-To: <1212825701.32207.403.camel@pmac.infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,47 +23,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, Jun 08, 2008 at 06:57:10PM +0400, Jochen Friedrich wrote:
-> Stefan Roese пишет:
->> On Saturday 07 June 2008, Peter Korsgaard wrote:
->>   
->>>>>>>> "Sean" == Sean MacLennan <smaclennan@pikatech.com> writes:
->>>>>>>>               
->>>  Sean> On Fri, 06 Jun 2008 10:34:28 -0500
->>>
->>>  Sean> "Jon Loeliger" <jdl@freescale.com> wrote:
->>>  >> On Fri, 2008-06-06 at 13:19 +0200, Wolfgang Denk wrote:
->>>  >> > In message <BC38AEE0-E2D9-40AD-8946-6C4B18AA4BF4@freescale.com>
->>>  >> >
->>>  >> > Becky Bruce wrote:
->>>  >> > > On Jun 5, 2008, at 3:30 PM, Scott Wood wrote:
->>>  >> > > > Olof Johansson wrote:
->>>  >> > > >> On Jun 5, 2008, at 3:12 PM, Arnd Bergmann wrote:
->>>  >> > > >>> On Thursday 05 June 2008, Stephen Neuendorffer wrote:
->>>  >> > > >>>>> "Grant Likely" <grant.likely@secretlab.ca> wrote:
->>>  >> > > >>>>>> Paulus, Can we just kill all of arch/ppc for .27 right now?
->>>  >> > > >>>>>
->>>  >> > > >>>>> Acked-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
->>>  >> > > >>>> Acked-by: Stephen Neuendorffer
->>>  >> > > >>>> <stephen.neuendorffer@xilinx.com>
->>>  >> > > >>> Acked-by: Arnd Bergmann <arnd@arndb.de>
->>>  >> > > >> Acked-by: Olof Johansson <olof@lixom.net>
->>>  >> > > > Acked-by: Scott Wood <scottwood@freescale.com>
->>>  >> > > Acked-by: Becky Bruce <becky.bruce@freescale.com>
->>>  >> > Acked-by: Wolfgang Denk <wd@denx.de>
->>>  >> Acked-by: Jon Loeliger <jdl@freescale.com>
->>>  > Acked-by: Sean MacLennan <smaclennan@pikatech.com>
->>> Acked-by: Peter Korsgaard <jacmet@sunsite.dk>
->> Acked-by: Stefan Roese <sr@denx.de>
-> Acked-by: Jochen Friedrich <jochen@scram.de>
-Acked-by: Adrian Bunk <bunk@kernel.org>
+David Woodhouse wrote:
+> On Thu, 2008-06-05 at 10:50 +0200, Wolfgang Grandegger wrote:
+>> [NAND] driver extension to support NAND on TQM85xx modules
+>>
+>> This patch extends the FSL UPM NAND driver from Anton Vorontsov to
+>> support NAND on the TQM85xx modules. Unfortunately, the hardware does
+>> not support the R/B pins of the NAND chip and therefore the specified
+>> maximum delay time must used. It therefore re-introduces the chip-delay
+>> property.
+>>
+>> Note: this patch is based on various patches from  Anton Vorontsov posted
+>>       to this list:
+>>
+>>       http://ozlabs.org/pipermail/linuxppc-dev/2008-April/055587.html.
+> 
+> Do you also want me to apply that patch (on which this one depends)?
+> It says 'Signed-off-by: not yet' ...
 
-cu
-Adrian
+Anton has already answer that question.
 
--- 
+> You should probably comment on the removal of the OF_GPIO dependency. It
+> looks fine, since the relevant functions all get stubbed out and will do
+> the right thing, but it's worth a comment in the commit text.
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+OK, will do so.
+
+Wolfgang.
