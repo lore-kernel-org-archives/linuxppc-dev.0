@@ -1,13 +1,24 @@
-Return-Path: <jonsmirl@gmail.com>
-Message-ID: <9e4733910806081208r1a8d0987j6eab0d73bc446640@mail.gmail.com>
-Date: Sun, 8 Jun 2008 15:08:33 -0400
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "linuxppc-dev list" <Linuxppc-dev@ozlabs.org>,
-	"Sascha Hauer" <s.hauer@pengutronix.de>,
-	"Grant Likely" <grant.likely@secretlab.ca>
-Subject: Comments on device tree for pcm030
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 85A9FDDF31
+	for <linuxppc-dev@ozlabs.org>; Mon,  9 Jun 2008 05:40:06 +1000 (EST)
+In-Reply-To: <484C1F6C.9000108@grandegger.com>
+References: <4847A8DA.6010406@grandegger.com>
+	<1212825701.32207.403.camel@pmac.infradead.org>
+	<20080607114438.GA23329@polina.dev.rtsoft.ru>
+	<484C1F6C.9000108@grandegger.com>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <0909149cc236822d193338c5eeb4e4b4@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH v2] [NAND] driver extension to support NAND on TQM85xx
+	modules
+Date: Sun, 8 Jun 2008 21:39:44 +0200
+To: Wolfgang Grandegger <wg@grandegger.com>
+Cc: linux-mtd@lists.infradead.org, David Woodhouse <dwmw2@infradead.org>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,58 +28,11 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Why not a compatible field in the top of the tree? Then you wouldn't
-need to list the boards in mpc5200_simple.c.
-	compatible = "phytec,pcm030","simple-mpc5200";
+> I see. I think I should then also post the bindings (update of
+> booting-without-of.txt) separately.
 
-Device tree has an entry for AC97 on PSC1. I don't think the Phytec
-module or carrier board has AC97 hardware.
+Yes please.  They are much easier to review that way (and they
+should be reviewed as a separate entity anyway).
 
-The RTC chip says pcf8563, phytec doc says it is a pcf8564.
 
-There should be an i2c entry for the eeprom but I don't know the part
-number for it.
-
-What about the flash on the local bus?  Could we use something like
-this, or the same without the partition data?
-
-	lpb@ff000000 {
-		compatible = "fsl,lpb";
-		ranges = <0 ff000000 01000000>;
-		
-		flash@00000000 {
-			compatible = "cfi-flash";
-			reg = <00000000 01000000>;
-			bank-width = <2>;
-			#size-cells = <1>;
-			#address-cells = <1>;
-			partition@0 {
-				label = "ubootl";
-				reg = <00000000 00040000>;
-			};
-			partition@40000 {
-				label = "kernel";
-				reg = <00040000 001c0000>;
-			};
-			partition@200000 {
-				label = "jffs2";
-				reg = <00200000 00D00000>;
-			};
-			partition@f00000 {
-				label = "uboot";
-				reg = <00f00000 00040000>;
-			};
-			partition@f40000 {
-				label = "oftree";
-				reg = <00f40000 00040000>;
-			};
-			partition@f80000 {
-				label = "space";
-				reg = <00f80000 00080000>;
-			};
-		};
-	};
-
--- 
-Jon Smirl
-jonsmirl@gmail.com
+Segher
