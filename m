@@ -1,20 +1,21 @@
-Return-Path: <khali@linux-fr.org>
-Received: from services.gcu-squad.org (zone0.gcu-squad.org [212.85.147.21])
+Return-Path: <jochen@scram.de>
+Received: from mail.scram.de (mail0.scram.de [78.47.204.202])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 3541ADDE45
-	for <linuxppc-dev@ozlabs.org>; Sun,  8 Jun 2008 22:48:54 +1000 (EST)
-Date: Sun, 8 Jun 2008 14:48:43 +0200
-From: Jean Delvare <khali@linux-fr.org>
+	(Client CN "mail.scram.de", Issuer "scram e.V. CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 87F8DDDE07
+	for <linuxppc-dev@ozlabs.org>; Mon,  9 Jun 2008 00:57:28 +1000 (EST)
+Message-ID: <484BF346.8010704@scram.de>
+Date: Sun, 08 Jun 2008 18:57:10 +0400
+From: Jochen Friedrich <jochen@scram.de>
+MIME-Version: 1.0
 To: Stefan Roese <sr@denx.de>
-Subject: Re: [PATCH] i2c-ibm_iic: Enable driver for all PPC4xx variants in
-	arch/powerpc
-Message-ID: <20080608144843.58857324@hyperion.delvare>
-In-Reply-To: <1212653453-26093-1-git-send-email-sr@denx.de>
-References: <1212653453-26093-1-git-send-email-sr@denx.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, i2c@lm-sensors.org
+Subject: Re: arch/ppc is going away Real Soon Now
+References: <20080606111904.9B1D1247CC@gemini.denx.de>	<20080606171147.7961a6c3@lappy.seanm.ca>	<87lk1hbssr.fsf@macbook.be.48ers.dk>
+	<200806071207.12020.sr@denx.de>
+In-Reply-To: <200806071207.12020.sr@denx.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Wolfgang Denk <wd@denx.de>, Sean MacLennan <smaclennan@pikatech.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,45 +25,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Stefan,
-
-On Thu,  5 Jun 2008 10:10:53 +0200, Stefan Roese wrote:
-> This patch enables the IBM I2C driver for all PPC4xx variants by adding
-> "ibm,iic" to the compatible list. This way all currently available
-> arch/powerpc 4xx ports can make use of this driver without any changes.
-> Additionally all "other" compatible entries are removed since they are
-> not needed anymore.
-> 
-> Currently all 4xx PPC's have the same compatible I2C macro. If at some
-> time an incompatibility is detected we can take care of this with an
-> additional property.
-> 
-> Signed-off-by: Stefan Roese <sr@denx.de>
-> ---
->  drivers/i2c/busses/i2c-ibm_iic.c |    6 +-----
->  1 files changed, 1 insertions(+), 5 deletions(-)
-> 
-> diff --git a/drivers/i2c/busses/i2c-ibm_iic.c b/drivers/i2c/busses/i2c-ibm_iic.c
-> index 3a364a7..ed73801 100644
-> --- a/drivers/i2c/busses/i2c-ibm_iic.c
-> +++ b/drivers/i2c/busses/i2c-ibm_iic.c
-> @@ -807,11 +807,7 @@ static int __devexit iic_remove(struct of_device *ofdev)
->  }
->  
->  static const struct of_device_id ibm_iic_match[] = {
-> -	{ .compatible = "ibm,iic-405ex", },
-> -	{ .compatible = "ibm,iic-405gp", },
-> -	{ .compatible = "ibm,iic-440gp", },
-> -	{ .compatible = "ibm,iic-440gpx", },
-> -	{ .compatible = "ibm,iic-440grx", },
-> +	{ .compatible = "ibm,iic", },
->  	{}
->  };
->  
-
-OK, I can take this in my tree, unless it depends on arch-specific
-patches which have not hit mainline yet. I guess this is 2.6.27
-material?
-
--- 
-Jean Delvare
+Stefan Roese пишет:
+> On Saturday 07 June 2008, Peter Korsgaard wrote:
+>   
+>>>>>>> "Sean" == Sean MacLennan <smaclennan@pikatech.com> writes:
+>>>>>>>               
+>>  Sean> On Fri, 06 Jun 2008 10:34:28 -0500
+>>
+>>  Sean> "Jon Loeliger" <jdl@freescale.com> wrote:
+>>  >> On Fri, 2008-06-06 at 13:19 +0200, Wolfgang Denk wrote:
+>>  >> > In message <BC38AEE0-E2D9-40AD-8946-6C4B18AA4BF4@freescale.com>
+>>  >> >
+>>  >> > Becky Bruce wrote:
+>>  >> > > On Jun 5, 2008, at 3:30 PM, Scott Wood wrote:
+>>  >> > > > Olof Johansson wrote:
+>>  >> > > >> On Jun 5, 2008, at 3:12 PM, Arnd Bergmann wrote:
+>>  >> > > >>> On Thursday 05 June 2008, Stephen Neuendorffer wrote:
+>>  >> > > >>>>> "Grant Likely" <grant.likely@secretlab.ca> wrote:
+>>  >> > > >>>>>> Paulus, Can we just kill all of arch/ppc for .27 right now?
+>>  >> > > >>>>>
+>>  >> > > >>>>> Acked-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+>>  >> > > >>>> Acked-by: Stephen Neuendorffer
+>>  >> > > >>>> <stephen.neuendorffer@xilinx.com>
+>>  >> > > >>> Acked-by: Arnd Bergmann <arnd@arndb.de>
+>>  >> > > >> Acked-by: Olof Johansson <olof@lixom.net>
+>>  >> > > > Acked-by: Scott Wood <scottwood@freescale.com>
+>>  >> > > Acked-by: Becky Bruce <becky.bruce@freescale.com>
+>>  >> > Acked-by: Wolfgang Denk <wd@denx.de>
+>>  >> Acked-by: Jon Loeliger <jdl@freescale.com>
+>>  > Acked-by: Sean MacLennan <smaclennan@pikatech.com>
+>> Acked-by: Peter Korsgaard <jacmet@sunsite.dk>
+>>     
+>
+> Acked-by: Stefan Roese <sr@denx.de>
+>
+>   
+Acked-by: Jochen Friedrich <jochen@scram.de>
