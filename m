@@ -1,17 +1,35 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <ossthema@de.ibm.com>
+Received: from mtagate7.uk.ibm.com (mtagate7.uk.ibm.com [195.212.29.140])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id EB659DE2A8
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jun 2008 00:11:38 +1000 (EST)
-Date: Mon, 9 Jun 2008 09:11:29 -0500 (CDT)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Please pull from 'for-2.6.26' branch
-Message-ID: <Pine.LNX.4.64.0806090911070.27607@blarg.am.freescale.net>
+	(Client CN "mtagate7.uk.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 8EE3CDDF3E
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jun 2008 00:18:51 +1000 (EST)
+Received: from d06nrmr1407.portsmouth.uk.ibm.com
+	(d06nrmr1407.portsmouth.uk.ibm.com [9.149.38.185])
+	by mtagate7.uk.ibm.com (8.13.8/8.13.8) with ESMTP id m59EHdav389912
+	for <linuxppc-dev@ozlabs.org>; Mon, 9 Jun 2008 14:17:39 GMT
+Received: from d06av02.portsmouth.uk.ibm.com (d06av02.portsmouth.uk.ibm.com
+	[9.149.37.228])
+	by d06nrmr1407.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v9.0) with
+	ESMTP id m59EHdSp2003132
+	for <linuxppc-dev@ozlabs.org>; Mon, 9 Jun 2008 15:17:39 +0100
+Received: from d06av02.portsmouth.uk.ibm.com (loopback [127.0.0.1])
+	by d06av02.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id m59EHcFJ013037
+	for <linuxppc-dev@ozlabs.org>; Mon, 9 Jun 2008 15:17:39 +0100
+From: Jan-Bernd Themann <ossthema@de.ibm.com>
+To: Jeff Garzik <jeff@garzik.org>
+Subject: [PATCH][2.6.26] ehea: set mac address fix
+Date: Mon, 9 Jun 2008 15:17:37 +0100
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200806091617.38396.ossthema@de.ibm.com>
+Cc: Thomas Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
+	netdev <netdev@vger.kernel.org>, hering2@de.ibm.com,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	linux-ppc <linuxppc-dev@ozlabs.org>, Christoph Raisch <raisch@de.ibm.com>,
+	Marcus Eder <meder@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,63 +39,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Please pull from 'for-2.6.26' branch of
+eHEA has to call firmware functions in order to change the mac address
+of a logical port. This patch checks if the logical port is up
+when calling the register / deregister mac address calls. If the port
+is down these firmware calls would fail and are therefore not executed.
 
-	master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git for-2.6.26
+Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com>
 
-to receive the following updates:
+---
 
- arch/powerpc/boot/dts/mpc8548cds.dts              |    4
- arch/powerpc/configs/83xx/mpc8313_rdb_defconfig   |  155 +++++++---
- arch/powerpc/configs/83xx/mpc8315_rdb_defconfig   |  162 +++++++----
- arch/powerpc/configs/83xx/mpc832x_mds_defconfig   |  146 ++++++----
- arch/powerpc/configs/83xx/mpc832x_rdb_defconfig   |  150 ++++++----
- arch/powerpc/configs/83xx/mpc834x_itx_defconfig   |  157 +++++++---
- arch/powerpc/configs/83xx/mpc834x_itxgp_defconfig |  150 ++++++----
- arch/powerpc/configs/83xx/mpc834x_mds_defconfig   |  146 ++++++----
- arch/powerpc/configs/83xx/mpc836x_mds_defconfig   |  146 ++++++----
- arch/powerpc/configs/83xx/mpc837x_mds_defconfig   |  146 ++++++----
- arch/powerpc/configs/83xx/mpc837x_rdb_defconfig   |  222 +++++++++++----
- arch/powerpc/configs/83xx/sbc834x_defconfig       |  140 ++++++---
- arch/powerpc/configs/85xx/ksi8560_defconfig       |  168 +++++++----
- arch/powerpc/configs/85xx/mpc8540_ads_defconfig   |  133 ++++++---
- arch/powerpc/configs/85xx/mpc8544_ds_defconfig    |  210 +++++++++-----
- arch/powerpc/configs/85xx/mpc8560_ads_defconfig   |  135 ++++++---
- arch/powerpc/configs/85xx/mpc8568mds_defconfig    |  150 ++++++----
- arch/powerpc/configs/85xx/mpc8572_ds_defconfig    |  210 +++++++++-----
- arch/powerpc/configs/85xx/mpc85xx_cds_defconfig   |  137 ++++++---
- arch/powerpc/configs/85xx/sbc8548_defconfig       |  131 ++++++---
- arch/powerpc/configs/85xx/sbc8560_defconfig       |  135 ++++++---
- arch/powerpc/configs/85xx/stx_gp3_defconfig       |  152 ++++++----
- arch/powerpc/configs/85xx/tqm8540_defconfig       |  147 ++++++----
- arch/powerpc/configs/85xx/tqm8541_defconfig       |  146 ++++++----
- arch/powerpc/configs/85xx/tqm8555_defconfig       |  146 ++++++----
- arch/powerpc/configs/85xx/tqm8560_defconfig       |  146 ++++++----
- arch/powerpc/configs/adder875_defconfig           |   52 ++-
- arch/powerpc/configs/ep8248e_defconfig            |  124 +++++---
- arch/powerpc/configs/ep88xc_defconfig             |   47 ++-
- arch/powerpc/configs/linkstation_defconfig        |  172 +++++++----
- arch/powerpc/configs/mpc7448_hpc2_defconfig       |  136 ++++++---
- arch/powerpc/configs/mpc8272_ads_defconfig        |  126 +++++---
- arch/powerpc/configs/mpc83xx_defconfig            |  151 ++++++----
- arch/powerpc/configs/mpc85xx_defconfig            |  210 +++++++++-----
- arch/powerpc/configs/mpc8610_hpcd_defconfig       |  316 ++++++++++++----------
- arch/powerpc/configs/mpc8641_hpcn_defconfig       |  210 +++++++++-----
- arch/powerpc/configs/mpc866_ads_defconfig         |  128 +++++---
- arch/powerpc/configs/mpc885_ads_defconfig         |   47 ++-
- arch/powerpc/configs/pq2fads_defconfig            |  133 ++++++---
- arch/powerpc/configs/prpmc2800_defconfig          |  153 ++++++----
- arch/powerpc/configs/sbc8641d_defconfig           |  150 ++++++----
- arch/powerpc/configs/storcenter_defconfig         |   71 ++--
- arch/powerpc/platforms/85xx/Kconfig               |    1
- 43 files changed, 3960 insertions(+), 2137 deletions(-)
-
-Kumar Gala (3):
-      [POWERPC] 85xx: MPC85xx MDS - Unconditionally select PHYLIB for board fixups
-      [POWERPC] 85xx: MPC8548CDS - Fix size of PCIe IO space
-      [POWERPC] Updated Freescale PPC defconfigs
-
-Timur Tabi (1):
-      [POWERPC] 8610: Update defconfig for MPC8610 HPCD
-
-r
+diff -Nurp -X dontdiff linux-2.6.26-rc4/drivers/net/ehea/ehea_main.c patched_kernel/drivers/net/ehea/ehea_main.c
+--- linux-2.6.26-rc4/drivers/net/ehea/ehea_main.c	2008-05-26 20:08:11.000000000 +0200
++++ patched_kernel/drivers/net/ehea/ehea_main.c	2008-06-09 15:42:17.000000000 +0200
+@@ -1766,16 +1766,20 @@ static int ehea_set_mac_addr(struct net_
+ 	mutex_lock(&ehea_bcmc_regs.lock);
+ 
+ 	/* Deregister old MAC in pHYP */
+-	ret = ehea_broadcast_reg_helper(port, H_DEREG_BCMC);
+-	if (ret)
+-		goto out_upregs;
++	if (port->state == EHEA_PORT_UP) {
++		ret = ehea_broadcast_reg_helper(port, H_DEREG_BCMC);
++		if (ret)
++			goto out_upregs;
++	}
+ 
+ 	port->mac_addr = cb0->port_mac_addr << 16;
+ 
+ 	/* Register new MAC in pHYP */
+-	ret = ehea_broadcast_reg_helper(port, H_REG_BCMC);
+-	if (ret)
+-		goto out_upregs;
++	if (port->state == EHEA_PORT_UP) {
++		ret = ehea_broadcast_reg_helper(port, H_REG_BCMC);
++		if (ret)
++			goto out_upregs;
++	}
+ 
+ 	ret = 0;
+ 
