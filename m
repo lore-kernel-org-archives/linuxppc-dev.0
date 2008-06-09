@@ -1,18 +1,16 @@
-Return-Path: <jbarnes@virtuousgeek.org>
-Received: from outbound-mail-138.bluehost.com (outbound-mail-138.bluehost.com
-	[67.222.39.28]) by ozlabs.org (Postfix) with SMTP id 5AD09DDEEC
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jun 2008 05:15:10 +1000 (EST)
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: 2.6.26-rc5-mm1: procfs whine
-Date: Mon, 9 Jun 2008 12:08:17 -0700
-References: <20080609014817.9bdc9ee4.akpm@linux-foundation.org>
-In-Reply-To: <20080609014817.9bdc9ee4.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200806091208.18034.jbarnes@virtuousgeek.org>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <txtbox@gmail.com>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.242])
+	by ozlabs.org (Postfix) with ESMTP id C77D5DDE3A
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jun 2008 06:09:28 +1000 (EST)
+Received: by an-out-0708.google.com with SMTP id c34so466343anc.78
+	for <linuxppc-dev@ozlabs.org>; Mon, 09 Jun 2008 13:09:27 -0700 (PDT)
+Subject: Making the Kernel
+From: Jacob Holladay Poteet <txtbox@gmail.com>
+To: linuxppc-dev@ozlabs.org
+Content-Type: text/plain
+Date: Mon, 09 Jun 2008 15:09:23 -0500
+Message-Id: <1213042163.7776.4.camel@Phoebe>
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,23 +20,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Monday, June 09, 2008 1:48 am Andrew Morton wrote:
-> At boot, using http://userweb.kernel.org/~akpm/config-g5.txt on a mac g5:
->
-> io scheduler cfq registered
-> proc_dir_entry '00' already registered
-> Call Trace:
-> [c00000017a0fbb70] [c0000000000120fc] .show_stack+0x58/0x1dc (unreliable)
-> [c00000017a0fbc20] [c0000000001415a8] .proc_register+0x218/0x260
-> [c00000017a0fbcd0] [c0000000001419d4] .proc_mkdir_mode+0x40/0x74
-> [c00000017a0fbd50] [c0000000001e6640] .pci_proc_attach_device+0x90/0x134
-> [c00000017a0fbdf0] [c0000000005e5250] .pci_proc_init+0x68/0xa0
-> [c00000017a0fbe70] [c0000000005c0cd4] .kernel_init+0x228/0x49c
-> [c00000017a0fbf90] [c000000000026e0c] .kernel_thread+0x4c/0x68
-> nvidiafb: Device ID: 10de0141
+Good Afternoon,
 
-Maybe something in the powerpc PCI init code changed recently?  It looks like 
-pci_bus_add_devices() is getting called more than once (or at least 
-pci_bus_add_device() for this specific device).
+I've gone through the process of configuring a kernel for my Xilinx
+board design using the mhs->devtree, dts+'make menuconfig'
+options->'make all' process and things seem to have succeeded. I was
+under the expectation that I would find a file
+arch/powerpc/boot/zImage.virtex, which is a type of .elf file that I can
+use to make a bitstream, but I didn't find this said file in the output.
+I found several zImage files (zImage,
+zImage.pmac,.miboot,.chrp,.lds,.cofflds), but none of them had the
+desired '.virtex' extension. Am I looking for something that doesn't
+exist? If not, can someone help me generate the necessary file?
 
-Jesse
+This is my first time through this process so I appreciate your advice.
+
+Sincerely,
+Jake Poteet
