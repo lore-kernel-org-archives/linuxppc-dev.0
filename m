@@ -1,16 +1,17 @@
-Return-Path: <bunk@kernel.org>
-Received: from smtp4.pp.htv.fi (smtp4.pp.htv.fi [213.243.153.38])
-	by ozlabs.org (Postfix) with ESMTP id E01C4DE1F4
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jun 2008 08:24:07 +1000 (EST)
-Date: Tue, 10 Jun 2008 01:23:12 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: paulus@samba.org, geert@linux-m68k.org, zippel@linux-m68k.org
-Subject: [2.6 patch] drivers/macintosh/: possible cleanups
-Message-ID: <20080609222312.GM1987@cs181133002.pp.htv.fi>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Cc: linuxppc-dev@ozlabs.org, linux-m68k@lists.linux-m68k.org,
-	linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18509.44672.668946.207110@cargo.ozlabs.ibm.com>
+Date: Tue, 10 Jun 2008 08:28:16 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Stefan Roscher <ossrosch@linux.vnet.ibm.com>
+Subject: Re: [PATCH 0/2] Prevent loss of interrupts in IB/ehca
+In-Reply-To: <200806091742.29421.ossrosch@linux.vnet.ibm.com>
+References: <200806091742.29421.ossrosch@linux.vnet.ibm.com>
+Cc: TKLEIN@de.ibm.com, THEMANN@de.ibm.com, fenkes@de.ibm.com,
+	OF-EWG <ewg@lists.openfabrics.org>, LKML <linux-kernel@vger.kernel.org>,
+	LinuxPPC-Dev <linuxppc-dev@ozlabs.org>, raisch@de.ibm.com,
+	general@lists.openfabrics.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,101 +21,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch contains the following possible cleanups:
-- make the following needlessly global code static:
-  - adb.c: adb_controller
-  - adb.c: adb_init()
-  - adbhid.c: adb_to_linux_keycodes[]
-  - via-pmu68k.c: backlight_level
-  - via-pmu68k.c: backlight_enabled
-- remove the following unused code:
-  - via-pmu68k.c: sleep_notifier_list
+Stefan Roscher writes:
 
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> This patchset contains two changes for IB/ehca and ibmebus.
+> 
+> The first patch enables ibmebus_request_irq() to optionally return the 
+> IRQ number, which is used by the second patch to trigger EOI in case of 
+> lost interrupts.
 
----
+At first sight it seems like a very bad idea for a driver to be poking
+into the internals of the interrupt subsystem like this.  Under what
+circumstances do interrupts get lost, and why does doing an extra EOI
+like this fix the problem?
 
- drivers/macintosh/adb.c        |    5 ++---
- drivers/macintosh/adbhid.c     |    2 +-
- drivers/macintosh/via-pmu68k.c |    5 ++---
- include/linux/adb.h            |    1 -
- 4 files changed, 5 insertions(+), 8 deletions(-)
-
-45413fb42fb4215d80bb15f50a5bdc869465e9a1 diff --git a/drivers/macintosh/adb.c b/drivers/macintosh/adb.c
-index dbaad39..61b62a6 100644
---- a/drivers/macintosh/adb.c
-+++ b/drivers/macintosh/adb.c
-@@ -46,7 +46,6 @@
- #endif
- 
- 
--EXPORT_SYMBOL(adb_controller);
- EXPORT_SYMBOL(adb_client_list);
- 
- extern struct adb_driver via_macii_driver;
-@@ -80,7 +79,7 @@ static struct adb_driver *adb_driver_list[] = {
- 
- static struct class *adb_dev_class;
- 
--struct adb_driver *adb_controller;
-+static struct adb_driver *adb_controller;
- BLOCKING_NOTIFIER_HEAD(adb_client_list);
- static int adb_got_sleep;
- static int adb_inited;
-@@ -290,7 +289,7 @@ static int adb_resume(struct platform_device *dev)
- }
- #endif /* CONFIG_PM */
- 
--int __init adb_init(void)
-+static int __init adb_init(void)
- {
- 	struct adb_driver *driver;
- 	int i;
-diff --git a/drivers/macintosh/adbhid.c b/drivers/macintosh/adbhid.c
-index ef4c117..af72f97 100644
---- a/drivers/macintosh/adbhid.c
-+++ b/drivers/macintosh/adbhid.c
-@@ -75,7 +75,7 @@ static struct notifier_block adbhid_adb_notifier = {
- #define ADB_KEY_POWER_OLD	0x7e
- #define ADB_KEY_POWER		0x7f
- 
--u16 adb_to_linux_keycodes[128] = {
-+static u16 adb_to_linux_keycodes[128] = {
- 	/* 0x00 */ KEY_A, 		/*  30 */
- 	/* 0x01 */ KEY_S, 		/*  31 */
- 	/* 0x02 */ KEY_D,		/*  32 */
-diff --git a/drivers/macintosh/via-pmu68k.c b/drivers/macintosh/via-pmu68k.c
-index e2f84da..b64741c 100644
---- a/drivers/macintosh/via-pmu68k.c
-+++ b/drivers/macintosh/via-pmu68k.c
-@@ -101,7 +101,6 @@ static int pmu_kind = PMU_UNKNOWN;
- static int pmu_fully_inited;
- 
- int asleep;
--BLOCKING_NOTIFIER_HEAD(sleep_notifier_list);
- 
- static int pmu_probe(void);
- static int pmu_init(void);
-@@ -741,8 +740,8 @@ pmu_handle_data(unsigned char *data, int len)
- 	}
- }
- 
--int backlight_level = -1;
--int backlight_enabled = 0;
-+static int backlight_level = -1;
-+static int backlight_enabled = 0;
- 
- #define LEVEL_TO_BRIGHT(lev)	((lev) < 1? 0x7f: 0x4a - ((lev) << 1))
- 
-diff --git a/include/linux/adb.h b/include/linux/adb.h
-index 64d8878..63bca50 100644
---- a/include/linux/adb.h
-+++ b/include/linux/adb.h
-@@ -84,7 +84,6 @@ enum adb_message {
-     ADB_MSG_PRE_RESET,	/* Called before resetting the bus */
-     ADB_MSG_POST_RESET	/* Called after resetting the bus (re-do init & register) */
- };
--extern struct adb_driver *adb_controller;
- extern struct blocking_notifier_head adb_client_list;
- 
- int adb_request(struct adb_request *req, void (*done)(struct adb_request *),
+Paul.
