@@ -1,17 +1,21 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
-	[140.211.169.13])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 261F2DE04B
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jun 2008 09:32:43 +1000 (EST)
-Message-Id: <200806092326.m59NQ9vo014224@imap1.linux-foundation.org>
-Subject: [patch 3/5] macintosh: therm_windtunnel: semaphore to mutex
-To: paulus@samba.org
-From: akpm@linux-foundation.org
-Date: Mon, 09 Jun 2008 16:26:08 -0700
-Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org, dwalker@mvista.com
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 0ABB1DDF83
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jun 2008 09:41:29 +1000 (EST)
+Subject: Re: [patch 1/5] powerpc: fix for OProfile callgraph for Power 64
+	bit user apps
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: akpm@linux-foundation.org
+In-Reply-To: <200806092326.m59NQ7rM014218@imap1.linux-foundation.org>
+References: <200806092326.m59NQ7rM014218@imap1.linux-foundation.org>
+Content-Type: text/plain
+Date: Tue, 10 Jun 2008 09:41:17 +1000
+Message-Id: <1213054877.25745.11.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, carll@us.ibm.com, paulus@samba.org, cel@us.ibm.com
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,64 +25,94 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Daniel Walker <dwalker@mvista.com>
+On Mon, 2008-06-09 at 16:26 -0700, akpm@linux-foundation.org wrote:
+> From: Carl Love <cel@us.ibm.com>
+> 
+> Fix the 64 bit user code backtrace which currently may hang the system.
+> 
+> Signed-off-by: Carl Love <carll@us.ibm.com>
+> Cc: Maynard Johnson <maynardj@us.ibm.com>
 
-Signed-off-by: Daniel Walker <dwalker@mvista.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
----
+That looks weird. I doubt it's the right fix for the problem. Paul,
+I remember this was discussed earlier, did we come up with a proper fix
+already ?
 
- drivers/macintosh/therm_windtunnel.c |   16 ++++++++--------
- 1 file changed, 8 insertions(+), 8 deletions(-)
+Cheers,
+Ben.
 
-diff -puN drivers/macintosh/therm_windtunnel.c~macintosh-therm_windtunnel-semaphore-to-mutex drivers/macintosh/therm_windtunnel.c
---- a/drivers/macintosh/therm_windtunnel.c~macintosh-therm_windtunnel-semaphore-to-mutex
-+++ a/drivers/macintosh/therm_windtunnel.c
-@@ -62,7 +62,7 @@ static struct {
- 	volatile int		running;
- 	struct task_struct	*poll_task;
- 	
--	struct semaphore 	lock;
-+	struct mutex	 	lock;
- 	struct of_device	*of_dev;
- 	
- 	struct i2c_client	*thermostat;
-@@ -286,23 +286,23 @@ restore_regs( void )
- 
- static int control_loop(void *dummy)
- {
--	down(&x.lock);
-+	mutex_lock(&x.lock);
- 	setup_hardware();
--	up(&x.lock);
-+	mutex_unlock(&x.lock);
- 
- 	for (;;) {
- 		msleep_interruptible(8000);
- 		if (kthread_should_stop())
- 			break;
- 
--		down(&x.lock);
-+		mutex_lock(&x.lock);
- 		poll_temp();
--		up(&x.lock);
-+		mutex_unlock(&x.lock);
- 	}
- 
--	down(&x.lock);
-+	mutex_lock(&x.lock);
- 	restore_regs();
--	up(&x.lock);
-+	mutex_unlock(&x.lock);
- 
- 	return 0;
- }
-@@ -489,7 +489,7 @@ g4fan_init( void )
- 	const struct apple_thermal_info *info;
- 	struct device_node *np;
- 
--	init_MUTEX( &x.lock );
-+	mutex_init(&x.lock);
- 
- 	if( !(np=of_find_node_by_name(NULL, "power-mgt")) )
- 		return -ENODEV;
-_
+> On Thu, 15 May 2008 10:20:44 +1000
+> Michael Ellerman <michael@ellerman.id.au> wrote:
+> >
+> > __copy_from_user_inatomic() accepts any value for n, it just has a
+> > special case for 1, 2, 4 and 8 - but it should still work for other
+> > values.
+> > 
+> > The old code copied 24 bytes from sp, and the new code copies 8 bytes
+> > from sp and 8 bytes from sp + 16 - so I don't see where the 48 bytes
+> > comes in to it?
+> > 
+> > \ufeffAlso the comment is a little hard to parse, I think you mean "Issue:
+> > the ..", but I read "Issue" as a verb in that sentence. And "Don't read
+> > more then" should be "than".
+> 
+> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> ---
+> 
+>  arch/powerpc/oprofile/backtrace.c |   33 ++++++++++++++++++++++------
+>  1 file changed, 27 insertions(+), 6 deletions(-)
+> 
+> diff -puN arch/powerpc/oprofile/backtrace.c~powerpc-fix-for-oprofile-callgraph-for-power-64-bit-user-apps arch/powerpc/oprofile/backtrace.c
+> --- a/arch/powerpc/oprofile/backtrace.c~powerpc-fix-for-oprofile-callgraph-for-power-64-bit-user-apps
+> +++ a/arch/powerpc/oprofile/backtrace.c
+> @@ -53,19 +53,40 @@ static unsigned int user_getsp32(unsigne
+>  #ifdef CONFIG_PPC64
+>  static unsigned long user_getsp64(unsigned long sp, int is_first)
+>  {
+> -	unsigned long stack_frame[3];
+> +	unsigned long stk_frm_lr;
+> +	unsigned long stk_frm_sp;
+> +	unsigned long size;
+> +
+> +	/* Issue the __copy_from_user_inatomic() third argument currently
+> +	 * only takes sizes 1, 2, 4 or 8 bytes.  Don't read more then the
+> +	 * first 48 bytes of the stack frame.  That is all that is
+> +	 * guaranteed to exist.  Reading more may cause the system to hang.
+> +	 *
+> +	 * 64 bit stack frame layout:
+> +	 * 0-7   bytes is the pointer to previous stack
+> +	 * 8-15  bytes condition register save area
+> +	 * 16-23 bytes link register save area
+> +	 */
+> +	size = sizeof(unsigned long);
+> +	if (!access_ok(VERIFY_READ, (void __user *)sp, size))
+> +		return 0;
+>  
+> -	if (!access_ok(VERIFY_READ, (void __user *)sp, sizeof(stack_frame)))
+> +	if (__copy_from_user_inatomic(&stk_frm_sp, (void __user *)sp,
+> +					size))
+>  		return 0;
+>  
+> -	if (__copy_from_user_inatomic(stack_frame, (void __user *)sp,
+> -					sizeof(stack_frame)))
+> +	/* get the LR from the user stack */
+> +	if (!access_ok(VERIFY_READ, (void __user *)(sp+16), size))
+> +		return 0;
+> +
+> +	if (__copy_from_user_inatomic(&stk_frm_lr, (void __user *)(sp+16),
+> +					size))
+>  		return 0;
+>  
+>  	if (!is_first)
+> -		oprofile_add_trace(STACK_LR64(stack_frame));
+> +		oprofile_add_trace(stk_frm_lr);
+>  
+> -	return STACK_SP(stack_frame);
+> +	return stk_frm_sp;
+>  }
+>  #endif
+>  
+> _
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
