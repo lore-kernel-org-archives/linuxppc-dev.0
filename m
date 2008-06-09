@@ -1,14 +1,26 @@
-Return-Path: <sha@pengutronix.de>
-Date: Mon, 9 Jun 2008 11:13:35 +0200
-From: Sascha Hauer <s.hauer@pengutronix.de>
-To: Jon Smirl <jonsmirl@gmail.com>
-Subject: Re: Comments on device tree for pcm030
-Message-ID: <20080609091335.GC13036@pengutronix.de>
-References: <9e4733910806081208r1a8d0987j6eab0d73bc446640@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <9e4733910806081208r1a8d0987j6eab0d73bc446640@mail.gmail.com>
-Cc: linuxppc-dev list <Linuxppc-dev@ozlabs.org>
+Return-Path: <pczanik@fang.fa.gau.hu>
+Received: from a.relay.invitel.net (a.relay.invitel.net [62.77.203.3])
+	by ozlabs.org (Postfix) with ESMTP id 9B828DDEDB
+	for <linuxppc-dev@ozlabs.org>; Mon,  9 Jun 2008 19:51:55 +1000 (EST)
+Received: from mail.invitel.hu (mail.invitel.hu [213.163.59.4])
+	by a.relay.invitel.net (Invitel Core SMTP Transmitter) with ESMTP id
+	3A5F3370346
+	for <linuxppc-dev@ozlabs.org>; Mon,  9 Jun 2008 11:42:51 +0200 (CEST)
+Received: from [192.168.2.179] ([62.77.251.67])
+	by mail.invitel.hu (Invitel Messaging Server)
+	with ESMTPA id <0K2600MFIWB5LGY0@invitel.hu> for
+	linuxppc-dev@ozlabs.org; Mon, 09 Jun 2008 11:42:42 +0200 (CEST)
+Date: Mon, 09 Jun 2008 11:42:41 +0200
+From: Peter Czanik <pczanik@fang.fa.gau.hu>
+Subject: Re: Default flats for running dtc from kernel build
+In-reply-to: <A005B9E2-9A1D-4190-AB00-A7C880E4DBDB@kernel.crashing.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+Message-id: <484CFB11.1080400@fang.fa.gau.hu>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+References: <20080606143347.B35CC247FE@gemini.denx.de>
+	<A005B9E2-9A1D-4190-AB00-A7C880E4DBDB@kernel.crashing.org>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, Wolfgang Denk <wd@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,74 +30,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+Hello,
 
-On Sun, Jun 08, 2008 at 03:08:33PM -0400, Jon Smirl wrote:
-> Why not a compatible field in the top of the tree? Then you wouldn't
-> need to list the boards in mpc5200_simple.c.
-> 	compatible = "phytec,pcm030","simple-mpc5200";
-> 
-> Device tree has an entry for AC97 on PSC1. I don't think the Phytec
-> module or carrier board has AC97 hardware.
-> 
-> The RTC chip says pcf8563, phytec doc says it is a pcf8564.
-> 
-> There should be an i2c entry for the eeprom but I don't know the part
-> number for it.
-> 
-> What about the flash on the local bus?  Could we use something like
-> this, or the same without the partition data?
-> 
-> 	lpb@ff000000 {
-> 		compatible = "fsl,lpb";
-> 		ranges = <0 ff000000 01000000>;
-> 		
-> 		flash@00000000 {
-> 			compatible = "cfi-flash";
-> 			reg = <00000000 01000000>;
-> 			bank-width = <2>;
+Kumar Gala írta:
+> diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+> index c40fb82..52db85a 100644
+> --- a/arch/powerpc/boot/Makefile
+> +++ b/arch/powerpc/boot/Makefile
+> @@ -29,6 +29,8 @@ ifdef CONFIG_DEBUG_INFO
+>  BOOTCFLAGS     += -g
+>  endif
+>
+> +DTS_FLAGS      ?= -R4 -S 0x3000
+> +
+>  ifeq ($(call cc-option-yn, -fstack-protector),y)
+>  BOOTCFLAGS     += -fno-stack-protector
+>  endif
+I have a 8610 standing next to my desk with U-Boot 1.3.0 (Mar 13 2008 - 
+10:14:26). It came with 2.6.23. I wanted to compile a kernel from the 
+latest available kernel sources ( 2.6.26-RC5-git2 ). I compiled it using 
+mpc8610_hpcd_defconfig. I also did a make mpc8610_hpcd.dtb to have a 
+matching dtb file for the kernel. This is how far it gets:
 
-The board comes with different flash sizes with different bank widths.
-That's why I decided to no put the flash entries into the tree.
-We used to detect the flash size/bankwidth using the bootcs config
-register (which was previously set by U-Boot). We could change U-Boot to
-adjust the device tree accordingly, but we haven't done this so far,
-sorry.
+=> boot
 
-> 			#size-cells = <1>;
-> 			#address-cells = <1>;
-> 			partition@0 {
-> 				label = "ubootl";
-> 				reg = <00000000 00040000>;
-> 			};
-> 			partition@40000 {
-> 				label = "kernel";
-> 				reg = <00040000 001c0000>;
-> 			};
-> 			partition@200000 {
-> 				label = "jffs2";
-> 				reg = <00200000 00D00000>;
-> 			};
-> 			partition@f00000 {
-> 				label = "uboot";
-> 				reg = <00f00000 00040000>;
-> 			};
-> 			partition@f40000 {
-> 				label = "oftree";
-> 				reg = <00f40000 00040000>;
-> 			};
-> 			partition@f80000 {
-> 				label = "space";
-> 				reg = <00f80000 00080000>;
-> 			};
+11032 bytes read
 
-I think partitions shouldn't go into the default device tree, as people
-may have different partitioning.
+1708346 bytes read
+## Booting image at 01000000 ...
+  Image Name:   Linux-2.6.26-rc5-git2-czp7
+  Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+  Data Size:    1708282 Bytes =  1.6 MB
+  Load Address: 00000000
+  Entry Point:  00000000
+  Verifying Checksum ... OK
+  Uncompressing Kernel Image ... OK
+  Booting using the fdt at 0xc00000
+  Loading Device Tree to 007fb000, end 007fdb17 ... OK
 
-Sascha
+When I use the 2.6.26 kernel, but the original dtb file from the BSP, 
+then I get two more lines on the serial console:
 
--- 
-Pengutronix e.K. - Linux Solutions for Science and Industry
------------------------------------------------------------
-Kontakt-Informationen finden Sie im Header dieser Mail oder
-auf der Webseite -> http://www.pengutronix.de/impressum/ <-
+pci@8000 first_busno=0 last_busno=0
+pcie@9000 first_busno=0 last_busno=0
+
+So I suspected, that this might be something with the dtb file. This is 
+when I ran into this thread. I tried all the different options for 
+DTS_FLAGS to generate a working dtb file, but I got the same result, 
+"Loading Device Tree to 007fb000, end 007fdb17 ... OK" was the last line 
+on screen. Any additional ideas, how to create a working dtb file for 
+the 8610 board for later kernels?
+
+Bye,
+CzP
