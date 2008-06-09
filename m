@@ -1,20 +1,28 @@
-Return-Path: <sr@denx.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.179]) by ozlabs.org (Postfix) with ESMTP id B183BDDEEF
-	for <linuxppc-dev@ozlabs.org>; Mon,  9 Jun 2008 14:49:41 +1000 (EST)
-From: Stefan Roese <sr@denx.de>
-To: Jean Delvare <khali@linux-fr.org>
-Subject: Re: [PATCH] i2c-ibm_iic: Enable driver for all PPC4xx variants in
-	arch/powerpc
-Date: Mon, 9 Jun 2008 06:48:24 +0200
-References: <1212653453-26093-1-git-send-email-sr@denx.de>
-	<20080608144843.58857324@hyperion.delvare>
-In-Reply-To: <20080608144843.58857324@hyperion.delvare>
+Return-Path: <geert@linux-m68k.org>
+Received: from yergi.telenet-ops.be (yergi.telenet-ops.be [195.130.132.36])
+	by ozlabs.org (Postfix) with ESMTP id C2685DDECA
+	for <linuxppc-dev@ozlabs.org>; Mon,  9 Jun 2008 17:46:42 +1000 (EST)
+Received: from wilson.telenet-ops.be (unknown [195.130.132.42])
+	by yergi.telenet-ops.be (Postfix) with ESMTP id 2587D71271B
+	for <linuxppc-dev@ozlabs.org>; Mon,  9 Jun 2008 09:47:00 +0200 (CEST)
+Date: Mon, 9 Jun 2008 09:46:22 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Sender: geert@linux-m68k.org
+To: Jon Loeliger <jdl@jdl.com>
+Subject: Re: 4xx support in arch/ppc is going away Real Soon Now 
+In-Reply-To: <E1K5NE9-000275-2M@jdl.com>
+Message-ID: <Pine.LNX.4.64.0806090942230.25145@anakin>
+References: <20080605095253.7df9dbe0@zod.rchland.ibm.com>
+	<fa686aa40806050811t4ab2fbfk9eed34d0972376c4@mail.gmail.com>
+	<20080606115347.GC472@cs181133002.pp.htv.fi>
+	<20080606085601.623ef866@vader.jdub.homelinux.org>
+	<fa686aa40806060753i76b1d652ldd2bb99f5406dab@mail.gmail.com>
+	<18506.31325.899081.47718@cargo.ozlabs.ibm.com>
+	<E1K5NE9-000275-2M@jdl.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200806090648.24339.sr@denx.de>
-Cc: linuxppc-dev@ozlabs.org, i2c@lm-sensors.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Adrian Bunk <bunk@kernel.org>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,52 +32,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Jean,
+On Sun, 8 Jun 2008, Jon Loeliger wrote:
+> > Grant Likely writes:
+> > 
+> > > Oh, and we're going try to create the longest acked-by chain in
+> > > Linux history.
+> > 
+> > Cool :)
+> > 
+> > Paul.
+> 
+> So far, I think it looks like this, sorted:
+> 
+> Acked-by: Arnd Bergmann <arnd@arndb.de>
+> Acked-by: Becky Bruce <becky.bruce@freescale.com>
+> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Acked-by: Grant Likely <grant.likely@secretlab.ca>
+> Acked-by: Jochen Friedrich <jochen@scram.de>
+> Acked-by: Jon Loeliger <jdl@freescale.com>
+> Acked-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+> Acked-by: Kumar Gala <galak@kernel.crashing.org>
+> Acked-by: Olof Johansson <olof@lixom.net>
+> Acked-by: Peter Korsgaard <jacmet@sunsite.dk>
+> Acked-by: Scott Wood <scottwood@freescale.com>
+> Acked-by: Sean MacLennan <smaclennan@pikatech.com>
+> Acked-by: Segher Boessenkool <segher@kernel.crashing.org>
+> Acked-by: Stefan Roese <sr@denx.de>
+> Acked-by: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
+> Acked-by: Wolfgang Denk <wd@denx.de>
+> 
+> I'm not sure, but I _think_ there are a few other PowerPC
+> developers out there still... :-)
 
-On Sunday 08 June 2008, Jean Delvare wrote:
-> > This patch enables the IBM I2C driver for all PPC4xx variants by adding
-> > "ibm,iic" to the compatible list. This way all currently available
-> > arch/powerpc 4xx ports can make use of this driver without any changes.
-> > Additionally all "other" compatible entries are removed since they are
-> > not needed anymore.
-> >
-> > Currently all 4xx PPC's have the same compatible I2C macro. If at some
-> > time an incompatibility is detected we can take care of this with an
-> > additional property.
-> >
-> > Signed-off-by: Stefan Roese <sr@denx.de>
-> > ---
-> >  drivers/i2c/busses/i2c-ibm_iic.c |    6 +-----
-> >  1 files changed, 1 insertions(+), 5 deletions(-)
-> >
-> > diff --git a/drivers/i2c/busses/i2c-ibm_iic.c
-> > b/drivers/i2c/busses/i2c-ibm_iic.c index 3a364a7..ed73801 100644
-> > --- a/drivers/i2c/busses/i2c-ibm_iic.c
-> > +++ b/drivers/i2c/busses/i2c-ibm_iic.c
-> > @@ -807,11 +807,7 @@ static int __devexit iic_remove(struct of_device
-> > *ofdev) }
-> >
-> >  static const struct of_device_id ibm_iic_match[] = {
-> > -	{ .compatible = "ibm,iic-405ex", },
-> > -	{ .compatible = "ibm,iic-405gp", },
-> > -	{ .compatible = "ibm,iic-440gp", },
-> > -	{ .compatible = "ibm,iic-440gpx", },
-> > -	{ .compatible = "ibm,iic-440grx", },
-> > +	{ .compatible = "ibm,iic", },
-> >  	{}
-> >  };
->
-> OK, I can take this in my tree, unless it depends on arch-specific
-> patches which have not hit mainline yet.
+As there's no CHRP LongTrail support (bummer, mine died 4 years ago) left in
+arch/ppc/, I don't mind you killing the whole arch/ppc/ ;-)
 
-No, this doesn't depend on other pathes.
+Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
 
-> I guess this is 2.6.27 
-> material?
+Gr{oetje,eeting}s,
 
-Yes. No real hurry here.
+						Geert
 
-Thanks.
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-Best regards,
-Stefan
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
