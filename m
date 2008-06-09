@@ -4,14 +4,17 @@ Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "smtp.linux-foundation.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 78646DE2F9
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jun 2008 09:26:46 +1000 (EST)
-Message-Id: <200806092326.m59NQA9c014230@imap1.linux-foundation.org>
-Subject: [patch 5/5] arch/powerpc/platforms/pseries/eeh_driver.c: fix warning
+	by ozlabs.org (Postfix) with ESMTPS id D0E35DDFAA
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jun 2008 09:30:29 +1000 (EST)
+Message-Id: <200806092329.m59NTt1s014465@imap1.linux-foundation.org>
+Subject: [patch 1/1] fsldma: the MPC8377MDS board device tree node for fsldma
+	driver
 To: paulus@samba.org
 From: akpm@linux-foundation.org
-Date: Mon, 09 Jun 2008 16:26:10 -0700
-Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org
+Date: Mon, 09 Jun 2008 16:29:54 -0700
+Cc: shannon.nelson@intel.com, linuxppc-dev@ozlabs.org, scottwood@freescale.com,
+	galak@gate.crashing.org, akpm@linux-foundation.org,
+	leoli@freescale.com, dan.j.williams@intel.com, wei.zhang@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,51 +24,73 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Andrew Morton <akpm@linux-foundation.org>
+From: Zhang Wei <wei.zhang@freescale.com>
 
-Fix this:
+The fsldma driver is tested on MPC8377MDS board.  The patch adds fsldma driver
+support into MPC8377MDS device tree.
 
-/usr/src/devel/arch/powerpc/platforms/pseries/eeh_driver.c: In function 'print_device_node_tree':
-/usr/src/devel/arch/powerpc/platforms/pseries/eeh_driver.c:55: warning: ISO C90 forbids mixed declarations and code
-
-also make that function look like it's part of Linux.  I mean, wtf are you
-guys up to down there??
-
-[akpm@linux-foundation.org: coding-style fixes]
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Zhang Wei <wei.zhang@freescale.com>
+Cc: "Nelson, Shannon" <shannon.nelson@intel.com>
+Cc: Dan Williams <dan.j.williams@intel.com>
+Cc: Kumar Gala <galak@gate.crashing.org>
 Cc: Paul Mackerras <paulus@samba.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Scott Wood <scottwood@freescale.com>
+Cc: Li Yang <leoli@freescale.com>
+
+On Wed, 14 May 2008 18:28:08 -0500
+Scott Wood <scottwood@freescale.com> wrote:
+
+
+> akpm@linux-foundation.org wrote:
+> > From: Zhang Wei <wei.zhang@freescale.com>
+> > 
+> According to booting-without-of.txt, the interrupts property should be 
+> repeated in each channel.  The driver also needs to be fixed to remember 
+> whether it registered a DMA-block-level interrupt handler already, and 
+> not try to register a channel interrupt.
+
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- arch/powerpc/platforms/pseries/eeh_driver.c |   11 +++++++----
- 1 file changed, 7 insertions(+), 4 deletions(-)
+ arch/powerpc/boot/dts/mpc8377_mds.dts |   27 ++++++++++++++++++++++++
+ 1 file changed, 27 insertions(+)
 
-diff -puN arch/powerpc/platforms/pseries/eeh_driver.c~arch-powerpc-platforms-pseries-eeh_driverc-fix-warning arch/powerpc/platforms/pseries/eeh_driver.c
---- a/arch/powerpc/platforms/pseries/eeh_driver.c~arch-powerpc-platforms-pseries-eeh_driverc-fix-warning
-+++ a/arch/powerpc/platforms/pseries/eeh_driver.c
-@@ -42,17 +42,20 @@ static inline const char * pcid_name (st
- }
+diff -puN arch/powerpc/boot/dts/mpc8377_mds.dts~fsldma-the-mpc8377mds-board-device-tree-node-for-fsldma-driver arch/powerpc/boot/dts/mpc8377_mds.dts
+--- a/arch/powerpc/boot/dts/mpc8377_mds.dts~fsldma-the-mpc8377mds-board-device-tree-node-for-fsldma-driver
++++ a/arch/powerpc/boot/dts/mpc8377_mds.dts
+@@ -303,6 +303,33 @@
+ 			};
+ 		};
  
- #ifdef DEBUG
--static void print_device_node_tree (struct pci_dn *pdn, int dent)
-+static void print_device_node_tree(struct pci_dn *pdn, int dent)
- {
- 	int i;
--	if (!pdn) return;
--	for (i=0;i<dent; i++)
-+	struct device_node *pc;
++		dma@82a8 {
++			#address-cells = <1>;
++			#size-cells = <1>;
++			compatible = "fsl,mpc8349-dma";
++			reg = <0x82a8 4>;
++			ranges = <0 0x8100 0x1a8>;
++			interrupt-parent = <&ipic>;
++			interrupts = <0x47 8>;
++			cell-index = <0>;
++			dma-channel@0 {
++				compatible = "fsl,mpc8349-dma-channel";
++				reg = <0 0x80>;
++			};
++			dma-channel@80 {
++				compatible = "fsl,mpc8349-dma-channel";
++				reg = <0x80 0x80>;
++			};
++			dma-channel@100 {
++				compatible = "fsl,mpc8349-dma-channel";
++				reg = <0x100 0x80>;
++			};
++			dma-channel@180 {
++				compatible = "fsl,mpc8349-dma-channel";
++				reg = <0x180 0x28>;
++			};
++		};
 +
-+	if (!pdn)
-+		return;
-+	for (i = 0; i < dent; i++)
- 		printk(" ");
- 	printk("dn=%s mode=%x \tcfg_addr=%x pe_addr=%x \tfull=%s\n",
- 		pdn->node->name, pdn->eeh_mode, pdn->eeh_config_addr,
- 		pdn->eeh_pe_config_addr, pdn->node->full_name);
- 	dent += 3;
--	struct device_node *pc = pdn->node->child;
-+	pc = pdn->node->child;
- 	while (pc) {
- 		print_device_node_tree(PCI_DN(pc), dent);
- 		pc = pc->sibling;
+ 		/* IPIC
+ 		 * interrupts cell = <intr #, sense>
+ 		 * sense values match linux IORESOURCE_IRQ_* defines:
 _
