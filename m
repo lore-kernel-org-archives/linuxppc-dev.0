@@ -1,20 +1,20 @@
-Return-Path: <jbe@pengutronix.de>
-Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
-	[83.236.181.26]) by ozlabs.org (Postfix) with ESMTP id 06FC5DDF7C
-	for <linuxppc-dev@ozlabs.org>; Mon,  9 Jun 2008 23:05:32 +1000 (EST)
-From: Juergen Beisert <jbe@pengutronix.de>
-To: "Jon Smirl" <jonsmirl@gmail.com>
-Date: Mon, 9 Jun 2008 15:05:05 +0200
-References: <9e4733910806081208r1a8d0987j6eab0d73bc446640@mail.gmail.com>
-	<200806090956.32160.jbe@pengutronix.de>
-	<9e4733910806090537y73d29280ofce1ce04086dae5d@mail.gmail.com>
-In-Reply-To: <9e4733910806090537y73d29280ofce1ce04086dae5d@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200806091505.07185.jbe@pengutronix.de>
-Subject: Re: Comments on device tree for pcm030
-Cc: linuxppc-dev@ozlabs.org, wsa@pengutronix.de
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 516E1DDFC3
+	for <linuxppc-dev@ozlabs.org>; Mon,  9 Jun 2008 23:07:58 +1000 (EST)
+Date: Mon, 9 Jun 2008 23:07:52 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Julia Lawall <julia@diku.dk>
+Subject: Re: [PATCH 2/4] drivers/macintosh/smu.c: add missing of_node_put
+Message-Id: <20080609230752.f3bba16d.sfr@canb.auug.org.au>
+In-Reply-To: <Pine.LNX.4.64.0806091420080.16009@ask.diku.dk>
+References: <Pine.LNX.4.64.0806091420080.16009@ask.diku.dk>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Mon__9_Jun_2008_23_07_52_+1000_0BjiwbtP=/FvICFL"
+Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,37 +24,75 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Jon,
+--Signature=_Mon__9_Jun_2008_23_07_52_+1000_0BjiwbtP=/FvICFL
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Monday 09 June 2008 14:37, Jon Smirl wrote:
-> On 6/9/08, Juergen Beisert <jbe@pengutronix.de> wrote:
-> >  > > Device tree has an entry for AC97 on PSC1. I don't think the Phytec
-> >  > > module or carrier board has AC97 hardware.
-> >  >
-> >  > Might be a bug
-> >
-> > NACK. The baseboard for the pcm030 CPU board has AC97 hardware connected
-> > to PSC1. And it plays audio...
+On Mon, 9 Jun 2008 14:20:42 +0200 (CEST) Julia Lawall <julia@diku.dk> wrote:
 >
-> I'm staring at a baseboard for the pcm030 in my hand, I don't see any
-> AC97 hardware. It has two serial, two CAN, ethernet and power. Where's
-> the AC97?
+> From: Julia Lawall <julia@diku.dk>
+>=20
+> of_node_put is needed before discarding a value received from
+> of_find_node_by_type, eg in error handling code.
+>=20
+> The semantic patch that makes the change is as follows:
+> (http://www.emn.fr/x-info/coccinelle/)
+>=20
+> // <smpl>
+> @@
+> struct device_node *n;
+> struct device_node *n1;
+> struct device_node *n2;
+> statement S;
+> identifier f1,f2;
+> expression E1,E2;
+> constant C;
+> @@
+>=20
+> n =3D of_find_node_by_type(...)
+> ...
+> if (!n) S
+> ... when !=3D of_node_put(n)
+>     when !=3D n1 =3D f1(n,...)
+>     when !=3D E1 =3D n
+>     when any
+>     when strict
+> (
+> + of_node_put(n);
+>   return -C;
+> |
+>   of_node_put(n);
+> |
+>   n2 =3D f2(n,...)
+> |
+>   E2 =3D n
+> |
+>   return ...;
+> )
+> // </smpl>
+>=20
+> Signed-off-by: Julia Lawall <julia@diku.dk>
 
-It seems you have an "old" development hardware. Here I have=20
-the "PCM-030-02REI" (=3DCPU card) and "PCM-973-tiny" (=3Dbaseboard). The=20
-PCM-973-tiny comes with a Wolfson AC97 sound device. This is the current=20
-combination everyone can buy.
+Acked-by: Stephen Rothwell <sfr@canb.auug.org.au>
 
-> http://www.phytec.com/products/rdk/PowerPC/phyCORE-MPC5200B-tinyRDK.html
+However, the error handling in that routine (smu_init) needs much more
+work.
 
-Yes. This kit contains the PCM-973-tiny with AC97 sound.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-Regards,
-Juergen
+--Signature=_Mon__9_Jun_2008_23_07_52_+1000_0BjiwbtP=/FvICFL
+Content-Type: application/pgp-signature
 
-=2D-=20
-Dipl.-Ing. Juergen Beisert | http://www.pengutronix.de
-=A0Pengutronix - Linux Solutions for Science and Industry
-=A0   Handelsregister: Amtsgericht Hildesheim, HRA 2686
-=A0 =A0 =A0    Vertretung Sued/Muenchen, Germany
-   Phone: +49-8766-939 228 |  Fax: +49-5121-206917-9
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkhNKygACgkQTgG2atn1QN/lkQCgkl0CJwmYb6tvLd2Aud371RIC
+krEAn2DljxkHbnta4ey6eG4yORJaRxHH
+=EEnX
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__9_Jun_2008_23_07_52_+1000_0BjiwbtP=/FvICFL--
