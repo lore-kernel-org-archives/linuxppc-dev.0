@@ -1,18 +1,21 @@
-Return-Path: <julia@diku.dk>
-Received: from mgw2.diku.dk (mgw2.diku.dk [130.225.96.92])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mgw2.diku.dk",
-	Issuer "KU Security Authority" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 951A8DE218
-	for <linuxppc-dev@ozlabs.org>; Mon,  9 Jun 2008 22:22:01 +1000 (EST)
-Date: Mon, 9 Jun 2008 14:21:51 +0200 (CEST)
-From: Julia Lawall <julia@diku.dk>
-To: benh@kernel.crashing.org, linuxppc-dev@ozlabs.org,
-	linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 4/4] drivers/macintosh/therm_adt746x.c: add missing of_node_put
-Message-ID: <Pine.LNX.4.64.0806091421200.16009@ask.diku.dk>
+Return-Path: <jonsmirl@gmail.com>
+Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.31])
+	by ozlabs.org (Postfix) with ESMTP id 3BC61DDFBF
+	for <linuxppc-dev@ozlabs.org>; Mon,  9 Jun 2008 22:37:54 +1000 (EST)
+Received: by yw-out-2324.google.com with SMTP id 5so1199068ywh.39
+	for <linuxppc-dev@ozlabs.org>; Mon, 09 Jun 2008 05:37:51 -0700 (PDT)
+Message-ID: <9e4733910806090537y73d29280ofce1ce04086dae5d@mail.gmail.com>
+Date: Mon, 9 Jun 2008 08:37:51 -0400
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: "Juergen Beisert" <jbe@pengutronix.de>
+Subject: Re: Comments on device tree for pcm030
+In-Reply-To: <200806090956.32160.jbe@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+References: <9e4733910806081208r1a8d0987j6eab0d73bc446640@mail.gmail.com>
+	<fa686aa40806081628s2632bcb3he21b26e49873a65f@mail.gmail.com>
+	<200806090956.32160.jbe@pengutronix.de>
+Cc: linuxppc-dev@ozlabs.org, wsa@pengutronix.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,85 +25,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Julia Lawall <julia@diku.dk>
+On 6/9/08, Juergen Beisert <jbe@pengutronix.de> wrote:
+>  > > Device tree has an entry for AC97 on PSC1. I don't think the Phytec
+>  > > module or carrier board has AC97 hardware.
+>  >
+>  > Might be a bug
+>
+>
+> NACK. The baseboard for the pcm030 CPU board has AC97 hardware connected to
+>  PSC1. And it plays audio...
 
-of_node_put is needed before discarding a value received from
-of_find_node_by_name, eg in error handling code.
+I'm staring at a baseboard for the pcm030 in my hand, I don't see any
+AC97 hardware. It has two serial, two CAN, ethernet and power. Where's
+the AC97?
 
-The semantic patch that makes the change is as follows:
-(http://www.emn.fr/x-info/coccinelle/)
+http://www.phytec.com/products/rdk/PowerPC/phyCORE-MPC5200B-tinyRDK.html
 
-// <smpl>
-@@
-struct device_node *n;
-struct device_node *n1;
-statement S;
-identifier f;
-expression E;
-constant C;
-@@
-
-n = of_find_node_by_name(...)
-...
-if (!n) S
-... when != of_node_put(n)
-    when != n1 = f(n,...)
-    when != E = n
-    when any
-    when strict
-(
-+ of_node_put(n);
-  return -C;
-|
-  of_node_put(n);
-|
-  n1 = f(n,...)
-|
-  E = n
-|
-  return ...;
-)
-// </smpl>
-
-Signed-off-by: Julia Lawall <julia@diku.dk>
-
----
-
-diff -u -p a/drivers/macintosh/therm_adt746x.c b/drivers/macintosh/therm_adt746x.c
---- a/drivers/macintosh/therm_adt746x.c
-+++ b/drivers/macintosh/therm_adt746x.c
-@@ -562,18 +562,24 @@ thermostat_init(void)
- 		therm_type = ADT7460;
- 	else if (of_device_is_compatible(np, "adt7467"))
- 		therm_type = ADT7467;
--	else
-+	else {
-+		of_node_put(np);
- 		return -ENODEV;
-+	}
- 
- 	prop = of_get_property(np, "hwsensor-params-version", NULL);
- 	printk(KERN_INFO "adt746x: version %d (%ssupported)\n", *prop,
- 			 (*prop == 1)?"":"un");
--	if (*prop != 1)
-+	if (*prop != 1) {
-+		of_node_put(np);
- 		return -ENODEV;
-+	}
- 
- 	prop = of_get_property(np, "reg", NULL);
--	if (!prop)
-+	if (!prop) {
-+		of_node_put(np);
- 		return -ENODEV;
-+	}
- 
- 	/* look for bus either by path or using "reg" */
- 	if (strstr(np->full_name, "/i2c-bus@") != NULL) {
-@@ -610,5 +616,6 @@ thermostat_init(void)
- 	
- 	if (of_dev == NULL) {
- 		printk(KERN_ERR "Can't register temperatures device !\n");
-+		of_node_put(np);
- 		return -ENODEV;
- 	}
+-- 
+Jon Smirl
+jonsmirl@gmail.com
