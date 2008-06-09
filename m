@@ -1,11 +1,19 @@
 Return-Path: <akpm@linux-foundation.org>
-Message-Id: <200806092326.m59NQ8QR014221@imap1.linux-foundation.org>
-Subject: [patch 2/5] spufs: convert nopfn to fault
+Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
+	[140.211.169.13])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "smtp.linux-foundation.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 5AE6FDE268
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jun 2008 09:26:45 +1000 (EST)
+Message-Id: <200806092326.m59NQ7rM014218@imap1.linux-foundation.org>
+Subject: [patch 1/5] powerpc: fix for OProfile callgraph for Power 64 bit user
+	apps
 To: paulus@samba.org
 From: akpm@linux-foundation.org
-Date: Mon, 09 Jun 2008 16:26:08 -0700
-Cc: npiggin@suse.de, linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
-	jk@ozlabs.org
+Date: Mon, 09 Jun 2008 16:26:07 -0700
+Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org, cel@us.ibm.com,
+	carll@us.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,287 +23,82 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Nick Piggin <npiggin@suse.de>
+From: Carl Love <cel@us.ibm.com>
 
-spufs: convert nopfn to fault
+Fix the 64 bit user code backtrace which currently may hang the system.
 
-Signed-off-by: Nick Piggin <npiggin@suse.de>
-Acked-by: Jeremy Kerr <jk@ozlabs.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Carl Love <carll@us.ibm.com>
+Cc: Maynard Johnson <maynardj@us.ibm.com>
+
+On Thu, 15 May 2008 10:20:44 +1000
+Michael Ellerman <michael@ellerman.id.au> wrote:
+>
+> __copy_from_user_inatomic() accepts any value for n, it just has a
+> special case for 1, 2, 4 and 8 - but it should still work for other
+> values.
+> 
+> The old code copied 24 bytes from sp, and the new code copies 8 bytes
+> from sp and 8 bytes from sp + 16 - so I don't see where the 48 bytes
+> comes in to it?
+> 
+> \ufeffAlso the comment is a little hard to parse, I think you mean "Issue:
+> the ..", but I read "Issue" as a verb in that sentence. And "Don't read
+> more then" should be "than".
+
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- arch/powerpc/platforms/cell/spufs/file.c     |   98 ++++++++---------
- arch/powerpc/platforms/cell/spufs/sputrace.c |    8 -
- 2 files changed, 54 insertions(+), 52 deletions(-)
+ arch/powerpc/oprofile/backtrace.c |   33 ++++++++++++++++++++++------
+ 1 file changed, 27 insertions(+), 6 deletions(-)
 
-diff -puN arch/powerpc/platforms/cell/spufs/file.c~spufs-convert-nopfn-to-fault arch/powerpc/platforms/cell/spufs/file.c
---- a/arch/powerpc/platforms/cell/spufs/file.c~spufs-convert-nopfn-to-fault
-+++ a/arch/powerpc/platforms/cell/spufs/file.c
-@@ -238,11 +238,13 @@ spufs_mem_write(struct file *file, const
- 	return size;
- }
- 
--static unsigned long spufs_mem_mmap_nopfn(struct vm_area_struct *vma,
--					  unsigned long address)
-+static int
-+spufs_mem_mmap_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
+diff -puN arch/powerpc/oprofile/backtrace.c~powerpc-fix-for-oprofile-callgraph-for-power-64-bit-user-apps arch/powerpc/oprofile/backtrace.c
+--- a/arch/powerpc/oprofile/backtrace.c~powerpc-fix-for-oprofile-callgraph-for-power-64-bit-user-apps
++++ a/arch/powerpc/oprofile/backtrace.c
+@@ -53,19 +53,40 @@ static unsigned int user_getsp32(unsigne
+ #ifdef CONFIG_PPC64
+ static unsigned long user_getsp64(unsigned long sp, int is_first)
  {
- 	struct spu_context *ctx	= vma->vm_file->private_data;
--	unsigned long pfn, offset, addr0 = address;
-+	unsigned long address = (unsigned long)vmf->virtual_address;
-+	unsigned long pfn, offset;
+-	unsigned long stack_frame[3];
++	unsigned long stk_frm_lr;
++	unsigned long stk_frm_sp;
++	unsigned long size;
 +
- #ifdef CONFIG_SPU_FS_64K_LS
- 	struct spu_state *csa = &ctx->csa;
- 	int psize;
-@@ -260,15 +262,15 @@ static unsigned long spufs_mem_mmap_nopf
- 	}
- #endif /* CONFIG_SPU_FS_64K_LS */
++	/* Issue the __copy_from_user_inatomic() third argument currently
++	 * only takes sizes 1, 2, 4 or 8 bytes.  Don't read more then the
++	 * first 48 bytes of the stack frame.  That is all that is
++	 * guaranteed to exist.  Reading more may cause the system to hang.
++	 *
++	 * 64 bit stack frame layout:
++	 * 0-7   bytes is the pointer to previous stack
++	 * 8-15  bytes condition register save area
++	 * 16-23 bytes link register save area
++	 */
++	size = sizeof(unsigned long);
++	if (!access_ok(VERIFY_READ, (void __user *)sp, size))
++		return 0;
  
--	offset = (address - vma->vm_start) + (vma->vm_pgoff << PAGE_SHIFT);
-+	offset = vmf->pgoff << PAGE_SHIFT;
- 	if (offset >= LS_SIZE)
--		return NOPFN_SIGBUS;
-+		return VM_FAULT_SIGBUS;
+-	if (!access_ok(VERIFY_READ, (void __user *)sp, sizeof(stack_frame)))
++	if (__copy_from_user_inatomic(&stk_frm_sp, (void __user *)sp,
++					size))
+ 		return 0;
  
--	pr_debug("spufs_mem_mmap_nopfn address=0x%lx -> 0x%lx, offset=0x%lx\n",
--		 addr0, address, offset);
-+	pr_debug("spufs_mem_mmap_fault address=0x%lx, offset=0x%lx\n",
-+			address, offset);
+-	if (__copy_from_user_inatomic(stack_frame, (void __user *)sp,
+-					sizeof(stack_frame)))
++	/* get the LR from the user stack */
++	if (!access_ok(VERIFY_READ, (void __user *)(sp+16), size))
++		return 0;
++
++	if (__copy_from_user_inatomic(&stk_frm_lr, (void __user *)(sp+16),
++					size))
+ 		return 0;
  
- 	if (spu_acquire(ctx))
--		return NOPFN_REFAULT;
-+		return VM_FAULT_NOPAGE;
+ 	if (!is_first)
+-		oprofile_add_trace(STACK_LR64(stack_frame));
++		oprofile_add_trace(stk_frm_lr);
  
- 	if (ctx->state == SPU_STATE_SAVED) {
- 		vma->vm_page_prot = __pgprot(pgprot_val(vma->vm_page_prot)
-@@ -283,12 +285,12 @@ static unsigned long spufs_mem_mmap_nopf
- 
- 	spu_release(ctx);
- 
--	return NOPFN_REFAULT;
-+	return VM_FAULT_NOPAGE;
+-	return STACK_SP(stack_frame);
++	return stk_frm_sp;
  }
- 
- 
- static struct vm_operations_struct spufs_mem_mmap_vmops = {
--	.nopfn = spufs_mem_mmap_nopfn,
-+	.fault = spufs_mem_mmap_fault,
- };
- 
- static int spufs_mem_mmap(struct file *file, struct vm_area_struct *vma)
-@@ -351,20 +353,19 @@ static const struct file_operations spuf
  #endif
- };
  
--static unsigned long spufs_ps_nopfn(struct vm_area_struct *vma,
--				    unsigned long address,
-+static int spufs_ps_fault(struct vm_area_struct *vma,
-+				    struct vm_fault *vmf,
- 				    unsigned long ps_offs,
- 				    unsigned long ps_size)
- {
- 	struct spu_context *ctx = vma->vm_file->private_data;
--	unsigned long area, offset = address - vma->vm_start;
-+	unsigned long area, offset = vmf->pgoff << PAGE_SHIFT;
- 	int ret = 0;
- 
--	spu_context_nospu_trace(spufs_ps_nopfn__enter, ctx);
-+	spu_context_nospu_trace(spufs_ps_fault__enter, ctx);
- 
--	offset += vma->vm_pgoff << PAGE_SHIFT;
- 	if (offset >= ps_size)
--		return NOPFN_SIGBUS;
-+		return VM_FAULT_SIGBUS;
- 
- 	/*
- 	 * Because we release the mmap_sem, the context may be destroyed while
-@@ -378,7 +379,7 @@ static unsigned long spufs_ps_nopfn(stru
- 	 * pages to hand out to the user, but we don't want to wait
- 	 * with the mmap_sem held.
- 	 * It is possible to drop the mmap_sem here, but then we need
--	 * to return NOPFN_REFAULT because the mappings may have
-+	 * to return VM_FAULT_NOPAGE because the mappings may have
- 	 * hanged.
- 	 */
- 	if (spu_acquire(ctx))
-@@ -386,14 +387,15 @@ static unsigned long spufs_ps_nopfn(stru
- 
- 	if (ctx->state == SPU_STATE_SAVED) {
- 		up_read(&current->mm->mmap_sem);
--		spu_context_nospu_trace(spufs_ps_nopfn__sleep, ctx);
-+		spu_context_nospu_trace(spufs_ps_fault__sleep, ctx);
- 		ret = spufs_wait(ctx->run_wq, ctx->state == SPU_STATE_RUNNABLE);
--		spu_context_trace(spufs_ps_nopfn__wake, ctx, ctx->spu);
-+		spu_context_trace(spufs_ps_fault__wake, ctx, ctx->spu);
- 		down_read(&current->mm->mmap_sem);
- 	} else {
- 		area = ctx->spu->problem_phys + ps_offs;
--		vm_insert_pfn(vma, address, (area + offset) >> PAGE_SHIFT);
--		spu_context_trace(spufs_ps_nopfn__insert, ctx, ctx->spu);
-+		vm_insert_pfn(vma, (unsigned long)vmf->virtual_address,
-+					(area + offset) >> PAGE_SHIFT);
-+		spu_context_trace(spufs_ps_fault__insert, ctx, ctx->spu);
- 	}
- 
- 	if (!ret)
-@@ -401,18 +403,18 @@ static unsigned long spufs_ps_nopfn(stru
- 
- refault:
- 	put_spu_context(ctx);
--	return NOPFN_REFAULT;
-+	return VM_FAULT_NOPAGE;
- }
- 
- #if SPUFS_MMAP_4K
--static unsigned long spufs_cntl_mmap_nopfn(struct vm_area_struct *vma,
--					   unsigned long address)
-+static int spufs_cntl_mmap_fault(struct vm_area_struct *vma,
-+					   struct vm_fault *vmf)
- {
--	return spufs_ps_nopfn(vma, address, 0x4000, 0x1000);
-+	return spufs_ps_fault(vma, vmf, 0x4000, 0x1000);
- }
- 
- static struct vm_operations_struct spufs_cntl_mmap_vmops = {
--	.nopfn = spufs_cntl_mmap_nopfn,
-+	.fault = spufs_cntl_mmap_fault,
- };
- 
- /*
-@@ -1097,23 +1099,23 @@ static ssize_t spufs_signal1_write(struc
- 	return 4;
- }
- 
--static unsigned long spufs_signal1_mmap_nopfn(struct vm_area_struct *vma,
--					      unsigned long address)
-+static int
-+spufs_signal1_mmap_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
- {
- #if PAGE_SIZE == 0x1000
--	return spufs_ps_nopfn(vma, address, 0x14000, 0x1000);
-+	return spufs_ps_fault(vma, vmf, 0x14000, 0x1000);
- #elif PAGE_SIZE == 0x10000
- 	/* For 64k pages, both signal1 and signal2 can be used to mmap the whole
- 	 * signal 1 and 2 area
- 	 */
--	return spufs_ps_nopfn(vma, address, 0x10000, 0x10000);
-+	return spufs_ps_fault(vma, vmf, 0x10000, 0x10000);
- #else
- #error unsupported page size
- #endif
- }
- 
- static struct vm_operations_struct spufs_signal1_mmap_vmops = {
--	.nopfn = spufs_signal1_mmap_nopfn,
-+	.fault = spufs_signal1_mmap_fault,
- };
- 
- static int spufs_signal1_mmap(struct file *file, struct vm_area_struct *vma)
-@@ -1234,23 +1236,23 @@ static ssize_t spufs_signal2_write(struc
- }
- 
- #if SPUFS_MMAP_4K
--static unsigned long spufs_signal2_mmap_nopfn(struct vm_area_struct *vma,
--					      unsigned long address)
-+static int
-+spufs_signal2_mmap_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
- {
- #if PAGE_SIZE == 0x1000
--	return spufs_ps_nopfn(vma, address, 0x1c000, 0x1000);
-+	return spufs_ps_fault(vma, vmf, 0x1c000, 0x1000);
- #elif PAGE_SIZE == 0x10000
- 	/* For 64k pages, both signal1 and signal2 can be used to mmap the whole
- 	 * signal 1 and 2 area
- 	 */
--	return spufs_ps_nopfn(vma, address, 0x10000, 0x10000);
-+	return spufs_ps_fault(vma, vmf, 0x10000, 0x10000);
- #else
- #error unsupported page size
- #endif
- }
- 
- static struct vm_operations_struct spufs_signal2_mmap_vmops = {
--	.nopfn = spufs_signal2_mmap_nopfn,
-+	.fault = spufs_signal2_mmap_fault,
- };
- 
- static int spufs_signal2_mmap(struct file *file, struct vm_area_struct *vma)
-@@ -1362,14 +1364,14 @@ DEFINE_SPUFS_ATTRIBUTE(spufs_signal2_typ
- 		       spufs_signal2_type_set, "%llu\n", SPU_ATTR_ACQUIRE);
- 
- #if SPUFS_MMAP_4K
--static unsigned long spufs_mss_mmap_nopfn(struct vm_area_struct *vma,
--					  unsigned long address)
-+static int
-+spufs_mss_mmap_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
- {
--	return spufs_ps_nopfn(vma, address, 0x0000, 0x1000);
-+	return spufs_ps_fault(vma, vmf, 0x0000, 0x1000);
- }
- 
- static struct vm_operations_struct spufs_mss_mmap_vmops = {
--	.nopfn = spufs_mss_mmap_nopfn,
-+	.fault = spufs_mss_mmap_fault,
- };
- 
- /*
-@@ -1424,14 +1426,14 @@ static const struct file_operations spuf
- 	.mmap	 = spufs_mss_mmap,
- };
- 
--static unsigned long spufs_psmap_mmap_nopfn(struct vm_area_struct *vma,
--					    unsigned long address)
-+static int
-+spufs_psmap_mmap_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
- {
--	return spufs_ps_nopfn(vma, address, 0x0000, 0x20000);
-+	return spufs_ps_fault(vma, vmf, 0x0000, 0x20000);
- }
- 
- static struct vm_operations_struct spufs_psmap_mmap_vmops = {
--	.nopfn = spufs_psmap_mmap_nopfn,
-+	.fault = spufs_psmap_mmap_fault,
- };
- 
- /*
-@@ -1484,14 +1486,14 @@ static const struct file_operations spuf
- 
- 
- #if SPUFS_MMAP_4K
--static unsigned long spufs_mfc_mmap_nopfn(struct vm_area_struct *vma,
--					  unsigned long address)
-+static int
-+spufs_mfc_mmap_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
- {
--	return spufs_ps_nopfn(vma, address, 0x3000, 0x1000);
-+	return spufs_ps_fault(vma, vmf, 0x3000, 0x1000);
- }
- 
- static struct vm_operations_struct spufs_mfc_mmap_vmops = {
--	.nopfn = spufs_mfc_mmap_nopfn,
-+	.fault = spufs_mfc_mmap_fault,
- };
- 
- /*
-diff -puN arch/powerpc/platforms/cell/spufs/sputrace.c~spufs-convert-nopfn-to-fault arch/powerpc/platforms/cell/spufs/sputrace.c
---- a/arch/powerpc/platforms/cell/spufs/sputrace.c~spufs-convert-nopfn-to-fault
-+++ a/arch/powerpc/platforms/cell/spufs/sputrace.c
-@@ -182,10 +182,10 @@ struct spu_probe spu_probes[] = {
- 	{ "spu_yield__enter", "ctx %p", spu_context_nospu_event },
- 	{ "spu_deactivate__enter", "ctx %p", spu_context_nospu_event },
- 	{ "__spu_deactivate__unload", "ctx %p spu %p", spu_context_event },
--	{ "spufs_ps_nopfn__enter", "ctx %p", spu_context_nospu_event },
--	{ "spufs_ps_nopfn__sleep", "ctx %p", spu_context_nospu_event },
--	{ "spufs_ps_nopfn__wake", "ctx %p spu %p", spu_context_event },
--	{ "spufs_ps_nopfn__insert", "ctx %p spu %p", spu_context_event },
-+	{ "spufs_ps_fault__enter", "ctx %p", spu_context_nospu_event },
-+	{ "spufs_ps_fault__sleep", "ctx %p", spu_context_nospu_event },
-+	{ "spufs_ps_fault__wake", "ctx %p spu %p", spu_context_event },
-+	{ "spufs_ps_fault__insert", "ctx %p spu %p", spu_context_event },
- 	{ "spu_acquire_saved__enter", "ctx %p", spu_context_nospu_event },
- 	{ "destroy_spu_context__enter", "ctx %p", spu_context_nospu_event },
- 	{ "spufs_stop_callback__enter", "ctx %p spu %p", spu_context_event },
 _
