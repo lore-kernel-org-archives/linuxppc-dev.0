@@ -1,15 +1,15 @@
 Return-Path: <rsc@pengutronix.de>
-Date: Mon, 9 Jun 2008 23:00:22 +0200
+Date: Mon, 9 Jun 2008 23:05:26 +0200
 From: Robert Schwebel <r.schwebel@pengutronix.de>
-To: Sascha Hauer <s.hauer@pengutronix.de>
+To: Jon Smirl <jonsmirl@gmail.com>
 Subject: Re: Comments on device tree for pcm030
-Message-ID: <20080609210022.GM10115@pengutronix.de>
+Message-ID: <20080609210526.GN10115@pengutronix.de>
 References: <9e4733910806081208r1a8d0987j6eab0d73bc446640@mail.gmail.com>
-	<20080609091335.GC13036@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-15
-In-Reply-To: <20080609091335.GC13036@pengutronix.de>
-Cc: linuxppc-dev list <Linuxppc-dev@ozlabs.org>
+In-Reply-To: <9e4733910806081208r1a8d0987j6eab0d73bc446640@mail.gmail.com>
+Cc: linuxppc-dev list <Linuxppc-dev@ozlabs.org>,
+	Wolfram Sang <wsa@pengutronix.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,12 +19,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Jun 09, 2008 at 11:13:35AM +0200, Sascha Hauer wrote:
-> I think partitions shouldn't go into the default device tree, as people
-> may have different partitioning.
+On Sun, Jun 08, 2008 at 03:08:33PM -0400, Jon Smirl wrote:
+> There should be an i2c entry for the eeprom but I don't know the part
+> number for it.
 
-It is also a chicken-and-egg thing, because the oftree would describe
-the partition it is in.
+Wolfram has oftree bindings for the new at24 driver which will be used
+in combination with this board. For patches, please see the i2c list.
 
 Robert
 -- 
