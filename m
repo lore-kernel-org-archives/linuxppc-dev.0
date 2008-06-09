@@ -1,15 +1,15 @@
-Return-Path: <evangelion1122001@yahoo.com.cn>
-Received: from n6.bullet.re3.yahoo.com (n6.bullet.re3.yahoo.com
-	[68.142.237.91]) by ozlabs.org (Postfix) with SMTP id 8F1EBDDEDE
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jun 2008 00:23:30 +1000 (EST)
-Subject: Is there any significant difference of memory management between
-	PPC 405 and 440?
-From: Evangelion <evangelion1122001@yahoo.com.cn>
-To: linuxppc-dev@ozlabs.org
-Content-Type: text/plain
-Date: Mon, 09 Jun 2008 16:34:53 +0200
-Message-Id: <1213022093.6785.49.camel@zr.gii.upv.es>
-Mime-Version: 1.0
+Return-Path: <wg@grandegger.com>
+Message-ID: <484D49FF.4090604@grandegger.com>
+Date: Mon, 09 Jun 2008 17:19:27 +0200
+From: Wolfgang Grandegger <wg@grandegger.com>
+MIME-Version: 1.0
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] booting-without-of: add more bindings for FSL UPM driver
+References: <484CECE2.9050605@grandegger.com>
+	<519f1a6d9baeca8cfea9e8ad7a92c4d4@kernel.crashing.org>
+In-Reply-To: <519f1a6d9baeca8cfea9e8ad7a92c4d4@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,62 +19,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi, all:
-    It may be a silly question.
+Segher Boessenkool wrote:
+>> +      - chip-delay : may specify a delay value in milliseconds.
+> 
+> Delay for what?  The binding should say.  "chip-delay" is a bit
+> too generic name as well, it could be more descriptive perhaps.
 
-    There is a 405 and a 440 board. We create a kernel module which will
-allocate 3MB memory every time it is loaded. It runs basically well in
-440 board, which owns 256MB memory. However, in 405 board, which only
-has 32MB memory, loading the module always results in "Data machine
-check in kernel mode":
+The chip-delay property defines an appropriate maximum delay 
+time (tR) required for read operations if the R/B pin is not
+connected. It's used as shown below:
 
-....
-Data machine check in kernel mode.
-PLB0: BEAR= 0x03016004 ACR=   0x00000000 BESR=  0x00c00000
-PLB0 to OPB: BEAR= 0x04000000 BESR0= 0x00000000 BESR1= 0x00000000
-Oops: machine check, sig: 7 [#1]
-NIP: 00002D10 LR: 000010A8 CTR: C3170160
-REGS: c0282f50 TRAP: 0202   Not tainted  (2.6.19.2)
-MSR: 00021000 <ME>  CR: 24000088  XER: 00000000
-TASK = c3016000[0] '' THREAD: c0264000
-GPR00: 08000000 C08ABCB0 C3016000 C08ABCC0 C3177250 C3016000 C3018000
-00000000 
-GPR08: C3018000 00000000 00021032 008ABCB0 030161B0 10019DA8 00000000
-00000000 
-GPR16: 10102260 1009DF98 100F0000 100F7998 C3170000 00000002 00000028
-C3170000 
-GPR24: 00000001 C3170000 C3170000 00000000 00000001 00000001 00000000
-00000000 
-NIP [00002D10] 0x2d10
-LR [000010A8] 0x10a8
-Call Trace:
-Instruction dump:
-XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX 
-XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX 
-Kernel panic - not syncing: Attempted to kill the idle task!
- <0>Rebooting in 180 seconds..<NULL>
-....
++		/* Note: NAND support needs to be enabled in U-Boot */
++		upm@3,0 {
++			#address-cells = <0>;
++			#size-cells = <0>;
++			compatible = "fsl,upm-nand";
++			reg = <3 0x0 0x800>;
++			fsl,upm-addr-offset = <0x10>;
++			fsl,upm-cmd-offset = <0x08>;
++			chip-delay = <25>; // in micro-seconds
++
++			nand@0 {
++				#address-cells = <1>;
++				#size-cells = <1>;
++
++				partition@0 {
++					    label = "fs";
++					    reg = <0x00000000 0x01000000>;
++				};
++			};
++		};
++	};
++
 
-    We have checked that once the 405 board boots successfully, there is
-only about 5MB free memory. So we have tried to change the memory
-allocated size in the module to smaller than 3MB, e.g. 1KB, 3KB, 1.5MB
-etc., but got the same results.
-    Here we run the same codes in these two boards but get totally
-different results, therefore, we wonder what the exact cause of "Data
-machine check in kernel mode". We think it relates to memory management,
-but is there any other potential reasons?
-    If there is significant difference of memory management between 405
-and 440, would anyone like to tell us something about it? And what
-should we pay attention to in our implementation for these two boards?
+> Shouldn't this be a property of the NAND device anyway, not the
+> NAND controller?
 
-    Thank you very much!
+Strictly speaking, it's a property of the NAND device. Therefore it 
+should be inside the node nand@0, I thhink:
 
-Best Regards
++			nand@0 {
++				#address-cells = <1>;
++				#size-cells = <1>;
++			        chip-delay = <25>; // in micro-seconds
++
++				partition@0 {
++					    label = "fs";
++					    reg = <0x00000000 0x01000000>;
++				};
++			};
 
-Evangelion
+Where should that be documented?
 
-June 9th, 2008
-
-__________________________________________________
-∏œøÏ◊¢≤·—≈ª¢≥¨¥Û»›¡ø√‚∑—” œ‰?
-http://cn.mail.yahoo.com
+Wolfgang.
