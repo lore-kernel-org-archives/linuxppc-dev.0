@@ -1,11 +1,13 @@
 Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <18509.7013.755926.968038@cargo.ozlabs.ibm.com>
-Date: Mon, 9 Jun 2008 22:00:37 +1000
+Message-ID: <18509.7599.970933.555379@cargo.ozlabs.ibm.com>
+Date: Mon, 9 Jun 2008 22:10:23 +1000
 From: Paul Mackerras <paulus@samba.org>
-To: linuxppc-dev@ozlabs.org
-Subject: Changing from "[POWERPC]" to "powerpc:" in git headlines
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [git pull] Please pull powerpc.git merge branch
+Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,24 +17,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Upon prodding from Andrew Morton, and after discussing it with a few
-people, I have decided to change the way we format the git headline
-(the first line of the commit text) for powerpc-related patches.
-Instead of starting the headline with "[POWERPC]" or "[POWERPC]:
-subsystem", we're now going to use "powerpc:" or
-"powerpc/subsystem:".  This is in line with what many other subsystems
-are doing these days and it conforms with the principle that square
-brackets in patch subjects are used to delimit information which
-shouldn't go into the permanent record (e.g., [1/7] or [RESEND]).
+Please pull from the 'merge' branch of
 
-I'm making this change from now on for commits that are queued up for
-2.6.27.  For 2.6.26 I'm going to stick with the old convention.
+git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
 
-So if people are sending patches for 2.6.27, it would be helpful if
-you put "powerpc:" or "powerpc/subsystem:" at the start of the patch
-subject.  People who are putting commits destined for 2.6.27 or later
-into a git tree for me to pull need to make sure they format the
-commits this way.  (It's more important to get it right in the git
-tree case because I can edit patches but not git commits.)
+to get 4 more bug-fix commits, plus one from Stephen Rothwell that
+changes one place where we do sprintf(pci_name(dev), ... to use
+dev_set_name() instead, so that we don't end up with an error when a
+change that is in Greg KH's tree (changing pci_name(dev) to be const)
+hits your tree.
 
+Thanks,
 Paul.
+
+ arch/powerpc/boot/Makefile      |    4 ++--
+ arch/powerpc/kernel/pci_64.c    |    2 +-
+ arch/powerpc/kernel/signal_64.c |    4 +++-
+ arch/powerpc/mm/mem.c           |    3 +--
+ drivers/net/Kconfig             |    2 +-
+ include/linux/memory_hotplug.h  |   16 ++++++++--------
+ 6 files changed, 16 insertions(+), 15 deletions(-)
+
+Adrian Bunk (1):
+      [POWERPC] boot/Makefile CONFIG_ variable fixes
+
+Benjamin Herrenschmidt (1):
+      [POWERPC] Fix incorrect enabling of VMX when building signal or user context
+
+Nathan Lynch (2):
+      [POWERPC] Make walk_memory_resource available with MEMORY_HOTPLUG=n
+      [POWERPC] ehea: Remove dependency on MEMORY_HOTPLUG
+
+Stephen Rothwell (1):
+      [POWERPC] Use dev_set_name in pci_64.c
