@@ -1,15 +1,31 @@
-Return-Path: <wg@grandegger.com>
-Message-ID: <484D49FF.4090604@grandegger.com>
-Date: Mon, 09 Jun 2008 17:19:27 +0200
-From: Wolfgang Grandegger <wg@grandegger.com>
+Return-Path: <ossrosch@linux.vnet.ibm.com>
+Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 0350CDE6A9
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jun 2008 01:42:54 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e3.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m59FgfJu027443
+	for <linuxppc-dev@ozlabs.org>; Mon, 9 Jun 2008 11:42:41 -0400
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
+	m59FgVnA204472
+	for <linuxppc-dev@ozlabs.org>; Mon, 9 Jun 2008 11:42:31 -0400
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m59FgU7s011753
+	for <linuxppc-dev@ozlabs.org>; Mon, 9 Jun 2008 11:42:31 -0400
+From: Stefan Roscher <ossrosch@linux.vnet.ibm.com>
+To: Roland Dreier <rolandd@cisco.com>, "OF-EWG" <ewg@lists.openfabrics.org>,
+	general@lists.openfabrics.org, "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
+	LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH 0/2] Prevent loss of interrupts in IB/ehca
+Date: Mon, 9 Jun 2008 17:42:28 +0200
 MIME-Version: 1.0
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] booting-without-of: add more bindings for FSL UPM driver
-References: <484CECE2.9050605@grandegger.com>
-	<519f1a6d9baeca8cfea9e8ad7a92c4d4@kernel.crashing.org>
-In-Reply-To: <519f1a6d9baeca8cfea9e8ad7a92c4d4@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200806091742.29421.ossrosch@linux.vnet.ibm.com>
+Cc: TKLEIN@de.ibm.com, fenkes@de.ibm.com, raisch@de.ibm.com, THEMANN@de.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,56 +35,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Segher Boessenkool wrote:
->> +      - chip-delay : may specify a delay value in milliseconds.
-> 
-> Delay for what?  The binding should say.  "chip-delay" is a bit
-> too generic name as well, it could be more descriptive perhaps.
+This patchset contains two changes for IB/ehca and ibmebus.
 
-The chip-delay property defines an appropriate maximum delay 
-time (tR) required for read operations if the R/B pin is not
-connected. It's used as shown below:
+The first patch enables ibmebus_request_irq() to optionally return the 
+IRQ number, which is used by the second patch to trigger EOI in case of 
+lost interrupts.
 
-+		/* Note: NAND support needs to be enabled in U-Boot */
-+		upm@3,0 {
-+			#address-cells = <0>;
-+			#size-cells = <0>;
-+			compatible = "fsl,upm-nand";
-+			reg = <3 0x0 0x800>;
-+			fsl,upm-addr-offset = <0x10>;
-+			fsl,upm-cmd-offset = <0x08>;
-+			chip-delay = <25>; // in micro-seconds
-+
-+			nand@0 {
-+				#address-cells = <1>;
-+				#size-cells = <1>;
-+
-+				partition@0 {
-+					    label = "fs";
-+					    reg = <0x00000000 0x01000000>;
-+				};
-+			};
-+		};
-+	};
-+
+They should apply cleanly against 2.6.26 git tree.
 
-> Shouldn't this be a property of the NAND device anyway, not the
-> NAND controller?
-
-Strictly speaking, it's a property of the NAND device. Therefore it 
-should be inside the node nand@0, I thhink:
-
-+			nand@0 {
-+				#address-cells = <1>;
-+				#size-cells = <1>;
-+			        chip-delay = <25>; // in micro-seconds
-+
-+				partition@0 {
-+					    label = "fs";
-+					    reg = <0x00000000 0x01000000>;
-+				};
-+			};
-
-Where should that be documented?
-
-Wolfgang.
+Thanks
+Stefan
