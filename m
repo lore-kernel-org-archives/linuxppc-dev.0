@@ -4,17 +4,14 @@ Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "smtp.linux-foundation.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id D0E35DDFAA
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jun 2008 09:30:29 +1000 (EST)
-Message-Id: <200806092329.m59NTt1s014465@imap1.linux-foundation.org>
-Subject: [patch 1/1] fsldma: the MPC8377MDS board device tree node for fsldma
-	driver
+	by ozlabs.org (Postfix) with ESMTPS id 2B358DDF57
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jun 2008 09:31:55 +1000 (EST)
+Message-Id: <200806092326.m59NQ9rm014227@imap1.linux-foundation.org>
+Subject: [patch 4/5] macintosh: media bay: semaphore to mutex
 To: paulus@samba.org
 From: akpm@linux-foundation.org
-Date: Mon, 09 Jun 2008 16:29:54 -0700
-Cc: shannon.nelson@intel.com, linuxppc-dev@ozlabs.org, scottwood@freescale.com,
-	galak@gate.crashing.org, akpm@linux-foundation.org,
-	leoli@freescale.com, dan.j.williams@intel.com, wei.zhang@freescale.com
+Date: Mon, 09 Jun 2008 16:26:09 -0700
+Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org, dwalker@mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,73 +21,124 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Zhang Wei <wei.zhang@freescale.com>
+From: Daniel Walker <dwalker@mvista.com>
 
-The fsldma driver is tested on MPC8377MDS board.  The patch adds fsldma driver
-support into MPC8377MDS device tree.
-
-Signed-off-by: Zhang Wei <wei.zhang@freescale.com>
-Cc: "Nelson, Shannon" <shannon.nelson@intel.com>
-Cc: Dan Williams <dan.j.williams@intel.com>
-Cc: Kumar Gala <galak@gate.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Scott Wood <scottwood@freescale.com>
-Cc: Li Yang <leoli@freescale.com>
-
-On Wed, 14 May 2008 18:28:08 -0500
-Scott Wood <scottwood@freescale.com> wrote:
-
-
-> akpm@linux-foundation.org wrote:
-> > From: Zhang Wei <wei.zhang@freescale.com>
-> > 
-> According to booting-without-of.txt, the interrupts property should be 
-> repeated in each channel.  The driver also needs to be fixed to remember 
-> whether it registered a DMA-block-level interrupt handler already, and 
-> not try to register a channel interrupt.
-
+Signed-off-by: Daniel Walker <dwalker@mvista.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- arch/powerpc/boot/dts/mpc8377_mds.dts |   27 ++++++++++++++++++++++++
- 1 file changed, 27 insertions(+)
+ drivers/macintosh/mediabay.c |   27 ++++++++++++++-------------
+ 1 file changed, 14 insertions(+), 13 deletions(-)
 
-diff -puN arch/powerpc/boot/dts/mpc8377_mds.dts~fsldma-the-mpc8377mds-board-device-tree-node-for-fsldma-driver arch/powerpc/boot/dts/mpc8377_mds.dts
---- a/arch/powerpc/boot/dts/mpc8377_mds.dts~fsldma-the-mpc8377mds-board-device-tree-node-for-fsldma-driver
-+++ a/arch/powerpc/boot/dts/mpc8377_mds.dts
-@@ -303,6 +303,33 @@
- 			};
- 		};
+diff -puN drivers/macintosh/mediabay.c~macintosh-media-bay-semaphore-to-mutex drivers/macintosh/mediabay.c
+--- a/drivers/macintosh/mediabay.c~macintosh-media-bay-semaphore-to-mutex
++++ a/drivers/macintosh/mediabay.c
+@@ -21,6 +21,7 @@
+ #include <linux/init.h>
+ #include <linux/ide.h>
+ #include <linux/kthread.h>
++#include <linux/mutex.h>
+ #include <asm/prom.h>
+ #include <asm/pgtable.h>
+ #include <asm/io.h>
+@@ -77,7 +78,7 @@ struct media_bay_info {
+ 	int				index;
+ 	int				cached_gpio;
+ 	int				sleeping;
+-	struct semaphore		lock;
++	struct mutex			lock;
+ #ifdef CONFIG_BLK_DEV_IDE_PMAC
+ 	ide_hwif_t			*cd_port;
+ 	void __iomem			*cd_base;
+@@ -459,27 +460,27 @@ int media_bay_set_ide_infos(struct devic
+ 		if (bay->mdev && which_bay == bay->mdev->ofdev.node) {
+ 			int timeout = 5000, index = hwif->index;
+ 			
+-			down(&bay->lock);
++			mutex_lock(&bay->lock);
  
-+		dma@82a8 {
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			compatible = "fsl,mpc8349-dma";
-+			reg = <0x82a8 4>;
-+			ranges = <0 0x8100 0x1a8>;
-+			interrupt-parent = <&ipic>;
-+			interrupts = <0x47 8>;
-+			cell-index = <0>;
-+			dma-channel@0 {
-+				compatible = "fsl,mpc8349-dma-channel";
-+				reg = <0 0x80>;
-+			};
-+			dma-channel@80 {
-+				compatible = "fsl,mpc8349-dma-channel";
-+				reg = <0x80 0x80>;
-+			};
-+			dma-channel@100 {
-+				compatible = "fsl,mpc8349-dma-channel";
-+				reg = <0x100 0x80>;
-+			};
-+			dma-channel@180 {
-+				compatible = "fsl,mpc8349-dma-channel";
-+				reg = <0x180 0x28>;
-+			};
-+		};
-+
- 		/* IPIC
- 		 * interrupts cell = <intr #, sense>
- 		 * sense values match linux IORESOURCE_IRQ_* defines:
+ 			bay->cd_port	= hwif;
+  			bay->cd_base	= (void __iomem *) base;
+ 			bay->cd_irq	= irq;
+ 
+ 			if ((MB_CD != bay->content_id) || bay->state != mb_up) {
+-				up(&bay->lock);
++				mutex_unlock(&bay->lock);
+ 				return 0;
+ 			}
+ 			printk(KERN_DEBUG "Registered ide%d for media bay %d\n", index, i);
+ 			do {
+ 				if (MB_IDE_READY(i)) {
+ 					bay->cd_index	= index;
+-					up(&bay->lock);
++					mutex_unlock(&bay->lock);
+ 					return 0;
+ 				}
+ 				mdelay(1);
+ 			} while(--timeout);
+ 			printk(KERN_DEBUG "Timeount waiting IDE in bay %d\n", i);
+-			up(&bay->lock);
++			mutex_unlock(&bay->lock);
+ 			return -ENODEV;
+ 		}
+ 	}
+@@ -616,10 +617,10 @@ static int media_bay_task(void *x)
+ 
+ 	while (!kthread_should_stop()) {
+ 		for (i = 0; i < media_bay_count; ++i) {
+-			down(&media_bays[i].lock);
++			mutex_lock(&media_bays[i].lock);
+ 			if (!media_bays[i].sleeping)
+ 				media_bay_step(i);
+-			up(&media_bays[i].lock);
++			mutex_unlock(&media_bays[i].lock);
+ 		}
+ 
+ 		msleep_interruptible(MB_POLL_DELAY);
+@@ -659,7 +660,7 @@ static int __devinit media_bay_attach(st
+ 	bay->index = i;
+ 	bay->ops = match->data;
+ 	bay->sleeping = 0;
+-	init_MUTEX(&bay->lock);
++	mutex_init(&bay->lock);
+ 
+ 	/* Init HW probing */
+ 	if (bay->ops->init)
+@@ -697,10 +698,10 @@ static int media_bay_suspend(struct maci
+ 
+ 	if (state.event != mdev->ofdev.dev.power.power_state.event
+ 	    && (state.event & PM_EVENT_SLEEP)) {
+-		down(&bay->lock);
++		mutex_lock(&bay->lock);
+ 		bay->sleeping = 1;
+ 		set_mb_power(bay, 0);
+-		up(&bay->lock);
++		mutex_unlock(&bay->lock);
+ 		msleep(MB_POLL_DELAY);
+ 		mdev->ofdev.dev.power.power_state = state;
+ 	}
+@@ -719,12 +720,12 @@ static int media_bay_resume(struct macio
+ 	       	   they seem to help the 3400 get it right.
+ 	       	 */
+ 	       	/* Force MB power to 0 */
+-		down(&bay->lock);
++		mutex_lock(&bay->lock);
+ 	       	set_mb_power(bay, 0);
+ 		msleep(MB_POWER_DELAY);
+ 	       	if (bay->ops->content(bay) != bay->content_id) {
+ 			printk("mediabay%d: content changed during sleep...\n", bay->index);
+-			up(&bay->lock);
++			mutex_unlock(&bay->lock);
+ 	       		return 0;
+ 		}
+ 	       	set_mb_power(bay, 1);
+@@ -740,7 +741,7 @@ static int media_bay_resume(struct macio
+ 	       	} while((bay->state != mb_empty) &&
+ 	       		(bay->state != mb_up));
+ 		bay->sleeping = 0;
+-		up(&bay->lock);
++		mutex_unlock(&bay->lock);
+ 	}
+ 	return 0;
+ }
 _
