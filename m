@@ -1,16 +1,17 @@
-Return-Path: <madhvesh.s@ap.sony.com>
-Received: from VA3EHSOBE006.bigfish.com (outbound-va3.frontbridge.com
-	[216.32.180.16]) by ozlabs.org (Postfix) with ESMTP id 76CD1DDF02
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jun 2008 00:11:30 +1000 (EST)
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id EB659DE2A8
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jun 2008 00:11:38 +1000 (EST)
+Date: Mon, 9 Jun 2008 09:11:29 -0500 (CDT)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Please pull from 'for-2.6.26' branch
+Message-ID: <Pine.LNX.4.64.0806090911070.27607@blarg.am.freescale.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Subject: RE: [RFC] Kprobes for book-e
-Date: Mon, 9 Jun 2008 19:40:59 +0530
-Message-ID: <7B7EF7F090B9804A830ACC82F2CDE95D28F224@insardxms01.ap.sony.com>
-From: "Sulibhavi, Madhvesh" <madhvesh.s@ap.sony.com>
-To: "Kumar Gala" <galak@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, rsmadhvesh@vsnl.net,
-	Paul Mackerras <paulus@samba.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,62 +21,63 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote on Tuesday, June 03, 2008 9:16 PM
-> To: Sulibhavi, Madhvesh
-> Cc: rsmadhvesh@vsnl.net; ananth@in.ibm.com;=20
-> linuxppc-dev@ozlabs.org; Paul Mackerras
-> Subject: Re: [RFC] Kprobes for book-e
+Please pull from 'for-2.6.26' branch of
 
-..<snip>
->=20
-> >
-> > I think the block code under CONFIG_BOOKE may not
-> > be required now if exception cleanup fixes address the stack
-> > problem which i had explained in my port. I have to look into
-> > exception fix patches and confirm about these changes. Can
-> > you please provide me the thread where exception cleanup
-> > is posted as i haven't tracked the list from long time.
->=20
-> http://ozlabs.org/pipermail/linuxppc-dev/2008-May/056457.html
->=20
-> What was the original thinking about why you had to enable=20
-> MSR_EE and =20
-> MSR_CE?
+	master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git for-2.6.26
 
-I found that this code is redundant and it was added while debugging
-the flags status during my port. This is a bug since it modifies the MSR
+to receive the following updates:
 
-status and enables the critical and external bits which is not supposed
-to.
-The interrupts status should be kept back to original state without
-enabling
-interrupt bits after executing the post_handler. So this change is not
-valid
-and it can be taken out.
+ arch/powerpc/boot/dts/mpc8548cds.dts              |    4
+ arch/powerpc/configs/83xx/mpc8313_rdb_defconfig   |  155 +++++++---
+ arch/powerpc/configs/83xx/mpc8315_rdb_defconfig   |  162 +++++++----
+ arch/powerpc/configs/83xx/mpc832x_mds_defconfig   |  146 ++++++----
+ arch/powerpc/configs/83xx/mpc832x_rdb_defconfig   |  150 ++++++----
+ arch/powerpc/configs/83xx/mpc834x_itx_defconfig   |  157 +++++++---
+ arch/powerpc/configs/83xx/mpc834x_itxgp_defconfig |  150 ++++++----
+ arch/powerpc/configs/83xx/mpc834x_mds_defconfig   |  146 ++++++----
+ arch/powerpc/configs/83xx/mpc836x_mds_defconfig   |  146 ++++++----
+ arch/powerpc/configs/83xx/mpc837x_mds_defconfig   |  146 ++++++----
+ arch/powerpc/configs/83xx/mpc837x_rdb_defconfig   |  222 +++++++++++----
+ arch/powerpc/configs/83xx/sbc834x_defconfig       |  140 ++++++---
+ arch/powerpc/configs/85xx/ksi8560_defconfig       |  168 +++++++----
+ arch/powerpc/configs/85xx/mpc8540_ads_defconfig   |  133 ++++++---
+ arch/powerpc/configs/85xx/mpc8544_ds_defconfig    |  210 +++++++++-----
+ arch/powerpc/configs/85xx/mpc8560_ads_defconfig   |  135 ++++++---
+ arch/powerpc/configs/85xx/mpc8568mds_defconfig    |  150 ++++++----
+ arch/powerpc/configs/85xx/mpc8572_ds_defconfig    |  210 +++++++++-----
+ arch/powerpc/configs/85xx/mpc85xx_cds_defconfig   |  137 ++++++---
+ arch/powerpc/configs/85xx/sbc8548_defconfig       |  131 ++++++---
+ arch/powerpc/configs/85xx/sbc8560_defconfig       |  135 ++++++---
+ arch/powerpc/configs/85xx/stx_gp3_defconfig       |  152 ++++++----
+ arch/powerpc/configs/85xx/tqm8540_defconfig       |  147 ++++++----
+ arch/powerpc/configs/85xx/tqm8541_defconfig       |  146 ++++++----
+ arch/powerpc/configs/85xx/tqm8555_defconfig       |  146 ++++++----
+ arch/powerpc/configs/85xx/tqm8560_defconfig       |  146 ++++++----
+ arch/powerpc/configs/adder875_defconfig           |   52 ++-
+ arch/powerpc/configs/ep8248e_defconfig            |  124 +++++---
+ arch/powerpc/configs/ep88xc_defconfig             |   47 ++-
+ arch/powerpc/configs/linkstation_defconfig        |  172 +++++++----
+ arch/powerpc/configs/mpc7448_hpc2_defconfig       |  136 ++++++---
+ arch/powerpc/configs/mpc8272_ads_defconfig        |  126 +++++---
+ arch/powerpc/configs/mpc83xx_defconfig            |  151 ++++++----
+ arch/powerpc/configs/mpc85xx_defconfig            |  210 +++++++++-----
+ arch/powerpc/configs/mpc8610_hpcd_defconfig       |  316 ++++++++++++----------
+ arch/powerpc/configs/mpc8641_hpcn_defconfig       |  210 +++++++++-----
+ arch/powerpc/configs/mpc866_ads_defconfig         |  128 +++++---
+ arch/powerpc/configs/mpc885_ads_defconfig         |   47 ++-
+ arch/powerpc/configs/pq2fads_defconfig            |  133 ++++++---
+ arch/powerpc/configs/prpmc2800_defconfig          |  153 ++++++----
+ arch/powerpc/configs/sbc8641d_defconfig           |  150 ++++++----
+ arch/powerpc/configs/storcenter_defconfig         |   71 ++--
+ arch/powerpc/platforms/85xx/Kconfig               |    1
+ 43 files changed, 3960 insertions(+), 2137 deletions(-)
 
-The code within the "prepare_single_step()" is already doing the job=20
-of disabling interrupts and setting bits required for single step and
-hence
-no additional changes are required for Book-e version of kprobes.
+Kumar Gala (3):
+      [POWERPC] 85xx: MPC85xx MDS - Unconditionally select PHYLIB for board fixups
+      [POWERPC] 85xx: MPC8548CDS - Fix size of PCIe IO space
+      [POWERPC] Updated Freescale PPC defconfigs
 
-I confirmed the above changes in my local tree and found no issues
-for kprobes, jprobes and kretprobes. But this testing is done using
-2.6.22.y+ppc arch.
+Timur Tabi (1):
+      [POWERPC] 8610: Update defconfig for MPC8610 HPCD
 
-Once after fixing the binutils-2.17 issue i am facing for latest kernel,
-
-i will retest and inform if any problems to new patches.=20
-
--madhvesh
-
-
-
--------------------------------------------------------------------
-This email is confidential and intended only for the use of the =
-individual or entity named above and may contain information that is =
-privileged. If you are not the intended recipient, you are notified that =
-any dissemination, distribution or copying of this email is strictly =
-prohibited. If you have received this email in error, please notify us =
-immediately by return email or telephone and destroy the original =
-message. - This mail is sent via Sony Asia Pacific Mail Gateway.
--------------------------------------------------------------------
+r
