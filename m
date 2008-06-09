@@ -3,14 +3,14 @@ Received: from mgw2.diku.dk (mgw2.diku.dk [130.225.96.92])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mgw2.diku.dk",
 	Issuer "KU Security Authority" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 63D87DE0DD
-	for <linuxppc-dev@ozlabs.org>; Mon,  9 Jun 2008 22:20:24 +1000 (EST)
-Date: Mon, 9 Jun 2008 14:20:04 +0200 (CEST)
+	by ozlabs.org (Postfix) with ESMTPS id 5075BDE20A
+	for <linuxppc-dev@ozlabs.org>; Mon,  9 Jun 2008 22:20:48 +1000 (EST)
+Date: Mon, 9 Jun 2008 14:20:42 +0200 (CEST)
 From: Julia Lawall <julia@diku.dk>
-To: paulus@samba.org, linuxppc-dev@ozlabs.org,
+To: benh@kernel.crashing.org, linuxppc-dev@ozlabs.org,
 	linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 1/4] arch/powerpc: add missing of_node_put
-Message-ID: <Pine.LNX.4.64.0806091418340.16009@ask.diku.dk>
+Subject: [PATCH 2/4] drivers/macintosh/smu.c: add missing of_node_put
+Message-ID: <Pine.LNX.4.64.0806091420080.16009@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -67,18 +67,23 @@ Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
 
-diff -u -p a/arch/powerpc/platforms/pseries/nvram.c b/arch/powerpc/platforms/pseries/nvram.c
---- a/arch/powerpc/platforms/pseries/nvram.c
-+++ b/arch/powerpc/platforms/pseries/nvram.c
-@@ -131,8 +131,10 @@ int __init pSeries_nvram_init(void)
- 		return -ENODEV;
+diff -u -p a/drivers/macintosh/smu.c b/drivers/macintosh/smu.c
+--- a/drivers/macintosh/smu.c
++++ b/drivers/macintosh/smu.c
+@@ -483,12 +483,15 @@ int __init smu_init (void)
  
- 	nbytes_p = of_get_property(nvram, "#bytes", &proplen);
--	if (nbytes_p == NULL || proplen != sizeof(unsigned int))
-+	if (nbytes_p == NULL || proplen != sizeof(unsigned int)) {
-+		of_node_put(nvram);
- 		return -EIO;
+ 	if (smu_cmdbuf_abs == 0) {
+ 		printk(KERN_ERR "SMU: Command buffer not allocated !\n");
++		of_node_put(np);
+ 		return -EINVAL;
+ 	}
+ 
+ 	smu = alloc_bootmem(sizeof(struct smu_device));
+-	if (smu == NULL)
++	if (smu == NULL) {
++		of_node_put(np);
+ 		return -ENOMEM;
 +	}
+ 	memset(smu, 0, sizeof(*smu));
  
- 	nvram_size = *nbytes_p;
- 
+ 	spin_lock_init(&smu->lock);
