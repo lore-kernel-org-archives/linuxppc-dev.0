@@ -1,14 +1,20 @@
 Return-Path: <benh@kernel.crashing.org>
-Subject: Re: [patch 2/5] spufs: convert nopfn to fault
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id CDCECDDFF3
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jun 2008 09:47:11 +1000 (EST)
+Subject: Re: [patch 5/5] arch/powerpc/platforms/pseries/eeh_driver.c: fix
+	warning
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: akpm@linux-foundation.org
-In-Reply-To: <200806092326.m59NQ8QR014221@imap1.linux-foundation.org>
-References: <200806092326.m59NQ8QR014221@imap1.linux-foundation.org>
+In-Reply-To: <200806092326.m59NQA9c014230@imap1.linux-foundation.org>
+References: <200806092326.m59NQA9c014230@imap1.linux-foundation.org>
 Content-Type: text/plain
-Date: Tue, 10 Jun 2008 09:45:49 +1000
-Message-Id: <1213055149.25745.14.camel@pasglop>
+Date: Tue, 10 Jun 2008 09:47:02 +1000
+Message-Id: <1213055222.25745.16.camel@pasglop>
 Mime-Version: 1.0
-Cc: npiggin@suse.de, linuxppc-dev@ozlabs.org, paulus@samba.org, jk@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -20,14 +26,22 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 On Mon, 2008-06-09 at 16:26 -0700, akpm@linux-foundation.org wrote:
-> From: Nick Piggin <npiggin@suse.de>
+> From: Andrew Morton <akpm@linux-foundation.org>
 > 
-> spufs: convert nopfn to fault
+> Fix this:
 > 
-> Signed-off-by: Nick Piggin <npiggin@suse.de>
-> Acked-by: Jeremy Kerr <jk@ozlabs.org>
-> Cc: Paul Mackerras <paulus@samba.org>
+> /usr/src/devel/arch/powerpc/platforms/pseries/eeh_driver.c: In function 'print_device_node_tree':
+> /usr/src/devel/arch/powerpc/platforms/pseries/eeh_driver.c:55: warning: ISO C90 forbids mixed declarations and code
+> 
+> also make that function look like it's part of Linux.  I mean, wtf are you
+> guys up to down there??
+
+The EEH code ... oh well. It does need some love...
+
+> [akpm@linux-foundation.org: coding-style fixes]
 
 Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
+> Cc: Paul Mackerras <paulus@samba.org>
 > Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> ---
