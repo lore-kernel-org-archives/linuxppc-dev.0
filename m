@@ -1,11 +1,20 @@
-Return-Path: <jonsmirl@gmail.com>
-Message-ID: <9e4733910806081827u776112c0x497c5ddf0f4667a@mail.gmail.com>
-Date: Sun, 8 Jun 2008 21:27:47 -0400
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "linuxppc-dev list" <Linuxppc-dev@ozlabs.org>
-Subject: zImage.chrp is getting gziped on Efika
+Return-Path: <sr@denx.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.179]) by ozlabs.org (Postfix) with ESMTP id B183BDDEEF
+	for <linuxppc-dev@ozlabs.org>; Mon,  9 Jun 2008 14:49:41 +1000 (EST)
+From: Stefan Roese <sr@denx.de>
+To: Jean Delvare <khali@linux-fr.org>
+Subject: Re: [PATCH] i2c-ibm_iic: Enable driver for all PPC4xx variants in
+	arch/powerpc
+Date: Mon, 9 Jun 2008 06:48:24 +0200
+References: <1212653453-26093-1-git-send-email-sr@denx.de>
+	<20080608144843.58857324@hyperion.delvare>
+In-Reply-To: <20080608144843.58857324@hyperion.delvare>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200806090648.24339.sr@denx.de>
+Cc: linuxppc-dev@ozlabs.org, i2c@lm-sensors.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,21 +24,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Z3ppcGluZyB0aGUgaW1hZ2UgdGFrZXMgdG8gbG9uZyBpbiBkZXZlbG9wbWVudCBjeWNsZSwgaG93
-IGRvIEkgdHVybiBpdCBvZmY/CgpFZmlrYSBpcyBjaG9raW5nIG9uIGl0IHRvby4KCnpJbWFnZSBz
-dGFydGluZzogbG9hZGVkIGF0IDB4MDA0MDAwMDAgKHNwOiAweDAxN2ZmOWUwKQpBbGxvY2F0aW5n
-IDB4YzAyYTgzZGMgYnl0ZXMgZm9yIGtlcm5lbCAuLi4KT0YgdmVyc2lvbiA9ICdFRklLQTVLMiwx
-LjMnCmd1bnppcHBpbmcgKDB4ZmZmZmZmZmYgPC0gMHgwMDQwNzAwMDoweDAwODM4Y2YxKS4uLixc
-XVUKCu+/ve+/ve+/vdGl77+977+977+9amrvv700JSUC77+977+977+977+977+977+977+9KmUa
-77+9JSUVAgLvv73vv73vv73vv73vv73vv73vv73vv73vv73vv70CajUlCQkT77+977+977+977+9
-77+977+977+977+9atSk77+9ShUSJCRMXu+/vTA0MDExOUMKQ1RSICAgMHgwMDAwMDA3MCBDUiAg
-IDB4NDAwMDIwMjQgICBYRVIgMHgwCkRBUiAgMHgwMDAwMDAwMCBEU0lTUiAweDAwMDAwMDAwIFR5
-cGUgMgpHUFJbXSAweDAwMDAwMDA4IDB4MDE3RkY5NTAgMHgwMDAwMDAwMCAweDAwODM5MDE0IDB4
-MDAwMDAwMDQKMHhDMDI5MjlFOCAweDAwODQzNTZDIDB4MDAwMDAwMDAKR1BSW10gMHgwMDAwMDAw
-MCAweDAwMDAwMDAwIDB4MDAwMDAwNzAgMHgwMDAwMDA3MCAweDQwMDAyMDI0CjB4RkZGN0VGRkYg
-MHhGN0Y3QkY3RiAweDZGRkFGRjZFCkdQUltdIDB4MDA0MzFDMzYgMHgwMDAwMDAwNCAweEMwMjky
-OUU4IDB4MDAwMDAwMDAgMHgwMDAwMDAwMAoweEMwMjkyOTc3IDB4RjAwMDFGRkYgMHhGMDAwMDAy
-QQpHUFJbXSAweDAwODM5MDE0IDB4MDA0MDcwQkIgMHgwMDQzMUMzNiAweDAwMDAwMDAwIDB4MDAw
-MDAwMDYKMHgwMDgzOTA0NCAweDAwNDBFMUUwIDB4QzAyOTI5RTgKaWJhdDBVIDB4MDAwMDFGRkYg
-aWJhdDBMIDB4MDAwMDAwMTIKaWJhdDFVIDB4RjAwMDFGRkYgaWJhdDFMIDB4RjAwMDAwMTIKCgot
-LSAKSm9uIFNtaXJsCmpvbnNtaXJsQGdtYWlsLmNvbQo=
+Hi Jean,
+
+On Sunday 08 June 2008, Jean Delvare wrote:
+> > This patch enables the IBM I2C driver for all PPC4xx variants by adding
+> > "ibm,iic" to the compatible list. This way all currently available
+> > arch/powerpc 4xx ports can make use of this driver without any changes.
+> > Additionally all "other" compatible entries are removed since they are
+> > not needed anymore.
+> >
+> > Currently all 4xx PPC's have the same compatible I2C macro. If at some
+> > time an incompatibility is detected we can take care of this with an
+> > additional property.
+> >
+> > Signed-off-by: Stefan Roese <sr@denx.de>
+> > ---
+> >  drivers/i2c/busses/i2c-ibm_iic.c |    6 +-----
+> >  1 files changed, 1 insertions(+), 5 deletions(-)
+> >
+> > diff --git a/drivers/i2c/busses/i2c-ibm_iic.c
+> > b/drivers/i2c/busses/i2c-ibm_iic.c index 3a364a7..ed73801 100644
+> > --- a/drivers/i2c/busses/i2c-ibm_iic.c
+> > +++ b/drivers/i2c/busses/i2c-ibm_iic.c
+> > @@ -807,11 +807,7 @@ static int __devexit iic_remove(struct of_device
+> > *ofdev) }
+> >
+> >  static const struct of_device_id ibm_iic_match[] = {
+> > -	{ .compatible = "ibm,iic-405ex", },
+> > -	{ .compatible = "ibm,iic-405gp", },
+> > -	{ .compatible = "ibm,iic-440gp", },
+> > -	{ .compatible = "ibm,iic-440gpx", },
+> > -	{ .compatible = "ibm,iic-440grx", },
+> > +	{ .compatible = "ibm,iic", },
+> >  	{}
+> >  };
+>
+> OK, I can take this in my tree, unless it depends on arch-specific
+> patches which have not hit mainline yet.
+
+No, this doesn't depend on other pathes.
+
+> I guess this is 2.6.27 
+> material?
+
+Yes. No real hurry here.
+
+Thanks.
+
+Best regards,
+Stefan
