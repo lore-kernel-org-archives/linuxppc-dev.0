@@ -1,21 +1,16 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id CDCECDDFF3
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jun 2008 09:47:11 +1000 (EST)
-Subject: Re: [patch 5/5] arch/powerpc/platforms/pseries/eeh_driver.c: fix
-	warning
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: akpm@linux-foundation.org
-In-Reply-To: <200806092326.m59NQA9c014230@imap1.linux-foundation.org>
-References: <200806092326.m59NQA9c014230@imap1.linux-foundation.org>
-Content-Type: text/plain
-Date: Tue, 10 Jun 2008 09:47:02 +1000
-Message-Id: <1213055222.25745.16.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
-Reply-To: benh@kernel.crashing.org
+Return-Path: <segher@kernel.crashing.org>
+In-Reply-To: <484D49FF.4090604@grandegger.com>
+References: <484CECE2.9050605@grandegger.com>
+	<519f1a6d9baeca8cfea9e8ad7a92c4d4@kernel.crashing.org>
+	<484D49FF.4090604@grandegger.com>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <a9f4227722f169bc9c2e712df774b748@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] booting-without-of: add more bindings for FSL UPM driver
+Date: Tue, 10 Jun 2008 01:47:30 +0200
+To: Wolfgang Grandegger <wg@grandegger.com>
+Cc: Linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,23 +20,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2008-06-09 at 16:26 -0700, akpm@linux-foundation.org wrote:
-> From: Andrew Morton <akpm@linux-foundation.org>
-> 
-> Fix this:
-> 
-> /usr/src/devel/arch/powerpc/platforms/pseries/eeh_driver.c: In function 'print_device_node_tree':
-> /usr/src/devel/arch/powerpc/platforms/pseries/eeh_driver.c:55: warning: ISO C90 forbids mixed declarations and code
-> 
-> also make that function look like it's part of Linux.  I mean, wtf are you
-> guys up to down there??
+>>> +      - chip-delay : may specify a delay value in milliseconds.
+>>
+>> Delay for what?  The binding should say.  "chip-delay" is a bit
+>> too generic name as well, it could be more descriptive perhaps.
+>
+> The chip-delay property defines an appropriate maximum delay
+> time (tR) required for read operations if the R/B pin is not
+> connected.
 
-The EEH code ... oh well. It does need some love...
+Yeah.  So please put that in the binding.
 
-> [akpm@linux-foundation.org: coding-style fixes]
+>> Shouldn't this be a property of the NAND device anyway, not the
+>> NAND controller?
+>
+> Strictly speaking, it's a property of the NAND device. Therefore it
+> should be inside the node nand@0, I thhink:
+>
+> +			nand@0 {
+> +				#address-cells = <1>;
+> +				#size-cells = <1>;
+> +			        chip-delay = <25>; // in micro-seconds
 
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Something like that, yes.  You wrote milliseconds before; which is it?
 
-> Cc: Paul Mackerras <paulus@samba.org>
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> ---
+And, a better property name, please.
+
+> Where should that be documented?
+
+In the binding for nand devices.  If there isn't any yet, it might be
+best to include that with the binding for your nand controller (i.e.,
+describe the whole sub node there).
+
+
+Segher
