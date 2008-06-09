@@ -1,16 +1,20 @@
-Return-Path: <segher@kernel.crashing.org>
-In-Reply-To: <484D49FF.4090604@grandegger.com>
-References: <484CECE2.9050605@grandegger.com>
-	<519f1a6d9baeca8cfea9e8ad7a92c4d4@kernel.crashing.org>
-	<484D49FF.4090604@grandegger.com>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <a9f4227722f169bc9c2e712df774b748@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] booting-without-of: add more bindings for FSL UPM driver
-Date: Tue, 10 Jun 2008 01:47:30 +0200
-To: Wolfgang Grandegger <wg@grandegger.com>
-Cc: Linuxppc-dev@ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 96FD2DDEF2
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jun 2008 09:56:21 +1000 (EST)
+Subject: Re: [patch 4/5] macintosh: media bay: semaphore to mutex
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: akpm@linux-foundation.org
+In-Reply-To: <200806092326.m59NQ9rm014227@imap1.linux-foundation.org>
+References: <200806092326.m59NQ9rm014227@imap1.linux-foundation.org>
+Content-Type: text/plain
+Date: Tue, 10 Jun 2008 09:39:53 +1000
+Message-Id: <1213054793.25745.7.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, dwalker@mvista.com
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,37 +24,132 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>> +      - chip-delay : may specify a delay value in milliseconds.
->>
->> Delay for what?  The binding should say.  "chip-delay" is a bit
->> too generic name as well, it could be more descriptive perhaps.
->
-> The chip-delay property defines an appropriate maximum delay
-> time (tR) required for read operations if the R/B pin is not
-> connected.
+On Mon, 2008-06-09 at 16:26 -0700, akpm@linux-foundation.org wrote:
+> From: Daniel Walker <dwalker@mvista.com>
+> 
+> Signed-off-by: Daniel Walker <dwalker@mvista.com>
+> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
-Yeah.  So please put that in the binding.
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
->> Shouldn't this be a property of the NAND device anyway, not the
->> NAND controller?
->
-> Strictly speaking, it's a property of the NAND device. Therefore it
-> should be inside the node nand@0, I thhink:
->
-> +			nand@0 {
-> +				#address-cells = <1>;
-> +				#size-cells = <1>;
-> +			        chip-delay = <25>; // in micro-seconds
-
-Something like that, yes.  You wrote milliseconds before; which is it?
-
-And, a better property name, please.
-
-> Where should that be documented?
-
-In the binding for nand devices.  If there isn't any yet, it might be
-best to include that with the binding for your nand controller (i.e.,
-describe the whole sub node there).
-
-
-Segher
+> ---
+> 
+>  drivers/macintosh/mediabay.c |   27 ++++++++++++++-------------
+>  1 file changed, 14 insertions(+), 13 deletions(-)
+> 
+> diff -puN drivers/macintosh/mediabay.c~macintosh-media-bay-semaphore-to-mutex drivers/macintosh/mediabay.c
+> --- a/drivers/macintosh/mediabay.c~macintosh-media-bay-semaphore-to-mutex
+> +++ a/drivers/macintosh/mediabay.c
+> @@ -21,6 +21,7 @@
+>  #include <linux/init.h>
+>  #include <linux/ide.h>
+>  #include <linux/kthread.h>
+> +#include <linux/mutex.h>
+>  #include <asm/prom.h>
+>  #include <asm/pgtable.h>
+>  #include <asm/io.h>
+> @@ -77,7 +78,7 @@ struct media_bay_info {
+>  	int				index;
+>  	int				cached_gpio;
+>  	int				sleeping;
+> -	struct semaphore		lock;
+> +	struct mutex			lock;
+>  #ifdef CONFIG_BLK_DEV_IDE_PMAC
+>  	ide_hwif_t			*cd_port;
+>  	void __iomem			*cd_base;
+> @@ -459,27 +460,27 @@ int media_bay_set_ide_infos(struct devic
+>  		if (bay->mdev && which_bay == bay->mdev->ofdev.node) {
+>  			int timeout = 5000, index = hwif->index;
+>  			
+> -			down(&bay->lock);
+> +			mutex_lock(&bay->lock);
+>  
+>  			bay->cd_port	= hwif;
+>   			bay->cd_base	= (void __iomem *) base;
+>  			bay->cd_irq	= irq;
+>  
+>  			if ((MB_CD != bay->content_id) || bay->state != mb_up) {
+> -				up(&bay->lock);
+> +				mutex_unlock(&bay->lock);
+>  				return 0;
+>  			}
+>  			printk(KERN_DEBUG "Registered ide%d for media bay %d\n", index, i);
+>  			do {
+>  				if (MB_IDE_READY(i)) {
+>  					bay->cd_index	= index;
+> -					up(&bay->lock);
+> +					mutex_unlock(&bay->lock);
+>  					return 0;
+>  				}
+>  				mdelay(1);
+>  			} while(--timeout);
+>  			printk(KERN_DEBUG "Timeount waiting IDE in bay %d\n", i);
+> -			up(&bay->lock);
+> +			mutex_unlock(&bay->lock);
+>  			return -ENODEV;
+>  		}
+>  	}
+> @@ -616,10 +617,10 @@ static int media_bay_task(void *x)
+>  
+>  	while (!kthread_should_stop()) {
+>  		for (i = 0; i < media_bay_count; ++i) {
+> -			down(&media_bays[i].lock);
+> +			mutex_lock(&media_bays[i].lock);
+>  			if (!media_bays[i].sleeping)
+>  				media_bay_step(i);
+> -			up(&media_bays[i].lock);
+> +			mutex_unlock(&media_bays[i].lock);
+>  		}
+>  
+>  		msleep_interruptible(MB_POLL_DELAY);
+> @@ -659,7 +660,7 @@ static int __devinit media_bay_attach(st
+>  	bay->index = i;
+>  	bay->ops = match->data;
+>  	bay->sleeping = 0;
+> -	init_MUTEX(&bay->lock);
+> +	mutex_init(&bay->lock);
+>  
+>  	/* Init HW probing */
+>  	if (bay->ops->init)
+> @@ -697,10 +698,10 @@ static int media_bay_suspend(struct maci
+>  
+>  	if (state.event != mdev->ofdev.dev.power.power_state.event
+>  	    && (state.event & PM_EVENT_SLEEP)) {
+> -		down(&bay->lock);
+> +		mutex_lock(&bay->lock);
+>  		bay->sleeping = 1;
+>  		set_mb_power(bay, 0);
+> -		up(&bay->lock);
+> +		mutex_unlock(&bay->lock);
+>  		msleep(MB_POLL_DELAY);
+>  		mdev->ofdev.dev.power.power_state = state;
+>  	}
+> @@ -719,12 +720,12 @@ static int media_bay_resume(struct macio
+>  	       	   they seem to help the 3400 get it right.
+>  	       	 */
+>  	       	/* Force MB power to 0 */
+> -		down(&bay->lock);
+> +		mutex_lock(&bay->lock);
+>  	       	set_mb_power(bay, 0);
+>  		msleep(MB_POWER_DELAY);
+>  	       	if (bay->ops->content(bay) != bay->content_id) {
+>  			printk("mediabay%d: content changed during sleep...\n", bay->index);
+> -			up(&bay->lock);
+> +			mutex_unlock(&bay->lock);
+>  	       		return 0;
+>  		}
+>  	       	set_mb_power(bay, 1);
+> @@ -740,7 +741,7 @@ static int media_bay_resume(struct macio
+>  	       	} while((bay->state != mb_empty) &&
+>  	       		(bay->state != mb_up));
+>  		bay->sleeping = 0;
+> -		up(&bay->lock);
+> +		mutex_unlock(&bay->lock);
+>  	}
+>  	return 0;
+>  }
+> _
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
