@@ -1,35 +1,15 @@
-Return-Path: <ossthema@de.ibm.com>
-Received: from mtagate7.uk.ibm.com (mtagate7.uk.ibm.com [195.212.29.140])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate7.uk.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 8EE3CDDF3E
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jun 2008 00:18:51 +1000 (EST)
-Received: from d06nrmr1407.portsmouth.uk.ibm.com
-	(d06nrmr1407.portsmouth.uk.ibm.com [9.149.38.185])
-	by mtagate7.uk.ibm.com (8.13.8/8.13.8) with ESMTP id m59EHdav389912
-	for <linuxppc-dev@ozlabs.org>; Mon, 9 Jun 2008 14:17:39 GMT
-Received: from d06av02.portsmouth.uk.ibm.com (d06av02.portsmouth.uk.ibm.com
-	[9.149.37.228])
-	by d06nrmr1407.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v9.0) with
-	ESMTP id m59EHdSp2003132
-	for <linuxppc-dev@ozlabs.org>; Mon, 9 Jun 2008 15:17:39 +0100
-Received: from d06av02.portsmouth.uk.ibm.com (loopback [127.0.0.1])
-	by d06av02.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id m59EHcFJ013037
-	for <linuxppc-dev@ozlabs.org>; Mon, 9 Jun 2008 15:17:39 +0100
-From: Jan-Bernd Themann <ossthema@de.ibm.com>
-To: Jeff Garzik <jeff@garzik.org>
-Subject: [PATCH][2.6.26] ehea: set mac address fix
-Date: Mon, 9 Jun 2008 15:17:37 +0100
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200806091617.38396.ossthema@de.ibm.com>
-Cc: Thomas Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
-	netdev <netdev@vger.kernel.org>, hering2@de.ibm.com,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	linux-ppc <linuxppc-dev@ozlabs.org>, Christoph Raisch <raisch@de.ibm.com>,
-	Marcus Eder <meder@de.ibm.com>
+Return-Path: <evangelion1122001@yahoo.com.cn>
+Received: from n6.bullet.re3.yahoo.com (n6.bullet.re3.yahoo.com
+	[68.142.237.91]) by ozlabs.org (Postfix) with SMTP id 8F1EBDDEDE
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jun 2008 00:23:30 +1000 (EST)
+Subject: Is there any significant difference of memory management between
+	PPC 405 and 440?
+From: Evangelion <evangelion1122001@yahoo.com.cn>
+To: linuxppc-dev@ozlabs.org
+Content-Type: text/plain
+Date: Mon, 09 Jun 2008 16:34:53 +0200
+Message-Id: <1213022093.6785.49.camel@zr.gii.upv.es>
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,42 +19,62 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-eHEA has to call firmware functions in order to change the mac address
-of a logical port. This patch checks if the logical port is up
-when calling the register / deregister mac address calls. If the port
-is down these firmware calls would fail and are therefore not executed.
+Hi, all:
+    It may be a silly question.
 
-Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com>
+    There is a 405 and a 440 board. We create a kernel module which will
+allocate 3MB memory every time it is loaded. It runs basically well in
+440 board, which owns 256MB memory. However, in 405 board, which only
+has 32MB memory, loading the module always results in "Data machine
+check in kernel mode":
 
----
+....
+Data machine check in kernel mode.
+PLB0: BEAR= 0x03016004 ACR=   0x00000000 BESR=  0x00c00000
+PLB0 to OPB: BEAR= 0x04000000 BESR0= 0x00000000 BESR1= 0x00000000
+Oops: machine check, sig: 7 [#1]
+NIP: 00002D10 LR: 000010A8 CTR: C3170160
+REGS: c0282f50 TRAP: 0202   Not tainted  (2.6.19.2)
+MSR: 00021000 <ME>  CR: 24000088  XER: 00000000
+TASK = c3016000[0] '' THREAD: c0264000
+GPR00: 08000000 C08ABCB0 C3016000 C08ABCC0 C3177250 C3016000 C3018000
+00000000 
+GPR08: C3018000 00000000 00021032 008ABCB0 030161B0 10019DA8 00000000
+00000000 
+GPR16: 10102260 1009DF98 100F0000 100F7998 C3170000 00000002 00000028
+C3170000 
+GPR24: 00000001 C3170000 C3170000 00000000 00000001 00000001 00000000
+00000000 
+NIP [00002D10] 0x2d10
+LR [000010A8] 0x10a8
+Call Trace:
+Instruction dump:
+XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX 
+XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX 
+Kernel panic - not syncing: Attempted to kill the idle task!
+ <0>Rebooting in 180 seconds..<NULL>
+....
 
-diff -Nurp -X dontdiff linux-2.6.26-rc4/drivers/net/ehea/ehea_main.c patched_kernel/drivers/net/ehea/ehea_main.c
---- linux-2.6.26-rc4/drivers/net/ehea/ehea_main.c	2008-05-26 20:08:11.000000000 +0200
-+++ patched_kernel/drivers/net/ehea/ehea_main.c	2008-06-09 15:42:17.000000000 +0200
-@@ -1766,16 +1766,20 @@ static int ehea_set_mac_addr(struct net_
- 	mutex_lock(&ehea_bcmc_regs.lock);
- 
- 	/* Deregister old MAC in pHYP */
--	ret = ehea_broadcast_reg_helper(port, H_DEREG_BCMC);
--	if (ret)
--		goto out_upregs;
-+	if (port->state == EHEA_PORT_UP) {
-+		ret = ehea_broadcast_reg_helper(port, H_DEREG_BCMC);
-+		if (ret)
-+			goto out_upregs;
-+	}
- 
- 	port->mac_addr = cb0->port_mac_addr << 16;
- 
- 	/* Register new MAC in pHYP */
--	ret = ehea_broadcast_reg_helper(port, H_REG_BCMC);
--	if (ret)
--		goto out_upregs;
-+	if (port->state == EHEA_PORT_UP) {
-+		ret = ehea_broadcast_reg_helper(port, H_REG_BCMC);
-+		if (ret)
-+			goto out_upregs;
-+	}
- 
- 	ret = 0;
- 
+    We have checked that once the 405 board boots successfully, there is
+only about 5MB free memory. So we have tried to change the memory
+allocated size in the module to smaller than 3MB, e.g. 1KB, 3KB, 1.5MB
+etc., but got the same results.
+    Here we run the same codes in these two boards but get totally
+different results, therefore, we wonder what the exact cause of "Data
+machine check in kernel mode". We think it relates to memory management,
+but is there any other potential reasons?
+    If there is significant difference of memory management between 405
+and 440, would anyone like to tell us something about it? And what
+should we pay attention to in our implementation for these two boards?
+
+    Thank you very much!
+
+Best Regards
+
+Evangelion
+
+June 9th, 2008
+
+__________________________________________________
+∏œøÏ◊¢≤·—≈ª¢≥¨¥Û»›¡ø√‚∑—” œ‰?
+http://cn.mail.yahoo.com
