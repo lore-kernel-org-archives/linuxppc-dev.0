@@ -1,18 +1,14 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
-	[140.211.169.13])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 94C7EDDEDE
-	for <linuxppc-dev@ozlabs.org>; Mon,  9 Jun 2008 18:48:23 +1000 (EST)
-Date: Mon, 9 Jun 2008 01:48:17 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: linuxppc-dev@ozlabs.org, Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: 2.6.26-rc5-mm1: procfs whine
-Message-Id: <20080609014817.9bdc9ee4.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Return-Path: <sha@pengutronix.de>
+Date: Mon, 9 Jun 2008 11:13:35 +0200
+From: Sascha Hauer <s.hauer@pengutronix.de>
+To: Jon Smirl <jonsmirl@gmail.com>
+Subject: Re: Comments on device tree for pcm030
+Message-ID: <20080609091335.GC13036@pengutronix.de>
+References: <9e4733910806081208r1a8d0987j6eab0d73bc446640@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <9e4733910806081208r1a8d0987j6eab0d73bc446640@mail.gmail.com>
+Cc: linuxppc-dev list <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,17 +18,74 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hi,
 
-At boot, using http://userweb.kernel.org/~akpm/config-g5.txt on a mac g5:
+On Sun, Jun 08, 2008 at 03:08:33PM -0400, Jon Smirl wrote:
+> Why not a compatible field in the top of the tree? Then you wouldn't
+> need to list the boards in mpc5200_simple.c.
+> 	compatible = "phytec,pcm030","simple-mpc5200";
+> 
+> Device tree has an entry for AC97 on PSC1. I don't think the Phytec
+> module or carrier board has AC97 hardware.
+> 
+> The RTC chip says pcf8563, phytec doc says it is a pcf8564.
+> 
+> There should be an i2c entry for the eeprom but I don't know the part
+> number for it.
+> 
+> What about the flash on the local bus?  Could we use something like
+> this, or the same without the partition data?
+> 
+> 	lpb@ff000000 {
+> 		compatible = "fsl,lpb";
+> 		ranges = <0 ff000000 01000000>;
+> 		
+> 		flash@00000000 {
+> 			compatible = "cfi-flash";
+> 			reg = <00000000 01000000>;
+> 			bank-width = <2>;
 
-io scheduler cfq registered
-proc_dir_entry '00' already registered
-Call Trace:
-[c00000017a0fbb70] [c0000000000120fc] .show_stack+0x58/0x1dc (unreliable)
-[c00000017a0fbc20] [c0000000001415a8] .proc_register+0x218/0x260
-[c00000017a0fbcd0] [c0000000001419d4] .proc_mkdir_mode+0x40/0x74
-[c00000017a0fbd50] [c0000000001e6640] .pci_proc_attach_device+0x90/0x134
-[c00000017a0fbdf0] [c0000000005e5250] .pci_proc_init+0x68/0xa0
-[c00000017a0fbe70] [c0000000005c0cd4] .kernel_init+0x228/0x49c
-[c00000017a0fbf90] [c000000000026e0c] .kernel_thread+0x4c/0x68
-nvidiafb: Device ID: 10de0141 
+The board comes with different flash sizes with different bank widths.
+That's why I decided to no put the flash entries into the tree.
+We used to detect the flash size/bankwidth using the bootcs config
+register (which was previously set by U-Boot). We could change U-Boot to
+adjust the device tree accordingly, but we haven't done this so far,
+sorry.
+
+> 			#size-cells = <1>;
+> 			#address-cells = <1>;
+> 			partition@0 {
+> 				label = "ubootl";
+> 				reg = <00000000 00040000>;
+> 			};
+> 			partition@40000 {
+> 				label = "kernel";
+> 				reg = <00040000 001c0000>;
+> 			};
+> 			partition@200000 {
+> 				label = "jffs2";
+> 				reg = <00200000 00D00000>;
+> 			};
+> 			partition@f00000 {
+> 				label = "uboot";
+> 				reg = <00f00000 00040000>;
+> 			};
+> 			partition@f40000 {
+> 				label = "oftree";
+> 				reg = <00f40000 00040000>;
+> 			};
+> 			partition@f80000 {
+> 				label = "space";
+> 				reg = <00f80000 00080000>;
+> 			};
+
+I think partitions shouldn't go into the default device tree, as people
+may have different partitioning.
+
+Sascha
+
+-- 
+Pengutronix e.K. - Linux Solutions for Science and Industry
+-----------------------------------------------------------
+Kontakt-Informationen finden Sie im Header dieser Mail oder
+auf der Webseite -> http://www.pengutronix.de/impressum/ <-
