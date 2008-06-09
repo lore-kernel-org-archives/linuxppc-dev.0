@@ -1,20 +1,16 @@
-Return-Path: <jonsmirl@gmail.com>
-Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.31])
-	by ozlabs.org (Postfix) with ESMTP id 6F2BFDDF5A
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jun 2008 07:30:14 +1000 (EST)
-Received: by yw-out-2324.google.com with SMTP id 5so1355063ywh.39
-	for <linuxppc-dev@ozlabs.org>; Mon, 09 Jun 2008 14:30:11 -0700 (PDT)
-Message-ID: <9e4733910806091430j56aeb06bpa090b0c8242e2041@mail.gmail.com>
-Date: Mon, 9 Jun 2008 17:30:10 -0400
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Juergen Beisert" <jbe@pengutronix.de>
-Subject: Re: Comments on device tree for pcm030
-In-Reply-To: <200806091831.25200.jbe@pengutronix.de>
+Return-Path: <bunk@kernel.org>
+Received: from smtp4.pp.htv.fi (smtp4.pp.htv.fi [213.243.153.38])
+	by ozlabs.org (Postfix) with ESMTP id E01C4DE1F4
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jun 2008 08:24:07 +1000 (EST)
+Date: Tue, 10 Jun 2008 01:23:12 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: paulus@samba.org, geert@linux-m68k.org, zippel@linux-m68k.org
+Subject: [2.6 patch] drivers/macintosh/: possible cleanups
+Message-ID: <20080609222312.GM1987@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <9e4733910806081208r1a8d0987j6eab0d73bc446640@mail.gmail.com>
-	<200806091831.25200.jbe@pengutronix.de>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=utf-8
+Cc: linuxppc-dev@ozlabs.org, linux-m68k@lists.linux-m68k.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,145 +20,101 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 6/9/08, Juergen Beisert <jbe@pengutronix.de> wrote:
-> On Sunday 08 June 2008 21:08, Jon Smirl wrote:
->  > What about the flash on the local bus?  Could we use something like
->  > this, or the same without the partition data?
->  >
->  >       lpb@ff000000 {
->  >               compatible = "fsl,lpb";
->  >               ranges = <0 ff000000 01000000>;
->  >
->  >               flash@00000000 {
->  >                       compatible = "cfi-flash";
->  >                       reg = <00000000 01000000>;
->  >                       bank-width = <2>;
->  >                       #size-cells = <1>;
->  >                       #address-cells = <1>;
->  >                       partition@0 {
->  >                               label = "ubootl";
->  >                               reg = <00000000 00040000>;
->  >                       };
->  >                       partition@40000 {
->  >                               label = "kernel";
->  >                               reg = <00040000 001c0000>;
->  >                       };
->  >                       partition@200000 {
->  >                               label = "jffs2";
->  >                               reg = <00200000 00D00000>;
->  >                       };
->  >                       partition@f00000 {
->  >                               label = "uboot";
->  >                               reg = <00f00000 00040000>;
->  >                       };
->  >                       partition@f40000 {
->  >                               label = "oftree";
->  >                               reg = <00f40000 00040000>;
->  >                       };
->  >                       partition@f80000 {
->  >                               label = "space";
->  >                               reg = <00f80000 00080000>;
->  >                       };
->  >               };
->  >       };
->
->
-> Hmm, I tried with these setting (and many others) to make the flash on my
->  board work again.
->  But the physmap_of.c driver always fails. It tries to request the region
->  0xfe000000 to 0x00000000 (my flash is 32MiB in size at 0xfe00000 to
->  0xffffffff) and fails badly. What are the correct settings in the OFTree to
->  make the physmap_of.c driver work?
+This patch contains the following possible cleanups:
+- make the following needlessly global code static:
+  - adb.c: adb_controller
+  - adb.c: adb_init()
+  - adbhid.c: adb_to_linux_keycodes[]
+  - via-pmu68k.c: backlight_level
+  - via-pmu68k.c: backlight_enabled
+- remove the following unused code:
+  - via-pmu68k.c: sleep_notifier_list
 
-This is my boot log:
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
-ff000000.flash: Found 1 x16 devices at 0x0 in 16-bit bank
- Intel/Sharp Extended Query Table at 0x0031
-Using buffer write method
-cfi_cmdset_0001: Erase suspend on write enabled
-RedBoot partition parsing not available
-Creating 6 MTD partitions on "ff000000.flash":
-0x00000000-0x00040000 : "ubootl"
-0x00040000-0x00200000 : "kernel"
-0x00200000-0x00f00000 : "jffs2"
-0x00f00000-0x00f40000 : "uboot"
-0x00f40000-0x00f80000 : "oftree"
-0x00f80000-0x01000000 : "space"
+---
 
-CONFIG_MTD=y
-# CONFIG_MTD_DEBUG is not set
-CONFIG_MTD_CONCAT=y
-CONFIG_MTD_PARTITIONS=y
-# CONFIG_MTD_REDBOOT_PARTS is not set
-CONFIG_MTD_CMDLINE_PARTS=y
+ drivers/macintosh/adb.c        |    5 ++---
+ drivers/macintosh/adbhid.c     |    2 +-
+ drivers/macintosh/via-pmu68k.c |    5 ++---
+ include/linux/adb.h            |    1 -
+ 4 files changed, 5 insertions(+), 8 deletions(-)
 
-#
-# User Modules And Translation Layers
-#
-CONFIG_MTD_CHAR=y
-CONFIG_MTD_BLKDEVS=y
-CONFIG_MTD_BLOCK=y
-# CONFIG_FTL is not set
-# CONFIG_NFTL is not set
-# CONFIG_INFTL is not set
-# CONFIG_RFD_FTL is not set
-# CONFIG_SSFDC is not set
-# CONFIG_MTD_OOPS is not set
-
-#
-# RAM/ROM/Flash chip drivers
-#
-CONFIG_MTD_CFI=y
-# CONFIG_MTD_JEDECPROBE is not set
-CONFIG_MTD_GEN_PROBE=y
-# CONFIG_MTD_CFI_ADV_OPTIONS is not set
-CONFIG_MTD_MAP_BANK_WIDTH_1=y
-CONFIG_MTD_MAP_BANK_WIDTH_2=y
-CONFIG_MTD_MAP_BANK_WIDTH_4=y
-# CONFIG_MTD_MAP_BANK_WIDTH_8 is not set
-# CONFIG_MTD_MAP_BANK_WIDTH_16 is not set
-# CONFIG_MTD_MAP_BANK_WIDTH_32 is not set
-CONFIG_MTD_CFI_I1=y
-CONFIG_MTD_CFI_I2=y
-# CONFIG_MTD_CFI_I4 is not set
-# CONFIG_MTD_CFI_I8 is not set
-CONFIG_MTD_CFI_INTELEXT=y
-# CONFIG_MTD_CFI_AMDSTD is not set
-# CONFIG_MTD_CFI_STAA is not set
-CONFIG_MTD_CFI_UTIL=y
-# CONFIG_MTD_RAM is not set
-# CONFIG_MTD_ROM is not set
-# CONFIG_MTD_ABSENT is not set
-
-#
-# Mapping drivers for chip access
-#
-# CONFIG_MTD_COMPLEX_MAPPINGS is not set
-# CONFIG_MTD_PHYSMAP is not set
-CONFIG_MTD_PHYSMAP_OF=y
-# CONFIG_MTD_INTEL_VR_NOR is not set
-# CONFIG_MTD_PLATRAM is not set
-
-
-
-
-
-
-
->
->
->  Regards,
->  Juergen
->
->  --
->  Dipl.-Ing. Juergen Beisert | http://www.pengutronix.de
->   Pengutronix - Linux Solutions for Science and Industry
->      Handelsregister: Amtsgericht Hildesheim, HRA 2686
->           Vertretung Sued/Muenchen, Germany
->    Phone: +49-8766-939 228 |  Fax: +49-5121-206917-9
->
-
-
--- 
-Jon Smirl
-jonsmirl@gmail.com
+45413fb42fb4215d80bb15f50a5bdc869465e9a1 diff --git a/drivers/macintosh/adb.c b/drivers/macintosh/adb.c
+index dbaad39..61b62a6 100644
+--- a/drivers/macintosh/adb.c
++++ b/drivers/macintosh/adb.c
+@@ -46,7 +46,6 @@
+ #endif
+ 
+ 
+-EXPORT_SYMBOL(adb_controller);
+ EXPORT_SYMBOL(adb_client_list);
+ 
+ extern struct adb_driver via_macii_driver;
+@@ -80,7 +79,7 @@ static struct adb_driver *adb_driver_list[] = {
+ 
+ static struct class *adb_dev_class;
+ 
+-struct adb_driver *adb_controller;
++static struct adb_driver *adb_controller;
+ BLOCKING_NOTIFIER_HEAD(adb_client_list);
+ static int adb_got_sleep;
+ static int adb_inited;
+@@ -290,7 +289,7 @@ static int adb_resume(struct platform_device *dev)
+ }
+ #endif /* CONFIG_PM */
+ 
+-int __init adb_init(void)
++static int __init adb_init(void)
+ {
+ 	struct adb_driver *driver;
+ 	int i;
+diff --git a/drivers/macintosh/adbhid.c b/drivers/macintosh/adbhid.c
+index ef4c117..af72f97 100644
+--- a/drivers/macintosh/adbhid.c
++++ b/drivers/macintosh/adbhid.c
+@@ -75,7 +75,7 @@ static struct notifier_block adbhid_adb_notifier = {
+ #define ADB_KEY_POWER_OLD	0x7e
+ #define ADB_KEY_POWER		0x7f
+ 
+-u16 adb_to_linux_keycodes[128] = {
++static u16 adb_to_linux_keycodes[128] = {
+ 	/* 0x00 */ KEY_A, 		/*  30 */
+ 	/* 0x01 */ KEY_S, 		/*  31 */
+ 	/* 0x02 */ KEY_D,		/*  32 */
+diff --git a/drivers/macintosh/via-pmu68k.c b/drivers/macintosh/via-pmu68k.c
+index e2f84da..b64741c 100644
+--- a/drivers/macintosh/via-pmu68k.c
++++ b/drivers/macintosh/via-pmu68k.c
+@@ -101,7 +101,6 @@ static int pmu_kind = PMU_UNKNOWN;
+ static int pmu_fully_inited;
+ 
+ int asleep;
+-BLOCKING_NOTIFIER_HEAD(sleep_notifier_list);
+ 
+ static int pmu_probe(void);
+ static int pmu_init(void);
+@@ -741,8 +740,8 @@ pmu_handle_data(unsigned char *data, int len)
+ 	}
+ }
+ 
+-int backlight_level = -1;
+-int backlight_enabled = 0;
++static int backlight_level = -1;
++static int backlight_enabled = 0;
+ 
+ #define LEVEL_TO_BRIGHT(lev)	((lev) < 1? 0x7f: 0x4a - ((lev) << 1))
+ 
+diff --git a/include/linux/adb.h b/include/linux/adb.h
+index 64d8878..63bca50 100644
+--- a/include/linux/adb.h
++++ b/include/linux/adb.h
+@@ -84,7 +84,6 @@ enum adb_message {
+     ADB_MSG_PRE_RESET,	/* Called before resetting the bus */
+     ADB_MSG_POST_RESET	/* Called after resetting the bus (re-do init & register) */
+ };
+-extern struct adb_driver *adb_controller;
+ extern struct blocking_notifier_head adb_client_list;
+ 
+ int adb_request(struct adb_request *req, void (*done)(struct adb_request *),
