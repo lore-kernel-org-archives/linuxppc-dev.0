@@ -1,23 +1,13 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 19CABDE2D4
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jun 2008 08:01:23 +1000 (EST)
-Message-Id: <057C3E99-B1DC-49BF-B9A8-4C72D943E920@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: avorontsov@ru.mvista.com
-In-Reply-To: <20080610193215.GA14162@polina.dev.rtsoft.ru>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v924)
-Subject: Re: [PATCH] powerpc: 83xx: update mpc83xx_defconfig to support
-	MPC8360E-RDK
-Date: Tue, 10 Jun 2008 17:01:17 -0500
-References: <20080429185920.GA19735@polina.dev.rtsoft.ru>
-	<20080429190049.GE21203@polina.dev.rtsoft.ru>
-	<67EC8BE5-3BF0-4107-8FA9-A058283E7EB5@kernel.crashing.org>
-	<20080610193215.GA14162@polina.dev.rtsoft.ru>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <shaggy@linux.vnet.ibm.com>
+Date: Tue, 10 Jun 2008 18:01:24 -0400
+From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+To: linuxppc-dev list <Linuxppc-dev@ozlabs.org>
+Message-Id: <20080610220123.10257.69686.sendpatchset@norville.austin.ibm.com>
+In-Reply-To: <20080610220055.10257.84465.sendpatchset@norville.austin.ibm.com>
+References: <20080610220055.10257.84465.sendpatchset@norville.austin.ibm.com>
+Subject: [RFC:PATCH 05/06] powerpc: Add Strong Access Ordering
+Cc: linux-mm <linux-mm@kvack.org>, Andrew Morton <akpm@linux-foundation.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,35 +17,75 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+powerpc: Add Strong Access Ordering
 
-On Jun 10, 2008, at 2:32 PM, Anton Vorontsov wrote:
+Things I don't like about this patch:
 
-> This patch updates mpc83xx_defconfig to support MPC8360E-RDK board.
->
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> ---
->
-> On Tue, Jun 10, 2008 at 10:55:39AM -0500, Kumar Gala wrote:
-> [...]
->> Can you do me a favor and update mpc83xx_defconfig and make sure that
->> boots and provide that in a separate patch.  I want to start making  
->> sure
->> we have whatever features boards need enabled in the  
->> mpc83xx_defconfig.
->
-> Done. This is on top of your current powerpc-next branch (HEAD
-> at 917f0af9e5a9ce) + applied patches (seems like you forgot to push
-> out the tree).
->
-> Thus mpc83xx_defconfig wasn't updated for a long time, so the
-> patch isn't readable.
->
-> Here is what I enabled manually:
+1. All the includes I added to asm-powerpc/mman.h
+2. It doesn't look like mmap() used to validate prot.  Now instead of
+ignoring invalid values, it will return -EINVAL.  Could this be a problem?
+3. Are these new functions in any hot paths that the extra instructions will
+add any significant overhead?
 
-Can you look at refreshing this against my for-2.6.26 tree (its got an  
-updated defconfig)
+Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+---
 
-Or update the mpc83xx_defconfig and than enable what you needed and  
-provide a patch of just the things being enabled.
+ arch/powerpc/kernel/syscalls.c |    3 +++
+ include/asm-powerpc/mman.h     |   26 ++++++++++++++++++++++++++
+ 2 files changed, 29 insertions(+)
 
-- k
+diff -Nurp linux004/arch/powerpc/kernel/syscalls.c linux005/arch/powerpc/kernel/syscalls.c
+--- linux004/arch/powerpc/kernel/syscalls.c	2008-06-05 10:07:32.000000000 -0500
++++ linux005/arch/powerpc/kernel/syscalls.c	2008-06-10 16:48:59.000000000 -0500
+@@ -143,6 +143,9 @@ static inline unsigned long do_mmap2(uns
+ 	struct file * file = NULL;
+ 	unsigned long ret = -EINVAL;
+ 
++	if (!arch_validate_prot(prot))
++		goto out;
++
+ 	if (shift) {
+ 		if (off & ((1 << shift) - 1))
+ 			goto out;
+diff -Nurp linux004/include/asm-powerpc/mman.h linux005/include/asm-powerpc/mman.h
+--- linux004/include/asm-powerpc/mman.h	2008-06-10 16:48:59.000000000 -0500
++++ linux005/include/asm-powerpc/mman.h	2008-06-10 16:48:59.000000000 -0500
+@@ -1,7 +1,9 @@
+ #ifndef _ASM_POWERPC_MMAN_H
+ #define _ASM_POWERPC_MMAN_H
+ 
++#include <asm/cputable.h>
+ #include <asm-generic/mman.h>
++#include <linux/mm.h>
+ 
+ /*
+  * This program is free software; you can redistribute it and/or
+@@ -26,4 +28,28 @@
+ #define MAP_POPULATE	0x8000		/* populate (prefault) pagetables */
+ #define MAP_NONBLOCK	0x10000		/* do not block on IO */
+ 
++#define HAVE_ARCH_PROT_BITS
++
++/*
++ * This file is included by linux/mman.h, so we can't use cacl_vm_prot_bits()
++ * here.  How important is the optimization?
++ */
++static inline unsigned long arch_calc_vm_prot_bits(unsigned long prot)
++{
++	return (prot & PROT_SAO) ? VM_SAO : 0;
++}
++
++static inline pgprot_t arch_vm_get_page_prot(unsigned long vm_flags)
++{
++	return (vm_flags & VM_SAO) ? __pgprot(_PAGE_SAO) : 0;
++}
++
++static inline int arch_validate_prot(unsigned long prot)
++{
++	if (prot & ~(PROT_READ | PROT_WRITE | PROT_EXEC | PROT_SEM | PROT_SAO))
++		return 1;
++	if ((prot & PROT_SAO) && !cpu_has_feature(CPU_FTR_SAO))
++		return 1;
++	return 0;
++}
+ #endif	/* _ASM_POWERPC_MMAN_H */
