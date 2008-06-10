@@ -1,23 +1,14 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
-	[140.211.169.13])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 6B556DDE98
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jun 2008 10:00:18 +1000 (EST)
-Date: Mon, 9 Jun 2008 17:00:12 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: benh@kernel.crashing.org
-Subject: Re: [patch 5/5] arch/powerpc/platforms/pseries/eeh_driver.c: fix
-	warning
-Message-Id: <20080609170012.3225db84.akpm@linux-foundation.org>
-In-Reply-To: <1213055222.25745.16.camel@pasglop>
-References: <200806092326.m59NQA9c014230@imap1.linux-foundation.org>
-	<1213055222.25745.16.camel@pasglop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Return-Path: <jonsmirl@gmail.com>
+Message-ID: <9e4733910806091716l9e50ab9xf65c4a90cb5a5343@mail.gmail.com>
+Date: Mon, 9 Jun 2008 20:16:06 -0400
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: "linuxppc-dev list" <Linuxppc-dev@ozlabs.org>
+Subject: Re: zImage.chrp is getting gziped on Efika
+In-Reply-To: <9e4733910806090555p7d6d768chbc7114f759c3557b@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <9e4733910806081827u776112c0x497c5ddf0f4667a@mail.gmail.com>
+	<9e4733910806090555p7d6d768chbc7114f759c3557b@mail.gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,27 +18,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 10 Jun 2008 09:47:02 +1000
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+This doesn't look right. I don't think vmlinux.strip should be 3.2GB
+for the Efika.
 
-> On Mon, 2008-06-09 at 16:26 -0700, akpm@linux-foundation.org wrote:
-> > From: Andrew Morton <akpm@linux-foundation.org>
-> > 
-> > Fix this:
-> > 
-> > /usr/src/devel/arch/powerpc/platforms/pseries/eeh_driver.c: In function 'print_device_node_tree':
-> > /usr/src/devel/arch/powerpc/platforms/pseries/eeh_driver.c:55: warning: ISO C90 forbids mixed declarations and code
-> > 
-> > also make that function look like it's part of Linux.  I mean, wtf are you
-> > guys up to down there??
-> 
-> The EEH code ... oh well. It does need some love...
+rwxr-xr-x  1 jonsmirl jonsmirl   32429434 2008-06-09 20:12 vmlinux
+-rw-r--r--  1 jonsmirl jonsmirl   61735424 2008-06-09 20:12 vmlinux.o
+-rwxr-xr-x  1 jonsmirl jonsmirl 3224000004 2008-06-08 21:11 vmlinux.strip
+-rwxr-xr-x  1 jonsmirl jonsmirl 3224175192 2008-06-09 20:12 vmlinux.strip.21504
+-rw-------  1 jonsmirl jonsmirl    2064384 2008-06-09 20:12
+vmlinux.strip.21504.gz
+-rwxr-xr-x  1 jonsmirl jonsmirl    4477568 2008-06-09 00:17 vmlinux.strip.gz
+-rw-r--r--  1 jonsmirl jonsmirl 3224000765 2008-06-08 21:12 zImage.6451.o
+jonsmirl@terra:~/es$
 
-Feel free to make the changelog more family-friendly.  You can always
-tell how many build errors I fixed in the predecing six hours..
 
-> > [akpm@linux-foundation.org: coding-style fixes]
-> 
-> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-Thanks.
+-- 
+Jon Smirl
+jonsmirl@gmail.com
