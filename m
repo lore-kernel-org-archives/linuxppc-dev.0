@@ -1,17 +1,27 @@
-Return-Path: <jonsmirl@gmail.com>
-Message-ID: <9e4733910806101208q1bb71913y5c0b5dc5d4fc4cb5@mail.gmail.com>
-Date: Tue, 10 Jun 2008 15:08:05 -0400
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Scott Wood" <scottwood@freescale.com>,
-	"Robert Schwebel" <r.schwebel@pengutronix.de>
-Subject: Re: Image generation for Efika is broken in 2.6.26
-In-Reply-To: <9e4733910806101044u1dd79185vc40f5c66e82edbfb@mail.gmail.com>
+Return-Path: <jbarnes@virtuousgeek.org>
+Received: from outbound-mail-130.bluehost.com (outbound-mail-130.bluehost.com
+	[67.222.38.30]) by ozlabs.org (Postfix) with SMTP id 9D749DE196
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jun 2008 05:20:27 +1000 (EST)
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Roland Dreier <rdreier@cisco.com>
+Subject: Re: MMIO and gcc re-ordering issue
+Date: Tue, 10 Jun 2008 12:19:34 -0700
+References: <1211852026.3286.36.camel@pasglop>
+	<1213121426.8536.7.camel@localhost.localdomain>
+	<adaskvl3yb0.fsf@cisco.com>
+In-Reply-To: <adaskvl3yb0.fsf@cisco.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <9e4733910806100738rac8e415x99f6e96715ebee90@mail.gmail.com>
-	<20080610165719.GA5139@loki.buserror.net>
-	<9e4733910806101044u1dd79185vc40f5c66e82edbfb@mail.gmail.com>
-Cc: linuxppc-dev list <Linuxppc-dev@ozlabs.org>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200806101219.34995.jbarnes@virtuousgeek.org>
+Cc: linux-arch@vger.kernel.org, Nick Piggin <nickpiggin@yahoo.com.au>,
+	Russell King <rmk+lkml@arm.linux.org.uk>,
+	Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
+	David Miller <davem@davemloft.net>,
+	James Bottomley <James.Bottomley@hansenpartnership.com>,
+	linuxppc-dev@ozlabs.org, scottwood@freescale.com,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Trent Piepho <tpiepho@freescale.com>, alan@lxorguk.ukuu.org.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,57 +31,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 6/10/08, Jon Smirl <jonsmirl@gmail.com> wrote:
-> On 6/10/08, Scott Wood <scottwood@freescale.com> wrote:
->  > On Tue, Jun 10, 2008 at 10:38:31AM -0400, Jon Smirl wrote:
->  >  > Why is my vmlinux.strip 3.2GB? Could a missing address be interpreted
->  >  > as -1 (0xFFF..) and cause the image to contain all of memory?
->  >  >
->  >  > -rw-r--r--  1 jonsmirl jonsmirl   61738015 2008-06-10 10:31 vmlinux.o
->  >  > -rwxr-xr-x  1 jonsmirl jonsmirl 3224175192 2008-06-10 10:31 vmlinux.strip.3651
->  >  >
->  >  > After it is packed vmlinux is 32MB. Packing gigabytes of zeros, maybe?
->  >  >
->  >  > -rwxr-xr-x  1 jonsmirl jonsmirl 32430673 2008-06-10 10:31 vmlinux
->  >  >
->  >  > This image won't load onto the Efika probably because it is trying to
->  >  > expand back to 3.2GB.
->  >  >
->  >  > With the same .config vmlinux is 4.1MB on 2.6.25
->  >  >
->  >  > -rwxr-xr-x  1 jonsmirl jonsmirl 4119174 2008-06-09 20:09 vmlinux
->  >
->  >
->  > Are you using binutils 2.17?  It has a bug that was triggered by the p_paddr
->  >  change.  Do you get a bunch of warnings from the strip command?
+On Tuesday, June 10, 2008 12:05 pm Roland Dreier wrote:
+>  > me too.  That's the whole basis for readX_relaxed() and its cohorts: we
+>  > make our weirdest machines (like altix) conform to the x86 norm.  Then
+>  > where it really kills us we introduce additional semantics to selected
+>  > drivers that enable us to recover I/O speed on the abnormal platforms.
 >
+> Except as I pointed out before, Altix doesn't conform to the norm and
+> many (most?) drivers are missing mmiowb()s that are needed for Altix.
+> Just no one has plugged most devices into an Altix (or haven't stressed
+> the driver in a way that exposes problems of IO ordering between CPUs).
 >
-> I don't see any warnings even when run make V=1.
->
->  I'm using the Pengutronix OSELAS.Toolchain-1.1.1 which has bunutils 2.17 in it.
->
->  I'm trying to convince OSELAS to rebuild the toolchain on Ubuntu hardy
->  but I'm having problems.
+> It would be a great thing to use the powerpc trick of setting a flag
+> that is tested by spin_unlock()/mutex_unlock() and automatically doing
+> the mmiowb() if needed, and then killing off mmiowb() entirely.
 
+Yeah I think that's what Nick's guidelines would guarantee.  And Jes is 
+already working on the spin_unlock change you mentioned, so mmiowb() should 
+be history soon (in name only, assuming Nick also introduces the I/O barriers 
+he talked about for ordering the looser accessors it would still be there but 
+would be called io_wmb or something).
 
-After much mucking with my toolchain, I got it built with bin-utils
-2.18. That fixed the Efika problem. Thanks for the tip.
-
-
->
->  >
->  >
->  >  -Scott
->
-> >
->
->
->  --
->  Jon Smirl
->  jonsmirl@gmail.com
->
-
-
--- 
-Jon Smirl
-jonsmirl@gmail.com
+Jesse
