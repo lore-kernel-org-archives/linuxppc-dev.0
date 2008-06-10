@@ -1,36 +1,35 @@
-Return-Path: <ossrosch@linux.vnet.ibm.com>
-Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
+Return-Path: <cel@us.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 6921ADDE25
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jun 2008 01:01:53 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e2.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m5AF1nIr011744
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jun 2008 11:01:49 -0400
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
-	m5AF1nX9156924
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jun 2008 11:01:49 -0400
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m5AF1mOF001304
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jun 2008 11:01:49 -0400
-From: Stefan Roscher <ossrosch@linux.vnet.ibm.com>
-To: Roland Dreier <rdreier@cisco.com>
-Subject: Re: [PATCH REPOST] IB/ehca: In case of lost interrupts,
-	trigger EOI to reenable interrupts
-Date: Tue, 10 Jun 2008 17:01:45 +0200
-References: <200806101644.34693.ossrosch@linux.vnet.ibm.com>
-	<adatzg15ol2.fsf@cisco.com>
-In-Reply-To: <adatzg15ol2.fsf@cisco.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200806101701.47090.ossrosch@linux.vnet.ibm.com>
-Cc: TKLEIN@de.ibm.com, THEMANN@de.ibm.com, fenkes@de.ibm.com,
-	LKML <linux-kernel@vger.kernel.org>, OF-EWG <ewg@lists.openfabrics.org>,
-	LinuxPPC-Dev <linuxppc-dev@ozlabs.org>, raisch@de.ibm.com,
-	Paul Mackerras <paulus@samba.org>, general@lists.openfabrics.org
+	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id D1D4ADE4AF
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jun 2008 01:38:35 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m5AFcWKd029233
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jun 2008 11:38:32 -0400
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
+	m5AFcUti062140
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jun 2008 09:38:30 -0600
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m5AFcTpp007367
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jun 2008 09:38:29 -0600
+Subject: Re: [patch 1/5] powerpc: fix for OProfile callgraph for Power 64
+	bit user apps
+From: Carl Love <cel@us.ibm.com>
+To: michael@ellerman.id.au
+In-Reply-To: <1213057802.25500.1.camel@localhost>
+References: <200806092326.m59NQ7rM014218@imap1.linux-foundation.org>
+	<1213054877.25745.11.camel@pasglop>
+	<1213057802.25500.1.camel@localhost>
+Content-Type: text/plain
+Date: Tue, 10 Jun 2008 08:35:46 -0700
+Message-Id: <1213112146.6763.177.camel@carll-linux-desktop>
+Mime-Version: 1.0
+Cc: akpm@linux-foundation.org, carll@us.ibm.com, paulus@samba.org,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -40,16 +39,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tuesday 10 June 2008 16:52:57 Roland Dreier wrote:
->  > During corner case testing, we noticed that some versions of ehca 
->  > do not properly transition to interrupt done in special load situations.
->  > This can be resolved by periodically triggering EOI through H_EOI, 
->  > if eqes are pending.
+
+On Tue, 2008-06-10 at 10:30 +1000, Michael Ellerman wrote:
+> On Tue, 2008-06-10 at 09:41 +1000, Benjamin Herrenschmidt wrote:
+> > On Mon, 2008-06-09 at 16:26 -0700, akpm@linux-foundation.org wrote:
+> > > From: Carl Love <cel@us.ibm.com>
+> > > 
+> > > Fix the 64 bit user code backtrace which currently may hang the system.
+> > > 
+> > > Signed-off-by: Carl Love <carll@us.ibm.com>
+> > > Cc: Maynard Johnson <maynardj@us.ibm.com>
+> > 
+> > That looks weird. I doubt it's the right fix for the problem. Paul,
+> > I remember this was discussed earlier, did we come up with a proper fix
+> > already ?
 > 
-> So just to be clear: this is a workaround for a hardware/firmware bug?
+> We decided there probably wasn't a bug there at all:
 > 
->  - R.
+> http://ozlabs.org/pipermail/linuxppc-dev/2008-May/056449.html
+> 
+> Haven't heard from Carl if he reproduced the hang and traced it to
+> something else.
+> 
+> cheers
 > 
 
-Yes it is.
-regards Stefan
+After a discussion of this patch, the general consensus was that the
+issue is with the underlying copy from user call.  After developing and
+posting the patch, I had tried to go back and reproduce it again and was
+not able to. My system had changed slightly and I could get it to fail.
+I still have this on my to do list to get back to working on the Powerpc
+callgraph support as there are some other fundamental issues with the
+code.  Specifically the call back traces are not always correct for leaf
+nodes.  This was actually the issue I was working on when I found the
+issue with the 64 bit applications hanging the system.  
+
+The patch should be dropped.
+
+                Carl Love
