@@ -1,15 +1,33 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.174]) by ozlabs.org (Postfix) with ESMTP id E1867DDF52
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jun 2008 00:41:48 +1000 (EST)
-Message-Id: <20080610142947.974805307@arndb.de>
-References: <20080610142702.354823071@arndb.de>
-Date: Tue, 10 Jun 2008 16:27:05 +0200
-From: arnd@arndb.de
-To: paulus@samba.org
-Subject: [PATCH 3/5] powerpc/ibm_iic: remove support for OCP
-Cc: linuxppc-dev@ozlabs.org, Ben Dooks <ben-linux@fluff.org>,
-	i2c@lm-sensors.org
+Return-Path: <ossrosch@linux.vnet.ibm.com>
+Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id DCF98DDF11
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jun 2008 00:45:00 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e6.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m5AEl4tp020727
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jun 2008 10:47:04 -0400
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
+	m5AEibVV207696
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jun 2008 10:44:37 -0400
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m5AEiadO004841
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jun 2008 10:44:37 -0400
+From: Stefan Roscher <ossrosch@linux.vnet.ibm.com>
+To: Roland Dreier <rolandd@cisco.com>, Paul Mackerras <paulus@samba.org>,
+	"LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
+	LKML <linux-kernel@vger.kernel.org>,
+	"OF-EWG" <ewg@lists.openfabrics.org>, general@lists.openfabrics.org
+Subject: [PATCH REPOST] IB/ehca: In case of lost interrupts,
+	trigger EOI to reenable interrupts
+Date: Tue, 10 Jun 2008 16:44:31 +0200
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200806101644.34693.ossrosch@linux.vnet.ibm.com>
+Cc: TKLEIN@de.ibm.com, fenkes@de.ibm.com, raisch@de.ibm.com, THEMANN@de.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,223 +37,81 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-OCP is dead, so all code referring to it can go away as well.
+During corner case testing, we noticed that some versions of ehca 
+do not properly transition to interrupt done in special load situations.
+This can be resolved by periodically triggering EOI through H_EOI, 
+if eqes are pending.
 
-Cc: i2c@lm-sensors.org
-Cc: Ben Dooks <ben-linux@fluff.org>
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Signed-off-by: Stefan Roscher <stefan.roscher@de.ibm.com>
+
 ---
- drivers/i2c/busses/i2c-ibm_iic.c |  181 --------------------------------------
- 1 files changed, 0 insertions(+), 181 deletions(-)
+This patch replaces my previous patch-set.
+As Paul suggested, this version of the patch calls H_EOI directly and doesn't need
+any ibmebus changes.
+ 
+ drivers/infiniband/hw/ehca/ehca_main.c |   11 +++++++++--
+ drivers/infiniband/hw/ehca/hcp_if.c    |   11 +++++++++++
+ drivers/infiniband/hw/ehca/hcp_if.h    |    1 +
+ 3 files changed, 21 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/i2c/busses/i2c-ibm_iic.c b/drivers/i2c/busses/i2c-ibm_iic.c
-index 85dbf34..3a364a7 100644
---- a/drivers/i2c/busses/i2c-ibm_iic.c
-+++ b/drivers/i2c/busses/i2c-ibm_iic.c
-@@ -42,13 +42,7 @@
- #include <asm/io.h>
- #include <linux/i2c.h>
- #include <linux/i2c-id.h>
--
--#ifdef CONFIG_IBM_OCP
--#include <asm/ocp.h>
--#include <asm/ibm4xx.h>
--#else
- #include <linux/of_platform.h>
--#endif
- 
- #include "i2c-ibm_iic.h"
- 
-@@ -665,180 +659,6 @@ static inline u8 iic_clckdiv(unsigned int opb)
- 	return (u8)((opb + 9) / 10 - 1);
- }
- 
--#ifdef CONFIG_IBM_OCP
--/*
-- * Register single IIC interface
-- */
--static int __devinit iic_probe(struct ocp_device *ocp){
--
--	struct ibm_iic_private* dev;
--	struct i2c_adapter* adap;
--	struct ocp_func_iic_data* iic_data = ocp->def->additions;
--	int ret;
--
--	if (!iic_data)
--		printk(KERN_WARNING"ibm-iic%d: missing additional data!\n",
--			ocp->def->index);
--
--	if (!(dev = kzalloc(sizeof(*dev), GFP_KERNEL))) {
--		printk(KERN_ERR "ibm-iic%d: failed to allocate device data\n",
--			ocp->def->index);
--		return -ENOMEM;
--	}
--
--	dev->idx = ocp->def->index;
--	ocp_set_drvdata(ocp, dev);
--
--	if (!request_mem_region(ocp->def->paddr, sizeof(struct iic_regs),
--				"ibm_iic")) {
--		ret = -EBUSY;
--		goto fail1;
--	}
--
--	if (!(dev->vaddr = ioremap(ocp->def->paddr, sizeof(struct iic_regs)))){
--		printk(KERN_ERR "ibm-iic%d: failed to ioremap device registers\n",
--			dev->idx);
--		ret = -ENXIO;
--		goto fail2;
--	}
--
--	init_waitqueue_head(&dev->wq);
--
--	dev->irq = iic_force_poll ? -1 : ocp->def->irq;
--	if (dev->irq >= 0){
--		/* Disable interrupts until we finish initialization,
--		   assumes level-sensitive IRQ setup...
--		 */
--		iic_interrupt_mode(dev, 0);
--		if (request_irq(dev->irq, iic_handler, 0, "IBM IIC", dev)){
--			printk(KERN_ERR "ibm-iic%d: request_irq %d failed\n",
--				dev->idx, dev->irq);
--			/* Fallback to the polling mode */
--			dev->irq = -1;
--		}
--	}
--
--	if (dev->irq < 0)
--		printk(KERN_WARNING "ibm-iic%d: using polling mode\n",
--			dev->idx);
--
--	/* Board specific settings */
--	dev->fast_mode = iic_force_fast ? 1 : (iic_data ? iic_data->fast_mode : 0);
--
--	/* clckdiv is the same for *all* IIC interfaces,
--	 * but I'd rather make a copy than introduce another global. --ebs
--	 */
--	dev->clckdiv = iic_clckdiv(ocp_sys_info.opb_bus_freq);
--	DBG("%d: clckdiv = %d\n", dev->idx, dev->clckdiv);
--
--	/* Initialize IIC interface */
--	iic_dev_init(dev);
--
--	/* Register it with i2c layer */
--	adap = &dev->adap;
--	adap->dev.parent = &ocp->dev;
--	strcpy(adap->name, "IBM IIC");
--	i2c_set_adapdata(adap, dev);
--	adap->id = I2C_HW_OCP;
--	adap->class = I2C_CLASS_HWMON;
--	adap->algo = &iic_algo;
--	adap->client_register = NULL;
--	adap->client_unregister = NULL;
--	adap->timeout = 1;
--
--	/*
--	 * If "dev->idx" is negative we consider it as zero.
--	 * The reason to do so is to avoid sysfs names that only make
--	 * sense when there are multiple adapters.
--	 */
--	adap->nr = dev->idx >= 0 ? dev->idx : 0;
--
--	if ((ret = i2c_add_numbered_adapter(adap)) < 0) {
--		printk(KERN_ERR "ibm-iic%d: failed to register i2c adapter\n",
--			dev->idx);
--		goto fail;
--	}
--
--	printk(KERN_INFO "ibm-iic%d: using %s mode\n", dev->idx,
--		dev->fast_mode ? "fast (400 kHz)" : "standard (100 kHz)");
--
--	return 0;
--
--fail:
--	if (dev->irq >= 0){
--		iic_interrupt_mode(dev, 0);
--		free_irq(dev->irq, dev);
--	}
--
--	iounmap(dev->vaddr);
--fail2:
--	release_mem_region(ocp->def->paddr, sizeof(struct iic_regs));
--fail1:
--	ocp_set_drvdata(ocp, NULL);
--	kfree(dev);
--	return ret;
--}
--
--/*
-- * Cleanup initialized IIC interface
-- */
--static void __devexit iic_remove(struct ocp_device *ocp)
--{
--	struct ibm_iic_private* dev = (struct ibm_iic_private*)ocp_get_drvdata(ocp);
--	BUG_ON(dev == NULL);
--	if (i2c_del_adapter(&dev->adap)){
--		printk(KERN_ERR "ibm-iic%d: failed to delete i2c adapter :(\n",
--			dev->idx);
--		/* That's *very* bad, just shutdown IRQ ... */
--		if (dev->irq >= 0){
--		    iic_interrupt_mode(dev, 0);
--		    free_irq(dev->irq, dev);
--		    dev->irq = -1;
--		}
--	} else {
--		if (dev->irq >= 0){
--		    iic_interrupt_mode(dev, 0);
--		    free_irq(dev->irq, dev);
--		}
--		iounmap(dev->vaddr);
--		release_mem_region(ocp->def->paddr, sizeof(struct iic_regs));
--		kfree(dev);
--	}
--}
--
--static struct ocp_device_id ibm_iic_ids[] __devinitdata =
--{
--	{ .vendor = OCP_VENDOR_IBM, .function = OCP_FUNC_IIC },
--	{ .vendor = OCP_VENDOR_INVALID }
--};
--
--MODULE_DEVICE_TABLE(ocp, ibm_iic_ids);
--
--static struct ocp_driver ibm_iic_driver =
--{
--	.name 		= "iic",
--	.id_table	= ibm_iic_ids,
--	.probe		= iic_probe,
--	.remove		= __devexit_p(iic_remove),
--#if defined(CONFIG_PM)
--	.suspend	= NULL,
--	.resume		= NULL,
--#endif
--};
--
--static int __init iic_init(void)
--{
--	printk(KERN_INFO "IBM IIC driver v" DRIVER_VERSION "\n");
--	return ocp_register_driver(&ibm_iic_driver);
--}
--
--static void __exit iic_exit(void)
--{
--	ocp_unregister_driver(&ibm_iic_driver);
--}
--
--#else  /* !CONFIG_IBM_OCP */
--
- static int __devinit iic_request_irq(struct of_device *ofdev,
- 				     struct ibm_iic_private *dev)
+diff --git a/drivers/infiniband/hw/ehca/ehca_main.c b/drivers/infiniband/hw/ehca/ehca_main.c
+index 482103e..add4ff4 100644
+--- a/drivers/infiniband/hw/ehca/ehca_main.c
++++ b/drivers/infiniband/hw/ehca/ehca_main.c
+@@ -937,6 +937,7 @@ static struct of_platform_driver ehca_driver = {
+ void ehca_poll_eqs(unsigned long data)
  {
-@@ -1011,7 +831,6 @@ static void __exit iic_exit(void)
- {
- 	of_unregister_platform_driver(&ibm_iic_driver);
- }
--#endif /* CONFIG_IBM_OCP */
+ 	struct ehca_shca *shca;
++	u64 ret;
  
- module_init(iic_init);
- module_exit(iic_exit);
+ 	spin_lock(&shca_list_lock);
+ 	list_for_each_entry(shca, &shca_list, shca_list) {
+@@ -955,8 +956,14 @@ void ehca_poll_eqs(unsigned long data)
+ 				spin_unlock_irqrestore(&eq->spinlock, flags);
+ 				max--;
+ 			} while (q_ofs == q_ofs2 && max > 0);
+-			if (q_ofs == q_ofs2)
+-				ehca_process_eq(shca, 0);
++			if (q_ofs == q_ofs2) {
++				ret = hipz_h_eoi(eq->ist);
++				if (ret != H_SUCCESS)
++					ehca_err(&shca->ib_device,
++						 "bad return code EOI -"
++						 "rc = %ld\n", ret);
++				tasklet_hi_schedule(&shca->eq.interrupt_task);
++			}
+ 		}
+ 	}
+ 	mod_timer(&poll_eqs_timer, round_jiffies(jiffies + HZ));
+diff --git a/drivers/infiniband/hw/ehca/hcp_if.c b/drivers/infiniband/hw/ehca/hcp_if.c
+index 5245e13..7084efd 100644
+--- a/drivers/infiniband/hw/ehca/hcp_if.c
++++ b/drivers/infiniband/hw/ehca/hcp_if.c
+@@ -933,3 +933,14 @@ u64 hipz_h_error_data(const struct ipz_adapter_handle adapter_handle,
+ 				       r_cb,
+ 				       0, 0, 0, 0);
+ }
++
++u64 hipz_h_eoi(int irq)
++{
++	int value;
++	unsigned long xirr;
++
++	iosync();
++	value = (0xff << 24) | irq;
++	xirr = value & 0xffffffff;
++	return plpar_hcall_norets(H_EOI, xirr);
++}
+diff --git a/drivers/infiniband/hw/ehca/hcp_if.h b/drivers/infiniband/hw/ehca/hcp_if.h
+index 60ce02b..2c3c6e0 100644
+--- a/drivers/infiniband/hw/ehca/hcp_if.h
++++ b/drivers/infiniband/hw/ehca/hcp_if.h
+@@ -260,5 +260,6 @@ u64 hipz_h_error_data(const struct ipz_adapter_handle adapter_handle,
+ 		      const u64 ressource_handle,
+ 		      void *rblock,
+ 		      unsigned long *byte_count);
++u64 hipz_h_eoi(int irq);
+ 
+ #endif /* __HCP_IF_H__ */
 -- 
-1.5.4.3
-
--- 
+1.5.5
