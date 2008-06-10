@@ -1,35 +1,20 @@
-Return-Path: <cel@us.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id D1D4ADE4AF
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jun 2008 01:38:35 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m5AFcWKd029233
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jun 2008 11:38:32 -0400
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
-	m5AFcUti062140
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jun 2008 09:38:30 -0600
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m5AFcTpp007367
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jun 2008 09:38:29 -0600
-Subject: Re: [patch 1/5] powerpc: fix for OProfile callgraph for Power 64
-	bit user apps
-From: Carl Love <cel@us.ibm.com>
-To: michael@ellerman.id.au
-In-Reply-To: <1213057802.25500.1.camel@localhost>
-References: <200806092326.m59NQ7rM014218@imap1.linux-foundation.org>
-	<1213054877.25745.11.camel@pasglop>
-	<1213057802.25500.1.camel@localhost>
-Content-Type: text/plain
-Date: Tue, 10 Jun 2008 08:35:46 -0700
-Message-Id: <1213112146.6763.177.camel@carll-linux-desktop>
-Mime-Version: 1.0
-Cc: akpm@linux-foundation.org, carll@us.ibm.com, paulus@samba.org,
-	linuxppc-dev@ozlabs.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id EBDD3DDFCC
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jun 2008 01:55:46 +1000 (EST)
+Message-Id: <67EC8BE5-3BF0-4107-8FA9-A058283E7EB5@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+In-Reply-To: <20080429190049.GE21203@polina.dev.rtsoft.ru>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v924)
+Subject: Re: [PATCH 5/6] [POWERPC] 83xx: new board support: MPC8360E-RDK
+Date: Tue, 10 Jun 2008 10:55:39 -0500
+References: <20080429185920.GA19735@polina.dev.rtsoft.ru>
+	<20080429190049.GE21203@polina.dev.rtsoft.ru>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -40,40 +25,48 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Tue, 2008-06-10 at 10:30 +1000, Michael Ellerman wrote:
-> On Tue, 2008-06-10 at 09:41 +1000, Benjamin Herrenschmidt wrote:
-> > On Mon, 2008-06-09 at 16:26 -0700, akpm@linux-foundation.org wrote:
-> > > From: Carl Love <cel@us.ibm.com>
-> > > 
-> > > Fix the 64 bit user code backtrace which currently may hang the system.
-> > > 
-> > > Signed-off-by: Carl Love <carll@us.ibm.com>
-> > > Cc: Maynard Johnson <maynardj@us.ibm.com>
-> > 
-> > That looks weird. I doubt it's the right fix for the problem. Paul,
-> > I remember this was discussed earlier, did we come up with a proper fix
-> > already ?
-> 
-> We decided there probably wasn't a bug there at all:
-> 
-> http://ozlabs.org/pipermail/linuxppc-dev/2008-May/056449.html
-> 
-> Haven't heard from Carl if he reproduced the hang and traced it to
-> something else.
-> 
-> cheers
-> 
+On Apr 29, 2008, at 2:00 PM, Anton Vorontsov wrote:
 
-After a discussion of this patch, the general consensus was that the
-issue is with the underlying copy from user call.  After developing and
-posting the patch, I had tried to go back and reproduce it again and was
-not able to. My system had changed slightly and I could get it to fail.
-I still have this on my to do list to get back to working on the Powerpc
-callgraph support as there are some other fundamental issues with the
-code.  Specifically the call back traces are not always correct for leaf
-nodes.  This was actually the issue I was working on when I found the
-issue with the 64 bit applications hanging the system.  
+> This is patch adds board file, device tree, and defconfig for the new
+> board, made by Freescale Semiconductor Inc. and Logic Product  
+> Development.
+>
+> Currently supported:
+> 1. UEC{1,2,7,4};
+> 2. I2C;
+> 3. SPI;
+> 4. NS16550 serial;
+> 5. PCI and miniPCI;
+> 6. Intel NOR StrataFlash X16 64Mbit PC28F640P30T85;
+> 7. Graphics controller, Fujitsu MB86277.
+>
+> Not supported in this patch:
+> 1. StMICRO NAND512W3A2BN6E, 512 Mbit (supported with FSL UPM NAND  
+> driver);
+> 2. FHCI USB (supported with FHCI driver).
+> 3. QE Serial UCCs (tested to not work with ucc_uart driver, reason
+>   unknown, yet);
+> 4. ADC AD7843 (tested to work, but support via device tree depends on
+>   major SPI rework, GPIO API, etc);
+>
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> ---
+> arch/powerpc/boot/dts/mpc836x_rdk.dts           |  397 +++++++++
+> arch/powerpc/configs/83xx/mpc836x_rdk_defconfig | 1090 ++++++++++++++ 
+> +++++++++
+> arch/powerpc/platforms/83xx/Kconfig             |   11 +
+> arch/powerpc/platforms/83xx/Makefile            |    1 +
+> arch/powerpc/platforms/83xx/mpc836x_rdk.c       |  111 +++
+> 5 files changed, 1610 insertions(+), 0 deletions(-)
+> create mode 100644 arch/powerpc/boot/dts/mpc836x_rdk.dts
+> create mode 100644 arch/powerpc/configs/83xx/mpc836x_rdk_defconfig
+> create mode 100644 arch/powerpc/platforms/83xx/mpc836x_rdk.c
 
-The patch should be dropped.
+Can you do me a favor and update mpc83xx_defconfig and make sure that  
+boots and provide that in a separate patch.  I want to start making  
+sure we have whatever features boards need enabled in the  
+mpc83xx_defconfig.
 
-                Carl Love
+thanks
+
+- k
