@@ -1,17 +1,22 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH] [POWERPC] Free a PTE bit on ppc64 with 64K pages
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <20080529055401.9B758DDDE7@ozlabs.org>
-References: <20080529055401.9B758DDDE7@ozlabs.org>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-UOqog35EJ46iSJzy1jbu"
-Date: Tue, 10 Jun 2008 14:00:51 +1000
-Message-Id: <1213070451.7957.3.camel@localhost>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
-Reply-To: michael@ellerman.id.au
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id F1B60DDEE8
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jun 2008 15:16:43 +1000 (EST)
+Message-Id: <7B2677EE-5A72-4DE8-A550-8901503E122F@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: akpm@linux-foundation.org
+In-Reply-To: <200806092329.m59NTt1s014465@imap1.linux-foundation.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v924)
+Subject: Re: [patch 1/1] fsldma: the MPC8377MDS board device tree node for
+	fsldma driver
+Date: Tue, 10 Jun 2008 00:16:19 -0500
+References: <200806092329.m59NTt1s014465@imap1.linux-foundation.org>
+Cc: shannon.nelson@intel.com, linuxppc-dev@ozlabs.org, paulus@samba.org,
+	scottwood@freescale.com, galak@gate.crashing.org,
+	dan.j.williams@intel.com, leoli@freescale.com, wei.zhang@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,47 +27,45 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-UOqog35EJ46iSJzy1jbu
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+On Jun 9, 2008, at 6:29 PM, akpm@linux-foundation.org wrote:
 
-On Thu, 2008-05-29 at 15:51 +1000, Benjamin Herrenschmidt wrote:
-> This patch frees a PTE bit when using 64K pages on ppc64. This is done
-> by getting rid of the separate _PAGE_HASHPTE bit. Instead, we just test
-> if any of the 16 sub-page bits is set. For non-combo pages (ie. real
-> 64K pages), we set SUB0 and the location encoding in that field.
->=20
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> From: Zhang Wei <wei.zhang@freescale.com>
+>
+> The fsldma driver is tested on MPC8377MDS board.  The patch adds  
+> fsldma driver
+> support into MPC8377MDS device tree.
+>
+> Signed-off-by: Zhang Wei <wei.zhang@freescale.com>
+> Cc: "Nelson, Shannon" <shannon.nelson@intel.com>
+> Cc: Dan Williams <dan.j.williams@intel.com>
+> Cc: Kumar Gala <galak@gate.crashing.org>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Scott Wood <scottwood@freescale.com>
+> Cc: Li Yang <leoli@freescale.com>
+>
+> On Wed, 14 May 2008 18:28:08 -0500
+> Scott Wood <scottwood@freescale.com> wrote:
+>
+>
+>> akpm@linux-foundation.org wrote:
+>>> From: Zhang Wei <wei.zhang@freescale.com>
+>>>
+>> According to booting-without-of.txt, the interrupts property should  
+>> be
+>> repeated in each channel.  The driver also needs to be fixed to  
+>> remember
+>> whether it registered a DMA-block-level interrupt handler already,  
+>> and
+>> not try to register a channel interrupt.
+>
+> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 > ---
->=20
-> Please review and make sure I didn't miss something ...=20
+>
+> arch/powerpc/boot/dts/mpc8377_mds.dts |   27 ++++++++++++++++++++++++
+> 1 file changed, 27 insertions(+)
 
-This doesn't build for CONFIG_PPC_64K_PAGES=3Dn and
-CONFIG_PPC_HAS_HASH_64K=3Dy, because the asm is protected by the latter
-but the header definitions are protected by the former.
+This is already in Linus's tree as commit  
+3f346935f4f7141b0253ab0d8dfefb6e20ad08c3
 
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-UOqog35EJ46iSJzy1jbu
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBITfxzdSjSd0sB4dIRAh9cAJ9osm3E4pWW3WKnHqzjinZfWlbSUgCgusXj
-uyq885llFNO2abgTazrFr6Q=
-=MYxr
------END PGP SIGNATURE-----
-
---=-UOqog35EJ46iSJzy1jbu--
+- k
