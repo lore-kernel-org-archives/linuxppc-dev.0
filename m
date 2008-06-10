@@ -1,20 +1,26 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 07FD9DDEDE
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jun 2008 02:16:06 +1000 (EST)
-Message-Id: <1872DAC5-C05B-4857-82A0-84F8FA0117FB@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: avorontsov@ru.mvista.com
-In-Reply-To: <20080610140233.GA4061@polina.dev.rtsoft.ru>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v924)
-Subject: Re: Please pull from 'powerpc-next' branch
-Date: Tue, 10 Jun 2008 11:16:02 -0500
-References: <Pine.LNX.4.64.0806042232040.23796@blarg.am.freescale.net>
-	<20080610140233.GA4061@polina.dev.rtsoft.ru>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Return-Path: <rdreier@cisco.com>
+Received: from sj-iport-6.cisco.com (sj-iport-6.cisco.com [171.71.176.117])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "sj-iport-6.cisco.com", Issuer "Cisco SSCA" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id E3AC2DDEF0
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jun 2008 02:18:54 +1000 (EST)
+From: Roland Dreier <rdreier@cisco.com>
+To: Stefan Roscher <ossrosch@linux.vnet.ibm.com>
+Subject: Re: [PATCH REPOST] IB/ehca: In case of lost interrupts,
+	trigger EOI to reenable interrupts
+References: <200806101644.34693.ossrosch@linux.vnet.ibm.com>
+	<adatzg15ol2.fsf@cisco.com>
+	<200806101701.47090.ossrosch@linux.vnet.ibm.com>
+Date: Tue, 10 Jun 2008 09:18:50 -0700
+In-Reply-To: <200806101701.47090.ossrosch@linux.vnet.ibm.com> (Stefan
+	Roscher's message of "Tue, 10 Jun 2008 17:01:45 +0200")
+Message-ID: <adaabht5klx.fsf@cisco.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: TKLEIN@de.ibm.com, THEMANN@de.ibm.com, fenkes@de.ibm.com,
+	LKML <linux-kernel@vger.kernel.org>, OF-EWG <ewg@lists.openfabrics.org>,
+	LinuxPPC-Dev <linuxppc-dev@ozlabs.org>, raisch@de.ibm.com,
+	Paul Mackerras <paulus@samba.org>, general@lists.openfabrics.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,47 +30,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+ > > So just to be clear: this is a workaround for a hardware/firmware bug?
 
-On Jun 10, 2008, at 9:02 AM, Anton Vorontsov wrote:
+ > Yes it is.
 
-> On Wed, Jun 04, 2008 at 10:32:38PM -0500, Kumar Gala wrote:
->> Please pull from 'powerpc-next' branch of
->>
->> 	master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git  
->> powerpc-next
->
-> Kumar, could you provide some status for these patches?
->
-> * rdk/83xx/qe queue
->
-> [PATCH 1/7] [POWERPC] sysdev: implement FSL GTM support
-> http://patchwork.ozlabs.org/linuxppc/patch?id=18669
->
-> [PATCH 2/7] [POWERPC] QE: add support for QE USB clocks routing
-> http://patchwork.ozlabs.org/linuxppc/patch?id=18670
->
-> [PATCH 3/7] [POWERPC] QE: prepare QE PIO code for GPIO LIB support
-> http://patchwork.ozlabs.org/linuxppc/patch?id=18671
->
-> [PATCH 4/7] [POWERPC] QE: implement support for the GPIO LIB API
-> http://patchwork.ozlabs.org/linuxppc/patch?id=18672
->
-> [PATCH 5/7] [POWERPC] 83xx: new board support: MPC8360E-RDK
-> http://patchwork.ozlabs.org/linuxppc/patch?id=18673
->
-> [PATCH 7/7] [POWERPC] qe_lib: switch to the cpm_muram implementation
-> http://patchwork.ozlabs.org/linuxppc/patch?id=18675
->
-> * MPC837xRDB ethernet fix
->
-> [POWERPC] 83xx: MPC837xRDB's VSC7385 ethernet switch isn't on the  
-> MDIO bus
-> http://patchwork.ozlabs.org/linuxppc/patch?id=17389
->
-> Thanks,
+OK, so paulus et al... does it seem like a good approach to call H_EOI
+from driver code (given that this driver makes tons of other hcalls)?
 
-Applied all of these to the various trees.  (powerpc-next for all but  
-the last one).  See me email about making sure RDK builds and boots as  
-port of the mpc83xx_defconfig.
+How critical is this?  Since you said "corner case testing" I suspect we
+can defer this to 2.6.27 and maybe get it into -stable later?
 
-- k
+Also, out of curiousity:
+
+ > +u64 hipz_h_eoi(int irq)
+ > +{
+ > +	int value;
+ > +	unsigned long xirr;
+ > +
+ > +	iosync();
+
+what is the iosync() required for here?
+
+ > +	value = (0xff << 24) | irq;
+ > +	xirr = value & 0xffffffff;
+
+given that irq and value are ints, is there any possible way value could
+have bits outside of the low 32 set?  If you're worried about sign
+extension isn't it simpler to just make value unsigned?
+
+ > +	return plpar_hcall_norets(H_EOI, xirr);
+ > +}
+
+ie why not:
+
+u64 hipz_h_eoi(int irq)
+{
+	unsigned xirr;
+
+	iosync();
+	xirr = (0xff << 24) | irq;
+	return plpar_hcall_norets(H_EOI, xirr);
+}
