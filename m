@@ -1,11 +1,11 @@
 Return-Path: <shaggy@linux.vnet.ibm.com>
-Date: Tue, 10 Jun 2008 18:01:24 -0400
+Date: Tue, 10 Jun 2008 18:01:18 -0400
 From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
 To: linuxppc-dev list <Linuxppc-dev@ozlabs.org>
-Message-Id: <20080610220123.10257.69686.sendpatchset@norville.austin.ibm.com>
+Message-Id: <20080610220118.10257.31835.sendpatchset@norville.austin.ibm.com>
 In-Reply-To: <20080610220055.10257.84465.sendpatchset@norville.austin.ibm.com>
 References: <20080610220055.10257.84465.sendpatchset@norville.austin.ibm.com>
-Subject: [RFC:PATCH 05/06] powerpc: Add Strong Access Ordering
+Subject: [RFC:PATCH 04/06] powerpc: Define CPU_FTR_SAO
 Cc: linux-mm <linux-mm@kvack.org>, Andrew Morton <akpm@linux-foundation.org>,
 	Linus Torvalds <torvalds@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -17,75 +17,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-powerpc: Add Strong Access Ordering
+powerpc: Define CPU_FTR_SAO
 
-Things I don't like about this patch:
-
-1. All the includes I added to asm-powerpc/mman.h
-2. It doesn't look like mmap() used to validate prot.  Now instead of
-ignoring invalid values, it will return -EINVAL.  Could this be a problem?
-3. Are these new functions in any hot paths that the extra instructions will
-add any significant overhead?
+This is just a placeholder to make the patchset compilable.
 
 Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
 ---
 
- arch/powerpc/kernel/syscalls.c |    3 +++
- include/asm-powerpc/mman.h     |   26 ++++++++++++++++++++++++++
- 2 files changed, 29 insertions(+)
+ include/asm-powerpc/cputable.h |    1 +
+ 1 file changed, 1 insertion(+)
 
-diff -Nurp linux004/arch/powerpc/kernel/syscalls.c linux005/arch/powerpc/kernel/syscalls.c
---- linux004/arch/powerpc/kernel/syscalls.c	2008-06-05 10:07:32.000000000 -0500
-+++ linux005/arch/powerpc/kernel/syscalls.c	2008-06-10 16:48:59.000000000 -0500
-@@ -143,6 +143,9 @@ static inline unsigned long do_mmap2(uns
- 	struct file * file = NULL;
- 	unsigned long ret = -EINVAL;
+diff -Nurp linux003/include/asm-powerpc/cputable.h linux004/include/asm-powerpc/cputable.h
+--- linux003/include/asm-powerpc/cputable.h	2008-04-16 21:49:44.000000000 -0500
++++ linux004/include/asm-powerpc/cputable.h	2008-06-10 16:48:59.000000000 -0500
+@@ -180,6 +180,7 @@ extern void do_feature_fixups(unsigned l
+ #define CPU_FTR_DSCR			LONG_ASM_CONST(0x0002000000000000)
+ #define CPU_FTR_1T_SEGMENT		LONG_ASM_CONST(0x0004000000000000)
+ #define CPU_FTR_NO_SLBIE_B		LONG_ASM_CONST(0x0008000000000000)
++#define CPU_FTR_SAO			LONG_ASM_CONST(0x0010000000000000)
  
-+	if (!arch_validate_prot(prot))
-+		goto out;
-+
- 	if (shift) {
- 		if (off & ((1 << shift) - 1))
- 			goto out;
-diff -Nurp linux004/include/asm-powerpc/mman.h linux005/include/asm-powerpc/mman.h
---- linux004/include/asm-powerpc/mman.h	2008-06-10 16:48:59.000000000 -0500
-+++ linux005/include/asm-powerpc/mman.h	2008-06-10 16:48:59.000000000 -0500
-@@ -1,7 +1,9 @@
- #ifndef _ASM_POWERPC_MMAN_H
- #define _ASM_POWERPC_MMAN_H
+ #ifndef __ASSEMBLY__
  
-+#include <asm/cputable.h>
- #include <asm-generic/mman.h>
-+#include <linux/mm.h>
- 
- /*
-  * This program is free software; you can redistribute it and/or
-@@ -26,4 +28,28 @@
- #define MAP_POPULATE	0x8000		/* populate (prefault) pagetables */
- #define MAP_NONBLOCK	0x10000		/* do not block on IO */
- 
-+#define HAVE_ARCH_PROT_BITS
-+
-+/*
-+ * This file is included by linux/mman.h, so we can't use cacl_vm_prot_bits()
-+ * here.  How important is the optimization?
-+ */
-+static inline unsigned long arch_calc_vm_prot_bits(unsigned long prot)
-+{
-+	return (prot & PROT_SAO) ? VM_SAO : 0;
-+}
-+
-+static inline pgprot_t arch_vm_get_page_prot(unsigned long vm_flags)
-+{
-+	return (vm_flags & VM_SAO) ? __pgprot(_PAGE_SAO) : 0;
-+}
-+
-+static inline int arch_validate_prot(unsigned long prot)
-+{
-+	if (prot & ~(PROT_READ | PROT_WRITE | PROT_EXEC | PROT_SEM | PROT_SAO))
-+		return 1;
-+	if ((prot & PROT_SAO) && !cpu_has_feature(CPU_FTR_SAO))
-+		return 1;
-+	return 0;
-+}
- #endif	/* _ASM_POWERPC_MMAN_H */
