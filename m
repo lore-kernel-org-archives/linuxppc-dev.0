@@ -1,15 +1,25 @@
-Return-Path: <bunk@kernel.org>
-Received: from smtp4.pp.htv.fi (smtp4.pp.htv.fi [213.243.153.38])
-	by ozlabs.org (Postfix) with ESMTP id 4C96CDE218
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jun 2008 03:49:12 +1000 (EST)
-Date: Tue, 10 Jun 2008 20:47:45 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: paulus@samba.org, benh@kernel.crashing.org
-Subject: [2.6 patch] drivers/macintosh/mediabay.c build fix
-Message-ID: <20080610174745.GE11685@cs181133002.pp.htv.fi>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <James.Bottomley@HansenPartnership.com>
+Received: from accolon.hansenpartnership.com (accolon.hansenpartnership.com
+	[76.243.235.52]) by ozlabs.org (Postfix) with ESMTP id 51683DEBE8
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jun 2008 04:10:35 +1000 (EST)
+Subject: Re: MMIO and gcc re-ordering issue
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+In-Reply-To: <200806101041.28829.jbarnes@virtuousgeek.org>
+References: <1211852026.3286.36.camel@pasglop>
+	<alpine.LFD.1.10.0806031153360.3473@woody.linux-foundation.org>
+	<200806101656.51211.nickpiggin@yahoo.com.au>
+	<200806101041.28829.jbarnes@virtuousgeek.org>
+Content-Type: text/plain
+Date: Tue, 10 Jun 2008 13:10:26 -0500
+Message-Id: <1213121426.8536.7.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linux-arch@vger.kernel.org, Nick Piggin <nickpiggin@yahoo.com.au>,
+	Russell King <rmk+lkml@arm.linux.org.uk>,
+	Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
+	David Miller <davem@davemloft.net>, linuxppc-dev@ozlabs.org,
+	scottwood@freescale.com, Linus Torvalds <torvalds@linux-foundation.org>,
+	Trent Piepho <tpiepho@freescale.com>, alan@lxorguk.ukuu.org.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,83 +29,65 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch fixes the following build error with CONFIG_BLK_DEV_IDE_PMAC=n:
+On Tue, 2008-06-10 at 10:41 -0700, Jesse Barnes wrote:
+> On Monday, June 09, 2008 11:56 pm Nick Piggin wrote:
+> > So that still doesn't tell us what *minimum* level of ordering we should
+> > provide in the cross platform readl/writel API. Some relatively sane
+> > suggestions would be:
+> >
+> > - as strong as x86. guaranteed not to break drivers that work on x86,
+> >   but slower on some archs. To me, this is most pleasing. It is much
+> >   much easier to notice something is going a little slower and to work
+> >   out how to use weaker ordering there, than it is to debug some
+> >   once-in-a-bluemoon breakage caused by just the right architecture,
+> >   driver, etc. It totally frees up the driver writer from thinking
+> >   about barriers, provided they get the locking right.
+> >
+> > - ordered WRT other IO accessors, constrained within spinlocks, but not
+> >   cacheable memory. This is what powerpc does now. It's a little faster
+> >   for them, and probably covers the vast majority of drivers, but there
+> >   are real possibilities to get it wrong (trivial example: using bit
+> >   locks or mutexes or any kind of open coded locking or lockless
+> >   synchronisation can break).
+> >
+> > - (less sane) same as above, but not ordered WRT spinlocks. This is what
+> >   ia64 (sn2) does. From a purist POV, it is a little less arbitrary than
+> >   powerpc, but in practice, it will break a lot more drivers than powerpc.
+> >
+> > I was kind of joking about taking control of this issue :) But seriously,
+> > it needs a decision to be made. I vote for #1. My rationale: I'm still
+> > finding relatively major (well, found maybe 4 or 5 in the last couple of
+> > years) bugs in the mm subsystem due to memory ordering problems. This is
+> > apparently one of the most well reviewed and tested bit of code in the
+> > kernel by people who know all about memory ordering. Not to mention that
+> > mm/ does not have to worry about IO ordering at all. Then apparently
+> > driver are the least reviewed and tested. Connect dots.
+> >
+> > Now that doesn't leave waker ordering architectures lumped with "slow old
+> > x86 semantics". Think of it as giving them the benefit of sharing x86
+> > development and testing :) We can then formalise the relaxed __ accessors
+> > to be more complete (ie. +/- byteswapping). I'd also propose to add
+> > io_rmb/io_wmb/io_mb that order io/io access, to help architectures like
+> > sn2 where the io/cacheable barrier is pretty expensive.
+> >
+> > Any comments?
+> 
+> FWIW that approach sounds pretty good to me.  Arches that suffer from 
+> performance penalties can still add lower level primitives and port selected 
+> drivers over, so really they won't be losing much.  AFAICT though drivers 
+> will still have to worry about regular memory ordering issues; they'll just 
+> be safe from I/O related ones. :)  Still, the simplification is probably 
+> worth it.
 
-<--  snip  -->
+me too.  That's the whole basis for readX_relaxed() and its cohorts: we
+make our weirdest machines (like altix) conform to the x86 norm.  Then
+where it really kills us we introduce additional semantics to selected
+drivers that enable us to recover I/O speed on the abnormal platforms.
 
-...
-  CC      drivers/macintosh/mediabay.o
-/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/macintosh/mediabay.c: In function 'check_media_bay':
-/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/macintosh/mediabay.c:428: error: 'struct media_bay_info' has no member named 'cd_index'
-make[3]: *** [drivers/macintosh/mediabay.o] Error 1
+About the only problem we've had is that architectures aren't very good
+at co-ordinating for their additional accessors so we tend to get a
+forest of strange ones growing up, which appear only in a few drivers
+(i.e. the ones that need the speed ups) and which have no well
+documented meaning.
 
-<--  snip  -->
-
-Reported-by: Adrian Bunk <bunk@kernel.org>
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
-
----
-
- drivers/macintosh/mediabay.c   |    4 ++--
- include/asm-powerpc/mediabay.h |   12 ++++++++++--
- 2 files changed, 12 insertions(+), 4 deletions(-)
-
-e644eb541d73b1fe13550506398d725a536c6aef diff --git a/drivers/macintosh/mediabay.c b/drivers/macintosh/mediabay.c
-index 82add26..7d406ef 100644
---- a/drivers/macintosh/mediabay.c
-+++ b/drivers/macintosh/mediabay.c
-@@ -84,7 +84,7 @@ struct media_bay_info {
- 	int				cd_irq;
- 	int				cd_retry;
- #endif
--#if defined(CONFIG_BLK_DEV_IDE_PMAC) || defined(CONFIG_MAC_FLOPPY)
-+#if defined(CONFIG_BLK_DEV_IDE_PMAC)
- 	int 				cd_index;
- #endif
- };
-@@ -417,6 +417,7 @@ static void poll_media_bay(struct media_bay_info* bay)
- 	}
- }
- 
-+#ifdef CONFIG_BLK_DEV_IDE_PMAC
- int check_media_bay(struct device_node *which_bay, int what)
- {
- 	int	i;
-@@ -432,7 +433,6 @@ int check_media_bay(struct device_node *which_bay, int what)
- }
- EXPORT_SYMBOL(check_media_bay);
- 
--#ifdef CONFIG_BLK_DEV_IDE_PMAC
- int check_media_bay_by_base(unsigned long base, int what)
- {
- 	int	i;
-diff --git a/include/asm-powerpc/mediabay.h b/include/asm-powerpc/mediabay.h
-index df111c3..b2efb33 100644
---- a/include/asm-powerpc/mediabay.h
-+++ b/include/asm-powerpc/mediabay.h
-@@ -17,8 +17,6 @@
- #define MB_POWER	6	/* media bay contains a Power device (???) */
- #define MB_NO		7	/* media bay contains nothing */
- 
--int check_media_bay(struct device_node *which_bay, int what);
--
- /* Number of bays in the machine or 0 */
- extern int media_bay_count;
- 
-@@ -29,6 +27,16 @@ int check_media_bay_by_base(unsigned long base, int what);
- /* called by IDE PMAC host driver to register IDE controller for media bay */
- int media_bay_set_ide_infos(struct device_node *which_bay, unsigned long base,
- 			    int irq, ide_hwif_t *hwif);
-+
-+int check_media_bay(struct device_node *which_bay, int what);
-+
-+#else
-+
-+static inline int check_media_bay(struct device_node *which_bay, int what)
-+{
-+	return -ENODEV;
-+}
-+
- #endif
- 
- #endif /* __KERNEL__ */
+James
