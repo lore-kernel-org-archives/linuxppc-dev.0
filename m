@@ -1,21 +1,17 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 9B53ADDEDA
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jun 2008 16:50:34 +1000 (EST)
-Subject: Re: [PATCH] [POWERPC] Free a PTE bit on ppc64 with 64K pages
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: michael@ellerman.id.au
-In-Reply-To: <1213070451.7957.3.camel@localhost>
-References: <20080529055401.9B758DDDE7@ozlabs.org>
-	<1213070451.7957.3.camel@localhost>
-Content-Type: text/plain
-Date: Tue, 10 Jun 2008 16:50:22 +1000
-Message-Id: <1213080622.25745.26.camel@pasglop>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 7A21CDDEFE
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jun 2008 16:54:49 +1000 (EST)
+Date: Tue, 10 Jun 2008 16:54:41 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Paul Mackerras <paulus@samba.org>, <linuxppc-dev@ozlabs.org>
+Subject: linux-next: powerpc build failure
+Message-Id: <20080610165441.a7c5ddd0.sfr@canb.auug.org.au>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
-Reply-To: benh@kernel.crashing.org
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Tue__10_Jun_2008_16_54_41_+1000_V5Z82GWEpdfu9ov4"
+Cc: linux-next@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,12 +21,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2008-06-10 at 14:00 +1000, Michael Ellerman wrote:
-> 
-> This doesn't build for CONFIG_PPC_64K_PAGES=n and
-> CONFIG_PPC_HAS_HASH_64K=y, because the asm is protected by the latter
-> but the header definitions are protected by the former.
+--Signature=_Tue__10_Jun_2008_16_54_41_+1000_V5Z82GWEpdfu9ov4
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Crap ! This is going to be nasty... I have to think about it
+Hi Paul,
 
-Ben.
+Today's linux-next tree build (powerpc ppc64_defconfig) failed like this:
+
+  UPD     include/linux/compile.h
+arch/powerpc/mm/built-in.o: In function `ht64_insert_pte':
+hash_native_64.c:(.text+0x4756): undefined reference to `_PAGE_HPTE_SUB0'
+
+I have reverted commit 2d9a973b0fee245af43b73412a08e88bc955644d
+("powerpc: Free a PTE bit on ppc64 with 64K pages") for now.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Tue__10_Jun_2008_16_54_41_+1000_V5Z82GWEpdfu9ov4
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkhOJTEACgkQTgG2atn1QN8NQwCfe78D56mVqdVkMA+fxjJURt8/
+e+oAoIh2RH4NNJHcbCbkpE+zN+lBVB3k
+=8f7I
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__10_Jun_2008_16_54_41_+1000_V5Z82GWEpdfu9ov4--
