@@ -2,18 +2,18 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D7EDEDECFE
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jun 2008 02:08:37 +1000 (EST)
-Message-Id: <2AD4B8C7-D6BF-44C2-B1DF-883EC16CFD71@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id 9FC98DEEB9
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jun 2008 02:09:00 +1000 (EST)
+Message-Id: <13478D7F-779B-472D-8C36-C736321EB645@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
 To: Anton Vorontsov <avorontsov@ru.mvista.com>
-In-Reply-To: <20080523163856.GB16137@polina.dev.rtsoft.ru>
+In-Reply-To: <20080523163858.GC16137@polina.dev.rtsoft.ru>
 Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Mime-Version: 1.0 (Apple Message framework v924)
-Subject: Re: [PATCH 2/7] [POWERPC] QE: add support for QE USB clocks routing
-Date: Tue, 10 Jun 2008 11:08:29 -0500
+Subject: Re: [PATCH 3/7] [POWERPC] QE: prepare QE PIO code for GPIO LIB support
+Date: Tue, 10 Jun 2008 11:08:41 -0500
 References: <20080523163811.GA12181@polina.dev.rtsoft.ru>
-	<20080523163856.GB16137@polina.dev.rtsoft.ru>
+	<20080523163858.GC16137@polina.dev.rtsoft.ru>
 Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
 	Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -28,32 +28,19 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 On May 23, 2008, at 11:38 AM, Anton Vorontsov wrote:
 
-> This patch adds a function to the qe_lib to setup QE USB clocks  
-> routing.
-> To setup clocks safely, cmxgcr register needs locking, so I just  
-> reused
-> ucc_lock since it was used only to protect cmxgcr.
->
-> The idea behind placing clocks routing functions into the qe_lib is  
-> that
-> later we'll hopefully switch to the generic Linux Clock API, thus, for
-> example, FHCI driver may be used for QE and CPM chips without nasty  
-> #ifdefs.
->
-> This patch also fixes QE_USB_RESTART_TX command definition in the  
-> qe.h.
+> - split and export __par_io_config_pin() out of par_io_config_pin(),  
+> so we
+>  could use the prefixed version with GPIO LIB API;
+> - rename struct port_regs to qe_pio_regs, and place it into qe.h;
+> - rename #define NUM_OF_PINS to QE_PIO_PINS, and place it into qe.h.
 >
 > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 > Acked-By: Timur Tabi <timur@freescale.com>
 > ---
-> arch/powerpc/sysdev/qe_lib/Kconfig  |    4 ++
-> arch/powerpc/sysdev/qe_lib/Makefile |    1 +
-> arch/powerpc/sysdev/qe_lib/ucc.c    |    7 ++--
-> arch/powerpc/sysdev/qe_lib/usb.c    |   55 ++++++++++++++++++++++++++ 
-> +++++++++
-> include/asm-powerpc/qe.h            |   23 ++++++++++++++-
-> 5 files changed, 86 insertions(+), 4 deletions(-)
-> create mode 100644 arch/powerpc/sysdev/qe_lib/usb.c
+> arch/powerpc/sysdev/qe_lib/qe_io.c |   94 ++++++++++++++++ 
+> +-------------------
+> include/asm-powerpc/qe.h           |   19 +++++++
+> 2 files changed, 64 insertions(+), 49 deletions(-)
 
 
 applied.
