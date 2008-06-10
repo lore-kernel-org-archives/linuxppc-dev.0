@@ -1,19 +1,23 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Message-ID: <484EFF86.1030709@ru.mvista.com>
-Date: Wed, 11 Jun 2008 02:26:14 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 72F64DDECF
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jun 2008 09:16:56 +1000 (EST)
+Date: Wed, 11 Jun 2008 03:16:54 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: [PATCH v2] powerpc/83xx: update mpc83xx_defconfig to support
+	MPC8360E-RDK
+Message-ID: <20080610231654.GA12300@polina.dev.rtsoft.ru>
+References: <20080429185920.GA19735@polina.dev.rtsoft.ru>
+	<20080429190049.GE21203@polina.dev.rtsoft.ru>
+	<67EC8BE5-3BF0-4107-8FA9-A058283E7EB5@kernel.crashing.org>
+	<20080610193215.GA14162@polina.dev.rtsoft.ru>
+	<057C3E99-B1DC-49BF-B9A8-4C72D943E920@kernel.crashing.org>
 MIME-Version: 1.0
-To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-Subject: Re: [RFC:PATCH 06/06] powerpc: Don't clear _PAGE_COHERENT when
-	_PAGE_SAO is set
-References: <20080610220055.10257.84465.sendpatchset@norville.austin.ibm.com>
-	<20080610220129.10257.69024.sendpatchset@norville.austin.ibm.com>
-In-Reply-To: <20080610220129.10257.69024.sendpatchset@norville.austin.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev list <Linuxppc-dev@ozlabs.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	linux-mm <linux-mm@kvack.org>
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <057C3E99-B1DC-49BF-B9A8-4C72D943E920@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,31 +27,202 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello.
+This patch updates mpc83xx_defconfig to support MPC8360E-RDK board.
 
-Dave Kleikamp wrote:
-> powerpc: Don't clear _PAGE_COHERENT when _PAGE_SAO is set
->
-> This is a placeholder.  Benh tells me that he will come up with a better fix.
->
-> Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-> ---
->
->  arch/powerpc/platforms/pseries/lpar.c |    3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
->
-> diff -Nurp linux005/arch/powerpc/platforms/pseries/lpar.c linux006/arch/powerpc/platforms/pseries/lpar.c
-> --- linux005/arch/powerpc/platforms/pseries/lpar.c	2008-06-05 10:07:34.000000000 -0500
-> +++ linux006/arch/powerpc/platforms/pseries/lpar.c	2008-06-10 16:48:59.000000000 -0500
-> @@ -305,7 +305,8 @@ static long pSeries_lpar_hpte_insert(uns
->  	flags = 0;
->  
->  	/* Make pHyp happy */
-> -	if (rflags & (_PAGE_GUARDED|_PAGE_NO_CACHE))
-> +	if ((rflags & _PAGE_GUARDED) ||
-> +	    ((rflags & _PAGE_NO_CACHE) & !(rflags & _PAGE_WRITETHRU)))
->   
-   I don't think you really meant bitwise AND here. I suppose the second 
-expression just will never be true.
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
 
-WBR, Sergei
+On Tue, Jun 10, 2008 at 05:01:17PM -0500, Kumar Gala wrote:
+[...]
+> Can you look at refreshing this against my for-2.6.26 tree (its got an  
+> updated defconfig)
+
+That's an idea. Cherry-picked the defconfig update commit, and here is
+the patch on top.
+
+I'm assuming that CONFIG_PCI=n + CONFIG_FB_OF build breakage fix will
+be committed prior to this patch. If not, we'll have to enable the
+CONFIG_PCI in the defconfig as a separate patch, since it will produce
+unreadable changes again. (btw, is there any particular reason why PCI
+is disabled?)
+
+ arch/powerpc/configs/mpc83xx_defconfig |   65 +++++++++++++++++++++++++++++--
+ 1 files changed, 60 insertions(+), 5 deletions(-)
+
+diff --git a/arch/powerpc/configs/mpc83xx_defconfig b/arch/powerpc/configs/mpc83xx_defconfig
+index 4293c8b..d6a0052 100644
+--- a/arch/powerpc/configs/mpc83xx_defconfig
++++ b/arch/powerpc/configs/mpc83xx_defconfig
+@@ -1,7 +1,7 @@
+ #
+ # Automatically generated make config: don't edit
+ # Linux kernel version: 2.6.26-rc5
+-# Mon Jun  9 08:52:14 2008
++# Wed Jun 11 02:59:37 2008
+ #
+ # CONFIG_PPC64 is not set
+ 
+@@ -38,6 +38,7 @@ CONFIG_ARCH_HAS_ILOG2_U32=y
+ CONFIG_GENERIC_HWEIGHT=y
+ CONFIG_GENERIC_CALIBRATE_DELAY=y
+ CONFIG_GENERIC_FIND_NEXT_BIT=y
++CONFIG_GENERIC_GPIO=y
+ # CONFIG_ARCH_NO_VIRT_TO_BUS is not set
+ CONFIG_PPC=y
+ CONFIG_EARLY_PRINTK=y
+@@ -166,6 +167,7 @@ CONFIG_MPC832x_RDB=y
+ CONFIG_MPC834x_MDS=y
+ CONFIG_MPC834x_ITX=y
+ CONFIG_MPC836x_MDS=y
++CONFIG_MPC836x_RDK=y
+ CONFIG_MPC837x_MDS=y
+ CONFIG_MPC837x_RDB=y
+ CONFIG_SBC834x=y
+@@ -241,6 +243,8 @@ CONFIG_ZONE_DMA=y
+ CONFIG_GENERIC_ISA_DMA=y
+ CONFIG_PPC_INDIRECT_PCI=y
+ CONFIG_FSL_SOC=y
++CONFIG_FSL_LBC=y
++CONFIG_FSL_GTM=y
+ # CONFIG_PCI is not set
+ # CONFIG_PCI_DOMAINS is not set
+ # CONFIG_PCI_SYSCALL is not set
+@@ -356,7 +360,7 @@ CONFIG_DEFAULT_TCP_CONG="cubic"
+ CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
+ CONFIG_STANDALONE=y
+ CONFIG_PREVENT_FIRMWARE_BUILD=y
+-# CONFIG_FW_LOADER is not set
++CONFIG_FW_LOADER=y
+ # CONFIG_SYS_HYPERVISOR is not set
+ # CONFIG_CONNECTOR is not set
+ CONFIG_MTD=y
+@@ -398,7 +402,7 @@ CONFIG_MTD_CFI_I1=y
+ CONFIG_MTD_CFI_I2=y
+ # CONFIG_MTD_CFI_I4 is not set
+ # CONFIG_MTD_CFI_I8 is not set
+-# CONFIG_MTD_CFI_INTELEXT is not set
++CONFIG_MTD_CFI_INTELEXT=y
+ CONFIG_MTD_CFI_AMDSTD=y
+ # CONFIG_MTD_CFI_STAA is not set
+ CONFIG_MTD_CFI_UTIL=y
+@@ -438,6 +442,7 @@ CONFIG_MTD_NAND_IDS=y
+ # CONFIG_MTD_NAND_PLATFORM is not set
+ # CONFIG_MTD_ALAUDA is not set
+ CONFIG_MTD_NAND_FSL_ELBC=y
++CONFIG_MTD_NAND_FSL_UPM=y
+ # CONFIG_MTD_ONENAND is not set
+ 
+ #
+@@ -445,6 +450,7 @@ CONFIG_MTD_NAND_FSL_ELBC=y
+ #
+ # CONFIG_MTD_UBI is not set
+ CONFIG_OF_DEVICE=y
++CONFIG_OF_GPIO=y
+ CONFIG_OF_I2C=y
+ # CONFIG_PARPORT is not set
+ CONFIG_BLK_DEV=y
+@@ -636,7 +642,7 @@ CONFIG_SERIAL_8250_RUNTIME_UARTS=4
+ CONFIG_SERIAL_CORE=y
+ CONFIG_SERIAL_CORE_CONSOLE=y
+ # CONFIG_SERIAL_OF_PLATFORM is not set
+-# CONFIG_SERIAL_QE is not set
++CONFIG_SERIAL_QE=y
+ CONFIG_UNIX98_PTYS=y
+ CONFIG_LEGACY_PTYS=y
+ CONFIG_LEGACY_PTY_COUNT=256
+@@ -655,6 +661,7 @@ CONFIG_I2C_CHARDEV=y
+ #
+ # I2C Hardware Bus support
+ #
++# CONFIG_I2C_GPIO is not set
+ CONFIG_I2C_MPC=y
+ # CONFIG_I2C_OCORES is not set
+ # CONFIG_I2C_PARPORT_LIGHT is not set
+@@ -672,6 +679,7 @@ CONFIG_I2C_MPC=y
+ # CONFIG_SENSORS_PCF8574 is not set
+ # CONFIG_PCF8575 is not set
+ # CONFIG_SENSORS_PCF8591 is not set
++# CONFIG_TPS65010 is not set
+ # CONFIG_SENSORS_MAX6875 is not set
+ # CONFIG_SENSORS_TSL2550 is not set
+ # CONFIG_I2C_DEBUG_CORE is not set
+@@ -679,6 +687,21 @@ CONFIG_I2C_MPC=y
+ # CONFIG_I2C_DEBUG_BUS is not set
+ # CONFIG_I2C_DEBUG_CHIP is not set
+ # CONFIG_SPI is not set
++CONFIG_HAVE_GPIO_LIB=y
++
++#
++# GPIO Support
++#
++
++#
++# I2C GPIO expanders:
++#
++# CONFIG_GPIO_PCA953X is not set
++# CONFIG_GPIO_PCF857X is not set
++
++#
++# SPI GPIO expanders:
++#
+ # CONFIG_W1 is not set
+ # CONFIG_POWER_SUPPLY is not set
+ CONFIG_HWMON=y
+@@ -780,13 +803,43 @@ CONFIG_DAB=y
+ #
+ # CONFIG_VGASTATE is not set
+ CONFIG_VIDEO_OUTPUT_CONTROL=m
+-# CONFIG_FB is not set
++CONFIG_FB=y
++# CONFIG_FIRMWARE_EDID is not set
++# CONFIG_FB_DDC is not set
++CONFIG_FB_CFB_FILLRECT=y
++CONFIG_FB_CFB_COPYAREA=y
++CONFIG_FB_CFB_IMAGEBLIT=y
++# CONFIG_FB_CFB_REV_PIXELS_IN_BYTE is not set
++# CONFIG_FB_SYS_FILLRECT is not set
++# CONFIG_FB_SYS_COPYAREA is not set
++# CONFIG_FB_SYS_IMAGEBLIT is not set
++CONFIG_FB_FOREIGN_ENDIAN=y
++CONFIG_FB_BOTH_ENDIAN=y
++# CONFIG_FB_BIG_ENDIAN is not set
++# CONFIG_FB_LITTLE_ENDIAN is not set
++# CONFIG_FB_SYS_FOPS is not set
++# CONFIG_FB_SVGALIB is not set
++CONFIG_FB_MACMODES=y
++# CONFIG_FB_BACKLIGHT is not set
++# CONFIG_FB_MODE_HELPERS is not set
++# CONFIG_FB_TILEBLITTING is not set
++
++#
++# Frame buffer hardware drivers
++#
++CONFIG_FB_OF=y
++# CONFIG_FB_VGA16 is not set
++# CONFIG_FB_S1D13XXX is not set
++# CONFIG_FB_FSL_DIU is not set
++# CONFIG_FB_IBM_GXT4500 is not set
++# CONFIG_FB_VIRTUAL is not set
+ # CONFIG_BACKLIGHT_LCD_SUPPORT is not set
+ 
+ #
+ # Display device support
+ #
+ # CONFIG_DISPLAY_SUPPORT is not set
++# CONFIG_LOGO is not set
+ 
+ #
+ # Sound
+@@ -1012,8 +1065,10 @@ CONFIG_MSDOS_PARTITION=y
+ # CONFIG_SYSV68_PARTITION is not set
+ # CONFIG_NLS is not set
+ # CONFIG_DLM is not set
++CONFIG_UCC_SLOW=y
+ CONFIG_UCC_FAST=y
+ CONFIG_UCC=y
++CONFIG_QE_GPIO=y
+ 
+ #
+ # Library routines
+-- 
+1.5.5.4
