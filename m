@@ -1,11 +1,12 @@
 Return-Path: <shaggy@linux.vnet.ibm.com>
-Date: Tue, 10 Jun 2008 18:01:18 -0400
+Date: Tue, 10 Jun 2008 18:01:30 -0400
 From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
 To: linuxppc-dev list <Linuxppc-dev@ozlabs.org>
-Message-Id: <20080610220118.10257.31835.sendpatchset@norville.austin.ibm.com>
+Message-Id: <20080610220129.10257.69024.sendpatchset@norville.austin.ibm.com>
 In-Reply-To: <20080610220055.10257.84465.sendpatchset@norville.austin.ibm.com>
 References: <20080610220055.10257.84465.sendpatchset@norville.austin.ibm.com>
-Subject: [RFC:PATCH 04/06] powerpc: Define CPU_FTR_SAO
+Subject: [RFC:PATCH 06/06] powerpc: Don't clear _PAGE_COHERENT when _PAGE_SAO
+	is set
 Cc: linux-mm <linux-mm@kvack.org>, Andrew Morton <akpm@linux-foundation.org>,
 	Linus Torvalds <torvalds@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -17,24 +18,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-powerpc: Define CPU_FTR_SAO
+powerpc: Don't clear _PAGE_COHERENT when _PAGE_SAO is set
 
-This is just a placeholder to make the patchset compilable.
+This is a placeholder.  Benh tells me that he will come up with a better fix.
 
 Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
 ---
 
- include/asm-powerpc/cputable.h |    1 +
- 1 file changed, 1 insertion(+)
+ arch/powerpc/platforms/pseries/lpar.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff -Nurp linux003/include/asm-powerpc/cputable.h linux004/include/asm-powerpc/cputable.h
---- linux003/include/asm-powerpc/cputable.h	2008-04-16 21:49:44.000000000 -0500
-+++ linux004/include/asm-powerpc/cputable.h	2008-06-10 16:48:59.000000000 -0500
-@@ -180,6 +180,7 @@ extern void do_feature_fixups(unsigned l
- #define CPU_FTR_DSCR			LONG_ASM_CONST(0x0002000000000000)
- #define CPU_FTR_1T_SEGMENT		LONG_ASM_CONST(0x0004000000000000)
- #define CPU_FTR_NO_SLBIE_B		LONG_ASM_CONST(0x0008000000000000)
-+#define CPU_FTR_SAO			LONG_ASM_CONST(0x0010000000000000)
+diff -Nurp linux005/arch/powerpc/platforms/pseries/lpar.c linux006/arch/powerpc/platforms/pseries/lpar.c
+--- linux005/arch/powerpc/platforms/pseries/lpar.c	2008-06-05 10:07:34.000000000 -0500
++++ linux006/arch/powerpc/platforms/pseries/lpar.c	2008-06-10 16:48:59.000000000 -0500
+@@ -305,7 +305,8 @@ static long pSeries_lpar_hpte_insert(uns
+ 	flags = 0;
  
- #ifndef __ASSEMBLY__
+ 	/* Make pHyp happy */
+-	if (rflags & (_PAGE_GUARDED|_PAGE_NO_CACHE))
++	if ((rflags & _PAGE_GUARDED) ||
++	    ((rflags & _PAGE_NO_CACHE) & !(rflags & _PAGE_WRITETHRU)))
+ 		hpte_r &= ~_PAGE_COHERENT;
  
+ 	lpar_rc = plpar_pte_enter(flags, hpte_group, hpte_v, hpte_r, &slot);
