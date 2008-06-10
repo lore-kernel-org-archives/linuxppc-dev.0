@@ -1,22 +1,19 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.249])
-	by ozlabs.org (Postfix) with ESMTP id 02211DDDE7
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	by ozlabs.org (Postfix) with ESMTP id A74B8DE007
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun,  8 Jun 2008 13:38:37 +1000 (EST)
-Received: by an-out-0708.google.com with SMTP id c34so349090anc.78
-	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 07 Jun 2008 20:38:29 -0700 (PDT)
-Message-ID: <fa686aa40806072038h20a9dfd6kf32148cb1c4417ce@mail.gmail.com>
-Date: Sat, 7 Jun 2008 21:38:29 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Sam Karp" <sam.d.karp@gmail.com>
-Subject: Re: Linux w/o UBoot from Linear Flash
-In-Reply-To: <800687fe0806071529j16cc360bub252c492975368ea@mail.gmail.com>
+	Tue, 10 Jun 2008 19:31:36 +1000 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1K60CR-0003wL-L1
+	for linuxppc-embedded@ozlabs.org; Tue, 10 Jun 2008 02:31:31 -0700
+Message-ID: <17751311.post@talk.nabble.com>
+Date: Tue, 10 Jun 2008 02:31:31 -0700 (PDT)
+From: Misbah khan <misbah_khan@engineer.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: Problem in flashing of yaffs image.
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <800687fe0806071529j16cc360bub252c492975368ea@mail.gmail.com>
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -27,21 +24,26 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Sat, Jun 7, 2008 at 4:29 PM, Sam Karp <sam.d.karp@gmail.com> wrote:
-> I currently have a linux ramdisk image (zImage.initrd.elf) stored in
-> linear flash.  I also have a bit file with the xilinx EDK generated
-> bootloader in platform flash on an ML403.   Is it neccessary to have
-> uboot with the linux kernel to be able to boot automatically or can i
-> simply alter the xilinx bootloader (if needed at all? )
 
-U-Boot in not necessary.  You can modify the xilinx bootloader to load
-an elf file into ram and jump into it.  When you migrate to using
-arch/powerpc, you can use the simpleImage target which can be loaded
-anywhere into ram before jumping to it.
+Hi all ...
 
-Cheers,
-g.
+I am facing problem in flashing yaffs image(yaffs not yaffs2). The problem
+is this :-
 
+I am able to create the yaffs image but when i do 
+
+./mkyaffs -e /dev/mtd8 image_name.img
+
+It is giving ioctl MEMSETOOB error ....
+
+Commenting this ioctl call does Erase the flash but not Writing 
+when i try to mount .... mount -t yaffs /dev/mtd8 /mnt 
+
+Its not showing the contents ....where in other files i could be able to
+write to the mtdblock usinf flash erase and write commands 
+
+
+Could any one share their thought or experience regarding this problem 
 -- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+View this message in context: http://www.nabble.com/Problem-in-flashing-of-yaffs-image.-tp17751311p17751311.html
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
