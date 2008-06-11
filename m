@@ -1,15 +1,28 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id C5B02DDF2D
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jun 2008 22:32:49 +1000 (EST)
-Date: Wed, 11 Jun 2008 16:32:48 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH] powerpc/QE: qe_reset should be __init
-Message-ID: <20080611123248.GA8207@polina.dev.rtsoft.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 108A5DDF11
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jun 2008 22:36:06 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e31.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m5BCa2Qf017760
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jun 2008 08:36:02 -0400
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
+	m5BCa2Ja165872
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jun 2008 06:36:02 -0600
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m5BCa2tJ013702
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jun 2008 06:36:02 -0600
+Date: Wed, 11 Jun 2008 08:35:29 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: linuxppc-dev@ozlabs.org
+Subject: Patches added to 4xx 'next' branch
+Message-ID: <20080611083529.23aa1689@zod.rchland.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,43 +32,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch fixes following section mismatch:
+The following patches have been added to the 'next' branch of the 4xx
+tree.  As usual, I will let them sit there for a few days and then ask
+Paul to pull.
 
-WARNING: arch/powerpc/sysdev/built-in.o(.text+0x11d8): Section mismatch in
-reference from the function qe_reset() to the function
-.init.text:cpm_muram_init()
+If I've missed any patches for 2.6.27, now would be the time to point
+them out to me.
 
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
- arch/powerpc/sysdev/qe_lib/qe.c |    2 +-
- include/asm-powerpc/qe.h        |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+josh
 
-diff --git a/arch/powerpc/sysdev/qe_lib/qe.c b/arch/powerpc/sysdev/qe_lib/qe.c
-index 28e05df..9e82d7e 100644
---- a/arch/powerpc/sysdev/qe_lib/qe.c
-+++ b/arch/powerpc/sysdev/qe_lib/qe.c
-@@ -87,7 +87,7 @@ phys_addr_t get_qe_base(void)
- 
- EXPORT_SYMBOL(get_qe_base);
- 
--void qe_reset(void)
-+void __init qe_reset(void)
- {
- 	if (qe_immr == NULL)
- 		qe_immr = ioremap(get_qe_base(), QE_IMMAP_SIZE);
-diff --git a/include/asm-powerpc/qe.h b/include/asm-powerpc/qe.h
-index 80807fd..1355e72 100644
---- a/include/asm-powerpc/qe.h
-+++ b/include/asm-powerpc/qe.h
-@@ -84,7 +84,7 @@ static inline bool qe_clock_is_brg(enum qe_clock clk)
- extern spinlock_t cmxgcr_lock;
- 
- /* Export QE common operations */
--extern void qe_reset(void);
-+extern void __init qe_reset(void);
- 
- /* QE PIO */
- #define QE_PIO_PINS 32
--- 
-1.5.5.4
+Giuseppe Coviello (2):
+      powerpc/4xx: Sam440ep support
+      powerpc/4xx: Convert Sam440ep DTS to dts-v1
+
+Imre Kaloz (1):
+      powerpc/4xx: MTD support for the AMCC Taishan Board
+
+Josh Boyer (1):
+      Revert "[POWERPC] 4xx: Fix 460GT support to not enable FPU"
+
+Stefan Roese (1):
+      powerpc/4xx: PCIe driver now detects if a port is disabled via the dev-tre
+
+Valentine Barshak (1):
+      powerpc/4xx: Fix resource issue in warp-nand.c
