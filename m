@@ -1,24 +1,10 @@
-Return-Path: <nickpiggin@yahoo.com.au>
-Received: from smtp119.mail.mud.yahoo.com (smtp119.mail.mud.yahoo.com
-	[209.191.84.76]) by ozlabs.org (Postfix) with SMTP id 5B85ADDEFA
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jun 2008 15:35:36 +1000 (EST)
-From: Nick Piggin <nickpiggin@yahoo.com.au>
+Return-Path: <benh@ozlabs.org>
 To: Paul Mackerras <paulus@samba.org>
-Subject: Re: MMIO and gcc re-ordering issue
-Date: Wed, 11 Jun 2008 15:35:24 +1000
-References: <1211852026.3286.36.camel@pasglop>
-	<200806111500.30789.nickpiggin@yahoo.com.au>
-	<18511.24317.31038.926337@cargo.ozlabs.ibm.com>
-In-Reply-To: <18511.24317.31038.926337@cargo.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200806111535.24523.nickpiggin@yahoo.com.au>
-Cc: linux-arch@vger.kernel.org, Russell King <rmk+lkml@arm.linux.org.uk>,
-	Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
-	Trent Piepho <tpiepho@freescale.com>, linuxppc-dev@ozlabs.org,
-	scottwood@freescale.com, Linus Torvalds <torvalds@linux-foundation.org>,
-	David Miller <davem@davemloft.net>, alan@lxorguk.ukuu.org.uk
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Wed, 11 Jun 2008 15:37:10 +1000
+Subject: [PATCH] powerpc: Free a PTE bit on ppc64 with 64K pages
+Message-Id: <20080611053724.B19AEDDF07@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,103 +14,166 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 11 June 2008 15:13, Paul Mackerras wrote:
-> Nick Piggin writes:
-> > > I just wish we had even one actual example of things going wrong with
-> > > the current rules we have on powerpc to motivate changing to this
-> > > model.
-> >
-> > ~/usr/src/linux-2.6> git grep test_and_set_bit drivers/ | wc -l
-> > 506
-> > How sure are you that none of those forms part of a cobbled-together
-> > locking scheme that hopes to constrain some IO access?
->
-> My comment was precisely about the fact that this sort of argument is
-> actually FUD.  I want one example that is demonstrably wrong, not just
-> a "how sure are you".
+This patch frees a PTE bit when using 64K pages on ppc64. This is done
+by getting rid of the separate _PAGE_HASHPTE bit. Instead, we just test
+if any of the 16 sub-page bits is set. For non-combo pages (ie. real
+64K pages), we set SUB0 and the location encoding in that field.
 
-But this is a case where you really should be scared, so FUD is
-completely appropriate.
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
 
-At least, I don't see how it is at all worse than FUD about how much
-slower everything will be with stronger ordering, and how nobody will
-be able to do anything about it. In reality, for most devices it will
-not be measurable, and for some like network or disk might use a bit
-of a tweak in one or two fastpaths.
+Second version of the patch, fixes the problem with 64K hashing
+used with 4K base pages.
 
-If the driver author honestly does not know the code well enough to
-say whether a particular ordering is allowed or not, then it should
-just not be allowed.
+ arch/powerpc/mm/hash_low_64.S       |   17 ++++++++++-------
+ arch/powerpc/mm/hugetlbpage.c       |    8 +++++---
+ include/asm-powerpc/pgtable-4k.h    |    1 +
+ include/asm-powerpc/pgtable-64k.h   |   17 +++++++++++++++--
+ include/asm-powerpc/pgtable-ppc64.h |    1 -
+ 5 files changed, 31 insertions(+), 13 deletions(-)
 
-
-Anyway, what do I win if I give you a concrete example?
-
-I found one in the first file I picked out of my grep: drivers/net/s2io.c
-
-        if (test_and_set_bit(__S2IO_STATE_LINK_TASK, &(nic->state))) {
-                /* The card is being reset, no point doing anything */
-                goto out_unlock;
-        }
-
-...
-                val64 = readq(&bar0->adapter_control);
-                val64 |= ADAPTER_LED_ON;
-                writeq(val64, &bar0->adapter_control);
-                s2io_link(nic, LINK_UP);
-        } else {
-                if (CARDS_WITH_FAULTY_LINK_INDICATORS(nic->device_type,
-                                                      subid)) {
-                        val64 = readq(&bar0->gpio_control);
-                        val64 &= ~GPIO_CTRL_GPIO_0;
-                        writeq(val64, &bar0->gpio_control);
-                        val64 = readq(&bar0->gpio_control);
-                }
-                /* turn off LED */
-                val64 = readq(&bar0->adapter_control);
-                val64 = val64 &(~ADAPTER_LED_ON);
-                writeq(val64, &bar0->adapter_control);
-                s2io_link(nic, LINK_DOWN);
-        }
-        clear_bit(__S2IO_STATE_LINK_TASK, &(nic->state));
-
-Now I can't say definitively that this is going to be wrong on
-powerpc, because I don't know the code well enough. But I'd be
-90% sure that the unlock is not supposed to be visible to
-other CPUs before the writeqs are queued to the card. On x86 it
-wouldn't be.
-
-
-> > But surely you have to audit the drivers anyway to ensure they are OK
-> > with the current powerpc scheme. In which case, once you have audited
-> > them and know they are safe, you can easily convert them to the even
-> > _faster_ __readl/__writel, and just add the appropriate barriers.
->
-> The trouble is that as code gets maintained, using __writel + explicit
-> barriers is more fragile because some people will change the code, or
-> add new code, without understanding the barriers.
-
-If the relaxed writel and explicit barriers are not well documented and
-well understood, then they should not be used.
-
-And if the memory ordering issues are not well understood, then it
-should be done with locking and strongly ordered IO accessors.
-
-
-> So whenever a 
-> driver gets converted to using __writel + barriers, we will end up
-> having to watch every change that goes into it forever.  Whereas with
-
-*You* don't have to watch it, the maintainer does. And if they can't
-understand the barriers, then it should not be converted to use them.
-Unless you want to take over maintainership. And if you do, then you
-should be watching all changes that go into it.
-
-
-> the current scheme there's a much smaller set of gotchas to watch out
-> for, and the gotchas are things that already raise red flags, such as
-> open-coded locking and any sort of "clever" lockless scheme.
-
-And with the strongly ordered scheme, there is much smaller set of
-gotchas again, and it behaves the same as the x86 it was developed on,
-and you don't get confused by the list of rules: IO access is either
-strongly ordered or weakly ordered.
+--- linux-work.orig/arch/powerpc/mm/hash_low_64.S	2008-03-19 13:52:26.000000000 +1100
++++ linux-work/arch/powerpc/mm/hash_low_64.S	2008-06-11 14:34:03.000000000 +1000
+@@ -388,7 +388,7 @@ _GLOBAL(__hash_page_4K)
+ 	 */
+ 	rlwinm	r30,r4,32-9+7,31-7,31-7	/* _PAGE_RW -> _PAGE_DIRTY */
+ 	or	r30,r30,r31
+-	ori	r30,r30,_PAGE_BUSY | _PAGE_ACCESSED | _PAGE_HASHPTE
++	ori	r30,r30,_PAGE_BUSY | _PAGE_ACCESSED
+ 	oris	r30,r30,_PAGE_COMBO@h
+ 	/* Write the linux PTE atomically (setting busy) */
+ 	stdcx.	r30,0,r6
+@@ -468,7 +468,7 @@ END_FTR_SECTION(CPU_FTR_NOEXECUTE|CPU_FT
+ 	 * go to out-of-line code to try to modify the HPTE. We look for
+ 	 * the bit at (1 >> (index + 32))
+ 	 */
+-	andi.	r0,r31,_PAGE_HASHPTE
++	rldicl.	r0,r31,64-12,48
+ 	li	r26,0			/* Default hidx */
+ 	beq	htab_insert_pte
+ 
+@@ -722,11 +722,11 @@ BEGIN_FTR_SECTION
+ 	bne-	ht64_bail_ok
+ END_FTR_SECTION_IFCLR(CPU_FTR_CI_LARGE_PAGE)
+ 	/* Prepare new PTE value (turn access RW into DIRTY, then
+-	 * add BUSY,HASHPTE and ACCESSED)
++	 * add BUSY and ACCESSED)
+ 	 */
+ 	rlwinm	r30,r4,32-9+7,31-7,31-7	/* _PAGE_RW -> _PAGE_DIRTY */
+ 	or	r30,r30,r31
+-	ori	r30,r30,_PAGE_BUSY | _PAGE_ACCESSED | _PAGE_HASHPTE
++	ori	r30,r30,_PAGE_BUSY | _PAGE_ACCESSED
+ 	/* Write the linux PTE atomically (setting busy) */
+ 	stdcx.	r30,0,r6
+ 	bne-	1b
+@@ -794,18 +794,21 @@ END_FTR_SECTION(CPU_FTR_NOEXECUTE|CPU_FT
+ 	/* Check if we may already be in the hashtable, in this case, we
+ 	 * go to out-of-line code to try to modify the HPTE
+ 	 */
+-	andi.	r0,r31,_PAGE_HASHPTE
++	rldicl.	r0,r31,64-12,48
+ 	bne	ht64_modify_pte
+ 
+ ht64_insert_pte:
+ 	/* Clear hpte bits in new pte (we also clear BUSY btw) and
+-	 * add _PAGE_HASHPTE
++	 * add _PAGE_HPTE_SUB0
+ 	 */
+ 	lis	r0,_PAGE_HPTEFLAGS@h
+ 	ori	r0,r0,_PAGE_HPTEFLAGS@l
+ 	andc	r30,r30,r0
++#ifdef CONFIG_PPC_64K_PAGES
++	oris	r30,r30,_PAGE_HPTE_SUB0@h
++#else
+ 	ori	r30,r30,_PAGE_HASHPTE
+-
++#endif
+ 	/* Phyical address in r5 */
+ 	rldicl	r5,r31,64-PTE_RPN_SHIFT,PTE_RPN_SHIFT
+ 	sldi	r5,r5,PAGE_SHIFT
+Index: linux-work/arch/powerpc/mm/hugetlbpage.c
+===================================================================
+--- linux-work.orig/arch/powerpc/mm/hugetlbpage.c	2008-03-19 13:52:26.000000000 +1100
++++ linux-work/arch/powerpc/mm/hugetlbpage.c	2008-06-11 14:34:03.000000000 +1000
+@@ -458,8 +458,7 @@ int hash_huge_page(struct mm_struct *mm,
+ 		old_pte = pte_val(*ptep);
+ 		if (old_pte & _PAGE_BUSY)
+ 			goto out;
+-		new_pte = old_pte | _PAGE_BUSY |
+-			_PAGE_ACCESSED | _PAGE_HASHPTE;
++		new_pte = old_pte | _PAGE_BUSY | _PAGE_ACCESSED;
+ 	} while(old_pte != __cmpxchg_u64((unsigned long *)ptep,
+ 					 old_pte, new_pte));
+ 
+@@ -499,8 +498,11 @@ repeat:
+ 			      HPTES_PER_GROUP) & ~0x7UL;
+ 
+ 		/* clear HPTE slot informations in new PTE */
++#ifdef CONFIG_PPC_64K_PAGES
++		new_pte = (new_pte & ~_PAGE_HPTEFLAGS) | _PAGE_HPTE_SUB0;
++#else
+ 		new_pte = (new_pte & ~_PAGE_HPTEFLAGS) | _PAGE_HASHPTE;
+-
++#endif
+ 		/* Add in WIMG bits */
+ 		/* XXX We should store these in the pte */
+ 		/* --BenH: I think they are ... */
+Index: linux-work/include/asm-powerpc/pgtable-4k.h
+===================================================================
+--- linux-work.orig/include/asm-powerpc/pgtable-4k.h	2008-03-03 11:58:57.000000000 +1100
++++ linux-work/include/asm-powerpc/pgtable-4k.h	2008-06-11 14:34:03.000000000 +1000
+@@ -41,6 +41,7 @@
+ #define PGDIR_MASK	(~(PGDIR_SIZE-1))
+ 
+ /* PTE bits */
++#define _PAGE_HASHPTE	0x0400 /* software: pte has an associated HPTE */
+ #define _PAGE_SECONDARY 0x8000 /* software: HPTE is in secondary group */
+ #define _PAGE_GROUP_IX  0x7000 /* software: HPTE index within group */
+ #define _PAGE_F_SECOND  _PAGE_SECONDARY
+Index: linux-work/include/asm-powerpc/pgtable-64k.h
+===================================================================
+--- linux-work.orig/include/asm-powerpc/pgtable-64k.h	2008-03-19 13:52:48.000000000 +1100
++++ linux-work/include/asm-powerpc/pgtable-64k.h	2008-06-11 14:34:03.000000000 +1000
+@@ -75,6 +75,20 @@ static inline struct subpage_prot_table 
+ #define _PAGE_COMBO	0x10000000 /* this is a combo 4k page */
+ #define _PAGE_4K_PFN	0x20000000 /* PFN is for a single 4k page */
+ 
++/* For 64K page, we don't have a separate _PAGE_HASHPTE bit. Instead,
++ * we set that to be the whole sub-bits mask. The C code will only
++ * test this, so a multi-bit mask will work. For combo pages, this
++ * is equivalent as effectively, the old _PAGE_HASHPTE was an OR of
++ * all the sub bits. For real 64k pages, we now have the assembly set
++ * _PAGE_HPTE_SUB0 in addition to setting the HIDX bits which overlap
++ * that mask. This is fine as long as the HIDX bits are never set on
++ * a PTE that isn't hashed, which is the case today.
++ *
++ * A little nit is for the huge page C code, which does the hashing
++ * in C, we need to provide which bit to use.
++ */
++#define _PAGE_HASHPTE	_PAGE_HPTE_SUB
++
+ /* Note the full page bits must be in the same location as for normal
+  * 4k pages as the same asssembly will be used to insert 64K pages
+  * wether the kernel has CONFIG_PPC_64K_PAGES or not
+@@ -83,8 +97,7 @@ static inline struct subpage_prot_table 
+ #define _PAGE_F_GIX     0x00007000 /* full page: hidx bits */
+ 
+ /* PTE flags to conserve for HPTE identification */
+-#define _PAGE_HPTEFLAGS (_PAGE_BUSY | _PAGE_HASHPTE | _PAGE_HPTE_SUB |\
+-                         _PAGE_COMBO)
++#define _PAGE_HPTEFLAGS (_PAGE_BUSY | _PAGE_HASHPTE | _PAGE_COMBO)
+ 
+ /* Shift to put page number into pte.
+  *
+Index: linux-work/include/asm-powerpc/pgtable-ppc64.h
+===================================================================
+--- linux-work.orig/include/asm-powerpc/pgtable-ppc64.h	2008-05-28 09:31:19.000000000 +1000
++++ linux-work/include/asm-powerpc/pgtable-ppc64.h	2008-06-11 14:34:03.000000000 +1000
+@@ -91,7 +91,6 @@
+ #define _PAGE_DIRTY	0x0080 /* C: page changed */
+ #define _PAGE_ACCESSED	0x0100 /* R: page referenced */
+ #define _PAGE_RW	0x0200 /* software: user write access allowed */
+-#define _PAGE_HASHPTE	0x0400 /* software: pte has an associated HPTE */
+ #define _PAGE_BUSY	0x0800 /* software: PTE & hash are busy */
+ 
+ #define _PAGE_BASE	(_PAGE_PRESENT | _PAGE_ACCESSED | _PAGE_COHERENT)
