@@ -1,37 +1,21 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id D30A3DE3E3
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 0530DDE447
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 12 Jun 2008 03:56:57 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e1.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m5BHurFQ021576
-	for <linuxppc-embedded@ozlabs.org>; Wed, 11 Jun 2008 13:56:53 -0400
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
-	m5BHurKB228314
-	for <linuxppc-embedded@ozlabs.org>; Wed, 11 Jun 2008 13:56:53 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m5BHura1002446
-	for <linuxppc-embedded@ozlabs.org>; Wed, 11 Jun 2008 13:56:53 -0400
-Date: Wed, 11 Jun 2008 13:56:18 -0400
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: "Darcy Watkins" <DWatkins@tranzeo.com>
-Subject: Re: PPC to PowerPC Migration
-Message-ID: <20080611135618.001db94d@zod.rchland.ibm.com>
-In-Reply-To: <D61182AC8012EA4EBC531B3AF23BE109603587@tranzeo-mail2.12stewart.tranzeo.com>
-References: <c443b0db0806101048t1df8c11ag456fbc352709966b@mail.gmail.com>
-	<161B3BAD77161449A144FF054231C3D6022A3E4A@uss-am-xch-01.am.trimblecorp.net>
-	<f608b67d0806110655v19dac162wc3adfc8939b5c40a@mail.gmail.com>
-	<D61182AC8012EA4EBC531B3AF23BE10960355D@tranzeo-mail2.12stewart.tranzeo.com>
-	<20080611123254.64fabf64@vader.jdub.homelinux.org>
-	<D61182AC8012EA4EBC531B3AF23BE109603578@tranzeo-mail2.12stewart.tranzeo.com>
-	<20080611133247.0ac8b7c6@zod.rchland.ibm.com>
-	<D61182AC8012EA4EBC531B3AF23BE109603587@tranzeo-mail2.12stewart.tranzeo.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 12 Jun 2008 03:58:36 +1000 (EST)
+Message-ID: <48501248.8010104@freescale.com>
+Date: Wed, 11 Jun 2008 12:58:32 -0500
+From: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
+To: David Jander <david.jander@protonic.nl>
+Subject: Re: [PATCH 1/2] Added support for PRTLVT based boards (MPC5121)
+References: <200806111143.08905.david.jander@protonic.nl>
+In-Reply-To: <200806111143.08905.david.jander@protonic.nl>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -43,25 +27,94 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wed, 11 Jun 2008 10:52:13 -0700
-"Darcy Watkins" <DWatkins@tranzeo.com> wrote:
+David Jander wrote:
+>  arch/powerpc/platforms/512x/mpc5121_ads.c     |  104 ----------
+>  arch/powerpc/platforms/512x/mpc5121_generic.c |  105 ++++++++++
 
-> Hi Josh,
-> 
-> Is there a special git tree for 4xx or are you referring to kernel.org?
-> ... or do I just post the patches to this list?
+Pass -B -M -C to git-format-patch to detect renames, copies, etc.
 
-http://git.kernel.org/?p=linux/kernel/git/jwboyer/powerpc-4xx.git;a=summary
+> +	flash@fe000000 {
+> +		device_type = "rom";
+> +		compatible = "direct-mapped";
+> +		probe-type = "CFI";
+> +		reg = <0xfe000000 0x02000000>;
+> +		bank-width = <2>;
+> +		partitions = <0x00000000 0x01800000   // filesystem
+> +		              0x01800000 0x00200000   // config0
+> +		              0x01a00000 0x00200000   // config1
+> +		              0x01c00000 0x002e0000   // kernel
+> +		              0x01ee0000 0x00020000   // one sector for device tree
+> +		              0x01f00000 0x00100000>; // u-boot
+> +		partition-names = "filesystem", "config0", "config1","kernel", "device-tree", "u-boot";
+> +	};
 
-You can clone it with:
+This is an old flash binding.  Please use the one currently described in 
+Documentation/booting-without-of.txt.
 
-git clone \
-git://git.kernel.org/pub/scm/linux/kernel/git/jwboyer/powerpc-4xx.git
+> +	soc@80000000 {
+> +		compatible = "fsl,mpc5121-immr";
 
-The 'next' branch contains the current stuff heading into whatever is
-the next merge window (which right now would be 2.6.27.
+Also simple-bus.
 
-You can post patches here, but most of them go to the linuxppc-dev list
-now.
+> +		//axe@2000 {
+> +		//	compatible = "mpc512x-axe";
+> +		//	reg = <2000 100>;
+> +		//	interrupts = <2a 8>;
+> +		//	interrupt-parent = < &ipic >;
+> +		//};
 
-josh
+Why is this here, but commented out?
+
+> +		mdio@2800 {
+> +			device_type = "mdio";
+
+No device_type.
+
+> +		// PSC4 in i2s mode
+> +		i2s@11500 {
+> +			device_type = "i2s";
+
+No device_type.
+
+> +		// PSC5 in SPI mode for touchscreen
+> +		spi@11500 {
+> +			device_type = "spi";
+
+No device_type.
+
+> +		dma2@14000 {
+> +			compatible = "fsl,mpc5121-dma2";
+
+Is this DMA controller compatible with drivers/dma/fsldma.c?  If so, 
+follow the established binding.
+
+> +config MPC5121_GENERIC
+> +	bool
+> +	default n
+> +
+>  config MPC5121_ADS
+>  	bool "Freescale MPC5121E ADS"
+>  	depends on PPC_MULTIPLATFORM && PPC32
+>  	select DEFAULT_UIMAGE
+>  	select PPC_MPC5121
+> +	select MPC5121_GENERIC
+>  	help
+>  	  This option enables support for the MPC5121E ADS board.
+>  	default n
+> +
+> +config PRTLVT
+> +	bool "Protonic LVT family of MPC5121 based boards"
+> +	depends on PPC_MULTIPLATFORM && PPC32
+> +	select DEFAULT_UIMAGE
+> +	select PPC_MPC5121
+> +	select MPC5121_GENERIC
+> +	help
+> +	  This option enables support for the Protonic LVT family (ZANMCU and VICVT2).
+> +	default n
+
+Can we leave out the "default n" lines?  They're no-ops.
+
+I don't think these configs should depend on an option 
+(PPC_MULTIPLATFORM) that is described as "Generic desktop/server/laptop"...
+
+-Scott
