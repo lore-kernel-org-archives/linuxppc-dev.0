@@ -1,16 +1,18 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id F00F3DDF33
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jun 2008 09:02:53 +1000 (EST)
-Date: Thu, 12 Jun 2008 03:02:51 +0400
+	by ozlabs.org (Postfix) with ESMTP id D3729DDED6
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jun 2008 09:04:03 +1000 (EST)
+Date: Thu, 12 Jun 2008 03:04:02 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH 0/4] Fix RTC for MPC8572DS and support RTC on MPC8610HPCD
-Message-ID: <20080611230250.GA13412@polina.dev.rtsoft.ru>
+Subject: [PATCH 1/4] powerpc: fsl_uli1575: fix RTC quirk to work on
+	MPC8572DS and MPC8610HPCD
+Message-ID: <20080611230402.GA21351@polina.dev.rtsoft.ru>
+References: <20080611230250.GA13412@polina.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf8
+In-Reply-To: <20080611230250.GA13412@polina.dev.rtsoft.ru>
 Cc: linuxppc-dev@ozlabs.org
-Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,24 +22,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello Kumar,
+This patch fixes RTC on MPC8572DS boards: dummy read helps only when
+reading at the end of the bridge's memory (i.e. outside of behind the
+bridge devices' assigned regions).
 
-The previous series scattered a bit, so I gathered it again.
+With this change the quirk also makes RTC work on MPC8610HPCD, so it's
+unlikely that this will break MPC8641HPCN or MPC8544DS boards.
 
-I've found MPC8572DS board to test RTC quirk changes that I've made
-for MPC8610HPCD, and it appears that without the change RTC does not
-work on MPC8572DS, too.
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
+ arch/powerpc/platforms/fsl_uli1575.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-So, the first patch actually fixes it for MPC8572DS, and also makes
-RTC work on MPC8610HPCD. I still can't test the patch on MPC8641HPCD
-and MPC8544DS (no boards handy), but I don't believe that the change
-could break these boards.
-
-I also dropped MACH_PCI_FIXUP_*() approach, and did just machine_is()s
-inside the fixups. I think this looks better... as far as possible for
-the board specific fixups. :-)
-
+diff --git a/arch/powerpc/platforms/fsl_uli1575.c b/arch/powerpc/platforms/fsl_uli1575.c
+index afc9141..756561c 100644
+--- a/arch/powerpc/platforms/fsl_uli1575.c
++++ b/arch/powerpc/platforms/fsl_uli1575.c
+@@ -221,7 +221,7 @@ static void __devinit quirk_final_uli5249(struct pci_dev *dev)
+ 	for (i = 0; i < PCI_BUS_NUM_RESOURCES; i++) {
+ 		if ((bus->resource[i]) &&
+ 			(bus->resource[i]->flags & IORESOURCE_MEM)) {
+-			dummy = ioremap(bus->resource[i]->start, 0x4);
++			dummy = ioremap(bus->resource[i]->end - 3, 0x4);
+ 			if (dummy) {
+ 				in_8(dummy);
+ 				iounmap(dummy);
 -- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+1.5.5.4
