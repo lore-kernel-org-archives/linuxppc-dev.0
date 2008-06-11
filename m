@@ -1,25 +1,29 @@
-Return-Path: <mingo@elte.hu>
-Received: from fallback.mail.elte.hu (fallback.mail.elte.hu [157.181.151.13])
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 8CAF4DDE1F
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jun 2008 20:00:35 +1000 (EST)
-Received: from mx3.mail.elte.hu ([157.181.1.138])
-	by fallback.mail.elte.hu with esmtp (Exim) id 1K6N82-0006qm-24
-	from <mingo@elte.hu>
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jun 2008 12:00:30 +0200
-Date: Wed, 11 Jun 2008 11:59:51 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: linux-next: powerpc build failure
-Message-ID: <20080611095951.GB14033@elte.hu>
-References: <20080611192748.686236fd.sfr@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080611192748.686236fd.sfr@canb.auug.org.au>
-Cc: linuxppc-dev@ozlabs.org, Thomas Gleixner <tglx@linutronix.de>,
-	linux-next@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
-	"H. Peter Anvin" <hpa@zytor.com>
+	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 547DADDEFE
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jun 2008 21:49:36 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e31.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m5BBnW3w025638
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jun 2008 07:49:32 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
+	m5BBnWh4174972
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jun 2008 05:49:32 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m5BBnV69017851
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jun 2008 05:49:31 -0600
+Date: Wed, 11 Jun 2008 07:48:59 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: paulus@samba.org
+Subject: Please pull 'for-2.6.26' branch of 4xx tree
+Message-ID: <20080611074859.10fff0a0@zod.rchland.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,23 +33,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hi Paul,
 
-* Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+Please pull from:
 
-> Hi all,
-> 
-> Today's linux-next build (powerpc allyesconfig) failed like this:
-> 
-> vmlinux.o: In function `ipx_ioctl':
-> /scratch/sfr/next/net/ipx/af_ipx.c:1830: relocation truncated to fit: R_PPC64_REL24 against symbol `._mcount' defined in .text section in vmlinux.o
-> 
-> (and lots more similar)
-> 
-> I am assuming that this has something to do with how big vmlinux is 
-> for allyesconfig and the addition of -pg to KBUILD_CFLAGS for ftrace.
+ master.kernel.org:/pub/scm/linux/kernel/git/jwboyer/powerpc-4xx.git for-2.6.26
 
-could this be a tool chain limitation perhaps, or a gcc bug? Or does the 
-allyesconfig size go beyond some fundamental hardware limitation. (i 
-doubt it's the latter)
+to get one commit from Grant that fixes simpleImage targets.  It seems
+both of us missed this when Grant sent it out a while ago.
 
-	Ingo
+The tree is based off of Linus' current tree as of this morning.
+
+josh
+
+Grant Likely (1):
+      [POWERPC] bootwrapper: add simpleImage* to list of boot targets
+
+ arch/powerpc/Makefile |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
