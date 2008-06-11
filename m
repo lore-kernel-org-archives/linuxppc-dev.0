@@ -1,21 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 4BC90DDE07
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jun 2008 16:30:09 +1000 (EST)
-Subject: Re: [RFC/PATCH] powerpc: rework 4xx PTE access and TLB miss
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kumar Gala <kumar.gala@freescale.com>
-In-Reply-To: <0C753631-7D6C-4A31-82B1-2540C012BCDB@freescale.com>
-References: <1213145431.25745.42.camel@pasglop>
-	<0C753631-7D6C-4A31-82B1-2540C012BCDB@freescale.com>
-Content-Type: text/plain
-Date: Wed, 11 Jun 2008 16:29:54 +1000
-Message-Id: <1213165794.25745.66.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Reply-To: benh@kernel.crashing.org
+Return-Path: <mkl@pengutronix.de>
+Message-ID: <484F7CA1.9010209@pengutronix.de>
+Date: Wed, 11 Jun 2008 09:20:01 +0200
+From: Marc Kleine-Budde <mkl@pengutronix.de>
+MIME-Version: 1.0
+To: Robert Schwebel <r.schwebel@pengutronix.de>
+References: <9e4733910806100738rac8e415x99f6e96715ebee90@mail.gmail.com>
+	<20080610165719.GA5139@loki.buserror.net>
+	<9e4733910806101044u1dd79185vc40f5c66e82edbfb@mail.gmail.com>
+	<9e4733910806101208q1bb71913y5c0b5dc5d4fc4cb5@mail.gmail.com>
+	<20080611052907.GP13599@pengutronix.de>
+In-Reply-To: <20080611052907.GP13599@pengutronix.de>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="------------enig76FA1972A0B07892089C79C3"
+Subject: Re: Image generation for Efika is broken in 2.6.26
+Cc: Scott Wood <scottwood@freescale.com>,
+	linuxppc-dev list <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,38 +25,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2008-06-11 at 01:20 -0500, Kumar Gala wrote:
-> On Jun 10, 2008, at 7:50 PM, Benjamin Herrenschmidt wrote:
-> 
-> > This is some preliminary work to improve TLB management on SW loaded
-> > TLB powerpc platforms. This introduce support for non-atomic PTE
-> > operations in pgtable-ppc32.h and removes write back to the PTE from
-> > the TLB miss handlers. In addition, the DSI interrupt code no longer
-> > tries to fixup write permission, this is left to generic code, and
-> > _PAGE_HWWRITE is gone.
-> >
-> > Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> > ---
-> >
-> > This is a first step, plan is to do the same for FSL BookE, 405 and
-> > possibly 8xx too. From there, I want to rework a bit the execute
-> > permission handling to avoid multiple faults, add support for
-> > _PAGE_EXEC (no executable mappings), for prefaulting (especially
-> > for kmap) and proper SMP support for future SMP capable BookE
-> > platforms.
-> 
-> You really should add some comment about what you are doing with the  
-> 44x watermark.  As I look at this I'm not clear what that change is  
-> about and I'm sure in the future someone looking at this will  
-> wondering why this commit changed those bits.
-> 
-> Otherwise this all looks good (other than my other nit picking comments)
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig76FA1972A0B07892089C79C3
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: quoted-printable
 
-I'll add a comment. Basically, the idea is to replace a load of the
-watermark from memory in the fast path, with a cmpli instruction,
-that we then "patch" when the watermark changes (which is very rare).
+Robert Schwebel wrote:
+> On Tue, Jun 10, 2008 at 03:08:05PM -0400, Jon Smirl wrote:
+>>>  I'm trying to convince OSELAS to rebuild the toolchain on Ubuntu
+>>>  hardy but I'm having problems.
+>> After much mucking with my toolchain, I got it built with bin-utils
+>> 2.18. That fixed the Efika problem. Thanks for the tip.
+>=20
+> Marc, do we have a fix for that 2.17 problem?
 
-Saves a load and a GPR for use in the TLB miss handler, which allows me
-further to avoid a double loading of the PTE bottom half, etc...
+No,
+I just have heard yesterday that there is a problem, but have not seen
+any further details (I'm not reading this list). Is there a fix w/o
+update binutils to 2.18?
 
-Ben.
+Marc
+
+--=20
+ Marc Kleine-Budde              Phone: +49-231-2826-924
+ Pengutronix - Linux Solutions for Science and Industry
+ Vertretung West/Dortmund     http://www.pengutronix.de
+
+
+--------------enig76FA1972A0B07892089C79C3
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iD8DBQFIT3yhjTAFq1RaXHMRAg8lAJ4v4WBv9e99lhBQOFscyV4lfduREgCdHRMp
+Vs+GCP97+M1sm68NkqbIqO0=
+=3L6p
+-----END PGP SIGNATURE-----
+
+--------------enig76FA1972A0B07892089C79C3--
