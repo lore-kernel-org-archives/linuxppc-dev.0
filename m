@@ -1,13 +1,12 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id C5B8EDE091
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jun 2008 09:04:32 +1000 (EST)
-Date: Thu, 12 Jun 2008 03:04:31 +0400
+	by ozlabs.org (Postfix) with ESMTP id 9A5B3DDF07
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jun 2008 09:04:38 +1000 (EST)
+Date: Thu, 12 Jun 2008 03:04:37 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH 3/4] powerpc: rtc_cmos_setup: assign interrupts only if
-	there is i8259 PIC
-Message-ID: <20080611230431.GC21351@polina.dev.rtsoft.ru>
+Subject: [PATCH 4/4] powerpc/86xx: mpc8610_hpcd: add support for ULI RTC
+Message-ID: <20080611230437.GD21351@polina.dev.rtsoft.ru>
 References: <20080611230250.GA13412@polina.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf8
@@ -22,65 +21,115 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-i8259 PIC is disabled on MPC8610HPCD boards, thus currently rtc-cmos
-driver fails to probe.
+The ULI "Super South Bridge" contains ISA bridge to the legacy
+devices, such as Super IO mouse/keyboard/floppy disk controllers,
+parallel port, i8259 interrupt controller and so on.
 
-To fix the issue, we lookup the device tree for "chrp,iic" and
-"pnpPNP,000" compatible devices, and if not found we do not assign RTC
-IRQ and assuming that i8259 was disabled.
-
-Though this patch fixes RTC on some boards (and surely should not break
-any other), the whole approach is still broken. We can't easily fix this
-though, because old device trees do not specify i8259 interrupts for the
-cmos rtc node.
+i8259 is disabled on the MPC8610HPCD, and other peripherals are not
+traced out. So we use only RTC.
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- arch/powerpc/sysdev/rtc_cmos_setup.c |   23 +++++++++++++++++------
- 1 files changed, 17 insertions(+), 6 deletions(-)
+ arch/powerpc/boot/dts/mpc8610_hpcd.dts      |   14 +++++++
+ arch/powerpc/configs/mpc8610_hpcd_defconfig |   51 ++++++++++++++++++++++++--
+ 2 files changed, 61 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/sysdev/rtc_cmos_setup.c b/arch/powerpc/sysdev/rtc_cmos_setup.c
-index c09ddc0..c1879eb 100644
---- a/arch/powerpc/sysdev/rtc_cmos_setup.c
-+++ b/arch/powerpc/sysdev/rtc_cmos_setup.c
-@@ -21,6 +21,7 @@ static int  __init add_rtc(void)
- 	struct device_node *np;
- 	struct platform_device *pd;
- 	struct resource res[2];
-+	unsigned int num_res = 1;
- 	int ret;
+diff --git a/arch/powerpc/boot/dts/mpc8610_hpcd.dts b/arch/powerpc/boot/dts/mpc8610_hpcd.dts
+index 65a5f64..c4507cd 100644
+--- a/arch/powerpc/boot/dts/mpc8610_hpcd.dts
++++ b/arch/powerpc/boot/dts/mpc8610_hpcd.dts
+@@ -388,6 +388,20 @@
+ 					  0x01000000 0x0 0x00000000
+ 					  0x01000000 0x0 0x00000000
+ 					  0x0 0x00100000>;
++
++				isa@1e {
++					device_type = "isa";
++					#size-cells = <1>;
++					#address-cells = <2>;
++					reg = <0xf000 0 0 0 0>;
++					ranges = <1 0 0x01000000 0 0
++						  0x00001000>;
++
++					rtc@70 {
++						compatible = "pnpPNP,b00";
++						reg = <1 0x70 2>;
++					};
++				};
+ 			};
+ 		};
+ 	};
+diff --git a/arch/powerpc/configs/mpc8610_hpcd_defconfig b/arch/powerpc/configs/mpc8610_hpcd_defconfig
+index 7e5b9ce..5885597 100644
+--- a/arch/powerpc/configs/mpc8610_hpcd_defconfig
++++ b/arch/powerpc/configs/mpc8610_hpcd_defconfig
+@@ -813,7 +813,6 @@ CONFIG_UNIX98_PTYS=y
+ # CONFIG_IPMI_HANDLER is not set
+ # CONFIG_HW_RANDOM is not set
+ # CONFIG_NVRAM is not set
+-# CONFIG_GEN_RTC is not set
+ # CONFIG_R3964 is not set
+ # CONFIG_APPLICOM is not set
+ # CONFIG_RAW_DRIVER is not set
+@@ -1065,12 +1064,56 @@ CONFIG_USB_ARCH_HAS_EHCI=y
+ # CONFIG_NEW_LEDS is not set
+ # CONFIG_INFINIBAND is not set
+ # CONFIG_EDAC is not set
+-# CONFIG_RTC_CLASS is not set
+-# CONFIG_DMADEVICES is not set
++CONFIG_RTC_LIB=y
++CONFIG_RTC_CLASS=y
++CONFIG_RTC_HCTOSYS=y
++CONFIG_RTC_HCTOSYS_DEVICE="rtc0"
++# CONFIG_RTC_DEBUG is not set
++
++#
++# RTC interfaces
++#
++CONFIG_RTC_INTF_SYSFS=y
++CONFIG_RTC_INTF_PROC=y
++CONFIG_RTC_INTF_DEV=y
++# CONFIG_RTC_INTF_DEV_UIE_EMUL is not set
++# CONFIG_RTC_DRV_TEST is not set
++
++#
++# I2C RTC drivers
++#
++# CONFIG_RTC_DRV_DS1307 is not set
++# CONFIG_RTC_DRV_DS1374 is not set
++# CONFIG_RTC_DRV_DS1672 is not set
++# CONFIG_RTC_DRV_MAX6900 is not set
++# CONFIG_RTC_DRV_RS5C372 is not set
++# CONFIG_RTC_DRV_ISL1208 is not set
++# CONFIG_RTC_DRV_X1205 is not set
++# CONFIG_RTC_DRV_PCF8563 is not set
++# CONFIG_RTC_DRV_PCF8583 is not set
++# CONFIG_RTC_DRV_M41T80 is not set
++# CONFIG_RTC_DRV_S35390A is not set
  
- 	memset(&res, 0, sizeof(res));
-@@ -41,14 +42,24 @@ static int  __init add_rtc(void)
- 	if (res[0].start != RTC_PORT(0))
- 		return -EINVAL;
+ #
+-# Userspace I/O
++# SPI RTC drivers
+ #
++
++#
++# Platform RTC drivers
++#
++CONFIG_RTC_DRV_CMOS=y
++# CONFIG_RTC_DRV_DS1511 is not set
++# CONFIG_RTC_DRV_DS1553 is not set
++# CONFIG_RTC_DRV_DS1742 is not set
++# CONFIG_RTC_DRV_STK17TA8 is not set
++# CONFIG_RTC_DRV_M48T86 is not set
++# CONFIG_RTC_DRV_M48T59 is not set
++# CONFIG_RTC_DRV_V3020 is not set
++
++#
++# on-CPU RTC drivers
++#
++# CONFIG_DMADEVICES is not set
+ # CONFIG_UIO is not set
  
--	/* Use a fixed interrupt value of 8 since on PPC if we are using this
--	 * its off an i8259 which we ensure has interrupt numbers 0..15. */
--	res[1].start = 8;
--	res[1].end = 8;
--	res[1].flags = IORESOURCE_IRQ;
-+	np = of_find_compatible_node(NULL, NULL, "chrp,iic");
-+	if (!np)
-+		np = of_find_compatible_node(NULL, NULL, "pnpPNP,000");
-+	if (np) {
-+		of_node_put(np);
-+		/*
-+		 * Use a fixed interrupt value of 8 since on PPC if we are
-+		 * using this its off an i8259 which we ensure has interrupt
-+		 * numbers 0..15.
-+		 */
-+		res[1].start = 8;
-+		res[1].end = 8;
-+		res[1].flags = IORESOURCE_IRQ;
-+		num_res++;
-+	}
- 
- 	pd = platform_device_register_simple("rtc_cmos", -1,
--					     &res[0], 2);
-+					     &res[0], num_res);
- 
- 	if (IS_ERR(pd))
- 		return PTR_ERR(pd);
+ #
 -- 
 1.5.5.4
