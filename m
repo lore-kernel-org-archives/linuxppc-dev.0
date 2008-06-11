@@ -1,28 +1,30 @@
 Return-Path: <david.jander@protonic.nl>
 Received: from protonic.prtnl (protonic.xs4all.nl [213.84.116.84])
-	by ozlabs.org (Postfix) with ESMTP id 42C3BDDF20
+	by ozlabs.org (Postfix) with ESMTP id 3CC51DDF37
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 11 Jun 2008 19:44:47 +1000 (EST)
+	Wed, 11 Jun 2008 19:45:22 +1000 (EST)
 Received: from localhost (localhost [127.0.0.1])
-	by protonic.prtnl (Postfix) with ESMTP id 1FA7829EC9
+	by protonic.prtnl (Postfix) with ESMTP id 255BF29EBB
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 11 Jun 2008 11:43:08 +0200 (CEST)
+	Wed, 11 Jun 2008 11:43:42 +0200 (CEST)
 Received: from protonic.prtnl ([127.0.0.1])
 	by localhost (protonic [127.0.0.1]) (amavisd-new, port 10024) with ESMTP
-	id 07022-01 for <linuxppc-embedded@ozlabs.org>;
-	Wed, 11 Jun 2008 11:41:29 +0200 (CEST)
+	id 06546-06 for <linuxppc-embedded@ozlabs.org>;
+	Wed, 11 Jun 2008 11:43:07 +0200 (CEST)
 Received: from archvile.prtnl (archvile.prtnl [192.168.1.153])
-	by protonic.prtnl (Postfix) with ESMTP id A3C9129EBB
+	by protonic.prtnl (Postfix) with ESMTP id 0D2FD29EC8
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 11 Jun 2008 11:41:29 +0200 (CEST)
+	Wed, 11 Jun 2008 11:43:04 +0200 (CEST)
 From: David Jander <david.jander@protonic.nl>
 To: linuxppc-embedded@ozlabs.org
-Subject: [PATCH 1/2] Added support for PRTLVT based boards (MPC5121)
-Date: Wed, 11 Jun 2008 11:43:08 +0200
+Subject: [PATCH 2/2] Re-added support for FEC on MPC5121 from Freescale LTIB
+Date: Wed, 11 Jun 2008 11:44:44 +0200
+References: <200806111143.08905.david.jander@protonic.nl>
+In-Reply-To: <200806111143.08905.david.jander@protonic.nl>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200806111143.08905.david.jander@protonic.nl>
+  charset="iso-8859-1"
+Message-Id: <200806111144.44218.david.jander@protonic.nl>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -33,555 +35,505 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-
-Made MPC5121_ADS board support generic
+to current head
 
 Signed-off-by: David Jander <david@protonic.nl>
 ---
- arch/powerpc/boot/dts/prtlvt.dts              |  267 +++++++++++++++++++++++++
- arch/powerpc/platforms/512x/Kconfig           |   15 ++
- arch/powerpc/platforms/512x/Makefile          |    2 +-
- arch/powerpc/platforms/512x/mpc5121_ads.c     |  104 ----------
- arch/powerpc/platforms/512x/mpc5121_generic.c |  105 ++++++++++
- 5 files changed, 388 insertions(+), 105 deletions(-)
- create mode 100644 arch/powerpc/boot/dts/prtlvt.dts
- delete mode 100644 arch/powerpc/platforms/512x/mpc5121_ads.c
- create mode 100644 arch/powerpc/platforms/512x/mpc5121_generic.c
+ drivers/net/fs_enet/Kconfig        |   16 ++++-
+ drivers/net/fs_enet/fec_mpc5121.h  |  120 ++++++++++++++++++++++++++++++++++++
+ drivers/net/fs_enet/fs_enet-main.c |   90 +++++++++++++++++++++++----
+ drivers/net/fs_enet/fs_enet.h      |   14 +++-
+ drivers/net/fs_enet/mac-fec.c      |   22 ++++++-
+ drivers/net/fs_enet/mii-fec.c      |   10 +++-
+ 6 files changed, 249 insertions(+), 23 deletions(-)
+ create mode 100644 drivers/net/fs_enet/fec_mpc5121.h
 
-diff --git a/arch/powerpc/boot/dts/prtlvt.dts b/arch/powerpc/boot/dts/prtlvt.dts
-new file mode 100644
-index 0000000..93d2fa2
---- /dev/null
-+++ b/arch/powerpc/boot/dts/prtlvt.dts
-@@ -0,0 +1,267 @@
-+/*
-+ * Device tree source for PRTLVT based boards, base on:
-+ * MPC5121E MDS Device Tree Source
-+ *
-+ * Copyright 2007 Freescale Semiconductor Inc.
-+ * Copyright 2008 Protonic Holland
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ */
-+
-+ /* compile with: ./dtc -p 10240 -R 20 -I dts -o prtlvt.dtb -O dtb -b 0 dts/prtlvt.dts */
-+
-+/dts-v1/;
-+
-+/ {
-+	model = "prtlvt";
-+	compatible = "prt,prtlvt";
-+	#address-cells = <1>;
-+	#size-cells = <1>;
-+
-+	cpus {
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+
-+		PowerPC,5121@0 {
-+			device_type = "cpu";
-+			reg = <0>;
-+			d-cache-line-size = <0x20>;	// 32 bytes
-+			i-cache-line-size = <0x20>;	// 32 bytes
-+			d-cache-size = <0x8000>;	// L1, 32K
-+			i-cache-size = <0x8000>;	// L1, 32K
-+			timebase-frequency = <50000000>;// 50 MHz (csb/4)
-+			bus-frequency = <200000000>;	// 200 MHz csb bus
-+			clock-frequency = <400000000>;	// 400 MHz ppc core
-+		};
-+	};
-+
-+	memory {
-+		device_type = "memory";
-+		reg = <0x00000000 0x10000000>;	// 256MB at 0
-+	};
-+
-+	flash@fe000000 {
-+		device_type = "rom";
-+		compatible = "direct-mapped";
-+		probe-type = "CFI";
-+		reg = <0xfe000000 0x02000000>;
-+		bank-width = <2>;
-+		partitions = <0x00000000 0x01800000   // filesystem
-+		              0x01800000 0x00200000   // config0
-+		              0x01a00000 0x00200000   // config1
-+		              0x01c00000 0x002e0000   // kernel
-+		              0x01ee0000 0x00020000   // one sector for device tree
-+		              0x01f00000 0x00100000>; // u-boot
-+		partition-names = "filesystem", "config0", "config1","kernel", "device-tree", "u-boot";
-+	};
-+
-+	soc@80000000 {
-+		compatible = "fsl,mpc5121-immr";
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		#interrupt-cells = <2>;
-+		ranges = <0x0 0x80000000 0x400000>;
-+		reg = <0x80000000 0x400000>;
-+		bus-frequency = <66000000>;	// 66 MHz ips bus
-+
-+
-+		// IPIC
-+		// interrupts cell = <intr #, sense>
-+		// sense values match linux IORESOURCE_IRQ_* defines:
-+		// sense == 8: Level, low assertion
-+		// sense == 2: Edge, high-to-low change
-+		//
-+		ipic: interrupt-controller@c00 {
-+			compatible = "fsl,mpc5121-ipic", "fsl,ipic";
-+			interrupt-controller;
-+			#address-cells = <0>;
-+			#interrupt-cells = <2>;
-+			reg = <0xc00 0x100>;
-+		};
-+
-+		// 512x PSCs are not 52xx PSCs compatible
-+		// PSC0 serial port aka ttyPSC0
-+		serial@11000 {
-+			device_type = "serial";
-+			compatible = "fsl,mpc5121-psc-uart";
-+			port-number = <0>;
-+			cell-index = <0>;
-+			reg = <0x11000 0x100>;
-+			interrupts = <0x28 0x8>; // actually the fifo irq
-+			interrupt-parent = < &ipic >;
-+		};
-+
-+		// PSC1 serial port aka ttyPSC1
-+		serial@11100 {
-+			device_type = "serial";
-+			compatible = "fsl,mpc5121-psc-uart";
-+			port-number = <1>;
-+			cell-index = <1>;
-+			reg = <0x11100 0x100>;
-+			interrupts = <0x28 0x8>; // actually the fifo irq
-+			interrupt-parent = < &ipic >;
-+		};
-+
-+		// PSC2 serial port aka ttyPSC2
-+		serial@11200 {
-+			device_type = "serial";
-+			compatible = "fsl,mpc5121-psc-uart";
-+			port-number = <2>;
-+			cell-index = <2>;
-+			reg = <0x11200 0x100>;
-+			interrupts = <0x28 0x8>; // actually the fifo irq
-+			interrupt-parent = < &ipic >;
-+		};
-+		
-+		// PSC3 serial port aka ttyPSC3
-+		serial@11300 {
-+			device_type = "serial";
-+			compatible = "fsl,mpc5121-psc-uart";
-+			port-number = <3>;
-+			cell-index = <3>;
-+			reg = <0x11300 0x100>;
-+			interrupts = <0x28 0x8>; // actually the fifo irq
-+			interrupt-parent = < &ipic >;
-+		};
-+
-+		pscsfifo@11f00 {
-+			compatible = "fsl,mpc5121-psc-fifo";
-+			reg = <0x11f00 0x100>;
-+			interrupts = <0x28 0x8>;
-+			interrupt-parent = < &ipic >;
-+		};
-+
-+		i2c@1700 {
-+			compatible = "fsl,mpc5121-i2c", "fsl-i2c";
-+			reg = <0x1700 0x20>;
-+			interrupts = <0x9 0x8>;
-+			interrupt-parent = < &ipic >;
-+			fsl5200-clocking;
-+		};
-+
-+		i2c@1720 {
-+			compatible = "fsl,mpc5121-i2c", "fsl-i2c";
-+			reg = <0x1720 0x20>;
-+			interrupts = <0xa 0x8>;
-+			interrupt-parent = < &ipic >;
-+			fsl5200-clocking;
-+		};
-+
-+		i2c@1740 {
-+			compatible = "fsl,mpc5121-i2c", "fsl-i2c";
-+			reg = <0x1740 0x20>;
-+			interrupts = <0xb 0x8>;
-+			interrupt-parent = < &ipic >;
-+			fsl5200-clocking;
-+		};
-+
-+		i2ccontrol@1760 {
-+			compatible = "fsl,mpc5121-i2c-ctrl";
-+			reg = <0x1760 0x8>;
-+		};
-+
-+		//axe@2000 {
-+		//	compatible = "mpc512x-axe";
-+		//	reg = <2000 100>;
-+		//	interrupts = <2a 8>;
-+		//	interrupt-parent = < &ipic >;
-+		//};
-+
-+		diu@2100 {
-+			compatible = "fsl,mpc5121-diu", "fsl-diu";
-+			reg = <0x2100 0x100>;
-+			interrupts = <0x40 0x8>;
-+			interrupt-parent = < &ipic >;
-+			clk-name = "diu_clk";
-+			clk-parent = "ips_clk";
-+			clk-ctrl = <0x1 0x1f>; // sccr2 bit 31
-+		};
-+
-+		mdio@2800 {
-+			device_type = "mdio";
-+			compatible = "fsl,mpc5121-fec-mdio";
-+			reg = <0x2800 0x800>;
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			phy: ethernet-phy@0 {
-+				reg = <1>;
-+				device_type = "ethernet-phy";
-+			};
-+		};
-+
-+		ethernet@2800 {
-+			device_type = "network";
-+			compatible = "fsl,mpc5121-fec";
-+			reg = <0x2800 0x800>;
-+			local-mac-address = [ 00 00 00 00 00 00 ];
-+			interrupts = <0x4 0x8 >;
-+			interrupt-parent = < &ipic >;
-+			phy-handle = < &phy >;
-+		};
-+
-+		// port1 using extern ULPI PHY
-+		usb@3000 {
-+			device_type = "usb";
-+			compatible = "fsl,fsl-usb2-dr";
-+			reg = <0x3000 0x1000>;
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			interrupt-parent = < &ipic >;
-+			interrupts = <0x2c 0x8>;
-+			dr_mode = "otg";
-+			phy_type = "ulpi";
-+			port1;
-+		};
-+
-+		// port0 using internal UTMI PHY
-+		usb@4000 {
-+			device_type = "usb";
-+			compatible = "fsl,fsl-usb2-dr";
-+			reg = <0x4000 0x1000>;
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			interrupt-parent = < &ipic >;
-+			interrupts = <0x2b 0x8>;
-+			dr_mode = "otg";
-+			phy_type = "utmi";
-+			port0;
-+		};
-+
-+		// PSC4 in i2s mode
-+		i2s@11500 {
-+			device_type = "i2s";
-+			compatible = "fsl,mpc5121-psc-i2s";
-+			cell-index = <4>;
-+			reg = <0x11400 0x100>;
-+			interrupts = <0x20 8>;
-+			interrupt-parent = < &ipic >;
-+		};
-+
-+		// PSC5 in SPI mode for touchscreen
-+		spi@11500 {
-+			device_type = "spi";
-+			compatible = "fsl,mpc5121-psc-spi";
-+			cell-index = <5>;
-+			reg = <0x11500 0x100>;
-+			interrupts = <0x21 8>;
-+			interrupt-parent = < &ipic >;
-+		};
-+
-+		dma2@14000 {
-+			compatible = "fsl,mpc5121-dma2";
-+			reg = <0x14000 0x1800>;
-+			interrupts = <0x41 0x8>;
-+			interrupt-parent = < &ipic >;
-+		};
-+
-+		sata@20000 {
-+			compatible = "fsl,mpc5121-sata";
-+			reg = <0x20000 0x2000>;
-+			interrupts = <0x2d 0x8 0x56 0x8>;
-+			interrupt-parent = < &ipic >;
-+		};
-+	};
-+};
-diff --git a/arch/powerpc/platforms/512x/Kconfig b/arch/powerpc/platforms/512x/Kconfig
-index 4c0da0c..67707f2 100644
---- a/arch/powerpc/platforms/512x/Kconfig
-+++ b/arch/powerpc/platforms/512x/Kconfig
-@@ -9,11 +9,26 @@ config PPC_MPC5121
- 	select PPC_MPC512x
- 	default n
+diff --git a/drivers/net/fs_enet/Kconfig b/drivers/net/fs_enet/Kconfig
+index 562ea68..8eea038 100644
+--- a/drivers/net/fs_enet/Kconfig
++++ b/drivers/net/fs_enet/Kconfig
+@@ -1,9 +1,17 @@
+ config FS_ENET
+        tristate "Freescale Ethernet Driver"
+-       depends on CPM1 || CPM2
++       depends on CPM1 || CPM2 || FS_ENET_MPC5121_FEC
+        select MII
+        select PHYLIB
  
-+config MPC5121_GENERIC
-+	bool
++config FS_ENET_MPC5121_FEC
++	bool "Freescale MPC512x FEC driver"
++	depends on PPC_MPC512x
++	select FS_ENET
++	select FS_ENET_HAS_FEC
++	select PPC_CPM_NEW_BINDING
 +	default n
 +
- config MPC5121_ADS
- 	bool "Freescale MPC5121E ADS"
- 	depends on PPC_MULTIPLATFORM && PPC32
- 	select DEFAULT_UIMAGE
- 	select PPC_MPC5121
-+	select MPC5121_GENERIC
- 	help
- 	  This option enables support for the MPC5121E ADS board.
- 	default n
+ config FS_ENET_HAS_SCC
+ 	bool "Chip has an SCC usable for ethernet"
+ 	depends on FS_ENET && (CPM1 || CPM2)
+@@ -16,13 +24,15 @@ config FS_ENET_HAS_FCC
+ 
+ config FS_ENET_HAS_FEC
+ 	bool "Chip has an FEC usable for ethernet"
+-	depends on FS_ENET && CPM1
++	depends on FS_ENET && (CPM1 || FS_ENET_MPC5121_FEC)
+ 	select FS_ENET_MDIO_FEC
+ 	default y
+ 
 +
-+config PRTLVT
-+	bool "Protonic LVT family of MPC5121 based boards"
-+	depends on PPC_MULTIPLATFORM && PPC32
-+	select DEFAULT_UIMAGE
-+	select PPC_MPC5121
-+	select MPC5121_GENERIC
-+	help
-+	  This option enables support for the Protonic LVT family (ZANMCU and VICVT2).
-+	default n
-diff --git a/arch/powerpc/platforms/512x/Makefile b/arch/powerpc/platforms/512x/Makefile
-index 232c89f..9d40a2e 100644
---- a/arch/powerpc/platforms/512x/Makefile
-+++ b/arch/powerpc/platforms/512x/Makefile
-@@ -1,4 +1,4 @@
- #
- # Makefile for the Freescale PowerPC 512x linux kernel.
- #
--obj-$(CONFIG_MPC5121_ADS)	+= mpc5121_ads.o
-+obj-$(CONFIG_MPC5121_GENERIC)	+= mpc5121_generic.o
-diff --git a/arch/powerpc/platforms/512x/mpc5121_ads.c b/arch/powerpc/platforms/512x/mpc5121_ads.c
-deleted file mode 100644
-index 50bd3a3..0000000
---- a/arch/powerpc/platforms/512x/mpc5121_ads.c
-+++ /dev/null
-@@ -1,104 +0,0 @@
--/*
-- * Copyright (C) 2007 Freescale Semiconductor, Inc. All rights reserved.
-- *
-- * Author: John Rigby, <jrigby@freescale.com>, Thur Mar 29 2007
-- *
-- * Description:
-- * MPC5121 ADS board setup
-- *
-- * This is free software; you can redistribute it and/or modify it
-- * under the terms of the GNU General Public License as published by
-- * the Free Software Foundation; either version 2 of the License, or
-- * (at your option) any later version.
-- *
-- */
--
--#include <linux/kernel.h>
--#include <linux/io.h>
--#include <linux/irq.h>
--#include <linux/of_platform.h>
--
--#include <asm/machdep.h>
--#include <asm/ipic.h>
--#include <asm/prom.h>
--#include <asm/time.h>
--
--/**
-- * 	mpc512x_find_ips_freq - Find the IPS bus frequency for a device
-- * 	@node:	device node
-- *
-- * 	Returns IPS bus frequency, or 0 if the bus frequency cannot be found.
-- */
--unsigned long
--mpc512x_find_ips_freq(struct device_node *node)
--{
--	struct device_node *np;
--	const unsigned int *p_ips_freq = NULL;
--
--	of_node_get(node);
--	while (node) {
--		p_ips_freq = of_get_property(node, "bus-frequency", NULL);
--		if (p_ips_freq)
--			break;
--
--		np = of_get_parent(node);
--		of_node_put(node);
--		node = np;
--	}
--	if (node)
--		of_node_put(node);
--
--	return p_ips_freq ? *p_ips_freq : 0;
--}
--EXPORT_SYMBOL(mpc512x_find_ips_freq);
--
--static struct of_device_id __initdata of_bus_ids[] = {
--	{ .name = "soc", },
--	{ .name = "localbus", },
--	{},
--};
--
--static void __init mpc5121_ads_declare_of_platform_devices(void)
--{
--	/* Find every child of the SOC node and add it to of_platform */
--	if (of_platform_bus_probe(NULL, of_bus_ids, NULL))
--		printk(KERN_ERR __FILE__ ": "
--			"Error while probing of_platform bus\n");
--}
--
--static void __init mpc5121_ads_init_IRQ(void)
--{
--	struct device_node *np;
--
--	np = of_find_compatible_node(NULL, NULL, "fsl,ipic");
--	if (!np)
--		return;
--
--	ipic_init(np, 0);
--	of_node_put(np);
--
--	/*
--	 * Initialize the default interrupt mapping priorities,
--	 * in case the boot rom changed something on us.
--	 */
--	ipic_set_default_priority();
--}
--
--/*
-- * Called very early, MMU is off, device-tree isn't unflattened
-- */
--static int __init mpc5121_ads_probe(void)
--{
--	unsigned long root = of_get_flat_dt_root();
--
--	return of_flat_dt_is_compatible(root, "fsl,mpc5121ads");
--}
--
--define_machine(mpc5121_ads) {
--	.name			= "MPC5121 ADS",
--	.probe			= mpc5121_ads_probe,
--	.init			= mpc5121_ads_declare_of_platform_devices,
--	.init_IRQ		= mpc5121_ads_init_IRQ,
--	.get_irq		= ipic_get_irq,
--	.calibrate_decr		= generic_calibrate_decr,
--};
-diff --git a/arch/powerpc/platforms/512x/mpc5121_generic.c b/arch/powerpc/platforms/512x/mpc5121_generic.c
+ config FS_ENET_MDIO_FEC
+ 	tristate "MDIO driver for FEC"
+-	depends on FS_ENET && CPM1
++	depends on FS_ENET && (CPM1 || FS_ENET_MPC5121_FEC)
++
+ 
+ config FS_ENET_MDIO_FCC
+ 	tristate "MDIO driver for FCC"
+diff --git a/drivers/net/fs_enet/fec_mpc5121.h b/drivers/net/fs_enet/fec_mpc5121.h
 new file mode 100644
-index 0000000..602580b
+index 0000000..b8a69d4
 --- /dev/null
-+++ b/arch/powerpc/platforms/512x/mpc5121_generic.c
-@@ -0,0 +1,105 @@
++++ b/drivers/net/fs_enet/fec_mpc5121.h
+@@ -0,0 +1,120 @@
 +/*
-+ * Copyright (C) 2007 Freescale Semiconductor, Inc. All rights reserved.
++ * Copyright (C) 2007,2008 Freescale Semiconductor, Inc. All rights reserved.
 + *
-+ * Author: John Rigby, <jrigby@freescale.com>, Thur Mar 29 2007
++ * Author: John Rigby, <jrigby@freescale.com>
 + *
-+ * Description:
-+ * MPC5121 SoC setup
++ * Modified version of drivers/net/fec.h:
++ *
++ *	fec.h  --  Fast Ethernet Controller for Motorola ColdFire SoC
++ *		   processors.
++ *
++ *	(C) Copyright 2000-2005, Greg Ungerer (gerg@snapgear.com)
++ *	(C) Copyright 2000-2001, Lineo (www.lineo.com)
 + *
 + * This is free software; you can redistribute it and/or modify it
 + * under the terms of the GNU General Public License as published by
 + * the Free Software Foundation; either version 2 of the License, or
 + * (at your option) any later version.
-+ *
 + */
++#ifndef FEC_MPC5121_H
++#define FEC_MPC5121_H
 +
-+#include <linux/kernel.h>
-+#include <linux/io.h>
-+#include <linux/irq.h>
-+#include <linux/of_platform.h>
-+
-+#include <asm/machdep.h>
-+#include <asm/ipic.h>
-+#include <asm/prom.h>
-+#include <asm/time.h>
-+
-+/**
-+ * 	mpc512x_find_ips_freq - Find the IPS bus frequency for a device
-+ * 	@node:	device node
-+ *
-+ * 	Returns IPS bus frequency, or 0 if the bus frequency cannot be found.
-+ */
-+unsigned long
-+mpc512x_find_ips_freq(struct device_node *node)
-+{
-+	struct device_node *np;
-+	const unsigned int *p_ips_freq = NULL;
-+
-+	of_node_get(node);
-+	while (node) {
-+		p_ips_freq = of_get_property(node, "bus-frequency", NULL);
-+		if (p_ips_freq)
-+			break;
-+
-+		np = of_get_parent(node);
-+		of_node_put(node);
-+		node = np;
-+	}
-+	if (node)
-+		of_node_put(node);
-+
-+	return p_ips_freq ? *p_ips_freq : 0;
-+}
-+EXPORT_SYMBOL(mpc512x_find_ips_freq);
-+
-+static struct of_device_id __initdata of_bus_ids[] = {
-+	{ .name = "soc", },
-+	{ .name = "localbus", },
-+	{},
-+};
-+
-+static void __init mpc5121_generic_declare_of_platform_devices(void)
-+{
-+	/* Find every child of the SOC node and add it to of_platform */
-+	if (of_platform_bus_probe(NULL, of_bus_ids, NULL))
-+		printk(KERN_ERR __FILE__ ": "
-+			"Error while probing of_platform bus\n");
-+}
-+
-+static void __init mpc5121_generic_init_IRQ(void)
-+{
-+	struct device_node *np;
-+
-+	np = of_find_compatible_node(NULL, NULL, "fsl,ipic");
-+	if (!np)
-+		return;
-+
-+	ipic_init(np, 0);
-+	of_node_put(np);
-+
-+	/*
-+	 * Initialize the default interrupt mapping priorities,
-+	 * in case the boot rom changed something on us.
-+	 */
-+	ipic_set_default_priority();
-+}
++typedef struct fec {
++	u32 fec_reserved0;
++	u32 fec_ievent;		/* Interrupt event reg */
++	u32 fec_imask;		/* Interrupt mask reg */
++	u32 fec_reserved1;
++	u32 fec_r_des_active;	/* Receive descriptor reg */
++	u32 fec_x_des_active;	/* Transmit descriptor reg */
++	u32 fec_reserved2[3];
++	u32 fec_ecntrl;		/* Ethernet control reg */
++	u32 fec_reserved3[6];
++	u32 fec_mii_data;		/* MII manage frame reg */
++	u32 fec_mii_speed;		/* MII speed control reg */
++	u32 fec_reserved4[7];
++	u32 fec_mib_ctrlstat;	/* MIB control/status reg */
++	u32 fec_reserved5[7];
++	u32 fec_r_cntrl;		/* Receive control reg */
++	u32 fec_reserved6[15];
++	u32 fec_x_cntrl;		/* Transmit Control reg */
++	u32 fec_reserved7[7];
++	u32 fec_addr_low;		/* Low 32bits MAC address */
++	u32 fec_addr_high;		/* High 16bits MAC address */
++	u32 fec_opd;		/* Opcode + Pause duration */
++	u32 fec_reserved8[10];
++	u32 fec_hash_table_high;	/* High 32bits hash table */
++	u32 fec_hash_table_low;	/* Low 32bits hash table */
++	u32 fec_grp_hash_table_high;/* High 32bits hash table */
++	u32 fec_grp_hash_table_low;	/* Low 32bits hash table */
++	u32 fec_reserved9[7];
++	u32 fec_x_wmrk;		/* FIFO transmit water mark */
++	u32 fec_reserved10;
++	u32 fec_r_bound;		/* FIFO receive bound reg */
++	u32 fec_r_fstart;		/* FIFO receive start reg */
++	u32 fec_reserved11[11];
++	u32 fec_r_des_start;	/* Receive descriptor ring */
++	u32 fec_x_des_start;	/* Transmit descriptor ring */
++	u32 fec_r_buff_size;	/* Maximum receive buff size */
++	u32 fec_dma_control;	/* DMA Endian and other ctrl */
++} fec_t;
 +
 +/*
-+ * Called very early, MMU is off, device-tree isn't unflattened
++ *	Define the buffer descriptor structure.
 + */
-+static int __init mpc5121_generic_probe(void)
-+{
-+	unsigned long root = of_get_flat_dt_root();
++typedef struct bufdesc {
++	unsigned short	cbd_sc;			/* Control and status info */
++	unsigned short	cbd_datlen;		/* Data length */
++	unsigned long	cbd_bufaddr;		/* Buffer address */
++} cbd_t;
 +
-+	return of_flat_dt_is_compatible(root, "fsl,mpc5121ads") ||
-+			of_flat_dt_is_compatible(root, "prt,prtlvt");
++/*
++ *	The following definitions courtesy of commproc.h, which where
++ *	Copyright (c) 1997 Dan Malek (dmalek@jlc.net).
++ */
++#define BD_SC_EMPTY     ((ushort)0x8000)        /* Recieve is empty */
++#define BD_SC_READY     ((ushort)0x8000)        /* Transmit is ready */
++#define BD_SC_WRAP      ((ushort)0x2000)        /* Last buffer descriptor */
++#define BD_SC_INTRPT    ((ushort)0x1000)        /* Interrupt on change */
++#define BD_SC_CM        ((ushort)0x0200)        /* Continous mode */
++#define BD_SC_ID        ((ushort)0x0100)        /* Rec'd too many idles */
++#define BD_SC_P         ((ushort)0x0100)        /* xmt preamble */
++#define BD_SC_BR        ((ushort)0x0020)        /* Break received */
++#define BD_SC_FR        ((ushort)0x0010)        /* Framing error */
++#define BD_SC_PR        ((ushort)0x0008)        /* Parity error */
++#define BD_SC_OV        ((ushort)0x0002)        /* Overrun */
++#define BD_SC_CD        ((ushort)0x0001)        /* ?? */
++
++/* Buffer descriptor control/status used by Ethernet receive.
++*/
++#define BD_ENET_RX_EMPTY        ((ushort)0x8000)
++#define BD_ENET_RX_WRAP         ((ushort)0x2000)
++#define BD_ENET_RX_INTR         ((ushort)0x1000)
++#define BD_ENET_RX_LAST         ((ushort)0x0800)
++#define BD_ENET_RX_FIRST        ((ushort)0x0400)
++#define BD_ENET_RX_MISS         ((ushort)0x0100)
++#define BD_ENET_RX_LG           ((ushort)0x0020)
++#define BD_ENET_RX_NO           ((ushort)0x0010)
++#define BD_ENET_RX_SH           ((ushort)0x0008)
++#define BD_ENET_RX_CR           ((ushort)0x0004)
++#define BD_ENET_RX_OV           ((ushort)0x0002)
++#define BD_ENET_RX_CL           ((ushort)0x0001)
++#define BD_ENET_RX_STATS        ((ushort)0x013f)        /* All status bits */
++
++/* Buffer descriptor control/status used by Ethernet transmit.
++*/
++#define BD_ENET_TX_READY        ((ushort)0x8000)
++#define BD_ENET_TX_PAD          ((ushort)0x4000)
++#define BD_ENET_TX_WRAP         ((ushort)0x2000)
++#define BD_ENET_TX_INTR         ((ushort)0x1000)
++#define BD_ENET_TX_LAST         ((ushort)0x0800)
++#define BD_ENET_TX_TC           ((ushort)0x0400)
++#define BD_ENET_TX_DEF          ((ushort)0x0200)
++#define BD_ENET_TX_HB           ((ushort)0x0100)
++#define BD_ENET_TX_LC           ((ushort)0x0080)
++#define BD_ENET_TX_RL           ((ushort)0x0040)
++#define BD_ENET_TX_RCMASK       ((ushort)0x003c)
++#define BD_ENET_TX_UN           ((ushort)0x0002)
++#define BD_ENET_TX_CSL          ((ushort)0x0001)
++#define BD_ENET_TX_STATS        ((ushort)0x03ff)        /* All status bits */
++
++#endif /* FEC_MPC5121_H */
+diff --git a/drivers/net/fs_enet/fs_enet-main.c b/drivers/net/fs_enet/fs_enet-main.c
+index 31c9693..4ca8513 100644
+--- a/drivers/net/fs_enet/fs_enet-main.c
++++ b/drivers/net/fs_enet/fs_enet-main.c
+@@ -69,6 +69,7 @@ MODULE_PARM_DESC(fs_enet_debug,
+ static void fs_enet_netpoll(struct net_device *dev);
+ #endif
+ 
++#define ENET_RX_ALIGN 16
+ static void fs_set_multicast_list(struct net_device *dev)
+ {
+ 	struct fs_enet_private *fep = netdev_priv(dev);
+@@ -592,6 +593,33 @@ void fs_cleanup_bds(struct net_device *dev)
+ 
+ /**********************************************************************************/
+ 
++#define TX_ALIGN_WORKAROUND
++#ifdef TX_ALIGN_WORKAROUND
++static struct sk_buff *aligntxskb(struct net_device *dev, struct sk_buff *skb)
++{
++	struct sk_buff *skbn;
++	skbn = dev_alloc_skb(ENET_RX_FRSIZE+0x20);
++	if (skbn)
++		skb_align(skbn, 0x20);
++
++	if (!skbn) { 
++	    printk(KERN_WARNING DRV_MODULE_NAME
++		    ": %s Memory squeeze, dropping tx packet.\n",
++		    dev->name);
++		dev_kfree_skb_any(skb);
++		return NULL;
++	}
++
++	skb_copy_from_linear_data(skb, skbn->data, skb->len);
++	skb_put(skbn, skb->len);
++	dev_kfree_skb_any(skb);
++	return skbn;
++}
++#else
++#define aligntxskb(skb) skb
++#endif
++
++
+ static int fs_enet_start_xmit(struct sk_buff *skb, struct net_device *dev)
+ {
+ 	struct fs_enet_private *fep = netdev_priv(dev);
+@@ -600,6 +628,7 @@ static int fs_enet_start_xmit(struct sk_buff *skb, struct net_device *dev)
+ 	u16 sc;
+ 	unsigned long flags;
+ 
++	skb = aligntxskb(dev, skb);
+ 	spin_lock_irqsave(&fep->tx_lock, flags);
+ 
+ 	/*
+@@ -951,7 +980,7 @@ static int fs_ioctl(struct net_device *dev, struct ifreq *rq, int cmd)
+ {
+ 	struct fs_enet_private *fep = netdev_priv(dev);
+ 	struct mii_ioctl_data *mii = (struct mii_ioctl_data *)&rq->ifr_data;
+-
++	printk("<1> %s: %s (%d)\n",__FILE__,__FUNCTION__,__LINE__);
+ 	if (!netif_running(dev))
+ 		return -EINVAL;
+ 
+@@ -1147,6 +1176,7 @@ static int fs_cleanup_instance(struct net_device *ndev)
+ 
+ /**************************************************************************************/
+ 
++#ifndef CONFIG_FS_ENET_MPC5121_FEC
+ /* handy pointer to the immap */
+ void __iomem *fs_enet_immap = NULL;
+ 
+@@ -1168,6 +1198,10 @@ static void cleanup_immap(void)
+ 	iounmap(fs_enet_immap);
+ #endif
+ }
++#else
++#define setup_immap() 0
++#define cleanup_immap() do {} while (0)
++#endif
+ 
+ /**************************************************************************************/
+ 
+@@ -1370,10 +1404,17 @@ static struct of_device_id fs_enet_match[] = {
+ 	},
+ #endif
+ #ifdef CONFIG_FS_ENET_HAS_FEC
++#ifndef CONFIG_FS_ENET_MPC5121_FEC
+ 	{
+ 		.compatible = "fsl,pq1-fec-enet",
+ 		.data = (void *)&fs_fec_ops,
+ 	},
++#else
++	{
++		.compatible = "fsl,mpc5121-fec",
++		.data = (void *)&fs_fec_ops,
++	},
++#endif
+ #endif
+ 	{}
+ };
+@@ -1431,15 +1472,42 @@ static int fs_enet_remove(struct device *dev)
+ 	return fs_cleanup_instance(dev_get_drvdata(dev));
+ }
+ 
++#ifdef CONFIG_PM
++static int fs_enet_suspend(struct device *dev, pm_message_t state)
++{
++	struct net_device *ndev = dev_get_drvdata(dev);
++
++	if (netif_running(ndev))
++		fs_enet_close(ndev);
++
++	return 0;
 +}
 +
-+define_machine(mpc5121_generic) {
-+	.name			= "MPC5121 generic",
-+	.probe			= mpc5121_generic_probe,
-+	.init			= mpc5121_generic_declare_of_platform_devices,
-+	.init_IRQ		= mpc5121_generic_init_IRQ,
-+	.get_irq		= ipic_get_irq,
-+	.calibrate_decr	= generic_calibrate_decr,
-+};
++static int fs_enet_resume(struct device *dev)
++{
++	struct net_device *ndev = dev_get_drvdata(dev);
++
++	if (netif_running(ndev))
++		fs_enet_open(ndev);
++
++	return 0;
++}
++#else
++#define fs_enet_suspend	NULL
++#define fs_enet_resume	NULL
++#endif
++
+ static struct device_driver fs_enet_fec_driver = {
++#ifndef CONFIG_FS_ENET_MPC5121_FEC
+ 	.name	  	= "fsl-cpm-fec",
++#else
++	.name	  	= "fsl-mpc5121-fec",
++#endif
+ 	.bus		= &platform_bus_type,
+ 	.probe		= fs_enet_probe,
+ 	.remove		= fs_enet_remove,
+-#ifdef CONFIG_PM
+-/*	.suspend	= fs_enet_suspend,	TODO */
+-/*	.resume		= fs_enet_resume,	TODO */
+-#endif
++	.suspend	= fs_enet_suspend,
++	.resume		= fs_enet_resume,
+ };
+ 
+ static struct device_driver fs_enet_scc_driver = {
+@@ -1447,10 +1515,8 @@ static struct device_driver fs_enet_scc_driver = {
+ 	.bus		= &platform_bus_type,
+ 	.probe		= fs_enet_probe,
+ 	.remove		= fs_enet_remove,
+-#ifdef CONFIG_PM
+-/*	.suspend	= fs_enet_suspend,	TODO */
+-/*	.resume		= fs_enet_resume,	TODO */
+-#endif
++	.suspend	= fs_enet_suspend,
++	.resume		= fs_enet_resume,
+ };
+ 
+ static struct device_driver fs_enet_fcc_driver = {
+@@ -1458,10 +1524,8 @@ static struct device_driver fs_enet_fcc_driver = {
+ 	.bus		= &platform_bus_type,
+ 	.probe		= fs_enet_probe,
+ 	.remove		= fs_enet_remove,
+-#ifdef CONFIG_PM
+-/*	.suspend	= fs_enet_suspend,	TODO */
+-/*	.resume		= fs_enet_resume,	TODO */
+-#endif
++	.suspend	= fs_enet_suspend,
++	.resume		= fs_enet_resume,
+ };
+ 
+ static int __init fs_init(void)
+diff --git a/drivers/net/fs_enet/fs_enet.h b/drivers/net/fs_enet/fs_enet.h
+index e05389c..56d3f14 100644
+--- a/drivers/net/fs_enet/fs_enet.h
++++ b/drivers/net/fs_enet/fs_enet.h
+@@ -9,11 +9,17 @@
+ #include <linux/dma-mapping.h>
+ 
+ #include <linux/fs_enet_pd.h>
++#ifndef CONFIG_FS_ENET_MPC5121_FEC
+ #include <asm/fs_pd.h>
++#else
++#include "fec_mpc5121.h"
++#endif
+ 
+ #ifdef CONFIG_CPM1
+ #include <asm/cpm1.h>
++#endif
+ 
++#if defined(CONFIG_CPM1) || defined(CONFIG_FS_ENET_MPC5121_FEC)
+ struct fec_info {
+ 	fec_t __iomem *fecp;
+ 	u32 mii_speed;
+@@ -170,10 +176,10 @@ void fs_enet_platform_cleanup(void);
+ #define __cbd_in16(addr)	__raw_readw(addr)
+ #else
+ /* for others play it safe */
+-#define __cbd_out32(addr, x)	out_be32(addr, x)
+-#define __cbd_out16(addr, x)	out_be16(addr, x)
+-#define __cbd_in32(addr)	in_be32(addr)
+-#define __cbd_in16(addr)	in_be16(addr)
++#define __cbd_out32(addr, x)	out_be32((volatile void __iomem *)addr, x)
++#define __cbd_out16(addr, x)	out_be16((volatile void __iomem *)addr, x)
++#define __cbd_in32(addr)	in_be32((volatile void __iomem *)addr)
++#define __cbd_in16(addr)	in_be16((volatile void __iomem *)addr)
+ #endif
+ 
+ /* write */
+diff --git a/drivers/net/fs_enet/mac-fec.c b/drivers/net/fs_enet/mac-fec.c
+index 8a311d1..d4de57f 100644
+--- a/drivers/net/fs_enet/mac-fec.c
++++ b/drivers/net/fs_enet/mac-fec.c
+@@ -42,6 +42,9 @@
+ #include <asm/mpc8xx.h>
+ #include <asm/cpm1.h>
+ #endif
++#ifdef CONFIG_FS_ENET_MPC5121_FEC
++#include "fec_mpc5121.h"
++#endif
+ 
+ #ifdef CONFIG_PPC_CPM_NEW_BINDING
+ #include <asm/of_device.h>
+@@ -306,7 +309,9 @@ static void restart(struct net_device *dev)
+ 	 * Set maximum receive buffer size.
+ 	 */
+ 	FW(fecp, r_buff_size, PKT_MAXBLR_SIZE);
++#ifndef CONFIG_FS_ENET_MPC5121_FEC
+ 	FW(fecp, r_hash, PKT_MAXBUF_SIZE);
++#endif
+ 
+ 	/* get physical address */
+ 	rx_bd_base_phys = fep->ring_mem_addr;
+@@ -320,10 +325,17 @@ static void restart(struct net_device *dev)
+ 
+ 	fs_init_bds(dev);
+ 
++#ifndef CONFIG_FS_ENET_MPC5121_FEC
+ 	/*
+ 	 * Enable big endian and don't care about SDMA FC.
+ 	 */
+ 	FW(fecp, fun_code, 0x78000000);
++#else
++	/*
++	 * Set DATA_BO and DESC_BO and leave the rest unchanged
++	 */
++	FS(fecp, dma_control, 0xc0000000);
++#endif
+ 
+ 	/*
+ 	 * Set MII speed.
+@@ -334,11 +346,13 @@ static void restart(struct net_device *dev)
+ 	 * Clear any outstanding interrupt.
+ 	 */
+ 	FW(fecp, ievent, 0xffc0);
++#ifndef CONFIG_FS_ENET_MPC5121_FEC
+ #ifndef CONFIG_PPC_MERGE
+ 	FW(fecp, ivec, (fep->interrupt / 2) << 29);
+ #else
+ 	FW(fecp, ivec, (virq_to_hw(fep->interrupt) / 2) << 29);
+ #endif
++#endif
+ 
+ 	/*
+ 	 * adjust to speed (only for DUET & RMII)
+@@ -368,9 +382,13 @@ static void restart(struct net_device *dev)
+ 		out_be32(&immap->im_cpm.cp_cptr, cptr);
+ 	}
+ #endif
+-
+-
++#ifdef CONFIG_FS_ENET_MPC5121_FEC
++	FW(fecp, r_cntrl, PKT_MAXBUF_SIZE<<16);	/* max frame size */
++	FS(fecp, r_cntrl, FEC_RCNTRL_MII_MODE); /* MII enable */
++#else
+ 	FW(fecp, r_cntrl, FEC_RCNTRL_MII_MODE);	/* MII enable */
++#endif
++
+ 	/*
+ 	 * adjust to duplex mode
+ 	 */
+diff --git a/drivers/net/fs_enet/mii-fec.c b/drivers/net/fs_enet/mii-fec.c
+index f0014cf..5d9b846 100644
+--- a/drivers/net/fs_enet/mii-fec.c
++++ b/drivers/net/fs_enet/mii-fec.c
+@@ -38,6 +38,7 @@
+ 
+ #ifdef CONFIG_PPC_CPM_NEW_BINDING
+ #include <asm/of_platform.h>
++#include <asm/time.h>
+ #endif
+ 
+ #include "fs_enet.h"
+@@ -71,7 +72,7 @@ static int fs_mii_fec_init(struct fec_info* fec, struct fs_mii_fec_platform_info
+ {
+ 	struct resource *r;
+ 	fec_t __iomem *fecp;
+-	char* name = "fsl-cpm-fec";
++	char *name = "fsl-cpm-fec";
+ 
+ 	/* we need fec in order to be useful */
+ 	struct platform_device *fec_pdev =
+@@ -261,9 +262,16 @@ static int fs_enet_mdio_remove(struct of_device *ofdev)
+ }
+ 
+ static struct of_device_id fs_enet_mdio_fec_match[] = {
++#ifdef CONFIG_FS_ENET_FEC
+ 	{
+ 		.compatible = "fsl,pq1-fec-mdio",
+ 	},
++#endif
++#ifdef CONFIG_FS_ENET_MPC5121_FEC
++	{
++		.compatible = "fsl,mpc5121-fec-mdio",
++	},
++#endif
+ 	{},
+ };
+ 
 -- 
 1.5.4.3
