@@ -1,22 +1,23 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.249])
-	by ozlabs.org (Postfix) with ESMTP id 97815DE028
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jun 2008 23:30:38 +1000 (EST)
-Received: by an-out-0708.google.com with SMTP id c34so643896anc.78
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jun 2008 06:30:36 -0700 (PDT)
-Message-ID: <fa686aa40806110630t413aa7a2wcc3c223f306349b6@mail.gmail.com>
-Date: Wed, 11 Jun 2008 07:30:35 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "David Jander" <david.jander@protonic.nl>,
-	linuxppc-dev <linuxppc-dev@ozlabs.org>
-Subject: Re: [PATCH] prtlvt board support (MPC5121e) added
-In-Reply-To: <200806111141.16901.david.jander@protonic.nl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <200806101842.36755.david@protonic.nl>
-	<fa686aa40806101337k45fc0b1bm95a6dc49541bcd66@mail.gmail.com>
-	<200806111141.16901.david.jander@protonic.nl>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 3D849DDE25
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jun 2008 23:52:34 +1000 (EST)
+Message-Id: <CF897329-1FD6-4F3D-B91C-2C7B4225126E@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: avorontsov@ru.mvista.com
+In-Reply-To: <20080611122919.GA2573@polina.dev.rtsoft.ru>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v924)
+Subject: Re: [PATCH 4/7] [POWERPC] QE: implement support for the GPIO LIB API
+Date: Wed, 11 Jun 2008 08:52:16 -0500
+References: <20080519174558.GA26229@polina.dev.rtsoft.ru>
+	<20080519174705.GD28185@polina.dev.rtsoft.ru>
+	<CC7DA92D-EE00-48E9-AAA0-51A13A3BD5D0@kernel.crashing.org>
+	<20080611122919.GA2573@polina.dev.rtsoft.ru>
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
+	Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,36 +27,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jun 11, 2008 at 3:41 AM, David Jander <david.jander@protonic.nl> wrote:
-> On Tuesday 10 June 2008 22:37:18 you wrote:
->> Thanks for the patch, comments below.
->> > --- /dev/null
->> > +++ b/arch/powerpc/platforms/512x/prtlvt.c
+
+On Jun 11, 2008, at 7:29 AM, Anton Vorontsov wrote:
+
+> On Tue, Jun 10, 2008 at 11:15:08AM -0500, Kumar Gala wrote:
 >>
->> Looks like you've just duplicated mpc5121_ads.c.  You should just add
->> your boards name to the mpc5121_ads_probe function.  Bonus points if
->> you rename the .c file to something more generic.  You only need a new
->> board file if your board needs something special.
+>> On May 19, 2008, at 12:47 PM, Anton Vorontsov wrote:
+>>
+>>> This is needed to access QE GPIOs via Linux GPIO API.
+>>>
+>>> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+>>> Acked-By: Timur Tabi <timur@freescale.com>
+>>> ---
+>>> Documentation/powerpc/booting-without-of.txt |   27 +++++
+>>> arch/powerpc/sysdev/qe_lib/Kconfig           |    9 ++
+>>> arch/powerpc/sysdev/qe_lib/Makefile          |    1 +
+>>> arch/powerpc/sysdev/qe_lib/gpio.c            |  146 +++++++++++++++ 
+>>> ++
+>>> +++++++++
+>>> include/asm-powerpc/qe.h                     |    3 +
+>>> 5 files changed, 186 insertions(+), 0 deletions(-)
+>>> create mode 100644 arch/powerpc/sysdev/qe_lib/gpio.c
+>>
+>> applied.
 >
-> Well, it looks like mpc5121_ads.c is pretty generic. The MPC5121 is almost
-> a "motherboard-in-a-chip" type of SoC, so there isn't much board-specific
-> stuff anywhere. IO-control register setup should be done in the boot-loader.
-> What should we do about this then? Rename the whole mpc5121_ads stuff to
-> something more generic? What about calling it "mpc5121_generic.c"?
+> I've just rebased on the pushed out powerpc-next branch, and noticed
+> that you merged this patch from the old series.
+>
+> The difference is in absence of arch_initcall() for QE GPIOs
+> initialization, i.e. in this version boards should explicitly call
+> qe_add_gpiochips(). So.. was this done deliberately? Or should I send
+> you an update?
 
-mpc5121_generic.c works for me.
+just send me an update to my tree at this point.
 
-> Btw, you posted this to linucppc-dev mailing list, but I think that was a
-> mistake, since this is clearly an embedded processor, so I removed the CC.
-
-Nope, not a mistake.  Discussions on embedded stuff is welcome on the
-linuxppc-dev mailing list.  There has been some talk of removing the
-linuxppc-embedded list entirely.  I've added the list back to the to:
-list.
-
-Cheers,
-g.
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+- k
