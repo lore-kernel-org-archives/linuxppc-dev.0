@@ -1,20 +1,16 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [Cbe-oss-dev] [PATCH] powerpc/cell: disable ptcal in case of
-	kdump reboot
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Arnd Bergmann <arnd@arndb.de>
-In-Reply-To: <200806111828.59043.arnd@arndb.de>
-References: <200806111828.59043.arnd@arndb.de>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-AhvSmqCo1p6ElYZ5UFUl"
-Date: Thu, 12 Jun 2008 02:49:16 +1000
-Message-Id: <1213202956.28589.4.camel@localhost>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Michael Neuling <mikey@neuling.org>,
-	Paul Mackerras <paulus@samba.org>, Jeremy Kerr <jk@ozlabs.org>,
-	cbe-oss-dev@ozlabs.org
-Reply-To: michael@ellerman.id.au
+Return-Path: <scottwood@freescale.com>
+Date: Wed, 11 Jun 2008 11:53:55 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Marc Kleine-Budde <mkl@pengutronix.de>
+Subject: Re: Image generation for Efika is broken in 2.6.26
+Message-ID: <20080611165355.GB2779@loki.buserror.net>
+References: <9e4733910806100738rac8e415x99f6e96715ebee90@mail.gmail.com>
+	<20080610165719.GA5139@loki.buserror.net>
+	<484FD30B.3020105@pengutronix.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <484FD30B.3020105@pengutronix.de>
+Cc: linuxppc-dev list <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,56 +20,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Wed, Jun 11, 2008 at 03:28:43PM +0200, Marc Kleine-Budde wrote:
+> Scott Wood wrote:
+> > Are you using binutils 2.17?  It has a bug that was triggered by the
+> > p_paddr change.  Do you get a bunch of warnings from the strip command?
+> 
+> Same problem here with binutils-2.17. But no warnings from strip. Can
+> you give me some pointers to the original bug report or the fix of the
+> problem in the binutils svn. I've searched this mailinglist and the
+> binutils bugzilla, but without success.
 
---=-AhvSmqCo1p6ElYZ5UFUl
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Not sure, I just know that I don't see the behavior on anything before or
+after 2.17.  This is the closest I found, though it's post-2.18:
 
-On Wed, 2008-06-11 at 18:28 +0200, Arnd Bergmann wrote:
-> The ibm,cbe-start-ptcal rtas call transfers ownership
-> of a memory range to the hardware in order to do
-> periodic memory interface recalibration.
-> When we do a kexec, we need to get this page back,
-> so we don't step on the new kernel's toes.
-> We used to do this correctly in case of a user triggered
-> kexec, but not for kdump.
+http://www.nabble.com/Zero-p_paddr-confuses-BFD-td17002340.html
 
-Used to?
-
-> This patch disables ptcal from the cell specific
-> machine_crash_shutdown() callback.=20
-
-I'd rather you used the crash_shutdown_register() infrastructure Mikey
-added for EHEA - it's designed for just this sort of thing.
-
-> I also needed to fix the pseries code that tries to install its
-> default_machine_crash_shutdown() code independent
-> of what machine we're running on.
-
-That's a buglet.
-
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-AhvSmqCo1p6ElYZ5UFUl
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBIUAIMdSjSd0sB4dIRAsFoAJwMmBqkuRQGPJBhWZ9Q8zbUA/EdpQCgh2M4
-sg1xEKNwMuUvSn5J4JUhbcY=
-=QxVP
------END PGP SIGNATURE-----
-
---=-AhvSmqCo1p6ElYZ5UFUl--
+-Scott
