@@ -1,23 +1,18 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 72F64DDECF
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jun 2008 09:16:56 +1000 (EST)
-Date: Wed, 11 Jun 2008 03:16:54 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH v2] powerpc/83xx: update mpc83xx_defconfig to support
-	MPC8360E-RDK
-Message-ID: <20080610231654.GA12300@polina.dev.rtsoft.ru>
-References: <20080429185920.GA19735@polina.dev.rtsoft.ru>
-	<20080429190049.GE21203@polina.dev.rtsoft.ru>
-	<67EC8BE5-3BF0-4107-8FA9-A058283E7EB5@kernel.crashing.org>
-	<20080610193215.GA14162@polina.dev.rtsoft.ru>
-	<057C3E99-B1DC-49BF-B9A8-4C72D943E920@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <057C3E99-B1DC-49BF-B9A8-4C72D943E920@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: avorontsov@ru.mvista.com
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id C78CFDDEEC
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jun 2008 10:50:48 +1000 (EST)
+Subject: [RFC/PATCH] powerpc: rework 4xx PTE access and TLB miss
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain
+Date: Wed, 11 Jun 2008 10:50:31 +1000
+Message-Id: <1213145431.25745.42.camel@pasglop>
+Mime-Version: 1.0
+Cc: Kumar Gala <kumar.gala@freescale.com>
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,202 +22,595 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch updates mpc83xx_defconfig to support MPC8360E-RDK board.
+This is some preliminary work to improve TLB management on SW loaded
+TLB powerpc platforms. This introduce support for non-atomic PTE
+operations in pgtable-ppc32.h and removes write back to the PTE from
+the TLB miss handlers. In addition, the DSI interrupt code no longer
+tries to fixup write permission, this is left to generic code, and
+_PAGE_HWWRITE is gone.
 
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
 
-On Tue, Jun 10, 2008 at 05:01:17PM -0500, Kumar Gala wrote:
-[...]
-> Can you look at refreshing this against my for-2.6.26 tree (its got an  
-> updated defconfig)
+This is a first step, plan is to do the same for FSL BookE, 405 and
+possibly 8xx too. From there, I want to rework a bit the execute
+permission handling to avoid multiple faults, add support for
+_PAGE_EXEC (no executable mappings), for prefaulting (especially
+for kmap) and proper SMP support for future SMP capable BookE
+platforms.
 
-That's an idea. Cherry-picked the defconfig update commit, and here is
-the patch on top.
-
-I'm assuming that CONFIG_PCI=n + CONFIG_FB_OF build breakage fix will
-be committed prior to this patch. If not, we'll have to enable the
-CONFIG_PCI in the defconfig as a separate patch, since it will produce
-unreadable changes again. (btw, is there any particular reason why PCI
-is disabled?)
-
- arch/powerpc/configs/mpc83xx_defconfig |   65 +++++++++++++++++++++++++++++--
- 1 files changed, 60 insertions(+), 5 deletions(-)
-
-diff --git a/arch/powerpc/configs/mpc83xx_defconfig b/arch/powerpc/configs/mpc83xx_defconfig
-index 4293c8b..d6a0052 100644
---- a/arch/powerpc/configs/mpc83xx_defconfig
-+++ b/arch/powerpc/configs/mpc83xx_defconfig
-@@ -1,7 +1,7 @@
- #
- # Automatically generated make config: don't edit
- # Linux kernel version: 2.6.26-rc5
--# Mon Jun  9 08:52:14 2008
-+# Wed Jun 11 02:59:37 2008
- #
- # CONFIG_PPC64 is not set
+Index: linux-work/arch/powerpc/kernel/head_44x.S
+===================================================================
+--- linux-work.orig/arch/powerpc/kernel/head_44x.S	2008-06-10 18:13:46.000000000 +1000
++++ linux-work/arch/powerpc/kernel/head_44x.S	2008-06-11 10:31:59.000000000 +1000
+@@ -293,112 +293,7 @@ interrupt_base:
+ 	MCHECK_EXCEPTION(0x0210, MachineCheckA, machine_check_exception)
  
-@@ -38,6 +38,7 @@ CONFIG_ARCH_HAS_ILOG2_U32=y
- CONFIG_GENERIC_HWEIGHT=y
- CONFIG_GENERIC_CALIBRATE_DELAY=y
- CONFIG_GENERIC_FIND_NEXT_BIT=y
-+CONFIG_GENERIC_GPIO=y
- # CONFIG_ARCH_NO_VIRT_TO_BUS is not set
- CONFIG_PPC=y
- CONFIG_EARLY_PRINTK=y
-@@ -166,6 +167,7 @@ CONFIG_MPC832x_RDB=y
- CONFIG_MPC834x_MDS=y
- CONFIG_MPC834x_ITX=y
- CONFIG_MPC836x_MDS=y
-+CONFIG_MPC836x_RDK=y
- CONFIG_MPC837x_MDS=y
- CONFIG_MPC837x_RDB=y
- CONFIG_SBC834x=y
-@@ -241,6 +243,8 @@ CONFIG_ZONE_DMA=y
- CONFIG_GENERIC_ISA_DMA=y
- CONFIG_PPC_INDIRECT_PCI=y
- CONFIG_FSL_SOC=y
-+CONFIG_FSL_LBC=y
-+CONFIG_FSL_GTM=y
- # CONFIG_PCI is not set
- # CONFIG_PCI_DOMAINS is not set
- # CONFIG_PCI_SYSCALL is not set
-@@ -356,7 +360,7 @@ CONFIG_DEFAULT_TCP_CONG="cubic"
- CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
- CONFIG_STANDALONE=y
- CONFIG_PREVENT_FIRMWARE_BUILD=y
--# CONFIG_FW_LOADER is not set
-+CONFIG_FW_LOADER=y
- # CONFIG_SYS_HYPERVISOR is not set
- # CONFIG_CONNECTOR is not set
- CONFIG_MTD=y
-@@ -398,7 +402,7 @@ CONFIG_MTD_CFI_I1=y
- CONFIG_MTD_CFI_I2=y
- # CONFIG_MTD_CFI_I4 is not set
- # CONFIG_MTD_CFI_I8 is not set
--# CONFIG_MTD_CFI_INTELEXT is not set
-+CONFIG_MTD_CFI_INTELEXT=y
- CONFIG_MTD_CFI_AMDSTD=y
- # CONFIG_MTD_CFI_STAA is not set
- CONFIG_MTD_CFI_UTIL=y
-@@ -438,6 +442,7 @@ CONFIG_MTD_NAND_IDS=y
- # CONFIG_MTD_NAND_PLATFORM is not set
- # CONFIG_MTD_ALAUDA is not set
- CONFIG_MTD_NAND_FSL_ELBC=y
-+CONFIG_MTD_NAND_FSL_UPM=y
- # CONFIG_MTD_ONENAND is not set
+ 	/* Data Storage Interrupt */
+-	START_EXCEPTION(DataStorage)
+-	mtspr	SPRN_SPRG0, r10		/* Save some working registers */
+-	mtspr	SPRN_SPRG1, r11
+-	mtspr	SPRN_SPRG4W, r12
+-	mtspr	SPRN_SPRG5W, r13
+-	mfcr	r11
+-	mtspr	SPRN_SPRG7W, r11
+-
+-	/*
+-	 * Check if it was a store fault, if not then bail
+-	 * because a user tried to access a kernel or
+-	 * read-protected page.  Otherwise, get the
+-	 * offending address and handle it.
+-	 */
+-	mfspr	r10, SPRN_ESR
+-	andis.	r10, r10, ESR_ST@h
+-	beq	2f
+-
+-	mfspr	r10, SPRN_DEAR		/* Get faulting address */
+-
+-	/* If we are faulting a kernel address, we have to use the
+-	 * kernel page tables.
+-	 */
+-	lis	r11, PAGE_OFFSET@h
+-	cmplw	r10, r11
+-	blt+	3f
+-	lis	r11, swapper_pg_dir@h
+-	ori	r11, r11, swapper_pg_dir@l
+-
+-	mfspr   r12,SPRN_MMUCR
+-	rlwinm	r12,r12,0,0,23		/* Clear TID */
+-
+-	b	4f
+-
+-	/* Get the PGD for the current thread */
+-3:
+-	mfspr	r11,SPRN_SPRG3
+-	lwz	r11,PGDIR(r11)
+-
+-	/* Load PID into MMUCR TID */
+-	mfspr	r12,SPRN_MMUCR		/* Get MMUCR */
+-	mfspr   r13,SPRN_PID		/* Get PID */
+-	rlwimi	r12,r13,0,24,31		/* Set TID */
+-
+-4:
+-	mtspr   SPRN_MMUCR,r12
+-
+-	rlwinm  r12, r10, 13, 19, 29    /* Compute pgdir/pmd offset */
+-	lwzx    r11, r12, r11           /* Get pgd/pmd entry */
+-	rlwinm. r12, r11, 0, 0, 20      /* Extract pt base address */
+-	beq     2f                      /* Bail if no table */
+-
+-	rlwimi  r12, r10, 23, 20, 28    /* Compute pte address */
+-	lwz     r11, 4(r12)             /* Get pte entry */
+-
+-	andi.	r13, r11, _PAGE_RW	/* Is it writeable? */
+-	beq	2f			/* Bail if not */
+-
+-	/* Update 'changed'.
+-	*/
+-	ori	r11, r11, _PAGE_DIRTY|_PAGE_ACCESSED|_PAGE_HWWRITE
+-	stw	r11, 4(r12)		/* Update Linux page table */
+-
+-	li	r13, PPC44x_TLB_SR@l	/* Set SR */
+-	rlwimi	r13, r11, 29, 29, 29	/* SX = _PAGE_HWEXEC */
+-	rlwimi	r13, r11, 0, 30, 30	/* SW = _PAGE_RW */
+-	rlwimi	r13, r11, 29, 28, 28	/* UR = _PAGE_USER */
+-	rlwimi	r12, r11, 31, 26, 26	/* (_PAGE_USER>>1)->r12 */
+-	rlwimi	r12, r11, 29, 30, 30	/* (_PAGE_USER>>3)->r12 */
+-	and	r12, r12, r11		/* HWEXEC/RW & USER */
+-	rlwimi	r13, r12, 0, 26, 26	/* UX = HWEXEC & USER */
+-	rlwimi	r13, r12, 3, 27, 27	/* UW = RW & USER */
+-
+-	rlwimi	r11,r13,0,26,31		/* Insert static perms */
+-
+-	rlwinm	r11,r11,0,20,15		/* Clear U0-U3 */
+-
+-	/* find the TLB index that caused the fault.  It has to be here. */
+-	tlbsx	r10, 0, r10
+-
+-	tlbwe	r11, r10, PPC44x_TLB_ATTRIB	/* Write ATTRIB */
+-
+-	/* Done...restore registers and get out of here.
+-	*/
+-	mfspr	r11, SPRN_SPRG7R
+-	mtcr	r11
+-	mfspr	r13, SPRN_SPRG5R
+-	mfspr	r12, SPRN_SPRG4R
+-
+-	mfspr	r11, SPRN_SPRG1
+-	mfspr	r10, SPRN_SPRG0
+-	rfi			/* Force context change */
+-
+-2:
+-	/*
+-	 * The bailout.  Restore registers to pre-exception conditions
+-	 * and call the heavyweights to help us out.
+-	 */
+-	mfspr	r11, SPRN_SPRG7R
+-	mtcr	r11
+-	mfspr	r13, SPRN_SPRG5R
+-	mfspr	r12, SPRN_SPRG4R
+-
+-	mfspr	r11, SPRN_SPRG1
+-	mfspr	r10, SPRN_SPRG0
+-	b	data_access
++	DATA_STORAGE_EXCEPTION
  
- #
-@@ -445,6 +450,7 @@ CONFIG_MTD_NAND_FSL_ELBC=y
- #
- # CONFIG_MTD_UBI is not set
- CONFIG_OF_DEVICE=y
-+CONFIG_OF_GPIO=y
- CONFIG_OF_I2C=y
- # CONFIG_PARPORT is not set
- CONFIG_BLK_DEV=y
-@@ -636,7 +642,7 @@ CONFIG_SERIAL_8250_RUNTIME_UARTS=4
- CONFIG_SERIAL_CORE=y
- CONFIG_SERIAL_CORE_CONSOLE=y
- # CONFIG_SERIAL_OF_PLATFORM is not set
--# CONFIG_SERIAL_QE is not set
-+CONFIG_SERIAL_QE=y
- CONFIG_UNIX98_PTYS=y
- CONFIG_LEGACY_PTYS=y
- CONFIG_LEGACY_PTY_COUNT=256
-@@ -655,6 +661,7 @@ CONFIG_I2C_CHARDEV=y
- #
- # I2C Hardware Bus support
- #
-+# CONFIG_I2C_GPIO is not set
- CONFIG_I2C_MPC=y
- # CONFIG_I2C_OCORES is not set
- # CONFIG_I2C_PARPORT_LIGHT is not set
-@@ -672,6 +679,7 @@ CONFIG_I2C_MPC=y
- # CONFIG_SENSORS_PCF8574 is not set
- # CONFIG_PCF8575 is not set
- # CONFIG_SENSORS_PCF8591 is not set
-+# CONFIG_TPS65010 is not set
- # CONFIG_SENSORS_MAX6875 is not set
- # CONFIG_SENSORS_TSL2550 is not set
- # CONFIG_I2C_DEBUG_CORE is not set
-@@ -679,6 +687,21 @@ CONFIG_I2C_MPC=y
- # CONFIG_I2C_DEBUG_BUS is not set
- # CONFIG_I2C_DEBUG_CHIP is not set
- # CONFIG_SPI is not set
-+CONFIG_HAVE_GPIO_LIB=y
+ 	/* Instruction Storage Interrupt */
+ 	INSTRUCTION_STORAGE_EXCEPTION
+@@ -418,7 +313,6 @@ interrupt_base:
+ #else
+ 	EXCEPTION(0x2010, FloatingPointUnavailable, unknown_exception, EXC_XFER_EE)
+ #endif
+-
+ 	/* System Call Interrupt */
+ 	START_EXCEPTION(SystemCall)
+ 	NORMAL_EXCEPTION_PROLOG
+@@ -479,18 +373,57 @@ interrupt_base:
+ 4:
+ 	mtspr	SPRN_MMUCR,r12
+ 
++	/* Mask of required permission bits. Note that while we
++	 * do copy ESR:ST to _PAGE_RW position as trying to write
++	 * to an RO page is pretty common, we don't do it with
++	 * _PAGE_DIRTY. We could do it, but it's a fairly rare
++	 * event so I'd rather take the overhead when it happens
++	 * rather than adding an instruction here. We should measure
++	 * whether the whole thing is worth it in the first place
++	 * as we could avoid loading SPRN_ESR completely in the first
++	 * place...
++	 *
++	 * TODO: Is it worth doing that mfspr & rlwimi in the first
++	 *       place or can we save a couple of instructions here ?
++	 */
++	mfspr	r12,SPRN_ESR
++	li	r13,_PAGE_PRESENT|_PAGE_ACCESSED
++	rlwimi	r13,r12,10,30,30
 +
-+#
-+# GPIO Support
-+#
-+
-+#
-+# I2C GPIO expanders:
-+#
-+# CONFIG_GPIO_PCA953X is not set
-+# CONFIG_GPIO_PCF857X is not set
-+
-+#
-+# SPI GPIO expanders:
-+#
- # CONFIG_W1 is not set
- # CONFIG_POWER_SUPPLY is not set
- CONFIG_HWMON=y
-@@ -780,13 +803,43 @@ CONFIG_DAB=y
- #
- # CONFIG_VGASTATE is not set
- CONFIG_VIDEO_OUTPUT_CONTROL=m
--# CONFIG_FB is not set
-+CONFIG_FB=y
-+# CONFIG_FIRMWARE_EDID is not set
-+# CONFIG_FB_DDC is not set
-+CONFIG_FB_CFB_FILLRECT=y
-+CONFIG_FB_CFB_COPYAREA=y
-+CONFIG_FB_CFB_IMAGEBLIT=y
-+# CONFIG_FB_CFB_REV_PIXELS_IN_BYTE is not set
-+# CONFIG_FB_SYS_FILLRECT is not set
-+# CONFIG_FB_SYS_COPYAREA is not set
-+# CONFIG_FB_SYS_IMAGEBLIT is not set
-+CONFIG_FB_FOREIGN_ENDIAN=y
-+CONFIG_FB_BOTH_ENDIAN=y
-+# CONFIG_FB_BIG_ENDIAN is not set
-+# CONFIG_FB_LITTLE_ENDIAN is not set
-+# CONFIG_FB_SYS_FOPS is not set
-+# CONFIG_FB_SVGALIB is not set
-+CONFIG_FB_MACMODES=y
-+# CONFIG_FB_BACKLIGHT is not set
-+# CONFIG_FB_MODE_HELPERS is not set
-+# CONFIG_FB_TILEBLITTING is not set
-+
-+#
-+# Frame buffer hardware drivers
-+#
-+CONFIG_FB_OF=y
-+# CONFIG_FB_VGA16 is not set
-+# CONFIG_FB_S1D13XXX is not set
-+# CONFIG_FB_FSL_DIU is not set
-+# CONFIG_FB_IBM_GXT4500 is not set
-+# CONFIG_FB_VIRTUAL is not set
- # CONFIG_BACKLIGHT_LCD_SUPPORT is not set
++	/* Load the PTE */
+ 	rlwinm 	r12, r10, 13, 19, 29	/* Compute pgdir/pmd offset */
+ 	lwzx	r11, r12, r11		/* Get pgd/pmd entry */
+ 	rlwinm.	r12, r11, 0, 0, 20	/* Extract pt base address */
+ 	beq	2f			/* Bail if no table */
  
- #
- # Display device support
- #
- # CONFIG_DISPLAY_SUPPORT is not set
-+# CONFIG_LOGO is not set
+ 	rlwimi	r12, r10, 23, 20, 28	/* Compute pte address */
+-	lwz	r11, 4(r12)		/* Get pte entry */
+-	andi.	r13, r11, _PAGE_PRESENT	/* Is the page present? */
+-	beq	2f			/* Bail if not present */
++	lwz	r11, 0(r12)		/* Get high word of pte entry */
++	lwz	r12, 4(r12)		/* Get low word of pte entry */
++
++	lis	r10,tlb_44x_index@ha
++
++	andc.	r13,r13,r12		/* Check permission */
++
++	/* Load the next available TLB index */
++	lwz	r13,tlb_44x_index@l(r10)
  
- #
- # Sound
-@@ -1012,8 +1065,10 @@ CONFIG_MSDOS_PARTITION=y
- # CONFIG_SYSV68_PARTITION is not set
- # CONFIG_NLS is not set
- # CONFIG_DLM is not set
-+CONFIG_UCC_SLOW=y
- CONFIG_UCC_FAST=y
- CONFIG_UCC=y
-+CONFIG_QE_GPIO=y
+-	ori	r11, r11, _PAGE_ACCESSED
+-	stw	r11, 4(r12)
++	bne	2f			/* Bail if permission mismach */
++
++	/* Increment, rollover, and store TLB index */
++	addi	r13,r13,1
++
++	/* Compare with watermark (instruction gets patched) */
++	.globl tlb_44x_patch_hwater_D
++tlb_44x_patch_hwater_D:
++	cmpwi	0,r13,1			/* reserve entries */
++	ble	5f
++	li	r13,0
++5:
++	/* Store the next available TLB index */
++	stw	r13,tlb_44x_index@l(r10)
++
++	/* Re-load the faulting address */
++	mfspr	r10,SPRN_DEAR
  
- #
- # Library routines
--- 
-1.5.5.4
+ 	 /* Jump to common tlb load */
+ 	b	finish_tlb_load
+@@ -505,7 +438,7 @@ interrupt_base:
+ 	mfspr	r12, SPRN_SPRG4R
+ 	mfspr	r11, SPRN_SPRG1
+ 	mfspr	r10, SPRN_SPRG0
+-	b	data_access
++	b	DataStorage
+ 
+ 	/* Instruction TLB Error Interrupt */
+ 	/*
+@@ -549,18 +482,42 @@ interrupt_base:
+ 4:
+ 	mtspr	SPRN_MMUCR,r12
+ 
++	/* Make up the required permissions */
++	li	r13,_PAGE_PRESENT | _PAGE_ACCESSED | _PAGE_HWEXEC
++
+ 	rlwinm	r12, r10, 13, 19, 29	/* Compute pgdir/pmd offset */
+ 	lwzx	r11, r12, r11		/* Get pgd/pmd entry */
+ 	rlwinm.	r12, r11, 0, 0, 20	/* Extract pt base address */
+ 	beq	2f			/* Bail if no table */
+ 
+ 	rlwimi	r12, r10, 23, 20, 28	/* Compute pte address */
+-	lwz	r11, 4(r12)		/* Get pte entry */
+-	andi.	r13, r11, _PAGE_PRESENT	/* Is the page present? */
+-	beq	2f			/* Bail if not present */
++	lwz	r11, 0(r12)		/* Get high word of pte entry */
++	lwz	r12, 4(r12)		/* Get low word of pte entry */
+ 
+-	ori	r11, r11, _PAGE_ACCESSED
+-	stw	r11, 4(r12)
++	lis	r10,tlb_44x_index@ha
++
++	andc.	r13,r13,r12		/* Check permission */
++
++	/* Load the next available TLB index */
++	lwz	r13,tlb_44x_index@l(r10)
++
++	bne	2f			/* Bail if permission mismach */
++
++	/* Increment, rollover, and store TLB index */
++	addi	r13,r13,1
++
++	/* Compare with watermark (instruction gets patched) */
++	.globl tlb_44x_patch_hwater_I
++tlb_44x_patch_hwater_I:
++	cmpwi	0,r13,1			/* reserve entries */
++	ble	5f
++	li	r13,0
++5:
++	/* Store the next available TLB index */
++	stw	r13,tlb_44x_index@l(r10)
++
++	/* Re-load the faulting address */
++	mfspr	r10,SPRN_SRR0
+ 
+ 	/* Jump to common TLB load point */
+ 	b	finish_tlb_load
+@@ -582,86 +539,40 @@ interrupt_base:
+ 
+ /*
+  * Local functions
+- */
+-	/*
+-	 * Data TLB exceptions will bail out to this point
+-	 * if they can't resolve the lightweight TLB fault.
+-	 */
+-data_access:
+-	NORMAL_EXCEPTION_PROLOG
+-	mfspr	r5,SPRN_ESR		/* Grab the ESR, save it, pass arg3 */
+-	stw	r5,_ESR(r11)
+-	mfspr	r4,SPRN_DEAR		/* Grab the DEAR, save it, pass arg2 */
+-	EXC_XFER_EE_LITE(0x0300, handle_page_fault)
++  */
+ 
+ /*
+ 
+  * Both the instruction and data TLB miss get to this
+  * point to load the TLB.
+  * 	r10 - EA of fault
+- * 	r11 - available to use
+- *	r12 - Pointer to the 64-bit PTE
+- *	r13 - available to use
++ * 	r11 - PTE high word value
++ *	r12 - PTE low word value
++ *	r13 - TLB index
+  *	MMUCR - loaded with proper value when we get here
+  *	Upon exit, we reload everything and RFI.
+  */
+ finish_tlb_load:
+-	/*
+-	 * We set execute, because we don't have the granularity to
+-	 * properly set this at the page level (Linux problem).
+-	 * If shared is set, we cause a zero PID->TID load.
+-	 * Many of these bits are software only.  Bits we don't set
+-	 * here we (properly should) assume have the appropriate value.
+-	 */
+-
+-	/* Load the next available TLB index */
+-	lis	r13, tlb_44x_index@ha
+-	lwz	r13, tlb_44x_index@l(r13)
+-	/* Load the TLB high watermark */
+-	lis	r11, tlb_44x_hwater@ha
+-	lwz	r11, tlb_44x_hwater@l(r11)
+-
+-	/* Increment, rollover, and store TLB index */
+-	addi	r13, r13, 1
+-	cmpw	0, r13, r11			/* reserve entries */
+-	ble	7f
+-	li	r13, 0
+-7:
+-	/* Store the next available TLB index */
+-	lis	r11, tlb_44x_index@ha
+-	stw	r13, tlb_44x_index@l(r11)
+-
+-	lwz	r11, 0(r12)			/* Get MS word of PTE */
+-	lwz	r12, 4(r12)			/* Get LS word of PTE */
+-	rlwimi	r11, r12, 0, 0 , 19		/* Insert RPN */
+-	tlbwe	r11, r13, PPC44x_TLB_XLAT	/* Write XLAT */
++	/* Combine RPN & ERPN an write WS 0 */
++	rlwimi	r11,r12,0,0,19
++	tlbwe	r11,r13,PPC44x_TLB_XLAT
+ 
+ 	/*
+-	 * Create PAGEID. This is the faulting address,
++	 * Create WS1. This is the faulting address (EPN),
+ 	 * page size, and valid flag.
+ 	 */
+-	li	r11, PPC44x_TLB_VALID | PPC44x_TLB_4K
+-	rlwimi	r10, r11, 0, 20, 31		/* Insert valid and page size */
+-	tlbwe	r10, r13, PPC44x_TLB_PAGEID	/* Write PAGEID */
+-
+-	li	r10, PPC44x_TLB_SR@l		/* Set SR */
+-	rlwimi	r10, r12, 0, 30, 30		/* Set SW = _PAGE_RW */
+-	rlwimi	r10, r12, 29, 29, 29		/* SX = _PAGE_HWEXEC */
+-	rlwimi	r10, r12, 29, 28, 28		/* UR = _PAGE_USER */
+-	rlwimi	r11, r12, 31, 26, 26		/* (_PAGE_USER>>1)->r12 */
+-	and	r11, r12, r11			/* HWEXEC & USER */
+-	rlwimi	r10, r11, 0, 26, 26		/* UX = HWEXEC & USER */
+-
+-	rlwimi	r12, r10, 0, 26, 31		/* Insert static perms */
+-
+-	/*
+-	 * Clear U0-U3 and WL1 IL1I IL1D IL2I IL2D bits which are added
+-	 * on newer 440 cores like the 440x6 used on AMCC 460EX/460GT (see
+-	 * include/asm-powerpc/pgtable-ppc32.h for details).
+-	 */
+-	rlwinm	r12, r12, 0, 20, 10
+-
+-	tlbwe	r12, r13, PPC44x_TLB_ATTRIB	/* Write ATTRIB */
++	li	r11,PPC44x_TLB_VALID | PPC44x_TLB_4K
++	rlwimi	r10,r11,0,20,31			/* Insert valid and page size*/
++	tlbwe	r10,r13,PPC44x_TLB_PAGEID	/* Write PAGEID */
++
++	/* And WS 2 */
++	li	r10,0xf85			/* Mask to apply from PTE */
++	rlwimi	r10,r12,29,30,30		/* DIRTY -> SW position */
++	and	r11,r12,r10			/* Mask PTE bits to keep */
++	andi.	r10,r12,_PAGE_USER		/* User page ? */
++	beq	1f				/* nope, leave U bits empty */
++	rlwimi	r11,r11,3,26,28			/* yes, copy S bits to U */
++1:	tlbwe	r11,r13,PPC44x_TLB_ATTRIB	/* Write ATTRIB */
+ 
+ 	/* Done...restore registers and get out of here.
+ 	*/
+Index: linux-work/arch/powerpc/mm/44x_mmu.c
+===================================================================
+--- linux-work.orig/arch/powerpc/mm/44x_mmu.c	2008-06-10 18:13:46.000000000 +1000
++++ linux-work/arch/powerpc/mm/44x_mmu.c	2008-06-10 18:16:49.000000000 +1000
+@@ -37,11 +37,28 @@ unsigned int tlb_44x_index; /* = 0 */
+ unsigned int tlb_44x_hwater = PPC44x_TLB_SIZE - 1 - PPC44x_EARLY_TLBS;
+ int icache_44x_need_flush;
+ 
++static void __init ppc44x_update_tlb_hwater(void)
++{
++	extern unsigned int tlb_44x_patch_hwater_D[];
++	extern unsigned int tlb_44x_patch_hwater_I[];
++
++	tlb_44x_patch_hwater_D[0] = (tlb_44x_patch_hwater_D[0] & 0xffff0000) |
++		tlb_44x_hwater;
++	tlb_44x_patch_hwater_I[0] = (tlb_44x_patch_hwater_I[0] & 0xffff0000) |
++		tlb_44x_hwater;
++
++	flush_instruction_cache();
++}
++
+ /*
+  * "Pins" a 256MB TLB entry in AS0 for kernel lowmem
+  */
+ static void __init ppc44x_pin_tlb(unsigned int virt, unsigned int phys)
+ {
++	unsigned int entry = tlb_44x_hwater--;
++
++	ppc44x_update_tlb_hwater();
++
+ 	__asm__ __volatile__(
+ 		"tlbwe	%2,%3,%4\n"
+ 		"tlbwe	%1,%3,%5\n"
+@@ -50,7 +67,7 @@ static void __init ppc44x_pin_tlb(unsign
+ 	: "r" (PPC44x_TLB_SW | PPC44x_TLB_SR | PPC44x_TLB_SX | PPC44x_TLB_G),
+ 	  "r" (phys),
+ 	  "r" (virt | PPC44x_TLB_VALID | PPC44x_TLB_256M),
+-	  "r" (tlb_44x_hwater--), /* slot for this TLB entry */
++	  "r" (entry),
+ 	  "i" (PPC44x_TLB_PAGEID),
+ 	  "i" (PPC44x_TLB_XLAT),
+ 	  "i" (PPC44x_TLB_ATTRIB));
+@@ -58,6 +75,8 @@ static void __init ppc44x_pin_tlb(unsign
+ 
+ void __init MMU_init_hw(void)
+ {
++	ppc44x_update_tlb_hwater();
++
+ 	flush_instruction_cache();
+ }
+ 
+Index: linux-work/include/asm-powerpc/pgtable-ppc32.h
+===================================================================
+--- linux-work.orig/include/asm-powerpc/pgtable-ppc32.h	2008-06-10 18:13:47.000000000 +1000
++++ linux-work/include/asm-powerpc/pgtable-ppc32.h	2008-06-10 18:16:49.000000000 +1000
+@@ -182,6 +182,9 @@ extern int icache_44x_need_flush;
+ #define _PMD_SIZE_16M	0x0e0
+ #define PMD_PAGE_SIZE(pmdval)	(1024 << (((pmdval) & _PMD_SIZE) >> 4))
+ 
++/* Until my rework is finished, 40x still needs atomic PTE updates */
++#define PTE_ATOMIC_UPDATES	1
++
+ #elif defined(CONFIG_44x)
+ /*
+  * Definitions for PPC440
+@@ -253,17 +256,17 @@ extern int icache_44x_need_flush;
+  */
+ 
+ #define _PAGE_PRESENT	0x00000001		/* S: PTE valid */
+-#define	_PAGE_RW	0x00000002		/* S: Write permission */
++#define _PAGE_RW	0x00000002		/* S: Write permission */
+ #define _PAGE_FILE	0x00000004		/* S: nonlinear file mapping */
++#define _PAGE_HWEXEC	0x00000004		/* H: Execute permission */
+ #define _PAGE_ACCESSED	0x00000008		/* S: Page referenced */
+-#define _PAGE_HWWRITE	0x00000010		/* H: Dirty & RW */
+-#define _PAGE_HWEXEC	0x00000020		/* H: Execute permission */
+-#define	_PAGE_USER	0x00000040		/* S: User page */
+-#define	_PAGE_ENDIAN	0x00000080		/* H: E bit */
+-#define	_PAGE_GUARDED	0x00000100		/* H: G bit */
+-#define	_PAGE_DIRTY	0x00000200		/* S: Page dirty */
+-#define	_PAGE_NO_CACHE	0x00000400		/* H: I bit */
+-#define	_PAGE_WRITETHRU	0x00000800		/* H: W bit */
++#define _PAGE_DIRTY	0x00000010		/* S: Page dirty */
++#define _PAGE_USER	0x00000040		/* S: User page */
++#define _PAGE_ENDIAN	0x00000080		/* H: E bit */
++#define _PAGE_GUARDED	0x00000100		/* H: G bit */
++#define _PAGE_COHERENT	0x00000200		/* H: M bit */
++#define _PAGE_NO_CACHE	0x00000400		/* H: I bit */
++#define _PAGE_WRITETHRU	0x00000800		/* H: W bit */
+ 
+ /* TODO: Add large page lowmem mapping support */
+ #define _PMD_PRESENT	0
+@@ -273,6 +276,7 @@ extern int icache_44x_need_flush;
+ /* ERPN in a PTE never gets cleared, ignore it */
+ #define _PTE_NONE_MASK	0xffffffff00000000ULL
+ 
++
+ #elif defined(CONFIG_FSL_BOOKE)
+ /*
+    MMU Assist Register 3:
+@@ -315,6 +319,9 @@ extern int icache_44x_need_flush;
+ #define _PMD_PRESENT_MASK (PAGE_MASK)
+ #define _PMD_BAD	(~PAGE_MASK)
+ 
++/* Until my rework is finished, 40x still needs atomic PTE updates */
++#define PTE_ATOMIC_UPDATES	1
++
+ #elif defined(CONFIG_8xx)
+ /* Definitions for 8xx embedded chips. */
+ #define _PAGE_PRESENT	0x0001	/* Page is valid */
+@@ -345,6 +352,9 @@ extern int icache_44x_need_flush;
+ 
+ #define _PTE_NONE_MASK _PAGE_ACCESSED
+ 
++/* Until my rework is finished, 40x still needs atomic PTE updates */
++#define PTE_ATOMIC_UPDATES	1
++
+ #else /* CONFIG_6xx */
+ /* Definitions for 60x, 740/750, etc. */
+ #define _PAGE_PRESENT	0x001	/* software: pte contains a translation */
+@@ -365,6 +375,10 @@ extern int icache_44x_need_flush;
+ #define _PMD_PRESENT	0
+ #define _PMD_PRESENT_MASK (PAGE_MASK)
+ #define _PMD_BAD	(~PAGE_MASK)
++
++/* Hash tbale based platforms need atomic updates of the linux PTE */
++#define PTE_ATOMIC_UPDATES	1
++
+ #endif
+ 
+ /*
+@@ -557,9 +571,11 @@ extern void add_hash_page(unsigned conte
+  * low PTE word since we expect ALL flag bits to be there
+  */
+ #ifndef CONFIG_PTE_64BIT
+-static inline unsigned long pte_update(pte_t *p, unsigned long clr,
++static inline unsigned long pte_update(pte_t *p,
++				       unsigned long clr,
+ 				       unsigned long set)
+ {
++#ifdef PTE_ATOMIC_UPDATES
+ 	unsigned long old, tmp;
+ 
+ 	__asm__ __volatile__("\
+@@ -572,16 +588,26 @@ static inline unsigned long pte_update(p
+ 	: "=&r" (old), "=&r" (tmp), "=m" (*p)
+ 	: "r" (p), "r" (clr), "r" (set), "m" (*p)
+ 	: "cc" );
++#else /* PTE_ATOMIC_UPDATES */
++	unsigned long old = pte_val(*p);
++	*p = __pte((old & ~clr) | set);
++#endif /* !PTE_ATOMIC_UPDATES */
++
+ #ifdef CONFIG_44x
+ 	if ((old & _PAGE_USER) && (old & _PAGE_HWEXEC))
+ 		icache_44x_need_flush = 1;
+ #endif
+ 	return old;
+ }
+-#else
+-static inline unsigned long long pte_update(pte_t *p, unsigned long clr,
+-				       unsigned long set)
++#else /* CONFIG_PTE_64BIT */
++/* TODO: Change that to only modify the low word and move set_pte_at()
++ * out of line
++ */
++static inline unsigned long long pte_update(pte_t *p,
++					    unsigned long clr,
++					    unsigned long set)
+ {
++#ifdef PTE_ATOMIC_UPDATES
+ 	unsigned long long old;
+ 	unsigned long tmp;
+ 
+@@ -596,13 +622,18 @@ static inline unsigned long long pte_upd
+ 	: "=&r" (old), "=&r" (tmp), "=m" (*p)
+ 	: "r" (p), "r" ((unsigned long)(p) + 4), "r" (clr), "r" (set), "m" (*p)
+ 	: "cc" );
++#else /* PTE_ATOMIC_UPDATES */
++	unsigned long long old = pte_val(*p);
++	*p = __pte((old & ~clr) | set);
++#endif /* !PTE_ATOMIC_UPDATES */
++
+ #ifdef CONFIG_44x
+ 	if ((old & _PAGE_USER) && (old & _PAGE_HWEXEC))
+ 		icache_44x_need_flush = 1;
+ #endif
+ 	return old;
+ }
+-#endif
++#endif /* CONFIG_PTE_64BIT */
+ 
+ /*
+  * set_pte stores a linux PTE into the linux page table.
+@@ -665,7 +696,7 @@ static inline void __ptep_set_access_fla
+ ({									   \
+ 	int __changed = !pte_same(*(__ptep), __entry);			   \
+ 	if (__changed) {						   \
+-		__ptep_set_access_flags(__ptep, __entry, __dirty);    	   \
++		__ptep_set_access_flags(__ptep, __entry, __dirty);         \
+ 		flush_tlb_page_nohash(__vma, __address);		   \
+ 	}								   \
+ 	__changed;							   \
+Index: linux-work/arch/powerpc/kernel/head_booke.h
+===================================================================
+--- linux-work.orig/arch/powerpc/kernel/head_booke.h	2008-06-10 18:13:46.000000000 +1000
++++ linux-work/arch/powerpc/kernel/head_booke.h	2008-06-10 18:16:49.000000000 +1000
+@@ -327,6 +327,14 @@ label:
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD;				      \
+ 	EXC_XFER_TEMPLATE(DebugException, 0x2002, (MSR_KERNEL & ~(MSR_ME|MSR_DE|MSR_CE)), NOCOPY, crit_transfer_to_handler, ret_from_crit_exc)
+ 
++#define DATA_STORAGE_EXCEPTION						      \
++	START_EXCEPTION(DataStorage)					      \
++	NORMAL_EXCEPTION_PROLOG;					      \
++	mfspr	r5,SPRN_ESR;		/* Grab the ESR and save it */	      \
++	stw	r5,_ESR(r11);						      \
++	mfspr	r4,SPRN_DEAR;		/* Grab the DEAR */		      \
++	EXC_XFER_EE_LITE(0x0300, handle_page_fault)
++
+ #define INSTRUCTION_STORAGE_EXCEPTION					      \
+ 	START_EXCEPTION(InstructionStorage)				      \
+ 	NORMAL_EXCEPTION_PROLOG;					      \
