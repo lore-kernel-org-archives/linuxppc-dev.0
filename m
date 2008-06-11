@@ -1,21 +1,12 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 6BBE7DDD0B
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jun 2008 12:18:57 +1000 (EST)
-Message-Id: <7B3D2AD1-DBC4-41DB-91EE-D070CA4B47AD@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-To: benh@kernel.crashing.org
-In-Reply-To: <1213145431.25745.42.camel@pasglop>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v924)
-Subject: Re: [RFC/PATCH] powerpc: rework 4xx PTE access and TLB miss
-Date: Tue, 10 Jun 2008 21:18:41 -0500
-References: <1213145431.25745.42.camel@pasglop>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Return-Path: <jonsmirl@gmail.com>
+Message-ID: <9e4733910806101940o7f2f9863jb5e556ee2fc39a7e@mail.gmail.com>
+Date: Tue, 10 Jun 2008 22:40:45 -0400
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: "Linux I2C" <i2c@lm-sensors.org>,
+	"linuxppc-dev list" <Linuxppc-dev@ozlabs.org>
+Subject: [PATCH] Convert i2c-mpc from a platform driver to an of_platform one
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,176 +16,207 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->
-> Index: linux-work/include/asm-powerpc/pgtable-ppc32.h
-> ===================================================================
-> --- linux-work.orig/include/asm-powerpc/pgtable-ppc32.h	2008-06-10  
-> 18:13:47.000000000 +1000
-> +++ linux-work/include/asm-powerpc/pgtable-ppc32.h	2008-06-10  
-> 18:16:49.000000000 +1000
-> @@ -182,6 +182,9 @@ extern int icache_44x_need_flush;
-> #define _PMD_SIZE_16M	0x0e0
-> #define PMD_PAGE_SIZE(pmdval)	(1024 << (((pmdval) & _PMD_SIZE) >> 4))
->
-> +/* Until my rework is finished, 40x still needs atomic PTE updates */
-> +#define PTE_ATOMIC_UPDATES	1
-> +
-> #elif defined(CONFIG_44x)
-> /*
->  * Definitions for PPC440
-> @@ -253,17 +256,17 @@ extern int icache_44x_need_flush;
->  */
->
-> #define _PAGE_PRESENT	0x00000001		/* S: PTE valid */
-> -#define	_PAGE_RW	0x00000002		/* S: Write permission */
-> +#define _PAGE_RW	0x00000002		/* S: Write permission */
-> #define _PAGE_FILE	0x00000004		/* S: nonlinear file mapping */
-> +#define _PAGE_HWEXEC	0x00000004		/* H: Execute permission */
+Convert i2c-mpc from a platform driver into an of_platform driver.
+This patch is much smaller since Jochen already added
+of_find_i2c_driver(). Versions of this have been posted before.
 
-I'm sure this is ok, but why can we overlay _PAGE_HWEXEC and _PAGE_FILE?
+Signed-ff-by: Jon Smirl <jonsmirl@gmail.com>
 
-> #define _PAGE_ACCESSED	0x00000008		/* S: Page referenced */
-> -#define _PAGE_HWWRITE	0x00000010		/* H: Dirty & RW */
-> -#define _PAGE_HWEXEC	0x00000020		/* H: Execute permission */
-> -#define	_PAGE_USER	0x00000040		/* S: User page */
-> -#define	_PAGE_ENDIAN	0x00000080		/* H: E bit */
-> -#define	_PAGE_GUARDED	0x00000100		/* H: G bit */
-> -#define	_PAGE_DIRTY	0x00000200		/* S: Page dirty */
-> -#define	_PAGE_NO_CACHE	0x00000400		/* H: I bit */
-> -#define	_PAGE_WRITETHRU	0x00000800		/* H: W bit */
-> +#define _PAGE_DIRTY	0x00000010		/* S: Page dirty */
+-- 
 
-why the gap?
->
-> +#define _PAGE_USER	0x00000040		/* S: User page */
-> +#define _PAGE_ENDIAN	0x00000080		/* H: E bit */
-> +#define _PAGE_GUARDED	0x00000100		/* H: G bit */
-> +#define _PAGE_COHERENT	0x00000200		/* H: M bit */
-> +#define _PAGE_NO_CACHE	0x00000400		/* H: I bit */
-> +#define _PAGE_WRITETHRU	0x00000800		/* H: W bit */
->
-> /* TODO: Add large page lowmem mapping support */
-> #define _PMD_PRESENT	0
-> @@ -273,6 +276,7 @@ extern int icache_44x_need_flush;
-> /* ERPN in a PTE never gets cleared, ignore it */
-> #define _PTE_NONE_MASK	0xffffffff00000000ULL
->
-> +
-> #elif defined(CONFIG_FSL_BOOKE)
-> /*
->    MMU Assist Register 3:
-> @@ -315,6 +319,9 @@ extern int icache_44x_need_flush;
-> #define _PMD_PRESENT_MASK (PAGE_MASK)
-> #define _PMD_BAD	(~PAGE_MASK)
->
-> +/* Until my rework is finished, 40x still needs atomic PTE updates */
-> +#define PTE_ATOMIC_UPDATES	1
+ drivers/i2c/busses/i2c-mpc.c |  105 +++++++++++++++++++++++++-----------------
+ 1 files changed, 63 insertions(+), 42 deletions(-)
 
-fix comment
->
-> +
-> #elif defined(CONFIG_8xx)
-> /* Definitions for 8xx embedded chips. */
-> #define _PAGE_PRESENT	0x0001	/* Page is valid */
-> @@ -345,6 +352,9 @@ extern int icache_44x_need_flush;
->
-> #define _PTE_NONE_MASK _PAGE_ACCESSED
->
-> +/* Until my rework is finished, 40x still needs atomic PTE updates */
-> +#define PTE_ATOMIC_UPDATES	1
-> +
-fix comment
->
-> #else /* CONFIG_6xx */
-> /* Definitions for 60x, 740/750, etc. */
-> #define _PAGE_PRESENT	0x001	/* software: pte contains a translation */
-> @@ -365,6 +375,10 @@ extern int icache_44x_need_flush;
-> #define _PMD_PRESENT	0
-> #define _PMD_PRESENT_MASK (PAGE_MASK)
-> #define _PMD_BAD	(~PAGE_MASK)
-> +
-> +/* Hash tbale based platforms need atomic updates of the linux PTE */
 
-tbale?
+diff --git a/drivers/i2c/busses/i2c-mpc.c b/drivers/i2c/busses/i2c-mpc.c
+index a076129..76d8091 100644
+--- a/drivers/i2c/busses/i2c-mpc.c
++++ b/drivers/i2c/busses/i2c-mpc.c
+@@ -18,6 +18,8 @@
+ #include <linux/sched.h>
+ #include <linux/init.h>
+ #include <linux/platform_device.h>
++#include <linux/of_platform.h>
++#include <linux/of_i2c.h>
 
->
-> +#define PTE_ATOMIC_UPDATES	1
-> +
-> #endif
->
-> /*
-> @@ -557,9 +571,11 @@ extern void add_hash_page(unsigned conte
->  * low PTE word since we expect ALL flag bits to be there
->  */
-> #ifndef CONFIG_PTE_64BIT
-> -static inline unsigned long pte_update(pte_t *p, unsigned long clr,
-> +static inline unsigned long pte_update(pte_t *p,
-> +				       unsigned long clr,
-> 				       unsigned long set)
-> {
-> +#ifdef PTE_ATOMIC_UPDATES
-> 	unsigned long old, tmp;
->
-> 	__asm__ __volatile__("\
-> @@ -572,16 +588,26 @@ static inline unsigned long pte_update(p
-> 	: "=&r" (old), "=&r" (tmp), "=m" (*p)
-> 	: "r" (p), "r" (clr), "r" (set), "m" (*p)
-> 	: "cc" );
-> +#else /* PTE_ATOMIC_UPDATES */
-> +	unsigned long old = pte_val(*p);
-> +	*p = __pte((old & ~clr) | set);
-> +#endif /* !PTE_ATOMIC_UPDATES */
-> +
-> #ifdef CONFIG_44x
-> 	if ((old & _PAGE_USER) && (old & _PAGE_HWEXEC))
-> 		icache_44x_need_flush = 1;
-> #endif
-> 	return old;
-> }
-> -#else
-> -static inline unsigned long long pte_update(pte_t *p, unsigned long  
-> clr,
-> -				       unsigned long set)
-> +#else /* CONFIG_PTE_64BIT */
-> +/* TODO: Change that to only modify the low word and move  
-> set_pte_at()
-> + * out of line
-> + */
-> +static inline unsigned long long pte_update(pte_t *p,
-> +					    unsigned long clr,
-> +					    unsigned long set)
-> {
-> +#ifdef PTE_ATOMIC_UPDATES
-> 	unsigned long long old;
-> 	unsigned long tmp;
->
-> @@ -596,13 +622,18 @@ static inline unsigned long long pte_upd
-> 	: "=&r" (old), "=&r" (tmp), "=m" (*p)
-> 	: "r" (p), "r" ((unsigned long)(p) + 4), "r" (clr), "r" (set),  
-> "m" (*p)
-> 	: "cc" );
-> +#else /* PTE_ATOMIC_UPDATES */
-> +	unsigned long long old = pte_val(*p);
-> +	*p = __pte((old & ~clr) | set);
-> +#endif /* !PTE_ATOMIC_UPDATES */
-> +
-> #ifdef CONFIG_44x
-> 	if ((old & _PAGE_USER) && (old & _PAGE_HWEXEC))
-> 		icache_44x_need_flush = 1;
-> #endif
-> 	return old;
-> }
-> -#endif
-> +#endif /* CONFIG_PTE_64BIT */
->
-> /*
->  * set_pte stores a linux PTE into the linux page table.
-> @@ -665,7 +696,7 @@ static inline void __ptep_set_access_fla
-> ({									   \
-> 	int __changed = !pte_same(*(__ptep), __entry);			   \
-> 	if (__changed) {						   \
-> -		__ptep_set_access_flags(__ptep, __entry, __dirty);    	   \
-> +		__ptep_set_access_flags(__ptep, __entry, __dirty);         \
-> 		flush_tlb_page_nohash(__vma, __address);		   \
-> 	}								   \
-> 	__changed;							   \
+ #include <asm/io.h>
+ #include <linux/fsl_devices.h>
+@@ -25,13 +27,13 @@
+ #include <linux/interrupt.h>
+ #include <linux/delay.h>
+
+-#define MPC_I2C_ADDR  0x00
++#define DRV_NAME "mpc-i2c"
++
+ #define MPC_I2C_FDR 	0x04
+ #define MPC_I2C_CR	0x08
+ #define MPC_I2C_SR	0x0c
+ #define MPC_I2C_DR	0x10
+ #define MPC_I2C_DFSRR 0x14
+-#define MPC_I2C_REGION 0x20
+
+ #define CCR_MEN  0x80
+ #define CCR_MIEN 0x40
+@@ -315,102 +317,121 @@ static struct i2c_adapter mpc_ops = {
+ 	.timeout = 1,
+ };
+
+-static int fsl_i2c_probe(struct platform_device *pdev)
++static int fsl_i2c_probe(struct of_device *op, const struct
+of_device_id *match)
+ {
+ 	int result = 0;
+ 	struct mpc_i2c *i2c;
+-	struct fsl_i2c_platform_data *pdata;
+-	struct resource *r = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+-
+-	pdata = (struct fsl_i2c_platform_data *) pdev->dev.platform_data;
+
+ 	i2c = kzalloc(sizeof(*i2c), GFP_KERNEL);
+ 	if (!i2c)
+ 		return -ENOMEM;
+
+-	i2c->irq = platform_get_irq(pdev, 0);
+-	if (i2c->irq < 0)
+-		i2c->irq = NO_IRQ; /* Use polling */
++	if (of_get_property(op->node, "dfsrr", NULL))
++		i2c->flags |= FSL_I2C_DEV_SEPARATE_DFSRR;
+
+-	i2c->flags = pdata->device_flags;
+-	init_waitqueue_head(&i2c->queue);
++	if (of_device_is_compatible(op->node, "mpc5200-i2c"))
++		i2c->flags |= FSL_I2C_DEV_CLOCK_5200;
+
+-	i2c->base = ioremap((phys_addr_t)r->start, MPC_I2C_REGION);
++	init_waitqueue_head(&i2c->queue);
+
++	i2c->base = of_iomap(op->node, 0);
+ 	if (!i2c->base) {
+ 		printk(KERN_ERR "i2c-mpc - failed to map controller\n");
+ 		result = -ENOMEM;
+ 		goto fail_map;
+ 	}
+
+-	if (i2c->irq != NO_IRQ)
+-		if ((result = request_irq(i2c->irq, mpc_i2c_isr,
+-					  IRQF_SHARED, "i2c-mpc", i2c)) < 0) {
+-			printk(KERN_ERR
+-			       "i2c-mpc - failed to attach interrupt\n");
+-			goto fail_irq;
+-		}
++	i2c->irq = irq_of_parse_and_map(op->node, 0);
++	if (i2c->irq == NO_IRQ) {
++		result = -ENXIO;
++		goto fail_irq;
++	}
++
++	result = request_irq(i2c->irq, mpc_i2c_isr,
++						IRQF_SHARED, "i2c-mpc", i2c);
++	if (result < 0) {
++		printk(KERN_ERR "i2c-mpc - failed to attach interrupt\n");
++		goto fail_request;
++	}
+
+ 	mpc_i2c_setclock(i2c);
+-	platform_set_drvdata(pdev, i2c);
++
++	dev_set_drvdata(&op->dev, i2c);
+
+ 	i2c->adap = mpc_ops;
+-	i2c->adap.nr = pdev->id;
+ 	i2c_set_adapdata(&i2c->adap, i2c);
+-	i2c->adap.dev.parent = &pdev->dev;
+-	if ((result = i2c_add_numbered_adapter(&i2c->adap)) < 0) {
++	i2c->adap.dev.parent = &op->dev;
++
++	result = i2c_add_adapter(&i2c->adap);
++	if (result < 0) {
+ 		printk(KERN_ERR "i2c-mpc - failed to add adapter\n");
+ 		goto fail_add;
+ 	}
++	of_register_i2c_devices(&i2c->adap, op->node);
+
+ 	return result;
+
+-      fail_add:
+-	if (i2c->irq != NO_IRQ)
+-		free_irq(i2c->irq, i2c);
+-      fail_irq:
++ fail_add:
++	dev_set_drvdata(&op->dev, NULL);
++	free_irq(i2c->irq, i2c);
++ fail_request:
++	irq_dispose_mapping(i2c->irq);
++ fail_irq:
+ 	iounmap(i2c->base);
+-      fail_map:
++ fail_map:
+ 	kfree(i2c);
+ 	return result;
+ };
+
+-static int fsl_i2c_remove(struct platform_device *pdev)
++static int fsl_i2c_remove(struct of_device *op)
+ {
+-	struct mpc_i2c *i2c = platform_get_drvdata(pdev);
++	struct mpc_i2c *i2c = dev_get_drvdata(&op->dev);
+
+ 	i2c_del_adapter(&i2c->adap);
+-	platform_set_drvdata(pdev, NULL);
++	dev_set_drvdata(&op->dev, NULL);
+
+ 	if (i2c->irq != NO_IRQ)
+ 		free_irq(i2c->irq, i2c);
+
++	irq_dispose_mapping(i2c->irq);
+ 	iounmap(i2c->base);
+ 	kfree(i2c);
+ 	return 0;
+ };
+
+-/* work with hotplug and coldplug */
+-MODULE_ALIAS("platform:fsl-i2c");
++static const struct of_device_id mpc_i2c_of_match[] = {
++	{
++		.compatible	= "fsl-i2c",
++	},
++	{},
++};
++MODULE_DEVICE_TABLE(of, mpc_i2c_of_match);
++
+
+ /* Structure for a device driver */
+-static struct platform_driver fsl_i2c_driver = {
+-	.probe = fsl_i2c_probe,
+-	.remove = fsl_i2c_remove,
+-	.driver	= {
+-		.owner = THIS_MODULE,
+-		.name = "fsl-i2c",
++static struct of_platform_driver mpc_i2c_driver = {
++	.match_table	= mpc_i2c_of_match,
++	.probe		= fsl_i2c_probe,
++	.remove		= __devexit_p(fsl_i2c_remove),
++	.driver		= {
++		.owner	= THIS_MODULE,
++		.name	= DRV_NAME,
+ 	},
+ };
+
+ static int __init fsl_i2c_init(void)
+ {
+-	return platform_driver_register(&fsl_i2c_driver);
++	int rv;
++
++	rv = of_register_platform_driver(&mpc_i2c_driver);
++	if (rv)
++		printk(KERN_ERR DRV_NAME " of_register_platform_driver failed (%i)\n", rv);
++	return rv;
+ }
+
+ static void __exit fsl_i2c_exit(void)
+ {
+-	platform_driver_unregister(&fsl_i2c_driver);
++	of_unregister_platform_driver(&mpc_i2c_driver);
+ }
+
+ module_init(fsl_i2c_init);
