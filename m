@@ -2,14 +2,16 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id A0EADDDFE5
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jun 2008 04:38:19 +1000 (EST)
-Date: Wed, 11 Jun 2008 13:38:13 -0500 (CDT)
+	by ozlabs.org (Postfix) with ESMTPS id 1DAE0DE210
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jun 2008 04:48:05 +1000 (EST)
+Date: Wed, 11 Jun 2008 13:48:00 -0500 (CDT)
 From: Kumar Gala <galak@kernel.crashing.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc/booke: Fix definitions for dbcr[1-2] and dbsr
+Subject: [PATCH v2] powerpc/booke: Fix definitions for dbcr[1-2] and dbsr
 	registers
-Message-ID: <Pine.LNX.4.64.0806111336320.28205@blarg.am.freescale.net>
+In-Reply-To: <Pine.LNX.4.64.0806111336320.28205@blarg.am.freescale.net>
+Message-ID: <Pine.LNX.4.64.0806111347310.14285@blarg.am.freescale.net>
+References: <Pine.LNX.4.64.0806111336320.28205@blarg.am.freescale.net>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -37,9 +39,7 @@ Acked-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 ---
 
-Jerone, take a look at this one.  Its in the powerpc-next branch of my git
-tree.  Note I've dropped some of the aliases you added and the reason is
-to match the existing DBSR bits.
+Missed an alias for DBCR0_IC for book-e
 
 - k
 
