@@ -1,16 +1,14 @@
-Return-Path: <jonsmirl@gmail.com>
-Message-ID: <9e4733910806110914v2fb9e4a3o3736663bd54a03cd@mail.gmail.com>
-Date: Wed, 11 Jun 2008 12:14:08 -0400
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Wolfram Sang" <w.sang@pengutronix.de>
-Subject: Re: [i2c] [PATCH] Convert i2c-mpc from a platform driver to an
-	of_platform one
-In-Reply-To: <20080611160048.GB4257@pengutronix.de>
+Return-Path: <arnd@arndb.de>
+From: Arnd Bergmann <arnd@arndb.de>
+To: Paul Mackerras <paulus@samba.org>
+Subject: [PATCH] powerpc/cell: disable ptcal in case of kdump reboot
+Date: Wed, 11 Jun 2008 18:28:58 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <9e4733910806101940o7f2f9863jb5e556ee2fc39a7e@mail.gmail.com>
-	<20080611160048.GB4257@pengutronix.de>
-Cc: linuxppc-dev list <Linuxppc-dev@ozlabs.org>, Linux I2C <i2c@lm-sensors.org>
+Content-Type: text/plain;
+  charset="utf-8"
+Message-Id: <200806111828.59043.arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org, Jeremy Kerr <jk@ozlabs.org>,
+	cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,271 +18,81 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 6/11/08, Wolfram Sang <w.sang@pengutronix.de> wrote:
-> On Tue, Jun 10, 2008 at 10:40:45PM -0400, Jon Smirl wrote:
->  > Convert i2c-mpc from a platform driver into an of_platform driver.
->  > This patch is much smaller since Jochen already added
->  > of_find_i2c_driver(). Versions of this have been posted before.
->  >
->  > Signed-ff-by: Jon Smirl <jonsmirl@gmail.com>
->
->
-> Typo: Signed-off... (I'm curious, do such typos enforce resending the
->  patch?)
+The ibm,cbe-start-ptcal rtas call transfers ownership
+of a memory range to the hardware in order to do
+periodic memory interface recalibration.
+When we do a kexec, we need to get this page back,
+so we don't step on the new kernel's toes.
+We used to do this correctly in case of a user triggered
+kexec, but not for kdump.
 
+This patch disables ptcal from the cell specific
+machine_crash_shutdown() callback. I also needed
+to fix the pseries code that tries to install its
+default_machine_crash_shutdown() code independent
+of what machine we're running on.
 
-I just cut and pasted this version to get the comments. Next pass I
-will send it using stgit which will add the right signed-off line and
-fix the wrapping.
+The fix has been verified by Akira Tsukamoto, the
+original reporter of the problem.
 
+Acked-by: Akira Tsukamoto <akirat@rd.scei.sony.co.jp>
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+---
+ arch/powerpc/platforms/cell/ras.c      |    6 ++++++
+ arch/powerpc/platforms/cell/ras.h      |    1 +
+ arch/powerpc/platforms/cell/setup.c    |    2 +-
+ arch/powerpc/platforms/pseries/kexec.c |    2 +-
+ 4 files changed, 9 insertions(+), 2 deletions(-)
 
->
->  Tested-by: Wolfram Sang <w.sang@pengutronix.de>
->
->
->  >
->  > --
->  >
->  >  drivers/i2c/busses/i2c-mpc.c |  105 +++++++++++++++++++++++++-----------------
->  >  1 files changed, 63 insertions(+), 42 deletions(-)
->  >
->  >
->  > diff --git a/drivers/i2c/busses/i2c-mpc.c b/drivers/i2c/busses/i2c-mpc.c
->  > index a076129..76d8091 100644
->  > --- a/drivers/i2c/busses/i2c-mpc.c
->  > +++ b/drivers/i2c/busses/i2c-mpc.c
->  > @@ -18,6 +18,8 @@
->  >  #include <linux/sched.h>
->  >  #include <linux/init.h>
->  >  #include <linux/platform_device.h>
->  > +#include <linux/of_platform.h>
->  > +#include <linux/of_i2c.h>
->  >
->  >  #include <asm/io.h>
->  >  #include <linux/fsl_devices.h>
->  > @@ -25,13 +27,13 @@
->  >  #include <linux/interrupt.h>
->  >  #include <linux/delay.h>
->  >
->  > -#define MPC_I2C_ADDR  0x00
->  > +#define DRV_NAME "mpc-i2c"
->  > +
->  >  #define MPC_I2C_FDR  0x04
->  >  #define MPC_I2C_CR   0x08
->  >  #define MPC_I2C_SR   0x0c
->  >  #define MPC_I2C_DR   0x10
->  >  #define MPC_I2C_DFSRR 0x14
->  > -#define MPC_I2C_REGION 0x20
->  >
->  >  #define CCR_MEN  0x80
->  >  #define CCR_MIEN 0x40
->  > @@ -315,102 +317,121 @@ static struct i2c_adapter mpc_ops = {
->  >       .timeout = 1,
->  >  };
->  >
->  > -static int fsl_i2c_probe(struct platform_device *pdev)
->  > +static int fsl_i2c_probe(struct of_device *op, const struct
->  > of_device_id *match)
->
->
-> The above two lines have to be concatenated, otherwise the patch will
->  not apply. Also, __devinit?
->
->
->  >  {
->  >       int result = 0;
->  >       struct mpc_i2c *i2c;
->  > -     struct fsl_i2c_platform_data *pdata;
->  > -     struct resource *r = platform_get_resource(pdev, IORESOURCE_MEM, 0);
->  > -
->  > -     pdata = (struct fsl_i2c_platform_data *) pdev->dev.platform_data;
->  >
->  >       i2c = kzalloc(sizeof(*i2c), GFP_KERNEL);
->  >       if (!i2c)
->  >               return -ENOMEM;
->  >
->  > -     i2c->irq = platform_get_irq(pdev, 0);
->  > -     if (i2c->irq < 0)
->  > -             i2c->irq = NO_IRQ; /* Use polling */
->  > +     if (of_get_property(op->node, "dfsrr", NULL))
->  > +             i2c->flags |= FSL_I2C_DEV_SEPARATE_DFSRR;
->  >
->  > -     i2c->flags = pdata->device_flags;
->  > -     init_waitqueue_head(&i2c->queue);
->  > +     if (of_device_is_compatible(op->node, "mpc5200-i2c"))
->  > +             i2c->flags |= FSL_I2C_DEV_CLOCK_5200;
->  >
->  > -     i2c->base = ioremap((phys_addr_t)r->start, MPC_I2C_REGION);
->  > +     init_waitqueue_head(&i2c->queue);
->  >
->  > +     i2c->base = of_iomap(op->node, 0);
->  >       if (!i2c->base) {
->  >               printk(KERN_ERR "i2c-mpc - failed to map controller\n");
->  >               result = -ENOMEM;
->  >               goto fail_map;
->  >       }
->  >
->  > -     if (i2c->irq != NO_IRQ)
->  > -             if ((result = request_irq(i2c->irq, mpc_i2c_isr,
->  > -                                       IRQF_SHARED, "i2c-mpc", i2c)) < 0) {
->  > -                     printk(KERN_ERR
->  > -                            "i2c-mpc - failed to attach interrupt\n");
->  > -                     goto fail_irq;
->  > -             }
->  > +     i2c->irq = irq_of_parse_and_map(op->node, 0);
->  > +     if (i2c->irq == NO_IRQ) {
->  > +             result = -ENXIO;
->
->
-> Minor thing, but I wonder if -EINVAL is more appropriate?
->
->
->  > +             goto fail_irq;
->  > +     }
->  > +
->  > +     result = request_irq(i2c->irq, mpc_i2c_isr,
->  > +                                             IRQF_SHARED, "i2c-mpc", i2c);
->  > +     if (result < 0) {
->  > +             printk(KERN_ERR "i2c-mpc - failed to attach interrupt\n");
->  > +             goto fail_request;
->  > +     }
->  >
->  >       mpc_i2c_setclock(i2c);
->  > -     platform_set_drvdata(pdev, i2c);
->  > +
->  > +     dev_set_drvdata(&op->dev, i2c);
->  >
->  >       i2c->adap = mpc_ops;
->  > -     i2c->adap.nr = pdev->id;
->  >       i2c_set_adapdata(&i2c->adap, i2c);
->  > -     i2c->adap.dev.parent = &pdev->dev;
->  > -     if ((result = i2c_add_numbered_adapter(&i2c->adap)) < 0) {
->  > +     i2c->adap.dev.parent = &op->dev;
->  > +
->  > +     result = i2c_add_adapter(&i2c->adap);
->  > +     if (result < 0) {
->  >               printk(KERN_ERR "i2c-mpc - failed to add adapter\n");
->  >               goto fail_add;
->  >       }
->  > +     of_register_i2c_devices(&i2c->adap, op->node);
->  >
->  >       return result;
->  >
->  > -      fail_add:
->  > -     if (i2c->irq != NO_IRQ)
->  > -             free_irq(i2c->irq, i2c);
->  > -      fail_irq:
->  > + fail_add:
->  > +     dev_set_drvdata(&op->dev, NULL);
->  > +     free_irq(i2c->irq, i2c);
->  > + fail_request:
->  > +     irq_dispose_mapping(i2c->irq);
->  > + fail_irq:
->  >       iounmap(i2c->base);
->  > -      fail_map:
->  > + fail_map:
->  >       kfree(i2c);
->  >       return result;
->  >  };
->  >
->  > -static int fsl_i2c_remove(struct platform_device *pdev)
->  > +static int fsl_i2c_remove(struct of_device *op)
->
->
-> __devexit?
->
->
->  >  {
->  > -     struct mpc_i2c *i2c = platform_get_drvdata(pdev);
->  > +     struct mpc_i2c *i2c = dev_get_drvdata(&op->dev);
->  >
->  >       i2c_del_adapter(&i2c->adap);
->  > -     platform_set_drvdata(pdev, NULL);
->  > +     dev_set_drvdata(&op->dev, NULL);
->  >
->  >       if (i2c->irq != NO_IRQ)
->  >               free_irq(i2c->irq, i2c);
->  >
->  > +     irq_dispose_mapping(i2c->irq);
->  >       iounmap(i2c->base);
->  >       kfree(i2c);
->  >       return 0;
->  >  };
->  >
->  > -/* work with hotplug and coldplug */
->  > -MODULE_ALIAS("platform:fsl-i2c");
->  > +static const struct of_device_id mpc_i2c_of_match[] = {
->  > +     {
->  > +             .compatible     = "fsl-i2c",
->  > +     },
->  > +     {},
->  > +};
->  > +MODULE_DEVICE_TABLE(of, mpc_i2c_of_match);
->  > +
->  >
->  >  /* Structure for a device driver */
->  > -static struct platform_driver fsl_i2c_driver = {
->  > -     .probe = fsl_i2c_probe,
->  > -     .remove = fsl_i2c_remove,
->  > -     .driver = {
->  > -             .owner = THIS_MODULE,
->  > -             .name = "fsl-i2c",
->  > +static struct of_platform_driver mpc_i2c_driver = {
->  > +     .match_table    = mpc_i2c_of_match,
->  > +     .probe          = fsl_i2c_probe,
->  > +     .remove         = __devexit_p(fsl_i2c_remove),
->  > +     .driver         = {
->  > +             .owner  = THIS_MODULE,
->  > +             .name   = DRV_NAME,
->  >       },
->  >  };
->  >
->  >  static int __init fsl_i2c_init(void)
->  >  {
->  > -     return platform_driver_register(&fsl_i2c_driver);
->  > +     int rv;
->  > +
->  > +     rv = of_register_platform_driver(&mpc_i2c_driver);
->  > +     if (rv)
->  > +             printk(KERN_ERR DRV_NAME " of_register_platform_driver failed (%i)\n", rv);
->  > +     return rv;
->  >  }
->  >
->  >  static void __exit fsl_i2c_exit(void)
->  >  {
->  > -     platform_driver_unregister(&fsl_i2c_driver);
->  > +     of_unregister_platform_driver(&mpc_i2c_driver);
->  >  }
->  >
->  >  module_init(fsl_i2c_init);
->  >
->
-> > _______________________________________________
->  > i2c mailing list
->  > i2c@lm-sensors.org
->  > http://lists.lm-sensors.org/mailman/listinfo/i2c
->
->  Kind regards,
->
->    Wolfram
->
->
->  --
->   Dipl.-Ing. Wolfram Sang | http://www.pengutronix.de
->   Pengutronix - Linux Solutions for Science and Industry
->
-> -----BEGIN PGP SIGNATURE-----
->  Version: GnuPG v1.4.6 (GNU/Linux)
->
->  iD8DBQFIT/awD27XaX1/VRsRAoPrAJ0eWru6TJizVxfksnhS3KjZ7WHhmACcCbXJ
->  YsAUtKZSxlJAV5r/G22BlaE=
->  =YX24
->  -----END PGP SIGNATURE-----
->
->
->
-
-
+diff --git a/arch/powerpc/platforms/cell/ras.c b/arch/powerpc/platforms/cell/ras.c
+index 655704a..21b313d 100644
+--- a/arch/powerpc/platforms/cell/ras.c
++++ b/arch/powerpc/platforms/cell/ras.c
+@@ -226,6 +226,12 @@ static int cbe_ptcal_notify_reboot(struct notifier_block *nb,
+ 	return cbe_ptcal_disable();
+ }
+ 
++void cbe_machine_crash_shutdown(struct pt_regs *regs)
++{
++	cbe_ptcal_disable();
++	return default_machine_crash_shutdown(regs);
++}
++
+ static struct notifier_block cbe_ptcal_reboot_notifier = {
+ 	.notifier_call = cbe_ptcal_notify_reboot
+ };
+diff --git a/arch/powerpc/platforms/cell/ras.h b/arch/powerpc/platforms/cell/ras.h
+index eb7ee54..d1401f9 100644
+--- a/arch/powerpc/platforms/cell/ras.h
++++ b/arch/powerpc/platforms/cell/ras.h
+@@ -5,5 +5,6 @@ extern void cbe_system_error_exception(struct pt_regs *regs);
+ extern void cbe_maintenance_exception(struct pt_regs *regs);
+ extern void cbe_thermal_exception(struct pt_regs *regs);
+ extern void cbe_ras_init(void);
++extern void cbe_machine_crash_shutdown(struct pt_regs *regs);
+ 
+ #endif /* RAS_H */
+diff --git a/arch/powerpc/platforms/cell/setup.c b/arch/powerpc/platforms/cell/setup.c
+index ab721b5..b555030 100644
+--- a/arch/powerpc/platforms/cell/setup.c
++++ b/arch/powerpc/platforms/cell/setup.c
+@@ -292,6 +292,6 @@ define_machine(cell) {
+ #ifdef CONFIG_KEXEC
+ 	.machine_kexec		= default_machine_kexec,
+ 	.machine_kexec_prepare	= default_machine_kexec_prepare,
+-	.machine_crash_shutdown	= default_machine_crash_shutdown,
++	.machine_crash_shutdown	= cbe_machine_crash_shutdown,
+ #endif
+ };
+diff --git a/arch/powerpc/platforms/pseries/kexec.c b/arch/powerpc/platforms/pseries/kexec.c
+index e9dd5fe..53cbd53 100644
+--- a/arch/powerpc/platforms/pseries/kexec.c
++++ b/arch/powerpc/platforms/pseries/kexec.c
+@@ -70,4 +70,4 @@ static int __init pseries_kexec_setup(void)
+ 
+ 	return 0;
+ }
+-__initcall(pseries_kexec_setup);
++machine_device_initcall(pseries, pseries_kexec_setup);
 -- 
-Jon Smirl
-jonsmirl@gmail.com
+1.5.4.3
