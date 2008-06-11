@@ -1,12 +1,21 @@
-Return-Path: <jonsmirl@gmail.com>
-Message-ID: <9e4733910806101940o7f2f9863jb5e556ee2fc39a7e@mail.gmail.com>
-Date: Tue, 10 Jun 2008 22:40:45 -0400
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Linux I2C" <i2c@lm-sensors.org>,
-	"linuxppc-dev list" <Linuxppc-dev@ozlabs.org>
-Subject: [PATCH] Convert i2c-mpc from a platform driver to an of_platform one
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 2113BDDEC6
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jun 2008 12:43:26 +1000 (EST)
+Subject: Re: [RFC/PATCH] powerpc: rework 4xx PTE access and TLB miss
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Kumar Gala <kumar.gala@freescale.com>
+In-Reply-To: <7B3D2AD1-DBC4-41DB-91EE-D070CA4B47AD@freescale.com>
+References: <1213145431.25745.42.camel@pasglop>
+	<7B3D2AD1-DBC4-41DB-91EE-D070CA4B47AD@freescale.com>
+Content-Type: text/plain
+Date: Wed, 11 Jun 2008 12:43:09 +1000
+Message-Id: <1213152189.25745.55.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,207 +25,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Convert i2c-mpc from a platform driver into an of_platform driver.
-This patch is much smaller since Jochen already added
-of_find_i2c_driver(). Versions of this have been posted before.
 
-Signed-ff-by: Jon Smirl <jonsmirl@gmail.com>
+> > #define _PAGE_PRESENT	0x00000001		/* S: PTE valid */
+> > -#define	_PAGE_RW	0x00000002		/* S: Write permission */
+> > +#define _PAGE_RW	0x00000002		/* S: Write permission */
+> > #define _PAGE_FILE	0x00000004		/* S: nonlinear file mapping */
+> > +#define _PAGE_HWEXEC	0x00000004		/* H: Execute permission */
+> 
+> I'm sure this is ok, but why can we overlay _PAGE_HWEXEC and _PAGE_FILE?
 
--- 
+_PAGE_FILE is only meaningful for non present PTEs.
 
- drivers/i2c/busses/i2c-mpc.c |  105 +++++++++++++++++++++++++-----------------
- 1 files changed, 63 insertions(+), 42 deletions(-)
+> > #define _PAGE_ACCESSED	0x00000008		/* S: Page referenced */
+> > -#define _PAGE_HWWRITE	0x00000010		/* H: Dirty & RW */
+> > -#define _PAGE_HWEXEC	0x00000020		/* H: Execute permission */
+> > -#define	_PAGE_USER	0x00000040		/* S: User page */
+> > -#define	_PAGE_ENDIAN	0x00000080		/* H: E bit */
+> > -#define	_PAGE_GUARDED	0x00000100		/* H: G bit */
+> > -#define	_PAGE_DIRTY	0x00000200		/* S: Page dirty */
+> > -#define	_PAGE_NO_CACHE	0x00000400		/* H: I bit */
+> > -#define	_PAGE_WRITETHRU	0x00000800		/* H: W bit */
+> > +#define _PAGE_DIRTY	0x00000010		/* S: Page dirty */
+> 
+> why the gap?
 
+There are tricks to simplify the TLB miss handlers here. WIMGE are in
+the natural position of the final tlbwe, _PAGE_PRESENT is in SR
+position, _PAGE_RW in SW and _PAGE_HWEXEC in SX. I then conditionally
+copy them down to the "U" bits when _PAGE_USER is set. This trick
+isn't as useful on FSL though as your MAS layout mixes up the
+protection bits in a less useful way.
 
-diff --git a/drivers/i2c/busses/i2c-mpc.c b/drivers/i2c/busses/i2c-mpc.c
-index a076129..76d8091 100644
---- a/drivers/i2c/busses/i2c-mpc.c
-+++ b/drivers/i2c/busses/i2c-mpc.c
-@@ -18,6 +18,8 @@
- #include <linux/sched.h>
- #include <linux/init.h>
- #include <linux/platform_device.h>
-+#include <linux/of_platform.h>
-+#include <linux/of_i2c.h>
+As to why _PAGE_USER is appended to WIMGE rather than _PAGE_DIRTY,
+well, it was one or the other, either way there would be a gap,
+which we can later use for _PAGE_EXEC. I'm also thinking about
+finding a bit for _PAGE_SPECIAL for fast_gup.
 
- #include <asm/io.h>
- #include <linux/fsl_devices.h>
-@@ -25,13 +27,13 @@
- #include <linux/interrupt.h>
- #include <linux/delay.h>
-
--#define MPC_I2C_ADDR  0x00
-+#define DRV_NAME "mpc-i2c"
-+
- #define MPC_I2C_FDR 	0x04
- #define MPC_I2C_CR	0x08
- #define MPC_I2C_SR	0x0c
- #define MPC_I2C_DR	0x10
- #define MPC_I2C_DFSRR 0x14
--#define MPC_I2C_REGION 0x20
-
- #define CCR_MEN  0x80
- #define CCR_MIEN 0x40
-@@ -315,102 +317,121 @@ static struct i2c_adapter mpc_ops = {
- 	.timeout = 1,
- };
-
--static int fsl_i2c_probe(struct platform_device *pdev)
-+static int fsl_i2c_probe(struct of_device *op, const struct
-of_device_id *match)
- {
- 	int result = 0;
- 	struct mpc_i2c *i2c;
--	struct fsl_i2c_platform_data *pdata;
--	struct resource *r = platform_get_resource(pdev, IORESOURCE_MEM, 0);
--
--	pdata = (struct fsl_i2c_platform_data *) pdev->dev.platform_data;
-
- 	i2c = kzalloc(sizeof(*i2c), GFP_KERNEL);
- 	if (!i2c)
- 		return -ENOMEM;
-
--	i2c->irq = platform_get_irq(pdev, 0);
--	if (i2c->irq < 0)
--		i2c->irq = NO_IRQ; /* Use polling */
-+	if (of_get_property(op->node, "dfsrr", NULL))
-+		i2c->flags |= FSL_I2C_DEV_SEPARATE_DFSRR;
-
--	i2c->flags = pdata->device_flags;
--	init_waitqueue_head(&i2c->queue);
-+	if (of_device_is_compatible(op->node, "mpc5200-i2c"))
-+		i2c->flags |= FSL_I2C_DEV_CLOCK_5200;
-
--	i2c->base = ioremap((phys_addr_t)r->start, MPC_I2C_REGION);
-+	init_waitqueue_head(&i2c->queue);
-
-+	i2c->base = of_iomap(op->node, 0);
- 	if (!i2c->base) {
- 		printk(KERN_ERR "i2c-mpc - failed to map controller\n");
- 		result = -ENOMEM;
- 		goto fail_map;
- 	}
-
--	if (i2c->irq != NO_IRQ)
--		if ((result = request_irq(i2c->irq, mpc_i2c_isr,
--					  IRQF_SHARED, "i2c-mpc", i2c)) < 0) {
--			printk(KERN_ERR
--			       "i2c-mpc - failed to attach interrupt\n");
--			goto fail_irq;
--		}
-+	i2c->irq = irq_of_parse_and_map(op->node, 0);
-+	if (i2c->irq == NO_IRQ) {
-+		result = -ENXIO;
-+		goto fail_irq;
-+	}
-+
-+	result = request_irq(i2c->irq, mpc_i2c_isr,
-+						IRQF_SHARED, "i2c-mpc", i2c);
-+	if (result < 0) {
-+		printk(KERN_ERR "i2c-mpc - failed to attach interrupt\n");
-+		goto fail_request;
-+	}
-
- 	mpc_i2c_setclock(i2c);
--	platform_set_drvdata(pdev, i2c);
-+
-+	dev_set_drvdata(&op->dev, i2c);
-
- 	i2c->adap = mpc_ops;
--	i2c->adap.nr = pdev->id;
- 	i2c_set_adapdata(&i2c->adap, i2c);
--	i2c->adap.dev.parent = &pdev->dev;
--	if ((result = i2c_add_numbered_adapter(&i2c->adap)) < 0) {
-+	i2c->adap.dev.parent = &op->dev;
-+
-+	result = i2c_add_adapter(&i2c->adap);
-+	if (result < 0) {
- 		printk(KERN_ERR "i2c-mpc - failed to add adapter\n");
- 		goto fail_add;
- 	}
-+	of_register_i2c_devices(&i2c->adap, op->node);
-
- 	return result;
-
--      fail_add:
--	if (i2c->irq != NO_IRQ)
--		free_irq(i2c->irq, i2c);
--      fail_irq:
-+ fail_add:
-+	dev_set_drvdata(&op->dev, NULL);
-+	free_irq(i2c->irq, i2c);
-+ fail_request:
-+	irq_dispose_mapping(i2c->irq);
-+ fail_irq:
- 	iounmap(i2c->base);
--      fail_map:
-+ fail_map:
- 	kfree(i2c);
- 	return result;
- };
-
--static int fsl_i2c_remove(struct platform_device *pdev)
-+static int fsl_i2c_remove(struct of_device *op)
- {
--	struct mpc_i2c *i2c = platform_get_drvdata(pdev);
-+	struct mpc_i2c *i2c = dev_get_drvdata(&op->dev);
-
- 	i2c_del_adapter(&i2c->adap);
--	platform_set_drvdata(pdev, NULL);
-+	dev_set_drvdata(&op->dev, NULL);
-
- 	if (i2c->irq != NO_IRQ)
- 		free_irq(i2c->irq, i2c);
-
-+	irq_dispose_mapping(i2c->irq);
- 	iounmap(i2c->base);
- 	kfree(i2c);
- 	return 0;
- };
-
--/* work with hotplug and coldplug */
--MODULE_ALIAS("platform:fsl-i2c");
-+static const struct of_device_id mpc_i2c_of_match[] = {
-+	{
-+		.compatible	= "fsl-i2c",
-+	},
-+	{},
-+};
-+MODULE_DEVICE_TABLE(of, mpc_i2c_of_match);
-+
-
- /* Structure for a device driver */
--static struct platform_driver fsl_i2c_driver = {
--	.probe = fsl_i2c_probe,
--	.remove = fsl_i2c_remove,
--	.driver	= {
--		.owner = THIS_MODULE,
--		.name = "fsl-i2c",
-+static struct of_platform_driver mpc_i2c_driver = {
-+	.match_table	= mpc_i2c_of_match,
-+	.probe		= fsl_i2c_probe,
-+	.remove		= __devexit_p(fsl_i2c_remove),
-+	.driver		= {
-+		.owner	= THIS_MODULE,
-+		.name	= DRV_NAME,
- 	},
- };
-
- static int __init fsl_i2c_init(void)
- {
--	return platform_driver_register(&fsl_i2c_driver);
-+	int rv;
-+
-+	rv = of_register_platform_driver(&mpc_i2c_driver);
-+	if (rv)
-+		printk(KERN_ERR DRV_NAME " of_register_platform_driver failed (%i)\n", rv);
-+	return rv;
- }
-
- static void __exit fsl_i2c_exit(void)
- {
--	platform_driver_unregister(&fsl_i2c_driver);
-+	of_unregister_platform_driver(&mpc_i2c_driver);
- }
-
- module_init(fsl_i2c_init);
+Cheers,
+Ben.
