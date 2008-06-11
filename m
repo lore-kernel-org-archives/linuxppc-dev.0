@@ -1,21 +1,21 @@
-Return-Path: <mkl@pengutronix.de>
-Message-ID: <484F7CA1.9010209@pengutronix.de>
-Date: Wed, 11 Jun 2008 09:20:01 +0200
-From: Marc Kleine-Budde <mkl@pengutronix.de>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-To: Robert Schwebel <r.schwebel@pengutronix.de>
-References: <9e4733910806100738rac8e415x99f6e96715ebee90@mail.gmail.com>
-	<20080610165719.GA5139@loki.buserror.net>
-	<9e4733910806101044u1dd79185vc40f5c66e82edbfb@mail.gmail.com>
-	<9e4733910806101208q1bb71913y5c0b5dc5d4fc4cb5@mail.gmail.com>
-	<20080611052907.GP13599@pengutronix.de>
-In-Reply-To: <20080611052907.GP13599@pengutronix.de>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="------------enig76FA1972A0B07892089C79C3"
-Subject: Re: Image generation for Efika is broken in 2.6.26
-Cc: Scott Wood <scottwood@freescale.com>,
-	linuxppc-dev list <Linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18511.24732.191606.794160@cargo.ozlabs.ibm.com>
+Date: Wed, 11 Jun 2008 15:20:28 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: Re: MMIO and gcc re-ordering issue
+In-Reply-To: <200806101656.51211.nickpiggin@yahoo.com.au>
+References: <1211852026.3286.36.camel@pasglop>
+	<Pine.LNX.4.64.0806031130130.3242@t2.domain.actdsltmp>
+	<alpine.LFD.1.10.0806031153360.3473@woody.linux-foundation.org>
+	<200806101656.51211.nickpiggin@yahoo.com.au>
+Cc: linux-arch@vger.kernel.org, Russell King <rmk+lkml@arm.linux.org.uk>,
+	Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
+	Trent Piepho <tpiepho@freescale.com>, linuxppc-dev@ozlabs.org,
+	scottwood@freescale.com, Linus Torvalds <torvalds@linux-foundation.org>,
+	David Miller <davem@davemloft.net>, alan@lxorguk.ukuu.org.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,45 +25,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig76FA1972A0B07892089C79C3
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: quoted-printable
+Nick Piggin writes:
 
-Robert Schwebel wrote:
-> On Tue, Jun 10, 2008 at 03:08:05PM -0400, Jon Smirl wrote:
->>>  I'm trying to convince OSELAS to rebuild the toolchain on Ubuntu
->>>  hardy but I'm having problems.
->> After much mucking with my toolchain, I got it built with bin-utils
->> 2.18. That fixed the Efika problem. Thanks for the tip.
->=20
-> Marc, do we have a fix for that 2.17 problem?
+> Now that doesn't leave waker ordering architectures lumped with "slow old
+> x86 semantics". Think of it as giving them the benefit of sharing x86
+> development and testing :)
 
-No,
-I just have heard yesterday that there is a problem, but have not seen
-any further details (I'm not reading this list). Is there a fix w/o
-update binutils to 2.18?
+Worth something, but not perhaps as much as you think, given that many
+x86 driver writers still don't pay much attention to making their code
+endian-safe and 64-bit-clean.  And there are still plenty of drivers
+that use virt_to_bus...
 
-Marc
-
---=20
- Marc Kleine-Budde              Phone: +49-231-2826-924
- Pengutronix - Linux Solutions for Science and Industry
- Vertretung West/Dortmund     http://www.pengutronix.de
-
-
---------------enig76FA1972A0B07892089C79C3
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFIT3yhjTAFq1RaXHMRAg8lAJ4v4WBv9e99lhBQOFscyV4lfduREgCdHRMp
-Vs+GCP97+M1sm68NkqbIqO0=
-=3L6p
------END PGP SIGNATURE-----
-
---------------enig76FA1972A0B07892089C79C3--
+Paul.
