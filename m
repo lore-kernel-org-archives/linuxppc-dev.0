@@ -1,22 +1,21 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Wed, 11 Jun 2008 11:58:39 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Jon Loeliger <jdl@freescale.com>
-Subject: dtc: Add support for binary includes.
-Message-ID: <20080611015839.GB22012@yookeroo.seuss>
-References: <20080220191941.GA2062@ld0162-tx32.am.freescale.net>
-	<20080226003955.GA24382@localhost.localdomain>
-	<7BF8FE6B-8BDD-4DC3-953E-E023C38EBA87@kernel.crashing.org>
-	<483C4C04.9020408@freescale.com>
-	<20080528235859.GA10260@yookeroo.seuss>
-	<20080529000227.GB10260@yookeroo.seuss>
-	<48404D83.4070108@freescale.com>
-	<20080604041304.GD29085@yookeroo.seuss>
-	<4846A60F.9020909@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4846A60F.9020909@freescale.com>
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org, jdl@jdl.com
+Return-Path: <kumar.gala@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 6BBE7DDD0B
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jun 2008 12:18:57 +1000 (EST)
+Message-Id: <7B3D2AD1-DBC4-41DB-91EE-D070CA4B47AD@freescale.com>
+From: Kumar Gala <kumar.gala@freescale.com>
+To: benh@kernel.crashing.org
+In-Reply-To: <1213145431.25745.42.camel@pasglop>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v924)
+Subject: Re: [RFC/PATCH] powerpc: rework 4xx PTE access and TLB miss
+Date: Tue, 10 Jun 2008 21:18:41 -0500
+References: <1213145431.25745.42.camel@pasglop>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,288 +25,176 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jun 04, 2008 at 09:26:23AM -0500, Jon Loeliger wrote:
-> David Gibson wrote:
 >
->> But as I said that can be dealt with in the future without breaking
->> compatibility.  Objection withdrawn.
->>
+> Index: linux-work/include/asm-powerpc/pgtable-ppc32.h
+> ===================================================================
+> --- linux-work.orig/include/asm-powerpc/pgtable-ppc32.h	2008-06-10  
+> 18:13:47.000000000 +1000
+> +++ linux-work/include/asm-powerpc/pgtable-ppc32.h	2008-06-10  
+> 18:16:49.000000000 +1000
+> @@ -182,6 +182,9 @@ extern int icache_44x_need_flush;
+> #define _PMD_SIZE_16M	0x0e0
+> #define PMD_PAGE_SIZE(pmdval)	(1024 << (((pmdval) & _PMD_SIZE) >> 4))
 >
-> And on that note, I officially implore Scott to
-> re-submit his binary include patch!
+> +/* Until my rework is finished, 40x still needs atomic PTE updates */
+> +#define PTE_ATOMIC_UPDATES	1
+> +
+> #elif defined(CONFIG_44x)
+> /*
+>  * Definitions for PPC440
+> @@ -253,17 +256,17 @@ extern int icache_44x_need_flush;
+>  */
+>
+> #define _PAGE_PRESENT	0x00000001		/* S: PTE valid */
+> -#define	_PAGE_RW	0x00000002		/* S: Write permission */
+> +#define _PAGE_RW	0x00000002		/* S: Write permission */
+> #define _PAGE_FILE	0x00000004		/* S: nonlinear file mapping */
+> +#define _PAGE_HWEXEC	0x00000004		/* H: Execute permission */
 
-Scott's original patch does still have some implementation details I
-didn't like.  So in the interests of saving time, I've addressed some
-of those, added a testcase, and and now resubmitting my revised
-version of Scott's patch.
+I'm sure this is ok, but why can we overlay _PAGE_HWEXEC and _PAGE_FILE?
 
-dtc: Add support for binary includes.
+> #define _PAGE_ACCESSED	0x00000008		/* S: Page referenced */
+> -#define _PAGE_HWWRITE	0x00000010		/* H: Dirty & RW */
+> -#define _PAGE_HWEXEC	0x00000020		/* H: Execute permission */
+> -#define	_PAGE_USER	0x00000040		/* S: User page */
+> -#define	_PAGE_ENDIAN	0x00000080		/* H: E bit */
+> -#define	_PAGE_GUARDED	0x00000100		/* H: G bit */
+> -#define	_PAGE_DIRTY	0x00000200		/* S: Page dirty */
+> -#define	_PAGE_NO_CACHE	0x00000400		/* H: I bit */
+> -#define	_PAGE_WRITETHRU	0x00000800		/* H: W bit */
+> +#define _PAGE_DIRTY	0x00000010		/* S: Page dirty */
 
-A property's data can be populated with a file's contents
-as follows:
+why the gap?
+>
+> +#define _PAGE_USER	0x00000040		/* S: User page */
+> +#define _PAGE_ENDIAN	0x00000080		/* H: E bit */
+> +#define _PAGE_GUARDED	0x00000100		/* H: G bit */
+> +#define _PAGE_COHERENT	0x00000200		/* H: M bit */
+> +#define _PAGE_NO_CACHE	0x00000400		/* H: I bit */
+> +#define _PAGE_WRITETHRU	0x00000800		/* H: W bit */
+>
+> /* TODO: Add large page lowmem mapping support */
+> #define _PMD_PRESENT	0
+> @@ -273,6 +276,7 @@ extern int icache_44x_need_flush;
+> /* ERPN in a PTE never gets cleared, ignore it */
+> #define _PTE_NONE_MASK	0xffffffff00000000ULL
+>
+> +
+> #elif defined(CONFIG_FSL_BOOKE)
+> /*
+>    MMU Assist Register 3:
+> @@ -315,6 +319,9 @@ extern int icache_44x_need_flush;
+> #define _PMD_PRESENT_MASK (PAGE_MASK)
+> #define _PMD_BAD	(~PAGE_MASK)
+>
+> +/* Until my rework is finished, 40x still needs atomic PTE updates */
+> +#define PTE_ATOMIC_UPDATES	1
 
-node {
-	prop = /incbin/("path/to/data");
-};
+fix comment
+>
+> +
+> #elif defined(CONFIG_8xx)
+> /* Definitions for 8xx embedded chips. */
+> #define _PAGE_PRESENT	0x0001	/* Page is valid */
+> @@ -345,6 +352,9 @@ extern int icache_44x_need_flush;
+>
+> #define _PTE_NONE_MASK _PAGE_ACCESSED
+>
+> +/* Until my rework is finished, 40x still needs atomic PTE updates */
+> +#define PTE_ATOMIC_UPDATES	1
+> +
+fix comment
+>
+> #else /* CONFIG_6xx */
+> /* Definitions for 60x, 740/750, etc. */
+> #define _PAGE_PRESENT	0x001	/* software: pte contains a translation */
+> @@ -365,6 +375,10 @@ extern int icache_44x_need_flush;
+> #define _PMD_PRESENT	0
+> #define _PMD_PRESENT_MASK (PAGE_MASK)
+> #define _PMD_BAD	(~PAGE_MASK)
+> +
+> +/* Hash tbale based platforms need atomic updates of the linux PTE */
 
-A subset of a file can be included by passing start and size parameters.
-For example, to include bytes 8 through 23:
+tbale?
 
-node {
-	prop = /incbin/("path/to/data", 8, 16);
-};
-
-As with /include/, non-absolute paths are looked for in the directory
-of the source file that includes them.
-
-Implementation revised, and a testcase added by David Gibson
-
-Signed-off-by: Scott Wood <scottwood@freescale.com>
-Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
-
-Index: dtc/data.c
-===================================================================
---- dtc.orig/data.c	2008-06-11 11:50:29.000000000 +1000
-+++ dtc/data.c	2008-06-11 11:50:38.000000000 +1000
-@@ -167,14 +167,29 @@
- 	return d;
- }
- 
--struct data data_copy_file(FILE *f, size_t len)
-+struct data data_copy_file(FILE *f, size_t maxlen)
- {
--	struct data d;
-+	struct data d = empty_data;
-+
-+	while (!feof(f) && (d.len < maxlen)) {
-+		size_t chunksize, ret;
-+
-+		if (maxlen == -1)
-+			chunksize = 4096;
-+		else
-+			chunksize = maxlen - d.len;
-+
-+		d = data_grow_for(d, chunksize);
-+		ret = fread(d.val + d.len, 1, chunksize, f);
-+
-+		if (ferror(f))
-+			die("Error reading file into data: %s", strerror(errno));
- 
--	d = data_grow_for(empty_data, len);
-+		if (d.len + ret < d.len)
-+			die("Overflow reading file into data\n");
- 
--	d.len = len;
--	fread(d.val, len, 1, f);
-+		d.len += ret;
-+	}
- 
- 	return d;
- }
-Index: dtc/dtc-lexer.l
-===================================================================
---- dtc.orig/dtc-lexer.l	2008-06-11 11:50:29.000000000 +1000
-+++ dtc/dtc-lexer.l	2008-06-11 11:50:38.000000000 +1000
-@@ -190,6 +190,13 @@
- 			return DT_PROPNODENAME;
- 		}
- 
-+"/incbin/"	{
-+			yylloc.file = srcpos_file;
-+			yylloc.first_line = yylineno;
-+			DPRINT("Binary Include\n");
-+			return DT_INCBIN;
-+		}
-+
- <*>[[:space:]]+	/* eat whitespace */
- 
- <*>"/*"([^*]|\*+[^*/])*\*+"/"	{
-Index: dtc/dtc-parser.y
-===================================================================
---- dtc.orig/dtc-parser.y	2008-06-11 11:50:29.000000000 +1000
-+++ dtc/dtc-parser.y	2008-06-11 11:50:38.000000000 +1000
-@@ -21,6 +21,8 @@
- %locations
- 
- %{
-+#include <stdio.h>
-+
- #include "dtc.h"
- #include "srcpos.h"
- 
-@@ -59,6 +61,7 @@
- %token <data> DT_STRING
- %token <labelref> DT_LABEL
- %token <labelref> DT_REF
-+%token DT_INCBIN
- 
- %type <data> propdata
- %type <data> propdataprefix
-@@ -197,6 +200,34 @@
- 		{
- 			$$ = data_add_marker($1, REF_PATH, $2);
- 		}
-+	| propdataprefix DT_INCBIN '(' DT_STRING ',' addr ',' addr ')'
-+		{
-+			struct search_path path = { srcpos_file->dir, NULL, NULL };
-+			struct dtc_file *file = dtc_open_file($4.val, &path);
-+			struct data d = empty_data;
-+
-+			if ($6 != 0)
-+				if (fseek(file->file, $6, SEEK_SET) != 0)
-+					yyerrorf("Couldn't seek to offset %llu in \"%s\": %s",
-+						 (unsigned long long)$6,
-+						 $4.val, strerror(errno));
-+
-+			d = data_copy_file(file->file, $8);
-+
-+			$$ = data_merge($1, d);
-+			dtc_close_file(file);
-+		}
-+	| propdataprefix DT_INCBIN '(' DT_STRING ')'
-+		{
-+			struct search_path path = { srcpos_file->dir, NULL, NULL };
-+			struct dtc_file *file = dtc_open_file($4.val, &path);
-+			struct data d = empty_data;
-+
-+			d = data_copy_file(file->file, -1);
-+
-+			$$ = data_merge($1, d);
-+			dtc_close_file(file);
-+		}
- 	| propdata DT_LABEL
- 		{
- 			$$ = data_add_marker($1, LABEL, $2);
-Index: dtc/tests/incbin.bin
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ dtc/tests/incbin.bin	2008-06-11 11:50:38.000000000 +1000
-@@ -0,0 +1 @@
-+abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ
-\ No newline at end of file
-Index: dtc/tests/incbin.c
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ dtc/tests/incbin.c	2008-06-11 11:50:38.000000000 +1000
-@@ -0,0 +1,75 @@
-+/*
-+ * libfdt - Flat Device Tree manipulation
-+ *	Testcase for string escapes in dtc
-+ * Copyright (C) 2006 David Gibson, IBM Corporation.
-+ *
-+ * This library is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU Lesser General Public License
-+ * as published by the Free Software Foundation; either version 2.1 of
-+ * the License, or (at your option) any later version.
-+ *
-+ * This library is distributed in the hope that it will be useful, but
-+ * WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ * Lesser General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU Lesser General Public
-+ * License along with this library; if not, write to the Free Software
-+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
-+ */
-+#include <stdlib.h>
-+#include <stdio.h>
-+#include <string.h>
-+#include <stdint.h>
-+#include <errno.h>
-+
-+#include <fdt.h>
-+#include <libfdt.h>
-+
-+#include "tests.h"
-+#include "testdata.h"
-+
-+#define CHUNKSIZE	1024
-+
-+void *load_file(const char *name, int *len)
-+{
-+	FILE *f;
-+	void *buf = NULL;
-+	int bufsize = 0, n;
-+
-+	*len = 0;
-+
-+	f = fopen(name, "r");
-+	if (!f)
-+		FAIL("Couldn't open \"%s\": %s", name, strerror(errno));
-+
-+	while (!feof(f)) {
-+		if (bufsize < (*len + CHUNKSIZE)) {
-+			buf = xrealloc(buf, *len + CHUNKSIZE);
-+			bufsize = *len + CHUNKSIZE;
-+		}
-+
-+		n = fread(buf + *len, 1, CHUNKSIZE, f);
-+		if (ferror(f))
-+			FAIL("Error reading \"%s\": %s", name, strerror(errno));
-+		*len += n;
-+	}
-+
-+	return buf;
-+}
-+
-+int main(int argc, char *argv[])
-+{
-+	void *fdt, *incbin;
-+	int len;
-+
-+	test_init(argc, argv);
-+
-+	incbin = load_file("incbin.bin", &len);
-+	fdt = load_blob_arg(argc, argv);
-+
-+	check_getprop(fdt, 0, "incbin", len, incbin);
-+	check_getprop(fdt, 0, "incbin-partial", 17, incbin + 13);
-+
-+	PASS();
-+}
-Index: dtc/tests/incbin.dts
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ dtc/tests/incbin.dts	2008-06-11 11:50:38.000000000 +1000
-@@ -0,0 +1,6 @@
-+/dts-v1/;
-+
-+/ {
-+	incbin = /incbin/("incbin.bin");
-+	incbin-partial = /incbin/("incbin.bin", 13, 17);
-+};
-Index: dtc/tests/Makefile.tests
-===================================================================
---- dtc.orig/tests/Makefile.tests	2008-06-11 11:50:29.000000000 +1000
-+++ dtc/tests/Makefile.tests	2008-06-11 11:50:38.000000000 +1000
-@@ -9,7 +9,7 @@
- 	sw_tree1 \
- 	move_and_save mangle-layout nopulate \
- 	open_pack rw_tree1 set_name setprop del_property del_node \
--	string_escapes references path-references boot-cpuid \
-+	string_escapes references path-references boot-cpuid incbin \
- 	dtbs_equal_ordered \
- 	add_subnode_with_nops
- LIB_TESTS = $(LIB_TESTS_L:%=$(TESTS_PREFIX)%)
-Index: dtc/tests/run_tests.sh
-===================================================================
---- dtc.orig/tests/run_tests.sh	2008-06-11 11:50:38.000000000 +1000
-+++ dtc/tests/run_tests.sh	2008-06-11 11:50:38.000000000 +1000
-@@ -207,6 +207,10 @@
-     run_dtc_test -I dts -O dtb -o dtc_comments-cmp.test.dtb comments-cmp.dts
-     run_test dtbs_equal_ordered dtc_comments.test.dtb dtc_comments-cmp.test.dtb
- 
-+    # Check /incbin/ directive
-+    run_dtc_test -I dts -O dtb -o incbin.test.dtb incbin.dts
-+    run_test incbin incbin.test.dtb
-+
-     # Check boot_cpuid_phys handling
-     run_dtc_test -I dts -O dtb -b 17 -o boot_cpuid.test.dtb empty.dts
-     run_test boot-cpuid boot_cpuid.test.dtb 17
-
-
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+>
+> +#define PTE_ATOMIC_UPDATES	1
+> +
+> #endif
+>
+> /*
+> @@ -557,9 +571,11 @@ extern void add_hash_page(unsigned conte
+>  * low PTE word since we expect ALL flag bits to be there
+>  */
+> #ifndef CONFIG_PTE_64BIT
+> -static inline unsigned long pte_update(pte_t *p, unsigned long clr,
+> +static inline unsigned long pte_update(pte_t *p,
+> +				       unsigned long clr,
+> 				       unsigned long set)
+> {
+> +#ifdef PTE_ATOMIC_UPDATES
+> 	unsigned long old, tmp;
+>
+> 	__asm__ __volatile__("\
+> @@ -572,16 +588,26 @@ static inline unsigned long pte_update(p
+> 	: "=&r" (old), "=&r" (tmp), "=m" (*p)
+> 	: "r" (p), "r" (clr), "r" (set), "m" (*p)
+> 	: "cc" );
+> +#else /* PTE_ATOMIC_UPDATES */
+> +	unsigned long old = pte_val(*p);
+> +	*p = __pte((old & ~clr) | set);
+> +#endif /* !PTE_ATOMIC_UPDATES */
+> +
+> #ifdef CONFIG_44x
+> 	if ((old & _PAGE_USER) && (old & _PAGE_HWEXEC))
+> 		icache_44x_need_flush = 1;
+> #endif
+> 	return old;
+> }
+> -#else
+> -static inline unsigned long long pte_update(pte_t *p, unsigned long  
+> clr,
+> -				       unsigned long set)
+> +#else /* CONFIG_PTE_64BIT */
+> +/* TODO: Change that to only modify the low word and move  
+> set_pte_at()
+> + * out of line
+> + */
+> +static inline unsigned long long pte_update(pte_t *p,
+> +					    unsigned long clr,
+> +					    unsigned long set)
+> {
+> +#ifdef PTE_ATOMIC_UPDATES
+> 	unsigned long long old;
+> 	unsigned long tmp;
+>
+> @@ -596,13 +622,18 @@ static inline unsigned long long pte_upd
+> 	: "=&r" (old), "=&r" (tmp), "=m" (*p)
+> 	: "r" (p), "r" ((unsigned long)(p) + 4), "r" (clr), "r" (set),  
+> "m" (*p)
+> 	: "cc" );
+> +#else /* PTE_ATOMIC_UPDATES */
+> +	unsigned long long old = pte_val(*p);
+> +	*p = __pte((old & ~clr) | set);
+> +#endif /* !PTE_ATOMIC_UPDATES */
+> +
+> #ifdef CONFIG_44x
+> 	if ((old & _PAGE_USER) && (old & _PAGE_HWEXEC))
+> 		icache_44x_need_flush = 1;
+> #endif
+> 	return old;
+> }
+> -#endif
+> +#endif /* CONFIG_PTE_64BIT */
+>
+> /*
+>  * set_pte stores a linux PTE into the linux page table.
+> @@ -665,7 +696,7 @@ static inline void __ptep_set_access_fla
+> ({									   \
+> 	int __changed = !pte_same(*(__ptep), __entry);			   \
+> 	if (__changed) {						   \
+> -		__ptep_set_access_flags(__ptep, __entry, __dirty);    	   \
+> +		__ptep_set_access_flags(__ptep, __entry, __dirty);         \
+> 		flush_tlb_page_nohash(__vma, __address);		   \
+> 	}								   \
+> 	__changed;							   \
