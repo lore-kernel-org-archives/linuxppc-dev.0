@@ -1,21 +1,19 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18511.24732.191606.794160@cargo.ozlabs.ibm.com>
-Date: Wed, 11 Jun 2008 15:20:28 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: Re: MMIO and gcc re-ordering issue
-In-Reply-To: <200806101656.51211.nickpiggin@yahoo.com.au>
-References: <1211852026.3286.36.camel@pasglop>
-	<Pine.LNX.4.64.0806031130130.3242@t2.domain.actdsltmp>
-	<alpine.LFD.1.10.0806031153360.3473@woody.linux-foundation.org>
-	<200806101656.51211.nickpiggin@yahoo.com.au>
-Cc: linux-arch@vger.kernel.org, Russell King <rmk+lkml@arm.linux.org.uk>,
-	Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
-	Trent Piepho <tpiepho@freescale.com>, linuxppc-dev@ozlabs.org,
-	scottwood@freescale.com, Linus Torvalds <torvalds@linux-foundation.org>,
-	David Miller <davem@davemloft.net>, alan@lxorguk.ukuu.org.uk
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id ACFB2DDEDA
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jun 2008 19:27:58 +1000 (EST)
+Date: Wed, 11 Jun 2008 19:27:48 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+	"H. Peter Anvin" <hpa@zytor.com>
+Subject: linux-next: powerpc build failure
+Message-Id: <20080611192748.686236fd.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Wed__11_Jun_2008_19_27_48_+1000_bYvf7rdRWHA=kzf6"
+Cc: linuxppc-dev@ozlabs.org, linux-next@vger.kernel.org,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,15 +23,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Nick Piggin writes:
+--Signature=_Wed__11_Jun_2008_19_27_48_+1000_bYvf7rdRWHA=kzf6
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> Now that doesn't leave waker ordering architectures lumped with "slow old
-> x86 semantics". Think of it as giving them the benefit of sharing x86
-> development and testing :)
+Hi all,
 
-Worth something, but not perhaps as much as you think, given that many
-x86 driver writers still don't pay much attention to making their code
-endian-safe and 64-bit-clean.  And there are still plenty of drivers
-that use virt_to_bus...
+Today's linux-next build (powerpc allyesconfig) failed like this:
 
-Paul.
+vmlinux.o: In function `ipx_ioctl':
+/scratch/sfr/next/net/ipx/af_ipx.c:1830: relocation truncated to fit: R_PPC=
+64_REL24 against symbol `._mcount' defined in .text section in vmlinux.o
+
+(and lots more similar)
+
+I am assuming that this has something to do with how big vmlinux is for
+allyesconfig and the addition of -pg to KBUILD_CFLAGS for ftrace.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__11_Jun_2008_19_27_48_+1000_bYvf7rdRWHA=kzf6
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkhPmpQACgkQTgG2atn1QN8EsgCgmPnYeRCAPOMgE2zSgPjLpXUF
+ycUAn3HXoodQ+2YO2zNLFtF4MZs7liLe
+=aQlN
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__11_Jun_2008_19_27_48_+1000_bYvf7rdRWHA=kzf6--
