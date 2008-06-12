@@ -1,21 +1,29 @@
-Return-Path: <madhvesh.s@ap.sony.com>
-Received: from mail214-va3-R.bigfish.com (mail-va3.bigfish.com
-	[216.32.180.115])
+Return-Path: <willy@parisc-linux.org>
+Received: from mail.parisc-linux.org (palinux.external.hp.com [192.25.206.14])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com",
-	Issuer "Microsoft Secure Server Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 17823DDF03
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jun 2008 00:56:29 +1000 (EST)
+	(Client CN "mail.parisc-linux.org",
+	Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 0A204DE2B4
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jun 2008 01:07:32 +1000 (EST)
+Date: Thu, 12 Jun 2008 09:07:16 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: MMIO and gcc re-ordering issue
+Message-ID: <20080612150716.GX30405@parisc-linux.org>
+References: <1211852026.3286.36.camel@pasglop> <4843C3D7.7000609@sgi.com>
+	<200806031433.12460.nickpiggin@yahoo.com.au>
+	<200806030952.10360.jbarnes@virtuousgeek.org>
+	<4847A690.302@sgi.com> <1212655433.9496.109.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Subject: RE: [RFC] Kprobes for book-e
-Date: Thu, 12 Jun 2008 19:59:07 +0530
-Message-ID: <7B7EF7F090B9804A830ACC82F2CDE95D28FC85@insardxms01.ap.sony.com>
-From: "Sulibhavi, Madhvesh" <madhvesh.s@ap.sony.com>
-To: "Kumar Gala" <galak@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, rsmadhvesh@vsnl.net,
-	Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1212655433.9496.109.camel@pasglop>
+Cc: linux-arch@vger.kernel.org, Nick Piggin <nickpiggin@yahoo.com.au>,
+	Roland Dreier <rdreier@cisco.com>, Jes Sorensen <jes@sgi.com>,
+	linux-kernel@vger.kernel.org, Jeremy Higdon <jeremy@sgi.com>,
+	David Miller <davem@davemloft.net>, linuxppc-dev@ozlabs.org,
+	Jesse Barnes <jbarnes@virtuousgeek.org>, scottwood@freescale.com,
+	torvalds@linux-foundation.org, tpiepho@freescale.com,
+	alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,53 +33,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote Wednesday, June 11, 2008 8:36 PM
-> To: Sulibhavi, Madhvesh
-> Cc: rsmadhvesh@vsnl.net; ananth@in.ibm.com;=20
-> linuxppc-dev@ozlabs.org; Paul Mackerras
-> Subject: Re: [RFC] Kprobes for book-e
->=20
-...
+On Thu, Jun 05, 2008 at 06:43:53PM +1000, Benjamin Herrenschmidt wrote:
+> Note that the powerpc implementation currently clears the flag
+> on spin_lock and tests it on unlock. We are considering changing
+> that to not touch the flag on spin_lock and just clear it whenever
+> we do a sync (ie, on unlock, on explicit mmiowb, and possibly even
+> on readl's where we happen to do sync's).
 
-> ---------------------------------------------------------------------
-> > arch/powerpc/kernel/kprobes.c |   35 ++++++++++++++++++++++++++++++=20
-> > +----
-> > arch/powerpc/kernel/misc_32.S |    2 +-
-> > arch/powerpc/kernel/traps.c   |   26 +++++++++++++++++++++++++-
-> > 3 files changed, 57 insertions(+), 6 deletions(-)
->=20
-> Your patch got line wrapped by your mailer.  Take a look at =20
-> Documentation/email-clients.tx
+Your current scheme sounds like it's broken for
 
-Yes, i need to correct my emailer (long pending)
+spin_lock(a)
+writel();
+spin_lock(b);
+spin_unlock(b);
+spin_unlock(a);
 
->=20
-> > static void __kprobes prepare_singlestep(struct kprobe *p, struct
-> > pt_regs *regs)
-> > {
-> > +#ifdef CONFIG_BOOKE
-> > +	regs->msr &=3D ~(MSR_EE); /* Turn off 'Externel Interrupt' bits */
-> > +	regs->msr &=3D ~(MSR_CE); /* Turn off 'Critical Interrupt' bits */
-> > +	regs->msr |=3D MSR_DE;
->=20
-> can we remove MSR_EE and MSR_CE here?
-
-Ah! yes? interrupts are enabled while executing the trap
-instruction in ppc unlike int3 of x86 where interupts are=20
-disabled. kprobe_handler already handles the reentrancy with=20
-nmissed count. I think this code can be removed and=20
-I will confirm after my test.
-
-
--Madhvesh
-
-
--------------------------------------------------------------------
-This email is confidential and intended only for the use of the =
-individual or entity named above and may contain information that is =
-privileged. If you are not the intended recipient, you are notified that =
-any dissemination, distribution or copying of this email is strictly =
-prohibited. If you have received this email in error, please notify us =
-immediately by return email or telephone and destroy the original =
-message. - This mail is sent via Sony Asia Pacific Mail Gateway.
--------------------------------------------------------------------
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
