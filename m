@@ -1,18 +1,15 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 4CA6DDE558
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jun 2008 05:47:35 +1000 (EST)
-Message-Id: <038420D9-89B1-41B4-8941-CF12CD7F4D61@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Ron Madrid <ron_madrid@sbcglobal.net>
-In-Reply-To: <937773.70026.qm@web83508.mail.sp1.yahoo.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v924)
+Return-Path: <ron_madrid@sbcglobal.net>
+Received: from web83508.mail.sp1.yahoo.com (web83508.mail.sp1.yahoo.com
+	[216.252.120.164]) by ozlabs.org (Postfix) with SMTP id 4A3C6DDD0B
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jun 2008 06:04:25 +1000 (EST)
+Date: Thu, 12 Jun 2008 13:04:23 -0700 (PDT)
+From: Ron Madrid <ron_madrid@sbcglobal.net>
 Subject: Re: Using DMA interrupt on MPC8313
-Date: Thu, 12 Jun 2008 14:47:29 -0500
-References: <937773.70026.qm@web83508.mail.sp1.yahoo.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <038420D9-89B1-41B4-8941-CF12CD7F4D61@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Message-ID: <85644.91618.qm@web83508.mail.sp1.yahoo.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -23,16 +20,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Well in that case wouldn't I need to use the fsldma driver?  Or is dmaengine a generic dma driver?
 
-On Jun 12, 2008, at 2:35 PM, Ron Madrid wrote:
+Ron
+--- Kumar Gala <galak@kernel.crashing.org> wrote:
 
-> I'm trying to write a driver that would make use of the DMA on the  
-> MPC8313.  I'm attempting to
-> register the interrupt with request_irq but it is not passing.  Is  
-> there something that I need to
-> do before I call request_irq, maybe in the dts or somewhere else?
-
-
-any reason you aren't using the dmaengine driver?
-
-- k
+> 
+> On Jun 12, 2008, at 2:35 PM, Ron Madrid wrote:
+> 
+> > I'm trying to write a driver that would make use of the DMA on the  
+> > MPC8313.  I'm attempting to
+> > register the interrupt with request_irq but it is not passing.  Is  
+> > there something that I need to
+> > do before I call request_irq, maybe in the dts or somewhere else?
+> 
+> 
+> any reason you aren't using the dmaengine driver?
+> 
+> - k
+> 
