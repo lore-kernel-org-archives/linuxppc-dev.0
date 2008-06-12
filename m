@@ -1,22 +1,12 @@
-Return-Path: <wsa@pengutronix.de>
-Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
-	[83.236.181.26]) by ozlabs.org (Postfix) with ESMTP id C575FDDF07
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jun 2008 19:04:42 +1000 (EST)
-Received: from leda.ptxnet.pengutronix.de ([10.1.0.71] ident=Debian-exim)
-	by metis.extern.pengutronix.de with esmtp (Exim 4.63)
-	(envelope-from <wsa@pengutronix.de>) id 1K6ijS-00025o-7G
-	for linuxppc-dev@ozlabs.org; Thu, 12 Jun 2008 11:04:34 +0200
-Received: from wsa by leda.ptxnet.pengutronix.de with local (Exim 4.67)
-	(envelope-from <wsa@pengutronix.de>) id 1K6ijR-0002iL-3B
-	for linuxppc-dev@ozlabs.org; Thu, 12 Jun 2008 11:04:33 +0200
-Date: Thu, 12 Jun 2008 11:04:33 +0200
-From: Wolfram Sang <w.sang@pengutronix.de>
+Return-Path: <arnd@arndb.de>
+Message-Id: <20080612092511.438345634@arndb.de>
+References: <20080612091433.851620325@arndb.de>
+Date: Thu, 12 Jun 2008 11:14:35 +0200
+From: Arnd Bergmann <arnd@arndb.de>
 To: linuxppc-dev@ozlabs.org
-Subject: Merging seperate FDT-blobs?
-Message-ID: <20080612090433.GA4235@pengutronix.de>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="OgqxwSJOaUobr8KG"
+Subject: [patch 2/3] powerpc/pseries: call pseries_kexec_setup only on pseries
+Cc: Michael Neuling <mikey@neuling.org>, Jeremy Kerr <jk@ozlabs.org>,
+	cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,47 +16,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+The pseries_kexec_setup function overwrites some ppc_md
+pointers, so make sure it only gets called when running on
+the right architecture.
 
---OgqxwSJOaUobr8KG
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+---
+ arch/powerpc/platforms/pseries/kexec.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Hello,
+diff --git a/arch/powerpc/platforms/pseries/kexec.c b/arch/powerpc/platforms/pseries/kexec.c
+index e9dd5fe..53cbd53 100644
+--- a/arch/powerpc/platforms/pseries/kexec.c
++++ b/arch/powerpc/platforms/pseries/kexec.c
+@@ -70,4 +70,4 @@ static int __init pseries_kexec_setup(void)
+ 
+ 	return 0;
+ }
+-__initcall(pseries_kexec_setup);
++machine_device_initcall(pseries, pseries_kexec_setup);
+-- 
+1.5.4.3
 
-a project I am working on consists of different hardware modules, which
-can be combined in a lot of variations (not at runtime, though). As each
-module shall contain an I2C-eeprom, the idea is now to put a fragment of
-a FDT-blob into that EEPROM and let the bootloader combine these
-fragments. Such an approach was also sketched by David Gibson recently.
-(http://ozlabs.org/pipermail/linuxppc-dev/2008-February/051630.html)
-
-(As a sidenote, I am not quite sure and could not find anything about
-what the mentioned 'fdt_graft' should actually do, in my case something
-like a 'fdt_add_blob_subnode' function would be sufficent, I guess.)
-
-My question: Is there already an effort towards such an approach to
-which I could contribute, or do I have to start from scratch?
-
-Kind regards,
-
-   Wolfram
-
---=20
-  Dipl.-Ing. Wolfram Sang | http://www.pengutronix.de
- Pengutronix - Linux Solutions for Science and Industry
-
---OgqxwSJOaUobr8KG
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD4DBQFIUOagD27XaX1/VRsRAgNeAJY9w4+t6qtEUbKSdAq5bkcUk7JhAKCpl6fu
-ScFfw8FCN2++iy4r3I4u1g==
-=Z/0v
------END PGP SIGNATURE-----
-
---OgqxwSJOaUobr8KG--
+-- 
