@@ -1,12 +1,16 @@
 Return-Path: <arnd@arndb.de>
-Message-Id: <20080612092511.307094929@arndb.de>
-References: <20080612091433.851620325@arndb.de>
-Date: Thu, 12 Jun 2008 11:14:34 +0200
 From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: [patch 1/3] powerpc: provide dummy crash_shutdown_register
-Cc: Michael Neuling <mikey@neuling.org>, Jeremy Kerr <jk@ozlabs.org>,
-	cbe-oss-dev@ozlabs.org
+To: cbe-oss-dev@ozlabs.org
+Subject: [PATCH 4/3] powerpc: increase CRASH_HANDLER_MAX
+Date: Thu, 12 Jun 2008 11:34:39 +0200
+References: <20080612091433.851620325@arndb.de>
+In-Reply-To: <20080612091433.851620325@arndb.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200806121134.39984.arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org, Michael Neuling <mikey@neuling.org>,
+	Jeremy Kerr <jk@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,55 +20,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-When kexec is disabled, the crash_shutdown_{un,}register
-functions are not available in the kernel.
-This provides dummy inline functions for those so that
-the callers don't have to worry about it.
+There are now two potential callers of machine_crash_shutdown,
+so increase the limit accordingly.
 
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- include/asm-powerpc/kexec.h |   13 ++++++++++++-
- 1 files changed, 12 insertions(+), 1 deletions(-)
+ arch/powerpc/kernel/crash.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/include/asm-powerpc/kexec.h b/include/asm-powerpc/kexec.h
-index 701857b..acdcdc6 100644
---- a/include/asm-powerpc/kexec.h
-+++ b/include/asm-powerpc/kexec.h
-@@ -34,6 +34,8 @@
- #ifndef __ASSEMBLY__
- #include <linux/cpumask.h>
+diff --git a/arch/powerpc/kernel/crash.c b/arch/powerpc/kernel/crash.c
+index eae401d..0a8439a 100644
+--- a/arch/powerpc/kernel/crash.c
++++ b/arch/powerpc/kernel/crash.c
+@@ -48,7 +48,7 @@ int crashing_cpu = -1;
+ static cpumask_t cpus_in_crash = CPU_MASK_NONE;
+ cpumask_t cpus_in_sr = CPU_MASK_NONE;
  
-+typedef void (*crash_shutdown_t)(void);
-+
- #ifdef CONFIG_KEXEC
- 
- #ifdef __powerpc64__
-@@ -123,7 +125,6 @@ struct pt_regs;
- extern void default_machine_kexec(struct kimage *image);
- extern int default_machine_kexec_prepare(struct kimage *image);
- extern void default_machine_crash_shutdown(struct pt_regs *regs);
--typedef void (*crash_shutdown_t)(void);
- extern int crash_shutdown_register(crash_shutdown_t handler);
- extern int crash_shutdown_unregister(crash_shutdown_t handler);
- 
-@@ -143,6 +144,16 @@ static inline int overlaps_crashkernel(unsigned long start, unsigned long size)
- 
- static inline void reserve_crashkernel(void) { ; }
- 
-+static inline int crash_shutdown_register(crash_shutdown_t handler)
-+{
-+	return 0;
-+}
-+
-+static inline int crash_shutdown_unregister(crash_shutdown_t handler)
-+{
-+	return 0;
-+}
-+
- #endif /* CONFIG_KEXEC */
- #endif /* ! __ASSEMBLY__ */
- #endif /* __KERNEL__ */
+-#define CRASH_HANDLER_MAX 1
++#define CRASH_HANDLER_MAX 2
+ /* NULL terminated list of shutdown handles */
+ static crash_shutdown_t crash_shutdown_handles[CRASH_HANDLER_MAX+1];
+ static DEFINE_SPINLOCK(crash_handlers_lock);
 -- 
 1.5.4.3
-
--- 
