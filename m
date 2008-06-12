@@ -1,19 +1,27 @@
-Return-Path: <arnd@arndb.de>
-From: Arnd Bergmann <arnd@arndb.de>
-To: michael@ellerman.id.au
-Subject: Re: [Cbe-oss-dev] [PATCH] powerpc/cell: disable ptcal in case of
-	kdump reboot
-Date: Thu, 12 Jun 2008 09:39:21 +0200
-References: <200806111828.59043.arnd@arndb.de>
-	<1213202956.28589.4.camel@localhost>
-In-Reply-To: <1213202956.28589.4.camel@localhost>
+Return-Path: <mingo@elte.hu>
+Received: from mx2.mail.elte.hu (mx2.mail.elte.hu [157.181.151.9])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 40DAEDDFD8
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jun 2008 17:47:52 +1000 (EST)
+Date: Thu, 12 Jun 2008 09:47:02 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: linux-next: powerpc build failure
+Message-ID: <20080612074702.GA18419@elte.hu>
+References: <20080611192748.686236fd.sfr@canb.auug.org.au>
+	<20080611095951.GB14033@elte.hu>
+	<18512.32267.636550.47385@cargo.ozlabs.ibm.com>
+	<20080612053335.GA22035@bubble.grove.modra.org>
+	<20080612170505.6049fa75.sfr@canb.auug.org.au>
+	<20080612071612.GB28590@elte.hu>
+	<20080612172754.91460af2.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Message-Id: <200806120939.23836.arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, Michael Neuling <mikey@neuling.org>,
-	Paul Mackerras <paulus@samba.org>, Jeremy Kerr <jk@ozlabs.org>,
-	cbe-oss-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080612172754.91460af2.sfr@canb.auug.org.au>
+Cc: linuxppc-dev@ozlabs.org, linux-next@vger.kernel.org,
+	Paul Mackerras <paulus@samba.org>, Alan Modra <amodra@bigpond.net.au>,
+	"H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,23 +31,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 11 June 2008, Michael Ellerman wrote:
-> On Wed, 2008-06-11 at 18:28 +0200, Arnd Bergmann wrote:
-> > We used to do this correctly in case of a user triggered
-> > kexec, but not for kdump.
+
+* Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+
+> On Thu, 12 Jun 2008 09:16:12 +0200 Ingo Molnar <mingo@elte.hu> wrote:
+> >
+> > ugh, please do that hack only privately in your allyesconfig testing 
+> > and do not commit that change to linux-next!
 > 
-> Used to?
+> See my other email, I have removed the ftrace disabling patch and 
+> reverted one of Sam Ravnborg's instead.
 
-Sorry, wrong wording. I meant without this patch, it's correct
-for kexec.
- 
-> > This patch disables ptcal from the cell specific
-> > machine_crash_shutdown() callback. 
-> 
-> I'd rather you used the crash_shutdown_register() infrastructure Mikey
-> added for EHEA - it's designed for just this sort of thing.
+thanks.
 
-Thanks for pointing this out, I wasn't aware of that call.
-New patch coming up.
-
-	Arnd <><
+	Ingo
