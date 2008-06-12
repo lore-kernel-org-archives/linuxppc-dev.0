@@ -1,16 +1,24 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [Cbe-oss-dev] [PATCH] powerpc/cell: disable ptcal in case of
-	kdump reboot
-In-reply-to: <200806120939.23836.arnd@arndb.de> 
-References: <200806111828.59043.arnd@arndb.de>
-	<1213202956.28589.4.camel@localhost>
-	<200806120939.23836.arnd@arndb.de>
-Date: Thu, 12 Jun 2008 18:06:54 +1000
-Message-ID: <11619.1213258014@neuling.org>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Jeremy Kerr <jk@ozlabs.org>, cbe-oss-dev@ozlabs.org
+Return-Path: <amodra@bigpond.net.au>
+Received: from nschwmtas04p.mx.bigpond.com (nschwmtas04p.mx.bigpond.com
+	[61.9.189.146]) by ozlabs.org (Postfix) with ESMTP id E5301DDFF7
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jun 2008 18:15:54 +1000 (EST)
+Date: Thu, 12 Jun 2008 17:45:53 +0930
+From: Alan Modra <amodra@bigpond.net.au>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: linux-next: powerpc build failure
+Message-ID: <20080612081553.GA22457@bubble.grove.modra.org>
+References: <20080611192748.686236fd.sfr@canb.auug.org.au>
+	<20080611095951.GB14033@elte.hu>
+	<18512.32267.636550.47385@cargo.ozlabs.ibm.com>
+	<20080612053335.GA22035@bubble.grove.modra.org>
+	<20080612170505.6049fa75.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080612170505.6049fa75.sfr@canb.auug.org.au>
+Cc: linuxppc-dev@ozlabs.org, linux-next@vger.kernel.org,
+	Paul Mackerras <paulus@samba.org>,
+	"H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+	Thomas Gleixner <tglx@linutronix.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,31 +28,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-In message <200806120939.23836.arnd@arndb.de> you wrote:
-> On Wednesday 11 June 2008, Michael Ellerman wrote:
-> > On Wed, 2008-06-11 at 18:28 +0200, Arnd Bergmann wrote:
-> > > We used to do this correctly in case of a user triggered
-> > > kexec, but not for kdump.
-> > 
-> > Used to?
-> 
-> Sorry, wrong wording. I meant without this patch, it's correct
-> for kexec.
->  
-> > > This patch disables ptcal from the cell specific
-> > > machine_crash_shutdown() callback. 
-> > 
-> > I'd rather you used the crash_shutdown_register() infrastructure Mikey
-> > added for EHEA - it's designed for just this sort of thing.
-> 
-> Thanks for pointing this out, I wasn't aware of that call.
-> New patch coming up.
+On Thu, Jun 12, 2008 at 05:05:05PM +1000, Stephen Rothwell wrote:
+> /usr/bin/ld: --relax and -r may not be used together
 
-In theory we can register lots of call backs but currently the maximum
-is set to 1 through CRASH_HANDLER_MAX.  This is to discourage people
-from using this infrastructure at all.
+Can't you arrange so that --relax is only used on the final link?  Of
+course, if you have mashed all the input .text sections together with
+"ld -r", resulting in one monster .text then --relax quite likely
+won't help.  ld can't break apart an input section to insert
+trampolines in the middle.
 
-Unless there's some crazy arse company that's going to mix a CBE with an
-eHEA, we are probably ok leaving this at 1.  Right?
-
-Mikey
+-- 
+Alan Modra
+Australia Development Lab, IBM
