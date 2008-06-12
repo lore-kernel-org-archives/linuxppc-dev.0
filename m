@@ -1,26 +1,25 @@
 Return-Path: <rcjenn@linux.vnet.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 5CBBADDF7F
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jun 2008 08:16:05 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m5CMG21d013948
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jun 2008 18:16:02 -0400
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
-	m5CMG2cp174882
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jun 2008 16:16:02 -0600
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m5CMG16P018298
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jun 2008 16:16:02 -0600
-Date: Thu, 12 Jun 2008 17:14:31 -0500
+	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id DC0B4DE13D
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jun 2008 08:17:09 +1000 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e2.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m5CMH6tm004223
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jun 2008 18:17:06 -0400
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
+	m5CMH63t216220
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jun 2008 18:17:06 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m5CMH6mZ005705
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jun 2008 18:17:06 -0400
+Date: Thu, 12 Jun 2008 17:15:35 -0500
 From: Robert Jennings <rcj@linux.vnet.ibm.com>
 To: paulus@samba.org
-Subject: [PATCH 09/19] powerpc: Add CMO paging statistics
-Message-ID: <20080612221431.GP30916@linux.vnet.ibm.com>
+Subject: [PATCH 10/19] powerpc: move get_longbusy_msecs out of ehca/ehea
+Message-ID: <20080612221535.GQ30916@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 In-Reply-To: <20080612215312.GF30916@linux.vnet.ibm.com>
@@ -35,78 +34,172 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-=46rom: Brian King <brking@linux.vnet.ibm.com>
+=46rom: Robert Jennings <rcj@linux.vnet.ibm.com>
 
-With the addition of Cooperative Memory Overcommitment (CMO) support
-for IBM Power Systems, two fields have been added to the VPA to report
-paging statistics. Add support in lparcfg to report them to userspace.
+In support of Cooperative Memory Overcommitment (CMO) this moves
+get_longbusy_msecs() out of the ehca and ehea drivers and into the=20
+architecture's hvcall header as plpar_get_longbusy_msecs.  Some firmware
+calls made in pSeries platform iommu code will need to share this
+functionality.
 
-Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
+Signed-off-by: Robert Jennings <rcj@linux.vnet.ibm.com>
 
 ---
+ drivers/infiniband/hw/ehca/hcp_if.c |   24 ++----------------------
+ drivers/net/ehea/ehea_phyp.c        |    4 ++--
+ drivers/net/ehea/ehea_phyp.h        |   20 --------------------
+ include/asm-powerpc/hvcall.h        |   27 +++++++++++++++++++++++++++
+ 4 files changed, 31 insertions(+), 44 deletions(-)
 
- arch/powerpc/kernel/lparcfg.c |   20 ++++++++++++++++++++
- include/asm-powerpc/lppaca.h  |    5 ++++-
- 2 files changed, 24 insertions(+), 1 deletion(-)
-
-Index: b/arch/powerpc/kernel/lparcfg.c
+Index: b/drivers/infiniband/hw/ehca/hcp_if.c
 =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
 =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
 =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- a/arch/powerpc/kernel/lparcfg.c
-+++ b/arch/powerpc/kernel/lparcfg.c
-@@ -410,6 +410,25 @@ static int lparcfg_count_active_processo
- 	return count;
- }
+--- a/drivers/infiniband/hw/ehca/hcp_if.c
++++ b/drivers/infiniband/hw/ehca/hcp_if.c
+@@ -90,26 +90,6 @@
 =20
-+static void pseries_cmo_data(struct seq_file *m)
+ static DEFINE_SPINLOCK(hcall_lock);
+=20
+-static u32 get_longbusy_msecs(int longbusy_rc)
+-{
+-	switch (longbusy_rc) {
+-	case H_LONG_BUSY_ORDER_1_MSEC:
+-		return 1;
+-	case H_LONG_BUSY_ORDER_10_MSEC:
+-		return 10;
+-	case H_LONG_BUSY_ORDER_100_MSEC:
+-		return 100;
+-	case H_LONG_BUSY_ORDER_1_SEC:
+-		return 1000;
+-	case H_LONG_BUSY_ORDER_10_SEC:
+-		return 10000;
+-	case H_LONG_BUSY_ORDER_100_SEC:
+-		return 100000;
+-	default:
+-		return 1;
+-	}
+-}
+-
+ static long ehca_plpar_hcall_norets(unsigned long opcode,
+ 				    unsigned long arg1,
+ 				    unsigned long arg2,
+@@ -139,7 +119,7 @@ static long ehca_plpar_hcall_norets(unsi
+ 			spin_unlock_irqrestore(&hcall_lock, flags);
+=20
+ 		if (H_IS_LONG_BUSY(ret)) {
+-			sleep_msecs =3D get_longbusy_msecs(ret);
++			sleep_msecs =3D plpar_get_longbusy_msecs(ret);
+ 			msleep_interruptible(sleep_msecs);
+ 			continue;
+ 		}
+@@ -192,7 +172,7 @@ static long ehca_plpar_hcall9(unsigned l
+ 			spin_unlock_irqrestore(&hcall_lock, flags);
+=20
+ 		if (H_IS_LONG_BUSY(ret)) {
+-			sleep_msecs =3D get_longbusy_msecs(ret);
++			sleep_msecs =3D plpar_get_longbusy_msecs(ret);
+ 			msleep_interruptible(sleep_msecs);
+ 			continue;
+ 		}
+Index: b/drivers/net/ehea/ehea_phyp.c
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- a/drivers/net/ehea/ehea_phyp.c
++++ b/drivers/net/ehea/ehea_phyp.c
+@@ -61,7 +61,7 @@ static long ehea_plpar_hcall_norets(unsi
+ 					 arg5, arg6, arg7);
+=20
+ 		if (H_IS_LONG_BUSY(ret)) {
+-			sleep_msecs =3D get_longbusy_msecs(ret);
++			sleep_msecs =3D plpar_get_longbusy_msecs(ret);
+ 			msleep_interruptible(sleep_msecs);
+ 			continue;
+ 		}
+@@ -102,7 +102,7 @@ static long ehea_plpar_hcall9(unsigned l
+ 				   arg6, arg7, arg8, arg9);
+=20
+ 		if (H_IS_LONG_BUSY(ret)) {
+-			sleep_msecs =3D get_longbusy_msecs(ret);
++			sleep_msecs =3D plpar_get_longbusy_msecs(ret);
+ 			msleep_interruptible(sleep_msecs);
+ 			continue;
+ 		}
+Index: b/drivers/net/ehea/ehea_phyp.h
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- a/drivers/net/ehea/ehea_phyp.h
++++ b/drivers/net/ehea/ehea_phyp.h
+@@ -40,26 +40,6 @@
+  * hcp_*  - structures, variables and functions releated to Hypervisor Cal=
+ls
+  */
+=20
+-static inline u32 get_longbusy_msecs(int long_busy_ret_code)
+-{
+-	switch (long_busy_ret_code) {
+-	case H_LONG_BUSY_ORDER_1_MSEC:
+-		return 1;
+-	case H_LONG_BUSY_ORDER_10_MSEC:
+-		return 10;
+-	case H_LONG_BUSY_ORDER_100_MSEC:
+-		return 100;
+-	case H_LONG_BUSY_ORDER_1_SEC:
+-		return 1000;
+-	case H_LONG_BUSY_ORDER_10_SEC:
+-		return 10000;
+-	case H_LONG_BUSY_ORDER_100_SEC:
+-		return 100000;
+-	default:
+-		return 1;
+-	}
+-}
+-
+ /* Number of pages which can be registered at once by H_REGISTER_HEA_RPAGE=
+S */
+ #define EHEA_MAX_RPAGE 512
+=20
+Index: b/include/asm-powerpc/hvcall.h
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- a/include/asm-powerpc/hvcall.h
++++ b/include/asm-powerpc/hvcall.h
+@@ -222,6 +222,33 @@
+ #ifndef __ASSEMBLY__
+=20
+ /**
++ * plpar_get_longbusy_msecs: - Return number of msecs for H_LONG_BUSY* res=
+ponse
++ * @long_busy_ret_code: The H_LONG_BUSY_* constant to process
++ *
++ * This returns the number of msecs that corresponds to an H_LONG_BUSY_*
++ * response from a plpar_hcall.  If there is no match 1 is returned.
++ */
++static inline u32 plpar_get_longbusy_msecs(int long_busy_ret_code)
 +{
-+	int cpu;
-+	unsigned long cmo_faults =3D 0;
-+	unsigned long cmo_fault_time =3D 0;
-+
-+	if (!firmware_has_feature(FW_FEATURE_CMO))
-+		return;
-+
-+	for_each_possible_cpu(cpu) {
-+		cmo_faults +=3D lppaca[cpu].cmo_faults;
-+		cmo_fault_time +=3D lppaca[cpu].cmo_fault_time;
++	switch (long_busy_ret_code) {
++	case H_LONG_BUSY_ORDER_1_MSEC:
++		return 1;
++	case H_LONG_BUSY_ORDER_10_MSEC:
++		return 10;
++	case H_LONG_BUSY_ORDER_100_MSEC:
++		return 100;
++	case H_LONG_BUSY_ORDER_1_SEC:
++		return 1000;
++	case H_LONG_BUSY_ORDER_10_SEC:
++		return 10000;
++	case H_LONG_BUSY_ORDER_100_SEC:
++		return 100000;
++	default:
++		return 1;
 +	}
-+
-+	seq_printf(m, "cmo_faults=3D%lu\n", cmo_faults);
-+	seq_printf(m, "cmo_fault_time_usec=3D%lu\n",
-+		   cmo_fault_time / tb_ticks_per_usec);
 +}
 +
- static int pseries_lparcfg_data(struct seq_file *m, void *v)
- {
- 	int partition_potential_processors;
-@@ -435,6 +454,7 @@ static int pseries_lparcfg_data(struct s
- 		parse_system_parameter_string(m);
- 		parse_ppp_data(m);
- 		parse_mpp_data(m);
-+		pseries_cmo_data(m);
-=20
- 		seq_printf(m, "purr=3D%ld\n", get_purr());
-=20
-Index: b/include/asm-powerpc/lppaca.h
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- a/include/asm-powerpc/lppaca.h
-+++ b/include/asm-powerpc/lppaca.h
-@@ -125,7 +125,10 @@ struct lppaca {
- 	// NOTE: This value will ALWAYS be zero for dedicated processors and
- 	// will NEVER be zero for shared processors (ie, initialized to a 1).
- 	volatile u32 yield_count;	// PLIC increments each dispatchx00-x03
--	u8	reserved6[124];		// Reserved                     x04-x7F
-+	u32 reserved6;
-+	volatile u64 cmo_faults;	// CMO page fault count         x08-x0F
-+	volatile u64 cmo_fault_time;	// CMO page fault time          x10-x17
-+	u8	reserved7[104];		// Reserved                     x18-x7F
-=20
- //=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D
- // CACHE_LINE_4-5 0x0180 - 0x027F Contains PMC interrupt data
++/**
+  * plpar_hcall_norets: - Make a pseries hypervisor call with no return arg=
+uments
+  * @opcode: The hypervisor call to make.
+  *
