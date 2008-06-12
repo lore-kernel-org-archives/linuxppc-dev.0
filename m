@@ -1,24 +1,17 @@
-Return-Path: <nickpiggin@yahoo.com.au>
-Received: from smtp115.mail.mud.yahoo.com (smtp115.mail.mud.yahoo.com
-	[209.191.84.164]) by ozlabs.org (Postfix) with SMTP id F2A6FDE206
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jun 2008 23:08:43 +1000 (EST)
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: MMIO and gcc re-ordering issue
-Date: Thu, 12 Jun 2008 23:08:35 +1000
-References: <1211852026.3286.36.camel@pasglop>
-	<200806111535.24523.nickpiggin@yahoo.com.au>
-	<18513.4925.711881.794221@cargo.ozlabs.ibm.com>
-In-Reply-To: <18513.4925.711881.794221@cargo.ozlabs.ibm.com>
-MIME-Version: 1.0
-Message-Id: <200806122308.35556.nickpiggin@yahoo.com.au>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Cc: linux-arch@vger.kernel.org, Russell King <rmk+lkml@arm.linux.org.uk>,
-	Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
-	Trent Piepho <tpiepho@freescale.com>, linuxppc-dev@ozlabs.org,
-	scottwood@freescale.com, Linus Torvalds <torvalds@linux-foundation.org>,
-	David Miller <davem@davemloft.net>, alan@lxorguk.ukuu.org.uk
+Return-Path: <sam@ravnborg.org>
+Received: from pasmtpA.tele.dk (pasmtpa.tele.dk [80.160.77.114])
+	by ozlabs.org (Postfix) with ESMTP id E26FBDDFC5
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jun 2008 23:16:11 +1000 (EST)
+Date: Thu, 12 Jun 2008 15:16:50 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+	linux-kbuild <linux-kbuild@vger.kernel.org>,
+	LKML <linux-kernel@vger.kernel.org>
+Subject: [GIT PULL] one kbuild fix for powerpc
+Message-ID: <20080612131650.GA13702@uranus.ravnborg.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,55 +21,99 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thursday 12 June 2008 22:14, Paul Mackerras wrote:
-> Nick Piggin writes:
-> >                 /* turn off LED */
-> >                 val64 = readq(&bar0->adapter_control);
-> >                 val64 = val64 &(~ADAPTER_LED_ON);
-> >                 writeq(val64, &bar0->adapter_control);
-> >                 s2io_link(nic, LINK_DOWN);
-> >         }
-> >         clear_bit(__S2IO_STATE_LINK_TASK, &(nic->state));
-> >
-> > Now I can't say definitively that this is going to be wrong on
-> > powerpc, because I don't know the code well enough. But I'd be
-> > 90% sure that the unlock is not supposed to be visible to
-> > other CPUs before the writeqs are queued to the card. On x86 it
-> > wouldn't be.
->
-> Interestingly, there is also a store to cacheable memory
-> (nic->device_enabled_once), but no smp_wmb or equivalent before the
-> clear_bit.  So there are other potential problems here besides the I/O
-> related ones.
+Hi Linus.
 
-Yeah there sure is. That sucks too, but we go one step at a time ;)
-I think proposing a strong ordering between set_bit/clear_bit would
-actually be quite noticable slowdown in core kernel code at this
-point.
+Following fix has been late as I have been sloppy to look into this.
+Kumar has patiently reminded me and tested the follwing fix.
 
-Which reminds me, I have been meaning to do another pass of test and
-set bit / clear bit conversions to the _lock primitives...
+I could have made the patch a few lines smaller - but decided to add
+a helper function and moved the obvious candidates to the helper function.
+
+Please pull from:
+
+    ssh://master.kernel.org/pub/scm/linux/kernel/git/sam/kbuild-fixes.git
 
 
-> Anyway, I have done some tests on a dual G5 here with putting a sync
-> on both sides of the store in writel etc. (i.e. making readl/writel
-> strongly ordered w.r.t. everything else), and as you predicted, there
-> wasn't a noticeable performance degradation, at least not on the
-> couple of things I tried.  So I am now inclined to accept your
-> suggestion that we should do that.  I should probably do some similar
-> checks on POWER6 and a few other machines first, though.
+	Sam 
 
-Oh good, thanks for looking into it. I guess it might be a little more
-noticable on bigger POWER systems. And I think we might even need to do
-a PCI read after every writel on sn2 systems in order to get the
-semantics I want.
 
-I can't say it won't be noticable. But if we consider the number of
-drivers (maybe one or two dozen well maintained ones), and number of
-sites in each driver (maybe one or two submission and completion
-fastpaths which should have a minimum of IO operations in each one)
-that will have to be converted in order to get performance as good or
-better than it is currently with relaxed accessors.... and weigh that
-against all the places in those and every other crappy obscure
-driver that we *won't* have to audit, I really think we end up with
-a net win even with some short term pain.
+ scripts/mod/modpost.c |   26 +++++++++++++++++++++-----
+ 1 files changed, 21 insertions(+), 5 deletions(-)
+
+
+commit 82e93ceaa5b55a8eb2b9b5454b2904b60781c763
+Author: Sam Ravnborg <sam@ravnborg.org>
+Date:   Thu Jun 12 15:02:55 2008 +0200
+
+    kbuild: ignore powerpc specific symbols in modpost
+    
+    Kumar Gala <galak@kernel.crashing.org> wrote:
+    We have a case in powerpc in which we want to link some library
+    routines with all module objects.  The routines are intended for
+    handling out-of-line function call register save/restore so having
+    them as EXPORT_SYMBOL() is counter productive (we do also need to
+    link the same "library" code into the kernel).
+    
+    Without this patch a powerpc build would error out and fail
+    to build modules with the added register save/restore module.
+    
+    There were two obvious solutions:
+    1) To link the .o file before the modpost stage
+    2) To ignore the symbols in modpost
+    
+    Option 1) was ruled out because we do not have any separate
+    linking stage for single file modules.
+    
+    This patch implements option 2 - and do so only for powerpc.
+    
+    The symbols we ignore are all undefined symbols named:
+    _restgpr_*, _savegpr_*, _rest32gpr_*, _save32gpr_*
+    
+    Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+    Cc: Kumar Gala <galak@kernel.crashing.org>
+    Cc: Paul Mackerras <paulus@samba.org>
+
+diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
+index 508c589..b763aba 100644
+--- a/scripts/mod/modpost.c
++++ b/scripts/mod/modpost.c
+@@ -467,6 +467,26 @@ static void parse_elf_finish(struct elf_info *info)
+ 	release_file(info->hdr, info->size);
+ }
+ 
++static int ignore_undef_symbol(struct elf_info *info, const char *symname)
++{
++	/* ignore __this_module, it will be resolved shortly */
++	if (strcmp(symname, MODULE_SYMBOL_PREFIX "__this_module") == 0)
++		return 1;
++	/* ignore global offset table */
++	if (strcmp(symname, "_GLOBAL_OFFSET_TABLE_") == 0)
++		return 1;
++	if (info->hdr->e_machine == EM_PPC)
++		/* Special register function linked on all modules during final link of .ko */
++		if (strncmp(symname, "_restgpr_", sizeof("_restgpr_") - 1) == 0 ||
++		    strncmp(symname, "_savegpr_", sizeof("_savegpr_") - 1) == 0 ||
++		    strncmp(symname, "_rest32gpr_", sizeof("_rest32gpr_") - 1) == 0 ||
++		    strncmp(symname, "_save32gpr_", sizeof("_save32gpr_") - 1) == 0) {
++			return 1;
++	}
++	/* Do not ignore this symbol */
++	return 0;
++}
++
+ #define CRC_PFX     MODULE_SYMBOL_PREFIX "__crc_"
+ #define KSYMTAB_PFX MODULE_SYMBOL_PREFIX "__ksymtab_"
+ 
+@@ -493,11 +513,7 @@ static void handle_modversions(struct module *mod, struct elf_info *info,
+ 		if (ELF_ST_BIND(sym->st_info) != STB_GLOBAL &&
+ 		    ELF_ST_BIND(sym->st_info) != STB_WEAK)
+ 			break;
+-		/* ignore global offset table */
+-		if (strcmp(symname, "_GLOBAL_OFFSET_TABLE_") == 0)
+-			break;
+-		/* ignore __this_module, it will be resolved shortly */
+-		if (strcmp(symname, MODULE_SYMBOL_PREFIX "__this_module") == 0)
++		if (ignore_undef_symbol(info, symname))
+ 			break;
+ /* cope with newer glibc (2.3.4 or higher) STT_ definition in elf.h */
+ #if defined(STT_REGISTER) || defined(STT_SPARC_REGISTER)
