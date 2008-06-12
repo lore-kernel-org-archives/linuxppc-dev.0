@@ -1,17 +1,16 @@
 Return-Path: <bzolnier@gmail.com>
 Received: from fg-out-1718.google.com (fg-out-1718.google.com [72.14.220.158])
-	by ozlabs.org (Postfix) with ESMTP id 49EDFDE5CF
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jun 2008 09:11:00 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 446B5DE80B
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jun 2008 09:11:09 +1000 (EST)
 Received: by fg-out-1718.google.com with SMTP id d23so2639026fga.39
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jun 2008 16:11:00 -0700 (PDT)
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jun 2008 16:11:09 -0700 (PDT)
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
-Date: Fri, 13 Jun 2008 01:12:43 +0200
-Message-Id: <20080612231243.18335.14596.sendpatchset@localhost.localdomain>
+Date: Fri, 13 Jun 2008 01:12:51 +0200
+Message-Id: <20080612231251.18335.77903.sendpatchset@localhost.localdomain>
 In-Reply-To: <20080612231224.18335.91182.sendpatchset@localhost.localdomain>
 References: <20080612231224.18335.91182.sendpatchset@localhost.localdomain>
-Subject: [PATCH 3/7] ide-pmac: remove bogus comment about
-	pmac_ide_setup_device()
+Subject: [PATCH 4/7] ide-pmac: media-bay support fixes
 Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
 	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -23,25 +22,135 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+* If MB_CD device has already been detected and bay is in mb_up state just
+  change bay's state to mb_ide_resetting and let probing thread do the rest
+  instead of having open-coded waiting for IDE device to become ready in
+  media_bay_set_ide_infos() and doing the probe by ide_device_add().
+
+* Move media_bay_set_ide_infos() call after ide_device_add().
+
+* Use check_media_bay() instead of check_media_bay_by_base(),
+  then remove the latter function.
+
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/ide/ppc/pmac.c |    5 +----
- 1 file changed, 1 insertion(+), 4 deletions(-)
+ drivers/ide/ppc/pmac.c         |   18 ++++++++----------
+ drivers/macintosh/mediabay.c   |   33 +++++----------------------------
+ include/asm-powerpc/mediabay.h |    1 -
+ 3 files changed, 13 insertions(+), 39 deletions(-)
 
 Index: b/drivers/ide/ppc/pmac.c
 ===================================================================
 --- a/drivers/ide/ppc/pmac.c
 +++ b/drivers/ide/ppc/pmac.c
-@@ -975,10 +975,7 @@ static const struct ide_port_info pmac_p
+@@ -1030,10 +1030,6 @@ pmac_ide_setup_device(pmac_ide_hwif_t *p
+ 	/* XXX FIXME: Media bay stuff need re-organizing */
+ 	if (np->parent && np->parent->name
+ 	    && strcasecmp(np->parent->name, "media-bay") == 0) {
+-#ifdef CONFIG_PMAC_MEDIABAY
+-		media_bay_set_ide_infos(np->parent, pmif->regbase, pmif->irq,
+-					hwif);
+-#endif /* CONFIG_PMAC_MEDIABAY */
+ 		pmif->mediabay = 1;
+ 		if (!bidp)
+ 			pmif->aapl_bus_id = 1;
+@@ -1067,19 +1063,21 @@ pmac_ide_setup_device(pmac_ide_hwif_t *p
  
- /*
-  * Setup, register & probe an IDE channel driven by this driver, this is
-- * called by one of the 2 probe functions (macio or PCI). Note that a channel
-- * that ends up beeing free of any device is not kept around by this driver
-- * (it is kept in 2.4). This introduce an interface numbering change on some
-- * rare machines unfortunately, but it's better this way.
-+ * called by one of the 2 probe functions (macio or PCI).
-  */
- static int __devinit
- pmac_ide_setup_device(pmac_ide_hwif_t *pmif, ide_hwif_t *hwif, hw_regs_t *hw)
+ 	if (pmif->mediabay) {
+ #ifdef CONFIG_PMAC_MEDIABAY
+-		if (check_media_bay_by_base(pmif->regbase, MB_CD)) {
+-#else
+-		if (1) {
++		if (check_media_bay(np->parent, MB_CD) == -ENODEV)
++			break;
+ #endif
+-			hwif->drives[0].noprobe = 1;
+-			hwif->drives[1].noprobe = 1;
+-		}
++		hwif->drives[0].noprobe = 1;
++		hwif->drives[1].noprobe = 1;
+ 	}
+ 
+ 	idx[0] = hwif->index;
+ 
+ 	ide_device_add(idx, &d);
+ 
++#ifdef CONFIG_PMAC_MEDIABAY
++	media_bay_set_ide_infos(np->parent, pmif->regbase, pmif->irq, hwif);
++#endif
++
+ 	return 0;
+ }
+ 
+Index: b/drivers/macintosh/mediabay.c
+===================================================================
+--- a/drivers/macintosh/mediabay.c
++++ b/drivers/macintosh/mediabay.c
+@@ -433,21 +433,6 @@ int check_media_bay(struct device_node *
+ EXPORT_SYMBOL(check_media_bay);
+ 
+ #ifdef CONFIG_BLK_DEV_IDE_PMAC
+-int check_media_bay_by_base(unsigned long base, int what)
+-{
+-	int	i;
+-
+-	for (i=0; i<media_bay_count; i++)
+-		if (media_bays[i].mdev && base == (unsigned long) media_bays[i].cd_base) {
+-			if ((what == media_bays[i].content_id) && media_bays[i].state == mb_up)
+-				return 0;
+-			media_bays[i].cd_index = -1;
+-			return -EINVAL;
+-		} 
+-
+-	return -ENODEV;
+-}
+-
+ int media_bay_set_ide_infos(struct device_node* which_bay, unsigned long base,
+ 			    int irq, ide_hwif_t *hwif)
+ {
+@@ -457,8 +442,6 @@ int media_bay_set_ide_infos(struct devic
+ 		struct media_bay_info* bay = &media_bays[i];
+ 
+ 		if (bay->mdev && which_bay == bay->mdev->ofdev.node) {
+-			int timeout = 5000, index = hwif->index;
+-			
+ 			down(&bay->lock);
+ 
+ 			bay->cd_port	= hwif;
+@@ -469,18 +452,12 @@ int media_bay_set_ide_infos(struct devic
+ 				up(&bay->lock);
+ 				return 0;
+ 			}
+-			printk(KERN_DEBUG "Registered ide%d for media bay %d\n", index, i);
+-			do {
+-				if (MB_IDE_READY(i)) {
+-					bay->cd_index	= index;
+-					up(&bay->lock);
+-					return 0;
+-				}
+-				mdelay(1);
+-			} while(--timeout);
+-			printk(KERN_DEBUG "Timeount waiting IDE in bay %d\n", i);
++
++			/* let probing thread do the rest */
++			bay->state = mb_ide_resetting;
++
+ 			up(&bay->lock);
+-			return -ENODEV;
++			return 0;
+ 		}
+ 	}
+ 
+Index: b/include/asm-powerpc/mediabay.h
+===================================================================
+--- a/include/asm-powerpc/mediabay.h
++++ b/include/asm-powerpc/mediabay.h
+@@ -25,7 +25,6 @@ extern int media_bay_count;
+ #ifdef CONFIG_BLK_DEV_IDE_PMAC
+ #include <linux/ide.h>
+ 
+-int check_media_bay_by_base(unsigned long base, int what);
+ /* called by IDE PMAC host driver to register IDE controller for media bay */
+ int media_bay_set_ide_infos(struct device_node *which_bay, unsigned long base,
+ 			    int irq, ide_hwif_t *hwif);
