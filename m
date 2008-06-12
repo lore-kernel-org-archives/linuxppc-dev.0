@@ -1,20 +1,22 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.29])
-	by ozlabs.org (Postfix) with ESMTP id D1E97DDF5F
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jun 2008 00:10:48 +1000 (EST)
-Received: by yx-out-2324.google.com with SMTP id 8so410900yxg.39
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jun 2008 07:10:47 -0700 (PDT)
-Message-ID: <fa686aa40806120710g67761ectfee1e3f0916b0eb@mail.gmail.com>
-Date: Thu, 12 Jun 2008 08:10:47 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "David Jander" <david.jander@protonic.nl>
-Subject: Re: [PATCH 1/2] Added support for PRTLVT based boards (MPC5121)
-In-Reply-To: <200806121344.26883.david.jander@protonic.nl>
+Return-Path: <roel.kluin@gmail.com>
+Received: from gv-out-0910.google.com (gv-out-0910.google.com [216.239.58.186])
+	by ozlabs.org (Postfix) with ESMTP id D212ADDFCB
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jun 2008 00:03:57 +1000 (EST)
+Received: by gv-out-0910.google.com with SMTP id y18so829021gvf.14
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jun 2008 07:03:55 -0700 (PDT)
+Message-ID: <25e057c00806120703g27566bd7ie522a7d5d4664d92@mail.gmail.com>
+Date: Thu, 12 Jun 2008 16:03:54 +0200
+From: "roel kluin" <roel.kluin@gmail.com>
+To: "Sam Ravnborg" <sam@ravnborg.org>
+Subject: Re: [GIT PULL] one kbuild fix for powerpc
+In-Reply-To: <20080612131650.GA13702@uranus.ravnborg.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-References: <200806121344.26883.david.jander@protonic.nl>
-Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
+References: <20080612131650.GA13702@uranus.ravnborg.org>
+Cc: linux-kbuild <linux-kbuild@vger.kernel.org>,
+	LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,149 +26,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Looking even better.  Just a few more comments.  I'll probably be able
-to pick up the next one for inclusion in 2.6.27.
+2008/6/12 Sam Ravnborg <sam@ravnborg.org>:
 
-On Thu, Jun 12, 2008 at 5:44 AM, David Jander <david.jander@protonic.nl> wrote:
->  Made MPC5121_ADS board support generic:
->  Renamed arch/powerpc/platforms/512x/mpc5121_ads.c and added list of supported
->  boards.
->  For both MPC5121 ADS or PRTLVT support, just select "MPC5121_GENERIC" and use
->  the corresponding device-tree.
+> diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
+> index 508c589..b763aba 100644
+> --- a/scripts/mod/modpost.c
+> +++ b/scripts/mod/modpost.c
+> @@ -467,6 +467,26 @@ static void parse_elf_finish(struct elf_info *info)
+>        release_file(info->hdr, info->size);
+>  }
 >
-> Signed-off-by: David Jander <david@protonic.nl>
-> ---
->  arch/powerpc/boot/dts/prtlvt.dts                   |  272 ++++++++++++++++++++
->  arch/powerpc/platforms/512x/Kconfig                |   14 +-
->  arch/powerpc/platforms/512x/Makefile               |    2 +-
->  .../512x/{mpc5121_ads.c => mpc5121_generic.c}      |   38 ++-
->  4 files changed, 307 insertions(+), 19 deletions(-)
->  create mode 100644 arch/powerpc/boot/dts/prtlvt.dts
->  rename arch/powerpc/platforms/512x/{mpc5121_ads.c => mpc5121_generic.c} (73%)
+> +static int ignore_undef_symbol(struct elf_info *info, const char *symname)
+> +{
+> +       /* ignore __this_module, it will be resolved shortly */
+> +       if (strcmp(symname, MODULE_SYMBOL_PREFIX "__this_module") == 0)
+> +               return 1;
+> +       /* ignore global offset table */
+> +       if (strcmp(symname, "_GLOBAL_OFFSET_TABLE_") == 0)
+> +               return 1;
+> +       if (info->hdr->e_machine == EM_PPC)
+> +               /* Special register function linked on all modules during final link of .ko */
+> +               if (strncmp(symname, "_restgpr_", sizeof("_restgpr_") - 1) == 0 ||
+> +                   strncmp(symname, "_savegpr_", sizeof("_savegpr_") - 1) == 0 ||
+> +                   strncmp(symname, "_rest32gpr_", sizeof("_rest32gpr_") - 1) == 0 ||
+> +                   strncmp(symname, "_save32gpr_", sizeof("_save32gpr_") - 1) == 0) {
+> +                       return 1;
+> +       }
+
+Either the indentation is wrong, or you want to move the opening curly
+bracket upwards.
+
+> +       /* Do not ignore this symbol */
+> +       return 0;
+> +}
+> +
+>  #define CRC_PFX     MODULE_SYMBOL_PREFIX "__crc_"
+>  #define KSYMTAB_PFX MODULE_SYMBOL_PREFIX "__ksymtab_"
 >
-> diff --git a/arch/powerpc/boot/dts/prtlvt.dts b/arch/powerpc/boot/dts/prtlvt.dts
-> new file mode 100644
-> index 0000000..a011c8c
-> --- /dev/null
-> +++ b/arch/powerpc/boot/dts/prtlvt.dts
-> @@ -0,0 +1,272 @@
-> +/*
-> + * Device tree source for PRTLVT based boards, base on:
-> + * MPC5121E MDS Device Tree Source
-> + *
-> + * Copyright 2007 Freescale Semiconductor Inc.
-> + * Copyright 2008 Protonic Holland
-> + *
-> + * This program is free software; you can redistribute  it and/or modify it
-> + * under  the terms of  the GNU General  Public License as published by the
-> + * Free Software Foundation;  either version 2 of the  License, or (at your
-> + * option) any later version.
-> + */
-> +
-> + /* compile with: ./dtc -p 10240 -R 20 -I dts -o prtlvt.dtb -O dtb -b 0 dts/prtlvt.dts */
-> +
-> +/dts-v1/;
-> +
-> +/ {
-> +       model = "prtlvt";
-> +       compatible = "prt,prtlvt";
-> +       #address-cells = <1>;
-> +       #size-cells = <1>;
-> +
-> +       cpus {
-> +               #address-cells = <1>;
-> +               #size-cells = <0>;
-> +
-> +               PowerPC,5121@0 {
-> +                       device_type = "cpu";
-> +                       reg = <0>;
-> +                       d-cache-line-size = <0x20>;     // 32 bytes
-> +                       i-cache-line-size = <0x20>;     // 32 bytes
-> +                       d-cache-size = <0x8000>;        // L1, 32K
-> +                       i-cache-size = <0x8000>;        // L1, 32K
-> +                       timebase-frequency = <50000000>;// 50 MHz (csb/4)
-> +                       bus-frequency = <200000000>;    // 200 MHz csb bus
-> +                       clock-frequency = <400000000>;  // 400 MHz ppc core
-> +               };
-> +       };
-> +
-> +       memory {
-> +               device_type = "memory";
-> +               reg = <0x00000000 0x10000000>;  // 256MB at 0
-> +       };
-> +
-> +       flash@fe000000 {
-
-There should probably be a node to describe the local bus that the
-flash is attached to and this flash node should be a child of the bus.
-
-> +               compatible = "amd,s29gl256n", "cfi-flash";
-> +               reg = <0xfe000000 0x02000000>;
-> +               bank-width = <2>;
-> +               #address-cells = <1>;
-> +               #size-cells = <1>;
-> +               rootfs@0 {
-> +                       label = "rootfs";
-> +                       reg = <0x00000000 0x01800000>;
-> +               };
-> +               config@1800000 {
-> +                       label ="config0";
-> +                       reg = <0x01800000 0x00200000>;
-> +               };
-> +               config@1a00000 {
-> +                       label ="config1";
-> +                       reg = <0x01a00000 0x00200000>;
-> +               };
-> +               kernel@1c00000 {
-> +                       label ="kernel";
-> +                       reg = <0x01c00000 0x002e0000>;
-> +               };
-> +               dt@1ee0000 {
-> +                       label ="devicetree";
-> +                       reg = <0x01ee0000 0x00020000>;
-> +               };
-> +               uboot@1ee0000 {
-> +                       label ="uboot";
-> +                       reg = <0x01f00000 0x00100000>;
-> +               };
-> +       };
-
-I'm still not all that keen on encoding the partition information into
-the 'stock' device tree included with the kernel as it is more of a
-configuration description that is more properly supplied by the
-bootloader.  This is a debate that has been going back and forth over
-the last few months, so there isn't a solid concensus yet, but my
-preference is to remove or comment out the partition information for
-now.
-
-> +               i2ccontrol@1760 {
-> +                       compatible = "fsl,mpc5121-i2c-ctrl";
-> +                       reg = <0x1760 0x8>;
-> +               };
-> +
-> +               diu@2100 {
-
-(nitpick) There is a recommended practice that says node names should
-be generic as much as possible, so I think this should probably be
-video@2100.  The compatible value is fine.
-
-> +               ethernet@2800 {
-> +                       compatible = "fsl,mpc5121-fec";
-> +                       reg = <0x2800 0x800>;
-> +                       local-mac-address = [ 00 00 00 00 00 00 ];
-> +                       interrupts = <0x4 0x8 >;
-> +                       interrupt-parent = < &ipic >;
-> +                       phy-handle = < &phy >;
-> +               };
-> +
-> +               // This dma controller is not compatible with fsldma
-> +               dma2@14000 {
-
-Also for generic names; 'dma@14000' makes more sense than 'dma2@14000'.
-
-Cheers,
-g.
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+> @@ -493,11 +513,7 @@ static void handle_modversions(struct module *mod, struct elf_info *info,
+>                if (ELF_ST_BIND(sym->st_info) != STB_GLOBAL &&
+>                    ELF_ST_BIND(sym->st_info) != STB_WEAK)
+>                        break;
+> -               /* ignore global offset table */
+> -               if (strcmp(symname, "_GLOBAL_OFFSET_TABLE_") == 0)
+> -                       break;
+> -               /* ignore __this_module, it will be resolved shortly */
+> -               if (strcmp(symname, MODULE_SYMBOL_PREFIX "__this_module") == 0)
+> +               if (ignore_undef_symbol(info, symname))
+>                        break;
+>  /* cope with newer glibc (2.3.4 or higher) STT_ definition in elf.h */
+>  #if defined(STT_REGISTER) || defined(STT_SPARC_REGISTER)
