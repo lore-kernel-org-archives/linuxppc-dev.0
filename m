@@ -1,27 +1,25 @@
 Return-Path: <rcjenn@linux.vnet.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 6EADADE195
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jun 2008 08:12:45 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e31.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m5CMCfD4024226
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jun 2008 18:12:41 -0400
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
-	m5CMCf4e175702
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jun 2008 16:12:41 -0600
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m5CMCei7032523
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jun 2008 16:12:40 -0600
-Date: Thu, 12 Jun 2008 17:11:10 -0500
+	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 04162DE574
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jun 2008 08:13:09 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e5.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m5CMD6j9003664
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jun 2008 18:13:06 -0400
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
+	m5CMD6U7182572
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jun 2008 18:13:06 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m5CMD5b0025226
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jun 2008 18:13:06 -0400
+Date: Thu, 12 Jun 2008 17:11:35 -0500
 From: Robert Jennings <rcj@linux.vnet.ibm.com>
 To: paulus@samba.org
-Subject: [PATCH 04/19] powerpc: Split retrieval of processor entitlement
-	data into a helper routine
-Message-ID: <20080612221110.GK30916@linux.vnet.ibm.com>
+Subject: [PATCH 05/19] powerpc: Enable CMO feature during platform setup
+Message-ID: <20080612221135.GL30916@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 In-Reply-To: <20080612215312.GF30916@linux.vnet.ibm.com>
@@ -36,168 +34,136 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-=46rom: Nathan Fontenot <nfont@austin.ibm.com>
+=46rom: Robert Jennings <rcj@linux.vnet.ibm.com>
 
-Split the retrieval of processor entitlement data returned in the H_GET_PPP
-hcall into its own helper routine.
+For Cooperative Memory Overcommitment (CMO), set the FW_FEATURE_CMO
+flag in powerpc_firmware_features from the rtas ibm,get-system-parameters
+table prior to calling iommu_init_early_pSeries.
 
-Signed-off-by: Nathan Fontenot <nfont@austin.ibm.com>
+With this, any CMO specific functionality can be controlled by checking:
+ firmware_has_feature(FW_FEATURE_CMO)
+
+Signed-off-by: Robert Jennings <rcj@linux.vnet.ibm.com>
 
 ---
- arch/powerpc/kernel/lparcfg.c |   80 ++++++++++++++++++++++++-------------=
------
- 1 file changed, 45 insertions(+), 35 deletions(-)
+ arch/powerpc/platforms/pseries/setup.c |   71 ++++++++++++++++++++++++++++=
++++++
+ include/asm-powerpc/firmware.h         |    3 +
+ 2 files changed, 73 insertions(+), 1 deletion(-)
 
-Index: b/arch/powerpc/kernel/lparcfg.c
+Index: b/arch/powerpc/platforms/pseries/setup.c
 =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
 =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
 =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- a/arch/powerpc/kernel/lparcfg.c
-+++ b/arch/powerpc/kernel/lparcfg.c
-@@ -158,6 +158,18 @@ int h_get_mpp(struct hvcall_mpp_data *mp
+--- a/arch/powerpc/platforms/pseries/setup.c
++++ b/arch/powerpc/platforms/pseries/setup.c
+@@ -314,6 +314,76 @@ static int pseries_set_xdabr(unsigned lo
+ 			H_DABRX_KERNEL | H_DABRX_USER);
  }
- EXPORT_SYMBOL(h_get_mpp);
 =20
-+struct hvcall_ppp_data {
-+	u64	entitlement;
-+	u64	unallocated_entitlement;
-+	u16	group_num;
-+	u16	pool_num;
-+	u8	capped;
-+	u8	weight;
-+	u8	unallocated_weight;
-+	u16	active_procs_in_pool;
-+	u16	active_system_procs;
-+};
++#define CMO_CHARACTERISTICS_TOKEN 44
++#define CMO_MAXLENGTH 1026
++
++/**
++ * fw_cmo_feature_init - FW_FEATURE_CMO is not stored in ibm,hypertas-func=
+tions,
++ * handle that here. (Stolen from parse_system_parameter_string)
++ */
++void pSeries_cmo_feature_init(void)
++{
++	char *ptr, *key, *value, *end;
++	int call_status;
++	int PrPSP =3D -1;
++	int SecPSP =3D -1;
++
++	pr_debug(" -> fw_cmo_feature_init()\n");
++	spin_lock(&rtas_data_buf_lock);
++	memset(rtas_data_buf, 0, RTAS_DATA_BUF_SIZE);
++	call_status =3D rtas_call(rtas_token("ibm,get-system-parameter"), 3, 1,
++				NULL,
++				CMO_CHARACTERISTICS_TOKEN,
++				__pa(rtas_data_buf),
++				RTAS_DATA_BUF_SIZE);
++
++	if (call_status !=3D 0) {
++		spin_unlock(&rtas_data_buf_lock);
++		pr_debug("CMO not available\n");
++		pr_debug(" <- fw_cmo_feature_init()\n");
++		return;
++	}
++
++	end =3D rtas_data_buf + CMO_MAXLENGTH - 2;
++	ptr =3D rtas_data_buf + 2;	/* step over strlen value */
++	key =3D value =3D ptr;
++
++	while (*ptr && (ptr <=3D end)) {
++		/* Separate the key and value by replacing '=3D' with '\0' and
++		 * point the value at the string after the '=3D'
++		 */
++		if (ptr[0] =3D=3D '=3D') {
++			ptr[0] =3D '\0';
++			value =3D ptr + 1;
++		} else if (ptr[0] =3D=3D '\0' || ptr[0] =3D=3D ',') {
++			/* Terminate the string containing the key/value pair */
++			ptr[0] =3D '\0';
++
++			if (key =3D=3D value) {
++				pr_debug("Malformed key/value pair\n");
++				/* Never found a '=3D', end processing */
++				break;
++			}
++
++			if (0 =3D=3D strcmp(key, "PrPSP"))
++				PrPSP =3D simple_strtoul(value, NULL, 10);
++			else if (0 =3D=3D strcmp(key, "SecPSP"))
++				SecPSP =3D simple_strtoul(value, NULL, 10);
++			value =3D key =3D ptr + 1;
++		}
++		ptr++;
++	}
++
++	if (PrPSP !=3D -1 || SecPSP !=3D -1) {
++		pr_info("CMO enabled\n");
++		pr_debug("CMO enabled, PrPSP=3D%d, SecPSP=3D%d\n", PrPSP, SecPSP);
++		powerpc_firmware_features |=3D FW_FEATURE_CMO;
++	} else
++		pr_debug("CMO not enabled, PrPSP=3D%d, SecPSP=3D%d\n", PrPSP, SecPSP);
++	spin_unlock(&rtas_data_buf_lock);
++	pr_debug(" <- fw_cmo_feature_init()\n");
++}
 +
  /*
-  * H_GET_PPP hcall returns info in 4 parms.
-  *  entitled_capacity,unallocated_capacity,
-@@ -178,20 +190,24 @@ EXPORT_SYMBOL(h_get_mpp);
-  *              XXXX - Active processors in Physical Processor Pool.
-  *                  XXXX  - Processors active on platform.
+  * Early initialization.  Relocation is on but do not reference unbolted p=
+ages
   */
--static unsigned int h_get_ppp(unsigned long *entitled,
--			      unsigned long *unallocated,
--			      unsigned long *aggregation,
--			      unsigned long *resource)
-+static unsigned int h_get_ppp(struct hvcall_ppp_data *ppp_data)
- {
- 	unsigned long rc;
- 	unsigned long retbuf[PLPAR_HCALL_BUFSIZE];
+@@ -329,6 +399,7 @@ static void __init pSeries_init_early(vo
+ 	else if (firmware_has_feature(FW_FEATURE_XDABR))
+ 		ppc_md.set_dabr =3D pseries_set_xdabr;
 =20
- 	rc =3D plpar_hcall(H_GET_PPP, retbuf);
++	pSeries_cmo_feature_init();
+ 	iommu_init_early_pSeries();
 =20
--	*entitled =3D retbuf[0];
--	*unallocated =3D retbuf[1];
--	*aggregation =3D retbuf[2];
--	*resource =3D retbuf[3];
-+	ppp_data->entitlement =3D retbuf[0];
-+	ppp_data->unallocated_entitlement =3D retbuf[1];
-+
-+	ppp_data->group_num =3D (retbuf[2] >> 2 * 8) & 0xffff;
-+	ppp_data->pool_num =3D retbuf[2] & 0xffff;
-+
-+	ppp_data->capped =3D (retbuf[3] >> 6 * 8) & 0x01;
-+	ppp_data->weight =3D (retbuf[3] >> 5 * 8) & 0xff;
-+	ppp_data->unallocated_weight =3D (retbuf[3] >> 4 * 8) & 0xff;
-+	ppp_data->active_procs_in_pool =3D (retbuf[3] >> 2 * 8) & 0xffff;
-+	ppp_data->active_system_procs =3D retbuf[3] & 0xffff;
+ 	pr_debug(" <- pSeries_init_early()\n");
+Index: b/include/asm-powerpc/firmware.h
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- a/include/asm-powerpc/firmware.h
++++ b/include/asm-powerpc/firmware.h
+@@ -45,6 +45,7 @@
+ #define FW_FEATURE_PS3_LV1	ASM_CONST(0x0000000000800000)
+ #define FW_FEATURE_BEAT		ASM_CONST(0x0000000001000000)
+ #define FW_FEATURE_BULK_REMOVE	ASM_CONST(0x0000000002000000)
++#define FW_FEATURE_CMO		ASM_CONST(0x0000000004000000)
 =20
- 	return rc;
- }
-@@ -216,29 +232,27 @@ static unsigned int h_pic(unsigned long=20
-  */
- static void parse_ppp_data(struct seq_file *m)
- {
--	unsigned long h_entitled, h_unallocated;
--	unsigned long h_aggregation, h_resource;
-+	struct hvcall_ppp_data ppp_data;
- 	int rc;
+ #ifndef __ASSEMBLY__
 =20
--	rc =3D h_get_ppp(&h_entitled, &h_unallocated, &h_aggregation,
--		       &h_resource);
-+	rc =3D h_get_ppp(&ppp_data);
- 	if (rc)
- 		return;
-=20
--	seq_printf(m, "partition_entitled_capacity=3D%ld\n", h_entitled);
--	seq_printf(m, "group=3D%ld\n", (h_aggregation >> 2 * 8) & 0xffff);
--	seq_printf(m, "system_active_processors=3D%ld\n",
--		   (h_resource >> 0 * 8) & 0xffff);
-+	seq_printf(m, "partition_entitled_capacity=3D%ld\n",
-+	           ppp_data.entitlement);
-+	seq_printf(m, "group=3D%d\n", ppp_data.group_num);
-+	seq_printf(m, "system_active_processors=3D%d\n",
-+	           ppp_data.active_system_procs);
-=20
- 	/* pool related entries are apropriate for shared configs */
- 	if (lppaca[0].shared_proc) {
- 		unsigned long pool_idle_time, pool_procs;
-=20
--		seq_printf(m, "pool=3D%ld\n", (h_aggregation >> 0 * 8) & 0xffff);
-+		seq_printf(m, "pool=3D%d\n", ppp_data.pool_num);
-=20
- 		/* report pool_capacity in percentage */
--		seq_printf(m, "pool_capacity=3D%ld\n",
--			   ((h_resource >> 2 * 8) & 0xffff) * 100);
-+		seq_printf(m, "pool_capacity=3D%d\n", ppp_data.group_num * 100);
-=20
- 		rc =3D h_pic(&pool_idle_time, &pool_procs);
- 		if (! rc) {
-@@ -247,12 +261,12 @@ static void parse_ppp_data(struct seq_fi
- 		}
- 	}
-=20
--	seq_printf(m, "unallocated_capacity_weight=3D%ld\n",
--		   (h_resource >> 4 * 8) & 0xFF);
--
--	seq_printf(m, "capacity_weight=3D%ld\n", (h_resource >> 5 * 8) & 0xFF);
--	seq_printf(m, "capped=3D%ld\n", (h_resource >> 6 * 8) & 0x01);
--	seq_printf(m, "unallocated_capacity=3D%ld\n", h_unallocated);
-+	seq_printf(m, "unallocated_capacity_weight=3D%d\n",
-+		   ppp_data.unallocated_weight);
-+	seq_printf(m, "capacity_weight=3D%d\n", ppp_data.weight);
-+	seq_printf(m, "capped=3D%d\n", ppp_data.capped);
-+	seq_printf(m, "unallocated_capacity=3D%ld\n",
-+		   ppp_data.unallocated_entitlement);
- }
-=20
- /**
-@@ -452,30 +466,26 @@ static int pseries_lparcfg_data(struct s
-=20
- static ssize_t update_ppp(u64 *entitlement, u8 *weight)
- {
--	unsigned long current_entitled;
--	unsigned long dummy;
--	unsigned long resource;
--	u8 current_weight, new_weight;
-+	struct hvcall_ppp_data ppp_data;
-+	u8 new_weight;
- 	u64 new_entitled;
- 	ssize_t retval;
-=20
- 	/* Get our current parameters */
--	retval =3D h_get_ppp(&current_entitled, &dummy, &dummy, &resource);
-+	retval =3D h_get_ppp(&ppp_data);
- 	if (retval)
- 		return retval;
-=20
--	current_weight =3D (resource >> 5 * 8) & 0xFF;
--
- 	if (entitlement) {
--		new_weight =3D current_weight;
-+		new_weight =3D ppp_data.weight;
- 		new_entitled =3D *entitlement;
- 	} else {
- 		new_weight =3D *weight;
--		new_entitled =3D current_entitled;
-+		new_entitled =3D ppp_data.entitlement;
- 	}
-=20
- 	pr_debug("%s: current_entitled =3D %lu, current_weight =3D %u\n",
--		 __FUNCTION__, current_entitled, current_weight);
-+	         __FUNCTION__, ppp_data.entitlement, ppp_data.weight);
-=20
- 	pr_debug("%s: new_entitled =3D %lu, new_weight =3D %u\n",
- 		 __FUNCTION__, new_entitled, new_weight);
+@@ -57,7 +58,7 @@ enum {
+ 		FW_FEATURE_MIGRATE | FW_FEATURE_PERFMON | FW_FEATURE_CRQ |
+ 		FW_FEATURE_VIO | FW_FEATURE_RDMA | FW_FEATURE_LLAN |
+ 		FW_FEATURE_BULK | FW_FEATURE_XDABR | FW_FEATURE_MULTITCE |
+-		FW_FEATURE_SPLPAR | FW_FEATURE_LPAR,
++		FW_FEATURE_SPLPAR | FW_FEATURE_LPAR | FW_FEATURE_CMO,
+ 	FW_FEATURE_PSERIES_ALWAYS =3D 0,
+ 	FW_FEATURE_ISERIES_POSSIBLE =3D FW_FEATURE_ISERIES | FW_FEATURE_LPAR,
+ 	FW_FEATURE_ISERIES_ALWAYS =3D FW_FEATURE_ISERIES | FW_FEATURE_LPAR,
