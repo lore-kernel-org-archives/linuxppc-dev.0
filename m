@@ -1,31 +1,19 @@
-Return-Path: <rcjenn@linux.vnet.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 44124DDF18
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jun 2008 08:33:30 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e33.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m5CMXRXf006234
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jun 2008 18:33:27 -0400
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
-	m5CMXRBs144472
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jun 2008 16:33:27 -0600
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m5CMXQZR019481
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jun 2008 16:33:26 -0600
-Date: Thu, 12 Jun 2008 17:31:56 -0500
-From: Robert Jennings <rcj@linux.vnet.ibm.com>
-To: paulus@samba.org
-Subject: [PATCH 19/19] powerpc: Update arch vector to indicate support for CMO
-Message-ID: <20080612223156.GA30916@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080612215312.GF30916@linux.vnet.ibm.com>
-Cc: Brian King <brking@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org,
-	David Darrington <ddarring@linux.vnet.ibm.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 6AEC5DE1DC
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jun 2008 09:01:47 +1000 (EST)
+Message-Id: <4D6BC3F2-C43D-4317-B0BE-AF0A551E6CF1@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Ron Madrid <ron_madrid@sbcglobal.net>
+In-Reply-To: <85644.91618.qm@web83508.mail.sp1.yahoo.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v924)
+Subject: Re: Using DMA interrupt on MPC8313
+Date: Thu, 12 Jun 2008 18:01:41 -0500
+References: <85644.91618.qm@web83508.mail.sp1.yahoo.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,46 +23,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-=46rom: Nathan Fontenot <nfont@austin.ibm.com>
+The dmaengine provides a generic set of APIs w/a FSL dma backend.  It  
+might be the case that your need of dma doesnt fit into the current  
+set of APIs.
 
-Update the architecture vector to indicate that Cooperative Memory
-Overcommitment is supported.
+- k
 
-This is the last patch in the series.  Committing it will signal to=20
-the platform firmware is CMO enabled.
+On Jun 12, 2008, at 3:04 PM, Ron Madrid wrote:
 
-Signed-off-by: Nathan Fontenot <nfont@austin.ibm.com>
-
----
-
- arch/powerpc/kernel/prom_init.c |    5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
-
-Index: b/arch/powerpc/kernel/prom_init.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- a/arch/powerpc/kernel/prom_init.c
-+++ b/arch/powerpc/kernel/prom_init.c
-@@ -642,6 +642,7 @@ static void __init early_cmdline_parse(v
- #else
- #define OV5_MSI			0x00
- #endif /* CONFIG_PCI_MSI */
-+#define OV5_CMO			0x80	/* Cooperative Memory Overcommitment */
-=20
- /*
-  * The architecture vector has an array of PVR mask/value pairs,
-@@ -684,10 +685,12 @@ static unsigned char ibm_architecture_ve
- 	0,				/* don't halt */
-=20
- 	/* option vector 5: PAPR/OF options */
--	3 - 2,				/* length */
-+	5 - 2,				/* length */
- 	0,				/* don't ignore, don't halt */
- 	OV5_LPAR | OV5_SPLPAR | OV5_LARGE_PAGES | OV5_DRCONF_MEMORY |
- 	OV5_DONATE_DEDICATE_CPU | OV5_MSI,
-+	0,
-+	OV5_CMO,
- };
-=20
- /* Old method - ELF header with PT_NOTE sections */
+> Well in that case wouldn't I need to use the fsldma driver?  Or is  
+> dmaengine a generic dma driver?
+>
+> Ron
+> --- Kumar Gala <galak@kernel.crashing.org> wrote:
+>
+>>
+>> On Jun 12, 2008, at 2:35 PM, Ron Madrid wrote:
+>>
+>>> I'm trying to write a driver that would make use of the DMA on the
+>>> MPC8313.  I'm attempting to
+>>> register the interrupt with request_irq but it is not passing.  Is
+>>> there something that I need to
+>>> do before I call request_irq, maybe in the dts or somewhere else?
+>>
+>>
+>> any reason you aren't using the dmaengine driver?
+>>
+>> - k
+>>
