@@ -1,17 +1,24 @@
-Return-Path: <sam@ravnborg.org>
-Received: from pasmtpA.tele.dk (pasmtpa.tele.dk [80.160.77.114])
-	by ozlabs.org (Postfix) with ESMTP id E26FBDDFC5
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jun 2008 23:16:11 +1000 (EST)
-Date: Thu, 12 Jun 2008 15:16:50 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-	linux-kbuild <linux-kbuild@vger.kernel.org>,
-	LKML <linux-kernel@vger.kernel.org>
-Subject: [GIT PULL] one kbuild fix for powerpc
-Message-ID: <20080612131650.GA13702@uranus.ravnborg.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Return-Path: <glikely@secretlab.ca>
+Received: from wr-out-0506.google.com (wr-out-0506.google.com [64.233.184.225])
+	by ozlabs.org (Postfix) with ESMTP id E1444DDF48
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jun 2008 23:36:52 +1000 (EST)
+Received: by wr-out-0506.google.com with SMTP id c48so2176194wra.1
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jun 2008 06:36:50 -0700 (PDT)
+Message-ID: <fa686aa40806120636m3aa45802v8a15fc51bfc059a1@mail.gmail.com>
+Date: Thu, 12 Jun 2008 07:36:50 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Kumar Gala" <galak@kernel.crashing.org>
+Subject: Re: [PATCH 2/2] Re-added support for FEC on MPC5121 from Freescale
+	LTIB to current head
+In-Reply-To: <9DD9B395-38FF-422B-83D8-B91178AB46E1@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <200806121344.26883.david.jander@protonic.nl>
+	<200806121345.52293.david.jander@protonic.nl>
+	<9DD9B395-38FF-422B-83D8-B91178AB46E1@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, David Jander <david.jander@protonic.nl>,
+	linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,99 +28,116 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Linus.
+On Thu, Jun 12, 2008 at 6:12 AM, Kumar Gala <galak@kernel.crashing.org> wrote:
+>
+> On Jun 12, 2008, at 6:45 AM, David Jander wrote:
+>
+> Your commit message isn't exactly helpful as most people dont know what LTIB
+> is and its not terribly relevant.  It just seems like you are adding support
+> for the FEC on MPC5121 and this point.
 
-Following fix has been late as I have been sloppy to look into this.
-Kumar has patiently reminded me and tested the follwing fix.
+Agreed.  Also, you need to CC: the netdev mailing list for network drivers.
 
-I could have made the patch a few lines smaller - but decided to add
-a helper function and moved the obvious candidates to the helper function.
+>> Signed-off-by: David Jander <david@protonic.nl>
+>> ---
+>> arch/powerpc/platforms/Kconfig     |    2 +-
+>> drivers/net/fec.h                  |   43 ++++++++++++++++++++
+>> drivers/net/fs_enet/Kconfig        |   22 +++++++++-
+>> drivers/net/fs_enet/fs_enet-main.c |   76
+>> ++++++++++++++++++++++++++++++------
+>> drivers/net/fs_enet/fs_enet.h      |   17 +++++---
+>> drivers/net/fs_enet/mac-fec.c      |   22 +++++++++-
+>> drivers/net/fs_enet/mii-fec.c      |   10 ++++-
+>> 7 files changed, 167 insertions(+), 25 deletions(-)
+>>
+>> diff --git a/arch/powerpc/platforms/Kconfig
+>> b/arch/powerpc/platforms/Kconfig
+>> index 87454c5..a96937f 100644
+>> --- a/arch/powerpc/platforms/Kconfig
+>> +++ b/arch/powerpc/platforms/Kconfig
+>> @@ -288,7 +288,7 @@ config CPM2
+>>
+>> config PPC_CPM_NEW_BINDING
+>>        bool
+>> -       depends on CPM1 || CPM2
+>> +       depends on CPM1 || CPM2 || FS_ENET_MPC5121_FEC
+>>        default y
+>>
+>> config AXON_RAM
+>> diff --git a/drivers/net/fec.h b/drivers/net/fec.h
+>> index 292719d..5c9fe34 100644
+>> --- a/drivers/net/fec.h
+>> +++ b/drivers/net/fec.h
+>> @@ -59,6 +59,7 @@ typedef struct fec {
+>> } fec_t;
+>>
+>> #else
+>> +#if !defined(CONFIG_FS_ENET_MPC5121_FEC)
+>>
+>> /*
+>>  *      Define device register set address map.
+>> @@ -97,6 +98,48 @@ typedef struct fec {
+>>        unsigned long   fec_fifo_ram[112];      /* FIFO RAM buffer */
+>> } fec_t;
+>>
+>> +#else /* CONFIG_FS_ENET_MPC5121_FEC */
+>> +
+>> +typedef struct fec {
+>> +       u32 fec_reserved0;
+>> +       u32 fec_ievent;         /* Interrupt event reg */
+>> +       u32 fec_imask;          /* Interrupt mask reg */
+>> +       u32 fec_reserved1;
+>> +       u32 fec_r_des_active;   /* Receive descriptor reg */
+>> +       u32 fec_x_des_active;   /* Transmit descriptor reg */
+>> +       u32 fec_reserved2[3];
+>> +       u32 fec_ecntrl;         /* Ethernet control reg */
+>> +       u32 fec_reserved3[6];
+>> +       u32 fec_mii_data;               /* MII manage frame reg */
+>> +       u32 fec_mii_speed;              /* MII speed control reg */
+>> +       u32 fec_reserved4[7];
+>> +       u32 fec_mib_ctrlstat;   /* MIB control/status reg */
+>> +       u32 fec_reserved5[7];
+>> +       u32 fec_r_cntrl;                /* Receive control reg */
+>> +       u32 fec_reserved6[15];
+>> +       u32 fec_x_cntrl;                /* Transmit Control reg */
+>> +       u32 fec_reserved7[7];
+>> +       u32 fec_addr_low;               /* Low 32bits MAC address */
+>> +       u32 fec_addr_high;              /* High 16bits MAC address */
+>> +       u32 fec_opd;            /* Opcode + Pause duration */
+>> +       u32 fec_reserved8[10];
+>> +       u32 fec_hash_table_high;        /* High 32bits hash table */
+>> +       u32 fec_hash_table_low; /* Low 32bits hash table */
+>> +       u32 fec_grp_hash_table_high;/* High 32bits hash table */
+>> +       u32 fec_grp_hash_table_low;     /* Low 32bits hash table */
+>> +       u32 fec_reserved9[7];
+>> +       u32 fec_x_wmrk;         /* FIFO transmit water mark */
+>> +       u32 fec_reserved10;
+>> +       u32 fec_r_bound;                /* FIFO receive bound reg */
+>> +       u32 fec_r_fstart;               /* FIFO receive start reg */
+>> +       u32 fec_reserved11[11];
+>> +       u32 fec_r_des_start;    /* Receive descriptor ring */
+>> +       u32 fec_x_des_start;    /* Transmit descriptor ring */
+>> +       u32 fec_r_buff_size;    /* Maximum receive buff size */
+>> +       u32 fec_dma_control;    /* DMA Endian and other ctrl */
+>> +} fec_t;
+>> +
+>> +#endif /* CONFIG_FS_ENET_MPC5121_FEC */
+>> #endif /* CONFIG_M5272 */
+>
+> I'm not exactly clear as to why this was done this way but this not
+> acceptable as it means we can't build a multiplatform kernel that needs this
+> driver.
+>
+> I'm also not clear to me if the MPC5121 FEC is really the same device or
+> close to it that it should be sharing this driver or have its own.
 
-Please pull from:
+Indeed.  If it is not easy to isolate the differences for runtime
+binding then it may be best to just clone the driver as a starting
+point and make the 5121 specific changes.
 
-    ssh://master.kernel.org/pub/scm/linux/kernel/git/sam/kbuild-fixes.git
+Cheers,
+g.
 
-
-	Sam 
-
-
- scripts/mod/modpost.c |   26 +++++++++++++++++++++-----
- 1 files changed, 21 insertions(+), 5 deletions(-)
-
-
-commit 82e93ceaa5b55a8eb2b9b5454b2904b60781c763
-Author: Sam Ravnborg <sam@ravnborg.org>
-Date:   Thu Jun 12 15:02:55 2008 +0200
-
-    kbuild: ignore powerpc specific symbols in modpost
-    
-    Kumar Gala <galak@kernel.crashing.org> wrote:
-    We have a case in powerpc in which we want to link some library
-    routines with all module objects.  The routines are intended for
-    handling out-of-line function call register save/restore so having
-    them as EXPORT_SYMBOL() is counter productive (we do also need to
-    link the same "library" code into the kernel).
-    
-    Without this patch a powerpc build would error out and fail
-    to build modules with the added register save/restore module.
-    
-    There were two obvious solutions:
-    1) To link the .o file before the modpost stage
-    2) To ignore the symbols in modpost
-    
-    Option 1) was ruled out because we do not have any separate
-    linking stage for single file modules.
-    
-    This patch implements option 2 - and do so only for powerpc.
-    
-    The symbols we ignore are all undefined symbols named:
-    _restgpr_*, _savegpr_*, _rest32gpr_*, _save32gpr_*
-    
-    Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
-    Cc: Kumar Gala <galak@kernel.crashing.org>
-    Cc: Paul Mackerras <paulus@samba.org>
-
-diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
-index 508c589..b763aba 100644
---- a/scripts/mod/modpost.c
-+++ b/scripts/mod/modpost.c
-@@ -467,6 +467,26 @@ static void parse_elf_finish(struct elf_info *info)
- 	release_file(info->hdr, info->size);
- }
- 
-+static int ignore_undef_symbol(struct elf_info *info, const char *symname)
-+{
-+	/* ignore __this_module, it will be resolved shortly */
-+	if (strcmp(symname, MODULE_SYMBOL_PREFIX "__this_module") == 0)
-+		return 1;
-+	/* ignore global offset table */
-+	if (strcmp(symname, "_GLOBAL_OFFSET_TABLE_") == 0)
-+		return 1;
-+	if (info->hdr->e_machine == EM_PPC)
-+		/* Special register function linked on all modules during final link of .ko */
-+		if (strncmp(symname, "_restgpr_", sizeof("_restgpr_") - 1) == 0 ||
-+		    strncmp(symname, "_savegpr_", sizeof("_savegpr_") - 1) == 0 ||
-+		    strncmp(symname, "_rest32gpr_", sizeof("_rest32gpr_") - 1) == 0 ||
-+		    strncmp(symname, "_save32gpr_", sizeof("_save32gpr_") - 1) == 0) {
-+			return 1;
-+	}
-+	/* Do not ignore this symbol */
-+	return 0;
-+}
-+
- #define CRC_PFX     MODULE_SYMBOL_PREFIX "__crc_"
- #define KSYMTAB_PFX MODULE_SYMBOL_PREFIX "__ksymtab_"
- 
-@@ -493,11 +513,7 @@ static void handle_modversions(struct module *mod, struct elf_info *info,
- 		if (ELF_ST_BIND(sym->st_info) != STB_GLOBAL &&
- 		    ELF_ST_BIND(sym->st_info) != STB_WEAK)
- 			break;
--		/* ignore global offset table */
--		if (strcmp(symname, "_GLOBAL_OFFSET_TABLE_") == 0)
--			break;
--		/* ignore __this_module, it will be resolved shortly */
--		if (strcmp(symname, MODULE_SYMBOL_PREFIX "__this_module") == 0)
-+		if (ignore_undef_symbol(info, symname))
- 			break;
- /* cope with newer glibc (2.3.4 or higher) STT_ definition in elf.h */
- #if defined(STT_REGISTER) || defined(STT_SPARC_REGISTER)
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
