@@ -1,22 +1,22 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [Cbe-oss-dev] [PATCH] powerpc/cell: disable ptcal in case of
-	kdump reboot
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Michael Neuling <mikey@neuling.org>
-In-Reply-To: <11619.1213258014@neuling.org>
-References: <200806111828.59043.arnd@arndb.de>
-	<1213202956.28589.4.camel@localhost> <200806120939.23836.arnd@arndb.de>
-	<11619.1213258014@neuling.org>
+Return-Path: <wsa@pengutronix.de>
+Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
+	[83.236.181.26]) by ozlabs.org (Postfix) with ESMTP id C575FDDF07
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jun 2008 19:04:42 +1000 (EST)
+Received: from leda.ptxnet.pengutronix.de ([10.1.0.71] ident=Debian-exim)
+	by metis.extern.pengutronix.de with esmtp (Exim 4.63)
+	(envelope-from <wsa@pengutronix.de>) id 1K6ijS-00025o-7G
+	for linuxppc-dev@ozlabs.org; Thu, 12 Jun 2008 11:04:34 +0200
+Received: from wsa by leda.ptxnet.pengutronix.de with local (Exim 4.67)
+	(envelope-from <wsa@pengutronix.de>) id 1K6ijR-0002iL-3B
+	for linuxppc-dev@ozlabs.org; Thu, 12 Jun 2008 11:04:33 +0200
+Date: Thu, 12 Jun 2008 11:04:33 +0200
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Merging seperate FDT-blobs?
+Message-ID: <20080612090433.GA4235@pengutronix.de>
+MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-pfIsV/4u5ijq15qdJVWZ"
-Date: Thu, 12 Jun 2008 19:04:40 +1000
-Message-Id: <1213261480.8652.5.camel@localhost>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Jeremy Kerr <jk@ozlabs.org>, Arnd Bergmann <arnd@arndb.de>,
-	cbe-oss-dev@ozlabs.org
-Reply-To: michael@ellerman.id.au
+	protocol="application/pgp-signature"; boundary="OgqxwSJOaUobr8KG"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,67 +27,46 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-pfIsV/4u5ijq15qdJVWZ
-Content-Type: text/plain
+--OgqxwSJOaUobr8KG
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, 2008-06-12 at 18:06 +1000, Michael Neuling wrote:
-> In message <200806120939.23836.arnd@arndb.de> you wrote:
-> > On Wednesday 11 June 2008, Michael Ellerman wrote:
-> > > On Wed, 2008-06-11 at 18:28 +0200, Arnd Bergmann wrote:
-> > > > We used to do this correctly in case of a user triggered
-> > > > kexec, but not for kdump.
-> > >=20
-> > > Used to?
-> >=20
-> > Sorry, wrong wording. I meant without this patch, it's correct
-> > for kexec.
-> > =20
-> > > > This patch disables ptcal from the cell specific
-> > > > machine_crash_shutdown() callback.=20
-> > >=20
-> > > I'd rather you used the crash_shutdown_register() infrastructure Mike=
-y
-> > > added for EHEA - it's designed for just this sort of thing.
-> >=20
-> > Thanks for pointing this out, I wasn't aware of that call.
-> > New patch coming up.
->=20
-> In theory we can register lots of call backs but currently the maximum
-> is set to 1 through CRASH_HANDLER_MAX.  This is to discourage people
-> from using this infrastructure at all.
+Hello,
 
-Yeah true. In this case I think it's the less horrible solution to
-something that's fundamentally kdump-unfriendly.
+a project I am working on consists of different hardware modules, which
+can be combined in a lot of variations (not at runtime, though). As each
+module shall contain an I2C-eeprom, the idea is now to put a fragment of
+a FDT-blob into that EEPROM and let the bootloader combine these
+fragments. Such an approach was also sketched by David Gibson recently.
+(http://ozlabs.org/pipermail/linuxppc-dev/2008-February/051630.html)
 
-> Unless there's some crazy arse company that's going to mix a CBE with an
-> eHEA, we are probably ok leaving this at 1.  Right?
+(As a sidenote, I am not quite sure and could not find anything about
+what the mentioned 'fdt_graft' should actually do, in my case something
+like a 'fdt_add_blob_subnode' function would be sufficent, I guess.)
 
-No comment *cough*. I guess I'd say just increase it to 2 on the off
-chance, can't hurt much.
+My question: Is there already an effort towards such an approach to
+which I could contribute, or do I have to start from scratch?
 
-cheers
+Kind regards,
+
+   Wolfram
 
 --=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
+  Dipl.-Ing. Wolfram Sang | http://www.pengutronix.de
+ Pengutronix - Linux Solutions for Science and Industry
 
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-pfIsV/4u5ijq15qdJVWZ
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+--OgqxwSJOaUobr8KG
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.6 (GNU/Linux)
 
-iD8DBQBIUOaodSjSd0sB4dIRAshpAKCQrXcmjdar6w1rT58Ko9BsfOl9VgCeNp0h
-Pltl94MaSkI3vtbHgBtZgF8=
-=8QIQ
+iD4DBQFIUOagD27XaX1/VRsRAgNeAJY9w4+t6qtEUbKSdAq5bkcUk7JhAKCpl6fu
+ScFfw8FCN2++iy4r3I4u1g==
+=Z/0v
 -----END PGP SIGNATURE-----
 
---=-pfIsV/4u5ijq15qdJVWZ--
+--OgqxwSJOaUobr8KG--
