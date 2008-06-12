@@ -2,17 +2,19 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 3EAEFDE4B0
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jun 2008 23:40:47 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 7544EDE571
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jun 2008 23:40:52 +1000 (EST)
 From: Kumar Gala <galak@kernel.crashing.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 2/5] cpm_uart: Remove !CONFIG_PPC_CPM_NEW_BINDING code
-Date: Thu, 12 Jun 2008 08:40:31 -0500
-Message-Id: <1213278034-28552-3-git-send-email-galak@kernel.crashing.org>
-In-Reply-To: <1213278034-28552-2-git-send-email-galak@kernel.crashing.org>
+Subject: [PATCH 4/5] fs_enet: Remove !CONFIG_PPC_CPM_NEW_BINDING code
+Date: Thu, 12 Jun 2008 08:40:33 -0500
+Message-Id: <1213278034-28552-5-git-send-email-galak@kernel.crashing.org>
+In-Reply-To: <1213278034-28552-4-git-send-email-galak@kernel.crashing.org>
 References: <1213278034-28552-1-git-send-email-galak@kernel.crashing.org>
 	<1213278034-28552-2-git-send-email-galak@kernel.crashing.org>
-Cc: scottwood@freescale.com
+	<1213278034-28552-3-git-send-email-galak@kernel.crashing.org>
+	<1213278034-28552-4-git-send-email-galak@kernel.crashing.org>
+Cc: scottwood@freescale.com, netdev@vger.kernel.org, jeff@garzik.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,1014 +27,988 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 Now that arch/ppc is gone we always define CONFIG_PPC_CPM_NEW_BINDING so
 we can remove all the code associated with !CONFIG_PPC_CPM_NEW_BINDING.
 
+Also fixed some asm/of_platform.h to linux/of_platform.h (and of_device.h)
+
 Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 ---
- drivers/serial/cpm_uart/cpm_uart.h      |    3 -
- drivers/serial/cpm_uart/cpm_uart_core.c |  371 +------------------------------
- drivers/serial/cpm_uart/cpm_uart_cpm1.c |  168 --------------
- drivers/serial/cpm_uart/cpm_uart_cpm1.h |   10 -
- drivers/serial/cpm_uart/cpm_uart_cpm2.c |  277 -----------------------
- drivers/serial/cpm_uart/cpm_uart_cpm2.h |   10 -
- 6 files changed, 1 insertions(+), 838 deletions(-)
 
-diff --git a/drivers/serial/cpm_uart/cpm_uart.h b/drivers/serial/cpm_uart/cpm_uart.h
-index 3d07bec..5c76e0a 100644
---- a/drivers/serial/cpm_uart/cpm_uart.h
-+++ b/drivers/serial/cpm_uart/cpm_uart.h
-@@ -84,9 +84,6 @@ struct uart_cpm_port {
- 	u32			command;
- };
+Jeff, if this looks ok, its easier if this can go via the powerpc tree.
+
+- k
+
+ drivers/net/fs_enet/Makefile       |    5 -
+ drivers/net/fs_enet/fs_enet-main.c |  309 +-----------------------------------
+ drivers/net/fs_enet/fs_enet.h      |    4 -
+ drivers/net/fs_enet/mac-fcc.c      |   67 +--------
+ drivers/net/fs_enet/mac-fec.c      |   23 +---
+ drivers/net/fs_enet/mac-scc.c      |   37 +----
+ drivers/net/fs_enet/mii-bitbang.c  |  107 -------------
+ drivers/net/fs_enet/mii-fec.c      |  144 +-----------------
+ include/linux/fs_enet_pd.h         |    4 -
+ 9 files changed, 5 insertions(+), 695 deletions(-)
+
+diff --git a/drivers/net/fs_enet/Makefile b/drivers/net/fs_enet/Makefile
+index 1ffbe07..d4a305e 100644
+--- a/drivers/net/fs_enet/Makefile
++++ b/drivers/net/fs_enet/Makefile
+@@ -8,12 +8,7 @@ fs_enet-$(CONFIG_FS_ENET_HAS_SCC) += mac-scc.o
+ fs_enet-$(CONFIG_FS_ENET_HAS_FEC) += mac-fec.o
+ fs_enet-$(CONFIG_FS_ENET_HAS_FCC) += mac-fcc.o
  
--#ifndef CONFIG_PPC_CPM_NEW_BINDING
--extern int cpm_uart_port_map[UART_NR];
--#endif
- extern int cpm_uart_nr;
- extern struct uart_cpm_port cpm_uart_ports[UART_NR];
+-ifeq ($(CONFIG_PPC_CPM_NEW_BINDING),y)
+ obj-$(CONFIG_FS_ENET_MDIO_FEC) += mii-fec.o
+ obj-$(CONFIG_FS_ENET_MDIO_FCC) += mii-bitbang.o
+-else
+-fs_enet-$(CONFIG_FS_ENET_MDIO_FEC) += mii-fec.o
+-fs_enet-$(CONFIG_FS_ENET_MDIO_FCC) += mii-bitbang.o
+-endif
  
-diff --git a/drivers/serial/cpm_uart/cpm_uart_core.c b/drivers/serial/cpm_uart/cpm_uart_core.c
-index b0104ca..43f58dc 100644
---- a/drivers/serial/cpm_uart/cpm_uart_core.c
-+++ b/drivers/serial/cpm_uart/cpm_uart_core.c
-@@ -42,6 +42,7 @@
- #include <linux/bootmem.h>
- #include <linux/dma-mapping.h>
- #include <linux/fs_uart_pd.h>
+ fs_enet-objs := fs_enet-main.o $(fs_enet-m)
+diff --git a/drivers/net/fs_enet/fs_enet-main.c b/drivers/net/fs_enet/fs_enet-main.c
+index a5baaf5..a9f9aae 100644
+--- a/drivers/net/fs_enet/fs_enet-main.c
++++ b/drivers/net/fs_enet/fs_enet-main.c
+@@ -36,25 +36,18 @@
+ #include <linux/fs.h>
+ #include <linux/platform_device.h>
+ #include <linux/phy.h>
 +#include <linux/of_platform.h>
  
- #include <asm/io.h>
+ #include <linux/vmalloc.h>
+ #include <asm/pgtable.h>
  #include <asm/irq.h>
-@@ -49,10 +50,6 @@
- #include <asm/fs_pd.h>
- #include <asm/udbg.h>
+ #include <asm/uaccess.h>
  
 -#ifdef CONFIG_PPC_CPM_NEW_BINDING
--#include <linux/of_platform.h>
+-#include <asm/of_platform.h>
 -#endif
--
- #if defined(CONFIG_SERIAL_CPM_CONSOLE) && defined(CONFIG_MAGIC_SYSRQ)
- #define SUPPORT_SYSRQ
- #endif
-@@ -72,59 +69,6 @@ static void cpm_uart_initbd(struct uart_cpm_port *pinfo);
  
- /**************************************************************/
+ #include "fs_enet.h"
+ 
+ /*************************************************/
  
 -#ifndef CONFIG_PPC_CPM_NEW_BINDING
--/* Track which ports are configured as uarts */
--int cpm_uart_port_map[UART_NR];
--/* How many ports did we config as uarts */
--int cpm_uart_nr;
+-static char version[] __devinitdata =
+-    DRV_MODULE_NAME ".c:v" DRV_MODULE_VERSION " (" DRV_MODULE_RELDATE ")" "\n";
+-#endif
 -
--/* Place-holder for board-specific stuff */
--struct platform_device* __attribute__ ((weak)) __init
--early_uart_get_pdev(int index)
+ MODULE_AUTHOR("Pantelis Antoniou <panto@intracom.gr>");
+ MODULE_DESCRIPTION("Freescale Ethernet Driver");
+ MODULE_LICENSE("GPL");
+@@ -957,190 +950,6 @@ static int fs_ioctl(struct net_device *dev, struct ifreq *rq, int cmd)
+ extern int fs_mii_connect(struct net_device *dev);
+ extern void fs_mii_disconnect(struct net_device *dev);
+ 
+-#ifndef CONFIG_PPC_CPM_NEW_BINDING
+-static struct net_device *fs_init_instance(struct device *dev,
+-		struct fs_platform_info *fpi)
 -{
--	return NULL;
--}
+-	struct net_device *ndev = NULL;
+-	struct fs_enet_private *fep = NULL;
+-	int privsize, i, r, err = 0, registered = 0;
+-
+-	fpi->fs_no = fs_get_id(fpi);
+-	/* guard */
+-	if ((unsigned int)fpi->fs_no >= FS_MAX_INDEX)
+-		return ERR_PTR(-EINVAL);
+-
+-	privsize = sizeof(*fep) + (sizeof(struct sk_buff **) *
+-			    (fpi->rx_ring + fpi->tx_ring));
+-
+-	ndev = alloc_etherdev(privsize);
+-	if (!ndev) {
+-		err = -ENOMEM;
+-		goto err;
+-	}
+-
+-	fep = netdev_priv(ndev);
+-
+-	fep->dev = dev;
+-	dev_set_drvdata(dev, ndev);
+-	fep->fpi = fpi;
+-	if (fpi->init_ioports)
+-		fpi->init_ioports((struct fs_platform_info *)fpi);
+-
+-#ifdef CONFIG_FS_ENET_HAS_FEC
+-	if (fs_get_fec_index(fpi->fs_no) >= 0)
+-		fep->ops = &fs_fec_ops;
+-#endif
+-
+-#ifdef CONFIG_FS_ENET_HAS_SCC
+-	if (fs_get_scc_index(fpi->fs_no) >=0)
+-		fep->ops = &fs_scc_ops;
+-#endif
+-
+-#ifdef CONFIG_FS_ENET_HAS_FCC
+-	if (fs_get_fcc_index(fpi->fs_no) >= 0)
+-		fep->ops = &fs_fcc_ops;
+-#endif
+-
+-	if (fep->ops == NULL) {
+-		printk(KERN_ERR DRV_MODULE_NAME
+-		       ": %s No matching ops found (%d).\n",
+-		       ndev->name, fpi->fs_no);
+-		err = -EINVAL;
+-		goto err;
+-	}
+-
+-	r = (*fep->ops->setup_data)(ndev);
+-	if (r != 0) {
+-		printk(KERN_ERR DRV_MODULE_NAME
+-		       ": %s setup_data failed\n",
+-			ndev->name);
+-		err = r;
+-		goto err;
+-	}
+-
+-	/* point rx_skbuff, tx_skbuff */
+-	fep->rx_skbuff = (struct sk_buff **)&fep[1];
+-	fep->tx_skbuff = fep->rx_skbuff + fpi->rx_ring;
+-
+-	/* init locks */
+-	spin_lock_init(&fep->lock);
+-	spin_lock_init(&fep->tx_lock);
+-
+-	/*
+-	 * Set the Ethernet address.
+-	 */
+-	for (i = 0; i < 6; i++)
+-		ndev->dev_addr[i] = fpi->macaddr[i];
+-
+-	r = (*fep->ops->allocate_bd)(ndev);
+-
+-	if (fep->ring_base == NULL) {
+-		printk(KERN_ERR DRV_MODULE_NAME
+-		       ": %s buffer descriptor alloc failed (%d).\n", ndev->name, r);
+-		err = r;
+-		goto err;
+-	}
+-
+-	/*
+-	 * Set receive and transmit descriptor base.
+-	 */
+-	fep->rx_bd_base = fep->ring_base;
+-	fep->tx_bd_base = fep->rx_bd_base + fpi->rx_ring;
+-
+-	/* initialize ring size variables */
+-	fep->tx_ring = fpi->tx_ring;
+-	fep->rx_ring = fpi->rx_ring;
+-
+-	/*
+-	 * The FEC Ethernet specific entries in the device structure.
+-	 */
+-	ndev->open = fs_enet_open;
+-	ndev->hard_start_xmit = fs_enet_start_xmit;
+-	ndev->tx_timeout = fs_timeout;
+-	ndev->watchdog_timeo = 2 * HZ;
+-	ndev->stop = fs_enet_close;
+-	ndev->get_stats = fs_enet_get_stats;
+-	ndev->set_multicast_list = fs_set_multicast_list;
+-
+-#ifdef CONFIG_NET_POLL_CONTROLLER
+-	ndev->poll_controller = fs_enet_netpoll;
+-#endif
+-
+-	netif_napi_add(ndev, &fep->napi,
+-		       fs_enet_rx_napi, fpi->napi_weight);
+-
+-	ndev->ethtool_ops = &fs_ethtool_ops;
+-	ndev->do_ioctl = fs_ioctl;
+-
+-	init_timer(&fep->phy_timer_list);
+-
+-	netif_carrier_off(ndev);
+-
+-	err = register_netdev(ndev);
+-	if (err != 0) {
+-		printk(KERN_ERR DRV_MODULE_NAME
+-		       ": %s register_netdev failed.\n", ndev->name);
+-		goto err;
+-	}
+-	registered = 1;
 -
 -
--static void cpm_uart_count(void)
--{
--	cpm_uart_nr = 0;
--#ifdef CONFIG_SERIAL_CPM_SMC1
--	cpm_uart_port_map[cpm_uart_nr++] = UART_SMC1;
--#endif
--#ifdef CONFIG_SERIAL_CPM_SMC2
--	cpm_uart_port_map[cpm_uart_nr++] = UART_SMC2;
--#endif
--#ifdef CONFIG_SERIAL_CPM_SCC1
--	cpm_uart_port_map[cpm_uart_nr++] = UART_SCC1;
--#endif
--#ifdef CONFIG_SERIAL_CPM_SCC2
--	cpm_uart_port_map[cpm_uart_nr++] = UART_SCC2;
--#endif
--#ifdef CONFIG_SERIAL_CPM_SCC3
--	cpm_uart_port_map[cpm_uart_nr++] = UART_SCC3;
--#endif
--#ifdef CONFIG_SERIAL_CPM_SCC4
--	cpm_uart_port_map[cpm_uart_nr++] = UART_SCC4;
--#endif
--}
+-	return ndev;
 -
--/* Get UART number by its id */
--static int cpm_uart_id2nr(int id)
--{
--	int i;
--	if (id < UART_NR) {
--		for (i=0; i<UART_NR; i++) {
--			if (cpm_uart_port_map[i] == id)
--				return i;
+-err:
+-	if (ndev != NULL) {
+-		if (registered)
+-			unregister_netdev(ndev);
+-
+-		if (fep && fep->ops) {
+-			(*fep->ops->free_bd)(ndev);
+-			(*fep->ops->cleanup_data)(ndev);
 -		}
+-
+-		free_netdev(ndev);
 -	}
 -
--	/* not found or invalid argument */
--	return -1;
+-	dev_set_drvdata(dev, NULL);
+-
+-	return ERR_PTR(err);
 -}
--#endif
 -
- /*
-  * Check, if transmit buffers are processed
- */
-@@ -935,7 +879,6 @@ static struct uart_ops cpm_uart_pops = {
- 	.verify_port	= cpm_uart_verify_port,
- };
- 
--#ifdef CONFIG_PPC_CPM_NEW_BINDING
- struct uart_cpm_port cpm_uart_ports[UART_NR];
- 
- static int cpm_uart_init_port(struct device_node *np,
-@@ -1012,153 +955,6 @@ out_mem:
- 	return ret;
- }
- 
--#else
--
--struct uart_cpm_port cpm_uart_ports[UART_NR] = {
--	[UART_SMC1] = {
--		.port = {
--			.irq		= SMC1_IRQ,
--			.ops		= &cpm_uart_pops,
--			.iotype		= UPIO_MEM,
--			.lock		= __SPIN_LOCK_UNLOCKED(cpm_uart_ports[UART_SMC1].port.lock),
--		},
--		.flags = FLAG_SMC,
--		.tx_nrfifos = TX_NUM_FIFO,
--		.tx_fifosize = TX_BUF_SIZE,
--		.rx_nrfifos = RX_NUM_FIFO,
--		.rx_fifosize = RX_BUF_SIZE,
--		.set_lineif = smc1_lineif,
--	},
--	[UART_SMC2] = {
--		.port = {
--			.irq		= SMC2_IRQ,
--			.ops		= &cpm_uart_pops,
--			.iotype		= UPIO_MEM,
--			.lock		= __SPIN_LOCK_UNLOCKED(cpm_uart_ports[UART_SMC2].port.lock),
--		},
--		.flags = FLAG_SMC,
--		.tx_nrfifos = TX_NUM_FIFO,
--		.tx_fifosize = TX_BUF_SIZE,
--		.rx_nrfifos = RX_NUM_FIFO,
--		.rx_fifosize = RX_BUF_SIZE,
--		.set_lineif = smc2_lineif,
--#ifdef CONFIG_SERIAL_CPM_ALT_SMC2
--		.is_portb = 1,
--#endif
--	},
--	[UART_SCC1] = {
--		.port = {
--			.irq		= SCC1_IRQ,
--			.ops		= &cpm_uart_pops,
--			.iotype		= UPIO_MEM,
--			.lock		= __SPIN_LOCK_UNLOCKED(cpm_uart_ports[UART_SCC1].port.lock),
--		},
--		.tx_nrfifos = TX_NUM_FIFO,
--		.tx_fifosize = TX_BUF_SIZE,
--		.rx_nrfifos = RX_NUM_FIFO,
--		.rx_fifosize = RX_BUF_SIZE,
--		.set_lineif = scc1_lineif,
--		.wait_closing = SCC_WAIT_CLOSING,
--	},
--	[UART_SCC2] = {
--		.port = {
--			.irq		= SCC2_IRQ,
--			.ops		= &cpm_uart_pops,
--			.iotype		= UPIO_MEM,
--			.lock		= __SPIN_LOCK_UNLOCKED(cpm_uart_ports[UART_SCC2].port.lock),
--		},
--		.tx_nrfifos = TX_NUM_FIFO,
--		.tx_fifosize = TX_BUF_SIZE,
--		.rx_nrfifos = RX_NUM_FIFO,
--		.rx_fifosize = RX_BUF_SIZE,
--		.set_lineif = scc2_lineif,
--		.wait_closing = SCC_WAIT_CLOSING,
--	},
--	[UART_SCC3] = {
--		.port = {
--			.irq		= SCC3_IRQ,
--			.ops		= &cpm_uart_pops,
--			.iotype		= UPIO_MEM,
--			.lock		= __SPIN_LOCK_UNLOCKED(cpm_uart_ports[UART_SCC3].port.lock),
--		},
--		.tx_nrfifos = TX_NUM_FIFO,
--		.tx_fifosize = TX_BUF_SIZE,
--		.rx_nrfifos = RX_NUM_FIFO,
--		.rx_fifosize = RX_BUF_SIZE,
--		.set_lineif = scc3_lineif,
--		.wait_closing = SCC_WAIT_CLOSING,
--	},
--	[UART_SCC4] = {
--		.port = {
--			.irq		= SCC4_IRQ,
--			.ops		= &cpm_uart_pops,
--			.iotype		= UPIO_MEM,
--			.lock		= __SPIN_LOCK_UNLOCKED(cpm_uart_ports[UART_SCC4].port.lock),
--		},
--		.tx_nrfifos = TX_NUM_FIFO,
--		.tx_fifosize = TX_BUF_SIZE,
--		.rx_nrfifos = RX_NUM_FIFO,
--		.rx_fifosize = RX_BUF_SIZE,
--		.set_lineif = scc4_lineif,
--		.wait_closing = SCC_WAIT_CLOSING,
--	},
--};
--
--int cpm_uart_drv_get_platform_data(struct platform_device *pdev, int is_con)
+-static int fs_cleanup_instance(struct net_device *ndev)
 -{
--	struct resource *r;
--	struct fs_uart_platform_info *pdata = pdev->dev.platform_data;
--	int idx;	/* It is UART_SMCx or UART_SCCx index */
--	struct uart_cpm_port *pinfo;
--	int line;
--	u32 mem, pram;
+-	struct fs_enet_private *fep;
+-	const struct fs_platform_info *fpi;
+-	struct device *dev;
 -
--        idx = pdata->fs_no = fs_uart_get_id(pdata);
--
--	line = cpm_uart_id2nr(idx);
--	if(line < 0) {
--		printk(KERN_ERR"%s(): port %d is not registered", __func__, idx);
+-	if (ndev == NULL)
 -		return -EINVAL;
+-
+-	fep = netdev_priv(ndev);
+-	if (fep == NULL)
+-		return -EINVAL;
+-
+-	fpi = fep->fpi;
+-
+-	unregister_netdev(ndev);
+-
+-	dma_free_coherent(fep->dev, (fpi->tx_ring + fpi->rx_ring) * sizeof(cbd_t),
+-			  (void __force *)fep->ring_base, fep->ring_mem_addr);
+-
+-	/* reset it */
+-	(*fep->ops->cleanup_data)(ndev);
+-
+-	dev = fep->dev;
+-	if (dev != NULL) {
+-		dev_set_drvdata(dev, NULL);
+-		fep->dev = NULL;
 -	}
 -
--	pinfo = (struct uart_cpm_port *) &cpm_uart_ports[idx];
--
--	pinfo->brg = pdata->brg;
--
--	if (!is_con) {
--		pinfo->port.line = line;
--		pinfo->port.flags = UPF_BOOT_AUTOCONF;
--	}
--
--	if (!(r = platform_get_resource_byname(pdev, IORESOURCE_MEM, "regs")))
--		return -EINVAL;
--	mem = (u32)ioremap(r->start, r->end - r->start + 1);
--
--	if (!(r = platform_get_resource_byname(pdev, IORESOURCE_MEM, "pram")))
--		return -EINVAL;
--	pram = (u32)ioremap(r->start, r->end - r->start + 1);
--
--	if(idx > fsid_smc2_uart) {
--		pinfo->sccp = (scc_t *)mem;
--		pinfo->sccup = (scc_uart_t *)pram;
--	} else {
--		pinfo->smcp = (smc_t *)mem;
--		pinfo->smcup = (smc_uart_t *)pram;
--	}
--	pinfo->tx_nrfifos = pdata->tx_num_fifo;
--	pinfo->tx_fifosize = pdata->tx_buf_size;
--
--	pinfo->rx_nrfifos = pdata->rx_num_fifo;
--	pinfo->rx_fifosize = pdata->rx_buf_size;
--
--	pinfo->port.uartclk = pdata->uart_clk;
--	pinfo->port.mapbase = (unsigned long)mem;
--	pinfo->port.irq = platform_get_irq(pdev, 0);
+-	free_netdev(ndev);
 -
 -	return 0;
 -}
 -#endif
 -
- #ifdef CONFIG_SERIAL_CPM_CONSOLE
- /*
-  *	Print a string to the serial port trying not to disturb
-@@ -1169,12 +965,7 @@ int cpm_uart_drv_get_platform_data(struct platform_device *pdev, int is_con)
- static void cpm_uart_console_write(struct console *co, const char *s,
- 				   u_int count)
+ /**************************************************************************************/
+ 
+ /* handy pointer to the immap */
+@@ -1167,7 +976,6 @@ static void cleanup_immap(void)
+ 
+ /**************************************************************************************/
+ 
+-#ifdef CONFIG_PPC_CPM_NEW_BINDING
+ static int __devinit find_phy(struct device_node *np,
+                               struct fs_platform_info *fpi)
+ {
+@@ -1399,121 +1207,6 @@ static void __exit fs_cleanup(void)
+ 	of_unregister_platform_driver(&fs_enet_driver);
+ 	cleanup_immap();
+ }
+-#else
+-static int __devinit fs_enet_probe(struct device *dev)
+-{
+-	struct net_device *ndev;
+-
+-	/* no fixup - no device */
+-	if (dev->platform_data == NULL) {
+-		printk(KERN_INFO "fs_enet: "
+-				"probe called with no platform data; "
+-				"remove unused devices\n");
+-		return -ENODEV;
+-	}
+-
+-	ndev = fs_init_instance(dev, dev->platform_data);
+-	if (IS_ERR(ndev))
+-		return PTR_ERR(ndev);
+-	return 0;
+-}
+-
+-static int fs_enet_remove(struct device *dev)
+-{
+-	return fs_cleanup_instance(dev_get_drvdata(dev));
+-}
+-
+-static struct device_driver fs_enet_fec_driver = {
+-	.name	  	= "fsl-cpm-fec",
+-	.bus		= &platform_bus_type,
+-	.probe		= fs_enet_probe,
+-	.remove		= fs_enet_remove,
+-#ifdef CONFIG_PM
+-/*	.suspend	= fs_enet_suspend,	TODO */
+-/*	.resume		= fs_enet_resume,	TODO */
+-#endif
+-};
+-
+-static struct device_driver fs_enet_scc_driver = {
+-	.name	  	= "fsl-cpm-scc",
+-	.bus		= &platform_bus_type,
+-	.probe		= fs_enet_probe,
+-	.remove		= fs_enet_remove,
+-#ifdef CONFIG_PM
+-/*	.suspend	= fs_enet_suspend,	TODO */
+-/*	.resume		= fs_enet_resume,	TODO */
+-#endif
+-};
+-
+-static struct device_driver fs_enet_fcc_driver = {
+-	.name	  	= "fsl-cpm-fcc",
+-	.bus		= &platform_bus_type,
+-	.probe		= fs_enet_probe,
+-	.remove		= fs_enet_remove,
+-#ifdef CONFIG_PM
+-/*	.suspend	= fs_enet_suspend,	TODO */
+-/*	.resume		= fs_enet_resume,	TODO */
+-#endif
+-};
+-
+-static int __init fs_init(void)
+-{
+-	int r;
+-
+-	printk(KERN_INFO
+-			"%s", version);
+-
+-	r = setup_immap();
+-	if (r != 0)
+-		return r;
+-
+-#ifdef CONFIG_FS_ENET_HAS_FCC
+-	/* let's insert mii stuff */
+-	r = fs_enet_mdio_bb_init();
+-
+-	if (r != 0) {
+-		printk(KERN_ERR DRV_MODULE_NAME
+-			"BB PHY init failed.\n");
+-		return r;
+-	}
+-	r = driver_register(&fs_enet_fcc_driver);
+-	if (r != 0)
+-		goto err;
+-#endif
+-
+-#ifdef CONFIG_FS_ENET_HAS_FEC
+-	r =  fs_enet_mdio_fec_init();
+-	if (r != 0) {
+-		printk(KERN_ERR DRV_MODULE_NAME
+-			"FEC PHY init failed.\n");
+-		return r;
+-	}
+-
+-	r = driver_register(&fs_enet_fec_driver);
+-	if (r != 0)
+-		goto err;
+-#endif
+-
+-#ifdef CONFIG_FS_ENET_HAS_SCC
+-	r = driver_register(&fs_enet_scc_driver);
+-	if (r != 0)
+-		goto err;
+-#endif
+-
+-	return 0;
+-err:
+-	cleanup_immap();
+-	return r;
+-}
+-
+-static void __exit fs_cleanup(void)
+-{
+-	driver_unregister(&fs_enet_fec_driver);
+-	driver_unregister(&fs_enet_fcc_driver);
+-	driver_unregister(&fs_enet_scc_driver);
+-	cleanup_immap();
+-}
+-#endif
+ 
+ #ifdef CONFIG_NET_POLL_CONTROLLER
+ static void fs_enet_netpoll(struct net_device *dev)
+diff --git a/drivers/net/fs_enet/fs_enet.h b/drivers/net/fs_enet/fs_enet.h
+index e05389c..db46d2e 100644
+--- a/drivers/net/fs_enet/fs_enet.h
++++ b/drivers/net/fs_enet/fs_enet.h
+@@ -138,10 +138,6 @@ struct fs_enet_private {
+ };
+ 
+ /***************************************************************************/
+-#ifndef CONFIG_PPC_CPM_NEW_BINDING
+-int fs_enet_mdio_bb_init(void);
+-int fs_enet_mdio_fec_init(void);
+-#endif
+ 
+ void fs_init_bds(struct net_device *dev);
+ void fs_cleanup_bds(struct net_device *dev);
+diff --git a/drivers/net/fs_enet/mac-fcc.c b/drivers/net/fs_enet/mac-fcc.c
+index e363211..133125f 100644
+--- a/drivers/net/fs_enet/mac-fcc.c
++++ b/drivers/net/fs_enet/mac-fcc.c
+@@ -33,6 +33,7 @@
+ #include <linux/fs.h>
+ #include <linux/platform_device.h>
+ #include <linux/phy.h>
++#include <linux/of_device.h>
+ 
+ #include <asm/immap_cpm2.h>
+ #include <asm/mpc8260.h>
+@@ -42,10 +43,6 @@
+ #include <asm/irq.h>
+ #include <asm/uaccess.h>
+ 
+-#ifdef CONFIG_PPC_CPM_NEW_BINDING
+-#include <asm/of_device.h>
+-#endif
+-
+ #include "fs_enet.h"
+ 
+ /*************************************************/
+@@ -87,7 +84,6 @@ static inline int fcc_cr_cmd(struct fs_enet_private *fep, u32 op)
+ 
+ static int do_pd_setup(struct fs_enet_private *fep)
  {
 -#ifdef CONFIG_PPC_CPM_NEW_BINDING
- 	struct uart_cpm_port *pinfo = &cpm_uart_ports[co->index];
+ 	struct of_device *ofdev = to_of_device(fep->dev);
+ 	struct fs_platform_info *fpi = fep->fpi;
+ 	int ret = -EINVAL;
+@@ -125,44 +121,6 @@ out_fccp:
+ 	iounmap(fep->fcc.fccp);
+ out:
+ 	return ret;
 -#else
--	struct uart_cpm_port *pinfo =
--	    &cpm_uart_ports[cpm_uart_port_map[co->index]];
+-	struct platform_device *pdev = to_platform_device(fep->dev);
+-	struct resource *r;
+-
+-	/* Fill out IRQ field */
+-	fep->interrupt = platform_get_irq(pdev, 0);
+-	if (fep->interrupt < 0)
+-		return -EINVAL;
+-
+-	/* Attach the memory for the FCC Parameter RAM */
+-	r = platform_get_resource_byname(pdev, IORESOURCE_MEM, "fcc_pram");
+-	fep->fcc.ep = ioremap(r->start, r->end - r->start + 1);
+-	if (fep->fcc.ep == NULL)
+-		return -EINVAL;
+-
+-	r = platform_get_resource_byname(pdev, IORESOURCE_MEM, "fcc_regs");
+-	fep->fcc.fccp = ioremap(r->start, r->end - r->start + 1);
+-	if (fep->fcc.fccp == NULL)
+-		return -EINVAL;
+-
+-	if (fep->fpi->fcc_regs_c) {
+-		fep->fcc.fcccp = (void __iomem *)fep->fpi->fcc_regs_c;
+-	} else {
+-		r = platform_get_resource_byname(pdev, IORESOURCE_MEM,
+-				"fcc_regs_c");
+-		fep->fcc.fcccp = ioremap(r->start,
+-				r->end - r->start + 1);
+-	}
+-
+-	if (fep->fcc.fcccp == NULL)
+-		return -EINVAL;
+-
+-	fep->fcc.mem = (void __iomem *)fep->fpi->mem_offset;
+-	if (fep->fcc.mem == NULL)
+-		return -EINVAL;
+-
+-	return 0;
 -#endif
- 	unsigned int i;
- 	cbd_t __iomem *bdp, *bdbase;
- 	unsigned char *cp;
-@@ -1252,7 +1043,6 @@ static int __init cpm_uart_console_setup(struct console *co, char *options)
- 	struct uart_cpm_port *pinfo;
- 	struct uart_port *port;
+ }
+ 
+ #define FCC_NAPI_RX_EVENT_MSK	(FCC_ENET_RXF | FCC_ENET_RXB)
+@@ -173,17 +131,6 @@ out:
+ static int setup_data(struct net_device *dev)
+ {
+ 	struct fs_enet_private *fep = netdev_priv(dev);
+-#ifndef CONFIG_PPC_CPM_NEW_BINDING
+-	struct fs_platform_info *fpi = fep->fpi;
+-
+-	fpi->cp_command = (fpi->cp_page << 26) |
+-	                  (fpi->cp_block << 21) |
+-	                  (12 << 6);
+-
+-	fep->fcc.idx = fs_get_fcc_index(fpi->fs_no);
+-	if ((unsigned int)fep->fcc.idx >= 3)	/* max 3 FCCs */
+-		return -EINVAL;
+-#endif
+ 
+ 	if (do_pd_setup(fep) != 0)
+ 		return -EINVAL;
+@@ -304,9 +251,6 @@ static void restart(struct net_device *dev)
+ 	fcc_enet_t __iomem *ep = fep->fcc.ep;
+ 	dma_addr_t rx_bd_base_phys, tx_bd_base_phys;
+ 	u16 paddrh, paddrm, paddrl;
+-#ifndef CONFIG_PPC_CPM_NEW_BINDING
+-	u16 mem_addr;
+-#endif
+ 	const unsigned char *mac;
+ 	int i;
+ 
+@@ -338,19 +282,10 @@ static void restart(struct net_device *dev)
+ 	 * this area.
+ 	 */
  
 -#ifdef CONFIG_PPC_CPM_NEW_BINDING
- 	struct device_node *np = NULL;
- 	int i = 0;
+ 	W16(ep, fen_genfcc.fcc_riptr, fpi->dpram_offset);
+ 	W16(ep, fen_genfcc.fcc_tiptr, fpi->dpram_offset + 32);
  
-@@ -1284,35 +1074,6 @@ static int __init cpm_uart_console_setup(struct console *co, char *options)
- 	if (ret)
- 		return ret;
- 
+ 	W16(ep, fen_padptr, fpi->dpram_offset + 64);
 -#else
+-	mem_addr = (u32) fep->fcc.mem;	/* de-fixup dpram offset */
 -
--	struct fs_uart_platform_info *pdata;
--	struct platform_device* pdev = early_uart_get_pdev(co->index);
+-	W16(ep, fen_genfcc.fcc_riptr, (mem_addr & 0xffff));
+-	W16(ep, fen_genfcc.fcc_tiptr, ((mem_addr + 32) & 0xffff));
 -
--	if (!pdev) {
--		pr_info("cpm_uart: console: compat mode\n");
--		/* compatibility - will be cleaned up */
--		cpm_uart_init_portdesc();
--	}
--
--	port =
--	    (struct uart_port *)&cpm_uart_ports[cpm_uart_port_map[co->index]];
--	pinfo = (struct uart_cpm_port *)port;
--	if (!pdev) {
--		if (pinfo->set_lineif)
--			pinfo->set_lineif(pinfo);
--	} else {
--		pdata = pdev->dev.platform_data;
--		if (pdata)
--			if (pdata->init_ioports)
--				pdata->init_ioports(pdata);
--
--		cpm_uart_drv_get_platform_data(pdev, 1);
--	}
--
--	pinfo->flags |= FLAG_CONSOLE;
+-	W16(ep, fen_padptr, mem_addr + 64);
+-#endif
+ 
+ 	/* fill with special symbol...  */
+ 	memset_io(fep->fcc.mem + fpi->dpram_offset + 64, 0x88, 32);
+diff --git a/drivers/net/fs_enet/mac-fec.c b/drivers/net/fs_enet/mac-fec.c
+index 8a311d1..0a7d1c5 100644
+--- a/drivers/net/fs_enet/mac-fec.c
++++ b/drivers/net/fs_enet/mac-fec.c
+@@ -32,6 +32,7 @@
+ #include <linux/bitops.h>
+ #include <linux/fs.h>
+ #include <linux/platform_device.h>
++#include <linux/of_device.h>
+ 
+ #include <asm/irq.h>
+ #include <asm/uaccess.h>
+@@ -43,10 +44,6 @@
+ #include <asm/cpm1.h>
+ #endif
+ 
+-#ifdef CONFIG_PPC_CPM_NEW_BINDING
+-#include <asm/of_device.h>
 -#endif
 -
- 	if (options) {
- 		uart_parse_options(options, &baud, &parity, &bits, &flow);
- 	} else {
-@@ -1386,7 +1147,6 @@ static struct uart_driver cpm_reg = {
- 	.nr		= UART_NR,
+ #include "fs_enet.h"
+ #include "fec.h"
+ 
+@@ -99,7 +96,6 @@ static int whack_reset(fec_t __iomem *fecp)
+ 
+ static int do_pd_setup(struct fs_enet_private *fep)
+ {
+-#ifdef CONFIG_PPC_CPM_NEW_BINDING
+ 	struct of_device *ofdev = to_of_device(fep->dev);
+ 
+ 	fep->interrupt = of_irq_to_resource(ofdev->node, 0, NULL);
+@@ -111,23 +107,6 @@ static int do_pd_setup(struct fs_enet_private *fep)
+ 		return -EINVAL;
+ 
+ 	return 0;
+-#else
+-	struct platform_device *pdev = to_platform_device(fep->dev);
+-	struct resource	*r;
+-
+-	/* Fill out IRQ field */
+-	fep->interrupt = platform_get_irq_byname(pdev,"interrupt");
+-	if (fep->interrupt < 0)
+-		return -EINVAL;
+-
+-	r = platform_get_resource_byname(pdev, IORESOURCE_MEM, "regs");
+-	fep->fec.fecp = ioremap(r->start, r->end - r->start + 1);
+-
+-	if(fep->fec.fecp == NULL)
+-		return -EINVAL;
+-
+-	return 0;
+-#endif
+ }
+ 
+ #define FEC_NAPI_RX_EVENT_MSK	(FEC_ENET_RXF | FEC_ENET_RXB)
+diff --git a/drivers/net/fs_enet/mac-scc.c b/drivers/net/fs_enet/mac-scc.c
+index d7ca319..029b3c7 100644
+--- a/drivers/net/fs_enet/mac-scc.c
++++ b/drivers/net/fs_enet/mac-scc.c
+@@ -32,6 +32,7 @@
+ #include <linux/bitops.h>
+ #include <linux/fs.h>
+ #include <linux/platform_device.h>
++#include <linux/of_platform.h>
+ 
+ #include <asm/irq.h>
+ #include <asm/uaccess.h>
+@@ -43,10 +44,6 @@
+ #include <asm/cpm1.h>
+ #endif
+ 
+-#ifdef CONFIG_PPC_CPM_NEW_BINDING
+-#include <asm/of_platform.h>
+-#endif
+-
+ #include "fs_enet.h"
+ 
+ /*************************************************/
+@@ -99,7 +96,6 @@ static inline int scc_cr_cmd(struct fs_enet_private *fep, u32 op)
+ 
+ static int do_pd_setup(struct fs_enet_private *fep)
+ {
+-#ifdef CONFIG_PPC_CPM_NEW_BINDING
+ 	struct of_device *ofdev = to_of_device(fep->dev);
+ 
+ 	fep->interrupt = of_irq_to_resource(ofdev->node, 0, NULL);
+@@ -115,27 +111,6 @@ static int do_pd_setup(struct fs_enet_private *fep)
+ 		iounmap(fep->scc.sccp);
+ 		return -EINVAL;
+ 	}
+-#else
+-	struct platform_device *pdev = to_platform_device(fep->dev);
+-	struct resource *r;
+-
+-	/* Fill out IRQ field */
+-	fep->interrupt = platform_get_irq_byname(pdev, "interrupt");
+-	if (fep->interrupt < 0)
+-		return -EINVAL;
+-
+-	r = platform_get_resource_byname(pdev, IORESOURCE_MEM, "regs");
+-	fep->scc.sccp = ioremap(r->start, r->end - r->start + 1);
+-
+-	if (fep->scc.sccp == NULL)
+-		return -EINVAL;
+-
+-	r = platform_get_resource_byname(pdev, IORESOURCE_MEM, "pram");
+-	fep->scc.ep = ioremap(r->start, r->end - r->start + 1);
+-
+-	if (fep->scc.ep == NULL)
+-		return -EINVAL;
+-#endif
+ 
+ 	return 0;
+ }
+@@ -149,16 +124,6 @@ static int setup_data(struct net_device *dev)
+ {
+ 	struct fs_enet_private *fep = netdev_priv(dev);
+ 
+-#ifndef CONFIG_PPC_CPM_NEW_BINDING
+-	struct fs_platform_info *fpi = fep->fpi;
+-
+-	fep->scc.idx = fs_get_scc_index(fpi->fs_no);
+-	if ((unsigned int)fep->fcc.idx >= 4) /* max 4 SCCs */
+-		return -EINVAL;
+-
+-	fpi->cp_command = fep->fcc.idx << 6;
+-#endif
+-
+ 	do_pd_setup(fep);
+ 
+ 	fep->scc.hthi = 0;
+diff --git a/drivers/net/fs_enet/mii-bitbang.c b/drivers/net/fs_enet/mii-bitbang.c
+index 1620030..be4b72f 100644
+--- a/drivers/net/fs_enet/mii-bitbang.c
++++ b/drivers/net/fs_enet/mii-bitbang.c
+@@ -22,10 +22,7 @@
+ #include <linux/mii.h>
+ #include <linux/platform_device.h>
+ #include <linux/mdio-bitbang.h>
+-
+-#ifdef CONFIG_PPC_CPM_NEW_BINDING
+ #include <linux/of_platform.h>
+-#endif
+ 
+ #include "fs_enet.h"
+ 
+@@ -110,7 +107,6 @@ static struct mdiobb_ops bb_ops = {
+ 	.get_mdio_data = mdio_read,
  };
  
 -#ifdef CONFIG_PPC_CPM_NEW_BINDING
- static int probe_index;
+ static int __devinit fs_mii_bitbang_init(struct mii_bus *bus,
+                                          struct device_node *np)
+ {
+@@ -271,106 +267,3 @@ static void fs_enet_mdio_bb_exit(void)
  
- static int __devinit cpm_uart_probe(struct of_device *ofdev,
-@@ -1457,135 +1217,6 @@ static void __exit cpm_uart_exit(void)
- 	of_unregister_platform_driver(&cpm_uart_driver);
- 	uart_unregister_driver(&cpm_reg);
- }
+ module_init(fs_enet_mdio_bb_init);
+ module_exit(fs_enet_mdio_bb_exit);
 -#else
--static int cpm_uart_drv_probe(struct device *dev)
+-static int __devinit fs_mii_bitbang_init(struct bb_info *bitbang,
+-                                         struct fs_mii_bb_platform_info *fmpi)
 -{
--	struct platform_device  *pdev = to_platform_device(dev);
--	struct fs_uart_platform_info *pdata;
--	int ret = -ENODEV;
+-	bitbang->dir = (u32 __iomem *)fmpi->mdio_dir.offset;
+-	bitbang->dat = (u32 __iomem *)fmpi->mdio_dat.offset;
+-	bitbang->mdio_msk = 1U << (31 - fmpi->mdio_dat.bit);
+-	bitbang->mdc_msk = 1U << (31 - fmpi->mdc_dat.bit);
 -
--	if(!pdev) {
--		printk(KERN_ERR"CPM UART: platform data missing!\n");
--		return ret;
+-	return 0;
+-}
+-
+-static int __devinit fs_enet_mdio_probe(struct device *dev)
+-{
+-	struct platform_device *pdev = to_platform_device(dev);
+-	struct fs_mii_bb_platform_info *pdata;
+-	struct mii_bus *new_bus;
+-	struct bb_info *bitbang;
+-	int err = 0;
+-
+-	if (NULL == dev)
+-		return -EINVAL;
+-
+-	bitbang = kzalloc(sizeof(struct bb_info), GFP_KERNEL);
+-
+-	if (NULL == bitbang)
+-		return -ENOMEM;
+-
+-	bitbang->ctrl.ops = &bb_ops;
+-
+-	new_bus = alloc_mdio_bitbang(&bitbang->ctrl);
+-
+-	if (NULL == new_bus)
+-		return -ENOMEM;
+-
+-	new_bus->name = "BB MII Bus",
+-	snprintf(new_bus->id, MII_BUS_ID_SIZE, "%x", pdev->id);
+-
+-	new_bus->phy_mask = ~0x9;
+-	pdata = (struct fs_mii_bb_platform_info *)pdev->dev.platform_data;
+-
+-	if (NULL == pdata) {
+-		printk(KERN_ERR "gfar mdio %d: Missing platform data!\n", pdev->id);
+-		return -ENODEV;
 -	}
 -
--	pdata = pdev->dev.platform_data;
+-	/*set up workspace*/
+-	fs_mii_bitbang_init(bitbang, pdata);
 -
--	if ((ret = cpm_uart_drv_get_platform_data(pdev, 0)))
--		return ret;
+-	new_bus->priv = bitbang;
 -
--	pr_debug("cpm_uart_drv_probe: Adding CPM UART %d\n", cpm_uart_id2nr(pdata->fs_no));
+-	new_bus->irq = pdata->irq;
 -
--	if (pdata->init_ioports)
--                pdata->init_ioports(pdata);
+-	new_bus->dev = dev;
+-	dev_set_drvdata(dev, new_bus);
 -
--	ret = uart_add_one_port(&cpm_reg, &cpm_uart_ports[pdata->fs_no].port);
+-	err = mdiobus_register(new_bus);
 -
--        return ret;
+-	if (0 != err) {
+-		printk (KERN_ERR "%s: Cannot register as MDIO bus\n",
+-				new_bus->name);
+-		goto bus_register_fail;
+-	}
+-
+-	return 0;
+-
+-bus_register_fail:
+-	free_mdio_bitbang(new_bus);
+-	kfree(bitbang);
+-
+-	return err;
 -}
 -
--static int cpm_uart_drv_remove(struct device *dev)
+-static int fs_enet_mdio_remove(struct device *dev)
 -{
--	struct platform_device  *pdev = to_platform_device(dev);
--	struct fs_uart_platform_info *pdata = pdev->dev.platform_data;
+-	struct mii_bus *bus = dev_get_drvdata(dev);
 -
--	pr_debug("cpm_uart_drv_remove: Removing CPM UART %d\n",
--			cpm_uart_id2nr(pdata->fs_no));
+-	mdiobus_unregister(bus);
 -
--        uart_remove_one_port(&cpm_reg, &cpm_uart_ports[pdata->fs_no].port);
--        return 0;
+-	dev_set_drvdata(dev, NULL);
+-
+-	free_mdio_bitbang(bus);
+-
+-	return 0;
 -}
 -
--static struct device_driver cpm_smc_uart_driver = {
--        .name   = "fsl-cpm-smc:uart",
--        .bus    = &platform_bus_type,
--        .probe  = cpm_uart_drv_probe,
--        .remove = cpm_uart_drv_remove,
+-static struct device_driver fs_enet_bb_mdio_driver = {
+-	.name = "fsl-bb-mdio",
+-	.bus = &platform_bus_type,
+-	.probe = fs_enet_mdio_probe,
+-	.remove = fs_enet_mdio_remove,
 -};
 -
--static struct device_driver cpm_scc_uart_driver = {
--        .name   = "fsl-cpm-scc:uart",
--        .bus    = &platform_bus_type,
--        .probe  = cpm_uart_drv_probe,
--        .remove = cpm_uart_drv_remove,
--};
+-int fs_enet_mdio_bb_init(void)
+-{
+-	return driver_register(&fs_enet_bb_mdio_driver);
+-}
 -
--/*
--   This is supposed to match uart devices on platform bus,
--   */
--static int match_is_uart (struct device* dev, void* data)
+-void fs_enet_mdio_bb_exit(void)
+-{
+-	driver_unregister(&fs_enet_bb_mdio_driver);
+-}
+-#endif
+diff --git a/drivers/net/fs_enet/mii-fec.c b/drivers/net/fs_enet/mii-fec.c
+index f0014cf..695f74c 100644
+--- a/drivers/net/fs_enet/mii-fec.c
++++ b/drivers/net/fs_enet/mii-fec.c
+@@ -31,15 +31,12 @@
+ #include <linux/ethtool.h>
+ #include <linux/bitops.h>
+ #include <linux/platform_device.h>
++#include <linux/of_platform.h>
+ 
+ #include <asm/pgtable.h>
+ #include <asm/irq.h>
+ #include <asm/uaccess.h>
+ 
+-#ifdef CONFIG_PPC_CPM_NEW_BINDING
+-#include <asm/of_platform.h>
+-#endif
+-
+ #include "fs_enet.h"
+ #include "fec.h"
+ 
+@@ -51,52 +48,6 @@
+ 
+ #define FEC_MII_LOOPS	10000
+ 
+-#ifndef CONFIG_PPC_CPM_NEW_BINDING
+-static int match_has_phy (struct device *dev, void* data)
 -{
 -	struct platform_device* pdev = container_of(dev, struct platform_device, dev);
--	int ret = 0;
--	/* this was setfunc as uart */
--	if(strstr(pdev->name,":uart")) {
--		ret = 1;
+-	struct fs_platform_info* fpi;
+-	if(strcmp(pdev->name, (char*)data))
+-	{
+-	    return 0;
 -	}
--	return ret;
--}
 -
--
--static int cpm_uart_init(void) {
--
--	int ret;
--	int i;
--	struct device *dev;
--	printk(KERN_INFO "Serial: CPM driver $Revision: 0.02 $\n");
--
--	/* lookup the bus for uart devices */
--	dev = bus_find_device(&platform_bus_type, NULL, 0, match_is_uart);
--
--	/* There are devices on the bus - all should be OK  */
--	if (dev) {
--		cpm_uart_count();
--		cpm_reg.nr = cpm_uart_nr;
--
--		if (!(ret = uart_register_driver(&cpm_reg))) {
--			if ((ret = driver_register(&cpm_smc_uart_driver))) {
--				uart_unregister_driver(&cpm_reg);
--				return ret;
--			}
--			if ((ret = driver_register(&cpm_scc_uart_driver))) {
--				driver_unregister(&cpm_scc_uart_driver);
--				uart_unregister_driver(&cpm_reg);
--			}
--		}
--	} else {
--	/* No capable platform devices found - falling back to legacy mode */
--		pr_info("cpm_uart: WARNING: no UART devices found on platform bus!\n");
--		pr_info(
--		"cpm_uart: the driver will guess configuration, but this mode is no longer supported.\n");
--
--		/* Don't run this again, if the console driver did it already */
--		if (cpm_uart_nr == 0)
--			cpm_uart_init_portdesc();
--
--		cpm_reg.nr = cpm_uart_nr;
--		ret = uart_register_driver(&cpm_reg);
--
--		if (ret)
--			return ret;
--
--		for (i = 0; i < cpm_uart_nr; i++) {
--			int con = cpm_uart_port_map[i];
--			cpm_uart_ports[con].port.line = i;
--			cpm_uart_ports[con].port.flags = UPF_BOOT_AUTOCONF;
--			if (cpm_uart_ports[con].set_lineif)
--				cpm_uart_ports[con].set_lineif(&cpm_uart_ports[con]);
--			uart_add_one_port(&cpm_reg, &cpm_uart_ports[con].port);
--		}
--
--	}
--	return ret;
--}
--
--static void __exit cpm_uart_exit(void)
--{
--	driver_unregister(&cpm_scc_uart_driver);
--	driver_unregister(&cpm_smc_uart_driver);
--	uart_unregister_driver(&cpm_reg);
--}
--#endif
- 
- module_init(cpm_uart_init);
- module_exit(cpm_uart_exit);
-diff --git a/drivers/serial/cpm_uart/cpm_uart_cpm1.c b/drivers/serial/cpm_uart/cpm_uart_cpm1.c
-index bec0c97..0f0aff0 100644
---- a/drivers/serial/cpm_uart/cpm_uart_cpm1.c
-+++ b/drivers/serial/cpm_uart/cpm_uart_cpm1.c
-@@ -51,7 +51,6 @@
- 
- /**************************************************************/
- 
--#ifdef CONFIG_PPC_CPM_NEW_BINDING
- void cpm_line_cr_cmd(struct uart_cpm_port *port, int cmd)
- {
- 	cpm_command(port->command, cmd);
-@@ -68,75 +67,6 @@ void cpm_uart_unmap_pram(struct uart_cpm_port *port, void __iomem *pram)
- 	iounmap(pram);
- }
- 
--#else
--void cpm_line_cr_cmd(struct uart_cpm_port *port, int cmd)
--{
--	ushort val;
--	int line = port - cpm_uart_ports;
--	volatile cpm8xx_t *cp = cpmp;
--
--	switch (line) {
--	case UART_SMC1:
--		val = mk_cr_cmd(CPM_CR_CH_SMC1, cmd) | CPM_CR_FLG;
--		break;
--	case UART_SMC2:
--		val = mk_cr_cmd(CPM_CR_CH_SMC2, cmd) | CPM_CR_FLG;
--		break;
--	case UART_SCC1:
--		val = mk_cr_cmd(CPM_CR_CH_SCC1, cmd) | CPM_CR_FLG;
--		break;
--	case UART_SCC2:
--		val = mk_cr_cmd(CPM_CR_CH_SCC2, cmd) | CPM_CR_FLG;
--		break;
--	case UART_SCC3:
--		val = mk_cr_cmd(CPM_CR_CH_SCC3, cmd) | CPM_CR_FLG;
--		break;
--	case UART_SCC4:
--		val = mk_cr_cmd(CPM_CR_CH_SCC4, cmd) | CPM_CR_FLG;
--		break;
--	default:
--		return;
--
--	}
--	cp->cp_cpcr = val;
--	while (cp->cp_cpcr & CPM_CR_FLG) ;
--}
--
--void smc1_lineif(struct uart_cpm_port *pinfo)
--{
--	pinfo->brg = 1;
--}
--
--void smc2_lineif(struct uart_cpm_port *pinfo)
--{
--	pinfo->brg = 2;
--}
--
--void scc1_lineif(struct uart_cpm_port *pinfo)
--{
--	/* XXX SCC1: insert port configuration here */
--	pinfo->brg = 1;
--}
--
--void scc2_lineif(struct uart_cpm_port *pinfo)
--{
--	/* XXX SCC2: insert port configuration here */
--	pinfo->brg = 2;
--}
--
--void scc3_lineif(struct uart_cpm_port *pinfo)
--{
--	/* XXX SCC3: insert port configuration here */
--	pinfo->brg = 3;
--}
--
--void scc4_lineif(struct uart_cpm_port *pinfo)
--{
--	/* XXX SCC4: insert port configuration here */
--	pinfo->brg = 4;
--}
--#endif
--
- /*
-  * Allocate DP-Ram and memory buffers. We need to allocate a transmit and
-  * receive buffer descriptors from dual port ram, and a character
-@@ -205,101 +135,3 @@ void cpm_uart_freebuf(struct uart_cpm_port *pinfo)
- 
- 	cpm_dpfree(pinfo->dp_addr);
- }
--
--#ifndef CONFIG_PPC_CPM_NEW_BINDING
--/* Setup any dynamic params in the uart desc */
--int cpm_uart_init_portdesc(void)
--{
--	pr_debug("CPM uart[-]:init portdesc\n");
--
--	cpm_uart_nr = 0;
--#ifdef CONFIG_SERIAL_CPM_SMC1
--	cpm_uart_ports[UART_SMC1].smcp = &cpmp->cp_smc[0];
--/*
-- *  Is SMC1 being relocated?
-- */
--# ifdef CONFIG_I2C_SPI_SMC1_UCODE_PATCH
--	cpm_uart_ports[UART_SMC1].smcup =
--	    (smc_uart_t *) & cpmp->cp_dparam[0x3C0];
--# else
--	cpm_uart_ports[UART_SMC1].smcup =
--	    (smc_uart_t *) & cpmp->cp_dparam[PROFF_SMC1];
--# endif
--	cpm_uart_ports[UART_SMC1].port.mapbase =
--	    (unsigned long)&cpmp->cp_smc[0];
--	cpm_uart_ports[UART_SMC1].smcp->smc_smcm |= (SMCM_RX | SMCM_TX);
--	cpm_uart_ports[UART_SMC1].smcp->smc_smcmr &= ~(SMCMR_REN | SMCMR_TEN);
--	cpm_uart_ports[UART_SMC1].port.uartclk = uart_clock();
--	cpm_uart_port_map[cpm_uart_nr++] = UART_SMC1;
--#endif
--
--#ifdef CONFIG_SERIAL_CPM_SMC2
--	cpm_uart_ports[UART_SMC2].smcp = &cpmp->cp_smc[1];
--	cpm_uart_ports[UART_SMC2].smcup =
--	    (smc_uart_t *) & cpmp->cp_dparam[PROFF_SMC2];
--	cpm_uart_ports[UART_SMC2].port.mapbase =
--	    (unsigned long)&cpmp->cp_smc[1];
--	cpm_uart_ports[UART_SMC2].smcp->smc_smcm |= (SMCM_RX | SMCM_TX);
--	cpm_uart_ports[UART_SMC2].smcp->smc_smcmr &= ~(SMCMR_REN | SMCMR_TEN);
--	cpm_uart_ports[UART_SMC2].port.uartclk = uart_clock();
--	cpm_uart_port_map[cpm_uart_nr++] = UART_SMC2;
--#endif
--
--#ifdef CONFIG_SERIAL_CPM_SCC1
--	cpm_uart_ports[UART_SCC1].sccp = &cpmp->cp_scc[0];
--	cpm_uart_ports[UART_SCC1].sccup =
--	    (scc_uart_t *) & cpmp->cp_dparam[PROFF_SCC1];
--	cpm_uart_ports[UART_SCC1].port.mapbase =
--	    (unsigned long)&cpmp->cp_scc[0];
--	cpm_uart_ports[UART_SCC1].sccp->scc_sccm &=
--	    ~(UART_SCCM_TX | UART_SCCM_RX);
--	cpm_uart_ports[UART_SCC1].sccp->scc_gsmrl &=
--	    ~(SCC_GSMRL_ENR | SCC_GSMRL_ENT);
--	cpm_uart_ports[UART_SCC1].port.uartclk = uart_clock();
--	cpm_uart_port_map[cpm_uart_nr++] = UART_SCC1;
--#endif
--
--#ifdef CONFIG_SERIAL_CPM_SCC2
--	cpm_uart_ports[UART_SCC2].sccp = &cpmp->cp_scc[1];
--	cpm_uart_ports[UART_SCC2].sccup =
--	    (scc_uart_t *) & cpmp->cp_dparam[PROFF_SCC2];
--	cpm_uart_ports[UART_SCC2].port.mapbase =
--	    (unsigned long)&cpmp->cp_scc[1];
--	cpm_uart_ports[UART_SCC2].sccp->scc_sccm &=
--	    ~(UART_SCCM_TX | UART_SCCM_RX);
--	cpm_uart_ports[UART_SCC2].sccp->scc_gsmrl &=
--	    ~(SCC_GSMRL_ENR | SCC_GSMRL_ENT);
--	cpm_uart_ports[UART_SCC2].port.uartclk = uart_clock();
--	cpm_uart_port_map[cpm_uart_nr++] = UART_SCC2;
--#endif
--
--#ifdef CONFIG_SERIAL_CPM_SCC3
--	cpm_uart_ports[UART_SCC3].sccp = &cpmp->cp_scc[2];
--	cpm_uart_ports[UART_SCC3].sccup =
--	    (scc_uart_t *) & cpmp->cp_dparam[PROFF_SCC3];
--	cpm_uart_ports[UART_SCC3].port.mapbase =
--	    (unsigned long)&cpmp->cp_scc[2];
--	cpm_uart_ports[UART_SCC3].sccp->scc_sccm &=
--	    ~(UART_SCCM_TX | UART_SCCM_RX);
--	cpm_uart_ports[UART_SCC3].sccp->scc_gsmrl &=
--	    ~(SCC_GSMRL_ENR | SCC_GSMRL_ENT);
--	cpm_uart_ports[UART_SCC3].port.uartclk = uart_clock();
--	cpm_uart_port_map[cpm_uart_nr++] = UART_SCC3;
--#endif
--
--#ifdef CONFIG_SERIAL_CPM_SCC4
--	cpm_uart_ports[UART_SCC4].sccp = &cpmp->cp_scc[3];
--	cpm_uart_ports[UART_SCC4].sccup =
--	    (scc_uart_t *) & cpmp->cp_dparam[PROFF_SCC4];
--	cpm_uart_ports[UART_SCC4].port.mapbase =
--	    (unsigned long)&cpmp->cp_scc[3];
--	cpm_uart_ports[UART_SCC4].sccp->scc_sccm &=
--	    ~(UART_SCCM_TX | UART_SCCM_RX);
--	cpm_uart_ports[UART_SCC4].sccp->scc_gsmrl &=
--	    ~(SCC_GSMRL_ENR | SCC_GSMRL_ENT);
--	cpm_uart_ports[UART_SCC4].port.uartclk = uart_clock();
--	cpm_uart_port_map[cpm_uart_nr++] = UART_SCC4;
--#endif
+-	fpi = pdev->dev.platform_data;
+-	if((fpi)&&(fpi->has_phy))
+-		return 1;
 -	return 0;
 -}
--#endif
-diff --git a/drivers/serial/cpm_uart/cpm_uart_cpm1.h b/drivers/serial/cpm_uart/cpm_uart_cpm1.h
-index b805698..10eecd6 100644
---- a/drivers/serial/cpm_uart/cpm_uart_cpm1.h
-+++ b/drivers/serial/cpm_uart/cpm_uart_cpm1.h
-@@ -12,16 +12,6 @@
- 
- #include <asm/cpm1.h>
- 
--/* defines for IRQs */
--#ifndef CONFIG_PPC_CPM_NEW_BINDING
--#define SMC1_IRQ	(CPM_IRQ_OFFSET + CPMVEC_SMC1)
--#define SMC2_IRQ	(CPM_IRQ_OFFSET + CPMVEC_SMC2)
--#define SCC1_IRQ	(CPM_IRQ_OFFSET + CPMVEC_SCC1)
--#define SCC2_IRQ	(CPM_IRQ_OFFSET + CPMVEC_SCC2)
--#define SCC3_IRQ	(CPM_IRQ_OFFSET + CPMVEC_SCC3)
--#define SCC4_IRQ	(CPM_IRQ_OFFSET + CPMVEC_SCC4)
--#endif
 -
- static inline void cpm_set_brg(int brg, int baud)
- {
- 	cpm_setbrg(brg, baud);
-diff --git a/drivers/serial/cpm_uart/cpm_uart_cpm2.c b/drivers/serial/cpm_uart/cpm_uart_cpm2.c
-index e53524c..b8db4d3 100644
---- a/drivers/serial/cpm_uart/cpm_uart_cpm2.c
-+++ b/drivers/serial/cpm_uart/cpm_uart_cpm2.c
-@@ -41,9 +41,7 @@
- #include <asm/io.h>
- #include <asm/irq.h>
- #include <asm/fs_pd.h>
--#ifdef CONFIG_PPC_CPM_NEW_BINDING
- #include <asm/prom.h>
--#endif
- 
- #include <linux/serial_core.h>
- #include <linux/kernel.h>
-@@ -52,7 +50,6 @@
- 
- /**************************************************************/
- 
--#ifdef CONFIG_PPC_CPM_NEW_BINDING
- void cpm_line_cr_cmd(struct uart_cpm_port *port, int cmd)
- {
- 	cpm_command(port->command, cmd);
-@@ -106,172 +103,6 @@ void cpm_uart_unmap_pram(struct uart_cpm_port *port, void __iomem *pram)
- 		iounmap(pram);
- }
- 
--#else
--void cpm_line_cr_cmd(struct uart_cpm_port *port, int cmd)
+-static int fs_mii_fec_init(struct fec_info* fec, struct fs_mii_fec_platform_info *fmpi)
 -{
--	ulong val;
--	int line = port - cpm_uart_ports;
--	volatile cpm_cpm2_t *cp = cpm2_map(im_cpm);
+-	struct resource *r;
+-	fec_t __iomem *fecp;
+-	char* name = "fsl-cpm-fec";
 -
+-	/* we need fec in order to be useful */
+-	struct platform_device *fec_pdev =
+-		container_of(bus_find_device(&platform_bus_type, NULL, name, match_has_phy),
+-				struct platform_device, dev);
 -
--	switch (line) {
--	case UART_SMC1:
--		val = mk_cr_cmd(CPM_CR_SMC1_PAGE, CPM_CR_SMC1_SBLOCK, 0,
--				cmd) | CPM_CR_FLG;
--		break;
--	case UART_SMC2:
--		val = mk_cr_cmd(CPM_CR_SMC2_PAGE, CPM_CR_SMC2_SBLOCK, 0,
--				cmd) | CPM_CR_FLG;
--		break;
--	case UART_SCC1:
--		val = mk_cr_cmd(CPM_CR_SCC1_PAGE, CPM_CR_SCC1_SBLOCK, 0,
--				cmd) | CPM_CR_FLG;
--		break;
--	case UART_SCC2:
--		val = mk_cr_cmd(CPM_CR_SCC2_PAGE, CPM_CR_SCC2_SBLOCK, 0,
--				cmd) | CPM_CR_FLG;
--		break;
--	case UART_SCC3:
--		val = mk_cr_cmd(CPM_CR_SCC3_PAGE, CPM_CR_SCC3_SBLOCK, 0,
--				cmd) | CPM_CR_FLG;
--		break;
--	case UART_SCC4:
--		val = mk_cr_cmd(CPM_CR_SCC4_PAGE, CPM_CR_SCC4_SBLOCK, 0,
--				cmd) | CPM_CR_FLG;
--		break;
--	default:
--		return;
--
+-	if(fec_pdev == NULL) {
+-		printk(KERN_ERR"Unable to find PHY for %s", name);
+-		return -ENODEV;
 -	}
--	cp->cp_cpcr = val;
--	while (cp->cp_cpcr & CPM_CR_FLG) ;
 -
--	cpm2_unmap(cp);
--}
+-	r = platform_get_resource_byname(fec_pdev, IORESOURCE_MEM, "regs");
 -
--void smc1_lineif(struct uart_cpm_port *pinfo)
--{
--	volatile iop_cpm2_t *io = cpm2_map(im_ioport);
--	volatile cpmux_t *cpmux = cpm2_map(im_cpmux);
+-	fec->fecp = fecp = ioremap(r->start,sizeof(fec_t));
+-	fec->mii_speed = fmpi->mii_speed;
 -
--	/* SMC1 is only on port D */
--	io->iop_ppard |= 0x00c00000;
--	io->iop_pdird |= 0x00400000;
--	io->iop_pdird &= ~0x00800000;
--	io->iop_psord &= ~0x00c00000;
--
--	/* Wire BRG1 to SMC1 */
--	cpmux->cmx_smr &= 0x0f;
--	pinfo->brg = 1;
--
--	cpm2_unmap(cpmux);
--	cpm2_unmap(io);
--}
--
--void smc2_lineif(struct uart_cpm_port *pinfo)
--{
--	volatile iop_cpm2_t *io = cpm2_map(im_ioport);
--	volatile cpmux_t *cpmux = cpm2_map(im_cpmux);
--
--	/* SMC2 is only on port A */
--	io->iop_ppara |= 0x00c00000;
--	io->iop_pdira |= 0x00400000;
--	io->iop_pdira &= ~0x00800000;
--	io->iop_psora &= ~0x00c00000;
--
--	/* Wire BRG2 to SMC2 */
--	cpmux->cmx_smr &= 0xf0;
--	pinfo->brg = 2;
--
--	cpm2_unmap(cpmux);
--	cpm2_unmap(io);
--}
--
--void scc1_lineif(struct uart_cpm_port *pinfo)
--{
--	volatile iop_cpm2_t *io = cpm2_map(im_ioport);
--	volatile cpmux_t *cpmux = cpm2_map(im_cpmux);
--
--	/* Use Port D for SCC1 instead of other functions.  */
--	io->iop_ppard |= 0x00000003;
--	io->iop_psord &= ~0x00000001;	/* Rx */
--	io->iop_psord |= 0x00000002;	/* Tx */
--	io->iop_pdird &= ~0x00000001;	/* Rx */
--	io->iop_pdird |= 0x00000002;	/* Tx */
--
--	/* Wire BRG1 to SCC1 */
--	cpmux->cmx_scr &= 0x00ffffff;
--	cpmux->cmx_scr |= 0x00000000;
--	pinfo->brg = 1;
--
--	cpm2_unmap(cpmux);
--	cpm2_unmap(io);
--}
--
--void scc2_lineif(struct uart_cpm_port *pinfo)
--{
--	/*
--	 * STx GP3 uses the SCC2 secondary option pin assignment
--	 * which this driver doesn't account for in the static
--	 * pin assignments. This kind of board specific info
--	 * really has to get out of the driver so boards can
--	 * be supported in a sane fashion.
--	 */
--	volatile cpmux_t *cpmux = cpm2_map(im_cpmux);
--#ifndef CONFIG_STX_GP3
--	volatile iop_cpm2_t *io = cpm2_map(im_ioport);
--
--	io->iop_pparb |= 0x008b0000;
--	io->iop_pdirb |= 0x00880000;
--	io->iop_psorb |= 0x00880000;
--	io->iop_pdirb &= ~0x00030000;
--	io->iop_psorb &= ~0x00030000;
--#endif
--	cpmux->cmx_scr &= 0xff00ffff;
--	cpmux->cmx_scr |= 0x00090000;
--	pinfo->brg = 2;
--
--	cpm2_unmap(cpmux);
--	cpm2_unmap(io);
--}
--
--void scc3_lineif(struct uart_cpm_port *pinfo)
--{
--	volatile iop_cpm2_t *io = cpm2_map(im_ioport);
--	volatile cpmux_t *cpmux = cpm2_map(im_cpmux);
--
--	io->iop_pparb |= 0x008b0000;
--	io->iop_pdirb |= 0x00880000;
--	io->iop_psorb |= 0x00880000;
--	io->iop_pdirb &= ~0x00030000;
--	io->iop_psorb &= ~0x00030000;
--	cpmux->cmx_scr &= 0xffff00ff;
--	cpmux->cmx_scr |= 0x00001200;
--	pinfo->brg = 3;
--
--	cpm2_unmap(cpmux);
--	cpm2_unmap(io);
--}
--
--void scc4_lineif(struct uart_cpm_port *pinfo)
--{
--	volatile iop_cpm2_t *io = cpm2_map(im_ioport);
--	volatile cpmux_t *cpmux = cpm2_map(im_cpmux);
--
--	io->iop_ppard |= 0x00000600;
--	io->iop_psord &= ~0x00000600;	/* Tx/Rx */
--	io->iop_pdird &= ~0x00000200;	/* Rx */
--	io->iop_pdird |= 0x00000400;	/* Tx */
--
--	cpmux->cmx_scr &= 0xffffff00;
--	cpmux->cmx_scr |= 0x0000001b;
--	pinfo->brg = 4;
--
--	cpm2_unmap(cpmux);
--	cpm2_unmap(io);
--}
--#endif
--
- /*
-  * Allocate DP-Ram and memory buffers. We need to allocate a transmit and
-  * receive buffer descriptors from dual port ram, and a character
-@@ -340,111 +171,3 @@ void cpm_uart_freebuf(struct uart_cpm_port *pinfo)
- 
- 	cpm_dpfree(pinfo->dp_addr);
- }
--
--#ifndef CONFIG_PPC_CPM_NEW_BINDING
--/* Setup any dynamic params in the uart desc */
--int cpm_uart_init_portdesc(void)
--{
--#if defined(CONFIG_SERIAL_CPM_SMC1) || defined(CONFIG_SERIAL_CPM_SMC2)
--	u16 *addr;
--#endif
--	pr_debug("CPM uart[-]:init portdesc\n");
--
--	cpm_uart_nr = 0;
--#ifdef CONFIG_SERIAL_CPM_SMC1
--	cpm_uart_ports[UART_SMC1].smcp = (smc_t *) cpm2_map(im_smc[0]);
--	cpm_uart_ports[UART_SMC1].port.mapbase =
--	    (unsigned long)cpm_uart_ports[UART_SMC1].smcp;
--
--	cpm_uart_ports[UART_SMC1].smcup =
--	    (smc_uart_t *) cpm2_map_size(im_dprambase[PROFF_SMC1], PROFF_SMC_SIZE);
--	addr = (u16 *)cpm2_map_size(im_dprambase[PROFF_SMC1_BASE], 2);
--	*addr = PROFF_SMC1;
--	cpm2_unmap(addr);
--
--	cpm_uart_ports[UART_SMC1].smcp->smc_smcm |= (SMCM_RX | SMCM_TX);
--	cpm_uart_ports[UART_SMC1].smcp->smc_smcmr &= ~(SMCMR_REN | SMCMR_TEN);
--	cpm_uart_ports[UART_SMC1].port.uartclk = uart_clock();
--	cpm_uart_port_map[cpm_uart_nr++] = UART_SMC1;
--#endif
--
--#ifdef CONFIG_SERIAL_CPM_SMC2
--	cpm_uart_ports[UART_SMC2].smcp = (smc_t *) cpm2_map(im_smc[1]);
--	cpm_uart_ports[UART_SMC2].port.mapbase =
--	    (unsigned long)cpm_uart_ports[UART_SMC2].smcp;
--
--	cpm_uart_ports[UART_SMC2].smcup =
--	    (smc_uart_t *) cpm2_map_size(im_dprambase[PROFF_SMC2], PROFF_SMC_SIZE);
--	addr = (u16 *)cpm2_map_size(im_dprambase[PROFF_SMC2_BASE], 2);
--	*addr = PROFF_SMC2;
--	cpm2_unmap(addr);
--
--	cpm_uart_ports[UART_SMC2].smcp->smc_smcm |= (SMCM_RX | SMCM_TX);
--	cpm_uart_ports[UART_SMC2].smcp->smc_smcmr &= ~(SMCMR_REN | SMCMR_TEN);
--	cpm_uart_ports[UART_SMC2].port.uartclk = uart_clock();
--	cpm_uart_port_map[cpm_uart_nr++] = UART_SMC2;
--#endif
--
--#ifdef CONFIG_SERIAL_CPM_SCC1
--	cpm_uart_ports[UART_SCC1].sccp = (scc_t *) cpm2_map(im_scc[0]);
--	cpm_uart_ports[UART_SCC1].port.mapbase =
--	    (unsigned long)cpm_uart_ports[UART_SCC1].sccp;
--	cpm_uart_ports[UART_SCC1].sccup =
--	    (scc_uart_t *) cpm2_map_size(im_dprambase[PROFF_SCC1], PROFF_SCC_SIZE);
--
--	cpm_uart_ports[UART_SCC1].sccp->scc_sccm &=
--	    ~(UART_SCCM_TX | UART_SCCM_RX);
--	cpm_uart_ports[UART_SCC1].sccp->scc_gsmrl &=
--	    ~(SCC_GSMRL_ENR | SCC_GSMRL_ENT);
--	cpm_uart_ports[UART_SCC1].port.uartclk = uart_clock();
--	cpm_uart_port_map[cpm_uart_nr++] = UART_SCC1;
--#endif
--
--#ifdef CONFIG_SERIAL_CPM_SCC2
--	cpm_uart_ports[UART_SCC2].sccp = (scc_t *) cpm2_map(im_scc[1]);
--	cpm_uart_ports[UART_SCC2].port.mapbase =
--	    (unsigned long)cpm_uart_ports[UART_SCC2].sccp;
--	cpm_uart_ports[UART_SCC2].sccup =
--	    (scc_uart_t *) cpm2_map_size(im_dprambase[PROFF_SCC2], PROFF_SCC_SIZE);
--
--	cpm_uart_ports[UART_SCC2].sccp->scc_sccm &=
--	    ~(UART_SCCM_TX | UART_SCCM_RX);
--	cpm_uart_ports[UART_SCC2].sccp->scc_gsmrl &=
--	    ~(SCC_GSMRL_ENR | SCC_GSMRL_ENT);
--	cpm_uart_ports[UART_SCC2].port.uartclk = uart_clock();
--	cpm_uart_port_map[cpm_uart_nr++] = UART_SCC2;
--#endif
--
--#ifdef CONFIG_SERIAL_CPM_SCC3
--	cpm_uart_ports[UART_SCC3].sccp = (scc_t *) cpm2_map(im_scc[2]);
--	cpm_uart_ports[UART_SCC3].port.mapbase =
--	    (unsigned long)cpm_uart_ports[UART_SCC3].sccp;
--	cpm_uart_ports[UART_SCC3].sccup =
--	    (scc_uart_t *) cpm2_map_size(im_dprambase[PROFF_SCC3], PROFF_SCC_SIZE);
--
--	cpm_uart_ports[UART_SCC3].sccp->scc_sccm &=
--	    ~(UART_SCCM_TX | UART_SCCM_RX);
--	cpm_uart_ports[UART_SCC3].sccp->scc_gsmrl &=
--	    ~(SCC_GSMRL_ENR | SCC_GSMRL_ENT);
--	cpm_uart_ports[UART_SCC3].port.uartclk = uart_clock();
--	cpm_uart_port_map[cpm_uart_nr++] = UART_SCC3;
--#endif
--
--#ifdef CONFIG_SERIAL_CPM_SCC4
--	cpm_uart_ports[UART_SCC4].sccp = (scc_t *) cpm2_map(im_scc[3]);
--	cpm_uart_ports[UART_SCC4].port.mapbase =
--	    (unsigned long)cpm_uart_ports[UART_SCC4].sccp;
--	cpm_uart_ports[UART_SCC4].sccup =
--	    (scc_uart_t *) cpm2_map_size(im_dprambase[PROFF_SCC4], PROFF_SCC_SIZE);
--
--	cpm_uart_ports[UART_SCC4].sccp->scc_sccm &=
--	    ~(UART_SCCM_TX | UART_SCCM_RX);
--	cpm_uart_ports[UART_SCC4].sccp->scc_gsmrl &=
--	    ~(SCC_GSMRL_ENR | SCC_GSMRL_ENT);
--	cpm_uart_ports[UART_SCC4].port.uartclk = uart_clock();
--	cpm_uart_port_map[cpm_uart_nr++] = UART_SCC4;
--#endif
+-	setbits32(&fecp->fec_r_cntrl, FEC_RCNTRL_MII_MODE);	/* MII enable */
+-	setbits32(&fecp->fec_ecntrl, FEC_ECNTRL_PINMUX | FEC_ECNTRL_ETHER_EN);
+-	out_be32(&fecp->fec_ievent, FEC_ENET_MII);
+-	out_be32(&fecp->fec_mii_speed, fec->mii_speed);
 -
 -	return 0;
 -}
 -#endif
-diff --git a/drivers/serial/cpm_uart/cpm_uart_cpm2.h b/drivers/serial/cpm_uart/cpm_uart_cpm2.h
-index a48b56e..7194c63 100644
---- a/drivers/serial/cpm_uart/cpm_uart_cpm2.h
-+++ b/drivers/serial/cpm_uart/cpm_uart_cpm2.h
-@@ -12,16 +12,6 @@
- 
- #include <asm/cpm2.h>
- 
--/* defines for IRQs */
--#ifndef CONFIG_PPC_CPM_NEW_BINDING
--#define SMC1_IRQ	SIU_INT_SMC1
--#define SMC2_IRQ	SIU_INT_SMC2
--#define SCC1_IRQ	SIU_INT_SCC1
--#define SCC2_IRQ	SIU_INT_SCC2
--#define SCC3_IRQ	SIU_INT_SCC3
--#define SCC4_IRQ	SIU_INT_SCC4
--#endif
 -
- static inline void cpm_set_brg(int brg, int baud)
+ static int fs_enet_fec_mii_read(struct mii_bus *bus , int phy_id, int location)
  {
- 	cpm_setbrg(brg, baud);
+ 	struct fec_info* fec = bus->priv;
+@@ -151,7 +102,6 @@ static int fs_enet_fec_mii_reset(struct mii_bus *bus)
+ 	return 0;
+ }
+ 
+-#ifdef CONFIG_PPC_CPM_NEW_BINDING
+ static void __devinit add_phy(struct mii_bus *bus, struct device_node *np)
+ {
+ 	const u32 *data;
+@@ -286,95 +236,3 @@ static void fs_enet_mdio_fec_exit(void)
+ 
+ module_init(fs_enet_mdio_fec_init);
+ module_exit(fs_enet_mdio_fec_exit);
+-#else
+-static int __devinit fs_enet_fec_mdio_probe(struct device *dev)
+-{
+-	struct platform_device *pdev = to_platform_device(dev);
+-	struct fs_mii_fec_platform_info *pdata;
+-	struct mii_bus *new_bus;
+-	struct fec_info *fec;
+-	int err = 0;
+-	if (NULL == dev)
+-		return -EINVAL;
+-	new_bus = kzalloc(sizeof(struct mii_bus), GFP_KERNEL);
+-
+-	if (NULL == new_bus)
+-		return -ENOMEM;
+-
+-	fec = kzalloc(sizeof(struct fec_info), GFP_KERNEL);
+-
+-	if (NULL == fec)
+-		return -ENOMEM;
+-
+-	new_bus->name = "FEC MII Bus",
+-	new_bus->read = &fs_enet_fec_mii_read,
+-	new_bus->write = &fs_enet_fec_mii_write,
+-	new_bus->reset = &fs_enet_fec_mii_reset,
+-	snprintf(new_bus->id, MII_BUS_ID_SIZE, "%x", pdev->id);
+-
+-	pdata = (struct fs_mii_fec_platform_info *)pdev->dev.platform_data;
+-
+-	if (NULL == pdata) {
+-		printk(KERN_ERR "fs_enet FEC mdio %d: Missing platform data!\n", pdev->id);
+-		return -ENODEV;
+-	}
+-
+-	/*set up workspace*/
+-
+-	fs_mii_fec_init(fec, pdata);
+-	new_bus->priv = fec;
+-
+-	new_bus->irq = pdata->irq;
+-
+-	new_bus->dev = dev;
+-	dev_set_drvdata(dev, new_bus);
+-
+-	err = mdiobus_register(new_bus);
+-
+-	if (0 != err) {
+-		printk (KERN_ERR "%s: Cannot register as MDIO bus\n",
+-				new_bus->name);
+-		goto bus_register_fail;
+-	}
+-
+-	return 0;
+-
+-bus_register_fail:
+-	kfree(new_bus);
+-
+-	return err;
+-}
+-
+-
+-static int fs_enet_fec_mdio_remove(struct device *dev)
+-{
+-	struct mii_bus *bus = dev_get_drvdata(dev);
+-
+-	mdiobus_unregister(bus);
+-
+-	dev_set_drvdata(dev, NULL);
+-	kfree(bus->priv);
+-
+-	bus->priv = NULL;
+-	kfree(bus);
+-
+-	return 0;
+-}
+-
+-static struct device_driver fs_enet_fec_mdio_driver = {
+-	.name = "fsl-cpm-fec-mdio",
+-	.bus = &platform_bus_type,
+-	.probe = fs_enet_fec_mdio_probe,
+-	.remove = fs_enet_fec_mdio_remove,
+-};
+-
+-int fs_enet_mdio_fec_init(void)
+-{
+-	return driver_register(&fs_enet_fec_mdio_driver);
+-}
+-
+-void fs_enet_mdio_fec_exit(void)
+-{
+-	driver_unregister(&fs_enet_fec_mdio_driver);
+-}
+-#endif
+diff --git a/include/linux/fs_enet_pd.h b/include/linux/fs_enet_pd.h
+index 9bc045b..0ba21ee 100644
+--- a/include/linux/fs_enet_pd.h
++++ b/include/linux/fs_enet_pd.h
+@@ -135,11 +135,7 @@ struct fs_platform_info {
+ 	u32 device_flags;
+ 
+ 	int phy_addr;		/* the phy address (-1 no phy) */
+-#ifdef CONFIG_PPC_CPM_NEW_BINDING
+ 	char bus_id[16];
+-#else
+-	const char*	bus_id;
+-#endif
+ 	int phy_irq;		/* the phy irq (if it exists)  */
+ 
+ 	const struct fs_mii_bus_info *bus_info;
 -- 
 1.5.5.1
