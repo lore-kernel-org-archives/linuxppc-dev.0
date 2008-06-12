@@ -1,26 +1,25 @@
 Return-Path: <rcjenn@linux.vnet.ibm.com>
-Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
+Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 0F18EDE445
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jun 2008 08:23:02 +1000 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e6.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m5CMP5j0020794
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jun 2008 18:25:05 -0400
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
-	m5CMMcck225634
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jun 2008 18:22:38 -0400
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
-	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m5CMMbDn014640
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jun 2008 18:22:37 -0400
-Date: Thu, 12 Jun 2008 17:21:07 -0500
+	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id F1D9BDE98A
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jun 2008 08:23:31 +1000 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e4.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m5CMNSsV003950
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jun 2008 18:23:28 -0400
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
+	m5CMNScx058216
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jun 2008 18:23:28 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m5CMNSEi020950
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jun 2008 18:23:28 -0400
+Date: Thu, 12 Jun 2008 17:21:58 -0500
 From: Robert Jennings <rcj@linux.vnet.ibm.com>
 To: paulus@samba.org
-Subject: [PATCH 13/19] powerpc: Verify CMO memory entitlement updates with
-	virtual I/O
-Message-ID: <20080612222107.GU30916@linux.vnet.ibm.com>
+Subject: [PATCH 14/19] powerpc: hvc enablement for CMO
+Message-ID: <20080612222157.GV30916@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 In-Reply-To: <20080612215312.GF30916@linux.vnet.ibm.com>
@@ -35,43 +34,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-=46rom: Nathan Fontenot <nfont@austin.ibm.com>
+=46rom: Robert Jennings <rcj@linux.vnet.ibm.com>
 
-Verify memory entitlement updates can be handled by vio.
+Define a get_io_entitlement function so that it can function in a
+Cooperative Memory Overcommitment (CMO) environment (it returns 0 to
+indicate that no IO entitlement is required, as the driver does not
+perform DMA operations).
 
-Signed-off-by: Nathan Fontenot <nfont@austin.ibm.com>
+Signed-off-by: Robert Jennings <rcj@linux.vnet.ibm.com>
 
 ---
- arch/powerpc/kernel/lparcfg.c |   10 ++++++++++
- 1 file changed, 10 insertions(+)
+ drivers/char/hvc_vio.c |    6 ++++++
+ 1 file changed, 6 insertions(+)
 
-Index: b/arch/powerpc/kernel/lparcfg.c
+Index: b/drivers/char/hvc_vio.c
 =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
 =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
 =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- a/arch/powerpc/kernel/lparcfg.c
-+++ b/arch/powerpc/kernel/lparcfg.c
-@@ -34,6 +34,7 @@
- #include <asm/time.h>
- #include <asm/prom.h>
- #include <asm/vdso_datapage.h>
-+#include <asm/vio.h>
+--- a/drivers/char/hvc_vio.c
++++ b/drivers/char/hvc_vio.c
+@@ -82,6 +82,11 @@ static struct hv_ops hvc_get_put_ops =3D {
+ 	.put_chars =3D hvc_put_chars,
+ };
 =20
- #define MODULE_VERS "1.7"
- #define MODULE_NAME "lparcfg"
-@@ -528,6 +529,15 @@ static ssize_t update_mpp(u64 *entitleme
- 	u8 new_weight;
- 	ssize_t rc;
-=20
-+	if (entitlement) {
-+		/* Check with vio to ensure the new memory entitlement
-+		 * can be handled.
-+		 */
-+		rc =3D vio_cmo_entitlement_update(*entitlement);
-+		if (rc)
-+			return rc;
-+	}
++unsigned long hvc_io_entitlement(struct vio_dev *vdev)
++{
++	return 0;
++}
 +
- 	rc =3D h_get_mpp(&mpp_data);
- 	if (rc)
- 		return rc;
+ static int __devinit hvc_vio_probe(struct vio_dev *vdev,
+ 				const struct vio_device_id *id)
+ {
+@@ -111,6 +116,7 @@ static struct vio_driver hvc_vio_driver=20
+ 	.id_table	=3D hvc_driver_table,
+ 	.probe		=3D hvc_vio_probe,
+ 	.remove		=3D hvc_vio_remove,
++	.get_io_entitlement =3D hvc_io_entitlement,
+ 	.driver		=3D {
+ 		.name	=3D hvc_driver_name,
+ 		.owner	=3D THIS_MODULE,
