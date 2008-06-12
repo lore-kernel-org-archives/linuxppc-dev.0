@@ -1,21 +1,18 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id E80B6DE4F7
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jun 2008 06:40:09 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 1/5] powerpc: remove mpc8xx-ide driver
-Date: Thu, 12 Jun 2008 22:38:43 +0200
-References: <20080610142702.354823071@arndb.de>
-	<200806102101.20156.bzolnier@gmail.com>
-	<325FF1AB-AFFA-45EE-9796-25D5004F27BB@kernel.crashing.org>
-In-Reply-To: <325FF1AB-AFFA-45EE-9796-25D5004F27BB@kernel.crashing.org>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 2DAD1DE82E
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jun 2008 07:19:11 +1000 (EST)
+Date: Thu, 12 Jun 2008 16:19:06 -0500 (CDT)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Paul Mackerras <paulus@samba.org>
+Subject: [PATCH 1/2][FOR 2.6.26][POWERPC] Fix bootwrapper builds with newer
+	gcc versions
+Message-ID: <Pine.LNX.4.64.0806121549060.18722@blarg.am.freescale.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200806122238.43946.arnd@arndb.de>
-Cc: linux-ide@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
-	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,90 +22,285 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thursday 12 June 2008, Kumar Gala wrote:
-> 
-> On Jun 10, 2008, at 2:01 PM, Bartlomiej Zolnierkiewicz wrote:
-> > Thanks, applied.
-> >
-> Acked-by: Kumar Gala <galak@kernel.crashing.org>
+GCC 4.4.x looks to be adding support for generating out-of-line register
+saves/restores based on:
 
-Ok, I've updated my git tree again, to remove this one and
-the commproc.h changes that have gone into the m68k-nommu
-tree.
+http://gcc.gnu.org/ml/gcc-patches/2008-04/msg01678.html
 
-The patches remain now, and are still available for powerpc-next at
+This breaks the bootwrapper as we'd need to link with libgcc to get the
+implementation of the register save/restores.
 
-git://git.kernel.org/pub/scm/linux/kernel/git/arnd/playground.git ppc-removal-more
+To workaround this issue, we just stole the save/restore code from gcc
+and simplified it down for our needs (integer only).
 
-	Arnd <><
-
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 ---
-commit 2c2732c402532e6be26d58f38abd39f56070d569
-Author: Arnd Bergmann <arnd@arndb.de>
-Date:   Tue Jun 10 15:55:40 2008 +0200
 
-    powerpc/mtd: remove dead platform specific maps
+Paul, now that we have Sam's commit:
 
-    It is no longer possible to select compilation of these
-    drivers with arch/powerpc, so the code should be removed.
+kbuild: ignore powerpc specific symbols in modpost
 
-    New platforms should use physmap_of.
+in Linus's tree can you pick these two patches up and send them upstream
+for 2.6.26 (as well as my for-2.6.26 tree).
 
-    Cc: linux-mtd@lists.infradead.org
-    Cc: David Woodhouse <dwmw2@infradead.org>
-    Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+- k
 
- drivers/mtd/maps/Kconfig            |   57 --------
- drivers/mtd/maps/Makefile           |    6 -
- drivers/mtd/maps/mbx860.c           |  100 -------------
- drivers/mtd/maps/ocotea.c           |  154 ---------------------
- drivers/mtd/maps/redwood.c          |  176 -----------------------
- drivers/mtd/maps/rpxlite.c          |   66 ---------
- drivers/mtd/maps/tqm8xxl.c          |  261 -----------------------------------
- drivers/mtd/maps/wr_sbc82xx_flash.c |  180 ------------------------
- 8 files changed, 0 insertions(+), 1000 deletions(-)
+ arch/powerpc/boot/Makefile    |    2 +-
+ arch/powerpc/boot/crtsavres.S |  233 +++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 234 insertions(+), 1 deletions(-)
+ create mode 100644 arch/powerpc/boot/crtsavres.S
 
-commit 41f911f000f3935ba85adb571cb9eb54ee9bed68
-Author: Arnd Bergmann <arnd@arndb.de>
-Date:   Tue Jun 10 15:45:11 2008 +0200
+diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+index d53b84e..1cee2f9 100644
+--- a/arch/powerpc/boot/Makefile
++++ b/arch/powerpc/boot/Makefile
+@@ -51,7 +51,7 @@ $(addprefix $(obj)/,$(zlib) gunzip_util.o main.o): \
+ 	$(addprefix $(obj)/,$(zliblinuxheader)) $(addprefix $(obj)/,$(zlibheader))
 
-    powerpc: remove references to dead platforms
-
-    The SPRUCE, LOPEC, SANDPOINT, PPC_GEN550 and PPLUS Kconfig
-    symbols were only defined for platforms in arch/ppc that are
-    no longer there with arch/powerpc. All compile time
-    switches based on these symbols can now be removed.
-
-    Cc: linux-input@vger.kernel.org
-    Cc: linux-m68k@lists.linux-m68k.org
-    Cc: linux-pcmcia@lists.infradead.org
-    Cc: Vitaly Bordug <vitb@kernel.crashing.org>
-    Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-
- arch/powerpc/Kconfig              |    4 -
- arch/powerpc/Kconfig.debug        |    2 +-
- drivers/ide/pci/sl82c105.c        |    4 -
- drivers/input/serio/i8042-ppcio.h |   75 --------------------
- drivers/net/Kconfig               |    3 +-
- drivers/net/fec.c                 |   35 +---------
- drivers/net/smc91x.h              |   37 +----------
- drivers/pcmcia/m8xx_pcmcia.c      |  136 -------------------------------------
- include/asm-powerpc/ide.h         |   12 ---
- 9 files changed, 4 insertions(+), 304 deletions(-)
-
-commit d790ca4b21f14ee1943d9193808f3b8a980b650e
-Author: Arnd Bergmann <arnd@arndb.de>
-Date:   Tue Jun 10 15:32:56 2008 +0200
-
-    powerpc: remove hdpu drivers
-
-    The CONFIG_HDPU option is gone with the removal of arch/ppc,
-    so the drivers have become dead code that can be removed.
-
-    Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-
- drivers/misc/Makefile                 |    1 -
- drivers/misc/hdpuftrs/Makefile        |    1 -
- drivers/misc/hdpuftrs/hdpu_cpustate.c |  249 ---------------------------------
- drivers/misc/hdpuftrs/hdpu_nexus.c    |  150 --------------------
- 4 files changed, 0 insertions(+), 401 deletions(-)
+ src-libfdt := fdt.c fdt_ro.c fdt_wip.c fdt_sw.c fdt_rw.c fdt_strerror.c
+-src-wlib := string.S crt0.S stdio.c main.c \
++src-wlib := string.S crt0.S crtsavres.S stdio.c main.c \
+ 		$(addprefix libfdt/,$(src-libfdt)) libfdt-wrapper.c \
+ 		ns16550.c serial.c simple_alloc.c div64.S util.S \
+ 		gunzip_util.c elf_util.c $(zlib) devtree.c oflib.c ofconsole.c \
+diff --git a/arch/powerpc/boot/crtsavres.S b/arch/powerpc/boot/crtsavres.S
+new file mode 100644
+index 0000000..f3d9b35
+--- /dev/null
++++ b/arch/powerpc/boot/crtsavres.S
+@@ -0,0 +1,233 @@
++/*
++ * Special support for eabi and SVR4
++ *
++ *   Copyright (C) 1995, 1996, 1998, 2000, 2001 Free Software Foundation, Inc.
++ *   Copyright 2008 Freescale Semiconductor, Inc.
++ *   Written By Michael Meissner
++ *
++ * Based on gcc/config/rs6000/crtsavres.asm from gcc
++ *
++ * This file is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License as published by the
++ * Free Software Foundation; either version 2, or (at your option) any
++ * later version.
++ *
++ * In addition to the permissions in the GNU General Public License, the
++ * Free Software Foundation gives you unlimited permission to link the
++ * compiled version of this file with other programs, and to distribute
++ * those programs without any restriction coming from the use of this
++ * file.  (The General Public License restrictions do apply in other
++ * respects; for example, they cover modification of the file, and
++ * distribution when not linked into another program.)
++ *
++ * This file is distributed in the hope that it will be useful, but
++ * WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; see the file COPYING.  If not, write to
++ * the Free Software Foundation, 51 Franklin Street, Fifth Floor,
++ * Boston, MA 02110-1301, USA.
++ *
++ *    As a special exception, if you link this library with files
++ *    compiled with GCC to produce an executable, this does not cause
++ *    the resulting executable to be covered by the GNU General Public License.
++ *    This exception does not however invalidate any other reasons why
++ *    the executable file might be covered by the GNU General Public License.
++ */
++
++	.file	"crtsavres.S"
++	.section ".text"
++
++/* On PowerPC64 Linux, these functions are provided by the linker.  */
++#ifndef __powerpc64__
++
++#define _GLOBAL(name) \
++	.type name,@function; \
++	.globl name; \
++name:
++
++/* Routines for saving integer registers, called by the compiler.  */
++/* Called with r11 pointing to the stack header word of the caller of the */
++/* function, just beyond the end of the integer save area.  */
++
++_GLOBAL(_savegpr_14)
++_GLOBAL(_save32gpr_14)
++	stw	14,-72(11)	/* save gp registers */
++_GLOBAL(_savegpr_15)
++_GLOBAL(_save32gpr_15)
++	stw	15,-68(11)
++_GLOBAL(_savegpr_16)
++_GLOBAL(_save32gpr_16)
++	stw	16,-64(11)
++_GLOBAL(_savegpr_17)
++_GLOBAL(_save32gpr_17)
++	stw	17,-60(11)
++_GLOBAL(_savegpr_18)
++_GLOBAL(_save32gpr_18)
++	stw	18,-56(11)
++_GLOBAL(_savegpr_19)
++_GLOBAL(_save32gpr_19)
++	stw	19,-52(11)
++_GLOBAL(_savegpr_20)
++_GLOBAL(_save32gpr_20)
++	stw	20,-48(11)
++_GLOBAL(_savegpr_21)
++_GLOBAL(_save32gpr_21)
++	stw	21,-44(11)
++_GLOBAL(_savegpr_22)
++_GLOBAL(_save32gpr_22)
++	stw	22,-40(11)
++_GLOBAL(_savegpr_23)
++_GLOBAL(_save32gpr_23)
++	stw	23,-36(11)
++_GLOBAL(_savegpr_24)
++_GLOBAL(_save32gpr_24)
++	stw	24,-32(11)
++_GLOBAL(_savegpr_25)
++_GLOBAL(_save32gpr_25)
++	stw	25,-28(11)
++_GLOBAL(_savegpr_26)
++_GLOBAL(_save32gpr_26)
++	stw	26,-24(11)
++_GLOBAL(_savegpr_27)
++_GLOBAL(_save32gpr_27)
++	stw	27,-20(11)
++_GLOBAL(_savegpr_28)
++_GLOBAL(_save32gpr_28)
++	stw	28,-16(11)
++_GLOBAL(_savegpr_29)
++_GLOBAL(_save32gpr_29)
++	stw	29,-12(11)
++_GLOBAL(_savegpr_30)
++_GLOBAL(_save32gpr_30)
++	stw	30,-8(11)
++_GLOBAL(_savegpr_31)
++_GLOBAL(_save32gpr_31)
++	stw	31,-4(11)
++	blr
++
++/* Routines for restoring integer registers, called by the compiler.  */
++/* Called with r11 pointing to the stack header word of the caller of the */
++/* function, just beyond the end of the integer restore area.  */
++
++_GLOBAL(_restgpr_14)
++_GLOBAL(_rest32gpr_14)
++	lwz	14,-72(11)	/* restore gp registers */
++_GLOBAL(_restgpr_15)
++_GLOBAL(_rest32gpr_15)
++	lwz	15,-68(11)
++_GLOBAL(_restgpr_16)
++_GLOBAL(_rest32gpr_16)
++	lwz	16,-64(11)
++_GLOBAL(_restgpr_17)
++_GLOBAL(_rest32gpr_17)
++	lwz	17,-60(11)
++_GLOBAL(_restgpr_18)
++_GLOBAL(_rest32gpr_18)
++	lwz	18,-56(11)
++_GLOBAL(_restgpr_19)
++_GLOBAL(_rest32gpr_19)
++	lwz	19,-52(11)
++_GLOBAL(_restgpr_20)
++_GLOBAL(_rest32gpr_20)
++	lwz	20,-48(11)
++_GLOBAL(_restgpr_21)
++_GLOBAL(_rest32gpr_21)
++	lwz	21,-44(11)
++_GLOBAL(_restgpr_22)
++_GLOBAL(_rest32gpr_22)
++	lwz	22,-40(11)
++_GLOBAL(_restgpr_23)
++_GLOBAL(_rest32gpr_23)
++	lwz	23,-36(11)
++_GLOBAL(_restgpr_24)
++_GLOBAL(_rest32gpr_24)
++	lwz	24,-32(11)
++_GLOBAL(_restgpr_25)
++_GLOBAL(_rest32gpr_25)
++	lwz	25,-28(11)
++_GLOBAL(_restgpr_26)
++_GLOBAL(_rest32gpr_26)
++	lwz	26,-24(11)
++_GLOBAL(_restgpr_27)
++_GLOBAL(_rest32gpr_27)
++	lwz	27,-20(11)
++_GLOBAL(_restgpr_28)
++_GLOBAL(_rest32gpr_28)
++	lwz	28,-16(11)
++_GLOBAL(_restgpr_29)
++_GLOBAL(_rest32gpr_29)
++	lwz	29,-12(11)
++_GLOBAL(_restgpr_30)
++_GLOBAL(_rest32gpr_30)
++	lwz	30,-8(11)
++_GLOBAL(_restgpr_31)
++_GLOBAL(_rest32gpr_31)
++	lwz	31,-4(11)
++	blr
++
++/* Routines for restoring integer registers, called by the compiler.  */
++/* Called with r11 pointing to the stack header word of the caller of the */
++/* function, just beyond the end of the integer restore area.  */
++
++_GLOBAL(_restgpr_14_x)
++_GLOBAL(_rest32gpr_14_x)
++	lwz	14,-72(11)	/* restore gp registers */
++_GLOBAL(_restgpr_15_x)
++_GLOBAL(_rest32gpr_15_x)
++	lwz	15,-68(11)
++_GLOBAL(_restgpr_16_x)
++_GLOBAL(_rest32gpr_16_x)
++	lwz	16,-64(11)
++_GLOBAL(_restgpr_17_x)
++_GLOBAL(_rest32gpr_17_x)
++	lwz	17,-60(11)
++_GLOBAL(_restgpr_18_x)
++_GLOBAL(_rest32gpr_18_x)
++	lwz	18,-56(11)
++_GLOBAL(_restgpr_19_x)
++_GLOBAL(_rest32gpr_19_x)
++	lwz	19,-52(11)
++_GLOBAL(_restgpr_20_x)
++_GLOBAL(_rest32gpr_20_x)
++	lwz	20,-48(11)
++_GLOBAL(_restgpr_21_x)
++_GLOBAL(_rest32gpr_21_x)
++	lwz	21,-44(11)
++_GLOBAL(_restgpr_22_x)
++_GLOBAL(_rest32gpr_22_x)
++	lwz	22,-40(11)
++_GLOBAL(_restgpr_23_x)
++_GLOBAL(_rest32gpr_23_x)
++	lwz	23,-36(11)
++_GLOBAL(_restgpr_24_x)
++_GLOBAL(_rest32gpr_24_x)
++	lwz	24,-32(11)
++_GLOBAL(_restgpr_25_x)
++_GLOBAL(_rest32gpr_25_x)
++	lwz	25,-28(11)
++_GLOBAL(_restgpr_26_x)
++_GLOBAL(_rest32gpr_26_x)
++	lwz	26,-24(11)
++_GLOBAL(_restgpr_27_x)
++_GLOBAL(_rest32gpr_27_x)
++	lwz	27,-20(11)
++_GLOBAL(_restgpr_28_x)
++_GLOBAL(_rest32gpr_28_x)
++	lwz	28,-16(11)
++_GLOBAL(_restgpr_29_x)
++_GLOBAL(_rest32gpr_29_x)
++	lwz	29,-12(11)
++_GLOBAL(_restgpr_30_x)
++_GLOBAL(_rest32gpr_30_x)
++	lwz	30,-8(11)
++_GLOBAL(_restgpr_31_x)
++_GLOBAL(_rest32gpr_31_x)
++	lwz	0,4(11)
++	lwz	31,-4(11)
++	mtlr	0
++	mr	1,11
++	blr
++#endif
+-- 
+1.5.5.1
