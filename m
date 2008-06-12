@@ -1,27 +1,17 @@
-Return-Path: <mingo@elte.hu>
-Received: from mx2.mail.elte.hu (mx2.mail.elte.hu [157.181.151.9])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 40DAEDDFD8
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jun 2008 17:47:52 +1000 (EST)
-Date: Thu, 12 Jun 2008 09:47:02 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: linux-next: powerpc build failure
-Message-ID: <20080612074702.GA18419@elte.hu>
-References: <20080611192748.686236fd.sfr@canb.auug.org.au>
-	<20080611095951.GB14033@elte.hu>
-	<18512.32267.636550.47385@cargo.ozlabs.ibm.com>
-	<20080612053335.GA22035@bubble.grove.modra.org>
-	<20080612170505.6049fa75.sfr@canb.auug.org.au>
-	<20080612071612.GB28590@elte.hu>
-	<20080612172754.91460af2.sfr@canb.auug.org.au>
+Return-Path: <wg@grandegger.com>
+Message-ID: <4850D9DA.7000207@grandegger.com>
+Date: Thu, 12 Jun 2008 10:10:02 +0200
+From: Wolfgang Grandegger <wg@grandegger.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080612172754.91460af2.sfr@canb.auug.org.au>
-Cc: linuxppc-dev@ozlabs.org, linux-next@vger.kernel.org,
-	Paul Mackerras <paulus@samba.org>, Alan Modra <amodra@bigpond.net.au>,
-	"H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] booting-without-of: add more bindings for FSL UPM driver
+References: <484CECE2.9050605@grandegger.com>
+	<519f1a6d9baeca8cfea9e8ad7a92c4d4@kernel.crashing.org>
+	<484D49FF.4090604@grandegger.com>
+	<a9f4227722f169bc9c2e712df774b748@kernel.crashing.org>
+In-Reply-To: <a9f4227722f169bc9c2e712df774b748@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,17 +21,118 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-* Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-
-> On Thu, 12 Jun 2008 09:16:12 +0200 Ingo Molnar <mingo@elte.hu> wrote:
-> >
-> > ugh, please do that hack only privately in your allyesconfig testing 
-> > and do not commit that change to linux-next!
+Segher Boessenkool wrote:
+>>>> +      - chip-delay : may specify a delay value in milliseconds.
+>>>
+>>> Delay for what?  The binding should say.  "chip-delay" is a bit
+>>> too generic name as well, it could be more descriptive perhaps.
+>>
+>> The chip-delay property defines an appropriate maximum delay
+>> time (tR) required for read operations if the R/B pin is not
+>> connected.
 > 
-> See my other email, I have removed the ftrace disabling patch and 
-> reverted one of Sam Ravnborg's instead.
+> Yeah.  So please put that in the binding.
+> 
+>>> Shouldn't this be a property of the NAND device anyway, not the
+>>> NAND controller?
+>>
+>> Strictly speaking, it's a property of the NAND device. Therefore it
+>> should be inside the node nand@0, I thhink:
+>>
+>> +            nand@0 {
+>> +                #address-cells = <1>;
+>> +                #size-cells = <1>;
+>> +                    chip-delay = <25>; // in micro-seconds
+> 
+> Something like that, yes.  You wrote milliseconds before; which is it?
 
-thanks.
+Oops, it's in micro-seconds.
 
-	Ingo
+> And, a better property name, please.
+
+Here is what we speak about (from the NAND chip manual):
+
+  "After a READ command is sent to the memory device, data is
+   transferred from the memory array to the data register in tR.
+   Typically tR is 25us. The READ STATUS (70h) command or the R/B#
+   signal can be used to determine when the device is ready."
+
+And in the NAND header file "chip-delay" is documented as shown below:
+
+  "chip_delay: [BOARDSPECIFIC] chip dependent delay for transfering data 
+               from array to read regs (tR)"
+
+The name "read-fetch-time" sounds more reasonable too me, but English
+is not my native language.
+
+>> Where should that be documented?
+> 
+> In the binding for nand devices.  If there isn't any yet, it might be
+> best to include that with the binding for your nand controller (i.e.,
+> describe the whole sub node there).
+
+OK, here is a my proposal:
+
+    x) Freescale Localbus UPM programmed to work with NAND flash
+
+      Required properties:
+      - compatible : "fsl,upm-nand".
+      - reg : should specify localbus chip select and size used for the chip.
+      - fsl,upm-addr-offset : UPM pattern offset for the address latch.
+      - fsl,upm-cmd-offset : UPM pattern offset for the command latch.
+      - gpios : may specify optional GPIO connected to the Ready-Not-Busy pin.
+
+      Each NAND flash device is represented as a sub-node of the UPM node.
+      The nodes's name represents the name of the corresponding device.
+
+      NAND flash properties:
+      - compatible: not yet used.
+      - read-fetch-delay: chip dependent delay for transfering data 
+        from array to read regs (tR) im micro-seconds.
+ 
+      Each partition is represented as a sub-node of the NAND flash device.
+      Each node's name represents the name of the corresponding partition
+      of the NAND flash device.
+
+      NAND flash partitions:
+      - reg : The partition's offset and size within the flash bank.
+      - label : (optional) The label / name for this flash partition.
+        If omitted, the label is taken from the node name (excluding
+        the unit address).
+      - read-only : (optional) This parameter, if present, is a hint to
+        Linux that this flash partition should only be mounted
+        read-only.  This is usually used for flash partitions
+        containing early-boot firmware images or data which should not
+        be clobbered.
+ 
+      Example:
+
+	upm@1,0 {
+		compatible = "fsl,upm-nand";
+		reg = <1 0 1>;
+		fsl,upm-addr-offset = <16>;
+		fsl,upm-cmd-offset = <8>;
+		gpios = <&qe_pio_e 18 0>;
+
+		flash {
+			#address-cells = <1>;
+			#size-cells = <1>;
+			compatible = "stmicro,NAND512W3A2BN6E";
+			read-fetch-delay = 25
+
+			fs@0 {
+				label = "fs";
+				reg = <0 f80000>;
+			};
+
+			firmware@f80000 {
+				label ="firmware";
+				reg = <f80000 80000>;
+				read-only;
+			};
+		};
+	};
+
+What do you think?
+
+Wolfgang.
