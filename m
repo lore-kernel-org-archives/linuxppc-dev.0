@@ -1,31 +1,21 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id C5B4ADE22C
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jun 2008 06:37:13 +1000 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e2.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m5CKb7PG023315
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jun 2008 16:37:07 -0400
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
-	m5CKb74x225566
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jun 2008 16:37:07 -0400
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
-	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m5CKb7Eq025580
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jun 2008 16:37:07 -0400
-Date: Thu, 12 Jun 2008 16:36:15 -0400
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Stefan Roese <sr@denx.de>
-Subject: Re: [PATCH] powerpc/4xx: Workaround for PPC440EPx/GRx PCI_28 Errata
-Message-ID: <20080612163615.1ba71e36@zod.rchland.ibm.com>
-In-Reply-To: <200806121624.13577.sr@denx.de>
-References: <20080611104549.45836929@zod.rchland.ibm.com>
-	<200806121624.13577.sr@denx.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id E80B6DE4F7
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jun 2008 06:40:09 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 1/5] powerpc: remove mpc8xx-ide driver
+Date: Thu, 12 Jun 2008 22:38:43 +0200
+References: <20080610142702.354823071@arndb.de>
+	<200806102101.20156.bzolnier@gmail.com>
+	<325FF1AB-AFFA-45EE-9796-25D5004F27BB@kernel.crashing.org>
+In-Reply-To: <325FF1AB-AFFA-45EE-9796-25D5004F27BB@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200806122238.43946.arnd@arndb.de>
+Cc: linux-ide@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,40 +25,90 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 12 Jun 2008 16:24:13 +0200
-Stefan Roese <sr@denx.de> wrote:
-
-> On Wednesday 11 June 2008, Josh Boyer wrote:
-> > The 440EPx/GRx chips don't support PCI MRM commands.  Drivers determine
-> > this by looking for a zero value in the PCI cache line size register. 
-> > However, some drivers write to this register upon initialization.  This can
-> > cause MRMs to be used on these chips, which may cause deadlocks on PLB4.
-> >
-> > The workaround implemented here introduces a new indirect_type flag, called
-> > PPC_INDIRECT_TYPE_BROKEN_MRM.  This is set in the pci_controller structure
-> > in the pci fixup function for 4xx PCI bridges by determining if the bridge
-> > is compatible with 440EPx/GRx.  The flag is checked in the
-> > indirect_write_config function, and forces any writes to the
-> > PCI_CACHE_LINE_SIZE register to be zero, which will disable MRMs for these
-> > chips.
-> >
-> > A similar workaround has been tested by AMCC on various PCI cards, such as
-> > the Silicon Image ATA card and Intel E1000 GIGE card.  Hangs were seen with
-> > the Silicon Image card, and MRMs were seen on the bus with a PCI analyzer.
-> > With the workaround in place, the card functioned properly and only Memory
-> > Reads were seen on the bus with the analyzer.
-> >
-> > Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+On Thursday 12 June 2008, Kumar Gala wrote:
 > 
-> Acked-by: Stefan Roese <sr@denx.de>
-> 
-> I manually applied your patch (since it doesn't apply clean as discussed on 
-> IRC) and tested it on my Sequoia with a modified PCI USB driver changing 
-> PCI_CACHE_LINE_SIZE.
+> On Jun 10, 2008, at 2:01 PM, Bartlomiej Zolnierkiewicz wrote:
+> > Thanks, applied.
+> >
+> Acked-by: Kumar Gala <galak@kernel.crashing.org>
 
-Thanks.  I blame git for being dumb.  I guess I'll have to switch to
-using git-format-patch instead of quilt.
+Ok, I've updated my git tree again, to remove this one and
+the commproc.h changes that have gone into the m68k-nommu
+tree.
 
-In the meantime, I'll queue this up for .27.
+The patches remain now, and are still available for powerpc-next at
 
-josh
+git://git.kernel.org/pub/scm/linux/kernel/git/arnd/playground.git ppc-removal-more
+
+	Arnd <><
+
+---
+commit 2c2732c402532e6be26d58f38abd39f56070d569
+Author: Arnd Bergmann <arnd@arndb.de>
+Date:   Tue Jun 10 15:55:40 2008 +0200
+
+    powerpc/mtd: remove dead platform specific maps
+
+    It is no longer possible to select compilation of these
+    drivers with arch/powerpc, so the code should be removed.
+
+    New platforms should use physmap_of.
+
+    Cc: linux-mtd@lists.infradead.org
+    Cc: David Woodhouse <dwmw2@infradead.org>
+    Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+
+ drivers/mtd/maps/Kconfig            |   57 --------
+ drivers/mtd/maps/Makefile           |    6 -
+ drivers/mtd/maps/mbx860.c           |  100 -------------
+ drivers/mtd/maps/ocotea.c           |  154 ---------------------
+ drivers/mtd/maps/redwood.c          |  176 -----------------------
+ drivers/mtd/maps/rpxlite.c          |   66 ---------
+ drivers/mtd/maps/tqm8xxl.c          |  261 -----------------------------------
+ drivers/mtd/maps/wr_sbc82xx_flash.c |  180 ------------------------
+ 8 files changed, 0 insertions(+), 1000 deletions(-)
+
+commit 41f911f000f3935ba85adb571cb9eb54ee9bed68
+Author: Arnd Bergmann <arnd@arndb.de>
+Date:   Tue Jun 10 15:45:11 2008 +0200
+
+    powerpc: remove references to dead platforms
+
+    The SPRUCE, LOPEC, SANDPOINT, PPC_GEN550 and PPLUS Kconfig
+    symbols were only defined for platforms in arch/ppc that are
+    no longer there with arch/powerpc. All compile time
+    switches based on these symbols can now be removed.
+
+    Cc: linux-input@vger.kernel.org
+    Cc: linux-m68k@lists.linux-m68k.org
+    Cc: linux-pcmcia@lists.infradead.org
+    Cc: Vitaly Bordug <vitb@kernel.crashing.org>
+    Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+
+ arch/powerpc/Kconfig              |    4 -
+ arch/powerpc/Kconfig.debug        |    2 +-
+ drivers/ide/pci/sl82c105.c        |    4 -
+ drivers/input/serio/i8042-ppcio.h |   75 --------------------
+ drivers/net/Kconfig               |    3 +-
+ drivers/net/fec.c                 |   35 +---------
+ drivers/net/smc91x.h              |   37 +----------
+ drivers/pcmcia/m8xx_pcmcia.c      |  136 -------------------------------------
+ include/asm-powerpc/ide.h         |   12 ---
+ 9 files changed, 4 insertions(+), 304 deletions(-)
+
+commit d790ca4b21f14ee1943d9193808f3b8a980b650e
+Author: Arnd Bergmann <arnd@arndb.de>
+Date:   Tue Jun 10 15:32:56 2008 +0200
+
+    powerpc: remove hdpu drivers
+
+    The CONFIG_HDPU option is gone with the removal of arch/ppc,
+    so the drivers have become dead code that can be removed.
+
+    Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+
+ drivers/misc/Makefile                 |    1 -
+ drivers/misc/hdpuftrs/Makefile        |    1 -
+ drivers/misc/hdpuftrs/hdpu_cpustate.c |  249 ---------------------------------
+ drivers/misc/hdpuftrs/hdpu_nexus.c    |  150 --------------------
+ 4 files changed, 0 insertions(+), 401 deletions(-)
