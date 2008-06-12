@@ -2,14 +2,16 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 2DAD1DE82E
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jun 2008 07:19:11 +1000 (EST)
-Date: Thu, 12 Jun 2008 16:19:06 -0500 (CDT)
+	by ozlabs.org (Postfix) with ESMTPS id 3F330DE256
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jun 2008 07:21:02 +1000 (EST)
+Date: Thu, 12 Jun 2008 16:20:58 -0500 (CDT)
 From: Kumar Gala <galak@kernel.crashing.org>
 To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 1/2][FOR 2.6.26][POWERPC] Fix bootwrapper builds with newer
+Subject: [PATCH 2/2][FOR 2.6.26][POWERPC] Fix -Os kernel builds with newer
 	gcc versions
-Message-ID: <Pine.LNX.4.64.0806121549060.18722@blarg.am.freescale.net>
+In-Reply-To: <Pine.LNX.4.64.0806121549060.18722@blarg.am.freescale.net>
+Message-ID: <Pine.LNX.4.64.0806121620110.18722@blarg.am.freescale.net>
+References: <Pine.LNX.4.64.0806121549060.18722@blarg.am.freescale.net>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Cc: linuxppc-dev@ozlabs.org
@@ -27,48 +29,83 @@ saves/restores based on:
 
 http://gcc.gnu.org/ml/gcc-patches/2008-04/msg01678.html
 
-This breaks the bootwrapper as we'd need to link with libgcc to get the
-implementation of the register save/restores.
+This breaks the kernel if we enable CONFIG_CC_OPTIMIZE_FOR_SIZE.  To fix
+this we add the use the save/restore code from gcc and simplified it down
+for our needs (integer only).
 
-To workaround this issue, we just stole the save/restore code from gcc
-and simplified it down for our needs (integer only).
+Additionally, we have to link this code into each module.  The other
+solution was to add EXPORT_SYMBOL() which meant going through the
+trampoline which seemed nonsensical for these out-of-line routines.
+
+Finally, we add some checks to prom_init_check.sh to ignore the
+out-of-line save/restore functions.
 
 Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 ---
+ arch/powerpc/Makefile                  |    2 +
+ arch/powerpc/kernel/prom_init_check.sh |   14 ++
+ arch/powerpc/lib/Makefile              |    2 +-
+ arch/powerpc/lib/crtsavres.S           |  229 ++++++++++++++++++++++++++++++++
+ 4 files changed, 246 insertions(+), 1 deletions(-)
+ create mode 100644 arch/powerpc/lib/crtsavres.S
 
-Paul, now that we have Sam's commit:
+diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
+index 9dcdc03..d3779a8 100644
+--- a/arch/powerpc/Makefile
++++ b/arch/powerpc/Makefile
+@@ -96,6 +96,8 @@ endif
+ else
+ 	KBUILD_CFLAGS += $(call cc-option,-mtune=power4)
+ endif
++else
++LDFLAGS_MODULE	+= arch/powerpc/lib/crtsavres.o
+ endif
 
-kbuild: ignore powerpc specific symbols in modpost
+ ifeq ($(CONFIG_TUNE_CELL),y)
+diff --git a/arch/powerpc/kernel/prom_init_check.sh b/arch/powerpc/kernel/prom_init_check.sh
+index 31729a9..2c7e8e8 100644
+--- a/arch/powerpc/kernel/prom_init_check.sh
++++ b/arch/powerpc/kernel/prom_init_check.sh
+@@ -48,6 +48,20 @@ do
+ 		fi
+ 	done
 
-in Linus's tree can you pick these two patches up and send them upstream
-for 2.6.26 (as well as my for-2.6.26 tree).
++	# ignore register save/restore funcitons
++	if [ "${UNDEF:0:9}" = "_restgpr_" ]; then
++		OK=1
++	fi
++	if [ "${UNDEF:0:11}" = "_rest32gpr_" ]; then
++		OK=1
++	fi
++	if [ "${UNDEF:0:9}" = "_savegpr_" ]; then
++		OK=1
++	fi
++	if [ "${UNDEF:0:11}" = "_save32gpr_" ]; then
++		OK=1
++	fi
++
+ 	if [ $OK -eq 0 ]; then
+ 		ERROR=1
+ 		echo "Error: External symbol '$UNDEF' referenced" \
+diff --git a/arch/powerpc/lib/Makefile b/arch/powerpc/lib/Makefile
+index c71d37d..e522b06 100644
+--- a/arch/powerpc/lib/Makefile
++++ b/arch/powerpc/lib/Makefile
+@@ -9,7 +9,7 @@ endif
+ ifeq ($(CONFIG_PPC_MERGE),y)
+ obj-y			:= string.o alloc.o \
+ 			   checksum_$(CONFIG_WORD_SIZE).o
+-obj-$(CONFIG_PPC32)	+= div64.o copy_32.o
++obj-$(CONFIG_PPC32)	+= div64.o copy_32.o crtsavres.o
+ obj-$(CONFIG_HAS_IOMEM)	+= devres.o
+ endif
 
-- k
-
- arch/powerpc/boot/Makefile    |    2 +-
- arch/powerpc/boot/crtsavres.S |  233 +++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 234 insertions(+), 1 deletions(-)
- create mode 100644 arch/powerpc/boot/crtsavres.S
-
-diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-index d53b84e..1cee2f9 100644
---- a/arch/powerpc/boot/Makefile
-+++ b/arch/powerpc/boot/Makefile
-@@ -51,7 +51,7 @@ $(addprefix $(obj)/,$(zlib) gunzip_util.o main.o): \
- 	$(addprefix $(obj)/,$(zliblinuxheader)) $(addprefix $(obj)/,$(zlibheader))
-
- src-libfdt := fdt.c fdt_ro.c fdt_wip.c fdt_sw.c fdt_rw.c fdt_strerror.c
--src-wlib := string.S crt0.S stdio.c main.c \
-+src-wlib := string.S crt0.S crtsavres.S stdio.c main.c \
- 		$(addprefix libfdt/,$(src-libfdt)) libfdt-wrapper.c \
- 		ns16550.c serial.c simple_alloc.c div64.S util.S \
- 		gunzip_util.c elf_util.c $(zlib) devtree.c oflib.c ofconsole.c \
-diff --git a/arch/powerpc/boot/crtsavres.S b/arch/powerpc/boot/crtsavres.S
+diff --git a/arch/powerpc/lib/crtsavres.S b/arch/powerpc/lib/crtsavres.S
 new file mode 100644
-index 0000000..f3d9b35
+index 0000000..70a9cd8
 --- /dev/null
-+++ b/arch/powerpc/boot/crtsavres.S
-@@ -0,0 +1,233 @@
++++ b/arch/powerpc/lib/crtsavres.S
+@@ -0,0 +1,229 @@
 +/*
 + * Special support for eabi and SVR4
 + *
@@ -108,16 +145,12 @@ index 0000000..f3d9b35
 + *    the executable file might be covered by the GNU General Public License.
 + */
 +
++#include <asm/ppc_asm.h>
++
 +	.file	"crtsavres.S"
 +	.section ".text"
 +
-+/* On PowerPC64 Linux, these functions are provided by the linker.  */
-+#ifndef __powerpc64__
-+
-+#define _GLOBAL(name) \
-+	.type name,@function; \
-+	.globl name; \
-+name:
++#ifdef CONFIG_CC_OPTIMIZE_FOR_SIZE
 +
 +/* Routines for saving integer registers, called by the compiler.  */
 +/* Called with r11 pointing to the stack header word of the caller of the */
