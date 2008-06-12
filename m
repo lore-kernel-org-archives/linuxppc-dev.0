@@ -1,22 +1,19 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id CD958DE128
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	by ozlabs.org (Postfix) with ESMTP id 63C6BDEB5D
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 13 Jun 2008 08:19:29 +1000 (EST)
-Message-ID: <4851A0EA.2090006@freescale.com>
-Date: Thu, 12 Jun 2008 17:19:22 -0500
-From: Scott Wood <scottwood@freescale.com>
+	Fri, 13 Jun 2008 08:14:34 +1000 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1K6v3v-0003uh-1R
+	for linuxppc-embedded@ozlabs.org; Thu, 12 Jun 2008 15:14:31 -0700
+Message-ID: <17810852.post@talk.nabble.com>
+Date: Thu, 12 Jun 2008 15:14:31 -0700 (PDT)
+From: Trevor Anderson <tanderson@vmetro.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: Correct way to adjust PCI resource allocations?
 MIME-Version: 1.0
-To: David Goodenough <david.goodenough@linkchoose.co.uk>
-Subject: Re: Freescale MPC8321 support
-References: <200806122225.33060.david.goodenough@linkchoose.co.uk>
-In-Reply-To: <200806122225.33060.david.goodenough@linkchoose.co.uk>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -27,21 +24,41 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-David Goodenough wrote:
-> This processor is described as an e300c2 core.  I found that e300c2
-> is listed in the arch/powerpc/kernel/cputypes.c file.  Does this mean
-> that it is supported, or is that just a place holder?
 
-Yes, it is supported.
+Hi,
 
-> If it is supported (as a core) what about the peripherals built into
-> the MPC8321 are they likely to be supported?
+I'm hoping somebody can tell me the correct way to change the memory
+resources allocated to particular PCI buses/devices at startup?
 
-The more commonly used ones should be.
+I'm developing a card (MPC8641D, 2.6.25 kernel) that includes a PCI/X-VMEBus
+bridge, and the driver requires that it have a chunk of [prefetchable] PCI
+memory space available to it. There is nothing on the chip that says so: it
+has a single BAR that covers its configuration registers, but nothing else.
 
-> How about Flash support, or is this very board dependant?
+So: I need a way to declare an additional memory requirement for this
+particular device that will wend its way back through the chain of PCIe and
+PCIX buses to the root.
 
-Yes, flash (I assume you mean NOR) should work.  See the localbus nodes 
-in existing device trees.
+So far I've been using a platform-specific "pcibios_fixup_resources"
+function that simply writes-in my new requirement, in conjunction with
+"ppc_pci_flags = PPC_PCI_REASSIGN_ALL_RSRC", as a new resource entry in the
+device's pci_device structure. And this has been working well, so far. But
+I've discovered that fitting an XMC/PMC card to my board mucks things up -
+the resource allocations fail. The XMC/PMC card appears on the same PCI/X
+bus as the VME bridge. 
 
--Scott
+This leads me to think I've not been using the correct method all along, but
+happened to hit lucky until now.
+
+What is the right way to do this?
+Is pcibios_fixup_resources even meant to do something like this?
+
+Any help gratefully welcomed.
+
+Cheers,
+
+- Trevor Anderson <tanderson@vmetro.com>
+
+-- 
+View this message in context: http://www.nabble.com/Correct-way-to-adjust-PCI-resource-allocations--tp17810852p17810852.html
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
