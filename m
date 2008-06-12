@@ -1,16 +1,21 @@
-Return-Path: <galak@kernel.crashing.org>
-Message-Id: <9DD9B395-38FF-422B-83D8-B91178AB46E1@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: David Jander <david.jander@protonic.nl>
-In-Reply-To: <200806121345.52293.david.jander@protonic.nl>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v924)
-Subject: Re: [PATCH 2/2] Re-added support for FEC on MPC5121 from Freescale
-	LTIB to current head
-Date: Thu, 12 Jun 2008 07:12:15 -0500
-References: <200806121344.26883.david.jander@protonic.nl>
-	<200806121345.52293.david.jander@protonic.nl>
-Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18513.4925.711881.794221@cargo.ozlabs.ibm.com>
+Date: Thu, 12 Jun 2008 22:14:53 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: Re: MMIO and gcc re-ordering issue
+In-Reply-To: <200806111535.24523.nickpiggin@yahoo.com.au>
+References: <1211852026.3286.36.camel@pasglop>
+	<200806111500.30789.nickpiggin@yahoo.com.au>
+	<18511.24317.31038.926337@cargo.ozlabs.ibm.com>
+	<200806111535.24523.nickpiggin@yahoo.com.au>
+Cc: linux-arch@vger.kernel.org, Russell King <rmk+lkml@arm.linux.org.uk>,
+	Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
+	Trent Piepho <tpiepho@freescale.com>, linuxppc-dev@ozlabs.org,
+	scottwood@freescale.com, Linus Torvalds <torvalds@linux-foundation.org>,
+	David Miller <davem@davemloft.net>, alan@lxorguk.ukuu.org.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,105 +25,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Nick Piggin writes:
 
-On Jun 12, 2008, at 6:45 AM, David Jander wrote:
+>                 /* turn off LED */
+>                 val64 = readq(&bar0->adapter_control);
+>                 val64 = val64 &(~ADAPTER_LED_ON);
+>                 writeq(val64, &bar0->adapter_control);
+>                 s2io_link(nic, LINK_DOWN);
+>         }
+>         clear_bit(__S2IO_STATE_LINK_TASK, &(nic->state));
+> 
+> Now I can't say definitively that this is going to be wrong on
+> powerpc, because I don't know the code well enough. But I'd be
+> 90% sure that the unlock is not supposed to be visible to
+> other CPUs before the writeqs are queued to the card. On x86 it
+> wouldn't be.
 
-Your commit message isn't exactly helpful as most people dont know  
-what LTIB is and its not terribly relevant.  It just seems like you  
-are adding support for the FEC on MPC5121 and this point.
+Interestingly, there is also a store to cacheable memory
+(nic->device_enabled_once), but no smp_wmb or equivalent before the
+clear_bit.  So there are other potential problems here besides the I/O
+related ones.
 
->
-> Signed-off-by: David Jander <david@protonic.nl>
-> ---
-> arch/powerpc/platforms/Kconfig     |    2 +-
-> drivers/net/fec.h                  |   43 ++++++++++++++++++++
-> drivers/net/fs_enet/Kconfig        |   22 +++++++++-
-> drivers/net/fs_enet/fs_enet-main.c |   76 +++++++++++++++++++++++++++ 
-> +++------
-> drivers/net/fs_enet/fs_enet.h      |   17 +++++---
-> drivers/net/fs_enet/mac-fec.c      |   22 +++++++++-
-> drivers/net/fs_enet/mii-fec.c      |   10 ++++-
-> 7 files changed, 167 insertions(+), 25 deletions(-)
->
-> diff --git a/arch/powerpc/platforms/Kconfig b/arch/powerpc/platforms/ 
-> Kconfig
-> index 87454c5..a96937f 100644
-> --- a/arch/powerpc/platforms/Kconfig
-> +++ b/arch/powerpc/platforms/Kconfig
-> @@ -288,7 +288,7 @@ config CPM2
->
-> config PPC_CPM_NEW_BINDING
-> 	bool
-> -	depends on CPM1 || CPM2
-> +	depends on CPM1 || CPM2 || FS_ENET_MPC5121_FEC
-> 	default y
->
-> config AXON_RAM
-> diff --git a/drivers/net/fec.h b/drivers/net/fec.h
-> index 292719d..5c9fe34 100644
-> --- a/drivers/net/fec.h
-> +++ b/drivers/net/fec.h
-> @@ -59,6 +59,7 @@ typedef struct fec {
-> } fec_t;
->
-> #else
-> +#if !defined(CONFIG_FS_ENET_MPC5121_FEC)
->
-> /*
->  *	Define device register set address map.
-> @@ -97,6 +98,48 @@ typedef struct fec {
-> 	unsigned long	fec_fifo_ram[112];	/* FIFO RAM buffer */
-> } fec_t;
->
-> +#else /* CONFIG_FS_ENET_MPC5121_FEC */
-> +
-> +typedef struct fec {
-> +	u32 fec_reserved0;
-> +	u32 fec_ievent;		/* Interrupt event reg */
-> +	u32 fec_imask;		/* Interrupt mask reg */
-> +	u32 fec_reserved1;
-> +	u32 fec_r_des_active;	/* Receive descriptor reg */
-> +	u32 fec_x_des_active;	/* Transmit descriptor reg */
-> +	u32 fec_reserved2[3];
-> +	u32 fec_ecntrl;		/* Ethernet control reg */
-> +	u32 fec_reserved3[6];
-> +	u32 fec_mii_data;		/* MII manage frame reg */
-> +	u32 fec_mii_speed;		/* MII speed control reg */
-> +	u32 fec_reserved4[7];
-> +	u32 fec_mib_ctrlstat;	/* MIB control/status reg */
-> +	u32 fec_reserved5[7];
-> +	u32 fec_r_cntrl;		/* Receive control reg */
-> +	u32 fec_reserved6[15];
-> +	u32 fec_x_cntrl;		/* Transmit Control reg */
-> +	u32 fec_reserved7[7];
-> +	u32 fec_addr_low;		/* Low 32bits MAC address */
-> +	u32 fec_addr_high;		/* High 16bits MAC address */
-> +	u32 fec_opd;		/* Opcode + Pause duration */
-> +	u32 fec_reserved8[10];
-> +	u32 fec_hash_table_high;	/* High 32bits hash table */
-> +	u32 fec_hash_table_low;	/* Low 32bits hash table */
-> +	u32 fec_grp_hash_table_high;/* High 32bits hash table */
-> +	u32 fec_grp_hash_table_low;	/* Low 32bits hash table */
-> +	u32 fec_reserved9[7];
-> +	u32 fec_x_wmrk;		/* FIFO transmit water mark */
-> +	u32 fec_reserved10;
-> +	u32 fec_r_bound;		/* FIFO receive bound reg */
-> +	u32 fec_r_fstart;		/* FIFO receive start reg */
-> +	u32 fec_reserved11[11];
-> +	u32 fec_r_des_start;	/* Receive descriptor ring */
-> +	u32 fec_x_des_start;	/* Transmit descriptor ring */
-> +	u32 fec_r_buff_size;	/* Maximum receive buff size */
-> +	u32 fec_dma_control;	/* DMA Endian and other ctrl */
-> +} fec_t;
-> +
-> +#endif /* CONFIG_FS_ENET_MPC5121_FEC */
-> #endif /* CONFIG_M5272 */
+Anyway, I have done some tests on a dual G5 here with putting a sync
+on both sides of the store in writel etc. (i.e. making readl/writel
+strongly ordered w.r.t. everything else), and as you predicted, there
+wasn't a noticeable performance degradation, at least not on the
+couple of things I tried.  So I am now inclined to accept your
+suggestion that we should do that.  I should probably do some similar
+checks on POWER6 and a few other machines first, though.
 
-I'm not exactly clear as to why this was done this way but this not  
-acceptable as it means we can't build a multiplatform kernel that  
-needs this driver.
-
-I'm also not clear to me if the MPC5121 FEC is really the same device  
-or close to it that it should be sharing this driver or have its own.
-
-- k
+Paul.
