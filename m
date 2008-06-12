@@ -1,21 +1,19 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.31])
-	by ozlabs.org (Postfix) with ESMTP id 15A51DDE41
+Return-Path: <david.jander@protonic.nl>
+Received: from protonic.prtnl (protonic.xs4all.nl [213.84.116.84])
+	by ozlabs.org (Postfix) with ESMTP id B36A5DDEE1
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 12 Jun 2008 16:36:18 +1000 (EST)
-Received: by yw-out-2324.google.com with SMTP id 5so2090132ywh.39
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 11 Jun 2008 23:36:17 -0700 (PDT)
-Message-ID: <fa686aa40806112336n6b997b7dw94d471ed680d18a2@mail.gmail.com>
-Date: Thu, 12 Jun 2008 00:36:17 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "David Jander" <david.jander@protonic.nl>
+	Thu, 12 Jun 2008 16:54:47 +1000 (EST)
+From: David Jander <david.jander@protonic.nl>
+To: Scott Wood <scottwood@freescale.com>
 Subject: Re: [PATCH 1/2] Added support for PRTLVT based boards (MPC5121)
-In-Reply-To: <200806111143.08905.david.jander@protonic.nl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Date: Thu, 12 Jun 2008 08:54:27 +0200
 References: <200806111143.08905.david.jander@protonic.nl>
+	<48501248.8010104@freescale.com>
+In-Reply-To: <48501248.8010104@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Message-Id: <200806120854.27334.david.jander@protonic.nl>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -27,125 +25,83 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Looking good.  A few more comments below.
+On Wednesday 11 June 2008 19:58:32 Scott Wood wrote:
+> Pass -B -M -C to git-format-patch to detect renames, copies, etc.
 
-On Wed, Jun 11, 2008 at 3:43 AM, David Jander <david.jander@protonic.nl> wrote:
+Thanks for the hint. I am still a git-noob ;-)
+
+>[...]
+> This is an old flash binding.  Please use the one currently described in
+> Documentation/booting-without-of.txt.
+
+Thanks again, I was searching for documentation about dts, and couldn't find 
+much.
+
+> > +		//axe@2000 {
+> > +		//	compatible = "mpc512x-axe";
+> > +		//	reg = <2000 100>;
+> > +		//	interrupts = <2a 8>;
+> > +		//	interrupt-parent = < &ipic >;
+> > +		//};
 >
-> Made MPC5121_ADS board support generic
+> Why is this here, but commented out?
 
-This description isn't verbose enough.  Describe what this patch
-changes in more detail please.
+Hmm, I know we are going to use it, but there are no drivers still...
+I'll leave it out, and add it again later when axe-support has arrived.
 
+> > +		dma2@14000 {
+> > +			compatible = "fsl,mpc5121-dma2";
 >
-> Signed-off-by: David Jander <david@protonic.nl>
-> ---
-> diff --git a/arch/powerpc/boot/dts/prtlvt.dts b/arch/powerpc/boot/dts/prtlvt.dts
-> new file mode 100644
-> index 0000000..93d2fa2
-> --- /dev/null
-> +++ b/arch/powerpc/boot/dts/prtlvt.dts
-> @@ -0,0 +1,267 @@
-> +       soc@80000000 {
-> +               compatible = "fsl,mpc5121-immr";
+> Is this DMA controller compatible with drivers/dma/fsldma.c?  If so,
+> follow the established binding.
 
-As Scott mentioned, this should be:
+No, it's not compatible with any other dma controller AFAIK. It special for 
+this chip. John Rigby is writing the driver for it right now.
 
-compatible = "fsl,mpc5121-immr", "simple-bus";
-
-> +               //axe@2000 {
-> +               //      compatible = "mpc512x-axe";
-
-Even though this is commented out; the compatible value is in the wrong form.
-
-> +               // port1 using extern ULPI PHY
-> +               usb@3000 {
-> +                       device_type = "usb";
-> +                       compatible = "fsl,fsl-usb2-dr";
-
-Poor compatible form.  fsl,fsl-usb2-dr does not specify a particular
-implementation of the device and is rather redundant.  Should probably
-be:
-
-compatible = "fsl,mpc5121-usb2-dr", "fsl-usb2-dr";
-
-Which means: 'this is a usb-dr controller on the MPC5121, which is
-also compatible with the pre-existing "fsl-usb2-dr" device tree
-binding.'  "fsl-usb2-dr" is used on line 656 of fsl_soc.c.  It's not a
-very good values for a compatible field (for various reasons), but it
-is already in existence so it is okay to claim compatibility with it.
-
-If this USB controller is *not* compatible with fsl-usb2-dr, then you
-should not have that value.
-
-> +               // port0 using internal UTMI PHY
-> +               usb@4000 {
-> +                       device_type = "usb";
-> +                       compatible = "fsl,fsl-usb2-dr";
-
-Ditto
-
-> diff --git a/arch/powerpc/platforms/512x/Kconfig b/arch/powerpc/platforms/512x/Kconfig
-> index 4c0da0c..67707f2 100644
-> --- a/arch/powerpc/platforms/512x/Kconfig
-> +++ b/arch/powerpc/platforms/512x/Kconfig
-> @@ -9,11 +9,26 @@ config PPC_MPC5121
->        select PPC_MPC512x
->        default n
+> > +config MPC5121_GENERIC
+> > +	bool
+> > +	default n
+> > +
+> >  config MPC5121_ADS
+> >  	bool "Freescale MPC5121E ADS"
+> >  	depends on PPC_MULTIPLATFORM && PPC32
+> >  	select DEFAULT_UIMAGE
+> >  	select PPC_MPC5121
+> > +	select MPC5121_GENERIC
+> >  	help
+> >  	  This option enables support for the MPC5121E ADS board.
+> >  	default n
+> > +
+> > +config PRTLVT
+> > +	bool "Protonic LVT family of MPC5121 based boards"
+> > +	depends on PPC_MULTIPLATFORM && PPC32
+> > +	select DEFAULT_UIMAGE
+> > +	select PPC_MPC5121
+> > +	select MPC5121_GENERIC
+> > +	help
+> > +	  This option enables support for the Protonic LVT family (ZANMCU and
+> > VICVT2). +	default n
 >
-> +config MPC5121_GENERIC
-> +       bool
-> +       default n
-> +
->  config MPC5121_ADS
->        bool "Freescale MPC5121E ADS"
->        depends on PPC_MULTIPLATFORM && PPC32
->        select DEFAULT_UIMAGE
->        select PPC_MPC5121
-> +       select MPC5121_GENERIC
->        help
->          This option enables support for the MPC5121E ADS board.
->        default n
-> +
-> +config PRTLVT
-> +       bool "Protonic LVT family of MPC5121 based boards"
-> +       depends on PPC_MULTIPLATFORM && PPC32
-> +       select DEFAULT_UIMAGE
-> +       select PPC_MPC5121
-> +       select MPC5121_GENERIC
-> +       help
-> +         This option enables support for the Protonic LVT family (ZANMCU and VICVT2).
-> +       default n
+> Can we leave out the "default n" lines?  They're no-ops.
 
-Personally, I wouldn't bother with separate Kconfig entrys for each
-supported board.  Just have a single MPC5121_GENERIC config property
-and add to the help text the list of boards that it supports.  Boards
-that require extra platform code can add extra Kconfig entries.
+Ok, I removed also several others (all of them in this file). I hope that it 
+is not a problem not making this a separate patch?
 
-> diff --git a/arch/powerpc/platforms/512x/Makefile b/arch/powerpc/platforms/512x/Makefile
-> index 232c89f..9d40a2e 100644
-> --- a/arch/powerpc/platforms/512x/Makefile
-> +++ b/arch/powerpc/platforms/512x/Makefile
-> @@ -1,4 +1,4 @@
->  #
->  # Makefile for the Freescale PowerPC 512x linux kernel.
->  #
-> -obj-$(CONFIG_MPC5121_ADS)      += mpc5121_ads.o
-> +obj-$(CONFIG_MPC5121_GENERIC)  += mpc5121_generic.o
-> +static int __init mpc5121_generic_probe(void)
-> +{
-> +       unsigned long root = of_get_flat_dt_root();
-> +
-> +       return of_flat_dt_is_compatible(root, "fsl,mpc5121ads") ||
-> +                       of_flat_dt_is_compatible(root, "prt,prtlvt");
+> I don't think these configs should depend on an option
+> (PPC_MULTIPLATFORM) that is described as "Generic desktop/server/laptop"...
 
-This list is just going to get bigger.  Maybe consider a list like is
-used in arch/powerpc/platforms/52xx/mpc5200_simple.c
+I think right now they need to. That's the way someone broke...err changed 
+platform selection.
 
-Otherwise, this patch is looking pretty good.
+We should fix that later, but I don't really know what would be the right way 
+to fix this right now. I'll think about it after this...
 
-Cheers,
-g.
+Btw, is it ok I just re-submit the fixed patches (with cc to linuxppc-dev)?
+
+Thanks.
+
+Greetings,
 
 -- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+David Jander
+Protonic Holland.
