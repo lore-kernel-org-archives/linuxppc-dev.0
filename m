@@ -1,27 +1,19 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.31])
-	by ozlabs.org (Postfix) with ESMTP id 9A103DDFBD
+Return-Path: <laurentp@cse-semaphore.com>
+Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
+	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id 03982DDF0A
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 12 Jun 2008 23:57:21 +1000 (EST)
-Received: by yw-out-2324.google.com with SMTP id 5so2175466ywh.39
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 12 Jun 2008 06:57:12 -0700 (PDT)
-Message-ID: <fa686aa40806120657k4d692595hac04f1739eb0b88d@mail.gmail.com>
-Date: Thu, 12 Jun 2008 07:57:12 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Scott Wood" <scottwood@freescale.com>
-Subject: Re: [PATCH 2/2] Re-added support for FEC on MPC5121 from Freescale
-	LTIB
-In-Reply-To: <20080612132936.GB21060@ld0162-tx32.am.freescale.net>
+	Fri, 13 Jun 2008 00:05:32 +1000 (EST)
+From: Laurent Pinchart <laurentp@cse-semaphore.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: Question on PowerPC's JTAG instruction
+Date: Thu, 12 Jun 2008 16:05:26 +0200
+References: <966933c00805291814s12439a96q57fabe77ff1139ec@mail.gmail.com>
+In-Reply-To: <966933c00805291814s12439a96q57fabe77ff1139ec@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <200806111143.08905.david.jander@protonic.nl>
-	<200806111144.44218.david.jander@protonic.nl>
-	<48501725.9080907@freescale.com>
-	<200806121233.13089.david.jander@protonic.nl>
-	<20080612132936.GB21060@ld0162-tx32.am.freescale.net>
-Cc: David Jander <david.jander@protonic.nl>, linuxppc-embedded@ozlabs.org
+Content-Type: multipart/signed; boundary="nextPart11450844.EnjOmffEZr";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
+Message-Id: <200806121605.28850.laurentp@cse-semaphore.com>
+Cc: John Zhou <johnzhouzj@gmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -32,37 +24,72 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jun 12, 2008 at 7:29 AM, Scott Wood <scottwood@freescale.com> wrote:
-> On Thu, Jun 12, 2008 at 12:33:12PM +0200, David Jander wrote:
->> > > +#ifndef CONFIG_FS_ENET_MPC5121_FEC
->> > >   /*
->> > >    * Enable big endian and don't care about SDMA FC.
->> > >    */
->> > >   FW(fecp, fun_code, 0x78000000);
->> > > +#else
->> > > + /*
->> > > +  * Set DATA_BO and DESC_BO and leave the rest unchanged
->> > > +  */
->> > > + FS(fecp, dma_control, 0xc0000000);
->> > > +#endif
->>
->> I have tried, but it is almost impossible, since both FEC types use a struct
->> named "fec_t" which very different betwen both types. That means that the code
->> would have enormous amounts of "if" statements all over.
->> Any suggestion?
->
-> OK, I missed that this was FEC-specific code and not general fs-enet.
->
-> 8xx/512x multiplatform is already unsupported due to core differences,
-> but make sure that 82xx/512x multiplatform doesn't get broken.
+--nextPart11450844.EnjOmffEZr
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Yeah, but the amount of #ifdefs required in this drivers adds a
-maintenance burden.  I think I'd rather see it either refactored or
-cloned.
+Hi John,
 
-Cheers,
-g.
+On Friday 30 May 2008 03:14, John Zhou wrote:
+> Hi,
+>=20
+> We want to design a tool to speed up our hardware diagnostics via JTAG
+> port.
+>=20
+> So we have question to ask for your help:
+>=20
+> 1. How do we access PowerPC's internal GPRs and SPRs etc. via JTAG
+> instruction?
+>=20
+> We'v gone through IEEE.1149.1.   There are no standard JTAG instruction to
+> access CPU's data bus, including internal or external data bus. Do we must
+> need private JTAG instruction to access CPU's internal resource?
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+That's right.
+
+> if it is, could you share the documents with us?
+
+No public documentation is available. You will need to sign an NDA with=20
+=46reescale (and probably pay $$$$).
+
+I had to design a test bench to program the flash memory on our MPC8248-bas=
+ed=20
+hardware, and ended up using JTAG to bitbang the bus signals. Programming t=
+he=20
+processor through JTAG private instructions would have been faster.
+
+> 2. For 'BSDL' usage, you know, we have many components on one board and m=
+uch
+> more signals are processed specically. So, how to integrate PowerPC's BSDL
+> with other components' 'BSDL'?  Could you give us any hints on it? or any
+> document is also welcome!
+>=20
+> Your any help is appreciated!
+
+Best regards,
+
+=2D-=20
+Laurent Pinchart
+CSE Semaphore Belgium
+
+Chaussee de Bruxelles, 732A
+B-1410 Waterloo
+Belgium
+
+T +32 (2) 387 42 59
+=46 +32 (2) 387 42 75
+
+--nextPart11450844.EnjOmffEZr
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
+
+iD8DBQBIUS0o8y9gWxC9vpcRAoAGAKDWc4AqmGwMHVKns0SOTci+YzS6SQCfUN/c
+aX35y0M6hk0JLitLCR5oz5Y=
+=XKWK
+-----END PGP SIGNATURE-----
+
+--nextPart11450844.EnjOmffEZr--
