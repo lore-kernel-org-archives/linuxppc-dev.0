@@ -1,18 +1,21 @@
-Return-Path: <sr@denx.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.179]) by ozlabs.org (Postfix) with ESMTP id 7C9DEDE5F3
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jun 2008 00:26:56 +1000 (EST)
-From: Stefan Roese <sr@denx.de>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Subject: Re: [PATCH] powerpc/4xx: Workaround for PPC440EPx/GRx PCI_28 Errata
-Date: Thu, 12 Jun 2008 16:24:13 +0200
-References: <20080611104549.45836929@zod.rchland.ibm.com>
-In-Reply-To: <20080611104549.45836929@zod.rchland.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200806121624.13577.sr@denx.de>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <sam@ravnborg.org>
+Received: from pasmtpA.tele.dk (pasmtpa.tele.dk [80.160.77.114])
+	by ozlabs.org (Postfix) with ESMTP id 6BA7ADE7CC
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jun 2008 00:42:35 +1000 (EST)
+Date: Thu, 12 Jun 2008 16:43:17 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: roel kluin <roel.kluin@gmail.com>
+Subject: Re: [GIT PULL] one kbuild fix for powerpc
+Message-ID: <20080612144317.GA14397@uranus.ravnborg.org>
+References: <20080612131650.GA13702@uranus.ravnborg.org>
+	<25e057c00806120703g27566bd7ie522a7d5d4664d92@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <25e057c00806120703g27566bd7ie522a7d5d4664d92@mail.gmail.com>
+Cc: linux-kbuild <linux-kbuild@vger.kernel.org>,
+	LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,33 +25,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 11 June 2008, Josh Boyer wrote:
-> The 440EPx/GRx chips don't support PCI MRM commands.  Drivers determine
-> this by looking for a zero value in the PCI cache line size register. 
-> However, some drivers write to this register upon initialization.  This can
-> cause MRMs to be used on these chips, which may cause deadlocks on PLB4.
->
-> The workaround implemented here introduces a new indirect_type flag, called
-> PPC_INDIRECT_TYPE_BROKEN_MRM.  This is set in the pci_controller structure
-> in the pci fixup function for 4xx PCI bridges by determining if the bridge
-> is compatible with 440EPx/GRx.  The flag is checked in the
-> indirect_write_config function, and forces any writes to the
-> PCI_CACHE_LINE_SIZE register to be zero, which will disable MRMs for these
-> chips.
->
-> A similar workaround has been tested by AMCC on various PCI cards, such as
-> the Silicon Image ATA card and Intel E1000 GIGE card.  Hangs were seen with
-> the Silicon Image card, and MRMs were seen on the bus with a PCI analyzer.
-> With the workaround in place, the card functioned properly and only Memory
-> Reads were seen on the bus with the analyzer.
->
-> Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+On Thu, Jun 12, 2008 at 04:03:54PM +0200, roel kluin wrote:
+> 2008/6/12 Sam Ravnborg <sam@ravnborg.org>:
+> 
+> > diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
+> > index 508c589..b763aba 100644
+> > --- a/scripts/mod/modpost.c
+> > +++ b/scripts/mod/modpost.c
+> > @@ -467,6 +467,26 @@ static void parse_elf_finish(struct elf_info *info)
+> >        release_file(info->hdr, info->size);
+> >  }
+> >
+> > +static int ignore_undef_symbol(struct elf_info *info, const char *symname)
+> > +{
+> > +       /* ignore __this_module, it will be resolved shortly */
+> > +       if (strcmp(symname, MODULE_SYMBOL_PREFIX "__this_module") == 0)
+> > +               return 1;
+> > +       /* ignore global offset table */
+> > +       if (strcmp(symname, "_GLOBAL_OFFSET_TABLE_") == 0)
+> > +               return 1;
+> > +       if (info->hdr->e_machine == EM_PPC)
+> > +               /* Special register function linked on all modules during final link of .ko */
+> > +               if (strncmp(symname, "_restgpr_", sizeof("_restgpr_") - 1) == 0 ||
+> > +                   strncmp(symname, "_savegpr_", sizeof("_savegpr_") - 1) == 0 ||
+> > +                   strncmp(symname, "_rest32gpr_", sizeof("_rest32gpr_") - 1) == 0 ||
+> > +                   strncmp(symname, "_save32gpr_", sizeof("_save32gpr_") - 1) == 0) {
+> > +                       return 1;
+> > +       }
+> 
+> Either the indentation is wrong, or you want to move the opening curly
+> bracket upwards.
 
-Acked-by: Stefan Roese <sr@denx.de>
+Deleted brackets - they are not needed.
+And updated kbuild-fixes.git
 
-I manually applied your patch (since it doesn't apply clean as discussed on 
-IRC) and tested it on my Sequoia with a modified PCI USB driver changing 
-PCI_CACHE_LINE_SIZE.
-
-Best regards,
-Stefan
+	Sam
