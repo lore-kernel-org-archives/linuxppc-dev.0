@@ -1,14 +1,16 @@
 Return-Path: <bzolnier@gmail.com>
 Received: from fg-out-1718.google.com (fg-out-1718.google.com [72.14.220.158])
-	by ozlabs.org (Postfix) with ESMTP id 24580DE0E3
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jun 2008 09:10:45 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id BDB7CDE44E
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jun 2008 09:10:52 +1000 (EST)
 Received: by fg-out-1718.google.com with SMTP id d23so2639026fga.39
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jun 2008 16:10:43 -0700 (PDT)
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jun 2008 16:10:52 -0700 (PDT)
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
-Date: Fri, 13 Jun 2008 01:12:24 +0200
-Message-Id: <20080612231224.18335.91182.sendpatchset@localhost.localdomain>
-Subject: [PATCH 1/7] ide-pmac: bugfix for media-bay support rework
+Date: Fri, 13 Jun 2008 01:12:34 +0200
+Message-Id: <20080612231234.18335.85898.sendpatchset@localhost.localdomain>
+In-Reply-To: <20080612231224.18335.91182.sendpatchset@localhost.localdomain>
+References: <20080612231224.18335.91182.sendpatchset@localhost.localdomain>
+Subject: [PATCH 2/7] ide-pmac: add ->cable_detect method
 Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
 	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -20,39 +22,130 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Fix bug introduced by:
+Add ->cable_detect method and remove no longer needed pmif->cable_80 flag
+(there is also no need to mask ->udma_mask now).
 
-commit 2dde7861afa23cd59db83515cb0b810b92b220aa
-Author: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Date:   Fri Apr 18 00:46:23 2008 +0200
+This fixes:
 
-    ide: rework PowerMac media-bay support (take 2)
-...
+- forced ignoring of cable detection (needed for some CF devices & debug)
 
-[ Yeah, I suck. ]
-
-bay->cd_index shouldn't be changed if IDE devices are not present
-or retry operations won't happen.
+- cable detection for warm-plug
 
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
-first three patches are meant for 2.6.26, the rest for 2.6.27
+ drivers/ide/ppc/pmac.c |   55 +++++++++++++++++++++++++++----------------------
+ 1 file changed, 31 insertions(+), 24 deletions(-)
 
-drivers/macintosh/mediabay.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-Index: b/drivers/macintosh/mediabay.c
+Index: b/drivers/ide/ppc/pmac.c
 ===================================================================
---- a/drivers/macintosh/mediabay.c
-+++ b/drivers/macintosh/mediabay.c
-@@ -556,7 +556,8 @@ static void media_bay_step(int i)
- 				printk("mediabay %d, registering IDE...\n", i);
- 				pmu_suspend();
- 				ide_port_scan(bay->cd_port);
--				bay->cd_index = bay->cd_port->index;
-+				if (bay->cd_port->present)
-+					bay->cd_index = bay->cd_port->index;
- 				pmu_resume();
- 			}
- 			if (bay->cd_index == -1) {
+--- a/drivers/ide/ppc/pmac.c
++++ b/drivers/ide/ppc/pmac.c
+@@ -57,7 +57,6 @@ typedef struct pmac_ide_hwif {
+ 	int				irq;
+ 	int				kind;
+ 	int				aapl_bus_id;
+-	unsigned			cable_80 : 1;
+ 	unsigned			mediabay : 1;
+ 	unsigned			broken_dma : 1;
+ 	unsigned			broken_dma_warn : 1;
+@@ -915,10 +914,40 @@ pmac_ide_do_resume(ide_hwif_t *hwif)
+ 	return 0;
+ }
+ 
++static u8 pmac_ide_cable_detect(ide_hwif_t *hwif)
++{
++	pmac_ide_hwif_t *pmif = (pmac_ide_hwif_t *)ide_get_hwifdata(hwif);
++	struct device_node *np = pmif->node;
++	const char *cable = of_get_property(np, "cable-type", NULL);
++
++	/* Get cable type from device-tree. */
++	if (cable && !strncmp(cable, "80-", 3))
++		return ATA_CBL_PATA80;
++
++	/*
++	 * G5's seem to have incorrect cable type in device-tree.
++	 * Let's assume they have a 80 conductor cable, this seem
++	 * to be always the case unless the user mucked around.
++	 */
++	if (of_device_is_compatible(np, "K2-UATA") ||
++	    of_device_is_compatible(np, "shasta-ata"))
++		return ATA_CBL_PATA80;
++
++	return ATA_CBL_PATA40;
++}
++
+ static const struct ide_port_ops pmac_ide_ata6_port_ops = {
+ 	.set_pio_mode		= pmac_ide_set_pio_mode,
+ 	.set_dma_mode		= pmac_ide_set_dma_mode,
+ 	.selectproc		= pmac_ide_kauai_selectproc,
++	.cable_detect		= pmac_ide_cable_detect,
++};
++
++static const struct ide_port_ops pmac_ide_ata4_port_ops = {
++	.set_pio_mode		= pmac_ide_set_pio_mode,
++	.set_dma_mode		= pmac_ide_set_dma_mode,
++	.selectproc		= pmac_ide_selectproc,
++	.cable_detect		= pmac_ide_cable_detect,
+ };
+ 
+ static const struct ide_port_ops pmac_ide_port_ops = {
+@@ -959,7 +988,6 @@ pmac_ide_setup_device(pmac_ide_hwif_t *p
+ 	u8 idx[4] = { 0xff, 0xff, 0xff, 0xff };
+ 	struct ide_port_info d = pmac_port_info;
+ 
+-	pmif->cable_80 = 0;
+ 	pmif->broken_dma = pmif->broken_dma_warn = 0;
+ 	if (of_device_is_compatible(np, "shasta-ata")) {
+ 		pmif->kind = controller_sh_ata6;
+@@ -976,6 +1004,7 @@ pmac_ide_setup_device(pmac_ide_hwif_t *p
+ 	} else if (of_device_is_compatible(np, "keylargo-ata")) {
+ 		if (strcmp(np->name, "ata-4") == 0) {
+ 			pmif->kind = controller_kl_ata4;
++			d.port_ops = &pmac_ide_ata4_port_ops;
+ 			d.udma_mask = ATA_UDMA4;
+ 		} else
+ 			pmif->kind = controller_kl_ata3;
+@@ -989,22 +1018,6 @@ pmac_ide_setup_device(pmac_ide_hwif_t *p
+ 	bidp = of_get_property(np, "AAPL,bus-id", NULL);
+ 	pmif->aapl_bus_id =  bidp ? *bidp : 0;
+ 
+-	/* Get cable type from device-tree */
+-	if (pmif->kind == controller_kl_ata4 || pmif->kind == controller_un_ata6
+-	    || pmif->kind == controller_k2_ata6
+-	    || pmif->kind == controller_sh_ata6) {
+-		const char* cable = of_get_property(np, "cable-type", NULL);
+-		if (cable && !strncmp(cable, "80-", 3))
+-			pmif->cable_80 = 1;
+-	}
+-	/* G5's seem to have incorrect cable type in device-tree. Let's assume
+-	 * they have a 80 conductor cable, this seem to be always the case unless
+-	 * the user mucked around
+-	 */
+-	if (of_device_is_compatible(np, "K2-UATA") ||
+-	    of_device_is_compatible(np, "shasta-ata"))
+-		pmif->cable_80 = 1;
+-
+ 	/* On Kauai-type controllers, we make sure the FCR is correct */
+ 	if (pmif->kauai_fcr)
+ 		writel(KAUAI_FCR_UATA_MAGIC |
+@@ -1050,7 +1063,6 @@ pmac_ide_setup_device(pmac_ide_hwif_t *p
+ 
+ 	hwif->hwif_data = pmif;
+ 	ide_init_port_hw(hwif, hw);
+-	hwif->cbl = pmif->cable_80 ? ATA_CBL_PATA80 : ATA_CBL_PATA40;
+ 
+ 	printk(KERN_INFO "ide%d: Found Apple %s controller, bus ID %d%s, irq %d\n",
+ 	       hwif->index, model_name[pmif->kind], pmif->aapl_bus_id,
+@@ -1067,11 +1079,6 @@ pmac_ide_setup_device(pmac_ide_hwif_t *p
+ 		}
+ 	}
+ 
+-#ifdef CONFIG_BLK_DEV_IDEDMA_PMAC
+-	if (pmif->cable_80 == 0)
+-		d.udma_mask &= ATA_UDMA2;
+-#endif
+-
+ 	idx[0] = hwif->index;
+ 
+ 	ide_device_add(idx, &d);
