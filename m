@@ -1,22 +1,31 @@
-Return-Path: <laurentp@cse-semaphore.com>
-Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
-	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id 082ECDDF48
-	for <linuxppc-dev@ozlabs.org>; Sat, 14 Jun 2008 01:16:04 +1000 (EST)
-From: Laurent Pinchart <laurentp@cse-semaphore.com>
-To: avorontsov@ru.mvista.com
-Subject: Re: [PATCHv2 1/2] [POWERPC] CPM2: Implement GPIO LIB API on CPM2
-	Freescale SoC.
-Date: Fri, 13 Jun 2008 17:15:56 +0200
-References: <4808D75B.9000002@scram.de>
-	<200806131446.27552.laurentp@cse-semaphore.com>
-	<20080613145730.GA27615@polina.dev.rtsoft.ru>
-In-Reply-To: <20080613145730.GA27615@polina.dev.rtsoft.ru>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2013701.Ra6LxCl7f2";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Message-Id: <200806131715.59345.laurentp@cse-semaphore.com>
-Cc: Scott Wood <scottwood@freescale.com>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Return-Path: <krafft@de.ibm.com>
+Received: from mtagate2.de.ibm.com (mtagate2.de.ibm.com [195.212.29.151])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mtagate2.de.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id E2A3DDE08F
+	for <linuxppc-dev@ozlabs.org>; Sat, 14 Jun 2008 01:37:03 +1000 (EST)
+Received: from d12nrmr1607.megacenter.de.ibm.com
+	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
+	by mtagate2.de.ibm.com (8.13.8/8.13.8) with ESMTP id m5DFaqQu040276
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jun 2008 15:36:52 GMT
+Received: from d12av01.megacenter.de.ibm.com (d12av01.megacenter.de.ibm.com
+	[9.149.165.212])
+	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v9.0) with
+	ESMTP id m5DFaqbS4157500
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jun 2008 17:36:52 +0200
+Received: from d12av01.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av01.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id m5DFaqi9001508
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jun 2008 17:36:52 +0200
+Date: Fri, 13 Jun 2008 17:36:49 +0200
+From: Christian Krafft <krafft@de.ibm.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [RFC] poweroff via pm_power_off if set
+Message-ID: <20080613173649.5451976e@de.ibm.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="Sig_/STVW3a14O6lLFUEuUw_eSe=";
+	protocol="application/pgp-signature"; micalg=PGP-SHA1
+Cc: krafft@de.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,58 +35,73 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---nextPart2013701.Ra6LxCl7f2
-Content-Type: text/plain;
-  charset="utf-8"
+--Sig_/STVW3a14O6lLFUEuUw_eSe=
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
 
-On Friday 13 June 2008 16:57, Anton Vorontsov wrote:
-> On Fri, Jun 13, 2008 at 02:46:20PM +0200, Laurent Pinchart wrote:
-> > On Friday 18 April 2008 19:16, Jochen Friedrich wrote:
-> > > Based on earlier work by Laurent Pinchart.
-> > >=20
-> > > This patch implement GPIO LIB support for the CPM2 GPIOs.
-> > >=20
-> > > Signed-off-by: Jochen Friedrich <jochen@scram.de>
-> > > Cc: Laurent Pinchart <laurentp@cse-semaphore.com>
-> >=20
-> > Signed-off-by: Laurent Pinchart <laurentp@cse-semaphore.com>
-> >=20
-> > Is there any showstopper or can this one be applied to powerpc-next ?
->=20
-> One comment below.
->=20
-> [...]
-> > > +	mm_gc->save_regs =3D cpm2_gpio32_save_regs;
-> > > +	of_gc->gpio_cells =3D 1;
->=20
-> I would strongly suggest to use gpio_cells =3D 2, otherwise you will not
-> able to pass GPIO flags (such as active-low etc) without breaking the
-> compatibility with older trees.
+This patch is needed to make ipmi_poweroff working on powerpc.
+It straightens the poweroff procedure to match with other architectures.
+At the moment powerpc plattforms can define their poweroff method using
+ppc_md.power_off. The only way for plattform independent driver (ipmi_power=
+off)
+to register it's poweroff function is to use pm_power_off. So machine_power=
+_off
+should check whether pm_power_off has been set and if so it should be used.
+If not, plattform dependent ppc_md.power_off should be called.
 
-Agreed. Jochen, will you resubmit or should I do it ?
+Signed-off-by: Christian Krafft <krafft@de.ibm.com>
 
-=2D-=20
-Laurent Pinchart
-CSE Semaphore Belgium
+Index: linux.git/arch/powerpc/kernel/setup-common.c
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- linux.git.orig/arch/powerpc/kernel/setup-common.c
++++ linux.git/arch/powerpc/kernel/setup-common.c
+@@ -121,6 +121,8 @@ void machine_restart(char *cmd)
+ void machine_power_off(void)
+ {
+ 	machine_shutdown();
++	if (pm_power_off)
++		pm_power_off();
+ 	if (ppc_md.power_off)
+ 		ppc_md.power_off();
+ #ifdef CONFIG_SMP
+@@ -133,7 +135,7 @@ void machine_power_off(void)
+ /* Used by the G5 thermal driver */
+ EXPORT_SYMBOL_GPL(machine_power_off);
+=20
+-void (*pm_power_off)(void) =3D machine_power_off;
++void (*pm_power_off)(void) =3D NULL;
+ EXPORT_SYMBOL_GPL(pm_power_off);
+=20
+ void machine_halt(void)
 
-Chaussee de Bruxelles, 732A
-B-1410 Waterloo
-Belgium
 
-T +32 (2) 387 42 59
-=46 +32 (2) 387 42 75
+--=20
+Mit freundlichen Gruessen,
+kind regards,
 
---nextPart2013701.Ra6LxCl7f2
-Content-Type: application/pgp-signature
+Christian Krafft
+IBM Systems & Technology Group,
+Linux Kernel Development
+IT Specialist
+
+
+Vorsitzender des Aufsichtsrats:	Martin Jetter
+Geschaeftsfuehrung:		Herbert Kircher
+Sitz der Gesellschaft:		Boeblingen
+Registriergericht:		Amtsgericht Stuttgart, HRB 243294
+
+--Sig_/STVW3a14O6lLFUEuUw_eSe=
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Disposition: attachment; filename=signature.asc
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
+Version: GnuPG v2.0.7 (GNU/Linux)
 
-iD8DBQBIUo8v8y9gWxC9vpcRArvvAKDF0QBBD3iKqCdQkfjCjNAWeHYEOgCg0Tig
-Cx+dIz9l0/lGkUn1aYjrEXs=
-=Q/0b
+iD8DBQFIUpQU6rqK4qDx+dcRAoX2AJ9/+QO+xFBG3B2BKglRtJBpAymEjgCfUqb6
+iFDOT7teWSY4kz+6zyNo8e0=
+=qIvl
 -----END PGP SIGNATURE-----
 
---nextPart2013701.Ra6LxCl7f2--
+--Sig_/STVW3a14O6lLFUEuUw_eSe=--
