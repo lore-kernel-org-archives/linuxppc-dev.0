@@ -1,23 +1,30 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Fri, 13 Jun 2008 10:01:25 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: dtc: Add support for binary includes.
-Message-ID: <20080613000125.GA10981@yookeroo.seuss>
-References: <20080226003955.GA24382@localhost.localdomain>
-	<7BF8FE6B-8BDD-4DC3-953E-E023C38EBA87@kernel.crashing.org>
-	<483C4C04.9020408@freescale.com>
-	<20080528235859.GA10260@yookeroo.seuss>
-	<20080529000227.GB10260@yookeroo.seuss>
-	<48404D83.4070108@freescale.com>
-	<20080604041304.GD29085@yookeroo.seuss>
-	<4846A60F.9020909@freescale.com>
-	<20080611015839.GB22012@yookeroo.seuss>
-	<20080612164322.GA2972@loki.buserror.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080612164322.GA2972@loki.buserror.net>
-Cc: jdl@jdl.com, linuxppc-dev@ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id A6AE6DDF66
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jun 2008 10:08:29 +1000 (EST)
+Subject: Re: MMIO and gcc re-ordering issue
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Matthew Wilcox <matthew@wil.cx>
+In-Reply-To: <20080612150716.GX30405@parisc-linux.org>
+References: <1211852026.3286.36.camel@pasglop> <4843C3D7.7000609@sgi.com>
+	<200806031433.12460.nickpiggin@yahoo.com.au>
+	<200806030952.10360.jbarnes@virtuousgeek.org> <4847A690.302@sgi.com>
+	<1212655433.9496.109.camel@pasglop>
+	<20080612150716.GX30405@parisc-linux.org>
+Content-Type: text/plain
+Date: Fri, 13 Jun 2008 10:07:04 +1000
+Message-Id: <1213315624.14478.56.camel@pasglop>
+Mime-Version: 1.0
+Cc: linux-arch@vger.kernel.org, Nick Piggin <nickpiggin@yahoo.com.au>,
+	Roland Dreier <rdreier@cisco.com>, Jes Sorensen <jes@sgi.com>,
+	linux-kernel@vger.kernel.org, Jeremy Higdon <jeremy@sgi.com>,
+	David Miller <davem@davemloft.net>, linuxppc-dev@ozlabs.org,
+	Jesse Barnes <jbarnes@virtuousgeek.org>, scottwood@freescale.com,
+	torvalds@linux-foundation.org, tpiepho@freescale.com,
+	alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,42 +34,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jun 12, 2008 at 11:43:22AM -0500, Scott Wood wrote:
-> On Wed, Jun 11, 2008 at 11:58:39AM +1000, David Gibson wrote:
-> > Scott's original patch does still have some implementation details I
-> > didn't like.  So in the interests of saving time, I've addressed some
-> > of those, added a testcase, and and now resubmitting my revised
-> > version of Scott's patch.
+On Thu, 2008-06-12 at 09:07 -0600, Matthew Wilcox wrote:
+> On Thu, Jun 05, 2008 at 06:43:53PM +1000, Benjamin Herrenschmidt wrote:
+> > Note that the powerpc implementation currently clears the flag
+> > on spin_lock and tests it on unlock. We are considering changing
+> > that to not touch the flag on spin_lock and just clear it whenever
+> > we do a sync (ie, on unlock, on explicit mmiowb, and possibly even
+> > on readl's where we happen to do sync's).
 > 
-> Acked-by: Scott Wood <scottwood@freescale.com>
+> Your current scheme sounds like it's broken for
 > 
-> > -struct data data_copy_file(FILE *f, size_t len)
-> > +struct data data_copy_file(FILE *f, size_t maxlen)
-> >  {
-> > -	struct data d;
-> > +	struct data d = empty_data;
-> > +
-> > +	while (!feof(f) && (d.len < maxlen)) {
-> > +		size_t chunksize, ret;
-> > +
-> > +		if (maxlen == -1)
-> > +			chunksize = 4096;
-> > +		else
-> > +			chunksize = maxlen - d.len;
-> > +
-> > +		d = data_grow_for(d, chunksize);
-> > +		ret = fread(d.val + d.len, 1, chunksize, f);
-> > +
-> > +		if (ferror(f))
-> > +			die("Error reading file into data: %s", strerror(errno));
-> 
-> It'd be nice if we could keep the filename around for reporting here...
+> spin_lock(a)
+> writel();
+> spin_lock(b);
+> spin_unlock(b);
+> spin_unlock(a);
 
-It would.  Well, I've been intending to clean up the input file
-handling in several ways already, I'll see if that can be worked in.
+Which is why we are considering changing it :-)
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+But as Paulus said before, he did some measurement and we came to the
+conclusion that (pending more measurements on a wider range of HW) we
+may as well drop the whole scheme and make writel fully synchronous
+instead.
+
+Then, we can get some nice weakly ordered accessors and start adding
+them with appropriate explicit barriers to the hot path of perf.
+critical drivers we care about.
+
+Cheers,
+Ben.
