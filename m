@@ -1,36 +1,17 @@
-Return-Path: <agl@us.ibm.com>
-Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 946BEDDFDF
-	for <linuxppc-dev@ozlabs.org>; Sat, 14 Jun 2008 04:12:13 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e4.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m5DICATG032764
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jun 2008 14:12:10 -0400
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
-	m5DICAjY163660
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jun 2008 14:12:10 -0400
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
-	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m5DIC9LV024039
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jun 2008 14:12:10 -0400
-Subject: Re: [RFC PATCH 2/2] Update defconfigs for CONFIG_HUGETLB
-From: Adam Litke <agl@us.ibm.com>
-To: Adrian Bunk <bunk@kernel.org>
-In-Reply-To: <20080612193638.GB17231@cs181133002.pp.htv.fi>
-References: <1213296540.17108.8.camel@localhost.localdomain>
-	<1213296945.17108.13.camel@localhost.localdomain>
-	<20080612193638.GB17231@cs181133002.pp.htv.fi>
-Content-Type: text/plain
-Date: Fri, 13 Jun 2008 14:12:08 -0400
-Message-Id: <1213380728.15016.8.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: npiggin@suse.de, linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, mel@csn.ul.ie, linux-sh@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-mm <linux-mm@kvack.org>,
-	linux-mips@linux-mips.org, nacc@us.ibm.com,
-	sparclinux@vger.kernel.org, Eric B Munson <ebmunson@us.ibm.com>
+Return-Path: <ricardo.ribalda@gmail.com>
+Received: from fg-out-1718.google.com (fg-out-1718.google.com [72.14.220.154])
+	by ozlabs.org (Postfix) with ESMTP id DB444DDE21
+	for <linuxppc-dev@ozlabs.org>; Sat, 14 Jun 2008 04:20:39 +1000 (EST)
+Received: by fg-out-1718.google.com with SMTP id d23so2843511fga.39
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jun 2008 11:20:37 -0700 (PDT)
+Message-ID: <aa76a2be0806131120i44396eafw66046f7fe68bb4d8@mail.gmail.com>
+Date: Fri, 13 Jun 2008 20:20:37 +0200
+From: "Ricardo Ribalda Delgado" <ricardo.ribalda@uam.es>
+Sender: ricardo.ribalda@gmail.com
+To: linuxppc-dev@ozlabs.org
+Subject: Xilinx EDK 10.1 and XUPV2P: A little report
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -40,30 +21,182 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2008-06-12 at 22:36 +0300, Adrian Bunk wrote:
-> On Thu, Jun 12, 2008 at 02:55:45PM -0400, Adam Litke wrote:
-> > Update all defconfigs that specify a default configuration for hugetlbfs.
-> > There is now only one option: CONFIG_HUGETLB.  Replace the old
-> > CONFIG_HUGETLB_PAGE and CONFIG_HUGETLBFS options with the new one.  I found no
-> > cases where CONFIG_HUGETLBFS and CONFIG_HUGETLB_PAGE had different values so
-> > this patch is large but completely mechanical:
-> >...
-> >  335 files changed, 335 insertions(+), 385 deletions(-)
-> >...
-> 
-> Please don't do this kind of patches - it doesn't bring any advantage 
-> but can create tons of patch conflicts.
-> 
-> The next time a defconfig gets updated it will anyway automatically be 
-> fixed, and for defconfigs that aren't updated it doesn't create any 
-> problems to keep them as they are today until they might one day get 
-> updated.
+Hello list
 
-Thanks for taking a look.  I am not sure if I have ever seen a defconfig
-patch hit the mailing list before and I was wondering how those changes
-happen.  In any case I am perfectly happy to drop this huge patch and
-stick with just the first one.
+   I have tried to port Linux 2.6 (xilinx git) to a XUPV2P board
+running a system implemented with EDK10.1 (Linux Version). I have
+fail, and I think I now why, this is a little report written for
+saving you some time (and maybe solving my problem if I am doing
+something wrong)
+
+The board is not supported by EDK 10.1, but I have found a Board
+Support File form https://wiki.ittc.ku.edu that seems to work. To
+start I have created a design that consists on a ppc, the mpmc, an
+uartlite, an interrupt manager and some bram. The "basic programs"
+worked ok on it.
+
+ I have downloaded the kernel form xilinx git and adapted the
+xparameters file to fit my design.
+
+ I have created a toolchain using OpenEmbedded and compiled the kernel
+with it, then I have downloaded the binary to the board and everything
+works fine until "Now booting the kernel"
+
+  Debugging the kernel I have found that the system crashes (Exception
+0x700) setting the mmu inside "start_here" (head_4xx.S)...
+
+  Because it was a crash in the "very beginning" of my kernel live I
+developed some simple apps to tests all my peripherals and they worked
+ok in real mode: All of them worked OK
+
+  BUT I have created a small piece of code that tests the peripherals
+in virtual mode and when the program is linked to the ram the system
+crashes!! Strangely, it works ok when it runs from bram.....
+
+   The same code works perfectly on a design created with EDK 8.1 and
+the kernel also works fine.
+
+   I attach the source code of my test app and the OpenEmbedded
+parameters I have used.
+
+
+
+                                      Best Regards
+
+
+
+-----------------
+
+main:
+
+.globl main
+
+my_code:
+
+bl uart
+
+tlbia
+isync
+
+lis r3,my_code@h
+ori r3,r3,my_code@l
+mr r4,r3
+iccci r0,r3
+
+/*PID*/
+li r0,0
+mtpid r0
+sync
+
+mem_map:
+/*RAM*/
+lis r3,0@h
+ori r3,r3,0@l
+mr r4,r3
+rlwinm  r4,r4,0,0,21
+ori     r4,r4,768
+rlwinm  r3,r3,0,0,21
+ori     r3,r3,960  /*16M*/
+li      r0,0
+tlbwelo r4,r0
+tlbwehi r3,r0
+
+/*BRAM*/
+lis r3,0xffff0000@h
+ori r3,r3,0xffff0000@l
+mr r4,r3
+rlwinm  r4,r4,0,0,21
+ori     r4,r4,768
+rlwinm  r3,r3,0,0,21
+ori     r3,r3,448 /* 64K */
+li      r0,1
+tlbwelo r4,r0
+tlbwehi r3,r0
+
+/*UARTLITE*/
+lis r3,0x40600000@h
+ori r3,r3,0x40600000@l
+mr r4,r3
+rlwinm  r4,r4,0,0,21
+ori     r4,r4,263
+rlwinm  r3,r3,0,0,21
+ori     r3,r3,448 /*64K*/
+li      r0,2
+tlbwelo r4,r0
+tlbwehi r3,r0
+
+sync
+
+on_mmu:
+lis r0,0
+ori r0,r0,4146
+mtsrr1 r0
+lis     r0,bucle@h
+ori     r0,r0,bucle@l
+mtsrr0  r0
+rfi
+b .
+
+
+uart:
+lis r11,0x4060000c@h
+ori r11,r11,0x4060000c@l
+li r14,0x0
+stb r14,0x0(r11)
+lis     r11,0x40600008@h
+ori     r11,r11,0x40600008@l
+busy:
+lwz     r10,0(r11)
+andi.   r12,r10,8
+bne+ busy
+lis r11,0x40600004@h
+ori r11,r11,0x40600004@l
+li r14,0x32
+stb r14,0x0(r11)
+br
+
+
+rw_ram:
+lis     r11,0x100000@h
+ori     r11,r11,0x100000@l
+lwz     r10,0(r11)
+lis r11,0x100000@h
+ori r11,r11,0x100000@l
+li r10,0xcc
+stb r10,0x0(r11)
+br
+
+rw_rom:
+lis     r11,0xfffffffc@h
+ori     r11,r11,0xfffffffc@l
+lwz     r10,0(r11)
+lis r11,0xfffffffc@h
+ori r11,r11,0xfffffffc@l
+li r10,0xcc
+stb r10,0x0(r11)
+br
+
+bucle:
+bl rw_ram
+bl uart
+bl rw_rom
+
+bl bucle
+
+
+-------------------
+
+
+OpenEmbedded Parameters:
+PREFERRED_VERSION_gcc = "4.2.1"
+PREFERRED_VERSION_gcc-cross = "4.2.1"
+PREFERRED_VERSION_gcc-cross-initial = "4.2.1"
+PREFERRED_VERSION_binutils = "2.18"
+PREFERRED_VERSION_binutils-cross = "2.18"
+PREFERRED_VERSION_glibc = "2.5"
+PREFERRED_VERSION_glibc-intermediate = "2.5"
+PREFERRED_VERSION_linux-libc-headers = "2.6.25"
 
 -- 
-Adam Litke - (agl at us.ibm.com)
-IBM Linux Technology Center
+Ricardo Ribalda
+http://www.eps.uam.es/~rribalda/
