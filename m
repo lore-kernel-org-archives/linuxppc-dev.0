@@ -1,22 +1,32 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 67303DE0CC
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jun 2008 10:23:20 +1000 (EST)
-Date: Fri, 13 Jun 2008 10:23:13 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Robert Jennings <rcj@linux.vnet.ibm.com>
-Subject: Re: [PATCH 02/19] powerpc: Split processor entitlement retrieval
-	and gathering to helper routines
-Message-Id: <20080613102313.0ce30d4d.sfr@canb.auug.org.au>
-In-Reply-To: <20080612220858.GI30916@linux.vnet.ibm.com>
-References: <20080612215312.GF30916@linux.vnet.ibm.com>
-	<20080612220858.GI30916@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Fri__13_Jun_2008_10_23_13_+1000_ULgxxAZUBJWQrBFe"
-Cc: Brian King <brking@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org,
-	paulus@samba.org, David Darrington <ddarring@linux.vnet.ibm.com>
+Return-Path: <jdl@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 7A1D1DDF22
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jun 2008 10:47:16 +1000 (EST)
+Message-ID: <4851C378.9000506@freescale.com>
+Date: Thu, 12 Jun 2008 19:46:48 -0500
+From: Jon Loeliger <jdl@freescale.com>
+MIME-Version: 1.0
+To: Scott Wood <scottwood@freescale.com>, Jon Loeliger <jdl@freescale.com>,
+	Kumar Gala <galak@kernel.crashing.org>, linuxppc-dev@ozlabs.org,
+	jdl@jdl.com
+Subject: Re: dtc: Add support for binary includes.
+References: <20080226003955.GA24382@localhost.localdomain>
+	<7BF8FE6B-8BDD-4DC3-953E-E023C38EBA87@kernel.crashing.org>
+	<483C4C04.9020408@freescale.com>
+	<20080528235859.GA10260@yookeroo.seuss>
+	<20080529000227.GB10260@yookeroo.seuss>
+	<48404D83.4070108@freescale.com>
+	<20080604041304.GD29085@yookeroo.seuss>
+	<4846A60F.9020909@freescale.com>
+	<20080611015839.GB22012@yookeroo.seuss>
+	<20080612164322.GA2972@loki.buserror.net>
+	<20080613000125.GA10981@yookeroo.seuss>
+In-Reply-To: <20080613000125.GA10981@yookeroo.seuss>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,48 +36,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Fri__13_Jun_2008_10_23_13_+1000_ULgxxAZUBJWQrBFe
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+David Gibson wrote:
 
-Hi Robert,
+>> It'd be nice if we could keep the filename around for reporting here...
+> 
+> It would.  Well, I've been intending to clean up the input file
+> handling in several ways already, I'll see if that can be worked in.
+> 
 
-On Thu, 12 Jun 2008 17:08:58 -0500 Robert Jennings <rcj@linux.vnet.ibm.com>=
- wrote:
->
-> -		seq_printf(m, "R4=3D0x%lx\n", h_entitled);
-> -		seq_printf(m, "R5=3D0x%lx\n", h_unallocated);
-> -		seq_printf(m, "R6=3D0x%lx\n", h_aggregation);
-> -		seq_printf(m, "R7=3D0x%lx\n", h_resource);
 
-This changes a user visible interface by removing the above.  I don't
-know if this matters (probably not), but it should be mentioned in the
-changelog.
+With Scott's ACK on this, I intend commit David's patch.
+So if you adjust the input file reporting here, please
+do it as an "additional patch."
 
-> +	if (new_entitled)
-> +		*new_weight =3D current_weight;
-> +
-> +	if (new_weight)
-> +		*new_entitled =3D current_entitled;
+And for the record, I will also make an official tagged
+release just after any such cleanup patch appears, or
+in the next couple days, whichever comes first.
 
-These look fishy - checking one pointer for NULL and then updating via
-the other pointer.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Fri__13_Jun_2008_10_23_13_+1000_ULgxxAZUBJWQrBFe
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkhRvfEACgkQTgG2atn1QN+rUgCeOgxggsUjWdvB6lJnIFPuNSP3
-RZIAnjpqCPk7hzr08nSjCWVhfafWO8Ff
-=Pqdv
------END PGP SIGNATURE-----
-
---Signature=_Fri__13_Jun_2008_10_23_13_+1000_ULgxxAZUBJWQrBFe--
+Thanks,
+jdl
