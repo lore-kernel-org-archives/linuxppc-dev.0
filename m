@@ -1,30 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id A6AE6DDF66
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jun 2008 10:08:29 +1000 (EST)
-Subject: Re: MMIO and gcc re-ordering issue
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Matthew Wilcox <matthew@wil.cx>
-In-Reply-To: <20080612150716.GX30405@parisc-linux.org>
-References: <1211852026.3286.36.camel@pasglop> <4843C3D7.7000609@sgi.com>
-	<200806031433.12460.nickpiggin@yahoo.com.au>
-	<200806030952.10360.jbarnes@virtuousgeek.org> <4847A690.302@sgi.com>
-	<1212655433.9496.109.camel@pasglop>
-	<20080612150716.GX30405@parisc-linux.org>
-Content-Type: text/plain
-Date: Fri, 13 Jun 2008 10:07:04 +1000
-Message-Id: <1213315624.14478.56.camel@pasglop>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 67303DE0CC
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jun 2008 10:23:20 +1000 (EST)
+Date: Fri, 13 Jun 2008 10:23:13 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Robert Jennings <rcj@linux.vnet.ibm.com>
+Subject: Re: [PATCH 02/19] powerpc: Split processor entitlement retrieval
+	and gathering to helper routines
+Message-Id: <20080613102313.0ce30d4d.sfr@canb.auug.org.au>
+In-Reply-To: <20080612220858.GI30916@linux.vnet.ibm.com>
+References: <20080612215312.GF30916@linux.vnet.ibm.com>
+	<20080612220858.GI30916@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Cc: linux-arch@vger.kernel.org, Nick Piggin <nickpiggin@yahoo.com.au>,
-	Roland Dreier <rdreier@cisco.com>, Jes Sorensen <jes@sgi.com>,
-	linux-kernel@vger.kernel.org, Jeremy Higdon <jeremy@sgi.com>,
-	David Miller <davem@davemloft.net>, linuxppc-dev@ozlabs.org,
-	Jesse Barnes <jbarnes@virtuousgeek.org>, scottwood@freescale.com,
-	torvalds@linux-foundation.org, tpiepho@freescale.com,
-	alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
-Reply-To: benh@kernel.crashing.org
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Fri__13_Jun_2008_10_23_13_+1000_ULgxxAZUBJWQrBFe"
+Cc: Brian King <brking@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org,
+	paulus@samba.org, David Darrington <ddarring@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,32 +26,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2008-06-12 at 09:07 -0600, Matthew Wilcox wrote:
-> On Thu, Jun 05, 2008 at 06:43:53PM +1000, Benjamin Herrenschmidt wrote:
-> > Note that the powerpc implementation currently clears the flag
-> > on spin_lock and tests it on unlock. We are considering changing
-> > that to not touch the flag on spin_lock and just clear it whenever
-> > we do a sync (ie, on unlock, on explicit mmiowb, and possibly even
-> > on readl's where we happen to do sync's).
-> 
-> Your current scheme sounds like it's broken for
-> 
-> spin_lock(a)
-> writel();
-> spin_lock(b);
-> spin_unlock(b);
-> spin_unlock(a);
+--Signature=_Fri__13_Jun_2008_10_23_13_+1000_ULgxxAZUBJWQrBFe
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Which is why we are considering changing it :-)
+Hi Robert,
 
-But as Paulus said before, he did some measurement and we came to the
-conclusion that (pending more measurements on a wider range of HW) we
-may as well drop the whole scheme and make writel fully synchronous
-instead.
+On Thu, 12 Jun 2008 17:08:58 -0500 Robert Jennings <rcj@linux.vnet.ibm.com>=
+ wrote:
+>
+> -		seq_printf(m, "R4=3D0x%lx\n", h_entitled);
+> -		seq_printf(m, "R5=3D0x%lx\n", h_unallocated);
+> -		seq_printf(m, "R6=3D0x%lx\n", h_aggregation);
+> -		seq_printf(m, "R7=3D0x%lx\n", h_resource);
 
-Then, we can get some nice weakly ordered accessors and start adding
-them with appropriate explicit barriers to the hot path of perf.
-critical drivers we care about.
+This changes a user visible interface by removing the above.  I don't
+know if this matters (probably not), but it should be mentioned in the
+changelog.
 
+> +	if (new_entitled)
+> +		*new_weight =3D current_weight;
+> +
+> +	if (new_weight)
+> +		*new_entitled =3D current_entitled;
+
+These look fishy - checking one pointer for NULL and then updating via
+the other pointer.
+
+--=20
 Cheers,
-Ben.
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Fri__13_Jun_2008_10_23_13_+1000_ULgxxAZUBJWQrBFe
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkhRvfEACgkQTgG2atn1QN+rUgCeOgxggsUjWdvB6lJnIFPuNSP3
+RZIAnjpqCPk7hzr08nSjCWVhfafWO8Ff
+=Pqdv
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__13_Jun_2008_10_23_13_+1000_ULgxxAZUBJWQrBFe--
