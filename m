@@ -1,33 +1,16 @@
-Return-Path: <brking@linux.vnet.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 6B334DE19C
-	for <linuxppc-dev@ozlabs.org>; Sat, 14 Jun 2008 04:31:45 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e31.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m5DIVeU1029866
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jun 2008 14:31:40 -0400
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
-	m5DIVewn164404
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jun 2008 12:31:40 -0600
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m5DIVd9T020746
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jun 2008 12:31:40 -0600
-Message-ID: <4852BCDF.80404@linux.vnet.ibm.com>
-Date: Fri, 13 Jun 2008 13:30:55 -0500
-From: Brian King <brking@linux.vnet.ibm.com>
+Return-Path: <ron_madrid@sbcglobal.net>
+Received: from web83503.mail.sp1.yahoo.com (web83503.mail.sp1.yahoo.com
+	[216.252.120.159]) by ozlabs.org (Postfix) with SMTP id DBBF8DE044
+	for <linuxppc-dev@ozlabs.org>; Sat, 14 Jun 2008 05:02:04 +1000 (EST)
+Date: Fri, 13 Jun 2008 12:02:02 -0700 (PDT)
+From: Ron Madrid <ron_madrid@sbcglobal.net>
+Subject: Re: Using DMA interrupt on MPC8313
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <4D6BC3F2-C43D-4317-B0BE-AF0A551E6CF1@kernel.crashing.org>
 MIME-Version: 1.0
-To: Robert Jennings <rcj@linux.vnet.ibm.com>
-Subject: Re: [PATCH 18/19] ibmvscsi: driver enablement for CMO
-References: <20080612222427.GZ30916@linux.vnet.ibm.com>
-In-Reply-To: <20080612222427.GZ30916@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org,
-	linux-scsi <linux-scsi@vger.kernel.org>,
-	David Darrington <ddarring@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=iso-8859-1
+Message-ID: <973175.42029.qm@web83503.mail.sp1.yahoo.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,164 +20,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-CC'ing linux-scsi, although we'd like to take this through the powerpc tree since it
-is part of a patch set to enable a Power platform feature.
+So after I've built the kernel to include the dmaengine and fsldma drivers, my driver is allowed
+to register its ISR via request_irq.  However, if these drivers are not installed then request_irq
+fails in my driver.  So it seems that there is some other initialization happening before
+request_irq is being called in fsldma and subsequently my driver.  Does anyone know what this is?
 
--Brian
+Ron
+--- Kumar Gala <galak@kernel.crashing.org> wrote:
 
-Robert Jennings wrote:
-> From: Robert Jennings <rcj@linux.vnet.ibm.com>
+> The dmaengine provides a generic set of APIs w/a FSL dma backend.  It  
+> might be the case that your need of dma doesnt fit into the current  
+> set of APIs.
 > 
-> Enable the driver to function in a Cooperative Memory Overcommitment (CMO)
-> environment.
+> - k
 > 
-> The following changes are made to enable the driver for CMO:
->  * DMA mapping errors will not result in error messages if entitlement has
->    been exceeded and resources were not available.
->  * The driver has a get_io_entitlement function defined to function
->    in a CMO environment. It will indicate how much IO memory it would like
->    to function.
+> On Jun 12, 2008, at 3:04 PM, Ron Madrid wrote:
 > 
-> Signed-off-by: Robert Jennings <rcj@linux.vnet.ibm.com>
+> > Well in that case wouldn't I need to use the fsldma driver?  Or is  
+> > dmaengine a generic dma driver?
+> >
+> > Ron
+> > --- Kumar Gala <galak@kernel.crashing.org> wrote:
+> >
+> >>
+> >> On Jun 12, 2008, at 2:35 PM, Ron Madrid wrote:
+> >>
+> >>> I'm trying to write a driver that would make use of the DMA on the
+> >>> MPC8313.  I'm attempting to
+> >>> register the interrupt with request_irq but it is not passing.  Is
+> >>> there something that I need to
+> >>> do before I call request_irq, maybe in the dts or somewhere else?
+> >>
+> >>
+> >> any reason you aren't using the dmaengine driver?
+> >>
+> >> - k
+> >>
 > 
-> ---
->  drivers/scsi/ibmvscsi/ibmvscsi.c |   46 +++++++++++++++++++++++++++++++++------
->  drivers/scsi/ibmvscsi/ibmvscsi.h |    2 ++
->  2 files changed, 41 insertions(+), 7 deletions(-)
 > 
-> Index: b/drivers/scsi/ibmvscsi/ibmvscsi.c
-> ===================================================================
-> --- a/drivers/scsi/ibmvscsi/ibmvscsi.c
-> +++ b/drivers/scsi/ibmvscsi/ibmvscsi.c
-> @@ -72,6 +72,8 @@
->  #include <linux/delay.h>
->  #include <asm/firmware.h>
->  #include <asm/vio.h>
-> +#include <asm/firmware.h>
-> +#include <asm/iommu.h>
->  #include <scsi/scsi.h>
->  #include <scsi/scsi_cmnd.h>
->  #include <scsi/scsi_host.h>
-> @@ -426,8 +428,10 @@ static int map_sg_data(struct scsi_cmnd 
->  					   SG_ALL * sizeof(struct srp_direct_buf),
->  					   &evt_struct->ext_list_token, 0);
->  		if (!evt_struct->ext_list) {
-> -			sdev_printk(KERN_ERR, cmd->device,
-> -				    "Can't allocate memory for indirect table\n");
-> +			if (!firmware_has_feature(FW_FEATURE_CMO))
-> +				sdev_printk(KERN_ERR, cmd->device,
-> +				            "Can't allocate memory "
-> +				            "for indirect table\n");
->  			return 0;
->  		}
->  	}
-> @@ -743,7 +747,9 @@ static int ibmvscsi_queuecommand(struct 
->  	srp_cmd->lun = ((u64) lun) << 48;
-> 
->  	if (!map_data_for_srp_cmd(cmnd, evt_struct, srp_cmd, hostdata->dev)) {
-> -		sdev_printk(KERN_ERR, cmnd->device, "couldn't convert cmd to srp_cmd\n");
-> +		if (!firmware_has_feature(FW_FEATURE_CMO))
-> +			sdev_printk(KERN_ERR, cmnd->device,
-> +			            "couldn't convert cmd to srp_cmd\n");
->  		free_event_struct(&hostdata->pool, evt_struct);
->  		return SCSI_MLQUEUE_HOST_BUSY;
->  	}
-> @@ -855,7 +861,10 @@ static void send_mad_adapter_info(struct
->  					    DMA_BIDIRECTIONAL);
-> 
->  	if (dma_mapping_error(req->buffer)) {
-> -		dev_err(hostdata->dev, "Unable to map request_buffer for adapter_info!\n");
-> +		if (!firmware_has_feature(FW_FEATURE_CMO))
-> +			dev_err(hostdata->dev,
-> +			        "Unable to map request_buffer for "
-> +			        "adapter_info!\n");
->  		free_event_struct(&hostdata->pool, evt_struct);
->  		return;
->  	}
-> @@ -1400,7 +1409,9 @@ static int ibmvscsi_do_host_config(struc
->  						    DMA_BIDIRECTIONAL);
-> 
->  	if (dma_mapping_error(host_config->buffer)) {
-> -		dev_err(hostdata->dev, "dma_mapping error getting host config\n");
-> +		if (!firmware_has_feature(FW_FEATURE_CMO))
-> +			dev_err(hostdata->dev,
-> +			        "dma_mapping error getting host config\n");
->  		free_event_struct(&hostdata->pool, evt_struct);
->  		return -1;
->  	}
-> @@ -1604,7 +1615,7 @@ static struct scsi_host_template driver_
->  	.eh_host_reset_handler = ibmvscsi_eh_host_reset_handler,
->  	.slave_configure = ibmvscsi_slave_configure,
->  	.change_queue_depth = ibmvscsi_change_queue_depth,
-> -	.cmd_per_lun = 16,
-> +	.cmd_per_lun = IBMVSCSI_CMDS_PER_LUN_DEFAULT,
->  	.can_queue = IBMVSCSI_MAX_REQUESTS_DEFAULT,
->  	.this_id = -1,
->  	.sg_tablesize = SG_ALL,
-> @@ -1613,6 +1624,26 @@ static struct scsi_host_template driver_
->  };
-> 
->  /**
-> + * ibmvscsi_get_io_entitlement - Calculate IO entitlement needed by the driver
-> + *
-> + * @vdev: struct vio_dev for the device whose entitlement is to be returned
-> + *
-> + * Return value:
-> + *	Number of bytes of IO data the driver will need to perform well.
-> + */
-> +static unsigned long ibmvscsi_get_io_entitlement(struct vio_dev *vdev)
-> +{
-> +	/* iu_storage data allocated in initialize_event_pool */
-> +	unsigned long io_entitlement = max_requests * sizeof(union viosrp_iu);
-> +
-> +	/* add io space for sg data */
-> +	io_entitlement += (IBMVSCSI_MAX_SECTORS_DEFAULT *
-> +	                     IBMVSCSI_CMDS_PER_LUN_DEFAULT);
-> +
-> +	return IOMMU_PAGE_ALIGN(io_entitlement);
-> +}
-> +
-> +/**
->   * Called by bus code for each adapter
->   */
->  static int ibmvscsi_probe(struct vio_dev *vdev, const struct vio_device_id *id)
-> @@ -1641,7 +1672,7 @@ static int ibmvscsi_probe(struct vio_dev
->  	hostdata->host = host;
->  	hostdata->dev = dev;
->  	atomic_set(&hostdata->request_limit, -1);
-> -	hostdata->host->max_sectors = 32 * 8; /* default max I/O 32 pages */
-> +	hostdata->host->max_sectors = IBMVSCSI_MAX_SECTORS_DEFAULT;
-> 
->  	rc = ibmvscsi_ops->init_crq_queue(&hostdata->queue, hostdata, max_requests);
->  	if (rc != 0 && rc != H_RESOURCE) {
-> @@ -1735,6 +1766,7 @@ static struct vio_driver ibmvscsi_driver
->  	.id_table = ibmvscsi_device_table,
->  	.probe = ibmvscsi_probe,
->  	.remove = ibmvscsi_remove,
-> +	.get_io_entitlement = ibmvscsi_get_io_entitlement,
->  	.driver = {
->  		.name = "ibmvscsi",
->  		.owner = THIS_MODULE,
-> Index: b/drivers/scsi/ibmvscsi/ibmvscsi.h
-> ===================================================================
-> --- a/drivers/scsi/ibmvscsi/ibmvscsi.h
-> +++ b/drivers/scsi/ibmvscsi/ibmvscsi.h
-> @@ -45,6 +45,8 @@ struct Scsi_Host;
->  #define MAX_INDIRECT_BUFS 10
-> 
->  #define IBMVSCSI_MAX_REQUESTS_DEFAULT 100
-> +#define IBMVSCSI_CMDS_PER_LUN_DEFAULT 16
-> +#define IBMVSCSI_MAX_SECTORS_DEFAULT 256 /* 32 * 8 = default max I/O 32 pages */
->  #define IBMVSCSI_MAX_CMDS_PER_LUN 64
-> 
->  /* ------------------------------------------------------------
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
-
-
--- 
-Brian King
-Linux on Power Virtualization
-IBM Linux Technology Center
