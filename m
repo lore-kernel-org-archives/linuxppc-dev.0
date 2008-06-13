@@ -1,22 +1,23 @@
-Return-Path: <jgarzik@pobox.com>
-Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
+Return-Path: <bgill@monty.am.freescale.net>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 1F79FDDFF7
-	for <linuxppc-dev@ozlabs.org>; Sat, 14 Jun 2008 05:56:02 +1000 (EST)
-Message-ID: <4852D0BD.7010403@pobox.com>
-Date: Fri, 13 Jun 2008 15:55:41 -0400
-From: Jeff Garzik <jgarzik@pobox.com>
-MIME-Version: 1.0
-To: Brian King <brking@linux.vnet.ibm.com>
-Subject: Re: [PATCH 10/19] [repost] powerpc: move get_longbusy_msecs out of
-	ehca/ehea
-References: <20080612221848.GR30916@linux.vnet.ibm.com>
-	<4852BB43.9080305@linux.vnet.ibm.com>
-In-Reply-To: <4852BB43.9080305@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org,
-	David Darrington <ddarring@linux.vnet.ibm.com>
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id E0673DDF51
+	for <linuxppc-dev@ozlabs.org>; Sat, 14 Jun 2008 09:19:10 +1000 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	m5DNJ4S7003438
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jun 2008 16:19:05 -0700 (MST)
+Received: from monty.am.freescale.net (monty.am.freescale.net [10.82.19.26])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m5DNJ3uj016995
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jun 2008 18:19:04 -0500 (CDT)
+From: Becky Bruce <becky.bruce@freescale.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc: Silly spelling fix in pgtable-ppc32
+Date: Fri, 13 Jun 2008 18:12:44 -0500
+Message-Id: <1213398764-19605-1-git-send-email-becky.bruce@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,36 +27,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Brian King wrote:
-> Jeff,
-> 
-> Regarding the patches Rob just posted here, we'd like to just take them
-> through the powerpc tree with your sign off since they are part of a
-> Power platform feature we are enabling.
-> 
-> Thanks,
-> 
-> Brian
-> 
-> Robert Jennings wrote:
->> From: Robert Jennings <rcj@linux.vnet.ibm.com>
->>
->> In support of Cooperative Memory Overcommitment (CMO) this moves
->> get_longbusy_msecs() out of the ehca and ehea drivers and into the 
->> architecture's hvcall header as plpar_get_longbusy_msecs.  Some firmware
->> calls made in pSeries platform iommu code will need to share this
->> functionality.
->>
->> Signed-off-by: Robert Jennings <rcj@linux.vnet.ibm.com>
->>
->> ---
->>
->> I missed copying netdev on this patch the first time.
->>
->>  drivers/infiniband/hw/ehca/hcp_if.c |   24 ++----------------------
->>  drivers/net/ehea/ehea_phyp.c        |    4 ++--
->>  drivers/net/ehea/ehea_phyp.h        |   20 --------------------
->>  include/asm-powerpc/hvcall.h        |   27 +++++++++++++++++++++++++++
->>  4 files changed, 31 insertions(+), 44 deletions(-)
+Signed-off-by: Becky Bruce <becky.bruce@freescale.com>
+---
+ include/asm-powerpc/pgtable-ppc32.h |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-ACK the quoted patch
+diff --git a/include/asm-powerpc/pgtable-ppc32.h b/include/asm-powerpc/pgtable-ppc32.h
+index c08e714..dde466b 100644
+--- a/include/asm-powerpc/pgtable-ppc32.h
++++ b/include/asm-powerpc/pgtable-ppc32.h
+@@ -620,8 +620,8 @@ static inline void set_pte_at(struct mm_struct *mm, unsigned long addr,
+ }
+ 
+ /*
+- * 2.6 calles this without flushing the TLB entry, this is wrong
+- * for our hash-based implementation, we fix that up here
++ * 2.6 calls this without flushing the TLB entry; this is wrong
++ * for our hash-based implementation, we fix that up here.
+  */
+ #define __HAVE_ARCH_PTEP_TEST_AND_CLEAR_YOUNG
+ static inline int __ptep_test_and_clear_young(unsigned int context, unsigned long addr, pte_t *ptep)
+-- 
+1.5.4.1
