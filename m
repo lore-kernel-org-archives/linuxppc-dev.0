@@ -1,33 +1,33 @@
 Return-Path: <brking@linux.vnet.ibm.com>
-Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 6B6EADDF6A
-	for <linuxppc-dev@ozlabs.org>; Sat, 14 Jun 2008 04:24:33 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e1.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m5DIOUFM019176
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jun 2008 14:24:30 -0400
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
-	m5DIOUq6138284
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jun 2008 14:24:30 -0400
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m5DIOTnu000629
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jun 2008 14:24:29 -0400
-Message-ID: <4852BB43.9080305@linux.vnet.ibm.com>
-Date: Fri, 13 Jun 2008 13:24:03 -0500
+	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 6B334DE19C
+	for <linuxppc-dev@ozlabs.org>; Sat, 14 Jun 2008 04:31:45 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e31.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m5DIVeU1029866
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jun 2008 14:31:40 -0400
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
+	m5DIVewn164404
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jun 2008 12:31:40 -0600
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m5DIVd9T020746
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jun 2008 12:31:40 -0600
+Message-ID: <4852BCDF.80404@linux.vnet.ibm.com>
+Date: Fri, 13 Jun 2008 13:30:55 -0500
 From: Brian King <brking@linux.vnet.ibm.com>
 MIME-Version: 1.0
 To: Robert Jennings <rcj@linux.vnet.ibm.com>
-Subject: Re: [PATCH 10/19] [repost] powerpc: move get_longbusy_msecs out of
-	ehca/ehea
-References: <20080612221848.GR30916@linux.vnet.ibm.com>
-In-Reply-To: <20080612221848.GR30916@linux.vnet.ibm.com>
+Subject: Re: [PATCH 18/19] ibmvscsi: driver enablement for CMO
+References: <20080612222427.GZ30916@linux.vnet.ibm.com>
+In-Reply-To: <20080612222427.GZ30916@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org,
-	David Darrington <ddarring@linux.vnet.ibm.com>,
-	Jeff Garzik <jgarzik@pobox.com>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org,
+	linux-scsi <linux-scsi@vger.kernel.org>,
+	David Darrington <ddarring@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,177 +37,161 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Jeff,
+CC'ing linux-scsi, although we'd like to take this through the powerpc tree since it
+is part of a patch set to enable a Power platform feature.
 
-Regarding the patches Rob just posted here, we'd like to just take them
-through the powerpc tree with your sign off since they are part of a
-Power platform feature we are enabling.
-
-Thanks,
-
-Brian
+-Brian
 
 Robert Jennings wrote:
 > From: Robert Jennings <rcj@linux.vnet.ibm.com>
 > 
-> In support of Cooperative Memory Overcommitment (CMO) this moves
-> get_longbusy_msecs() out of the ehca and ehea drivers and into the 
-> architecture's hvcall header as plpar_get_longbusy_msecs.  Some firmware
-> calls made in pSeries platform iommu code will need to share this
-> functionality.
+> Enable the driver to function in a Cooperative Memory Overcommitment (CMO)
+> environment.
+> 
+> The following changes are made to enable the driver for CMO:
+>  * DMA mapping errors will not result in error messages if entitlement has
+>    been exceeded and resources were not available.
+>  * The driver has a get_io_entitlement function defined to function
+>    in a CMO environment. It will indicate how much IO memory it would like
+>    to function.
 > 
 > Signed-off-by: Robert Jennings <rcj@linux.vnet.ibm.com>
 > 
 > ---
+>  drivers/scsi/ibmvscsi/ibmvscsi.c |   46 +++++++++++++++++++++++++++++++++------
+>  drivers/scsi/ibmvscsi/ibmvscsi.h |    2 ++
+>  2 files changed, 41 insertions(+), 7 deletions(-)
 > 
-> I missed copying netdev on this patch the first time.
+> Index: b/drivers/scsi/ibmvscsi/ibmvscsi.c
+> ===================================================================
+> --- a/drivers/scsi/ibmvscsi/ibmvscsi.c
+> +++ b/drivers/scsi/ibmvscsi/ibmvscsi.c
+> @@ -72,6 +72,8 @@
+>  #include <linux/delay.h>
+>  #include <asm/firmware.h>
+>  #include <asm/vio.h>
+> +#include <asm/firmware.h>
+> +#include <asm/iommu.h>
+>  #include <scsi/scsi.h>
+>  #include <scsi/scsi_cmnd.h>
+>  #include <scsi/scsi_host.h>
+> @@ -426,8 +428,10 @@ static int map_sg_data(struct scsi_cmnd 
+>  					   SG_ALL * sizeof(struct srp_direct_buf),
+>  					   &evt_struct->ext_list_token, 0);
+>  		if (!evt_struct->ext_list) {
+> -			sdev_printk(KERN_ERR, cmd->device,
+> -				    "Can't allocate memory for indirect table\n");
+> +			if (!firmware_has_feature(FW_FEATURE_CMO))
+> +				sdev_printk(KERN_ERR, cmd->device,
+> +				            "Can't allocate memory "
+> +				            "for indirect table\n");
+>  			return 0;
+>  		}
+>  	}
+> @@ -743,7 +747,9 @@ static int ibmvscsi_queuecommand(struct 
+>  	srp_cmd->lun = ((u64) lun) << 48;
 > 
->  drivers/infiniband/hw/ehca/hcp_if.c |   24 ++----------------------
->  drivers/net/ehea/ehea_phyp.c        |    4 ++--
->  drivers/net/ehea/ehea_phyp.h        |   20 --------------------
->  include/asm-powerpc/hvcall.h        |   27 +++++++++++++++++++++++++++
->  4 files changed, 31 insertions(+), 44 deletions(-)
+>  	if (!map_data_for_srp_cmd(cmnd, evt_struct, srp_cmd, hostdata->dev)) {
+> -		sdev_printk(KERN_ERR, cmnd->device, "couldn't convert cmd to srp_cmd\n");
+> +		if (!firmware_has_feature(FW_FEATURE_CMO))
+> +			sdev_printk(KERN_ERR, cmnd->device,
+> +			            "couldn't convert cmd to srp_cmd\n");
+>  		free_event_struct(&hostdata->pool, evt_struct);
+>  		return SCSI_MLQUEUE_HOST_BUSY;
+>  	}
+> @@ -855,7 +861,10 @@ static void send_mad_adapter_info(struct
+>  					    DMA_BIDIRECTIONAL);
 > 
-> Index: b/drivers/infiniband/hw/ehca/hcp_if.c
-> ===================================================================
-> --- a/drivers/infiniband/hw/ehca/hcp_if.c
-> +++ b/drivers/infiniband/hw/ehca/hcp_if.c
-> @@ -90,26 +90,6 @@
->  
->  static DEFINE_SPINLOCK(hcall_lock);
->  
-> -static u32 get_longbusy_msecs(int longbusy_rc)
-> -{
-> -	switch (longbusy_rc) {
-> -	case H_LONG_BUSY_ORDER_1_MSEC:
-> -		return 1;
-> -	case H_LONG_BUSY_ORDER_10_MSEC:
-> -		return 10;
-> -	case H_LONG_BUSY_ORDER_100_MSEC:
-> -		return 100;
-> -	case H_LONG_BUSY_ORDER_1_SEC:
-> -		return 1000;
-> -	case H_LONG_BUSY_ORDER_10_SEC:
-> -		return 10000;
-> -	case H_LONG_BUSY_ORDER_100_SEC:
-> -		return 100000;
-> -	default:
-> -		return 1;
-> -	}
-> -}
-> -
->  static long ehca_plpar_hcall_norets(unsigned long opcode,
->  				    unsigned long arg1,
->  				    unsigned long arg2,
-> @@ -139,7 +119,7 @@ static long ehca_plpar_hcall_norets(unsi
->  			spin_unlock_irqrestore(&hcall_lock, flags);
->  
->  		if (H_IS_LONG_BUSY(ret)) {
-> -			sleep_msecs = get_longbusy_msecs(ret);
-> +			sleep_msecs = plpar_get_longbusy_msecs(ret);
->  			msleep_interruptible(sleep_msecs);
->  			continue;
->  		}
-> @@ -192,7 +172,7 @@ static long ehca_plpar_hcall9(unsigned l
->  			spin_unlock_irqrestore(&hcall_lock, flags);
->  
->  		if (H_IS_LONG_BUSY(ret)) {
-> -			sleep_msecs = get_longbusy_msecs(ret);
-> +			sleep_msecs = plpar_get_longbusy_msecs(ret);
->  			msleep_interruptible(sleep_msecs);
->  			continue;
->  		}
-> Index: b/drivers/net/ehea/ehea_phyp.c
-> ===================================================================
-> --- a/drivers/net/ehea/ehea_phyp.c
-> +++ b/drivers/net/ehea/ehea_phyp.c
-> @@ -61,7 +61,7 @@ static long ehea_plpar_hcall_norets(unsi
->  					 arg5, arg6, arg7);
->  
->  		if (H_IS_LONG_BUSY(ret)) {
-> -			sleep_msecs = get_longbusy_msecs(ret);
-> +			sleep_msecs = plpar_get_longbusy_msecs(ret);
->  			msleep_interruptible(sleep_msecs);
->  			continue;
->  		}
-> @@ -102,7 +102,7 @@ static long ehea_plpar_hcall9(unsigned l
->  				   arg6, arg7, arg8, arg9);
->  
->  		if (H_IS_LONG_BUSY(ret)) {
-> -			sleep_msecs = get_longbusy_msecs(ret);
-> +			sleep_msecs = plpar_get_longbusy_msecs(ret);
->  			msleep_interruptible(sleep_msecs);
->  			continue;
->  		}
-> Index: b/drivers/net/ehea/ehea_phyp.h
-> ===================================================================
-> --- a/drivers/net/ehea/ehea_phyp.h
-> +++ b/drivers/net/ehea/ehea_phyp.h
-> @@ -40,26 +40,6 @@
->   * hcp_*  - structures, variables and functions releated to Hypervisor Calls
->   */
->  
-> -static inline u32 get_longbusy_msecs(int long_busy_ret_code)
-> -{
-> -	switch (long_busy_ret_code) {
-> -	case H_LONG_BUSY_ORDER_1_MSEC:
-> -		return 1;
-> -	case H_LONG_BUSY_ORDER_10_MSEC:
-> -		return 10;
-> -	case H_LONG_BUSY_ORDER_100_MSEC:
-> -		return 100;
-> -	case H_LONG_BUSY_ORDER_1_SEC:
-> -		return 1000;
-> -	case H_LONG_BUSY_ORDER_10_SEC:
-> -		return 10000;
-> -	case H_LONG_BUSY_ORDER_100_SEC:
-> -		return 100000;
-> -	default:
-> -		return 1;
-> -	}
-> -}
-> -
->  /* Number of pages which can be registered at once by H_REGISTER_HEA_RPAGES */
->  #define EHEA_MAX_RPAGE 512
->  
-> Index: b/include/asm-powerpc/hvcall.h
-> ===================================================================
-> --- a/include/asm-powerpc/hvcall.h
-> +++ b/include/asm-powerpc/hvcall.h
-> @@ -222,6 +222,33 @@
->  #ifndef __ASSEMBLY__
->  
+>  	if (dma_mapping_error(req->buffer)) {
+> -		dev_err(hostdata->dev, "Unable to map request_buffer for adapter_info!\n");
+> +		if (!firmware_has_feature(FW_FEATURE_CMO))
+> +			dev_err(hostdata->dev,
+> +			        "Unable to map request_buffer for "
+> +			        "adapter_info!\n");
+>  		free_event_struct(&hostdata->pool, evt_struct);
+>  		return;
+>  	}
+> @@ -1400,7 +1409,9 @@ static int ibmvscsi_do_host_config(struc
+>  						    DMA_BIDIRECTIONAL);
+> 
+>  	if (dma_mapping_error(host_config->buffer)) {
+> -		dev_err(hostdata->dev, "dma_mapping error getting host config\n");
+> +		if (!firmware_has_feature(FW_FEATURE_CMO))
+> +			dev_err(hostdata->dev,
+> +			        "dma_mapping error getting host config\n");
+>  		free_event_struct(&hostdata->pool, evt_struct);
+>  		return -1;
+>  	}
+> @@ -1604,7 +1615,7 @@ static struct scsi_host_template driver_
+>  	.eh_host_reset_handler = ibmvscsi_eh_host_reset_handler,
+>  	.slave_configure = ibmvscsi_slave_configure,
+>  	.change_queue_depth = ibmvscsi_change_queue_depth,
+> -	.cmd_per_lun = 16,
+> +	.cmd_per_lun = IBMVSCSI_CMDS_PER_LUN_DEFAULT,
+>  	.can_queue = IBMVSCSI_MAX_REQUESTS_DEFAULT,
+>  	.this_id = -1,
+>  	.sg_tablesize = SG_ALL,
+> @@ -1613,6 +1624,26 @@ static struct scsi_host_template driver_
+>  };
+> 
 >  /**
-> + * plpar_get_longbusy_msecs: - Return number of msecs for H_LONG_BUSY* response
-> + * @long_busy_ret_code: The H_LONG_BUSY_* constant to process
+> + * ibmvscsi_get_io_entitlement - Calculate IO entitlement needed by the driver
 > + *
-> + * This returns the number of msecs that corresponds to an H_LONG_BUSY_*
-> + * response from a plpar_hcall.  If there is no match 1 is returned.
+> + * @vdev: struct vio_dev for the device whose entitlement is to be returned
+> + *
+> + * Return value:
+> + *	Number of bytes of IO data the driver will need to perform well.
 > + */
-> +static inline u32 plpar_get_longbusy_msecs(int long_busy_ret_code)
+> +static unsigned long ibmvscsi_get_io_entitlement(struct vio_dev *vdev)
 > +{
-> +	switch (long_busy_ret_code) {
-> +	case H_LONG_BUSY_ORDER_1_MSEC:
-> +		return 1;
-> +	case H_LONG_BUSY_ORDER_10_MSEC:
-> +		return 10;
-> +	case H_LONG_BUSY_ORDER_100_MSEC:
-> +		return 100;
-> +	case H_LONG_BUSY_ORDER_1_SEC:
-> +		return 1000;
-> +	case H_LONG_BUSY_ORDER_10_SEC:
-> +		return 10000;
-> +	case H_LONG_BUSY_ORDER_100_SEC:
-> +		return 100000;
-> +	default:
-> +		return 1;
-> +	}
+> +	/* iu_storage data allocated in initialize_event_pool */
+> +	unsigned long io_entitlement = max_requests * sizeof(union viosrp_iu);
+> +
+> +	/* add io space for sg data */
+> +	io_entitlement += (IBMVSCSI_MAX_SECTORS_DEFAULT *
+> +	                     IBMVSCSI_CMDS_PER_LUN_DEFAULT);
+> +
+> +	return IOMMU_PAGE_ALIGN(io_entitlement);
 > +}
 > +
 > +/**
->   * plpar_hcall_norets: - Make a pseries hypervisor call with no return arguments
->   * @opcode: The hypervisor call to make.
->   *
+>   * Called by bus code for each adapter
+>   */
+>  static int ibmvscsi_probe(struct vio_dev *vdev, const struct vio_device_id *id)
+> @@ -1641,7 +1672,7 @@ static int ibmvscsi_probe(struct vio_dev
+>  	hostdata->host = host;
+>  	hostdata->dev = dev;
+>  	atomic_set(&hostdata->request_limit, -1);
+> -	hostdata->host->max_sectors = 32 * 8; /* default max I/O 32 pages */
+> +	hostdata->host->max_sectors = IBMVSCSI_MAX_SECTORS_DEFAULT;
+> 
+>  	rc = ibmvscsi_ops->init_crq_queue(&hostdata->queue, hostdata, max_requests);
+>  	if (rc != 0 && rc != H_RESOURCE) {
+> @@ -1735,6 +1766,7 @@ static struct vio_driver ibmvscsi_driver
+>  	.id_table = ibmvscsi_device_table,
+>  	.probe = ibmvscsi_probe,
+>  	.remove = ibmvscsi_remove,
+> +	.get_io_entitlement = ibmvscsi_get_io_entitlement,
+>  	.driver = {
+>  		.name = "ibmvscsi",
+>  		.owner = THIS_MODULE,
+> Index: b/drivers/scsi/ibmvscsi/ibmvscsi.h
+> ===================================================================
+> --- a/drivers/scsi/ibmvscsi/ibmvscsi.h
+> +++ b/drivers/scsi/ibmvscsi/ibmvscsi.h
+> @@ -45,6 +45,8 @@ struct Scsi_Host;
+>  #define MAX_INDIRECT_BUFS 10
+> 
+>  #define IBMVSCSI_MAX_REQUESTS_DEFAULT 100
+> +#define IBMVSCSI_CMDS_PER_LUN_DEFAULT 16
+> +#define IBMVSCSI_MAX_SECTORS_DEFAULT 256 /* 32 * 8 = default max I/O 32 pages */
+>  #define IBMVSCSI_MAX_CMDS_PER_LUN 64
+> 
+>  /* ------------------------------------------------------------
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
 
 
 -- 
