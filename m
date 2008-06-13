@@ -1,18 +1,30 @@
-Return-Path: <david.jander@protonic.nl>
-From: David Jander <david.jander@protonic.nl>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 2/2] Re-added support for FEC on MPC5121 from Freescale
-	LTIB to current head
-Date: Fri, 13 Jun 2008 11:32:17 +0200
-References: <200806121344.26883.david.jander@protonic.nl>
-	<200806121345.52293.david.jander@protonic.nl>
-	<9DD9B395-38FF-422B-83D8-B91178AB46E1@kernel.crashing.org>
-In-Reply-To: <9DD9B395-38FF-422B-83D8-B91178AB46E1@kernel.crashing.org>
+Return-Path: <chandru@in.ibm.com>
+Received: from e28esmtp06.in.ibm.com (e28smtp06.in.ibm.com [59.145.155.6])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e28smtp06.in.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id DD878DDF1E
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jun 2008 19:33:50 +1000 (EST)
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+	by e28esmtp06.in.ibm.com (8.13.1/8.13.1) with ESMTP id m5D9WSRb014077
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jun 2008 15:02:28 +0530
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+	by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
+	m5D9WBvg737386
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jun 2008 15:02:11 +0530
+Received: from d28av04.in.ibm.com (loopback [127.0.0.1])
+	by d28av04.in.ibm.com (8.13.1/8.13.3) with ESMTP id m5D9WR4F025371
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jun 2008 15:02:27 +0530
+Received: from guara.in.ibm.com (guara.in.ibm.com [9.124.35.86])
+	by d28av04.in.ibm.com (8.13.1/8.12.11) with ESMTP id m5D9WRVK025368
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jun 2008 15:02:27 +0530
+From: Chandru <chandru@in.ibm.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [RFC][PATCH] powerpc: add usable-memory property to drconf memory
+Date: Fri, 13 Jun 2008 14:51:39 +0530
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200806131132.17700.david.jander@protonic.nl>
-Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
+  charset="us-ascii"
+Message-Id: <200806131451.39467.chandru@in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,82 +34,73 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thursday 12 June 2008 14:12:15 you wrote:
-> On Jun 12, 2008, at 6:45 AM, David Jander wrote:
->
-> Your commit message isn't exactly helpful as most people dont know
-> what LTIB is and its not terribly relevant.  It just seems like you
-> are adding support for the FEC on MPC5121 and this point.
->
->[...]
-> > --- a/drivers/net/fec.h
-> > +++ b/drivers/net/fec.h
-> > @@ -59,6 +59,7 @@ typedef struct fec {
-> > } fec_t;
-> >
-> > #else
-> > +#if !defined(CONFIG_FS_ENET_MPC5121_FEC)
-> >
-> > /*
-> >  *	Define device register set address map.
-> > @@ -97,6 +98,48 @@ typedef struct fec {
-> > 	unsigned long	fec_fifo_ram[112];	/* FIFO RAM buffer */
-> > } fec_t;
-> >
-> > +#else /* CONFIG_FS_ENET_MPC5121_FEC */
-> > +
-> > +typedef struct fec {
-> > [...]
-> > +} fec_t;
-> > +
-> > +#endif /* CONFIG_FS_ENET_MPC5121_FEC */
-> > #endif /* CONFIG_M5272 */
->
-> I'm not exactly clear as to why this was done this way but this not
-> acceptable as it means we can't build a multiplatform kernel that
-> needs this driver.
+kexec-tools in user space collects rtas, crash , tce region ranges 
+from /proc/device-tree/ and passes them as linux,usable-memory properties to 
+second/kdump kernel in the device tree buffer. With drconf memory in power6 
+machines, we need a similar method to preserve those regions in the kdump 
+kernel.  This patch adopts a method to append the number 'n' from n'th lmb 
+entry in ibm,dynamic-memory as a string to "linux,usable-memory" string , so 
+as to distinguish each usable-memory region and it's size.  Another place 
+that needs similar change but not included in this patch is in  
+arch/powerpc/mm/numa.c. 
 
-Well, it wouldn't be possible either, since CONFIG_M5272 is a Cold-fire 
-processor, and CONFIG_FS_ENET_MPC5121_FEC is for a PowerPC processor.
-In this case.
-Otherwise you are right, the driver breaks MPC83xx/MPC5121 multiplatform 
-builds.
+Signed-off-by: Chandru S <chandru@in.ibm.com>
+---
 
-> I'm also not clear to me if the MPC5121 FEC is really the same device
-> or close to it that it should be sharing this driver or have its own.
-
-I am coming to the conclusion that it should have its own driver. 
-Altough a lot of code could be shared, there are still enough differences, so 
-that writing just ONE driver without some #ifdef's that would break 
-multiplatform builds, would instead end up with a much bigger amount of if's, 
-that would make it unreadable, unmaintainable and inefficient.
-Here's why: The above struct fet_t for instance is mapped to a set of 
-registers in the FEC. For processors with a CPM1, a CPM2 or without CPM (i.e. 
-MPC5121) the register mapping seems to be significantly different, 
-nevertheless the structs are all called "struct fec_t". How can one fix this 
-at runtime without changing the name of the structs and then just use a lot 
-of "if's" or a combination of macro's and if's everywhere a register of the 
-FEC is accessed? I fear it will be a mess.
-
-So I think it's either a separate driver, or break multiplatform builds.
-
-Since I am learning from you that breaking multiplatform builds is a no-go, 
-I'll settle for splitting up the driver.
-
-Any suggestion on where to put that split-off? How to name it?
-I would suggest drivers/net/fec_mpc512x/*
-
-I just resubmitted PATCH 1/2 again without part 2 (which hasn't much to do 
-with it anyway), so Grant may have a final look at it (hopefully I did it 
-right this time). Part 2 (MPC5121_FEC) will have to wait until monday or so, 
-since it will take me a while, and I have to do other things in between.
-
-Any suggestions on how to solve the puzzle are of course welcome...
-
-Thanks a lot for reviewing.
-
-Best regards,
-
--- 
-David Jander
-Protonic Holland.
+--- arch/powerpc/kernel/prom.c.orig	2008-06-13 11:42:45.000000000 +0530
++++ arch/powerpc/kernel/prom.c	2008-06-13 12:09:04.000000000 +0530
+@@ -884,9 +884,10 @@ static u64 __init dt_mem_next_cell(int s
+  */
+ static int __init early_init_dt_scan_drconf_memory(unsigned long node)
+ {
+-	cell_t *dm, *ls;
+-	unsigned long l, n, flags;
++	cell_t *dm, *ls, *udm, *reg, *endp;
++	unsigned long l, n, un, flags;
+ 	u64 base, size, lmb_size;
++	char buf[64], t[8];
+ 
+ 	ls = (cell_t *)of_get_flat_dt_prop(node, "ibm,lmb-size", &l);
+ 	if (ls == NULL || l < dt_root_size_cells * sizeof(cell_t))
+@@ -919,6 +920,41 @@ static int __init early_init_dt_scan_drc
+ 		}
+ 		lmb_add(base, size);
+ 	}
++
++	/* Scan usable-memory properties */
++	for (; un != 0; --un) {
++		base = dt_mem_next_cell(dt_root_addr_cells, &udm);
++		flags = dm[3];
++		udm += 4;
++		if ((flags & 0x80) || !(flags & 0x8))
++			continue;
++		strcpy(buf, "linux,usable-memory");
++		sprintf(t, "%d", (int)un);
++		strcat(buf, t);
++		reg = (cell_t *)of_get_flat_dt_prop(node,
++					(const char *)buf, &l);
++		if (reg == NULL)
++			continue;
++		/* remove the previously added lmb */
++		lmb_remove(base, (base+lmb_size));
++		endp = reg + (l / sizeof(cell_t));
++		while ((endp - reg) >= (dt_root_addr_cells +
++						dt_root_size_cells)) {
++
++			base = dt_mem_next_cell(dt_root_addr_cells, &reg);
++			size = dt_mem_next_cell(dt_root_size_cells, &reg);
++
++			if (size == 0)
++				continue;
++			if (iommu_is_off) {
++				if (base >= 0x80000000ul)
++					continue;
++				if ((base + size) > 0x80000000ul)
++					size = 0x80000000ul - base;
++			}
++			lmb_add(base, size);
++		}
++	}
+ 	lmb_dump_all();
+ 	return 0;
+ }
