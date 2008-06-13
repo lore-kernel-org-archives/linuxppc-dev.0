@@ -1,24 +1,37 @@
-Return-Path: <ralf@linux-mips.org>
-Received: from vigor.karmaclothing.net (vigor.karmaclothing.net
-	[217.169.26.28])
+Return-Path: <ossrosch@linux.vnet.ibm.com>
+Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B1536DDF5E
-	for <linuxppc-dev@ozlabs.org>; Sat, 14 Jun 2008 00:29:33 +1000 (EST)
-Date: Fri, 13 Jun 2008 14:46:29 +0100
-From: Ralf Baechle <ralf@linux-mips.org>
-To: Adam Litke <agl@us.ibm.com>
-Subject: Re: [RFC PATCH 0/2] Merge HUGETLB_PAGE and HUGETLBFS Kconfig options
-Message-ID: <20080613134629.GD16344@linux-mips.org>
-References: <1213296540.17108.8.camel@localhost.localdomain>
+	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 2C9B3DDFC4
+	for <linuxppc-dev@ozlabs.org>; Sat, 14 Jun 2008 00:39:51 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e1.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m5DEdlw4024240
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jun 2008 10:39:47 -0400
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
+	m5DEdlad204028
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jun 2008 10:39:47 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m5DEdk7R002554
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jun 2008 10:39:47 -0400
+From: Stefan Roscher <ossrosch@linux.vnet.ibm.com>
+To: Roland Dreier <rdreier@cisco.com>
+Subject: Re: [PATCH REPOST] IB/ehca: In case of lost interrupts,
+	trigger EOI to reenable interrupts
+Date: Fri, 13 Jun 2008 16:39:40 +0200
+References: <200806101644.34693.ossrosch@linux.vnet.ibm.com>
+	<200806101701.47090.ossrosch@linux.vnet.ibm.com>
+	<adaabht5klx.fsf@cisco.com>
+In-Reply-To: <adaabht5klx.fsf@cisco.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1213296540.17108.8.camel@localhost.localdomain>
-Cc: npiggin@suse.de, linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, mel@csn.ul.ie, linux-sh@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-mm <linux-mm@kvack.org>,
-	linux-mips@linux-mips.org, nacc@us.ibm.com,
-	sparclinux@vger.kernel.org, Eric B Munson <ebmunson@us.ibm.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200806131639.43173.ossrosch@linux.vnet.ibm.com>
+Cc: TKLEIN@de.ibm.com, THEMANN@de.ibm.com, fenkes@de.ibm.com,
+	LKML <linux-kernel@vger.kernel.org>, OF-EWG <ewg@lists.openfabrics.org>,
+	LinuxPPC-Dev <linuxppc-dev@ozlabs.org>, raisch@de.ibm.com,
+	Paul Mackerras <paulus@samba.org>, general@lists.openfabrics.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,27 +41,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jun 12, 2008 at 02:49:00PM -0400, Adam Litke wrote:
+Hi Roland,
 
-> There are currently two global Kconfig options that enable/disable the
-> hugetlb code: CONFIG_HUGETLB_PAGE and CONFIG_HUGETLBFS.  This may have
-> made sense before hugetlbfs became ubiquitous but now the pair of
-> options are redundant.  Merging these two options into one will simplify
-> the code slightly and will, more importantly, avoid confusion and
-> questions like: Which hugetlbfs CONFIG option should my code depend on?
+On Tuesday 10 June 2008 18:18:50 Roland Dreier wrote:
+>  > > So just to be clear: this is a workaround for a hardware/firmware bug?
 > 
-> CONFIG_HUGETLB_PAGE is aliased to the value of CONFIG_HUGETLBFS, so one
-> option can be removed without any effect.  The first patch merges the
-> two options into one option: CONFIG_HUGETLB.  The second patch updates
-> the defconfigs to set the one new option appropriately.
+>  > Yes it is.
 > 
-> I have cross-compiled this on i386, x86_64, ia64, powerpc, sparc64 and
-> sh with the option enabled and disabled.  This is completely mechanical
-> but, due to the large number of files affected (especially defconfigs),
-> could do well with a review from several sets of eyeballs.  Thanks.
+> OK, so paulus et al... does it seem like a good approach to call H_EOI
+> from driver code (given that this driver makes tons of other hcalls)?
+> 
+> How critical is this?  Since you said "corner case testing" I suspect we
+> can defer this to 2.6.27 and maybe get it into -stable later?
 
-MIPS doesn't do HUGETLB (at least not in-tree atm) so I'm not sure why
-linux-mips@linux-mips.org was cc'ed at all.  So feel free to add my
-Couldnt-care-less: ack line ;-)
+No, it's ok with me if you pick this for 2.6.27.
+> 
+> Also, out of curiousity:
+> 
+>  > +u64 hipz_h_eoi(int irq)
+>  > +{
+>  > +	int value;
+>  > +	unsigned long xirr;
+>  > +
+>  > +	iosync();
+> 
+> what is the iosync() required for here?
 
-  Ralf
+It's the same sequence as the interrupt handler for powerpc is implemented.
+
+> 
+>  > +	value = (0xff << 24) | irq;
+>  > +	xirr = value & 0xffffffff;
+> 
+> given that irq and value are ints, is there any possible way value could
+> have bits outside of the low 32 set?  If you're worried about sign
+> extension isn't it simpler to just make value unsigned?
+> 
+>  > +	return plpar_hcall_norets(H_EOI, xirr);
+>  > +}
+> 
+> ie why not:
+> 
+> u64 hipz_h_eoi(int irq)
+> {
+> 	unsigned xirr;
+> 
+> 	iosync();
+> 	xirr = (0xff << 24) | irq;
+> 	return plpar_hcall_norets(H_EOI, xirr);
+> }
+> 
+Yeah, you are rigth I will change that with the final patch.
+I will send the final patch soon.
+
+regards Stefan
