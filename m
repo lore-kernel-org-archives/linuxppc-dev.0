@@ -1,14 +1,34 @@
-Return-Path: <frey_simon@yahoo.fr>
-Received: from web26005.mail.ukl.yahoo.com (web26005.mail.ukl.yahoo.com
-	[217.12.10.216]) by ozlabs.org (Postfix) with SMTP id 1A4E5DDF35
-	for <linuxppc-dev@ozlabs.org>; Sat, 14 Jun 2008 00:53:00 +1000 (EST)
-Date: Fri, 13 Jun 2008 14:46:19 +0000 (GMT)
-From: Simon Frey <frey_simon@yahoo.fr>
-Subject: XLLTemac with SGDMA working on virtex4FX ?
-To: linuxppc-dev@ozlabs.org
+Return-Path: <ossrosch@linux.vnet.ibm.com>
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 71D85DDEE8
+	for <linuxppc-dev@ozlabs.org>; Sat, 14 Jun 2008 00:56:14 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e33.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m5DEuAtj030990
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jun 2008 10:56:10 -0400
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
+	m5DEuAU0053160
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jun 2008 08:56:10 -0600
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m5DEu8NS010467
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jun 2008 08:56:10 -0600
+From: Stefan Roscher <ossrosch@linux.vnet.ibm.com>
+To: Roland Dreier <rdreier@cisco.com>,
+	"LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
+	LKML <linux-kernel@vger.kernel.org>,
+	"OF-EWG" <ewg@lists.openfabrics.org>, general@lists.openfabrics.org
+Subject: [PATCH REPOST #2] IB/ehca: In case of lost interrupts,
+	trigger EOI to reenable interrupts
+Date: Fri, 13 Jun 2008 16:55:41 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Message-ID: <433607.2549.qm@web26005.mail.ukl.yahoo.com>
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200806131655.43410.ossrosch@linux.vnet.ibm.com>
+Cc: fenkes@de.ibm.com, raisch@de.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,123 +38,79 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi all,
+During corner case testing, we noticed that some versions of ehca 
+do not properly transition to interrupt done in special load situations.
+This can be resolved by periodically triggering EOI through H_EOI, 
+if eqes are pending.
 
-does anyone have working driver for xps_ll_temac unsing sg dma and checksum=
- offload on rx and tx ??
+Signed-off-by: Stefan Roscher <stefan.roscher@de.ibm.com>
+---
+As firmware team suggested I moved the call of the EOI h_call into 
+the handler function, this ensures that we will call EOI only when we 
+find a valid eqe on the event queue.
+Additionally I changed the calculation of the xirr value as Roland suggested.
 
-I use the xlnx kernel with ARCH=3Dpowerpc  and a device tree generated with=
- the gen_mhs_devtree under EDK 10.1
+ drivers/infiniband/hw/ehca/ehca_irq.c |    9 +++++++--
+ drivers/infiniband/hw/ehca/hcp_if.c   |   10 ++++++++++
+ drivers/infiniband/hw/ehca/hcp_if.h   |    1 +
+ 3 files changed, 18 insertions(+), 2 deletions(-)
 
-I don't know what's wrong but i can't get or send anything  even the speed =
-is only 10 Mb/s !
-
-that's what i get when the kernel starts...
-
-## Starting application at 0x004007d0 ...
-Using Xilinx Virtex machine description
-Linux version 2.6.25-xlnx (simon@linux) (gcc version 4.2.2) #11 PREEMPT Fri=
- Jun 13 15:51:29 CEST 2008
-Zone PFN ranges:
-  DMA             0 ->    16384
-  Normal      16384 ->    16384
-Movable zone start PFN for each node
-early_node_map[1] active PFN ranges
-    0:        0 ->    16384
-Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 16256
-Kernel command line: console=3DttyS0,115200 ip=3Ddhcp
-Xilinx intc at 0x81800000 mapped to 0xfdfff000
-PID hash table entries: 256 (order: 8, 1024 bytes)
-clocksource: timebase mult[1400000] shift[22] registered
-Console: colour dummy device 80x25
-Dentry cache hash table entries: 8192 (order: 3, 32768 bytes)
-Inode-cache hash table entries: 4096 (order: 2, 16384 bytes)
-Memory: 61704k/65536k available (2892k kernel code, 3768k reserved, 112k da=
-ta, 141k bss, 144k init)
-Mount-cache hash table entries: 512
-net_namespace: 536 bytes
-NET: Registered protocol family 16
-NET: Registered protocol family 2
-IP route cache hash table entries: 1024 (order: 0, 4096 bytes)
-TCP established hash table entries: 2048 (order: 2, 16384 bytes)
-TCP bind hash table entries: 2048 (order: 1, 8192 bytes)
-TCP: Hash tables configured (established 2048 bind 2048)
-TCP reno registered
-Installing knfsd (copyright (C) 1996 okir@monad.swb.de).
-io scheduler noop registered
-io scheduler anticipatory registered
-io scheduler deadline registered
-io scheduler cfq registered (default)
-Serial: 8250/16550 driver $Revision: 1.90 $ 4 ports, IRQ sharing disabled
-83e00000.serial: ttyS0 at MMIO 0x83e00003 (irq =3D 16) is a 16550A
-console [ttyS0] enabled
-brd: module loaded
-loop: module loaded
-Device Tree Probing 'ethernet'
-xilinx_lltemac 81c00000.ethernet: MAC address is now  0: a:35: 0:22: 1
-xilinx_lltemac 81c00000.ethernet: XLlTemac: using DMA mode.
-XLlTemac: Dma base address: phy: 0x84600100, virt: 0xc5010100
-XLlTemac: buffer descriptor size: 32768 (0x8000)
-XLlTemac: Allocating DMA descriptors with kmalloc<6>XLlTemac: (buffer_descr=
-iptor_init) phy: 0x3868000, virt: 0xc3868000, size: 0x8000
-XTemac: PHY detected at address 4.
-xilinx_lltemac 81c00000.ethernet: eth0: Xilinx TEMAC at 0x81C00000 mapped t=
-o 0xC500E000, irq=3D17
-mice: PS/2 mouse device common for all mice
-TCP cubic registered
-NET: Registered protocol family 1
-NET: Registered protocol family 17
-RPC: Registered udp transport module.
-RPC: Registered tcp transport module.
-eth0: XLlTemac: Options: 0x3fa
-eth0: XLlTemac: allocating interrupt 19 for dma mode tx.
-eth0: XLlTemac: allocating interrupt 18 for dma mode rx.
-eth0: XLlTemac: speed set to 10Mb/s
-eth0: XLlTemac: Send Threshold =3D 240, Receive Threshold =3D 40
-eth0: XLlTemac: Send Wait bound =3D 254, Receive Wait bound =3D 254
-Sending DHCP requests ...... timed out!
-IP-Config: Reopening network devices...
-eth0: XLlTemac: Options: 0x3fa                                             =
-                                                               =20
-
-
-
-I can see the led blinking on my switch but don't see nothing using wiresha=
-k !!!
-
-
-Finaly, i know the the temac works because i can use it with uboot !!! even=
-=20
-at speed 1000.
-
-In:    serial
-Out:   serial
-Err:   serial
-U-Boot relocated to 03fcf000
-### main_loop entered: bootdelay=3D3
-
-### main_loop: bootcmd=3D"loooaadd %addr"
-Press Enter within 3 seconds to stop autoboot
-Unknown command 'loooaadd' - try 'help'
-=3D> setenv bootfile zImage.virtex
-=3D> tftp 40000
-eth0: Xilinx XPS LocalLink Tri-Mode Ether MAC #0 at 0x81C00000.
-1000BASE-T/FD
-TFTP from server 192.168.1.100; our IP address is 192.168.1.200
-Filename 'zImage.virtex'.
-Load address: 0x40000
-Loading: #################################################################
-         ########################################################
-done
-Bytes transferred =3D 1772215 (1b0ab7 hex)
-=3D>
-
-
-so if someone already had that problem...=20
-
-Thanks in advance=20
-
-Simon
-=0A=0A=0A      ____________________________________________________________=
-_________________ =0AEnvoyez avec Yahoo! Mail. Une boite mail plus intellig=
-ente http://mail.yahoo.fr
+diff --git a/drivers/infiniband/hw/ehca/ehca_irq.c b/drivers/infiniband/hw/ehca/ehca_irq.c
+index ce1ab05..0792d93 100644
+--- a/drivers/infiniband/hw/ehca/ehca_irq.c
++++ b/drivers/infiniband/hw/ehca/ehca_irq.c
+@@ -531,7 +531,7 @@ void ehca_process_eq(struct ehca_shca *shca, int is_irq)
+ {
+ 	struct ehca_eq *eq = &shca->eq;
+ 	struct ehca_eqe_cache_entry *eqe_cache = eq->eqe_cache;
+-	u64 eqe_value;
++	u64 eqe_value, ret;
+ 	unsigned long flags;
+ 	int eqe_cnt, i;
+ 	int eq_empty = 0;
+@@ -583,8 +583,13 @@ void ehca_process_eq(struct ehca_shca *shca, int is_irq)
+ 			ehca_dbg(&shca->ib_device,
+ 				 "No eqe found for irq event");
+ 		goto unlock_irq_spinlock;
+-	} else if (!is_irq)
++	} else if (!is_irq) {
++		ret = hipz_h_eoi(eq->ist);
++		if (ret != H_SUCCESS)
++			ehca_err(&shca->ib_device,
++				 "bad return code EOI -rc = %ld\n", ret);
+ 		ehca_dbg(&shca->ib_device, "deadman found %x eqe", eqe_cnt);
++	}
+ 	if (unlikely(eqe_cnt == EHCA_EQE_CACHE_SIZE))
+ 		ehca_dbg(&shca->ib_device, "too many eqes for one irq event");
+ 	/* enable irq for new packets */
+diff --git a/drivers/infiniband/hw/ehca/hcp_if.c b/drivers/infiniband/hw/ehca/hcp_if.c
+index 5245e13..415d3a4 100644
+--- a/drivers/infiniband/hw/ehca/hcp_if.c
++++ b/drivers/infiniband/hw/ehca/hcp_if.c
+@@ -933,3 +933,13 @@ u64 hipz_h_error_data(const struct ipz_adapter_handle adapter_handle,
+ 				       r_cb,
+ 				       0, 0, 0, 0);
+ }
++
++u64 hipz_h_eoi(int irq)
++{
++	unsigned long xirr;
++
++	iosync();
++	xirr = (0xffULL << 24) | irq;
++
++	return plpar_hcall_norets(H_EOI, xirr);
++}
+diff --git a/drivers/infiniband/hw/ehca/hcp_if.h b/drivers/infiniband/hw/ehca/hcp_if.h
+index 60ce02b..2c3c6e0 100644
+--- a/drivers/infiniband/hw/ehca/hcp_if.h
++++ b/drivers/infiniband/hw/ehca/hcp_if.h
+@@ -260,5 +260,6 @@ u64 hipz_h_error_data(const struct ipz_adapter_handle adapter_handle,
+ 		      const u64 ressource_handle,
+ 		      void *rblock,
+ 		      unsigned long *byte_count);
++u64 hipz_h_eoi(int irq);
+ 
+ #endif /* __HCP_IF_H__ */
+-- 
+1.5.5
