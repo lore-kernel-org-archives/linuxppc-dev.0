@@ -1,34 +1,31 @@
-Return-Path: <chandru@in.ibm.com>
-Received: from e23smtp02.au.ibm.com (E23SMTP02.au.ibm.com [202.81.18.163])
+Return-Path: <luisgpm@linux.vnet.ibm.com>
+Received: from igw1.br.ibm.com (igw1.br.ibm.com [32.104.18.24])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp02.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 6CF5BDDEF3
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jun 2008 21:12:48 +1000 (EST)
-Received: from sd0109e.au.ibm.com (d23rh905.au.ibm.com [202.81.18.225])
-	by e23smtp02.au.ibm.com (8.13.1/8.13.1) with ESMTP id m5DBCJ0C013905
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jun 2008 21:12:19 +1000
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
-	by sd0109e.au.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
-	m5DBCIR6223284
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jun 2008 21:12:18 +1000
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
-	by d23av03.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m5DBCIIk024951
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jun 2008 21:12:18 +1000
-Received: from guara.in.ibm.com (guara.in.ibm.com [9.124.35.86])
-	by d23av03.au.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	m5DBCHJ7024934
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jun 2008 21:12:17 +1000
-From: Chandru <chandru@in.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [RFC][PATCH] powerpc: add usable-memory property to drconf memory
-Date: Fri, 13 Jun 2008 16:42:17 +0530
-References: <200806131451.39467.chandru@in.ibm.com>
-In-Reply-To: <200806131451.39467.chandru@in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200806131642.17532.chandru@in.ibm.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 4708CDDE08
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jun 2008 22:43:29 +1000 (EST)
+Received: from mailhub1.br.ibm.com (mailhub1 [9.18.232.109])
+	by igw1.br.ibm.com (Postfix) with ESMTP id 5639632C267
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jun 2008 09:17:45 -0300 (BRST)
+Received: from d24av02.br.ibm.com (d24av02.br.ibm.com [9.18.232.47])
+	by mailhub1.br.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
+	m5DChQOp1388646
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jun 2008 09:43:26 -0300
+Received: from d24av02.br.ibm.com (loopback [127.0.0.1])
+	by d24av02.br.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m5DChMKC004230
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jun 2008 09:43:22 -0300
+Subject: Re: [PATCH 5/6] ibm_newemac: PowerPC 440GX EMAC PHY clock workaround
+From: Luis Machado <luisgpm@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <20080422004803.7F497DE2C5@ozlabs.org>
+References: <20080422004803.7F497DE2C5@ozlabs.org>
+Content-Type: text/plain
+Date: Fri, 13 Jun 2008 09:43:13 -0300
+Message-Id: <1213360994.32117.0.camel@gargoyle>
+Mime-Version: 1.0
+Cc: netdev@vger.kernel.org, jgarzik@pobox.com, linuxppc-dev@ozlabs.org
+Reply-To: luisgpm@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,93 +35,114 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Friday 13 June 2008 14:51:39 Chandru wrote:
-> kexec-tools in user space collects rtas, crash , tce region ranges
-> from /proc/device-tree/ and passes them as linux,usable-memory properties
-> to second/kdump kernel in the device tree buffer. With drconf memory in
-> power6 machines, we need a similar method to preserve those regions in the
-> kdump kernel.  This patch adopts a method to append the number 'n' from
-> n'th lmb entry in ibm,dynamic-memory as a string to "linux,usable-memory"
-> string , so as to distinguish each usable-memory region and it's size. 
-> Another place that needs similar change but not included in this patch is
-> in
-> arch/powerpc/mm/numa.c.
+Did this show up on 2.6.26 recently? Or we're expecting it to show up a
+bit later?
 
-The previous patch had  two missing lines. Hence sending it again. Sorry about 
-this  :(.
+Thanks,
+Luis
 
-Signed-off-by: Chandru S <chandru@in.ibm.com>
----
-
-
---- arch/powerpc/kernel/prom.c.orig	2008-06-13 11:42:45.000000000 +0530
-+++ arch/powerpc/kernel/prom.c	2008-06-13 16:21:04.000000000 +0530
-@@ -884,20 +884,22 @@ static u64 __init dt_mem_next_cell(int s
-  */
- static int __init early_init_dt_scan_drconf_memory(unsigned long node)
- {
--	cell_t *dm, *ls;
--	unsigned long l, n, flags;
-+	cell_t *dm, *ls, *udm, *reg, *endp;
-+	unsigned long l, n, un, flags;
- 	u64 base, size, lmb_size;
-+	char buf[64], t[8];
- 
- 	ls = (cell_t *)of_get_flat_dt_prop(node, "ibm,lmb-size", &l);
- 	if (ls == NULL || l < dt_root_size_cells * sizeof(cell_t))
- 		return 0;
- 	lmb_size = dt_mem_next_cell(dt_root_size_cells, &ls);
- 
--	dm = (cell_t *)of_get_flat_dt_prop(node, "ibm,dynamic-memory", &l);
-+	udm = dm = (cell_t *)of_get_flat_dt_prop(node,
-+						"ibm,dynamic-memory", &l);
- 	if (dm == NULL || l < sizeof(cell_t))
- 		return 0;
- 
--	n = *dm++;	/* number of entries */
-+	un = n = *dm++;	/* number of entries */
- 	if (l < (n * (dt_root_addr_cells + 4) + 1) * sizeof(cell_t))
- 		return 0;
- 
-@@ -919,6 +921,41 @@ static int __init early_init_dt_scan_drc
- 		}
- 		lmb_add(base, size);
- 	}
-+
-+	/* Scan usable-memory properties */
-+	for (; un != 0; --un) {
-+		base = dt_mem_next_cell(dt_root_addr_cells, &udm);
-+		flags = dm[3];
-+		udm += 4;
-+		if ((flags & 0x80) || !(flags & 0x8))
-+			continue;
-+		strcpy(buf, "linux,usable-memory");
-+		sprintf(t, "%d", (int)un);
-+		strcat(buf, t);
-+		reg = (cell_t *)of_get_flat_dt_prop(node,
-+					(const char *)buf, &l);
-+		if (reg == NULL)
-+			continue;
-+		/* remove the previously added lmb */
-+		lmb_remove(base, (base+lmb_size));
-+		endp = reg + (l / sizeof(cell_t));
-+		while ((endp - reg) >= (dt_root_addr_cells +
-+						dt_root_size_cells)) {
-+
-+			base = dt_mem_next_cell(dt_root_addr_cells, &reg);
-+			size = dt_mem_next_cell(dt_root_size_cells, &reg);
-+
-+			if (size == 0)
-+				continue;
-+			if (iommu_is_off) {
-+				if (base >= 0x80000000ul)
-+					continue;
-+				if ((base + size) > 0x80000000ul)
-+					size = 0x80000000ul - base;
-+			}
-+			lmb_add(base, size);
-+		}
-+	}
- 	lmb_dump_all();
- 	return 0;
- }
+On Tue, 2008-04-22 at 10:46 +1000, Benjamin Herrenschmidt wrote:
+> From: Valentine Barshak <vbarshak@ru.mvista.com>
+> 
+> The PowerPC 440GX Taishan board fails to reset EMAC3 (reset timeout error)
+> if there's no link. Because of that it fails to find PHY chip. The older ibm_emac
+> driver had a workaround for that: the EMAC_CLK_INTERNAL/EMAC_CLK_EXTERNAL macros,
+> which toggle the Ethernet Clock Select bit in the SDR0_MFR register. This patch
+> does the same for "ibm,emac-440gx" compatible chips. The workaround forces
+> clock on -all- EMACs, so we select clock under global emac_phy_map_lock.
+> 
+> BenH: Made that #ifdef CONFIG_PPC_DCR_NATIVE for now as dcri_* stuff doesn't
+> exist for MMIO type DCRs like Cell. Some future rework & improvements of the
+> DCR infrastructure will make that cleaner but for now, this makes it work.
+> 
+> Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> 
+> ---
+>  drivers/net/ibm_newemac/core.c |   18 +++++++++++++++++-
+>  drivers/net/ibm_newemac/core.h |    8 ++++++--
+>  2 files changed, 23 insertions(+), 3 deletions(-)
+> 
+> --- linux-work.orig/drivers/net/ibm_newemac/core.c	2008-04-22 10:11:59.000000000 +1000
+> +++ linux-work/drivers/net/ibm_newemac/core.c	2008-04-22 10:31:18.000000000 +1000
+> @@ -43,6 +43,8 @@
+>  #include <asm/io.h>
+>  #include <asm/dma.h>
+>  #include <asm/uaccess.h>
+> +#include <asm/dcr.h>
+> +#include <asm/dcr-regs.h>
+> 
+>  #include "core.h"
+> 
+> @@ -2333,6 +2335,11 @@ static int __devinit emac_init_phy(struc
+>  	dev->phy.mdio_read = emac_mdio_read;
+>  	dev->phy.mdio_write = emac_mdio_write;
+> 
+> +	/* Enable internal clock source */
+> +#ifdef CONFIG_PPC_DCR_NATIVE
+> +	if (emac_has_feature(dev, EMAC_FTR_440GX_PHY_CLK_FIX))
+> +		dcri_clrset(SDR0, SDR0_MFR, 0, SDR0_MFR_ECS);
+> +#endif
+>  	/* Configure EMAC with defaults so we can at least use MDIO
+>  	 * This is needed mostly for 440GX
+>  	 */
+> @@ -2365,6 +2372,12 @@ static int __devinit emac_init_phy(struc
+>  			if (!emac_mii_phy_probe(&dev->phy, i))
+>  				break;
+>  		}
+> +
+> +	/* Enable external clock source */
+> +#ifdef CONFIG_PPC_DCR_NATIVE
+> +	if (emac_has_feature(dev, EMAC_FTR_440GX_PHY_CLK_FIX))
+> +		dcri_clrset(SDR0, SDR0_MFR, SDR0_MFR_ECS, 0);
+> +#endif
+>  	mutex_unlock(&emac_phy_map_lock);
+>  	if (i == 0x20) {
+>  		printk(KERN_WARNING "%s: can't find PHY!\n", np->full_name);
+> @@ -2490,8 +2503,11 @@ static int __devinit emac_init_config(st
+>  	}
+> 
+>  	/* Check EMAC version */
+> -	if (of_device_is_compatible(np, "ibm,emac4"))
+> +	if (of_device_is_compatible(np, "ibm,emac4")) {
+>  		dev->features |= EMAC_FTR_EMAC4;
+> +		if (of_device_is_compatible(np, "ibm,emac-440gx"))
+> +			dev->features |= EMAC_FTR_440GX_PHY_CLK_FIX;
+> +	}
+> 
+>  	/* Fixup some feature bits based on the device tree */
+>  	if (of_get_property(np, "has-inverted-stacr-oc", NULL))
+> Index: linux-work/drivers/net/ibm_newemac/core.h
+> ===================================================================
+> --- linux-work.orig/drivers/net/ibm_newemac/core.h	2008-04-22 10:06:31.000000000 +1000
+> +++ linux-work/drivers/net/ibm_newemac/core.h	2008-04-22 10:30:03.000000000 +1000
+> @@ -301,6 +301,10 @@ struct emac_instance {
+>   * Set if we have new type STACR with STAOPC
+>   */
+>  #define EMAC_FTR_HAS_NEW_STACR		0x00000040
+> +/*
+> + * Set if we need phy clock workaround for 440gx
+> + */
+> +#define EMAC_FTR_440GX_PHY_CLK_FIX	0x00000080
+> 
+> 
+>  /* Right now, we don't quite handle the always/possible masks on the
+> @@ -312,8 +316,8 @@ enum {
+> 
+>  	EMAC_FTRS_POSSIBLE	=
+>  #ifdef CONFIG_IBM_NEW_EMAC_EMAC4
+> -	    EMAC_FTR_EMAC4	| EMAC_FTR_HAS_NEW_STACR	|
+> -	    EMAC_FTR_STACR_OC_INVERT	|
+> +	    EMAC_FTR_EMAC4 | EMAC_FTR_HAS_NEW_STACR |
+> +	    EMAC_FTR_STACR_OC_INVERT | EMAC_FTR_440GX_PHY_CLK_FIX |
+>  #endif
+>  #ifdef CONFIG_IBM_NEW_EMAC_TAH
+>  	    EMAC_FTR_HAS_TAH	|
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+-- 
+Luis Machado
+Software Engineer 
+IBM Linux Technology Center
