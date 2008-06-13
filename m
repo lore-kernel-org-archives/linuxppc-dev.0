@@ -1,13 +1,18 @@
 Return-Path: <david.jander@protonic.nl>
 From: David Jander <david.jander@protonic.nl>
-To: linuxppc-embedded@ozlabs.org
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 2/2] Re-added support for FEC on MPC5121 from Freescale
+	LTIB to current head
+Date: Fri, 13 Jun 2008 11:32:17 +0200
+References: <200806121344.26883.david.jander@protonic.nl>
+	<200806121345.52293.david.jander@protonic.nl>
+	<9DD9B395-38FF-422B-83D8-B91178AB46E1@kernel.crashing.org>
+In-Reply-To: <9DD9B395-38FF-422B-83D8-B91178AB46E1@kernel.crashing.org>
 MIME-Version: 1.0
-Subject: [PATCH] Added support for PRTLVT based boards (MPC5121)
-Date: Fri, 13 Jun 2008 10:49:03 +0200
 Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200806131049.03765.david.jander@protonic.nl>
-Cc: linuxppc-dev@ozlabs.org
+  charset="iso-8859-1"
+Message-Id: <200806131132.17700.david.jander@protonic.nl>
+Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,402 +22,82 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
- Made MPC5121_ADS board support generic:
- Renamed arch/powerpc/platforms/512x/mpc5121_ads.c and added list of supported
- boards.
- For both MPC5121 ADS or PRTLVT support, just select "MPC5121_GENERIC" and use
- the corresponding device-tree.
+On Thursday 12 June 2008 14:12:15 you wrote:
+> On Jun 12, 2008, at 6:45 AM, David Jander wrote:
+>
+> Your commit message isn't exactly helpful as most people dont know
+> what LTIB is and its not terribly relevant.  It just seems like you
+> are adding support for the FEC on MPC5121 and this point.
+>
+>[...]
+> > --- a/drivers/net/fec.h
+> > +++ b/drivers/net/fec.h
+> > @@ -59,6 +59,7 @@ typedef struct fec {
+> > } fec_t;
+> >
+> > #else
+> > +#if !defined(CONFIG_FS_ENET_MPC5121_FEC)
+> >
+> > /*
+> >  *	Define device register set address map.
+> > @@ -97,6 +98,48 @@ typedef struct fec {
+> > 	unsigned long	fec_fifo_ram[112];	/* FIFO RAM buffer */
+> > } fec_t;
+> >
+> > +#else /* CONFIG_FS_ENET_MPC5121_FEC */
+> > +
+> > +typedef struct fec {
+> > [...]
+> > +} fec_t;
+> > +
+> > +#endif /* CONFIG_FS_ENET_MPC5121_FEC */
+> > #endif /* CONFIG_M5272 */
+>
+> I'm not exactly clear as to why this was done this way but this not
+> acceptable as it means we can't build a multiplatform kernel that
+> needs this driver.
 
-Signed-off-by: David Jander <david@protonic.nl>
----
- arch/powerpc/boot/dts/prtlvt.dts                   |  255 ++++++++++++++++++++
- arch/powerpc/platforms/512x/Kconfig                |   14 +-
- arch/powerpc/platforms/512x/Makefile               |    2 +-
- .../512x/{mpc5121_ads.c => mpc5121_generic.c}      |   38 ++-
- 4 files changed, 290 insertions(+), 19 deletions(-)
- create mode 100644 arch/powerpc/boot/dts/prtlvt.dts
- rename arch/powerpc/platforms/512x/{mpc5121_ads.c => mpc5121_generic.c} (73%)
+Well, it wouldn't be possible either, since CONFIG_M5272 is a Cold-fire 
+processor, and CONFIG_FS_ENET_MPC5121_FEC is for a PowerPC processor.
+In this case.
+Otherwise you are right, the driver breaks MPC83xx/MPC5121 multiplatform 
+builds.
 
-diff --git a/arch/powerpc/boot/dts/prtlvt.dts b/arch/powerpc/boot/dts/prtlvt.dts
-new file mode 100644
-index 0000000..aeb663b
---- /dev/null
-+++ b/arch/powerpc/boot/dts/prtlvt.dts
-@@ -0,0 +1,255 @@
-+/*
-+ * Device tree source for PRTLVT based boards, based on:
-+ * MPC5121E MDS Device Tree Source
-+ *
-+ * Copyright 2007 Freescale Semiconductor Inc.
-+ * Copyright 2008 Protonic Holland
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ */
-+
-+ /* compile with: ./dtc -p 10240 -R 20 -I dts -o prtlvt.dtb -O dtb -b 0 dts/prtlvt.dts */
-+
-+/dts-v1/;
-+
-+/ {
-+	model = "prtlvt";
-+	compatible = "prt,prtlvt";
-+	#address-cells = <1>;
-+	#size-cells = <1>;
-+
-+	cpus {
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+
-+		PowerPC,5121@0 {
-+			device_type = "cpu";
-+			reg = <0>;
-+			d-cache-line-size = <0x20>;	// 32 bytes
-+			i-cache-line-size = <0x20>;	// 32 bytes
-+			d-cache-size = <0x8000>;	// L1, 32K
-+			i-cache-size = <0x8000>;	// L1, 32K
-+			timebase-frequency = <50000000>;// 50 MHz (csb/4)
-+			bus-frequency = <200000000>;	// 200 MHz csb bus
-+			clock-frequency = <400000000>;	// 400 MHz ppc core
-+		};
-+	};
-+
-+	memory {
-+		device_type = "memory";
-+		reg = <0x00000000 0x10000000>;	// 256MB at 0
-+	};
-+
-+	localbus@80000020 {
-+		compatible = "prt,prtlvt-localbus", "simple-bus";
-+		#address-cells = <2>;
-+		#size-cells = <1>;
-+		reg = <0x80000020 0x40>;
-+		ranges = <0x0 0x0 0xfe000000 0x02000000>;
-+		flash@0,0 {
-+			compatible = "amd,s29gl256n", "cfi-flash";
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			reg = <0 0x0 0x02000000>;
-+			bank-width = <2>;
-+		};
-+	};
-+	
-+	soc@80000000 {
-+		compatible = "fsl,mpc5121-immr", "simple-bus";
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		#interrupt-cells = <2>;
-+		ranges = <0x0 0x80000000 0x400000>;
-+		reg = <0x80000000 0x400000>;
-+		bus-frequency = <66000000>;	// 66 MHz ips bus
-+
-+
-+		// IPIC
-+		// interrupts cell = <intr #, sense>
-+		// sense values match linux IORESOURCE_IRQ_* defines:
-+		// sense == 8: Level, low assertion
-+		// sense == 2: Edge, high-to-low change
-+		//
-+		ipic: interrupt-controller@c00 {
-+			compatible = "fsl,mpc5121-ipic", "fsl,ipic";
-+			interrupt-controller;
-+			#address-cells = <0>;
-+			#interrupt-cells = <2>;
-+			reg = <0xc00 0x100>;
-+		};
-+
-+		// 512x PSCs are not 52xx PSCs compatible
-+		// PSC0 serial port aka ttyPSC0
-+		serial@11000 {
-+			device_type = "serial";
-+			compatible = "fsl,mpc5121-psc-uart";
-+			port-number = <0>;
-+			cell-index = <0>;
-+			reg = <0x11000 0x100>;
-+			interrupts = <0x28 0x8>; // actually the fifo irq
-+			interrupt-parent = < &ipic >;
-+		};
-+
-+		// PSC1 serial port aka ttyPSC1
-+		serial@11100 {
-+			device_type = "serial";
-+			compatible = "fsl,mpc5121-psc-uart";
-+			port-number = <1>;
-+			cell-index = <1>;
-+			reg = <0x11100 0x100>;
-+			interrupts = <0x28 0x8>; // actually the fifo irq
-+			interrupt-parent = < &ipic >;
-+		};
-+
-+		// PSC2 serial port aka ttyPSC2
-+		serial@11200 {
-+			device_type = "serial";
-+			compatible = "fsl,mpc5121-psc-uart";
-+			port-number = <2>;
-+			cell-index = <2>;
-+			reg = <0x11200 0x100>;
-+			interrupts = <0x28 0x8>; // actually the fifo irq
-+			interrupt-parent = < &ipic >;
-+		};
-+		
-+		// PSC3 serial port aka ttyPSC3
-+		serial@11300 {
-+			device_type = "serial";
-+			compatible = "fsl,mpc5121-psc-uart";
-+			port-number = <3>;
-+			cell-index = <3>;
-+			reg = <0x11300 0x100>;
-+			interrupts = <0x28 0x8>; // actually the fifo irq
-+			interrupt-parent = < &ipic >;
-+		};
-+
-+		pscsfifo@11f00 {
-+			compatible = "fsl,mpc5121-psc-fifo";
-+			reg = <0x11f00 0x100>;
-+			interrupts = <0x28 0x8>;
-+			interrupt-parent = < &ipic >;
-+		};
-+
-+		i2c@1700 {
-+			compatible = "fsl,mpc5121-i2c", "fsl-i2c";
-+			reg = <0x1700 0x20>;
-+			interrupts = <0x9 0x8>;
-+			interrupt-parent = < &ipic >;
-+			fsl5200-clocking;
-+		};
-+
-+		i2c@1720 {
-+			compatible = "fsl,mpc5121-i2c", "fsl-i2c";
-+			reg = <0x1720 0x20>;
-+			interrupts = <0xa 0x8>;
-+			interrupt-parent = < &ipic >;
-+			fsl5200-clocking;
-+		};
-+
-+		i2c@1740 {
-+			compatible = "fsl,mpc5121-i2c", "fsl-i2c";
-+			reg = <0x1740 0x20>;
-+			interrupts = <0xb 0x8>;
-+			interrupt-parent = < &ipic >;
-+			fsl5200-clocking;
-+		};
-+
-+		i2ccontrol@1760 {
-+			compatible = "fsl,mpc5121-i2c-ctrl";
-+			reg = <0x1760 0x8>;
-+		};
-+
-+		display@2100 {
-+			compatible = "fsl,mpc5121-diu", "fsl-diu";
-+			reg = <0x2100 0x100>;
-+			interrupts = <0x40 0x8>;
-+			interrupt-parent = < &ipic >;
-+			clk-name = "diu_clk";
-+			clk-parent = "ips_clk";
-+			clk-ctrl = <0x1 0x1f>; // sccr2 bit 31
-+		};
-+
-+		mdio@2800 {
-+			compatible = "fsl,mpc5121-fec-mdio";
-+			reg = <0x2800 0x800>;
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			phy: ethernet-phy@0 {
-+				reg = <1>;
-+				device_type = "ethernet-phy";
-+			};
-+		};
-+
-+		ethernet@2800 {
-+			compatible = "fsl,mpc5121-fec";
-+			reg = <0x2800 0x800>;
-+			local-mac-address = [ 00 00 00 00 00 00 ];
-+			interrupts = <0x4 0x8 >;
-+			interrupt-parent = < &ipic >;
-+			phy-handle = < &phy >;
-+		};
-+
-+		// port1 using extern ULPI PHY
-+		usb@3000 {
-+			compatible = "fsl,mpc5121-usb2-dr", "fsl-usb2-dr";
-+			reg = <0x3000 0x1000>;
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			interrupt-parent = < &ipic >;
-+			interrupts = <0x2c 0x8>;
-+			dr_mode = "otg";
-+			phy_type = "ulpi";
-+			port1;
-+		};
-+
-+		// port0 using internal UTMI PHY
-+		usb@4000 {
-+			compatible = "fsl,mpc5121-usb2-dr", "fsl-usb2-dr";
-+			reg = <0x4000 0x1000>;
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			interrupt-parent = < &ipic >;
-+			interrupts = <0x2b 0x8>;
-+			dr_mode = "otg";
-+			phy_type = "utmi";
-+			port0;
-+		};
-+
-+		// PSC4 in i2s mode
-+		i2s@11500 {
-+			compatible = "fsl,mpc5121-psc-i2s";
-+			cell-index = <4>;
-+			reg = <0x11400 0x100>;
-+			interrupts = <0x20 8>;
-+			interrupt-parent = < &ipic >;
-+		};
-+
-+		// PSC5 in SPI mode for touchscreen
-+		spi@11500 {
-+			compatible = "fsl,mpc5121-psc-spi";
-+			cell-index = <5>;
-+			reg = <0x11500 0x100>;
-+			interrupts = <0x21 8>;
-+			interrupt-parent = < &ipic >;
-+		};
-+
-+		// This dma controller is not compatible with fsldma
-+		dma@14000 {
-+			compatible = "fsl,mpc5121-dma2";
-+			reg = <0x14000 0x1800>;
-+			interrupts = <0x41 0x8>;
-+			interrupt-parent = < &ipic >;
-+		};
-+
-+		sata@20000 {
-+			compatible = "fsl,mpc5121-sata";
-+			reg = <0x20000 0x2000>;
-+			interrupts = <0x2d 0x8 0x56 0x8>;
-+			interrupt-parent = < &ipic >;
-+		};
-+	};
-+};
-diff --git a/arch/powerpc/platforms/512x/Kconfig b/arch/powerpc/platforms/512x/Kconfig
-index 4c0da0c..57b3912 100644
---- a/arch/powerpc/platforms/512x/Kconfig
-+++ b/arch/powerpc/platforms/512x/Kconfig
-@@ -2,18 +2,20 @@ config PPC_MPC512x
- 	bool
- 	select FSL_SOC
- 	select IPIC
--	default n
- 
- config PPC_MPC5121
- 	bool
- 	select PPC_MPC512x
--	default n
- 
--config MPC5121_ADS
--	bool "Freescale MPC5121E ADS"
-+config MPC5121_GENERIC
-+	bool "Generic support for simple MPC5121 based boards"
- 	depends on PPC_MULTIPLATFORM && PPC32
- 	select DEFAULT_UIMAGE
- 	select PPC_MPC5121
- 	help
--	  This option enables support for the MPC5121E ADS board.
--	default n
-+	  This option enables support for a simple MPC5121 based boards which
-+	  do not need a custom platform specific setup.
-+
-+	  Boards that are compatible with this generic platform support
-+	  are: Freescale MPC5121 ADS and Protonic LVT based boards (ZANMCU
-+	  and VICVT2).
-diff --git a/arch/powerpc/platforms/512x/Makefile b/arch/powerpc/platforms/512x/Makefile
-index 232c89f..9d40a2e 100644
---- a/arch/powerpc/platforms/512x/Makefile
-+++ b/arch/powerpc/platforms/512x/Makefile
-@@ -1,4 +1,4 @@
- #
- # Makefile for the Freescale PowerPC 512x linux kernel.
- #
--obj-$(CONFIG_MPC5121_ADS)	+= mpc5121_ads.o
-+obj-$(CONFIG_MPC5121_GENERIC)	+= mpc5121_generic.o
-diff --git a/arch/powerpc/platforms/512x/mpc5121_ads.c b/arch/powerpc/platforms/512x/mpc5121_generic.c
-similarity index 73%
-rename from arch/powerpc/platforms/512x/mpc5121_ads.c
-rename to arch/powerpc/platforms/512x/mpc5121_generic.c
-index 50bd3a3..824ddbb 100644
---- a/arch/powerpc/platforms/512x/mpc5121_ads.c
-+++ b/arch/powerpc/platforms/512x/mpc5121_generic.c
-@@ -4,7 +4,7 @@
-  * Author: John Rigby, <jrigby@freescale.com>, Thur Mar 29 2007
-  *
-  * Description:
-- * MPC5121 ADS board setup
-+ * MPC5121 SoC setup
-  *
-  * This is free software; you can redistribute it and/or modify it
-  * under the terms of the GNU General Public License as published by
-@@ -58,7 +58,7 @@ static struct of_device_id __initdata of_bus_ids[] = {
- 	{},
- };
- 
--static void __init mpc5121_ads_declare_of_platform_devices(void)
-+static void __init mpc5121_generic_declare_of_platform_devices(void)
- {
- 	/* Find every child of the SOC node and add it to of_platform */
- 	if (of_platform_bus_probe(NULL, of_bus_ids, NULL))
-@@ -66,7 +66,7 @@ static void __init mpc5121_ads_declare_of_platform_devices(void)
- 			"Error while probing of_platform bus\n");
- }
- 
--static void __init mpc5121_ads_init_IRQ(void)
-+static void __init mpc5121_generic_init_IRQ(void)
- {
- 	struct device_node *np;
- 
-@@ -84,21 +84,35 @@ static void __init mpc5121_ads_init_IRQ(void)
- 	ipic_set_default_priority();
- }
- 
-+/* list of the supported boards */
-+static char *board[] __initdata = {
-+	"fsl,mpc5121ads",
-+	"prt,prtlvt",
-+	NULL
-+};
-+
- /*
-  * Called very early, MMU is off, device-tree isn't unflattened
-  */
--static int __init mpc5121_ads_probe(void)
-+static int __init mpc5121_generic_probe(void)
- {
--	unsigned long root = of_get_flat_dt_root();
-+	unsigned long node = of_get_flat_dt_root();
-+	int i = 0;
- 
--	return of_flat_dt_is_compatible(root, "fsl,mpc5121ads");
-+	while (board[i]) {
-+		if (of_flat_dt_is_compatible(node, board[i]))
-+			break;
-+		i++;
-+	}
-+	
-+	return (board[i] != NULL);
- }
- 
--define_machine(mpc5121_ads) {
--	.name			= "MPC5121 ADS",
--	.probe			= mpc5121_ads_probe,
--	.init			= mpc5121_ads_declare_of_platform_devices,
--	.init_IRQ		= mpc5121_ads_init_IRQ,
-+define_machine(mpc5121_generic) {
-+	.name			= "MPC5121 generic",
-+	.probe			= mpc5121_generic_probe,
-+	.init			= mpc5121_generic_declare_of_platform_devices,
-+	.init_IRQ		= mpc5121_generic_init_IRQ,
- 	.get_irq		= ipic_get_irq,
--	.calibrate_decr		= generic_calibrate_decr,
-+	.calibrate_decr	= generic_calibrate_decr,
- };
+> I'm also not clear to me if the MPC5121 FEC is really the same device
+> or close to it that it should be sharing this driver or have its own.
+
+I am coming to the conclusion that it should have its own driver. 
+Altough a lot of code could be shared, there are still enough differences, so 
+that writing just ONE driver without some #ifdef's that would break 
+multiplatform builds, would instead end up with a much bigger amount of if's, 
+that would make it unreadable, unmaintainable and inefficient.
+Here's why: The above struct fet_t for instance is mapped to a set of 
+registers in the FEC. For processors with a CPM1, a CPM2 or without CPM (i.e. 
+MPC5121) the register mapping seems to be significantly different, 
+nevertheless the structs are all called "struct fec_t". How can one fix this 
+at runtime without changing the name of the structs and then just use a lot 
+of "if's" or a combination of macro's and if's everywhere a register of the 
+FEC is accessed? I fear it will be a mess.
+
+So I think it's either a separate driver, or break multiplatform builds.
+
+Since I am learning from you that breaking multiplatform builds is a no-go, 
+I'll settle for splitting up the driver.
+
+Any suggestion on where to put that split-off? How to name it?
+I would suggest drivers/net/fec_mpc512x/*
+
+I just resubmitted PATCH 1/2 again without part 2 (which hasn't much to do 
+with it anyway), so Grant may have a final look at it (hopefully I did it 
+right this time). Part 2 (MPC5121_FEC) will have to wait until monday or so, 
+since it will take me a while, and I have to do other things in between.
+
+Any suggestions on how to solve the puzzle are of course welcome...
+
+Thanks a lot for reviewing.
+
+Best regards,
+
 -- 
-1.5.4.3
+David Jander
+Protonic Holland.
