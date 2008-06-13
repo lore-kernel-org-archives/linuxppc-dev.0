@@ -1,23 +1,16 @@
-Return-Path: <bgill@monty.am.freescale.net>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id EFED8DDF86
-	for <linuxppc-dev@ozlabs.org>; Sat, 14 Jun 2008 09:48:10 +1000 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	m5DNm35w010781
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jun 2008 16:48:04 -0700 (MST)
-Received: from monty.am.freescale.net (monty.am.freescale.net [10.82.19.26])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m5DNm3aw013074
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jun 2008 18:48:03 -0500 (CDT)
-From: Becky Bruce <becky.bruce@freescale.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 2/2] powerpc: Get rid of bitfields in ppc_bat struct
-Date: Fri, 13 Jun 2008 18:41:43 -0500
-Message-Id: <1213400503-22839-2-git-send-email-becky.bruce@freescale.com>
+Return-Path: <ron_madrid@sbcglobal.net>
+Received: from web83514.mail.sp1.yahoo.com (web83514.mail.sp1.yahoo.com
+	[216.252.120.170]) by ozlabs.org (Postfix) with SMTP id 2378EDDF43
+	for <linuxppc-dev@ozlabs.org>; Sat, 14 Jun 2008 09:52:33 +1000 (EST)
+Date: Fri, 13 Jun 2008 16:52:32 -0700 (PDT)
+From: Ron Madrid <ron_madrid@sbcglobal.net>
+Subject: Re: Using DMA interrupt on MPC8313
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <094E5361-18FC-47D7-BB7C-8A8AF89DBEC1@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Message-ID: <470944.9117.qm@web83514.mail.sp1.yahoo.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,108 +20,60 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-While working on the 36-bit physical support, I noticed that there
-was exactly one line of code that actually referenced the bitfields.
-So I got rid of them and redefined ppc_bat as a struct of 2 u32's:
-batu and batl.  I also got rid of the previous union that held the
-bitfield structs and a word representation of the batu/l values.
+I don't know why request_irq is succeeding when the fsldma and dmaengine drivers are installed. 
+I'm using the same dts in both cases.
 
-This seems like a nicer solution than adding in a bunch of
-new bitfields to support extended bat addressing that would never
-get used, and just leaving the struct as-is would have been
-incomplete in the face of large physical addressing.
+Ron
+--- Kumar Gala <galak@kernel.crashing.org> wrote:
 
-Signed-off-by: Becky Bruce <becky.bruce@freescale.com>
----
- arch/powerpc/mm/ppc_mmu_32.c     |   19 ++++++++-----------
- include/asm-powerpc/mmu-hash32.h |   19 ++-----------------
- 2 files changed, 10 insertions(+), 28 deletions(-)
-
-diff --git a/arch/powerpc/mm/ppc_mmu_32.c b/arch/powerpc/mm/ppc_mmu_32.c
-index 55ec17e..c53145f 100644
---- a/arch/powerpc/mm/ppc_mmu_32.c
-+++ b/arch/powerpc/mm/ppc_mmu_32.c
-@@ -38,10 +38,7 @@ struct hash_pte *Hash, *Hash_end;
- unsigned long Hash_size, Hash_mask;
- unsigned long _SDR1;
- 
--union ubat {			/* BAT register values to be loaded */
--	struct ppc_bat bat;
--	u32	word[2];
--} BATS[8][2];			/* 8 pairs of IBAT, DBAT */
-+struct ppc_bat BATS[8][2];	/* 8 pairs of IBAT, DBAT */
- 
- struct batrange {		/* stores address ranges mapped by BATs */
- 	unsigned long start;
-@@ -124,7 +121,7 @@ void __init setbat(int index, unsigned long virt, phys_addr_t phys,
- {
- 	unsigned int bl;
- 	int wimgxpp;
--	union ubat *bat = BATS[index];
-+	struct ppc_bat *bat = BATS[index];
- 
- 	if (((flags & _PAGE_NO_CACHE) == 0) &&
- 	    cpu_has_feature(CPU_FTR_NEED_COHERENT))
-@@ -137,15 +134,15 @@ void __init setbat(int index, unsigned long virt, phys_addr_t phys,
- 		wimgxpp = flags & (_PAGE_WRITETHRU | _PAGE_NO_CACHE
- 				   | _PAGE_COHERENT | _PAGE_GUARDED);
- 		wimgxpp |= (flags & _PAGE_RW)? BPP_RW: BPP_RX;
--		bat[1].word[0] = virt | (bl << 2) | 2; /* Vs=1, Vp=0 */
--		bat[1].word[1] = BAT_PHYS_ADDR(phys) | wimgxpp;
-+		bat[1].batu = virt | (bl << 2) | 2; /* Vs=1, Vp=0 */
-+		bat[1].batl = BAT_PHYS_ADDR(phys) | wimgxpp;
- #ifndef CONFIG_KGDB /* want user access for breakpoints */
- 		if (flags & _PAGE_USER)
- #endif
--			bat[1].bat.batu.vp = 1;
-+			bat[1].batu |= 1; 	/* Vp = 1 */
- 		if (flags & _PAGE_GUARDED) {
- 			/* G bit must be zero in IBATs */
--			bat[0].word[0] = bat[0].word[1] = 0;
-+			bat[0].batu = bat[0].batl = 0;
- 		} else {
- 			/* make IBAT same as DBAT */
- 			bat[0] = bat[1];
-@@ -158,8 +155,8 @@ void __init setbat(int index, unsigned long virt, phys_addr_t phys,
- 				   | _PAGE_COHERENT);
- 		wimgxpp |= (flags & _PAGE_RW)?
- 			((flags & _PAGE_USER)? PP_RWRW: PP_RWXX): PP_RXRX;
--		bat->word[0] = virt | wimgxpp | 4;	/* Ks=0, Ku=1 */
--		bat->word[1] = phys | bl | 0x40;	/* V=1 */
-+		bat->batu = virt | wimgxpp | 4;	/* Ks=0, Ku=1 */
-+		bat->batl = phys | bl | 0x40;	/* V=1 */
- 	}
- 
- 	bat_addrs[index].start = virt;
-diff --git a/include/asm-powerpc/mmu-hash32.h b/include/asm-powerpc/mmu-hash32.h
-index f39ff98..16b1a1e 100644
---- a/include/asm-powerpc/mmu-hash32.h
-+++ b/include/asm-powerpc/mmu-hash32.h
-@@ -38,23 +38,8 @@
- #endif
- 
- struct ppc_bat {
--	struct {
--		unsigned long bepi:15;	/* Effective page index (virtual address) */
--		unsigned long :4;	/* Unused */
--		unsigned long bl:11;	/* Block size mask */
--		unsigned long vs:1;	/* Supervisor valid */
--		unsigned long vp:1;	/* User valid */
--	} batu; 		/* Upper register */
--	struct {
--		unsigned long brpn:15;	/* Real page index (physical address) */
--		unsigned long :10;	/* Unused */
--		unsigned long w:1;	/* Write-thru cache */
--		unsigned long i:1;	/* Cache inhibit */
--		unsigned long m:1;	/* Memory coherence */
--		unsigned long g:1;	/* Guarded (MBZ in IBAT) */
--		unsigned long :1;	/* Unused */
--		unsigned long pp:2;	/* Page access protections */
--	} batl;			/* Lower register */
-+	u32 batu;
-+	u32 batl;
- };
- #endif /* !__ASSEMBLY__ */
- 
--- 
-1.5.4.1
+> That's a bit odd.  How is your driver getting the IRQ its requesting?   
+> Are you using the same .dts in both cases?
+> 
+> - k
+> 
+> On Jun 13, 2008, at 2:02 PM, Ron Madrid wrote:
+> 
+> > So after I've built the kernel to include the dmaengine and fsldma  
+> > drivers, my driver is allowed
+> > to register its ISR via request_irq.  However, if these drivers are  
+> > not installed then request_irq
+> > fails in my driver.  So it seems that there is some other  
+> > initialization happening before
+> > request_irq is being called in fsldma and subsequently my driver.   
+> > Does anyone know what this is?
+> >
+> > Ron
+> > --- Kumar Gala <galak@kernel.crashing.org> wrote:
+> >
+> >> The dmaengine provides a generic set of APIs w/a FSL dma backend.  It
+> >> might be the case that your need of dma doesnt fit into the current
+> >> set of APIs.
+> >>
+> >> - k
+> >>
+> >> On Jun 12, 2008, at 3:04 PM, Ron Madrid wrote:
+> >>
+> >>> Well in that case wouldn't I need to use the fsldma driver?  Or is
+> >>> dmaengine a generic dma driver?
+> >>>
+> >>> Ron
+> >>> --- Kumar Gala <galak@kernel.crashing.org> wrote:
+> >>>
+> >>>>
+> >>>> On Jun 12, 2008, at 2:35 PM, Ron Madrid wrote:
+> >>>>
+> >>>>> I'm trying to write a driver that would make use of the DMA on the
+> >>>>> MPC8313.  I'm attempting to
+> >>>>> register the interrupt with request_irq but it is not passing.  Is
+> >>>>> there something that I need to
+> >>>>> do before I call request_irq, maybe in the dts or somewhere else?
+> >>>>
+> >>>>
+> >>>> any reason you aren't using the dmaengine driver?
+> >>>>
+> >>>> - k
+> >>>>
+> >>
+> >>
+> 
+> 
