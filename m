@@ -1,17 +1,33 @@
-Return-Path: <ricardo.ribalda@gmail.com>
-Received: from fg-out-1718.google.com (fg-out-1718.google.com [72.14.220.154])
-	by ozlabs.org (Postfix) with ESMTP id DB444DDE21
-	for <linuxppc-dev@ozlabs.org>; Sat, 14 Jun 2008 04:20:39 +1000 (EST)
-Received: by fg-out-1718.google.com with SMTP id d23so2843511fga.39
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jun 2008 11:20:37 -0700 (PDT)
-Message-ID: <aa76a2be0806131120i44396eafw66046f7fe68bb4d8@mail.gmail.com>
-Date: Fri, 13 Jun 2008 20:20:37 +0200
-From: "Ricardo Ribalda Delgado" <ricardo.ribalda@uam.es>
-Sender: ricardo.ribalda@gmail.com
-To: linuxppc-dev@ozlabs.org
-Subject: Xilinx EDK 10.1 and XUPV2P: A little report
+Return-Path: <brking@linux.vnet.ibm.com>
+Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 6B6EADDF6A
+	for <linuxppc-dev@ozlabs.org>; Sat, 14 Jun 2008 04:24:33 +1000 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e1.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m5DIOUFM019176
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jun 2008 14:24:30 -0400
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
+	m5DIOUq6138284
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jun 2008 14:24:30 -0400
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m5DIOTnu000629
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jun 2008 14:24:29 -0400
+Message-ID: <4852BB43.9080305@linux.vnet.ibm.com>
+Date: Fri, 13 Jun 2008 13:24:03 -0500
+From: Brian King <brking@linux.vnet.ibm.com>
 MIME-Version: 1.0
+To: Robert Jennings <rcj@linux.vnet.ibm.com>
+Subject: Re: [PATCH 10/19] [repost] powerpc: move get_longbusy_msecs out of
+	ehca/ehea
+References: <20080612221848.GR30916@linux.vnet.ibm.com>
+In-Reply-To: <20080612221848.GR30916@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=ISO-8859-1
+Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org,
+	David Darrington <ddarring@linux.vnet.ibm.com>,
+	Jeff Garzik <jgarzik@pobox.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,182 +37,180 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello list
+Jeff,
 
-   I have tried to port Linux 2.6 (xilinx git) to a XUPV2P board
-running a system implemented with EDK10.1 (Linux Version). I have
-fail, and I think I now why, this is a little report written for
-saving you some time (and maybe solving my problem if I am doing
-something wrong)
+Regarding the patches Rob just posted here, we'd like to just take them
+through the powerpc tree with your sign off since they are part of a
+Power platform feature we are enabling.
 
-The board is not supported by EDK 10.1, but I have found a Board
-Support File form https://wiki.ittc.ku.edu that seems to work. To
-start I have created a design that consists on a ppc, the mpmc, an
-uartlite, an interrupt manager and some bram. The "basic programs"
-worked ok on it.
+Thanks,
 
- I have downloaded the kernel form xilinx git and adapted the
-xparameters file to fit my design.
+Brian
 
- I have created a toolchain using OpenEmbedded and compiled the kernel
-with it, then I have downloaded the binary to the board and everything
-works fine until "Now booting the kernel"
+Robert Jennings wrote:
+> From: Robert Jennings <rcj@linux.vnet.ibm.com>
+> 
+> In support of Cooperative Memory Overcommitment (CMO) this moves
+> get_longbusy_msecs() out of the ehca and ehea drivers and into the 
+> architecture's hvcall header as plpar_get_longbusy_msecs.  Some firmware
+> calls made in pSeries platform iommu code will need to share this
+> functionality.
+> 
+> Signed-off-by: Robert Jennings <rcj@linux.vnet.ibm.com>
+> 
+> ---
+> 
+> I missed copying netdev on this patch the first time.
+> 
+>  drivers/infiniband/hw/ehca/hcp_if.c |   24 ++----------------------
+>  drivers/net/ehea/ehea_phyp.c        |    4 ++--
+>  drivers/net/ehea/ehea_phyp.h        |   20 --------------------
+>  include/asm-powerpc/hvcall.h        |   27 +++++++++++++++++++++++++++
+>  4 files changed, 31 insertions(+), 44 deletions(-)
+> 
+> Index: b/drivers/infiniband/hw/ehca/hcp_if.c
+> ===================================================================
+> --- a/drivers/infiniband/hw/ehca/hcp_if.c
+> +++ b/drivers/infiniband/hw/ehca/hcp_if.c
+> @@ -90,26 +90,6 @@
+>  
+>  static DEFINE_SPINLOCK(hcall_lock);
+>  
+> -static u32 get_longbusy_msecs(int longbusy_rc)
+> -{
+> -	switch (longbusy_rc) {
+> -	case H_LONG_BUSY_ORDER_1_MSEC:
+> -		return 1;
+> -	case H_LONG_BUSY_ORDER_10_MSEC:
+> -		return 10;
+> -	case H_LONG_BUSY_ORDER_100_MSEC:
+> -		return 100;
+> -	case H_LONG_BUSY_ORDER_1_SEC:
+> -		return 1000;
+> -	case H_LONG_BUSY_ORDER_10_SEC:
+> -		return 10000;
+> -	case H_LONG_BUSY_ORDER_100_SEC:
+> -		return 100000;
+> -	default:
+> -		return 1;
+> -	}
+> -}
+> -
+>  static long ehca_plpar_hcall_norets(unsigned long opcode,
+>  				    unsigned long arg1,
+>  				    unsigned long arg2,
+> @@ -139,7 +119,7 @@ static long ehca_plpar_hcall_norets(unsi
+>  			spin_unlock_irqrestore(&hcall_lock, flags);
+>  
+>  		if (H_IS_LONG_BUSY(ret)) {
+> -			sleep_msecs = get_longbusy_msecs(ret);
+> +			sleep_msecs = plpar_get_longbusy_msecs(ret);
+>  			msleep_interruptible(sleep_msecs);
+>  			continue;
+>  		}
+> @@ -192,7 +172,7 @@ static long ehca_plpar_hcall9(unsigned l
+>  			spin_unlock_irqrestore(&hcall_lock, flags);
+>  
+>  		if (H_IS_LONG_BUSY(ret)) {
+> -			sleep_msecs = get_longbusy_msecs(ret);
+> +			sleep_msecs = plpar_get_longbusy_msecs(ret);
+>  			msleep_interruptible(sleep_msecs);
+>  			continue;
+>  		}
+> Index: b/drivers/net/ehea/ehea_phyp.c
+> ===================================================================
+> --- a/drivers/net/ehea/ehea_phyp.c
+> +++ b/drivers/net/ehea/ehea_phyp.c
+> @@ -61,7 +61,7 @@ static long ehea_plpar_hcall_norets(unsi
+>  					 arg5, arg6, arg7);
+>  
+>  		if (H_IS_LONG_BUSY(ret)) {
+> -			sleep_msecs = get_longbusy_msecs(ret);
+> +			sleep_msecs = plpar_get_longbusy_msecs(ret);
+>  			msleep_interruptible(sleep_msecs);
+>  			continue;
+>  		}
+> @@ -102,7 +102,7 @@ static long ehea_plpar_hcall9(unsigned l
+>  				   arg6, arg7, arg8, arg9);
+>  
+>  		if (H_IS_LONG_BUSY(ret)) {
+> -			sleep_msecs = get_longbusy_msecs(ret);
+> +			sleep_msecs = plpar_get_longbusy_msecs(ret);
+>  			msleep_interruptible(sleep_msecs);
+>  			continue;
+>  		}
+> Index: b/drivers/net/ehea/ehea_phyp.h
+> ===================================================================
+> --- a/drivers/net/ehea/ehea_phyp.h
+> +++ b/drivers/net/ehea/ehea_phyp.h
+> @@ -40,26 +40,6 @@
+>   * hcp_*  - structures, variables and functions releated to Hypervisor Calls
+>   */
+>  
+> -static inline u32 get_longbusy_msecs(int long_busy_ret_code)
+> -{
+> -	switch (long_busy_ret_code) {
+> -	case H_LONG_BUSY_ORDER_1_MSEC:
+> -		return 1;
+> -	case H_LONG_BUSY_ORDER_10_MSEC:
+> -		return 10;
+> -	case H_LONG_BUSY_ORDER_100_MSEC:
+> -		return 100;
+> -	case H_LONG_BUSY_ORDER_1_SEC:
+> -		return 1000;
+> -	case H_LONG_BUSY_ORDER_10_SEC:
+> -		return 10000;
+> -	case H_LONG_BUSY_ORDER_100_SEC:
+> -		return 100000;
+> -	default:
+> -		return 1;
+> -	}
+> -}
+> -
+>  /* Number of pages which can be registered at once by H_REGISTER_HEA_RPAGES */
+>  #define EHEA_MAX_RPAGE 512
+>  
+> Index: b/include/asm-powerpc/hvcall.h
+> ===================================================================
+> --- a/include/asm-powerpc/hvcall.h
+> +++ b/include/asm-powerpc/hvcall.h
+> @@ -222,6 +222,33 @@
+>  #ifndef __ASSEMBLY__
+>  
+>  /**
+> + * plpar_get_longbusy_msecs: - Return number of msecs for H_LONG_BUSY* response
+> + * @long_busy_ret_code: The H_LONG_BUSY_* constant to process
+> + *
+> + * This returns the number of msecs that corresponds to an H_LONG_BUSY_*
+> + * response from a plpar_hcall.  If there is no match 1 is returned.
+> + */
+> +static inline u32 plpar_get_longbusy_msecs(int long_busy_ret_code)
+> +{
+> +	switch (long_busy_ret_code) {
+> +	case H_LONG_BUSY_ORDER_1_MSEC:
+> +		return 1;
+> +	case H_LONG_BUSY_ORDER_10_MSEC:
+> +		return 10;
+> +	case H_LONG_BUSY_ORDER_100_MSEC:
+> +		return 100;
+> +	case H_LONG_BUSY_ORDER_1_SEC:
+> +		return 1000;
+> +	case H_LONG_BUSY_ORDER_10_SEC:
+> +		return 10000;
+> +	case H_LONG_BUSY_ORDER_100_SEC:
+> +		return 100000;
+> +	default:
+> +		return 1;
+> +	}
+> +}
+> +
+> +/**
+>   * plpar_hcall_norets: - Make a pseries hypervisor call with no return arguments
+>   * @opcode: The hypervisor call to make.
+>   *
 
-  Debugging the kernel I have found that the system crashes (Exception
-0x700) setting the mmu inside "start_here" (head_4xx.S)...
-
-  Because it was a crash in the "very beginning" of my kernel live I
-developed some simple apps to tests all my peripherals and they worked
-ok in real mode: All of them worked OK
-
-  BUT I have created a small piece of code that tests the peripherals
-in virtual mode and when the program is linked to the ram the system
-crashes!! Strangely, it works ok when it runs from bram.....
-
-   The same code works perfectly on a design created with EDK 8.1 and
-the kernel also works fine.
-
-   I attach the source code of my test app and the OpenEmbedded
-parameters I have used.
-
-
-
-                                      Best Regards
-
-
-
------------------
-
-main:
-
-.globl main
-
-my_code:
-
-bl uart
-
-tlbia
-isync
-
-lis r3,my_code@h
-ori r3,r3,my_code@l
-mr r4,r3
-iccci r0,r3
-
-/*PID*/
-li r0,0
-mtpid r0
-sync
-
-mem_map:
-/*RAM*/
-lis r3,0@h
-ori r3,r3,0@l
-mr r4,r3
-rlwinm  r4,r4,0,0,21
-ori     r4,r4,768
-rlwinm  r3,r3,0,0,21
-ori     r3,r3,960  /*16M*/
-li      r0,0
-tlbwelo r4,r0
-tlbwehi r3,r0
-
-/*BRAM*/
-lis r3,0xffff0000@h
-ori r3,r3,0xffff0000@l
-mr r4,r3
-rlwinm  r4,r4,0,0,21
-ori     r4,r4,768
-rlwinm  r3,r3,0,0,21
-ori     r3,r3,448 /* 64K */
-li      r0,1
-tlbwelo r4,r0
-tlbwehi r3,r0
-
-/*UARTLITE*/
-lis r3,0x40600000@h
-ori r3,r3,0x40600000@l
-mr r4,r3
-rlwinm  r4,r4,0,0,21
-ori     r4,r4,263
-rlwinm  r3,r3,0,0,21
-ori     r3,r3,448 /*64K*/
-li      r0,2
-tlbwelo r4,r0
-tlbwehi r3,r0
-
-sync
-
-on_mmu:
-lis r0,0
-ori r0,r0,4146
-mtsrr1 r0
-lis     r0,bucle@h
-ori     r0,r0,bucle@l
-mtsrr0  r0
-rfi
-b .
-
-
-uart:
-lis r11,0x4060000c@h
-ori r11,r11,0x4060000c@l
-li r14,0x0
-stb r14,0x0(r11)
-lis     r11,0x40600008@h
-ori     r11,r11,0x40600008@l
-busy:
-lwz     r10,0(r11)
-andi.   r12,r10,8
-bne+ busy
-lis r11,0x40600004@h
-ori r11,r11,0x40600004@l
-li r14,0x32
-stb r14,0x0(r11)
-br
-
-
-rw_ram:
-lis     r11,0x100000@h
-ori     r11,r11,0x100000@l
-lwz     r10,0(r11)
-lis r11,0x100000@h
-ori r11,r11,0x100000@l
-li r10,0xcc
-stb r10,0x0(r11)
-br
-
-rw_rom:
-lis     r11,0xfffffffc@h
-ori     r11,r11,0xfffffffc@l
-lwz     r10,0(r11)
-lis r11,0xfffffffc@h
-ori r11,r11,0xfffffffc@l
-li r10,0xcc
-stb r10,0x0(r11)
-br
-
-bucle:
-bl rw_ram
-bl uart
-bl rw_rom
-
-bl bucle
-
-
--------------------
-
-
-OpenEmbedded Parameters:
-PREFERRED_VERSION_gcc = "4.2.1"
-PREFERRED_VERSION_gcc-cross = "4.2.1"
-PREFERRED_VERSION_gcc-cross-initial = "4.2.1"
-PREFERRED_VERSION_binutils = "2.18"
-PREFERRED_VERSION_binutils-cross = "2.18"
-PREFERRED_VERSION_glibc = "2.5"
-PREFERRED_VERSION_glibc-intermediate = "2.5"
-PREFERRED_VERSION_linux-libc-headers = "2.6.25"
 
 -- 
-Ricardo Ribalda
-http://www.eps.uam.es/~rribalda/
+Brian King
+Linux on Power Virtualization
+IBM Linux Technology Center
