@@ -1,20 +1,34 @@
-Return-Path: <hidave.darkstar@gmail.com>
-Received: from ti-out-0910.google.com (ti-out-0910.google.com [209.85.142.188])
-	by ozlabs.org (Postfix) with ESMTP id 5130FDDE16
-	for <linuxppc-dev@ozlabs.org>; Sun, 15 Jun 2008 21:05:38 +1000 (EST)
-Received: by ti-out-0910.google.com with SMTP id w7so1717774tib.13
-	for <linuxppc-dev@ozlabs.org>; Sun, 15 Jun 2008 04:05:36 -0700 (PDT)
-Message-ID: <a8e1da0806150405j3e97a7e2s2b66f1edf04f72ff@mail.gmail.com>
-Date: Sun, 15 Jun 2008 19:05:36 +0800
-From: "Dave Young" <hidave.darkstar@gmail.com>
-To: benh@kernel.crashing.org
-Subject: Re: macmini g4 can't boot with new kernel
-In-Reply-To: <1213513445.8129.91.camel@pasglop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-References: <a8e1da0806142112v6969d22v45731a1ff821c5df@mail.gmail.com>
-	<1213513445.8129.91.camel@pasglop>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <krafft@de.ibm.com>
+Received: from mtagate4.de.ibm.com (mtagate4.de.ibm.com [195.212.29.153])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mtagate4.de.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 22B5DDDE17
+	for <linuxppc-dev@ozlabs.org>; Mon, 16 Jun 2008 00:46:39 +1000 (EST)
+Received: from d12nrmr1607.megacenter.de.ibm.com
+	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
+	by mtagate4.de.ibm.com (8.13.8/8.13.8) with ESMTP id m5FEkRCF107754
+	for <linuxppc-dev@ozlabs.org>; Sun, 15 Jun 2008 14:46:27 GMT
+Received: from d12av02.megacenter.de.ibm.com (d12av02.megacenter.de.ibm.com
+	[9.149.165.228])
+	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v9.0) with
+	ESMTP id m5FEkR1a3309700
+	for <linuxppc-dev@ozlabs.org>; Sun, 15 Jun 2008 16:46:27 +0200
+Received: from d12av02.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av02.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id m5FEkRHb029722
+	for <linuxppc-dev@ozlabs.org>; Sun, 15 Jun 2008 16:46:27 +0200
+Date: Sun, 15 Jun 2008 17:01:51 +0200
+From: Christian Krafft <krafft@de.ibm.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [RFC] poweroff via pm_power_off if set
+Message-ID: <20080615170151.35446b18@de.ibm.com>
+In-Reply-To: <E67AB741-49D3-456D-9559-C040C5CD5ACC@kernel.crashing.org>
+References: <20080613173649.5451976e@de.ibm.com>
+	<E67AB741-49D3-456D-9559-C040C5CD5ACC@kernel.crashing.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="Sig_/TDLjb72AlQdvakK3OimrCYP";
+	protocol="application/pgp-signature"; micalg=PGP-SHA1
+Cc: linuxppc-dev@ozlabs.org, krafft@de.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,35 +38,67 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, Jun 15, 2008 at 3:04 PM, Benjamin Herrenschmidt
-<benh@kernel.crashing.org> wrote:
-> On Sun, 2008-06-15 at 12:12 +0800, Dave Young wrote:
->> Hi,
->>
->> I recently built kernel 2.6.26-rc5 for my macmini g4, but it can't
->> boot. I'm not sure if it's related to kernel or yaboot, or the open
->> firmware.
->>
->> My distribution is yellowdog 6.1, config file attached
->>
->> After load the kernel , it reports:
->>
->> zImage starting : loaded at 0x004001f8 (SP:0x0023eea4)
->> Allocating 0xc04b26c1 bytes
->> ...
->> Invalid memory access at %SRR0 : 004020e4 %SRR1 : 00003030
->
-> What are you trying to boot precisely ?
+--Sig_/TDLjb72AlQdvakK3OimrCYP
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-It's arch/powerpc/boot/zImage
+On Fri, 13 Jun 2008 11:00:33 -0500
+Kumar Gala <galak@kernel.crashing.org> wrote:
 
->
-> >From yaboot, I would suggest you try to boot a straight vmlinux rather
-> than a zImage. The later's never been really supported.
+>=20
+> On Jun 13, 2008, at 10:36 AM, Christian Krafft wrote:
+>=20
+> > This patch is needed to make ipmi_poweroff working on powerpc.
+> > It straightens the poweroff procedure to match with other =20
+> > architectures.
+> > At the moment powerpc plattforms can define their poweroff method =20
+> > using
+> > ppc_md.power_off. The only way for plattform independent driver =20
+> > (ipmi_poweroff)
+> > to register it's poweroff function is to use pm_power_off. So =20
+> > machine_power_off
+> > should check whether pm_power_off has been set and if so it should =20
+> > be used.
+> > If not, plattform dependent ppc_md.power_off should be called.
+>=20
+> It seems like this should be the other way around.  Meaning =20
+> ppc_md.power_off should be called first than pm_power_off.  If a =20
+> platform provides a power off mechanism that should presuming take =20
+> precedence over the ipmi_poweroff.
+>=20
+> - k
 
-Thanks a lot, I didn't know this before.
-vmlinux works indeed.
+I'd see the pm_power_off as an option to override platform specific poweroff
+function. If you want to use ppc_md.power_off you simply don't need to load
+ipmi_poweroff module. Also it would not be possible to use ipmi_poweroff
+on plattforms that provide a ppc_md.power_off.=20
 
--- 
-Regards
-dave
+
+--=20
+Mit freundlichen Gruessen,
+kind regards,
+
+Christian Krafft
+IBM Systems & Technology Group,
+Linux Kernel Development
+IT Specialist
+
+
+Vorsitzender des Aufsichtsrats:	Martin Jetter
+Geschaeftsfuehrung:		Herbert Kircher
+Sitz der Gesellschaft:		Boeblingen
+Registriergericht:		Amtsgericht Stuttgart, HRB 243294
+
+--Sig_/TDLjb72AlQdvakK3OimrCYP
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.7 (GNU/Linux)
+
+iD4DBQFIVS8C6rqK4qDx+dcRApukAJd+Aw1iCL9gA8L8s2QK8l0x0k/1AKCHck05
+BjeTgLaCJ9Ok2/IjLAGkNw==
+=1s+K
+-----END PGP SIGNATURE-----
+
+--Sig_/TDLjb72AlQdvakK3OimrCYP--
