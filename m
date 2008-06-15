@@ -1,24 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id AD69CDDE21
-	for <linuxppc-dev@ozlabs.org>; Sun, 15 Jun 2008 09:37:53 +1000 (EST)
-Subject: Re: [Bug 10714] Badness seen on 2.6.26-rc2 with lockdep enabled
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Adrian Bunk <bunk@kernel.org>
-In-Reply-To: <20080614230424.GA21168@cs181133002.pp.htv.fi>
-References: <RzbtSgMztjP.A.R0C.dIDVIB@albercik>
-	<Jn7irxIunJK.A.ggF.4KDVIB@albercik>
-	<20080614230424.GA21168@cs181133002.pp.htv.fi>
-Content-Type: text/plain
-Date: Sun, 15 Jun 2008 09:29:21 +1000
-Message-Id: <1213486161.8129.89.camel@pasglop>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 68C9BDDE02
+	for <linuxppc-dev@ozlabs.org>; Sun, 15 Jun 2008 10:49:01 +1000 (EST)
+Date: Sun, 15 Jun 2008 10:48:56 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: hs@denx.de
+Subject: Re: [PATCH] [8xx] powerpc: Add support for the MPC852 based mgsuvd
+	board from keymile.
+Message-Id: <20080615104856.a77a29f5.sfr@canb.auug.org.au>
+In-Reply-To: <485415AC.9090001@denx.de>
+References: <20080612152838.GA2756@loki.buserror.net> <4852A09B.100@denx.de>
+	<4852977B.8030800@freescale.com> <4852D0D0.4030701@denx.de>
+	<20080614175733.a2036f44.sfr@canb.auug.org.au>
+	<485415AC.9090001@denx.de>
 Mime-Version: 1.0
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linuxppc-dev@ozlabs.org,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	bugme-daemon@bugzilla.kernel.org, Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: benh@kernel.crashing.org
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Sun__15_Jun_2008_10_48_56_+1000_feI7OgS1woo/sPdM"
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,25 +27,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, 2008-06-15 at 02:04 +0300, Adrian Bunk wrote:
-> On Sat, Jun 14, 2008 at 10:12:02PM +0200, Rafael J. Wysocki wrote:
-> > This message has been generated automatically as a part of a report
-> > of recent regressions.
-> > 
-> > The following bug entry is on the current list of known regressions
-> > from 2.6.25.  Please verify if it still should be listed.
-> > 
-> > 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10714
-> > Subject		: Badness seen on 2.6.26-rc2 with lockdep enabled
-> > Submitter	: Balbir Singh <balbir@linux.vnet.ibm.com>
-> > Date		: 2008-05-14 12:57 (32 days old)
-> > References	: http://marc.info/?l=linux-kernel&m=121076917429133&w=4
-> 
-> Benjamin, you said you wanted to have a look at this?
+--Signature=_Sun__15_Jun_2008_10_48_56_+1000_feI7OgS1woo/sPdM
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Ah yes, slipped out of my mind. It's probably a missing annotation in
-the RTAS code, I'll have a look tomorrow.
+On Sat, 14 Jun 2008 21:02:04 +0200 Heiko Schocher <hs@denx.de> wrote:
+>
+> [powerpc]  add support for the MPC852 based mgsuvd board from
+>            keymile to arch/powerpc. Supported SMC1 (serial console),
+>            SCC3 Ethernet (10Mbps hdx).
+>=20
+> Signed-off-by: Heiko Schocher <hs@denx.de>
 
-Thanks,
-Ben.
+Reviewed-by: Stephen Rothwell <sfr@canb.auug.org.au> Structure/syntax of
+Kconfig, Makefile, mgsuvd.c
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Sun__15_Jun_2008_10_48_56_+1000_feI7OgS1woo/sPdM
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkhUZvgACgkQTgG2atn1QN/BrACeIxU9A26LRAMgHv+0I3DiDscj
+nPkAn2WA4qTVEetNEevlhGq82cyUs3yL
+=rNpY
+-----END PGP SIGNATURE-----
+
+--Signature=_Sun__15_Jun_2008_10_48_56_+1000_feI7OgS1woo/sPdM--
