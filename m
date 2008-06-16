@@ -1,20 +1,19 @@
-Return-Path: <matthias.fuchs@esd-electronics.com>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id 35FEDDDF25
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jun 2008 00:13:33 +1000 (EST)
-From: Matthias Fuchs <matthias.fuchs@esd-electronics.com>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: 4xx support in arch/ppc is going away Real Soon Now
-Date: Mon, 16 Jun 2008 16:10:39 +0200
-References: <20080605095253.7df9dbe0@zod.rchland.ibm.com>
-	<18506.31325.899081.47718@cargo.ozlabs.ibm.com>
-	<E1K5NE9-000275-2M@jdl.com>
-In-Reply-To: <E1K5NE9-000275-2M@jdl.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200806161610.39632.matthias.fuchs@esd-electronics.com>
-Cc: Jon Loeliger <jdl@jdl.com>, Paul Mackerras <paulus@samba.org>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id DEA5DDE002
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jun 2008 00:44:49 +1000 (EST)
+Message-Id: <2FCBCE91-8B77-4E78-A7F9-D4128980814F@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Ron Madrid <ron_madrid@sbcglobal.net>
+In-Reply-To: <470944.9117.qm@web83514.mail.sp1.yahoo.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v924)
+Subject: Re: Using DMA interrupt on MPC8313
+Date: Mon, 16 Jun 2008 09:44:43 -0500
+References: <470944.9117.qm@web83514.mail.sp1.yahoo.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,42 +23,72 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sunday 08 June 2008 17:54, Jon Loeliger wrote:
-> > Grant Likely writes:
-> > 
-> > > Oh, and we're going try to create the longest acked-by chain in
-> > > Linux history.
-> > 
-> > Cool :)
-> > 
-> > Paul.
-> 
-> So far, I think it looks like this, sorted:
-> 
-> Acked-by: Arnd Bergmann <arnd@arndb.de>
-> Acked-by: Becky Bruce <becky.bruce@freescale.com>
-> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Acked-by: Grant Likely <grant.likely@secretlab.ca>
-> Acked-by: Jochen Friedrich <jochen@scram.de>
-> Acked-by: Jon Loeliger <jdl@freescale.com>
-> Acked-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-> Acked-by: Kumar Gala <galak@kernel.crashing.org>
-> Acked-by: Olof Johansson <olof@lixom.net>
-> Acked-by: Peter Korsgaard <jacmet@sunsite.dk>
-> Acked-by: Scott Wood <scottwood@freescale.com>
-> Acked-by: Sean MacLennan <smaclennan@pikatech.com>
-> Acked-by: Segher Boessenkool <segher@kernel.crashing.org>
-> Acked-by: Stefan Roese <sr@denx.de>
-> Acked-by: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
-> Acked-by: Wolfgang Denk <wd@denx.de>
-> 
-> I'm not sure, but I _think_ there are a few other PowerPC
-> developers out there still... :-)
-> 
-> jdl
-Acked-by: Matthias Fuchs <matthias.fuchs@esd-electronics.com>
+What does your code actually look like.  In your driver how are you  
+getting the IRQ value that you pass to request_irq?
 
-It seems that I have to post cpci405 patches for arch/powerpc soon.
-The board is still active! Nobody would believe it :-)
+- k
 
-Matthias
+On Jun 13, 2008, at 6:52 PM, Ron Madrid wrote:
+
+> I don't know why request_irq is succeeding when the fsldma and  
+> dmaengine drivers are installed.
+> I'm using the same dts in both cases.
+>
+> Ron
+> --- Kumar Gala <galak@kernel.crashing.org> wrote:
+>
+>> That's a bit odd.  How is your driver getting the IRQ its requesting?
+>> Are you using the same .dts in both cases?
+>>
+>> - k
+>>
+>> On Jun 13, 2008, at 2:02 PM, Ron Madrid wrote:
+>>
+>>> So after I've built the kernel to include the dmaengine and fsldma
+>>> drivers, my driver is allowed
+>>> to register its ISR via request_irq.  However, if these drivers are
+>>> not installed then request_irq
+>>> fails in my driver.  So it seems that there is some other
+>>> initialization happening before
+>>> request_irq is being called in fsldma and subsequently my driver.
+>>> Does anyone know what this is?
+>>>
+>>> Ron
+>>> --- Kumar Gala <galak@kernel.crashing.org> wrote:
+>>>
+>>>> The dmaengine provides a generic set of APIs w/a FSL dma  
+>>>> backend.  It
+>>>> might be the case that your need of dma doesnt fit into the current
+>>>> set of APIs.
+>>>>
+>>>> - k
+>>>>
+>>>> On Jun 12, 2008, at 3:04 PM, Ron Madrid wrote:
+>>>>
+>>>>> Well in that case wouldn't I need to use the fsldma driver?  Or is
+>>>>> dmaengine a generic dma driver?
+>>>>>
+>>>>> Ron
+>>>>> --- Kumar Gala <galak@kernel.crashing.org> wrote:
+>>>>>
+>>>>>>
+>>>>>> On Jun 12, 2008, at 2:35 PM, Ron Madrid wrote:
+>>>>>>
+>>>>>>> I'm trying to write a driver that would make use of the DMA on  
+>>>>>>> the
+>>>>>>> MPC8313.  I'm attempting to
+>>>>>>> register the interrupt with request_irq but it is not  
+>>>>>>> passing.  Is
+>>>>>>> there something that I need to
+>>>>>>> do before I call request_irq, maybe in the dts or somewhere  
+>>>>>>> else?
+>>>>>>
+>>>>>>
+>>>>>> any reason you aren't using the dmaengine driver?
+>>>>>>
+>>>>>> - k
+>>>>>>
+>>>>
+>>>>
+>>
+>>
