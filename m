@@ -1,18 +1,20 @@
 Return-Path: <laurentp@cse-semaphore.com>
 Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
-	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id B93D1DDED5
-	for <linuxppc-dev@ozlabs.org>; Mon, 16 Jun 2008 18:52:56 +1000 (EST)
+	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id AC7ECDDF0E
+	for <linuxppc-dev@ozlabs.org>; Mon, 16 Jun 2008 18:57:05 +1000 (EST)
 From: Laurent Pinchart <laurentp@cse-semaphore.com>
 To: linuxppc-dev@ozlabs.org
-Subject: Re: CPM2 mii-bitbang: Allowing mdio on port pins other than port C
-Date: Mon, 16 Jun 2008 10:52:53 +0200
-References: <49B96DF39F2CDD499DA8B9C7753A060D2275FC@stamp.senetas.com>
-In-Reply-To: <49B96DF39F2CDD499DA8B9C7753A060D2275FC@stamp.senetas.com>
+Subject: Re: [PATCH 2/2] fs_enet: MDIO on GPIO support
+Date: Mon, 16 Jun 2008 10:57:02 +0200
+References: <200805261152.37636.laurentp@cse-semaphore.com>
+	<200805261153.46131.laurentp@cse-semaphore.com>
+In-Reply-To: <200805261153.46131.laurentp@cse-semaphore.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1531777.k9iCzBvR69";
+Content-Type: multipart/signed; boundary="nextPart2581888.IHSIfX5t83";
 	protocol="application/pgp-signature"; micalg=pgp-sha1
-Message-Id: <200806161052.53268.laurentp@cse-semaphore.com>
-Cc: Mark Ware <mark.ware@senetas.com>
+Message-Id: <200806161057.03158.laurentp@cse-semaphore.com>
+Cc: Scott Wood <scottwood@freescale.com>, netdev@vger.kernel.org,
+	jgarzik@pobox.com, vbordug@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,63 +24,92 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---nextPart1531777.k9iCzBvR69
+--nextPart2581888.IHSIfX5t83
 Content-Type: text/plain;
   charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
-Hi Mark,
+On Monday 26 May 2008 11:53, Laurent Pinchart wrote:
+> Port the fs_enet driver to support the MDIO on GPIO driver for PHY access
+> in addition to the mii-bitbang driver.
 
-On Monday 16 June 2008 08:19, Mark Ware wrote:
-> Hello,
->=20
-> I am preparing a board port (from 2.4.18!) for a proprietary board which
-> has it's mdio on a different port than mdc.  The current mii-bitbang
-> driver in fs_enet assumes both pins are connected to port C.  I have
-> created a fairly simple patch to make this more flexible, but I'm new to
-> device trees and am unsure how best to describe the situation in the
-> dts.
->=20
-> The current mdio node for CPM2 looks something like:
->=20
-> mdio@10d40 {
->   device_type =3D "mdio";
->   compatible =3D "fsl,cpm2-mdio-bitbang";
->   #address-cells =3D <1>;
->   #size-cells =3D <0>
->   reg =3D <0x10d40 0x14>;
->   fsl,mdio-pin =3D <12>;
->   fsl,mdc-pin =3D <15>;
-> }
->=20
-> I have made mdio work on our board by adding a second reg range and
-> using the first one for mdc and the second one for mdio:=20
->=20
->   reg =3D <0x10d40 0x14 0x10d60 0x14>;  // mdc=3Dport D, mdio=3Dport A
->   fsl,mdio-pin =3D <12>;    		  // PD12
->   fsl,mdc-pin =3D <15>;     		  // PC15
->=20
-> The code remains backwards compatible, in that if only one reg range is
-> present it is used for both.
->=20
-> Is this a valid (and acceptable) way to extend the reg property?
+Now that 1/2 has been applied by Jeff, could this one make it to=20
+powerpc-next ?
 
-It is. Sergej Stepanov submitted similar patches some times ago. You can fi=
-nd=20
-them at
-
-http://www.spinics.net/lists/netdev/msg45778.html
-http://www.spinics.net/lists/netdev/msg47159.html
-
-> Is their a cleaner way I should look at?
-
-Using the GPIO lib might be cleaner. Have a look at=20
-http://www.nabble.com/-PATCH-0-2--MDIO-on-GPIO-support-for-the-fs_enet-driv=
-er-ts17468958.html=20
-for a patch.
-
-Best regards,
+> Signed-off-by: Laurent Pinchart <laurentp@cse-semaphore.com>
+> ---
+>  drivers/net/fs_enet/fs_enet-main.c |   31 ++++++++++++++++++++-----------
+>  1 files changed, 20 insertions(+), 11 deletions(-)
+>=20
+> diff --git a/drivers/net/fs_enet/fs_enet-main.c=20
+b/drivers/net/fs_enet/fs_enet-main.c
+> index 67b4b07..b0eb1d2 100644
+> --- a/drivers/net/fs_enet/fs_enet-main.c
+> +++ b/drivers/net/fs_enet/fs_enet-main.c
+> @@ -43,6 +43,7 @@
+>  #include <asm/uaccess.h>
+> =20
+>  #ifdef CONFIG_PPC_CPM_NEW_BINDING
+> +#include <linux/of_gpio.h>
+>  #include <asm/of_platform.h>
+>  #endif
+> =20
+> @@ -1172,8 +1173,7 @@ static int __devinit find_phy(struct device_node *n=
+p,
+>                                struct fs_platform_info *fpi)
+>  {
+>  	struct device_node *phynode, *mdionode;
+> -	struct resource res;
+> -	int ret =3D 0, len;
+> +	int ret =3D 0, len, bus_id;
+>  	const u32 *data;
+> =20
+>  	data  =3D of_get_property(np, "fixed-link", NULL);
+> @@ -1190,19 +1190,28 @@ static int __devinit find_phy(struct device_node=
+=20
+*np,
+>  	if (!phynode)
+>  		return -EINVAL;
+> =20
+> -	mdionode =3D of_get_parent(phynode);
+> -	if (!mdionode)
+> +	data =3D of_get_property(phynode, "reg", &len);
+> +	if (!data || len !=3D 4) {
+> +		ret =3D -EINVAL;
+>  		goto out_put_phy;
+> +	}
+> =20
+> -	ret =3D of_address_to_resource(mdionode, 0, &res);
+> -	if (ret)
+> -		goto out_put_mdio;
+> +	mdionode =3D of_get_parent(phynode);
+> +	if (!mdionode) {
+> +		ret =3D -EINVAL;
+> +		goto out_put_phy;
+> +	}
+> =20
+> -	data =3D of_get_property(phynode, "reg", &len);
+> -	if (!data || len !=3D 4)
+> -		goto out_put_mdio;
+> +	bus_id =3D of_get_gpio(mdionode, 0);
+> +	if (bus_id < 0) {
+> +		struct resource res;
+> +		ret =3D of_address_to_resource(mdionode, 0, &res);
+> +		if (ret)
+> +			goto out_put_mdio;
+> +		bus_id =3D res.start;
+> +	}
+> =20
+> -	snprintf(fpi->bus_id, 16, "%x:%02x", res.start, *data);
+> +	snprintf(fpi->bus_id, 16, "%x:%02x", bus_id, *data);
+> =20
+>  out_put_mdio:
+>  	of_node_put(mdionode);
+> --=20
+> 1.5.0
+>=20
+>=20
 
 =2D-=20
 Laurent Pinchart
@@ -91,15 +122,15 @@ Belgium
 T +32 (2) 387 42 59
 =46 +32 (2) 387 42 75
 
---nextPart1531777.k9iCzBvR69
+--nextPart2581888.IHSIfX5t83
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.5 (GNU/Linux)
 
-iD8DBQBIVinl8y9gWxC9vpcRAqzsAKCKdkILbKdTREbGGimZLE6FoefAUgCdF9JH
-S0846ukbuCa/wGEH3LLC2F8=
-=OzDW
+iD8DBQBIVirf8y9gWxC9vpcRApF2AKDCMnoCkuGXu4iicN/vHSZXUAU+ewCeJabu
+u7XDDbA+DNgrfzGu7fnhElg=
+=TU17
 -----END PGP SIGNATURE-----
 
---nextPart1531777.k9iCzBvR69--
+--nextPart2581888.IHSIfX5t83--
