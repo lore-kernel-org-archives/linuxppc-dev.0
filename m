@@ -4,13 +4,13 @@ Received: from de01egw02.freescale.net (de01egw02.freescale.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "de01egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 4F71FDE1B9
+	by ozlabs.org (Postfix) with ESMTPS id 25AEADE1B7
 	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jun 2008 02:11:35 +1000 (EST)
-Date: Mon, 16 Jun 2008 11:10:45 -0500
+Date: Mon, 16 Jun 2008 11:10:50 -0500
 From: Kim Phillips <kim.phillips@freescale.com>
 To: linux-crypto@vger.kernel.org
-Subject: [PATCH 2/4] crypto/talitos: unmap h/w generated IV
-Message-Id: <20080616111045.c0d3b843.kim.phillips@freescale.com>
+Subject: [PATCH 3/4] crypto/talitos: fix premature done handling
+Message-Id: <20080616111050.596c245b.kim.phillips@freescale.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-dev@ozlabs.org, herbert@gondor.apana.org.au
@@ -23,22 +23,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Since the h/w doesn't support out-of-order processing within a channel,
+abort channel flush processing in the no-done-bits-and-no-error case
+so as to not allow premature passthrough to the callback (and thus
+dropped packets).
+
 Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
 ---
- drivers/crypto/talitos.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+ drivers/crypto/talitos.c |    9 +++++++--
+ 1 files changed, 7 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/crypto/talitos.c b/drivers/crypto/talitos.c
-index f301e95..ce4787e 100644
+index ce4787e..64ddad2 100644
 --- a/drivers/crypto/talitos.c
 +++ b/drivers/crypto/talitos.c
-@@ -654,6 +654,7 @@ static void ipsec_esp_unmap(struct device *dev,
- 			    struct ipsec_esp_edesc *edesc,
- 			    struct aead_request *areq)
- {
-+	unmap_single_talitos_ptr(dev, &edesc->desc.ptr[6], DMA_FROM_DEVICE);
- 	unmap_single_talitos_ptr(dev, &edesc->desc.ptr[3], DMA_TO_DEVICE);
- 	unmap_single_talitos_ptr(dev, &edesc->desc.ptr[2], DMA_TO_DEVICE);
- 	unmap_single_talitos_ptr(dev, &edesc->desc.ptr[0], DMA_TO_DEVICE);
+@@ -307,8 +307,13 @@ static void flush_channel(struct device *dev, int ch, int error, int reset_ch)
+ 
+ 		/* descriptors with their done bits set don't get the error */
+ 		rmb();
+-		status = ((request->desc->hdr & DESC_HDR_DONE)
+-			  == DESC_HDR_DONE) ? 0 : error;
++		if ((request->desc->hdr & DESC_HDR_DONE) == DESC_HDR_DONE)
++			status = 0;
++		else
++			if (!error)
++				break;
++			else
++				status = error;
+ 
+ 		dma_unmap_single(dev, request->dma_desc,
+ 			sizeof(struct talitos_desc), DMA_BIDIRECTIONAL);
 -- 
 1.5.6.rc2.26.g8c37
