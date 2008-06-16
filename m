@@ -2,19 +2,20 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B7A16DDEEB
-	for <linuxppc-dev@ozlabs.org>; Mon, 16 Jun 2008 17:11:44 +1000 (EST)
-Subject: Re: BUG() in current git, __dma_alloc_coherent, Beige G3
+	by ozlabs.org (Postfix) with ESMTPS id CD7C1DDF03
+	for <linuxppc-dev@ozlabs.org>; Mon, 16 Jun 2008 17:13:54 +1000 (EST)
+Subject: Re: [git pull] Please pull powerpc.git merge branch
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Gerhard Pircher <gerhard_pircher@gmx.net>
-In-Reply-To: <20080616070359.300020@gmx.net>
-References: <20080616014615.GA8960@nineveh.local>
-	<1213591838.8129.123.camel@pasglop>  <20080616070359.300020@gmx.net>
+To: Paul Mackerras <paulus@samba.org>
+In-Reply-To: <18518.114.100584.607669@cargo.ozlabs.ibm.com>
+References: <18518.114.100584.607669@cargo.ozlabs.ibm.com>
 Content-Type: text/plain
-Date: Mon, 16 Jun 2008 17:11:27 +1000
-Message-Id: <1213600287.8129.125.camel@pasglop>
+Date: Mon, 16 Jun 2008 17:13:22 +1000
+Message-Id: <1213600402.8129.127.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Kumar Gala <kumar.gala@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	linux-kernel@vger.kernel.org
 Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -25,13 +26,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Mon, 2008-06-16 at 15:56 +1000, Paul Mackerras wrote:
+> Please pull from the 'merge' branch of
+> 
+> git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
+> 
+> to get some more bug fixes and defconfig updates for powerpc, as
+> listed below.  Almost all of the bulk is in the defconfig updates for
+> the Freescale embedded platforms.
 
-> I discovered this bug some time ago and reported it on the list.
-> See here for more info:
-> http://ozlabs.org/pipermail/linuxppc-dev/2008-May/056128.html
-> Anyway I don't think your machine needs dma-noncoherent.
-
-Kumar, do you have a fix for that ?
+Paul, did you have a chance to fix our defconfig's for the loss of
+SFF support in libata ?
 
 Cheers,
 Ben.
