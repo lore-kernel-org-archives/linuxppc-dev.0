@@ -1,30 +1,29 @@
-Return-Path: <glppe-linuxppc-embedded-2@m.gmane.org>
-Received: from ciao.gmane.org (main.gmane.org [80.91.229.2])
-	by ozlabs.org (Postfix) with ESMTP id 44A8DDDFB5
+Return-Path: <marco.stornelli@coritel.it>
+Received: from nausicaa2.coritel.it
+	(host254-130-static.190-82-b.business.telecomitalia.it
+	[82.190.130.254]) by ozlabs.org (Postfix) with ESMTP id 1705EDDEE3
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 17 Jun 2008 00:27:04 +1000 (EST)
-Received: from list by ciao.gmane.org with local (Exim 4.43)
-	id 1K8FfZ-0007Sg-3B
-	for linuxppc-embedded@ozlabs.org; Mon, 16 Jun 2008 14:26:53 +0000
-Received: from fw-emea.rohde-schwarz.com ([80.246.32.33])
-	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
-	id 1AlnuQ-0007hv-00
-	for <linuxppc-embedded@ozlabs.org>; Mon, 16 Jun 2008 14:26:53 +0000
-Received: from euphoria by fw-emea.rohde-schwarz.com with local (Gmexim 0.1
-	(Debian)) id 1AlnuQ-0007hv-00
-	for <linuxppc-embedded@ozlabs.org>; Mon, 16 Jun 2008 14:26:53 +0000
-To: linuxppc-embedded@ozlabs.org
-From: Florian Boelstler <euphoria@arcor.de>
-Subject: Re: Reserving small amounts of memory with mem= (MPC85xx,   2.6.15
-	arch/ppc)
-Date: Mon, 16 Jun 2008 16:26:43 +0200
-Message-ID: <g35t76$u50$1@ger.gmane.org>
-References: <g2ri8j$qlk$1@ger.gmane.org>	<d194b8ce0806121214w2ac2edf6n7f222eb51463a989@mail.gmail.com>	<g2u0ae$238$1@ger.gmane.org>
-	<485292C2.6030103@freescale.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-In-Reply-To: <485292C2.6030103@freescale.com>
-Sender: news <news@ger.gmane.org>
+	Tue, 17 Jun 2008 01:13:59 +1000 (EST)
+Received: from localhost (nausicaa2.coritel.it [127.0.0.1])
+	by nausicaa2.coritel.it (Postfix) with ESMTP id 9D47043400E
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 16 Jun 2008 17:16:21 +0200 (CEST)
+Received: from nausicaa2.coritel.it ([127.0.0.1])
+	by localhost (nausicaa2.coritel.it [127.0.0.1]) (amavisd-new,
+	port 10024)
+	with ESMTP id MStwSUh8TErQ for <linuxppc-embedded@ozlabs.org>;
+	Mon, 16 Jun 2008 17:16:20 +0200 (CEST)
+Received: from [192.168.2.2] (217-133-82-13.b2b.tiscali.it [217.133.82.13])
+	by nausicaa2.coritel.it (Postfix) with ESMTP id 868A143400A
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 16 Jun 2008 17:16:20 +0200 (CEST)
+Message-ID: <485683B7.5030407@coritel.it>
+Date: Mon, 16 Jun 2008 17:16:07 +0200
+From: Marco Stornelli <marco.stornelli@coritel.it>
+MIME-Version: 1.0
+To: LinuxPPC-Embedded <linuxppc-embedded@ozlabs.org>
+Subject: MPC8641D Msi
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -35,22 +34,21 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Scott Wood wrote:
-> CAM entries can be any power of 4 between 4K and 256M.  However, the 
-> code currently is hardcoded to use no more than 3 entries.
+Hi,
 
-Ah, this explains a lot, thanks.
+I've got a device connected with Pci-express to an mpc8641d_hpcn 
+evaluation board (rev. 2.0) and I'm using the latest kernel. This device 
+use MSI to generate an interrupt, but it seems possible that the only 
+MSI that can be triggered through the standard PCI Express is interrupt 
+0. Is there a way to solve it? Some workaround or something like it?
 
-> Alternately, do you have highmem enabled?  That will let you access the 
-> rest of the RAM that the CAM doesn't map, though I don't know if an 
-> initrd in highmem works.
+Thanks.
 
-I didn't had highmem enabled so far. Now it is and Linux is able to 
-allocate rest of memory.
+-- 
+Marco Stornelli
+Embedded Software Engineer
+CoRiTeL - Consorzio di Ricerca sulle Telecomunicazioni
+http://www.coritel.it
 
-It doesn't work if initrd is placed in highmem though. I just put it at 
-the end of lowmem.
-
-Cheers,
-
-   Florian
+marco.stornelli@coritel.it
++39 06 72582838
