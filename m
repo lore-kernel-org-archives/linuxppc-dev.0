@@ -1,20 +1,16 @@
-Return-Path: <bunk@kernel.org>
-Received: from smtp4.pp.htv.fi (smtp4.pp.htv.fi [213.243.153.38])
-	by ozlabs.org (Postfix) with ESMTP id 9DB14DDF8B
-	for <linuxppc-dev@ozlabs.org>; Mon, 16 Jun 2008 22:44:45 +1000 (EST)
-Date: Mon, 16 Jun 2008 15:43:24 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [git pull] Please pull powerpc.git merge branch
-Message-ID: <20080616124324.GC10854@cs181133002.pp.htv.fi>
-References: <18518.114.100584.607669@cargo.ozlabs.ibm.com>
-	<18518.19857.917564.461743@cargo.ozlabs.ibm.com>
+Return-Path: <ricardo.ribalda@gmail.com>
+Received: from fg-out-1718.google.com (fg-out-1718.google.com [72.14.220.158])
+	by ozlabs.org (Postfix) with ESMTP id 859E0DDE3A
+	for <linuxppc-dev@ozlabs.org>; Mon, 16 Jun 2008 22:22:08 +1000 (EST)
+Received: by fg-out-1718.google.com with SMTP id d23so3216891fga.39
+	for <linuxppc-dev@ozlabs.org>; Mon, 16 Jun 2008 05:22:06 -0700 (PDT)
+Message-ID: <aa76a2be0806160522n357165d4pb6a0d1b24c670a4d@mail.gmail.com>
+Date: Mon, 16 Jun 2008 14:22:05 +0200
+From: Ricardo <ricardo.ribalda@gmail.com>
+To: linuxppc-embedded@ozlabs.org, linuxppc-dev@ozlabs.org
+Subject: Xilinx EDK 10.1 and XUPV2P: A little report
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <18518.19857.917564.461743@cargo.ozlabs.ibm.com>
-Cc: Jeff Garzik <jeff@garzik.org>, linux-ide@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	akpm@linux-foundation.org, Linus Torvalds <torvalds@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,46 +20,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Jun 16, 2008 at 09:25:05PM +1000, Paul Mackerras wrote:
-> Linus,
-> 
-> As Ben pointed out, I had forgotten to re-do a couple of defconfigs
-> where I had inadvertently turned off the SATA driver for the G5
-> powermacs.  So when you do the pull as I requested earlier from
-> 
-> git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
-> 
-> you'll also get one more commit as listed below.
-> 
-> Thanks,
-> Paul.
-> 
->  arch/powerpc/configs/g5_defconfig    |   62 ++++++++++++++++++++++++++++++--
->  arch/powerpc/configs/ppc64_defconfig |   66 ++++++++++++++++++++++++++++++++--
->  2 files changed, 122 insertions(+), 6 deletions(-)
-> 
-> Paul Mackerras (1):
->       [POWERPC] Turn on ATA_SFF so we get SATA_SVW back in defconfigs
->...
+Hello list
 
-What about my patch [1] to eliminate this new trap in kconfig since we 
-do not have to bother kconfig users with ATA_SFF at all?
+ I have tried to port Linux 2.6 (xilinx git) to a XUPV2P board
+running a system implemented with EDK10.1 (Linux Version). I have
+fail, and I think I now why, this is a little report written for
+saving you some time (and maybe solving my problem if I am doing
+something wrong)
 
-Besides some orthoginal discussion whether this stuff should actually be 
-called SFF I am not aware of any reactions to my patch from the ATA 
-people.
+The board is not supported by EDK 10.1, but I have found a Board
+Support File form https://wiki.ittc.ku.edu that seems to work. To
+start I have created a design that consists on a ppc, the mpmc, an
+uartlite, an interrupt manager and some bram. The "basic programs":
+Test memory and peripherals
+worked ok on it.
 
-I already sent this patch twice and I can update it to the latest tree 
-if it's considered OK, but I'd like to get some ACK/NAK first.
+ I have downloaded the kernel form xilinx git and adapted the
+xparameters file to fit my design.
 
-cu
-Adrian
+ I have created a toolchain using OpenEmbedded and compiled the kernel
+with it, then I have downloaded the binary to the board and everything
+works fine until "Now booting the kernel"
 
-[1] http://lkml.org/lkml/2008/4/21/501
+ Debugging the kernel I have found that the system crashes (Exception
+0x700) setting the mmu inside "start_here" (head_4xx.S)...
+
+ Because it was a crash in the "very beginning" of my kernel live I
+developed some simple apps to tests all my peripherals and they worked
+ok in real mode: All of them worked OK
+
+ BUT I have created a small piece of code that tests the peripherals
+in virtual mode and when the program is linked to the ram the system
+crashes!! Strangely, it works ok when it runs from bram.....
+
+ The same code works perfectly on a design created with EDK 8.1 and
+the kernel also works fine.
+
+ I attach the source code of my test app parameters I have used.
+
+
+
+                                    Best Regards
+
+
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Ricardo Ribalda
+http://www.eps.uam.es/~rribalda/
