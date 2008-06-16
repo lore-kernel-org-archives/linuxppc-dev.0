@@ -1,20 +1,15 @@
-Return-Path: <becky.bruce@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 41EDCDDE2A
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jun 2008 02:53:00 +1000 (EST)
-In-Reply-To: <Pine.LNX.4.64.0806161045450.20181@blarg.am.freescale.net>
-References: <Pine.LNX.4.64.0806161045450.20181@blarg.am.freescale.net>
-Mime-Version: 1.0 (Apple Message framework v753.1)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <8037A14F-8CCA-4920-8B26-F31ACCD012C7@freescale.com>
-From: Becky Bruce <becky.bruce@freescale.com>
-Subject: Re: [PATCH] powerpc/booke: Add support for new e500mc core
-Date: Mon, 16 Jun 2008 11:56:30 -0500
+Return-Path: <ron_madrid@sbcglobal.net>
+Received: from web83508.mail.sp1.yahoo.com (web83508.mail.sp1.yahoo.com
+	[216.252.120.164]) by ozlabs.org (Postfix) with SMTP id 9E126DDF03
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jun 2008 03:13:15 +1000 (EST)
+Date: Mon, 16 Jun 2008 10:13:12 -0700 (PDT)
+From: Ron Madrid <ron_madrid@sbcglobal.net>
+Subject: Re: Using DMA interrupt on MPC8313
 To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <2FCBCE91-8B77-4E78-A7F9-D4128980814F@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Message-ID: <101441.49932.qm@web83508.mail.sp1.yahoo.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -26,68 +21,152 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Jun 16, 2008, at 10:46 AM, Kumar Gala wrote:
+Here's my code.  There are a few other things that happen but they are inconsequential to this
+problem.  I'm sure that the request_irq call is right, especially since it works if the fsldma
+drivers are builtin to the kernel.  Also, the irq number 71 comes from the reference manual for
+them MPC8313.  It is the internal interrupt for the DMA.  I'll do some more testing in a little
+while to try to determine the cause of the error in request_irq.
 
-> The new e500mc core from Freescale is based on the e500v2 but with the
-> following changes:
->
-> * Supports only the Enhanced Debug Architecture (DSRR0/1, etc)
-> * Floating Point
-> * No SPE
-> * Supports lwsync
-> * Doorbell Exceptions
-> * Hypervisor
->
-> ---
->
-> In my powerpc-next tree.
->
->  arch/powerpc/kernel/cputable.c         |   15 +++++++++++++++
->  arch/powerpc/kernel/head_booke.h       |    6 +++++-
->  arch/powerpc/kernel/head_fsl_booke.S   |   10 ++++++++--
->  arch/powerpc/platforms/Kconfig.cputype |   10 ++++++++--
->  include/asm-powerpc/cache.h            |    3 +++
->  include/asm-powerpc/cputable.h         |    6 ++++--
->  include/asm-powerpc/synch.h            |    2 +-
->  7 files changed, 44 insertions(+), 8 deletions(-)
->
-> diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/ 
-> cputable.c
-> index e44d553..36fa061 100644
-> --- a/arch/powerpc/kernel/cputable.c
-> +++ b/arch/powerpc/kernel/cputable.c
-> @@ -1522,6 +1522,21 @@ static struct cpu_spec __initdata cpu_specs 
-> [] = {
->  		.machine_check		= machine_check_e500,
->  		.platform		= "ppc8548",
->  	},
-> +	{	/* e500mc */
-> +		.pvr_mask		= 0xffff0000,
-> +		.pvr_value		= 0x80230000,
-> +		.cpu_name		= "e500mc",
-> +		/* xxx - galak: add CPU_FTR_MAYBE_CAN_DOZE */
-> +		.cpu_features		= CPU_FTRS_E500MC,
-> +		.cpu_user_features	= COMMON_USER_BOOKE | PPC_FEATURE_HAS_FPU,
-> +		.icache_bsize		= 64,
-> +		.dcache_bsize		= 64,
-> +		.num_pmcs		= 4,
-> +		.oprofile_cpu_type	= "ppc/e500", /* xxx - galak, e500mc? */
-> +		.oprofile_type		= PPC_OPROFILE_FSL_EMB,
-> +		.machine_check		= machine_check_e500,
-> +		.platform		= "ppc4080",
-> +	},
->  	{	/* default match */
->  		.pvr_mask		= 0x00000000,
->  		.pvr_value		= 0x00000000,
+	int result = 0;
+	unsigned int firstminor = 0;
+	dev_t dev;
+	
+	printk(KERN_ALERT "Hello World Driver!  Hi Ron2!\n");
 
-Did you intend to leave your 2 "xxx - galak" comments in here?
 
-Also, I think you have a problem - you allow CONFIG_SMP to be set  
-with CONFIG_FSL_BOOKE now, but if you actually turn on CONFIG_SMP, in  
-pgtable_32.c you're going to have build problems.  CONFIG_SMP enables  
-hash_page_sync(), which we don't have on BookE.  You need to add a ! 
-BOOKE to the config protections in pgtable_32.c for hash_page_sync()  
-declaration and callers.
+	result |= alloc_chrdev_region(&dev, firstminor, 1, kModuleName);
 
-Cheers,
-Becky
+
+	if(result < 0){
+
+		printk("simpc: alloc_chrdev_region failed %u\n", result);
+
+		return result;
+
+	}
+
+	mpc_major = MAJOR(dev);
+	mpc_minor = MINOR(dev);
+
+
+	printk(KERN_ALERT kModuleName " MAJOR NUM = %d\n",mpc_major);
+
+	pdx.devno = MKDEV(mpc_major, mpc_minor);
+
+	cdev_init(&pdx.cdev, &mpc_fops);
+	pdx.cdev.owner = THIS_MODULE;
+	pdx.cdev.ops = &mpc_fops;
+	result = cdev_add(&pdx.cdev, pdx.devno, 1);
+
+	if(result)
+		printk(KERN_ALERT kModuleName "-init_module: Error %d adding pdx.cdev", result);
+
+		
+	printk(KERN_ALERT kModuleName "-SIMPC_open: Entering\n");
+
+	pdx.irq = 71;
+
+
+
+	printk(KERN_ALERT kModuleName "-SIMPC_open: IRQ = %d\n", pdx.irq);
+
+
+
+	if (pdx.irq == 0){
+
+		printk(kModuleName "-SIMPC_open: WARNING-cannot get IRQ\n");
+		return 0;
+	}
+
+
+	if (request_irq(pdx.irq, SIMPC_isr, IRQF_SHARED, kModuleName, &pdx)){
+
+		printk(kModuleName "-SIMPC_open: ERROR-Interrupt Request failed.\n"
+
+			"    pdx.irq = %d, SIMPC_isr = 0x%x\n", 
+
+			pdx.irq, (int)SIMPC_isr);
+
+
+
+		pdx.irq = 0;
+
+	}
+
+	else
+
+		printk(kModuleName "-SIMPC_open: found IRQ %d\n", pdx.irq);
+
+--- Kumar Gala <galak@kernel.crashing.org> wrote:
+
+> What does your code actually look like.  In your driver how are you  
+> getting the IRQ value that you pass to request_irq?
+> 
+> - k
+> 
+> On Jun 13, 2008, at 6:52 PM, Ron Madrid wrote:
+> 
+> > I don't know why request_irq is succeeding when the fsldma and  
+> > dmaengine drivers are installed.
+> > I'm using the same dts in both cases.
+> >
+> > Ron
+> > --- Kumar Gala <galak@kernel.crashing.org> wrote:
+> >
+> >> That's a bit odd.  How is your driver getting the IRQ its requesting?
+> >> Are you using the same .dts in both cases?
+> >>
+> >> - k
+> >>
+> >> On Jun 13, 2008, at 2:02 PM, Ron Madrid wrote:
+> >>
+> >>> So after I've built the kernel to include the dmaengine and fsldma
+> >>> drivers, my driver is allowed
+> >>> to register its ISR via request_irq.  However, if these drivers are
+> >>> not installed then request_irq
+> >>> fails in my driver.  So it seems that there is some other
+> >>> initialization happening before
+> >>> request_irq is being called in fsldma and subsequently my driver.
+> >>> Does anyone know what this is?
+> >>>
+> >>> Ron
+> >>> --- Kumar Gala <galak@kernel.crashing.org> wrote:
+> >>>
+> >>>> The dmaengine provides a generic set of APIs w/a FSL dma  
+> >>>> backend.  It
+> >>>> might be the case that your need of dma doesnt fit into the current
+> >>>> set of APIs.
+> >>>>
+> >>>> - k
+> >>>>
+> >>>> On Jun 12, 2008, at 3:04 PM, Ron Madrid wrote:
+> >>>>
+> >>>>> Well in that case wouldn't I need to use the fsldma driver?  Or is
+> >>>>> dmaengine a generic dma driver?
+> >>>>>
+> >>>>> Ron
+> >>>>> --- Kumar Gala <galak@kernel.crashing.org> wrote:
+> >>>>>
+> >>>>>>
+> >>>>>> On Jun 12, 2008, at 2:35 PM, Ron Madrid wrote:
+> >>>>>>
+> >>>>>>> I'm trying to write a driver that would make use of the DMA on  
+> >>>>>>> the
+> >>>>>>> MPC8313.  I'm attempting to
+> >>>>>>> register the interrupt with request_irq but it is not  
+> >>>>>>> passing.  Is
+> >>>>>>> there something that I need to
+> >>>>>>> do before I call request_irq, maybe in the dts or somewhere  
+> >>>>>>> else?
+> >>>>>>
+> >>>>>>
+> >>>>>> any reason you aren't using the dmaengine driver?
+> >>>>>>
+> >>>>>> - k
+> >>>>>>
+> >>>>
+> >>>>
+> >>
+> >>
+> 
+> 
