@@ -1,21 +1,20 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 33D16DDFB5
-	for <linuxppc-dev@ozlabs.org>; Mon, 16 Jun 2008 23:23:33 +1000 (EST)
-Date: Mon, 16 Jun 2008 17:23:30 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Pierre Ossman <drzeus-mmc@drzeus.cx>
-Subject: Re: [PATCH] [RFC v3] OF: OpenFirmware bindings for the mmc_spi driver
-Message-ID: <20080616132330.GA7468@polina.dev.rtsoft.ru>
-References: <20080605161624.GA517@polina.dev.rtsoft.ru>
-	<20080614175723.209e93dc@mjolnir.drzeus.cx>
+Return-Path: <timur@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id D8100DDF0E
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jun 2008 00:12:45 +1000 (EST)
+Message-ID: <48567494.8020905@freescale.com>
+Date: Mon, 16 Jun 2008 09:11:32 -0500
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <20080614175723.209e93dc@mjolnir.drzeus.cx>
-Cc: David Brownell <dbrownell@users.sourceforge.net>,
-	Gary Jennejohn <garyj@denx.de>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Reply-To: avorontsov@ru.mvista.com
+To: Ron Madrid <ron_madrid@sbcglobal.net>
+Subject: Re: Using DMA interrupt on MPC8313
+References: <397587.26957.qm@web83513.mail.sp1.yahoo.com>
+In-Reply-To: <397587.26957.qm@web83513.mail.sp1.yahoo.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,23 +24,9 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, Jun 14, 2008 at 05:57:23PM +0200, Pierre Ossman wrote:
-> On Thu, 5 Jun 2008 20:16:24 +0400
-> Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
-> 
-> > Here is v3. I'm out of ideas if you won't like it. :-)
-> > 
-> > v3:
-> > - Now these bindings are using bus notifiers chain, thus we adhere to the
-> >   spi bus.
-> > 
-> 
-> Now this was nice and clean. I take it Grant doesn't like this version
-> though. What's the downside of it?
+Ron Madrid wrote:
+> So are you implying that the request_irq function should work without any other initialization
+> function before it?
 
-To me the main downside of it is inability to make this modular. :-/
-
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+No, I'm saying that you'll get a more accurate assessment of why it 
+fails if you see where it returns an error code.
