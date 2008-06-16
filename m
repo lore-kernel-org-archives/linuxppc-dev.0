@@ -1,20 +1,21 @@
-Return-Path: <jfannin@gmail.com>
-Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.30])
-	by ozlabs.org (Postfix) with ESMTP id 52369DDEEC
-	for <linuxppc-dev@ozlabs.org>; Mon, 16 Jun 2008 17:31:03 +1000 (EST)
-Received: by yw-out-2324.google.com with SMTP id 5so3028932ywh.39
-	for <linuxppc-dev@ozlabs.org>; Mon, 16 Jun 2008 00:30:49 -0700 (PDT)
-Date: Mon, 16 Jun 2008 03:30:41 -0400
-From: Joseph Fannin <jfannin@gmail.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: BUG() in current git, __dma_alloc_coherent, Beige G3
-Message-ID: <20080616073041.GA26917@nineveh.local>
-References: <20080616014615.GA8960@nineveh.local>
-	<1213591838.8129.123.camel@pasglop>
+Return-Path: <sdann@us.mufg.jp>
+Received: from btmna.com (mx2.btmna.com [12.14.70.196])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx2.us.mufg.jp",
+	Issuer "VeriSign Class 3 Secure Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 3551FDDE3A
+	for <linuxppc-dev@ozlabs.org>; Mon, 16 Jun 2008 18:17:16 +1000 (EST)
+Received: from NJHR2033.ad.btmna.com ([10.97.200.9])
+	by nymr0003.btmna.com (8.14.1/8.14.1) with ESMTP id m5G7wwcM030881
+	for <linuxppc-dev@ozlabs.org>; Mon, 16 Jun 2008 03:59:00 -0400
+Subject: Carol Dann is out of the office.
+From: Sheau-Jiuan Dann <sdann@us.mufg.jp>
+To: linuxppc-dev@ozlabs.org
+Message-ID: <OF33685EB7.460B78A2-ON8525746A.002C16C0-8525746A.002C16C0@btmna.com>
+Date: Mon, 16 Jun 2008 04:01:34 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1213591838.8129.123.camel@pasglop>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+	charset="US-ASCII"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,32 +25,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Jun 16, 2008 at 02:50:38PM +1000, Benjamin Herrenschmidt wrote:
-> On Sun, 2008-06-15 at 21:46 -0400, Joseph Fannin wrote:
-> > Hello!
-> >
-> > I'm reproducably hitting a BUG() in Linus' git (current as of about
-> > noon, Sunday 15, GMT -0500) on my Beige PowerMac G3 (32bit, natch).
-> > The line indicted in the (hand-copied) traceback that follows is:
-> >
-> >     BUG_ON(!pte_none(*pte));
-> >
-> > ...in __dma_alloc_coherent().
->
->  .../...
->
-> > [   261.043131] ------------[ cut here ]------------
-> > [   261.044194] kernel BUG at arch/powerpc/lib/dma-noncoherent.c:209!
->
-> I wonder how you end up hitting code in dma-noncoherent.c in the first
-> place ! PowerMac kernels should not have that code compiled in at all...
 
-I think it's because PPC_PRPMC2800 and MPC5121_ADS both live under
-PPC_MULTIPLATFORM, and end up selecting NOT_COHERENT_CACHE.
+I will be out of the office starting  06/16/2008 and will not return
+until 07/07/2008.
 
-If the button in Kconfig isn't labeled "Do Not Push", heck, I'll build
-it.
 
---
-Joseph Fannin
-jfannin@gmail.com
+Should you need any assistance on RS6000/AIX/TSM , please contact :
+Mr. Obaid Farghani at 201-413-8028 (ofarghani@us.mufg.jp), Mr. Paul
+Giglio at 201-413-8280 (pgiglio@us.mufg.jp) or Mr. Gary Fatone at
+201-413-8955 (gfatone@us.mufg.jp )
+
+Thank you.
+
+
+
+
+I will respond to your message when I return.
+
+Regards,
+
+Carol
+
+
+-----------------------------------------
+This electronic mail message, and any of the accompanying
+documents, may contain confidential or privileged information.  Any
+unauthorized disclosure or distribution of such information is
+strictly prohibited.  If you are not the intended recipient of this
+message, please notify the sender immediately and destroy the
+message.  Messages sent through electronic media may be subject to
+delays or unauthorized alterations.  Neither The Bank of
+Tokyo-Mitsubishi UFJ, Ltd. nor any of its affiliates is responsible
+for any such delay or alteration.  This message may contain a
+commercial advertisement or promotion of a commercial product or
+service.  If you do not wish to receive messages of this kind from
+the sender in the future, please reply to this message and type
+"REMOVE MY EMAIL ADDRESS" in the subject field, or write to the
+sender at 1251 Avenue of the Americas, New York, NY 10020-1104.
