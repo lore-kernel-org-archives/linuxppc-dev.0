@@ -1,32 +1,19 @@
-Return-Path: <nfont@austin.ibm.com>
-Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
+Return-Path: <kim.phillips@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 16EE4DDFCA
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jun 2008 02:09:50 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e1.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m5GG9hXw011443
-	for <linuxppc-dev@ozlabs.org>; Mon, 16 Jun 2008 12:09:43 -0400
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
-	m5GG9heR206792
-	for <linuxppc-dev@ozlabs.org>; Mon, 16 Jun 2008 12:09:43 -0400
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
-	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m5GG9hea024243
-	for <linuxppc-dev@ozlabs.org>; Mon, 16 Jun 2008 12:09:43 -0400
-Message-ID: <48569044.3040501@austin.ibm.com>
-Date: Mon, 16 Jun 2008 11:09:40 -0500
-From: Nathan Fontenot <nfont@austin.ibm.com>
-MIME-Version: 1.0
-To: Robert Jennings <rcj@linux.vnet.ibm.com>
-Subject: [PATCH 03/19][v2] powerpc: Add memory entitlement capabilities to
-	/proc/ppc64/lparcfg
-References: <20080612220923.GJ30916@linux.vnet.ibm.com>
-In-Reply-To: <20080612220923.GJ30916@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Brian King <brking@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org,
-	paulus@samba.org, David Darrington <ddarring@linux.vnet.ibm.com>
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 0FE38DE1B5
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jun 2008 02:11:35 +1000 (EST)
+Date: Mon, 16 Jun 2008 11:10:53 -0500
+From: Kim Phillips <kim.phillips@freescale.com>
+To: linux-crypto@vger.kernel.org
+Subject: [PATCH 4/4] crypto/talitos: add hwrng support
+Message-Id: <20080616111053.b3a3c99d.kim.phillips@freescale.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, herbert@gondor.apana.org.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,220 +23,253 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch has been updated to remove a piece that is now included
-in patch 2/19 of this series where it should be.
+register with the hwrng subsystem to provide entropy to the kernel.
 
--Nathan
-
-Update /proc/ppc64/lparcfg to enable displaying of Cooperative Memory
-Overcommitment statistics as reported by the H_GET_MPP hcall.  This also
-updates the lparcfg interface to allow setting memory entitlement and
-weight.
-
-Signed-off-by: Nathan Fontenot <nfont@austin.ibm.com>
-
+Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
 ---
-  arch/powerpc/kernel/lparcfg.c |  139 
-+++++++++++++++++++++++++++++++++++++++---
-  include/asm-powerpc/hvcall.h  |   18 +++++
-  2 files changed, 147 insertions(+), 10 deletions(-)
+ drivers/crypto/Kconfig   |    1 +
+ drivers/crypto/talitos.c |  136 ++++++++++++++++++++++++++++++++++++++--------
+ drivers/crypto/talitos.h |   13 ++++-
+ 3 files changed, 126 insertions(+), 24 deletions(-)
 
-Index: linux-2.6.git/arch/powerpc/kernel/lparcfg.c
-===================================================================
---- linux-2.6.git.orig/arch/powerpc/kernel/lparcfg.c	2008-06-16 
-10:32:29.000000000 -0500
-+++ linux-2.6.git/arch/powerpc/kernel/lparcfg.c	2008-06-16 
-10:47:55.000000000 -0500
-@@ -129,6 +129,35 @@
-  /*
-   * Methods used to fetch LPAR data when running on a pSeries platform.
-   */
-+/**
-+ * h_get_mpp
-+ * H_GET_MPP hcall returns info in 7 parms
+diff --git a/drivers/crypto/Kconfig b/drivers/crypto/Kconfig
+index 98d96df..249c135 100644
+--- a/drivers/crypto/Kconfig
++++ b/drivers/crypto/Kconfig
+@@ -178,6 +178,7 @@ config CRYPTO_DEV_TALITOS
+ 	tristate "Talitos Freescale Security Engine (SEC)"
+ 	select CRYPTO_ALGAPI
+ 	select CRYPTO_AUTHENC
++	select HW_RANDOM
+ 	depends on FSL_SOC
+ 	help
+ 	  Say 'Y' here to use the Freescale Security Engine (SEC)
+diff --git a/drivers/crypto/talitos.c b/drivers/crypto/talitos.c
+index 64ddad2..e123312 100644
+--- a/drivers/crypto/talitos.c
++++ b/drivers/crypto/talitos.c
+@@ -124,6 +124,9 @@ struct talitos_private {
+ 
+ 	/* list of registered algorithms */
+ 	struct list_head alg_list;
++
++	/* hwrng device */
++	struct hwrng rng;
+ };
+ 
+ /*
+@@ -523,8 +526,8 @@ static void talitos_error(unsigned long data)
+ 			}
+ 		}
+ 	}
+-	if (reset_dev || isr & ~TALITOS_ISR_CHERR) {
+-		dev_err(dev, "done overflow or internal time out error: "
++	if (reset_dev || isr & ~TALITOS_ISR_CHERR || isr_lo) {
++		dev_err(dev, "done overflow, internal time out, or rngu error: "
+ 		        "ISR 0x%08x_%08x\n", isr, isr_lo);
+ 
+ 		/* purge request queues */
+@@ -549,7 +552,7 @@ static irqreturn_t talitos_interrupt(int irq, void *data)
+ 	out_be32(priv->reg + TALITOS_ICR, isr);
+ 	out_be32(priv->reg + TALITOS_ICR_LO, isr_lo);
+ 
+-	if (unlikely(isr & ~TALITOS_ISR_CHDONE))
++	if (unlikely((isr & ~TALITOS_ISR_CHDONE) || isr_lo))
+ 		talitos_error((unsigned long)data);
+ 	else
+ 		if (likely(isr & TALITOS_ISR_CHDONE))
+@@ -559,6 +562,80 @@ static irqreturn_t talitos_interrupt(int irq, void *data)
+ }
+ 
+ /*
++ * hwrng
 + */
-+int h_get_mpp(struct hvcall_mpp_data *mpp_data)
++static int talitos_rng_data_present(struct hwrng *rng, int wait)
 +{
-+	int rc;
-+	unsigned long retbuf[PLPAR_HCALL_BUFSIZE];
++	struct device *dev = (struct device *)rng->priv;
++	struct talitos_private *priv = dev_get_drvdata(dev);
++	u32 ofl;
++	int i;
 +
-+	rc = plpar_hcall(H_GET_MPP, retbuf);
++	for (i = 0; i < 20; i++) {
++		ofl = in_be32(priv->reg + TALITOS_RNGUSR_LO) &
++		      TALITOS_RNGUSR_LO_OFL;
++		if (ofl || !wait)
++			break;
++		udelay(10);
++	}
 +
-+	mpp_data->entitled_mem = retbuf[0];
-+	mpp_data->mapped_mem = retbuf[1];
-+
-+	mpp_data->group_num = (retbuf[2] >> 2 * 8) & 0xffff;
-+	mpp_data->pool_num = retbuf[2] & 0xffff;
-+
-+	mpp_data->mem_weight = (retbuf[3] >> 7 * 8) & 0xff;
-+	mpp_data->unallocated_mem_weight = (retbuf[3] >> 6 * 8) & 0xff;
-+	mpp_data->unallocated_entitlement = retbuf[3] & 0xffffffffffff;
-+
-+	mpp_data->pool_size = retbuf[4];
-+	mpp_data->loan_request = retbuf[5];
-+	mpp_data->backing_mem = retbuf[6];
-+
-+	return rc;
-+}
-+EXPORT_SYMBOL(h_get_mpp);
-+
-  /*
-   * H_GET_PPP hcall returns info in 4 parms.
-   *  entitled_capacity,unallocated_capacity,
-@@ -226,6 +255,44 @@
-  	seq_printf(m, "unallocated_capacity=%ld\n", h_unallocated);
-  }
-
-+/**
-+ * parse_mpp_data
-+ * Parse out data returned from h_get_mpp
-+ */
-+static void parse_mpp_data(struct seq_file *m)
-+{
-+	struct hvcall_mpp_data mpp_data;
-+	int rc;
-+
-+	rc = h_get_mpp(&mpp_data);
-+	if (rc)
-+		return;
-+
-+	seq_printf(m, "entitled_memory=%ld\n", mpp_data.entitled_mem);
-+
-+	if (mpp_data.mapped_mem != -1)
-+		seq_printf(m, "mapped_entitled_memory=%ld\n",
-+			   mpp_data.mapped_mem);
-+
-+	seq_printf(m, "entitled_memory_group_number=%d\n", mpp_data.group_num);
-+	seq_printf(m, "entitled_memory_pool_number=%d\n", mpp_data.pool_num);
-+
-+	seq_printf(m, "entitled_memory_weight=%d\n", mpp_data.mem_weight);
-+	seq_printf(m, "unallocated_entitled_memory_weight=%d\n",
-+		   mpp_data.unallocated_mem_weight);
-+	seq_printf(m, "unallocated_io_mapping_entitlement=%ld\n",
-+		   mpp_data.unallocated_entitlement);
-+
-+	if (mpp_data.pool_size != -1)
-+		seq_printf(m, "entitled_memory_pool_size=%ld bytes\n",
-+			   mpp_data.pool_size);
-+
-+	seq_printf(m, "entitled_memory_loan_request=%ld\n",
-+		   mpp_data.loan_request);
-+
-+	seq_printf(m, "backing_memory=%ld bytes\n", mpp_data.backing_mem);
++	return !!ofl;
 +}
 +
-  #define SPLPAR_CHARACTERISTICS_TOKEN 20
-  #define SPLPAR_MAXLENGTH 1026*(sizeof(char))
-
-@@ -353,6 +420,7 @@
-  		/* this call handles the ibm,get-system-parameter contents */
-  		parse_system_parameter_string(m);
-  		parse_ppp_data(m);
-+		parse_mpp_data(m);
-
-  		seq_printf(m, "purr=%ld\n", get_purr());
-
-@@ -417,6 +485,43 @@
-  	return retval;
-  }
-
-+/**
-+ * update_mpp
-+ *
-+ * Update the memory entitlement and weight for the partition.  Caller must
-+ * spercify either a new entitlement or weight, not both, to be updated
-+ * since the h_set_mpp call takes both entitlement and weight as 
-parameters.
-+ */
-+static ssize_t update_mpp(u64 *entitlement, u8 *weight)
++static int talitos_rng_data_read(struct hwrng *rng, u32 *data)
 +{
-+	struct hvcall_mpp_data mpp_data;
-+	u64 new_entitled;
-+	u8 new_weight;
-+	ssize_t rc;
++	struct device *dev = (struct device *)rng->priv;
++	struct talitos_private *priv = dev_get_drvdata(dev);
 +
-+	rc = h_get_mpp(&mpp_data);
-+	if (rc)
-+		return rc;
++	/* rng fifo requires 64-bit accesses */
++	*data = in_be32(priv->reg + TALITOS_RNGU_FIFO);
++	*data = in_be32(priv->reg + TALITOS_RNGU_FIFO_LO);
 +
-+	if (entitlement) {
-+		new_weight = mpp_data.mem_weight;
-+		new_entitled = *entitlement;
-+	} else if (weight) {
-+		new_weight = *weight;
-+		new_entitled = mpp_data.entitled_mem;
-+	} else
-+		return -EINVAL;
-+
-+	pr_debug("%s: current_entitled = %lu, current_weight = %u\n",
-+		 __FUNCTION__, mpp_data.entitled_mem, mpp_data.mem_weight);
-+
-+	pr_debug("%s: new_entitled = %lu, new_weight = %u\n",
-+		 __FUNCTION__, new_entitled, new_weight);
-+
-+	rc = plpar_hcall_norets(H_SET_MPP, new_entitled, new_weight);
-+	return rc;
++	return sizeof(u32);
 +}
 +
-  /*
-   * Interface for changing system parameters (variable capacity weight
-   * and entitled capacity).  Format of input is "param_name=value";
-@@ -470,6 +575,20 @@
-  			goto out;
-
-  		retval = update_ppp(NULL, new_weight_ptr);
-+	} else if (!strcmp(kbuf, "entitled_memory")) {
-+		char *endp;
-+		*new_entitled_ptr = (u64) simple_strtoul(tmp, &endp, 10);
-+		if (endp == tmp)
-+			goto out;
++static int talitos_rng_init(struct hwrng *rng)
++{
++	struct device *dev = (struct device *)rng->priv;
++	struct talitos_private *priv = dev_get_drvdata(dev);
++	unsigned int timeout = TALITOS_TIMEOUT;
 +
-+		retval = update_mpp(new_entitled_ptr, NULL);
-+	} else if (!strcmp(kbuf, "entitled_memory_weight")) {
-+		char *endp;
-+		*new_weight_ptr = (u8) simple_strtoul(tmp, &endp, 10);
-+		if (endp == tmp)
-+			goto out;
++	setbits32(priv->reg + TALITOS_RNGURCR_LO, TALITOS_RNGURCR_LO_SR);
++	while (!(in_be32(priv->reg + TALITOS_RNGUSR_LO) & TALITOS_RNGUSR_LO_RD)
++	       && --timeout)
++		cpu_relax();
++	if (timeout == 0) {
++		dev_err(dev, "failed to reset rng hw\n");
++		return -ENODEV;
++	}
 +
-+		retval = update_mpp(NULL, new_weight_ptr);
-  	} else
-  		goto out;
-
-Index: linux-2.6.git/include/asm-powerpc/hvcall.h
-===================================================================
---- linux-2.6.git.orig/include/asm-powerpc/hvcall.h	2008-06-16 
-10:25:58.000000000 -0500
-+++ linux-2.6.git/include/asm-powerpc/hvcall.h	2008-06-16 
-10:42:42.000000000 -0500
-@@ -210,7 +210,9 @@
-  #define H_JOIN			0x298
-  #define H_VASI_STATE            0x2A4
-  #define H_ENABLE_CRQ		0x2B0
--#define MAX_HCALL_OPCODE	H_ENABLE_CRQ
-+#define H_SET_MPP		0x2D0
-+#define H_GET_MPP		0x2D4
-+#define MAX_HCALL_OPCODE	H_GET_MPP
-
-  #ifndef __ASSEMBLY__
-
-@@ -270,6 +272,20 @@
-  };
-  #define HCALL_STAT_ARRAY_SIZE	((MAX_HCALL_OPCODE >> 2) + 1)
-
-+struct hvcall_mpp_data {
-+	unsigned long entitled_mem;
-+	unsigned long mapped_mem;
-+	unsigned short group_num;
-+	unsigned short pool_num;
-+	unsigned char mem_weight;
-+	unsigned char unallocated_mem_weight;
-+	unsigned long unallocated_entitlement;	/* value in bytes */
-+	unsigned long pool_size;
-+	long loan_request;
-+	unsigned long backing_mem;
-+};
++	/* start generating */
++	setbits32(priv->reg + TALITOS_RNGUDSR_LO, 0);
 +
-+int h_get_mpp(struct hvcall_mpp_data *);
-  #endif /* __ASSEMBLY__ */
-  #endif /* __KERNEL__ */
-  #endif /* _ASM_POWERPC_HVCALL_H */
++	return 0;
++}
++
++static int talitos_register_rng(struct device *dev)
++{
++	struct talitos_private *priv = dev_get_drvdata(dev);
++
++	priv->rng.name		= dev_driver_string(dev),
++	priv->rng.init		= talitos_rng_init,
++	priv->rng.data_present	= talitos_rng_data_present,
++	priv->rng.data_read	= talitos_rng_data_read,
++	priv->rng.priv		= (unsigned long)dev;
++
++	return hwrng_register(&priv->rng);
++}
++
++static void talitos_unregister_rng(struct device *dev)
++{
++	struct talitos_private *priv = dev_get_drvdata(dev);
++
++	hwrng_unregister(&priv->rng);
++}
++
++/*
+  * crypto alg
+  */
+ #define TALITOS_CRA_PRIORITY		3000
+@@ -1094,6 +1171,26 @@ static int talitos_cra_init(struct crypto_tfm *tfm)
+ 	return 0;
+ }
+ 
++/*
++ * given the alg's descriptor header template, determine whether descriptor
++ * type and primary/secondary execution units required match the hw
++ * capabilities description provided in the device tree node.
++ */
++static int hw_supports(struct device *dev, __be32 desc_hdr_template)
++{
++	struct talitos_private *priv = dev_get_drvdata(dev);
++	int ret;
++
++	ret = (1 << DESC_TYPE(desc_hdr_template) & priv->desc_types) &&
++	      (1 << PRIMARY_EU(desc_hdr_template) & priv->exec_units);
++
++	if (SECONDARY_EU(desc_hdr_template))
++		ret = ret && (1 << SECONDARY_EU(desc_hdr_template)
++		              & priv->exec_units);
++
++	return ret;
++}
++
+ static int __devexit talitos_remove(struct of_device *ofdev)
+ {
+ 	struct device *dev = &ofdev->dev;
+@@ -1107,6 +1204,9 @@ static int __devexit talitos_remove(struct of_device *ofdev)
+ 		kfree(t_alg);
+ 	}
+ 
++	if (hw_supports(dev, DESC_HDR_SEL0_RNG))
++		talitos_unregister_rng(dev);
++
+ 	kfree(priv->tail);
+ 	kfree(priv->head);
+ 
+@@ -1167,26 +1267,6 @@ static struct talitos_crypto_alg *talitos_alg_alloc(struct device *dev,
+ 	return t_alg;
+ }
+ 
+-/*
+- * given the alg's descriptor header template, determine whether descriptor
+- * type and primary/secondary execution units required match the hw
+- * capabilities description provided in the device tree node.
+- */
+-static int hw_supports(struct device *dev, __be32 desc_hdr_template)
+-{
+-	struct talitos_private *priv = dev_get_drvdata(dev);
+-	int ret;
+-
+-	ret = (1 << DESC_TYPE(desc_hdr_template) & priv->desc_types) &&
+-	      (1 << PRIMARY_EU(desc_hdr_template) & priv->exec_units);
+-
+-	if (SECONDARY_EU(desc_hdr_template))
+-		ret = ret && (1 << SECONDARY_EU(desc_hdr_template)
+-		              & priv->exec_units);
+-
+-	return ret;
+-}
+-
+ static int talitos_probe(struct of_device *ofdev,
+ 			 const struct of_device_id *match)
+ {
+@@ -1309,6 +1389,16 @@ static int talitos_probe(struct of_device *ofdev,
+ 		goto err_out;
+ 	}
+ 
++	/* register the RNG, if available */
++	if (hw_supports(dev, DESC_HDR_SEL0_RNG)) {
++		err = talitos_register_rng(dev);
++		if (err) {
++			dev_err(dev, "failed to register hwrng: %d\n", err);
++			goto err_out;
++		} else
++			dev_info(dev, "hwrng\n");
++	}
++
+ 	/* register crypto algorithms the device supports */
+ 	INIT_LIST_HEAD(&priv->alg_list);
+ 
+diff --git a/drivers/crypto/talitos.h b/drivers/crypto/talitos.h
+index 27deb65..de0e377 100644
+--- a/drivers/crypto/talitos.h
++++ b/drivers/crypto/talitos.h
+@@ -39,7 +39,7 @@
+ #define TALITOS_IMR			0x1008  /* interrupt mask register */
+ #define   TALITOS_IMR_INIT		0x10fff /* enable channel IRQs */
+ #define TALITOS_IMR_LO			0x100C
+-#define   TALITOS_IMR_LO_INIT		0x0     /* disable execution unit IRQs*/
++#define   TALITOS_IMR_LO_INIT		0x20000 /* allow RNGU error IRQs */
+ #define TALITOS_ISR			0x1010  /* interrupt status register */
+ #define   TALITOS_ISR_CHERR		0xaa    /* channel errors mask */
+ #define   TALITOS_ISR_CHDONE		0x55    /* channel done mask */
+@@ -106,6 +106,17 @@
+ #define TALITOS_AFEUISR_LO		0x8034
+ #define TALITOS_RNGUISR			0xa030 /* random number unit */
+ #define TALITOS_RNGUISR_LO		0xa034
++#define TALITOS_RNGUSR			0xa028 /* rng status */
++#define TALITOS_RNGUSR_LO		0xa02c
++#define   TALITOS_RNGUSR_LO_RD		0x1	/* reset done */
++#define   TALITOS_RNGUSR_LO_OFL		0xff0000/* output FIFO length */
++#define TALITOS_RNGUDSR			0xa010	/* data size */
++#define TALITOS_RNGUDSR_LO		0xa014
++#define TALITOS_RNGU_FIFO		0xa800	/* output FIFO */
++#define TALITOS_RNGU_FIFO_LO		0xa804	/* output FIFO */
++#define TALITOS_RNGURCR			0xa018	/* reset control */
++#define TALITOS_RNGURCR_LO		0xa01c
++#define   TALITOS_RNGURCR_LO_SR		0x1	/* software reset */
+ #define TALITOS_PKEUISR			0xc030 /* public key unit */
+ #define TALITOS_PKEUISR_LO		0xc034
+ #define TALITOS_KEUISR			0xe030 /* kasumi unit */
+-- 
+1.5.6.rc2.26.g8c37
