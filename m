@@ -1,16 +1,34 @@
-Return-Path: <ron_madrid@sbcglobal.net>
-Received: from web83508.mail.sp1.yahoo.com (web83508.mail.sp1.yahoo.com
-	[216.252.120.164]) by ozlabs.org (Postfix) with SMTP id 38417DE090
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jun 2008 04:07:12 +1000 (EST)
-Date: Mon, 16 Jun 2008 11:07:10 -0700 (PDT)
-From: Ron Madrid <ron_madrid@sbcglobal.net>
-Subject: Re: Using DMA interrupt on MPC8313
-To: Scott Wood <scottwood@freescale.com>
-In-Reply-To: <4856A3CA.4010905@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Message-ID: <788575.91210.qm@web83508.mail.sp1.yahoo.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 92834DE06C
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jun 2008 04:07:17 +1000 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e3.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m5GI75H3032196
+	for <linuxppc-dev@ozlabs.org>; Mon, 16 Jun 2008 14:07:05 -0400
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
+	m5GI6xfF051132
+	for <linuxppc-dev@ozlabs.org>; Mon, 16 Jun 2008 14:07:00 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m5GI6xKQ023339
+	for <linuxppc-dev@ozlabs.org>; Mon, 16 Jun 2008 14:06:59 -0400
+Date: Mon, 16 Jun 2008 14:05:12 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Matthias Fuchs <matthias.fuchs@esd-electronics.com>
+Subject: Re: 4xx support in arch/ppc is going away Real Soon Now
+Message-ID: <20080616140512.06914da5@zod.rchland.ibm.com>
+In-Reply-To: <200806161610.39632.matthias.fuchs@esd-electronics.com>
+References: <20080605095253.7df9dbe0@zod.rchland.ibm.com>
+	<18506.31325.899081.47718@cargo.ozlabs.ibm.com>
+	<E1K5NE9-000275-2M@jdl.com>
+	<200806161610.39632.matthias.fuchs@esd-electronics.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Jon Loeliger <jdl@jdl.com>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,65 +38,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I don't see a "dma" node in the mpc8377mds.dts (2.6.25).  I found one in mpc8610_hpcd.dts and
-modeled it after that.
+On Mon, 16 Jun 2008 16:10:39 +0200
+Matthias Fuchs <matthias.fuchs@esd-electronics.com> wrote:
 
-		dma@82a8 {
-			#address-cells = <1>;
-			#size-cells = <1>;
-			compatible = "fsl,elo-dma";
-			cell-index = <0>;
-			reg = <0x82a8 0x4>; /* DMA general status register */
-			ranges = <0x0 0x8100 0x200>;
+> Acked-by: Matthias Fuchs <matthias.fuchs@esd-electronics.com>
+> 
+> It seems that I have to post cpci405 patches for arch/powerpc soon.
+> The board is still active! Nobody would believe it :-)
 
-			dma-channel@0 {
-				compatible = "fsl,elo-dma-channel";
-				cell-index = <0>;
-				reg = <0x0 0x80>;
-				interrupt-parent = <&ipic>;
-				interrupts = <71 0x8>;
-			};
-			dma-channel@1 {
-				compatible = "fsl,elo-dma-channel";
-				cell-index = <1>;
-				reg = <0x80 0x80>;
-				interrupt-parent = <&ipic>;
-				interrupts = <71 0x8>;
-			};
-			dma-channel@2 {
-				compatible = "fsl,elo-dma-channel";
-				cell-index = <2>;
-				reg = <0x100 0x80>;
-				interrupt-parent = <&ipic>;
-				interrupts = <71 0x8>;
-			};
-			dma-channel@3 {
-				compatible = "fsl,elo-dma-channel";
-				cell-index = <3>;
-				reg = <0x180 0x80>;
-				interrupt-parent = <&ipic>;
-				interrupts = <71 0x8>;
-			};
-		};
+I believe it.  And that's all that matters.  Well... that and you
+actually posting the patches :).
 
---- Scott Wood <scottwood@freescale.com> wrote:
-
-> Ron Madrid wrote:
-> > Here's my code.  There are a few other things that happen but they are inconsequential to this
-> > problem.  I'm sure that the request_irq call is right, especially since it works if the fsldma
-> > drivers are builtin to the kernel.  Also, the irq number 71 comes from the reference manual
-> for
-> > them MPC8313.  It is the internal interrupt for the DMA.  I'll do some more testing in a
-> little
-> > while to try to determine the cause of the error in request_irq.
-> 
-> You cannot pass hardware IRQ numbers directly to request_irq() -- it has 
-> no idea which IRQ controller you're referring to (even if there happens 
-> to be only one on your board).
-> 
-> You should get the IRQ from the device tree, using 
-> irq_of_parse_and_map() on the device node for the DMA channel (see the 
-> mpc8377mds device tree for an example DMA node).
-> 
-> -Scott
-> 
+josh
