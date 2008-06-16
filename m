@@ -1,13 +1,14 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <mark.ware@senetas.com>
+Received: from mail.senetas.com (mail.datum.com.au [203.174.147.20])
+	by ozlabs.org (Postfix) with ESMTP id AFB7FDDE24
+	for <linuxppc-dev@ozlabs.org>; Mon, 16 Jun 2008 16:41:40 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18518.114.100584.607669@cargo.ozlabs.ibm.com>
-Date: Mon, 16 Jun 2008 15:56:02 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [git pull] Please pull powerpc.git merge branch
-Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
-	linux-kernel@vger.kernel.org
+Content-Type: multipart/mixed; boundary="----_=_NextPart_001_01C8CF79.29A5BEF4"
+Subject: CPM2 mii-bitbang: Allowing mdio on port pins other than port C
+Date: Mon, 16 Jun 2008 16:19:32 +1000
+Message-ID: <49B96DF39F2CDD499DA8B9C7753A060D2275FC@stamp.senetas.com>
+From: "Mark Ware" <mark.ware@senetas.com>
+To: <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,126 +18,246 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Please pull from the 'merge' branch of
+This is a multi-part message in MIME format.
 
-git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
+------_=_NextPart_001_01C8CF79.29A5BEF4
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-to get some more bug fixes and defconfig updates for powerpc, as
-listed below.  Almost all of the bulk is in the defconfig updates for
-the Freescale embedded platforms.
+Hello,
 
-Thanks,
-Paul.
+I am preparing a board port (from 2.4.18!) for a proprietary board which
+has it's mdio on a different port than mdc.  The current mii-bitbang
+driver in fs_enet assumes both pins are connected to port C.  I have
+created a fairly simple patch to make this more flexible, but I'm new to
+device trees and am unsure how best to describe the situation in the
+dts.
 
- arch/powerpc/Makefile                             |    4 
- arch/powerpc/boot/Makefile                        |    2 
- arch/powerpc/boot/crtsavres.S                     |  233 +++++++++++++++
- arch/powerpc/boot/dts/mpc8377_rdb.dts             |    8 -
- arch/powerpc/boot/dts/mpc8378_rdb.dts             |    8 -
- arch/powerpc/boot/dts/mpc8379_rdb.dts             |    8 -
- arch/powerpc/boot/dts/mpc8548cds.dts              |    4 
- arch/powerpc/configs/83xx/mpc8313_rdb_defconfig   |  155 +++++++---
- arch/powerpc/configs/83xx/mpc8315_rdb_defconfig   |  162 +++++++----
- arch/powerpc/configs/83xx/mpc832x_mds_defconfig   |  146 ++++++----
- arch/powerpc/configs/83xx/mpc832x_rdb_defconfig   |  150 +++++++---
- arch/powerpc/configs/83xx/mpc834x_itx_defconfig   |  157 +++++++---
- arch/powerpc/configs/83xx/mpc834x_itxgp_defconfig |  150 ++++++----
- arch/powerpc/configs/83xx/mpc834x_mds_defconfig   |  146 ++++++----
- arch/powerpc/configs/83xx/mpc836x_mds_defconfig   |  146 ++++++----
- arch/powerpc/configs/83xx/mpc837x_mds_defconfig   |  146 ++++++----
- arch/powerpc/configs/83xx/mpc837x_rdb_defconfig   |  224 +++++++++++----
- arch/powerpc/configs/83xx/sbc834x_defconfig       |  140 ++++++---
- arch/powerpc/configs/85xx/ksi8560_defconfig       |  168 +++++++----
- arch/powerpc/configs/85xx/mpc8540_ads_defconfig   |  133 ++++++---
- arch/powerpc/configs/85xx/mpc8544_ds_defconfig    |  210 +++++++++-----
- arch/powerpc/configs/85xx/mpc8560_ads_defconfig   |  135 ++++++---
- arch/powerpc/configs/85xx/mpc8568mds_defconfig    |  150 ++++++----
- arch/powerpc/configs/85xx/mpc8572_ds_defconfig    |  210 +++++++++-----
- arch/powerpc/configs/85xx/mpc85xx_cds_defconfig   |  137 ++++++---
- arch/powerpc/configs/85xx/sbc8548_defconfig       |  131 ++++++---
- arch/powerpc/configs/85xx/sbc8560_defconfig       |  135 ++++++---
- arch/powerpc/configs/85xx/stx_gp3_defconfig       |  152 ++++++----
- arch/powerpc/configs/85xx/tqm8540_defconfig       |  147 ++++++----
- arch/powerpc/configs/85xx/tqm8541_defconfig       |  146 ++++++----
- arch/powerpc/configs/85xx/tqm8555_defconfig       |  146 ++++++----
- arch/powerpc/configs/85xx/tqm8560_defconfig       |  146 ++++++----
- arch/powerpc/configs/adder875_defconfig           |   52 ++-
- arch/powerpc/configs/ep8248e_defconfig            |  124 ++++++--
- arch/powerpc/configs/ep88xc_defconfig             |   47 ++-
- arch/powerpc/configs/linkstation_defconfig        |  172 +++++++----
- arch/powerpc/configs/mpc7448_hpc2_defconfig       |  136 ++++++---
- arch/powerpc/configs/mpc8272_ads_defconfig        |  126 ++++++--
- arch/powerpc/configs/mpc83xx_defconfig            |  151 ++++++----
- arch/powerpc/configs/mpc85xx_defconfig            |  230 ++++++++++-----
- arch/powerpc/configs/mpc8610_hpcd_defconfig       |  316 ++++++++++++---------
- arch/powerpc/configs/mpc8641_hpcn_defconfig       |  210 +++++++++-----
- arch/powerpc/configs/mpc866_ads_defconfig         |  128 ++++++---
- arch/powerpc/configs/mpc885_ads_defconfig         |   47 ++-
- arch/powerpc/configs/pq2fads_defconfig            |  133 ++++++---
- arch/powerpc/configs/prpmc2800_defconfig          |  153 +++++++---
- arch/powerpc/configs/sbc8641d_defconfig           |  150 ++++++----
- arch/powerpc/configs/storcenter_defconfig         |   71 +++--
- arch/powerpc/kernel/irq.c                         |    2 
- arch/powerpc/kernel/ppc_ksyms.c                   |    2 
- arch/powerpc/kernel/prom_init_check.sh            |   14 +
- arch/powerpc/lib/Makefile                         |    2 
- arch/powerpc/lib/crtsavres.S                      |  229 +++++++++++++++
- arch/powerpc/platforms/85xx/Kconfig               |    1 
- arch/powerpc/platforms/cell/spu_base.c            |   44 ++-
- arch/powerpc/platforms/cell/spufs/run.c           |   21 +
- arch/powerpc/platforms/cell/spufs/sched.c         |   19 +
- arch/powerpc/platforms/pseries/eeh_driver.c       |   11 -
- arch/powerpc/platforms/pseries/nvram.c            |    4 
- arch/powerpc/xmon/xmon.c                          |    1 
- drivers/macintosh/mediabay.c                      |    4 
- drivers/macintosh/smu.c                           |    5 
- drivers/macintosh/therm_adt746x.c                 |   13 +
- include/asm-powerpc/mediabay.h                    |   12 +
- include/asm-powerpc/spu.h                         |    1 
- include/asm-powerpc/spu_csa.h                     |    2 
- include/asm-powerpc/system.h                      |    2 
- 67 files changed, 4557 insertions(+), 2213 deletions(-)
- create mode 100644 arch/powerpc/boot/crtsavres.S
- create mode 100644 arch/powerpc/lib/crtsavres.S
+The current mdio node for CPM2 looks something like:
 
-Adrian Bunk (1):
-      [POWERPC] Build fix for drivers/macintosh/mediabay.c
+mdio@10d40 {
+  device_type =3D "mdio";
+  compatible =3D "fsl,cpm2-mdio-bitbang";
+  #address-cells =3D <1>;
+  #size-cells =3D <0>
+  reg =3D <0x10d40 0x14>;
+  fsl,mdio-pin =3D <12>;
+  fsl,mdc-pin =3D <15>;
+}
 
-Andrew Morton (1):
-      [POWERPC] Fix warning in pseries/eeh_driver.c
+I have made mdio work on our board by adding a second reg range and
+using the first one for mdc and the second one for mdio:=20
 
-Anton Vorontsov (1):
-      [POWERPC] 83xx: MPC837xRDB's VSC7385 ethernet switch isn't on the MDIO bus
+  reg =3D <0x10d40 0x14 0x10d60 0x14>;  // mdc=3Dport D, mdio=3Dport A
+  fsl,mdio-pin =3D <12>;    		  // PD12
+  fsl,mdc-pin =3D <15>;     		  // PC15
 
-Emil Medve (1):
-      [POWERPC] Fix return value check logic in debugfs virq_mapping setup
+The code remains backwards compatible, in that if only one reg range is
+present it is used for both.
 
-Grant Likely (1):
-      [POWERPC] bootwrapper: add simpleImage* to list of boot targets
+Is this a valid (and acceptable) way to extend the reg property?  Is
+their a cleaner way I should look at?
 
-Julia Lawall (3):
-      [POWERPC] Add missing of_node_put in pseries/nvram.c
-      [POWERPC] Add missing of_node_put in drivers/macintosh/smu.c
-      [POWERPC] Add missing of_node_put in drivers/macintosh/therm_adt746x.c
+Regards,
+Mark Ware
 
-Kumar Gala (5):
-      [POWERPC] 85xx: MPC85xx MDS - Unconditionally select PHYLIB for board fixups
-      [POWERPC] 85xx: MPC8548CDS - Fix size of PCIe IO space
-      [POWERPC] Updated Freescale PPC defconfigs
-      [POWERPC] Fix bootwrapper builds with newer gcc versions
-      [POWERPC] Fix -Os kernel builds with newer gcc versions
+------_=_NextPart_001_01C8CF79.29A5BEF4
+Content-Type: application/octet-stream;
+	name="B2010.dts"
+Content-Transfer-Encoding: base64
+Content-Description: B2010.dts
+Content-Disposition: attachment;
+	filename="B2010.dts"
 
-Luke Browning (4):
-      powerpc/spufs: wait for stable spu status in spu_stopped()
-      powerpc/spufs: remove class_0_dsisr from spu exception handling
-      powerpc/spufs: synchronize interaction between spu exception handling and time slicing
-      powerpc/spufs: fix missed stop-and-signal event
+LyoKICogRGV2aWNlIFRyZWUgZm9yIHRoZSBDeXBoZXJOZXQgQjIwMTBBMDA1IG1vdGhlcmJvYXJk
+CiAqCiAqIENvcHlyaWdodCAyMDA4IFNlbmV0YXMgUFRZIExURAogKgogKi8KCi9kdHMtdjEvOwov
+IHsKICAgIG1vZGVsID0gIkIyMDEwQTAwNSI7CiAgICBjb21wYXRpYmxlID0gImN0YW0sQjIwMTAi
+OwogICAgI2FkZHJlc3MtY2VsbHMgPSA8MT47CiAgICAjc2l6ZS1jZWxscyA9IDwxPjsKCiAgICBh
+bGlhc2VzIHsKICAgICAgICBzZXJpYWwwID0gJnNtYzI7ICAgICAgICAvLyBpbnRlcm5hbCBzZXJp
+YWwKICAgICAgICBzZXJpYWwxID0gJnNjYzQ7ICAgICAgICAvLyBDTEkKICAgICAgICBldGhlcm5l
+dDAgPSAmZW5ldDA7CiAgICB9OwoKICAgIGNwdXMgewogICAgICAgICNhZGRyZXNzLWNlbGxzID0g
+PDE+OwogICAgICAgICNzaXplLWNlbGxzID0gPDA+OwoKICAgICAgICBQb3dlclBDLDgyODBAMCB7
+CiAgICAgICAgICAgIGRldmljZV90eXBlID0gImNwdSI7CiAgICAgICAgICAgIHJlZyA9IDwwPjsK
+ICAgICAgICAgICAgZC1jYWNoZS1saW5lLXNpemUgPSA8MzI+OwogICAgICAgICAgICBpLWNhY2hl
+LWxpbmUtc2l6ZSA9IDwzMj47CiAgICAgICAgICAgIGQtY2FjaGUtc2l6ZSA9IDwxNjM4ND47CiAg
+ICAgICAgICAgIGktY2FjaGUtc2l6ZSA9IDwxNjM4ND47CiAgICAgICAgICAgIHRpbWViYXNlLWZy
+ZXF1ZW5jeSA9IDwwPjsgICAvLyBGaWxsZWQgaW4gYnkgVS1Cb290CiAgICAgICAgICAgIGNsb2Nr
+LWZyZXF1ZW5jeSA9IDwwPjsgICAgICAvLyBGaWxsZWQgaW4gYnkgVS1Cb290CiAgICAgICAgICAg
+IGJ1cy1mcmVxdWVuY3kgPSA8MD47ICAgICAgICAvLyBGaWxsZWQgaW4gYnkgVS1Cb290CiAgICAg
+ICAgfTsKICAgIH07CgogICAgbWVtb3J5IHsKICAgICAgICBkZXZpY2VfdHlwZSA9ICJtZW1vcnki
+OwogICAgICAgIHJlZyA9IDwwIDA+OyAgICAgICAgICAgICAgICAgICAgLy8gRmlsbGVkIGluIGJ5
+IFUtQm9vdAogICAgfTsKCiAgICBsb2NhbGJ1c0BmMDAxMDEwMCB7CiAgICAgICAgY29tcGF0aWJs
+ZSA9ICJmc2wsbXBjODI4MC1sb2NhbGJ1cyIsCiAgICAgICAgICAgICAgICAgImZzbCxwcTItbG9j
+YWxidXMiLAogICAgICAgICAgICAgICAgICJzaW1wbGUtYnVzIjsKICAgICAgICAjYWRkcmVzcy1j
+ZWxscyA9IDwyPjsKICAgICAgICAjc2l6ZS1jZWxscyA9IDwxPjsKICAgICAgICByZWcgPSA8MHhm
+MDAxMDEwMCAweDYwPjsKCiAgICAgICAgcmFuZ2VzID0gPDB4MCAgMHgwIDB4ZmUwMDAwMDAgMHgw
+MjAwMDAwMCAgICAgICAgLy8gdmlhIEpNUDQgZmxhc2gvQm9vdFNJTU0KICAgICAgICAgICAgICAg
+ICAgMHgzICAweDAgMHhlMDAwMDAwMCAweDAxMDAwMDAwICAgICAgICAvLyBsb2NhbCBTRFJBTQog
+ICAgICAgICAgICAgICAgICAweDggIDB4MCAweGYwMjAwMDAwIDB4MDAyMDAwMDAKICAgICAgICAg
+ICAgICAgICA+OwogICAgfTsKCiAgICBzb2NAZjAwMDAwMDAgewogICAgICAgICNhZGRyZXNzLWNl
+bGxzID0gPDE+OwogICAgICAgICNzaXplLWNlbGxzID0gPDE+OwogICAgICAgIGNvbXBhdGlibGUg
+PSAiZnNsLG1wYzgyODAtaW1tciIsICJmc2wscHEyLXNvYyIsICJzaW1wbGUtYnVzIjsKICAgICAg
+ICByYW5nZXMgPSA8MHgwMDAwMDAwMCAweGYwMDAwMDAwIDB4MDAwNTMwMDA+OwogICAgICAgIGRl
+dmljZV90eXBlID0gInNvYyI7CgogICAgICAgIGNwbUAxMTljMCB7CiAgICAgICAgICAgICNhZGRy
+ZXNzLWNlbGxzID0gPDE+OwogICAgICAgICAgICAjc2l6ZS1jZWxscyA9IDwxPjsKICAgICAgICAg
+ICAgI2ludGVycnVwdC1jZWxscyA9IDwyPjsKICAgICAgICAgICAgY29tcGF0aWJsZSA9ICJmc2ws
+bXBjODI4MC1jcG0iLCAiZnNsLGNwbTIiLAogICAgICAgICAgICAgICAgICAgICAgICAgInNpbXBs
+ZS1idXMiOwogICAgICAgICAgICByZWcgPSA8MHgxMTljMCAweDMwPjsKICAgICAgICAgICAgcmFu
+Z2VzOwoKICAgICAgICAgICAgbXVyYW1AMCB7CiAgICAgICAgICAgICAgICAjYWRkcmVzcy1jZWxs
+cyA9IDwxPjsKICAgICAgICAgICAgICAgICNzaXplLWNlbGxzID0gPDE+OwogICAgICAgICAgICAg
+ICAgY29tcGF0aWJsZSA9ICJmc2wsY3BtLW11cmFtIjsKICAgICAgICAgICAgICAgIHJhbmdlcyA9
+IDwwIDAgMHgxMDAwMD47CgogICAgICAgICAgICAgICAgZGF0YUAwIHsKICAgICAgICAgICAgICAg
+ICAgICBjb21wYXRpYmxlID0gImZzbCxjcG0tbXVyYW0tZGF0YSI7CiAgICAgICAgICAgICAgICAg
+ICAgcmVnID0gPDB4MCAweDIwMDAgMHg5ODAwIDB4ODAwPjsgICAgLy8gb3JpZwovLyAgICAgICAg
+ICAgICAgICAgICAgcmVnID0gPDB4ODAgMHgxZjgwIDB4OTgwMCAweDgwMD47CiAgICAgICAgICAg
+ICAgICB9OwogICAgICAgICAgICB9OwoKICAgICAgICAgICAgYnJnQDExOWYwIHsKICAgICAgICAg
+ICAgICAgIGNvbXBhdGlibGUgPSAiZnNsLG1wYzgyODAtYnJnIiwKICAgICAgICAgICAgICAgICAg
+ICAgICAgICJmc2wsY3BtMi1icmciLAogICAgICAgICAgICAgICAgICAgICAgICAgImZzbCxjcG0t
+YnJnIjsKICAgICAgICAgICAgICAgIHJlZyA9IDwweDExOWYwIDB4MTAgMHgxMTVmMCAweDEwPjsK
+ICAgICAgICAgICAgICAgIGNsb2NrLWZyZXF1ZW5jeSA9IDwxNTAwMDAwMDA+OwogICAgICAgICAg
+ICB9OwoKICAgICAgICAgICAgLy8gSW50ZXJuYWwgc2VyaWFsIHBvcnQKICAgICAgICAgICAgc21j
+Mjogc2VyaWFsQDExYTkwIHsKICAgICAgICAgICAgICAgIGRldmljZV90eXBlID0gInNlcmlhbCI7
+CiAgICAgICAgICAgICAgICBjb21wYXRpYmxlID0gImZzbCxtcGM4MjgwLXNtYy11YXJ0IiwKICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAiZnNsLGNwbTItc21jLXVhcnQiOwogICAgICAgICAg
+ICAgICAgcmVnID0gPDB4MTFhOTAgMHgyMCAweDg4ZmMgMHgwMj47CiAgICAgICAgICAgICAgICBp
+bnRlcnJ1cHRzID0gPDUgOD47ICAgICAgICAgICAgICAgICAgICAgLy9TSVVfSU5UX1NNQzIKICAg
+ICAgICAgICAgICAgIGludGVycnVwdC1wYXJlbnQgPSA8JlBJQz47ICAgICAgICAgICAgICAvLz8/
+Pz8KICAgICAgICAgICAgICAgIGZzbCxjcG0tYnJnID0gPDg+OyAgICAgICAgICAgICAgICAgICAg
+ICAvLyB0YWtlbiBmcm9tIDgyeHgvdWFydC5jIGluIDIuNC4xOAogICAgICAgICAgICAgICAgZnNs
+LGNwbS1jb21tYW5kID0gPDB4MjEyMDAwMDA+OwogICAgICAgICAgICAgICAgY3VycmVudC1zcGVl
+ZCA9IDwxOTIwMD47ICAgICAgICAvLyB1LWJvb3Q/CiAgICAgICAgICAgIH07CgogICAgICAgICAg
+ICAvLyBDTEkKICAgICAgICAgICAgc2NjNDogc2VyaWFsQDExYTAwIHsKICAgICAgICAgICAgICAg
+IGRldmljZV90eXBlID0gInNlcmlhbCI7CiAgICAgICAgICAgICAgICBjb21wYXRpYmxlID0gImZz
+bCxtcGM4MjgwLXNjYy11YXJ0IiwKICAgICAgICAgICAgICAgICAgICAgICAgICJmc2wsY3BtMi1z
+Y2MtdWFydCI7CiAgICAgICAgICAgICAgICByZWcgPSA8MHgxMWE2MCAweDIwIDB4ODMwMCAweDEw
+MD47CiAgICAgICAgICAgICAgICBpbnRlcnJ1cHRzID0gPDB4MmIgOD47CiAgICAgICAgICAgICAg
+ICBpbnRlcnJ1cHQtcGFyZW50ID0gPCZQSUM+OwogICAgICAgICAgICAgICAgZnNsLGNwbS1icmcg
+PSA8ND47ICAgICAgICAgICAgICAgICAgICAgIC8vIHRha2VuIGZyb20gODJ4eC91YXJ0LmMgaW4g
+Mi40LjE4CiAgICAgICAgICAgICAgICBmc2wsY3BtLWNvbW1hbmQgPSA8MHgwY2UwMDAwMD47CiAg
+ICAgICAgICAgICAgICBjdXJyZW50LXNwZWVkID0gPDk2MDA+OwogICAgICAgICAgICB9OwoKICAg
+ICAgICAgICAgLy8gRnJvbnQgcGFuZWwgZXRoZXJlbnQgKGZjYzMpCiAgICAgICAgICAgIGVuZXQw
+OiBldGhlcm5ldEAxMTMyMCB7CiAgICAgICAgICAgICAgICBkZXZpY2VfdHlwZSA9ICJuZXR3b3Jr
+IjsKICAgICAgICAgICAgICAgIGNvbXBhdGlibGUgPSAiZnNsLG1wYzgyODAtZmNjLWVuZXQiLAog
+ICAgICAgICAgICAgICAgICAgICAgICAgImZzbCxjcG0yLWZjYy1lbmV0IjsKICAgICAgICAgICAg
+ICAgIHJlZyA9IDwweDExMzQwIDB4MjAgMHg4NjAwIDB4MTAwIDB4MTEzZDAgMT47CiAgICAgICAg
+ICAgICAgICBsb2NhbC1tYWMtYWRkcmVzcyA9IFswMCAwMCAwMCAwMCAwMCAwMCBdOyAgIC8vIHUt
+Ym9vdAogICAgICAgICAgICAgICAgaW50ZXJydXB0cyA9IDwweDIyIDg+OwogICAgICAgICAgICAg
+ICAgaW50ZXJydXB0LXBhcmVudCA9IDwmUElDPjsKICAgICAgICAgICAgICAgIHBoeS1oYW5kbGUg
+PSA8JlBIWTA+OwogICAgICAgICAgICAgICAgbGludXgsbmV0d29yay1pbmRleCA9IDwwPjsKICAg
+ICAgICAgICAgICAgIGZzbCxjcG0tY29tbWFuZCA9IDwweDFhNDAwMzAwPjsKICAgICAgICAgICAg
+fTsKCgkJCW1kaW9AMTBkNDAgewoJCQkJZGV2aWNlX3R5cGUgPSAibWRpbyI7CgkJCQljb21wYXRp
+YmxlID0gImN0YW0sQjIwMTAtbWRpby1iaXRiYW5nIiwKCQkJCSAgICAgICAgICAgICAiZnNsLG1w
+YzgyODAtbWRpby1iaXRiYW5nIiwKCQkJCSAgICAgICAgICAgICAiZnNsLGNwbTItbWRpby1iaXRi
+YW5nIjsKCQkJCSNhZGRyZXNzLWNlbGxzID0gPDE+OwoJCQkJI3NpemUtY2VsbHMgPSA8MD47CgkJ
+CQlyZWcgPSA8MHgxMGQ2MCAweDE0IDB4MTBkNDAgMHgxND47ICAvL21kaW8sIG1kYwoJCQkJZnNs
+LG1kaW8tcGluID0gPDEyPjsgICAgLy8gUEQxMgoJCQkJZnNsLG1kYy1waW4gPSA8MTU+OyAgICAg
+Ly8gUEMxNQoKCQkJCVBIWTA6IGV0aGVybmV0LXBoeUAwIHsKCQkJCQlyZWcgPSA8MHgwPjsKCQkJ
+CQlkZXZpY2VfdHlwZSA9ICJldGhlcm5ldC1waHkiOwoJCQkJfTsKCgkJCX07CgogICAgICAgIH07
+CgogICAgICAgIFBJQzogaW50ZXJydXB0LWNvbnRyb2xsZXJAMTBjMDAgewogICAgICAgICAgICAj
+aW50ZXJydXB0LWNlbGxzID0gPDI+OwogICAgICAgICAgICBpbnRlcnJ1cHQtY29udHJvbGxlcjsK
+ICAgICAgICAgICAgcmVnID0gPDB4MTBjMDAgMHg4MD47CiAgICAgICAgICAgIGNvbXBhdGlibGUg
+PSAiZnNsLG1wYzgyODAtcGljIiwgImZzbCxjcG0yLXBpYyI7ICAgICAvLyBvciBmc2wscHEyLXBp
+YwogICAgICAgIH07CiAgICB9OwoKICAgIGNob3NlbiB7CiAgICAgICAgbGludXgsc3Rkb3V0LXBh
+dGggPSAmc21jMjsKICAgIH07Cn07Cg==
 
-Nick Piggin (1):
-      [POWERPC] Fix rmb to order cacheable vs. noncacheable
+------_=_NextPart_001_01C8CF79.29A5BEF4
+Content-Type: application/octet-stream;
+	name="B2010.dts"
+Content-Transfer-Encoding: base64
+Content-Description: B2010.dts
+Content-Disposition: attachment;
+	filename="B2010.dts"
 
-Stephen Rothwell (1):
-      [POWERPC] Remove ppc32's export of console_drivers
+LyoKICogRGV2aWNlIFRyZWUgZm9yIHRoZSBDeXBoZXJOZXQgQjIwMTBBMDA1IG1vdGhlcmJvYXJk
+CiAqCiAqIENvcHlyaWdodCAyMDA4IFNlbmV0YXMgUFRZIExURAogKgogKi8KCi9kdHMtdjEvOwov
+IHsKICAgIG1vZGVsID0gIkIyMDEwQTAwNSI7CiAgICBjb21wYXRpYmxlID0gImN0YW0sQjIwMTAi
+OwogICAgI2FkZHJlc3MtY2VsbHMgPSA8MT47CiAgICAjc2l6ZS1jZWxscyA9IDwxPjsKCiAgICBh
+bGlhc2VzIHsKICAgICAgICBzZXJpYWwwID0gJnNtYzI7ICAgICAgICAvLyBpbnRlcm5hbCBzZXJp
+YWwKICAgICAgICBzZXJpYWwxID0gJnNjYzQ7ICAgICAgICAvLyBDTEkKICAgICAgICBldGhlcm5l
+dDAgPSAmZW5ldDA7CiAgICB9OwoKICAgIGNwdXMgewogICAgICAgICNhZGRyZXNzLWNlbGxzID0g
+PDE+OwogICAgICAgICNzaXplLWNlbGxzID0gPDA+OwoKICAgICAgICBQb3dlclBDLDgyODBAMCB7
+CiAgICAgICAgICAgIGRldmljZV90eXBlID0gImNwdSI7CiAgICAgICAgICAgIHJlZyA9IDwwPjsK
+ICAgICAgICAgICAgZC1jYWNoZS1saW5lLXNpemUgPSA8MzI+OwogICAgICAgICAgICBpLWNhY2hl
+LWxpbmUtc2l6ZSA9IDwzMj47CiAgICAgICAgICAgIGQtY2FjaGUtc2l6ZSA9IDwxNjM4ND47CiAg
+ICAgICAgICAgIGktY2FjaGUtc2l6ZSA9IDwxNjM4ND47CiAgICAgICAgICAgIHRpbWViYXNlLWZy
+ZXF1ZW5jeSA9IDwwPjsgICAvLyBGaWxsZWQgaW4gYnkgVS1Cb290CiAgICAgICAgICAgIGNsb2Nr
+LWZyZXF1ZW5jeSA9IDwwPjsgICAgICAvLyBGaWxsZWQgaW4gYnkgVS1Cb290CiAgICAgICAgICAg
+IGJ1cy1mcmVxdWVuY3kgPSA8MD47ICAgICAgICAvLyBGaWxsZWQgaW4gYnkgVS1Cb290CiAgICAg
+ICAgfTsKICAgIH07CgogICAgbWVtb3J5IHsKICAgICAgICBkZXZpY2VfdHlwZSA9ICJtZW1vcnki
+OwogICAgICAgIHJlZyA9IDwwIDA+OyAgICAgICAgICAgICAgICAgICAgLy8gRmlsbGVkIGluIGJ5
+IFUtQm9vdAogICAgfTsKCiAgICBsb2NhbGJ1c0BmMDAxMDEwMCB7CiAgICAgICAgY29tcGF0aWJs
+ZSA9ICJmc2wsbXBjODI4MC1sb2NhbGJ1cyIsCiAgICAgICAgICAgICAgICAgImZzbCxwcTItbG9j
+YWxidXMiLAogICAgICAgICAgICAgICAgICJzaW1wbGUtYnVzIjsKICAgICAgICAjYWRkcmVzcy1j
+ZWxscyA9IDwyPjsKICAgICAgICAjc2l6ZS1jZWxscyA9IDwxPjsKICAgICAgICByZWcgPSA8MHhm
+MDAxMDEwMCAweDYwPjsKCiAgICAgICAgcmFuZ2VzID0gPDB4MCAgMHgwIDB4ZmUwMDAwMDAgMHgw
+MjAwMDAwMCAgICAgICAgLy8gdmlhIEpNUDQgZmxhc2gvQm9vdFNJTU0KICAgICAgICAgICAgICAg
+ICAgMHgzICAweDAgMHhlMDAwMDAwMCAweDAxMDAwMDAwICAgICAgICAvLyBsb2NhbCBTRFJBTQog
+ICAgICAgICAgICAgICAgICAweDggIDB4MCAweGYwMjAwMDAwIDB4MDAyMDAwMDAKICAgICAgICAg
+ICAgICAgICA+OwogICAgfTsKCiAgICBzb2NAZjAwMDAwMDAgewogICAgICAgICNhZGRyZXNzLWNl
+bGxzID0gPDE+OwogICAgICAgICNzaXplLWNlbGxzID0gPDE+OwogICAgICAgIGNvbXBhdGlibGUg
+PSAiZnNsLG1wYzgyODAtaW1tciIsICJmc2wscHEyLXNvYyIsICJzaW1wbGUtYnVzIjsKICAgICAg
+ICByYW5nZXMgPSA8MHgwMDAwMDAwMCAweGYwMDAwMDAwIDB4MDAwNTMwMDA+OwogICAgICAgIGRl
+dmljZV90eXBlID0gInNvYyI7CgogICAgICAgIGNwbUAxMTljMCB7CiAgICAgICAgICAgICNhZGRy
+ZXNzLWNlbGxzID0gPDE+OwogICAgICAgICAgICAjc2l6ZS1jZWxscyA9IDwxPjsKICAgICAgICAg
+ICAgI2ludGVycnVwdC1jZWxscyA9IDwyPjsKICAgICAgICAgICAgY29tcGF0aWJsZSA9ICJmc2ws
+bXBjODI4MC1jcG0iLCAiZnNsLGNwbTIiLAogICAgICAgICAgICAgICAgICAgICAgICAgInNpbXBs
+ZS1idXMiOwogICAgICAgICAgICByZWcgPSA8MHgxMTljMCAweDMwPjsKICAgICAgICAgICAgcmFu
+Z2VzOwoKICAgICAgICAgICAgbXVyYW1AMCB7CiAgICAgICAgICAgICAgICAjYWRkcmVzcy1jZWxs
+cyA9IDwxPjsKICAgICAgICAgICAgICAgICNzaXplLWNlbGxzID0gPDE+OwogICAgICAgICAgICAg
+ICAgY29tcGF0aWJsZSA9ICJmc2wsY3BtLW11cmFtIjsKICAgICAgICAgICAgICAgIHJhbmdlcyA9
+IDwwIDAgMHgxMDAwMD47CgogICAgICAgICAgICAgICAgZGF0YUAwIHsKICAgICAgICAgICAgICAg
+ICAgICBjb21wYXRpYmxlID0gImZzbCxjcG0tbXVyYW0tZGF0YSI7CiAgICAgICAgICAgICAgICAg
+ICAgcmVnID0gPDB4MCAweDIwMDAgMHg5ODAwIDB4ODAwPjsgICAgLy8gb3JpZwovLyAgICAgICAg
+ICAgICAgICAgICAgcmVnID0gPDB4ODAgMHgxZjgwIDB4OTgwMCAweDgwMD47CiAgICAgICAgICAg
+ICAgICB9OwogICAgICAgICAgICB9OwoKICAgICAgICAgICAgYnJnQDExOWYwIHsKICAgICAgICAg
+ICAgICAgIGNvbXBhdGlibGUgPSAiZnNsLG1wYzgyODAtYnJnIiwKICAgICAgICAgICAgICAgICAg
+ICAgICAgICJmc2wsY3BtMi1icmciLAogICAgICAgICAgICAgICAgICAgICAgICAgImZzbCxjcG0t
+YnJnIjsKICAgICAgICAgICAgICAgIHJlZyA9IDwweDExOWYwIDB4MTAgMHgxMTVmMCAweDEwPjsK
+ICAgICAgICAgICAgICAgIGNsb2NrLWZyZXF1ZW5jeSA9IDwxNTAwMDAwMDA+OwogICAgICAgICAg
+ICB9OwoKICAgICAgICAgICAgLy8gSW50ZXJuYWwgc2VyaWFsIHBvcnQKICAgICAgICAgICAgc21j
+Mjogc2VyaWFsQDExYTkwIHsKICAgICAgICAgICAgICAgIGRldmljZV90eXBlID0gInNlcmlhbCI7
+CiAgICAgICAgICAgICAgICBjb21wYXRpYmxlID0gImZzbCxtcGM4MjgwLXNtYy11YXJ0IiwKICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAiZnNsLGNwbTItc21jLXVhcnQiOwogICAgICAgICAg
+ICAgICAgcmVnID0gPDB4MTFhOTAgMHgyMCAweDg4ZmMgMHgwMj47CiAgICAgICAgICAgICAgICBp
+bnRlcnJ1cHRzID0gPDUgOD47ICAgICAgICAgICAgICAgICAgICAgLy9TSVVfSU5UX1NNQzIKICAg
+ICAgICAgICAgICAgIGludGVycnVwdC1wYXJlbnQgPSA8JlBJQz47ICAgICAgICAgICAgICAvLz8/
+Pz8KICAgICAgICAgICAgICAgIGZzbCxjcG0tYnJnID0gPDg+OyAgICAgICAgICAgICAgICAgICAg
+ICAvLyB0YWtlbiBmcm9tIDgyeHgvdWFydC5jIGluIDIuNC4xOAogICAgICAgICAgICAgICAgZnNs
+LGNwbS1jb21tYW5kID0gPDB4MjEyMDAwMDA+OwogICAgICAgICAgICAgICAgY3VycmVudC1zcGVl
+ZCA9IDwxOTIwMD47ICAgICAgICAvLyB1LWJvb3Q/CiAgICAgICAgICAgIH07CgogICAgICAgICAg
+ICAvLyBDTEkKICAgICAgICAgICAgc2NjNDogc2VyaWFsQDExYTAwIHsKICAgICAgICAgICAgICAg
+IGRldmljZV90eXBlID0gInNlcmlhbCI7CiAgICAgICAgICAgICAgICBjb21wYXRpYmxlID0gImZz
+bCxtcGM4MjgwLXNjYy11YXJ0IiwKICAgICAgICAgICAgICAgICAgICAgICAgICJmc2wsY3BtMi1z
+Y2MtdWFydCI7CiAgICAgICAgICAgICAgICByZWcgPSA8MHgxMWE2MCAweDIwIDB4ODMwMCAweDEw
+MD47CiAgICAgICAgICAgICAgICBpbnRlcnJ1cHRzID0gPDB4MmIgOD47CiAgICAgICAgICAgICAg
+ICBpbnRlcnJ1cHQtcGFyZW50ID0gPCZQSUM+OwogICAgICAgICAgICAgICAgZnNsLGNwbS1icmcg
+PSA8ND47ICAgICAgICAgICAgICAgICAgICAgIC8vIHRha2VuIGZyb20gODJ4eC91YXJ0LmMgaW4g
+Mi40LjE4CiAgICAgICAgICAgICAgICBmc2wsY3BtLWNvbW1hbmQgPSA8MHgwY2UwMDAwMD47CiAg
+ICAgICAgICAgICAgICBjdXJyZW50LXNwZWVkID0gPDk2MDA+OwogICAgICAgICAgICB9OwoKICAg
+ICAgICAgICAgLy8gRnJvbnQgcGFuZWwgZXRoZXJlbnQgKGZjYzMpCiAgICAgICAgICAgIGVuZXQw
+OiBldGhlcm5ldEAxMTMyMCB7CiAgICAgICAgICAgICAgICBkZXZpY2VfdHlwZSA9ICJuZXR3b3Jr
+IjsKICAgICAgICAgICAgICAgIGNvbXBhdGlibGUgPSAiZnNsLG1wYzgyODAtZmNjLWVuZXQiLAog
+ICAgICAgICAgICAgICAgICAgICAgICAgImZzbCxjcG0yLWZjYy1lbmV0IjsKICAgICAgICAgICAg
+ICAgIHJlZyA9IDwweDExMzQwIDB4MjAgMHg4NjAwIDB4MTAwIDB4MTEzZDAgMT47CiAgICAgICAg
+ICAgICAgICBsb2NhbC1tYWMtYWRkcmVzcyA9IFswMCAwMCAwMCAwMCAwMCAwMCBdOyAgIC8vIHUt
+Ym9vdAogICAgICAgICAgICAgICAgaW50ZXJydXB0cyA9IDwweDIyIDg+OwogICAgICAgICAgICAg
+ICAgaW50ZXJydXB0LXBhcmVudCA9IDwmUElDPjsKICAgICAgICAgICAgICAgIHBoeS1oYW5kbGUg
+PSA8JlBIWTA+OwogICAgICAgICAgICAgICAgbGludXgsbmV0d29yay1pbmRleCA9IDwwPjsKICAg
+ICAgICAgICAgICAgIGZzbCxjcG0tY29tbWFuZCA9IDwweDFhNDAwMzAwPjsKICAgICAgICAgICAg
+fTsKCgkJCW1kaW9AMTBkNDAgewoJCQkJZGV2aWNlX3R5cGUgPSAibWRpbyI7CgkJCQljb21wYXRp
+YmxlID0gImN0YW0sQjIwMTAtbWRpby1iaXRiYW5nIiwKCQkJCSAgICAgICAgICAgICAiZnNsLG1w
+YzgyODAtbWRpby1iaXRiYW5nIiwKCQkJCSAgICAgICAgICAgICAiZnNsLGNwbTItbWRpby1iaXRi
+YW5nIjsKCQkJCSNhZGRyZXNzLWNlbGxzID0gPDE+OwoJCQkJI3NpemUtY2VsbHMgPSA8MD47CgkJ
+CQlyZWcgPSA8MHgxMGQ2MCAweDE0IDB4MTBkNDAgMHgxND47ICAvL21kaW8sIG1kYwoJCQkJZnNs
+LG1kaW8tcGluID0gPDEyPjsgICAgLy8gUEQxMgoJCQkJZnNsLG1kYy1waW4gPSA8MTU+OyAgICAg
+Ly8gUEMxNQoKCQkJCVBIWTA6IGV0aGVybmV0LXBoeUAwIHsKCQkJCQlyZWcgPSA8MHgwPjsKCQkJ
+CQlkZXZpY2VfdHlwZSA9ICJldGhlcm5ldC1waHkiOwoJCQkJfTsKCgkJCX07CgogICAgICAgIH07
+CgogICAgICAgIFBJQzogaW50ZXJydXB0LWNvbnRyb2xsZXJAMTBjMDAgewogICAgICAgICAgICAj
+aW50ZXJydXB0LWNlbGxzID0gPDI+OwogICAgICAgICAgICBpbnRlcnJ1cHQtY29udHJvbGxlcjsK
+ICAgICAgICAgICAgcmVnID0gPDB4MTBjMDAgMHg4MD47CiAgICAgICAgICAgIGNvbXBhdGlibGUg
+PSAiZnNsLG1wYzgyODAtcGljIiwgImZzbCxjcG0yLXBpYyI7ICAgICAvLyBvciBmc2wscHEyLXBp
+YwogICAgICAgIH07CiAgICB9OwoKICAgIGNob3NlbiB7CiAgICAgICAgbGludXgsc3Rkb3V0LXBh
+dGggPSAmc21jMjsKICAgIH07Cn07Cg==
 
-Timur Tabi (1):
-      [POWERPC] 8610: Update defconfig for MPC8610 HPCD
+------_=_NextPart_001_01C8CF79.29A5BEF4--
