@@ -1,19 +1,32 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <nfont@austin.ibm.com>
+Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 017FDDDF5A
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jun 2008 01:46:31 +1000 (EST)
-Received: from localhost (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id m5GFkQMb003103
-	for <linuxppc-dev@ozlabs.org>; Mon, 16 Jun 2008 10:46:26 -0500
-Date: Mon, 16 Jun 2008 10:46:25 -0500 (CDT)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc/booke: Add support for new e500mc core
-Message-ID: <Pine.LNX.4.64.0806161045450.20181@blarg.am.freescale.net>
+	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id CF60BDDEE7
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jun 2008 02:07:54 +1000 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e3.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m5GG7hiT001017
+	for <linuxppc-dev@ozlabs.org>; Mon, 16 Jun 2008 12:07:43 -0400
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
+	m5GG7b0l206914
+	for <linuxppc-dev@ozlabs.org>; Mon, 16 Jun 2008 12:07:37 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m5GG7bY6015870
+	for <linuxppc-dev@ozlabs.org>; Mon, 16 Jun 2008 12:07:37 -0400
+Message-ID: <48568FC5.9020406@austin.ibm.com>
+Date: Mon, 16 Jun 2008 11:07:33 -0500
+From: Nathan Fontenot <nfont@austin.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Robert Jennings <rcj@linux.vnet.ibm.com>
+Subject: Re: [PATCH 02/19] powerpc: Split processor entitlement retrieval
+	and	gathering to helper routines
+References: <20080612220858.GI30916@linux.vnet.ibm.com>
+In-Reply-To: <20080612220858.GI30916@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Brian King <brking@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org,
+	paulus@samba.org, David Darrington <ddarring@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,204 +36,239 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The new e500mc core from Freescale is based on the e500v2 but with the
-following changes:
+Split the retrieval and setting of processor entitlement and weight into
+helper routines.  This also removes the printing of the raw values
+returned from h_get_ppp, the values are already parsed and printed.
 
-* Supports only the Enhanced Debug Architecture (DSRR0/1, etc)
-* Floating Point
-* No SPE
-* Supports lwsync
-* Doorbell Exceptions
-* Hypervisor
+Signed-off-by: Nathan Fontenot <nfont@austin.ibm.com>
 
 ---
+  arch/powerpc/kernel/lparcfg.c |  163 
+++++++++++++++++++++++--------------------
+  1 file changed, 86 insertions(+), 77 deletions(-)
 
-In my powerpc-next tree.
+Index: linux-2.6.git/arch/powerpc/kernel/lparcfg.c
+===================================================================
+--- linux-2.6.git.orig/arch/powerpc/kernel/lparcfg.c	2008-06-16 
+10:22:42.000000000 -0500
++++ linux-2.6.git/arch/powerpc/kernel/lparcfg.c	2008-06-16 
+10:32:29.000000000 -0500
+@@ -167,7 +167,8 @@
+  	return rc;
+  }
 
- arch/powerpc/kernel/cputable.c         |   15 +++++++++++++++
- arch/powerpc/kernel/head_booke.h       |    6 +++++-
- arch/powerpc/kernel/head_fsl_booke.S   |   10 ++++++++--
- arch/powerpc/platforms/Kconfig.cputype |   10 ++++++++--
- include/asm-powerpc/cache.h            |    3 +++
- include/asm-powerpc/cputable.h         |    6 ++++--
- include/asm-powerpc/synch.h            |    2 +-
- 7 files changed, 44 insertions(+), 8 deletions(-)
+-static void h_pic(unsigned long *pool_idle_time, unsigned long *num_procs)
++static unsigned int h_pic(unsigned long *pool_idle_time,
++			  unsigned long *num_procs)
+  {
+  	unsigned long rc;
+  	unsigned long retbuf[PLPAR_HCALL_BUFSIZE];
+@@ -176,6 +177,53 @@
 
-diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
-index e44d553..36fa061 100644
---- a/arch/powerpc/kernel/cputable.c
-+++ b/arch/powerpc/kernel/cputable.c
-@@ -1522,6 +1522,21 @@ static struct cpu_spec __initdata cpu_specs[] = {
- 		.machine_check		= machine_check_e500,
- 		.platform		= "ppc8548",
- 	},
-+	{	/* e500mc */
-+		.pvr_mask		= 0xffff0000,
-+		.pvr_value		= 0x80230000,
-+		.cpu_name		= "e500mc",
-+		/* xxx - galak: add CPU_FTR_MAYBE_CAN_DOZE */
-+		.cpu_features		= CPU_FTRS_E500MC,
-+		.cpu_user_features	= COMMON_USER_BOOKE | PPC_FEATURE_HAS_FPU,
-+		.icache_bsize		= 64,
-+		.dcache_bsize		= 64,
-+		.num_pmcs		= 4,
-+		.oprofile_cpu_type	= "ppc/e500", /* xxx - galak, e500mc? */
-+		.oprofile_type		= PPC_OPROFILE_FSL_EMB,
-+		.machine_check		= machine_check_e500,
-+		.platform		= "ppc4080",
-+	},
- 	{	/* default match */
- 		.pvr_mask		= 0x00000000,
- 		.pvr_value		= 0x00000000,
-diff --git a/arch/powerpc/kernel/head_booke.h b/arch/powerpc/kernel/head_booke.h
-index 9501c58..505494f 100644
---- a/arch/powerpc/kernel/head_booke.h
-+++ b/arch/powerpc/kernel/head_booke.h
-@@ -68,9 +68,13 @@
- #define MCHECK_STACK_BASE	mcheckirq_ctx
- #define CRIT_STACK_BASE		critirq_ctx
-
--/* only on e200 for now */
-+/* only on e500mc/e200 */
- #define DEBUG_STACK_BASE	dbgirq_ctx
-+#ifdef CONFIG_PPC_E500MC
-+#define DEBUG_SPRG		SPRN_SPRG9
-+#else
- #define DEBUG_SPRG		SPRN_SPRG6W
-+#endif
-
- #define EXC_LVL_FRAME_OVERHEAD	(THREAD_SIZE - INT_FRAME_SIZE - EXC_LVL_SIZE)
-
-diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
-index 503f860..7c2b653 100644
---- a/arch/powerpc/kernel/head_fsl_booke.S
-+++ b/arch/powerpc/kernel/head_fsl_booke.S
-@@ -304,7 +304,7 @@ skpinv:	addi	r6,r6,1				/* Increment */
- 	SET_IVOR(13, DataTLBError);
- 	SET_IVOR(14, InstructionTLBError);
- 	SET_IVOR(15, DebugDebug);
--#if defined(CONFIG_E500)
-+#if defined(CONFIG_E500) && !defined(CONFIG_PPC_E500MC)
- 	SET_IVOR(15, DebugCrit);
- #endif
- 	SET_IVOR(32, SPEUnavailable);
-@@ -313,6 +313,9 @@ skpinv:	addi	r6,r6,1				/* Increment */
- #ifndef CONFIG_E200
- 	SET_IVOR(35, PerformanceMonitor);
- #endif
-+#ifdef CONFIG_PPC_E500MC
-+	SET_IVOR(36, Doorbell);
-+#endif
-
- 	/* Establish the interrupt vector base */
- 	lis	r4,interrupt_base@h	/* IVPR only uses the high 16-bits */
-@@ -750,10 +753,13 @@ interrupt_base:
- 	/* Performance Monitor */
- 	EXCEPTION(0x2060, PerformanceMonitor, performance_monitor_exception, EXC_XFER_STD)
-
-+#ifdef CONFIG_PPC_E500MC
-+	EXCEPTION(0x2070, Doorbell, unknown_exception, EXC_XFER_EE)
-+#endif
-
- 	/* Debug Interrupt */
- 	DEBUG_DEBUG_EXCEPTION
--#if defined(CONFIG_E500)
-+#if defined(CONFIG_E500) && !defined(CONFIG_PPC_E500MC)
- 	DEBUG_CRIT_EXCEPTION
- #endif
-
-diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-index f7efaa9..9e67cf1 100644
---- a/arch/powerpc/platforms/Kconfig.cputype
-+++ b/arch/powerpc/platforms/Kconfig.cputype
-@@ -95,6 +95,12 @@ config E500
- 	select FSL_EMB_PERFMON
- 	bool
-
-+config PPC_E500MC
-+	bool "e500mc Support"
-+	select PPC_FPU
-+	depends on E500
-+	default n
+  	*pool_idle_time = retbuf[0];
+  	*num_procs = retbuf[1];
 +
- config PPC_FPU
- 	bool
- 	default y if PPC64
-@@ -157,7 +163,7 @@ config ALTIVEC
++	return rc;
++}
++
++/*
++ * parse_ppp_data
++ * Parse out the data returned from h_get_ppp and h_pic
++ */
++static void parse_ppp_data(struct seq_file *m)
++{
++	unsigned long h_entitled, h_unallocated;
++	unsigned long h_aggregation, h_resource;
++	int rc;
++
++	rc = h_get_ppp(&h_entitled, &h_unallocated, &h_aggregation,
++		       &h_resource);
++	if (rc)
++		return;
++
++	seq_printf(m, "partition_entitled_capacity=%ld\n", h_entitled);
++	seq_printf(m, "group=%ld\n", (h_aggregation >> 2 * 8) & 0xffff);
++	seq_printf(m, "system_active_processors=%ld\n",
++		   (h_resource >> 0 * 8) & 0xffff);
++
++	/* pool related entries are apropriate for shared configs */
++	if (lppaca[0].shared_proc) {
++		unsigned long pool_idle_time, pool_procs;
++
++		seq_printf(m, "pool=%ld\n", (h_aggregation >> 0 * 8) & 0xffff);
++
++		/* report pool_capacity in percentage */
++		seq_printf(m, "pool_capacity=%ld\n",
++			   ((h_resource >> 2 * 8) & 0xffff) * 100);
++
++		rc = h_pic(&pool_idle_time, &pool_procs);
++		if (! rc) {
++			seq_printf(m, "pool_idle_time=%ld\n", pool_idle_time);
++			seq_printf(m, "pool_num_procs=%ld\n", pool_procs);
++		}
++	}
++
++	seq_printf(m, "unallocated_capacity_weight=%ld\n",
++		   (h_resource >> 4 * 8) & 0xFF);
++
++	seq_printf(m, "capacity_weight=%ld\n", (h_resource >> 5 * 8) & 0xFF);
++	seq_printf(m, "capped=%ld\n", (h_resource >> 6 * 8) & 0x01);
++	seq_printf(m, "unallocated_capacity=%ld\n", h_unallocated);
+  }
 
- config SPE
- 	bool "SPE Support"
--	depends on E200 || E500
-+	depends on E200 || (E500 && !PPC_E500MC)
- 	default y
- 	---help---
- 	  This option enables kernel support for the Signal Processing
-@@ -201,7 +207,7 @@ config VIRT_CPU_ACCOUNTING
- 	  If in doubt, say Y here.
+  #define SPLPAR_CHARACTERISTICS_TOKEN 20
+@@ -302,59 +350,11 @@
+  	partition_active_processors = lparcfg_count_active_processors();
 
- config SMP
--	depends on PPC_STD_MMU
-+	depends on PPC_STD_MMU || FSL_BOOKE
- 	bool "Symmetric multi-processing support"
- 	---help---
- 	  This enables support for systems with more than one CPU. If you have
-diff --git a/include/asm-powerpc/cache.h b/include/asm-powerpc/cache.h
-index 5350704..81de6eb 100644
---- a/include/asm-powerpc/cache.h
-+++ b/include/asm-powerpc/cache.h
-@@ -8,6 +8,9 @@
- #if defined(CONFIG_8xx) || defined(CONFIG_403GCX)
- #define L1_CACHE_SHIFT		4
- #define MAX_COPY_PREFETCH	1
-+#elif defined(CONFIG_PPC_E500MC)
-+#define L1_CACHE_SHIFT		6
-+#define MAX_COPY_PREFETCH	4
- #elif defined(CONFIG_PPC32)
- #define L1_CACHE_SHIFT		5
- #define MAX_COPY_PREFETCH	4
-diff --git a/include/asm-powerpc/cputable.h b/include/asm-powerpc/cputable.h
-index 1e79673..a3dce17 100644
---- a/include/asm-powerpc/cputable.h
-+++ b/include/asm-powerpc/cputable.h
-@@ -351,6 +351,8 @@ extern void do_feature_fixups(unsigned long value, void *fixup_start,
- 	    CPU_FTR_NODSISRALIGN)
- #define CPU_FTRS_E500_2	(CPU_FTR_USE_TB | CPU_FTR_SPE_COMP | \
- 	    CPU_FTR_BIG_PHYS | CPU_FTR_NODSISRALIGN)
-+#define CPU_FTRS_E500MC	(CPU_FTR_USE_TB | CPU_FTR_BIG_PHYS | \
-+	    CPU_FTR_NODSISRALIGN)
- #define CPU_FTRS_GENERIC_32	(CPU_FTR_COMMON | CPU_FTR_NODSISRALIGN)
+  	if (firmware_has_feature(FW_FEATURE_SPLPAR)) {
+-		unsigned long h_entitled, h_unallocated;
+-		unsigned long h_aggregation, h_resource;
+-		unsigned long pool_idle_time, pool_procs;
+-		unsigned long purr;
+-
+-		h_get_ppp(&h_entitled, &h_unallocated, &h_aggregation,
+-			  &h_resource);
+-
+-		seq_printf(m, "R4=0x%lx\n", h_entitled);
+-		seq_printf(m, "R5=0x%lx\n", h_unallocated);
+-		seq_printf(m, "R6=0x%lx\n", h_aggregation);
+-		seq_printf(m, "R7=0x%lx\n", h_resource);
+-
+-		purr = get_purr();
+-
+  		/* this call handles the ibm,get-system-parameter contents */
+  		parse_system_parameter_string(m);
++		parse_ppp_data(m);
 
- /* 64-bit CPUs */
-@@ -421,7 +423,7 @@ enum {
- 	    CPU_FTRS_E200 |
- #endif
- #ifdef CONFIG_E500
--	    CPU_FTRS_E500 | CPU_FTRS_E500_2 |
-+	    CPU_FTRS_E500 | CPU_FTRS_E500_2 | CPU_FTRS_E500MC |
- #endif
- 	    0,
- };
-@@ -461,7 +463,7 @@ enum {
- 	    CPU_FTRS_E200 &
- #endif
- #ifdef CONFIG_E500
--	    CPU_FTRS_E500 & CPU_FTRS_E500_2 &
-+	    CPU_FTRS_E500 & CPU_FTRS_E500_2 & CPU_FTRS_E500MC &
- #endif
- 	    CPU_FTRS_POSSIBLE,
- };
-diff --git a/include/asm-powerpc/synch.h b/include/asm-powerpc/synch.h
-index 2cda3c3..42a1ef5 100644
---- a/include/asm-powerpc/synch.h
-+++ b/include/asm-powerpc/synch.h
-@@ -4,7 +4,7 @@
+-		seq_printf(m, "partition_entitled_capacity=%ld\n", h_entitled);
+-
+-		seq_printf(m, "group=%ld\n", (h_aggregation >> 2 * 8) & 0xffff);
+-
+-		seq_printf(m, "system_active_processors=%ld\n",
+-			   (h_resource >> 0 * 8) & 0xffff);
+-
+-		/* pool related entries are apropriate for shared configs */
+-		if (lppaca[0].shared_proc) {
+-
+-			h_pic(&pool_idle_time, &pool_procs);
+-
+-			seq_printf(m, "pool=%ld\n",
+-				   (h_aggregation >> 0 * 8) & 0xffff);
+-
+-			/* report pool_capacity in percentage */
+-			seq_printf(m, "pool_capacity=%ld\n",
+-				   ((h_resource >> 2 * 8) & 0xffff) * 100);
+-
+-			seq_printf(m, "pool_idle_time=%ld\n", pool_idle_time);
+-
+-			seq_printf(m, "pool_num_procs=%ld\n", pool_procs);
+-		}
+-
+-		seq_printf(m, "unallocated_capacity_weight=%ld\n",
+-			   (h_resource >> 4 * 8) & 0xFF);
+-
+-		seq_printf(m, "capacity_weight=%ld\n",
+-			   (h_resource >> 5 * 8) & 0xFF);
+-
+-		seq_printf(m, "capped=%ld\n", (h_resource >> 6 * 8) & 0x01);
+-
+-		seq_printf(m, "unallocated_capacity=%ld\n", h_unallocated);
+-
+-		seq_printf(m, "purr=%ld\n", purr);
++		seq_printf(m, "purr=%ld\n", get_purr());
 
- #include <linux/stringify.h>
+  	} else {		/* non SPLPAR case */
 
--#ifdef __powerpc64__
-+#if defined(__powerpc64__) || defined(CONFIG_PPC_E500MC)
- #define __SUBARCH_HAS_LWSYNC
- #endif
+@@ -382,6 +382,41 @@
+  	return 0;
+  }
 
--- 
-1.5.5.1
++static ssize_t update_ppp(u64 *entitlement, u8 *weight)
++{
++	unsigned long current_entitled;
++	unsigned long dummy;
++	unsigned long resource;
++	u8 current_weight, new_weight;
++	u64 new_entitled;
++	ssize_t retval;
++
++	/* Get our current parameters */
++	retval = h_get_ppp(&current_entitled, &dummy, &dummy, &resource);
++	if (retval)
++		return retval;
++
++	current_weight = (resource >> 5 * 8) & 0xFF;
++
++	if (entitlement) {
++		new_weight = current_weight;
++		new_entitled = *entitlement;
++	} else if (weight) {
++		new_weight = *weight;
++		new_entitled = current_entitled;
++	} else
++		return -EINVAL;
++
++	pr_debug("%s: current_entitled = %lu, current_weight = %u\n",
++		 __FUNCTION__, current_entitled, current_weight);
++
++	pr_debug("%s: new_entitled = %lu, new_weight = %u\n",
++		 __FUNCTION__, new_entitled, new_weight);
++
++	retval = plpar_hcall_norets(H_SET_PPP, new_entitled, new_weight);
++	return retval;
++}
++
+  /*
+   * Interface for changing system parameters (variable capacity weight
+   * and entitled capacity).  Format of input is "param_name=value";
+@@ -399,12 +434,6 @@
+  	char *tmp;
+  	u64 new_entitled, *new_entitled_ptr = &new_entitled;
+  	u8 new_weight, *new_weight_ptr = &new_weight;
+-
+-	unsigned long current_entitled;	/* parameters for h_get_ppp */
+-	unsigned long dummy;
+-	unsigned long resource;
+-	u8 current_weight;
+-
+  	ssize_t retval = -ENOMEM;
+
+  	if (!firmware_has_feature(FW_FEATURE_SPLPAR) ||
+@@ -432,33 +461,17 @@
+  		*new_entitled_ptr = (u64) simple_strtoul(tmp, &endp, 10);
+  		if (endp == tmp)
+  			goto out;
+-		new_weight_ptr = &current_weight;
++
++		retval = update_ppp(new_entitled_ptr, NULL);
+  	} else if (!strcmp(kbuf, "capacity_weight")) {
+  		char *endp;
+  		*new_weight_ptr = (u8) simple_strtoul(tmp, &endp, 10);
+  		if (endp == tmp)
+  			goto out;
+-		new_entitled_ptr = &current_entitled;
+-	} else
+-		goto out;
+
+-	/* Get our current parameters */
+-	retval = h_get_ppp(&current_entitled, &dummy, &dummy, &resource);
+-	if (retval) {
+-		retval = -EIO;
++		retval = update_ppp(NULL, new_weight_ptr);
++	} else
+  		goto out;
+-	}
+-
+-	current_weight = (resource >> 5 * 8) & 0xFF;
+-
+-	pr_debug("%s: current_entitled = %lu, current_weight = %u\n",
+-		 __func__, current_entitled, current_weight);
+-
+-	pr_debug("%s: new_entitled = %lu, new_weight = %u\n",
+-		 __func__, *new_entitled_ptr, *new_weight_ptr);
+-
+-	retval = plpar_hcall_norets(H_SET_PPP, *new_entitled_ptr,
+-				    *new_weight_ptr);
+
+  	if (retval == H_SUCCESS || retval == H_CONSTRAINED) {
+  		retval = count;
