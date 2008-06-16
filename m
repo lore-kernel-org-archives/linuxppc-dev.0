@@ -1,33 +1,15 @@
-Return-Path: <nfont@austin.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 296F5DE352
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jun 2008 06:48:11 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m5GKm7T2010102
-	for <linuxppc-dev@ozlabs.org>; Mon, 16 Jun 2008 16:48:07 -0400
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
-	m5GKm6VT173884
-	for <linuxppc-dev@ozlabs.org>; Mon, 16 Jun 2008 14:48:06 -0600
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m5GKm61M009668
-	for <linuxppc-dev@ozlabs.org>; Mon, 16 Jun 2008 14:48:06 -0600
-Message-ID: <4856D17F.7010804@austin.ibm.com>
-Date: Mon, 16 Jun 2008 15:47:59 -0500
-From: Nathan Fontenot <nfont@austin.ibm.com>
+Return-Path: <djiang@mvista.com>
+Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
+	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id 4E7FBDDDD4
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jun 2008 07:32:48 +1000 (EST)
+Date: Mon, 16 Jun 2008 14:32:44 -0700
+From: Dave Jiang <djiang@mvista.com>
+To: galak@kernel.crashing.org
+Subject: [PATCH] 85xx: publish of device for cds platforms
+Message-ID: <20080616213134.GA22354@blade.az.mvista.com>
 MIME-Version: 1.0
-To: Robert Jennings <rcj@linux.vnet.ibm.com>
-Subject: [PATCH 03/19][v3] powerpc: Add memory entitlement capabilities to
-	/proc/ppc64/lparcfg
-References: <20080612220923.GJ30916@linux.vnet.ibm.com>
-In-Reply-To: <20080612220923.GJ30916@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Brian King <brking@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org,
-	paulus@samba.org, David Darrington <ddarring@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,219 +19,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Version 3 of the patch, small update to use the correct plpar_hcall
-for H_GET_MPP.
--------------------
 
-Update /proc/ppc64/lparcfg to enable displaying of Cooperative Memory
-Overcommitment statistics as reported by the H_GET_MPP hcall.  This also
-updates the lparcfg interface to allow setting memory entitlement and
-weight.
+Publish the devices listed in dts under SOC as of_device for 85xx_cds
+platform. The devices are needed by the 85xx EDAC driver.
 
-Signed-off-by: Nathan Fontenot <nfont@austin.ibm.com>
+Signed-off-by: Dave Jiang <djiang@mvista.com>
 
 ---
-  arch/powerpc/kernel/lparcfg.c |  139 
-+++++++++++++++++++++++++++++++++++++++---
-  include/asm-powerpc/hvcall.h  |   18 +++++
-  2 files changed, 147 insertions(+), 10 deletions(-)
+ arch/powerpc/platforms/85xx/mpc85xx_cds.c |   14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
 
-Index: linux-2.6.git/arch/powerpc/kernel/lparcfg.c
+Index: 2.6.26-rc5-mm3/arch/powerpc/platforms/85xx/mpc85xx_cds.c
 ===================================================================
---- linux-2.6.git.orig/arch/powerpc/kernel/lparcfg.c	2008-06-16 
-10:32:29.000000000 -0500
-+++ linux-2.6.git/arch/powerpc/kernel/lparcfg.c	2008-06-16 
-10:47:55.000000000 -0500
-@@ -129,6 +129,35 @@
-  /*
-   * Methods used to fetch LPAR data when running on a pSeries platform.
-   */
-+/**
-+ * h_get_mpp
-+ * H_GET_MPP hcall returns info in 7 parms
-+ */
-+int h_get_mpp(struct hvcall_mpp_data *mpp_data)
-+{
-+	int rc;
-+	unsigned long retbuf[PLPAR_HCALL9_BUFSIZE];
-+
-+	rc = plpar_hcall9(H_GET_MPP, retbuf);
-+
-+	mpp_data->entitled_mem = retbuf[0];
-+	mpp_data->mapped_mem = retbuf[1];
-+
-+	mpp_data->group_num = (retbuf[2] >> 2 * 8) & 0xffff;
-+	mpp_data->pool_num = retbuf[2] & 0xffff;
-+
-+	mpp_data->mem_weight = (retbuf[3] >> 7 * 8) & 0xff;
-+	mpp_data->unallocated_mem_weight = (retbuf[3] >> 6 * 8) & 0xff;
-+	mpp_data->unallocated_entitlement = retbuf[3] & 0xffffffffffff;
-+
-+	mpp_data->pool_size = retbuf[4];
-+	mpp_data->loan_request = retbuf[5];
-+	mpp_data->backing_mem = retbuf[6];
-+
-+	return rc;
-+}
-+EXPORT_SYMBOL(h_get_mpp);
-+
-  /*
-   * H_GET_PPP hcall returns info in 4 parms.
-   *  entitled_capacity,unallocated_capacity,
-@@ -226,6 +255,44 @@
-  	seq_printf(m, "unallocated_capacity=%ld\n", h_unallocated);
-  }
-
-+/**
-+ * parse_mpp_data
-+ * Parse out data returned from h_get_mpp
-+ */
-+static void parse_mpp_data(struct seq_file *m)
-+{
-+	struct hvcall_mpp_data mpp_data;
-+	int rc;
-+
-+	rc = h_get_mpp(&mpp_data);
-+	if (rc)
-+		return;
-+
-+	seq_printf(m, "entitled_memory=%ld\n", mpp_data.entitled_mem);
-+
-+	if (mpp_data.mapped_mem != -1)
-+		seq_printf(m, "mapped_entitled_memory=%ld\n",
-+			   mpp_data.mapped_mem);
-+
-+	seq_printf(m, "entitled_memory_group_number=%d\n", mpp_data.group_num);
-+	seq_printf(m, "entitled_memory_pool_number=%d\n", mpp_data.pool_num);
-+
-+	seq_printf(m, "entitled_memory_weight=%d\n", mpp_data.mem_weight);
-+	seq_printf(m, "unallocated_entitled_memory_weight=%d\n",
-+		   mpp_data.unallocated_mem_weight);
-+	seq_printf(m, "unallocated_io_mapping_entitlement=%ld\n",
-+		   mpp_data.unallocated_entitlement);
-+
-+	if (mpp_data.pool_size != -1)
-+		seq_printf(m, "entitled_memory_pool_size=%ld bytes\n",
-+			   mpp_data.pool_size);
-+
-+	seq_printf(m, "entitled_memory_loan_request=%ld\n",
-+		   mpp_data.loan_request);
-+
-+	seq_printf(m, "backing_memory=%ld bytes\n", mpp_data.backing_mem);
-+}
-+
-  #define SPLPAR_CHARACTERISTICS_TOKEN 20
-  #define SPLPAR_MAXLENGTH 1026*(sizeof(char))
-
-@@ -353,6 +420,7 @@
-  		/* this call handles the ibm,get-system-parameter contents */
-  		parse_system_parameter_string(m);
-  		parse_ppp_data(m);
-+		parse_mpp_data(m);
-
-  		seq_printf(m, "purr=%ld\n", get_purr());
-
-@@ -417,6 +485,43 @@
-  	return retval;
-  }
-
-+/**
-+ * update_mpp
-+ *
-+ * Update the memory entitlement and weight for the partition.  Caller must
-+ * spercify either a new entitlement or weight, not both, to be updated
-+ * since the h_set_mpp call takes both entitlement and weight as 
-parameters.
-+ */
-+static ssize_t update_mpp(u64 *entitlement, u8 *weight)
-+{
-+	struct hvcall_mpp_data mpp_data;
-+	u64 new_entitled;
-+	u8 new_weight;
-+	ssize_t rc;
-+
-+	rc = h_get_mpp(&mpp_data);
-+	if (rc)
-+		return rc;
-+
-+	if (entitlement) {
-+		new_weight = mpp_data.mem_weight;
-+		new_entitled = *entitlement;
-+	} else if (weight) {
-+		new_weight = *weight;
-+		new_entitled = mpp_data.entitled_mem;
-+	} else
-+		return -EINVAL;
-+
-+	pr_debug("%s: current_entitled = %lu, current_weight = %u\n",
-+		 __FUNCTION__, mpp_data.entitled_mem, mpp_data.mem_weight);
-+
-+	pr_debug("%s: new_entitled = %lu, new_weight = %u\n",
-+		 __FUNCTION__, new_entitled, new_weight);
-+
-+	rc = plpar_hcall_norets(H_SET_MPP, new_entitled, new_weight);
-+	return rc;
-+}
-+
-  /*
-   * Interface for changing system parameters (variable capacity weight
-   * and entitled capacity).  Format of input is "param_name=value";
-@@ -470,6 +575,20 @@
-  			goto out;
-
-  		retval = update_ppp(NULL, new_weight_ptr);
-+	} else if (!strcmp(kbuf, "entitled_memory")) {
-+		char *endp;
-+		*new_entitled_ptr = (u64) simple_strtoul(tmp, &endp, 10);
-+		if (endp == tmp)
-+			goto out;
-+
-+		retval = update_mpp(new_entitled_ptr, NULL);
-+	} else if (!strcmp(kbuf, "entitled_memory_weight")) {
-+		char *endp;
-+		*new_weight_ptr = (u8) simple_strtoul(tmp, &endp, 10);
-+		if (endp == tmp)
-+			goto out;
-+
-+		retval = update_mpp(NULL, new_weight_ptr);
-  	} else
-  		goto out;
-
-Index: linux-2.6.git/include/asm-powerpc/hvcall.h
-===================================================================
---- linux-2.6.git.orig/include/asm-powerpc/hvcall.h	2008-06-16 
-10:25:58.000000000 -0500
-+++ linux-2.6.git/include/asm-powerpc/hvcall.h	2008-06-16 
-10:42:42.000000000 -0500
-@@ -210,7 +210,9 @@
-  #define H_JOIN			0x298
-  #define H_VASI_STATE            0x2A4
-  #define H_ENABLE_CRQ		0x2B0
--#define MAX_HCALL_OPCODE	H_ENABLE_CRQ
-+#define H_SET_MPP		0x2D0
-+#define H_GET_MPP		0x2D4
-+#define MAX_HCALL_OPCODE	H_GET_MPP
-
-  #ifndef __ASSEMBLY__
-
-@@ -270,6 +272,20 @@
-  };
-  #define HCALL_STAT_ARRAY_SIZE	((MAX_HCALL_OPCODE >> 2) + 1)
-
-+struct hvcall_mpp_data {
-+	unsigned long entitled_mem;
-+	unsigned long mapped_mem;
-+	unsigned short group_num;
-+	unsigned short pool_num;
-+	unsigned char mem_weight;
-+	unsigned char unallocated_mem_weight;
-+	unsigned long unallocated_entitlement;	/* value in bytes */
-+	unsigned long pool_size;
-+	long loan_request;
-+	unsigned long backing_mem;
+--- 2.6.26-rc5-mm3.orig/arch/powerpc/platforms/85xx/mpc85xx_cds.c
++++ 2.6.26-rc5-mm3/arch/powerpc/platforms/85xx/mpc85xx_cds.c
+@@ -26,6 +26,7 @@
+ #include <linux/module.h>
+ #include <linux/interrupt.h>
+ #include <linux/fsl_devices.h>
++#include <linux/of_platform.h>
+ 
+ #include <asm/system.h>
+ #include <asm/pgtable.h>
+@@ -335,6 +336,19 @@ static int __init mpc85xx_cds_probe(void
+         return of_flat_dt_is_compatible(root, "MPC85xxCDS");
+ }
+ 
++static struct of_device_id __initdata of_bus_ids[] = {
++	{ .type = "soc", },
++	{ .compatible = "soc", },
++	{},
 +};
 +
-+int h_get_mpp(struct hvcall_mpp_data *);
-  #endif /* __ASSEMBLY__ */
-  #endif /* __KERNEL__ */
-  #endif /* _ASM_POWERPC_HVCALL_H */
++static int __init declare_of_platform_devices(void)
++{
++	return of_platform_bus_probe(NULL, of_bus_ids, NULL);
++}
++machine_device_initcall(mpc85xx_cds, declare_of_platform_devices);
++
++
+ define_machine(mpc85xx_cds) {
+ 	.name		= "MPC85xx CDS",
+ 	.probe		= mpc85xx_cds_probe,
