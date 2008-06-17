@@ -1,21 +1,19 @@
-Return-Path: <madhvesh.s@ap.sony.com>
-Received: from mail76-wa4-R.bigfish.com (mail-wa4.bigfish.com [216.32.181.112])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com",
-	Issuer "Microsoft Secure Server Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id B64E5DE020
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jun 2008 23:57:59 +1000 (EST)
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id F15B4DDF0F
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jun 2008 00:01:44 +1000 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id m5HE1dsk002477
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jun 2008 09:01:40 -0500
+Date: Tue, 17 Jun 2008 09:01:39 -0500 (CDT)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH v2] powerpc/booke: Add support for new e500mc core
+Message-ID: <Pine.LNX.4.64.0806170901140.15775@blarg.am.freescale.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [RFC] Kprobes for book-e
-Date: Tue, 17 Jun 2008 19:01:02 +0530
-Message-ID: <7B7EF7F090B9804A830ACC82F2CDE95D2BB0F2@insardxms01.ap.sony.com>
-From: "Sulibhavi, Madhvesh" <madhvesh.s@ap.sony.com>
-To: "Sulibhavi, Madhvesh" <madhvesh.s@ap.sony.com>,
-	"Kumar Gala" <galak@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, rsmadhvesh@vsnl.net,
-	Paul Mackerras <paulus@samba.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,119 +23,196 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Sulibhavi, Madhvesh wrote on Thursday, June 12, 2008 7:59 PM
-> > > static void __kprobes prepare_singlestep(struct kprobe *p, struct
-> > > pt_regs *regs)
-> > > {
-> > > +#ifdef CONFIG_BOOKE
-> > > +	regs->msr &=3D ~(MSR_EE); /* Turn off 'Externel Interrupt' bits =
-*/
-> > > +	regs->msr &=3D ~(MSR_CE); /* Turn off 'Critical Interrupt' bits =
-*/
-> > > +	regs->msr |=3D MSR_DE;
-> >=20
-> > can we remove MSR_EE and MSR_CE here?
->=20
-> Ah! yes?=20
+The new e500mc core from Freescale is based on the e500v2 but with the
+following changes:
 
-No!!, this code cannot be removed. My tests fail
-while doing the probe test for do_gettimeofday and __kmalloc.
-I get Oops and Segfault. I think i had got similar results
-in my initial port using 2.6.26.39. Here is the log...
+* Supports only the Enhanced Debug Architecture (DSRR0/1, etc)
+* Floating Point
+* No SPE
+* Supports lwsync
+* Doorbell Exceptions
+* Hypervisor
 
-------------------------------------------------------------------------
----------------------------------
-/ # modprobe k-008
-Oops: Exception in kernel mode, sig: 4 [#1]
-Ebony
-Modules linked in: k_007 k_006 k_005 k_004 k_003 k_002 k_001
-NIP: d100601c LR: c0195bfc CTR: 00000000
-REGS: c79e56a0 TRAP: 0700   Not tainted  (2.6.26-rc5-dirty)=20
-MSR: 00029200 <EE,ME>  CR: 24022088  XER: 00000000
-TASK =3D c7854420[761] 'ash' THREAD: c79e4000
-GPR00: 00000000 c79e5750 c7854420 00000000 00000000 00000000 000005bc
-00000000
-GPR08: 00037eec 00000000 00000092 00008000 00037e5a 1001f184 00000000
-fff9ed50
-GPR16: 8fa72401 fff837f1 00000000 c0a80001 00000000 00000801 00000000
-00000070
-GPR24: 00000000 00004000 00004000 00000040 c7997000 c786b3c0 c7a11010
-00000000
-NIP [d100601c] 0xd100601c
-LR [c0195bfc] ip_cork_release+0x28/0x50
-Call Trace:
-[c79e5750] [c786b3c0] 0xc786b3c0 (unreliable)
-[c79e5770] [c01972d4] ip_push_pending_frames+0x308/0x3dc
-[c79e57a0] [c01b48d8] udp_push_pending_frames+0x104/0x320
-[c79e57d0] [c01b4d3c] udp_sendmsg+0x248/0x59c
-[c79e5870] [c01bccfc] inet_sendmsg+0x50/0x78
-[c79e5890] [c016ce7c] sock_sendmsg+0xac/0xf4
-[c79e5980] [c016d280] kernel_sendmsg+0x2c/0x44
-[c79e59a0] [c01d09f4] xs_send_kvec+0x88/0x98
-[c79e59e0] [c01d18fc] xs_sendpages+0x7c/0x20c
-[c79e5a10] [c01d1f3c] xs_udp_send_request+0x48/0x170
-[c79e5a30] [c01cfb60] xprt_transmit+0x64/0x224
-[c79e5a60] [c01ce820] call_transmit+0x19c/0x274
-[c79e5a80] [c01d456c] __rpc_execute+0x7c/0x29c
-[c79e5aa0] [c01ccb38] rpc_run_task+0x68/0x94
-[c79e5ac0] [c01ccf80] rpc_call_sync+0x4c/0x7c
-[c79e5af0] [c00dc4ac] nfs_proc_getattr+0x6c/0xb0
-[c79e5b20] [c00d5cc0] __nfs_revalidate_inode+0xf8/0x234
-[c79e5be0] [c00d33ac] nfs_lookup_revalidate+0x2f0/0x388
-[c79e5d40] [c0085328] do_lookup+0x54/0x1b8
-[c79e5d70] [c0086240] __link_path_walk+0xb38/0xee0
-[c79e5dc0] [c00860a8] __link_path_walk+0x9a0/0xee0
-[c79e5e10] [c0085508] path_walk+0x7c/0x140
-[c79e5e40] [c0086858] do_path_lookup+0x68/0x16c
-[c79e5e70] [c0086ee8] __path_lookup_intent_open+0x58/0xc0
-[c79e5e90] [c00815a4] open_exec+0x28/0xc8
-[c79e5ef0] [c0081c4c] do_execve+0x58/0x1c8
-[c79e5f20] [c0005f68] sys_execve+0x50/0x7c
-[c79e5f40] [c000c710] ret_from_syscall+0x0/0x3c
-Instruction dump:
-XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX
-XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX
----[ end trace eb93901908c2ca13 ]---
-Illegal instructUnable to handle kernel paging request for data at
-address 0x744
-ion
-Faulting instruction address: 0xc0076d64
-Oops: Kernel access of bad area, sig: 11 [#2]
-Ebony
-Modules linked in: k_007 k_006 k_005 k_004 k_003 k_002 k_001
-NIP: c0076d64 LR: c0090520 CTR: 00000002
-REGS: c79bbe40 TRAP: 0300   Tainted: G      D    (2.6.26-rc5-dirty)
-MSR: 00029000 <EE,ME>  CR: 42004024  XER: 00000000
-DEAR: 74657374, ESR: 00000000
-TASK =3D c7856d60[733] 'ash' THREAD: c79ba000
-GPR00: 696e670a c79bbef0 c7856d60 1007a000 74657374 1007a000 10079ffc
-00000000
-GPR08: 00000000 00004000 c02e6000 c02d0000 82004028 1001f184 00000000
-fff9ed50
-GPR16: 8fa72401 fff837f1 03f940aa c0240000 c02a0000 00000000 00000000
-1007a494
-GPR24: 00000002 10075000 00000000 c79bbf10 1007a000 00001002 c79e8000
-00000002
-NIP [c0076d64] kfree+0x3c/0xc0
-LR [c0090520] sys_getcwd+0x124/0x194
-Call Trace:
-[c79bbef0] [1007a000] 0x1007a000 (unreliable)
-[c79bbf00] [c0090520] sys_getcwd+0x124/0x194
-[c79bbf40] [c000c710] ret_from_syscall+0x0/0x3c
-Instruction dump:
-93e1000c 90010014 7c651b78 409d005c 3d60c02d 814b851c 3d234000 5529c9f4
-7c09502e 7c895214 70094000 40820074 <80040000> 70090080 41820070
-8064000c
----[ end trace eb93901908c2ca13 ]---
-Segmentation fault
+---
+* Dropped the SMP changes to Kconfig
+* Changed plaform to ppce500mc
 
+- k
 
--------------------------------------------------------------------
-This email is confidential and intended only for the use of the =
-individual or entity named above and may contain information that is =
-privileged. If you are not the intended recipient, you are notified that =
-any dissemination, distribution or copying of this email is strictly =
-prohibited. If you have received this email in error, please notify us =
-immediately by return email or telephone and destroy the original =
-message. - This mail is sent via Sony Asia Pacific Mail Gateway.
--------------------------------------------------------------------
+ arch/powerpc/kernel/cputable.c         |   15 +++++++++++++++
+ arch/powerpc/kernel/head_booke.h       |    6 +++++-
+ arch/powerpc/kernel/head_fsl_booke.S   |   10 ++++++++--
+ arch/powerpc/platforms/Kconfig.cputype |    7 ++++++-
+ include/asm-powerpc/cache.h            |    3 +++
+ include/asm-powerpc/cputable.h         |    6 ++++--
+ include/asm-powerpc/synch.h            |    2 +-
+ 7 files changed, 42 insertions(+), 7 deletions(-)
+
+diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
+index e44d553..aa421f5 100644
+--- a/arch/powerpc/kernel/cputable.c
++++ b/arch/powerpc/kernel/cputable.c
+@@ -1522,6 +1522,21 @@ static struct cpu_spec __initdata cpu_specs[] = {
+ 		.machine_check		= machine_check_e500,
+ 		.platform		= "ppc8548",
+ 	},
++	{	/* e500mc */
++		.pvr_mask		= 0xffff0000,
++		.pvr_value		= 0x80230000,
++		.cpu_name		= "e500mc",
++		/* xxx - galak: add CPU_FTR_MAYBE_CAN_DOZE */
++		.cpu_features		= CPU_FTRS_E500MC,
++		.cpu_user_features	= COMMON_USER_BOOKE | PPC_FEATURE_HAS_FPU,
++		.icache_bsize		= 64,
++		.dcache_bsize		= 64,
++		.num_pmcs		= 4,
++		.oprofile_cpu_type	= "ppc/e500", /* xxx - galak, e500mc? */
++		.oprofile_type		= PPC_OPROFILE_FSL_EMB,
++		.machine_check		= machine_check_e500,
++		.platform		= "ppce500mc",
++	},
+ 	{	/* default match */
+ 		.pvr_mask		= 0x00000000,
+ 		.pvr_value		= 0x00000000,
+diff --git a/arch/powerpc/kernel/head_booke.h b/arch/powerpc/kernel/head_booke.h
+index 9501c58..505494f 100644
+--- a/arch/powerpc/kernel/head_booke.h
++++ b/arch/powerpc/kernel/head_booke.h
+@@ -68,9 +68,13 @@
+ #define MCHECK_STACK_BASE	mcheckirq_ctx
+ #define CRIT_STACK_BASE		critirq_ctx
+
+-/* only on e200 for now */
++/* only on e500mc/e200 */
+ #define DEBUG_STACK_BASE	dbgirq_ctx
++#ifdef CONFIG_PPC_E500MC
++#define DEBUG_SPRG		SPRN_SPRG9
++#else
+ #define DEBUG_SPRG		SPRN_SPRG6W
++#endif
+
+ #define EXC_LVL_FRAME_OVERHEAD	(THREAD_SIZE - INT_FRAME_SIZE - EXC_LVL_SIZE)
+
+diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
+index 503f860..7c2b653 100644
+--- a/arch/powerpc/kernel/head_fsl_booke.S
++++ b/arch/powerpc/kernel/head_fsl_booke.S
+@@ -304,7 +304,7 @@ skpinv:	addi	r6,r6,1				/* Increment */
+ 	SET_IVOR(13, DataTLBError);
+ 	SET_IVOR(14, InstructionTLBError);
+ 	SET_IVOR(15, DebugDebug);
+-#if defined(CONFIG_E500)
++#if defined(CONFIG_E500) && !defined(CONFIG_PPC_E500MC)
+ 	SET_IVOR(15, DebugCrit);
+ #endif
+ 	SET_IVOR(32, SPEUnavailable);
+@@ -313,6 +313,9 @@ skpinv:	addi	r6,r6,1				/* Increment */
+ #ifndef CONFIG_E200
+ 	SET_IVOR(35, PerformanceMonitor);
+ #endif
++#ifdef CONFIG_PPC_E500MC
++	SET_IVOR(36, Doorbell);
++#endif
+
+ 	/* Establish the interrupt vector base */
+ 	lis	r4,interrupt_base@h	/* IVPR only uses the high 16-bits */
+@@ -750,10 +753,13 @@ interrupt_base:
+ 	/* Performance Monitor */
+ 	EXCEPTION(0x2060, PerformanceMonitor, performance_monitor_exception, EXC_XFER_STD)
+
++#ifdef CONFIG_PPC_E500MC
++	EXCEPTION(0x2070, Doorbell, unknown_exception, EXC_XFER_EE)
++#endif
+
+ 	/* Debug Interrupt */
+ 	DEBUG_DEBUG_EXCEPTION
+-#if defined(CONFIG_E500)
++#if defined(CONFIG_E500) && !defined(CONFIG_PPC_E500MC)
+ 	DEBUG_CRIT_EXCEPTION
+ #endif
+
+diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
+index f7efaa9..1a1ccfb 100644
+--- a/arch/powerpc/platforms/Kconfig.cputype
++++ b/arch/powerpc/platforms/Kconfig.cputype
+@@ -95,6 +95,11 @@ config E500
+ 	select FSL_EMB_PERFMON
+ 	bool
+
++config PPC_E500MC
++	bool "e500mc Support"
++	select PPC_FPU
++	depends on E500
++
+ config PPC_FPU
+ 	bool
+ 	default y if PPC64
+@@ -157,7 +162,7 @@ config ALTIVEC
+
+ config SPE
+ 	bool "SPE Support"
+-	depends on E200 || E500
++	depends on E200 || (E500 && !PPC_E500MC)
+ 	default y
+ 	---help---
+ 	  This option enables kernel support for the Signal Processing
+diff --git a/include/asm-powerpc/cache.h b/include/asm-powerpc/cache.h
+index 5350704..81de6eb 100644
+--- a/include/asm-powerpc/cache.h
++++ b/include/asm-powerpc/cache.h
+@@ -8,6 +8,9 @@
+ #if defined(CONFIG_8xx) || defined(CONFIG_403GCX)
+ #define L1_CACHE_SHIFT		4
+ #define MAX_COPY_PREFETCH	1
++#elif defined(CONFIG_PPC_E500MC)
++#define L1_CACHE_SHIFT		6
++#define MAX_COPY_PREFETCH	4
+ #elif defined(CONFIG_PPC32)
+ #define L1_CACHE_SHIFT		5
+ #define MAX_COPY_PREFETCH	4
+diff --git a/include/asm-powerpc/cputable.h b/include/asm-powerpc/cputable.h
+index 1e79673..a3dce17 100644
+--- a/include/asm-powerpc/cputable.h
++++ b/include/asm-powerpc/cputable.h
+@@ -351,6 +351,8 @@ extern void do_feature_fixups(unsigned long value, void *fixup_start,
+ 	    CPU_FTR_NODSISRALIGN)
+ #define CPU_FTRS_E500_2	(CPU_FTR_USE_TB | CPU_FTR_SPE_COMP | \
+ 	    CPU_FTR_BIG_PHYS | CPU_FTR_NODSISRALIGN)
++#define CPU_FTRS_E500MC	(CPU_FTR_USE_TB | CPU_FTR_BIG_PHYS | \
++	    CPU_FTR_NODSISRALIGN)
+ #define CPU_FTRS_GENERIC_32	(CPU_FTR_COMMON | CPU_FTR_NODSISRALIGN)
+
+ /* 64-bit CPUs */
+@@ -421,7 +423,7 @@ enum {
+ 	    CPU_FTRS_E200 |
+ #endif
+ #ifdef CONFIG_E500
+-	    CPU_FTRS_E500 | CPU_FTRS_E500_2 |
++	    CPU_FTRS_E500 | CPU_FTRS_E500_2 | CPU_FTRS_E500MC |
+ #endif
+ 	    0,
+ };
+@@ -461,7 +463,7 @@ enum {
+ 	    CPU_FTRS_E200 &
+ #endif
+ #ifdef CONFIG_E500
+-	    CPU_FTRS_E500 & CPU_FTRS_E500_2 &
++	    CPU_FTRS_E500 & CPU_FTRS_E500_2 & CPU_FTRS_E500MC &
+ #endif
+ 	    CPU_FTRS_POSSIBLE,
+ };
+diff --git a/include/asm-powerpc/synch.h b/include/asm-powerpc/synch.h
+index 2cda3c3..42a1ef5 100644
+--- a/include/asm-powerpc/synch.h
++++ b/include/asm-powerpc/synch.h
+@@ -4,7 +4,7 @@
+
+ #include <linux/stringify.h>
+
+-#ifdef __powerpc64__
++#if defined(__powerpc64__) || defined(CONFIG_PPC_E500MC)
+ #define __SUBARCH_HAS_LWSYNC
+ #endif
+
+-- 
+1.5.5.1
