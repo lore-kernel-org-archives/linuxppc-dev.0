@@ -1,22 +1,23 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <jrigby@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
+	(Client CN "de01egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 229C2DDE06
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jun 2008 05:37:40 +1000 (EST)
-Message-ID: <4858127F.10601@freescale.com>
-Date: Tue, 17 Jun 2008 14:37:35 -0500
-From: Scott Wood <scottwood@freescale.com>
+	by ozlabs.org (Postfix) with ESMTPS id 93473DE501
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jun 2008 05:43:56 +1000 (EST)
+Message-ID: <485813EC.6030602@freescale.com>
+Date: Tue, 17 Jun 2008 13:43:40 -0600
+From: John Rigby <jrigby@freescale.com>
 MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH v2] powerpc/booke: Add support for new e500mc core
-References: <Pine.LNX.4.64.0806170901140.15775@blarg.am.freescale.net>	<20080617162309.GA3217@loki.buserror.net>	<2FC90D95-762E-41D7-AD4E-64362B624BF8@kernel.crashing.org>	<485801A7.3090309@freescale.com>	<C5C81740-FEF8-42CA-80C2-A729238BED2B@kernel.crashing.org>
-	<485811DD.50106@freescale.com>
-In-Reply-To: <485811DD.50106@freescale.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+To: Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [PATCH] [Rev2] MPC5121 FEC support
+References: <1213729717-26688-1-git-send-email-jrigby@freescale.com>
+	<20080617192237.GA12961@uranus.ravnborg.org>
+In-Reply-To: <20080617192237.GA12961@uranus.ravnborg.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
+	jeff@garzik.org, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,15 +27,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Scott Wood wrote:
-> Kumar Gala wrote:
->> Also, there is a direction that does work.  You can run an e500v2 
->> kernel on an e500mc.  Its just going the other way around that can be 
->> an issue.
-> 
-> Actually, wouldn't the kernel need to set HID0[DCBZ32] for an e500v2 
-> kernel to run on e500mc?
+Thanks Sam,  Scott already addressed most of your issues.  The 
+background that you are likely missing and I will add to the patch 
+header is that the 5121 has an FEC core with all the same registers as 
+8xx except the order of the registers is scrambled.  Fortunately the old 
+FEC only exists on CPM1 machines so we can use CONFIG_CPM1 to 
+differentiate between the two.
 
-Grr, I meant L1CSR0[DCBZ32].
 
--Scott
+>
+> I we have a conversion from fec_t to struct fec
+> then this is a separate patch in the normal case.
+>   
+I'll split the patch into a clean-up patch followed by a 5121 patch.
