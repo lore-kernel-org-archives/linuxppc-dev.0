@@ -1,31 +1,17 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 8983BDDDF7
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jun 2008 08:38:09 +1000 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e2.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m5HMc6Zt015331
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jun 2008 18:38:06 -0400
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
-	m5HMc6YJ123188
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jun 2008 18:38:06 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m5HMc6Pj014217
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jun 2008 18:38:06 -0400
-Date: Tue, 17 Jun 2008 18:36:08 -0400
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: paulus@samba.org
-Subject: Re: [PATCH] [POWERPC] 4xx: Clear new TLB cache attribute bits in
-	Data Storage vector
-Message-ID: <20080617183608.4f61e6e8@zod.rchland.ibm.com>
-In-Reply-To: <20080617183439.63d2aa3c@zod.rchland.ibm.com>
-References: <20080617183439.63d2aa3c@zod.rchland.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <ntl@pobox.com>
+Received: from sasl.smtp.pobox.com (a-sasl-fastnet.sasl.smtp.pobox.com
+	[207.106.133.19]) by ozlabs.org (Postfix) with ESMTP id BA63DDDE10
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jun 2008 08:59:13 +1000 (EST)
+Date: Tue, 17 Jun 2008 17:39:52 -0500
+From: Nathan Lynch <ntl@pobox.com>
+To: jschopp@austin.ibm.com
+Subject: Re: [PATCH] Power5,Power6 BSR driver
+Message-ID: <20080617223952.GA9594@localdomain>
+References: <20080616185344.GB16192@gamma>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080616185344.GB16192@gamma>
+Cc: sonnyrao@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,43 +21,116 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 17 Jun 2008 18:34:39 -0400
-Josh Boyer <jwboyer@linux.vnet.ibm.com> wrote:
+Hi, mainly a couple of coding style things, but one minor bug (I
+think).
 
-> A recent commit added support for the new 440x6 and 464 cores that have the
-> added WL1, IL1I, IL1D, IL2I, and ILD2 bits for the caching attributes in the
-> TLBs.  The new bits were cleared in the finish_tlb_load function, however a
-> similar bit of code was missed in the DataStorage interrupt vector.
+jschopp@austin.ibm.com wrote:
+> From: Sonny Rao <sonnyrao@linux.vnet.ibm.com>
 > 
-> Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+> +static int bsr_mmap(struct file *filp, struct vm_area_struct *vma)
+> +{
+> +	unsigned long size   = vma->vm_end - vma->vm_start;
+> +	struct bsr_dev *dev = filp->private_data;
+> +
+> +	if (size > dev->bsr_len || (size & (PAGE_SIZE-1)))
+> +		return -EINVAL;
+> +
+> +	vma->vm_flags |= (VM_IO | VM_DONTEXPAND);
+> +	vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
+> +
+> +	if (io_remap_pfn_range(vma, vma->vm_start, dev->bsr_addr >> PAGE_SHIFT,
+> +			       size, vma->vm_page_prot))
+> +	    return -EAGAIN;
 
-Paul,  this needs to go into 2.6.26.  Do you have anything else queued
-up at the moment, or should I put this in my tree and ask Linus to pull
-it in?
+Indentation is wrong.
 
-Sorry for the late fix.  It was just noticed today.
 
-josh
+> +static void bsr_cleanup_devs(void)
+> +{
+> +	int i;
+> +	for (i=0 ; i < num_bsr_devs; i++) {
 
-> ---
->  arch/powerpc/kernel/head_44x.S |    7 ++++++-
->  1 files changed, 6 insertions(+), 1 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/head_44x.S b/arch/powerpc/kernel/head_44x.S
-> index c2b9dc4..22b5d2c 100644
-> --- a/arch/powerpc/kernel/head_44x.S
-> +++ b/arch/powerpc/kernel/head_44x.S
-> @@ -368,7 +368,12 @@ interrupt_base:
->  
->  	rlwimi	r11,r13,0,26,31		/* Insert static perms */
->  
-> -	rlwinm	r11,r11,0,20,15		/* Clear U0-U3 */
-> +	/*
-> +	 * Clear U0-U3 and WL1 IL1I IL1D IL2I IL2D bits which are added
-> +	 * on newer 440 cores like the 440x6 used on AMCC 460EX/460GT (see
-> +	 * include/asm-powerpc/pgtable-ppc32.h for details).
-> +	 */
-> +	rlwinm	r11,r11,0,20,10
->  
->  	/* find the TLB index that caused the fault.  It has to be here. */
->  	tlbsx	r10, 0, r10
+             i = 0
+
+> +		struct bsr_dev *cur = bsr_devs + i;
+> +		if (cur->bsr_device) {
+> +			cdev_del(&cur->bsr_cdev);
+> +			device_del(cur->bsr_device);
+> +		}
+> +	}
+> +
+> +	kfree(bsr_devs);
+> +}
+> +
+> +static int bsr_create_devs(struct device_node *bn)
+> +{
+> +	int reg_len, bsr_stride_len, bsr_bytes_len;
+> +	const u64 *reg;
+> +	const u32 *bsr_stride;
+> +	const u32 *bsr_bytes;
+> +	unsigned i;
+> +
+> +	reg        = of_get_property(bn, "reg", &reg_len);
+> +	bsr_stride = of_get_property(bn, "ibm,lock-stride", &bsr_stride_len);
+> +	bsr_bytes  = of_get_property(bn, "ibm,#lock-bytes", &bsr_bytes_len);
+> +
+> +	if (!reg || !bsr_stride || !bsr_bytes ||
+> +	    (bsr_stride_len != bsr_bytes_len) ||
+> +	    (bsr_stride_len/4 != reg_len/16)) {
+
+             bsr_stride_len / 4 != reg_len / 16
+
+
+> +		printk(KERN_ERR "bsr of-node has missing/incorrect property\n");
+> +		return -ENODEV;
+> +	}
+
+...
+
+> +static int __init bsr_init(void)
+> +{
+> +	struct device_node *np;
+> +	dev_t bsr_dev = MKDEV(bsr_major, 0);
+> +	int ret = -ENODEV;
+> +	int result;
+> +
+> +	np = of_find_compatible_node(NULL, "ibm,bsr", "ibm,bsr");
+> +	if (!np)
+> +		goto out_err;
+> +
+> +	bsr_class = class_create(THIS_MODULE, "bsr");
+> +	if (IS_ERR(bsr_class)) {
+> +		printk(KERN_ERR "class_create() failed for bsr_class\n");
+> +		goto out_err;
+
+At this point I think you can leak a reference to np.
+
+
+> +	}
+> +	bsr_class->dev_attrs = bsr_dev_attrs;
+> +
+> +	result = alloc_chrdev_region(&bsr_dev, 0, BSR_MAX_DEVS, "bsr");
+> +	bsr_major = MAJOR(bsr_dev);
+> +	if (result < 0) {
+> +		printk(KERN_ERR "alloc_chrdev_region() failed for bsr\n");
+> +		goto out_err_1;
+> +	}
+> +
+> +	if ((ret = bsr_create_devs(np)) < 0)
+> +		goto out_err_2;
+> +
+> +	of_node_put(np);
+> +
+> +	return 0;
+> +
+> + out_err_2:
+> +	unregister_chrdev_region(bsr_dev, BSR_MAX_DEVS);
+> +
+> + out_err_1:
+> +	class_destroy(bsr_class);
+> +	of_node_put(np);
+> +
+> + out_err:
+> +
+> +	return ret;
+> +}
