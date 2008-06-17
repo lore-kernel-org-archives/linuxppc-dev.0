@@ -1,18 +1,32 @@
-Return-Path: <broonie@sirena.org.uk>
-Received: from cassiel.sirena.org.uk (cassiel.sirena.org.uk [80.68.93.111])
-	by ozlabs.org (Postfix) with ESMTP id E845CDDD01
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jun 2008 08:18:01 +1000 (EST)
-Date: Tue, 17 Jun 2008 23:17:55 +0100
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
-Subject: Re: Loading drivers based on board identification
-Message-ID: <20080617221754.GA17165@sirena.org.uk>
-References: <20080617202656.GA10957@sirena.org.uk>
-	<20080617213105.4F96911D8063@mail23-dub.bigfish.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080617213105.4F96911D8063@mail23-dub.bigfish.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id A1297DDF61
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jun 2008 08:36:42 +1000 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e5.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m5HMabwK001390
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jun 2008 18:36:37 -0400
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
+	m5HMabwv239504
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jun 2008 18:36:37 -0400
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m5HMabgN019845
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jun 2008 18:36:37 -0400
+Received: from zod.rchland.ibm.com ([9.49.216.172])
+	by d01av01.pok.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	m5HMaaqH019833
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jun 2008 18:36:37 -0400
+Date: Tue, 17 Jun 2008 18:34:39 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] [POWERPC] 4xx: Clear new TLB cache attribute bits in Data
+	Storage vector
+Message-ID: <20080617183439.63d2aa3c@zod.rchland.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,28 +36,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Jun 17, 2008 at 02:31:03PM -0700, Stephen Neuendorffer wrote:
+A recent commit added support for the new 440x6 and 464 cores that have the
+added WL1, IL1I, IL1D, IL2I, and ILD2 bits for the caching attributes in the
+TLBs.  The new bits were cleared in the finish_tlb_load function, however a
+similar bit of code was missed in the DataStorage interrupt vector.
 
-> I'm very interested in trying to factor out board data from the device
-> tree, but for slightly different reasons, I think.  (Although I don't
-> exactly understand what you're proposing...)
+Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+---
+ arch/powerpc/kernel/head_44x.S |    7 ++++++-
+ 1 files changed, 6 insertions(+), 1 deletions(-)
 
-Sorry, I should have gone into a *little* more detail about what DMI
-information actually is.  DMI provides device management data - you can
-see the things that Linux supports in include/linux/dmi.h.  Of most
-relevance to what I'm talking about here is information like the board,
-chassis and system manufactuer, product name and version though there is
-other, more device tree style, information in there.
-
-This information can be queried by drivers to allow them to override
-default behaviour based on knowledge about the system in a similar way
-to how OpenFirmware but of more relevance here is that it is also
-possible for drivers to use the module autoloading infrastructure to
-automatically load modules which provide dmi: module aliases (for
-example, this is used by the dcdbas driver which interfaces to Dell
-system management controllers to automatically load on Dell systems).
-
-> I don't yet have a proposal, but I'd be curious to hear your thoughts.
-
-My proposal would be to essentially clone at least the system
-information bit of the DMI API to provide equivalent information.
+diff --git a/arch/powerpc/kernel/head_44x.S b/arch/powerpc/kernel/head_44x.S
+index c2b9dc4..22b5d2c 100644
+--- a/arch/powerpc/kernel/head_44x.S
++++ b/arch/powerpc/kernel/head_44x.S
+@@ -368,7 +368,12 @@ interrupt_base:
+ 
+ 	rlwimi	r11,r13,0,26,31		/* Insert static perms */
+ 
+-	rlwinm	r11,r11,0,20,15		/* Clear U0-U3 */
++	/*
++	 * Clear U0-U3 and WL1 IL1I IL1D IL2I IL2D bits which are added
++	 * on newer 440 cores like the 440x6 used on AMCC 460EX/460GT (see
++	 * include/asm-powerpc/pgtable-ppc32.h for details).
++	 */
++	rlwinm	r11,r11,0,20,10
+ 
+ 	/* find the TLB index that caused the fault.  It has to be here. */
+ 	tlbsx	r10, 0, r10
+-- 
+1.5.4.3
