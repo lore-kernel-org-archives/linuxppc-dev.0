@@ -1,24 +1,18 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <ncase@xes-inc.com>
+Received: from xes-mad.com (xes-mad.com [216.165.139.214])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id A42AADE12F
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jun 2008 01:34:45 +1000 (EST)
-Message-Id: <7DA5A123-700B-4DA2-BAD0-E4E894EDD3F3@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Olof Johansson <olof@lixom.net>
-In-Reply-To: <DBDA460C-2CFC-45AF-9974-EE6433E09793@lixom.net>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v924)
-Subject: Re: [PATCH] powerpc/booke: Add support for new e500mc core
-Date: Tue, 17 Jun 2008 10:34:38 -0500
-References: <Pine.LNX.4.64.0806161045450.20181@blarg.am.freescale.net>
-	<55923B54-4F55-4779-B071-CB816BD4FA99@lixom.net>
-	<B9E4053C-723F-4BB2-B789-F3F18BA04C4B@kernel.crashing.org>
-	<7FE83D5F-6D1C-41F2-8823-868B30A2BDE3@lixom.net>
-	<E91EB0E1-DAEB-4CC5-B601-C12A5D4F2F4F@kernel.crashing.org>
-	<DBDA460C-2CFC-45AF-9974-EE6433E09793@lixom.net>
-Cc: linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTPS id E7905DDF19
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jun 2008 02:12:04 +1000 (EST)
+From: Nate Case <ncase@xes-inc.com>
+To: Sebastian Siewior <sebastian@breakpoint.cc>
+Subject: [PATCH v2] USB: isp1760: Support board-specific hardware
+	configurations
+Date: Tue, 17 Jun 2008 11:11:38 -0500
+Message-Id: <1213719098-28002-1-git-send-email-ncase@xes-inc.com>
+Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org,
+	Greg Kroah-Hartman <gregkh@suse.de>, linux-usb@vger.kernel.org,
+	Nate Case <ncase@xes-inc.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,24 +22,306 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+This adds support for hardware configurations that don't match the
+chip default register settings (e.g., 16-bit data bus, DACK and
+DREQ pulled up instead of down, analog overcurrent mode).
 
-On Jun 17, 2008, at 10:04 AM, Olof Johansson wrote:
+These settings are passed in via the OF device tree.  The PCI
+interface still assumes the same default values.
 
-> On Jun 17, 2008, at 9:42 AM, Kumar Gala wrote:
->
->>> But: since the cacheline is available in cputable, it can still be  
->>> used at runtime, so as long as the alignments are large enough,  
->>> stuff like the dcbz loops should still be OK (might need an audit  
->>> though to make sure there's nothing missed). With that, you could  
->>> at least still boot an E500MC kernel on E500.
->>
->> Its not as simple as that since there are assumptions about how  
->> many bytes a dcbz will clear.
->
-> Ok, ppc64 already gets that info from the cputable, not from compile  
-> time options. I guess ppc32 lacks that so far.
+Signed-off-by: Nate Case <ncase@xes-inc.com>
+---
+This version addresses feedback from Sebastian Siewior and
+Olof Johansson.  Specifically, a new flag was added for ISP1761 which
+is set during probe time.  This is used instead of checking the Chip
+ID register (which doesn't allow you to distinguish between the ISP1760
+and ISP1761).  Also, device tree property checking is adjusted to
+simply check for a property's presence when setting flags.
 
-Yeah, if you look at the asm/cache.h the defines in there are used all  
-over the place for ppc32 (like copy_32.S, misc_32.S)
+I tested this version on both a custom ppc64 board and Electra.
+Olof also tried testing it on his Electra but without success (I'm
+guessing, perhaps naively, that a difference between our setups was
+the cause and the driver changes are still OK).
 
-- k
+ drivers/usb/host/isp1760-hcd.c |   67 +++++++++++++++++++++++++++++++--------
+ drivers/usb/host/isp1760-hcd.h |   20 +++++++++++-
+ drivers/usb/host/isp1760-if.c  |   35 +++++++++++++++++++-
+ 3 files changed, 104 insertions(+), 18 deletions(-)
+
+diff --git a/drivers/usb/host/isp1760-hcd.c b/drivers/usb/host/isp1760-hcd.c
+index 65aa5ec..d6c218c 100644
+--- a/drivers/usb/host/isp1760-hcd.c
++++ b/drivers/usb/host/isp1760-hcd.c
+@@ -38,6 +38,7 @@ struct isp1760_hcd {
+ 	unsigned		i_thresh;
+ 	unsigned long		reset_done;
+ 	unsigned long		next_statechange;
++	unsigned int		devflags;
+ };
+ 
+ static inline struct isp1760_hcd *hcd_to_priv(struct usb_hcd *hcd)
+@@ -378,9 +379,31 @@ static int isp1760_hc_setup(struct usb_hcd *hcd)
+ {
+ 	struct isp1760_hcd *priv = hcd_to_priv(hcd);
+ 	int result;
+-	u32 scratch;
++	u32 scratch, hwmode;
++
++	/* Setup HW Mode Control: This assumes a level active-low interrupt */
++	hwmode = HW_DATA_BUS_32BIT;
++
++	if (priv->devflags & ISP1760_FLAG_BUS_WIDTH_16)
++		hwmode &= ~HW_DATA_BUS_32BIT;
++	if (priv->devflags & ISP1760_FLAG_ANALOG_OC)
++		hwmode |= HW_ANA_DIGI_OC;
++	if (priv->devflags & ISP1760_FLAG_DACK_POL_HIGH)
++		hwmode |= HW_DACK_POL_HIGH;
++	if (priv->devflags & ISP1760_FLAG_DREQ_POL_HIGH)
++		hwmode |= HW_DREQ_POL_HIGH;
++
++	/*
++	 * We have to set this first in case we're in 16-bit mode.
++	 * Write it twice to ensure correct upper bits if switching
++	 * to 16-bit mode.
++	 */
++	isp1760_writel(hwmode, hcd->regs + HC_HW_MODE_CTRL);
++	isp1760_writel(hwmode, hcd->regs + HC_HW_MODE_CTRL);
+ 
+ 	isp1760_writel(0xdeadbabe, hcd->regs + HC_SCRATCH_REG);
++	/* Change bus pattern */
++	scratch = isp1760_readl(hcd->regs + HC_CHIP_ID_REG);
+ 	scratch = isp1760_readl(hcd->regs + HC_SCRATCH_REG);
+ 	if (scratch != 0xdeadbabe) {
+ 		printk(KERN_ERR "ISP1760: Scratch test failed.\n");
+@@ -403,17 +426,29 @@ static int isp1760_hc_setup(struct usb_hcd *hcd)
+ 
+ 	/* Step 11 passed */
+ 
+-	isp1760_writel(INTERRUPT_ENABLE_MASK, hcd->regs + HC_INTERRUPT_REG);
+-	isp1760_writel(INTERRUPT_ENABLE_MASK, hcd->regs + HC_INTERRUPT_ENABLE);
++	isp1760_info(priv, "bus width: %d, oc: %s\n",
++			   (priv->devflags & ISP1760_FLAG_BUS_WIDTH_16) ?
++			   16 : 32, (priv->devflags & ISP1760_FLAG_ANALOG_OC) ?
++			   "analog" : "digital");
+ 
+ 	/* ATL reset */
+-	scratch = isp1760_readl(hcd->regs + HC_HW_MODE_CTRL);
+-	isp1760_writel(scratch | ALL_ATX_RESET, hcd->regs + HC_HW_MODE_CTRL);
++	isp1760_writel(hwmode | ALL_ATX_RESET, hcd->regs + HC_HW_MODE_CTRL);
+ 	mdelay(10);
+-	isp1760_writel(scratch, hcd->regs + HC_HW_MODE_CTRL);
++	isp1760_writel(hwmode, hcd->regs + HC_HW_MODE_CTRL);
+ 
+-	isp1760_writel(PORT1_POWER | PORT1_INIT2, hcd->regs + HC_PORT1_CTRL);
+-	mdelay(10);
++	isp1760_writel(INTERRUPT_ENABLE_MASK, hcd->regs + HC_INTERRUPT_REG);
++	isp1760_writel(INTERRUPT_ENABLE_MASK, hcd->regs + HC_INTERRUPT_ENABLE);
++
++	/*
++	 * PORT 1 Control register of the ISP1760 is the OTG control
++	 * register on ISP1761.
++	 */
++	if (!(priv->devflags & ISP1760_FLAG_ISP1761) &&
++	    !(priv->devflags & ISP1760_FLAG_PORT1_DIS)) {
++		isp1760_writel(PORT1_POWER | PORT1_INIT2,
++			       hcd->regs + HC_PORT1_CTRL);
++		mdelay(10);
++	}
+ 
+ 	priv->hcs_params = isp1760_readl(hcd->regs + HC_HCSPARAMS);
+ 
+@@ -453,8 +488,7 @@ static int isp1760_run(struct usb_hcd *hcd)
+ 	hcd->state = HC_STATE_RUNNING;
+ 	isp1760_enable_interrupts(hcd);
+ 	temp = isp1760_readl(hcd->regs + HC_HW_MODE_CTRL);
+-	temp |= FINAL_HW_CONFIG;
+-	isp1760_writel(temp, hcd->regs + HC_HW_MODE_CTRL);
++	isp1760_writel(temp | HW_GLOBAL_INTR_EN, hcd->regs + HC_HW_MODE_CTRL);
+ 
+ 	command = isp1760_readl(hcd->regs + HC_USBCMD);
+ 	command &= ~(CMD_LRESET|CMD_RESET);
+@@ -2112,6 +2146,7 @@ static int isp1760_get_frame(struct usb_hcd *hcd)
+ static void isp1760_stop(struct usb_hcd *hcd)
+ {
+ 	struct isp1760_hcd *priv = hcd_to_priv(hcd);
++	u32 temp;
+ 
+ 	isp1760_hub_control(hcd, ClearPortFeature, USB_PORT_FEAT_POWER,	1,
+ 			NULL, 0);
+@@ -2120,7 +2155,8 @@ static void isp1760_stop(struct usb_hcd *hcd)
+ 	spin_lock_irq(&priv->lock);
+ 	ehci_reset(priv);
+ 	/* Disable IRQ */
+-	isp1760_writel(HW_DATA_BUS_32BIT, hcd->regs + HC_HW_MODE_CTRL);
++	temp = isp1760_readl(hcd->regs + HC_HW_MODE_CTRL);
++	isp1760_writel(temp &= ~HW_GLOBAL_INTR_EN, hcd->regs + HC_HW_MODE_CTRL);
+ 	spin_unlock_irq(&priv->lock);
+ 
+ 	isp1760_writel(0, hcd->regs + HC_CONFIGFLAG);
+@@ -2128,10 +2164,11 @@ static void isp1760_stop(struct usb_hcd *hcd)
+ 
+ static void isp1760_shutdown(struct usb_hcd *hcd)
+ {
+-	u32 command;
++	u32 command, temp;
+ 
+ 	isp1760_stop(hcd);
+-	isp1760_writel(HW_DATA_BUS_32BIT, hcd->regs + HC_HW_MODE_CTRL);
++	temp = isp1760_readl(hcd->regs + HC_HW_MODE_CTRL);
++	isp1760_writel(temp &= ~HW_GLOBAL_INTR_EN, hcd->regs + HC_HW_MODE_CTRL);
+ 
+ 	command = isp1760_readl(hcd->regs + HC_USBCMD);
+ 	command &= ~CMD_RUN;
+@@ -2183,7 +2220,8 @@ void deinit_kmem_cache(void)
+ }
+ 
+ struct usb_hcd *isp1760_register(u64 res_start, u64 res_len, int irq,
+-		u64 irqflags, struct device *dev, const char *busname)
++		u64 irqflags, struct device *dev, const char *busname,
++		unsigned int devflags)
+ {
+ 	struct usb_hcd *hcd;
+ 	struct isp1760_hcd *priv;
+@@ -2200,6 +2238,7 @@ struct usb_hcd *isp1760_register(u64 res_start, u64 res_len, int irq,
+ 		return ERR_PTR(-ENOMEM);
+ 
+ 	priv = hcd_to_priv(hcd);
++	priv->devflags = devflags;
+ 	init_memory(priv);
+ 	hcd->regs = ioremap(res_start, res_len);
+ 	if (!hcd->regs) {
+diff --git a/drivers/usb/host/isp1760-hcd.h b/drivers/usb/host/isp1760-hcd.h
+index 3d86d0f..6473dd8 100644
+--- a/drivers/usb/host/isp1760-hcd.h
++++ b/drivers/usb/host/isp1760-hcd.h
+@@ -3,7 +3,8 @@
+ 
+ /* exports for if */
+ struct usb_hcd *isp1760_register(u64 res_start, u64 res_len, int irq,
+-		u64 irqflags, struct device *dev, const char *busname);
++		u64 irqflags, struct device *dev, const char *busname,
++		unsigned int devflags);
+ int init_kmem_once(void);
+ void deinit_kmem_cache(void);
+ 
+@@ -31,6 +32,7 @@ void deinit_kmem_cache(void);
+ /* Configuration Register */
+ #define HC_HW_MODE_CTRL		0x300
+ #define ALL_ATX_RESET		(1 << 31)
++#define HW_ANA_DIGI_OC		(1 << 15)
+ #define HW_DATA_BUS_32BIT	(1 << 8)
+ #define HW_DACK_POL_HIGH	(1 << 6)
+ #define HW_DREQ_POL_HIGH	(1 << 5)
+@@ -56,13 +58,14 @@ void deinit_kmem_cache(void);
+ #define PORT1_POWER		(3 << 3)
+ #define PORT1_INIT1		(1 << 7)
+ #define PORT1_INIT2		(1 << 23)
++#define HW_OTG_CTRL_SET		0x374
++#define HW_OTG_CTRL_CLR		0x376
+ 
+ /* Interrupt Register */
+ #define HC_INTERRUPT_REG	0x310
+ 
+ #define HC_INTERRUPT_ENABLE	0x314
+ #define INTERRUPT_ENABLE_MASK	(HC_INTL_INT | HC_ATL_INT | HC_EOT_INT)
+-#define FINAL_HW_CONFIG	(HW_GLOBAL_INTR_EN | HW_DATA_BUS_32BIT)
+ 
+ #define HC_ISO_INT		(1 << 9)
+ #define HC_ATL_INT		(1 << 8)
+@@ -122,6 +125,19 @@ typedef void (packet_enqueue)(struct usb_hcd *hcd, struct isp1760_qh *qh,
+ #define isp1760_err(priv, fmt, args...) \
+ 	dev_err(priv_to_hcd(priv)->self.controller, fmt, ##args)
+ 
++/*
++ * Device flags that can vary from board to board.  All of these
++ * indicate the most "atypical" case, so that a devflags of 0 is
++ * a sane default configuration.
++ */
++#define ISP1760_FLAG_PORT1_DIS		0x00000001 /* Port 1 disabled */
++#define ISP1760_FLAG_BUS_WIDTH_16	0x00000002 /* 16-bit data bus width */
++#define ISP1760_FLAG_OTG_EN		0x00000004 /* Port 1 supports OTG */
++#define ISP1760_FLAG_ANALOG_OC		0x00000008 /* Analog overcurrent */
++#define ISP1760_FLAG_DACK_POL_HIGH	0x00000010 /* DACK active high */
++#define ISP1760_FLAG_DREQ_POL_HIGH	0x00000020 /* DREQ active high */
++#define ISP1760_FLAG_ISP1761		0x00000040 /* Chip is ISP1761 */
++
+ /* chip memory management */
+ struct memory_chunk {
+ 	unsigned int start;
+diff --git a/drivers/usb/host/isp1760-if.c b/drivers/usb/host/isp1760-if.c
+index 440bf94..56e2ad6 100644
+--- a/drivers/usb/host/isp1760-if.c
++++ b/drivers/usb/host/isp1760-if.c
+@@ -35,6 +35,8 @@ static int of_isp1760_probe(struct of_device *dev,
+ 	int virq;
+ 	u64 res_len;
+ 	int ret;
++	const unsigned int *prop;
++	unsigned int devflags = 0;
+ 
+ 	ret = of_address_to_resource(dp, 0, &memory);
+ 	if (ret)
+@@ -55,8 +57,32 @@ static int of_isp1760_probe(struct of_device *dev,
+ 	virq = irq_create_of_mapping(oirq.controller, oirq.specifier,
+ 			oirq.size);
+ 
++	if (of_device_is_compatible(dp, "nxp,usb-isp1761"))
++		devflags |= ISP1760_FLAG_ISP1761;
++
++	if (of_get_property(dp, "port1-disable", NULL) != NULL)
++		devflags |= ISP1760_FLAG_PORT1_DIS;
++
++	/* Some systems wire up only 16 of the 32 data lines */
++	prop = of_get_property(dp, "bus-width", NULL);
++	if (prop && *prop == 16)
++		devflags |= ISP1760_FLAG_BUS_WIDTH_16;
++
++	if (of_get_property(dp, "port1-otg", NULL) != NULL)
++		devflags |= ISP1760_FLAG_OTG_EN;
++
++	if (of_get_property(dp, "analog-oc", NULL) != NULL)
++		devflags |= ISP1760_FLAG_ANALOG_OC;
++
++	if (of_get_property(dp, "dack-polarity", NULL) != NULL)
++		devflags |= ISP1760_FLAG_DACK_POL_HIGH;
++
++	if (of_get_property(dp, "dreq-polarity", NULL) != NULL)
++		devflags |= ISP1760_FLAG_DREQ_POL_HIGH;
++
+ 	hcd = isp1760_register(memory.start, res_len, virq,
+-		IRQF_SHARED | IRQF_DISABLED, &dev->dev, dev->dev.bus_id);
++		IRQF_SHARED | IRQF_DISABLED, &dev->dev, dev->dev.bus_id,
++		devflags);
+ 	if (IS_ERR(hcd)) {
+ 		ret = PTR_ERR(hcd);
+ 		goto release_reg;
+@@ -87,6 +113,9 @@ static struct of_device_id of_isp1760_match[] = {
+ 	{
+ 		.compatible = "nxp,usb-isp1760",
+ 	},
++	{
++		.compatible = "nxp,usb-isp1761",
++	},
+ 	{ },
+ };
+ MODULE_DEVICE_TABLE(of, of_isp1760_match);
+@@ -116,6 +145,7 @@ static int __devinit isp1761_pci_probe(struct pci_dev *dev,
+ 	int length;
+ 	int status = 1;
+ 	struct usb_hcd *hcd;
++	unsigned int devflags = 0;
+ 
+ 	if (usb_disabled())
+ 		return -ENODEV;
+@@ -200,7 +230,8 @@ static int __devinit isp1761_pci_probe(struct pci_dev *dev,
+ 
+ 	dev->dev.dma_mask = NULL;
+ 	hcd = isp1760_register(pci_mem_phy0, length, dev->irq,
+-		IRQF_SHARED | IRQF_DISABLED, &dev->dev, dev->dev.bus_id);
++		IRQF_SHARED | IRQF_DISABLED, &dev->dev, dev->dev.bus_id,
++		devflags);
+ 	pci_set_drvdata(dev, hcd);
+ 	if (!hcd)
+ 		return 0;
+-- 
+1.5.4.4
