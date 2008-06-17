@@ -1,20 +1,24 @@
-Return-Path: <sam@ravnborg.org>
-Received: from pasmtpA.tele.dk (pasmtpa.tele.dk [80.160.77.114])
-	by ozlabs.org (Postfix) with ESMTP id AE0BBDE2D9
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jun 2008 05:45:37 +1000 (EST)
-Date: Tue, 17 Jun 2008 21:46:20 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 2B55ADE5F2
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jun 2008 05:55:56 +1000 (EST)
+Message-Id: <28C30C45-9F42-4097-BEB2-6015296AC9CE@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
 To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH] [Rev2] MPC5121 FEC support
-Message-ID: <20080617194620.GA13147@uranus.ravnborg.org>
-References: <1213729717-26688-1-git-send-email-jrigby@freescale.com>
-	<20080617192237.GA12961@uranus.ravnborg.org>
-	<48581113.4060101@freescale.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <48581113.4060101@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, jeff@garzik.org, John Rigby <jrigby@freescale.com>,
-	netdev@vger.kernel.org
+In-Reply-To: <48580FCF.5020604@freescale.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v924)
+Subject: Re: [PATCH v2] powerpc/booke: Add support for new e500mc core
+Date: Tue, 17 Jun 2008 14:55:46 -0500
+References: <Pine.LNX.4.64.0806170901140.15775@blarg.am.freescale.net>
+	<20080617162309.GA3217@loki.buserror.net>
+	<2FC90D95-762E-41D7-AD4E-64362B624BF8@kernel.crashing.org>
+	<485801A7.3090309@freescale.com>
+	<C5C81740-FEF8-42CA-80C2-A729238BED2B@kernel.crashing.org>
+	<48580FCF.5020604@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,63 +28,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Jun 17, 2008 at 02:31:31PM -0500, Scott Wood wrote:
-> Sam Ravnborg wrote:
-> >>+	data = of_get_property(ofdev->node, "fsl,align-tx-packets", &len);
-> >>+	if (data && len == 4)
-> >>+		fpi->align_tx_packets = *data;
-> >>+
-> >Where did "4" come from. USe a define with a desriptive name.
-> 
-> It's sizeof(u32), i.e. one device tree cell.  This is fairly normal.
-Not fpr me at least - but I just review the patch out of context.
-If it is sizeof(u32) why not write so?
 
-> 
-> >> 	fpi->rx_ring = 32;
-> >> 	fpi->tx_ring = 32;
-> >Same for "32"
-> >> 	fpi->rx_copybreak = 240;
-> >Same for "240".
-> 
-> They're arbitrary tuning parameters.  How is a #define any more 
-> descriptive than the field name?
-So it is clear they are tuneing parameters.
+On Jun 17, 2008, at 2:26 PM, Scott Wood wrote:
 
-
-> 
-> Besides, that's pre-existing, and has nothing to do with this patch.
+> Kumar Gala wrote:
+>> Also, there is a direction that does work.  You can run an e500v2  
+>> kernel on an e500mc.  Its just going the other way around that can  
+>> be an issue.
 >
-OK.
- 
-> >>--- a/drivers/net/fs_enet/fs_enet.h
-> >>+++ b/drivers/net/fs_enet/fs_enet.h
-> >>@@ -10,12 +10,17 @@
-> >> 
-> >> #include <linux/fs_enet_pd.h>
-> >> #include <asm/fs_pd.h>
-> >>+#ifdef CONFIG_FS_ENET_MPC5121_FEC
-> >>+#include "fec_mpc5121.h"
-> >>+#endif
-> >
-> >Which is this include ifdeffed - looks like some wrong concept.
-> 
-> This has already been discussed.  There are two similar but different 
-> ethernet controllers that are being targeted, and the chips they are a 
-> part of (8xx and 512x) are already mutually exclusive with respect to 
-> multiplatform kernels due to core differences.
-OK - had not seen it (or forgot).
+> Maybe have a "choice" config option for minimum supported e500  
+> version, with higher settings being better optimized but  
+> incompatible with older hardware?  This would be similar to how x86  
+> does it.
 
-> 
-> >The amount of ifdef introduced looks bad..
-> 
-> Yes, it's bad -- but it's a matter of which is the lesser evil, a few 
-> ifdefs or large amounts of mostly duplicated code.
-> 
-> >And try to run the patch through scripts/checkpatch.pl
-> >And try to split it up a bit.
-> 
-> Other than the fec_t thing, I don't see any needed splitting...
-It was only the fec_t => struct fec change I had in mind.
+For now I'm going to stick with what we got.  Hopefully we can work  
+through the issues and have a single kernel support v1/v2/mc with all  
+the features.
 
-	Sam
+- k
