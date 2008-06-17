@@ -1,24 +1,17 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 1D032DE662
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jun 2008 06:04:04 +1000 (EST)
-Message-ID: <485818AA.8090701@freescale.com>
-Date: Tue, 17 Jun 2008 15:03:54 -0500
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <broonie@sirena.org.uk>
+Received: from cassiel.sirena.org.uk (cassiel.sirena.org.uk [80.68.93.111])
+	by ozlabs.org (Postfix) with ESMTP id D2BA4DDEF6
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jun 2008 06:49:44 +1000 (EST)
+Received: from broonie by cassiel.sirena.org.uk with local (Exim 4.63)
+	(envelope-from <broonie@sirena.org.uk>) id 1K8hlY-0003eM-L2
+	for linuxppc-dev@ozlabs.org; Tue, 17 Jun 2008 21:26:56 +0100
+Date: Tue, 17 Jun 2008 21:26:56 +0100
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: linuxppc-dev@ozlabs.org
+Subject: Loading drivers based on board identification
+Message-ID: <20080617202656.GA10957@sirena.org.uk>
 MIME-Version: 1.0
-To: Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [PATCH] [Rev2] MPC5121 FEC support
-References: <1213729717-26688-1-git-send-email-jrigby@freescale.com>
-	<48581188.90102@freescale.com>
-	<20080617195739.GB13147@uranus.ravnborg.org>
-In-Reply-To: <20080617195739.GB13147@uranus.ravnborg.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org, jeff@garzik.org, John Rigby <jrigby@freescale.com>,
-	netdev@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,34 +21,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Sam Ravnborg wrote:
-> On Tue, Jun 17, 2008 at 02:33:28PM -0500, Scott Wood wrote:
->> John Rigby wrote:
->>> config FS_ENET
->>>        tristate "Freescale Ethernet Driver"
->>> -       depends on CPM1 || CPM2
->>> +       depends on CPM1 || CPM2 || FS_ENET_MPC5121_FEC
->>>        select MII
->>>        select PHYLIB
->>>
->>> +config FS_ENET_MPC5121_FEC
->>> +	bool "Freescale MPC512x FEC driver"
->>> +	depends on PPC_MPC512x
->>> +	select FS_ENET
->>> +	select PPC_CPM_NEW_BINDING
->>> +	default y
->> No default y.
-> I by the way do not see the need for the prompt of FS_ENET.
+Recently there's been quite a bit of discussion surrounding how to set
+up machine specific hardware that can't readily be represented in the
+device tree.  I was wondering if one way of solving these problems might
+be to provide a mechanism for drivers to load based on board type rather
+than by binding to nodes in the device tree, similar to DMI on x86
+systems?
 
-Agreed, especially since it's overly broad (there is Freescale ethernet 
-hardware that this driver doesn't support).  We'd need to change depends 
-into selects in the more specific entries.
+The particular case that this has been cropping up for is ASoC machine
+drivers - these are drivers which specify how the components of an
+embedded audio subsystem (each of which has its own driver) should be
+used together to make a functional ALSA device.  Broadly, it will say
+something along the lines of "The audio codec at this I2C address is
+connected to one or more SSI ports on the SoC and these are clocked in
+the following way", though it can get much more complex.  
 
-> Do you ever want to change it if one of the dependencies
-> are selected?
+This isn't a property of any of the component devices - it's all about
+the relationships between these devices - and it gets sufficiently
+complex in many systems that it's not realistic to try to encode it in
+the device tree.  There is normally no specific hardware associated with
+this that isn't controlled by one of the component drivers which makes
+it difficult to fit into the device tree - in hardware terms this
+roughly corresponds to the physical board the system is on.
 
-Do you mean if CPM1 or CPM2 is selected?  Yes, it's quite possible that 
-the user has no need for the CPM ethernet and would rather reclaim the 
-memory (especially on CPM1, which has boards as small as 8MiB).
-
--Scott
+Since this is difficult to represent in an idiomatic way in the device
+tree probing based on the board type seems like reasonable solution.
