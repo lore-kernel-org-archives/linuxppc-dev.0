@@ -1,20 +1,19 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 18356DDEDB
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jun 2008 05:56:39 +1000 (EST)
-Message-Id: <F52FE3BF-FE92-44BF-B106-0A8B6DF4C0E1@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
+Return-Path: <sam@ravnborg.org>
+Received: from pasmtpA.tele.dk (pasmtpa.tele.dk [80.160.77.114])
+	by ozlabs.org (Postfix) with ESMTP id 82812DE7E4
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jun 2008 05:56:55 +1000 (EST)
+Date: Tue, 17 Jun 2008 21:57:39 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
 To: Scott Wood <scottwood@freescale.com>
-In-Reply-To: <4858127F.10601@freescale.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v924)
-Subject: Re: [PATCH v2] powerpc/booke: Add support for new e500mc core
-Date: Tue, 17 Jun 2008 14:55:59 -0500
-References: <Pine.LNX.4.64.0806170901140.15775@blarg.am.freescale.net>	<20080617162309.GA3217@loki.buserror.net>	<2FC90D95-762E-41D7-AD4E-64362B624BF8@kernel.crashing.org>	<485801A7.3090309@freescale.com>	<C5C81740-FEF8-42CA-80C2-A729238BED2B@kernel.crashing.org>
-	<485811DD.50106@freescale.com> <4858127F.10601@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] [Rev2] MPC5121 FEC support
+Message-ID: <20080617195739.GB13147@uranus.ravnborg.org>
+References: <1213729717-26688-1-git-send-email-jrigby@freescale.com>
+	<48581188.90102@freescale.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <48581188.90102@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, jeff@garzik.org, John Rigby <jrigby@freescale.com>,
+	netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,19 +23,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Tue, Jun 17, 2008 at 02:33:28PM -0500, Scott Wood wrote:
+> John Rigby wrote:
+> > config FS_ENET
+> >        tristate "Freescale Ethernet Driver"
+> >-       depends on CPM1 || CPM2
+> >+       depends on CPM1 || CPM2 || FS_ENET_MPC5121_FEC
+> >        select MII
+> >        select PHYLIB
+> > 
+> >+config FS_ENET_MPC5121_FEC
+> >+	bool "Freescale MPC512x FEC driver"
+> >+	depends on PPC_MPC512x
+> >+	select FS_ENET
+> >+	select PPC_CPM_NEW_BINDING
+> >+	default y
+> 
+> No default y.
+I by the way do not see the need for the prompt of FS_ENET.
+Do you ever want to change it if one of the dependencies
+are selected?
 
-On Jun 17, 2008, at 2:37 PM, Scott Wood wrote:
-
-> Scott Wood wrote:
->> Kumar Gala wrote:
->>> Also, there is a direction that does work.  You can run an e500v2  
->>> kernel on an e500mc.  Its just going the other way around that can  
->>> be an issue.
->> Actually, wouldn't the kernel need to set HID0[DCBZ32] for an  
->> e500v2 kernel to run on e500mc?
->
-> Grr, I meant L1CSR0[DCBZ32].
-
-You are correct we would need to do that.
-
-- k
+	Sam
