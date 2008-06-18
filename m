@@ -1,10 +1,10 @@
 Return-Path: <shaggy@linux.vnet.ibm.com>
-Message-Id: <20080618223329.644300254@linux.vnet.ibm.com>
+Message-Id: <20080618223329.166670421@linux.vnet.ibm.com>
 References: <20080618223254.966080905@linux.vnet.ibm.com>
-Date: Wed, 18 Jun 2008 17:33:00 -0500
+Date: Wed, 18 Jun 2008 17:32:57 -0500
 From: shaggy@linux.vnet.ibm.com
 To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [patch 6/6] powerpc: Dont clear _PAGE_COHERENT when _PAGE_SAO is set
+Subject: [patch 3/6] powerpc: Define flags for Strong Access Ordering
 Cc: linux-mm@kvack.org, Paul Mackerras <paulus@au1.ibm.com>,
 	Linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -16,26 +16,64 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+This patch defines:
+
+- PROT_SAO, which is passed into mmap() and mprotect() in the prot field
+- VM_SAO in vma->vm_flags, and
+- _PAGE_SAO, the combination of WIMG bits in the pte that enables strong
+access ordering for the page.
+
+NOTE: There doesn't seem to be a precedent for architecture-dependent vm_flags.
+It may be better to define VM_SAO somewhere in include/asm-powerpc/.  Since
+vm_flags is a long, defining it in the high-order word would help prevent a
+collision with any newly added values in architecture-independent code.
+
 Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
 
- arch/powerpc/platforms/pseries/lpar.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ include/asm-powerpc/mman.h          |    2 ++
+ include/asm-powerpc/pgtable-ppc64.h |    3 +++
+ include/linux/mm.h                  |    1 +
+ 3 files changed, 6 insertions(+)
 
-Index: linux-2.6.26-rc5/arch/powerpc/platforms/pseries/lpar.c
+Index: linux-2.6.26-rc5/include/asm-powerpc/mman.h
 ===================================================================
---- linux-2.6.26-rc5.orig/arch/powerpc/platforms/pseries/lpar.c
-+++ linux-2.6.26-rc5/arch/powerpc/platforms/pseries/lpar.c
-@@ -305,7 +305,8 @@ static long pSeries_lpar_hpte_insert(uns
- 	flags = 0;
+--- linux-2.6.26-rc5.orig/include/asm-powerpc/mman.h
++++ linux-2.6.26-rc5/include/asm-powerpc/mman.h
+@@ -10,6 +10,8 @@
+  * 2 of the License, or (at your option) any later version.
+  */
  
- 	/* Make pHyp happy */
--	if (rflags & (_PAGE_GUARDED|_PAGE_NO_CACHE))
-+	if ((rflags & _PAGE_GUARDED) ||
-+	    ((rflags & _PAGE_NO_CACHE) & !(rflags & _PAGE_WRITETHRU)))
- 		hpte_r &= ~_PAGE_COHERENT;
++#define PROT_SAO	0x10		/* Strong Access Ordering */
++
+ #define MAP_RENAME      MAP_ANONYMOUS   /* In SunOS terminology */
+ #define MAP_NORESERVE   0x40            /* don't reserve swap pages */
+ #define MAP_LOCKED	0x80
+Index: linux-2.6.26-rc5/include/asm-powerpc/pgtable-ppc64.h
+===================================================================
+--- linux-2.6.26-rc5.orig/include/asm-powerpc/pgtable-ppc64.h
++++ linux-2.6.26-rc5/include/asm-powerpc/pgtable-ppc64.h
+@@ -94,6 +94,9 @@
+ #define _PAGE_HASHPTE	0x0400 /* software: pte has an associated HPTE */
+ #define _PAGE_BUSY	0x0800 /* software: PTE & hash are busy */
  
- 	lpar_rc = plpar_pte_enter(flags, hpte_group, hpte_v, hpte_r, &slot);
++/* Strong Access Ordering */
++#define _PAGE_SAO	(_PAGE_WRITETHRU | _PAGE_NO_CACHE | _PAGE_COHERENT)
++
+ #define _PAGE_BASE	(_PAGE_PRESENT | _PAGE_ACCESSED | _PAGE_COHERENT)
+ 
+ #define _PAGE_WRENABLE	(_PAGE_RW | _PAGE_DIRTY)
+Index: linux-2.6.26-rc5/include/linux/mm.h
+===================================================================
+--- linux-2.6.26-rc5.orig/include/linux/mm.h
++++ linux-2.6.26-rc5/include/linux/mm.h
+@@ -108,6 +108,7 @@ extern unsigned int kobjsize(const void 
+ 
+ #define VM_CAN_NONLINEAR 0x08000000	/* Has ->fault & does nonlinear pages */
+ #define VM_MIXEDMAP	0x10000000	/* Can contain "struct page" and pure PFN pages */
++#define VM_SAO		0x20000000	/* Strong Access Ordering (powerpc) */
+ 
+ #ifndef VM_STACK_DEFAULT_FLAGS		/* arch can override this */
+ #define VM_STACK_DEFAULT_FLAGS VM_DATA_DEFAULT_FLAGS
 
 -- 
