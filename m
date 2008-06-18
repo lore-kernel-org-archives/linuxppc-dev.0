@@ -1,23 +1,24 @@
-Return-Path: <jcrigby@gmail.com>
-Received: from wf-out-1314.google.com (wf-out-1314.google.com [209.85.200.169])
-	by ozlabs.org (Postfix) with ESMTP id 780B5DDED2
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jun 2008 14:12:37 +1000 (EST)
-Received: by wf-out-1314.google.com with SMTP id 24so83108wfg.15
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jun 2008 21:12:35 -0700 (PDT)
-Message-ID: <4b73d43f0806172112s63ada35brb2e27f3262d7c07@mail.gmail.com>
-Date: Tue, 17 Jun 2008 22:12:35 -0600
-From: "John Rigby" <jcrigby@gmail.com>
-To: "Jeff Garzik" <jeff@garzik.org>
-Subject: Re: [PATCH 1/2] fs_enet: fix checkpatch.pl problems
-In-Reply-To: <485886D9.5070800@garzik.org>
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_18767_19192528.1213762355533"
-References: <1213743794-3537-1-git-send-email-jrigby@freescale.com>
-	<1213743794-3537-2-git-send-email-jrigby@freescale.com>
-	<485886D9.5070800@garzik.org>
+Return-Path: <sam@ravnborg.org>
+Received: from pasmtpA.tele.dk (pasmtpa.tele.dk [80.160.77.114])
+	by ozlabs.org (Postfix) with ESMTP id 4D44FDDE00
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jun 2008 15:00:12 +1000 (EST)
+Date: Wed, 18 Jun 2008 07:00:53 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Trent Piepho <tpiepho@freescale.com>
+Subject: Re: [PATCH] [Rev2] MPC5121 FEC support
+Message-ID: <20080618050053.GA19359@uranus.ravnborg.org>
+References: <1213729717-26688-1-git-send-email-jrigby@freescale.com>
+	<48581188.90102@freescale.com>
+	<20080617195739.GB13147@uranus.ravnborg.org>
+	<485818AA.8090701@freescale.com>
+	<20080617210055.GA13468@uranus.ravnborg.org>
+	<485828B0.4010101@freescale.com>
+	<Pine.LNX.4.64.0806171648300.7584@t2.domain.actdsltmp>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.64.0806171648300.7584@t2.domain.actdsltmp>
 Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
-	Sam Ravnborg <sam@ravnborg.org>, netdev@vger.kernel.org
+	jeff@garzik.org, John Rigby <jrigby@freescale.com>, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,83 +28,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-------=_Part_18767_19192528.1213762355533
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+> >
+> >I'm not sure I understand what you're looking for, but I don't see 
+> >anything wrong with something like this (apart from missing help text):
+> >
+> >config FS_ENET
+> >	 bool
+> >	 select MII
+> >	 select PHYLIB
+> >
+> >config FS_ENET_HAS_SCC
+> >	 bool "Freescale CPM SCC Ethernet"
+> >	 depends on CPM1 || CPM2
+> >	 select FS_ENET
+> 
+> What prevents me from turning on FS_ENET_HAS_SCC without MII or PHYLIB?
+Nothing.
+But if set FS_ENET_HAS_SCC to 'y' then kconfig will select FS_ENET
+which again will select MII and PHYLIB.
 
-Sorry, I thought I was doing the right thing to base the patch on Kumar's
-patch that removes the CONFIG_PPC_CPM_NEW_BINDING stuff.  That is likely why
-it did not apply.
-
-On Tue, Jun 17, 2008 at 9:54 PM, Jeff Garzik <jeff@garzik.org> wrote:
-
-> John Rigby wrote:
->
->> Fixed all errors and warnings that checkpatch.pl
->> reports if this was a new submission.
->> Also changed instances of fec_t to struct fec in
->> mac-fec.c and mii-fec.c.
->>
->> This is in preparation of adding MPC5121 support.
->>
->> Signed-off-by: John Rigby <jrigby@freescale.com>
->> ---
->>  drivers/net/fs_enet/fs_enet-main.c |   70
->> ++++++++++++++++++++---------------
->>  drivers/net/fs_enet/fs_enet.h      |   15 +++++---
->>  drivers/net/fs_enet/mac-fcc.c      |    7 ++--
->>  drivers/net/fs_enet/mac-fec.c      |   40 ++++++++++----------
->>  drivers/net/fs_enet/mac-scc.c      |   13 ++++---
->>  drivers/net/fs_enet/mii-bitbang.c  |    4 +-
->>  drivers/net/fs_enet/mii-fec.c      |   23 +++++++-----
->>  7 files changed, 95 insertions(+), 77 deletions(-)
->>
->
-> patch does not apply
->
->
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
->
-
-------=_Part_18767_19192528.1213762355533
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-Sorry, I thought I was doing the right thing to base the patch on Kumar&#39;s patch that removes the CONFIG_PPC_CPM_NEW_BINDING stuff.&nbsp; That is likely why it did not apply.<br><br><div class="gmail_quote">On Tue, Jun 17, 2008 at 9:54 PM, Jeff Garzik &lt;<a href="mailto:jeff@garzik.org">jeff@garzik.org</a>&gt; wrote:<br>
-<blockquote class="gmail_quote" style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;"><div class="Ih2E3d">John Rigby wrote:<br>
-<blockquote class="gmail_quote" style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">
-Fixed all errors and warnings that checkpatch.pl<br>
-reports if this was a new submission.<br>
-Also changed instances of fec_t to struct fec in<br>
-mac-fec.c and mii-fec.c.<br>
-<br>
-This is in preparation of adding MPC5121 support.<br>
-<br>
-Signed-off-by: John Rigby &lt;<a href="mailto:jrigby@freescale.com" target="_blank">jrigby@freescale.com</a>&gt;<br>
----<br>
-&nbsp;drivers/net/fs_enet/fs_enet-main.c | &nbsp; 70 ++++++++++++++++++++---------------<br>
-&nbsp;drivers/net/fs_enet/fs_enet.h &nbsp; &nbsp; &nbsp;| &nbsp; 15 +++++---<br>
-&nbsp;drivers/net/fs_enet/mac-fcc.c &nbsp; &nbsp; &nbsp;| &nbsp; &nbsp;7 ++--<br>
-&nbsp;drivers/net/fs_enet/mac-fec.c &nbsp; &nbsp; &nbsp;| &nbsp; 40 ++++++++++----------<br>
-&nbsp;drivers/net/fs_enet/mac-scc.c &nbsp; &nbsp; &nbsp;| &nbsp; 13 ++++---<br>
-&nbsp;drivers/net/fs_enet/mii-bitbang.c &nbsp;| &nbsp; &nbsp;4 +-<br>
-&nbsp;drivers/net/fs_enet/mii-fec.c &nbsp; &nbsp; &nbsp;| &nbsp; 23 +++++++-----<br>
-&nbsp;7 files changed, 95 insertions(+), 77 deletions(-)<br>
-</blockquote>
-<br></div>
-patch does not apply<div><div></div><div class="Wj3C7c"><br>
-<br>
-<br>
-_______________________________________________<br>
-Linuxppc-dev mailing list<br>
-<a href="mailto:Linuxppc-dev@ozlabs.org" target="_blank">Linuxppc-dev@ozlabs.org</a><br>
-<a href="https://ozlabs.org/mailman/listinfo/linuxppc-dev" target="_blank">https://ozlabs.org/mailman/listinfo/linuxppc-dev</a><br>
-</div></div></blockquote></div><br>
-
-------=_Part_18767_19192528.1213762355533--
+	Sam
