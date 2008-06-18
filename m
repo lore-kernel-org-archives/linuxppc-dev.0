@@ -1,23 +1,17 @@
-Return-Path: <jgarzik@pobox.com>
-Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D384FDE052
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jun 2008 01:00:59 +1000 (EST)
-Message-ID: <48592322.3090201@pobox.com>
-Date: Wed, 18 Jun 2008 11:00:50 -0400
-From: Jeff Garzik <jgarzik@pobox.com>
+Return-Path: <laurentp@cse-semaphore.com>
+Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
+	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id A8788DE1DB
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jun 2008 01:07:20 +1000 (EST)
+From: Laurent Pinchart <laurentp@cse-semaphore.com>
+To: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org,
+	pantelis.antoniou@gmail.com, vbordug@ru.mvista.com
+Subject: [PATCH] fs_enet: restore promiscuous and multicast settings in
+	restart()
+Date: Wed, 18 Jun 2008 17:07:07 +0200
 MIME-Version: 1.0
-To: Laurent Pinchart <laurentp@cse-semaphore.com>
-Subject: Re: [PATCH 2/2] fs_enet: MDIO on GPIO support
-References: <200805261152.37636.laurentp@cse-semaphore.com>
-	<200806161057.03158.laurentp@cse-semaphore.com>
-	<20080616163400.GA13996@loki.buserror.net>
-	<200806181648.40874.laurentp@cse-semaphore.com>
-In-Reply-To: <200806181648.40874.laurentp@cse-semaphore.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
-	vbordug@ru.mvista.com, netdev@vger.kernel.org
+Content-Type: multipart/signed; boundary="nextPart1386118.M8y5TnNNF1";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
+Message-Id: <200806181707.17739.laurentp@cse-semaphore.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,43 +21,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Laurent Pinchart wrote:
-> Hi Scott,
-> 
-> On Monday 16 June 2008 18:34, Scott Wood wrote:
->> On Mon, Jun 16, 2008 at 10:57:02AM +0200, Laurent Pinchart wrote:
->>> On Monday 26 May 2008 11:53, Laurent Pinchart wrote:
->>>> Port the fs_enet driver to support the MDIO on GPIO driver for PHY
->>>> access in addition to the mii-bitbang driver.
->>> Now that 1/2 has been applied by Jeff, could this one make it to 
->>> powerpc-next ?
->> This patch should probably go through Jeff as well...
-> 
-> Jeff, what's your opinion on this ?
-> 
->> Acked-by: Scott Wood <scottwood@freescale.com>
->>
->>>> -	data = of_get_property(phynode, "reg", &len);
->>>> -	if (!data || len != 4)
->>>> -		goto out_put_mdio;
->>>> +	bus_id = of_get_gpio(mdionode, 0);
->>>> +	if (bus_id < 0) {
->>>> +		struct resource res;
->>>> +		ret = of_address_to_resource(mdionode, 0, &res);
->>>> +		if (ret)
->>>> +			goto out_put_mdio;
->>>> +		bus_id = res.start;
->>>> +	}
->>>>  
->>>> -	snprintf(fpi->bus_id, 16, "%x:%02x", res.start, *data);
->>>> +	snprintf(fpi->bus_id, 16, "%x:%02x", bus_id, *data);
+--nextPart1386118.M8y5TnNNF1
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-What are the patch dependencies, if any?
+The restart() function is called when the link state changes and resets
+multicast and promiscous settings. This patch restores those settings at the
+end of restart().
 
-My general rule is, anytime I see 80%+ of the patch dealing with 
-arch-specific API functions (such as OF resource stuff), I tend to 
-prefer that goes via an arch tree.
+Signed-off-by: Laurent Pinchart <laurentp@cse-semaphore.com>
+=2D--
+ drivers/net/fs_enet/mac-fcc.c     |    3 +++
+ 2 files changed, 4 insertions(+), 1 deletions(-)
 
-If it's a networking change, of course I'd prefer it came in my direction.
+diff --git a/drivers/net/fs_enet/mac-fcc.c b/drivers/net/fs_enet/mac-fcc.c
+index ce40cf9..1a95cf1 100644
+=2D-- a/drivers/net/fs_enet/mac-fcc.c
++++ b/drivers/net/fs_enet/mac-fcc.c
+@@ -464,6 +464,9 @@ static void restart(struct net_device *dev)
+ 		C32(fccp, fcc_fpsmr, FCC_PSMR_FDE | FCC_PSMR_LPB);
+=20
+ 	S32(fccp, fcc_gfmr, FCC_GFMR_ENR | FCC_GFMR_ENT);
++
++	/* Restore multicast and promiscous settings */
++	set_multicast_list(dev);
+ }
+=20
+ static void stop(struct net_device *dev)
+=2D-=20
+1.5.0
 
-	Jeff
+=2D-=20
+Laurent Pinchart
+CSE Semaphore Belgium
+
+Chaussee de Bruxelles, 732A
+B-1410 Waterloo
+Belgium
+
+T +32 (2) 387 42 59
+=46 +32 (2) 387 42 75
+
+--nextPart1386118.M8y5TnNNF1
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
+
+iD8DBQBIWSSl8y9gWxC9vpcRAuYCAKDT9dcrHrpeZyli5c9AFpUr2ALLxQCgx95Z
+itlXbHcTrA/+ZK8T6WbE0Qg=
+=Wu/5
+-----END PGP SIGNATURE-----
+
+--nextPart1386118.M8y5TnNNF1--
