@@ -1,23 +1,20 @@
-Return-Path: <jcrigby@gmail.com>
-Received: from wf-out-1314.google.com (wf-out-1314.google.com [209.85.200.171])
-	by ozlabs.org (Postfix) with ESMTP id E7DC2DE128
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jun 2008 23:29:18 +1000 (EST)
-Received: by wf-out-1314.google.com with SMTP id 24so276995wfg.15
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jun 2008 06:29:17 -0700 (PDT)
-Message-ID: <4b73d43f0806180629o5d85d0b0yf48018088e728975@mail.gmail.com>
-Date: Wed, 18 Jun 2008 07:29:17 -0600
-From: "John Rigby" <jcrigby@gmail.com>
-To: "Grant Likely" <grant.likely@secretlab.ca>
-Subject: Re: [PATCH 1/2] fs_enet: fix checkpatch.pl problems
-In-Reply-To: <fa686aa40806172220u13d4397cn51f7f98e020408aa@mail.gmail.com>
+Return-Path: <laurentp@cse-semaphore.com>
+Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
+	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id EEFDCDE154
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jun 2008 00:36:19 +1000 (EST)
+From: Laurent Pinchart <laurentp@cse-semaphore.com>
+To: "Mark Ware" <mark.ware@senetas.com>
+Subject: Re: CPM2 mii-bitbang: Allowing mdio on port pins other than port C
+Date: Wed, 18 Jun 2008 16:36:08 +0200
+References: <49B96DF39F2CDD499DA8B9C7753A060D2275FC@stamp.senetas.com>
+	<200806161052.53268.laurentp@cse-semaphore.com>
+	<49B96DF39F2CDD499DA8B9C7753A060D25B387@stamp.senetas.com>
+In-Reply-To: <49B96DF39F2CDD499DA8B9C7753A060D25B387@stamp.senetas.com>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_708_19955640.1213795757453"
-References: <1213743794-3537-1-git-send-email-jrigby@freescale.com>
-	<1213743794-3537-2-git-send-email-jrigby@freescale.com>
-	<fa686aa40806172220u13d4397cn51f7f98e020408aa@mail.gmail.com>
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
-	Sam Ravnborg <sam@ravnborg.org>, jeff@garzik.org, netdev@vger.kernel.org
+Content-Type: multipart/signed; boundary="nextPart1434910.qYO8vUUxrD";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
+Message-Id: <200806181636.10758.laurentp@cse-semaphore.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,73 +24,101 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-------=_Part_708_19955640.1213795757453
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+--nextPart1434910.qYO8vUUxrD
+Content-Type: text/plain;
+  charset="ansi_x3.4-1968"
+Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
-I agree, I'll separate the fec_t -> struct fec changes out.
+Hi Mark,
 
-On Tue, Jun 17, 2008 at 11:20 PM, Grant Likely <grant.likely@secretlab.ca>
-wrote:
+On Wednesday 18 June 2008 14:21, Mark Ware wrote:
+> Hi Laurent,
+> > Hi Mark,
+> >=20
+> > On Monday 16 June 2008 08:19, Mark Ware wrote:
+> > > Hello,
+> > >=20
+> > > I am preparing a board port (from 2.4.18!) for a proprietary board=20
+> > > which has it's mdio on a different port than mdc.  The current=20
+> > > mii-bitbang driver in fs_enet assumes both pins are=20
+> > connected to port=20
+> > > C.  I have created a fairly simple patch to make this more=20
+> > flexible,=20
+> > > but I'm new to device trees and am unsure how best to describe the=20
+> > > situation in the dts.
+> > >=20
+> > > The current mdio node for CPM2 looks something like:
+> > >=20
+> > > mdio@10d40 {
+> > >   device_type =3D "mdio";
+> > >   compatible =3D "fsl,cpm2-mdio-bitbang";
+> > >   #address-cells =3D <1>;
+> > >   #size-cells =3D <0>
+> > >   reg =3D <0x10d40 0x14>;
+> > >   fsl,mdio-pin =3D <12>;
+> > >   fsl,mdc-pin =3D <15>;
+> > > }
+> > >=20
+> > > I have made mdio work on our board by adding a second reg range and=20
+> > > using the first one for mdc and the second one for mdio:
+> > >=20
+> > >   reg =3D <0x10d40 0x14 0x10d60 0x14>;  // mdc=3Dport D, mdio=3Dport A
+> > >   fsl,mdio-pin =3D <12>;    		  // PD12
+> > >   fsl,mdc-pin =3D <15>;     		  // PC15
+> > >=20
+> > > The code remains backwards compatible, in that if only one=20
+> > reg range=20
+> > > is present it is used for both.
+> > >=20
+> > > Is this a valid (and acceptable) way to extend the reg property?
+> >=20
+> > It is. Sergej Stepanov submitted similar patches some times=20
+> > ago. You can find them at
+> >=20
+> > http://www.spinics.net/lists/netdev/msg45778.html
+> > http://www.spinics.net/lists/netdev/msg47159.html
+> >=20
+> > > Is their a cleaner way I should look at?
+> >=20
+> > Using the GPIO lib might be cleaner. Have a look at=20
+> > http://www.nabble.com/-PATCH-0-2--MDIO-on-GPIO-support-for-the
+> > -fs_enet-driver-ts17468958.html
+> > for a patch.
+> >=20
+>=20
+> Thanks for the links.  It looks like I should have been searching in
+> netdev not powerpc for this.
+>=20
+> I will look at Sergej's patch and perhaps submit a merged version, but
+> with the GPIO version likely to be merged is there much point?  The GPIO
+> lib method appears to be a more generic replacement.
 
-> On Tue, Jun 17, 2008 at 5:03 PM, John Rigby <jrigby@freescale.com> wrote:
-> > Fixed all errors and warnings that checkpatch.pl
-> > reports if this was a new submission.
-> > Also changed instances of fec_t to struct fec in
-> > mac-fec.c and mii-fec.c.
->
-> Nit: checkpatch is not law; particularly in the case of whitespace
-> change.  Personally, I think cleaning up whitespace in this regard
-> causes more problems than it solves.  Plus, it makes the important
-> change (fec_t -> struct fec) get lost in a see of unimportant ones
-> which makes for hard reviewing.
->
-> But I must sleep now; I'll review your other patch tomorrow.
->
-> Cheers,
-> g.
->
-> --
-> Grant Likely, B.Sc., P.Eng.
-> Secret Lab Technologies Ltd.
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
->
+I don't see much reason to use the non-GPIO version (except maybe on very=20
+memory constrained platforms to avoid pulling the GPIO lib in the kernel, b=
+ut=20
+that would help much).
 
-------=_Part_708_19955640.1213795757453
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+=2D-=20
+Laurent Pinchart
+CSE Semaphore Belgium
 
-I agree, I&#39;ll separate the fec_t -&gt; struct fec changes out.<br><br><div class="gmail_quote">On Tue, Jun 17, 2008 at 11:20 PM, Grant Likely &lt;<a href="mailto:grant.likely@secretlab.ca">grant.likely@secretlab.ca</a>&gt; wrote:<br>
-<blockquote class="gmail_quote" style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;"><div class="Ih2E3d">On Tue, Jun 17, 2008 at 5:03 PM, John Rigby &lt;<a href="mailto:jrigby@freescale.com">jrigby@freescale.com</a>&gt; wrote:<br>
+Chaussee de Bruxelles, 732A
+B-1410 Waterloo
+Belgium
 
-&gt; Fixed all errors and warnings that checkpatch.pl<br>
-&gt; reports if this was a new submission.<br>
-&gt; Also changed instances of fec_t to struct fec in<br>
-&gt; mac-fec.c and mii-fec.c.<br>
-<br>
-</div>Nit: checkpatch is not law; particularly in the case of whitespace<br>
-change. &nbsp;Personally, I think cleaning up whitespace in this regard<br>
-causes more problems than it solves. &nbsp;Plus, it makes the important<br>
-change (fec_t -&gt; struct fec) get lost in a see of unimportant ones<br>
-which makes for hard reviewing.<br>
-<br>
-But I must sleep now; I&#39;ll review your other patch tomorrow.<br>
-<br>
-Cheers,<br>
-g.<br>
-<font color="#888888"><br>
---<br>
-Grant Likely, B.Sc., P.Eng.<br>
-Secret Lab Technologies Ltd.<br>
-</font><div><div></div><div class="Wj3C7c">_______________________________________________<br>
-Linuxppc-dev mailing list<br>
-<a href="mailto:Linuxppc-dev@ozlabs.org">Linuxppc-dev@ozlabs.org</a><br>
-<a href="https://ozlabs.org/mailman/listinfo/linuxppc-dev" target="_blank">https://ozlabs.org/mailman/listinfo/linuxppc-dev</a><br>
-</div></div></blockquote></div><br>
+T +32 (2) 387 42 59
+=46 +32 (2) 387 42 75
 
-------=_Part_708_19955640.1213795757453--
+--nextPart1434910.qYO8vUUxrD
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
+
+iD8DBQBIWR1a8y9gWxC9vpcRAkJsAJsEGLfKoNuqgpR31qmj3DC0Pska3ACfaQ2I
+StDfQn+sS9UENZpyUNPqIo8=
+=ejZg
+-----END PGP SIGNATURE-----
+
+--nextPart1434910.qYO8vUUxrD--
