@@ -1,31 +1,13 @@
-Return-Path: <jschopp@austin.ibm.com>
-Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 6100EDDFB0
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jun 2008 07:28:19 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e2.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m5ILSFOG006702
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jun 2008 17:28:15 -0400
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
-	m5ILSF17238944
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jun 2008 17:28:15 -0400
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m5ILSE0T015273
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jun 2008 17:28:15 -0400
-Message-ID: <48597DED.7070005@austin.ibm.com>
-Date: Wed, 18 Jun 2008 16:28:13 -0500
-From: Joel Schopp <jschopp@austin.ibm.com>
-MIME-Version: 1.0
-To: Olof Johansson <olof@lixom.net>
-Subject: Re: [PATCH 1/2] Power7 architected entry
-References: <20080618201124.GA23828@gamma> <20080618201821.GA23865@gamma>
-	<D57C4E4C-55C3-4886-8128-14CAC80EE475@lixom.net>
-In-Reply-To: <D57C4E4C-55C3-4886-8128-14CAC80EE475@lixom.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, mikey@neuling.org, paulus@samba.org
+Return-Path: <shaggy@linux.vnet.ibm.com>
+Message-Id: <20080618223328.856102092@linux.vnet.ibm.com>
+References: <20080618223254.966080905@linux.vnet.ibm.com>
+Date: Wed, 18 Jun 2008 17:32:55 -0500
+From: shaggy@linux.vnet.ibm.com
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [patch 1/6] mm: Allow architectures to define additional protection
+	bits
+Cc: linux-mm@kvack.org, Paul Mackerras <paulus@au1.ibm.com>,
+	Linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,26 +17,97 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Olof Johansson wrote:
->
-> On Jun 18, 2008, at 3:18 PM, jschopp@austin.ibm.com wrote:
->
->> Add an entry for Power7 architected mode and add "(raw)" to Power7 
->> raw mode to
->> distinguish it more clearly.
->>
->> Signed-off-by: Joel Schopp <jschopp@austin.ibm.com>
->> ---
->> arch/powerpc/kernel/cputable.c             |   48 
->> +++++++++++++++++++++++++++++
->> arch/powerpc/platforms/pseries/cpu_setup.S |    6 +++
->> include/asm-powerpc/cputable.h             |    9 +++++
->> 3 files changed, 63 insertions(+)
->
-> Huh? This patch only changes one file.
->
->
-> -Olof
->
-The patch is correct, the shortlog is incorrect.  Must not have gotten 
-updated from an earlier version, sorry for the confusion.
+This patch allows architectures to define functions to deal with
+additional protections bits for mmap() and mprotect().
+
+arch_calc_vm_prot_bits() maps additonal protection bits to vm_flags
+arch_vm_get_page_prot() maps additional vm_flags to the vma's vm_page_prot
+arch_validate_prot() checks for valid values of the protection bits
+
+Note: vm_get_page_prot() is now pretty ugly.  Suggestions?
+
+Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+---
+
+ include/linux/mman.h |   28 +++++++++++++++++++++++++++-
+ mm/mmap.c            |    5 +++--
+ mm/mprotect.c        |    2 +-
+ 3 files changed, 31 insertions(+), 4 deletions(-)
+
+Index: linux-2.6.26-rc5/include/linux/mman.h
+===================================================================
+--- linux-2.6.26-rc5.orig/include/linux/mman.h
++++ linux-2.6.26-rc5/include/linux/mman.h
+@@ -34,6 +34,31 @@ static inline void vm_unacct_memory(long
+ }
+ 
+ /*
++ * Allow architectures to handle additional protection bits
++ */
++
++#ifndef arch_calc_vm_prot_bits
++#define arch_calc_vm_prot_bits(prot) 0
++#endif
++
++#ifndef arch_vm_get_page_prot
++#define arch_vm_get_page_prot(vm_flags) __pgprot(0)
++#endif
++
++#ifndef arch_validate_prot
++/*
++ * This is called from mprotect().  PROT_GROWSDOWN and PROT_GROWSUP have
++ * already been masked out.
++ *
++ * Returns true if the prot flags are valid
++ */
++static inline int arch_validate_prot(unsigned long prot)
++{
++	return (prot & ~(PROT_READ | PROT_WRITE | PROT_EXEC | PROT_SEM)) == 0;
++}
++#endif
++
++/*
+  * Optimisation macro.  It is equivalent to:
+  *      (x & bit1) ? bit2 : 0
+  * but this version is faster.
+@@ -51,7 +76,8 @@ calc_vm_prot_bits(unsigned long prot)
+ {
+ 	return _calc_vm_trans(prot, PROT_READ,  VM_READ ) |
+ 	       _calc_vm_trans(prot, PROT_WRITE, VM_WRITE) |
+-	       _calc_vm_trans(prot, PROT_EXEC,  VM_EXEC );
++	       _calc_vm_trans(prot, PROT_EXEC,  VM_EXEC) |
++	       arch_calc_vm_prot_bits(prot);
+ }
+ 
+ /*
+Index: linux-2.6.26-rc5/mm/mmap.c
+===================================================================
+--- linux-2.6.26-rc5.orig/mm/mmap.c
++++ linux-2.6.26-rc5/mm/mmap.c
+@@ -72,8 +72,9 @@ pgprot_t protection_map[16] = {
+ 
+ pgprot_t vm_get_page_prot(unsigned long vm_flags)
+ {
+-	return protection_map[vm_flags &
+-				(VM_READ|VM_WRITE|VM_EXEC|VM_SHARED)];
++	return __pgprot(pgprot_val(protection_map[vm_flags &
++				(VM_READ|VM_WRITE|VM_EXEC|VM_SHARED)]) |
++			pgprot_val(arch_vm_get_page_prot(vm_flags)));
+ }
+ EXPORT_SYMBOL(vm_get_page_prot);
+ 
+Index: linux-2.6.26-rc5/mm/mprotect.c
+===================================================================
+--- linux-2.6.26-rc5.orig/mm/mprotect.c
++++ linux-2.6.26-rc5/mm/mprotect.c
+@@ -239,7 +239,7 @@ sys_mprotect(unsigned long start, size_t
+ 	end = start + len;
+ 	if (end <= start)
+ 		return -ENOMEM;
+-	if (prot & ~(PROT_READ | PROT_WRITE | PROT_EXEC | PROT_SEM))
++	if (!arch_validate_prot(prot))
+ 		return -EINVAL;
+ 
+ 	reqprot = prot;
+
+-- 
