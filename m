@@ -1,32 +1,22 @@
-Return-Path: <emunson@us.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 3D6E9DE00B
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jun 2008 07:16:07 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m5ILFvZ5018295
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jun 2008 17:15:57 -0400
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
-	m5ILFvV6168852
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jun 2008 15:15:57 -0600
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m5ILFuqe025974
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jun 2008 15:15:56 -0600
-Date: Wed, 18 Jun 2008 14:15:55 -0700
-From: Eric B Munson <ebmunson@us.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [RFC PATCH V2] Keep 3 high personality bytes across exec
-Message-ID: <20080618211555.GA21865@us.ibm.com>
-References: <20080618060651.GA8251@us.ibm.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="dDRMvlgZJXvWKvBx"
-In-Reply-To: <20080618060651.GA8251@us.ibm.com>
-Cc: linux-kernel@vger.kernel.org
+Return-Path: <kenneth@southpole.se>
+Received: from mail.southpole.se (mail.southpole.se [193.12.106.18])
+	by ozlabs.org (Postfix) with ESMTP id 0B69ADE019
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jun 2008 07:16:13 +1000 (EST)
+Received: from localhost (localhost [127.0.0.1])
+	by mail.southpole.se (Postfix) with SMTP id B652F4ED0FA
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jun 2008 23:16:02 +0200 (CEST)
+Subject: Re: [U-Boot-Users] mpc5121 cache coherency
+From: kenneth johansson <kenneth@southpole.se>
+To: John Rigby <jcrigby@gmail.com>
+In-Reply-To: <4b73d43f0806181238k4ab0b900w3f18216a5c083248@mail.gmail.com>
+References: <1213817391.27790.27.camel@localhost.localdomain>
+	<4b73d43f0806181238k4ab0b900w3f18216a5c083248@mail.gmail.com>
+Content-Type: text/plain
+Date: Wed, 18 Jun 2008 23:16:04 +0200
+Message-Id: <1213823764.10172.3.camel@duo>
+Mime-Version: 1.0
+Cc: u-boot-users <u-boot-users@lists.sourceforge.net>,
+	linuxppc-embedded@ozlabs.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,89 +26,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Wed, 2008-06-18 at 13:38 -0600, John Rigby wrote:
+> Unlike other SOCs with e300 cores the 5121 is not cache coherent.  The
+> problem is an internal bridge that the processor can not snoop across.
 
---dDRMvlgZJXvWKvBx
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Currently when a 32 bit process is exec'd on a powerpc 64 bit host the value
-in the top three bytes of the personality is clobbered.  This patch adds a
-check in the SET_PERSONALITY macro that will carry all the values in the top
-three bytes across the exec.
-
-These three bytes currently carry flags to disable address randomisation,
-limit the address space, force zeroing of an mmapped page, etc.  Should an
-application set any of these bits they will be maintained and honoured on
-homogeneous environment but discarded and ignored on a heterogeneous
-environment.  So if an application requires all mmapped pages to be initial=
-ised
-to zero and a wrapper is used to setup the personality and exec the target,
-these flags will remain set on an all 32 or all 64 bit envrionment, but they
-will be lost in the exec on a mixed 32/64 bit environment.  Losing these bi=
-ts
-means that the same application would behave differently in different
-environments.  Tested on a POWER5+ machine with 64bit kernel and a mixed
-64/32 bit user space.
-
-Signed-off-by: Eric B Munson <ebmunson@us.ibm.com>
-
----
-V2
-
-Changes from V1:
-Updated changelog with a better description of why this change is useful
-
-Based on 2.6.26-rc6
-
- include/asm-powerpc/elf.h   |    3 ++-
- include/linux/personality.h |    6 ++++++
- 2 files changed, 8 insertions(+), 1 deletions(-)
-
-diff --git a/include/asm-powerpc/elf.h b/include/asm-powerpc/elf.h
-index 9080d85..2f11a0e 100644
---- a/include/asm-powerpc/elf.h
-+++ b/include/asm-powerpc/elf.h
-@@ -257,7 +257,8 @@ do {								\
- 	else							\
- 		clear_thread_flag(TIF_ABI_PENDING);		\
- 	if (personality(current->personality) !=3D PER_LINUX32)	\
--		set_personality(PER_LINUX);			\
-+		set_personality(PER_LINUX |			\
-+			(current->personality & PER_INHERIT));	\
- } while (0)
- /*
-  * An executable for which elf_read_implies_exec() returns TRUE will
-diff --git a/include/linux/personality.h b/include/linux/personality.h
-index a84e9ff..362eb90 100644
---- a/include/linux/personality.h
-+++ b/include/linux/personality.h
-@@ -36,6 +36,12 @@ enum {
- 	ADDR_LIMIT_3GB =3D 	0x8000000,
- };
-=20
-+/* Mask for the above personality values */
-+#define PER_INHERIT (ADDR_NO_RANDOMIZE|FDPIC_FUNCPTRS|MMAP_PAGE_ZERO| \
-+			ADDR_COMPAT_LAYOUT|READ_IMPLIES_EXEC|ADDR_LIMIT_32BIT| \
-+			SHORT_INODE|WHOLE_SECONDS|STICKY_TIMEOUTS| \
-+			ADDR_LIMIT_3GB)
-+
- /*
-  * Security-relevant compatibility flags that must be
-  * cleared upon setuid or setgid exec:
+I do not have access to the manuals right now but I search all over an
+this was not something I found. Is this a design decision or an errata
+for the current version of the chip ?   
 
 
---dDRMvlgZJXvWKvBx
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFIWXsLsnv9E83jkzoRAmvvAKD2suHEuv/a0lIssNGonxgQjIixAQCg7GIc
-bRVSwh+iGam+oxJVs+GpgFQ=
-=zVLk
------END PGP SIGNATURE-----
-
---dDRMvlgZJXvWKvBx--
+> On Wed, Jun 18, 2008 at 1:29 PM, Kenneth Johansson <kenneth@southpole.se> wrote:
+> > I have  tried to speed up u-boot by turning on I/D cache during boot.
+> >
+> > It sort of works and gives quite a boost but I'm having problems with
+> > the ethernet driver that no longer works.
+> >
+> > What I'm seeing is that the cpu do not notice the ethernet hardwares
+> > updates that is located in DRAM. Basically what is expected from a cache
+> > incoherent system.
+> >
+> > Now my question is should not the e300 core detect writes to the DRAM
+> > and reload the cached data ??
+> >
+> > ---
+> > To get cache working I'm turning on the MMU and program some BAT
+> > registers to a 1-1 mapping where only DRAM has cache on and all other
+> > memory regions like the IMMR, flash ... has cache off.
+> >
+> >
+> >
+> > -------------------------------------------------------------------------
+> > Check out the new SourceForge.net Marketplace.
+> > It's the best place to buy or sell services for
+> > just about anything Open Source.
+> > http://sourceforge.net/services/buy/index.php
+> > _______________________________________________
+> > U-Boot-Users mailing list
+> > U-Boot-Users@lists.sourceforge.net
+> > https://lists.sourceforge.net/lists/listinfo/u-boot-users
+> >
+> 
