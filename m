@@ -1,28 +1,28 @@
 Return-Path: <jschopp@austin.ibm.com>
-Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
+Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 74D9EDE027
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jun 2008 02:18:47 +1000 (EST)
-Received: from d01relay07.pok.ibm.com (d01relay07.pok.ibm.com [9.56.227.147])
-	by e4.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m5IGIgpN031858
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jun 2008 12:18:42 -0400
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by d01relay07.pok.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
-	m5IGIfH81331412
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jun 2008 12:18:41 -0400
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m5IGIeqW020846
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jun 2008 10:18:41 -0600
-Message-ID: <48593560.9080107@austin.ibm.com>
-Date: Wed, 18 Jun 2008 11:18:40 -0500
+	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 6E50EDDFB3
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jun 2008 02:28:26 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e6.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m5IGUgGR008036
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jun 2008 12:30:42 -0400
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
+	m5IGSNYl193410
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jun 2008 12:28:23 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m5IGSMmF032461
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jun 2008 12:28:23 -0400
+Message-ID: <485937A6.1000205@austin.ibm.com>
+Date: Wed, 18 Jun 2008 11:28:22 -0500
 From: Joel Schopp <jschopp@austin.ibm.com>
 MIME-Version: 1.0
 To: Michael Neuling <mikey@neuling.org>
-Subject: Re: powerpc: Add cputable entry for POWER7
-References: <16237.1213750046@neuling.org>
-In-Reply-To: <16237.1213750046@neuling.org>
+Subject: Re: [PATCH 6/9] powerpc: Add VSX CPU feature
+References: <20080618004734.1A41370297@localhost.localdomain>
+In-Reply-To: <20080618004734.1A41370297@localhost.localdomain>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -34,146 +34,73 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I'll send out some additional entries in a minute when I rebase what I 
-have on this.  I think a couple of those lines were originally authored 
-by me so...
+A couple of these lines originated with me.
 
 Signed-off-by: Joel Schopp <jschopp@austin.ibm.com>
 
 Michael Neuling wrote:
-> Add a cputable entry for the POWER7 processor.  
->
-> Also tell firmware that we know about POWER7.
+> Add a VSX CPU feature.  Also add code to detect if VSX is available
+> from the device tree.
 >
 > Signed-off-by: Michael Neuling <mikey@neuling.org>
-> --- 
-> Paulus: please consider for your 2.6.27 tree.
+> ---
 >
->  arch/powerpc/kernel/cputable.c  |   25 +++++++++++++++++++++++++
->  arch/powerpc/kernel/misc.S      |    5 +++++
->  arch/powerpc/kernel/prom_init.c |    1 +
->  include/asm-powerpc/cputable.h  |   12 ++++++++++--
->  4 files changed, 41 insertions(+), 2 deletions(-)
+>  arch/powerpc/kernel/prom.c     |    3 +++
+>  include/asm-powerpc/cputable.h |   13 +++++++++++++
+>  2 files changed, 16 insertions(+)
 >
-> Index: linux-2.6-ozlabs/arch/powerpc/kernel/cputable.c
+> Index: linux-2.6-ozlabs/arch/powerpc/kernel/prom.c
 > ===================================================================
-> --- linux-2.6-ozlabs.orig/arch/powerpc/kernel/cputable.c
-> +++ linux-2.6-ozlabs/arch/powerpc/kernel/cputable.c
-> @@ -52,6 +52,8 @@ extern void __setup_cpu_ppc970MP(unsigne
->  extern void __setup_cpu_pa6t(unsigned long offset, struct cpu_spec* spec);
->  extern void __restore_cpu_pa6t(void);
->  extern void __restore_cpu_ppc970(void);
-> +extern void __setup_cpu_power7(unsigned long offset, struct cpu_spec* spec);
-> +extern void __restore_cpu_power7(void);
->  #endif /* CONFIG_PPC64 */
->  
->  /* This table only contains "desktop" CPUs, it need to be filled with embedded
-> @@ -68,6 +70,9 @@ extern void __restore_cpu_ppc970(void);
->  #define COMMON_USER_POWER6	(COMMON_USER_PPC64 | PPC_FEATURE_ARCH_2_05 |\
->  				 PPC_FEATURE_SMT | PPC_FEATURE_ICACHE_SNOOP | \
->  				 PPC_FEATURE_TRUE_LE)
-> +#define COMMON_USER_POWER7	(COMMON_USER_PPC64 | PPC_FEATURE_ARCH_2_06 |\
-> +				 PPC_FEATURE_SMT | PPC_FEATURE_ICACHE_SNOOP | \
-> +				 PPC_FEATURE_TRUE_LE)
->  #define COMMON_USER_PA6T	(COMMON_USER_PPC64 | PPC_FEATURE_PA6T |\
->  				 PPC_FEATURE_TRUE_LE | \
->  				 PPC_FEATURE_HAS_ALTIVEC_COMP)
-> @@ -380,6 +385,26 @@ static struct cpu_spec __initdata cpu_sp
->  		.machine_check		= machine_check_generic,
->  		.platform		= "power6",
->  	},
-> +	{	/* Power7 */
-> +		.pvr_mask		= 0xffff0000,
-> +		.pvr_value		= 0x003f0000,
-> +		.cpu_name		= "POWER7",
-> +		.cpu_features		= CPU_FTRS_POWER7,
-> +		.cpu_user_features	= COMMON_USER_POWER7,
-> +		.icache_bsize		= 128,
-> +		.dcache_bsize		= 128,
-> +		.num_pmcs		= 6,
-> +		.pmc_type		= PPC_PMC_IBM,
-> +		.cpu_setup		= __setup_cpu_power7,
-> +		.cpu_restore		= __restore_cpu_power7,
-> +		.oprofile_cpu_type	= "ppc64/power7",
-> +		.oprofile_type		= PPC_OPROFILE_POWER4,
-> +		.oprofile_mmcra_sihv	= POWER6_MMCRA_SIHV,
-> +		.oprofile_mmcra_sipr	= POWER6_MMCRA_SIPR,
-> +		.oprofile_mmcra_clear	= POWER6_MMCRA_THRM |
-> +			POWER6_MMCRA_OTHER,
-> +		.platform		= "power7",
-> +	},
->  	{	/* Cell Broadband Engine */
->  		.pvr_mask		= 0xffff0000,
->  		.pvr_value		= 0x00700000,
-> Index: linux-2.6-ozlabs/arch/powerpc/kernel/misc.S
-> ===================================================================
-> --- linux-2.6-ozlabs.orig/arch/powerpc/kernel/misc.S
-> +++ linux-2.6-ozlabs/arch/powerpc/kernel/misc.S
-> @@ -116,3 +116,8 @@ _GLOBAL(longjmp)
->  	mtlr	r0
->  	mr	r3,r4
->  	blr
-> +
-> +_GLOBAL(__setup_cpu_power7)
-> +_GLOBAL(__restore_cpu_power7)
-> +	/* place holder */
-> +	blr
-> Index: linux-2.6-ozlabs/arch/powerpc/kernel/prom_init.c
-> ===================================================================
-> --- linux-2.6-ozlabs.orig/arch/powerpc/kernel/prom_init.c
-> +++ linux-2.6-ozlabs/arch/powerpc/kernel/prom_init.c
-> @@ -650,6 +650,7 @@ static void __init early_cmdline_parse(v
->  static unsigned char ibm_architecture_vec[] = {
->  	W(0xfffe0000), W(0x003a0000),	/* POWER5/POWER5+ */
->  	W(0xffff0000), W(0x003e0000),	/* POWER6 */
-> +	W(0xffff0000), W(0x003f0000),	/* POWER7 */
->  	W(0xffffffff), W(0x0f000002),	/* all 2.05-compliant */
->  	W(0xfffffffe), W(0x0f000001),	/* all 2.04-compliant and earlier */
->  	5 - 1,				/* 5 option vectors */
+> --- linux-2.6-ozlabs.orig/arch/powerpc/kernel/prom.c
+> +++ linux-2.6-ozlabs/arch/powerpc/kernel/prom.c
+> @@ -609,6 +609,9 @@ static struct feature_property {
+>  	{"altivec", 0, CPU_FTR_ALTIVEC, PPC_FEATURE_HAS_ALTIVEC},
+>  	{"ibm,vmx", 1, CPU_FTR_ALTIVEC, PPC_FEATURE_HAS_ALTIVEC},
+>  #endif /* CONFIG_ALTIVEC */
+> +#ifdef CONFIG_VSX
+> +	{"ibm,vmx", 2, CPU_FTR_VSX, PPC_FEATURE_HAS_VSX},
+> +#endif /* CONFIG_VSX */
+>  #ifdef CONFIG_PPC64
+>  	{"ibm,dfp", 1, 0, PPC_FEATURE_HAS_DFP},
+>  	{"ibm,purr", 1, CPU_FTR_PURR, 0},
 > Index: linux-2.6-ozlabs/include/asm-powerpc/cputable.h
 > ===================================================================
 > --- linux-2.6-ozlabs.orig/include/asm-powerpc/cputable.h
 > +++ linux-2.6-ozlabs/include/asm-powerpc/cputable.h
-> @@ -26,6 +26,7 @@
->  #define PPC_FEATURE_PA6T		0x00000800
+> @@ -27,6 +27,7 @@
 >  #define PPC_FEATURE_HAS_DFP		0x00000400
 >  #define PPC_FEATURE_POWER6_EXT		0x00000200
-> +#define PPC_FEATURE_ARCH_2_06		0x00000100
+>  #define PPC_FEATURE_ARCH_2_06		0x00000100
+> +#define PPC_FEATURE_HAS_VSX		0x00000080
 >  
 >  #define PPC_FEATURE_TRUE_LE		0x00000002
 >  #define PPC_FEATURE_PPC_LE		0x00000001
-> @@ -376,6 +377,12 @@ extern void do_feature_fixups(unsigned l
->  	    CPU_FTR_COHERENT_ICACHE | CPU_FTR_LOCKLESS_TLBIE | \
->  	    CPU_FTR_PURR | CPU_FTR_SPURR | CPU_FTR_REAL_LE | \
->  	    CPU_FTR_DSCR)
-> +#define CPU_FTRS_POWER7 (CPU_FTR_USE_TB | \
-> +	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
-> +	    CPU_FTR_MMCRA | CPU_FTR_SMT | \
-> +	    CPU_FTR_COHERENT_ICACHE | CPU_FTR_LOCKLESS_TLBIE | \
-> +	    CPU_FTR_PURR | CPU_FTR_SPURR | CPU_FTR_REAL_LE | \
-> +	    CPU_FTR_DSCR)
->  #define CPU_FTRS_CELL	(CPU_FTR_USE_TB | \
->  	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
->  	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_MMCRA | CPU_FTR_SMT | \
-> @@ -391,7 +398,8 @@ extern void do_feature_fixups(unsigned l
->  #define CPU_FTRS_POSSIBLE	\
->  	    (CPU_FTRS_POWER3 | CPU_FTRS_RS64 | CPU_FTRS_POWER4 |	\
->  	    CPU_FTRS_PPC970 | CPU_FTRS_POWER5 | CPU_FTRS_POWER6 |	\
-> -	    CPU_FTRS_CELL | CPU_FTRS_PA6T | CPU_FTR_1T_SEGMENT)
-> +	    CPU_FTRS_POWER7 | CPU_FTRS_CELL | CPU_FTRS_PA6T |		\
-> +	    CPU_FTR_1T_SEGMENT)
->  #else
->  enum {
->  	CPU_FTRS_POSSIBLE =
-> @@ -431,7 +439,7 @@ enum {
->  #define CPU_FTRS_ALWAYS		\
->  	    (CPU_FTRS_POWER3 & CPU_FTRS_RS64 & CPU_FTRS_POWER4 &	\
->  	    CPU_FTRS_PPC970 & CPU_FTRS_POWER5 & CPU_FTRS_POWER6 &	\
-> -	    CPU_FTRS_CELL & CPU_FTRS_PA6T & CPU_FTRS_POSSIBLE)
-> +	    CPU_FTRS_POWER7 & CPU_FTRS_CELL & CPU_FTRS_PA6T & CPU_FTRS_POSSIBLE)
->  #else
->  enum {
->  	CPU_FTRS_ALWAYS =
+> @@ -181,6 +182,7 @@ extern void do_feature_fixups(unsigned l
+>  #define CPU_FTR_DSCR			LONG_ASM_CONST(0x0002000000000000)
+>  #define CPU_FTR_1T_SEGMENT		LONG_ASM_CONST(0x0004000000000000)
+>  #define CPU_FTR_NO_SLBIE_B		LONG_ASM_CONST(0x0008000000000000)
+> +#define CPU_FTR_VSX			LONG_ASM_CONST(0x0010000000000000)
+>  
+>  #ifndef __ASSEMBLY__
+>  
+> @@ -199,6 +201,17 @@ extern void do_feature_fixups(unsigned l
+>  #define PPC_FEATURE_HAS_ALTIVEC_COMP    0
+>  #endif
+>  
+> +/* We only set the VSX features if the kernel was compiled with VSX
+> + * support
+> + */
+> +#ifdef CONFIG_VSX
+> +#define CPU_FTR_VSX_COMP	CPU_FTR_VSX
+> +#define PPC_FEATURE_HAS_VSX_COMP PPC_FEATURE_HAS_VSX
+> +#else
+> +#define CPU_FTR_VSX_COMP	0
+> +#define PPC_FEATURE_HAS_VSX_COMP    0
+> +#endif
+> +
+>  /* We only set the spe features if the kernel was compiled with spe
+>   * support
+>   */
 > _______________________________________________
 > Linuxppc-dev mailing list
 > Linuxppc-dev@ozlabs.org
