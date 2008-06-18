@@ -1,21 +1,19 @@
-Return-Path: <matvejchikov@gmail.com>
-Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.29])
-	by ozlabs.org (Postfix) with ESMTP id 0149EDE45C
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jun 2008 04:45:58 +1000 (EST)
-Received: by yx-out-2324.google.com with SMTP id 8so72757yxg.39
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jun 2008 11:45:57 -0700 (PDT)
-Message-ID: <8496f91a0806181145w62d57a7fua767c8036f2261aa@mail.gmail.com>
-Date: Wed, 18 Jun 2008 22:45:57 +0400
-From: "Matvejchikov Ilya" <matvejchikov@gmail.com>
-To: "Laurent Pinchart" <laurentp@cse-semaphore.com>
-Subject: Re: [PATCH] fs_enet: restore promiscuous and multicast settings in
-	restart()
-In-Reply-To: <200806181707.17739.laurentp@cse-semaphore.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <200806181707.17739.laurentp@cse-semaphore.com>
-Cc: linuxppc-dev@ozlabs.org, vbordug@ru.mvista.com, netdev@vger.kernel.org
-Reply-To: matvejchikov@gmail.com
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id D4239DE048
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jun 2008 05:35:41 +1000 (EST)
+Message-Id: <7B118E94-F308-4768-8ED6-BD66C5C3D3CA@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Michael Neuling <mikey@neuling.org>
+In-Reply-To: <20080618004734.0B72E70296@localhost.localdomain>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v924)
+Subject: Re: [PATCH 5/9] powerpc: Introduce VSX thread_struct and CONFIG_VSX
+Date: Wed, 18 Jun 2008 14:35:30 -0500
+References: <20080618004734.0B72E70296@localhost.localdomain>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,47 +23,72 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I'm glad that you have corrected it. Half a year ago I pointed out
-that there was such a mistake:
-http://patchwork.ozlabs.org/linuxppc/patch?id=10700
 
-Thanks.
+On Jun 17, 2008, at 7:47 PM, Michael Neuling wrote:
 
-2008/6/18 Laurent Pinchart <laurentp@cse-semaphore.com>:
-> The restart() function is called when the link state changes and resets
-> multicast and promiscous settings. This patch restores those settings at the
-> end of restart().
+> The layout of the new VSR registers and how they overlap on top of the
+> legacy FPR and VR registers is:
 >
-> Signed-off-by: Laurent Pinchart <laurentp@cse-semaphore.com>
+>                   VSR doubleword 0               VSR doubleword 1
+>           
+> ----------------------------------------------------------------
+>  VSR[0]  |             FPR[0]             
+> |                              |
+>           
+> ----------------------------------------------------------------
+>  VSR[1]  |             FPR[1]             
+> |                              |
+>           
+> ----------------------------------------------------------------
+>          |              ...               
+> |                              |
+>          |              ...               
+> |                              |
+>           
+> ----------------------------------------------------------------
+>  VSR[30] |             FPR[30]            
+> |                              |
+>           
+> ----------------------------------------------------------------
+>  VSR[31] |             FPR[31]            
+> |                              |
+>           
+> ----------------------------------------------------------------
+>  VSR[32] |                              
+> VR[0]                            |
+>           
+> ----------------------------------------------------------------
+>  VSR[33] |                              
+> VR[1]                            |
+>           
+> ----------------------------------------------------------------
+>           
+> |                              ...                             |
+>           
+> |                              ...                             |
+>           
+> ----------------------------------------------------------------
+>  VSR[62] |                              
+> VR[30]                           |
+>           
+> ----------------------------------------------------------------
+>  VSR[63] |                              
+> VR[31]                           |
+>           
+> ----------------------------------------------------------------
+>
+> VSX has 64 128bit registers.  The first 32 regs overlap with the FP
+> registers and hence extend them with and additional 64 bits.  The
+> second 32 regs overlap with the VMX registers.
+>
+> This patch introduces the thread_struct changes required to reflect
+> this register layout.  Ptrace and signals code is updated so that the
+> floating point registers are correctly accessed from the thread_struct
+> when CONFIG_VSX is enabled.
+>
+> Signed-off-by: Michael Neuling <mikey@neuling.org>
 > ---
->  drivers/net/fs_enet/mac-fcc.c     |    3 +++
->  2 files changed, 4 insertions(+), 1 deletions(-)
->
-> diff --git a/drivers/net/fs_enet/mac-fcc.c b/drivers/net/fs_enet/mac-fcc.c
-> index ce40cf9..1a95cf1 100644
-> --- a/drivers/net/fs_enet/mac-fcc.c
-> +++ b/drivers/net/fs_enet/mac-fcc.c
-> @@ -464,6 +464,9 @@ static void restart(struct net_device *dev)
->                C32(fccp, fcc_fpsmr, FCC_PSMR_FDE | FCC_PSMR_LPB);
->
->        S32(fccp, fcc_gfmr, FCC_GFMR_ENR | FCC_GFMR_ENT);
-> +
-> +       /* Restore multicast and promiscous settings */
-> +       set_multicast_list(dev);
->  }
->
->  static void stop(struct net_device *dev)
-> --
-> 1.5.0
->
-> --
-> Laurent Pinchart
-> CSE Semaphore Belgium
->
-> Chaussee de Bruxelles, 732A
-> B-1410 Waterloo
-> Belgium
->
-> T +32 (2) 387 42 59
-> F +32 (2) 387 42 75
->
+
+Is VSX mutually exclusive with altivec/fp?  is there a MSR bit for it?
+
+- k
