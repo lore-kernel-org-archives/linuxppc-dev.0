@@ -1,17 +1,31 @@
-Return-Path: <seema.pm@gmail.com>
-Received: from wf-out-1314.google.com (wf-out-1314.google.com [209.85.200.175])
-	by ozlabs.org (Postfix) with ESMTP id 5DEAFDE108
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jun 2008 07:27:10 +1000 (EST)
-Received: by wf-out-1314.google.com with SMTP id 24so450187wfg.15
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jun 2008 14:27:09 -0700 (PDT)
-Message-ID: <4e69a5150806181427r5acc8905u16c046492df7243c@mail.gmail.com>
-Date: Wed, 18 Jun 2008 14:27:09 -0700
-From: "SEEMA pm" <seema.pm@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Subject: kgdb issues for ppc target
+Return-Path: <jschopp@austin.ibm.com>
+Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 6100EDDFB0
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jun 2008 07:28:19 +1000 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e2.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m5ILSFOG006702
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jun 2008 17:28:15 -0400
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
+	m5ILSF17238944
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jun 2008 17:28:15 -0400
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m5ILSE0T015273
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jun 2008 17:28:15 -0400
+Message-ID: <48597DED.7070005@austin.ibm.com>
+Date: Wed, 18 Jun 2008 16:28:13 -0500
+From: Joel Schopp <jschopp@austin.ibm.com>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_8152_29366162.1213824429049"
+To: Olof Johansson <olof@lixom.net>
+Subject: Re: [PATCH 1/2] Power7 architected entry
+References: <20080618201124.GA23828@gamma> <20080618201821.GA23865@gamma>
+	<D57C4E4C-55C3-4886-8128-14CAC80EE475@lixom.net>
+In-Reply-To: <D57C4E4C-55C3-4886-8128-14CAC80EE475@lixom.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, mikey@neuling.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,40 +35,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-------=_Part_8152_29366162.1213824429049
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-Hello,
-I have an mpc8540 target board with a BSP - linux-2.6.11. I have a host
-machine where I have ppc-target configured gdb obtained from gdb-6.8.tar.gz.
-I am able to debug userspace files by running gdbserver in target machine.
-Now I want to debug kernel files of my target machine. I have
-CONFIG_DEBUG_KERNEL=y, CONFIG_DEBUG_INFO=y and CONFIG_SERIAL_TEXT_DEBUG=y.
-I want to debug kernel remotely after it's loaded in the target machine as I
-do with userspace files. In the host machine when i run: gdb ./uImage, I get
-not in executable format - error.
-
-I have downloaded kernel patches : linux-2.6.13-kgdb-2.3 and applied
-core-lite.patch,ppc-lite.patch and eth.patch, got lot of hunks and failed
-messages. After this when I build uImage I am getting lot of build errors.
-
-It would be really helpful if I can get the list of exact patches needed so
-I can make the changes manually as mine is a modified 2.6.11 kernel. Also, I
-need steps of how to run it in the target machine through ethernet port.
-
-Thanks
-
-------=_Part_8152_29366162.1213824429049
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-Hello,<br>I have an mpc8540 target board with a BSP - linux-2.6.11. I have a host machine where I have ppc-target configured gdb obtained from gdb-6.8.tar.gz. I am able to debug userspace files by running gdbserver in target machine.<br>
-Now I want to debug kernel files of my target machine. I have CONFIG_DEBUG_KERNEL=y, CONFIG_DEBUG_INFO=y and CONFIG_SERIAL_TEXT_DEBUG=y.<br>I want to debug kernel remotely after it&#39;s loaded in the target machine as I do with userspace files. In the host machine when i run: gdb ./uImage, I get not in executable format - error.<br>
-<br>I have downloaded kernel patches : linux-2.6.13-kgdb-2.3 and applied core-lite.patch,ppc-lite.patch and eth.patch, got lot of hunks and failed messages. After this when I build uImage I am getting lot of build errors.<br>
-<br>It would be really helpful if I can get the list of exact patches needed so I can make the changes manually as mine is a modified 2.6.11 kernel. Also, I need steps of how to run it in the target machine through ethernet port.<br>
-<br>Thanks<br><br><br><br>
-
-------=_Part_8152_29366162.1213824429049--
+Olof Johansson wrote:
+>
+> On Jun 18, 2008, at 3:18 PM, jschopp@austin.ibm.com wrote:
+>
+>> Add an entry for Power7 architected mode and add "(raw)" to Power7 
+>> raw mode to
+>> distinguish it more clearly.
+>>
+>> Signed-off-by: Joel Schopp <jschopp@austin.ibm.com>
+>> ---
+>> arch/powerpc/kernel/cputable.c             |   48 
+>> +++++++++++++++++++++++++++++
+>> arch/powerpc/platforms/pseries/cpu_setup.S |    6 +++
+>> include/asm-powerpc/cputable.h             |    9 +++++
+>> 3 files changed, 63 insertions(+)
+>
+> Huh? This patch only changes one file.
+>
+>
+> -Olof
+>
+The patch is correct, the shortlog is incorrect.  Must not have gotten 
+updated from an earlier version, sorry for the confusion.
