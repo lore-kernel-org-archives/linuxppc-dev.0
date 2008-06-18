@@ -1,11 +1,21 @@
-Return-Path: <mikey@neuling.org>
-To: Paul Mackerras <paulus@samba.org>
-From: Michael Neuling <mikey@neuling.org>
-Date: Wed, 18 Jun 2008 10:47:34 +1000
-Subject: [PATCH 9/9] powerpc: Add CONFIG_VSX config option
-In-Reply-To: <1213750053.678227.22239172650.qpush@coopers>
-Message-Id: <20080618004734.4EBD670291@localhost.localdomain>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <jcrigby@gmail.com>
+Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.180])
+	by ozlabs.org (Postfix) with ESMTP id 22F52DDE45
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jun 2008 10:55:57 +1000 (EST)
+Received: by py-out-1112.google.com with SMTP id z59so11450pyg.27
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jun 2008 17:55:56 -0700 (PDT)
+Message-ID: <4b73d43f0806171755u7ea8e965rbb62e74559f676c0@mail.gmail.com>
+Date: Tue, 17 Jun 2008 18:55:55 -0600
+From: "John Rigby" <jcrigby@gmail.com>
+To: "Stephen Rothwell" <sfr@canb.auug.org.au>
+Subject: Re: [PATCH] MPC5121 FEC support
+In-Reply-To: <20080618103549.06110799.sfr@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_Part_16781_3510628.1213750555721"
+References: <1213724880-14965-1-git-send-email-jrigby@freescale.com>
+	<20080618103549.06110799.sfr@canb.auug.org.au>
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,38 +25,78 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Add CONFIG_VSX config build option.  Must compile with POWER4, FPU and ALTIVEC.
+------=_Part_16781_3510628.1213750555721
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Signed-off-by: Michael Neuling <mikey@neuling.org>
----
+On Tue, Jun 17, 2008 at 6:35 PM, Stephen Rothwell <sfr@canb.auug.org.au>
+wrote:
 
- arch/powerpc/platforms/Kconfig.cputype |   16 ++++++++++++++++
- 1 file changed, 16 insertions(+)
+> Hi John,
+>
+> You should factor out the fec_t -> struct fec change into an earlier
+> patch of its own.
 
-Index: linux-2.6-ozlabs/arch/powerpc/platforms/Kconfig.cputype
-===================================================================
---- linux-2.6-ozlabs.orig/arch/powerpc/platforms/Kconfig.cputype
-+++ linux-2.6-ozlabs/arch/powerpc/platforms/Kconfig.cputype
-@@ -171,6 +171,22 @@ config VSX
- 
- 	  If in doubt, say Y here.
- 
-+config VSX
-+	bool "VSX Support"
-+	depends on POWER4 && ALTIVEC && PPC_FPU
-+	---help---
-+
-+	  This option enables kernel support for the Vector Scaler extensions
-+	  to the PowerPC processor. The kernel currently supports saving and
-+	  restoring VSX registers, and turning on the 'VSX enable' bit so user
-+	  processes can execute VSX instructions.
-+
-+	  This option is only usefully if you have a processor that supports
-+	  VSX (P7 and above), but does not have any affect on a non-VSX
-+	  CPUs (it does, however add code to the kernel).
-+
-+	  If in doubt, say Y here.
-+
- config SPE
- 	bool "SPE Support"
- 	depends on E200 || E500
+Ok, I'll separate that from the checkpatch fixes.
+
+>
+>
+> On Tue, 17 Jun 2008 11:48:00 -0600 John Rigby <jrigby@freescale.com>
+> wrote:
+> >
+> > +++ b/drivers/net/fs_enet/fec_mpc5121.h
+>
+> > +#include <asm/cpm.h>
+>
+
+>
+> Nothing in this file uses anything in asm/cpm.h, so it shouldn't be
+> included here.
+
+Ok.
+
+>
+>
+> --
+> Cheers,
+> Stephen Rothwell                    sfr@canb.auug.org.au
+> http://www.canb.auug.org.au/~sfr/ <http://www.canb.auug.org.au/%7Esfr/>
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+>
+
+------=_Part_16781_3510628.1213750555721
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+<br><br><div class="gmail_quote">On Tue, Jun 17, 2008 at 6:35 PM, Stephen Rothwell &lt;<a href="mailto:sfr@canb.auug.org.au">sfr@canb.auug.org.au</a>&gt; wrote:<br><blockquote class="gmail_quote" style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">
+Hi John,<br>
+<br>
+You should factor out the fec_t -&gt; struct fec change into an earlier<br>
+patch of its own.</blockquote><div>Ok, I&#39;ll separate that from the checkpatch fixes. <br></div><blockquote class="gmail_quote" style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">
+<br>
+<br>
+On Tue, 17 Jun 2008 11:48:00 -0600 John Rigby &lt;<a href="mailto:jrigby@freescale.com">jrigby@freescale.com</a>&gt; wrote:<br>
+&gt;<br>
+&gt; +++ b/drivers/net/fs_enet/fec_mpc5121.h<br>
+<br>
+&gt; +#include &lt;asm/cpm.h&gt;&nbsp;<br></blockquote><blockquote class="gmail_quote" style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;"><br>
+<br>
+Nothing in this file uses anything in asm/cpm.h, so it shouldn&#39;t be<br>
+included here.</blockquote><div>Ok. <br></div><blockquote class="gmail_quote" style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;"><br>
+<font color="#888888"><br>
+--<br>
+Cheers,<br>
+Stephen Rothwell &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<a href="mailto:sfr@canb.auug.org.au">sfr@canb.auug.org.au</a><br>
+<a href="http://www.canb.auug.org.au/%7Esfr/" target="_blank">http://www.canb.auug.org.au/~sfr/</a><br>
+</font><br>_______________________________________________<br>
+Linuxppc-dev mailing list<br>
+<a href="mailto:Linuxppc-dev@ozlabs.org">Linuxppc-dev@ozlabs.org</a><br>
+<a href="https://ozlabs.org/mailman/listinfo/linuxppc-dev" target="_blank">https://ozlabs.org/mailman/listinfo/linuxppc-dev</a><br></blockquote></div><br>
+
+------=_Part_16781_3510628.1213750555721--
