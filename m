@@ -1,24 +1,22 @@
-Return-Path: <sam@ravnborg.org>
-Received: from pasmtpA.tele.dk (pasmtpa.tele.dk [80.160.77.114])
-	by ozlabs.org (Postfix) with ESMTP id 4D44FDDE00
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jun 2008 15:00:12 +1000 (EST)
-Date: Wed, 18 Jun 2008 07:00:53 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Trent Piepho <tpiepho@freescale.com>
-Subject: Re: [PATCH] [Rev2] MPC5121 FEC support
-Message-ID: <20080618050053.GA19359@uranus.ravnborg.org>
-References: <1213729717-26688-1-git-send-email-jrigby@freescale.com>
-	<48581188.90102@freescale.com>
-	<20080617195739.GB13147@uranus.ravnborg.org>
-	<485818AA.8090701@freescale.com>
-	<20080617210055.GA13468@uranus.ravnborg.org>
-	<485828B0.4010101@freescale.com>
-	<Pine.LNX.4.64.0806171648300.7584@t2.domain.actdsltmp>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.64.0806171648300.7584@t2.domain.actdsltmp>
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.242])
+	by ozlabs.org (Postfix) with ESMTP id D8D63DDE3A
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jun 2008 15:20:36 +1000 (EST)
+Received: by an-out-0708.google.com with SMTP id c34so16826anc.78
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jun 2008 22:20:34 -0700 (PDT)
+Message-ID: <fa686aa40806172220u13d4397cn51f7f98e020408aa@mail.gmail.com>
+Date: Tue, 17 Jun 2008 23:20:21 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "John Rigby" <jrigby@freescale.com>
+Subject: Re: [PATCH 1/2] fs_enet: fix checkpatch.pl problems
+In-Reply-To: <1213743794-3537-2-git-send-email-jrigby@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <1213743794-3537-1-git-send-email-jrigby@freescale.com>
+	<1213743794-3537-2-git-send-email-jrigby@freescale.com>
 Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
-	jeff@garzik.org, John Rigby <jrigby@freescale.com>, netdev@vger.kernel.org
+	Sam Ravnborg <sam@ravnborg.org>, jeff@garzik.org, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,23 +26,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> >
-> >I'm not sure I understand what you're looking for, but I don't see 
-> >anything wrong with something like this (apart from missing help text):
-> >
-> >config FS_ENET
-> >	 bool
-> >	 select MII
-> >	 select PHYLIB
-> >
-> >config FS_ENET_HAS_SCC
-> >	 bool "Freescale CPM SCC Ethernet"
-> >	 depends on CPM1 || CPM2
-> >	 select FS_ENET
-> 
-> What prevents me from turning on FS_ENET_HAS_SCC without MII or PHYLIB?
-Nothing.
-But if set FS_ENET_HAS_SCC to 'y' then kconfig will select FS_ENET
-which again will select MII and PHYLIB.
+On Tue, Jun 17, 2008 at 5:03 PM, John Rigby <jrigby@freescale.com> wrote:
+> Fixed all errors and warnings that checkpatch.pl
+> reports if this was a new submission.
+> Also changed instances of fec_t to struct fec in
+> mac-fec.c and mii-fec.c.
 
-	Sam
+Nit: checkpatch is not law; particularly in the case of whitespace
+change.  Personally, I think cleaning up whitespace in this regard
+causes more problems than it solves.  Plus, it makes the important
+change (fec_t -> struct fec) get lost in a see of unimportant ones
+which makes for hard reviewing.
+
+But I must sleep now; I'll review your other patch tomorrow.
+
+Cheers,
+g.
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
