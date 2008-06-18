@@ -1,22 +1,17 @@
-Return-Path: <kenneth@southpole.se>
-Received: from mail.southpole.se (mail.southpole.se [193.12.106.18])
-	by ozlabs.org (Postfix) with ESMTP id 0B69ADE019
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jun 2008 07:16:13 +1000 (EST)
-Received: from localhost (localhost [127.0.0.1])
-	by mail.southpole.se (Postfix) with SMTP id B652F4ED0FA
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jun 2008 23:16:02 +0200 (CEST)
-Subject: Re: [U-Boot-Users] mpc5121 cache coherency
-From: kenneth johansson <kenneth@southpole.se>
-To: John Rigby <jcrigby@gmail.com>
-In-Reply-To: <4b73d43f0806181238k4ab0b900w3f18216a5c083248@mail.gmail.com>
-References: <1213817391.27790.27.camel@localhost.localdomain>
-	<4b73d43f0806181238k4ab0b900w3f18216a5c083248@mail.gmail.com>
-Content-Type: text/plain
-Date: Wed, 18 Jun 2008 23:16:04 +0200
-Message-Id: <1213823764.10172.3.camel@duo>
-Mime-Version: 1.0
-Cc: u-boot-users <u-boot-users@lists.sourceforge.net>,
-	linuxppc-embedded@ozlabs.org, linuxppc-dev@ozlabs.org
+Return-Path: <seema.pm@gmail.com>
+Received: from wf-out-1314.google.com (wf-out-1314.google.com [209.85.200.175])
+	by ozlabs.org (Postfix) with ESMTP id 5DEAFDE108
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jun 2008 07:27:10 +1000 (EST)
+Received: by wf-out-1314.google.com with SMTP id 24so450187wfg.15
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jun 2008 14:27:09 -0700 (PDT)
+Message-ID: <4e69a5150806181427r5acc8905u16c046492df7243c@mail.gmail.com>
+Date: Wed, 18 Jun 2008 14:27:09 -0700
+From: "SEEMA pm" <seema.pm@gmail.com>
+To: linuxppc-dev@ozlabs.org
+Subject: kgdb issues for ppc target
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_Part_8152_29366162.1213824429049"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,43 +21,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2008-06-18 at 13:38 -0600, John Rigby wrote:
-> Unlike other SOCs with e300 cores the 5121 is not cache coherent.  The
-> problem is an internal bridge that the processor can not snoop across.
+------=_Part_8152_29366162.1213824429049
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-I do not have access to the manuals right now but I search all over an
-this was not something I found. Is this a design decision or an errata
-for the current version of the chip ?   
+Hello,
+I have an mpc8540 target board with a BSP - linux-2.6.11. I have a host
+machine where I have ppc-target configured gdb obtained from gdb-6.8.tar.gz.
+I am able to debug userspace files by running gdbserver in target machine.
+Now I want to debug kernel files of my target machine. I have
+CONFIG_DEBUG_KERNEL=y, CONFIG_DEBUG_INFO=y and CONFIG_SERIAL_TEXT_DEBUG=y.
+I want to debug kernel remotely after it's loaded in the target machine as I
+do with userspace files. In the host machine when i run: gdb ./uImage, I get
+not in executable format - error.
 
+I have downloaded kernel patches : linux-2.6.13-kgdb-2.3 and applied
+core-lite.patch,ppc-lite.patch and eth.patch, got lot of hunks and failed
+messages. After this when I build uImage I am getting lot of build errors.
 
-> On Wed, Jun 18, 2008 at 1:29 PM, Kenneth Johansson <kenneth@southpole.se> wrote:
-> > I have  tried to speed up u-boot by turning on I/D cache during boot.
-> >
-> > It sort of works and gives quite a boost but I'm having problems with
-> > the ethernet driver that no longer works.
-> >
-> > What I'm seeing is that the cpu do not notice the ethernet hardwares
-> > updates that is located in DRAM. Basically what is expected from a cache
-> > incoherent system.
-> >
-> > Now my question is should not the e300 core detect writes to the DRAM
-> > and reload the cached data ??
-> >
-> > ---
-> > To get cache working I'm turning on the MMU and program some BAT
-> > registers to a 1-1 mapping where only DRAM has cache on and all other
-> > memory regions like the IMMR, flash ... has cache off.
-> >
-> >
-> >
-> > -------------------------------------------------------------------------
-> > Check out the new SourceForge.net Marketplace.
-> > It's the best place to buy or sell services for
-> > just about anything Open Source.
-> > http://sourceforge.net/services/buy/index.php
-> > _______________________________________________
-> > U-Boot-Users mailing list
-> > U-Boot-Users@lists.sourceforge.net
-> > https://lists.sourceforge.net/lists/listinfo/u-boot-users
-> >
-> 
+It would be really helpful if I can get the list of exact patches needed so
+I can make the changes manually as mine is a modified 2.6.11 kernel. Also, I
+need steps of how to run it in the target machine through ethernet port.
+
+Thanks
+
+------=_Part_8152_29366162.1213824429049
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+Hello,<br>I have an mpc8540 target board with a BSP - linux-2.6.11. I have a host machine where I have ppc-target configured gdb obtained from gdb-6.8.tar.gz. I am able to debug userspace files by running gdbserver in target machine.<br>
+Now I want to debug kernel files of my target machine. I have CONFIG_DEBUG_KERNEL=y, CONFIG_DEBUG_INFO=y and CONFIG_SERIAL_TEXT_DEBUG=y.<br>I want to debug kernel remotely after it&#39;s loaded in the target machine as I do with userspace files. In the host machine when i run: gdb ./uImage, I get not in executable format - error.<br>
+<br>I have downloaded kernel patches : linux-2.6.13-kgdb-2.3 and applied core-lite.patch,ppc-lite.patch and eth.patch, got lot of hunks and failed messages. After this when I build uImage I am getting lot of build errors.<br>
+<br>It would be really helpful if I can get the list of exact patches needed so I can make the changes manually as mine is a modified 2.6.11 kernel. Also, I need steps of how to run it in the target machine through ethernet port.<br>
+<br>Thanks<br><br><br><br>
+
+------=_Part_8152_29366162.1213824429049--
