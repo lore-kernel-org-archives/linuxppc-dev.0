@@ -1,29 +1,11 @@
-Return-Path: <emunson@us.ibm.com>
-Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id E766ADDE03
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jun 2008 16:07:17 +1000 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e6.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m5I69NI6004371
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jun 2008 02:09:23 -0400
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
-	m5I66sbk223976
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jun 2008 02:06:54 -0400
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m5I66skd000363
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jun 2008 02:06:54 -0400
-Date: Tue, 17 Jun 2008 23:06:51 -0700
-From: Eric B Munson <ebmunson@us.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [RFC PATCH] Keep 3 high personality bytes across exec
-Message-ID: <20080618060651.GA8251@us.ibm.com>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="h31gzZEtNLTqOjlF"
-Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18520.44515.740845.910077@cargo.ozlabs.ibm.com>
+Date: Wed, 18 Jun 2008 16:40:35 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [POWERPC] Clear sub-page HPTE present bits when demoting page size
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,72 +15,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+When we demote a slice from 64k to 4k, and we are about to insert an
+HPTE for a 4k subpage and we notice that there is an existing 64k
+HPTE, we first invalidate that HPTE before inserting the new 4k
+subpage HPTE.  Since the bits that encode which hash bucket the old
+HPTE was in overlap with the bits that encode which of the 16 subpages
+have HPTEs, we need to clear out the subpage HPTE-present bits before
+starting to insert HPTEs for the 4k subpages.  If we don't do that, we
+can erroneously think that a subpage already has an HPTE when it
+doesn't.
 
---h31gzZEtNLTqOjlF
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+That in itself wouldn't be such a problem except that when we go to
+update the HPTE that we think is present on machines with a
+hypervisor, the hypervisor can tell us that the HPTE we think is there
+is actually there even though it isn't, which can lead to a process
+getting stuck in a loop, continually faulting.  The reason for the
+confusion is that the AVPN (abbreviated virtual page number) we are
+looking for in the HPTE for a 4k subpage can actually match the AVPN
+in a stale HPTE for another 64k page.  For example, the HPTE for
+the 4k subpage at 0x84000f000 will be in the same hash bucket and have
+the same AVPN as the HPTE for the 64k page at 0x8400f0000.
 
-Currently when a 32 bit process is exec'd on a powerpc 64 bit host the valu=
-es
-of the top three bytes of the personality are clobbered.  This patch adds a
-check in the SET_PERSONALITY macro that will carry all the values in the top
-three bytes across the exec.
+This fixes the code to clear out the subpage HPTE-present bits.
 
-Signed-off-by: Eric B Munson <ebmunson@us.ibm.com>
-
+Signed-off-by: Paul Mackerras <paulus@samba.org>
 ---
-
-Based on 2.6.26-rc6
-
- include/asm-powerpc/elf.h   |    3 ++-
- include/linux/personality.h |    6 ++++++
- 2 files changed, 8 insertions(+), 1 deletions(-)
-
-diff --git a/include/asm-powerpc/elf.h b/include/asm-powerpc/elf.h
-index 9080d85..2f11a0e 100644
---- a/include/asm-powerpc/elf.h
-+++ b/include/asm-powerpc/elf.h
-@@ -257,7 +257,8 @@ do {								\
- 	else							\
- 		clear_thread_flag(TIF_ABI_PENDING);		\
- 	if (personality(current->personality) !=3D PER_LINUX32)	\
--		set_personality(PER_LINUX);			\
-+		set_personality(PER_LINUX |			\
-+			(current->personality & PER_INHERIT));	\
- } while (0)
- /*
-  * An executable for which elf_read_implies_exec() returns TRUE will
-diff --git a/include/linux/personality.h b/include/linux/personality.h
-index a84e9ff..362eb90 100644
---- a/include/linux/personality.h
-+++ b/include/linux/personality.h
-@@ -36,6 +36,12 @@ enum {
- 	ADDR_LIMIT_3GB =3D 	0x8000000,
- };
-=20
-+/* Mask for the above personality values */
-+#define PER_INHERIT (ADDR_NO_RANDOMIZE|FDPIC_FUNCPTRS|MMAP_PAGE_ZERO| \
-+			ADDR_COMPAT_LAYOUT|READ_IMPLIES_EXEC|ADDR_LIMIT_32BIT| \
-+			SHORT_INODE|WHOLE_SECONDS|STICKY_TIMEOUTS| \
-+			ADDR_LIMIT_3GB)
-+
- /*
-  * Security-relevant compatibility flags that must be
-  * cleared upon setuid or setgid exec:
-
-
---h31gzZEtNLTqOjlF
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFIWKX7snv9E83jkzoRAi9lAKDZZre2ksNhC3llJrNF7vzLVJFXNwCgo2k/
-NNHS5lCbE/ZKJtm3UfjS1do=
-=wIy8
------END PGP SIGNATURE-----
-
---h31gzZEtNLTqOjlF--
+diff --git a/arch/powerpc/mm/hash_low_64.S b/arch/powerpc/mm/hash_low_64.S
+index 21d2484..70f4c83 100644
+--- a/arch/powerpc/mm/hash_low_64.S
++++ b/arch/powerpc/mm/hash_low_64.S
+@@ -568,6 +568,10 @@ htab_inval_old_hpte:
+ 	ld	r7,STK_PARM(r9)(r1)	/* ssize */
+ 	ld	r8,STK_PARM(r8)(r1)	/* local */
+ 	bl	.flush_hash_page
++	/* Clear out _PAGE_HPTE_SUB bits in the new linux PTE */
++	lis	r0,_PAGE_HPTE_SUB@h
++	ori	r0,r0,_PAGE_HPTE_SUB@l
++	andc	r30,r30,r0
+ 	b	htab_insert_pte
+ 	
+ htab_bail_ok:
