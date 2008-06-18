@@ -1,19 +1,13 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id CED44DDF9C
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jun 2008 23:05:34 +1000 (EST)
-Message-Id: <3DC08C70-5096-47BF-8452-367495F8B19E@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Michael Neuling <mikey@neuling.org>
-In-Reply-To: <1213750053.678227.22239172650.qpush@coopers>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v924)
-Subject: Re: [PATCH 0/9] powerpc: Add kernel support for POWER7 VSX. 
-Date: Wed, 18 Jun 2008 08:05:23 -0500
-References: <1213750053.678227.22239172650.qpush@coopers>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18521.2804.318527.293516@cargo.ozlabs.ibm.com>
+Date: Wed, 18 Jun 2008 23:17:40 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [git pull] Please pull powerpc.git merge branch
+Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,21 +17,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Linus,
 
-On Jun 17, 2008, at 7:47 PM, Michael Neuling wrote:
+Please pull from the 'merge' branch of
 
-> The following set of patches adds Vector Scalar Extentions (VSX)
-> support for POWER7.  Includes context switch, ptrace and signals  
-> support.
->
-> Signed-off-by: Michael Neuling <mikey@neuling.org>
-> ---
-> This series is on top of the POWER7 cputable entry patch.
->
-> Paulus: please consider for your 2.6.27 tree.
+git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
 
-I bit better explanation of what VSX would be useful.  Its not clear  
-to me exactly how these instructions behave such that we have to touch  
-all this code.
+to get two more small bug-fixes for powerpc, as listed below.
 
-- k
+Thanks,
+Paul.
+
+ arch/powerpc/kernel/head_44x.S |    7 ++++++-
+ arch/powerpc/mm/hash_low_64.S  |    4 ++++
+ 2 files changed, 10 insertions(+), 1 deletions(-)
+
+Josh Boyer (1):
+      [POWERPC] 4xx: Clear new TLB cache attribute bits in Data Storage vector
+
+Paul Mackerras (1):
+      [POWERPC] Clear sub-page HPTE present bits when demoting page size
