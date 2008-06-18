@@ -1,14 +1,31 @@
-Return-Path: <jschopp@austin.ibm.com>
-From: jschopp@austin.ibm.com
-Date: Wed, 18 Jun 2008 15:23:23 -0500
-To: paulus@ozlabs.org
-Subject: [PATCH 2/2] 2.06 architecture-vec
-Message-ID: <20080618202323.GB23865@gamma>
-References: <20080618201124.GA23828@gamma>
+Return-Path: <John.Linn@xilinx.com>
+Received: from mail107-sin-R.bigfish.com (mail-sin.bigfish.com [207.46.51.74])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "*.bigfish.com",
+	Issuer "Microsoft Secure Server Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 0F05EDDF14
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jun 2008 06:36:44 +1000 (EST)
+Received: from mail107-sin (localhost.localdomain [127.0.0.1])
+	by mail107-sin-R.bigfish.com (Postfix) with ESMTP id CCCF313B01BC
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jun 2008 20:36:40 +0000 (UTC)
+Received: from xsj-gw1 (unknown [149.199.60.83])
+	by mail107-sin.bigfish.com (Postfix) with ESMTP id DAD3E48804F
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jun 2008 20:36:39 +0000 (UTC)
+Received: from unknown-38-66.xilinx.com ([149.199.38.66]
+	helo=xsj-smtp1.xilinx.com) by xsj-gw1 with esmtp (Exim 4.63)
+	(envelope-from <John.Linn@xilinx.com>) id 1K94OV-0005Ut-4O
+	for linuxppc-dev@ozlabs.org; Wed, 18 Jun 2008 13:36:39 -0700
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080618201124.GA23828@gamma>
-Cc: linuxppc-dev@ozlabs.org, mikey@neuling.org
+Content-Type: text/plain;
+	charset="US-ASCII"
+Subject: 44x defconfig directory
+Date: Wed, 18 Jun 2008 14:36:37 -0600
+In-Reply-To: <47ecccf53807a949b54dede883137c6d@kernel.crashing.org>
+References: <1207487181.6809.18.camel@vader.jdub.homelinux.org><73BD1263-F09B-4E08-AA77-BEBD67D91C58@kernel.crashing.org><1207709608.3996.0.camel@vader.jdub.homelinux.org><18428.24729.933714.665889@cargo.ozlabs.ibm.com>
+	<47ecccf53807a949b54dede883137c6d@kernel.crashing.org>
+From: "John Linn" <John.Linn@xilinx.com>
+To: <linuxppc-dev@ozlabs.org>
+Message-Id: <20080618203639.DAD3E48804F@mail107-sin.bigfish.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,37 +35,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Add the bits to the architecture-vec so that ibm,client-architecture
-lets the firmware know we support the 2.06 architecture.
 
-Signed-off-by: Joel Schopp <jschopp@austin.ibm.com>
+I'm adding a new defconfig file to the new configs/44x directory and
+make doesn't seem to find it.
 
-Index: 2.6.26-rc6/arch/powerpc/kernel/prom_init.c
-===================================================================
---- 2.6.26-rc6.orig/arch/powerpc/kernel/prom_init.c
-+++ 2.6.26-rc6/arch/powerpc/kernel/prom_init.c
-@@ -620,6 +620,7 @@ static void __init early_cmdline_parse(v
- #define OV1_PPC_2_03		0x10	/* set if we support PowerPC 2.03 */
- #define OV1_PPC_2_04		0x08	/* set if we support PowerPC 2.04 */
- #define OV1_PPC_2_05		0x04	/* set if we support PowerPC 2.05 */
-+#define OV1_PPC_2_06		0x02	/* set if we support PowerPC 2.06 */
- 
- /* Option vector 2: Open Firmware options supported */
- #define OV2_REAL_MODE		0x20	/* set if we want OF in real mode */
-@@ -651,6 +652,7 @@ static unsigned char ibm_architecture_ve
- 	W(0xfffe0000), W(0x003a0000),	/* POWER5/POWER5+ */
- 	W(0xffff0000), W(0x003e0000),	/* POWER6 */
- 	W(0xffff0000), W(0x003f0000),	/* POWER7 */
-+	W(0xffffffff), W(0x0f000003),	/* all 2.06-compliant */
- 	W(0xffffffff), W(0x0f000002),	/* all 2.05-compliant */
- 	W(0xfffffffe), W(0x0f000001),	/* all 2.04-compliant and earlier */
- 	5 - 1,				/* 5 option vectors */
-@@ -659,7 +661,7 @@ static unsigned char ibm_architecture_ve
- 	3 - 2,				/* length */
- 	0,				/* don't ignore, don't halt */
- 	OV1_PPC_2_00 | OV1_PPC_2_01 | OV1_PPC_2_02 | OV1_PPC_2_03 |
--	OV1_PPC_2_04 | OV1_PPC_2_05,
-+	OV1_PPC_2_04 | OV1_PPC_2_05 | OV1_PPC_2_06,
- 
- 	/* option vector 2: Open Firmware options supported */
- 	34 - 2,				/* length */
+I must be missing something as this seems simple.
+
+Should I have to specify 44x in the path (make ARCH=3Dpowerpc
+44x/defconfig) as this does work?
+
+Thanks,
+John
+
+This email and any attachments are intended for the sole use of the named r=
+ecipient(s) and contain(s) confidential information that may be proprietary=
+, privileged or copyrighted under applicable law. If you are not the intend=
+ed recipient, do not read, copy, or forward this email message or any attac=
+hments. Delete this email message and any attachments immediately.
