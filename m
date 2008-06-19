@@ -1,17 +1,24 @@
-Return-Path: <arnd@arndb.de>
-From: Arnd Bergmann <arnd@arndb.de>
-To: cbe-oss-dev@ozlabs.org
-Subject: Re: [Cbe-oss-dev] [RFC 3/3] powerpc: copy_4K_page tweaked for Cell
-Date: Thu, 19 Jun 2008 23:28:50 +0200
-References: <200806191754.17289.markn@au1.ibm.com>
-In-Reply-To: <200806191754.17289.markn@au1.ibm.com>
+Return-Path: <rdreier@cisco.com>
+Received: from sj-iport-3.cisco.com (sj-iport-3.cisco.com [171.71.176.72])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "sj-iport-3.cisco.com", Issuer "Cisco SSCA" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 720DBDDF08
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jun 2008 08:35:45 +1000 (EST)
+From: Roland Dreier <rdreier@cisco.com>
+To: Stefan Roscher <ossrosch@linux.vnet.ibm.com>
+Subject: Re: [PATCH REPOST #2] IB/ehca: In case of lost interrupts,
+	trigger EOI to reenable interrupts
+References: <200806131655.43410.ossrosch@linux.vnet.ibm.com>
+Date: Thu, 19 Jun 2008 15:35:40 -0700
+In-Reply-To: <200806131655.43410.ossrosch@linux.vnet.ibm.com> (Stefan
+	Roscher's message of "Fri, 13 Jun 2008 16:55:41 +0200")
+Message-ID: <adafxr9uk77.fsf@cisco.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200806192328.51423.arnd@arndb.de>
-Cc: Mark Nelson <markn@au1.ibm.com>, linuxppc-dev@ozlabs.org,
-	Gunnar von Boehn <VONBOEHN@de.ibm.com>,
-	Michael Ellerman <ellerman@au1.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+Cc: fenkes@de.ibm.com, LKML <linux-kernel@vger.kernel.org>,
+	OF-EWG <ewg@lists.openfabrics.org>,
+	LinuxPPC-Dev <linuxppc-dev@ozlabs.org>, raisch@de.ibm.com,
+	general@lists.openfabrics.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,17 +28,81 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-T24gVGh1cnNkYXkgMTkgSnVuZSAyMDA4LCBNYXJrIE5lbHNvbiB3cm90ZToKPiCgoKCgoKCgoC5h
-bGlnbiCgNwo+IF9HTE9CQUwoY29weV80S19wYWdlKQo+IKCgoKCgoKCgZGNidKCgoKAwLHI0oKCg
-oKCgoKCgoKCgLyogUHJlZmV0Y2ggT05FIFNSQyBjYWNoZWxpbmUgKi8KPiAKPiCgoKCgoKCgoGFk
-ZGmgoKCgcjYscjMsLTigoKCgoKCgoC8qIHByZXBhcmUgZm9yIHN0ZHUgKi8KPiCgoKCgoKCgoGFk
-ZGmgoKCgcjQscjQsLTigoKCgoKCgoC8qIHByZXBhcmUgZm9yIGxkdSAqLwo+IAo+IKCgoKCgoKCg
-bGmgoKCgoKByMTAsMzKgoKCgoKCgoKCgLyogY29weSAzMiBjYWNoZSBsaW5lcyBmb3IgYSA0SyBw
-YWdlICovCj4goKCgoKCgoKBsaaCgoKCgoHIxMiwxMjgrOKCgoKCgoKCgoKCgoKCgoC8qIHByZWZl
-dGNoIGRpc3RhbmNlKi8KClNpbmNlIHlvdSBoYXZlIGEgbG9vcCBoZXJlIGFueXdheSBpbnN0ZWFk
-IG9mIHRoZSBmdWxseSB1bnJvbGxlZApjb2RlLCB3aHkgbm90IHByb3ZpZGUgYSBjb3B5XzY0S19w
-YWdlIGZ1bmN0aW9uIGFzIHdlbGwsIGp1bXBpbmcgaW4KaGVyZT8KClRoZSBpbmxpbmUgNjRrIGNv
-cHlfcGFnZSBmdW5jdGlvbiBvdGhlcndpc2UganVzdCBhZGRzIGNvZGUgc2l6ZSwKYXMgd2VsbCBh
-cyBiZWluZyBhIHRpbnkgYml0IHNsb3dlci4gSXQgbWF5IGV2ZW4gYmUgZ29vZCB0bwpoYXZlIGFu
-IG91dC1vZi1saW5lIGNvcHlfNjRLX3BhZ2UgZm9yIHRoZSByZWd1bGFyIGNvZGUsIGp1c3QKY2Fs
-bGluZyBjb3B5XzRLX3BhZ2UgcmVwZWF0ZWRseS4KCglBcm5kIDw+PAo=
+ > During corner case testing, we noticed that some versions of ehca 
+ > do not properly transition to interrupt done in special load situations.
+ > This can be resolved by periodically triggering EOI through H_EOI, 
+ > if eqes are pending.
+ > 
+ > Signed-off-by: Stefan Roscher <stefan.roscher@de.ibm.com>
+ > ---
+ > As firmware team suggested I moved the call of the EOI h_call into 
+ > the handler function, this ensures that we will call EOI only when we 
+ > find a valid eqe on the event queue.
+ > Additionally I changed the calculation of the xirr value as Roland suggested.
+
+paulus / benh -- does this version still get your ack?  Seems that fw
+team is OK with it according to Stefan...
+
+If so I will add this to my tree for 2.6.27.
+
+ > diff --git a/drivers/infiniband/hw/ehca/ehca_irq.c b/drivers/infiniband/hw/ehca/ehca_irq.c
+ > index ce1ab05..0792d93 100644
+ > --- a/drivers/infiniband/hw/ehca/ehca_irq.c
+ > +++ b/drivers/infiniband/hw/ehca/ehca_irq.c
+ > @@ -531,7 +531,7 @@ void ehca_process_eq(struct ehca_shca *shca, int is_irq)
+ >  {
+ >  	struct ehca_eq *eq = &shca->eq;
+ >  	struct ehca_eqe_cache_entry *eqe_cache = eq->eqe_cache;
+ > -	u64 eqe_value;
+ > +	u64 eqe_value, ret;
+ >  	unsigned long flags;
+ >  	int eqe_cnt, i;
+ >  	int eq_empty = 0;
+ > @@ -583,8 +583,13 @@ void ehca_process_eq(struct ehca_shca *shca, int is_irq)
+ >  			ehca_dbg(&shca->ib_device,
+ >  				 "No eqe found for irq event");
+ >  		goto unlock_irq_spinlock;
+ > -	} else if (!is_irq)
+ > +	} else if (!is_irq) {
+ > +		ret = hipz_h_eoi(eq->ist);
+ > +		if (ret != H_SUCCESS)
+ > +			ehca_err(&shca->ib_device,
+ > +				 "bad return code EOI -rc = %ld\n", ret);
+ >  		ehca_dbg(&shca->ib_device, "deadman found %x eqe", eqe_cnt);
+ > +	}
+ >  	if (unlikely(eqe_cnt == EHCA_EQE_CACHE_SIZE))
+ >  		ehca_dbg(&shca->ib_device, "too many eqes for one irq event");
+ >  	/* enable irq for new packets */
+ > diff --git a/drivers/infiniband/hw/ehca/hcp_if.c b/drivers/infiniband/hw/ehca/hcp_if.c
+ > index 5245e13..415d3a4 100644
+ > --- a/drivers/infiniband/hw/ehca/hcp_if.c
+ > +++ b/drivers/infiniband/hw/ehca/hcp_if.c
+ > @@ -933,3 +933,13 @@ u64 hipz_h_error_data(const struct ipz_adapter_handle adapter_handle,
+ >  				       r_cb,
+ >  				       0, 0, 0, 0);
+ >  }
+ > +
+ > +u64 hipz_h_eoi(int irq)
+ > +{
+ > +	unsigned long xirr;
+ > +
+ > +	iosync();
+ > +	xirr = (0xffULL << 24) | irq;
+ > +
+ > +	return plpar_hcall_norets(H_EOI, xirr);
+ > +}
+ > diff --git a/drivers/infiniband/hw/ehca/hcp_if.h b/drivers/infiniband/hw/ehca/hcp_if.h
+ > index 60ce02b..2c3c6e0 100644
+ > --- a/drivers/infiniband/hw/ehca/hcp_if.h
+ > +++ b/drivers/infiniband/hw/ehca/hcp_if.h
+ > @@ -260,5 +260,6 @@ u64 hipz_h_error_data(const struct ipz_adapter_handle adapter_handle,
+ >  		      const u64 ressource_handle,
+ >  		      void *rblock,
+ >  		      unsigned long *byte_count);
+ > +u64 hipz_h_eoi(int irq);
+ >  
+ >  #endif /* __HCP_IF_H__ */
+ > -- 
+ > 1.5.5
+ > 
+ > 
