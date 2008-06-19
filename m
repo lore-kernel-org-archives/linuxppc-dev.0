@@ -1,23 +1,17 @@
-Return-Path: <matvejchikov@gmail.com>
-Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.28])
-	by ozlabs.org (Postfix) with ESMTP id 39836DDE21
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jun 2008 05:41:34 +1000 (EST)
-Received: by yx-out-2324.google.com with SMTP id 8so193809yxg.39
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jun 2008 12:41:33 -0700 (PDT)
-Message-ID: <8496f91a0806191241v14c8a054s93f5a352bff68c62@mail.gmail.com>
-Date: Thu, 19 Jun 2008 23:41:33 +0400
-From: "Matvejchikov Ilya" <matvejchikov@gmail.com>
-To: "Vitaly Bordug" <vbordug@ru.mvista.com>
-Subject: Re: [PATCH] fs_enet: restore promiscuous and multicast settings in
-	restart()
-In-Reply-To: <20080619222042.2910e284@vitb.ru.mvista.com>
+Return-Path: <arnd@arndb.de>
+From: Arnd Bergmann <arnd@arndb.de>
+To: cbe-oss-dev@ozlabs.org
+Subject: Re: [Cbe-oss-dev] [RFC 3/3] powerpc: copy_4K_page tweaked for Cell
+Date: Thu, 19 Jun 2008 23:28:50 +0200
+References: <200806191754.17289.markn@au1.ibm.com>
+In-Reply-To: <200806191754.17289.markn@au1.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <200806181707.17739.laurentp@cse-semaphore.com>
-	<8496f91a0806181145w62d57a7fua767c8036f2261aa@mail.gmail.com>
-	<20080619222042.2910e284@vitb.ru.mvista.com>
-Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org
-Reply-To: matvejchikov@gmail.com
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200806192328.51423.arnd@arndb.de>
+Cc: Mark Nelson <markn@au1.ibm.com>, linuxppc-dev@ozlabs.org,
+	Gunnar von Boehn <VONBOEHN@de.ibm.com>,
+	Michael Ellerman <ellerman@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,62 +21,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Yes, please. =)
-
-2008/6/19 Vitaly Bordug <vbordug@ru.mvista.com>:
-> On Wed, 18 Jun 2008 22:45:57 +0400
-> "Matvejchikov Ilya" <matvejchikov@gmail.com> wrote:
->
->> I'm glad that you have corrected it. Half a year ago I pointed out
->> that there was such a mistake:
->> http://patchwork.ozlabs.org/linuxppc/patch?id=10700
->>
-> You've used -embedded ML, and patch wasn't noticed... I can add your S-O-B line if that will make you fill better :)
->
-> -Vitaly
->> Thanks.
->>
->> 2008/6/18 Laurent Pinchart <laurentp@cse-semaphore.com>:
->> > The restart() function is called when the link state changes and resets
->> > multicast and promiscous settings. This patch restores those settings at the
->> > end of restart().
->> >
->> > Signed-off-by: Laurent Pinchart <laurentp@cse-semaphore.com>
->> > ---
->> >  drivers/net/fs_enet/mac-fcc.c     |    3 +++
->> >  2 files changed, 4 insertions(+), 1 deletions(-)
->> >
->> > diff --git a/drivers/net/fs_enet/mac-fcc.c b/drivers/net/fs_enet/mac-fcc.c
->> > index ce40cf9..1a95cf1 100644
->> > --- a/drivers/net/fs_enet/mac-fcc.c
->> > +++ b/drivers/net/fs_enet/mac-fcc.c
->> > @@ -464,6 +464,9 @@ static void restart(struct net_device *dev)
->> >                C32(fccp, fcc_fpsmr, FCC_PSMR_FDE | FCC_PSMR_LPB);
->> >
->> >        S32(fccp, fcc_gfmr, FCC_GFMR_ENR | FCC_GFMR_ENT);
->> > +
->> > +       /* Restore multicast and promiscous settings */
->> > +       set_multicast_list(dev);
->> >  }
->> >
->> >  static void stop(struct net_device *dev)
->> > --
->> > 1.5.0
->> >
->> > --
->> > Laurent Pinchart
->> > CSE Semaphore Belgium
->> >
->> > Chaussee de Bruxelles, 732A
->> > B-1410 Waterloo
->> > Belgium
->> >
->> > T +32 (2) 387 42 59
->> > F +32 (2) 387 42 75
->> >
->
->
-> --
-> Sincerely,
-> Vitaly
->
+T24gVGh1cnNkYXkgMTkgSnVuZSAyMDA4LCBNYXJrIE5lbHNvbiB3cm90ZToKPiCgoKCgoKCgoC5h
+bGlnbiCgNwo+IF9HTE9CQUwoY29weV80S19wYWdlKQo+IKCgoKCgoKCgZGNidKCgoKAwLHI0oKCg
+oKCgoKCgoKCgLyogUHJlZmV0Y2ggT05FIFNSQyBjYWNoZWxpbmUgKi8KPiAKPiCgoKCgoKCgoGFk
+ZGmgoKCgcjYscjMsLTigoKCgoKCgoC8qIHByZXBhcmUgZm9yIHN0ZHUgKi8KPiCgoKCgoKCgoGFk
+ZGmgoKCgcjQscjQsLTigoKCgoKCgoC8qIHByZXBhcmUgZm9yIGxkdSAqLwo+IAo+IKCgoKCgoKCg
+bGmgoKCgoKByMTAsMzKgoKCgoKCgoKCgLyogY29weSAzMiBjYWNoZSBsaW5lcyBmb3IgYSA0SyBw
+YWdlICovCj4goKCgoKCgoKBsaaCgoKCgoHIxMiwxMjgrOKCgoKCgoKCgoKCgoKCgoC8qIHByZWZl
+dGNoIGRpc3RhbmNlKi8KClNpbmNlIHlvdSBoYXZlIGEgbG9vcCBoZXJlIGFueXdheSBpbnN0ZWFk
+IG9mIHRoZSBmdWxseSB1bnJvbGxlZApjb2RlLCB3aHkgbm90IHByb3ZpZGUgYSBjb3B5XzY0S19w
+YWdlIGZ1bmN0aW9uIGFzIHdlbGwsIGp1bXBpbmcgaW4KaGVyZT8KClRoZSBpbmxpbmUgNjRrIGNv
+cHlfcGFnZSBmdW5jdGlvbiBvdGhlcndpc2UganVzdCBhZGRzIGNvZGUgc2l6ZSwKYXMgd2VsbCBh
+cyBiZWluZyBhIHRpbnkgYml0IHNsb3dlci4gSXQgbWF5IGV2ZW4gYmUgZ29vZCB0bwpoYXZlIGFu
+IG91dC1vZi1saW5lIGNvcHlfNjRLX3BhZ2UgZm9yIHRoZSByZWd1bGFyIGNvZGUsIGp1c3QKY2Fs
+bGluZyBjb3B5XzRLX3BhZ2UgcmVwZWF0ZWRseS4KCglBcm5kIDw+PAo=
