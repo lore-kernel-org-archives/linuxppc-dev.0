@@ -2,24 +2,20 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E19CFDDEE7
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jun 2008 16:10:42 +1000 (EST)
-Message-Id: <4D6D9E9A-EE1C-45E5-B493-0249C256B02B@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id 4D7C6DDE2A
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jun 2008 16:16:11 +1000 (EST)
+Message-Id: <5A31B777-6591-4AE9-BDE5-3B624AED10A4@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Michael Neuling <mikey@neuling.org>
-In-Reply-To: <29411.1213855280@neuling.org>
+To: Michael Ellerman <michael@ellerman.id.au>,
+	Paul Mackerras <paulus@samba.org>
+In-Reply-To: <33bba4965d9907a8a93e9f92fd5c3874a6e21f90.1212042061.git.michael@ellerman.id.au>
 Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Mime-Version: 1.0 (Apple Message framework v924)
-Subject: Re: [PATCH 5/9] powerpc: Introduce VSX thread_struct and CONFIG_VSX 
-Date: Thu, 19 Jun 2008 01:10:32 -0500
-References: <20080618004734.0B72E70296@localhost.localdomain>
-	<5AEB0769-1394-4924-803D-C40CAF685519@kernel.crashing.org>
-	<14228.1213850120@neuling.org>
-	<A62DFD0C-387A-4833-B266-99DB1B09E101@kernel.crashing.org>
-	<26165.1213853871@neuling.org>
-	<B0E87874-BC65-4037-A43D-91C4142475E7@kernel.crashing.org>
-	<29411.1213855280@neuling.org>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH 1/6] Move code patching code into
+	arch/powerpc/lib/code-patching.c
+Date: Thu, 19 Jun 2008 01:15:56 -0500
+References: <33bba4965d9907a8a93e9f92fd5c3874a6e21f90.1212042061.git.michael@ellerman.id.au>
+Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,66 +26,38 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Jun 19, 2008, at 1:01 AM, Michael Neuling wrote:
+On May 29, 2008, at 1:20 AM, Michael Ellerman wrote:
 
-> In message <B0E87874-BC65-4037- 
-> A43D-91C4142475E7@kernel.crashing.org> you wrote
-> :
->>>>>>> +	} fpvsr __attribute__((aligned(16)));
->>>>>>
->>>>>> Do we really need a union here?  what would happen if you just
->>>>>> changed
->>>>>> the type of fpr[32] from double to vector if #CONFIG_VSX?
->>>>>>
->>>>>> I really dont like the union and think we can just make the  
->>>>>> storage
->>>>>> look opaque which is the key.  I doubt we every really care about
->>>>>> using fpr[] as a double in the kernel.
->>>>>
->>>>> I did something similar to this for the first cut of this patch,  
->>>>> but
->>>>> it
->>>>> made the code accessing this structure much less readable.
->>>>
->>>> really, what code is that?
->>>
->>> Any code that has to read/write the top or bottom 64 bits _only_ of
->>> the
->>> 128 bit vector.
->>>
->>> The signals code is a good example where, for backwards  
->>> compatibility,
->>> we need to read/write the old 64 bit FP regs, from the 128 bit value
->>> in
->>> the struct.
->>>
->>> Similarly, the way we've extended the signals interface for VSX, you
->>> need to read/write out the bottom 64 bits (vsrlow) of a 128 bit  
->>> value.
->>>
->>> eg. the simple:
->>>    current->thread.fpvsr.fp[i].vsrlow = buf[i]
->>> would turn into some abomination/macro.
->>
->> it would turn into something like:
->>
->> current->thread.fpr[i][2] = buf[i];
->> current->thread.fpr[i][3] = buf[i+1];
+> We currently have a few routines for patching code in asm/system.h,  
+> because
+> they didn't fit anywhere else. I'd like to clean them up a little  
+> and add
+> some more, so first move them into a dedicated C file - they don't  
+> need to
+> be inlined.
 >
-> Maybe abomination was going too far :-)
+> While we're moving the code, drop create_function_call(), it's  
+> intended
+> caller never got merged and will be replaced in future with something
+> different.
 >
-> I still think using the union makes it is easier to read than what you
-> have here.  Also, it better reflects the structure of what's being
-> stored there.
+> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+> ---
+> arch/powerpc/kernel/crash_dump.c          |    1 +
+> arch/powerpc/lib/Makefile                 |    2 +
+> arch/powerpc/lib/code-patching.c          |   33 ++++++++++++++++++++
+> arch/powerpc/platforms/86xx/mpc86xx_smp.c |    1 +
+> arch/powerpc/platforms/powermac/smp.c     |    1 +
+> include/asm-powerpc/code-patching.h       |   25 +++++++++++++++
+> include/asm-powerpc/system.h              |   48  
+> -----------------------------
+> 7 files changed, 63 insertions(+), 48 deletions(-)
+>
+> diff --git a/arch/powerpc/kernel/crash_dum
 
-I don't think that holds much weight with me.  We don't union the  
-vector128 type to show it also supports float, u16, and u8 types.
+what's the state of these patches and getting them into powerpc-next?
 
-I stick by the fact that the ONLY place it looks like you access the  
-union via the .vsr member is for memset or memcpy so you clearly know  
-if the size should be sizeof(double) or sizeof(vector).
-
-Also, I can see the case in the future that 'fpr's become 128-bits  
-wide' and allow for native long double support.
+I'm looking at some runtime fix ups that I was thinking of basing on  
+this code.
 
 - k
