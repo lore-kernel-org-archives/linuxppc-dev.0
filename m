@@ -1,28 +1,19 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 37E11DDEF3
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jun 2008 23:25:10 +1000 (EST)
-Message-Id: <A7512E17-3986-4E05-8BAA-635E4D6AC865@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: benh@kernel.crashing.org
-In-Reply-To: <1213868019.8011.68.camel@pasglop>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v924)
-Subject: Re: [PATCH 5/9] powerpc: Introduce VSX thread_struct and CONFIG_VSX
-Date: Thu, 19 Jun 2008 08:24:58 -0500
-References: <20080618004734.0B72E70296@localhost.localdomain>
-	<5AEB0769-1394-4924-803D-C40CAF685519@kernel.crashing.org>
-	<14228.1213850120@neuling.org>
-	<A62DFD0C-387A-4833-B266-99DB1B09E101@kernel.crashing.org>
-	<26165.1213853871@neuling.org>
-	<B0E87874-BC65-4037-A43D-91C4142475E7@kernel.crashing.org>
-	<29411.1213855280@neuling.org>
-	<4D6D9E9A-EE1C-45E5-B493-0249C256B02B@kernel.crashing.org>
-	<1213868019.8011.68.camel@pasglop>
-Cc: linuxppc-dev@ozlabs.org, Michael Neuling <mikey@neuling.org>,
-	Paul Mackerras <paulus@samba.org>
+Return-Path: <arnd@arndb.de>
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [RFC 0/3] powerpc: memory copy routines tweaked for Cell
+Date: Thu, 19 Jun 2008 15:59:04 +0200
+References: <200806191753.51495.markn@au1.ibm.com>
+	<200806191353.17323.arnd@arndb.de>
+	<18522.19171.348796.482938@cargo.ozlabs.ibm.com>
+In-Reply-To: <18522.19171.348796.482938@cargo.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200806191559.04852.arnd@arndb.de>
+Cc: Mark Nelson <markn@au1.ibm.com>, Gunnar von Boehn <VONBOEHN@de.ibm.com>,
+	Paul Mackerras <paulus@samba.org>, cbe-oss-dev@ozlabs.org,
+	Michael Ellerman <ellerman@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,35 +23,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thursday 19 June 2008, Paul Mackerras wrote:
+> Arnd Bergmann writes:
+> 
+> > Have you tried running this code on other platforms to see if it
+> > actually performs worse on any of them? I would guess that the
+> > older code also doesn't work too well on Power 5 and Power 6,
+> 
+> Why would you guess that?
 
-On Jun 19, 2008, at 4:33 AM, Benjamin Herrenschmidt wrote:
+I remembered that Gunnar had done some tests on other CPUs showing
+that an earlier version of the code was better than the kernel
+memcpy.
+Also, I had tried to trace the history of the usercopy function
+and found that it predates most of the CPUs in current use, so
+I assume it has suffered from bitrot and nobody tried to do better
+since the Power3 days. AFAICT, it hasn't seen any update since your
+original Power4 version from 2002.
 
-> On Thu, 2008-06-19 at 01:10 -0500, Kumar Gala wrote:
->>> I still think using the union makes it is easier to read than what  
->>> you
->>> have here.  Also, it better reflects the structure of what's being
->>> stored there.
->>
->> I don't think that holds much weight with me.  We don't union the
->> vector128 type to show it also supports float, u16, and u8 types.
->
-> But this is different. The same registers are either basic FP regs or
-> full VSX regs.
->
-> I don't see what's wrong with union, it's a nice way to express  
-> things.
-
-We also don't do this for SPE (the freescale version).
-
->> I stick by the fact that the ONLY place it looks like you access the
->> union via the .vsr member is for memset or memcpy so you clearly know
->> if the size should be sizeof(double) or sizeof(vector).
->>
->> Also, I can see the case in the future that 'fpr's become
->
-> What's wrong with the union ? there's nothing ugly about them..
-
-I'll wait for the next version and see how many places .vsr is  
-actually accessed.
-
-- k
+	Arnd <><
