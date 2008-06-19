@@ -1,16 +1,23 @@
-Return-Path: <VONBOEHN@de.ibm.com>
-In-Reply-To: <200806191353.17323.arnd@arndb.de>
-References: <200806191753.51495.markn@au1.ibm.com>
-	<200806191353.17323.arnd@arndb.de>
-Subject: Re: [RFC 0/3] powerpc: memory copy routines tweaked for Cell
-To: Arnd Bergmann <arnd@arndb.de>
-Message-ID: <OF44809729.FB9D2C51-ONC125746D.00429A93-C125746D.0042FB12@de.ibm.com>
-From: Gunnar von Boehn <VONBOEHN@de.ibm.com>
-Date: Thu, 19 Jun 2008 14:11:22 +0200
-MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-Cc: Mark Nelson <markn@au1.ibm.com>, linuxppc-dev@ozlabs.org,
-	Michael Ellerman <ellerman@au1.ibm.com>, cbe-oss-dev@ozlabs.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 8E9A1DDDEA
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jun 2008 23:23:27 +1000 (EST)
+Message-Id: <07FF95CF-C157-4258-8BF5-34CAD2CECDCA@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: michael@ellerman.id.au
+In-Reply-To: <1213858514.25483.1.camel@localhost>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v924)
+Subject: Re: [PATCH 1/6] Move code patching code into
+	arch/powerpc/lib/code-patching.c
+Date: Thu, 19 Jun 2008 08:23:13 -0500
+References: <33bba4965d9907a8a93e9f92fd5c3874a6e21f90.1212042061.git.michael@ellerman.id.au>
+	<5A31B777-6591-4AE9-BDE5-3B624AED10A4@kernel.crashing.org>
+	<1213858514.25483.1.camel@localhost>
+Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,56 +27,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Arnd,
 
-I have no results for P5/P6, but I did some tests on JS21 aka PPC-970.
-On PPC-970 the CELL memcpy is faster than the current Linux routine.
-This becomes really visible when you really copy memory-to-memory and are
-not only working in the 2ndlevelcache.
+On Jun 19, 2008, at 1:55 AM, Michael Ellerman wrote:
 
+> On Thu, 2008-06-19 at 01:15 -0500, Kumar Gala wrote:
+>> On May 29, 2008, at 1:20 AM, Michael Ellerman wrote:
+>>
+>>> We currently have a few routines for patching code in asm/system.h,
+>>> because
+>>> they didn't fit anywhere else. I'd like to clean them up a little
+>>> and add
+>>> some more, so first move them into a dedicated C file - they don't
+>>> need to
+>>> be inlined.
+>>>
+>>> While we're moving the code, drop create_function_call(), it's
+>>> intended
+>>> caller never got merged and will be replaced in future with  
+>>> something
+>>> different.
+>>>
+>>> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+>>> ---
+>>> arch/powerpc/kernel/crash_dump.c          |    1 +
+>>> arch/powerpc/lib/Makefile                 |    2 +
+>>> arch/powerpc/lib/code-patching.c          |   33 ++++++++++++++++++ 
+>>> ++
+>>> arch/powerpc/platforms/86xx/mpc86xx_smp.c |    1 +
+>>> arch/powerpc/platforms/powermac/smp.c     |    1 +
+>>> include/asm-powerpc/code-patching.h       |   25 +++++++++++++++
+>>> include/asm-powerpc/system.h              |   48
+>>> -----------------------------
+>>> 7 files changed, 63 insertions(+), 48 deletions(-)
+>>>
+>>> diff --git a/arch/powerpc/kernel/crash_dum
+>>
+>> what's the state of these patches and getting them into powerpc-next?
+>
+> I think what I posted is reasonably solid, I've added some more  
+> routines
+> for the stuff I'm working on. I'll repost today or tommorrow.
+>
+>> I'm looking at some runtime fix ups that I was thinking of basing on
+>> this code.
+>
+> What have you got in mind? I'm working on some runtime fixups too :)
 
-Kind regards
+I want to be able to run time fix up lwsync an remove it as compile  
+time thing.
 
-Gunnar von Boehn
-
-
-
-
-                                                                           
-             Arnd Bergmann                                                 
-             <arnd@arndb.de>                                               
-                                                                        To 
-             19/06/2008 13:53          linuxppc-dev@ozlabs.org             
-                                                                        cc 
-                                       Mark Nelson <markn@au1.ibm.com>,    
-                                       cbe-oss-dev@ozlabs.org, Gunnar von  
-                                       Boehn/Germany/Contr/IBM@IBMDE,      
-                                       Michael Ellerman                    
-                                       <ellerman@au1.ibm.com>              
-                                                                   Subject 
-                                       Re: [RFC 0/3] powerpc: memory copy  
-                                       routines tweaked for Cell           
-                                                                           
-                                                                           
-                                                                           
-                                                                           
-                                                                           
-                                                                           
-
-
-
-
-On Thursday 19 June 2008, Mark Nelson wrote:
-> The plan is to use Michael Ellerman's code patching work so that at
-runtime
-> if we're running on a Cell machine the new routines are called but
-otherwise
-> the existing memory copy routines are used.
-
-Have you tried running this code on other platforms to see if it
-actually performs worse on any of them? I would guess that the
-older code also doesn't work too well on Power 5 and Power 6, so the
-cell optimized version could give us a significant advantage as well,
-albeit less than another CPU specific version.
-
-             Arnd <><
+- k
