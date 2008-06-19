@@ -1,12 +1,27 @@
-Return-Path: <krafft@de.ibm.com>
-Date: Thu, 19 Jun 2008 19:35:34 +0200
-From: Christian Krafft <krafft@de.ibm.com>
-To: cbe-oss-dev@ozlabs.org
-Subject: cell: add support for power button of future IBM cell blades
-Message-ID: <20080619193534.54850b36@de.ibm.com>
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id BAF4ADE31A
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jun 2008 03:56:00 +1000 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e4.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m5JHtv5Y030343
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jun 2008 13:55:57 -0400
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
+	m5JHtvPC211298
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jun 2008 13:55:57 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m5JHtvU3002282
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jun 2008 13:55:57 -0400
+Date: Thu, 19 Jun 2008 13:53:34 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: paulus@samba.org
+Subject: Please pull 'next' branch of 4xx tree
+Message-ID: <20080619135334.6f17d2e0@zod.rchland.ibm.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="Sig_/5ADivlJOFslAi113E5=WJcd";
-	protocol="application/pgp-signature"; micalg=PGP-SHA1
+Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -17,154 +32,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Sig_/5ADivlJOFslAi113E5=WJcd
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+Hi Paul,
 
-This patch adds support for the power button on future IBM cell blades.
-It actually doesn't shut down the machine. Instead it exposes an
-input device /dev/input/event0 to userspace which sends KEY_POWER
-if power button has been pressed.
-haldaemon actually recognizes the button, so a plattform independent acpid
-replacement should handle it correctly.
+Please pull from:
 
-Signed-off-by: Christian Krafft <krafft@de.ibm.com>
+ master.kernel.org:/pub/scm/linux/kernel/git/jwboyer/powerpc-4xx.git next
 
-Index: linux.git/arch/powerpc/platforms/cell/pervasive.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- linux.git.orig/arch/powerpc/platforms/cell/pervasive.c
-+++ linux.git/arch/powerpc/platforms/cell/pervasive.c
-@@ -24,8 +24,10 @@
- #undef DEBUG
-=20
- #include <linux/interrupt.h>
-+#include <linux/input.h>
- #include <linux/irq.h>
- #include <linux/percpu.h>
-+#include <linux/platform_device.h>
- #include <linux/types.h>
- #include <linux/kallsyms.h>
-=20
-@@ -40,6 +42,9 @@
-=20
- static int sysreset_hack;
-=20
-+static struct input_dev *button_dev;
-+static struct platform_device *button_pdev;
-+
- static void cbe_power_save(void)
- {
- 	unsigned long ctrl, thread_switch_control;
-@@ -105,10 +110,21 @@ static int cbe_system_reset_exception(st
- 		 */
- 		if (sysreset_hack && (cpu =3D smp_processor_id()) =3D=3D 0) {
- 			pmd =3D cbe_get_cpu_pmd_regs(cpu);
--			if (in_be64(&pmd->ras_esc_0) & 0xffff) {
-+			if (in_be64(&pmd->ras_esc_0) & 0x0000ffff) {
- 				out_be64(&pmd->ras_esc_0, 0);
- 				return 0;
- 			}
-+			if (in_be64(&pmd->ras_esc_0) & 0x00010000) {
-+				out_be64(&pmd->ras_esc_0, 0);
-+				if (!button_dev)
-+					return 0;
-+
-+				input_report_key(button_dev, KEY_POWER, 1);
-+				input_sync(button_dev);
-+				input_report_key(button_dev, KEY_POWER, 0);
-+				input_sync(button_dev);
-+				return 1;
-+			}
- 		}
- 		break;
- #ifdef CONFIG_CBE_RAS
-@@ -155,3 +171,55 @@ void __init cbe_pervasive_init(void)
- 	ppc_md.power_save =3D cbe_power_save;
- 	ppc_md.system_reset_exception =3D cbe_system_reset_exception;
- }
-+
-+static int __init cbe_power_button_init(void)
-+{
-+	int ret;
-+	struct input_dev *dev;
-+
-+	if (!sysreset_hack)
-+		return 0;
-+
-+	dev =3D input_allocate_device();
-+        if (!dev) {
-+		ret =3D -ENOMEM;
-+                printk(KERN_ERR "%s: Not enough memory\n", __func__);
-+                goto out;
-+        }
-+
-+	set_bit(EV_KEY, dev->evbit);
-+	set_bit(KEY_POWER, dev->keybit);
-+
-+	dev->name =3D "Power Button";
-+	dev->id.bustype =3D BUS_HOST;
-+
-+	/* this makes the button look like an acpi power button
-+	 * no clue whether anyone relies on that though */
-+	dev->id.product =3D 0x02;
-+	dev->phys =3D "LNXPWRBN/button/input0";
-+
-+	button_pdev =3D platform_device_register_simple("power_button", 0, NULL,
-0);
-+	if (IS_ERR(button_pdev)) {
-+		ret =3D PTR_ERR(button_pdev);
-+		goto out_free_input;
-+	}
-+
-+	dev->dev.parent =3D &button_pdev->dev;
-+
-+	ret =3D input_register_device(dev);
-+	if (ret) {
-+                printk(KERN_ERR "%s: Failed to register device\n", __func_=
-_);
-+		goto out_free_pdev;
-+        }
-+
-+	button_dev =3D dev;
-+	return ret;
-+
-+out_free_pdev:
-+	platform_device_unregister(button_pdev);
-+out_free_input:
-+	input_free_device(dev);
-+out:
-+	return ret;
-+}
-+device_initcall(cbe_power_button_init);
+to get some more changes for 2.6.27.  A new board port, a revert, and a
+few fixes.
 
+I'll have a few more after this as well, most notably Ben's rework
+patch.
 
---=20
-Mit freundlichen Gruessen,
-kind regards,
+josh
 
-Christian Krafft
-IBM Systems & Technology Group,
-Linux Kernel Development
-IT Specialist
+Giuseppe Coviello (2):
+      powerpc/4xx: Sam440ep support
+      powerpc/4xx: Convert Sam440ep DTS to dts-v1
 
+Imre Kaloz (1):
+      powerpc/4xx: MTD support for the AMCC Taishan Board
 
-Vorsitzender des Aufsichtsrats:	Martin Jetter
-Geschaeftsfuehrung:		Herbert Kircher
-Sitz der Gesellschaft:		Boeblingen
-Registriergericht:		Amtsgericht Stuttgart, HRB 243294
+Josh Boyer (2):
+      Revert "[POWERPC] 4xx: Fix 460GT support to not enable FPU"
+      powerpc/4xx: Workaround for PPC440EPx/GRx PCI_28 Errata
 
---Sig_/5ADivlJOFslAi113E5=WJcd
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
+Stefan Roese (1):
+      powerpc/4xx: PCIe driver now detects if a port is disabled via the dev-tre
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.7 (GNU/Linux)
+Valentine Barshak (1):
+      powerpc/4xx: Fix resource issue in warp-nand.c
 
-iD8DBQFIWpju6rqK4qDx+dcRAji2AJ9csYYgKKPTUGv5FnpLsYUcUtP1AQCdFEIu
-RNJKI2kWrDbFGMHZZNq406E=
-=yeig
------END PGP SIGNATURE-----
-
---Sig_/5ADivlJOFslAi113E5=WJcd--
+ arch/powerpc/boot/Makefile                  |    3 +-
+ arch/powerpc/boot/cuboot-sam440ep.c         |   49 ++
+ arch/powerpc/boot/dts/sam440ep.dts          |  293 +++++++
+ arch/powerpc/boot/dts/taishan.dts           |   29 +-
+ arch/powerpc/configs/44x/sam440ep_defconfig | 1192 +++++++++++++++++++++++++++
+ arch/powerpc/configs/44x/taishan_defconfig  |   79 ++-
+ arch/powerpc/kernel/cpu_setup_44x.S         |    1 +
+ arch/powerpc/kernel/cputable.c              |    4 +-
+ arch/powerpc/platforms/44x/Kconfig          |    9 +
+ arch/powerpc/platforms/44x/Makefile         |    1 +
+ arch/powerpc/platforms/44x/sam440ep.c       |   79 ++
+ arch/powerpc/platforms/44x/warp-nand.c      |    3 +-
+ arch/powerpc/sysdev/indirect_pci.c          |    6 +
+ arch/powerpc/sysdev/ppc4xx_pci.c            |   14 +
+ include/asm-powerpc/pci-bridge.h            |    3 +
+ 15 files changed, 1759 insertions(+), 6 deletions(-)
