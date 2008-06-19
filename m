@@ -1,31 +1,19 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 93CEFDDFB0
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jun 2008 00:06:37 +1000 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e5.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m5JE6Xxi023901
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jun 2008 10:06:33 -0400
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
-	m5JE6R2H193844
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jun 2008 10:06:27 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m5JE6Qjf006027
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jun 2008 10:06:27 -0400
-Date: Thu, 19 Jun 2008 10:04:05 -0400
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org
-Subject: Re: [RFC/PATCH] powerpc: rework 4xx PTE access and TLB miss
-Message-ID: <20080619100405.61da19fa@zod.rchland.ibm.com>
-In-Reply-To: <1213145431.25745.42.camel@pasglop>
-References: <1213145431.25745.42.camel@pasglop>
+Return-Path: <sebastien.dugue@bull.net>
+Received: from ecfrec.frec.bull.fr (ecfrec.frec.bull.fr [129.183.4.8])
+	by ozlabs.org (Postfix) with ESMTP id 2588CDDE1E
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jun 2008 00:34:53 +1000 (EST)
+Date: Thu, 19 Jun 2008 15:53:26 +0200
+From: Sebastien Dugue <sebastien.dugue@bull.net>
+To: Chirag Jog <chirag@linux.vnet.ibm.com>
+Subject: Re: [OOPS] RT kernel on PowerPC
+Message-ID: <20080619155326.0234be60@bull.net>
+In-Reply-To: <20080619124634.GA7409@linux.vnet.ibm.com>
+References: <20080619124634.GA7409@linux.vnet.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Kumar Gala <kumar.gala@freescale.com>
+Cc: linux-rt-users <linux-rt-users@vger.kernel.org>, josht@linux.vnet.ibm.com,
+	LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
+	nsnix@comcast.net, Sripathi Kodi <sripathik@in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,32 +23,87 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 11 Jun 2008 10:50:31 +1000
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-> This is some preliminary work to improve TLB management on SW loaded
-> TLB powerpc platforms. This introduce support for non-atomic PTE
-> operations in pgtable-ppc32.h and removes write back to the PTE from
-> the TLB miss handlers. In addition, the DSI interrupt code no longer
-> tries to fixup write permission, this is left to generic code, and
-> _PAGE_HWWRITE is gone.
+  Hi Chirag
+
+On Thu, 19 Jun 2008 18:16:34 +0530 Chirag Jog <chirag@linux.vnet.ibm.com> wrote:
+
+> Hi,
+>     I was trying out the realtime linux kernel 2.6.25.4-rt3 on a powerpc box.
+>     The kernel booted fine.
+>     On running the matrix_mult testcase from the real-time testsuite
+>     in ltp (ltp/testcases/realtime/func), I get the following Oops.
+>     After the which machine just freezes.
+
+  I do get the same thing on a JS22 blade, and you will find that some other
+tests are hanging or oopsing. For example the sbrk_mutex testcase suffers from
+missed hrtimer wakeups. I also get loads of:
+
+  BUG: using smp_processor_id() in preemptible [00000000] code
+
+all triggered from the sys_munmap -> ... -> free_pgtables code path.
+
+  Currently I'm trying to debug some networking problems where the whole
+stack gets stuck under heavy receive load.
+
+  As you can see, -rt is far from stable on the Power architecture. Sorry for
+not having an answer for you but I just wanted to show some of the
+obstacles laying ahead.
+
+  Sebastien.
+
+>     I tried setting the panic_on_oops but that didn't help strangely.
+>     Also, attached is the config file
 > 
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> ---
+> Oops: Kernel access of bad area, sig: 11 [#1]
+> PREEMPT SMP NR_CPUS=64 NUMA pSeries
+> Modules linked in: autofs4 hidp rfcomm l2cap bluetooth sunrpc ehea inet_lro iptable_filter ip_tables xt_tcpudp ip6table_filter ip6_tables x_tables ipv6 dm_mirror dm_multipath dm_mod parport_pc lp parport sg sr_mod ibmvscsic scsi_transport_srp sd_mod scsi_mod ext3 jbd uhci_hcd ohci_hcd ehci_hcd
+> NIP: c000000000050fa0 LR: c000000000053db4 CTR: c00000000005ab98
+> REGS: c00000009224fe50 TRAP: 0300   Not tainted  (2.6.25.4-rt3)
+> MSR: 8000000000001032 <ME,IR,DR>  CR: 28000088  XER: 00000000
+> DAR: c0000180004fc4b0, DSISR: 0000000040000000
+> TASK = c000000092200ad0[59] 'events/3' THREAD: c000000092250000 CPU: 3
+> GPR00: c0000000004fc480 c0000000922500d0 c0000000005bca00 c000000092200ad0 
+> GPR04: 0000000000000002 0000000000000038 0000000000000000 000000000000000f 
+> GPR08: 0000000000000001 c0000180004fc480 0f0f0f0f0f0f0f0f c0000000004d9a00 
+> GPR12: 8000000000009032 c0000000004fca80 0000000000000000 c000000000413910 
+> GPR16: 4000000000c00000 c000000000412108 0000000000000000 0000000000284000 
+> GPR20: c0000000004cb9b0 00000000010cb9b0 0000000000000000 0000001fdaa40b13 
+> GPR24: 0000000000000000 000000000000001f c0000000922501d0 0000000000000000 
+> GPR28: 0000000000000001 c000000092200ad0 c00000000056a680 c000000090b18ad0 
+> NIP [c000000000050fa0] .__resched_task+0x38/0xfc
+> LR [c000000000053db4] .try_to_wake_up+0x168/0x200
+> Call Trace:
+> Instruction dump:
+> fbc1fff0 fbe1fff8 ebc2af70 7c7d1b78 f8010010 f821ff71 e81e8008 e97e8000 
+> e9230008 81290010 79294da4 7d290214 <e8090030> 7c0b002e 7c000074 7800d182 
 > 
-> This is a first step, plan is to do the same for FSL BookE, 405 and
-> possibly 8xx too. From there, I want to rework a bit the execute
-> permission handling to avoid multiple faults, add support for
-> _PAGE_EXEC (no executable mappings), for prefaulting (especially
-> for kmap) and proper SMP support for future SMP capable BookE
-> platforms.
-
-I've looked this over quite a bit and can't find anything wrong with
-it.  As soon as I get my boards set back up next week, I will try it
-out on a few and see if I can find a good stress test as well.
-
-If you could add the comments that Kumar suggested and send out an
-updated patch, I'm inclined to get this into 2.6.27, but we should do
-that soon if that is our target.
-
-josh
+> Disassembling the __resched_task,
+> 
+> Dump of assembler code for function __resched_task:
+> 0xc000000000050f68 <__resched_task+0>:  mflr    r0
+> 0xc000000000050f6c <__resched_task+4>:  std     r29,-24(r1)
+> 0xc000000000050f70 <__resched_task+8>:  std     r30,-16(r1)
+> 0xc000000000050f74 <__resched_task+12>: std     r31,-8(r1)
+> 0xc000000000050f78 <__resched_task+16>: ld      r30,-20624(r2)
+> 0xc000000000050f7c <__resched_task+20>: mr      r29,r3
+> 0xc000000000050f80 <__resched_task+24>: std     r0,16(r1)
+> 0xc000000000050f84 <__resched_task+28>: stdu    r1,-144(r1)
+> 0xc000000000050f88 <__resched_task+32>: ld      r0,-32760(r30)
+> 0xc000000000050f8c <__resched_task+36>: ld      r11,-32768(r30)
+> 0xc000000000050f90 <__resched_task+40>: ld      r9,8(r3)
+> 0xc000000000050f94 <__resched_task+44>: lwz     r9,16(r9)
+> 0xc000000000050f98 <__resched_task+48>: rldicr  r9,r9,9,54
+> 0xc000000000050f9c <__resched_task+52>: add     r9,r9,r0
+> 0xc000000000050fa0 <__resched_task+56>: ld      r0,48(r9) <----
+> offending instruction 
+> 0xc000000000050fa4 <__resched_task+60>: lwzx    r0,r11,r0
+>         
+> 
+> 
+> 
+> 
+> -- 
+> Cheers,
+> Chirag Jog
+> 
