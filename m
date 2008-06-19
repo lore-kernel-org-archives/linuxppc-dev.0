@@ -1,28 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <mingo@elte.hu>
+Received: from fallback.mail.elte.hu (fallback.mail.elte.hu [157.181.151.13])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E3410DDF08
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jun 2008 19:33:52 +1000 (EST)
-Subject: Re: [PATCH 5/9] powerpc: Introduce VSX thread_struct and CONFIG_VSX
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <4D6D9E9A-EE1C-45E5-B493-0249C256B02B@kernel.crashing.org>
-References: <20080618004734.0B72E70296@localhost.localdomain>
-	<5AEB0769-1394-4924-803D-C40CAF685519@kernel.crashing.org>
-	<14228.1213850120@neuling.org>
-	<A62DFD0C-387A-4833-B266-99DB1B09E101@kernel.crashing.org>
-	<26165.1213853871@neuling.org>
-	<B0E87874-BC65-4037-A43D-91C4142475E7@kernel.crashing.org>
-	<29411.1213855280@neuling.org>
-	<4D6D9E9A-EE1C-45E5-B493-0249C256B02B@kernel.crashing.org>
-Content-Type: text/plain
-Date: Thu, 19 Jun 2008 19:33:39 +1000
-Message-Id: <1213868019.8011.68.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Michael Neuling <mikey@neuling.org>,
-	Paul Mackerras <paulus@samba.org>
-Reply-To: benh@kernel.crashing.org
+	by ozlabs.org (Postfix) with ESMTPS id CA891DDDF0
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jun 2008 19:51:42 +1000 (EST)
+Date: Thu, 19 Jun 2008 11:50:48 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Nathan Lynch <ntl@pobox.com>
+Subject: Re: [RFC/PATCH 0/3] sched: allow arch override of cpu power
+Message-ID: <20080619095048.GD15228@elte.hu>
+References: <1213835374-10868-1-git-send-email-ntl@pobox.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1213835374-10868-1-git-send-email-ntl@pobox.com>
+Cc: linuxppc-dev@ozlabs.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org,
+	Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,26 +25,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2008-06-19 at 01:10 -0500, Kumar Gala wrote:
-> > I still think using the union makes it is easier to read than what you
-> > have here.  Also, it better reflects the structure of what's being
-> > stored there.
+
+* Nathan Lynch <ntl@pobox.com> wrote:
+
+> There is an "interesting" quality of POWER6 cores, which each have 2 
+> hardware threads: assuming one thread on the core is idle, the primary 
+> thread is a little "faster" than the secondary thread.  To illustrate:
 > 
-> I don't think that holds much weight with me.  We don't union the  
-> vector128 type to show it also supports float, u16, and u8 types.
-
-But this is different. The same registers are either basic FP regs or 
-full VSX regs.
-
-I don't see what's wrong with union, it's a nice way to express things.
- 
-> I stick by the fact that the ONLY place it looks like you access the  
-> union via the .vsr member is for memset or memcpy so you clearly know  
-> if the size should be sizeof(double) or sizeof(vector).
+> for cpumask in 0x1 0x2 ; do
+>     taskset $cpumask /usr/bin/time -f "%e elapsed, %U user, %S sys" \
+>             /bin/sh -c "i=1000000 ; while (( i-- )) ; do : ; done"
+> done
 > 
-> Also, I can see the case in the future that 'fpr's become 
+> 17.05 elapsed, 16.83 user, 0.22 sys
+> 17.54 elapsed, 17.32 user, 0.22 sys
+> 
+> (The first result is for a primary thread; the second result for a 
+> secondary thread.)
+> 
+> So it would be nice to have the scheduler slightly prefer primary 
+> threads on POWER6 machines.  These patches, which allow the 
+> architecture to override the scheduler's CPU "power" calculation, are 
+> one possible approach, but I'm open to others.  Please note: these 
+> seemed to have the desired effect on 2.6.25-rc kernels (2-3% 
+> improvement in a kernbench-like make -j <nr_cores>), but I'm not 
+> seeing this improvement with 2.6.26-rc kernels for some reason I am 
+> still trying to track down.
 
-What's wrong with the union ? there's nothing ugly about them..
+ok, i guess that discrepancy has to be tracked down before we can think 
+about these patches - but the principle is OK.
 
-Cheers,
-Ben.
+One problem is that the whole cpu-power balancing code in sched.c is a 
+bit ... unclear and under-documented. So any change to this area should 
+begin at documenting the basics: what do the units mean exactly, how are 
+they used in balancing and what is the desired effect.
+
+I'd not be surprised if there were a few buglets in this area, SMT is 
+not at the forefront of testing at the moment. There's nothing 
+spectacularly broken in it (i have a HT machine myself), but the 
+concepts have bitrotten a bit. Patches - even if they just add comments 
+- are welcome :-)
+
+	Ingo
