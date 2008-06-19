@@ -1,12 +1,15 @@
 Return-Path: <ntl@pobox.com>
 Received: from sasl.smtp.pobox.com (a-sasl-fastnet.sasl.smtp.pobox.com
-	[207.106.133.19]) by ozlabs.org (Postfix) with ESMTP id 94828DDEE1
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jun 2008 10:30:08 +1000 (EST)
+	[207.106.133.19]) by ozlabs.org (Postfix) with ESMTP id EBDA5DE075
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jun 2008 10:30:28 +1000 (EST)
 From: Nathan Lynch <ntl@pobox.com>
 To: linux-kernel@vger.kernel.org
-Subject: [RFC/PATCH 0/3] sched: allow arch override of cpu power
-Date: Wed, 18 Jun 2008 19:29:31 -0500
-Message-Id: <1213835374-10868-1-git-send-email-ntl@pobox.com>
+Subject: [RFC/PATCH 2/3] add cpu_power to machdep_calls, override
+	SD_SIBLING_INIT
+Date: Wed, 18 Jun 2008 19:29:33 -0500
+Message-Id: <1213835374-10868-3-git-send-email-ntl@pobox.com>
+In-Reply-To: <1213835374-10868-1-git-send-email-ntl@pobox.com>
+References: <1213835374-10868-1-git-send-email-ntl@pobox.com>
 Cc: linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@elte.hu>,
 	Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -18,40 +21,91 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-There is an "interesting" quality of POWER6 cores, which each have 2
-hardware threads: assuming one thread on the core is idle, the primary
-thread is a little "faster" than the secondary thread.  To illustrate:
+Add a cpu_power() call to machdep_calls, which will allow platforms to
+override the scheduler's default cpu power calculation.  If the
+platform does not provide a cpu_power() method, the scheduler's
+default value is used.
 
-for cpumask in 0x1 0x2 ; do
-    taskset $cpumask /usr/bin/time -f "%e elapsed, %U user, %S sys" \
-            /bin/sh -c "i=1000000 ; while (( i-- )) ; do : ; done"
-done
+Copy the default SD_SIBLING_INIT to powerpc's topology.h and add the
+SD_ASYM_CPU_POWER flag, which will cause ppc_md.cpu_power() to be
+invoked (via arch_cpu_power()) during sched domain initialization.
 
-17.05 elapsed, 16.83 user, 0.22 sys
-17.54 elapsed, 17.32 user, 0.22 sys
+Signed-off-by: Nathan Lynch <ntl@pobox.com>
+---
+ arch/powerpc/kernel/setup-common.c |    7 +++++++
+ include/asm-powerpc/machdep.h      |    2 ++
+ include/asm-powerpc/topology.h     |   31 +++++++++++++++++++++++++++++++
+ 3 files changed, 40 insertions(+), 0 deletions(-)
 
-(The first result is for a primary thread; the second result for a
-secondary thread.)
-
-So it would be nice to have the scheduler slightly prefer primary
-threads on POWER6 machines.  These patches, which allow the
-architecture to override the scheduler's CPU "power" calculation, are
-one possible approach, but I'm open to others.  Please note: these
-seemed to have the desired effect on 2.6.25-rc kernels (2-3%
-improvement in a kernbench-like make -j <nr_cores>), but I'm not
-seeing this improvement with 2.6.26-rc kernels for some reason I am
-still trying to track down.
-
-Nathan Lynch (3):
-  sched: support arch override of sched_group cpu power
-  add cpu_power to machdep_calls, override SD_SIBLING_INIT
-  adjust cpu power for secondary threads on POWER6
-
- arch/powerpc/kernel/setup-common.c     |    7 ++++++
- arch/powerpc/platforms/pseries/setup.c |   37 ++++++++++++++++++++++++++++++++
- include/asm-powerpc/cputable.h         |    3 +-
- include/asm-powerpc/machdep.h          |    2 +
- include/asm-powerpc/topology.h         |   31 ++++++++++++++++++++++++++
- include/linux/sched.h                  |    1 +
- kernel/sched.c                         |   14 ++++++++++++
- 7 files changed, 94 insertions(+), 1 deletions(-)
+diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
+index db540ea..609d09e 100644
+--- a/arch/powerpc/kernel/setup-common.c
++++ b/arch/powerpc/kernel/setup-common.c
+@@ -671,3 +671,10 @@ static int powerpc_debugfs_init(void)
+ }
+ arch_initcall(powerpc_debugfs_init);
+ #endif
++
++unsigned int arch_cpu_power(int cpu, unsigned int default_power)
++{
++	if (ppc_md.cpu_power)
++		return ppc_md.cpu_power(cpu, default_power);
++	return default_power;
++}
+diff --git a/include/asm-powerpc/machdep.h b/include/asm-powerpc/machdep.h
+index 54ed64d..de6ff6b 100644
+--- a/include/asm-powerpc/machdep.h
++++ b/include/asm-powerpc/machdep.h
+@@ -260,6 +260,8 @@ struct machdep_calls {
+ 	void (*suspend_disable_irqs)(void);
+ 	void (*suspend_enable_irqs)(void);
+ #endif
++	/* Override scheduler's cpu power calculation */
++	unsigned int (*cpu_power)(int cpu, unsigned int default_power);
+ };
+ 
+ extern void power4_idle(void);
+diff --git a/include/asm-powerpc/topology.h b/include/asm-powerpc/topology.h
+index 100c6fb..4335c15 100644
+--- a/include/asm-powerpc/topology.h
++++ b/include/asm-powerpc/topology.h
+@@ -72,6 +72,37 @@ static inline int pcibus_to_node(struct pci_bus *bus)
+ 	.nr_balance_failed	= 0,			\
+ }
+ 
++#define SD_SIBLING_INIT (struct sched_domain) {		\
++	.span			= CPU_MASK_NONE,	\
++	.parent			= NULL,			\
++	.child			= NULL,			\
++	.groups			= NULL,			\
++	.min_interval		= 1,			\
++	.max_interval		= 2,			\
++	.busy_factor		= 64,			\
++	.imbalance_pct		= 110,			\
++	.cache_nice_tries	= 0,			\
++	.busy_idx		= 0,			\
++	.idle_idx		= 0,			\
++	.newidle_idx		= 0,			\
++	.wake_idx		= 0,			\
++	.forkexec_idx		= 0,			\
++	.flags			= SD_LOAD_BALANCE	\
++				| SD_BALANCE_NEWIDLE	\
++				| SD_BALANCE_FORK	\
++				| SD_BALANCE_EXEC	\
++				| SD_WAKE_AFFINE	\
++				| SD_WAKE_IDLE		\
++				| SD_SHARE_CPUPOWER	\
++				| SD_ASYM_CPU_POWER,	\
++	.last_balance		= jiffies,		\
++	.balance_interval	= 1,			\
++	.nr_balance_failed	= 0,			\
++}
++
++#define arch_cpu_power(cpu, power) arch_cpu_power(cpu, power)
++extern unsigned int arch_cpu_power(int cpu, unsigned int default_power);
++
+ extern void __init dump_numa_cpu_topology(void);
+ 
+ extern int sysfs_add_device_to_node(struct sys_device *dev, int nid);
+-- 
+1.5.5
