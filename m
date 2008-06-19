@@ -1,21 +1,19 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	by ozlabs.org (Postfix) with ESMTP id 133B6DDE26
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 8319FDDF77
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 20 Jun 2008 02:33:11 +1000 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1K9N4N-0006SR-0u
-	for linuxppc-embedded@ozlabs.org; Thu, 19 Jun 2008 09:33:07 -0700
-Message-ID: <18012972.post@talk.nabble.com>
-Date: Thu, 19 Jun 2008 09:33:07 -0700 (PDT)
-From: swamydp <swamydp@gmail.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: linux 2.6 hangs at __delay function on Viretx 4 board
-In-Reply-To: <17222725.post@talk.nabble.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-References: <17222725.post@talk.nabble.com>
+	Fri, 20 Jun 2008 04:38:36 +1000 (EST)
+To: "Anand Kumar S" <sanandkumar@hcl.in>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: u-boot for ML403
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 18 Jun 2008 12:34:48 +0530."
+	<66E8AEE9980BB44CA5FCAD39EBA56AC6049EC842@CHN-HCLT-EVS02.HCLT.CORP.HCL.IN>
+Date: Thu, 19 Jun 2008 20:38:33 +0200
+Sender: wd@denx.de
+Message-Id: <20080619183833.82B93248D2@gemini.denx.de>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -26,49 +24,33 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-
-Hello 
-
-Sorry for the late reply. I was busy with another project.
-
-I finally got linux 2.6 to boot on HITECH board. 
-
-Thanks to John Linn for all the pointers to debug the code. I also got the
-UARTLITE as console working. I had to disable several macros in
-virtex_devices.c to make the kernel boot.
-
-Now I am working on using UART16550 as console which is free at Xilinx after
-registration. Thanks to Marc and Stephen for the info.
-
---swamy
-
-
-
-swamydp wrote:
+In message <66E8AEE9980BB44CA5FCAD39EBA56AC6049EC842@CHN-HCLT-EVS02.HCLT.CORP.HCL.IN> you wrote:
 > 
-> 
-> I am trying to boot linux 2.6 on HITECH virtex 4(fx60) board. Linux hangs
-> at address 0xc00045ec which is in the __udelay function. I am using EDK
-> 9.2i and gcc version 4.0.2 for compiling the kernel. The following is the
-> boot message from the bootloader. 
-> 
-> loaded at:     00400000 0054E19C
-> board data at: 0054C120 0054C19C
-> relocated to:  00404064 004040E0
-> zimage at:     00404E55 0054B5B4
-> avail ram:     0054F000 02000000
-> 
-> Linux/PPC load: console=ttyS0,9600 console=tty0 root=/dev/sda2
-> Uncompressing Linux...done.
-> Now booting the kernel
-> 
-> Any help is greatly appreciated. I have run out of ideas to fix this.
-> 
-> Thanks
-> swamy
-> 
-> 
+> I am new to virtex 4 platform and i am trying to bringup u-boot on ML403
+
+You are off topic on this list. Please post U-Boot related questions o
+the U-Boot mailing list.
+
+But - be warned:
+
+> DISCLAIMER:
+
+Such  disclaimers  are  taken  seriously  there,  and  incidents   of
+unauthorized disclosure will be reported to your management.
+
+
+> Content-Type: text/html;
+> 	charset="us-ascii"
+> Content-Transfer-Encoding: quoted-printable
+
+Also note that HTML is strictly forbidden on the U-Boot mailing list.
+
+Best regards,
+
+Wolfgang Denk
 
 -- 
-View this message in context: http://www.nabble.com/linux-2.6-hangs-at-__delay-function-on-Viretx-4-board-tp17222725p18012972.html
-Sent from the linuxppc-embedded mailing list archive at Nabble.com.
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+panic: kernel trap (ignored)
