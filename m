@@ -1,19 +1,31 @@
-Return-Path: <arnd@arndb.de>
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [RFC 0/3] powerpc: memory copy routines tweaked for Cell
-Date: Thu, 19 Jun 2008 15:59:04 +0200
-References: <200806191753.51495.markn@au1.ibm.com>
-	<200806191353.17323.arnd@arndb.de>
-	<18522.19171.348796.482938@cargo.ozlabs.ibm.com>
-In-Reply-To: <18522.19171.348796.482938@cargo.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200806191559.04852.arnd@arndb.de>
-Cc: Mark Nelson <markn@au1.ibm.com>, Gunnar von Boehn <VONBOEHN@de.ibm.com>,
-	Paul Mackerras <paulus@samba.org>, cbe-oss-dev@ozlabs.org,
-	Michael Ellerman <ellerman@au1.ibm.com>
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 93CEFDDFB0
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jun 2008 00:06:37 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e5.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m5JE6Xxi023901
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jun 2008 10:06:33 -0400
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
+	m5JE6R2H193844
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jun 2008 10:06:27 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m5JE6Qjf006027
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jun 2008 10:06:27 -0400
+Date: Thu, 19 Jun 2008 10:04:05 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org
+Subject: Re: [RFC/PATCH] powerpc: rework 4xx PTE access and TLB miss
+Message-ID: <20080619100405.61da19fa@zod.rchland.ibm.com>
+In-Reply-To: <1213145431.25745.42.camel@pasglop>
+References: <1213145431.25745.42.camel@pasglop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Kumar Gala <kumar.gala@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,22 +35,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thursday 19 June 2008, Paul Mackerras wrote:
-> Arnd Bergmann writes:
-> 
-> > Have you tried running this code on other platforms to see if it
-> > actually performs worse on any of them? I would guess that the
-> > older code also doesn't work too well on Power 5 and Power 6,
-> 
-> Why would you guess that?
+On Wed, 11 Jun 2008 10:50:31 +1000
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-I remembered that Gunnar had done some tests on other CPUs showing
-that an earlier version of the code was better than the kernel
-memcpy.
-Also, I had tried to trace the history of the usercopy function
-and found that it predates most of the CPUs in current use, so
-I assume it has suffered from bitrot and nobody tried to do better
-since the Power3 days. AFAICT, it hasn't seen any update since your
-original Power4 version from 2002.
+> This is some preliminary work to improve TLB management on SW loaded
+> TLB powerpc platforms. This introduce support for non-atomic PTE
+> operations in pgtable-ppc32.h and removes write back to the PTE from
+> the TLB miss handlers. In addition, the DSI interrupt code no longer
+> tries to fixup write permission, this is left to generic code, and
+> _PAGE_HWWRITE is gone.
+> 
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> ---
+> 
+> This is a first step, plan is to do the same for FSL BookE, 405 and
+> possibly 8xx too. From there, I want to rework a bit the execute
+> permission handling to avoid multiple faults, add support for
+> _PAGE_EXEC (no executable mappings), for prefaulting (especially
+> for kmap) and proper SMP support for future SMP capable BookE
+> platforms.
 
-	Arnd <><
+I've looked this over quite a bit and can't find anything wrong with
+it.  As soon as I get my boards set back up next week, I will try it
+out on a few and see if I can find a good stress test as well.
+
+If you could add the comments that Kumar suggested and send out an
+updated patch, I'm inclined to get this into 2.6.27, but we should do
+that soon if that is our target.
+
+josh
