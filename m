@@ -1,19 +1,25 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 8319FDDF77
+Return-Path: <dcogley@uslinc.com>
+Received: from mta31.charter.net (mta31.charter.net [216.33.127.82])
+	by ozlabs.org (Postfix) with ESMTP id 66CD7DE272
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 20 Jun 2008 04:38:36 +1000 (EST)
-To: "Anand Kumar S" <sanandkumar@hcl.in>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: u-boot for ML403
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 18 Jun 2008 12:34:48 +0530."
-	<66E8AEE9980BB44CA5FCAD39EBA56AC6049EC842@CHN-HCLT-EVS02.HCLT.CORP.HCL.IN>
-Date: Thu, 19 Jun 2008 20:38:33 +0200
-Sender: wd@denx.de
-Message-Id: <20080619183833.82B93248D2@gemini.denx.de>
-Cc: linuxppc-embedded@ozlabs.org
+	Fri, 20 Jun 2008 04:45:45 +1000 (EST)
+Received: from aarprv06.charter.net ([10.20.200.76]) by mta31.charter.net
+	(InterMail vM.7.08.03.00 201-2186-126-20070710) with ESMTP
+	id <20080619184545.LXMZ2641.mta31.charter.net@aarprv06.charter.net>
+	for <linuxppc-embedded@ozlabs.org>; Thu, 19 Jun 2008 14:45:45 -0400
+Received: from [192.168.1.34] (really [71.93.35.174])
+	by aarprv06.charter.net with ESMTP
+	id <20080619184544.VHYS3194.aarprv06.charter.net@[192.168.1.34]>
+	for <linuxppc-embedded@ozlabs.org>; Thu, 19 Jun 2008 14:45:44 -0400
+Subject: Re: Updating glibc on SELF image
+From: Dave Cogley <dcogley@uslinc.com>
+To: PPC Embedded List <linuxppc-embedded@ozlabs.org>
+In-Reply-To: <1213824912.4450.20.camel@localhost.localdomain>
+References: <1213824912.4450.20.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Thu, 19 Jun 2008 11:45:49 -0700
+Message-Id: <1213901149.4450.22.camel@localhost.localdomain>
+Mime-Version: 1.0
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -24,33 +30,43 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <66E8AEE9980BB44CA5FCAD39EBA56AC6049EC842@CHN-HCLT-EVS02.HCLT.CORP.HCL.IN> you wrote:
+Can someone provide a comprehensive guide for building SELF images from
+scratch? More specifically how to install dependency libraries?
+
+Thanks,
+Dave
+
+On Wed, 2008-06-18 at 14:35 -0700, Dave Cogley wrote:
+> Hi,
 > 
-> I am new to virtex 4 platform and i am trying to bringup u-boot on ML403
-
-You are off topic on this list. Please post U-Boot related questions o
-the U-Boot mailing list.
-
-But - be warned:
-
-> DISCLAIMER:
-
-Such  disclaimers  are  taken  seriously  there,  and  incidents   of
-unauthorized disclosure will be reported to your management.
-
-
-> Content-Type: text/html;
-> 	charset="us-ascii"
-> Content-Transfer-Encoding: quoted-printable
-
-Also note that HTML is strictly forbidden on the U-Boot mailing list.
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-panic: kernel trap (ignored)
+> I am having some trouble with building my SELF image on a Sequoia board.
+> I am trying to update some shared library components on the "stock" DENX
+> provided JFFS file system image.
+> 
+> While running over an NFS root I was able to successfully mount my MTD
+> device and manually copy libraries my application requires to the SELF
+> image. This appears to work for most the libraries that are non existent
+> on the default image (libreadline, libXml etc.). 
+> 
+> The problem is that when developing on the NFS partition (flash_nfs) the
+> glic version in use is 2.6 and the SELF image only has 2.3.5. I manually
+> copy over the libc-2.6.so library from the NFS image to the SELF image
+> and create a new symbolic link "libc.so.6". Now while booting up with
+> 2.6 I get segfaults on start-up daemons and my application segfaults
+> when starting as well. Changing the link back to the 2.3.5 library
+> everything works fine (except my application which requires 2.4).
+> 
+> The glibc library I am attempting to use is compiled for the ppc
+> architecture and works fine on the NFS partition. Am I missing something
+> else that needs to be updated for the glibc library? Is there anyway I
+> can update this library on the SELF image without installing make and
+> gcc?
+> 
+> Thank You,
+> Dave Cogley
+> 
+> 
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
