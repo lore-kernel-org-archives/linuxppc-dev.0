@@ -2,9 +2,9 @@ Return-Path: <mikey@neuling.org>
 To: Paul Mackerras <paulus@samba.org>
 From: Michael Neuling <mikey@neuling.org>
 Date: Fri, 20 Jun 2008 14:13:52 +1000
-Subject: [PATCH 0/9] powerpc: Add kernel support for POWER7 VSX. 
-In-Reply-To: <1213750053.678227.22239172650.qpush@coopers>
-Message-Id: <1213935232.194904.168421502953.qpush@coopers>
+Subject: [PATCH 3/9] powerpc: Move altivec_unavailable
+In-Reply-To: <1213935232.194904.168421502953.qpush@coopers>
+Message-Id: <20080620041352.4955D70294@localhost.localdomain>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -15,16 +15,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The following set of patches adds Vector Scalar Extentions (VSX)
-support for POWER7.  Includes context switch, ptrace and signals support.
+Move the altivec_unavailable code, to make room at 0xf40 where the
+vsx_unavailable exception will be.
 
 Signed-off-by: Michael Neuling <mikey@neuling.org>
---- 
-Paulus: please consider for your 2.6.27 tree.
+---
 
-Updated with comments from Kumar, Milton, Dave Woodhouse and Mark
-'NKOTB' Nelson.
-- Changed thread_struct array definition to be cleaner
-- Updated CPU_FTRS_POSSIBLE 
-- Updated Kconfig typo and dupilicate
-- Added comment to clarify ibm,vmx = 2 really means VSX. 
+ arch/powerpc/kernel/head_64.S |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+Index: linux-2.6-ozlabs/arch/powerpc/kernel/head_64.S
+===================================================================
+--- linux-2.6-ozlabs.orig/arch/powerpc/kernel/head_64.S
++++ linux-2.6-ozlabs/arch/powerpc/kernel/head_64.S
+@@ -275,7 +275,8 @@ END_FTR_SECTION_IFSET(CPU_FTR_REAL_LE)
+ 	. = 0xf00
+ 	b	performance_monitor_pSeries
+ 
+-	STD_EXCEPTION_PSERIES(0xf20, altivec_unavailable)
++	. = 0xf20
++	b	altivec_unavailable_pSeries
+ 
+ #ifdef CONFIG_CBE_RAS
+ 	HSTD_EXCEPTION_PSERIES(0x1200, cbe_system_error)
+@@ -295,6 +296,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_REAL_LE)
+ 
+ 	/* moved from 0xf00 */
+ 	STD_EXCEPTION_PSERIES(., performance_monitor)
++	STD_EXCEPTION_PSERIES(., altivec_unavailable)
+ 
+ /*
+  * An interrupt came in while soft-disabled; clear EE in SRR1,
