@@ -1,17 +1,18 @@
-Return-Path: <VONBOEHN@de.ibm.com>
-In-Reply-To: <973448.15152.qm@web33101.mail.mud.yahoo.com>
-References: <OF3C6636F6.52E3D242-ONC125746D.005214B0-C125746D.0053FABE@de.ibm.com>
-	<973448.15152.qm@web33101.mail.mud.yahoo.com>
-Subject: Re: [RFC 1/3] powerpc: __copy_tofrom_user tweaked for Cell
-To: sanjay3000@yahoo.com
-Message-ID: <OF2260963C.4B69232D-ONC125746E.0032489D-C125746E.003FD09E@de.ibm.com>
-From: Gunnar von Boehn <VONBOEHN@de.ibm.com>
-Date: Fri, 20 Jun 2008 13:36:45 +0200
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id C0FEDDDED6
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jun 2008 22:28:23 +1000 (EST)
+Date: Fri, 20 Jun 2008 16:28:20 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Chen Gong <g.chen@freescale.com>
+Subject: Re: [PATCH] fix mpc83xx spi prescale modulus calculate
+Message-ID: <20080620122820.GA24187@polina.dev.rtsoft.ru>
+References: <1213954697-8569-1-git-send-email-g.chen@freescale.com>
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-Cc: Mark Nelson <markn@au1.ibm.com>, linuxppc-dev@ozlabs.org,
-	Michael Ellerman <ellerman@au1.ibm.com>, cbe-oss-dev@ozlabs.org,
-	Arnd Bergmann <arnd@arndb.de>
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <1213954697-8569-1-git-send-email-g.chen@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,71 +22,76 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Sanjay,
+On Fri, Jun 20, 2008 at 05:38:17PM +0800, Chen Gong wrote:
+> Signed-off-by: Chen Gong <g.chen@freescale.com>
 
-> I suppose it would still function correctly via the handler, but horribly
-slowly.
+The patch lacks any description. E.g. at which frequencies the current
+math breaks, and why?
 
-How important is best performance for the unaligned copy to/from
-uncacheable memory?
-The challenge of the CELL chip is that X-form of the shift instructions are
-microcoded.
-The shifts are needed to implement a copy that reads and writes always
-aligned.
-There is of course the option to not use the X-form of the shift but to
-write several copy routines
-using immediate shift instructions and to pick the matching copy routine.
-This option would of course highly increase the code size of the memcopy
-routine.
+> ---
+>  drivers/spi/spi_mpc83xx.c |   29 ++++++++++++++++-------------
+>  1 files changed, 16 insertions(+), 13 deletions(-)
+> 
+> diff --git a/drivers/spi/spi_mpc83xx.c b/drivers/spi/spi_mpc83xx.c
+> index 6832da6..070c621 100644
+> --- a/drivers/spi/spi_mpc83xx.c
+> +++ b/drivers/spi/spi_mpc83xx.c
+> @@ -266,21 +266,24 @@ int mpc83xx_spi_setup_transfer(struct spi_device *spi, struct spi_transfer *t)
+>  
+>  	cs->hw_mode |= SPMODE_LEN(bits_per_word);
+>  
+> -	if ((mpc83xx_spi->spibrg / hz) >= 64) {
+> -		pm = mpc83xx_spi->spibrg / (hz * 64) - 1;
+> -		if (pm > 0x0f) {
+> -			dev_err(&spi->dev, "Requested speed is too "
+> -				"low: %d Hz. Will use %d Hz instead.\n",
+> -				hz, mpc83xx_spi->spibrg / 1024);
+> -			pm = 0x0f;
+> +	if ((mpc83xx_spi->spibrg / hz) > 64) {
+> +		pm = mpc83xx_spi->spibrg / (hz * 64);
+> +		if (pm > 16) {
 
+Suppose this didn't happen. So we calculated:
+pm = mpc83xx_spi->spibrg / (hz * 64);
+And we didn't set any hw flag.
 
-Kind regards
+> +			cs->hw_mode |= SPMODE_DIV16;
+> +			pm /= 16;
+> +			if (pm > 16) {
+> +				dev_err(&spi->dev, "Requested speed is too "
+> +					"low: %d Hz. Will use %d Hz instead.\n",
+> +					hz, mpc83xx_spi->spibrg / 1024);
+> +				pm = 16;
+> +			}
+>  		}
+> -		cs->hw_mode |= SPMODE_PM(pm) | SPMODE_DIV16;
+> -	} else {
+> +	} else
+>  		pm = mpc83xx_spi->spibrg / (hz * 4);
 
-Gunnar
+Now suppose this did happen. So we calculated:
+pm = mpc83xx_spi->spibrg / (hz * 4);
+And we didn't set any hw flag either.
 
+So, we used two different formulas with the same hw flags.
 
+Maybe I'm missing something, but this looks quite wrong.
 
-                                                                           
-             Sanjay Patel                                                  
-             <sanjay3000@yahoo                                             
-             .com>                                                      To 
-                                       Arnd Bergmann <arnd@arndb.de>,      
-             19/06/2008 18:13          Gunnar von                          
-                                       Boehn/Germany/Contr/IBM@IBMDE       
-                                                                        cc 
-             Please respond to         Mark Nelson <markn@au1.ibm.com>,    
-             sanjay3000@yahoo.         linuxppc-dev@ozlabs.org, Michael    
-                    com                Ellerman <ellerman@au1.ibm.com>,    
-                                       cbe-oss-dev@ozlabs.org              
-                                                                   Subject 
-                                       Re: [RFC 1/3] powerpc:              
-                                       __copy_tofrom_user tweaked for Cell 
-                                                                           
-                                                                           
-                                                                           
-                                                                           
-                                                                           
-                                                                           
+> -		if (pm)
+> -			pm--;
+> -		cs->hw_mode |= SPMODE_PM(pm);
+> -	}
+> +	if (pm)
+> +		pm--;
+> +
+> +	cs->hw_mode |= SPMODE_PM(pm);
+>  	regval =  mpc83xx_spi_read_reg(&mpc83xx_spi->base->mode);
+>  	if (cs->hw_mode != regval) {
+>  		unsigned long flags;
+> -- 
+> 1.5.4
 
-
-
-
-
-
-
---- On Thu, 6/19/08, Gunnar von Boehn <VONBOEHN@de.ibm.com> wrote:
-
-> You are right the main copy2user requires that the SRC is
-> cacheable.
-> IMHO because of the exception on load, the routine should
-> fallback to the
-> byte copy loop.
->
-> Arnd, could you verify that it works on localstore?
-
-Since the main loops use 'dcbz', the destination must also be cacheable.
-IIRC, if the destination is write-through or cache-inhibited, the 'dcbz'
-will cause an alignment exception. I suppose it would still function
-correctly via the handler, but horribly slowly.
-
---Sanjay
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
