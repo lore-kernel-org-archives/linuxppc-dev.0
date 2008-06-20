@@ -1,17 +1,17 @@
 Return-Path: <markn@au1.ibm.com>
 From: Mark Nelson <markn@au1.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [RFC 1/3] powerpc: __copy_tofrom_user tweaked for Cell
-Date: Fri, 20 Jun 2008 11:55:53 +1000
-References: <200806191753.59599.markn@au1.ibm.com>
-	<200806191643.59037.arnd@arndb.de>
-In-Reply-To: <200806191643.59037.arnd@arndb.de>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [Cbe-oss-dev] [RFC 3/3] powerpc: copy_4K_page tweaked for Cell
+Date: Fri, 20 Jun 2008 12:25:02 +1000
+References: <200806191754.17289.markn@au1.ibm.com>
+	<200806192328.51423.arnd@arndb.de>
+In-Reply-To: <200806192328.51423.arnd@arndb.de>
 MIME-Version: 1.0
-Message-Id: <200806201155.53189.markn@au1.ibm.com>
 Content-Type: text/plain;
   charset="iso-8859-1"
-Cc: Gunnar von Boehn <VONBOEHN@de.ibm.com>, cbe-oss-dev@ozlabs.org,
-	Arnd Bergmann <arnd@arndb.de>, Michael Ellerman <ellerman@au1.ibm.com>
+Message-Id: <200806201225.02753.markn@au1.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, Gunnar von Boehn <VONBOEHN@de.ibm.com>,
+	cbe-oss-dev@ozlabs.org, Michael Ellerman <ellerman@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,30 +21,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> * The naming of the labels (with just numbers) is rather confusing,
-> it would be good to have something better, but I must admit that
-> I don't have a good idea either.
+On Fri, 20 Jun 2008 07:28:50 am Arnd Bergmann wrote:
+> On Thursday 19 June 2008, Mark Nelson wrote:
+> > =A0=A0=A0=A0=A0=A0=A0=A0.align =A07
+> > _GLOBAL(copy_4K_page)
+> > =A0=A0=A0=A0=A0=A0=A0=A0dcbt=A0=A0=A0=A00,r4=A0=A0=A0=A0=A0=A0=A0=A0=A0=
+=A0=A0=A0/* Prefetch ONE SRC cacheline */
+> >=20
+> > =A0=A0=A0=A0=A0=A0=A0=A0addi=A0=A0=A0=A0r6,r3,-8=A0=A0=A0=A0=A0=A0=A0=
+=A0/* prepare for stdu */
+> > =A0=A0=A0=A0=A0=A0=A0=A0addi=A0=A0=A0=A0r4,r4,-8=A0=A0=A0=A0=A0=A0=A0=
+=A0/* prepare for ldu */
+> >=20
+> > =A0=A0=A0=A0=A0=A0=A0=A0li=A0=A0=A0=A0=A0=A0r10,32=A0=A0=A0=A0=A0=A0=A0=
+=A0=A0=A0/* copy 32 cache lines for a 4K page */
+> > =A0=A0=A0=A0=A0=A0=A0=A0li=A0=A0=A0=A0=A0=A0r12,128+8=A0=A0=A0=A0=A0=A0=
+=A0=A0=A0=A0=A0=A0=A0=A0=A0/* prefetch distance*/
+>=20
+> Since you have a loop here anyway instead of the fully unrolled
+> code, why not provide a copy_64K_page function as well, jumping in
+> here?
 
-I will admit that at first glance the label naming with numbers
-does look confusing but when you notice that all the loads start
-at 20 and all the stores start at 60 and that to get the exception
-handler for those instructions you just add 100 I think it makes
-sense, but that could be because I've been looking at it way too
-long...
+That is a good idea. What effect will that have on how the code
+patching will work?
 
-(I thought I had a comment in there to that effect but it must
-have gotten lost along the way. I'll add a new comment
-explaining the above, that should help)
+>=20
+> The inline 64k copy_page function otherwise just adds code size,
+> as well as being a tiny bit slower. It may even be good to
+> have an out-of-line copy_64K_page for the regular code, just
+> calling copy_4K_page repeatedly.
 
-> 
-> * The trick of using the condition code in cr7 for the last bytes
-> is really cute, but are the four branches actually better than a
-> single computed branch into the middle of 15 byte wise copies?
+Doing that sounds like it'll make the code patching easier.
 
-The original copy_tofrom_user does this also, which I guess is
-carried over to this new version...
-
-Gunnar did you have an old version that did something similar
-to this?
+Thanks!
 
 Mark
