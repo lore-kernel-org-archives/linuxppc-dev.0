@@ -1,28 +1,17 @@
-Return-Path: <LeoLi@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 92478DDDED
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jun 2008 19:47:59 +1000 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
-	m5K9lq2H012602
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jun 2008 02:47:53 -0700 (MST)
-Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
-	[10.192.129.221])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m5K9loPK015668
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jun 2008 04:47:51 -0500 (CDT)
+Return-Path: <VONBOEHN@de.ibm.com>
+In-Reply-To: <973448.15152.qm@web33101.mail.mud.yahoo.com>
+References: <OF3C6636F6.52E3D242-ONC125746D.005214B0-C125746D.0053FABE@de.ibm.com>
+	<973448.15152.qm@web33101.mail.mud.yahoo.com>
+Subject: Re: [RFC 1/3] powerpc: __copy_tofrom_user tweaked for Cell
+To: sanjay3000@yahoo.com
+Message-ID: <OF2260963C.4B69232D-ONC125746E.0032489D-C125746E.003FD09E@de.ibm.com>
+From: Gunnar von Boehn <VONBOEHN@de.ibm.com>
+Date: Fri, 20 Jun 2008 13:36:45 +0200
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Subject: RE: [PATCH] fix mpc83xx spi prescale modulus calculate
-Date: Fri, 20 Jun 2008 17:47:47 +0800
-Message-ID: <989B956029373F45A0B8AF0297081890025637E0@zch01exm26.fsl.freescale.net>
-In-Reply-To: <1213954697-8569-1-git-send-email-g.chen@freescale.com>
-References: <1213954697-8569-1-git-send-email-g.chen@freescale.com>
-From: "Li Yang" <LeoLi@freescale.com>
-To: "Chen Gong" <G.Chen@freescale.com>, <linuxppc-dev@ozlabs.org>
+Content-type: text/plain; charset=US-ASCII
+Cc: Mark Nelson <markn@au1.ibm.com>, linuxppc-dev@ozlabs.org,
+	Michael Ellerman <ellerman@au1.ibm.com>, cbe-oss-dev@ozlabs.org,
+	Arnd Bergmann <arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,17 +21,71 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: linuxppc-dev-bounces+leoli=3Dfreescale.com@ozlabs.org=20
-> [mailto:linuxppc-dev-bounces+leoli=3Dfreescale.com@ozlabs.org]=20
-> On Behalf Of Chen Gong
-> Sent: Friday, June 20, 2008 5:38 PM
-> To: linuxppc-dev@ozlabs.org
-> Cc: Chen Gong
-> Subject: [PATCH] fix mpc83xx spi prescale modulus calculate
->=20
-> Signed-off-by: Chen Gong <g.chen@freescale.com>
+Hi Sanjay,
 
-I think you should at least cc David Brownell and SPI mailling list.
+> I suppose it would still function correctly via the handler, but horribly
+slowly.
 
-- Leo
+How important is best performance for the unaligned copy to/from
+uncacheable memory?
+The challenge of the CELL chip is that X-form of the shift instructions are
+microcoded.
+The shifts are needed to implement a copy that reads and writes always
+aligned.
+There is of course the option to not use the X-form of the shift but to
+write several copy routines
+using immediate shift instructions and to pick the matching copy routine.
+This option would of course highly increase the code size of the memcopy
+routine.
+
+
+Kind regards
+
+Gunnar
+
+
+
+                                                                           
+             Sanjay Patel                                                  
+             <sanjay3000@yahoo                                             
+             .com>                                                      To 
+                                       Arnd Bergmann <arnd@arndb.de>,      
+             19/06/2008 18:13          Gunnar von                          
+                                       Boehn/Germany/Contr/IBM@IBMDE       
+                                                                        cc 
+             Please respond to         Mark Nelson <markn@au1.ibm.com>,    
+             sanjay3000@yahoo.         linuxppc-dev@ozlabs.org, Michael    
+                    com                Ellerman <ellerman@au1.ibm.com>,    
+                                       cbe-oss-dev@ozlabs.org              
+                                                                   Subject 
+                                       Re: [RFC 1/3] powerpc:              
+                                       __copy_tofrom_user tweaked for Cell 
+                                                                           
+                                                                           
+                                                                           
+                                                                           
+                                                                           
+                                                                           
+
+
+
+
+
+
+
+--- On Thu, 6/19/08, Gunnar von Boehn <VONBOEHN@de.ibm.com> wrote:
+
+> You are right the main copy2user requires that the SRC is
+> cacheable.
+> IMHO because of the exception on load, the routine should
+> fallback to the
+> byte copy loop.
+>
+> Arnd, could you verify that it works on localstore?
+
+Since the main loops use 'dcbz', the destination must also be cacheable.
+IIRC, if the destination is write-through or cache-inhibited, the 'dcbz'
+will cause an alignment exception. I suppose it would still function
+correctly via the handler, but horribly slowly.
+
+--Sanjay
