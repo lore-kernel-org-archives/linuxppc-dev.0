@@ -2,17 +2,18 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id DFF8BDDEE8
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jun 2008 16:37:17 +1000 (EST)
-Message-Id: <B353EBCF-A080-41C7-B331-61D29C6F5C02@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id 24237DDEED
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jun 2008 16:39:23 +1000 (EST)
+Message-Id: <7F82D2F6-6FB3-49F0-9512-D60AC2E9CBED@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
 To: Michael Neuling <mikey@neuling.org>
-In-Reply-To: <1213935232.194904.168421502953.qpush@coopers>
+In-Reply-To: <20080620041352.4350D70293@localhost.localdomain>
 Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Mime-Version: 1.0 (Apple Message framework v924)
-Subject: Re: [PATCH 0/9] powerpc: Add kernel support for POWER7 VSX. 
-Date: Fri, 20 Jun 2008 01:37:07 -0500
-References: <1213935232.194904.168421502953.qpush@coopers>
+Subject: Re: [PATCH 2/9] powerpc: Add macros to access floating point
+	registers in thread_struct.
+Date: Fri, 20 Jun 2008 01:39:12 -0500
+References: <20080620041352.4350D70293@localhost.localdomain>
 Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -26,25 +27,43 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 On Jun 19, 2008, at 11:13 PM, Michael Neuling wrote:
 
-> The following set of patches adds Vector Scalar Extentions (VSX)
-> support for POWER7.  Includes context switch, ptrace and signals  
-> support.
+> Index: linux-2.6-ozlabs/include/asm-powerpc/processor.h
+> ===================================================================
+> --- linux-2.6-ozlabs.orig/include/asm-powerpc/processor.h
+> +++ linux-2.6-ozlabs/include/asm-powerpc/processor.h
+> @@ -136,6 +136,9 @@ typedef struct {
+> 	unsigned long seg;
+> } mm_segment_t;
 >
-> Signed-off-by: Michael Neuling <mikey@neuling.org>
-> ---
-> Paulus: please consider for your 2.6.27 tree.
+> +#define TS_FPR(i) fpr[i]
+> +#define TS_FPRSTART fpr
+> +
+> struct thread_struct {
+> 	unsigned long	ksp;		/* Kernel stack pointer */
+> 	unsigned long	ksp_limit;	/* if ksp <= ksp_limit stack overflow */
+> @@ -197,12 +200,13 @@ struct thread_struct {
+> 	.fpexc_mode = MSR_FE0 | MSR_FE1, \
+> }
+> #else
+> +#define	FPVSR_INIT_THREAD .fpr = {0}
+
+Being a bit nit picky, but doesn't seem like this patch should  
+introduce FPVSR.
+
 >
-> Updated with comments from Kumar, Milton, Dave Woodhouse and Mark
-> 'NKOTB' Nelson.
-> - Changed thread_struct array definition to be cleaner
-> - Updated CPU_FTRS_POSSIBLE
-> - Updated Kconfig typo and dupilicate
-> - Added comment to clarify ibm,vmx = 2 really means VSX.
-
-One question I was wondering about is the "user space" view of VSX.   
-Is the intent to have it seem like there is a unique register set for  
-VSX separate from FP or AltiVec?
-
-(This gets into what the ABI changes look like).
-
-- k
+> #define INIT_THREAD  { \
+> 	.ksp = INIT_SP, \
+> 	.ksp_limit = INIT_SP_LIMIT, \
+> 	.regs = (struct pt_regs *)INIT_SP - 1, /* XXX bogus, I think */ \
+> 	.fs = KERNEL_DS, \
+> -	.fpr = {0}, \
+> +	FPVSR_INIT_THREAD, \
+> 	.fpscr = { .val = 0, }, \
+> 	.fpexc_mode = 0, \
+> }
+> @@ -289,4 +293,5 @@ static inline void prefetchw(const void
+>
+> #endif /* __KERNEL__ */
+> #endif /* __ASSEMBLY__ */
+> +#define TS_FPRSPACING 1
+> #endif /* _ASM_POWERPC_PROCESSOR_H */
