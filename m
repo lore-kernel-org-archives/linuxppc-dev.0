@@ -1,16 +1,17 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B0AB1DE59D
-	for <linuxppc-dev@ozlabs.org>; Sat, 21 Jun 2008 02:36:16 +1000 (EST)
-Date: Fri, 20 Jun 2008 11:36:05 -0500 (CDT)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH][WIP][RFC] powerpc: fixup lwsync at runtime
-Message-ID: <Pine.LNX.4.64.0806201131040.17834@blarg.am.freescale.net>
+Return-Path: <VONBOEHN@de.ibm.com>
+In-Reply-To: <18523.1109.809247.646816@cargo.ozlabs.ibm.com>
+References: <200806191753.59599.markn@au1.ibm.com>	<200806191643.59037.arnd@arndb.de>	<OF3C6636F6.52E3D242-ONC125746D.005214B0-C125746D.0053FABE@de.ibm.com>
+	<18523.1109.809247.646816@cargo.ozlabs.ibm.com>
+Subject: Re: [Cbe-oss-dev] [RFC 1/3] powerpc: __copy_tofrom_user tweaked
+	for	Cell
+To: Paul Mackerras <paulus@samba.org>
+Message-ID: <OF6887AC47.6DDF03ED-ONC125746E.005A9A67-C125746E.005C3AC1@de.ibm.com>
+From: Gunnar von Boehn <VONBOEHN@de.ibm.com>
+Date: Fri, 20 Jun 2008 18:47:07 +0200
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Michael Ellerman <ellerman@au1.ibm.com>,
+	cbe-oss-dev@ozlabs.org, Arnd Bergmann <arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,169 +21,88 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a work in progress towards make lwsync fixed up at runtime.  The
-patch is based (requires) the module refactoring patch.  Some of this code
-should be reworked based on the code patching work from Michael.  Also,
-ppc64 and vdso support needs a bit of cleaning up.
+Hi Paul,
 
-Some questions:
-* How do we determine at runtime if we need to convert sync to lwsync.
-This is simliar to cpu_feature but has the issue that cpu_feature is about
-either having code in or not.
+Of course, I can only speak for the test result that I got on our
+platforms.
+We did test on PS3, QS21 single/dual, QS22 single/dual, and JS21
 
-* Do we simplify the section of fixup information and remove the mask and
-value since we don't use them and they double the size of the section
+The performance of the old Linux routine and the new routine is about the
+same for copies of less than 128 Bytes.
+At 512 byte the new routine is about 100% faster than the old one. (on QS
+21)
+At 1500 Byte size, which is a typical ethernet frame size, the new routine
+is over 3 times faster than the old one.  (on QS21)
 
-- k
+We could NOT see a performance decrease for small copies.
+We saw that for copies of 512 byte and more the performance increase is
+significant.
 
- arch/powerpc/kernel/cputable.c    |   17 +++++++++++++++--
- arch/powerpc/kernel/module.c      |    5 +++++
- arch/powerpc/kernel/setup_32.c    |    3 +++
- arch/powerpc/kernel/vmlinux.lds.S |    6 ++++++
- include/asm-powerpc/synch.h       |   26 +++++++++++++++++---------
- include/asm-powerpc/system.h      |    2 +-
- 6 files changed, 47 insertions(+), 12 deletions(-)
 
-diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
-index c5397c1..4905f1d 100644
---- a/arch/powerpc/kernel/cputable.c
-+++ b/arch/powerpc/kernel/cputable.c
-@@ -1600,7 +1600,7 @@ struct cpu_spec * __init identify_cpu(unsigned long offset, unsigned int pvr)
- 	return NULL;
- }
+>However, it's very rare to transfer large amounts of data over
+>loopback, unless you're running a benchmark like iperf or netperf.
 
--void do_feature_fixups(unsigned long value, void *fixup_start, void *fixup_end)
-+static inline void __do_feature_fixups(unsigned long value, void *fixup_start, void *fixup_end, u32 insn)
- {
- 	struct fixup_entry {
- 		unsigned long	mask;
-@@ -1625,7 +1625,7 @@ void do_feature_fixups(unsigned long value, void *fixup_start, void *fixup_end)
- 		pend = ((unsigned int *)fcur) + (fcur->end_off / 4);
+Please mind that this test was done as its a simple way to show how much
+less work the CPU needs to do to handle network traffic.
+All network traffic goes to copy2user - all network traffic can now be done
+with much less CPU power wasted for copying the data.
 
- 		for (p = pstart; p < pend; p++) {
--			*p = 0x60000000u;
-+			*p = insn;
- 			asm volatile ("dcbst 0, %0" : : "r" (p));
- 		}
- 		asm volatile ("sync" : : : "memory");
-@@ -1634,3 +1634,16 @@ void do_feature_fixups(unsigned long value, void *fixup_start, void *fixup_end)
- 		asm volatile ("sync; isync" : : : "memory");
- 	}
- }
-+
-+void do_feature_fixups(unsigned long value, void *fixup_start, void *fixup_end)
-+{
-+	__do_feature_fixups(value, fixup_start, fixup_end, 0x60000000u);
-+}
-+
-+#define PPC_LWSYNC_INSTR	0x7c2004ac
-+void do_lwsync_fixups(void *fixup_start, void *fixup_end)
-+{
-+#if defined(__powerpc64__) || defined(CONFIG_PPC_E500MC)
-+	__do_feature_fixups(0, fixup_start, fixup_end, PPC_LWSYNC_INSTR);
-+#endif
-+}
-diff --git a/arch/powerpc/kernel/module.c b/arch/powerpc/kernel/module.c
-index 40dd52d..34905b8 100644
---- a/arch/powerpc/kernel/module.c
-+++ b/arch/powerpc/kernel/module.c
-@@ -86,6 +86,11 @@ int module_finalize(const Elf_Ehdr *hdr,
- 				  (void *)sect->sh_addr + sect->sh_size);
- #endif
+Don't you agree that network traffic or IO in general with packages over
+500 Byte, is not a rare case?
 
-+	sect = find_section(hdr, sechdrs, "__lwsync_fixup");
-+	if (sect != NULL)
-+		do_lwsync_fixups((void *)sect->sh_addr,
-+				 (void *)sect->sh_addr + sect->sh_size);
-+
- 	return 0;
- }
 
-diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
-index 9e83add..d1e498f 100644
---- a/arch/powerpc/kernel/setup_32.c
-+++ b/arch/powerpc/kernel/setup_32.c
-@@ -101,6 +101,9 @@ unsigned long __init early_init(unsigned long dt_ptr)
- 			  PTRRELOC(&__start___ftr_fixup),
- 			  PTRRELOC(&__stop___ftr_fixup));
+Cheers
+Gunnar
 
-+	do_lwsync_fixups(PTRRELOC(&__start___lwsync_fixup),
-+			 PTRRELOC(&__stop___lwsync_fixup));
-+
- 	return KERNELBASE + offset;
- }
 
-diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
-index 0c3000b..d4d351a 100644
---- a/arch/powerpc/kernel/vmlinux.lds.S
-+++ b/arch/powerpc/kernel/vmlinux.lds.S
-@@ -127,6 +127,12 @@ SECTIONS
- 		*(__ftr_fixup)
- 		__stop___ftr_fixup = .;
- 	}
-+	. = ALIGN(8);
-+	__lwsync_fixup : AT(ADDR(__lwsync_fixup) - LOAD_OFFSET) {
-+		__start___lwsync_fixup = .;
-+		*(__lwsync_fixup)
-+		__stop___lwsync_fixup = .;
-+	}
- #ifdef CONFIG_PPC64
- 	. = ALIGN(8);
- 	__fw_ftr_fixup : AT(ADDR(__fw_ftr_fixup) - LOAD_OFFSET) {
-diff --git a/include/asm-powerpc/synch.h b/include/asm-powerpc/synch.h
-index 42a1ef5..c031808 100644
---- a/include/asm-powerpc/synch.h
-+++ b/include/asm-powerpc/synch.h
-@@ -3,20 +3,28 @@
- #ifdef __KERNEL__
 
- #include <linux/stringify.h>
-+#include <asm/asm-compat.h>
 
--#if defined(__powerpc64__) || defined(CONFIG_PPC_E500MC)
--#define __SUBARCH_HAS_LWSYNC
--#endif
-+#ifndef __ASSEMBLY__
-+extern unsigned int __start___lwsync_fixup, __stop___lwsync_fixup;
-+extern void do_lwsync_fixups(void *fixup_start, void *fixup_end);
-+#endif /* __ASSEMBLY__ */
+                                                                           
+             Paul Mackerras                                                
+             <paulus@samba.org                                             
+             >                                                          To 
+                                       Gunnar von                          
+             20/06/2008 03:13          Boehn/Germany/Contr/IBM@IBMDE       
+                                                                        cc 
+                                       Arnd Bergmann <arnd@arndb.de>,      
+                                       linuxppc-dev@ozlabs.org, Michael    
+                                       Ellerman <ellerman@au1.ibm.com>,    
+                                       cbe-oss-dev@ozlabs.org              
+                                                                   Subject 
+                                       Re: [Cbe-oss-dev] [RFC 1/3]         
+                                       powerpc: __copy_tofrom_user tweaked 
+                                       for  Cell                           
+                                                                           
+                                                                           
+                                                                           
+                                                                           
+                                                                           
+                                                                           
 
--#ifdef __SUBARCH_HAS_LWSYNC
--#    define LWSYNC	lwsync
--#else
--#    define LWSYNC	sync
--#endif
-+#define BEGIN_LWSYNC_SECTION_NESTED(label)	label:
-+#define BEGIN_LWSYNC_SECTION		BEGIN_LWSYNC_SECTION_NESTED(97)
-+#define END_LWSYNC_SECTION_NESTED(msk, val, label) \
-+	MAKE_FTR_SECTION_ENTRY(msk, val, label, __lwsync_fixup)
-+#define END_LWSYNC_SECTION \
-+	END_LWSYNC_SECTION_NESTED(1, 1, 97)
-+
-+#    define LWSYNC		\
-+	BEGIN_LWSYNC_SECTION;	\
-+	sync;			\
-+	END_LWSYNC_SECTION;
 
- #ifdef CONFIG_SMP
- #define ISYNC_ON_SMP	"\n\tisync\n"
--#define LWSYNC_ON_SMP	__stringify(LWSYNC) "\n"
-+#define LWSYNC_ON_SMP	stringify_in_c(LWSYNC) "\n"
- #else
- #define ISYNC_ON_SMP
- #define LWSYNC_ON_SMP
-diff --git a/include/asm-powerpc/system.h b/include/asm-powerpc/system.h
-index df781ad..15218bb 100644
---- a/include/asm-powerpc/system.h
-+++ b/include/asm-powerpc/system.h
-@@ -34,7 +34,7 @@
-  * SMP since it is only used to order updates to system memory.
-  */
- #define mb()   __asm__ __volatile__ ("sync" : : : "memory")
--#define rmb()  __asm__ __volatile__ (__stringify(LWSYNC) : : : "memory")
-+#define rmb()  __asm__ __volatile__ (stringify_in_c(LWSYNC) : : : "memory")
- #define wmb()  __asm__ __volatile__ ("sync" : : : "memory")
- #define read_barrier_depends()  do { } while(0)
 
--- 
-1.5.5.1
+
+Gunnar von Boehn writes:
+
+> The "regular" code was much slower for the normal case and has a special
+> version for the 4K optimized case.
+
+That's a slightly inaccurate view...
+
+The reason for having the two cases is that when I profiled the
+distribution of sizes and alignments of memory copies in the kernel,
+the result was that almost all copies (something like 99%, IIRC) were
+either 128 bytes or less, or else a whole page at a page-aligned
+address.
+
+Thus we get the best performance by having a simple copy routine with
+minimal setup overhead for the small copy case, plus an aggressively
+optimized page copy routine.  Spending time setting up for a
+multi-cacheline copy that's not a whole page is just going to hurt the
+small copy case without providing any real benefit.
+
+Transferring data over loopback is possibly an exception to that.
+However, it's very rare to transfer large amounts of data over
+loopback, unless you're running a benchmark like iperf or netperf. :-/
+
+Paul.
