@@ -1,18 +1,17 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18523.1109.809247.646816@cargo.ozlabs.ibm.com>
-Date: Fri, 20 Jun 2008 11:13:57 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Gunnar von Boehn <VONBOEHN@de.ibm.com>
-Subject: Re: [Cbe-oss-dev] [RFC 1/3] powerpc: __copy_tofrom_user tweaked for
-	Cell
-In-Reply-To: <OF3C6636F6.52E3D242-ONC125746D.005214B0-C125746D.0053FABE@de.ibm.com>
+Return-Path: <markn@au1.ibm.com>
+From: Mark Nelson <markn@au1.ibm.com>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [RFC 1/3] powerpc: __copy_tofrom_user tweaked for Cell
+Date: Fri, 20 Jun 2008 11:55:53 +1000
 References: <200806191753.59599.markn@au1.ibm.com>
 	<200806191643.59037.arnd@arndb.de>
-	<OF3C6636F6.52E3D242-ONC125746D.005214B0-C125746D.0053FABE@de.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, Michael Ellerman <ellerman@au1.ibm.com>,
-	cbe-oss-dev@ozlabs.org, Arnd Bergmann <arnd@arndb.de>
+In-Reply-To: <200806191643.59037.arnd@arndb.de>
+MIME-Version: 1.0
+Message-Id: <200806201155.53189.markn@au1.ibm.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Cc: Gunnar von Boehn <VONBOEHN@de.ibm.com>, cbe-oss-dev@ozlabs.org,
+	Arnd Bergmann <arnd@arndb.de>, Michael Ellerman <ellerman@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,27 +21,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Gunnar von Boehn writes:
+> * The naming of the labels (with just numbers) is rather confusing,
+> it would be good to have something better, but I must admit that
+> I don't have a good idea either.
 
-> The "regular" code was much slower for the normal case and has a special
-> version for the 4K optimized case.
+I will admit that at first glance the label naming with numbers
+does look confusing but when you notice that all the loads start
+at 20 and all the stores start at 60 and that to get the exception
+handler for those instructions you just add 100 I think it makes
+sense, but that could be because I've been looking at it way too
+long...
 
-That's a slightly inaccurate view...
+(I thought I had a comment in there to that effect but it must
+have gotten lost along the way. I'll add a new comment
+explaining the above, that should help)
 
-The reason for having the two cases is that when I profiled the
-distribution of sizes and alignments of memory copies in the kernel,
-the result was that almost all copies (something like 99%, IIRC) were
-either 128 bytes or less, or else a whole page at a page-aligned
-address.
+> 
+> * The trick of using the condition code in cr7 for the last bytes
+> is really cute, but are the four branches actually better than a
+> single computed branch into the middle of 15 byte wise copies?
 
-Thus we get the best performance by having a simple copy routine with
-minimal setup overhead for the small copy case, plus an aggressively
-optimized page copy routine.  Spending time setting up for a
-multi-cacheline copy that's not a whole page is just going to hurt the
-small copy case without providing any real benefit.
+The original copy_tofrom_user does this also, which I guess is
+carried over to this new version...
 
-Transferring data over loopback is possibly an exception to that.
-However, it's very rare to transfer large amounts of data over
-loopback, unless you're running a benchmark like iperf or netperf. :-/
+Gunnar did you have an old version that did something similar
+to this?
 
-Paul.
+Mark
