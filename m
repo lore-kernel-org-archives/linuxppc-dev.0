@@ -2,32 +2,32 @@ Return-Path: <nfont@austin.ibm.com>
 Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 2B34BDDEED
-	for <linuxppc-dev@ozlabs.org>; Sat, 21 Jun 2008 07:32:58 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 12EACDDEED
+	for <linuxppc-dev@ozlabs.org>; Sat, 21 Jun 2008 07:34:38 +1000 (EST)
 Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e1.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m5KLWtQ9021489
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jun 2008 17:32:55 -0400
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+	by e1.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m5KLYaxG025340
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jun 2008 17:34:36 -0400
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
 	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
-	m5KLWttA230730
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jun 2008 17:32:55 -0400
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m5KLWtcI005324
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jun 2008 17:32:55 -0400
+	m5KLYaTj183674
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jun 2008 17:34:36 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m5KLYZhj013601
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jun 2008 17:34:35 -0400
 Received: from austin.ibm.com (netmail2.austin.ibm.com [9.41.248.176])
-	by d01av01.pok.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	m5KLWtaR005313
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jun 2008 17:32:55 -0400
+	by d01av02.pok.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	m5KLYZu5013590
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jun 2008 17:34:35 -0400
 Received: from [9.53.40.161] (mudbug-009053040161.austin.ibm.com [9.53.40.161])
-	by austin.ibm.com (8.13.8/8.12.10) with ESMTP id m5KLWso0068294
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jun 2008 16:32:55 -0500
-Message-ID: <485C2207.90407@austin.ibm.com>
-Date: Fri, 20 Jun 2008 16:32:55 -0500
+	by austin.ibm.com (8.13.8/8.12.10) with ESMTP id m5KLYZqW063266
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jun 2008 16:34:35 -0500
+Message-ID: <485C226B.6050807@austin.ibm.com>
+Date: Fri, 20 Jun 2008 16:34:35 -0500
 From: Nathan Fontenot <nfont@austin.ibm.com>
 MIME-Version: 1.0
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 3/5] Update device tree correctly for drconf memory add/remove
+Subject: [PATCH 4/5] Helper routines for parsing drconf memory
 References: <485C2033.20101@austin.ibm.com>
 In-Reply-To: <485C2033.20101@austin.ibm.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
@@ -40,234 +40,249 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Memory dlpar updates to correctly update the device tree when an lmb is
-added/removed.  The main difference for memory under the
-ibm,dynamic-reconfiguration-memory node is that dlpar adding or removing an
-lmb only requires an update to the ibm,dynamic-memory property.  Previously,
-entire nodes were added or removed when a lmb was dlpar added/removed.
-
-The patch updates the /proc/ppc64/ofdt interface to recognize when the
-ibm,dynamic-memory preoperty is updated and properly invokes the memory
-hotplug notifier chain.
-
-This also updates the pseries hotplug notifier to be able to gather information
-for lmbs represented under the ibm,dynamic-reconfiguration-memory node and
-have the lmbs added/removed.
+This patch pulls several pieces of exisitng code for parsing memory under
+the ibm,dynamic-reconfiguration-memory node of the device tree into helper
+routines.  This is in preparation for the next patch that will also use these
+same helper routines.  There are no functional changes in this patch.
 
 Signed-off-by: Nathan Fontenot <nfont@austin.ibm.com>
 ---
 
-Index: linux-2.6.git/include/asm-powerpc/pSeries_reconfig.h
+Index: linux-2.6.git/arch/powerpc/mm/numa.c
 ===================================================================
---- linux-2.6.git.orig/include/asm-powerpc/pSeries_reconfig.h	2008-06-20 
-12:08:41.000000000 -0500
-+++ linux-2.6.git/include/asm-powerpc/pSeries_reconfig.h	2008-06-20 
-12:50:03.000000000 -0500
-@@ -9,8 +9,10 @@
-   * added or removed on pSeries systems.
-   */
-
--#define PSERIES_RECONFIG_ADD    0x0001
--#define PSERIES_RECONFIG_REMOVE 0x0002
-+#define PSERIES_RECONFIG_ADD		0x0001
-+#define PSERIES_RECONFIG_REMOVE		0x0002
-+#define PSERIES_DRCONF_MEM_ADD		0x0003
-+#define PSERIES_DRCONF_MEM_REMOVE	0x0004
-
-  #ifdef CONFIG_PPC_PSERIES
-  extern int pSeries_reconfig_notifier_register(struct notifier_block *);
-Index: linux-2.6.git/arch/powerpc/platforms/pseries/reconfig.c
-===================================================================
---- linux-2.6.git.orig/arch/powerpc/platforms/pseries/reconfig.c	2008-06-20 
-12:08:41.000000000 -0500
-+++ linux-2.6.git/arch/powerpc/platforms/pseries/reconfig.c	2008-06-20 
-12:58:22.000000000 -0500
-@@ -422,8 +422,8 @@
-  {
-  	struct device_node *np;
-  	unsigned char *value;
--	char *name, *end;
--	int length;
-+	char *name, *end, *next_prop;
-+	int rc, length;
-  	struct property *newprop, *oldprop;
-  	buf = parse_node(buf, bufsize, &np);
-  	end = buf + bufsize;
-@@ -431,7 +431,8 @@
-  	if (!np)
-  		return -ENODEV;
-
--	if (parse_next_property(buf, end, &name, &length, &value) == NULL)
-+	next_prop = parse_next_property(buf, end, &name, &length, &value);
-+	if (!next_prop)
-  		return -EINVAL;
-
-  	newprop = new_property(name, length, value, NULL);
-@@ -442,7 +443,34 @@
-  	if (!oldprop)
-  		return -ENODEV;
-
--	return prom_update_property(np, newprop, oldprop);
-+	rc = prom_update_property(np, newprop, oldprop);
-+	if (rc)
-+		return rc;
-+
-+	/* For memory under the ibm,dynamic-reconfiguration-memory node
-+	 * of the device tree, adding and removing memory is just an update
-+	 * to the ibm,dynamic-memory property instead of adding/removing a
-+	 * memory node in the device tree.  For these cases we still need to
-+	 * involve the notifier chain.
-+	 */
-+	if (!strcmp(name, "ibm,dynamic-memory")) {
-+		int action;
-+
-+		next_prop = parse_next_property(next_prop, end, &name,
-+						&length, &value);
-+		if (!next_prop)
-+			return -EINVAL;
-+
-+		if (!strcmp(name, "add"))
-+			action = PSERIES_DRCONF_MEM_ADD;
-+		else
-+			action = PSERIES_DRCONF_MEM_REMOVE;
-+
-+		blocking_notifier_call_chain(&pSeries_reconfig_chain,
-+					     action, value);
-+	}
-+
-+	return 0;
+--- linux-2.6.git.orig/arch/powerpc/mm/numa.c	2008-06-03 16:29:04.000000000 -0500
++++ linux-2.6.git/arch/powerpc/mm/numa.c	2008-06-19 23:11:47.000000000 -0500
+@@ -268,6 +268,144 @@
+  	return result;
   }
 
-  /**
-Index: linux-2.6.git/arch/powerpc/platforms/pseries/hotplug-memory.c
-===================================================================
---- linux-2.6.git.orig/arch/powerpc/platforms/pseries/hotplug-memory.c	2008-06-20 
-12:40:21.000000000 -0500
-+++ linux-2.6.git/arch/powerpc/platforms/pseries/hotplug-memory.c	2008-06-20 
-13:18:09.000000000 -0500
-@@ -15,32 +15,11 @@
-  #include <asm/machdep.h>
-  #include <asm/pSeries_reconfig.h>
-
--static int pseries_remove_memory(struct device_node *np)
-+static int pseries_remove_lmb(unsigned long base, unsigned int lmb_size)
-  {
--	const char *type;
--	const unsigned int *regs;
--	unsigned long base;
--	unsigned int lmb_size;
--	u64 start_pfn, start;
-+	unsigned long start_pfn, start;
-  	struct zone *zone;
--	int ret = -EINVAL;
--
--	/*
--	 * Check to see if we are actually removing memory
--	 */
--	type = of_get_property(np, "device_type", NULL);
--	if (type == NULL || strcmp(type, "memory") != 0)
--		return 0;
--
--	/*
--	 * Find the base address and size of the lmb
--	 */
--	regs = of_get_property(np, "reg", NULL);
--	if (!regs)
--		return ret;
--
--	base = *(unsigned long *)regs;
--	lmb_size = regs[3];
-+	int ret;
-
-  	start_pfn = base >> PFN_SECTION_SHIFT;
-  	zone = page_zone(pfn_to_page(start_pfn));
-@@ -71,6 +50,35 @@
-  	return ret;
-  }
-
-+static int pseries_remove_memory(struct device_node *np)
++struct of_drconf_cell {
++	u64	base_addr;
++	u32	drc_index;
++	u32	reserved;
++	u32	aa_index;
++	u32	flags;
++};
++
++#define DRCONF_MEM_ASSIGNED	0x00000008
++#define DRCONF_MEM_AI_INVALID	0x00000040
++#define DRCONF_MEM_RESERVED	0x00000080
++
++/*
++ * Read the next lmb list entry from the ibm,dynamic-memory property
++ * and return the information in the provided of_drconf_cell structure.
++ */
++static void read_drconf_cell(struct of_drconf_cell *drmem, const u32 **cellp)
 +{
-+	const char *type;
-+	const unsigned int *regs;
-+	unsigned long base;
-+	unsigned int lmb_size;
-+	int ret = -EINVAL;
++	const u32 *cp;
 +
-+	/*
-+	 * Check to see if we are actually removing memory
-+	 */
-+	type = of_get_property(np, "device_type", NULL);
-+	if (type == NULL || strcmp(type, "memory") != 0)
-+		return 0;
++	drmem->base_addr = read_n_cells(n_mem_addr_cells, cellp);
 +
-+	/*
-+	 * Find the base address and size of the lmb
-+	 */
-+	regs = of_get_property(np, "reg", NULL);
-+	if (!regs)
-+		return ret;
++	cp = *cellp;
++	drmem->drc_index = cp[0];
++	drmem->reserved = cp[1];
++	drmem->aa_index = cp[2];
++	drmem->flags = cp[3];
 +
-+	base = *(unsigned long *)regs;
-+	lmb_size = regs[3];
-+
-+	ret = pseries_remove_lmb(base, lmb_size);
-+	return ret;
++	*cellp = cp + 4;
 +}
 +
-  static int pseries_add_memory(struct device_node *np)
-  {
-  	const char *type;
-@@ -99,10 +107,39 @@
-  	/*
-  	 * Update memory region to represent the memory add
-  	 */
--	lmb_add(base, lmb_size);
--	return 0;
-+	ret = lmb_add(base, lmb_size);
-+	return (ret < 0) ? -EINVAL : 0;
-  }
-
-+static int pseries_drconf_memory(unsigned long *base, unsigned int action)
++/*
++ * Retreive and validate the ibm,dynamic-memory property of the device tree.
++ *
++ * The layout of the ibm,dynamic-memory property is a number N of lmb
++ * list entries followed by N lmb list entries.  Each lmb list entry
++ * contains information as layed out in the of_drconf_cell struct above.
++ */
++static int of_get_drconf_memory(struct device_node *memory, const u32 **dm)
 +{
-+	struct device_node *np;
-+	const unsigned long *lmb_size;
-+	int rc;
++	const u32 *prop;
++	u32 len, entries;
 +
-+	np = of_find_node_by_path("/ibm,dynamic-reconfiguration-memory");
-+	if (!np)
-+		return -EINVAL;
++	prop = of_get_property(memory, "ibm,dynamic-memory", &len);
++	if (!prop || len < sizeof(unsigned int))
++		return 0;
 +
-+	lmb_size = of_get_property(np, "ibm,lmb-size", NULL);
-+	if (!lmb_size) {
-+		of_node_put(np);
-+		return -EINVAL;
++	entries = *prop++;
++
++	/* Now that we know the number of entries, revalidate the size
++	 * of the property read in to ensure we have everything
++	 */
++	if (len < (entries * (n_mem_addr_cells + 4) + 1) * sizeof(unsigned int))
++		return 0;
++
++	*dm = prop;
++	return entries;
++}
++
++/*
++ * Retreive and validate the ibm,lmb-size property for drconf memory
++ * from the device tree.
++ */
++static u64 of_get_lmb_size(struct device_node *memory)
++{
++	const u32 *prop;
++	u32 len;
++
++	prop = of_get_property(memory, "ibm,lmb-size", &len);
++	if (!prop || len < sizeof(unsigned int))
++		return 0;
++
++	return read_n_cells(n_mem_size_cells, &prop);
++}
++
++struct assoc_arrays {
++	u32	n_arrays;
++	u32	array_sz;
++	const u32 *arrays;
++};
++
++/*
++ * Retreive and validate the list of associativity arrays for drconf
++ * memory from the ibm,associativity-lookup-arrays property of the
++ * device tree..
++ *
++ * The layout of the ibm,associativity-lookup-arrays property is a number N
++ * indicating the number of associativity arrays, followed by a number M
++ * indicating the size of each associativity array, followed by a list
++ * of N associativity arrays.
++ */
++static int of_get_assoc_arrays(struct device_node *memory,
++			       struct assoc_arrays *aa)
++{
++	const u32 *prop;
++	u32 len;
++
++	prop = of_get_property(memory, "ibm,associativity-lookup-arrays", &len);
++	if (!prop || len < 2 * sizeof(unsigned int))
++		return -1;
++
++	aa->n_arrays = *prop++;
++	aa->array_sz = *prop++;
++
++	/* Now that we know the number of arrrays and size of each array,
++	 * revalidate the size of the property read in.
++	 */
++	if (len < (aa->n_arrays * aa->array_sz + 2) * sizeof(unsigned int))
++		return -1;
++
++	aa->arrays = prop;
++	return 0;
++}
++
++/*
++ * This is like of_node_to_nid_single() for memory represented in the
++ * ibm,dynamic-reconfiguration-memory node.
++ */
++static int of_drconf_to_nid_single(struct of_drconf_cell *drmem,
++				   struct assoc_arrays *aa)
++{
++	int default_nid = 0;
++	int nid = default_nid;
++	int index;
++
++	if (min_common_depth > 0 && min_common_depth <= aa->array_sz &&
++	    !(drmem->flags & DRCONF_MEM_AI_INVALID) &&
++	    drmem->aa_index < aa->n_arrays) {
++		index = drmem->aa_index * aa->array_sz + min_common_depth - 1;
++		nid = aa->arrays[index];
++
++		if (nid == 0xffff || nid >= MAX_NUMNODES)
++			nid = default_nid;
 +	}
 +
-+	if (action == PSERIES_DRCONF_MEM_ADD) {
-+		rc = lmb_add(*base, *lmb_size);
-+		rc = (rc < 0) ? -EINVAL : 0;
-+	} else if (action == PSERIES_DRCONF_MEM_REMOVE) {
-+		rc = pseries_remove_lmb(*base, *lmb_size);
-+	} else {
-+		rc = -EINVAL;
-+	}
++	return nid;
++}
 +
-+	of_node_put(np);
-+	return rc;
-+ }
-+
-  static int pseries_memory_notifier(struct notifier_block *nb,
-  				unsigned long action, void *node)
+  /*
+   * Figure out to which domain a cpu belongs and stick it there.
+   * Return the id of the domain used.
+@@ -355,57 +493,49 @@
+   */
+  static void __init parse_drconf_memory(struct device_node *memory)
   {
-@@ -117,6 +154,11 @@
-  		if (pseries_remove_memory(node))
-  			err = NOTIFY_BAD;
-  		break;
-+	case PSERIES_DRCONF_MEM_ADD:
-+	case PSERIES_DRCONF_MEM_REMOVE:
-+		if (pseries_drconf_memory(node, action))
-+			err = NOTIFY_BAD;
-+		break;
-  	default:
-  		err = NOTIFY_DONE;
-  		break;
+-	const unsigned int *lm, *dm, *aa;
+-	unsigned int ls, ld, la;
+-	unsigned int n, aam, aalen;
+-	unsigned long lmb_size, size, start;
+-	int nid, default_nid = 0;
+-	unsigned int ai, flags;
+-
+-	lm = of_get_property(memory, "ibm,lmb-size", &ls);
+-	dm = of_get_property(memory, "ibm,dynamic-memory", &ld);
+-	aa = of_get_property(memory, "ibm,associativity-lookup-arrays", &la);
+-	if (!lm || !dm || !aa ||
+-	    ls < sizeof(unsigned int) || ld < sizeof(unsigned int) ||
+-	    la < 2 * sizeof(unsigned int))
++	const u32 *dm;
++	unsigned int n, rc;
++	unsigned long lmb_size, size;
++	int nid;
++	struct assoc_arrays aa;
++
++	n = of_get_drconf_memory(memory, &dm);
++	if (!n)
+  		return;
+
+-	lmb_size = read_n_cells(n_mem_size_cells, &lm);
+-	n = *dm++;		/* number of LMBs */
+-	aam = *aa++;		/* number of associativity lists */
+-	aalen = *aa++;		/* length of each associativity list */
+-	if (ld < (n * (n_mem_addr_cells + 4) + 1) * sizeof(unsigned int) ||
+-	    la < (aam * aalen + 2) * sizeof(unsigned int))
++	lmb_size = of_get_lmb_size(memory);
++	if (!lmb_size)
++		return;
++
++	rc = of_get_assoc_arrays(memory, &aa);
++	if (rc)
+  		return;
+
+  	for (; n != 0; --n) {
+-		start = read_n_cells(n_mem_addr_cells, &dm);
+-		ai = dm[2];
+-		flags = dm[3];
+-		dm += 4;
+-		/* 0x80 == reserved, 0x8 = assigned to us */
+-		if ((flags & 0x80) || !(flags & 0x8))
+-			continue;
+-		nid = default_nid;
+-		/* flags & 0x40 means associativity index is invalid */
+-		if (min_common_depth > 0 && min_common_depth <= aalen &&
+-		    (flags & 0x40) == 0 && ai < aam) {
+-			/* this is like of_node_to_nid_single */
+-			nid = aa[ai * aalen + min_common_depth - 1];
+-			if (nid == 0xffff || nid >= MAX_NUMNODES)
+-				nid = default_nid;
+-		}
++		struct of_drconf_cell drmem;
+
+-		fake_numa_create_new_node(((start + lmb_size) >> PAGE_SHIFT),
+-						&nid);
++		read_drconf_cell(&drmem, &dm);
++
++		/* skip this block if the reserved bit is set in flags (0x80)
++		   or if the block is not assigned to this partition (0x8) */
++		if ((drmem.flags & DRCONF_MEM_RESERVED)
++		    || !(drmem.flags & DRCONF_MEM_ASSIGNED))
++ 			continue;
++
++		nid = of_drconf_to_nid_single(&drmem, &aa);
++
++		fake_numa_create_new_node(
++				((drmem.base_addr + lmb_size) >> PAGE_SHIFT),
++					   &nid);
+  		node_set_online(nid);
+
+-		size = numa_enforce_memory_limit(start, lmb_size);
++		size = numa_enforce_memory_limit(drmem.base_addr, lmb_size);
+  		if (!size)
+  			continue;
+
+-		add_active_range(nid, start >> PAGE_SHIFT,
+-				 (start >> PAGE_SHIFT) + (size >> PAGE_SHIFT));
++		add_active_range(nid, drmem.base_addr >> PAGE_SHIFT,
++				 (drmem.base_addr >> PAGE_SHIFT)
++				 + (size >> PAGE_SHIFT));
+  	}
+  }
