@@ -1,16 +1,25 @@
-Return-Path: <david.jander@protonic.nl>
-From: David Jander <david.jander@protonic.nl>
-To: "John Rigby" <jcrigby@gmail.com>
-Subject: Re: [PATCH] Added support for PRTLVT based boards (MPC5121)
-Date: Fri, 20 Jun 2008 11:01:27 +0200
-References: <200806131049.03765.david.jander@protonic.nl>
-	<4b73d43f0806180833r7877fc16o2673f64df5e49aa7@mail.gmail.com>
-In-Reply-To: <4b73d43f0806180833r7877fc16o2673f64df5e49aa7@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200806201101.27908.david.jander@protonic.nl>
-Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
+Return-Path: <G.Chen@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 4FB44DDF4D
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jun 2008 19:43:22 +1000 (EST)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
+	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
+	m5K9hG0O013064
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jun 2008 02:43:16 -0700 (MST)
+Received: from zch01exm21.fsl.freescale.net (zch01exm21.ap.freescale.net
+	[10.192.129.205])
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id m5K9hEDJ008637
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jun 2008 04:43:15 -0500 (CDT)
+From: Chen Gong <g.chen@freescale.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] fix mpc83xx spi prescale modulus calculate
+Date: Fri, 20 Jun 2008 17:38:17 +0800
+Message-Id: <1213954697-8569-1-git-send-email-g.chen@freescale.com>
+Cc: Chen Gong <g.chen@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,81 +29,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Signed-off-by: Chen Gong <g.chen@freescale.com>
+---
+ drivers/spi/spi_mpc83xx.c |   29 ++++++++++++++++-------------
+ 1 files changed, 16 insertions(+), 13 deletions(-)
 
-Hi John,
-
-On Wednesday 18 June 2008 17:33:48 John Rigby wrote:
-> Hi David,
->
-> Looks like your device tree is based on the beta ltib bsp.  There were
-> some changes in release 1 that you may want to incorporate:
->
-> First as a convention I changed all the interrupt numbers in the
-> tuples to be decimal.  I like this better because the interrupts are
-> decimal in the reference manual.
->
-> Second, the new clock driver that is in the release 1 bsp and will be
-> posting here shortly no longer uses the device tree, so you can remove
-> all the clk-name, clk-parent, clk-ctrl properties.
-
-Thanks, I'll incorporate these changes and submit again.
-Btw, do you agree with the following part of the patch?
-
-> > diff --git a/arch/powerpc/platforms/512x/Kconfig
-> > b/arch/powerpc/platforms/512x/Kconfig index 4c0da0c..57b3912 100644
-> > --- a/arch/powerpc/platforms/512x/Kconfig
-> > +++ b/arch/powerpc/platforms/512x/Kconfig
-> > @@ -2,18 +2,20 @@ config PPC_MPC512x
-> >        bool
-> >        select FSL_SOC
-> >        select IPIC
-> > -       default n
-> >
-> >  config PPC_MPC5121
-> >        bool
-> >        select PPC_MPC512x
-> > -       default n
-> >
-> > -config MPC5121_ADS
-> > -       bool "Freescale MPC5121E ADS"
-> > +config MPC5121_GENERIC
-> > +       bool "Generic support for simple MPC5121 based boards"
-> >        depends on PPC_MULTIPLATFORM && PPC32
-> >        select DEFAULT_UIMAGE
-> >        select PPC_MPC5121
-> >        help
-> > -         This option enables support for the MPC5121E ADS board.
-> > -       default n
-> > +         This option enables support for a simple MPC5121 based boards
-> > which +         do not need a custom platform specific setup.
-> > +
-> > +         Boards that are compatible with this generic platform support
-> > +         are: Freescale MPC5121 ADS and Protonic LVT based boards
-> > (ZANMCU +         and VICVT2).
-> > diff --git a/arch/powerpc/platforms/512x/Makefile
-> > b/arch/powerpc/platforms/512x/Makefile index 232c89f..9d40a2e 100644
-> > --- a/arch/powerpc/platforms/512x/Makefile
-> > +++ b/arch/powerpc/platforms/512x/Makefile
-> > @@ -1,4 +1,4 @@
-> >  #
-> >  # Makefile for the Freescale PowerPC 512x linux kernel.
-> >  #
-> > -obj-$(CONFIG_MPC5121_ADS)      += mpc5121_ads.o
-> > +obj-$(CONFIG_MPC5121_GENERIC)  += mpc5121_generic.o
-> > diff --git a/arch/powerpc/platforms/512x/mpc5121_ads.c
-> > b/arch/powerpc/platforms/512x/mpc5121_generic.c similarity index 73%
-> > rename from arch/powerpc/platforms/512x/mpc5121_ads.c
-> > rename to arch/powerpc/platforms/512x/mpc5121_generic.c
-> > index 50bd3a3..824ddbb 100644
-> > --- a/arch/powerpc/platforms/512x/mpc5121_ads.c
-> > +++ b/arch/powerpc/platforms/512x/mpc5121_generic.c
->[...]
-
-The idea is to make it as simple as possible to add new platforms that are 
-basically just derivatives of the same.
-
-Greetings,
-
+diff --git a/drivers/spi/spi_mpc83xx.c b/drivers/spi/spi_mpc83xx.c
+index 6832da6..070c621 100644
+--- a/drivers/spi/spi_mpc83xx.c
++++ b/drivers/spi/spi_mpc83xx.c
+@@ -266,21 +266,24 @@ int mpc83xx_spi_setup_transfer(struct spi_device *spi, struct spi_transfer *t)
+ 
+ 	cs->hw_mode |= SPMODE_LEN(bits_per_word);
+ 
+-	if ((mpc83xx_spi->spibrg / hz) >= 64) {
+-		pm = mpc83xx_spi->spibrg / (hz * 64) - 1;
+-		if (pm > 0x0f) {
+-			dev_err(&spi->dev, "Requested speed is too "
+-				"low: %d Hz. Will use %d Hz instead.\n",
+-				hz, mpc83xx_spi->spibrg / 1024);
+-			pm = 0x0f;
++	if ((mpc83xx_spi->spibrg / hz) > 64) {
++		pm = mpc83xx_spi->spibrg / (hz * 64);
++		if (pm > 16) {
++			cs->hw_mode |= SPMODE_DIV16;
++			pm /= 16;
++			if (pm > 16) {
++				dev_err(&spi->dev, "Requested speed is too "
++					"low: %d Hz. Will use %d Hz instead.\n",
++					hz, mpc83xx_spi->spibrg / 1024);
++				pm = 16;
++			}
+ 		}
+-		cs->hw_mode |= SPMODE_PM(pm) | SPMODE_DIV16;
+-	} else {
++	} else
+ 		pm = mpc83xx_spi->spibrg / (hz * 4);
+-		if (pm)
+-			pm--;
+-		cs->hw_mode |= SPMODE_PM(pm);
+-	}
++	if (pm)
++		pm--;
++
++	cs->hw_mode |= SPMODE_PM(pm);
+ 	regval =  mpc83xx_spi_read_reg(&mpc83xx_spi->base->mode);
+ 	if (cs->hw_mode != regval) {
+ 		unsigned long flags;
 -- 
-David Jander
-Protonic Holland.
+1.5.4
