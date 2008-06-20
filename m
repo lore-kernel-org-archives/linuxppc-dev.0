@@ -2,9 +2,9 @@ Return-Path: <mikey@neuling.org>
 To: Paul Mackerras <paulus@samba.org>
 From: Michael Neuling <mikey@neuling.org>
 Date: Fri, 20 Jun 2008 14:13:52 +1000
-Subject: [PATCH 1/9] powerpc: Fix msr setting in 32 bit signal code
+Subject: [PATCH 4/9] powerpc: Make load_up_fpu and load_up_altivec callable
 In-Reply-To: <1213935232.194904.168421502953.qpush@coopers>
-Message-Id: <20080620041352.3B70F70292@localhost.localdomain>
+Message-Id: <20080620041352.4FF8C70295@localhost.localdomain>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -15,57 +15,95 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-If we set the SPE MSR bit in save_user_regs we can blow away the VEC
-bit.  This will never happen in reality (VMX and SPE will never be in
-the same processor as their opcodes overlap), but it looks bad.  Also
-when we add VSX here in a later patch, we can hit two of these at the
-same time.  
+Make load_up_fpu and load_up_altivec callable so they can be reused by
+the VSX code.  
 
 Signed-off-by: Michael Neuling <mikey@neuling.org>
 ---
 
- arch/powerpc/kernel/signal_32.c |   10 ++++++----
- 1 file changed, 6 insertions(+), 4 deletions(-)
+ arch/powerpc/kernel/fpu.S        |    2 +-
+ arch/powerpc/kernel/head_32.S    |    6 ++++--
+ arch/powerpc/kernel/head_64.S    |    8 +++++---
+ arch/powerpc/kernel/head_booke.h |    6 ++++--
+ 4 files changed, 14 insertions(+), 8 deletions(-)
 
-Index: linux-2.6-ozlabs/arch/powerpc/kernel/signal_32.c
+Index: linux-2.6-ozlabs/arch/powerpc/kernel/fpu.S
 ===================================================================
---- linux-2.6-ozlabs.orig/arch/powerpc/kernel/signal_32.c
-+++ linux-2.6-ozlabs/arch/powerpc/kernel/signal_32.c
-@@ -336,6 +336,8 @@ struct rt_sigframe {
- static int save_user_regs(struct pt_regs *regs, struct mcontext __user *frame,
- 		int sigret)
- {
-+	unsigned long msr = regs->msr;
-+
- 	/* Make sure floating point registers are stored in regs */
- 	flush_fp_to_thread(current);
+--- linux-2.6-ozlabs.orig/arch/powerpc/kernel/fpu.S
++++ linux-2.6-ozlabs/arch/powerpc/kernel/fpu.S
+@@ -85,7 +85,7 @@ _GLOBAL(load_up_fpu)
+ #endif /* CONFIG_SMP */
+ 	/* restore registers and return */
+ 	/* we haven't used ctr or xer or lr */
+-	b	fast_exception_return
++	blr
  
-@@ -354,8 +356,7 @@ static int save_user_regs(struct pt_regs
- 			return 1;
- 		/* set MSR_VEC in the saved MSR value to indicate that
- 		   frame->mc_vregs contains valid data */
--		if (__put_user(regs->msr | MSR_VEC, &frame->mc_gregs[PT_MSR]))
--			return 1;
-+		msr |= MSR_VEC;
- 	}
- 	/* else assert((regs->msr & MSR_VEC) == 0) */
+ /*
+  * giveup_fpu(tsk)
+Index: linux-2.6-ozlabs/arch/powerpc/kernel/head_32.S
+===================================================================
+--- linux-2.6-ozlabs.orig/arch/powerpc/kernel/head_32.S
++++ linux-2.6-ozlabs/arch/powerpc/kernel/head_32.S
+@@ -421,8 +421,10 @@ BEGIN_FTR_SECTION
+ 	b 	ProgramCheck
+ END_FTR_SECTION_IFSET(CPU_FTR_FPU_UNAVAILABLE)
+ 	EXCEPTION_PROLOG
+-	bne	load_up_fpu		/* if from user, just load it up */
+-	addi	r3,r1,STACK_FRAME_OVERHEAD
++	beq	1f
++	bl	load_up_fpu		/* if from user, just load it up */
++	b	fast_exception_return
++1:	addi	r3,r1,STACK_FRAME_OVERHEAD
+ 	EXC_XFER_EE_LITE(0x800, kernel_fp_unavailable_exception)
  
-@@ -377,8 +378,7 @@ static int save_user_regs(struct pt_regs
- 			return 1;
- 		/* set MSR_SPE in the saved MSR value to indicate that
- 		   frame->mc_vregs contains valid data */
--		if (__put_user(regs->msr | MSR_SPE, &frame->mc_gregs[PT_MSR]))
--			return 1;
-+		msr |= MSR_SPE;
- 	}
- 	/* else assert((regs->msr & MSR_SPE) == 0) */
+ /* Decrementer */
+Index: linux-2.6-ozlabs/arch/powerpc/kernel/head_64.S
+===================================================================
+--- linux-2.6-ozlabs.orig/arch/powerpc/kernel/head_64.S
++++ linux-2.6-ozlabs/arch/powerpc/kernel/head_64.S
+@@ -741,7 +741,8 @@ fp_unavailable_common:
+ 	ENABLE_INTS
+ 	bl	.kernel_fp_unavailable_exception
+ 	BUG_OPCODE
+-1:	b	.load_up_fpu
++1:	bl	.load_up_fpu
++	b	fast_exception_return
  
-@@ -387,6 +387,8 @@ static int save_user_regs(struct pt_regs
- 		return 1;
- #endif /* CONFIG_SPE */
+ 	.align	7
+ 	.globl altivec_unavailable_common
+@@ -749,7 +750,8 @@ altivec_unavailable_common:
+ 	EXCEPTION_PROLOG_COMMON(0xf20, PACA_EXGEN)
+ #ifdef CONFIG_ALTIVEC
+ BEGIN_FTR_SECTION
+-	bne	.load_up_altivec	/* if from user, just load it up */
++	bnel	.load_up_altivec
++	b	fast_exception_return
+ END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
+ #endif
+ 	bl	.save_nvgprs
+@@ -829,7 +831,7 @@ _STATIC(load_up_altivec)
+ 	std	r4,0(r3)
+ #endif /* CONFIG_SMP */
+ 	/* restore registers and return */
+-	b	fast_exception_return
++	blr
+ #endif /* CONFIG_ALTIVEC */
  
-+	if (__put_user(msr, &frame->mc_gregs[PT_MSR]))
-+		return 1;
- 	if (sigret) {
- 		/* Set up the sigreturn trampoline: li r0,sigret; sc */
- 		if (__put_user(0x38000000UL + sigret, &frame->tramp[0])
+ /*
+Index: linux-2.6-ozlabs/arch/powerpc/kernel/head_booke.h
+===================================================================
+--- linux-2.6-ozlabs.orig/arch/powerpc/kernel/head_booke.h
++++ linux-2.6-ozlabs/arch/powerpc/kernel/head_booke.h
+@@ -363,8 +363,10 @@ label:
+ #define FP_UNAVAILABLE_EXCEPTION					      \
+ 	START_EXCEPTION(FloatingPointUnavailable)			      \
+ 	NORMAL_EXCEPTION_PROLOG;					      \
+-	bne	load_up_fpu;		/* if from user, just load it up */   \
+-	addi	r3,r1,STACK_FRAME_OVERHEAD;				      \
++	beq	1f;							      \
++	bl	load_up_fpu;		/* if from user, just load it up */   \
++	b	fast_exception_return;					      \
++1:	addi	r3,r1,STACK_FRAME_OVERHEAD;				      \
+ 	EXC_XFER_EE_LITE(0x800, kernel_fp_unavailable_exception)
+ 
+ #endif /* __HEAD_BOOKE_H__ */
