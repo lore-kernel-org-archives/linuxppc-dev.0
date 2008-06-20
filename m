@@ -2,16 +2,13 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 1CAF5DDFA6
-	for <linuxppc-dev@ozlabs.org>; Sat, 21 Jun 2008 02:31:06 +1000 (EST)
-Received: from localhost (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id m5KGV1LA025925
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jun 2008 11:31:02 -0500
-Date: Fri, 20 Jun 2008 11:31:01 -0500 (CDT)
+	by ozlabs.org (Postfix) with ESMTPS id B0AB1DE59D
+	for <linuxppc-dev@ozlabs.org>; Sat, 21 Jun 2008 02:36:16 +1000 (EST)
+Date: Fri, 20 Jun 2008 11:36:05 -0500 (CDT)
 From: Kumar Gala <galak@kernel.crashing.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc: Move common module code into its own file
-Message-ID: <Pine.LNX.4.64.0806201130280.17834@blarg.am.freescale.net>
+Subject: [PATCH][WIP][RFC] powerpc: fixup lwsync at runtime
+Message-ID: <Pine.LNX.4.64.0806201131040.17834@blarg.am.freescale.net>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -23,326 +20,169 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Refactor common code between ppc32 and ppc64 module handling into a
-shared filed.
+This is a work in progress towards make lwsync fixed up at runtime.  The
+patch is based (requires) the module refactoring patch.  Some of this code
+should be reworked based on the code patching work from Michael.  Also,
+ppc64 and vdso support needs a bit of cleaning up.
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
----
- arch/powerpc/kernel/Makefile    |    2 +-
- arch/powerpc/kernel/module.c    |  110 +++++++++++++++++++++++++++++++++++++++
- arch/powerpc/kernel/module_32.c |   72 -------------------------
- arch/powerpc/kernel/module_64.c |   78 ---------------------------
- 4 files changed, 111 insertions(+), 151 deletions(-)
- create mode 100644 arch/powerpc/kernel/module.c
+Some questions:
+* How do we determine at runtime if we need to convert sync to lwsync.
+This is simliar to cpu_feature but has the issue that cpu_feature is about
+either having code in or not.
 
-diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-index 0e8f928..9ebeb24 100644
---- a/arch/powerpc/kernel/Makefile
-+++ b/arch/powerpc/kernel/Makefile
-@@ -44,7 +44,7 @@ obj-$(CONFIG_TAU)		+= tau_6xx.o
- obj-$(CONFIG_HIBERNATION)	+= swsusp.o suspend.o \
- 				   swsusp_$(CONFIG_WORD_SIZE).o
- obj64-$(CONFIG_HIBERNATION)	+= swsusp_asm64.o
--obj-$(CONFIG_MODULES)		+= module_$(CONFIG_WORD_SIZE).o
-+obj-$(CONFIG_MODULES)		+= module.o module_$(CONFIG_WORD_SIZE).o
- obj-$(CONFIG_44x)		+= cpu_setup_44x.o
+* Do we simplify the section of fixup information and remove the mask and
+value since we don't use them and they double the size of the section
 
- ifeq ($(CONFIG_PPC_MERGE),y)
-diff --git a/arch/powerpc/kernel/module.c b/arch/powerpc/kernel/module.c
-new file mode 100644
-index 0000000..40dd52d
---- /dev/null
-+++ b/arch/powerpc/kernel/module.c
-@@ -0,0 +1,110 @@
-+/*  Kernel module help for powerpc.
-+    Copyright (C) 2001, 2003 Rusty Russell IBM Corporation.
-+    Copyright (C) 2008 Freescale Semiconductor, Inc.
+- k
+
+ arch/powerpc/kernel/cputable.c    |   17 +++++++++++++++--
+ arch/powerpc/kernel/module.c      |    5 +++++
+ arch/powerpc/kernel/setup_32.c    |    3 +++
+ arch/powerpc/kernel/vmlinux.lds.S |    6 ++++++
+ include/asm-powerpc/synch.h       |   26 +++++++++++++++++---------
+ include/asm-powerpc/system.h      |    2 +-
+ 6 files changed, 47 insertions(+), 12 deletions(-)
+
+diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
+index c5397c1..4905f1d 100644
+--- a/arch/powerpc/kernel/cputable.c
++++ b/arch/powerpc/kernel/cputable.c
+@@ -1600,7 +1600,7 @@ struct cpu_spec * __init identify_cpu(unsigned long offset, unsigned int pvr)
+ 	return NULL;
+ }
+
+-void do_feature_fixups(unsigned long value, void *fixup_start, void *fixup_end)
++static inline void __do_feature_fixups(unsigned long value, void *fixup_start, void *fixup_end, u32 insn)
+ {
+ 	struct fixup_entry {
+ 		unsigned long	mask;
+@@ -1625,7 +1625,7 @@ void do_feature_fixups(unsigned long value, void *fixup_start, void *fixup_end)
+ 		pend = ((unsigned int *)fcur) + (fcur->end_off / 4);
+
+ 		for (p = pstart; p < pend; p++) {
+-			*p = 0x60000000u;
++			*p = insn;
+ 			asm volatile ("dcbst 0, %0" : : "r" (p));
+ 		}
+ 		asm volatile ("sync" : : : "memory");
+@@ -1634,3 +1634,16 @@ void do_feature_fixups(unsigned long value, void *fixup_start, void *fixup_end)
+ 		asm volatile ("sync; isync" : : : "memory");
+ 	}
+ }
 +
-+    This program is free software; you can redistribute it and/or modify
-+    it under the terms of the GNU General Public License as published by
-+    the Free Software Foundation; either version 2 of the License, or
-+    (at your option) any later version.
-+
-+    This program is distributed in the hope that it will be useful,
-+    but WITHOUT ANY WARRANTY; without even the implied warranty of
-+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+    GNU General Public License for more details.
-+
-+    You should have received a copy of the GNU General Public License
-+    along with this program; if not, write to the Free Software
-+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-+*/
-+#include <linux/module.h>
-+#include <linux/elf.h>
-+#include <linux/moduleloader.h>
-+#include <linux/err.h>
-+#include <linux/vmalloc.h>
-+#include <linux/bug.h>
-+#include <asm/module.h>
-+#include <asm/uaccess.h>
-+#include <asm/firmware.h>
-+#include <linux/sort.h>
-+
-+#include "setup.h"
-+
-+LIST_HEAD(module_bug_list);
-+
-+void *module_alloc(unsigned long size)
++void do_feature_fixups(unsigned long value, void *fixup_start, void *fixup_end)
 +{
-+	if (size == 0)
-+		return NULL;
-+
-+	return vmalloc_exec(size);
++	__do_feature_fixups(value, fixup_start, fixup_end, 0x60000000u);
 +}
 +
-+/* Free memory returned from module_alloc */
-+void module_free(struct module *mod, void *module_region)
++#define PPC_LWSYNC_INSTR	0x7c2004ac
++void do_lwsync_fixups(void *fixup_start, void *fixup_end)
 +{
-+	vfree(module_region);
-+	/* FIXME: If module_region == mod->init_region, trim exception
-+           table entries. */
-+}
-+
-+static const Elf_Shdr *find_section(const Elf_Ehdr *hdr,
-+				    const Elf_Shdr *sechdrs,
-+				    const char *name)
-+{
-+	char *secstrings;
-+	unsigned int i;
-+
-+	secstrings = (char *)hdr + sechdrs[hdr->e_shstrndx].sh_offset;
-+	for (i = 1; i < hdr->e_shnum; i++)
-+		if (strcmp(secstrings+sechdrs[i].sh_name, name) == 0)
-+			return &sechdrs[i];
-+	return NULL;
-+}
-+
-+int module_finalize(const Elf_Ehdr *hdr,
-+		const Elf_Shdr *sechdrs, struct module *me)
-+{
-+	const Elf_Shdr *sect;
-+	int err;
-+
-+	err = module_bug_finalize(hdr, sechdrs, me);
-+	if (err)
-+		return err;
-+
-+	/* Apply feature fixups */
-+	sect = find_section(hdr, sechdrs, "__ftr_fixup");
-+	if (sect != NULL)
-+		do_feature_fixups(cur_cpu_spec->cpu_features,
-+				  (void *)sect->sh_addr,
-+				  (void *)sect->sh_addr + sect->sh_size);
-+
-+#ifdef CONFIG_PPC64
-+	sect = find_section(hdr, sechdrs, "__fw_ftr_fixup");
-+	if (sect != NULL)
-+		do_feature_fixups(powerpc_firmware_features,
-+				  (void *)sect->sh_addr,
-+				  (void *)sect->sh_addr + sect->sh_size);
++#if defined(__powerpc64__) || defined(CONFIG_PPC_E500MC)
++	__do_feature_fixups(0, fixup_start, fixup_end, PPC_LWSYNC_INSTR);
 +#endif
-+
-+	return 0;
 +}
-+
-+void module_arch_cleanup(struct module *mod)
-+{
-+	module_bug_cleanup(mod);
-+}
-+
-+struct bug_entry *module_find_bug(unsigned long bugaddr)
-+{
-+	struct mod_arch_specific *mod;
-+	unsigned int i;
-+	struct bug_entry *bug;
-+
-+	list_for_each_entry(mod, &module_bug_list, bug_list) {
-+		bug = mod->bug_table;
-+		for (i = 0; i < mod->num_bugs; ++i, ++bug)
-+			if (bugaddr == bug->bug_addr)
-+				return bug;
-+	}
-+	return NULL;
-+}
-diff --git a/arch/powerpc/kernel/module_32.c b/arch/powerpc/kernel/module_32.c
-index eab3138..2df91a0 100644
---- a/arch/powerpc/kernel/module_32.c
-+++ b/arch/powerpc/kernel/module_32.c
-@@ -34,23 +34,6 @@
- #define DEBUGP(fmt , ...)
+diff --git a/arch/powerpc/kernel/module.c b/arch/powerpc/kernel/module.c
+index 40dd52d..34905b8 100644
+--- a/arch/powerpc/kernel/module.c
++++ b/arch/powerpc/kernel/module.c
+@@ -86,6 +86,11 @@ int module_finalize(const Elf_Ehdr *hdr,
+ 				  (void *)sect->sh_addr + sect->sh_size);
  #endif
 
--LIST_HEAD(module_bug_list);
--
--void *module_alloc(unsigned long size)
--{
--	if (size == 0)
--		return NULL;
--	return vmalloc(size);
--}
--
--/* Free memory returned from module_alloc */
--void module_free(struct module *mod, void *module_region)
--{
--	vfree(module_region);
--	/* FIXME: If module_region == mod->init_region, trim exception
--           table entries. */
--}
--
- /* Count how many different relocations (different symbol, different
-    addend) */
- static unsigned int count_relocs(const Elf32_Rela *rela, unsigned int num)
-@@ -325,58 +308,3 @@ int apply_relocate_add(Elf32_Shdr *sechdrs,
++	sect = find_section(hdr, sechdrs, "__lwsync_fixup");
++	if (sect != NULL)
++		do_lwsync_fixups((void *)sect->sh_addr,
++				 (void *)sect->sh_addr + sect->sh_size);
++
+ 	return 0;
+ }
+
+diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
+index 9e83add..d1e498f 100644
+--- a/arch/powerpc/kernel/setup_32.c
++++ b/arch/powerpc/kernel/setup_32.c
+@@ -101,6 +101,9 @@ unsigned long __init early_init(unsigned long dt_ptr)
+ 			  PTRRELOC(&__start___ftr_fixup),
+ 			  PTRRELOC(&__stop___ftr_fixup));
+
++	do_lwsync_fixups(PTRRELOC(&__start___lwsync_fixup),
++			 PTRRELOC(&__stop___lwsync_fixup));
++
+ 	return KERNELBASE + offset;
+ }
+
+diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
+index 0c3000b..d4d351a 100644
+--- a/arch/powerpc/kernel/vmlinux.lds.S
++++ b/arch/powerpc/kernel/vmlinux.lds.S
+@@ -127,6 +127,12 @@ SECTIONS
+ 		*(__ftr_fixup)
+ 		__stop___ftr_fixup = .;
  	}
- 	return 0;
- }
--
--static const Elf_Shdr *find_section(const Elf_Ehdr *hdr,
--				    const Elf_Shdr *sechdrs,
--				    const char *name)
--{
--	char *secstrings;
--	unsigned int i;
--
--	secstrings = (char *)hdr + sechdrs[hdr->e_shstrndx].sh_offset;
--	for (i = 1; i < hdr->e_shnum; i++)
--		if (strcmp(secstrings+sechdrs[i].sh_name, name) == 0)
--			return &sechdrs[i];
--	return NULL;
--}
--
--int module_finalize(const Elf_Ehdr *hdr,
--		    const Elf_Shdr *sechdrs,
--		    struct module *me)
--{
--	const Elf_Shdr *sect;
--	int err;
--
--	err = module_bug_finalize(hdr, sechdrs, me);
--	if (err)		/* never true, currently */
--		return err;
--
--	/* Apply feature fixups */
--	sect = find_section(hdr, sechdrs, "__ftr_fixup");
--	if (sect != NULL)
--		do_feature_fixups(cur_cpu_spec->cpu_features,
--				  (void *)sect->sh_addr,
--				  (void *)sect->sh_addr + sect->sh_size);
--
--	return 0;
--}
--
--void module_arch_cleanup(struct module *mod)
--{
--	module_bug_cleanup(mod);
--}
--
--struct bug_entry *module_find_bug(unsigned long bugaddr)
--{
--	struct mod_arch_specific *mod;
--	unsigned int i;
--	struct bug_entry *bug;
--
--	list_for_each_entry(mod, &module_bug_list, bug_list) {
--		bug = mod->bug_table;
--		for (i = 0; i < mod->num_bugs; ++i, ++bug)
--			if (bugaddr == bug->bug_addr)
--				return bug;
--	}
--	return NULL;
--}
-diff --git a/arch/powerpc/kernel/module_64.c b/arch/powerpc/kernel/module_64.c
-index 3a82b02..4803f2d 100644
---- a/arch/powerpc/kernel/module_64.c
-+++ b/arch/powerpc/kernel/module_64.c
-@@ -101,22 +101,6 @@ static unsigned int count_relocs(const Elf64_Rela *rela, unsigned int num)
- 	return _count_relocs;
- }
++	. = ALIGN(8);
++	__lwsync_fixup : AT(ADDR(__lwsync_fixup) - LOAD_OFFSET) {
++		__start___lwsync_fixup = .;
++		*(__lwsync_fixup)
++		__stop___lwsync_fixup = .;
++	}
+ #ifdef CONFIG_PPC64
+ 	. = ALIGN(8);
+ 	__fw_ftr_fixup : AT(ADDR(__fw_ftr_fixup) - LOAD_OFFSET) {
+diff --git a/include/asm-powerpc/synch.h b/include/asm-powerpc/synch.h
+index 42a1ef5..c031808 100644
+--- a/include/asm-powerpc/synch.h
++++ b/include/asm-powerpc/synch.h
+@@ -3,20 +3,28 @@
+ #ifdef __KERNEL__
 
--void *module_alloc(unsigned long size)
--{
--	if (size == 0)
--		return NULL;
--
--	return vmalloc_exec(size);
--}
--
--/* Free memory returned from module_alloc */
--void module_free(struct module *mod, void *module_region)
--{
--	vfree(module_region);
--	/* FIXME: If module_region == mod->init_region, trim exception
--           table entries. */
--}
--
- static int relacmp(const void *_x, const void *_y)
- {
- 	const Elf64_Rela *x, *y;
-@@ -466,65 +450,3 @@ int apply_relocate_add(Elf64_Shdr *sechdrs,
+ #include <linux/stringify.h>
++#include <asm/asm-compat.h>
 
- 	return 0;
- }
--
--LIST_HEAD(module_bug_list);
--
--static const Elf_Shdr *find_section(const Elf_Ehdr *hdr,
--				    const Elf_Shdr *sechdrs,
--				    const char *name)
--{
--	char *secstrings;
--	unsigned int i;
--
--	secstrings = (char *)hdr + sechdrs[hdr->e_shstrndx].sh_offset;
--	for (i = 1; i < hdr->e_shnum; i++)
--		if (strcmp(secstrings+sechdrs[i].sh_name, name) == 0)
--			return &sechdrs[i];
--	return NULL;
--}
--
--int module_finalize(const Elf_Ehdr *hdr,
--		const Elf_Shdr *sechdrs, struct module *me)
--{
--	const Elf_Shdr *sect;
--	int err;
--
--	err = module_bug_finalize(hdr, sechdrs, me);
--	if (err)
--		return err;
--
--	/* Apply feature fixups */
--	sect = find_section(hdr, sechdrs, "__ftr_fixup");
--	if (sect != NULL)
--		do_feature_fixups(cur_cpu_spec->cpu_features,
--				  (void *)sect->sh_addr,
--				  (void *)sect->sh_addr + sect->sh_size);
--
--	sect = find_section(hdr, sechdrs, "__fw_ftr_fixup");
--	if (sect != NULL)
--		do_feature_fixups(powerpc_firmware_features,
--				  (void *)sect->sh_addr,
--				  (void *)sect->sh_addr + sect->sh_size);
--
--	return 0;
--}
--
--void module_arch_cleanup(struct module *mod)
--{
--	module_bug_cleanup(mod);
--}
--
--struct bug_entry *module_find_bug(unsigned long bugaddr)
--{
--	struct mod_arch_specific *mod;
--	unsigned int i;
--	struct bug_entry *bug;
--
--	list_for_each_entry(mod, &module_bug_list, bug_list) {
--		bug = mod->bug_table;
--		for (i = 0; i < mod->num_bugs; ++i, ++bug)
--			if (bugaddr == bug->bug_addr)
--				return bug;
--	}
--	return NULL;
--}
+-#if defined(__powerpc64__) || defined(CONFIG_PPC_E500MC)
+-#define __SUBARCH_HAS_LWSYNC
+-#endif
++#ifndef __ASSEMBLY__
++extern unsigned int __start___lwsync_fixup, __stop___lwsync_fixup;
++extern void do_lwsync_fixups(void *fixup_start, void *fixup_end);
++#endif /* __ASSEMBLY__ */
+
+-#ifdef __SUBARCH_HAS_LWSYNC
+-#    define LWSYNC	lwsync
+-#else
+-#    define LWSYNC	sync
+-#endif
++#define BEGIN_LWSYNC_SECTION_NESTED(label)	label:
++#define BEGIN_LWSYNC_SECTION		BEGIN_LWSYNC_SECTION_NESTED(97)
++#define END_LWSYNC_SECTION_NESTED(msk, val, label) \
++	MAKE_FTR_SECTION_ENTRY(msk, val, label, __lwsync_fixup)
++#define END_LWSYNC_SECTION \
++	END_LWSYNC_SECTION_NESTED(1, 1, 97)
++
++#    define LWSYNC		\
++	BEGIN_LWSYNC_SECTION;	\
++	sync;			\
++	END_LWSYNC_SECTION;
+
+ #ifdef CONFIG_SMP
+ #define ISYNC_ON_SMP	"\n\tisync\n"
+-#define LWSYNC_ON_SMP	__stringify(LWSYNC) "\n"
++#define LWSYNC_ON_SMP	stringify_in_c(LWSYNC) "\n"
+ #else
+ #define ISYNC_ON_SMP
+ #define LWSYNC_ON_SMP
+diff --git a/include/asm-powerpc/system.h b/include/asm-powerpc/system.h
+index df781ad..15218bb 100644
+--- a/include/asm-powerpc/system.h
++++ b/include/asm-powerpc/system.h
+@@ -34,7 +34,7 @@
+  * SMP since it is only used to order updates to system memory.
+  */
+ #define mb()   __asm__ __volatile__ ("sync" : : : "memory")
+-#define rmb()  __asm__ __volatile__ (__stringify(LWSYNC) : : : "memory")
++#define rmb()  __asm__ __volatile__ (stringify_in_c(LWSYNC) : : : "memory")
+ #define wmb()  __asm__ __volatile__ ("sync" : : : "memory")
+ #define read_barrier_depends()  do { } while(0)
+
 -- 
 1.5.5.1
