@@ -1,19 +1,11 @@
-Return-Path: <billfink@mindspring.com>
-Received: from elasmtp-scoter.atl.sa.earthlink.net
-	(elasmtp-scoter.atl.sa.earthlink.net [209.86.89.67])
-	by ozlabs.org (Postfix) with ESMTP id C4E23DDE25
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jun 2008 13:01:35 +1000 (EST)
-Date: Thu, 19 Jun 2008 23:01:28 -0400
-From: Bill Fink <billfink@mindspring.com>
-To: Laurent Pinchart <laurentp@cse-semaphore.com>
-Subject: Re: [PATCH] fs_enet: restore promiscuous and multicast settings in
-	restart()
-Message-Id: <20080619230128.def96ee0.billfink@mindspring.com>
-In-Reply-To: <200806181707.17739.laurentp@cse-semaphore.com>
-References: <200806181707.17739.laurentp@cse-semaphore.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, vbordug@ru.mvista.com, netdev@vger.kernel.org
+Return-Path: <mikey@neuling.org>
+To: Paul Mackerras <paulus@samba.org>
+From: Michael Neuling <mikey@neuling.org>
+Date: Fri, 20 Jun 2008 14:13:52 +1000
+Subject: [PATCH 0/9] powerpc: Add kernel support for POWER7 VSX. 
+In-Reply-To: <1213750053.678227.22239172650.qpush@coopers>
+Message-Id: <1213935232.194904.168421502953.qpush@coopers>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,33 +15,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 18 Jun 2008, Laurent Pinchart wrote:
+The following set of patches adds Vector Scalar Extentions (VSX)
+support for POWER7.  Includes context switch, ptrace and signals support.
 
-> The restart() function is called when the link state changes and resets
-> multicast and promiscous settings. This patch restores those settings at the
-> end of restart().
-> 
-> Signed-off-by: Laurent Pinchart <laurentp@cse-semaphore.com>
-> ---
->  drivers/net/fs_enet/mac-fcc.c     |    3 +++
->  2 files changed, 4 insertions(+), 1 deletions(-)
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+--- 
+Paulus: please consider for your 2.6.27 tree.
 
-Is the whole patch here?  The above says 2 files changed and 5 lines
-changed, but what's included here is only 1 file and 3 line changes.
-
-> diff --git a/drivers/net/fs_enet/mac-fcc.c b/drivers/net/fs_enet/mac-fcc.c
-> index ce40cf9..1a95cf1 100644
-> --- a/drivers/net/fs_enet/mac-fcc.c
-> +++ b/drivers/net/fs_enet/mac-fcc.c
-> @@ -464,6 +464,9 @@ static void restart(struct net_device *dev)
->  		C32(fccp, fcc_fpsmr, FCC_PSMR_FDE | FCC_PSMR_LPB);
->  
->  	S32(fccp, fcc_gfmr, FCC_GFMR_ENR | FCC_GFMR_ENT);
-> +
-> +	/* Restore multicast and promiscous settings */
-> +	set_multicast_list(dev);
->  }
->  
->  static void stop(struct net_device *dev)
-
-						-Bill
+Updated with comments from Kumar, Milton, Dave Woodhouse and Mark
+'NKOTB' Nelson.
+- Changed thread_struct array definition to be cleaner
+- Updated CPU_FTRS_POSSIBLE 
+- Updated Kconfig typo and dupilicate
+- Added comment to clarify ibm,vmx = 2 really means VSX. 
