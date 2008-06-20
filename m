@@ -1,16 +1,18 @@
-Return-Path: <wsa@pengutronix.de>
-Date: Fri, 20 Jun 2008 18:10:33 +0200
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: Merging seperate FDT-blobs?
-Message-ID: <20080620161033.GE17701@pengutronix.de>
-References: <20080612090433.GA4235@pengutronix.de>
-	<20080613042304.GD29451@yookeroo.seuss>
+Return-Path: <VONBOEHN@de.ibm.com>
+In-Reply-To: <18522.60641.706672.27167@cargo.ozlabs.ibm.com>
+References: <200806191753.51495.markn@au1.ibm.com>	<200806191353.17323.arnd@arndb.de>	<OF44809729.FB9D2C51-ONC125746D.00429A93-C125746D.0042FB12@de.ibm.com>
+	<18522.60641.706672.27167@cargo.ozlabs.ibm.com>
+Subject: Re: [RFC 0/3] powerpc: memory copy routines tweaked for Cell
+To: Paul Mackerras <paulus@samba.org>
+Message-ID: <OF7AC5CF9D.1B10153A-ONC125746E.00578A51-C125746E.0059168B@de.ibm.com>
+From: Gunnar von Boehn <VONBOEHN@de.ibm.com>
+Date: Fri, 20 Jun 2008 18:12:49 +0200
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="a1QUDc0q7S3U7/Jg"
-In-Reply-To: <20080613042304.GD29451@yookeroo.seuss>
-Cc: david@gibson.dropbear.id.au
+Content-type: multipart/mixed;
+	Boundary="0__=4EBBFEFDDFC40CC18f9e8a93df938690918c4EBBFEFDDFC40CC1"
+Cc: Mark Nelson <markn@au1.ibm.com>, linuxppc-dev@ozlabs.org,
+	Michael Ellerman <ellerman@au1.ibm.com>, cbe-oss-dev@ozlabs.org,
+	Arnd Bergmann <arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,165 +22,289 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+--0__=4EBBFEFDDFC40CC18f9e8a93df938690918c4EBBFEFDDFC40CC1
+Content-type: text/plain; charset=US-ASCII
 
---a1QUDc0q7S3U7/Jg
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hi Paul,
 
-On Fri, Jun 13, 2008 at 02:23:04PM +1000, David Gibson wrote:
+I wrote a small benchmark tool that compares various memcpy routines under
+a number of conditions.
+The benchmark test a number of different block sizes from a few Bytes to 16
+MB.
+Each test is repeated in a loop several times.
 
-> > a project I am working on consists of different hardware modules, which
-> > can be combined in a lot of variations (not at runtime, though). As each
-> > module shall contain an I2C-eeprom, the idea is now to put a fragment of
-> > a FDT-blob into that EEPROM and let the bootloader combine these
-> > fragments. Such an approach was also sketched by David Gibson recently.
-[...]
-> > My question: Is there already an effort towards such an approach to
-> > which I could contribute, or do I have to start from scratch?
->=20
-> I don't know of anyone who's implemented this specifically, but if you
-> do get there first, please do it on top of libfdt.
+Three main types of copies are benchmarked.
+a) Copies that are not cache able. This is a real memory-to-memory copy.
+To prevent the CPU from caching the data, the SRC and DST pointers are
+moved during the loop iterations.
+b) Copies where the CPU is allowed to cache the SRC. This is a
+cache-to-memory copy.
+To prevent the CPU from caching the data, the DST pointer is moved during
+the loop iterations.
+C) Copies where the CPU is allowed to cache both SRC and DST. This is a
+cache-to-cache copy.
+To allow the CPU to cache it, both pointers are constant during the loop
+iterations.
 
-Yes, I would surely put this on top of libfdt.
+The test are repeated with different source/dst alignments to show
+performance difference for aligned or not aligned data.
 
-Similar to what Stephen Neuendorffer wrote recently
-(http://ozlabs.org/pipermail/linuxppc-dev/2008-June/058074.html), I'd
-like to develop a solution which makes the fragments compilable
-independently from a main tree. This would allow to store a fragment
-on an extension board once and connect it to different kinds of baseboards
-without any reconfiguration necessary.
+I've tested and compared various copy routines both on PS3, JS21 and QS21
+and QS22.
 
-So far, main problems I faced for such an approach are:
+Please find some results of the PS3 attached.
 
-1) How do you know where a node from the fragment should be added to
-   in the main tree?
-   Imagine your extension board carries an I2C device, then you need to
-   find the correct I2C bus which may have a different name on different
-   baseboards (and there may be more than one bus).
+The test clearly show that the old GLIBC and Linux memcpy routines have the
+same speed on CELL.
+For aligned data:
+Linux and GLIBC both got result speed  around 1500 MB/sec.
+The Linux routine has an exception for the 4K case and gets around 3200
+MB/sec for 4K copies
+Our patch always gets a result between 5500-6000 MB/sec
 
-2) How to deal with phandles?
-   The fragment does not know anything about phandles from the main
-   tree, so it cannot use them, although it needs to for a number of
-   typical fdt-entries.
-
-My proposal looks like the following (this is all still brainstorming
-phase, so please feel free to join):
-
-Create a property "external-name". This defines the name of the current
-node regarding access from external fragments and must be unique.
-Example for an i2c bus in the main tree:
-
-	i2c@3d00 {
-		#address-cells =3D <1>;
-		#size-cells =3D <0>;
-		compatible =3D "fsl,mpc5200b-i2c","fsl,mpc5200-i2c","fsl-i2c";
-		[...]
-		external-name =3D "i2c-0";
-	};
-
-If you are strict on keeping consistent names for equal busses on
-different baseboards, then this should ensure hardware independency.
-Now a fragment, or an external, could look like this:
-
-/ {
-	// Using the external-name now.
-	i2c-0 {
-		eeprom@52 {
-			device_type =3D "i2c";
-			compatible =3D "linux,24c32";
-			reg =3D <0x52>;
-		};
-	};
-};
-
-A boot-loader could add this node with an algorithm like the
-following pseudo-code:
-
-foreach node from external_fdt with depth =3D=3D 1 {
-
-	name =3D fdt_get_name(external_fdt, node);
-
-	offset =3D fdt_node_offset_by_prop_value(main_fdt, "external-name", name);
-	if (offset =3D=3D -FDT_ERR_NOTFOUND)
-		offset =3D fdt_add_subnode(main_fdt, 0 /* root level*/, name);
-
-	copy_properties_and_subnodes(...);
-}
-
-So, it will take the name of each node with depth =3D=3D 1 from the
-external, look if there is an "external-name" set to the same name in
-the main tree and add the node to the place found. If not found, it will
-be put below the root-node. (Note that copy_properties_and_subnotes is
-still an obstacle and has to be implemented)
-
-The property "external-name" could also be used to deal with phandles.
-In an external, fragment, or however you call it, properties requiring a
-phandle from the main-fdt could be prefixed. Instead of:
-
-	interrupt-parent =3D <&mpic>
-
-we would write
-
-	phandle-for-interrupt-parent =3D "mpic-0";
-
-(maybe the prefix 'phandle-for-' could be replaced by a token?),
-assuming there is a pic which has the property
-'external-name =3D "mpic-0"'.
-
-Then we have the following pseudocode for the bootloader, which would
-find out the phandle for mpic-0 and set 'interrupt-parent' accordingly:
-
-	if (property starts with "phandle-for-") {
-		propname =3D property without 'phandle-for-';
-
-		name =3D fdt_getprop(external_fdt, cur_node, property);
-
-		phandle_offset =3D fdt_node_offset_by_prop_value(main_fdt, "external-name=
-", name)
-		phandle =3D fdt_get_phandle(main_fdt, phandle_offset);
-
-		fdt_setprop(external_fdt, propname, phandle);
-		copy_prop_to_main_fdt();
-	}
-
-Finally, the main tree needs to know where to look for externals.
-Something like this should do:
-
-	externals {
-		blob0 {
-			device-handle =3D <&eeprom>;
-			offset =3D <0xf00>;
-		};
-	};
-
-This can easily be parsed by a bootloader and should be flexible enough
-to allow different kinds of memory.
+For unaligned data both Linux and glibc score low with 800 MB/sec
+Our patch gets here around 2500 MB/sec
 
 
-This is what I have come up with so far. Still, my proposal is very
-likely far from complete, so I am really looking forward to comments,
-crticism or improvements.
+If you want then I can send you the source of my benchmark program.
 
-Kind regards,
+Cheers
+Gunnar
 
-   Wolfram
+(See attached file: ps3_result_easy_toread.txt)
 
---=20
-  Dipl.-Ing. Wolfram Sang | http://www.pengutronix.de
- Pengutronix - Linux Solutions for Science and Industry
 
---a1QUDc0q7S3U7/Jg
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
 
-iD8DBQFIW9Z5D27XaX1/VRsRAukLAKCtOklc78zFhOotT7CuxFC22PlxewCfewVY
-bLU97wDCV4Hy40+wtYdSaTg=
-=NZaS
------END PGP SIGNATURE-----
+                                                                           
+             Paul Mackerras                                                
+             <paulus@samba.org                                             
+             >                                                          To 
+                                       Gunnar von                          
+             20/06/2008 01:33          Boehn/Germany/Contr/IBM@IBMDE       
+                                                                        cc 
+                                       Arnd Bergmann <arnd@arndb.de>, Mark 
+                                       Nelson <markn@au1.ibm.com>,         
+                                       linuxppc-dev@ozlabs.org, Michael    
+                                       Ellerman <ellerman@au1.ibm.com>,    
+                                       cbe-oss-dev@ozlabs.org              
+                                                                   Subject 
+                                       Re: [RFC 0/3] powerpc: memory copy  
+                                       routines tweaked for Cell           
+                                                                           
+                                                                           
+                                                                           
+                                                                           
+                                                                           
+                                                                           
 
---a1QUDc0q7S3U7/Jg--
+
+
+
+Gunnar von Boehn writes:
+
+> I have no results for P5/P6, but I did some tests on JS21 aka PPC-970.
+> On PPC-970 the CELL memcpy is faster than the current Linux routine.
+> This becomes really visible when you really copy memory-to-memory and are
+> not only working in the 2ndlevelcache.
+
+Could you send some more details, like the actual copy speed you
+measured and how you did the tests?
+
+Thanks,
+Paul.
+
+--0__=4EBBFEFDDFC40CC18f9e8a93df938690918c4EBBFEFDDFC40CC1
+Content-type: text/plain;
+	name="ps3_result_easy_toread.txt"
+Content-Disposition: attachment; filename="ps3_result_easy_toread.txt"
+Content-transfer-encoding: base64
+
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tCkJlbmNobWFy
+ayBtZW1jcHkgcGVyZm9ybWFuY2UgdjEuOTAKLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tClRoZSBUZXN0IHdpbGwgcnVuIHNvbWUgdGltZSBwbGVhc2UgYmUg
+cGF0aWVudC4KVG90YWwgbWVtb3J5IHJlcXVpcmVkID0gMzMuNiBNQi4KLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tCgpNZW1vcnkgdGhyb3VnaHB1dCBXb3Jr
+aW5nIG9uIEFycmF5cyBvZiAxNi44IE1CLgpXZSBhcmUgbm93IGNvbXBhcmluZyBkaWZmZXJlbnQg
+bWVtY3B5IHJvdXRpbmVzClJlc3VsdHMgYXJlIGluIE1CL3NlYy4gSGlnaGVyIHZhbHVlIG1lYW5z
+IGZhc3Rlci4KVGhlIHRlc3Qgd2lsbCBiZSByZXBlYXRlZCBvbiBkaWZmZXJlbnQgYWxpZ25lZCBk
+YXRhLgotLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KQmVz
+dCBDYXNlIC0gQ29weSBNZW1vcnktdG8tTWVtb3J5CkFsaWdubWVudCAwLTAgICAgIDE2TUIgIDMw
+MEtCICAgNjRLQiAgIDE2S0IgICAgNEtCICAgIDJLQiAgICAxS0IgICA1MTJCICAgMzg0QiAgIDI1
+NkIgICAxNTBCICAgMTI4QiAgIDEwMEIgICAgNjRCICAgIDMyQiAgICAxNkIgCi0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQpnbGliYyBtZW1jcHkgICAgICAx
+NTYzICAgMTU4MiAgIDE2MDEgICAxNjAwICAgMTU5OSAgIDE0ODkgICAxMzIwICAgMTA5OSAgICA5
+OTcgICAgODMzICAgIDQ0MyAgICA1NTMgICAgNDI4ICAgIDI4MCAgICAxNDIgICAgIDcxIApsaW51
+eCA2NCAgICAgICAgICAxNTQ0ICAgMTU2MSAgIDE1MzUgICAxNTQyICAgMzI3NCAgIDE0NTIgICAx
+MjkxICAgMTA5MyAgIDEwMDYgICAgODM5ICAgIDUwOCAgICA1NTUgICAgNDUxICAgIDI5NiAgICAx
+NDkgICAgIDc1IApDRUxMIG1lbWNweSAgICAgICA1ODY5ICAgNjAxNiAgIDU0NTQgICA1MzQ2ICAg
+NTYwNyAgIDQzNTUgICAzNTIzICAgMjAzMCAgIDE2NDggICAxMTMxICAgIDY3MCAgICA2MDAgICAg
+NDEzICAgIDI5NCAgICAxNDkgICAgIDc1IAoKLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tCkJlc3QgQ2FzZSAtIENvcHkgQ2FjaGUtdG8tTWVtb3J5CkFsaWdu
+bWVudCAwLTAgICAgIDE2TUIgIDMwMEtCICAgNjRLQiAgIDE2S0IgICAgNEtCICAgIDJLQiAgICAx
+S0IgICA1MTJCICAgMzg0QiAgIDI1NkIgICAxNTBCICAgMTI4QiAgIDEwMEIgICAgNjRCICAgIDMy
+QiAgICAxNkIgCi0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LQpnbGliYyBtZW1jcHkgICAgICAxNjI1ICAgMjIyNSAgIDYxMDQgICA2NTY5ICAgNzAxMyAgIDY3
+NzggICA1OTY3ICAgNTc3NyAgIDUxMDEgICAzOTI4ICAgMjQyOSAgIDIyMjQgICAxNDkwICAgMTEy
+MSAgICA1NjQgICAgMjg0IApsaW51eCA2NCAgICAgICAgICAxNTY2ICAgMjExMCAgIDUzMzIgICA2
+MzcyICAgMzI2NCAgIDYzOTQgICA1ODU4ICAgNTI4NiAgIDQ1MzkgICAzNTc0ICAgMjQzNCAgIDIx
+NDIgICAxNTcyICAgMTEzNSAgICA1NzQgICAgMjg4IApDRUxMIG1lbWNweSAgICAgICA1NjgzICAg
+Nzc2MyAgMTEwMDIgIDEwODQzICAxMDMwNiAgIDkwMTggICA4MzUyICAgNjU5NSAgIDU4MDUgICA0
+NjI5ICAgMjU3MiAgIDIzMDAgICAxNTk1ICAgMTE1NCAgICA1NzcgICAgMjg3IAoKLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tCkJlc3QgQ2FzZSAtIENvcHkg
+Q2FjaGUtdG8tQ2FjaGUKQWxpZ25tZW50IDAtMCAgICAgMTZNQiAgMzAwS0IgICA2NEtCICAgMTZL
+QiAgICA0S0IgICAgMktCICAgIDFLQiAgIDUxMkIgICAzODRCICAgMjU2QiAgIDE1MEIgICAxMjhC
+ICAgMTAwQiAgICA2NEIgICAgMzJCICAgIDE2QiAKLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tCmdsaWJjIG1lbWNweSAgICAgIDE2MjcgICAxOTgyICAgNjg1
+MiAgMTQ5MjggIDE0MTE0ICAxMzEyOCAgMTEzNjEgICA5MjkxICAgODIxNyAgIDY0NzAgICA1MDIz
+ICAgNDgwOCAgIDM4NDcgICAyODgyICAgMTU1MiAgIDEwMTQgCmxpbnV4IDY0ICAgICAgICAgIDE1
+NjUgICAxODc4ICAgNTkwNyAgMTA1NjUgICA0MTIwICAgOTg3NCAgIDkxNDEgICA3OTkzICAgNzM3
+MyAgIDYzMzQgICA0ODg1ICAgNDM0NCAgIDQzODkgICAzNjE5ICAgMjE1OSAgIDEyMjcgCkNFTEwg
+bWVtY3B5ICAgICAgIDU2NTIgICA3Nzk2ICAxNTI3NyAgMTgyOTYgIDE3Mzc0ICAxNjYyOCAgMTQz
+MzIgIDExMjM0ICAxMDQ2OCAgIDk1NTAgICA2OTgyICAgODMyNCAgIDU0NTYgICA0MDg0ICAgMjcw
+MyAgIDE1NDcgCgotLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0KR29vZCBDYXNlIC0gYWxpZ25lZCBvbiA0IGJ1dCBjcm9zc2VzIDRrIHBhZ2UgLSBDb3B5IE1l
+bW9yeS10by1NZW1vcnkKQWxpZ25tZW50IDAtNDA5MiAgMTZNQiAgMzAwS0IgICA2NEtCICAgMTZL
+QiAgICA0S0IgICAgMktCICAgIDFLQiAgIDUxMkIgICAzODRCICAgMjU2QiAgIDE1MEIgICAxMjhC
+ICAgMTAwQiAgICA2NEIgICAgMzJCICAgIDE2QiAKLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tCmdsaWJjIG1lbWNweSAgICAgIDE2MDYgICAxNjIwICAgMTU5
+OSAgIDE2MDIgICAxNTkxICAgMTUxMCAgIDEzNTQgICAxMTAzICAgIDk5MiAgICA4MjMgICAgNDk3
+ICAgIDQ3MCAgICA0MjYgICAgMjc4ICAgIDE0MCAgICAgNzIgCmxpbnV4IDY0ICAgICAgICAgIDE1
+NTggICAxNTc2ICAgMTU1OSAgIDE1NTAgICAxNTIxICAgMTQyNyAgIDEyNDIgICAxMDEzICAgIDkw
+MCAgICA3NDUgICAgNTAwICAgIDQ1NCAgICA0NTAgICAgMjk1ICAgIDE1MCAgICAgNzUgCkNFTEwg
+bWVtY3B5ICAgICAgIDU5OTEgICA2MDQyICAgNTkwNyAgIDU2NjAgICA0Nzk0ICAgMzY2MCAgIDI2
+ODcgICAxODM3ICAgMTQ1MSAgIDEwMzkgICAgNjM2ICAgIDU1NiAgICA0MzggICAgMjkwICAgIDE0
+OCAgICAgNzMgCgotLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0KR29vZCBDYXNlIC0gYWxpZ25lZCBvbiA0IGJ1dCBjcm9zc2VzIDRrIHBhZ2UgLSBDb3B5IENh
+Y2hlLXRvLU1lbW9yeQpBbGlnbm1lbnQgMC00MDkyICAxNk1CICAzMDBLQiAgIDY0S0IgICAxNktC
+ICAgIDRLQiAgICAyS0IgICAgMUtCICAgNTEyQiAgIDM4NEIgICAyNTZCICAgMTUwQiAgIDEyOEIg
+ICAxMDBCICAgIDY0QiAgICAzMkIgICAgMTZCIAotLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0KZ2xpYmMgbWVtY3B5ICAgICAgMTYxOCAgIDIxMjggICA0NTY4
+ICAgNzUzMSAgIDgwMTMgICA3MTIyICAgNjE2MyAgIDQ4NDUgICAzOTQ0ICAgMjg2MCAgIDIzMjIg
+ICAxNzM3ICAgMTQwMCAgIDExMDkgICAgNTU5ICAgIDI4MiAKbGludXggNjQgICAgICAgICAgMTU2
+MCAgIDIwMzggICA0NDIyICAgNjYwNCAgIDY1NTEgICA1NjU5ICAgNDcwMCAgIDQyNzMgICAzODE0
+ICAgMjc2NSAgIDIzMDYgICAxNjY3ICAgMTQzNyAgIDExMjcgICAgNTY3ICAgIDI4NiAKQ0VMTCBt
+ZW1jcHkgICAgICAgNTYyOCAgIDc3NDcgIDEwNzUwICAxMDcxNSAgMTAwMzggICA4MDA2ICAgNTk1
+NSAgIDUxNzYgICA0NDMxICAgMzQzOCAgIDI0MzEgICAxODgxICAgMTM0MyAgIDExMjggICAgNTcw
+ICAgIDI4MiAKCi0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LQpNaXNhbGlnbmVkIENhc2VzIC0gQ29weSBNZW1vcnktdG8tTWVtb3J5CkFsaWdubWVudCA3LTAg
+ICAgIDE2TUIgIDMwMEtCICAgNjRLQiAgIDE2S0IgICAgNEtCICAgIDJLQiAgICAxS0IgICA1MTJC
+ICAgMzg0QiAgIDI1NkIgICAxNTBCICAgMTI4QiAgIDEwMEIgICAgNjRCICAgIDMyQiAgICAxNkIg
+Ci0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQpnbGliYyBt
+ZW1jcHkgICAgICAgODIzICAgIDgyOSAgICA4MjMgICAgODIzICAgIDgxNiAgICA3NzggICAgNzEz
+ICAgIDYyMCAgICA1NjggICAgNDg5ICAgIDM4NSAgICAzNDIgICAgMzQzICAgIDI0MCAgICAxMzAg
+ICAgIDY3IApsaW51eCA2NCAgICAgICAgICAgODYxICAgIDg3NSAgICA4NjQgICAgODU5ICAgIDg2
+MSAgICA4MTQgICAgNzUzICAgIDY1NCAgICA2MDEgICAgNTE4ICAgIDM3MSAgICAzNjUgICAgMzU4
+ICAgIDI1MyAgICAxMzggICAgIDczIApDRUxMIG1lbWNweSAgICAgICAyNTUxICAgMjU0MyAgIDI1
+MTIgICAyNTMxICAgMjQyNiAgIDIxMzIgICAxNzU2ICAgMTI0MCAgIDEwODkgICAgODM5ICAgIDU0
+MCAgICA1MDAgICAgNDAyICAgIDI3MiAgICAxMjEgICAgIDc1IAoKLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tCkFsaWdubWVudCAwLTcgICAgIDE2TUIgIDMw
+MEtCICAgNjRLQiAgIDE2S0IgICAgNEtCICAgIDJLQiAgICAxS0IgICA1MTJCICAgMzg0QiAgIDI1
+NkIgICAxNTBCICAgMTI4QiAgIDEwMEIgICAgNjRCICAgIDMyQiAgICAxNkIgCi0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQpnbGliYyBtZW1jcHkgICAgICAg
+ODI1ICAgIDgzMCAgICA4MjMgICAgODE5ICAgIDgxNSAgICA3ODggICAgNzQyICAgIDY2NiAgICA2
+MjEgICAgNTQ2ICAgIDM1NiAgICA0MDcgICAgMzQwICAgIDI0MCAgICAxMzEgICAgIDYwIApsaW51
+eCA2NCAgICAgICAgICAgODU3ICAgIDg2OCAgICA4NTQgICAgODU2ICAgIDg1MiAgICA4MjIgICAg
+Nzc3ICAgIDY4OSAgICA2NDcgICAgNTcwICAgIDM5NiAgICA0MTggICAgMzUwICAgIDI0MiAgICAx
+MzIgICAgIDcwIApDRUxMIG1lbWNweSAgICAgICAyNjUxICAgMjYyNiAgIDI2NDEgICAyNTQwICAg
+MjM3MiAgIDIwNzEgICAxNDkyICAgIDk4NSAgICA4MzggICAgNTg0ICAgIDQwNCAgICAzNDAgICAg
+MzQ2ICAgIDI0MyAgICAxMjcgICAgIDY0IAoKLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tCkFsaWdubWVudCAxNy0xMSAgIDE2TUIgIDMwMEtCICAgNjRLQiAg
+IDE2S0IgICAgNEtCICAgIDJLQiAgICAxS0IgICA1MTJCICAgMzg0QiAgIDI1NkIgICAxNTBCICAg
+MTI4QiAgIDEwMEIgICAgNjRCICAgIDMyQiAgICAxNkIgCi0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQpnbGliYyBtZW1jcHkgICAgICAgODIzICAgIDgyOSAg
+ICA4MjMgICAgODIzICAgIDgxNiAgICA3NzEgICAgNzExICAgIDYxNCAgICA1NjQgICAgNDgzICAg
+IDM3OSAgICAzMzkgICAgMzQ1ICAgIDI0MCAgICAxMjUgICAgIDY5IApsaW51eCA2NCAgICAgICAg
+ICAgODUzICAgIDg2NyAgICA4NTMgICAgODUxICAgIDg1MSAgICA4MDMgICAgNzM5ICAgIDYzOCAg
+ICA1ODQgICAgNDk5ICAgIDM5NSAgICAzNTEgICAgMzUxICAgIDIzOSAgICAxMzAgICAgIDY5IApD
+RUxMIG1lbWNweSAgICAgICAyNTU3ICAgMjU0MiAgIDI1MDcgICAyNTE1ICAgMjM4NyAgIDE4NjMg
+ICAxNDg3ICAgIDk5OCAgICA4MjkgICAgNjIwICAgIDQzNSAgICAzNzcgICAgMzkwICAgIDI0MSAg
+ICAxMzggICAgIDcxIAoKLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tCk1pc2FsaWduZWQgQ2FzZXMgLSBDb3B5IENhY2hlLXRvLU1lbW9yeQpBbGlnbm1lbnQg
+Ny0wICAgICAxNk1CICAzMDBLQiAgIDY0S0IgICAxNktCICAgIDRLQiAgICAyS0IgICAgMUtCICAg
+NTEyQiAgIDM4NEIgICAyNTZCICAgMTUwQiAgIDEyOEIgICAxMDBCICAgIDY0QiAgICAzMkIgICAg
+MTZCIAotLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KZ2xp
+YmMgbWVtY3B5ICAgICAgIDgyNCAgICA5NjIgICAxMzQwICAgMTMxNyAgIDEzMjEgICAxMjg4ICAg
+MTIzOSAgIDExNjAgICAxMTIwICAgMTA0OCAgICA5MDkgICAgODcwICAgIDg0MCAgICA2OTQgICAg
+NDQ1ICAgIDI4MSAKbGludXggNjQgICAgICAgICAgIDg2MCAgIDEwMTAgICAxNDA0ICAgMTQzMiAg
+IDE0MzUgICAxNDAyICAgMTM1MiAgIDEyNDcgICAxMjE1ICAgMTEzNCAgICA5NjMgICAxMDA2ICAg
+IDg4MCAgICA3NjMgICAgNDM0ICAgIDI3OSAKQ0VMTCBtZW1jcHkgICAgICAgMjUxOSAgIDI2NTYg
+ICAyNjgxICAgMjYxMyAgIDI1NjYgICAyNDQ2ICAgMjI4NCAgIDIxMDAgICAyMDEzICAgMTg0NiAg
+IDE2MzEgICAxNTAwICAgMTM0MyAgIDEwNTkgICAgNTYxICAgIDI4NyAKCi0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQpBbGlnbm1lbnQgMC03ICAgICAxNk1C
+ICAzMDBLQiAgIDY0S0IgICAxNktCICAgIDRLQiAgICAyS0IgICAgMUtCICAgNTEyQiAgIDM4NEIg
+ICAyNTZCICAgMTUwQiAgIDEyOEIgICAxMDBCICAgIDY0QiAgICAzMkIgICAgMTZCIAotLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KZ2xpYmMgbWVtY3B5ICAg
+ICAgIDgyNSAgICA5NDkgICAxMjY4ICAgMTMyNCAgIDEzMTkgICAxMjg1ICAgMTI0NCAgIDExNDcg
+ICAxMTA3ICAgMTAzOSAgICA4NDcgICAgODgyICAgIDgzNCAgICA2OTYgICAgNDI1ICAgIDIxOCAK
+bGludXggNjQgICAgICAgICAgIDg1NCAgIDEwMDcgICAxNDA2ICAgMTQxOSAgIDE0MzAgICAxMzkx
+ICAgMTMxOSAgIDEyMDkgICAxMTYzICAgMTA4MiAgICA5MzggICAgOTIzICAgIDgyMiAgICA2OTUg
+ICAgMzcxICAgIDE5MiAKQ0VMTCBtZW1jcHkgICAgICAgMjU5OCAgIDI3MzEgICAyNzI5ICAgMjcy
+NiAgIDI1NTggICAyMzcyICAgMjEyNiAgIDE3NTcgICAxNjMzICAgMTM0MyAgIDEwNTcgICAgOTIx
+ICAgIDg1MCAgICA3MzkgICAgMzc0ICAgIDI0MiAKCi0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLQpBbGlnbm1lbnQgMTctMTEgICAxNk1CICAzMDBLQiAgIDY0
+S0IgICAxNktCICAgIDRLQiAgICAyS0IgICAgMUtCICAgNTEyQiAgIDM4NEIgICAyNTZCICAgMTUw
+QiAgIDEyOEIgICAxMDBCICAgIDY0QiAgICAzMkIgICAgMTZCIAotLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KZ2xpYmMgbWVtY3B5ICAgICAgIDgyNCAgICA5
+NDYgICAxMjUxICAgMTMyMSAgIDEzMjUgICAxMjkxICAgMTIzOCAgIDExNDMgICAxMTA2ICAgMTAz
+OCAgICA4OTggICAgODY4ICAgIDg2MSAgICA2ODkgICAgMzY0ICAgIDE5MyAKbGludXggNjQgICAg
+ICAgICAgIDg1NyAgICA5OTkgICAxMzkxICAgMTQyNiAgIDE0MjEgICAxMzc5ICAgMTMxNiAgIDEy
+MDEgICAxMTU5ICAgMTA1MyAgICA4NjggICAgODg2ICAgIDgzNSAgICA2NjEgICAgNDIyICAgIDI1
+MSAKQ0VMTCBtZW1jcHkgICAgICAgMjUxOSAgIDI2NTcgICAyNjQxICAgMjYwNSAgIDI1MzcgICAy
+Mzg5ICAgMjIxMSAgIDE5NjIgICAxODQzICAgMTU1NCAgIDE0NjAgICAxMzAyICAgMTE4MSAgICA3
+NzIgICAgMzc1ICAgIDI3OCAKCi0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLQo=
+
+--0__=4EBBFEFDDFC40CC18f9e8a93df938690918c4EBBFEFDDFC40CC1--
