@@ -1,17 +1,19 @@
-Return-Path: <markn@au1.ibm.com>
-From: Mark Nelson <markn@au1.ibm.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [Cbe-oss-dev] [RFC 3/3] powerpc: copy_4K_page tweaked for Cell
-Date: Fri, 20 Jun 2008 12:25:02 +1000
-References: <200806191754.17289.markn@au1.ibm.com>
-	<200806192328.51423.arnd@arndb.de>
-In-Reply-To: <200806192328.51423.arnd@arndb.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200806201225.02753.markn@au1.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, Gunnar von Boehn <VONBOEHN@de.ibm.com>,
-	cbe-oss-dev@ozlabs.org, Michael Ellerman <ellerman@au1.ibm.com>
+Return-Path: <billfink@mindspring.com>
+Received: from elasmtp-scoter.atl.sa.earthlink.net
+	(elasmtp-scoter.atl.sa.earthlink.net [209.86.89.67])
+	by ozlabs.org (Postfix) with ESMTP id C4E23DDE25
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jun 2008 13:01:35 +1000 (EST)
+Date: Thu, 19 Jun 2008 23:01:28 -0400
+From: Bill Fink <billfink@mindspring.com>
+To: Laurent Pinchart <laurentp@cse-semaphore.com>
+Subject: Re: [PATCH] fs_enet: restore promiscuous and multicast settings in
+	restart()
+Message-Id: <20080619230128.def96ee0.billfink@mindspring.com>
+In-Reply-To: <200806181707.17739.laurentp@cse-semaphore.com>
+References: <200806181707.17739.laurentp@cse-semaphore.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, vbordug@ru.mvista.com, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,38 +23,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 20 Jun 2008 07:28:50 am Arnd Bergmann wrote:
-> On Thursday 19 June 2008, Mark Nelson wrote:
-> > =A0=A0=A0=A0=A0=A0=A0=A0.align =A07
-> > _GLOBAL(copy_4K_page)
-> > =A0=A0=A0=A0=A0=A0=A0=A0dcbt=A0=A0=A0=A00,r4=A0=A0=A0=A0=A0=A0=A0=A0=A0=
-=A0=A0=A0/* Prefetch ONE SRC cacheline */
-> >=20
-> > =A0=A0=A0=A0=A0=A0=A0=A0addi=A0=A0=A0=A0r6,r3,-8=A0=A0=A0=A0=A0=A0=A0=
-=A0/* prepare for stdu */
-> > =A0=A0=A0=A0=A0=A0=A0=A0addi=A0=A0=A0=A0r4,r4,-8=A0=A0=A0=A0=A0=A0=A0=
-=A0/* prepare for ldu */
-> >=20
-> > =A0=A0=A0=A0=A0=A0=A0=A0li=A0=A0=A0=A0=A0=A0r10,32=A0=A0=A0=A0=A0=A0=A0=
-=A0=A0=A0/* copy 32 cache lines for a 4K page */
-> > =A0=A0=A0=A0=A0=A0=A0=A0li=A0=A0=A0=A0=A0=A0r12,128+8=A0=A0=A0=A0=A0=A0=
-=A0=A0=A0=A0=A0=A0=A0=A0=A0/* prefetch distance*/
->=20
-> Since you have a loop here anyway instead of the fully unrolled
-> code, why not provide a copy_64K_page function as well, jumping in
-> here?
+On Wed, 18 Jun 2008, Laurent Pinchart wrote:
 
-That is a good idea. What effect will that have on how the code
-patching will work?
+> The restart() function is called when the link state changes and resets
+> multicast and promiscous settings. This patch restores those settings at the
+> end of restart().
+> 
+> Signed-off-by: Laurent Pinchart <laurentp@cse-semaphore.com>
+> ---
+>  drivers/net/fs_enet/mac-fcc.c     |    3 +++
+>  2 files changed, 4 insertions(+), 1 deletions(-)
 
->=20
-> The inline 64k copy_page function otherwise just adds code size,
-> as well as being a tiny bit slower. It may even be good to
-> have an out-of-line copy_64K_page for the regular code, just
-> calling copy_4K_page repeatedly.
+Is the whole patch here?  The above says 2 files changed and 5 lines
+changed, but what's included here is only 1 file and 3 line changes.
 
-Doing that sounds like it'll make the code patching easier.
+> diff --git a/drivers/net/fs_enet/mac-fcc.c b/drivers/net/fs_enet/mac-fcc.c
+> index ce40cf9..1a95cf1 100644
+> --- a/drivers/net/fs_enet/mac-fcc.c
+> +++ b/drivers/net/fs_enet/mac-fcc.c
+> @@ -464,6 +464,9 @@ static void restart(struct net_device *dev)
+>  		C32(fccp, fcc_fpsmr, FCC_PSMR_FDE | FCC_PSMR_LPB);
+>  
+>  	S32(fccp, fcc_gfmr, FCC_GFMR_ENR | FCC_GFMR_ENT);
+> +
+> +	/* Restore multicast and promiscous settings */
+> +	set_multicast_list(dev);
+>  }
+>  
+>  static void stop(struct net_device *dev)
 
-Thanks!
-
-Mark
+						-Bill
