@@ -1,17 +1,20 @@
-Return-Path: <michael@ellerman.id.au>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id AD5F6DDF07
+	for <linuxppc-dev@ozlabs.org>; Sun, 22 Jun 2008 02:07:51 +1000 (EST)
+Message-Id: <81690AB9-9D0A-4CB4-8A0A-B0D8653FECE7@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: benh@kernel.crashing.org
+In-Reply-To: <1214004193.8011.184.camel@pasglop>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v924)
 Subject: Re: [PATCH][WIP][RFC] powerpc: fixup lwsync at runtime
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <Pine.LNX.4.64.0806201131040.17834@blarg.am.freescale.net>
+Date: Sat, 21 Jun 2008 11:07:41 -0500
 References: <Pine.LNX.4.64.0806201131040.17834@blarg.am.freescale.net>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-n9GlkHJfsVYojWyvFowt"
-Date: Sat, 21 Jun 2008 20:27:23 +1000
-Message-Id: <1214044043.13524.6.camel@localhost>
-Mime-Version: 1.0
+	<1214004193.8011.184.camel@pasglop>
 Cc: linuxppc-dev@ozlabs.org
-Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,63 +25,32 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-n9GlkHJfsVYojWyvFowt
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+On Jun 20, 2008, at 6:23 PM, Benjamin Herrenschmidt wrote:
 
-On Fri, 2008-06-20 at 11:36 -0500, Kumar Gala wrote:
-> This is a work in progress towards make lwsync fixed up at runtime.  The
-> patch is based (requires) the module refactoring patch.  Some of this cod=
-e
-> should be reworked based on the code patching work from Michael.  Also,
-> ppc64 and vdso support needs a bit of cleaning up.
+> On Fri, 2008-06-20 at 11:36 -0500, Kumar Gala wrote:
+>> This is a work in progress towards make lwsync fixed up at  
+>> runtime.  The
+>> patch is based (requires) the module refactoring patch.  Some of  
+>> this code
+>> should be reworked based on the code patching work from Michael.   
+>> Also,
+>> ppc64 and vdso support needs a bit of cleaning up.
+>>
+>> Some questions:
+>> * How do we determine at runtime if we need to convert sync to  
+>> lwsync.
+>> This is simliar to cpu_feature but has the issue that cpu_feature  
+>> is about
+>> either having code in or not.
+>>
+>> * Do we simplify the section of fixup information and remove the  
+>> mask and
+>> value since we don't use them and they double the size of the section
+>
+> Remind me why we want to do that ? ie. can't we just use lwsync
+> unconditionally ? It's supposed to degrade to sync on CPUs that don't
+> support it, or is that broken on some parts ?
 
-Hi Kumar,
+I believe its broken on e500v1/v2.  However I'll double check.
 
-This will clash in practice, though not in spirit, with the stuff I've
-been working on to allow alternative feature sections. The code is in my
-tree on kernel.org if you want to check it out, I was about to send
-yesterday it but realised it breaks if you have exception table entries
-in your alternative case code >:/
-
-http://git.kernel.org/?p=3Dlinux/kernel/git/mpe/linux-2.6.git;a=3Dsummary
-
-> Some questions:
-> * How do we determine at runtime if we need to convert sync to lwsync.
-> This is simliar to cpu_feature but has the issue that cpu_feature is abou=
-t
-> either having code in or not.
-
-Isn't it just if cpus_possible =3D 1 ?
-
-> * Do we simplify the section of fixup information and remove the mask and
-> value since we don't use them and they double the size of the section
-
-I guess it depends how many you end up with. My patches add another two
-longs to the fixup entry also. It is all freed after boot.
-
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-n9GlkHJfsVYojWyvFowt
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBIXNeLdSjSd0sB4dIRArmZAJwKMF0hrJio9RzyvsnaS1T45rwEQACgwmLv
-PIQON0CGNmAse6oGkbfgrEM=
-=mDtt
------END PGP SIGNATURE-----
-
---=-n9GlkHJfsVYojWyvFowt--
+- k
