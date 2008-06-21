@@ -1,19 +1,18 @@
-Return-Path: <sanjay3000@yahoo.com>
-Received: from web33102.mail.mud.yahoo.com (web33102.mail.mud.yahoo.com
-	[209.191.69.132]) by ozlabs.org (Postfix) with SMTP id E337ADDF54
-	for <linuxppc-dev@ozlabs.org>; Sat, 21 Jun 2008 09:44:57 +1000 (EST)
-Date: Fri, 20 Jun 2008 16:44:55 -0700 (PDT)
-From: Sanjay Patel <sanjay3000@yahoo.com>
-Subject: Re: [RFC 1/3] powerpc: __copy_tofrom_user tweaked for Cell
-To: benh@kernel.crashing.org
-In-Reply-To: <1214004027.8011.182.camel@pasglop>
+Return-Path: <markn@au1.ibm.com>
+From: Mark Nelson <markn@au1.ibm.com>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [RFC 0/3] powerpc: memory copy routines tweaked for Cell
+Date: Sat, 21 Jun 2008 10:12:34 +1000
+References: <200806191753.51495.markn@au1.ibm.com>
+	<200806191353.17323.arnd@arndb.de>
+	<200806200949.29673.markn@au1.ibm.com>
+In-Reply-To: <200806200949.29673.markn@au1.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <834245.69039.qm@web33102.mail.mud.yahoo.com>
-Cc: Mark Nelson <markn@au1.ibm.com>, Gunnar von Boehn <VONBOEHN@de.ibm.com>,
-	Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@ozlabs.org,
-	Michael Ellerman <ellerman@au1.ibm.com>, cbe-oss-dev@ozlabs.org
-Reply-To: sanjay3000@yahoo.com
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200806211012.34497.markn@au1.ibm.com>
+Cc: Gunnar von Boehn <VONBOEHN@de.ibm.com>, cbe-oss-dev@ozlabs.org,
+	Arnd Bergmann <arnd@arndb.de>, Michael Ellerman <ellerman@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,21 +22,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Fri, 20 Jun 2008 09:49:29 am Mark Nelson wrote:
+> On Thu, 19 Jun 2008 09:53:16 pm Arnd Bergmann wrote:
+> > On Thursday 19 June 2008, Mark Nelson wrote:
+> > > The plan is to use Michael Ellerman's code patching work so that at runtime
+> > > if we're running on a Cell machine the new routines are called but otherwise
+> > > the existing memory copy routines are used.
+> > 
+> > Have you tried running this code on other platforms to see if it
+> > actually performs worse on any of them? I would guess that the
+> > older code also doesn't work too well on Power 5 and Power 6, so the
+> > cell optimized version could give us a significant advantage as well,
+> > albeit less than another CPU specific version.
+> > 
+> > 	Arnd <><
+> > 
+> 
+> I did run the tests on Power 5 and Power 6, and on Power 5 with the
+> new routines, the iperf bandwidth increased to 7.9 GBits/sec up from
+> 7.5 GBits/sec; but on Power 6 the bandwidth with the old routines
+> was 13.6 GBits/sec compared to 12.8 GBits/sec...
 
+After running the tests again I get a similar result, where on Power 6
+the new routine is slower than the old one.
 
+I'll spend some time doing tests to see if we can come up with a
+routine that works well on Power 6 too.
 
---- On Fri, 6/20/08, Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-> I though OS X had a trick with a CR bit that would disable
-> the dcbz optimization on the first alignment fault ? Or did they
-> totally remove it ?
-
-Ah, it's coming back to me. :)
-
-Apple added 'dcbz', removed it, and then there was the clever trick of optimizing the code path with a boot-time perf test and/or changing the code on the first fault...I'm not sure what's implemented in the recent builds.
-
-If Linux can do something similar, that should allow good perf on cacheable and cache-inhibited space as well as different CPUs (eg, if 'dcba' is available, then you don't need the alignment fault hack).
-
---Sanjay
-
-
-      
+Mark
