@@ -1,21 +1,17 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id CAB5DDDF02
-	for <linuxppc-dev@ozlabs.org>; Sat, 21 Jun 2008 14:49:44 +1000 (EST)
-Date: Fri, 20 Jun 2008 21:49:42 -0700 (PDT)
-Message-Id: <20080620.214942.193706145.davem@davemloft.net>
-To: paulus@samba.org
-Subject: Re: [Cbe-oss-dev] [RFC 1/3] powerpc: __copy_tofrom_user tweaked
-	for Cell
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <18524.33738.450400.63491@cargo.ozlabs.ibm.com>
-References: <18523.1109.809247.646816@cargo.ozlabs.ibm.com>
-	<200806210400.20794.arnd@arndb.de>
-	<18524.33738.450400.63491@cargo.ozlabs.ibm.com>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH][WIP][RFC] powerpc: fixup lwsync at runtime
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <Pine.LNX.4.64.0806201131040.17834@blarg.am.freescale.net>
+References: <Pine.LNX.4.64.0806201131040.17834@blarg.am.freescale.net>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-n9GlkHJfsVYojWyvFowt"
+Date: Sat, 21 Jun 2008 20:27:23 +1000
+Message-Id: <1214044043.13524.6.camel@localhost>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, VONBOEHN@de.ibm.com, ellerman@au1.ibm.com,
-	arnd@arndb.de, cbe-oss-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,28 +21,64 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Paul Mackerras <paulus@samba.org>
-Date: Sat, 21 Jun 2008 14:30:02 +1000
 
-> Is this application really transferring bulk data and using buffers
-> that aren't a multiple of the page size?  Do you know whether the
-> copies ended up being misaligned?
+--=-n9GlkHJfsVYojWyvFowt
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-We used to cache align the sub-buffers carved out of the per-socket
-anonymous buffer page that TCP, UDP, and other protocols use to
-collect user write()/sendmsg() data when the outgoing interface
-supports scatter-gather and checksumming (basically just about
-any reasonable ethernet device these days).
+On Fri, 2008-06-20 at 11:36 -0500, Kumar Gala wrote:
+> This is a work in progress towards make lwsync fixed up at runtime.  The
+> patch is based (requires) the module refactoring patch.  Some of this cod=
+e
+> should be reworked based on the code patching work from Michael.  Also,
+> ppc64 and vdso support needs a bit of cleaning up.
 
-But that alignment was removed from net/ipv4/tcp.c (I forget the exact
-reasons, I think it was space wastage).
+Hi Kumar,
 
-The net result is that you will therefore see a lot of misaligned
-copies for networking sends these days.
+This will clash in practice, though not in spirit, with the stuff I've
+been working on to allow alternative feature sections. The code is in my
+tree on kernel.org if you want to check it out, I was about to send
+yesterday it but realised it breaks if you have exception table entries
+in your alternative case code >:/
 
-In my opinion optimizing mempcy/user-copy in the most general way is
-the best course of action.  Whatever histogram of sizes and alignments
-you obtain with sampling today will change unpredictably in the
-future.  I'm saying this as someone who fell into that trap on sparc64
-several times in the past, and I have 5 memcpy/user-copy/memset
-variants to maintain on that platform these days :-/
+http://git.kernel.org/?p=3Dlinux/kernel/git/mpe/linux-2.6.git;a=3Dsummary
+
+> Some questions:
+> * How do we determine at runtime if we need to convert sync to lwsync.
+> This is simliar to cpu_feature but has the issue that cpu_feature is abou=
+t
+> either having code in or not.
+
+Isn't it just if cpus_possible =3D 1 ?
+
+> * Do we simplify the section of fixup information and remove the mask and
+> value since we don't use them and they double the size of the section
+
+I guess it depends how many you end up with. My patches add another two
+longs to the fixup entry also. It is all freed after boot.
+
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-n9GlkHJfsVYojWyvFowt
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBIXNeLdSjSd0sB4dIRArmZAJwKMF0hrJio9RzyvsnaS1T45rwEQACgwmLv
+PIQON0CGNmAse6oGkbfgrEM=
+=mDtt
+-----END PGP SIGNATURE-----
+
+--=-n9GlkHJfsVYojWyvFowt--
