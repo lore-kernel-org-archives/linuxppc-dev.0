@@ -1,18 +1,19 @@
-Return-Path: <markn@au1.ibm.com>
-From: Mark Nelson <markn@au1.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [RFC 0/3] powerpc: memory copy routines tweaked for Cell
-Date: Sat, 21 Jun 2008 10:12:34 +1000
-References: <200806191753.51495.markn@au1.ibm.com>
-	<200806191353.17323.arnd@arndb.de>
-	<200806200949.29673.markn@au1.ibm.com>
-In-Reply-To: <200806200949.29673.markn@au1.ibm.com>
+Return-Path: <arnd@arndb.de>
+From: Arnd Bergmann <arnd@arndb.de>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [Cbe-oss-dev] [RFC 1/3] powerpc: __copy_tofrom_user tweaked for
+	Cell
+Date: Sat, 21 Jun 2008 04:00:20 +0200
+References: <200806191753.59599.markn@au1.ibm.com>
+	<OF3C6636F6.52E3D242-ONC125746D.005214B0-C125746D.0053FABE@de.ibm.com>
+	<18523.1109.809247.646816@cargo.ozlabs.ibm.com>
+In-Reply-To: <18523.1109.809247.646816@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
-Message-Id: <200806211012.34497.markn@au1.ibm.com>
-Cc: Gunnar von Boehn <VONBOEHN@de.ibm.com>, cbe-oss-dev@ozlabs.org,
-	Arnd Bergmann <arnd@arndb.de>, Michael Ellerman <ellerman@au1.ibm.com>
+Message-Id: <200806210400.20794.arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org, Gunnar von Boehn <VONBOEHN@de.ibm.com>,
+	Michael Ellerman <ellerman@au1.ibm.com>, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,31 +23,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 20 Jun 2008 09:49:29 am Mark Nelson wrote:
-> On Thu, 19 Jun 2008 09:53:16 pm Arnd Bergmann wrote:
-> > On Thursday 19 June 2008, Mark Nelson wrote:
-> > > The plan is to use Michael Ellerman's code patching work so that at runtime
-> > > if we're running on a Cell machine the new routines are called but otherwise
-> > > the existing memory copy routines are used.
-> > 
-> > Have you tried running this code on other platforms to see if it
-> > actually performs worse on any of them? I would guess that the
-> > older code also doesn't work too well on Power 5 and Power 6, so the
-> > cell optimized version could give us a significant advantage as well,
-> > albeit less than another CPU specific version.
-> > 
-> > 	Arnd <><
-> > 
-> 
-> I did run the tests on Power 5 and Power 6, and on Power 5 with the
-> new routines, the iperf bandwidth increased to 7.9 GBits/sec up from
-> 7.5 GBits/sec; but on Power 6 the bandwidth with the old routines
-> was 13.6 GBits/sec compared to 12.8 GBits/sec...
+On Friday 20 June 2008, Paul Mackerras wrote:
 
-After running the tests again I get a similar result, where on Power 6
-the new routine is slower than the old one.
+> Transferring data over loopback is possibly an exception to that.
+> However, it's very rare to transfer large amounts of data over
+> loopback, unless you're running a benchmark like iperf or netperf. :-/
 
-I'll spend some time doing tests to see if we can come up with a
-routine that works well on Power 6 too.
+Well, it is the exact case that came up in a real world scenario
+for cell: On a network intensive application where the SPUs are
+supposed to do all the work, we ended up not getting enough
+data in and out through gbit ethernet because the PPU spent
+much of its time in copy_to_user.
 
-Mark
+Going to 10gbit will make the problem even more apparent.
+
+I understand that optimizing for this case will cost extra
+branches for the other cases, but maybe we can find a better
+compromise than before. Can you name a test case that you
+consider important to optimize for for what you consider
+real-life tests?
+
+Doing some static compile-time analysis, I found that most
+of the call sites (which are not necessarily most of
+the run time calls) pass either a small constant size of
+less than a few cache lines, or have a variable size but are
+not at all performance critical.
+Since the prefetching and cache line size awareness was
+most of the improvement for cell (AFAIU), maybe we can
+annotate the few interesting cases, say by introducing a
+new copy_from_user_large() function that can be easily
+optimized for large transfers on a given CPU, while
+the remaining code keeps optmizing for small transfers
+and may even get rid of the full page copy optimization
+in order to save a branch.
+
+	Arnd <><
