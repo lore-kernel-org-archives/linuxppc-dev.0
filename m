@@ -2,18 +2,17 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 10F5BDDED7
-	for <linuxppc-dev@ozlabs.org>; Sun, 22 Jun 2008 10:20:43 +1000 (EST)
-Subject: Re: [PATCH][WIP][RFC] powerpc: fixup lwsync at runtime
+	by ozlabs.org (Postfix) with ESMTPS id 07E3ADDEDC
+	for <linuxppc-dev@ozlabs.org>; Sun, 22 Jun 2008 10:29:15 +1000 (EST)
+Subject: Re: [PATCH] powerpc: Only demote individual slices rather than
+	whole process
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <81690AB9-9D0A-4CB4-8A0A-B0D8653FECE7@kernel.crashing.org>
-References: <Pine.LNX.4.64.0806201131040.17834@blarg.am.freescale.net>
-	<1214004193.8011.184.camel@pasglop>
-	<81690AB9-9D0A-4CB4-8A0A-B0D8653FECE7@kernel.crashing.org>
+To: Paul Mackerras <paulus@samba.org>
+In-Reply-To: <18520.40232.383998.820059@cargo.ozlabs.ibm.com>
+References: <18520.40232.383998.820059@cargo.ozlabs.ibm.com>
 Content-Type: text/plain
-Date: Sun, 22 Jun 2008 10:20:36 +1000
-Message-Id: <1214094036.8011.192.camel@pasglop>
+Date: Sun, 22 Jun 2008 10:29:09 +1000
+Message-Id: <1214094549.8011.196.camel@pasglop>
 Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
 Reply-To: benh@kernel.crashing.org
@@ -26,16 +25,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, 2008-06-21 at 11:07 -0500, Kumar Gala wrote:
+On Wed, 2008-06-18 at 15:29 +1000, Paul Mackerras wrote:
+> At present, if we have a kernel with a 64kB page size, and some
+> process maps something that has to be mapped with 4kB pages (such as a
+> cache-inhibited mapping on POWER5+, or the eHCA infiniband queue-pair
+> pages), we change the process to use 4kB pages everywhere.  This hurts
+> the performance of HPC programs that access eHCA from userspace.
 > 
-> > Remind me why we want to do that ? ie. can't we just use lwsync
-> > unconditionally ? It's supposed to degrade to sync on CPUs that
-> don't
-> > support it, or is that broken on some parts ?
+> With this patch, the kernel will only demote the slice(s) containing
+> the eHCA or cache-inhibited mappings, leaving the remaining slices
+> able to use 64kB hardware pages.
 > 
-> I believe its broken on e500v1/v2.  However I'll double check.
+> This also changes the slice_get_unmapped_area code so that it is
+> willing to place a 64k-page mapping into (or across) a 4k-page slice
+> if there is no better alternative, i.e. if the program specified
+> MAP_FIXED or if there is not sufficient space available in slices that
+> are either empty or already have 64k-page mappings in them.
+> 
+> Signed-off-by: Paul Mackerras <paulus@samba.org>
+> ---
 
-An option is that if you get a program check instead, you can "fixup"
-the sync from the exception too...
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+
+(pending some torture testing of course :-)
 
 Ben.
