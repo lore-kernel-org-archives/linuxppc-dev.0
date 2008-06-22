@@ -2,17 +2,16 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 07E3ADDEDC
-	for <linuxppc-dev@ozlabs.org>; Sun, 22 Jun 2008 10:29:15 +1000 (EST)
-Subject: Re: [PATCH] powerpc: Only demote individual slices rather than
-	whole process
+	by ozlabs.org (Postfix) with ESMTPS id 28E32DDEE3
+	for <linuxppc-dev@ozlabs.org>; Sun, 22 Jun 2008 10:30:13 +1000 (EST)
+Subject: Re: [POWERPC] Clear sub-page HPTE present bits when demoting page size
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Paul Mackerras <paulus@samba.org>
-In-Reply-To: <18520.40232.383998.820059@cargo.ozlabs.ibm.com>
-References: <18520.40232.383998.820059@cargo.ozlabs.ibm.com>
+In-Reply-To: <18520.44515.740845.910077@cargo.ozlabs.ibm.com>
+References: <18520.44515.740845.910077@cargo.ozlabs.ibm.com>
 Content-Type: text/plain
-Date: Sun, 22 Jun 2008 10:29:09 +1000
-Message-Id: <1214094549.8011.196.camel@pasglop>
+Date: Sun, 22 Jun 2008 10:30:07 +1000
+Message-Id: <1214094607.8011.198.camel@pasglop>
 Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
 Reply-To: benh@kernel.crashing.org
@@ -25,28 +24,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2008-06-18 at 15:29 +1000, Paul Mackerras wrote:
-> At present, if we have a kernel with a 64kB page size, and some
-> process maps something that has to be mapped with 4kB pages (such as a
-> cache-inhibited mapping on POWER5+, or the eHCA infiniband queue-pair
-> pages), we change the process to use 4kB pages everywhere.  This hurts
-> the performance of HPC programs that access eHCA from userspace.
+On Wed, 2008-06-18 at 16:40 +1000, Paul Mackerras wrote:
+> When we demote a slice from 64k to 4k, and we are about to insert an
+> HPTE for a 4k subpage and we notice that there is an existing 64k
+> HPTE, we first invalidate that HPTE before inserting the new 4k
+> subpage HPTE.  Since the bits that encode which hash bucket the old
+> HPTE was in overlap with the bits that encode which of the 16 subpages
+> have HPTEs, we need to clear out the subpage HPTE-present bits before
+> starting to insert HPTEs for the 4k subpages.  If we don't do that, we
+> can erroneously think that a subpage already has an HPTE when it
+> doesn't.
 > 
-> With this patch, the kernel will only demote the slice(s) containing
-> the eHCA or cache-inhibited mappings, leaving the remaining slices
-> able to use 64kB hardware pages.
+> That in itself wouldn't be such a problem except that when we go to
+> update the HPTE that we think is present on machines with a
+> hypervisor, the hypervisor can tell us that the HPTE we think is there
+> is actually there even though it isn't, which can lead to a process
+> getting stuck in a loop, continually faulting.  The reason for the
+> confusion is that the AVPN (abbreviated virtual page number) we are
+> looking for in the HPTE for a 4k subpage can actually match the AVPN
+> in a stale HPTE for another 64k page.  For example, the HPTE for
+> the 4k subpage at 0x84000f000 will be in the same hash bucket and have
+> the same AVPN as the HPTE for the 64k page at 0x8400f0000.
 > 
-> This also changes the slice_get_unmapped_area code so that it is
-> willing to place a 64k-page mapping into (or across) a 4k-page slice
-> if there is no better alternative, i.e. if the program specified
-> MAP_FIXED or if there is not sufficient space available in slices that
-> are either empty or already have 64k-page mappings in them.
-> 
+> This fixes the code to clear out the subpage HPTE-present bits.
+>
 > Signed-off-by: Paul Mackerras <paulus@samba.org>
-> ---
 
 Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-(pending some torture testing of course :-)
-
-Ben.
+> ---
+> diff --git a/arch/powerpc/mm/hash_low_64.S b/arch/powerpc/mm/hash_low_64.S
+> index 21d2484..70f4c83 100644
+> --- a/arch/powerpc/mm/hash_low_64.S
+> +++ b/arch/powerpc/mm/hash_low_64.S
+> @@ -568,6 +568,10 @@ htab_inval_old_hpte:
+>  	ld	r7,STK_PARM(r9)(r1)	/* ssize */
+>  	ld	r8,STK_PARM(r8)(r1)	/* local */
+>  	bl	.flush_hash_page
+> +	/* Clear out _PAGE_HPTE_SUB bits in the new linux PTE */
+> +	lis	r0,_PAGE_HPTE_SUB@h
+> +	ori	r0,r0,_PAGE_HPTE_SUB@l
+> +	andc	r30,r30,r0
+>  	b	htab_insert_pte
+>  	
+>  htab_bail_ok:
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
