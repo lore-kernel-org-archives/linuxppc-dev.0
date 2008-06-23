@@ -2,18 +2,22 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 388D4DDF6E
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Jun 2008 00:46:30 +1000 (EST)
-Message-Id: <75D005F8-878F-4646-A9DE-7E1E7A57F537@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id 0AA49DE31A
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Jun 2008 01:02:43 +1000 (EST)
+Message-Id: <DEF3CE1C-9101-42AA-9F68-768A6D12C00C@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Michael Neuling <mikey@neuling.org>
-In-Reply-To: <20080623073807.E915670294@localhost.localdomain>
+To: benh@kernel.crashing.org
+In-Reply-To: <1214094036.8011.192.camel@pasglop>
 Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Mime-Version: 1.0 (Apple Message framework v924)
-Subject: Re: [PATCH 1/9] powerpc: Fix msr setting in 32 bit signal code
-Date: Mon, 23 Jun 2008 09:46:15 -0500
-References: <20080623073807.E915670294@localhost.localdomain>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH][WIP][RFC] powerpc: fixup lwsync at runtime
+Date: Mon, 23 Jun 2008 10:02:27 -0500
+References: <Pine.LNX.4.64.0806201131040.17834@blarg.am.freescale.net>
+	<1214004193.8011.184.camel@pasglop>
+	<81690AB9-9D0A-4CB4-8A0A-B0D8653FECE7@kernel.crashing.org>
+	<1214094036.8011.192.camel@pasglop>
+Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>,
+	David Woodhouse <dwmw2@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,20 +28,29 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Jun 23, 2008, at 2:38 AM, Michael Neuling wrote:
+On Jun 21, 2008, at 7:20 PM, Benjamin Herrenschmidt wrote:
 
-> If we set the SPE MSR bit in save_user_regs we can blow away the VEC
-> bit.  This will never happen in reality (VMX and SPE will never be in
-> the same processor as their opcodes overlap), but it looks bad.  Also
-> when we add VSX here in a later patch, we can hit two of these at the
-> same time.
->
-> Signed-off-by: Michael Neuling <mikey@neuling.org>
-> ---
+> On Sat, 2008-06-21 at 11:07 -0500, Kumar Gala wrote:
+>>
+>>> Remind me why we want to do that ? ie. can't we just use lwsync
+>>> unconditionally ? It's supposed to degrade to sync on CPUs that
+>> don't
+>>> support it, or is that broken on some parts ?
+>>
+>> I believe its broken on e500v1/v2.  However I'll double check.
 
-I think it would also be good to comment about how this doesn't happen  
-since they are the same MSR bit.  Having that comment might reduce  
-confusion if anyone ever looks at this commit message in the future.   
-(Plus you seem to have trailing white space in the commit message).
+e500v1/v2 treat lwsync as a illop.
+
+> An option is that if you get a program check instead, you can "fixup"
+> the sync from the exception too...
+
+
+We could.  However it just feels a bit dirty to illop in the kernel  
+and fix it up.
+
+Plus, I think David Woodhouse had some ideas about being able to  
+generate a single SMP/no-SMP kernel image like x86 apparently does  
+with some form of run time fixup.  It would seem that was be in the  
+same realm as the lwsync fixup I'm looking at.
 
 - k
