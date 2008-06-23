@@ -1,24 +1,15 @@
-Return-Path: <geert@linux-m68k.org>
-Received: from yergi.telenet-ops.be (yergi.telenet-ops.be [195.130.132.36])
-	by ozlabs.org (Postfix) with ESMTP id B9B77DE128
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Jun 2008 04:15:10 +1000 (EST)
-Received: from wilson.telenet-ops.be (unknown [195.130.132.42])
-	by yergi.telenet-ops.be (Postfix) with ESMTP id DBBA5710531
-	for <linuxppc-dev@ozlabs.org>; Mon, 23 Jun 2008 20:15:18 +0200 (CEST)
-Date: Mon, 23 Jun 2008 20:14:51 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Sender: geert@linux-m68k.org
-To: Adrian Bunk <bunk@kernel.org>
-Subject: Re: [2.6 patch] drivers/macintosh/: possible cleanups
-In-Reply-To: <20080623174657.GC4756@cs181140183.pp.htv.fi>
-Message-ID: <Pine.LNX.4.64.0806232014160.20175@anakin>
-References: <20080609222312.GM1987@cs181133002.pp.htv.fi>
-	<20080610102125.2816c9e3.sfr@canb.auug.org.au>
-	<20080623174657.GC4756@cs181140183.pp.htv.fi>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-m68k@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org
+Return-Path: <sr@denx.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.179]) by ozlabs.org (Postfix) with ESMTP id 42275DE13D
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Jun 2008 04:36:16 +1000 (EST)
+From: Stefan Roese <sr@denx.de>
+To: linuxppc-dev@ozlabs.org,
+	netdev@vger.kernel.org
+Subject: [PATCH V2] ibm_newemac: Fixes kernel crashes when speed of cable
+	connected changes
+Date: Mon, 23 Jun 2008 20:36:02 +0200
+Message-Id: <1214246162-25293-1-git-send-email-sr@denx.de>
+Cc: Sathya Narayanan <sathyan@teamf1.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,50 +19,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 23 Jun 2008, Adrian Bunk wrote:
-> On Tue, Jun 10, 2008 at 10:21:25AM +1000, Stephen Rothwell wrote:
-> > On Tue, 10 Jun 2008 01:23:12 +0300 Adrian Bunk <bunk@kernel.org> wrote:
-> > >
-> > > +++ b/drivers/macintosh/adbhid.c
-> > > @@ -75,7 +75,7 @@ static struct notifier_block adbhid_adb_notifier = {
-> > >  #define ADB_KEY_POWER_OLD	0x7e
-> > >  #define ADB_KEY_POWER		0x7f
-> > >  
-> > > -u16 adb_to_linux_keycodes[128] = {
-> > > +static u16 adb_to_linux_keycodes[128] = {
-> > 
-> > This could be const as well.
-> 
-> Updated patch below.
-> 
-> cu
-> Adrian
-> 
-> <--  snip  -->
-> 
-> This patch contains the following possible cleanups:
-> - make the following needlessly global code static:
->   - adb.c: adb_controller
->   - adb.c: adb_init()
->   - adbhid.c: adb_to_linux_keycodes[]  (also make it const)
->   - via-pmu68k.c: backlight_level
->   - via-pmu68k.c: backlight_enabled
-> - remove the following unused code:
->   - via-pmu68k.c: sleep_notifier_list
-> 
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+From: Sathya Narayanan <sathyan@teamf1.com>
 
-Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
+The descriptor pointers were not initialized to NIL values, so it was
+poiniting to some random addresses which was completely invalid. This
+fix takes care of initializing the descriptor to NIL values and clearing
+the valid descriptors on clean ring operation.
 
-I assume Paulus will take it, as he controls more Macs?
+Signed-off-by: Sathya Narayanan <sathyan@teamf1.com>
+Signed-off-by: Stefan Roese <sr@denx.de>
+---
+Changed since V1:
+- Fixed off-by-one error in for loops
 
-Gr{oetje,eeting}s,
+ drivers/net/ibm_newemac/core.c |    6 +++++-
+ 1 files changed, 5 insertions(+), 1 deletions(-)
 
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+diff --git a/drivers/net/ibm_newemac/core.c b/drivers/net/ibm_newemac/core.c
+index 5d2108c..6dfc2c9 100644
+--- a/drivers/net/ibm_newemac/core.c
++++ b/drivers/net/ibm_newemac/core.c
+@@ -1025,7 +1025,7 @@ static void emac_clean_tx_ring(struct emac_instance *dev)
+ 	int i;
+ 
+ 	for (i = 0; i < NUM_TX_BUFF; ++i) {
+-		if (dev->tx_skb[i]) {
++		if (dev->tx_skb[i] && dev->tx_desc[i].data_ptr) {
+ 			dev_kfree_skb(dev->tx_skb[i]);
+ 			dev->tx_skb[i] = NULL;
+ 			if (dev->tx_desc[i].ctrl & MAL_TX_CTRL_READY)
+@@ -2719,6 +2719,10 @@ static int __devinit emac_probe(struct of_device *ofdev,
+ 	/* Clean rings */
+ 	memset(dev->tx_desc, 0, NUM_TX_BUFF * sizeof(struct mal_descriptor));
+ 	memset(dev->rx_desc, 0, NUM_RX_BUFF * sizeof(struct mal_descriptor));
++	for (i = 0; i < NUM_TX_BUFF; i++)
++		dev->tx_skb[i] = NULL;
++	for (i = 0; i < NUM_RX_BUFF; i++)
++		dev->rx_skb[i] = NULL;
+ 
+ 	/* Attach to ZMII, if needed */
+ 	if (emac_has_feature(dev, EMAC_FTR_HAS_ZMII) &&
+-- 
+1.5.6
