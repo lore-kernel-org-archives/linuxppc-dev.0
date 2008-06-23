@@ -1,13 +1,17 @@
 Return-Path: <tony@bakeyournoodle.com>
 Received: from pythia.bakeyournoodle.com (pythia.bakeyournoodle.com
-	[203.82.209.197]) by ozlabs.org (Postfix) with ESMTP id F01EFDDDFD
-	for <linuxppc-dev@ozlabs.org>; Mon, 23 Jun 2008 18:13:20 +1000 (EST)
-To: Paul Mackerras <paulus@samba.org>, <linuxppc-dev@ozlabs.org>
-Message-Id: <1a551391a3c4925271cc86cb2e957aaccb0b599c.1214208801.git.tony@bakeyournoodle.com>
+	[203.82.209.197]) by ozlabs.org (Postfix) with ESMTP id 588BBDDEF9
+	for <linuxppc-dev@ozlabs.org>; Mon, 23 Jun 2008 18:16:46 +1000 (EST)
+Date: Mon, 23 Jun 2008 18:16:44 +1000
 From: Tony Breeds <tony@bakeyournoodle.com>
-Subject: [PATCH 1/1] Change the default link address for pSeries zImage
+To: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 1/1] Change the default link address for pSeries zImage
 	kernels.
-Date: Mon, 23 Jun 2008 18:13:23 +1000 (EST)
+Message-ID: <20080623081643.GI20457@bakeyournoodle.com>
+References: <1a551391a3c4925271cc86cb2e957aaccb0b599c.1214208801.git.tony@bakeyournoodle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <1a551391a3c4925271cc86cb2e957aaccb0b599c.1214208801.git.tony@bakeyournoodle.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,132 +21,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Currently we set the start of the .text section to be 4Mb for pSeries.
-In situations where the zImage is > 8Mb we'll fail to boot (due to
-overlapping with OF).  Move .text in a zImage from 4MB to 64MB (well past OF).
+On Mon, Jun 23, 2008 at 06:13:23PM +1000, Tony Breeds wrote:
+> Currently we set the start of the .text section to be 4Mb for pSeries.
+> In situations where the zImage is > 8Mb we'll fail to boot (due to
+> overlapping with OF).  Move .text in a zImage from 4MB to 64MB (well past OF).
+> 
+> We still will not be able to load large zImage unless we also move OF,
+> to that end, add a note to the zImage ELF to move OF to 32Mb.  If this
+> is the very first kernel booted then we'll need to moev OF manually by
+> setting real-base.
+> 
+> Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
+> ---
 
-We still will not be able to load large zImage unless we also move OF,
-to that end, add a note to the zImage ELF to move OF to 32Mb.  If this
-is the very first kernel booted then we'll need to moev OF manually by
-setting real-base.
+Ooops should have said that this has been boot tested on power
+3,4,5,5+,6 and JS20.  POWER4 firmware seems to have aproblem manually
+reloacting realbase but asside from that it booted.
 
-Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
----
- arch/powerpc/boot/addnote.c         |    2 +-
- arch/powerpc/boot/oflib.c           |   15 +++++++++++++--
- arch/powerpc/boot/wrapper           |   14 ++++++++++++--
- arch/powerpc/boot/zImage.coff.lds.S |    1 -
- arch/powerpc/boot/zImage.lds.S      |    1 -
- 5 files changed, 26 insertions(+), 7 deletions(-)
+Yours Tony
 
-diff --git a/arch/powerpc/boot/addnote.c b/arch/powerpc/boot/addnote.c
-index 8041a98..b1e5611 100644
---- a/arch/powerpc/boot/addnote.c
-+++ b/arch/powerpc/boot/addnote.c
-@@ -25,7 +25,7 @@ char arch[] = "PowerPC";
- #define N_DESCR	6
- unsigned int descr[N_DESCR] = {
- 	0xffffffff,		/* real-mode = true */
--	0x00c00000,		/* real-base, i.e. where we expect OF to be */
-+	0x02000000,		/* real-base, i.e. where we expect OF to be */
- 	0xffffffff,		/* real-size */
- 	0xffffffff,		/* virt-base */
- 	0xffffffff,		/* virt-size */
-diff --git a/arch/powerpc/boot/oflib.c b/arch/powerpc/boot/oflib.c
-index 95b8fd6..93a1a84 100644
---- a/arch/powerpc/boot/oflib.c
-+++ b/arch/powerpc/boot/oflib.c
-@@ -168,8 +168,19 @@ void *of_claim(unsigned long virt, unsigned long size, unsigned long align)
- 
- void *of_vmlinux_alloc(unsigned long size)
- {
--	void *p = malloc(size);
--
-+	unsigned long start = (unsigned long)_start, end = (unsigned long)_end;
-+	void *addr;
-+	void *p;
-+
-+	/* With some older POWER4 firmware the we need to claim the area
-+	 * the kernel will reside in.  Newer firmwares don't need this so we
-+	 * just ignore the return value.
-+	 */
-+	addr = of_claim(start, end - start, 0);
-+	printf("Trying to claim from 0x%lx to 0x%lx (0x%lx) got %p\r\n",
-+	       start, end, end - start, addr);
-+
-+	p = malloc(size);
- 	if (!p)
- 		fatal("Can't allocate memory for kernel image!\n\r");
- 
-diff --git a/arch/powerpc/boot/wrapper b/arch/powerpc/boot/wrapper
-index d6c96d9..22bc26e 100755
---- a/arch/powerpc/boot/wrapper
-+++ b/arch/powerpc/boot/wrapper
-@@ -138,14 +138,20 @@ objflags=-S
- tmp=$tmpdir/zImage.$$.o
- ksection=.kernel:vmlinux.strip
- isection=.kernel:initrd
-+link_address='0x400000'
- 
- case "$platform" in
--pmac|pseries|chrp)
-+pseries)
-+    platformo=$object/of.o
-+    link_address='0x4000000'
-+    ;;
-+pmac|chrp)
-     platformo=$object/of.o
-     ;;
- coff)
-     platformo=$object/of.o
-     lds=$object/zImage.coff.lds
-+    link_address='0x500000'
-     ;;
- miboot|uboot)
-     # miboot and U-boot want just the bare bits, not an ELF binary
-@@ -190,6 +196,7 @@ ps3)
-     objflags="-O binary --set-section-flags=.bss=contents,alloc,load,data"
-     ksection=.kernel:vmlinux.bin
-     isection=.kernel:initrd
-+    link_address=''
-     ;;
- ep88xc|ep405|ep8248e)
-     platformo="$object/fixed-head.o $object/$platform.o"
-@@ -268,7 +275,10 @@ if [ -n "$dtb" ]; then
- fi
- 
- if [ "$platform" != "miboot" ]; then
--    ${CROSS}ld -m elf32ppc -T $lds -o "$ofile" \
-+    if [ -n "$link_address" ] ; then
-+        text_start="-Ttext $link_address --defsym _start=$link_address"
-+    fi
-+    ${CROSS}ld -m elf32ppc -T $lds $text_start -o "$ofile" \
- 	$platformo $tmp $object/wrapper.a
-     rm $tmp
- fi
-diff --git a/arch/powerpc/boot/zImage.coff.lds.S b/arch/powerpc/boot/zImage.coff.lds.S
-index fe87a90..856dc78 100644
---- a/arch/powerpc/boot/zImage.coff.lds.S
-+++ b/arch/powerpc/boot/zImage.coff.lds.S
-@@ -3,7 +3,6 @@ ENTRY(_zimage_start_opd)
- EXTERN(_zimage_start_opd)
- SECTIONS
- {
--  . = (5*1024*1024);
-   _start = .;
-   .text      :
-   {
-diff --git a/arch/powerpc/boot/zImage.lds.S b/arch/powerpc/boot/zImage.lds.S
-index f6e380f..0962d62 100644
---- a/arch/powerpc/boot/zImage.lds.S
-+++ b/arch/powerpc/boot/zImage.lds.S
-@@ -3,7 +3,6 @@ ENTRY(_zimage_start)
- EXTERN(_zimage_start)
- SECTIONS
- {
--  . = (4*1024*1024);
-   _start = .;
-   .text      :
-   {
--- 
-1.5.5.4
+  linux.conf.au    http://www.marchsouth.org/
+  Jan 19 - 24 2009 The Australian Linux Technical Conference!
