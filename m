@@ -1,17 +1,20 @@
-Return-Path: <herbert@gondor.apana.org.au>
-Received: from arnor.apana.org.au (rhun.apana.org.au [64.62.148.172])
-	by ozlabs.org (Postfix) with ESMTP id 05562DDED5
-	for <linuxppc-dev@ozlabs.org>; Mon, 23 Jun 2008 21:51:03 +1000 (EST)
-Date: Mon, 23 Jun 2008 19:50:52 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Kim Phillips <kim.phillips@freescale.com>
-Subject: Re: [PATCH 1/4] crypto/talitos: rm duplicate timeout definition
-Message-ID: <20080623115052.GA31688@gondor.apana.org.au>
-References: <20080616111040.b8bde43a.kim.phillips@freescale.com>
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Date: Mon, 23 Jun 2008 14:07:50 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: Gunnar von Boehn <VONBOEHN@de.ibm.com>
+Subject: Re: [RFC 1/3] powerpc: __copy_tofrom_user tweaked for Cell
+In-Reply-To: <OFD65B3B6C.9A2E5A1E-ONC1257471.002B578F-C1257471.002ECE46@de.ibm.com>
+Message-ID: <Pine.LNX.4.64.0806231406130.8773@vixen.sonytel.be>
+References: <OF2260963C.4B69232D-ONC125746E.0032489D-C125746E.003FD09E@de.ibm.com>
+	<247666.12345.qm@web33104.mail.mud.yahoo.com>
+	<OFD65B3B6C.9A2E5A1E-ONC1257471.002B578F-C1257471.002ECE46@de.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080616111040.b8bde43a.kim.phillips@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, linux-crypto@vger.kernel.org
+Content-Type: MULTIPART/MIXED;
+	BOUNDARY="-584349381-1646437380-1214222870=:8773"
+Cc: Mark Nelson <markn@au1.ibm.com>, sanjay3000@yahoo.com,
+	Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@ozlabs.org,
+	Michael Ellerman <ellerman@au1.ibm.com>, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,12 +24,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Jun 16, 2008 at 11:10:40AM -0500, Kim Phillips wrote:
-> Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-I've merged these patches into the original changeset.  Thanks!
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+---584349381-1646437380-1214222870=:8773
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+
+On Mon, 23 Jun 2008, Gunnar von Boehn wrote:
+> > The problem is that the dcbz will generate the alignment exception
+> > regardless of whether the data is actually unaligned or not.
+> > Once you're on that code path, performance can't be good, can it?
+> 
+> In which case will DCBZ create an aligned exception?
+
+When using dcbz on uncached memory, IIRC.
+
+With kind regards,
+
+Geert Uytterhoeven
+Software Architect
+
+Sony Techsoft Centre
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
+
+Sony Technology and Software Centre Europe
+A division of Sony Service Centre (Europe) N.V.
+Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium
+VAT BE 0413.825.160 · RPR Brussels
+Fortis 293-0376800-10 GEBA-BE-BB
+---584349381-1646437380-1214222870=:8773--
