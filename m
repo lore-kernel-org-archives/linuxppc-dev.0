@@ -1,11 +1,10 @@
 Return-Path: <mikey@neuling.org>
 To: Paul Mackerras <paulus@samba.org>
 From: Michael Neuling <mikey@neuling.org>
-Date: Mon, 23 Jun 2008 15:31:28 +1000
-Subject: [PATCH 2/9] powerpc: Add macros to access floating point registers in
-	thread_struct.
+Date: Mon, 23 Jun 2008 15:31:29 +1000
+Subject: [PATCH 7/9] powerpc: Add VSX assembler code macros
 In-Reply-To: <1214199088.328454.246197670684.qpush@coopers>
-Message-Id: <20080623053128.EE35B70295@localhost.localdomain>
+Message-Id: <20080623053129.8EEE27029B@localhost.localdomain>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -16,378 +15,166 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-We are going to change where the floating point registers are stored
-in the thread_struct, so in preparation add some macros to access the
-floating point registers.  Update all code to use these new macros.
+This adds the macros for the VSX load/store instruction as most
+binutils are not going to support this for a while.
+
+Also add VSX register save/restore macros and vsr[0-63] register definitions.
 
 Signed-off-by: Michael Neuling <mikey@neuling.org>
 ---
 
- arch/powerpc/kernel/align.c      |    6 ++--
- arch/powerpc/kernel/process.c    |    5 ++-
- arch/powerpc/kernel/ptrace.c     |   14 +++++----
- arch/powerpc/kernel/ptrace32.c   |    9 ++++--
- arch/powerpc/kernel/softemu8xx.c |    4 +-
- arch/powerpc/math-emu/math.c     |   56 +++++++++++++++++++--------------------
- include/asm-powerpc/ppc_asm.h    |    5 ++-
- include/asm-powerpc/processor.h  |    3 ++
- 8 files changed, 56 insertions(+), 46 deletions(-)
+ include/asm-powerpc/ppc_asm.h |  127 ++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 127 insertions(+)
 
-Index: linux-2.6-ozlabs/arch/powerpc/kernel/align.c
-===================================================================
---- linux-2.6-ozlabs.orig/arch/powerpc/kernel/align.c
-+++ linux-2.6-ozlabs/arch/powerpc/kernel/align.c
-@@ -366,7 +366,7 @@ static int emulate_multiple(struct pt_re
- static int emulate_fp_pair(struct pt_regs *regs, unsigned char __user *addr,
- 			   unsigned int reg, unsigned int flags)
- {
--	char *ptr = (char *) &current->thread.fpr[reg];
-+	char *ptr = (char *) &current->thread.TS_FPR(reg);
- 	int i, ret;
- 
- 	if (!(flags & F))
-@@ -784,7 +784,7 @@ int fix_alignment(struct pt_regs *regs)
- 				return -EFAULT;
- 		}
- 	} else if (flags & F) {
--		data.dd = current->thread.fpr[reg];
-+		data.dd = current->thread.TS_FPR(reg);
- 		if (flags & S) {
- 			/* Single-precision FP store requires conversion... */
- #ifdef CONFIG_PPC_FPU
-@@ -862,7 +862,7 @@ int fix_alignment(struct pt_regs *regs)
- 		if (unlikely(ret))
- 			return -EFAULT;
- 	} else if (flags & F)
--		current->thread.fpr[reg] = data.dd;
-+		current->thread.TS_FPR(reg) = data.dd;
- 	else
- 		regs->gpr[reg] = data.ll;
- 
-Index: linux-2.6-ozlabs/arch/powerpc/kernel/process.c
-===================================================================
---- linux-2.6-ozlabs.orig/arch/powerpc/kernel/process.c
-+++ linux-2.6-ozlabs/arch/powerpc/kernel/process.c
-@@ -110,7 +110,7 @@ int dump_task_fpu(struct task_struct *ts
- 		return 0;
- 	flush_fp_to_thread(current);
- 
--	memcpy(fpregs, &tsk->thread.fpr[0], sizeof(*fpregs));
-+	memcpy(fpregs, &tsk->thread.TS_FPR(0), sizeof(*fpregs));
- 
- 	return 1;
- }
-@@ -689,7 +689,8 @@ void start_thread(struct pt_regs *regs, 
- #endif
- 
- 	discard_lazy_cpu_state();
--	memset(current->thread.fpr, 0, sizeof(current->thread.fpr));
-+	memset(current->thread.fpr, 0,
-+	       sizeof(current->thread.fpr));
- 	current->thread.fpscr.val = 0;
- #ifdef CONFIG_ALTIVEC
- 	memset(current->thread.vr, 0, sizeof(current->thread.vr));
-Index: linux-2.6-ozlabs/arch/powerpc/kernel/ptrace.c
-===================================================================
---- linux-2.6-ozlabs.orig/arch/powerpc/kernel/ptrace.c
-+++ linux-2.6-ozlabs/arch/powerpc/kernel/ptrace.c
-@@ -218,10 +218,10 @@ static int fpr_get(struct task_struct *t
- 	flush_fp_to_thread(target);
- 
- 	BUILD_BUG_ON(offsetof(struct thread_struct, fpscr) !=
--		     offsetof(struct thread_struct, fpr[32]));
-+		     offsetof(struct thread_struct, TS_FPR(32)));
- 
- 	return user_regset_copyout(&pos, &count, &kbuf, &ubuf,
--				   &target->thread.fpr, 0, -1);
-+				   target->thread.fpr, 0, -1);
- }
- 
- static int fpr_set(struct task_struct *target, const struct user_regset *regset,
-@@ -231,10 +231,10 @@ static int fpr_set(struct task_struct *t
- 	flush_fp_to_thread(target);
- 
- 	BUILD_BUG_ON(offsetof(struct thread_struct, fpscr) !=
--		     offsetof(struct thread_struct, fpr[32]));
-+		     offsetof(struct thread_struct, TS_FPR(32)));
- 
- 	return user_regset_copyin(&pos, &count, &kbuf, &ubuf,
--				  &target->thread.fpr, 0, -1);
-+				  target->thread.fpr, 0, -1);
- }
- 
- 
-@@ -728,7 +728,8 @@ long arch_ptrace(struct task_struct *chi
- 			tmp = ptrace_get_reg(child, (int) index);
- 		} else {
- 			flush_fp_to_thread(child);
--			tmp = ((unsigned long *)child->thread.fpr)[index - PT_FPR0];
-+			tmp = ((unsigned long *)child->thread.fpr)
-+				[TS_FPRSPACING * (index - PT_FPR0)];
- 		}
- 		ret = put_user(tmp,(unsigned long __user *) data);
- 		break;
-@@ -755,7 +756,8 @@ long arch_ptrace(struct task_struct *chi
- 			ret = ptrace_put_reg(child, index, data);
- 		} else {
- 			flush_fp_to_thread(child);
--			((unsigned long *)child->thread.fpr)[index - PT_FPR0] = data;
-+			((unsigned long *)child->thread.fpr)
-+				[TS_FPRSPACING * (index - PT_FPR0)] = data;
- 			ret = 0;
- 		}
- 		break;
-Index: linux-2.6-ozlabs/arch/powerpc/kernel/ptrace32.c
-===================================================================
---- linux-2.6-ozlabs.orig/arch/powerpc/kernel/ptrace32.c
-+++ linux-2.6-ozlabs/arch/powerpc/kernel/ptrace32.c
-@@ -122,7 +122,8 @@ long compat_arch_ptrace(struct task_stru
- 			 * to be an array of unsigned int (32 bits) - the
- 			 * index passed in is based on this assumption.
- 			 */
--			tmp = ((unsigned int *)child->thread.fpr)[index - PT_FPR0];
-+			tmp = ((unsigned int *)child->thread.fpr)
-+				[TS_FPRSPACING * (index - PT_FPR0)];
- 		}
- 		ret = put_user((unsigned int)tmp, (u32 __user *)data);
- 		break;
-@@ -162,7 +163,8 @@ long compat_arch_ptrace(struct task_stru
- 		CHECK_FULL_REGS(child->thread.regs);
- 		if (numReg >= PT_FPR0) {
- 			flush_fp_to_thread(child);
--			tmp = ((unsigned long int *)child->thread.fpr)[numReg - PT_FPR0];
-+			tmp = ((unsigned long int *)child->thread.fpr)
-+				[TS_FPRSPACING * (numReg - PT_FPR0)];
- 		} else { /* register within PT_REGS struct */
- 			tmp = ptrace_get_reg(child, numReg);
- 		} 
-@@ -217,7 +219,8 @@ long compat_arch_ptrace(struct task_stru
- 			 * to be an array of unsigned int (32 bits) - the
- 			 * index passed in is based on this assumption.
- 			 */
--			((unsigned int *)child->thread.fpr)[index - PT_FPR0] = data;
-+			((unsigned int *)child->thread.fpr)
-+				[TS_FPRSPACING * (index - PT_FPR0)] = data;
- 			ret = 0;
- 		}
- 		break;
-Index: linux-2.6-ozlabs/arch/powerpc/kernel/softemu8xx.c
-===================================================================
---- linux-2.6-ozlabs.orig/arch/powerpc/kernel/softemu8xx.c
-+++ linux-2.6-ozlabs/arch/powerpc/kernel/softemu8xx.c
-@@ -124,7 +124,7 @@ int Soft_emulate_8xx(struct pt_regs *reg
- 	disp = instword & 0xffff;
- 
- 	ea = (u32 *)(regs->gpr[idxreg] + disp);
--	ip = (u32 *)&current->thread.fpr[flreg];
-+	ip = (u32 *)&current->thread.TS_FPR(flreg);
- 
- 	switch ( inst )
- 	{
-@@ -168,7 +168,7 @@ int Soft_emulate_8xx(struct pt_regs *reg
- 		break;
- 	case FMR:
- 		/* assume this is a fp move -- Cort */
--		memcpy(ip, &current->thread.fpr[(instword>>11)&0x1f],
-+		memcpy(ip, &current->thread.TS_FPR((instword>>11)&0x1f),
- 		       sizeof(double));
- 		break;
- 	default:
-Index: linux-2.6-ozlabs/arch/powerpc/math-emu/math.c
-===================================================================
---- linux-2.6-ozlabs.orig/arch/powerpc/math-emu/math.c
-+++ linux-2.6-ozlabs/arch/powerpc/math-emu/math.c
-@@ -230,14 +230,14 @@ do_mathemu(struct pt_regs *regs)
- 	case LFD:
- 		idx = (insn >> 16) & 0x1f;
- 		sdisp = (insn & 0xffff);
--		op0 = (void *)&current->thread.fpr[(insn >> 21) & 0x1f];
-+		op0 = (void *)&current->thread.TS_FPR((insn >> 21) & 0x1f);
- 		op1 = (void *)((idx ? regs->gpr[idx] : 0) + sdisp);
- 		lfd(op0, op1, op2, op3);
- 		break;
- 	case LFDU:
- 		idx = (insn >> 16) & 0x1f;
- 		sdisp = (insn & 0xffff);
--		op0 = (void *)&current->thread.fpr[(insn >> 21) & 0x1f];
-+		op0 = (void *)&current->thread.TS_FPR((insn >> 21) & 0x1f);
- 		op1 = (void *)((idx ? regs->gpr[idx] : 0) + sdisp);
- 		lfd(op0, op1, op2, op3);
- 		regs->gpr[idx] = (unsigned long)op1;
-@@ -245,21 +245,21 @@ do_mathemu(struct pt_regs *regs)
- 	case STFD:
- 		idx = (insn >> 16) & 0x1f;
- 		sdisp = (insn & 0xffff);
--		op0 = (void *)&current->thread.fpr[(insn >> 21) & 0x1f];
-+		op0 = (void *)&current->thread.TS_FPR((insn >> 21) & 0x1f);
- 		op1 = (void *)((idx ? regs->gpr[idx] : 0) + sdisp);
- 		stfd(op0, op1, op2, op3);
- 		break;
- 	case STFDU:
- 		idx = (insn >> 16) & 0x1f;
- 		sdisp = (insn & 0xffff);
--		op0 = (void *)&current->thread.fpr[(insn >> 21) & 0x1f];
-+		op0 = (void *)&current->thread.TS_FPR((insn >> 21) & 0x1f);
- 		op1 = (void *)((idx ? regs->gpr[idx] : 0) + sdisp);
- 		stfd(op0, op1, op2, op3);
- 		regs->gpr[idx] = (unsigned long)op1;
- 		break;
- 	case OP63:
--		op0 = (void *)&current->thread.fpr[(insn >> 21) & 0x1f];
--		op1 = (void *)&current->thread.fpr[(insn >> 11) & 0x1f];
-+		op0 = (void *)&current->thread.TS_FPR((insn >> 21) & 0x1f);
-+		op1 = (void *)&current->thread.TS_FPR((insn >> 11) & 0x1f);
- 		fmr(op0, op1, op2, op3);
- 		break;
- 	default:
-@@ -356,28 +356,28 @@ do_mathemu(struct pt_regs *regs)
- 
- 	switch (type) {
- 	case AB:
--		op0 = (void *)&current->thread.fpr[(insn >> 21) & 0x1f];
--		op1 = (void *)&current->thread.fpr[(insn >> 16) & 0x1f];
--		op2 = (void *)&current->thread.fpr[(insn >> 11) & 0x1f];
-+		op0 = (void *)&current->thread.TS_FPR((insn >> 21) & 0x1f);
-+		op1 = (void *)&current->thread.TS_FPR((insn >> 16) & 0x1f);
-+		op2 = (void *)&current->thread.TS_FPR((insn >> 11) & 0x1f);
- 		break;
- 
- 	case AC:
--		op0 = (void *)&current->thread.fpr[(insn >> 21) & 0x1f];
--		op1 = (void *)&current->thread.fpr[(insn >> 16) & 0x1f];
--		op2 = (void *)&current->thread.fpr[(insn >>  6) & 0x1f];
-+		op0 = (void *)&current->thread.TS_FPR((insn >> 21) & 0x1f);
-+		op1 = (void *)&current->thread.TS_FPR((insn >> 16) & 0x1f);
-+		op2 = (void *)&current->thread.TS_FPR((insn >>  6) & 0x1f);
- 		break;
- 
- 	case ABC:
--		op0 = (void *)&current->thread.fpr[(insn >> 21) & 0x1f];
--		op1 = (void *)&current->thread.fpr[(insn >> 16) & 0x1f];
--		op2 = (void *)&current->thread.fpr[(insn >> 11) & 0x1f];
--		op3 = (void *)&current->thread.fpr[(insn >>  6) & 0x1f];
-+		op0 = (void *)&current->thread.TS_FPR((insn >> 21) & 0x1f);
-+		op1 = (void *)&current->thread.TS_FPR((insn >> 16) & 0x1f);
-+		op2 = (void *)&current->thread.TS_FPR((insn >> 11) & 0x1f);
-+		op3 = (void *)&current->thread.TS_FPR((insn >>  6) & 0x1f);
- 		break;
- 
- 	case D:
- 		idx = (insn >> 16) & 0x1f;
- 		sdisp = (insn & 0xffff);
--		op0 = (void *)&current->thread.fpr[(insn >> 21) & 0x1f];
-+		op0 = (void *)&current->thread.TS_FPR((insn >> 21) & 0x1f);
- 		op1 = (void *)((idx ? regs->gpr[idx] : 0) + sdisp);
- 		break;
- 
-@@ -387,27 +387,27 @@ do_mathemu(struct pt_regs *regs)
- 			goto illegal;
- 
- 		sdisp = (insn & 0xffff);
--		op0 = (void *)&current->thread.fpr[(insn >> 21) & 0x1f];
-+		op0 = (void *)&current->thread.TS_FPR((insn >> 21) & 0x1f);
- 		op1 = (void *)(regs->gpr[idx] + sdisp);
- 		break;
- 
- 	case X:
--		op0 = (void *)&current->thread.fpr[(insn >> 21) & 0x1f];
-+		op0 = (void *)&current->thread.TS_FPR((insn >> 21) & 0x1f);
- 		break;
- 
- 	case XA:
--		op0 = (void *)&current->thread.fpr[(insn >> 21) & 0x1f];
--		op1 = (void *)&current->thread.fpr[(insn >> 16) & 0x1f];
-+		op0 = (void *)&current->thread.TS_FPR((insn >> 21) & 0x1f);
-+		op1 = (void *)&current->thread.TS_FPR((insn >> 16) & 0x1f);
- 		break;
- 
- 	case XB:
--		op0 = (void *)&current->thread.fpr[(insn >> 21) & 0x1f];
--		op1 = (void *)&current->thread.fpr[(insn >> 11) & 0x1f];
-+		op0 = (void *)&current->thread.TS_FPR((insn >> 21) & 0x1f);
-+		op1 = (void *)&current->thread.TS_FPR((insn >> 11) & 0x1f);
- 		break;
- 
- 	case XE:
- 		idx = (insn >> 16) & 0x1f;
--		op0 = (void *)&current->thread.fpr[(insn >> 21) & 0x1f];
-+		op0 = (void *)&current->thread.TS_FPR((insn >> 21) & 0x1f);
- 		if (!idx) {
- 			if (((insn >> 1) & 0x3ff) == STFIWX)
- 				op1 = (void *)(regs->gpr[(insn >> 11) & 0x1f]);
-@@ -421,7 +421,7 @@ do_mathemu(struct pt_regs *regs)
- 
- 	case XEU:
- 		idx = (insn >> 16) & 0x1f;
--		op0 = (void *)&current->thread.fpr[(insn >> 21) & 0x1f];
-+		op0 = (void *)&current->thread.TS_FPR((insn >> 21) & 0x1f);
- 		op1 = (void *)((idx ? regs->gpr[idx] : 0)
- 				+ regs->gpr[(insn >> 11) & 0x1f]);
- 		break;
-@@ -429,8 +429,8 @@ do_mathemu(struct pt_regs *regs)
- 	case XCR:
- 		op0 = (void *)&regs->ccr;
- 		op1 = (void *)((insn >> 23) & 0x7);
--		op2 = (void *)&current->thread.fpr[(insn >> 16) & 0x1f];
--		op3 = (void *)&current->thread.fpr[(insn >> 11) & 0x1f];
-+		op2 = (void *)&current->thread.TS_FPR((insn >> 16) & 0x1f);
-+		op3 = (void *)&current->thread.TS_FPR((insn >> 11) & 0x1f);
- 		break;
- 
- 	case XCRL:
-@@ -450,7 +450,7 @@ do_mathemu(struct pt_regs *regs)
- 
- 	case XFLB:
- 		op0 = (void *)((insn >> 17) & 0xff);
--		op1 = (void *)&current->thread.fpr[(insn >> 11) & 0x1f];
-+		op1 = (void *)&current->thread.TS_FPR((insn >> 11) & 0x1f);
- 		break;
- 
- 	default:
 Index: linux-2.6-ozlabs/include/asm-powerpc/ppc_asm.h
 ===================================================================
 --- linux-2.6-ozlabs.orig/include/asm-powerpc/ppc_asm.h
 +++ linux-2.6-ozlabs/include/asm-powerpc/ppc_asm.h
-@@ -6,6 +6,7 @@
+@@ -74,6 +74,15 @@ END_FTR_SECTION_IFCLR(CPU_FTR_PURR);				
+ 				REST_10GPRS(22, base)
+ #endif
  
- #include <linux/stringify.h>
- #include <asm/asm-compat.h>
-+#include <asm/processor.h>
- 
- #ifndef __ASSEMBLY__
- #error __FILE__ should only be used in assembler files
-@@ -83,13 +84,13 @@ END_FTR_SECTION_IFCLR(CPU_FTR_PURR);				
- #define REST_8GPRS(n, base)	REST_4GPRS(n, base); REST_4GPRS(n+4, base)
- #define REST_10GPRS(n, base)	REST_8GPRS(n, base); REST_2GPRS(n+8, base)
- 
--#define SAVE_FPR(n, base)	stfd	n,THREAD_FPR0+8*(n)(base)
-+#define SAVE_FPR(n, base)	stfd	n,THREAD_FPR0+8*TS_FPRSPACING*(n)(base)
- #define SAVE_2FPRS(n, base)	SAVE_FPR(n, base); SAVE_FPR(n+1, base)
- #define SAVE_4FPRS(n, base)	SAVE_2FPRS(n, base); SAVE_2FPRS(n+2, base)
- #define SAVE_8FPRS(n, base)	SAVE_4FPRS(n, base); SAVE_4FPRS(n+4, base)
- #define SAVE_16FPRS(n, base)	SAVE_8FPRS(n, base); SAVE_8FPRS(n+8, base)
- #define SAVE_32FPRS(n, base)	SAVE_16FPRS(n, base); SAVE_16FPRS(n+16, base)
--#define REST_FPR(n, base)	lfd	n,THREAD_FPR0+8*(n)(base)
-+#define REST_FPR(n, base)	lfd	n,THREAD_FPR0+8*TS_FPRSPACING*(n)(base)
- #define REST_2FPRS(n, base)	REST_FPR(n, base); REST_FPR(n+1, base)
- #define REST_4FPRS(n, base)	REST_2FPRS(n, base); REST_2FPRS(n+2, base)
- #define REST_8FPRS(n, base)	REST_4FPRS(n, base); REST_4FPRS(n+4, base)
-Index: linux-2.6-ozlabs/include/asm-powerpc/processor.h
-===================================================================
---- linux-2.6-ozlabs.orig/include/asm-powerpc/processor.h
-+++ linux-2.6-ozlabs/include/asm-powerpc/processor.h
-@@ -136,6 +136,8 @@ typedef struct {
- 	unsigned long seg;
- } mm_segment_t;
- 
-+#define TS_FPR(i) fpr[i]
++/*
++ * Define what the VSX XX1 form instructions will look like, then add
++ * the 128 bit load store instructions based on that.
++ */
++#define VSX_XX1(xs, ra, rb)	(((xs) & 0x1f) << 21 | ((ra) << 16) |  \
++				 ((rb) << 11) | (((xs) >> 5)))
 +
- struct thread_struct {
- 	unsigned long	ksp;		/* Kernel stack pointer */
- 	unsigned long	ksp_limit;	/* if ksp <= ksp_limit stack overflow */
-@@ -289,4 +291,5 @@ static inline void prefetchw(const void 
++#define STXVD2X(xs, ra, rb)	.long (0x7c000798 | VSX_XX1((xs), (ra), (rb)))
++#define LXVD2X(xs, ra, rb)	.long (0x7c000698 | VSX_XX1((xs), (ra), (rb)))
  
- #endif /* __KERNEL__ */
- #endif /* __ASSEMBLY__ */
-+#define TS_FPRSPACING 1
- #endif /* _ASM_POWERPC_PROCESSOR_H */
+ #define SAVE_2GPRS(n, base)	SAVE_GPR(n, base); SAVE_GPR(n+1, base)
+ #define SAVE_4GPRS(n, base)	SAVE_2GPRS(n, base); SAVE_2GPRS(n+2, base)
+@@ -110,6 +119,57 @@ END_FTR_SECTION_IFCLR(CPU_FTR_PURR);				
+ #define REST_16VRS(n,b,base)	REST_8VRS(n,b,base); REST_8VRS(n+8,b,base)
+ #define REST_32VRS(n,b,base)	REST_16VRS(n,b,base); REST_16VRS(n+16,b,base)
+ 
++/* Save the lower 32 VSRs in the thread VSR region */
++#define SAVE_VSR(n,b,base)	li b,THREAD_VSR0+(16*(n));  STXVD2X(n,b,base)
++#define SAVE_2VSRS(n,b,base)	SAVE_VSR(n,b,base); SAVE_VSR(n+1,b,base)
++#define SAVE_4VSRS(n,b,base)	SAVE_2VSRS(n,b,base); SAVE_2VSRS(n+2,b,base)
++#define SAVE_8VSRS(n,b,base)	SAVE_4VSRS(n,b,base); SAVE_4VSRS(n+4,b,base)
++#define SAVE_16VSRS(n,b,base)	SAVE_8VSRS(n,b,base); SAVE_8VSRS(n+8,b,base)
++#define SAVE_32VSRS(n,b,base)	SAVE_16VSRS(n,b,base); SAVE_16VSRS(n+16,b,base)
++#define REST_VSR(n,b,base)	li b,THREAD_VSR0+(16*(n)); LXVD2X(n,b,base)
++#define REST_2VSRS(n,b,base)	REST_VSR(n,b,base); REST_VSR(n+1,b,base)
++#define REST_4VSRS(n,b,base)	REST_2VSRS(n,b,base); REST_2VSRS(n+2,b,base)
++#define REST_8VSRS(n,b,base)	REST_4VSRS(n,b,base); REST_4VSRS(n+4,b,base)
++#define REST_16VSRS(n,b,base)	REST_8VSRS(n,b,base); REST_8VSRS(n+8,b,base)
++#define REST_32VSRS(n,b,base)	REST_16VSRS(n,b,base); REST_16VSRS(n+16,b,base)
++/* Save the upper 32 VSRs (32-63) in the thread VSX region (0-31) */
++#define SAVE_VSRU(n,b,base)	li b,THREAD_VR0+(16*(n));  STXVD2X(n+32,b,base)
++#define SAVE_2VSRSU(n,b,base)	SAVE_VSRU(n,b,base); SAVE_VSRU(n+1,b,base)
++#define SAVE_4VSRSU(n,b,base)	SAVE_2VSRSU(n,b,base); SAVE_2VSRSU(n+2,b,base)
++#define SAVE_8VSRSU(n,b,base)	SAVE_4VSRSU(n,b,base); SAVE_4VSRSU(n+4,b,base)
++#define SAVE_16VSRSU(n,b,base)	SAVE_8VSRSU(n,b,base); SAVE_8VSRSU(n+8,b,base)
++#define SAVE_32VSRSU(n,b,base)	SAVE_16VSRSU(n,b,base); SAVE_16VSRSU(n+16,b,base)
++#define REST_VSRU(n,b,base)	li b,THREAD_VR0+(16*(n)); LXVD2X(n+32,b,base)
++#define REST_2VSRSU(n,b,base)	REST_VSRU(n,b,base); REST_VSRU(n+1,b,base)
++#define REST_4VSRSU(n,b,base)	REST_2VSRSU(n,b,base); REST_2VSRSU(n+2,b,base)
++#define REST_8VSRSU(n,b,base)	REST_4VSRSU(n,b,base); REST_4VSRSU(n+4,b,base)
++#define REST_16VSRSU(n,b,base)	REST_8VSRSU(n,b,base); REST_8VSRSU(n+8,b,base)
++#define REST_32VSRSU(n,b,base)	REST_16VSRSU(n,b,base); REST_16VSRSU(n+16,b,base)
++
++#ifdef CONFIG_VSX
++#define REST_32FPVSRS(n,c,base)						\
++BEGIN_FTR_SECTION							\
++	b	2f;							\
++END_FTR_SECTION_IFSET(CPU_FTR_VSX);					\
++	REST_32FPRS(n,base);						\
++	b	3f;							\
++2:	REST_32VSRS(n,c,base);						\
++3:
++
++#define SAVE_32FPVSRS(n,c,base)						\
++BEGIN_FTR_SECTION							\
++	b	2f;							\
++END_FTR_SECTION_IFSET(CPU_FTR_VSX);					\
++	SAVE_32FPRS(n,base);						\
++	b	3f;							\
++2:	SAVE_32VSRS(n,c,base);						\
++3:
++
++#else
++#define REST_32FPVSRS(n,b,base)	REST_32FPRS(n, base)
++#define SAVE_32FPVSRS(n,b,base)	SAVE_32FPRS(n, base)
++#endif
++
+ #define SAVE_EVR(n,s,base)	evmergehi s,s,n; stw s,THREAD_EVR0+4*(n)(base)
+ #define SAVE_2EVRS(n,s,base)	SAVE_EVR(n,s,base); SAVE_EVR(n+1,s,base)
+ #define SAVE_4EVRS(n,s,base)	SAVE_2EVRS(n,s,base); SAVE_2EVRS(n+2,s,base)
+@@ -534,6 +594,73 @@ END_FTR_SECTION_IFCLR(CPU_FTR_601)
+ #define	vr30	30
+ #define	vr31	31
+ 
++/* VSX Registers (VSRs) */
++
++#define	vsr0	0
++#define	vsr1	1
++#define	vsr2	2
++#define	vsr3	3
++#define	vsr4	4
++#define	vsr5	5
++#define	vsr6	6
++#define	vsr7	7
++#define	vsr8	8
++#define	vsr9	9
++#define	vsr10	10
++#define	vsr11	11
++#define	vsr12	12
++#define	vsr13	13
++#define	vsr14	14
++#define	vsr15	15
++#define	vsr16	16
++#define	vsr17	17
++#define	vsr18	18
++#define	vsr19	19
++#define	vsr20	20
++#define	vsr21	21
++#define	vsr22	22
++#define	vsr23	23
++#define	vsr24	24
++#define	vsr25	25
++#define	vsr26	26
++#define	vsr27	27
++#define	vsr28	28
++#define	vsr29	29
++#define	vsr30	30
++#define	vsr31	31
++#define	vsr32	32
++#define	vsr33	33
++#define	vsr34	34
++#define	vsr35	35
++#define	vsr36	36
++#define	vsr37	37
++#define	vsr38	38
++#define	vsr39	39
++#define	vsr40	40
++#define	vsr41	41
++#define	vsr42	42
++#define	vsr43	43
++#define	vsr44	44
++#define	vsr45	45
++#define	vsr46	46
++#define	vsr47	47
++#define	vsr48	48
++#define	vsr49	49
++#define	vsr50	50
++#define	vsr51	51
++#define	vsr52	52
++#define	vsr53	53
++#define	vsr54	54
++#define	vsr55	55
++#define	vsr56	56
++#define	vsr57	57
++#define	vsr58	58
++#define	vsr59	59
++#define	vsr60	60
++#define	vsr61	61
++#define	vsr62	62
++#define	vsr63	63
++
+ /* SPE Registers (EVPRs) */
+ 
+ #define	evr0	0
