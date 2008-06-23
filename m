@@ -1,14 +1,18 @@
-Return-Path: <sr@denx.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.171]) by ozlabs.org (Postfix) with ESMTP id 4FEE4DE307
-	for <linuxppc-dev@ozlabs.org>; Mon, 23 Jun 2008 22:55:16 +1000 (EST)
-From: Stefan Roese <sr@denx.de>
-To: linuxppc-dev@ozlabs.org,
-	netdev@vger.kernel.org
-Subject: [PATCH] ibm_newemac: Fixes memory leak in ibm_newemac ethernet driver
-Date: Mon, 23 Jun 2008 14:55:12 +0200
-Message-Id: <1214225712-25882-1-git-send-email-sr@denx.de>
-Cc: Sathya Narayanan <sathyan@teamf1.com>
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	by ozlabs.org (Postfix) with ESMTP id A5B1FDE029
+	for <linuxppc-dev@ozlabs.org>; Mon, 23 Jun 2008 22:48:11 +1000 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1KAlSp-0003Xn-SJ
+	for linuxppc-dev@ozlabs.org; Mon, 23 Jun 2008 05:48:07 -0700
+Message-ID: <18067094.post@talk.nabble.com>
+Date: Mon, 23 Jun 2008 05:48:07 -0700 (PDT)
+From: jumpingProgrammer <rabbitzp@163.com>
+To: linuxppc-dev@ozlabs.org
+Subject: a question of mpc8313, maybe simple
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,36 +22,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Sathya Narayanan <sathyan@teamf1.com>
 
-This patch addresses the memory leak happenning in drivers transmit queue
-under heavy load condition. Once the transmit queue becomes full, driver
-does an automatic wrapup of queue. During which the untransmitted SKB's are
-lost without getting freed up.
+i am working with a board of mpc8313 using default mpc8313erdb.dts.
+But i do not know how can i correctly use DMA to transport data from memory
+to a PCI device.
+i tryed this
+{
+     .....
+     request_irq(IRQ,....);
+     request_dma(.....);
+     ....
+}
 
-Signed-off-by: Sathya Narayanan <sathyan@teamf1.com>
-Signed-off-by: Stefan Roese <sr@denx.de>
----
- drivers/net/ibm_newemac/core.c |    7 +++++++
- 1 files changed, 7 insertions(+), 0 deletions(-)
+In request_irq() , i do not know what is the parameter IRQ.
+And , i did not find any words about DMA in mpc8313erdb.dts .
+So 
+1. please tell me what should be the parameter IRQ?
+      Is it the irq requested when DMA initialized or another one?
+2. If i want initialize DMA, how should i do with mpc8313erdb.dts?
 
-diff --git a/drivers/net/ibm_newemac/core.c b/drivers/net/ibm_newemac/core.c
-index aa407b2..ee868b6 100644
---- a/drivers/net/ibm_newemac/core.c
-+++ b/drivers/net/ibm_newemac/core.c
-@@ -1328,6 +1328,13 @@ static int emac_start_xmit(struct sk_buff *skb, struct net_device *ndev)
- 
- 	DBG2(dev, "xmit(%u) %d" NL, len, slot);
- 
-+	if (dev->tx_skb[slot] && dev->tx_desc[slot].data_ptr) {
-+		dev_kfree_skb(dev->tx_skb[slot]);
-+		dev->tx_skb[slot] = NULL;
-+		dev->tx_cnt--;
-+		++dev->estats.tx_dropped;
-+	}
-+
- 	dev->tx_skb[slot] = skb;
- 	dev->tx_desc[slot].data_ptr = dma_map_single(&dev->ofdev->dev,
- 						     skb->data, len,
+
 -- 
-1.5.6
+View this message in context: http://www.nabble.com/a-question-of-mpc8313%2C-maybe-simple-tp18067094p18067094.html
+Sent from the linuxppc-dev mailing list archive at Nabble.com.
