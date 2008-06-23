@@ -1,20 +1,20 @@
 Return-Path: <scottwood@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
+	(Client CN "az33egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 3B446DDEED
+	by ozlabs.org (Postfix) with ESMTPS id ABDABDDF2D
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 24 Jun 2008 03:00:48 +1000 (EST)
-Message-ID: <485FD6AC.6010605@freescale.com>
-Date: Mon, 23 Jun 2008 12:00:28 -0500
+	Tue, 24 Jun 2008 03:02:30 +1000 (EST)
+Message-ID: <485FD712.8010500@freescale.com>
+Date: Mon, 23 Jun 2008 12:02:10 -0500
 From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-To: "Qin, Laigui (GE EntSol, Security)" <laigui.qin@ge.com>
-Subject: Re: NAND access fail after MMU enabled when booting linux
-References: <A9D89E0D76AFF24B9441851F2AC72D7203E7E23C@BANMLVEM05.e2k.ad.ge.com>
-In-Reply-To: <A9D89E0D76AFF24B9441851F2AC72D7203E7E23C@BANMLVEM05.e2k.ad.ge.com>
+To: zhanglei459 <zhanglei459@gmail.com>
+Subject: Re: how to understand pci section in device tree source file
+References: <18070474.post@talk.nabble.com>
+In-Reply-To: <18070474.post@talk.nabble.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -27,23 +27,15 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Qin, Laigui (GE EntSol, Security) wrote:
-> I am facing a MMU related problem when porting Linux to my custom board 
-> with Coldfire M5445x processor. The observation is that* the nand Bus 
-> chip select/WE/RE become 100 times longer than normal when MMU enabled*. 
-> I just can not understand this...
+zhanglei459 wrote:
+> I guess  which refer to host-pci bridge ATMU,is right?
 
-Coldfire is m68k; this list is for powerpc.
+Yes.
 
-> Look into my driver codes, I use the virtual address (0xe0000000) 
-> applied from ioremap() kernel function.
-> 
-> 136         /* map physical address */
-> 137         this->IO_ADDR_R = this->IO_ADDR_W = ioremap(0x00000000, 1024);
-> 138         if (!this->IO_ADDR_R) {
-> 139                 printk(KERN_WARNING "ioremap micron NAND @0x00000000 
-> failed\n");
+> But how to descripe
+> added-on pci chip,whose BAR0 and BAR1 are IO spaces, BAR2 and BAR3  are MEM
+> spaces.
 
-Is it really at address zero, or is that where your RAM is?
+You don't need to -- this can be probed at run-time.
 
 -Scott
