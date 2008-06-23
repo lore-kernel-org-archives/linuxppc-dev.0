@@ -1,15 +1,19 @@
-Return-Path: <bunk@kernel.org>
-Received: from smtp4.pp.htv.fi (smtp4.pp.htv.fi [213.243.153.38])
-	by ozlabs.org (Postfix) with ESMTP id 8204DDE594
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Jun 2008 03:50:25 +1000 (EST)
-Date: Mon, 23 Jun 2008 20:48:28 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: paulus@samba.org
-Subject: [RFC: 2.6 patch] powerpc: asm/elf.h: reduce userspace header
-Message-ID: <20080623174828.GG4756@cs181140183.pp.htv.fi>
+Return-Path: <julia@diku.dk>
+Received: from mgw2.diku.dk (mgw2.diku.dk [130.225.96.92])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mgw2.diku.dk",
+	Issuer "KU Security Authority" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id C84B8DDED8
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Jun 2008 04:15:01 +1000 (EST)
+Date: Mon, 23 Jun 2008 20:14:52 +0200 (CEST)
+From: Julia Lawall <julia@diku.dk>
+To: benh@kernel.crashing.org, sfr@canb.auug.org.au,
+	linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	kernel-janitors@vger.kernel.org
+Subject: [PATCH] drivers/macintosh/smu.c: improve error handling
+Message-ID: <Pine.LNX.4.64.0806232014190.942@ask.diku.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,68 +23,101 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch makes asm/elf.h export less non-userspace stuff to userspace.
+From: Julia Lawall <julia@diku.dk>
 
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
+This patch makes two changes:
+* As noted by Akinobu Mita in patch
+b1fceac2b9e04d278316b2faddf276015fc06e3b, alloc_bootmem never returns NULL
+and always returns a zeroed region of memory.  Thus the error checking code
+and memset after the call to alloc_bootmem are not necessary.
+* The old error handling code consisted of setting a global variable to
+NULL and returning an error code, which could cause previously allocated
+resources never to be freed.  The patch adds calls to appropriate resource
+deallocation functions.
 
+ drivers/macintosh/smu.c |   34 +++++++++++++++++++---------------
+ 1 file changed, 19 insertions(+), 15 deletions(-)
+
+Signed-off-by: Julia Lawall <julia@diku.dk>
 ---
 
- include/asm-powerpc/elf.h |   12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
-
-6e868802e4b350a9dac071044b7cf52af7404134 diff --git a/include/asm-powerpc/elf.h b/include/asm-powerpc/elf.h
-index 9080d85..d1e3bda 100644
---- a/include/asm-powerpc/elf.h
-+++ b/include/asm-powerpc/elf.h
-@@ -224,8 +224,6 @@ extern int dump_task_altivec(struct task_struct *, elf_vrregset_t *vrregs);
- #define ELF_CORE_XFPREG_TYPE NT_PPC_VMX
- #endif
+diff -u -p a/drivers/macintosh/smu.c b/drivers/macintosh/smu.c
+--- a/drivers/macintosh/smu.c
++++ b/drivers/macintosh/smu.c
+@@ -474,6 +474,7 @@ int __init smu_init (void)
+ {
+ 	struct device_node *np;
+ 	const u32 *data;
++	int ret = 0;
  
--#endif /* __KERNEL__ */
+         np = of_find_node_by_type(NULL, "smu");
+         if (np == NULL)
+@@ -483,16 +484,11 @@ int __init smu_init (void)
+ 
+ 	if (smu_cmdbuf_abs == 0) {
+ 		printk(KERN_ERR "SMU: Command buffer not allocated !\n");
+-		of_node_put(np);
+-		return -EINVAL;
++		ret = -EINVAL;
++		goto fail_np;
+ 	}
+ 
+ 	smu = alloc_bootmem(sizeof(struct smu_device));
+-	if (smu == NULL) {
+-		of_node_put(np);
+-		return -ENOMEM;
+-	}
+-	memset(smu, 0, sizeof(*smu));
+ 
+ 	spin_lock_init(&smu->lock);
+ 	INIT_LIST_HEAD(&smu->cmd_list);
+@@ -510,14 +506,14 @@ int __init smu_init (void)
+ 	smu->db_node = of_find_node_by_name(NULL, "smu-doorbell");
+ 	if (smu->db_node == NULL) {
+ 		printk(KERN_ERR "SMU: Can't find doorbell GPIO !\n");
+-		goto fail;
++		ret = -ENXIO;
++		goto fail_bootmem;
+ 	}
+ 	data = of_get_property(smu->db_node, "reg", NULL);
+ 	if (data == NULL) {
+-		of_node_put(smu->db_node);
+-		smu->db_node = NULL;
+ 		printk(KERN_ERR "SMU: Can't find doorbell GPIO address !\n");
+-		goto fail;
++		ret = -ENXIO;
++		goto fail_db_node;
+ 	}
+ 
+ 	/* Current setup has one doorbell GPIO that does both doorbell
+@@ -551,7 +547,8 @@ int __init smu_init (void)
+ 	smu->db_buf = ioremap(0x8000860c, 0x1000);
+ 	if (smu->db_buf == NULL) {
+ 		printk(KERN_ERR "SMU: Can't map doorbell buffer pointer !\n");
+-		goto fail;
++		ret = -ENXIO;
++		goto fail_msg_node;
+ 	}
+ 
+ 	/* U3 has an issue with NAP mode when issuing SMU commands */
+@@ -562,10 +559,17 @@ int __init smu_init (void)
+ 	sys_ctrler = SYS_CTRLER_SMU;
+ 	return 0;
+ 
+- fail:
++fail_msg_node:
++	if (smu->msg_node)
++		of_node_put(smu->msg_node);
++fail_db_node:
++	of_node_put(smu->db_node);
++fail_bootmem:
++	free_bootmem((unsigned long)smu, sizeof(struct smu_device));
+ 	smu = NULL;
+-	return -ENXIO;
 -
- /* ELF_HWCAP yields a mask that user programs can use to figure out what
-    instruction set this cpu supports.  This could be done in userspace,
-    but it's not easy, and we've already done it here.  */
-@@ -243,8 +241,6 @@ extern int dump_task_altivec(struct task_struct *, elf_vrregset_t *vrregs);
- } while (0)
- #endif /* __powerpc64__ */
++fail_np:
++	of_node_put(np);
++	return ret;
+ }
  
--#ifdef __KERNEL__
--
- #ifdef __powerpc64__
- # define SET_PERSONALITY(ex, ibcs2)				\
- do {								\
-@@ -272,8 +268,6 @@ do {								\
- # define SET_PERSONALITY(ex, ibcs2) set_personality((ibcs2)?PER_SVR4:PER_LINUX)
- #endif /* __powerpc64__ */
  
--#endif /* __KERNEL__ */
--
- extern int dcache_bsize;
- extern int icache_bsize;
- extern int ucache_bsize;
-@@ -285,6 +279,8 @@ extern int arch_setup_additional_pages(struct linux_binprm *bprm,
- 				       int executable_stack);
- #define VDSO_AUX_ENT(a,b) NEW_AUX_ENT(a,b);
- 
-+#endif /* __KERNEL__ */
-+
- /*
-  * The requirements here are:
-  * - keep the final alignment of sp (sp & 0xf)
-@@ -422,6 +418,8 @@ do {									\
- /* Keep this the last entry.  */
- #define R_PPC64_NUM		107
- 
-+#ifdef  __KERNEL__
-+
- #ifdef CONFIG_SPU_BASE
- /* Notes used in ET_CORE. Note name is "SPU/<fd>/<filename>". */
- #define NT_SPU		1
-@@ -430,4 +428,6 @@ do {									\
- 
- #endif /* CONFIG_SPU_BASE */
- 
-+#endif /* __KERNEL */
-+
- #endif /* _ASM_POWERPC_ELF_H */
