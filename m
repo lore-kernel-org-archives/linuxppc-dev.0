@@ -1,20 +1,18 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Date: Mon, 23 Jun 2008 14:07:50 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Gunnar von Boehn <VONBOEHN@de.ibm.com>
-Subject: Re: [RFC 1/3] powerpc: __copy_tofrom_user tweaked for Cell
-In-Reply-To: <OFD65B3B6C.9A2E5A1E-ONC1257471.002B578F-C1257471.002ECE46@de.ibm.com>
-Message-ID: <Pine.LNX.4.64.0806231406130.8773@vixen.sonytel.be>
-References: <OF2260963C.4B69232D-ONC125746E.0032489D-C125746E.003FD09E@de.ibm.com>
-	<247666.12345.qm@web33104.mail.mud.yahoo.com>
-	<OFD65B3B6C.9A2E5A1E-ONC1257471.002B578F-C1257471.002ECE46@de.ibm.com>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED;
-	BOUNDARY="-584349381-1646437380-1214222870=:8773"
-Cc: Mark Nelson <markn@au1.ibm.com>, sanjay3000@yahoo.com,
-	Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@ozlabs.org,
-	Michael Ellerman <ellerman@au1.ibm.com>, cbe-oss-dev@ozlabs.org
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH 1/1] Change the default link address for pSeries zImage
+	kernels.
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Tony Breeds <tony@bakeyournoodle.com>
+In-Reply-To: <1a551391a3c4925271cc86cb2e957aaccb0b599c.1214208801.git.tony@bakeyournoodle.com>
+References: <1a551391a3c4925271cc86cb2e957aaccb0b599c.1214208801.git.tony@bakeyournoodle.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-LADZtEevsbUli/Iq5e+6"
+Date: Mon, 23 Jun 2008 22:20:37 +1000
+Message-Id: <1214223637.7573.2.camel@localhost>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,38 +22,59 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
 
----584349381-1646437380-1214222870=:8773
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+--=-LADZtEevsbUli/Iq5e+6
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-On Mon, 23 Jun 2008, Gunnar von Boehn wrote:
-> > The problem is that the dcbz will generate the alignment exception
-> > regardless of whether the data is actually unaligned or not.
-> > Once you're on that code path, performance can't be good, can it?
-> 
-> In which case will DCBZ create an aligned exception?
+On Mon, 2008-06-23 at 18:13 +1000, Tony Breeds wrote:
+> Currently we set the start of the .text section to be 4Mb for pSeries.
+> In situations where the zImage is > 8Mb we'll fail to boot (due to
+> overlapping with OF).  Move .text in a zImage from 4MB to 64MB (well past=
+ OF).
+...
+> diff --git a/arch/powerpc/boot/oflib.c b/arch/powerpc/boot/oflib.c
+> index 95b8fd6..93a1a84 100644
+> --- a/arch/powerpc/boot/oflib.c
+> +++ b/arch/powerpc/boot/oflib.c
+> @@ -168,8 +168,19 @@ void *of_claim(unsigned long virt, unsigned long siz=
+e, unsigned long align)
+> =20
+>  void *of_vmlinux_alloc(unsigned long size)
+>  {
+> -	void *p =3D malloc(size);
+> -
+> +	unsigned long start =3D (unsigned long)_start, end =3D (unsigned long)_=
+end;
+> +	void *addr;
+> +	void *p;
+> +
+> +	/* With some older POWER4 firmware the we need to claim the area
 
-When using dcbz on uncached memory, IIRC.
+Sorry, typo/grammaro :/                     ^^^^^^
 
-With kind regards,
+cheers
 
-Geert Uytterhoeven
-Software Architect
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
 
-Sony Techsoft Centre
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
 
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
 
-Sony Technology and Software Centre Europe
-A division of Sony Service Centre (Europe) N.V.
-Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium
-VAT BE 0413.825.160 · RPR Brussels
-Fortis 293-0376800-10 GEBA-BE-BB
----584349381-1646437380-1214222870=:8773--
+--=-LADZtEevsbUli/Iq5e+6
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBIX5UVdSjSd0sB4dIRAlVjAKCe1TcR6eyaXT6l1Nhtmg/GD/BOWQCfW/Ec
+kd1nRE9H/x0Ccrf1ecaIKXU=
+=HnPE
+-----END PGP SIGNATURE-----
+
+--=-LADZtEevsbUli/Iq5e+6--
