@@ -1,18 +1,17 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH 1/1] Change the default link address for pSeries zImage
-	kernels.
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Tony Breeds <tony@bakeyournoodle.com>
-In-Reply-To: <1a551391a3c4925271cc86cb2e957aaccb0b599c.1214208801.git.tony@bakeyournoodle.com>
-References: <1a551391a3c4925271cc86cb2e957aaccb0b599c.1214208801.git.tony@bakeyournoodle.com>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-LADZtEevsbUli/Iq5e+6"
-Date: Mon, 23 Jun 2008 22:20:37 +1000
-Message-Id: <1214223637.7573.2.camel@localhost>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
-Reply-To: michael@ellerman.id.au
+Return-Path: <neko@genesi-usa.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.169])
+	by ozlabs.org (Postfix) with ESMTP id 74ABADE05E
+	for <linuxppc-dev@ozlabs.org>; Mon, 23 Jun 2008 22:33:17 +1000 (EST)
+Received: by ug-out-1314.google.com with SMTP id k3so362658ugf.0
+	for <linuxppc-dev@ozlabs.org>; Mon, 23 Jun 2008 05:33:15 -0700 (PDT)
+Message-ID: <485F9806.1000408@genesi-usa.com>
+Date: Mon, 23 Jun 2008 13:33:10 +0100
+From: Matt Sealey <matt@genesi-usa.com>
+MIME-Version: 1.0
+To: ppc-dev <linuxppc-dev@ozlabs.org>
+Subject: rh_init exported twice (rheap vs. dm-region_hash)
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Sender: Matt Sealey <neko@genesi-usa.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,59 +21,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hi guys,
 
---=-LADZtEevsbUli/Iq5e+6
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+I keep getting export errors when building kernels, a conflict between
+arch/powerpc/lib/rheap.c:rh_init() and drivers/dm/dm-region_hash.c:rh_init()
 
-On Mon, 2008-06-23 at 18:13 +1000, Tony Breeds wrote:
-> Currently we set the start of the .text section to be 4Mb for pSeries.
-> In situations where the zImage is > 8Mb we'll fail to boot (due to
-> overlapping with OF).  Move .text in a zImage from 4MB to 64MB (well past=
- OF).
-...
-> diff --git a/arch/powerpc/boot/oflib.c b/arch/powerpc/boot/oflib.c
-> index 95b8fd6..93a1a84 100644
-> --- a/arch/powerpc/boot/oflib.c
-> +++ b/arch/powerpc/boot/oflib.c
-> @@ -168,8 +168,19 @@ void *of_claim(unsigned long virt, unsigned long siz=
-e, unsigned long align)
-> =20
->  void *of_vmlinux_alloc(unsigned long size)
->  {
-> -	void *p =3D malloc(size);
-> -
-> +	unsigned long start =3D (unsigned long)_start, end =3D (unsigned long)_=
-end;
-> +	void *addr;
-> +	void *p;
-> +
-> +	/* With some older POWER4 firmware the we need to claim the area
+- in the event you want to use BestComm, MPC8610 DIU or other features
+*and* a RAID algorithm, which subsystem would be best to patch away or
+patch in a fix?
 
-Sorry, typo/grammaro :/                     ^^^^^^
+I was thinking of renaming the dm hash one to rh_hash_init() and then I
+thought, maybe rh_heap_init() is better. Then I thought, why have rh in
+both places, why not rename the entire API (rheap_ and rhash_) in both
+cases?
 
-cheers
+What do you think is the best solution? Willing to hack and compile test
+just so my kernel builds are "cleaner"..
 
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-LADZtEevsbUli/Iq5e+6
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBIX5UVdSjSd0sB4dIRAlVjAKCe1TcR6eyaXT6l1Nhtmg/GD/BOWQCfW/Ec
-kd1nRE9H/x0Ccrf1ecaIKXU=
-=HnPE
------END PGP SIGNATURE-----
-
---=-LADZtEevsbUli/Iq5e+6--
+-- 
+Matt Sealey <matt@genesi-usa.com>
+Genesi, Manager, Developer Relations
