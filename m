@@ -1,22 +1,19 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 1F6F7DDF3A
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Jun 2008 03:17:07 +1000 (EST)
-Date: Mon, 23 Jun 2008 12:16:44 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: "Welch, Martyn (GE EntSol,
-	Intelligent Platforms)" <martyn.welch@gefanuc.com>
-Subject: Re: Virqs of cascaded interrupt controller.
-Message-ID: <20080623171644.GB6978@loki.buserror.net>
-References: <1CADFA951940554D86FBD8B24BBFF3A0017B35B9@LONMLVEM08.e2k.ad.ge.com>
+Return-Path: <bunk@kernel.org>
+Received: from smtp6.pp.htv.fi (smtp6.pp.htv.fi [213.243.153.40])
+	by ozlabs.org (Postfix) with ESMTP id 2F823DE151
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Jun 2008 03:48:54 +1000 (EST)
+Date: Mon, 23 Jun 2008 20:46:57 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: [2.6 patch] drivers/macintosh/: possible cleanups
+Message-ID: <20080623174657.GC4756@cs181140183.pp.htv.fi>
+References: <20080609222312.GM1987@cs181133002.pp.htv.fi>
+	<20080610102125.2816c9e3.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1CADFA951940554D86FBD8B24BBFF3A0017B35B9@LONMLVEM08.e2k.ad.ge.com>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20080610102125.2816c9e3.sfr@canb.auug.org.au>
+Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, geert@linux-m68k.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,26 +23,125 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Jun 23, 2008 at 03:00:35PM +0100, Welch, Martyn (GE EntSol, Intelligent Platforms) wrote:
-> I'm in the process of porting Linux to one of our boards based on an
-> 8641D. Some of the interrupts of on-board devices are dealt with by a
-> custom interrupt controller in one of the onboard FPGAs, which cascades
-> into the 8641D's mpic. I'm trying to write a driver for it.
+On Tue, Jun 10, 2008 at 10:21:25AM +1000, Stephen Rothwell wrote:
+> Hi Adrian,
 > 
-> Looking at examples of cascaded interrupt handlers I've managed to get
-> to the point where the kernel is trying to register interrupts from the
-> DTB file I provide it. The problem is I don't know what virqs are being
-> assigned to the interrupts or how virqs are/should be assigned to a
-> cascaded interrupt controller.
+> On Tue, 10 Jun 2008 01:23:12 +0300 Adrian Bunk <bunk@kernel.org> wrote:
+> >
+> > +++ b/drivers/macintosh/adbhid.c
+> > @@ -75,7 +75,7 @@ static struct notifier_block adbhid_adb_notifier = {
+> >  #define ADB_KEY_POWER_OLD	0x7e
+> >  #define ADB_KEY_POWER		0x7f
+> >  
+> > -u16 adb_to_linux_keycodes[128] = {
+> > +static u16 adb_to_linux_keycodes[128] = {
+> 
+> This could be const as well.
 
-The virqs are created by irq_create_mapping() or irq_of_parse_and_map(). 
-It is preferred to use the latter, with the interrupts expressed in the
-device tree.
+Updated patch below.
 
-If that doesn't answer your question, could you be more specific about what
-you're trying to find out, and/or what aspect of the existing cascaded irq
-controllers (e.g. sysdev/qe_lib/qe_ic.c, platforms/82xx/pq2ads-pci-pic.c)
-you want clarfication of?  Do you want to know what to pass to request_irq,
-how to turn virqs back into hwirqs in the cascade driver, or something else?
+cu
+Adrian
 
--Scott
+
+<--  snip  -->
+
+
+This patch contains the following possible cleanups:
+- make the following needlessly global code static:
+  - adb.c: adb_controller
+  - adb.c: adb_init()
+  - adbhid.c: adb_to_linux_keycodes[]  (also make it const)
+  - via-pmu68k.c: backlight_level
+  - via-pmu68k.c: backlight_enabled
+- remove the following unused code:
+  - via-pmu68k.c: sleep_notifier_list
+
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
+
+---
+
+ drivers/macintosh/adb.c        |    5 ++---
+ drivers/macintosh/adbhid.c     |    2 +-
+ drivers/macintosh/via-pmu68k.c |    5 ++---
+ include/linux/adb.h            |    1 -
+ 4 files changed, 5 insertions(+), 8 deletions(-)
+
+45413fb42fb4215d80bb15f50a5bdc869465e9a1 diff --git a/drivers/macintosh/adb.c b/drivers/macintosh/adb.c
+index dbaad39..61b62a6 100644
+--- a/drivers/macintosh/adb.c
++++ b/drivers/macintosh/adb.c
+@@ -46,7 +46,6 @@
+ #endif
+ 
+ 
+-EXPORT_SYMBOL(adb_controller);
+ EXPORT_SYMBOL(adb_client_list);
+ 
+ extern struct adb_driver via_macii_driver;
+@@ -80,7 +79,7 @@ static struct adb_driver *adb_driver_list[] = {
+ 
+ static struct class *adb_dev_class;
+ 
+-struct adb_driver *adb_controller;
++static struct adb_driver *adb_controller;
+ BLOCKING_NOTIFIER_HEAD(adb_client_list);
+ static int adb_got_sleep;
+ static int adb_inited;
+@@ -290,7 +289,7 @@ static int adb_resume(struct platform_device *dev)
+ }
+ #endif /* CONFIG_PM */
+ 
+-int __init adb_init(void)
++static int __init adb_init(void)
+ {
+ 	struct adb_driver *driver;
+ 	int i;
+diff --git a/drivers/macintosh/adbhid.c b/drivers/macintosh/adbhid.c
+index ef4c117..af72f97 100644
+--- a/drivers/macintosh/adbhid.c
++++ b/drivers/macintosh/adbhid.c
+@@ -75,7 +75,7 @@ static struct notifier_block adbhid_adb_notifier = {
+ #define ADB_KEY_POWER_OLD	0x7e
+ #define ADB_KEY_POWER		0x7f
+ 
+-u16 adb_to_linux_keycodes[128] = {
++static const u16 adb_to_linux_keycodes[128] = {
+ 	/* 0x00 */ KEY_A, 		/*  30 */
+ 	/* 0x01 */ KEY_S, 		/*  31 */
+ 	/* 0x02 */ KEY_D,		/*  32 */
+diff --git a/drivers/macintosh/via-pmu68k.c b/drivers/macintosh/via-pmu68k.c
+index e2f84da..b64741c 100644
+--- a/drivers/macintosh/via-pmu68k.c
++++ b/drivers/macintosh/via-pmu68k.c
+@@ -101,7 +101,6 @@ static int pmu_kind = PMU_UNKNOWN;
+ static int pmu_fully_inited;
+ 
+ int asleep;
+-BLOCKING_NOTIFIER_HEAD(sleep_notifier_list);
+ 
+ static int pmu_probe(void);
+ static int pmu_init(void);
+@@ -741,8 +740,8 @@ pmu_handle_data(unsigned char *data, int len)
+ 	}
+ }
+ 
+-int backlight_level = -1;
+-int backlight_enabled = 0;
++static int backlight_level = -1;
++static int backlight_enabled = 0;
+ 
+ #define LEVEL_TO_BRIGHT(lev)	((lev) < 1? 0x7f: 0x4a - ((lev) << 1))
+ 
+diff --git a/include/linux/adb.h b/include/linux/adb.h
+index 64d8878..63bca50 100644
+--- a/include/linux/adb.h
++++ b/include/linux/adb.h
+@@ -84,7 +84,6 @@ enum adb_message {
+     ADB_MSG_PRE_RESET,	/* Called before resetting the bus */
+     ADB_MSG_POST_RESET	/* Called after resetting the bus (re-do init & register) */
+ };
+-extern struct adb_driver *adb_controller;
+ extern struct blocking_notifier_head adb_client_list;
+ 
+ int adb_request(struct adb_request *req, void (*done)(struct adb_request *),
