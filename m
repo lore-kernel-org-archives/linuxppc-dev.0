@@ -1,12 +1,12 @@
 Return-Path: <michael@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
-Message-Id: <e1b874df92f61cbd3c25bd90f6e48784dc1f632b.1214271072.git.michael@ellerman.id.au>
+Message-Id: <d66e1bcc6428a3fde7665e09ded9a9331f5b480d.1214271072.git.michael@ellerman.id.au>
 In-Reply-To: <fd46b7fc5f4785affb58f1de2b85a63b154e0de8.1214271072.git.michael@ellerman.id.au>
 References: <fd46b7fc5f4785affb58f1de2b85a63b154e0de8.1214271072.git.michael@ellerman.id.au>
 From: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH 03/14] powerpc: Make create_branch() return errors if the
-	branch target is too large
-Date: Tue, 24 Jun 2008 11:32:24 +1000 (EST)
+Subject: [PATCH 04/14] powerpc: Add ppc_function_entry() which gets the entry
+	point for a function
+Date: Tue, 24 Jun 2008 11:32:28 +1000 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,44 +16,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-If you pass a target value to create_branch() which is more than 32MB - 4,
-or - 32MB away from the branch site, then it's impossible to create an
-immediate branch. The current code doesn't check, which will lead to us
-creating a branch to somewhere else - which is bad.
-
-For code that cares to check we return 0, which is easy to check for, and
-for code that doesn't at least we'll be creating an illegal instruction,
-rather than a branch to some random address.
+Because function pointers point to different things on 32-bit vs 64-bit,
+add a macro that deals with dereferencing the OPD on 64-bit. The soon to
+be merged ftrace wants this, as well as other code I am working on.
 
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
- arch/powerpc/lib/code-patching.c |   10 ++++++++--
- 1 files changed, 8 insertions(+), 2 deletions(-)
+ include/asm-powerpc/code-patching.h |   16 ++++++++++++++++
+ 1 files changed, 16 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/lib/code-patching.c b/arch/powerpc/lib/code-patching.c
-index 638dde3..430f4c1 100644
---- a/arch/powerpc/lib/code-patching.c
-+++ b/arch/powerpc/lib/code-patching.c
-@@ -26,12 +26,18 @@ unsigned int create_branch(const unsigned int *addr,
- 			   unsigned long target, int flags)
- {
- 	unsigned int instruction;
-+	long offset;
+diff --git a/include/asm-powerpc/code-patching.h b/include/asm-powerpc/code-patching.h
+index fdb187c..a45a7ff 100644
+--- a/include/asm-powerpc/code-patching.h
++++ b/include/asm-powerpc/code-patching.h
+@@ -10,6 +10,8 @@
+  * 2 of the License, or (at your option) any later version.
+  */
  
-+	offset = target;
- 	if (! (flags & BRANCH_ABSOLUTE))
--		target = target - (unsigned long)addr;
-+		offset = offset - (unsigned long)addr;
++#include <asm/types.h>
 +
-+	/* Check we can represent the target in the instruction format */
-+	if (offset < -0x2000000 || offset > 0x1fffffc || offset & 0x3)
-+		return 0;
+ /* Flags for create_branch:
+  * "b"   == create_branch(addr, target, 0);
+  * "ba"  == create_branch(addr, target, BRANCH_ABSOLUTE);
+@@ -24,4 +26,18 @@ unsigned int create_branch(const unsigned int *addr,
+ void patch_branch(unsigned int *addr, unsigned long target, int flags);
+ void patch_instruction(unsigned int *addr, unsigned int instr);
  
- 	/* Mask out the flags and target, so they don't step on each other. */
--	instruction = 0x48000000 | (flags & 0x3) | (target & 0x03FFFFFC);
-+	instruction = 0x48000000 | (flags & 0x3) | (offset & 0x03FFFFFC);
- 
- 	return instruction;
- }
++static inline unsigned long ppc_function_entry(void *func)
++{
++#ifdef CONFIG_PPC64
++	/*
++	 * On PPC64 the function pointer actually points to the function's
++	 * descriptor. The first entry in the descriptor is the address
++	 * of the function text.
++	 */
++	return ((func_descr_t *)func)->entry;
++#else
++	return (unsigned long)func;
++#endif
++}
++
+ #endif /* _ASM_POWERPC_CODE_PATCHING_H */
 -- 
 1.5.5
