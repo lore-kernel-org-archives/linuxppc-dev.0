@@ -1,10 +1,10 @@
 Return-Path: <mikey@neuling.org>
 To: Paul Mackerras <paulus@samba.org>
 From: Michael Neuling <mikey@neuling.org>
-Date: Tue, 24 Jun 2008 20:57:49 +1000
-Subject: [PATCH 1/9] powerpc: Fix msr setting in 32 bit signal code
+Date: Tue, 24 Jun 2008 20:57:50 +1000
+Subject: [PATCH 7/9] powerpc: Add VSX assembler code macros
 In-Reply-To: <1214305069.538931.136638600960.qpush@coopers>
-Message-Id: <20080624105749.BE8B370294@localhost.localdomain>
+Message-Id: <20080624105750.2D695702A4@localhost.localdomain>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -15,58 +15,166 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-If we set the SPE MSR bit in save_user_regs we can blow away the VEC
-bit.  This doesn't matter in reality as they are infact the same bit
-but looks bad.
+This adds the macros for the VSX load/store instruction as most
+binutils are not going to support this for a while.
 
-Also, when we add VSX in a later patch, we need to be able to set two
-separate MSR bits here.
+Also add VSX register save/restore macros and vsr[0-63] register definitions.
 
 Signed-off-by: Michael Neuling <mikey@neuling.org>
 ---
 
- arch/powerpc/kernel/signal_32.c |   10 ++++++----
- 1 file changed, 6 insertions(+), 4 deletions(-)
+ include/asm-powerpc/ppc_asm.h |  127 ++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 127 insertions(+)
 
-Index: linux-2.6-ozlabs/arch/powerpc/kernel/signal_32.c
+Index: linux-2.6-ozlabs/include/asm-powerpc/ppc_asm.h
 ===================================================================
---- linux-2.6-ozlabs.orig/arch/powerpc/kernel/signal_32.c
-+++ linux-2.6-ozlabs/arch/powerpc/kernel/signal_32.c
-@@ -336,6 +336,8 @@ struct rt_sigframe {
- static int save_user_regs(struct pt_regs *regs, struct mcontext __user *frame,
- 		int sigret)
- {
-+	unsigned long msr = regs->msr;
+--- linux-2.6-ozlabs.orig/include/asm-powerpc/ppc_asm.h
++++ linux-2.6-ozlabs/include/asm-powerpc/ppc_asm.h
+@@ -74,6 +74,15 @@ END_FTR_SECTION_IFCLR(CPU_FTR_PURR);				
+ 				REST_10GPRS(22, base)
+ #endif
+ 
++/*
++ * Define what the VSX XX1 form instructions will look like, then add
++ * the 128 bit load store instructions based on that.
++ */
++#define VSX_XX1(xs, ra, rb)	(((xs) & 0x1f) << 21 | ((ra) << 16) |  \
++				 ((rb) << 11) | (((xs) >> 5)))
 +
- 	/* Make sure floating point registers are stored in regs */
- 	flush_fp_to_thread(current);
++#define STXVD2X(xs, ra, rb)	.long (0x7c000798 | VSX_XX1((xs), (ra), (rb)))
++#define LXVD2X(xs, ra, rb)	.long (0x7c000698 | VSX_XX1((xs), (ra), (rb)))
  
-@@ -354,8 +356,7 @@ static int save_user_regs(struct pt_regs
- 			return 1;
- 		/* set MSR_VEC in the saved MSR value to indicate that
- 		   frame->mc_vregs contains valid data */
--		if (__put_user(regs->msr | MSR_VEC, &frame->mc_gregs[PT_MSR]))
--			return 1;
-+		msr |= MSR_VEC;
- 	}
- 	/* else assert((regs->msr & MSR_VEC) == 0) */
+ #define SAVE_2GPRS(n, base)	SAVE_GPR(n, base); SAVE_GPR(n+1, base)
+ #define SAVE_4GPRS(n, base)	SAVE_2GPRS(n, base); SAVE_2GPRS(n+2, base)
+@@ -110,6 +119,57 @@ END_FTR_SECTION_IFCLR(CPU_FTR_PURR);				
+ #define REST_16VRS(n,b,base)	REST_8VRS(n,b,base); REST_8VRS(n+8,b,base)
+ #define REST_32VRS(n,b,base)	REST_16VRS(n,b,base); REST_16VRS(n+16,b,base)
  
-@@ -377,8 +378,7 @@ static int save_user_regs(struct pt_regs
- 			return 1;
- 		/* set MSR_SPE in the saved MSR value to indicate that
- 		   frame->mc_vregs contains valid data */
--		if (__put_user(regs->msr | MSR_SPE, &frame->mc_gregs[PT_MSR]))
--			return 1;
-+		msr |= MSR_SPE;
- 	}
- 	/* else assert((regs->msr & MSR_SPE) == 0) */
++/* Save the lower 32 VSRs in the thread VSR region */
++#define SAVE_VSR(n,b,base)	li b,THREAD_VSR0+(16*(n));  STXVD2X(n,b,base)
++#define SAVE_2VSRS(n,b,base)	SAVE_VSR(n,b,base); SAVE_VSR(n+1,b,base)
++#define SAVE_4VSRS(n,b,base)	SAVE_2VSRS(n,b,base); SAVE_2VSRS(n+2,b,base)
++#define SAVE_8VSRS(n,b,base)	SAVE_4VSRS(n,b,base); SAVE_4VSRS(n+4,b,base)
++#define SAVE_16VSRS(n,b,base)	SAVE_8VSRS(n,b,base); SAVE_8VSRS(n+8,b,base)
++#define SAVE_32VSRS(n,b,base)	SAVE_16VSRS(n,b,base); SAVE_16VSRS(n+16,b,base)
++#define REST_VSR(n,b,base)	li b,THREAD_VSR0+(16*(n)); LXVD2X(n,b,base)
++#define REST_2VSRS(n,b,base)	REST_VSR(n,b,base); REST_VSR(n+1,b,base)
++#define REST_4VSRS(n,b,base)	REST_2VSRS(n,b,base); REST_2VSRS(n+2,b,base)
++#define REST_8VSRS(n,b,base)	REST_4VSRS(n,b,base); REST_4VSRS(n+4,b,base)
++#define REST_16VSRS(n,b,base)	REST_8VSRS(n,b,base); REST_8VSRS(n+8,b,base)
++#define REST_32VSRS(n,b,base)	REST_16VSRS(n,b,base); REST_16VSRS(n+16,b,base)
++/* Save the upper 32 VSRs (32-63) in the thread VSX region (0-31) */
++#define SAVE_VSRU(n,b,base)	li b,THREAD_VR0+(16*(n));  STXVD2X(n+32,b,base)
++#define SAVE_2VSRSU(n,b,base)	SAVE_VSRU(n,b,base); SAVE_VSRU(n+1,b,base)
++#define SAVE_4VSRSU(n,b,base)	SAVE_2VSRSU(n,b,base); SAVE_2VSRSU(n+2,b,base)
++#define SAVE_8VSRSU(n,b,base)	SAVE_4VSRSU(n,b,base); SAVE_4VSRSU(n+4,b,base)
++#define SAVE_16VSRSU(n,b,base)	SAVE_8VSRSU(n,b,base); SAVE_8VSRSU(n+8,b,base)
++#define SAVE_32VSRSU(n,b,base)	SAVE_16VSRSU(n,b,base); SAVE_16VSRSU(n+16,b,base)
++#define REST_VSRU(n,b,base)	li b,THREAD_VR0+(16*(n)); LXVD2X(n+32,b,base)
++#define REST_2VSRSU(n,b,base)	REST_VSRU(n,b,base); REST_VSRU(n+1,b,base)
++#define REST_4VSRSU(n,b,base)	REST_2VSRSU(n,b,base); REST_2VSRSU(n+2,b,base)
++#define REST_8VSRSU(n,b,base)	REST_4VSRSU(n,b,base); REST_4VSRSU(n+4,b,base)
++#define REST_16VSRSU(n,b,base)	REST_8VSRSU(n,b,base); REST_8VSRSU(n+8,b,base)
++#define REST_32VSRSU(n,b,base)	REST_16VSRSU(n,b,base); REST_16VSRSU(n+16,b,base)
++
++#ifdef CONFIG_VSX
++#define REST_32FPVSRS(n,c,base)						\
++BEGIN_FTR_SECTION							\
++	b	2f;							\
++END_FTR_SECTION_IFSET(CPU_FTR_VSX);					\
++	REST_32FPRS(n,base);						\
++	b	3f;							\
++2:	REST_32VSRS(n,c,base);						\
++3:
++
++#define SAVE_32FPVSRS(n,c,base)						\
++BEGIN_FTR_SECTION							\
++	b	2f;							\
++END_FTR_SECTION_IFSET(CPU_FTR_VSX);					\
++	SAVE_32FPRS(n,base);						\
++	b	3f;							\
++2:	SAVE_32VSRS(n,c,base);						\
++3:
++
++#else
++#define REST_32FPVSRS(n,b,base)	REST_32FPRS(n, base)
++#define SAVE_32FPVSRS(n,b,base)	SAVE_32FPRS(n, base)
++#endif
++
+ #define SAVE_EVR(n,s,base)	evmergehi s,s,n; stw s,THREAD_EVR0+4*(n)(base)
+ #define SAVE_2EVRS(n,s,base)	SAVE_EVR(n,s,base); SAVE_EVR(n+1,s,base)
+ #define SAVE_4EVRS(n,s,base)	SAVE_2EVRS(n,s,base); SAVE_2EVRS(n+2,s,base)
+@@ -534,6 +594,73 @@ END_FTR_SECTION_IFCLR(CPU_FTR_601)
+ #define	vr30	30
+ #define	vr31	31
  
-@@ -387,6 +387,8 @@ static int save_user_regs(struct pt_regs
- 		return 1;
- #endif /* CONFIG_SPE */
++/* VSX Registers (VSRs) */
++
++#define	vsr0	0
++#define	vsr1	1
++#define	vsr2	2
++#define	vsr3	3
++#define	vsr4	4
++#define	vsr5	5
++#define	vsr6	6
++#define	vsr7	7
++#define	vsr8	8
++#define	vsr9	9
++#define	vsr10	10
++#define	vsr11	11
++#define	vsr12	12
++#define	vsr13	13
++#define	vsr14	14
++#define	vsr15	15
++#define	vsr16	16
++#define	vsr17	17
++#define	vsr18	18
++#define	vsr19	19
++#define	vsr20	20
++#define	vsr21	21
++#define	vsr22	22
++#define	vsr23	23
++#define	vsr24	24
++#define	vsr25	25
++#define	vsr26	26
++#define	vsr27	27
++#define	vsr28	28
++#define	vsr29	29
++#define	vsr30	30
++#define	vsr31	31
++#define	vsr32	32
++#define	vsr33	33
++#define	vsr34	34
++#define	vsr35	35
++#define	vsr36	36
++#define	vsr37	37
++#define	vsr38	38
++#define	vsr39	39
++#define	vsr40	40
++#define	vsr41	41
++#define	vsr42	42
++#define	vsr43	43
++#define	vsr44	44
++#define	vsr45	45
++#define	vsr46	46
++#define	vsr47	47
++#define	vsr48	48
++#define	vsr49	49
++#define	vsr50	50
++#define	vsr51	51
++#define	vsr52	52
++#define	vsr53	53
++#define	vsr54	54
++#define	vsr55	55
++#define	vsr56	56
++#define	vsr57	57
++#define	vsr58	58
++#define	vsr59	59
++#define	vsr60	60
++#define	vsr61	61
++#define	vsr62	62
++#define	vsr63	63
++
+ /* SPE Registers (EVPRs) */
  
-+	if (__put_user(msr, &frame->mc_gregs[PT_MSR]))
-+		return 1;
- 	if (sigret) {
- 		/* Set up the sigreturn trampoline: li r0,sigret; sc */
- 		if (__put_user(0x38000000UL + sigret, &frame->tramp[0])
+ #define	evr0	0
