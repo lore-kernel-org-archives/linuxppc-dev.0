@@ -1,12 +1,33 @@
-Return-Path: <michael@ozlabs.org>
-To: <linuxppc-dev@ozlabs.org>
-Message-Id: <d09f853cf591c6b33c316eb4df16dbb2a43246e8.1214271072.git.michael@ellerman.id.au>
-In-Reply-To: <fd46b7fc5f4785affb58f1de2b85a63b154e0de8.1214271072.git.michael@ellerman.id.au>
-References: <fd46b7fc5f4785affb58f1de2b85a63b154e0de8.1214271072.git.michael@ellerman.id.au>
-From: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH 14/14] powerpc: Use an alternative feature section in
-	entry_64.S
-Date: Tue, 24 Jun 2008 11:33:05 +1000 (EST)
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id BA256DE461
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Jun 2008 11:39:18 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m5O1dEFu008048
+	for <linuxppc-dev@ozlabs.org>; Mon, 23 Jun 2008 21:39:14 -0400
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
+	m5O1dEjd148054
+	for <linuxppc-dev@ozlabs.org>; Mon, 23 Jun 2008 19:39:14 -0600
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m5O1dEVv022447
+	for <linuxppc-dev@ozlabs.org>; Mon, 23 Jun 2008 19:39:14 -0600
+Date: Mon, 23 Jun 2008 21:35:56 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: John Linn <John.Linn@xilinx.com>
+Subject: Re: [PATCH] [RFC] powerpc: Xilinx: adding virtex5 powerpc 440 support
+Message-ID: <20080623213556.3378316a@zod.rchland.ibm.com>
+In-Reply-To: <20080623213038.490C110B806B@mail11-dub.bigfish.com>
+References: <20080623162856.D5FA41CA806C@mail66-dub.bigfish.com>
+	<20080623150846.40d65f08@zod.rchland.ibm.com>
+	<20080623213038.490C110B806B@mail11-dub.bigfish.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,43 +37,55 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Use an alternative feature section in _switch. There are three cases
-handled here, either we don't have an SLB, in which case we jump over the
-entire code section, or if we do we either do or don't have 1TB segments.
+On Mon, 23 Jun 2008 15:30:35 -0600
+John Linn <John.Linn@xilinx.com> wrote:
 
-Boot tested on Power3, Power5 and Power5+.
+> >> + *
+> >> + * Copyright 2007 IBM Corporation
+> >> + *   Based on cuboot-83xx.c, which is:
+> >> + * Copyright (c) 2007 Freescale Semiconductor, Inc.
+> >> + *
+> >> + * This program is free software; you can redistribute it and/or
+> modify
+> >> it
+> >> + * under the terms of the GNU General Public License version 2 as
+> >> published
+> >> + * by the Free Software Foundation.
+> >> + */
+> >> +
+> >> +#include <stddef.h>
+> >> +#include <stdio.h>
+> >> +#include "ops.h"
+> >> +#include "dcr.h"
+> >> +#include "4xx.h"
+> >> +#include "io.h"
+> >> +#include "reg.h"
+> >> +
+> >> +BSS_STACK(4096);
+> >> +
+> >> +#include "types.h"
+> >> +#include "gunzip_util.h"
+> >> +#include <libfdt.h>
+> >> +#include "../../../include/linux/autoconf.h"
+> >
+> >Ew.  We've never included the CONFIG_ variables from Kconfig in the
+> >bootwrapper.  It's supposed to be independent of the kernel.
+> >
+> 
+> I'll try to better understand if we can detect the compressed device
+> tree and if we really have to disable the APU.
+> 
+> What's the reasoning for being independent of the kernel, maybe it's
+> obvious to everyone but me?
 
-Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
----
- arch/powerpc/kernel/entry_64.S |   12 ++++++------
- 1 files changed, 6 insertions(+), 6 deletions(-)
+The intention, as I understand it, is that the wrapper utilities can be
+installed stand-alone and used to wrap other kernels if needs be.  In
+practice I've not seen this happen yet, as most PowerPC kernels
+are built directly from the kernel source.  Fedora does have a
+separate package for the wrapper bits, but I'm not entirely sure it's
+used.
 
-diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index c0db5b7..6ca3044 100644
---- a/arch/powerpc/kernel/entry_64.S
-+++ b/arch/powerpc/kernel/entry_64.S
-@@ -383,16 +383,16 @@ END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
- 
- 	ld	r8,KSP(r4)	/* new stack pointer */
- BEGIN_FTR_SECTION
--	b	2f
--END_FTR_SECTION_IFCLR(CPU_FTR_SLB)
--BEGIN_FTR_SECTION
-+  BEGIN_FTR_SECTION_NESTED(95)
- 	clrrdi	r6,r8,28	/* get its ESID */
- 	clrrdi	r9,r1,28	/* get current sp ESID */
--END_FTR_SECTION_IFCLR(CPU_FTR_1T_SEGMENT)
--BEGIN_FTR_SECTION
-+  FTR_SECTION_ELSE_NESTED(95)
- 	clrrdi	r6,r8,40	/* get its 1T ESID */
- 	clrrdi	r9,r1,40	/* get current sp 1T ESID */
--END_FTR_SECTION_IFSET(CPU_FTR_1T_SEGMENT)
-+  ALT_FTR_SECTION_END_NESTED_IFCLR(CPU_FTR_1T_SEGMENT, 95)
-+FTR_SECTION_ELSE
-+	b	2f
-+ALT_FTR_SECTION_END_IFSET(CPU_FTR_SLB)
- 	clrldi.	r0,r6,2		/* is new ESID c00000000? */
- 	cmpd	cr1,r6,r9	/* or is new ESID the same as current ESID? */
- 	cror	eq,4*cr1+eq,eq
--- 
-1.5.5
+My understanding could be totally wrong, and if so I'll politely ask
+Paul or anyone else to hit me with a cluebat :).
+
+josh
