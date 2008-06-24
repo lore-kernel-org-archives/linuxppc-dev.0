@@ -1,19 +1,24 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 0B5C4DDE26
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Jun 2008 23:55:44 +1000 (EST)
-Message-Id: <EA0B1EA9-DFBF-460F-B084-6DF506CD0852@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Michael Ellerman <michael@ellerman.id.au>
-In-Reply-To: <fd46b7fc5f4785affb58f1de2b85a63b154e0de8.1214271072.git.michael@ellerman.id.au>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v924)
-Subject: Re: [PATCH 01/14] powerpc: Move code patching code into
-	arch/powerpc/lib/code-patching.c
-Date: Tue, 24 Jun 2008 08:23:03 -0500
-References: <fd46b7fc5f4785affb58f1de2b85a63b154e0de8.1214271072.git.michael@ellerman.id.au>
+Return-Path: <jacmet@gmail.com>
+Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.190])
+	by ozlabs.org (Postfix) with ESMTP id BB21BDE0C1
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Jun 2008 00:01:54 +1000 (EST)
+Received: by nf-out-0910.google.com with SMTP id e27so14237nfd.9
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Jun 2008 07:01:51 -0700 (PDT)
+To: John Linn <John.Linn@xilinx.com>
+Subject: Re: [PATCH] [RFC] powerpc: Xilinx: adding virtex5 powerpc 440 support
+References: <20080623162856.D5FA41CA806C@mail66-dub.bigfish.com>
+	<20080623150846.40d65f08@zod.rchland.ibm.com>
+	<20080623213038.490C110B806B@mail11-dub.bigfish.com>
+	<87d4m79vpu.fsf@macbook.be.48ers.dk>
+	<20080624135054.8A1ACA4806C@mail121-dub.bigfish.com>
+From: Peter Korsgaard <jacmet@sunsite.dk>
+Date: Tue, 24 Jun 2008 16:01:43 +0200
+In-Reply-To: <20080624135054.8A1ACA4806C@mail121-dub.bigfish.com> (John Linn's
+	message of "Tue\, 24 Jun 2008 07\:50\:53 -0600")
+Message-ID: <87wskfue2g.fsf@macbook.be.48ers.dk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Sender: Peter Korsgaard <jacmet@gmail.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -24,24 +29,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+>>>>> "John" == John Linn <John.Linn@xilinx.com> writes:
 
-On Jun 23, 2008, at 8:32 PM, Michael Ellerman wrote:
+ John> Yes it is compatible with the normal powerpc FPU.
 
-> We currently have a few routines for patching code in asm/system.h,  
-> because
-> they didn't fit anywhere else. I'd like to clean them up a little  
-> and add
-> some more, so first move them into a dedicated C file - they don't  
-> need to
-> be inlined.
->
-> While we're moving the code, drop create_function_call(), it's  
-> intended
-> caller never got merged and will be replaced in future with something
-> different.
->
-> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+Ahh, great - That didn't used to be the case with the earlier fpu
+stuff afaik.
 
-Acked-by: Kumar Gala <galak@kernel.crashing.org>
-
-- k
+-- 
+Bye, Peter Korsgaard
