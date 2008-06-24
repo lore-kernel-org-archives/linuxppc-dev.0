@@ -1,32 +1,19 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id BA256DE461
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Jun 2008 11:39:18 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m5O1dEFu008048
-	for <linuxppc-dev@ozlabs.org>; Mon, 23 Jun 2008 21:39:14 -0400
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
-	m5O1dEjd148054
-	for <linuxppc-dev@ozlabs.org>; Mon, 23 Jun 2008 19:39:14 -0600
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m5O1dEVv022447
-	for <linuxppc-dev@ozlabs.org>; Mon, 23 Jun 2008 19:39:14 -0600
-Date: Mon, 23 Jun 2008 21:35:56 -0400
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: John Linn <John.Linn@xilinx.com>
-Subject: Re: [PATCH] [RFC] powerpc: Xilinx: adding virtex5 powerpc 440 support
-Message-ID: <20080623213556.3378316a@zod.rchland.ibm.com>
-In-Reply-To: <20080623213038.490C110B806B@mail11-dub.bigfish.com>
-References: <20080623162856.D5FA41CA806C@mail66-dub.bigfish.com>
-	<20080623150846.40d65f08@zod.rchland.ibm.com>
-	<20080623213038.490C110B806B@mail11-dub.bigfish.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 5E036DDF99
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Jun 2008 11:41:03 +1000 (EST)
+In-Reply-To: <1214215255.8011.257.camel@pasglop>
+References: <20080623094539.GA16685@lisas.de>
+	<1214215255.8011.257.camel@pasglop>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <fbe00e06a9ca1745126a5b9cb9849290@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: starting with 2.6.26-rc1 cell_defconfig fails on QS22
+Date: Tue, 24 Jun 2008 03:40:36 +0200
+To: benh@kernel.crashing.org
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -37,55 +24,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 23 Jun 2008 15:30:35 -0600
-John Linn <John.Linn@xilinx.com> wrote:
+>> Finalizing device tree... using OF tree (promptr=0e1004c4)
+>>
+>>
+>> ( 700 ) Program Exception [ e1004c4 ]
+>
+> The program check exception happens at 0xe1004c4 ? That looks like the
+> OF entry point (promptr)... could it be possible that it got corrupted
+> somewhat ? The only thing I see above there would be the stack but
+> I fail to see how it would use that much...
 
-> >> + *
-> >> + * Copyright 2007 IBM Corporation
-> >> + *   Based on cuboot-83xx.c, which is:
-> >> + * Copyright (c) 2007 Freescale Semiconductor, Inc.
-> >> + *
-> >> + * This program is free software; you can redistribute it and/or
-> modify
-> >> it
-> >> + * under the terms of the GNU General Public License version 2 as
-> >> published
-> >> + * by the Free Software Foundation.
-> >> + */
-> >> +
-> >> +#include <stddef.h>
-> >> +#include <stdio.h>
-> >> +#include "ops.h"
-> >> +#include "dcr.h"
-> >> +#include "4xx.h"
-> >> +#include "io.h"
-> >> +#include "reg.h"
-> >> +
-> >> +BSS_STACK(4096);
-> >> +
-> >> +#include "types.h"
-> >> +#include "gunzip_util.h"
-> >> +#include <libfdt.h>
-> >> +#include "../../../include/linux/autoconf.h"
-> >
-> >Ew.  We've never included the CONFIG_ variables from Kconfig in the
-> >bootwrapper.  It's supposed to be independent of the kernel.
-> >
-> 
-> I'll try to better understand if we can detect the compressed device
-> tree and if we really have to disable the APU.
-> 
-> What's the reasoning for being independent of the kernel, maybe it's
-> obvious to everyone but me?
+I don't know what this [ e1004c4 ] is, if I read the current public
+SLOF code (for JS2x) correctly it seems to be whatever was on the
+stack (or just below the stack) below the error code that was thrown.
+Maybe some errors put something interesting there, dunno.
 
-The intention, as I understand it, is that the wrapper utilities can be
-installed stand-alone and used to wrap other kernels if needs be.  In
-practice I've not seen this happen yet, as most PowerPC kernels
-are built directly from the kernel source.  Fedora does have a
-separate package for the wrapper bits, but I'm not entirely sure it's
-used.
+/me looks deeper...  Nastiness :-)  So, a decrementer exception gives
+the current decrementer value as reason code; an external exception
+reads some BE-specific registers (on any system!); and all other
+exceptions use whatever was in GPR4?
 
-My understanding could be totally wrong, and if so I'll politely ask
-Paul or anyone else to hit me with a cluebat :).
+Anyway, the register dump shows:
 
-josh
+>>     CR / XER           LR / CTR          SRR0 / SRR1        DAR / 
+>> DSISR
+>>         80000022   00000000014073e8   000000000189e99c 
+>> 0000000000000000
+>> 0000000020000000   0000000001400000   9000000000083000 00000000
+
+so SRR0 is 0189e99c, which is where the exception happened.  Does
+objdump show what's going on?  It seems to happen almost immediately
+after the kernel starts, given the CTR value.  If the SRR0 address
+doesn't help, the LR address should.
+
+>> I have tried it with gcc-3.4.2, gcc-4.1.1 and gcc-4.2.4.
+
+The binutils version is more interesting here.  2.18?
+
+
+Segher
