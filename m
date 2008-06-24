@@ -2,9 +2,9 @@ Return-Path: <mikey@neuling.org>
 To: Paul Mackerras <paulus@samba.org>
 From: Michael Neuling <mikey@neuling.org>
 Date: Tue, 24 Jun 2008 20:57:50 +1000
-Subject: [PATCH 4/9] powerpc: Make load_up_fpu and load_up_altivec callable
+Subject: [PATCH 6/9] powerpc: Add VSX CPU feature
 In-Reply-To: <1214305069.538931.136638600960.qpush@coopers>
-Message-Id: <20080624105750.1118370299@localhost.localdomain>
+Message-Id: <20080624105750.1F9AD7029B@localhost.localdomain>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -15,97 +15,77 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Make load_up_fpu and load_up_altivec callable so they can be reused by
-the VSX code.  
+Add a VSX CPU feature.  Also add code to detect if VSX is available
+from the device tree.
 
 Signed-off-by: Michael Neuling <mikey@neuling.org>
+Signed-off-by: Joel Schopp <jschopp@austin.ibm.com>
+
 ---
 
- arch/powerpc/kernel/fpu.S        |    2 +-
- arch/powerpc/kernel/head_32.S    |    6 ++++--
- arch/powerpc/kernel/head_64.S    |   10 +++++++---
- arch/powerpc/kernel/head_booke.h |    6 ++++--
- 4 files changed, 16 insertions(+), 8 deletions(-)
+ arch/powerpc/kernel/prom.c     |    4 ++++
+ include/asm-powerpc/cputable.h |   15 ++++++++++++++-
+ 2 files changed, 18 insertions(+), 1 deletion(-)
 
-Index: linux-2.6-ozlabs/arch/powerpc/kernel/fpu.S
+Index: linux-2.6-ozlabs/arch/powerpc/kernel/prom.c
 ===================================================================
---- linux-2.6-ozlabs.orig/arch/powerpc/kernel/fpu.S
-+++ linux-2.6-ozlabs/arch/powerpc/kernel/fpu.S
-@@ -85,7 +85,7 @@ _GLOBAL(load_up_fpu)
- #endif /* CONFIG_SMP */
- 	/* restore registers and return */
- 	/* we haven't used ctr or xer or lr */
--	b	fast_exception_return
-+	blr
- 
- /*
-  * giveup_fpu(tsk)
-Index: linux-2.6-ozlabs/arch/powerpc/kernel/head_32.S
-===================================================================
---- linux-2.6-ozlabs.orig/arch/powerpc/kernel/head_32.S
-+++ linux-2.6-ozlabs/arch/powerpc/kernel/head_32.S
-@@ -421,8 +421,10 @@ BEGIN_FTR_SECTION
- 	b 	ProgramCheck
- END_FTR_SECTION_IFSET(CPU_FTR_FPU_UNAVAILABLE)
- 	EXCEPTION_PROLOG
--	bne	load_up_fpu		/* if from user, just load it up */
--	addi	r3,r1,STACK_FRAME_OVERHEAD
-+	beq	1f
-+	bl	load_up_fpu		/* if from user, just load it up */
-+	b	fast_exception_return
-+1:	addi	r3,r1,STACK_FRAME_OVERHEAD
- 	EXC_XFER_EE_LITE(0x800, kernel_fp_unavailable_exception)
- 
- /* Decrementer */
-Index: linux-2.6-ozlabs/arch/powerpc/kernel/head_64.S
-===================================================================
---- linux-2.6-ozlabs.orig/arch/powerpc/kernel/head_64.S
-+++ linux-2.6-ozlabs/arch/powerpc/kernel/head_64.S
-@@ -741,7 +741,8 @@ fp_unavailable_common:
- 	ENABLE_INTS
- 	bl	.kernel_fp_unavailable_exception
- 	BUG_OPCODE
--1:	b	.load_up_fpu
-+1:	bl	.load_up_fpu
-+	b	fast_exception_return
- 
- 	.align	7
- 	.globl altivec_unavailable_common
-@@ -749,7 +750,10 @@ altivec_unavailable_common:
- 	EXCEPTION_PROLOG_COMMON(0xf20, PACA_EXGEN)
- #ifdef CONFIG_ALTIVEC
- BEGIN_FTR_SECTION
--	bne	.load_up_altivec	/* if from user, just load it up */
-+	beq	1f
-+	bl	.load_up_altivec
-+	b	fast_exception_return
-+1:
- END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
- #endif
- 	bl	.save_nvgprs
-@@ -829,7 +833,7 @@ _STATIC(load_up_altivec)
- 	std	r4,0(r3)
- #endif /* CONFIG_SMP */
- 	/* restore registers and return */
--	b	fast_exception_return
-+	blr
+--- linux-2.6-ozlabs.orig/arch/powerpc/kernel/prom.c
++++ linux-2.6-ozlabs/arch/powerpc/kernel/prom.c
+@@ -609,6 +609,10 @@ static struct feature_property {
+ 	{"altivec", 0, CPU_FTR_ALTIVEC, PPC_FEATURE_HAS_ALTIVEC},
+ 	{"ibm,vmx", 1, CPU_FTR_ALTIVEC, PPC_FEATURE_HAS_ALTIVEC},
  #endif /* CONFIG_ALTIVEC */
- 
- /*
-Index: linux-2.6-ozlabs/arch/powerpc/kernel/head_booke.h
++#ifdef CONFIG_VSX
++	/* Yes, this _really_ is ibm,vmx == 2 to enable VSX */
++	{"ibm,vmx", 2, CPU_FTR_VSX, PPC_FEATURE_HAS_VSX},
++#endif /* CONFIG_VSX */
+ #ifdef CONFIG_PPC64
+ 	{"ibm,dfp", 1, 0, PPC_FEATURE_HAS_DFP},
+ 	{"ibm,purr", 1, CPU_FTR_PURR, 0},
+Index: linux-2.6-ozlabs/include/asm-powerpc/cputable.h
 ===================================================================
---- linux-2.6-ozlabs.orig/arch/powerpc/kernel/head_booke.h
-+++ linux-2.6-ozlabs/arch/powerpc/kernel/head_booke.h
-@@ -363,8 +363,10 @@ label:
- #define FP_UNAVAILABLE_EXCEPTION					      \
- 	START_EXCEPTION(FloatingPointUnavailable)			      \
- 	NORMAL_EXCEPTION_PROLOG;					      \
--	bne	load_up_fpu;		/* if from user, just load it up */   \
--	addi	r3,r1,STACK_FRAME_OVERHEAD;				      \
-+	beq	1f;							      \
-+	bl	load_up_fpu;		/* if from user, just load it up */   \
-+	b	fast_exception_return;					      \
-+1:	addi	r3,r1,STACK_FRAME_OVERHEAD;				      \
- 	EXC_XFER_EE_LITE(0x800, kernel_fp_unavailable_exception)
+--- linux-2.6-ozlabs.orig/include/asm-powerpc/cputable.h
++++ linux-2.6-ozlabs/include/asm-powerpc/cputable.h
+@@ -27,6 +27,7 @@
+ #define PPC_FEATURE_HAS_DFP		0x00000400
+ #define PPC_FEATURE_POWER6_EXT		0x00000200
+ #define PPC_FEATURE_ARCH_2_06		0x00000100
++#define PPC_FEATURE_HAS_VSX		0x00000080
  
- #endif /* __HEAD_BOOKE_H__ */
+ #define PPC_FEATURE_TRUE_LE		0x00000002
+ #define PPC_FEATURE_PPC_LE		0x00000001
+@@ -181,6 +182,7 @@ extern void do_feature_fixups(unsigned l
+ #define CPU_FTR_DSCR			LONG_ASM_CONST(0x0002000000000000)
+ #define CPU_FTR_1T_SEGMENT		LONG_ASM_CONST(0x0004000000000000)
+ #define CPU_FTR_NO_SLBIE_B		LONG_ASM_CONST(0x0008000000000000)
++#define CPU_FTR_VSX			LONG_ASM_CONST(0x0010000000000000)
+ 
+ #ifndef __ASSEMBLY__
+ 
+@@ -199,6 +201,17 @@ extern void do_feature_fixups(unsigned l
+ #define PPC_FEATURE_HAS_ALTIVEC_COMP    0
+ #endif
+ 
++/* We only set the VSX features if the kernel was compiled with VSX
++ * support
++ */
++#ifdef CONFIG_VSX
++#define CPU_FTR_VSX_COMP	CPU_FTR_VSX
++#define PPC_FEATURE_HAS_VSX_COMP PPC_FEATURE_HAS_VSX
++#else
++#define CPU_FTR_VSX_COMP	0
++#define PPC_FEATURE_HAS_VSX_COMP    0
++#endif
++
+ /* We only set the spe features if the kernel was compiled with spe
+  * support
+  */
+@@ -399,7 +412,7 @@ extern void do_feature_fixups(unsigned l
+ 	    (CPU_FTRS_POWER3 | CPU_FTRS_RS64 | CPU_FTRS_POWER4 |	\
+ 	    CPU_FTRS_PPC970 | CPU_FTRS_POWER5 | CPU_FTRS_POWER6 |	\
+ 	    CPU_FTRS_POWER7 | CPU_FTRS_CELL | CPU_FTRS_PA6T |		\
+-	    CPU_FTR_1T_SEGMENT)
++	    CPU_FTR_1T_SEGMENT | CPU_FTR_VSX)
+ #else
+ enum {
+ 	CPU_FTRS_POSSIBLE =
