@@ -1,18 +1,22 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18528.13965.55621.496788@cargo.ozlabs.ibm.com>
-Date: Tue, 24 Jun 2008 09:49:33 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Gunnar von Boehn <VONBOEHN@de.ibm.com>
-Subject: Re: [RFC 1/3] powerpc: __copy_tofrom_user tweaked for Cell
-In-Reply-To: <OFD65B3B6C.9A2E5A1E-ONC1257471.002B578F-C1257471.002ECE46@de.ibm.com>
-References: <OF2260963C.4B69232D-ONC125746E.0032489D-C125746E.003FD09E@de.ibm.com>
-	<247666.12345.qm@web33104.mail.mud.yahoo.com>
-	<OFD65B3B6C.9A2E5A1E-ONC1257471.002B578F-C1257471.002ECE46@de.ibm.com>
-Cc: Mark Nelson <markn@au1.ibm.com>, sanjay3000@yahoo.com,
-	Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@ozlabs.org,
-	Michael Ellerman <ellerman@au1.ibm.com>, cbe-oss-dev@ozlabs.org
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 408FCDDEDC
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Jun 2008 10:38:15 +1000 (EST)
+Date: Tue, 24 Jun 2008 10:38:04 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Adrian Bunk <bunk@kernel.org>
+Subject: Re: [2.6 patch] drivers/macintosh/: possible cleanups
+Message-Id: <20080624103804.ed76bf3a.sfr@canb.auug.org.au>
+In-Reply-To: <20080623174657.GC4756@cs181140183.pp.htv.fi>
+References: <20080609222312.GM1987@cs181133002.pp.htv.fi>
+	<20080610102125.2816c9e3.sfr@canb.auug.org.au>
+	<20080623174657.GC4756@cs181140183.pp.htv.fi>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Tue__24_Jun_2008_10_38_04_+1000_=_m8JAN0957Le5hF"
+Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, geert@linux-m68k.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,18 +26,66 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Gunnar von Boehn writes:
+--Signature=_Tue__24_Jun_2008_10_38_04_+1000_=_m8JAN0957Le5hF
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> Interesting points.
-> Can you help me to understand where the negative effect of DCBZ does come
-> from?
+On Mon, 23 Jun 2008 20:46:57 +0300 Adrian Bunk <bunk@kernel.org> wrote:
+>
+> On Tue, Jun 10, 2008 at 10:21:25AM +1000, Stephen Rothwell wrote:
+> > Hi Adrian,
+> >=20
+> > On Tue, 10 Jun 2008 01:23:12 +0300 Adrian Bunk <bunk@kernel.org> wrote:
+> > >
+> > > +++ b/drivers/macintosh/adbhid.c
+> > > @@ -75,7 +75,7 @@ static struct notifier_block adbhid_adb_notifier =
+=3D {
+> > >  #define ADB_KEY_POWER_OLD	0x7e
+> > >  #define ADB_KEY_POWER		0x7f
+> > > =20
+> > > -u16 adb_to_linux_keycodes[128] =3D {
+> > > +static u16 adb_to_linux_keycodes[128] =3D {
+> >=20
+> > This could be const as well.
+>=20
+> Updated patch below.
+>=20
+> cu
+> Adrian
+>=20
+>=20
+> <--  snip  -->
+>=20
+>=20
+> This patch contains the following possible cleanups:
+> - make the following needlessly global code static:
+>   - adb.c: adb_controller
+>   - adb.c: adb_init()
+>   - adbhid.c: adb_to_linux_keycodes[]  (also make it const)
+>   - via-pmu68k.c: backlight_level
+>   - via-pmu68k.c: backlight_enabled
+> - remove the following unused code:
+>   - via-pmu68k.c: sleep_notifier_list
+>=20
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
-In my experience, dcbz slows down the hot-cache case because it adds a
-few cycles to the execution time of the inner loop, and on most 64-bit
-PowerPC implementations, it doesn't actually help even in the
-cold-cache case because the store queue does enough write combining
-that the cache doesn't end up reading the line from memory.  I don't
-know whether the Cell PPE can do that, but I could believe that it
-can't.
+Acked-by: Stephen Rothwell <sfr@canb.auug.org.au>
 
-Paul.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Tue__24_Jun_2008_10_38_04_+1000_=_m8JAN0957Le5hF
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkhgQewACgkQTgG2atn1QN8lBwCfU80Zq/XzTROgviNqOnNZ25ql
+eP8AnRA4qSr1PqQybMgEPfZkDzpn9LFu
+=ajUS
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__24_Jun_2008_10_38_04_+1000_=_m8JAN0957Le5hF--
