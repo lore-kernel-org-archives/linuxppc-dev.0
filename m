@@ -1,16 +1,27 @@
-Return-Path: <vasbridge@sanblaze.com>
-Received: from mail.gazungle.com (mail.gazungle.com [207.210.240.68])
-	by ozlabs.org (Postfix) with ESMTP id 6C3C4DDFB4
+Return-Path: <petermendham@computing.dundee.ac.uk>
+Received: from uncle.computing.dundee.ac.uk (uncle.computing.dundee.ac.uk
+	[134.36.36.11])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 625CBDDDF7
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 25 Jun 2008 01:52:23 +1000 (EST)
-From: "Vince Asbridge" <vasbridge@sanblaze.com>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: Migrating from 2.6.11 to 2.6.23 breaks pci-e with LSI 1068 SAS chip
-Date: Tue, 24 Jun 2008 11:51:29 -0400
-Message-ID: <13c601c8d612$2af82500$4b01a8c0@sanblaze.com>
+	Wed, 25 Jun 2008 05:21:25 +1000 (EST)
+Received: from mailex.computing.dundee.ac.uk (mailex.computing.dundee.ac.uk
+	[134.36.36.15])
+	by uncle.computing.dundee.ac.uk (8.13.1/8.13.1) with ESMTP id
+	m5OJL9HY021034
+	for <linuxppc-embedded@ozlabs.org>; Tue, 24 Jun 2008 20:21:10 +0100
+Message-ID: <48614927.8020406@computing.dundee.ac.uk>
+Date: Tue, 24 Jun 2008 20:21:11 +0100
+From: Peter Mendham <petermendham@computing.dundee.ac.uk>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_NextPart_000_13C7_01C8D5F0.A3E68500"
+To: John Linn <linnj@xilinx.com>
+Subject: Re: Linux on Virtex board with ARCH=powerpc
+References: <4860B81F.6070205@computing.dundee.ac.uk>
+	<20080624140532.E77E333006C@mail5-sin.bigfish.com>
+In-Reply-To: <20080624140532.E77E333006C@mail5-sin.bigfish.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -21,138 +32,190 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+Hi John,
 
-------=_NextPart_000_13C7_01C8D5F0.A3E68500
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Thanks for your reply, that's really helpful.  I'm actually using the 
+mainline kernel, rather than the one from the xilinx git tree, but your 
+information has really moved me on.  My first problem was that the 
+Xilinx utility (from the git tree) for device tree dts generation didn't 
+insert a "linux,stdout-path" node under "chosen".  I spotted that the 
+ml403 example had this, so after adding it I got early console 
+messages.  Everything now grinds to a halt after I get the message "flat 
+tree at 0x40ad60" which is just before it calls the kernel, so I assume 
+it's that call that is killing it.  I have "console=ttyUL0" for my 
+uartlite, so I should be getting messages, shouldn't I?  Do you know 
+where the next execution point is?  Maybe I could find out where it's 
+getting stuck.
 
-All,
+I haven't managed to generate an ACE file, I'm just loading the kernel 
+image from xmd ATM, genace won't play ball for me, it complains about 
+-board user not being valid, it won't even run on the examples copied 
+directly from the user manual.  Anyway, I think genace is a bit OT, and 
+I can manage with xmd for now.
 
-I'm new to this mailing list, but have not had any luck finding information
-on this issue.
+Thanks,
+-- Peter
 
-Please be kind if I break the forum rules on my first post.
+John Linn wrote:
+> Hi Peter,
+>
+> I'm not up on what can be done with the simple image you refer to in 1.
+> I'm sure I should be, but there's a lot to learn.
+>
+> With regards to 2, the elf image, zImage (without the elf extension), is
+> located in arch/powerpc/boot.
+>
+> You can make a SystemACE file from that elf image just as you did in
+> arch/ppc.  We have a default device tree file, ml405.dts, in the
+> arch/powerpc/boot/dts directory for our ml405 board. The kernel
+> configuration has a config, DEVICE_TREE, that specifies the name of the
+> device tree file. I normally compile the device tree into the kernel
+> which is the default build, make ARCH=powerpc zImage. That image does
+> not require a boot loader.
+>
+> I inserted the text below from a document that I have about building the
+> arch/ppc and arch/powerpc kernels.
+>
+> Hope that helps,
+> John
+>
+>
+> Notation
+>
+> The phrase "<ppc or powerpc>" is used throughput the text and means that
+> one or the other, "ppc" or "powerpc" is to be typed depending on the
+> architecture you are building.
+>
+> Commands that are used in a bash shell are preceded by ">".
+>
+> Getting Ready To Build the Kernel
+>
+> This assumes you installed the ELDK tools and assumes you'll be using a
+> bash shell.
+>
+>   
+>> bash
+>> export CROSS_COMPILE=ppc_4xx-
+>>     
+>
+> Setting Up the Kernel Tree
+>
+> If you have previously built this kernel for another architecture, ppc
+> or powerpc, then the tree needs to be setup correctly for the new
+> architecture.  Assuming you have not previously built it, this does not
+> need to be done.
+>
+>   
+>> make ARCH=<ppc or powerpc> mrproper
+>>     
+>
+> Configuring the Kernel
+>
+> The kernel should be configured to run on the ML405 or ML507 board from
+> Xilinx. 
+> 	
+>   
+>> make ARCH=<ppc or powerpc>  ml405_defconfig
+>>     
+>
+> or 
+>
+>   
+>> make ARCH=<ppc or powerpc> ml507_defconfig
+>>     
+>
+> Building the Kernel
+>
+> The following command will build the Linux kernel assuming you are in
+> the root directory of the kernel.  The root directory of the kernel from
+> the Xilinx Git tree is linux-2.6-xlnx. An elf file, zImage.elf, is
+> created in the arch/ppc/boot/images directory for ppc architecture. An
+> elf file, zImage, is created in the the arch/powerpc/boot directory for
+> the powerpc architecture.
+>
+>   
+>> make ARCH=<ppc or powerpc> zImage
+>>     
+> 	
+> Building the Kernel With Ramdisk
+>
+> A ram disk image, a file named *.gz, must be placed into the
+> arch/ppc/boot/images or arch/powerpc/boot directory, depending on the
+> architecture, prior to building the kernel.
+>
+>   
+>> make ARCH=<ppc or powerpc> zImage.initrd
+>>     
+>
+> An elf file, zImage.initrd.elf, is created in arch/ppc/boot/images
+> directory for the ppc architecture. An elf file file, zImage.initrd, is
+> created in arch/powerpc/boot directory for the powerpc architecture.
+>
+> Generating An Ace File
+>
+> The elf file generated for the kernel and the bit stream can be combined
+> to create an ACE file for compact flash.  The following assumes a bash
+> shell where XMD is accessible and a xilinx probe attached to the board
+> for which you are generating an ace file.
+>
+>   
+>> xmd -tcl genace.tcl -jprog -target ppc_hw -hw <bit file name> -elf <elf
+>>     
+> file name> -board <ml405 or ml507> -ace <desired ace file name>
+>
+> -----Original Message-----
+> From: linuxppc-embedded-bounces+john.linn=xilinx.com@ozlabs.org
+> [mailto:linuxppc-embedded-bounces+john.linn=xilinx.com@ozlabs.org] On
+> Behalf Of Peter Mendham
+> Sent: Tuesday, June 24, 2008 3:02 AM
+> To: linuxppc-embedded@ozlabs.org
+> Subject: Linux on Virtex board with ARCH=powerpc
+>
+> Dear all,
+>
+> I'm trying to boot a 2.6.26-rc6 kernel on a custom Virtex 4 board.  I 
+> have used the Xilinx utility to generate a device tree and now want to 
+> generate an image for throwing onto CF for use with a SystemACE (just 
+> like on the the ML3/4xx boards).  I don't want to use a bootloader (I 
+> don't really need one).  I saw something on this list about simpleImage,
+>
+> "simple" sounded good to me so I thought I'd try that (or did I 
+> misinterpret what this is for?).  I also don't want the image to be too 
+> big, I always used to use a zImage under ARCH=ppc. So, two questions, 
+> which hopefully are easy ones:
+> 1. I did what Grant said in a post to this list about simpleImage, and 
+> dumped my dts into arch/powerpc/boot/dts and I called it system.dts (for
+>
+> now).  I then tried to do make simpleImage.system which ran right 
+> through to final link then moaned about a missing simpleboot-system.  
+> Where is this supposed to come from?  What am I doing wrong?  I naively 
+> tried copying simpleboot.o to simpleboot-system.o and the error went 
+> away.  Hmm.
+> 2. I need an ELF to give to my SystemACE file generator.  This used to 
+> pop up in arch/ppc/boot/images and be called zImage.elf, which made 
+> sense to me.  What's the deal now with powerpc?  What should I be using?
+> Finally, can anyone give me a heads-up on any gotchas with what I'm 
+> trying to do.  As you can tell, I don't entirely know what I'm doing, so
+>
+> any pointers would be gratefully received.
+>
+> Thanks,
+> -- Peter
+>
+>
+> The University of Dundee is a Scottish Registered Charity, No. SC015096.
+>
+>
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>
+>
+> This email and any attachments are intended for the sole use of the named recipient(s) and contain(s) confidential information that may be proprietary, privileged or copyrighted under applicable law. If you are not the intended recipient, do not read, copy, or forward this email message or any attachments. Delete this email message and any attachments immediately.
+>
+>
+>   
 
-We recently tried to upgrade our Freescale CDS 8548 look-alike module (code
-name ATCA1000) from the 2.6.11 based BSP to the 2.6.23 based BSP.
 
-The upgrade went fairly smoothly, until we tried using SOME pci-e devices
-(some work fine, some don't show up to lspci).
-
-LSI pci-e controllers no longer show up at all!
-
-We see the ixgbe (intel 10G), SiliconImage SATA controller but do not see
-LSI devices (Specifically 1068 SAS, FC949-E fibrechannel).
-
-We're guessing it's a resource issue behind the bridge, because the LSI
-devices try to allocate 1 - 3M behind the bridge, but we can't find the bug,
-or where we would debug such an issue.
-
-The devices seem to "train" correctly, because we have an LED on the pci-e
-switch (PLX 8 port pci-e switch), and it's ON indicating pci-e link between
-the bridge and the 1068 device).
-
-We're totally at a loss as to why this always worked on the 2.6.11 kernel
-but doesn't work on 2.6.23.
-
-Using lspci, the LSI adapters do not show up in the list at all, as though
-they are not plugged into the system.
-
-Is there something that needs to be done with respect to PCI-E devices that
-is new in the 2.6.23 based BSP that did not need to be done in the 2.6.11
-based kit?  For example, are pci resources allocated by a different piece of
-code, that may have some issue allocating resources for the LSI adapters?
-
-I currently do not have access to a pci-e analyzer.
-
-Thanks for any help,
-Vince Asbridge
-
-
-
-------=_NextPart_000_13C7_01C8D5F0.A3E68500
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
-<HTML>
-<HEAD>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Dus-ascii">
-<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
-6.5.7036.0">
-<TITLE>Migrating from 2.6.11 to 2.6.23 breaks pci-e with LSI 1068 SAS =
-chip</TITLE>
-</HEAD>
-<BODY>
-<!-- Converted from text/rtf format -->
-
-<P><FONT SIZE=3D2 FACE=3D"Arial">All,</FONT>
-</P>
-
-<P><FONT SIZE=3D2 FACE=3D"Arial">I'm new to this mailing list, but have =
-not had any luck finding information on this issue.</FONT>
-</P>
-
-<P><FONT SIZE=3D2 FACE=3D"Arial">Please be kind if I break the forum =
-rules on my first post.</FONT>
-</P>
-
-<P><FONT SIZE=3D2 FACE=3D"Arial">We recently tried to upgrade our =
-Freescale CDS 8548 look-alike module (code name ATCA1000) from the =
-2.6.11 based BSP to the 2.6.23 based BSP.</FONT></P>
-
-<P><FONT SIZE=3D2 FACE=3D"Arial">The upgrade went fairly smoothly, until =
-we tried using SOME pci-e devices (some work fine, some don't show up to =
-lspci).</FONT></P>
-
-<P><FONT SIZE=3D2 FACE=3D"Arial">LSI pci-e controllers no longer show up =
-at all!</FONT>
-</P>
-
-<P><FONT SIZE=3D2 FACE=3D"Arial">We see the ixgbe (intel 10G), =
-SiliconImage SATA controller but do not see LSI devices (Specifically =
-1068 SAS, FC949-E fibrechannel).</FONT></P>
-
-<P><FONT SIZE=3D2 FACE=3D"Arial">We're guessing it's a resource issue =
-behind the bridge, because the LSI devices try to allocate 1 - 3M behind =
-the bridge, but we can't find the bug, or where we would debug such an =
-issue.</FONT></P>
-
-<P><FONT SIZE=3D2 FACE=3D"Arial">The devices seem to &quot;train&quot; =
-correctly, because we have an LED on the pci-e switch (PLX 8 port pci-e =
-switch), and it's ON indicating pci-e link between the bridge and the =
-1068 device).</FONT></P>
-
-<P><FONT SIZE=3D2 FACE=3D"Arial">We're totally at a loss as to why this =
-always worked on the 2.6.11 kernel but doesn&#8217;t work on =
-2.6.23.</FONT>
-</P>
-
-<P><FONT SIZE=3D2 FACE=3D"Arial">Using lspci, the LSI adapters do not =
-show up in the list at all, as though they are not plugged into the =
-system.</FONT>
-</P>
-
-<P><FONT SIZE=3D2 FACE=3D"Arial">Is there something that needs to be =
-done with respect to PCI-E devices that is new in the 2.6.23 based BSP =
-that did not need to be done in the 2.6.11 based kit?&nbsp; For example, =
-are pci resources allocated by a different piece of code, that may have =
-some issue allocating resources for the LSI adapters?</FONT></P>
-
-<P><FONT SIZE=3D2 FACE=3D"Arial">I currently do not have access to a =
-pci-e analyzer.</FONT>
-</P>
-
-<P><FONT SIZE=3D2 FACE=3D"Arial">Thanks for any help,</FONT>
-
-<BR><FONT SIZE=3D2 FACE=3D"Arial">Vince Asbridge</FONT>
-</P>
-<BR>
-
-</BODY>
-</HTML>
-------=_NextPart_000_13C7_01C8D5F0.A3E68500--
+The University of Dundee is a Scottish Registered Charity, No. SC015096.
