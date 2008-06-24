@@ -1,32 +1,23 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	by ozlabs.org (Postfix) with ESMTP id B43A3DDF1E
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Jun 2008 15:54:32 +1000 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1KB1U4-0008Fs-42
-	for linuxppc-dev@ozlabs.org; Mon, 23 Jun 2008 22:54:28 -0700
-Message-ID: <18084260.post@talk.nabble.com>
-Date: Mon, 23 Jun 2008 22:54:28 -0700 (PDT)
-From: jumpingProgrammer <rabbitzp@163.com>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: Using DMA interrupt on MPC8313
-In-Reply-To: <329782.75894.qm@web83515.mail.sp1.yahoo.com>
+Return-Path: <jacmet@gmail.com>
+Received: from ik-out-1112.google.com (ik-out-1112.google.com [66.249.90.178])
+	by ozlabs.org (Postfix) with ESMTP id 4FC1DDDE24
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Jun 2008 16:46:12 +1000 (EST)
+Received: by ik-out-1112.google.com with SMTP id c21so1799627ika.1
+	for <linuxppc-dev@ozlabs.org>; Mon, 23 Jun 2008 23:46:10 -0700 (PDT)
+To: John Linn <John.Linn@xilinx.com>
+Subject: Re: [PATCH] [RFC] powerpc: Xilinx: adding virtex5 powerpc 440 support
+References: <20080623162856.D5FA41CA806C@mail66-dub.bigfish.com>
+	<20080623150846.40d65f08@zod.rchland.ibm.com>
+	<20080623213038.490C110B806B@mail11-dub.bigfish.com>
+From: Peter Korsgaard <jacmet@sunsite.dk>
+Date: Tue, 24 Jun 2008 08:46:05 +0200
+In-Reply-To: <20080623213038.490C110B806B@mail11-dub.bigfish.com> (John Linn's
+	message of "Mon\, 23 Jun 2008 15\:30\:35 -0600")
+Message-ID: <87d4m79vpu.fsf@macbook.be.48ers.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-References: <937773.70026.qm@web83508.mail.sp1.yahoo.com>
-	<038420D9-89B1-41B4-8941-CF12CD7F4D61@kernel.crashing.org>
-	<85644.91618.qm@web83508.mail.sp1.yahoo.com>
-	<4D6BC3F2-C43D-4317-B0BE-AF0A551E6CF1@kernel.crashing.org>
-	<973175.42029.qm@web83503.mail.sp1.yahoo.com>
-	<094E5361-18FC-47D7-BB7C-8A8AF89DBEC1@kernel.crashing.org>
-	<470944.9117.qm@web83514.mail.sp1.yahoo.com>
-	<2FCBCE91-8B77-4E78-A7F9-D4128980814F@kernel.crashing.org>
-	<101441.49932.qm@web83508.mail.sp1.yahoo.com>
-	<4856A3CA.4010905@freescale.com>
-	<788575.91210.qm@web83508.mail.sp1.yahoo.com>
-	<4856B3B4.9020206@freescale.com>
-	<329782.75894.qm@web83515.mail.sp1.yahoo.com>
+Sender: Peter Korsgaard <jacmet@gmail.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,56 +27,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+>>>>> "John" == John Linn <John.Linn@xilinx.com> writes:
 
-I use this in 8313erdb.dts, but can not find DMA info in
-/proc/interrupts.why?
+Hi John,
 
-dma@8030 { 
-			#address-cells = <1>; 
-			#size-cells = <1>; 
-			compatible = "fsl,elo-dma"; 
-			cell-index = <0>; 
-			reg = <8030 2d0>; /* DMA general status register */ 
-			ranges = <0 8100 200>; 
+ >>> +config PPC_FPU
+ >>> +	depends on XILINX_VIRTEX_5_FXT
+ >>> +	bool "Enable Xilinx Soft FPU"
+ >>> +	help
+ >>> +	  This option enables the Xilinx Soft FPU attached to the APU
+ >>> +	  interface of the PPC440 (requires DP_FULL FPU pcore).
+ >> 
+ >> There is already a PPC_FPU option in platforms/Kconfig.cputype
 
-			dma-channel@0 { 
-				compatible = "fsl,elo-dma-channel"; 
-				cell-index = <0>; 
-				reg = <0 80>; 
-				interrupt-parent = <700>; 
-				interrupts = <47 8>; 
-			}; 
-			dma-channel@1 { 
-				compatible = "fsl,elo-dma-channel"; 
-				cell-index = <1>; 
-				reg = <80 80>; 
-				interrupt-parent = <700>; 
-				interrupts = <47 8>; 
-			}; 
-			dma-channel@2 { 
-				compatible = "fsl,elo-dma-channel"; 
-				cell-index = <2>; 
-				reg = <100 80>; 
-				interrupt-parent = <700>; 
-				interrupts = <47 8>; 
-			}; 
-			dma-channel@3 { 
-				compatible = "fsl,elo-dma-channel"; 
-				cell-index = <3>; 
-				reg = <180 80>; 
-				interrupt-parent = <700>; 
-				interrupts = <47 8>; 
-			};
-		}
-
-
-_______________________________________________
-Linuxppc-dev mailing list
-Linuxppc-dev@ozlabs.org
-https://ozlabs.org/mailman/listinfo/linuxppc-dev
-
-
+Is the Xilinx soft FPU compatible with the normal powerpc FPU?
 
 -- 
-View this message in context: http://www.nabble.com/Using-DMA-interrupt-on-MPC8313-tp17808164p18084260.html
-Sent from the linuxppc-dev mailing list archive at Nabble.com.
+Bye, Peter Korsgaard
