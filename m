@@ -1,18 +1,15 @@
-Return-Path: <John.Linn@xilinx.com>
-Received: from WA4EHSOBE005.bigfish.com (outbound-wa4.frontbridge.com
-	[216.32.181.16]) by ozlabs.org (Postfix) with ESMTP id 49EF5DDFD5
-	for <linuxppc-dev@ozlabs.org>; Wed, 25 Jun 2008 07:07:57 +1000 (EST)
+Return-Path: <miteshnet@hotmail.com>
+Received: from bay0-omc1-s6.bay0.hotmail.com (bay0-omc1-s6.bay0.hotmail.com
+	[65.54.246.78]) by ozlabs.org (Postfix) with ESMTP id A5743DE040
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Jun 2008 07:13:02 +1000 (EST)
+Message-ID: <BAY124-DS415CCF7A303D59AD03437BEA10@phx.gbl>
+From: "Mitesh" <miteshnet@hotmail.com>
+To: <linuxppc-dev@ozlabs.org>
+Subject: Exit points for returning from kernel mode to user mode
+Date: Tue, 24 Jun 2008 15:22:01 -0600
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Subject: RE: [PATCH] [RFC] powerpc: Xilinx: adding virtex5 powerpc 440 support
-Date: Tue, 24 Jun 2008 15:07:48 -0600
-In-Reply-To: <20080623213556.3378316a@zod.rchland.ibm.com>
-References: <20080623162856.D5FA41CA806C@mail66-dub.bigfish.com><20080623150846.40d65f08@zod.rchland.ibm.com><20080623213038.490C110B806B@mail11-dub.bigfish.com>
-	<20080623213556.3378316a@zod.rchland.ibm.com>
-From: John Linn <John.Linn@xilinx.com>
-To: "Grant Likely" <grant.likely@secretlab.ca>
-Message-ID: <20080624210750.A21E314006F@mail88-wa4.bigfish.com>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_0144_01C8D60E.0CDD8730"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,92 +19,65 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Grant,
+This is a multi-part message in MIME format.
 
-It appears that you designed the simpleImage around Xilinx FPGAs.
+------=_NextPart_000_0144_01C8D60E.0CDD8730
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-Since we have to initialize the 16550 UART in the bootstrap and there's
-no boot loader, were you thinking we would add the 16550 initialization
-to simpleboot.c?
+ I am trying to understand exit points from kernel mode to user mode. I =
+believe this happens when the scheduler is invoked, there are =
+interrupts, exceptions, or the kernel is executing system call in =
+process context.=20
 
-Why do we want a flat binary rather than an elf file for the target?
+Is there a single function which is called in the ppc kernel when the =
+mode is switched back to user mode ?=20
 
-Thanks,
-John
+I have linux 2.6.16.21 kernel running on a 4-way p550 IBM pSeries with =
+POWER5 processors. Everytime before a process begins executing in user =
+mode I want to execute a special SMT thread priority assembler =
+instruction.=20
 
->From Grant's commit:
+What code files should I be looking at, is there one place this can be =
+done? Any tips are appreciated.
+------=_NextPart_000_0144_01C8D60E.0CDD8730
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-This target produces a flat binary rather than an ELF file,
-fixes the entry point at the beginning of the image, and takes
-a complete device tree with no fixups needed.
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=3DContent-Type =
+content=3Dtext/html;charset=3Diso-8859-1>
+<META content=3D"MSHTML 6.00.6000.16674" name=3DGENERATOR></HEAD>
+<BODY id=3DMailContainerBody=20
+style=3D"PADDING-RIGHT: 10px; PADDING-LEFT: 10px; PADDING-TOP: 15px"=20
+bgColor=3D#ffffff leftMargin=3D0 topMargin=3D0 CanvasTabStop=3D"true"=20
+name=3D"Compose message area">
+<DIV><FONT face=3DArial size=3D2>&nbsp;I am trying to understand exit =
+points from=20
+kernel mode to user mode. I believe this happens when the scheduler is =
+invoked,=20
+there are interrupts, exceptions, or the kernel is executing system call =
+in=20
+process context.=20
+<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2>Is there a single function which is =
+called in the=20
+ppc kernel when the mode is switched back to user mode ? </FONT></DIV>
+<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2>I have linux 2.6.16.21 kernel running =
+on&nbsp;a=20
+4-way p550 IBM pSeries with POWER5 processors. Everytime before a =
+process begins=20
+executing in user mode I want to&nbsp;execute a special SMT thread =
+priority=20
+assembler instruction. </FONT></DIV>
+<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2>What code files should I be looking at, =
+is there=20
+one place this can be done? Any tips are=20
+appreciated.</FONT></DIV></FONT></DIV></BODY></HTML>
 
------Original Message-----
-From: Josh Boyer [mailto:jwboyer@linux.vnet.ibm.com] =
-
-Sent: Monday, June 23, 2008 7:36 PM
-To: John Linn
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] [RFC] powerpc: Xilinx: adding virtex5 powerpc 440
-support
-
-On Mon, 23 Jun 2008 15:30:35 -0600
-John Linn <John.Linn@xilinx.com> wrote:
-
-> >> + *
-> >> + * Copyright 2007 IBM Corporation
-> >> + *   Based on cuboot-83xx.c, which is:
-> >> + * Copyright (c) 2007 Freescale Semiconductor, Inc.
-> >> + *
-> >> + * This program is free software; you can redistribute it and/or
-> modify
-> >> it
-> >> + * under the terms of the GNU General Public License version 2 as
-> >> published
-> >> + * by the Free Software Foundation.
-> >> + */
-> >> +
-> >> +#include <stddef.h>
-> >> +#include <stdio.h>
-> >> +#include "ops.h"
-> >> +#include "dcr.h"
-> >> +#include "4xx.h"
-> >> +#include "io.h"
-> >> +#include "reg.h"
-> >> +
-> >> +BSS_STACK(4096);
-> >> +
-> >> +#include "types.h"
-> >> +#include "gunzip_util.h"
-> >> +#include <libfdt.h>
-> >> +#include "../../../include/linux/autoconf.h"
-> >
-> >Ew.  We've never included the CONFIG_ variables from Kconfig in the
-> >bootwrapper.  It's supposed to be independent of the kernel.
-> >
-> =
-
-> I'll try to better understand if we can detect the compressed device
-> tree and if we really have to disable the APU.
-> =
-
-> What's the reasoning for being independent of the kernel, maybe it's
-> obvious to everyone but me?
-
-The intention, as I understand it, is that the wrapper utilities can be
-installed stand-alone and used to wrap other kernels if needs be.  In
-practice I've not seen this happen yet, as most PowerPC kernels
-are built directly from the kernel source.  Fedora does have a
-separate package for the wrapper bits, but I'm not entirely sure it's
-used.
-
-My understanding could be totally wrong, and if so I'll politely ask
-Paul or anyone else to hit me with a cluebat :).
-
-josh
-
-
-This email and any attachments are intended for the sole use of the named r=
-ecipient(s) and contain(s) confidential information that may be proprietary=
-, privileged or copyrighted under applicable law. If you are not the intend=
-ed recipient, do not read, copy, or forward this email message or any attac=
-hments. Delete this email message and any attachments immediately.
+------=_NextPart_000_0144_01C8D60E.0CDD8730--
