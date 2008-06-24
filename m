@@ -1,22 +1,11 @@
-Return-Path: <dhowells@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [66.187.233.31])
-	by ozlabs.org (Postfix) with ESMTP id 541CCDDEF1
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Jun 2008 20:24:44 +1000 (EST)
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20080623174809.GE4756@cs181140183.pp.htv.fi>
-References: <20080623174809.GE4756@cs181140183.pp.htv.fi>
-To: Adrian Bunk <bunk@kernel.org>
-Subject: Re: [2.6 patch] asm/ptrace.h userspace headers cleanup
-Date: Tue, 24 Jun 2008 11:23:48 +0100
-Message-ID: <8058.1214303028@redhat.com>
-Sender: dhowells@redhat.com
-Cc: chris@zankel.net, cooloney@kernel.org, ysato@users.sourceforge.jp,
-	linux-parisc@vger.kernel.org, linux-sh@vger.kernel.org,
-	dev-etrax@axis.com, linux-mips@linux-mips.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	paulus@samba.org, Roland McGrath <roland@redhat.com>,
-	gerg@uclinux.org, Andrew Morton <akpm@linux-foundation.org>,
-	yasutake.koichi@jp.panasonic.com, rmk@arm.linux.org.uk
+Return-Path: <mikey@neuling.org>
+To: Paul Mackerras <paulus@samba.org>
+From: Michael Neuling <mikey@neuling.org>
+Date: Tue, 24 Jun 2008 20:57:49 +1000
+Subject: [PATCH 0/9] powerpc: Add kernel support for POWER7 VSX. 
+In-Reply-To: <1214206687.690380.817887322840.qpush@coopers>
+Message-Id: <1214305069.538931.136638600960.qpush@coopers>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,18 +15,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Adrian Bunk <bunk@kernel.org> wrote:
+The following set of patches adds Vector Scalar Extentions (VSX)
+support for POWER7.  Includes context switch, ptrace and signals support.
 
-> This patch contains the following cleanups for the asm/ptrace.h 
-> userspace headers:
-> - include/asm-generic/Kbuild.asm already lists ptrace.h, remove
->   the superfluous listings in the Kbuild files of the following
->   architectures:
-> ...
->   - frv
-> ...
-> - don't expose function prototypes and macros to userspace:
-> ...
->   - mn10300
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+--- 
+Paulus: please consider for your 2.6.27 tree.
 
-Acked-by: David Howells <dhowells@redhat.com> (FRV and MN10300)
+Updates this post....
+- Comment on VMX vs SPE as suggested by Kumar.
+- Fixes for core files
