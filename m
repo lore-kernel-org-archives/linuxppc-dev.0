@@ -1,20 +1,21 @@
-Return-Path: <adrian@rhlx01.hs-esslingen.de>
-Received: from rhlx01.hs-esslingen.de (rhlx01.hs-esslingen.de [129.143.116.10])
+Return-Path: <jdl@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "rhlx01.hs-esslingen.de", Issuer "HE CA - G02" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 9B3F8DE0DB
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Jun 2008 22:29:35 +1000 (EST)
-Date: Tue, 24 Jun 2008 14:29:29 +0200
-From: Adrian Reber <adrian@lisas.de>
-To: Jeremy Kerr <jk@ozlabs.org>,
-	Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: starting with 2.6.26-rc1 cell_defconfig fails on QS22
-Message-ID: <20080624122929.GA10666@lisas.de>
-References: <20080623094539.GA16685@lisas.de>
-	<200806240945.33255.jk@ozlabs.org>
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id B7AE0DE093
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Jun 2008 23:26:17 +1000 (EST)
+Message-ID: <4860F5E8.1060609@freescale.com>
+Date: Tue, 24 Jun 2008 08:26:00 -0500
+From: Jon Loeliger <jdl@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200806240945.33255.jk@ozlabs.org>
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [PATCH 02/14] powerpc: Allow create_branch() to return errors
+References: <fd46b7fc5f4785affb58f1de2b85a63b154e0de8.1214271072.git.michael@ellerman.id.au>
+	<bda40d2750deae8e742dc9d115a6aab4843701ee.1214271072.git.michael@ellerman.id.au>
+In-Reply-To: <bda40d2750deae8e742dc9d115a6aab4843701ee.1214271072.git.michael@ellerman.id.au>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -25,24 +26,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Jun 24, 2008 at 09:45:32AM +1000, Jeremy Kerr wrote:
-> > Somehow I expect that I am doing something wrong, because nobody else
-> > has reported something like this yet.
+Michael Ellerman wrote:
+> Currently create_branch() creates a branch instruction for you, and patches
+> it into the call site. In some circumstances it would be nice to be able to
+> create the instruction and patch it later, and also some code might want
+> to check for errors in the branch creation before doing the patching. A
+> future patch will change create_branch() to check for errors.
 > 
-> Seems to work fine here - just booted 945754a on a QS22 with 
-> cell_defconfig:
+> For callers that don't care, replace create_branch() with patch_branch(),
+> which just creates the branch and patches it directly.
 > 
-> [jk@qs22 ~]$ cat /proc/version
-> Linux version 2.6.26-rc7-09992-g945754a (jk@build) (gcc version 4.1.3 
-> 20080114 (prerelease) (Debian 4.1.2-19)) #154 SMP Tue Jun 24 09:32:59 
-> EST 2008
+> While we're touching all the callers, change to using unsigned int *, as
+> this seems to match usage better. That allows (and requires) us to remove
+> the volatile in the definition of vector in powermac/smp.c and mpc86xx_smp.c,
+> that's correct because now that we're passing vector as an unsigned int *
+> the compiler knows that it's value might change across the patch_branch()
+> call.
 > 
-> Reverting that commit definitely fixes the problem for you? Perhaps a 
-> binutils problem then?
+> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+> ---
 
-D'oh. I spent so much time and the solution is so easy.
+86xx bits...
 
-Thanks everybody. I have updated to binutils-2.18.50.0.6-2.ppc and now
-it works again on QS22 and JS21.
-
-		Adrian
+Acked-by: Jon Loeliger <jdl@freescale.com>
