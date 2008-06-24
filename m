@@ -1,26 +1,32 @@
-Return-Path: <grundler@lackof.org>
-Received: from colo.lackof.org (colo.lackof.org [198.49.126.79])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.lackof.org",
-	Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id CE6AFDDF01
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Jun 2008 15:47:53 +1000 (EST)
-Date: Mon, 23 Jun 2008 23:18:26 -0600
-From: Grant Grundler <grundler@parisc-linux.org>
-To: Adrian Bunk <bunk@kernel.org>
-Subject: Re: [2.6 patch] asm/ptrace.h userspace headers cleanup
-Message-ID: <20080624051826.GC19434@colo.lackof.org>
-References: <20080623174809.GE4756@cs181140183.pp.htv.fi>
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	by ozlabs.org (Postfix) with ESMTP id B43A3DDF1E
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Jun 2008 15:54:32 +1000 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1KB1U4-0008Fs-42
+	for linuxppc-dev@ozlabs.org; Mon, 23 Jun 2008 22:54:28 -0700
+Message-ID: <18084260.post@talk.nabble.com>
+Date: Mon, 23 Jun 2008 22:54:28 -0700 (PDT)
+From: jumpingProgrammer <rabbitzp@163.com>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: Using DMA interrupt on MPC8313
+In-Reply-To: <329782.75894.qm@web83515.mail.sp1.yahoo.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080623174809.GE4756@cs181140183.pp.htv.fi>
-Cc: chris@zankel.net, dev-etrax@axis.com, ysato@users.sourceforge.jp,
-	linux-parisc@vger.kernel.org, linux-sh@vger.kernel.org,
-	linux-mips@linux-mips.org, cooloney@kernel.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	paulus@samba.org, Roland McGrath <roland@redhat.com>,
-	gerg@uclinux.org, Andrew Morton <akpm@linux-foundation.org>,
-	yasutake.koichi@jp.panasonic.com, rmk@arm.linux.org.uk
+References: <937773.70026.qm@web83508.mail.sp1.yahoo.com>
+	<038420D9-89B1-41B4-8941-CF12CD7F4D61@kernel.crashing.org>
+	<85644.91618.qm@web83508.mail.sp1.yahoo.com>
+	<4D6BC3F2-C43D-4317-B0BE-AF0A551E6CF1@kernel.crashing.org>
+	<973175.42029.qm@web83503.mail.sp1.yahoo.com>
+	<094E5361-18FC-47D7-BB7C-8A8AF89DBEC1@kernel.crashing.org>
+	<470944.9117.qm@web83514.mail.sp1.yahoo.com>
+	<2FCBCE91-8B77-4E78-A7F9-D4128980814F@kernel.crashing.org>
+	<101441.49932.qm@web83508.mail.sp1.yahoo.com>
+	<4856A3CA.4010905@freescale.com>
+	<788575.91210.qm@web83508.mail.sp1.yahoo.com>
+	<4856B3B4.9020206@freescale.com>
+	<329782.75894.qm@web83515.mail.sp1.yahoo.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,47 +36,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Jun 23, 2008 at 08:48:09PM +0300, Adrian Bunk wrote:
-> This patch contains the following cleanups for the asm/ptrace.h 
-> userspace headers:
-> - include/asm-generic/Kbuild.asm already lists ptrace.h, remove
->   the superfluous listings in the Kbuild files of the following
->   architectures:
->   - cris
->   - frv
->   - powerpc
->   - x86
-> - don't expose function prototypes and macros to userspace:
->   - arm
->   - blackfin
->   - cris
->   - mn10300
->   - parisc
-...
-> diff --git a/include/asm-parisc/ptrace.h b/include/asm-parisc/ptrace.h
-> index 93f990e..3e94c5d 100644
-> --- a/include/asm-parisc/ptrace.h
-> +++ b/include/asm-parisc/ptrace.h
-> @@ -33,7 +33,6 @@ struct pt_regs {
->  	unsigned long ipsw;	/* CR22 */
->  };
->  
-> -#define task_regs(task) ((struct pt_regs *) ((char *)(task) + TASK_REGS))
->  /*
->   * The numbers chosen here are somewhat arbitrary but absolutely MUST
->   * not overlap with any of the number assigned in <linux/ptrace.h>.
-> @@ -43,8 +42,11 @@ struct pt_regs {
->   * since we have taken branch traps too)
->   */
->  #define PTRACE_SINGLEBLOCK	12	/* resume execution until next branch */
-> +
->  #ifdef __KERNEL__
->  
-> +#define task_regs(task) ((struct pt_regs *) ((char *)(task) + TASK_REGS))
-> +
->  /* XXX should we use iaoq[1] or iaoq[0] ? */
->  #define user_mode(regs)			(((regs)->iaoq[0] & 3) ? 1 : 0)
->  #define user_space(regs)		(((regs)->iasq[1] != 0) ? 1 : 0)
 
-Looks fine to me.
-Acked-by: Grant Grundler <grundler@parisc-linux.org>
+I use this in 8313erdb.dts, but can not find DMA info in
+/proc/interrupts.why?
+
+dma@8030 { 
+			#address-cells = <1>; 
+			#size-cells = <1>; 
+			compatible = "fsl,elo-dma"; 
+			cell-index = <0>; 
+			reg = <8030 2d0>; /* DMA general status register */ 
+			ranges = <0 8100 200>; 
+
+			dma-channel@0 { 
+				compatible = "fsl,elo-dma-channel"; 
+				cell-index = <0>; 
+				reg = <0 80>; 
+				interrupt-parent = <700>; 
+				interrupts = <47 8>; 
+			}; 
+			dma-channel@1 { 
+				compatible = "fsl,elo-dma-channel"; 
+				cell-index = <1>; 
+				reg = <80 80>; 
+				interrupt-parent = <700>; 
+				interrupts = <47 8>; 
+			}; 
+			dma-channel@2 { 
+				compatible = "fsl,elo-dma-channel"; 
+				cell-index = <2>; 
+				reg = <100 80>; 
+				interrupt-parent = <700>; 
+				interrupts = <47 8>; 
+			}; 
+			dma-channel@3 { 
+				compatible = "fsl,elo-dma-channel"; 
+				cell-index = <3>; 
+				reg = <180 80>; 
+				interrupt-parent = <700>; 
+				interrupts = <47 8>; 
+			};
+		}
+
+
+_______________________________________________
+Linuxppc-dev mailing list
+Linuxppc-dev@ozlabs.org
+https://ozlabs.org/mailman/listinfo/linuxppc-dev
+
+
+
+-- 
+View this message in context: http://www.nabble.com/Using-DMA-interrupt-on-MPC8313-tp17808164p18084260.html
+Sent from the linuxppc-dev mailing list archive at Nabble.com.
