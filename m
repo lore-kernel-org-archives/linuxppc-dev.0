@@ -1,12 +1,10 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Tue, 24 Jun 2008 11:21:44 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Jon Loeliger <jdl@freescale.com>
-Subject: dtc: Testcase for /include/ directive
-Message-ID: <20080624012144.GB1236@yookeroo.seuss>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <michael@ozlabs.org>
+To: <linuxppc-dev@ozlabs.org>
+Message-Id: <fd46b7fc5f4785affb58f1de2b85a63b154e0de8.1214271072.git.michael@ellerman.id.au>
+From: Michael Ellerman <michael@ellerman.id.au>
+Subject: [PATCH 01/14] powerpc: Move code patching code into
+	arch/powerpc/lib/code-patching.c
+Date: Tue, 24 Jun 2008 11:32:21 +1000 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,115 +14,205 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch adds a testcase for the /include/ directive.  It assembles
-a sample dts file with many /include/ directives at a variety of
-different lexical / grammatical contexts.
+We currently have a few routines for patching code in asm/system.h, because
+they didn't fit anywhere else. I'd like to clean them up a little and add
+some more, so first move them into a dedicated C file - they don't need to
+be inlined.
 
-Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+While we're moving the code, drop create_function_call(), it's intended
+caller never got merged and will be replaced in future with something
+different.
 
-Index: dtc/tests/include0.dts
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ dtc/tests/include0.dts	2008-06-24 11:19:42.000000000 +1000
-@@ -0,0 +1 @@
-+/include/ "include1.dts"
-Index: dtc/tests/include1.dts
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ dtc/tests/include1.dts	2008-06-24 11:19:42.000000000 +1000
-@@ -0,0 +1,23 @@
-+/dts-v1/;
-+
-+/include/ "include2.dts"
-+/memreserve/ /include/ "include3.dts";
-+
-+/ {
-+	/include/ "include4.dts"
-+	/include/ "include5.dts" = <0xdeadbeef>;
-+	prop-str = /include/ "include6.dts";
-+
-+	/include/ "include7.dts"
-+
-+	subnode@2 {
-+		linux,phandle = <0x2000>;
-+		prop-int = <123456789>;
-+
-+		/include/ "include8.dts"
-+			linux,phandle = <0x2001>;
-+			compatible = "subsubnode2", "subsubnode";
-+			prop-int = <0726746425>;
-+		};
-+	};
-+};
-Index: dtc/tests/include2.dts
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ dtc/tests/include2.dts	2008-06-24 11:19:42.000000000 +1000
-@@ -0,0 +1 @@
-+/memreserve/ 0xdeadbeef00000000 0x100000;
-Index: dtc/tests/include3.dts
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ dtc/tests/include3.dts	2008-06-24 11:19:42.000000000 +1000
-@@ -0,0 +1 @@
-+123456789 010000
-Index: dtc/tests/include4.dts
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ dtc/tests/include4.dts	2008-06-24 11:19:42.000000000 +1000
-@@ -0,0 +1 @@
-+	compatible = "test_tree1";
-Index: dtc/tests/include5.dts
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ dtc/tests/include5.dts	2008-06-24 11:19:42.000000000 +1000
-@@ -0,0 +1 @@
-+prop-int
-Index: dtc/tests/include6.dts
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ dtc/tests/include6.dts	2008-06-24 11:19:42.000000000 +1000
-@@ -0,0 +1 @@
-+"hello world"
-Index: dtc/tests/include7.dts
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ dtc/tests/include7.dts	2008-06-24 11:19:42.000000000 +1000
-@@ -0,0 +1,9 @@
-+	subnode@1 {
-+		compatible = "subnode1";
-+		prop-int = [deadbeef];
-+
-+		subsubnode {
-+			compatible = "subsubnode1", "subsubnode";
-+			prop-int = <0xdeadbeef>;
-+		};
-+	};
-Index: dtc/tests/include8.dts
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ dtc/tests/include8.dts	2008-06-24 11:19:42.000000000 +1000
-@@ -0,0 +1 @@
-+subsubnode@0 {
-\ No newline at end of file
-Index: dtc/tests/run_tests.sh
-===================================================================
---- dtc.orig/tests/run_tests.sh	2008-06-24 11:19:07.000000000 +1000
-+++ dtc/tests/run_tests.sh	2008-06-24 11:19:42.000000000 +1000
-@@ -207,6 +207,10 @@
-     run_dtc_test -I dts -O dtb -o dtc_comments-cmp.test.dtb comments-cmp.dts
-     run_test dtbs_equal_ordered dtc_comments.test.dtb dtc_comments-cmp.test.dtb
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+---
+
+This series is also in my git tree:
+http://git.kernel.org/?p=linux/kernel/git/mpe/linux-2.6.git
+
+
+ arch/powerpc/kernel/crash_dump.c          |    1 +
+ arch/powerpc/lib/Makefile                 |    2 +
+ arch/powerpc/lib/code-patching.c          |   33 ++++++++++++++++++++
+ arch/powerpc/platforms/86xx/mpc86xx_smp.c |    1 +
+ arch/powerpc/platforms/powermac/smp.c     |    1 +
+ include/asm-powerpc/code-patching.h       |   25 +++++++++++++++
+ include/asm-powerpc/system.h              |   48 -----------------------------
+ 7 files changed, 63 insertions(+), 48 deletions(-)
+
+diff --git a/arch/powerpc/kernel/crash_dump.c b/arch/powerpc/kernel/crash_dump.c
+index 9ee3c52..35b9a66 100644
+--- a/arch/powerpc/kernel/crash_dump.c
++++ b/arch/powerpc/kernel/crash_dump.c
+@@ -14,6 +14,7 @@
+ #include <linux/crash_dump.h>
+ #include <linux/bootmem.h>
+ #include <linux/lmb.h>
++#include <asm/code-patching.h>
+ #include <asm/kdump.h>
+ #include <asm/prom.h>
+ #include <asm/firmware.h>
+diff --git a/arch/powerpc/lib/Makefile b/arch/powerpc/lib/Makefile
+index c71d37d..305c7df 100644
+--- a/arch/powerpc/lib/Makefile
++++ b/arch/powerpc/lib/Makefile
+@@ -24,3 +24,5 @@ obj-$(CONFIG_SMP)	+= locks.o
+ endif
  
-+    # Check /include/ directive
-+    run_dtc_test -I dts -O dtb -o includes.test.dtb include0.dts
-+    run_test dtbs_equal_ordered includes.test.dtb test_tree1.dtb
+ obj-$(CONFIG_PPC_LIB_RHEAP) += rheap.o
 +
-     # Check /incbin/ directive
-     run_dtc_test -I dts -O dtb -o incbin.test.dtb incbin.dts
-     run_test incbin incbin.test.dtb
-
++obj-y			+= code-patching.o
+diff --git a/arch/powerpc/lib/code-patching.c b/arch/powerpc/lib/code-patching.c
+new file mode 100644
+index 0000000..7afae88
+--- /dev/null
++++ b/arch/powerpc/lib/code-patching.c
+@@ -0,0 +1,33 @@
++/*
++ *  Copyright 2008 Michael Ellerman, IBM Corporation.
++ *
++ *  This program is free software; you can redistribute it and/or
++ *  modify it under the terms of the GNU General Public License
++ *  as published by the Free Software Foundation; either version
++ *  2 of the License, or (at your option) any later version.
++ */
++
++#include <linux/kernel.h>
++#include <asm/code-patching.h>
++
++
++void create_instruction(unsigned long addr, unsigned int instr)
++{
++	unsigned int *p;
++	p  = (unsigned int *)addr;
++	*p = instr;
++	asm ("dcbst 0, %0; sync; icbi 0,%0; sync; isync" : : "r" (p));
++}
++
++void create_branch(unsigned long addr, unsigned long target, int flags)
++{
++	unsigned int instruction;
++
++	if (! (flags & BRANCH_ABSOLUTE))
++		target = target - addr;
++
++	/* Mask out the flags and target, so they don't step on each other. */
++	instruction = 0x48000000 | (flags & 0x3) | (target & 0x03FFFFFC);
++
++	create_instruction(addr, instruction);
++}
+diff --git a/arch/powerpc/platforms/86xx/mpc86xx_smp.c b/arch/powerpc/platforms/86xx/mpc86xx_smp.c
+index ba55b0f..63f5585 100644
+--- a/arch/powerpc/platforms/86xx/mpc86xx_smp.c
++++ b/arch/powerpc/platforms/86xx/mpc86xx_smp.c
+@@ -15,6 +15,7 @@
+ #include <linux/init.h>
+ #include <linux/delay.h>
+ 
++#include <asm/code-patching.h>
+ #include <asm/page.h>
+ #include <asm/pgtable.h>
+ #include <asm/pci-bridge.h>
+diff --git a/arch/powerpc/platforms/powermac/smp.c b/arch/powerpc/platforms/powermac/smp.c
+index cb2d894..bf202f7 100644
+--- a/arch/powerpc/platforms/powermac/smp.c
++++ b/arch/powerpc/platforms/powermac/smp.c
+@@ -36,6 +36,7 @@
+ 
+ #include <asm/ptrace.h>
+ #include <asm/atomic.h>
++#include <asm/code-patching.h>
+ #include <asm/irq.h>
+ #include <asm/page.h>
+ #include <asm/pgtable.h>
+diff --git a/include/asm-powerpc/code-patching.h b/include/asm-powerpc/code-patching.h
+new file mode 100644
+index 0000000..0b91fdf
+--- /dev/null
++++ b/include/asm-powerpc/code-patching.h
+@@ -0,0 +1,25 @@
++#ifndef _ASM_POWERPC_CODE_PATCHING_H
++#define _ASM_POWERPC_CODE_PATCHING_H
++
++/*
++ * Copyright 2008, Michael Ellerman, IBM Corporation.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ */
++
++/* Flags for create_branch:
++ * "b"   == create_branch(addr, target, 0);
++ * "ba"  == create_branch(addr, target, BRANCH_ABSOLUTE);
++ * "bl"  == create_branch(addr, target, BRANCH_SET_LINK);
++ * "bla" == create_branch(addr, target, BRANCH_ABSOLUTE | BRANCH_SET_LINK);
++ */
++#define BRANCH_SET_LINK	0x1
++#define BRANCH_ABSOLUTE	0x2
++
++extern void create_branch(unsigned long addr, unsigned long target, int flags);
++extern void create_instruction(unsigned long addr, unsigned int instr);
++
++#endif /* _ASM_POWERPC_CODE_PATCHING_H */
+diff --git a/include/asm-powerpc/system.h b/include/asm-powerpc/system.h
+index df781ad..d141e48 100644
+--- a/include/asm-powerpc/system.h
++++ b/include/asm-powerpc/system.h
+@@ -519,54 +519,6 @@ extern void reloc_got2(unsigned long);
+ 
+ #define PTRRELOC(x)	((typeof(x)) add_reloc_offset((unsigned long)(x)))
+ 
+-static inline void create_instruction(unsigned long addr, unsigned int instr)
+-{
+-	unsigned int *p;
+-	p  = (unsigned int *)addr;
+-	*p = instr;
+-	asm ("dcbst 0, %0; sync; icbi 0,%0; sync; isync" : : "r" (p));
+-}
+-
+-/* Flags for create_branch:
+- * "b"   == create_branch(addr, target, 0);
+- * "ba"  == create_branch(addr, target, BRANCH_ABSOLUTE);
+- * "bl"  == create_branch(addr, target, BRANCH_SET_LINK);
+- * "bla" == create_branch(addr, target, BRANCH_ABSOLUTE | BRANCH_SET_LINK);
+- */
+-#define BRANCH_SET_LINK	0x1
+-#define BRANCH_ABSOLUTE	0x2
+-
+-static inline void create_branch(unsigned long addr,
+-		unsigned long target, int flags)
+-{
+-	unsigned int instruction;
+-
+-	if (! (flags & BRANCH_ABSOLUTE))
+-		target = target - addr;
+-
+-	/* Mask out the flags and target, so they don't step on each other. */
+-	instruction = 0x48000000 | (flags & 0x3) | (target & 0x03FFFFFC);
+-
+-	create_instruction(addr, instruction);
+-}
+-
+-static inline void create_function_call(unsigned long addr, void * func)
+-{
+-	unsigned long func_addr;
+-
+-#ifdef CONFIG_PPC64
+-	/*
+-	 * On PPC64 the function pointer actually points to the function's
+-	 * descriptor. The first entry in the descriptor is the address
+-	 * of the function text.
+-	 */
+-	func_addr = *(unsigned long *)func;
+-#else
+-	func_addr = (unsigned long)func;
+-#endif
+-	create_branch(addr, func_addr, BRANCH_SET_LINK);
+-}
+-
+ #ifdef CONFIG_VIRT_CPU_ACCOUNTING
+ extern void account_system_vtime(struct task_struct *);
+ #endif
 -- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+1.5.5
