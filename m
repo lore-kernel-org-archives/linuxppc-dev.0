@@ -1,27 +1,27 @@
 Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
+	(Client CN "az33egw01.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id DDFF9DE41B
-	for <linuxppc-dev@ozlabs.org>; Wed, 25 Jun 2008 05:22:17 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 7F4C1DE28A
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Jun 2008 06:46:30 +1000 (EST)
 Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	m5OJMBsl023362
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Jun 2008 12:22:11 -0700 (MST)
+	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	m5OKkN3S006203
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Jun 2008 13:46:23 -0700 (MST)
 Received: from loki (udp110651uds.am.freescale.net [10.82.16.68])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m5OJMAfE006119
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Jun 2008 14:22:11 -0500 (CDT)
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m5OKkMra023869
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Jun 2008 15:46:23 -0500 (CDT)
 Received: from scott by loki with local (Exim 4.69)
-	(envelope-from <scottwood@freescale.com>) id 1KBE5S-0002DN-CW
-	for linuxppc-dev@ozlabs.org; Tue, 24 Jun 2008 14:21:54 -0500
-Date: Tue, 24 Jun 2008 14:21:54 -0500
+	(envelope-from <scottwood@freescale.com>) id 1KBFOw-0002Fb-OI
+	for linuxppc-dev@ozlabs.org; Tue, 24 Jun 2008 15:46:06 -0500
+Date: Tue, 24 Jun 2008 15:46:06 -0500
 From: Scott Wood <scottwood@freescale.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH/RFC] Document Freescale power management nodes, and the
+Subject: [PATCH v2] Document Freescale power management nodes, and the
 	sleep property.
-Message-ID: <20080624192154.GB8485@loki.buserror.net>
+Message-ID: <20080624204606.GA8641@loki.buserror.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -35,11 +35,13 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Signed-off-by: Scott Wood <scottwood@freescale.com>
 ---
- Documentation/powerpc/booting-without-of.txt |  192 ++++++++++++++++++++------
- 1 files changed, 151 insertions(+), 41 deletions(-)
+Added the fsl,mpc8313-wakeup-timer property.
+
+ Documentation/powerpc/booting-without-of.txt |  196 ++++++++++++++++++++------
+ 1 files changed, 155 insertions(+), 41 deletions(-)
 
 diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
-index b68684d..1aa59f8 100644
+index b68684d..4b8faf6 100644
 --- a/Documentation/powerpc/booting-without-of.txt
 +++ b/Documentation/powerpc/booting-without-of.txt
 @@ -62,6 +62,7 @@ Table of Contents
@@ -64,7 +66,7 @@ index b68684d..1aa59f8 100644
    Appendix A - Sample SOC node for MPC8540
  
  
-@@ -2967,6 +2970,60 @@ platforms are moved over to use the flattened-device-tree model.
+@@ -2967,6 +2970,64 @@ platforms are moved over to use the flattened-device-tree model.
  	clock-frequency = <0>;
      };
  
@@ -94,6 +96,10 @@ index b68684d..1aa59f8 100644
 +
 +    - interrupts: For "fsl,mpc8349-pmc"-compatible devices, the first
 +      resource is the PMC block interrupt.
++
++    - fsl,mpc8313-wakeup-timer: For "fsl,mpc8313-pmc"-compatible devices,
++      this is a phandle to an "fsl,gtm" node on which timer 4 can be used as
++      a wakeup source from deep sleep.
 +
 +    Sleep specifiers:
 +
@@ -125,7 +131,7 @@ index b68684d..1aa59f8 100644
  VII - Marvell Discovery mv64[345]6x System Controller chips
  ===========================================================
  
-@@ -3574,8 +3631,8 @@ encodings listed below:
+@@ -3574,8 +3635,8 @@ encodings listed below:
  	2 =  high to low edge sensitive type enabled
  	3 =  low to high edge sensitive type enabled
  
@@ -136,7 +142,7 @@ index b68684d..1aa59f8 100644
  
  1) gpios property
  -----------------
-@@ -3623,6 +3680,37 @@ Example of two SOC GPIO banks defined as gpio-controller nodes:
+@@ -3623,6 +3684,37 @@ Example of two SOC GPIO banks defined as gpio-controller nodes:
  		gpio-controller;
  	};
  
@@ -174,7 +180,7 @@ index b68684d..1aa59f8 100644
  Appendix A - Sample SOC node for MPC8540
  ========================================
  
-@@ -3639,47 +3727,47 @@ not necessary as they are usually the same as the root node.
+@@ -3639,47 +3731,47 @@ not necessary as they are usually the same as the root node.
  		reg = <e0000000 00003000>;
  		bus-frequency = <0>;
  
@@ -254,7 +260,7 @@ index b68684d..1aa59f8 100644
  		};
  
  		ethernet@25000 {
-@@ -3693,6 +3781,7 @@ not necessary as they are usually the same as the root node.
+@@ -3693,6 +3785,7 @@ not necessary as they are usually the same as the root node.
  			interrupts = <13 3 14 3 18 3>;
  			interrupt-parent = <40000>;
  			phy-handle = <2452001>;
@@ -262,7 +268,7 @@ index b68684d..1aa59f8 100644
  		};
  
  		ethernet@26000 {
-@@ -3706,15 +3795,31 @@ not necessary as they are usually the same as the root node.
+@@ -3706,15 +3799,31 @@ not necessary as they are usually the same as the root node.
  			interrupts = <19 3>;
  			interrupt-parent = <40000>;
  			phy-handle = <2452002>;
@@ -300,7 +306,7 @@ index b68684d..1aa59f8 100644
  		};
  
  		pic@40000 {
-@@ -3733,6 +3838,11 @@ not necessary as they are usually the same as the root node.
+@@ -3733,6 +3842,11 @@ not necessary as they are usually the same as the root node.
  			device_type = "i2c";
  			compatible  = "fsl-i2c";
  			dfsrr;
