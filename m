@@ -4,23 +4,25 @@ Received: from az33egw02.freescale.net (az33egw02.freescale.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "az33egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 8AB62DE31B
-	for <linuxppc-dev@ozlabs.org>; Wed, 25 Jun 2008 07:24:43 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 8ADC3DE36E
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Jun 2008 07:24:44 +1000 (EST)
 Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
 	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	m5OLObZb006125
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Jun 2008 14:24:38 -0700 (MST)
+	m5OLOdB7006138
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Jun 2008 14:24:39 -0700 (MST)
 From: John Rigby <jrigby@freescale.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 5/8][Version 2] powerpc: pci config cleanup
-Date: Tue, 24 Jun 2008 15:24:29 -0600
-Message-Id: <1214342672-23536-6-git-send-email-jrigby@freescale.com>
-In-Reply-To: <1214342672-23536-5-git-send-email-jrigby@freescale.com>
+Subject: [PATCH 7/8][Version 2] MPC5121 Add PCI support
+Date: Tue, 24 Jun 2008 15:24:31 -0600
+Message-Id: <1214342672-23536-8-git-send-email-jrigby@freescale.com>
+In-Reply-To: <1214342672-23536-7-git-send-email-jrigby@freescale.com>
 References: <1214342672-23536-1-git-send-email-jrigby@freescale.com>
 	<1214342672-23536-2-git-send-email-jrigby@freescale.com>
 	<1214342672-23536-3-git-send-email-jrigby@freescale.com>
 	<1214342672-23536-4-git-send-email-jrigby@freescale.com>
 	<1214342672-23536-5-git-send-email-jrigby@freescale.com>
+	<1214342672-23536-6-git-send-email-jrigby@freescale.com>
+	<1214342672-23536-7-git-send-email-jrigby@freescale.com>
 Cc: John Rigby <jrigby@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -31,173 +33,99 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-change
-    bool "PCI support" if <long ugly expression>
-to
-    bool "PCI support" if PPC_HAS_PCI
-
-and add select PPC_HAS_PCI to all the config nodes that
-were previously in the PCI if expression
+Uses mpc83xx_add_bridge in fsl_pci.c
 
 Signed-off-by: John Rigby <jrigby@freescale.com>
 ---
- arch/powerpc/Kconfig                   |    9 +++++----
- arch/powerpc/platforms/52xx/Kconfig    |    1 +
- arch/powerpc/platforms/83xx/Kconfig    |    1 +
- arch/powerpc/platforms/85xx/Kconfig    |    2 +-
- arch/powerpc/platforms/86xx/Kconfig    |    2 ++
- arch/powerpc/platforms/Kconfig         |    1 +
- arch/powerpc/platforms/Kconfig.cputype |    2 ++
- arch/powerpc/platforms/iseries/Kconfig |    1 +
- arch/powerpc/platforms/ps3/Kconfig     |    1 +
- arch/powerpc/platforms/pseries/Kconfig |    1 +
- 10 files changed, 16 insertions(+), 5 deletions(-)
+ arch/powerpc/platforms/512x/Kconfig       |    2 ++
+ arch/powerpc/platforms/512x/mpc5121_ads.c |   10 ++++++++++
+ arch/powerpc/platforms/512x/mpc512x.h     |    1 +
+ arch/powerpc/sysdev/fsl_pci.c             |    5 +++--
+ 4 files changed, 16 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 3934e26..fa9bd91 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -542,11 +542,12 @@ config FSL_LBC
- config MCA
+diff --git a/arch/powerpc/platforms/512x/Kconfig b/arch/powerpc/platforms/512x/Kconfig
+index 0fd3b00..f53f49b 100644
+--- a/arch/powerpc/platforms/512x/Kconfig
++++ b/arch/powerpc/platforms/512x/Kconfig
+@@ -2,6 +2,8 @@ config PPC_MPC512x
  	bool
- 
-+config PPC_HAS_PCI
-+	bool
-+
- config PCI
--	bool "PCI support" if 40x || CPM2 || PPC_83xx || PPC_85xx || PPC_86xx \
--		|| PPC_MPC52xx || (EMBEDDED && (PPC_PSERIES || PPC_ISERIES)) \
--		|| PPC_PS3 || 44x
--	default y if !40x && !CPM2 && !8xx && !PPC_MPC512x && !PPC_83xx \
-+	bool "PCI support" if PPC_HAS_PCI
-+	default y if !40x && !CPM2 && !8xx && !PPC_83xx \
- 		&& !PPC_85xx && !PPC_86xx
- 	default PCI_PERMEDIA if !4xx && !CPM2 && !8xx
- 	default PCI_QSPAN if !4xx && !CPM2 && 8xx
-diff --git a/arch/powerpc/platforms/52xx/Kconfig b/arch/powerpc/platforms/52xx/Kconfig
-index acd2fc8..fb4b19a 100644
---- a/arch/powerpc/platforms/52xx/Kconfig
-+++ b/arch/powerpc/platforms/52xx/Kconfig
-@@ -3,6 +3,7 @@ config PPC_MPC52xx
- 	depends on PPC_MULTIPLATFORM && PPC32
  	select FSL_SOC
- 	select PPC_CLOCK
+ 	select IPIC
 +	select PPC_HAS_PCI
++	select FSL_PCI if PCI
  
- config PPC_MPC5200_SIMPLE
- 	bool "Generic support for simple MPC5200 based boards"
-diff --git a/arch/powerpc/platforms/83xx/Kconfig b/arch/powerpc/platforms/83xx/Kconfig
-index 583b0c7..ccac363 100644
---- a/arch/powerpc/platforms/83xx/Kconfig
-+++ b/arch/powerpc/platforms/83xx/Kconfig
-@@ -2,6 +2,7 @@ menuconfig MPC83xx
- 	bool "83xx Board Type"
- 	depends on PPC_83xx
- 	select PPC_UDBG_16550
-+	select PPC_HAS_PCI
- 	select PPC_INDIRECT_PCI
- 
- if MPC83xx
-diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/platforms/85xx/Kconfig
-index 7ff29d5..8b38ff7 100644
---- a/arch/powerpc/platforms/85xx/Kconfig
-+++ b/arch/powerpc/platforms/85xx/Kconfig
-@@ -2,8 +2,8 @@ menuconfig MPC85xx
- 	bool "Machine Type"
- 	depends on PPC_85xx
- 	select PPC_UDBG_16550
--	select PPC_INDIRECT_PCI if PCI
- 	select MPIC
-+	select PPC_HAS_PCI
- 	select FSL_PCI if PCI
- 	select SERIAL_8250_SHARE_IRQ if SERIAL_8250
- 	default y
-diff --git a/arch/powerpc/platforms/86xx/Kconfig b/arch/powerpc/platforms/86xx/Kconfig
-index 053f49a..efea617 100644
---- a/arch/powerpc/platforms/86xx/Kconfig
-+++ b/arch/powerpc/platforms/86xx/Kconfig
-@@ -28,6 +28,7 @@ endchoice
- 
- config MPC8641
+ config PPC_MPC5121
  	bool
-+	select PPC_HAS_PCI
- 	select FSL_PCI if PCI
- 	select PPC_UDBG_16550
- 	select MPIC
-@@ -35,6 +36,7 @@ config MPC8641
+diff --git a/arch/powerpc/platforms/512x/mpc5121_ads.c b/arch/powerpc/platforms/512x/mpc5121_ads.c
+index 36805fd..3306e29 100644
+--- a/arch/powerpc/platforms/512x/mpc5121_ads.c
++++ b/arch/powerpc/platforms/512x/mpc5121_ads.c
+@@ -22,16 +22,26 @@
+ #include <asm/prom.h>
+ #include <asm/time.h>
  
- config MPC8610
- 	bool
-+	select PPC_HAS_PCI
- 	select FSL_PCI if PCI
- 	select PPC_UDBG_16550
- 	select MPIC
-diff --git a/arch/powerpc/platforms/Kconfig b/arch/powerpc/platforms/Kconfig
-index 87454c5..cc68ab3 100644
---- a/arch/powerpc/platforms/Kconfig
-+++ b/arch/powerpc/platforms/Kconfig
-@@ -280,6 +280,7 @@ config CPM2
- 	depends on MPC85xx || 8260
- 	select CPM
- 	select PPC_LIB_RHEAP
-+	select PPC_PCI
- 	help
- 	  The CPM2 (Communications Processor Module) is a coprocessor on
- 	  embedded CPUs made by Freescale.  Selecting this option means that
-diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-index f7efaa9..db8add6 100644
---- a/arch/powerpc/platforms/Kconfig.cputype
-+++ b/arch/powerpc/platforms/Kconfig.cputype
-@@ -42,12 +42,14 @@ config 40x
- 	select PPC_DCR_NATIVE
- 	select PPC_UDBG_16550
- 	select 4xx_SOC
-+	select PPC_HAS_PCI
++#include <sysdev/fsl_pci.h>
++
+ #include "mpc512x.h"
+ #include "mpc5121_ads.h"
  
- config 44x
- 	bool "AMCC 44x"
- 	select PPC_DCR_NATIVE
- 	select PPC_UDBG_16550
- 	select 4xx_SOC
-+	select PPC_HAS_PCI
+ static void __init mpc5121_ads_setup_arch(void)
+ {
++#ifdef CONFIG_PCI
++	struct device_node *np;
++#endif
+ 	printk(KERN_INFO "MPC5121 ADS board from Freescale Semiconductor\n");
+ 	/*
+ 	 * cpld regs are needed early
+ 	 */
+ 	mpc5121_ads_cpld_map();
++
++#ifdef CONFIG_PCI
++	for_each_compatible_node(np, "pci", "fsl,mpc5121-pci")
++		mpc83xx_add_bridge(np);
++#endif
+ }
  
- config E200
- 	bool "Freescale e200"
-diff --git a/arch/powerpc/platforms/iseries/Kconfig b/arch/powerpc/platforms/iseries/Kconfig
-index 761d9e9..c19c455 100644
---- a/arch/powerpc/platforms/iseries/Kconfig
-+++ b/arch/powerpc/platforms/iseries/Kconfig
-@@ -2,6 +2,7 @@ config PPC_ISERIES
- 	bool "IBM Legacy iSeries"
- 	depends on PPC_MULTIPLATFORM && PPC64
- 	select PPC_INDIRECT_IO
-+	select PPC_HAS_PCI if EMBEDDED
+ static struct of_device_id __initdata of_bus_ids[] = {
+diff --git a/arch/powerpc/platforms/512x/mpc512x.h b/arch/powerpc/platforms/512x/mpc512x.h
+index 789b817..be30915 100644
+--- a/arch/powerpc/platforms/512x/mpc512x.h
++++ b/arch/powerpc/platforms/512x/mpc512x.h
+@@ -11,4 +11,5 @@
+ #define __MPC512X_H__
+ extern unsigned long mpc512x_find_ips_freq(struct device_node *node);
+ extern void __init mpc512x_init_IRQ(void);
++extern int mpc512x_add_bridge(struct device_node *dev);
+ #endif				/* __MPC512X_H__ */
+diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
+index 6e6688f..a40bb8e 100644
+--- a/arch/powerpc/sysdev/fsl_pci.c
++++ b/arch/powerpc/sysdev/fsl_pci.c
+@@ -249,7 +249,7 @@ DECLARE_PCI_FIXUP_HEADER(0x1957, PCI_DEVICE_ID_MPC8641D, quirk_fsl_pcie_header);
+ DECLARE_PCI_FIXUP_HEADER(0x1957, PCI_DEVICE_ID_MPC8610, quirk_fsl_pcie_header);
+ #endif /* CONFIG_PPC_85xx || CONFIG_PPC_86xx */
  
- menu "iSeries device drivers"
- 	depends on PPC_ISERIES
-diff --git a/arch/powerpc/platforms/ps3/Kconfig b/arch/powerpc/platforms/ps3/Kconfig
-index a5f4e95..b50ea02 100644
---- a/arch/powerpc/platforms/ps3/Kconfig
-+++ b/arch/powerpc/platforms/ps3/Kconfig
-@@ -8,6 +8,7 @@ config PPC_PS3
- 	select USB_ARCH_HAS_EHCI
- 	select USB_EHCI_BIG_ENDIAN_MMIO
- 	select MEMORY_HOTPLUG
-+	select PPC_PCI
- 	help
- 	  This option enables support for the Sony PS3 game console
- 	  and other platforms using the PS3 hypervisor.  Enabling this
-diff --git a/arch/powerpc/platforms/pseries/Kconfig b/arch/powerpc/platforms/pseries/Kconfig
-index 07fe5b6..e205066 100644
---- a/arch/powerpc/platforms/pseries/Kconfig
-+++ b/arch/powerpc/platforms/pseries/Kconfig
-@@ -7,6 +7,7 @@ config PPC_PSERIES
- 	select RTAS_ERROR_LOGGING
- 	select PPC_UDBG_16550
- 	select PPC_NATIVE
-+	select PPC_HAS_PCI if EMBEDDED
- 	default y
+-#if defined(CONFIG_PPC_83xx)
++#if defined(CONFIG_PPC_83xx) || defined(CONFIG_PPC_MPC512x)
+ int __init mpc83xx_add_bridge(struct device_node *dev)
+ {
+ 	int len;
+@@ -281,6 +281,7 @@ int __init mpc83xx_add_bridge(struct device_node *dev)
  
- config PPC_SPLPAR
+ 	/* MPC83xx supports up to two host controllers one at 0x8500 from immrbar
+ 	 * the other at 0x8600, we consider the 0x8500 the primary controller
++	 * MPC512x supports one host controller at 0x8500.
+ 	 */
+ 	/* PCI 1 */
+ 	if ((rsrc.start & 0xfffff) == 0x8500) {
+@@ -292,7 +293,7 @@ int __init mpc83xx_add_bridge(struct device_node *dev)
+ 		primary = 0;
+ 	}
+ 
+-	printk(KERN_INFO "Found MPC83xx PCI host bridge at 0x%016llx. "
++	printk(KERN_INFO "Found FSL PCI host bridge at 0x%016llx. "
+ 	       "Firmware bus number: %d->%d\n",
+ 	       (unsigned long long)rsrc.start, hose->first_busno,
+ 	       hose->last_busno);
 -- 
 1.5.6.rc0.46.gd2b3
