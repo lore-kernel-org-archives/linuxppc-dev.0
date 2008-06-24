@@ -1,12 +1,11 @@
 Return-Path: <michael@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
-Message-Id: <24aa9b0751e6ac616d6baf10da39163332bec0a8.1214271072.git.michael@ellerman.id.au>
+Message-Id: <fc204cd230d4f00c1b5b618ecff4895157832c99.1214271072.git.michael@ellerman.id.au>
 In-Reply-To: <fd46b7fc5f4785affb58f1de2b85a63b154e0de8.1214271072.git.michael@ellerman.id.au>
 References: <fd46b7fc5f4785affb58f1de2b85a63b154e0de8.1214271072.git.michael@ellerman.id.au>
 From: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH 07/14] powerpc: Add PPC_NOP_INSTR,
-	a hash define for the preferred nop instruction
-Date: Tue, 24 Jun 2008 11:32:35 +1000 (EST)
+Subject: [PATCH 08/14] powerpc: Split out do_feature_fixups() from cputable.c
+Date: Tue, 24 Jun 2008 11:32:36 +1000 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,84 +15,141 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-A bunch of code has hard-coded the value for a "nop" instruction, it
-would be nice to have a #define for it.
+The logic to patch CPU feature sections lives in cputable.c, but these days
+it's used for CPU features as well as firmware features. Move it into
+it's own file for neatness and as preparation for some additions.
+
+While we're moving the code, we pull the loop body logic into a separate
+routine, and remove a comment which doesn't apply anymore.
 
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
- arch/powerpc/kernel/cputable.c      |    3 ++-
- arch/powerpc/kernel/crash_dump.c    |    2 +-
- arch/powerpc/kernel/module_64.c     |    3 ++-
- include/asm-powerpc/code-patching.h |    2 ++
- 4 files changed, 7 insertions(+), 3 deletions(-)
+ arch/powerpc/kernel/cputable.c    |   36 -----------------------
+ arch/powerpc/lib/Makefile         |    1 +
+ arch/powerpc/lib/feature-fixups.c |   56 +++++++++++++++++++++++++++++++++++++
+ 3 files changed, 57 insertions(+), 36 deletions(-)
 
 diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
-index e44d553..887e190 100644
+index 887e190..11943f0 100644
 --- a/arch/powerpc/kernel/cputable.c
 +++ b/arch/powerpc/kernel/cputable.c
-@@ -17,6 +17,7 @@
+@@ -17,7 +17,6 @@
  #include <linux/module.h>
  
  #include <asm/oprofile_impl.h>
-+#include <asm/code-patching.h>
+-#include <asm/code-patching.h>
  #include <asm/cputable.h>
  #include <asm/prom.h>		/* for PTRRELOC on ARCH=ppc */
  
-@@ -1613,7 +1614,7 @@ void do_feature_fixups(unsigned long value, void *fixup_start, void *fixup_end)
- 		pend = ((unsigned int *)fcur) + (fcur->end_off / 4);
- 
- 		for (p = pstart; p < pend; p++) {
--			*p = 0x60000000u;
-+			*p = PPC_NOP_INSTR;
- 			asm volatile ("dcbst 0, %0" : : "r" (p));
- 		}
- 		asm volatile ("sync" : : : "memory");
-diff --git a/arch/powerpc/kernel/crash_dump.c b/arch/powerpc/kernel/crash_dump.c
-index 2664854..e0debcc 100644
---- a/arch/powerpc/kernel/crash_dump.c
-+++ b/arch/powerpc/kernel/crash_dump.c
-@@ -44,7 +44,7 @@ static void __init create_trampoline(unsigned long addr)
- 	 * branch to "addr" we jump to ("addr" + 32 MB). Although it requires
- 	 * two instructions it doesn't require any registers.
- 	 */
--	patch_instruction(p, 0x60000000); /* nop */
-+	patch_instruction(p, PPC_NOP_INSTR);
- 	patch_branch(++p, addr + PHYSICAL_START, 0);
+@@ -1588,38 +1587,3 @@ struct cpu_spec * __init identify_cpu(unsigned long offset, unsigned int pvr)
+ 	BUG();
+ 	return NULL;
  }
+-
+-void do_feature_fixups(unsigned long value, void *fixup_start, void *fixup_end)
+-{
+-	struct fixup_entry {
+-		unsigned long	mask;
+-		unsigned long	value;
+-		long		start_off;
+-		long		end_off;
+-	} *fcur, *fend;
+-
+-	fcur = fixup_start;
+-	fend = fixup_end;
+-
+-	for (; fcur < fend; fcur++) {
+-		unsigned int *pstart, *pend, *p;
+-
+-		if ((value & fcur->mask) == fcur->value)
+-			continue;
+-
+-		/* These PTRRELOCs will disappear once the new scheme for
+-		 * modules and vdso is implemented
+-		 */
+-		pstart = ((unsigned int *)fcur) + (fcur->start_off / 4);
+-		pend = ((unsigned int *)fcur) + (fcur->end_off / 4);
+-
+-		for (p = pstart; p < pend; p++) {
+-			*p = PPC_NOP_INSTR;
+-			asm volatile ("dcbst 0, %0" : : "r" (p));
+-		}
+-		asm volatile ("sync" : : : "memory");
+-		for (p = pstart; p < pend; p++)
+-			asm volatile ("icbi 0,%0" : : "r" (p));
+-		asm volatile ("sync; isync" : : : "memory");
+-	}
+-}
+diff --git a/arch/powerpc/lib/Makefile b/arch/powerpc/lib/Makefile
+index 305c7df..4afcf3a 100644
+--- a/arch/powerpc/lib/Makefile
++++ b/arch/powerpc/lib/Makefile
+@@ -26,3 +26,4 @@ endif
+ obj-$(CONFIG_PPC_LIB_RHEAP) += rheap.o
  
-diff --git a/arch/powerpc/kernel/module_64.c b/arch/powerpc/kernel/module_64.c
-index 3a82b02..d5e569a 100644
---- a/arch/powerpc/kernel/module_64.c
-+++ b/arch/powerpc/kernel/module_64.c
-@@ -24,6 +24,7 @@
- #include <asm/module.h>
- #include <asm/uaccess.h>
- #include <asm/firmware.h>
-+#include <asm/code-patching.h>
- #include <linux/sort.h>
- 
- #include "setup.h"
-@@ -346,7 +347,7 @@ static unsigned long stub_for_addr(Elf64_Shdr *sechdrs,
-    restore r2. */
- static int restore_r2(u32 *instruction, struct module *me)
- {
--	if (*instruction != 0x60000000) {
-+	if (*instruction != PPC_NOP_INSTR) {
- 		printk("%s: Expect noop after relocate, got %08x\n",
- 		       me->name, *instruction);
- 		return 0;
-diff --git a/include/asm-powerpc/code-patching.h b/include/asm-powerpc/code-patching.h
-index 40ad46b..ef3a5d1 100644
---- a/include/asm-powerpc/code-patching.h
-+++ b/include/asm-powerpc/code-patching.h
-@@ -12,6 +12,8 @@
- 
- #include <asm/types.h>
- 
-+#define PPC_NOP_INSTR	0x60000000
+ obj-y			+= code-patching.o
++obj-y			+= feature-fixups.o
+diff --git a/arch/powerpc/lib/feature-fixups.c b/arch/powerpc/lib/feature-fixups.c
+new file mode 100644
+index 0000000..f6fd5d2
+--- /dev/null
++++ b/arch/powerpc/lib/feature-fixups.c
+@@ -0,0 +1,56 @@
++/*
++ *  Copyright (C) 2001 Ben. Herrenschmidt (benh@kernel.crashing.org)
++ *
++ *  Modifications for ppc64:
++ *      Copyright (C) 2003 Dave Engebretsen <engebret@us.ibm.com>
++ *
++ *  Copyright 2008 Michael Ellerman, IBM Corporation.
++ *
++ *  This program is free software; you can redistribute it and/or
++ *  modify it under the terms of the GNU General Public License
++ *  as published by the Free Software Foundation; either version
++ *  2 of the License, or (at your option) any later version.
++ */
 +
- /* Flags for create_branch:
-  * "b"   == create_branch(addr, target, 0);
-  * "ba"  == create_branch(addr, target, BRANCH_ABSOLUTE);
++#include <linux/kernel.h>
++#include <asm/cputable.h>
++#include <asm/code-patching.h>
++
++
++struct fixup_entry {
++	unsigned long	mask;
++	unsigned long	value;
++	long		start_off;
++	long		end_off;
++};
++
++static void patch_feature_section(unsigned long value, struct fixup_entry *fcur)
++{
++	unsigned int *pstart, *pend, *p;
++
++	if ((value & fcur->mask) == fcur->value)
++		return;
++
++	pstart = ((unsigned int *)fcur) + (fcur->start_off / 4);
++	pend = ((unsigned int *)fcur) + (fcur->end_off / 4);
++
++	for (p = pstart; p < pend; p++) {
++		*p = PPC_NOP_INSTR;
++		asm volatile ("dcbst 0, %0" : : "r" (p));
++	}
++	asm volatile ("sync" : : : "memory");
++	for (p = pstart; p < pend; p++)
++		asm volatile ("icbi 0,%0" : : "r" (p));
++	asm volatile ("sync; isync" : : : "memory");
++}
++
++void do_feature_fixups(unsigned long value, void *fixup_start, void *fixup_end)
++{
++	struct fixup_entry *fcur, *fend;
++
++	fcur = fixup_start;
++	fend = fixup_end;
++
++	for (; fcur < fend; fcur++)
++		patch_feature_section(value, fcur);
++}
 -- 
 1.5.5
