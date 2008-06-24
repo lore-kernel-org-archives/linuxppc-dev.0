@@ -1,14 +1,23 @@
-Return-Path: <galak@kernel.crashing.org>
-Message-Id: <0EE7A51D-FCB1-4A52-B5F6-4F9D7588A361@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Bizhan Gholikhamseh (bgholikh) <bgholikh@cisco.com>
-In-Reply-To: <F795765B112E7344AF36AA9112796415069F13E6@xmb-sjc-212.amer.cisco.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v924)
-Subject: Re: Graphic Card on Freescale  MPC837x-rdb
-Date: Tue, 24 Jun 2008 12:32:59 -0500
-References: <F795765B112E7344AF36AA9112796415069F13E6@xmb-sjc-212.amer.cisco.com>
-Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 540C8DE24A
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Jun 2008 03:59:02 +1000 (EST)
+Date: Tue, 24 Jun 2008 12:58:22 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: jumpingProgrammer <rabbitzp@163.com>
+Subject: Re: a question of mpc8313, maybe simple
+Message-ID: <20080624175822.GA7804@loki.buserror.net>
+References: <18067094.post@talk.nabble.com>
+	<20080623170956.GA6978@loki.buserror.net>
+	<18081728.post@talk.nabble.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <18081728.post@talk.nabble.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,14 +27,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Mon, Jun 23, 2008 at 06:13:41PM -0700, jumpingProgrammer wrote:
+> 
+> Thanks a lot for answer my question.
+> But i am newhand and not very clear about it.
+> Do you mean:
+> 1. in this case i do not need to include DMA when i "make menuconfig" ?
+>         The path is Device Drivers->DMA.
 
-On Jun 24, 2008, at 12:17 PM, Bizhan Gholikhamseh (bgholikh) wrote:
+Right, that's for independent DMA engines, such as for offloading
+memory-to-memory copies.
 
-> HI all,
-> Has anyone tried using a Graphic card on Freescale MPC837x-rdb  
-> board? If so I appreciate any hints and information that I can use.
+> 2. in this case i do not need add any DMA information in mpc8313erdb.dts?
 
-Nope, but you'll most likely need some form of x86 emulation for the  
-video bios init.
+Right.
 
-- k
+-Scott
