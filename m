@@ -1,21 +1,34 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <brking@linux.vnet.ibm.com>
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 6D064DE0F8
-	for <linuxppc-dev@ozlabs.org>; Wed, 25 Jun 2008 00:23:16 +1000 (EST)
-Message-Id: <0C4694A6-CCCA-4236-92FC-D498E40E6A31@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Michael Ellerman <michael@ellerman.id.au>
-In-Reply-To: <e1b874df92f61cbd3c25bd90f6e48784dc1f632b.1214271072.git.michael@ellerman.id.au>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v924)
-Subject: Re: [PATCH 03/14] powerpc: Make create_branch() return errors if the
-	branch target is too large
-Date: Tue, 24 Jun 2008 08:21:00 -0500
-References: <fd46b7fc5f4785affb58f1de2b85a63b154e0de8.1214271072.git.michael@ellerman.id.au>
-	<e1b874df92f61cbd3c25bd90f6e48784dc1f632b.1214271072.git.michael@ellerman.id.au>
-Cc: linuxppc-dev@ozlabs.org
+	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 15034DE12B
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Jun 2008 00:24:48 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e31.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m5OEOiZ6024838
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Jun 2008 10:24:44 -0400
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
+	m5OEOieS100342
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Jun 2008 08:24:44 -0600
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m5OEOdDP028603
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Jun 2008 08:24:43 -0600
+Message-ID: <4861037D.8000408@linux.vnet.ibm.com>
+Date: Tue, 24 Jun 2008 09:23:57 -0500
+From: Brian King <brking@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: Nathan Fontenot <nfont@austin.ibm.com>
+Subject: Re: [PATCH 03/19][v3] powerpc: Add memory entitlement capabilities
+	to /proc/ppc64/lparcfg
+References: <20080612220923.GJ30916@linux.vnet.ibm.com>
+	<4856D17F.7010804@austin.ibm.com>
+In-Reply-To: <4856D17F.7010804@austin.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org,
+	David Darrington <ddarring@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,24 +38,69 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Just a few minor nits.
 
-On Jun 23, 2008, at 8:32 PM, Michael Ellerman wrote:
+> +/**
+> + * h_get_mpp
+> + * H_GET_MPP hcall returns info in 7 parms
+> + */
+> +int h_get_mpp(struct hvcall_mpp_data *mpp_data)
+> +{
+> +    int rc;
+> +    unsigned long retbuf[PLPAR_HCALL9_BUFSIZE];
+   ^^^^
 
-> If you pass a target value to create_branch() which is more than  
-> 32MB - 4,
-> or - 32MB away from the branch site, then it's impossible to create an
-> immediate branch. The current code doesn't check, which will lead to  
-> us
-> creating a branch to somewhere else - which is bad.
->
-> For code that cares to check we return 0, which is easy to check  
-> for, and
-> for code that doesn't at least we'll be creating an illegal  
-> instruction,
-> rather than a branch to some random address.
->
-> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+Should be tabs instead of spaces in this function and a few others
+in this patch file.
 
-Acked-by: Kumar Gala <galak@kernel.crashing.org>
+> +/**
+> + * parse_mpp_data
+> + * Parse out data returned from h_get_mpp
+> + */
+> +static void parse_mpp_data(struct seq_file *m)
+> +{
+> +    struct hvcall_mpp_data mpp_data;
+> +    int rc;
 
-- k
+Same here.
+
+> +/**
+> + * update_mpp
+> + *
+> + * Update the memory entitlement and weight for the partition.  Caller
+> must
+> + * spercify either a new entitlement or weight, not both, to be updated
+      ^^^^^^^^
+
+> + * since the h_set_mpp call takes both entitlement and weight as
+> parameters.
+> + */
+> +static ssize_t update_mpp(u64 *entitlement, u8 *weight)
+> +{
+> +    struct hvcall_mpp_data mpp_data;
+
+Tab/spacing here.
+
+> @@ -270,6 +272,20 @@
+>  };
+>  #define HCALL_STAT_ARRAY_SIZE    ((MAX_HCALL_OPCODE >> 2) + 1)
+> 
+> +struct hvcall_mpp_data {
+> +    unsigned long entitled_mem;
+> +    unsigned long mapped_mem;
+> +    unsigned short group_num;
+> +    unsigned short pool_num;
+> +    unsigned char mem_weight;
+> +    unsigned char unallocated_mem_weight;
+> +    unsigned long unallocated_entitlement;    /* value in bytes */
+> +    unsigned long pool_size;
+> +    long loan_request;
+
+Might as well be specific here and call this a signed long.
+Tab/spacing issue here as well.
+
+
+-- 
+Brian King
+Linux on Power Virtualization
+IBM Linux Technology Center
