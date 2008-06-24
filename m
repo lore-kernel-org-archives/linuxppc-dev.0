@@ -1,21 +1,12 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	by ozlabs.org (Postfix) with ESMTP id AB0C8DDEF3
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Jun 2008 11:13:45 +1000 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1KAx6L-0007yf-RX
-	for linuxppc-dev@ozlabs.org; Mon, 23 Jun 2008 18:13:41 -0700
-Message-ID: <18081728.post@talk.nabble.com>
-Date: Mon, 23 Jun 2008 18:13:41 -0700 (PDT)
-From: jumpingProgrammer <rabbitzp@163.com>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: a question of mpc8313, maybe simple
-In-Reply-To: <20080623170956.GA6978@loki.buserror.net>
+Return-Path: <dgibson@ozlabs.org>
+Date: Tue, 24 Jun 2008 11:21:44 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Jon Loeliger <jdl@freescale.com>
+Subject: dtc: Testcase for /include/ directive
+Message-ID: <20080624012144.GB1236@yookeroo.seuss>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-References: <18067094.post@talk.nabble.com>
-	<20080623170956.GA6978@loki.buserror.net>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,49 +16,115 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+This patch adds a testcase for the /include/ directive.  It assembles
+a sample dts file with many /include/ directives at a variety of
+different lexical / grammatical contexts.
 
-Thanks a lot for answer my question.
-But i am newhand and not very clear about it.
-Do you mean:
-1. in this case i do not need to include DMA when i "make menuconfig" ?
-        The path is Device Drivers->DMA.
-2. in this case i do not need add any DMA information in mpc8313erdb.dts?
+Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 
-Now i am reading PCI driver in kernel 2.6.20 to catch your meaning.
-
-
-Scott Wood-2 wrote:
-> 
-> On Mon, Jun 23, 2008 at 05:48:07AM -0700, jumpingProgrammer wrote:
->> i am working with a board of mpc8313 using default mpc8313erdb.dts.
->> But i do not know how can i correctly use DMA to transport data from
->> memory
->> to a PCI device.
->> i tryed this
->> {
->>      .....
->>      request_irq(IRQ,....);
->>      request_dma(.....);
->>      ....
->> }
->> 
->> In request_irq() , i do not know what is the parameter IRQ.
-> 
-> Use pci_dev->irq.
-> 
->> And , i did not find any words about DMA in mpc8313erdb.dts .
-> 
-> PCI devices can do bus-mastering DMA themselves; request_dma() is for ISA
-> devices.
-> 
-> -Scott
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
-> 
-> 
+Index: dtc/tests/include0.dts
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ dtc/tests/include0.dts	2008-06-24 11:19:42.000000000 +1000
+@@ -0,0 +1 @@
++/include/ "include1.dts"
+Index: dtc/tests/include1.dts
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ dtc/tests/include1.dts	2008-06-24 11:19:42.000000000 +1000
+@@ -0,0 +1,23 @@
++/dts-v1/;
++
++/include/ "include2.dts"
++/memreserve/ /include/ "include3.dts";
++
++/ {
++	/include/ "include4.dts"
++	/include/ "include5.dts" = <0xdeadbeef>;
++	prop-str = /include/ "include6.dts";
++
++	/include/ "include7.dts"
++
++	subnode@2 {
++		linux,phandle = <0x2000>;
++		prop-int = <123456789>;
++
++		/include/ "include8.dts"
++			linux,phandle = <0x2001>;
++			compatible = "subsubnode2", "subsubnode";
++			prop-int = <0726746425>;
++		};
++	};
++};
+Index: dtc/tests/include2.dts
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ dtc/tests/include2.dts	2008-06-24 11:19:42.000000000 +1000
+@@ -0,0 +1 @@
++/memreserve/ 0xdeadbeef00000000 0x100000;
+Index: dtc/tests/include3.dts
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ dtc/tests/include3.dts	2008-06-24 11:19:42.000000000 +1000
+@@ -0,0 +1 @@
++123456789 010000
+Index: dtc/tests/include4.dts
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ dtc/tests/include4.dts	2008-06-24 11:19:42.000000000 +1000
+@@ -0,0 +1 @@
++	compatible = "test_tree1";
+Index: dtc/tests/include5.dts
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ dtc/tests/include5.dts	2008-06-24 11:19:42.000000000 +1000
+@@ -0,0 +1 @@
++prop-int
+Index: dtc/tests/include6.dts
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ dtc/tests/include6.dts	2008-06-24 11:19:42.000000000 +1000
+@@ -0,0 +1 @@
++"hello world"
+Index: dtc/tests/include7.dts
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ dtc/tests/include7.dts	2008-06-24 11:19:42.000000000 +1000
+@@ -0,0 +1,9 @@
++	subnode@1 {
++		compatible = "subnode1";
++		prop-int = [deadbeef];
++
++		subsubnode {
++			compatible = "subsubnode1", "subsubnode";
++			prop-int = <0xdeadbeef>;
++		};
++	};
+Index: dtc/tests/include8.dts
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ dtc/tests/include8.dts	2008-06-24 11:19:42.000000000 +1000
+@@ -0,0 +1 @@
++subsubnode@0 {
+\ No newline at end of file
+Index: dtc/tests/run_tests.sh
+===================================================================
+--- dtc.orig/tests/run_tests.sh	2008-06-24 11:19:07.000000000 +1000
++++ dtc/tests/run_tests.sh	2008-06-24 11:19:42.000000000 +1000
+@@ -207,6 +207,10 @@
+     run_dtc_test -I dts -O dtb -o dtc_comments-cmp.test.dtb comments-cmp.dts
+     run_test dtbs_equal_ordered dtc_comments.test.dtb dtc_comments-cmp.test.dtb
+ 
++    # Check /include/ directive
++    run_dtc_test -I dts -O dtb -o includes.test.dtb include0.dts
++    run_test dtbs_equal_ordered includes.test.dtb test_tree1.dtb
++
+     # Check /incbin/ directive
+     run_dtc_test -I dts -O dtb -o incbin.test.dtb incbin.dts
+     run_test incbin incbin.test.dtb
 
 -- 
-View this message in context: http://www.nabble.com/a-question-of-mpc8313%2C-maybe-simple-tp18069331p18081728.html
-Sent from the linuxppc-dev mailing list archive at Nabble.com.
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
