@@ -1,14 +1,12 @@
 Return-Path: <khali@linux-fr.org>
-Date: Wed, 25 Jun 2008 15:25:42 +0200
+Date: Wed, 25 Jun 2008 15:58:25 +0200
 From: Jean Delvare <khali@linux-fr.org>
 To: "Jon Smirl" <jonsmirl@gmail.com>
 Subject: Re: [i2c] [PATCH] Convert i2c-mpc from a platform driver to an
 	of_platform one
-Message-ID: <20080625152542.40003d30@hyperion.delvare>
-In-Reply-To: <9e4733910806110914v2fb9e4a3o3736663bd54a03cd@mail.gmail.com>
+Message-ID: <20080625155825.43d07d20@hyperion.delvare>
+In-Reply-To: <9e4733910806101940o7f2f9863jb5e556ee2fc39a7e@mail.gmail.com>
 References: <9e4733910806101940o7f2f9863jb5e556ee2fc39a7e@mail.gmail.com>
-	<20080611160048.GB4257@pengutronix.de>
-	<9e4733910806110914v2fb9e4a3o3736663bd54a03cd@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-dev list <Linuxppc-dev@ozlabs.org>,
@@ -24,43 +22,245 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Hi Jon,
 
-On Wed, 11 Jun 2008 12:14:08 -0400, Jon Smirl wrote:
-> On 6/11/08, Wolfram Sang <w.sang@pengutronix.de> wrote:
-> > On Tue, Jun 10, 2008 at 10:40:45PM -0400, Jon Smirl wrote:
-> >  > Convert i2c-mpc from a platform driver into an of_platform driver.
-> >  > This patch is much smaller since Jochen already added
-> >  > of_find_i2c_driver(). Versions of this have been posted before.
-> >  >
-> >  > Signed-ff-by: Jon Smirl <jonsmirl@gmail.com>
-> >
-> > Typo: Signed-off... (I'm curious, do such typos enforce resending the
-> >  patch?)
+> Convert i2c-mpc from a platform driver into an of_platform driver.
+> This patch is much smaller since Jochen already added
+> of_find_i2c_driver(). Versions of this have been posted before.
+> 
+> Signed-ff-by: Jon Smirl <jonsmirl@gmail.com>
+> 
+> -- 
 
-In theory it should. The line means that you've read the "Developer's
-Certificate of Origin" and you agree with it, so it's somewhat binding.
-I guess a lawyer would argue that the line isn't worth anything if
-"Signed-off-by" isn't spelled properly.
+This separator is supposed to be 3 dashes, NOT 2 dashes followed by a
+space. The latter makes the patch look like your e-mail signature, and
+e-mail clients usually strip that when one replies. Which is pretty
+inconvenient when commenting on a patch ;)
 
-Thanks Wolfram for the review, BTW.
+> 
+>  drivers/i2c/busses/i2c-mpc.c |  105 +++++++++++++++++++++++++-----------------
+>  1 files changed, 63 insertions(+), 42 deletions(-)
+> 
+> 
+> diff --git a/drivers/i2c/busses/i2c-mpc.c b/drivers/i2c/busses/i2c-mpc.c
+> index a076129..76d8091 100644
+> --- a/drivers/i2c/busses/i2c-mpc.c
+> +++ b/drivers/i2c/busses/i2c-mpc.c
+> @@ -18,6 +18,8 @@
+>  #include <linux/sched.h>
+>  #include <linux/init.h>
+>  #include <linux/platform_device.h>
 
-> I just cut and pasted this version to get the comments. Next pass I
-> will send it using stgit which will add the right signed-off line and
-> fix the wrapping.
+If the driver is no longer a platform driver, do you still need to
+include <linux/platform_device.h>?
 
-That's doing things the wrong way around. If you want people to comment
-on your patch, the least you can do is make sure they can apply it.
+> +#include <linux/of_platform.h>
+> +#include <linux/of_i2c.h>
+> 
+>  #include <asm/io.h>
+>  #include <linux/fsl_devices.h>
+> @@ -25,13 +27,13 @@
+>  #include <linux/interrupt.h>
+>  #include <linux/delay.h>
+> 
+> -#define MPC_I2C_ADDR  0x00
+> +#define DRV_NAME "mpc-i2c"
+> +
+>  #define MPC_I2C_FDR 	0x04
+>  #define MPC_I2C_CR	0x08
+>  #define MPC_I2C_SR	0x0c
+>  #define MPC_I2C_DR	0x10
+>  #define MPC_I2C_DFSRR 0x14
+> -#define MPC_I2C_REGION 0x20
+> 
+>  #define CCR_MEN  0x80
+>  #define CCR_MIEN 0x40
+> @@ -315,102 +317,121 @@ static struct i2c_adapter mpc_ops = {
+>  	.timeout = 1,
+>  };
+> 
+> -static int fsl_i2c_probe(struct platform_device *pdev)
+> +static int fsl_i2c_probe(struct of_device *op, const struct
+> of_device_id *match)
+>  {
+>  	int result = 0;
+>  	struct mpc_i2c *i2c;
+> -	struct fsl_i2c_platform_data *pdata;
+> -	struct resource *r = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+> -
+> -	pdata = (struct fsl_i2c_platform_data *) pdev->dev.platform_data;
+> 
+>  	i2c = kzalloc(sizeof(*i2c), GFP_KERNEL);
+>  	if (!i2c)
+>  		return -ENOMEM;
+> 
+> -	i2c->irq = platform_get_irq(pdev, 0);
+> -	if (i2c->irq < 0)
+> -		i2c->irq = NO_IRQ; /* Use polling */
+> +	if (of_get_property(op->node, "dfsrr", NULL))
+> +		i2c->flags |= FSL_I2C_DEV_SEPARATE_DFSRR;
+> 
+> -	i2c->flags = pdata->device_flags;
+> -	init_waitqueue_head(&i2c->queue);
+> +	if (of_device_is_compatible(op->node, "mpc5200-i2c"))
+> +		i2c->flags |= FSL_I2C_DEV_CLOCK_5200;
+> 
+> -	i2c->base = ioremap((phys_addr_t)r->start, MPC_I2C_REGION);
+> +	init_waitqueue_head(&i2c->queue);
+> 
+> +	i2c->base = of_iomap(op->node, 0);
+>  	if (!i2c->base) {
+>  		printk(KERN_ERR "i2c-mpc - failed to map controller\n");
+>  		result = -ENOMEM;
+>  		goto fail_map;
+>  	}
+> 
+> -	if (i2c->irq != NO_IRQ)
+> -		if ((result = request_irq(i2c->irq, mpc_i2c_isr,
+> -					  IRQF_SHARED, "i2c-mpc", i2c)) < 0) {
+> -			printk(KERN_ERR
+> -			       "i2c-mpc - failed to attach interrupt\n");
+> -			goto fail_irq;
+> -		}
+> +	i2c->irq = irq_of_parse_and_map(op->node, 0);
+> +	if (i2c->irq == NO_IRQ) {
+> +		result = -ENXIO;
+> +		goto fail_irq;
+> +	}
 
-If I can't apply your patch, that means I can't verify if it applies
-properly, I can't run checkpatch.pl on it, I can't get quilt to color
-it, and I can't compare it to a previous version of the same patch.
+This is a significant functionality change. The original code supported
+devices with no IRQ, now your enforce the use of an IRQ and fail if
+it's not there. If you have any reason to do that, this must be in a
+separate patch, and this must be done consistently (removing the
+polling code in i2c_wait, etc.)
 
-Also, it would be a good idea to keep Jochen Friedrich in the loop
-(Cc'd), as he proposed a similar patch based on a previous version of
-yours back in April. I suppose he has some interest in it.
+> +
+> +	result = request_irq(i2c->irq, mpc_i2c_isr,
+> +						IRQF_SHARED, "i2c-mpc", i2c);
+> +	if (result < 0) {
+> +		printk(KERN_ERR "i2c-mpc - failed to attach interrupt\n");
+> +		goto fail_request;
+> +	}
+> 
+>  	mpc_i2c_setclock(i2c);
+> -	platform_set_drvdata(pdev, i2c);
+> +
+> +	dev_set_drvdata(&op->dev, i2c);
+> 
+>  	i2c->adap = mpc_ops;
+> -	i2c->adap.nr = pdev->id;
+>  	i2c_set_adapdata(&i2c->adap, i2c);
+> -	i2c->adap.dev.parent = &pdev->dev;
+> -	if ((result = i2c_add_numbered_adapter(&i2c->adap)) < 0) {
+> +	i2c->adap.dev.parent = &op->dev;
+> +
+> +	result = i2c_add_adapter(&i2c->adap);
 
-While mentioning Jochen's version of the patch: it was deleting 123
-lines from arch/powerpc/sysdev/fsl_soc.c. Yours doesn't. Should it?
-http://lists.lm-sensors.org/pipermail/i2c/2008-April/003314.html
+The driver was previously using i2c_add_numbered_adapter(), giving MPC
+platform the possibility to use new-style i2c drivers:
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=1469fa263870acd890a4b9f6ef557acc5d673b44
+You're breaking this, I doubt it's on purpose?
+
+> +	if (result < 0) {
+>  		printk(KERN_ERR "i2c-mpc - failed to add adapter\n");
+>  		goto fail_add;
+>  	}
+> +	of_register_i2c_devices(&i2c->adap, op->node);
+> 
+>  	return result;
+> 
+> -      fail_add:
+> -	if (i2c->irq != NO_IRQ)
+> -		free_irq(i2c->irq, i2c);
+> -      fail_irq:
+> + fail_add:
+> +	dev_set_drvdata(&op->dev, NULL);
+> +	free_irq(i2c->irq, i2c);
+> + fail_request:
+> +	irq_dispose_mapping(i2c->irq);
+> + fail_irq:
+>  	iounmap(i2c->base);
+> -      fail_map:
+> + fail_map:
+>  	kfree(i2c);
+>  	return result;
+>  };
+> 
+> -static int fsl_i2c_remove(struct platform_device *pdev)
+> +static int fsl_i2c_remove(struct of_device *op)
+>  {
+> -	struct mpc_i2c *i2c = platform_get_drvdata(pdev);
+> +	struct mpc_i2c *i2c = dev_get_drvdata(&op->dev);
+> 
+>  	i2c_del_adapter(&i2c->adap);
+> -	platform_set_drvdata(pdev, NULL);
+> +	dev_set_drvdata(&op->dev, NULL);
+> 
+>  	if (i2c->irq != NO_IRQ)
+>  		free_irq(i2c->irq, i2c);
+> 
+> +	irq_dispose_mapping(i2c->irq);
+>  	iounmap(i2c->base);
+>  	kfree(i2c);
+>  	return 0;
+>  };
+> 
+> -/* work with hotplug and coldplug */
+> -MODULE_ALIAS("platform:fsl-i2c");
+> +static const struct of_device_id mpc_i2c_of_match[] = {
+> +	{
+> +		.compatible	= "fsl-i2c",
+> +	},
+> +	{},
+> +};
+> +MODULE_DEVICE_TABLE(of, mpc_i2c_of_match);
+> +
+> 
+>  /* Structure for a device driver */
+> -static struct platform_driver fsl_i2c_driver = {
+> -	.probe = fsl_i2c_probe,
+> -	.remove = fsl_i2c_remove,
+> -	.driver	= {
+> -		.owner = THIS_MODULE,
+> -		.name = "fsl-i2c",
+> +static struct of_platform_driver mpc_i2c_driver = {
+> +	.match_table	= mpc_i2c_of_match,
+> +	.probe		= fsl_i2c_probe,
+> +	.remove		= __devexit_p(fsl_i2c_remove),
+> +	.driver		= {
+> +		.owner	= THIS_MODULE,
+> +		.name	= DRV_NAME,
+>  	},
+>  };
+> 
+>  static int __init fsl_i2c_init(void)
+>  {
+> -	return platform_driver_register(&fsl_i2c_driver);
+> +	int rv;
+> +
+> +	rv = of_register_platform_driver(&mpc_i2c_driver);
+> +	if (rv)
+> +		printk(KERN_ERR DRV_NAME " of_register_platform_driver failed (%i)\n", rv);
+
+Line too long, please fold.
+
+> +	return rv;
+>  }
+
+Note, BTW, that this error check doesn't seem very useful. Driver
+registration can't really fail, if it does you can't really miss it,
+and modprobe will tell you error code if it happens (not too sure what
+happens if init of built-in drivers fail.)
+
+> 
+>  static void __exit fsl_i2c_exit(void)
+>  {
+> -	platform_driver_unregister(&fsl_i2c_driver);
+> +	of_unregister_platform_driver(&mpc_i2c_driver);
+>  }
+> 
+>  module_init(fsl_i2c_init);
+
+This adds to Wolfram's comments about missing devinit/devexit tags
+which were correct and should be addressed.
 
 -- 
 Jean Delvare
