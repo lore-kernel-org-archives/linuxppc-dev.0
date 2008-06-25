@@ -1,16 +1,20 @@
-Return-Path: <khali@linux-fr.org>
-Date: Wed, 25 Jun 2008 15:58:25 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: "Jon Smirl" <jonsmirl@gmail.com>
-Subject: Re: [i2c] [PATCH] Convert i2c-mpc from a platform driver to an
-	of_platform one
-Message-ID: <20080625155825.43d07d20@hyperion.delvare>
-In-Reply-To: <9e4733910806101940o7f2f9863jb5e556ee2fc39a7e@mail.gmail.com>
-References: <9e4733910806101940o7f2f9863jb5e556ee2fc39a7e@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev list <Linuxppc-dev@ozlabs.org>,
-	Wolfram Sang <w.sang@pengutronix.de>, Linux I2C <i2c@lm-sensors.org>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 15893DDE98
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jun 2008 00:08:44 +1000 (EST)
+Message-Id: <F09034D9-1B3C-4087-B6DF-FAB7B3AFA191@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Michael Neuling <mikey@neuling.org>
+In-Reply-To: <20080625040718.028B470296@localhost.localdomain>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v924)
+Subject: Re: [PATCH 2/9] powerpc: Add macros to access floating point
+	registers in thread_struct.
+Date: Wed, 25 Jun 2008 09:08:31 -0500
+References: <20080625040718.028B470296@localhost.localdomain>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,247 +24,62 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Jon,
+>
+> Index: linux-2.6-ozlabs/arch/powerpc/kernel/ptrace32.c
+> ===================================================================
+> --- linux-2.6-ozlabs.orig/arch/powerpc/kernel/ptrace32.c
+> +++ linux-2.6-ozlabs/arch/powerpc/kernel/ptrace32.c
+> @@ -64,6 +64,11 @@ static long compat_ptrace_old(struct tas
+> 	return -EPERM;
+> }
+>
+> +/* Macros to workout the correct index for the FPR in the thread  
+> struct */
+> +#define FPRNUMBER(i) (((i) - PT_FPR0) >> 1)
+> +#define FPRHALF(i) (((i) - PT_FPR0) % 2)
 
-> Convert i2c-mpc from a platform driver into an of_platform driver.
-> This patch is much smaller since Jochen already added
-> of_find_i2c_driver(). Versions of this have been posted before.
-> 
-> Signed-ff-by: Jon Smirl <jonsmirl@gmail.com>
-> 
-> -- 
+Have you looked at what the compiler spits out here to make sure we  
+aren't getting a divide?  Seems like we could use '& 0x1'.
 
-This separator is supposed to be 3 dashes, NOT 2 dashes followed by a
-space. The latter makes the patch look like your e-mail signature, and
-e-mail clients usually strip that when one replies. Which is pretty
-inconvenient when commenting on a patch ;)
+> +#define FPRINDEX(i) TS_FPRWIDTH * FPRNUMBER(i) + FPRHALF(i)
 
-> 
->  drivers/i2c/busses/i2c-mpc.c |  105 +++++++++++++++++++++++++-----------------
->  1 files changed, 63 insertions(+), 42 deletions(-)
-> 
-> 
-> diff --git a/drivers/i2c/busses/i2c-mpc.c b/drivers/i2c/busses/i2c-mpc.c
-> index a076129..76d8091 100644
-> --- a/drivers/i2c/busses/i2c-mpc.c
-> +++ b/drivers/i2c/busses/i2c-mpc.c
-> @@ -18,6 +18,8 @@
->  #include <linux/sched.h>
->  #include <linux/init.h>
->  #include <linux/platform_device.h>
 
-If the driver is no longer a platform driver, do you still need to
-include <linux/platform_device.h>?
 
-> +#include <linux/of_platform.h>
-> +#include <linux/of_i2c.h>
-> 
->  #include <asm/io.h>
->  #include <linux/fsl_devices.h>
-> @@ -25,13 +27,13 @@
->  #include <linux/interrupt.h>
->  #include <linux/delay.h>
-> 
-> -#define MPC_I2C_ADDR  0x00
-> +#define DRV_NAME "mpc-i2c"
+>
 > +
->  #define MPC_I2C_FDR 	0x04
->  #define MPC_I2C_CR	0x08
->  #define MPC_I2C_SR	0x0c
->  #define MPC_I2C_DR	0x10
->  #define MPC_I2C_DFSRR 0x14
-> -#define MPC_I2C_REGION 0x20
-> 
->  #define CCR_MEN  0x80
->  #define CCR_MIEN 0x40
-> @@ -315,102 +317,121 @@ static struct i2c_adapter mpc_ops = {
->  	.timeout = 1,
->  };
-> 
-> -static int fsl_i2c_probe(struct platform_device *pdev)
-> +static int fsl_i2c_probe(struct of_device *op, const struct
-> of_device_id *match)
->  {
->  	int result = 0;
->  	struct mpc_i2c *i2c;
-> -	struct fsl_i2c_platform_data *pdata;
-> -	struct resource *r = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> -
-> -	pdata = (struct fsl_i2c_platform_data *) pdev->dev.platform_data;
-> 
->  	i2c = kzalloc(sizeof(*i2c), GFP_KERNEL);
->  	if (!i2c)
->  		return -ENOMEM;
-> 
-> -	i2c->irq = platform_get_irq(pdev, 0);
-> -	if (i2c->irq < 0)
-> -		i2c->irq = NO_IRQ; /* Use polling */
-> +	if (of_get_property(op->node, "dfsrr", NULL))
-> +		i2c->flags |= FSL_I2C_DEV_SEPARATE_DFSRR;
-> 
-> -	i2c->flags = pdata->device_flags;
-> -	init_waitqueue_head(&i2c->queue);
-> +	if (of_device_is_compatible(op->node, "mpc5200-i2c"))
-> +		i2c->flags |= FSL_I2C_DEV_CLOCK_5200;
-> 
-> -	i2c->base = ioremap((phys_addr_t)r->start, MPC_I2C_REGION);
-> +	init_waitqueue_head(&i2c->queue);
-> 
-> +	i2c->base = of_iomap(op->node, 0);
->  	if (!i2c->base) {
->  		printk(KERN_ERR "i2c-mpc - failed to map controller\n");
->  		result = -ENOMEM;
->  		goto fail_map;
->  	}
-> 
-> -	if (i2c->irq != NO_IRQ)
-> -		if ((result = request_irq(i2c->irq, mpc_i2c_isr,
-> -					  IRQF_SHARED, "i2c-mpc", i2c)) < 0) {
-> -			printk(KERN_ERR
-> -			       "i2c-mpc - failed to attach interrupt\n");
-> -			goto fail_irq;
-> -		}
-> +	i2c->irq = irq_of_parse_and_map(op->node, 0);
-> +	if (i2c->irq == NO_IRQ) {
-> +		result = -ENXIO;
-> +		goto fail_irq;
-> +	}
+> long compat_arch_ptrace(struct task_struct *child, compat_long_t  
+> request,
+> 			compat_ulong_t caddr, compat_ulong_t cdata)
+> {
+> @@ -122,7 +127,8 @@ long compat_arch_ptrace(struct task_stru
+> 			 * to be an array of unsigned int (32 bits) - the
+> 			 * index passed in is based on this assumption.
+> 			 */
+> -			tmp = ((unsigned int *)child->thread.fpr)[index - PT_FPR0];
+> +			tmp = ((unsigned int *)child->thread.fpr)
+> +				[FPRINDEX(index)];
+> 		}
+> 		ret = put_user((unsigned int)tmp, (u32 __user *)data);
+> 		break;
+> @@ -162,7 +168,8 @@ long compat_arch_ptrace(struct task_stru
+> 		CHECK_FULL_REGS(child->thread.regs);
+> 		if (numReg >= PT_FPR0) {
+> 			flush_fp_to_thread(child);
+> -			tmp = ((unsigned long int *)child->thread.fpr)[numReg - PT_FPR0];
+> +			tmp = ((unsigned long int *)child->thread.fpr)
+> +				[FPRINDEX(numReg)];
+> 		} else { /* register within PT_REGS struct */
+> 			tmp = ptrace_get_reg(child, numReg);
+> 		}
+> @@ -217,7 +224,8 @@ long compat_arch_ptrace(struct task_stru
+> 			 * to be an array of unsigned int (32 bits) - the
+> 			 * index passed in is based on this assumption.
+> 			 */
+> -			((unsigned int *)child->thread.fpr)[index - PT_FPR0] = data;
+> +			((unsigned int *)child->thread.fpr)
+> +				[FPRINDEX(index)] = data;
+> 			ret = 0;
+> 		}
+> 		break;
 
-This is a significant functionality change. The original code supported
-devices with no IRQ, now your enforce the use of an IRQ and fail if
-it's not there. If you have any reason to do that, this must be in a
-separate patch, and this must be done consistently (removing the
-polling code in i2c_wait, etc.)
-
-> +
-> +	result = request_irq(i2c->irq, mpc_i2c_isr,
-> +						IRQF_SHARED, "i2c-mpc", i2c);
-> +	if (result < 0) {
-> +		printk(KERN_ERR "i2c-mpc - failed to attach interrupt\n");
-> +		goto fail_request;
-> +	}
-> 
->  	mpc_i2c_setclock(i2c);
-> -	platform_set_drvdata(pdev, i2c);
-> +
-> +	dev_set_drvdata(&op->dev, i2c);
-> 
->  	i2c->adap = mpc_ops;
-> -	i2c->adap.nr = pdev->id;
->  	i2c_set_adapdata(&i2c->adap, i2c);
-> -	i2c->adap.dev.parent = &pdev->dev;
-> -	if ((result = i2c_add_numbered_adapter(&i2c->adap)) < 0) {
-> +	i2c->adap.dev.parent = &op->dev;
-> +
-> +	result = i2c_add_adapter(&i2c->adap);
-
-The driver was previously using i2c_add_numbered_adapter(), giving MPC
-platform the possibility to use new-style i2c drivers:
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=1469fa263870acd890a4b9f6ef557acc5d673b44
-You're breaking this, I doubt it's on purpose?
-
-> +	if (result < 0) {
->  		printk(KERN_ERR "i2c-mpc - failed to add adapter\n");
->  		goto fail_add;
->  	}
-> +	of_register_i2c_devices(&i2c->adap, op->node);
-> 
->  	return result;
-> 
-> -      fail_add:
-> -	if (i2c->irq != NO_IRQ)
-> -		free_irq(i2c->irq, i2c);
-> -      fail_irq:
-> + fail_add:
-> +	dev_set_drvdata(&op->dev, NULL);
-> +	free_irq(i2c->irq, i2c);
-> + fail_request:
-> +	irq_dispose_mapping(i2c->irq);
-> + fail_irq:
->  	iounmap(i2c->base);
-> -      fail_map:
-> + fail_map:
->  	kfree(i2c);
->  	return result;
->  };
-> 
-> -static int fsl_i2c_remove(struct platform_device *pdev)
-> +static int fsl_i2c_remove(struct of_device *op)
->  {
-> -	struct mpc_i2c *i2c = platform_get_drvdata(pdev);
-> +	struct mpc_i2c *i2c = dev_get_drvdata(&op->dev);
-> 
->  	i2c_del_adapter(&i2c->adap);
-> -	platform_set_drvdata(pdev, NULL);
-> +	dev_set_drvdata(&op->dev, NULL);
-> 
->  	if (i2c->irq != NO_IRQ)
->  		free_irq(i2c->irq, i2c);
-> 
-> +	irq_dispose_mapping(i2c->irq);
->  	iounmap(i2c->base);
->  	kfree(i2c);
->  	return 0;
->  };
-> 
-> -/* work with hotplug and coldplug */
-> -MODULE_ALIAS("platform:fsl-i2c");
-> +static const struct of_device_id mpc_i2c_of_match[] = {
-> +	{
-> +		.compatible	= "fsl-i2c",
-> +	},
-> +	{},
-> +};
-> +MODULE_DEVICE_TABLE(of, mpc_i2c_of_match);
-> +
-> 
->  /* Structure for a device driver */
-> -static struct platform_driver fsl_i2c_driver = {
-> -	.probe = fsl_i2c_probe,
-> -	.remove = fsl_i2c_remove,
-> -	.driver	= {
-> -		.owner = THIS_MODULE,
-> -		.name = "fsl-i2c",
-> +static struct of_platform_driver mpc_i2c_driver = {
-> +	.match_table	= mpc_i2c_of_match,
-> +	.probe		= fsl_i2c_probe,
-> +	.remove		= __devexit_p(fsl_i2c_remove),
-> +	.driver		= {
-> +		.owner	= THIS_MODULE,
-> +		.name	= DRV_NAME,
->  	},
->  };
-> 
->  static int __init fsl_i2c_init(void)
->  {
-> -	return platform_driver_register(&fsl_i2c_driver);
-> +	int rv;
-> +
-> +	rv = of_register_platform_driver(&mpc_i2c_driver);
-> +	if (rv)
-> +		printk(KERN_ERR DRV_NAME " of_register_platform_driver failed (%i)\n", rv);
-
-Line too long, please fold.
-
-> +	return rv;
->  }
-
-Note, BTW, that this error check doesn't seem very useful. Driver
-registration can't really fail, if it does you can't really miss it,
-and modprobe will tell you error code if it happens (not too sure what
-happens if init of built-in drivers fail.)
-
-> 
->  static void __exit fsl_i2c_exit(void)
->  {
-> -	platform_driver_unregister(&fsl_i2c_driver);
-> +	of_unregister_platform_driver(&mpc_i2c_driver);
->  }
-> 
->  module_init(fsl_i2c_init);
-
-This adds to Wolfram's comments about missing devinit/devexit tags
-which were correct and should be addressed.
-
--- 
-Jean Delvare
+- k
