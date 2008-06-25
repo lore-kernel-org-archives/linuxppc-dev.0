@@ -1,26 +1,13 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id 6DD67DDED7
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jun 2008 09:24:09 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: Adrian Bunk <bunk@kernel.org>
-Subject: Re: [PATCH 48/60] microblaze_v4: headers simple files - empty or
-	redirect to asm-generic
-Date: Fri, 27 Jun 2008 01:23:05 +0200
-References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
-	<200806261838.33787.arnd@arndb.de>
-	<20080626180530.GA22827@cs181140183.pp.htv.fi>
-In-Reply-To: <20080626180530.GA22827@cs181140183.pp.htv.fi>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Message-Id: <200806270123.06669.arnd@arndb.de>
-Cc: linux-arch@vger.kernel.org, alan@lxorguk.ukuu.org.uk,
-	Michal Simek <monstr@monstr.eu>, vapier.adi@gmail.com,
-	matthew@wil.cx, microblaze-uclinux@itee.uq.edu.au,
-	linux-kernel@vger.kernel.org, drepper@redhat.com,
-	linuxppc-dev@ozlabs.org, will.newton@gmail.com, hpa@zytor.com,
-	monstr@seznam.cz, John.Linn@xilinx.com, john.williams@petalogix.com
+Return-Path: <grant.likely@secretlab.ca>
+Date: Wed, 25 Jun 2008 13:21:04 -0700
+From: Grant Likely <grant.likely@secretlab.ca>
+Subject: [PATCH] powerpc/bootwrapper: Add documentation of boot wrapper targets
+To: john.linn@xilinx.com, stephen.neuendorffer@xilinx.com,
+	linuxppc-dev@ozlabs.com, paulus@samba.org
+Message-id: <20080625202104.30114.47902.stgit@trillian.secretlab.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=utf-8
+Cc: petermendham@computing.dundee.ac.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,51 +17,147 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thursday 26 June 2008, Adrian Bunk wrote:
-> Honestly, I do not completely like your approach of getting the 
-> microblaze port submitter to create the asm-generic files - I would 
-> personally prefer if the microblaze port would look exactly like all 
-> other ports and the (reasonable) changes you have in mind were not
-> being discussed and done as part of the submission of a new port.
+From: Grant Likely <grant.likely@secretlab.ca>
 
-But it works really well this way ;-). My point is that a new port
-should look just like all the other ports should have looked as
-well, not like they did. When it comes to the ABI, you
-cannot make incompatible changes after it's merged, so IMHO all
-ABI defining headers should go to asm-generic if possible.
+There have been many questions on and off the mailing list about how
+exactly the bootwrapper is used for embedded targets.  Add some
+documentation and help text to try and clarify the system.
 
-Since there doesn't seem to be anyone investing work into moving the
-files there (I started it before, but got bored before submitting
-them all myself), the point of adding a new architecture is exactly
-the right one for putting the file to asm-generic. For Michal, there
-is no difference between putting the file into asm-generic or
-asm-microblaze, other than that he has to change his existing
-patch once, but in return he gets fewer files to maintain afterwards.
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+---
 
-The fundamental principle here is: if you want your code to get in,
-do it in a way that makes your own code cleaner by making it cleaner
-for everyone else as well.
-The result is that more people look at the code, and that Michal's
-name gets more widely known, so the next time he needs something
-from another developer, he's more likely to get heard because
-you think of him as the person that did all the useful work on
-the asm-generic files.
+ Documentation/powerpc/bootwrapper.txt |   78 +++++++++++++++++++++++++++++++++
+ arch/powerpc/Makefile                 |   15 ++++++
+ arch/powerpc/boot/wrapper             |    4 ++
+ 3 files changed, 96 insertions(+), 1 deletions(-)
 
-> After all, it won't matter whether we'll unify resp. remove
-> 22 or 23 files.
-
-That wasn't my idea. The logic was that if one more file exists
-in asm-generic that can be removed from the architectures,
-we get 22 more files to remove without anyone having to look
-at the big picture. When microblaze is in, I can compile a list
-with asm-generic files that can be used to replace the architecture
-specific files, so the arch maintainers can decide on their own
-whether to clean their own stuff up or not.
-
-With namei.h, I may have gone too far to request moving it
-to asm-generic as part of the microblaze merge, because it's
-not an ABI header, but I think it's a step in the right direction
-anyway, and I may put it there myself if I ever get to do
-my "how to port Linux to a new architecture the right way" paper.
-
-	Arnd <><
+diff --git a/Documentation/powerpc/bootwrapper.txt b/Documentation/powerpc/bootwrapper.txt
+new file mode 100644
+index 0000000..8dcb560
+--- /dev/null
++++ b/Documentation/powerpc/bootwrapper.txt
+@@ -0,0 +1,78 @@
++The PowerPC boot wrapper
++------------------------
++Copyright (C) Secret Lab Technologies Ltd.
++
++PowerPC image targets compresses and wraps the kernel image (vmlinux) with
++a boot wrapper to make it usable by the system firmware.  There is no
++standard PowerPC firmware interface, so the boot wrapper is designed to
++be adaptable for each kind of image that needs to be built.
++
++The boot wrapper can be found in the arch/powerpc/boot/ directory.  The
++Makefile in that directory has targets for all the available image types.
++Currently, the following image targets exist:
++
++   cuImage.%:		Backwards compatible uImage for older version of
++			U-Boot (for versions that don't understand the device
++			tree).  This image embeds a device tree blob inside
++			the image.
++   dtbImage.%:		Similar to zImage, except device tree blob is embedded
++			inside the image.
++   simpleImage.%:	Firmware independent compressed image that does not
++			depend on any particular firmware interface and embeds
++			a device tree blob.  This image can be loaded to any
++			location in RAM and jumped to.  Firmware cannot pass
++			any configuration data to the kernel with this image
++			type and the kernel depends on the device tree to
++			determine its console device.
++   treeImage.%;		Image format for some versions of ppc4xx firmware (non
++			U-Boot firmware).  This image embeds a device tree
++			blob inside the image.
++   uImage:		Native image format used by U-Boot.  The uImage target
++			does not add any boot code.  It just wraps a compressed
++			vmlinux in the uImage data structure.
++   zImage.%:		Image usable by OpenFirmware.  Image expects firmware
++			to provide the device tree using OpenFirmware
++			interfaces.  Typically general purpose hardware uses
++			this image format.
++
++Image types which embed a device tree blob (simpleImage, dtbImage, treeImage,
++and cuImage) all generate the device tree blob from a file in the
++arch/powerpc/boot/dts/ directory.  The Makefile selects the correct device
++tree source based on the name of the target.  Therefore, if the kernel is
++built with 'make treeImage.walnut simpleImage.virtex405-ml403', then the
++build system will use arch/powerpc/boot/dts/walnut.dts to build
++treeImage.walnut and arch/powerpc/boot/dts/virtex405-ml403.dts to build
++the simpleImage.virtex405-ml403.
++
++Two special targets called 'zImage' and 'zImage.initrd' also exist.  These
++targets build all the default images as selected by the kernel configuration.
++Default images are selected by the boot wrapper Makefile
++(arch/powerpc/boot/Makefile) by adding targets to the $image-y variable.  Look
++at the Makefile to see which default image targets are available.
++
++How it is built
++---------------
++arch/powerpc is designed to support multiplatform kernels, which means
++that a single vmlinux image can be booted on many different target boards.
++It also means that the boot wrapper must be able to wrap for many kinds of
++images on a single build.  The design decision was made to not use any
++conditional compilation code (#ifdef, etc) in the boot wrapper source code.
++All of the boot wrapper pieces are buildable at any time regardless of the
++kernel configuration.  Building all the wrapper bits on every kernel build
++also ensures that obscure parts of the wrapper are at the very least compile
++tested in a large variety of environments.
++
++The wrapper is adapted for different image types at link time by linking in
++just the wrapper bits that are appropriate for the image type.  The 'wrapper'
++script (found in arch/powerpc/boot/wrapper) is called by the Makefile and
++is responsible for selecting the correct wrapper bits for the image type.
++The arguments are well documented in the script's comment block, so they
++are not repeated here.  However, it is worth mentioning that the script
++uses the -p (platform) argument as the main method of deciding which wrapper
++bits to compile in.  Look for the large 'case "$platform" in' block in the
++middle of the script.  This is also the place where platform specific fixups
++can be selected by changing the link order.
++
++In particular, care should be taken when working with cuImages.  cuImage
++wrapper bits are very board specific and care should be taken to make sure
++the target you are trying to build is supported by the wrapper bits.
+diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
+index b7d4c4c..754c7eb 100644
+--- a/arch/powerpc/Makefile
++++ b/arch/powerpc/Makefile
+@@ -169,12 +169,25 @@ bootwrapper_install %.dtb:
+ 	$(Q)$(MAKE) ARCH=ppc64 $(build)=$(boot) $(patsubst %,$(boot)/%,$@)
+ 
+ define archhelp
+-  @echo '* zImage          - Compressed kernel image (arch/$(ARCH)/boot/zImage.*)'
++  @echo '* zImage          - Build default images selected by kernel config'
++  @echo '  zImage.*        - Compressed kernel image (arch/$(ARCH)/boot/zImage.*)'
++  @echo '  uImage          - U-Book native image format'
++  @echo '  cuImage.<dt>    - Backwards compatible U-Boot image for older'
++  @echo '                    versions which do not support device trees'
++  @echo '  dtbImage.<dt>   - zImage with an embedded device tree blob'
++  @echo '  simpleImage.<dt> - Firmware independant image.'
++  @echo '  treeImage.<dt>  - Support for older IBM 4xx firmware (not U-Boot)'
+   @echo '  install         - Install kernel using'
+   @echo '                    (your) ~/bin/installkernel or'
+   @echo '                    (distribution) /sbin/installkernel or'
+   @echo '                    install to $$(INSTALL_PATH) and run lilo'
+   @echo '  *_defconfig     - Select default config from arch/$(ARCH)/configs'
++  @echo ''
++  @echo '  Targets with <dt> embed a device tree blob inside the image'
++  @echo '  These targets support board with firmware that does not'
++  @echo '  support passing a device tree directly.  Replace <dt> with the'
++  @echo '  name of a dts file from the arch/$(ARCH)/boot/dts/ directory'
++  @echo '  (minus the .dts extension).'
+ endef
+ 
+ install:
+diff --git a/arch/powerpc/boot/wrapper b/arch/powerpc/boot/wrapper
+index d6c96d9..7cd4182 100755
+--- a/arch/powerpc/boot/wrapper
++++ b/arch/powerpc/boot/wrapper
+@@ -203,6 +203,10 @@ simpleboot-virtex405-*)
+     platformo="$object/virtex405-head.o $object/simpleboot.o"
+     binary=y
+     ;;
++simpleboot-*)
++    platformo="$object/simpleboot.o"
++    binary=y
++    ;;
+ esac
+ 
+ vmz="$tmpdir/`basename \"$kernel\"`.$ext"
