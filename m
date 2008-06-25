@@ -1,21 +1,19 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 2A92CDDFEC
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jun 2008 09:36:19 +1000 (EST)
-In-Reply-To: <4862AA19.3030502@freescale.com>
-References: <1214424332-18496-1-git-send-email-timur@freescale.com>
-	<762468c24d365ca8397b5833aa172b95@kernel.crashing.org>
-	<4862AA19.3030502@freescale.com>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <c293d4d144094e5b0311b703e64893dc@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
+Return-Path: <jwboyer@gmail.com>
+Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.30])
+	by ozlabs.org (Postfix) with ESMTP id 421CADDED6
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jun 2008 09:51:56 +1000 (EST)
+Received: by yw-out-2324.google.com with SMTP id 5so1117284ywh.39
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Jun 2008 16:51:54 -0700 (PDT)
 Subject: Re: [PATCH] powerpc: add of_find_next_property and
 	of_get_aliased_index
-Date: Thu, 26 Jun 2008 01:35:57 +0200
+From: Josh Boyer <jwboyer@gmail.com>
 To: Timur Tabi <timur@freescale.com>
+In-Reply-To: <1214424332-18496-1-git-send-email-timur@freescale.com>
+References: <1214424332-18496-1-git-send-email-timur@freescale.com>
+Content-Type: text/plain
+Date: Wed, 25 Jun 2008 19:51:49 -0400
+Message-Id: <1214437909.14225.122.camel@weaponx>
+Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org, sr@denx.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -26,42 +24,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> It returns 2 for both "i2c-1" and "i2c-2".
->
-> Well, I'm assuming that the alias property names will follow the 
-> current
-> convention of xxxxnn where xxxx is a name and nn is a number.  No 
-> dashes or
-> other punctuation.
+On Wed, 2008-06-25 at 15:05 -0500, Timur Tabi wrote:
+> +/**
+> + * Return the first or next property within a node.
+> + * @np: the node
+> + * @prev: if NULL, return 1st prop, otherwise return the prop after 'prev'
+> + *
+> + * This function is used to get a list of properties within a node.  It's
+> + * also useful for when you don't know the name of the propety you want to
+> + * find.
 
-Well, yes, your suggested code doesn't allow punctuation either; but
-that wasn't my point, it doesn't allow numbers in names.  Why don't
-you just parse a number from the end?
+How is this useful when you don't know the name of the property you want
+to find?  I don't understand that at all.
 
->> Also, alias names do not have any significance in general, they are
->> just handy shortcut names for humans to use; it would be better not
->> to overload this.  What do you want to use this for?
->
-> As an alternative to cell-index or device-id for enumerating devices.  
-> The
-> consensus from the '"cell-index" vs. "index" vs. no index in I2C 
-> device nodes'
-> thread is that aliases are to be used to enumerate devices.
+I'm not really sure what good having a list of the properties within a
+node is either, outside of using it for debugging.
 
-Erm, no.  That wasn't the consensus as I remember it; besides, it's
-not a good plan.
-
-Pretty much all busses can be enumerated without anything like this.
-There was consensus on this.
-
-Overloading "cell-index" is a bad plan.  There was consensus on this,
-as well.
-
-The only thing a platform should ever use aliases for is if it needs
-to (for whatever purpose) find a specific device, that it cannot
-identify otherwise (via "reg", ...).  And then that platform code
-should look up the device by the alias, not look up the alias by the
-device -- there is no 1-1 mapping from device to alias!
-
-
-Segher
+josh
