@@ -1,21 +1,12 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 72224DDE28
-	for <linuxppc-dev@ozlabs.org>; Wed, 25 Jun 2008 12:19:24 +1000 (EST)
-Message-Id: <37C1E242-D46C-4A70-B00E-F91635EA2154@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Michael Neuling <mikey@neuling.org>
-In-Reply-To: <9409.1214352397@neuling.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v924)
-Subject: Re: [PATCH 7/9] powerpc: Add VSX assembler code macros 
-Date: Tue, 24 Jun 2008 21:19:08 -0500
-References: <20080624105750.2D695702A4@localhost.localdomain>
-	<B2FEFA8A-8814-44BE-81E5-8E2A873C2A1F@kernel.crashing.org>
-	<9409.1214352397@neuling.org>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Return-Path: <dgibson@ozlabs.org>
+Date: Wed, 25 Jun 2008 13:53:07 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Jon Loeliger <jdl@freescale.com>
+Subject: dtc: Use stdint.h types throughout dtc
+Message-ID: <20080625035307.GB8284@yookeroo.seuss>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,155 +16,225 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Currently, dtc defines Linux-like names for various fixed-size integer
+types.  There's no good reason to do this; even Linux itself doesn't
+use these names for externally visible things any more.  This patch
+replaces these with the C99 standardized type names from stdint.h.
 
-On Jun 24, 2008, at 7:06 PM, Michael Neuling wrote:
+Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 
-> In message  
-> <B2FEFA8A-8814-44BE-81E5-8E2A873C2A1F@kernel.crashing.org> you wrote
-> :
->>
->> On Jun 24, 2008, at 5:57 AM, Michael Neuling wrote:
->>
->>> This adds the macros for the VSX load/store instruction as most
->>> binutils are not going to support this for a while.
->>>
->>> Also add VSX register save/restore macros and vsr[0-63] register
->>> definitions.
->>>
->>> Signed-off-by: Michael Neuling <mikey@neuling.org>
->>> ---
->>>
->>> include/asm-powerpc/ppc_asm.h |  127 ++++++++++++++++++++++++++++++ 
->>> ++
->>> ++++++++++
->>> 1 file changed, 127 insertions(+)
->>>
->>> Index: linux-2.6-ozlabs/include/asm-powerpc/ppc_asm.h
->>> ===================================================================
->>> --- linux-2.6-ozlabs.orig/include/asm-powerpc/ppc_asm.h
->>> +++ linux-2.6-ozlabs/include/asm-powerpc/ppc_asm.h
->>> @@ -74,6 +74,15 @@ END_FTR_SECTION_IFCLR(CPU_FTR_PURR);		
-> 		
->>> 				REST_10GPRS(22, base)
->>> #endif
->>>
->>> +/*
->>> + * Define what the VSX XX1 form instructions will look like, then  
->>> add
->>> + * the 128 bit load store instructions based on that.
->>> + */
->>> +#define VSX_XX1(xs, ra, rb)	(((xs) & 0x1f) << 21 | ((ra) << 16) |
-> \
->>> +				 ((rb) << 11) | (((xs) >> 5)))
->>> +
->>> +#define STXVD2X(xs, ra, rb)	.long (0x7c000798 | VSX_XX1((xs), (ra),
->
->>> (rb)))
->>> +#define LXVD2X(xs, ra, rb)	.long (0x7c000698 | VSX_XX1((xs), (ra),
->>> (rb)))
->>>
->>> #define SAVE_2GPRS(n, base)	SAVE_GPR(n, base); SAVE_GPR(n+1, base)
->>> #define SAVE_4GPRS(n, base)	SAVE_2GPRS(n, base); SAVE_2GPRS(n+2,  
->>> base)
->>> @@ -110,6 +119,57 @@ END_FTR_SECTION_IFCLR(CPU_FTR_PURR);		
-> 		
->>> #define REST_16VRS(n,b,base)	REST_8VRS(n,b,base); REST_8VRS(n
->>> +8,b,base)
->>> #define REST_32VRS(n,b,base)	REST_16VRS(n,b,base); REST_16VRS(n
->>> +16,b,base)
->>>
->>> +/* Save the lower 32 VSRs in the thread VSR region */
->>> +#define SAVE_VSR(n,b,base)	li b,THREAD_VSR0+(16*(n));
->>> STXVD2X(n,b,base)
->>> +#define SAVE_2VSRS(n,b,base)	SAVE_VSR(n,b,base); SAVE_VSR(n 
->>> +1,b,base
-> )
->>> +#define SAVE_4VSRS(n,b,base)	SAVE_2VSRS(n,b,base); SAVE_2VSRS(n
->>> +2,b,base)
->>> +#define SAVE_8VSRS(n,b,base)	SAVE_4VSRS(n,b,base); SAVE_4VSRS(n
->>> +4,b,base)
->>> +#define SAVE_16VSRS(n,b,base)	SAVE_8VSRS(n,b,base); SAVE_8VSRS(n
->>> +8,b,base)
->>> +#define SAVE_32VSRS(n,b,base)	SAVE_16VSRS(n,b,base); SAVE_16VSRS(n
->>> +16,b,base)
->>> +#define REST_VSR(n,b,base)	li b,THREAD_VSR0+(16*(n));
->>> LXVD2X(n,b,base)
->>> +#define REST_2VSRS(n,b,base)	REST_VSR(n,b,base); REST_VSR(n 
->>> +1,b,base
-> )
->>> +#define REST_4VSRS(n,b,base)	REST_2VSRS(n,b,base); REST_2VSRS(n
->>> +2,b,base)
->>> +#define REST_8VSRS(n,b,base)	REST_4VSRS(n,b,base); REST_4VSRS(n
->>> +4,b,base)
->>> +#define REST_16VSRS(n,b,base)	REST_8VSRS(n,b,base); REST_8VSRS(n
->>> +8,b,base)
->>> +#define REST_32VSRS(n,b,base)	REST_16VSRS(n,b,base); REST_16VSRS(n
->>> +16,b,base)
->>> +/* Save the upper 32 VSRs (32-63) in the thread VSX region (0-31)  
->>> */
->>> +#define SAVE_VSRU(n,b,base)	li b,THREAD_VR0+(16*(n));  STXVD2X(n
->>> +32,b,base)
->>> +#define SAVE_2VSRSU(n,b,base)	SAVE_VSRU(n,b,base); SAVE_VSRU(n
->>> +1,b,base)
->>> +#define SAVE_4VSRSU(n,b,base)	SAVE_2VSRSU(n,b,base); SAVE_2VSRSU(n
->>> +2,b,base)
->>> +#define SAVE_8VSRSU(n,b,base)	SAVE_4VSRSU(n,b,base); SAVE_4VSRSU(n
->>> +4,b,base)
->>> +#define SAVE_16VSRSU(n,b,base)	SAVE_8VSRSU(n,b,base); SAVE_8VSRSU(n
->>> +8,b,base)
->>> +#define SAVE_32VSRSU(n,b,base)	SAVE_16VSRSU(n,b,base);
->>> SAVE_16VSRSU(n+16,b,base)
->>> +#define REST_VSRU(n,b,base)	li b,THREAD_VR0+(16*(n)); LXVD2X(n
->>> +32,b,base)
->>> +#define REST_2VSRSU(n,b,base)	REST_VSRU(n,b,base); REST_VSRU(n
->>> +1,b,base)
->>> +#define REST_4VSRSU(n,b,base)	REST_2VSRSU(n,b,base); REST_2VSRSU(n
->>> +2,b,base)
->>> +#define REST_8VSRSU(n,b,base)	REST_4VSRSU(n,b,base); REST_4VSRSU(n
->>> +4,b,base)
->>> +#define REST_16VSRSU(n,b,base)	REST_8VSRSU(n,b,base); REST_8VSRSU(n
->>> +8,b,base)
->>> +#define REST_32VSRSU(n,b,base)	REST_16VSRSU(n,b,base);
->>> REST_16VSRSU(n+16,b,base)
->>> +
->>> +#ifdef CONFIG_VSX
->>
->> I think we should do this in fpu.S so its clearly in the code when
->> reading it what's going on.
->
-> Do you mean the section above or below this comment?
+Index: dtc/dtc.h
+===================================================================
+--- dtc.orig/dtc.h	2008-06-25 13:47:29.000000000 +1000
++++ dtc/dtc.h	2008-06-25 13:48:03.000000000 +1000
+@@ -75,11 +75,7 @@
+ 	return new;
+ }
+ 
+-typedef uint8_t u8;
+-typedef uint16_t u16;
+-typedef uint32_t u32;
+-typedef uint64_t u64;
+-typedef u32 cell_t;
++typedef uint32_t cell_t;
+ 
+ #define cpu_to_be16(x)	htons(x)
+ #define be16_to_cpu(x)	ntohs(x)
+@@ -144,7 +140,7 @@
+ struct data data_merge(struct data d1, struct data d2);
+ struct data data_append_cell(struct data d, cell_t word);
+ struct data data_append_re(struct data d, const struct fdt_reserve_entry *re);
+-struct data data_append_addr(struct data d, u64 addr);
++struct data data_append_addr(struct data d, uint64_t addr);
+ struct data data_append_byte(struct data d, uint8_t byte);
+ struct data data_append_zeroes(struct data d, int len);
+ struct data data_append_align(struct data d, int align);
+@@ -222,7 +218,7 @@
+ 	char *label;
+ };
+ 
+-struct reserve_info *build_reserve_entry(u64 start, u64 len, char *label);
++struct reserve_info *build_reserve_entry(uint64_t start, uint64_t len, char *label);
+ struct reserve_info *chain_reserve_entry(struct reserve_info *first,
+ 					 struct reserve_info *list);
+ struct reserve_info *add_reserve_entry(struct reserve_info *list,
+@@ -232,11 +228,11 @@
+ struct boot_info {
+ 	struct reserve_info *reservelist;
+ 	struct node *dt;		/* the device tree */
+-	u32 boot_cpuid_phys;
++	uint32_t boot_cpuid_phys;
+ };
+ 
+ struct boot_info *build_boot_info(struct reserve_info *reservelist,
+-				  struct node *tree, u32 boot_cpuid_phys);
++				  struct node *tree, uint32_t boot_cpuid_phys);
+ 
+ /* Checks */
+ 
+Index: dtc/data.c
+===================================================================
+--- dtc.orig/data.c	2008-06-25 13:48:12.000000000 +1000
++++ dtc/data.c	2008-06-25 13:48:18.000000000 +1000
+@@ -262,9 +262,9 @@
+ 	return data_append_data(d, &bere, sizeof(bere));
+ }
+ 
+-struct data data_append_addr(struct data d, u64 addr)
++struct data data_append_addr(struct data d, uint64_t addr)
+ {
+-	u64 beaddr = cpu_to_be64(addr);
++	uint64_t beaddr = cpu_to_be64(addr);
+ 
+ 	return data_append_data(d, &beaddr, sizeof(beaddr));
+ }
+Index: dtc/dtc-parser.y
+===================================================================
+--- dtc.orig/dtc-parser.y	2008-06-25 13:49:51.000000000 +1000
++++ dtc/dtc-parser.y	2008-06-25 13:50:13.000000000 +1000
+@@ -39,10 +39,10 @@
+ 	char *literal;
+ 	char *labelref;
+ 	unsigned int cbase;
+-	u8 byte;
++	uint8_t byte;
+ 	struct data data;
+ 
+-	u64 addr;
++	uint64_t addr;
+ 	cell_t cell;
+ 	struct property *prop;
+ 	struct property *proplist;
+Index: dtc/flattree.c
+===================================================================
+--- dtc.orig/flattree.c	2008-06-25 13:48:25.000000000 +1000
++++ dtc/flattree.c	2008-06-25 13:49:39.000000000 +1000
+@@ -168,16 +168,16 @@
+ 	for_each_marker_of_type(m, LABEL)
+ 		emit_offset_label(f, m->ref, m->offset);
+ 
+-	while ((d.len - off) >= sizeof(u32)) {
++	while ((d.len - off) >= sizeof(uint32_t)) {
+ 		fprintf(f, "\t.long\t0x%x\n",
+-			be32_to_cpu(*((u32 *)(d.val+off))));
+-		off += sizeof(u32);
++			be32_to_cpu(*((uint32_t *)(d.val+off))));
++		off += sizeof(uint32_t);
+ 	}
+ 
+-	if ((d.len - off) >= sizeof(u16)) {
++	if ((d.len - off) >= sizeof(uint16_t)) {
+ 		fprintf(f, "\t.short\t0x%hx\n",
+-			be16_to_cpu(*((u16 *)(d.val+off))));
+-		off += sizeof(u16);
++			be16_to_cpu(*((uint16_t *)(d.val+off))));
++		off += sizeof(uint16_t);
+ 	}
+ 
+ 	if ((d.len - off) >= 1) {
+@@ -575,9 +575,9 @@
+ 	inb->ptr += len;
+ }
+ 
+-static u32 flat_read_word(struct inbuf *inb)
++static uint32_t flat_read_word(struct inbuf *inb)
+ {
+-	u32 val;
++	uint32_t val;
+ 
+ 	assert(((inb->ptr - inb->base) % sizeof(val)) == 0);
+ 
+@@ -611,7 +611,7 @@
+ 
+ 	inb->ptr += len;
+ 
+-	flat_realign(inb, sizeof(u32));
++	flat_realign(inb, sizeof(uint32_t));
+ 
+ 	return str;
+ }
+@@ -628,7 +628,7 @@
+ 
+ 	flat_read_chunk(inb, d.val, len);
+ 
+-	flat_realign(inb, sizeof(u32));
++	flat_realign(inb, sizeof(uint32_t));
+ 
+ 	return d;
+ }
+@@ -655,7 +655,7 @@
+ static struct property *flat_read_property(struct inbuf *dtbuf,
+ 					   struct inbuf *strbuf, int flags)
+ {
+-	u32 proplen, stroff;
++	uint32_t proplen, stroff;
+ 	char *name;
+ 	struct data val;
+ 
+@@ -725,7 +725,7 @@
+ {
+ 	struct node *node;
+ 	char *flatname;
+-	u32 val;
++	uint32_t val;
+ 
+ 	node = build_node(NULL, NULL);
+ 
+@@ -783,8 +783,8 @@
+ struct boot_info *dt_from_blob(const char *fname)
+ {
+ 	struct dtc_file *dtcf;
+-	u32 magic, totalsize, version, size_dt, boot_cpuid_phys;
+-	u32 off_dt, off_str, off_mem_rsvmap;
++	uint32_t magic, totalsize, version, size_dt, boot_cpuid_phys;
++	uint32_t off_dt, off_str, off_mem_rsvmap;
+ 	int rc;
+ 	char *blob;
+ 	struct fdt_header *fdt;
+@@ -794,7 +794,7 @@
+ 	int sizeleft;
+ 	struct reserve_info *reservelist;
+ 	struct node *tree;
+-	u32 val;
++	uint32_t val;
+ 	int flags = 0;
+ 
+ 	dtcf = dtc_open_file(fname, NULL);
+@@ -867,7 +867,7 @@
+ 		die("String table offset exceeds total size\n");
+ 
+ 	if (version >= 3) {
+-		u32 size_str = be32_to_cpu(fdt->size_dt_strings);
++		uint32_t size_str = be32_to_cpu(fdt->size_dt_strings);
+ 		if (off_str+size_str > totalsize)
+ 			die("String table extends past total size\n");
+ 		inbuf_init(&strbuf, blob + off_str, blob + off_str + size_str);
+Index: dtc/livetree.c
+===================================================================
+--- dtc.orig/livetree.c	2008-06-25 13:48:48.000000000 +1000
++++ dtc/livetree.c	2008-06-25 13:49:17.000000000 +1000
+@@ -123,7 +123,8 @@
+ 	*p = child;
+ }
+ 
+-struct reserve_info *build_reserve_entry(u64 address, u64 size, char *label)
++struct reserve_info *build_reserve_entry(uint64_t address, uint64_t size,
++					 char *label)
+ {
+ 	struct reserve_info *new = xmalloc(sizeof(*new));
+ 
+@@ -165,7 +166,7 @@
+ }
+ 
+ struct boot_info *build_boot_info(struct reserve_info *reservelist,
+-				  struct node *tree, u32 boot_cpuid_phys)
++				  struct node *tree, uint32_t boot_cpuid_phys)
+ {
+ 	struct boot_info *bi;
+ 
 
-Sorry, the code below.  (That does REST_32FPVSRS)..
-
->
->
->>
->>>
->>> +#define REST_32FPVSRS(n,c,base)					
-> 	\
->>> +BEGIN_FTR_SECTION							\
->>> +	b	2f;							\
->>> +END_FTR_SECTION_IFSET(CPU_FTR_VSX);				
-> 	\
->>> +	REST_32FPRS(n,base);						\
->>> +	b	3f;							\
->>> +2:	REST_32VSRS(n,c,base);						\
->>> +3:
->>> +
->>> +#define SAVE_32FPVSRS(n,c,base)					
-> 	\
->>> +BEGIN_FTR_SECTION							\
->>> +	b	2f;							\
->>> +END_FTR_SECTION_IFSET(CPU_FTR_VSX);				
-> 	\
->>> +	SAVE_32FPRS(n,base);						\
->>> +	b	3f;							\
->>> +2:	SAVE_32VSRS(n,c,base);						\
->>> +3:
->>> +
->>> +#else
->>> +#define REST_32FPVSRS(n,b,base)	REST_32FPRS(n, base)
->>> +#define SAVE_32FPVSRS(n,b,base)	SAVE_32FPRS(n, base)
->>> +#endif
->>
->>
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
