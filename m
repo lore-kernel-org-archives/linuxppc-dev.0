@@ -1,10 +1,10 @@
 Return-Path: <mikey@neuling.org>
 To: Paul Mackerras <paulus@samba.org>
 From: Michael Neuling <mikey@neuling.org>
-Date: Wed, 25 Jun 2008 14:07:17 +1000
-Subject: [PATCH 1/9] powerpc: Fix msr setting in 32 bit signal code
+Date: Wed, 25 Jun 2008 14:07:18 +1000
+Subject: [PATCH 3/9] powerpc: Move altivec_unavailable
 In-Reply-To: <1214366837.623950.515350956858.qpush@coopers>
-Message-Id: <20080625040717.E162270294@localhost.localdomain>
+Message-Id: <20080625040718.0BA6070298@localhost.localdomain>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -15,58 +15,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-If we set the SPE MSR bit in save_user_regs we can blow away the VEC
-bit.  This doesn't matter in reality as they are infact the same bit
-but looks bad.
-
-Also, when we add VSX in a later patch, we need to be able to set two
-separate MSR bits here.
+Move the altivec_unavailable code, to make room at 0xf40 where the
+vsx_unavailable exception will be.
 
 Signed-off-by: Michael Neuling <mikey@neuling.org>
 ---
 
- arch/powerpc/kernel/signal_32.c |   10 ++++++----
- 1 file changed, 6 insertions(+), 4 deletions(-)
+ arch/powerpc/kernel/head_64.S |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-Index: linux-2.6-ozlabs/arch/powerpc/kernel/signal_32.c
+Index: linux-2.6-ozlabs/arch/powerpc/kernel/head_64.S
 ===================================================================
---- linux-2.6-ozlabs.orig/arch/powerpc/kernel/signal_32.c
-+++ linux-2.6-ozlabs/arch/powerpc/kernel/signal_32.c
-@@ -336,6 +336,8 @@ struct rt_sigframe {
- static int save_user_regs(struct pt_regs *regs, struct mcontext __user *frame,
- 		int sigret)
- {
-+	unsigned long msr = regs->msr;
-+
- 	/* Make sure floating point registers are stored in regs */
- 	flush_fp_to_thread(current);
+--- linux-2.6-ozlabs.orig/arch/powerpc/kernel/head_64.S
++++ linux-2.6-ozlabs/arch/powerpc/kernel/head_64.S
+@@ -275,7 +275,8 @@ END_FTR_SECTION_IFSET(CPU_FTR_REAL_LE)
+ 	. = 0xf00
+ 	b	performance_monitor_pSeries
  
-@@ -354,8 +356,7 @@ static int save_user_regs(struct pt_regs
- 			return 1;
- 		/* set MSR_VEC in the saved MSR value to indicate that
- 		   frame->mc_vregs contains valid data */
--		if (__put_user(regs->msr | MSR_VEC, &frame->mc_gregs[PT_MSR]))
--			return 1;
-+		msr |= MSR_VEC;
- 	}
- 	/* else assert((regs->msr & MSR_VEC) == 0) */
+-	STD_EXCEPTION_PSERIES(0xf20, altivec_unavailable)
++	. = 0xf20
++	b	altivec_unavailable_pSeries
  
-@@ -377,8 +378,7 @@ static int save_user_regs(struct pt_regs
- 			return 1;
- 		/* set MSR_SPE in the saved MSR value to indicate that
- 		   frame->mc_vregs contains valid data */
--		if (__put_user(regs->msr | MSR_SPE, &frame->mc_gregs[PT_MSR]))
--			return 1;
-+		msr |= MSR_SPE;
- 	}
- 	/* else assert((regs->msr & MSR_SPE) == 0) */
+ #ifdef CONFIG_CBE_RAS
+ 	HSTD_EXCEPTION_PSERIES(0x1200, cbe_system_error)
+@@ -295,6 +296,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_REAL_LE)
  
-@@ -387,6 +387,8 @@ static int save_user_regs(struct pt_regs
- 		return 1;
- #endif /* CONFIG_SPE */
+ 	/* moved from 0xf00 */
+ 	STD_EXCEPTION_PSERIES(., performance_monitor)
++	STD_EXCEPTION_PSERIES(., altivec_unavailable)
  
-+	if (__put_user(msr, &frame->mc_gregs[PT_MSR]))
-+		return 1;
- 	if (sigret) {
- 		/* Set up the sigreturn trampoline: li r0,sigret; sc */
- 		if (__put_user(0x38000000UL + sigret, &frame->tramp[0])
+ /*
+  * An interrupt came in while soft-disabled; clear EE in SRR1,
