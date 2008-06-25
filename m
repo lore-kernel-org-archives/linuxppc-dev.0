@@ -1,24 +1,29 @@
-Return-Path: <schwab@suse.de>
-Received: from mx1.suse.de (mail.suse.de [195.135.220.2])
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id E34E1DE36F
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jun 2008 03:08:07 +1000 (EST)
-From: Andreas Schwab <schwab@suse.de>
-To: Gabriel Paubert <paubert@iram.es>
-Subject: Re: [PATCH 2/9] powerpc: Add macros to access floating
-	point	registers in thread_struct.
-References: <20080625040718.028B470296@localhost.localdomain>
-	<F09034D9-1B3C-4087-B6DF-FAB7B3AFA191@kernel.crashing.org>
-	<48626588.8050202@freescale.com> <20080625161255.GA12165@iram.es>
-Date: Wed, 25 Jun 2008 19:08:00 +0200
-In-Reply-To: <20080625161255.GA12165@iram.es> (Gabriel Paubert's message of
-	"Wed, 25 Jun 2008 18:12:55 +0200")
-Message-ID: <jetzfhigsv.fsf@sykes.suse.de>
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 0BA98DE031
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jun 2008 03:16:41 +1000 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	m5PHGZ7j003846
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Jun 2008 10:16:35 -0700 (MST)
+Received: from loki (udp110651uds.am.freescale.net [10.82.16.68])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m5PHGZrV011440
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Jun 2008 12:16:35 -0500 (CDT)
+Received: from scott by loki with local (Exim 4.69)
+	(envelope-from <scottwood@freescale.com>) id 1KBYbQ-0002OR-2n
+	for linuxppc-dev@ozlabs.org; Wed, 25 Jun 2008 12:16:16 -0500
+Date: Wed, 25 Jun 2008 12:16:16 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 1/2 v3] Document Freescale power management nodes, and the
+	sleep property.
+Message-ID: <20080625171616.GB9184@loki.buserror.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
-	Michael Neuling <mikey@neuling.org>, Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,29 +33,300 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Gabriel Paubert <paubert@iram.es> writes:
+Signed-off-by: Scott Wood <scottwood@freescale.com>
+---
+Added 86xx PMC bindings, and corrected a couple errors in the example.
 
-> On Wed, Jun 25, 2008 at 10:34:32AM -0500, Scott Wood wrote:
->> Kumar Gala wrote:
->> >>+/* Macros to workout the correct index for the FPR in the thread 
->> >>struct */
->> >>+#define FPRNUMBER(i) (((i) - PT_FPR0) >> 1)
->> >>+#define FPRHALF(i) (((i) - PT_FPR0) % 2)
->> >
->> >Have you looked at what the compiler spits out here to make sure we 
->> >aren't getting a divide?  Seems like we could use '& 0x1'.
->> 
->> GCC's not *that* dumb.  However, you may get some unnecessary 
->> sign-twiddling if "i" is signed.
->
-> Not for modulo 2, it's only an even/odd choice
+ Documentation/powerpc/booting-without-of.txt |  207 ++++++++++++++++++++-----
+ 1 files changed, 165 insertions(+), 42 deletions(-)
 
-That's wrong.  -1 % 2 == -1, 1 % 2 == 1.
-
-Andreas.
-
+diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
+index b68684d..076c71a 100644
+--- a/Documentation/powerpc/booting-without-of.txt
++++ b/Documentation/powerpc/booting-without-of.txt
+@@ -62,6 +62,7 @@ Table of Contents
+       s) Freescale on board FPGA
+       t) Freescael MSI interrupt controller
+       u) Freescale General-purpose Timers Module
++      v) Freescale Power Management Controller
+ 
+   VII - Marvell Discovery mv64[345]6x System Controller chips
+     1) The /system-controller node
+@@ -92,10 +93,12 @@ Table of Contents
+     3) OpenPIC Interrupt Controllers
+     4) ISA Interrupt Controllers
+ 
+-  VIII - Specifying GPIO information for devices
++  IX - Specifying GPIO information for devices
+     1) gpios property
+     2) gpio-controller nodes
+ 
++  X - Specifying device power management information (sleep property)
++
+   Appendix A - Sample SOC node for MPC8540
+ 
+ 
+@@ -2967,6 +2970,70 @@ platforms are moved over to use the flattened-device-tree model.
+ 	clock-frequency = <0>;
+     };
+ 
++    v) Freescale Power Management Controller
++
++    Properties:
++    - compatible: "fsl,<chip>-pmc".
++
++      "fsl,mpc8349-pmc" should be listed for any chip whose PMC is
++      compatible.  "fsl,mpc8313-pmc" should also be listed for any chip
++      whose PMC is compatible, and implies deep-sleep capability.
++
++      "fsl,mpc8548-pmc" should be listed for any chip whose PMC is
++      compatible.  "fsl,mpc8536-pmc" should also be listed for any chip
++      whose PMC is compatible, and implies deep-sleep capability.
++
++      "fsl,mpc8641d-pmc" should be listed for any chip whose PMC is
++      compatible; all statements below that apply to "fsl,mpc8548-pmc" also
++      apply to "fsl,mpc8641d-pmc".
++
++      Compatibility does not include bit assigments in SCCR/PMCDR; these bit
++      assigments are indicated via the sleep specifier in each device's
++      sleep property.
++
++    - reg: For devices compatible with "fsl,mpc8349-pmc", the first resource
++      is the PMC block, and the second resource is the Clock Configuration
++      block.
++
++      For devices compatible with "fsl,mpc8548-pmc", the first resource
++      is a 32-byte block beginning with DEVDISR.
++
++    - interrupts: For "fsl,mpc8349-pmc"-compatible devices, the first
++      resource is the PMC block interrupt.
++
++    - fsl,mpc8313-wakeup-timer: For "fsl,mpc8313-pmc"-compatible devices,
++      this is a phandle to an "fsl,gtm" node on which timer 4 can be used as
++      a wakeup source from deep sleep.
++
++    Sleep specifiers:
++
++      fsl,mpc8349-pmc: Sleep specifiers consist of one cell.  For each bit
++      that is set in the cell, the corresponding bit in SCCR will be saved
++      and cleared on suspend, and restored on resume.  This sleep controller
++      supports disabling and resuming devices at any time.
++
++      fsl,mpc8536-pmc: Sleep specifiers consist of three cells, the third of
++      which will be ORed into PMCDR upon suspend, and cleared from PMCDR
++      upon resume.  The first two cells are as described for fsl,mpc8578-pmc.
++      This sleep controller only supports disabling devices during system
++      sleep, or permanently.
++
++      fsl,mpc8548-pmc: Sleep specifiers consist of one or two cells, the
++      first of which will be ORed into DEVDISR (and the second into
++      DEVDISR2, if present -- this cell should be zero or absent if the
++      hardware does not have DEVDISR2) upon a request for permanent device
++      disabling.  This sleep controller does not support configuring devices
++      to disable during system sleep (unless supported by another compatible
++      match), or dynamically.
++
++    Example:
++
++	power@b00 {
++		compatible = "fsl,mpc8313-pmc", "fsl,mpc8349-pmc";
++		reg = <0xb00 0x100 0xa00 0x100>;
++		interrupts = <80 8>;
++	};
++
+ VII - Marvell Discovery mv64[345]6x System Controller chips
+ ===========================================================
+ 
+@@ -3574,8 +3641,8 @@ encodings listed below:
+ 	2 =  high to low edge sensitive type enabled
+ 	3 =  low to high edge sensitive type enabled
+ 
+-VIII - Specifying GPIO information for devices
+-==============================================
++IX - Specifying GPIO information for devices
++============================================
+ 
+ 1) gpios property
+ -----------------
+@@ -3623,6 +3690,37 @@ Example of two SOC GPIO banks defined as gpio-controller nodes:
+ 		gpio-controller;
+ 	};
+ 
++X - Specifying Device Power Management Information (sleep property)
++===================================================================
++
++Devices on SOCs often have mechanisms for placing devices into low-power
++states that are decoupled from the devices' own register blocks.  Sometimes,
++this information is more complicated than a cell-index property can
++reasonably describe.  Thus, each device controlled in such a manner
++may contain a "sleep" property which describes these connections.
++
++The sleep property consists of one or more sleep resources, each of
++which consists of a phandle to a sleep controller, followed by a
++controller-specific sleep specifier of zero or more cells.
++
++The semantics of what type of low power modes are possible are defined
++by the sleep controller.  Some examples of the types of low power modes
++that may be supported are:
++
++ - Dynamic: The device may be disabled or enabled at any time.
++ - System Suspend: The device may request to be disabled or remain
++   awake during system suspend, but will not be disabled until then.
++ - Permanent: The device is disabled permanently (until the next hard
++   reset).
++
++Some devices may share a clock domain with each other, such that they should
++only be suspended when none of the devices are in use.  Where reasonable,
++such nodes should be placed on a virtual bus, where the bus has the sleep
++property.  If the clock domain is shared among devices that cannot be
++reasonably grouped in this manner, then create a virtual sleep controller
++(similar to an interrupt nexus, except that defining a standardized
++sleep-map should wait until its necessity is demonstrated).
++
+ Appendix A - Sample SOC node for MPC8540
+ ========================================
+ 
+@@ -3639,47 +3737,48 @@ not necessary as they are usually the same as the root node.
+ 		reg = <e0000000 00003000>;
+ 		bus-frequency = <0>;
+ 
+-		mdio@24520 {
+-			reg = <24520 20>;
+-			device_type = "mdio";
+-			compatible = "gianfar";
+-
+-			ethernet-phy@0 {
+-				linux,phandle = <2452000>
+-				interrupt-parent = <40000>;
+-				interrupts = <35 1>;
+-				reg = <0>;
+-				device_type = "ethernet-phy";
+-			};
+-
+-			ethernet-phy@1 {
+-				linux,phandle = <2452001>
+-				interrupt-parent = <40000>;
+-				interrupts = <35 1>;
+-				reg = <1>;
+-				device_type = "ethernet-phy";
+-			};
+-
+-			ethernet-phy@3 {
+-				linux,phandle = <2452002>
+-				interrupt-parent = <40000>;
+-				interrupts = <35 1>;
+-				reg = <3>;
+-				device_type = "ethernet-phy";
+-			};
+-
+-		};
+-
+ 		ethernet@24000 {
+-			#size-cells = <0>;
++			#address-cells = <1>;
++			#size-cells = <1>;
+ 			device_type = "network";
+ 			model = "TSEC";
+-			compatible = "gianfar";
++			compatible = "gianfar", "simple-bus";
+ 			reg = <24000 1000>;
+ 			mac-address = [ 00 E0 0C 00 73 00 ];
+ 			interrupts = <d 3 e 3 12 3>;
+ 			interrupt-parent = <40000>;
+ 			phy-handle = <2452000>;
++			sleep = <&pmc 00000080>;
++			ranges;
++			
++			mdio@24520 {
++				reg = <24520 20>;
++				compatible = "fsl,gianfar-mdio";
++
++				ethernet-phy@0 {
++					linux,phandle = <2452000>
++					interrupt-parent = <40000>;
++					interrupts = <35 1>;
++					reg = <0>;
++					device_type = "ethernet-phy";
++				};
++
++				ethernet-phy@1 {
++					linux,phandle = <2452001>
++					interrupt-parent = <40000>;
++					interrupts = <35 1>;
++					reg = <1>;
++					device_type = "ethernet-phy";
++				};
++
++				ethernet-phy@3 {
++					linux,phandle = <2452002>
++					interrupt-parent = <40000>;
++					interrupts = <35 1>;
++					reg = <3>;
++					device_type = "ethernet-phy";
++				};
++			};
+ 		};
+ 
+ 		ethernet@25000 {
+@@ -3693,6 +3792,7 @@ not necessary as they are usually the same as the root node.
+ 			interrupts = <13 3 14 3 18 3>;
+ 			interrupt-parent = <40000>;
+ 			phy-handle = <2452001>;
++			sleep = <&pmc 00000040>;
+ 		};
+ 
+ 		ethernet@26000 {
+@@ -3706,15 +3806,33 @@ not necessary as they are usually the same as the root node.
+ 			interrupts = <19 3>;
+ 			interrupt-parent = <40000>;
+ 			phy-handle = <2452002>;
++			sleep = <&pmc 00000020>;
+ 		};
+ 
+ 		serial@4500 {
+-			device_type = "serial";
+-			compatible = "ns16550";
+-			reg = <4500 100>;
+-			clock-frequency = <0>;
+-			interrupts = <1a 3>;
+-			interrupt-parent = <40000>;
++			#address-cells = <1>;
++			#size-cells = <1>;
++			compatible = "fsl,mpc8540-duart", "simple-bus";
++			sleep = <&pmc 00000002>;
++			ranges;
++
++			serial@4500 {
++				device_type = "serial";
++				compatible = "ns16550";
++				reg = <4500 100>;
++				clock-frequency = <0>;
++				interrupts = <1a 3>;
++				interrupt-parent = <40000>;
++			};
++
++			serial@4600 {
++				device_type = "serial";
++				compatible = "ns16550";
++				reg = <4600 100>;
++				clock-frequency = <0>;
++				interrupts = <1a 3>;
++				interrupt-parent = <40000>;
++			};
+ 		};
+ 
+ 		pic@40000 {
+@@ -3733,6 +3851,11 @@ not necessary as they are usually the same as the root node.
+ 			device_type = "i2c";
+ 			compatible  = "fsl-i2c";
+ 			dfsrr;
++			sleep = <&pmc 00000004>;
+ 		};
+ 
++		pmc: power@e0070 {
++			compatible = "fsl,mpc8540-pmc", "fsl,mpc8548-pmc";
++			reg = <e0070 20>;
++		};
+ 	};
 -- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+1.5.5.4
