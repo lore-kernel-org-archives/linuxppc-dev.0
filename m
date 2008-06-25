@@ -1,29 +1,26 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 0BA98DE031
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jun 2008 03:16:41 +1000 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
-	m5PHGZ7j003846
-	for <linuxppc-dev@ozlabs.org>; Wed, 25 Jun 2008 10:16:35 -0700 (MST)
-Received: from loki (udp110651uds.am.freescale.net [10.82.16.68])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m5PHGZrV011440
-	for <linuxppc-dev@ozlabs.org>; Wed, 25 Jun 2008 12:16:35 -0500 (CDT)
-Received: from scott by loki with local (Exim 4.69)
-	(envelope-from <scottwood@freescale.com>) id 1KBYbQ-0002OR-2n
-	for linuxppc-dev@ozlabs.org; Wed, 25 Jun 2008 12:16:16 -0500
-Date: Wed, 25 Jun 2008 12:16:16 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 1/2 v3] Document Freescale power management nodes, and the
-	sleep property.
-Message-ID: <20080625171616.GB9184@loki.buserror.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 6D0C8DE19F
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jun 2008 03:17:35 +1000 (EST)
+Message-Id: <EC00E92B-9156-41B3-B85E-9D50E0227999@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: John Rigby <jrigby@freescale.com>
+In-Reply-To: <1214342672-23536-7-git-send-email-jrigby@freescale.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v924)
+Subject: Re: [PATCH 6/8][Version 2] powerpc: Move mpc83xx_add_bridge to
+	fsl_pci.c
+Date: Wed, 25 Jun 2008 12:17:25 -0500
+References: <1214342672-23536-1-git-send-email-jrigby@freescale.com>
+	<1214342672-23536-2-git-send-email-jrigby@freescale.com>
+	<1214342672-23536-3-git-send-email-jrigby@freescale.com>
+	<1214342672-23536-4-git-send-email-jrigby@freescale.com>
+	<1214342672-23536-5-git-send-email-jrigby@freescale.com>
+	<1214342672-23536-6-git-send-email-jrigby@freescale.com>
+	<1214342672-23536-7-git-send-email-jrigby@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,300 +30,143 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Signed-off-by: Scott Wood <scottwood@freescale.com>
----
-Added 86xx PMC bindings, and corrected a couple errors in the example.
 
- Documentation/powerpc/booting-without-of.txt |  207 ++++++++++++++++++++-----
- 1 files changed, 165 insertions(+), 42 deletions(-)
+On Jun 24, 2008, at 4:24 PM, John Rigby wrote:
 
-diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
-index b68684d..076c71a 100644
---- a/Documentation/powerpc/booting-without-of.txt
-+++ b/Documentation/powerpc/booting-without-of.txt
-@@ -62,6 +62,7 @@ Table of Contents
-       s) Freescale on board FPGA
-       t) Freescael MSI interrupt controller
-       u) Freescale General-purpose Timers Module
-+      v) Freescale Power Management Controller
- 
-   VII - Marvell Discovery mv64[345]6x System Controller chips
-     1) The /system-controller node
-@@ -92,10 +93,12 @@ Table of Contents
-     3) OpenPIC Interrupt Controllers
-     4) ISA Interrupt Controllers
- 
--  VIII - Specifying GPIO information for devices
-+  IX - Specifying GPIO information for devices
-     1) gpios property
-     2) gpio-controller nodes
- 
-+  X - Specifying device power management information (sleep property)
-+
-   Appendix A - Sample SOC node for MPC8540
- 
- 
-@@ -2967,6 +2970,70 @@ platforms are moved over to use the flattened-device-tree model.
- 	clock-frequency = <0>;
-     };
- 
-+    v) Freescale Power Management Controller
-+
-+    Properties:
-+    - compatible: "fsl,<chip>-pmc".
-+
-+      "fsl,mpc8349-pmc" should be listed for any chip whose PMC is
-+      compatible.  "fsl,mpc8313-pmc" should also be listed for any chip
-+      whose PMC is compatible, and implies deep-sleep capability.
-+
-+      "fsl,mpc8548-pmc" should be listed for any chip whose PMC is
-+      compatible.  "fsl,mpc8536-pmc" should also be listed for any chip
-+      whose PMC is compatible, and implies deep-sleep capability.
-+
-+      "fsl,mpc8641d-pmc" should be listed for any chip whose PMC is
-+      compatible; all statements below that apply to "fsl,mpc8548-pmc" also
-+      apply to "fsl,mpc8641d-pmc".
-+
-+      Compatibility does not include bit assigments in SCCR/PMCDR; these bit
-+      assigments are indicated via the sleep specifier in each device's
-+      sleep property.
-+
-+    - reg: For devices compatible with "fsl,mpc8349-pmc", the first resource
-+      is the PMC block, and the second resource is the Clock Configuration
-+      block.
-+
-+      For devices compatible with "fsl,mpc8548-pmc", the first resource
-+      is a 32-byte block beginning with DEVDISR.
-+
-+    - interrupts: For "fsl,mpc8349-pmc"-compatible devices, the first
-+      resource is the PMC block interrupt.
-+
-+    - fsl,mpc8313-wakeup-timer: For "fsl,mpc8313-pmc"-compatible devices,
-+      this is a phandle to an "fsl,gtm" node on which timer 4 can be used as
-+      a wakeup source from deep sleep.
-+
-+    Sleep specifiers:
-+
-+      fsl,mpc8349-pmc: Sleep specifiers consist of one cell.  For each bit
-+      that is set in the cell, the corresponding bit in SCCR will be saved
-+      and cleared on suspend, and restored on resume.  This sleep controller
-+      supports disabling and resuming devices at any time.
-+
-+      fsl,mpc8536-pmc: Sleep specifiers consist of three cells, the third of
-+      which will be ORed into PMCDR upon suspend, and cleared from PMCDR
-+      upon resume.  The first two cells are as described for fsl,mpc8578-pmc.
-+      This sleep controller only supports disabling devices during system
-+      sleep, or permanently.
-+
-+      fsl,mpc8548-pmc: Sleep specifiers consist of one or two cells, the
-+      first of which will be ORed into DEVDISR (and the second into
-+      DEVDISR2, if present -- this cell should be zero or absent if the
-+      hardware does not have DEVDISR2) upon a request for permanent device
-+      disabling.  This sleep controller does not support configuring devices
-+      to disable during system sleep (unless supported by another compatible
-+      match), or dynamically.
-+
-+    Example:
-+
-+	power@b00 {
-+		compatible = "fsl,mpc8313-pmc", "fsl,mpc8349-pmc";
-+		reg = <0xb00 0x100 0xa00 0x100>;
-+		interrupts = <80 8>;
-+	};
-+
- VII - Marvell Discovery mv64[345]6x System Controller chips
- ===========================================================
- 
-@@ -3574,8 +3641,8 @@ encodings listed below:
- 	2 =  high to low edge sensitive type enabled
- 	3 =  low to high edge sensitive type enabled
- 
--VIII - Specifying GPIO information for devices
--==============================================
-+IX - Specifying GPIO information for devices
-+============================================
- 
- 1) gpios property
- -----------------
-@@ -3623,6 +3690,37 @@ Example of two SOC GPIO banks defined as gpio-controller nodes:
- 		gpio-controller;
- 	};
- 
-+X - Specifying Device Power Management Information (sleep property)
-+===================================================================
-+
-+Devices on SOCs often have mechanisms for placing devices into low-power
-+states that are decoupled from the devices' own register blocks.  Sometimes,
-+this information is more complicated than a cell-index property can
-+reasonably describe.  Thus, each device controlled in such a manner
-+may contain a "sleep" property which describes these connections.
-+
-+The sleep property consists of one or more sleep resources, each of
-+which consists of a phandle to a sleep controller, followed by a
-+controller-specific sleep specifier of zero or more cells.
-+
-+The semantics of what type of low power modes are possible are defined
-+by the sleep controller.  Some examples of the types of low power modes
-+that may be supported are:
-+
-+ - Dynamic: The device may be disabled or enabled at any time.
-+ - System Suspend: The device may request to be disabled or remain
-+   awake during system suspend, but will not be disabled until then.
-+ - Permanent: The device is disabled permanently (until the next hard
-+   reset).
-+
-+Some devices may share a clock domain with each other, such that they should
-+only be suspended when none of the devices are in use.  Where reasonable,
-+such nodes should be placed on a virtual bus, where the bus has the sleep
-+property.  If the clock domain is shared among devices that cannot be
-+reasonably grouped in this manner, then create a virtual sleep controller
-+(similar to an interrupt nexus, except that defining a standardized
-+sleep-map should wait until its necessity is demonstrated).
-+
- Appendix A - Sample SOC node for MPC8540
- ========================================
- 
-@@ -3639,47 +3737,48 @@ not necessary as they are usually the same as the root node.
- 		reg = <e0000000 00003000>;
- 		bus-frequency = <0>;
- 
--		mdio@24520 {
--			reg = <24520 20>;
--			device_type = "mdio";
--			compatible = "gianfar";
--
--			ethernet-phy@0 {
--				linux,phandle = <2452000>
--				interrupt-parent = <40000>;
--				interrupts = <35 1>;
--				reg = <0>;
--				device_type = "ethernet-phy";
--			};
--
--			ethernet-phy@1 {
--				linux,phandle = <2452001>
--				interrupt-parent = <40000>;
--				interrupts = <35 1>;
--				reg = <1>;
--				device_type = "ethernet-phy";
--			};
--
--			ethernet-phy@3 {
--				linux,phandle = <2452002>
--				interrupt-parent = <40000>;
--				interrupts = <35 1>;
--				reg = <3>;
--				device_type = "ethernet-phy";
--			};
--
--		};
--
- 		ethernet@24000 {
--			#size-cells = <0>;
-+			#address-cells = <1>;
-+			#size-cells = <1>;
- 			device_type = "network";
- 			model = "TSEC";
--			compatible = "gianfar";
-+			compatible = "gianfar", "simple-bus";
- 			reg = <24000 1000>;
- 			mac-address = [ 00 E0 0C 00 73 00 ];
- 			interrupts = <d 3 e 3 12 3>;
- 			interrupt-parent = <40000>;
- 			phy-handle = <2452000>;
-+			sleep = <&pmc 00000080>;
-+			ranges;
-+			
-+			mdio@24520 {
-+				reg = <24520 20>;
-+				compatible = "fsl,gianfar-mdio";
-+
-+				ethernet-phy@0 {
-+					linux,phandle = <2452000>
-+					interrupt-parent = <40000>;
-+					interrupts = <35 1>;
-+					reg = <0>;
-+					device_type = "ethernet-phy";
-+				};
-+
-+				ethernet-phy@1 {
-+					linux,phandle = <2452001>
-+					interrupt-parent = <40000>;
-+					interrupts = <35 1>;
-+					reg = <1>;
-+					device_type = "ethernet-phy";
-+				};
-+
-+				ethernet-phy@3 {
-+					linux,phandle = <2452002>
-+					interrupt-parent = <40000>;
-+					interrupts = <35 1>;
-+					reg = <3>;
-+					device_type = "ethernet-phy";
-+				};
-+			};
- 		};
- 
- 		ethernet@25000 {
-@@ -3693,6 +3792,7 @@ not necessary as they are usually the same as the root node.
- 			interrupts = <13 3 14 3 18 3>;
- 			interrupt-parent = <40000>;
- 			phy-handle = <2452001>;
-+			sleep = <&pmc 00000040>;
- 		};
- 
- 		ethernet@26000 {
-@@ -3706,15 +3806,33 @@ not necessary as they are usually the same as the root node.
- 			interrupts = <19 3>;
- 			interrupt-parent = <40000>;
- 			phy-handle = <2452002>;
-+			sleep = <&pmc 00000020>;
- 		};
- 
- 		serial@4500 {
--			device_type = "serial";
--			compatible = "ns16550";
--			reg = <4500 100>;
--			clock-frequency = <0>;
--			interrupts = <1a 3>;
--			interrupt-parent = <40000>;
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			compatible = "fsl,mpc8540-duart", "simple-bus";
-+			sleep = <&pmc 00000002>;
-+			ranges;
-+
-+			serial@4500 {
-+				device_type = "serial";
-+				compatible = "ns16550";
-+				reg = <4500 100>;
-+				clock-frequency = <0>;
-+				interrupts = <1a 3>;
-+				interrupt-parent = <40000>;
-+			};
-+
-+			serial@4600 {
-+				device_type = "serial";
-+				compatible = "ns16550";
-+				reg = <4600 100>;
-+				clock-frequency = <0>;
-+				interrupts = <1a 3>;
-+				interrupt-parent = <40000>;
-+			};
- 		};
- 
- 		pic@40000 {
-@@ -3733,6 +3851,11 @@ not necessary as they are usually the same as the root node.
- 			device_type = "i2c";
- 			compatible  = "fsl-i2c";
- 			dfsrr;
-+			sleep = <&pmc 00000004>;
- 		};
- 
-+		pmc: power@e0070 {
-+			compatible = "fsl,mpc8540-pmc", "fsl,mpc8548-pmc";
-+			reg = <e0070 20>;
-+		};
- 	};
--- 
-1.5.5.4
+> This allows other platforms with the same pci
+> block like MPC5121 to use it.
+>
+> Signed-off-by: John Rigby <jrigby@freescale.com>
+> ---
+
+Can you break the PCI patches out into their own patch set.
+>
+> arch/powerpc/platforms/83xx/Kconfig       |    2 +-
+> arch/powerpc/platforms/83xx/Makefile      |    1 -
+> arch/powerpc/platforms/83xx/mpc831x_rdb.c |    1 +
+> arch/powerpc/platforms/83xx/mpc832x_mds.c |    1 +
+> arch/powerpc/platforms/83xx/mpc832x_rdb.c |    1 +
+> arch/powerpc/platforms/83xx/mpc834x_itx.c |    1 +
+> arch/powerpc/platforms/83xx/mpc834x_mds.c |    1 +
+> arch/powerpc/platforms/83xx/mpc836x_mds.c |    1 +
+> arch/powerpc/platforms/83xx/mpc837x_mds.c |    1 +
+> arch/powerpc/platforms/83xx/mpc837x_rdb.c |    1 +
+> arch/powerpc/platforms/83xx/mpc83xx.h     |    1 -
+> arch/powerpc/platforms/83xx/pci.c         |   91  
+> -----------------------------
+> arch/powerpc/platforms/83xx/sbc834x.c     |    1 +
+> arch/powerpc/sysdev/fsl_pci.c             |   61 +++++++++++++++++++
+> arch/powerpc/sysdev/fsl_pci.h             |    1 +
+> 15 files changed, 72 insertions(+), 94 deletions(-)
+> delete mode 100644 arch/powerpc/platforms/83xx/pci.c
+>
+
+>
+> diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/ 
+> fsl_pci.c
+> index 489ca5a..6e6688f 100644
+> --- a/arch/powerpc/sysdev/fsl_pci.c
+> +++ b/arch/powerpc/sysdev/fsl_pci.c
+> @@ -27,6 +27,7 @@
+> #include <sysdev/fsl_soc.h>
+> #include <sysdev/fsl_pci.h>
+>
+> +#if defined(PPC_85xx) || defined(PPC_86xx)
+
+this is wrong.  you are missing CONFIG_
+
+>
+> /* atmu setup for fsl pci/pcie controller */
+> void __init setup_pci_atmu(struct pci_controller *hose, struct  
+> resource *rsrc)
+> {
+> @@ -246,3 +247,63 @@ DECLARE_PCI_FIXUP_HEADER(0x1957,  
+> PCI_DEVICE_ID_MPC8572, quirk_fsl_pcie_header);
+> DECLARE_PCI_FIXUP_HEADER(0x1957, PCI_DEVICE_ID_MPC8641,  
+> quirk_fsl_pcie_header);
+> DECLARE_PCI_FIXUP_HEADER(0x1957, PCI_DEVICE_ID_MPC8641D,  
+> quirk_fsl_pcie_header);
+> DECLARE_PCI_FIXUP_HEADER(0x1957, PCI_DEVICE_ID_MPC8610,  
+> quirk_fsl_pcie_header);
+> +#endif /* CONFIG_PPC_85xx || CONFIG_PPC_86xx */
+> +
+> +#if defined(CONFIG_PPC_83xx)
+> +int __init mpc83xx_add_bridge(struct device_node *dev)
+> +{
+> +	int len;
+> +	struct pci_controller *hose;
+> +	struct resource rsrc;
+> +	const int *bus_range;
+> +	int primary = 1, has_address = 0;
+> +	phys_addr_t immr = get_immrbase();
+> +
+> +	pr_debug("Adding PCI host bridge %s\n", dev->full_name);
+> +
+> +	/* Fetch host bridge registers address */
+> +	has_address = (of_address_to_resource(dev, 0, &rsrc) == 0);
+> +
+> +	/* Get bus range if any */
+> +	bus_range = of_get_property(dev, "bus-range", &len);
+> +	if (bus_range == NULL || len < 2 * sizeof(int)) {
+> +		printk(KERN_WARNING "Can't get bus-range for %s, assume"
+> +		       " bus 0\n", dev->full_name);
+> +	}
+> +
+> +	ppc_pci_flags |= PPC_PCI_REASSIGN_ALL_BUS;
+> +	hose = pcibios_alloc_controller(dev);
+> +	if (!hose)
+> +		return -ENOMEM;
+> +
+> +	hose->first_busno = bus_range ? bus_range[0] : 0;
+> +	hose->last_busno = bus_range ? bus_range[1] : 0xff;
+> +
+> +	/* MPC83xx supports up to two host controllers one at 0x8500 from  
+> immrbar
+> +	 * the other at 0x8600, we consider the 0x8500 the primary  
+> controller
+> +	 */
+> +	/* PCI 1 */
+> +	if ((rsrc.start & 0xfffff) == 0x8500) {
+> +		setup_indirect_pci(hose, immr + 0x8300, immr + 0x8304, 0);
+> +	}
+> +	/* PCI 2 */
+> +	if ((rsrc.start & 0xfffff) == 0x8600) {
+> +		setup_indirect_pci(hose, immr + 0x8380, immr + 0x8384, 0);
+> +		primary = 0;
+> +	}
+> +
+> +	printk(KERN_INFO "Found MPC83xx PCI host bridge at 0x%016llx. "
+> +	       "Firmware bus number: %d->%d\n",
+> +	       (unsigned long long)rsrc.start, hose->first_busno,
+> +	       hose->last_busno);
+> +
+> +	pr_debug(" ->Hose at 0x%p, cfg_addr=0x%p,cfg_data=0x%p\n",
+> +	    hose, hose->cfg_addr, hose->cfg_data);
+> +
+> +	/* Interpret the "ranges" property */
+> +	/* This also maps the I/O region and sets isa_io/mem_base */
+> +	pci_process_bridge_OF_ranges(hose, dev, primary);
+> +
+> +	return 0;
+> +}
+> +#endif /* CONFIG_PPC_83xx */
+> diff --git a/arch/powerpc/sysdev/fsl_pci.h b/arch/powerpc/sysdev/ 
+> fsl_pci.h
+> index 37b04ad..13f30c2 100644
+> --- a/arch/powerpc/sysdev/fsl_pci.h
+> +++ b/arch/powerpc/sysdev/fsl_pci.h
+> @@ -83,6 +83,7 @@ struct ccsr_pci {
+>
+> extern int fsl_add_bridge(struct device_node *dev, int is_primary);
+> extern void fsl_pcibios_fixup_bus(struct pci_bus *bus);
+> +extern int mpc83xx_add_bridge(struct device_node *dev);
+>
+> #endif /* __POWERPC_FSL_PCI_H */
+> #endif /* __KERNEL__ */
+> -- 
+> 1.5.6.rc0.46.gd2b3
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
