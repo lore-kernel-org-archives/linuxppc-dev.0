@@ -1,23 +1,28 @@
-Return-Path: <sebastian@breakpoint.cc>
-Received: from Chamillionaire.breakpoint.cc (Chamillionaire.breakpoint.cc
-	[85.10.199.196])
+Return-Path: <timur@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C9421DDF0B
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jun 2008 07:33:04 +1000 (EST)
-Date: Wed, 25 Jun 2008 23:32:53 +0200
-From: Sebastian Siewior <sebastian@breakpoint.cc>
-To: Olof Johansson <olof@lixom.net>
-Subject: Re: [PATCH v2] USB: isp1760: Support board-specific hardware
-	configurations
-Message-ID: <20080625213253.GA31376@Chamillionaire.breakpoint.cc>
-References: <1213719098-28002-1-git-send-email-ncase@xes-inc.com>
-	<20080625182425.GA29841@Chamillionaire.breakpoint.cc>
-	<20080625212250.GA13594@lixom.net>
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id C1B6BDDF4E
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jun 2008 07:47:05 +1000 (EST)
+Message-ID: <4862BCCF.6040403@freescale.com>
+Date: Wed, 25 Jun 2008 16:46:55 -0500
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-In-Reply-To: <20080625212250.GA13594@lixom.net>
-Cc: linuxppc-dev@ozlabs.org, Nate Case <ncase@xes-inc.com>
+To: benh@kernel.crashing.org
+Subject: Re: "cell-index" vs. "index" vs. no index in I2C device nodes
+References: <200806041706.21557.sr@denx.de> <4846B39F.3010601@freescale.com>	
+	<20080604154351.GB10393@ld0162-tx32.am.freescale.net>	
+	<20080604211942.2bddc860@zod.rchland.ibm.com>	
+	<4848028B.5060105@freescale.com>	
+	<fa686aa40806050839h55d8e358m93248414507f10e2@mail.gmail.com>	
+	<48480987.1070701@freescale.com>
+	<1212726040.12464.21.camel@pasglop>
+In-Reply-To: <1212726040.12464.21.camel@pasglop>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Scott Wood <scottwood@freescale.com>, Stefan Roese <sr@denx.de>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,18 +32,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-* Olof Johansson | 2008-06-25 16:22:50 [-0500]:
+Benjamin Herrenschmidt wrote:
 
->> Kumar / Josh: Should we describe those DT entries in
->> Documentation/powerpc/booting-without-of.txt? In the yes case: which
->> section do you recommend?
->
->I don't see a need to. We don't document the IBM busses there either.
+> No, the fabric driver should get to its device node in a way or another,
+> and from there, find a pointer (via a phandle) to it's codec, and match
+> that to an i2c device.
+> 
+> If the current infrastructure doesn't allow that kind of matching, it
+> needs to be fixed.
 
-Okey.
+Scott and I looked at this just now, and it doesn't seem to be an easy fix
+unless we use of_i2c.c, which seems to be unused currently.  Something about not
+being able to get the i2c_adapter structure from its corresponding device_node
+struct.
 
->
->
->-Olof
+Anyone know when of_i2c.c is going to come "online" replace what's in fsl_soc.c?
 
-Sebastian
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
