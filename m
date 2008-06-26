@@ -1,19 +1,19 @@
 Return-Path: <arnd@arndb.de>
 Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.171]) by ozlabs.org (Postfix) with ESMTP id 0931ADE2E0
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jun 2008 01:14:16 +1000 (EST)
+	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id 82950DEB33
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jun 2008 01:19:08 +1000 (EST)
 From: Arnd Bergmann <arnd@arndb.de>
 To: monstr@seznam.cz
-Subject: Re: [PATCH 31/60] microblaze_v4: memory inicialization, MMU, TLB
-Date: Thu, 26 Jun 2008 17:14:11 +0200
+Subject: Re: [PATCH 33/60] microblaze_v4: includes SHM*, msgbuf
+Date: Thu, 26 Jun 2008 17:18:17 +0200
 References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-31-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-32-git-send-email-monstr@seznam.cz>
-In-Reply-To: <1214483429-32360-32-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-33-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-34-git-send-email-monstr@seznam.cz>
+In-Reply-To: <1214483429-32360-34-git-send-email-monstr@seznam.cz>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-15"
-Message-Id: <200806261714.12967.arnd@arndb.de>
+Message-Id: <200806261718.18006.arnd@arndb.de>
 Cc: linux-arch@vger.kernel.org, alan@lxorguk.ukuu.org.uk,
 	Michal Simek <monstr@monstr.eu>, vapier.adi@gmail.com,
 	matthew@wil.cx, microblaze-uclinux@itee.uq.edu.au,
@@ -30,18 +30,23 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 On Thursday 26 June 2008, monstr@seznam.cz wrote:
+> =A0include/asm-microblaze/msgbuf.h =A0 | =A0 39 +++++++++++++++++++++++++=
++++
+> =A0include/asm-microblaze/shmbuf.h =A0 | =A0 50 +++++++++++++++++++++++++=
+++++++++++++
+> =A0include/asm-microblaze/shmparam.h | =A0 14 ++++++++++
+> =A03 files changed, 103 insertions(+), 0 deletions(-)
+> =A0create mode 100644 include/asm-microblaze/msgbuf.h
+> =A0create mode 100644 include/asm-microblaze/shmbuf.h
+> =A0create mode 100644 include/asm-microblaze/shmparam.h
+>=20
 
-> +#include <linux/autoconf.h>
+These files are ok, but IMHO they should be in asm-generic, since there
+are already many identical copies.
 
-You should never need to include linux/autoconf.h anywhere,
-just remove this.
-
-> +#include <linux/init.h>
-> +#include <linux/mm.h>
-> +#include "../../../mm/internal.h"
-
-Why do you need to include the internal.h file here?
-If you have a good reason to do it, you should probably
-add the symbol you need to a global header file.
+While the implementation of these three, as well as ipcbuf.h and sembuf.h
+could be better optimized for endianess and word size differences, I have
+come to the conclusion that there is no point for them to really be
+different, and uClibc expects this exact layout by default anyway.
 
 	Arnd <><
