@@ -2,14 +2,14 @@ Return-Path: <monstr@seznam.cz>
 Received: from monstr.eu (238.225.broadband7.iol.cz [88.102.225.238])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 5F5ABDE02B
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jun 2008 23:20:34 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id F1D5FDDE9F
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jun 2008 23:23:46 +1000 (EST)
 From: monstr@seznam.cz
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 20/60] microblaze_v4: early_printk support
-Date: Thu, 26 Jun 2008 14:29:49 +0200
-Message-Id: <1214483429-32360-21-git-send-email-monstr@seznam.cz>
-In-Reply-To: <1214483429-32360-20-git-send-email-monstr@seznam.cz>
+Subject: [PATCH 17/60] microblaze_v4: head.S + linker script
+Date: Thu, 26 Jun 2008 14:29:46 +0200
+Message-Id: <1214483429-32360-18-git-send-email-monstr@seznam.cz>
+In-Reply-To: <1214483429-32360-17-git-send-email-monstr@seznam.cz>
 References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
 	<1214483429-32360-2-git-send-email-monstr@seznam.cz>
 	<1214483429-32360-3-git-send-email-monstr@seznam.cz>
@@ -27,9 +27,6 @@ References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
 	<1214483429-32360-15-git-send-email-monstr@seznam.cz>
 	<1214483429-32360-16-git-send-email-monstr@seznam.cz>
 	<1214483429-32360-17-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-18-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-19-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-20-git-send-email-monstr@seznam.cz>
 Cc: linux-arch@vger.kernel.org, alan@lxorguk.ukuu.org.uk,
 	Michal Simek <monstr@monstr.eu>, vapier.adi@gmail.com,
 	arnd@arndb.de, matthew@wil.cx, microblaze-uclinux@itee.uq.edu.au,
@@ -50,145 +47,204 @@ From: Michal Simek <monstr@monstr.eu>
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- arch/microblaze/kernel/early_printk.c |  130 +++++++++++++++++++++++++++++++++
- 1 files changed, 130 insertions(+), 0 deletions(-)
- create mode 100644 arch/microblaze/kernel/early_printk.c
+ arch/microblaze/kernel/head.S        |   38 +++++++++
+ arch/microblaze/kernel/vmlinux.lds.S |  143 ++++++++++++++++++++++++++++++++++
+ 2 files changed, 181 insertions(+), 0 deletions(-)
+ create mode 100644 arch/microblaze/kernel/head.S
+ create mode 100644 arch/microblaze/kernel/vmlinux.lds.S
 
-diff --git a/arch/microblaze/kernel/early_printk.c b/arch/microblaze/kernel/early_printk.c
+diff --git a/arch/microblaze/kernel/head.S b/arch/microblaze/kernel/head.S
 new file mode 100644
-index 0000000..6da0fd9
+index 0000000..8f87626
 --- /dev/null
-+++ b/arch/microblaze/kernel/early_printk.c
-@@ -0,0 +1,130 @@
++++ b/arch/microblaze/kernel/head.S
+@@ -0,0 +1,38 @@
 +/*
-+ * Early printk support for Microblaze.
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
 + *
-+ * Copyright (C) 2007-2008 Michal Simek <monstr@monstr.eu>
-+ * Copyright (C) 2003-2006 Yasushi SHOJI <yashi@atmark-techno.com>
++ * Copyright (C) 2007 Michal Simek <monstr@monstr.eu>
++ * Copyright (C) 2006 Atmark Techno, Inc.
++ */
++
++#include <linux/linkage.h>
++#include <asm/thread_info.h>
++
++	.text
++ENTRY(_start)
++	mfs	r1, rmsr
++	andi	r1, r1, ~2
++	mts	rmsr, r1
++
++	/* Initialize small data anchors */
++	la	r13, r0, _KERNEL_SDA_BASE_
++	la	r2, r0, _KERNEL_SDA2_BASE_
++
++	/* Initialize stack pointer */
++	la	r1, r0, init_thread_union + THREAD_SIZE - 4
++
++	/* Initialize r31 with current task address */
++	la	r31, r0, init_task
++
++	/* Call platform dependent initialize function.
++	 * Please see $(ARCH)/mach-$(SUBARCH)/setup.c for
++	 * the function. */
++	la	r8, r0, machine_early_init
++	brald	r15, r8
++	nop
++
++	la	r15, r0, machine_halt
++	braid	start_kernel
++	nop
+diff --git a/arch/microblaze/kernel/vmlinux.lds.S b/arch/microblaze/kernel/vmlinux.lds.S
+new file mode 100644
+index 0000000..f31e7ef
+--- /dev/null
++++ b/arch/microblaze/kernel/vmlinux.lds.S
+@@ -0,0 +1,143 @@
++/*
++ * Copyright (C) 2006 Atmark Techno, Inc.
 + *
 + * This file is subject to the terms and conditions of the GNU General Public
 + * License. See the file "COPYING" in the main directory of this archive
 + * for more details.
 + */
 +
-+/* FIXME Once we got some system without uart light, we need to refactor */
++OUTPUT_FORMAT("elf32-microblaze", "elf32-microblaze", "elf32-microblaze")
++OUTPUT_ARCH(microblaze)
++ENTRY(_start)
 +
-+#include <linux/console.h>
-+#include <linux/kernel.h>
-+#include <linux/init.h>
-+#include <linux/string.h>
-+#include <linux/tty.h>
-+#include <asm/io.h>
-+#include <asm/processor.h>
-+#include <asm/fcntl.h>
-+#include <asm/setup.h>
++#include <linux/autoconf.h>
++#include <asm-generic/vmlinux.lds.h>
 +
-+#ifdef CONFIG_EARLY_PRINTK
-+#define BASE_ADDR ((unsigned char *)CONFIG_EARLY_PRINTK_UARTLITE_ADDRESS)
++jiffies = jiffies_64 + 4;
 +
-+#define RX_FIFO	BASE_ADDR
-+#define TX_FIFO	((unsigned long *)(BASE_ADDR + 4))
-+#define STATUS	((unsigned long *)(BASE_ADDR + 8))
-+#define CONTROL	((unsigned long *)(BASE_ADDR + 12))
++SECTIONS {
++	. = CONFIG_KERNEL_BASE_ADDR;
 +
-+static void early_printk_putc(char c)
-+{
-+	/*
-+	 * Limit how many times we'll spin waiting for TX FIFO status.
-+	 * This will prevent lockups if the base address is incorrectly
-+	 * set, or any other issue on the UARTLITE.
-+	 * This limit is pretty arbitrary, unless we are at about 10 baud
-+	 * we'll never timeout on a working UART.
-+	 */
-+
-+	unsigned retries = 10000;
-+	while (retries-- && (ioread32(STATUS) & (1<<3)))
-+		;
-+
-+	/* Only attempt the iowrite if we didn't timeout */
-+	if (retries)
-+		iowrite32((c & 0xff), TX_FIFO);
-+}
-+
-+static void early_printk_write(struct console *unused,
-+					const char *s, unsigned n)
-+{
-+	while (*s && n-- > 0) {
-+		early_printk_putc(*s);
-+		if (*s == '\n')
-+			early_printk_putc('\r');
-+		s++;
++	.text : {
++		_text = . ;
++		_stext = . ;
++		TEXT_TEXT
++		SCHED_TEXT
++		LOCK_TEXT
++		. = ALIGN (4) ;
++		_etext = . ;
 +	}
-+}
 +
-+static struct console early_serial_console = {
-+	.name = "earlyser",
-+	.write = early_printk_write,
-+	.flags = CON_PRINTBUFFER,
-+	.index = -1,
-+};
++	. = ALIGN(16);
++	RODATA
 +
-+/* Direct interface for emergencies */
-+static struct console *early_console = &early_serial_console;
-+static int early_console_initialized;
-+
-+void early_printk(const char *fmt, ...)
-+{
-+	char buf[512];
-+	int n;
-+	va_list ap;
-+
-+	if (early_console_initialized) {
-+		va_start(ap, fmt);
-+		n = vscnprintf(buf, 512, fmt, ap);
-+		early_console->write(early_console, buf, n);
-+		va_end(ap);
++	/* sdata2 section can go anywhere, but must be word aligned
++	 and SDA2_BASE must point to the middle of it */
++	.sdata2 : {
++		_ssrw = .;
++		. = ALIGN(0x8);
++		*(.sdata2)
++	. = ALIGN(8);
++	_essrw = .;
++	_ssrw_size = _essrw - _ssrw;
++	_KERNEL_SDA2_BASE_ = _ssrw + (_ssrw_size / 2);
 +	}
++
++	_sdata = . ;
++	.data ALIGN (0x4) : {
++		DATA_DATA
++	}
++	. = ALIGN(32);
++	.data.cacheline_aligned : { *(.data.cacheline_aligned) }
++	_edata = . ;
++
++	/* The initial task */
++	. = ALIGN(8192);
++	.data.init_task : { *(.data.init_task) }
++
++	/* Under the microblaze ABI, .sdata and .sbss must be contiguous */
++	. = ALIGN(8);
++	.sdata : {
++		_ssro = .;
++		*(.sdata)
++	}
++
++	.sbss :	{
++		_ssbss = .;
++		*(.sbss)
++		_esbss = .;
++		_essro = .;
++		_ssro_size = _essro - _ssro ;
++		_KERNEL_SDA_BASE_ = _ssro + (_ssro_size / 2) ;
++	}
++
++	. = ALIGN(16);
++	__start___ex_table = .;
++	__ex_table : { *(__ex_table) }
++	__stop___ex_table = .;
++
++	__init_begin = .;
++
++	. = ALIGN(4096);
++	.init.text : {
++		_sinittext = . ;
++		*(.init.text)
++		*(.exit.text)
++		*(.exit.data)
++		_einittext = .;
++	}
++
++	.init.data : { *(.init.data) }
++
++	. = ALIGN(4);
++	.init.ivt : {
++		__ivt_start = .;
++		*(.init.ivt)
++		__ivt_end = .;
++	}
++
++	.init.setup : {
++		__setup_start = .;
++		*(.init.setup)
++		__setup_end = .;
++	}
++
++	.initcall.init : {
++		__initcall_start = .;
++		INITCALLS
++		__initcall_end = .;
++	}
++
++	.con_initcall.init : {
++		__con_initcall_start = .;
++		*(.con_initcall.init)
++		__con_initcall_end = .;
++	}
++
++	__init_end_before_initramfs = .;
++
++	.init.ramfs ALIGN(4096) : {
++		__initramfs_start = .;
++		*(.init.ramfs)
++		__initramfs_end = .;
++		. = ALIGN(4);
++		LONG(0);
++		. = ALIGN(4096);/* Pad init.ramfs up to page boundary, so
++				that __init_end == __bss_start. This will
++				make image.elf consistent with the image.bin */
++	}
++
++	__init_end = .;
++
++	.bss ALIGN (4096) : {
++		__bss_start = . ;
++			*(.bss*)
++			*(COMMON)
++		. = ALIGN (4) ;
++		__bss_stop = . ;
++		_ebss = . ;
++	}
++	. = ALIGN(4096);
++	_end = .;
 +}
 +
-+static int __initdata keep_early;
-+
-+int __init setup_early_printk(char *opt)
-+{
-+	char *space;
-+	char buf[256];
-+
-+	if (early_console_initialized)
-+		return 1;
-+
-+	strlcpy(buf, opt, sizeof(buf));
-+	space = strchr(buf, ' ');
-+	if (space)
-+		*space = 0;
-+
-+	if (strstr(buf, "keep"))
-+		keep_early = 1;
-+
-+	early_console = &early_serial_console;
-+	early_console_initialized = 1;
-+	register_console(early_console);
-+	return 0;
-+}
-+#if 0
-+static void __init disable_early_printk(void)
-+{
-+	if (!early_console_initialized || !early_console)
-+		return;
-+	if (!keep_early) {
-+		printk(KERN_INFO "disabling early console\n");
-+		unregister_console(early_console);
-+		early_console_initialized = 0;
-+	} else
-+		printk(KERN_INFO "keeping early console\n");
-+}
-+#endif
-+
-+__setup("earlyprintk=", setup_early_printk);
-+
-+#else
-+void early_printk(const char *fmt, ...)
-+{
-+}
-+#endif
 -- 
 1.5.4.GIT
