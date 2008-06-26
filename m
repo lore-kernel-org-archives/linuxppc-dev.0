@@ -1,21 +1,17 @@
 Return-Path: <laurentp@cse-semaphore.com>
 Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
-	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id 24ADADE472
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jun 2008 21:21:26 +1000 (EST)
+	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id 57C23DE028
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jun 2008 21:38:21 +1000 (EST)
 From: Laurent Pinchart <laurentp@cse-semaphore.com>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 2/2] fs_enet: MDIO on GPIO support
-Date: Thu, 26 Jun 2008 13:21:23 +0200
-References: <200805261152.37636.laurentp@cse-semaphore.com>
-	<48592322.3090201@pobox.com>
-	<200806181716.40362.laurentp@cse-semaphore.com>
-In-Reply-To: <200806181716.40362.laurentp@cse-semaphore.com>
+To: linuxppc-dev@ozlabs.org,
+ linux-serial@vger.kernel.org
+Subject: [RFC] cpm_uart: Fix break generation
+Date: Thu, 26 Jun 2008 13:38:14 +0200
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1356336.k58zgoD23A";
+Content-Type: multipart/signed; boundary="nextPart12031472.ByL2JTWP1D";
 	protocol="application/pgp-signature"; micalg=pgp-sha1
-Message-Id: <200806261321.24338.laurentp@cse-semaphore.com>
-Cc: Scott Wood <scottwood@freescale.com>, netdev@vger.kernel.org,
-	Jeff Garzik <jgarzik@pobox.com>, vbordug@ru.mvista.com
+Message-Id: <200806261338.19358.laurentp@cse-semaphore.com>
+Cc: scottwood@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,79 +21,63 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---nextPart1356336.k58zgoD23A
+--nextPart12031472.ByL2JTWP1D
 Content-Type: text/plain;
-  charset="utf-8"
+  charset="us-ascii"
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
-Jeff, Scott,
+When generating a break condition on a serial port, the CPM must be told
+beforehand how long the break should be. Unfortunately, this information is
+not available through the current serial break handling API. This patch wor=
+ks
+around the problem by requesting a 32767 characters break followed by a 0
+characters break after the requested duration. The CPM will stop the first
+break when the second one is requested. This might not work with future CPM
+revisions.
 
-On Wednesday 18 June 2008 17:16, Laurent Pinchart wrote:
-> On Wednesday 18 June 2008 17:00, Jeff Garzik wrote:
-> > Laurent Pinchart wrote:
-> > > Hi Scott,
-> > >=20
-> > > On Monday 16 June 2008 18:34, Scott Wood wrote:
-> > >> On Mon, Jun 16, 2008 at 10:57:02AM +0200, Laurent Pinchart wrote:
-> > >>> On Monday 26 May 2008 11:53, Laurent Pinchart wrote:
-> > >>>> Port the fs_enet driver to support the MDIO on GPIO driver for PHY
-> > >>>> access in addition to the mii-bitbang driver.
-> > >>> Now that 1/2 has been applied by Jeff, could this one make it to=20
-> > >>> powerpc-next ?
-> > >> This patch should probably go through Jeff as well...
-> > >=20
-> > > Jeff, what's your opinion on this ?
-> > >=20
-> > >> Acked-by: Scott Wood <scottwood@freescale.com>
-> > >>
-> > >>>> -	data =3D of_get_property(phynode, "reg", &len);
-> > >>>> -	if (!data || len !=3D 4)
-> > >>>> -		goto out_put_mdio;
-> > >>>> +	bus_id =3D of_get_gpio(mdionode, 0);
-> > >>>> +	if (bus_id < 0) {
-> > >>>> +		struct resource res;
-> > >>>> +		ret =3D of_address_to_resource(mdionode, 0, &res);
-> > >>>> +		if (ret)
-> > >>>> +			goto out_put_mdio;
-> > >>>> +		bus_id =3D res.start;
-> > >>>> +	}
-> > >>>> =20
-> > >>>> -	snprintf(fpi->bus_id, 16, "%x:%02x", res.start, *data);
-> > >>>> +	snprintf(fpi->bus_id, 16, "%x:%02x", bus_id, *data);
-> >=20
-> > What are the patch dependencies, if any?
-> >=20
-> > My general rule is, anytime I see 80%+ of the patch dealing with=20
-> > arch-specific API functions (such as OF resource stuff), I tend to=20
-> > prefer that goes via an arch tree.
-> >=20
-> > If it's a networking change, of course I'd prefer it came in my directi=
-on.
->=20
-> The patch modifies the way the Freescale SoC fs_enet driver computes the =
-PHY=20
-> bus_id field when it connects to a PHY.
->=20
-> The 'legacy' binding method was to use the MDIO general purpose I/O regis=
-ter=20
-> address to identify the mii bus. My first patch (OpenFirmware GPIO based =
-MDIO=20
-> bitbang driver) introduces a new binding using the GPIO library.
->=20
-> With this patch the mii bus is now identified by the GPIO lib I/O resourc=
-e=20
-> number if available and falls back to the register address when the devic=
-e=20
-> tree uses the legacy binding.
->=20
-> There should be no dependencies. When the OF GPIO support is not selected=
+An alternative would be to change the serial break handling API to pass the=
 =20
-> linux/of_gpio.h will define of_get_gpio() as a stub, so the fs_enet drive=
-r=20
-> will fall back to the legacy binding.
+break duration down to the serial drivers.
 
-Have we reached a consensus on which tree the patch should go to ?
+=2D--
+ drivers/serial/cpm_uart/cpm_uart_core.c |    9 +++++++++
+ 1 files changed, 9 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/serial/cpm_uart/cpm_uart_core.c=20
+b/drivers/serial/cpm_uart/cpm_uart_core.c
+index c29d87d..aa0a284 100644
+=2D-- a/drivers/serial/cpm_uart/cpm_uart_core.c
++++ b/drivers/serial/cpm_uart/cpm_uart_core.c
+@@ -268,14 +268,23 @@ static void cpm_uart_break_ctl(struct uart_port *port=
+,=20
+int break_state)
+ static void cpm_uart_break_ctl(struct uart_port *port, int break_state)
+ {
+ 	struct uart_cpm_port *pinfo =3D (struct uart_cpm_port *)port;
++	volatile u16 *brkcr =3D IS_SMC(pinfo) ? &pinfo->smcup->smc_brkcr
++				: &pinfo->sccup->scc_brkcr;
+=20
+ 	pr_debug("CPM uart[%d]:break ctrl, break_state: %d\n", port->line,
+ 		break_state);
+=20
+ 	if (break_state)
++	{
++		*brkcr =3D 32767;
+ 		cpm_line_cr_cmd(pinfo, CPM_CR_STOP_TX);
++	}
+ 	else
++	{
++		*brkcr =3D 0;
++		cpm_line_cr_cmd(pinfo, CPM_CR_STOP_TX);
+ 		cpm_line_cr_cmd(pinfo, CPM_CR_RESTART_TX);
++	}
+ }
+=20
+ /*
+=2D-=20
+1.5.0
+
 
 =2D-=20
 Laurent Pinchart
@@ -110,15 +90,15 @@ Belgium
 T +32 (2) 387 42 59
 =46 +32 (2) 387 42 75
 
---nextPart1356336.k58zgoD23A
+--nextPart12031472.ByL2JTWP1D
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.5 (GNU/Linux)
 
-iD8DBQBIY3u08y9gWxC9vpcRAifyAJ90DWnya7fYbNRJcOy5NtxjTplfvwCgxk6U
-w1PNM1gpYtAmI4QsZCKc2ok=
-=insJ
+iD8DBQBIY3+r8y9gWxC9vpcRAnMtAJ4onySNqgrTNRYHA0ceYGjbQhnjwACg2jhP
+Yq0sa913L+cpVz6xkPJfByM=
+=wUFO
 -----END PGP SIGNATURE-----
 
---nextPart1356336.k58zgoD23A--
+--nextPart12031472.ByL2JTWP1D--
