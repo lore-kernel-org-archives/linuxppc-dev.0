@@ -1,23 +1,23 @@
 Return-Path: <monstr@seznam.cz>
 Received: from mxl.seznam.cz (mxl.seznam.cz [77.75.72.44])
-	by ozlabs.org (Postfix) with ESMTP id 8659FDE00F
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jun 2008 04:55:49 +1000 (EST)
-Message-ID: <4863E68C.30802@seznam.cz>
-Date: Thu, 26 Jun 2008 20:57:16 +0200
+	by ozlabs.org (Postfix) with ESMTP id D65BDDE03D
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jun 2008 04:57:47 +1000 (EST)
+Message-ID: <4863E70A.2060108@seznam.cz>
+Date: Thu, 26 Jun 2008 20:59:22 +0200
 From: Michal Simek <monstr@seznam.cz>
 MIME-Version: 1.0
-To: Jon Loeliger <jdl@freescale.com>
-Subject: Re: [PATCH 12/60] microblaze_v4: Generic dts file for platforms
-References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>	<1214483429-32360-2-git-send-email-monstr@seznam.cz>	<1214483429-32360-3-git-send-email-monstr@seznam.cz>	<1214483429-32360-4-git-send-email-monstr@seznam.cz>	<1214483429-32360-5-git-send-email-monstr@seznam.cz>	<1214483429-32360-6-git-send-email-monstr@seznam.cz>	<1214483429-32360-7-git-send-email-monstr@seznam.cz>	<1214483429-32360-8-git-send-email-monstr@seznam.cz>	<1214483429-32360-9-git-send-email-monstr@seznam.cz>	<1214483429-32360-10-git-send-email-monstr@seznam.cz>	<1214483429-32360-11-git-send-email-monstr@seznam.cz>	<1214483429-32360-12-git-send-email-monstr@seznam.cz>	<1214483429-32360-13-git-send-email-monstr@seznam.cz>
-	<4863B096.7020309@freescale.com>
-In-Reply-To: <4863B096.7020309@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-arch@vger.kernel.org, alan@lxorguk.ukuu.org.uk, arnd@arndb.de,
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: Microblaze init port v4
+References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
+	<200806261709.37045.arnd@arndb.de>
+In-Reply-To: <200806261709.37045.arnd@arndb.de>
+Content-Type: text/plain; charset=ISO-8859-2
+Cc: linux-arch@vger.kernel.org, john.williams@petalogix.com,
 	vapier.adi@gmail.com, matthew@wil.cx,
 	microblaze-uclinux@itee.uq.edu.au, linux-kernel@vger.kernel.org,
-	drepper@redhat.com, linuxppc-dev@ozlabs.org,
-	will.newton@gmail.com, hpa@zytor.com, John.Linn@xilinx.com,
-	john.williams@petalogix.com
+	John.Linn@xilinx.com, linuxppc-dev@ozlabs.org,
+	will.newton@gmail.com, hpa@zytor.com, drepper@redhat.com,
+	alan@lxorguk.ukuu.org.uk
 Reply-To: monstr@seznam.cz
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -28,92 +28,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-OK. We have to change fdt generator with Steve.
+Hi Arnd,
 
-Steve: can you look at it?
+> On Thursday 26 June 2008, monstr@seznam.cz wrote:
+>> We have there still problem with syscalls and we don't have chance to 
+>> fix it to stable version, this is not part which I can do yourself. 
+>> Microblaze will be n + 1 platform which use some old syscalls. 
+>> I hope you understand.
+> 
+> That still leaves the problem that a lot of your syscalls have bugs
+> copied from other platforms. If you need to maintain backwards compatibility
+> with your existing binaries, that's fine, but please fix the code you are
+> adding.
+
+This is for now. I'll remove when I will have new toolchain.
+
+I saw an email from you about.
 
 M
-
-
-> monstr@seznam.cz wrote:
->> From: Michal Simek <monstr@monstr.eu>
->>
->>
->> Signed-off-by: Michal Simek <monstr@monstr.eu>
->> ---
->>  arch/microblaze/platform/generic/system.dts |  300
->> +++++++++++++++++++++++++++
->>  1 files changed, 300 insertions(+), 0 deletions(-)
->>  create mode 100644 arch/microblaze/platform/generic/system.dts
->>
->> diff --git a/arch/microblaze/platform/generic/system.dts
->> b/arch/microblaze/platform/generic/system.dts
->> new file mode 100644
->> index 0000000..724a037
->> --- /dev/null
->> +++ b/arch/microblaze/platform/generic/system.dts
->> @@ -0,0 +1,300 @@
->> +/*
->> + * (C) Copyright 2007-2008 Xilinx, Inc.
->> + * (C) Copyright 2007-2008 Michal Simek
->> + *
->> + * Michal SIMEK <monstr@monstr.eu>
->> + *
->> + * This program is free software; you can redistribute it and/or
->> + * modify it under the terms of the GNU General Public License as
->> + * published by the Free Software Foundation; either version 2 of
->> + * the License, or (at your option) any later version.
->> + *
->> + * This program is distributed in the hope that it will be useful,
->> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
->> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
->> + * GNU General Public License for more details.
->> + *
->> + * You should have received a copy of the GNU General Public License
->> + * along with this program; if not, write to the Free Software
->> + * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
->> + * MA 02111-1307 USA
->> + *
->> + * CAUTION: This file is automatically generated by libgen.
->> + * Version: Xilinx EDK 9.2.02 EDK_Jm_SP2.3
->> + * Generate by FDT v1.00.a
->> + */
->> +
->> +/ {
->> +    #address-cells = <1>;
->> +    #size-cells = <1>;
->> +    compatible = "xlnx,microblaze";
->> +    model = "testing";
->> +    DDR_SDRAM_32Mx16: memory@20000000 {
->> +        device_type = "memory";
->> +        reg = < 20000000 2000000 >;
->> +    } ;
->> +    chosen {
->> +        bootargs = "console=ttyUL0,115200 loglevel=15";
->> +        linux,stdout-path = "/plb@0/serial@40100000";
->> +    } ;
->> +    cpus {
->> +        #address-cells = <1>;
->> +        #cpus = <1>;
->> +        #size-cells = <0>;
->> +        microblaze_0: cpu@0 {
->> +            clock-frequency = <2faf080>;
-> 
-> 
-> This should really be using the /dts-v1/ format now.
-> 
-> Thanks,
-> jdl
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
-> 
-> 
-> ------------------------------------------------------------------------
-> 
-> 
-> No virus found in this incoming message.
-> Checked by AVG. 
-> Version: 8.0.101 / Virus Database: 270.4.1/1519 - Release Date: 25.6.2008 04:13
