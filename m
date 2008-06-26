@@ -2,31 +2,16 @@ Return-Path: <monstr@seznam.cz>
 Received: from monstr.eu (238.225.broadband7.iol.cz [88.102.225.238])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id F1D5FDDE9F
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jun 2008 23:23:46 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 364EDDE5AD
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jun 2008 23:26:37 +1000 (EST)
 From: monstr@seznam.cz
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 17/60] microblaze_v4: head.S + linker script
-Date: Thu, 26 Jun 2008 14:29:46 +0200
-Message-Id: <1214483429-32360-18-git-send-email-monstr@seznam.cz>
-In-Reply-To: <1214483429-32360-17-git-send-email-monstr@seznam.cz>
+Subject: [PATCH 02/60] microblaze_v4: Makefiles for Microblaze cpu
+Date: Thu, 26 Jun 2008 14:29:31 +0200
+Message-Id: <1214483429-32360-3-git-send-email-monstr@seznam.cz>
+In-Reply-To: <1214483429-32360-2-git-send-email-monstr@seznam.cz>
 References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
 	<1214483429-32360-2-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-3-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-4-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-5-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-6-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-7-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-8-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-9-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-10-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-11-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-12-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-13-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-14-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-15-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-16-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-17-git-send-email-monstr@seznam.cz>
 Cc: linux-arch@vger.kernel.org, alan@lxorguk.ukuu.org.uk,
 	Michal Simek <monstr@monstr.eu>, vapier.adi@gmail.com,
 	arnd@arndb.de, matthew@wil.cx, microblaze-uclinux@itee.uq.edu.au,
@@ -47,204 +32,195 @@ From: Michal Simek <monstr@monstr.eu>
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- arch/microblaze/kernel/head.S        |   38 +++++++++
- arch/microblaze/kernel/vmlinux.lds.S |  143 ++++++++++++++++++++++++++++++++++
- 2 files changed, 181 insertions(+), 0 deletions(-)
- create mode 100644 arch/microblaze/kernel/head.S
- create mode 100644 arch/microblaze/kernel/vmlinux.lds.S
+ arch/microblaze/Makefile                  |   63 +++++++++++++++++++++++++++++
+ arch/microblaze/boot/Makefile             |   17 ++++++++
+ arch/microblaze/kernel/Makefile           |   17 ++++++++
+ arch/microblaze/kernel/cpu/Makefile       |    8 ++++
+ arch/microblaze/lib/Makefile              |    5 ++
+ arch/microblaze/mm/Makefile               |    5 ++
+ arch/microblaze/platform/Makefile         |    6 +++
+ arch/microblaze/platform/generic/Makefile |    3 +
+ 8 files changed, 124 insertions(+), 0 deletions(-)
+ create mode 100644 arch/microblaze/Makefile
+ create mode 100644 arch/microblaze/boot/Makefile
+ create mode 100644 arch/microblaze/kernel/Makefile
+ create mode 100644 arch/microblaze/kernel/cpu/Makefile
+ create mode 100644 arch/microblaze/lib/Makefile
+ create mode 100644 arch/microblaze/mm/Makefile
+ create mode 100644 arch/microblaze/platform/Makefile
+ create mode 100644 arch/microblaze/platform/generic/Makefile
 
-diff --git a/arch/microblaze/kernel/head.S b/arch/microblaze/kernel/head.S
+diff --git a/arch/microblaze/Makefile b/arch/microblaze/Makefile
 new file mode 100644
-index 0000000..8f87626
+index 0000000..7e9e1b4
 --- /dev/null
-+++ b/arch/microblaze/kernel/head.S
-@@ -0,0 +1,38 @@
-+/*
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License. See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ *
-+ * Copyright (C) 2007 Michal Simek <monstr@monstr.eu>
-+ * Copyright (C) 2006 Atmark Techno, Inc.
-+ */
++++ b/arch/microblaze/Makefile
+@@ -0,0 +1,63 @@
++UTS_SYSNAME = -DUTS_SYSNAME=\"uClinux\"
 +
-+#include <linux/linkage.h>
-+#include <asm/thread_info.h>
++# What CPU vesion are we building for, and crack it open
++# as major.minor.rev
++CPU_VER=$(subst ",,$(CONFIG_XILINX_MICROBLAZE0_HW_VER) )
++CPU_MAJOR=$(shell echo $(CPU_VER) | cut -d '.' -f 1)
++CPU_MINOR=$(shell echo $(CPU_VER) | cut -d '.' -f 2)
++CPU_REV=$(shell echo $(CPU_VER) | cut -d '.' -f 3)
 +
-+	.text
-+ENTRY(_start)
-+	mfs	r1, rmsr
-+	andi	r1, r1, ~2
-+	mts	rmsr, r1
++export CPU_VER CPU_MAJOR CPU_MINOR CPU_REV
 +
-+	/* Initialize small data anchors */
-+	la	r13, r0, _KERNEL_SDA_BASE_
-+	la	r2, r0, _KERNEL_SDA2_BASE_
++# Use cpu-related CONFIG_ vars to set compile options.
 +
-+	/* Initialize stack pointer */
-+	la	r1, r0, init_thread_union + THREAD_SIZE - 4
++# Work out HW multipler support.  This is icky.
++# 1. Spartan2 has no HW multiplers.
++# 2. MicroBlaze v3.x always uses them, except in Spartan 2
++# 3. All other FPGa/CPU ver combos, we can trust the CONFIG_ settings
++ifeq (,$(findstring spartan2,$(CONFIG_XILINX_MICROBLAZE0_FAMILY)))
++  ifeq ($(CPU_MAJOR),3)
++    CPUFLAGS-1 += -mno-xl-soft-mul
++  else
++    # USE_HW_MUL can be 0, 1, or 2, defining a heirarchy of HW Mul support.
++    CPUFLAGS-$(subst 1,,$(CONFIG_XILINX_MICROBLAZE0_USE_HW_MUL)) += -mxl-multiply-high
++    CPUFLAGS-$(CONFIG_XILINX_MICROBLAZE0_USE_HW_MUL) += -mno-xl-soft-mul
++  endif
++endif
++CPUFLAGS-$(CONFIG_XILINX_MICROBLAZE0_USE_DIV) += -mno-xl-soft-div
++CPUFLAGS-$(CONFIG_XILINX_MICROBLAZE0_USE_BARREL) += -mxl-barrel-shift
++CPUFLAGS-$(CONFIG_XILINX_MICROBLAZE0_USE_PCMP) += -mxl-pattern-compare
 +
-+	/* Initialize r31 with current task address */
-+	la	r31, r0, init_task
++CPUFLAGS-1 += $(call cc-option,-mcpu=v$(CPU_VER))
 +
-+	/* Call platform dependent initialize function.
-+	 * Please see $(ARCH)/mach-$(SUBARCH)/setup.c for
-+	 * the function. */
-+	la	r8, r0, machine_early_init
-+	brald	r15, r8
-+	nop
++# The various CONFIG_XILINX cpu features options are integers 0/1/2...
++# rather than bools y/n
++CFLAGS += $(CPUFLAGS-1)
++CFLAGS += $(CPUFLAGS-2)
 +
-+	la	r15, r0, machine_halt
-+	braid	start_kernel
-+	nop
-diff --git a/arch/microblaze/kernel/vmlinux.lds.S b/arch/microblaze/kernel/vmlinux.lds.S
++# r31 holds current when in kernel mode
++CFLAGS += -ffixed-r31
++
++LDFLAGS_BLOB := --format binary --oformat elf32-microblaze
++
++LIBGCC := $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
++
++head-y		:= arch/microblaze/kernel/head.o
++libs-y		+= arch/microblaze/lib/ $(LIBGCC)
++core-y		+= arch/microblaze/kernel/ arch/microblaze/mm/ \
++		   arch/microblaze/platform/
++
++boot := arch/$(ARCH)/boot
++
++all: linux.bin
++
++archclean:
++	$(Q)$(MAKE) $(clean)=$(boot)
++
++linux.bin linux.bin.gz: vmlinux
++	$(Q)$(MAKE) $(build)=$(boot) $(boot)/$@
++
++define archhelp
++  echo  '* linux.bin    - Create raw binary'
++  echo  '  linux.bin.gz - Create compressed raw binary'
++endef
+diff --git a/arch/microblaze/boot/Makefile b/arch/microblaze/boot/Makefile
 new file mode 100644
-index 0000000..f31e7ef
+index 0000000..844edf4
 --- /dev/null
-+++ b/arch/microblaze/kernel/vmlinux.lds.S
-@@ -0,0 +1,143 @@
-+/*
-+ * Copyright (C) 2006 Atmark Techno, Inc.
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License. See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ */
++++ b/arch/microblaze/boot/Makefile
+@@ -0,0 +1,17 @@
++#
++# arch/microblaze/boot/Makefile
++#
 +
-+OUTPUT_FORMAT("elf32-microblaze", "elf32-microblaze", "elf32-microblaze")
-+OUTPUT_ARCH(microblaze)
-+ENTRY(_start)
++targets := linux.bin linux.bin.gz
 +
-+#include <linux/autoconf.h>
-+#include <asm-generic/vmlinux.lds.h>
++OBJCOPYFLAGS_linux.bin  := -O binary
 +
-+jiffies = jiffies_64 + 4;
++$(obj)/linux.bin: vmlinux FORCE
++	$(call if_changed,objcopy)
++	@echo 'Kernel: $@ is ready' ' (#'`cat .version`')'
 +
-+SECTIONS {
-+	. = CONFIG_KERNEL_BASE_ADDR;
++$(obj)/linux.bin.gz: $(obj)/linux.bin FORCE
++	$(call if_changed,gzip)
++	@echo 'Kernel: $@ is ready' ' (#'`cat .version`')'
 +
-+	.text : {
-+		_text = . ;
-+		_stext = . ;
-+		TEXT_TEXT
-+		SCHED_TEXT
-+		LOCK_TEXT
-+		. = ALIGN (4) ;
-+		_etext = . ;
-+	}
++clean-kernel += linux.bin linux.bin.gz
+diff --git a/arch/microblaze/kernel/Makefile b/arch/microblaze/kernel/Makefile
+new file mode 100644
+index 0000000..f7a6bb8
+--- /dev/null
++++ b/arch/microblaze/kernel/Makefile
+@@ -0,0 +1,17 @@
++#
++# Makefile
++#
 +
-+	. = ALIGN(16);
-+	RODATA
++extra-y := head.o vmlinux.lds
 +
-+	/* sdata2 section can go anywhere, but must be word aligned
-+	 and SDA2_BASE must point to the middle of it */
-+	.sdata2 : {
-+		_ssrw = .;
-+		. = ALIGN(0x8);
-+		*(.sdata2)
-+	. = ALIGN(8);
-+	_essrw = .;
-+	_ssrw_size = _essrw - _ssrw;
-+	_KERNEL_SDA2_BASE_ = _ssrw + (_ssrw_size / 2);
-+	}
++obj-y += entry.o exceptions.o \
++	hw_exception_handler.o init_task.o intc.o irq.o of_device.o \
++	process.o prom.o ptrace.o \
++	setup.o signal.o sys_microblaze.o timer.o traps.o
 +
-+	_sdata = . ;
-+	.data ALIGN (0x4) : {
-+		DATA_DATA
-+	}
-+	. = ALIGN(32);
-+	.data.cacheline_aligned : { *(.data.cacheline_aligned) }
-+	_edata = . ;
++obj-y += cpu/
 +
-+	/* The initial task */
-+	. = ALIGN(8192);
-+	.data.init_task : { *(.data.init_task) }
++obj-$(CONFIG_EARLY_PRINTK)	+= early_printk.o
++obj-$(CONFIG_SELFMOD)		+= selfmod.o
++obj-$(CONFIG_HEART_BEAT)	+= heartbeat.o
++obj-$(CONFIG_MODULES)		+= microblaze_ksyms.o module.o
+diff --git a/arch/microblaze/kernel/cpu/Makefile b/arch/microblaze/kernel/cpu/Makefile
+new file mode 100644
+index 0000000..20646e5
+--- /dev/null
++++ b/arch/microblaze/kernel/cpu/Makefile
+@@ -0,0 +1,8 @@
++#
++# Build the appropriate CPU version support
++#
 +
-+	/* Under the microblaze ABI, .sdata and .sbss must be contiguous */
-+	. = ALIGN(8);
-+	.sdata : {
-+		_ssro = .;
-+		*(.sdata)
-+	}
++EXTRA_CFLAGS += -DCPU_MAJOR=$(CPU_MAJOR) -DCPU_MINOR=$(CPU_MINOR) \
++		-DCPU_REV=$(CPU_REV)
 +
-+	.sbss :	{
-+		_ssbss = .;
-+		*(.sbss)
-+		_esbss = .;
-+		_essro = .;
-+		_ssro_size = _essro - _ssro ;
-+		_KERNEL_SDA_BASE_ = _ssro + (_ssro_size / 2) ;
-+	}
++obj-y += cache.o cpuinfo.o cpuinfo-pvr-full.o cpuinfo-static.o mb.o pvr.o
+diff --git a/arch/microblaze/lib/Makefile b/arch/microblaze/lib/Makefile
+new file mode 100644
+index 0000000..f0c36ff
+--- /dev/null
++++ b/arch/microblaze/lib/Makefile
+@@ -0,0 +1,5 @@
++#
++# Makefile
++#
 +
-+	. = ALIGN(16);
-+	__start___ex_table = .;
-+	__ex_table : { *(__ex_table) }
-+	__stop___ex_table = .;
++lib-y := memcpy.o memmove.o memset.o uaccess.o
+diff --git a/arch/microblaze/mm/Makefile b/arch/microblaze/mm/Makefile
+new file mode 100644
+index 0000000..bf9e447
+--- /dev/null
++++ b/arch/microblaze/mm/Makefile
+@@ -0,0 +1,5 @@
++#
++# Makefile
++#
 +
-+	__init_begin = .;
++obj-y := init.o
+diff --git a/arch/microblaze/platform/Makefile b/arch/microblaze/platform/Makefile
+new file mode 100644
+index 0000000..ea1b75c
+--- /dev/null
++++ b/arch/microblaze/platform/Makefile
+@@ -0,0 +1,6 @@
++#
++# Makefile for arch/microblaze/platform directory
++#
++#obj-$(CONFIG_PLATFORM_GENERIC) += generic/
 +
-+	. = ALIGN(4096);
-+	.init.text : {
-+		_sinittext = . ;
-+		*(.init.text)
-+		*(.exit.text)
-+		*(.exit.data)
-+		_einittext = .;
-+	}
-+
-+	.init.data : { *(.init.data) }
-+
-+	. = ALIGN(4);
-+	.init.ivt : {
-+		__ivt_start = .;
-+		*(.init.ivt)
-+		__ivt_end = .;
-+	}
-+
-+	.init.setup : {
-+		__setup_start = .;
-+		*(.init.setup)
-+		__setup_end = .;
-+	}
-+
-+	.initcall.init : {
-+		__initcall_start = .;
-+		INITCALLS
-+		__initcall_end = .;
-+	}
-+
-+	.con_initcall.init : {
-+		__con_initcall_start = .;
-+		*(.con_initcall.init)
-+		__con_initcall_end = .;
-+	}
-+
-+	__init_end_before_initramfs = .;
-+
-+	.init.ramfs ALIGN(4096) : {
-+		__initramfs_start = .;
-+		*(.init.ramfs)
-+		__initramfs_end = .;
-+		. = ALIGN(4);
-+		LONG(0);
-+		. = ALIGN(4096);/* Pad init.ramfs up to page boundary, so
-+				that __init_end == __bss_start. This will
-+				make image.elf consistent with the image.bin */
-+	}
-+
-+	__init_end = .;
-+
-+	.bss ALIGN (4096) : {
-+		__bss_start = . ;
-+			*(.bss*)
-+			*(COMMON)
-+		. = ALIGN (4) ;
-+		__bss_stop = . ;
-+		_ebss = . ;
-+	}
-+	. = ALIGN(4096);
-+	_end = .;
-+}
-+
++obj-y	+= platform.o
+diff --git a/arch/microblaze/platform/generic/Makefile b/arch/microblaze/platform/generic/Makefile
+new file mode 100644
+index 0000000..9a8b1bd
+--- /dev/null
++++ b/arch/microblaze/platform/generic/Makefile
+@@ -0,0 +1,3 @@
++#
++# Empty Makefile to keep make clean happy
++#
 -- 
 1.5.4.GIT
