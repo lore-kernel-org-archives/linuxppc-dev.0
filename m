@@ -2,16 +2,17 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 52ECFDE558
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jun 2008 21:55:16 +1000 (EST)
-Subject: Re: [PATCH 1/1] powerpc: add 64 bit version of huge_ptep_set_wrprotect
+	by ozlabs.org (Postfix) with ESMTPS id 71B61DE58D
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jun 2008 21:55:23 +1000 (EST)
+Subject: Re: [PATCH/RFC] powerpc: prevent memory corruption due to cache
+	invalidation of unaligned DMA buffer
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Andy Whitcroft <apw@shadowen.org>
-In-Reply-To: <1214474158-17870-1-git-send-email-apw@shadowen.org>
-References: <1214474158-17870-1-git-send-email-apw@shadowen.org>
+To: Andrew Lewis <andrew-lewis@netspace.net.au>
+In-Reply-To: <48636161.6080603@netspace.net.au>
+References: <48636161.6080603@netspace.net.au>
 Content-Type: text/plain
-Date: Thu, 26 Jun 2008 20:51:42 +1000
-Message-Id: <1214477502.8011.459.camel@pasglop>
+Date: Thu, 26 Jun 2008 20:55:48 +1000
+Message-Id: <1214477748.8011.464.camel@pasglop>
 Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 Reply-To: benh@kernel.crashing.org
@@ -24,40 +25,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2008-06-26 at 10:55 +0100, Andy Whitcroft wrote:
-> The implementation of huge_ptep_set_wrprotect() directly calls
-> ptep_set_wrprotect() to mark a hugepte write protected.  However this
-> call is not appropriate on ppc64 kernels as this is a small page only
-> implementation.  This can lead to the hash not being flushed correctly
-> when a mapping is being converted to COW, allowing processes to continue
-> using the original copy.
-> 
-> Currently huge_ptep_set_wrprotect() unconditionally calls
-> ptep_set_wrprotect().  This is fine on ppc32 kernels as this call is
-> generic.  On 64 bit this is implemented as:
-> 
-> 	pte_update(mm, addr, ptep, _PAGE_RW, 0);
-> 
-> On ppc64 this last parameter is the page size and is passed directly on
-> to hpte_need_flush():
-> 
-> 	hpte_need_flush(mm, addr, ptep, old, huge);
-> 
-> And this directly affects the page size we pass to flush_hash_page():
-> 
-> 	flush_hash_page(vaddr, rpte, psize, ssize, 0);
-> 
-> As this changes the way the hash is calculated we will flush the wrong
-> pages, potentially leaving live hashes to the original page.
-> 
-> Move the definition of huge_ptep_set_wrprotect() to the 32/64 bit specific
-> headers.
-> 
-> Signed-off-by: Andy Whitcroft <apw@shadowen.org>
+On Thu, 2008-06-26 at 17:29 +0800, Andrew Lewis wrote:
+> On PowerPC processors with non-coherent cache architectures the DMA
+> subsystem calls invalidate_dcache_range() before performing a DMA read
+> operation.  If the address and length of the DMA buffer are not aligned
+> to a cache-line boundary this can result in memory outside of the DMA
+> buffer being invalidated in the cache.  If this memory has an
+> uncommitted store then the data will be lost and a subsequent read of
+> that address will result in an old value being returned from main memory.
+
+Thanks for providing a fix. The problem is old and in fact was discussed
+a while ago, unfortunately, it looks like the SCSI folks didn't fix it
+yet.
+
+In theory, on non-cache coherent architecture, buffers that can be
+DMA'ed should not share cache lines with other objects. This is violated
+by the SCSI code due to recent changes to the way the sense buffer is
+allocated. Various solutions were proposed, including a __dma_buffer
+alignment directive, but back then, the wind blew more toward changing
+the way the buffer is allocated in the SCSI stack.
+
+Some people started working on that and I lost track. It looks like it
+wasn't properly fixed :-(
+
+I'll ack your patch for now as workaround, though it would be good to
+have some kind of debug option to make it WARN_ON when the unaligned
+case happen, to track them down and help fix them. I'll try to catch up
+with the SCSI folks to see what's up on this side.
+
+In the meantime:
 
 Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-
-Good catch btw !
-
-Cheers,
-Ben.
