@@ -1,17 +1,26 @@
-Return-Path: <scottwood@freescale.com>
-Message-ID: <4863FA88.1010708@freescale.com>
-Date: Thu, 26 Jun 2008 15:22:32 -0500
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <stephen.neuendorffer@xilinx.com>
+Received: from VA3EHSOBE002.bigfish.com (outbound-va3.frontbridge.com
+	[216.32.180.16]) by ozlabs.org (Postfix) with ESMTP id 0C6AADDFF6
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jun 2008 06:27:36 +1000 (EST)
 MIME-Version: 1.0
-To: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
-Subject: Re: [PATCH] powerpc/bootwrapper: Add documentation of
-	boot	wrappertargets
-References: <20080625202104.30114.47902.stgit@trillian.secretlab.ca>	<20080626164842.1D3AB1358053@mail15-sin.bigfish.com>	<1214507238.7698.3.camel@weaponx>
-	<20080626201643.D01221788058@mail223-wa4.bigfish.com>
-In-Reply-To: <20080626201643.D01221788058@mail223-wa4.bigfish.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: John Linn <linnj@xilinx.com>, paulus@samba.org, linuxppc-dev@ozlabs.com,
-	petermendham@computing.dundee.ac.uk
+Content-Type: text/plain; charset="us-ascii"
+Subject: RE: Microblaze init port v4
+Date: Thu, 26 Jun 2008 13:27:29 -0700
+In-Reply-To: <20080626194301.GD22827@cs181140183.pp.htv.fi>
+References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
+	<20080626150121.GB22025@cs181140183.pp.htv.fi>
+	<4863E4FD.6040803@seznam.cz>
+	<20080626194301.GD22827@cs181140183.pp.htv.fi>
+From: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
+To: "Adrian Bunk" <bunk@kernel.org>,
+	"Michal Simek" <monstr@seznam.cz>
+Message-ID: <20080626202730.CEE063C0061@mail98-va3.bigfish.com>
+Cc: linux-arch@vger.kernel.org, alan@lxorguk.ukuu.org.uk, vapier.adi@gmail.com,
+	arnd@arndb.de, matthew@wil.cx, microblaze-uclinux@itee.uq.edu.au,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	will.newton@gmail.com, hpa@zytor.com,
+	John Linn <linnj@xilinx.com>, drepper@redhat.com,
+	john.williams@petalogix.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,39 +30,84 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Stephen Neuendorffer wrote:
->> cuImage is for boards running an older U-Boot that does not understand
->> device trees.
-> 
-> Forgive my ignorance here, but what specifically does this imply?  As
-> far as I can tell, generally speaking, some of the board-specific
-> information is passed into the boot wrapper, which then stuffs it into
-> the device tree.
 
-It implies that the binary is in uImage format, targets older u-boot (as 
-opposed to some other bootloader entirely, which might be targeted with 
-a dtbImage -- see adder875, for example), and has a device tree embedded.
+We're looking at putting a microblaze toolchain on git.xilinx.com, which
+will be slightly easier than grabbing all of petalinux, if people just
+want to compile test it.  =
 
->> uImage is for device-tree aware U-Boot versions
-> 
-> And this differs from above because it gets a device tree passed in,
-> which uboot has already stuffed correctly.
 
-Yes.
+At the moment, we would very much like to push the microblaze
+architecture code to the gcc mainline.  I believe the main barrier is
+that we don't have someone with the bandwidth to interact with the gcc
+community at the moment, although hiring someone to work on it may be in
+the works. (Anyone interested?)
 
->> dtbImage is used for boards that can take an ELF zImage, but still
-> need
->> a dtb provided.
->>
->> simpleImage, not sure here.
-> 
-> So both of these are elfs...  but how do they differ?  Is it only in how
-> the right head.s file gets picked up?
+Steve
 
-Neither is necessarily an ELF.  The only simpleboot target I see is a 
-flat binary, as are some of the dtbImage targets (adder875, ep88xc, 
-ep405, etc).  simpleboot is more of a platform than an image type; it's 
-a platform that assumes nothing about the firmware that loaded it, and 
-gets all information from the embedded device tree.
+> -----Original Message-----
+> From: Adrian Bunk [mailto:bunk@kernel.org]
+> Sent: Thursday, June 26, 2008 12:43 PM
+> To: Michal Simek
+> Cc: linux-kernel@vger.kernel.org; arnd@arndb.de;
+linux-arch@vger.kernel.org; Stephen Neuendorffer;
+> John Linn; john.williams@petalogix.com; matthew@wil.cx;
+will.newton@gmail.com; drepper@redhat.com;
+> microblaze-uclinux@itee.uq.edu.au; grant.likely@secretlab.ca;
+linuxppc-dev@ozlabs.org;
+> vapier.adi@gmail.com; alan@lxorguk.ukuu.org.uk; hpa@zytor.com
+> Subject: Re: Microblaze init port v4
+> =
 
--Scott
+> On Thu, Jun 26, 2008 at 08:50:37PM +0200, Michal Simek wrote:
+> > Hi Adrian,
+> >
+> > > On Thu, Jun 26, 2008 at 02:29:29PM +0200, monstr@seznam.cz wrote:
+> > >> Hi everybody,
+> > >>
+> > >> current linux version is 2.6.26-rc8 and I think this is the right
+time
+> > >> to send latest patches againts rc8 for Microblaze CPU.
+> > >> ...
+> > >
+> > > Thanks for your work on getting the architecture included.
+> > >
+> > > I have two questions:
+> > >
+> > > Where can I find a toolchain for compiling a Microblaze kernel?
+> > I personally use petalogix toolchain from www.petalogix.com.
+> >
+> > > What is the status of Microblaze support in upstream binutils and
+gcc?
+> >
+> > I don't have any information about. We will discuss with John
+Williams and guys
+> > from Xilinx
+> > what we can do for it.
+> =
+
+> Thanks!
+> =
+
+> > M
+> =
+
+> cu
+> Adrian
+> =
+
+> --
+> =
+
+>        "Is there not promise of rain?" Ling Tan asked suddenly out
+>         of the darkness. There had been need of rain for many days.
+>        "Only a promise," Lao Er said.
+>                                        Pearl S. Buck - Dragon Seed
+> =
+
+
+
+This email and any attachments are intended for the sole use of the named r=
+ecipient(s) and contain(s) confidential information that may be proprietary=
+, privileged or copyrighted under applicable law. If you are not the intend=
+ed recipient, do not read, copy, or forward this email message or any attac=
+hments. Delete this email message and any attachments immediately.
