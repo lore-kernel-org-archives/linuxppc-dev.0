@@ -1,16 +1,13 @@
-Return-Path: <andrew-lewis@netspace.net.au>
-Received: from mail.netspace.net.au (mail-out5.netspace.net.au [203.10.110.92])
-	by ozlabs.org (Postfix) with ESMTP id 5D2ADDE041
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jun 2008 19:50:00 +1000 (EST)
-Message-ID: <48636161.6080603@netspace.net.au>
-Date: Thu, 26 Jun 2008 17:29:05 +0800
-From: Andrew Lewis <andrew-lewis@netspace.net.au>
-MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH/RFC] powerpc: prevent memory corruption due to cache
-	invalidation of unaligned DMA buffer
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: 'Andrew Lewis' <andrew-lewis@netspace.net.au>, paulus@samba.org
+Return-Path: <apw@shadowen.org>
+Received: from hellhawk.shadowen.org (hellhawk.shadowen.org [80.68.90.175])
+	by ozlabs.org (Postfix) with ESMTP id 3EE01DE1C6
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jun 2008 20:23:44 +1000 (EST)
+From: Andy Whitcroft <apw@shadowen.org>
+To: paulus@samba.org
+Subject: [PATCH 1/1] powerpc: add 64 bit version of huge_ptep_set_wrprotect
+Date: Thu, 26 Jun 2008 10:55:58 +0100
+Message-Id: <1214474158-17870-1-git-send-email-apw@shadowen.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,71 +17,94 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On PowerPC processors with non-coherent cache architectures the DMA
-subsystem calls invalidate_dcache_range() before performing a DMA read
-operation.  If the address and length of the DMA buffer are not aligned
-to a cache-line boundary this can result in memory outside of the DMA
-buffer being invalidated in the cache.  If this memory has an
-uncommitted store then the data will be lost and a subsequent read of
-that address will result in an old value being returned from main memory.
+The implementation of huge_ptep_set_wrprotect() directly calls
+ptep_set_wrprotect() to mark a hugepte write protected.  However this
+call is not appropriate on ppc64 kernels as this is a small page only
+implementation.  This can lead to the hash not being flushed correctly
+when a mapping is being converted to COW, allowing processes to continue
+using the original copy.
 
-Only when the DMA buffer starts on a cache-line boundary and is an exact
-mutiple of the cache-line size can invalidate_dcache_range() be called,
-otherwise flush_dcache_range() must be called.  flush_dcache_range()
-will first flush uncommitted writes, and then invalidate the cache.
+Currently huge_ptep_set_wrprotect() unconditionally calls
+ptep_set_wrprotect().  This is fine on ppc32 kernels as this call is
+generic.  On 64 bit this is implemented as:
 
-Signed-off-by: Andrew Lewis <andrew-lewis at netspace.net.au>
+	pte_update(mm, addr, ptep, _PAGE_RW, 0);
+
+On ppc64 this last parameter is the page size and is passed directly on
+to hpte_need_flush():
+
+	hpte_need_flush(mm, addr, ptep, old, huge);
+
+And this directly affects the page size we pass to flush_hash_page():
+
+	flush_hash_page(vaddr, rpte, psize, ssize, 0);
+
+As this changes the way the hash is calculated we will flush the wrong
+pages, potentially leaving live hashes to the original page.
+
+Move the definition of huge_ptep_set_wrprotect() to the 32/64 bit specific
+headers.
+
+Signed-off-by: Andy Whitcroft <apw@shadowen.org>
 ---
-This problem was originally observed using SLUB on the ADS5121
-development kit for the Freescale MPC5121e SoC.  When booting with a USB
-flash disk connected there was a highly intermittent kernel panic where
-an attempt was made to dereference an address containing 0x6b6b6b6b, the
-SLUB poison marker.
+ include/asm-powerpc/hugetlb.h       |    6 ------
+ include/asm-powerpc/pgtable-ppc32.h |    6 ++++++
+ include/asm-powerpc/pgtable-ppc64.h |    9 +++++++++
+ 3 files changed, 15 insertions(+), 6 deletions(-)
 
-Tracing the origin of the corruption was difficult as modifying the
-kernel would often result in the corruption vanishing.  Eventually it
-was determined that the SCSI request pointer us->srb->request was being
-corrupted from a valid value to 0x6b6b6b6b somewhere in the call to
-us->proto_handler(us->srb, us) in usb_stor_control_thread()
-(drivers/usb/storage/usb.c).
-
-Further tracing revealed the corruption to be occuring when
-invalidate_dcache_range() was called.
-
-The address of us->srb->request was 0xCFAC81EC, while the parameters
-passed to invalidate_dcache_range() were start=0xCFAC81F0 and
-end=0xCFAC8202.
-
-As these addresses are not on a cache-line boundary,
-invalidate_dcache_range() actually invalidates from 0xCFAC81E0 to
-0xCFAC82E0.  This results in an uncommitted store at address 0xCFAC81EC
-being discarded to be replaced with 0x6b6b6b6b from the SLUB poisoning
-which had been committed to main memory.
-
-Applying this patch also corrected random crashes observed when
-connecting and disconnecting a ZD1121 Wireless LAN USB adapter.
-
- dma-noncoherent.c |   11 +++++++++--
- 1 files changed, 9 insertions(+), 2 deletions(-)
-
-diff -upNr linux-2.6.24.6/arch/powerpc/lib/dma-noncoherent.c wk-linux-2.6.24.6/arch/powerpc/lib/dma-noncoherent.c
---- linux-2.6.24.6/arch/powerpc/lib/dma-noncoherent.c	2008-05-02 05:50:00.000000000 +0800
-+++ wk-linux-2.6.24.6/arch/powerpc/lib/dma-noncoherent.c	2008-06-25 15:11:25.000000000 +0800
-@@ -348,8 +348,15 @@ void __dma_sync(void *vaddr, size_t size
- 	switch (direction) {
- 	case DMA_NONE:
- 		BUG();
--	case DMA_FROM_DEVICE:	/* invalidate only */
--		invalidate_dcache_range(start, end);
-+	case DMA_FROM_DEVICE:	
-+		/*
-+		 * invalidate only when cache-line aligned otherwise there is
-+		 * the potential for discarding uncommitted data from the cache
-+		 */
-+		if ((start & (L1_CACHE_BYTES - 1)) || (size & (L1_CACHE_BYTES - 1)))
-+			flush_dcache_range(start, end);
-+		else
-+			invalidate_dcache_range(start, end);
- 		break;
- 	case DMA_TO_DEVICE:		/* writeback only */
- 		clean_dcache_range(start, end);
+diff --git a/include/asm-powerpc/hugetlb.h b/include/asm-powerpc/hugetlb.h
+index 649c6c3..be32ff0 100644
+--- a/include/asm-powerpc/hugetlb.h
++++ b/include/asm-powerpc/hugetlb.h
+@@ -49,12 +49,6 @@ static inline pte_t huge_pte_wrprotect(pte_t pte)
+ 	return pte_wrprotect(pte);
+ }
+ 
+-static inline void huge_ptep_set_wrprotect(struct mm_struct *mm,
+-					   unsigned long addr, pte_t *ptep)
+-{
+-	ptep_set_wrprotect(mm, addr, ptep);
+-}
+-
+ static inline int huge_ptep_set_access_flags(struct vm_area_struct *vma,
+ 					     unsigned long addr, pte_t *ptep,
+ 					     pte_t pte, int dirty)
+diff --git a/include/asm-powerpc/pgtable-ppc32.h b/include/asm-powerpc/pgtable-ppc32.h
+index c08e714..eddad35 100644
+--- a/include/asm-powerpc/pgtable-ppc32.h
++++ b/include/asm-powerpc/pgtable-ppc32.h
+@@ -652,6 +652,12 @@ static inline void ptep_set_wrprotect(struct mm_struct *mm, unsigned long addr,
+ {
+ 	pte_update(ptep, (_PAGE_RW | _PAGE_HWWRITE), 0);
+ }
++static inline void huge_ptep_set_wrprotect(struct mm_struct *mm,
++					   unsigned long addr, pte_t *ptep)
++{
++	ptep_set_wrprotect(mm, addr, ptep);
++}
++
+ 
+ #define __HAVE_ARCH_PTEP_SET_ACCESS_FLAGS
+ static inline void __ptep_set_access_flags(pte_t *ptep, pte_t entry, int dirty)
+diff --git a/include/asm-powerpc/pgtable-ppc64.h b/include/asm-powerpc/pgtable-ppc64.h
+index cc6a43b..9f7dbc2 100644
+--- a/include/asm-powerpc/pgtable-ppc64.h
++++ b/include/asm-powerpc/pgtable-ppc64.h
+@@ -313,6 +313,15 @@ static inline void ptep_set_wrprotect(struct mm_struct *mm, unsigned long addr,
+        		return;
+ 	old = pte_update(mm, addr, ptep, _PAGE_RW, 0);
+ }
++static inline void huge_ptep_set_wrprotect(struct mm_struct *mm,
++					   unsigned long addr, pte_t *ptep)
++{
++	unsigned long old;
++
++       	if ((pte_val(*ptep) & _PAGE_RW) == 0)
++       		return;
++	old = pte_update(mm, addr, ptep, _PAGE_RW, 1);
++}
+ 
+ /*
+  * We currently remove entries from the hashtable regardless of whether
+-- 
+1.5.6.205.g7ca3a
