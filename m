@@ -1,19 +1,38 @@
-Return-Path: <monstr@seznam.cz>
-Received: from monstr.eu (238.225.broadband7.iol.cz [88.102.225.238])
+Return-Path: <alan@lxorguk.ukuu.org.uk>
+Received: from lxorguk.ukuu.org.uk (earthlight.etchedpixels.co.uk
+	[81.2.110.250])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 27CD2DF170
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jun 2008 23:38:25 +1000 (EST)
-From: monstr@seznam.cz
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 01/60] microblaze_v4: Kconfig patches
-Date: Thu, 26 Jun 2008 14:29:30 +0200
-Message-Id: <1214483429-32360-2-git-send-email-monstr@seznam.cz>
-In-Reply-To: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
+	by ozlabs.org (Postfix) with ESMTPS id DAD0BDFA74
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jun 2008 23:38:44 +1000 (EST)
+Date: Thu, 26 Jun 2008 14:18:37 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: monstr@seznam.cz
+Subject: Re: [PATCH 46/60] microblaze_v4: termbits.h termios.h
+Message-ID: <20080626141837.0f8f439d@lxorguk.ukuu.org.uk>
+In-Reply-To: <1214483429-32360-47-git-send-email-monstr@seznam.cz>
 References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
-Cc: linux-arch@vger.kernel.org, alan@lxorguk.ukuu.org.uk,
-	Michal Simek <monstr@monstr.eu>, vapier.adi@gmail.com,
-	arnd@arndb.de, matthew@wil.cx, microblaze-uclinux@itee.uq.edu.au,
+	<1214483429-32360-32-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-33-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-34-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-35-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-36-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-37-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-38-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-39-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-40-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-41-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-42-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-43-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-44-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-45-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-46-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-47-git-send-email-monstr@seznam.cz>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linux-arch@vger.kernel.org, Michal Simek <monstr@monstr.eu>,
+	vapier.adi@gmail.com, arnd@arndb.de, matthew@wil.cx,
+	microblaze-uclinux@itee.uq.edu.au, linux-kernel@vger.kernel.org,
 	drepper@redhat.com, linuxppc-dev@ozlabs.org,
 	will.newton@gmail.com, hpa@zytor.com, John.Linn@xilinx.com,
 	john.williams@petalogix.com
@@ -26,379 +45,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Michal Simek <monstr@monstr.eu>
+> +++ b/include/asm-generic/termbits.h
+> @@ -0,0 +1,200 @@
 
+> +/* c_cflag bit meaning */
+> +
+> +#define CBAUD	0010017
+> +#define B0	0000000 /* hang up */
 
-Signed-off-by: Michal Simek <monstr@monstr.eu>
----
- arch/microblaze/Kconfig                       |  157 +++++++++++++++++++++++++
- arch/microblaze/Kconfig.debug                 |   39 ++++++
- arch/microblaze/platform/Kconfig.platform     |   77 ++++++++++++
- arch/microblaze/platform/generic/Kconfig.auto |   62 ++++++++++
- 4 files changed, 335 insertions(+), 0 deletions(-)
- create mode 100644 arch/microblaze/Kconfig
- create mode 100644 arch/microblaze/Kconfig.debug
- create mode 100644 arch/microblaze/platform/Kconfig.platform
- create mode 100644 arch/microblaze/platform/generic/Kconfig.auto
-
-diff --git a/arch/microblaze/Kconfig b/arch/microblaze/Kconfig
-new file mode 100644
-index 0000000..0e9545b
---- /dev/null
-+++ b/arch/microblaze/Kconfig
-@@ -0,0 +1,157 @@
-+# For a description of the syntax of this configuration file,
-+# see Documentation/kbuild/kconfig-language.txt.
-+
-+mainmenu "Linux/Microblaze Kernel Configuration"
-+
-+config MICROBLAZE
-+	def_bool y
-+	select HAVE_LMB
-+
-+config MMU
-+	def_bool n
-+
-+config SWAP
-+	def_bool n
-+
-+config RWSEM_GENERIC_SPINLOCK
-+	def_bool y
-+
-+config RWSEM_XCHGADD_ALGORITHM
-+	bool
-+
-+config ARCH_HAS_ILOG2_U32
-+	def_bool n
-+
-+config ARCH_HAS_ILOG2_U64
-+	def_bool n
-+
-+config GENERIC_FIND_NEXT_BIT
-+	def_bool y
-+
-+config GENERIC_HWEIGHT
-+	def_bool y
-+
-+config GENERIC_HARDIRQS
-+	def_bool y
-+
-+config GENERIC_IRQ_PROBE
-+	def_bool y
-+
-+config GENERIC_CALIBRATE_DELAY
-+	def_bool y
-+
-+config GENERIC_TIME
-+	def_bool y
-+
-+config PCI
-+	def_bool n
-+
-+config NO_DMA
-+	def_bool y
-+
-+config GENERIC_CSUM
-+	def_bool y
-+
-+config HZ
-+	int
-+	default 100
-+
-+config DEFCONFIG_LIST
-+	string
-+	default "arch/$ARCH/defconfig"
-+
-+source "init/Kconfig"
-+
-+source "arch/microblaze/platform/Kconfig.platform"
-+
-+menu "Processor type and features"
-+
-+config PREEMPT
-+	bool "Preemptible Kernel"
-+	help
-+	  This option reduces the latency of the kernel when reacting to
-+	  real-time or interactive events by allowing a low priority process to
-+	  be preempted even if it is in kernel mode executing a system call.
-+	  This allows applications to run more reliably even when the system is
-+	  under load.
-+
-+	  Say Y here if you are building a kernel for a desktop, embedded
-+	  or real-time system.  Say N if you are unsure.
-+
-+config PREEMPT_TIMES
-+	bool "Collect preemption latency times"
-+	depends on PREEMPT
-+	help
-+	  Allow collection for preemption latency times.
-+
-+config LARGE_ALLOCS
-+	bool "Allow allocating large blocks (> 1MB) of memory"
-+	help
-+	  Allow the slab memory allocator to keep chains for very large
-+	  memory sizes - up to 32MB. You may need this if your system has
-+	  a lot of RAM, and you need to able to allocate very large
-+	  contiguous chunks. If unsure, say N.
-+
-+config GENERIC_CLOCKEVENTS
-+	bool "Clockevents - enable"
-+	default n
-+	help
-+	  clock events
-+
-+comment "Boot options"
-+
-+config CMDLINE
-+	string "Default kernel command string"
-+	default ""
-+	help
-+	  On some architectures there is currently no way for the boot loader
-+	  to pass arguments to the kernel. For these architectures, you should
-+	  supply some command-line options at build time by entering them
-+	  here.
-+
-+config CMDLINE_FORCE
-+	bool "Force default kernel command string"
-+	help
-+	  Set this to have arguments from the default kernel command string
-+	  override those passed by the boot loader.
-+
-+config OF
-+	def_bool y
-+
-+config OF_DEVICE
-+	def_bool y
-+
-+config PROC_DEVICETREE
-+	bool "Support for device tree in /proc"
-+	depends on PROC_FS
-+	help
-+	  This option adds a device-tree directory under /proc which contains
-+	  an image of the device tree that the kernel copies from Open
-+	  Firmware or other boot firmware. If unsure, say Y here.
-+
-+endmenu
-+
-+config APM_EMULATION
-+	bool
-+
-+source "mm/Kconfig"
-+
-+menu "Exectuable file formats"
-+
-+source "fs/Kconfig.binfmt"
-+
-+endmenu
-+
-+source "net/Kconfig"
-+
-+source "drivers/Kconfig"
-+
-+source "fs/Kconfig"
-+
-+source "arch/microblaze/Kconfig.debug"
-+
-+source "security/Kconfig"
-+
-+source "crypto/Kconfig"
-+
-+source "lib/Kconfig"
-diff --git a/arch/microblaze/Kconfig.debug b/arch/microblaze/Kconfig.debug
-new file mode 100644
-index 0000000..611ef00
---- /dev/null
-+++ b/arch/microblaze/Kconfig.debug
-@@ -0,0 +1,39 @@
-+# For a description of the syntax of this configuration file,
-+# see Documentation/kbuild/kconfig-language.txt.
-+
-+menu "Kernel hacking"
-+
-+source "lib/Kconfig.debug"
-+
-+config EARLY_PRINTK
-+	bool "Early printk function for kernel"
-+	default n
-+	help
-+	  This option turns on/off early printk messages to console.
-+
-+config EARLY_PRINTK_UARTLITE_ADDRESS
-+	hex "Physical address where UART Lite for early printk is mapped"
-+	depends on EARLY_PRINTK
-+	default "0x00000000"
-+	help
-+	  Please enter physical address where your uart lite is mapped.
-+
-+config HEART_BEAT
-+	bool "Heart beat function for kernel"
-+	default n
-+	help
-+	  This option turns on/off heart beat kernel functionality on selected
-+	  GPIO address.
-+
-+config HEART_BEAT_ADDRESS
-+	hex "Physical address for heart beat LED"
-+	depends on HEART_BEAT
-+	default "0x00000000"
-+	help
-+	  Please enter physical address GPIO LED.
-+
-+config DEBUG_BOOTMEM
-+	depends on DEBUG_KERNEL
-+	bool "Debug BOOTMEM initialization"
-+
-+endmenu
-diff --git a/arch/microblaze/platform/Kconfig.platform b/arch/microblaze/platform/Kconfig.platform
-new file mode 100644
-index 0000000..2789f92
---- /dev/null
-+++ b/arch/microblaze/platform/Kconfig.platform
-@@ -0,0 +1,77 @@
-+# For a description of the syntax of this configuration file,
-+# see Documentation/kbuild/kconfig-language.txt.
-+#
-+# Platform selection Kconfig menu for MicroBlaze targets
-+#
-+
-+menu "Platform options"
-+choice
-+	prompt "Platform"
-+	default PLATFORM_MICROBLAZE_AUTO
-+	help
-+	  Choose which hardware board/platform you are targeting.
-+
-+config PLATFORM_GENERIC
-+	bool "Generic"
-+	help
-+	  Choose this option for the Generic platform.
-+
-+endchoice
-+
-+config SELFMOD
-+	bool "Use self modified code for intc/timer"
-+	depends on EXPERIMENTAL
-+	default n
-+	help
-+	  This choice enables self-modified code for interrupt controller
-+	  and timer.
-+
-+config SELFMOD_INTC
-+	bool "Use self modified code for intc"
-+	depends on SELFMOD
-+	default y
-+	help
-+	  This choice enables self-modified code for interrupt controller.
-+
-+config SELFMOD_TIMER
-+	bool "Use self modified code for timer"
-+	depends on SELFMOD
-+	default y
-+	help
-+	  This choice enables self-modified code for timer.
-+
-+config OPT_LIB_FUNCTION
-+	bool "Optimalized lib function"
-+	default y
-+	help
-+	  Allows turn on optimalized library function (memcpy and memmove).
-+	  They are optimized by using word alignment. This will work
-+	  fine if both source and destination are aligned on the same
-+	  boundary. However, if they are aligned on different boundaries
-+	  shifts will be necessary. This might result in bad performance
-+	  on MicroBlaze systems without a barrel shifter.
-+
-+# This is still a bit broken - disabling for now JW 20070504
-+config ALLOW_EDIT_AUTO
-+	bool "Permit Display/edit of Kconfig.auto platform settings"
-+	default n
-+	help
-+	  Allows the editing of auto-generated platform settings from
-+	  the Kconfig.auto file. Obviously this does not change the
-+	  underlying hardware, so be very careful if you go editing
-+	  these settings.
-+
-+	  Also, if you enable this, and edit various Kconfig.auto
-+	  settings, YOUR CHANGES WILL BE LOST if you then disable it
-+	  again. You have been warned!
-+
-+	  If unsure, say no.
-+
-+comment "Automatic platform settings from Kconfig.auto"
-+	depends on ALLOW_EDIT_AUTO
-+
-+if PLATFORM_GENERIC=y
-+	source "arch/microblaze/platform/generic/Kconfig.auto"
-+endif
-+
-+endmenu
-diff --git a/arch/microblaze/platform/generic/Kconfig.auto b/arch/microblaze/platform/generic/Kconfig.auto
-new file mode 100644
-index 0000000..bc1983e
---- /dev/null
-+++ b/arch/microblaze/platform/generic/Kconfig.auto
-@@ -0,0 +1,62 @@
-+#
-+# (C) Copyright 2007 Michal Simek
-+#
-+# Michal SIMEK <monstr@monstr.eu>
-+#
-+# This program is free software; you can redistribute it and/or
-+# modify it under the terms of the GNU General Public License as
-+# published by the Free Software Foundation; either version 2 of
-+# the License, or (at your option) any later version.
-+#
-+# This program is distributed in the hope that it will be useful,
-+# but WITHOUT ANY WARRANTY; without even the implied warranty of
-+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-+# GNU General Public License for more details.
-+#
-+# You should have received a copy of the GNU General Public License
-+# along with this program; if not, write to the Free Software
-+# Foundation, Inc., 59 Temple Place, Suite 330, Boston,
-+# MA 02111-1307 USA
-+#
-+# CAUTION: This file is automatically generated by libgen.
-+# Version: Xilinx EDK 9.2.02 EDK_Jm_SP2.3
-+# Generate by U-BOOT v4.00.c
-+#
-+
-+# Definitions for MICROBLAZE0
-+comment "Definitions for MICROBLAZE0"
-+      depends on ALLOW_EDIT_AUTO
-+
-+config KERNEL_BASE_ADDR
-+	hex "Physical address where Linux Kernel is"
-+	default "0x20000000"
-+	help
-+	  BASE Address for kernel
-+
-+config XILINX_MICROBLAZE0_FAMILY
-+       string "Targetted FPGA family" if ALLOW_EDIT_AUTO
-+       default spartan3e
-+
-+config XILINX_MICROBLAZE0_USE_MSR_INSTR
-+       int "USE_MSR_INSTR" if ALLOW_EDIT_AUTO
-+       default 1
-+
-+config XILINX_MICROBLAZE0_USE_BARREL
-+       int "USE_BARREL range (0:1)" if ALLOW_EDIT_AUTO
-+       default 1
-+
-+config XILINX_MICROBLAZE0_USE_DIV
-+       int "USE_DIV range (0:1)" if ALLOW_EDIT_AUTO
-+       default 1
-+
-+config XILINX_MICROBLAZE0_USE_HW_MULT
-+       int "USE_HW_MULT range (0:1)" if ALLOW_EDIT_AUTO
-+       default 2
-+
-+config XILINX_MICROBLAZE0_USE_FPU
-+       int "USE_FPU range (0:1)" if ALLOW_EDIT_AUTO
-+       default 2
-+
-+config XILINX_MICROBLAZE0_HW_VER
-+       string "Core version number" if ALLOW_EDIT_AUTO
-+       default 7.00.a
--- 
-1.5.4.GIT
+You need BOTHER in here as well - especially if it is going to be generic.
