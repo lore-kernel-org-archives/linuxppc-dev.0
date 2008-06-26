@@ -1,21 +1,20 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id B05E6DEED9
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jun 2008 01:26:17 +1000 (EST)
-Date: Thu, 26 Jun 2008 10:25:28 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Jon Loeliger <jdl@freescale.com>, linuxppc-dev@ozlabs.org,
-	Benno Rice <benno@jeamland.net>
-Subject: Re: dtc: Address an assortment of portability problems
-Message-ID: <20080626152528.GA12256@loki.buserror.net>
-References: <20080626010349.GH308@yookeroo.seuss>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080626010349.GH308@yookeroo.seuss>
+Return-Path: <jwboyer@gmail.com>
+Received: from wr-out-0506.google.com (wr-out-0506.google.com [64.233.184.237])
+	by ozlabs.org (Postfix) with ESMTP id 7FC47DE7B4
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jun 2008 01:29:00 +1000 (EST)
+Received: by wr-out-0506.google.com with SMTP id c48so69826wra.1
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jun 2008 08:28:58 -0700 (PDT)
+Subject: Re: [PATCH] Remove experimental status of kdump on PPC64
+From: Josh Boyer <jwboyer@gmail.com>
+To: Bernhard Walle <bwalle@suse.de>
+In-Reply-To: <1214485035-26041-1-git-send-email-bwalle@suse.de>
+References: <1214485035-26041-1-git-send-email-bwalle@suse.de>
+Content-Type: text/plain
+Date: Thu, 26 Jun 2008 11:28:52 -0400
+Message-Id: <1214494132.2791.0.camel@weaponx>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, kexec@lists.infradead.org,
+	linux-kernel@vger.kernel.org, vgoyal@redhat.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,15 +24,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jun 26, 2008 at 11:03:49AM +1000, David Gibson wrote:
-> 	- the endian handling functions in libfdt_env.h, based on
-> endian.h and byteswap.h are replaced with some portable open-coded
-> versions.  Unfortunately, these result in fairly crappy code when
-> compiled, but as far as I can determine there doesn't seem to be any
-> POSIX, SUS or de facto standard way of determining endianness at
-> compile time, nor standard names for byteswapping functions.
+On Thu, 2008-06-26 at 14:57 +0200, Bernhard Walle wrote:
+> This patch removes the experimental status of kdump on IA64. kdump is on IA64
+> now since more than one year and it has proven to be stable.
 
-Since device-tree and network byte order happen to be the same, we could use
-ntohl/htonl.
+I think you mean PPC64?
 
--Scott
+josh
+
+> For i386/x86_64, a similar patch has been accepted by Ingo Molnar and Vivek
+> Goyal.
+> 
+> 
+> Signed-off-by: Bernhard Walle <bwalle@suse.de>
+> ---
+>  arch/powerpc/Kconfig |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+> index 3934e26..2a116b9 100644
+> --- a/arch/powerpc/Kconfig
+> +++ b/arch/powerpc/Kconfig
+> @@ -308,8 +308,8 @@ config KEXEC
+>  	  strongly in flux, so no good recommendation can be made.
+>  
+>  config CRASH_DUMP
+> -	bool "Build a kdump crash kernel (EXPERIMENTAL)"
+> -	depends on PPC_MULTIPLATFORM && PPC64 && EXPERIMENTAL
+> +	bool "Build a kdump crash kernel"
+> +	depends on PPC_MULTIPLATFORM && PPC64
+>  	help
+>  	  Build a kernel suitable for use as a kdump capture kernel.
+>  	  The kernel will be linked at a different address than normal, and
