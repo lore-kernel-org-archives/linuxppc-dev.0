@@ -2,14 +2,14 @@ Return-Path: <monstr@seznam.cz>
 Received: from monstr.eu (238.225.broadband7.iol.cz [88.102.225.238])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D198FDEA87
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jun 2008 22:39:10 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id E5D20DF3E6
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jun 2008 22:39:38 +1000 (EST)
 From: monstr@seznam.cz
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 38/60] microblaze_v4: headers for executables format FLAT, ELF
-Date: Thu, 26 Jun 2008 14:30:07 +0200
-Message-Id: <1214483429-32360-39-git-send-email-monstr@seznam.cz>
-In-Reply-To: <1214483429-32360-38-git-send-email-monstr@seznam.cz>
+Subject: [PATCH 57/60] microblaze_v4: entry.S
+Date: Thu, 26 Jun 2008 14:30:26 +0200
+Message-Id: <1214483429-32360-58-git-send-email-monstr@seznam.cz>
+In-Reply-To: <1214483429-32360-57-git-send-email-monstr@seznam.cz>
 References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
 	<1214483429-32360-2-git-send-email-monstr@seznam.cz>
 	<1214483429-32360-3-git-send-email-monstr@seznam.cz>
@@ -48,6 +48,25 @@ References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
 	<1214483429-32360-36-git-send-email-monstr@seznam.cz>
 	<1214483429-32360-37-git-send-email-monstr@seznam.cz>
 	<1214483429-32360-38-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-39-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-40-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-41-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-42-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-43-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-44-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-45-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-46-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-47-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-48-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-49-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-50-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-51-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-52-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-53-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-54-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-55-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-56-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-57-git-send-email-monstr@seznam.cz>
 Cc: linux-arch@vger.kernel.org, alan@lxorguk.ukuu.org.uk,
 	Michal Simek <monstr@monstr.eu>, vapier.adi@gmail.com,
 	arnd@arndb.de, matthew@wil.cx, microblaze-uclinux@itee.uq.edu.au,
@@ -68,19 +87,19 @@ From: Michal Simek <monstr@monstr.eu>
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- include/asm-microblaze/elf.h  |   22 ++++++++++
- include/asm-microblaze/flat.h |   90 +++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 112 insertions(+), 0 deletions(-)
- create mode 100644 include/asm-microblaze/elf.h
- create mode 100644 include/asm-microblaze/flat.h
+ arch/microblaze/kernel/entry.S |  597 ++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 597 insertions(+), 0 deletions(-)
+ create mode 100644 arch/microblaze/kernel/entry.S
 
-diff --git a/include/asm-microblaze/elf.h b/include/asm-microblaze/elf.h
+diff --git a/arch/microblaze/kernel/entry.S b/arch/microblaze/kernel/entry.S
 new file mode 100644
-index 0000000..a9f2ecf
+index 0000000..cfabea7
 --- /dev/null
-+++ b/include/asm-microblaze/elf.h
-@@ -0,0 +1,22 @@
++++ b/arch/microblaze/kernel/entry.S
+@@ -0,0 +1,597 @@
 +/*
++ * arch/microblaze/kernel/entry.S
++ *
 + * Copyright (C) 2006 Atmark Techno, Inc.
 + *
 + * This file is subject to the terms and conditions of the GNU General Public
@@ -88,115 +107,592 @@ index 0000000..a9f2ecf
 + * for more details.
 + */
 +
-+#ifndef _ASM_MICROBLAZE_ELF_H
-+#define _ASM_MICROBLAZE_ELF_H
++#include <linux/linkage.h>
++#include <asm/thread_info.h>
++#include <asm/errno.h>
++#include <asm/asm-offsets.h>
++#include <asm/registers.h>
++#include <asm/unistd.h>
++#include <asm/percpu.h>
++#include <asm/signal.h>
 +
-+#define EM_XILINX_MICROBLAZE 0xbaab
-+#define ELF_ARCH	EM_XILINX_MICROBLAZE
++#define PER_CPU(var) per_cpu__##var
 +
-+#define elf_check_arch(x) ((x)->e_machine == EM_XILINX_MICROBLAZE)
++#if CONFIG_XILINX_MICROBLAZE0_USE_MSR_INSTR
++	.macro	disable_irq
++	msrclr r0, MSR_IE
++	.endm
++
++	.macro	enable_irq
++	msrset r0, MSR_IE
++	.endm
++
++	.macro	clear_bip
++	msrclr r0, MSR_BIP
++	.endm
++#else
++	.macro	disable_irq
++	mfs r11, rmsr
++	andi r11, r11, ~MSR_IE
++	mts rmsr, r11
++	.endm
++
++	.macro	enable_irq
++	mfs r11, rmsr
++	ori r11, r11, MSR_IE
++	mts rmsr, r11
++	.endm
++
++	.macro	clear_bip
++	mfs r11, rmsr
++	andi r11, r11, ~MSR_BIP
++	mts rmsr, r11
++	.endm
++#endif
++
++ENTRY(_interrupt)
++	swi	r1, r0, PER_CPU(ENTRY_SP)	/* save the current sp */
++	swi	r11, r0, PER_CPU(R11_SAVE)	/* temporarily save r11 */
++	lwi	r11, r0, PER_CPU(KM)		/* load mode indicator */
++	beqid	r11, 1f
++	nop
++	brid	2f				/* jump over */
++	addik	r1, r1, (-PT_SIZE)	/* room for pt_regs (delay slot) */
++1:						/* switch to kernel stack */
++	lwi	r1, r0, PER_CPU(CURRENT_SAVE)	/* get the saved current */
++	lwi	r1, r1, TS_THREAD_INFO		/* get the thread info */
++	/* calculate kernel stack pointer */
++	addik	r1, r1, THREAD_SIZE - PT_SIZE
++2:
++	swi	r11, r1, PT_MODE		/* store the mode */
++	lwi	r11, r0, PER_CPU(R11_SAVE)	/* reload r11 */
++	swi	r2, r1, PT_R2
++	swi	r3, r1, PT_R3
++	swi	r4, r1, PT_R4
++	swi	r5, r1, PT_R5
++	swi	r6, r1, PT_R6
++	swi	r7, r1, PT_R7
++	swi	r8, r1, PT_R8
++	swi	r9, r1, PT_R9
++	swi	r10, r1, PT_R10
++	swi	r11, r1, PT_R11
++	swi	r12, r1, PT_R12
++	swi	r13, r1, PT_R13
++	swi	r14, r1, PT_R14
++	swi	r14, r1, PT_PC
++	swi	r15, r1, PT_R15
++	swi	r16, r1, PT_R16
++	swi	r17, r1, PT_R17
++	swi	r18, r1, PT_R18
++	swi	r19, r1, PT_R19
++	swi	r20, r1, PT_R20
++	swi	r21, r1, PT_R21
++	swi	r22, r1, PT_R22
++	swi	r23, r1, PT_R23
++	swi	r24, r1, PT_R24
++	swi	r25, r1, PT_R25
++	swi	r26, r1, PT_R26
++	swi	r27, r1, PT_R27
++	swi	r28, r1, PT_R28
++	swi	r29, r1, PT_R29
++	swi	r30, r1, PT_R30
++	swi	r31, r1, PT_R31
++	/* special purpose registers */
++	mfs	r11, rmsr
++	swi	r11, r1, PT_MSR
++	mfs	r11, rear
++	swi	r11, r1, PT_EAR
++	mfs	r11, resr
++	swi	r11, r1, PT_ESR
++	mfs	r11, rfsr
++	swi	r11, r1, PT_FSR
++	/* reload original stack pointer and save it */
++	lwi	r11, r0, PER_CPU(ENTRY_SP)
++	swi	r11, r1, PT_R1
++	/* update mode indicator we are in kernel mode */
++	addik	r11, r0, 1
++	swi	r11, r0, PER_CPU(KM)
++	/* restore r31 */
++	lwi	r31, r0, PER_CPU(CURRENT_SAVE)
++	/* prepare the link register, the argument and jump */
++	la	r15, r0, ret_from_intr - 8
++	addk	r6, r0, r15
++	braid	do_IRQ
++	add	r5, r0, r1
++
++ret_from_intr:
++	lwi	r11, r1, PT_MODE
++	bneid	r11, 3f
++
++	lwi	r6, r31, TS_THREAD_INFO	/* get thread info */
++	lwi	r19, r6, TI_FLAGS	/* get flags in thread info */
++				/* do an extra work if any bits are set */
++
++	andi	r11, r19, _TIF_NEED_RESCHED
++	beqi	r11, 1f
++	bralid	r15, schedule
++	nop
++1:	andi	r11, r19, _TIF_SIGPENDING
++	beqid	r11, no_intr_reshed
++	addk	r5, r1, r0
++	addk	r7, r0, r0
++	bralid	r15, do_signal
++	addk	r6, r0, r0
++
++no_intr_reshed:
++	/* save mode indicator */
++	lwi	r11, r1, PT_MODE
++3:
++	swi	r11, r0, PER_CPU(KM)
++
++	/* save r31 */
++	swi	r31, r0, PER_CPU(CURRENT_SAVE)
++restore_context:
++	/* special purpose registers */
++	lwi	r11, r1, PT_FSR
++	mts	rfsr, r11
++	lwi	r11, r1, PT_ESR
++	mts	resr, r11
++	lwi	r11, r1, PT_EAR
++	mts	rear, r11
++	lwi	r11, r1, PT_MSR
++	mts	rmsr, r11
++
++	lwi	r31, r1, PT_R31
++	lwi	r30, r1, PT_R30
++	lwi	r29, r1, PT_R29
++	lwi	r28, r1, PT_R28
++	lwi	r27, r1, PT_R27
++	lwi	r26, r1, PT_R26
++	lwi	r25, r1, PT_R25
++	lwi	r24, r1, PT_R24
++	lwi	r23, r1, PT_R23
++	lwi	r22, r1, PT_R22
++	lwi	r21, r1, PT_R21
++	lwi	r20, r1, PT_R20
++	lwi	r19, r1, PT_R19
++	lwi	r18, r1, PT_R18
++	lwi	r17, r1, PT_R17
++	lwi	r16, r1, PT_R16
++	lwi	r15, r1, PT_R15
++	lwi	r14, r1, PT_PC
++	lwi	r13, r1, PT_R13
++	lwi	r12, r1, PT_R12
++	lwi	r11, r1, PT_R11
++	lwi	r10, r1, PT_R10
++	lwi	r9, r1, PT_R9
++	lwi	r8, r1, PT_R8
++	lwi	r7, r1, PT_R7
++	lwi	r6, r1, PT_R6
++	lwi	r5, r1, PT_R5
++	lwi	r4, r1, PT_R4
++	lwi	r3, r1, PT_R3
++	lwi	r2, r1, PT_R2
++	lwi	r1, r1, PT_R1
++	rtid	r14, 0
++	nop
++
++ENTRY(_reset)
++	brai	0;
++
++ENTRY(_user_exception)
++	swi	r1, r0, PER_CPU(ENTRY_SP)	/* save the current sp */
++	swi	r11, r0, PER_CPU(R11_SAVE)	/* temporarily save r11 */
++	lwi	r11, r0, PER_CPU(KM)		/* load mode indicator */
++	beqid	r11, 1f				/* Already in kernel mode? */
++	nop
++	brid	2f				/* jump over */
++	addik	r1, r1, (-PT_SIZE)	/* Room for pt_regs (delay slot) */
++1:						/* Switch to kernel stack */
++	lwi	r1, r0, PER_CPU(CURRENT_SAVE)	/* get the saved current */
++	lwi	r1, r1, TS_THREAD_INFO		/* get the thread info */
++	/* calculate kernel stack pointer */
++	addik	r1, r1, THREAD_SIZE - PT_SIZE
++	swi	r11, r0, PER_CPU(R11_SAVE)	/* temporarily save r11 */
++	lwi	r11, r0, PER_CPU(KM)		/* load mode indicator */
++2:
++	swi	r11, r1, PT_MODE		/* store the mode */
++	lwi	r11, r0, PER_CPU(R11_SAVE)	/* reload r11 */
++	/* save them on stack */
++	swi	r2, r1, PT_R2
++	swi	r3, r1, PT_R3 /* r3: _always_ in clobber list; see unistd.h */
++	swi	r4, r1, PT_R4 /* r4: _always_ in clobber list; see unistd.h */
++	swi	r5, r1, PT_R5
++	swi	r6, r1, PT_R6
++	swi	r7, r1, PT_R7
++	swi	r8, r1, PT_R8
++	swi	r9, r1, PT_R9
++	swi	r10, r1, PT_R10
++	swi	r11, r1, PT_R11
++	/* r12: _always_ in clobber list; see unistd.h */
++	swi	r12, r1, PT_R12
++	swi	r13, r1, PT_R13
++	/* r14: _always_ in clobber list; see unistd.h */
++	swi	r14, r1, PT_R14
++	/* but we want to return to the next inst. */
++	addik	r14, r14, 0x4
++	swi	r14, r1, PT_PC		/* increment by 4 and store in pc */
++	swi	r15, r1, PT_R15
++	swi	r16, r1, PT_R16
++	swi	r17, r1, PT_R17
++	swi	r18, r1, PT_R18
++	swi	r19, r1, PT_R19
++	swi	r20, r1, PT_R20
++	swi	r21, r1, PT_R21
++	swi	r22, r1, PT_R22
++	swi	r23, r1, PT_R23
++	swi	r24, r1, PT_R24
++	swi	r25, r1, PT_R25
++	swi	r26, r1, PT_R26
++	swi	r27, r1, PT_R27
++	swi	r28, r1, PT_R28
++	swi	r29, r1, PT_R29
++	swi	r30, r1, PT_R30
++	swi	r31, r1, PT_R31
++
++	disable_irq
++	nop		/* make sure IE bit is in effect */
++	clear_bip	/* once IE is in effect it is safe to clear BIP */
++	nop
++
++	/* special purpose registers */
++	mfs	r11, rmsr
++	swi	r11, r1, PT_MSR
++	mfs	r11, rear
++	swi	r11, r1, PT_EAR
++	mfs	r11, resr
++	swi	r11, r1, PT_ESR
++	mfs	r11, rfsr
++	swi	r11, r1, PT_FSR
++	/* reload original stack pointer and save it */
++	lwi	r11, r0, PER_CPU(ENTRY_SP)
++	swi	r11, r1, PT_R1
++	/* update mode indicator we are in kernel mode */
++	addik	r11, r0, 1
++	swi	r11, r0, PER_CPU(KM)
++	/* restore r31 */
++	lwi	r31, r0, PER_CPU(CURRENT_SAVE)
++	/* re-enable interrupts now we are in kernel mode */
++	enable_irq
++
++	/* See if the system call number is valid. */
++	addi	r11, r12, -NR_syscalls
++	bgei	r11, 1f			/* return to user if not valid */
++	/* Figure out which function to use for this system call. */
++	/* Note Microblaze barrel shift is optional, so don't rely on it */
++	add	r12, r12, r12			/* convert num -> ptr */
++	add	r12, r12, r12
++	lwi	r12, r12, sys_call_table	/* Get function pointer */
++	la	r15, r0, ret_to_user-8		/* set return address */
++	bra	r12				/* Make the system call. */
++	bri	0				/* won't reach here */
++1:
++	brid	ret_to_user			/* jump to syscall epilogue */
++	addi	r3, r0, -ENOSYS			/* set errno in delay slot */
 +
 +/*
-+ * These are used to set parameters in the core dumps.
++ * Debug traps are like a system call, but entered via brki r14, 0x60
++ * All we need to do is send the SIGTRAP signal to current, ptrace and do_signal
++ * will handle the rest
 + */
-+#define ELF_CLASS	ELFCLASS32
++ENTRY(_debug_exception)
++	swi	r1, r0, PER_CPU(ENTRY_SP)	/* save the current sp */
++	lwi	r1, r0, PER_CPU(CURRENT_SAVE)	/* get the saved current */
++	lwi	r1, r1, TS_THREAD_INFO		/* get the thread info */
++	addik	r1, r1, THREAD_SIZE - PT_SIZE	/* get the kernel stack */
++	swi	r11, r0, PER_CPU(R11_SAVE)	/* temporarily save r11 */
++	lwi	r11, r0, PER_CPU(KM)		/* load mode indicator */
++//save_context:
++	swi	r11, r1, PT_MODE	/* store the mode */
++	lwi	r11, r0, PER_CPU(R11_SAVE)	/* reload r11 */
++	/* save them on stack */
++	swi	r2, r1, PT_R2
++	swi	r3, r1, PT_R3 /* r3: _always_ in clobber list; see unistd.h */
++	swi	r4, r1, PT_R4 /* r4: _always_ in clobber list; see unistd.h */
++	swi	r5, r1, PT_R5
++	swi	r6, r1, PT_R6
++	swi	r7, r1, PT_R7
++	swi	r8, r1, PT_R8
++	swi	r9, r1, PT_R9
++	swi	r10, r1, PT_R10
++	swi	r11, r1, PT_R11
++	/* r12: _always_ in clobber list; see unistd.h */
++	swi	r12, r1, PT_R12
++	swi	r13, r1, PT_R13
++	/* r14: _always_ in clobber list; see unistd.h */
++	swi	r14, r1, PT_R14
++	swi	r14, r1, PT_PC /* Will return to interrupted instruction */
++	swi	r15, r1, PT_R15
++	swi	r16, r1, PT_R16
++	swi	r17, r1, PT_R17
++	swi	r18, r1, PT_R18
++	swi	r19, r1, PT_R19
++	swi	r20, r1, PT_R20
++	swi	r21, r1, PT_R21
++	swi	r22, r1, PT_R22
++	swi	r23, r1, PT_R23
++	swi	r24, r1, PT_R24
++	swi	r25, r1, PT_R25
++	swi	r26, r1, PT_R26
++	swi	r27, r1, PT_R27
++	swi	r28, r1, PT_R28
++	swi	r29, r1, PT_R29
++	swi	r30, r1, PT_R30
++	swi	r31, r1, PT_R31
 +
-+#endif /* _ASM_MICROBLAZE_ELF_H */
-diff --git a/include/asm-microblaze/flat.h b/include/asm-microblaze/flat.h
-new file mode 100644
-index 0000000..acf0da5
---- /dev/null
-+++ b/include/asm-microblaze/flat.h
-@@ -0,0 +1,90 @@
-+/*
-+ * uClinux flat-format executables
-+ *
-+ * Copyright (C) 2005 John Williams <jwilliams@itee.uq.edu.au>
-+ *
-+ * This file is subject to the terms and conditions of the GNU General
-+ * Public License. See the file COPYING in the main directory of this
-+ * archive for more details.
-+ */
++	disable_irq
++	nop		/* make sure IE bit is in effect */
++	clear_bip	/* once IE is in effect it is safe to clear BIP */
++	nop
 +
-+#ifndef _ASM_MICROBLAZE_FLAT_H
-+#define _ASM_MICROBLAZE_FLAT_H
++	/* special purpose registers */
++	mfs	r11, rmsr
++	swi	r11, r1, PT_MSR
++	mfs	r11, rear
++	swi	r11, r1, PT_EAR
++	mfs	r11, resr
++	swi	r11, r1, PT_ESR
++	mfs	r11, rfsr
++	swi	r11, r1, PT_FSR
++	/* reload original stack pointer and save it */
++	lwi	r11, r0, PER_CPU(ENTRY_SP)
++	swi	r11, r1, PT_R1
++	/* update mode indicator we are in kernel mode */
++	addik	r11, r0, 1
++	swi	r11, r0, PER_CPU(KM)
++	/* restore r31 */
++	lwi	r31, r0, PER_CPU(CURRENT_SAVE)
++	/* re-enable interrupts now we are in kernel mode */
++	enable_irq
 +
-+#include <asm/unaligned.h>
++	addi	r5, r0, SIGTRAP			/* sending the trap signal */
++	add	r6, r0, r31			/* to current */
++	bralid	r15, send_sig
++	add	r7, r0, r0			/* 3rd param zero */
 +
-+#define	flat_stack_align(sp) /* nothing needed */
-+#define	flat_argvp_envp_on_stack()	0
-+#define	flat_old_ram_flag(flags)	(flags)
-+#define	flat_reloc_valid(reloc, size)	((reloc) <= (size))
-+#define	flat_set_persistent(relval, p)		0
++	/* Restore r3/r4 to work around how ret_to_user works */
++	lwi	r3, r1, PT_R3
++	lwi	r4, r1, PT_R4
++	bri	ret_to_user
 +
-+/*
-+ * Microblaze works a little differently from other arches, because
-+ * of the MICROBLAZE_64 reloc type. Here, a 32 bit address is split
-+ * over two instructions, an 'imm' instruction which provides the top
-+ * 16 bits, then the instruction "proper" which provides the low 16
-+ * bits.
-+ */
++ENTRY(_break)
++	bri	0
 +
-+/*
-+ * Crack open a symbol reference and extract the address to be
-+ * relocated. rp is a potentially unaligned pointer to the
-+ * reference
-+ */
++/* struct task_struct *_switch_to(struct thread_info *prev,
++					struct thread_info *next); */
++ENTRY(_switch_to)
++	/* prepare return value */
++	addk	r3, r0, r31
 +
-+static inline unsigned long
-+flat_get_addr_from_rp(unsigned long *rp, unsigned long relval,
-+			unsigned long flags, unsigned long *persistent)
-+{
-+	unsigned long addr;
-+	(void)flags;
++	/* save registers in cpu_context */
++	/* use r11 and r12, volatile registers, as temp register */
++	addik	r11, r5, TI_CPU_CONTEXT
++	swi	r1, r11, CC_SP
++	swi	r2, r11, CC_R2
++	/* skip volatile registers.
++	 * they are saved on stack when we jumped to _switch_to() */
++	/* dedicated registers */
++	swi	r13, r11, CC_R13
++	swi	r14, r11, CC_R14
++	swi	r15, r11, CC_R15
++	swi	r16, r11, CC_R16
++	swi	r17, r11, CC_R17
++	swi	r18, r11, CC_R18
++	/* save non-volatile registers */
++	swi	r19, r11, CC_R19
++	swi	r20, r11, CC_R20
++	swi	r21, r11, CC_R21
++	swi	r22, r11, CC_R22
++	swi	r23, r11, CC_R23
++	swi	r24, r11, CC_R24
++	swi	r25, r11, CC_R25
++	swi	r26, r11, CC_R26
++	swi	r27, r11, CC_R27
++	swi	r28, r11, CC_R28
++	swi	r29, r11, CC_R29
++	swi	r30, r11, CC_R30
++	/* special purpose registers */
++	mfs	r12, rmsr
++	swi	r12, r11, CC_MSR
++	mfs	r12, rear
++	swi	r12, r11, CC_EAR
++	mfs	r12, resr
++	swi	r12, r11, CC_ESR
++	mfs	r12, rfsr
++	swi	r12, r11, CC_FSR
 +
-+	/* Is it a split 64/32 reference? */
-+	if (relval & 0x80000000) {
-+		/* Grab the two halves of the reference */
-+		unsigned long val_hi, val_lo;
++	/* update r31, the current */
++	lwi	r31, r6, TI_TASK
++	swi	r31, r0, PER_CPU(CURRENT_SAVE)
 +
-+		val_hi = get_unaligned(rp);
-+		val_lo = get_unaligned(rp+1);
++	/* get new process' cpu context and restore */
++	addik	r11, r6, TI_CPU_CONTEXT
 +
-+		/* Crack the address out */
-+		addr = ((val_hi & 0xffff) << 16) + (val_lo & 0xffff);
-+	} else {
-+		/* Get the address straight out */
-+		addr = get_unaligned(rp);
-+	}
++	/* special purpose registers */
++	lwi	r12, r11, CC_FSR
++	mts	rfsr, r12
++	lwi	r12, r11, CC_ESR
++	mts	resr, r12
++	lwi	r12, r11, CC_EAR
++	mts	rear, r12
++	lwi	r12, r11, CC_MSR
++	mts	rmsr, r12
++	/* non-volatile registers */
++	lwi	r30, r11, CC_R30
++	lwi	r29, r11, CC_R29
++	lwi	r28, r11, CC_R28
++	lwi	r27, r11, CC_R27
++	lwi	r26, r11, CC_R26
++	lwi	r25, r11, CC_R25
++	lwi	r24, r11, CC_R24
++	lwi	r23, r11, CC_R23
++	lwi	r22, r11, CC_R22
++	lwi	r21, r11, CC_R21
++	lwi	r20, r11, CC_R20
++	lwi	r19, r11, CC_R19
++	/* dedicated registers */
++	lwi	r18, r11, CC_R18
++	lwi	r17, r11, CC_R17
++	lwi	r16, r11, CC_R16
++	lwi	r15, r11, CC_R15
++	lwi	r14, r11, CC_R14
++	lwi	r13, r11, CC_R13
++	/* skip volatile registers */
++	lwi	r2, r11, CC_R2
++	lwi	r1, r11, CC_SP
 +
-+	return addr;
-+}
++	rtsd	r15, 8
++	nop
 +
-+/*
-+ * Insert an address into the symbol reference at rp. rp is potentially
-+ * unaligned.
-+ */
++ENTRY(ret_from_fork)
++	addk	r5, r0, r3
++	addk	r6, r0, r1
++	brlid	r15, schedule_tail
++	nop
++	swi	r31, r1, PT_R31		/* save r31 in user context. */
++			/* will soon be restored to r31 in ret_to_user */
++	addk	r3, r0, r0
++	brid	ret_to_user
++	nop
 +
-+static inline void
-+flat_put_addr_at_rp(unsigned long *rp, unsigned long addr, unsigned long relval)
-+{
-+	/* Is this a split 64/32 reloc? */
-+	if (relval & 0x80000000) {
-+		/* Get the two "halves" */
-+		unsigned long val_hi = get_unaligned(rp);
-+		unsigned long val_lo = get_unaligned(rp + 1);
++work_pending:
++	andi	r11, r19, _TIF_NEED_RESCHED
++	beqi	r11, 1f
++	bralid	r15, schedule
++	nop
++1:	andi	r11, r19, _TIF_SIGPENDING
++	beqi	r11, no_work_pending
++	addk	r5, r1, r0
++	addik	r7, r0, 1
++	bralid	r15, do_signal
++	addk	r6, r0, r0
++	bri	no_work_pending
 +
-+		/* insert the address */
-+		val_hi = (val_hi & 0xffff0000) | addr >> 16;
-+		val_lo = (val_lo & 0xffff0000) | (addr & 0xffff);
++ENTRY(ret_to_user)
++	disable_irq
 +
-+		/* store the two halves back into memory */
-+		put_unaligned(val_hi, rp);
-+		put_unaligned(val_lo, rp+1);
-+	} else {
-+		/* Put it straight in, no messing around */
-+		put_unaligned(addr, rp);
-+	}
-+}
++	swi	r4, r1, PT_R4		/* return val */
++	swi	r3, r1, PT_R3		/* return val */
 +
-+#define	flat_get_relocate_addr(rel)	(rel & 0x7fffffff)
++	lwi	r6, r31, TS_THREAD_INFO /* get thread info */
++	lwi	r19, r6, TI_FLAGS /* get flags in thread info */
++	bnei	r19, work_pending /* do an extra work if any bits are set */
++no_work_pending:
++	disable_irq
 +
-+#endif /* _ASM_MICROBLAZE_FLAT_H */
++	/* save r31 */
++	swi	r31, r0, PER_CPU(CURRENT_SAVE)
++	/* save mode indicator */
++	lwi	r18, r1, PT_MODE
++	swi	r18, r0, PER_CPU(KM)
++//restore_context:
++	/* special purpose registers */
++	lwi	r18, r1, PT_FSR
++	mts	rfsr, r18
++	lwi	r18, r1, PT_ESR
++	mts	resr, r18
++	lwi	r18, r1, PT_EAR
++	mts	rear, r18
++	lwi	r18, r1, PT_MSR
++	mts	rmsr, r18
++
++	lwi	r31, r1, PT_R31
++	lwi	r30, r1, PT_R30
++	lwi	r29, r1, PT_R29
++	lwi	r28, r1, PT_R28
++	lwi	r27, r1, PT_R27
++	lwi	r26, r1, PT_R26
++	lwi	r25, r1, PT_R25
++	lwi	r24, r1, PT_R24
++	lwi	r23, r1, PT_R23
++	lwi	r22, r1, PT_R22
++	lwi	r21, r1, PT_R21
++	lwi	r20, r1, PT_R20
++	lwi	r19, r1, PT_R19
++	lwi	r18, r1, PT_R18
++	lwi	r17, r1, PT_R17
++	lwi	r16, r1, PT_R16
++	lwi	r15, r1, PT_R15
++	lwi	r14, r1, PT_PC
++	lwi	r13, r1, PT_R13
++	lwi	r12, r1, PT_R12
++	lwi	r11, r1, PT_R11
++	lwi	r10, r1, PT_R10
++	lwi	r9, r1, PT_R9
++	lwi	r8, r1, PT_R8
++	lwi	r7, r1, PT_R7
++	lwi	r6, r1, PT_R6
++	lwi	r5, r1, PT_R5
++	lwi	r4, r1, PT_R4		/* return val */
++	lwi	r3, r1, PT_R3		/* return val */
++	lwi	r2, r1, PT_R2
++	lwi	r1, r1, PT_R1
++
++	rtid	r14, 0
++	nop
++
++sys_vfork_wrapper:
++	brid	sys_vfork
++	addk	r5, r1, r0
++
++sys_clone_wrapper:
++	brid	sys_clone
++	addk	r7, r1, r0
++
++sys_execve_wrapper:
++	brid	sys_execve
++	addk	r8, r1, r0
++
++sys_sigreturn_wrapper:
++	brid	sys_sigreturn
++	addk	r5, r1, r0
++
++sys_rt_sigreturn_wrapper:
++	brid	sys_rt_sigreturn
++	addk	r5, r1, r0
++
++sys_sigsuspend_wrapper:
++	brid	sys_rt_sigsuspend
++	addk	r6, r1, r0
++
++sys_rt_sigsuspend_wrapper:
++	brid	sys_rt_sigsuspend
++	addk	r7, r1, r0
++
++	/* Interrupt vector table */
++	.section	.init.ivt, "ax"
++	.org 0x0
++	brai	_reset
++	brai	_user_exception
++	brai	_interrupt
++	brai	_break
++	brai	_hw_exception_handler
++	.org 0x60
++	brai	_debug_exception
++
++.section .rodata,"a"
++#include "syscall_table.S"
++
++syscall_table_size=(.-sys_call_table)
 -- 
 1.5.4.GIT
