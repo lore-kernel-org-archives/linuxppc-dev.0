@@ -1,17 +1,16 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id BA76FDDF85
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jun 2008 17:49:57 +1000 (EST)
-Date: Thu, 26 Jun 2008 02:49:51 -0500 (CDT)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Please pull from 'powerpc-next' branch
-Message-ID: <Pine.LNX.4.64.0806260249300.14932@blarg.am.freescale.net>
+Return-Path: <madhvesh.s@ap.sony.com>
+Received: from WA4EHSOBE002.bigfish.com (outbound-wa4.frontbridge.com
+	[216.32.181.16]) by ozlabs.org (Postfix) with ESMTP id BB17BDDEFD
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jun 2008 18:08:05 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset="US-ASCII"
+Subject: RE: [PATCH 2/2] powerpc/booke: Add kprobes support for booke style
+	processors
+Date: Thu, 26 Jun 2008 13:37:30 +0530
+Message-ID: <7B7EF7F090B9804A830ACC82F2CDE95D2E419B@insardxms01.ap.sony.com>
+From: "Sulibhavi, Madhvesh" <madhvesh.s@ap.sony.com>
+To: "Kumar Gala" <galak@kernel.crashing.org>, <linuxppc-dev@ozlabs.org>
+Cc: "Sulibhavi, Madhvesh" <madhvesh.s@ap.sony.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,96 +20,187 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Please pull from 'powerpc-next' branch of
+Hi Kumar,
 
-	master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git powerpc-next
+I confirmed these updated patches and found no issues
+with my test. I acknowledge these patches for powerpc
+kprobes booke support.
 
-to receive the following updates:
+-Madhvesh
 
- Documentation/powerpc/booting-without-of.txt    |   59 +
- arch/powerpc/Kconfig                            |    6
- arch/powerpc/boot/Makefile                      |    1
- arch/powerpc/boot/dts/mpc836x_rdk.dts           |  397 ++++++++
- arch/powerpc/boot/dts/tqm8540.dts               |    4
- arch/powerpc/boot/dts/tqm8541.dts               |    4
- arch/powerpc/boot/dts/tqm8548-bigflash.dts      |  365 +++++++
- arch/powerpc/boot/dts/tqm8548.dts               |  365 +++++++
- arch/powerpc/boot/dts/tqm8555.dts               |    4
- arch/powerpc/boot/dts/tqm8560.dts               |   69 +
- arch/powerpc/boot/wrapper                       |    2
- arch/powerpc/configs/83xx/mpc836x_rdk_defconfig | 1128 ++++++++++++++++++++++++
- arch/powerpc/configs/85xx/tqm8548_defconfig     | 1094 +++++++++++++++++++++++
- arch/powerpc/kernel/Makefile                    |    1
- arch/powerpc/kernel/cputable.c                  |   16
- arch/powerpc/kernel/entry_32.S                  |    8
- arch/powerpc/kernel/head_booke.h                |   10
- arch/powerpc/kernel/head_fsl_booke.S            |   57 +
- arch/powerpc/kernel/idle_6xx.S                  |    2
- arch/powerpc/kernel/idle_e500.S                 |   93 +
- arch/powerpc/kernel/setup_32.c                  |    5
- arch/powerpc/platforms/83xx/Kconfig             |   11
- arch/powerpc/platforms/83xx/Makefile            |    1
- arch/powerpc/platforms/83xx/mpc836x_rdk.c       |  102 ++
- arch/powerpc/platforms/85xx/Kconfig             |    8
- arch/powerpc/platforms/85xx/mpc85xx_ads.c       |    8
- arch/powerpc/platforms/85xx/tqm85xx.c           |   23
- arch/powerpc/platforms/Kconfig.cputype          |    7
- arch/powerpc/sysdev/Makefile                    |    2
- arch/powerpc/sysdev/cpm_common.c                |   16
- arch/powerpc/sysdev/fsl_gtm.c                   |  434 +++++++++
- arch/powerpc/sysdev/qe_lib/Kconfig              |   13
- arch/powerpc/sysdev/qe_lib/Makefile             |    2
- arch/powerpc/sysdev/qe_lib/gpio.c               |  149 +++
- arch/powerpc/sysdev/qe_lib/qe.c                 |   94 --
- arch/powerpc/sysdev/qe_lib/qe_io.c              |   94 --
- arch/powerpc/sysdev/qe_lib/ucc.c                |    7
- arch/powerpc/sysdev/qe_lib/usb.c                |   55 +
- drivers/serial/cpm_uart/cpm_uart.h              |   11
- drivers/serial/cpm_uart/cpm_uart_core.c         |  373 -------
- drivers/serial/cpm_uart/cpm_uart_cpm1.c         |  170 ---
- drivers/serial/cpm_uart/cpm_uart_cpm1.h         |   12
- drivers/serial/cpm_uart/cpm_uart_cpm2.c         |  283 ------
- drivers/serial/cpm_uart/cpm_uart_cpm2.h         |   12
- include/asm-powerpc/cache.h                     |    3
- include/asm-powerpc/cpm.h                       |    1
- include/asm-powerpc/cpm1.h                      |   20
- include/asm-powerpc/cpm2.h                      |   26
- include/asm-powerpc/cputable.h                  |   19
- include/asm-powerpc/fsl_gtm.h                   |   47 +
- include/asm-powerpc/machdep.h                   |    1
- include/asm-powerpc/qe.h                        |   82 +
- include/asm-powerpc/reg.h                       |    2
- include/asm-powerpc/reg_booke.h                 |   74 +
- include/asm-powerpc/synch.h                     |    2
- 55 files changed, 4740 insertions(+), 1114 deletions(-)
+> -----Original Message-----
+> From: Kumar Gala [mailto:galak@kernel.crashing.org]=20
+> Sent: Thursday, June 26, 2008 12:36 PM
+> To: linuxppc-dev@ozlabs.org
+> Cc: Sulibhavi, Madhvesh
+> Subject: [PATCH 2/2] powerpc/booke: Add kprobes support for=20
+> booke style processors
+>=20
+> This patch is based on work done by Madhvesh. R. Sulibhavi back in
+> March 2007.
+>=20
+> We refactor some of the single step handling since it differs between
+> "classic" and "booke" powerpc cores.
+>=20
+> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+> ---
+>  Documentation/kprobes.txt     |    1 +
+>  arch/powerpc/kernel/kprobes.c |   25 +++++++++++++++++++------
+>  arch/powerpc/kernel/traps.c   |   26 +++++++++++++++++---------
+>  3 files changed, 37 insertions(+), 15 deletions(-)
+>=20
+> diff --git a/Documentation/kprobes.txt b/Documentation/kprobes.txt
+> index 6877e71..a79633d 100644
+> --- a/Documentation/kprobes.txt
+> +++ b/Documentation/kprobes.txt
+> @@ -172,6 +172,7 @@ architectures:
+>  - ia64 (Does not support probes on instruction slot1.)
+>  - sparc64 (Return probes not yet implemented.)
+>  - arm
+> +- ppc
+>=20
+>  3. Configuring Kprobes
+>=20
+> diff --git a/arch/powerpc/kernel/kprobes.c=20
+> b/arch/powerpc/kernel/kprobes.c
+> index 74693d9..4ba2af1 100644
+> --- a/arch/powerpc/kernel/kprobes.c
+> +++ b/arch/powerpc/kernel/kprobes.c
+> @@ -34,6 +34,13 @@
+>  #include <asm/cacheflush.h>
+>  #include <asm/sstep.h>
+>  #include <asm/uaccess.h>
+> +#include <asm/system.h>
+> +
+> +#ifdef CONFIG_BOOKE
+> +#define MSR_SINGLESTEP	(MSR_DE)
+> +#else
+> +#define MSR_SINGLESTEP	(MSR_SE)
+> +#endif
+>=20
+>  DEFINE_PER_CPU(struct kprobe *, current_kprobe) =3D NULL;
+>  DEFINE_PER_CPU(struct kprobe_ctlblk, kprobe_ctlblk);
+> @@ -53,7 +60,8 @@ int __kprobes arch_prepare_kprobe(struct kprobe *p)
+>  		ret =3D -EINVAL;
+>  	}
+>=20
+> -	/* insn must be on a special executable page on ppc64 */
+> +	/* insn must be on a special executable page on ppc64.  This is
+> +	 * not explicitly required on ppc32 (right now), but it=20
+> doesn't hurt */
+>  	if (!ret) {
+>  		p->ainsn.insn =3D get_insn_slot();
+>  		if (!p->ainsn.insn)
+> @@ -100,7 +108,11 @@ static void __kprobes=20
+> prepare_singlestep(struct kprobe *p, struct pt_regs *regs)
+>  	 * possible we'd get the single step reported for an=20
+> exception handler
+>  	 * like Decrementer or External Interrupt */
+>  	regs->msr &=3D ~MSR_EE;
+> -	regs->msr |=3D MSR_SE;
+> +	regs->msr |=3D MSR_SINGLESTEP;
+> +#ifdef CONFIG_BOOKE
+> +	regs->msr &=3D ~MSR_CE;
+> +	mtspr(SPRN_DBCR0, mfspr(SPRN_DBCR0) | DBCR0_IC | DBCR0_IDM);
+> +#endif
+>=20
+>  	/*
+>  	 * On powerpc we should single step on the original
+> @@ -163,7 +175,8 @@ static int __kprobes=20
+> kprobe_handler(struct pt_regs *regs)
+>  			kprobe_opcode_t insn =3D *p->ainsn.insn;
+>  			if (kcb->kprobe_status =3D=3D KPROBE_HIT_SS &&
+>  					is_trap(insn)) {
+> -				regs->msr &=3D ~MSR_SE;
+> +				/* Turn off 'trace' bits */
+> +				regs->msr &=3D ~MSR_SINGLESTEP;
+>  				regs->msr |=3D kcb->kprobe_saved_msr;
+>  				goto no_kprobe;
+>  			}
+> @@ -404,10 +417,10 @@ out:
+>=20
+>  	/*
+>  	 * if somebody else is singlestepping across a probe point, msr
+> -	 * will have SE set, in which case, continue the=20
+> remaining processing
+> +	 * will have DE/SE set, in which case, continue the=20
+> remaining processing
+>  	 * of do_debug, as if this is not a probe hit.
+>  	 */
+> -	if (regs->msr & MSR_SE)
+> +	if (regs->msr & MSR_SINGLESTEP)
+>  		return 0;
+>=20
+>  	return 1;
+> @@ -430,7 +443,7 @@ int __kprobes kprobe_fault_handler(struct=20
+> pt_regs *regs, int trapnr)
+>  		 * normal page fault.
+>  		 */
+>  		regs->nip =3D (unsigned long)cur->addr;
+> -		regs->msr &=3D ~MSR_SE;
+> +		regs->msr &=3D ~MSR_SINGLESTEP; /* Turn off=20
+> 'trace' bits */
+>  		regs->msr |=3D kcb->kprobe_saved_msr;
+>  		if (kcb->kprobe_status =3D=3D KPROBE_REENTER)
+>  			restore_previous_kprobe(kcb);
+> diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+> index 4b5b7ff..b463d48 100644
+> --- a/arch/powerpc/kernel/traps.c
+> +++ b/arch/powerpc/kernel/traps.c
+> @@ -1030,21 +1030,29 @@ void SoftwareEmulation(struct pt_regs *regs)
+>=20
+>  #if defined(CONFIG_40x) || defined(CONFIG_BOOKE)
+>=20
+> -void DebugException(struct pt_regs *regs, unsigned long debug_status)
+> +void __kprobes DebugException(struct pt_regs *regs, unsigned=20
+> long debug_status)
+>  {
+>  	if (debug_status & DBSR_IC) {	/* instruction completion */
+>  		regs->msr &=3D ~MSR_DE;
+> +
+> +		/* Disable instruction completion */
+> +		mtspr(SPRN_DBCR0, mfspr(SPRN_DBCR0) & ~DBCR0_IC);
+> +		/* Clear the instruction completion event */
+> +		mtspr(SPRN_DBSR, DBSR_IC);
+> +
+> +		if (notify_die(DIE_SSTEP, "single_step", regs, 5,
+> +			       5, SIGTRAP) =3D=3D NOTIFY_STOP) {
+> +			return;
+> +		}
+> +
+> +		if (debugger_sstep(regs))
+> +			return;
+> +
+>  		if (user_mode(regs)) {
+>  			current->thread.dbcr0 &=3D ~DBCR0_IC;
+> -		} else {
+> -			/* Disable instruction completion */
+> -			mtspr(SPRN_DBCR0, mfspr(SPRN_DBCR0) &=20
+> ~DBCR0_IC);
+> -			/* Clear the instruction completion event */
+> -			mtspr(SPRN_DBSR, DBSR_IC);
+> -			if (debugger_sstep(regs))
+> -				return;
+>  		}
+> -		_exception(SIGTRAP, regs, TRAP_TRACE, 0);
+> +
+> +		_exception(SIGTRAP, regs, TRAP_TRACE, regs->nip);
+>  	}
+>  }
+>  #endif /* CONFIG_4xx || CONFIG_BOOKE */
+> --=20
+> 1.5.5.1
+>=20
+>=20
+>=20
 
-Anton Vorontsov (8):
-      powerpc/sysdev: implement FSL GTM support
-      powerpc/QE: add support for QE USB clocks routing
-      powerpc/QE: prepare QE PIO code for GPIO LIB support
-      powerpc/QE: implement support for the GPIO LIB API
-      powerpc/83xx: new board support: MPC8360E-RDK
-      powerpc/QE: switch to the cpm_muram implementation
-      powerpc/QE: qe_reset should be __init
-      powerpc/QE: use arch_initcall to probe QUICC Engine GPIOs
 
-Jerone Young (1):
-      powerpc/booke: Fix definitions for dbcr[1-2] and dbsr registers
-
-Kumar Gala (7):
-      powerpc/booke: Fix some comments related to debug level exceptions
-      powerpc/booke: Add support for new e500mc core
-      powerpc/85xx: add DOZE/NAP support for e500 core
-      powerpc/e500mc: flush L2 on NAP for e500mc
-      cpm_uart: fix whitespace issues
-      cpm_uart: Remove !CONFIG_PPC_CPM_NEW_BINDING code
-      powerpc/cpm: Remove !CONFIG_PPC_CPM_NEW_BINDING code
-
-Vitaly Bordug (1):
-      powerpc/85xx: Update pin setup for 8560ads
-
-Wolfgang Grandegger (4):
-      powerpc/85xx: correct vendor prefix in DTS files for TQM85xx modules
-      powerpc/85xx: add board support for the TQM8548 modules
-      powerpc/85xx: support for the TQM8548 module using the big Flash
-      powerpc/85xx: add local bus nodes for Flash and CAN to tqm8560.dts
+-------------------------------------------------------------------
+This email is confidential and intended only for the use of the =
+individual or entity named above and may contain information that is =
+privileged. If you are not the intended recipient, you are notified that =
+any dissemination, distribution or copying of this email is strictly =
+prohibited. If you have received this email in error, please notify us =
+immediately by return email or telephone and destroy the original =
+message. - This mail is sent via Sony Asia Pacific Mail Gateway.
+-------------------------------------------------------------------
