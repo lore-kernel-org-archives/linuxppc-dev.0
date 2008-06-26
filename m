@@ -2,14 +2,14 @@ Return-Path: <monstr@seznam.cz>
 Received: from monstr.eu (238.225.broadband7.iol.cz [88.102.225.238])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id AAE23DF384
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jun 2008 22:39:30 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id D198FDEA87
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jun 2008 22:39:10 +1000 (EST)
 From: monstr@seznam.cz
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 60/60] microblaze_v4: Enable drivers for Microblaze
-Date: Thu, 26 Jun 2008 14:30:29 +0200
-Message-Id: <1214483429-32360-61-git-send-email-monstr@seznam.cz>
-In-Reply-To: <1214483429-32360-60-git-send-email-monstr@seznam.cz>
+Subject: [PATCH 38/60] microblaze_v4: headers for executables format FLAT, ELF
+Date: Thu, 26 Jun 2008 14:30:07 +0200
+Message-Id: <1214483429-32360-39-git-send-email-monstr@seznam.cz>
+In-Reply-To: <1214483429-32360-38-git-send-email-monstr@seznam.cz>
 References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
 	<1214483429-32360-2-git-send-email-monstr@seznam.cz>
 	<1214483429-32360-3-git-send-email-monstr@seznam.cz>
@@ -48,28 +48,6 @@ References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
 	<1214483429-32360-36-git-send-email-monstr@seznam.cz>
 	<1214483429-32360-37-git-send-email-monstr@seznam.cz>
 	<1214483429-32360-38-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-39-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-40-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-41-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-42-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-43-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-44-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-45-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-46-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-47-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-48-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-49-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-50-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-51-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-52-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-53-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-54-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-55-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-56-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-57-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-58-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-59-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-60-git-send-email-monstr@seznam.cz>
 Cc: linux-arch@vger.kernel.org, alan@lxorguk.ukuu.org.uk,
 	Michal Simek <monstr@monstr.eu>, vapier.adi@gmail.com,
 	arnd@arndb.de, matthew@wil.cx, microblaze-uclinux@itee.uq.edu.au,
@@ -90,49 +68,135 @@ From: Michal Simek <monstr@monstr.eu>
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- drivers/block/Kconfig  |    2 +-
- drivers/char/Kconfig   |    2 +-
- drivers/serial/Kconfig |    2 +-
- 3 files changed, 3 insertions(+), 3 deletions(-)
+ include/asm-microblaze/elf.h  |   22 ++++++++++
+ include/asm-microblaze/flat.h |   90 +++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 112 insertions(+), 0 deletions(-)
+ create mode 100644 include/asm-microblaze/elf.h
+ create mode 100644 include/asm-microblaze/flat.h
 
-diff --git a/drivers/block/Kconfig b/drivers/block/Kconfig
-index 0d1d213..a92767c 100644
---- a/drivers/block/Kconfig
-+++ b/drivers/block/Kconfig
-@@ -413,7 +413,7 @@ source "drivers/s390/block/Kconfig"
- 
- config XILINX_SYSACE
- 	tristate "Xilinx SystemACE support"
--	depends on 4xx
-+	depends on 4xx || MICROBLAZE
- 	help
- 	  Include support for the Xilinx SystemACE CompactFlash interface
- 
-diff --git a/drivers/char/Kconfig b/drivers/char/Kconfig
-index 2d854bb..981c57a 100644
---- a/drivers/char/Kconfig
-+++ b/drivers/char/Kconfig
-@@ -879,7 +879,7 @@ config DTLK
- 
- config XILINX_HWICAP
- 	tristate "Xilinx HWICAP Support"
--	depends on XILINX_VIRTEX
-+	depends on XILINX_VIRTEX || MICROBLAZE
- 	help
- 	  This option enables support for Xilinx Internal Configuration
- 	  Access Port (ICAP) driver.  The ICAP is used on Xilinx Virtex
-diff --git a/drivers/serial/Kconfig b/drivers/serial/Kconfig
-index 9bc4276..984ba34 100644
---- a/drivers/serial/Kconfig
-+++ b/drivers/serial/Kconfig
-@@ -776,7 +776,7 @@ config SERIAL_IMX_CONSOLE
- 
- config SERIAL_UARTLITE
- 	tristate "Xilinx uartlite serial port support"
--	depends on PPC32
-+	depends on PPC32 || MICROBLAZE
- 	select SERIAL_CORE
- 	help
- 	  Say Y here if you want to use the Xilinx uartlite serial controller.
+diff --git a/include/asm-microblaze/elf.h b/include/asm-microblaze/elf.h
+new file mode 100644
+index 0000000..a9f2ecf
+--- /dev/null
++++ b/include/asm-microblaze/elf.h
+@@ -0,0 +1,22 @@
++/*
++ * Copyright (C) 2006 Atmark Techno, Inc.
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
++ */
++
++#ifndef _ASM_MICROBLAZE_ELF_H
++#define _ASM_MICROBLAZE_ELF_H
++
++#define EM_XILINX_MICROBLAZE 0xbaab
++#define ELF_ARCH	EM_XILINX_MICROBLAZE
++
++#define elf_check_arch(x) ((x)->e_machine == EM_XILINX_MICROBLAZE)
++
++/*
++ * These are used to set parameters in the core dumps.
++ */
++#define ELF_CLASS	ELFCLASS32
++
++#endif /* _ASM_MICROBLAZE_ELF_H */
+diff --git a/include/asm-microblaze/flat.h b/include/asm-microblaze/flat.h
+new file mode 100644
+index 0000000..acf0da5
+--- /dev/null
++++ b/include/asm-microblaze/flat.h
+@@ -0,0 +1,90 @@
++/*
++ * uClinux flat-format executables
++ *
++ * Copyright (C) 2005 John Williams <jwilliams@itee.uq.edu.au>
++ *
++ * This file is subject to the terms and conditions of the GNU General
++ * Public License. See the file COPYING in the main directory of this
++ * archive for more details.
++ */
++
++#ifndef _ASM_MICROBLAZE_FLAT_H
++#define _ASM_MICROBLAZE_FLAT_H
++
++#include <asm/unaligned.h>
++
++#define	flat_stack_align(sp) /* nothing needed */
++#define	flat_argvp_envp_on_stack()	0
++#define	flat_old_ram_flag(flags)	(flags)
++#define	flat_reloc_valid(reloc, size)	((reloc) <= (size))
++#define	flat_set_persistent(relval, p)		0
++
++/*
++ * Microblaze works a little differently from other arches, because
++ * of the MICROBLAZE_64 reloc type. Here, a 32 bit address is split
++ * over two instructions, an 'imm' instruction which provides the top
++ * 16 bits, then the instruction "proper" which provides the low 16
++ * bits.
++ */
++
++/*
++ * Crack open a symbol reference and extract the address to be
++ * relocated. rp is a potentially unaligned pointer to the
++ * reference
++ */
++
++static inline unsigned long
++flat_get_addr_from_rp(unsigned long *rp, unsigned long relval,
++			unsigned long flags, unsigned long *persistent)
++{
++	unsigned long addr;
++	(void)flags;
++
++	/* Is it a split 64/32 reference? */
++	if (relval & 0x80000000) {
++		/* Grab the two halves of the reference */
++		unsigned long val_hi, val_lo;
++
++		val_hi = get_unaligned(rp);
++		val_lo = get_unaligned(rp+1);
++
++		/* Crack the address out */
++		addr = ((val_hi & 0xffff) << 16) + (val_lo & 0xffff);
++	} else {
++		/* Get the address straight out */
++		addr = get_unaligned(rp);
++	}
++
++	return addr;
++}
++
++/*
++ * Insert an address into the symbol reference at rp. rp is potentially
++ * unaligned.
++ */
++
++static inline void
++flat_put_addr_at_rp(unsigned long *rp, unsigned long addr, unsigned long relval)
++{
++	/* Is this a split 64/32 reloc? */
++	if (relval & 0x80000000) {
++		/* Get the two "halves" */
++		unsigned long val_hi = get_unaligned(rp);
++		unsigned long val_lo = get_unaligned(rp + 1);
++
++		/* insert the address */
++		val_hi = (val_hi & 0xffff0000) | addr >> 16;
++		val_lo = (val_lo & 0xffff0000) | (addr & 0xffff);
++
++		/* store the two halves back into memory */
++		put_unaligned(val_hi, rp);
++		put_unaligned(val_lo, rp+1);
++	} else {
++		/* Put it straight in, no messing around */
++		put_unaligned(addr, rp);
++	}
++}
++
++#define	flat_get_relocate_addr(rel)	(rel & 0x7fffffff)
++
++#endif /* _ASM_MICROBLAZE_FLAT_H */
 -- 
 1.5.4.GIT
