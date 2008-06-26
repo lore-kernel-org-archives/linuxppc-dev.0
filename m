@@ -1,22 +1,19 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <monstr@seznam.cz>
+Received: from monstr.eu (238.225.broadband7.iol.cz [88.102.225.238])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 6F5EDDE5A8
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jun 2008 00:08:15 +1000 (EST)
-Message-ID: <4863A2B0.9000303@freescale.com>
-Date: Thu, 26 Jun 2008 09:07:44 -0500
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 1/3] mpc83xx: Power Management support
-References: <20080625215051.GA11784@loki.buserror.net>
-	<D70F79B4-BA5F-46D4-9D74-4CB2E375AF60@kernel.crashing.org>
-In-Reply-To: <D70F79B4-BA5F-46D4-9D74-4CB2E375AF60@kernel.crashing.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 00F93DDF3A
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jun 2008 00:11:40 +1000 (EST)
+From: monstr@seznam.cz
+To: linux-kernel@vger.kernel.org
+Subject: Microblaze init port v4
+Date: Thu, 26 Jun 2008 14:29:29 +0200
+Message-Id: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
+Cc: linux-arch@vger.kernel.org, alan@lxorguk.ukuu.org.uk, vapier.adi@gmail.com,
+	arnd@arndb.de, matthew@wil.cx, microblaze-uclinux@itee.uq.edu.au,
+	drepper@redhat.com, linuxppc-dev@ozlabs.org,
+	will.newton@gmail.com, hpa@zytor.com, John.Linn@xilinx.com,
+	john.williams@petalogix.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,25 +23,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
-> 
-> On Jun 25, 2008, at 4:50 PM, Scott Wood wrote:
-> 
->> Basic PM support for 83xx.  Standby is implemented as sleep.
->> Suspend-to-RAM is implemented as "deep sleep" (with the processor
->> turned off) on 831x.  PCI agent power management is supported.
->>
->> Device power management of SOC peripherals is not yet supported.
-> 
-> (Not comments on this patch, but related)
-> 
-> Do you know if anyone is looking at making sure DOZE/NAP work on 83xx?  
-> We clearly don't flush the L1 cache today in the 6xx code.
+Hi everybody,
 
-Doze should work (a long time ago when I did power measurements I saw a 
-drop in consumption once Linux started, and the system was idle)...  Nap 
-is not supported, and should probably be removed from the e300 cputable 
-entry.  I don't think it's worthwhile to flush the cache every time the 
-cpu is idle just to nap instead of doze.
+current linux version is 2.6.26-rc8 and I think this is the right time
+to send latest patches againts rc8 for Microblaze CPU.
 
--Scott
+I fixed there some issues which were reported to me.
+
+We have there still problem with syscalls and we don't have chance to 
+fix it to stable version, this is not part which I can do yourself. 
+Microblaze will be n + 1 platform which use some old syscalls. 
+I hope you understand.
+
+I am sending more than 50 patches and I would like to see ACKs for patches
+which are good and comments for patches which are bad.
+
+Thanks for your time and review.
+
+Best regards,
+Michal Simek
+www.monstr.eu
