@@ -1,18 +1,12 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 2/9] powerpc: Add macros to access floating point
-	registers in thread_struct.
-In-reply-to: <1DD06CDB-428E-4832-93CA-6F0404CA6692@kernel.crashing.org> 
-References: <20080625040718.028B470296@localhost.localdomain>
-	<F09034D9-1B3C-4087-B6DF-FAB7B3AFA191@kernel.crashing.org>
-	<48626588.8050202@freescale.com> <20080625161255.GA12165@iram.es>
-	<48626FA9.8010903@freescale.com>
-	<1DD06CDB-428E-4832-93CA-6F0404CA6692@kernel.crashing.org>
-Date: Thu, 26 Jun 2008 10:09:33 +1000
-Message-ID: <16449.1214438973@neuling.org>
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>
+Return-Path: <dgibson@ozlabs.org>
+Date: Thu, 26 Jun 2008 10:43:06 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Jon Loeliger <jdl@freescale.com>
+Subject: dtc: Use libfdt endian conversion functions in libfdt
+Message-ID: <20080626004306.GG308@yookeroo.seuss>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,70 +16,129 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-In message <1DD06CDB-428E-4832-93CA-6F0404CA6692@kernel.crashing.org> you wrote:
-> 
-> On Jun 25, 2008, at 11:17 AM, Scott Wood wrote:
-> 
-> > Gabriel Paubert wrote:
-> >> On Wed, Jun 25, 2008 at 10:34:32AM -0500, Scott Wood wrote:
-> >>> Kumar Gala wrote:
-> >>>>> +/* Macros to workout the correct index for the FPR in the  
-> >>>>> thread struct */
-> >>>>> +#define FPRNUMBER(i) (((i) - PT_FPR0) >> 1)
-> >>>>> +#define FPRHALF(i) (((i) - PT_FPR0) % 2)
-> >>>> Have you looked at what the compiler spits out here to make sure  
-> >>>> we aren't getting a divide?  Seems like we could use '& 0x1'.
-> >>> GCC's not *that* dumb.  However, you may get some unnecessary sign- 
-> >>> twiddling if "i" is signed.
-> >> Not for modulo 2, it's only an even/odd choice and GCC implements  
-> >> that efficiently IIRC. For other powers of 2,
-> >> making the left hand side unsigned helps the compiler.
-> >
-> > From this:
-> >
-> > int foo(int x)
-> > {
-> > 	return x % 2;
-> > }
-> >
-> > I get this with -O3:
-> >
-> > foo:
-> >        mr 0,3
-> >        srawi 3,3,1
-> >        addze 3,3
-> >        slwi 3,3,1
-> >        subf 3,3,0
-> >        blr
-> >        .size   foo, .-foo
-> >        .ident  "GCC: (GNU) 4.1.2"
-> >
-> > Changing it to "x & 1", or to unsigned, gives this:
-> >
-> > foo:
-> >        rlwinm 3,3,0,31,31
-> >        blr
-> >        .size   foo, .-foo
-> >        .ident  "GCC: (GNU) 4.1.2"
-> >
-> > Maybe newer GCCs are better?
-> 
-> Nope. gcc-4.3.0 from fedora 9:
-> 
-> foo:
->          mr 0,3
->          srawi 3,3,1
->          addze 3,3
->          slwi 3,3,1
->          subf 3,3,0
->          blr
-> 
-> bar:
->          rlwinm 3,3,0,31,31
->          blr
-> 
-> if you make 'x' unsigned things are better.
+Following on from the last patch, which made dtc use the same endian
+conversion functions as libfdt, this patch makes ftdump use these
+functions as well.  This brings us down to a single set of endian
+handling functions in all of dtc and libfdt, so just one place to fix
+things.
 
-I've changed it to '& 0x1', which compiles to something better here.
+Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 
-Mikey
+---
+ ftdump.c |   47 ++++++++++++++++-------------------------------
+ 1 file changed, 16 insertions(+), 31 deletions(-)
+
+Index: dtc/ftdump.c
+===================================================================
+--- dtc.orig/ftdump.c	2008-06-25 16:59:25.000000000 +1000
++++ dtc/ftdump.c	2008-06-25 16:59:27.000000000 +1000
+@@ -6,24 +6,9 @@
+ #include <stdio.h>
+ #include <string.h>
+ #include <ctype.h>
+-#include <netinet/in.h>
+-#include <byteswap.h>
+ 
+ #include <fdt.h>
+-
+-#define cpu_to_be16(x)	htons(x)
+-#define be16_to_cpu(x)	ntohs(x)
+-
+-#define cpu_to_be32(x)	htonl(x)
+-#define be32_to_cpu(x)	ntohl(x)
+-
+-#if __BYTE_ORDER == __BIG_ENDIAN
+-#define cpu_to_be64(x)	(x)
+-#define be64_to_cpu(x)	(x)
+-#else
+-#define cpu_to_be64(x)	bswap_64(x)
+-#define be64_to_cpu(x)	bswap_64(x)
+-#endif
++#include <libfdt_env.h>
+ 
+ #define ALIGN(x, a)	(((x) + ((a) - 1)) & ~((a) - 1))
+ #define PALIGN(p, a)	((void *)(ALIGN((unsigned long)(p), (a))))
+@@ -81,15 +66,15 @@
+ static void dump_blob(void *blob)
+ {
+ 	struct fdt_header *bph = blob;
+-	uint32_t off_mem_rsvmap = be32_to_cpu(bph->off_mem_rsvmap);
+-	uint32_t off_dt = be32_to_cpu(bph->off_dt_struct);
+-	uint32_t off_str = be32_to_cpu(bph->off_dt_strings);
++	uint32_t off_mem_rsvmap = fdt32_to_cpu(bph->off_mem_rsvmap);
++	uint32_t off_dt = fdt32_to_cpu(bph->off_dt_struct);
++	uint32_t off_str = fdt32_to_cpu(bph->off_dt_strings);
+ 	struct fdt_reserve_entry *p_rsvmap =
+ 		(struct fdt_reserve_entry *)(blob + off_mem_rsvmap);
+ 	char *p_struct = blob + off_dt;
+ 	char *p_strings = blob + off_str;
+-	uint32_t version = be32_to_cpu(bph->version);
+-	uint32_t totalsize = be32_to_cpu(bph->totalsize);
++	uint32_t version = fdt32_to_cpu(bph->version);
++	uint32_t totalsize = fdt32_to_cpu(bph->totalsize);
+ 	uint32_t tag;
+ 	char *p;
+ 	char *s, *t;
+@@ -100,29 +85,29 @@
+ 	depth = 0;
+ 	shift = 4;
+ 
+-	printf("// magic:\t\t0x%x\n", be32_to_cpu(bph->magic));
++	printf("// magic:\t\t0x%x\n", fdt32_to_cpu(bph->magic));
+ 	printf("// totalsize:\t\t0x%x (%d)\n", totalsize, totalsize);
+ 	printf("// off_dt_struct:\t0x%x\n", off_dt);
+ 	printf("// off_dt_strings:\t0x%x\n", off_str);
+ 	printf("// off_mem_rsvmap:\t0x%x\n", off_mem_rsvmap);
+ 	printf("// version:\t\t%d\n", version);
+ 	printf("// last_comp_version:\t%d\n",
+-	       be32_to_cpu(bph->last_comp_version));
++	       fdt32_to_cpu(bph->last_comp_version));
+ 	if (version >= 2)
+ 		printf("// boot_cpuid_phys:\t0x%x\n",
+-		       be32_to_cpu(bph->boot_cpuid_phys));
++		       fdt32_to_cpu(bph->boot_cpuid_phys));
+ 
+ 	if (version >= 3)
+ 		printf("// size_dt_strings:\t0x%x\n",
+-		       be32_to_cpu(bph->size_dt_strings));
++		       fdt32_to_cpu(bph->size_dt_strings));
+ 	if (version >= 17)
+ 		printf("// size_dt_struct:\t0x%x\n",
+-		       be32_to_cpu(bph->size_dt_struct));
++		       fdt32_to_cpu(bph->size_dt_struct));
+ 	printf("\n");
+ 
+ 	for (i = 0; ; i++) {
+-		addr = be64_to_cpu(p_rsvmap[i].address);
+-		size = be64_to_cpu(p_rsvmap[i].size);
++		addr = fdt64_to_cpu(p_rsvmap[i].address);
++		size = fdt64_to_cpu(p_rsvmap[i].size);
+ 		if (addr == 0 && size == 0)
+ 			break;
+ 
+@@ -131,7 +116,7 @@
+ 	}
+ 
+ 	p = p_struct;
+-	while ((tag = be32_to_cpu(GET_CELL(p))) != FDT_END) {
++	while ((tag = fdt32_to_cpu(GET_CELL(p))) != FDT_END) {
+ 
+ 		/* printf("tag: 0x%08x (%d)\n", tag, p - p_struct); */
+ 
+@@ -164,8 +149,8 @@
+ 			fprintf(stderr, "%*s ** Unknown tag 0x%08x\n", depth * shift, "", tag);
+ 			break;
+ 		}
+-		sz = be32_to_cpu(GET_CELL(p));
+-		s = p_strings + be32_to_cpu(GET_CELL(p));
++		sz = fdt32_to_cpu(GET_CELL(p));
++		s = p_strings + fdt32_to_cpu(GET_CELL(p));
+ 		if (version < 16 && sz >= 8)
+ 			p = PALIGN(p, 8);
+ 		t = p;
+
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
