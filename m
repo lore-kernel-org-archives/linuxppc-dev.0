@@ -2,14 +2,14 @@ Return-Path: <monstr@seznam.cz>
 Received: from monstr.eu (238.225.broadband7.iol.cz [88.102.225.238])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 11EF6DE737
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jun 2008 22:37:09 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id E9354DEFF5
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jun 2008 22:38:53 +1000 (EST)
 From: monstr@seznam.cz
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 43/60] microblaze_v4: system.h pvr.h processor.h
-Date: Thu, 26 Jun 2008 14:30:12 +0200
-Message-Id: <1214483429-32360-44-git-send-email-monstr@seznam.cz>
-In-Reply-To: <1214483429-32360-43-git-send-email-monstr@seznam.cz>
+Subject: [PATCH 32/60] microblaze_v4: page.h, segment.h, unaligned.h
+Date: Thu, 26 Jun 2008 14:30:01 +0200
+Message-Id: <1214483429-32360-33-git-send-email-monstr@seznam.cz>
+In-Reply-To: <1214483429-32360-32-git-send-email-monstr@seznam.cz>
 References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
 	<1214483429-32360-2-git-send-email-monstr@seznam.cz>
 	<1214483429-32360-3-git-send-email-monstr@seznam.cz>
@@ -42,17 +42,6 @@ References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
 	<1214483429-32360-30-git-send-email-monstr@seznam.cz>
 	<1214483429-32360-31-git-send-email-monstr@seznam.cz>
 	<1214483429-32360-32-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-33-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-34-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-35-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-36-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-37-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-38-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-39-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-40-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-41-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-42-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-43-git-send-email-monstr@seznam.cz>
 Cc: linux-arch@vger.kernel.org, alan@lxorguk.ukuu.org.uk,
 	Michal Simek <monstr@monstr.eu>, vapier.adi@gmail.com,
 	arnd@arndb.de, matthew@wil.cx, microblaze-uclinux@itee.uq.edu.au,
@@ -73,20 +62,20 @@ From: Michal Simek <monstr@monstr.eu>
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- include/asm-microblaze/processor.h |   87 ++++++++++++++++
- include/asm-microblaze/pvr.h       |  183 ++++++++++++++++++++++++++++++++++
- include/asm-microblaze/system.h    |  190 ++++++++++++++++++++++++++++++++++++
- 3 files changed, 460 insertions(+), 0 deletions(-)
- create mode 100644 include/asm-microblaze/processor.h
- create mode 100644 include/asm-microblaze/pvr.h
- create mode 100644 include/asm-microblaze/system.h
+ include/asm-microblaze/page.h      |  117 ++++++++++++++++++++++++++++++++++++
+ include/asm-microblaze/segment.h   |   39 ++++++++++++
+ include/asm-microblaze/unaligned.h |   19 ++++++
+ 3 files changed, 175 insertions(+), 0 deletions(-)
+ create mode 100644 include/asm-microblaze/page.h
+ create mode 100644 include/asm-microblaze/segment.h
+ create mode 100644 include/asm-microblaze/unaligned.h
 
-diff --git a/include/asm-microblaze/processor.h b/include/asm-microblaze/processor.h
+diff --git a/include/asm-microblaze/page.h b/include/asm-microblaze/page.h
 new file mode 100644
-index 0000000..b88419c
+index 0000000..f7ed024
 --- /dev/null
-+++ b/include/asm-microblaze/processor.h
-@@ -0,0 +1,87 @@
++++ b/include/asm-microblaze/page.h
+@@ -0,0 +1,117 @@
 +/*
 + * Copyright (C) 2006 Atmark Techno, Inc.
 + *
@@ -95,469 +84,184 @@ index 0000000..b88419c
 + * for more details.
 + */
 +
-+#ifndef _ASM_MICROBLAZE_PROCESSOR_H
-+#define _ASM_MICROBLAZE_PROCESSOR_H
-+
-+#include <asm/ptrace.h>
-+#include <asm/setup.h>
-+
-+/*
-+ * User space process size: memory size
-+ *
-+ * TASK_SIZE on MMU cpu is usually 1GB. However, on no-MMU arch, both
-+ * user processes and the kernel is on the same memory region. They
-+ * both share the memory space and that is limited by the amount of
-+ * physical memory. thus, we set TASK_SIZE == amount of total memory.
-+ */
-+
-+#define TASK_SIZE	(0x81000000 - 0x80000000)
-+
-+/*
-+ * Default implementation of macro that returns current
-+ * instruction pointer ("program counter").
-+ */
-+#define current_text_addr() ({ __label__ _l; _l: &&_l; })
-+
-+/*
-+ * This decides where the kernel will search for a free chunk of vm
-+ * space during mmap's. We won't be using it
-+ */
-+#define TASK_UNMAPPED_BASE	0
-+
-+struct task_struct;
-+
-+/* thread_struct is gone. use thread_info instead. */
-+struct thread_struct { };
-+#define INIT_THREAD	{ }
-+
-+/* Do necessary setup to start up a newly executed thread. */
-+static inline void start_thread(struct pt_regs *regs,
-+				unsigned long pc,
-+				unsigned long usp)
-+{
-+	regs->pc = pc;
-+	regs->r1 = usp;
-+	regs->kernel_mode = 0;
-+}
-+
-+/* Free all resources held by a thread. */
-+static inline void release_thread(struct task_struct *dead_task)
-+{
-+}
-+
-+/* Free all resources held by a thread. */
-+static inline void exit_thread(void)
-+{
-+}
-+
-+extern unsigned long thread_saved_pc(struct task_struct *t);
-+
-+extern unsigned long get_wchan(struct task_struct *p);
-+
-+/* FIXME */
-+#define cpu_relax()		do {} while (0)
-+#define prepare_to_copy(tsk)	do {} while (0)
-+
-+/*
-+ * create a kernel thread without removing it from tasklists
-+ */
-+extern int kernel_thread(int (*fn)(void *), void *arg, unsigned long flags);
-+
-+/* #define task_thread_info(task) (task)->thread_info */
-+/* #define task_stack_page(task) ((void*)((task)->thread_info)) */
-+
-+#define task_pt_regs(tsk) \
-+		(((struct pt_regs *)(THREAD_SIZE + task_stack_page(tsk))) - 1)
-+
-+
-+#define KSTK_EIP(tsk)	(0)
-+#define KSTK_ESP(tsk)	(0)
-+
-+#endif /* _ASM_MICROBLAZE_PROCESSOR_H */
-diff --git a/include/asm-microblaze/pvr.h b/include/asm-microblaze/pvr.h
-new file mode 100644
-index 0000000..1c67731
---- /dev/null
-+++ b/include/asm-microblaze/pvr.h
-@@ -0,0 +1,183 @@
-+/*
-+ * Support for the MicroBlaze PVR (Processor Version Register)
-+ *
-+ * Copyright (C) 2007 John Williams <john.williams@petalogix.com>
-+ * Copyright (C) 2007 PetaLogix
-+ *
-+ * This file is subject to the terms and conditions of the GNU General
-+ * Public License. See the file COPYING in the main directory of this
-+ * archive for more details.
-+ *
-+ */
-+#ifndef _ASM_MICROBLAZE_PVR_H
-+#define _ASM_MICROBLAZE_PVR_H
-+
-+#define PVR_MSR_BIT 0x400
-+
-+struct pvr_s {
-+	unsigned pvr[16];
-+};
-+
-+/* The following taken from Xilinx's standalone BSP pvr.h */
-+
-+/* Basic PVR mask */
-+#define PVR0_PVR_FULL_MASK		0x80000000
-+#define PVR0_USE_BARREL_MASK		0x40000000
-+#define PVR0_USE_DIV_MASK		0x20000000
-+#define PVR0_USE_HW_MUL_MASK		0x10000000
-+#define PVR0_USE_FPU_MASK		0x08000000
-+#define PVR0_USE_EXCEPTION_MASK		0x04000000
-+#define PVR0_USE_ICACHE_MASK		0x02000000
-+#define PVR0_USE_DCACHE_MASK		0x01000000
-+#define PVR0_VERSION_MASK		0x0000FF00
-+#define PVR0_USER1_MASK			0x000000FF
-+
-+/* User 2 PVR mask */
-+#define PVR1_USER2_MASK			0xFFFFFFFF
-+
-+/* Configuration PVR masks */
-+#define PVR2_D_OPB_MASK			0x80000000
-+#define PVR2_D_LMB_MASK			0x40000000
-+#define PVR2_I_OPB_MASK			0x20000000
-+#define PVR2_I_LMB_MASK			0x10000000
-+#define PVR2_INTERRUPT_IS_EDGE_MASK	0x08000000
-+#define PVR2_EDGE_IS_POSITIVE_MASK	0x04000000
-+#define PVR2_USE_MSR_INSTR		0x00020000
-+#define PVR2_USE_PCMP_INSTR		0x00010000
-+#define PVR2_AREA_OPTIMISED		0x00008000
-+#define PVR2_USE_BARREL_MASK		0x00004000
-+#define PVR2_USE_DIV_MASK		0x00002000
-+#define PVR2_USE_HW_MUL_MASK		0x00001000
-+#define PVR2_USE_FPU_MASK		0x00000800
-+#define PVR2_USE_MUL64_MASK		0x00000400
-+#define PVR2_OPCODE_0x0_ILLEGAL_MASK	0x00000040
-+#define PVR2_UNALIGNED_EXCEPTION_MASK	0x00000020
-+#define PVR2_ILL_OPCODE_EXCEPTION_MASK	0x00000010
-+#define PVR2_IOPB_BUS_EXCEPTION_MASK	0x00000008
-+#define PVR2_DOPB_BUS_EXCEPTION_MASK	0x00000004
-+#define PVR2_DIV_ZERO_EXCEPTION_MASK	0x00000002
-+#define PVR2_FPU_EXCEPTION_MASK		0x00000001
-+
-+/* Debug and exception PVR masks */
-+#define PVR3_DEBUG_ENABLED_MASK		0x80000000
-+#define PVR3_NUMBER_OF_PC_BRK_MASK	0x1E000000
-+#define PVR3_NUMBER_OF_RD_ADDR_BRK_MASK	0x00380000
-+#define PVR3_NUMBER_OF_WR_ADDR_BRK_MASK	0x0000E000
-+#define PVR3_FSL_LINKS_MASK		0x00000380
-+
-+/* ICache config PVR masks */
-+#define PVR4_USE_ICACHE_MASK		0x80000000
-+#define PVR4_ICACHE_ADDR_TAG_BITS_MASK	0x7C000000
-+#define PVR4_ICACHE_USE_FSL_MASK	0x02000000
-+#define PVR4_ICACHE_ALLOW_WR_MASK	0x01000000
-+#define PVR4_ICACHE_LINE_LEN_MASK	0x00E00000
-+#define PVR4_ICACHE_BYTE_SIZE_MASK	0x001F0000
-+
-+/* DCache config PVR masks */
-+#define PVR5_USE_DCACHE_MASK		0x80000000
-+#define PVR5_DCACHE_ADDR_TAG_BITS_MASK	0x7C000000
-+#define PVR5_DCACHE_USE_FSL_MASK	0x02000000
-+#define PVR5_DCACHE_ALLOW_WR_MASK	0x01000000
-+#define PVR5_DCACHE_LINE_LEN_MASK	0x00E00000
-+#define PVR5_DCACHE_BYTE_SIZE_MASK	0x001F0000
-+
-+/* ICache base address PVR mask */
-+#define PVR6_ICACHE_BASEADDR_MASK	0xFFFFFFFF
-+
-+/* ICache high address PVR mask */
-+#define PVR7_ICACHE_HIGHADDR_MASK	0xFFFFFFFF
-+
-+/* DCache base address PVR mask */
-+#define PVR8_DCACHE_BASEADDR_MASK	0xFFFFFFFF
-+
-+/* DCache high address PVR mask */
-+#define PVR9_DCACHE_HIGHADDR_MASK	0xFFFFFFFF
-+
-+/* Target family PVR mask */
-+#define PVR10_TARGET_FAMILY_MASK	0xFF000000
-+
-+/* MSR Reset value PVR mask */
-+#define PVR11_MSR_RESET_VALUE_MASK	0x000007FF
-+
-+
-+/* PVR access macros */
-+#define PVR_IS_FULL(pvr)		(pvr.pvr[0] & PVR0_PVR_FULL_MASK)
-+#define PVR_USE_BARREL(pvr)		(pvr.pvr[0] & PVR0_USE_BARREL_MASK)
-+#define PVR_USE_DIV(pvr)		(pvr.pvr[0] & PVR0_USE_DIV_MASK)
-+#define PVR_USE_HW_MUL(pvr)		(pvr.pvr[0] & PVR0_USE_HW_MUL_MASK)
-+#define PVR_USE_FPU(pvr)		(pvr.pvr[0] & PVR0_USE_FPU_MASK)
-+#define PVR_USE_ICACHE(pvr)		(pvr.pvr[0] & PVR0_USE_ICACHE_MASK)
-+#define PVR_USE_DCACHE(pvr)		(pvr.pvr[0] & PVR0_USE_DCACHE_MASK)
-+#define PVR_VERSION(pvr)	((pvr.pvr[0] & PVR0_VERSION_MASK) >> 8)
-+#define PVR_USER1(pvr)			(pvr.pvr[0] & PVR0_USER1_MASK)
-+#define PVR_USER2(pvr)			(pvr.pvr[1] & PVR1_USER2_MASK)
-+
-+#define PVR_D_OPB(pvr)			(pvr.pvr[2] & PVR2_D_OPB_MASK)
-+#define PVR_D_LMB(pvr)			(pvr.pvr[2] & PVR2_D_LMB_MASK)
-+#define PVR_I_OPB(pvr)			(pvr.pvr[2] & PVR2_I_OPB_MASK)
-+#define PVR_I_LMB(pvr)			(pvr.pvr[2] & PVR2_I_LMB_MASK)
-+#define PVR_INTERRUPT_IS_EDGE(pvr) \
-+			(pvr.pvr[2] & PVR2_INTERRUPT_IS_EDGE_MASK)
-+#define PVR_EDGE_IS_POSITIVE(pvr) \
-+			(pvr.pvr[2] & PVR2_EDGE_IS_POSITIVE_MASK)
-+#define PVR_USE_MSR_INSTR(pvr)		(pvr.pvr[2] & PVR2_USE_MSR_INSTR)
-+#define PVR_USE_PCMP_INSTR(pvr)		(pvr.pvr[2] & PVR2_USE_PCMP_INSTR)
-+#define PVR_AREA_OPTIMISED(pvr)		(pvr.pvr[2] & PVR2_AREA_OPTIMISED)
-+#define PVR_USE_MUL64(pvr)		(pvr.pvr[2] & PVR2_USE_MUL64_MASK)
-+#define PVR_OPCODE_0x0_ILLEGAL(pvr) \
-+			(pvr.pvr[2] & PVR2_OPCODE_0x0_ILLEGAL_MASK)
-+#define PVR_UNALIGNED_EXCEPTION(pvr) \
-+			(pvr.pvr[2] & PVR2_UNALIGNED_EXCEPTION_MASK)
-+#define PVR_ILL_OPCODE_EXCEPTION(pvr) \
-+			(pvr.pvr[2] & PVR2_ILL_OPCODE_EXCEPTION_MASK)
-+#define PVR_IOPB_BUS_EXCEPTION(pvr) \
-+			(pvr.pvr[2] & PVR2_IOPB_BUS_EXCEPTION_MASK)
-+#define PVR_DOPB_BUS_EXCEPTION(pvr) \
-+			(pvr.pvr[2] & PVR2_DOPB_BUS_EXCEPTION_MASK)
-+#define PVR_DIV_ZERO_EXCEPTION(pvr) \
-+			(pvr.pvr[2] & PVR2_DIV_ZERO_EXCEPTION_MASK)
-+#define PVR_FPU_EXCEPTION(pvr)		(pvr.pvr[2] & PVR2_FPU_EXCEPTION_MASK)
-+
-+#define PVR_DEBUG_ENABLED(pvr)		(pvr.pvr[3] & PVR3_DEBUG_ENABLED_MASK)
-+#define PVR_NUMBER_OF_PC_BRK(pvr) \
-+			((pvr.pvr[3] & PVR3_NUMBER_OF_PC_BRK_MASK) >> 25)
-+#define PVR_NUMBER_OF_RD_ADDR_BRK(pvr) \
-+			((pvr.pvr[3] & PVR3_NUMBER_OF_RD_ADDR_BRK_MASK) >> 19)
-+#define PVR_NUMBER_OF_WR_ADDR_BRK(pvr) \
-+			((pvr.pvr[3] & PVR3_NUMBER_OF_WR_ADDR_BRK_MASK) >> 13)
-+#define PVR_FSL_LINKS(pvr)	((pvr.pvr[3] & PVR3_FSL_LINKS_MASK) >> 7)
-+
-+#define PVR_ICACHE_ADDR_TAG_BITS(pvr) \
-+			((pvr.pvr[4] & PVR4_ICACHE_ADDR_TAG_BITS_MASK) >> 26)
-+#define PVR_ICACHE_USE_FSL(pvr)		(pvr.pvr[4] & PVR4_ICACHE_USE_FSL_MASK)
-+#define PVR_ICACHE_ALLOW_WR(pvr)	(pvr.pvr[4] & PVR4_ICACHE_ALLOW_WR_MASK)
-+#define PVR_ICACHE_LINE_LEN(pvr) \
-+			(1 << ((pvr.pvr[4] & PVR4_ICACHE_LINE_LEN_MASK) >> 21))
-+#define PVR_ICACHE_BYTE_SIZE(pvr) \
-+			(1 << ((pvr.pvr[4] & PVR4_ICACHE_BYTE_SIZE_MASK) >> 16))
-+
-+#define PVR_DCACHE_ADDR_TAG_BITS(pvr) \
-+			((pvr.pvr[5] & PVR5_DCACHE_ADDR_TAG_BITS_MASK) >> 26)
-+#define PVR_DCACHE_USE_FSL(pvr)		(pvr.pvr[5] & PVR5_DCACHE_USE_FSL_MASK)
-+#define PVR_DCACHE_ALLOW_WR(pvr)	(pvr.pvr[5] & PVR5_DCACHE_ALLOW_WR_MASK)
-+#define PVR_DCACHE_LINE_LEN(pvr) \
-+			(1 << ((pvr.pvr[5] & PVR5_DCACHE_LINE_LEN_MASK) >> 21))
-+#define PVR_DCACHE_BYTE_SIZE(pvr) \
-+			(1 << ((pvr.pvr[5] & PVR5_DCACHE_BYTE_SIZE_MASK) >> 16))
-+
-+
-+#define PVR_ICACHE_BASEADDR(pvr)	(pvr.pvr[6] & PVR6_ICACHE_BASEADDR_MASK)
-+#define PVR_ICACHE_HIGHADDR(pvr)	(pvr.pvr[7] & PVR7_ICACHE_HIGHADDR_MASK)
-+
-+#define PVR_DCACHE_BASEADDR(pvr)	(pvr.pvr[8] & PVR8_DCACHE_BASEADDR_MASK)
-+#define PVR_DCACHE_HIGHADDR(pvr)	(pvr.pvr[9] & PVR9_DCACHE_HIGHADDR_MASK)
-+
-+#define PVR_TARGET_FAMILY(pvr)	((pvr.pvr[10] & PVR10_TARGET_FAMILY_MASK) >> 24)
-+
-+#define PVR_MSR_RESET_VALUE(pvr) \
-+				(pvr.pvr[11] & PVR11_MSR_RESET_VALUE_MASK)
-+
-+int cpu_has_pvr(void);
-+void get_pvr(struct pvr_s *pvr);
-+
-+#endif /* _ASM_MICROBLAZE_PVR_H */
-diff --git a/include/asm-microblaze/system.h b/include/asm-microblaze/system.h
-new file mode 100644
-index 0000000..f80f64c
---- /dev/null
-+++ b/include/asm-microblaze/system.h
-@@ -0,0 +1,190 @@
-+/*
-+ * Copyright (C) 2006 Atmark Techno, Inc.
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License. See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ */
-+
-+#ifndef _ASM_MICROBLAZE_SYSTEM_H
-+#define _ASM_MICROBLAZE_SYSTEM_H
++#ifndef _ASM_MICROBLAZE_PAGE_H
++#define _ASM_MICROBLAZE_PAGE_H
 +
 +#include <linux/autoconf.h>
-+#include <asm/registers.h>
++#include <linux/pfn.h>
++
++/* PAGE_SHIFT determines the page size */
++
++#define PAGE_SHIFT	(12)
++#define PAGE_SIZE	(1UL << PAGE_SHIFT)
++#define PAGE_MASK	(~(PAGE_SIZE-1))
++
++#ifdef __KERNEL__
++
 +#include <asm/setup.h>
 +
-+struct task_struct;
-+struct thread_info;
++#ifndef __ASSEMBLY__
 +
-+extern struct task_struct *_switch_to(struct thread_info *prev,
-+					struct thread_info *next);
++#define get_user_page(vaddr)			__get_free_page(GFP_KERNEL)
++#define free_user_page(page, addr)		free_page(addr)
 +
-+#define switch_to(prev, next, last)					\
-+	do {								\
-+		(last) = _switch_to(task_thread_info(prev),		\
-+					task_thread_info(next));	\
-+	} while (0)
++#define clear_page(pgaddr)			memset((pgaddr), 0, PAGE_SIZE)
++#define copy_page(to, from)			memcpy((to), (from), PAGE_SIZE)
 +
-+#if CONFIG_XILINX_MICROBLAZE0_USE_MSR_INSTR
++#define clear_user_page(pgaddr, vaddr, page)	memset((pgaddr), 0, PAGE_SIZE)
++#define copy_user_page(vto, vfrom, vaddr, topg) \
++			memcpy((vto), (vfrom), PAGE_SIZE)
 +
-+#define local_irq_save(flags)				\
-+	do {						\
-+		asm volatile ("# local_irq_save	\n\t"	\
-+				"msrclr %0, %1	\n\t"	\
-+				"nop	\n\t"		\
-+				: "=r"(flags)		\
-+				: "i"(MSR_IE)		\
-+				: "memory");		\
-+	} while (0)
++/*
++ * These are used to make use of C type-checking..
++ */
++typedef struct { unsigned long	pte; }		pte_t;
++typedef struct { unsigned long	ste[64]; }	pmd_t;
++typedef struct { pmd_t		pue[1]; }	pud_t;
++typedef struct { pud_t		pge[1]; }	pgd_t;
++typedef struct { unsigned long	pgprot; }	pgprot_t;
++typedef struct page *pgtable_t;
 +
-+#define local_irq_disable()					\
-+	do {							\
-+		asm volatile ("# local_irq_disable \n\t"	\
-+				"msrclr r0, %0 \n\t"		\
-+				"nop	\n\t"			\
-+				:				\
-+				: "i"(MSR_IE)			\
-+				: "memory");			\
-+	} while (0)
++#define pte_val(x)	((x).pte)
++#define pmd_val(x)	((x).ste[0])
++#define pud_val(x)	((x).pue[0])
++#define pgd_val(x)	((x).pge[0])
++#define pgprot_val(x)	((x).pgprot)
 +
-+#define local_irq_enable()					\
-+	do {							\
-+		asm volatile ("# local_irq_enable \n\t"		\
-+				"msrset	r0, %0 \n\t"		\
-+				"nop	\n\t"			\
-+				:				\
-+				: "i"(MSR_IE)			\
-+				: "memory");			\
-+	} while (0)
++#define __pte(x)	((pte_t) { (x) })
++#define __pmd(x)	((pmd_t) { (x) })
++#define __pgd(x)	((pgd_t) { (x) })
++#define __pgprot(x)	((pgprot_t) { (x) })
 +
-+#else /* CONFIG_XILINX_MICROBLAZE0_USE_MSR_INSTR == 0 */
++/* align addr on a size boundary - adjust address up/down if needed */
++#define _ALIGN_UP(addr, size)	(((addr)+((size)-1))&(~((size)-1)))
++#define _ALIGN_DOWN(addr, size)	((addr)&(~((size)-1)))
 +
-+#define local_irq_save(flags)					\
-+	do {							\
-+		register unsigned tmp;				\
-+		asm volatile ("# local_irq_save	\n\t"		\
-+				"mfs	%0, rmsr \n\t"		\
-+				"andi	%1, %0, %2 \n\t"	\
-+				"mts	rmsr, %1 \n\t"		\
-+				"nop \n\t"			\
-+				: "=r"(flags), "=r" (tmp)	\
-+				: "i"(~MSR_IE)			\
-+				: "memory");			\
-+	} while (0)
++/* align addr on a size boundary - adjust address up if needed */
++#define _ALIGN(addr, size)	_ALIGN_UP(addr, size)
 +
-+#define local_irq_disable()					\
-+	do {							\
-+		register unsigned tmp;				\
-+		asm volatile ("# local_irq_disable \n\t"	\
-+				"mfs	%0, rmsr \n\t"		\
-+				"andi	%0, %0, %1 \n\t"	\
-+				"mts	rmsr, %0 \n\t"		\
-+				"nop \n\t"			\
-+				: "=r"(tmp)			\
-+				: "i"(~MSR_IE)			\
-+				: "memory");			\
-+	} while (0)
++/* to align the pointer to the (next) page boundary */
++#define PAGE_ALIGN(addr)	(((addr) + PAGE_SIZE - 1) & PAGE_MASK)
 +
-+#define local_irq_enable()					\
-+	do {							\
-+		register unsigned tmp;				\
-+		asm volatile ("# local_irq_enable \n\t"		\
-+				"mfs	%0, rmsr \n\t"		\
-+				"ori	%0, %0, %1 \n\t"	\
-+				"mts	rmsr, %0 \n\t"		\
-+				"nop \n\t"			\
-+				: "=r"(tmp)			\
-+				: "i"(MSR_IE)			\
-+				: "memory");			\
-+	} while (0)
++extern unsigned int __page_offset;
++#define PAGE_OFFSET __page_offset
 +
-+#endif /* CONFIG_XILINX_MICROBLAZE0_USE_MSR_INSTR */
++/**
++ * Conversions for virtual address, physical address, pfn, and struct
++ * page are defined in the following files.
++ *
++ * virt -+
++ *	 | asm-microblaze/page.h
++ * phys -+
++ *	 | linux/pfn.h
++ *  pfn -+
++ *	 | asm-generic/memory_model.h
++ * page -+
++ *
++ */
 +
-+#define local_save_flags(flags)					\
-+	do {							\
-+		asm volatile ("# local_save_flags \n\t"		\
-+				"mfs	%0, rmsr \n\t"		\
-+				"nop	\n\t"			\
-+				: "=r"(flags)			\
-+				:				\
-+				: "memory");			\
-+	} while (0)
++extern unsigned long max_low_pfn;
++extern unsigned long min_low_pfn;
++extern unsigned long max_pfn;
 +
-+#define local_irq_restore(flags)			\
-+	do {						\
-+		asm volatile ("# local_irq_restore \n\t"\
-+				"mts	rmsr, %0 \n\t"	\
-+				"nop	\n\t"		\
-+				:			\
-+				:"r"(flags)		\
-+				: "memory");		\
-+	} while (0)
++#define __pa(vaddr)		((unsigned long) (vaddr))
++#define __va(paddr)		((void *) (paddr))
 +
-+static inline int irqs_disabled(void)
-+{
-+	unsigned long flags;
++#define phys_to_pfn(phys)	(PFN_DOWN(phys))
++#define pfn_to_phys(pfn)	(PFN_PHYS(pfn))
 +
-+	local_save_flags(flags);
-+	return ((flags & MSR_IE) == 0);
-+}
++#define virt_to_pfn(vaddr)	(phys_to_pfn((__pa(vaddr))))
++#define pfn_to_virt(pfn)	__va(pfn_to_phys((pfn)))
 +
-+#define smp_read_barrier_depends()	do {} while (0)
-+#define read_barrier_depends()		do {} while (0)
++#define virt_to_page(vaddr)	(pfn_to_page(virt_to_pfn(vaddr)))
++#define page_to_virt(page)	(pfn_to_virt(page_to_pfn(page)))
 +
-+#define nop()			asm volatile ("nop")
-+#define mb()			barrier()
-+#define rmb()			mb()
-+#define wmb()			mb()
-+#define set_mb(var, value)	do { var = value; mb(); } while (0)
-+#define set_wmb(var, value)	do { var = value; wmb(); } while (0)
++#define page_to_phys(page)	(pfn_to_phys(page_to_pfn(page)))
++#define page_to_bus(page)	(page_to_phys(page))
++#define phys_to_page(paddr)	(pfn_to_page(phys_to_pfn(paddr)))
 +
-+#define smp_mb()		mb()
-+#define smp_rmb()		rmb()
-+#define smp_wmb()		wmb()
++#define pfn_valid(pfn)		((pfn) >= min_low_pfn && (pfn) < max_mapnr)
++#define	virt_addr_valid(vaddr)	(pfn_valid(virt_to_pfn(vaddr)))
 +
-+void show_trace(struct task_struct *task, unsigned long *stack);
-+void __bad_xchg(volatile void *ptr, int size);
++#define ARCH_PFN_OFFSET		(PAGE_OFFSET >> PAGE_SHIFT)
 +
-+static inline unsigned long __xchg(unsigned long x, volatile void *ptr,
-+								int size)
-+{
-+	unsigned long ret;
-+	unsigned long flags;
++#endif /* __ASSEMBLY__ */
 +
-+	switch (size) {
-+	case 1:
-+		local_irq_save(flags);
-+		ret = *(volatile unsigned char *)ptr;
-+		*(volatile unsigned char *)ptr = x;
-+		local_irq_restore(flags);
-+		break;
++#endif /* __KERNEL__ */
 +
-+	case 4:
-+		local_irq_save(flags);
-+		ret = *(volatile unsigned long *)ptr;
-+		*(volatile unsigned long *)ptr = x;
-+		local_irq_restore(flags);
-+		break;
-+	default:
-+		__bad_xchg(ptr, size), ret = 0;
-+		break;
-+	}
++#include <asm-generic/memory_model.h>
++#include <asm-generic/page.h>
 +
-+	return ret;
-+}
++#endif /* _ASM_MICROBLAZE_PAGE_H */
+diff --git a/include/asm-microblaze/segment.h b/include/asm-microblaze/segment.h
+new file mode 100644
+index 0000000..670a099
+--- /dev/null
++++ b/include/asm-microblaze/segment.h
+@@ -0,0 +1,39 @@
++/*
++ * Copyright (C) 2006 Atmark Techno, Inc.
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
++ */
 +
-+#define xchg(ptr,x) \
-+	((__typeof__(*(ptr))) __xchg((unsigned long)(x), (ptr), sizeof(*(ptr))))
++#ifndef _ASM_MICROBLAZE_SEGMENT_H
++#define _ASM_MICROBLAZE_SEGMENT_H
 +
-+extern void *cacheable_memcpy(void *, const void *, unsigned int);
-+void free_init_pages(char *what, unsigned long begin, unsigned long end);
-+void free_initmem(void);
-+extern char *klimit;
-+extern unsigned int memory_end;
-+extern void ret_from_fork(void);
++#ifndef __ASSEMBLY__
 +
-+#ifdef CONFIG_DEBUG_FS
-+extern struct dentry *of_debugfs_root;
-+#endif
++typedef struct {
++	unsigned long seg;
++} mm_segment_t;
 +
-+#endif /* _ASM_MICROBLAZE_SYSTEM_H */
++/*
++ * The fs value determines whether argument validity checking should be
++ * performed or not. If get_fs() == USER_DS, checking is performed, with
++ * get_fs() == KERNEL_DS, checking is bypassed.
++ *
++ * For historical reasons, these macros are grossly misnamed.
++ *
++ * For non-MMU arch like Microblaze, KERNEL_DS and USER_DS is equal.
++ */
++#define KERNEL_DS	((mm_segment_t){0})
++#define USER_DS		KERNEL_DS
++
++#define get_ds()	(KERNEL_DS)
++#define get_fs()	(current_thread_info()->addr_limit)
++#define set_fs(x) \
++		do { current_thread_info()->addr_limit = (x); } while (0)
++
++#define segment_eq(a, b)		((a).seg == (b).seg)
++
++#endif /* __ASSEMBLY__ */
++
++#endif /* _ASM_MICROBLAZE_SEGMENT_H */
+diff --git a/include/asm-microblaze/unaligned.h b/include/asm-microblaze/unaligned.h
+new file mode 100644
+index 0000000..ad8bd76
+--- /dev/null
++++ b/include/asm-microblaze/unaligned.h
+@@ -0,0 +1,19 @@
++/*
++ * Copyright (C) 2008 Michal Simek <monstr@monstr.eu>
++ * Copyright (C) 2006 Atmark Techno, Inc.
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
++ */
++
++#ifndef _ASM_MICROBLAZE_UNALIGNED_H
++#define _ASM_MICROBLAZE_UNALIGNED_H
++
++#include <linux/unaligned/access_ok.h>
++#include <linux/unaligned/generic.h>
++
++#define get_unaligned	__get_unaligned_be
++#define put_unaligned	__put_unaligned_be
++
++#endif /* _ASM_MICROBLAZE_UNALIGNED_H */
 -- 
 1.5.4.GIT
