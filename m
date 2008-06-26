@@ -1,32 +1,21 @@
-Return-Path: <DaveLiu@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
+Return-Path: <vitb@kernel.crashing.org>
+Received: from vitb.dev.rtsoft.ru (unknown [85.21.88.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 94D4DDF11C
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jun 2008 00:39:52 +1000 (EST)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
-	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
-	m5QEdkNT023660
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jun 2008 07:39:47 -0700 (MST)
-Received: from zch01exm21.fsl.freescale.net (zch01exm21.ap.freescale.net
-	[10.192.129.205])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id m5QEdicG019672
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jun 2008 09:39:45 -0500 (CDT)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Subject: RE: [PATCH 1/3] mpc83xx: Power Management support
-Date: Thu, 26 Jun 2008 22:39:41 +0800
-Message-ID: <58A20A281BAF1047B4EAE68DE5C0BDC201011622@zch01exm21.fsl.freescale.net>
-In-Reply-To: <D70F79B4-BA5F-46D4-9D74-4CB2E375AF60@kernel.crashing.org>
-References: <20080625215051.GA11784@loki.buserror.net>
-	<D70F79B4-BA5F-46D4-9D74-4CB2E375AF60@kernel.crashing.org>
-From: "Liu Dave" <DaveLiu@freescale.com>
-To: "Kumar Gala" <galak@kernel.crashing.org>,
-	"Wood Scott" <scottwood@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 3AA79DE306
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jun 2008 01:00:54 +1000 (EST)
+Date: Thu, 26 Jun 2008 17:56:14 +0400
+From: Vitaly Bordug <vitb@kernel.crashing.org>
+To: Laurent Pinchart <laurentp@cse-semaphore.com>
+Subject: Re: [PATCHv2] fs_enet: restore promiscuous and multicast settings
+	in restart()
+Message-ID: <20080626175614.57ea5bbe@vitb.ru.mvista.com>
+In-Reply-To: <200806261148.26569.laurentp@cse-semaphore.com>
+References: <200806261148.26569.laurentp@cse-semaphore.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Matvejchikov Ilya <matvejchikov@gmail.com>,
+	netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,21 +25,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> > Basic PM support for 83xx.  Standby is implemented as sleep.
-> > Suspend-to-RAM is implemented as "deep sleep" (with the processor
-> > turned off) on 831x.  PCI agent power management is supported.
-> >
-> > Device power management of SOC peripherals is not yet supported.
->=20
-> (Not comments on this patch, but related)
->=20
-> Do you know if anyone is looking at making sure DOZE/NAP work on =20
-> 83xx?  We clearly don't flush the L1 cache today in the 6xx code.
+On Thu, 26 Jun 2008 11:48:22 +0200
+Laurent Pinchart <laurentp@cse-semaphore.com> wrote:
 
-I did the test on 837x, the NAP did *not* work, due to the cache
-coherence issue.
-You are right, currently no flush L1 in the 6xx code, maybe it depend on
-the
-platform hardware capability.
+> The restart() function is called when the link state changes and resets
+> multicast and promiscuous settings. This patch restores those settings at the
+> end of restart().
+> 
+> Signed-off-by: Laurent Pinchart <laurentp@cse-semaphore.com>
+Acked-by: Vitaly Bordug <vitb@kernel.crashing.org>
 
-Dave
+
+
+-- 
+Sincerely, 
+Vitaly
