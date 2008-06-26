@@ -1,34 +1,17 @@
-Return-Path: <monstr@seznam.cz>
-Received: from monstr.eu (238.225.broadband7.iol.cz [88.102.225.238])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C0B7ADE0EE
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jun 2008 23:34:44 +1000 (EST)
-From: monstr@seznam.cz
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 13/60] microblaze_v4: kernel modules support
-Date: Thu, 26 Jun 2008 14:29:42 +0200
-Message-Id: <1214483429-32360-14-git-send-email-monstr@seznam.cz>
-In-Reply-To: <1214483429-32360-13-git-send-email-monstr@seznam.cz>
-References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-2-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-3-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-4-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-5-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-6-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-7-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-8-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-9-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-10-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-11-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-12-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-13-git-send-email-monstr@seznam.cz>
-Cc: linux-arch@vger.kernel.org, alan@lxorguk.ukuu.org.uk,
-	Michal Simek <monstr@monstr.eu>, vapier.adi@gmail.com,
-	arnd@arndb.de, matthew@wil.cx, microblaze-uclinux@itee.uq.edu.au,
-	drepper@redhat.com, linuxppc-dev@ozlabs.org,
-	will.newton@gmail.com, hpa@zytor.com, John.Linn@xilinx.com,
-	john.williams@petalogix.com
+Return-Path: <John.Linn@xilinx.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Subject: RE: [PATCH] powerpc/bootwrapper: Add documentation of boot wrapper
+	targets
+Date: Thu, 26 Jun 2008 07:35:55 -0600
+In-Reply-To: <20080625202104.30114.47902.stgit@trillian.secretlab.ca>
+References: <20080625202104.30114.47902.stgit@trillian.secretlab.ca>
+From: John Linn <John.Linn@xilinx.com>
+To: "Grant Likely" <grant.likely@secretlab.ca>,
+	"Stephen Neuendorffer" <stephenn@xilinx.com>, <linuxppc-dev@ozlabs.com>,
+	<paulus@samba.org>
+Message-ID: <20080626133557.C7BC1143804F@mail91-wa4.bigfish.com>
+Cc: petermendham@computing.dundee.ac.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,260 +21,228 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Michal Simek <monstr@monstr.eu>
+Thanks Grant, that's a great start for helping us to better understand
+the bootwrapper.
 
+The wrapper is somewhat complex and hard to get your head around, or at
+least my head ;).
 
-Signed-off-by: Michal Simek <monstr@monstr.eu>
+-- John
+
+-----Original Message-----
+From: Grant Likely [mailto:grant.likely@secretlab.ca] =
+
+Sent: Wednesday, June 25, 2008 2:21 PM
+To: John Linn; Stephen Neuendorffer; linuxppc-dev@ozlabs.com;
+paulus@samba.org
+Cc: petermendham@computing.dundee.ac.uk
+Subject: [PATCH] powerpc/bootwrapper: Add documentation of boot wrapper
+targets
+
+From: Grant Likely <grant.likely@secretlab.ca>
+
+There have been many questions on and off the mailing list about how
+exactly the bootwrapper is used for embedded targets.  Add some
+documentation and help text to try and clarify the system.
+
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 ---
- arch/microblaze/kernel/microblaze_ksyms.c |   47 ++++++++++
- arch/microblaze/kernel/module.c           |  140 +++++++++++++++++++++++++++++
- include/asm-microblaze/module.h           |   37 ++++++++
- 3 files changed, 224 insertions(+), 0 deletions(-)
- create mode 100644 arch/microblaze/kernel/microblaze_ksyms.c
- create mode 100644 arch/microblaze/kernel/module.c
- create mode 100644 include/asm-microblaze/module.h
 
-diff --git a/arch/microblaze/kernel/microblaze_ksyms.c b/arch/microblaze/kernel/microblaze_ksyms.c
+ Documentation/powerpc/bootwrapper.txt |   78
++++++++++++++++++++++++++++++++++
+ arch/powerpc/Makefile                 |   15 ++++++
+ arch/powerpc/boot/wrapper             |    4 ++
+ 3 files changed, 96 insertions(+), 1 deletions(-)
+
+diff --git a/Documentation/powerpc/bootwrapper.txt
+b/Documentation/powerpc/bootwrapper.txt
 new file mode 100644
-index 0000000..297cd68
+index 0000000..8dcb560
 --- /dev/null
-+++ b/arch/microblaze/kernel/microblaze_ksyms.c
-@@ -0,0 +1,47 @@
-+/*
-+ * Copyright (C) 2008 Michal Simek <monstr@monstr.eu>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
-+#include <linux/module.h>
-+#include <linux/string.h>
-+#include <linux/cryptohash.h>
-+#include <linux/delay.h>
-+#include <linux/in6.h>
-+#include <linux/syscalls.h>
++++ b/Documentation/powerpc/bootwrapper.txt
+@@ -0,0 +1,78 @@
++The PowerPC boot wrapper
++------------------------
++Copyright (C) Secret Lab Technologies Ltd.
 +
-+#include <asm/checksum.h>
-+#include <asm/io.h>
-+#include <asm/page.h>
-+#include <asm/system.h>
-+#include <asm/uaccess.h>
++PowerPC image targets compresses and wraps the kernel image (vmlinux)
+with
++a boot wrapper to make it usable by the system firmware.  There is no
++standard PowerPC firmware interface, so the boot wrapper is designed to
++be adaptable for each kind of image that needs to be built.
 +
-+/*
-+ * libgcc functions - functions that are used internally by the
-+ * compiler... (prototypes are not correct though, but that
-+ * doesn't really matter since they're not versioned).
-+ */
-+extern void __ashldi3(void);
-+EXPORT_SYMBOL(__ashldi3);
-+extern void __ashrdi3(void);
-+EXPORT_SYMBOL(__ashrdi3);
-+extern void __divsi3(void);
-+EXPORT_SYMBOL(__divsi3);
-+extern void __lshrdi3(void);
-+EXPORT_SYMBOL(__lshrdi3);
-+extern void __modsi3(void);
-+EXPORT_SYMBOL(__modsi3);
-+extern void __mulsi3(void);
-+EXPORT_SYMBOL(__mulsi3);
-+extern void __muldi3(void);
-+EXPORT_SYMBOL(__muldi3);
-+extern void __ucmpdi2(void);
-+EXPORT_SYMBOL(__ucmpdi2);
-+extern void __udivsi3(void);
-+EXPORT_SYMBOL(__udivsi3);
-+extern void __umodsi3(void);
-+EXPORT_SYMBOL(__umodsi3);
-+/*extern void fpundefinstr(void);
-+extern void fp_enter(void);*/
-diff --git a/arch/microblaze/kernel/module.c b/arch/microblaze/kernel/module.c
-new file mode 100644
-index 0000000..a59b2e5
---- /dev/null
-+++ b/arch/microblaze/kernel/module.c
-@@ -0,0 +1,140 @@
-+/*
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ */
-+#include <linux/module.h>
-+#include <linux/moduleloader.h>
-+#include <linux/kernel.h>
-+#include <linux/elf.h>
-+#include <linux/vmalloc.h>
-+#include <linux/slab.h>
-+#include <linux/fs.h>
-+#include <linux/string.h>
++The boot wrapper can be found in the arch/powerpc/boot/ directory.  The
++Makefile in that directory has targets for all the available image
+types.
++Currently, the following image targets exist:
 +
-+#include <asm/pgtable.h>
++   cuImage.%:		Backwards compatible uImage for older version of
++			U-Boot (for versions that don't understand the
+device
++			tree).  This image embeds a device tree blob
+inside
++			the image.
++   dtbImage.%:		Similar to zImage, except device tree blob is
+embedded
++			inside the image.
++   simpleImage.%:	Firmware independent compressed image that does
+not
++			depend on any particular firmware interface and
+embeds
++			a device tree blob.  This image can be loaded to
+any
++			location in RAM and jumped to.  Firmware cannot
+pass
++			any configuration data to the kernel with this
+image
++			type and the kernel depends on the device tree
+to
++			determine its console device.
++   treeImage.%;		Image format for some versions of ppc4xx
+firmware (non
++			U-Boot firmware).  This image embeds a device
+tree
++			blob inside the image.
++   uImage:		Native image format used by U-Boot.  The uImage
+target
++			does not add any boot code.  It just wraps a
+compressed
++			vmlinux in the uImage data structure.
++   zImage.%:		Image usable by OpenFirmware.  Image expects
+firmware
++			to provide the device tree using OpenFirmware
++			interfaces.  Typically general purpose hardware
+uses
++			this image format.
 +
-+#undef DEBUG
++Image types which embed a device tree blob (simpleImage, dtbImage,
+treeImage,
++and cuImage) all generate the device tree blob from a file in the
++arch/powerpc/boot/dts/ directory.  The Makefile selects the correct
+device
++tree source based on the name of the target.  Therefore, if the kernel
+is
++built with 'make treeImage.walnut simpleImage.virtex405-ml403', then
+the
++build system will use arch/powerpc/boot/dts/walnut.dts to build
++treeImage.walnut and arch/powerpc/boot/dts/virtex405-ml403.dts to build
++the simpleImage.virtex405-ml403.
 +
-+void *module_alloc(unsigned long size)
-+{
-+	void *ret;
-+	ret = (size == 0) ? NULL : vmalloc(size);
-+	pr_debug("module_alloc (%08lx@%08lx)\n", size, (unsigned long int)ret);
-+	return ret;
-+}
++Two special targets called 'zImage' and 'zImage.initrd' also exist.
+These
++targets build all the default images as selected by the kernel
+configuration.
++Default images are selected by the boot wrapper Makefile
++(arch/powerpc/boot/Makefile) by adding targets to the $image-y
+variable.  Look
++at the Makefile to see which default image targets are available.
 +
-+void module_free(struct module *module, void *region)
-+{
-+	pr_debug("module_free(%s,%08lx)\n", module->name,
-+					(unsigned long)region);
-+	vfree(region);
-+}
++How it is built
++---------------
++arch/powerpc is designed to support multiplatform kernels, which means
++that a single vmlinux image can be booted on many different target
+boards.
++It also means that the boot wrapper must be able to wrap for many kinds
+of
++images on a single build.  The design decision was made to not use any
++conditional compilation code (#ifdef, etc) in the boot wrapper source
+code.
++All of the boot wrapper pieces are buildable at any time regardless of
+the
++kernel configuration.  Building all the wrapper bits on every kernel
+build
++also ensures that obscure parts of the wrapper are at the very least
+compile
++tested in a large variety of environments.
 +
-+int module_frob_arch_sections(Elf_Ehdr *hdr,
-+				Elf_Shdr *sechdrs,
-+				char *secstrings,
-+				struct module *mod)
-+{
-+	return 0;
-+}
++The wrapper is adapted for different image types at link time by
+linking in
++just the wrapper bits that are appropriate for the image type.  The
+'wrapper'
++script (found in arch/powerpc/boot/wrapper) is called by the Makefile
+and
++is responsible for selecting the correct wrapper bits for the image
+type.
++The arguments are well documented in the script's comment block, so
+they
++are not repeated here.  However, it is worth mentioning that the script
++uses the -p (platform) argument as the main method of deciding which
+wrapper
++bits to compile in.  Look for the large 'case "$platform" in' block in
+the
++middle of the script.  This is also the place where platform specific
+fixups
++can be selected by changing the link order.
 +
-+int apply_relocate(Elf32_Shdr *sechdrs, const char *strtab,
-+	unsigned int symindex, unsigned int relsec, struct module *module)
-+{
-+
-+	printk(KERN_ERR "module %s: ADD RELOCATION unsupported\n",
-+		module->name);
-+	return -ENOEXEC;
-+
-+}
-+
-+int apply_relocate_add(Elf32_Shdr *sechdrs, const char *strtab,
-+	unsigned int symindex, unsigned int relsec, struct module *module)
-+{
-+
-+	unsigned int i;
-+	Elf32_Rela *rela = (void *)sechdrs[relsec].sh_addr;
-+	Elf32_Sym *sym;
-+	unsigned long int *location;
-+	unsigned long int locoffs;
-+	unsigned long int value;
-+	unsigned long int old_value;
-+
-+	pr_debug("Applying add relocation section %u to %u\n",
-+		relsec, sechdrs[relsec].sh_info);
-+
-+	for (i = 0; i < sechdrs[relsec].sh_size / sizeof(*rela); i++) {
-+
-+		location = (void *)sechdrs[sechdrs[relsec].sh_info].sh_addr +
-+				rela[i].r_offset;
-+		sym = (Elf32_Sym *)sechdrs[symindex].sh_addr +
-+			ELF32_R_SYM(rela[i].r_info);
-+		value = sym->st_value + rela[i].r_addend;
-+
-+		switch (ELF32_R_TYPE(rela[i].r_info)) {
-+
-+		/*
-+		 * Be careful! mb-gcc / mb-ld splits the relocs between the
-+		 * text and the reloc table. In general this means we must
-+		 * read the current contents of (*location), add any offset
-+		 * then store the result back in
-+		 */
-+
-+		case R_MICROBLAZE_32:
-+			old_value = *location;
-+			*location = value + old_value;
-+			pr_debug("R_MICROBLAZE_32 (%08lx->%08lx)\n",
-+				old_value, value);
-+			break;
-+
-+		case R_MICROBLAZE_64:
-+			old_value = ((location[0] & 0x0000FFFF) << 16) |
-+				((location[1] & 0x0000FFFF));
-+			value += old_value;
-+			location[0] = (location[0] & 0xFFFF0000) |
-+					(value >> 16);
-+			location[1] = (location[1] & 0xFFFF0000) |
-+					(value & 0xFFFF);
-+			pr_debug("R_MICROBLAZE_64 (%08lx->%08lx)\n",
-+				old_value, value);
-+			break;
-+
-+		case R_MICROBLAZE_64_PCREL:
-+			locoffs = (location[0] & 0xFFFF) << 16 |
-+				(location[1] & 0xFFFF);
-+			value -= (unsigned long int)(location) + 4 +
-+				locoffs;
-+			location[0] = (location[0] & 0xFFFF0000) |
-+					(value >> 16);
-+			location[1] = (location[1] & 0xFFFF0000) |
-+					(value & 0xFFFF);
-+			pr_debug("R_MICROBLAZE_64_PCREL (%08lx)\n",
-+				value);
-+			break;
-+
-+		case R_MICROBLAZE_NONE:
-+			pr_debug("R_MICROBLAZE_NONE\n");
-+			break;
-+
-+		default:
-+			printk(KERN_ERR "module %s: "
-+				"Unknown relocation: %u\n",
-+				module->name,
-+				ELF32_R_TYPE(rela->r_info));
-+			return -ENOEXEC;
-+		}
-+	}
-+	return 0;
-+}
-+
-+int module_finalize(const Elf32_Ehdr *hdr, const Elf_Shdr *sechdrs,
-+		struct module *module)
-+{
-+	return 0;
-+}
-+
-+void module_arch_cleanup(struct module *mod)
-+{
-+}
-diff --git a/include/asm-microblaze/module.h b/include/asm-microblaze/module.h
-new file mode 100644
-index 0000000..914565a
---- /dev/null
-+++ b/include/asm-microblaze/module.h
-@@ -0,0 +1,37 @@
-+/*
-+ * Copyright (C) 2006 Atmark Techno, Inc.
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License. See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ */
-+
-+#ifndef _ASM_MICROBLAZE_MODULE_H
-+#define _ASM_MICROBLAZE_MODULE_H
-+
-+/* Microblaze Relocations */
-+#define R_MICROBLAZE_NONE 0
-+#define R_MICROBLAZE_32 1
-+#define R_MICROBLAZE_32_PCREL 2
-+#define R_MICROBLAZE_64_PCREL 3
-+#define R_MICROBLAZE_32_PCREL_LO 4
-+#define R_MICROBLAZE_64 5
-+#define R_MICROBLAZE_32_LO 6
-+#define R_MICROBLAZE_SRO32 7
-+#define R_MICROBLAZE_SRW32 8
-+#define R_MICROBLAZE_64_NONE 9
-+#define R_MICROBLAZE_32_SYM_OP_SYM 10
-+/* Keep this the last entry. */
-+#define R_MICROBLAZE_NUM 11
-+
-+struct mod_arch_specific {
-+	int foo;
-+};
-+
-+#define Elf_Shdr	Elf32_Shdr
-+#define Elf_Sym		Elf32_Sym
-+#define Elf_Ehdr	Elf32_Ehdr
-+
-+typedef struct { volatile int counter; } module_t;
-+
-+#endif /* _ASM_MICROBLAZE_MODULE_H */
--- 
-1.5.4.GIT
++In particular, care should be taken when working with cuImages.
+cuImage
++wrapper bits are very board specific and care should be taken to make
+sure
++the target you are trying to build is supported by the wrapper bits.
+diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
+index b7d4c4c..754c7eb 100644
+--- a/arch/powerpc/Makefile
++++ b/arch/powerpc/Makefile
+@@ -169,12 +169,25 @@ bootwrapper_install %.dtb:
+ 	$(Q)$(MAKE) ARCH=3Dppc64 $(build)=3D$(boot) $(patsubst
+%,$(boot)/%,$@)
+ =
+
+ define archhelp
+-  @echo '* zImage          - Compressed kernel image
+(arch/$(ARCH)/boot/zImage.*)'
++  @echo '* zImage          - Build default images selected by kernel
+config'
++  @echo '  zImage.*        - Compressed kernel image
+(arch/$(ARCH)/boot/zImage.*)'
++  @echo '  uImage          - U-Book native image format'
++  @echo '  cuImage.<dt>    - Backwards compatible U-Boot image for
+older'
++  @echo '                    versions which do not support device
+trees'
++  @echo '  dtbImage.<dt>   - zImage with an embedded device tree blob'
++  @echo '  simpleImage.<dt> - Firmware independant image.'
++  @echo '  treeImage.<dt>  - Support for older IBM 4xx firmware (not
+U-Boot)'
+   @echo '  install         - Install kernel using'
+   @echo '                    (your) ~/bin/installkernel or'
+   @echo '                    (distribution) /sbin/installkernel or'
+   @echo '                    install to $$(INSTALL_PATH) and run lilo'
+   @echo '  *_defconfig     - Select default config from
+arch/$(ARCH)/configs'
++  @echo ''
++  @echo '  Targets with <dt> embed a device tree blob inside the image'
++  @echo '  These targets support board with firmware that does not'
++  @echo '  support passing a device tree directly.  Replace <dt> with
+the'
++  @echo '  name of a dts file from the arch/$(ARCH)/boot/dts/
+directory'
++  @echo '  (minus the .dts extension).'
+ endef
+ =
+
+ install:
+diff --git a/arch/powerpc/boot/wrapper b/arch/powerpc/boot/wrapper
+index d6c96d9..7cd4182 100755
+--- a/arch/powerpc/boot/wrapper
++++ b/arch/powerpc/boot/wrapper
+@@ -203,6 +203,10 @@ simpleboot-virtex405-*)
+     platformo=3D"$object/virtex405-head.o $object/simpleboot.o"
+     binary=3Dy
+     ;;
++simpleboot-*)
++    platformo=3D"$object/simpleboot.o"
++    binary=3Dy
++    ;;
+ esac
+ =
+
+ vmz=3D"$tmpdir/`basename \"$kernel\"`.$ext"
+
+
+
+This email and any attachments are intended for the sole use of the named r=
+ecipient(s) and contain(s) confidential information that may be proprietary=
+, privileged or copyrighted under applicable law. If you are not the intend=
+ed recipient, do not read, copy, or forward this email message or any attac=
+hments. Delete this email message and any attachments immediately.
