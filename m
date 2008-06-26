@@ -2,15 +2,14 @@ Return-Path: <monstr@seznam.cz>
 Received: from monstr.eu (238.225.broadband7.iol.cz [88.102.225.238])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 6F680DEA41
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jun 2008 22:39:01 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 595FFDF138
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jun 2008 22:39:07 +1000 (EST)
 From: monstr@seznam.cz
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 44/60] microblaze_v4: clinkage.h linkage.h sections.h
-	kmap_types.h
-Date: Thu, 26 Jun 2008 14:30:13 +0200
-Message-Id: <1214483429-32360-45-git-send-email-monstr@seznam.cz>
-In-Reply-To: <1214483429-32360-44-git-send-email-monstr@seznam.cz>
+Subject: [PATCH 40/60] microblaze_v4: headers for irq
+Date: Thu, 26 Jun 2008 14:30:09 +0200
+Message-Id: <1214483429-32360-41-git-send-email-monstr@seznam.cz>
+In-Reply-To: <1214483429-32360-40-git-send-email-monstr@seznam.cz>
 References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
 	<1214483429-32360-2-git-send-email-monstr@seznam.cz>
 	<1214483429-32360-3-git-send-email-monstr@seznam.cz>
@@ -51,10 +50,6 @@ References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
 	<1214483429-32360-38-git-send-email-monstr@seznam.cz>
 	<1214483429-32360-39-git-send-email-monstr@seznam.cz>
 	<1214483429-32360-40-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-41-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-42-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-43-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-44-git-send-email-monstr@seznam.cz>
 Cc: linux-arch@vger.kernel.org, alan@lxorguk.ukuu.org.uk,
 	Michal Simek <monstr@monstr.eu>, vapier.adi@gmail.com,
 	arnd@arndb.de, matthew@wil.cx, microblaze-uclinux@itee.uq.edu.au,
@@ -75,54 +70,18 @@ From: Michal Simek <monstr@monstr.eu>
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- include/asm-microblaze/clinkage.h   |   27 +++++++++++++++++++++++++++
- include/asm-microblaze/kmap_types.h |   29 +++++++++++++++++++++++++++++
- include/asm-microblaze/linkage.h    |   15 +++++++++++++++
- include/asm-microblaze/sections.h   |   21 +++++++++++++++++++++
- 4 files changed, 92 insertions(+), 0 deletions(-)
- create mode 100644 include/asm-microblaze/clinkage.h
- create mode 100644 include/asm-microblaze/kmap_types.h
- create mode 100644 include/asm-microblaze/linkage.h
- create mode 100644 include/asm-microblaze/sections.h
+ include/asm-microblaze/hardirq.h  |   29 +++++++++++++++++++++++++++++
+ include/asm-microblaze/irq_regs.h |    1 +
+ 2 files changed, 30 insertions(+), 0 deletions(-)
+ create mode 100644 include/asm-microblaze/hardirq.h
+ create mode 100644 include/asm-microblaze/hw_irq.h
+ create mode 100644 include/asm-microblaze/irq_regs.h
 
-diff --git a/include/asm-microblaze/clinkage.h b/include/asm-microblaze/clinkage.h
+diff --git a/include/asm-microblaze/hardirq.h b/include/asm-microblaze/hardirq.h
 new file mode 100644
-index 0000000..a2e09bd
+index 0000000..2aca035
 --- /dev/null
-+++ b/include/asm-microblaze/clinkage.h
-@@ -0,0 +1,27 @@
-+/*
-+ * Macros to reflect C symbol-naming conventions
-+ *
-+ * Copyright (C) 2003 John Williams <jwilliams@itee.uq.edu.au>
-+ * Copyright (C) 2001,2002 NEC Corporatione
-+ * Copyright (C) 2001,2002 Miles Bader <miles@gnu.org>
-+ *
-+ * This file is subject to the terms and conditions of the GNU General
-+ * Public License. See the file COPYING in the main directory of this
-+ * archive for more details.
-+ *
-+ * Written by Miles Bader <miles@gnu.org>
-+ * Microblaze port by John Williams
-+ */
-+
-+#ifndef _ASM_MICROBLAZE_CLINKAGE_H
-+#define _ASM_MICROBLAZE_CLINKAGE_H
-+
-+#define __ASSEMBLY__
-+
-+#include <linux/linkage.h>
-+
-+#define C_SYMBOL_NAME(name)	name
-+#define C_ENTRY(name)		.globl name; .align 4; name
-+#define C_END(name)
-+
-+#endif /* _ASM_MICROBLAZE_CLINKAGE_H */
-diff --git a/include/asm-microblaze/kmap_types.h b/include/asm-microblaze/kmap_types.h
-new file mode 100644
-index 0000000..4d7e222
---- /dev/null
-+++ b/include/asm-microblaze/kmap_types.h
++++ b/include/asm-microblaze/hardirq.h
 @@ -0,0 +1,29 @@
 +/*
 + * Copyright (C) 2006 Atmark Techno, Inc.
@@ -132,74 +91,36 @@ index 0000000..4d7e222
 + * for more details.
 + */
 +
-+#ifndef _ASM_MICROBLAZE_KMAP_TYPES_H
-+#define _ASM_MICROBLAZE_KMAP_TYPES_H
++#ifndef _ASM_MICROBLAZE_HARDIRQ_H
++#define _ASM_MICROBLAZE_HARDIRQ_H
 +
-+enum km_type {
-+	KM_BOUNCE_READ,
-+	KM_SKB_SUNRPC_DATA,
-+	KM_SKB_DATA_SOFTIRQ,
-+	KM_USER0,
-+	KM_USER1,
-+	KM_BIO_SRC_IRQ,
-+	KM_BIO_DST_IRQ,
-+	KM_PTE0,
-+	KM_PTE1,
-+	KM_IRQ0,
-+	KM_IRQ1,
-+	KM_SOFTIRQ0,
-+	KM_SOFTIRQ1,
-+	KM_TYPE_NR,
-+};
++#include <linux/cache.h>
++#include <linux/irq.h>
++#include <asm/irq.h>
++#include <asm/current.h>
++#include <asm/ptrace.h>
 +
-+#endif /* _ASM_MICROBLAZE_KMAP_TYPES_H */
-diff --git a/include/asm-microblaze/linkage.h b/include/asm-microblaze/linkage.h
++/* should be defined in each interrupt controller driver */
++extern unsigned int get_irq(struct pt_regs *regs);
++
++typedef struct {
++	unsigned int __softirq_pending;
++} ____cacheline_aligned irq_cpustat_t;
++
++void ack_bad_irq(unsigned int irq);
++
++#include <linux/irq_cpustat.h> /* Standard mappings for irq_cpustat_t above */
++
++#endif /* _ASM_MICROBLAZE_HARDIRQ_H */
+diff --git a/include/asm-microblaze/hw_irq.h b/include/asm-microblaze/hw_irq.h
 new file mode 100644
-index 0000000..3a8e36d
---- /dev/null
-+++ b/include/asm-microblaze/linkage.h
-@@ -0,0 +1,15 @@
-+/*
-+ * Copyright (C) 2006 Atmark Techno, Inc.
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License. See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ */
-+
-+#ifndef _ASM_MICROBLAZE_LINKAGE_H
-+#define _ASM_MICROBLAZE_LINKAGE_H
-+
-+#define __ALIGN		.align 4
-+#define __ALIGN_STR	".align 4"
-+
-+#endif /* _ASM_MICROBLAZE_LINKAGE_H */
-diff --git a/include/asm-microblaze/sections.h b/include/asm-microblaze/sections.h
+index 0000000..e69de29
+diff --git a/include/asm-microblaze/irq_regs.h b/include/asm-microblaze/irq_regs.h
 new file mode 100644
-index 0000000..d0c12fd
+index 0000000..3dd9c0b
 --- /dev/null
-+++ b/include/asm-microblaze/sections.h
-@@ -0,0 +1,21 @@
-+/*
-+ * Copyright (C) 2006 Atmark Techno, Inc.
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License. See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ */
-+
-+#ifndef _ASM_MICROBLAZE_SECTIONS_H
-+#define _ASM_MICROBLAZE_SECTIONS_H
-+
-+#include <asm-generic/sections.h>
-+
-+extern char _ssbss[], _esbss[];
-+extern unsigned long __ivt_start[], __ivt_end[];
-+
-+#ifdef CONFIG_MTD_UCLINUX
-+extern char *_ebss;
-+#endif
-+
-+#endif /* _ASM_MICROBLAZE_SECTIONS_H */
++++ b/include/asm-microblaze/irq_regs.h
+@@ -0,0 +1 @@
++#include <asm-generic/irq_regs.h>
 -- 
 1.5.4.GIT
