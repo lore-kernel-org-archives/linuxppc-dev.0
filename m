@@ -1,21 +1,30 @@
-Return-Path: <bunk@kernel.org>
-Received: from smtp4.pp.htv.fi (smtp4.pp.htv.fi [213.243.153.38])
-	by ozlabs.org (Postfix) with ESMTP id CFCABDE215
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jun 2008 05:42:13 +1000 (EST)
-Date: Thu, 26 Jun 2008 22:40:02 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Michal Simek <monstr@seznam.cz>
-Subject: Re: [PATCH 02/60] microblaze_v4: Makefiles for Microblaze cpu
-Message-ID: <20080626194002.GC22827@cs181140183.pp.htv.fi>
-References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-2-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-3-git-send-email-monstr@seznam.cz>
-	<20080626143623.GC30954@cs181140183.pp.htv.fi>
-	<4863E414.4090303@seznam.cz>
+Return-Path: <madrabbit@gmail.com>
+Received: from wf-out-1314.google.com (wf-out-1314.google.com [209.85.200.171])
+	by ozlabs.org (Postfix) with ESMTP id 78104DE22A
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jun 2008 05:43:22 +1000 (EST)
+Received: by wf-out-1314.google.com with SMTP id 24so160073wfg.15
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jun 2008 12:43:21 -0700 (PDT)
+Message-ID: <2c0942db0806261243g52edd45eo11ded19bb1f24004@mail.gmail.com>
+Date: Thu, 26 Jun 2008 12:43:20 -0700
+From: "Ray Lee" <ray-lk@madrabbit.org>
+Sender: madrabbit@gmail.com
+To: monstr@seznam.cz
+Subject: Re: [PATCH 08/60] microblaze_v4: exception handling
+In-Reply-To: <4863EBD9.1010601@seznam.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <4863E414.4090303@seznam.cz>
-Cc: linux-arch@vger.kernel.org, alan@lxorguk.ukuu.org.uk, vapier.adi@gmail.com,
+Content-Type: text/plain; charset=UTF-8
+References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-3-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-4-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-5-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-6-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-7-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-8-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-9-git-send-email-monstr@seznam.cz>
+	<2c0942db0806260935p51564a7et6517b39e9a6706dc@mail.gmail.com>
+	<4863EBD9.1010601@seznam.cz>
+Cc: linux-arch@vger.kernel.org, alan@lxorguk.ukuu.org.uk,
+	Michal Simek <monstr@monstr.eu>, vapier.adi@gmail.com,
 	arnd@arndb.de, matthew@wil.cx, microblaze-uclinux@itee.uq.edu.au,
 	linux-kernel@vger.kernel.org, drepper@redhat.com,
 	linuxppc-dev@ozlabs.org, will.newton@gmail.com, hpa@zytor.com,
@@ -29,60 +38,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jun 26, 2008 at 08:46:44PM +0200, Michal Simek wrote:
-> Adrian Bunk napsal(a):
-> > On Thu, Jun 26, 2008 at 02:29:31PM +0200, monstr@seznam.cz wrote:
-> >> ...
-> >> --- /dev/null
-> >> +++ b/arch/microblaze/Makefile
-> >> ...
-> >> +# Work out HW multipler support.  This is icky.
-> >> +# 1. Spartan2 has no HW multiplers.
-> >> +# 2. MicroBlaze v3.x always uses them, except in Spartan 2
-> >> +# 3. All other FPGa/CPU ver combos, we can trust the CONFIG_ settings
-> >> +ifeq (,$(findstring spartan2,$(CONFIG_XILINX_MICROBLAZE0_FAMILY)))
-> >> +  ifeq ($(CPU_MAJOR),3)
-> >> +    CPUFLAGS-1 += -mno-xl-soft-mul
-> >> +  else
-> >> +    # USE_HW_MUL can be 0, 1, or 2, defining a heirarchy of HW Mul support.
-> >> +    CPUFLAGS-$(subst 1,,$(CONFIG_XILINX_MICROBLAZE0_USE_HW_MUL)) += -mxl-multiply-high
-> >> +    CPUFLAGS-$(CONFIG_XILINX_MICROBLAZE0_USE_HW_MUL) += -mno-xl-soft-mul
-> >> +  endif
-> >> +endif
-> >> +CPUFLAGS-$(CONFIG_XILINX_MICROBLAZE0_USE_DIV) += -mno-xl-soft-div
-> >> +CPUFLAGS-$(CONFIG_XILINX_MICROBLAZE0_USE_BARREL) += -mxl-barrel-shift
-> >> +CPUFLAGS-$(CONFIG_XILINX_MICROBLAZE0_USE_PCMP) += -mxl-pattern-compare
-> >> +
-> >> +CPUFLAGS-1 += $(call cc-option,-mcpu=v$(CPU_VER))
-> >> +
-> >> +# The various CONFIG_XILINX cpu features options are integers 0/1/2...
-> >> +# rather than bools y/n
-> >> +CFLAGS += $(CPUFLAGS-1)
-> >> +CFLAGS += $(CPUFLAGS-2)
-> >> ...
-> > 
-> > Why are the options not bools?
-> > 
-> > cu
-> > Adrian
-> 
-> because CONFIG_XILINX_... are 0, 1 or 2 not only y, n.
+On Thu, Jun 26, 2008 at 12:19 PM, Michal Simek <monstr@seznam.cz> wrote:
+>> On Thu, Jun 26, 2008 at 5:29 AM,  <monstr@seznam.cz> wrote:
+>>> +ex_sw:
+>>> +       /* Get the destination register number into r5 */
+>>> +       lbui    r5, r0, ex_reg_op;
+>>> +       /* Form store_word jump table offset (sw_table + (8 * regnum)) */
+>>> +       la      r6, r0, sw_table;
+>>> +       add     r5, r5, r5;
+>>> +       add     r5, r5, r5;
+>>> +       add     r5, r5, r5;
+>>> +       add     r5, r5, r6;
+>>> +       bra     r5;
+>>
+>> Possibly stupid question: This is part of the unaligned store word
+>> exception handler, yes? Shouldn't the above add's be addk's to
+>> preserve the state of the carry register pre/post store?
+>
+> I don't think that addk is important. I have some tests for exception, I want to
+> cover full exception handling.
 
-I understood that.
-
-But _why_ are these options not bools?
-
-In most cases the order of gcc flags does not matter, and it is not 
-obvious for me why the order matters here.
-
-> M
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Okay. It doesn't match your other exception handlers, though, which is
+why I noticed it in the first place (they use addk).
