@@ -1,17 +1,22 @@
-Return-Path: <John.Linn@xilinx.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Subject: RE: [PATCH] powerpc/bootwrapper: Add documentation of boot wrapper
-	targets
-Date: Thu, 26 Jun 2008 07:35:55 -0600
-In-Reply-To: <20080625202104.30114.47902.stgit@trillian.secretlab.ca>
-References: <20080625202104.30114.47902.stgit@trillian.secretlab.ca>
-From: John Linn <John.Linn@xilinx.com>
-To: "Grant Likely" <grant.likely@secretlab.ca>,
-	"Stephen Neuendorffer" <stephenn@xilinx.com>, <linuxppc-dev@ozlabs.com>,
-	<paulus@samba.org>
-Message-ID: <20080626133557.C7BC1143804F@mail91-wa4.bigfish.com>
-Cc: petermendham@computing.dundee.ac.uk
+Return-Path: <monstr@seznam.cz>
+Received: from monstr.eu (238.225.broadband7.iol.cz [88.102.225.238])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 27CD2DF170
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jun 2008 23:38:25 +1000 (EST)
+From: monstr@seznam.cz
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 01/60] microblaze_v4: Kconfig patches
+Date: Thu, 26 Jun 2008 14:29:30 +0200
+Message-Id: <1214483429-32360-2-git-send-email-monstr@seznam.cz>
+In-Reply-To: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
+References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
+Cc: linux-arch@vger.kernel.org, alan@lxorguk.ukuu.org.uk,
+	Michal Simek <monstr@monstr.eu>, vapier.adi@gmail.com,
+	arnd@arndb.de, matthew@wil.cx, microblaze-uclinux@itee.uq.edu.au,
+	drepper@redhat.com, linuxppc-dev@ozlabs.org,
+	will.newton@gmail.com, hpa@zytor.com, John.Linn@xilinx.com,
+	john.williams@petalogix.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,228 +26,379 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Thanks Grant, that's a great start for helping us to better understand
-the bootwrapper.
+From: Michal Simek <monstr@monstr.eu>
 
-The wrapper is somewhat complex and hard to get your head around, or at
-least my head ;).
 
--- John
-
------Original Message-----
-From: Grant Likely [mailto:grant.likely@secretlab.ca] =
-
-Sent: Wednesday, June 25, 2008 2:21 PM
-To: John Linn; Stephen Neuendorffer; linuxppc-dev@ozlabs.com;
-paulus@samba.org
-Cc: petermendham@computing.dundee.ac.uk
-Subject: [PATCH] powerpc/bootwrapper: Add documentation of boot wrapper
-targets
-
-From: Grant Likely <grant.likely@secretlab.ca>
-
-There have been many questions on and off the mailing list about how
-exactly the bootwrapper is used for embedded targets.  Add some
-documentation and help text to try and clarify the system.
-
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
+ arch/microblaze/Kconfig                       |  157 +++++++++++++++++++++++++
+ arch/microblaze/Kconfig.debug                 |   39 ++++++
+ arch/microblaze/platform/Kconfig.platform     |   77 ++++++++++++
+ arch/microblaze/platform/generic/Kconfig.auto |   62 ++++++++++
+ 4 files changed, 335 insertions(+), 0 deletions(-)
+ create mode 100644 arch/microblaze/Kconfig
+ create mode 100644 arch/microblaze/Kconfig.debug
+ create mode 100644 arch/microblaze/platform/Kconfig.platform
+ create mode 100644 arch/microblaze/platform/generic/Kconfig.auto
 
- Documentation/powerpc/bootwrapper.txt |   78
-+++++++++++++++++++++++++++++++++
- arch/powerpc/Makefile                 |   15 ++++++
- arch/powerpc/boot/wrapper             |    4 ++
- 3 files changed, 96 insertions(+), 1 deletions(-)
-
-diff --git a/Documentation/powerpc/bootwrapper.txt
-b/Documentation/powerpc/bootwrapper.txt
+diff --git a/arch/microblaze/Kconfig b/arch/microblaze/Kconfig
 new file mode 100644
-index 0000000..8dcb560
+index 0000000..0e9545b
 --- /dev/null
-+++ b/Documentation/powerpc/bootwrapper.txt
-@@ -0,0 +1,78 @@
-+The PowerPC boot wrapper
-+------------------------
-+Copyright (C) Secret Lab Technologies Ltd.
++++ b/arch/microblaze/Kconfig
+@@ -0,0 +1,157 @@
++# For a description of the syntax of this configuration file,
++# see Documentation/kbuild/kconfig-language.txt.
 +
-+PowerPC image targets compresses and wraps the kernel image (vmlinux)
-with
-+a boot wrapper to make it usable by the system firmware.  There is no
-+standard PowerPC firmware interface, so the boot wrapper is designed to
-+be adaptable for each kind of image that needs to be built.
++mainmenu "Linux/Microblaze Kernel Configuration"
 +
-+The boot wrapper can be found in the arch/powerpc/boot/ directory.  The
-+Makefile in that directory has targets for all the available image
-types.
-+Currently, the following image targets exist:
++config MICROBLAZE
++	def_bool y
++	select HAVE_LMB
 +
-+   cuImage.%:		Backwards compatible uImage for older version of
-+			U-Boot (for versions that don't understand the
-device
-+			tree).  This image embeds a device tree blob
-inside
-+			the image.
-+   dtbImage.%:		Similar to zImage, except device tree blob is
-embedded
-+			inside the image.
-+   simpleImage.%:	Firmware independent compressed image that does
-not
-+			depend on any particular firmware interface and
-embeds
-+			a device tree blob.  This image can be loaded to
-any
-+			location in RAM and jumped to.  Firmware cannot
-pass
-+			any configuration data to the kernel with this
-image
-+			type and the kernel depends on the device tree
-to
-+			determine its console device.
-+   treeImage.%;		Image format for some versions of ppc4xx
-firmware (non
-+			U-Boot firmware).  This image embeds a device
-tree
-+			blob inside the image.
-+   uImage:		Native image format used by U-Boot.  The uImage
-target
-+			does not add any boot code.  It just wraps a
-compressed
-+			vmlinux in the uImage data structure.
-+   zImage.%:		Image usable by OpenFirmware.  Image expects
-firmware
-+			to provide the device tree using OpenFirmware
-+			interfaces.  Typically general purpose hardware
-uses
-+			this image format.
++config MMU
++	def_bool n
 +
-+Image types which embed a device tree blob (simpleImage, dtbImage,
-treeImage,
-+and cuImage) all generate the device tree blob from a file in the
-+arch/powerpc/boot/dts/ directory.  The Makefile selects the correct
-device
-+tree source based on the name of the target.  Therefore, if the kernel
-is
-+built with 'make treeImage.walnut simpleImage.virtex405-ml403', then
-the
-+build system will use arch/powerpc/boot/dts/walnut.dts to build
-+treeImage.walnut and arch/powerpc/boot/dts/virtex405-ml403.dts to build
-+the simpleImage.virtex405-ml403.
++config SWAP
++	def_bool n
 +
-+Two special targets called 'zImage' and 'zImage.initrd' also exist.
-These
-+targets build all the default images as selected by the kernel
-configuration.
-+Default images are selected by the boot wrapper Makefile
-+(arch/powerpc/boot/Makefile) by adding targets to the $image-y
-variable.  Look
-+at the Makefile to see which default image targets are available.
++config RWSEM_GENERIC_SPINLOCK
++	def_bool y
 +
-+How it is built
-+---------------
-+arch/powerpc is designed to support multiplatform kernels, which means
-+that a single vmlinux image can be booted on many different target
-boards.
-+It also means that the boot wrapper must be able to wrap for many kinds
-of
-+images on a single build.  The design decision was made to not use any
-+conditional compilation code (#ifdef, etc) in the boot wrapper source
-code.
-+All of the boot wrapper pieces are buildable at any time regardless of
-the
-+kernel configuration.  Building all the wrapper bits on every kernel
-build
-+also ensures that obscure parts of the wrapper are at the very least
-compile
-+tested in a large variety of environments.
++config RWSEM_XCHGADD_ALGORITHM
++	bool
 +
-+The wrapper is adapted for different image types at link time by
-linking in
-+just the wrapper bits that are appropriate for the image type.  The
-'wrapper'
-+script (found in arch/powerpc/boot/wrapper) is called by the Makefile
-and
-+is responsible for selecting the correct wrapper bits for the image
-type.
-+The arguments are well documented in the script's comment block, so
-they
-+are not repeated here.  However, it is worth mentioning that the script
-+uses the -p (platform) argument as the main method of deciding which
-wrapper
-+bits to compile in.  Look for the large 'case "$platform" in' block in
-the
-+middle of the script.  This is also the place where platform specific
-fixups
-+can be selected by changing the link order.
++config ARCH_HAS_ILOG2_U32
++	def_bool n
 +
-+In particular, care should be taken when working with cuImages.
-cuImage
-+wrapper bits are very board specific and care should be taken to make
-sure
-+the target you are trying to build is supported by the wrapper bits.
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index b7d4c4c..754c7eb 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -169,12 +169,25 @@ bootwrapper_install %.dtb:
- 	$(Q)$(MAKE) ARCH=3Dppc64 $(build)=3D$(boot) $(patsubst
-%,$(boot)/%,$@)
- =
-
- define archhelp
--  @echo '* zImage          - Compressed kernel image
-(arch/$(ARCH)/boot/zImage.*)'
-+  @echo '* zImage          - Build default images selected by kernel
-config'
-+  @echo '  zImage.*        - Compressed kernel image
-(arch/$(ARCH)/boot/zImage.*)'
-+  @echo '  uImage          - U-Book native image format'
-+  @echo '  cuImage.<dt>    - Backwards compatible U-Boot image for
-older'
-+  @echo '                    versions which do not support device
-trees'
-+  @echo '  dtbImage.<dt>   - zImage with an embedded device tree blob'
-+  @echo '  simpleImage.<dt> - Firmware independant image.'
-+  @echo '  treeImage.<dt>  - Support for older IBM 4xx firmware (not
-U-Boot)'
-   @echo '  install         - Install kernel using'
-   @echo '                    (your) ~/bin/installkernel or'
-   @echo '                    (distribution) /sbin/installkernel or'
-   @echo '                    install to $$(INSTALL_PATH) and run lilo'
-   @echo '  *_defconfig     - Select default config from
-arch/$(ARCH)/configs'
-+  @echo ''
-+  @echo '  Targets with <dt> embed a device tree blob inside the image'
-+  @echo '  These targets support board with firmware that does not'
-+  @echo '  support passing a device tree directly.  Replace <dt> with
-the'
-+  @echo '  name of a dts file from the arch/$(ARCH)/boot/dts/
-directory'
-+  @echo '  (minus the .dts extension).'
- endef
- =
-
- install:
-diff --git a/arch/powerpc/boot/wrapper b/arch/powerpc/boot/wrapper
-index d6c96d9..7cd4182 100755
---- a/arch/powerpc/boot/wrapper
-+++ b/arch/powerpc/boot/wrapper
-@@ -203,6 +203,10 @@ simpleboot-virtex405-*)
-     platformo=3D"$object/virtex405-head.o $object/simpleboot.o"
-     binary=3Dy
-     ;;
-+simpleboot-*)
-+    platformo=3D"$object/simpleboot.o"
-+    binary=3Dy
-+    ;;
- esac
- =
-
- vmz=3D"$tmpdir/`basename \"$kernel\"`.$ext"
-
-
-
-This email and any attachments are intended for the sole use of the named r=
-ecipient(s) and contain(s) confidential information that may be proprietary=
-, privileged or copyrighted under applicable law. If you are not the intend=
-ed recipient, do not read, copy, or forward this email message or any attac=
-hments. Delete this email message and any attachments immediately.
++config ARCH_HAS_ILOG2_U64
++	def_bool n
++
++config GENERIC_FIND_NEXT_BIT
++	def_bool y
++
++config GENERIC_HWEIGHT
++	def_bool y
++
++config GENERIC_HARDIRQS
++	def_bool y
++
++config GENERIC_IRQ_PROBE
++	def_bool y
++
++config GENERIC_CALIBRATE_DELAY
++	def_bool y
++
++config GENERIC_TIME
++	def_bool y
++
++config PCI
++	def_bool n
++
++config NO_DMA
++	def_bool y
++
++config GENERIC_CSUM
++	def_bool y
++
++config HZ
++	int
++	default 100
++
++config DEFCONFIG_LIST
++	string
++	default "arch/$ARCH/defconfig"
++
++source "init/Kconfig"
++
++source "arch/microblaze/platform/Kconfig.platform"
++
++menu "Processor type and features"
++
++config PREEMPT
++	bool "Preemptible Kernel"
++	help
++	  This option reduces the latency of the kernel when reacting to
++	  real-time or interactive events by allowing a low priority process to
++	  be preempted even if it is in kernel mode executing a system call.
++	  This allows applications to run more reliably even when the system is
++	  under load.
++
++	  Say Y here if you are building a kernel for a desktop, embedded
++	  or real-time system.  Say N if you are unsure.
++
++config PREEMPT_TIMES
++	bool "Collect preemption latency times"
++	depends on PREEMPT
++	help
++	  Allow collection for preemption latency times.
++
++config LARGE_ALLOCS
++	bool "Allow allocating large blocks (> 1MB) of memory"
++	help
++	  Allow the slab memory allocator to keep chains for very large
++	  memory sizes - up to 32MB. You may need this if your system has
++	  a lot of RAM, and you need to able to allocate very large
++	  contiguous chunks. If unsure, say N.
++
++config GENERIC_CLOCKEVENTS
++	bool "Clockevents - enable"
++	default n
++	help
++	  clock events
++
++comment "Boot options"
++
++config CMDLINE
++	string "Default kernel command string"
++	default ""
++	help
++	  On some architectures there is currently no way for the boot loader
++	  to pass arguments to the kernel. For these architectures, you should
++	  supply some command-line options at build time by entering them
++	  here.
++
++config CMDLINE_FORCE
++	bool "Force default kernel command string"
++	help
++	  Set this to have arguments from the default kernel command string
++	  override those passed by the boot loader.
++
++config OF
++	def_bool y
++
++config OF_DEVICE
++	def_bool y
++
++config PROC_DEVICETREE
++	bool "Support for device tree in /proc"
++	depends on PROC_FS
++	help
++	  This option adds a device-tree directory under /proc which contains
++	  an image of the device tree that the kernel copies from Open
++	  Firmware or other boot firmware. If unsure, say Y here.
++
++endmenu
++
++config APM_EMULATION
++	bool
++
++source "mm/Kconfig"
++
++menu "Exectuable file formats"
++
++source "fs/Kconfig.binfmt"
++
++endmenu
++
++source "net/Kconfig"
++
++source "drivers/Kconfig"
++
++source "fs/Kconfig"
++
++source "arch/microblaze/Kconfig.debug"
++
++source "security/Kconfig"
++
++source "crypto/Kconfig"
++
++source "lib/Kconfig"
+diff --git a/arch/microblaze/Kconfig.debug b/arch/microblaze/Kconfig.debug
+new file mode 100644
+index 0000000..611ef00
+--- /dev/null
++++ b/arch/microblaze/Kconfig.debug
+@@ -0,0 +1,39 @@
++# For a description of the syntax of this configuration file,
++# see Documentation/kbuild/kconfig-language.txt.
++
++menu "Kernel hacking"
++
++source "lib/Kconfig.debug"
++
++config EARLY_PRINTK
++	bool "Early printk function for kernel"
++	default n
++	help
++	  This option turns on/off early printk messages to console.
++
++config EARLY_PRINTK_UARTLITE_ADDRESS
++	hex "Physical address where UART Lite for early printk is mapped"
++	depends on EARLY_PRINTK
++	default "0x00000000"
++	help
++	  Please enter physical address where your uart lite is mapped.
++
++config HEART_BEAT
++	bool "Heart beat function for kernel"
++	default n
++	help
++	  This option turns on/off heart beat kernel functionality on selected
++	  GPIO address.
++
++config HEART_BEAT_ADDRESS
++	hex "Physical address for heart beat LED"
++	depends on HEART_BEAT
++	default "0x00000000"
++	help
++	  Please enter physical address GPIO LED.
++
++config DEBUG_BOOTMEM
++	depends on DEBUG_KERNEL
++	bool "Debug BOOTMEM initialization"
++
++endmenu
+diff --git a/arch/microblaze/platform/Kconfig.platform b/arch/microblaze/platform/Kconfig.platform
+new file mode 100644
+index 0000000..2789f92
+--- /dev/null
++++ b/arch/microblaze/platform/Kconfig.platform
+@@ -0,0 +1,77 @@
++# For a description of the syntax of this configuration file,
++# see Documentation/kbuild/kconfig-language.txt.
++#
++# Platform selection Kconfig menu for MicroBlaze targets
++#
++
++menu "Platform options"
++choice
++	prompt "Platform"
++	default PLATFORM_MICROBLAZE_AUTO
++	help
++	  Choose which hardware board/platform you are targeting.
++
++config PLATFORM_GENERIC
++	bool "Generic"
++	help
++	  Choose this option for the Generic platform.
++
++endchoice
++
++config SELFMOD
++	bool "Use self modified code for intc/timer"
++	depends on EXPERIMENTAL
++	default n
++	help
++	  This choice enables self-modified code for interrupt controller
++	  and timer.
++
++config SELFMOD_INTC
++	bool "Use self modified code for intc"
++	depends on SELFMOD
++	default y
++	help
++	  This choice enables self-modified code for interrupt controller.
++
++config SELFMOD_TIMER
++	bool "Use self modified code for timer"
++	depends on SELFMOD
++	default y
++	help
++	  This choice enables self-modified code for timer.
++
++config OPT_LIB_FUNCTION
++	bool "Optimalized lib function"
++	default y
++	help
++	  Allows turn on optimalized library function (memcpy and memmove).
++	  They are optimized by using word alignment. This will work
++	  fine if both source and destination are aligned on the same
++	  boundary. However, if they are aligned on different boundaries
++	  shifts will be necessary. This might result in bad performance
++	  on MicroBlaze systems without a barrel shifter.
++
++# This is still a bit broken - disabling for now JW 20070504
++config ALLOW_EDIT_AUTO
++	bool "Permit Display/edit of Kconfig.auto platform settings"
++	default n
++	help
++	  Allows the editing of auto-generated platform settings from
++	  the Kconfig.auto file. Obviously this does not change the
++	  underlying hardware, so be very careful if you go editing
++	  these settings.
++
++	  Also, if you enable this, and edit various Kconfig.auto
++	  settings, YOUR CHANGES WILL BE LOST if you then disable it
++	  again. You have been warned!
++
++	  If unsure, say no.
++
++comment "Automatic platform settings from Kconfig.auto"
++	depends on ALLOW_EDIT_AUTO
++
++if PLATFORM_GENERIC=y
++	source "arch/microblaze/platform/generic/Kconfig.auto"
++endif
++
++endmenu
+diff --git a/arch/microblaze/platform/generic/Kconfig.auto b/arch/microblaze/platform/generic/Kconfig.auto
+new file mode 100644
+index 0000000..bc1983e
+--- /dev/null
++++ b/arch/microblaze/platform/generic/Kconfig.auto
+@@ -0,0 +1,62 @@
++#
++# (C) Copyright 2007 Michal Simek
++#
++# Michal SIMEK <monstr@monstr.eu>
++#
++# This program is free software; you can redistribute it and/or
++# modify it under the terms of the GNU General Public License as
++# published by the Free Software Foundation; either version 2 of
++# the License, or (at your option) any later version.
++#
++# This program is distributed in the hope that it will be useful,
++# but WITHOUT ANY WARRANTY; without even the implied warranty of
++# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
++# GNU General Public License for more details.
++#
++# You should have received a copy of the GNU General Public License
++# along with this program; if not, write to the Free Software
++# Foundation, Inc., 59 Temple Place, Suite 330, Boston,
++# MA 02111-1307 USA
++#
++# CAUTION: This file is automatically generated by libgen.
++# Version: Xilinx EDK 9.2.02 EDK_Jm_SP2.3
++# Generate by U-BOOT v4.00.c
++#
++
++# Definitions for MICROBLAZE0
++comment "Definitions for MICROBLAZE0"
++      depends on ALLOW_EDIT_AUTO
++
++config KERNEL_BASE_ADDR
++	hex "Physical address where Linux Kernel is"
++	default "0x20000000"
++	help
++	  BASE Address for kernel
++
++config XILINX_MICROBLAZE0_FAMILY
++       string "Targetted FPGA family" if ALLOW_EDIT_AUTO
++       default spartan3e
++
++config XILINX_MICROBLAZE0_USE_MSR_INSTR
++       int "USE_MSR_INSTR" if ALLOW_EDIT_AUTO
++       default 1
++
++config XILINX_MICROBLAZE0_USE_BARREL
++       int "USE_BARREL range (0:1)" if ALLOW_EDIT_AUTO
++       default 1
++
++config XILINX_MICROBLAZE0_USE_DIV
++       int "USE_DIV range (0:1)" if ALLOW_EDIT_AUTO
++       default 1
++
++config XILINX_MICROBLAZE0_USE_HW_MULT
++       int "USE_HW_MULT range (0:1)" if ALLOW_EDIT_AUTO
++       default 2
++
++config XILINX_MICROBLAZE0_USE_FPU
++       int "USE_FPU range (0:1)" if ALLOW_EDIT_AUTO
++       default 2
++
++config XILINX_MICROBLAZE0_HW_VER
++       string "Core version number" if ALLOW_EDIT_AUTO
++       default 7.00.a
+-- 
+1.5.4.GIT
