@@ -2,15 +2,14 @@ Return-Path: <monstr@seznam.cz>
 Received: from monstr.eu (238.225.broadband7.iol.cz [88.102.225.238])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 828D5DE438
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jun 2008 22:36:20 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 098FDDE489
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jun 2008 22:36:32 +1000 (EST)
 From: monstr@seznam.cz
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 18/60] microblaze_v4: supported function for memory -
-	kernel/lib
-Date: Thu, 26 Jun 2008 14:29:47 +0200
-Message-Id: <1214483429-32360-19-git-send-email-monstr@seznam.cz>
-In-Reply-To: <1214483429-32360-18-git-send-email-monstr@seznam.cz>
+Subject: [PATCH 25/60] microblaze_v4: process and init task function
+Date: Thu, 26 Jun 2008 14:29:54 +0200
+Message-Id: <1214483429-32360-26-git-send-email-monstr@seznam.cz>
+In-Reply-To: <1214483429-32360-25-git-send-email-monstr@seznam.cz>
 References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
 	<1214483429-32360-2-git-send-email-monstr@seznam.cz>
 	<1214483429-32360-3-git-send-email-monstr@seznam.cz>
@@ -29,6 +28,13 @@ References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
 	<1214483429-32360-16-git-send-email-monstr@seznam.cz>
 	<1214483429-32360-17-git-send-email-monstr@seznam.cz>
 	<1214483429-32360-18-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-19-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-20-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-21-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-22-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-23-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-24-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-25-git-send-email-monstr@seznam.cz>
 Cc: linux-arch@vger.kernel.org, alan@lxorguk.ukuu.org.uk,
 	Michal Simek <monstr@monstr.eu>, vapier.adi@gmail.com,
 	arnd@arndb.de, matthew@wil.cx, microblaze-uclinux@itee.uq.edu.au,
@@ -49,443 +55,178 @@ From: Michal Simek <monstr@monstr.eu>
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- arch/microblaze/lib/memcpy.c  |  160 +++++++++++++++++++++++++++++++++++++
- arch/microblaze/lib/memmove.c |  174 +++++++++++++++++++++++++++++++++++++++++
- arch/microblaze/lib/memset.c  |   78 ++++++++++++++++++
- 3 files changed, 412 insertions(+), 0 deletions(-)
- create mode 100644 arch/microblaze/lib/memcpy.c
- create mode 100644 arch/microblaze/lib/memmove.c
- create mode 100644 arch/microblaze/lib/memset.c
+ arch/microblaze/kernel/init_task.c |   28 ++++++++
+ arch/microblaze/kernel/process.c   |  127 ++++++++++++++++++++++++++++++++++++
+ 2 files changed, 155 insertions(+), 0 deletions(-)
+ create mode 100644 arch/microblaze/kernel/init_task.c
+ create mode 100644 arch/microblaze/kernel/process.c
 
-diff --git a/arch/microblaze/lib/memcpy.c b/arch/microblaze/lib/memcpy.c
+diff --git a/arch/microblaze/kernel/init_task.c b/arch/microblaze/kernel/init_task.c
 new file mode 100644
-index 0000000..199668d
+index 0000000..c841b55
 --- /dev/null
-+++ b/arch/microblaze/lib/memcpy.c
-@@ -0,0 +1,160 @@
++++ b/arch/microblaze/kernel/init_task.c
+@@ -0,0 +1,28 @@
 +/*
-+ * Copyright (C) 2008 Michal Simek <monstr@monstr.eu>
++ * Copyright (C) 2006 Atmark Techno, Inc.
 + *
-+ * Reasonably optimised generic C-code for memcpy on Microblaze
-+ * This is generic C code to do efficient, alignment-aware memcpy.
-+ *
-+ * It is based on demo code originally Copyright 2001 by Intel Corp, taken from
-+ * http://www.embedded.com/showArticle.jhtml?articleID=19205567
-+ *
-+ * Attempts were made, unsuccesfully, to contact the original
-+ * author of this code (Michael Morrow, Intel).  Below is the original
-+ * copyright notice.
-+ *
-+ * This software has been developed by Intel Corporation.
-+ * Intel specifically disclaims all warranties, express or
-+ * implied, and all liability, including consequential and
-+ * other indirect damages, for the use of this program, including
-+ * liability for infringement of any proprietary rights,
-+ * and including the warranties of merchantability and fitness
-+ * for a particular purpose. Intel does not assume any
-+ * responsibility for and errors which may appear in this program
-+ * not any responsibility to update it.
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
 + */
 +
-+#include <linux/types.h>
-+#include <linux/stddef.h>
-+#include <linux/compiler.h>
 +#include <linux/module.h>
++#include <linux/sched.h>
++#include <linux/init_task.h>
++#include <linux/fs.h>
++#include <linux/mqueue.h>
 +
-+#include <asm/string.h>
++#include <asm/pgtable.h>
++
++static struct fs_struct init_fs = INIT_FS;
++static struct signal_struct init_signals = INIT_SIGNALS(init_signals);
++static struct sighand_struct init_sighand = INIT_SIGHAND(init_sighand);
++struct mm_struct init_mm = INIT_MM(init_mm);
++EXPORT_SYMBOL(init_mm);
++
++union thread_union init_thread_union
++	__attribute__((__section__(".data.init_task"))) =
++{ INIT_THREAD_INFO(init_task) };
++
++struct task_struct init_task = INIT_TASK(init_task);
++EXPORT_SYMBOL(init_task);
+diff --git a/arch/microblaze/kernel/process.c b/arch/microblaze/kernel/process.c
+new file mode 100644
+index 0000000..c8e6bef
+--- /dev/null
++++ b/arch/microblaze/kernel/process.c
+@@ -0,0 +1,127 @@
++/*
++ * Copyright (C) 2006 Atmark Techno, Inc.
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
++ */
++
++#include <linux/module.h>
++#include <linux/sched.h>
++#include <linux/pm.h>
++
 +#include <asm/system.h>
 +
-+#ifdef __HAVE_ARCH_MEMCPY
-+void *memcpy(void *v_dst, const void *v_src, __kernel_size_t c)
++/* FIXME */
++void show_regs(struct pt_regs *regs)
 +{
-+	const char *src = v_src;
-+	char *dst = v_dst;
-+#ifndef CONFIG_OPT_LIB_FUNCTION
-+	/* Simple, byte oriented memcpy. */
-+	while (c--)
-+		*dst++ = *src++;
-+
-+	return v_dst;
-+#else
-+	/* The following code tries to optimize the copy by using unsigned
-+	 * alignment. This will work fine if both source and destination are
-+	 * aligned on the same boundary. However, if they are aligned on
-+	 * different boundaries shifts will be necessary. This might result in
-+	 * bad performance on MicroBlaze systems without a barrel shifter.
-+	 */
-+	const uint32_t *i_src;
-+	uint32_t *i_dst;
-+
-+	if (c >= 4) {
-+		unsigned  value, buf_hold;
-+
-+		/* Align the dstination to a word boundry. */
-+		/* This is done in an endian independant manner. */
-+		switch ((unsigned long)dst & 3) {
-+		case 1:
-+			*dst++ = *src++;
-+			--c;
-+		case 2:
-+			*dst++ = *src++;
-+			--c;
-+		case 3:
-+			*dst++ = *src++;
-+			--c;
-+		}
-+
-+		i_dst = (void *)dst;
-+
-+		/* Choose a copy scheme based on the source */
-+		/* alignment relative to dstination. */
-+		switch ((unsigned long)src & 3) {
-+		case 0x0:	/* Both byte offsets are aligned */
-+			i_src  = (const void *)src;
-+
-+			for (; c >= 4; c -= 4)
-+				*i_dst++ = *i_src++;
-+
-+			src  = (const void *)i_src;
-+			break;
-+		case 0x1:	/* Unaligned - Off by 1 */
-+			/* Word align the source */
-+			i_src = (const void *) ((unsigned)src & ~3);
-+
-+			/* Load the holding buffer */
-+			buf_hold = *i_src++ << 8;
-+
-+			for (; c >= 4; c -= 4) {
-+				value = *i_src++;
-+				*i_dst++ = buf_hold | value >> 24;
-+				buf_hold = value << 8;
-+			}
-+
-+			/* Realign the source */
-+			src = (const void *)i_src;
-+			src -= 3;
-+			break;
-+		case 0x2:	/* Unaligned - Off by 2 */
-+			/* Word align the source */
-+			i_src = (const void *) ((unsigned)src & ~3);
-+
-+			/* Load the holding buffer */
-+			buf_hold = *i_src++ << 16;
-+
-+			for (; c >= 4; c -= 4) {
-+				value = *i_src++;
-+				*i_dst++ = buf_hold | value >> 16;
-+				buf_hold = value << 16;
-+			}
-+
-+			/* Realign the source */
-+			src = (const void *)i_src;
-+			src -= 2;
-+			break;
-+		case 0x3:	/* Unaligned - Off by 3 */
-+			/* Word align the source */
-+			i_src = (const void *) ((unsigned)src & ~3);
-+
-+			/* Load the holding buffer */
-+			buf_hold = *i_src++ << 24;
-+
-+			for (; c >= 4; c -= 4) {
-+				value = *i_src++;
-+				*i_dst++ = buf_hold | value >> 8;
-+				buf_hold = value << 24;
-+			}
-+
-+			/* Realign the source */
-+			src = (const void *)i_src;
-+			src -= 1;
-+			break;
-+		}
-+		dst = (void *)i_dst;
++	unsigned long *p;
++	int i;
++	printk(KERN_INFO "pc:\t0x%08lx\tsp:\t0x%08lx\n", regs->pc, regs->r1);
++	printk(KERN_INFO
++		"flags:\t0x%08lx\tear:\t0x%08lx\tesr:\t"
++		"0x%08lx\tfsr:\t0x%08lx\n",
++		regs->msr, regs->ear, regs->esr, regs->fsr);
++	printk(KERN_INFO
++		"r0:\t0x%08lx\tr1:\t0x%08lx\tr2:\t0x%08lx\tr3\t0x%08lx\n",
++		0L, regs->r1, regs->r2, regs->r3);
++	for (i = 4, p = &(regs->r4); i < 32; i += 4, p += 4) {
++		printk(KERN_INFO "r%i:\t0x%08lx\tr%i:\t0x%08lx\tr%i:\t"
++			"0x%08lx\tr%i:\t0x%08lx\n",
++			i, *p, i+1, *(p+1), i+2, *(p+2), i+3, *(p+3));
 +	}
-+
-+	/* Finish off any remaining bytes */
-+	/* simple fast copy, ... unless a cache boundry is crossed */
-+	switch (c) {
-+	case 3:
-+		*dst++ = *src++;
-+	case 2:
-+		*dst++ = *src++;
-+	case 1:
-+		*dst++ = *src++;
-+	}
-+
-+	return v_dst;
-+#endif
++	printk(KERN_INFO "\n");
 +}
-+EXPORT_SYMBOL(memcpy);
-+#endif /* __HAVE_ARCH_MEMCPY */
 +
++void (*pm_power_off)(void) = NULL;
++EXPORT_SYMBOL(pm_power_off);
 +
-+void *cacheable_memcpy(void *d, const void *s, __kernel_size_t c)
++void cpu_idle(void)
 +{
-+	return memcpy(d, s, c);
++	set_thread_flag(TIF_POLLING_NRFLAG);
++
++	while (1) {
++		while (!need_resched())
++			cpu_relax();
++
++		preempt_enable_no_resched();
++		schedule();
++		preempt_disable();
++	}
 +}
-diff --git a/arch/microblaze/lib/memmove.c b/arch/microblaze/lib/memmove.c
-new file mode 100644
-index 0000000..4db1ea6
---- /dev/null
-+++ b/arch/microblaze/lib/memmove.c
-@@ -0,0 +1,174 @@
++
++void flush_thread(void)
++{
++}
++
++int copy_thread(int nr, unsigned long clone_flags, unsigned long usp,
++		unsigned long unused,
++		struct task_struct *p, struct pt_regs *regs)
++{
++	struct pt_regs *childregs = task_pt_regs(p);
++	struct thread_info *ti = task_thread_info(p);
++
++	*childregs = *regs;
++
++	if (user_mode(regs))
++		childregs->r1 = usp;
++	else
++		childregs->r1 = ((unsigned long) ti) + THREAD_SIZE;
++
++	memset(&ti->cpu_context, 0, sizeof(struct cpu_context));
++	ti->cpu_context.r1 = (unsigned long)childregs;
++	ti->cpu_context.msr = (unsigned long)childregs->msr;
++	ti->cpu_context.r15 = (unsigned long)ret_from_fork - 8;
++
++	if (clone_flags & CLONE_SETTLS)
++		;/* FIXME: not sure what to do */
++
++	return 0;
++}
++
 +/*
-+ * Copyright (C) 2008 Michal Simek <monstr@monstr.eu>
-+ *
-+ * Reasonably optimised generic C-code for memcpy on Microblaze
-+ * This is generic C code to do efficient, alignment-aware memmove.
-+ *
-+ * It is based on demo code originally Copyright 2001 by Intel Corp, taken from
-+ * http://www.embedded.com/showArticle.jhtml?articleID=19205567
-+ *
-+ * Attempts were made, unsuccesfully, to contact the original
-+ * author of this code (Michael Morrow, Intel).  Below is the original
-+ * copyright notice.
-+ *
-+ * This software has been developed by Intel Corporation.
-+ * Intel specifically disclaims all warranties, express or
-+ * implied, and all liability, including consequential and
-+ * other indirect damages, for the use of this program, including
-+ * liability for infringement of any proprietary rights,
-+ * and including the warranties of merchantability and fitness
-+ * for a particular purpose. Intel does not assume any
-+ * responsibility for and errors which may appear in this program
-+ * not any responsibility to update it.
++ * Return saved PC of a blocked thread.
++ * FIXME this needs to be checked
 + */
-+
-+#include <linux/types.h>
-+#include <linux/stddef.h>
-+#include <linux/compiler.h>
-+#include <linux/module.h>
-+
-+#include <asm/string.h>
-+
-+#ifdef __HAVE_ARCH_MEMMOVE
-+void *memmove(void *v_dst, const void *v_src, __kernel_size_t c)
++unsigned long thread_saved_pc(struct task_struct *tsk)
 +{
-+	const char *src = v_src;
-+	char *dst = v_dst;
++	struct cpu_context *ctx =
++		&(((struct thread_info *)(tsk->stack))->cpu_context);
 +
-+#ifdef CONFIG_OPT_LIB_FUNCTION
-+	const uint32_t *i_src;
-+	uint32_t *i_dst;
-+#endif
-+
-+	if (!c)
-+		return v_dst;
-+
-+	/* Use memcpy when source is higher than dest */
-+	if (v_dst <= v_src)
-+		return memcpy(v_dst, v_src, c);
-+
-+#ifndef CONFIG_OPT_LIB_FUNCTION
-+	/* copy backwards, from end to beginning */
-+	src += c;
-+	dst += c;
-+
-+	/* Simple, byte oriented memmove. */
-+	while (c--)
-+		*--dst = *--src;
-+
-+	return v_dst;
-+#else
-+	/* The following code tries to optimize the copy by using unsigned
-+	 * alignment. This will work fine if both source and destination are
-+	 * aligned on the same boundary. However, if they are aligned on
-+	 * different boundaries shifts will be necessary. This might result in
-+	 * bad performance on MicroBlaze systems without a barrel shifter.
-+	 */
-+	/* FIXME this part needs more test */
-+	/* Do a descending copy - this is a bit trickier! */
-+	dst += c;
-+	src += c;
-+
-+	if (c >= 4) {
-+		unsigned  value, buf_hold;
-+
-+		/* Align the destination to a word boundry. */
-+		/* This is done in an endian independant manner. */
-+
-+		switch ((unsigned long)dst & 3) {
-+		case 3:
-+			*--dst = *--src;
-+			--c;
-+		case 2:
-+			*--dst = *--src;
-+			--c;
-+		case 1:
-+			*--dst = *--src;
-+			--c;
-+		}
-+
-+		i_dst = (void *)dst;
-+		/* Choose a copy scheme based on the source */
-+		/* alignment relative to dstination. */
-+		switch ((unsigned long)src & 3) {
-+		case 0x0:	/* Both byte offsets are aligned */
-+
-+			i_src  = (const void *)src;
-+
-+			for (; c >= 4; c -= 4)
-+				*--i_dst = *--i_src;
-+
-+			src  = (const void *)i_src;
-+			break;
-+		case 0x1:	/* Unaligned - Off by 1 */
-+			/* Word align the source */
-+			i_src = (const void *) (((unsigned)src + 4) & ~3);
-+
-+			/* Load the holding buffer */
-+			buf_hold = *--i_src >> 24;
-+
-+			for (; c >= 4; c -= 4) {
-+				value = *--i_src;
-+				*--i_dst = buf_hold << 8 | value;
-+				buf_hold = value >> 24;
-+			}
-+
-+			/* Realign the source */
-+			src = (const void *)i_src;
-+			src += 1;
-+			break;
-+		case 0x2:	/* Unaligned - Off by 2 */
-+			/* Word align the source */
-+			i_src = (const void *) (((unsigned)src + 4) & ~3);
-+
-+			/* Load the holding buffer */
-+			buf_hold = *--i_src >> 16;
-+
-+			for (; c >= 4; c -= 4) {
-+				value = *--i_src;
-+				*--i_dst = buf_hold << 16 | value;
-+				buf_hold = value >> 16;
-+			}
-+
-+			/* Realign the source */
-+			src = (const void *)i_src;
-+			src += 2;
-+			break;
-+		case 0x3:	/* Unaligned - Off by 3 */
-+			/* Word align the source */
-+			i_src = (const void *) (((unsigned)src + 4) & ~3);
-+
-+			/* Load the holding buffer */
-+			buf_hold = *--i_src >> 8;
-+
-+			for (; c >= 4; c -= 4) {
-+				value = *--i_src;
-+				*--i_dst = buf_hold << 24 | value;
-+				buf_hold = value >> 8;
-+			}
-+
-+			/* Realign the source */
-+			src = (const void *)i_src;
-+			src += 3;
-+			break;
-+		}
-+		dst = (void *)i_dst;
-+	}
-+
-+	/* simple fast copy, ... unless a cache boundry is crossed */
-+	/* Finish off any remaining bytes */
-+	switch (c) {
-+	case 4:
-+		*--dst = *--src;
-+	case 3:
-+		*--dst = *--src;
-+	case 2:
-+		*--dst = *--src;
-+	case 1:
-+		*--dst = *--src;
-+	}
-+	return v_dst;
-+#endif
++	/* Check whether the thread is blocked in resume() */
++	if (in_sched_functions(ctx->r15))
++		return ((unsigned long)ctx->r15);
++	else
++		return ctx->r14;
 +}
-+EXPORT_SYMBOL(memmove);
-+#endif /* __HAVE_ARCH_MEMMOVE */
-diff --git a/arch/microblaze/lib/memset.c b/arch/microblaze/lib/memset.c
-new file mode 100644
-index 0000000..6a2f4e5
---- /dev/null
-+++ b/arch/microblaze/lib/memset.c
-@@ -0,0 +1,78 @@
-+/*
-+ * Copyright (C) 2008 Michal Simek <monstr@monstr.eu>
-+ *
-+ * Reasonably optimised generic C-code for memset on Microblaze
-+ * This is generic C code to do efficient, alignment-aware memcpy.
-+ *
-+ * It is based on demo code originally Copyright 2001 by Intel Corp, taken from
-+ * http://www.embedded.com/showArticle.jhtml?articleID=19205567
-+ *
-+ * Attempts were made, unsuccesfully, to contact the original
-+ * author of this code (Michael Morrow, Intel).  Below is the original
-+ * copyright notice.
-+ *
-+ * This software has been developed by Intel Corporation.
-+ * Intel specifically disclaims all warranties, express or
-+ * implied, and all liability, including consequential and
-+ * other indirect damages, for the use of this program, including
-+ * liability for infringement of any proprietary rights,
-+ * and including the warranties of merchantability and fitness
-+ * for a particular purpose. Intel does not assume any
-+ * responsibility for and errors which may appear in this program
-+ * not any responsibility to update it.
-+ */
 +
-+#include <linux/types.h>
-+#include <linux/stddef.h>
-+#include <linux/compiler.h>
-+#include <linux/module.h>
-+
-+#include <asm/string.h>
-+
-+#ifdef __HAVE_ARCH_MEMSET
-+void *memset(void *v_src, int c, __kernel_size_t n)
++static void kernel_thread_helper(int (*fn)(void *), void *arg)
 +{
-+
-+	char *src = v_src;
-+#ifdef CONFIG_OPT_LIB_FUNCTION
-+	uint32_t *i_src;
-+	uint32_t w32;
-+#endif
-+	/* Truncate c to 8 bits */
-+	c = (c & 0xFF);
-+
-+#ifdef CONFIG_OPT_LIB_FUNCTION
-+	/* Make a repeating word out of it */
-+	w32 = c;
-+	w32 |= w32 << 8;
-+	w32 |= w32 << 16;
-+
-+	if (n >= 4) {
-+		/* Align the destination to a word boundary */
-+		/* This is done in an endian independant manner */
-+		switch ((unsigned) src & 3) {
-+		case 1: *src++ = c;
-+			--n;
-+		case 2: *src++ = c;
-+			--n;
-+		case 3: *src++ = c;
-+			--n;
-+		}
-+
-+		i_src  = (void *)src;
-+
-+		/* Do as many full-word copies as we can */
-+		for (; n >= 4; n -= 4)
-+			*i_src++ = w32;
-+
-+		src  = (void *)i_src;
-+	}
-+#endif
-+	/* Simple, byte oriented memset or the rest of count. */
-+	while (n--)
-+		*src++ = c;
-+
-+	return v_src;
++	fn(arg);
++	do_exit(-1);
 +}
-+EXPORT_SYMBOL(memset);
-+#endif /* __HAVE_ARCH_MEMSET */
++
++int kernel_thread(int (*fn)(void *), void *arg, unsigned long flags)
++{
++	struct pt_regs regs;
++	int ret;
++
++	memset(&regs, 0, sizeof(regs));
++	/* store them in non-volatile registers */
++	regs.r5 = (unsigned long)fn;
++	regs.r6 = (unsigned long)arg;
++	local_save_flags(regs.msr);
++	regs.pc = (unsigned long)kernel_thread_helper;
++	regs.kernel_mode = 1;
++
++	ret = do_fork(flags | CLONE_VM | CLONE_UNTRACED, 0,
++			&regs, 0, NULL, NULL);
++
++	return ret;
++}
++
++unsigned long get_wchan(struct task_struct *p)
++{
++/* TBD (used by procfs) */
++	return 0;
++}
 -- 
 1.5.4.GIT
