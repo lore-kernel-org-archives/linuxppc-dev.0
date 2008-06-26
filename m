@@ -2,14 +2,14 @@ Return-Path: <monstr@seznam.cz>
 Received: from monstr.eu (238.225.broadband7.iol.cz [88.102.225.238])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 529EDDE5C6
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jun 2008 22:36:58 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 361DBDE737
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jun 2008 22:37:00 +1000 (EST)
 From: monstr@seznam.cz
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 36/60] microblaze_v4: ioctl support
-Date: Thu, 26 Jun 2008 14:30:05 +0200
-Message-Id: <1214483429-32360-37-git-send-email-monstr@seznam.cz>
-In-Reply-To: <1214483429-32360-36-git-send-email-monstr@seznam.cz>
+Subject: [PATCH 35/60] microblaze_v4: definitions of types
+Date: Thu, 26 Jun 2008 14:30:04 +0200
+Message-Id: <1214483429-32360-36-git-send-email-monstr@seznam.cz>
+In-Reply-To: <1214483429-32360-35-git-send-email-monstr@seznam.cz>
 References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
 	<1214483429-32360-2-git-send-email-monstr@seznam.cz>
 	<1214483429-32360-3-git-send-email-monstr@seznam.cz>
@@ -45,7 +45,6 @@ References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
 	<1214483429-32360-33-git-send-email-monstr@seznam.cz>
 	<1214483429-32360-34-git-send-email-monstr@seznam.cz>
 	<1214483429-32360-35-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-36-git-send-email-monstr@seznam.cz>
 Cc: linux-arch@vger.kernel.org, alan@lxorguk.ukuu.org.uk,
 	Michal Simek <monstr@monstr.eu>, vapier.adi@gmail.com,
 	arnd@arndb.de, matthew@wil.cx, microblaze-uclinux@itee.uq.edu.au,
@@ -66,25 +65,18 @@ From: Michal Simek <monstr@monstr.eu>
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- include/asm-microblaze/ioctl.h  |    1 +
- include/asm-microblaze/ioctls.h |   91 +++++++++++++++++++++++++++++++++++++++
- 2 files changed, 92 insertions(+), 0 deletions(-)
- create mode 100644 include/asm-microblaze/ioctl.h
- create mode 100644 include/asm-microblaze/ioctls.h
+ include/asm-microblaze/posix_types.h |   69 ++++++++++++++++++++++++++++++++++
+ include/asm-microblaze/types.h       |   62 ++++++++++++++++++++++++++++++
+ 2 files changed, 131 insertions(+), 0 deletions(-)
+ create mode 100644 include/asm-microblaze/posix_types.h
+ create mode 100644 include/asm-microblaze/types.h
 
-diff --git a/include/asm-microblaze/ioctl.h b/include/asm-microblaze/ioctl.h
+diff --git a/include/asm-microblaze/posix_types.h b/include/asm-microblaze/posix_types.h
 new file mode 100644
-index 0000000..b279fe0
+index 0000000..4e6412d
 --- /dev/null
-+++ b/include/asm-microblaze/ioctl.h
-@@ -0,0 +1 @@
-+#include <asm-generic/ioctl.h>
-diff --git a/include/asm-microblaze/ioctls.h b/include/asm-microblaze/ioctls.h
-new file mode 100644
-index 0000000..76c963f
---- /dev/null
-+++ b/include/asm-microblaze/ioctls.h
-@@ -0,0 +1,91 @@
++++ b/include/asm-microblaze/posix_types.h
+@@ -0,0 +1,69 @@
 +/*
 + * Copyright (C) 2006 Atmark Techno, Inc.
 + *
@@ -93,88 +85,134 @@ index 0000000..76c963f
 + * for more details.
 + */
 +
-+#ifndef _ASM_MICROBLAZE_IOCTLS_H
-+#define _ASM_MICROBLAZE_IOCTLS_H
++#ifndef _ASM_MICROBLAZE_POSIX_TYPES_H
++#define _ASM_MICROBLAZE_POSIX_TYPES_H
 +
-+#include <asm/ioctl.h>
++/*
++ * This file is generally used by user-level software, so you need to
++ * be a little careful about namespace pollution etc. Also, we cannot
++ * assume GCC is being used.
++ */
 +
-+/* 0x54 is just a magic number to make these relatively unique ('T') */
++typedef unsigned long	__kernel_ino_t;
++typedef unsigned int	__kernel_mode_t;
++typedef unsigned int	__kernel_nlink_t;
++typedef long		__kernel_off_t;
++typedef int		__kernel_pid_t;
++typedef unsigned int	__kernel_ipc_pid_t;
++typedef unsigned int	__kernel_uid_t;
++typedef unsigned int	__kernel_gid_t;
++typedef unsigned int	__kernel_size_t;
++typedef int		__kernel_ssize_t;
++typedef int		__kernel_ptrdiff_t;
++typedef long		__kernel_time_t;
++typedef long		__kernel_suseconds_t;
++typedef long		__kernel_clock_t;
++typedef int		__kernel_timer_t;
++typedef int		__kernel_clockid_t;
++typedef int		__kernel_daddr_t;
++typedef char *		__kernel_caddr_t;
++typedef unsigned short	__kernel_uid16_t;
++typedef unsigned short	__kernel_gid16_t;
++typedef unsigned int	__kernel_uid32_t;
++typedef unsigned int	__kernel_gid32_t;
 +
-+#define TCGETS		0x5401
-+#define TCSETS		0x5402
-+#define TCSETSW		0x5403
-+#define TCSETSF		0x5404
-+#define TCGETA		0x5405
-+#define TCSETA		0x5406
-+#define TCSETAW		0x5407
-+#define TCSETAF		0x5408
-+#define TCSBRK		0x5409
-+#define TCXONC		0x540A
-+#define TCFLSH		0x540B
-+#define TIOCEXCL	0x540C
-+#define TIOCNXCL	0x540D
-+#define TIOCSCTTY	0x540E
-+#define TIOCGPGRP	0x540F
-+#define TIOCSPGRP	0x5410
-+#define TIOCOUTQ	0x5411
-+#define TIOCSTI		0x5412
-+#define TIOCGWINSZ	0x5413
-+#define TIOCSWINSZ	0x5414
-+#define TIOCMGET	0x5415
-+#define TIOCMBIS	0x5416
-+#define TIOCMBIC	0x5417
-+#define TIOCMSET	0x5418
-+#define TIOCGSOFTCAR	0x5419
-+#define TIOCSSOFTCAR	0x541A
-+#define FIONREAD	0x541B
-+#define TIOCINQ		FIONREAD
-+#define TIOCLINUX	0x541C
-+#define TIOCCONS	0x541D
-+#define TIOCGSERIAL	0x541E
-+#define TIOCSSERIAL	0x541F
-+#define TIOCPKT		0x5420
-+#define FIONBIO		0x5421
-+#define TIOCNOTTY	0x5422
-+#define TIOCSETD	0x5423
-+#define TIOCGETD	0x5424
-+#define TCSBRKP		0x5425 /* Needed for POSIX tcsendbreak() */
-+#define TIOCTTYGSTRUCT	0x5426 /* For debugging only */
-+#define TIOCSBRK	0x5427 /* BSD compatibility */
-+#define TIOCCBRK	0x5428 /* BSD compatibility */
-+#define TIOCGSID	0x5429 /* Return the session ID of FD */
-+/* Get Pty Number (of pty-mux device) */
-+#define TIOCGPTN	_IOR('T', 0x30, unsigned int)
-+#define TIOCSPTLCK	_IOW('T', 0x31, int) /* Lock/unlock Pty */
++#ifdef __GNUC__
++typedef long long	__kernel_loff_t;
++#endif
 +
-+#define FIONCLEX	0x5450 /* these numbers need to be adjusted. */
-+#define FIOCLEX		0x5451
-+#define FIOASYNC	0x5452
-+#define TIOCSERCONFIG	0x5453
-+#define TIOCSERGWILD	0x5454
-+#define TIOCSERSWILD	0x5455
-+#define TIOCGLCKTRMIOS	0x5456
-+#define TIOCSLCKTRMIOS	0x5457
-+#define TIOCSERGSTRUCT	0x5458 /* For debugging only */
-+#define TIOCSERGETLSR	0x5459 /* Get line status register */
-+#define TIOCSERGETMULTI 0x545A /* Get multiport config */
-+#define TIOCSERSETMULTI 0x545B /* Set multiport config */
++typedef struct {
++#if defined(__KERNEL__) || defined(__USE_ALL)
++	int	val[2];
++#else /* !defined(__KERNEL__) && !defined(__USE_ALL) */
++	int	__val[2];
++#endif /* !defined(__KERNEL__) && !defined(__USE_ALL) */
++} __kernel_fsid_t;
 +
-+#define TIOCMIWAIT	0x545C /* wait for a change on serial input line(s) */
-+#define TIOCGICOUNT	0x545D /* read serial port inline interrupt counts */
++#if defined(__KERNEL__) || !defined(__GLIBC__) || (__GLIBC__ < 2)
 +
-+#define	FIOQSIZE	0x545E
++#undef	__FD_SET
++#define	__FD_SET(d, set)	((set)->fds_bits[__FDELT(d)] |= __FDMASK(d))
 +
-+/* Used for packet mode */
-+#define TIOCPKT_DATA		0
-+#define TIOCPKT_FLUSHREAD	1
-+#define TIOCPKT_FLUSHWRITE	2
-+#define TIOCPKT_STOP		4
-+#define TIOCPKT_START		8
-+#define TIOCPKT_NOSTOP		16
-+#define TIOCPKT_DOSTOP		32
++#undef	__FD_CLR
++#define	__FD_CLR(d, set)	((set)->fds_bits[__FDELT(d)] &= ~__FDMASK(d))
 +
-+#define TIOCSER_TEMT	0x01 /* Transmitter physically empty */
++#undef	__FD_ISSET
++#define	__FD_ISSET(d, set)	(!!((set)->fds_bits[__FDELT(d)] & __FDMASK(d)))
 +
-+#endif /* _ASM_MICROBLAZE_IOCTLS_H */
++#undef	__FD_ZERO
++#define __FD_ZERO(fdsetp) (memset (fdsetp, 0, sizeof(*(fd_set *)fdsetp)))
++
++#endif /* defined(__KERNEL__) || !defined(__GLIBC__) || (__GLIBC__ < 2) */
++
++#endif /* _ASM_MICROBLAZE_POSIX_TYPES_H */
+diff --git a/include/asm-microblaze/types.h b/include/asm-microblaze/types.h
+new file mode 100644
+index 0000000..449ab8d
+--- /dev/null
++++ b/include/asm-microblaze/types.h
+@@ -0,0 +1,62 @@
++/*
++ * Copyright (C) Atmark Techno, Inc.
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
++ */
++
++#ifndef _ASM_MICROBLAZE_TYPES_H
++#define _ASM_MICROBLAZE_TYPES_H
++
++#ifndef __ASSEMBLY__
++
++typedef unsigned short umode_t;
++
++/*
++ * __xx is ok: it doesn't pollute the POSIX namespace. Use these in the
++ * header files exported to user space
++ */
++
++typedef __signed__ char __s8;
++typedef unsigned char __u8;
++
++typedef __signed__ short __s16;
++typedef unsigned short __u16;
++
++typedef __signed__ int __s32;
++typedef unsigned int __u32;
++
++#if defined(__GNUC__) && !defined(__STRICT_ANSI__)
++typedef __signed__ long long __s64;
++typedef unsigned long long __u64;
++#endif
++
++/*
++ * These aren't exported outside the kernel to avoid name space clashes
++ */
++#ifdef __KERNEL__
++
++typedef __signed__ char s8;
++typedef unsigned char u8;
++
++typedef __signed__ short s16;
++typedef unsigned short u16;
++
++typedef __signed__ int s32;
++typedef unsigned int u32;
++
++typedef __signed__ long long s64;
++typedef unsigned long long u64;
++
++
++#define BITS_PER_LONG 32
++
++/* Dma addresses are 32-bits wide. */
++
++typedef u32 dma_addr_t;
++
++#endif/* __KERNEL__ */
++#endif
++
++#endif /* _ASM_MICROBLAZE_TYPES_H */
 -- 
 1.5.4.GIT
