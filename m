@@ -2,14 +2,14 @@ Return-Path: <monstr@seznam.cz>
 Received: from monstr.eu (238.225.broadband7.iol.cz [88.102.225.238])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 05B81DF50E
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jun 2008 22:40:02 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 1338DDF77A
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jun 2008 22:40:25 +1000 (EST)
 From: monstr@seznam.cz
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 55/60] microblaze_v4: pci headers
-Date: Thu, 26 Jun 2008 14:30:24 +0200
-Message-Id: <1214483429-32360-56-git-send-email-monstr@seznam.cz>
-In-Reply-To: <1214483429-32360-55-git-send-email-monstr@seznam.cz>
+Subject: [PATCH 50/60] microblaze_v4: device.h param.h topology.h
+Date: Thu, 26 Jun 2008 14:30:19 +0200
+Message-Id: <1214483429-32360-51-git-send-email-monstr@seznam.cz>
+In-Reply-To: <1214483429-32360-50-git-send-email-monstr@seznam.cz>
 References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
 	<1214483429-32360-2-git-send-email-monstr@seznam.cz>
 	<1214483429-32360-3-git-send-email-monstr@seznam.cz>
@@ -60,11 +60,6 @@ References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
 	<1214483429-32360-48-git-send-email-monstr@seznam.cz>
 	<1214483429-32360-49-git-send-email-monstr@seznam.cz>
 	<1214483429-32360-50-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-51-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-52-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-53-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-54-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-55-git-send-email-monstr@seznam.cz>
 Cc: linux-arch@vger.kernel.org, alan@lxorguk.ukuu.org.uk,
 	Michal Simek <monstr@monstr.eu>, vapier.adi@gmail.com,
 	arnd@arndb.de, matthew@wil.cx, microblaze-uclinux@itee.uq.edu.au,
@@ -85,25 +80,94 @@ From: Michal Simek <monstr@monstr.eu>
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- include/asm-microblaze/pci-bridge.h |    1 +
- include/asm-microblaze/pci.h        |    1 +
- 2 files changed, 2 insertions(+), 0 deletions(-)
- create mode 100644 include/asm-microblaze/pci-bridge.h
- create mode 100644 include/asm-microblaze/pci.h
+ include/asm-generic/param.h       |   32 ++++++++++++++++++++++++++++++++
+ include/asm-microblaze/device.h   |   21 +++++++++++++++++++++
+ include/asm-microblaze/param.h    |    1 +
+ include/asm-microblaze/topology.h |    1 +
+ 4 files changed, 55 insertions(+), 0 deletions(-)
+ create mode 100644 include/asm-generic/param.h
+ create mode 100644 include/asm-microblaze/device.h
+ create mode 100644 include/asm-microblaze/param.h
+ create mode 100644 include/asm-microblaze/topology.h
 
-diff --git a/include/asm-microblaze/pci-bridge.h b/include/asm-microblaze/pci-bridge.h
+diff --git a/include/asm-generic/param.h b/include/asm-generic/param.h
 new file mode 100644
-index 0000000..7ad28f6
+index 0000000..b2ed486
 --- /dev/null
-+++ b/include/asm-microblaze/pci-bridge.h
-@@ -0,0 +1 @@
-+#include <linux/pci.h>
-diff --git a/include/asm-microblaze/pci.h b/include/asm-microblaze/pci.h
++++ b/include/asm-generic/param.h
+@@ -0,0 +1,32 @@
++/*
++ * include/asm-generic/param.h
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
++ *
++ * Copyright (C) 2006 Atmark Techno, Inc.
++ */
++
++#ifndef _ASM_GENERIC_PARAM_H
++#define _ASM_GENERIC_PARAM_H
++
++#ifdef __KERNEL__
++#define HZ		CONFIG_HZ	/* internal kernel timer frequency */
++#define USER_HZ		100		/* for user interfaces in "ticks" */
++#define CLOCKS_PER_SEC	(USER_HZ)	/* frequency at which times() counts */
++#endif /* __KERNEL__ */
++
++#ifndef HZ
++#define HZ 100
++#endif
++
++#define EXEC_PAGESIZE	4096
++
++#ifndef NOGROUP
++#define NOGROUP		(-1)
++#endif
++
++#define MAXHOSTNAMELEN	64	/* max length of hostname */
++
++#endif /* _ASM_GENERIC_PARAM_H */
+diff --git a/include/asm-microblaze/device.h b/include/asm-microblaze/device.h
 new file mode 100644
-index 0000000..469e80e
+index 0000000..c042830
 --- /dev/null
-+++ b/include/asm-microblaze/pci.h
++++ b/include/asm-microblaze/device.h
+@@ -0,0 +1,21 @@
++/*
++ * Arch specific extensions to struct device
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License v2. See the file "COPYING" in the main directory of this archive
++ * for more details.
++ */
++
++#ifndef _ASM_MICROBLAZE_DEVICE_H
++#define _ASM_MICROBLAZE_DEVICE_H
++
++struct device_node;
++
++struct dev_archdata {
++	/* Optional pointer to an OF device node */
++	struct device_node	*of_node;
++};
++
++#endif /* _ASM_MICROBLAZE_DEVICE_H */
++
++
+diff --git a/include/asm-microblaze/param.h b/include/asm-microblaze/param.h
+new file mode 100644
+index 0000000..965d454
+--- /dev/null
++++ b/include/asm-microblaze/param.h
 @@ -0,0 +1 @@
-+#include <asm/io.h>
++#include <asm-generic/param.h>
+diff --git a/include/asm-microblaze/topology.h b/include/asm-microblaze/topology.h
+new file mode 100644
+index 0000000..5428f33
+--- /dev/null
++++ b/include/asm-microblaze/topology.h
+@@ -0,0 +1 @@
++#include <asm-generic/topology.h>
 -- 
 1.5.4.GIT
