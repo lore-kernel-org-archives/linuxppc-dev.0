@@ -1,33 +1,26 @@
-Return-Path: <madrabbit@gmail.com>
-Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.236])
-	by ozlabs.org (Postfix) with ESMTP id 2410BDEC17
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jun 2008 02:35:23 +1000 (EST)
-Received: by rv-out-0506.google.com with SMTP id f6so92130rvb.9
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jun 2008 09:35:22 -0700 (PDT)
-Message-ID: <2c0942db0806260935p51564a7et6517b39e9a6706dc@mail.gmail.com>
-Date: Thu, 26 Jun 2008 09:35:22 -0700
-From: "Ray Lee" <ray-lk@madrabbit.org>
-Sender: madrabbit@gmail.com
-To: monstr@seznam.cz
-Subject: Re: [PATCH 08/60] microblaze_v4: exception handling
-In-Reply-To: <1214483429-32360-9-git-send-email-monstr@seznam.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id D238DDE152
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jun 2008 02:41:22 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: Adrian Bunk <bunk@kernel.org>
+Subject: Re: [PATCH 48/60] microblaze_v4: headers simple files - empty or
+	redirect to asm-generic
+Date: Thu, 26 Jun 2008 18:38:32 +0200
 References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-2-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-3-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-4-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-5-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-6-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-7-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-8-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-9-git-send-email-monstr@seznam.cz>
+	<200806261735.12738.arnd@arndb.de>
+	<20080626162118.GG22025@cs181140183.pp.htv.fi>
+In-Reply-To: <20080626162118.GG22025@cs181140183.pp.htv.fi>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Message-Id: <200806261838.33787.arnd@arndb.de>
 Cc: linux-arch@vger.kernel.org, alan@lxorguk.ukuu.org.uk,
 	Michal Simek <monstr@monstr.eu>, vapier.adi@gmail.com,
-	arnd@arndb.de, matthew@wil.cx, microblaze-uclinux@itee.uq.edu.au,
+	matthew@wil.cx, microblaze-uclinux@itee.uq.edu.au,
 	linux-kernel@vger.kernel.org, drepper@redhat.com,
 	linuxppc-dev@ozlabs.org, will.newton@gmail.com, hpa@zytor.com,
-	John.Linn@xilinx.com, john.williams@petalogix.com
+	monstr@seznam.cz, John.Linn@xilinx.com, john.williams@petalogix.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,18 +30,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jun 26, 2008 at 5:29 AM,  <monstr@seznam.cz> wrote:
-> +ex_sw:
-> +       /* Get the destination register number into r5 */
-> +       lbui    r5, r0, ex_reg_op;
-> +       /* Form store_word jump table offset (sw_table + (8 * regnum)) */
-> +       la      r6, r0, sw_table;
-> +       add     r5, r5, r5;
-> +       add     r5, r5, r5;
-> +       add     r5, r5, r5;
-> +       add     r5, r5, r6;
-> +       bra     r5;
+On Thursday 26 June 2008, Adrian Bunk wrote:
+> The comment could be nuked (as well as the #ifdef __KERNEL__), but for 
+> the one #define an asm-generic header would IMHO be overkill.
 
-Possibly stupid question: This is part of the unaligned store word
-exception handler, yes? Shouldn't the above add's be addk's to
-preserve the state of the carry register pre/post store?
+I agree that it doesn't technically make sense to have a one-line
+asm-generic header, but I like the idea of reducing the number of
+asm/*.h files that actually contain anything other that
+#include <asm-generic/$FILE.h>, mostly for documentation purposes.
+
+If we can eventually agree on a way to get rid of the requirement
+for explicit redirection, we can remove a larger number of source
+files completely.
+
+	Arnd <><
