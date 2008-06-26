@@ -2,18 +2,18 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id EE71ADDE25
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jun 2008 18:36:54 +1000 (EST)
-Message-Id: <FA8FD975-81D9-47B6-85C7-40DB2C600F04@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id 3F3CDDDF32
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jun 2008 18:58:16 +1000 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id m5Q8wBqH029489
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jun 2008 03:58:12 -0500
+Date: Thu, 26 Jun 2008 03:58:11 -0500 (CDT)
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Paul Mackerras <paulus@samba.org>
-In-Reply-To: <Pine.LNX.4.64.0806260249300.14932@blarg.am.freescale.net>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v924)
-Subject: Re: Please pull from 'powerpc-next' branch
-Date: Thu, 26 Jun 2008 03:36:45 -0500
-References: <Pine.LNX.4.64.0806260249300.14932@blarg.am.freescale.net>
-Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc/bootwrapper: Pad .dtb by default
+Message-ID: <Pine.LNX.4.64.0806260357520.15915@blarg.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,22 +23,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Since most bootloaders or wrappers tend to update or add some information
+to the .dtb they a handled they need some working space to do that in.
 
-On Jun 26, 2008, at 2:49 AM, Kumar Gala wrote:
+By default add 1K of padding via a default setting of DTS_FLAGS.
 
-> Please pull from 'powerpc-next' branch of
->
-> 	master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git  
-> powerpc-next
->
-> to receive the following updates:
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
+ arch/powerpc/boot/Makefile |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
+diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+index 25d9fb0..85b45f1 100644
+--- a/arch/powerpc/boot/Makefile
++++ b/arch/powerpc/boot/Makefile
+@@ -35,6 +35,8 @@ endif
 
-Added the kprobe patches:
+ BOOTCFLAGS	+= -I$(obj) -I$(srctree)/$(obj) -I$(srctree)/$(src)/libfdt
 
-Kumar Gala (2):
-       powerpc/kprobes: Some minor fixes
-       powerpc/booke: Add kprobes support for booke style processors
-
-
-- k
++DTS_FLAGS	?= -p 1024
++
+ $(obj)/4xx.o: BOOTCFLAGS += -mcpu=405
+ $(obj)/ebony.o: BOOTCFLAGS += -mcpu=405
+ $(obj)/cuboot-taishan.o: BOOTCFLAGS += -mcpu=405
+-- 
+1.5.5.1
