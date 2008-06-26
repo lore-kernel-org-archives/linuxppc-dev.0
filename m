@@ -2,14 +2,15 @@ Return-Path: <monstr@seznam.cz>
 Received: from monstr.eu (238.225.broadband7.iol.cz [88.102.225.238])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 20427DE9EA
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jun 2008 22:39:21 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 86D72DE5B0
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jun 2008 22:39:15 +1000 (EST)
 From: monstr@seznam.cz
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 51/60] microblaze_v4: pool.h socket.h
-Date: Thu, 26 Jun 2008 14:30:20 +0200
-Message-Id: <1214483429-32360-52-git-send-email-monstr@seznam.cz>
-In-Reply-To: <1214483429-32360-51-git-send-email-monstr@seznam.cz>
+Subject: [PATCH 48/60] microblaze_v4: headers simple files - empty or redirect
+	to asm-generic
+Date: Thu, 26 Jun 2008 14:30:17 +0200
+Message-Id: <1214483429-32360-49-git-send-email-monstr@seznam.cz>
+In-Reply-To: <1214483429-32360-48-git-send-email-monstr@seznam.cz>
 References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
 	<1214483429-32360-2-git-send-email-monstr@seznam.cz>
 	<1214483429-32360-3-git-send-email-monstr@seznam.cz>
@@ -58,9 +59,6 @@ References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
 	<1214483429-32360-46-git-send-email-monstr@seznam.cz>
 	<1214483429-32360-47-git-send-email-monstr@seznam.cz>
 	<1214483429-32360-48-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-49-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-50-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-51-git-send-email-monstr@seznam.cz>
 Cc: linux-arch@vger.kernel.org, alan@lxorguk.ukuu.org.uk,
 	Michal Simek <monstr@monstr.eu>, vapier.adi@gmail.com,
 	arnd@arndb.de, matthew@wil.cx, microblaze-uclinux@itee.uq.edu.au,
@@ -81,20 +79,97 @@ From: Michal Simek <monstr@monstr.eu>
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- include/asm-generic/socket.h    |   66 +++++++++++++++++++++++++++++++++++++++
- include/asm-microblaze/poll.h   |    1 +
- include/asm-microblaze/socket.h |    1 +
- 3 files changed, 68 insertions(+), 0 deletions(-)
- create mode 100644 include/asm-generic/socket.h
- create mode 100644 include/asm-microblaze/poll.h
- create mode 100644 include/asm-microblaze/socket.h
+ include/asm-microblaze/cputime.h           |    1 +
+ include/asm-microblaze/div64.h             |    1 +
+ include/asm-microblaze/emergency-restart.h |    1 +
+ include/asm-microblaze/errno.h             |    1 +
+ include/asm-microblaze/futex.h             |    1 +
+ include/asm-microblaze/kdebug.h            |    1 +
+ include/asm-microblaze/local.h             |    1 +
+ include/asm-microblaze/mutex.h             |    1 +
+ include/asm-microblaze/namei.h             |   22 ++++++++++++++++++++++
+ include/asm-microblaze/percpu.h            |    1 +
+ include/asm-microblaze/resource.h          |    1 +
+ 11 files changed, 32 insertions(+), 0 deletions(-)
+ create mode 100644 include/asm-microblaze/auxvec.h
+ create mode 100644 include/asm-microblaze/cputime.h
+ create mode 100644 include/asm-microblaze/div64.h
+ create mode 100644 include/asm-microblaze/emergency-restart.h
+ create mode 100644 include/asm-microblaze/errno.h
+ create mode 100644 include/asm-microblaze/futex.h
+ create mode 100644 include/asm-microblaze/kdebug.h
+ create mode 100644 include/asm-microblaze/local.h
+ create mode 100644 include/asm-microblaze/mutex.h
+ create mode 100644 include/asm-microblaze/namei.h
+ create mode 100644 include/asm-microblaze/percpu.h
+ create mode 100644 include/asm-microblaze/resource.h
+ create mode 100644 include/asm-microblaze/user.h
 
-diff --git a/include/asm-generic/socket.h b/include/asm-generic/socket.h
+diff --git a/include/asm-microblaze/auxvec.h b/include/asm-microblaze/auxvec.h
 new file mode 100644
-index 0000000..3f3430e
+index 0000000..e69de29
+diff --git a/include/asm-microblaze/cputime.h b/include/asm-microblaze/cputime.h
+new file mode 100644
+index 0000000..6d68ad7
 --- /dev/null
-+++ b/include/asm-generic/socket.h
-@@ -0,0 +1,66 @@
++++ b/include/asm-microblaze/cputime.h
+@@ -0,0 +1 @@
++#include <asm-generic/cputime.h>
+diff --git a/include/asm-microblaze/div64.h b/include/asm-microblaze/div64.h
+new file mode 100644
+index 0000000..6cd978c
+--- /dev/null
++++ b/include/asm-microblaze/div64.h
+@@ -0,0 +1 @@
++#include <asm-generic/div64.h>
+diff --git a/include/asm-microblaze/emergency-restart.h b/include/asm-microblaze/emergency-restart.h
+new file mode 100644
+index 0000000..3711bd9
+--- /dev/null
++++ b/include/asm-microblaze/emergency-restart.h
+@@ -0,0 +1 @@
++#include <asm-generic/emergency-restart.h>
+diff --git a/include/asm-microblaze/errno.h b/include/asm-microblaze/errno.h
+new file mode 100644
+index 0000000..4c82b50
+--- /dev/null
++++ b/include/asm-microblaze/errno.h
+@@ -0,0 +1 @@
++#include <asm-generic/errno.h>
+diff --git a/include/asm-microblaze/futex.h b/include/asm-microblaze/futex.h
+new file mode 100644
+index 0000000..0b74582
+--- /dev/null
++++ b/include/asm-microblaze/futex.h
+@@ -0,0 +1 @@
++#include <asm-generic/futex.h>
+diff --git a/include/asm-microblaze/kdebug.h b/include/asm-microblaze/kdebug.h
+new file mode 100644
+index 0000000..6ece1b0
+--- /dev/null
++++ b/include/asm-microblaze/kdebug.h
+@@ -0,0 +1 @@
++#include <asm-generic/kdebug.h>
+diff --git a/include/asm-microblaze/local.h b/include/asm-microblaze/local.h
+new file mode 100644
+index 0000000..c11c530
+--- /dev/null
++++ b/include/asm-microblaze/local.h
+@@ -0,0 +1 @@
++#include <asm-generic/local.h>
+diff --git a/include/asm-microblaze/mutex.h b/include/asm-microblaze/mutex.h
+new file mode 100644
+index 0000000..ff6101a
+--- /dev/null
++++ b/include/asm-microblaze/mutex.h
+@@ -0,0 +1 @@
++#include <asm-generic/mutex-dec.h>
+diff --git a/include/asm-microblaze/namei.h b/include/asm-microblaze/namei.h
+new file mode 100644
+index 0000000..61d60b8
+--- /dev/null
++++ b/include/asm-microblaze/namei.h
+@@ -0,0 +1,22 @@
 +/*
 + * Copyright (C) 2006 Atmark Techno, Inc.
 + *
@@ -103,77 +178,36 @@ index 0000000..3f3430e
 + * for more details.
 + */
 +
-+#ifndef _ASM_GENERIC_SOCKET_H
-+#define _ASM_GENERIC_SOCKET_H
++#ifndef _ASM_MICROBLAZE_NAMEI_H
++#define _ASM_MICROBLAZE_NAMEI_H
 +
-+#include <asm/sockios.h>
++#ifdef __KERNEL__
 +
-+/* For setsockoptions(2) */
-+#define SOL_SOCKET	1
++/* This dummy routine maybe changed to something useful
++ * for /usr/gnemul/ emulation stuff.
++ * Look at asm-sparc/namei.h for details.
++ */
++#define __emul_prefix() NULL
 +
-+#define SO_DEBUG	1
-+#define SO_REUSEADDR	2
-+#define SO_TYPE		3
-+#define SO_ERROR	4
-+#define SO_DONTROUTE	5
-+#define SO_BROADCAST	6
-+#define SO_SNDBUF	7
-+#define SO_RCVBUF	8
-+#define SO_SNDBUFFORCE	32
-+#define SO_RCVBUFFORCE	33
-+#define SO_KEEPALIVE	9
-+#define SO_OOBINLINE	10
-+#define SO_NO_CHECK	11
-+#define SO_PRIORITY	12
-+#define SO_LINGER	13
-+#define SO_BSDCOMPAT	14
-+/* To add :#define SO_REUSEPORT 15 */
-+#define SO_PASSCRED	16
-+#define SO_PEERCRED	17
-+#define SO_RCVLOWAT	18
-+#define SO_SNDLOWAT	19
-+#define SO_RCVTIMEO	20
-+#define SO_SNDTIMEO	21
++#endif /* __KERNEL__ */
 +
-+/* Security levels - as per NRL IPv6 - don't actually do anything */
-+#define SO_SECURITY_AUTHENTICATION		22
-+#define SO_SECURITY_ENCRYPTION_TRANSPORT	23
-+#define SO_SECURITY_ENCRYPTION_NETWORK		24
-+
-+#define SO_BINDTODEVICE	25
-+
-+/* Socket filtering */
-+#define SO_ATTACH_FILTER	26
-+#define SO_DETACH_FILTER	27
-+
-+#define SO_PEERNAME		28
-+#define SO_TIMESTAMP		29
-+#define SCM_TIMESTAMP		SO_TIMESTAMP
-+
-+#define SO_ACCEPTCONN		30
-+
-+#define SO_PEERSEC		31
-+#define SO_PASSSEC		34
-+
-+#define SO_TIMESTAMPNS		35
-+#define SCM_TIMESTAMPNS		SO_TIMESTAMPNS
-+
-+#define SO_MARK			36
-+
-+#endif /* _ASM_GENERIC_SOCKET_H */
-diff --git a/include/asm-microblaze/poll.h b/include/asm-microblaze/poll.h
++#endif /* _ASM_MICROBLAZE_NAMEI_H */
+diff --git a/include/asm-microblaze/percpu.h b/include/asm-microblaze/percpu.h
 new file mode 100644
-index 0000000..c98509d
+index 0000000..06a959d
 --- /dev/null
-+++ b/include/asm-microblaze/poll.h
++++ b/include/asm-microblaze/percpu.h
 @@ -0,0 +1 @@
-+#include <asm-generic/poll.h>
-diff --git a/include/asm-microblaze/socket.h b/include/asm-microblaze/socket.h
++#include <asm-generic/percpu.h>
+diff --git a/include/asm-microblaze/resource.h b/include/asm-microblaze/resource.h
 new file mode 100644
-index 0000000..6b71384
+index 0000000..04bc4db
 --- /dev/null
-+++ b/include/asm-microblaze/socket.h
++++ b/include/asm-microblaze/resource.h
 @@ -0,0 +1 @@
-+#include <asm-generic/socket.h>
++#include <asm-generic/resource.h>
+diff --git a/include/asm-microblaze/user.h b/include/asm-microblaze/user.h
+new file mode 100644
+index 0000000..e69de29
 -- 
 1.5.4.GIT
