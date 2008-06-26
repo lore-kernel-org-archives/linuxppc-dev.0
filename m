@@ -1,25 +1,21 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id 82950DEB33
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jun 2008 01:19:08 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: monstr@seznam.cz
-Subject: Re: [PATCH 33/60] microblaze_v4: includes SHM*, msgbuf
-Date: Thu, 26 Jun 2008 17:18:17 +0200
-References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-33-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-34-git-send-email-monstr@seznam.cz>
-In-Reply-To: <1214483429-32360-34-git-send-email-monstr@seznam.cz>
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id B05E6DEED9
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jun 2008 01:26:17 +1000 (EST)
+Date: Thu, 26 Jun 2008 10:25:28 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Jon Loeliger <jdl@freescale.com>, linuxppc-dev@ozlabs.org,
+	Benno Rice <benno@jeamland.net>
+Subject: Re: dtc: Address an assortment of portability problems
+Message-ID: <20080626152528.GA12256@loki.buserror.net>
+References: <20080626010349.GH308@yookeroo.seuss>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Message-Id: <200806261718.18006.arnd@arndb.de>
-Cc: linux-arch@vger.kernel.org, alan@lxorguk.ukuu.org.uk,
-	Michal Simek <monstr@monstr.eu>, vapier.adi@gmail.com,
-	matthew@wil.cx, microblaze-uclinux@itee.uq.edu.au,
-	linux-kernel@vger.kernel.org, drepper@redhat.com,
-	linuxppc-dev@ozlabs.org, will.newton@gmail.com, hpa@zytor.com,
-	John.Linn@xilinx.com, john.williams@petalogix.com
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080626010349.GH308@yookeroo.seuss>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,24 +25,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thursday 26 June 2008, monstr@seznam.cz wrote:
-> =A0include/asm-microblaze/msgbuf.h =A0 | =A0 39 +++++++++++++++++++++++++=
-+++
-> =A0include/asm-microblaze/shmbuf.h =A0 | =A0 50 +++++++++++++++++++++++++=
-++++++++++++
-> =A0include/asm-microblaze/shmparam.h | =A0 14 ++++++++++
-> =A03 files changed, 103 insertions(+), 0 deletions(-)
-> =A0create mode 100644 include/asm-microblaze/msgbuf.h
-> =A0create mode 100644 include/asm-microblaze/shmbuf.h
-> =A0create mode 100644 include/asm-microblaze/shmparam.h
->=20
+On Thu, Jun 26, 2008 at 11:03:49AM +1000, David Gibson wrote:
+> 	- the endian handling functions in libfdt_env.h, based on
+> endian.h and byteswap.h are replaced with some portable open-coded
+> versions.  Unfortunately, these result in fairly crappy code when
+> compiled, but as far as I can determine there doesn't seem to be any
+> POSIX, SUS or de facto standard way of determining endianness at
+> compile time, nor standard names for byteswapping functions.
 
-These files are ok, but IMHO they should be in asm-generic, since there
-are already many identical copies.
+Since device-tree and network byte order happen to be the same, we could use
+ntohl/htonl.
 
-While the implementation of these three, as well as ipcbuf.h and sembuf.h
-could be better optimized for endianess and word size differences, I have
-come to the conclusion that there is no point for them to really be
-different, and uClibc expects this exact layout by default anyway.
-
-	Arnd <><
+-Scott
