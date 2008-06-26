@@ -1,20 +1,19 @@
 Return-Path: <arnd@arndb.de>
 Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.174]) by ozlabs.org (Postfix) with ESMTP id 29295DE90F
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jun 2008 01:35:59 +1000 (EST)
+	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id CCA23DDFD6
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jun 2008 01:44:08 +1000 (EST)
 From: Arnd Bergmann <arnd@arndb.de>
 To: monstr@seznam.cz
-Subject: Re: [PATCH 48/60] microblaze_v4: headers simple files - empty or
-	redirect to asm-generic
-Date: Thu, 26 Jun 2008 17:35:11 +0200
+Subject: Re: [PATCH 52/60] microblaze_v4: fcntl.h sockios.h ucontext.h
+Date: Thu, 26 Jun 2008 17:43:09 +0200
 References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-48-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-49-git-send-email-monstr@seznam.cz>
-In-Reply-To: <1214483429-32360-49-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-52-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-53-git-send-email-monstr@seznam.cz>
+In-Reply-To: <1214483429-32360-53-git-send-email-monstr@seznam.cz>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-15"
-Message-Id: <200806261735.12738.arnd@arndb.de>
+Message-Id: <200806261743.10441.arnd@arndb.de>
 Cc: linux-arch@vger.kernel.org, alan@lxorguk.ukuu.org.uk,
 	Michal Simek <monstr@monstr.eu>, vapier.adi@gmail.com,
 	matthew@wil.cx, microblaze-uclinux@itee.uq.edu.au,
@@ -31,25 +30,22 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 On Thursday 26 June 2008, monstr@seznam.cz wrote:
-> +
-> +#ifndef _ASM_MICROBLAZE_NAMEI_H
-> +#define _ASM_MICROBLAZE_NAMEI_H
-> +
-> +#ifdef __KERNEL__
-> +
-> +/* This dummy routine maybe changed to something useful
-> + * for /usr/gnemul/ emulation stuff.
-> + * Look at asm-sparc/namei.h for details.
-> + */
-> +#define __emul_prefix() NULL
-> +
-> +#endif /* __KERNEL__ */
-> +
-> +#endif /* _ASM_MICROBLAZE_NAMEI_H */
+> =A0include/asm-generic/sockios.h =A0 =A0 | =A0 23 +++++++++++++++++++++++
+> =A0include/asm-generic/ucontext.h =A0 =A0| =A0 24 ++++++++++++++++++++++++
+> =A0include/asm-microblaze/fcntl.h =A0 =A0| =A0 =A01 +
+> =A0include/asm-microblaze/sockios.h =A0| =A0 23 +++++++++++++++++++++++
+> =A0include/asm-microblaze/ucontext.h | =A0 =A01 +
 
-Could you move this to asm-generic? Note that the comment is wrong,
-asm-sparc doesn't actually implement it any more, only ia64, mips and
-arm have an implementation that actually does something interesting
-here.
+The grouping of files seems rather arbitrary here. What would be really
+good here is if you had all the new asm-generic files as separate patches,
+i.e. as a series adding them independent of the microblaze patches so
+that the other arch maintainers could look at them and start using
+the same files, and then add all your trivial wrappers in a single
+patch.
+
+Also, the sockios file here looks like it should be in asm-generic.
+
+The contents of the files in this patch all look good, they are
+identical to the majority of the other architectures.
 
 	Arnd <><
