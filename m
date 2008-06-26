@@ -1,23 +1,17 @@
-Return-Path: <stephen.neuendorffer@xilinx.com>
-Received: from WA4EHSOBE003.bigfish.com (outbound-wa4.frontbridge.com
-	[216.32.181.16]) by ozlabs.org (Postfix) with ESMTP id 68532DDE1A
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jun 2008 06:18:17 +1000 (EST)
+Return-Path: <scottwood@freescale.com>
+Message-ID: <4863FA88.1010708@freescale.com>
+Date: Thu, 26 Jun 2008 15:22:32 -0500
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Subject: RE: [PATCH 12/60] microblaze_v4: Generic dts file for platforms
-Date: Thu, 26 Jun 2008 13:18:11 -0700
-In-Reply-To: <4863E68C.30802@seznam.cz>
-References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>	<1214483429-32360-2-git-send-email-monstr@seznam.cz>	<1214483429-32360-3-git-send-email-monstr@seznam.cz>	<1214483429-32360-4-git-send-email-monstr@seznam.cz>	<1214483429-32360-5-git-send-email-monstr@seznam.cz>	<1214483429-32360-6-git-send-email-monstr@seznam.cz>	<1214483429-32360-7-git-send-email-monstr@seznam.cz>	<1214483429-32360-8-git-send-email-monstr@seznam.cz>	<1214483429-32360-9-git-send-email-monstr@seznam.cz>	<1214483429-32360-10-git-send-email-monstr@seznam.cz>	<1214483429-32360-11-git-send-email-monstr@seznam.cz>	<1214483429-32360-12-git-send-email-monstr@seznam.cz>	<1214483429-32360-13-git-send-email-monstr@seznam.cz><4863B096.7020309@freescale.com>
-	<4863E68C.30802@seznam.cz>
-From: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
-To: <monstr@seznam.cz>,
-	"Jon Loeliger" <jdl@freescale.com>
-Message-ID: <20080626201813.9662411E0051@mail20-wa4.bigfish.com>
-Cc: linux-arch@vger.kernel.org, john.williams@petalogix.com, arnd@arndb.de,
-	vapier.adi@gmail.com, matthew@wil.cx,
-	microblaze-uclinux@itee.uq.edu.au, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, will.newton@gmail.com, hpa@zytor.com,
-	John Linn <linnj@xilinx.com>, drepper@redhat.com, alan@lxorguk.ukuu.org.uk
+To: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
+Subject: Re: [PATCH] powerpc/bootwrapper: Add documentation of
+	boot	wrappertargets
+References: <20080625202104.30114.47902.stgit@trillian.secretlab.ca>	<20080626164842.1D3AB1358053@mail15-sin.bigfish.com>	<1214507238.7698.3.camel@weaponx>
+	<20080626201643.D01221788058@mail223-wa4.bigfish.com>
+In-Reply-To: <20080626201643.D01221788058@mail223-wa4.bigfish.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: John Linn <linnj@xilinx.com>, paulus@samba.org, linuxppc-dev@ozlabs.com,
+	petermendham@computing.dundee.ac.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,133 +21,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Stephen Neuendorffer wrote:
+>> cuImage is for boards running an older U-Boot that does not understand
+>> device trees.
+> 
+> Forgive my ignorance here, but what specifically does this imply?  As
+> far as I can tell, generally speaking, some of the board-specific
+> information is passed into the boot wrapper, which then stuffs it into
+> the device tree.
 
-It's on my list of things to do, but I'm swamped with a few deadlines at
-the moment.
+It implies that the binary is in uImage format, targets older u-boot (as 
+opposed to some other bootloader entirely, which might be targeted with 
+a dtbImage -- see adder875, for example), and has a device tree embedded.
 
-Steve
+>> uImage is for device-tree aware U-Boot versions
+> 
+> And this differs from above because it gets a device tree passed in,
+> which uboot has already stuffed correctly.
 
-> -----Original Message-----
-> From: linuxppc-dev-bounces+stephen.neuendorffer=3Dxilinx.com@ozlabs.org
-[mailto:linuxppc-dev-
-> bounces+stephen.neuendorffer=3Dxilinx.com@ozlabs.org] On Behalf Of
-Michal Simek
-> Sent: Thursday, June 26, 2008 11:57 AM
-> To: Jon Loeliger
-> Cc: linux-arch@vger.kernel.org; alan@lxorguk.ukuu.org.uk;
-arnd@arndb.de; vapier.adi@gmail.com;
-> matthew@wil.cx; microblaze-uclinux@itee.uq.edu.au;
-linux-kernel@vger.kernel.org; drepper@redhat.com;
-> linuxppc-dev@ozlabs.org; will.newton@gmail.com; hpa@zytor.com; John
-Linn; john.williams@petalogix.com
-> Subject: Re: [PATCH 12/60] microblaze_v4: Generic dts file for
-platforms
-> =
+Yes.
 
-> OK. We have to change fdt generator with Steve.
-> =
+>> dtbImage is used for boards that can take an ELF zImage, but still
+> need
+>> a dtb provided.
+>>
+>> simpleImage, not sure here.
+> 
+> So both of these are elfs...  but how do they differ?  Is it only in how
+> the right head.s file gets picked up?
 
-> Steve: can you look at it?
-> =
+Neither is necessarily an ELF.  The only simpleboot target I see is a 
+flat binary, as are some of the dtbImage targets (adder875, ep88xc, 
+ep405, etc).  simpleboot is more of a platform than an image type; it's 
+a platform that assumes nothing about the firmware that loaded it, and 
+gets all information from the embedded device tree.
 
-> M
-> =
-
-> =
-
-> > monstr@seznam.cz wrote:
-> >> From: Michal Simek <monstr@monstr.eu>
-> >>
-> >>
-> >> Signed-off-by: Michal Simek <monstr@monstr.eu>
-> >> ---
-> >>  arch/microblaze/platform/generic/system.dts |  300
-> >> +++++++++++++++++++++++++++
-> >>  1 files changed, 300 insertions(+), 0 deletions(-)
-> >>  create mode 100644 arch/microblaze/platform/generic/system.dts
-> >>
-> >> diff --git a/arch/microblaze/platform/generic/system.dts
-> >> b/arch/microblaze/platform/generic/system.dts
-> >> new file mode 100644
-> >> index 0000000..724a037
-> >> --- /dev/null
-> >> +++ b/arch/microblaze/platform/generic/system.dts
-> >> @@ -0,0 +1,300 @@
-> >> +/*
-> >> + * (C) Copyright 2007-2008 Xilinx, Inc.
-> >> + * (C) Copyright 2007-2008 Michal Simek
-> >> + *
-> >> + * Michal SIMEK <monstr@monstr.eu>
-> >> + *
-> >> + * This program is free software; you can redistribute it and/or
-> >> + * modify it under the terms of the GNU General Public License as
-> >> + * published by the Free Software Foundation; either version 2 of
-> >> + * the License, or (at your option) any later version.
-> >> + *
-> >> + * This program is distributed in the hope that it will be useful,
-> >> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> >> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-> >> + * GNU General Public License for more details.
-> >> + *
-> >> + * You should have received a copy of the GNU General Public
-License
-> >> + * along with this program; if not, write to the Free Software
-> >> + * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
-> >> + * MA 02111-1307 USA
-> >> + *
-> >> + * CAUTION: This file is automatically generated by libgen.
-> >> + * Version: Xilinx EDK 9.2.02 EDK_Jm_SP2.3
-> >> + * Generate by FDT v1.00.a
-> >> + */
-> >> +
-> >> +/ {
-> >> +    #address-cells =3D <1>;
-> >> +    #size-cells =3D <1>;
-> >> +    compatible =3D "xlnx,microblaze";
-> >> +    model =3D "testing";
-> >> +    DDR_SDRAM_32Mx16: memory@20000000 {
-> >> +        device_type =3D "memory";
-> >> +        reg =3D < 20000000 2000000 >;
-> >> +    } ;
-> >> +    chosen {
-> >> +        bootargs =3D "console=3DttyUL0,115200 loglevel=3D15";
-> >> +        linux,stdout-path =3D "/plb@0/serial@40100000";
-> >> +    } ;
-> >> +    cpus {
-> >> +        #address-cells =3D <1>;
-> >> +        #cpus =3D <1>;
-> >> +        #size-cells =3D <0>;
-> >> +        microblaze_0: cpu@0 {
-> >> +            clock-frequency =3D <2faf080>;
-> >
-> >
-> > This should really be using the /dts-v1/ format now.
-> >
-> > Thanks,
-> > jdl
-> >
-> > _______________________________________________
-> > Linuxppc-dev mailing list
-> > Linuxppc-dev@ozlabs.org
-> > https://ozlabs.org/mailman/listinfo/linuxppc-dev
-> >
-> >
-> >
-------------------------------------------------------------------------
-> >
-> >
-> > No virus found in this incoming message.
-> > Checked by AVG.
-> > Version: 8.0.101 / Virus Database: 270.4.1/1519 - Release Date:
-25.6.2008 04:13
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
-
-
-This email and any attachments are intended for the sole use of the named r=
-ecipient(s) and contain(s) confidential information that may be proprietary=
-, privileged or copyrighted under applicable law. If you are not the intend=
-ed recipient, do not read, copy, or forward this email message or any attac=
-hments. Delete this email message and any attachments immediately.
+-Scott
