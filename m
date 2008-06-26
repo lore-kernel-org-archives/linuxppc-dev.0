@@ -1,17 +1,26 @@
-Return-Path: <seema.pm@gmail.com>
-Received: from wf-out-1314.google.com (wf-out-1314.google.com [209.85.200.174])
-	by ozlabs.org (Postfix) with ESMTP id 78A67DE027
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jun 2008 07:53:25 +1000 (EST)
-Received: by wf-out-1314.google.com with SMTP id 24so205371wfg.15
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jun 2008 14:53:24 -0700 (PDT)
-Message-ID: <4e69a5150806261453n1196b5b8va61e330ea57bb00e@mail.gmail.com>
-Date: Thu, 26 Jun 2008 14:53:24 -0700
-From: "SEEMA pm" <seema.pm@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Subject: issue with kgdb on ppc
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id 3164ADDF00
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jun 2008 08:09:28 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH 48/60] microblaze_v4: headers simple files - empty or
+	redirect to asm-generic
+Date: Fri, 27 Jun 2008 00:09:11 +0200
+References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
+	<200806261838.33787.arnd@arndb.de> <4863D87F.5060103@zytor.com>
+In-Reply-To: <4863D87F.5060103@zytor.com>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_8667_16878721.1214517204372"
+Content-Type: text/plain;
+  charset="utf-8"
+Message-Id: <200806270009.12378.arnd@arndb.de>
+Cc: linux-arch@vger.kernel.org, alan@lxorguk.ukuu.org.uk,
+	Adrian Bunk <bunk@kernel.org>, vapier.adi@gmail.com,
+	matthew@wil.cx, microblaze-uclinux@itee.uq.edu.au,
+	linux-kernel@vger.kernel.org, drepper@redhat.com,
+	linuxppc-dev@ozlabs.org, will.newton@gmail.com,
+	Michal Simek <monstr@monstr.eu>, monstr@seznam.cz,
+	John.Linn@xilinx.com, john.williams@petalogix.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,54 +30,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-------=_Part_8667_16878721.1214517204372
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Thursday 26 June 2008, H. Peter Anvin wrote:
+> 
+> The sanest way to do that would probably be something along the lines of:
+> 
+> -> Change include/asm-xxx to arch/xxx/include/asm
 
-Hello
+Sam Ravnborg is already working on this part.
 
-I'm trying to get kgdb working on a mpc8540 based target machine. I took the
-latest patches which are for 2.6.13(mine is 2.6.11) and build and made
-changes to config by enabling :
-- Compile the kernel with debug info
-- KGDB: kernel debugging with remote gdb
-- KGDB: Console messages through gdb
-- Method for KGDB communication (KGDB: On ethernet - in kernel)
+> -> Create arch/generic
+> -> Make sure arch/xxx/include/asm and arch/generic/include/asm are both 
+> in the include path, in that order.
+> 
+> That would also get rid of the symlink.
 
-I also added bootargs through uboot as:
-kgdboe=6443@10.110.1.2/,6442@10.110.1.31/00:0F:1F:6E:F3:30 kgdbwait
+It requires two more steps:
 
-Now, I'm getting the messages:
-netconsole: not configured, aborting
-kgdboe: eth0 doesn't support polling, aborting.
-kgdboe: netpoll_setup failed kgdboe failed
+- change all remaining users of #include <asm-generic/*.h> to include
+that file with the new name, e.g. #include <generic/asm/foo.h> if we
+have it in the right path.
+- change the way 'make headers_install' works so that the files get
+installed to the right location in $PREFIX/include/asm/ instead of
+$PREFIX/include/asm-generic/ for each header that does not exist
+in arch/foo/include/asm.
 
-And after some lines;
+These changes are probably somewhat controversial, and the first
+one is much more invasive than the patches that Sam has, so I'd
+not want to do them at the same time.
 
-kgdb: Defering I/O setup to kernel module.
-kgdb: Waiting for connection from remote gdb...
-But then it goes to load ramdisk.
+> On the other hand, the redirection isn't all that bad.
 
-Can someone please provide some help on this
+Agreed. I just have the hope that someone comes up with the magical
+solution for this problem that makes it a lot nicer than the suggestions
+so far or the current way of doing it ;-)
 
-thanks
-
-------=_Part_8667_16878721.1214517204372
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-Hello<br><br>I&#39;m
-trying to get kgdb working on a mpc8540 based target machine. I took
-the latest patches which are for 2.6.13(mine is 2.6.11) and build and
-made changes to config by enabling :<br>
-- Compile the kernel with debug info<br>- KGDB: kernel debugging with remote gdb <br>- KGDB: Console messages through gdb<br>- Method for KGDB communication (KGDB: On ethernet - in kernel)<br><br>I also added bootargs through uboot as:<br>
-
-kgdboe=<a href="http://6443@10.110.1.2/,6442@10.110.1.31/00:0F:1F:6E:F3:30" target="_blank">6443@10.110.1.2/,6442@10.110.1.31/00:0F:1F:6E:F3:30</a> kgdbwait<br><br>Now, I&#39;m getting the messages:<br>netconsole: not configured, aborting<br>
-
-kgdboe: eth0 doesn&#39;t support polling, aborting.<br>kgdboe: netpoll_setup failed kgdboe failed<br>&nbsp;<br>And after some lines;<br><br>kgdb: Defering I/O setup to kernel module.<br>kgdb: Waiting for connection from remote gdb...<br>
-
-But then it goes to load ramdisk.<br><br>Can someone please provide some help on this<br><br>thanks<br><br><br>
-
-------=_Part_8667_16878721.1214517204372--
+	Arnd <><
