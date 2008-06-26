@@ -1,24 +1,26 @@
 Return-Path: <arnd@arndb.de>
 Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.171]) by ozlabs.org (Postfix) with ESMTP id 4D9D5DDFDC
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jun 2008 08:34:45 +1000 (EST)
+	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id 6DD67DDED7
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jun 2008 09:24:09 +1000 (EST)
 From: Arnd Bergmann <arnd@arndb.de>
-To: monstr@seznam.cz
-Subject: Re: [PATCH 58/60] microblaze_v4: sys_microblaze.c
-Date: Fri, 27 Jun 2008 00:34:23 +0200
+To: Adrian Bunk <bunk@kernel.org>
+Subject: Re: [PATCH 48/60] microblaze_v4: headers simple files - empty or
+	redirect to asm-generic
+Date: Fri, 27 Jun 2008 01:23:05 +0200
 References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
-	<200806261748.30698.arnd@arndb.de> <4863E8F2.5080608@seznam.cz>
-In-Reply-To: <4863E8F2.5080608@seznam.cz>
+	<200806261838.33787.arnd@arndb.de>
+	<20080626180530.GA22827@cs181140183.pp.htv.fi>
+In-Reply-To: <20080626180530.GA22827@cs181140183.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-2"
-Message-Id: <200806270034.24455.arnd@arndb.de>
+  charset="utf-8"
+Message-Id: <200806270123.06669.arnd@arndb.de>
 Cc: linux-arch@vger.kernel.org, alan@lxorguk.ukuu.org.uk,
 	Michal Simek <monstr@monstr.eu>, vapier.adi@gmail.com,
 	matthew@wil.cx, microblaze-uclinux@itee.uq.edu.au,
 	linux-kernel@vger.kernel.org, drepper@redhat.com,
 	linuxppc-dev@ozlabs.org, will.newton@gmail.com, hpa@zytor.com,
-	John.Linn@xilinx.com, john.williams@petalogix.com
+	monstr@seznam.cz, John.Linn@xilinx.com, john.williams@petalogix.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,76 +30,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thursday 26 June 2008, Michal Simek wrote:
-> 
-> >> +
-> >> +/*
-> >> + * sys_ipc() is the de-multiplexer for the SysV IPC calls..
-> >> + *
-> >> + * This is really horribly ugly.
-> >> + */
-> > 
-> > If it's so horribly ugly, don't do it this way ;-)
-> 
-> :-) this is not my part of code. I'll remove it with syscall changes.
+On Thursday 26 June 2008, Adrian Bunk wrote:
+> Honestly, I do not completely like your approach of getting the 
+> microblaze port submitter to create the asm-generic files - I would 
+> personally prefer if the microblaze port would look exactly like all 
+> other ports and the (reasonable) changes you have in mind were not
+> being discussed and done as part of the submission of a new port.
 
-Yes, I was aware of that. I believe the comment was initially done in
-order to prevent people from copying it to new architectures, but it
-never worked.
+But it works really well this way ;-). My point is that a new port
+should look just like all the other ports should have looked as
+well, not like they did. When it comes to the ABI, you
+cannot make incompatible changes after it's merged, so IMHO all
+ABI defining headers should go to asm-generic if possible.
 
-> >> +int
-> >> +sys_ipc(uint call, int first, int second, int third, void *ptr, long fifth)
-> >> +{
-> >> +	int version, ret;
-> >> +
-> >> +	version = call >> 16; /* hack for backward compatibility */
-> >> +	call &= 0xffff;
-> > 
-> > Backwards compatibility with what?
-> 
-> I don't know.
-> John: I suppose this is your comment.
+Since there doesn't seem to be anyone investing work into moving the
+files there (I started it before, but got bored before submitting
+them all myself), the point of adding a new architecture is exactly
+the right one for putting the file to asm-generic. For Michal, there
+is no difference between putting the file into asm-generic or
+asm-microblaze, other than that he has to change his existing
+patch once, but in return he gets fewer files to maintain afterwards.
 
-No, it was a trick question, this is also copied from i386. It was meant
-for the iBCS2 compatibility layer that provides support for running
-Unix binaries from the late 80s, but never quite made it into the Linux
-kernel.
+The fundamental principle here is: if you want your code to get in,
+do it in a way that makes your own code cleaner by making it cleaner
+for everyone else as well.
+The result is that more people look at the code, and that Michal's
+name gets more widely known, so the next time he needs something
+from another developer, he's more likely to get heard because
+you think of him as the person that did all the useful work on
+the asm-generic files.
 
-> >> +unsigned long sys_mmap2(unsigned long addr, size_t len,
-> >> +			unsigned long prot, unsigned long flags,
-> >> +			unsigned long fd, unsigned long pgoff)
-> >> +{
-> >> +	return do_mmap2(addr, len, prot, flags, fd, pgoff);
-> >> +}
-> >> +
-> >> +unsigned long sys_mmap(unsigned long addr, size_t len,
-> >> +			unsigned long prot, unsigned long flags,
-> >> +			unsigned long fd, off_t offset)
-> >> +{
-> >> +	int err = -EINVAL;
-> >> +
-> >> +	if (offset & ~PAGE_MASK) {
-> >> +		printk(KERN_INFO "no pagemask in mmap\r\n");
-> >> +		goto out;
-> >> +	}
-> >> +
-> >> +	err = do_mmap2(addr, len, prot, flags, fd, offset >> PAGE_SHIFT);
-> >> +out:
-> >> +	return err;
-> >> +}
-> > 
-> > Which mmap is uClibc really using? I suppose you only need mmap2, even for
-> > compatibility with any binary ever built for microblaze.
-> 
-> I don't know. Microblaze should be compiled with uClibc and glibc. In case you
-> need mmap2 for uClibc and mmap for glibc it is ok.
+> After all, it won't matter whether we'll unify resp. remove
+> 22 or 23 files.
 
-I looked at uClibc again and found that you probably need both for compatibility
-and functionality, same as for other calls that can take either an off_t or
-a loff_t. Only if you changed the libc/sysdeps/linux/microblaze/mmap.c code,
-you could get rid of sys_mmap(). I don't think you need to worry about glibc
-at this point, because as I understand it the old port is broken anyway
-and it's easier to do a new microblaze glibc port from scratch than trying
-to update it to the latest glibc version...
+That wasn't my idea. The logic was that if one more file exists
+in asm-generic that can be removed from the architectures,
+we get 22 more files to remove without anyone having to look
+at the big picture. When microblaze is in, I can compile a list
+with asm-generic files that can be used to replace the architecture
+specific files, so the arch maintainers can decide on their own
+whether to clean their own stuff up or not.
+
+With namei.h, I may have gone too far to request moving it
+to asm-generic as part of the microblaze merge, because it's
+not an ABI header, but I think it's a step in the right direction
+anyway, and I may put it there myself if I ever get to do
+my "how to port Linux to a new architecture the right way" paper.
 
 	Arnd <><
