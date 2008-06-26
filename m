@@ -1,26 +1,32 @@
-Return-Path: <stephen.neuendorffer@xilinx.com>
-Received: from VA3EHSOBE002.bigfish.com (outbound-va3.frontbridge.com
-	[216.32.180.16]) by ozlabs.org (Postfix) with ESMTP id 0C6AADDFF6
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jun 2008 06:27:36 +1000 (EST)
+Return-Path: <monstr@seznam.cz>
+Received: from mxl.seznam.cz (mxl.seznam.cz [77.75.72.44])
+	by ozlabs.org (Postfix) with ESMTP id BF902DDEF4
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jun 2008 07:04:44 +1000 (EST)
+Message-ID: <486404C3.10301@seznam.cz>
+Date: Thu, 26 Jun 2008 23:06:11 +0200
+From: Michal Simek <monstr@seznam.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Subject: RE: Microblaze init port v4
-Date: Thu, 26 Jun 2008 13:27:29 -0700
-In-Reply-To: <20080626194301.GD22827@cs181140183.pp.htv.fi>
-References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
-	<20080626150121.GB22025@cs181140183.pp.htv.fi>
-	<4863E4FD.6040803@seznam.cz>
-	<20080626194301.GD22827@cs181140183.pp.htv.fi>
-From: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
-To: "Adrian Bunk" <bunk@kernel.org>,
-	"Michal Simek" <monstr@seznam.cz>
-Message-ID: <20080626202730.CEE063C0061@mail98-va3.bigfish.com>
+To: Ray Lee <ray-lk@madrabbit.org>
+Subject: Re: [PATCH 08/60] microblaze_v4: exception handling
+References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>	
+	<1214483429-32360-3-git-send-email-monstr@seznam.cz>	
+	<1214483429-32360-4-git-send-email-monstr@seznam.cz>	
+	<1214483429-32360-5-git-send-email-monstr@seznam.cz>	
+	<1214483429-32360-6-git-send-email-monstr@seznam.cz>	
+	<1214483429-32360-7-git-send-email-monstr@seznam.cz>	
+	<1214483429-32360-8-git-send-email-monstr@seznam.cz>	
+	<1214483429-32360-9-git-send-email-monstr@seznam.cz>	
+	<2c0942db0806260935p51564a7et6517b39e9a6706dc@mail.gmail.com>	
+	<4863EBD9.1010601@seznam.cz>
+	<2c0942db0806261243g52edd45eo11ded19bb1f24004@mail.gmail.com>
+In-Reply-To: <2c0942db0806261243g52edd45eo11ded19bb1f24004@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
 Cc: linux-arch@vger.kernel.org, alan@lxorguk.ukuu.org.uk, vapier.adi@gmail.com,
 	arnd@arndb.de, matthew@wil.cx, microblaze-uclinux@itee.uq.edu.au,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	will.newton@gmail.com, hpa@zytor.com,
-	John Linn <linnj@xilinx.com>, drepper@redhat.com,
-	john.williams@petalogix.com
+	linux-kernel@vger.kernel.org, drepper@redhat.com,
+	linuxppc-dev@ozlabs.org, will.newton@gmail.com, hpa@zytor.com,
+	monstr@seznam.cz, John.Linn@xilinx.com, john.williams@petalogix.com
+Reply-To: monstr@seznam.cz
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,84 +36,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Ray Lee napsal(a):
+> On Thu, Jun 26, 2008 at 12:19 PM, Michal Simek <monstr@seznam.cz> wrote:
+>>> On Thu, Jun 26, 2008 at 5:29 AM,  <monstr@seznam.cz> wrote:
+>>>> +ex_sw:
+>>>> +       /* Get the destination register number into r5 */
+>>>> +       lbui    r5, r0, ex_reg_op;
+>>>> +       /* Form store_word jump table offset (sw_table + (8 * regnum)) */
+>>>> +       la      r6, r0, sw_table;
+>>>> +       add     r5, r5, r5;
+>>>> +       add     r5, r5, r5;
+>>>> +       add     r5, r5, r5;
+>>>> +       add     r5, r5, r6;
+>>>> +       bra     r5;
+>>> Possibly stupid question: This is part of the unaligned store word
+>>> exception handler, yes? Shouldn't the above add's be addk's to
+>>> preserve the state of the carry register pre/post store?
+>> I don't think that addk is important. I have some tests for exception, I want to
+>> cover full exception handling.
+> 
+> Okay. It doesn't match your other exception handlers, though, which is
+> why I noticed it in the first place (they use addk).
 
-We're looking at putting a microblaze toolchain on git.xilinx.com, which
-will be slightly easier than grabbing all of petalinux, if people just
-want to compile test it.  =
+thanks for notice. I'll keep in my mind when I test it.
 
-
-At the moment, we would very much like to push the microblaze
-architecture code to the gcc mainline.  I believe the main barrier is
-that we don't have someone with the bandwidth to interact with the gcc
-community at the moment, although hiring someone to work on it may be in
-the works. (Anyone interested?)
-
-Steve
-
-> -----Original Message-----
-> From: Adrian Bunk [mailto:bunk@kernel.org]
-> Sent: Thursday, June 26, 2008 12:43 PM
-> To: Michal Simek
-> Cc: linux-kernel@vger.kernel.org; arnd@arndb.de;
-linux-arch@vger.kernel.org; Stephen Neuendorffer;
-> John Linn; john.williams@petalogix.com; matthew@wil.cx;
-will.newton@gmail.com; drepper@redhat.com;
-> microblaze-uclinux@itee.uq.edu.au; grant.likely@secretlab.ca;
-linuxppc-dev@ozlabs.org;
-> vapier.adi@gmail.com; alan@lxorguk.ukuu.org.uk; hpa@zytor.com
-> Subject: Re: Microblaze init port v4
-> =
-
-> On Thu, Jun 26, 2008 at 08:50:37PM +0200, Michal Simek wrote:
-> > Hi Adrian,
-> >
-> > > On Thu, Jun 26, 2008 at 02:29:29PM +0200, monstr@seznam.cz wrote:
-> > >> Hi everybody,
-> > >>
-> > >> current linux version is 2.6.26-rc8 and I think this is the right
-time
-> > >> to send latest patches againts rc8 for Microblaze CPU.
-> > >> ...
-> > >
-> > > Thanks for your work on getting the architecture included.
-> > >
-> > > I have two questions:
-> > >
-> > > Where can I find a toolchain for compiling a Microblaze kernel?
-> > I personally use petalogix toolchain from www.petalogix.com.
-> >
-> > > What is the status of Microblaze support in upstream binutils and
-gcc?
-> >
-> > I don't have any information about. We will discuss with John
-Williams and guys
-> > from Xilinx
-> > what we can do for it.
-> =
-
-> Thanks!
-> =
-
-> > M
-> =
-
-> cu
-> Adrian
-> =
-
-> --
-> =
-
->        "Is there not promise of rain?" Ling Tan asked suddenly out
->         of the darkness. There had been need of rain for many days.
->        "Only a promise," Lao Er said.
->                                        Pearl S. Buck - Dragon Seed
-> =
-
-
-
-This email and any attachments are intended for the sole use of the named r=
-ecipient(s) and contain(s) confidential information that may be proprietary=
-, privileged or copyrighted under applicable law. If you are not the intend=
-ed recipient, do not read, copy, or forward this email message or any attac=
-hments. Delete this email message and any attachments immediately.
+M
