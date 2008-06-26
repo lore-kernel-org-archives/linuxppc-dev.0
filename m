@@ -2,14 +2,14 @@ Return-Path: <monstr@seznam.cz>
 Received: from monstr.eu (238.225.broadband7.iol.cz [88.102.225.238])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 7D050DE932
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jun 2008 22:39:53 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 4CBF0DE923
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jun 2008 22:39:58 +1000 (EST)
 From: monstr@seznam.cz
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 45/60] microblaze_v4: stats headers
-Date: Thu, 26 Jun 2008 14:30:14 +0200
-Message-Id: <1214483429-32360-46-git-send-email-monstr@seznam.cz>
-In-Reply-To: <1214483429-32360-45-git-send-email-monstr@seznam.cz>
+Subject: [PATCH 56/60] microblaze_v4: IPC headers
+Date: Thu, 26 Jun 2008 14:30:25 +0200
+Message-Id: <1214483429-32360-57-git-send-email-monstr@seznam.cz>
+In-Reply-To: <1214483429-32360-56-git-send-email-monstr@seznam.cz>
 References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
 	<1214483429-32360-2-git-send-email-monstr@seznam.cz>
 	<1214483429-32360-3-git-send-email-monstr@seznam.cz>
@@ -55,6 +55,17 @@ References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
 	<1214483429-32360-43-git-send-email-monstr@seznam.cz>
 	<1214483429-32360-44-git-send-email-monstr@seznam.cz>
 	<1214483429-32360-45-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-46-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-47-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-48-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-49-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-50-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-51-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-52-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-53-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-54-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-55-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-56-git-send-email-monstr@seznam.cz>
 Cc: linux-arch@vger.kernel.org, alan@lxorguk.ukuu.org.uk,
 	Michal Simek <monstr@monstr.eu>, vapier.adi@gmail.com,
 	arnd@arndb.de, matthew@wil.cx, microblaze-uclinux@itee.uq.edu.au,
@@ -75,97 +86,60 @@ From: Michal Simek <monstr@monstr.eu>
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- include/asm-microblaze/stat.h   |   73 +++++++++++++++++++++++++++++++++++++++
- include/asm-microblaze/statfs.h |    1 +
- 2 files changed, 74 insertions(+), 0 deletions(-)
- create mode 100644 include/asm-microblaze/stat.h
- create mode 100644 include/asm-microblaze/statfs.h
+ include/asm-microblaze/ipc.h    |    1 +
+ include/asm-microblaze/ipcbuf.h |   36 ++++++++++++++++++++++++++++++++++++
+ 2 files changed, 37 insertions(+), 0 deletions(-)
+ create mode 100644 include/asm-microblaze/ipc.h
+ create mode 100644 include/asm-microblaze/ipcbuf.h
 
-diff --git a/include/asm-microblaze/stat.h b/include/asm-microblaze/stat.h
+diff --git a/include/asm-microblaze/ipc.h b/include/asm-microblaze/ipc.h
 new file mode 100644
-index 0000000..9767b11
+index 0000000..a46e3d9
 --- /dev/null
-+++ b/include/asm-microblaze/stat.h
-@@ -0,0 +1,73 @@
++++ b/include/asm-microblaze/ipc.h
+@@ -0,0 +1 @@
++#include <asm-generic/ipc.h>
+diff --git a/include/asm-microblaze/ipcbuf.h b/include/asm-microblaze/ipcbuf.h
+new file mode 100644
+index 0000000..b056fa4
+--- /dev/null
++++ b/include/asm-microblaze/ipcbuf.h
+@@ -0,0 +1,36 @@
 +/*
-+ * Microblaze stat structure
++ * Copyright (C) 2006 Atmark Techno, Inc.
 + *
-+ * Copyright (C) 2001,02,03 NEC Electronics Corporation
-+ * Copyright (C) 2001,02,03 Miles Bader <miles@gnu.org>
-+ *
-+ * This file is subject to the terms and conditions of the GNU General
-+ * Public License. See the file COPYING in the main directory of this
-+ * archive for more details.
-+ *
-+ * Written by Miles Bader <miles@gnu.org>
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
 + */
 +
-+#ifndef _ASM_MICROBLAZE_STAT_H
-+#define _ASM_MICROBLAZE_STAT_H
++#ifndef _ASM_MICROBLAZE_IPCBUF_H
++#define _ASM_MICROBLAZE_IPCBUF_H
 +
-+#include <asm/posix_types.h>
++/*
++ * The user_ipc_perm structure for microblaze architecture.
++ * Note extra padding because this structure is passed back and forth
++ * between kernel and user space.
++ *
++ * Pad space is left for:
++ * - 32-bit mode_t and seq
++ * - 2 miscellaneous 32-bit values
++ */
 +
-+struct stat {
-+	unsigned int	st_dev;
-+	unsigned long	st_ino;
-+	unsigned int	st_mode;
-+	unsigned int	st_nlink;
-+	unsigned int	st_uid;
-+	unsigned int	st_gid;
-+	unsigned int	st_rdev;
-+	long		st_size;
-+	unsigned long	st_blksize;
-+	unsigned long	st_blocks;
-+	unsigned long	st_atime;
-+	unsigned long	__unused1;
-+	unsigned long	st_mtime;
-+	unsigned long	__unused2;
-+	unsigned long	st_ctime;
-+	unsigned long	__unused3;
-+	unsigned long	__unused4;
-+	unsigned long	__unused5;
++struct ipc64_perm {
++	__kernel_key_t		key;
++	__kernel_uid32_t	uid;
++	__kernel_gid32_t	gid;
++	__kernel_uid32_t	cuid;
++	__kernel_gid32_t	cgid;
++	__kernel_mode_t		mode;
++	unsigned short		__pad1;
++	unsigned short		seq;
++	unsigned short		__pad2;
++	unsigned long		__unused1;
++	unsigned long		__unused2;
 +};
 +
-+struct stat64 {
-+	unsigned long long	st_dev;
-+	unsigned long	__unused1;
-+
-+	unsigned long long	st_ino;
-+
-+	unsigned int	st_mode;
-+	unsigned int	st_nlink;
-+
-+	unsigned int	st_uid;
-+	unsigned int	st_gid;
-+
-+	unsigned long long	st_rdev;
-+	unsigned long	__unused3;
-+
-+	long long	st_size;
-+	unsigned long	st_blksize;
-+
-+	unsigned long	st_blocks; /* No. of 512-byte blocks allocated */
-+	unsigned long	__unused4; /* future possible st_blocks high bits */
-+
-+	unsigned long	st_atime;
-+	unsigned long	st_atime_nsec;
-+
-+	unsigned long	st_mtime;
-+	unsigned long	st_mtime_nsec;
-+
-+	unsigned long	st_ctime;
-+	unsigned long	st_ctime_nsec;
-+
-+	unsigned long	__unused8;
-+};
-+
-+#endif /* _ASM_MICROBLAZE_STAT_H */
-diff --git a/include/asm-microblaze/statfs.h b/include/asm-microblaze/statfs.h
-new file mode 100644
-index 0000000..0b91fe1
---- /dev/null
-+++ b/include/asm-microblaze/statfs.h
-@@ -0,0 +1 @@
-+#include <asm-generic/statfs.h>
++#endif /* _ASM_MICROBLAZE_IPCBUF_H */
 -- 
 1.5.4.GIT
