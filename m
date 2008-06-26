@@ -2,14 +2,14 @@ Return-Path: <monstr@seznam.cz>
 Received: from monstr.eu (238.225.broadband7.iol.cz [88.102.225.238])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 4A3BDDFDF4
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jun 2008 23:12:16 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 3F330DE503
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jun 2008 23:12:41 +1000 (EST)
 From: monstr@seznam.cz
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 27/60] microblaze_v4: virtualization
-Date: Thu, 26 Jun 2008 14:29:56 +0200
-Message-Id: <1214483429-32360-28-git-send-email-monstr@seznam.cz>
-In-Reply-To: <1214483429-32360-27-git-send-email-monstr@seznam.cz>
+Subject: [PATCH 30/60] microblaze_v4: support for a.out
+Date: Thu, 26 Jun 2008 14:29:59 +0200
+Message-Id: <1214483429-32360-31-git-send-email-monstr@seznam.cz>
+In-Reply-To: <1214483429-32360-30-git-send-email-monstr@seznam.cz>
 References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
 	<1214483429-32360-2-git-send-email-monstr@seznam.cz>
 	<1214483429-32360-3-git-send-email-monstr@seznam.cz>
@@ -37,6 +37,9 @@ References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
 	<1214483429-32360-25-git-send-email-monstr@seznam.cz>
 	<1214483429-32360-26-git-send-email-monstr@seznam.cz>
 	<1214483429-32360-27-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-28-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-29-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-30-git-send-email-monstr@seznam.cz>
 Cc: linux-arch@vger.kernel.org, alan@lxorguk.ukuu.org.uk,
 	Michal Simek <monstr@monstr.eu>, vapier.adi@gmail.com,
 	arnd@arndb.de, matthew@wil.cx, microblaze-uclinux@itee.uq.edu.au,
@@ -57,16 +60,11 @@ From: Michal Simek <monstr@monstr.eu>
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- include/asm-microblaze/kvm.h |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
- create mode 100644 include/asm-microblaze/kvm.h
+ 0 files changed, 0 insertions(+), 0 deletions(-)
+ create mode 100644 include/asm-microblaze/a.out.h
 
-diff --git a/include/asm-microblaze/kvm.h b/include/asm-microblaze/kvm.h
+diff --git a/include/asm-microblaze/a.out.h b/include/asm-microblaze/a.out.h
 new file mode 100644
-index 0000000..01c5e79
---- /dev/null
-+++ b/include/asm-microblaze/kvm.h
-@@ -0,0 +1 @@
-+/* Microblaze does not support KVM */
+index 0000000..e69de29
 -- 
 1.5.4.GIT
