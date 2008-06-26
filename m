@@ -1,17 +1,47 @@
-Return-Path: <galak@kernel.crashing.org>
-Message-Id: <D0B930D5-3211-4199-94B9-586065A0F116@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Wolfgang Grandegger <wg@grandegger.com>
-In-Reply-To: <4863A424.5080904@grandegger.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v924)
-Subject: Re: [PATCH] [POWERPC] 85xx: TQM8548: add missing support for RTC and
-	LM75
-Date: Thu, 26 Jun 2008 09:15:32 -0500
-References: <4863967F.8060806@grandegger.com>
-	<D6CBABD3-569E-4BED-894C-4F86696E4DD6@kernel.crashing.org>
-	<4863A424.5080904@grandegger.com>
-Cc: Linuxppc-dev@ozlabs.org
+Return-Path: <jacmet@gmail.com>
+Received: from gv-out-0910.google.com (gv-out-0910.google.com [216.239.58.188])
+	by ozlabs.org (Postfix) with ESMTP id B9E01DF537
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jun 2008 00:17:25 +1000 (EST)
+Received: by gv-out-0910.google.com with SMTP id y18so10943gvf.14
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jun 2008 07:17:23 -0700 (PDT)
+To: monstr@seznam.cz
+Subject: Re: [PATCH 60/60] microblaze_v4: Enable drivers for Microblaze
+References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-42-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-43-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-44-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-45-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-46-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-47-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-48-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-49-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-50-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-51-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-52-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-53-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-54-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-55-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-56-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-57-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-58-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-59-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-60-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-61-git-send-email-monstr@seznam.cz>
+From: Peter Korsgaard <jacmet@sunsite.dk>
+Date: Thu, 26 Jun 2008 16:16:39 +0200
+In-Reply-To: <1214483429-32360-61-git-send-email-monstr@seznam.cz>
+	(monstr@seznam.cz's message of "Thu\,
+	26 Jun 2008 14\:30\:29 +0200")
+Message-ID: <87d4m4i8mw.fsf@macbook.be.48ers.dk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Sender: Peter Korsgaard <jacmet@gmail.com>
+Cc: linux-arch@vger.kernel.org, Michal Simek <monstr@monstr.eu>, arnd@arndb.de,
+	vapier.adi@gmail.com, matthew@wil.cx,
+	microblaze-uclinux@itee.uq.edu.au, linux-kernel@vger.kernel.org,
+	John.Linn@xilinx.com, linuxppc-dev@ozlabs.org,
+	will.newton@gmail.com, john.williams@petalogix.com,
+	hpa@zytor.com, drepper@redhat.com, alan@lxorguk.ukuu.org.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,34 +51,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+>>>>> "monstr" == monstr  <monstr@seznam.cz> writes:
 
-On Jun 26, 2008, at 9:13 AM, Wolfgang Grandegger wrote:
+ monstr> From: Michal Simek <monstr@monstr.eu>
+ monstr> Signed-off-by: Michal Simek <monstr@monstr.eu>
 
-> Kumar Gala wrote:
->> On Jun 26, 2008, at 8:15 AM, Wolfgang Grandegger wrote:
->>> It adds the missing RTC node to tqm8548.dts and enables support for
->>> I2C, DS1307 and LM75 in the default configuration.
->>>
->>> Signed-off-by: Wolfgang Grandegger <wg@grandegger.com>
->>> ---
->>> arch/powerpc/boot/dts/tqm8548.dts           |    5 arch/powerpc/ 
->>> configs/85xx/tqm8548_defconfig |  143 ++++++++++++++++++++++++++--
->>> 2 files changed, 142 insertions(+), 6 deletions(-)
->> your mailer is wrapping things.
->
-> Hm, I can apply the patch extracted from my mail without problems.
->
->> Also, can you test out the mpc85xx_defconfig and make sure it works  
->> with the tqm85xx boards (and provide a second patch that enables  
->> whatever drivers you need in there)
->
-> OK, will do so beginning of next week. For the TQM8548 I use the  
-> ELDK ppc_85xxDP and for all others the ppc_85xx tool chain. Does a  
-> mixed image for both types of MPC85xx CPUs make sense?
+Acked-by: Peter Korsgaard <jacmet@sunsite.dk>
 
-I'm just trying to keep the mpc85xx_defconfig as a subset of all the  
-other defconfigs for 85xx so it gives people doing testing one  
-defconfig to build and try and sure that the other defconfigs will  
-continue to work.
+ monstr>  config SERIAL_UARTLITE
+ monstr>  	tristate "Xilinx uartlite serial port support"
+ monstr> -	depends on PPC32
+ monstr> +	depends on PPC32 || MICROBLAZE
+ monstr>  	select SERIAL_CORE
+ monstr>  	help
 
-- k
+-- 
+Bye, Peter Korsgaard
