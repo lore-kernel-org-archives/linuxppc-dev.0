@@ -1,28 +1,17 @@
-Return-Path: <jdl@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 0AEC2DE237
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jun 2008 07:45:27 +1000 (EST)
-Message-ID: <48640DB1.7020500@freescale.com>
-Date: Thu, 26 Jun 2008 16:44:17 -0500
-From: Jon Loeliger <jdl@freescale.com>
+Return-Path: <seema.pm@gmail.com>
+Received: from wf-out-1314.google.com (wf-out-1314.google.com [209.85.200.174])
+	by ozlabs.org (Postfix) with ESMTP id 78A67DE027
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jun 2008 07:53:25 +1000 (EST)
+Received: by wf-out-1314.google.com with SMTP id 24so205371wfg.15
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jun 2008 14:53:24 -0700 (PDT)
+Message-ID: <4e69a5150806261453n1196b5b8va61e330ea57bb00e@mail.gmail.com>
+Date: Thu, 26 Jun 2008 14:53:24 -0700
+From: "SEEMA pm" <seema.pm@gmail.com>
+To: linuxppc-dev@ozlabs.org
+Subject: issue with kgdb on ppc
 MIME-Version: 1.0
-To: monstr@seznam.cz
-Subject: Re: [PATCH 12/60] microblaze_v4: Generic dts file for platforms
-References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>	<1214483429-32360-2-git-send-email-monstr@seznam.cz>	<1214483429-32360-3-git-send-email-monstr@seznam.cz>	<1214483429-32360-4-git-send-email-monstr@seznam.cz>	<1214483429-32360-5-git-send-email-monstr@seznam.cz>	<1214483429-32360-6-git-send-email-monstr@seznam.cz>	<1214483429-32360-7-git-send-email-monstr@seznam.cz>	<1214483429-32360-8-git-send-email-monstr@seznam.cz>	<1214483429-32360-9-git-send-email-monstr@seznam.cz>	<1214483429-32360-10-git-send-email-monstr@seznam.cz>	<1214483429-32360-11-git-send-email-monstr@seznam.cz>	<1214483429-32360-12-git-send-email-monstr@seznam.cz>	<1214483429-32360-13-git-send-email-monstr@seznam.cz><4863B096.7020309@freescale.com>	<4863E68C.30802@seznam.cz>
-	<20080626201813.9662411E0051@mail20-wa4.bigfish.com>
-	<48640CF7.7050700@seznam.cz>
-In-Reply-To: <48640CF7.7050700@seznam.cz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linux-arch@vger.kernel.org, alan@lxorguk.ukuu.org.uk, arnd@arndb.de,
-	vapier.adi@gmail.com, matthew@wil.cx,
-	microblaze-uclinux@itee.uq.edu.au, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, will.newton@gmail.com, hpa@zytor.com,
-	John Linn <linnj@xilinx.com>, drepper@redhat.com,
-	john.williams@petalogix.com
+Content-Type: multipart/alternative;
+	boundary="----=_Part_8667_16878721.1214517204372"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,19 +21,54 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Michal Simek wrote:
-> Ok. Thanks for information Steve.
-> 
-> Jon: Only for sure the main difference is only in value handling. Am I right?
-> If yes, it is easy to change.
-> 
-> M
+------=_Part_8667_16878721.1214517204372
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Right.  It is essentially C-like now.  And has a
-declarator at the top with /dts-v1/.  Essentially
-all of the DTS files in arch/powerpc/boot/dts should
-be V1 now.  Lots of examples.
+Hello
 
-Except in Byte Arrays:  x = [ CA FE BA BE FE ED D0 0D ];
+I'm trying to get kgdb working on a mpc8540 based target machine. I took the
+latest patches which are for 2.6.13(mine is 2.6.11) and build and made
+changes to config by enabling :
+- Compile the kernel with debug info
+- KGDB: kernel debugging with remote gdb
+- KGDB: Console messages through gdb
+- Method for KGDB communication (KGDB: On ethernet - in kernel)
 
-jdl
+I also added bootargs through uboot as:
+kgdboe=6443@10.110.1.2/,6442@10.110.1.31/00:0F:1F:6E:F3:30 kgdbwait
+
+Now, I'm getting the messages:
+netconsole: not configured, aborting
+kgdboe: eth0 doesn't support polling, aborting.
+kgdboe: netpoll_setup failed kgdboe failed
+
+And after some lines;
+
+kgdb: Defering I/O setup to kernel module.
+kgdb: Waiting for connection from remote gdb...
+But then it goes to load ramdisk.
+
+Can someone please provide some help on this
+
+thanks
+
+------=_Part_8667_16878721.1214517204372
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+Hello<br><br>I&#39;m
+trying to get kgdb working on a mpc8540 based target machine. I took
+the latest patches which are for 2.6.13(mine is 2.6.11) and build and
+made changes to config by enabling :<br>
+- Compile the kernel with debug info<br>- KGDB: kernel debugging with remote gdb <br>- KGDB: Console messages through gdb<br>- Method for KGDB communication (KGDB: On ethernet - in kernel)<br><br>I also added bootargs through uboot as:<br>
+
+kgdboe=<a href="http://6443@10.110.1.2/,6442@10.110.1.31/00:0F:1F:6E:F3:30" target="_blank">6443@10.110.1.2/,6442@10.110.1.31/00:0F:1F:6E:F3:30</a> kgdbwait<br><br>Now, I&#39;m getting the messages:<br>netconsole: not configured, aborting<br>
+
+kgdboe: eth0 doesn&#39;t support polling, aborting.<br>kgdboe: netpoll_setup failed kgdboe failed<br>&nbsp;<br>And after some lines;<br><br>kgdb: Defering I/O setup to kernel module.<br>kgdb: Waiting for connection from remote gdb...<br>
+
+But then it goes to load ramdisk.<br><br>Can someone please provide some help on this<br><br>thanks<br><br><br>
+
+------=_Part_8667_16878721.1214517204372--
