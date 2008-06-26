@@ -2,14 +2,14 @@ Return-Path: <monstr@seznam.cz>
 Received: from monstr.eu (238.225.broadband7.iol.cz [88.102.225.238])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 4EB31DE926
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jun 2008 22:39:57 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 05B81DF50E
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jun 2008 22:40:02 +1000 (EST)
 From: monstr@seznam.cz
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 33/60] microblaze_v4: includes SHM*, msgbuf
-Date: Thu, 26 Jun 2008 14:30:02 +0200
-Message-Id: <1214483429-32360-34-git-send-email-monstr@seznam.cz>
-In-Reply-To: <1214483429-32360-33-git-send-email-monstr@seznam.cz>
+Subject: [PATCH 55/60] microblaze_v4: pci headers
+Date: Thu, 26 Jun 2008 14:30:24 +0200
+Message-Id: <1214483429-32360-56-git-send-email-monstr@seznam.cz>
+In-Reply-To: <1214483429-32360-55-git-send-email-monstr@seznam.cz>
 References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
 	<1214483429-32360-2-git-send-email-monstr@seznam.cz>
 	<1214483429-32360-3-git-send-email-monstr@seznam.cz>
@@ -43,6 +43,28 @@ References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
 	<1214483429-32360-31-git-send-email-monstr@seznam.cz>
 	<1214483429-32360-32-git-send-email-monstr@seznam.cz>
 	<1214483429-32360-33-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-34-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-35-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-36-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-37-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-38-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-39-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-40-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-41-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-42-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-43-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-44-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-45-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-46-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-47-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-48-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-49-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-50-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-51-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-52-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-53-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-54-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-55-git-send-email-monstr@seznam.cz>
 Cc: linux-arch@vger.kernel.org, alan@lxorguk.ukuu.org.uk,
 	Michal Simek <monstr@monstr.eu>, vapier.adi@gmail.com,
 	arnd@arndb.de, matthew@wil.cx, microblaze-uclinux@itee.uq.edu.au,
@@ -63,134 +85,25 @@ From: Michal Simek <monstr@monstr.eu>
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- include/asm-microblaze/msgbuf.h   |   39 ++++++++++++++++++++++++++++
- include/asm-microblaze/shmbuf.h   |   50 +++++++++++++++++++++++++++++++++++++
- include/asm-microblaze/shmparam.h |   14 ++++++++++
- 3 files changed, 103 insertions(+), 0 deletions(-)
- create mode 100644 include/asm-microblaze/msgbuf.h
- create mode 100644 include/asm-microblaze/shmbuf.h
- create mode 100644 include/asm-microblaze/shmparam.h
+ include/asm-microblaze/pci-bridge.h |    1 +
+ include/asm-microblaze/pci.h        |    1 +
+ 2 files changed, 2 insertions(+), 0 deletions(-)
+ create mode 100644 include/asm-microblaze/pci-bridge.h
+ create mode 100644 include/asm-microblaze/pci.h
 
-diff --git a/include/asm-microblaze/msgbuf.h b/include/asm-microblaze/msgbuf.h
+diff --git a/include/asm-microblaze/pci-bridge.h b/include/asm-microblaze/pci-bridge.h
 new file mode 100644
-index 0000000..8172bc9
+index 0000000..7ad28f6
 --- /dev/null
-+++ b/include/asm-microblaze/msgbuf.h
-@@ -0,0 +1,39 @@
-+/*
-+ * Copyright (C) 2006 Atmark Techno, Inc.
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License. See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ */
-+
-+#ifndef _ASM_MICROBLAZE_MSGBUF_H
-+#define _ASM_MICROBLAZE_MSGBUF_H
-+
-+/*
-+ * The msqid64_ds structure for microblaze architecture.
-+ * Note extra padding because this structure is passed back and forth
-+ * between kernel and user space.
-+ *
-+ * Pad space is left for:
-+ * - 64-bit time_t to solve y2038 problem
-+ * - 2 miscellaneous 32-bit values
-+ */
-+
-+struct msqid64_ds {
-+	struct ipc64_perm msg_perm;
-+	__kernel_time_t msg_stime; /* last msgsnd time */
-+	unsigned long __unused1;
-+	__kernel_time_t msg_rtime; /* last msgrcv time */
-+	unsigned long __unused2;
-+	__kernel_time_t msg_ctime; /* last change time */
-+	unsigned long __unused3;
-+	unsigned long msg_cbytes; /* current number of bytes on queue */
-+	unsigned long msg_qnum; /* number of messages in queue */
-+	unsigned long msg_qbytes; /* max number of bytes on queue */
-+	__kernel_pid_t msg_lspid; /* pid of last msgsnd */
-+	__kernel_pid_t msg_lrpid; /* last receive pid */
-+	unsigned long __unused4;
-+	unsigned long __unused5;
-+};
-+
-+#endif /* _ASM_MICROBLAZE_MSGBUF_H */
-diff --git a/include/asm-microblaze/shmbuf.h b/include/asm-microblaze/shmbuf.h
++++ b/include/asm-microblaze/pci-bridge.h
+@@ -0,0 +1 @@
++#include <linux/pci.h>
+diff --git a/include/asm-microblaze/pci.h b/include/asm-microblaze/pci.h
 new file mode 100644
-index 0000000..a460e36
+index 0000000..469e80e
 --- /dev/null
-+++ b/include/asm-microblaze/shmbuf.h
-@@ -0,0 +1,50 @@
-+/*
-+ * Copyright (C) 2006 Atmark Techno, Inc.
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License. See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ */
-+
-+#ifndef _ASM_MICROBLAZE_SHMBUF_H
-+#define _ASM_MICROBLAZE_SHMBUF_H
-+
-+/*
-+ * The shmid64_ds structure for microblaze architecture.
-+ * Note extra padding because this structure is passed back and forth
-+ * between kernel and user space.
-+ *
-+ * Pad space is left for:
-+ * - 64-bit time_t to solve y2038 problem
-+ * - 2 miscellaneous 32-bit values
-+ */
-+
-+struct shmid64_ds {
-+	struct ipc64_perm	shm_perm; /* operation perms */
-+	size_t			shm_segsz; /* size of segment (bytes) */
-+	__kernel_time_t		shm_atime; /* last attach time */
-+	unsigned long		__unused1;
-+	__kernel_time_t		shm_dtime; /* last detach time */
-+	unsigned long		__unused2;
-+	__kernel_time_t		shm_ctime; /* last change time */
-+	unsigned long		__unused3;
-+	__kernel_pid_t		shm_cpid; /* pid of creator */
-+	__kernel_pid_t		shm_lpid; /* pid of last operator */
-+	unsigned long		shm_nattch; /* no. of current attaches */
-+	unsigned long		__unused4;
-+	unsigned long		__unused5;
-+};
-+
-+struct shminfo64 {
-+	unsigned long	shmmax;
-+	unsigned long	shmmin;
-+	unsigned long	shmmni;
-+	unsigned long	shmseg;
-+	unsigned long	shmall;
-+	unsigned long	__unused1;
-+	unsigned long	__unused2;
-+	unsigned long	__unused3;
-+	unsigned long	__unused4;
-+};
-+
-+#endif /* _ASM_MICROBLAZE_SHMBUF_H */
-diff --git a/include/asm-microblaze/shmparam.h b/include/asm-microblaze/shmparam.h
-new file mode 100644
-index 0000000..719bbed
---- /dev/null
-+++ b/include/asm-microblaze/shmparam.h
-@@ -0,0 +1,14 @@
-+/*
-+ * Copyright (C) 2006 Atmark Techno, Inc.
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License. See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ */
-+
-+#ifndef _ASM_MICROBLAZE_SHMPARAM_H
-+#define _ASM_MICROBLAZE_SHMPARAM_H
-+
-+#define SHMLBA	PAGE_SIZE /* attach addr a multiple of this */
-+
-+#endif /* _ASM_MICROBLAZE_SHMPARAM_H */
++++ b/include/asm-microblaze/pci.h
+@@ -0,0 +1 @@
++#include <asm/io.h>
 -- 
 1.5.4.GIT
