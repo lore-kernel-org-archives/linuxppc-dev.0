@@ -1,22 +1,18 @@
 Return-Path: <laurentp@cse-semaphore.com>
 Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
-	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id 33075DDE1F
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jun 2008 19:38:08 +1000 (EST)
+	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id BCAEDDDF89
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jun 2008 19:48:29 +1000 (EST)
 From: Laurent Pinchart <laurentp@cse-semaphore.com>
-To: matvejchikov@gmail.com
-Subject: Re: [PATCH] fs_enet: restore promiscuous and multicast settings in
+To: linuxppc-dev@ozlabs.org,
+ netdev@vger.kernel.org
+Subject: [PATCHv2] fs_enet: restore promiscuous and multicast settings in
 	restart()
-Date: Thu, 26 Jun 2008 11:38:03 +0200
-References: <200806181707.17739.laurentp@cse-semaphore.com>
-	<200806201025.28768.laurentp@cse-semaphore.com>
-	<8496f91a0806200155hcb1f440ld7b5f678d95fdb85@mail.gmail.com>
-In-Reply-To: <8496f91a0806200155hcb1f440ld7b5f678d95fdb85@mail.gmail.com>
+Date: Thu, 26 Jun 2008 11:48:22 +0200
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart14464927.ITozZ45xa8";
+Content-Type: multipart/signed; boundary="nextPart9003016.thAWR5S1O3";
 	protocol="application/pgp-signature"; micalg=pgp-sha1
-Message-Id: <200806261138.04192.laurentp@cse-semaphore.com>
-Cc: linuxppc-dev@ozlabs.org, Bill Fink <billfink@mindspring.com>,
-	vbordug@ru.mvista.com, netdev@vger.kernel.org
+Message-Id: <200806261148.26569.laurentp@cse-semaphore.com>
+Cc: Matvejchikov Ilya <matvejchikov@gmail.com>, vbordug@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,39 +22,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---nextPart14464927.ITozZ45xa8
+--nextPart9003016.thAWR5S1O3
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="us-ascii"
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
-Hi,
+The restart() function is called when the link state changes and resets
+multicast and promiscuous settings. This patch restores those settings at t=
+he
+end of restart().
 
-On Friday 20 June 2008 10:55, Matvejchikov Ilya wrote:
-> >> > diff --git a/drivers/net/fs_enet/mac-fcc.c=20
-b/drivers/net/fs_enet/mac-fcc.c
-> >> > index ce40cf9..1a95cf1 100644
-> >> > --- a/drivers/net/fs_enet/mac-fcc.c
-> >> > +++ b/drivers/net/fs_enet/mac-fcc.c
-> >> > @@ -464,6 +464,9 @@ static void restart(struct net_device *dev)
-> >> >             C32(fccp, fcc_fpsmr, FCC_PSMR_FDE | FCC_PSMR_LPB);
-> >> >
-> >> >     S32(fccp, fcc_gfmr, FCC_GFMR_ENR | FCC_GFMR_ENT);
-> >> > +
-> >> > +   /* Restore multicast and promiscous settings */
-> >> > +   set_multicast_list(dev);
-> >> >  }
->=20
-> Is it right to call set_multicast_list() after turning on transmitter
-> and receiver? May be swap this lines around?
+Signed-off-by: Laurent Pinchart <laurentp@cse-semaphore.com>
+=2D--
+ drivers/net/fs_enet/mac-fcc.c |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
 
-I'm not sure if that will make a difference, but you're right, restoring th=
-e=20
-multicast and promiscuous settings is better done before turning the receiv=
-er=20
-and transmitter on.
-
-I'll send a new patch.
+diff --git a/drivers/net/fs_enet/mac-fcc.c b/drivers/net/fs_enet/mac-fcc.c
+index e363211..849afbe 100644
+=2D-- a/drivers/net/fs_enet/mac-fcc.c
++++ b/drivers/net/fs_enet/mac-fcc.c
+@@ -463,6 +463,9 @@ static void restart(struct net_device *dev)
+ 	else
+ 		C32(fccp, fcc_fpsmr, FCC_PSMR_FDE | FCC_PSMR_LPB);
+=20
++	/* Restore multicast and promiscuous settings */
++	set_multicast_list(dev);
++
+ 	S32(fccp, fcc_gfmr, FCC_GFMR_ENR | FCC_GFMR_ENT);
+ }
+=20
+=2D-=20
+1.5.0
 
 =2D-=20
 Laurent Pinchart
@@ -71,15 +66,15 @@ Belgium
 T +32 (2) 387 42 59
 =46 +32 (2) 387 42 75
 
---nextPart14464927.ITozZ45xa8
+--nextPart9003016.thAWR5S1O3
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.5 (GNU/Linux)
 
-iD8DBQBIY2N88y9gWxC9vpcRAuljAKDD41t9uE4oXuG1MrkOpDgsxRXV2gCfRXeH
-cGP4eVG5ixNwDAQpQfE6ozI=
-=8Y7q
+iD8DBQBIY2Xq8y9gWxC9vpcRAn+iAJ4ho6iSqLULCZ1hKG4OQzqzHVAIGQCeL4QA
+cM/DwfNtOJWJbSNVj6HNKgc=
+=MCsk
 -----END PGP SIGNATURE-----
 
---nextPart14464927.ITozZ45xa8--
+--nextPart9003016.thAWR5S1O3--
