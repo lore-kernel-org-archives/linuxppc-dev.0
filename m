@@ -1,22 +1,21 @@
-Return-Path: <paubert@iram.es>
-Received: from gra-lx1.iram.es (gra-lx1.iram.es [150.214.224.41])
-	by ozlabs.org (Postfix) with ESMTP id BF4BADE359
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jun 2008 21:21:21 +1000 (EST)
-From: Gabriel Paubert <paubert@iram.es>
-Date: Thu, 26 Jun 2008 12:44:42 +0200
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 2/9] powerpc: Add macros to access floating
-	point	registers in thread_struct.
-Message-ID: <20080626104442.GA31102@iram.es>
-References: <20080625040718.028B470296@localhost.localdomain>
-	<F09034D9-1B3C-4087-B6DF-FAB7B3AFA191@kernel.crashing.org>
-	<48626588.8050202@freescale.com> <20080625161255.GA12165@iram.es>
-	<48626FA9.8010903@freescale.com>
+Return-Path: <laurentp@cse-semaphore.com>
+Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
+	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id 24ADADE472
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jun 2008 21:21:26 +1000 (EST)
+From: Laurent Pinchart <laurentp@cse-semaphore.com>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 2/2] fs_enet: MDIO on GPIO support
+Date: Thu, 26 Jun 2008 13:21:23 +0200
+References: <200805261152.37636.laurentp@cse-semaphore.com>
+	<48592322.3090201@pobox.com>
+	<200806181716.40362.laurentp@cse-semaphore.com>
+In-Reply-To: <200806181716.40362.laurentp@cse-semaphore.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <48626FA9.8010903@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, Michael Neuling <mikey@neuling.org>,
-	Paul Mackerras <paulus@samba.org>
+Content-Type: multipart/signed; boundary="nextPart1356336.k58zgoD23A";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
+Message-Id: <200806261321.24338.laurentp@cse-semaphore.com>
+Cc: Scott Wood <scottwood@freescale.com>, netdev@vger.kernel.org,
+	Jeff Garzik <jgarzik@pobox.com>, vbordug@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,69 +25,100 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jun 25, 2008 at 11:17:45AM -0500, Scott Wood wrote:
-> Gabriel Paubert wrote:
-> >On Wed, Jun 25, 2008 at 10:34:32AM -0500, Scott Wood wrote:
-> >>Kumar Gala wrote:
-> >>>>+/* Macros to workout the correct index for the FPR in the thread 
-> >>>>struct */
-> >>>>+#define FPRNUMBER(i) (((i) - PT_FPR0) >> 1)
-> >>>>+#define FPRHALF(i) (((i) - PT_FPR0) % 2)
-> >>>Have you looked at what the compiler spits out here to make sure we 
-> >>>aren't getting a divide?  Seems like we could use '& 0x1'.
-> >>GCC's not *that* dumb.  However, you may get some unnecessary 
-> >>sign-twiddling if "i" is signed.
-> >
-> >Not for modulo 2, it's only an even/odd choice and GCC 
-> >implements that efficiently IIRC. For other powers of 2,
-> >making the left hand side unsigned helps the compiler.
-> 
-> From this:
-> 
-> int foo(int x)
-> {
-> 	return x % 2;
-> }
-> 
-> I get this with -O3:
-> 
-> foo:
->         mr 0,3
->         srawi 3,3,1
->         addze 3,3
->         slwi 3,3,1
->         subf 3,3,0
->         blr
->         .size   foo, .-foo
->         .ident  "GCC: (GNU) 4.1.2"
-> 
+--nextPart1356336.k58zgoD23A
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Indeed. Signed modulo results can be negative...
+Jeff, Scott,
 
-There are probably better ways to implement this case
-on PPC, for example:
+On Wednesday 18 June 2008 17:16, Laurent Pinchart wrote:
+> On Wednesday 18 June 2008 17:00, Jeff Garzik wrote:
+> > Laurent Pinchart wrote:
+> > > Hi Scott,
+> > >=20
+> > > On Monday 16 June 2008 18:34, Scott Wood wrote:
+> > >> On Mon, Jun 16, 2008 at 10:57:02AM +0200, Laurent Pinchart wrote:
+> > >>> On Monday 26 May 2008 11:53, Laurent Pinchart wrote:
+> > >>>> Port the fs_enet driver to support the MDIO on GPIO driver for PHY
+> > >>>> access in addition to the mii-bitbang driver.
+> > >>> Now that 1/2 has been applied by Jeff, could this one make it to=20
+> > >>> powerpc-next ?
+> > >> This patch should probably go through Jeff as well...
+> > >=20
+> > > Jeff, what's your opinion on this ?
+> > >=20
+> > >> Acked-by: Scott Wood <scottwood@freescale.com>
+> > >>
+> > >>>> -	data =3D of_get_property(phynode, "reg", &len);
+> > >>>> -	if (!data || len !=3D 4)
+> > >>>> -		goto out_put_mdio;
+> > >>>> +	bus_id =3D of_get_gpio(mdionode, 0);
+> > >>>> +	if (bus_id < 0) {
+> > >>>> +		struct resource res;
+> > >>>> +		ret =3D of_address_to_resource(mdionode, 0, &res);
+> > >>>> +		if (ret)
+> > >>>> +			goto out_put_mdio;
+> > >>>> +		bus_id =3D res.start;
+> > >>>> +	}
+> > >>>> =20
+> > >>>> -	snprintf(fpi->bus_id, 16, "%x:%02x", res.start, *data);
+> > >>>> +	snprintf(fpi->bus_id, 16, "%x:%02x", bus_id, *data);
+> >=20
+> > What are the patch dependencies, if any?
+> >=20
+> > My general rule is, anytime I see 80%+ of the patch dealing with=20
+> > arch-specific API functions (such as OF resource stuff), I tend to=20
+> > prefer that goes via an arch tree.
+> >=20
+> > If it's a networking change, of course I'd prefer it came in my directi=
+on.
+>=20
+> The patch modifies the way the Freescale SoC fs_enet driver computes the =
+PHY=20
+> bus_id field when it connects to a PHY.
+>=20
+> The 'legacy' binding method was to use the MDIO general purpose I/O regis=
+ter=20
+> address to identify the mii bus. My first patch (OpenFirmware GPIO based =
+MDIO=20
+> bitbang driver) introduces a new binding using the GPIO library.
+>=20
+> With this patch the mii bus is now identified by the GPIO lib I/O resourc=
+e=20
+> number if available and falls back to the register address when the devic=
+e=20
+> tree uses the legacy binding.
+>=20
+> There should be no dependencies. When the OF GPIO support is not selected=
+=20
+> linux/of_gpio.h will define of_get_gpio() as a stub, so the fs_enet drive=
+r=20
+> will fall back to the legacy binding.
 
-	rlwinm tmp,input,4,27,28 ; make shift amount from LSB and MSB 
-	lis result,0xff01
-	srw result,result,tmp
-	; result is now 0x00 for even, 0x01 for odd positive,
-	; and 0xff for odd negative
-	extsb result,result
+Have we reached a consensus on which tree the patch should go to ?
 
-No carry, shorter dependency length (although srw may be slow
-on Cell it seems, but addze may be worse).
+=2D-=20
+Laurent Pinchart
+CSE Semaphore Belgium
 
+Chaussee de Bruxelles, 732A
+B-1410 Waterloo
+Belgium
 
-> Changing it to "x & 1", or to unsigned, gives this:
-> 
-> foo:
->         rlwinm 3,3,0,31,31
->         blr
->         .size   foo, .-foo
->         .ident  "GCC: (GNU) 4.1.2"
-> 
-> Maybe newer GCCs are better?
+T +32 (2) 387 42 59
+=46 +32 (2) 387 42 75
 
-Nope, but unsigned is often better for the right shift.
+--nextPart1356336.k58zgoD23A
+Content-Type: application/pgp-signature
 
-	Gabriel
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
+
+iD8DBQBIY3u08y9gWxC9vpcRAifyAJ90DWnya7fYbNRJcOy5NtxjTplfvwCgxk6U
+w1PNM1gpYtAmI4QsZCKc2ok=
+=insJ
+-----END PGP SIGNATURE-----
+
+--nextPart1356336.k58zgoD23A--
