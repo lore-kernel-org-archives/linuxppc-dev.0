@@ -1,19 +1,19 @@
 Return-Path: <arnd@arndb.de>
 Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id CCA23DDFD6
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jun 2008 01:44:08 +1000 (EST)
+	[212.227.126.183]) by ozlabs.org (Postfix) with ESMTP id 970FBDDEDF
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jun 2008 01:49:24 +1000 (EST)
 From: Arnd Bergmann <arnd@arndb.de>
 To: monstr@seznam.cz
-Subject: Re: [PATCH 52/60] microblaze_v4: fcntl.h sockios.h ucontext.h
-Date: Thu, 26 Jun 2008 17:43:09 +0200
+Subject: Re: [PATCH 58/60] microblaze_v4: sys_microblaze.c
+Date: Thu, 26 Jun 2008 17:48:29 +0200
 References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-52-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-53-git-send-email-monstr@seznam.cz>
-In-Reply-To: <1214483429-32360-53-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-58-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-59-git-send-email-monstr@seznam.cz>
+In-Reply-To: <1214483429-32360-59-git-send-email-monstr@seznam.cz>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-15"
-Message-Id: <200806261743.10441.arnd@arndb.de>
+Message-Id: <200806261748.30698.arnd@arndb.de>
 Cc: linux-arch@vger.kernel.org, alan@lxorguk.ukuu.org.uk,
 	Michal Simek <monstr@monstr.eu>, vapier.adi@gmail.com,
 	matthew@wil.cx, microblaze-uclinux@itee.uq.edu.au,
@@ -30,22 +30,74 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 On Thursday 26 June 2008, monstr@seznam.cz wrote:
-> =A0include/asm-generic/sockios.h =A0 =A0 | =A0 23 +++++++++++++++++++++++
-> =A0include/asm-generic/ucontext.h =A0 =A0| =A0 24 ++++++++++++++++++++++++
-> =A0include/asm-microblaze/fcntl.h =A0 =A0| =A0 =A01 +
-> =A0include/asm-microblaze/sockios.h =A0| =A0 23 +++++++++++++++++++++++
-> =A0include/asm-microblaze/ucontext.h | =A0 =A01 +
+> +
+> +/*
+> + * sys_ipc() is the de-multiplexer for the SysV IPC calls..
+> + *
+> + * This is really horribly ugly.
+> + */
 
-The grouping of files seems rather arbitrary here. What would be really
-good here is if you had all the new asm-generic files as separate patches,
-i.e. as a series adding them independent of the microblaze patches so
-that the other arch maintainers could look at them and start using
-the same files, and then add all your trivial wrappers in a single
-patch.
+If it's so horribly ugly, don't do it this way ;-)
 
-Also, the sockios file here looks like it should be in asm-generic.
+> +int
+> +sys_ipc(uint call, int first, int second, int third, void *ptr, long fifth)
+> +{
+> +	int version, ret;
+> +
+> +	version = call >> 16; /* hack for backward compatibility */
+> +	call &= 0xffff;
 
-The contents of the files in this patch all look good, they are
-identical to the majority of the other architectures.
+Backwards compatibility with what?
+
+
+> +static inline unsigned long
+> +do_mmap2(unsigned long addr, size_t len,
+> +	unsigned long prot, unsigned long flags,
+> +	unsigned long fd, unsigned long pgoff)
+> +{
+> +	struct file *file = NULL;
+> +	int ret = -EBADF;
+> +
+> +	flags &= ~(MAP_EXECUTABLE | MAP_DENYWRITE);
+> +	if (!(flags & MAP_ANONYMOUS))
+> +		if (!(file = fget(fd))) {
+> +			printk(KERN_INFO "no fd in mmap\r\n");
+> +			goto out;
+> +		}
+> +
+> +	down_write(&current->mm->mmap_sem);
+> +	ret = do_mmap_pgoff(file, addr, len, prot, flags, pgoff);
+> +	up_write(&current->mm->mmap_sem);
+> +	if (file)
+> +		fput(file);
+> +out:
+> +	return ret;
+> +}
+> +
+> +unsigned long sys_mmap2(unsigned long addr, size_t len,
+> +			unsigned long prot, unsigned long flags,
+> +			unsigned long fd, unsigned long pgoff)
+> +{
+> +	return do_mmap2(addr, len, prot, flags, fd, pgoff);
+> +}
+> +
+> +unsigned long sys_mmap(unsigned long addr, size_t len,
+> +			unsigned long prot, unsigned long flags,
+> +			unsigned long fd, off_t offset)
+> +{
+> +	int err = -EINVAL;
+> +
+> +	if (offset & ~PAGE_MASK) {
+> +		printk(KERN_INFO "no pagemask in mmap\r\n");
+> +		goto out;
+> +	}
+> +
+> +	err = do_mmap2(addr, len, prot, flags, fd, offset >> PAGE_SHIFT);
+> +out:
+> +	return err;
+> +}
+
+Which mmap is uClibc really using? I suppose you only need mmap2, even for
+compatibility with any binary ever built for microblaze.
 
 	Arnd <><
