@@ -2,14 +2,14 @@ Return-Path: <monstr@seznam.cz>
 Received: from monstr.eu (238.225.broadband7.iol.cz [88.102.225.238])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 595FFDF138
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jun 2008 22:39:07 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 4C98FDF1CD
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jun 2008 22:39:12 +1000 (EST)
 From: monstr@seznam.cz
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 40/60] microblaze_v4: headers for irq
-Date: Thu, 26 Jun 2008 14:30:09 +0200
-Message-Id: <1214483429-32360-41-git-send-email-monstr@seznam.cz>
-In-Reply-To: <1214483429-32360-40-git-send-email-monstr@seznam.cz>
+Subject: [PATCH 47/60] microblaze_v4: sigcontext.h siginfo.h
+Date: Thu, 26 Jun 2008 14:30:16 +0200
+Message-Id: <1214483429-32360-48-git-send-email-monstr@seznam.cz>
+In-Reply-To: <1214483429-32360-47-git-send-email-monstr@seznam.cz>
 References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
 	<1214483429-32360-2-git-send-email-monstr@seznam.cz>
 	<1214483429-32360-3-git-send-email-monstr@seznam.cz>
@@ -50,6 +50,13 @@ References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
 	<1214483429-32360-38-git-send-email-monstr@seznam.cz>
 	<1214483429-32360-39-git-send-email-monstr@seznam.cz>
 	<1214483429-32360-40-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-41-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-42-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-43-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-44-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-45-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-46-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-47-git-send-email-monstr@seznam.cz>
 Cc: linux-arch@vger.kernel.org, alan@lxorguk.ukuu.org.uk,
 	Michal Simek <monstr@monstr.eu>, vapier.adi@gmail.com,
 	arnd@arndb.de, matthew@wil.cx, microblaze-uclinux@itee.uq.edu.au,
@@ -70,19 +77,18 @@ From: Michal Simek <monstr@monstr.eu>
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- include/asm-microblaze/hardirq.h  |   29 +++++++++++++++++++++++++++++
- include/asm-microblaze/irq_regs.h |    1 +
- 2 files changed, 30 insertions(+), 0 deletions(-)
- create mode 100644 include/asm-microblaze/hardirq.h
- create mode 100644 include/asm-microblaze/hw_irq.h
- create mode 100644 include/asm-microblaze/irq_regs.h
+ include/asm-microblaze/sigcontext.h |   19 +++++++++++++++++++
+ include/asm-microblaze/siginfo.h    |   15 +++++++++++++++
+ 2 files changed, 34 insertions(+), 0 deletions(-)
+ create mode 100644 include/asm-microblaze/sigcontext.h
+ create mode 100644 include/asm-microblaze/siginfo.h
 
-diff --git a/include/asm-microblaze/hardirq.h b/include/asm-microblaze/hardirq.h
+diff --git a/include/asm-microblaze/sigcontext.h b/include/asm-microblaze/sigcontext.h
 new file mode 100644
-index 0000000..2aca035
+index 0000000..2819672
 --- /dev/null
-+++ b/include/asm-microblaze/hardirq.h
-@@ -0,0 +1,29 @@
++++ b/include/asm-microblaze/sigcontext.h
+@@ -0,0 +1,19 @@
 +/*
 + * Copyright (C) 2006 Atmark Techno, Inc.
 + *
@@ -91,36 +97,37 @@ index 0000000..2aca035
 + * for more details.
 + */
 +
-+#ifndef _ASM_MICROBLAZE_HARDIRQ_H
-+#define _ASM_MICROBLAZE_HARDIRQ_H
++#ifndef _ASM_MICROBLAZE_SIGCONTEXT_H
++#define _ASM_MICROBLAZE_SIGCONTEXT_H
 +
-+#include <linux/cache.h>
-+#include <linux/irq.h>
-+#include <asm/irq.h>
-+#include <asm/current.h>
 +#include <asm/ptrace.h>
 +
-+/* should be defined in each interrupt controller driver */
-+extern unsigned int get_irq(struct pt_regs *regs);
++struct sigcontext {
++	struct pt_regs regs;
++	unsigned long oldmask;
++};
 +
-+typedef struct {
-+	unsigned int __softirq_pending;
-+} ____cacheline_aligned irq_cpustat_t;
-+
-+void ack_bad_irq(unsigned int irq);
-+
-+#include <linux/irq_cpustat.h> /* Standard mappings for irq_cpustat_t above */
-+
-+#endif /* _ASM_MICROBLAZE_HARDIRQ_H */
-diff --git a/include/asm-microblaze/hw_irq.h b/include/asm-microblaze/hw_irq.h
++#endif /* _ASM_MICROBLAZE_SIGCONTEXT_H */
+diff --git a/include/asm-microblaze/siginfo.h b/include/asm-microblaze/siginfo.h
 new file mode 100644
-index 0000000..e69de29
-diff --git a/include/asm-microblaze/irq_regs.h b/include/asm-microblaze/irq_regs.h
-new file mode 100644
-index 0000000..3dd9c0b
+index 0000000..f162911
 --- /dev/null
-+++ b/include/asm-microblaze/irq_regs.h
-@@ -0,0 +1 @@
-+#include <asm-generic/irq_regs.h>
++++ b/include/asm-microblaze/siginfo.h
+@@ -0,0 +1,15 @@
++/*
++ * Copyright (C) 2006 Atmark Techno, Inc.
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
++ */
++
++#ifndef _ASM_MICROBLAZE_SIGINFO_H
++#define _ASM_MICROBLAZE_SIGINFO_H
++
++#include <linux/types.h>
++#include <asm-generic/siginfo.h>
++
++#endif /* _ASM_MICROBLAZE_SIGINFO_H */
 -- 
 1.5.4.GIT
