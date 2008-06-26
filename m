@@ -1,20 +1,25 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from wr-out-0506.google.com (wr-out-0506.google.com [64.233.184.237])
-	by ozlabs.org (Postfix) with ESMTP id 7FC47DE7B4
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jun 2008 01:29:00 +1000 (EST)
-Received: by wr-out-0506.google.com with SMTP id c48so69826wra.1
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jun 2008 08:28:58 -0700 (PDT)
-Subject: Re: [PATCH] Remove experimental status of kdump on PPC64
-From: Josh Boyer <jwboyer@gmail.com>
-To: Bernhard Walle <bwalle@suse.de>
-In-Reply-To: <1214485035-26041-1-git-send-email-bwalle@suse.de>
-References: <1214485035-26041-1-git-send-email-bwalle@suse.de>
-Content-Type: text/plain
-Date: Thu, 26 Jun 2008 11:28:52 -0400
-Message-Id: <1214494132.2791.0.camel@weaponx>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, kexec@lists.infradead.org,
-	linux-kernel@vger.kernel.org, vgoyal@redhat.com
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id 6F4E9DE87F
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jun 2008 01:29:26 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: monstr@seznam.cz
+Subject: Re: [PATCH 46/60] microblaze_v4: termbits.h termios.h
+Date: Thu, 26 Jun 2008 17:28:47 +0200
+References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-46-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-47-git-send-email-monstr@seznam.cz>
+In-Reply-To: <1214483429-32360-47-git-send-email-monstr@seznam.cz>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Message-Id: <200806261728.48860.arnd@arndb.de>
+Cc: linux-arch@vger.kernel.org, alan@lxorguk.ukuu.org.uk,
+	Michal Simek <monstr@monstr.eu>, vapier.adi@gmail.com,
+	matthew@wil.cx, microblaze-uclinux@itee.uq.edu.au,
+	linux-kernel@vger.kernel.org, drepper@redhat.com,
+	linuxppc-dev@ozlabs.org, will.newton@gmail.com, hpa@zytor.com,
+	John.Linn@xilinx.com, john.williams@petalogix.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,35 +29,54 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2008-06-26 at 14:57 +0200, Bernhard Walle wrote:
-> This patch removes the experimental status of kdump on IA64. kdump is on IA64
-> now since more than one year and it has proven to be stable.
-
-I think you mean PPC64?
-
-josh
-
-> For i386/x86_64, a similar patch has been accepted by Ingo Molnar and Vivek
-> Goyal.
-> 
-> 
-> Signed-off-by: Bernhard Walle <bwalle@suse.de>
-> ---
->  arch/powerpc/Kconfig |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> index 3934e26..2a116b9 100644
-> --- a/arch/powerpc/Kconfig
-> +++ b/arch/powerpc/Kconfig
-> @@ -308,8 +308,8 @@ config KEXEC
->  	  strongly in flux, so no good recommendation can be made.
->  
->  config CRASH_DUMP
-> -	bool "Build a kdump crash kernel (EXPERIMENTAL)"
-> -	depends on PPC_MULTIPLATFORM && PPC64 && EXPERIMENTAL
-> +	bool "Build a kdump crash kernel"
-> +	depends on PPC_MULTIPLATFORM && PPC64
->  	help
->  	  Build a kernel suitable for use as a kdump capture kernel.
->  	  The kernel will be linked at a different address than normal, and
+T24gVGh1cnNkYXkgMjYgSnVuZSAyMDA4LCBtb25zdHJAc2V6bmFtLmN6IHdyb3RlOgo+IEBAIC0w
+LDAgKzEsODQgQEAKPiArCj4gKyNpbmNsdWRlIDxsaW51eC9zdHJpbmcuaD4KPiArI2luY2x1ZGUg
+PGFzbS90ZXJtYml0cy5oPgo+ICsjaW5jbHVkZSA8YXNtL2lvY3Rscy5oPgo+ICsKPiArc3RydWN0
+IHdpbnNpemUgewo+ICugoKCgoKCgdW5zaWduZWQgc2hvcnQgd3Nfcm93Owo+ICugoKCgoKCgdW5z
+aWduZWQgc2hvcnQgd3NfY29sOwo+ICugoKCgoKCgdW5zaWduZWQgc2hvcnQgd3NfeHBpeGVsOwo+
+ICugoKCgoKCgdW5zaWduZWQgc2hvcnQgd3NfeXBpeGVsOwo+ICt9Owo+ICsKPiArI2RlZmluZSBO
+Q0MgOAo+ICtzdHJ1Y3QgdGVybWlvIHsKPiAroKCgoKCgoHVuc2lnbmVkIHNob3J0IGNfaWZsYWc7
+IC8qIGlucHV0IG1vZGUgZmxhZ3MgKi8KPiAroKCgoKCgoHVuc2lnbmVkIHNob3J0IGNfb2ZsYWc7
+IC8qIG91dHB1dCBtb2RlIGZsYWdzICovCj4gK6CgoKCgoKB1bnNpZ25lZCBzaG9ydCBjX2NmbGFn
+OyAvKiBjb250cm9sIG1vZGUgZmxhZ3MgKi8KPiAroKCgoKCgoHVuc2lnbmVkIHNob3J0IGNfbGZs
+YWc7IC8qIGxvY2FsIG1vZGUgZmxhZ3MgKi8KPiAroKCgoKCgoHVuc2lnbmVkIGNoYXIgY19saW5l
+OyAvKiBsaW5lIGRpc2NpcGxpbmUgKi8KPiAroKCgoKCgoHVuc2lnbmVkIGNoYXIgY19jY1tOQ0Nd
+OyAvKiBjb250cm9sIGNoYXJhY3RlcnMgKi8KPiArfTsKPiArCj4gKyNpZmRlZiBfX0tFUk5FTF9f
+Cj4gKy8qoKCgoKBpbnRyPV5DoKCgoKCgoKCgcXVpdD1efKCgoKCgoKCgoGVyYXNlPWRlbKCgoKCg
+oKBraWxsPV5VCj4gK6CgoKCgoKBlb2Y9XkSgoKCgoKCgoKCgdnRpbWU9XDCgoKCgoKCgoHZtaW49
+XDGgoKCgoKCgoKBzeHRjPVwwCj4gK6CgoKCgoKBzdGFydD1eUaCgoKCgoKCgc3RvcD1eU6CgoKCg
+oKCgoHN1c3A9XlqgoKCgoKCgoKBlb2w9XDAKPiAroKCgoKCgoHJlcHJpbnQ9XlKgoKCgoKBkaXNj
+YXJkPV5VoKCgoKCgd2VyYXNlPV5XoKCgoKCgoGxuZXh0PV5WCj4gK6CgoKCgoKBlb2wyPVwwCj4g
+KyovCj4gKyNkZWZpbmUgSU5JVF9DX0NDICJcMDAzXDAzNFwxNzdcMDI1XDAwNFwwXDFcMFwwMjFc
+MDIzXDAzMlwwXDAyMlwwMTdcMDI3XDAyNlwwIgo+ICsjZW5kaWYKPiArCj4gKy8qIE1vZGVtIGxp
+bmVzICovCj4gKwo+ICsjZGVmaW5lIFRJT0NNX0xFoKCgoKCgoDB4MDAxCj4gKyNkZWZpbmUgVElP
+Q01fRFRSoKCgoKCgMHgwMDIKPiArI2RlZmluZSBUSU9DTV9SVFOgoKCgoKAweDAwNAo+ICsjZGVm
+aW5lIFRJT0NNX1NUoKCgoKCgoDB4MDA4Cj4gKyNkZWZpbmUgVElPQ01fU1KgoKCgoKCgMHgwMTAK
+PiArI2RlZmluZSBUSU9DTV9DVFOgoKCgoKAweDAyMAo+ICsjZGVmaW5lIFRJT0NNX0NBUqCgoKCg
+oDB4MDQwCj4gKyNkZWZpbmUgVElPQ01fUk5HoKCgoKCgMHgwODAKPiArI2RlZmluZSBUSU9DTV9E
+U1KgoKCgoKAweDEwMAo+ICsjZGVmaW5lIFRJT0NNX0NEoKCgoKCgoFRJT0NNX0NBUgo+ICsjZGVm
+aW5lIFRJT0NNX1JJoKCgoKCgoFRJT0NNX1JORwo+ICsjZGVmaW5lIFRJT0NNX09VVDGgoKCgoDB4
+MjAwMAo+ICsjZGVmaW5lIFRJT0NNX09VVDKgoKCgoDB4NDAwMAo+ICsjZGVmaW5lIFRJT0NNX0xP
+T1CgoKCgoDB4ODAwMAoKSXQgd291bGQgYmUgbmljZSBpZiBtb3JlIG9mIHRoZSBhYm92ZSBjb3Vs
+ZCBiZSBpbiBhc20tZ2VuZXJpYy90ZXJtaW9zLmgsCmFzIGZhciBhcyBJIGNhbiB0ZWxsIHRoZXkg
+YXJlIGlkZW50aWNhbCBmb3IgYWxsIChmb3VyKSB1c2VycyBvZiB0aGF0CmdlbmVyaWMgZmlsZS4K
+T2YgY291cnNlIGlmIHlvdSBkbyB0aGF0LCB5b3UnbGwgaGF2ZSB0byByZW1vdmUgdGhlIGNvZGUg
+ZnJvbSB0aGUgZXhpc3RpbmcKdXNlcnMuCgo+ICsvKiBpb2N0bCAoZmQsIFRJT0NTRVJHRVRMU1Is
+ICZyZXN1bHQpIHdoZXJlIHJlc3VsdCBtYXkgYmUgYXMgYmVsb3cgKi8KPiArCj4gKy8qIExpbmUg
+ZGlzY2lwbGluZXMgKi8KPiArCj4gKyNkZWZpbmUgTl9UVFmgoKCgoKCgoKCgMAo+ICsjZGVmaW5l
+IE5fU0xJUKCgoKCgoKCgoDEKPiArI2RlZmluZSBOX01PVVNFoKCgoKCgoKCgoKCgoKCgoDIKPiAr
+I2RlZmluZSBOX1BQUKCgoKCgoKCgoKAzCj4gKyNkZWZpbmUgTl9TVFJJUKCgoKCgoKCgoKCgoKCg
+oKA0Cj4gKyNkZWZpbmUgTl9BWDI1oKCgoKCgoKCgNQo+ICsjZGVmaW5lIE5fWDI1oKCgoKCgoKCg
+oDYgLyogWC4yNSBhc3luYyAqLwo+ICsjZGVmaW5lIE5fNlBBQ0ugoKCgoKCgoKCgoKCgoKCgNwo+
+ICsjZGVmaW5lIE5fTUFTQ6CgoKCgoKCgoDggLyogUmVzZXJ2ZWQgZm9yIE1vYml0ZXggbW9kdWxl
+IDxrYXpAY2FmZS5uZXQ+ICovCj4gKyNkZWZpbmUgTl9SMzk2NKCgoKCgoKCgoKCgoKCgoKA5IC8q
+IFJlc2VydmVkIGZvciBTaW1hdGljIFIzOTY0IG1vZHVsZSAqLwo+ICsjZGVmaW5lIE5fUFJPRklC
+VVNfRkRMoDEwIC8qIFJlc2VydmVkIGZvciBQcm9maWJ1cyA8RGF2ZUBtdmhpLmNvbT4gKi8KPiAr
+I2RlZmluZSBOX0lSREGgoKCgoKCgoKAxMSAvKiBMaW51eCBJUiAtIGh0dHA6Ly9pcmRhLnNvdXJj
+ZWZvcmdlLm5ldC8gKi8KPiArI2RlZmluZSBOX1NNU0JMT0NLoKCgoKAxMiAvKiBTTVMgYmxvY2sg
+bW9kZSAtIGZvciB0YWxraW5nIHRvIEdTTSBkYXRhIGNhcmRzCj4gK6CgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKBhYm91dCBTTVMgbWVzc2FnZXMgKi8KPiArI2RlZmluZSBOX0hETEOgoKCg
+oKCgoKAxMyAvKiBzeW5jaHJvbm91cyBIRExDICovCj4gKyNkZWZpbmUgTl9TWU5DX1BQUKCgoKCg
+MTQKPiArI2RlZmluZSBOX0hDSaCgoKCgoKCgoKAxNSAvKiBCbHVldG9vdGggSENJIFVBUlQgKi8K
+PiArCgpUaGVzZSBhcmUgYWxyZWFkeSBkZWZpbmVkIGluIGxpbnV4L3R0eS5oLCBzbyB0aGV5IHNo
+b3VsZCBub3QgYmUgaGVyZS4KCglBcm5kIDw+PAoK
