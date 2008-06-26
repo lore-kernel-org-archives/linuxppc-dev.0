@@ -2,14 +2,14 @@ Return-Path: <monstr@seznam.cz>
 Received: from monstr.eu (238.225.broadband7.iol.cz [88.102.225.238])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 4C98FDF1CD
+	by ozlabs.org (Postfix) with ESMTPS id 56218DF1AE
 	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jun 2008 22:39:12 +1000 (EST)
 From: monstr@seznam.cz
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 47/60] microblaze_v4: sigcontext.h siginfo.h
-Date: Thu, 26 Jun 2008 14:30:16 +0200
-Message-Id: <1214483429-32360-48-git-send-email-monstr@seznam.cz>
-In-Reply-To: <1214483429-32360-47-git-send-email-monstr@seznam.cz>
+Subject: [PATCH 52/60] microblaze_v4: fcntl.h sockios.h ucontext.h
+Date: Thu, 26 Jun 2008 14:30:21 +0200
+Message-Id: <1214483429-32360-53-git-send-email-monstr@seznam.cz>
+In-Reply-To: <1214483429-32360-52-git-send-email-monstr@seznam.cz>
 References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
 	<1214483429-32360-2-git-send-email-monstr@seznam.cz>
 	<1214483429-32360-3-git-send-email-monstr@seznam.cz>
@@ -57,6 +57,11 @@ References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
 	<1214483429-32360-45-git-send-email-monstr@seznam.cz>
 	<1214483429-32360-46-git-send-email-monstr@seznam.cz>
 	<1214483429-32360-47-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-48-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-49-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-50-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-51-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-52-git-send-email-monstr@seznam.cz>
 Cc: linux-arch@vger.kernel.org, alan@lxorguk.ukuu.org.uk,
 	Michal Simek <monstr@monstr.eu>, vapier.adi@gmail.com,
 	arnd@arndb.de, matthew@wil.cx, microblaze-uclinux@itee.uq.edu.au,
@@ -77,18 +82,24 @@ From: Michal Simek <monstr@monstr.eu>
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- include/asm-microblaze/sigcontext.h |   19 +++++++++++++++++++
- include/asm-microblaze/siginfo.h    |   15 +++++++++++++++
- 2 files changed, 34 insertions(+), 0 deletions(-)
- create mode 100644 include/asm-microblaze/sigcontext.h
- create mode 100644 include/asm-microblaze/siginfo.h
+ include/asm-generic/sockios.h     |   23 +++++++++++++++++++++++
+ include/asm-generic/ucontext.h    |   24 ++++++++++++++++++++++++
+ include/asm-microblaze/fcntl.h    |    1 +
+ include/asm-microblaze/sockios.h  |   23 +++++++++++++++++++++++
+ include/asm-microblaze/ucontext.h |    1 +
+ 5 files changed, 72 insertions(+), 0 deletions(-)
+ create mode 100644 include/asm-generic/sockios.h
+ create mode 100644 include/asm-generic/ucontext.h
+ create mode 100644 include/asm-microblaze/fcntl.h
+ create mode 100644 include/asm-microblaze/sockios.h
+ create mode 100644 include/asm-microblaze/ucontext.h
 
-diff --git a/include/asm-microblaze/sigcontext.h b/include/asm-microblaze/sigcontext.h
+diff --git a/include/asm-generic/sockios.h b/include/asm-generic/sockios.h
 new file mode 100644
-index 0000000..2819672
+index 0000000..9dc86e6
 --- /dev/null
-+++ b/include/asm-microblaze/sigcontext.h
-@@ -0,0 +1,19 @@
++++ b/include/asm-generic/sockios.h
+@@ -0,0 +1,23 @@
 +/*
 + * Copyright (C) 2006 Atmark Techno, Inc.
 + *
@@ -97,23 +108,64 @@ index 0000000..2819672
 + * for more details.
 + */
 +
-+#ifndef _ASM_MICROBLAZE_SIGCONTEXT_H
-+#define _ASM_MICROBLAZE_SIGCONTEXT_H
++#ifndef _ASM_GENERIC_SOCKIOS_H
++#define _ASM_GENERIC_SOCKIOS_H
 +
-+#include <asm/ptrace.h>
++#include <asm-generic/ioctl.h>
 +
-+struct sigcontext {
-+	struct pt_regs regs;
-+	unsigned long oldmask;
++/* Socket-level I/O control calls. */
++#define FIOSETOWN	0x8901
++#define SIOCSPGRP	0x8902
++#define FIOGETOWN	0x8903
++#define SIOCGPGRP	0x8904
++#define SIOCATMARK	0x8905
++#define SIOCGSTAMP	0x8906		/* Get stamp (timeval) */
++#define SIOCGSTAMPNS	0x8907		/* Get stamp (timespec) */
++
++#endif /* _ASM_GENERIC_SOCKIOS_H */
+diff --git a/include/asm-generic/ucontext.h b/include/asm-generic/ucontext.h
+new file mode 100644
+index 0000000..3e718c2
+--- /dev/null
++++ b/include/asm-generic/ucontext.h
+@@ -0,0 +1,24 @@
++/*
++ * include/asm-generic/ucontext.h
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
++ *
++ * Copyright (C) 2006 Atmark Techno, Inc.
++ */
++
++#ifndef _ASM_GENERIC_UCONTEXT_H
++#define _ASM_GENERIC_UCONTEXT_H
++
++#include <asm/sigcontext.h>
++
++struct ucontext {
++	unsigned long		uc_flags;
++	struct ucontext		*uc_link;
++	stack_t			uc_stack;
++	struct sigcontext	uc_mcontext;
++	sigset_t		uc_sigmask; /* mask last for extensibility */
 +};
 +
-+#endif /* _ASM_MICROBLAZE_SIGCONTEXT_H */
-diff --git a/include/asm-microblaze/siginfo.h b/include/asm-microblaze/siginfo.h
++#endif /* _ASM_GENERIC_UCONTEXT_H */
+diff --git a/include/asm-microblaze/fcntl.h b/include/asm-microblaze/fcntl.h
 new file mode 100644
-index 0000000..f162911
+index 0000000..46ab12d
 --- /dev/null
-+++ b/include/asm-microblaze/siginfo.h
-@@ -0,0 +1,15 @@
++++ b/include/asm-microblaze/fcntl.h
+@@ -0,0 +1 @@
++#include <asm-generic/fcntl.h>
+diff --git a/include/asm-microblaze/sockios.h b/include/asm-microblaze/sockios.h
+new file mode 100644
+index 0000000..41d1a0c
+--- /dev/null
++++ b/include/asm-microblaze/sockios.h
+@@ -0,0 +1,23 @@
 +/*
 + * Copyright (C) 2006 Atmark Techno, Inc.
 + *
@@ -122,12 +174,27 @@ index 0000000..f162911
 + * for more details.
 + */
 +
-+#ifndef _ASM_MICROBLAZE_SIGINFO_H
-+#define _ASM_MICROBLAZE_SIGINFO_H
++#ifndef _ASM_MICROBLAZE_SOCKIOS_H
++#define _ASM_MICROBLAZE_SOCKIOS_H
 +
-+#include <linux/types.h>
-+#include <asm-generic/siginfo.h>
++#include <asm/ioctl.h>
 +
-+#endif /* _ASM_MICROBLAZE_SIGINFO_H */
++/* Socket-level I/O control calls. */
++#define FIOSETOWN	0x8901
++#define SIOCSPGRP	0x8902
++#define FIOGETOWN	0x8903
++#define SIOCGPGRP	0x8904
++#define SIOCATMARK	0x8905
++#define SIOCGSTAMP	0x8906		/* Get stamp (timeval) */
++#define SIOCGSTAMPNS	0x8907		/* Get stamp (timespec) */
++
++#endif /* _ASM_MICROBLAZE_SOCKIOS_H */
+diff --git a/include/asm-microblaze/ucontext.h b/include/asm-microblaze/ucontext.h
+new file mode 100644
+index 0000000..9bc07b9
+--- /dev/null
++++ b/include/asm-microblaze/ucontext.h
+@@ -0,0 +1 @@
++#include <asm-generic/ucontext.h>
 -- 
 1.5.4.GIT
