@@ -1,13 +1,16 @@
-Return-Path: <grant.likely@secretlab.ca>
-Date: Wed, 25 Jun 2008 13:21:04 -0700
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH] powerpc/bootwrapper: Add documentation of boot wrapper targets
-To: john.linn@xilinx.com, stephen.neuendorffer@xilinx.com,
-	linuxppc-dev@ozlabs.com, paulus@samba.org
-Message-id: <20080625202104.30114.47902.stgit@trillian.secretlab.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=utf-8
-Cc: petermendham@computing.dundee.ac.uk
+Return-Path: <wmb@firmworks.com>
+Received: from rs35.luxsci.com (rs35.luxsci.com [66.216.127.90])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 85243DDF14
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jun 2008 09:56:42 +1000 (EST)
+Message-ID: <48642B50.9060607@firmworks.com>
+Date: Thu, 26 Jun 2008 13:50:40 -1000
+From: Mitch Bradley <wmb@firmworks.com>
+MIME-Version: 1.0
+To: linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org
+Subject: [PATCH] Support NAND partitions >4GiB with Open Firmware
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,147 +20,148 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Grant Likely <grant.likely@secretlab.ca>
+This patch modifes ofpart.c so the total size of NAND FLASH
+and the size of an individual partition can exceed 4GiB.  It does so
+by decoding the "reg" property based on the values of "#address-cells"
+and "#size-cells" in the parent node, thus allowing the base address
+and size to be 64-bit numbers if necessary.  It handles any combination
+of #address-cells = 1 or 2 and #size-cells = 1 or 2, handles the case
+where the parent node doesn't have #address-cells / #size-cells properties,
+and handles the case where the value of #address-cells is incorrectly
+inherited from farther up the tree than the direct parent.
 
-There have been many questions on and off the mailing list about how
-exactly the bootwrapper is used for embedded targets.  Add some
-documentation and help text to try and clarify the system.
+This patch does not solve the problem that the MTD subsystem
+itself is limited to 2 GiB NAND sizes, but it is a step in that direction.
+The final assignment of the 64-bit partition offset and size values is
+truncated (by the C type conversion rules) to the actual size of the
+struct mtd_partition offset and size fields (which are currently u_int32's).
+At some point in the future, when those fields become larger, the code
+should "just work".
 
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
----
+The patch should apply to either 2.6.25 or 2.6.26rc.  It has been tested
+on the OLPC variant of 2.6.25 , with additional patches to other
+OLPC-specific files that aren't necessary for other architectures
+that have more mature support for Open Firmware.  The OLPC
+patch set, plus a set of test cases that verify correct operation for
+various #address-cells / #size-cells combinations, can be found at
+http://dev.laptop.org/~wmb/ofpart-olpc.tgz
 
- Documentation/powerpc/bootwrapper.txt |   78 +++++++++++++++++++++++++++++++++
- arch/powerpc/Makefile                 |   15 ++++++
- arch/powerpc/boot/wrapper             |    4 ++
- 3 files changed, 96 insertions(+), 1 deletions(-)
+Signed-off-by: Mitch Bradley <wmb@firmworks.com>
 
-diff --git a/Documentation/powerpc/bootwrapper.txt b/Documentation/powerpc/bootwrapper.txt
-new file mode 100644
-index 0000000..8dcb560
---- /dev/null
-+++ b/Documentation/powerpc/bootwrapper.txt
-@@ -0,0 +1,78 @@
-+The PowerPC boot wrapper
-+------------------------
-+Copyright (C) Secret Lab Technologies Ltd.
+diff --git a/drivers/mtd/ofpart.c b/drivers/mtd/ofpart.c
+index f86e069..b83b26c 100644
+--- a/drivers/mtd/ofpart.c
++++ b/drivers/mtd/ofpart.c
+@@ -7,6 +7,10 @@
+  * Revised to handle newer style flash binding by:
+  *   Copyright (C) 2007 David Gibson, IBM Corporation.
+  *
++ * Revised to handle multi-cell addresses and size in reg properties,
++ * paving the way for NAND FLASH devices > 4GiB by:
++ *   Mitch Bradley <wmb@laptop.org>
++ *
+  * This program is free software; you can redistribute  it and/or modify it
+  * under  the terms of  the GNU General  Public License as published by the
+  * Free Software Foundation;  either version 2 of the  License, or (at your
+@@ -15,0 +19,0 @@
+
+ #include <linux/module.h>
+ #include <linux/init.h>
++#include <linux/device.h>
+ #include <linux/of.h>
+ #include <linux/mtd/mtd.h>
+ #include <linux/mtd/partitions.h>
+
++u_int32_t decode_cell(const u_int8_t *prop)
++{
++       return ((prop[0] << 24) + (prop[1] << 16) + (prop[2] << 8) + 
+prop[3]);
++}
 +
-+PowerPC image targets compresses and wraps the kernel image (vmlinux) with
-+a boot wrapper to make it usable by the system firmware.  There is no
-+standard PowerPC firmware interface, so the boot wrapper is designed to
-+be adaptable for each kind of image that needs to be built.
+ int __devinit of_mtd_parse_partitions(struct device *dev,
+                                       struct mtd_info *mtd,
+                                       struct device_node *node,
+@@ -44,5 +54,7 @@ int __devinit of_mtd_parse_partitions(struct device *dev,
+        pp = NULL;
+        i = 0;
+        while ((pp = of_get_next_child(node, pp))) {
+-               const u32 *reg;
++               u_int64_t xoffset, xsize;
++               const u_int32_t *propval;
++               u_int32_t addrcells = 0, sizecells = 0;
+                int len;
+
+-               reg = of_get_property(pp, "reg", &len);
+-               if (!reg || (len != 2 * sizeof(u32))) {
++               /*
++                * Determine the layout of a "reg" entry based on the parent
++                * node's properties, if it hasn't been done already.
++                */
 +
-+The boot wrapper can be found in the arch/powerpc/boot/ directory.  The
-+Makefile in that directory has targets for all the available image types.
-+Currently, the following image targets exist:
++               if (addrcells == 0)
++                       addrcells = of_n_addr_cells(pp);
++               if (sizecells == 0)
++                       sizecells = of_n_size_cells(pp);
 +
-+   cuImage.%:		Backwards compatible uImage for older version of
-+			U-Boot (for versions that don't understand the device
-+			tree).  This image embeds a device tree blob inside
-+			the image.
-+   dtbImage.%:		Similar to zImage, except device tree blob is embedded
-+			inside the image.
-+   simpleImage.%:	Firmware independent compressed image that does not
-+			depend on any particular firmware interface and embeds
-+			a device tree blob.  This image can be loaded to any
-+			location in RAM and jumped to.  Firmware cannot pass
-+			any configuration data to the kernel with this image
-+			type and the kernel depends on the device tree to
-+			determine its console device.
-+   treeImage.%;		Image format for some versions of ppc4xx firmware (non
-+			U-Boot firmware).  This image embeds a device tree
-+			blob inside the image.
-+   uImage:		Native image format used by U-Boot.  The uImage target
-+			does not add any boot code.  It just wraps a compressed
-+			vmlinux in the uImage data structure.
-+   zImage.%:		Image usable by OpenFirmware.  Image expects firmware
-+			to provide the device tree using OpenFirmware
-+			interfaces.  Typically general purpose hardware uses
-+			this image format.
++               propval = of_get_property(pp, "reg", &len);
 +
-+Image types which embed a device tree blob (simpleImage, dtbImage, treeImage,
-+and cuImage) all generate the device tree blob from a file in the
-+arch/powerpc/boot/dts/ directory.  The Makefile selects the correct device
-+tree source based on the name of the target.  Therefore, if the kernel is
-+built with 'make treeImage.walnut simpleImage.virtex405-ml403', then the
-+build system will use arch/powerpc/boot/dts/walnut.dts to build
-+treeImage.walnut and arch/powerpc/boot/dts/virtex405-ml403.dts to build
-+the simpleImage.virtex405-ml403.
++               /*
++                * Handle the possibility of a broken device tree that
++                * doesn't define #address-cells and #size-cells properly.
++                 * In a standard device tree, if the address portion of
++                 * "reg" is one cell, the direct parent should have a
++                 * #address-cells property with value 1.
++                */
++               if (propval && (len == 2 * sizeof(u32)))
++                       addrcells = sizecells = 1;
 +
-+Two special targets called 'zImage' and 'zImage.initrd' also exist.  These
-+targets build all the default images as selected by the kernel configuration.
-+Default images are selected by the boot wrapper Makefile
-+(arch/powerpc/boot/Makefile) by adding targets to the $image-y variable.  Look
-+at the Makefile to see which default image targets are available.
++               /* Error checks */
 +
-+How it is built
-+---------------
-+arch/powerpc is designed to support multiplatform kernels, which means
-+that a single vmlinux image can be booted on many different target boards.
-+It also means that the boot wrapper must be able to wrap for many kinds of
-+images on a single build.  The design decision was made to not use any
-+conditional compilation code (#ifdef, etc) in the boot wrapper source code.
-+All of the boot wrapper pieces are buildable at any time regardless of the
-+kernel configuration.  Building all the wrapper bits on every kernel build
-+also ensures that obscure parts of the wrapper are at the very least compile
-+tested in a large variety of environments.
++               if (addrcells < 1 || addrcells > 2) {
++                       of_node_put(pp);
++                       dev_err(dev, "Invalid #address_cells %d on %s\n",
++                               addrcells, node->full_name);
++                       kfree(*pparts);
++                       *pparts = NULL;
++                       return -EINVAL;
++               }
 +
-+The wrapper is adapted for different image types at link time by linking in
-+just the wrapper bits that are appropriate for the image type.  The 'wrapper'
-+script (found in arch/powerpc/boot/wrapper) is called by the Makefile and
-+is responsible for selecting the correct wrapper bits for the image type.
-+The arguments are well documented in the script's comment block, so they
-+are not repeated here.  However, it is worth mentioning that the script
-+uses the -p (platform) argument as the main method of deciding which wrapper
-+bits to compile in.  Look for the large 'case "$platform" in' block in the
-+middle of the script.  This is also the place where platform specific fixups
-+can be selected by changing the link order.
++               if (sizecells < 1 || sizecells > 2) {
++                       of_node_put(pp);
++                       dev_err(dev, "Invalid #size-cells %d on %s\n",
++                               sizecells, node->full_name);
++                       kfree(*pparts);
++                       *pparts = NULL;
++                       return -EINVAL;
++               }
 +
-+In particular, care should be taken when working with cuImages.  cuImage
-+wrapper bits are very board specific and care should be taken to make sure
-+the target you are trying to build is supported by the wrapper bits.
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index b7d4c4c..754c7eb 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -169,12 +169,25 @@ bootwrapper_install %.dtb:
- 	$(Q)$(MAKE) ARCH=ppc64 $(build)=$(boot) $(patsubst %,$(boot)/%,$@)
- 
- define archhelp
--  @echo '* zImage          - Compressed kernel image (arch/$(ARCH)/boot/zImage.*)'
-+  @echo '* zImage          - Build default images selected by kernel config'
-+  @echo '  zImage.*        - Compressed kernel image (arch/$(ARCH)/boot/zImage.*)'
-+  @echo '  uImage          - U-Book native image format'
-+  @echo '  cuImage.<dt>    - Backwards compatible U-Boot image for older'
-+  @echo '                    versions which do not support device trees'
-+  @echo '  dtbImage.<dt>   - zImage with an embedded device tree blob'
-+  @echo '  simpleImage.<dt> - Firmware independant image.'
-+  @echo '  treeImage.<dt>  - Support for older IBM 4xx firmware (not U-Boot)'
-   @echo '  install         - Install kernel using'
-   @echo '                    (your) ~/bin/installkernel or'
-   @echo '                    (distribution) /sbin/installkernel or'
-   @echo '                    install to $$(INSTALL_PATH) and run lilo'
-   @echo '  *_defconfig     - Select default config from arch/$(ARCH)/configs'
-+  @echo ''
-+  @echo '  Targets with <dt> embed a device tree blob inside the image'
-+  @echo '  These targets support board with firmware that does not'
-+  @echo '  support passing a device tree directly.  Replace <dt> with the'
-+  @echo '  name of a dts file from the arch/$(ARCH)/boot/dts/ directory'
-+  @echo '  (minus the .dts extension).'
- endef
- 
- install:
-diff --git a/arch/powerpc/boot/wrapper b/arch/powerpc/boot/wrapper
-index d6c96d9..7cd4182 100755
---- a/arch/powerpc/boot/wrapper
-+++ b/arch/powerpc/boot/wrapper
-@@ -203,6 +203,10 @@ simpleboot-virtex405-*)
-     platformo="$object/virtex405-head.o $object/simpleboot.o"
-     binary=y
-     ;;
-+simpleboot-*)
-+    platformo="$object/simpleboot.o"
-+    binary=y
-+    ;;
- esac
- 
- vmz="$tmpdir/`basename \"$kernel\"`.$ext"
++               if (!propval || (len != (addrcells+sizecells) * 
+sizeof(u32))) {
+                        of_node_put(pp);
+                        dev_err(dev, "Invalid 'reg' on %s\n", 
+node->full_name);
+                        kfree(*pparts);
+                        *pparts = NULL;
+                        return -EINVAL;
+                }
+-               (*pparts)[i].offset = reg[0];
+-               (*pparts)[i].size = reg[1];
++
++               /* Accumulate the base address and size into 64-bit 
+numbers */
++               xoffset = (u_int64_t)ntohl(propval[0]);
++               if (addrcells > 1) {
++                       xoffset <<= 32;
++                       xoffset += ntohl(propval[1]);
++               }
++               xsize = (u_int64_t)ntohl(propval[addrcells]);
++               if (sizecells > 1) {
++                       xsize <<= 32;
++                       xsize += ntohl(propval[addrcells+1]);
++               }
++
++               (*pparts)[i].offset = xoffset;
++               (*pparts)[i].size = xsize;
+
+                partname = of_get_property(pp, "label", &len);
+                if (!partname)
