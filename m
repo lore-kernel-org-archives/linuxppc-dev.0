@@ -1,21 +1,17 @@
-Return-Path: <bwalle@suse.de>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+Return-Path: <jrigby@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id A7550DF303
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jun 2008 03:02:16 +1000 (EST)
-Date: Thu, 26 Jun 2008 19:02:09 +0200
-From: Bernhard Walle <bwalle@suse.de>
-To: Josh Boyer <jwboyer@gmail.com>
-Subject: Re: [PATCH] Remove experimental status of kdump on PPC64
-Message-ID: <20080626190209.3e046ea8@kopernikus.site>
-In-Reply-To: <1214494132.2791.0.camel@weaponx>
-References: <1214485035-26041-1-git-send-email-bwalle@suse.de>
-	<1214494132.2791.0.camel@weaponx>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, kexec@lists.infradead.org,
-	linux-kernel@vger.kernel.org, vgoyal@redhat.com
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 3275EDE990
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jun 2008 03:08:08 +1000 (EST)
+From: John Rigby <jrigby@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: [PATCH 0/2] powerpc: pci cleanup [rev2]
+Date: Thu, 26 Jun 2008 11:07:55 -0600
+Message-Id: <1214500077-9254-1-git-send-email-jrigby@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, John Rigby <jrigby@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,17 +21,8 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-* Josh Boyer <jwboyer@gmail.com> [2008-06-26 11:28]:
->
-> On Thu, 2008-06-26 at 14:57 +0200, Bernhard Walle wrote:
-> > This patch removes the experimental status of kdump on IA64. kdump is on IA64
-> > now since more than one year and it has proven to be stable.
-> 
-> I think you mean PPC64?
-
-Right. Copy & paste, I made the same patch for IA64. Resent. Sorry. :)
-
-
-Bernhard
--- 
-Bernhard Walle, SUSE LINUX Products GmbH, Architecture Development
+patch 1/2 cleans up powerpc pci config
+    Thanks to Michael Ellerman for his comments.  This new version
+    calls the new config var PPC_PCI_CHOICE instead of PPC_HAS_PCI
+patch 2/2 moves mpc83xx_add_bridge to fsl_pci.c
+    This is unchanged.
