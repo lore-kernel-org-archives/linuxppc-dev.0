@@ -2,14 +2,14 @@ Return-Path: <monstr@seznam.cz>
 Received: from monstr.eu (238.225.broadband7.iol.cz [88.102.225.238])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 85308DE498
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jun 2008 23:28:09 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 4CB43DF901
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jun 2008 23:29:29 +1000 (EST)
 From: monstr@seznam.cz
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 15/60] microblaze_v4: PVR support, cpuinfo support
-Date: Thu, 26 Jun 2008 14:29:44 +0200
-Message-Id: <1214483429-32360-16-git-send-email-monstr@seznam.cz>
-In-Reply-To: <1214483429-32360-15-git-send-email-monstr@seznam.cz>
+Subject: [PATCH 23/60] microblaze_v4: setup.c - system setting
+Date: Thu, 26 Jun 2008 14:29:52 +0200
+Message-Id: <1214483429-32360-24-git-send-email-monstr@seznam.cz>
+In-Reply-To: <1214483429-32360-23-git-send-email-monstr@seznam.cz>
 References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
 	<1214483429-32360-2-git-send-email-monstr@seznam.cz>
 	<1214483429-32360-3-git-send-email-monstr@seznam.cz>
@@ -25,6 +25,14 @@ References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
 	<1214483429-32360-13-git-send-email-monstr@seznam.cz>
 	<1214483429-32360-14-git-send-email-monstr@seznam.cz>
 	<1214483429-32360-15-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-16-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-17-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-18-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-19-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-20-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-21-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-22-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-23-git-send-email-monstr@seznam.cz>
 Cc: linux-arch@vger.kernel.org, alan@lxorguk.ukuu.org.uk,
 	Michal Simek <monstr@monstr.eu>, vapier.adi@gmail.com,
 	arnd@arndb.de, matthew@wil.cx, microblaze-uclinux@itee.uq.edu.au,
@@ -45,27 +53,23 @@ From: Michal Simek <monstr@monstr.eu>
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- arch/microblaze/kernel/cpu/mb.c  |  115 ++++++++++++++++++++++++++++++++++++++
- arch/microblaze/kernel/cpu/pvr.c |   81 ++++++++++++++++++++++++++
- 2 files changed, 196 insertions(+), 0 deletions(-)
- create mode 100644 arch/microblaze/kernel/cpu/mb.c
- create mode 100644 arch/microblaze/kernel/cpu/pvr.c
+ arch/microblaze/kernel/setup.c |  187 ++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 187 insertions(+), 0 deletions(-)
+ create mode 100644 arch/microblaze/kernel/setup.c
 
-diff --git a/arch/microblaze/kernel/cpu/mb.c b/arch/microblaze/kernel/cpu/mb.c
+diff --git a/arch/microblaze/kernel/setup.c b/arch/microblaze/kernel/setup.c
 new file mode 100644
-index 0000000..0124112
+index 0000000..95d6eae
 --- /dev/null
-+++ b/arch/microblaze/kernel/cpu/mb.c
-@@ -0,0 +1,115 @@
++++ b/arch/microblaze/kernel/setup.c
+@@ -0,0 +1,187 @@
 +/*
-+ * CPU-version specific code
++ * Copyright (C) 2007-2008 Michal Simek <monstr@monstr.eu>
++ * Copyright (C) 2006 Atmark Techno, Inc.
 + *
 + * This file is subject to the terms and conditions of the GNU General Public
 + * License. See the file "COPYING" in the main directory of this archive
 + * for more details.
-+ *
-+ * Copyright (C) 2007 Michal Simek <monstr@monstr.eu>
-+ * Copyright (C) 2006 PetaLogix
 + */
 +
 +#include <linux/init.h>
@@ -73,191 +77,178 @@ index 0000000..0124112
 +#include <linux/seq_file.h>
 +#include <linux/cpu.h>
 +#include <linux/initrd.h>
++#include <linux/console.h>
++#include <linux/debugfs.h>
 +
-+#include <asm/cpuinfo.h>
 +#include <asm/setup.h>
 +#include <asm/sections.h>
 +#include <asm/page.h>
 +#include <asm/io.h>
 +#include <asm/bug.h>
 +#include <asm/param.h>
-+#include <asm/delay.h>
++#include <asm/cache.h>
++#include <asm/cacheflush.h>
++#include <asm/entry.h>
++#include <asm/cpuinfo.h>
 +
-+static int show_cpuinfo(struct seq_file *m, void *v)
++#include <asm/system.h>
++#include <asm/prom.h>
++#include <asm/pgtable.h>
++
++DEFINE_PER_CPU(unsigned int, KSP);	/* Saved kernel stack pointer */
++DEFINE_PER_CPU(unsigned int, KM);	/* Kernel/user mode */
++DEFINE_PER_CPU(unsigned int, ENTRY_SP);	/* Saved SP on kernel entry */
++DEFINE_PER_CPU(unsigned int, R11_SAVE);	/* Temp variable for entry */
++DEFINE_PER_CPU(unsigned int, CURRENT_SAVE);	/* Saved current pointer */
++
++int have_of = 1;
++unsigned int boot_cpuid;
++char cmd_line[COMMAND_LINE_SIZE];
++static char default_command_line[COMMAND_LINE_SIZE] __initdata = CONFIG_CMDLINE;
++
++void __init setup_arch(char **cmdline_p)
 +{
-+	int count = 0;
-+	char *fpga_family = "Unknown";
-+	char *cpu_ver = "Unknown";
-+	int i;
-+	printk("%s\n", __func__);
++	console_verbose();
 +
-+	/* Denormalised to get the fpga family string */
-+	for (i = 0; family_string_lookup[i].s != NULL; i++) {
-+		if (cpuinfo.fpga_family_code == family_string_lookup[i].k) {
-+			fpga_family = (char *)family_string_lookup[i].s;
-+			break;
-+		}
-+	}
++	unflatten_device_tree();
++	/* NOTE I think that this function is not necessary to call */
++	/* irq_early_init(); */
++	setup_cpuinfo();
 +
-+	/* Denormalised to get the hw version string */
-+	for (i = 0; cpu_ver_lookup[i].s != NULL; i++) {
-+		if (cpuinfo.ver_code == cpu_ver_lookup[i].k) {
-+			cpu_ver = (char *)cpu_ver_lookup[i].s;
-+			break;
-+		}
-+	}
++	__invalidate_icache_all();
++	__enable_icache();
 +
-+	count = seq_printf(m,
-+			"CPU-Family:	MicroBlaze\n"
-+			"FPGA-Arch:	%s\n"
-+			"CPU-Ver:	%s\n"
-+			"CPU-MHz:	%d.%02d\n"
-+			"BogoMips:	%lu.%02lu\n",
-+			fpga_family,
-+			cpu_ver,
-+			cpuinfo.cpu_clock_freq /
-+			1000000,
-+			cpuinfo.cpu_clock_freq %
-+			1000000,
-+			loops_per_jiffy / (500000 / HZ),
-+			(loops_per_jiffy / (5000 / HZ)) % 100);
++	__invalidate_dcache_all();
++	__enable_dcache();
 +
-+	count += seq_printf(m,
-+			"HW-Div:\t\t%s\n"
-+			"HW-Shift:\t%s\n",
-+			cpuinfo.use_divider ? "yes" : "no",
-+			cpuinfo.use_barrel ? "yes" : "no");
++	panic_timeout = 120;
 +
-+	if (cpuinfo.use_icache)
-+		count += seq_printf(m,
-+				"Icache:\t\t%ukB\n",
-+				cpuinfo.icache_size >> 10);
-+	else
-+		count += seq_printf(m, "Icache:\t\tno\n");
++	setup_memory();
++	paging_init();
 +
-+	if (cpuinfo.use_dcache)
-+		count += seq_printf(m,
-+				"Dcache:\t\t%ukB\n",
-+				cpuinfo.dcache_size >> 10);
-+	else
-+		count += seq_printf(m, "Dcache:\t\tno\n");
++#if defined(CONFIG_SELFMOD_INTC) || defined(CONFIG_SELFMOD_TIMER)
++	printk(KERN_NOTICE "Self modified code enable\n");
++#endif
 +
-+	count += seq_printf(m,
-+			"HW-Debug:\t%s\n",
-+			cpuinfo.hw_debug ? "yes" : "no");
++#ifdef CONFIG_VT
++#if defined(CONFIG_XILINX_CONSOLE)
++	conswitchp = &xil_con;
++#elif defined(CONFIG_DUMMY_CONSOLE)
++	conswitchp = &dummy_con;
++#endif
++#endif
++}
 +
++#ifdef CONFIG_MTD_UCLINUX
++/* Handle both romfs and cramfs types, without generating unnecessary
++ code (ie no point checking for CRAMFS if it's not even enabled) */
++inline unsigned get_romfs_len(unsigned *addr)
++{
++#ifdef CONFIG_ROMFS_FS
++	if (memcmp(&addr[0], "-rom1fs-", 8) == 0) /* romfs */
++		return be32_to_cpu(addr[2]);
++#endif
++
++#ifdef CONFIG_CRAMFS
++	if (addr[0] == le32_to_cpu(0x28cd3d45)) /* cramfs */
++		return le32_to_cpu(addr[1]);
++#endif
 +	return 0;
 +}
++#endif	/* CONFIG_MTD_UCLINUX_EBSS */
 +
-+static void *c_start(struct seq_file *m, loff_t *pos)
++void __init machine_early_init(const char *cmdline, unsigned int ram,
++		unsigned int fdt)
 +{
-+	int i = *pos;
++	unsigned long *src, *dst = (unsigned long *)0x0;
++	early_printk("Ramdisk addr 0x%08x, FDT 0x%08x\n", ram, fdt);
 +
-+	return i < NR_CPUS ? (void *) (i + 1) : NULL;
++#ifdef CONFIG_MTD_UCLINUX
++	{
++		int size;
++		unsigned int romfs_base;
++		romfs_base = (ram ? ram : (unsigned int)&__init_end);
++		/* if CONFIG_MTD_UCLINUX_EBSS is defined, assume ROMFS is at the
++		 * end of kernel, which is ROMFS_LOCATION defined above. */
++		size = PAGE_ALIGN(get_romfs_len((unsigned *)romfs_base));
++		early_printk("Found romfs @ 0x%08x (0x%08x)\n",
++				romfs_base, size);
++		early_printk("#### klimit %p ####\n", klimit);
++		BUG_ON(size < 0); /* What else can we do? */
++
++		/* Use memmove to handle likely case of memory overlap */
++		early_printk("Moving 0x%08x bytes from 0x%08x to 0x%08x\n",
++			size, romfs_base, (unsigned)&_ebss);
++		memmove(&_ebss, (int *)romfs_base, size);
++
++		/* update klimit */
++		klimit += PAGE_ALIGN(size);
++		early_printk("New klimit: 0x%08x\n", (unsigned)klimit);
++	}
++#endif
++
++	memset(__bss_start, 0, __bss_stop-__bss_start);
++	memset(_ssbss, 0, _esbss-_ssbss);
++
++	printk(KERN_NOTICE "Found FDT at 0x%08x\n", fdt);
++	early_init_devtree((void *)fdt);
++
++	/* Copy command line passed from bootloader, or use default
++	 if none provided, or forced */
++#ifndef CONFIG_CMDLINE_FORCE
++	if (cmdline && cmdline[0] != '\0')
++		strlcpy(cmd_line, cmdline, COMMAND_LINE_SIZE);
++	else
++#endif
++		strlcpy(cmd_line, default_command_line, COMMAND_LINE_SIZE);
++
++	for (src = __ivt_start; src < __ivt_end; src++, dst++)
++		*dst = *src;
++
++	/* Initialize global data */
++	per_cpu(KM, 0) = 0x1;	/* We start in kernel mode */
++	per_cpu(CURRENT_SAVE, 0) = (unsigned long)current;
 +}
 +
-+static void *c_next(struct seq_file *m, void *v, loff_t *pos)
++#ifdef CONFIG_DEBUG_FS
++struct dentry *of_debugfs_root;
++
++static int microblaze_debugfs_init(void)
 +{
-+	++*pos;
-+	return c_start(m, pos);
++	of_debugfs_root = debugfs_create_dir("microblaze", NULL);
++
++	return of_debugfs_root == NULL;
++}
++arch_initcall(microblaze_debugfs_init);
++#endif
++
++void machine_restart(char *cmd)
++{
++	printk(KERN_NOTICE "Machine restart...\n");
++	dump_stack();
++	while (1)
++		;
 +}
 +
-+static void c_stop(struct seq_file *m, void *v)
++void machine_shutdown(void)
 +{
++	printk(KERN_NOTICE "Machine shutdown...\n");
++	while (1)
++		;
 +}
 +
-+struct seq_operations cpuinfo_op = {
-+	.start = c_start,
-+	.next = c_next,
-+	.stop = c_stop,
-+	.show = show_cpuinfo,
-+};
-diff --git a/arch/microblaze/kernel/cpu/pvr.c b/arch/microblaze/kernel/cpu/pvr.c
-new file mode 100644
-index 0000000..0b117bd
---- /dev/null
-+++ b/arch/microblaze/kernel/cpu/pvr.c
-@@ -0,0 +1,81 @@
-+/*
-+ * Support for MicroBlaze PVR (processor version register)
-+ *
-+ * Copyright (C) 2007 Michal Simek <monstr@monstr.eu>
-+ * Copyright (C) 2007 John Williams <john.williams@petalogix.com>
-+ * Copyright (C) 2007 PetaLogix
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License. See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/compiler.h>
-+#include <asm/system.h>
-+#include <asm/exceptions.h>
-+#include <asm/pvr.h>
-+
-+/*
-+ * Until we get an assembler that knows about the pvr registers,
-+ * this horrible cruft will have to do.
-+ * That hardcoded opcode is mfs r3, rpvrNN
-+ */
-+
-+#define get_single_pvr(pvrid, val)				\
-+{								\
-+	register unsigned tmp __asm__("r3");			\
-+	tmp = 0x0;	/* Prevent warning about unused */	\
-+	__asm__ __volatile__ (					\
-+			".byte 0x94,0x60,0xa0, " #pvrid "\n\t"	\
-+			: "=r" (tmp):: "memory"); 		\
-+	val = tmp;						\
++void machine_halt(void)
++{
++	printk(KERN_NOTICE "Machine halt...\n");
++	while (1)
++		;
 +}
 +
-+/*
-+ * Does the CPU support the PVR register?
-+ * return value:
-+ * 0: no PVR
-+ * 1: simple PVR
-+ * 2: full PVR
-+ *
-+ * This must work on all CPU versions, including those before the
-+ * PVR was even an option.
-+ */
-+
-+int cpu_has_pvr(void)
++void machine_power_off(void)
 +{
-+	unsigned flags;
-+	unsigned pvr0;
-+
-+	local_save_flags(flags);
-+
-+	/* PVR bit in MSR tells us if there is any support */
-+	if (!(flags & PVR_MSR_BIT))
-+		return 0;
-+
-+	get_single_pvr(0x00, pvr0);
-+	pr_debug("%s: pvr0 is 0x%08x\n", __func__, pvr0);
-+
-+	if (pvr0 & PVR0_PVR_FULL_MASK)
-+		return 1;
-+
-+	/* for partial PVR use static cpuinfo */
-+	return 2;
-+}
-+
-+void get_pvr(struct pvr_s *p)
-+{
-+	get_single_pvr(0, p->pvr[0]);
-+	get_single_pvr(1, p->pvr[1]);
-+	get_single_pvr(2, p->pvr[2]);
-+	get_single_pvr(3, p->pvr[3]);
-+	get_single_pvr(4, p->pvr[4]);
-+	get_single_pvr(5, p->pvr[5]);
-+	get_single_pvr(6, p->pvr[6]);
-+	get_single_pvr(7, p->pvr[7]);
-+	get_single_pvr(8, p->pvr[8]);
-+	get_single_pvr(9, p->pvr[9]);
-+	get_single_pvr(10, p->pvr[10]);
-+	get_single_pvr(11, p->pvr[11]);
++	printk(KERN_NOTICE "Machine power off...\n");
++	while (1)
++		;
 +}
 -- 
 1.5.4.GIT
