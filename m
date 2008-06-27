@@ -2,19 +2,20 @@ Return-Path: <jeff@garzik.org>
 Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 16C75DDDEA
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jun 2008 14:58:45 +1000 (EST)
-Message-ID: <4864737D.80306@garzik.org>
-Date: Fri, 27 Jun 2008 00:58:37 -0400
+	by ozlabs.org (Postfix) with ESMTPS id BEF6CDDEF1
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jun 2008 15:14:37 +1000 (EST)
+Message-ID: <48647736.3080704@garzik.org>
+Date: Fri, 27 Jun 2008 01:14:30 -0400
 From: Jeff Garzik <jeff@garzik.org>
 MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH 06/12] net: use linux/of_{device,platform}.h instead of asm
-References: <20080523161627.a75d5010.sfr@canb.auug.org.au>
-	<20080523162854.2e6ea8f0.sfr@canb.auug.org.au>
-In-Reply-To: <20080523162854.2e6ea8f0.sfr@canb.auug.org.au>
+To: Stefan Roese <sr@denx.de>
+Subject: Re: [PATCH V2] ibm_newemac: Fixes kernel crashes when speed of cable
+	connected changes
+References: <1214246162-25293-1-git-send-email-sr@denx.de>
+In-Reply-To: <1214246162-25293-1-git-send-email-sr@denx.de>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>, netdev@vger.kernel.org
+Cc: linuxppc-dev@ozlabs.org, Sathya Narayanan <sathyan@teamf1.com>,
+	netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,17 +25,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Stephen Rothwell wrote:
-> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+Stefan Roese wrote:
+> From: Sathya Narayanan <sathyan@teamf1.com>
+> 
+> The descriptor pointers were not initialized to NIL values, so it was
+> poiniting to some random addresses which was completely invalid. This
+> fix takes care of initializing the descriptor to NIL values and clearing
+> the valid descriptors on clean ring operation.
+> 
+> Signed-off-by: Sathya Narayanan <sathyan@teamf1.com>
+> Signed-off-by: Stefan Roese <sr@denx.de>
 > ---
->  drivers/net/fs_enet/fs_enet-main.c |    2 +-
->  drivers/net/fs_enet/mac-scc.c      |    2 +-
->  drivers/net/fs_enet/mii-fec.c      |    2 +-
->  drivers/net/ibm_newemac/core.h     |    2 +-
->  drivers/net/ucc_geth.c             |    2 +-
->  drivers/net/ucc_geth_mii.c         |    2 +-
->  6 files changed, 6 insertions(+), 6 deletions(-)
+> Changed since V1:
+> - Fixed off-by-one error in for loops
+> 
+>  drivers/net/ibm_newemac/core.c |    6 +++++-
+>  1 files changed, 5 insertions(+), 1 deletions(-)
 
-ACK
+I didn't see any answers to ben h's questions?
 
-I'll let a ppc person queue this
+Holding this patch, waiting for ben's ack...
