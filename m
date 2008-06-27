@@ -1,15 +1,20 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 16678DDF0F
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jun 2008 16:18:29 +1000 (EST)
-Date: Fri, 27 Jun 2008 16:18:27 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: paulus@samba.org
-Subject: [PATCH] powerpc: excplictly copy elements of pt_regs
-Message-Id: <20080627161827.4647186f.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <jeff@garzik.org>
+Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 83AB1DDED0
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jun 2008 16:37:31 +1000 (EST)
+Message-ID: <48648AA2.2020204@garzik.org>
+Date: Fri, 27 Jun 2008 02:37:22 -0400
+From: Jeff Garzik <jeff@garzik.org>
+MIME-Version: 1.0
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [PATCH 01/12] pata_mpc52xx: use linux/of_platform.h instead of asm
+References: <20080523161627.a75d5010.sfr@canb.auug.org.au>
+In-Reply-To: <20080523161627.a75d5010.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, Tejun Heo <htejun@gmail.com>,
+	Sylvain Munaut <tnt@246tNt.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,74 +24,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Gcc 4.3 produced this warning:
+Stephen Rothwell wrote:
+> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+> ---
+>  drivers/ata/pata_mpc52xx.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> I am not sure who wants to take this.
+> 
+> diff --git a/drivers/ata/pata_mpc52xx.c b/drivers/ata/pata_mpc52xx.c
+> index bc79df6..a9e8273 100644
+> --- a/drivers/ata/pata_mpc52xx.c
+> +++ b/drivers/ata/pata_mpc52xx.c
+> @@ -16,10 +16,10 @@
+>  #include <linux/slab.h>
+>  #include <linux/delay.h>
+>  #include <linux/libata.h>
+> +#include <linux/of_platform.h>
+>  
+>  #include <asm/types.h>
+>  #include <asm/prom.h>
+> -#include <asm/of_platform.h>
+>  #include <asm/mpc52xx.h>
 
-arch/powerpc/kernel/signal_64.c: In function 'restore_sigcontext':
-arch/powerpc/kernel/signal_64.c:161: warning: array subscript is above array bounds
-
-This is caused by us copying to aliases of elements of the pt_regs
-structure.  Make those explicit.
-
-This adds one extra __get_user and unrolls a loop.
-
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- arch/powerpc/kernel/signal_64.c |   24 ++++++++++++------------
- 1 files changed, 12 insertions(+), 12 deletions(-)
-
-This has been build tested for ppc64_defconfig.
-
-diff --git a/arch/powerpc/kernel/signal_64.c b/arch/powerpc/kernel/signal_64.c
-index da7c058..8af35c5 100644
---- a/arch/powerpc/kernel/signal_64.c
-+++ b/arch/powerpc/kernel/signal_64.c
-@@ -137,29 +137,29 @@ static long restore_sigcontext(struct pt_regs *regs, sigset_t *set, int sig,
- #endif
- 	unsigned long err = 0;
- 	unsigned long save_r13 = 0;
--	elf_greg_t *gregs = (elf_greg_t *)regs;
- 	unsigned long msr;
--	int i;
- 
- 	/* If this is not a signal return, we preserve the TLS in r13 */
- 	if (!sig)
- 		save_r13 = regs->gpr[13];
- 
--	/* copy everything before MSR */
--	err |= __copy_from_user(regs, &sc->gp_regs,
--				PT_MSR*sizeof(unsigned long));
--
-+	/* copy the GPRs */
-+	err |= __copy_from_user(regs->gpr, sc->gp_regs, sizeof(regs->gpr));
-+	err |= __get_user(regs->nip, &sc->gp_regs[PT_NIP]);
- 	/* get MSR separately, transfer the LE bit if doing signal return */
- 	err |= __get_user(msr, &sc->gp_regs[PT_MSR]);
- 	if (sig)
- 		regs->msr = (regs->msr & ~MSR_LE) | (msr & MSR_LE);
--
-+	err |= __get_user(regs->orig_gpr3, &sc->gp_regs[PT_ORIG_R3]);
-+	err |= __get_user(regs->ctr, &sc->gp_regs[PT_CTR]);
-+	err |= __get_user(regs->link, &sc->gp_regs[PT_LNK]);
-+	err |= __get_user(regs->xer, &sc->gp_regs[PT_XER]);
-+	err |= __get_user(regs->ccr, &sc->gp_regs[PT_CCR]);
- 	/* skip SOFTE */
--	for (i = PT_MSR+1; i <= PT_RESULT; i++) {
--		if (i == PT_SOFTE)
--			continue;
--		err |= __get_user(gregs[i], &sc->gp_regs[i]);
--	}
-+	err |= __get_user(regs->trap, &sc->gp_regs[PT_TRAP]);
-+	err |= __get_user(regs->dar, &sc->gp_regs[PT_DAR]);
-+	err |= __get_user(regs->dsisr, &sc->gp_regs[PT_DSISR]);
-+	err |= __get_user(regs->result, &sc->gp_regs[PT_RESULT]);
- 
- 	if (!sig)
- 		regs->gpr[13] = save_r13;
--- 
-1.5.6
-
-
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+ACK.  send it via an arch tree
