@@ -1,23 +1,24 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 2A61DDE08D
-	for <linuxppc-dev@ozlabs.org>; Sat, 28 Jun 2008 00:53:22 +1000 (EST)
-Message-ID: <4864FECF.3010304@freescale.com>
-Date: Fri, 27 Jun 2008 09:53:03 -0500
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>, Jon Loeliger <jdl@freescale.com>,
-	linuxppc-dev@ozlabs.org, Benno Rice <benno@jeamland.net>
-Subject: Re: dtc: Address an assortment of portability problems
-References: <20080626010349.GH308@yookeroo.seuss>
-	<20080626152528.GA12256@loki.buserror.net>
-	<20080626234743.GA16169@yookeroo.seuss>
-In-Reply-To: <20080626234743.GA16169@yookeroo.seuss>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Return-Path: <Monstr@seznam.cz>
+Received: from mxl.seznam.cz (mxl.seznam.cz [77.75.72.44])
+	by ozlabs.org (Postfix) with ESMTP id CF0CADDEEB
+	for <linuxppc-dev@ozlabs.org>; Sat, 28 Jun 2008 00:55:07 +1000 (EST)
+In-Reply-To: <20080627115936.GA18644@cs181140183.pp.htv.fi>
+Date: Fri, 27 Jun 2008 15:19:34 +0200 (CEST)
+To: =?us-ascii?Q?Adrian=20Bunk?= <bunk@kernel.org>
+From: =?us-ascii?Q?Michal=20Simek?= <Monstr@seznam.cz>
+Subject: =?us-ascii?Q?Re=3A=20=5BPATCH=2048=2F60=5D=20microblaze=5Fv4=3A=20headers=20simple=20files=20=2D=20empty=20or=20redirect=20to=20asm=2Dgeneric?=
+Mime-Version: 1.0
+Message-Id: <4641.7464-1541-432171441-1214572774@seznam.cz>
+Content-Type: text/plain;
+	charset="us-ascii"
+Cc: linux-arch@vger.kernel.org,
+	=?us-ascii?Q?Michal=20Simek?= <monstr@monstr.eu>,
+	=?us-ascii?Q?Arnd=20Bergmann?= <arnd@arndb.de>,
+	vapier.adi@gmail.com, matthew@wil.cx,
+	microblaze-uclinux@itee.uq.edu.au, linux-kernel@vger.kernel.org,
+	John.Linn@xilinx.com, linuxppc-dev@ozlabs.org,
+	will.newton@gmail.com, john.williams@petalogix.com,
+	hpa@zytor.com, drepper@redhat.com, alan@lxorguk.ukuu.org.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,21 +28,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Gibson wrote:
-> On Thu, Jun 26, 2008 at 10:25:28AM -0500, Scott Wood wrote:
->> On Thu, Jun 26, 2008 at 11:03:49AM +1000, David Gibson wrote:
->>> 	- the endian handling functions in libfdt_env.h, based on
->>> endian.h and byteswap.h are replaced with some portable open-coded
->>> versions.  Unfortunately, these result in fairly crappy code when
->>> compiled, but as far as I can determine there doesn't seem to be any
->>> POSIX, SUS or de facto standard way of determining endianness at
->>> compile time, nor standard names for byteswapping functions.
->> Since device-tree and network byte order happen to be the same, we could use
->> ntohl/htonl.
-> 
-> Not for the 64-bit version.
+Hi Adrian and Arnd,
 
-Why?  They operate on uint32_t despite the "l" in the name, and there 
-are no 64-bit fields in the device tree...
+>> > After all, it won't matter whether we'll unify resp. remove
+>> > 22 or 23 files.
+>> 
+>> That wasn't my idea. The logic was that if one more file exists
+>> in asm-generic that can be removed from the architectures,
+>> we get 22 more files to remove without anyone having to look
+>> at the big picture. When microblaze is in,
+>
+>Discussions of the "big picture" should be in an own thread, not as 
+>part of a merge of a new architecture.
+>
+>I am not an architecture maintainer, but I do not like the way you want 
+>to couple the microblaze merge with the move of stuff to asm-generic.
+>
+>They both make sense, but they are clearly separate issues.
+>
+>> I can compile a list
+>> with asm-generic files that can be used to replace the architecture
+>> specific files, so the arch maintainers can decide on their own
+>> whether to clean their own stuff up or not.
+>>...
+>
+>We need either all architectures changed or none at all - we do need the 
+>arch headers to become more similar, not more different.
+>
+>And this is why we need an agreement _before_ an asm-generic header gets 
+>added, not after it.
 
--Scott
+I moved some headers to asm-generic how Arnd recommended to me. The same style
+is applied to of files. If you think that is good idea to start with new topic what is necessary to move
+to asm-generic, I agree. For me is not hard to move these files back to asm-microblaze and then
+someone can do big patch among all archs.
+If you want to managed, please open new discussion about and cc me.
+
+Michal
