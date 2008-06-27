@@ -1,21 +1,20 @@
-Return-Path: <jeff@garzik.org>
-Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id BEF6CDDEF1
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jun 2008 15:14:37 +1000 (EST)
-Message-ID: <48647736.3080704@garzik.org>
-Date: Fri, 27 Jun 2008 01:14:30 -0400
-From: Jeff Garzik <jeff@garzik.org>
+Return-Path: <rusty@rustcorp.com.au>
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Christian Borntraeger <borntraeger@de.ibm.com>
+Subject: Re: [RFC 1/3 v2] hvc_console: rework setup to replace irq functions
+	with callbacks
+Date: Fri, 27 Jun 2008 15:27:51 +1000
+References: <200806031444.21945.borntraeger@de.ibm.com>
+	<200806201524.08237.borntraeger@de.ibm.com>
+In-Reply-To: <200806201524.08237.borntraeger@de.ibm.com>
 MIME-Version: 1.0
-To: Stefan Roese <sr@denx.de>
-Subject: Re: [PATCH V2] ibm_newemac: Fixes kernel crashes when speed of cable
-	connected changes
-References: <1214246162-25293-1-git-send-email-sr@denx.de>
-In-Reply-To: <1214246162-25293-1-git-send-email-sr@denx.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, Sathya Narayanan <sathyan@teamf1.com>,
-	netdev@vger.kernel.org
+Content-Type: text/plain;
+  charset="utf-8"
+Message-Id: <200806271527.52321.rusty@rustcorp.com.au>
+Cc: Linux PPC devel <linuxppc-dev@ozlabs.org>,
+	Jeremy Fitzhardinge <jeremy@goop.org>,
+	Yajin <zyj001et@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
+	Virtualization Mailing List <virtualization@lists.osdl.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,23 +24,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Stefan Roese wrote:
-> From: Sathya Narayanan <sathyan@teamf1.com>
-> 
-> The descriptor pointers were not initialized to NIL values, so it was
-> poiniting to some random addresses which was completely invalid. This
-> fix takes care of initializing the descriptor to NIL values and clearing
-> the valid descriptors on clean ring operation.
-> 
-> Signed-off-by: Sathya Narayanan <sathyan@teamf1.com>
-> Signed-off-by: Stefan Roese <sr@denx.de>
-> ---
-> Changed since V1:
-> - Fixed off-by-one error in for loops
-> 
->  drivers/net/ibm_newemac/core.c |    6 +++++-
->  1 files changed, 5 insertions(+), 1 deletions(-)
+On Friday 20 June 2008 23:24:08 Christian Borntraeger wrote:
+> I also kept hvc_struct defined in hvc_console.h so that hvc_irq.c can
+> access the irq_requested element.
 
-I didn't see any answers to ben h's questions?
+Added this fix:
 
-Holding this patch, waiting for ben's ack...
+=46ix compile of hvc_rtas.c
+
+Moving the struct definition out to the header had bad effect under one
+ppc64 config that I tried:
+
+drivers/char/hvc_console.h:59: error: field =E2=80=98kref=E2=80=99 has inco=
+mplete type
+
+So move the include of kref.h too.
+
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+
+diff -r f382d8f562a8 drivers/char/hvc_console.c
+=2D-- a/drivers/char/hvc_console.c	Fri Jun 27 15:17:49 2008 +1000
++++ b/drivers/char/hvc_console.c	Fri Jun 27 15:24:15 2008 +1000
+@@ -27,7 +27,6 @@
+ #include <linux/init.h>
+ #include <linux/kbd_kern.h>
+ #include <linux/kernel.h>
+=2D#include <linux/kref.h>
+ #include <linux/kthread.h>
+ #include <linux/list.h>
+ #include <linux/module.h>
+diff -r f382d8f562a8 drivers/char/hvc_console.h
+=2D-- a/drivers/char/hvc_console.h	Fri Jun 27 15:17:49 2008 +1000
++++ b/drivers/char/hvc_console.h	Fri Jun 27 15:24:15 2008 +1000
+@@ -26,6 +26,7 @@
+=20
+ #ifndef HVC_CONSOLE_H
+ #define HVC_CONSOLE_H
++#include <linux/kref.h>
+=20
+ /*
+  * This is the max number of console adapters that can/will be found as
