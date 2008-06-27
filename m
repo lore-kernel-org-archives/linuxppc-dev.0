@@ -1,21 +1,28 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id BEEAFDDEFB
-	for <linuxppc-dev@ozlabs.org>; Sat, 28 Jun 2008 00:55:17 +1000 (EST)
-Message-Id: <24590FB3-5A41-4CCC-964F-BE861ABA7FC0@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Paul Mackerras <paulus@samba.org>
-In-Reply-To: <18532.52894.698980.899308@cargo.ozlabs.ibm.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v924)
-Subject: Re: Please pull from 'powerpc-next' branch
-Date: Fri, 27 Jun 2008 08:00:11 -0500
-References: <Pine.LNX.4.64.0806260249300.14932@blarg.am.freescale.net>
-	<98D3041A-F888-4991-9B10-CF4A9AD4A5BD@kernel.crashing.org>
-	<18532.52894.698980.899308@cargo.ozlabs.ibm.com>
-Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>
+Return-Path: <sam@ravnborg.org>
+Received: from pasmtpB.tele.dk (pasmtpb.tele.dk [80.160.77.98])
+	by ozlabs.org (Postfix) with ESMTP id 91DB0DDF90
+	for <linuxppc-dev@ozlabs.org>; Sat, 28 Jun 2008 00:59:05 +1000 (EST)
+Date: Fri, 27 Jun 2008 15:55:52 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Adrian Bunk <bunk@kernel.org>
+Subject: Re: [PATCH 48/60] microblaze_v4: headers simple files - empty or
+	redirect to asm-generic
+Message-ID: <20080627135552.GA16485@uranus.ravnborg.org>
+References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
+	<200806261838.33787.arnd@arndb.de>
+	<20080626180530.GA22827@cs181140183.pp.htv.fi>
+	<200806270123.06669.arnd@arndb.de>
+	<20080627115936.GA18644@cs181140183.pp.htv.fi>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080627115936.GA18644@cs181140183.pp.htv.fi>
+Cc: linux-arch@vger.kernel.org, alan@lxorguk.ukuu.org.uk,
+	Michal Simek <monstr@monstr.eu>, vapier.adi@gmail.com,
+	Arnd Bergmann <arnd@arndb.de>, matthew@wil.cx,
+	microblaze-uclinux@itee.uq.edu.au, linux-kernel@vger.kernel.org,
+	drepper@redhat.com, linuxppc-dev@ozlabs.org,
+	will.newton@gmail.com, hpa@zytor.com, monstr@seznam.cz,
+	John.Linn@xilinx.com, john.williams@petalogix.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,27 +32,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+> 
+> We need either all architectures changed or none at all - we do need the 
+> arch headers to become more similar, not more different.
+> 
+> And this is why we need an agreement _before_ an asm-generic header gets 
+> added, not after it.
+We already have the agreement..
+Files which are equal among archs should be in asm-generic.
+And there is simply no gain in adding files for an arch when can put
+them in asm-generic.
+When they are in asm-generic than we can fix the other archs one-by-one.
 
-On Jun 27, 2008, at 6:27 AM, Paul Mackerras wrote:
-
-> Kumar Gala writes:
->
->> Paul, any update on when we might see some of the various patches
->> pulled into powerpc-next?
->
-> This weekend assuming I get over this gastric flu-like lurgy that I
-> have at the moment.
-
-Uugh, that sucks.
-
->> I've got some work I'd like to see in .27 but it needs Michael's code
->> patching patches.
->
-> I thought you had some concerns about patches 5/14 and 12/14 of his
-> series?
-
-5/14 needs some better comments but nothing that should hold up the  
-acceptance and 12/14 or should be merged with 11/14 if he reposts the  
-patch set.  But again, nothing to hold things up.
-
-- k
+	Sam
