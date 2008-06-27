@@ -1,16 +1,29 @@
-Return-Path: <wmb@firmworks.com>
-Received: from rs35.luxsci.com (rs35.luxsci.com [66.216.127.90])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 85243DDF14
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jun 2008 09:56:42 +1000 (EST)
-Message-ID: <48642B50.9060607@firmworks.com>
-Date: Thu, 26 Jun 2008 13:50:40 -1000
-From: Mitch Bradley <wmb@firmworks.com>
+Return-Path: <john.williams@petalogix.com>
+Received: from qb-out-0506.google.com (qb-out-0506.google.com [72.14.204.227])
+	by ozlabs.org (Postfix) with ESMTP id 8DE86DDE1E
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jun 2008 10:03:49 +1000 (EST)
+Received: by qb-out-0506.google.com with SMTP id c8so656206qbc.39
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jun 2008 17:03:47 -0700 (PDT)
+Message-ID: <1d3f23370806261703w277719cfn8b9f193e08a9d85a@mail.gmail.com>
+Date: Fri, 27 Jun 2008 10:03:46 +1000
+From: "John Williams" <john.williams@petalogix.com>
+To: "Adrian Bunk" <bunk@kernel.org>
+Subject: Re: [PATCH 02/60] microblaze_v4: Makefiles for Microblaze cpu
+In-Reply-To: <20080626194002.GC22827@cs181140183.pp.htv.fi>
 MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org
-Subject: [PATCH] Support NAND partitions >4GiB with Open Firmware
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
+References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-2-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-3-git-send-email-monstr@seznam.cz>
+	<20080626143623.GC30954@cs181140183.pp.htv.fi>
+	<4863E414.4090303@seznam.cz>
+	<20080626194002.GC22827@cs181140183.pp.htv.fi>
+Cc: linux-arch@vger.kernel.org, vapier.adi@gmail.com, arnd@arndb.de,
+	matthew@wil.cx, microblaze-uclinux@itee.uq.edu.au,
+	linux-kernel@vger.kernel.org, drepper@redhat.com,
+	linuxppc-dev@ozlabs.org, will.newton@gmail.com, hpa@zytor.com,
+	Michal Simek <monstr@seznam.cz>, John.Linn@xilinx.com,
+	alan@lxorguk.ukuu.org.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,148 +33,74 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch modifes ofpart.c so the total size of NAND FLASH
-and the size of an individual partition can exceed 4GiB.  It does so
-by decoding the "reg" property based on the values of "#address-cells"
-and "#size-cells" in the parent node, thus allowing the base address
-and size to be 64-bit numbers if necessary.  It handles any combination
-of #address-cells = 1 or 2 and #size-cells = 1 or 2, handles the case
-where the parent node doesn't have #address-cells / #size-cells properties,
-and handles the case where the value of #address-cells is incorrectly
-inherited from farther up the tree than the direct parent.
+On 6/27/08, Adrian Bunk <bunk@kernel.org> wrote:
+> On Thu, Jun 26, 2008 at 08:46:44PM +0200, Michal Simek wrote:
+>  > Adrian Bunk napsal(a):
+>  > > On Thu, Jun 26, 2008 at 02:29:31PM +0200, monstr@seznam.cz wrote:
+>  > >> ...
+>  > >> --- /dev/null
+>  > >> +++ b/arch/microblaze/Makefile
+>  > >> ...
+>  > >> +# Work out HW multipler support.  This is icky.
+>  > >> +# 1. Spartan2 has no HW multiplers.
+>  > >> +# 2. MicroBlaze v3.x always uses them, except in Spartan 2
+>  > >> +# 3. All other FPGa/CPU ver combos, we can trust the CONFIG_ settings
+>  > >> +ifeq (,$(findstring spartan2,$(CONFIG_XILINX_MICROBLAZE0_FAMILY)))
+>  > >> +  ifeq ($(CPU_MAJOR),3)
+>  > >> +    CPUFLAGS-1 += -mno-xl-soft-mul
+>  > >> +  else
+>  > >> +    # USE_HW_MUL can be 0, 1, or 2, defining a heirarchy of HW Mul support.
+>  > >> +    CPUFLAGS-$(subst 1,,$(CONFIG_XILINX_MICROBLAZE0_USE_HW_MUL)) += -mxl-multiply-high
+>  > >> +    CPUFLAGS-$(CONFIG_XILINX_MICROBLAZE0_USE_HW_MUL) += -mno-xl-soft-mul
+>  > >> +  endif
+>  > >> +endif
+>  > >> +CPUFLAGS-$(CONFIG_XILINX_MICROBLAZE0_USE_DIV) += -mno-xl-soft-div
+>  > >> +CPUFLAGS-$(CONFIG_XILINX_MICROBLAZE0_USE_BARREL) += -mxl-barrel-shift
+>  > >> +CPUFLAGS-$(CONFIG_XILINX_MICROBLAZE0_USE_PCMP) += -mxl-pattern-compare
+>  > >> +
+>  > >> +CPUFLAGS-1 += $(call cc-option,-mcpu=v$(CPU_VER))
+>  > >> +
+>  > >> +# The various CONFIG_XILINX cpu features options are integers 0/1/2...
+>  > >> +# rather than bools y/n
+>  > >> +CFLAGS += $(CPUFLAGS-1)
+>  > >> +CFLAGS += $(CPUFLAGS-2)
+>  > >> ...
+>  > >
+>  > > Why are the options not bools?
+>  > because CONFIG_XILINX_... are 0, 1 or 2 not only y, n.
 
-This patch does not solve the problem that the MTD subsystem
-itself is limited to 2 GiB NAND sizes, but it is a step in that direction.
-The final assignment of the 64-bit partition offset and size values is
-truncated (by the C type conversion rules) to the actual size of the
-struct mtd_partition offset and size fields (which are currently u_int32's).
-At some point in the future, when those fields become larger, the code
-should "just work".
+> I understood that.
+>
+>  But _why_ are these options not bools?
 
-The patch should apply to either 2.6.25 or 2.6.26rc.  It has been tested
-on the OLPC variant of 2.6.25 , with additional patches to other
-OLPC-specific files that aren't necessary for other architectures
-that have more mature support for Open Firmware.  The OLPC
-patch set, plus a set of test cases that verify correct operation for
-various #address-cells / #size-cells combinations, can be found at
-http://dev.laptop.org/~wmb/ofpart-olpc.tgz
+The CPU has 3 levels of multiplier support -
 
-Signed-off-by: Mitch Bradley <wmb@firmworks.com>
+0=none
+1= 32-bit (mul produces 32 LSB of a 32x32 bit multiply)
+2= 32-bit high (mulhi produces 32 MSB of a 32x32 bit multiply).
 
-diff --git a/drivers/mtd/ofpart.c b/drivers/mtd/ofpart.c
-index f86e069..b83b26c 100644
---- a/drivers/mtd/ofpart.c
-+++ b/drivers/mtd/ofpart.c
-@@ -7,6 +7,10 @@
-  * Revised to handle newer style flash binding by:
-  *   Copyright (C) 2007 David Gibson, IBM Corporation.
-  *
-+ * Revised to handle multi-cell addresses and size in reg properties,
-+ * paving the way for NAND FLASH devices > 4GiB by:
-+ *   Mitch Bradley <wmb@laptop.org>
-+ *
-  * This program is free software; you can redistribute  it and/or modify it
-  * under  the terms of  the GNU General  Public License as published by the
-  * Free Software Foundation;  either version 2 of the  License, or (at your
-@@ -15,0 +19,0 @@
+The CPU-specific options are pulled directly out of the MicroBlaze
+system design tools as an auto-generated config file that we drop into
+the kernel build.  Doing so ensures consistency between the hardware
+and the kernel running on it.
 
- #include <linux/module.h>
- #include <linux/init.h>
-+#include <linux/device.h>
- #include <linux/of.h>
- #include <linux/mtd/mtd.h>
- #include <linux/mtd/partitions.h>
+These options come out of the tools as intergers, 0,1,2.  We found in
+the early days of microblaze that lots of users built unbootable
+kernels because they manually transcribed these options incorrectly.
+So, we integrate as closely as we reasonable can to prevent these sort
+of CPU configuration errors.
 
-+u_int32_t decode_cell(const u_int8_t *prop)
-+{
-+       return ((prop[0] << 24) + (prop[1] << 16) + (prop[2] << 8) + 
-prop[3]);
-+}
-+
- int __devinit of_mtd_parse_partitions(struct device *dev,
-                                       struct mtd_info *mtd,
-                                       struct device_node *node,
-@@ -44,5 +54,7 @@ int __devinit of_mtd_parse_partitions(struct device *dev,
-        pp = NULL;
-        i = 0;
-        while ((pp = of_get_next_child(node, pp))) {
--               const u32 *reg;
-+               u_int64_t xoffset, xsize;
-+               const u_int32_t *propval;
-+               u_int32_t addrcells = 0, sizecells = 0;
-                int len;
+These options are now limited to about 6 CPU-specific options - things
+we must know about the CPU at compile time to set the correct cpuflags
+to GCC.
 
--               reg = of_get_property(pp, "reg", &len);
--               if (!reg || (len != 2 * sizeof(u32))) {
-+               /*
-+                * Determine the layout of a "reg" entry based on the parent
-+                * node's properties, if it hasn't been done already.
-+                */
-+
-+               if (addrcells == 0)
-+                       addrcells = of_n_addr_cells(pp);
-+               if (sizecells == 0)
-+                       sizecells = of_n_size_cells(pp);
-+
-+               propval = of_get_property(pp, "reg", &len);
-+
-+               /*
-+                * Handle the possibility of a broken device tree that
-+                * doesn't define #address-cells and #size-cells properly.
-+                 * In a standard device tree, if the address portion of
-+                 * "reg" is one cell, the direct parent should have a
-+                 * #address-cells property with value 1.
-+                */
-+               if (propval && (len == 2 * sizeof(u32)))
-+                       addrcells = sizecells = 1;
-+
-+               /* Error checks */
-+
-+               if (addrcells < 1 || addrcells > 2) {
-+                       of_node_put(pp);
-+                       dev_err(dev, "Invalid #address_cells %d on %s\n",
-+                               addrcells, node->full_name);
-+                       kfree(*pparts);
-+                       *pparts = NULL;
-+                       return -EINVAL;
-+               }
-+
-+               if (sizecells < 1 || sizecells > 2) {
-+                       of_node_put(pp);
-+                       dev_err(dev, "Invalid #size-cells %d on %s\n",
-+                               sizecells, node->full_name);
-+                       kfree(*pparts);
-+                       *pparts = NULL;
-+                       return -EINVAL;
-+               }
-+
-+               if (!propval || (len != (addrcells+sizecells) * 
-sizeof(u32))) {
-                        of_node_put(pp);
-                        dev_err(dev, "Invalid 'reg' on %s\n", 
-node->full_name);
-                        kfree(*pparts);
-                        *pparts = NULL;
-                        return -EINVAL;
-                }
--               (*pparts)[i].offset = reg[0];
--               (*pparts)[i].size = reg[1];
-+
-+               /* Accumulate the base address and size into 64-bit 
-numbers */
-+               xoffset = (u_int64_t)ntohl(propval[0]);
-+               if (addrcells > 1) {
-+                       xoffset <<= 32;
-+                       xoffset += ntohl(propval[1]);
-+               }
-+               xsize = (u_int64_t)ntohl(propval[addrcells]);
-+               if (sizecells > 1) {
-+                       xsize <<= 32;
-+                       xsize += ntohl(propval[addrcells+1]);
-+               }
-+
-+               (*pparts)[i].offset = xoffset;
-+               (*pparts)[i].size = xsize;
+All else is set through open firmware or querying a Processor Version
+Register at boot.
 
-                partname = of_get_property(pp, "label", &len);
-                if (!partname)
+Regards,
+
+John
+-- 
+John Williams, PhD, B.Eng, B.IT
+PetaLogix - Linux Solutions for a Reconfigurable World
+w: www.petalogix.com  p: +61-7-30090663  f: +61-7-30090663
