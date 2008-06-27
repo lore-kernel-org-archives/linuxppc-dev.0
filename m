@@ -1,15 +1,15 @@
-Return-Path: <nyet@nyet.org>
-Received: from curtis.curtisfong.org (curtis.curtisfong.org [66.43.110.51])
-	by ozlabs.org (Postfix) with ESMTP id 40648DE40F
-	for <linuxppc-dev@ozlabs.org>; Sat, 28 Jun 2008 05:34:35 +1000 (EST)
-Date: Fri, 27 Jun 2008 12:26:51 -0700
-From: Nye Liu <nyet@nyet.org>
+Return-Path: <nyet@mrv.com>
+Received: from chmailsrv.int.mrv.com (unknown [66.43.110.3])
+	by ozlabs.org (Postfix) with ESMTP id EA321DDFBD
+	for <linuxppc-dev@ozlabs.org>; Sat, 28 Jun 2008 06:13:25 +1000 (EST)
+Date: Fri, 27 Jun 2008 13:01:00 -0700
+From: Nye Liu <nyet@mrv.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH] FS_ENET: Don't attempt to set mii_speed when fec_inf is null
-Message-ID: <20080627192651.GA28291@curtisfong.org>
+Subject: [PATCH] POWERPC CPM: Minor cosmetic changes to udbg_putc
+Message-ID: <20080627200100.GA16661@mrv.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org
+Cc: scottwood@freescale.com, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,25 +21,44 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Nye Liu <nyet@mrv.com>
 
-When using CONFIG_FIXED_PHY, fec_inf (fep->phydev->bus->priv) is NULL in
-fs_enet/mac-fec.c restart(). Dereferencing fec_inf when trying to set the
-mii_speed causes a kernel oops.
+udbg_putc is a *function pointer* that is initialized during
+udbg_init_cpm. It might not be initialized properly when called from
+udbg_putc_cpm(), so (recursively) call udbg_putc_cpm() directly.
+
+Printing an "X" on initialization is ugly. How about a "\n" instead?
 
 Signed-off-by: Nye Liu <nyet@mrv.com>
 
 ---
 
-diff --git a/drivers/net/fs_enet/mac-fec.c b/drivers/net/fs_enet/mac-fec.c
-index 8a311d1..350bc73 100644
---- a/drivers/net/fs_enet/mac-fec.c
-+++ b/drivers/net/fs_enet/mac-fec.c
-@@ -328,7 +328,8 @@ static void restart(struct net_device *dev)
-        /*
-         * Set MII speed.
-         */
--       FW(fecp, mii_speed, fec_inf->mii_speed);
-+       if (fec_inf)
-+           FW(fecp, mii_speed, fec_inf->mii_speed);
+diff --git a/arch/powerpc/sysdev/cpm_common.c b/arch/powerpc/sysdev/cpm_common.c
+index cb7df2d..dcde743 100644
+--- a/arch/powerpc/sysdev/cpm_common.c
++++ b/arch/powerpc/sysdev/cpm_common.c
+@@ -37,7 +37,7 @@ static void udbg_putc_cpm(char c)
+ 	u8 __iomem *txbuf = (u8 __iomem __force *)in_be32(&cpm_udbg_txdesc[1]);
  
-        /*
-         * Clear any outstanding interrupt.
+ 	if (c == '\n')
+-		udbg_putc('\r');
++		udbg_putc_cpm('\r');
+ 
+ 	while (in_be32(&cpm_udbg_txdesc[0]) & 0x80000000)
+ 		;
+@@ -53,7 +53,7 @@ void __init udbg_init_cpm(void)
+ 		setbat(1, 0xf0000000, 0xf0000000, 1024*1024, _PAGE_IO);
+ #endif
+ 		udbg_putc = udbg_putc_cpm;
+-		udbg_putc('X');
++		udbg_putc('\n');
+ 	}
+ }
+ #endif
+
+-- 
+Nye Liu
+nliu@mrv.com
+(818) 772-6235x248
+(818) 772-0576 fax
+
+"Who would be stupid enough to quote a fictitious character?"
+	-- Don Quixote
