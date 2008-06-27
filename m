@@ -1,23 +1,23 @@
-Return-Path: <Monstr@seznam.cz>
-Received: from mxl.seznam.cz (mxl.seznam.cz [77.75.72.44])
-	by ozlabs.org (Postfix) with ESMTP id C906DDDF01
-	for <linuxppc-dev@ozlabs.org>; Sat, 28 Jun 2008 00:48:06 +1000 (EST)
-In-Reply-To: <alpine.LFD.1.10.0806271240461.3297@apollo.tec.linutronix.de>
-Date: Fri, 27 Jun 2008 15:10:32 +0200 (CEST)
-To: =?us-ascii?Q?Thomas=20Gleixner?= <tglx@linutronix.de>
-From: =?us-ascii?Q?Michal=20Simek?= <Monstr@seznam.cz>
-Subject: =?us-ascii?Q?Re=3A=20=5BPATCH=2026=2F60=5D=20microblaze=5Fv4=3A=20time=20support?=
-Mime-Version: 1.0
-Message-Id: <4641.7464-1217-45420265-1214572232@seznam.cz>
-Content-Type: text/plain;
-	charset="us-ascii"
-Cc: linux-arch@vger.kernel.org, alan@lxorguk.ukuu.org.uk,
-	=?us-ascii?Q?Michal=20Simek?= <monstr@monstr.eu>,
-	vapier.adi@gmail.com, arnd@arndb.de, matthew@wil.cx,
-	microblaze-uclinux@itee.uq.edu.au, linux-kernel@vger.kernel.org,
-	drepper@redhat.com, linuxppc-dev@ozlabs.org,
-	will.newton@gmail.com, hpa@zytor.com, John.Linn@xilinx.com,
-	john.williams@petalogix.com
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 2A61DDE08D
+	for <linuxppc-dev@ozlabs.org>; Sat, 28 Jun 2008 00:53:22 +1000 (EST)
+Message-ID: <4864FECF.3010304@freescale.com>
+Date: Fri, 27 Jun 2008 09:53:03 -0500
+From: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
+To: Scott Wood <scottwood@freescale.com>, Jon Loeliger <jdl@freescale.com>,
+	linuxppc-dev@ozlabs.org, Benno Rice <benno@jeamland.net>
+Subject: Re: dtc: Address an assortment of portability problems
+References: <20080626010349.GH308@yookeroo.seuss>
+	<20080626152528.GA12256@loki.buserror.net>
+	<20080626234743.GA16169@yookeroo.seuss>
+In-Reply-To: <20080626234743.GA16169@yookeroo.seuss>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,17 +27,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> +
->> +static inline void udelay(unsigned long usec)
->> +{
->> +}
->
->shouldnt this function be named zerodelay() ?
->
->Thanks,
->	tglx
+David Gibson wrote:
+> On Thu, Jun 26, 2008 at 10:25:28AM -0500, Scott Wood wrote:
+>> On Thu, Jun 26, 2008 at 11:03:49AM +1000, David Gibson wrote:
+>>> 	- the endian handling functions in libfdt_env.h, based on
+>>> endian.h and byteswap.h are replaced with some portable open-coded
+>>> versions.  Unfortunately, these result in fairly crappy code when
+>>> compiled, but as far as I can determine there doesn't seem to be any
+>>> POSIX, SUS or de facto standard way of determining endianness at
+>>> compile time, nor standard names for byteswapping functions.
+>> Since device-tree and network byte order happen to be the same, we could use
+>> ntohl/htonl.
+> 
+> Not for the 64-bit version.
 
-I have prepared implementation of this function which sent me JW.
-I did some changes which I test it because I found problem there. 
+Why?  They operate on uint32_t despite the "l" in the name, and there 
+are no 64-bit fields in the device tree...
 
-M
+-Scott
