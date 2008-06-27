@@ -1,20 +1,23 @@
-Return-Path: <ntl@pobox.com>
-Received: from sasl.smtp.pobox.com (a-sasl-fastnet.sasl.smtp.pobox.com
-	[207.106.133.19]) by ozlabs.org (Postfix) with ESMTP id 32E3FDDF06
-	for <linuxppc-dev@ozlabs.org>; Sat, 28 Jun 2008 00:39:29 +1000 (EST)
-Date: Fri, 27 Jun 2008 09:23:09 -0500
-From: Nathan Lynch <ntl@pobox.com>
-To: Breno Leitao <leitao@linux.vnet.ibm.com>
-Subject: Re: [RFC/PATCH 0/3] sched: allow arch override of cpu power
-Message-ID: <20080627142309.GR9594@localdomain>
-References: <1213835374-10868-1-git-send-email-ntl@pobox.com>
-	<4863F2CC.1030907@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4863F2CC.1030907@linux.vnet.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@elte.hu>,
-	Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org,
-	Anton Blanchard <anton@samba.org>
+Return-Path: <Monstr@seznam.cz>
+Received: from mxl.seznam.cz (mxl.seznam.cz [77.75.72.44])
+	by ozlabs.org (Postfix) with ESMTP id C906DDDF01
+	for <linuxppc-dev@ozlabs.org>; Sat, 28 Jun 2008 00:48:06 +1000 (EST)
+In-Reply-To: <alpine.LFD.1.10.0806271240461.3297@apollo.tec.linutronix.de>
+Date: Fri, 27 Jun 2008 15:10:32 +0200 (CEST)
+To: =?us-ascii?Q?Thomas=20Gleixner?= <tglx@linutronix.de>
+From: =?us-ascii?Q?Michal=20Simek?= <Monstr@seznam.cz>
+Subject: =?us-ascii?Q?Re=3A=20=5BPATCH=2026=2F60=5D=20microblaze=5Fv4=3A=20time=20support?=
+Mime-Version: 1.0
+Message-Id: <4641.7464-1217-45420265-1214572232@seznam.cz>
+Content-Type: text/plain;
+	charset="us-ascii"
+Cc: linux-arch@vger.kernel.org, alan@lxorguk.ukuu.org.uk,
+	=?us-ascii?Q?Michal=20Simek?= <monstr@monstr.eu>,
+	vapier.adi@gmail.com, arnd@arndb.de, matthew@wil.cx,
+	microblaze-uclinux@itee.uq.edu.au, linux-kernel@vger.kernel.org,
+	drepper@redhat.com, linuxppc-dev@ozlabs.org,
+	will.newton@gmail.com, hpa@zytor.com, John.Linn@xilinx.com,
+	john.williams@petalogix.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,28 +27,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Breno Leitao wrote:
-> Nathan Lynch wrote:
->> There is an "interesting" quality of POWER6 cores, which each have 2
->> hardware threads: assuming one thread on the core is idle, the primary
->> thread is a little "faster" than the secondary thread.  To illustrate:
->>   
-> I found this feature interesting and decided to do some tests.
-> After some tests I found that the example you post really runs fast in  
-> the first CPU, but a more "elaborated" application runs slower on the  
-> first CPU.
-> Here is a small example:
+>> +
+>> +static inline void udelay(unsigned long usec)
+>> +{
+>> +}
 >
-> # taskset 0x1 time -f "%e,  %U, %S" ./a.out ; taskset 0x2 time -f "%e,  
-> %U, %S" ./a.out
-> 10.77,  10.72, 0.01
-> 10.53, 10.48, 0.01
+>shouldnt this function be named zerodelay() ?
 >
-> # taskset 0x2 time -f "%e,  %U, %S" ./a.out ; taskset 0x1 time -f "%e,  
-> %U, %S" ./a.out
-> 10.55,  10.50, 0.01
-> 10.77, 10.72, 0.01
+>Thanks,
+>	tglx
 
-I've been able to duplicate your results, thanks for the testcase.
-Guess I'll need to understand what's going on before continuing with
-this...
+I have prepared implementation of this function which sent me JW.
+I did some changes which I test it because I found problem there. 
+
+M
