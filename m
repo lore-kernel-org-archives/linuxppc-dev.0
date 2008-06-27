@@ -1,20 +1,15 @@
-Return-Path: <rusty@rustcorp.com.au>
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Christian Borntraeger <borntraeger@de.ibm.com>
-Subject: Re: [RFC 1/3 v2] hvc_console: rework setup to replace irq functions
-	with callbacks
-Date: Fri, 27 Jun 2008 15:27:51 +1000
-References: <200806031444.21945.borntraeger@de.ibm.com>
-	<200806201524.08237.borntraeger@de.ibm.com>
-In-Reply-To: <200806201524.08237.borntraeger@de.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Message-Id: <200806271527.52321.rusty@rustcorp.com.au>
-Cc: Linux PPC devel <linuxppc-dev@ozlabs.org>,
-	Jeremy Fitzhardinge <jeremy@goop.org>,
-	Yajin <zyj001et@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
-	Virtualization Mailing List <virtualization@lists.osdl.org>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 16678DDF0F
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jun 2008 16:18:29 +1000 (EST)
+Date: Fri, 27 Jun 2008 16:18:27 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: paulus@samba.org
+Subject: [PATCH] powerpc: excplictly copy elements of pt_regs
+Message-Id: <20080627161827.4647186f.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,43 +19,74 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Friday 20 June 2008 23:24:08 Christian Borntraeger wrote:
-> I also kept hvc_struct defined in hvc_console.h so that hvc_irq.c can
-> access the irq_requested element.
+Gcc 4.3 produced this warning:
 
-Added this fix:
+arch/powerpc/kernel/signal_64.c: In function 'restore_sigcontext':
+arch/powerpc/kernel/signal_64.c:161: warning: array subscript is above array bounds
 
-=46ix compile of hvc_rtas.c
+This is caused by us copying to aliases of elements of the pt_regs
+structure.  Make those explicit.
 
-Moving the struct definition out to the header had bad effect under one
-ppc64 config that I tried:
+This adds one extra __get_user and unrolls a loop.
 
-drivers/char/hvc_console.h:59: error: field =E2=80=98kref=E2=80=99 has inco=
-mplete type
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ arch/powerpc/kernel/signal_64.c |   24 ++++++++++++------------
+ 1 files changed, 12 insertions(+), 12 deletions(-)
 
-So move the include of kref.h too.
+This has been build tested for ppc64_defconfig.
 
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+diff --git a/arch/powerpc/kernel/signal_64.c b/arch/powerpc/kernel/signal_64.c
+index da7c058..8af35c5 100644
+--- a/arch/powerpc/kernel/signal_64.c
++++ b/arch/powerpc/kernel/signal_64.c
+@@ -137,29 +137,29 @@ static long restore_sigcontext(struct pt_regs *regs, sigset_t *set, int sig,
+ #endif
+ 	unsigned long err = 0;
+ 	unsigned long save_r13 = 0;
+-	elf_greg_t *gregs = (elf_greg_t *)regs;
+ 	unsigned long msr;
+-	int i;
+ 
+ 	/* If this is not a signal return, we preserve the TLS in r13 */
+ 	if (!sig)
+ 		save_r13 = regs->gpr[13];
+ 
+-	/* copy everything before MSR */
+-	err |= __copy_from_user(regs, &sc->gp_regs,
+-				PT_MSR*sizeof(unsigned long));
+-
++	/* copy the GPRs */
++	err |= __copy_from_user(regs->gpr, sc->gp_regs, sizeof(regs->gpr));
++	err |= __get_user(regs->nip, &sc->gp_regs[PT_NIP]);
+ 	/* get MSR separately, transfer the LE bit if doing signal return */
+ 	err |= __get_user(msr, &sc->gp_regs[PT_MSR]);
+ 	if (sig)
+ 		regs->msr = (regs->msr & ~MSR_LE) | (msr & MSR_LE);
+-
++	err |= __get_user(regs->orig_gpr3, &sc->gp_regs[PT_ORIG_R3]);
++	err |= __get_user(regs->ctr, &sc->gp_regs[PT_CTR]);
++	err |= __get_user(regs->link, &sc->gp_regs[PT_LNK]);
++	err |= __get_user(regs->xer, &sc->gp_regs[PT_XER]);
++	err |= __get_user(regs->ccr, &sc->gp_regs[PT_CCR]);
+ 	/* skip SOFTE */
+-	for (i = PT_MSR+1; i <= PT_RESULT; i++) {
+-		if (i == PT_SOFTE)
+-			continue;
+-		err |= __get_user(gregs[i], &sc->gp_regs[i]);
+-	}
++	err |= __get_user(regs->trap, &sc->gp_regs[PT_TRAP]);
++	err |= __get_user(regs->dar, &sc->gp_regs[PT_DAR]);
++	err |= __get_user(regs->dsisr, &sc->gp_regs[PT_DSISR]);
++	err |= __get_user(regs->result, &sc->gp_regs[PT_RESULT]);
+ 
+ 	if (!sig)
+ 		regs->gpr[13] = save_r13;
+-- 
+1.5.6
 
-diff -r f382d8f562a8 drivers/char/hvc_console.c
-=2D-- a/drivers/char/hvc_console.c	Fri Jun 27 15:17:49 2008 +1000
-+++ b/drivers/char/hvc_console.c	Fri Jun 27 15:24:15 2008 +1000
-@@ -27,7 +27,6 @@
- #include <linux/init.h>
- #include <linux/kbd_kern.h>
- #include <linux/kernel.h>
-=2D#include <linux/kref.h>
- #include <linux/kthread.h>
- #include <linux/list.h>
- #include <linux/module.h>
-diff -r f382d8f562a8 drivers/char/hvc_console.h
-=2D-- a/drivers/char/hvc_console.h	Fri Jun 27 15:17:49 2008 +1000
-+++ b/drivers/char/hvc_console.h	Fri Jun 27 15:24:15 2008 +1000
-@@ -26,6 +26,7 @@
-=20
- #ifndef HVC_CONSOLE_H
- #define HVC_CONSOLE_H
-+#include <linux/kref.h>
-=20
- /*
-  * This is the max number of console adapters that can/will be found as
+
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
