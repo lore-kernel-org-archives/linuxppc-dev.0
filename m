@@ -4,18 +4,18 @@ Received: from az33egw01.freescale.net (az33egw01.freescale.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "az33egw01.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 1612CDE2E9
-	for <linuxppc-dev@ozlabs.org>; Sat, 28 Jun 2008 06:19:32 +1000 (EST)
-Message-ID: <48654974.6060200@freescale.com>
-Date: Fri, 27 Jun 2008 15:11:32 -0500
+	by ozlabs.org (Postfix) with ESMTPS id A961DDE244
+	for <linuxppc-dev@ozlabs.org>; Sat, 28 Jun 2008 06:28:39 +1000 (EST)
+Message-ID: <48654D6D.1090309@freescale.com>
+Date: Fri, 27 Jun 2008 15:28:29 -0500
 From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-To: Nye Liu <nyet@mrv.com>
-Subject: Re: [PATCH] POWERPC CPM: Minor cosmetic changes to udbg_putc
-References: <20080627200100.GA16661@mrv.com>
-In-Reply-To: <20080627200100.GA16661@mrv.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: Add dma nodes to 83xx, 85xx and 86xx boards
+References: <Pine.LNX.4.64.0806271449540.9071@blarg.am.freescale.net>
+In-Reply-To: <Pine.LNX.4.64.0806271449540.9071@blarg.am.freescale.net>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,16 +25,99 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Nye Liu wrote:
-> udbg_putc is a *function pointer* that is initialized during
-> udbg_init_cpm. It might not be initialized properly when called from
-> udbg_putc_cpm(), so (recursively) call udbg_putc_cpm() directly.
+Kumar Gala wrote:
+> diff --git a/arch/powerpc/boot/dts/asp834x-redboot.dts b/arch/powerpc/boot/dts/asp834x-redboot.dts
+> index 972cf78..d140031 100644
+> --- a/arch/powerpc/boot/dts/asp834x-redboot.dts
+> +++ b/arch/powerpc/boot/dts/asp834x-redboot.dts
+> @@ -53,7 +53,7 @@
+>  			     "fsl,pq2pro-localbus",
+>  			     "simple-bus";
+>  		reg = <0xff005000 0x1000>;
+> -		interrupts = <77 0x8>;
+> +		interrupts = <47 0x8>;
+>  		interrupt-parent = <&ipic>;
+> 
+>  		ranges = <
 
-ACK
+This is wrong (LBC is IRQ 77; IRQ 47 is reserved), and wasn't mentioned 
+in the patch description...
 
-> Printing an "X" on initialization is ugly. How about a "\n" instead?
+> diff --git a/arch/powerpc/boot/dts/mpc8313erdb.dts b/arch/powerpc/boot/dts/mpc8313erdb.dts
+> index e1f0dca..ae2c4aa 100644
+> --- a/arch/powerpc/boot/dts/mpc8313erdb.dts
+> +++ b/arch/powerpc/boot/dts/mpc8313erdb.dts
+> @@ -52,7 +52,7 @@
+>  		#size-cells = <1>;
+>  		compatible = "fsl,mpc8313-elbc", "fsl,elbc", "simple-bus";
+>  		reg = <0xe0005000 0x1000>;
+> -		interrupts = <77 0x8>;
+> +		interrupts = <13 0x8>;
+>  		interrupt-parent = <&ipic>;
 
-D'oh, that was a debugging leftover that I missed when cleaning things 
-up.  Just remove it.
+Likewise.  13 is the 1588 timer IRQ.
+
+> @@ -51,7 +51,7 @@
+>  		#size-cells = <1>;
+>  		compatible = "fsl,mpc8315-elbc", "fsl,elbc", "simple-bus";
+>  		reg = <0xe0005000 0x1000>;
+> -		interrupts = <77 0x8>;
+> +		interrupts = <15 0x8>;
+
+I2C this time. :-P
+
+> @@ -303,6 +268,41 @@
+>  			};
+>  		};
+> 
+> +		crypto@30000 {
+> +			model = "SEC3";
+> +			compatible = "talitos";
+> +			reg = <0x30000 0x10000>;
+> +			interrupts = <11 0x8>;
+> +			interrupt-parent = <&ipic>;
+> +			/* Rev. 3.0 geometry */
+> +			num-channels = <4>;
+> +			channel-fifo-len = <24>;
+> +			exec-units-mask = <0x000001fe>;
+> +			descriptor-types-mask = <0x03ab0ebf>;
+> +		};
+> +
+> +		sdhc@2e000 {
+> +			model = "eSDHC";
+> +			compatible = "fsl,esdhc";
+> +			reg = <0x2e000 0x1000>;
+> +			interrupts = <42 0x8>;
+> +			interrupt-parent = <&ipic>;
+> +		};
+> +
+> +		sata@18000 {
+> +			compatible = "fsl,mpc8379-sata", "fsl,pq-sata";
+> +			reg = <0x18000 0x1000>;
+> +			interrupts = <44 0x8>;
+> +			interrupt-parent = <&ipic>;
+> +		};
+> +
+> +		sata@19000 {
+> +			compatible = "fsl,mpc8379-sata", "fsl,pq-sata";
+> +			reg = <0x19000 0x1000>;
+> +			interrupts = <45 0x8>;
+> +			interrupt-parent = <&ipic>;
+> +		};
+
+Doesn't match the changelog, and the crypto binding is old.
+
+> diff --git a/arch/powerpc/boot/dts/mpc8378_mds.dts b/arch/powerpc/boot/dts/mpc8378_mds.dts
+> index 1d6ea08..5d57f5d 100644
+> --- a/arch/powerpc/boot/dts/mpc8378_mds.dts
+> +++ b/arch/powerpc/boot/dts/mpc8378_mds.dts
+> @@ -52,7 +52,7 @@
+>  		#size-cells = <1>;
+>  		compatible = "fsl,mpc8378-elbc", "fsl,elbc", "simple-bus";
+>  		reg = <0xe0005000 0x1000>;
+> -		interrupts = <77 0x8>;
+> +		interrupts = <78 0x8>;
+
+Another mangled localbus interrupt (and more after this).
 
 -Scott
