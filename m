@@ -1,34 +1,17 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.31])
-	by ozlabs.org (Postfix) with ESMTP id 9C3A4DDF12
-	for <linuxppc-dev@ozlabs.org>; Sat, 28 Jun 2008 15:49:37 +1000 (EST)
-Received: by yw-out-2324.google.com with SMTP id 5so362887ywh.39
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jun 2008 22:49:36 -0700 (PDT)
-Message-ID: <fa686aa40806272249l7eae0c34k43a20ad41672b77a@mail.gmail.com>
-Date: Fri, 27 Jun 2008 22:49:36 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: monstr@seznam.cz
-Subject: Re: [PATCH 12/60] microblaze_v4: Generic dts file for platforms
-In-Reply-To: <1214483429-32360-13-git-send-email-monstr@seznam.cz>
+Return-Path: <bart.vanassche@gmail.com>
+Received: from mailpush2.euphonynet.be (jester.euphonynet.be [212.87.96.13])
+	by ozlabs.org (Postfix) with ESMTP id 47D50DDEFD
+	for <linuxppc-dev@ozlabs.org>; Sat, 28 Jun 2008 17:26:13 +1000 (EST)
+From: Bart Van Assche <bart.vanassche@gmail.com>
+To: Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@ozlabs.org
+Subject: [PATCH 2.6.25.9] Make sure that include/asm-powerpc/spinlock.h does
+	not trigger compilation warnings
+Date: Sat, 28 Jun 2008 08:51:35 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-5-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-6-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-7-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-8-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-9-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-10-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-11-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-12-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-13-git-send-email-monstr@seznam.cz>
-Cc: linux-arch@vger.kernel.org, alan@lxorguk.ukuu.org.uk,
-	Michal Simek <monstr@monstr.eu>, vapier.adi@gmail.com,
-	arnd@arndb.de, matthew@wil.cx, microblaze-uclinux@itee.uq.edu.au,
-	linux-kernel@vger.kernel.org, drepper@redhat.com,
-	linuxppc-dev@ozlabs.org, will.newton@gmail.com, hpa@zytor.com,
-	John.Linn@xilinx.com, john.williams@petalogix.com
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200806280851.35417.bart.vanassche@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,60 +21,127 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jun 26, 2008 at 5:29 AM,  <monstr@seznam.cz> wrote:
-> From: Michal Simek <monstr@monstr.eu>
->
->
-> Signed-off-by: Michal Simek <monstr@monstr.eu>
-> ---
->  arch/microblaze/platform/generic/system.dts |  300 +++++++++++++++++++++++++++
->  1 files changed, 300 insertions(+), 0 deletions(-)
->  create mode 100644 arch/microblaze/platform/generic/system.dts
+When compiling kernel modules for ppc that include <linux/spinlock.h>, gcc
+prints a warning message every time it encounters a function declaration where
+the inline keyword appears after the return type. The patch below makes sure
+that the order of the inline keyword and the return type is as gcc expects it.
+Additionally, the __inline__ keyword is replaced by inline, as checkpatch
+expects.
 
-Since this is a generated file, and entirely bitstream specific, does
-it make sense to include it in the kernel tree?  If it does, then is
-it produced from one of the Xilinx reference designs?  Can you add
-documentation to the header that specifies exactly which design
-version this .dts is for?
+Signed-off-by: Bart Van Assche <bart.vanassche@gmail.com>
 
->
-> diff --git a/arch/microblaze/platform/generic/system.dts b/arch/microblaze/platform/generic/system.dts
-> new file mode 100644
-> index 0000000..724a037
-> --- /dev/null
-> +++ b/arch/microblaze/platform/generic/system.dts
-> @@ -0,0 +1,300 @@
-> +/*
-> + * (C) Copyright 2007-2008 Xilinx, Inc.
-> + * (C) Copyright 2007-2008 Michal Simek
-> + *
-> + * Michal SIMEK <monstr@monstr.eu>
-
-If this is a generated file, then is this copyright notice even appropriate?
-
-> + *
-> + * This program is free software; you can redistribute it and/or
-> + * modify it under the terms of the GNU General Public License as
-> + * published by the Free Software Foundation; either version 2 of
-> + * the License, or (at your option) any later version.
-> + *
-> + * This program is distributed in the hope that it will be useful,
-> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-> + * GNU General Public License for more details.
-> + *
-> + * You should have received a copy of the GNU General Public License
-> + * along with this program; if not, write to the Free Software
-> + * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
-> + * MA 02111-1307 USA
-
-I don't this whole large legal block is necessary.  Unless specified
-otherwise in the comment block, I believe GPL licencing is pretty much
-assumed and so the above three copyrights should be redundant.
-
-Cheers,
-g.
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+diff -uprN orig/linux-2.6.25.9/include/asm-powerpc/spinlock.h linux-2.6.25.9/include/asm-powerpc/spinlock.h
+--- orig/linux-2.6.25.9/include/asm-powerpc/spinlock.h	2008-06-24 23:09:06.000000000 +0200
++++ linux-2.6.25.9/include/asm-powerpc/spinlock.h	2008-06-28 08:34:52.000000000 +0200
+@@ -53,7 +53,7 @@
+  * This returns the old value in the lock, so we succeeded
+  * in getting the lock if the return value is 0.
+  */
+-static __inline__ unsigned long __spin_trylock(raw_spinlock_t *lock)
++static inline unsigned long __spin_trylock(raw_spinlock_t *lock)
+ {
+ 	unsigned long tmp, token;
+ 
+@@ -72,7 +72,7 @@ static __inline__ unsigned long __spin_t
+ 	return tmp;
+ }
+ 
+-static int __inline__ __raw_spin_trylock(raw_spinlock_t *lock)
++static inline int __raw_spin_trylock(raw_spinlock_t *lock)
+ {
+ 	CLEAR_IO_SYNC;
+ 	return __spin_trylock(lock) == 0;
+@@ -103,7 +103,7 @@ extern void __rw_yield(raw_rwlock_t *loc
+ #define SHARED_PROCESSOR	0
+ #endif
+ 
+-static void __inline__ __raw_spin_lock(raw_spinlock_t *lock)
++static inline void __raw_spin_lock(raw_spinlock_t *lock)
+ {
+ 	CLEAR_IO_SYNC;
+ 	while (1) {
+@@ -118,7 +118,8 @@ static void __inline__ __raw_spin_lock(r
+ 	}
+ }
+ 
+-static void __inline__ __raw_spin_lock_flags(raw_spinlock_t *lock, unsigned long flags)
++static inline
++void __raw_spin_lock_flags(raw_spinlock_t *lock, unsigned long flags)
+ {
+ 	unsigned long flags_dis;
+ 
+@@ -138,7 +139,7 @@ static void __inline__ __raw_spin_lock_f
+ 	}
+ }
+ 
+-static __inline__ void __raw_spin_unlock(raw_spinlock_t *lock)
++static inline void __raw_spin_unlock(raw_spinlock_t *lock)
+ {
+ 	SYNC_IO;
+ 	__asm__ __volatile__("# __raw_spin_unlock\n\t"
+@@ -179,7 +180,7 @@ extern void __raw_spin_unlock_wait(raw_s
+  * This returns the old value in the lock + 1,
+  * so we got a read lock if the return value is > 0.
+  */
+-static long __inline__ __read_trylock(raw_rwlock_t *rw)
++static inline long __read_trylock(raw_rwlock_t *rw)
+ {
+ 	long tmp;
+ 
+@@ -203,7 +204,7 @@ static long __inline__ __read_trylock(ra
+  * This returns the old value in the lock,
+  * so we got the write lock if the return value is 0.
+  */
+-static __inline__ long __write_trylock(raw_rwlock_t *rw)
++static inline long __write_trylock(raw_rwlock_t *rw)
+ {
+ 	long tmp, token;
+ 
+@@ -223,7 +224,7 @@ static __inline__ long __write_trylock(r
+ 	return tmp;
+ }
+ 
+-static void __inline__ __raw_read_lock(raw_rwlock_t *rw)
++static inline void __raw_read_lock(raw_rwlock_t *rw)
+ {
+ 	while (1) {
+ 		if (likely(__read_trylock(rw) > 0))
+@@ -237,7 +238,7 @@ static void __inline__ __raw_read_lock(r
+ 	}
+ }
+ 
+-static void __inline__ __raw_write_lock(raw_rwlock_t *rw)
++static inline void __raw_write_lock(raw_rwlock_t *rw)
+ {
+ 	while (1) {
+ 		if (likely(__write_trylock(rw) == 0))
+@@ -251,17 +252,17 @@ static void __inline__ __raw_write_lock(
+ 	}
+ }
+ 
+-static int __inline__ __raw_read_trylock(raw_rwlock_t *rw)
++static inline int __raw_read_trylock(raw_rwlock_t *rw)
+ {
+ 	return __read_trylock(rw) > 0;
+ }
+ 
+-static int __inline__ __raw_write_trylock(raw_rwlock_t *rw)
++static inline int __raw_write_trylock(raw_rwlock_t *rw)
+ {
+ 	return __write_trylock(rw) == 0;
+ }
+ 
+-static void __inline__ __raw_read_unlock(raw_rwlock_t *rw)
++static inline void __raw_read_unlock(raw_rwlock_t *rw)
+ {
+ 	long tmp;
+ 
+@@ -278,7 +279,7 @@ static void __inline__ __raw_read_unlock
+ 	: "cr0", "memory");
+ }
+ 
+-static __inline__ void __raw_write_unlock(raw_rwlock_t *rw)
++static inline void __raw_write_unlock(raw_rwlock_t *rw)
+ {
+ 	__asm__ __volatile__("# write_unlock\n\t"
+ 				LWSYNC_ON_SMP: : :"memory");
