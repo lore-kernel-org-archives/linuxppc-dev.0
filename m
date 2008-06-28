@@ -2,42 +2,19 @@ Return-Path: <segher@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 1A884DDE98
-	for <linuxppc-dev@ozlabs.org>; Sun, 29 Jun 2008 08:31:24 +1000 (EST)
-In-Reply-To: <1214483429-32360-20-git-send-email-monstr@seznam.cz>
-References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-2-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-3-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-4-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-5-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-6-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-7-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-8-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-9-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-10-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-11-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-12-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-13-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-14-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-15-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-16-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-17-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-18-git-send-email-monstr@seznam.cz>
-	<1214483429-32! 360-19-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-20-git-send-email-monstr@seznam.cz>
+	by ozlabs.org (Postfix) with ESMTPS id 80D88DDE1F
+	for <linuxppc-dev@ozlabs.org>; Sun, 29 Jun 2008 09:37:35 +1000 (EST)
+In-Reply-To: <fa686aa40806272229s795067d5he962c8a1750a260@mail.gmail.com>
+References: <20080627115243.d76e0814.kim.phillips@freescale.com>
+	<fa686aa40806272229s795067d5he962c8a1750a260@mail.gmail.com>
 Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <6e8c2b4453be89dba35e0595c9cfcf0a@kernel.crashing.org>
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <2b97f7566925ed86b78b364ff5724644@kernel.crashing.org>
 From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 19/60] microblaze_v4: checksum support
-Date: Sun, 29 Jun 2008 00:28:14 +0200
-To: monstr@seznam.cz
-Cc: linux-arch@vger.kernel.org, Michal Simek <monstr@monstr.eu>,
-	vapier.adi@gmail.com, arnd@arndb.de, matthew@wil.cx,
-	microblaze-uclinux@itee.uq.edu.au, linux-kernel@vger.kernel.org,
-	John.Linn@xilinx.com, linuxppc-dev@ozlabs.org,
-	alan@lxorguk.ukuu.org.uk, hpa@zytor.com, drepper@redhat.com,
-	john.williams@petalogix.com, will.newton@gmail.com
+Subject: Re: [PATCH v2] update crypto node definition and device tree instances
+Date: Sun, 29 Jun 2008 01:37:12 +0200
+To: "Grant Likely" <grant.likely@secretlab.ca>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -47,24 +24,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> +static inline unsigned int
-> +csum_tcpudp_nofold(unsigned long saddr, unsigned long daddr, unsigned 
-> short len,
-> +		unsigned short proto, unsigned int sum)
-> +{
-> +	__asm__("add %0, %4, %1\n\t"
-> +		"addc %0, %4, %2\n\t"
-> +		"addc %0, %4, %3\n\t"
-> +		"addc %0, %4, r0\n\t"
-> +		: "=d" (sum)
-> +		: "d" (saddr), "d" (daddr), "d" (len + proto),
-> +		"0"(sum));
+> I'm really don't like "fsl,sec1.0" or any of the variants as a
+> compatible property either because it can easily be abused (it's not
+> anchored to a specific physical part so the meaning can shift over
+> time); but that is another argument and it is well documented in other
+> email threads  
+> (http://thread.gmane.org/gmane.linux.ports.ppc64.devel/38977/ 
+> focus=39147)
 
-"sum" should use an earlyclobber, i.e.  "=&d"(sum)  , since some
-inputs are used after %0 is first written to.
+Also, these made-up names make you do more work: you'll need to
+write up a binding for them, explaining exactly what a 1.0 device
+etc. is (or at least point to documentation for it).  If you use
+a name that refers to some device that people can easily google
+for documentation, you can skip this (well, you might need to
+write a binding anyway; but at least you won't have to explain
+what the device _is_).
 
-Also, you can use "+" instead of "=" to say the argument is both
-input and output, and get rid of %4, if you like.
+Using actual model names also reduces the namespace pollution
+(hopefully Freescale will not create some other MPC8272 device
+ever, so "fsl,mpc8272-whatever" will never be a nice name to
+use for any other device; OTOH, it's likely that Freescale will
+create some other device called "SEC" (there are only so many
+TLAs, after all), so "fsl,sec-n.m" isn't as future-proof.
 
 
 Segher
