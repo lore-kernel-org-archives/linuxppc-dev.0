@@ -1,20 +1,22 @@
 Return-Path: <glikely@secretlab.ca>
 Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.29])
-	by ozlabs.org (Postfix) with ESMTP id C6CBDDDDFA
-	for <linuxppc-dev@ozlabs.org>; Sat, 28 Jun 2008 15:30:00 +1000 (EST)
-Received: by yw-out-2324.google.com with SMTP id 5so360966ywh.39
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jun 2008 22:29:59 -0700 (PDT)
-Message-ID: <fa686aa40806272229s795067d5he962c8a1750a260@mail.gmail.com>
-Date: Fri, 27 Jun 2008 22:29:59 -0700
+	by ozlabs.org (Postfix) with ESMTP id 39158DDE16
+	for <linuxppc-dev@ozlabs.org>; Sat, 28 Jun 2008 15:31:55 +1000 (EST)
+Received: by yw-out-2324.google.com with SMTP id 5so361148ywh.39
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jun 2008 22:31:55 -0700 (PDT)
+Message-ID: <fa686aa40806272231s69a895afv61877729acbac7fb@mail.gmail.com>
+Date: Fri, 27 Jun 2008 22:31:54 -0700
 From: "Grant Likely" <grant.likely@secretlab.ca>
 Sender: glikely@secretlab.ca
-To: "Kim Phillips" <kim.phillips@freescale.com>
-Subject: Re: [PATCH v2] update crypto node definition and device tree instances
-In-Reply-To: <20080627115243.d76e0814.kim.phillips@freescale.com>
+To: "Jeff Garzik" <jeff@garzik.org>
+Subject: Re: [PATCH 01/12] pata_mpc52xx: use linux/of_platform.h instead of asm
+In-Reply-To: <48648AA2.2020204@garzik.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-References: <20080627115243.d76e0814.kim.phillips@freescale.com>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+References: <20080523161627.a75d5010.sfr@canb.auug.org.au>
+	<48648AA2.2020204@garzik.org>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Tejun Heo <htejun@gmail.com>,
+	ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,50 +26,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Jun 27, 2008 at 9:52 AM, Kim Phillips
-<kim.phillips@freescale.com> wrote:
-> delete obsolete device-type property, delete model property
-> (use compatible property instead), prepend "fsl," to Freescale
-> specific properties. Add nodes to device trees that are missing them,
-> and fix broken property values in other trees.
+On Thu, Jun 26, 2008 at 11:37 PM, Jeff Garzik <jeff@garzik.org> wrote:
+> Stephen Rothwell wrote:
+>>
+>> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+>> ---
+>>  drivers/ata/pata_mpc52xx.c |    2 +-
+>>  1 files changed, 1 insertions(+), 1 deletions(-)
+>>
+>> I am not sure who wants to take this.
+>>
+>> diff --git a/drivers/ata/pata_mpc52xx.c b/drivers/ata/pata_mpc52xx.c
+>> index bc79df6..a9e8273 100644
+>> --- a/drivers/ata/pata_mpc52xx.c
+>> +++ b/drivers/ata/pata_mpc52xx.c
+>> @@ -16,10 +16,10 @@
+>>  #include <linux/slab.h>
+>>  #include <linux/delay.h>
+>>  #include <linux/libata.h>
+>> +#include <linux/of_platform.h>
+>>   #include <asm/types.h>
+>>  #include <asm/prom.h>
+>> -#include <asm/of_platform.h>
+>>  #include <asm/mpc52xx.h>
 >
-> Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
+> ACK.  send it via an arch tree
 
-Are there any drivers in mainline which use this node?  Do these
-changes break backwards compatibility with already deployed boards?
-(I know; this patch doesn't change any code; but I'm asking whether
-the driver will need to support both old and new bindings).
+I'll pick it up.
 
-> ---
-> diff --git a/arch/powerpc/boot/dts/mpc8272ads.dts b/arch/powerpc/boot/dts/mpc8272ads.dts
-> index 46e2da3..9a3881d 100644
-> --- a/arch/powerpc/boot/dts/mpc8272ads.dts
-> +++ b/arch/powerpc/boot/dts/mpc8272ads.dts
-> @@ -226,22 +226,15 @@
->                        compatible = "fsl,mpc8272-pic", "fsl,cpm2-pic";
->                };
->
-> -/* May need to remove if on a part without crypto engine */
->                crypto@30000 {
-> -                       device_type = "crypto";
-> -                       model = "SEC2";
-> -                       compatible = "fsl,mpc8272-talitos-sec2",
-> -                                    "fsl,talitos-sec2",
-> -                                    "fsl,talitos",
-> -                                    "talitos";
-> +                       compatible = "fsl,sec1.0";
-
-Should really be encoding the SoC model in the compatible property.
-At the very least, compatible should be:
-compatible = "fsl,mpc8272-sec", "fsl,sec1.0";
-
-I'm really don't like "fsl,sec1.0" or any of the variants as a
-compatible property either because it can easily be abused (it's not
-anchored to a specific physical part so the meaning can shift over
-time); but that is another argument and it is well documented in other
-email threads (http://thread.gmane.org/gmane.linux.ports.ppc64.devel/38977/focus=39147)
-
-Cheers,
 g.
 
 -- 
