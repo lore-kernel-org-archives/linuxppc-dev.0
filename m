@@ -1,20 +1,21 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from qb-out-0506.google.com (qb-out-0506.google.com [72.14.204.229])
-	by ozlabs.org (Postfix) with ESMTP id 85EDADDE1F
-	for <linuxppc-dev@ozlabs.org>; Sun, 29 Jun 2008 15:21:47 +1000 (EST)
-Received: by qb-out-0506.google.com with SMTP id d8so2676168qbc.37
-	for <linuxppc-dev@ozlabs.org>; Sat, 28 Jun 2008 22:21:46 -0700 (PDT)
-Date: Sat, 28 Jun 2008 23:21:43 -0600
+Received: from qb-out-0506.google.com (qb-out-0506.google.com [72.14.204.231])
+	by ozlabs.org (Postfix) with ESMTP id CB620DDEFE
+	for <linuxppc-dev@ozlabs.org>; Sun, 29 Jun 2008 15:30:39 +1000 (EST)
+Received: by qb-out-0506.google.com with SMTP id d8so2678277qbc.37
+	for <linuxppc-dev@ozlabs.org>; Sat, 28 Jun 2008 22:30:38 -0700 (PDT)
+Date: Sat, 28 Jun 2008 23:30:35 -0600
 From: Grant Likely <grant.likely@secretlab.ca>
 To: John Rigby <jrigby@freescale.com>
-Subject: Re: [PATCH 2/6] MPC5121 clock driver
-Message-ID: <20080629052143.GA13876@secretlab.ca>
+Subject: Re: [PATCH 3/6] MPC5121 Add generic board support
+Message-ID: <20080629053035.GB13876@secretlab.ca>
 References: <1213981119-1979-1-git-send-email-jrigby@freescale.com>
 	<1213981119-1979-2-git-send-email-jrigby@freescale.com>
 	<1213981119-1979-3-git-send-email-jrigby@freescale.com>
+	<1213981119-1979-4-git-send-email-jrigby@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1213981119-1979-3-git-send-email-jrigby@freescale.com>
+In-Reply-To: <1213981119-1979-4-git-send-email-jrigby@freescale.com>
 Sender: Grant Likely <glikely@secretlab.ca>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -26,156 +27,257 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Mostly looks good, a few comments below.
+Mostly looks good, but a few comments below.
 
-On Fri, Jun 20, 2008 at 10:58:35AM -0600, John Rigby wrote:
-> Implements the api defined in include/clk.h
-> 
-> Current only getting frequencies is supported
-> not setting.
-
-Need a more detailed commit message.  This doesn't tell me much.
-
+On Fri, Jun 20, 2008 at 10:58:36AM -0600, John Rigby wrote:
+> Move shared code from mpc5121_ads.c to mpc512x_shared.c.
+> Add new generic board setup mpc5121_generic.c
 > 
 > Signed-off-by: John Rigby <jrigby@freescale.com>
 > ---
->  arch/powerpc/platforms/512x/Makefile |    1 +
->  arch/powerpc/platforms/512x/clock.c  |  729 ++++++++++++++++++++++++++++++++++
->  2 files changed, 730 insertions(+), 0 deletions(-)
->  create mode 100644 arch/powerpc/platforms/512x/clock.c
+>  arch/powerpc/platforms/512x/Kconfig           |   15 ++++-
+>  arch/powerpc/platforms/512x/Makefile          |    3 +-
+>  arch/powerpc/platforms/512x/mpc5121_ads.c     |   45 +---------------
+>  arch/powerpc/platforms/512x/mpc5121_generic.c |   72 +++++++++++++++++++++++++
+>  arch/powerpc/platforms/512x/mpc512x.h         |   14 +++++
+>  arch/powerpc/platforms/512x/mpc512x_shared.c  |   66 ++++++++++++++++++++++
+>  6 files changed, 168 insertions(+), 47 deletions(-)
+>  create mode 100644 arch/powerpc/platforms/512x/mpc5121_generic.c
+>  create mode 100644 arch/powerpc/platforms/512x/mpc512x.h
+>  create mode 100644 arch/powerpc/platforms/512x/mpc512x_shared.c
 > 
+> diff --git a/arch/powerpc/platforms/512x/Kconfig b/arch/powerpc/platforms/512x/Kconfig
+> index 4c0da0c..f9a04da 100644
+> --- a/arch/powerpc/platforms/512x/Kconfig
+> +++ b/arch/powerpc/platforms/512x/Kconfig
+> @@ -2,12 +2,10 @@ config PPC_MPC512x
+>  	bool
+>  	select FSL_SOC
+>  	select IPIC
+> -	default n
+>  
+>  config PPC_MPC5121
+>  	bool
+>  	select PPC_MPC512x
+> -	default n
+>  
+>  config MPC5121_ADS
+>  	bool "Freescale MPC5121E ADS"
+> @@ -16,4 +14,15 @@ config MPC5121_ADS
+>  	select PPC_MPC5121
+>  	help
+>  	  This option enables support for the MPC5121E ADS board.
+> -	default n
+> +
+> +config MPC5121_GENERIC
+> +	bool "Generic support for simple MPC5121 based boards"
+> +	depends on PPC_MULTIPLATFORM && PPC32
+> +	select DEFAULT_UIMAGE
+> +	select PPC_MPC5121
+> +	help
+> +	  This option enables support for simple MPC5121 based boards
+> +	  which do not need custome platform specific setup.
+
+typo
+
+> +
+> +	  Compatible boards include:  Protonic LVT base boards (ZANMCU
+> +	  and VICVT2).
 > diff --git a/arch/powerpc/platforms/512x/Makefile b/arch/powerpc/platforms/512x/Makefile
-> index 232c89f..ef6c925 100644
+> index ef6c925..e6674c8 100644
 > --- a/arch/powerpc/platforms/512x/Makefile
 > +++ b/arch/powerpc/platforms/512x/Makefile
-> @@ -1,4 +1,5 @@
+> @@ -1,5 +1,6 @@
 >  #
 >  # Makefile for the Freescale PowerPC 512x linux kernel.
 >  #
-> +obj-y				:= clock.o
-
-should be +=
-
+> -obj-y				:= clock.o
+> +obj-y				:= clock.o mpc512x_shared.o
 >  obj-$(CONFIG_MPC5121_ADS)	+= mpc5121_ads.o
-> diff --git a/arch/powerpc/platforms/512x/clock.c b/arch/powerpc/platforms/512x/clock.c
+> +obj-$(CONFIG_MPC5121_GENERIC)	+= mpc5121_generic.o
+> diff --git a/arch/powerpc/platforms/512x/mpc5121_ads.c b/arch/powerpc/platforms/512x/mpc5121_ads.c
+> index 50bd3a3..45bb2ef 100644
+> --- a/arch/powerpc/platforms/512x/mpc5121_ads.c
+> +++ b/arch/powerpc/platforms/512x/mpc5121_ads.c
+> @@ -68,20 +40,7 @@ static void __init mpc5121_ads_declare_of_platform_devices(void)
+>  
+>  static void __init mpc5121_ads_init_IRQ(void)
+>  {
+> -	struct device_node *np;
+> -
+> -	np = of_find_compatible_node(NULL, NULL, "fsl,ipic");
+> -	if (!np)
+> -		return;
+> -
+> -	ipic_init(np, 0);
+> -	of_node_put(np);
+> -
+> -	/*
+> -	 * Initialize the default interrupt mapping priorities,
+> -	 * in case the boot rom changed something on us.
+> -	 */
+> -	ipic_set_default_priority();
+> +	mpc512x_init_IRQ();
+>  }
+
+Why not just put mpc512x_init_IRQ directly into the machine structure?
+>  
+>  /*
+> diff --git a/arch/powerpc/platforms/512x/mpc5121_generic.c b/arch/powerpc/platforms/512x/mpc5121_generic.c
 > new file mode 100644
-> index 0000000..39db722
+> index 0000000..0111a98
 > --- /dev/null
-> +++ b/arch/powerpc/platforms/512x/clock.c
-> @@ -0,0 +1,729 @@
+> +++ b/arch/powerpc/platforms/512x/mpc5121_generic.c
+> @@ -0,0 +1,72 @@
+> +/*
+> + * Copyright (C) 2007,2008 Freescale Semiconductor, Inc. All rights reserved.
+> + *
+> + * Author: John Rigby, <jrigby@freescale.com>
+> + *
+> + * Description:
+> + * MPC5121 SoC setup
+> + *
+> + * This is free software; you can redistribute it and/or modify it
+> + * under the terms of the GNU General Public License as published by
+> + * the Free Software Foundation; either version 2 of the License, or
+> + * (at your option) any later version.
+> + *
+> + */
+> +
+> +#include <linux/kernel.h>
+> +#include <linux/of_platform.h>
+> +
+> +#include <asm/machdep.h>
+> +#include <asm/ipic.h>
+> +#include <asm/prom.h>
+> +#include <asm/time.h>
+> +
+> +#include "mpc512x.h"
+> +
+> +static struct of_device_id __initdata of_bus_ids[] = {
+> +	{ .name = "soc", },
+> +	{ .name = "localbus", },
+
+Ugh.  Not good.  Bind against compatible, not name or type.
+
+> +	{},
+> +};
+> +
+> +static void __init mpc5121_generic_declare_of_platform_devices(void)
+> +{
+> +	/* Find every child of the SOC node and add it to of_platform */
+> +	if (of_platform_bus_probe(NULL, of_bus_ids, NULL))
+> +		printk(KERN_ERR __FILE__ ": "
+> +			"Error while probing of_platform bus\n");
+> +}
+> +
+> +/*
+> + * list of supported boards
+> + */
+> +static char *board[] __initdata = {
+> +	"prt,prtlvt",
+> +	NULL
+> +};
+> +
+> +/*
+> + * Called very early, MMU is off, device-tree isn't unflattened
+> + */
+> +static int __init mpc5121_generic_probe(void)
+> +{
+> +	unsigned long node = of_get_flat_dt_root();
+> +	int i = 0;
+> +
+> +	while (board[i]) {
+> +		if (of_flat_dt_is_compatible(node, board[i]))
+> +			break;
+> +		i++;
+> +	}
+> +
+> +	return board[i] != NULL;
+> +}
+> +
+> +define_machine(mpc5121_generic) {
+> +	.name			= "MPC5121 generic",
+> +	.probe			= mpc5121_generic_probe,
+> +	.init			= mpc5121_generic_declare_of_platform_devices,
+> +	.init_IRQ		= mpc512x_init_IRQ,
+> +	.get_irq		= ipic_get_irq,
+> +	.calibrate_decr		= generic_calibrate_decr,
+> +};
+> diff --git a/arch/powerpc/platforms/512x/mpc512x.h b/arch/powerpc/platforms/512x/mpc512x.h
+> new file mode 100644
+> index 0000000..789b817
+> --- /dev/null
+> +++ b/arch/powerpc/platforms/512x/mpc512x.h
+> @@ -0,0 +1,14 @@
+> +/*
+> + * Copyright (C) 2007 Freescale Semiconductor, Inc. All rights reserved.
+> + *
+> + * This program is free software; you can redistribute  it and/or modify it
+> + * under  the terms of  the GNU General  Public License as published by the
+> + * Free Software Foundation;  either version 2 of the  License, or (at your
+> + * option) any later version.
+> + */
+
+Should probably state what this file is for in the header block.
+
+> diff --git a/arch/powerpc/platforms/512x/mpc512x_shared.c b/arch/powerpc/platforms/512x/mpc512x_shared.c
+> new file mode 100644
+> index 0000000..4b8fe6a
+> --- /dev/null
+> +++ b/arch/powerpc/platforms/512x/mpc512x_shared.c
+> @@ -0,0 +1,66 @@
 > +/*
 > + * Copyright (C) 2007,2008 Freescale Semiconductor, Inc. All rights reserved.
 > + *
 > + * Author: John Rigby <jrigby@freescale.com>
 > + *
-> + * Implements the clk api defined in include/linux/clk.h
+> + * Description:
+> + * MPC512x Shared code
 > + *
-> + *    Original based on linux/arch/arm/mach-integrator/clock.c
-> + *
-> + *    Copyright (C) 2004 ARM Limited.
-> + *    Written by Deep Blue Solutions Limited.
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License version 2 as
-> + * published by the Free Software Foundation.
+> + * This is free software; you can redistribute it and/or modify it
+> + * under the terms of the GNU General Public License as published by
+> + * the Free Software Foundation; either version 2 of the License, or
+> + * (at your option) any later version.
 > + */
-> +#include <linux/module.h>
+> +
 > +#include <linux/kernel.h>
-> +#include <linux/list.h>
-> +#include <linux/errno.h>
-> +#include <linux/err.h>
-> +#include <linux/string.h>
-> +#include <linux/clk.h>
-> +#include <linux/mutex.h>
 > +#include <linux/io.h>
-> +
+> +#include <linux/irq.h>
 > +#include <linux/of_platform.h>
-> +#include <asm/mpc512x.h>
 > +
-> +static int clocks_initialized;
+> +#include <asm/machdep.h>
+> +#include <asm/ipic.h>
+> +#include <asm/prom.h>
+> +#include <asm/time.h>
 > +
-> +struct module;
-
-This is already defined in linux/module.h?
-
+> +#include "mpc512x.h"
 > +
-> +#undef CLK_DEBUG
-
-I think this line should be at the top of the file to be easier to find
-when toggling it.
-
-> +#ifdef CLK_DEBUG
-> +void dump_clocks(void)
+> +unsigned long
+> +mpc512x_find_ips_freq(struct device_node *node)
 > +{
-> +	struct clk *p;
+> +	struct device_node *np;
+> +	const unsigned int *p_ips_freq = NULL;
 > +
-> +	mutex_lock(&clocks_mutex);
-> +	printk(KERN_INFO "CLOCKS:\n");
-> +	list_for_each_entry(p, &clocks, node) {
-> +		printk(KERN_INFO "  %s %ld", p->name, p->rate);
-> +		if (p->parent)
-> +			printk(KERN_INFO " %s %ld", p->parent->name,
-> +			       p->parent->rate);
-> +		if (p->flags & CLK_HAS_CTRL)
-> +			printk(KERN_INFO " reg/bit %d/%d", p->reg, p->bit);
-> +		printk("\n");
+> +	of_node_get(node);
+> +	while (node) {
+> +		p_ips_freq = of_get_property(node, "bus-frequency", NULL);
+> +		if (p_ips_freq)
+> +			break;
+> +
+> +		np = of_get_parent(node);
+> +		of_node_put(node);
+> +		node = np;
 > +	}
-> +	mutex_unlock(&clocks_mutex);
+> +	if (node)
+> +		of_node_put(node);
+> +
+> +	return p_ips_freq ? *p_ips_freq : 0;
 > +}
-> +#define	DEBUG_CLK_DUMP() dump_clocks()
-> +#else
-> +#define	DEBUG_CLK_DUMP()
-> +#endif
-> +
-> +static long ips_to_ref(unsigned long rate)
-> +{
-> +	int ips_div = (clockctl->scfr1 >> 23) & 0x7;
-> +
-> +	rate *= ips_div;	/* csb_clk = ips_clk * ips_div */
-> +	rate *= 2;		/* sys_clk = csb_clk * 2 */
-> +	return sys_to_ref(rate);
-> +}
-> +
-> +static unsigned long devtree_getfreq(char *nodetype, char *clockname)
+> +EXPORT_SYMBOL(mpc512x_find_ips_freq);
 
-Why is nodetype even passed in here?  It isn't used, and besides, you
-shouldn't test against device_type anyway.  Test against compatible
-instead.
+This looks identical to the 52xx version.  Perhaps they should be
+merged... I wouldn't bother for getting this mainlined, but it is
+something to think about for the future.
 
-> +{
-> +	struct device_node *node;
-> +	const unsigned int *fp;
-> +	unsigned int val = 0;
-> +
-> +	node = of_find_node_by_type(NULL, "soc");
-
-Once again; don't look for device_type == "soc".  Use compatible.
-
-> +	if (node) {
-> +		fp = of_get_property(node, clockname, NULL);
-> +		if (fp)
-> +			val = of_read_ulong(fp, 1);
-> +	}
-> +	return val;
-> +}
-> +
-> +static void ref_clk_calc(struct clk *clk)
-> +{
-> +	unsigned long rate;
-> +
-> +	rate = devtree_getfreq("soc", "ref-frequency");
-> +	if (rate == 0) {
-> +		/*
-> +		 * no reference clock in device tree
-> +		 * get ips clock freq and go backwards from there
-> +		 */
-> +		rate = devtree_getfreq("soc", "bus-frequency");
-> +		if (rate == 0) {
-> +			printk(KERN_WARNING
-> +				"No bus-frequency in dev tree using 66MHz\n");
-> +			clk->rate = 66000000;
-
-Is it even worth trying to use a default here?  I think it should fail
-loudly instead to reduce the risk of people shipping boards with badly
-formed device trees.  I don't think there is any backwards compatibility
-need for doing this.
+g.
