@@ -1,20 +1,19 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 80D88DDE1F
-	for <linuxppc-dev@ozlabs.org>; Sun, 29 Jun 2008 09:37:35 +1000 (EST)
-In-Reply-To: <fa686aa40806272229s795067d5he962c8a1750a260@mail.gmail.com>
-References: <20080627115243.d76e0814.kim.phillips@freescale.com>
-	<fa686aa40806272229s795067d5he962c8a1750a260@mail.gmail.com>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <2b97f7566925ed86b78b364ff5724644@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH v2] update crypto node definition and device tree instances
-Date: Sun, 29 Jun 2008 01:37:12 +0200
-To: "Grant Likely" <grant.likely@secretlab.ca>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <jonsmirl@gmail.com>
+Message-ID: <9e4733910806281905l61714e33h8b26870e2c93539e@mail.gmail.com>
+Date: Sat, 28 Jun 2008 22:05:28 -0400
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: "Jean Delvare" <khali@linux-fr.org>,
+	"Grant Likely" <grant.likely@secretlab.ca>,
+	"Timur Tabi" <timur@freescale.com>
+Subject: Re: [i2c] [PATCH] Convert i2c-mpc from a platform driver to an
+	of_platform one
+In-Reply-To: <20080625155825.43d07d20@hyperion.delvare>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <9e4733910806101940o7f2f9863jb5e556ee2fc39a7e@mail.gmail.com>
+	<20080625155825.43d07d20@hyperion.delvare>
+Cc: linuxppc-dev list <Linuxppc-dev@ozlabs.org>,
+	Wolfram Sang <w.sang@pengutronix.de>, Linux I2C <i2c@lm-sensors.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,28 +23,68 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> I'm really don't like "fsl,sec1.0" or any of the variants as a
-> compatible property either because it can easily be abused (it's not
-> anchored to a specific physical part so the meaning can shift over
-> time); but that is another argument and it is well documented in other
-> email threads  
-> (http://thread.gmane.org/gmane.linux.ports.ppc64.devel/38977/ 
-> focus=39147)
+On 6/25/08, Jean Delvare <khali@linux-fr.org> wrote:
+>  >
+>  >       i2c->adap = mpc_ops;
+>  > -     i2c->adap.nr = pdev->id;
+>  >       i2c_set_adapdata(&i2c->adap, i2c);
+>  > -     i2c->adap.dev.parent = &pdev->dev;
+>  > -     if ((result = i2c_add_numbered_adapter(&i2c->adap)) < 0) {
+>  > +     i2c->adap.dev.parent = &op->dev;
+>  > +
+>  > +     result = i2c_add_adapter(&i2c->adap);
+>
+>
+> The driver was previously using i2c_add_numbered_adapter(), giving MPC
+>  platform the possibility to use new-style i2c drivers:
+>  http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=1469fa263870acd890a4b9f6ef557acc5d673b44
+>  You're breaking this, I doubt it's on purpose?
 
-Also, these made-up names make you do more work: you'll need to
-write up a binding for them, explaining exactly what a 1.0 device
-etc. is (or at least point to documentation for it).  If you use
-a name that refers to some device that people can easily google
-for documentation, you can skip this (well, you might need to
-write a binding anyway; but at least you won't have to explain
-what the device _is_).
+Grant, what do you want here? You're the one who converted it to
+i2c_add_numbered_adapter. But in other posts you've said that the
+device tree should have nothing to do with bus numbering.
 
-Using actual model names also reduces the namespace pollution
-(hopefully Freescale will not create some other MPC8272 device
-ever, so "fsl,mpc8272-whatever" will never be a nice name to
-use for any other device; OTOH, it's likely that Freescale will
-create some other device called "SEC" (there are only so many
-TLAs, after all), so "fsl,sec-n.m" isn't as future-proof.
+Once this driver is converted to an OF one it shouldn't need bus ids
+since all of the i2c devices will be children of the bus node. We can
+just let the i2c subsystem assign a bus number.
 
+Timur has some issues with the i2c bus number in his ALSA driver. The
+problem is locating the i2c device when the i2s driver loads. Parsing
+the device tree to extract an i2c bus and device number is not a good
+solution.
 
-Segher
+codec-handle should give you the i2c device node. But then we can't
+use of_find_device_by_node because the i2c device is not an of_device,
+it's a cross platform i2c_device. Should of_find_device_by_node()
+return a 'struct device' instead of a 'struct of_device' and leave it
+as a user exercise to cast up? It is used nine times in the kernel,
+mostly sparc.
+
+		i2s@2000 { /* PSC1 in i2s mode */
+			device_type = "sound";
+			compatible = "mpc5200b-psc-i2s","fsl,mpc5200b-psc-i2s";
+			cell-index = <0>;
+			reg = <0x2000 0x100>;
+			interrupts = <0x2 0x2 0x0>;
+			interrupt-parent = <&mpc5200_pic>;
+			codec-handle = <&tas0>;
+		};
+		i2c@3d00 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			compatible = "fsl,mpc5200b-i2c","fsl,mpc5200-i2c","fsl-i2c";
+			cell-index = <0>;
+			reg = <0x3d00 0x40>;
+			interrupts = <0x2 0xf 0x0>;
+			interrupt-parent = <&mpc5200_pic>;
+			fsl5200-clocking;
+			
+			tas0:codec@1b {
+				compatible = "ti,tas5504";
+				reg = <0x1b>;
+			};
+		};
+
+-- 
+Jon Smirl
+jonsmirl@gmail.com
