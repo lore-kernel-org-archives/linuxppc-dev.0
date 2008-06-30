@@ -1,24 +1,20 @@
-Return-Path: <kim.phillips@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 95AF0DE66C
-	for <linuxppc-dev@ozlabs.org>; Tue,  1 Jul 2008 04:14:55 +1000 (EST)
-Date: Mon, 30 Jun 2008 13:14:41 -0500
-From: Kim Phillips <kim.phillips@freescale.com>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH v2] update crypto node definition and device tree instances
-Message-Id: <20080630131441.e9b9ac1c.kim.phillips@freescale.com>
-In-Reply-To: <e590624fb4ff66d787a2fa3c44e00cbc@kernel.crashing.org>
-References: <20080627115243.d76e0814.kim.phillips@freescale.com>
-	<fa686aa40806272229s795067d5he962c8a1750a260@mail.gmail.com>
-	<2b97f7566925ed86b78b364ff5724644@kernel.crashing.org>
-	<20080630110410.7ee097ed.kim.phillips@freescale.com>
-	<e590624fb4ff66d787a2fa3c44e00cbc@kernel.crashing.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <dmitry.torokhov@gmail.com>
+Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.28])
+	by ozlabs.org (Postfix) with ESMTP id 48283DDEFF
+	for <linuxppc-dev@ozlabs.org>; Tue,  1 Jul 2008 04:21:16 +1000 (EST)
+Received: by yx-out-2324.google.com with SMTP id 8so310995yxg.39
+	for <linuxppc-dev@ozlabs.org>; Mon, 30 Jun 2008 11:21:14 -0700 (PDT)
+Date: Mon, 30 Jun 2008 14:21:12 -0400
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: John Linn <john.linn@xilinx.com>
+Subject: Re: [PATCH] [V2] powerpc: Xilinx: PS2: Added new XPS PS2 driver
+Message-ID: <20080630141552.ZZRA012@mailhub.coreip.homeip.net>
+References: <20080630153824.ED3D319B0075@mail96-wa4.bigfish.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080630153824.ED3D319B0075@mail96-wa4.bigfish.com>
+Cc: linuxppc-dev@ozlabs.org, Sadanand <sadanan@xilinx.com>,
+	linux-input@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,73 +24,70 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 30 Jun 2008 18:55:34 +0200
-Segher Boessenkool <segher@kernel.crashing.org> wrote:
+On Mon, Jun 30, 2008 at 08:38:21AM -0700, John Linn wrote:
+> +	spin_lock_init(&drvdata->lock);
+> +	dev_set_drvdata(dev, (void *)drvdata);
 
-> >> Also, these made-up names make you do more work: you'll need to
-> >
-> > who said they were made up?
-> 
-> I did.  These names do not refer to some physical part you can buy.
+No need to cast to void *.
 
-right, they refer to devices in multiple physical parts you can buy.
-Part-you-can-buy documentation clearly indicates the SEC version in
-that part, in the form "SEC X.Y", i.e, it's not something made up
-that's not already in freescale documentation.
+> +
+> +	if (!regs_res || !irq_res) {
+> +		dev_err(dev, "IO resource(s) not found\n");
+> +		retval = -EFAULT;
+> +		goto failed1;
+> +	}
+> +
+> +	drvdata->irq = irq_res->start;
+> +	remap_size = regs_res->end - regs_res->start + 1;
+> +	if (!request_mem_region(regs_res->start, remap_size, DRIVER_NAME)) {
+> +
+> +		dev_err(dev, "Couldn't lock memory region at 0x%08X\n",
+> +			(unsigned int)regs_res->start);
+> +		retval = -EBUSY;
+> +		goto failed1;
+> +	}
+> +
+> +	/* Fill in configuration data and add them to the list */
+> +	drvdata->phys_addr = regs_res->start;
+> +	drvdata->remap_size = remap_size;
+> +	drvdata->base_address = ioremap(regs_res->start, remap_size);
+> +	if (drvdata->base_address == NULL) {
+> +
+> +		dev_err(dev, "Couldn't ioremap memory at 0x%08X\n",
+> +			(unsigned int)regs_res->start);
+> +		retval = -EFAULT;
+> +		goto failed2;
+> +	}
+> +
+> +	/* Initialize the PS/2 interface */
+> +	down(&cfg_sem);
+> +	if (xps2_initialize(drvdata)) {
+> +		up(&cfg_sem);
+> +		dev_err(dev, "Could not initialize device\n");
+> +		retval = -ENODEV;
+> +		goto failed3;
+> +	}
+> +	up(&cfg_sem);
 
-> >> write up a binding for them, explaining exactly what a 1.0 device
-> >> etc. is (or at least point to documentation for it).  If you use
-> >> a name that refers to some device that people can easily google
-> >> for documentation, you can skip this (well, you might need to
-> >> write a binding anyway; but at least you won't have to explain
-> >> what the device _is_).
-> >
-> > documentation is available in the usual places, and it specifically
-> > points out which SEC version it references.
-> 
-> I can't find a manual online for "freescale sec"; googling
-> for "freescale sec-1.0" finds a manual for the PowerQUICC I;
-> is that the right one?  I don't know, so the binding needs
-> to explain it to me.
+Do you need a counting semaphore here?
 
-the binding shouldn't be responsible for google's shortcomings (that
-hit is correct, btw).
+> +
+> +	dev_info(dev, "Xilinx PS2 at 0x%08X mapped to 0x%08X, irq=%d\n",
+> +		drvdata->phys_addr, (u32)drvdata->base_address, drvdata->irq);
+> +
+> +	drvdata->serio.id.type = SERIO_8042;
+> +	drvdata->serio.write = sxps2_write;
+> +	drvdata->serio.open = sxps2_open;
+> +	drvdata->serio.close = sxps2_close;
+> +	drvdata->serio.port_data = drvdata;
+> +	drvdata->serio.dev.parent = dev;
+> +	snprintf(drvdata->serio.name, sizeof(drvdata->serio.name),
+> +		 XPS2_NAME_DESC, id);
+> +	snprintf(drvdata->serio.phys, sizeof(drvdata->serio.phys),
+> +		 XPS2_PHYS_DESC, id);
 
-> Going from SoC name -> SEC version is easy, but the other way around
-> not so.
-> 
-> Anyway, minor stuff.
+I bet if you make a temp variable for drvdata->serio the code size wil
+shrink a tiny bit.
 
-sounds like you're pointing out a lack of "SEC versions guide"
-documentation of Freescale..
-
-> > Plus, as I mentioned
-> > before, a lot of the differences between the SEC versions are miniscule
-> > feature bits scattered across the programming model.
-> 
-> I don't see how this is relevant, sorry.
-> 
-I'm under the impression that listing the differences (assuming they're
-easily obtainable) would lead to unnecessary b-w-of bloat.
-
-> >> Using actual model names also reduces the namespace pollution
-> >> (hopefully Freescale will not create some other MPC8272 device
-> >> ever, so "fsl,mpc8272-whatever" will never be a nice name to
-> >> use for any other device; OTOH, it's likely that Freescale will
-> >> create some other device called "SEC" (there are only so many
-> >> TLAs, after all), so "fsl,sec-n.m" isn't as future-proof.
-> >
-> > I doubt that; the SEC has been around for about a decade now and that
-> > hasn't happened.
-> 
-> You'll have to admit a three-letter acronym is a bigger namespace
-> squatter than a nice long name is.  But it's your namespace, I don't
-> care.
-> 
-> i tried googling for "freescale sec" to find any other devices called
-> SEC, but that didn't work out.  What is "insider trading"?  ;-)
-
-I don't know what google does; I'd search freescale documentation
-directly.
-
-Kim
+-- 
+Dmitry
