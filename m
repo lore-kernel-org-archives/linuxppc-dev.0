@@ -1,15 +1,24 @@
-Return-Path: <andre.schwarz@matrix-vision.de>
-Received: from p15137414.pureserver.info (matrixvision.de [217.160.213.229])
-	by ozlabs.org (Postfix) with ESMTP id 186BBDDF08
-	for <linuxppc-dev@ozlabs.org>; Tue,  1 Jul 2008 01:34:05 +1000 (EST)
-Message-ID: <4868FCE9.1060103@matrix-vision.de>
-Date: Mon, 30 Jun 2008 17:34:01 +0200
-From: =?ISO-8859-15?Q?Andr=E9_Schwarz?= <andre.schwarz@matrix-vision.de>
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 8EC5DDDD04
+	for <linuxppc-dev@ozlabs.org>; Tue,  1 Jul 2008 01:35:53 +1000 (EST)
+Date: Mon, 30 Jun 2008 10:35:13 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH v2] powerpc: Add dma nodes to 83xx, 85xx and 86xx boards
+Message-ID: <20080630153513.GD13950@loki.buserror.net>
+References: <Pine.LNX.4.64.0806271449540.9071@blarg.am.freescale.net>
+	<48654D6D.1090309@freescale.com>
+	<E57F448A-7217-4893-A77B-6367B0C3118A@kernel.crashing.org>
+	<Pine.LNX.4.64.0806271609540.10625@blarg.am.freescale.net>
+	<20080630041525.GD24012@yookeroo.seuss>
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: MPC83xx ipic problem
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Cc: linux-ppc list <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080630041525.GD24012@yookeroo.seuss>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,68 +28,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Scott,
+On Mon, Jun 30, 2008 at 02:15:25PM +1000, David Gibson wrote:
+> On Fri, Jun 27, 2008 at 04:10:17PM -0500, Kumar Gala wrote:
+> > Added DMA nodes for the elo/elo-plus DMA engines.
+> > 
+> > Renamed the interrupt controller alias in mpc832x_rdb.dts to ipic so that
+> > its the same as all the other boards.
+> > 
+> > Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+> 
+> [snip]
+> > diff --git a/arch/powerpc/boot/dts/asp834x-redboot.dts b/arch/powerpc/boot/dts/asp834x-redboot.dts
+> > index 972cf78..8b1bb0e 100644
+> > --- a/arch/powerpc/boot/dts/asp834x-redboot.dts
+> > +++ b/arch/powerpc/boot/dts/asp834x-redboot.dts
+> > @@ -118,6 +118,41 @@
+> >  			mode = "cpu";
+> >  		};
+> > 
+> > +		dma@82a8 {
+> > +			#address-cells = <1>;
+> > +			#size-cells = <1>;
+> > +			compatible = "fsl,mpc8347-dma", "fsl,elo-dma";
+> > +			reg = <0x82a8 4>;
+> > +			ranges = <0 0x8100 0x1a8>;
+> > +			interrupt-parent = <&ipic>;
+> > +			interrupts = <71 8>;
+> > +			cell-index = <0>;
+> 
+> What's the cell-index in these nodes used to index?  Given the
+> confusion there's been about the proper use of this property, a
+> comment indicating which shared registers this is used to index is
+> probably a good idea.
 
-actually I'm having trouble with my PCI interrupts.
-We are running 2.6.26-rc6 on a MPC8343 based board.
+There's supposed to be a cell-index in the *channels* to index into the
+shared summary register (the "reg" of the dma node itself).  I don't see any
+purpose for a cell-index in the main dma node, though.
 
-There are two external PCI devices connected (FPGA + miniPCI socket).
-The FPGA is working fine and uses IRQ0 for its PCI_INTA line.
-
-As soon there's a miniPCI module present and the driver loaded (actually=20
-an ath5k WiFi module) the system complains after a while :
-
-irq 48: nobody cared
-handlers: .... location of the FPGA irq handler
-Disabling IRQ #48
-
--> This is weird since the FPGA isn't working at all and IRQ0 is *not*=20
-asserted !
-
-Of course the miniPCI irq is routed to a different pin on the CPU=20
-(IRQ1). Having a look at the irq count it's obvious that the WiFi irqs=20
-are handled (ath module). The FPGA irq handler is located in the=20
-"mvbcdma0" module which is running rock solid without miniPCI present !
-
-mvBL-M7> cat /proc/interrupts
-CPU0
-16:       1826   IPIC   Level     i2c-mpc
-17:          9   IPIC   Level     i2c-mpc
-18:        201   IPIC   Level     ath
-19:       2896   IPIC   Level     serial
-21:          0   IPIC   Level     mpc83xx_spi
-32:          2   IPIC   Level     enet_tx
-33:        257   IPIC   Level     enet_rx
-34:          0   IPIC   Level     enet_error
-48:     100000   IPIC   Level     mvbcdma0
-BAD:          0
-
-
-The irq mapping insides the dts :
-
-interrupt-map =3D <0x5800 0 0 1 &ipic 0x30 0x8      -> FPGA @ IRQ0
-                  0x6000 0 0 1 &ipic 0x11 0x8      -> miniPCI INTA @ IRQ1
-                  0x6000 0 0 2 &ipic 0x11 0x8>;    -> miniPCI INTB @ IRQ1
-
-Is it legal to use a single irq pin twice ?
-After all the ath5k doesn't use/assert the INTB line at all ...
-
-
-If I do all the above after removing the FPGA module and releasing irq48=20
-the system doesn't complain anymore ... but hangs after a while with the=20
-IRQ1 line being unserviced.
-
-
-What do you think ?
-Any hints ?
-
-Am I doing anything obviously wrong ?
-
-
-
-regards,
-Andr=E9
-
-MATRIX VISION GmbH, Talstra=DFe 16, DE-71570 Oppenweiler  - Registergeric=
-ht: Amtsgericht Stuttgart, HRB 271090
-Gesch=E4ftsf=FChrer: Gerhard Thullner, Werner Armingeon, Uwe Furtner
+-Scott
