@@ -1,21 +1,25 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: Please pull from 'powerpc-next' branch
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <24590FB3-5A41-4CCC-964F-BE861ABA7FC0@kernel.crashing.org>
-References: <Pine.LNX.4.64.0806260249300.14932@blarg.am.freescale.net>
-	<98D3041A-F888-4991-9B10-CF4A9AD4A5BD@kernel.crashing.org>
-	<18532.52894.698980.899308@cargo.ozlabs.ibm.com>
-	<24590FB3-5A41-4CCC-964F-BE861ABA7FC0@kernel.crashing.org>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-UjCeUmUGnvRSMPaj6q+8"
-Date: Mon, 30 Jun 2008 13:52:11 +1000
-Message-Id: <1214797931.24778.0.camel@localhost>
-Mime-Version: 1.0
-Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>
-Reply-To: michael@ellerman.id.au
+Return-Path: <jcrigby@gmail.com>
+Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.232])
+	by ozlabs.org (Postfix) with ESMTP id DC93CDDED6
+	for <linuxppc-dev@ozlabs.org>; Mon, 30 Jun 2008 13:59:50 +1000 (EST)
+Received: by rv-out-0506.google.com with SMTP id f6so1056834rvb.9
+	for <linuxppc-dev@ozlabs.org>; Sun, 29 Jun 2008 20:59:49 -0700 (PDT)
+Message-ID: <4b73d43f0806292059y2a2b4642g5e8303ff13728c30@mail.gmail.com>
+Date: Sun, 29 Jun 2008 21:59:49 -0600
+From: "John Rigby" <jcrigby@gmail.com>
+To: "Grant Likely" <grant.likely@secretlab.ca>
+Subject: Re: [PATCH 5/6] MPC5121 Add PCI support
+In-Reply-To: <20080629053844.GD13876@secretlab.ca>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <1213981119-1979-1-git-send-email-jrigby@freescale.com>
+	<1213981119-1979-2-git-send-email-jrigby@freescale.com>
+	<1213981119-1979-3-git-send-email-jrigby@freescale.com>
+	<1213981119-1979-4-git-send-email-jrigby@freescale.com>
+	<1213981119-1979-5-git-send-email-jrigby@freescale.com>
+	<1213981119-1979-6-git-send-email-jrigby@freescale.com>
+	<20080629053844.GD13876@secretlab.ca>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,54 +29,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Yes, Kumar made the same comment.  The newer patch that moves the 83xx
+add bridge routine to fsl_soc obsoletes this patch.
 
---=-UjCeUmUGnvRSMPaj6q+8
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-On Fri, 2008-06-27 at 08:00 -0500, Kumar Gala wrote:
-> On Jun 27, 2008, at 6:27 AM, Paul Mackerras wrote:
->=20
-> > Kumar Gala writes:
-> >
-> >> Paul, any update on when we might see some of the various patches
-> >> pulled into powerpc-next?
-
-> >> I've got some work I'd like to see in .27 but it needs Michael's code
-> >> patching patches.
-> >
-> > I thought you had some concerns about patches 5/14 and 12/14 of his
-> > series?
->=20
-> 5/14 needs some better comments but nothing that should hold up the =20
-> acceptance and 12/14 or should be merged with 11/14 if he reposts the =20
-> patch set.  But again, nothing to hold things up.
-
-I guess it would be easier for you Kumar if I do a fixup patch to add
-comments, rather than rebasing and you having to rebase as well?
-
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-UjCeUmUGnvRSMPaj6q+8
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBIaFhrdSjSd0sB4dIRArmTAKCSz+lQuIE+3dVWT3WdtSQhU9haJACgupYn
-vSt70a4+tL2htmVHLMeyV9w=
-=Apcw
------END PGP SIGNATURE-----
-
---=-UjCeUmUGnvRSMPaj6q+8--
+On Sat, Jun 28, 2008 at 11:38 PM, Grant Likely
+<grant.likely@secretlab.ca> wrote:
+> On Fri, Jun 20, 2008 at 10:58:38AM -0600, John Rigby wrote:
+>> Copied from 83xx minus support for two busses.
+>
+> If this is a copy, then can it be shared?
+>
+> g.
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+>
