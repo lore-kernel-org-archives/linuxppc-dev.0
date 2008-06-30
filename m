@@ -1,18 +1,22 @@
-Return-Path: <agust@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 2802BDDF13
-	for <linuxppc-dev@ozlabs.org>; Tue,  1 Jul 2008 03:50:33 +1000 (EST)
-Message-ID: <48691BA2.3050001@denx.de>
-Date: Mon, 30 Jun 2008 19:45:06 +0200
-From: Anatolij Gustschin <agust@denx.de>
+Return-Path: <jacmet@gmail.com>
+Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.185])
+	by ozlabs.org (Postfix) with ESMTP id ABB51DE47B
+	for <linuxppc-dev@ozlabs.org>; Tue,  1 Jul 2008 03:55:52 +1000 (EST)
+Received: by nf-out-0910.google.com with SMTP id e27so519205nfd.9
+	for <linuxppc-dev@ozlabs.org>; Mon, 30 Jun 2008 10:55:50 -0700 (PDT)
+To: John Linn <john.linn@xilinx.com>
+Subject: Re: [PATCH] [V2] powerpc: Xilinx: PS2: Added new XPS PS2 driver
+References: <20080630153824.ED3D319B0075@mail96-wa4.bigfish.com>
+From: Peter Korsgaard <jacmet@sunsite.dk>
+Date: Mon, 30 Jun 2008 19:55:48 +0200
+In-Reply-To: <20080630153824.ED3D319B0075@mail96-wa4.bigfish.com> (John Linn's
+	message of "Mon\, 30 Jun 2008 08\:38\:21 -0700")
+Message-ID: <877ic6dcyj.fsf@macbook.be.48ers.dk>
 MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH v2] powerpc/bootwrapper: Add documentation of boot wrapper
-	targets
-References: <20080628050407.6067.90225.stgit@trillian.secretlab.ca>
-In-Reply-To: <20080628050407.6067.90225.stgit@trillian.secretlab.ca>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, john.linn@xilinx.com
+Content-Type: text/plain; charset=us-ascii
+Sender: Peter Korsgaard <jacmet@gmail.com>
+Cc: linuxppc-dev@ozlabs.org, Sadanand <sadanan@xilinx.com>,
+	linux-input@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,63 +26,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Grant Likely wrote:
-> From: Grant Likely <grant.likely@secretlab.ca>
-> 
-> There have been many questions on and off the mailing list about how
-> exactly the bootwrapper is used for embedded targets.  Add some
-> documentation and help text to try and clarify the system.
-> 
-> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+>>>>> "John" == John Linn <john.linn@xilinx.com> writes:
 
-<snip>
+ John> Added a new driver for Xilinx XPS PS2 IP. This driver is
+ John> a flat driver to better match the Linux driver pattern.
 
-> diff --git a/Documentation/powerpc/bootwrapper.txt b/Documentation/powerpc/bootwrapper.txt
-> new file mode 100644
-> index 0000000..a03d73c
-> --- /dev/null
-> +++ b/Documentation/powerpc/bootwrapper.txt
-> @@ -0,0 +1,141 @@
-> +The PowerPC boot wrapper
-> +------------------------
-> +Copyright (C) Secret Lab Technologies Ltd.
-> +
-> +PowerPC image targets compresses and wraps the kernel image (vmlinux) with
-> +a boot wrapper to make it usable by the system firmware.  There is no
-> +standard PowerPC firmware interface, so the boot wrapper is designed to
-> +be adaptable for each kind of image that needs to be built.
-> +
-> +The boot wrapper can be found in the arch/powerpc/boot/ directory.  The
-> +Makefile in that directory has targets for all the available image types.
-> +The different image types are used to support all of the various firmware
-> +interfaces found on PowerPC platforms.  OpenFirmware is the most commonly
-> +used firmare type on general purpose PowerPC systems from Apple, IBM and
+ John> Signed-off-by: Sadanand <sadanan@xilinx.com>
+ John> Signed-off-by: John Linn <john.linn@xilinx.com>
+ John> ---
 
-typo, s/firmare/firmware/
+ John> V2
 
-<snip>
+ John> Changes from v1:
 
-> diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-> index b7d4c4c..754c7eb 100644
-> --- a/arch/powerpc/Makefile
-> +++ b/arch/powerpc/Makefile
-> @@ -169,12 +169,25 @@ bootwrapper_install %.dtb:
->  	$(Q)$(MAKE) ARCH=ppc64 $(build)=$(boot) $(patsubst %,$(boot)/%,$@)
->  
->  define archhelp
-> -  @echo '* zImage          - Compressed kernel image (arch/$(ARCH)/boot/zImage.*)'
-> +  @echo '* zImage          - Build default images selected by kernel config'
-> +  @echo '  zImage.*        - Compressed kernel image (arch/$(ARCH)/boot/zImage.*)'
-> +  @echo '  uImage          - U-Book native image format'
+ John> Ran the scripts/checkpatch.pl on the patch as I should have done
+ John> before sending it (thanks to Stephen).
 
-typo, s/U-Book/U-Boot/
+What about my comments?
 
-> +  @echo '  cuImage.<dt>    - Backwards compatible U-Boot image for older'
-> +  @echo '                    versions which do not support device trees'
-> +  @echo '  dtbImage.<dt>   - zImage with an embedded device tree blob'
-> +  @echo '  simpleImage.<dt> - Firmware independant image.'
-
-typo, s/independant/independent/
-
-Cheers,
-Anatolij
+-- 
+Bye, Peter Korsgaard
