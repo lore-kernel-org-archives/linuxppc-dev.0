@@ -2,18 +2,23 @@ Return-Path: <segher@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 61A3CDE256
-	for <linuxppc-dev@ozlabs.org>; Tue,  1 Jul 2008 02:22:26 +1000 (EST)
-In-Reply-To: <1214795032.9125.7.camel@pek-cluo>
-References: <1214795032.9125.7.camel@pek-cluo>
+	by ozlabs.org (Postfix) with ESMTPS id AECEBDDEFD
+	for <linuxppc-dev@ozlabs.org>; Tue,  1 Jul 2008 02:28:25 +1000 (EST)
+In-Reply-To: <4117.6640-711-1819091302-1214810290@seznam.cz>
+References: <4117.6640-711-1819091302-1214810290@seznam.cz>
 Mime-Version: 1.0 (Apple Message framework v623)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <34080997e6c29d809a38331f88caf3cf@kernel.crashing.org>
+Message-Id: <387e5af6a3d9efd2b982dbc32e8e0338@kernel.crashing.org>
 From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [POWERPC] mpc7448hpc2.dts: remove chosen node from dts
-Date: Mon, 30 Jun 2008 18:22:09 +0200
-To: chunbo.luo@windriver.com
-Cc: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 19/60] microblaze_v4: checksum support
+Date: Mon, 30 Jun 2008 18:25:08 +0200
+To: Michal Simek <Monstr@seznam.cz>
+Cc: linux-arch@vger.kernel.org, Michal Simek <monstr@monstr.eu>,
+	vapier.adi@gmail.com, arnd@arndb.de, matthew@wil.cx,
+	microblaze-uclinux@itee.uq.edu.au, linux-kernel@vger.kernel.org,
+	John.Linn@xilinx.com, linuxppc-dev@ozlabs.org,
+	alan@lxorguk.ukuu.org.uk, hpa@zytor.com, drepper@redhat.com,
+	john.williams@petalogix.com, will.newton@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,18 +28,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> Modern versions of u-boot create a chosen node automatically.  So if
-> we set the chosen node in the dts file, there will be 2 chosen nodes
-> passed in to the kernel,
+> you find bug because there is microblaze asm code in generic folder.
 
-That's a bug in uboot, then: when it creates a property, it should
-delete an already existing property with the same name in that node.
+No, I found it because I was reading the code, I didn't even notice
+this was in asm-generic :-)
 
-> and the kernel command line will be taken from
-> the wrong node.  So, remove the extra chosen node from the dts file.
+> Big thanks. I'll fix it and I'll look at parameters too.
 
-This will cause a regression for people using an older version of
-uboot.  No idea how important that is.
+Thanks.
 
 
 Segher
