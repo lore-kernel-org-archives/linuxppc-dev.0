@@ -2,26 +2,23 @@ Return-Path: <segher@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 83A88DE0BE
-	for <linuxppc-dev@ozlabs.org>; Tue,  1 Jul 2008 06:57:13 +1000 (EST)
-In-Reply-To: <D70C5CB6-5066-4AD3-9367-879AF39FB8E1@kernel.crashing.org>
-References: <Pine.LNX.4.64.0806271449540.9071@blarg.am.freescale.net>
-	<48654D6D.1090309@freescale.com>
-	<E57F448A-7217-4893-A77B-6367B0C3118A@kernel.crashing.org>
-	<Pine.LNX.4.64.0806271609540.10625@blarg.am.freescale.net>
-	<20080630041525.GD24012@yookeroo.seuss>
-	<20080630153513.GD13950@loki.buserror.net>
-	<D70C5CB6-5066-4AD3-9367-879AF39FB8E1@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id B6202DE518
+	for <linuxppc-dev@ozlabs.org>; Tue,  1 Jul 2008 07:19:23 +1000 (EST)
+In-Reply-To: <20080630131441.e9b9ac1c.kim.phillips@freescale.com>
+References: <20080627115243.d76e0814.kim.phillips@freescale.com>
+	<fa686aa40806272229s795067d5he962c8a1750a260@mail.gmail.com>
+	<2b97f7566925ed86b78b364ff5724644@kernel.crashing.org>
+	<20080630110410.7ee097ed.kim.phillips@freescale.com>
+	<e590624fb4ff66d787a2fa3c44e00cbc@kernel.crashing.org>
+	<20080630131441.e9b9ac1c.kim.phillips@freescale.com>
 Mime-Version: 1.0 (Apple Message framework v623)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <9feed9d3c12e4b7fdd28262fd431206e@kernel.crashing.org>
+Message-Id: <e07b0ce3c375e9418ac976256c731f03@kernel.crashing.org>
 From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH v2] powerpc: Add dma nodes to 83xx, 85xx and 86xx boards
-Date: Mon, 30 Jun 2008 22:56:51 +0200
-To: Kumar Gala <galak@kernel.crashing.org>
-Cc: Scott Wood <scottwood@freescale.com>,
-	"linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>,
-	Timur Tabi <timur@freescale.com>
+Subject: Re: [PATCH v2] update crypto node definition and device tree instances
+Date: Mon, 30 Jun 2008 23:19:05 +0200
+To: Kim Phillips <kim.phillips@freescale.com>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,22 +28,90 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>> What's the cell-index in these nodes used to index?  Given the
->>> confusion there's been about the proper use of this property, a
->>> comment indicating which shared registers this is used to index is
->>> probably a good idea.
+>>>> Also, these made-up names make you do more work: you'll need to
+>>>
+>>> who said they were made up?
 >>
->> There's supposed to be a cell-index in the *channels* to index into 
->> the
->> shared summary register (the "reg" of the dma node itself).  I don't 
->> see any
->> purpose for a cell-index in the main dma node, though.
+>> I did.  These names do not refer to some physical part you can buy.
 >
-> I believe this comes into play when we have more than one DMA 
-> controller and sometimes there are special uses like on 8610.
+> right, they refer to devices in multiple physical parts you can buy.
+> Part-you-can-buy documentation clearly indicates the SEC version in
+> that part, in the form "SEC X.Y", i.e, it's not something made up
+> that's not already in freescale documentation.
 
-There is no need to guess what it is or isn't used for.  Just look
-it up in the binding for this device.
+Yes.  As a side note, since there are multiple devices that contain
+e.g. a sec-1.0, it would be prudent to describe the exact incarnation
+in the device tree, like "mpc8272-sec" or something, in either "model"
+or "compatible", just in case a problem shows up with one of them.
+
+>>>> write up a binding for them, explaining exactly what a 1.0 device
+>>>> etc. is (or at least point to documentation for it).  If you use
+>>>> a name that refers to some device that people can easily google
+>>>> for documentation, you can skip this (well, you might need to
+>>>> write a binding anyway; but at least you won't have to explain
+>>>> what the device _is_).
+>>>
+>>> documentation is available in the usual places, and it specifically
+>>> points out which SEC version it references.
+>>
+>> I can't find a manual online for "freescale sec"; googling
+>> for "freescale sec-1.0" finds a manual for the PowerQUICC I;
+>> is that the right one?  I don't know, so the binding needs
+>> to explain it to me.
+>
+> the binding shouldn't be responsible for google's shortcomings
+
+The binding needs to describe what device it is for.  I am a stupid
+user, just like most users, so if the binding doesn't tell me I turn
+to google.  Don't blame them for not finding it; the binding should
+have told me in the first place!
+
+> (that hit is correct, btw).
+
+Okay, cool.
+
+>> Going from SoC name -> SEC version is easy, but the other way around
+>> not so.
+>>
+>> Anyway, minor stuff.
+>
+> sounds like you're pointing out a lack of "SEC versions guide"
+> documentation of Freescale..
+
+Yes, that would have helped.
+
+>>> Plus, as I mentioned
+>>> before, a lot of the differences between the SEC versions are 
+>>> miniscule
+>>> feature bits scattered across the programming model.
+>>
+>> I don't see how this is relevant, sorry.
+>>
+> I'm under the impression that listing the differences (assuming they're
+> easily obtainable) would lead to unnecessary b-w-of bloat.
+
+The binding at a minimum should describe how to identify each
+unique version from the device tree, no matter how miniscule
+those differences are.  Just a specific "compatible" value will
+do.
+
+> I don't know what google does; I'd search freescale documentation
+> directly.
+
+Or the binding could just bloody say what it is talking about in the
+first place, heh.
+
+
+Anyway, how about we do something constructive?  If you still want to
+use "fsl,sec-N.M" names, that's fine with me.  Each specific device
+tree needs to still say which exact device it contains, so an entry
+would look like e.g.
+
+	compatible = "fsl,mpc8272-sec", "fsl,sec-3.0";
+
+and the driver can just probe for "fsl,sec-3.0" if it doesn't need
+to know about the exact version; but it _can_ use it if it _does_
+need to know.
 
 
 Segher
