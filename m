@@ -1,21 +1,24 @@
-Return-Path: <dmitry.torokhov@gmail.com>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.250])
-	by ozlabs.org (Postfix) with ESMTP id B28A8DE379
-	for <linuxppc-dev@ozlabs.org>; Tue,  1 Jul 2008 04:10:30 +1000 (EST)
-Received: by an-out-0708.google.com with SMTP id c34so287690anc.78
-	for <linuxppc-dev@ozlabs.org>; Mon, 30 Jun 2008 11:10:28 -0700 (PDT)
-Date: Mon, 30 Jun 2008 14:10:23 -0400
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH] powerpc: Xilinx: PS2: Added new XPS PS2 driver
-Message-ID: <20080630135531.ZZRA012@mailhub.coreip.homeip.net>
-References: <20080630142451.516A41D1006C@mail57-sin.bigfish.com>
-	<20080630171628.GF17916@secretlab.ca>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080630171628.GF17916@secretlab.ca>
-Cc: linuxppc-dev@ozlabs.org, linux-input@vger.kernel.org,
-	John Linn <john.linn@xilinx.com>, Sadanand <sadanan@xilinx.com>
+Return-Path: <kim.phillips@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 95AF0DE66C
+	for <linuxppc-dev@ozlabs.org>; Tue,  1 Jul 2008 04:14:55 +1000 (EST)
+Date: Mon, 30 Jun 2008 13:14:41 -0500
+From: Kim Phillips <kim.phillips@freescale.com>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH v2] update crypto node definition and device tree instances
+Message-Id: <20080630131441.e9b9ac1c.kim.phillips@freescale.com>
+In-Reply-To: <e590624fb4ff66d787a2fa3c44e00cbc@kernel.crashing.org>
+References: <20080627115243.d76e0814.kim.phillips@freescale.com>
+	<fa686aa40806272229s795067d5he962c8a1750a260@mail.gmail.com>
+	<2b97f7566925ed86b78b364ff5724644@kernel.crashing.org>
+	<20080630110410.7ee097ed.kim.phillips@freescale.com>
+	<e590624fb4ff66d787a2fa3c44e00cbc@kernel.crashing.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,198 +28,73 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Grant, John,
+On Mon, 30 Jun 2008 18:55:34 +0200
+Segher Boessenkool <segher@kernel.crashing.org> wrote:
 
-On Mon, Jun 30, 2008 at 11:16:28AM -0600, Grant Likely wrote:
-> On Mon, Jun 30, 2008 at 07:24:48AM -0700, John Linn wrote:
-> > +config SERIO_XILINX_XPS_PS2
-> > +	tristate "Xilinx XPS PS/2 Controller Support"
-> > +	help
-> > +	  This driver supports XPS PS/2 IP from Xilinx EDK.
-> > +
+> >> Also, these made-up names make you do more work: you'll need to
+> >
+> > who said they were made up?
 > 
-> Consider moving this block to somewhere in the middle of the file to
-> reduce the possibility of merge conflicts.
-> 
+> I did.  These names do not refer to some physical part you can buy.
 
-I can take care of that, no worries.
+right, they refer to devices in multiple physical parts you can buy.
+Part-you-can-buy documentation clearly indicates the SEC version in
+that part, in the form "SEC X.Y", i.e, it's not something made up
+that's not already in freescale documentation.
 
-> > + *
-> > + * (c) 2005 MontaVista Software, Inc.
-> > + * (c) 2008 Xilinx Inc.
-> > + *
-> > + * This program is free software; you can redistribute it and/or modify it
-> > + * under the terms of the GNU General Public License as published by the
-> > + * Free Software Foundation; either version 2 of the License, or (at your
-> > + * option) any later version.
-> > + *
-> > + * You should have received a copy of the GNU General Public License along
-> > + * with this program; if not, write to the Free Software Foundation, Inc.,
-> > + * 675 Mass Ave, Cambridge, MA 02139, USA.
+> >> write up a binding for them, explaining exactly what a 1.0 device
+> >> etc. is (or at least point to documentation for it).  If you use
+> >> a name that refers to some device that people can easily google
+> >> for documentation, you can skip this (well, you might need to
+> >> write a binding anyway; but at least you won't have to explain
+> >> what the device _is_).
+> >
+> > documentation is available in the usual places, and it specifically
+> > points out which SEC version it references.
 > 
-> These two paragraphs are redundant.  Being in the Linux source tree
-> implies that it is GPL licensed.  You can remove them.
-> 
+> I can't find a manual online for "freescale sec"; googling
+> for "freescale sec-1.0" finds a manual for the PowerQUICC I;
+> is that the right one?  I don't know, so the binding needs
+> to explain it to me.
 
-I prefer having the statement in right in the code actually. While
-being the in kernel implies that the code is GPLv2 compatible it could
-be dual-licensed or GPLv2 only. This removes any doubt as to what
-license is used on this particular piece of code.
+the binding shouldn't be responsible for google's shortcomings (that
+hit is correct, btw).
 
-> > + */
-> > +
-> > +
-> > +#include <linux/module.h>
-> > +#include <linux/serio.h>
-> > +#include <linux/interrupt.h>
-> > +#include <linux/errno.h>
-> > +#include <linux/init.h>
-> > +#include <linux/list.h>
-> > +#include <asm/io.h>
-> > +
-> > +#ifdef CONFIG_OF		/* For open firmware */
-> > + #include <linux/of_device.h>
-> > + #include <linux/of_platform.h>
-> > +#endif /* CONFIG_OF */
+> Going from SoC name -> SEC version is easy, but the other way around
+> not so.
 > 
-> This is a given for mainline since arch/ppc will not exist in 2.6.27
-> 
-> > +
-> > +#include "xilinx_ps2.h"
-> 
-> This header can simple be rolled into this .c file because the driver no
-> longer has multiple .c files.
-> 
-> 
-> > +#define DRIVER_DESCRIPTION	"Xilinx XPS PS/2 driver"
-> > +#define XPS2_NAME_DESC		"Xilinx XPS PS/2 Port #%d"
-> > +#define XPS2_PHYS_DESC		"xilinxps2/serio%d"
-> 
-> These strings are only used in 1 place each, no need to use a #define
-> 
-> > +
-> > +
-> > +static DECLARE_MUTEX(cfg_sem);
-> 
-> This mutex should be part of the driver private data structure
-> 
-> > +
-> > +/*********************/
-> > +/* Interrupt handler */
-> > +/*********************/
-> > +static irqreturn_t xps2_interrupt(int irq, void *dev_id)
-> > +{
-> > +	struct xps2data *drvdata = (struct xps2data *)dev_id;
-> > +	u32 intr_sr;
-> > +	u32 ier;
-> > +	u8 c;
-> > +	u8 retval;
-> > +
-> > +	/* Get the PS/2 interrupts and clear them */
-> > +	intr_sr = in_be32(drvdata->base_address + XPS2_IPISR_OFFSET);
-> > +	out_be32(drvdata->base_address + XPS2_IPISR_OFFSET, intr_sr);
-> > +
-> > +	/* Check which interrupt is active */
-> > +	if (intr_sr & XPS2_IPIXR_RX_OVF) {
-> > +		printk(KERN_ERR "%s: receive overrun error\n",
-> > +			drvdata->serio.name);
-> > +	}
-> > +
-> > +	if (intr_sr & XPS2_IPIXR_RX_ERR) {
-> > +		drvdata->dfl |= SERIO_PARITY;
-> > +	}
-> > +
-> > +	if (intr_sr & (XPS2_IPIXR_TX_NOACK | XPS2_IPIXR_WDT_TOUT)) {
-> > +		drvdata->dfl |= SERIO_TIMEOUT;
-> > +	}
-> > +
-> > +	if (intr_sr & XPS2_IPIXR_RX_FULL) {
-> > +		retval = xps2_recv(drvdata, &drvdata->rxb);
-> > +
-> > +		/* Error, if 1 byte is not received */
-> > +		if (retval != 1) {
-> > +			printk(KERN_ERR
-> > +				"%s: wrong rcvd byte count (%d)\n",
-> > +				drvdata->serio.name, retval);
+> Anyway, minor stuff.
 
-Don't you want to bail out here? Otherwise you will feed garbage to
-serio_interrupt() I think.
+sounds like you're pointing out a lack of "SEC versions guide"
+documentation of Freescale..
 
-> > +		}
-> > +		c = drvdata->rxb;
-> > +		serio_interrupt(&drvdata->serio, c, drvdata->dfl);
-> > +		drvdata->dfl = 0;
-> > +	}
-> > +
-> > +	if (intr_sr & XPS2_IPIXR_TX_ACK) {
-> > +
-> > +		/* Disable the TX interrupts after the transmission is
-> > +		 * complete */
-> > +		ier = in_be32(drvdata->base_address + XPS2_IPIER_OFFSET);
-> > +		ier &= (~(XPS2_IPIXR_TX_ACK & XPS2_IPIXR_ALL ));
-> > +		out_be32(drvdata->base_address + XPS2_IPIER_OFFSET, ier);
-> > +		drvdata->dfl = 0;
-> > +	}
-> > +
-> > +	return IRQ_HANDLED;
-> > +}
-> > +
-> > +/*******************/
-> > +/* serio callbacks */
-> > +/*******************/
-> > +
-> > +/*
-> > + * sxps2_write() sends a byte out through the PS/2 interface.
-> > + *
-> > + * The sole purpose of drvdata->tx_end is to prevent the driver
-> > + * from locking up in the do {} while; loop when nothing is connected
-> > + * to the given PS/2 port. That's why we do not try to recover
-> > + * from the transmission failure.
-> > + * drvdata->tx_end needs not to be initialized to some "far in the
-> > + * future" value, as the very first attempt to xps2_send() a byte
-> > + * is always successful, and drvdata->tx_end will be set to a proper
-> > + * value at that moment - before the 1st use in the comparison.
-> > + */
+> > Plus, as I mentioned
+> > before, a lot of the differences between the SEC versions are miniscule
+> > feature bits scattered across the programming model.
 > 
-> Good comment block.
+> I don't see how this is relevant, sorry.
 > 
-> nitpick: can you reformat the comment blocks to be in kerneldoc format?
-> That will allow the automatic document generation tools to parse it.
+I'm under the impression that listing the differences (assuming they're
+easily obtainable) would lead to unnecessary b-w-of bloat.
+
+> >> Using actual model names also reduces the namespace pollution
+> >> (hopefully Freescale will not create some other MPC8272 device
+> >> ever, so "fsl,mpc8272-whatever" will never be a nice name to
+> >> use for any other device; OTOH, it's likely that Freescale will
+> >> create some other device called "SEC" (there are only so many
+> >> TLAs, after all), so "fsl,sec-n.m" isn't as future-proof.
+> >
+> > I doubt that; the SEC has been around for about a decade now and that
+> > hasn't happened.
 > 
-> see: Documentation/kernel-doc-nano-HOWTO.txt
-
-This is an internal function so its not going to be exposed in
-kerneldoc though.
-
+> You'll have to admit a three-letter acronym is a bigger namespace
+> squatter than a nice long name is.  But it's your namespace, I don't
+> care.
 > 
-> > +static int sxps2_write(struct serio *pserio, unsigned char c)
-> > +{
-> > +	struct xps2data *drvdata = pserio->port_data;
-> > +	unsigned long flags;
-> > +	int retval;
-> > +
-> > +	do {
-> > +		spin_lock_irqsave(&drvdata->lock, flags);
-> > +		retval = xps2_send(drvdata, &c);
-> > +		spin_unlock_irqrestore(&drvdata->lock, flags);
-> > +
-> > +		if (retval == 1) {
-> > +			drvdata->tx_end = jiffies + HZ;
-> > +			return 0;	/* success */
-> > +		}
-> > +	} while (!time_after(jiffies, drvdata->tx_end));
+> i tried googling for "freescale sec" to find any other devices called
+> SEC, but that didn't work out.  What is "insider trading"?  ;-)
 
-The logic escapes me... Let's say you send a byte and time when
-jiffies were 10000 and now it is time 20000 and we try to send another
-byte. Our first attempt fails and with time fence 11000 (HZ=1000) we
-bail out of sxps2_write() after the very first unsiccessful attempt.
-Is this what you intended?
+I don't know what google does; I'd search freescale documentation
+directly.
 
-> > +
-> > +	return 1;			/* transmission is frozen */
-
-It is better to return a negative on error, even if you don't report
-actual -EXXXX error code.
-
--- 
-Dmitry
+Kim
