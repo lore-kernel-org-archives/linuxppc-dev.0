@@ -1,39 +1,27 @@
-Return-Path: <brking@linux.vnet.ibm.com>
-Received: from over.ny.us.ibm.com (over.ny.us.ibm.com [32.97.182.150])
+Return-Path: <kim.phillips@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "over.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 67403DDFCA
-	for <linuxppc-dev@ozlabs.org>; Tue,  1 Jul 2008 08:05:09 +1000 (EST)
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
-	by pokfb.esmtp.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	m5UM0E0h018014
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
-	for <linuxppc-dev@ozlabs.org>; Mon, 30 Jun 2008 18:00:15 -0400
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m5ULv4dl022284
-	for <linuxppc-dev@ozlabs.org>; Mon, 30 Jun 2008 17:57:04 -0400
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
-	m5ULv0XR034192
-	for <linuxppc-dev@ozlabs.org>; Mon, 30 Jun 2008 15:57:03 -0600
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m5ULux5r020382
-	for <linuxppc-dev@ozlabs.org>; Mon, 30 Jun 2008 15:57:00 -0600
-Message-ID: <486956A6.2070806@linux.vnet.ibm.com>
-Date: Mon, 30 Jun 2008 16:56:54 -0500
-From: Brian King <brking@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH 08/18 v2] powerpc: Do not probe PCI buses or eBus devices
-	if CMO is enabled
-References: <20080625201202.GB17020@linux.vnet.ibm.com>
-	<20080625201721.GJ17020@linux.vnet.ibm.com>
-	<18536.25052.228270.743669@cargo.ozlabs.ibm.com>
-In-Reply-To: <18536.25052.228270.743669@cargo.ozlabs.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, David Darrington <ddarring@linux.vnet.ibm.com>
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 79F97DDDCA
+	for <linuxppc-dev@ozlabs.org>; Tue,  1 Jul 2008 08:30:23 +1000 (EST)
+Date: Mon, 30 Jun 2008 17:30:08 -0500
+From: Kim Phillips <kim.phillips@freescale.com>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH v2] update crypto node definition and device tree instances
+Message-Id: <20080630173008.d6762380.kim.phillips@freescale.com>
+In-Reply-To: <e07b0ce3c375e9418ac976256c731f03@kernel.crashing.org>
+References: <20080627115243.d76e0814.kim.phillips@freescale.com>
+	<fa686aa40806272229s795067d5he962c8a1750a260@mail.gmail.com>
+	<2b97f7566925ed86b78b364ff5724644@kernel.crashing.org>
+	<20080630110410.7ee097ed.kim.phillips@freescale.com>
+	<e590624fb4ff66d787a2fa3c44e00cbc@kernel.crashing.org>
+	<20080630131441.e9b9ac1c.kim.phillips@freescale.com>
+	<e07b0ce3c375e9418ac976256c731f03@kernel.crashing.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -43,26 +31,105 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Paul Mackerras wrote:
-> Robert Jennings writes:
+On Mon, 30 Jun 2008 23:19:05 +0200
+Segher Boessenkool <segher@kernel.crashing.org> wrote:
+
+> >>>> Also, these made-up names make you do more work: you'll need to
+> >>>
+> >>> who said they were made up?
+> >>
+> >> I did.  These names do not refer to some physical part you can buy.
+> >
+> > right, they refer to devices in multiple physical parts you can buy.
+> > Part-you-can-buy documentation clearly indicates the SEC version in
+> > that part, in the form "SEC X.Y", i.e, it's not something made up
+> > that's not already in freescale documentation.
 > 
->> From: Brian King <brking@linux.vnet.ibm.com>
->>
->> The Cooperative Memory Overcommit (CMO) on System p does not currently
->> support native PCI devices or eBus devices when enabled.
+> Yes.  As a side note, since there are multiple devices that contain
+> e.g. a sec-1.0, it would be prudent to describe the exact incarnation
+> in the device tree, like "mpc8272-sec" or something, in either "model"
+
+but 'fsl,sec-X.Y' /does/ describe the exact incarnation, whereas
+'fsl,mpc8349-sec' /does not/.  "fsl,mpc8349-sec' might mean the SEC 2.1
+or the SEC 2.4, it depends on the revision of the mpc8349.
+
+> or "compatible", just in case a problem shows up with one of them.
+
+I thought 'model' was superseded by 'compatible'; that's why it's taken
+out here, along with device_type.
+
+> >>>> write up a binding for them, explaining exactly what a 1.0 device
+> >>>> etc. is (or at least point to documentation for it).  If you use
+> >>>> a name that refers to some device that people can easily google
+> >>>> for documentation, you can skip this (well, you might need to
+> >>>> write a binding anyway; but at least you won't have to explain
+> >>>> what the device _is_).
+> >>>
+> >>> documentation is available in the usual places, and it specifically
+> >>> points out which SEC version it references.
+> >>
+> >> I can't find a manual online for "freescale sec"; googling
+> >> for "freescale sec-1.0" finds a manual for the PowerQUICC I;
+> >> is that the right one?  I don't know, so the binding needs
+> >> to explain it to me.
+> >
+> > the binding shouldn't be responsible for google's shortcomings
 > 
-> Then why would we get any native PCI or eBus devices in the device
-> tree?
+> The binding needs to describe what device it is for.  I am a stupid
+> user, just like most users, so if the binding doesn't tell me I turn
+> to google.  Don't blame them for not finding it; the binding should
+> have told me in the first place!
 
-We shouldn't. The reason the patch exists is so that *if* firmware were to
-add support for physical PCI/eBus devices in CMO mode in the future, then
-we could get into a scenario where there are such devices in the device
-tree and we would want to prevent them from getting initialized
-on a kernel without the code needed to support such a feature.
+Again, I don't see how google's results are pertinent in this
+discussion.  The fact that Freescale doesn't publish a separate SEC
+manual is not what this patch is trying to address.
 
--Brian
+btw, the title for the binding is:
 
--- 
-Brian King
-Linux on Power Virtualization
-IBM Linux Technology Center
+  g) Freescale SOC SEC Security Engines
+
+Is that what you are looking for?  If not, what precisely?  a list of
+all the parts?  There's an SEC in every mpc8[35]xxE!
+
+> >>> Plus, as I mentioned
+> >>> before, a lot of the differences between the SEC versions are 
+> >>> miniscule
+> >>> feature bits scattered across the programming model.
+> >>
+> >> I don't see how this is relevant, sorry.
+> >>
+> > I'm under the impression that listing the differences (assuming they're
+> > easily obtainable) would lead to unnecessary b-w-of bloat.
+> 
+> The binding at a minimum should describe how to identify each
+> unique version from the device tree, no matter how miniscule
+> those differences are.  Just a specific "compatible" value will
+> do.
+
+I'm at a loss; isn't that what this patch does?
+
+> > I don't know what google does; I'd search freescale documentation
+> > directly.
+> 
+> Or the binding could just bloody say what it is talking about in the
+> first place, heh.
+
+Again, I'm at a loss here.  Can you give a specific example of what
+you're looking for here?
+
+> Anyway, how about we do something constructive?  If you still want to
+> use "fsl,sec-N.M" names, that's fine with me.  Each specific device
+> tree needs to still say which exact device it contains, so an entry
+> would look like e.g.
+> 
+> 	compatible = "fsl,mpc8272-sec", "fsl,sec-3.0";
+> 
+> and the driver can just probe for "fsl,sec-3.0" if it doesn't need
+> to know about the exact version; but it _can_ use it if it _does_
+> need to know.
+
+Currently the driver matches on "fsl,sec2.0", and if needs be, will
+call of_device_is_compatible with the version number that introduces
+the feature it wants to implement.
+
+Kim
