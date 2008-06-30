@@ -1,20 +1,22 @@
-Return-Path: <John.Linn@xilinx.com>
-Received: from WA4EHSOBE005.bigfish.com (outbound-wa4.frontbridge.com
-	[216.32.181.16]) by ozlabs.org (Postfix) with ESMTP id E6D81DDFAF
-	for <linuxppc-dev@ozlabs.org>; Tue,  1 Jul 2008 02:49:50 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Subject: RE: [PATCH] [POWERPC] Xilinx: add compatibility for 'simple-bus'.
-Date: Mon, 30 Jun 2008 10:49:43 -0600
-In-Reply-To: <977C41F842E66D4CB2E41332313B6150062A27B7@XSJ-EXCHVS1.xlnx.xilinx.com>
-References: <fa686aa40806281333i5ae1833fg561622640b5d3a4e@mail.gmail.com>
-	<20080630034548.A10A81750069@mail131-sin.bigfish.com>
-	<20080630163429.GE17916@secretlab.ca>
-	<977C41F842E66D4CB2E41332313B6150062A27B7@XSJ-EXCHVS1.xlnx.xilinx.com>
-From: John Linn <John.Linn@xilinx.com>
-To: "Stephen Neuendorffer" <stephenn@xilinx.com>, <grant.likely@secretlab.ca>
-Message-ID: <20080630164946.19CFF268053@mail219-wa4.bigfish.com>
-Cc: linuxppc-dev@ozlabs.org, git <git@xilinx.com>, dwg@au1.ibm.com
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 4B7B6DE267
+	for <linuxppc-dev@ozlabs.org>; Tue,  1 Jul 2008 02:55:56 +1000 (EST)
+In-Reply-To: <20080630110410.7ee097ed.kim.phillips@freescale.com>
+References: <20080627115243.d76e0814.kim.phillips@freescale.com>
+	<fa686aa40806272229s795067d5he962c8a1750a260@mail.gmail.com>
+	<2b97f7566925ed86b78b364ff5724644@kernel.crashing.org>
+	<20080630110410.7ee097ed.kim.phillips@freescale.com>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <e590624fb4ff66d787a2fa3c44e00cbc@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH v2] update crypto node definition and device tree instances
+Date: Mon, 30 Jun 2008 18:55:34 +0200
+To: Kim Phillips <kim.phillips@freescale.com>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,83 +26,54 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I'll give it a try, sounds easy.
+>> Also, these made-up names make you do more work: you'll need to
+>
+> who said they were made up?
 
--- John
+I did.  These names do not refer to some physical part you can buy.
 
------Original Message-----
-From: Stephen Neuendorffer =
+>> write up a binding for them, explaining exactly what a 1.0 device
+>> etc. is (or at least point to documentation for it).  If you use
+>> a name that refers to some device that people can easily google
+>> for documentation, you can skip this (well, you might need to
+>> write a binding anyway; but at least you won't have to explain
+>> what the device _is_).
+>
+> documentation is available in the usual places, and it specifically
+> points out which SEC version it references.
 
-Sent: Monday, June 30, 2008 10:49 AM
-To: grant.likely@secretlab.ca; John Linn
-Cc: dwg@au1.ibm.com; jwboyer@linux.vnet.ibm.com;
-linuxppc-dev@ozlabs.org; git
-Subject: RE: [PATCH] [POWERPC] Xilinx: add compatibility for
-'simple-bus'.
+I can't find a manual online for "freescale sec"; googling
+for "freescale sec-1.0" finds a manual for the PowerQUICC I;
+is that the right one?  I don't know, so the binding needs
+to explain it to me.
 
+Going from SoC name -> SEC version is easy, but the other way around
+not so.
 
-Ah.. good idea... hadn't thought of that, I guess.
+Anyway, minor stuff.
 
-John Linn: I have no time to look at this.  Can you see if such a fix
-fixes the problem?
+> Plus, as I mentioned
+> before, a lot of the differences between the SEC versions are miniscule
+> feature bits scattered across the programming model.
 
-Steve
+I don't see how this is relevant, sorry.
 
-> -----Original Message-----
-> From: Grant Likely [mailto:glikely@secretlab.ca] On Behalf Of Grant
-Likely
-> Sent: Monday, June 30, 2008 9:34 AM
-> To: Stephen Neuendorffer
-> Cc: dwg@au1.ibm.com; jwboyer@linux.vnet.ibm.com;
-linuxppc-dev@ozlabs.org; git
-> Subject: Re: [PATCH] [POWERPC] Xilinx: add compatibility for
-'simple-bus'.
-> =
+>> Using actual model names also reduces the namespace pollution
+>> (hopefully Freescale will not create some other MPC8272 device
+>> ever, so "fsl,mpc8272-whatever" will never be a nice name to
+>> use for any other device; OTOH, it's likely that Freescale will
+>> create some other device called "SEC" (there are only so many
+>> TLAs, after all), so "fsl,sec-n.m" isn't as future-proof.
+>
+> I doubt that; the SEC has been around for about a decade now and that
+> hasn't happened.
 
-> Stephen Neuendorffer wrote:
-> > Grant Likely wrote:
-> > > > I think the easiest solution is to change the Kconfig so that
-> > > > PPC_UDBG_16550 is only selected based on !XILINX_VIRTEX.  I've
-done this
-> > > > in my tree, but I've been swamped with other things at the
-moment, so I
-> > > > haven't verified it.
-> > >
-> > > This is an easy solution, but it is not a good one.  Doing so
-would
-> > > break UDBG on other 405 boards when building multiplatform
-kernels.
-> > > It would be better to teach legacy serial about the shift and
-offset.
-> > > Alternately, add code to add_legacy_soc_port() to skip it if the
-> > > shift/offset properties are present.
-> >
-> > Is there really much of a chance of that, given the differences
-> > with the bootwrappers?  Does anyone care enough about legacy_serial
-> > for this to matter?   My impression was that legacy serial was not
-> > preferred anyway...
-> =
+You'll have to admit a three-letter acronym is a bigger namespace
+squatter than a nice long name is.  But it's your namespace, I don't
+care.
 
-> You never know, a single kernel build can be wrapped multiple times,
-and
-> besides, it is a trivial fix.  Just add a test for the presence of
-> reg-shift and bail if it is present.
-> =
-
-> I don't know much about the history of legacy serial, but I do not
-> support adding multiplatform restrictions when not needed.
-> legacy_serial may be crusty, but it does have the advantage of
-> supporting UDBG which is a useful feature.  It may or may not go away.
-> =
-
-> Cheers,
-> g.
-> =
+i tried googling for "freescale sec" to find any other devices called
+SEC, but that didn't work out.  What is "insider trading"?  ;-)
 
 
-
-This email and any attachments are intended for the sole use of the named r=
-ecipient(s) and contain(s) confidential information that may be proprietary=
-, privileged or copyrighted under applicable law. If you are not the intend=
-ed recipient, do not read, copy, or forward this email message or any attac=
-hments. Delete this email message and any attachments immediately.
+Segher
