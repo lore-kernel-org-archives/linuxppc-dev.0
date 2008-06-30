@@ -1,31 +1,18 @@
-Return-Path: <jacmet@gmail.com>
-Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.184])
-	by ozlabs.org (Postfix) with ESMTP id 638D3DDF63
+Return-Path: <rukseninanir@gmail.com>
+Received: from fg-out-1718.google.com (fg-out-1718.google.com [72.14.220.155])
+	by ozlabs.org (Postfix) with ESMTP id B0232DDE41
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 28 Jun 2008 04:14:41 +1000 (EST)
-Received: by nf-out-0910.google.com with SMTP id e27so163700nfd.9
+	Mon, 30 Jun 2008 19:22:14 +1000 (EST)
+Received: by fg-out-1718.google.com with SMTP id d23so750322fga.39
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 27 Jun 2008 11:14:38 -0700 (PDT)
-To: Peter Mendham <petermendham@computing.dundee.ac.uk>
-Subject: Re: Linux on Virtex board with ARCH=powerpc
-References: <4860B81F.6070205@computing.dundee.ac.uk>
-	<20080624140532.E77E333006C@mail5-sin.bigfish.com>
-	<48614927.8020406@computing.dundee.ac.uk>
-	<20080624195027.01963640077@mail214-sin.bigfish.com>
-	<48626FAC.2070904@computing.dundee.ac.uk>
-	<20080625203435.D3C46778055@mail212-sin.bigfish.com>
-	<48639871.9020204@computing.dundee.ac.uk>
-	<20080626132905.2779E1F007F@mail24-dub.bigfish.com>
-	<4864DD66.5040909@computing.dundee.ac.uk>
-From: Peter Korsgaard <jacmet@sunsite.dk>
-Date: Fri, 27 Jun 2008 20:14:35 +0200
-In-Reply-To: <4864DD66.5040909@computing.dundee.ac.uk> (Peter Mendham's
-	message of "Fri\, 27 Jun 2008 13\:30\:30 +0100")
-Message-ID: <874p7eeodw.fsf@macbook.be.48ers.dk>
+	Mon, 30 Jun 2008 02:22:12 -0700 (PDT)
+Message-ID: <4868A5C0.5080409@gmail.com>
+Date: Mon, 30 Jun 2008 12:22:08 +0300
+From: Ruksen INANIR <rukseninanir@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Sender: Peter Korsgaard <jacmet@gmail.com>
-Cc: John Linn <John.Linn@xilinx.com>, linuxppc-embedded@ozlabs.org
+To: linuxppc-embedded@ozlabs.org
+Subject: High Memory problem on 2.4.22 Linux, 2GB ppc card
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -36,21 +23,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
->>>>> "Peter" == Peter Mendham <petermendham@computing.dundee.ac.uk> writes:
 
-Hi,
+Hi all,
+   I am working on a PPC Motorola card, which runs Linux 2.4.22.  The 
+card has 2 GB onboard memory. But with use 1456 MB of  the available 
+memory.  To increase the memory capacity i  need  to  increase the used 
+memory at least 64 MB. With CONFIG_HIGHMEM option all of the 2 GB memory 
+can be used but, but the fc driver on the card has no high memory 
+support, so this caused problems.
+     Then i saw that the memory is limited to 1456 by
+   #define MAX_LOW_MEM        0x5B000000  setting in pgtable.c.  I tried 
+to increase it by 64 MB but i could only increase the value of 
+MAX_LOW_MEM by 47 MB (1503 MB) without CONFIG_HIGHMEM option.
 
- Peter> I now have a new and rather bizarre problem, which maybe you
- Peter> or someone else has met before.  I have a simple FPGA design
- Peter> with memory, a sysace and a uart16550 on an ML405 (I've put my
- Peter> hardware to one side for the moment).  It works just fine.  If
- Peter> I swap the uart16550 for a uartlite (remaking the kernel with
- Peter> the correct device tree) I see all the boot messages and the
- Peter> kernel seems to start OK, the root partition is mounted but
- Peter> then I see nothing from /sbin/init.  This is the same root fs
- Peter> that I was using with the uart16550 example I just mentioned.
+   1)Is there any other setting that i should set other than     
+MAX_LOW_MEM to increase the usable memory to 1520 ?
+   2)I knew that the addressable physical memory without high memory 
+option was 1 G.  How was it possible to address 1503 MB without 
+CONFIG_HIGHMEM ? What is the max usable memory for 2.4.22 kernel?
 
-Did you remember to change your inittab to use /dev/ttyUL0?
-
--- 
-Bye, Peter Korsgaard
+   Thanks,
+   Rinanir.
