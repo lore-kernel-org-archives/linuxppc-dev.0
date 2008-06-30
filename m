@@ -1,19 +1,21 @@
-Return-Path: <John.Linn@xilinx.com>
-Received: from WA4EHSOBE002.bigfish.com (outbound-wa4.frontbridge.com
-	[216.32.181.16]) by ozlabs.org (Postfix) with ESMTP id 4F277DDF4C
-	for <linuxppc-dev@ozlabs.org>; Tue,  1 Jul 2008 00:39:40 +1000 (EST)
+Return-Path: <jacmet@gmail.com>
+Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.186])
+	by ozlabs.org (Postfix) with ESMTP id 2A11BDDED7
+	for <linuxppc-dev@ozlabs.org>; Tue,  1 Jul 2008 00:45:18 +1000 (EST)
+Received: by nf-out-0910.google.com with SMTP id e27so496637nfd.9
+	for <linuxppc-dev@ozlabs.org>; Mon, 30 Jun 2008 07:45:16 -0700 (PDT)
+To: John Linn <john.linn@xilinx.com>
+Subject: Re: [PATCH] powerpc: Xilinx: PS2: Added new XPS PS2 driver
+References: <20080630142451.516A41D1006C@mail57-sin.bigfish.com>
+From: Peter Korsgaard <jacmet@sunsite.dk>
+Date: Mon, 30 Jun 2008 16:45:04 +0200
+In-Reply-To: <20080630142451.516A41D1006C@mail57-sin.bigfish.com> (John Linn's
+	message of "Mon\, 30 Jun 2008 07\:24\:48 -0700")
+Message-ID: <87y74ndlsf.fsf@macbook.be.48ers.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Subject: RE: [PATCH] [POWERPC] Xilinx: add compatibility for 'simple-bus'.
-Date: Mon, 30 Jun 2008 08:39:34 -0600
-In-Reply-To: <977C41F842E66D4CB2E41332313B615019F061@XSJ-EXCHVS1.xlnx.xilinx.com>
-References: <20080508161529.65566FB805F@mail185-va3.bigfish.com><1210271125-11559-1-git-send-email-stephen.neuendorffer@xilinx.com><20080603214232.E0A8D1488061@mail55-wa4.bigfish.com><fa686aa40806060829h52c5d27fvcec8c02c2eee3c7@mail.gmail.com><20080606161932.0650C1500054@mail96-sin.bigfish.com>
-	<fa686aa40806281333i5ae1833fg561622640b5d3a4e@mail.gmail.com>
-	<977C41F842E66D4CB2E41332313B615019F061@XSJ-EXCHVS1.xlnx.xilinx.com>
-From: John Linn <John.Linn@xilinx.com>
-To: "Stephen Neuendorffer" <stephenn@xilinx.com>, <grant.likely@secretlab.ca>
-Message-ID: <20080630143936.6F0CDA005F@mail196-wa4.bigfish.com>
-Cc: linuxppc-dev@ozlabs.org, git <git@xilinx.com>, dwg@au1.ibm.com
+Content-Type: text/plain; charset=us-ascii
+Sender: Peter Korsgaard <jacmet@gmail.com>
+Cc: linuxppc-dev@ozlabs.org, Sadanand <sadanan@xilinx.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,76 +25,178 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I still have bad dreams about the of_serial patch I did as a newbie
-related to reg_shift and reg_offset ;)
+>>>>> "John" == John Linn <john.linn@xilinx.com> writes:
 
-I'm still a newbie, but we'll do whatever needs to be done. =
+ > Added a new driver for Xilinx XPS PS2 IP. This driver is
+ > a flat driver to better match the Linux driver pattern.
 
+This should probably go to the linux-input@ list as well.
 
-Any thoughts from Josh?
+ > Signed-off-by: Sadanand <sadanan@xilinx.com>
+ > Signed-off-by: John Linn <john.linn@xilinx.com>
+ > ---
+ >  drivers/input/serio/Kconfig      |    5 +
+ >  drivers/input/serio/Makefile     |    1 +
+ >  drivers/input/serio/xilinx_ps2.c |  464 ++++++++++++++++++++++++++++++++++++++
+ >  drivers/input/serio/xilinx_ps2.h |   97 ++++++++
+ >  4 files changed, 567 insertions(+), 0 deletions(-)
+ >  create mode 100644 drivers/input/serio/xilinx_ps2.c
+ >  create mode 100644 drivers/input/serio/xilinx_ps2.h
 
--- John
+ > diff --git a/drivers/input/serio/Kconfig b/drivers/input/serio/Kconfig
+ > index ec4b661..0e62b39 100644
+ > --- a/drivers/input/serio/Kconfig
+ > +++ b/drivers/input/serio/Kconfig
+ > @@ -190,4 +190,9 @@ config SERIO_RAW
+ >  	  To compile this driver as a module, choose M here: the
+ >  	  module will be called serio_raw.
+ 
+ > +config SERIO_XILINX_XPS_PS2
+ > +	tristate "Xilinx XPS PS/2 Controller Support"
+ > +	help
+ > +	  This driver supports XPS PS/2 IP from Xilinx EDK.
+ > +
+ >  endif
+ > diff --git a/drivers/input/serio/Makefile b/drivers/input/serio/Makefile
+ > index 38b8868..9b6c813 100644
+ > --- a/drivers/input/serio/Makefile
+ > +++ b/drivers/input/serio/Makefile
+ > @@ -21,3 +21,4 @@ obj-$(CONFIG_SERIO_PCIPS2)	+= pcips2.o
+ >  obj-$(CONFIG_SERIO_MACEPS2)	+= maceps2.o
+ >  obj-$(CONFIG_SERIO_LIBPS2)	+= libps2.o
+ >  obj-$(CONFIG_SERIO_RAW)		+= serio_raw.o
+ > +obj-$(CONFIG_SERIO_XILINX_XPS_PS2)	+= xilinx_ps2.o
+ > diff --git a/drivers/input/serio/xilinx_ps2.c b/drivers/input/serio/xilinx_ps2.c
+ > new file mode 100644
+ > index 0000000..670d47f
+ > --- /dev/null
+ > +++ b/drivers/input/serio/xilinx_ps2.c
+ > @@ -0,0 +1,464 @@
+ > +/*
+ > + * xilinx_ps2.c
+ > + *
+ > + * Xilinx PS/2 driver to interface PS/2 component to Linux
+ > + *
+ > + * Author: MontaVista Software, Inc.
+ > + *	   source@mvista.com
+ > + *
+ > + * (c) 2005 MontaVista Software, Inc.
+ > + * (c) 2008 Xilinx Inc.
+ > + *
 
------Original Message-----
-From: Stephen Neuendorffer =
+Is the montavista stuff still valid?
 
-Sent: Sunday, June 29, 2008 9:42 PM
-To: grant.likely@secretlab.ca
-Cc: dwg@au1.ibm.com; jwboyer@linux.vnet.ibm.com;
-linuxppc-dev@ozlabs.org; git
-Subject: RE: [PATCH] [POWERPC] Xilinx: add compatibility for
-'simple-bus'.
+ > + * This program is free software; you can redistribute it and/or modify it
+ > + * under the terms of the GNU General Public License as published by the
+ > + * Free Software Foundation; either version 2 of the License, or (at your
+ > + * option) any later version.
+ > + *
+ > + * You should have received a copy of the GNU General Public License along
+ > + * with this program; if not, write to the Free Software Foundation, Inc.,
+ > + * 675 Mass Ave, Cambridge, MA 02139, USA.
+ > + */
+ > +
+ > +
+ > +#include <linux/module.h>
+ > +#include <linux/serio.h>
+ > +#include <linux/interrupt.h>
+ > +#include <linux/errno.h>
+ > +#include <linux/init.h>
+ > +#include <linux/list.h>
+ > +#include <asm/io.h>
 
+linux/io.h please.
 
-Is there really much of a chance of that, given the differences with the
-bootwrappers?
-Does anyone care enough about legacy_serial for this to matter?   My
-impression was that legacy serial was not preferred anyway...
+ > +
+ > +#ifdef CONFIG_OF		/* For open firmware */
 
-Steve
+Why support !CONFIG_OF? 
 
------Original Message-----
-From: glikely@secretlab.ca on behalf of Grant Likely
-Sent: Sat 6/28/2008 1:33 PM
-To: Stephen Neuendorffer
-Cc: dwg@au1.ibm.com; jwboyer@linux.vnet.ibm.com;
-linuxppc-dev@ozlabs.org; git
-Subject: Re: [PATCH] [POWERPC] Xilinx: add compatibility for
-'simple-bus'.
- =
+ > + #include <linux/of_device.h>
+ > + #include <linux/of_platform.h>
+ > +#endif /* CONFIG_OF */
+ > +
+ > +#include "xilinx_ps2.h"
 
-On Fri, Jun 6, 2008 at 10:16 AM, Stephen Neuendorffer
-<stephen.neuendorffer@xilinx.com> wrote:
->
-> legacy_serial identifies a valid ns16550 on a simple-bus, but the
-> legacy_serial driver doesn't understand the shift and offset flags
-> necessary to get it to work, which results in no console.
->
-> I think the easiest solution is to change the Kconfig so that
-> PPC_UDBG_16550 is only selected based on !XILINX_VIRTEX.  I've done
-this
-> in my tree, but I've been swamped with other things at the moment, so
-I
-> haven't verified it.
+Why the seperate header? You're the only user of it, right?
 
-This is an easy solution, but it is not a good one.  Doing so would
-break UDBG on other 405 boards when building multiplatform kernels.
-It would be better to teach legacy serial about the shift and offset.
-Alternately, add code to add_legacy_soc_port() to skip it if the
-shift/offset properties are present.
+ > +
+ > +#define DRIVER_NAME		"xilinx_ps2"
+ > +#define DRIVER_DESCRIPTION	"Xilinx XPS PS/2 driver"
+ > +
+ > +#define XPS2_NAME_DESC		"Xilinx XPS PS/2 Port #%d"
+ > +#define XPS2_PHYS_DESC		"xilinxps2/serio%d"
 
-Cheers,
-g.
+Why have defines to stuff only used once?
 
--- =
+...
 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+ > +
+ > +/******************************/
+ > +/* The platform device driver */
+ > +/******************************/
+ > +
+ > +static int xps2_probe(struct device *dev)
 
+__devinit please.
 
+ > +{
+ > +	struct platform_device *pdev = to_platform_device(dev);
+ > +
+ > +	struct resource *irq_res = NULL;	/* Interrupt resources */
+ > +	struct resource *regs_res = NULL;	/* IO mem resources */
+ > +
+ > +	if (!dev) {
+ > +		dev_err(dev, "Probe called with NULL param\n");
+ > +		return -EINVAL;
+ > +	}
+ > +
+ > +	/* Find irq number, map the control registers in */
+ > +	irq_res = platform_get_resource(pdev, IORESOURCE_IRQ, 0);
+ > +	regs_res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+ > +	return xps2_setup(dev, pdev->id, regs_res, irq_res);
+ > +}
 
-This email and any attachments are intended for the sole use of the named r=
-ecipient(s) and contain(s) confidential information that may be proprietary=
-, privileged or copyrighted under applicable law. If you are not the intend=
-ed recipient, do not read, copy, or forward this email message or any attac=
-hments. Delete this email message and any attachments immediately.
+...
+
+ > +
+ > +/*
+ > + * xps2_remove() dissociates the driver with the Xilinx PS/2 device.
+ > + */
+ > +static int xps2_remove(struct device *dev)
+
+__devexit please.
+
+ > +{
+ > +	struct xps2data *drvdata;
+ > +
+ > +	if (!dev)
+ > +		return -EINVAL;
+ > +
+ > +	drvdata = (struct xps2data *)dev_get_drvdata(dev);
+ > +
+ > +	serio_unregister_port(&drvdata->serio);
+ > +
+ > +	iounmap(drvdata->base_address);
+ > +
+ > +	release_mem_region(drvdata->phys_addr, drvdata->remap_size);
+ > +
+ > +	kfree(drvdata);
+ > +	dev_set_drvdata(dev, NULL);
+ > +
+ > +	return 0;		/* success */
+ > +}
+ > +
+ > +static struct device_driver xps2_driver = {
+
+Please use a real struct platform_driver instead.
+
+ > +	.name = DRIVER_NAME,
+ > +	.bus = &platform_bus_type,
+ > +	.probe = xps2_probe,
+ > +	.remove = xps2_remove
+ > +};
+ > +
+
+-- 
+Bye, Peter Korsgaard
