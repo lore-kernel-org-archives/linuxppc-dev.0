@@ -1,21 +1,20 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from wf-out-1314.google.com (wf-out-1314.google.com [209.85.200.169])
-	by ozlabs.org (Postfix) with ESMTP id 71B9FDE00B
-	for <linuxppc-dev@ozlabs.org>; Tue,  1 Jul 2008 02:34:33 +1000 (EST)
-Received: by wf-out-1314.google.com with SMTP id 24so1750522wfg.15
-	for <linuxppc-dev@ozlabs.org>; Mon, 30 Jun 2008 09:34:32 -0700 (PDT)
-Date: Mon, 30 Jun 2008 10:34:29 -0600
-From: Grant Likely <grant.likely@secretlab.ca>
-To: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
-Subject: Re: [PATCH] [POWERPC] Xilinx: add compatibility for 'simple-bus'.
-Message-ID: <20080630163429.GE17916@secretlab.ca>
-References: <fa686aa40806281333i5ae1833fg561622640b5d3a4e@mail.gmail.com>
-	<20080630034548.A10A81750069@mail131-sin.bigfish.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080630034548.A10A81750069@mail131-sin.bigfish.com>
-Sender: Grant Likely <glikely@secretlab.ca>
-Cc: linuxppc-dev@ozlabs.org, git <git@xilinx.com>, dwg@au1.ibm.com
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id A6B2FDE08F
+	for <linuxppc-dev@ozlabs.org>; Tue,  1 Jul 2008 02:38:08 +1000 (EST)
+In-Reply-To: <4868FCE9.1060103@matrix-vision.de>
+References: <4868FCE9.1060103@matrix-vision.de>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <7dd3673e01cb808007902b12a63d0399@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: MPC83xx ipic problem
+Date: Mon, 30 Jun 2008 18:36:34 +0200
+To: =?ISO-8859-1?Q?Andr=E9_Schwarz?= <andre.schwarz@matrix-vision.de>
+Cc: Scott Wood <scottwood@freescale.com>,
+	linux-ppc list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,32 +24,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Stephen Neuendorffer wrote:
-> Grant Likely wrote:
-> > > I think the easiest solution is to change the Kconfig so that
-> > > PPC_UDBG_16550 is only selected based on !XILINX_VIRTEX.  I've done this
-> > > in my tree, but I've been swamped with other things at the moment, so I
-> > > haven't verified it.
-> > 
-> > This is an easy solution, but it is not a good one.  Doing so would
-> > break UDBG on other 405 boards when building multiplatform kernels.
-> > It would be better to teach legacy serial about the shift and offset.
-> > Alternately, add code to add_legacy_soc_port() to skip it if the
-> > shift/offset properties are present.
-> 
-> Is there really much of a chance of that, given the differences
-> with the bootwrappers?  Does anyone care enough about legacy_serial
-> for this to matter?   My impression was that legacy serial was not
-> preferred anyway...
+> interrupt-map = <0x5800 0 0 1 &ipic 0x30 0x8      -> FPGA @ IRQ0
+>                  0x6000 0 0 1 &ipic 0x11 0x8      -> miniPCI INTA @ 
+> IRQ1
+>                  0x6000 0 0 2 &ipic 0x11 0x8>;    -> miniPCI INTB @ 
+> IRQ1
+>
+> Is it legal to use a single irq pin twice ?
 
-You never know, a single kernel build can be wrapped multiple times, and
-besides, it is a trivial fix.  Just add a test for the presence of
-reg-shift and bail if it is present.
+The device tree simply describes the hardware; if the hardware
+connects both INTXs to the same IPIC interrupt pin, then it is
+correct.  You'll have to ask a hardware designer whether it is
+okay to just tie the two lines together; I believe it is, for
+PCI, but you better ask someone who really knows :-)
 
-I don't know much about the history of legacy serial, but I do not
-support adding multiplatform restrictions when not needed.
-legacy_serial may be crusty, but it does have the advantage of
-supporting UDBG which is a useful feature.  It may or may not go away.
 
-Cheers,
-g.
+Segher
