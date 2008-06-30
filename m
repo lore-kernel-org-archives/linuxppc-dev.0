@@ -1,24 +1,19 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B6202DE518
-	for <linuxppc-dev@ozlabs.org>; Tue,  1 Jul 2008 07:19:23 +1000 (EST)
-In-Reply-To: <20080630131441.e9b9ac1c.kim.phillips@freescale.com>
-References: <20080627115243.d76e0814.kim.phillips@freescale.com>
-	<fa686aa40806272229s795067d5he962c8a1750a260@mail.gmail.com>
-	<2b97f7566925ed86b78b364ff5724644@kernel.crashing.org>
-	<20080630110410.7ee097ed.kim.phillips@freescale.com>
-	<e590624fb4ff66d787a2fa3c44e00cbc@kernel.crashing.org>
-	<20080630131441.e9b9ac1c.kim.phillips@freescale.com>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <e07b0ce3c375e9418ac976256c731f03@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH v2] update crypto node definition and device tree instances
-Date: Mon, 30 Jun 2008 23:19:05 +0200
-To: Kim Phillips <kim.phillips@freescale.com>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <John.Linn@xilinx.com>
+Received: from VA3EHSOBE006.bigfish.com (outbound-va3.frontbridge.com
+	[216.32.180.16]) by ozlabs.org (Postfix) with ESMTP id EAD96DDEDC
+	for <linuxppc-dev@ozlabs.org>; Tue,  1 Jul 2008 07:28:34 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Subject: RE: [PATCH] [V2] powerpc: Xilinx: PS2: Added new XPS PS2 driver
+Date: Mon, 30 Jun 2008 15:28:26 -0600
+In-Reply-To: <20080630141552.ZZRA012@mailhub.coreip.homeip.net>
+References: <20080630153824.ED3D319B0075@mail96-wa4.bigfish.com>
+	<20080630141552.ZZRA012@mailhub.coreip.homeip.net>
+From: John Linn <John.Linn@xilinx.com>
+To: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+Message-ID: <20080630212827.DBE0E5E0076@mail105-va3.bigfish.com>
+Cc: linuxppc-dev@ozlabs.org, Sadanand Mutyala <sadanan@xilinx.com>,
+	linux-input@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,90 +23,181 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>>> Also, these made-up names make you do more work: you'll need to
->>>
->>> who said they were made up?
->>
->> I did.  These names do not refer to some physical part you can buy.
+Thanks Dmitry, see my comments inline.
+
+-- John
+
+>On Mon, Jun 30, 2008 at 08:38:21AM -0700, John Linn wrote:
+>> +	spin_lock_init(&drvdata->lock);
+>> +	dev_set_drvdata(dev, (void *)drvdata);
 >
-> right, they refer to devices in multiple physical parts you can buy.
-> Part-you-can-buy documentation clearly indicates the SEC version in
-> that part, in the form "SEC X.Y", i.e, it's not something made up
-> that's not already in freescale documentation.
+>No need to cast to void *.
 
-Yes.  As a side note, since there are multiple devices that contain
-e.g. a sec-1.0, it would be prudent to describe the exact incarnation
-in the device tree, like "mpc8272-sec" or something, in either "model"
-or "compatible", just in case a problem shows up with one of them.
+OK.
 
->>>> write up a binding for them, explaining exactly what a 1.0 device
->>>> etc. is (or at least point to documentation for it).  If you use
->>>> a name that refers to some device that people can easily google
->>>> for documentation, you can skip this (well, you might need to
->>>> write a binding anyway; but at least you won't have to explain
->>>> what the device _is_).
->>>
->>> documentation is available in the usual places, and it specifically
->>> points out which SEC version it references.
->>
->> I can't find a manual online for "freescale sec"; googling
->> for "freescale sec-1.0" finds a manual for the PowerQUICC I;
->> is that the right one?  I don't know, so the binding needs
->> to explain it to me.
 >
-> the binding shouldn't be responsible for google's shortcomings
-
-The binding needs to describe what device it is for.  I am a stupid
-user, just like most users, so if the binding doesn't tell me I turn
-to google.  Don't blame them for not finding it; the binding should
-have told me in the first place!
-
-> (that hit is correct, btw).
-
-Okay, cool.
-
->> Going from SoC name -> SEC version is easy, but the other way around
->> not so.
->>
->> Anyway, minor stuff.
+>> +
+>> +	if (!regs_res || !irq_res) {
+>> +		dev_err(dev, "IO resource(s) not found\n");
+>> +		retval =3D -EFAULT;
+>> +		goto failed1;
+>> +	}
+>> +
+>> +	drvdata->irq =3D irq_res->start;
+>> +	remap_size =3D regs_res->end - regs_res->start + 1;
+>> +	if (!request_mem_region(regs_res->start, remap_size,
+DRIVER_NAME)) {
+>> +
+>> +		dev_err(dev, "Couldn't lock memory region at 0x%08X\n",
+>> +			(unsigned int)regs_res->start);
+>> +		retval =3D -EBUSY;
+>> +		goto failed1;
+>> +	}
+>> +
+>> +	/* Fill in configuration data and add them to the list */
+>> +	drvdata->phys_addr =3D regs_res->start;
+>> +	drvdata->remap_size =3D remap_size;
+>> +	drvdata->base_address =3D ioremap(regs_res->start, remap_size);
+>> +	if (drvdata->base_address =3D=3D NULL) {
+>> +
+>> +		dev_err(dev, "Couldn't ioremap memory at 0x%08X\n",
+>> +			(unsigned int)regs_res->start);
+>> +		retval =3D -EFAULT;
+>> +		goto failed2;
+>> +	}
+>> +
+>> +	/* Initialize the PS/2 interface */
+>> +	down(&cfg_sem);
+>> +	if (xps2_initialize(drvdata)) {
+>> +		up(&cfg_sem);
+>> +		dev_err(dev, "Could not initialize device\n");
+>> +		retval =3D -ENODEV;
+>> +		goto failed3;
+>> +	}
+>> +	up(&cfg_sem);
 >
-> sounds like you're pointing out a lack of "SEC versions guide"
-> documentation of Freescale..
+>Do you need a counting semaphore here?
+>
 
-Yes, that would have helped.
+Seems like a simpler kind of mutal exclusion would do the job, like a
+spinlock.
+Looks like mutual exclusion is needed as the device contains 2 ps2
+controllers.
 
->>> Plus, as I mentioned
->>> before, a lot of the differences between the SEC versions are 
->>> miniscule
->>> feature bits scattered across the programming model.
->>
->> I don't see how this is relevant, sorry.
->>
-> I'm under the impression that listing the differences (assuming they're
-> easily obtainable) would lead to unnecessary b-w-of bloat.
+>> +
+>> +	dev_info(dev, "Xilinx PS2 at 0x%08X mapped to 0x%08X, irq=3D%d\n",
+>> +		drvdata->phys_addr, (u32)drvdata->base_address,
+drvdata->irq);
+>> +
+>> +	drvdata->serio.id.type =3D SERIO_8042;
+>> +	drvdata->serio.write =3D sxps2_write;
+>> +	drvdata->serio.open =3D sxps2_open;
+>> +	drvdata->serio.close =3D sxps2_close;
+>> +	drvdata->serio.port_data =3D drvdata;
+>> +	drvdata->serio.dev.parent =3D dev;
+>> +	snprintf(drvdata->serio.name, sizeof(drvdata->serio.name),
+>> +		 XPS2_NAME_DESC, id);
+>> +	snprintf(drvdata->serio.phys, sizeof(drvdata->serio.phys),
+>> +		 XPS2_PHYS_DESC, id);
+>
+>I bet if you make a temp variable for drvdata->serio the code size wil
+>shrink a tiny bit.
 
-The binding at a minimum should describe how to identify each
-unique version from the device tree, no matter how miniscule
-those differences are.  Just a specific "compatible" value will
-do.
+Ok, not sure the complexity of the temp is worth the tiny code
+shrinkage.
+I would think the compiler should optimize it as well but your
+experience
+must say otherwise.
 
-> I don't know what google does; I'd search freescale documentation
-> directly.
+>
+>-- =
 
-Or the binding could just bloody say what it is talking about in the
-first place, heh.
+>Dmitry
+>
+
+-----Original Message-----
+From: Dmitry Torokhov [mailto:dmitry.torokhov@gmail.com] =
+
+Sent: Monday, June 30, 2008 12:21 PM
+To: John Linn
+Cc: linuxppc-dev@ozlabs.org; linux-input@vger.kernel.org; Sadanand
+Mutyala
+Subject: Re: [PATCH] [V2] powerpc: Xilinx: PS2: Added new XPS PS2 driver
+
+On Mon, Jun 30, 2008 at 08:38:21AM -0700, John Linn wrote:
+> +	spin_lock_init(&drvdata->lock);
+> +	dev_set_drvdata(dev, (void *)drvdata);
+
+No need to cast to void *.
+
+> +
+> +	if (!regs_res || !irq_res) {
+> +		dev_err(dev, "IO resource(s) not found\n");
+> +		retval =3D -EFAULT;
+> +		goto failed1;
+> +	}
+> +
+> +	drvdata->irq =3D irq_res->start;
+> +	remap_size =3D regs_res->end - regs_res->start + 1;
+> +	if (!request_mem_region(regs_res->start, remap_size,
+DRIVER_NAME)) {
+> +
+> +		dev_err(dev, "Couldn't lock memory region at 0x%08X\n",
+> +			(unsigned int)regs_res->start);
+> +		retval =3D -EBUSY;
+> +		goto failed1;
+> +	}
+> +
+> +	/* Fill in configuration data and add them to the list */
+> +	drvdata->phys_addr =3D regs_res->start;
+> +	drvdata->remap_size =3D remap_size;
+> +	drvdata->base_address =3D ioremap(regs_res->start, remap_size);
+> +	if (drvdata->base_address =3D=3D NULL) {
+> +
+> +		dev_err(dev, "Couldn't ioremap memory at 0x%08X\n",
+> +			(unsigned int)regs_res->start);
+> +		retval =3D -EFAULT;
+> +		goto failed2;
+> +	}
+> +
+> +	/* Initialize the PS/2 interface */
+> +	down(&cfg_sem);
+> +	if (xps2_initialize(drvdata)) {
+> +		up(&cfg_sem);
+> +		dev_err(dev, "Could not initialize device\n");
+> +		retval =3D -ENODEV;
+> +		goto failed3;
+> +	}
+> +	up(&cfg_sem);
+
+Do you need a counting semaphore here?
+
+> +
+> +	dev_info(dev, "Xilinx PS2 at 0x%08X mapped to 0x%08X, irq=3D%d\n",
+> +		drvdata->phys_addr, (u32)drvdata->base_address,
+drvdata->irq);
+> +
+> +	drvdata->serio.id.type =3D SERIO_8042;
+> +	drvdata->serio.write =3D sxps2_write;
+> +	drvdata->serio.open =3D sxps2_open;
+> +	drvdata->serio.close =3D sxps2_close;
+> +	drvdata->serio.port_data =3D drvdata;
+> +	drvdata->serio.dev.parent =3D dev;
+> +	snprintf(drvdata->serio.name, sizeof(drvdata->serio.name),
+> +		 XPS2_NAME_DESC, id);
+> +	snprintf(drvdata->serio.phys, sizeof(drvdata->serio.phys),
+> +		 XPS2_PHYS_DESC, id);
+
+I bet if you make a temp variable for drvdata->serio the code size wil
+shrink a tiny bit.
+
+-- =
+
+Dmitry
 
 
-Anyway, how about we do something constructive?  If you still want to
-use "fsl,sec-N.M" names, that's fine with me.  Each specific device
-tree needs to still say which exact device it contains, so an entry
-would look like e.g.
-
-	compatible = "fsl,mpc8272-sec", "fsl,sec-3.0";
-
-and the driver can just probe for "fsl,sec-3.0" if it doesn't need
-to know about the exact version; but it _can_ use it if it _does_
-need to know.
-
-
-Segher
+This email and any attachments are intended for the sole use of the named r=
+ecipient(s) and contain(s) confidential information that may be proprietary=
+, privileged or copyrighted under applicable law. If you are not the intend=
+ed recipient, do not read, copy, or forward this email message or any attac=
+hments. Delete this email message and any attachments immediately.
