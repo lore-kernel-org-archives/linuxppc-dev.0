@@ -1,21 +1,18 @@
-Return-Path: <jacmet@gmail.com>
-Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.186])
-	by ozlabs.org (Postfix) with ESMTP id 2A11BDDED7
-	for <linuxppc-dev@ozlabs.org>; Tue,  1 Jul 2008 00:45:18 +1000 (EST)
-Received: by nf-out-0910.google.com with SMTP id e27so496637nfd.9
-	for <linuxppc-dev@ozlabs.org>; Mon, 30 Jun 2008 07:45:16 -0700 (PDT)
-To: John Linn <john.linn@xilinx.com>
-Subject: Re: [PATCH] powerpc: Xilinx: PS2: Added new XPS PS2 driver
-References: <20080630142451.516A41D1006C@mail57-sin.bigfish.com>
-From: Peter Korsgaard <jacmet@sunsite.dk>
-Date: Mon, 30 Jun 2008 16:45:04 +0200
-In-Reply-To: <20080630142451.516A41D1006C@mail57-sin.bigfish.com> (John Linn's
-	message of "Mon\, 30 Jun 2008 07\:24\:48 -0700")
-Message-ID: <87y74ndlsf.fsf@macbook.be.48ers.dk>
+Return-Path: <John.Linn@xilinx.com>
+Received: from IE1EHSOBE005.bigfish.com (outbound-dub.frontbridge.com
+	[213.199.154.16]) by ozlabs.org (Postfix) with ESMTP id E75F2DDF39
+	for <linuxppc-dev@ozlabs.org>; Tue,  1 Jul 2008 00:46:55 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Sender: Peter Korsgaard <jacmet@gmail.com>
-Cc: linuxppc-dev@ozlabs.org, Sadanand <sadanan@xilinx.com>
+Content-Type: text/plain; charset="US-ASCII"
+Subject: RE: [PATCH] powerpc: Xilinx: PS2: Added new XPS PS2 driver
+Date: Mon, 30 Jun 2008 08:46:41 -0600
+In-Reply-To: <87y74ndlsf.fsf@macbook.be.48ers.dk>
+References: <20080630142451.516A41D1006C@mail57-sin.bigfish.com>
+	<87y74ndlsf.fsf@macbook.be.48ers.dk>
+From: John Linn <John.Linn@xilinx.com>
+To: "Peter Korsgaard" <jacmet@sunsite.dk>
+Message-ID: <20080630144643.C1C4F1A1006E@mail21-dub.bigfish.com>
+Cc: linuxppc-dev@ozlabs.org, Sadanand Mutyala <sadanan@xilinx.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,7 +22,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>>>> "John" == John Linn <john.linn@xilinx.com> writes:
+Thanks Peter, will do.
+
+-----Original Message-----
+From: Peter Korsgaard [mailto:jacmet@gmail.com] On Behalf Of Peter
+Korsgaard
+Sent: Monday, June 30, 2008 8:45 AM
+To: John Linn
+Cc: linuxppc-dev@ozlabs.org; Sadanand Mutyala
+Subject: Re: [PATCH] powerpc: Xilinx: PS2: Added new XPS PS2 driver
+
+>>>>> "John" =3D=3D John Linn <john.linn@xilinx.com> writes:
 
  > Added a new driver for Xilinx XPS PS2 IP. This driver is
  > a flat driver to better match the Linux driver pattern.
@@ -37,36 +44,41 @@ This should probably go to the linux-input@ list as well.
  > ---
  >  drivers/input/serio/Kconfig      |    5 +
  >  drivers/input/serio/Makefile     |    1 +
- >  drivers/input/serio/xilinx_ps2.c |  464 ++++++++++++++++++++++++++++++++++++++
+ >  drivers/input/serio/xilinx_ps2.c |  464
+++++++++++++++++++++++++++++++++++++++
  >  drivers/input/serio/xilinx_ps2.h |   97 ++++++++
  >  4 files changed, 567 insertions(+), 0 deletions(-)
  >  create mode 100644 drivers/input/serio/xilinx_ps2.c
  >  create mode 100644 drivers/input/serio/xilinx_ps2.h
 
- > diff --git a/drivers/input/serio/Kconfig b/drivers/input/serio/Kconfig
+ > diff --git a/drivers/input/serio/Kconfig
+b/drivers/input/serio/Kconfig
  > index ec4b661..0e62b39 100644
  > --- a/drivers/input/serio/Kconfig
  > +++ b/drivers/input/serio/Kconfig
  > @@ -190,4 +190,9 @@ config SERIO_RAW
  >  	  To compile this driver as a module, choose M here: the
  >  	  module will be called serio_raw.
- 
+ =
+
  > +config SERIO_XILINX_XPS_PS2
  > +	tristate "Xilinx XPS PS/2 Controller Support"
  > +	help
  > +	  This driver supports XPS PS/2 IP from Xilinx EDK.
  > +
  >  endif
- > diff --git a/drivers/input/serio/Makefile b/drivers/input/serio/Makefile
+ > diff --git a/drivers/input/serio/Makefile
+b/drivers/input/serio/Makefile
  > index 38b8868..9b6c813 100644
  > --- a/drivers/input/serio/Makefile
  > +++ b/drivers/input/serio/Makefile
- > @@ -21,3 +21,4 @@ obj-$(CONFIG_SERIO_PCIPS2)	+= pcips2.o
- >  obj-$(CONFIG_SERIO_MACEPS2)	+= maceps2.o
- >  obj-$(CONFIG_SERIO_LIBPS2)	+= libps2.o
- >  obj-$(CONFIG_SERIO_RAW)		+= serio_raw.o
- > +obj-$(CONFIG_SERIO_XILINX_XPS_PS2)	+= xilinx_ps2.o
- > diff --git a/drivers/input/serio/xilinx_ps2.c b/drivers/input/serio/xilinx_ps2.c
+ > @@ -21,3 +21,4 @@ obj-$(CONFIG_SERIO_PCIPS2)	+=3D pcips2.o
+ >  obj-$(CONFIG_SERIO_MACEPS2)	+=3D maceps2.o
+ >  obj-$(CONFIG_SERIO_LIBPS2)	+=3D libps2.o
+ >  obj-$(CONFIG_SERIO_RAW)		+=3D serio_raw.o
+ > +obj-$(CONFIG_SERIO_XILINX_XPS_PS2)	+=3D xilinx_ps2.o
+ > diff --git a/drivers/input/serio/xilinx_ps2.c
+b/drivers/input/serio/xilinx_ps2.c
  > new file mode 100644
  > index 0000000..670d47f
  > --- /dev/null
@@ -86,13 +98,18 @@ This should probably go to the linux-input@ list as well.
 
 Is the montavista stuff still valid?
 
- > + * This program is free software; you can redistribute it and/or modify it
- > + * under the terms of the GNU General Public License as published by the
- > + * Free Software Foundation; either version 2 of the License, or (at your
+ > + * This program is free software; you can redistribute it and/or
+modify it
+ > + * under the terms of the GNU General Public License as published by
+the
+ > + * Free Software Foundation; either version 2 of the License, or (at
+your
  > + * option) any later version.
  > + *
- > + * You should have received a copy of the GNU General Public License along
- > + * with this program; if not, write to the Free Software Foundation, Inc.,
+ > + * You should have received a copy of the GNU General Public License
+along
+ > + * with this program; if not, write to the Free Software Foundation,
+Inc.,
  > + * 675 Mass Ave, Cambridge, MA 02139, USA.
  > + */
  > +
@@ -110,7 +127,8 @@ linux/io.h please.
  > +
  > +#ifdef CONFIG_OF		/* For open firmware */
 
-Why support !CONFIG_OF? 
+Why support !CONFIG_OF? =
+
 
  > + #include <linux/of_device.h>
  > + #include <linux/of_platform.h>
@@ -141,10 +159,11 @@ Why have defines to stuff only used once?
 __devinit please.
 
  > +{
- > +	struct platform_device *pdev = to_platform_device(dev);
+ > +	struct platform_device *pdev =3D to_platform_device(dev);
  > +
- > +	struct resource *irq_res = NULL;	/* Interrupt resources */
- > +	struct resource *regs_res = NULL;	/* IO mem resources */
+ > +	struct resource *irq_res =3D NULL;	/* Interrupt resources
+*/
+ > +	struct resource *regs_res =3D NULL;	/* IO mem resources */
  > +
  > +	if (!dev) {
  > +		dev_err(dev, "Probe called with NULL param\n");
@@ -152,8 +171,8 @@ __devinit please.
  > +	}
  > +
  > +	/* Find irq number, map the control registers in */
- > +	irq_res = platform_get_resource(pdev, IORESOURCE_IRQ, 0);
- > +	regs_res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+ > +	irq_res =3D platform_get_resource(pdev, IORESOURCE_IRQ, 0);
+ > +	regs_res =3D platform_get_resource(pdev, IORESOURCE_MEM, 0);
  > +	return xps2_setup(dev, pdev->id, regs_res, irq_res);
  > +}
 
@@ -173,7 +192,7 @@ __devexit please.
  > +	if (!dev)
  > +		return -EINVAL;
  > +
- > +	drvdata = (struct xps2data *)dev_get_drvdata(dev);
+ > +	drvdata =3D (struct xps2data *)dev_get_drvdata(dev);
  > +
  > +	serio_unregister_port(&drvdata->serio);
  > +
@@ -187,16 +206,24 @@ __devexit please.
  > +	return 0;		/* success */
  > +}
  > +
- > +static struct device_driver xps2_driver = {
+ > +static struct device_driver xps2_driver =3D {
 
 Please use a real struct platform_driver instead.
 
- > +	.name = DRIVER_NAME,
- > +	.bus = &platform_bus_type,
- > +	.probe = xps2_probe,
- > +	.remove = xps2_remove
+ > +	.name =3D DRIVER_NAME,
+ > +	.bus =3D &platform_bus_type,
+ > +	.probe =3D xps2_probe,
+ > +	.remove =3D xps2_remove
  > +};
  > +
 
--- 
+-- =
+
 Bye, Peter Korsgaard
+
+
+This email and any attachments are intended for the sole use of the named r=
+ecipient(s) and contain(s) confidential information that may be proprietary=
+, privileged or copyrighted under applicable law. If you are not the intend=
+ed recipient, do not read, copy, or forward this email message or any attac=
+hments. Delete this email message and any attachments immediately.
