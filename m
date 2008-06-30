@@ -1,17 +1,17 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Mon, 30 Jun 2008 14:15:25 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH v2] powerpc: Add dma nodes to 83xx, 85xx and 86xx boards
-Message-ID: <20080630041525.GD24012@yookeroo.seuss>
-References: <Pine.LNX.4.64.0806271449540.9071@blarg.am.freescale.net>
-	<48654D6D.1090309@freescale.com>
-	<E57F448A-7217-4893-A77B-6367B0C3118A@kernel.crashing.org>
-	<Pine.LNX.4.64.0806271609540.10625@blarg.am.freescale.net>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.64.0806271609540.10625@blarg.am.freescale.net>
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org
+Message-ID: <18536.25052.228270.743669@cargo.ozlabs.ibm.com>
+Date: Mon, 30 Jun 2008 14:32:28 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Robert Jennings <rcj@linux.vnet.ibm.com>
+Subject: Re: [PATCH 08/18 v2] powerpc: Do not probe PCI buses or eBus devices
+	if CMO is enabled
+In-Reply-To: <20080625201721.GJ17020@linux.vnet.ibm.com>
+References: <20080625201202.GB17020@linux.vnet.ibm.com>
+	<20080625201721.GJ17020@linux.vnet.ibm.com>
+Cc: Brian King <brking@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org,
+	David Darrington <ddarring@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,40 +21,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Jun 27, 2008 at 04:10:17PM -0500, Kumar Gala wrote:
-> Added DMA nodes for the elo/elo-plus DMA engines.
-> 
-> Renamed the interrupt controller alias in mpc832x_rdb.dts to ipic so that
-> its the same as all the other boards.
-> 
-> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+Robert Jennings writes:
 
-[snip]
-> diff --git a/arch/powerpc/boot/dts/asp834x-redboot.dts b/arch/powerpc/boot/dts/asp834x-redboot.dts
-> index 972cf78..8b1bb0e 100644
-> --- a/arch/powerpc/boot/dts/asp834x-redboot.dts
-> +++ b/arch/powerpc/boot/dts/asp834x-redboot.dts
-> @@ -118,6 +118,41 @@
->  			mode = "cpu";
->  		};
+> From: Brian King <brking@linux.vnet.ibm.com>
 > 
-> +		dma@82a8 {
-> +			#address-cells = <1>;
-> +			#size-cells = <1>;
-> +			compatible = "fsl,mpc8347-dma", "fsl,elo-dma";
-> +			reg = <0x82a8 4>;
-> +			ranges = <0 0x8100 0x1a8>;
-> +			interrupt-parent = <&ipic>;
-> +			interrupts = <71 8>;
-> +			cell-index = <0>;
+> The Cooperative Memory Overcommit (CMO) on System p does not currently
+> support native PCI devices or eBus devices when enabled.
 
-What's the cell-index in these nodes used to index?  Given the
-confusion there's been about the proper use of this property, a
-comment indicating which shared registers this is used to index is
-probably a good idea.
+Then why would we get any native PCI or eBus devices in the device
+tree?
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Paul.
