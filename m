@@ -1,21 +1,33 @@
-Return-Path: <kim.phillips@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
+Return-Path: <emunson@us.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 478D0DE2B3
-	for <linuxppc-dev@ozlabs.org>; Tue,  1 Jul 2008 01:56:52 +1000 (EST)
-Date: Mon, 30 Jun 2008 10:56:42 -0500
-From: Kim Phillips <kim.phillips@freescale.com>
-To: "Grant Likely" <grant.likely@secretlab.ca>
-Subject: Re: [PATCH v2] update crypto node definition and device tree instances
-Message-Id: <20080630105642.78df36f9.kim.phillips@freescale.com>
-In-Reply-To: <fa686aa40806272229s795067d5he962c8a1750a260@mail.gmail.com>
-References: <20080627115243.d76e0814.kim.phillips@freescale.com>
-	<fa686aa40806272229s795067d5he962c8a1750a260@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 36B55DE2B6
+	for <linuxppc-dev@ozlabs.org>; Tue,  1 Jul 2008 01:56:55 +1000 (EST)
+Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
+	[9.17.195.228])
+	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m5UFuqwf020033
+	for <linuxppc-dev@ozlabs.org>; Mon, 30 Jun 2008 11:56:52 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
+	m5UFuaKu120606
+	for <linuxppc-dev@ozlabs.org>; Mon, 30 Jun 2008 09:56:46 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m5UFuW8L011414
+	for <linuxppc-dev@ozlabs.org>; Mon, 30 Jun 2008 09:56:32 -0600
+Date: Mon, 30 Jun 2008 08:56:30 -0700
+From: Eric B Munson <ebmunson@us.ibm.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH V2] Keep 3 high personality bytes across exec
+Message-ID: <20080630155630.GA8445@us.ibm.com>
+References: <20080628000813.GA19960@us.ibm.com>
+	<18536.38684.384039.662264@cargo.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="k1lZvvs/B4yU6o8G"
+In-Reply-To: <18536.38684.384039.662264@cargo.ozlabs.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,65 +37,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 27 Jun 2008 22:29:59 -0700
-"Grant Likely" <grant.likely@secretlab.ca> wrote:
 
-> On Fri, Jun 27, 2008 at 9:52 AM, Kim Phillips
-> <kim.phillips@freescale.com> wrote:
-> > delete obsolete device-type property, delete model property
-> > (use compatible property instead), prepend "fsl," to Freescale
-> > specific properties. Add nodes to device trees that are missing them,
-> > and fix broken property values in other trees.
-> >
-> > Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
-> 
-> Are there any drivers in mainline which use this node?  Do these
+--k1lZvvs/B4yU6o8G
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-there's one sitting on kernel.org's cryptodev-2.6 tree.
+On Mon, 30 Jun 2008, Paul Mackerras wrote:
 
-> changes break backwards compatibility with already deployed boards?
-> (I know; this patch doesn't change any code; but I'm asking whether
-> the driver will need to support both old and new bindings).
+> Eric B Munson writes:
+>=20
+> > --- a/include/asm-powerpc/elf.h
+> > +++ b/include/asm-powerpc/elf.h
+> > @@ -257,7 +257,8 @@ do {								\
+> >  	else							\
+> >  		clear_thread_flag(TIF_ABI_PENDING);		\
+> >  	if (personality(current->personality) !=3D PER_LINUX32)	\
+> > -		set_personality(PER_LINUX);			\
+> > +		set_personality(PER_LINUX |			\
+> > +			(current->personality & PER_INHERIT));	\
+>=20
+> Couldn't we use ~PER_MASK here instead of PER_INHERIT?  That would
+> mean we wouldn't have to modify include/linux/personality.h, and we
+> wouldn't have to keep updating PER_INHERIT as more flags get added.
+>=20
+> (Nice patch description, BTW.  Thanks.)
+>=20
+> Paul.
+>=20
 
-Since the driver won't go in until 2.6.27 (and hopefully this patch),
-I'm guessing no.  There are out-of-tree drivers that will need to be
-updated to handle the new bindings, however.
+Yeah, ~PER_MASK will work fine.  I used PER_INHERIT first because I
+was not sure if there were values that should not be carried forward.
+I will have an updated patch out shortly.
 
-> > ---
-> > diff --git a/arch/powerpc/boot/dts/mpc8272ads.dts b/arch/powerpc/boot/dts/mpc8272ads.dts
-> > index 46e2da3..9a3881d 100644
-> > --- a/arch/powerpc/boot/dts/mpc8272ads.dts
-> > +++ b/arch/powerpc/boot/dts/mpc8272ads.dts
-> > @@ -226,22 +226,15 @@
-> >                        compatible = "fsl,mpc8272-pic", "fsl,cpm2-pic";
-> >                };
-> >
-> > -/* May need to remove if on a part without crypto engine */
-> >                crypto@30000 {
-> > -                       device_type = "crypto";
-> > -                       model = "SEC2";
-> > -                       compatible = "fsl,mpc8272-talitos-sec2",
-> > -                                    "fsl,talitos-sec2",
-> > -                                    "fsl,talitos",
-> > -                                    "talitos";
-> > +                       compatible = "fsl,sec1.0";
-> 
-> Should really be encoding the SoC model in the compatible property.
-> At the very least, compatible should be:
-> compatible = "fsl,mpc8272-sec", "fsl,sec1.0";
-> 
-> I'm really don't like "fsl,sec1.0" or any of the variants as a
-> compatible property either because it can easily be abused (it's not
-> anchored to a specific physical part so the meaning can shift over
-> time); but that is another argument and it is well documented in other
-> email threads (http://thread.gmane.org/gmane.linux.ports.ppc64.devel/38977/focus=39147)
+Eric
 
-I don't follow - afaict, the thread you are referring to had a
-more generic name (no version number for the device).  Meanwhile, the
-"fsl,secX.Y" designation /is/ anchored to one or more specific parts
-and thus its meaning will not shift over time.  In fact, different
-revisions of the mpc834x have different revisions of the SEC device
-(the node gets up-revved in u-boot), so compatible = "fsl,mpc8349-sec"
-is, in fact, ambiguous.
+--k1lZvvs/B4yU6o8G
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
-Kim
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFIaQIusnv9E83jkzoRAjBzAJ9bQ+qYRJSc7v+Xnd0p2KLekE8oWQCgsDHz
+UNvamXxuUJ461lmmtsQMZh4=
+=yDrU
+-----END PGP SIGNATURE-----
+
+--k1lZvvs/B4yU6o8G--
