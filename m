@@ -1,23 +1,13 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.238])
-	by ozlabs.org (Postfix) with ESMTP id 84942DDDF5
-	for <linuxppc-dev@ozlabs.org>; Tue,  1 Jul 2008 08:45:30 +1000 (EST)
-Received: by rv-out-0506.google.com with SMTP id f6so1402376rvb.9
-	for <linuxppc-dev@ozlabs.org>; Mon, 30 Jun 2008 15:45:29 -0700 (PDT)
-Date: Mon, 30 Jun 2008 16:45:27 -0600
-From: Grant Likely <grant.likely@secretlab.ca>
-To: John Linn <John.Linn@xilinx.com>
-Subject: Re: [PATCH] powerpc: Xilinx: PS2: Added new XPS PS2 driver
-Message-ID: <20080630224526.GA23679@secretlab.ca>
-References: <20080630142451.516A41D1006C@mail57-sin.bigfish.com>
-	<20080630171628.GF17916@secretlab.ca>
-	<20080630200015.06E6E1F8054@mail93-va3.bigfish.com>
+Return-Path: <jonsmirl@gmail.com>
+From: Jon Smirl <jonsmirl@gmail.com>
+Subject: [PATCH 2/2] Add the of_find_i2c_device_by_node function, V4
+To: i2c@lm-sensors.org, Linuxppc-dev@ozlabs.org
+Date: Mon, 30 Jun 2008 19:01:28 -0400
+Message-ID: <20080630230128.12482.79570.stgit@terra>
+In-Reply-To: <20080630230126.12482.87927.stgit@terra>
+References: <20080630230126.12482.87927.stgit@terra>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080630200015.06E6E1F8054@mail93-va3.bigfish.com>
-Sender: Grant Likely <glikely@secretlab.ca>
-Cc: linuxppc-dev@ozlabs.org, dmitry.torokhov@gmail.com,
-	linux-input@vger.kernel.org, Sadanand Mutyala <sadanan@xilinx.com>
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,18 +17,119 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Jun 30, 2008 at 02:00:12PM -0600, John Linn wrote:
-> >
-> >Since xps2_recv() and xps2_send() are used by the sxps2_* routines and
-> >by the irq handler, they should be moved to about them in this file.
-> >
-> 
-> OK, keeping them close makes maintenance easier I guess.
-> 
+Add the of_find_i2c_device_by_node function. This allows you to follow a reference in the device to an i2c device node and then locate the linux device instantiated by the device tree. Example use, an i2s codec controlled by i2c.
+---
 
-Oops, there is a typo in my comment:
+ drivers/i2c/i2c-core.c |    2 +-
+ drivers/of/of_i2c.c    |   37 ++++++++++++++++++++++++++-----------
+ include/linux/i2c.h    |    3 +++
+ include/linux/of_i2c.h |    2 ++
+ 4 files changed, 32 insertions(+), 12 deletions(-)
 
-"... they should be moved to *above* them in this file."  'about' doesn't
-make much sense.
-
-g.
+diff --git a/drivers/i2c/i2c-core.c b/drivers/i2c/i2c-core.c
+index d0175f4..e3abe1b 100644
+--- a/drivers/i2c/i2c-core.c
++++ b/drivers/i2c/i2c-core.c
+@@ -208,7 +208,7 @@ static struct device_attribute i2c_dev_attrs[] = {
+ 	{ },
+ };
+ 
+-static struct bus_type i2c_bus_type = {
++struct bus_type i2c_bus_type = {
+ 	.name		= "i2c",
+ 	.dev_attrs	= i2c_dev_attrs,
+ 	.match		= i2c_device_match,
+diff --git a/drivers/of/of_i2c.c b/drivers/of/of_i2c.c
+index 715a444..ca69a16 100644
+--- a/drivers/of/of_i2c.c
++++ b/drivers/of/of_i2c.c
+@@ -75,7 +75,7 @@ static int of_find_i2c_driver(struct device_node *node,
+ void of_register_i2c_devices(struct i2c_adapter *adap,
+ 			     struct device_node *adap_node)
+ {
+-	void *result;
++	struct i2c_client *i2c_dev;
+ 	struct device_node *node;
+ 
+ 	for_each_child_of_node(adap_node, node) {
+@@ -90,29 +90,44 @@ void of_register_i2c_devices(struct i2c_adapter *adap,
+ 			continue;
+ 		}
+ 
+-		info.irq = irq_of_parse_and_map(node, 0);
+-		if (info.irq == NO_IRQ)
+-			info.irq = -1;
+-
+-		if (of_find_i2c_driver(node, &info) < 0) {
+-			irq_dispose_mapping(info.irq);
++		if (of_find_i2c_driver(node, &info) < 0)
+ 			continue;
+-		}
+ 
++		info.irq = irq_of_parse_and_map(node, 0);
+ 		info.addr = *addr;
+ 
+-		request_module(info.type);
++		request_module("%s", info.type);
+ 
+-		result = i2c_new_device(adap, &info);
+-		if (result == NULL) {
++		i2c_dev = i2c_new_device(adap, &info);
++		if (i2c_dev == NULL) {
+ 			printk(KERN_ERR
+ 			       "of-i2c: Failed to load driver for %s\n",
+ 			       info.type);
+ 			irq_dispose_mapping(info.irq);
+ 			continue;
+ 		}
++		
++		i2c_dev->dev.archdata.of_node = of_node_get(node);
+ 	}
+ }
+ EXPORT_SYMBOL(of_register_i2c_devices);
+ 
++static int of_dev_node_match(struct device *dev, void *data)
++{
++        return dev->archdata.of_node == data;
++}
++
++struct i2c_client *of_find_i2c_device_by_node(struct device_node *node)
++{
++	struct device *dev;
++	
++	dev = bus_find_device(&i2c_bus_type, NULL, node, 
++					 of_dev_node_match);
++	if (!dev)
++		return NULL;
++		
++	return to_i2c_client(dev);
++}
++EXPORT_SYMBOL(of_find_i2c_device_by_node);
++
+ MODULE_LICENSE("GPL");
+diff --git a/include/linux/i2c.h b/include/linux/i2c.h
+index fb9af6a..186b22d 100644
+--- a/include/linux/i2c.h
++++ b/include/linux/i2c.h
+@@ -92,6 +92,9 @@ extern s32 i2c_smbus_read_i2c_block_data(struct i2c_client * client,
+ extern s32 i2c_smbus_write_i2c_block_data(struct i2c_client * client,
+ 					  u8 command, u8 length,
+ 					  const u8 *values);
++					  
++/* Base of the i2c bus */
++extern struct bus_type i2c_bus_type; 
+ 
+ /*
+  * A driver is capable of handling one or more physical devices present on
+diff --git a/include/linux/of_i2c.h b/include/linux/of_i2c.h
+index bd2a870..17d5897 100644
+--- a/include/linux/of_i2c.h
++++ b/include/linux/of_i2c.h
+@@ -16,5 +16,7 @@
+ 
+ void of_register_i2c_devices(struct i2c_adapter *adap,
+ 			     struct device_node *adap_node);
++struct i2c_client *of_find_i2c_device_by_node(struct device_node *node);
++			     
+ 
+ #endif /* __LINUX_OF_I2C_H */
