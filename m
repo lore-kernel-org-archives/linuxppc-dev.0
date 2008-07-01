@@ -1,37 +1,17 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 43A31DDF2B
-	for <linuxppc-dev@ozlabs.org>; Tue,  1 Jul 2008 16:24:37 +1000 (EST)
-Subject: RE: [PATCH 12/60] microblaze_v4: Generic dts file for platforms
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
-In-Reply-To: <20080630033943.332471860046@mail171-va3.bigfish.com>
-References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-6-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-7-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-8-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-9-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-10-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-11-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-12-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-13-git-send-email-monstr@seznam.cz>
-	<fa686aa40806272249l7eae0c34k43a20ad41672b77a@mail.gmail.com>
-	<1d3f23370806291702g4344a2f9lb62f85cbb475fca4@mail.gmail.com>
-	<20080630033943.332471860046@mail171-va3.bigfish.com>
-Content-Type: text/plain
-Date: Tue, 01 Jul 2008 16:21:42 +1000
-Message-Id: <1214893302.20711.102.camel@pasglop>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH] powerpc: fixup lwsync at runtime
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <Pine.LNX.4.64.0807010031241.23830@blarg.am.freescale.net>
+References: <Pine.LNX.4.64.0807010031241.23830@blarg.am.freescale.net>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-0qr8HO79Kqsye8rMDkPz"
+Date: Tue, 01 Jul 2008 16:29:13 +1000
+Message-Id: <1214893753.8055.13.camel@localhost>
 Mime-Version: 1.0
-Cc: linux-arch@vger.kernel.org, alan@lxorguk.ukuu.org.uk,
-	Michal Simek <monstr@monstr.eu>, vapier.adi@gmail.com,
-	arnd@arndb.de, matthew@wil.cx, microblaze-uclinux@itee.uq.edu.au,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	will.newton@gmail.com, hpa@zytor.com,
-	John Linn <linnj@xilinx.com>, monstr@seznam.cz,
-	drepper@redhat.com, John Williams <john.williams@petalogix.com>
-Reply-To: benh@kernel.crashing.org
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -42,34 +22,150 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-> As for the copyright, I haven't been able to find much information on
-> whether or not generated files are even copyrightable.  One might
-> argue that they
-> don't have sufficient 'creative value' to be copyrightable.  Or
-> arguably, they are as copyrightable by the generator author as by the
-> author or the .mhs file.
-> I admit in this case, I've followed the safe route by claiming a
-> copyright, which at least at Xilinx has significant precedent.
+--=-0qr8HO79Kqsye8rMDkPz
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Also, thinking about your idea of sticking bits in BRAM etc...
+On Tue, 2008-07-01 at 00:32 -0500, Kumar Gala wrote:
+> To allow for a single kernel image on e500 v1/v2/mc we need to fixup lwsy=
+nc
+> at runtime.  On e500v1/v2 lwsync causes an illop so we need to patch up
+> the code.  We default to 'sync' since that is always safe and if the cpu
+> is capable we will replace 'sync' with 'lwsync'.
+>=20
+> We introduce CPU_FTR_LWSYNC as a way to determine at runtime if this is
+> needed.  This flag could be moved elsewhere since we dont really use it
+> for the normal CPU_FTR purpose.
+>=20
+> Finally we only store the relative offset in the fixup section to keep it
+> as small as possible rather than using a full fixup_entry.
 
-what would be nice would be the ability to "merge" trees. We've been
-talking about that multiple times, it would be useful at several levels:
+How many entries are we talking? I guess it's not much bother to have a
+separate section.
 
- - We could provide pre-made DTs for known CPUs (ie, 440GP, 440GX,
-405EX, ...)
- - Boards can then include that, and then "override" some properties
-(clocks, PHY wiring, ...)
- - That could be done at the binary level too so that the BRAM contains
-on "overlay" on top of the base ref. platform device-tree that comes
-with the kernel for example.
+> diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_3=
+2.c
+> index 9e83add..0109e7f 100644
+> --- a/arch/powerpc/kernel/setup_32.c
+> +++ b/arch/powerpc/kernel/setup_32.c
+> @@ -101,6 +101,10 @@ unsigned long __init early_init(unsigned long dt_ptr=
+)
+>  			  PTRRELOC(&__start___ftr_fixup),
+>  			  PTRRELOC(&__stop___ftr_fixup));
+>=20
+> +	do_lwsync_fixups(spec->cpu_features,
+> +			 PTRRELOC(&__start___lwsync_fixup),
+> +			 PTRRELOC(&__stop___lwsync_fixup));
+> +
 
-This is slightly different between doing that in the .dts source via
-some kind of #include vs. doing that by merging blobs but we could make
-it be essentially be the same internally: The #include generates a blob
-that is then "merged in".
+This could be changed to use cur_cpu_spec->cpu_features, and then all
+the call sites would be passing that, which would mean
+do_lwsync_fixups() could just check cur_cpu_spec->cpu_features directly.
 
-Just random thoughts...
+> diff --git a/arch/powerpc/lib/feature-fixups.c b/arch/powerpc/lib/feature=
+-fixups.c
+> index 48e1ed8..ac5f5a1 100644
+> --- a/arch/powerpc/lib/feature-fixups.c
+> +++ b/arch/powerpc/lib/feature-fixups.c
+> @@ -110,6 +110,22 @@ void do_feature_fixups(unsigned long value, void *fi=
+xup_start, void *fixup_end)
+>  	}
+>  }
+>=20
+> +void do_lwsync_fixups(unsigned long value, void *fixup_start, void *fixu=
+p_end)
+> +{
+> +	unsigned int *start, *end, *dest;
+> +
+> +	if (!(value & CPU_FTR_LWSYNC))
+> +		return ;
+> +
+> +	start =3D fixup_start;
+> +	end =3D fixup_end;
+> +
+> +	for (; start < end; start++) {
+> +		dest =3D (void *)start + *start;
+> +		patch_instruction(dest, PPC_LWSYNC_INSTR);
+> +	}
+> +}
+> +
+>  #ifdef CONFIG_FTR_FIXUP_SELFTEST
 
-Ben.
- 
+...
+
+No tests? :)
+
+> diff --git a/include/asm-powerpc/synch.h b/include/asm-powerpc/synch.h
+> index 42a1ef5..4737c61 100644
+> --- a/include/asm-powerpc/synch.h
+> +++ b/include/asm-powerpc/synch.h
+> @@ -3,20 +3,37 @@
+>  #ifdef __KERNEL__
+>=20
+>  #include <linux/stringify.h>
+> +#include <asm/feature-fixups.h>
+>=20
+> -#if defined(__powerpc64__) || defined(CONFIG_PPC_E500MC)
+> -#define __SUBARCH_HAS_LWSYNC
+> -#endif
+> +#ifndef __ASSEMBLY__
+> +extern unsigned int __start___lwsync_fixup, __stop___lwsync_fixup;
+> +extern void do_lwsync_fixups(unsigned long value, void *fixup_start,
+> +			     void *fixup_end);
+> +#endif /* __ASSEMBLY__ */
+> +
+> +#define START_LWSYNC_SECTION(label)	label##1:
+> +#define MAKE_LWSYNC_SECTION_ENTRY(label, sect)		\
+> +label##4:						\
+> +	.pushsection sect,"a";				\
+> +	.align 2;					\
+> +label##5:					       	\
+> +	.long label##1b-label##5b;			\
+> +	.popsection;
+
+I'd rather this was in feature-fixups.h, seeing as I just moved all the
+feature-fixup related macros in there :)
+
+It might make more sense to use label##2 and label##3.
+
+>=20
+> -#ifdef __SUBARCH_HAS_LWSYNC
+> +#if defined(__powerpc64__)
+>  #    define LWSYNC	lwsync
+> +#elif defined(CONFIG_E500)
+> +#    define LWSYNC					\
+> +	START_LWSYNC_SECTION(97);			\
+> +	sync;						\
+> +	MAKE_LWSYNC_SECTION_ENTRY(97, __lwsync_fixup);
+>  #else
+>  #    define LWSYNC	sync
+>  #endif
+
+Using 97 means you can't nest an LWSYNC inside a feature or firmware
+feature section, if you use say 96 then nesting should work.
+
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-0qr8HO79Kqsye8rMDkPz
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBIac65dSjSd0sB4dIRAu5LAJ4nj47Mk19mS+lRITxzvBsB7qOgggCffsu+
+vJndtHPcp+0DpVEKI8Bcrjk=
+=GMRF
+-----END PGP SIGNATURE-----
+
+--=-0qr8HO79Kqsye8rMDkPz--
