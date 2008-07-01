@@ -1,18 +1,19 @@
-Return-Path: <stephen.neuendorffer@xilinx.com>
-Received: from VA3EHSOBE006.bigfish.com (outbound-va3.frontbridge.com
-	[216.32.180.16]) by ozlabs.org (Postfix) with ESMTP id 46DF2DE310
-	for <linuxppc-dev@ozlabs.org>; Wed,  2 Jul 2008 02:48:13 +1000 (EST)
+Return-Path: <John.Linn@xilinx.com>
+Received: from IE1EHSOBE002.bigfish.com (outbound-dub.frontbridge.com
+	[213.199.154.16]) by ozlabs.org (Postfix) with ESMTP id 718A8DDE0A
+	for <linuxppc-dev@ozlabs.org>; Wed,  2 Jul 2008 02:52:28 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset="US-ASCII"
 Subject: RE: [PATCH] powerpc: legacy_serial: reg-offset & shift aren't used
-Date: Tue, 1 Jul 2008 09:48:06 -0700
-In-Reply-To: <12149299143952-git-send-email-john.linn@xilinx.com>
+Date: Tue, 1 Jul 2008 10:52:20 -0600
+In-Reply-To: <977C41F842E66D4CB2E41332313B6150062A2DB4@XSJ-EXCHVS1.xlnx.xilinx.com>
 References: <12149299143952-git-send-email-john.linn@xilinx.com>
-From: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
-To: "John Linn" <john.linn@xilinx.com>, <linuxppc-dev@ozlabs.org>,
+	<977C41F842E66D4CB2E41332313B6150062A2DB4@XSJ-EXCHVS1.xlnx.xilinx.com>
+From: John Linn <John.Linn@xilinx.com>
+To: "Stephen Neuendorffer" <stephenn@xilinx.com>, <linuxppc-dev@ozlabs.org>,
 	<grant.likely@secretlab.ca>, <paulus@samba.org>,
 	<benh@kernel.crashing.org>, <dwg@au1.ibm.com>, <jwboyer@linux.vnet.ibm.com>
-Message-ID: <20080701164807.98F1EFF0083@mail8-va3.bigfish.com>
+Message-ID: <20080701165222.991255E0054@mail197-dub.bigfish.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,6 +22,27 @@ List-Post: <mailto:linuxppc-dev@ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
+
+It could be "||" but I didn't know if there were cases where that
+wouldn't be true. I don't know that code that well so I was being
+conservative and maybe shouldn't be. =
+
+
+Our specific case works fine with "&&" since we have both in the device
+tree.  =
+
+
+-- John
+
+-----Original Message-----
+From: Stephen Neuendorffer =
+
+Sent: Tuesday, July 01, 2008 10:48 AM
+To: John Linn; linuxppc-dev@ozlabs.org; grant.likely@secretlab.ca;
+paulus@samba.org; benh@kernel.crashing.org; dwg@au1.ibm.com;
+jwboyer@linux.vnet.ibm.com
+Subject: RE: [PATCH] powerpc: legacy_serial: reg-offset & shift aren't
+used
 
 
 
