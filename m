@@ -1,19 +1,17 @@
-Return-Path: <sr@denx.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id 07FE3DE06D
-	for <linuxppc-dev@ozlabs.org>; Tue,  1 Jul 2008 16:37:52 +1000 (EST)
-From: Stefan Roese <sr@denx.de>
-To: benh@kernel.crashing.org
-Subject: Re: [PATCH v2] Parameterize EMAC Multicast Match Handling
-Date: Tue, 1 Jul 2008 08:37:45 +0200
-References: <C48F0E18.101F1%gerickson@nuovations.com>
-	<1214892899.20711.95.camel@pasglop>
-In-Reply-To: <1214892899.20711.95.camel@pasglop>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Message-Id: <200807010837.45282.sr@denx.de>
-Cc: linuxppc-dev@ozlabs.org, Grant Erickson <gerickson@nuovations.com>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id A96EDDE04E
+	for <linuxppc-dev@ozlabs.org>; Tue,  1 Jul 2008 16:48:34 +1000 (EST)
+Date: Tue, 1 Jul 2008 16:48:27 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Paul Mackerras <paulus@samba.org>, <linuxppc-dev@ozlabs.org>
+Subject: linux-next: manual merge of the powerpc tree
+Message-Id: <20080701164827.c76600c3.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Tue__1_Jul_2008_16_48_27_+1000_sjEM_l3d5a37.rVX"
+Cc: linux-next@vger.kernel.org, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,35 +21,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tuesday 01 July 2008, Benjamin Herrenschmidt wrote:
-> > Stefan and/or Ben:
-> >
-> > Any thoughts on this?
->
-> I was hesitating a bit... do we really need to be -that- flexible ?
->
-> That is, either that or use some new compatible entry to detect the new
-> reg layout and whack that as a feature bit instead ? The advantage
-> of the later is that we have the possibility of doing conditional
-> compile for kernels that support only a given processor or set of
-> processors (not that we have implemented much of it, but it just
-> becomes Kconfig mumbo jumbo and a little bit of defines in the .h
-> by turning the feature test into a compile-time 0 or 1.
->
-> But this isn't a hot path and not a lot of code so maybe not worth
-> bothering... however, it does add 3 properties to the DT and I know
-> embedded people (especially Xilinx) are a bit concerned about the size
-> of the DT when they try to fit it in block RAM...
+--Signature=_Tue__1_Jul_2008_16_48_27_+1000_sjEM_l3d5a37.rVX
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Yes, this was my feeling too. Not the size of the dtb but more the increased 
-complexity of the EMAC device node. I would prefer Ben's idea with this new 
-compatible entry too.
+Hi Paul,
 
-Best regards,
-Stefan
+Today's linux-next merge of the powerpc tree got a conflict in
+drivers/macintosh/mediabay.c between commit
+3fdba626506365e3aaf49140632120cd9156c2e8 ("ide-pmac: media-bay support
+fixes (take 3)") from the ide tree and commit
+9a24729d8aeef967eac7af71c6a69edc83d06558 ("macintosh/media bay: Convert
+semaphore to mutex") from the powerpc tree.
 
-=====================================================================
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: +49-8142-66989-0 Fax: +49-8142-66989-80  Email: office@denx.de
-=====================================================================
+I used the version from the ide tree but with the down/up ->
+mutex_lock/mutex_unlock changes applied.  It may be worth a check to make
+sure I got it right.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Tue__1_Jul_2008_16_48_27_+1000_sjEM_l3d5a37.rVX
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkhp0zsACgkQjjKRsyhoI8wlnACgo9y9aNWhjEdDDwo/gXBTTN/A
+XlgAn02veHrfgPuNJny50uocDA4rdaJu
+=ocNJ
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__1_Jul_2008_16_48_27_+1000_sjEM_l3d5a37.rVX--
