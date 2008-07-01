@@ -1,18 +1,21 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id D6BF8DDF2E
-	for <linuxppc-dev@ozlabs.org>; Tue,  1 Jul 2008 17:11:46 +1000 (EST)
-Date: Tue, 1 Jul 2008 17:11:37 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: David Miller <davem@davemloft.net>
-Subject: linux-next: manual merge of the net tree
-Message-Id: <20080701171137.f71c70f9.sfr@canb.auug.org.au>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 0254ADDF5D
+	for <linuxppc-dev@ozlabs.org>; Tue,  1 Jul 2008 17:16:02 +1000 (EST)
+Subject: Re: [PATCH] powerpc: fixup lwsync at runtime
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1214893402.20711.104.camel@pasglop>
+References: <Pine.LNX.4.64.0807010031241.23830@blarg.am.freescale.net>
+	<1214893402.20711.104.camel@pasglop>
+Content-Type: text/plain
+Date: Tue, 01 Jul 2008 17:15:55 +1000
+Message-Id: <1214896555.20711.112.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Tue__1_Jul_2008_17_11_37_+1000_AApJXU/i0rfTZM/v"
-Cc: linuxppc-dev@ozlabs.org, linux-next@vger.kernel.org,
-	Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,37 +25,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Tue__1_Jul_2008_17_11_37_+1000_AApJXU/i0rfTZM/v
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Tue, 2008-07-01 at 16:23 +1000, Benjamin Herrenschmidt wrote:
+> On Tue, 2008-07-01 at 00:32 -0500, Kumar Gala wrote:
+> > To allow for a single kernel image on e500 v1/v2/mc we need to fixup lwsync
+> > at runtime.  On e500v1/v2 lwsync causes an illop so we need to patch up
+> > the code.  We default to 'sync' since that is always safe and if the cpu
+> > is capable we will replace 'sync' with 'lwsync'.
+> > 
+> > We introduce CPU_FTR_LWSYNC as a way to determine at runtime if this is
+> > needed.  This flag could be moved elsewhere since we dont really use it
+> > for the normal CPU_FTR purpose.
+> > 
+> > Finally we only store the relative offset in the fixup section to keep it
+> > as small as possible rather than using a full fixup_entry.
+> > 
+> > Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+> 
+> I'd rather have some more generic "alternatives" stuff but in the
+> meantime, Ack.
 
-Hi Dave,
+Hrm... minus mpe's comments...
 
-Today's linux-next merge of the net tree got a trivial conflict in
-drivers/net/fs_enet/fs_enet-main.c between commit
-55b6c8e99d582cc66947b465d0ff3147a0219808 ("drivers/net: Use linux/of_
-{device,platform}.h instead of asm") from the powerpc tree and commit
-d8b35fac8c7e1b44d873c1afcc5f88bc5ef4b361 ("fs_enet: MDIO on GPIO
-support") from the net tree.
-
-I fixed it up and can carry the fixup.
-(The powerpc commit just changed asm/of_platform.h to linux/of_platform.h)
-
---=20
 Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Tue__1_Jul_2008_17_11_37_+1000_AApJXU/i0rfTZM/v
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkhp2KkACgkQjjKRsyhoI8xC7gCgpUgW6OV2lEj+4rPPGAjgUWiq
-c8AAoIYLmf9NCNXB1lK/0CLQJIvmB5Wl
-=kfzp
------END PGP SIGNATURE-----
-
---Signature=_Tue__1_Jul_2008_17_11_37_+1000_AApJXU/i0rfTZM/v--
+Ben.
