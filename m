@@ -1,18 +1,35 @@
-Return-Path: <andre.schwarz@matrix-vision.de>
-Received: from p15137414.pureserver.info (matrixvision.de [217.160.213.229])
-	by ozlabs.org (Postfix) with ESMTP id 35764DDF6B
-	for <linuxppc-dev@ozlabs.org>; Tue,  1 Jul 2008 17:45:42 +1000 (EST)
-Message-ID: <4869E09E.5000108@matrix-vision.de>
-Date: Tue, 01 Jul 2008 09:45:34 +0200
-From: =?UTF-8?B?QW5kcsOpIFNjaHdhcno=?= <andre.schwarz@matrix-vision.de>
+Return-Path: <kamalesh@linux.vnet.ibm.com>
+Received: from e23smtp04.au.ibm.com (E23SMTP04.au.ibm.com [202.81.18.173])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e23smtp04.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id C6A5CDE252
+	for <linuxppc-dev@ozlabs.org>; Tue,  1 Jul 2008 18:04:20 +1000 (EST)
+Received: from sd0109e.au.ibm.com (d23rh905.au.ibm.com [202.81.18.225])
+	by e23smtp04.au.ibm.com (8.13.1/8.13.1) with ESMTP id m6183RhM017271
+	for <linuxppc-dev@ozlabs.org>; Tue, 1 Jul 2008 18:03:27 +1000
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+	by sd0109e.au.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
+	m6184IOM161460
+	for <linuxppc-dev@ozlabs.org>; Tue, 1 Jul 2008 18:04:19 +1000
+Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
+	by d23av03.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m6184Ipx013915
+	for <linuxppc-dev@ozlabs.org>; Tue, 1 Jul 2008 18:04:18 +1000
+Message-ID: <4869E4FF.8030202@linux.vnet.ibm.com>
+Date: Tue, 01 Jul 2008 13:34:15 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: MPC83xx ipic problem
-References: <4868FCE9.1060103@matrix-vision.de>
-	<48692E18.9050500@freescale.com>
-In-Reply-To: <48692E18.9050500@freescale.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linux-ppc list <linuxppc-dev@ozlabs.org>
+To: Tony Breeds <tony@bakeyournoodle.com>
+Subject: Re: [BUILD-FAILURE] linux-next: Tree for June 30 - powerpc - build
+	failure at arch_add_memory()
+References: <20080701001656.e156585c.sfr@canb.auug.org.au>
+	<486924FE.4090801@linux.vnet.ibm.com>
+	<20080701013438.GT20457@bakeyournoodle.com>
+In-Reply-To: <20080701013438.GT20457@bakeyournoodle.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-kbuild@vger.kernel.org,
+	LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
+	linux-next@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,63 +39,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Scott,
-
-thanks for your reply.
-
-Honestly I don't think the board wiring is incorrect.
-FPGA goes to IRQ0 and miniPCI is wired to IRQ1.
-
-Maybe there's a crosstalk problem since the pull-up resistors are=20
-packaged inside an array ... I'll check this.
-
-
-regards,
-Andr=C3=A9
-
-
-Scott Wood schrieb:
-> Andr=C3=A9 Schwarz wrote:
->> There are two external PCI devices connected (FPGA + miniPCI socket).
->> The FPGA is working fine and uses IRQ0 for its PCI_INTA line.
+Tony Breeds wrote:
+> On Mon, Jun 30, 2008 at 11:55:02PM +0530, Kamalesh Babulal wrote:
+>> Hi Stephen,
 >>
->> As soon there's a miniPCI module present and the driver loaded=20
->> (actually an ath5k WiFi module) the system complains after a while :
+>> next-20080630 kernel build fails on powerpc, with randconfig
 >>
->> irq 48: nobody cared
->> handlers: .... location of the FPGA irq handler
->> Disabling IRQ #48
->>
->> -> This is weird since the FPGA isn't working at all and IRQ0 is *not*=
-=20
->> asserted !
->=20
-> Are you *sure* that IRQ0 isn't asserted?  The IPIC seems to think it is=
-.
->=20
->> Of course the miniPCI irq is routed to a different pin on the CPU (IRQ=
-1).
->=20
-> Perhaps the board wiring is incorrect?
->=20
->> interrupt-map =3D <0x5800 0 0 1 &ipic 0x30 0x8      -> FPGA @ IRQ0
->>                  0x6000 0 0 1 &ipic 0x11 0x8      -> miniPCI INTA @ IR=
-Q1
->>                  0x6000 0 0 2 &ipic 0x11 0x8>;    -> miniPCI INTB @ IR=
-Q1
->>
->> Is it legal to use a single irq pin twice ?
->=20
-> Yes.
->=20
-> -Scott
->=20
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+>>   CC      arch/powerpc/mm/mem.o
+>> arch/powerpc/mm/mem.c: In function ‘arch_add_memory’:
+>> arch/powerpc/mm/mem.c:130: error: implicit declaration of function ‘create_section_mapping’
+>> make[1]: *** [arch/powerpc/mm/mem.o] Error 1
+>> make: *** [arch/powerpc/mm] Error 2
+> 
+> This problem exists in in 2.6.26-rc8, so it's not specifially linux-next
+> realted.  The patch at:
+> http://patchwork.ozlabs.org/linuxppc/patch?id=19347
+> should fix it but is un-ACK'd ;P
+Hi Tony,
+
+Thanks, the patch fixes the build failure on the machine.
+
+> 
+> Yours Tony
+> 
+>   linux.conf.au    http://www.marchsouth.org/
+>   Jan 19 - 24 2009 The Australian Linux Technical Conference!
+> 
 
 
-MATRIX VISION GmbH, Talstra=DFe 16, DE-71570 Oppenweiler  - Registergeric=
-ht: Amtsgericht Stuttgart, HRB 271090
-Gesch=E4ftsf=FChrer: Gerhard Thullner, Werner Armingeon, Uwe Furtner
+-- 
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
