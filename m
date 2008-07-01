@@ -1,21 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 0254ADDF5D
-	for <linuxppc-dev@ozlabs.org>; Tue,  1 Jul 2008 17:16:02 +1000 (EST)
-Subject: Re: [PATCH] powerpc: fixup lwsync at runtime
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1214893402.20711.104.camel@pasglop>
-References: <Pine.LNX.4.64.0807010031241.23830@blarg.am.freescale.net>
-	<1214893402.20711.104.camel@pasglop>
-Content-Type: text/plain
-Date: Tue, 01 Jul 2008 17:15:55 +1000
-Message-Id: <1214896555.20711.112.camel@pasglop>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id F1E42DE0BD
+	for <linuxppc-dev@ozlabs.org>; Tue,  1 Jul 2008 17:19:49 +1000 (EST)
+Date: Tue, 1 Jul 2008 17:19:40 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: David Miller <davem@davemloft.net>
+Subject: linux-next: manual merge of the net tree
+Message-Id: <20080701171940.6f282113.sfr@canb.auug.org.au>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
-Reply-To: benh@kernel.crashing.org
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Tue__1_Jul_2008_17_19_40_+1000_o7xw.kT+YcDiOhly"
+Cc: linuxppc-dev@ozlabs.org, linux-next@vger.kernel.org,
+	Paul Mackerras <paulus@samba.org>, Jason Jin <Jason.jin@freescale.com>,
+	Jeff Garzik <jgarzik@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,26 +23,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2008-07-01 at 16:23 +1000, Benjamin Herrenschmidt wrote:
-> On Tue, 2008-07-01 at 00:32 -0500, Kumar Gala wrote:
-> > To allow for a single kernel image on e500 v1/v2/mc we need to fixup lwsync
-> > at runtime.  On e500v1/v2 lwsync causes an illop so we need to patch up
-> > the code.  We default to 'sync' since that is always safe and if the cpu
-> > is capable we will replace 'sync' with 'lwsync'.
-> > 
-> > We introduce CPU_FTR_LWSYNC as a way to determine at runtime if this is
-> > needed.  This flag could be moved elsewhere since we dont really use it
-> > for the normal CPU_FTR purpose.
-> > 
-> > Finally we only store the relative offset in the fixup section to keep it
-> > as small as possible rather than using a full fixup_entry.
-> > 
-> > Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
-> 
-> I'd rather have some more generic "alternatives" stuff but in the
-> meantime, Ack.
+--Signature=_Tue__1_Jul_2008_17_19_40_+1000_o7xw.kT+YcDiOhly
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Hrm... minus mpe's comments...
+Hi Dave,
 
+Today's linux-next merge of the net tree got a conflict in  between
+commits aee1dc73b519227084d77b0b2fc972b68b4153d8 ("[POWERPC] Update
+booting-without-of for Freescale PCIe MSI") and
+83ff9dcf375c418ca3b98eb950711525ca1269e2 ("powerpc/sysdev: implement FSL
+GTM support") from the powerpc tree and commit
+a5edeccb1a8432ae5d9fb9bccea5a4b64c565017 ("net: OpenFirmware GPIO based
+MDIO bitbang driver") from the net tree.
+
+They are just overlapping additions. I renumbered(?) the "MDIO on GPIOs"
+section to 'v'.
+
+--=20
 Cheers,
-Ben.
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Tue__1_Jul_2008_17_19_40_+1000_o7xw.kT+YcDiOhly
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkhp2owACgkQjjKRsyhoI8xVrQCfYGH7Yh0cdpkLisXntFeHC2d/
+sDUAn0fokTgC7nE4/pqxhq3GSI6i8kZn
+=oEkA
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__1_Jul_2008_17_19_40_+1000_o7xw.kT+YcDiOhly--
