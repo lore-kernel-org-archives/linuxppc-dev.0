@@ -1,19 +1,15 @@
-Return-Path: <jonsmirl@gmail.com>
-Message-ID: <9e4733910807010938w67bab979tfba888641debe72f@mail.gmail.com>
-Date: Tue, 1 Jul 2008 12:38:05 -0400
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Jean Delvare" <khali@linux-fr.org>
-Subject: Re: [PATCH 2/2] Add the of_find_i2c_device_by_node function, V4
-In-Reply-To: <20080701182949.12119d6e@hyperion.delvare>
+Return-Path: <linnj@wolfgang-pc.public.xilinx.com>
+Received: from IE1EHSOBE002.bigfish.com (outbound-dub.frontbridge.com
+	[213.199.154.16]) by ozlabs.org (Postfix) with ESMTP id 237CEDE4CA
+	for <linuxppc-dev@ozlabs.org>; Wed,  2 Jul 2008 02:42:16 +1000 (EST)
+From: John Linn <john.linn@xilinx.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc: Xilinx: adding Xilinx 440 cpu support
+Date: Tue, 1 Jul 2008 09:42:07 -0700
+Message-ID: <20080701164211.6B71B1B70058@mail110-dub.bigfish.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20080630230126.12482.87927.stgit@terra>
-	<20080630230128.12482.79570.stgit@terra>
-	<20080701170544.72051418@hyperion.delvare>
-	<9e4733910807010812h30e49144v5b3012e6c156ecca@mail.gmail.com>
-	<20080701182949.12119d6e@hyperion.delvare>
-Cc: Linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	i2c@lm-sensors.org
+Content-Type: text/plain
+Cc: John Linn <john.linn@xilinx.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,42 +19,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 7/1/08, Jean Delvare <khali@linux-fr.org> wrote:
-> On Tue, 1 Jul 2008 11:12:58 -0400, Jon Smirl wrote:
->  > On 7/1/08, Jean Delvare <khali@linux-fr.org> wrote:
->  > > I'm fine with this patch. In particular, exporting i2c_bus_type is OK.
->  > >  It was un-exported only because it had no user left, but it can be
->  > >  exported again if needed.
->  >
->  > Another solution would be to move drivers/of/of_i2c into the i2c
->  > directory and make it part of i2c core on powerpc builds.
->
->
-> I don't think this is a good idea. Merging arch-specific code (or
->  half-arch-specific code in this case) into arch-neutral drivers ends up
->  being a pain to maintain. People will keep sending me patches for stuff
->  I don't know anything about and can't help with. Having of-specific
->  stuff in just one directory as is the case now sounds much better to
->  me. All it's missing is a MAINTAINERS entry.
+The following change updates the cputable to support the
+440 processor in the Xilinx Virtex5 FXT FPGA.
 
-A side effect of this is that the small pieces of code in drivers/of
-have to be compiled into stand alone modules and they may need access
-to internal symbols from the subsystem. If they were directly linked
-into the subsystems you wouldn't need to make the internal symbols
-visible. Now the subsystems have to be careful about breaking the
-in-kernel, external users of the symbols and we've made it possible
-for out of tree drivers to get to internal structures.
+Signed-off-by: John Linn <john.linn@xilinx.com>
+Acked-by: Grant Likely <grant.likely@secretlab.ca>
+---
+ arch/powerpc/kernel/cputable.c |   10 ++++++++++
+ 1 files changed, 10 insertions(+), 0 deletions(-)
 
-
-
-
->
->  --
->
-> Jean Delvare
->
-
-
+diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
+index e44d553..ae3660b 100644
+--- a/arch/powerpc/kernel/cputable.c
++++ b/arch/powerpc/kernel/cputable.c
+@@ -1410,6 +1410,16 @@ static struct cpu_spec __initdata cpu_specs[] = {
+ 		.machine_check		= machine_check_440A,
+ 		.platform		= "ppc440",
+ 	},
++	{ /* 440 in Xilinx Virtex-5 FXT */
++		.pvr_mask		= 0xfffffff0,
++		.pvr_value		= 0x7ff21910,
++		.cpu_name		= "440 in Virtex-5 FXT",
++		.cpu_features		= CPU_FTRS_44X,
++		.cpu_user_features	= COMMON_USER_BOOKE,
++		.icache_bsize		= 32,
++		.dcache_bsize		= 32,
++		.platform		= "ppc440",
++	},
+ 	{ /* 460EX */
+ 		.pvr_mask		= 0xffff0002,
+ 		.pvr_value		= 0x13020002,
 -- 
-Jon Smirl
-jonsmirl@gmail.com
+1.5.2.1
+
+
+
+This email and any attachments are intended for the sole use of the named recipient(s) and contain(s) confidential information that may be proprietary, privileged or copyrighted under applicable law. If you are not the intended recipient, do not read, copy, or forward this email message or any attachments. Delete this email message and any attachments immediately.
