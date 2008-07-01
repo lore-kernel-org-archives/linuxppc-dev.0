@@ -1,13 +1,21 @@
 Return-Path: <tony@bakeyournoodle.com>
 Received: from pythia.bakeyournoodle.com (pythia.bakeyournoodle.com
-	[203.82.209.197]) by ozlabs.org (Postfix) with ESMTP id 72B70DDE28
-	for <linuxppc-dev@ozlabs.org>; Tue,  1 Jul 2008 11:30:02 +1000 (EST)
-To: Paul Mackerras <paulus@samba.org>, <linuxppc-dev@ozlabs.org>
-Message-Id: <ee4b4da609da3b2e94f484a0124ed3f8cdfffee6.1214875806.git.tony@bakeyournoodle.com>
+	[203.82.209.197]) by ozlabs.org (Postfix) with ESMTP id 2AF7ADDD0B
+	for <linuxppc-dev@ozlabs.org>; Tue,  1 Jul 2008 11:34:39 +1000 (EST)
+Date: Tue, 1 Jul 2008 11:34:38 +1000
 From: Tony Breeds <tony@bakeyournoodle.com>
-Subject: [PATCH 1/1] Fix Building of arch/powerpc/mm/mem.o when
-	MEMORY_HOTPLUG=y and SPARSEMEM=n
-Date: Tue,  1 Jul 2008 11:30:06 +1000 (EST)
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Subject: Re: [BUILD-FAILURE] linux-next: Tree for June 30 - powerpc - build
+	failure at arch_add_memory()
+Message-ID: <20080701013438.GT20457@bakeyournoodle.com>
+References: <20080701001656.e156585c.sfr@canb.auug.org.au>
+	<486924FE.4090801@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <486924FE.4090801@linux.vnet.ibm.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-kbuild@vger.kernel.org,
+	LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
+	linux-next@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,53 +25,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Currently the kernel fails to build with the above config options with:
-  CC      arch/powerpc/mm/mem.o
-arch/powerpc/mm/mem.c: In function 'arch_add_memory':
-arch/powerpc/mm/mem.c:130: error: implicit declaration of function 'create_section_mapping'
+On Mon, Jun 30, 2008 at 11:55:02PM +0530, Kamalesh Babulal wrote:
+> Hi Stephen,
+> 
+> next-20080630 kernel build fails on powerpc, with randconfig
+> 
+>   CC      arch/powerpc/mm/mem.o
+> arch/powerpc/mm/mem.c: In function ‘arch_add_memory’:
+> arch/powerpc/mm/mem.c:130: error: implicit declaration of function ‘create_section_mapping’
+> make[1]: *** [arch/powerpc/mm/mem.o] Error 1
+> make: *** [arch/powerpc/mm] Error 2
 
-This patch explicitly includes asm/sparsemem.h in arch/powerpc/mm/mem.c and
-moves the guards in include/asm-powerpc/sparsemem.h to protect the
-SPARSEMEM specific portions only.
+This problem exists in in 2.6.26-rc8, so it's not specifially linux-next
+realted.  The patch at:
+http://patchwork.ozlabs.org/linuxppc/patch?id=19347
+should fix it but is un-ACK'd ;P
 
-Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
----
- arch/powerpc/mm/mem.c           |    1 +
- include/asm-powerpc/sparsemem.h |    4 ++--
- 2 files changed, 3 insertions(+), 2 deletions(-)
+Yours Tony
 
-diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-index 51f82d8..776ba6a 100644
---- a/arch/powerpc/mm/mem.c
-+++ b/arch/powerpc/mm/mem.c
-@@ -44,6 +44,7 @@
- #include <asm/btext.h>
- #include <asm/tlb.h>
- #include <asm/sections.h>
-+#include <asm/sparsemem.h>
- #include <asm/vdso.h>
- #include <asm/fixmap.h>
- 
-diff --git a/include/asm-powerpc/sparsemem.h b/include/asm-powerpc/sparsemem.h
-index 9aea8e9..54a47ea 100644
---- a/include/asm-powerpc/sparsemem.h
-+++ b/include/asm-powerpc/sparsemem.h
-@@ -13,6 +13,8 @@
- #define MAX_PHYSADDR_BITS       44
- #define MAX_PHYSMEM_BITS        44
- 
-+#endif /* CONFIG_SPARSEMEM */
-+
- #ifdef CONFIG_MEMORY_HOTPLUG
- extern void create_section_mapping(unsigned long start, unsigned long end);
- extern int remove_section_mapping(unsigned long start, unsigned long end);
-@@ -26,7 +28,5 @@ static inline int hot_add_scn_to_nid(unsigned long scn_addr)
- #endif /* CONFIG_NUMA */
- #endif /* CONFIG_MEMORY_HOTPLUG */
- 
--#endif /* CONFIG_SPARSEMEM */
--
- #endif /* __KERNEL__ */
- #endif /* _ASM_POWERPC_SPARSEMEM_H */
--- 
-1.5.6
+  linux.conf.au    http://www.marchsouth.org/
+  Jan 19 - 24 2009 The Australian Linux Technical Conference!
