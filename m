@@ -1,31 +1,17 @@
-Return-Path: <bunk@kernel.org>
-Received: from smtp5.pp.htv.fi (smtp5.pp.htv.fi [213.243.153.39])
-	by ozlabs.org (Postfix) with ESMTP id 77E20DE5EC
-	for <linuxppc-dev@ozlabs.org>; Wed,  2 Jul 2008 06:46:39 +1000 (EST)
-Date: Tue, 1 Jul 2008 23:46:17 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: monstr@seznam.cz
-Subject: Re: [PATCH 27/60] microblaze_v4: virtualization
-Message-ID: <20080701204617.GE32598@cs181140183.pp.htv.fi>
-References: <1214483429-32360-19-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-20-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-21-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-22-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-23-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-24-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-25-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-26-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-27-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-28-git-send-email-monstr@seznam.cz>
+Return-Path: <glikely@secretlab.ca>
+Received: from wf-out-1314.google.com (wf-out-1314.google.com [209.85.200.171])
+	by ozlabs.org (Postfix) with ESMTP id 34AD4DDEF2
+	for <linuxppc-dev@ozlabs.org>; Wed,  2 Jul 2008 07:12:11 +1000 (EST)
+Received: by wf-out-1314.google.com with SMTP id 24so69198wfg.15
+	for <linuxppc-dev@ozlabs.org>; Tue, 01 Jul 2008 14:12:10 -0700 (PDT)
+From: Grant Likely <grant.likely@secretlab.ca>
+Subject: [PATCH] powerpc/mpc5200: Fix lite5200b suspend/resume
+To: linuxppc-dev@ozlabs.org, plasm@roo.me.uk
+Date: Tue, 01 Jul 2008 15:12:02 -0600
+Message-ID: <20080701211033.13852.31692.stgit@trillian.secretlab.ca>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <1214483429-32360-28-git-send-email-monstr@seznam.cz>
-Cc: linux-arch@vger.kernel.org, alan@lxorguk.ukuu.org.uk,
-	Michal Simek <monstr@monstr.eu>, vapier.adi@gmail.com,
-	arnd@arndb.de, matthew@wil.cx, microblaze-uclinux@itee.uq.edu.au,
-	linux-kernel@vger.kernel.org, drepper@redhat.com,
-	linuxppc-dev@ozlabs.org, will.newton@gmail.com, hpa@zytor.com,
-	John.Linn@xilinx.com, john.williams@petalogix.com
+Content-Type: text/plain; charset="utf-8"
+Sender: Grant Likely <glikely@secretlab.ca>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,33 +21,94 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jun 26, 2008 at 02:29:56PM +0200, monstr@seznam.cz wrote:
-> From: Michal Simek <monstr@monstr.eu>
-> 
-> 
-> Signed-off-by: Michal Simek <monstr@monstr.eu>
-> ---
->  include/asm-microblaze/kvm.h |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
->  create mode 100644 include/asm-microblaze/kvm.h
-> 
-> diff --git a/include/asm-microblaze/kvm.h b/include/asm-microblaze/kvm.h
-> new file mode 100644
-> index 0000000..01c5e79
-> --- /dev/null
-> +++ b/include/asm-microblaze/kvm.h
-> @@ -0,0 +1 @@
-> +/* Microblaze does not support KVM */
+From: Tim Yamin <plasm@roo.me.uk>
 
-There's a patch pending for 2.6.27 that will remove the requirement for 
-this empty header.
+Suspend/resume ("echo mem > /sys/power/state") does not work with
+vanilla kernels -- the system does not suspend correctly and just
+hangs. This patch fixes this so suspend/resume works:
 
-cu
-Adrian
+1) of_iomap does not map the whole 0xC000 of the MPC5200 immr so
+saving registers does not work.
+2) PCI registers need to be saved and restored.
 
--- 
+Signed-off-by: Tim Yamin <plasm@roo.me.uk>
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+---
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Tim, please test this version.  I fixed a couple of bugs and want to make
+sure I haven't broken anything.  Once you ack it I'll ask Paul to pull it
+into 2.6.26.
+
+g.
+
+ arch/powerpc/platforms/52xx/lite5200_pm.c |   14 +++++++++++++-
+ 1 files changed, 13 insertions(+), 1 deletions(-)
+
+diff --git a/arch/powerpc/platforms/52xx/lite5200_pm.c b/arch/powerpc/platforms/52xx/lite5200_pm.c
+index 41c7fd9..fe92e65 100644
+--- a/arch/powerpc/platforms/52xx/lite5200_pm.c
++++ b/arch/powerpc/platforms/52xx/lite5200_pm.c
+@@ -14,6 +14,7 @@ static struct mpc52xx_sdma __iomem *bes;
+ static struct mpc52xx_xlb __iomem *xlb;
+ static struct mpc52xx_gpio __iomem *gps;
+ static struct mpc52xx_gpio_wkup __iomem *gpw;
++static void __iomem *pci;
+ static void __iomem *sram;
+ static const int sram_size = 0x4000;	/* 16 kBytes */
+ static void __iomem *mbar;
+@@ -50,6 +51,8 @@ static int lite5200_pm_prepare(void)
+ 		{ .type = "builtin", .compatible = "mpc5200", }, /* efika */
+ 		{}
+ 	};
++	u64 regaddr64 = 0;
++	const u32 *regaddr_p;
+ 
+ 	/* deep sleep? let mpc52xx code handle that */
+ 	if (lite5200_pm_target_state == PM_SUSPEND_STANDBY)
+@@ -60,8 +63,12 @@ static int lite5200_pm_prepare(void)
+ 
+ 	/* map registers */
+ 	np = of_find_matching_node(NULL, immr_ids);
+-	mbar = of_iomap(np, 0);
++	regaddr_p = of_get_address(np, 0, NULL, NULL);
++	if (regaddr_p)
++		regaddr64 = of_translate_address(np, regaddr_p);
+ 	of_node_put(np);
++
++	mbar = ioremap((u32) regaddr64, 0xC000);
+ 	if (!mbar) {
+ 		printk(KERN_ERR "%s:%i Error mapping registers\n", __func__, __LINE__);
+ 		return -ENOSYS;
+@@ -71,6 +78,7 @@ static int lite5200_pm_prepare(void)
+ 	pic = mbar + 0x500;
+ 	gps = mbar + 0xb00;
+ 	gpw = mbar + 0xc00;
++	pci = mbar + 0xd00;
+ 	bes = mbar + 0x1200;
+ 	xlb = mbar + 0x1f00;
+ 	sram = mbar + 0x8000;
+@@ -85,6 +93,7 @@ static struct mpc52xx_sdma sbes;
+ static struct mpc52xx_xlb sxlb;
+ static struct mpc52xx_gpio sgps;
+ static struct mpc52xx_gpio_wkup sgpw;
++static char spci[0x200];
+ 
+ static void lite5200_save_regs(void)
+ {
+@@ -94,6 +103,7 @@ static void lite5200_save_regs(void)
+ 	_memcpy_fromio(&sxlb, xlb, sizeof(*xlb));
+ 	_memcpy_fromio(&sgps, gps, sizeof(*gps));
+ 	_memcpy_fromio(&sgpw, gpw, sizeof(*gpw));
++	_memcpy_fromio(spci, pci, 0x200);
+ 
+ 	_memcpy_fromio(saved_sram, sram, sram_size);
+ }
+@@ -103,6 +113,8 @@ static void lite5200_restore_regs(void)
+ 	int i;
+ 	_memcpy_toio(sram, saved_sram, sram_size);
+ 
++	/* PCI Configuration */
++	_memcpy_toio(pci, spci, 0x200);
+ 
+ 	/*
+ 	 * GPIOs. Interrupt Master Enable has higher address then other
