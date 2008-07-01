@@ -1,20 +1,35 @@
-Return-Path: <jochen@scram.de>
-Received: from mail.scram.de (mail0.scram.de [78.47.204.202])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.scram.de", Issuer "scram e.V. CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id E0BC6DE137
-	for <linuxppc-dev@ozlabs.org>; Wed,  2 Jul 2008 01:54:53 +1000 (EST)
-Message-ID: <486A533B.40402@scram.de>
-Date: Tue, 01 Jul 2008 17:54:35 +0200
-From: Jochen Friedrich <jochen@scram.de>
+Return-Path: <stephen.neuendorffer@xilinx.com>
+Received: from IE1EHSOBE005.bigfish.com (outbound-dub.frontbridge.com
+	[213.199.154.16]) by ozlabs.org (Postfix) with ESMTP id 08811DE030
+	for <linuxppc-dev@ozlabs.org>; Wed,  2 Jul 2008 01:58:51 +1000 (EST)
 MIME-Version: 1.0
-To: Laurent Pinchart <laurentp@cse-semaphore.com>
-Subject: Re: Commits added to powerpc.git master and powerpc-next branches
-References: <18537.30774.608486.268257@cargo.ozlabs.ibm.com>
-	<200807011049.32699.laurentp@cse-semaphore.com>
-In-Reply-To: <200807011049.32699.laurentp@cse-semaphore.com>
-Content-Type: text/plain; charset=ISO-8859-15
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain; charset="us-ascii"
+Subject: RE: [PATCH 12/60] microblaze_v4: Generic dts file for platforms
+Date: Tue, 1 Jul 2008 08:58:43 -0700
+In-Reply-To: <1214893302.20711.102.camel@pasglop>
+References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-6-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-7-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-8-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-9-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-10-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-11-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-12-git-send-email-monstr@seznam.cz>
+	<1214483429-32360-13-git-send-email-monstr@seznam.cz>
+	<fa686aa40806272249l7eae0c34k43a20ad41672b77a@mail.gmail.com>
+	<1d3f23370806291702g4344a2f9lb62f85cbb475fca4@mail.gmail.com>
+	<20080630033943.332471860046@mail171-va3.bigfish.com>
+	<1214893302.20711.102.camel@pasglop>
+From: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
+To: <benh@kernel.crashing.org>
+Message-ID: <20080701155845.9DDE299004D@mail180-dub.bigfish.com>
+Cc: linux-arch@vger.kernel.org, alan@lxorguk.ukuu.org.uk,
+	Michal Simek <monstr@monstr.eu>, vapier.adi@gmail.com,
+	arnd@arndb.de, matthew@wil.cx, microblaze-uclinux@itee.uq.edu.au,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	will.newton@gmail.com, hpa@zytor.com,
+	John Linn <linnj@xilinx.com>, monstr@seznam.cz,
+	drepper@redhat.com, John Williams <john.williams@petalogix.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,19 +39,85 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Paul,
 
-On Tuesday 01 July 2008, Paul Mackerras wrote:
+Doing this at the binary level would be nice, but I see enough problems
+just doing it at the source level and at least for my purposes, doing it
+on a dtb would be overkill, I think.   =
 
-> The following commits have been added to the master and powerpc-next
-> branches of the powerpc.git repository.  This includes patches pulled
-> from Kumar's and Josh's trees.
 
-Now that the I2C driver for CPM1/CPM2 boards is in the i2c tree, is there
-any chance to get this one into 2.6.27?
+The main difficulty remains how to deal with cross references between
+nodes in a reasonable way where the references cross from one fragment
+to another.
 
-[POWERPC] Add i2c pins to dts and board setup
-  http://patchwork.ozlabs.org/linuxppc/patch?person=1023&id=18603
+Steve
 
-Thanks,
-Jochen
+> -----Original Message-----
+> From: Benjamin Herrenschmidt [mailto:benh@kernel.crashing.org]
+> Sent: Monday, June 30, 2008 11:22 PM
+> To: Stephen Neuendorffer
+> Cc: John Williams; grant.likely@secretlab.ca;
+linux-arch@vger.kernel.org; Michal Simek;
+> vapier.adi@gmail.com; arnd@arndb.de; matthew@wil.cx;
+microblaze-uclinux@itee.uq.edu.au; linux-
+> kernel@vger.kernel.org; linuxppc-dev@ozlabs.org;
+will.newton@gmail.com; hpa@zytor.com; John Linn;
+> monstr@seznam.cz; drepper@redhat.com; alan@lxorguk.ukuu.org.uk
+> Subject: RE: [PATCH 12/60] microblaze_v4: Generic dts file for
+platforms
+> =
+
+> =
+
+> > As for the copyright, I haven't been able to find much information
+on
+> > whether or not generated files are even copyrightable.  One might
+> > argue that they
+> > don't have sufficient 'creative value' to be copyrightable.  Or
+> > arguably, they are as copyrightable by the generator author as by
+the
+> > author or the .mhs file.
+> > I admit in this case, I've followed the safe route by claiming a
+> > copyright, which at least at Xilinx has significant precedent.
+> =
+
+> Also, thinking about your idea of sticking bits in BRAM etc...
+> =
+
+> what would be nice would be the ability to "merge" trees. We've been
+> talking about that multiple times, it would be useful at several
+levels:
+> =
+
+>  - We could provide pre-made DTs for known CPUs (ie, 440GP, 440GX,
+> 405EX, ...)
+>  - Boards can then include that, and then "override" some properties
+> (clocks, PHY wiring, ...)
+>  - That could be done at the binary level too so that the BRAM
+contains
+> on "overlay" on top of the base ref. platform device-tree that comes
+> with the kernel for example.
+> =
+
+> This is slightly different between doing that in the .dts source via
+> some kind of #include vs. doing that by merging blobs but we could
+make
+> it be essentially be the same internally: The #include generates a
+blob
+> that is then "merged in".
+> =
+
+> Just random thoughts...
+> =
+
+> Ben.
+> =
+
+> =
+
+
+
+This email and any attachments are intended for the sole use of the named r=
+ecipient(s) and contain(s) confidential information that may be proprietary=
+, privileged or copyrighted under applicable law. If you are not the intend=
+ed recipient, do not read, copy, or forward this email message or any attac=
+hments. Delete this email message and any attachments immediately.
