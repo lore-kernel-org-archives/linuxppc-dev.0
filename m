@@ -2,13 +2,13 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E755EDE044
-	for <linuxppc-dev@ozlabs.org>; Wed,  2 Jul 2008 01:16:28 +1000 (EST)
-Date: Tue, 1 Jul 2008 10:16:16 -0500 (CDT)
+	by ozlabs.org (Postfix) with ESMTPS id DAF86DE139
+	for <linuxppc-dev@ozlabs.org>; Wed,  2 Jul 2008 01:16:51 +1000 (EST)
+Date: Tue, 1 Jul 2008 10:16:40 -0500 (CDT)
 From: Kumar Gala <galak@kernel.crashing.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v2 1/2] powerpc: Fix building of feature-fixup tests on ppc32
-Message-ID: <Pine.LNX.4.64.0807011015390.20129@blarg.am.freescale.net>
+Subject: [PATCH v2 2/2] powerpc: fixup lwsync at runtime
+Message-ID: <Pine.LNX.4.64.0807011016190.20129@blarg.am.freescale.net>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -20,47 +20,411 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-We need to use PPC_LCMPI otherwise we get compile errors like:
+To allow for a single kernel image on e500 v1/v2/mc we need to fixup lwsync
+at runtime.  On e500v1/v2 lwsync causes an illop so we need to patch up
+the code.  We default to 'sync' since that is always safe and if the cpu
+is capable we will replace 'sync' with 'lwsync'.
 
-arch/powerpc/lib/feature-fixups-test.S: Assembler messages:
-arch/powerpc/lib/feature-fixups-test.S:142: Error: Unrecognized opcode: `cmpdi'
-arch/powerpc/lib/feature-fixups-test.S:149: Error: Unrecognized opcode: `cmpdi'
-arch/powerpc/lib/feature-fixups-test.S:164: Error: Unrecognized opcode: `cmpdi'
+We introduce CPU_FTR_LWSYNC as a way to determine at runtime if this is
+needed.  This flag could be moved elsewhere since we dont really use it
+for the normal CPU_FTR purpose.
+
+Finally we only store the relative offset in the fixup section to keep it
+as small as possible rather than using a full fixup_entry.
 
 Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 ---
- arch/powerpc/lib/feature-fixups-test.S |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
 
+* Moved and fixed up LWSYNC macros to feature-fixups.h
+* Added lwsync test case to feature-fixups
+* Reworked synch.h to be usable in asm code.
+
+- k
+
+ arch/powerpc/kernel/module.c            |    6 +++++
+ arch/powerpc/kernel/setup_32.c          |    4 +++
+ arch/powerpc/kernel/setup_64.c          |    2 +
+ arch/powerpc/kernel/vdso.c              |   10 ++++++++
+ arch/powerpc/kernel/vdso32/vdso32.lds.S |    3 ++
+ arch/powerpc/kernel/vdso64/vdso64.lds.S |    3 ++
+ arch/powerpc/kernel/vmlinux.lds.S       |    6 +++++
+ arch/powerpc/lib/feature-fixups-test.S  |   15 ++++++++++++
+ arch/powerpc/lib/feature-fixups.c       |   36 +++++++++++++++++++++++++++++
+ include/asm-powerpc/code-patching.h     |    3 +-
+ include/asm-powerpc/cputable.h          |   21 +++++++++--------
+ include/asm-powerpc/feature-fixups.h    |   10 ++++++++
+ include/asm-powerpc/synch.h             |   38 ++++++++++++++++++------------
+ 13 files changed, 131 insertions(+), 26 deletions(-)
+
+diff --git a/arch/powerpc/kernel/module.c b/arch/powerpc/kernel/module.c
+index 40dd52d..af07003 100644
+--- a/arch/powerpc/kernel/module.c
++++ b/arch/powerpc/kernel/module.c
+@@ -86,6 +86,12 @@ int module_finalize(const Elf_Ehdr *hdr,
+ 				  (void *)sect->sh_addr + sect->sh_size);
+ #endif
+
++	sect = find_section(hdr, sechdrs, "__lwsync_fixup");
++	if (sect != NULL)
++		do_lwsync_fixups(cur_cpu_spec->cpu_features,
++				 (void *)sect->sh_addr,
++				 (void *)sect->sh_addr + sect->sh_size);
++
+ 	return 0;
+ }
+
+diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
+index 9e83add..0109e7f 100644
+--- a/arch/powerpc/kernel/setup_32.c
++++ b/arch/powerpc/kernel/setup_32.c
+@@ -101,6 +101,10 @@ unsigned long __init early_init(unsigned long dt_ptr)
+ 			  PTRRELOC(&__start___ftr_fixup),
+ 			  PTRRELOC(&__stop___ftr_fixup));
+
++	do_lwsync_fixups(spec->cpu_features,
++			 PTRRELOC(&__start___lwsync_fixup),
++			 PTRRELOC(&__stop___lwsync_fixup));
++
+ 	return KERNELBASE + offset;
+ }
+
+diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+index 098fd96..04d8de9 100644
+--- a/arch/powerpc/kernel/setup_64.c
++++ b/arch/powerpc/kernel/setup_64.c
+@@ -363,6 +363,8 @@ void __init setup_system(void)
+ 			  &__start___ftr_fixup, &__stop___ftr_fixup);
+ 	do_feature_fixups(powerpc_firmware_features,
+ 			  &__start___fw_ftr_fixup, &__stop___fw_ftr_fixup);
++	do_lwsync_fixups(cur_cpu_spec->cpu_features,
++			 &__start___lwsync_fixup, &__stop___lwsync_fixup);
+
+ 	/*
+ 	 * Unflatten the device-tree passed by prom_init or kexec
+diff --git a/arch/powerpc/kernel/vdso.c b/arch/powerpc/kernel/vdso.c
+index ce245a8..f177c60 100644
+--- a/arch/powerpc/kernel/vdso.c
++++ b/arch/powerpc/kernel/vdso.c
+@@ -571,6 +571,11 @@ static __init int vdso_fixup_features(struct lib32_elfinfo *v32,
+ 	if (start64)
+ 		do_feature_fixups(powerpc_firmware_features,
+ 				  start64, start64 + size64);
++
++	start64 = find_section64(v64->hdr, "__lwsync_fixup", &size64);
++	if (start64)
++		do_lwsync_fixups(cur_cpu_spec->cpu_features,
++				 start64, start64 + size64);
+ #endif /* CONFIG_PPC64 */
+
+ 	start32 = find_section32(v32->hdr, "__ftr_fixup", &size32);
+@@ -585,6 +590,11 @@ static __init int vdso_fixup_features(struct lib32_elfinfo *v32,
+ 				  start32, start32 + size32);
+ #endif /* CONFIG_PPC64 */
+
++	start32 = find_section32(v32->hdr, "__lwsync_fixup", &size32);
++	if (start32)
++		do_lwsync_fixups(cur_cpu_spec->cpu_features,
++				 start32, start32 + size32);
++
+ 	return 0;
+ }
+
+diff --git a/arch/powerpc/kernel/vdso32/vdso32.lds.S b/arch/powerpc/kernel/vdso32/vdso32.lds.S
+index 2717935..be3b6a4 100644
+--- a/arch/powerpc/kernel/vdso32/vdso32.lds.S
++++ b/arch/powerpc/kernel/vdso32/vdso32.lds.S
+@@ -33,6 +33,9 @@ SECTIONS
+ 	. = ALIGN(8);
+ 	__ftr_fixup	: { *(__ftr_fixup) }
+
++	. = ALIGN(8);
++	__lwsync_fixup	: { *(__lwsync_fixup) }
++
+ #ifdef CONFIG_PPC64
+ 	. = ALIGN(8);
+ 	__fw_ftr_fixup	: { *(__fw_ftr_fixup) }
+diff --git a/arch/powerpc/kernel/vdso64/vdso64.lds.S b/arch/powerpc/kernel/vdso64/vdso64.lds.S
+index e608d1b..d0b2526 100644
+--- a/arch/powerpc/kernel/vdso64/vdso64.lds.S
++++ b/arch/powerpc/kernel/vdso64/vdso64.lds.S
+@@ -35,6 +35,9 @@ SECTIONS
+ 	__ftr_fixup	: { *(__ftr_fixup) }
+
+ 	. = ALIGN(8);
++	__lwsync_fixup	: { *(__lwsync_fixup) }
++
++	. = ALIGN(8);
+ 	__fw_ftr_fixup	: { *(__fw_ftr_fixup) }
+
+ 	/*
+diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
+index 3c07811..6856f6c 100644
+--- a/arch/powerpc/kernel/vmlinux.lds.S
++++ b/arch/powerpc/kernel/vmlinux.lds.S
+@@ -127,6 +127,12 @@ SECTIONS
+ 		*(__ftr_fixup)
+ 		__stop___ftr_fixup = .;
+ 	}
++	. = ALIGN(8);
++	__lwsync_fixup : AT(ADDR(__lwsync_fixup) - LOAD_OFFSET) {
++		__start___lwsync_fixup = .;
++		*(__lwsync_fixup)
++		__stop___lwsync_fixup = .;
++	}
+ #ifdef CONFIG_PPC64
+ 	. = ALIGN(8);
+ 	__fw_ftr_fixup : AT(ADDR(__fw_ftr_fixup) - LOAD_OFFSET) {
 diff --git a/arch/powerpc/lib/feature-fixups-test.S b/arch/powerpc/lib/feature-fixups-test.S
-index 10d038b..0549be0 100644
+index 0549be0..cb73748 100644
 --- a/arch/powerpc/lib/feature-fixups-test.S
 +++ b/arch/powerpc/lib/feature-fixups-test.S
-@@ -139,14 +139,14 @@ globl(ftr_fixup_test6)
- 1:	or	1,1,1
- BEGIN_FTR_SECTION
- 	or	5,5,5
--2:	cmpdi	r3,0
-+2:	PPC_LCMPI	r3,0
- 	beq	4f
- 	blt	2b
- 	b	1b
- 	b	4f
- FTR_SECTION_ELSE
- 2:	or	2,2,2
--	cmpdi	r3,1
-+	PPC_LCMPI	r3,1
- 	beq	3f
- 	blt	2b
- 	b	3f
-@@ -161,7 +161,7 @@ globl(end_ftr_fixup_test6)
- globl(ftr_fixup_test6_expected)
- 1:	or	1,1,1
- 2:	or	2,2,2
--	cmpdi	r3,1
-+	PPC_LCMPI	r3,1
- 	beq	3f
- 	blt	2b
- 	b	3f
+@@ -10,6 +10,7 @@
+
+ #include <asm/feature-fixups.h>
+ #include <asm/ppc_asm.h>
++#include <asm/synch.h>
+
+ 	.text
+
+@@ -725,3 +726,17 @@ MAKE_MACRO_TEST_EXPECTED(FTR);
+ MAKE_MACRO_TEST(FW_FTR);
+ MAKE_MACRO_TEST_EXPECTED(FW_FTR);
+ #endif
++
++globl(lwsync_fixup_test)
++1:	or	1,1,1
++	LWSYNC
++globl(end_lwsync_fixup_test)
++
++globl(lwsync_fixup_test_expected_LWSYNC)
++1:	or	1,1,1
++	lwsync
++
++globl(lwsync_fixup_test_expected_SYNC)
++1:	or	1,1,1
++	sync
++
+diff --git a/arch/powerpc/lib/feature-fixups.c b/arch/powerpc/lib/feature-fixups.c
+index 48e1ed8..4e43702 100644
+--- a/arch/powerpc/lib/feature-fixups.c
++++ b/arch/powerpc/lib/feature-fixups.c
+@@ -110,6 +110,22 @@ void do_feature_fixups(unsigned long value, void *fixup_start, void *fixup_end)
+ 	}
+ }
+
++void do_lwsync_fixups(unsigned long value, void *fixup_start, void *fixup_end)
++{
++	unsigned int *start, *end, *dest;
++
++	if (!(value & CPU_FTR_LWSYNC))
++		return ;
++
++	start = fixup_start;
++	end = fixup_end;
++
++	for (; start < end; start++) {
++		dest = (void *)start + *start;
++		patch_instruction(dest, PPC_LWSYNC_INSTR);
++	}
++}
++
+ #ifdef CONFIG_FTR_FIXUP_SELFTEST
+
+ #define check(x)	\
+@@ -295,6 +311,25 @@ static void test_fw_macros(void)
+ #endif
+ }
+
++static void test_lwsync_macros(void)
++{
++	extern void lwsync_fixup_test;
++	extern void end_lwsync_fixup_test;
++	extern void lwsync_fixup_test_expected_LWSYNC;
++	extern void lwsync_fixup_test_expected_SYNC;
++	unsigned long size = &end_lwsync_fixup_test -
++			     &lwsync_fixup_test;
++
++	/* The fixups have already been done for us during boot */
++	if (cur_cpu_spec->cpu_features & CPU_FTR_LWSYNC) {
++		check(memcmp(&lwsync_fixup_test,
++			     &lwsync_fixup_test_expected_LWSYNC, size) == 0);
++	} else {
++		check(memcmp(&lwsync_fixup_test,
++			     &lwsync_fixup_test_expected_SYNC, size) == 0);
++	}
++}
++
+ static int __init test_feature_fixups(void)
+ {
+ 	printk(KERN_DEBUG "Running feature fixup self-tests ...\n");
+@@ -307,6 +342,7 @@ static int __init test_feature_fixups(void)
+ 	test_alternative_case_with_external_branch();
+ 	test_cpu_macros();
+ 	test_fw_macros();
++	test_lwsync_macros();
+
+ 	return 0;
+ }
+diff --git a/include/asm-powerpc/code-patching.h b/include/asm-powerpc/code-patching.h
+index ef3a5d1..107d9b9 100644
+--- a/include/asm-powerpc/code-patching.h
++++ b/include/asm-powerpc/code-patching.h
+@@ -12,7 +12,8 @@
+
+ #include <asm/types.h>
+
+-#define PPC_NOP_INSTR	0x60000000
++#define PPC_NOP_INSTR		0x60000000
++#define PPC_LWSYNC_INSTR	0x7c2004ac
+
+ /* Flags for create_branch:
+  * "b"   == create_branch(addr, target, 0);
+diff --git a/include/asm-powerpc/cputable.h b/include/asm-powerpc/cputable.h
+index 4e4491c..3171ac9 100644
+--- a/include/asm-powerpc/cputable.h
++++ b/include/asm-powerpc/cputable.h
+@@ -156,6 +156,7 @@ extern void do_feature_fixups(unsigned long value, void *fixup_start,
+ #define CPU_FTR_UNIFIED_ID_CACHE	ASM_CONST(0x0000000001000000)
+ #define CPU_FTR_SPE			ASM_CONST(0x0000000002000000)
+ #define CPU_FTR_NEED_PAIRED_STWCX	ASM_CONST(0x0000000004000000)
++#define CPU_FTR_LWSYNC			ASM_CONST(0x0000000008000000)
+
+ /*
+  * Add the 64-bit processor unique features in the top half of the word;
+@@ -369,43 +370,43 @@ extern void do_feature_fixups(unsigned long value, void *fixup_start,
+ 	    CPU_FTR_NODSISRALIGN)
+ #define CPU_FTRS_E500MC	(CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB | \
+ 	    CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_BIG_PHYS | CPU_FTR_NODSISRALIGN | \
+-	    CPU_FTR_L2CSR)
++	    CPU_FTR_L2CSR | CPU_FTR_LWSYNC)
+ #define CPU_FTRS_GENERIC_32	(CPU_FTR_COMMON | CPU_FTR_NODSISRALIGN)
+
+ /* 64-bit CPUs */
+-#define CPU_FTRS_POWER3	(CPU_FTR_USE_TB | \
++#define CPU_FTRS_POWER3	(CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
+ 	    CPU_FTR_HPTE_TABLE | CPU_FTR_IABR | CPU_FTR_PPC_LE)
+-#define CPU_FTRS_RS64	(CPU_FTR_USE_TB | \
++#define CPU_FTRS_RS64	(CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
+ 	    CPU_FTR_HPTE_TABLE | CPU_FTR_IABR | \
+ 	    CPU_FTR_MMCRA | CPU_FTR_CTRL)
+-#define CPU_FTRS_POWER4	(CPU_FTR_USE_TB | \
++#define CPU_FTRS_POWER4	(CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
+ 	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
+ 	    CPU_FTR_MMCRA)
+-#define CPU_FTRS_PPC970	(CPU_FTR_USE_TB | \
++#define CPU_FTRS_PPC970	(CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
+ 	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
+ 	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_CAN_NAP | CPU_FTR_MMCRA)
+-#define CPU_FTRS_POWER5	(CPU_FTR_USE_TB | \
++#define CPU_FTRS_POWER5	(CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
+ 	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
+ 	    CPU_FTR_MMCRA | CPU_FTR_SMT | \
+ 	    CPU_FTR_COHERENT_ICACHE | CPU_FTR_LOCKLESS_TLBIE | \
+ 	    CPU_FTR_PURR)
+-#define CPU_FTRS_POWER6 (CPU_FTR_USE_TB | \
++#define CPU_FTRS_POWER6 (CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
+ 	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
+ 	    CPU_FTR_MMCRA | CPU_FTR_SMT | \
+ 	    CPU_FTR_COHERENT_ICACHE | CPU_FTR_LOCKLESS_TLBIE | \
+ 	    CPU_FTR_PURR | CPU_FTR_SPURR | CPU_FTR_REAL_LE | \
+ 	    CPU_FTR_DSCR)
+-#define CPU_FTRS_POWER7 (CPU_FTR_USE_TB | \
++#define CPU_FTRS_POWER7 (CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
+ 	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
+ 	    CPU_FTR_MMCRA | CPU_FTR_SMT | \
+ 	    CPU_FTR_COHERENT_ICACHE | CPU_FTR_LOCKLESS_TLBIE | \
+ 	    CPU_FTR_PURR | CPU_FTR_SPURR | CPU_FTR_REAL_LE | \
+ 	    CPU_FTR_DSCR)
+-#define CPU_FTRS_CELL	(CPU_FTR_USE_TB | \
++#define CPU_FTRS_CELL	(CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
+ 	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
+ 	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_MMCRA | CPU_FTR_SMT | \
+ 	    CPU_FTR_PAUSE_ZERO | CPU_FTR_CI_LARGE_PAGE | CPU_FTR_CELL_TB_BUG)
+-#define CPU_FTRS_PA6T (CPU_FTR_USE_TB | \
++#define CPU_FTRS_PA6T (CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
+ 	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | \
+ 	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_CI_LARGE_PAGE | \
+ 	    CPU_FTR_PURR | CPU_FTR_REAL_LE | CPU_FTR_NO_SLBIE_B)
+diff --git a/include/asm-powerpc/feature-fixups.h b/include/asm-powerpc/feature-fixups.h
+index ab30129..a102996 100644
+--- a/include/asm-powerpc/feature-fixups.h
++++ b/include/asm-powerpc/feature-fixups.h
+@@ -113,4 +113,14 @@ label##5:					       	\
+
+ #endif /* __ASSEMBLY__ */
+
++/* LWSYNC feature sections */
++#define START_LWSYNC_SECTION(label)	label##1:
++#define MAKE_LWSYNC_SECTION_ENTRY(label, sect)		\
++label##2:						\
++	.pushsection sect,"a";				\
++	.align 2;					\
++label##3:					       	\
++	.long label##1b-label##3b;			\
++	.popsection;
++
+ #endif /* __ASM_POWERPC_FEATURE_FIXUPS_H */
+diff --git a/include/asm-powerpc/synch.h b/include/asm-powerpc/synch.h
+index 42a1ef5..45963e8 100644
+--- a/include/asm-powerpc/synch.h
++++ b/include/asm-powerpc/synch.h
+@@ -3,34 +3,42 @@
+ #ifdef __KERNEL__
+
+ #include <linux/stringify.h>
++#include <asm/feature-fixups.h>
+
+-#if defined(__powerpc64__) || defined(CONFIG_PPC_E500MC)
+-#define __SUBARCH_HAS_LWSYNC
+-#endif
++#ifndef __ASSEMBLY__
++extern unsigned int __start___lwsync_fixup, __stop___lwsync_fixup;
++extern void do_lwsync_fixups(unsigned long value, void *fixup_start,
++			     void *fixup_end);
++
++static inline void eieio(void)
++{
++	__asm__ __volatile__ ("eieio" : : : "memory");
++}
++
++static inline void isync(void)
++{
++	__asm__ __volatile__ ("isync" : : : "memory");
++}
++#endif /* __ASSEMBLY__ */
+
+-#ifdef __SUBARCH_HAS_LWSYNC
++#if defined(__powerpc64__)
+ #    define LWSYNC	lwsync
++#elif defined(CONFIG_E500)
++#    define LWSYNC					\
++	START_LWSYNC_SECTION(96);			\
++	sync;						\
++	MAKE_LWSYNC_SECTION_ENTRY(96, __lwsync_fixup);
+ #else
+ #    define LWSYNC	sync
+ #endif
+
+ #ifdef CONFIG_SMP
+ #define ISYNC_ON_SMP	"\n\tisync\n"
+-#define LWSYNC_ON_SMP	__stringify(LWSYNC) "\n"
++#define LWSYNC_ON_SMP	stringify_in_c(LWSYNC) "\n"
+ #else
+ #define ISYNC_ON_SMP
+ #define LWSYNC_ON_SMP
+ #endif
+
+-static inline void eieio(void)
+-{
+-	__asm__ __volatile__ ("eieio" : : : "memory");
+-}
+-
+-static inline void isync(void)
+-{
+-	__asm__ __volatile__ ("isync" : : : "memory");
+-}
+-
+ #endif /* __KERNEL__ */
+ #endif	/* _ASM_POWERPC_SYNCH_H */
 -- 
 1.5.5.1
