@@ -1,21 +1,21 @@
-Return-Path: <tony@bakeyournoodle.com>
-Received: from pythia.bakeyournoodle.com (pythia.bakeyournoodle.com
-	[203.82.209.197]) by ozlabs.org (Postfix) with ESMTP id 2AF7ADDD0B
-	for <linuxppc-dev@ozlabs.org>; Tue,  1 Jul 2008 11:34:39 +1000 (EST)
-Date: Tue, 1 Jul 2008 11:34:38 +1000
-From: Tony Breeds <tony@bakeyournoodle.com>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Subject: Re: [BUILD-FAILURE] linux-next: Tree for June 30 - powerpc - build
-	failure at arch_add_memory()
-Message-ID: <20080701013438.GT20457@bakeyournoodle.com>
-References: <20080701001656.e156585c.sfr@canb.auug.org.au>
-	<486924FE.4090801@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <486924FE.4090801@linux.vnet.ibm.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-kbuild@vger.kernel.org,
-	LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
-	linux-next@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 540D0DDD0B
+	for <linuxppc-dev@ozlabs.org>; Tue,  1 Jul 2008 11:45:17 +1000 (EST)
+Subject: Re: Commits added to powerpc.git master and powerpc-next branches
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Paul Mackerras <paulus@samba.org>
+In-Reply-To: <18537.34789.355993.604857@cargo.ozlabs.ibm.com>
+References: <18537.30774.608486.268257@cargo.ozlabs.ibm.com>
+	<18537.34789.355993.604857@cargo.ozlabs.ibm.com>
+Content-Type: text/plain
+Date: Tue, 01 Jul 2008 11:45:10 +1000
+Message-Id: <1214876710.20711.69.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,23 +25,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Jun 30, 2008 at 11:55:02PM +0530, Kamalesh Babulal wrote:
-> Hi Stephen,
+On Tue, 2008-07-01 at 11:27 +1000, Paul Mackerras wrote:
+> Paul Mackerras writes:
 > 
-> next-20080630 kernel build fails on powerpc, with randconfig
+> > The following commits have been added to the master and powerpc-next
+> > branches of the powerpc.git repository.  This includes patches pulled
+> > from Kumar's and Josh's trees.
 > 
->   CC      arch/powerpc/mm/mem.o
-> arch/powerpc/mm/mem.c: In function ‘arch_add_memory’:
-> arch/powerpc/mm/mem.c:130: error: implicit declaration of function ‘create_section_mapping’
-> make[1]: *** [arch/powerpc/mm/mem.o] Error 1
-> make: *** [arch/powerpc/mm] Error 2
+> Hold off from pulling this for now, everyone...  I inadvertently broke
+> builds with 64k pages by leaving in some stuff that was purely for
+> testing in my "Only demote individual slices rather than whole
+> process" patch.  I'll re-do the tree in order to avoid breaking
+> bisection.
 
-This problem exists in in 2.6.26-rc8, so it's not specifially linux-next
-realted.  The patch at:
-http://patchwork.ozlabs.org/linuxppc/patch?id=19347
-should fix it but is un-ACK'd ;P
+Any chance to get my 4xx PTE rework in too ?
 
-Yours Tony
-
-  linux.conf.au    http://www.marchsouth.org/
-  Jan 19 - 24 2009 The Australian Linux Technical Conference!
+Cheers,
+Ben.
+ 
