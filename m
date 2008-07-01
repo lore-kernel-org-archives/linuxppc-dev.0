@@ -1,26 +1,11 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 60E6CDDF48
-	for <linuxppc-dev@ozlabs.org>; Tue,  1 Jul 2008 09:28:23 +1000 (EST)
-In-Reply-To: <20080630173008.d6762380.kim.phillips@freescale.com>
-References: <20080627115243.d76e0814.kim.phillips@freescale.com>
-	<fa686aa40806272229s795067d5he962c8a1750a260@mail.gmail.com>
-	<2b97f7566925ed86b78b364ff5724644@kernel.crashing.org>
-	<20080630110410.7ee097ed.kim.phillips@freescale.com>
-	<e590624fb4ff66d787a2fa3c44e00cbc@kernel.crashing.org>
-	<20080630131441.e9b9ac1c.kim.phillips@freescale.com>
-	<e07b0ce3c375e9418ac976256c731f03@kernel.crashing.org>
-	<20080630173008.d6762380.kim.phillips@freescale.com>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <f34059884cc9de85e6e0fe8a934ae06e@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH v2] update crypto node definition and device tree instances
-Date: Tue, 1 Jul 2008 01:27:58 +0200
-To: Kim Phillips <kim.phillips@freescale.com>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18537.30774.608486.268257@cargo.ozlabs.ibm.com>
+Date: Tue, 1 Jul 2008 10:20:06 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: linuxppc-dev@ozlabs.org
+Subject: Commits added to powerpc.git master and powerpc-next branches
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,92 +15,160 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> Yes.  As a side note, since there are multiple devices that contain
->> e.g. a sec-1.0, it would be prudent to describe the exact incarnation
->> in the device tree, like "mpc8272-sec" or something, in either "model"
->
-> but 'fsl,sec-X.Y' /does/ describe the exact incarnation,
+The following commits have been added to the master and powerpc-next
+branches of the powerpc.git repository.  This includes patches pulled
+from Kumar's and Josh's trees.
 
-No it doesn't.  If it's on a different SoC, it can have different
-bugs.  It might be _meant_ to be exactly the same, but that's not
-the same thing.
+Paul.
 
-> whereas
-> 'fsl,mpc8349-sec' /does not/.  "fsl,mpc8349-sec' might mean the SEC 2.1
-> or the SEC 2.4, it depends on the revision of the mpc8349.
+Adrian Bunk (3):
+      drivers/macintosh: Various cleanups
+      powerpc: Don't export asm/asm-compat.h to userspace
+      powerpc: asm/elf.h: Reduce userspace header
 
-Oh, nasty.  That just means you'll need to put the revision of
-the 8349 in there as well, though -- "fsl,mpc8349-rev2-sec" or
-something.
+Andrew Lewis (1):
+      powerpc: Prevent memory corruption due to cache invalidation of unaligned DMA buffer
 
->> or "compatible", just in case a problem shows up with one of them.
->
-> I thought 'model' was superseded by 'compatible';
+Andy Whitcroft (1):
+      powerpc: Add 64 bit version of huge_ptep_set_wrprotect
 
-"model" is still a valid property.  "model" shouldn't be needed
-to find which device driver to use, but any specific device driver
-can use it just fine.
+Anton Vorontsov (9):
+      powerpc/sysdev: implement FSL GTM support
+      powerpc/QE: add support for QE USB clocks routing
+      powerpc/QE: prepare QE PIO code for GPIO LIB support
+      powerpc/QE: implement support for the GPIO LIB API
+      powerpc/83xx: new board support: MPC8360E-RDK
+      powerpc/QE: switch to the cpm_muram implementation
+      powerpc/QE: qe_reset should be __init
+      powerpc/QE: use arch_initcall to probe QUICC Engine GPIOs
+      powerpc: Implement OF PCI address accessors stubs for CONFIG_PCI=n
 
-> that's why it's taken out here, along with device_type.
+Arnd Bergmann (4):
+      powerpc: Provide dummy crash_shutdown_register
+      powerpc/pseries: Call pseries_kexec_setup only on pseries
+      powerpc/cell: Disable ptcal in case of crash kdump
+      powerpc: Increase CRASH_HANDLER_MAX
 
-"device_type" simply isn't useful for flat device trees (in pretty
-much all cases), since it describes the OF programming model of a
-device, and almost none of that applies to flat trees.  So yeah,
-taking that out is a good thing (esp. in a case like this, where
-it isn't defined anywhere what device_type "crypto" means).
+Bart Van Assche (1):
+      powerpc: Make sure that include/asm-powerpc/spinlock.h does not trigger compilation warnings
 
->>>> I can't find a manual online for "freescale sec"; googling
->>>> for "freescale sec-1.0" finds a manual for the PowerQUICC I;
->>>> is that the right one?  I don't know, so the binding needs
->>>> to explain it to me.
->>>
->>> the binding shouldn't be responsible for google's shortcomings
->>
->> The binding needs to describe what device it is for.  I am a stupid
->> user, just like most users, so if the binding doesn't tell me I turn
->> to google.  Don't blame them for not finding it; the binding should
->> have told me in the first place!
->
-> Again, I don't see how google's results are pertinent in this
-> discussion.
+Becky Bruce (3):
+      powerpc: Silly spelling fix in pgtable-ppc32
+      powerpc: Change BAT code to use phys_addr_t
+      powerpc: Get rid of bitfields in ppc_bat struct
 
-It's not about google.  It's about a user who needs to find out
-what a certain "compatible" entry means, or who needs to find out
-what value to use for a certain device.
+Benjamin Herrenschmidt (1):
+      powerpc: Free a PTE bit on ppc64 with 64K pages
 
-> btw, the title for the binding is:
->
->   g) Freescale SOC SEC Security Engines
->
-> Is that what you are looking for?
+Bernhard Walle (1):
+      powerpc: Remove experimental status of kdump on 64-bit powerpc
 
-I'm not looking for the binding, I know where it is, thanks; I'm
-looking for information in the binding that tells me what "compatible"
-value means what.
+Daniel Walker (2):
+      macintosh/therm_windtunnel: Convert semaphore to mutex
+      macintosh/media bay: Convert semaphore to mutex
 
-> If not, what precisely?  a list of
-> all the parts?  There's an SEC in every mpc8[35]xxE!
+Dave Kleikamp (1):
+      powerpc: hash_huge_page() should get the WIMG bits from the lpte
 
-You could do a list of all, sure.  You could also say what a
-"compatible" value looks like, and give some representative
-examples.
+Giuseppe Coviello (2):
+      powerpc/4xx: Sam440ep support
+      powerpc/4xx: Convert Sam440ep DTS to dts-v1
 
->> The binding at a minimum should describe how to identify each
->> unique version from the device tree, no matter how miniscule
->> those differences are.  Just a specific "compatible" value will
->> do.
->
-> I'm at a loss; isn't that what this patch does?
+Imre Kaloz (1):
+      powerpc/4xx: MTD support for the AMCC Taishan Board
 
-I lost the patch, sorry.  I came into this thread at the point where
-Grant said that "fsl,sec1.0" is a horrible "compatible" value.
+Jerone Young (1):
+      powerpc/booke: Fix definitions for dbcr[1-2] and dbsr registers
 
-> Currently the driver matches on "fsl,sec2.0", and if needs be, will
-> call of_device_is_compatible with the version number that introduces
-> the feature it wants to implement.
+Joel Schopp (2):
+      powerpc: Add cputable entry for Power7 architected mode
+      powerpc: Tell firmware we support architecture V2.06
 
-That's okay I suppose.  Each device tree still should put the exact
-version of the chip in there as well.
+Josh Boyer (2):
+      Revert "[POWERPC] 4xx: Fix 460GT support to not enable FPU"
+      powerpc/4xx: Workaround for PPC440EPx/GRx PCI_28 Errata
 
+Julia Lawall (1):
+      drivers/macintosh/smu.c: Improve error handling
 
-Segher
+Kumar Gala (12):
+      powerpc/booke: Fix some comments related to debug level exceptions
+      powerpc/booke: Add support for new e500mc core
+      powerpc/85xx: add DOZE/NAP support for e500 core
+      powerpc/e500mc: flush L2 on NAP for e500mc
+      cpm_uart: fix whitespace issues
+      cpm_uart: Remove !CONFIG_PPC_CPM_NEW_BINDING code
+      powerpc/cpm: Remove !CONFIG_PPC_CPM_NEW_BINDING code
+      powerpc/kprobes: Some minor fixes
+      powerpc/booke: Add kprobes support for booke style processors
+      powerpc: Add dma nodes to 83xx, 85xx and 86xx boards
+      powerpc: Move common module code into its own file
+      powerpc/bootwrapper: Pad .dtb by default
+
+Michael Ellerman (14):
+      powerpc: Move code patching code into arch/powerpc/lib/code-patching.c
+      powerpc: Allow create_branch() to return errors
+      powerpc: Make create_branch() return errors if the branch target is too large
+      powerpc: Add ppc_function_entry() which gets the entry point for a function
+      powerpc: Add new code patching routines
+      powerpc: Add tests of the code patching routines
+      powerpc: Add PPC_NOP_INSTR, a hash define for the preferred nop instruction
+      powerpc: Split out do_feature_fixups() from cputable.c
+      powerpc: Consolidate CPU and firmware feature fixup macros
+      powerpc: Consolidate feature fixup macros for 64/32 bit
+      powerpc: Introduce infrastructure for feature sections with alternatives
+      powerpc: Add logic to patch alternative feature sections
+      powerpc: Add self-tests of the feature fixup code
+      powerpc: Use an alternative feature section in entry_64.S
+
+Michael Neuling (10):
+      powerpc: Add cputable entry for POWER7
+      powerpc: Fix MSR setting in 32 bit signal code
+      powerpc: Add macros to access floating point registers in thread_struct.
+      powerpc: Move altivec_unavailable
+      powerpc: Make load_up_fpu and load_up_altivec callable
+      powerpc: Introduce VSX thread_struct and CONFIG_VSX
+      powerpc: Add VSX CPU feature
+      powerpc: Add VSX assembler code macros
+      powerpc: Add VSX context save/restore, ptrace and signal support
+      powerpc: Add CONFIG_VSX config option
+
+Nick Piggin (2):
+      powerpc: Optimise smp_wmb on 64-bit processors
+      spufs: Convert nopfn to fault
+
+Paul Mackerras (1):
+      powerpc: Only demote individual slices rather than whole process
+
+Scott Wood (1):
+      powerpc: Fix copy-and-paste error in clrsetbits_le16
+
+Segher Boessenkool (1):
+      powerpc: Get rid of CROSS32{AS,LD,OBJCOPY}
+
+Stefan Roese (1):
+      powerpc/4xx: PCIe driver now detects if a port is disabled via the dev-tree
+
+Stephen Rothwell (7):
+      viotape: Use unlocked_ioctl
+      pasemi-rng: Use linux/of_platform.h instead of asm
+      hwmon: Use linux/of_platform.h instead of asm
+      macintosh: Use linux/of_{device,platform}.h instead of asm
+      drivers/net: Use linux/of_{device,platform}.h instead of asm
+      pcmcia: Use linux/of_{device,platform}.h instead of asm
+      powerpc: Explicitly copy elements of pt_regs
+
+Tony Breeds (1):
+      powerpc: Change the default link address for pSeries zImage kernels
+
+Valentine Barshak (1):
+      powerpc/4xx: Fix resource issue in warp-nand.c
+
+Vitaly Bordug (1):
+      powerpc/85xx: Update pin setup for 8560ads
+
+Wolfgang Grandegger (4):
+      powerpc/85xx: correct vendor prefix in DTS files for TQM85xx modules
+      powerpc/85xx: add board support for the TQM8548 modules
+      powerpc/85xx: support for the TQM8548 module using the big Flash
+      powerpc/85xx: add local bus nodes for Flash and CAN to tqm8560.dts
