@@ -1,17 +1,19 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from wf-out-1314.google.com (wf-out-1314.google.com [209.85.200.171])
-	by ozlabs.org (Postfix) with ESMTP id 34AD4DDEF2
-	for <linuxppc-dev@ozlabs.org>; Wed,  2 Jul 2008 07:12:11 +1000 (EST)
-Received: by wf-out-1314.google.com with SMTP id 24so69198wfg.15
-	for <linuxppc-dev@ozlabs.org>; Tue, 01 Jul 2008 14:12:10 -0700 (PDT)
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH] powerpc/mpc5200: Fix lite5200b suspend/resume
-To: linuxppc-dev@ozlabs.org, plasm@roo.me.uk
-Date: Tue, 01 Jul 2008 15:12:02 -0600
-Message-ID: <20080701211033.13852.31692.stgit@trillian.secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.246])
+	by ozlabs.org (Postfix) with ESMTP id BBD2ADDF77
+	for <linuxppc-dev@ozlabs.org>; Wed,  2 Jul 2008 08:04:40 +1000 (EST)
+Received: by an-out-0708.google.com with SMTP id c34so18812anc.78
+	for <linuxppc-dev@ozlabs.org>; Tue, 01 Jul 2008 15:04:38 -0700 (PDT)
+Message-ID: <fa686aa40807011504i5e09e7f1r1f00bb7450b9a9d8@mail.gmail.com>
+Date: Tue, 1 Jul 2008 16:04:37 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Josh Boyer" <jwboyer@linux.vnet.ibm.com>,
+	"Paul Mackerras" <paulus@samba.org>,
+	linuxppc-dev <linuxppc-dev@ozlabs.org>, "John Linn" <John.Linn@xilinx.com>
+Subject: Please pull into 2.6.26
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Sender: Grant Likely <glikely@secretlab.ca>
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,94 +23,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Tim Yamin <plasm@roo.me.uk>
+Hi Josh & Paul,
 
-Suspend/resume ("echo mem > /sys/power/state") does not work with
-vanilla kernels -- the system does not suspend correctly and just
-hangs. This patch fixes this so suspend/resume works:
+Here are a couple of last minute bug fixes for 2.6.26.  These are both
+Xilinx 4xx related.
 
-1) of_iomap does not map the whole 0xC000 of the MPC5200 immr so
-saving registers does not work.
-2) PCI registers need to be saved and restored.
+Could either of you please pull the tree?
 
-Signed-off-by: Tim Yamin <plasm@roo.me.uk>
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
----
-
-Tim, please test this version.  I fixed a couple of bugs and want to make
-sure I haven't broken anything.  Once you ack it I'll ask Paul to pull it
-into 2.6.26.
-
+Thanks,
 g.
 
- arch/powerpc/platforms/52xx/lite5200_pm.c |   14 +++++++++++++-
- 1 files changed, 13 insertions(+), 1 deletions(-)
+The following changes since commit 1702b52092e9a6d05398d3f9581ddc050ef00d06:
+  Linus Torvalds (1):
+        Merge git://git.kernel.org/.../mchehab/v4l-dvb
 
-diff --git a/arch/powerpc/platforms/52xx/lite5200_pm.c b/arch/powerpc/platforms/52xx/lite5200_pm.c
-index 41c7fd9..fe92e65 100644
---- a/arch/powerpc/platforms/52xx/lite5200_pm.c
-+++ b/arch/powerpc/platforms/52xx/lite5200_pm.c
-@@ -14,6 +14,7 @@ static struct mpc52xx_sdma __iomem *bes;
- static struct mpc52xx_xlb __iomem *xlb;
- static struct mpc52xx_gpio __iomem *gps;
- static struct mpc52xx_gpio_wkup __iomem *gpw;
-+static void __iomem *pci;
- static void __iomem *sram;
- static const int sram_size = 0x4000;	/* 16 kBytes */
- static void __iomem *mbar;
-@@ -50,6 +51,8 @@ static int lite5200_pm_prepare(void)
- 		{ .type = "builtin", .compatible = "mpc5200", }, /* efika */
- 		{}
- 	};
-+	u64 regaddr64 = 0;
-+	const u32 *regaddr_p;
- 
- 	/* deep sleep? let mpc52xx code handle that */
- 	if (lite5200_pm_target_state == PM_SUSPEND_STANDBY)
-@@ -60,8 +63,12 @@ static int lite5200_pm_prepare(void)
- 
- 	/* map registers */
- 	np = of_find_matching_node(NULL, immr_ids);
--	mbar = of_iomap(np, 0);
-+	regaddr_p = of_get_address(np, 0, NULL, NULL);
-+	if (regaddr_p)
-+		regaddr64 = of_translate_address(np, regaddr_p);
- 	of_node_put(np);
-+
-+	mbar = ioremap((u32) regaddr64, 0xC000);
- 	if (!mbar) {
- 		printk(KERN_ERR "%s:%i Error mapping registers\n", __func__, __LINE__);
- 		return -ENOSYS;
-@@ -71,6 +78,7 @@ static int lite5200_pm_prepare(void)
- 	pic = mbar + 0x500;
- 	gps = mbar + 0xb00;
- 	gpw = mbar + 0xc00;
-+	pci = mbar + 0xd00;
- 	bes = mbar + 0x1200;
- 	xlb = mbar + 0x1f00;
- 	sram = mbar + 0x8000;
-@@ -85,6 +93,7 @@ static struct mpc52xx_sdma sbes;
- static struct mpc52xx_xlb sxlb;
- static struct mpc52xx_gpio sgps;
- static struct mpc52xx_gpio_wkup sgpw;
-+static char spci[0x200];
- 
- static void lite5200_save_regs(void)
- {
-@@ -94,6 +103,7 @@ static void lite5200_save_regs(void)
- 	_memcpy_fromio(&sxlb, xlb, sizeof(*xlb));
- 	_memcpy_fromio(&sgps, gps, sizeof(*gps));
- 	_memcpy_fromio(&sgpw, gpw, sizeof(*gpw));
-+	_memcpy_fromio(spci, pci, 0x200);
- 
- 	_memcpy_fromio(saved_sram, sram, sram_size);
- }
-@@ -103,6 +113,8 @@ static void lite5200_restore_regs(void)
- 	int i;
- 	_memcpy_toio(sram, saved_sram, sram_size);
- 
-+	/* PCI Configuration */
-+	_memcpy_toio(pci, spci, 0x200);
- 
- 	/*
- 	 * GPIOs. Interrupt Master Enable has higher address then other
+are available in the git repository at:
+
+  git://git.secretlab.ca/git/linux-2.6-virtex.git virtex-for-2.6.26
+
+John Linn (2):
+      powerpc/bootwrapper: update for initrd with simpleImage
+      powerpc/legacy_serial: Bail if reg-offset/shift properties are present
+
+ arch/powerpc/boot/Makefile          |    3 ++-
+ arch/powerpc/kernel/legacy_serial.c |    5 +++++
+ 2 files changed, 7 insertions(+), 1 deletions(-)
+
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
