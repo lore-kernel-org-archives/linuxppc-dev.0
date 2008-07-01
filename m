@@ -1,11 +1,18 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 1/2] powerpc: Fix compile error for CONFIG_VSX 
-In-reply-to: <20080701040139.A6196702C9@localhost.localdomain> 
-References: <20080701040139.A6196702C9@localhost.localdomain>
-Date: Tue, 01 Jul 2008 14:51:29 +1000
-Message-ID: <29725.1214887889@neuling.org>
+Return-Path: <gerickson@nuovations.com>
+Received: from relay01.pair.com (relay01.pair.com [209.68.5.15])
+	by ozlabs.org (Postfix) with SMTP id 56125DDDF4
+	for <linuxppc-dev@ozlabs.org>; Tue,  1 Jul 2008 15:26:37 +1000 (EST)
+Date: Mon, 30 Jun 2008 22:26:32 -0700
+Subject: Re: [PATCH v2] Parameterize EMAC Multicast Match Handling
+From: Grant Erickson <gerickson@nuovations.com>
+To: Stefan Roese <sr@denx.de>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Message-ID: <C48F0E18.101F1%gerickson@nuovations.com>
+In-Reply-To: <1214352498-12527-1-git-send-email-gerickson@nuovations.com>
+Mime-version: 1.0
+Content-type: text/plain;
+	charset="US-ASCII"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,41 +22,77 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-
-In message <20080701040139.A6196702C9@localhost.localdomain> you wrote:
-> Fix compile error when CONFIG_VSX is enabled.
+On 6/24/08 5:08 PM, Grant Erickson wrote:
+> Various instances of the EMAC core have varying: 1) number of address
+> match slots, 2) width of the registers for handling address match slots,
+> 3) number of registers for handling address match slots and 4) base
+> offset for those registers.
 > 
-> arch/powerpc/kernel/signal_64.c: In function 'restore_sigcontext':
-> arch/powerpc/kernel/signal_64.c:241: error: 'i' undeclared (first use in this
- function)
-
-FYI.. this was caused by a merge conflict with sfr's patch
-fcbc5a976b1cafe2e866871c86d239d57503bfd5
-
-Mikey
-
+> As the driver stands today, it assumes that all EMACs have 4 IAHT and
+> GAHT 32-bit registers, starting at offset 0x30 from the register base,
+> with only 16-bits of each used for a total of 64 match slots.
 > 
-> Signed-off-by: Michael Neuling <mikey@neuling.org>
+> The 405EX(r) and 460 now use the EMAC4SYNC core rather than the EMAC4
+> core. This core has 8 IAHT and GAHT registers, starting at offset 0x80
+> from the register base, with ALL 32-bits of each used for a total of
+> 256 match slots.
+> 
+> This adds macros and inlines for handling these differences based on
+> three parameters parsed from the device tree:
+> 
+> xaht-slots-shift
+> xaht-width-shift
+> xaht-base-offset
+> 
+> and reworks the code, where appropriate to use those macros and inlines.
+> EMAC/EMAC4 values are defaulted for these keys if missing, resulting in
+> a driver that works as today's does for all cores.
+> 
+> In addition the register size passed to ioremap is now taken from the
+> device tree:
+> 
+> c0 for EMAC4SYNC cores
+> 74 for EMAC4 cores
+> 70 for EMAC cores
+> 
+> rathaer than sizeof (emac_regs).
+> 
+> Finally, the device trees have been updated with the appropriate xaht-*
+> keys and values.
+> 
+> This has been tested on an AMCC Haleakala board such that: 1) inbound
+> ICMP requests to 'haleakala.local' via MDNS from both Mac OS X 10.4.11
+> and Ubuntu 8.04 systems as well as 2) outbound ICMP requests from
+> 'haleakala.local' to those same systems in the '.local' domain via MDNS
+> now work.
+> 
+> Signed-off-by: Grant Erickson <gerickson@nuovations.com>
 > ---
-> 
->  arch/powerpc/kernel/signal_64.c |    1 +
->  1 file changed, 1 insertion(+)
-> 
-> Index: linux-2.6-ozlabs/arch/powerpc/kernel/signal_64.c
-> ===================================================================
-> --- linux-2.6-ozlabs.orig/arch/powerpc/kernel/signal_64.c
-> +++ linux-2.6-ozlabs/arch/powerpc/kernel/signal_64.c
-> @@ -167,6 +167,7 @@ static long restore_sigcontext(struct pt
->  #endif
->  #ifdef CONFIG_VSX
->  	double buf[FP_REGS_SIZE];
-> +	int i;
->  #endif
->  	unsigned long err = 0;
->  	unsigned long save_r13 = 0;
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
-> 
+>  arch/powerpc/boot/dts/bamboo.dts      |    6 +++
+>  arch/powerpc/boot/dts/canyonlands.dts |   10 ++++-
+>  arch/powerpc/boot/dts/ebony.dts       |    6 +++
+>  arch/powerpc/boot/dts/ep405.dts       |    3 ++
+>  arch/powerpc/boot/dts/glacier.dts     |   20 +++++++++--
+>  arch/powerpc/boot/dts/haleakala.dts   |    5 ++-
+>  arch/powerpc/boot/dts/katmai.dts      |    5 ++-
+>  arch/powerpc/boot/dts/kilauea.dts     |   10 ++++-
+>  arch/powerpc/boot/dts/makalu.dts      |   10 ++++-
+>  arch/powerpc/boot/dts/rainier.dts     |   10 ++++-
+>  arch/powerpc/boot/dts/sequoia.dts     |   10 ++++-
+>  arch/powerpc/boot/dts/taishan.dts     |   20 +++++++++--
+>  arch/powerpc/boot/dts/walnut.dts      |    3 ++
+>  arch/powerpc/boot/dts/warp.dts        |    3 ++
+>  drivers/net/ibm_newemac/core.c        |   55 +++++++++++++++++++----------
+>  drivers/net/ibm_newemac/core.h        |   61
+> +++++++++++++++++++++++++++++++++
+>  drivers/net/ibm_newemac/debug.c       |   32 +++++++++++------
+>  drivers/net/ibm_newemac/emac.h        |   15 +-------
+>  18 files changed, 219 insertions(+), 65 deletions(-)
+
+Stefan and/or Ben:
+
+Any thoughts on this?
+
+Regards,
+
+Grant
