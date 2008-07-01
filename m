@@ -1,19 +1,19 @@
-Return-Path: <John.Linn@xilinx.com>
-Received: from IE1EHSOBE002.bigfish.com (outbound-dub.frontbridge.com
-	[213.199.154.16]) by ozlabs.org (Postfix) with ESMTP id 718A8DDE0A
-	for <linuxppc-dev@ozlabs.org>; Wed,  2 Jul 2008 02:52:28 +1000 (EST)
+Return-Path: <jonsmirl@gmail.com>
+Message-ID: <9e4733910807011000t67e3abe5kb39302e911558dad@mail.gmail.com>
+Date: Tue, 1 Jul 2008 13:00:08 -0400
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: "Grant Likely" <grant.likely@secretlab.ca>
+Subject: Re: [PATCH 2/2] Add the of_find_i2c_device_by_node function, V4
+In-Reply-To: <20080701164329.GF6918@secretlab.ca>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Subject: RE: [PATCH] powerpc: legacy_serial: reg-offset & shift aren't used
-Date: Tue, 1 Jul 2008 10:52:20 -0600
-In-Reply-To: <977C41F842E66D4CB2E41332313B6150062A2DB4@XSJ-EXCHVS1.xlnx.xilinx.com>
-References: <12149299143952-git-send-email-john.linn@xilinx.com>
-	<977C41F842E66D4CB2E41332313B6150062A2DB4@XSJ-EXCHVS1.xlnx.xilinx.com>
-From: John Linn <John.Linn@xilinx.com>
-To: "Stephen Neuendorffer" <stephenn@xilinx.com>, <linuxppc-dev@ozlabs.org>,
-	<grant.likely@secretlab.ca>, <paulus@samba.org>,
-	<benh@kernel.crashing.org>, <dwg@au1.ibm.com>, <jwboyer@linux.vnet.ibm.com>
-Message-ID: <20080701165222.991255E0054@mail197-dub.bigfish.com>
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20080630230126.12482.87927.stgit@terra>
+	<20080630230128.12482.79570.stgit@terra>
+	<20080701170544.72051418@hyperion.delvare>
+	<9e4733910807010812h30e49144v5b3012e6c156ecca@mail.gmail.com>
+	<20080701164329.GF6918@secretlab.ca>
+Cc: Jean Delvare <khali@linux-fr.org>, Linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>, i2c@lm-sensors.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,86 +23,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-It could be "||" but I didn't know if there were cases where that
-wouldn't be true. I don't know that code that well so I was being
-conservative and maybe shouldn't be. =
+On 7/1/08, Grant Likely <grant.likely@secretlab.ca> wrote:
+> On Tue, Jul 01, 2008 at 11:12:58AM -0400, Jon Smirl wrote:
+>  > On 7/1/08, Jean Delvare <khali@linux-fr.org> wrote:
+>  > > I'm fine with this patch. In particular, exporting i2c_bus_type is OK.
+>  > >  It was un-exported only because it had no user left, but it can be
+>  > >  exported again if needed.
+>  >
+>  > Another solution would be to move drivers/of/of_i2c into the i2c
+>  > directory and make it part of i2c core on powerpc builds.
+>
+>
+> My preference is for things like of_spi and of_i2c to go with the
+>  related busses; I think it makes more sense to keep all the I2C stuff
+>  together, but I've already lost that battle once.
+>
+
+This is a similar problem to adding aliases to the i2c driver drivers
+for the device tree names of the i2c devices. Instead we have code in
+drivers/of/of_i2c.c that tries to guess the translation from device
+tree to linux names. Adding aliases to the drivers would eliminate the
+need for of_find_i2c_driver().
+
+I've previously posted patches implementing device tree names in the
+drivers that used ifdef to only instantiate on powerpc builds. For
+example....
+
+diff --git a/drivers/i2c/chips/tps65010.c b/drivers/i2c/chips/tps65010.c
+index e07274d..9cd1770 100644
+--- a/drivers/i2c/chips/tps65010.c
++++ b/drivers/i2c/chips/tps65010.c
+@@ -571,6 +571,10 @@ static const struct i2c_device_id tps65010_id[] = {
+        { "tps65011", TPS65011 },
+        { "tps65012", TPS65012 },
+        { "tps65013", TPS65013 },
++       OF_ID("ti,tps65010", TPS65010)
++       OF_ID("ti,tps65011", TPS65011)
++       OF_ID("ti,tps65012", TPS65012)
++       OF_ID("ti,tps65013", TPS65013)
+        { },
+ };
+ MODULE_DEVICE_TABLE(i2c, tps65010_id);
 
 
-Our specific case works fine with "&&" since we have both in the device
-tree.  =
-
-
--- John
-
------Original Message-----
-From: Stephen Neuendorffer =
-
-Sent: Tuesday, July 01, 2008 10:48 AM
-To: John Linn; linuxppc-dev@ozlabs.org; grant.likely@secretlab.ca;
-paulus@samba.org; benh@kernel.crashing.org; dwg@au1.ibm.com;
-jwboyer@linux.vnet.ibm.com
-Subject: RE: [PATCH] powerpc: legacy_serial: reg-offset & shift aren't
-used
-
-
-
-> -----Original Message-----
-> From: John Linn [mailto:john.linn@xilinx.com]
-> Sent: Tuesday, July 01, 2008 9:32 AM
-> To: linuxppc-dev@ozlabs.org; grant.likely@secretlab.ca;
-paulus@samba.org; benh@kernel.crashing.org;
-> dwg@au1.ibm.com; jwboyer@linux.vnet.ibm.com; Stephen Neuendorffer
-> Cc: John Linn
-> Subject: [PATCH] powerpc: legacy_serial: reg-offset & shift aren't
-used
-> =
-
-> The legacy serial driver does not work with an 8250
-> type UART that uses reg-offset and reg-shift. This
-> change updates the driver so it doesn't find the UART
-> when those properties are present on the UART in the
-> device tree for soc devices.
-> =
-
-> Signed-off-by: John Linn <john.linn@xilinx.com>
-> Acked-by: Grant Likely <grant.likely@secretlab.ca>
-> ---
-> =
-
->  arch/powerpc/kernel/legacy_serial.c |    5 +++++
->  1 files changed, 5 insertions(+), 0 deletions(-)
-> =
-
-> diff --git a/arch/powerpc/kernel/legacy_serial.c
-b/arch/powerpc/kernel/legacy_serial.c
-> index 61dd174..b43235f 100644
-> --- a/arch/powerpc/kernel/legacy_serial.c
-> +++ b/arch/powerpc/kernel/legacy_serial.c
-> @@ -136,6 +136,11 @@ static int __init add_legacy_soc_port(struct
-device_node *np,
->  	if (of_get_property(np, "clock-frequency", NULL) =3D=3D NULL)
->  		return -1;
-> =
-
-> +	/* if reg-shift and offset, don't try to use it */
-> +	if ((of_get_property(np, "reg-shift", NULL) !=3D NULL) &&
-> +		(of_get_property(np, "reg-offset", NULL) !=3D NULL))
-> +		return -1;
-
-Um, shouldn't this be || ?
-
-> +
->  	/* if rtas uses this device, don't try to use it as well */
->  	if (of_get_property(np, "used-by-rtas", NULL) !=3D NULL)
->  		return -1;
-> --
-> 1.5.2.1
-> =
-
-
-
-This email and any attachments are intended for the sole use of the named r=
-ecipient(s) and contain(s) confidential information that may be proprietary=
-, privileged or copyrighted under applicable law. If you are not the intend=
-ed recipient, do not read, copy, or forward this email message or any attac=
-hments. Delete this email message and any attachments immediately.
+-- 
+Jon Smirl
+jonsmirl@gmail.com
