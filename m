@@ -1,19 +1,18 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id F1E42DE0BD
-	for <linuxppc-dev@ozlabs.org>; Tue,  1 Jul 2008 17:19:49 +1000 (EST)
-Date: Tue, 1 Jul 2008 17:19:40 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: David Miller <davem@davemloft.net>
-Subject: linux-next: manual merge of the net tree
-Message-Id: <20080701171940.6f282113.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Tue__1_Jul_2008_17_19_40_+1000_o7xw.kT+YcDiOhly"
-Cc: linuxppc-dev@ozlabs.org, linux-next@vger.kernel.org,
-	Paul Mackerras <paulus@samba.org>, Jason Jin <Jason.jin@freescale.com>,
-	Jeff Garzik <jgarzik@redhat.com>
+Return-Path: <andre.schwarz@matrix-vision.de>
+Received: from p15137414.pureserver.info (matrixvision.de [217.160.213.229])
+	by ozlabs.org (Postfix) with ESMTP id 35764DDF6B
+	for <linuxppc-dev@ozlabs.org>; Tue,  1 Jul 2008 17:45:42 +1000 (EST)
+Message-ID: <4869E09E.5000108@matrix-vision.de>
+Date: Tue, 01 Jul 2008 09:45:34 +0200
+From: =?UTF-8?B?QW5kcsOpIFNjaHdhcno=?= <andre.schwarz@matrix-vision.de>
+MIME-Version: 1.0
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: MPC83xx ipic problem
+References: <4868FCE9.1060103@matrix-vision.de>
+	<48692E18.9050500@freescale.com>
+In-Reply-To: <48692E18.9050500@freescale.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linux-ppc list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,38 +22,63 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Tue__1_Jul_2008_17_19_40_+1000_o7xw.kT+YcDiOhly
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Scott,
 
-Hi Dave,
+thanks for your reply.
 
-Today's linux-next merge of the net tree got a conflict in  between
-commits aee1dc73b519227084d77b0b2fc972b68b4153d8 ("[POWERPC] Update
-booting-without-of for Freescale PCIe MSI") and
-83ff9dcf375c418ca3b98eb950711525ca1269e2 ("powerpc/sysdev: implement FSL
-GTM support") from the powerpc tree and commit
-a5edeccb1a8432ae5d9fb9bccea5a4b64c565017 ("net: OpenFirmware GPIO based
-MDIO bitbang driver") from the net tree.
+Honestly I don't think the board wiring is incorrect.
+FPGA goes to IRQ0 and miniPCI is wired to IRQ1.
 
-They are just overlapping additions. I renumbered(?) the "MDIO on GPIOs"
-section to 'v'.
+Maybe there's a crosstalk problem since the pull-up resistors are=20
+packaged inside an array ... I'll check this.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
 
---Signature=_Tue__1_Jul_2008_17_19_40_+1000_o7xw.kT+YcDiOhly
-Content-Type: application/pgp-signature
+regards,
+Andr=C3=A9
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
 
-iEYEARECAAYFAkhp2owACgkQjjKRsyhoI8xVrQCfYGH7Yh0cdpkLisXntFeHC2d/
-sDUAn0fokTgC7nE4/pqxhq3GSI6i8kZn
-=oEkA
------END PGP SIGNATURE-----
+Scott Wood schrieb:
+> Andr=C3=A9 Schwarz wrote:
+>> There are two external PCI devices connected (FPGA + miniPCI socket).
+>> The FPGA is working fine and uses IRQ0 for its PCI_INTA line.
+>>
+>> As soon there's a miniPCI module present and the driver loaded=20
+>> (actually an ath5k WiFi module) the system complains after a while :
+>>
+>> irq 48: nobody cared
+>> handlers: .... location of the FPGA irq handler
+>> Disabling IRQ #48
+>>
+>> -> This is weird since the FPGA isn't working at all and IRQ0 is *not*=
+=20
+>> asserted !
+>=20
+> Are you *sure* that IRQ0 isn't asserted?  The IPIC seems to think it is=
+.
+>=20
+>> Of course the miniPCI irq is routed to a different pin on the CPU (IRQ=
+1).
+>=20
+> Perhaps the board wiring is incorrect?
+>=20
+>> interrupt-map =3D <0x5800 0 0 1 &ipic 0x30 0x8      -> FPGA @ IRQ0
+>>                  0x6000 0 0 1 &ipic 0x11 0x8      -> miniPCI INTA @ IR=
+Q1
+>>                  0x6000 0 0 2 &ipic 0x11 0x8>;    -> miniPCI INTB @ IR=
+Q1
+>>
+>> Is it legal to use a single irq pin twice ?
+>=20
+> Yes.
+>=20
+> -Scott
+>=20
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
 
---Signature=_Tue__1_Jul_2008_17_19_40_+1000_o7xw.kT+YcDiOhly--
+
+MATRIX VISION GmbH, Talstra=DFe 16, DE-71570 Oppenweiler  - Registergeric=
+ht: Amtsgericht Stuttgart, HRB 271090
+Gesch=E4ftsf=FChrer: Gerhard Thullner, Werner Armingeon, Uwe Furtner
