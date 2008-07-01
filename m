@@ -1,19 +1,16 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id 14019DDF4A
-	for <linuxppc-dev@ozlabs.org>; Wed,  2 Jul 2008 01:00:36 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: Maxim Shchetynin <maxim@linux.vnet.ibm.com>
-Subject: Re: AZFS file system proposal
-Date: Tue, 1 Jul 2008 16:59:32 +0200
-References: <20080618160629.6cd749a8@mercedes-benz.boeblingen.de.ibm.com>
-In-Reply-To: <20080618160629.6cd749a8@mercedes-benz.boeblingen.de.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Message-Id: <200807011659.33413.arnd@arndb.de>
-Cc: linux-fsdevel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	linux-kernel@vger.kernel.org
+Return-Path: <khali@linux-fr.org>
+Date: Tue, 1 Jul 2008 17:05:44 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Jon Smirl <jonsmirl@gmail.com>
+Subject: Re: [PATCH 2/2] Add the of_find_i2c_device_by_node function, V4
+Message-ID: <20080701170544.72051418@hyperion.delvare>
+In-Reply-To: <20080630230128.12482.79570.stgit@terra>
+References: <20080630230126.12482.87927.stgit@terra>
+	<20080630230128.12482.79570.stgit@terra>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	i2c@lm-sensors.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,158 +20,146 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 18 June 2008, Maxim Shchetynin wrote:
-> AZFS patch updated accordinly to comments of Christoph Hellwig and Dmitri Vorobiev.
+Hi Jon,
 
-Sorry for my not commenting earlier on this. I'm finally collecting my
-2.6.27 patches and stumbled over it again. There are a few details
-that I hope we can fix up quickly, other than that, it looks good now,
-great work!
+On Mon, 30 Jun 2008 19:01:28 -0400, Jon Smirl wrote:
+> Add the of_find_i2c_device_by_node function. This allows you to
+> follow a reference in the device to an i2c device node and then
+> locate the linux device instantiated by the device tree. Example
+> use, an i2s codec controlled by i2c.
+> ---
+> 
+>  drivers/i2c/i2c-core.c |    2 +-
+>  drivers/of/of_i2c.c    |   37 ++++++++++++++++++++++++++-----------
+>  include/linux/i2c.h    |    3 +++
+>  include/linux/of_i2c.h |    2 ++
+>  4 files changed, 32 insertions(+), 12 deletions(-)
+> 
+> diff --git a/drivers/i2c/i2c-core.c b/drivers/i2c/i2c-core.c
+> index d0175f4..e3abe1b 100644
+> --- a/drivers/i2c/i2c-core.c
+> +++ b/drivers/i2c/i2c-core.c
+> @@ -208,7 +208,7 @@ static struct device_attribute i2c_dev_attrs[] = {
+>  	{ },
+>  };
+>  
+> -static struct bus_type i2c_bus_type = {
+> +struct bus_type i2c_bus_type = {
+>  	.name		= "i2c",
+>  	.dev_attrs	= i2c_dev_attrs,
+>  	.match		= i2c_device_match,
 
-> Subject: azfs: initial submit of azfs, a non-buffered filesystem
- 
-Please make the patch subject the actual subject of your email next time,
-and put the introductory text below the Signed-off-by: lines, separated
-by a "---" line. That will make the standard tools work without extra
-effort on my side. Also, please always Cc the person you want to merge
-the patch, in this case probably me.
+What if i2c-core is built as a module? Don't you need to export the
+symbol then?
 
-> diff -Nuar linux-2.6.26-rc6/fs/Makefile linux-2.6.26-rc6-azfs/fs/Makefile
-> --- linux-2.6.26-rc6/fs/Makefile	2008-06-12 23:22:24.000000000 +0200
-> +++ linux-2.6.26-rc6-azfs/fs/Makefile	2008-06-16 11:17:50.000000000 +0200
-> @@ -119,3 +119,4 @@
->  obj-$(CONFIG_DEBUG_FS)		+= debugfs/
->  obj-$(CONFIG_OCFS2_FS)		+= ocfs2/
->  obj-$(CONFIG_GFS2_FS)           += gfs2/
-> +obj-$(CONFIG_AZ_FS)		+= azfs.o
-> diff -Nuar linux-2.6.26-rc6/fs/azfs.c linux-2.6.26-rc6-azfs/fs/azfs.c
-> --- linux-2.6.26-rc6/fs/azfs.c	1970-01-01 01:00:00.000000000 +0100
-> +++ linux-2.6.26-rc6-azfs/fs/azfs.c	2008-06-18 15:56:13.252266896 +0200
+> diff --git a/drivers/of/of_i2c.c b/drivers/of/of_i2c.c
+> index 715a444..ca69a16 100644
+> --- a/drivers/of/of_i2c.c
+> +++ b/drivers/of/of_i2c.c
+> @@ -75,7 +75,7 @@ static int of_find_i2c_driver(struct device_node *node,
+>  void of_register_i2c_devices(struct i2c_adapter *adap,
+>  			     struct device_node *adap_node)
+>  {
+> -	void *result;
+> +	struct i2c_client *i2c_dev;
+>  	struct device_node *node;
+>  
+>  	for_each_child_of_node(adap_node, node) {
+> @@ -90,29 +90,44 @@ void of_register_i2c_devices(struct i2c_adapter *adap,
+>  			continue;
+>  		}
+>  
+> -		info.irq = irq_of_parse_and_map(node, 0);
+> -		if (info.irq == NO_IRQ)
+> -			info.irq = -1;
+> -
+> -		if (of_find_i2c_driver(node, &info) < 0) {
+> -			irq_dispose_mapping(info.irq);
+> +		if (of_find_i2c_driver(node, &info) < 0)
+>  			continue;
+> -		}
+>  
+> +		info.irq = irq_of_parse_and_map(node, 0);
+>  		info.addr = *addr;
+>  
+> -		request_module(info.type);
+> +		request_module("%s", info.type);
 
-All other file systems are in separate directories, so it would be better
-to rename fs/azfs.c to fs/azfs/inode.c
+A separate fix for this issue was already sent by Maximilian Attems a
+few days go:
+http://lists.lm-sensors.org/pipermail/i2c/2008-June/004030.html
 
-> +#define AZFS_FILESYSTEM_NAME		"azfs"
-> +#define AZFS_FILESYSTEM_FLAGS		FS_REQUIRES_DEV
-> +
-> +#define AZFS_SUPERBLOCK_MAGIC		0xABBA1972
-> +#define AZFS_SUPERBLOCK_FLAGS		MS_NOEXEC | \
-> +					MS_SYNCHRONOUS | \
-> +					MS_DIRSYNC | \
-> +					MS_ACTIVE
-
-Why MS_NOEXEC? What happens on a remount if the user does not specifies
--o remount,exec?
-
-> +/**
-> + * azfs_block_find - get real address of a part of a file
-> + * @inode: inode
-> + * @direction: data direction
-> + * @from: offset for read/write operation
-> + * @size: pointer to a value of the amount of data to be read/written
-> + */
-> +static unsigned long
-> +azfs_block_find(struct inode *inode, enum azfs_direction direction,
-> +		unsigned long from, unsigned long *size)
+>  
+> -		result = i2c_new_device(adap, &info);
+> -		if (result == NULL) {
+> +		i2c_dev = i2c_new_device(adap, &info);
+> +		if (i2c_dev == NULL) {
+>  			printk(KERN_ERR
+>  			       "of-i2c: Failed to load driver for %s\n",
+>  			       info.type);
+>  			irq_dispose_mapping(info.irq);
+>  			continue;
+>  		}
+> +		
+> +		i2c_dev->dev.archdata.of_node = of_node_get(node);
+>  	}
+>  }
+>  EXPORT_SYMBOL(of_register_i2c_devices);
+>  
+> +static int of_dev_node_match(struct device *dev, void *data)
 > +{
-> +	struct azfs_super *super;
-> +	struct azfs_znode *znode;
-> +	struct azfs_block *block;
-> +	unsigned long block_id, west, east;
-> +
-> +	super = inode->i_sb->s_fs_info;
-> +	znode = I2Z(inode);
-> +
-> +	if (from + *size > znode->size) {
-> +		i_size_write(inode, from + *size);
-> +		inode->i_op->truncate(inode);
-> +	}
-> +
-> +	read_lock(&znode->lock);
-> +
-> +	if (list_empty(&znode->block_list)) {
-> +		read_unlock(&znode->lock);
-> +		return 0;
-> +	}
-> +
-> +	block_id = from >> super->block_shift;
-> +
-> +	for_each_block(block, &znode->block_list) {
-> +		if (block->count > block_id)
-> +			break;
-> +		block_id -= block->count;
-> +	}
-> +
-> +	west = from % super->block_size;
-> +	east = ((block->count - block_id) << super->block_shift) - west;
-> +
-> +	if (*size > east)
-> +		*size = east;
-> +
-> +	block_id = ((block->id + block_id) << super->block_shift) + west;
-> +
-> +	read_unlock(&znode->lock);
-> +
-> +	block_id += direction == AZFS_MMAP ? super->ph_addr : super->io_addr;
-> +
-> +	return block_id;
+> +        return dev->archdata.of_node == data;
 > +}
-
-This overloading of the return type to mean either a pointer or an offset
-on the block device is rather confusing. Why not just return the raw block_id
-before the last += and leave that part up to the caller?
-
-static void __iomem *
-azfs_block_addr(struct inode *inode, enum azfs_direction direction,
-		unsigned long from, unsigned long *size)
-{
-	struct azfs_super *super;
-	unsigned long offset;
-	void __iomem *p;
-
-	super = inode->i_sb->s_fs_info;
-	offset = azfs_block_find(inode, super, 0, from, size);
-	p = super->ph_addr + offset;
-
-	return p;
-}
-
-> +	target = iov->iov_base;
-> +	todo = min((loff_t) iov->iov_len, i_size_read(inode) - pos);
 > +
-> +	for (step = todo; step; step -= size) {
-> +		size = step;
-> +		pin = azfs_block_find(inode, AZFS_READ, pos, &size);
-> +		if (!pin) {
-> +			rc = -ENOSPC;
-> +			goto out;
-> +		}
-> +		if (copy_to_user(target, (void*) pin, size)) {
-> +			rc = -EFAULT;
-> +			goto out;
-> +		}
+> +struct i2c_client *of_find_i2c_device_by_node(struct device_node *node)
+> +{
+> +	struct device *dev;
+> +	
+> +	dev = bus_find_device(&i2c_bus_type, NULL, node, 
+> +					 of_dev_node_match);
+> +	if (!dev)
+> +		return NULL;
+> +		
+> +	return to_i2c_client(dev);
+> +}
+> +EXPORT_SYMBOL(of_find_i2c_device_by_node);
+> +
+>  MODULE_LICENSE("GPL");
+> diff --git a/include/linux/i2c.h b/include/linux/i2c.h
+> index fb9af6a..186b22d 100644
+> --- a/include/linux/i2c.h
+> +++ b/include/linux/i2c.h
+> @@ -92,6 +92,9 @@ extern s32 i2c_smbus_read_i2c_block_data(struct i2c_client * client,
+>  extern s32 i2c_smbus_write_i2c_block_data(struct i2c_client * client,
+>  					  u8 command, u8 length,
+>  					  const u8 *values);
+> +					  
+> +/* Base of the i2c bus */
+> +extern struct bus_type i2c_bus_type; 
+>  
+>  /*
+>   * A driver is capable of handling one or more physical devices present on
+> diff --git a/include/linux/of_i2c.h b/include/linux/of_i2c.h
+> index bd2a870..17d5897 100644
+> --- a/include/linux/of_i2c.h
+> +++ b/include/linux/of_i2c.h
+> @@ -16,5 +16,7 @@
+>  
+>  void of_register_i2c_devices(struct i2c_adapter *adap,
+>  			     struct device_node *adap_node);
+> +struct i2c_client *of_find_i2c_device_by_node(struct device_node *node);
+> +			     
+>  
+>  #endif /* __LINUX_OF_I2C_H */
 
-Question to the powerpc folks: is copy_to_user safe for an __iomem source?
-Should there be two copies (memcpy_fromio and copy_to_user) instead?
+I'm fine with this patch. In particular, exporting i2c_bus_type is OK.
+It was un-exported only because it had no user left, but it can be
+exported again if needed.
 
-> +	page_prot = pgprot_val(vma->vm_page_prot);
-> +	page_prot |= (_PAGE_NO_CACHE | _PAGE_RW);
-> +	page_prot &= ~_PAGE_GUARDED;
-> +	vma->vm_page_prot = __pgprot(page_prot);
+I'm not the one to push this upstream though, as the patch is
+essentially an openfirmware patch. That would be something for Jochen
+Friedrich and Paul Mackerras I guess. Would be nice to have a
+MAINTAINERS entry for OF...
 
-The pgprot modifications rely on powerpc specific flags, but the
-file system should not really need to be powerpc only.
-
-The flags we want are more or less the same as PAGE_AGP, because
-both are I/O mapped memory that needs to be uncached but should
-not be guarded, for performance reasons.
-
-Maybe we can introduce a new PAGE_IOMEM here that we can use
-in all places that need something like this. In spufs we need
-the same flags for the local store mappings.
-
-I wouldn't hold up merging the file system for this problem, but
-until it is solved, the Kconfig entry should probably have
-a "depends on PPC".
-
-	Arnd <><
+-- 
+Jean Delvare
