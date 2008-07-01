@@ -1,35 +1,18 @@
-Return-Path: <kamalesh@linux.vnet.ibm.com>
-Received: from e23smtp04.au.ibm.com (E23SMTP04.au.ibm.com [202.81.18.173])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp04.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id C6A5CDE252
-	for <linuxppc-dev@ozlabs.org>; Tue,  1 Jul 2008 18:04:20 +1000 (EST)
-Received: from sd0109e.au.ibm.com (d23rh905.au.ibm.com [202.81.18.225])
-	by e23smtp04.au.ibm.com (8.13.1/8.13.1) with ESMTP id m6183RhM017271
-	for <linuxppc-dev@ozlabs.org>; Tue, 1 Jul 2008 18:03:27 +1000
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
-	by sd0109e.au.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
-	m6184IOM161460
-	for <linuxppc-dev@ozlabs.org>; Tue, 1 Jul 2008 18:04:19 +1000
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
-	by d23av03.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m6184Ipx013915
-	for <linuxppc-dev@ozlabs.org>; Tue, 1 Jul 2008 18:04:18 +1000
-Message-ID: <4869E4FF.8030202@linux.vnet.ibm.com>
-Date: Tue, 01 Jul 2008 13:34:15 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Return-Path: <laurentp@cse-semaphore.com>
+Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
+	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id C1FDFDE15F
+	for <linuxppc-dev@ozlabs.org>; Tue,  1 Jul 2008 18:49:48 +1000 (EST)
+From: Laurent Pinchart <laurentp@cse-semaphore.com>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: Commits added to powerpc.git master and powerpc-next branches
+Date: Tue, 1 Jul 2008 10:49:29 +0200
+References: <18537.30774.608486.268257@cargo.ozlabs.ibm.com>
+In-Reply-To: <18537.30774.608486.268257@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
-To: Tony Breeds <tony@bakeyournoodle.com>
-Subject: Re: [BUILD-FAILURE] linux-next: Tree for June 30 - powerpc - build
-	failure at arch_add_memory()
-References: <20080701001656.e156585c.sfr@canb.auug.org.au>
-	<486924FE.4090801@linux.vnet.ibm.com>
-	<20080701013438.GT20457@bakeyournoodle.com>
-In-Reply-To: <20080701013438.GT20457@bakeyournoodle.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-kbuild@vger.kernel.org,
-	LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
-	linux-next@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>
+Content-Type: multipart/signed; boundary="nextPart2283295.p4jTjbVQGB";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
+Message-Id: <200807011049.32699.laurentp@cse-semaphore.com>
+Cc: Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,36 +22,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Tony Breeds wrote:
-> On Mon, Jun 30, 2008 at 11:55:02PM +0530, Kamalesh Babulal wrote:
->> Hi Stephen,
->>
->> next-20080630 kernel build fails on powerpc, with randconfig
->>
->>   CC      arch/powerpc/mm/mem.o
->> arch/powerpc/mm/mem.c: In function ‘arch_add_memory’:
->> arch/powerpc/mm/mem.c:130: error: implicit declaration of function ‘create_section_mapping’
->> make[1]: *** [arch/powerpc/mm/mem.o] Error 1
->> make: *** [arch/powerpc/mm] Error 2
-> 
-> This problem exists in in 2.6.26-rc8, so it's not specifially linux-next
-> realted.  The patch at:
-> http://patchwork.ozlabs.org/linuxppc/patch?id=19347
-> should fix it but is un-ACK'd ;P
-Hi Tony,
+--nextPart2283295.p4jTjbVQGB
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Thanks, the patch fixes the build failure on the machine.
+Hi Paul,
 
-> 
-> Yours Tony
-> 
->   linux.conf.au    http://www.marchsouth.org/
->   Jan 19 - 24 2009 The Australian Linux Technical Conference!
-> 
+On Tuesday 01 July 2008, Paul Mackerras wrote:
+> The following commits have been added to the master and powerpc-next
+> branches of the powerpc.git repository.  This includes patches pulled
+> from Kumar's and Josh's trees.
 
+Any change of getting the following patches into 2.6.27 ? They have either =
+been acked and not picked, or just ignored so far :-/
 
--- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+[PATCHv2] fs_enet: restore promiscuous and multicast settings in restart()
+	http://patchwork.ozlabs.org/linuxppc/patch?person=3D968&id=3D19228
+[PATCH 2/2] fs_enet: MDIO on GPIO support
+	http://patchwork.ozlabs.org/linuxppc/patch?person=3D968&id=3D18693
+[PATCHv3 1/2] [POWERPC] CPM2: Implement GPIO LIB API on CPM2 Freescale SoC.
+	http://patchwork.ozlabs.org/linuxppc/patch?person=3D968&id=3D19045
+[PATCH] powerpc: Modem control lines support for the cpm_uart driver
+	http://patchwork.ozlabs.org/linuxppc/patch?person=3D968&id=3D17928
+[PATCH] cpm_uart: Support uart_wait_until_sent()
+	http://patchwork.ozlabs.org/linuxppc/patch?person=3D968&id=3D19233
+
+Best regards,
+
+=2D-=20
+Laurent Pinchart
+CSE Semaphore Belgium
+
+Chaussee de Bruxelles, 732A
+B-1410 Waterloo
+Belgium
+
+T +32 (2) 387 42 59
+=46 +32 (2) 387 42 75
+
+--nextPart2283295.p4jTjbVQGB
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+
+iEYEABECAAYFAkhp75wACgkQ8y9gWxC9vpdCNACeLYppdhSyvu42kwFOPcVQ/1lD
+GRsAoJzRQu+8OEcVvdTQhpF2Ev8MRWj9
+=VglR
+-----END PGP SIGNATURE-----
+
+--nextPart2283295.p4jTjbVQGB--
