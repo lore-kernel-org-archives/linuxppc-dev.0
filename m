@@ -1,20 +1,19 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 29D9ADDFE3
-	for <linuxppc-dev@ozlabs.org>; Wed,  2 Jul 2008 00:48:46 +1000 (EST)
-Message-Id: <DBD7C7F7-1EBB-4D73-88A0-72D079E800DB@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: michael@ellerman.id.au
-In-Reply-To: <1214893753.8055.13.camel@localhost>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v924)
-Subject: Re: [PATCH] powerpc: fixup lwsync at runtime
-Date: Tue, 1 Jul 2008 09:48:36 -0500
-References: <Pine.LNX.4.64.0807010031241.23830@blarg.am.freescale.net>
-	<1214893753.8055.13.camel@localhost>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id 14019DDF4A
+	for <linuxppc-dev@ozlabs.org>; Wed,  2 Jul 2008 01:00:36 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: Maxim Shchetynin <maxim@linux.vnet.ibm.com>
+Subject: Re: AZFS file system proposal
+Date: Tue, 1 Jul 2008 16:59:32 +0200
+References: <20080618160629.6cd749a8@mercedes-benz.boeblingen.de.ibm.com>
+In-Reply-To: <20080618160629.6cd749a8@mercedes-benz.boeblingen.de.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Message-Id: <200807011659.33413.arnd@arndb.de>
+Cc: linux-fsdevel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,56 +23,158 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Wednesday 18 June 2008, Maxim Shchetynin wrote:
+> AZFS patch updated accordinly to comments of Christoph Hellwig and Dmitri Vorobiev.
 
-On Jul 1, 2008, at 1:29 AM, Michael Ellerman wrote:
+Sorry for my not commenting earlier on this. I'm finally collecting my
+2.6.27 patches and stumbled over it again. There are a few details
+that I hope we can fix up quickly, other than that, it looks good now,
+great work!
 
-> On Tue, 2008-07-01 at 00:32 -0500, Kumar Gala wrote:
->> To allow for a single kernel image on e500 v1/v2/mc we need to  
->> fixup lwsync
->> at runtime.  On e500v1/v2 lwsync causes an illop so we need to  
->> patch up
->> the code.  We default to 'sync' since that is always safe and if  
->> the cpu
->> is capable we will replace 'sync' with 'lwsync'.
->>
->> We introduce CPU_FTR_LWSYNC as a way to determine at runtime if  
->> this is
->> needed.  This flag could be moved elsewhere since we dont really  
->> use it
->> for the normal CPU_FTR purpose.
->>
->> Finally we only store the relative offset in the fixup section to  
->> keep it
->> as small as possible rather than using a full fixup_entry.
->
-> How many entries are we talking? I guess it's not much bother to  
-> have a
-> separate section.
+> Subject: azfs: initial submit of azfs, a non-buffered filesystem
+ 
+Please make the patch subject the actual subject of your email next time,
+and put the introductory text below the Signed-off-by: lines, separated
+by a "---" line. That will make the standard tools work without extra
+effort on my side. Also, please always Cc the person you want to merge
+the patch, in this case probably me.
 
-On the order of 1000 entries for an SMP build.
+> diff -Nuar linux-2.6.26-rc6/fs/Makefile linux-2.6.26-rc6-azfs/fs/Makefile
+> --- linux-2.6.26-rc6/fs/Makefile	2008-06-12 23:22:24.000000000 +0200
+> +++ linux-2.6.26-rc6-azfs/fs/Makefile	2008-06-16 11:17:50.000000000 +0200
+> @@ -119,3 +119,4 @@
+>  obj-$(CONFIG_DEBUG_FS)		+= debugfs/
+>  obj-$(CONFIG_OCFS2_FS)		+= ocfs2/
+>  obj-$(CONFIG_GFS2_FS)           += gfs2/
+> +obj-$(CONFIG_AZ_FS)		+= azfs.o
+> diff -Nuar linux-2.6.26-rc6/fs/azfs.c linux-2.6.26-rc6-azfs/fs/azfs.c
+> --- linux-2.6.26-rc6/fs/azfs.c	1970-01-01 01:00:00.000000000 +0100
+> +++ linux-2.6.26-rc6-azfs/fs/azfs.c	2008-06-18 15:56:13.252266896 +0200
 
->> diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/ 
->> setup_32.c
->> index 9e83add..0109e7f 100644
->> --- a/arch/powerpc/kernel/setup_32.c
->> +++ b/arch/powerpc/kernel/setup_32.c
->> @@ -101,6 +101,10 @@ unsigned long __init early_init(unsigned long  
->> dt_ptr)
->> 			  PTRRELOC(&__start___ftr_fixup),
->> 			  PTRRELOC(&__stop___ftr_fixup));
->>
->> +	do_lwsync_fixups(spec->cpu_features,
->> +			 PTRRELOC(&__start___lwsync_fixup),
->> +			 PTRRELOC(&__stop___lwsync_fixup));
->> +
->
-> This could be changed to use cur_cpu_spec->cpu_features, and then all
-> the call sites would be passing that, which would mean
-> do_lwsync_fixups() could just check cur_cpu_spec->cpu_features  
-> directly.
+All other file systems are in separate directories, so it would be better
+to rename fs/azfs.c to fs/azfs/inode.c
 
-cur_cpu_spec and spec at this point arent the same thing.
+> +#define AZFS_FILESYSTEM_NAME		"azfs"
+> +#define AZFS_FILESYSTEM_FLAGS		FS_REQUIRES_DEV
+> +
+> +#define AZFS_SUPERBLOCK_MAGIC		0xABBA1972
+> +#define AZFS_SUPERBLOCK_FLAGS		MS_NOEXEC | \
+> +					MS_SYNCHRONOUS | \
+> +					MS_DIRSYNC | \
+> +					MS_ACTIVE
 
-will post a new version w/fixes.
+Why MS_NOEXEC? What happens on a remount if the user does not specifies
+-o remount,exec?
 
-- k
+> +/**
+> + * azfs_block_find - get real address of a part of a file
+> + * @inode: inode
+> + * @direction: data direction
+> + * @from: offset for read/write operation
+> + * @size: pointer to a value of the amount of data to be read/written
+> + */
+> +static unsigned long
+> +azfs_block_find(struct inode *inode, enum azfs_direction direction,
+> +		unsigned long from, unsigned long *size)
+> +{
+> +	struct azfs_super *super;
+> +	struct azfs_znode *znode;
+> +	struct azfs_block *block;
+> +	unsigned long block_id, west, east;
+> +
+> +	super = inode->i_sb->s_fs_info;
+> +	znode = I2Z(inode);
+> +
+> +	if (from + *size > znode->size) {
+> +		i_size_write(inode, from + *size);
+> +		inode->i_op->truncate(inode);
+> +	}
+> +
+> +	read_lock(&znode->lock);
+> +
+> +	if (list_empty(&znode->block_list)) {
+> +		read_unlock(&znode->lock);
+> +		return 0;
+> +	}
+> +
+> +	block_id = from >> super->block_shift;
+> +
+> +	for_each_block(block, &znode->block_list) {
+> +		if (block->count > block_id)
+> +			break;
+> +		block_id -= block->count;
+> +	}
+> +
+> +	west = from % super->block_size;
+> +	east = ((block->count - block_id) << super->block_shift) - west;
+> +
+> +	if (*size > east)
+> +		*size = east;
+> +
+> +	block_id = ((block->id + block_id) << super->block_shift) + west;
+> +
+> +	read_unlock(&znode->lock);
+> +
+> +	block_id += direction == AZFS_MMAP ? super->ph_addr : super->io_addr;
+> +
+> +	return block_id;
+> +}
+
+This overloading of the return type to mean either a pointer or an offset
+on the block device is rather confusing. Why not just return the raw block_id
+before the last += and leave that part up to the caller?
+
+static void __iomem *
+azfs_block_addr(struct inode *inode, enum azfs_direction direction,
+		unsigned long from, unsigned long *size)
+{
+	struct azfs_super *super;
+	unsigned long offset;
+	void __iomem *p;
+
+	super = inode->i_sb->s_fs_info;
+	offset = azfs_block_find(inode, super, 0, from, size);
+	p = super->ph_addr + offset;
+
+	return p;
+}
+
+> +	target = iov->iov_base;
+> +	todo = min((loff_t) iov->iov_len, i_size_read(inode) - pos);
+> +
+> +	for (step = todo; step; step -= size) {
+> +		size = step;
+> +		pin = azfs_block_find(inode, AZFS_READ, pos, &size);
+> +		if (!pin) {
+> +			rc = -ENOSPC;
+> +			goto out;
+> +		}
+> +		if (copy_to_user(target, (void*) pin, size)) {
+> +			rc = -EFAULT;
+> +			goto out;
+> +		}
+
+Question to the powerpc folks: is copy_to_user safe for an __iomem source?
+Should there be two copies (memcpy_fromio and copy_to_user) instead?
+
+> +	page_prot = pgprot_val(vma->vm_page_prot);
+> +	page_prot |= (_PAGE_NO_CACHE | _PAGE_RW);
+> +	page_prot &= ~_PAGE_GUARDED;
+> +	vma->vm_page_prot = __pgprot(page_prot);
+
+The pgprot modifications rely on powerpc specific flags, but the
+file system should not really need to be powerpc only.
+
+The flags we want are more or less the same as PAGE_AGP, because
+both are I/O mapped memory that needs to be uncached but should
+not be guarded, for performance reasons.
+
+Maybe we can introduce a new PAGE_IOMEM here that we can use
+in all places that need something like this. In spufs we need
+the same flags for the local store mappings.
+
+I wouldn't hold up merging the file system for this problem, but
+until it is solved, the Kconfig entry should probably have
+a "depends on PPC".
+
+	Arnd <><
