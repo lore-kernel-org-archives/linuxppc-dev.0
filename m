@@ -1,21 +1,17 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id B1EADDDFB4
-	for <linuxppc-dev@ozlabs.org>; Wed,  2 Jul 2008 01:09:44 +1000 (EST)
-Date: Wed, 2 Jul 2008 01:09:38 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: David Miller <davem@davemloft.net>
-Subject: Re: linux-next: manual merge of the net tree
-Message-Id: <20080702010938.41b1469b.sfr@canb.auug.org.au>
-In-Reply-To: <20080701171940.6f282113.sfr@canb.auug.org.au>
-References: <20080701171940.6f282113.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Wed__2_Jul_2008_01_09_38_+1000__YMdMZ9dMQ.3p_yh"
-Cc: linuxppc-dev@ozlabs.org, linux-next@vger.kernel.org,
-	Paul Mackerras <paulus@samba.org>, Jason Jin <Jason.jin@freescale.com>,
-	Jeff Garzik <jgarzik@redhat.com>
+Return-Path: <jonsmirl@gmail.com>
+Message-ID: <9e4733910807010812h30e49144v5b3012e6c156ecca@mail.gmail.com>
+Date: Tue, 1 Jul 2008 11:12:58 -0400
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: "Jean Delvare" <khali@linux-fr.org>
+Subject: Re: [PATCH 2/2] Add the of_find_i2c_device_by_node function, V4
+In-Reply-To: <20080701170544.72051418@hyperion.delvare>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20080630230126.12482.87927.stgit@terra>
+	<20080630230128.12482.79570.stgit@terra>
+	<20080701170544.72051418@hyperion.delvare>
+Cc: Linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	i2c@lm-sensors.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,34 +21,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Wed__2_Jul_2008_01_09_38_+1000__YMdMZ9dMQ.3p_yh
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On 7/1/08, Jean Delvare <khali@linux-fr.org> wrote:
+> I'm fine with this patch. In particular, exporting i2c_bus_type is OK.
+>  It was un-exported only because it had no user left, but it can be
+>  exported again if needed.
 
-On Tue, 1 Jul 2008 17:19:40 +1000 Stephen Rothwell <sfr@canb.auug.org.au> w=
-rote:
+Another solution would be to move drivers/of/of_i2c into the i2c
+directory and make it part of i2c core on powerpc builds.
+
+>  I'm not the one to push this upstream though, as the patch is
+>  essentially an openfirmware patch. That would be something for Jochen
+>  Friedrich and Paul Mackerras I guess. Would be nice to have a
+>  MAINTAINERS entry for OF...
 >
-> Hi Dave,
->=20
-> Today's linux-next merge of the net tree got a conflict in  between
-                                                             ^
-Documentation/powerpc/booting-without-of.txt
+>  --
+>
+> Jean Delvare
+>
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
 
---Signature=_Wed__2_Jul_2008_01_09_38_+1000__YMdMZ9dMQ.3p_yh
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkhqSLIACgkQjjKRsyhoI8za8gCfSkzF1eedYPHqwFLFGb4s27KS
-QZwAoKoD+KkprZIK2nqDByqWhcNsQu3w
-=O7ZR
------END PGP SIGNATURE-----
-
---Signature=_Wed__2_Jul_2008_01_09_38_+1000__YMdMZ9dMQ.3p_yh--
+-- 
+Jon Smirl
+jonsmirl@gmail.com
