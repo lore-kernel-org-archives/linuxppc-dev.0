@@ -1,15 +1,20 @@
 Return-Path: <galak@kernel.crashing.org>
-Message-Id: <331080E2-EB45-4660-BF34-E249D46DB96E@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 60224DE1F2
+	for <linuxppc-dev@ozlabs.org>; Wed,  2 Jul 2008 17:37:53 +1000 (EST)
+Message-Id: <53AF5414-9FDD-4B74-9369-9F6F717D7FDA@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Wolfgang Grandegger <wg@grandegger.com>
-In-Reply-To: <4863967F.8060806@grandegger.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+In-Reply-To: <20080701130438.GA25531@polina.dev.rtsoft.ru>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
 Mime-Version: 1.0 (Apple Message framework v924)
-Subject: Re: [PATCH] [POWERPC] 85xx: TQM8548: add missing support for RTC and
-	LM75
-Date: Wed, 2 Jul 2008 02:37:29 -0500
-References: <4863967F.8060806@grandegger.com>
-Cc: Linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] powerpc/86xx: mpc8610_hpcd: fix interrupt trigger type
+	for ULi IDE
+Date: Wed, 2 Jul 2008 02:37:45 -0500
+References: <20080701130438.GA25531@polina.dev.rtsoft.ru>
+Cc: linuxppc-dev@ozlabs.org, Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,17 +25,20 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Jun 26, 2008, at 8:15 AM, Wolfgang Grandegger wrote:
+On Jul 1, 2008, at 8:04 AM, Anton Vorontsov wrote:
 
-> It adds the missing RTC node to tqm8548.dts and enables support for
-> I2C, DS1307 and LM75 in the default configuration.
+> i8259 PIC is disabled on MPC8610HPCD, and ULi IDE is configured to use
+> PCI sideband interrupt that is specified in the device tree.
 >
-> Signed-off-by: Wolfgang Grandegger <wg@grandegger.com>
+> Current HPCD's device tree specify that IDE interrupt is low to high
+> sensitive, but in practice ULi IDE throws active-high interrupts (not
+> active-low as all normal PCI devices).
+>
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 > ---
-> arch/powerpc/boot/dts/tqm8548.dts           |    5
-> arch/powerpc/configs/85xx/tqm8548_defconfig |  143 ++++++++++++++++++ 
-> ++++++++--
-> 2 files changed, 142 insertions(+), 6 deletions(-)
+>
+> This is for -next, since the bug could be triggered only on RT kernels
+> with hardirq preemption.
 
 applied.
 
