@@ -2,19 +2,19 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 60224DE1F2
-	for <linuxppc-dev@ozlabs.org>; Wed,  2 Jul 2008 17:37:53 +1000 (EST)
-Message-Id: <53AF5414-9FDD-4B74-9369-9F6F717D7FDA@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id B31EEDE07D
+	for <linuxppc-dev@ozlabs.org>; Wed,  2 Jul 2008 17:42:00 +1000 (EST)
+Message-Id: <58163CFC-A697-4FF7-ADC5-A1B9C976965E@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-In-Reply-To: <20080701130438.GA25531@polina.dev.rtsoft.ru>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
+To: Laurent Pinchart <laurentp@cse-semaphore.com>
+In-Reply-To: <200807011049.32699.laurentp@cse-semaphore.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Mime-Version: 1.0 (Apple Message framework v924)
-Subject: Re: [PATCH] powerpc/86xx: mpc8610_hpcd: fix interrupt trigger type
-	for ULi IDE
-Date: Wed, 2 Jul 2008 02:37:45 -0500
-References: <20080701130438.GA25531@polina.dev.rtsoft.ru>
-Cc: linuxppc-dev@ozlabs.org, Timur Tabi <timur@freescale.com>
+Subject: Re: Commits added to powerpc.git master and powerpc-next branches
+Date: Wed, 2 Jul 2008 02:41:44 -0500
+References: <18537.30774.608486.268257@cargo.ozlabs.ibm.com>
+	<200807011049.32699.laurentp@cse-semaphore.com>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,21 +25,44 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Jul 1, 2008, at 8:04 AM, Anton Vorontsov wrote:
+On Jul 1, 2008, at 3:49 AM, Laurent Pinchart wrote:
 
-> i8259 PIC is disabled on MPC8610HPCD, and ULi IDE is configured to use
-> PCI sideband interrupt that is specified in the device tree.
+> Hi Paul,
 >
-> Current HPCD's device tree specify that IDE interrupt is low to high
-> sensitive, but in practice ULi IDE throws active-high interrupts (not
-> active-low as all normal PCI devices).
+> On Tuesday 01 July 2008, Paul Mackerras wrote:
+>> The following commits have been added to the master and powerpc-next
+>> branches of the powerpc.git repository.  This includes patches pulled
+>> from Kumar's and Josh's trees.
 >
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> ---
+> Any change of getting the following patches into 2.6.27 ? They have  
+> either been acked and not picked, or just ignored so far :-/
 >
-> This is for -next, since the bug could be triggered only on RT kernels
-> with hardirq preemption.
+> [PATCHv2] fs_enet: restore promiscuous and multicast settings in  
+> restart()
+> 	http://patchwork.ozlabs.org/linuxppc/patch?person=968&id=19228
 
-applied.
+Should go via netdev unless jgarizk says otherwise
+
+> [PATCH 2/2] fs_enet: MDIO on GPIO support
+> 	http://patchwork.ozlabs.org/linuxppc/patch?person=968&id=18693
+
+ditto
+
+> [PATCHv3 1/2] [POWERPC] CPM2: Implement GPIO LIB API on CPM2  
+> Freescale SoC.
+> 	http://patchwork.ozlabs.org/linuxppc/patch?person=968&id=19045
+
+I'll look at this one
+
+> [PATCH] powerpc: Modem control lines support for the cpm_uart driver
+> 	http://patchwork.ozlabs.org/linuxppc/patch?person=968&id=17928
+
+this seems to depend on the previous patch.
+
+> [PATCH] cpm_uart: Support uart_wait_until_sent()
+> 	http://patchwork.ozlabs.org/linuxppc/patch?person=968&id=19233
+
+
+applied
 
 - k
