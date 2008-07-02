@@ -1,18 +1,21 @@
-Return-Path: <John.Linn@xilinx.com>
-Received: from WA4EHSOBE004.bigfish.com (outbound-wa4.frontbridge.com
-	[216.32.181.16]) by ozlabs.org (Postfix) with ESMTP id EB5C3DE016
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 Jul 2008 00:10:51 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Subject: RE: [PATCH] powerpc: Xilinx: add dts file for ML507 board
-Date: Wed, 2 Jul 2008 08:10:03 -0600
-In-Reply-To: <20080701205301.1acdf087@zod.rchland.ibm.com>
-References: <20080701230301.E23A7198050@mail68-va3.bigfish.com>
-	<20080701205301.1acdf087@zod.rchland.ibm.com>
-From: John Linn <John.Linn@xilinx.com>
-To: "Josh Boyer" <jwboyer@linux.vnet.ibm.com>
-Message-ID: <20080702141015.61D5D398051@mail70-wa4.bigfish.com>
-Cc: linuxppc-dev@ozlabs.org, Stephen Neuendorffer <stephenn@xilinx.com>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 5C40ADE770
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 Jul 2008 00:31:32 +1000 (EST)
+Message-Id: <256CA345-23C6-4851-B769-7A3EFAE0BCEA@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: michael@ellerman.id.au
+In-Reply-To: <1214991302.7436.7.camel@localhost>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v924)
+Subject: Re: [PATCH v2 1/2] powerpc: Fix building of feature-fixup tests on
+	ppc32
+Date: Wed, 2 Jul 2008 09:31:22 -0500
+References: <Pine.LNX.4.64.0807011015390.20129@blarg.am.freescale.net>
+	<1214991302.7436.7.camel@localhost>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,43 +25,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Josh,
 
-It's looking like I need to update this anyway for some changes to our
-reference system I just learned about.
+On Jul 2, 2008, at 4:35 AM, Michael Ellerman wrote:
 
-I'll talk with Stephen about dts-v1 as he does most of the dts
-generation work.
+> On Tue, 2008-07-01 at 10:16 -0500, Kumar Gala wrote:
+>> We need to use PPC_LCMPI otherwise we get compile errors like:
+>>
+>> arch/powerpc/lib/feature-fixups-test.S: Assembler messages:
+>> arch/powerpc/lib/feature-fixups-test.S:142: Error: Unrecognized  
+>> opcode: `cmpdi'
+>> arch/powerpc/lib/feature-fixups-test.S:149: Error: Unrecognized  
+>> opcode: `cmpdi'
+>> arch/powerpc/lib/feature-fixups-test.S:164: Error: Unrecognized  
+>> opcode: `cmpdi'
+>
+> Sorry, I definitely built (and booted) a 32-bit config, so I'm not  
+> sure
+> how I missed that. What toolchain are you using?
 
-Thanks,
-John
+gcc-4.3.0 from fedora 9 on a G5.
 
------Original Message-----
-From: Josh Boyer [mailto:jwboyer@linux.vnet.ibm.com] =
-
-Sent: Tuesday, July 01, 2008 6:53 PM
-To: John Linn
-Cc: linuxppc-dev@ozlabs.org; grant.likely@secretlab.ca; John Linn
-Subject: Re: [PATCH] powerpc: Xilinx: add dts file for ML507 board
-
-On Tue, 1 Jul 2008 16:02:54 -0700
-John Linn <john.linn@xilinx.com> wrote:
-
-> This new file adds support for the ML507 board which
-> has a Virtex 5 FXT FPGA with a 440.
-
-I haven't looked this over thoroughly yet, but an immediate question
-comes to mind.  Any way this can get converted to dts-v1 before it's
-pulled in?  All of the in-tree DTS files should be dts-v1 now, so I'd
-like to have new ones go in as that.
-
-(Also CC'ing the proper list)
-
-josh
-
-
-This email and any attachments are intended for the sole use of the named r=
-ecipient(s) and contain(s) confidential information that may be proprietary=
-, privileged or copyrighted under applicable law. If you are not the intend=
-ed recipient, do not read, copy, or forward this email message or any attac=
-hments. Delete this email message and any attachments immediately.
+- k
