@@ -1,39 +1,30 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C307ADDF4B
-	for <linuxppc-dev@ozlabs.org>; Wed,  2 Jul 2008 10:28:25 +1000 (EST)
-Subject: RE: [PATCH 12/60] microblaze_v4: Generic dts file for platforms
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
-In-Reply-To: <20080701155845.9DDE299004D@mail180-dub.bigfish.com>
-References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-6-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-7-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-8-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-9-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-10-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-11-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-12-git-send-email-monstr@seznam.cz>
-	<1214483429-32360-13-git-send-email-monstr@seznam.cz>
-	<fa686aa40806272249l7eae0c34k43a20ad41672b77a@mail.gmail.com>
-	<1d3f23370806291702g4344a2f9lb62f85cbb475fca4@mail.gmail.com>
-	<20080630033943.332471860046@mail171-va3.bigfish.com>
-	<1214893302.20711.102.camel@pasglop>
-	<20080701155845.9DDE299004D@mail180-dub.bigfish.com>
-Content-Type: text/plain
-Date: Wed, 02 Jul 2008 10:25:30 +1000
-Message-Id: <1214958330.20711.205.camel@pasglop>
+	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id CCF48DDE18
+	for <linuxppc-dev@ozlabs.org>; Wed,  2 Jul 2008 10:57:40 +1000 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e5.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m620vXTd016847
+	for <linuxppc-dev@ozlabs.org>; Tue, 1 Jul 2008 20:57:33 -0400
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
+	m620uLBD064322
+	for <linuxppc-dev@ozlabs.org>; Tue, 1 Jul 2008 20:56:21 -0400
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m620uLjZ019769
+	for <linuxppc-dev@ozlabs.org>; Tue, 1 Jul 2008 20:56:21 -0400
+Date: Tue, 1 Jul 2008 20:53:01 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: John Linn <john.linn@xilinx.com>
+Subject: Re: [PATCH] powerpc: Xilinx: add dts file for ML507 board
+Message-ID: <20080701205301.1acdf087@zod.rchland.ibm.com>
+In-Reply-To: <20080701230301.E23A7198050@mail68-va3.bigfish.com>
+References: <20080701230301.E23A7198050@mail68-va3.bigfish.com>
 Mime-Version: 1.0
-Cc: linux-arch@vger.kernel.org, alan@lxorguk.ukuu.org.uk,
-	Michal Simek <monstr@monstr.eu>, vapier.adi@gmail.com,
-	arnd@arndb.de, matthew@wil.cx, microblaze-uclinux@itee.uq.edu.au,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	will.newton@gmail.com, hpa@zytor.com,
-	John Linn <linnj@xilinx.com>, monstr@seznam.cz,
-	drepper@redhat.com, John Williams <john.williams@petalogix.com>
-Reply-To: benh@kernel.crashing.org
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, John Linn <john.linn@xilinx.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -43,21 +34,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2008-07-01 at 08:58 -0700, Stephen Neuendorffer wrote:
-> Doing this at the binary level would be nice, but I see enough problems
-> just doing it at the source level and at least for my purposes, doing it
-> on a dtb would be overkill, I think.   
-> 
-> The main difficulty remains how to deal with cross references between
-> nodes in a reasonable way where the references cross from one fragment
-> to another.
+On Tue, 1 Jul 2008 16:02:54 -0700
+John Linn <john.linn@xilinx.com> wrote:
 
-I would have those done in the toplevel .dts
+> This new file adds support for the ML507 board which
+> has a Virtex 5 FXT FPGA with a 440.
 
-You can always override the property with the reference....
+I haven't looked this over thoroughly yet, but an immediate question
+comes to mind.  Any way this can get converted to dts-v1 before it's
+pulled in?  All of the in-tree DTS files should be dts-v1 now, so I'd
+like to have new ones go in as that.
 
-Ie. you #include your CPU or your SOC for example, and then override
-some property to point to something else using the override mechanism I
-mentioned.
+(Also CC'ing the proper list)
 
-Ben.
+josh
