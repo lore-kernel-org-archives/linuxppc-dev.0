@@ -1,19 +1,18 @@
-Return-Path: <laurentp@cse-semaphore.com>
-Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
-	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id 166B3DDF67
-	for <linuxppc-dev@ozlabs.org>; Wed,  2 Jul 2008 18:58:48 +1000 (EST)
-From: Laurent Pinchart <laurentp@cse-semaphore.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCHv2] cpm_uart: Support uart_wait_until_sent()
-Date: Wed, 2 Jul 2008 10:58:45 +0200
-References: <200806261355.09334.laurentp@cse-semaphore.com>
-	<4768A00D-3C8B-4AF2-A2E1-DE9C9BD055E4@kernel.crashing.org>
-In-Reply-To: <4768A00D-3C8B-4AF2-A2E1-DE9C9BD055E4@kernel.crashing.org>
+Return-Path: <hs@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 2595CDDFE7
+	for <linuxppc-dev@ozlabs.org>; Wed,  2 Jul 2008 19:33:52 +1000 (EST)
+Message-ID: <486B512B.9000004@denx.de>
+Date: Wed, 02 Jul 2008 11:58:03 +0200
+From: Heiko Schocher <hs@denx.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200807021058.45619.laurentp@cse-semaphore.com>
-Cc: linuxppc-dev@ozlabs.org, linux-serial@vger.kernel.org
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: patches for 2.6.27... (Kumar Gala)
+References: <mailman.486.1214989131.2883.linuxppc-dev@ozlabs.org>
+In-Reply-To: <mailman.486.1214989131.2883.linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: hs@denx.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,50 +22,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Set port->fifosize to the software FIFO size, and update the port timeout
-when the baud rate is modified. SCC ports have an optional 32 byte hardware
-FIFO which is currently not taken into account, as there is no documented way
-to check when the FIFO becomes empty.
+Hello Kumar,
 
-Signed-off-by: Laurent Pinchart <laurentp@cse-semaphore.com>
----
- drivers/serial/cpm_uart/cpm_uart_core.c |    6 ++++++
- 1 files changed, 6 insertions(+), 0 deletions(-)
+On Wednesday 02 July 2008, Kumar Gala wrote:
+> Please point out any patches that have been posted but havent made it
+> into a git tree related to Freescale chips.
 
-diff --git a/drivers/serial/cpm_uart/cpm_uart_core.c b/drivers/serial/cpm_uart/cpm_uart_core.c
-index a19dc7e..151cad2 100644
---- a/drivers/serial/cpm_uart/cpm_uart_core.c
-+++ b/drivers/serial/cpm_uart/cpm_uart_core.c
-@@ -608,6 +608,11 @@ static void cpm_uart_set_termios(struct uart_port *port,
- 	}
- 
- 	/*
-+	 * Update the timeout
-+	 */
-+	uart_update_timeout(port, termios->c_cflag, baud);
-+
-+	/*
- 	 * Set up parity check flag
- 	 */
- #define RELEVANT_IFLAG(iflag) (iflag & (IGNBRK|BRKINT|IGNPAR|PARMRK|INPCK))
-@@ -1068,6 +1073,7 @@ int cpm_uart_drv_get_platform_data(struct platform_device *pdev, int is_con)
- 	pinfo->port.type = PORT_CPM;
- 	pinfo->port.ops = &cpm_uart_pops,
- 	pinfo->port.iotype = UPIO_MEM;
-+	pinfo->port.fifosize = pinfo->tx_nrfifos * pinfo->tx_fifosize;
- 	spin_lock_init(&pinfo->port.lock);
- 
- 	pinfo->port.irq = of_irq_to_resource(np, 0, NULL);
+Here are 2 patches that I'd like to see in 2.6.27. They haven't made into
+any git tree as far as I know.
+
+http://ozlabs.org/pipermail/linuxppc-dev/2008-June/058118.html
+
+http://ozlabs.org/pipermail/linuxppc-dev/2008-June/057972.html
+
+thanks.
+bye
+Heiko
 -- 
-1.5.0
-
--- 
-Laurent Pinchart
-CSE Semaphore Belgium
-
-Chaussee de Bruxelles, 732A
-B-1410 Waterloo
-Belgium
-
-T +32 (2) 387 42 59
-F +32 (2) 387 42 75
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
