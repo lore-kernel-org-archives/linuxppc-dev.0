@@ -1,20 +1,28 @@
-Return-Path: <rukseninanir@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.171])
-	by ozlabs.org (Postfix) with ESMTP id 9439EDDFDE
+Return-Path: <glppe-linuxppc-embedded-2@m.gmane.org>
+Received: from ciao.gmane.org (main.gmane.org [80.91.229.2])
+	by ozlabs.org (Postfix) with ESMTP id C7BDCDE602
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  2 Jul 2008 23:32:13 +1000 (EST)
-Received: by ug-out-1314.google.com with SMTP id k3so474832ugf.0
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 02 Jul 2008 06:32:11 -0700 (PDT)
-Message-ID: <486B8353.7030604@gmail.com>
-Date: Wed, 02 Jul 2008 16:32:03 +0300
-From: Ruksen INANIR <rukseninanir@gmail.com>
-MIME-Version: 1.0
+	Thu,  3 Jul 2008 04:28:17 +1000 (EST)
+Received: from list by ciao.gmane.org with local (Exim 4.43)
+	id 1KE73r-0008AN-5L
+	for linuxppc-embedded@ozlabs.org; Wed, 02 Jul 2008 18:28:11 +0000
+Received: from p5497c006.dip.t-dialin.net ([84.151.192.6])
+	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
+	id 1AlnuQ-0007hv-00
+	for <linuxppc-embedded@ozlabs.org>; Wed, 02 Jul 2008 18:28:11 +0000
+Received: from dzu by p5497c006.dip.t-dialin.net with local (Gmexim 0.1
+	(Debian)) id 1AlnuQ-0007hv-00
+	for <linuxppc-embedded@ozlabs.org>; Wed, 02 Jul 2008 18:28:11 +0000
 To: linuxppc-embedded@ozlabs.org
-Subject: Re: High Memory problem on 2.4.22 Linux, 2GB ppc card
-References: <4868A5C0.5080409@gmail.com>
-In-Reply-To: <4868A5C0.5080409@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+From: Detlev Zundel <dzu@denx.de>
+Subject: Re: Updating glibc on SELF image
+Date: Wed, 02 Jul 2008 20:26:34 +0200
+Message-ID: <m2hcb82ld1.fsf@ohwell.denx.de>
+References: <1213824912.4450.20.camel@localhost.localdomain>
+	<1213901149.4450.22.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Sender: news <news@ger.gmane.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -25,38 +33,29 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hi Dave,
 
+> Can someone provide a comprehensive guide for building SELF images from
+> scratch? More specifically how to install dependency libraries?
 
-I want to change the MAX_LOW_MEM to 1520 MB, what other settings do i 
-need to change? I do not want to use HIGHMEM because the Fiber channel 
-does not support highmem. The card is 2 GB ppc. 1520 MB is enough. At 
-the moment card works with 1456 MB MAX_LOW_MEM.
+There is a mailing list specifically for ELDK and related questions[1].  
 
-Thanks
+Apart from that, if you want to change SELF contents, you can either do
+it manually (as you started) or adjust the SELF spec file and rebuild
+the target RPM as documented in the DULG.
 
+Apart from that I believe you somehow work with mismatching SELF and
+ELDK NFS installations.  The SELF rpm is built from the ELDK NFS
+installation, so it is simply not possible to have different versions of
+libraries between those two.
 
+Cheers
+  Detlev
 
+[1] http://lists.denx.de/mailman/listinfo/eldk
 
-
-Ruksen INANIR wrote:
->
-> Hi all,
->   I am working on a PPC Motorola card, which runs Linux 2.4.22.  The 
-> card has 2 GB onboard memory. But with use 1456 MB of  the available 
-> memory.  To increase the memory capacity i  need  to  increase the 
-> used memory at least 64 MB. With CONFIG_HIGHMEM option all of the 2 GB 
-> memory can be used but, but the fc driver on the card has no high 
-> memory support, so this caused problems.
->     Then i saw that the memory is limited to 1456 by
->   #define MAX_LOW_MEM        0x5B000000  setting in pgtable.c.  I 
-> tried to increase it by 64 MB but i could only increase the value of 
-> MAX_LOW_MEM by 47 MB (1503 MB) without CONFIG_HIGHMEM option.
->
->   1)Is there any other setting that i should set other than     
-> MAX_LOW_MEM to increase the usable memory to 1520 ?
->   2)I knew that the addressable physical memory without high memory 
-> option was 1 G.  How was it possible to address 1503 MB without 
-> CONFIG_HIGHMEM ? What is the max usable memory for 2.4.22 kernel?
->
->   Thanks,
->   Rinanir.
+-- 
+Ftpd never switches uid and euid, it uses setfsuid(2) instead. The
+main reason is that uid switching has been exploited in several
+breakins, but the sheer ugliness of uid switching counts too.
+                                     -- pure-ftpd(8)
