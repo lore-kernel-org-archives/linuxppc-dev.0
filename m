@@ -1,19 +1,21 @@
-Return-Path: <jochen@scram.de>
-Received: from mail.scram.de (mail0.scram.de [78.47.204.202])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.scram.de", Issuer "scram e.V. CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 94566DF004
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 Jul 2008 02:08:21 +1000 (EST)
-Message-ID: <486BA7E6.7070000@scram.de>
-Date: Wed, 02 Jul 2008 18:08:06 +0200
-From: Jochen Friedrich <jochen@scram.de>
-MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH] powerpc: Add documentation for CPM GPIO banks to
-	booting-without-of
-Content-Type: text/plain; charset=ISO-8859-15
-Cc: Scott Wood <scottwood@freescale.com>, Paul Mackerras <paulus@samba.org>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 0E104DE06C
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 Jul 2008 02:13:58 +1000 (EST)
+Message-Id: <FF9F9674-03B4-4FD1-9B01-8DC0972F6899@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Laurent Pinchart <laurentp@cse-semaphore.com>
+In-Reply-To: <200807021058.45619.laurentp@cse-semaphore.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v924)
+Subject: Re: [PATCHv2] cpm_uart: Support uart_wait_until_sent()
+Date: Wed, 2 Jul 2008 11:13:52 -0500
+References: <200806261355.09334.laurentp@cse-semaphore.com>
+	<4768A00D-3C8B-4AF2-A2E1-DE9C9BD055E4@kernel.crashing.org>
+	<200807021058.45619.laurentp@cse-semaphore.com>
+Cc: linuxppc-dev@ozlabs.org, linux-serial@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,60 +25,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Signed-off-by: Jochen Friedrich <jochen@scram.de>
----
- Documentation/powerpc/booting-without-of.txt |   39 ++++++++++++++++++++++++++
- 1 files changed, 39 insertions(+), 0 deletions(-)
 
-diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
-index 26d323f..5fe68ee 100644
---- a/Documentation/powerpc/booting-without-of.txt
-+++ b/Documentation/powerpc/booting-without-of.txt
-@@ -2174,6 +2174,45 @@ platforms are moved over to use the flattened-device-tree model.
- 		};
- 	};
+On Jul 2, 2008, at 3:58 AM, Laurent Pinchart wrote:
 
-+   xi) GPIO
-+
-+   Every GPIO controller node must have #gpio-cells property defined,
-+   this information will be used to translate gpio-specifiers.
-+   On CPM1 devices, all ports are using slightly different register layouts.
-+   Ports A, C and D are 16bit ports and Ports B and E are 32bit ports.
-+   On CPM2 devices, all ports are 32bit ports and use a common register layout.
-+
-+   Properties:
-+   - compatible : "fsl,cpm1-pario-bank-a", "fsl,cpm1-pario-bank-b",
-+     "fsl,cpm1-pario-bank-c", "fsl,cpm1-pario-bank-d",
-+     "fsl,cpm1-pario-bank-e", "fsl,cpm2-pario-bank"
-+   - #gpio-cells : Should be two. The first cell is the pin number and the
-+     second cell is used to specify optional paramters (currently unused).
-+   - gpio-controller : Marks the port as GPIO controller.
-+
-+   Example of three SOC GPIO banks defined as gpio-controller nodes:
-+
-+	CPM1_PIO_A: gpio-controller@950 {
-+		#gpio-cells = <2>;
-+		compatible = "fsl,cpm1-pario-bank-a";
-+		reg = <0x950 0x10>;
-+		gpio-controller;
-+	};
-+
-+	CPM1_PIO_B: gpio-controller@ab8 {
-+		#gpio-cells = <2>;
-+		compatible = "fsl,cpm1-pario-bank-b";
-+		reg = <0xab8 0x10>;
-+		gpio-controller;
-+	};
-+
-+	CPM1_PIO_E: gpio-controller@ac8 {
-+		#gpio-cells = <2>;
-+		compatible = "fsl,cpm1-pario-bank-e";
-+		reg = <0xac8 0x18>;
-+		gpio-controller;
-+	};
-+
-    m) Chipselect/Local Bus
+> Set port->fifosize to the software FIFO size, and update the port  
+> timeout
+> when the baud rate is modified. SCC ports have an optional 32 byte  
+> hardware
+> FIFO which is currently not taken into account, as there is no  
+> documented way
+> to check when the FIFO becomes empty.
+>
+> Signed-off-by: Laurent Pinchart <laurentp@cse-semaphore.com>
+> ---
+> drivers/serial/cpm_uart/cpm_uart_core.c |    6 ++++++
+> 1 files changed, 6 insertions(+), 0 deletions(-)
 
-    Properties:
--- 
-1.5.6
+applied.
+
+- k
