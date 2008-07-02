@@ -1,20 +1,19 @@
-Return-Path: <jochen@scram.de>
-Received: from mail.scram.de (mail0.scram.de [78.47.204.202])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.scram.de", Issuer "scram e.V. CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 51C6ADE113
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 Jul 2008 02:03:09 +1000 (EST)
-Message-ID: <486BA6B0.8060708@scram.de>
-Date: Wed, 02 Jul 2008 18:02:56 +0200
-From: Jochen Friedrich <jochen@scram.de>
-MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH] powerpc: fix section numbering of CPM chapter in
-	booting-without-of.
-Content-Type: text/plain; charset=ISO-8859-15
-Cc: Scott Wood <scottwood@freescale.com>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id E6E61DDE1F
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 Jul 2008 02:03:50 +1000 (EST)
+Message-Id: <AEE09588-1480-450B-BEDF-237E2D59D3D0@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Scott Wood <scottwood@freescale.com>
+In-Reply-To: <20080625215051.GA11784@loki.buserror.net>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v924)
+Subject: Re: [PATCH 1/3] mpc83xx: Power Management support
+Date: Wed, 2 Jul 2008 11:03:42 -0500
+References: <20080625215051.GA11784@loki.buserror.net>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,72 +23,66 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Within the Freescale Communications Processor Module chapter, both
-Serial and Network have the same section number iii). Renumber the
-sections to make them unique again.
+> diff --git a/arch/powerpc/platforms/83xx/suspend-asm.S b/arch/ 
+> powerpc/platforms/83xx/suspend-asm.S
+> new file mode 100644
+> index 0000000..03e29a2
+> --- /dev/null
+> +++ b/arch/powerpc/platforms/83xx/suspend-asm.S
+> @@ -0,0 +1,539 @@
+> +/*
+> + * Enter and leave sleep state on MPC83xx
+> + *
+> + * Author: Scott Wood <scottwood@freescale.com>
+> + *
+> + * Copyright (c) 2006 Freescale Semiconductor, Inc.
+> + *
+> + * This program is free software; you can redistribute it and/or  
+> modify it
+> + * under the terms of the GNU General Public License version 2 as  
+> published
+> + * by the Free Software Foundation.
+> + */
+> +
+> +#include <asm/page.h>
+> +#include <asm/ppc_asm.h>
+> +#include <asm/reg.h>
+> +#include <asm/asm-offsets.h>
+> +
+> +#define SS_MEMSAVE	0x00
+> +#define SS_HID		0x08 /* 3 HIDs */
+> +#define SS_IABR		0x14 /* 2 IABRs */
+> +#define SS_IBCR		0x1c
+> +#define SS_DABR		0x20 /* 2 DABRs */
+> +#define SS_DBCR		0x28
+> +#define SS_SP		0x2c
+> +#define SS_SR		0x30 /* 16 segment registers */
+> +#define SS_CURRENT	0x70
+> +#define SS_MSR		0x74
+> +#define SS_SDR1		0x78
+> +#define SS_LR		0x7c
+> +#define SS_SPRG		0x80 /* 4 SPRGs */
+> +#define SS_DBAT		0x90 /* 8 DBATs */
+> +#define SS_IBAT		0xd0 /* 8 IBATs */
+> +#define SS_TB		0x110
+> +#define SS_CR		0x118
+> +#define SS_GPREG	0x11c /* r12-r31 */
+> +#define STATE_SAVE_SIZE 0x16c
+> +
+> +	.section .data
+> +	.align	5
+> +
+> +mpc83xx_sleep_save_area:
+> +	.space	STATE_SAVE_SIZE
+> +immrbase:
+> +	.long	0
 
-Signed-off-by: Jochen Friedrich <jochen@scram.de>
----
- Documentation/powerpc/booting-without-of.txt |   12 ++++++------
- 1 files changed, 6 insertions(+), 6 deletions(-)
+If we are going to allocate space for save area like this, can't we do  
+this in C code.  Its less error prone and easier to extend over time.   
+I know the powermac code does something similar but it places the save  
+area on the stack.
 
-diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
-index 1d2a772..d9dc996 100644
---- a/Documentation/powerpc/booting-without-of.txt
-+++ b/Documentation/powerpc/booting-without-of.txt
-@@ -1992,7 +1992,7 @@ platforms are moved over to use the flattened-device-tree model.
- 		fsl,cpm-command = <00800000>;
- 	};
+It also seems like the core register save/restore should be shared  
+between 83xx and 5{1,2}xx but that would be a longer term goal.
 
--   iii) Network
-+   iv) Network
-
-    Currently defined compatibles:
-    - fsl,cpm1-scc-enet
-@@ -2015,7 +2015,7 @@ platforms are moved over to use the flattened-device-tree model.
- 		fsl,cpm-command = <12000300>;
- 	};
-
--   iv) MDIO
-+   v) MDIO
-
-    Currently defined compatibles:
-    fsl,pq1-fec-mdio (reg is same as first resource of FEC device)
-@@ -2039,7 +2039,7 @@ platforms are moved over to use the flattened-device-tree model.
- 		fsl,mdc-pin = <13>;
- 	};
-
--   v) Baud Rate Generators
-+   vi) Baud Rate Generators
-
-    Currently defined compatibles:
-    fsl,cpm-brg
-@@ -2062,7 +2062,7 @@ platforms are moved over to use the flattened-device-tree model.
- 		clock-frequency = <d#25000000>;
- 	};
-
--   vi) Interrupt Controllers
-+   vii) Interrupt Controllers
-
-    Currently defined compatibles:
-    - fsl,cpm1-pic
-@@ -2082,7 +2082,7 @@ platforms are moved over to use the flattened-device-tree model.
- 		compatible = "mpc8272-pic", "fsl,cpm2-pic";
- 	};
-
--   vii) USB (Universal Serial Bus Controller)
-+   viii) USB (Universal Serial Bus Controller)
-
-    Properties:
-    - compatible : "fsl,cpm1-usb", "fsl,cpm2-usb", "fsl,qe-usb"
-@@ -2098,7 +2098,7 @@ platforms are moved over to use the flattened-device-tree model.
- 		fsl,cpm-command = <2e600000>;
- 	};
-
--   viii) Multi-User RAM (MURAM)
-+   ix) Multi-User RAM (MURAM)
-
-    The multi-user/dual-ported RAM is expressed as a bus under the CPM node.
-
--- 
-1.5.6
+- k
