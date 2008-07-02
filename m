@@ -1,12 +1,17 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] powerpc: cleanup copy_to/from_user for vsx and fpr 
-In-reply-to: <1214963802.6328.185630097155.qpush@coopers> 
-References: <1214963802.6328.185630097155.qpush@coopers>
-Date: Wed, 02 Jul 2008 14:06:37 +1000
-Message-ID: <25184.1214971597@neuling.org>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <glikely@secretlab.ca>
+Received: from wf-out-1314.google.com (wf-out-1314.google.com [209.85.200.169])
+	by ozlabs.org (Postfix) with ESMTP id F36C4DDF27
+	for <linuxppc-dev@ozlabs.org>; Wed,  2 Jul 2008 14:08:10 +1000 (EST)
+Received: by wf-out-1314.google.com with SMTP id 24so207466wfg.15
+	for <linuxppc-dev@ozlabs.org>; Tue, 01 Jul 2008 21:08:09 -0700 (PDT)
+From: Grant Likely <grant.likely@secretlab.ca>
+Subject: [PATCH] powerpc/5200: fix compile warnings in bestcomm driver
+To: linuxppc-dev@ozlabs.org
+Date: Tue, 01 Jul 2008 22:08:06 -0600
+Message-ID: <20080702040806.3152.29986.stgit@trillian.secretlab.ca>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Sender: Grant Likely <glikely@secretlab.ca>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,313 +21,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This merges and cleans up some of the ugly copy/to from user code
-which is required for the new fpr and vsx layout in the thread_struct.
+From: Grant Likely <grant.likely@secretlab.ca>
 
-Also fixes some hard coded buffer sizes and removes a redundant
-fpr_flush_to_thread.
+Fix for the following compiler warnings:
 
-Signed-off-by: Michael Neuling <mikey@neuling.org>
+  CC      arch/powerpc/sysdev/bestcomm/bestcomm.o
+  arch/powerpc/sysdev/bestcomm/bestcomm.c: In function 'mpc52xx_bcom_probe':
+  arch/powerpc/sysdev/bestcomm/bestcomm.c:446:
+      warning: format '%08lx' expects type 'long unsigned int',
+      but argument 2 has type 'phys_addr_t'
+  CC      arch/powerpc/sysdev/bestcomm/sram.o
+  arch/powerpc/sysdev/bestcomm/sram.c: In function 'bcom_sram_init':
+  arch/powerpc/sysdev/bestcomm/sram.c:89:
+      warning: format '%08lx' expects type 'long unsigned int',
+      but argument 3 has type 'phys_addr_t'
+
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 ---
-Sorry, the last version broke 32bit kernel builds
 
- signal.h    |   10 +++++
- signal_32.c |  109 +++++++++++++++++++++++++++++++++++++++++-------------------
- signal_64.c |   43 ++++++-----------------
- 3 files changed, 96 insertions(+), 66 deletions(-)
+ arch/powerpc/sysdev/bestcomm/bestcomm.c |    2 +-
+ arch/powerpc/sysdev/bestcomm/sram.c     |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-Index: linux-2.6-ozlabs/arch/powerpc/kernel/signal.h
-===================================================================
---- linux-2.6-ozlabs.orig/arch/powerpc/kernel/signal.h
-+++ linux-2.6-ozlabs/arch/powerpc/kernel/signal.h
-@@ -24,6 +24,16 @@ extern int handle_rt_signal32(unsigned l
- 			      siginfo_t *info, sigset_t *oldset,
- 			      struct pt_regs *regs);
+diff --git a/arch/powerpc/sysdev/bestcomm/bestcomm.c b/arch/powerpc/sysdev/bestcomm/bestcomm.c
+index 64ec7d6..446c9ea 100644
+--- a/arch/powerpc/sysdev/bestcomm/bestcomm.c
++++ b/arch/powerpc/sysdev/bestcomm/bestcomm.c
+@@ -443,7 +443,7 @@ mpc52xx_bcom_probe(struct of_device *op, const struct of_device_id *match)
  
-+extern unsigned long copy_fpr_to_user(void __user *to,
-+				      struct task_struct *task);
-+extern unsigned long copy_fpr_from_user(struct task_struct *task,
-+					void __user *from);
-+#ifdef CONFIG_VSX
-+extern unsigned long copy_vsx_to_user(void __user *to,
-+				      struct task_struct *task);
-+extern unsigned long copy_vsx_from_user(struct task_struct *task,
-+					void __user *from);
-+#endif
+ 	/* Done ! */
+ 	printk(KERN_INFO "DMA: MPC52xx BestComm engine @%08lx ok !\n",
+-		bcom_eng->regs_base);
++		(long)bcom_eng->regs_base);
  
- #ifdef CONFIG_PPC64
+ 	return 0;
  
-Index: linux-2.6-ozlabs/arch/powerpc/kernel/signal_32.c
-===================================================================
---- linux-2.6-ozlabs.orig/arch/powerpc/kernel/signal_32.c
-+++ linux-2.6-ozlabs/arch/powerpc/kernel/signal_32.c
-@@ -328,6 +328,75 @@ struct rt_sigframe {
- 	int			abigap[56];
- };
- 
-+#ifdef CONFIG_VSX
-+unsigned long copy_fpr_to_user(void __user *to,
-+			       struct task_struct *task)
-+{
-+	double buf[ELF_NFPREG];
-+	int i;
-+
-+	/* save FPR copy to local buffer then write to the thread_struct */
-+	for (i = 0; i < (ELF_NFPREG - 1) ; i++)
-+		buf[i] = task->thread.TS_FPR(i);
-+	memcpy(&buf[i], &task->thread.fpscr, sizeof(double));
-+	return __copy_to_user(to, buf, ELF_NFPREG * sizeof(double));
-+}
-+
-+unsigned long copy_fpr_from_user(struct task_struct *task,
-+				 void __user *from)
-+{
-+	double buf[ELF_NFPREG];
-+	int i;
-+
-+	if (__copy_from_user(buf, from, ELF_NFPREG * sizeof(double)))
-+		return 1;
-+	for (i = 0; i < (ELF_NFPREG - 1) ; i++)
-+		task->thread.TS_FPR(i) = buf[i];
-+	memcpy(&task->thread.fpscr, &buf[i], sizeof(double));
-+
-+	return 0;
-+}
-+
-+unsigned long copy_vsx_to_user(void __user *to,
-+			       struct task_struct *task)
-+{
-+	double buf[ELF_NVSRHALFREG];
-+	int i;
-+
-+	/* save FPR copy to local buffer then write to the thread_struct */
-+	for (i = 0; i < ELF_NVSRHALFREG; i++)
-+		buf[i] = task->thread.fpr[i][TS_VSRLOWOFFSET];
-+	return __copy_to_user(to, buf, ELF_NVSRHALFREG * sizeof(double));
-+}
-+
-+unsigned long copy_vsx_from_user(struct task_struct *task,
-+				 void __user *from)
-+{
-+	double buf[ELF_NVSRHALFREG];
-+	int i;
-+
-+	if (__copy_from_user(buf, from, ELF_NVSRHALFREG * sizeof(double)))
-+		return 1;
-+	for (i = 0; i < ELF_NVSRHALFREG ; i++)
-+		task->thread.fpr[i][TS_VSRLOWOFFSET] = buf[i];
-+	return 0;
-+}
-+#else
-+inline unsigned long copy_fpr_to_user(void __user *to,
-+				      struct task_struct *task)
-+{
-+	return __copy_to_user(to, task->thread.fpr,
-+			      ELF_NFPREG * sizeof(double));
-+}
-+
-+inline unsigned long copy_fpr_from_user(struct task_struct *task,
-+					void __user *from)
-+{
-+	return __copy_from_user(task->thread.fpr, from,
-+			      ELF_NFPREG * sizeof(double));
-+}
-+#endif
-+
- /*
-  * Save the current user registers on the user stack.
-  * We only save the altivec/spe registers if the process has used
-@@ -337,10 +406,6 @@ static int save_user_regs(struct pt_regs
- 		int sigret)
- {
- 	unsigned long msr = regs->msr;
--#ifdef CONFIG_VSX
--	double buf[32];
--	int i;
--#endif
- 
- 	/* Make sure floating point registers are stored in regs */
- 	flush_fp_to_thread(current);
-@@ -370,14 +435,9 @@ static int save_user_regs(struct pt_regs
- 	if (__put_user(current->thread.vrsave, (u32 __user *)&frame->mc_vregs[32]))
- 		return 1;
- #endif /* CONFIG_ALTIVEC */
--#ifdef CONFIG_VSX
--	/* save FPR copy to local buffer then write to the thread_struct */
--	flush_fp_to_thread(current);
--	for (i = 0; i < 32 ; i++)
--		buf[i] = current->thread.TS_FPR(i);
--	memcpy(&buf[i], &current->thread.fpscr, sizeof(double));
--	if (__copy_to_user(&frame->mc_fregs, buf, ELF_NFPREG * sizeof(double)))
-+	if (copy_fpr_to_user(&frame->mc_fregs, current))
- 		return 1;
-+#ifdef CONFIG_VSX
- 	/*
- 	 * Copy VSR 0-31 upper half from thread_struct to local
- 	 * buffer, then write that to userspace.  Also set MSR_VSX in
-@@ -386,18 +446,10 @@ static int save_user_regs(struct pt_regs
- 	 */
- 	if (current->thread.used_vsr) {
- 		flush_vsx_to_thread(current);
--		for (i = 0; i < 32 ; i++)
--			buf[i] = current->thread.fpr[i][TS_VSRLOWOFFSET];
--		if (__copy_to_user(&frame->mc_vsregs, buf,
--				   ELF_NVSRHALFREG  * sizeof(double)))
-+		if (copy_vsx_to_user(&frame->mc_vsregs, current))
- 			return 1;
- 		msr |= MSR_VSX;
+diff --git a/arch/powerpc/sysdev/bestcomm/sram.c b/arch/powerpc/sysdev/bestcomm/sram.c
+index 9978438..5d74ef7 100644
+--- a/arch/powerpc/sysdev/bestcomm/sram.c
++++ b/arch/powerpc/sysdev/bestcomm/sram.c
+@@ -86,7 +86,7 @@ int bcom_sram_init(struct device_node *sram_node, char *owner)
+ 	if (!bcom_sram->base_virt) {
+ 		printk(KERN_ERR "%s: bcom_sram_init: "
+ 			"Map error SRAM zone 0x%08lx (0x%0x)!\n",
+-			owner, bcom_sram->base_phys, bcom_sram->size );
++			owner, (long)bcom_sram->base_phys, bcom_sram->size );
+ 		rv = -ENOMEM;
+ 		goto error_release;
  	}
--#else
--	/* save floating-point registers */
--	if (__copy_to_user(&frame->mc_fregs, current->thread.fpr,
--		    ELF_NFPREG * sizeof(double)))
--		return 1;
- #endif /* CONFIG_VSX */
- #ifdef CONFIG_SPE
- 	/* save spe registers */
-@@ -442,7 +494,6 @@ static long restore_user_regs(struct pt_
- 	unsigned int save_r2 = 0;
- 	unsigned long msr;
- #ifdef CONFIG_VSX
--	double buf[32];
- 	int i;
- #endif
- 
-@@ -490,13 +541,10 @@ static long restore_user_regs(struct pt_
- 	if (__get_user(current->thread.vrsave, (u32 __user *)&sr->mc_vregs[32]))
- 		return 1;
- #endif /* CONFIG_ALTIVEC */
-+	if (copy_fpr_from_user(current, &sr->mc_fregs))
-+		return 1;
- 
- #ifdef CONFIG_VSX
--	if (__copy_from_user(buf, &sr->mc_fregs,sizeof(sr->mc_fregs)))
--		return 1;
--	for (i = 0; i < 32 ; i++)
--		current->thread.TS_FPR(i) = buf[i];
--	memcpy(&current->thread.fpscr, &buf[i], sizeof(double));
- 	/*
- 	 * Force the process to reload the VSX registers from
- 	 * current->thread when it next does VSX instruction.
-@@ -507,18 +555,11 @@ static long restore_user_regs(struct pt_
- 		 * Restore altivec registers from the stack to a local
- 		 * buffer, then write this out to the thread_struct
- 		 */
--		if (__copy_from_user(buf, &sr->mc_vsregs,
--				     sizeof(sr->mc_vsregs)))
-+		if (copy_vsx_from_user(current, &sr->mc_vsregs))
- 			return 1;
--		for (i = 0; i < 32 ; i++)
--			current->thread.fpr[i][TS_VSRLOWOFFSET] = buf[i];
- 	} else if (current->thread.used_vsr)
- 		for (i = 0; i < 32 ; i++)
- 			current->thread.fpr[i][TS_VSRLOWOFFSET] = 0;
--#else
--	if (__copy_from_user(current->thread.fpr, &sr->mc_fregs,
--			     sizeof(sr->mc_fregs)))
--		return 1;
- #endif /* CONFIG_VSX */
- 	/*
- 	 * force the process to reload the FP registers from
-Index: linux-2.6-ozlabs/arch/powerpc/kernel/signal_64.c
-===================================================================
---- linux-2.6-ozlabs.orig/arch/powerpc/kernel/signal_64.c
-+++ linux-2.6-ozlabs/arch/powerpc/kernel/signal_64.c
-@@ -89,10 +89,6 @@ static long setup_sigcontext(struct sigc
- #endif
- 	unsigned long msr = regs->msr;
- 	long err = 0;
--#ifdef CONFIG_VSX
--	double buf[FP_REGS_SIZE];
--	int i;
--#endif
- 
- 	flush_fp_to_thread(current);
- 
-@@ -117,12 +113,9 @@ static long setup_sigcontext(struct sigc
- 	err |= __put_user(0, &sc->v_regs);
- #endif /* CONFIG_ALTIVEC */
- 	flush_fp_to_thread(current);
-+	/* copy fpr regs and fpscr */
-+	err |= copy_fpr_to_user(&sc->fp_regs, current);
- #ifdef CONFIG_VSX
--	/* Copy FP to local buffer then write that out */
--	for (i = 0; i < 32 ; i++)
--		buf[i] = current->thread.TS_FPR(i);
--	memcpy(&buf[i], &current->thread.fpscr, sizeof(double));
--	err |= __copy_to_user(&sc->fp_regs, buf, FP_REGS_SIZE);
- 	/*
- 	 * Copy VSX low doubleword to local buffer for formatting,
- 	 * then out to userspace.  Update v_regs to point after the
-@@ -131,17 +124,12 @@ static long setup_sigcontext(struct sigc
- 	if (current->thread.used_vsr) {
- 		flush_vsx_to_thread(current);
- 		v_regs += ELF_NVRREG;
--		for (i = 0; i < 32 ; i++)
--			buf[i] = current->thread.fpr[i][TS_VSRLOWOFFSET];
--		err |= __copy_to_user(v_regs, buf, 32 * sizeof(double));
-+		err |= copy_vsx_to_user(v_regs, current);
- 		/* set MSR_VSX in the MSR value in the frame to
- 		 * indicate that sc->vs_reg) contains valid data.
- 		 */
- 		msr |= MSR_VSX;
- 	}
--#else /* CONFIG_VSX */
--	/* copy fpr regs and fpscr */
--	err |= __copy_to_user(&sc->fp_regs, &current->thread.fpr, FP_REGS_SIZE);
- #endif /* CONFIG_VSX */
- 	err |= __put_user(&sc->gp_regs, &sc->regs);
- 	WARN_ON(!FULL_REGS(regs));
-@@ -165,13 +153,12 @@ static long restore_sigcontext(struct pt
- #ifdef CONFIG_ALTIVEC
- 	elf_vrreg_t __user *v_regs;
- #endif
--#ifdef CONFIG_VSX
--	double buf[FP_REGS_SIZE];
--	int i;
--#endif
- 	unsigned long err = 0;
- 	unsigned long save_r13 = 0;
- 	unsigned long msr;
-+#ifdef CONFIG_VSX
-+	int i;
-+#endif
- 
- 	/* If this is not a signal return, we preserve the TLS in r13 */
- 	if (!sig)
-@@ -234,15 +221,9 @@ static long restore_sigcontext(struct pt
- 	else
- 		current->thread.vrsave = 0;
- #endif /* CONFIG_ALTIVEC */
--#ifdef CONFIG_VSX
- 	/* restore floating point */
--	err |= __copy_from_user(buf, &sc->fp_regs, FP_REGS_SIZE);
--	if (err)
--		return err;
--	for (i = 0; i < 32 ; i++)
--		current->thread.TS_FPR(i) = buf[i];
--	memcpy(&current->thread.fpscr, &buf[i], sizeof(double));
--
-+	err |= copy_fpr_from_user(current, &sc->fp_regs);
-+#ifdef CONFIG_VSX
- 	/*
- 	 * Get additional VSX data. Update v_regs to point after the
- 	 * VMX data.  Copy VSX low doubleword from userspace to local
-@@ -250,14 +231,12 @@ static long restore_sigcontext(struct pt
- 	 */
- 	v_regs += ELF_NVRREG;
- 	if ((msr & MSR_VSX) != 0)
--		err |= __copy_from_user(buf, v_regs, 32 * sizeof(double));
-+		err |= copy_vsx_from_user(current, v_regs);
- 	else
--		memset(buf, 0, 32 * sizeof(double));
-+		for (i = 0; i < 32 ; i++)
-+			current->thread.fpr[i][TS_VSRLOWOFFSET] = 0;
- 
--	for (i = 0; i < 32 ; i++)
--		current->thread.fpr[i][TS_VSRLOWOFFSET] = buf[i];
- #else
--	err |= __copy_from_user(&current->thread.fpr, &sc->fp_regs, FP_REGS_SIZE);
- #endif
- 	return err;
- }
