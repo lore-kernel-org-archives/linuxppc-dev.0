@@ -2,18 +2,20 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id EF372DE9CC
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 Jul 2008 01:03:25 +1000 (EST)
-Received: from localhost (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id m62F3KfR016356
-	for <linuxppc-dev@ozlabs.org>; Wed, 2 Jul 2008 10:03:21 -0500
-Date: Wed, 2 Jul 2008 10:03:20 -0500 (CDT)
+	by ozlabs.org (Postfix) with ESMTPS id 2F3C0DDF74
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 Jul 2008 01:04:12 +1000 (EST)
+Message-Id: <F2A6FF1A-CF7F-4B2A-94B3-4C0E0693CB21@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc/85xx: minor fixes for MPC85xx DS board port
-Message-ID: <Pine.LNX.4.64.0807021002560.15410@blarg.am.freescale.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Chen Gong <clumsycg@gmail.com>
+In-Reply-To: <486B8AFE.7060303@gmail.com>
+Content-Type: text/plain; charset=GB2312; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v924)
+Subject: Re: [PATCH] powerpc/85xx: Add support for MPC8536DS
+Date: Wed, 2 Jul 2008 10:03:51 -0500
+References: <Pine.LNX.4.64.0807020201030.24791@blarg.am.freescale.net>
+	<20080702170814.de282293.sfr@canb.auug.org.au>
+	<486B8AFE.7060303@gmail.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,57 +25,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-These issues were reported by Stephen Rothwell for another 85xx board
-port and pointed out by Chen Gong as issues in the DS port.
 
-* mpic OF node reference counting was off
-* of_device_id struct should be marked as __initdata
+On Jul 2, 2008, at 9:04 AM, Chen Gong wrote:
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
----
-in my powerpc-next tree.
+> Stephen Rothwell =D0=B4=B5=C0:
+>> Hi Kumar,
+>>
+>> On Wed, 2 Jul 2008 02:01:10 -0500 (CDT) Kumar Gala =
+<galak@kernel.crashing.org=20
+>> > wrote:
+>>> +void __init mpc8536_ds_pic_init(void)
+>>> +{
+>>> +	struct mpic *mpic;
+>>> +	struct resource r;
+>>> +	struct device_node *np =3D NULL;
+>>
+>> You don't need to initialise this.
+>>
+>>> +	np =3D of_find_node_by_type(np, "open-pic");
+>>> +
+>>
+>> Extra blank line.
+>>
+>>> +	if (np =3D=3D NULL) {
+>>> +		printk(KERN_ERR "Could not find open-pic node\n");
+>>> +		return;
+>>> +	}
+>>> +
+>>> +	if (of_address_to_resource(np, 0, &r)) {
+>>> +		printk(KERN_ERR "Failed to map mpic register space\n");
+>>> +		of_node_put(np);
+>>> +		return;
+>>> +	}
+>>> +
+>>> +	mpic =3D mpic_alloc(np, r.start,
+>>> +			  MPIC_PRIMARY | MPIC_WANTS_RESET |
+>>> +			  MPIC_BIG_ENDIAN | MPIC_BROKEN_FRR_NIRQS,
+>>> +			0, 256, " OpenPIC  ");
+>>> +	BUG_ON(mpic =3D=3D NULL);
+>>> +
+>>> +	mpic_init(mpic);
+>>
+>> You leak a reference to np here.
+>
+> It looks like there are same problem in other mpc85xx_xx.c files
+
+agreed for the mpc85xx_ds.c, I dont see the _cds or _ads having these =20=
+
+issues.
 
 - k
-
- arch/powerpc/platforms/85xx/mpc85xx_ds.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ds.c b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
-index b010dc9..8b2d63d 100644
---- a/arch/powerpc/platforms/85xx/mpc85xx_ds.c
-+++ b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
-@@ -58,14 +58,13 @@ void __init mpc85xx_ds_pic_init(void)
- {
- 	struct mpic *mpic;
- 	struct resource r;
--	struct device_node *np = NULL;
-+	struct device_node *np;
- #ifdef CONFIG_PPC_I8259
- 	struct device_node *cascade_node = NULL;
- 	int cascade_irq;
- #endif
-
- 	np = of_find_node_by_type(np, "open-pic");
--
- 	if (np == NULL) {
- 		printk(KERN_ERR "Could not find open-pic node\n");
- 		return;
-@@ -82,6 +81,7 @@ void __init mpc85xx_ds_pic_init(void)
- 			  MPIC_BIG_ENDIAN | MPIC_BROKEN_FRR_NIRQS,
- 			0, 256, " OpenPIC  ");
- 	BUG_ON(mpic == NULL);
-+	of_node_put(np);
-
- 	mpic_init(mpic);
-
-@@ -185,7 +185,7 @@ static int __init mpc8544_ds_probe(void)
- 	}
- }
-
--static struct of_device_id mpc85xxds_ids[] = {
-+static struct of_device_id __initdata mpc85xxds_ids[] = {
- 	{ .type = "soc", },
- 	{ .compatible = "soc", },
- 	{},
--- 
-1.5.5.1
