@@ -1,21 +1,19 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 2F3C0DDF74
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 Jul 2008 01:04:12 +1000 (EST)
-Message-Id: <F2A6FF1A-CF7F-4B2A-94B3-4C0E0693CB21@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Chen Gong <clumsycg@gmail.com>
-In-Reply-To: <486B8AFE.7060303@gmail.com>
-Content-Type: text/plain; charset=GB2312; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v924)
-Subject: Re: [PATCH] powerpc/85xx: Add support for MPC8536DS
-Date: Wed, 2 Jul 2008 10:03:51 -0500
-References: <Pine.LNX.4.64.0807020201030.24791@blarg.am.freescale.net>
-	<20080702170814.de282293.sfr@canb.auug.org.au>
-	<486B8AFE.7060303@gmail.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linuxppc-dev@ozlabs.org
+Return-Path: <olaf@aepfle.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id E1587DEA57
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 Jul 2008 01:04:35 +1000 (EST)
+Date: Wed, 2 Jul 2008 17:04:32 +0200
+From: Olaf Hering <olaf@aepfle.de>
+To: Tony Breeds <tony@bakeyournoodle.com>
+Subject: Re: [PATCH v2] Change the default link address for pSeries zImage
+	kernels.
+Message-ID: <20080702150432.GA5910@aepfle.de>
+References: <1a551391a3c4925271cc86cb2e957aaccb0b599c.1214208801.git.tony@bakeyournoodle.com>
+	<4ca08ab3df251d90440c962ef15ead1a72d75f05.1214276944.git.tony@bakeyournoodle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <4ca08ab3df251d90440c962ef15ead1a72d75f05.1214276944.git.tony@bakeyournoodle.com>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,53 +23,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Tue, Jun 24, Tony Breeds wrote:
 
-On Jul 2, 2008, at 9:04 AM, Chen Gong wrote:
+> Currently we set the start of the .text section to be 4Mb for pSeries.
+> In situations where the zImage is > 8Mb we'll fail to boot (due to
+> overlapping with OF).  Move .text in a zImage from 4MB to 64MB (well past OF).
+> 
+> We still will not be able to load large zImage unless we also move OF,
+> to that end, add a note to the zImage ELF to move OF to 32Mb.  If this
+> is the very first kernel booted then we'll need to move OF manually by
+> setting real-base.
 
-> Stephen Rothwell =D0=B4=B5=C0:
->> Hi Kumar,
->>
->> On Wed, 2 Jul 2008 02:01:10 -0500 (CDT) Kumar Gala =
-<galak@kernel.crashing.org=20
->> > wrote:
->>> +void __init mpc8536_ds_pic_init(void)
->>> +{
->>> +	struct mpic *mpic;
->>> +	struct resource r;
->>> +	struct device_node *np =3D NULL;
->>
->> You don't need to initialise this.
->>
->>> +	np =3D of_find_node_by_type(np, "open-pic");
->>> +
->>
->> Extra blank line.
->>
->>> +	if (np =3D=3D NULL) {
->>> +		printk(KERN_ERR "Could not find open-pic node\n");
->>> +		return;
->>> +	}
->>> +
->>> +	if (of_address_to_resource(np, 0, &r)) {
->>> +		printk(KERN_ERR "Failed to map mpic register space\n");
->>> +		of_node_put(np);
->>> +		return;
->>> +	}
->>> +
->>> +	mpic =3D mpic_alloc(np, r.start,
->>> +			  MPIC_PRIMARY | MPIC_WANTS_RESET |
->>> +			  MPIC_BIG_ENDIAN | MPIC_BROKEN_FRR_NIRQS,
->>> +			0, 256, " OpenPIC  ");
->>> +	BUG_ON(mpic =3D=3D NULL);
->>> +
->>> +	mpic_init(mpic);
->>
->> You leak a reference to np here.
->
-> It looks like there are same problem in other mpc85xx_xx.c files
+Setting real-base to what?
 
-agreed for the mpc85xx_ds.c, I dont see the _cds or _ads having these =20=
+What currently happens with a large boot file is:
+Firmware loads the zImage at load-base, finds that the ELF file is too
+large to fit into the memory window and stops.
 
-issues.
+With your patch, firmware loads 12566528 bytes, and starts the zImage.
+The result is a truncated file, the initrd will be corrupted, kernel
+panic in populate_rootfs().
 
-- k
+The only system where firmware relocates itself from 12MB to 32MB is a
+p640 with firmware version NAN04194.
+All other systems seem to ignore the NOTE section, real-base remains at
+0xc00000
+
+So I do not think your patch is a real improvement,
+clear error vs. silent corruption.
+
+Do you happen to know how to automate the changing the value of
+real-base? The addnote change has appearently no effect on recent
+systems.
+
+Olaf
