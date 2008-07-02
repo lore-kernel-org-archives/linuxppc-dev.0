@@ -1,19 +1,24 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <lg@opensource.wolfsonmicro.com>
+Received: from opensource2.wolfsonmicro.com (opensource.wolfsonmicro.com
+	[80.75.67.52])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E6E61DDE1F
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 Jul 2008 02:03:50 +1000 (EST)
-Message-Id: <AEE09588-1480-450B-BEDF-237E2D59D3D0@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Scott Wood <scottwood@freescale.com>
-In-Reply-To: <20080625215051.GA11784@loki.buserror.net>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v924)
-Subject: Re: [PATCH 1/3] mpc83xx: Power Management support
-Date: Wed, 2 Jul 2008 11:03:42 -0500
-References: <20080625215051.GA11784@loki.buserror.net>
-Cc: linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTPS id A5BD4DE505
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 Jul 2008 02:06:30 +1000 (EST)
+Subject: Re: [alsa-devel] [PATCH 1/3] ALSA SoC: Add OpenFirmware helper for
+	matching bus and codec drivers
+From: Liam Girdwood <lg@opensource.wolfsonmicro.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+In-Reply-To: <20080702154804.GA23011@secretlab.ca>
+References: <20080701235330.16923.67218.stgit@trillian.secretlab.ca>
+	<s5hiqvod37w.wl%tiwai@suse.de>  <20080702154804.GA23011@secretlab.ca>
+Content-Type: text/plain
+Date: Wed, 02 Jul 2008 16:57:52 +0100
+Message-Id: <1215014272.4882.91.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: Takashi Iwai <tiwai@suse.de>, linuxppc-dev@ozlabs.org,
+	alsa-devel@alsa-project.org, broonie@opensource.wolfsonmicro.com,
+	timur@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,66 +28,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> diff --git a/arch/powerpc/platforms/83xx/suspend-asm.S b/arch/ 
-> powerpc/platforms/83xx/suspend-asm.S
-> new file mode 100644
-> index 0000000..03e29a2
-> --- /dev/null
-> +++ b/arch/powerpc/platforms/83xx/suspend-asm.S
-> @@ -0,0 +1,539 @@
-> +/*
-> + * Enter and leave sleep state on MPC83xx
-> + *
-> + * Author: Scott Wood <scottwood@freescale.com>
-> + *
-> + * Copyright (c) 2006 Freescale Semiconductor, Inc.
-> + *
-> + * This program is free software; you can redistribute it and/or  
-> modify it
-> + * under the terms of the GNU General Public License version 2 as  
-> published
-> + * by the Free Software Foundation.
-> + */
-> +
-> +#include <asm/page.h>
-> +#include <asm/ppc_asm.h>
-> +#include <asm/reg.h>
-> +#include <asm/asm-offsets.h>
-> +
-> +#define SS_MEMSAVE	0x00
-> +#define SS_HID		0x08 /* 3 HIDs */
-> +#define SS_IABR		0x14 /* 2 IABRs */
-> +#define SS_IBCR		0x1c
-> +#define SS_DABR		0x20 /* 2 DABRs */
-> +#define SS_DBCR		0x28
-> +#define SS_SP		0x2c
-> +#define SS_SR		0x30 /* 16 segment registers */
-> +#define SS_CURRENT	0x70
-> +#define SS_MSR		0x74
-> +#define SS_SDR1		0x78
-> +#define SS_LR		0x7c
-> +#define SS_SPRG		0x80 /* 4 SPRGs */
-> +#define SS_DBAT		0x90 /* 8 DBATs */
-> +#define SS_IBAT		0xd0 /* 8 IBATs */
-> +#define SS_TB		0x110
-> +#define SS_CR		0x118
-> +#define SS_GPREG	0x11c /* r12-r31 */
-> +#define STATE_SAVE_SIZE 0x16c
-> +
-> +	.section .data
-> +	.align	5
-> +
-> +mpc83xx_sleep_save_area:
-> +	.space	STATE_SAVE_SIZE
-> +immrbase:
-> +	.long	0
+On Wed, 2008-07-02 at 09:48 -0600, Grant Likely wrote:
+> On Wed, Jul 02, 2008 at 11:50:43AM +0200, Takashi Iwai wrote:
+> > 
+> > This is a helper module and not necessarily manually selectable.
+> > Better to make the other driver selecting this.
+> 
+> Yes, you're right.  I hadn't put too much thought into the Kconfig stuff
+> for this patch because, at the moment, I'm viewing this as a temporary
+> solution until ASoCv2 is merged.
+> 
+> Which raises another question: Liam and Mark, what is your opinion on
+> merging this driver?  Is it something that you would merge with the v1
+> API and then rework it when v2 is merged?  Or would you rather it be
+> kept out until v2 is ready?  I haven't even looked at the v2 API yet, so
+> I don't know how much rework is involved.
+> 
 
-If we are going to allocate space for save area like this, can't we do  
-this in C code.  Its less error prone and easier to extend over time.   
-I know the powermac code does something similar but it places the save  
-area on the stack.
+I'm happy with this atm for v1. We can then rework for V2.
 
-It also seems like the core register save/restore should be shared  
-between 83xx and 5{1,2}xx but that would be a longer term goal.
-
-- k
+Liam
