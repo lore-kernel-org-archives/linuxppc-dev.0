@@ -1,22 +1,17 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id DA723DDF83
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 Jul 2008 03:12:45 +1000 (EST)
-Message-ID: <486BB6E3.1060602@freescale.com>
-Date: Wed, 02 Jul 2008 12:12:03 -0500
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <djiang@mvista.com>
+Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
+	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id E80B0DE0FA
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 Jul 2008 03:25:37 +1000 (EST)
+Message-ID: <486BBA0E.4060205@mvista.com>
+Date: Wed, 02 Jul 2008 10:25:34 -0700
+From: Dave Jiang <djiang@mvista.com>
 MIME-Version: 1.0
 To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 1/3] mpc83xx: Power Management support
-References: <20080625215051.GA11784@loki.buserror.net>
-	<7B906E0F-3149-43F0-815A-8314BF5BA039@kernel.crashing.org>
-In-Reply-To: <7B906E0F-3149-43F0-815A-8314BF5BA039@kernel.crashing.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Subject: Re: patches for 2.6.27...
+References: <068935A1-11BE-4AEB-9C0E-E1AB53F1618E@kernel.crashing.org>
+In-Reply-To: <068935A1-11BE-4AEB-9C0E-E1AB53F1618E@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,36 +22,27 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 Kumar Gala wrote:
->> +#define SS_MEMSAVE    0x00
+> Please point out any patches that have been posted but havent made it 
+> into a git tree related to Freescale chips.
 > 
-> What is this? add a comment?
-
-There's a comment where MEMSAVE is used:
-
-         /* The first 2 words of memory are used to communicate with the
-          * bootloader, to tell it how to resume.
-          *
-          * The first word is the magic number 0xf5153ae5, and the second
-          * is the pointer to mpc83xx_deep_resume.
-          *
-          * The original content of these two words is saved in the state
-          * save area.
-          */
-
-We could stick a /* First 8 bytes of RAM */ after the #define if you want.
-
->> +#define SS_HID        0x08 /* 3 HIDs */
->> +#define SS_IABR        0x14 /* 2 IABRs */
->> +#define SS_IBCR        0x1c
->> +#define SS_DABR        0x20 /* 2 DABRs */
->> +#define SS_DBCR        0x28
->> +#define SS_SP        0x2c
->> +#define SS_SR        0x30 /* 16 segment registers */
->> +#define SS_CURRENT    0x70
+> I know there are probably a slew of CPM patches that need to get into 
+> the tree.
 > 
-> How about SS_R2 to match the pmac sleep.S code.  It will make 
-> refactoring all this easier in the future.
+> - k
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
 
-OK.
+Kumar can you put this one in please? Thanks!
 
--Scott
+http://patchwork.ozlabs.org/linuxppc/patch?q=Dave%20Jiang&id=19008
+
+-- 
+
+------------------------------------------------------
+Dave Jiang
+Software Engineer
+MontaVista Software, Inc.
+http://www.mvista.com
+------------------------------------------------------
