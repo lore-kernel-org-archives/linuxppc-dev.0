@@ -1,24 +1,22 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.31])
-	by ozlabs.org (Postfix) with ESMTP id 85D20DE4BA
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 Jul 2008 01:48:11 +1000 (EST)
-Received: by yw-out-2324.google.com with SMTP id 5so182821ywh.39
-	for <linuxppc-dev@ozlabs.org>; Wed, 02 Jul 2008 08:48:08 -0700 (PDT)
-Date: Wed, 2 Jul 2008 09:48:04 -0600
-From: Grant Likely <grant.likely@secretlab.ca>
-To: Takashi Iwai <tiwai@suse.de>
-Subject: Re: [alsa-devel] [PATCH 1/3] ALSA SoC: Add OpenFirmware helper for
-	matching bus and codec drivers
-Message-ID: <20080702154804.GA23011@secretlab.ca>
-References: <20080701235330.16923.67218.stgit@trillian.secretlab.ca>
-	<s5hiqvod37w.wl%tiwai@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <s5hiqvod37w.wl%tiwai@suse.de>
-Sender: Grant Likely <glikely@secretlab.ca>
-Cc: liam.girdwood@wolfsonmicro.com, alsa-devel@alsa-project.org,
-	broonie@opensource.wolfsonmicro.com, timur@freescale.com,
-	linuxppc-dev@ozlabs.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id E661CDDF64
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 Jul 2008 01:57:24 +1000 (EST)
+Message-Id: <46F3C08B-4F8E-42A2-BDE8-6849D33CA4A0@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: michael@ellerman.id.au
+In-Reply-To: <1214991248.7436.5.camel@localhost>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v924)
+Subject: Re: [PATCH] powerpc: fixup lwsync at runtime
+Date: Wed, 2 Jul 2008 10:57:11 -0500
+References: <Pine.LNX.4.64.0807010031241.23830@blarg.am.freescale.net>
+	<1214893753.8055.13.camel@localhost>
+	<DBD7C7F7-1EBB-4D73-88A0-72D079E800DB@kernel.crashing.org>
+	<1214991248.7436.5.camel@localhost>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,36 +26,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jul 02, 2008 at 11:50:43AM +0200, Takashi Iwai wrote:
-> At Tue, 01 Jul 2008 17:53:30 -0600,
-> Grant Likely wrote:
-> > diff --git a/sound/soc/Kconfig b/sound/soc/Kconfig
-> > index 18f28ac..c5736e5 100644
-> > --- a/sound/soc/Kconfig
-> > +++ b/sound/soc/Kconfig
-> > @@ -23,6 +23,12 @@ config SND_SOC
-> >  	  This ASoC audio support can also be built as a module.  If so, the module
-> >  	  will be called snd-soc-core.
-> >  
-> > +config SND_SOC_OF
-> > +	tristate "OF helpers for SoC audio support"
-> > +	depends on SND_SOC
-> > +	---help---
-> > +	  Add support for OpenFirmware device tree descriptions of sound device
-> > +
-> 
-> This is a helper module and not necessarily manually selectable.
-> Better to make the other driver selecting this.
 
-Yes, you're right.  I hadn't put too much thought into the Kconfig stuff
-for this patch because, at the moment, I'm viewing this as a temporary
-solution until ASoCv2 is merged.
+On Jul 2, 2008, at 4:34 AM, Michael Ellerman wrote:
 
-Which raises another question: Liam and Mark, what is your opinion on
-merging this driver?  Is it something that you would merge with the v1
-API and then rework it when v2 is merged?  Or would you rather it be
-kept out until v2 is ready?  I haven't even looked at the v2 API yet, so
-I don't know how much rework is involved.
+> On Tue, 2008-07-01 at 09:48 -0500, Kumar Gala wrote:
+>> On Jul 1, 2008, at 1:29 AM, Michael Ellerman wrote:
+>
+>>>> diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/
+>>>> setup_32.c
+>>>> index 9e83add..0109e7f 100644
+>>>> --- a/arch/powerpc/kernel/setup_32.c
+>>>> +++ b/arch/powerpc/kernel/setup_32.c
+>>>> @@ -101,6 +101,10 @@ unsigned long __init early_init(unsigned long
+>>>> dt_ptr)
+>>>> 			  PTRRELOC(&__start___ftr_fixup),
+>>>> 			  PTRRELOC(&__stop___ftr_fixup));
+>>>>
+>>>> +	do_lwsync_fixups(spec->cpu_features,
+>>>> +			 PTRRELOC(&__start___lwsync_fixup),
+>>>> +			 PTRRELOC(&__stop___lwsync_fixup));
+>>>> +
+>>>
+>>> This could be changed to use cur_cpu_spec->cpu_features, and then  
+>>> all
+>>> the call sites would be passing that, which would mean
+>>> do_lwsync_fixups() could just check cur_cpu_spec->cpu_features
+>>> directly.
+>>
+>> cur_cpu_spec and spec at this point arent the same thing.
+>
+> Aren't they? I must be missing something:
 
-Cheers,
-g.
+There is an issue with how ppc32 classic gets here and relocation.  If  
+I change the call to:
+
+         do_lwsync_fixups(cur_cpu_spec->cpu_features,
+                          PTRRELOC(&__start___lwsync_fixup),
+                          PTRRELOC(&__stop___lwsync_fixup));
+
+I can't boot on a 6xx based machine anymore.
+
+- k
