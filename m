@@ -1,18 +1,22 @@
-Return-Path: <olaf@aepfle.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id E1587DEA57
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 Jul 2008 01:04:35 +1000 (EST)
-Date: Wed, 2 Jul 2008 17:04:32 +0200
-From: Olaf Hering <olaf@aepfle.de>
-To: Tony Breeds <tony@bakeyournoodle.com>
-Subject: Re: [PATCH v2] Change the default link address for pSeries zImage
-	kernels.
-Message-ID: <20080702150432.GA5910@aepfle.de>
-References: <1a551391a3c4925271cc86cb2e957aaccb0b599c.1214208801.git.tony@bakeyournoodle.com>
-	<4ca08ab3df251d90440c962ef15ead1a72d75f05.1214276944.git.tony@bakeyournoodle.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <4ca08ab3df251d90440c962ef15ead1a72d75f05.1214276944.git.tony@bakeyournoodle.com>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 48D4EDDDE9
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 Jul 2008 01:10:39 +1000 (EST)
+Message-Id: <7A0E3A13-7E3D-409F-83A7-40D8092A71E9@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Jochen Friedrich <jochen@scram.de>
+In-Reply-To: <486B7619.4070603@scram.de>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v924)
+Subject: Re: Commits added to powerpc.git master and powerpc-next branches
+Date: Wed, 2 Jul 2008 10:10:22 -0500
+References: <18537.30774.608486.268257@cargo.ozlabs.ibm.com>
+	<200807011049.32699.laurentp@cse-semaphore.com>
+	<486A533B.40402@scram.de>
+	<AF0B4FF7-06C8-4AF8-B1C2-23697326BDDB@kernel.crashing.org>
+	<486B7619.4070603@scram.de>
 Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -23,37 +27,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Jun 24, Tony Breeds wrote:
 
-> Currently we set the start of the .text section to be 4Mb for pSeries.
-> In situations where the zImage is > 8Mb we'll fail to boot (due to
-> overlapping with OF).  Move .text in a zImage from 4MB to 64MB (well past OF).
-> 
-> We still will not be able to load large zImage unless we also move OF,
-> to that end, add a note to the zImage ELF to move OF to 32Mb.  If this
-> is the very first kernel booted then we'll need to move OF manually by
-> setting real-base.
+On Jul 2, 2008, at 7:35 AM, Jochen Friedrich wrote:
 
-Setting real-base to what?
+> Hi Kumar,
+>
+>>> any chance to get this one into 2.6.27?
+>>>
+>>> [POWERPC] Add i2c pins to dts and board setup
+>>> http://patchwork.ozlabs.org/linuxppc/patch?person=1023&id=18603
+>>
+>> Will we always want defconfig updates to enable the driver?
+>
+> Good question. Maybe not, as the i2c bus seems to be unused on these
+> boards unless someone connects some i2c devices.
+>
+> I'll resubmit just the booting-without-of part then.
 
-What currently happens with a large boot file is:
-Firmware loads the zImage at load-base, finds that the ELF file is too
-large to fit into the memory window and stops.
+Actually, if that's the case I'd prefer to leave the patch is as and  
+just make a note about the fact that the I2C bus isn't connected to  
+anything on the board in the commit message.  The code is a good  
+example of setting everything else up and I'd like to have that in the  
+tree.
 
-With your patch, firmware loads 12566528 bytes, and starts the zImage.
-The result is a truncated file, the initrd will be corrupted, kernel
-panic in populate_rootfs().
-
-The only system where firmware relocates itself from 12MB to 32MB is a
-p640 with firmware version NAN04194.
-All other systems seem to ignore the NOTE section, real-base remains at
-0xc00000
-
-So I do not think your patch is a real improvement,
-clear error vs. silent corruption.
-
-Do you happen to know how to automate the changing the value of
-real-base? The addnote change has appearently no effect on recent
-systems.
-
-Olaf
+- k
