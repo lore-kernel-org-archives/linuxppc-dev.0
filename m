@@ -1,20 +1,15 @@
-Return-Path: <mingo@elte.hu>
-Received: from mx2.mail.elte.hu (mx2.mail.elte.hu [157.181.151.9])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 0E356DDFC5
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 Jul 2008 17:26:56 +1000 (EST)
-Date: Thu, 3 Jul 2008 09:26:29 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: linux-next: generic-ipi tree build failure
-Message-ID: <20080703072629.GB5648@elte.hu>
-References: <20080703171007.5a17ea25.sfr@canb.auug.org.au>
+Return-Path: <luoxu_gun@yahoo.com.cn>
+Received: from web15910.mail.cnb.yahoo.com (web15910.mail.cnb.yahoo.com
+	[202.165.103.55]) by ozlabs.org (Postfix) with SMTP id D516BDDDF5
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 Jul 2008 18:47:14 +1000 (EST)
+Date: Thu, 3 Jul 2008 16:40:30 +0800 (CST)
+From: =?gb2312?q?=D0=F1=20=C2=DE?= <luoxu_gun@yahoo.com.cn>
+Subject: where can i find a kdb patch for my MPC8313 platform
+To: linuxppc-dev@ozlabs.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080703171007.5a17ea25.sfr@canb.auug.org.au>
-Cc: linuxppc-dev@ozlabs.org, linux-next@vger.kernel.org,
-	Paul Mackerras <paulus@samba.org>, Jens Axboe <jens.axboe@oracle.com>
+Content-Type: multipart/alternative; boundary="0-2095769176-1215074430=:26526"
+Message-ID: <638697.26526.qm@web15910.mail.cnb.yahoo.com>
+Cc: Wood Scoott <scottwood@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,71 +19,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+--0-2095769176-1215074430=:26526
+Content-Type: text/plain; charset=gb2312
+Content-Transfer-Encoding: 8bit
 
-* Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+Hello all:
+     I hope add the KDB function for my mpc8313 platform. I find some informations from the ftp://oss.sgi.com/projects/kdb/download . But i only find the comman patch and a patch for X86 system. Hi Scoott i think you have ever used the KDB to debug the MPC8313. Could you tell me where can i find the patch for the MPC8313.
 
-> Hi Ingo, Jens,
-> 
-> Today's linux-next build (powerpc ppc64_defconfig) failed like this:
-> 
-> arch/powerpc/mm/tlb_64.c: In function 'pgtable_free_now':
-> arch/powerpc/mm/tlb_64.c:66: error: too many arguments to function 'smp_call_function'
-> arch/powerpc/mm/slice.c: In function 'slice_get_unmapped_area':
-> arch/powerpc/mm/slice.c:559: error: too many arguments to function 'on_each_cpu'
-> arch/powerpc/kernel/machine_kexec_64.c: In function 'kexec_prepare_cpus':
-> arch/powerpc/kernel/machine_kexec_64.c:175: error: too many arguments to function 'smp_call_function'
-> 
-> I applied the patch below.
 
-thanks, applied the tlb_64.c and machine_kexec_64.c bits to 
-tip/generic-ipi [see the commit below]. (Please carry the slice.c bits 
-in linux-next separately as that's due to new code in linux-next.)
+Thanks
+Best wishs
+Steven 
 
-	Ingo
+       
+---------------------------------
+ —≈ª¢” œ‰£¨ƒ˙µƒ÷’…˙” œ‰£°
+--0-2095769176-1215074430=:26526
+Content-Type: text/html; charset=gb2312
+Content-Transfer-Encoding: 8bit
 
----------------->
-commit 392096e98fd55e54035978fe03796fca8d26a574
-Author: Stephen Rothwell <sfr@canb.auug.org.au>
-Date:   Thu Jul 3 17:10:07 2008 +1000
+Hello all:<br>&nbsp;&nbsp;&nbsp;&nbsp; I hope add the KDB function for my mpc8313 platform. I find some informations from the ftp://oss.sgi.com/projects/kdb/download . But i only find the comman patch and a patch for X86 system. Hi Scoott i think you have ever used the KDB to debug the MPC8313. Could you tell me where can i find the patch for the MPC8313.<br><br><br>Thanks<br>Best wishs<br>Steven <br><p>&#32;
 
-    generic-ipi: fix linux-next tree build failure
-    
-    Today's linux-next build (powerpc ppc64_defconfig) failed like this:
-    
-    arch/powerpc/mm/tlb_64.c: In function 'pgtable_free_now':
-    arch/powerpc/mm/tlb_64.c:66: error: too many arguments to function 'smp_call_function'
-    arch/powerpc/kernel/machine_kexec_64.c: In function 'kexec_prepare_cpus':
-    arch/powerpc/kernel/machine_kexec_64.c:175: error: too many arguments to function 'smp_call_function'
-    
-    Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
-    Acked-by: Jens Axboe <jens.axboe@oracle.com>
-    Cc: Paul Mackerras <paulus@samba.org>
-    Cc: <linuxppc-dev@ozlabs.org>
-    Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-diff --git a/arch/powerpc/kernel/machine_kexec_64.c b/arch/powerpc/kernel/machine_kexec_64.c
-index 704375b..b732b5f 100644
---- a/arch/powerpc/kernel/machine_kexec_64.c
-+++ b/arch/powerpc/kernel/machine_kexec_64.c
-@@ -172,7 +172,7 @@ static void kexec_prepare_cpus(void)
- {
- 	int my_cpu, i, notified=-1;
- 
--	smp_call_function(kexec_smp_down, NULL, 0, /* wait */0);
-+	smp_call_function(kexec_smp_down, NULL, /* wait */0);
- 	my_cpu = get_cpu();
- 
- 	/* check the others cpus are now down (via paca hw cpu id == -1) */
-diff --git a/arch/powerpc/mm/tlb_64.c b/arch/powerpc/mm/tlb_64.c
-index e2d867c..69ad829 100644
---- a/arch/powerpc/mm/tlb_64.c
-+++ b/arch/powerpc/mm/tlb_64.c
-@@ -66,7 +66,7 @@ static void pgtable_free_now(pgtable_free_t pgf)
- {
- 	pte_freelist_forced_free++;
- 
--	smp_call_function(pte_free_smp_sync, NULL, 0, 1);
-+	smp_call_function(pte_free_smp_sync, NULL, 1);
- 
- 	pgtable_free(pgf);
- }
+      <hr size=1><a href="http://cn.mail.yahoo.com/"> —≈ª¢” œ‰£¨ƒ˙µƒ÷’…˙” œ‰£°</a>
+--0-2095769176-1215074430=:26526--
