@@ -1,14 +1,20 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 64C75DE28D
-	for <linuxppc-dev@ozlabs.org>; Fri,  4 Jul 2008 03:48:46 +1000 (EST)
-Date: Thu, 3 Jul 2008 21:48:44 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc: add FHCI USB, FSL MCU, FSL UPM and GPIO LEDs bindings
-Message-ID: <20080703174844.GA27966@polina.dev.rtsoft.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 3F375DE5F5
+	for <linuxppc-dev@ozlabs.org>; Fri,  4 Jul 2008 03:50:07 +1000 (EST)
+Message-Id: <EC062FA3-9CF8-4A94-95C7-2AAF22754A9C@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+In-Reply-To: <20080703174844.GA27966@polina.dev.rtsoft.ru>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v924)
+Subject: Re: [PATCH] powerpc: add FHCI USB, FSL MCU,
+	FSL UPM and GPIO LEDs bindings
+Date: Thu, 3 Jul 2008 12:50:01 -0500
+References: <20080703174844.GA27966@polina.dev.rtsoft.ru>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,150 +24,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch adds few bindings for the new drivers to be submitted through
-the appropriate maintainers.
 
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
+On Jul 3, 2008, at 12:48 PM, Anton Vorontsov wrote:
 
-Segher, thanks for the comments on the previous version. Do you see any
-issues with this one or anything I could improve further?
+> This patch adds few bindings for the new drivers to be submitted  
+> through
+> the appropriate maintainers.
+>
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> ---
+>
+> Segher, thanks for the comments on the previous version. Do you see  
+> any
+> issues with this one or anything I could improve further?
+>
+> And if there are no issues... Kumar, could you apply this for  
+> powerpc-next?
+>
+> Thanks.
+>
+> Documentation/powerpc/booting-without-of.txt |  111 +++++++++++++++++ 
+> +++++++++
+> 1 files changed, 111 insertions(+), 0 deletions(-)
+>
+> diff --git a/Documentation/powerpc/booting-without-of.txt b/ 
+> Documentation/powerpc/booting-without-of.txt
+> index b68684d..a7ea549 100644
+> --- a/Documentation/powerpc/booting-without-of.txt
+> +++ b/Documentation/powerpc/booting-without-of.txt
+> @@ -62,6 +62,10 @@ Table of Contents
+>       s) Freescale on board FPGA
+>       t) Freescael MSI interrupt controller
+>       u) Freescale General-purpose Timers Module
+> +      v) Freescale QUICC Engine USB Controller
+> +      w) Freescale MCU with MPC8349E-mITX compatible firmware
 
-And if there are no issues... Kumar, could you apply this for powerpc-next?
+MCU doesn't mean much to me.  Its good to expand out the acronym at  
+least once.
 
-Thanks.
-
- Documentation/powerpc/booting-without-of.txt |  111 ++++++++++++++++++++++++++
- 1 files changed, 111 insertions(+), 0 deletions(-)
-
-diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
-index b68684d..a7ea549 100644
---- a/Documentation/powerpc/booting-without-of.txt
-+++ b/Documentation/powerpc/booting-without-of.txt
-@@ -62,6 +62,10 @@ Table of Contents
-       s) Freescale on board FPGA
-       t) Freescael MSI interrupt controller
-       u) Freescale General-purpose Timers Module
-+      v) Freescale QUICC Engine USB Controller
-+      w) Freescale MCU with MPC8349E-mITX compatible firmware
-+      x) Freescale Localbus UPM programmed to work with NAND flash
-+      y) LEDs on GPIOs
- 
-   VII - Marvell Discovery mv64[345]6x System Controller chips
-     1) The /system-controller node
-@@ -2967,6 +2971,113 @@ platforms are moved over to use the flattened-device-tree model.
- 	clock-frequency = <0>;
-     };
- 
-+    v) Freescale QUICC Engine USB Controller
-+
-+    Required properties:
-+      - compatible : should be "fsl,<chip>-qe-usb", "fsl,mpc8323-qe-usb";
-+      - reg : the first two cells should contain usb registers location and
-+        length, the next two two cells should contain PRAM location and
-+        length.
-+      - interrupts : should contain USB interrupt.
-+      - interrupt-parent : interrupt source phandle.
-+      - fsl,fullspeed-clock : specifies the full speed USB clock source:
-+        "none": clock source is disabled
-+        "brg1" through "brg16": clock source is BRG1-BRG16, respectively
-+        "clk1" through "clk24": clock source is CLK1-CLK24, respectively
-+      - fsl,lowspeed-clock : specifies the low speed USB clock source:
-+        "none": clock source is disabled
-+        "brg1" through "brg16": clock source is BRG1-BRG16, respectively
-+        "clk1" through "clk24": clock source is CLK1-CLK24, respectively
-+      - hub-power-budget : optional, USB power budget for the root hub, in mA.
-+      - gpios : should specify GPIOs in this order: USBOE, USBTP, USBTN, USBRP,
-+        USBRN, SPEED (optional), and POWER (optional).
-+
-+    Example:
-+
-+	usb@6c0 {
-+		compatible = "fsl,mpc8360-qe-usb", "fsl,mpc8323-qe-usb";
-+		reg = <0x6c0 0x40 0x8b00 0x100>;
-+		interrupts = <11>;
-+		interrupt-parent = <&qeic>;
-+		fsl,fullspeed-clock = "clk21";
-+		gpios = <&qe_pio_b  2 0 /* USBOE */
-+			 &qe_pio_b  3 0 /* USBTP */
-+			 &qe_pio_b  8 0 /* USBTN */
-+			 &qe_pio_b  9 0 /* USBRP */
-+			 &qe_pio_b 11 0 /* USBRN */
-+			 &qe_pio_e 20 0 /* SPEED */
-+			 &qe_pio_e 21 0 /* POWER */>;
-+	};
-+
-+    w) Freescale MCU with MPC8349E-mITX compatible firmware
-+
-+    Required properties:
-+      - compatible : "fsl,<mcu-chip>-<board>", "fsl,mcu-mpc8349emitx";
-+      - reg : should specify I2C address (0x0a).
-+      - #gpio-cells : should be 2.
-+      - gpio-controller : should be present;
-+
-+    Example:
-+
-+	mcu_pio: mcu@0a {
-+		#gpio-cells = <2>;
-+		compatible = "fsl,mc9s08qg8-mpc8349emitx",
-+			     "fsl,mcu-mpc8349emitx";
-+		reg = <0x0a>;
-+		gpio-controller;
-+	};
-+
-+    x) Freescale Localbus UPM programmed to work with NAND flash
-+
-+      Required properties:
-+      - compatible : "fsl,upm-nand".
-+      - reg : should specify localbus chip select and size used for the chip.
-+      - fsl,upm-addr-offset : UPM pattern offset for the address latch.
-+      - fsl,upm-cmd-offset : UPM pattern offset for the command latch.
-+      - gpios : may specify optional GPIO connected to the Ready-Not-Busy pin.
-+
-+      Example:
-+
-+	upm@1,0 {
-+		compatible = "fsl,upm-nand";
-+		reg = <1 0 1>;
-+		fsl,upm-addr-offset = <16>;
-+		fsl,upm-cmd-offset = <8>;
-+		gpios = <&qe_pio_e 18 0>;
-+
-+		flash {
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			compatible = "...";
-+
-+			partition@0 {
-+				...
-+			};
-+		};
-+	};
-+
-+    y) LEDs on GPIOs
-+
-+    Required properties:
-+      - compatible : should be "gpio-led".
-+      - label : (optional) the label for this LED. If omitted, the label is
-+        taken from the node name (excluding the unit address).
-+      - gpios : should specify LED GPIO.
-+
-+    Example:
-+
-+	led@0 {
-+		compatible = "gpio-led";
-+		label = "hdd";
-+		gpios = <&mcu_pio 0 1>;
-+	};
-+
-+	led@1 {
-+		compatible = "gpio-led";
-+		label = "pwr";
-+		gpios = <&mcu_pio 1 0>;
-+	};
-+
- VII - Marvell Discovery mv64[345]6x System Controller chips
- ===========================================================
- 
--- 
-1.5.5.4
+- k
