@@ -1,21 +1,18 @@
-Return-Path: <John.Linn@xilinx.com>
-Received: from WA4EHSOBE004.bigfish.com (outbound-wa4.frontbridge.com
-	[216.32.181.16]) by ozlabs.org (Postfix) with ESMTP id 2EADBDDFDB
-	for <linuxppc-dev@ozlabs.org>; Fri,  4 Jul 2008 04:43:32 +1000 (EST)
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id A21C8DDF1A
+	for <linuxppc-dev@ozlabs.org>; Fri,  4 Jul 2008 04:53:14 +1000 (EST)
+Date: Thu, 3 Jul 2008 22:53:12 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: New fsl device bindings file
+Message-ID: <20080703185312.GA6043@polina.dev.rtsoft.ru>
+References: <40B88BFD-1FEB-4E36-9917-54C7380FF801@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Subject: RE: [PATCH] [V2] powerpc: Xilinx: PS2: Added new XPS PS2 driver
-Date: Thu, 3 Jul 2008 11:59:50 -0600
-In-Reply-To: <20080703174229.GL2284@secretlab.ca>
-References: <20080703164235.37739A006B@mail196-wa4.bigfish.com>
-	<20080703132305.ZZRA012@mailhub.coreip.homeip.net>
-	<20080703174229.GL2284@secretlab.ca>
-From: John Linn <John.Linn@xilinx.com>
-To: "Grant Likely" <grant.likely@secretlab.ca>,
-	"Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-Message-ID: <20080703175952.74E449C0051@mail178-wa4.bigfish.com>
-Cc: linuxppc-dev@ozlabs.org, Sadanand Mutyala <sadanan@xilinx.com>,
-	linux-input@vger.kernel.org
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <40B88BFD-1FEB-4E36-9917-54C7380FF801@kernel.crashing.org>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,65 +22,99 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-In reviewing the data sheet for the device, I don't see any shared
-information between the 2 channels of the device.
+On Thu, Jul 03, 2008 at 01:20:18PM -0500, Kumar Gala wrote:
+> Guys,
+>
+> I'm sure you'll hate for doing this, but I've asked Kim to create a new 
+> Documentation/powerpc/fsl-device-tree-bindings.txt as part of his SEC 
+> patch.
 
-The mutex looks like it's not needed to me also.  =
+Just curious... why we're maintaining documentation in the .txt file?
+We could just create Documentation/powerpc/fsl-device-tree-bindings.dts
+file, that will be:
 
+1. True device tree source file;
+2. With a lots of comments for documentation purposes;
+3. Could be compiled (via imaginable dts-doxygen) into .txt or nice .pdf
+   file and printed :-), exactly as we do with kerneldoc.
 
-I'll review with some others here to make sure I'm not overlooking
-something. =
+For example, this
 
+- - - -
+   e) I2C
 
--- John
+   Required properties :
 
-> -----Original Message-----
-> From: Grant Likely [mailto:glikely@secretlab.ca] On Behalf Of Grant
-Likely
-> Sent: Thursday, July 03, 2008 11:42 AM
-> To: Dmitry Torokhov
-> Cc: John Linn; linuxppc-dev@ozlabs.org; linux-input@vger.kernel.org;
-jwboyer@linux.vnet.ibm.com;
-> jacmet@sunsite.dk; Sadanand Mutyala
-> Subject: Re: [PATCH] [V2] powerpc: Xilinx: PS2: Added new XPS PS2
-driver
-> =
+    - device_type : Should be "i2c"
+    - reg : Offset and length of the register set for the device
 
-> On Thu, Jul 03, 2008 at 01:27:00PM -0400, Dmitry Torokhov wrote:
-> > Hi John,
-> >
-> > On Thu, Jul 03, 2008 at 09:42:31AM -0700, John Linn wrote:
-> > > +
-> > > +	/* Initialize the PS/2 interface */
-> > > +	mutex_lock(&drvdata->cfg_mutex);
-> > > +	if (xps2_initialize(drvdata)) {
-> > > +		mutex_unlock(&drvdata->cfg_mutex);
-> > > +		dev_err(dev, "Could not initialize device\n");
-> > > +		retval =3D -ENODEV;
-> > > +		goto failed3;
-> > > +	}
-> > > +	mutex_unlock(&drvdata->cfg_mutex);
-> >
-> > The drvdata is allocated per-port and so both (there are 2 PS/2
-ports,
-> > right?) ports get their own copy of cfg_mutex. Since you are trying
-to
-> > serialze access to resource shared by both ports it will not work.
-> > The original driver-global mutex was appropriate (the only thing I
-> > objected there was use of a counting semaphore instead of a mutex).
-> =
+   Recommended properties :
 
-> John, correct me if I'm wrong, but I don't think there are any shared
-> resources being accessed here and I believe the mutex is entirely
-> unnecessary.
-> =
+    - compatible : Should be "fsl-i2c" for parts compatible with
+      Freescale I2C specifications.
+    - interrupts : <a b> where a is the interrupt number and b is a
+      field that represents an encoding of the sense and level
+      information for the interrupt.  This should be encoded based on
+      the information in section 2) depending on the type of interrupt
+      controller you have.
+    - interrupt-parent : the phandle for the interrupt controller that
+      services interrupts for this device.
+    - dfsrr : boolean; if defined, indicates that this I2C device has
+      a digital filter sampling rate register
+    - fsl5200-clocking : boolean; if defined, indicated that this device
+      uses the FSL 5200 clocking mechanism.
 
-> Cheers,
-> g.
+   Example :
 
+	i2c@3000 {
+		interrupt-parent = <40000>;
+		interrupts = <1b 3>;
+		reg = <3000 18>;
+		device_type = "i2c";
+		compatible  = "fsl-i2c";
+		dfsrr;
+	};
+- - - -
 
-This email and any attachments are intended for the sole use of the named r=
-ecipient(s) and contain(s) confidential information that may be proprietary=
-, privileged or copyrighted under applicable law. If you are not the intend=
-ed recipient, do not read, copy, or forward this email message or any attac=
-hments. Delete this email message and any attachments immediately.
+Turns into
+
+- - - -
+/* Freescale I2C controller */
+i2c@3000 {
+	/* the phandle for the interrupt controller that services interrupts
+	 * for this device. */
+	interrupt-parent = <40000>;
+
+	/* interrupts: <a b> where a is the interrupt number and b is a
+	 * field that represents an encoding of the sense and level
+	 * information for the interrupt.  This should be encoded based on
+	 * the information in section 2) depending on the type of interrupt
+	 * controller you have. */
+	interrupts = <1b 3>;
+
+	/* offset and length of the register set for the device */
+	reg = <3000 18>;
+
+	/* deprecated; */
+	device_type = "i2c";
+
+	/* should be "fsl-i2c" for parts compatible with Freescale I2C
+	 * specifications. */
+	compatible  = "fsl-i2c";
+
+	/* optional; boolean; if defined, indicates that this I2C device has
+ 	 * a digital filter sampling rate register */
+	dfsrr;
+
+	/* optional; boolean; if defined, indicated that this device
+	 * uses the FSL 5200 clocking mechanism. */
+	fsl5200-clocking;
+};
+- - - -
+
+Or is this too wild? :-)
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
