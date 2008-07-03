@@ -1,20 +1,20 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.182])
-	by ozlabs.org (Postfix) with ESMTP id 708CDDDF52
-	for <linuxppc-dev@ozlabs.org>; Fri,  4 Jul 2008 02:28:43 +1000 (EST)
-Received: by wa-out-1112.google.com with SMTP id n7so539357wag.13
-	for <linuxppc-dev@ozlabs.org>; Thu, 03 Jul 2008 09:28:42 -0700 (PDT)
-Date: Thu, 3 Jul 2008 10:28:09 -0600
+Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.29])
+	by ozlabs.org (Postfix) with ESMTP id 9B6AEDDF09
+	for <linuxppc-dev@ozlabs.org>; Fri,  4 Jul 2008 02:30:35 +1000 (EST)
+Received: by yx-out-2324.google.com with SMTP id 8so259327yxg.39
+	for <linuxppc-dev@ozlabs.org>; Thu, 03 Jul 2008 09:30:34 -0700 (PDT)
+Date: Thu, 3 Jul 2008 10:30:00 -0600
 From: Grant Likely <grant.likely@secretlab.ca>
 To: Jon Smirl <jonsmirl@gmail.com>
 Subject: Re: [alsa-devel] [PATCH 2/3] ALSA SoC: Add mpc5200-psc I2S driver
-Message-ID: <20080703162809.GH2284@secretlab.ca>
+Message-ID: <20080703163000.GI2284@secretlab.ca>
 References: <20080701235330.16923.67218.stgit@trillian.secretlab.ca>
 	<20080701235335.16923.43253.stgit@trillian.secretlab.ca>
-	<9e4733910807020651u368763en9362653ed613b2d1@mail.gmail.com>
+	<9e4733910807020819sdb6f442q75dc7f10f9f605a5@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <9e4733910807020651u368763en9362653ed613b2d1@mail.gmail.com>
+In-Reply-To: <9e4733910807020819sdb6f442q75dc7f10f9f605a5@mail.gmail.com>
 Sender: Grant Likely <glikely@secretlab.ca>
 Cc: liam.girdwood@wolfsonmicro.com, alsa-devel@alsa-project.org,
 	broonie@opensource.wolfsonmicro.com, timur@freescale.com,
@@ -28,56 +28,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jul 02, 2008 at 09:51:59AM -0400, Jon Smirl wrote:
-> DMA, needs to be split out. Efika is AC97 on the MPC5200 and needs to
-> share DMA code. The new Phytec pcm030 baseboard is AC97 too.
+On Wed, Jul 02, 2008 at 11:19:18AM -0400, Jon Smirl wrote:
+> On 7/1/08, Grant Likely <grant.likely@secretlab.ca> wrote:
+> >  +               /* Due to errata in the i2s mode; need to line up enabling
+> >  +                * the transmitter with a transition on the frame sync
+> >  +                * line */
+> >  +
+> >  +               spin_lock_irqsave(&psc_i2s->lock, flags);
+> >  +               /* first make sure it is low */
+> >  +               while ((in_8(&regs->ipcr_acr.ipcr) & 0x80) != 0);
+> 
+> Could this be moved to the front of the routine, to increase parallelism?
+> 
+> Once you detect the 0, it will be a fixed interval before the 1
+> happens. Might as well overlap the computations.
+> 
 
-I agree, but I'm not sure the best way to organize a split.  I'm not
-doing anything with the Efika at the moment and I haven't dug into the
-details of what needs to be done for AC97.
+Good point.  I'll try this out and see if it remains stable.  If this
+gets done wrong, then left and right channels will often get swapped.
 
-> What does the device tree look like?
-
-Here is the relevant excerpt, but it is not documented yet.  I haven't
-made any attempt encode the layout into the device tree (clocking, etc.)
-
-	spi@f00 {
-		#address-cells = <1>;
-		#size-cells = <0>;
-		compatible = "fsl,mpc5200b-spi","fsl,mpc5200-spi";
-		reg = <0xf00 0x20>;
-		num-slaves = <32>;
-		interrupts = <2 13 0 2 14 0>;
-		interrupt-parent = <&mpc5200_pic>;
-
-		codec1: codec@2 {
-			compatible = "ti,tlv320aic26";
-			linux,modalias = "tlv320aic26";
-			max-speed = <1000000>;
-			reg = <2>;
-		};
-
-		codec2: codec@3 {
-			compatible = "ti,tlv320aic26";
-			linux,modalias = "tlv320aic26";
-			max-speed = <1000000>;
-			reg = <3>;
-		};
-	};
-
-	i2s@2200 {		// PSC2
-		compatible = "fsl,mpc5200b-psc-i2s","fsl,mpc5200-psc-i2s";
-		cell-index = <1>;
-		reg = <0x2200 0x100>;
-		interrupts = <2 2 0>;
-		interrupt-parent = <&mpc5200_pic>;
-		codec-handle = <&codec1>;
-	};
-	i2s@2400 {		// PSC3
-		compatible = "fsl,mpc5200b-psc-i2s","fsl,mpc5200-psc-i2s";
-		cell-index = <2>;
-		reg = <0x2400 0x100>;
-		interrupts = <2 3 0>;
-		interrupt-parent = <&mpc5200_pic>;
-		codec-handle = <&codec2>;
-	};
+g.
