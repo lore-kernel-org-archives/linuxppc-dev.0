@@ -1,37 +1,18 @@
-Return-Path: <nfont@austin.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 6F3A4DDE1D
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 Jul 2008 13:35:56 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e36.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m633Zoc2014214
-	for <linuxppc-dev@ozlabs.org>; Wed, 2 Jul 2008 23:35:50 -0400
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
-	m633ZoJj178326
-	for <linuxppc-dev@ozlabs.org>; Wed, 2 Jul 2008 21:35:50 -0600
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m633Zo6P016408
-	for <linuxppc-dev@ozlabs.org>; Wed, 2 Jul 2008 21:35:50 -0600
-Received: from austin.ibm.com (netmail2.austin.ibm.com [9.41.248.176])
-	by d03av04.boulder.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	m633ZnAO016402
-	for <linuxppc-dev@ozlabs.org>; Wed, 2 Jul 2008 21:35:50 -0600
-Received: from [9.65.174.195] (sig-9-65-174-195.mts.ibm.com [9.65.174.195])
-	by austin.ibm.com (8.13.8/8.12.10) with ESMTP id m633Zm83043106
-	for <linuxppc-dev@ozlabs.org>; Wed, 2 Jul 2008 22:35:49 -0500
-Message-ID: <486C491A.4020202@austin.ibm.com>
-Date: Wed, 02 Jul 2008 22:35:54 -0500
-From: Nathan Fontenot <nfont@austin.ibm.com>
-MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 4/5 v2] Split code into helper routines for drconf memory
-References: <486C4462.4010004@austin.ibm.com> <486C463F.5080702@austin.ibm.com>
-In-Reply-To: <486C463F.5080702@austin.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 45D75DDFEA
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 Jul 2008 13:39:16 +1000 (EST)
+Date: Thu, 3 Jul 2008 13:39:05 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Paul Mackerras <paulus@samba.org>, <linuxppc-dev@ozlabs.org>
+Subject: linux-next: manual merge of the powerpc tree
+Message-Id: <20080703133905.7b6f058f.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Thu__3_Jul_2008_13_39_05_+1000_BS=pLOyUzYESdm3O"
+Cc: Jean Delvare <khali@linux-fr.org>, linux-next@vger.kernel.org,
+	Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -41,253 +22,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Oops, some silliness in one of the comments.  New patch below.
+--Signature=_Thu__3_Jul_2008_13_39_05_+1000_BS=pLOyUzYESdm3O
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-This patch splits off several pieces of code that parse the
-ibm,dynamic-reconfiguration-memory node of the device tree into separate
-helper routines.  This is in preparation for the followon patch that will
-use these helper routines.  There are no functional changes in this patch.
+Hi Paul,
 
-Signed-off-by: Nathan Fontenot <nfont@austin.ibm.com>
----
- arch/powerpc/mm/numa.c |  209 +++++++++++++++++++++++++++++++++++++++----------
- 1 file changed, 170 insertions(+), 39 deletions(-)
+Today's linux-next merge of the powerpc tree got a conflict in
+arch/powerpc/sysdev/fsl_soc.c between commit
+4eac6a8b17ce5ebe66eb94b6a0b43aa3a2bf7ea6 ("i2c-mpc: Convert to an
+of_platform driver") from the i2c tree and commits
+22fb7d9be593181e2f779cf7a8421703a6be713b ("[POWERPC] fsl: Add warning for
+unrecognized I2C nodes in the device tree"),
+64f9b5ee17ee7974d7cc58d75221432d86960ba3 ("[POWERPC] fsl: Add CS4270 i2c
+data to fsl_soc.c") and e026892c85571e12f11abffde5a90bcc704d663e
+("[POWERPC] fsl: Update fsl_soc to use cell-index property of I2C nodes")
+from the powerpc tree.
 
-Index: linux-2.6.git/arch/powerpc/mm/numa.c
-===================================================================
---- linux-2.6.git.orig/arch/powerpc/mm/numa.c	2008-07-01 18:40:55.000000000 -0500
-+++ linux-2.6.git/arch/powerpc/mm/numa.c	2008-07-02 22:29:58.000000000 -0500
-@@ -268,6 +268,144 @@
- 	return result;
- }
- 
-+struct of_drconf_cell {
-+	u64	base_addr;
-+	u32	drc_index;
-+	u32	reserved;
-+	u32	aa_index;
-+	u32	flags;
-+};
-+
-+#define DRCONF_MEM_ASSIGNED	0x00000008
-+#define DRCONF_MEM_AI_INVALID	0x00000040
-+#define DRCONF_MEM_RESERVED	0x00000080
-+
-+/*
-+ * Read the next lmb list entry from the ibm,dynamic-memory property
-+ * and return the information in the provided of_drconf_cell structure.
-+ */
-+static void read_drconf_cell(struct of_drconf_cell *drmem, const u32 **cellp)
-+{
-+	const u32 *cp;
-+
-+	drmem->base_addr = read_n_cells(n_mem_addr_cells, cellp);
-+
-+	cp = *cellp;
-+	drmem->drc_index = cp[0];
-+	drmem->reserved = cp[1];
-+	drmem->aa_index = cp[2];
-+	drmem->flags = cp[3];
-+
-+	*cellp = cp + 4;
-+}
-+
-+/*
-+ * Retreive and validate the ibm,dynamic-memory property of the device tree.
-+ *
-+ * The layout of the ibm,dynamic-memory property is a number N of lmb
-+ * list entries followed by N lmb list entries.  Each lmb list entry
-+ * contains information as layed out in the of_drconf_cell struct above.
-+ */
-+static int of_get_drconf_memory(struct device_node *memory, const u32 **dm)
-+{
-+	const u32 *prop;
-+	u32 len, entries;
-+
-+	prop = of_get_property(memory, "ibm,dynamic-memory", &len);
-+	if (!prop || len < sizeof(unsigned int))
-+		return 0;
-+
-+	entries = *prop++;
-+
-+	/* Now that we know the number of entries, revalidate the size
-+	 * of the property read in to ensure we have everything
-+	 */
-+	if (len < (entries * (n_mem_addr_cells + 4) + 1) * sizeof(unsigned int))
-+		return 0;
-+
-+	*dm = prop;
-+	return entries;
-+}
-+
-+/*
-+ * Retreive and validate the ibm,lmb-size property for drconf memory
-+ * from the device tree.
-+ */
-+static u64 of_get_lmb_size(struct device_node *memory)
-+{
-+	const u32 *prop;
-+	u32 len;
-+
-+	prop = of_get_property(memory, "ibm,lmb-size", &len);
-+	if (!prop || len < sizeof(unsigned int))
-+		return 0;
-+
-+	return read_n_cells(n_mem_size_cells, &prop);
-+}
-+
-+struct assoc_arrays {
-+	u32	n_arrays;
-+	u32	array_sz;
-+	const u32 *arrays;
-+};
-+
-+/*
-+ * Retreive and validate the list of associativity arrays for drconf
-+ * memory from the ibm,associativity-lookup-arrays property of the
-+ * device tree..
-+ *
-+ * The layout of the ibm,associativity-lookup-arrays property is a number N
-+ * indicating the number of associativity arrays, followed by a number M
-+ * indicating the size of each associativity array, followed by a list
-+ * of N associativity arrays.
-+ */
-+static int of_get_assoc_arrays(struct device_node *memory,
-+			       struct assoc_arrays *aa)
-+{
-+	const u32 *prop;
-+	u32 len;
-+
-+	prop = of_get_property(memory, "ibm,associativity-lookup-arrays", &len);
-+	if (!prop || len < 2 * sizeof(unsigned int))
-+		return -1;
-+
-+	aa->n_arrays = *prop++;
-+	aa->array_sz = *prop++;
-+
-+	/* Now that we know the number of arrrays and size of each array,
-+	 * revalidate the size of the property read in.
-+	 */
-+	if (len < (aa->n_arrays * aa->array_sz + 2) * sizeof(unsigned int))
-+		return -1;
-+
-+	aa->arrays = prop;
-+	return 0;
-+}
-+
-+/*
-+ * This is like of_node_to_nid_single() for memory represented in the
-+ * ibm,dynamic-reconfiguration-memory node.
-+ */
-+static int of_drconf_to_nid_single(struct of_drconf_cell *drmem,
-+				   struct assoc_arrays *aa)
-+{
-+	int default_nid = 0;
-+	int nid = default_nid;
-+	int index;
-+
-+	if (min_common_depth > 0 && min_common_depth <= aa->array_sz &&
-+	    !(drmem->flags & DRCONF_MEM_AI_INVALID) &&
-+	    drmem->aa_index < aa->n_arrays) {
-+		index = drmem->aa_index * aa->array_sz + min_common_depth - 1;
-+		nid = aa->arrays[index];
-+
-+		if (nid == 0xffff || nid >= MAX_NUMNODES)
-+			nid = default_nid;
-+	}
-+
-+	return nid;
-+}
-+
- /*
-  * Figure out to which domain a cpu belongs and stick it there.
-  * Return the id of the domain used.
-@@ -355,57 +493,50 @@
-  */
- static void __init parse_drconf_memory(struct device_node *memory)
- {
--	const unsigned int *lm, *dm, *aa;
--	unsigned int ls, ld, la;
--	unsigned int n, aam, aalen;
--	unsigned long lmb_size, size, start;
--	int nid, default_nid = 0;
--	unsigned int ai, flags;
--
--	lm = of_get_property(memory, "ibm,lmb-size", &ls);
--	dm = of_get_property(memory, "ibm,dynamic-memory", &ld);
--	aa = of_get_property(memory, "ibm,associativity-lookup-arrays", &la);
--	if (!lm || !dm || !aa ||
--	    ls < sizeof(unsigned int) || ld < sizeof(unsigned int) ||
--	    la < 2 * sizeof(unsigned int))
-+	const u32 *dm;
-+	unsigned int n, rc;
-+	unsigned long lmb_size, size;
-+	int nid;
-+	struct assoc_arrays aa;
-+
-+	n = of_get_drconf_memory(memory, &dm);
-+	if (!n)
- 		return;
- 
--	lmb_size = read_n_cells(n_mem_size_cells, &lm);
--	n = *dm++;		/* number of LMBs */
--	aam = *aa++;		/* number of associativity lists */
--	aalen = *aa++;		/* length of each associativity list */
--	if (ld < (n * (n_mem_addr_cells + 4) + 1) * sizeof(unsigned int) ||
--	    la < (aam * aalen + 2) * sizeof(unsigned int))
-+	lmb_size = of_get_lmb_size(memory);
-+	if (!lmb_size)
-+		return;
-+
-+	rc = of_get_assoc_arrays(memory, &aa);
-+	if (rc)
- 		return;
- 
- 	for (; n != 0; --n) {
--		start = read_n_cells(n_mem_addr_cells, &dm);
--		ai = dm[2];
--		flags = dm[3];
--		dm += 4;
--		/* 0x80 == reserved, 0x8 = assigned to us */
--		if ((flags & 0x80) || !(flags & 0x8))
-+		struct of_drconf_cell drmem;
-+
-+		read_drconf_cell(&drmem, &dm);
-+
-+		/* skip this block if the reserved bit is set in flags (0x80)
-+		   or if the block is not assigned to this partition (0x8) */
-+		if ((drmem.flags & DRCONF_MEM_RESERVED)
-+		    || !(drmem.flags & DRCONF_MEM_ASSIGNED))
- 			continue;
--		nid = default_nid;
--		/* flags & 0x40 means associativity index is invalid */
--		if (min_common_depth > 0 && min_common_depth <= aalen &&
--		    (flags & 0x40) == 0 && ai < aam) {
--			/* this is like of_node_to_nid_single */
--			nid = aa[ai * aalen + min_common_depth - 1];
--			if (nid == 0xffff || nid >= MAX_NUMNODES)
--				nid = default_nid;
--		}
- 
--		fake_numa_create_new_node(((start + lmb_size) >> PAGE_SHIFT),
--						&nid);
-+		nid = of_drconf_to_nid_single(&drmem, &aa);
-+
-+		fake_numa_create_new_node(
-+				((drmem.base_addr + lmb_size) >> PAGE_SHIFT),
-+					   &nid);
-+
- 		node_set_online(nid);
- 
--		size = numa_enforce_memory_limit(start, lmb_size);
-+		size = numa_enforce_memory_limit(drmem.base_addr, lmb_size);
- 		if (!size)
- 			continue;
- 
--		add_active_range(nid, start >> PAGE_SHIFT,
--				 (start >> PAGE_SHIFT) + (size >> PAGE_SHIFT));
-+		add_active_range(nid, drmem.base_addr >> PAGE_SHIFT,
-+				 (drmem.base_addr >> PAGE_SHIFT)
-+				 + (size >> PAGE_SHIFT));
- 	}
- }
+The changes from the powerpc tree modify code that the i2c tree removes.
+I used the i2c tree's version, but someone should check the result.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Thu__3_Jul_2008_13_39_05_+1000_BS=pLOyUzYESdm3O
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkhsSdkACgkQjjKRsyhoI8x0/gCgrwERbKr5w5TCuKaW5zmqSOZo
+CjMAn3Lesx5q9ogDarnWL0e/5wJlmMm+
+=7q+g
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__3_Jul_2008_13_39_05_+1000_BS=pLOyUzYESdm3O--
