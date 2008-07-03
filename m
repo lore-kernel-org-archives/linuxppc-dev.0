@@ -1,29 +1,18 @@
-Return-Path: <sachinp@in.ibm.com>
-Received: from e28esmtp05.in.ibm.com (e28smtp05.in.ibm.com [59.145.155.5])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e28smtp05.in.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id B78BCDDEE2
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 Jul 2008 16:32:57 +1000 (EST)
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
-	by e28esmtp05.in.ibm.com (8.13.1/8.13.1) with ESMTP id m636Vu57007934
-	for <linuxppc-dev@ozlabs.org>; Thu, 3 Jul 2008 12:01:56 +0530
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
-	by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
-	m636VZwY1376498
-	for <linuxppc-dev@ozlabs.org>; Thu, 3 Jul 2008 12:01:35 +0530
-Received: from d28av04.in.ibm.com (loopback [127.0.0.1])
-	by d28av04.in.ibm.com (8.13.1/8.13.3) with ESMTP id m636VthA014644
-	for <linuxppc-dev@ozlabs.org>; Thu, 3 Jul 2008 12:01:55 +0530
-Message-ID: <486C726A.9080606@in.ibm.com>
-Date: Thu, 03 Jul 2008 12:02:10 +0530
-From: "Sachin P. Sant" <sachinp@in.ibm.com>
-MIME-Version: 1.0
-To: michael@ellerman.id.au
+Return-Path: <michael@ellerman.id.au>
 Subject: Re: [PATCH] powerpc: Fix /dev/oldmem for kdump
-References: <48637594.5040709@in.ibm.com> <1215065710.17950.12.camel@localhost>
-In-Reply-To: <1215065710.17950.12.camel@localhost>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+From: Michael Ellerman <michael@ellerman.id.au>
+To: "Sachin P. Sant" <sachinp@in.ibm.com>
+In-Reply-To: <486C726A.9080606@in.ibm.com>
+References: <48637594.5040709@in.ibm.com>
+	<1215065710.17950.12.camel@localhost>  <486C726A.9080606@in.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-bAVyYX0KacCVUyDXmsZ0"
+Date: Thu, 03 Jul 2008 16:36:04 +1000
+Message-Id: <1215066964.17950.28.camel@localhost>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,17 +22,55 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Michael Ellerman wrote:
-> Even though I wrote this, it was so long ago I can't really vouch for
-> it. If you've tested it and it works Sachin then we should merge it. Is
-> this fix in distros or does it not apply?
->   
-Yes, i have tested this on couple of power boxes and the patch
-works fine. [ i can copy dump using both /proc/vmcore and /dev/oldmem
-interface ]
 
-No this fix is not part of distro ATM. But yes it applies to distros
-also. Once it is merged upstream, distros will eventually pick this up.
+--=-bAVyYX0KacCVUyDXmsZ0
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Thanks
--Sachin
+On Thu, 2008-07-03 at 12:02 +0530, Sachin P. Sant wrote:
+> Michael Ellerman wrote:
+> > Even though I wrote this, it was so long ago I can't really vouch for
+> > it. If you've tested it and it works Sachin then we should merge it. Is
+> > this fix in distros or does it not apply?
+> >  =20
+> Yes, i have tested this on couple of power boxes and the patch
+> works fine. [ i can copy dump using both /proc/vmcore and /dev/oldmem
+> interface ]
+
+OK great, thanks for that.
+
+> No this fix is not part of distro ATM. But yes it applies to distros
+> also. Once it is merged upstream, distros will eventually pick this up.
+
+Crud, OK well I guess we should hurry up and merge it then :D
+
+Paul, this has been broken for quite a while, but it would still be nice
+if the fix was in 26 - sorry!
+
+Acked-by: Michael Ellerman <michael@ellerman.id.au>
+
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-bAVyYX0KacCVUyDXmsZ0
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBIbHNUdSjSd0sB4dIRAvh4AJ46tPEz8+/Xz16SXdBLOFrY6LKQfgCgi+M1
+kpqznj47asn4tjZolYJiOvo=
+=KpkT
+-----END PGP SIGNATURE-----
+
+--=-bAVyYX0KacCVUyDXmsZ0--
