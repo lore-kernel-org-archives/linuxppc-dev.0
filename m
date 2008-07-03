@@ -1,21 +1,19 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <ncase@xes-inc.com>
+Received: from xes-mad.com (xes-mad.com [216.165.139.214])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 9FB99DDFAB
-	for <linuxppc-dev@ozlabs.org>; Fri,  4 Jul 2008 00:22:37 +1000 (EST)
-Message-ID: <486CE081.2020906@freescale.com>
-Date: Thu, 03 Jul 2008 09:21:53 -0500
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: =?UTF-8?B?5petIOe9lw==?= <luoxu_gun@yahoo.com.cn>
-Subject: Re: where can i find a kdb patch for my MPC8313 platform
-References: <638697.26526.qm@web15910.mail.cnb.yahoo.com>
-In-Reply-To: <638697.26526.qm@web15910.mail.cnb.yahoo.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 9A1E1DE0A7
+	for <linuxppc-dev@ozlabs.org>; Fri,  4 Jul 2008 01:23:39 +1000 (EST)
+Subject: Re: gianfar in SGMII mode
+From: Nate Case <ncase@xes-inc.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1215039186.7559.548.camel@localhost.localdomain>
+References: <1215039186.7559.548.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Thu, 03 Jul 2008 10:23:31 -0500
+Message-Id: <1215098611.7559.551.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,14 +23,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-旭 罗 wrote:
-> Hello all:
->      I hope add the KDB function for my mpc8313 platform. I find some 
-> informations from the ftp://oss.sgi.com/projects/kdb/download . But i 
-> only find the comman patch and a patch for X86 system. Hi Scoott i think 
-> you have ever used the KDB to debug the MPC8313. Could you tell me where 
-> can i find the patch for the MPC8313.
+On Wed, 2008-07-02 at 17:53 -0500, Nate Case wrote:
+> I'm looking at gfar_configure_serdes() and I'm at a loss as to why
+> this
+> is always called when the MAC is in SGMII mode.  It looks like it
+> assumes the use of TBI for some reason.  On my board it's just a
+> regular
+> SGMII interface to a bcm5482 PHY in SGMII mode, so there is no TBI
+> involved.
+> 
+> I'm guessing this is a case of the driver making incorrect assumptions
+> based on the existing Freescale boards.  Or am I missing something
+> here? 
 
-I have never used KDB, sorry.
+Answering my own question: I see now that TBI is used internally on the
+chip for the SerDes interface which implements SGMII..  so maybe there's
+no problem with what the driver is doing after all.
 
--Scott
+-- 
+Nate Case <ncase@xes-inc.com>
