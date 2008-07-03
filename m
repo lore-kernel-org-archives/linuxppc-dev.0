@@ -1,20 +1,19 @@
-Return-Path: <leon.woestenberg@gmail.com>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.247])
-	by ozlabs.org (Postfix) with ESMTP id 1FD7DDDEF2
+Return-Path: <bsilverman@conceptxdesign.com>
+Received: from smtprelay.hostedemail.com (smtprelay0249.hostedemail.com
+	[216.40.44.249]) by ozlabs.org (Postfix) with ESMTP id 7D8B1DDF02
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  4 Jul 2008 06:03:34 +1000 (EST)
-Received: by an-out-0708.google.com with SMTP id c34so715334anc.78
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 03 Jul 2008 13:03:33 -0700 (PDT)
-Message-ID: <c384c5ea0807031303i1ddf7663na80928fd77d40be5@mail.gmail.com>
-Date: Thu, 3 Jul 2008 22:03:33 +0200
-From: "Leon Woestenberg" <leon.woestenberg@gmail.com>
-To: "Brian Silverman" <bsilverman@conceptxdesign.com>
-Subject: Re: Full Linux distributions
-In-Reply-To: <486D27B9.8090308@conceptxdesign.com>
+	Fri,  4 Jul 2008 06:12:05 +1000 (EST)
+Message-ID: <486D32A7.7080007@conceptxdesign.com>
+Date: Thu, 03 Jul 2008 16:12:23 -0400
+From: Brian Silverman <bsilverman@conceptxdesign.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Leon Woestenberg <leon.woestenberg@gmail.com>
+Subject: Re: Full Linux distributions
 References: <486D27B9.8090308@conceptxdesign.com>
+	<c384c5ea0807031303i1ddf7663na80928fd77d40be5@mail.gmail.com>
+In-Reply-To: <c384c5ea0807031303i1ddf7663na80928fd77d40be5@mail.gmail.com>
+Content-Type: multipart/alternative;
+	boundary="------------030003030702010004090603"
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -26,32 +25,79 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello Brian,
 
-On Thu, Jul 3, 2008 at 9:25 PM, Brian Silverman
-<bsilverman@conceptxdesign.com> wrote:
-> I'm looking for advice into what Linux distributions (rootfs) people are
-> using for the PowerPC.
->
-> Specifically, I'm currently using busybox for my core rootfs, but I'm
->
-buildroot I guess, not busybox (alone).
+This is a multi-part message in MIME format.
+--------------030003030702010004090603
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-> looking for an alternative that will allow me to:
->   - easily add new packages
+Thanks for your response...
 
->   - is binary compatible with the PPC405. 440, and Freescale 85xx cores.
+Leon Woestenberg wrote:
 >
-binary compatible? You mean it can build binaries for those cores?
+>>   - is binary compatible with the PPC405. 440, and Freescale 85xx cores.
+>>
+>>     
+> binary compatible? You mean it can build binaries for those cores?
+>   
+What I meant (but said poorly) was that it has pre-compiled binaries.  
+But its fine if I can build it under cygwin.  And I am thinking that I 
+may drop the cygwin requirement, because its painful to do linux builds 
+under it.
+>   
+> My preference is to use OpenEmbedded and do so under a Linux host
+> system (any will do).
+> As I don't want to be tied to a certain host OS, Emdebian or
+> Gentoo-Embedded are no-go for me.
+>
+> I have used tools and rootfs systems like crosstool, buildroot, LFS before.
+>
+> There is also LTIB by Freescale, tried that?
+>   
+I need to look closer at LITB - but I was guessing it didn't have PPC4xx 
+support.
 
->   - can be large (compared to the usual embedded devices), say in the 100MB
-> to 1GB range.  It will sit on an SD card.
->   - Can be built/maintained under cygwin, and can generate a ext2 image
-> (e.g. with gen2extfs)
->
->   3) OpenEmbedded (doesn't seem to currently support cygwin)
->
-My preference is to use OpenEmbedded and do so under a Linux host
+Thanks!
+
+-- 
+Brian Silverman
+Concept X, LLC
+
+
+--------------030003030702010004090603
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html;charset=ISO-8859-1" http-equiv="Content-Type">
+</head>
+<body bgcolor="#ffffff" text="#000000">
+Thanks for your response...<br>
+<br>
+Leon Woestenberg wrote:
+<blockquote
+ cite="mid:c384c5ea0807031303i1ddf7663na80928fd77d40be5@mail.gmail.com"
+ type="cite"><br>
+  <blockquote type="cite">
+    <pre wrap="">  - is binary compatible with the PPC405. 440, and Freescale 85xx cores.
+
+    </pre>
+  </blockquote>
+  <pre wrap=""><!---->binary compatible? You mean it can build binaries for those cores?
+  </pre>
+</blockquote>
+What I meant (but said poorly) was that it has pre-compiled binaries.&nbsp;
+But its fine if I can build it under cygwin.&nbsp; And I am thinking that I
+may drop the cygwin requirement, because its painful to do linux builds
+under it.<br>
+<blockquote
+ cite="mid:c384c5ea0807031303i1ddf7663na80928fd77d40be5@mail.gmail.com"
+ type="cite">
+  <pre wrap="">
+  </pre>
+  <pre wrap="">My preference is to use OpenEmbedded and do so under a Linux host
 system (any will do).
 As I don't want to be tied to a certain host OS, Emdebian or
 Gentoo-Embedded are no-go for me.
@@ -59,7 +105,17 @@ Gentoo-Embedded are no-go for me.
 I have used tools and rootfs systems like crosstool, buildroot, LFS before.
 
 There is also LTIB by Freescale, tried that?
+  </pre>
+</blockquote>
+I need to look closer at LITB - but I was guessing it didn't have
+PPC4xx support.<br>
+<br>
+Thanks!<br>
+<pre class="moz-signature" cols="72">-- 
+Brian Silverman
+Concept X, LLC
+</pre>
+</body>
+</html>
 
-Regards,
--- 
-Leon
+--------------030003030702010004090603--
