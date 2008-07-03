@@ -1,35 +1,21 @@
-Return-Path: <ossthema@de.ibm.com>
-Received: from mtagate5.de.ibm.com (mtagate5.de.ibm.com [195.212.29.154])
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate5.de.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id A4697DE039
-	for <linuxppc-dev@ozlabs.org>; Fri,  4 Jul 2008 00:20:02 +1000 (EST)
-Received: from d12nrmr1607.megacenter.de.ibm.com
-	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate5.de.ibm.com (8.13.8/8.13.8) with ESMTP id m63EIp7M113176
-	for <linuxppc-dev@ozlabs.org>; Thu, 3 Jul 2008 14:18:51 GMT
-Received: from d12av03.megacenter.de.ibm.com (d12av03.megacenter.de.ibm.com
-	[9.149.165.213])
-	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v9.0) with
-	ESMTP id m63EIpJV3141806
-	for <linuxppc-dev@ozlabs.org>; Thu, 3 Jul 2008 16:18:51 +0200
-Received: from d12av03.megacenter.de.ibm.com (loopback [127.0.0.1])
-	by d12av03.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id m63EInhe021766
-	for <linuxppc-dev@ozlabs.org>; Thu, 3 Jul 2008 16:18:50 +0200
-From: Jan-Bernd Themann <ossthema@de.ibm.com>
-Subject: [PATCH 2/3] ehea: add MODULE_DEVICE_TABLE
-Date: Thu, 3 Jul 2008 15:18:48 +0100
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 9FB99DDFAB
+	for <linuxppc-dev@ozlabs.org>; Fri,  4 Jul 2008 00:22:37 +1000 (EST)
+Message-ID: <486CE081.2020906@freescale.com>
+Date: Thu, 03 Jul 2008 09:21:53 -0500
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200807031618.49641.ossthema@de.ibm.com>
-Cc: Thomas Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
-	netdev <netdev@vger.kernel.org>, hering2@de.ibm.com,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	kamalesh@linux.vnet.ibm.com, linux-ppc <linuxppc-dev@ozlabs.org>,
-	Christoph Raisch <raisch@de.ibm.com>, Marcus Eder <meder@de.ibm.com>
+To: =?UTF-8?B?5petIOe9lw==?= <luoxu_gun@yahoo.com.cn>
+Subject: Re: where can i find a kdb patch for my MPC8313 platform
+References: <638697.26526.qm@web15910.mail.cnb.yahoo.com>
+In-Reply-To: <638697.26526.qm@web15910.mail.cnb.yahoo.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,22 +25,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Required to allow distros to easily detect when ehea
-module needs to be loaded
+旭 罗 wrote:
+> Hello all:
+>      I hope add the KDB function for my mpc8313 platform. I find some 
+> informations from the ftp://oss.sgi.com/projects/kdb/download . But i 
+> only find the comman patch and a patch for X86 system. Hi Scoott i think 
+> you have ever used the KDB to debug the MPC8313. Could you tell me where 
+> can i find the patch for the MPC8313.
 
-Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com>
+I have never used KDB, sorry.
 
-
----
-
-diff -Nurp -X dontdiff linux-2.6.26-rc8/drivers/net/ehea/ehea_main.c patched_kernel/drivers/net/ehea/ehea_main.c
---- linux-2.6.26-rc8/drivers/net/ehea/ehea_main.c	2008-07-02 13:27:03.000000000 +0200
-+++ patched_kernel/drivers/net/ehea/ehea_main.c	2008-07-02 13:48:21.000000000 +0200
-@@ -118,6 +118,7 @@ static struct of_device_id ehea_device_t
- 	},
- 	{},
- };
-+MODULE_DEVICE_TABLE(of, ehea_device_table);
- 
- static struct of_platform_driver ehea_driver = {
- 	.name = "ehea",
+-Scott
