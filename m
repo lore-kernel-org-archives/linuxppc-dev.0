@@ -1,22 +1,30 @@
-Return-Path: <jonsmirl@gmail.com>
-Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.29])
-	by ozlabs.org (Postfix) with ESMTP id 6D7B8DDE04
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 Jul 2008 22:22:19 +1000 (EST)
-Received: by yx-out-2324.google.com with SMTP id 8so209223yxg.39
-	for <linuxppc-dev@ozlabs.org>; Thu, 03 Jul 2008 05:22:18 -0700 (PDT)
-Message-ID: <9e4733910807030522h1aa0bl1801ecc5fc877c25@mail.gmail.com>
-Date: Thu, 3 Jul 2008 08:22:18 -0400
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Grant Likely" <grant.likely@secretlab.ca>
-Subject: Re: linux-next: manual merge of the powerpc tree
-In-Reply-To: <20080703054739.GA643@secretlab.ca>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20080703133905.7b6f058f.sfr@canb.auug.org.au>
-	<20080703054739.GA643@secretlab.ca>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linuxppc-dev@ozlabs.org,
-	linux-next@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
-	Jean Delvare <khali@linux-fr.org>, Timur Tabi <timur@freescale.com>
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 6BEB7DDF36
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 Jul 2008 23:19:32 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e1.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m63DJPkQ004213
+	for <linuxppc-dev@ozlabs.org>; Thu, 3 Jul 2008 09:19:25 -0400
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
+	m63DI9a4232174
+	for <linuxppc-dev@ozlabs.org>; Thu, 3 Jul 2008 09:18:09 -0400
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m63DI83Z013023
+	for <linuxppc-dev@ozlabs.org>; Thu, 3 Jul 2008 09:18:08 -0400
+Date: Thu, 3 Jul 2008 09:14:48 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: John Linn <john.linn@xilinx.com>
+Subject: Re: [PATCH] powerpc: Xilinx: add 440 platform support
+Message-ID: <20080703091448.4e298ce8@zod.rchland.ibm.com>
+In-Reply-To: <20080701224829.EC51111E8013@mail35-sin.bigfish.com>
+References: <20080701224829.EC51111E8013@mail35-sin.bigfish.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, John Linn <john.linn@xilinx.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,46 +34,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 7/3/08, Grant Likely <grant.likely@secretlab.ca> wrote:
-> On Thu, Jul 03, 2008 at 01:39:05PM +1000, Stephen Rothwell wrote:
->  > Hi Paul,
->  >
->  > Today's linux-next merge of the powerpc tree got a conflict in
->  > arch/powerpc/sysdev/fsl_soc.c between commit
->  > 4eac6a8b17ce5ebe66eb94b6a0b43aa3a2bf7ea6 ("i2c-mpc: Convert to an
->  > of_platform driver") from the i2c tree and commits
->
->
-> It probably would have been better for this patch to go in via the
->  PowerPC tree.  It only touches powerpc-specific i2c code, not any i2c
->  core code.  There are quite a few MPCxxxx ports which use this driver,
->  I'd be happier to see it dropped from the i2c tree and merged in via
->  either Kumar or myself.
->
->  I'd also like to see some acks from people who have tested this patch
->  before it goes in.  (I'm just as guilty here; I'll apply it and test it
->  to my tree tomorrow).
+On Tue, 1 Jul 2008 15:48:26 -0700
+John Linn <john.linn@xilinx.com> wrote:
 
-I'm using it in my system. It doesn't change the function of the i2c
-controller, only how drivers get loaded. So if you boot and your
-devices are there it is working.
+> Support for the Xilinx Virtex5 FXT 440 is being
+> added.
+> 
+> Signed-off-by: John Linn <john.linn@xilinx.com>
+> ---
+>  arch/powerpc/platforms/44x/Kconfig  |   25 ++++++++++++++
+>  arch/powerpc/platforms/44x/Makefile |    1 +
+>  arch/powerpc/platforms/44x/virtex.c |   60 +++++++++++++++++++++++++++++++++++
+>  3 files changed, 86 insertions(+), 0 deletions(-)
+>  create mode 100644 arch/powerpc/platforms/44x/virtex.c
+> 
+> diff --git a/arch/powerpc/platforms/44x/Kconfig b/arch/powerpc/platforms/44x/Kconfig
+> index 6abe913..84eb847 100644
+> --- a/arch/powerpc/platforms/44x/Kconfig
+> +++ b/arch/powerpc/platforms/44x/Kconfig
+> @@ -102,6 +102,22 @@ config YOSEMITE
+>  #	help
+>  #	  This option enables support for the IBM PPC440GX evaluation board.
+> 
+> +config XILINX_VIRTEX440_GENERIC_BOARD
+> +	bool "Generic Xilinx Virtex 440 board"
+> +	depends on 44x
+> +	default n
+> +	select XILINX_VIRTEX_5_FXT
 
-Testing was good when the patch was initially posted in January. In
-the last six months the initial patch set has been sliced and diced
-into a bunch of different pieces but the contents of this patch are
-essentially unchanged.
+If this is for generic Virtex 440 board support, why is it selecting a
+specific Virtex 5 board?  Or am I confused as to what
+XILINX_VIRTEX_5_FXT is?
 
-I don't care which tree it uses to get to mainline, I'd just like to
-see it get merged.
-
-
->
->
->  g.
->
->
-
-
--- 
-Jon Smirl
-jonsmirl@gmail.com
+josh
