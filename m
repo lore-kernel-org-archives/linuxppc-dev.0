@@ -1,22 +1,15 @@
-Return-Path: <afleming@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 15D32DDE45
-	for <linuxppc-dev@ozlabs.org>; Fri,  4 Jul 2008 09:14:59 +1000 (EST)
-Message-Id: <2263A33B-E160-4E51-BD42-13ED72D067E8@freescale.com>
-From: Andy Fleming <afleming@freescale.com>
-To: Nate Case <ncase@xes-inc.com>
-In-Reply-To: <1215098611.7559.551.camel@localhost.localdomain>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v924)
-Subject: Re: gianfar in SGMII mode
-Date: Thu, 3 Jul 2008 18:14:41 -0500
-References: <1215039186.7559.548.camel@localhost.localdomain>
-	<1215098611.7559.551.camel@localhost.localdomain>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <ntl@pobox.com>
+Received: from sasl.smtp.pobox.com (a-sasl-fastnet.sasl.smtp.pobox.com
+	[207.106.133.19]) by ozlabs.org (Postfix) with ESMTP id 09F79DDDF9
+	for <linuxppc-dev@ozlabs.org>; Fri,  4 Jul 2008 09:20:25 +1000 (EST)
+Date: Thu, 3 Jul 2008 18:20:01 -0500
+From: Nathan Lynch <ntl@pobox.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] Add PPC_FEATURE_PMU_COMPAT
+Message-ID: <20080703232001.GB9594@localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,30 +19,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Beginning with Power6, there is a set of 32 PMU events which is
+compatible across POWER processor lines.  PPC_FEATURE_PMU_COMPAT
+indicates support for this subset.
 
-On Jul 3, 2008, at 10:23, Nate Case wrote:
+Signed-off-by: Nathan Lynch <ntl@pobox.com>
+---
+ arch/powerpc/kernel/cputable.c |    4 ++--
+ include/asm-powerpc/cputable.h |    1 +
+ 2 files changed, 3 insertions(+), 2 deletions(-)
 
-> On Wed, 2008-07-02 at 17:53 -0500, Nate Case wrote:
->> I'm looking at gfar_configure_serdes() and I'm at a loss as to why
->> this
->> is always called when the MAC is in SGMII mode.  It looks like it
->> assumes the use of TBI for some reason.  On my board it's just a
->> regular
->> SGMII interface to a bcm5482 PHY in SGMII mode, so there is no TBI
->> involved.
->>
->> I'm guessing this is a case of the driver making incorrect  
->> assumptions
->> based on the existing Freescale boards.  Or am I missing something
->> here?
->
-> Answering my own question: I see now that TBI is used internally on  
-> the
-> chip for the SerDes interface which implements SGMII..  so maybe  
-> there's
-> no problem with what the driver is doing after all.
-
-
-Yeah, it's screwy, but that's how the chip works.
-
-Andy
+diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
+index 817cea1..a9c90be 100644
+--- a/arch/powerpc/kernel/cputable.c
++++ b/arch/powerpc/kernel/cputable.c
+@@ -70,10 +70,10 @@ extern void __restore_cpu_power7(void);
+ 				 PPC_FEATURE_SMT | PPC_FEATURE_ICACHE_SNOOP)
+ #define COMMON_USER_POWER6	(COMMON_USER_PPC64 | PPC_FEATURE_ARCH_2_05 |\
+ 				 PPC_FEATURE_SMT | PPC_FEATURE_ICACHE_SNOOP | \
+-				 PPC_FEATURE_TRUE_LE)
++				 PPC_FEATURE_TRUE_LE | PPC_FEATURE_PMU_COMPAT)
+ #define COMMON_USER_POWER7	(COMMON_USER_PPC64 | PPC_FEATURE_ARCH_2_06 |\
+ 				 PPC_FEATURE_SMT | PPC_FEATURE_ICACHE_SNOOP | \
+-				 PPC_FEATURE_TRUE_LE)
++				 PPC_FEATURE_TRUE_LE | PPC_FEATURE_PMU_COMPAT)
+ #define COMMON_USER_PA6T	(COMMON_USER_PPC64 | PPC_FEATURE_PA6T |\
+ 				 PPC_FEATURE_TRUE_LE | \
+ 				 PPC_FEATURE_HAS_ALTIVEC_COMP)
+diff --git a/include/asm-powerpc/cputable.h b/include/asm-powerpc/cputable.h
+index 4e4491c..a9c1de3 100644
+--- a/include/asm-powerpc/cputable.h
++++ b/include/asm-powerpc/cputable.h
+@@ -26,6 +26,7 @@
+ #define PPC_FEATURE_POWER6_EXT		0x00000200
+ #define PPC_FEATURE_ARCH_2_06		0x00000100
+ #define PPC_FEATURE_HAS_VSX		0x00000080
++#define PPC_FEATURE_PMU_COMPAT		0x00000040
+ 
+ #define PPC_FEATURE_TRUE_LE		0x00000002
+ #define PPC_FEATURE_PPC_LE		0x00000001
+-- 
+1.5.5.1
