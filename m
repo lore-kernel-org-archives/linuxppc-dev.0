@@ -1,21 +1,21 @@
-Return-Path: <dzu@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id DFAA9DDE25
+Return-Path: <tmaenner@aehr.com>
+Received: from loki.aehr.com (gw01.aehr.com [64.32.191.120])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id BC1A6DE105
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  4 Jul 2008 02:26:08 +1000 (EST)
-From: Detlev Zundel <dzu@denx.de>
-To: Dave Cogley <dcogley@uslinc.com>
-Subject: Re: Updating glibc on SELF image
-References: <1213824912.4450.20.camel@localhost.localdomain>
-	<1213901149.4450.22.camel@localhost.localdomain>
-	<m2hcb82ld1.fsf@ohwell.denx.de>
-	<1215026295.3492.15.camel@localhost.localdomain>
-Date: Thu, 03 Jul 2008 18:24:40 +0200
-In-Reply-To: <1215026295.3492.15.camel@localhost.localdomain> (Dave Cogley's
-	message of "Wed, 02 Jul 2008 12:18:15 -0700")
-Message-ID: <m23amrylyv.fsf@ohwell.denx.de>
+	Fri,  4 Jul 2008 05:00:05 +1000 (EST)
+From: Thomas Maenner <tmaenner@aehr.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: Need stable 2.6 kernel for TQM823L
+Date: Thu, 3 Jul 2008 11:59:29 -0700
+References: <200807021418.13596.tmaenner@aehr.com>
+	<20080703055819.GB643@secretlab.ca>
+In-Reply-To: <20080703055819.GB643@secretlab.ca>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200807031159.30434.tmaenner@aehr.com>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -27,29 +27,55 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Dave,
+Thanks much Grant,
 
-> Thank you for the reply. I did not build the initial SELF image it was
-> provided to me from the board vendor. I used it as a starting point to
-> get something up and running on SELF. Can you point me to the
-> documentation on how to use the SELF RPM system?
+On Wednesday 02 July 2008 22:58:19 Grant Likely wrote:
+> On Wed, Jul 02, 2008 at 02:18:13PM -0700, Thomas Maenner wrote:
+> > Hi Guys,
+> >
+> > I have used the 2.4 kernel successfully on the TQM823L and 855s, and
+> > wanted to try out a 2.6 version. So I downloaded the latest from Wolfgang
+> > @ git.denx.de but I'm getting all sorts of compile errors....
+> >
+> > Before I continue to dive in, I wanted to ask the group some questions:
+> > - Is 2.6 ported to the TQM8xx modules?
+>
+> $ ls arch/powerpc/boot/dts/tqm*
+> arch/powerpc/boot/dts/tqm5200.dts  arch/powerpc/boot/dts/tqm8555.dts
+> arch/powerpc/boot/dts/tqm8540.dts  arch/powerpc/boot/dts/tqm8560.dts
+> arch/powerpc/boot/dts/tqm8541.dts
+>
+however, I found config files in the ppc tree:
+ls arch/ppc/configs/TQM8*
+arch/ppc/configs/TQM823L_defconfig  
+arch/ppc/configs/TQM850L_defconfig
+arch/ppc/configs/TQM8260_defconfig 
+arch/ppc/configs/TQM860L_defconfig
 
-Rebuilding the SELF image boils down to rebuilding the SELF "target
-package" having nothing SELF specific in the process.  This is explained
-in the DULG[1].
+Is this stuff still working?
+Do I still need to create a device tree?
 
-Cheers
-  Detlev
+Thanks again
 
-[1] http://www.denx.de/wiki/view/DULG/ELDKRebuildingComponents#Section_3.7.2.
+Tom
+
+> Unfortunately, it doesn't look like any of the tqm8xx boards have been
+> added to the device tree directory, so the answer is probably, 'no'.
+>
+> > - If so, is it stable?
+>
+> I believe 8xx support is stable in arch/powerpc, but you'll need to
+> write a device tree file for the board.  Look for a similar board in
+> arch/powerpc/boot/dts/ to use as a starting point.
+>
+> You'll probably also need to add a platform file to
+> arch/powerpc/platforms/8xx that matches against your new device tree file.
+>
+> g.
+
 
 -- 
-... that every year or so they're going to give you a new release full
-of 50 000  additional lines of code all  written  by monkeys.  Because
-they generally follow  the  ``million monkeys typing,   and eventually
-they'll come up with something useful'' school of system development.
-	                                    -- Richard M. Stallman
+Linux hackers are funny people: They count the time in patchlevels
 --
-DENX Software Engineering GmbH,      MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich,  Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-40 Fax: (+49)-8142-66989-80 Email: dzu@denx.de
+Thomas Maenner
+E-Mail: mailto:tmaenner@aehr.com
