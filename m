@@ -1,24 +1,15 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 602BDDDED2
-	for <linuxppc-dev@ozlabs.org>; Fri,  4 Jul 2008 09:47:10 +1000 (EST)
-Subject: Re: [PATCH]: [MPC5200] (v2) Add ATA DMA support
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Tim Yamin <plasm@roo.me.uk>
-In-Reply-To: <792f5f410807030835q4589a27eh4b7d13e93e922a5e@mail.gmail.com>
-References: <792f5f410806270544p69c773b9o9df4a5618d4babe1@mail.gmail.com>
-	<20080701234943.GA16391@secretlab.ca>
-	<792f5f410807020548m107cd6a5xf0360e07053e104c@mail.gmail.com>
-	<20080702173040.GB23846@secretlab.ca>
-	<792f5f410807030835q4589a27eh4b7d13e93e922a5e@mail.gmail.com>
-Content-Type: text/plain
-Date: Fri, 04 Jul 2008 09:47:03 +1000
-Message-Id: <1215128823.7960.12.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: benh@kernel.crashing.org
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18541.25199.153252.824136@cargo.ozlabs.ibm.com>
+Date: Fri, 4 Jul 2008 09:36:15 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: avorontsov@ru.mvista.com
+Subject: Re: New fsl device bindings file
+In-Reply-To: <20080703185312.GA6043@polina.dev.rtsoft.ru>
+References: <40B88BFD-1FEB-4E36-9917-54C7380FF801@kernel.crashing.org>
+	<20080703185312.GA6043@polina.dev.rtsoft.ru>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,26 +19,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2008-07-03 at 16:35 +0100, Tim Yamin wrote:
-> >> +static void
-> >> +mpc52xx_bmdma_start(struct ata_queued_cmd *qc)
-> >> +{
-> >> +     struct ata_port *ap = qc->ap;
-> >> +     struct mpc52xx_ata_priv *priv = ap->host->private_data;
-> >> +
-> >> +     /* LocalBus lock */
-> >> +     while (test_and_set_bit(0, &pata_mpc52xx_ata_dma_lock) != 0)
-> >> +             ;
-> >
-> > Need to be able to bail on timeout.
+Anton Vorontsov writes:
+
+> Just curious... why we're maintaining documentation in the .txt file?
+> We could just create Documentation/powerpc/fsl-device-tree-bindings.dts
+> file, that will be:
 > 
-> A deadlock can't occur within the PATA driver because you won't have
-> two DMA requests happening at once, so there is no point in adding a
-> timeout. And even if you do have a timeout, you'd have to drop the I/O
-> request somehow, so it's not really a good idea. If anything else
-> needs to touch the DMA lock, it should do so in a sensible fashion...
+> 1. True device tree source file;
+> 2. With a lots of comments for documentation purposes;
+> 3. Could be compiled (via imaginable dts-doxygen) into .txt or nice .pdf
+>    file and printed :-), exactly as we do with kerneldoc.
 
-But why a hand-coded lock with bitops ? Why not a real spinlock then ?
-The later is more efficient anyway.
+I suspect that will be harder to follow for people that are unfamiliar
+with device trees...
 
-Ben.
+Paul.
