@@ -1,22 +1,14 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from qb-out-0506.google.com (qb-out-0506.google.com [72.14.204.224])
-	by ozlabs.org (Postfix) with ESMTP id 75465DE15F
-	for <linuxppc-dev@ozlabs.org>; Fri,  4 Jul 2008 03:43:17 +1000 (EST)
-Received: by qb-out-0506.google.com with SMTP id d8so3285071qbc.37
-	for <linuxppc-dev@ozlabs.org>; Thu, 03 Jul 2008 10:43:16 -0700 (PDT)
-Date: Thu, 3 Jul 2008 11:42:29 -0600
-From: Grant Likely <grant.likely@secretlab.ca>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Subject: Re: [PATCH] [V2] powerpc: Xilinx: PS2: Added new XPS PS2 driver
-Message-ID: <20080703174229.GL2284@secretlab.ca>
-References: <20080703164235.37739A006B@mail196-wa4.bigfish.com>
-	<20080703132305.ZZRA012@mailhub.coreip.homeip.net>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 64C75DE28D
+	for <linuxppc-dev@ozlabs.org>; Fri,  4 Jul 2008 03:48:46 +1000 (EST)
+Date: Thu, 3 Jul 2008 21:48:44 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc: add FHCI USB, FSL MCU, FSL UPM and GPIO LEDs bindings
+Message-ID: <20080703174844.GA27966@polina.dev.rtsoft.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080703132305.ZZRA012@mailhub.coreip.homeip.net>
-Sender: Grant Likely <glikely@secretlab.ca>
-Cc: Sadanand <sadanan@xilinx.com>, linuxppc-dev@ozlabs.org,
-	linux-input@vger.kernel.org, John Linn <john.linn@xilinx.com>
+Content-Type: text/plain; charset=utf8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,30 +18,150 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jul 03, 2008 at 01:27:00PM -0400, Dmitry Torokhov wrote:
-> Hi John,
-> 
-> On Thu, Jul 03, 2008 at 09:42:31AM -0700, John Linn wrote:
-> > +
-> > +	/* Initialize the PS/2 interface */
-> > +	mutex_lock(&drvdata->cfg_mutex);
-> > +	if (xps2_initialize(drvdata)) {
-> > +		mutex_unlock(&drvdata->cfg_mutex);
-> > +		dev_err(dev, "Could not initialize device\n");
-> > +		retval = -ENODEV;
-> > +		goto failed3;
-> > +	}
-> > +	mutex_unlock(&drvdata->cfg_mutex);
-> 
-> The drvdata is allocated per-port and so both (there are 2 PS/2 ports,
-> right?) ports get their own copy of cfg_mutex. Since you are trying to
-> serialze access to resource shared by both ports it will not work.
-> The original driver-global mutex was appropriate (the only thing I
-> objected there was use of a counting semaphore instead of a mutex).
+This patch adds few bindings for the new drivers to be submitted through
+the appropriate maintainers.
 
-John, correct me if I'm wrong, but I don't think there are any shared
-resources being accessed here and I believe the mutex is entirely
-unnecessary.
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
 
-Cheers,
-g.
+Segher, thanks for the comments on the previous version. Do you see any
+issues with this one or anything I could improve further?
+
+And if there are no issues... Kumar, could you apply this for powerpc-next?
+
+Thanks.
+
+ Documentation/powerpc/booting-without-of.txt |  111 ++++++++++++++++++++++++++
+ 1 files changed, 111 insertions(+), 0 deletions(-)
+
+diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
+index b68684d..a7ea549 100644
+--- a/Documentation/powerpc/booting-without-of.txt
++++ b/Documentation/powerpc/booting-without-of.txt
+@@ -62,6 +62,10 @@ Table of Contents
+       s) Freescale on board FPGA
+       t) Freescael MSI interrupt controller
+       u) Freescale General-purpose Timers Module
++      v) Freescale QUICC Engine USB Controller
++      w) Freescale MCU with MPC8349E-mITX compatible firmware
++      x) Freescale Localbus UPM programmed to work with NAND flash
++      y) LEDs on GPIOs
+ 
+   VII - Marvell Discovery mv64[345]6x System Controller chips
+     1) The /system-controller node
+@@ -2967,6 +2971,113 @@ platforms are moved over to use the flattened-device-tree model.
+ 	clock-frequency = <0>;
+     };
+ 
++    v) Freescale QUICC Engine USB Controller
++
++    Required properties:
++      - compatible : should be "fsl,<chip>-qe-usb", "fsl,mpc8323-qe-usb";
++      - reg : the first two cells should contain usb registers location and
++        length, the next two two cells should contain PRAM location and
++        length.
++      - interrupts : should contain USB interrupt.
++      - interrupt-parent : interrupt source phandle.
++      - fsl,fullspeed-clock : specifies the full speed USB clock source:
++        "none": clock source is disabled
++        "brg1" through "brg16": clock source is BRG1-BRG16, respectively
++        "clk1" through "clk24": clock source is CLK1-CLK24, respectively
++      - fsl,lowspeed-clock : specifies the low speed USB clock source:
++        "none": clock source is disabled
++        "brg1" through "brg16": clock source is BRG1-BRG16, respectively
++        "clk1" through "clk24": clock source is CLK1-CLK24, respectively
++      - hub-power-budget : optional, USB power budget for the root hub, in mA.
++      - gpios : should specify GPIOs in this order: USBOE, USBTP, USBTN, USBRP,
++        USBRN, SPEED (optional), and POWER (optional).
++
++    Example:
++
++	usb@6c0 {
++		compatible = "fsl,mpc8360-qe-usb", "fsl,mpc8323-qe-usb";
++		reg = <0x6c0 0x40 0x8b00 0x100>;
++		interrupts = <11>;
++		interrupt-parent = <&qeic>;
++		fsl,fullspeed-clock = "clk21";
++		gpios = <&qe_pio_b  2 0 /* USBOE */
++			 &qe_pio_b  3 0 /* USBTP */
++			 &qe_pio_b  8 0 /* USBTN */
++			 &qe_pio_b  9 0 /* USBRP */
++			 &qe_pio_b 11 0 /* USBRN */
++			 &qe_pio_e 20 0 /* SPEED */
++			 &qe_pio_e 21 0 /* POWER */>;
++	};
++
++    w) Freescale MCU with MPC8349E-mITX compatible firmware
++
++    Required properties:
++      - compatible : "fsl,<mcu-chip>-<board>", "fsl,mcu-mpc8349emitx";
++      - reg : should specify I2C address (0x0a).
++      - #gpio-cells : should be 2.
++      - gpio-controller : should be present;
++
++    Example:
++
++	mcu_pio: mcu@0a {
++		#gpio-cells = <2>;
++		compatible = "fsl,mc9s08qg8-mpc8349emitx",
++			     "fsl,mcu-mpc8349emitx";
++		reg = <0x0a>;
++		gpio-controller;
++	};
++
++    x) Freescale Localbus UPM programmed to work with NAND flash
++
++      Required properties:
++      - compatible : "fsl,upm-nand".
++      - reg : should specify localbus chip select and size used for the chip.
++      - fsl,upm-addr-offset : UPM pattern offset for the address latch.
++      - fsl,upm-cmd-offset : UPM pattern offset for the command latch.
++      - gpios : may specify optional GPIO connected to the Ready-Not-Busy pin.
++
++      Example:
++
++	upm@1,0 {
++		compatible = "fsl,upm-nand";
++		reg = <1 0 1>;
++		fsl,upm-addr-offset = <16>;
++		fsl,upm-cmd-offset = <8>;
++		gpios = <&qe_pio_e 18 0>;
++
++		flash {
++			#address-cells = <1>;
++			#size-cells = <1>;
++			compatible = "...";
++
++			partition@0 {
++				...
++			};
++		};
++	};
++
++    y) LEDs on GPIOs
++
++    Required properties:
++      - compatible : should be "gpio-led".
++      - label : (optional) the label for this LED. If omitted, the label is
++        taken from the node name (excluding the unit address).
++      - gpios : should specify LED GPIO.
++
++    Example:
++
++	led@0 {
++		compatible = "gpio-led";
++		label = "hdd";
++		gpios = <&mcu_pio 0 1>;
++	};
++
++	led@1 {
++		compatible = "gpio-led";
++		label = "pwr";
++		gpios = <&mcu_pio 1 0>;
++	};
++
+ VII - Marvell Discovery mv64[345]6x System Controller chips
+ ===========================================================
+ 
+-- 
+1.5.5.4
