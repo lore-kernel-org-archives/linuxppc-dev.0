@@ -1,24 +1,21 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.181])
-	by ozlabs.org (Postfix) with ESMTP id DAA3DDDDF4
-	for <linuxppc-dev@ozlabs.org>; Fri,  4 Jul 2008 01:25:29 +1000 (EST)
-Received: by py-out-1112.google.com with SMTP id z59so472780pyg.27
-	for <linuxppc-dev@ozlabs.org>; Thu, 03 Jul 2008 08:25:28 -0700 (PDT)
-Date: Thu, 3 Jul 2008 09:24:53 -0600
+Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.178])
+	by ozlabs.org (Postfix) with ESMTP id C11DBDE16D
+	for <linuxppc-dev@ozlabs.org>; Fri,  4 Jul 2008 01:26:47 +1000 (EST)
+Received: by py-out-1112.google.com with SMTP id z59so473220pyg.27
+	for <linuxppc-dev@ozlabs.org>; Thu, 03 Jul 2008 08:26:46 -0700 (PDT)
+Date: Thu, 3 Jul 2008 09:26:14 -0600
 From: Grant Likely <grant.likely@secretlab.ca>
-To: Jon Smirl <jonsmirl@gmail.com>
-Subject: Re: linux-next: manual merge of the powerpc tree
-Message-ID: <20080703152453.GB2284@secretlab.ca>
-References: <20080703133905.7b6f058f.sfr@canb.auug.org.au>
-	<20080703054739.GA643@secretlab.ca>
-	<9e4733910807030522h1aa0bl1801ecc5fc877c25@mail.gmail.com>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Subject: Re: [PATCH] powerpc: Xilinx: add 440 platform support
+Message-ID: <20080703152614.GC2284@secretlab.ca>
+References: <20080701224829.EC51111E8013@mail35-sin.bigfish.com>
+	<20080703091448.4e298ce8@zod.rchland.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <9e4733910807030522h1aa0bl1801ecc5fc877c25@mail.gmail.com>
+In-Reply-To: <20080703091448.4e298ce8@zod.rchland.ibm.com>
 Sender: Grant Likely <glikely@secretlab.ca>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linuxppc-dev@ozlabs.org,
-	linux-next@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
-	Jean Delvare <khali@linux-fr.org>, Timur Tabi <timur@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, John Linn <john.linn@xilinx.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,17 +25,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jul 03, 2008 at 08:22:18AM -0400, Jon Smirl wrote:
-> Testing was good when the patch was initially posted in January. In
-> the last six months the initial patch set has been sliced and diced
-> into a bunch of different pieces but the contents of this patch are
-> essentially unchanged.
+On Thu, Jul 03, 2008 at 09:14:48AM -0400, Josh Boyer wrote:
+> On Tue, 1 Jul 2008 15:48:26 -0700 John Linn <john.linn@xilinx.com> wrote:
+> > +config XILINX_VIRTEX440_GENERIC_BOARD
+> > +	bool "Generic Xilinx Virtex 440 board"
+> > +	depends on 44x
+> > +	default n
+> > +	select XILINX_VIRTEX_5_FXT
 > 
-> I don't care which tree it uses to get to mainline, I'd just like to
-> see it get merged.
+> If this is for generic Virtex 440 board support, why is it selecting a
+> specific Virtex 5 board?  Or am I confused as to what
+> XILINX_VIRTEX_5_FXT is?
 
-Me too, but it is used by some of the mpc8xxx platforms too, so I'd like
-to see an ack from one of those users also.
+Virtex 5 FXT if the FPGA chip
 
-Cheers,
+Virtex440 is a Virtex 5 with a bitstream that enables the embedded 440
+processor.
+
 g.
