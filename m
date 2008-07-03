@@ -1,22 +1,37 @@
-Return-Path: <jonsmirl@gmail.com>
-Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.30])
-	by ozlabs.org (Postfix) with ESMTP id 30AB3DDF91
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 Jul 2008 13:26:16 +1000 (EST)
-Received: by yw-out-2324.google.com with SMTP id 5so285586ywh.39
-	for <linuxppc-dev@ozlabs.org>; Wed, 02 Jul 2008 20:26:16 -0700 (PDT)
-Message-ID: <9e4733910807022026r98f565brc84da873747a5631@mail.gmail.com>
-Date: Wed, 2 Jul 2008 23:26:07 -0400
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Anton Vorontsov" <avorontsov@ru.mvista.com>
-Subject: Re: [PATCH] [RFC v3] OF: OpenFirmware bindings for the mmc_spi driver
-In-Reply-To: <20080605161624.GA517@polina.dev.rtsoft.ru>
+Return-Path: <nfont@austin.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 6F3A4DDE1D
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 Jul 2008 13:35:56 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e36.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m633Zoc2014214
+	for <linuxppc-dev@ozlabs.org>; Wed, 2 Jul 2008 23:35:50 -0400
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
+	m633ZoJj178326
+	for <linuxppc-dev@ozlabs.org>; Wed, 2 Jul 2008 21:35:50 -0600
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m633Zo6P016408
+	for <linuxppc-dev@ozlabs.org>; Wed, 2 Jul 2008 21:35:50 -0600
+Received: from austin.ibm.com (netmail2.austin.ibm.com [9.41.248.176])
+	by d03av04.boulder.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	m633ZnAO016402
+	for <linuxppc-dev@ozlabs.org>; Wed, 2 Jul 2008 21:35:50 -0600
+Received: from [9.65.174.195] (sig-9-65-174-195.mts.ibm.com [9.65.174.195])
+	by austin.ibm.com (8.13.8/8.12.10) with ESMTP id m633Zm83043106
+	for <linuxppc-dev@ozlabs.org>; Wed, 2 Jul 2008 22:35:49 -0500
+Message-ID: <486C491A.4020202@austin.ibm.com>
+Date: Wed, 02 Jul 2008 22:35:54 -0500
+From: Nathan Fontenot <nfont@austin.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20080605161624.GA517@polina.dev.rtsoft.ru>
-Cc: David Brownell <dbrownell@users.sourceforge.net>,
-	Gary Jennejohn <garyj@denx.de>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
-	Pierre Ossman <drzeus-mmc@drzeus.cx>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 4/5 v2] Split code into helper routines for drconf memory
+References: <486C4462.4010004@austin.ibm.com> <486C463F.5080702@austin.ibm.com>
+In-Reply-To: <486C463F.5080702@austin.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,357 +41,253 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 6/5/08, Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
-> Here is v3. I'm out of ideas if you won't like it. :-)
->
->  v3:
->  - Now these bindings are using bus notifiers chain, thus we adhere to the
->   spi bus.
->
->   By the way, this scheme (IMO) looks good for I2C devices which needs
->   platform_data extracted from the device tree too (Cc'ing Jochen).
->
->  - Plus changed the OF bindings themselves, implemented voltage-range
->   property. (Pierre, please take a look at vddrange_to_ocrmask(). I
->   wonder if you would like this in the MMC core instead, with a kernel
->   doc, of course.)
->
->  v2:
->  - Bindings were adhered to the MMC_SPI driver. Withdrawn by Pierre Ossman.
->
->  v1:
->  - Bindings were adhered to the OF SPI core. Withdrawn by OF people.
->
->  Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
->  ---
->   Documentation/powerpc/booting-without-of.txt |   21 +++
->   drivers/of/Kconfig                           |    8 +
->   drivers/of/Makefile                          |    1 +
->   drivers/of/of_mmc_spi.c                      |  210 ++++++++++++++++++++++++++
->   4 files changed, 240 insertions(+), 0 deletions(-)
->   create mode 100644 drivers/of/of_mmc_spi.c
->
->  diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
->  index 6e1711c..6c55f3f 100644
->  --- a/Documentation/powerpc/booting-without-of.txt
->  +++ b/Documentation/powerpc/booting-without-of.txt
->  @@ -3143,7 +3143,28 @@ platforms are moved over to use the flattened-device-tree model.
->                         };
->                 };
->
->  +    ...) MMC-over-SPI
->
->  +      Required properties:
->  +      - compatible : should be "mmc-spi".
->  +      - reg : should specify SPI address (chip-select number).
->  +      - max-speed : (optional) maximum frequency for this device (Hz).
->  +      - voltage-range : two cells are required, first cell specifies minimum
->  +        slot voltage (mV), second cell specifies maximum slot voltage (mV).
->  +      - gpios : (optional) may specify GPIOs in this order: Write-Protect GPIO,
->  +        Card-Detect GPIO.
->  +
->  +      Example:
->  +
->  +       mmc-slot@0 {
->  +               compatible = "mmc-spi";
->  +               reg = <0>;
->  +               max-speed = <50000000>;
->  +               /* Unregulated slot. */
->  +               voltage-range = <3300 3300>;
->  +               gpios = <&sdcsr_pio 1 0   /*  WP */
->  +                        &sdcsr_pio 0 1>; /* nCD */
->  +       };
->
->   VII - Marvell Discovery mv64[345]6x System Controller chips
->   ===========================================================
->  diff --git a/drivers/of/Kconfig b/drivers/of/Kconfig
->  index 3a7a11a..aadbfb3 100644
->  --- a/drivers/of/Kconfig
->  +++ b/drivers/of/Kconfig
->  @@ -13,3 +13,11 @@ config OF_I2C
->         depends on PPC_OF && I2C
->         help
->           OpenFirmware I2C accessors
->  +
->  +config OF_MMC_SPI
->  +       bool "OpenFirmware bindings for MMC/SD over SPI"
->  +       depends on PPC_OF && SPI
->  +       default y if MMC_SPI
->  +       help
->  +         Say Y here to enable OpenFirmware bindings for the MMC/SD over SPI
->  +         driver.
->  diff --git a/drivers/of/Makefile b/drivers/of/Makefile
->  index 548772e..a7c44fc 100644
->  --- a/drivers/of/Makefile
->  +++ b/drivers/of/Makefile
->  @@ -2,3 +2,4 @@ obj-y = base.o
->   obj-$(CONFIG_OF_DEVICE) += device.o platform.o
->   obj-$(CONFIG_OF_GPIO)   += gpio.o
->   obj-$(CONFIG_OF_I2C)   += of_i2c.o
->  +obj-$(CONFIG_OF_MMC_SPI)       += of_mmc_spi.o
->  diff --git a/drivers/of/of_mmc_spi.c b/drivers/of/of_mmc_spi.c
->  new file mode 100644
->  index 0000000..aa4e017
->  --- /dev/null
->  +++ b/drivers/of/of_mmc_spi.c
->  @@ -0,0 +1,210 @@
->  +/*
->  + * OpenFirmware bindings for the MMC-over-SPI driver
->  + *
->  + * Copyright (c) MontaVista Software, Inc. 2008.
->  + *
->  + * Author: Anton Vorontsov <avorontsov@ru.mvista.com>
->  + *
->  + * This program is free software; you can redistribute  it and/or modify it
->  + * under  the terms of  the GNU General  Public License as published by the
->  + * Free Software Foundation;  either version 2 of the  License, or (at your
->  + * option) any later version.
->  + */
->  +
->  +#include <linux/init.h>
->  +#include <linux/device.h>
->  +#include <linux/notifier.h>
->  +#include <linux/gpio.h>
->  +#include <linux/of.h>
->  +#include <linux/of_gpio.h>
->  +#include <linux/of_platform.h>
->  +#include <linux/spi/spi.h>
->  +#include <linux/spi/mmc_spi.h>
->  +#include <linux/mmc/host.h>
->  +
->  +/*
->  + * XXX: Place it somewhere in the generic MMC code?
->  + */
->  +static int vdd_to_bitnum(int vdd)
->  +{
->  +       int bit;
->  +       const int max_bit = ilog2(MMC_VDD_35_36);
->  +
->  +       if (vdd < 1650 || vdd > 3600)
->  +               return -EINVAL;
->  +
->  +       if (vdd >= 1650 && vdd <= 1950)
->  +               return ilog2(MMC_VDD_165_195);
->  +
->  +       /* base 2000 mV, step 100 mV, bit's base 8 */
->  +       bit = (vdd - 2000) / 100 + 8;
->  +       if (bit > max_bit)
->  +               return max_bit;
->  +       return bit;
->  +}
->  +
->  +static int vddrange_to_ocrmask(int vdd_min, int vdd_max, unsigned int *mask)
->  +{
->  +       if (vdd_max < vdd_min)
->  +               return -EINVAL;
->  +
->  +       vdd_max = vdd_to_bitnum(vdd_max);
->  +       if (vdd_max < 0)
->  +               return -EINVAL;
->  +
->  +       vdd_min = vdd_to_bitnum(vdd_min);
->  +       if (vdd_min < 0)
->  +               return -EINVAL;
->  +
->  +       /* fill the mask, from max bit to min bit */
->  +       while (vdd_max >= vdd_min)
->  +               *mask |= 1 << vdd_max--;
->  +       return 0;
->  +}
->  +
->  +struct of_mmc_spi {
->  +       int wp_gpio;
->  +       int cd_gpio;
->  +       struct mmc_spi_platform_data mmc_pdata;
->  +};
->  +
->  +static struct of_mmc_spi *to_of_mmc_spi(struct device *dev)
->  +{
->  +       return container_of(dev->platform_data, struct of_mmc_spi, mmc_pdata);
->  +}
->  +
->  +static int mmc_get_ro(struct device *dev)
->  +{
->  +       struct of_mmc_spi *oms = to_of_mmc_spi(dev);
->  +
->  +       return gpio_get_value(oms->wp_gpio);
->  +}
->  +
->  +static int mmc_get_cd(struct device *dev)
->  +{
->  +       struct of_mmc_spi *oms = to_of_mmc_spi(dev);
->  +
->  +       return gpio_get_value(oms->cd_gpio);
->  +}
->  +
->  +static int of_mmc_spi_add(struct device *dev)
->  +{
->  +       int ret = -EINVAL;
->  +       struct device_node *np = dev->archdata.of_node;
->  +       struct of_mmc_spi *oms;
->  +       const u32 *voltage_range;
->  +       int size;
->  +
->  +       if (!np || !of_device_is_compatible(np, "mmc-spi"))
->  +               return NOTIFY_DONE;
->  +
->  +       oms = kzalloc(sizeof(*oms), GFP_KERNEL);
->  +       if (!oms)
->  +               return notifier_to_errno(-ENOMEM);
->  +
->  +       /* We don't support interrupts yet, let's poll. */
->  +       oms->mmc_pdata.caps |= MMC_CAP_NEEDS_POLL;
->  +
->  +       voltage_range = of_get_property(np, "voltage-range", &size);
->  +       if (!voltage_range || size < sizeof(*voltage_range) * 2) {
->  +               dev_err(dev, "OF: voltage-range unspecified\n");
->  +               goto err_ocr;
->  +       }
->  +
->  +       ret = vddrange_to_ocrmask(voltage_range[0], voltage_range[1],
->  +                                 &oms->mmc_pdata.ocr_mask);
->  +       if (ret) {
->  +               dev_err(dev, "OF: specified voltage-range is invalid\n");
->  +               goto err_ocr;
->  +       }
->  +
->  +       oms->wp_gpio = of_get_gpio(np, 0);
->  +       if (gpio_is_valid(oms->wp_gpio)) {
->  +               ret = gpio_request(oms->wp_gpio, dev->bus_id);
->  +               if (ret < 0)
->  +                       goto err_wp_gpio;
->  +               oms->mmc_pdata.get_ro = &mmc_get_ro;
->  +       }
->  +
->  +       oms->cd_gpio = of_get_gpio(np, 1);
->  +       if (gpio_is_valid(oms->cd_gpio)) {
->  +               ret = gpio_request(oms->cd_gpio, dev->bus_id);
->  +               if (ret < 0)
->  +                       goto err_cd_gpio;
->  +               oms->mmc_pdata.get_cd = &mmc_get_cd;
->  +       }
->  +
->  +       dev->platform_data = &oms->mmc_pdata;
->  +
->  +       return NOTIFY_STOP;
->  +
->  +err_cd_gpio:
->  +       if (gpio_is_valid(oms->wp_gpio))
->  +               gpio_free(oms->wp_gpio);
->  +err_wp_gpio:
->  +err_ocr:
->  +       kfree(oms);
->  +       return notifier_to_errno(ret);
->  +}
->  +
->  +static int of_mmc_spi_del(struct device *dev)
->  +{
->  +       struct device_node *np = dev->archdata.of_node;
->  +       struct of_mmc_spi *oms;
->  +
->  +       if (!np || !of_device_is_compatible(np, "mmc-spi") ||
->  +                       !dev->platform_data)
->  +               return NOTIFY_DONE;
->  +
->  +       oms = to_of_mmc_spi(dev);
->  +
->  +       if (gpio_is_valid(oms->cd_gpio))
->  +               gpio_free(oms->cd_gpio);
->  +       if (gpio_is_valid(oms->wp_gpio))
->  +               gpio_free(oms->wp_gpio);
->  +
->  +       kfree(oms);
->  +       return NOTIFY_STOP;
->  +}
->  +
->  +static int of_mmc_spi_notify(struct notifier_block *nb, unsigned long action,
->  +                            void *_dev)
->  +{
->  +       struct device *dev = _dev;
->  +
->  +       switch (action) {
->  +       case BUS_NOTIFY_ADD_DEVICE:
->  +               return of_mmc_spi_add(dev);
->  +       case BUS_NOTIFY_DEL_DEVICE:
->  +               return of_mmc_spi_del(dev);
->  +       };
->  +       return NOTIFY_DONE;
->  +}
->  +
->  +static struct notifier_block of_mmc_spi_notifier = {
->  +       .notifier_call = of_mmc_spi_notify,
->  +};
->  +
->  +/*
->  + * Should be called early enough, but after SPI core initializes. So, we
->  + * use subsys_initcall (as in the SPI core), and link order guaranties
->  + * that we'll be called at the right time.
->  + */
+Oops, some silliness in one of the comments.  New patch below.
 
-Why does this need to be loaded at subsys_initcall time? We have the
-equivalent code on i2c loading as a normal module.
+This patch splits off several pieces of code that parse the
+ibm,dynamic-reconfiguration-memory node of the device tree into separate
+helper routines.  This is in preparation for the followon patch that will
+use these helper routines.  There are no functional changes in this patch.
 
-When the spi bus driver code is processing the child SPI device nodes,
-it should request_module() this driver as a module. I made a note to
-fix that on Grant's SPI bus driver.
+Signed-off-by: Nathan Fontenot <nfont@austin.ibm.com>
+---
+ arch/powerpc/mm/numa.c |  209 +++++++++++++++++++++++++++++++++++++++----------
+ 1 file changed, 170 insertions(+), 39 deletions(-)
 
-		spi@f00 {
-			#address-cells = <1>;
-			#size-cells = <0>;
-			compatible = "fsl,mpc5200b-spi","fsl,mpc5200-spi";
-Triggers loading of Grant's SPI module via normal OF module mechanism
-			reg = <0xf00 0x20>;
-			interrupts = <0x2 0xd 0x0 0x2 0xe 0x0>;
-			interrupt-parent = <&mpc5200_pic>;
-			
-Grant's code loops through the child nodes
-			mmc-slot@0 {
-				compatible = "mmc-spi";
-Finds this and does request_module("mmc-spi");
-Then it registers the device
-				reg = <0>;
-				max-speed = <50000000>;
-				/* Unregulated slot. */
-				voltage-range = <3300 3300>;
-				/*gpios = <&sdcsr_pio 1 0   /*  WP */
-				/*		 &sdcsr_pio 0 1>; /* nCD */
-			};			
-		};
-
-As part of this module's initialization it may need to request_module
-generic mmc core module, but I haven't traced things out that far yet.
-None of these parts should need to be compiled in, they should all be
-capable of being loaded as a modules.
-
->  +static int __init of_mmc_spi_init(void)
->  +{
->  +       int ret;
->  +
->  +       ret = bus_register_notifier(&spi_bus_type, &of_mmc_spi_notifier);
->  +       if (ret) {
->  +               pr_err("%s: unable to register notifier on the spi bus\n",
->  +                       __func__);
->  +               return ret;
->  +       }
->  +
->  +       return 0;
->  +}
->  +subsys_initcall(of_mmc_spi_init);
->  +
->  +MODULE_DESCRIPTION("OpenFirmware bindings for the MMC-over-SPI driver");
->  +MODULE_AUTHOR("Anton Vorontsov <avorontsov@ru.mvista.com>");
->  +MODULE_LICENSE("GPL");
->  --
->  1.5.5.1
->
-> --
->  To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->  the body of a message to majordomo@vger.kernel.org
->  More majordomo info at  http://vger.kernel.org/majordomo-info.html
->  Please read the FAQ at  http://www.tux.org/lkml/
->
-
-
--- 
-Jon Smirl
-jonsmirl@gmail.com
+Index: linux-2.6.git/arch/powerpc/mm/numa.c
+===================================================================
+--- linux-2.6.git.orig/arch/powerpc/mm/numa.c	2008-07-01 18:40:55.000000000 -0500
++++ linux-2.6.git/arch/powerpc/mm/numa.c	2008-07-02 22:29:58.000000000 -0500
+@@ -268,6 +268,144 @@
+ 	return result;
+ }
+ 
++struct of_drconf_cell {
++	u64	base_addr;
++	u32	drc_index;
++	u32	reserved;
++	u32	aa_index;
++	u32	flags;
++};
++
++#define DRCONF_MEM_ASSIGNED	0x00000008
++#define DRCONF_MEM_AI_INVALID	0x00000040
++#define DRCONF_MEM_RESERVED	0x00000080
++
++/*
++ * Read the next lmb list entry from the ibm,dynamic-memory property
++ * and return the information in the provided of_drconf_cell structure.
++ */
++static void read_drconf_cell(struct of_drconf_cell *drmem, const u32 **cellp)
++{
++	const u32 *cp;
++
++	drmem->base_addr = read_n_cells(n_mem_addr_cells, cellp);
++
++	cp = *cellp;
++	drmem->drc_index = cp[0];
++	drmem->reserved = cp[1];
++	drmem->aa_index = cp[2];
++	drmem->flags = cp[3];
++
++	*cellp = cp + 4;
++}
++
++/*
++ * Retreive and validate the ibm,dynamic-memory property of the device tree.
++ *
++ * The layout of the ibm,dynamic-memory property is a number N of lmb
++ * list entries followed by N lmb list entries.  Each lmb list entry
++ * contains information as layed out in the of_drconf_cell struct above.
++ */
++static int of_get_drconf_memory(struct device_node *memory, const u32 **dm)
++{
++	const u32 *prop;
++	u32 len, entries;
++
++	prop = of_get_property(memory, "ibm,dynamic-memory", &len);
++	if (!prop || len < sizeof(unsigned int))
++		return 0;
++
++	entries = *prop++;
++
++	/* Now that we know the number of entries, revalidate the size
++	 * of the property read in to ensure we have everything
++	 */
++	if (len < (entries * (n_mem_addr_cells + 4) + 1) * sizeof(unsigned int))
++		return 0;
++
++	*dm = prop;
++	return entries;
++}
++
++/*
++ * Retreive and validate the ibm,lmb-size property for drconf memory
++ * from the device tree.
++ */
++static u64 of_get_lmb_size(struct device_node *memory)
++{
++	const u32 *prop;
++	u32 len;
++
++	prop = of_get_property(memory, "ibm,lmb-size", &len);
++	if (!prop || len < sizeof(unsigned int))
++		return 0;
++
++	return read_n_cells(n_mem_size_cells, &prop);
++}
++
++struct assoc_arrays {
++	u32	n_arrays;
++	u32	array_sz;
++	const u32 *arrays;
++};
++
++/*
++ * Retreive and validate the list of associativity arrays for drconf
++ * memory from the ibm,associativity-lookup-arrays property of the
++ * device tree..
++ *
++ * The layout of the ibm,associativity-lookup-arrays property is a number N
++ * indicating the number of associativity arrays, followed by a number M
++ * indicating the size of each associativity array, followed by a list
++ * of N associativity arrays.
++ */
++static int of_get_assoc_arrays(struct device_node *memory,
++			       struct assoc_arrays *aa)
++{
++	const u32 *prop;
++	u32 len;
++
++	prop = of_get_property(memory, "ibm,associativity-lookup-arrays", &len);
++	if (!prop || len < 2 * sizeof(unsigned int))
++		return -1;
++
++	aa->n_arrays = *prop++;
++	aa->array_sz = *prop++;
++
++	/* Now that we know the number of arrrays and size of each array,
++	 * revalidate the size of the property read in.
++	 */
++	if (len < (aa->n_arrays * aa->array_sz + 2) * sizeof(unsigned int))
++		return -1;
++
++	aa->arrays = prop;
++	return 0;
++}
++
++/*
++ * This is like of_node_to_nid_single() for memory represented in the
++ * ibm,dynamic-reconfiguration-memory node.
++ */
++static int of_drconf_to_nid_single(struct of_drconf_cell *drmem,
++				   struct assoc_arrays *aa)
++{
++	int default_nid = 0;
++	int nid = default_nid;
++	int index;
++
++	if (min_common_depth > 0 && min_common_depth <= aa->array_sz &&
++	    !(drmem->flags & DRCONF_MEM_AI_INVALID) &&
++	    drmem->aa_index < aa->n_arrays) {
++		index = drmem->aa_index * aa->array_sz + min_common_depth - 1;
++		nid = aa->arrays[index];
++
++		if (nid == 0xffff || nid >= MAX_NUMNODES)
++			nid = default_nid;
++	}
++
++	return nid;
++}
++
+ /*
+  * Figure out to which domain a cpu belongs and stick it there.
+  * Return the id of the domain used.
+@@ -355,57 +493,50 @@
+  */
+ static void __init parse_drconf_memory(struct device_node *memory)
+ {
+-	const unsigned int *lm, *dm, *aa;
+-	unsigned int ls, ld, la;
+-	unsigned int n, aam, aalen;
+-	unsigned long lmb_size, size, start;
+-	int nid, default_nid = 0;
+-	unsigned int ai, flags;
+-
+-	lm = of_get_property(memory, "ibm,lmb-size", &ls);
+-	dm = of_get_property(memory, "ibm,dynamic-memory", &ld);
+-	aa = of_get_property(memory, "ibm,associativity-lookup-arrays", &la);
+-	if (!lm || !dm || !aa ||
+-	    ls < sizeof(unsigned int) || ld < sizeof(unsigned int) ||
+-	    la < 2 * sizeof(unsigned int))
++	const u32 *dm;
++	unsigned int n, rc;
++	unsigned long lmb_size, size;
++	int nid;
++	struct assoc_arrays aa;
++
++	n = of_get_drconf_memory(memory, &dm);
++	if (!n)
+ 		return;
+ 
+-	lmb_size = read_n_cells(n_mem_size_cells, &lm);
+-	n = *dm++;		/* number of LMBs */
+-	aam = *aa++;		/* number of associativity lists */
+-	aalen = *aa++;		/* length of each associativity list */
+-	if (ld < (n * (n_mem_addr_cells + 4) + 1) * sizeof(unsigned int) ||
+-	    la < (aam * aalen + 2) * sizeof(unsigned int))
++	lmb_size = of_get_lmb_size(memory);
++	if (!lmb_size)
++		return;
++
++	rc = of_get_assoc_arrays(memory, &aa);
++	if (rc)
+ 		return;
+ 
+ 	for (; n != 0; --n) {
+-		start = read_n_cells(n_mem_addr_cells, &dm);
+-		ai = dm[2];
+-		flags = dm[3];
+-		dm += 4;
+-		/* 0x80 == reserved, 0x8 = assigned to us */
+-		if ((flags & 0x80) || !(flags & 0x8))
++		struct of_drconf_cell drmem;
++
++		read_drconf_cell(&drmem, &dm);
++
++		/* skip this block if the reserved bit is set in flags (0x80)
++		   or if the block is not assigned to this partition (0x8) */
++		if ((drmem.flags & DRCONF_MEM_RESERVED)
++		    || !(drmem.flags & DRCONF_MEM_ASSIGNED))
+ 			continue;
+-		nid = default_nid;
+-		/* flags & 0x40 means associativity index is invalid */
+-		if (min_common_depth > 0 && min_common_depth <= aalen &&
+-		    (flags & 0x40) == 0 && ai < aam) {
+-			/* this is like of_node_to_nid_single */
+-			nid = aa[ai * aalen + min_common_depth - 1];
+-			if (nid == 0xffff || nid >= MAX_NUMNODES)
+-				nid = default_nid;
+-		}
+ 
+-		fake_numa_create_new_node(((start + lmb_size) >> PAGE_SHIFT),
+-						&nid);
++		nid = of_drconf_to_nid_single(&drmem, &aa);
++
++		fake_numa_create_new_node(
++				((drmem.base_addr + lmb_size) >> PAGE_SHIFT),
++					   &nid);
++
+ 		node_set_online(nid);
+ 
+-		size = numa_enforce_memory_limit(start, lmb_size);
++		size = numa_enforce_memory_limit(drmem.base_addr, lmb_size);
+ 		if (!size)
+ 			continue;
+ 
+-		add_active_range(nid, start >> PAGE_SHIFT,
+-				 (start >> PAGE_SHIFT) + (size >> PAGE_SHIFT));
++		add_active_range(nid, drmem.base_addr >> PAGE_SHIFT,
++				 (drmem.base_addr >> PAGE_SHIFT)
++				 + (size >> PAGE_SHIFT));
+ 	}
+ }
