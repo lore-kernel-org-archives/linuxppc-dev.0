@@ -1,19 +1,32 @@
-Return-Path: <John.Linn@xilinx.com>
-Received: from VA3EHSOBE005.bigfish.com (outbound-va3.frontbridge.com
-	[216.32.180.16]) by ozlabs.org (Postfix) with ESMTP id 03F16DDEDC
-	for <linuxppc-dev@ozlabs.org>; Fri,  4 Jul 2008 05:31:21 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Subject: RE: [PATCH] [V2] powerpc: Xilinx: PS2: Added new XPS PS2 driver
-Date: Thu, 3 Jul 2008 13:31:09 -0600
-In-Reply-To: <20080703173721.GK2284@secretlab.ca>
-References: <20080703164235.37739A006B@mail196-wa4.bigfish.com>
-	<20080703173721.GK2284@secretlab.ca>
-From: John Linn <John.Linn@xilinx.com>
-To: "Grant Likely" <grant.likely@secretlab.ca>
-Message-ID: <20080703193112.EDDE01CE8058@mail117-va3.bigfish.com>
-Cc: Sadanand Mutyala <sadanan@xilinx.com>, dmitry.torokhov@gmail.com,
-	linuxppc-dev@ozlabs.org, linux-input@vger.kernel.org
+Return-Path: <shaggy@linux.vnet.ibm.com>
+Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 09CC8DDF5D
+	for <linuxppc-dev@ozlabs.org>; Fri,  4 Jul 2008 05:37:44 +1000 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e3.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m63JbfnW017358
+	for <linuxppc-dev@ozlabs.org>; Thu, 3 Jul 2008 15:37:41 -0400
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
+	m63Jbc26224292
+	for <linuxppc-dev@ozlabs.org>; Thu, 3 Jul 2008 15:37:38 -0400
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m63JbcZ2019509
+	for <linuxppc-dev@ozlabs.org>; Thu, 3 Jul 2008 15:37:38 -0400
+Subject: Resend: [patch 4/5] powerpc: Add Strong Access Ordering
+From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+To: Paul Mackerras <paulus@samba.org>
+In-Reply-To: <18540.32962.631137.738278@cargo.ozlabs.ibm.com>
+References: <20080701200706.011591798@linux.vnet.ibm.com>
+	<20080701200719.494365861@linux.vnet.ibm.com>
+	<18540.32962.631137.738278@cargo.ozlabs.ibm.com>
+Content-Type: text/plain
+Date: Thu, 03 Jul 2008 14:37:36 -0500
+Message-Id: <1215113856.19521.6.camel@norville.austin.ibm.com>
+Mime-Version: 1.0
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,662 +36,127 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Grant,
+On Thu, 2008-07-03 at 17:33 +1000, Paul Mackerras wrote:
+> Dave Kleikamp writes:
+> 
+> > This patch defines:
+> > 
+> > - PROT_SAO, which is passed into mmap() and mprotect() in the prot field
+> > - VM_SAO in vma->vm_flags, and
+> > - _PAGE_SAO, the combination of WIMG bits in the pte that enables strong
+> > access ordering for the page.
+> > 
+> > NOTE: There doesn't seem to be a precedent for architecture-dependent vm_flags.
+> > It may be better to define VM_SAO somewhere in include/asm-powerpc/.  Since
+> > vm_flags is a long, defining it in the high-order word would help prevent a
+> > collision with any newly added values in architecture-independent code.
+> 
+> This puts _PAGE_SAO in pgtable-ppc64.h, which is fine, but then your
+> patch 4/5 breaks the build for 32-bit machines with an error like
+> this:
+> 
+> In file included from /home/paulus/kernel/powerpc/include/linux/mman.h:4,
+>                  from /home/paulus/kernel/powerpc/arch/powerpc/kernel/asm-offsets.c:22:
+> include2/asm/mman.h: In function ?arch_vm_get_page_prot?:
+> include2/asm/mman.h:43: error: ?_PAGE_SAO? undeclared (first use in this function)
+> include2/asm/mman.h:43: error: (Each undeclared identifier is reported only once
+> include2/asm/mman.h:43: error: for each function it appears in.)
+> make[2]: *** [arch/powerpc/kernel/asm-offsets.s] Error 1
+> 
+> because of course we don't have a definition of _PAGE_SAO for 32-bit
+> machines...
+> 
+> Could you fix it and re-send please?
 
-Good comments.
+Sorry.  Here's a replacement for patch 4/5.  It adds an #ifdef
+CONFIG_PPC64 around the new code.
 
-With regard to the port-number, I don't see the value of using it unless
-I'm just missing something.  The address of the device seems just as
-useful.
+The alternative would be to introduce mman_ppc64.h which I think would
+be overkill.
 
-We'll spin the patch again taking these into account and Dmitry's
-comment also.
+powerpc: Add Strong Access Ordering
 
-Thanks,
-John
+Allow an application to enable Strong Access Ordering on specific pages of
+memory on Power 7 hardware. Currently, power has a weaker memory model than
+x86. Implementing a stronger memory model allows an emulator to more
+efficiently translate x86 code into power code, resulting in faster code
+execution.
 
+On Power 7 hardware, storing 0b1110 in the WIMG bits of the hpte enables
+strong access ordering mode for the memory page.  This patchset allows a
+user to specify which pages are thus enabled by passing a new protection
+bit through mmap() and mprotect().  I have tentatively defined this bit,
+PROT_SAO, as 0x10.
 
-> -----Original Message-----
-> From: Grant Likely [mailto:glikely@secretlab.ca] On Behalf Of Grant
-Likely
-> Sent: Thursday, July 03, 2008 11:37 AM
-> To: John Linn
-> Cc: linuxppc-dev@ozlabs.org; linux-input@vger.kernel.org;
-jwboyer@linux.vnet.ibm.com;
-> dmitry.torokhov@gmail.com; jacmet@sunsite.dk; Sadanand Mutyala
-> Subject: Re: [PATCH] [V2] powerpc: Xilinx: PS2: Added new XPS PS2
-driver
-> =
+Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+---
 
-> On Thu, Jul 03, 2008 at 09:42:31AM -0700, John Linn wrote:
-> > Added a new driver for Xilinx XPS PS2 IP. This driver is
-> > a flat driver to better match the Linux driver pattern.
-> >
-> > Signed-off-by: Sadanand <sadanan@xilinx.com>
-> > Signed-off-by: John Linn <john.linn@xilinx.com>
-> > ---
-> > V2
-> > 	Updated the driver based on feedback from Dmitry, Peter, and
-Grant.
-> > 	We believe Montavista copyright is still valid.
-> >
-> >  drivers/input/serio/Kconfig      |    5 +
-> >  drivers/input/serio/Makefile     |    1 +
-> >  drivers/input/serio/xilinx_ps2.c |  448
-++++++++++++++++++++++++++++++++++++++
-> >  3 files changed, 454 insertions(+), 0 deletions(-)
-> >  create mode 100644 drivers/input/serio/xilinx_ps2.c
-> >
-> > diff --git a/drivers/input/serio/Kconfig
-b/drivers/input/serio/Kconfig
-> > index ec4b661..0e62b39 100644
-> > --- a/drivers/input/serio/Kconfig
-> > +++ b/drivers/input/serio/Kconfig
-> > @@ -190,4 +190,9 @@ config SERIO_RAW
-> >  	  To compile this driver as a module, choose M here: the
-> >  	  module will be called serio_raw.
-> >
-> > +config SERIO_XILINX_XPS_PS2
-> > +	tristate "Xilinx XPS PS/2 Controller Support"
-> > +	help
-> > +	  This driver supports XPS PS/2 IP from Xilinx EDK.
-> > +
-> >  endif
-> > diff --git a/drivers/input/serio/Makefile
-b/drivers/input/serio/Makefile
-> > index 38b8868..9b6c813 100644
-> > --- a/drivers/input/serio/Makefile
-> > +++ b/drivers/input/serio/Makefile
-> > @@ -21,3 +21,4 @@ obj-$(CONFIG_SERIO_PCIPS2)	+=3D pcips2.o
-> >  obj-$(CONFIG_SERIO_MACEPS2)	+=3D maceps2.o
-> >  obj-$(CONFIG_SERIO_LIBPS2)	+=3D libps2.o
-> >  obj-$(CONFIG_SERIO_RAW)		+=3D serio_raw.o
-> > +obj-$(CONFIG_SERIO_XILINX_XPS_PS2)	+=3D xilinx_ps2.o
-> > diff --git a/drivers/input/serio/xilinx_ps2.c
-b/drivers/input/serio/xilinx_ps2.c
-> > new file mode 100644
-> > index 0000000..152bf2c
-> > --- /dev/null
-> > +++ b/drivers/input/serio/xilinx_ps2.c
-> > @@ -0,0 +1,448 @@
-> > +/*
-> > + * Xilinx XPS PS/2 device driver
-> > + *
-> > + * (c) 2005 MontaVista Software, Inc.
-> > + * (c) 2008 Xilinx, Inc.
-> > + *
-> > + * This program is free software; you can redistribute it and/or
-modify it
-> > + * under the terms of the GNU General Public License as published
-by the
-> > + * Free Software Foundation; either version 2 of the License, or
-(at your
-> > + * option) any later version.
-> > + *
-> > + * You should have received a copy of the GNU General Public
-License along
-> > + * with this program; if not, write to the Free Software
-Foundation, Inc.,
-> > + * 675 Mass Ave, Cambridge, MA 02139, USA.
-> > + */
-> > +
-> > +
-> > +#include <linux/module.h>
-> > +#include <linux/serio.h>
-> > +#include <linux/interrupt.h>
-> > +#include <linux/errno.h>
-> > +#include <linux/init.h>
-> > +#include <linux/list.h>
-> > +#include <linux/io.h>
-> > +
-> > +#include <linux/of_device.h>
-> > +#include <linux/of_platform.h>
-> > +
-> > +#define DRIVER_NAME		"xilinx_ps2"
-> > +
-> > +/* Register offsets for the xps2 device */
-> > +#define XPS2_SRST_OFFSET	0x00000000 /* Software Reset register */
-> > +#define XPS2_STATUS_OFFSET	0x00000004 /* Status register */
-> > +#define XPS2_RX_DATA_OFFSET	0x00000008 /* Receive Data
-register */
-> > +#define XPS2_TX_DATA_OFFSET	0x0000000C /* Transmit Data
-register */
-> > +#define XPS2_GIER_OFFSET	0x0000002C /* Global Interrupt Enable
-reg */
-> > +#define XPS2_IPISR_OFFSET	0x00000030 /* Interrupt Status register
-*/
-> > +#define XPS2_IPIER_OFFSET	0x00000038 /* Interrupt Enable register
-*/
-> > +
-> > +/* Reset Register Bit Definitions */
-> > +#define XPS2_SRST_RESET		0x0000000A /* Software Reset  */
-> > +
-> > +/* Status Register Bit Positions */
-> > +#define XPS2_STATUS_RX_FULL	0x00000001 /* Receive Full  */
-> > +#define XPS2_STATUS_TX_FULL	0x00000002 /* Transmit Full  */
-> > +
-> > +/* Bit definitions for ISR/IER registers. Both the registers have
-the same bit
-> > + * definitions and are only defined once. */
-> > +#define XPS2_IPIXR_WDT_TOUT	0x00000001 /* Watchdog Timeout
-Interrupt */
-> > +#define XPS2_IPIXR_TX_NOACK	0x00000002 /* Transmit No ACK
-Interrupt */
-> > +#define XPS2_IPIXR_TX_ACK	0x00000004 /* Transmit ACK (Data)
-Interrupt */
-> > +#define XPS2_IPIXR_RX_OVF	0x00000008 /* Receive Overflow Interrupt
-*/
-> > +#define XPS2_IPIXR_RX_ERR	0x00000010 /* Receive Error Interrupt */
-> > +#define XPS2_IPIXR_RX_FULL	0x00000020 /* Receive Data Interrupt */
-> > +
-> > +/* Mask for all the Transmit Interrupts */
-> > +#define XPS2_IPIXR_TX_ALL	(XPS2_IPIXR_TX_NOACK |
-XPS2_IPIXR_TX_ACK)
-> > +
-> > +/* Mask for all the Receive Interrupts */
-> > +#define XPS2_IPIXR_RX_ALL	(XPS2_IPIXR_RX_OVF | XPS2_IPIXR_RX_ERR |
-\
-> > +					XPS2_IPIXR_RX_FULL)
-> > +
-> > +/* Mask for all the Interrupts */
-> > +#define XPS2_IPIXR_ALL		(XPS2_IPIXR_TX_ALL |
-XPS2_IPIXR_RX_ALL |  \
-> > +					XPS2_IPIXR_WDT_TOUT)
-> > +
-> > +/* Global Interrupt Enable mask */
-> > +#define XPS2_GIER_GIE_MASK	0x80000000
-> > +
-> > +struct xps2data {
-> > +	int irq;
-> > +	u32 phys_addr;
-> > +	u32 remap_size;
-> > +	spinlock_t lock;
-> > +	u8 rxb;				/* Rx buffer */
-> > +	void __iomem *base_address;	/* virt. address of control
-registers */
-> > +	unsigned int dfl;
-> > +	struct serio serio;		/* serio */
-> > +	struct mutex cfg_mutex;
-> > +};
-> > +
-> > +/************************************/
-> > +/* XPS PS/2 data transmission calls */
-> > +/************************************/
-> > +
-> > +/*
-> > + * xps2_send() sends the specified byte of data to the PS/2 port.
-> > + */
-> > +static int xps2_send(struct xps2data *drvdata, u8 *byte)
-> > +{
-> > +	u32 sr;
-> > +	u32 ier;
-> > +	int retval =3D -1;
-> > +
-> > +	/* Enter a critical region by disabling the PS/2 transmit
-interrupts to
-> > +	 * allow this call to stop a previous operation that may be
-interrupt
-> > +	 * driven. Only stop the transmit interrupt since this critical
-region
-> > +	 * is not really exited in the normal manner */
-> > +	ier =3D in_be32(drvdata->base_address + XPS2_IPIER_OFFSET);
-> > +	ier &=3D (~(XPS2_IPIXR_TX_ALL & XPS2_IPIXR_ALL));
-> > +	out_be32(drvdata->base_address + XPS2_IPIER_OFFSET, ier);
-> > +
-> > +	/* If the PS/2 transmitter is empty send a byte of data */
-> > +	sr =3D in_be32(drvdata->base_address + XPS2_STATUS_OFFSET);
-> > +	if ((sr & XPS2_STATUS_TX_FULL) =3D=3D 0) {
-> > +		out_be32(drvdata->base_address + XPS2_TX_DATA_OFFSET,
-*byte);
-> > +		retval =3D 0;
-> > +	}
-> > +
-> > +	/* Enable the TX interrupts to track the status of the
-transmission */
-> > +	ier =3D in_be32(drvdata->base_address + XPS2_IPIER_OFFSET);
-> > +	ier |=3D (XPS2_IPIXR_TX_ALL | XPS2_IPIXR_WDT_TOUT);
-> > +	out_be32(drvdata->base_address + XPS2_IPIER_OFFSET, ier);
-> =
+ arch/powerpc/kernel/syscalls.c |    3 +++
+ include/asm-powerpc/mman.h     |   30 ++++++++++++++++++++++++++++++
+ 2 files changed, 33 insertions(+)
 
-> If this is a critical region, Wouldn't it be more appropriate to use a
-> spinlock with spin_lock_irqsave()/spin_unlock_irqrestore()  here?
-> =
+Index: b/arch/powerpc/kernel/syscalls.c
+===================================================================
+--- a/arch/powerpc/kernel/syscalls.c
++++ b/arch/powerpc/kernel/syscalls.c
+@@ -143,6 +143,9 @@
+ 	struct file * file = NULL;
+ 	unsigned long ret = -EINVAL;
+ 
++	if (!arch_validate_prot(prot))
++		goto out;
++
+ 	if (shift) {
+ 		if (off & ((1 << shift) - 1))
+ 			goto out;
+Index: b/include/asm-powerpc/mman.h
+===================================================================
+--- a/include/asm-powerpc/mman.h
++++ b/include/asm-powerpc/mman.h
+@@ -1,7 +1,9 @@
+ #ifndef _ASM_POWERPC_MMAN_H
+ #define _ASM_POWERPC_MMAN_H
+ 
++#include <asm/cputable.h>
+ #include <asm-generic/mman.h>
++#include <linux/mm.h>
+ 
+ /*
+  * This program is free software; you can redistribute it and/or
+@@ -26,4 +28,32 @@
+ #define MAP_POPULATE	0x8000		/* populate (prefault) pagetables */
+ #define MAP_NONBLOCK	0x10000		/* do not block on IO */
+ 
++#ifdef CONFIG_PPC64
++/*
++ * This file is included by linux/mman.h, so we can't use cacl_vm_prot_bits()
++ * here.  How important is the optimization?
++ */
++static inline unsigned long arch_calc_vm_prot_bits(unsigned long prot)
++{
++	return (prot & PROT_SAO) ? VM_SAO : 0;
++}
++#define arch_calc_vm_prot_bits(prot) arch_calc_vm_prot_bits(prot)
++
++static inline pgprot_t arch_vm_get_page_prot(unsigned long vm_flags)
++{
++	return (vm_flags & VM_SAO) ? __pgprot(_PAGE_SAO) : 0;
++}
++#define arch_vm_get_page_prot(vm_flags) arch_vm_get_page_prot(vm_flags)
++
++static inline int arch_validate_prot(unsigned long prot)
++{
++	if (prot & ~(PROT_READ | PROT_WRITE | PROT_EXEC | PROT_SEM | PROT_SAO))
++		return 0;
++	if ((prot & PROT_SAO) && !cpu_has_feature(CPU_FTR_SAO))
++		return 0;
++	return 1;
++}
++#define arch_validate_prot(prot) arch_validate_prot(prot)
++
++#endif /* CONFIG_PPC64 */
+ #endif	/* _ASM_POWERPC_MMAN_H */
 
-> ...
-> =
-
-> Actually, looking deeper into the file; xps2_send() is already
-protected
-> with a spin lock w/ irqsave.  Why do interrupts need to be disabled
-> at all?  It looks like this whole routine could be collapsed into a
-> about three lines of code in the sxps2_write() function.
-> =
-
-> > +
-> > +	return retval;
-> > +}
-> > +
-> > +/*
-> > + * xps2_recv() will attempt to receive a byte of data from the PS/2
-port.
-> > + */
-> > +static int xps2_recv(struct xps2data *drvdata, u8 *byte)
-> > +{
-> > +	u32 sr;
-> > +	int retval =3D -1;
-> > +
-> > +	/* If there is data available in the PS/2 receiver, read it */
-> > +	sr =3D in_be32(drvdata->base_address + XPS2_STATUS_OFFSET);
-> > +	if (sr & XPS2_STATUS_RX_FULL) {
-> > +		*byte =3D in_be32(drvdata->base_address +
-XPS2_RX_DATA_OFFSET);
-> > +		retval =3D 0;
-> > +	}
-> > +
-> > +	return retval;
-> > +}
-> > +
-> > +/*********************/
-> > +/* Interrupt handler */
-> > +/*********************/
-> > +static irqreturn_t xps2_interrupt(int irq, void *dev_id)
-> > +{
-> > +	struct xps2data *drvdata =3D (struct xps2data *)dev_id;
-> > +	u32 intr_sr;
-> > +	u32 ier;
-> > +	u8 c;
-> > +	u8 retval;
-> > +
-> > +	/* Get the PS/2 interrupts and clear them */
-> > +	intr_sr =3D in_be32(drvdata->base_address + XPS2_IPISR_OFFSET);
-> > +	out_be32(drvdata->base_address + XPS2_IPISR_OFFSET, intr_sr);
-> > +
-> > +	/* Check which interrupt is active */
-> > +	if (intr_sr & XPS2_IPIXR_RX_OVF) {
-> > +		printk(KERN_ERR "%s: receive overrun error\n",
-> > +			drvdata->serio.name);
-> > +	}
-> > +
-> > +	if (intr_sr & XPS2_IPIXR_RX_ERR)
-> > +		drvdata->dfl |=3D SERIO_PARITY;
-> > +
-> > +	if (intr_sr & (XPS2_IPIXR_TX_NOACK | XPS2_IPIXR_WDT_TOUT))
-> > +		drvdata->dfl |=3D SERIO_TIMEOUT;
-> > +
-> > +	if (intr_sr & XPS2_IPIXR_RX_FULL) {
-> > +		retval =3D xps2_recv(drvdata, &drvdata->rxb);
-> > +
-> > +		/* Error, if a byte is not received */
-> > +		if (retval) {
-> > +			printk(KERN_ERR
-> > +				"%s: wrong rcvd byte count (%d)\n",
-> > +				drvdata->serio.name, retval);
-> > +		} else {
-> > +			c =3D drvdata->rxb;
-> > +			serio_interrupt(&drvdata->serio, c,
-drvdata->dfl);
-> > +			drvdata->dfl =3D 0;
-> > +		}
-> > +	}
-> > +
-> > +	if (intr_sr & XPS2_IPIXR_TX_ACK) {
-> > +
-> > +		/* Disable the TX interrupts after the transmission is
-> > +		 * complete */
-> > +		ier =3D in_be32(drvdata->base_address +
-XPS2_IPIER_OFFSET);
-> > +		ier &=3D (~(XPS2_IPIXR_TX_ACK & XPS2_IPIXR_ALL));
-> > +		out_be32(drvdata->base_address + XPS2_IPIER_OFFSET,
-ier);
-> > +		drvdata->dfl =3D 0;
-> > +	}
-> > +
-> > +	return IRQ_HANDLED;
-> > +}
-> > +
-> > +/*******************/
-> > +/* serio callbacks */
-> > +/*******************/
-> > +
-> > +/*
-> > + *	sxps2_write() - sends a byte out through the PS/2 interface.
-> > + */
-> > +static int sxps2_write(struct serio *pserio, unsigned char c)
-> > +{
-> > +	struct xps2data *drvdata =3D pserio->port_data;
-> > +	unsigned long flags;
-> > +	int retval;
-> > +
-> > +	spin_lock_irqsave(&drvdata->lock, flags);
-> > +	retval =3D xps2_send(drvdata, &c);
-> > +	spin_unlock_irqrestore(&drvdata->lock, flags);
-> > +
-> > +	return retval;
-> > +}
-> > +
-> > +/*
-> > + * sxps2_open() is called when a port is open by the higher layer.
-> > + */
-> > +static int sxps2_open(struct serio *pserio)
-> > +{
-> > +	struct xps2data *drvdata =3D pserio->port_data;
-> > +	int retval;
-> > +
-> > +	retval =3D request_irq(drvdata->irq, &xps2_interrupt, 0,
-> > +				DRIVER_NAME, drvdata);
-> > +	if (retval) {
-> > +		printk(KERN_ERR
-> > +			"%s: Couldn't allocate interrupt %d\n",
-> > +			drvdata->serio.name, drvdata->irq);
-> > +		return retval;
-> > +	}
-> > +
-> > +	/* start reception by enabling the interrupts */
-> > +	out_be32(drvdata->base_address + XPS2_GIER_OFFSET,
-XPS2_GIER_GIE_MASK);
-> > +	out_be32(drvdata->base_address + XPS2_IPIER_OFFSET,
-XPS2_IPIXR_RX_ALL);
-> > +	(void)xps2_recv(drvdata, &drvdata->rxb);
-> > +
-> > +	return 0;		/* success */
-> > +}
-> > +
-> > +/*
-> > + * sxps2_close() frees the interrupt.
-> > + */
-> > +static void sxps2_close(struct serio *pserio)
-> > +{
-> > +	struct xps2data *drvdata =3D pserio->port_data;
-> > +
-> > +	/* Disable the PS2 interrupts */
-> > +	out_be32(drvdata->base_address + XPS2_GIER_OFFSET, 0x00);
-> > +	out_be32(drvdata->base_address + XPS2_IPIER_OFFSET, 0x00);
-> > +	free_irq(drvdata->irq, drvdata);
-> > +}
-> > +
-> > +/******************************/
-> > +/* Device initialization code */
-> > +/******************************/
-> > +
-> > +/*
-> > + * xps2_initialize() initializes the Xilinx PS/2 device.
-> > + */
-> > +static int xps2_initialize(struct xps2data *drvdata)
-> > +{
-> > +	/* Disable all the interrupts, just in case */
-> > +	out_be32(drvdata->base_address + XPS2_IPIER_OFFSET, 0);
-> > +
-> > +	/* Reset the PS2 device and abort any current transaction, to
-make sure
-> > +	 * we have the PS2 in a good state */
-> > +	out_be32(drvdata->base_address + XPS2_SRST_OFFSET,
-XPS2_SRST_RESET);
-> > +
-> > +	return 0;
-> > +}
-> =
-
-> This function is only called by xps2_setup() and should probably be
-> collapsed into it.
-> =
-
-> > +
-> > +/*
-> > + * XPS PS2 device setup code.
-> > + */
-> > +static int xps2_setup(struct device *dev, int id, struct resource
-*regs_res,
-> > +			struct resource *irq_res)
-> > +{
-> > +	struct xps2data *drvdata;
-> > +	struct serio *serio;
-> > +	unsigned long remap_size;
-> > +	int retval;
-> > +
-> > +	if (!dev)
-> > +		return -EINVAL;
-> > +
-> > +	drvdata =3D kzalloc(sizeof(struct xps2data), GFP_KERNEL);
-> > +	if (!drvdata) {
-> > +		dev_err(dev, "Couldn't allocate device private
-record\n");
-> > +		return -ENOMEM;
-> > +	}
-> > +	spin_lock_init(&drvdata->lock);
-> > +	mutex_init(&drvdata->cfg_mutex);
-> > +	dev_set_drvdata(dev, drvdata);
-> > +
-> > +	if (!regs_res || !irq_res) {
-> > +		dev_err(dev, "IO resource(s) not found\n");
-> > +		retval =3D -EFAULT;
-> > +		goto failed1;
-> > +	}
-> > +
-> > +	drvdata->irq =3D irq_res->start;
-> > +	remap_size =3D regs_res->end - regs_res->start + 1;
-> > +	if (!request_mem_region(regs_res->start, remap_size,
-DRIVER_NAME)) {
-> > +
-> > +		dev_err(dev, "Couldn't lock memory region at 0x%08X\n",
-> > +			(unsigned int)regs_res->start);
-> > +		retval =3D -EBUSY;
-> > +		goto failed1;
-> > +	}
-> > +
-> > +	/* Fill in configuration data and add them to the list */
-> > +	drvdata->phys_addr =3D regs_res->start;
-> > +	drvdata->remap_size =3D remap_size;
-> > +	drvdata->base_address =3D ioremap(regs_res->start, remap_size);
-> > +	if (drvdata->base_address =3D=3D NULL) {
-> > +
-> > +		dev_err(dev, "Couldn't ioremap memory at 0x%08X\n",
-> > +			(unsigned int)regs_res->start);
-> > +		retval =3D -EFAULT;
-> > +		goto failed2;
-> > +	}
-> > +
-> > +	/* Initialize the PS/2 interface */
-> > +	mutex_lock(&drvdata->cfg_mutex);
-> > +	if (xps2_initialize(drvdata)) {
-> > +		mutex_unlock(&drvdata->cfg_mutex);
-> > +		dev_err(dev, "Could not initialize device\n");
-> > +		retval =3D -ENODEV;
-> > +		goto failed3;
-> > +	}
-> > +	mutex_unlock(&drvdata->cfg_mutex);
-> =
-
-> This is the only user of cfg_mutex.  The IRQ isn't registered yet, and
-> the driver isn't registered with the serio layer either so you can
-just
-> drop the mutex entirely.
-> =
-
-> > +
-> > +	dev_info(dev, "Xilinx PS2 at 0x%08X mapped to 0x%08X, irq=3D%d\n",
-> > +		drvdata->phys_addr, (u32)drvdata->base_address,
-drvdata->irq);
-> > +
-> > +	serio =3D &drvdata->serio;
-> > +	serio->id.type =3D SERIO_8042;
-> > +	serio->write =3D sxps2_write;
-> > +	serio->open =3D sxps2_open;
-> > +	serio->close =3D sxps2_close;
-> > +	serio->port_data =3D drvdata;
-> > +	serio->dev.parent =3D dev;
-> > +	snprintf(drvdata->serio.name, sizeof(serio->name),
-> > +		 "Xilinx XPS PS/2 Port #%d", id);
-> > +	snprintf(drvdata->serio.phys, sizeof(serio->phys),
-> > +		 "xilinxps2/serio%d", id);
-> > +	serio_register_port(serio);
-> > +
-> > +	return 0;		/* success */
-> > +
-> > +failed3:
-> > +	iounmap(drvdata->base_address);
-> > +
-> > +failed2:
-> > +	release_mem_region(regs_res->start, remap_size);
-> > +
-> > +failed1:
-> > +	kfree(drvdata);
-> > +	dev_set_drvdata(dev, NULL);
-> > +
-> > +	return retval;
-> > +}
-> > +
-> > +/***************************/
-> > +/* OF Platform Bus Support */
-> > +/***************************/
-> > +
-> > +static int __devinit xps2_of_probe(struct of_device *ofdev, const
-struct
-> > +				   of_device_id * match)
-> > +{
-> > +	struct resource r_irq_struct;
-> > +	struct resource r_mem_struct;
-> > +	struct resource *r_irq =3D &r_irq_struct;	/* Interrupt resources
-*/
-> > +	struct resource *r_mem =3D &r_mem_struct;	/* IO mem resources */
-> =
-
-> This is very vebose; do this instead:
-> =
-
-> +	struct resource r_irq;
-> +	struct resource r_mem;
-> [...]
-> +	rc =3D of_address_to_resource(ofdev->node, 0, &r_mem);
-> [...]
-> +	rc =3D of_irq_to_resource(ofdev->node, 0, &r_irq);
-> [...]
-> +	return xps2_setup(&ofdev->dev, id ? *id : -1, &r_mem, &r_irq);
-> =
-
-> > +	int rc =3D 0;
-> > +	const unsigned int *id;
-> > +
-> > +	printk(KERN_INFO "Device Tree Probing \'%s\'\n",
-> > +			ofdev->node->name);
-> > +
-> > +	/* Get iospace for the device */
-> > +	rc =3D of_address_to_resource(ofdev->node, 0, r_mem);
-> > +	if (rc) {
-> > +		dev_warn(&ofdev->dev, "invalid address\n");
-> =
-
-> Probably should be dev_err(...);
-> =
-
-> > +		return rc;
-> > +	}
-> > +
-> > +	/* Get IRQ for the device */
-> > +	rc =3D of_irq_to_resource(ofdev->node, 0, r_irq);
-> > +	if (rc =3D=3D NO_IRQ) {
-> > +		dev_warn(&ofdev->dev, "no IRQ found\n");
-> =
-
-> ditto
-> =
-
-> > +		return rc;
-> > +	}
-> > +
-> > +	id =3D of_get_property(ofdev->node, "port-number", NULL);
-> =
-
-> Drop this line.  port-number is a poor way to specify a global value.
-> If really needed, you should search the aliases node for a matching
-> property to get the id.  Otherwise, you should probably fall back to
-> using the physical address of the device instead of -1.  At least it
-> guarantees that the value is unique.
-> =
-
-> > +	return xps2_setup(&ofdev->dev, id ? *id : -1, r_mem, r_irq);
-> > +}
-> > +
-> > +static int __devexit xps2_of_remove(struct of_device *of_dev)
-> > +{
-> > +	struct xps2data *drvdata;
-> > +	struct device *dev;
-> > +
-> > +	dev =3D &of_dev->dev;
-> > +	if (!dev)
-> > +		return -EINVAL;
-> > +
-> > +	drvdata =3D (struct xps2data *)dev_get_drvdata(dev);
-> > +
-> > +	serio_unregister_port(&drvdata->serio);
-> > +
-> > +	iounmap(drvdata->base_address);
-> > +
-> > +	release_mem_region(drvdata->phys_addr, drvdata->remap_size);
-> > +
-> > +	kfree(drvdata);
-> > +	dev_set_drvdata(dev, NULL);
-> > +
-> > +	return 0;		/* success */
-> > +}
-> > +
-> > +/* Match table for of_platform binding */
-> > +static struct of_device_id __devinitdata xps2_of_match[] =3D {
-> =
-
-> __devinitdata in the wrong place; should be:
-> =
-
-> +static struct of_device_id xps2_of_match[] __devinitdata =3D {
-> =
-
-> > +	{ .compatible =3D "xlnx,xps-ps2-1.00.a", },
-> > +	{ /* end of list */ },
-> > +};
-> > +MODULE_DEVICE_TABLE(of, xps2_of_match);
-> > +
-> > +static struct of_platform_driver xps2_of_driver =3D {
-> > +	.name		=3D DRIVER_NAME,
-> > +	.match_table	=3D xps2_of_match,
-> > +	.probe		=3D xps2_of_probe,
-> > +	.remove		=3D __devexit_p(xps2_of_remove),
-> > +};
-> > +
-> > +static int __init xps2_init(void)
-> > +{
-> > +	return of_register_platform_driver(&xps2_of_driver);
-> > +}
-> > +
-> > +static void __exit xps2_cleanup(void)
-> > +{
-> > +	of_unregister_platform_driver(&xps2_of_driver);
-> > +}
-> > +
-> > +module_init(xps2_init);
-> > +module_exit(xps2_cleanup);
-> > +
-> > +MODULE_AUTHOR("Xilinx, Inc.");
-> > +MODULE_DESCRIPTION("Xilinx XPS PS/2 driver");
-> > +MODULE_LICENSE("GPL");
-> > +
-> > --
-> > 1.5.2.1
-> >
-> >
-> >
-> > This email and any attachments are intended for the sole use of the
-named recipient(s) and
-> contain(s) confidential information that may be proprietary,
-privileged or copyrighted under
-> applicable law. If you are not the intended recipient, do not read,
-copy, or forward this email
-> message or any attachments. Delete this email message and any
-attachments immediately.
-> >
-> >
-
-
-This email and any attachments are intended for the sole use of the named r=
-ecipient(s) and contain(s) confidential information that may be proprietary=
-, privileged or copyrighted under applicable law. If you are not the intend=
-ed recipient, do not read, copy, or forward this email message or any attac=
-hments. Delete this email message and any attachments immediately.
+-- 
+David Kleikamp
+IBM Linux Technology Center
