@@ -1,17 +1,17 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id A585DDE381
-	for <linuxppc-dev@ozlabs.org>; Fri,  4 Jul 2008 01:59:26 +1000 (EST)
-Date: Thu, 3 Jul 2008 19:59:23 +0400
+	by ozlabs.org (Postfix) with ESMTP id 430AADDFFF
+	for <linuxppc-dev@ozlabs.org>; Fri,  4 Jul 2008 02:06:34 +1000 (EST)
+Date: Thu, 3 Jul 2008 20:06:32 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: patches for 2.6.27...
-Message-ID: <20080703155923.GA24286@polina.dev.rtsoft.ru>
-References: <068935A1-11BE-4AEB-9C0E-E1AB53F1618E@kernel.crashing.org>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: More commits added to powerpc.git master and powerpc-next branches
+Message-ID: <20080703160632.GB24286@polina.dev.rtsoft.ru>
+References: <18540.41013.722932.726273@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf8
-In-Reply-To: <068935A1-11BE-4AEB-9C0E-E1AB53F1618E@kernel.crashing.org>
-Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>
+In-Reply-To: <18540.41013.722932.726273@cargo.ozlabs.ibm.com>
+Cc: linuxppc-dev@ozlabs.org
 Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -22,29 +22,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jul 02, 2008 at 02:56:16AM -0500, Kumar Gala wrote:
-> Please point out any patches that have been posted but havent made it  
-> into a git tree related to Freescale chips.
+On Thu, Jul 03, 2008 at 07:47:33PM +1000, Paul Mackerras wrote:
+> The following patches have been added to the master and powerpc-next
+> branches of powerpc.git.
 
-How about RTC work for MPC8610HPCD/MPC8572DS:
+These seems to be lost:
 
-[PATCH 1/4] powerpc: fsl_uli1575: fix RTC quirk to work on MPC8572DS and MPC8610HPCD
-http://patchwork.ozlabs.org/linuxppc/patch?id=18913
+[OF] of_gpio: should use new <linux/gpio.h> header
+http://patchwork.ozlabs.org/linuxppc/patch?id=18750
 
-[PATCH 2/4] powerpc/85xx/86xx: some refactoring for fsl_uli1575 code
-http://patchwork.ozlabs.org/linuxppc/patch?id=18914
+[POWERPC] booting-without-of: fix GPIO section mis-numbering
+http://patchwork.ozlabs.org/linuxppc/patch?id=18661
 
-[PATCH 3/4] powerpc: rtc_cmos_setup: assign interrupts only if there is i8259 PIC
-http://patchwork.ozlabs.org/linuxppc/patch?id=18915
+^^ these two are powerpc-next material.
 
-[PATCH 4/4] powerpc/86xx: mpc8610_hpcd: add support for ULI RTC
-http://patchwork.ozlabs.org/linuxppc/patch?id=18916
-
-
-And mpc83xx_defconfig update for MPC8360E-RDK:
-
-[PATCH v3] powerpc/83xx: update mpc83xx_defconfig to support MPC8360E-RDK
-http://patchwork.ozlabs.org/linuxppc/patch?id=18903
+Thanks,
 
 -- 
 Anton Vorontsov
