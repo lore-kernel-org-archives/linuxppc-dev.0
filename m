@@ -1,20 +1,17 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from wf-out-1314.google.com (wf-out-1314.google.com [209.85.200.175])
-	by ozlabs.org (Postfix) with ESMTP id 0A757DDE02
-	for <linuxppc-dev@ozlabs.org>; Sat,  5 Jul 2008 03:00:45 +1000 (EST)
-Received: by wf-out-1314.google.com with SMTP id 24so1339633wfg.15
-	for <linuxppc-dev@ozlabs.org>; Fri, 04 Jul 2008 10:00:43 -0700 (PDT)
-Date: Fri, 4 Jul 2008 11:00:41 -0600
+Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.176])
+	by ozlabs.org (Postfix) with ESMTP id 022F3DDF36
+	for <linuxppc-dev@ozlabs.org>; Sat,  5 Jul 2008 03:22:46 +1000 (EST)
+Received: by py-out-1112.google.com with SMTP id z59so777714pyg.27
+	for <linuxppc-dev@ozlabs.org>; Fri, 04 Jul 2008 10:22:44 -0700 (PDT)
+Date: Fri, 4 Jul 2008 11:22:40 -0600
 From: Grant Likely <grant.likely@secretlab.ca>
-To: Andre Schwarz <andre.schwarz@matrix-vision.de>
-Subject: Re: [PATCH] Add MPC5200B base board mvBC-P
-Message-ID: <20080704170041.GD17062@secretlab.ca>
-References: <486E515B.80508@matrix-vision.de>
+To: jwboyer@gmail.com, linuxppc-dev@ozlabs.org
+Subject: Please pull linux-2.6-virtex.git
+Message-ID: <20080704172240.GE17062@secretlab.ca>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <486E515B.80508@matrix-vision.de>
 Sender: Grant Likely <glikely@secretlab.ca>
-Cc: linux-ppc list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,175 +21,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Jul 04, 2008 at 06:35:39PM +0200, Andre Schwarz wrote:
-> The mvBlueCOUGAR-P is a MPC5200B based camera system with Intel Gigabit ethernet
-> controller (using e1000). It's just another MPC5200_simple board.
-> 
-> Signed-off-by: Andre Schwarz <andre.schwarz@matrix-vision.de>
-> ---
-> 
-> 
-> Grant,
-> 
-> I don't know if there are any merge windows ...
-> If the patch should be modified or re-submitted on a later time please let me know.
+Hi Josh,
 
-The merge window will be opening any day now.  If you address comments
-quickly then I should be able to merge it into 2.6.27
+Here are the bulk of the Xilinx 440 support patches.  Please pull
+into your next branch.
 
->  arch/powerpc/boot/dts/mvbc-p.dts             |  206 +++++
->  arch/powerpc/configs/mvbc-p_defconfig        | 1158 ++++++++++++++++++++++++++
-Rename this to arch/powerpc/config/52xx/mvbc_p_defconfig (use platform
-specific defconfig dir and don't mix '-' and '_' in filenames).
+Thanks,
+g.
 
-> diff --git a/arch/powerpc/boot/dts/mvbc-p.dts b/arch/powerpc/boot/dts/mvbc-p.dts
-> new file mode 100644
-> index 0000000..90a2808
-> --- /dev/null
-> +++ b/arch/powerpc/boot/dts/mvbc-p.dts
-> @@ -0,0 +1,206 @@
-> +/*
-> + * mvBlueCOUGAR-P device tree source
-> + *
-> + * Copyright (C) 2008 Matrix Vision GmbH
-> + * Andre Schwarz <andre.schwarz@matrix-vision.de>
-> + *
-> + * This program is free software; you can redistribute it and/or modify it
-> + * under the terms of the GNU General Public License as published by the
-> + * Free Software Foundation; either version 2 of the License, or (at your
-> + * option) any later version.
-> + */
-> +
-> +/dts-v1/;
-> +
-> +/ {
-> +	model = "matrix-vision,mvbc-p";
-> +	compatible = "matrix-vision,mvbc-p";
-> +	#address-cells = <1>;
-> +	#size-cells = <1>;
-> +
-> +	cpus {
-> +		#address-cells = <1>;
-> +		#size-cells = <0>;
-> +
-> +		PowerPC,5200@0 {
-> +			device_type = "cpu";
-> +			reg = <0>;
-> +			d-cache-line-size = <32>;
-> +			i-cache-line-size = <32>;
-> +			d-cache-size = <0x4000>;
-> +			i-cache-size = <0x4000>;
-> +			timebase-frequency = <0>;
-> +			bus-frequency = <0>;
-> +			clock-frequency = <0>;
-> +		};
-> +	};
-> +
-> +	memory {
-> +		device_type = "memory";
-> +		reg = <0x00000000 0x00000000>;
-> +	};
-> +
-> +	soc5200@f0000000 {
-> +		#address-cells = <1>;
-> +		#size-cells = <1>;
-> +		compatible = "fsl,mpc5200-immr";
+The following changes since commit f3e909c2750eb20536bacacc867dc9047b70546a:
+  Michael Neuling (1):
+        powerpc: Update for VSX core file and ptrace
 
-Does this board use the original 5200, or the 5200B?  If it uses the
-5200B, then you should specify both fsl,mpc5200b-immr and
-fsl,mpc5200-immr.  Same goes for all other compatible properties in the
-tree; see lite5200b.dts for an example.
+are available in the git repository at:
 
-I am toying with the option of eliminating the need for fsl,mpc5200b-*,
-but until then the conservative and safest thing to do is to claim
-compatibility with both.
+  git://git.secretlab.ca/git/linux-2.6-virtex virtex-for-2.6.27
 
-> +	lpb {
-> +		compatible = "fsl,lpb";
+Grant Likely (2):
+      powerpc/bootwrapper: Add documentation of boot wrapper targets
+      powerpc/bootwrapper: add missing bit of simpleImage target
 
-You should also claim compatibility with "simple-bus" here.
+John Linn (5):
+      powerpc/virtex: add dts file for ML507 reference design
+      powerpc/virtex: Fix booting of Xilinx FPGAs with 16550 for 405 and 440
+      powerpc/virtex: add Xilinx Virtex 5 ppc440 platform support
+      powerpc/virtex: add Xilinx 440 cpu to the cputable
+      powerpc/virtex: add defconfig for virtex 5 platforms
 
-ie:  compatible = "fsl,lpb", "simple-bus";
-
-> +		#address-cells = <2>;
-> +		#size-cells = <1>;
-> +		ranges = <0x0 0x0 0xff800000 0x00800000>;
-> +		flash@0,0 {
-> +			compatible = "cfi-flash";
-
-For completeness, it is good practice for the first entry in the compatible
-list to be the actual flash chip, followed by "cfi-flash"
-
-> +			reg = <0 0 0x800000>;
-> +			#address-cells = <1>;
-> +			#size-cells = <1>;
-> +			bank-width = <1>;
-> +			device-width = <1>;
-> +			nor_total@0x0 {
-> +				reg = <0x0 0x800000>;
-> +			};
-
-I don't know if this is legal; to have overlapping flash sections (but
-I'm not a cfi-flash binding expert).
-
-> +			u-boot@0x0 {
-> +				reg = <0x0 0x40000>;
-> +			};
-> +			u-boot_autoscript@0x40000 {
-> +				reg = <0x40000 0x10000>;
-> +			};
-> +			u-boot_autoscript_red@0x50000 {
-> +				reg = <0x50000 0x10000>;
-> +			};
-> +			fpga@0x60000 {
-> +				reg = <0x60000 0x40000>;
-> +			};
-> +			user@0xa0000 {
-> +				reg = <0xa00000 0x60000>;
-> +			};
-> +			rfs@0x100000 {
-> +				reg = <0x100000 0x300000>;
-> +			};
-> +			kernel@0x400000 {
-> +				reg = <0x400000 0x3c0000>;
-> +			};
-> +			dtb@0x7c0000 {
-> +				reg = <0x7c0000 0x10000>;
-> +			};
-> +			dtb@0x7d0000 {
-> +				reg = <0x7d0000 0x10000>;
-> +			};
-> +			ppcboot_env@0x7e0000 {
-> +				reg = <0x7e0000 0x10000>;
-> +			};
-> +			ppcboot_env@0x7f0000 {
-> +				reg = <0x7f0000 0x10000>;
-> +			};
-
-I think it would be better to just leave out the partition information
-and modify U-Boot to fill them in (just like memory and clock speed are
-left out).  Things like flash partitions are less like hardware
-description and more like configuration data.
-
-> +		};
-> +	};
-> +
-> +	pci: pci@0xf0000d00 {
-> +		#interrupt-cells = <1>;
-> +		#size-cells = <2>;
-> +		#address-cells = <3>;
-> +		device_type = "pci";
-> +		compatible = "fsl,mpc5200-pci";
-> +		reg = <0xf0000d00 0x100>;
-> +		interrupt-map-mask = <0xf800 0 0 7>;
-> +		interrupt-map = <0x5800 0 0 1 &mpc5200_pic 1 2 3
-> +			0x5000 0 0 1 &mpc5200_pic 1 3 3>;
-> +		clock-frequency = <0>;
-> +		interrupts = <2 8 0 2 9 0 2 10 0>;
-> +		interrupt-parent = <&mpc5200_pic>;
-> +		bus-range = <0 0>;
-> +		ranges = <0x42000000 0 0x80000000 0x80000000 0 0x20000000
-> +			0x02000000 0 0xa0000000 0xa0000000 0 0x10000000
-> +			0x01000000 0 0x00000000 0xb0000000 0 0x01000000>;
-> +	};
-> +};
+ Documentation/powerpc/bootwrapper.txt      |  141 ++++
+ arch/powerpc/Makefile                      |   15 +-
+ arch/powerpc/boot/Makefile                 |    2 +-
+ arch/powerpc/boot/dts/virtex440-ml507.dts  |  238 ++++++
+ arch/powerpc/boot/simpleboot.c             |    6 +
+ arch/powerpc/boot/virtex.c                 |  100 +++
+ arch/powerpc/boot/wrapper                  |   10 +-
+ arch/powerpc/configs/44x/virtex5_defconfig | 1107 ++++++++++++++++++++++++++++
+ arch/powerpc/kernel/cputable.c             |   10 +
+ arch/powerpc/platforms/44x/Kconfig         |   26 +
+ arch/powerpc/platforms/44x/Makefile        |    1 +
+ arch/powerpc/platforms/44x/virtex.c        |   60 ++
+ 12 files changed, 1713 insertions(+), 3 deletions(-)
+ create mode 100644 Documentation/powerpc/bootwrapper.txt
+ create mode 100644 arch/powerpc/boot/dts/virtex440-ml507.dts
+ create mode 100644 arch/powerpc/boot/virtex.c
+ create mode 100644 arch/powerpc/configs/44x/virtex5_defconfig
+ create mode 100644 arch/powerpc/platforms/44x/virtex.c
