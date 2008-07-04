@@ -2,19 +2,20 @@ Return-Path: <jeff@garzik.org>
 Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id EFA0BDDF6B
-	for <linuxppc-dev@ozlabs.org>; Fri,  4 Jul 2008 22:17:44 +1000 (EST)
-Message-ID: <486E14E3.6080402@garzik.org>
-Date: Fri, 04 Jul 2008 08:17:39 -0400
+	by ozlabs.org (Postfix) with ESMTPS id 09E8FDDECA
+	for <linuxppc-dev@ozlabs.org>; Fri,  4 Jul 2008 22:25:14 +1000 (EST)
+Message-ID: <486E16A3.6020403@garzik.org>
+Date: Fri, 04 Jul 2008 08:25:07 -0400
 From: Jeff Garzik <jeff@garzik.org>
 MIME-Version: 1.0
-To: Stefan Roese <sr@denx.de>
-Subject: Re: [PATCH v2] ibm_newemac: Fixes entry of short packets
-References: <1214902699-10534-1-git-send-email-sr@denx.de>
-In-Reply-To: <1214902699-10534-1-git-send-email-sr@denx.de>
+To: Laurent Pinchart <laurentp@cse-semaphore.com>
+Subject: Re: [PATCHv2] fs_enet: restore promiscuous and multicast settings
+	in restart()
+References: <200806261148.26569.laurentp@cse-semaphore.com>
+In-Reply-To: <200806261148.26569.laurentp@cse-semaphore.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, Sathya Narayanan <sathyan@teamf1.com>,
-	netdev@vger.kernel.org
+Cc: linuxppc-dev@ozlabs.org, Matvejchikov Ilya <matvejchikov@gmail.com>,
+	vbordug@ru.mvista.com, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,33 +25,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Stefan Roese wrote:
-> From: Sathya Narayanan <sathyan@teamf1.com>
+Laurent Pinchart wrote:
+> The restart() function is called when the link state changes and resets
+> multicast and promiscuous settings. This patch restores those settings at the
+> end of restart().
 > 
-> Short packets has to be discarded by the driver. So this patch addresses the
-> issue of discarding the short packets of size lesser then ethernet header
-> size.
-> 
-> Signed-off-by: Sathya Narayanan <sathyan@teamf1.com>
-> Signed-off-by: Stefan Roese <sr@denx.de>
+> Signed-off-by: Laurent Pinchart <laurentp@cse-semaphore.com>
 > ---
->  drivers/net/ibm_newemac/core.c |    6 ++++++
->  1 files changed, 6 insertions(+), 0 deletions(-)
+>  drivers/net/fs_enet/mac-fcc.c |    3 +++
+>  1 files changed, 3 insertions(+), 0 deletions(-)
 > 
-> diff --git a/drivers/net/ibm_newemac/core.c b/drivers/net/ibm_newemac/core.c
-> index ca63fa0..babc79a 100644
-> --- a/drivers/net/ibm_newemac/core.c
-> +++ b/drivers/net/ibm_newemac/core.c
-> @@ -1636,6 +1636,12 @@ static int emac_poll_rx(void *param, int budget)
->  			goto next;
->  		}
+> diff --git a/drivers/net/fs_enet/mac-fcc.c b/drivers/net/fs_enet/mac-fcc.c
+> index e363211..849afbe 100644
+> --- a/drivers/net/fs_enet/mac-fcc.c
+> +++ b/drivers/net/fs_enet/mac-fcc.c
+> @@ -463,6 +463,9 @@ static void restart(struct net_device *dev)
+>  	else
+>  		C32(fccp, fcc_fpsmr, FCC_PSMR_FDE | FCC_PSMR_LPB);
 >  
-> +		if (len < ETH_HLEN) {
-> +			++dev->estats.rx_dropped_stack;
-> +			emac_recycle_rx_skb(dev, slot, len);
-> +			goto next;
-> +		}
+> +	/* Restore multicast and promiscuous settings */
+> +	set_multicast_list(dev);
 > +
->  		if (len && len < EMAC_RX_COPY_THRESH) {
+>  	S32(fccp, fcc_gfmr, FCC_GFMR_ENR | FCC_GFMR_ENT);
 
 applied 2.6.26
