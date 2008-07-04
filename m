@@ -1,13 +1,12 @@
 Return-Path: <arnd@arndb.de>
-Message-Id: <20080704190806.295617645@arndb.de>
+Message-Id: <20080704190805.768128502@arndb.de>
 References: <20080704190535.316377278@arndb.de>
-Date: Fri, 04 Jul 2008 21:05:41 +0200
+Date: Fri, 04 Jul 2008 21:05:37 +0200
 From: arnd@arndb.de
 To: Paul Mackerras <paulus@samba.org>,
 	Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [patch 06/11] powerpc: Add struct iommu_table argument to
-	iommu_map_sg()
-Cc: Mark Nelson <markn@au1.ibm.com>, linuxppc-dev@ozlabs.org,
+Subject: [patch 02/11] powerpc/axonram: use only one block device major number
+Cc: Maxim Shchetynin <maxim@de.ibm.com>, linuxppc-dev@ozlabs.org,
 	cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -18,74 +17,92 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Make iommu_map_sg take a struct iommu_table. It did so before commit
-740c3ce66700640a6e6136ff679b067e92125794 (iommu sg merging: ppc: make
-iommu respect the segment size limits).
+Axonram module registers one block device for each DDR2 DIMM found
+on a system. This means that each DDR2 DIMM becomes its own block device
+major number. This patch lets axonram module to register the only one
+block device for all DDR2 DIMMs which also spares kernel resources.
 
-This stops the function looking in the archdata.dma_data for the iommu
-table because in the future it will be called with a device that has
-no table there.
-
-This also has the nice side effect of making iommu_map_sg() match the
-other map functions.
-
-Signed-off-by: Mark Nelson <markn@au1.ibm.com>
+Signed-off-by: Maxim Shchetynin <maxim@de.ibm.com>
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- arch/powerpc/kernel/dma_64.c |    2 +-
- arch/powerpc/kernel/iommu.c  |    7 +++----
- include/asm-powerpc/iommu.h  |    6 +++---
- 3 files changed, 7 insertions(+), 8 deletions(-)
+ arch/powerpc/sysdev/axonram.c |   23 +++++++++++++++--------
+ 1 files changed, 15 insertions(+), 8 deletions(-)
 
-diff --git a/arch/powerpc/kernel/dma_64.c b/arch/powerpc/kernel/dma_64.c
-index 3a317cb..7397445 100644
---- a/arch/powerpc/kernel/dma_64.c
-+++ b/arch/powerpc/kernel/dma_64.c
-@@ -68,7 +68,7 @@ static void dma_iommu_unmap_single(struct device *dev, dma_addr_t dma_handle,
- static int dma_iommu_map_sg(struct device *dev, struct scatterlist *sglist,
- 			    int nelems, enum dma_data_direction direction)
+diff --git a/arch/powerpc/sysdev/axonram.c b/arch/powerpc/sysdev/axonram.c
+index 7f59188..9b639ed 100644
+--- a/arch/powerpc/sysdev/axonram.c
++++ b/arch/powerpc/sysdev/axonram.c
+@@ -57,6 +57,8 @@
+ #define AXON_RAM_SECTOR_SIZE		1 << AXON_RAM_SECTOR_SHIFT
+ #define AXON_RAM_IRQ_FLAGS		IRQF_SHARED | IRQF_TRIGGER_RISING
+ 
++static int azfs_major, azfs_minor;
++
+ struct axon_ram_bank {
+ 	struct of_device	*device;
+ 	struct gendisk		*disk;
+@@ -227,19 +229,14 @@ axon_ram_probe(struct of_device *device, const struct of_device_id *device_id)
+ 		goto failed;
+ 	}
+ 
+-	bank->disk->first_minor = 0;
++	bank->disk->major = azfs_major;
++	bank->disk->first_minor = azfs_minor;
+ 	bank->disk->fops = &axon_ram_devops;
+ 	bank->disk->private_data = bank;
+ 	bank->disk->driverfs_dev = &device->dev;
+ 
+ 	sprintf(bank->disk->disk_name, "%s%d",
+ 			AXON_RAM_DEVICE_NAME, axon_ram_bank_id);
+-	bank->disk->major = register_blkdev(0, bank->disk->disk_name);
+-	if (bank->disk->major < 0) {
+-		dev_err(&device->dev, "Cannot register block device\n");
+-		rc = -EFAULT;
+-		goto failed;
+-	}
+ 
+ 	bank->disk->queue = blk_alloc_queue(GFP_KERNEL);
+ 	if (bank->disk->queue == NULL) {
+@@ -276,6 +273,8 @@ axon_ram_probe(struct of_device *device, const struct of_device_id *device_id)
+ 		goto failed;
+ 	}
+ 
++	azfs_minor += bank->disk->minors;
++
+ 	return 0;
+ 
+ failed:
+@@ -310,7 +309,6 @@ axon_ram_remove(struct of_device *device)
+ 
+ 	device_remove_file(&device->dev, &dev_attr_ecc);
+ 	free_irq(bank->irq_id, device);
+-	unregister_blkdev(bank->disk->major, bank->disk->disk_name);
+ 	del_gendisk(bank->disk);
+ 	iounmap((void __iomem *) bank->io_addr);
+ 	kfree(bank);
+@@ -341,6 +339,14 @@ static struct of_platform_driver axon_ram_driver = {
+ static int __init
+ axon_ram_init(void)
  {
--	return iommu_map_sg(dev, sglist, nelems,
-+	return iommu_map_sg(dev, dev->archdata.dma_data, sglist, nelems,
- 			    device_to_mask(dev), direction);
++	azfs_major = register_blkdev(azfs_major, AXON_RAM_DEVICE_NAME);
++	if (azfs_major < 0) {
++		printk(KERN_ERR "%s cannot become block device major number\n",
++				AXON_RAM_MODULE_NAME);
++		return -EFAULT;
++	}
++	azfs_minor = 0;
++
+ 	return of_register_platform_driver(&axon_ram_driver);
  }
  
-diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
-index 0c66366..ccf00fe 100644
---- a/arch/powerpc/kernel/iommu.c
-+++ b/arch/powerpc/kernel/iommu.c
-@@ -267,11 +267,10 @@ static void iommu_free(struct iommu_table *tbl, dma_addr_t dma_addr,
- 	spin_unlock_irqrestore(&(tbl->it_lock), flags);
+@@ -351,6 +357,7 @@ static void __exit
+ axon_ram_exit(void)
+ {
+ 	of_unregister_platform_driver(&axon_ram_driver);
++	unregister_blkdev(azfs_major, AXON_RAM_DEVICE_NAME);
  }
  
--int iommu_map_sg(struct device *dev, struct scatterlist *sglist,
--		 int nelems, unsigned long mask,
--		 enum dma_data_direction direction)
-+int iommu_map_sg(struct device *dev, struct iommu_table *tbl,
-+		 struct scatterlist *sglist, int nelems,
-+		 unsigned long mask, enum dma_data_direction direction)
- {
--	struct iommu_table *tbl = dev->archdata.dma_data;
- 	dma_addr_t dma_next = 0, dma_addr;
- 	unsigned long flags;
- 	struct scatterlist *s, *outs, *segstart;
-diff --git a/include/asm-powerpc/iommu.h b/include/asm-powerpc/iommu.h
-index 852e15f..65f6682 100644
---- a/include/asm-powerpc/iommu.h
-+++ b/include/asm-powerpc/iommu.h
-@@ -79,9 +79,9 @@ extern void iommu_free_table(struct iommu_table *tbl, const char *node_name);
- extern struct iommu_table *iommu_init_table(struct iommu_table * tbl,
- 					    int nid);
- 
--extern int iommu_map_sg(struct device *dev, struct scatterlist *sglist,
--			int nelems, unsigned long mask,
--			enum dma_data_direction direction);
-+extern int iommu_map_sg(struct device *dev, struct iommu_table *tbl,
-+			struct scatterlist *sglist, int nelems,
-+			unsigned long mask, enum dma_data_direction direction);
- extern void iommu_unmap_sg(struct iommu_table *tbl, struct scatterlist *sglist,
- 			   int nelems, enum dma_data_direction direction);
- 
+ module_init(axon_ram_init);
 -- 
 1.5.4.3
 
