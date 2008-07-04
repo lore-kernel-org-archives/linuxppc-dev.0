@@ -1,20 +1,29 @@
-Return-Path: <broonie@sirena.org.uk>
-Received: from cassiel.sirena.org.uk (cassiel.sirena.org.uk [80.68.93.111])
-	by ozlabs.org (Postfix) with ESMTP id 58C8ADE1EF
-	for <linuxppc-dev@ozlabs.org>; Sat,  5 Jul 2008 06:49:35 +1000 (EST)
-Date: Fri, 4 Jul 2008 21:49:27 +0100
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [alsa-devel] [PATCH 3/3] ALSA SoC: Add Texas Instruments
-	TLV320AIC26 codec driver
-Message-ID: <20080704204927.GC20719@sirena.org.uk>
-References: <20080701235330.16923.67218.stgit@trillian.secretlab.ca>
-	<20080701235340.16923.48024.stgit@trillian.secretlab.ca>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080701235340.16923.48024.stgit@trillian.secretlab.ca>
-Cc: liam.girdwood@wolfsonmicro.com, alsa-devel@alsa-project.org,
-	timur@freescale.com, linuxppc-dev@ozlabs.org
+Return-Path: <akpm@linux-foundation.org>
+Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
+	[140.211.169.13])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "smtp.linux-foundation.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 73F7FDDE0A
+	for <linuxppc-dev@ozlabs.org>; Sat,  5 Jul 2008 08:01:06 +1000 (EST)
+Date: Fri, 4 Jul 2008 15:01:00 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Matthew Wilcox <matthew@wil.cx>
+Subject: Re: the printk problem
+Message-Id: <20080704150100.1f7b8a65.akpm@linux-foundation.org>
+In-Reply-To: <20080704204252.GM14894@parisc-linux.org>
+References: <20080625131101.GA6205@digi.com> <20080704104634.GA31634@digi.com>
+	<20080704111540.ddffd241.akpm@linux-foundation.org>
+	<alpine.LFD.1.10.0807041147450.2815@woody.linux-foundation.org>
+	<alpine.LFD.1.10.0807041250220.2815@woody.linux-foundation.org>
+	<20080704132716.f1e12554.akpm@linux-foundation.org>
+	<20080704204252.GM14894@parisc-linux.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Peter Anvin <hpa@zytor.com>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	"David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,29 +33,93 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Jul 01, 2008 at 05:53:40PM -0600, Grant Likely wrote:
 
-> +static ssize_t aic26_keyclick_show(struct device *dev,
-> +				   struct device_attribute *attr, char *buf)
-> +{
-> +	struct aic26 *aic26 = dev_get_drvdata(dev);
-> +	int val, amp, freq, len;
-> +
-> +	val = aic26_reg_read_cache(&aic26->codec, AIC26_REG_AUDIO_CTRL2);
-> +	amp = (val >> 12) & 0x7;
-> +	freq = (125 << ((val >> 8) & 0x7)) >> 1;
-> +	len = 2 * (1 +((val >> 8) & 0xf));
-> +
-> +	return sprintf(buf, "amp=%x freq=%iHz len=%iclks\n", amp, freq, len);
-> +}
+(heck, let's cc lkml - avoid having to go through all this again)
 
-It might be nice if these parameters were exposed as controls if they
-can be configured, though obviously that's not essential.
+On Fri, 4 Jul 2008 14:42:53 -0600 Matthew Wilcox <matthew@wil.cx> wrote:
 
-> +	/* Tell the of_soc helper about this codec */
-> +	of_snd_soc_register_codec(&aic26_soc_codec_dev, aic26, &aic26_dai,
-> +				  spi->dev.archdata.of_node);
+> On Fri, Jul 04, 2008 at 01:27:16PM -0700, Andrew Morton wrote:
+> > On Fri, 4 Jul 2008 13:02:05 -0700 (PDT) Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> > > > so I think we could easily just say that we extend %p in various ways:
+> > > > 
+> > > >  - %pS - print pointer as a symbol
+> > > > 
+> > > > and leave tons of room for future extensions for different kinds of 
+> > > > pointers. 
+> > 
+> > If this takes off we might want a register-your-printk-handler
+> > interface.  Maybe.
+> > 
+> > We also jump through hoops to print things like sector_t and
+> > resource_size_t.  They always need to be cast to `unsiged long long',
+> > which generates additional stack space and text in some setups.
+> 
+> The thing is that GCC checks types.  So it's fine to add "print this
+> pointer specially", but you can't in general add new printf arguments
+> without also hacking GCC.  Unless you use -Wno-format, and require
+> sparse to check special kernel types.
 
-Does this need to be ifdefed out if of_snd_soc_register_codec() is not
-in use or is the function stubbed out if it's not in use?  Stubbing it
-out would be cleaner.
+It would be excellent if gcc had an extension system so that you could
+add new printf control chars and maybe even tell gcc how to check them.
+But of course, if that were to happen, we couldn't use it for 4-5 years.
+
+What I had initially proposed was to abuse %S, which takes a wchar_t*. 
+gcc accepts `unsigned long *' for %S.
+
+Then, we put the kernel-specific control char after the S, so we can
+print an inode (rofl) with
+
+	struct inode *inode;
+
+	printk("here is an inode: %Si\n", (unsigned long *)inode);
+
+Downsides are:
+
+- there's a cast, so you could accidentally do
+
+	printk("here is an inode: %Si\n", (unsigned long *)dentry);
+
+- there's a cast, and they're ugly
+
+- gcc cannot of course check that the arg matches the control string
+
+Unfortunately (and this seems weird), gcc printf checking will not
+accept a void* for %S: it _has_ to be wchar_t*, and the checker won't
+permit void* substitution for that.
+
+Anyway, Linus took all that and said "let's abuse %p instead".  It
+_will_ accept any pointer so we can instead do:
+
+	printk("here is an inode: %pi\n", inode);
+
+which is nicer.
+
+
+I think the main customers of this are print_symbol():
+
+	printk("I am about to call %ps\n", fn);
+	(*fn)();
+
+and NIPQUAD and its ipv6 version.
+
+We don't know how much interest there would be in churning NIPQUAD from
+the net guys.  Interestingly, there's also %C (wint_t) which is a
+32-bit quantity.  So we could just go and say "%C prints an ipv4
+address" and be done with it.  But there's no way of doing that for
+ipv6 addresses so things would become asymmetrical there.
+
+Another customer is net mac addresses.  There are surely others.  One
+which should have been in printf 30 years ago was %b: binary.
+
+
+> > And then there's the perennial "need to cast u64 to unsigned long long
+> > to print it".  If we were to do
+> > 
+> > 	printk("%SL", (void *)some_u64);
+> > 
+> > then that's still bloody ugly, but it'll save a little text-n-stack.
+> 
+> u64 is easy to fix, and I don't know why we haven't.  Just make it
+> unsigned long long on all architectures.
+
+Yeah.  Why don't we do that?
