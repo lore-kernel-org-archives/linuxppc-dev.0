@@ -1,30 +1,20 @@
-Return-Path: <glppe-linuxppc-embedded-2@m.gmane.org>
-Received: from ciao.gmane.org (main.gmane.org [80.91.229.2])
-	by ozlabs.org (Postfix) with ESMTP id B6020DDE23
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  4 Jul 2008 21:50:40 +1000 (EST)
-Received: from list by ciao.gmane.org with local (Exim 4.43)
-	id 1KEjo7-0002wG-8m
-	for linuxppc-embedded@ozlabs.org; Fri, 04 Jul 2008 11:50:31 +0000
-Received: from p5497ff8e.dip.t-dialin.net ([84.151.255.142])
-	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
-	id 1AlnuQ-0007hv-00
-	for <linuxppc-embedded@ozlabs.org>; Fri, 04 Jul 2008 11:50:31 +0000
-Received: from dzu by p5497ff8e.dip.t-dialin.net with local (Gmexim 0.1
-	(Debian)) id 1AlnuQ-0007hv-00
-	for <linuxppc-embedded@ozlabs.org>; Fri, 04 Jul 2008 11:50:31 +0000
-To: linuxppc-embedded@ozlabs.org
-From: Detlev Zundel <dzu@denx.de>
-Subject: Re: Full Linux distributions
-Date: Fri, 04 Jul 2008 13:48:53 +0200
-Message-ID: <m2ej69vpi2.fsf@ohwell.denx.de>
-References: <486D27B9.8090308@conceptxdesign.com>
-	<c384c5ea0807031303i1ddf7663na80928fd77d40be5@mail.gmail.com>
-	<486D32A7.7080007@conceptxdesign.com>
-	<27dfa3d0807031659n4a03dd63i4793c3231d224ae6@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Sender: news <news@ger.gmane.org>
+Return-Path: <mahendravarman15@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.172])
+	by ozlabs.org (Postfix) with ESMTP id E3969DDEEE
+	for <linuxppc-embedded@ozlabs.org.>;
+	Sat,  5 Jul 2008 00:28:39 +1000 (EST)
+Received: by ug-out-1314.google.com with SMTP id s2so833594uge.6
+	for <linuxppc-embedded@ozlabs.org.>;
+	Fri, 04 Jul 2008 07:28:38 -0700 (PDT)
+Message-ID: <4ac2955e0807040728g54aeddccj684ea6a5ff6c6509@mail.gmail.com>
+Date: Fri, 4 Jul 2008 19:58:37 +0530
+From: "mahendra varman" <mahendravarman15@gmail.com>
+To: linuxppc-embedded@ozlabs.org., linux-kernel@vger.kernel.org,
+	"linux-mips@linux-mips.org" <linux-mips@linux-mips.org>
+Subject: cpc700-i2c driver in linux 2.6
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_Part_10883_8576246.1215181717428"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -35,39 +25,30 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Daniel,
+------=_Part_10883_8576246.1215181717428
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-> I've been using the ELDK for an amcc440EP ppc board. It's turned out
-> to be rather convenient, especially when running a networked
-> environment. 
+Hi all
 
-I'm glad to hear that the ELDK is useful.
+Iam porting linux 2.6 in one of my board containing cpc700 system controller
+and ppc processor
+Iam using the spruce platform
+I could not find the cpc700-i2c file in linux 2.6 under drivers/i2c section
 
-> The guy who primarily maintains it is very helpful also.
+If any of you already tried the above means plzz provide me the cpc700-i2c
+file in 2.6
 
-To be honest, the ELDK is maintained by our company.  It has become too
-much for a single individual.
 
-We of course invite others from the community to get involved
-here. There is a mailinglist[1] to discuss ELDK related topics and all
-sources needed to build it are available from our git server[2].
+Thanks in advance
 
-One of the inconveniences preventing likely many attempts to get
-involved is our old build system, which ensures excellent distribution
-compatibility however.
+------=_Part_10883_8576246.1215181717428
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-So one of the first goals I try to invest spare time is to fix the build
-process into being runnable on modern distros also.  We just cannot drop
-support for the old build environment to be as widely compatible as
-possible. 
+Hi all<br><br>Iam porting linux 2.6 in one of my board containing cpc700 system controller and ppc processor<br>Iam using the spruce platform <br>I could not find the cpc700-i2c file in linux 2.6 under drivers/i2c section<br>
+<br>If any of you already tried the above means plzz provide me the cpc700-i2c file in 2.6<br><br><br>Thanks in advance<br><br>
 
-Cheers
-  Detlev
-
-[1] http://lists.denx.de/mailman/listinfo/eldk
-[2] http://git.denx.de/
-
---
-DENX Software Engineering GmbH,      MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich,  Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-40 Fax: (+49)-8142-66989-80 Email: dzu@denx.de
+------=_Part_10883_8576246.1215181717428--
