@@ -1,15 +1,13 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18541.25199.153252.824136@cargo.ozlabs.ibm.com>
-Date: Fri, 4 Jul 2008 09:36:15 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: avorontsov@ru.mvista.com
-Subject: Re: New fsl device bindings file
-In-Reply-To: <20080703185312.GA6043@polina.dev.rtsoft.ru>
-References: <40B88BFD-1FEB-4E36-9917-54C7380FF801@kernel.crashing.org>
-	<20080703185312.GA6043@polina.dev.rtsoft.ru>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: More commits added to powerpc.git master and powerpc-next
+	branches
+In-reply-to: <18540.41013.722932.726273@cargo.ozlabs.ibm.com> 
+References: <18540.41013.722932.726273@cargo.ozlabs.ibm.com>
+Date: Fri, 04 Jul 2008 10:17:39 +1000
+Message-ID: <11064.1215130659@neuling.org>
+Cc: linuxppc-dev@ozlabs.org, sonnyrao@us.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,18 +17,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Anton Vorontsov writes:
-
-> Just curious... why we're maintaining documentation in the .txt file?
-> We could just create Documentation/powerpc/fsl-device-tree-bindings.dts
-> file, that will be:
+> Paul.
 > 
-> 1. True device tree source file;
-> 2. With a lots of comments for documentation purposes;
-> 3. Could be compiled (via imaginable dts-doxygen) into .txt or nice .pdf
->    file and printed :-), exactly as we do with kerneldoc.
+> Kumar Gala (2):
+>       powerpc: Fix building of feature-fixup tests on ppc32
+>       powerpc: Fixup lwsync at runtime
+> 
+> Michael Neuling (3):
+>       powerpc: Fix compile warning in init_thread
+>       powerpc: Clean up copy_to/from_user for vsx and fpr
+>       powerpc: Remove old dump_task_* functions
+> 
+> Nathan Fontenot (5):
+>       powerpc/pseries: Allow phandle to be specified in formats other than de
+cimal
+>       powerpc/pseries: Use base address to derive starting page frame number
+>       powerpc/pseries: Update the device tree correctly for drconf memory add
+/remove
+>       powerpc/pseries: Split code into helper routines for drconf memory
+>       powerpc/pseries: Update numa association of hotplug memory add for drco
+nf memory
+> 
+> Tony Breeds (1):
+>       powerpc: Fix building of arch/powerpc/mm/mem.o when MEMORY_HOTPLUG=y an
+d SPARSEMEM=n
 
-I suspect that will be harder to follow for people that are unfamiliar
-with device trees...
+Paulus,
 
-Paul.
+Can you apply Sonny's BSR patch?  
+
+http://patchwork.ozlabs.org/linuxppc/patch?q=sonny&id=19036
+
+Mikey
