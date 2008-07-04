@@ -1,17 +1,21 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.176])
-	by ozlabs.org (Postfix) with ESMTP id 022F3DDF36
-	for <linuxppc-dev@ozlabs.org>; Sat,  5 Jul 2008 03:22:46 +1000 (EST)
-Received: by py-out-1112.google.com with SMTP id z59so777714pyg.27
-	for <linuxppc-dev@ozlabs.org>; Fri, 04 Jul 2008 10:22:44 -0700 (PDT)
-Date: Fri, 4 Jul 2008 11:22:40 -0600
-From: Grant Likely <grant.likely@secretlab.ca>
-To: jwboyer@gmail.com, linuxppc-dev@ozlabs.org
-Subject: Please pull linux-2.6-virtex.git
-Message-ID: <20080704172240.GE17062@secretlab.ca>
+Return-Path: <jonsmirl@gmail.com>
+Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.30])
+	by ozlabs.org (Postfix) with ESMTP id CD70DDDE0A
+	for <linuxppc-dev@ozlabs.org>; Sat,  5 Jul 2008 03:27:41 +1000 (EST)
+Received: by yw-out-2324.google.com with SMTP id 5so558219ywh.39
+	for <linuxppc-dev@ozlabs.org>; Fri, 04 Jul 2008 10:27:40 -0700 (PDT)
+Message-ID: <9e4733910807041027v5a75b50ao248d3c2848f99630@mail.gmail.com>
+Date: Fri, 4 Jul 2008 13:27:39 -0400
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: "Grant Likely" <grant.likely@secretlab.ca>
+Subject: Re: [PATCH] Add MPC5200B base board mvBC-P
+In-Reply-To: <20080704170041.GD17062@secretlab.ca>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Sender: Grant Likely <glikely@secretlab.ca>
+Content-Type: text/plain; charset=ISO-8859-1
+References: <486E515B.80508@matrix-vision.de>
+	<20080704170041.GD17062@secretlab.ca>
+Cc: Andre Schwarz <andre.schwarz@matrix-vision.de>,
+	linux-ppc list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,48 +25,73 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Josh,
+On 7/4/08, Grant Likely <grant.likely@secretlab.ca> wrote:
+> On Fri, Jul 04, 2008 at 06:35:39PM +0200, Andre Schwarz wrote:
+>  > +             #address-cells = <2>;
+>  > +             #size-cells = <1>;
+>  > +             ranges = <0x0 0x0 0xff800000 0x00800000>;
+>  > +             flash@0,0 {
+>  > +                     compatible = "cfi-flash";
+>
+>  For completeness, it is good practice for the first entry in the compatible
+>  list to be the actual flash chip, followed by "cfi-flash"
+>
+>  > +                     reg = <0 0 0x800000>;
+>  > +                     #address-cells = <1>;
+>  > +                     #size-cells = <1>;
+>  > +                     bank-width = <1>;
+>  > +                     device-width = <1>;
+>  > +                     nor_total@0x0 {
+>  > +                             reg = <0x0 0x800000>;
+>  > +                     };
+>
+>  I don't know if this is legal; to have overlapping flash sections (but
+>  I'm not a cfi-flash binding expert).
+>
+>  > +                     u-boot@0x0 {
+>  > +                             reg = <0x0 0x40000>;
+>  > +                     };
+>  > +                     u-boot_autoscript@0x40000 {
+>  > +                             reg = <0x40000 0x10000>;
+>  > +                     };
+>  > +                     u-boot_autoscript_red@0x50000 {
+>  > +                             reg = <0x50000 0x10000>;
+>  > +                     };
+>  > +                     fpga@0x60000 {
+>  > +                             reg = <0x60000 0x40000>;
+>  > +                     };
+>  > +                     user@0xa0000 {
+>  > +                             reg = <0xa00000 0x60000>;
+>  > +                     };
+>  > +                     rfs@0x100000 {
+>  > +                             reg = <0x100000 0x300000>;
+>  > +                     };
+>  > +                     kernel@0x400000 {
+>  > +                             reg = <0x400000 0x3c0000>;
+>  > +                     };
+>  > +                     dtb@0x7c0000 {
+>  > +                             reg = <0x7c0000 0x10000>;
+>  > +                     };
+>  > +                     dtb@0x7d0000 {
+>  > +                             reg = <0x7d0000 0x10000>;
+>  > +                     };
+>  > +                     ppcboot_env@0x7e0000 {
+>  > +                             reg = <0x7e0000 0x10000>;
+>  > +                     };
+>  > +                     ppcboot_env@0x7f0000 {
+>  > +                             reg = <0x7f0000 0x10000>;
+>  > +                     };
+>
+>  I think it would be better to just leave out the partition information
+>  and modify U-Boot to fill them in (just like memory and clock speed are
+>  left out).  Things like flash partitions are less like hardware
+>  description and more like configuration data.
 
-Here are the bulk of the Xilinx 440 support patches.  Please pull
-into your next branch.
+Has anyone tried writing a RedBoot type partition table onto their
+flash device? If it is there the kernel will read the partition info
+from it. It's a config option in the kernel flash support section. Is
+there a utility for creating these tables?
 
-Thanks,
-g.
-
-The following changes since commit f3e909c2750eb20536bacacc867dc9047b70546a:
-  Michael Neuling (1):
-        powerpc: Update for VSX core file and ptrace
-
-are available in the git repository at:
-
-  git://git.secretlab.ca/git/linux-2.6-virtex virtex-for-2.6.27
-
-Grant Likely (2):
-      powerpc/bootwrapper: Add documentation of boot wrapper targets
-      powerpc/bootwrapper: add missing bit of simpleImage target
-
-John Linn (5):
-      powerpc/virtex: add dts file for ML507 reference design
-      powerpc/virtex: Fix booting of Xilinx FPGAs with 16550 for 405 and 440
-      powerpc/virtex: add Xilinx Virtex 5 ppc440 platform support
-      powerpc/virtex: add Xilinx 440 cpu to the cputable
-      powerpc/virtex: add defconfig for virtex 5 platforms
-
- Documentation/powerpc/bootwrapper.txt      |  141 ++++
- arch/powerpc/Makefile                      |   15 +-
- arch/powerpc/boot/Makefile                 |    2 +-
- arch/powerpc/boot/dts/virtex440-ml507.dts  |  238 ++++++
- arch/powerpc/boot/simpleboot.c             |    6 +
- arch/powerpc/boot/virtex.c                 |  100 +++
- arch/powerpc/boot/wrapper                  |   10 +-
- arch/powerpc/configs/44x/virtex5_defconfig | 1107 ++++++++++++++++++++++++++++
- arch/powerpc/kernel/cputable.c             |   10 +
- arch/powerpc/platforms/44x/Kconfig         |   26 +
- arch/powerpc/platforms/44x/Makefile        |    1 +
- arch/powerpc/platforms/44x/virtex.c        |   60 ++
- 12 files changed, 1713 insertions(+), 3 deletions(-)
- create mode 100644 Documentation/powerpc/bootwrapper.txt
- create mode 100644 arch/powerpc/boot/dts/virtex440-ml507.dts
- create mode 100644 arch/powerpc/boot/virtex.c
- create mode 100644 arch/powerpc/configs/44x/virtex5_defconfig
- create mode 100644 arch/powerpc/platforms/44x/virtex.c
+-- 
+Jon Smirl
+jonsmirl@gmail.com
