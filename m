@@ -1,13 +1,24 @@
-Return-Path: <arnd@arndb.de>
-Message-Id: <20080704190806.162475834@arndb.de>
-References: <20080704190535.316377278@arndb.de>
-Date: Fri, 04 Jul 2008 21:05:40 +0200
-From: arnd@arndb.de
-To: Paul Mackerras <paulus@samba.org>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [patch 05/11] powerpc/cell: add spu aware cpufreq governor
-Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org,
-	Christian Krafft <krafft@de.ibm.com>
+Return-Path: <torvalds@linux-foundation.org>
+Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
+	[140.211.169.13])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "smtp.linux-foundation.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 4A1D0DDF27
+	for <linuxppc-dev@ozlabs.org>; Sat,  5 Jul 2008 06:02:11 +1000 (EST)
+Date: Fri, 4 Jul 2008 13:02:05 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: the printk problem
+In-Reply-To: <alpine.LFD.1.10.0807041147450.2815@woody.linux-foundation.org>
+Message-ID: <alpine.LFD.1.10.0807041250220.2815@woody.linux-foundation.org>
+References: <20080625131101.GA6205@digi.com> <20080704104634.GA31634@digi.com>
+	<20080704111540.ddffd241.akpm@linux-foundation.org>
+	<alpine.LFD.1.10.0807041147450.2815@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, linux-ia64@vger.kernel.org,
+	"David S. Miller" <davem@davemloft.net>, Peter Anvin <hpa@zytor.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,243 +28,204 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch adds a cpufreq governor that takes the number of running spus
-into account. It's very similar to the ondemand governor, but not as complex.
-Instead of hacking spu load into the ondemand governor it might be easier to
-have cpufreq accepting multiple governors per cpu in future.
-Don't know if this is the right way, but it would keep the governors simple.
 
-Signed-off-by: Christian Krafft <krafft@de.ibm.com>
+
+On Fri, 4 Jul 2008, Linus Torvalds wrote:
+> 
+> so I think we could easily just say that we extend %p in various ways:
+> 
+>  - %pS - print pointer as a symbol
+> 
+> and leave tons of room for future extensions for different kinds of 
+> pointers. 
+
+So here's a totally untested example patch of this, which could probably 
+easily be extended to to other things.
+
+I actually made it '%pF' and '%pS' for a Function descriptor pointer and 
+normal Symbolic pointer respectively, because of the stupid things ia64 
+and PPC64 do with the pointer indirection through function descriptors. 
+
+That function descriptor indirection is totally untested, and I did it 
+with a
+
+	pagefault_disable();
+	__get_user(..)
+	pagefault_enable();
+
+thing because I thought it would be nice if printk() was always safe, and 
+passing bogus function pointers to '%pF' should try to work, but quite 
+frankly, I didn't even check that that part compiles, much less works.
+
+ia64/ppc lists cc'd, just in case somebody wants to test this.
+
+NOTE! There are no current actual users of this, but the _idea_ is that we 
+should be able to just do
+
+	printk("%pF\n", desc->handle_irq);
+
+instead of using
+
+	print_symbol("%s\n", (unsigned long)desc->handle_irq);
+
+The latter is from kernel/irq/internals.h, and actually looks incorrect - 
+shouldn't it use print_fn_descriptor_symbol(), since it's a C level 
+function pointer? We should use "print_symbol()" for return pointers we 
+find on the stack and data pointers, but not for stuff that actually has a 
+C type that is a function pointer?
+
+Somebody who cares about the insane function descriptors should take a 
+deeper look.
+
+NOTE AGAIN! UNTESTED! I could easily have screwed up printk() _entirely_, 
+since I had to factor out the string handling into a function of its own.
+
+		Linus
 ---
- arch/powerpc/platforms/cell/Kconfig            |   10 ++
- arch/powerpc/platforms/cell/Makefile           |    1 +
- arch/powerpc/platforms/cell/cbe_spu_governor.c |  183 ++++++++++++++++++++++++
- 3 files changed, 194 insertions(+), 0 deletions(-)
- create mode 100644 arch/powerpc/platforms/cell/cbe_spu_governor.c
+ lib/vsprintf.c |  102 ++++++++++++++++++++++++++++++++++++++++---------------
+ 1 files changed, 74 insertions(+), 28 deletions(-)
 
-diff --git a/arch/powerpc/platforms/cell/Kconfig b/arch/powerpc/platforms/cell/Kconfig
-index 3959fcf..2dfff9f 100644
---- a/arch/powerpc/platforms/cell/Kconfig
-+++ b/arch/powerpc/platforms/cell/Kconfig
-@@ -107,6 +107,16 @@ config CBE_CPUFREQ_PMI
- 	  processor will not only be able to run at lower speed,
- 	  but also at lower core voltage.
+diff --git a/lib/vsprintf.c b/lib/vsprintf.c
+index 6021757..148b656 100644
+--- a/lib/vsprintf.c
++++ b/lib/vsprintf.c
+@@ -22,6 +22,7 @@
+ #include <linux/string.h>
+ #include <linux/ctype.h>
+ #include <linux/kernel.h>
++#include <linux/kallsyms.h>
  
-+config CBE_CPUFREQ_SPU_GOVERNOR
-+	tristate "CBE frequency scaling based on SPU usage"
-+	depends on SPU_FS
-+	select CBE_CPUFREQ
-+	default m
-+	help
-+	  This governor checks for spu usage to adjust the cpu frequency.
-+	  If no spu is running on a given cpu, that cpu will be throttled to
-+	  the minimal possible frequency.
-+
- endmenu
+ #include <asm/page.h>		/* for PAGE_SIZE */
+ #include <asm/div64.h>
+@@ -482,6 +483,72 @@ static char *number(char *buf, char *end, unsigned long long num, int base, int
+ 	return buf;
+ }
  
- config OPROFILE_CELL
-diff --git a/arch/powerpc/platforms/cell/Makefile b/arch/powerpc/platforms/cell/Makefile
-index c2a7e4e..8be5158 100644
---- a/arch/powerpc/platforms/cell/Makefile
-+++ b/arch/powerpc/platforms/cell/Makefile
-@@ -8,6 +8,7 @@ obj-$(CONFIG_CBE_THERM)			+= cbe_thermal.o
- obj-$(CONFIG_CBE_CPUFREQ_PMI)		+= cbe_cpufreq_pmi.o
- obj-$(CONFIG_CBE_CPUFREQ)		+= cbe-cpufreq.o
- cbe-cpufreq-y				+= cbe_cpufreq_pervasive.o cbe_cpufreq.o
-+obj-$(CONFIG_CBE_CPUFREQ_SPU_GOVERNOR)	+= cbe_spu_governor.o
- 
- ifeq ($(CONFIG_SMP),y)
- obj-$(CONFIG_PPC_CELL_NATIVE)		+= smp.o
-diff --git a/arch/powerpc/platforms/cell/cbe_spu_governor.c b/arch/powerpc/platforms/cell/cbe_spu_governor.c
-new file mode 100644
-index 0000000..7e63009
---- /dev/null
-+++ b/arch/powerpc/platforms/cell/cbe_spu_governor.c
-@@ -0,0 +1,183 @@
-+/*
-+ * spu aware cpufreq governor for the cell processor
-+ *
-+ * (C) Copyright IBM Corporation 2006-2008
-+ *
-+ * Author: Christian Krafft <krafft@de.ibm.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2, or (at your option)
-+ * any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-+ */
-+
-+#include <linux/cpufreq.h>
-+#include <linux/sched.h>
-+#include <linux/timer.h>
-+#include <linux/workqueue.h>
-+#include <asm/atomic.h>
-+#include <asm/machdep.h>
-+#include <asm/spu.h>
-+
-+#define POLL_TIME	100000		/* in us */
-+#define EXP		753		/* exp(-1) in fixed-point */
-+
-+struct spu_gov_info_struct {
-+	unsigned long busy_spus;	/* fixed-point */
-+	struct cpufreq_policy *policy;
-+	struct delayed_work work;
-+	unsigned int poll_int;		/* us */
-+};
-+static DEFINE_PER_CPU(struct spu_gov_info_struct, spu_gov_info);
-+
-+static struct workqueue_struct *kspugov_wq;
-+
-+static int calc_freq(struct spu_gov_info_struct *info)
++static char *string(char *buf, char *end, char *s, int field_width, int precision, int flags)
 +{
-+	int cpu;
-+	int busy_spus;
++	int len, i;
 +
-+	cpu = info->policy->cpu;
-+	busy_spus = atomic_read(&cbe_spu_info[cpu_to_node(cpu)].busy_spus);
++	if ((unsigned long)s < PAGE_SIZE)
++		s = "<NULL>";
 +
-+	CALC_LOAD(info->busy_spus, EXP, busy_spus * FIXED_1);
-+	pr_debug(KERN_ERR "cpu %d: busy_spus=%d, info->busy_spus=%d\n", cpu, busy_spus, info->busy_spus);
++	len = strnlen(s, precision);
 +
-+	return info->policy->max * info->busy_spus / FIXED_1;
-+}
-+
-+static void spu_gov_work(struct work_struct *work)
-+{
-+	struct spu_gov_info_struct *info;
-+	int delay;
-+	unsigned long target_freq;
-+
-+	info = container_of(work, struct spu_gov_info_struct, work.work);
-+
-+	/* after cancel_delayed_work_sync we unset info->policy */
-+	BUG_ON(info->policy == NULL);
-+
-+	target_freq = calc_freq(info);
-+	__cpufreq_driver_target(info->policy, target_freq, CPUFREQ_RELATION_H);
-+
-+	delay = usecs_to_jiffies(info->poll_int);
-+	queue_delayed_work_on(info->policy->cpu, kspugov_wq, &info->work, delay);
-+}
-+
-+static void spu_gov_init_work(struct spu_gov_info_struct *info)
-+{
-+	int delay = usecs_to_jiffies(info->poll_int);
-+	INIT_DELAYED_WORK_DEFERRABLE(&info->work, spu_gov_work);
-+	queue_delayed_work_on(info->policy->cpu, kspugov_wq, &info->work, delay);
-+}
-+
-+static void spu_gov_cancel_work(struct spu_gov_info_struct *info)
-+{
-+	cancel_delayed_work_sync(&info->work);
-+}
-+
-+static int spu_gov_govern(struct cpufreq_policy *policy, unsigned int event)
-+{
-+	unsigned int cpu = policy->cpu;
-+	struct spu_gov_info_struct *info, *affected_info;
-+	int i;
-+	int ret = 0;
-+
-+	info = &per_cpu(spu_gov_info, cpu);
-+
-+	switch (event) {
-+	case CPUFREQ_GOV_START:
-+		if (!cpu_online(cpu)) {
-+			printk(KERN_ERR "cpu %d is not online\n", cpu);
-+			ret = -EINVAL;
-+			break;
++	if (!(flags & LEFT)) {
++		while (len < field_width--) {
++			if (buf < end)
++				*buf = ' ';
++			++buf;
 +		}
-+
-+		if (!policy->cur) {
-+			printk(KERN_ERR "no cpu specified in policy\n");
-+			ret = -EINVAL;
-+			break;
-+		}
-+
-+		/* initialize spu_gov_info for all affected cpus */
-+		for_each_cpu_mask(i, policy->cpus) {
-+			affected_info = &per_cpu(spu_gov_info, i);
-+			affected_info->policy = policy;
-+		}
-+
-+		info->poll_int = POLL_TIME;
-+
-+		/* setup timer */
-+		spu_gov_init_work(info);
-+
-+		break;
-+
-+	case CPUFREQ_GOV_STOP:
-+		/* cancel timer */
-+		spu_gov_cancel_work(info);
-+
-+		/* clean spu_gov_info for all affected cpus */
-+		for_each_cpu_mask (i, policy->cpus) {
-+			info = &per_cpu(spu_gov_info, i);
-+			info->policy = NULL;
-+		}
-+
-+		break;
 +	}
-+
-+	return ret;
++	for (i = 0; i < len; ++i) {
++		if (buf < end)
++			*buf = *s;
++		++buf; ++s;
++	}
++	while (len < field_width--) {
++		if (buf < end)
++			*buf = ' ';
++		++buf;
++	}
++	return buf;
 +}
-+
-+static struct cpufreq_governor spu_governor = {
-+	.name = "spu_governor",
-+	.governor = spu_gov_govern,
-+	.owner = THIS_MODULE,
-+};
 +
 +/*
-+ * module init and destoy
++ * Show a '%p' thing.  A kernel extension is that the '%p' is followed
++ * by an extra set of alphanumeric characters that are extended format
++ * specifiers.  Right now we just handle 'F' (for symbolic Function
++ * pointers) and 'S' (for Symbolic data pointers), but this can easily
++ * be extended in the future (network address types etc).
++ *
++ * The difference between 'S' and 'F' is that on ia64 and ppc64 function
++ * pointers are really function descriptors, which contain a pointer the
++ * real address. 
 + */
-+
-+static int __init spu_gov_init(void)
++static char *pointer(const char *fmt, char *buf, char *end, void *ptr, int base, int size, int precision, int type)
 +{
-+	int ret;
-+
-+	kspugov_wq = create_workqueue("kspugov");
-+	if (!kspugov_wq) {
-+		printk(KERN_ERR "creation of kspugov failed\n");
-+		ret = -EFAULT;
-+		goto out;
++	char sym[KSYM_SYMBOL_LEN];
++	switch (*fmt) {
++	case 'F':	/* Function pointer */
++#if defined(CONFIG_IA64) || defined(CONFIG_PPC64)
++		{ void *p;
++		pagefault_disable();
++		if (!__get_user((void **)ptr, &p))
++			ptr = p;
++		pagefault_enable();
++		}
++#endif
++	/* Fallthrough */
++	case 'S':	/* Other pointer */
++#if CONFIG_KALLSYMS
++		sprint_symbol(sym, (unsigned long) ptr);
++		return string(buf, end, sym, size, precision, type);
++#else
++		type |= SPECIAL;
++		break;
++#endif
 +	}
-+
-+	ret = cpufreq_register_governor(&spu_governor);
-+	if (ret) {
-+		printk(KERN_ERR "registration of governor failed\n");
-+		destroy_workqueue(kspugov_wq);
-+		goto out;
-+	}
-+out:
-+	return ret;
++	return number(buf, end, (unsigned long long) ptr, base, size, precision, type);
 +}
 +
-+static void __exit spu_gov_exit(void)
-+{
-+	cpufreq_unregister_governor(&spu_governor);
-+	destroy_workqueue(kspugov_wq);
-+}
-+
-+
-+module_init(spu_gov_init);
-+module_exit(spu_gov_exit);
-+
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("Christian Krafft <krafft@de.ibm.com>");
-+
--- 
-1.5.4.3
-
--- 
+ /**
+  * vsnprintf - Format a string and place it in a buffer
+  * @buf: The buffer to place the result into
+@@ -502,11 +569,9 @@ static char *number(char *buf, char *end, unsigned long long num, int base, int
+  */
+ int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
+ {
+-	int len;
+ 	unsigned long long num;
+-	int i, base;
++	int base;
+ 	char *str, *end, c;
+-	const char *s;
+ 
+ 	int flags;		/* flags to number() */
+ 
+@@ -622,29 +687,7 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
+ 				continue;
+ 
+ 			case 's':
+-				s = va_arg(args, char *);
+-				if ((unsigned long)s < PAGE_SIZE)
+-					s = "<NULL>";
+-
+-				len = strnlen(s, precision);
+-
+-				if (!(flags & LEFT)) {
+-					while (len < field_width--) {
+-						if (str < end)
+-							*str = ' ';
+-						++str;
+-					}
+-				}
+-				for (i = 0; i < len; ++i) {
+-					if (str < end)
+-						*str = *s;
+-					++str; ++s;
+-				}
+-				while (len < field_width--) {
+-					if (str < end)
+-						*str = ' ';
+-					++str;
+-				}
++				str = string(str, end, va_arg(args, char *), field_width, precision, flags);
+ 				continue;
+ 
+ 			case 'p':
+@@ -653,9 +696,12 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
+ 					field_width = 2*sizeof(void *);
+ 					flags |= ZEROPAD;
+ 				}
+-				str = number(str, end,
+-						(unsigned long) va_arg(args, void *),
++				str = pointer(fmt+1, str, end,
++						va_arg(args, void *),
+ 						16, field_width, precision, flags);
++				/* Skip all alphanumeric pointer suffixes */
++				while (isalnum(fmt[1]))
++					fmt++;
+ 				continue;
+ 
+ 
