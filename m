@@ -1,23 +1,24 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.181])
-	by ozlabs.org (Postfix) with ESMTP id 89817DDE24
-	for <linuxppc-dev@ozlabs.org>; Fri,  4 Jul 2008 14:18:37 +1000 (EST)
-Received: by wa-out-1112.google.com with SMTP id n7so666757wag.13
-	for <linuxppc-dev@ozlabs.org>; Thu, 03 Jul 2008 21:18:36 -0700 (PDT)
-Date: Thu, 3 Jul 2008 22:17:58 -0600
+Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.236])
+	by ozlabs.org (Postfix) with ESMTP id 1D438DDE01
+	for <linuxppc-dev@ozlabs.org>; Fri,  4 Jul 2008 14:26:35 +1000 (EST)
+Received: by rv-out-0506.google.com with SMTP id f6so1101539rvb.9
+	for <linuxppc-dev@ozlabs.org>; Thu, 03 Jul 2008 21:26:34 -0700 (PDT)
+Date: Thu, 3 Jul 2008 22:26:01 -0600
 From: Grant Likely <grant.likely@secretlab.ca>
-To: Chen Gong <G.Chen@freescale.com>
-Subject: Re: [PATCH v2 4/5] spi: Add OF binding support for SPI busses
-Message-ID: <20080704041758.GH12945@secretlab.ca>
-References: <20080703005749.26187.71719.stgit@trillian.secretlab.ca>
-	<20080703010313.26187.99119.stgit@trillian.secretlab.ca>
-	<58A20A281BAF1047B4EAE68DE5C0BDC2010121B7@zch01exm21.fsl.freescale.net>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: New fsl device bindings file
+Message-ID: <20080704042601.GI12945@secretlab.ca>
+References: <40B88BFD-1FEB-4E36-9917-54C7380FF801@kernel.crashing.org>
+	<486D1A58.8010403@freescale.com>
+	<fa686aa40807031134s4ddd0cabj1b31d3ee2d9d2258@mail.gmail.com>
+	<BE229B94-773D-4FA8-AFD0-E46F5887F8D3@kernel.crashing.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <58A20A281BAF1047B4EAE68DE5C0BDC2010121B7@zch01exm21.fsl.freescale.net>
+In-Reply-To: <BE229B94-773D-4FA8-AFD0-E46F5887F8D3@kernel.crashing.org>
 Sender: Grant Likely <glikely@secretlab.ca>
-Cc: david-b@pacbell.net, linuxppc-dev@ozlabs.org, fabrizio.garetto@gmail.com,
-	linux-kernel@vger.kernel.org, spi-devel-general@lists.sourceforge.net
+Cc: Scott Wood <scottwood@freescale.com>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,59 +28,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Jul 04, 2008 at 11:54:57AM +0800, Chen Gong wrote:
-> Grant Likely wrote:
-> > +		/* Mode (clock phase/polarity/etc.) */
-> > +		if (of_find_property(nc, "spi,cpha", NULL))
-> > +			spi->mode |= SPI_CPHA;
-> > +		if (of_find_property(nc, "spi,cpol", NULL))
-> > +			spi->mode |= SPI_CPOL;
-> 
-> so becuase in function spi_alloc_deive, spi is allocated by kzalloc,
-> how about writing as follows:
-> 		/* Mode (clock phase/polarity/etc.) */
-> 		prop = of_get_property(nc, "spi,cpha", NULL))
->                         if (prop)
-> 			spi->mode |= *prop;
-> 		prop = of_get_property(nc, "spi,cpol", NULL))
->                         if (prop)
-> 			spi->mode |= *prop;
+On Thu, Jul 03, 2008 at 01:38:17PM -0500, Kumar Gala wrote:
+>
+> On Jul 3, 2008, at 1:34 PM, Grant Likely wrote:
+>
+>> On Thu, Jul 3, 2008 at 12:28 PM, Scott Wood <scottwood@freescale.com> 
+>> wrote:
+>>> Documentation/powerpc/device-tree/fsl/cpm.txt
+>>> Documentation/powerpc/device-tree/fsl/cpm/uart.txt
+>>> Documentation/powerpc/device-tree/fsl/tsec.txt
+>>> Documentation/powerpc/device-tree/interrupts.txt
+>>> Documentation/powerpc/device-tree/dtb.txt
+>>
+>> May I suggest moving it to Documentation/of-bindings/ instead?  Some
+>> of these bindings (granted, not the fsl ones) will be used by
+>> non-powerpc platforms (sparc, microblaze).
+>
+> I think the powerpc bindings should still be under Docs/powerpc/of- 
+> bindings/
+>
+> It makes it cleaner in that each arch/sub-arch maintainer can maintain  
+> Docs/<arch>/of-bindings and we can all vet changes to Docs/of-bindings
 
-spi,cpha and spi,cpol are defined as empty properties.  The presence of
-the property in the node means I need to set the flag in the spi_device.
+Personally, I think it would still be better to keep everything in one
+place, even if large parts of it are arch specific.  I think it would
+encourage people to look across architecture boundaries when looking for
+examples of how to document device tree bindings.  It would also
+discourage accidental duplication for parts that end up being used in
+more than one architectures (ie. spi and i2c devices).  Not everyone is
+going to be well versed on the rules of what bindings should be arch
+specific and what should go in the common dir.  It will make everyone's
+life easier if there is only one place to look.
 
-> > +		/* Select device driver */
-> > +		sprop = of_get_property(nc, "linux,modalias", &len);
-> > +		if (sprop && len > 0)
-> > +			strncpy(spi->modalias, sprop, KOBJ_NAME_LEN);
-> > +		else
-> > +			strncpy(spi->modalias, "spidev", KOBJ_NAME_LEN);
-> > +
->  how about writing as follows:
-> 
-> 		if (sprop && len > 0)
-> 			strncpy(spi->modalias, sprop, KOBJ_NAME_LEN -
-> 1);
-> 		else
-> 			strncpy(spi->modalias, "spidev", KOBJ_NAME_LEN -
-> 1);
+(oh, and I think the subdirectories by manufacturer is a good layout).
 
-Actually, neither are very good.  What it should really be is:
-
-	if (sprop && len > 0)
-		strlcpy(spi->modalias, sprop, sizeof (spi->modalias));
-	else
-		strlcpy(spi->modalias, "spidev", sizeof (spi->modalias));
-
-This ensures that the string is always null terminated and always the
-right size.
-
-... But the whole argument is a bit moot.  The fact that I even defined
-a "linux,modalias" property is a great big hairy hack that I would
-never want my mother to see.  Instead, I need a method to bind to an SPI
-driver based on the compatible list.  Jon Smirl has done some work
-in this regard for i2c, but I haven't looked at it very deeply, and so
-do not at all understand it (yet).
-
-Thanks for the comments.
 g.
