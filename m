@@ -1,13 +1,18 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: More commits added to powerpc.git master and powerpc-next
-	branches
-In-reply-to: <18540.41013.722932.726273@cargo.ozlabs.ibm.com> 
-References: <18540.41013.722932.726273@cargo.ozlabs.ibm.com>
-Date: Fri, 04 Jul 2008 10:17:39 +1000
-Message-ID: <11064.1215130659@neuling.org>
-Cc: linuxppc-dev@ozlabs.org, sonnyrao@us.ibm.com
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [Bugme-new] [Bug 11027] New: random forward time jumps
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20080702110614.4bd45cce.akpm@linux-foundation.org>
+References: <bug-11027-10286@http.bugzilla.kernel.org/>
+	<20080702110614.4bd45cce.akpm@linux-foundation.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-V59PrzBOsLpLJuem6BLt"
+Date: Fri, 04 Jul 2008 10:46:57 +1000
+Message-Id: <1215132417.7849.2.camel@localhost>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,35 +22,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> Paul.
-> 
-> Kumar Gala (2):
->       powerpc: Fix building of feature-fixup tests on ppc32
->       powerpc: Fixup lwsync at runtime
-> 
-> Michael Neuling (3):
->       powerpc: Fix compile warning in init_thread
->       powerpc: Clean up copy_to/from_user for vsx and fpr
->       powerpc: Remove old dump_task_* functions
-> 
-> Nathan Fontenot (5):
->       powerpc/pseries: Allow phandle to be specified in formats other than de
-cimal
->       powerpc/pseries: Use base address to derive starting page frame number
->       powerpc/pseries: Update the device tree correctly for drconf memory add
-/remove
->       powerpc/pseries: Split code into helper routines for drconf memory
->       powerpc/pseries: Update numa association of hotplug memory add for drco
-nf memory
-> 
-> Tony Breeds (1):
->       powerpc: Fix building of arch/powerpc/mm/mem.o when MEMORY_HOTPLUG=y an
-d SPARSEMEM=n
 
-Paulus,
+--=-V59PrzBOsLpLJuem6BLt
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Can you apply Sonny's BSR patch?  
+On Wed, 2008-07-02 at 11:06 -0700, Andrew Morton wrote:
+> On Wed,  2 Jul 2008 10:49:59 -0700 (PDT) bugme-daemon@bugzilla.kernel.org=
+ wrote:
+>=20
+> > http://bugzilla.kernel.org/show_bug.cgi?id=3D11027
+>=20
+> Hopefully someone in ppc land has set a watch on
+> platform_ppc-32@kernel-bugs.osdl.org?
+>=20
+> If not, please go to http://bugzilla.kernel.org/userprefs.cgi?tab=3Demail
+> and enter platform_ppc-32@kernel-bugs.osdl.org into the "Users to watch:"
+> box.
 
-http://patchwork.ozlabs.org/linuxppc/patch?q=sonny&id=19036
+Is there a 64-bit equivalent? The obvious address didn't work.
 
-Mikey
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-V59PrzBOsLpLJuem6BLt
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBIbXMBdSjSd0sB4dIRAvF3AJsG2CwiIQmTCRmM48Ck32awVvjL/ACfbZE4
++L/8OrrWEWbwJDc5W79kpuU=
+=AYTh
+-----END PGP SIGNATURE-----
+
+--=-V59PrzBOsLpLJuem6BLt--
