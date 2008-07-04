@@ -2,19 +2,19 @@ Return-Path: <segher@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 3C2EADDEEC
-	for <linuxppc-dev@ozlabs.org>; Sat,  5 Jul 2008 08:33:49 +1000 (EST)
-In-Reply-To: <20080702105946.0ec1ffcc.kim.phillips@freescale.com>
-References: <068935A1-11BE-4AEB-9C0E-E1AB53F1618E@kernel.crashing.org>
-	<20080702105946.0ec1ffcc.kim.phillips@freescale.com>
+	by ozlabs.org (Postfix) with ESMTPS id 79169DDED3
+	for <linuxppc-dev@ozlabs.org>; Sat,  5 Jul 2008 08:46:09 +1000 (EST)
+In-Reply-To: <20080703141845.af88fd51.kim.phillips@freescale.com>
+References: <20080703141845.af88fd51.kim.phillips@freescale.com>
 Mime-Version: 1.0 (Apple Message framework v623)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <78c76632ee8501c9a4974a9291689b8c@kernel.crashing.org>
+Message-Id: <4278f6a4bcd22a0d3e185c47e6c76bab@kernel.crashing.org>
 From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: patches for 2.6.27...
-Date: Sat, 5 Jul 2008 00:33:22 +0200
+Subject: Re: [PATCH v3] powerpc: update crypto node definition and device tree
+	instances
+Date: Sat, 5 Jul 2008 00:45:50 +0200
 To: Kim Phillips <kim.phillips@freescale.com>
-Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,16 +24,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> Please point out any patches that have been posted but havent made it
->> into a git tree related to Freescale chips.
->
-> I haven't heard back from Segher, so:
->
-> http://patchwork.ozlabs.org/linuxppc/patch?id=19313
+> +- compatible : Should contain entries for this and backward compatible
+> +  SEC versions, high to low, e.g., "fsl,sec2.1", "fsl,sec2.0"
 
-You haven't heard back because I feel like I'm talking to a wall.
+First entry should state the _exact_ version of the device.  "sec-N.M"
+isn't good enough; there can be implementation bugs.
 
-The "compatible" definition for this node needs to be fixed.
+There can be more entries; you make it sound like each device tree
+should list _all_ compatible devices, which isn't the case.
+
+A device binding should not (and can not) say how "compatible"
+should be used; instead, it should list what values of "compatible"
+this binding applies to.  You can give recommendations of course.
+
+> +- interrupts : <a b> where a is the interrupt number and b is a
+> +  field that represents an encoding of the sense and level
+> +  information for the interrupt.  This should be encoded based on
+> +  the information in section 2) depending on the type of interrupt
+> +  controller you have.
+
+#interrupt-cells isn't always 2.  Your device binding shouldn't describe
+how interrupt encoding works (that's described in the imap recommended
+practice, already); instead, it should describe which device interrupts
+are listed here, and in what order.  Sounds like you only have one
+interrupt, so that should be easy ;-)
+
+> +- interrupt-parent : the phandle for the interrupt controller that
+> +  services interrupts for this device.
+
+"interrupt-parent" isn't a required property.  It isn't part of this
+device binding, either.
 
 
 Segher
