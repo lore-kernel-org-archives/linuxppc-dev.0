@@ -4,29 +4,30 @@ Received: from az33egw02.freescale.net (az33egw02.freescale.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "az33egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id B9C8DDDE20
-	for <linuxppc-dev@ozlabs.org>; Fri,  4 Jul 2008 13:55:07 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 604CBDDEDC
+	for <linuxppc-dev@ozlabs.org>; Fri,  4 Jul 2008 13:59:16 +1000 (EST)
 Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
 	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	m643t1sq006549
-	for <linuxppc-dev@ozlabs.org>; Thu, 3 Jul 2008 20:55:01 -0700 (MST)
+	m643xAfS008538
+	for <linuxppc-dev@ozlabs.org>; Thu, 3 Jul 2008 20:59:11 -0700 (MST)
 Received: from zch01exm21.fsl.freescale.net (zch01exm21.ap.freescale.net
 	[10.192.129.205])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m643sxA4017571
-	for <linuxppc-dev@ozlabs.org>; Thu, 3 Jul 2008 22:55:00 -0500 (CDT)
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m643x9SP018235
+	for <linuxppc-dev@ozlabs.org>; Thu, 3 Jul 2008 22:59:09 -0500 (CDT)
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="US-ASCII"
-Subject: RE: [PATCH v2 4/5] spi: Add OF binding support for SPI busses
-Date: Fri, 4 Jul 2008 11:54:57 +0800
-Message-ID: <58A20A281BAF1047B4EAE68DE5C0BDC2010121B7@zch01exm21.fsl.freescale.net>
-In-Reply-To: <20080703010313.26187.99119.stgit@trillian.secretlab.ca>
+Subject: RE: [PATCH v2 3/5] of-bindings: Add binding documentation for SPI
+	bussesand devices
+Date: Fri, 4 Jul 2008 11:59:07 +0800
+Message-ID: <58A20A281BAF1047B4EAE68DE5C0BDC2010121B9@zch01exm21.fsl.freescale.net>
+In-Reply-To: <20080703010308.26187.23037.stgit@trillian.secretlab.ca>
 References: <20080703005749.26187.71719.stgit@trillian.secretlab.ca>
-	<20080703010313.26187.99119.stgit@trillian.secretlab.ca>
+	<20080703010308.26187.23037.stgit@trillian.secretlab.ca>
 From: "Chen Gong" <G.Chen@freescale.com>
-To: "Grant Likely" <grant.likely@secretlab.ca>
-Cc: david-b@pacbell.net, linuxppc-dev@ozlabs.org, fabrizio.garetto@gmail.com,
-	linux-kernel@vger.kernel.org, spi-devel-general@lists.sourceforge.net
+To: "Grant Likely" <grant.likely@secretlab.ca>, <linuxppc-dev@ozlabs.org>,
+	<spi-devel-general@lists.sourceforge.net>, <linux-kernel@vger.kernel.org>
+Cc: david-b@pacbell.net, fabrizio.garetto@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -46,148 +47,90 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 > To: linuxppc-dev@ozlabs.org;=20
 > spi-devel-general@lists.sourceforge.net; linux-kernel@vger.kernel.org
 > Cc: david-b@pacbell.net; fabrizio.garetto@gmail.com
-> Subject: [PATCH v2 4/5] spi: Add OF binding support for SPI busses
+> Subject: [PATCH v2 3/5] of-bindings: Add binding=20
+> documentation for SPI bussesand devices
 >=20
 > From: Grant Likely <grant.likely@secretlab.ca>
 >=20
-> This patch adds support for populating an SPI bus based on data in the
-> OF device tree.  This is useful for powerpc platforms which use the
-> device tree instead of discrete code for describing platform layout.
+> Add documentation about how to describe SPI busses in the device tree.
 >=20
 > Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 > ---
 >=20
->  drivers/of/Kconfig     |    6 +++
->  drivers/of/Makefile    |    1 +
->  drivers/of/of_spi.c    |   88=20
-> ++++++++++++++++++++++++++++++++++++++++++++++++
->  include/linux/of_spi.h |   18 ++++++++++
->  4 files changed, 113 insertions(+), 0 deletions(-)
+>  Documentation/powerpc/booting-without-of.txt |   60=20
+> ++++++++++++++++++++++++++
+>  1 files changed, 60 insertions(+), 0 deletions(-)
 >=20
-> diff --git a/drivers/of/Kconfig b/drivers/of/Kconfig
-> index 3a7a11a..edd6e92 100644
-> --- a/drivers/of/Kconfig
-> +++ b/drivers/of/Kconfig
-> @@ -13,3 +13,9 @@ config OF_I2C
->  	depends on PPC_OF && I2C
->  	help
->  	  OpenFirmware I2C accessors
+> diff --git a/Documentation/powerpc/booting-without-of.txt=20
+> b/Documentation/powerpc/booting-without-of.txt
+> index 1d2a772..7d3564f 100644
+> --- a/Documentation/powerpc/booting-without-of.txt
+> +++ b/Documentation/powerpc/booting-without-of.txt
+> @@ -58,6 +58,7 @@ Table of Contents
+>        o) Xilinx IP cores
+>        p) Freescale Synchronous Serial Interface
+>  	  q) USB EHCI controllers
+> +      t) SPI busses
+> =20
+>    VII - Marvell Discovery mv64[345]6x System Controller chips
+>      1) The /system-controller node
+> @@ -2870,6 +2871,65 @@ platforms are moved over to use the=20
+> flattened-device-tree model.
+>  		reg =3D <0xe8000000 32>;
+>  	};
+> =20
+> +    t) SPI (Serial Peripheral Interface) busses
 > +
-> +config OF_SPI
-> +	def_tristate SPI
-> +	depends on OF && PPC_OF && SPI
-> +	help
-> +	  OpenFirmware SPI accessors
-> diff --git a/drivers/of/Makefile b/drivers/of/Makefile
-> index 548772e..4c3c6f8 100644
-> --- a/drivers/of/Makefile
-> +++ b/drivers/of/Makefile
-> @@ -2,3 +2,4 @@ obj-y =3D base.o
->  obj-$(CONFIG_OF_DEVICE) +=3D device.o platform.o
->  obj-$(CONFIG_OF_GPIO)   +=3D gpio.o
->  obj-$(CONFIG_OF_I2C)	+=3D of_i2c.o
-> +obj-$(CONFIG_OF_SPI)	+=3D of_spi.o
-> diff --git a/drivers/of/of_spi.c b/drivers/of/of_spi.c
-> new file mode 100644
-> index 0000000..ed0c807
-> --- /dev/null
-> +++ b/drivers/of/of_spi.c
-> @@ -0,0 +1,88 @@
-> +/*
-> + * SPI OF support routines
-> + * Copyright (C) 2008 Secret Lab Technologies Ltd.
-> + *
-> + * Support routines for deriving SPI device attachments from=20
-> the device
-> + * tree.
-> + */
+> +    SPI busses can be described with a node for the SPI master device
+> +    and a set of child nodes for each SPI slave on the bus.  For this
+> +    discussion, it is assumed that the system's SPI controller is in
+> +    SPI master mode.  This binding does not describe SPI controllers
+> +    in slave mode.
 > +
-> +#include <linux/of.h>
-> +#include <linux/device.h>
-> +#include <linux/spi/spi.h>
-> +#include <linux/of_spi.h>
+> +    The SPI master node requires the following properties:
+> +    - #address-cells  - number of cells required to define a=20
+> chip select
+> +			address on the SPI bus.
+> +    - #size-cells     - should be zero.
+> +    - compatible      - name of SPI bus controller following=20
+> generic names
+> +			recommended practice.
+> +    No other properties are required in the SPI bus node. =20
+> It is assumed
+> +    that a driver for an SPI bus device will understand that=20
+> it is an SPI bus.
+> +    However, the binding does not attempt to define the=20
+> specific method for
+> +    assigning chip select numbers.  Since SPI chip select=20
+> configuration is
+> +    flexible and non-standardized, it is left out of this=20
+> binding with the
+> +    assumption that board specific platform code will be=20
+> used to manage
+> +    chip selects.  Individual drivers can define additional=20
+> properties to
+> +    support describing the chip select layout.
 > +
-> +/**
-> + * of_register_spi_devices - Register child devices onto the SPI bus
-> + * @master:	Pointer to spi_master device
-> + * @np:		parent node of SPI device nodes
-> + *
-> + * Registers an spi_device for each child node of 'np' which=20
-> has a 'reg'
-> + * property.
-> + */
-> +void of_register_spi_devices(struct spi_master *master,=20
-> struct device_node *np)
-> +{
-> +	struct spi_device *spi;
-> +	struct device_node *nc;
-> +	const u32 *prop;
-> +	const char *sprop;
-> +	int rc;
-> +	int len;
+> +    SPI slave nodes must be children of the SPI master node and can
+> +    contain the following properties.
+> +    - reg             - (required) chip select address of device.
+> +    - compatible      - (required) name of SPI device=20
+> following generic names
+> +			recommended practice
+> +    - max-speed       - (required) Maximum SPI clocking=20
+> speed of device in Hz
+> +    - spi,cpol        - (optional) Device requires inverse=20
+> clock polarity
+> +    - spi,cpha        - (optional) Device requires shifted=20
+> clock phase
+> +    - linux,modalias  - (optional, Linux specific) Force=20
+> binding of SPI device
+> +			to a particular spi_device driver. =20
+> Useful for changing
+> +			driver binding between spidev and a=20
+> kernel SPI driver.
 > +
-> +	for_each_child_of_node(np, nc) {
-> +		/* Alloc an spi_device */
-> +		spi =3D spi_alloc_device(master);
-> +		if (!spi) {
-> +			dev_err(&master->dev, "spi_device alloc=20
-> error for %s\n",
-> +				nc->full_name);
-> +			continue;
-> +		}
-> +
-> +		/* Device address */
-> +		prop =3D of_get_property(nc, "reg", &len);
-> +		if (!prop || len < sizeof(*prop)) {
-> +			dev_err(&master->dev, "%s has no 'reg'=20
-> property\n",
-> +				nc->full_name);
-> +			continue;
-> +		}
-> +		spi->chip_select =3D *prop;
-> +
-> +		/* Mode (clock phase/polarity/etc.) */
-> +		if (of_find_property(nc, "spi,cpha", NULL))
-> +			spi->mode |=3D SPI_CPHA;
-> +		if (of_find_property(nc, "spi,cpol", NULL))
-> +			spi->mode |=3D SPI_CPOL;
 
-so becuase in function spi_alloc_deive, spi is allocated by kzalloc,
-how about writing as follows:
-		/* Mode (clock phase/polarity/etc.) */
-		prop =3D of_get_property(nc, "spi,cpha", NULL))
-                        if (prop)
-			spi->mode |=3D *prop;
-		prop =3D of_get_property(nc, "spi,cpol", NULL))
-                        if (prop)
-			spi->mode |=3D *prop;
-
-> +
-> +		/* Device speed */
-> +		prop =3D of_get_property(nc, "max-speed", &len);
-> +		if (!prop || len < sizeof(*prop)) {
-> +			dev_err(&master->dev, "%s has no=20
-> 'max-speed' property\n",
-> +				nc->full_name);
-> +			continue;
-> +		}
-> +		spi->max_speed_hz =3D *prop;
-> +
-> +		/* IRQ */
-> +		spi->irq =3D irq_of_parse_and_map(nc, 0);
-> +
-> +		/* Select device driver */
-> +		sprop =3D of_get_property(nc, "linux,modalias", &len);
-> +		if (sprop && len > 0)
-> +			strncpy(spi->modalias, sprop, KOBJ_NAME_LEN);
-> +		else
-> +			strncpy(spi->modalias, "spidev", KOBJ_NAME_LEN);
-> +
- how about writing as follows:
-
-		if (sprop && len > 0)
-			strncpy(spi->modalias, sprop, KOBJ_NAME_LEN -
-1);
-		else
-			strncpy(spi->modalias, "spidev", KOBJ_NAME_LEN -
-1);
+How about adding a "model" property to describe actual devie type.
+Such as using a "sst25vf040b" device with spi-interface, we can
+use model=3D"sst25vf040b" to describe it.
