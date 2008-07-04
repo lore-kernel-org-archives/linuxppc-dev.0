@@ -1,26 +1,20 @@
-Return-Path: <willy@parisc-linux.org>
-Received: from mail.parisc-linux.org (palinux.external.hp.com [192.25.206.14])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.parisc-linux.org",
-	Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 7BA1CDE28E
-	for <linuxppc-dev@ozlabs.org>; Sat,  5 Jul 2008 06:43:08 +1000 (EST)
-Date: Fri, 4 Jul 2008 14:42:53 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: the printk problem
-Message-ID: <20080704204252.GM14894@parisc-linux.org>
-References: <20080625131101.GA6205@digi.com> <20080704104634.GA31634@digi.com>
-	<20080704111540.ddffd241.akpm@linux-foundation.org>
-	<alpine.LFD.1.10.0807041147450.2815@woody.linux-foundation.org>
-	<alpine.LFD.1.10.0807041250220.2815@woody.linux-foundation.org>
-	<20080704132716.f1e12554.akpm@linux-foundation.org>
+Return-Path: <broonie@sirena.org.uk>
+Received: from cassiel.sirena.org.uk (cassiel.sirena.org.uk [80.68.93.111])
+	by ozlabs.org (Postfix) with ESMTP id 58C8ADE1EF
+	for <linuxppc-dev@ozlabs.org>; Sat,  5 Jul 2008 06:49:35 +1000 (EST)
+Date: Fri, 4 Jul 2008 21:49:27 +0100
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [alsa-devel] [PATCH 3/3] ALSA SoC: Add Texas Instruments
+	TLV320AIC26 codec driver
+Message-ID: <20080704204927.GC20719@sirena.org.uk>
+References: <20080701235330.16923.67218.stgit@trillian.secretlab.ca>
+	<20080701235340.16923.48024.stgit@trillian.secretlab.ca>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080704132716.f1e12554.akpm@linux-foundation.org>
-Cc: linuxppc-dev@ozlabs.org, linux-ia64@vger.kernel.org,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	"David S. Miller" <davem@davemloft.net>, Peter Anvin <hpa@zytor.com>
+In-Reply-To: <20080701235340.16923.48024.stgit@trillian.secretlab.ca>
+Cc: liam.girdwood@wolfsonmicro.com, alsa-devel@alsa-project.org,
+	timur@freescale.com, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,39 +24,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Jul 04, 2008 at 01:27:16PM -0700, Andrew Morton wrote:
-> On Fri, 4 Jul 2008 13:02:05 -0700 (PDT) Linus Torvalds <torvalds@linux-foundation.org> wrote:
-> > > so I think we could easily just say that we extend %p in various ways:
-> > > 
-> > >  - %pS - print pointer as a symbol
-> > > 
-> > > and leave tons of room for future extensions for different kinds of 
-> > > pointers. 
-> 
-> If this takes off we might want a register-your-printk-handler
-> interface.  Maybe.
-> 
-> We also jump through hoops to print things like sector_t and
-> resource_size_t.  They always need to be cast to `unsiged long long',
-> which generates additional stack space and text in some setups.
+On Tue, Jul 01, 2008 at 05:53:40PM -0600, Grant Likely wrote:
 
-The thing is that GCC checks types.  So it's fine to add "print this
-pointer specially", but you can't in general add new printf arguments
-without also hacking GCC.  Unless you use -Wno-format, and require
-sparse to check special kernel types.
+> +static ssize_t aic26_keyclick_show(struct device *dev,
+> +				   struct device_attribute *attr, char *buf)
+> +{
+> +	struct aic26 *aic26 = dev_get_drvdata(dev);
+> +	int val, amp, freq, len;
+> +
+> +	val = aic26_reg_read_cache(&aic26->codec, AIC26_REG_AUDIO_CTRL2);
+> +	amp = (val >> 12) & 0x7;
+> +	freq = (125 << ((val >> 8) & 0x7)) >> 1;
+> +	len = 2 * (1 +((val >> 8) & 0xf));
+> +
+> +	return sprintf(buf, "amp=%x freq=%iHz len=%iclks\n", amp, freq, len);
+> +}
 
-> And then there's the perennial "need to cast u64 to unsigned long long
-> to print it".  If we were to do
-> 
-> 	printk("%SL", (void *)some_u64);
-> 
-> then that's still bloody ugly, but it'll save a little text-n-stack.
+It might be nice if these parameters were exposed as controls if they
+can be configured, though obviously that's not essential.
 
-u64 is easy to fix, and I don't know why we haven't.  Just make it
-unsigned long long on all architectures.
+> +	/* Tell the of_soc helper about this codec */
+> +	of_snd_soc_register_codec(&aic26_soc_codec_dev, aic26, &aic26_dai,
+> +				  spi->dev.archdata.of_node);
 
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+Does this need to be ifdefed out if of_snd_soc_register_codec() is not
+in use or is the function stubbed out if it's not in use?  Stubbing it
+out would be cleaner.
