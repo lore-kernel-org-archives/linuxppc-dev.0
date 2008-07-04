@@ -1,29 +1,29 @@
 Return-Path: <rcjenn@linux.vnet.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 64ADDDDEF0
-	for <linuxppc-dev@ozlabs.org>; Fri,  4 Jul 2008 22:45:04 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e32.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m64Cdsfc011416
-	for <linuxppc-dev@ozlabs.org>; Fri, 4 Jul 2008 08:39:54 -0400
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
-	m64CixfS174522
-	for <linuxppc-dev@ozlabs.org>; Fri, 4 Jul 2008 06:44:59 -0600
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m64Ciw9X001148
-	for <linuxppc-dev@ozlabs.org>; Fri, 4 Jul 2008 06:44:59 -0600
-Date: Fri, 4 Jul 2008 07:44:50 -0500
+	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id F0FE0DDED3
+	for <linuxppc-dev@ozlabs.org>; Fri,  4 Jul 2008 22:51:22 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e4.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m64CpGeT001973
+	for <linuxppc-dev@ozlabs.org>; Fri, 4 Jul 2008 08:51:16 -0400
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
+	m64CpGIg205640
+	for <linuxppc-dev@ozlabs.org>; Fri, 4 Jul 2008 08:51:16 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m64CpFMU018981
+	for <linuxppc-dev@ozlabs.org>; Fri, 4 Jul 2008 08:51:15 -0400
+Date: Fri, 4 Jul 2008 07:51:06 -0500
 From: Robert Jennings <rcj@linux.vnet.ibm.com>
 To: paulus@samba.org
-Subject: [PATCH 00/16 v3] powerpc: pSeries Cooperative Memory
-	Overcommitment support
-Message-ID: <20080704124449.GA1310@linux.vnet.ibm.com>
+Subject: [PATCH 01/16 v3] powerpc: Remove extraneous error reporting for
+	hcall failures in lparcfg
+Message-ID: <20080704125106.GB1310@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080704124449.GA1310@linux.vnet.ibm.com>
 Cc: Brian King <brking@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org,
 	David Darrington <ddarring@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -35,43 +35,74 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is version 3 of the full patchset.  Please consider this for 2.6.27.
-Only the vio bus patch is changed but with two other patches dropped I
-felt it would be clearer to post the full set.
+=46rom: Nathan Fontenot <nfont@austin.ibm.com>
 
-A change was made so that devices not performing DMA operations will not
-require modification, therefore the hvc and hvcs driver patches have
-been dropped.  The vio bus patch has a more descriptive patch header
-now as it is a large addition of code.
+Remove the extraneous error reporting used when a hcall made from lparcfg f=
+ails.
 
-Cooperative Memory Overcommitment (CMO) is a pSeries platform feature
-that enables the allocation of more memory to a set logical partitions
-than is physically present.  For example, a system with 16Gb of memory
-can be configured to simultaneously run 3 logical partitions each with
-8Gb of memory allocated to them.
+Signed-off-by: Nathan Fontenot <nfont@austin.ibm.com>
+Signed-off-by: Robert Jennings <rcj@linux.vnet.ibm.com>
 
-The system firmware can page out memory as needed to meet the needs
-of each partition.  To minimize the effects of firmware paging memory,
-the Collaborative Memory Manager (CMM) driver acts as a balloon driver
-to work with firmware to provide memory ahead of any paging needs.
+---
+ arch/powerpc/kernel/lparcfg.c |   32 --------------------------------
+ 1 file changed, 32 deletions(-)
 
-The OS is provided with an entitlement of IO memory for device drivers
-to map.  This amount varies with the number of virtual IO adapters
-present and can change as devices are hot-plugged.  The VIO bus code
-distributes this memory to devices.  Logical partitions supporting CMO
-may only have virtual IO devices, physical devices are not supported.
-Above the entitled level, IO mappings can fail and the IOMMU needed be
-updated to handle this change.
-
-Virtual IO adapters have been updated to handle DMA mapping failures and
-to size their entitlement needs.
-
-Platform support for for CMM and hot-plug entitlement events are also
-included in the following patches.
-
-The changes should have minimal impact to non-CMO enabled environments.
-This patch set has been written against 2.6.26-rc8 and has been tested
-at that level.
-
-Regards,
-Robert Jennings
+Index: b/arch/powerpc/kernel/lparcfg.c
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- a/arch/powerpc/kernel/lparcfg.c
++++ b/arch/powerpc/kernel/lparcfg.c
+@@ -129,33 +129,6 @@ static int iseries_lparcfg_data(struct s
+ /*
+  * Methods used to fetch LPAR data when running on a pSeries platform.
+  */
+-static void log_plpar_hcall_return(unsigned long rc, char *tag)
+-{
+-	switch(rc) {
+-	case 0:
+-		return;
+-	case H_HARDWARE:
+-		printk(KERN_INFO "plpar-hcall (%s) "
+-				"Hardware fault\n", tag);
+-		return;
+-	case H_FUNCTION:
+-		printk(KERN_INFO "plpar-hcall (%s) "
+-				"Function not allowed\n", tag);
+-		return;
+-	case H_AUTHORITY:
+-		printk(KERN_INFO "plpar-hcall (%s) "
+-				"Not authorized to this function\n", tag);
+-		return;
+-	case H_PARAMETER:
+-		printk(KERN_INFO "plpar-hcall (%s) "
+-				"Bad parameter(s)\n",tag);
+-		return;
+-	default:
+-		printk(KERN_INFO "plpar-hcall (%s) "
+-				"Unexpected rc(0x%lx)\n", tag, rc);
+-	}
+-}
+-
+ /*
+  * H_GET_PPP hcall returns info in 4 parms.
+  *  entitled_capacity,unallocated_capacity,
+@@ -191,8 +164,6 @@ static unsigned int h_get_ppp(unsigned l
+ 	*aggregation =3D retbuf[2];
+ 	*resource =3D retbuf[3];
+=20
+-	log_plpar_hcall_return(rc, "H_GET_PPP");
+-
+ 	return rc;
+ }
+=20
+@@ -205,9 +176,6 @@ static void h_pic(unsigned long *pool_id
+=20
+ 	*pool_idle_time =3D retbuf[0];
+ 	*num_procs =3D retbuf[1];
+-
+-	if (rc !=3D H_AUTHORITY)
+-		log_plpar_hcall_return(rc, "H_PIC");
+ }
+=20
+ #define SPLPAR_CHARACTERISTICS_TOKEN 20
