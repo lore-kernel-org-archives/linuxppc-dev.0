@@ -1,13 +1,13 @@
 Return-Path: <arnd@arndb.de>
-Message-Id: <20080704190805.768128502@arndb.de>
+Message-Id: <20080704190806.162475834@arndb.de>
 References: <20080704190535.316377278@arndb.de>
-Date: Fri, 04 Jul 2008 21:05:37 +0200
+Date: Fri, 04 Jul 2008 21:05:40 +0200
 From: arnd@arndb.de
 To: Paul Mackerras <paulus@samba.org>,
 	Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [patch 02/11] powerpc/axonram: use only one block device major number
-Cc: Maxim Shchetynin <maxim@de.ibm.com>, linuxppc-dev@ozlabs.org,
-	cbe-oss-dev@ozlabs.org
+Subject: [patch 05/11] powerpc/cell: add spu aware cpufreq governor
+Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org,
+	Christian Krafft <krafft@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,92 +17,242 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Axonram module registers one block device for each DDR2 DIMM found
-on a system. This means that each DDR2 DIMM becomes its own block device
-major number. This patch lets axonram module to register the only one
-block device for all DDR2 DIMMs which also spares kernel resources.
+This patch adds a cpufreq governor that takes the number of running spus
+into account. It's very similar to the ondemand governor, but not as complex.
+Instead of hacking spu load into the ondemand governor it might be easier to
+have cpufreq accepting multiple governors per cpu in future.
+Don't know if this is the right way, but it would keep the governors simple.
 
-Signed-off-by: Maxim Shchetynin <maxim@de.ibm.com>
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Signed-off-by: Christian Krafft <krafft@de.ibm.com>
 ---
- arch/powerpc/sysdev/axonram.c |   23 +++++++++++++++--------
- 1 files changed, 15 insertions(+), 8 deletions(-)
+ arch/powerpc/platforms/cell/Kconfig            |   10 ++
+ arch/powerpc/platforms/cell/Makefile           |    1 +
+ arch/powerpc/platforms/cell/cbe_spu_governor.c |  183 ++++++++++++++++++++++++
+ 3 files changed, 194 insertions(+), 0 deletions(-)
+ create mode 100644 arch/powerpc/platforms/cell/cbe_spu_governor.c
 
-diff --git a/arch/powerpc/sysdev/axonram.c b/arch/powerpc/sysdev/axonram.c
-index 7f59188..9b639ed 100644
---- a/arch/powerpc/sysdev/axonram.c
-+++ b/arch/powerpc/sysdev/axonram.c
-@@ -57,6 +57,8 @@
- #define AXON_RAM_SECTOR_SIZE		1 << AXON_RAM_SECTOR_SHIFT
- #define AXON_RAM_IRQ_FLAGS		IRQF_SHARED | IRQF_TRIGGER_RISING
+diff --git a/arch/powerpc/platforms/cell/Kconfig b/arch/powerpc/platforms/cell/Kconfig
+index 3959fcf..2dfff9f 100644
+--- a/arch/powerpc/platforms/cell/Kconfig
++++ b/arch/powerpc/platforms/cell/Kconfig
+@@ -107,6 +107,16 @@ config CBE_CPUFREQ_PMI
+ 	  processor will not only be able to run at lower speed,
+ 	  but also at lower core voltage.
  
-+static int azfs_major, azfs_minor;
++config CBE_CPUFREQ_SPU_GOVERNOR
++	tristate "CBE frequency scaling based on SPU usage"
++	depends on SPU_FS
++	select CBE_CPUFREQ
++	default m
++	help
++	  This governor checks for spu usage to adjust the cpu frequency.
++	  If no spu is running on a given cpu, that cpu will be throttled to
++	  the minimal possible frequency.
 +
- struct axon_ram_bank {
- 	struct of_device	*device;
- 	struct gendisk		*disk;
-@@ -227,19 +229,14 @@ axon_ram_probe(struct of_device *device, const struct of_device_id *device_id)
- 		goto failed;
- 	}
+ endmenu
  
--	bank->disk->first_minor = 0;
-+	bank->disk->major = azfs_major;
-+	bank->disk->first_minor = azfs_minor;
- 	bank->disk->fops = &axon_ram_devops;
- 	bank->disk->private_data = bank;
- 	bank->disk->driverfs_dev = &device->dev;
+ config OPROFILE_CELL
+diff --git a/arch/powerpc/platforms/cell/Makefile b/arch/powerpc/platforms/cell/Makefile
+index c2a7e4e..8be5158 100644
+--- a/arch/powerpc/platforms/cell/Makefile
++++ b/arch/powerpc/platforms/cell/Makefile
+@@ -8,6 +8,7 @@ obj-$(CONFIG_CBE_THERM)			+= cbe_thermal.o
+ obj-$(CONFIG_CBE_CPUFREQ_PMI)		+= cbe_cpufreq_pmi.o
+ obj-$(CONFIG_CBE_CPUFREQ)		+= cbe-cpufreq.o
+ cbe-cpufreq-y				+= cbe_cpufreq_pervasive.o cbe_cpufreq.o
++obj-$(CONFIG_CBE_CPUFREQ_SPU_GOVERNOR)	+= cbe_spu_governor.o
  
- 	sprintf(bank->disk->disk_name, "%s%d",
- 			AXON_RAM_DEVICE_NAME, axon_ram_bank_id);
--	bank->disk->major = register_blkdev(0, bank->disk->disk_name);
--	if (bank->disk->major < 0) {
--		dev_err(&device->dev, "Cannot register block device\n");
--		rc = -EFAULT;
--		goto failed;
--	}
- 
- 	bank->disk->queue = blk_alloc_queue(GFP_KERNEL);
- 	if (bank->disk->queue == NULL) {
-@@ -276,6 +273,8 @@ axon_ram_probe(struct of_device *device, const struct of_device_id *device_id)
- 		goto failed;
- 	}
- 
-+	azfs_minor += bank->disk->minors;
+ ifeq ($(CONFIG_SMP),y)
+ obj-$(CONFIG_PPC_CELL_NATIVE)		+= smp.o
+diff --git a/arch/powerpc/platforms/cell/cbe_spu_governor.c b/arch/powerpc/platforms/cell/cbe_spu_governor.c
+new file mode 100644
+index 0000000..7e63009
+--- /dev/null
++++ b/arch/powerpc/platforms/cell/cbe_spu_governor.c
+@@ -0,0 +1,183 @@
++/*
++ * spu aware cpufreq governor for the cell processor
++ *
++ * (C) Copyright IBM Corporation 2006-2008
++ *
++ * Author: Christian Krafft <krafft@de.ibm.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2, or (at your option)
++ * any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++ */
 +
- 	return 0;
- 
- failed:
-@@ -310,7 +309,6 @@ axon_ram_remove(struct of_device *device)
- 
- 	device_remove_file(&device->dev, &dev_attr_ecc);
- 	free_irq(bank->irq_id, device);
--	unregister_blkdev(bank->disk->major, bank->disk->disk_name);
- 	del_gendisk(bank->disk);
- 	iounmap((void __iomem *) bank->io_addr);
- 	kfree(bank);
-@@ -341,6 +339,14 @@ static struct of_platform_driver axon_ram_driver = {
- static int __init
- axon_ram_init(void)
- {
-+	azfs_major = register_blkdev(azfs_major, AXON_RAM_DEVICE_NAME);
-+	if (azfs_major < 0) {
-+		printk(KERN_ERR "%s cannot become block device major number\n",
-+				AXON_RAM_MODULE_NAME);
-+		return -EFAULT;
++#include <linux/cpufreq.h>
++#include <linux/sched.h>
++#include <linux/timer.h>
++#include <linux/workqueue.h>
++#include <asm/atomic.h>
++#include <asm/machdep.h>
++#include <asm/spu.h>
++
++#define POLL_TIME	100000		/* in us */
++#define EXP		753		/* exp(-1) in fixed-point */
++
++struct spu_gov_info_struct {
++	unsigned long busy_spus;	/* fixed-point */
++	struct cpufreq_policy *policy;
++	struct delayed_work work;
++	unsigned int poll_int;		/* us */
++};
++static DEFINE_PER_CPU(struct spu_gov_info_struct, spu_gov_info);
++
++static struct workqueue_struct *kspugov_wq;
++
++static int calc_freq(struct spu_gov_info_struct *info)
++{
++	int cpu;
++	int busy_spus;
++
++	cpu = info->policy->cpu;
++	busy_spus = atomic_read(&cbe_spu_info[cpu_to_node(cpu)].busy_spus);
++
++	CALC_LOAD(info->busy_spus, EXP, busy_spus * FIXED_1);
++	pr_debug(KERN_ERR "cpu %d: busy_spus=%d, info->busy_spus=%d\n", cpu, busy_spus, info->busy_spus);
++
++	return info->policy->max * info->busy_spus / FIXED_1;
++}
++
++static void spu_gov_work(struct work_struct *work)
++{
++	struct spu_gov_info_struct *info;
++	int delay;
++	unsigned long target_freq;
++
++	info = container_of(work, struct spu_gov_info_struct, work.work);
++
++	/* after cancel_delayed_work_sync we unset info->policy */
++	BUG_ON(info->policy == NULL);
++
++	target_freq = calc_freq(info);
++	__cpufreq_driver_target(info->policy, target_freq, CPUFREQ_RELATION_H);
++
++	delay = usecs_to_jiffies(info->poll_int);
++	queue_delayed_work_on(info->policy->cpu, kspugov_wq, &info->work, delay);
++}
++
++static void spu_gov_init_work(struct spu_gov_info_struct *info)
++{
++	int delay = usecs_to_jiffies(info->poll_int);
++	INIT_DELAYED_WORK_DEFERRABLE(&info->work, spu_gov_work);
++	queue_delayed_work_on(info->policy->cpu, kspugov_wq, &info->work, delay);
++}
++
++static void spu_gov_cancel_work(struct spu_gov_info_struct *info)
++{
++	cancel_delayed_work_sync(&info->work);
++}
++
++static int spu_gov_govern(struct cpufreq_policy *policy, unsigned int event)
++{
++	unsigned int cpu = policy->cpu;
++	struct spu_gov_info_struct *info, *affected_info;
++	int i;
++	int ret = 0;
++
++	info = &per_cpu(spu_gov_info, cpu);
++
++	switch (event) {
++	case CPUFREQ_GOV_START:
++		if (!cpu_online(cpu)) {
++			printk(KERN_ERR "cpu %d is not online\n", cpu);
++			ret = -EINVAL;
++			break;
++		}
++
++		if (!policy->cur) {
++			printk(KERN_ERR "no cpu specified in policy\n");
++			ret = -EINVAL;
++			break;
++		}
++
++		/* initialize spu_gov_info for all affected cpus */
++		for_each_cpu_mask(i, policy->cpus) {
++			affected_info = &per_cpu(spu_gov_info, i);
++			affected_info->policy = policy;
++		}
++
++		info->poll_int = POLL_TIME;
++
++		/* setup timer */
++		spu_gov_init_work(info);
++
++		break;
++
++	case CPUFREQ_GOV_STOP:
++		/* cancel timer */
++		spu_gov_cancel_work(info);
++
++		/* clean spu_gov_info for all affected cpus */
++		for_each_cpu_mask (i, policy->cpus) {
++			info = &per_cpu(spu_gov_info, i);
++			info->policy = NULL;
++		}
++
++		break;
 +	}
-+	azfs_minor = 0;
 +
- 	return of_register_platform_driver(&axon_ram_driver);
- }
- 
-@@ -351,6 +357,7 @@ static void __exit
- axon_ram_exit(void)
- {
- 	of_unregister_platform_driver(&axon_ram_driver);
-+	unregister_blkdev(azfs_major, AXON_RAM_DEVICE_NAME);
- }
- 
- module_init(axon_ram_init);
++	return ret;
++}
++
++static struct cpufreq_governor spu_governor = {
++	.name = "spu_governor",
++	.governor = spu_gov_govern,
++	.owner = THIS_MODULE,
++};
++
++/*
++ * module init and destoy
++ */
++
++static int __init spu_gov_init(void)
++{
++	int ret;
++
++	kspugov_wq = create_workqueue("kspugov");
++	if (!kspugov_wq) {
++		printk(KERN_ERR "creation of kspugov failed\n");
++		ret = -EFAULT;
++		goto out;
++	}
++
++	ret = cpufreq_register_governor(&spu_governor);
++	if (ret) {
++		printk(KERN_ERR "registration of governor failed\n");
++		destroy_workqueue(kspugov_wq);
++		goto out;
++	}
++out:
++	return ret;
++}
++
++static void __exit spu_gov_exit(void)
++{
++	cpufreq_unregister_governor(&spu_governor);
++	destroy_workqueue(kspugov_wq);
++}
++
++
++module_init(spu_gov_init);
++module_exit(spu_gov_exit);
++
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Christian Krafft <krafft@de.ibm.com>");
++
 -- 
 1.5.4.3
 
