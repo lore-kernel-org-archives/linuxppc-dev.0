@@ -1,21 +1,25 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from ag-out-0708.google.com (ag-out-0708.google.com [72.14.246.244])
-	by ozlabs.org (Postfix) with ESMTP id 00ECCDDDEA
-	for <linuxppc-dev@ozlabs.org>; Fri,  4 Jul 2008 16:51:45 +1000 (EST)
-Received: by ag-out-0708.google.com with SMTP id 8so6590791agc.0
-	for <linuxppc-dev@ozlabs.org>; Thu, 03 Jul 2008 23:51:44 -0700 (PDT)
-Message-ID: <fa686aa40807032351l631febe2h8d38a9eed1053b6b@mail.gmail.com>
-Date: Fri, 4 Jul 2008 00:51:44 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: linuxppc-dev@ozlabs.org, "Josh Boyer" <jwboyer@linux.vnet.ibm.com>,
-	"Kumar Gala" <galak@kernel.crashing.org>
-Subject: Re: [RFC/PATCH] powerpc/bootwrapper: Allow user to specify additional
-	default targets
-In-Reply-To: <20080701175852.32575.39707.stgit@trillian.secretlab.ca>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20080701175852.32575.39707.stgit@trillian.secretlab.ca>
+Return-Path: <khali@linux-fr.org>
+Received: from services.gcu-squad.org (zone0.gcu-squad.org [212.85.147.21])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 568D6DDE11
+	for <linuxppc-dev@ozlabs.org>; Fri,  4 Jul 2008 17:36:11 +1000 (EST)
+Date: Fri, 4 Jul 2008 09:35:16 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: "Grant Likely" <grant.likely@secretlab.ca>
+Subject: Re: linux-next: manual merge of the powerpc tree
+Message-ID: <20080704093516.6d9a8195@hyperion.delvare>
+In-Reply-To: <fa686aa40807032254j76dd1892y7af76c1a2d555809@mail.gmail.com>
+References: <20080703133905.7b6f058f.sfr@canb.auug.org.au>
+	<20080703054739.GA643@secretlab.ca>
+	<9e4733910807030522h1aa0bl1801ecc5fc877c25@mail.gmail.com>
+	<20080703152453.GB2284@secretlab.ca>
+	<fa686aa40807032254j76dd1892y7af76c1a2d555809@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linuxppc-dev@ozlabs.org,
+	linux-next@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+	Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,71 +29,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Anyone had a chance to look at this?  I think this could be used to
-eliminate a lot of the platform specific default targets in
-arch/powerpc/boot/Makefile by moving them into the defconfigs.  Josh,
-Kumar, what are your thoughts?
+On Thu, 3 Jul 2008 23:54:26 -0600, Grant Likely wrote:
+> On Thu, Jul 3, 2008 at 9:24 AM, Grant Likely <grant.likely@secretlab.ca> wrote:
+> > On Thu, Jul 03, 2008 at 08:22:18AM -0400, Jon Smirl wrote:
+> >> Testing was good when the patch was initially posted in January. In
+> >> the last six months the initial patch set has been sliced and diced
+> >> into a bunch of different pieces but the contents of this patch are
+> >> essentially unchanged.
+> >>
+> >> I don't care which tree it uses to get to mainline, I'd just like to
+> >> see it get merged.
+> >
+> > Me too, but it is used by some of the mpc8xxx platforms too, so I'd like
+> > to see an ack from one of those users also.
+> 
+> Okay, I've tested it on my board.  All looks good to me.  I'd prefer
+> to hear back from one of the Freescale folks, but on a second reading
+> I think it is pretty safe.  I'll make sure any merge conflicts are
+> resolved.
+> 
+> Jean, is it okay with you to drop it from your tree and merge it through mine?
 
-g.
-
-On Tue, Jul 1, 2008 at 11:59 AM, Grant Likely <grant.likely@secretlab.ca> wrote:
-> From: Grant Likely <grant.likely@secretlab.ca>
->
-> It is inconvenient to add additional default targets to the bootwrapper
-> Makefile for each new board supported which just needs a different dts
-> file.  This change allows the defconfig to specify additional build
-> targets.
->
-> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
-> ---
->
->  arch/powerpc/Kconfig       |   13 +++++++++++++
->  arch/powerpc/boot/Makefile |    3 +++
->  2 files changed, 16 insertions(+), 0 deletions(-)
->
-> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> index 3934e26..f09f617 100644
-> --- a/arch/powerpc/Kconfig
-> +++ b/arch/powerpc/Kconfig
-> @@ -458,6 +458,19 @@ config CMDLINE
->          some command-line options at build time by entering them here.  In
->          most cases you will need to specify the root device here.
->
-> +config EXTRA_TARGETS
-> +       string "Additional default image types"
-> +       help
-> +         List additional targets to be built by the bootwrapper here (separated
-> +         by spaces).  This is useful for targets that depend of device tree
-> +         files in the .dts directory.
-> +
-> +         Targets in this list will be build as part of the default build
-> +         target, or when the user does a 'make zImage' or a
-> +         'make zImage.initrd'.
-> +
-> +         If unsure, leave blank
-> +
->  if !44x || BROKEN
->  config ARCH_WANTS_FREEZER_CONTROL
->        def_bool y
-> diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-> index 1cee2f9..1e38237 100644
-> --- a/arch/powerpc/boot/Makefile
-> +++ b/arch/powerpc/boot/Makefile
-> @@ -270,6 +270,9 @@ ifeq ($(CONFIG_PPC32),y)
->  image-$(CONFIG_PPC_PMAC)       += zImage.coff zImage.miboot
->  endif
->
-> +# Allow extra targets to be added to the defconfig
-> +image-y        += $(subst ",,$(CONFIG_EXTRA_TARGETS))
-> +
->  initrd-  := $(patsubst zImage%, zImage.initrd%, $(image-n) $(image-))
->  initrd-y := $(patsubst zImage%, zImage.initrd%, \
->                $(patsubst dtbImage%, dtbImage.initrd%, \
->
->
-
-
+Sure, no problem. It's done now, the patch is yours.
 
 -- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Jean Delvare
