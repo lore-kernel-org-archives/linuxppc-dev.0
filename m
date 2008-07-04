@@ -1,18 +1,18 @@
-Return-Path: <andre.schwarz@matrix-vision.de>
-Received: from p15137414.pureserver.info (matrixvision.de [217.160.213.229])
-	by ozlabs.org (Postfix) with ESMTP id 4A2DFDDD0B
-	for <linuxppc-dev@ozlabs.org>; Sat,  5 Jul 2008 01:10:50 +1000 (EST)
-Message-ID: <486E3D76.5090207@matrix-vision.de>
-Date: Fri, 04 Jul 2008 17:10:46 +0200
-From: Andre Schwarz <andre.schwarz@matrix-vision.de>
+Return-Path: <trini@kernel.crashing.org>
+Received: from fed1rmpop110.cox.net (fed1rmpop110.cox.net [68.230.241.14])
+	by ozlabs.org (Postfix) with ESMTP id 938C2DDF1B
+	for <linuxppc-dev@ozlabs.org>; Sat,  5 Jul 2008 01:29:34 +1000 (EST)
+Date: Fri, 4 Jul 2008 08:17:35 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: Update maintainers for powerpc
+Message-ID: <20080704151735.GA10351@smtp.west.cox.net>
+References: <18542.970.878558.275775@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: GPIO @ MPC5200
-References: <486DF3FA.3010806@matrix-vision.de>
-	<20080704143619.GA15751@secretlab.ca>
-In-Reply-To: <20080704143619.GA15751@secretlab.ca>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-ppc list <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <18542.970.878558.275775@cargo.ozlabs.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
+	torvalds@linux-foundation.org, anton@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,53 +22,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Grant Likely schrieb:
-> On Fri, Jul 04, 2008 at 11:57:14AM +0200, Andre Schwarz wrote:
->   
->> Sascha, Grant,
->>
->> I'm running on 2.6.26-rc6 with an MPC5200B based system.
->>
->> Looks like some (for me) crucial GPIO are touched during boot.
->> Is this possible ?
->>
->> Of course I have compiled in GPIO-Lib and specified the GPIOs in the dts.
->> But no access yet - I'd like to preserve the setup from u-boot...
->>     
->
-> The GPIO driver only writes to the GPIO registers when a driver actually
-> requests to use them.  At probe time, the gpio drivers read the current
-> values from the GPIO registers, so current config should be preserved.
->
-> However, the gpiochip_dir hook explicitly sets the output value when it
-> is called.  It may be that when you are claiming the GPIO line it is
-> getting set with a default (and wrong) value.
->
-> Another possibility; have you verified that it is the GPIO regs getting
-> clobbered?  Or is port_config getting changed on you?  Which GPIO pins?
->
-> g.
->   
+On Fri, Jul 04, 2008 at 09:04:42PM +1000, Paul Mackerras wrote:
 
-The pin in question is PSC2_4, i.e. a wake-up GPIO.
-It is configured as push-pull output and driven high.
+> This updates the MAINTAINERS entries for powerpc.  It adds Ben H to
+> the overall Linux for PowerPC entry and makes it clear this covers
+> both 32-bit and 64-bit machines.  It removes the separate entry we had
+> for Linux on 64-bit PowerPC where Anton and I were listed as
+> maintainers - Anton hasn't been involved in the day-to-day maintenance
+> of the code for several years.  Finally, it removes the entry for the
+> Linux for PowerPC boot code where Tom Rini was listed as the
+> maintainer.  That code got completely rewritten when we merged
+> 32-bit and 64-bit, and I and the various platform maintainers have
+> been maintaining that code since.
+> 
+> Signed-off-by: Paul Mackerras <paulus@samba.org>
 
-Since it has an external pull-down resistor I can't say if it is driven
-low or re-configured as an input ...
+Acked-by: Tom Rini <trini@kernel.crashing.org>
 
-I removed GPIO Lib and the problem is gone.
-I'm not yet using it anyway under linux - they're mainly for system
-configuration (setting up muxes etc.).
-
-I'll dig into it when I have some time.
-
-thanks,
-Andre
-
-
-
-
-
-
-MATRIX VISION GmbH, Talstraße 16, DE-71570 Oppenweiler  - Registergericht: Amtsgericht Stuttgart, HRB 271090
-Geschäftsführer: Gerhard Thullner, Werner Armingeon, Uwe Furtner
+-- 
+Tom Rini
