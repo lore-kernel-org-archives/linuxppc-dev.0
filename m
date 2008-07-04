@@ -1,26 +1,26 @@
 Return-Path: <rcjenn@linux.vnet.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 3DA94DDF28
-	for <linuxppc-dev@ozlabs.org>; Fri,  4 Jul 2008 22:53:12 +1000 (EST)
+	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 815EBDDFDA
+	for <linuxppc-dev@ozlabs.org>; Fri,  4 Jul 2008 22:53:21 +1000 (EST)
 Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
 	[9.17.195.227])
-	by e33.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m64Cr7PH028537
-	for <linuxppc-dev@ozlabs.org>; Fri, 4 Jul 2008 08:53:07 -0400
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m64CrIW8012466
+	for <linuxppc-dev@ozlabs.org>; Fri, 4 Jul 2008 08:53:18 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
 	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
-	m64Cr7BR172202
-	for <linuxppc-dev@ozlabs.org>; Fri, 4 Jul 2008 06:53:07 -0600
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m64Cr7ZH005535
-	for <linuxppc-dev@ozlabs.org>; Fri, 4 Jul 2008 06:53:07 -0600
-Date: Fri, 4 Jul 2008 07:52:57 -0500
+	m64CrIvQ169992
+	for <linuxppc-dev@ozlabs.org>; Fri, 4 Jul 2008 06:53:18 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m64CrHmp015943
+	for <linuxppc-dev@ozlabs.org>; Fri, 4 Jul 2008 06:53:18 -0600
+Date: Fri, 4 Jul 2008 07:53:09 -0500
 From: Robert Jennings <rcj@linux.vnet.ibm.com>
 To: paulus@samba.org
 Subject: [PATCH 06/16 v3] powerpc: Utilities to set firmware page state
-Message-ID: <20080704125257.GH1310@linux.vnet.ibm.com>
+Message-ID: <20080704125308.GI1310@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 In-Reply-To: <20080704124449.GA1310@linux.vnet.ibm.com>
