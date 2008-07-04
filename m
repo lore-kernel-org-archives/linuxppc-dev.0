@@ -4,21 +4,22 @@ Received: from de01egw02.freescale.net (de01egw02.freescale.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "de01egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 3B0B8DDD04
-	for <linuxppc-dev@ozlabs.org>; Fri,  4 Jul 2008 20:28:41 +1000 (EST)
-Message-Id: <DEA4DF93-2CC0-4F19-B1CC-59A737626D2B@freescale.com>
+	by ozlabs.org (Postfix) with ESMTPS id 6A150DDE19
+	for <linuxppc-dev@ozlabs.org>; Fri,  4 Jul 2008 20:59:48 +1000 (EST)
+Message-Id: <B7AF0D32-4A05-4DE1-88F5-06B28C9723EF@freescale.com>
 From: Timur Tabi <timur@freescale.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20080630132426.a89c32b0.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+To: Grant Likely <grant.likely@secretlab.ca>
+In-Reply-To: <20080703162809.GH2284@secretlab.ca>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
 Mime-Version: 1.0 (Apple Message framework v924)
-Subject: Re: [PATCH] fsl-diu-fb: Update Freescale DIU driver to use
-	page_alloc_exact()
-Date: Fri, 4 Jul 2008 06:32:05 -0400
-References: <1214325853-26150-1-git-send-email-timur@freescale.com>
-	<20080630132426.a89c32b0.akpm@linux-foundation.org>
-Cc: linuxppc-dev@ozlabs.org, linux-fbdev-devel@lists.sourceforge.net,
-	linux-kernel@vger.kernel.org
+Subject: Re: [alsa-devel] [PATCH 2/3] ALSA SoC: Add mpc5200-psc I2S driver
+Date: Fri, 4 Jul 2008 07:03:25 -0400
+References: <20080701235330.16923.67218.stgit@trillian.secretlab.ca>
+	<20080701235335.16923.43253.stgit@trillian.secretlab.ca>
+	<9e4733910807020651u368763en9362653ed613b2d1@mail.gmail.com>
+	<20080703162809.GH2284@secretlab.ca>
+Cc: liam.girdwood@wolfsonmicro.com, alsa-devel@alsa-project.org,
+	broonie@opensource.wolfsonmicro.com, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,13 +29,8 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+> 	i2s@2200 {		// PSC2
+> 		compatible = "fsl,mpc5200b-psc-i2s","fsl,mpc5200-psc-i2s";
+> 		cell-index = <1>;
 
-On Jun 30, 2008, at 4:24 PM, Andrew Morton wrote:
-
-> This is also incorrect.  We cannot pass u64 or uint64_t into printk at
-> all.  We do not know what type the architectures uses to implement
-> them.  It should be cast to a known type.  In this case `unsigned long
-> long'.
-
-Ok, I'll fix these, but I'm on vacation now and won't get to it for  
-another 10 days.
+cell-index should be zero-based, not one-based.
