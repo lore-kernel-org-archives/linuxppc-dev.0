@@ -1,24 +1,25 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.236])
-	by ozlabs.org (Postfix) with ESMTP id 1D438DDE01
-	for <linuxppc-dev@ozlabs.org>; Fri,  4 Jul 2008 14:26:35 +1000 (EST)
-Received: by rv-out-0506.google.com with SMTP id f6so1101539rvb.9
-	for <linuxppc-dev@ozlabs.org>; Thu, 03 Jul 2008 21:26:34 -0700 (PDT)
-Date: Thu, 3 Jul 2008 22:26:01 -0600
-From: Grant Likely <grant.likely@secretlab.ca>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: New fsl device bindings file
-Message-ID: <20080704042601.GI12945@secretlab.ca>
-References: <40B88BFD-1FEB-4E36-9917-54C7380FF801@kernel.crashing.org>
-	<486D1A58.8010403@freescale.com>
-	<fa686aa40807031134s4ddd0cabj1b31d3ee2d9d2258@mail.gmail.com>
-	<BE229B94-773D-4FA8-AFD0-E46F5887F8D3@kernel.crashing.org>
+Received: from ag-out-0708.google.com (ag-out-0708.google.com [72.14.246.246])
+	by ozlabs.org (Postfix) with ESMTP id EEBD2DDE03
+	for <linuxppc-dev@ozlabs.org>; Fri,  4 Jul 2008 15:54:28 +1000 (EST)
+Received: by ag-out-0708.google.com with SMTP id 8so6520218agc.0
+	for <linuxppc-dev@ozlabs.org>; Thu, 03 Jul 2008 22:54:27 -0700 (PDT)
+Message-ID: <fa686aa40807032254j76dd1892y7af76c1a2d555809@mail.gmail.com>
+Date: Thu, 3 Jul 2008 23:54:26 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Jon Smirl" <jonsmirl@gmail.com>
+Subject: Re: linux-next: manual merge of the powerpc tree
+In-Reply-To: <20080703152453.GB2284@secretlab.ca>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <BE229B94-773D-4FA8-AFD0-E46F5887F8D3@kernel.crashing.org>
-Sender: Grant Likely <glikely@secretlab.ca>
-Cc: Scott Wood <scottwood@freescale.com>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20080703133905.7b6f058f.sfr@canb.auug.org.au>
+	<20080703054739.GA643@secretlab.ca>
+	<9e4733910807030522h1aa0bl1801ecc5fc877c25@mail.gmail.com>
+	<20080703152453.GB2284@secretlab.ca>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linuxppc-dev@ozlabs.org,
+	linux-next@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+	Jean Delvare <khali@linux-fr.org>, Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,38 +29,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jul 03, 2008 at 01:38:17PM -0500, Kumar Gala wrote:
->
-> On Jul 3, 2008, at 1:34 PM, Grant Likely wrote:
->
->> On Thu, Jul 3, 2008 at 12:28 PM, Scott Wood <scottwood@freescale.com> 
->> wrote:
->>> Documentation/powerpc/device-tree/fsl/cpm.txt
->>> Documentation/powerpc/device-tree/fsl/cpm/uart.txt
->>> Documentation/powerpc/device-tree/fsl/tsec.txt
->>> Documentation/powerpc/device-tree/interrupts.txt
->>> Documentation/powerpc/device-tree/dtb.txt
+On Thu, Jul 3, 2008 at 9:24 AM, Grant Likely <grant.likely@secretlab.ca> wrote:
+> On Thu, Jul 03, 2008 at 08:22:18AM -0400, Jon Smirl wrote:
+>> Testing was good when the patch was initially posted in January. In
+>> the last six months the initial patch set has been sliced and diced
+>> into a bunch of different pieces but the contents of this patch are
+>> essentially unchanged.
 >>
->> May I suggest moving it to Documentation/of-bindings/ instead?  Some
->> of these bindings (granted, not the fsl ones) will be used by
->> non-powerpc platforms (sparc, microblaze).
+>> I don't care which tree it uses to get to mainline, I'd just like to
+>> see it get merged.
 >
-> I think the powerpc bindings should still be under Docs/powerpc/of- 
-> bindings/
->
-> It makes it cleaner in that each arch/sub-arch maintainer can maintain  
-> Docs/<arch>/of-bindings and we can all vet changes to Docs/of-bindings
+> Me too, but it is used by some of the mpc8xxx platforms too, so I'd like
+> to see an ack from one of those users also.
 
-Personally, I think it would still be better to keep everything in one
-place, even if large parts of it are arch specific.  I think it would
-encourage people to look across architecture boundaries when looking for
-examples of how to document device tree bindings.  It would also
-discourage accidental duplication for parts that end up being used in
-more than one architectures (ie. spi and i2c devices).  Not everyone is
-going to be well versed on the rules of what bindings should be arch
-specific and what should go in the common dir.  It will make everyone's
-life easier if there is only one place to look.
+Okay, I've tested it on my board.  All looks good to me.  I'd prefer
+to hear back from one of the Freescale folks, but on a second reading
+I think it is pretty safe.  I'll make sure any merge conflicts are
+resolved.
 
-(oh, and I think the subdirectories by manufacturer is a good layout).
+Jean, is it okay with you to drop it from your tree and merge it through mine?
 
+Cheers,
 g.
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
