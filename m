@@ -1,21 +1,20 @@
-Return-Path: <dhbaird@gmail.com>
-Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.235])
-	by ozlabs.org (Postfix) with ESMTP id 6BC74DDEED
+Return-Path: <sr@denx.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id 36882DDDD8
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  4 Jul 2008 12:02:42 +1000 (EST)
-Received: by rv-out-0506.google.com with SMTP id f6so1060084rvb.9
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 03 Jul 2008 19:02:40 -0700 (PDT)
-Message-ID: <440abda90807031902u766eb4dby932e8741e947488e@mail.gmail.com>
-Date: Thu, 3 Jul 2008 20:02:40 -0600
-From: "David Baird" <dhbaird@gmail.com>
-To: "Lorenzo T. Flores" <lorenzo@alphagolf.com>
-Subject: Re: booting an ML405
-In-Reply-To: <486D774A.7000102@alphagolf.com>
+	Fri,  4 Jul 2008 18:10:53 +1000 (EST)
+From: Stefan Roese <sr@denx.de>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: Need stable 2.6 kernel for TQM823L
+Date: Fri, 4 Jul 2008 10:10:48 +0200
+References: <200807021418.13596.tmaenner@aehr.com>
+	<20080703190440.GA3098@secretlab.ca>
+	<200807031839.19123.tmaenner@aehr.com>
+In-Reply-To: <200807031839.19123.tmaenner@aehr.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <486D774A.7000102@alphagolf.com>
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200807041010.48740.sr@denx.de>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -26,28 +25,33 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jul 3, 2008 at 7:05 PM, Lorenzo T. Flores <lorenzo@alphagolf.com> wrote:
-> I'm trying to compile the Xilinx patched kernel tree (v2.6.25-rc9) and run
-> it on an ML405
->
-> So far, I get to the following point in the boot sequence:
->
-> loaded at:     00400000 005AF5A0
-> board data at: 005AD524 005AD5A0
-> relocated to:  00405058 004050D4
-> zimage at:     00405E90 0051D6CC
-> initrd at:     0051E000 005ACC0D
-> avail ram:     005B0000 80000000
->
-> Linux/PPC load: console=ttyS0,9600 ip=on root=/dev/ram rw
-> Uncompressing Linux...done.
-> Now booting the kernel
->
-> The system hangs after it says "Now booting the kernel."
+Hi Tom,
 
-This seems to come up a lot, so I'm surprised you didn't find it in
-the archives ;-)
+On Friday 04 July 2008, Thomas Maenner wrote:
+> > arch/ppc is depreciated and will disappear in 2.6.27.  I don't know if
+> > anyone is actively keeping 8xx support working in arch/ppc so you may
+> > experience significant breakage.
+> >
+> > g.
+>
+> Not exactly what I was hoping to hear...
+>
+> What are the reasons to not port these TQs to 2.6?
+> Lack of resources? Not enough interest?
 
-Are you using uartlite?  You'll need to change the "console" option if you are.
+We (DENX) have been maintaining those TQM8xx boards (U-Boot & Linux). But till 
+now nobody asked us to port these over to arch/powerpc. You may understand 
+that we won't do this "just for fun". If you are interested in an 
+arch/powerpc port for these boards, we could do this of course. Please 
+contact me off list if you are interested in such a project.
 
--David
+Thanks.
+
+Best regards,
+Stefan
+
+=====================================================================
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: +49-8142-66989-0 Fax: +49-8142-66989-80  Email: office@denx.de
+=====================================================================
