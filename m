@@ -1,25 +1,25 @@
 Return-Path: <rcjenn@linux.vnet.ibm.com>
-Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
+Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id E09D5DE801
-	for <linuxppc-dev@ozlabs.org>; Fri,  4 Jul 2008 22:52:36 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e5.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m64CqUDM005686
-	for <linuxppc-dev@ozlabs.org>; Fri, 4 Jul 2008 08:52:30 -0400
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
-	m64CqU3q235530
-	for <linuxppc-dev@ozlabs.org>; Fri, 4 Jul 2008 08:52:30 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m64CqUfP006785
-	for <linuxppc-dev@ozlabs.org>; Fri, 4 Jul 2008 08:52:30 -0400
-Date: Fri, 4 Jul 2008 07:52:21 -0500
+	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 6D48DDDF44
+	for <linuxppc-dev@ozlabs.org>; Fri,  4 Jul 2008 22:52:55 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e4.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m64CqpZG005827
+	for <linuxppc-dev@ozlabs.org>; Fri, 4 Jul 2008 08:52:51 -0400
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
+	m64Cqpqi148574
+	for <linuxppc-dev@ozlabs.org>; Fri, 4 Jul 2008 08:52:51 -0400
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m64Cqpa9032469
+	for <linuxppc-dev@ozlabs.org>; Fri, 4 Jul 2008 08:52:51 -0400
+Date: Fri, 4 Jul 2008 07:52:42 -0500
 From: Robert Jennings <rcj@linux.vnet.ibm.com>
 To: paulus@samba.org
 Subject: [PATCH 05/16 v3] powerpc: Enable CMO feature during platform setup
-Message-ID: <20080704125221.GF1310@linux.vnet.ibm.com>
+Message-ID: <20080704125242.GG1310@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 In-Reply-To: <20080704124449.GA1310@linux.vnet.ibm.com>
