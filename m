@@ -1,28 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
+Return-Path: <segher@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 8467FDDF12
-	for <linuxppc-dev@ozlabs.org>; Sat,  5 Jul 2008 08:59:12 +1000 (EST)
-Subject: Re: the printk problem
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Matthew Wilcox <matthew@wil.cx>
-In-Reply-To: <20080704204252.GM14894@parisc-linux.org>
-References: <20080625131101.GA6205@digi.com> <20080704104634.GA31634@digi.com>
-	<20080704111540.ddffd241.akpm@linux-foundation.org>
-	<alpine.LFD.1.10.0807041147450.2815@woody.linux-foundation.org>
-	<alpine.LFD.1.10.0807041250220.2815@woody.linux-foundation.org>
-	<20080704132716.f1e12554.akpm@linux-foundation.org>
-	<20080704204252.GM14894@parisc-linux.org>
-Content-Type: text/plain
-Date: Sat, 05 Jul 2008 08:58:56 +1000
-Message-Id: <1215212336.8970.6.camel@pasglop>
-Mime-Version: 1.0
-Cc: linux-ia64@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Peter Anvin <hpa@zytor.com>, Andrew Morton <akpm@linux-foundation.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	"David S. Miller" <davem@davemloft.net>
-Reply-To: benh@kernel.crashing.org
+	by ozlabs.org (Postfix) with ESMTPS id 04503DDF23
+	for <linuxppc-dev@ozlabs.org>; Sat,  5 Jul 2008 08:59:32 +1000 (EST)
+In-Reply-To: <20080703185312.GA6043@polina.dev.rtsoft.ru>
+References: <40B88BFD-1FEB-4E36-9917-54C7380FF801@kernel.crashing.org>
+	<20080703185312.GA6043@polina.dev.rtsoft.ru>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <98d1b0ab793622085b72839f25095151@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: New fsl device bindings file
+Date: Sat, 5 Jul 2008 00:59:17 +0200
+To: avorontsov@ru.mvista.com
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,12 +24,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+> Just curious... why we're maintaining documentation in the .txt file?
 
-> u64 is easy to fix, and I don't know why we haven't.  Just make it
-> unsigned long long on all architectures.
+Because it is human-readable text?
 
-Yup. Also, one of the major user of that is to print a struct resource,
-which everybody does differently, so we may even look at doing a %pR
-that does the nice start..end [attr]..
+> Or is this too wild? :-)
 
-Ben.
+Yes :-)
+
+
+Segher
