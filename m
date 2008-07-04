@@ -1,27 +1,27 @@
 Return-Path: <rcjenn@linux.vnet.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 17BC4DDEE4
-	for <linuxppc-dev@ozlabs.org>; Fri,  4 Jul 2008 22:52:02 +1000 (EST)
+	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 46641DE5D0
+	for <linuxppc-dev@ozlabs.org>; Fri,  4 Jul 2008 22:52:20 +1000 (EST)
 Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
 	[9.17.195.106])
-	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m64Cpv27009449
-	for <linuxppc-dev@ozlabs.org>; Fri, 4 Jul 2008 08:51:57 -0400
+	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m64CqGM6010003
+	for <linuxppc-dev@ozlabs.org>; Fri, 4 Jul 2008 08:52:16 -0400
 Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
 	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
-	m64CpvG5177640
-	for <linuxppc-dev@ozlabs.org>; Fri, 4 Jul 2008 06:51:57 -0600
+	m64CqGYB177662
+	for <linuxppc-dev@ozlabs.org>; Fri, 4 Jul 2008 06:52:16 -0600
 Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
 	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m64CpuOA030133
-	for <linuxppc-dev@ozlabs.org>; Fri, 4 Jul 2008 06:51:56 -0600
-Date: Fri, 4 Jul 2008 07:51:47 -0500
+	m64CqGav031062
+	for <linuxppc-dev@ozlabs.org>; Fri, 4 Jul 2008 06:52:16 -0600
+Date: Fri, 4 Jul 2008 07:52:07 -0500
 From: Robert Jennings <rcj@linux.vnet.ibm.com>
 To: paulus@samba.org
-Subject: [PATCH 03/16 v3] powerpc: Add memory entitlement capabilities to
-	/proc/ppc64/lparcfg
-Message-ID: <20080704125147.GD1310@linux.vnet.ibm.com>
+Subject: [PATCH 04/16 v3] powerpc: Split retrieval of processor entitlement
+	data into a helper routine
+Message-ID: <20080704125207.GE1310@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 In-Reply-To: <20080704124449.GA1310@linux.vnet.ibm.com>
@@ -38,19 +38,16 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 =46rom: Nathan Fontenot <nfont@austin.ibm.com>
 
-Update /proc/ppc64/lparcfg to enable displaying of Cooperative Memory
-Overcommitment statistics as reported by the H_GET_MPP hcall.  This also
-updates the lparcfg interface to allow setting memory entitlement and
-weight.
+Split the retrieval of processor entitlement data returned in the H_GET_PPP
+hcall into its own helper routine.
 
 Signed-off-by: Nathan Fontenot <nfont@austin.ibm.com>
 Signed-off-by: Robert Jennings <rcj@linux.vnet.ibm.com>
 
 ---
- arch/powerpc/kernel/lparcfg.c |  119 +++++++++++++++++++++++++++++++++++++=
-+++++
- include/asm-powerpc/hvcall.h  |   18 ++++++
- 2 files changed, 136 insertions(+), 1 deletion(-)
+ arch/powerpc/kernel/lparcfg.c |   80 ++++++++++++++++++++++++-------------=
+-----
+ 1 file changed, 45 insertions(+), 35 deletions(-)
 
 Index: b/arch/powerpc/kernel/lparcfg.c
 =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
@@ -58,196 +55,151 @@ Index: b/arch/powerpc/kernel/lparcfg.c
 =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
 --- a/arch/powerpc/kernel/lparcfg.c
 +++ b/arch/powerpc/kernel/lparcfg.c
-@@ -129,6 +129,35 @@ static int iseries_lparcfg_data(struct s
- /*
-  * Methods used to fetch LPAR data when running on a pSeries platform.
-  */
-+/**
-+ * h_get_mpp
-+ * H_GET_MPP hcall returns info in 7 parms
-+ */
-+int h_get_mpp(struct hvcall_mpp_data *mpp_data)
-+{
-+	int rc;
-+	unsigned long retbuf[PLPAR_HCALL9_BUFSIZE];
-+
-+	rc =3D plpar_hcall9(H_GET_MPP, retbuf);
-+
-+	mpp_data->entitled_mem =3D retbuf[0];
-+	mpp_data->mapped_mem =3D retbuf[1];
-+
-+	mpp_data->group_num =3D (retbuf[2] >> 2 * 8) & 0xffff;
-+	mpp_data->pool_num =3D retbuf[2] & 0xffff;
-+
-+	mpp_data->mem_weight =3D (retbuf[3] >> 7 * 8) & 0xff;
-+	mpp_data->unallocated_mem_weight =3D (retbuf[3] >> 6 * 8) & 0xff;
-+	mpp_data->unallocated_entitlement =3D retbuf[3] & 0xffffffffffff;
-+
-+	mpp_data->pool_size =3D retbuf[4];
-+	mpp_data->loan_request =3D retbuf[5];
-+	mpp_data->backing_mem =3D retbuf[6];
-+
-+	return rc;
-+}
-+EXPORT_SYMBOL(h_get_mpp);
+@@ -158,6 +158,18 @@ int h_get_mpp(struct hvcall_mpp_data *mp
+ }
+ EXPORT_SYMBOL(h_get_mpp);
+=20
++struct hvcall_ppp_data {
++	u64	entitlement;
++	u64	unallocated_entitlement;
++	u16	group_num;
++	u16	pool_num;
++	u8	capped;
++	u8	weight;
++	u8	unallocated_weight;
++	u16	active_procs_in_pool;
++	u16	active_system_procs;
++};
 +
  /*
   * H_GET_PPP hcall returns info in 4 parms.
   *  entitled_capacity,unallocated_capacity,
-@@ -226,6 +255,44 @@ static void parse_ppp_data(struct seq_fi
- 	seq_printf(m, "unallocated_capacity=3D%ld\n", h_unallocated);
+@@ -178,20 +190,24 @@ EXPORT_SYMBOL(h_get_mpp);
+  *              XXXX - Active processors in Physical Processor Pool.
+  *                  XXXX  - Processors active on platform.
+  */
+-static unsigned int h_get_ppp(unsigned long *entitled,
+-			      unsigned long *unallocated,
+-			      unsigned long *aggregation,
+-			      unsigned long *resource)
++static unsigned int h_get_ppp(struct hvcall_ppp_data *ppp_data)
+ {
+ 	unsigned long rc;
+ 	unsigned long retbuf[PLPAR_HCALL_BUFSIZE];
+=20
+ 	rc =3D plpar_hcall(H_GET_PPP, retbuf);
+=20
+-	*entitled =3D retbuf[0];
+-	*unallocated =3D retbuf[1];
+-	*aggregation =3D retbuf[2];
+-	*resource =3D retbuf[3];
++	ppp_data->entitlement =3D retbuf[0];
++	ppp_data->unallocated_entitlement =3D retbuf[1];
++
++	ppp_data->group_num =3D (retbuf[2] >> 2 * 8) & 0xffff;
++	ppp_data->pool_num =3D retbuf[2] & 0xffff;
++
++	ppp_data->capped =3D (retbuf[3] >> 6 * 8) & 0x01;
++	ppp_data->weight =3D (retbuf[3] >> 5 * 8) & 0xff;
++	ppp_data->unallocated_weight =3D (retbuf[3] >> 4 * 8) & 0xff;
++	ppp_data->active_procs_in_pool =3D (retbuf[3] >> 2 * 8) & 0xffff;
++	ppp_data->active_system_procs =3D retbuf[3] & 0xffff;
+=20
+ 	return rc;
+ }
+@@ -216,29 +232,27 @@ static unsigned h_pic(unsigned long *poo
+  */
+ static void parse_ppp_data(struct seq_file *m)
+ {
+-	unsigned long h_entitled, h_unallocated;
+-	unsigned long h_aggregation, h_resource;
++	struct hvcall_ppp_data ppp_data;
+ 	int rc;
+=20
+-	rc =3D h_get_ppp(&h_entitled, &h_unallocated, &h_aggregation,
+-		       &h_resource);
++	rc =3D h_get_ppp(&ppp_data);
+ 	if (rc)
+ 		return;
+=20
+-	seq_printf(m, "partition_entitled_capacity=3D%ld\n", h_entitled);
+-	seq_printf(m, "group=3D%ld\n", (h_aggregation >> 2 * 8) & 0xffff);
+-	seq_printf(m, "system_active_processors=3D%ld\n",
+-		   (h_resource >> 0 * 8) & 0xffff);
++	seq_printf(m, "partition_entitled_capacity=3D%ld\n",
++	           ppp_data.entitlement);
++	seq_printf(m, "group=3D%d\n", ppp_data.group_num);
++	seq_printf(m, "system_active_processors=3D%d\n",
++	           ppp_data.active_system_procs);
+=20
+ 	/* pool related entries are apropriate for shared configs */
+ 	if (lppaca[0].shared_proc) {
+ 		unsigned long pool_idle_time, pool_procs;
+=20
+-		seq_printf(m, "pool=3D%ld\n", (h_aggregation >> 0 * 8) & 0xffff);
++		seq_printf(m, "pool=3D%d\n", ppp_data.pool_num);
+=20
+ 		/* report pool_capacity in percentage */
+-		seq_printf(m, "pool_capacity=3D%ld\n",
+-			   ((h_resource >> 2 * 8) & 0xffff) * 100);
++		seq_printf(m, "pool_capacity=3D%d\n", ppp_data.group_num * 100);
+=20
+ 		rc =3D h_pic(&pool_idle_time, &pool_procs);
+ 		if (! rc) {
+@@ -247,12 +261,12 @@ static void parse_ppp_data(struct seq_fi
+ 		}
+ 	}
+=20
+-	seq_printf(m, "unallocated_capacity_weight=3D%ld\n",
+-		   (h_resource >> 4 * 8) & 0xFF);
+-
+-	seq_printf(m, "capacity_weight=3D%ld\n", (h_resource >> 5 * 8) & 0xFF);
+-	seq_printf(m, "capped=3D%ld\n", (h_resource >> 6 * 8) & 0x01);
+-	seq_printf(m, "unallocated_capacity=3D%ld\n", h_unallocated);
++	seq_printf(m, "unallocated_capacity_weight=3D%d\n",
++		   ppp_data.unallocated_weight);
++	seq_printf(m, "capacity_weight=3D%d\n", ppp_data.weight);
++	seq_printf(m, "capped=3D%d\n", ppp_data.capped);
++	seq_printf(m, "unallocated_capacity=3D%ld\n",
++		   ppp_data.unallocated_entitlement);
  }
 =20
-+/**
-+ * parse_mpp_data
-+ * Parse out data returned from h_get_mpp
-+ */
-+static void parse_mpp_data(struct seq_file *m)
-+{
-+	struct hvcall_mpp_data mpp_data;
-+	int rc;
-+
-+	rc =3D h_get_mpp(&mpp_data);
-+	if (rc)
-+		return;
-+
-+	seq_printf(m, "entitled_memory=3D%ld\n", mpp_data.entitled_mem);
-+
-+	if (mpp_data.mapped_mem !=3D -1)
-+		seq_printf(m, "mapped_entitled_memory=3D%ld\n",
-+		           mpp_data.mapped_mem);
-+
-+	seq_printf(m, "entitled_memory_group_number=3D%d\n", mpp_data.group_num);
-+	seq_printf(m, "entitled_memory_pool_number=3D%d\n", mpp_data.pool_num);
-+
-+	seq_printf(m, "entitled_memory_weight=3D%d\n", mpp_data.mem_weight);
-+	seq_printf(m, "unallocated_entitled_memory_weight=3D%d\n",
-+	           mpp_data.unallocated_mem_weight);
-+	seq_printf(m, "unallocated_io_mapping_entitlement=3D%ld\n",
-+	           mpp_data.unallocated_entitlement);
-+
-+	if (mpp_data.pool_size !=3D -1)
-+		seq_printf(m, "entitled_memory_pool_size=3D%ld bytes\n",
-+		           mpp_data.pool_size);
-+
-+	seq_printf(m, "entitled_memory_loan_request=3D%ld\n",
-+	           mpp_data.loan_request);
-+
-+	seq_printf(m, "backing_memory=3D%ld bytes\n", mpp_data.backing_mem);
-+}
-+
- #define SPLPAR_CHARACTERISTICS_TOKEN 20
- #define SPLPAR_MAXLENGTH 1026*(sizeof(char))
+ /**
+@@ -451,31 +465,27 @@ static int pseries_lparcfg_data(struct s
 =20
-@@ -353,6 +420,7 @@ static int pseries_lparcfg_data(struct s
- 		/* this call handles the ibm,get-system-parameter contents */
- 		parse_system_parameter_string(m);
- 		parse_ppp_data(m);
-+		parse_mpp_data(m);
-=20
- 		seq_printf(m, "purr=3D%ld\n", get_purr());
- 	} else {		/* non SPLPAR case */
-@@ -416,6 +484,43 @@ static ssize_t update_ppp(u64 *entitleme
- 	return retval;
- }
-=20
-+/**
-+ * update_mpp
-+ *
-+ * Update the memory entitlement and weight for the partition.  Caller must
-+ * specify either a new entitlement or weight, not both, to be updated
-+ * since the h_set_mpp call takes both entitlement and weight as parameter=
-s.
-+ */
-+static ssize_t update_mpp(u64 *entitlement, u8 *weight)
-+{
-+	struct hvcall_mpp_data mpp_data;
-+	u64 new_entitled;
+ static ssize_t update_ppp(u64 *entitlement, u8 *weight)
+ {
+-	unsigned long current_entitled;
+-	unsigned long dummy;
+-	unsigned long resource;
+-	u8 current_weight, new_weight;
++	struct hvcall_ppp_data ppp_data;
 +	u8 new_weight;
-+	ssize_t rc;
-+
-+	rc =3D h_get_mpp(&mpp_data);
-+	if (rc)
-+		return rc;
-+
-+	if (entitlement) {
-+		new_weight =3D mpp_data.mem_weight;
-+		new_entitled =3D *entitlement;
-+	} else if (weight) {
-+		new_weight =3D *weight;
-+		new_entitled =3D mpp_data.entitled_mem;
-+	} else
-+		return -EINVAL;
-+
-+	pr_debug("%s: current_entitled =3D %lu, current_weight =3D %u\n",
-+	         __FUNCTION__, mpp_data.entitled_mem, mpp_data.mem_weight);
-+
-+	pr_debug("%s: new_entitled =3D %lu, new_weight =3D %u\n",
-+	         __FUNCTION__, new_entitled, new_weight);
-+
-+	rc =3D plpar_hcall_norets(H_SET_MPP, new_entitled, new_weight);
-+	return rc;
-+}
-+
- /*
-  * Interface for changing system parameters (variable capacity weight
-  * and entitled capacity).  Format of input is "param_name=3Dvalue";
-@@ -469,6 +574,20 @@ static ssize_t lparcfg_write(struct file
- 			goto out;
+ 	u64 new_entitled;
+ 	ssize_t retval;
 =20
- 		retval =3D update_ppp(NULL, new_weight_ptr);
-+	} else if (!strcmp(kbuf, "entitled_memory")) {
-+		char *endp;
-+		*new_entitled_ptr =3D (u64) simple_strtoul(tmp, &endp, 10);
-+		if (endp =3D=3D tmp)
-+			goto out;
-+
-+		retval =3D update_mpp(new_entitled_ptr, NULL);
-+	} else if (!strcmp(kbuf, "entitled_memory_weight")) {
-+		char *endp;
-+		*new_weight_ptr =3D (u8) simple_strtoul(tmp, &endp, 10);
-+		if (endp =3D=3D tmp)
-+			goto out;
-+
-+		retval =3D update_mpp(NULL, new_weight_ptr);
+ 	/* Get our current parameters */
+-	retval =3D h_get_ppp(&current_entitled, &dummy, &dummy, &resource);
++	retval =3D h_get_ppp(&ppp_data);
+ 	if (retval)
+ 		return retval;
+=20
+-	current_weight =3D (resource >> 5 * 8) & 0xFF;
+-
+ 	if (entitlement) {
+-		new_weight =3D current_weight;
++		new_weight =3D ppp_data.weight;
+ 		new_entitled =3D *entitlement;
+ 	} else if (weight) {
+ 		new_weight =3D *weight;
+-		new_entitled =3D current_entitled;
++		new_entitled =3D ppp_data.entitlement;
  	} else
- 		goto out;
+ 		return -EINVAL;
 =20
-Index: b/include/asm-powerpc/hvcall.h
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- a/include/asm-powerpc/hvcall.h
-+++ b/include/asm-powerpc/hvcall.h
-@@ -210,7 +210,9 @@
- #define H_JOIN			0x298
- #define H_VASI_STATE            0x2A4
- #define H_ENABLE_CRQ		0x2B0
--#define MAX_HCALL_OPCODE	H_ENABLE_CRQ
-+#define H_SET_MPP		0x2D0
-+#define H_GET_MPP		0x2D4
-+#define MAX_HCALL_OPCODE	H_GET_MPP
+ 	pr_debug("%s: current_entitled =3D %lu, current_weight =3D %u\n",
+-		 __FUNCTION__, current_entitled, current_weight);
++	         __FUNCTION__, ppp_data.entitlement, ppp_data.weight);
 =20
- #ifndef __ASSEMBLY__
-=20
-@@ -270,6 +272,20 @@ struct hcall_stats {
- };
- #define HCALL_STAT_ARRAY_SIZE	((MAX_HCALL_OPCODE >> 2) + 1)
-=20
-+struct hvcall_mpp_data {
-+	unsigned long entitled_mem;
-+	unsigned long mapped_mem;
-+	unsigned short group_num;
-+	unsigned short pool_num;
-+	unsigned char mem_weight;
-+	unsigned char unallocated_mem_weight;
-+	unsigned long unallocated_entitlement;  /* value in bytes */
-+	unsigned long pool_size;
-+	signed long loan_request;
-+	unsigned long backing_mem;
-+};
-+
-+int h_get_mpp(struct hvcall_mpp_data *);
- #endif /* __ASSEMBLY__ */
- #endif /* __KERNEL__ */
- #endif /* _ASM_POWERPC_HVCALL_H */
+ 	pr_debug("%s: new_entitled =3D %lu, new_weight =3D %u\n",
+ 		 __FUNCTION__, new_entitled, new_weight);
