@@ -1,18 +1,25 @@
-Return-Path: <olof@lixom.net>
-Received: from elcamino.pasemi.com (elcamino.pasemi.com [67.155.108.98])
-	by ozlabs.org (Postfix) with ESMTP id D99DCDDE17
-	for <linuxppc-dev@ozlabs.org>; Sun,  6 Jul 2008 03:51:44 +1000 (EST)
-Message-Id: <8B28A4E9-CDFF-46F1-80A5-08B6A8DFEA8D@lixom.net>
-From: Olof Johansson <olof@lixom.net>
-To: Robert Jennings <rcj@linux.vnet.ibm.com>
-In-Reply-To: <20080704125459.GM1310@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v926)
-Subject: Re: [PATCH 10/16 v3] powerpc: iommu enablement for CMO
-Date: Sat, 5 Jul 2008 12:51:41 -0500
-References: <20080704125459.GM1310@linux.vnet.ibm.com>
-Cc: Brian King <brking@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org,
-	paulus@samba.org, David Darrington <ddarring@linux.vnet.ibm.com>
+Return-Path: <torvalds@linux-foundation.org>
+Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
+	[140.211.169.13])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "smtp.linux-foundation.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 151B8DDEF2
+	for <linuxppc-dev@ozlabs.org>; Sun,  6 Jul 2008 03:57:52 +1000 (EST)
+Date: Sat, 5 Jul 2008 10:56:54 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+Subject: Re: the printk problem
+In-Reply-To: <20080705125230.GA20166@damson.getinternet.no>
+Message-ID: <alpine.LFD.1.10.0807051045520.2815@woody.linux-foundation.org>
+References: <20080705125230.GA20166@damson.getinternet.no>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linux-ia64@vger.kernel.org, Matthew Wilcox <matthew@wil.cx>,
+	linux-kernel@vger.kernel.org,
+	Jan Engelhardt <jengelh@medozas.de>, linuxppc-dev@ozlabs.org,
+	Peter Anvin <hpa@zytor.com>, Andrew Morton <akpm@linux-foundation.org>,
+	"David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,36 +29,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
 
-On Jul 4, 2008, at 7:54 AM, Robert Jennings wrote:
 
-> To support Cooperative Memory Overcommitment (CMO), we need to check
-> for failure from some of the tce hcalls.
->
-> These changes for the pseries platform affect the powerpc  
-> architecture;
-> patches for the other affected platforms are included in this patch.
->
-> pSeries platform IOMMU code changes:
-> * platform TCE functions must handle H_NOT_ENOUGH_RESOURCES errors and
->   return an error.
->
-> Architecture IOMMU code changes:
-> * Calls to ppc_md.tce_build need to check return values and return
->   DMA_MAPPING_ERROR for transient errors.
->
-> Architecture changes:
-> * struct machdep_calls for tce_build*_pSeriesLP functions need to  
-> change
->   to indicate failure.
-> * all other platforms will need updates to iommu functions to match  
-> the new
->   calling semantics; they will return 0 on success.  The other  
-> platforms
->   default configs have been built, but no further testing was  
-> performed.
->
-> Signed-off-by: Robert Jennings <rcj@linux.vnet.ibm.com>
+On Sat, 5 Jul 2008, Vegard Nossum wrote:
 
-Acked-by: Olof Johansson <olof@lixom.net>
+> On Sat, Jul 5, 2008 at 1:33 PM, Jan Engelhardt <jengelh@medozas.de> wrote:
+> >
+> > On Saturday 2008-07-05 00:01, Andrew Morton wrote:
+> >>
+> >>We don't know how much interest there would be in churning NIPQUAD from
+> >>the net guys.  Interestingly, there's also %C (wint_t) which is a
+> >>32-bit quantity.  So we could just go and say "%C prints an ipv4
+> >>address" and be done with it.  But there's no way of doing that for
+> >>ipv6 addresses so things would become asymmetrical there.
+> >
+> >        struct in6_addr src;
+> >        printk("Source address: %p{ipv6}\n", &src);
+> >
+> > How about %p{feature}?
+
+No.
+
+I _expressly_ chose '%p[alphanumeric]*' because it's basically 
+totally insane to have that in a *real* printk() string: the end result 
+would be totally unreadable.
+
+In contrast, '%p[specialchar]' is not unreadable, and in fact we have lots 
+of those already in the kernel. In fact, there are 40 occurrences of '%p{' 
+in the kernel, just grep for it (especially the AFS code seems to be very 
+happy to use that kind of printout in its debug statements).
+
+So it makes perfect sense to have a _real_ printk string that says
+
+	"BUG: Dentry %p{i=%lx,n=%s}"
+
+where we have that '%p{...' sequence: the end result is easily parseable. 
+In contrast, anybody who uses '%pS' or something like that and expects a 
+pointer name to be immediately followed by teh letter 'S' is simply 
+insane, because the end result is an unreadable mess.
+
+> (It's hard on the stack, yes, I know. We should fix kallsyms.)
+
+Not just that, but it's broken when KALLSYMS is disabled. Look at what 
+sprint_symbol() becomes.
+
+The patch I already sent out is about a million times better, because it 
+avoids all these issues, and knows about subtle issues like the difference 
+between a direct pointer and a pointer to a function descriptor. 
+
+		Linus
