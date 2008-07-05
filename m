@@ -1,21 +1,31 @@
-Return-Path: <jochen@scram.de>
-Received: from mail.scram.de (mail0.scram.de [78.47.204.202])
+Return-Path: <jengelh@medozas.de>
+Received: from sovereign.computergmbh.de (sovereign.computergmbh.de
+	[85.214.69.204])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.scram.de",
-	Issuer "StartCom Class 1 Primary Intermediate Server CA" (not
-	verified)) by ozlabs.org (Postfix) with ESMTPS id 74F86DDEDC
-	for <linuxppc-dev@ozlabs.org>; Sat,  5 Jul 2008 21:34:28 +1000 (EST)
-Message-ID: <486F5C53.10801@scram.de>
-Date: Sat, 05 Jul 2008 13:34:43 +0200
-From: Jochen Friedrich <jochen@scram.de>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id B6573DDF0A
+	for <linuxppc-dev@ozlabs.org>; Sat,  5 Jul 2008 21:39:14 +1000 (EST)
+Date: Sat, 5 Jul 2008 13:33:29 +0200 (CEST)
+From: Jan Engelhardt <jengelh@medozas.de>
+Sender: jengelh@sovereign.computergmbh.de
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: the printk problem
+In-Reply-To: <20080704150100.1f7b8a65.akpm@linux-foundation.org>
+Message-ID: <alpine.LNX.1.10.0807051332200.28765@fbirervta.pbzchgretzou.qr>
+References: <20080625131101.GA6205@digi.com> <20080704104634.GA31634@digi.com>
+	<20080704111540.ddffd241.akpm@linux-foundation.org>
+	<alpine.LFD.1.10.0807041147450.2815@woody.linux-foundation.org>
+	<alpine.LFD.1.10.0807041250220.2815@woody.linux-foundation.org>
+	<20080704132716.f1e12554.akpm@linux-foundation.org>
+	<20080704204252.GM14894@parisc-linux.org>
+	<20080704150100.1f7b8a65.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: New fsl device bindings file
-References: <40B88BFD-1FEB-4E36-9917-54C7380FF801@kernel.crashing.org>
-	<486D1A58.8010403@freescale.com>
-In-Reply-To: <486D1A58.8010403@freescale.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linux-ia64@vger.kernel.org, Matthew Wilcox <matthew@wil.cx>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Peter Anvin <hpa@zytor.com>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	"David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,21 +35,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Scott,
 
->> I'm going to move all the Freescale SoC related bindings into this new 
->> file.  One of the aspects of the new file is we will NOT having an 
->> ordinal heading index.
-> 
-> How about splitting up like this:
-> 
-> Documentation/powerpc/device-tree/fsl/cpm.txt
-> Documentation/powerpc/device-tree/fsl/cpm/uart.txt
-> Documentation/powerpc/device-tree/fsl/tsec.txt
-> Documentation/powerpc/device-tree/interrupts.txt
-> Documentation/powerpc/device-tree/dtb.txt
+On Saturday 2008-07-05 00:01, Andrew Morton wrote:
+>
+>We don't know how much interest there would be in churning NIPQUAD from
+>the net guys.  Interestingly, there's also %C (wint_t) which is a
+>32-bit quantity.  So we could just go and say "%C prints an ipv4
+>address" and be done with it.  But there's no way of doing that for
+>ipv6 addresses so things would become asymmetrical there.
 
-Sounds reasonable.
+	struct in6_addr src;
+	printk("Source address: %p{ipv6}\n", &src);
 
-Thanks,
-Jochen
+How about %p{feature}?
