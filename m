@@ -1,20 +1,20 @@
-Return-Path: <olof@lixom.net>
-Received: from elcamino.pasemi.com (elcamino.pasemi.com [67.155.108.98])
-	by ozlabs.org (Postfix) with ESMTP id 2A726DDE20
-	for <linuxppc-dev@ozlabs.org>; Sat,  5 Jul 2008 15:24:58 +1000 (EST)
-Message-Id: <8C77F02F-E930-40EB-AE25-F959C40833B3@lixom.net>
-From: Olof Johansson <olof@lixom.net>
-To: Grant Likely <grant.likely@secretlab.ca>
-In-Reply-To: <fa686aa40807031134s4ddd0cabj1b31d3ee2d9d2258@mail.gmail.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v926)
-Subject: Re: New fsl device bindings file
-Date: Sat, 5 Jul 2008 00:24:56 -0500
-References: <40B88BFD-1FEB-4E36-9917-54C7380FF801@kernel.crashing.org>
-	<486D1A58.8010403@freescale.com>
-	<fa686aa40807031134s4ddd0cabj1b31d3ee2d9d2258@mail.gmail.com>
-Cc: Scott Wood <scottwood@freescale.com>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [Cbe-oss-dev] [patch 11/11] powerpc/cell: Add
+	DMA_ATTR_STRONG_ORDERING dma attribute and use in IOMMU code
+From: Michael Ellerman <michael@ellerman.id.au>
+To: arnd@arndb.de
+In-Reply-To: <20080704190806.964824190@arndb.de>
+References: <20080704190535.316377278@arndb.de>
+	<20080704190806.964824190@arndb.de>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-fHzaPPedJRJzdagYu5Wz"
+Date: Sat, 05 Jul 2008 15:43:04 +1000
+Message-Id: <1215236584.7424.2.camel@localhost>
+Mime-Version: 1.0
+Cc: Paul Mackerras <paulus@samba.org>, cbe-oss-dev@ozlabs.org,
+	linuxppc-dev@ozlabs.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,28 +25,51 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Jul 3, 2008, at 1:34 PM, Grant Likely wrote:
+--=-fHzaPPedJRJzdagYu5Wz
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
->> How about splitting up like this:
->>
->> Documentation/powerpc/device-tree/fsl/cpm.txt
->> Documentation/powerpc/device-tree/fsl/cpm/uart.txt
->> Documentation/powerpc/device-tree/fsl/tsec.txt
->> Documentation/powerpc/device-tree/interrupts.txt
->> Documentation/powerpc/device-tree/dtb.txt
->
-> May I suggest moving it to Documentation/of-bindings/ instead?  Some
-> of these bindings (granted, not the fsl ones) will be used by
-> non-powerpc platforms (sparc, microblaze).
+On Fri, 2008-07-04 at 21:05 +0200, arnd@arndb.de wrote:
 
-Good idea, but:
+> Introduce a new dma attriblue DMA_ATTR_STRONG_ORDERING to use strong orde=
+ring
+> on DMA mappings in the Cell processor. Add the code to the Cell's IOMMU
+> implementation to use this.
+>=20
+> The current Cell IOMMU implementation sets the IOPTE_SO_RW bits in all IO=
+TPEs
+> (for both the dynamic and fixed mappings) which enforces strong ordering =
+of
+> both reads and writes. This patch makes the default behaviour weak orderi=
+ng
+> (the IOPTE_SO_RW bits not set) and to request a strongly ordered mapping =
+the
+> new DMA_ATTR_STRONG_ORDERING needs to be used.
 
-Don't call the bindings OF. They're not.
+We're sure that's safe?
 
-They are a linux-specific binding that happens to use the same data  
-structures and representation that OF does.
+cheers
 
-Call them dts-bindings or something else, just to avoid confusion.
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
 
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
 
--Olof
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-fHzaPPedJRJzdagYu5Wz
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBIbwnodSjSd0sB4dIRAr2tAKCEjlkiElxq1q+DE5zJN9bo46dnrACgzNIb
+ZFzW9/ckW7Ol0WplrShaywg=
+=8qzd
+-----END PGP SIGNATURE-----
+
+--=-fHzaPPedJRJzdagYu5Wz--
