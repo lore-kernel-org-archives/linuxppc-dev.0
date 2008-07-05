@@ -1,26 +1,19 @@
-Return-Path: <willy@parisc-linux.org>
-Received: from mail.parisc-linux.org (palinux.external.hp.com [192.25.206.14])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.parisc-linux.org",
-	Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 440D6DDEFD
-	for <linuxppc-dev@ozlabs.org>; Sun,  6 Jul 2008 04:52:59 +1000 (EST)
-Date: Sat, 5 Jul 2008 12:52:53 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Subject: Re: the printk problem
-Message-ID: <20080705185253.GQ14894@parisc-linux.org>
-References: <20080705125230.GA20166@damson.getinternet.no>
-	<alpine.LFD.1.10.0807051045520.2815@woody.linux-foundation.org>
-	<19f34abd0807051141h4ccfd0ar28660199f2bbf81f@mail.gmail.com>
+Return-Path: <arnd@arndb.de>
+From: Arnd Bergmann <arnd@arndb.de>
+To: benh@kernel.crashing.org
+Subject: Re: [Cbe-oss-dev] [patch 11/11] powerpc/cell: Add
+	DMA_ATTR_STRONG_ORDERING dma attribute and use in IOMMU code
+Date: Sat, 5 Jul 2008 23:51:39 +0200
+References: <20080704190535.316377278@arndb.de>
+	<1215236584.7424.2.camel@localhost>
+	<1215239339.8970.10.camel@pasglop>
+In-Reply-To: <1215239339.8970.10.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <19f34abd0807051141h4ccfd0ar28660199f2bbf81f@mail.gmail.com>
-Cc: linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
-	Jan Engelhardt <jengelh@medozas.de>, linuxppc-dev@ozlabs.org,
-	Peter Anvin <hpa@zytor.com>, Andrew Morton <akpm@linux-foundation.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	"David S. Miller" <davem@davemloft.net>
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Message-Id: <200807052351.39945.arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,16 +23,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, Jul 05, 2008 at 08:41:39PM +0200, Vegard Nossum wrote:
-> Single letters are bad because it hurts readability and limits the
-> usefulness of the extension.</MHO>
+On Saturday 05 July 2008, Benjamin Herrenschmidt wrote:
+> On Sat, 2008-07-05 at 15:43 +1000, Michael Ellerman wrote:
+> > > The current Cell IOMMU implementation sets the IOPTE_SO_RW bits in all IOTPEs
+> > > (for both the dynamic and fixed mappings) which enforces strong ordering of
+> > > both reads and writes. This patch makes the default behaviour weak ordering
+> > > (the IOPTE_SO_RW bits not set) and to request a strongly ordered mapping the
+> > > new DMA_ATTR_STRONG_ORDERING needs to be used.
+> > 
+> > We're sure that's safe?
+> 
+> I'd say it's not...
 
-I think you need a little warning noise that goes off in your head that
-means "I might be overdesigning this".  Linus' code is elegant and
-solves a problem nicely.
+It turned out that the firmware sets up the south bridge to never set the 'S'
+bit on incoming transactions, which overrides the IOPTE_SO_RW bits, on all
+existing cell hardware.
 
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+This weak ordering gives the same ordering guarantees as the default ordering
+for DMA on other PowerPC machines. Setting strong ordering on both the host
+bridge *and* the page table will give further ordering guarantees, i.e.
+it will make sure that no DMA requests on the bus can ever overtake each
+other.
+
+	Arnd <><
