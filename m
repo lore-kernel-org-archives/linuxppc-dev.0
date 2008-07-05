@@ -1,20 +1,17 @@
-Return-Path: <jengelh@medozas.de>
-Received: from sovereign.computergmbh.de (sovereign.computergmbh.de
-	[85.214.69.204])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E7151DDEE0
-	for <linuxppc-dev@ozlabs.org>; Sat,  5 Jul 2008 23:24:11 +1000 (EST)
-Date: Sat, 5 Jul 2008 15:24:04 +0200 (CEST)
-From: Jan Engelhardt <jengelh@medozas.de>
-Sender: jengelh@sovereign.computergmbh.de
-To: Vegard Nossum <vegard.nossum@gmail.com>
+Return-Path: <vegard.nossum@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.168])
+	by ozlabs.org (Postfix) with ESMTP id 0C89EDDF85
+	for <linuxppc-dev@ozlabs.org>; Sat,  5 Jul 2008 22:52:38 +1000 (EST)
+Received: by ug-out-1314.google.com with SMTP id k3so799697ugf.0
+	for <linuxppc-dev@ozlabs.org>; Sat, 05 Jul 2008 05:52:36 -0700 (PDT)
+Date: Sat, 5 Jul 2008 14:52:31 +0200
+To: Jan Engelhardt <jengelh@medozas.de>
 Subject: Re: the printk problem
-In-Reply-To: <20080705125230.GA20166@damson.getinternet.no>
-Message-ID: <alpine.LNX.1.10.0807051518500.28765@fbirervta.pbzchgretzou.qr>
-References: <20080705125230.GA20166@damson.getinternet.no>
+Message-ID: <20080705125230.GA20166@damson.getinternet.no>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <alpine.LNX.1.10.0807051332200.28765@fbirervta.pbzchgretzou.qr>
+From: Vegard Nossum <vegard.nossum@gmail.com>
 Cc: linux-ia64@vger.kernel.org, Matthew Wilcox <matthew@wil.cx>,
 	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
 	Peter Anvin <hpa@zytor.com>, Andrew Morton <akpm@linux-foundation.org>,
@@ -29,78 +26,105 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Saturday 2008-07-05 14:52, Vegard Nossum wrote:
->> On Saturday 2008-07-05 00:01, Andrew Morton wrote:
->>>
->>>We don't know how much interest there would be in churning NIPQUAD from
->>>the net guys.  Interestingly, there's also %C (wint_t) which is a
->>>32-bit quantity.  So we could just go and say "%C prints an ipv4
->>>address" and be done with it.  But there's no way of doing that for
->>>ipv6 addresses so things would become asymmetrical there.
->>
->>        struct in6_addr src;
->>        printk("Source address: %p{ipv6}\n", &src);
->>
->> How about %p{feature}?
+On Sat, Jul 5, 2008 at 1:33 PM, Jan Engelhardt <jengelh@medozas.de> wrote:
 >
->Something like this?
+> On Saturday 2008-07-05 00:01, Andrew Morton wrote:
+>>
+>>We don't know how much interest there would be in churning NIPQUAD from
+>>the net guys.  Interestingly, there's also %C (wint_t) which is a
+>>32-bit quantity.  So we could just go and say "%C prints an ipv4
+>>address" and be done with it.  But there's no way of doing that for
+>>ipv6 addresses so things would become asymmetrical there.
 >
->+static char *custom_format(char *buf, char *end,
->+	const char *fmt, unsigned int fmtlen, void *arg)
+>        struct in6_addr src;
+>        printk("Source address: %p{ipv6}\n", &src);
+>
+> How about %p{feature}?
 
-I'd use const void *arg here, so nobody gets the idea
-that you could modify the argument while printing :)
+Something like this?
 
->+{
->+	if (!strncmp(fmt, "sym", fmtlen)) {
->+		char name[KSYM_SYMBOL_LEN];
->+		int len;
->+		int i;
->+
->+		len = sprint_symbol(name, (unsigned long) arg);
->+		if (len < 0)
->+			return buf;
->+
->+		i = 0;
->+		while (i < len) {
->+			if (buf < end)
->+				*buf = name[i];
->+			++buf;
->+			++i;
->+		}
->+	}
+(It's hard on the stack, yes, I know. We should fix kallsyms.)
 
-And I assume it's then as simple as
+Vegard
 
-	} else if (strncmp(fmt, "nip6", fmtlen) == 0) {
-		snprintf(buf, end - buf (+1?), NIP6_FMT in expanded form,
-		         NIP6 in expanded form(arg));
-	}
 
-Hm, that's going to get a big function when everyone adds their
-fmttypes.
+From: Vegard Nossum <vegard.nossum@gmail.com>
+Date: Sat, 5 Jul 2008 14:01:00 +0200
+Subject: [PATCH] printf: add %p{} extension
 
->+
->+	return buf;
->+}
->+
-> static char *number(char *buf, char *end, unsigned long long num, int base, int size, int precision, int type)
-> {
-> 	/* we are called with base 8, 10 or 16, only, thus don't need "G..."  */
->@@ -648,6 +673,25 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
-> 				continue;
-> 
-> 			case 'p':
->+				if (fmt[1] == '{') {
->+					const char *cfmt;
->+
->+					/* Skip the '%{' */
->+					++fmt;
->+					++fmt;
->+
+Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
+---
+ lib/vsprintf.c |   44 ++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 44 insertions(+), 0 deletions(-)
 
-Not this?
-
-	/* Skip the '%p{' */
-	fmt += 3;
+diff --git a/lib/vsprintf.c b/lib/vsprintf.c
+index 6021757..011cf3f 100644
+--- a/lib/vsprintf.c
++++ b/lib/vsprintf.c
+@@ -17,6 +17,7 @@
+  */
+ 
+ #include <stdarg.h>
++#include <linux/kallsyms.h>
+ #include <linux/module.h>
+ #include <linux/types.h>
+ #include <linux/string.h>
+@@ -366,6 +367,30 @@ static noinline char* put_dec(char *buf, unsigned long long num)
+ #define SMALL	32		/* Must be 32 == 0x20 */
+ #define SPECIAL	64		/* 0x */
+ 
++static char *custom_format(char *buf, char *end,
++	const char *fmt, unsigned int fmtlen, void *arg)
++{
++	if (!strncmp(fmt, "sym", fmtlen)) {
++		char name[KSYM_SYMBOL_LEN];
++		int len;
++		int i;
++
++		len = sprint_symbol(name, (unsigned long) arg);
++		if (len < 0)
++			return buf;
++
++		i = 0;
++		while (i < len) {
++			if (buf < end)
++				*buf = name[i];
++			++buf;
++			++i;
++		}
++	}
++
++	return buf;
++}
++
+ static char *number(char *buf, char *end, unsigned long long num, int base, int size, int precision, int type)
+ {
+ 	/* we are called with base 8, 10 or 16, only, thus don't need "G..."  */
+@@ -648,6 +673,25 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
+ 				continue;
+ 
+ 			case 'p':
++				if (fmt[1] == '{') {
++					const char *cfmt;
++
++					/* Skip the '%{' */
++					++fmt;
++					++fmt;
++
++					cfmt = fmt;
++
++					/* Skip everything up to the '}' */
++					while (*fmt && *fmt != '}')
++						++fmt;
++
++					str = custom_format(str, end,
++						cfmt, fmt - cfmt,
++						va_arg(args, void *));
++					continue;
++				}
++
+ 				flags |= SMALL;
+ 				if (field_width == -1) {
+ 					field_width = 2*sizeof(void *);
+-- 
+1.5.4.1
