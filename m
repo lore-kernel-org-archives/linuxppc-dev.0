@@ -1,15 +1,19 @@
-Return-Path: <gerickson@nuovations.com>
-Received: from relay03.pair.com (relay03.pair.com [209.68.5.17])
-	by ozlabs.org (Postfix) with SMTP id 13697DDE28
-	for <linuxppc-dev@ozlabs.org>; Sat,  5 Jul 2008 19:18:37 +1000 (EST)
-From: Grant Erickson <gerickson@nuovations.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v3] ibm_newemac: Parameterize EMAC Multicast Match Handling
-Date: Sat,  5 Jul 2008 02:18:32 -0700
-Message-Id: <1215249512-1974-1-git-send-email-gerickson@nuovations.com>
-In-Reply-To: <C48F0E18.101F1%gerickson@nuovations.com>
-References: <C48F0E18.101F1%gerickson@nuovations.com>
-Cc: sr@denx.de
+Return-Path: <Andre.Schwarz@matrix-vision.de>
+Received: from p15137414.pureserver.info (matrixvision.de [217.160.213.229])
+	by ozlabs.org (Postfix) with ESMTP id 0C554DDE9F
+	for <linuxppc-dev@ozlabs.org>; Sat,  5 Jul 2008 19:32:08 +1000 (EST)
+Message-ID: <486F3F98.3060205@matrix-vision.de>
+Date: Sat, 05 Jul 2008 11:32:08 +0200
+From: =?ISO-8859-1?Q?Andr=E9_Schwarz?= <Andre.Schwarz@matrix-vision.de>
+MIME-Version: 1.0
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH] Add MPC5200B base board mvBC-P
+References: <486E515B.80508@matrix-vision.de>
+	<20080704170041.GD17062@secretlab.ca>
+In-Reply-To: <20080704170041.GD17062@secretlab.ca>
+Content-Type: multipart/alternative;
+	boundary="------------060706030706010803080207"
+Cc: linux-ppc list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,680 +23,531 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Various instances of the EMAC core have varying: 1) number of address 
-match slots, 2) width of the registers for handling address match slots, 
-3) number of registers for handling address match slots and 4) base 
-offset for those registers.
+This is a multi-part message in MIME format.
+--------------060706030706010803080207
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: quoted-printable
 
-As the driver stands today, it assumes that all EMACs have 4 IAHT and 
-GAHT 32-bit registers, starting at offset 0x30 from the register base, 
-with only 16-bits of each used for a total of 64 match slots.
+Grant,
 
-The 405EX(r) and 460EX now use the EMAC4SYNC core rather than the EMAC4 
-core. This core has 8 IAHT and GAHT registers, starting at offset 0x80 
-from the register base, with ALL 32-bits of each used for a total of 
-256 match slots.
+thanks for the quick feedback - I'll try to improve.
+Hopefully monday morning will be on time ....
 
-This adds a new compatible device tree entry "emac4sync" and a new,
-related feature flag "EMAC_FTR_EMAC4SYNC" along with a series of macros
-and inlines which supply the appropriate parameterized value based on
-the presence or absence of the EMAC4SYNC feature.
+Comments inline.
 
-The code has further been reworked where appropriate to use those macros
-and inlines.
+regards,
+Andr=E9
 
-In addition, the register size passed to ioremap is now taken from the 
-device tree:
+Grant Likely wrote:
+> On Fri, Jul 04, 2008 at 06:35:39PM +0200, Andre Schwarz wrote:
+>  =20
+>> The mvBlueCOUGAR-P is a MPC5200B based camera system with Intel Gigabi=
+t ethernet
+>> controller (using e1000). It's just another MPC5200_simple board.
+>>
+>> Signed-off-by: Andre Schwarz <andre.schwarz@matrix-vision.de>
+>> ---
+>>
+>>
+>> Grant,
+>>
+>> I don't know if there are any merge windows ...
+>> If the patch should be modified or re-submitted on a later time please=
+ let me know.
+>>    =20
+>
+> The merge window will be opening any day now.  If you address comments
+> quickly then I should be able to merge it into 2.6.27
+>
+>  =20
+great.
+>>  arch/powerpc/boot/dts/mvbc-p.dts             |  206 +++++
+>>  arch/powerpc/configs/mvbc-p_defconfig        | 1158 +++++++++++++++++=
++++++++++
+>>    =20
+> Rename this to arch/powerpc/config/52xx/mvbc_p_defconfig (use platform
+> specific defconfig dir and don't mix '-' and '_' in filenames).
+>
+>  =20
+ok - no problem.
+>> diff --git a/arch/powerpc/boot/dts/mvbc-p.dts b/arch/powerpc/boot/dts/=
+mvbc-p.dts
+>> new file mode 100644
+>> index 0000000..90a2808
+>> --- /dev/null
+>> +++ b/arch/powerpc/boot/dts/mvbc-p.dts
+>> @@ -0,0 +1,206 @@
+>> +/*
+>> + * mvBlueCOUGAR-P device tree source
+>> + *
+>> + * Copyright (C) 2008 Matrix Vision GmbH
+>> + * Andre Schwarz <andre.schwarz@matrix-vision.de>
+>> + *
+>> + * This program is free software; you can redistribute it and/or modi=
+fy it
+>> + * under the terms of the GNU General Public License as published by =
+the
+>> + * Free Software Foundation; either version 2 of the License, or (at =
+your
+>> + * option) any later version.
+>> + */
+>> +
+>> +/dts-v1/;
+>> +
+>> +/ {
+>> +	model =3D "matrix-vision,mvbc-p";
+>> +	compatible =3D "matrix-vision,mvbc-p";
+>> +	#address-cells =3D <1>;
+>> +	#size-cells =3D <1>;
+>> +
+>> +	cpus {
+>> +		#address-cells =3D <1>;
+>> +		#size-cells =3D <0>;
+>> +
+>> +		PowerPC,5200@0 {
+>> +			device_type =3D "cpu";
+>> +			reg =3D <0>;
+>> +			d-cache-line-size =3D <32>;
+>> +			i-cache-line-size =3D <32>;
+>> +			d-cache-size =3D <0x4000>;
+>> +			i-cache-size =3D <0x4000>;
+>> +			timebase-frequency =3D <0>;
+>> +			bus-frequency =3D <0>;
+>> +			clock-frequency =3D <0>;
+>> +		};
+>> +	};
+>> +
+>> +	memory {
+>> +		device_type =3D "memory";
+>> +		reg =3D <0x00000000 0x00000000>;
+>> +	};
+>> +
+>> +	soc5200@f0000000 {
+>> +		#address-cells =3D <1>;
+>> +		#size-cells =3D <1>;
+>> +		compatible =3D "fsl,mpc5200-immr";
+>>    =20
+>
+> Does this board use the original 5200, or the 5200B?  If it uses the
+> 5200B, then you should specify both fsl,mpc5200b-immr and
+> fsl,mpc5200-immr.  Same goes for all other compatible properties in the
+> tree; see lite5200b.dts for an example.
+>
+> I am toying with the option of eliminating the need for fsl,mpc5200b-*,
+> but until then the conservative and safest thing to do is to claim
+> compatibility with both.
+>
+>  =20
+It's a MPC5200B. I thought that the "b"-Option has already out of use=20
+after reading about this a few weeks ago ... maybe I misinterpreted.
+I'll fix this.
+>> +	lpb {
+>> +		compatible =3D "fsl,lpb";
+>>    =20
+>
+> You should also claim compatibility with "simple-bus" here.
+>
+> ie:  compatible =3D "fsl,lpb", "simple-bus";
+>
+>  =20
+ok.
+>> +		#address-cells =3D <2>;
+>> +		#size-cells =3D <1>;
+>> +		ranges =3D <0x0 0x0 0xff800000 0x00800000>;
+>> +		flash@0,0 {
+>> +			compatible =3D "cfi-flash";
+>>    =20
+>
+> For completeness, it is good practice for the first entry in the compat=
+ible
+> list to be the actual flash chip, followed by "cfi-flash"
+>
+>  =20
+ok.
+>> +			reg =3D <0 0 0x800000>;
+>> +			#address-cells =3D <1>;
+>> +			#size-cells =3D <1>;
+>> +			bank-width =3D <1>;
+>> +			device-width =3D <1>;
+>> +			nor_total@0x0 {
+>> +				reg =3D <0x0 0x800000>;
+>> +			};
+>>    =20
+>
+> I don't know if this is legal; to have overlapping flash sections (but
+> I'm not a cfi-flash binding expert).
+>
+>  =20
+Hopefully this is still possible. Nested mtd partitions have always been=20
+possible, e.g. embedded environment inside u-boot partition.
+It's proven very useful to have access to the whole chip - so it's=20
+possible to make binary updates even with the partition layout changing .=
+...
+I'd really like to stick to it if you don't mind.
+>> +			u-boot@0x0 {
+>> +				reg =3D <0x0 0x40000>;
+>> +			};
+>> +			u-boot_autoscript@0x40000 {
+>> +				reg =3D <0x40000 0x10000>;
+>> +			};
+>> +			u-boot_autoscript_red@0x50000 {
+>> +				reg =3D <0x50000 0x10000>;
+>> +			};
+>> +			fpga@0x60000 {
+>> +				reg =3D <0x60000 0x40000>;
+>> +			};
+>> +			user@0xa0000 {
+>> +				reg =3D <0xa00000 0x60000>;
+>> +			};
+>> +			rfs@0x100000 {
+>> +				reg =3D <0x100000 0x300000>;
+>> +			};
+>> +			kernel@0x400000 {
+>> +				reg =3D <0x400000 0x3c0000>;
+>> +			};
+>> +			dtb@0x7c0000 {
+>> +				reg =3D <0x7c0000 0x10000>;
+>> +			};
+>> +			dtb@0x7d0000 {
+>> +				reg =3D <0x7d0000 0x10000>;
+>> +			};
+>> +			ppcboot_env@0x7e0000 {
+>> +				reg =3D <0x7e0000 0x10000>;
+>> +			};
+>> +			ppcboot_env@0x7f0000 {
+>> +				reg =3D <0x7f0000 0x10000>;
+>> +			};
+>>    =20
+>
+> I think it would be better to just leave out the partition information
+> and modify U-Boot to fill them in (just like memory and clock speed are
+> left out).  Things like flash partitions are less like hardware
+> description and more like configuration data.
+>
+>  =20
+never did this. Is it quick'n'easy ?
+Honestly I don't like the bootloader to set up everything.
+If you need any change it will require a bootloader update which is a=20
+very fragile operation out in the field.
+There will always be bricked systems afterwards ....
+Failure in updating the (redundant) dtb blob or kernel will do almost=20
+always no harm since the system is still accessible and flashable using=20
+ethernet or serial.
 
-	c0 for EMAC4SYNC cores
-	74 for EMAC4 cores
-	70 for EMAC cores
+If it's not against all rule (which I don't think) I'd really like to=20
+stick to it, too.
+Is this ok ?
+>> +		};
+>> +	};
+>> +
+>> +	pci: pci@0xf0000d00 {
+>> +		#interrupt-cells =3D <1>;
+>> +		#size-cells =3D <2>;
+>> +		#address-cells =3D <3>;
+>> +		device_type =3D "pci";
+>> +		compatible =3D "fsl,mpc5200-pci";
+>> +		reg =3D <0xf0000d00 0x100>;
+>> +		interrupt-map-mask =3D <0xf800 0 0 7>;
+>> +		interrupt-map =3D <0x5800 0 0 1 &mpc5200_pic 1 2 3
+>> +			0x5000 0 0 1 &mpc5200_pic 1 3 3>;
+>> +		clock-frequency =3D <0>;
+>> +		interrupts =3D <2 8 0 2 9 0 2 10 0>;
+>> +		interrupt-parent =3D <&mpc5200_pic>;
+>> +		bus-range =3D <0 0>;
+>> +		ranges =3D <0x42000000 0 0x80000000 0x80000000 0 0x20000000
+>> +			0x02000000 0 0xa0000000 0xa0000000 0 0x10000000
+>> +			0x01000000 0 0x00000000 0xb0000000 0 0x01000000>;
+>> +	};
+>> +};
+>>    =20
 
-rather than sizeof (emac_regs).
 
-Finally, the device trees have been updated with the appropriate compatible
-entries and resource sizes.
 
-This has been tested on an AMCC Haleakala board such that: 1) inbound 
-ICMP requests to 'haleakala.local' via MDNS from both Mac OS X 10.4.11 
-and Ubuntu 8.04 systems as well as 2) outbound ICMP requests from 
-'haleakala.local' to those same systems in the '.local' domain via MDNS 
-now work.
+MATRIX VISION GmbH, Talstra=DFe 16, DE-71570 Oppenweiler  - Registergeric=
+ht: Amtsgericht Stuttgart, HRB 271090
+Gesch=E4ftsf=FChrer: Gerhard Thullner, Werner Armingeon, Uwe Furtner
 
-Signed-off-by: Grant Erickson <gerickson@nuovations.com>
+--------------060706030706010803080207
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html;charset=ISO-8859-1" http-equiv="Content-Type">
+  <title></title>
+</head>
+<body bgcolor="#ffffff" text="#000000">
+Grant,<br>
+<br>
+thanks for the quick feedback - I'll try to improve.<br>
+Hopefully monday morning will be on time ....<br>
+<br>
+Comments inline.<br>
+<br>
+regards,<br>
+Andr&eacute;<br>
+<br>
+Grant Likely wrote:
+<blockquote cite="mid:20080704170041.GD17062@secretlab.ca" type="cite">
+  <pre wrap="">On Fri, Jul 04, 2008 at 06:35:39PM +0200, Andre Schwarz wrote:
+  </pre>
+  <blockquote type="cite">
+    <pre wrap="">The mvBlueCOUGAR-P is a MPC5200B based camera system with Intel Gigabit ethernet
+controller (using e1000). It's just another MPC5200_simple board.
+
+Signed-off-by: Andre Schwarz <a class="moz-txt-link-rfc2396E" href="mailto:andre.schwarz@matrix-vision.de">&lt;andre.schwarz@matrix-vision.de&gt;</a>
 ---
- arch/powerpc/boot/dts/canyonlands.dts |    8 ++--
- arch/powerpc/boot/dts/glacier.dts     |    8 ++--
- arch/powerpc/boot/dts/haleakala.dts   |    4 +-
- arch/powerpc/boot/dts/katmai.dts      |    2 +-
- arch/powerpc/boot/dts/kilauea.dts     |    8 ++--
- arch/powerpc/boot/dts/makalu.dts      |    8 ++--
- arch/powerpc/boot/dts/rainier.dts     |    4 +-
- arch/powerpc/boot/dts/sequoia.dts     |    4 +-
- arch/powerpc/boot/dts/taishan.dts     |    8 ++--
- drivers/net/ibm_newemac/core.c        |   60 +++++++++++++++++-------
- drivers/net/ibm_newemac/core.h        |   83 ++++++++++++++++++++++++++++++++-
- drivers/net/ibm_newemac/debug.c       |   32 ++++++++-----
- drivers/net/ibm_newemac/emac.h        |   15 +------
- 13 files changed, 172 insertions(+), 72 deletions(-)
 
-diff --git a/arch/powerpc/boot/dts/canyonlands.dts b/arch/powerpc/boot/dts/canyonlands.dts
-index 3963412..b2811ea 100644
---- a/arch/powerpc/boot/dts/canyonlands.dts
-+++ b/arch/powerpc/boot/dts/canyonlands.dts
-@@ -264,7 +264,7 @@
- 
- 			EMAC0: ethernet@ef600e00 {
- 				device_type = "network";
--				compatible = "ibm,emac-460ex", "ibm,emac4";
-+				compatible = "ibm,emac-460ex", "ibm,emac4sync";
- 				interrupt-parent = <&EMAC0>;
- 				interrupts = <0 1>;
- 				#interrupt-cells = <1>;
-@@ -272,7 +272,7 @@
- 				#size-cells = <0>;
- 				interrupt-map = </*Status*/ 0 &UIC2 10 4
- 						 /*Wake*/   1 &UIC2 14 4>;
--				reg = <ef600e00 70>;
-+				reg = <ef600e00 c0>;
- 				local-mac-address = [000000000000]; /* Filled in by U-Boot */
- 				mal-device = <&MAL0>;
- 				mal-tx-channel = <0>;
-@@ -293,7 +293,7 @@
- 
- 			EMAC1: ethernet@ef600f00 {
- 				device_type = "network";
--				compatible = "ibm,emac-460ex", "ibm,emac4";
-+				compatible = "ibm,emac-460ex", "ibm,emac4sync";
- 				interrupt-parent = <&EMAC1>;
- 				interrupts = <0 1>;
- 				#interrupt-cells = <1>;
-@@ -301,7 +301,7 @@
- 				#size-cells = <0>;
- 				interrupt-map = </*Status*/ 0 &UIC2 11 4
- 						 /*Wake*/   1 &UIC2 15 4>;
--				reg = <ef600f00 70>;
-+				reg = <ef600f00 c0>;
- 				local-mac-address = [000000000000]; /* Filled in by U-Boot */
- 				mal-device = <&MAL0>;
- 				mal-tx-channel = <1>;
-diff --git a/arch/powerpc/boot/dts/glacier.dts b/arch/powerpc/boot/dts/glacier.dts
-index 0f2fc07..8ffde9b 100644
---- a/arch/powerpc/boot/dts/glacier.dts
-+++ b/arch/powerpc/boot/dts/glacier.dts
-@@ -281,7 +281,7 @@
- 				#size-cells = <0>;
- 				interrupt-map = </*Status*/ 0 &UIC2 10 4
- 						 /*Wake*/   1 &UIC2 14 4>;
--				reg = <ef600e00 70>;
-+				reg = <ef600e00 74>;
- 				local-mac-address = [000000000000]; /* Filled in by U-Boot */
- 				mal-device = <&MAL0>;
- 				mal-tx-channel = <0>;
-@@ -310,7 +310,7 @@
- 				#size-cells = <0>;
- 				interrupt-map = </*Status*/ 0 &UIC2 11 4
- 						 /*Wake*/   1 &UIC2 15 4>;
--				reg = <ef600f00 70>;
-+				reg = <ef600f00 74>;
- 				local-mac-address = [000000000000]; /* Filled in by U-Boot */
- 				mal-device = <&MAL0>;
- 				mal-tx-channel = <1>;
-@@ -340,7 +340,7 @@
- 				#size-cells = <0>;
- 				interrupt-map = </*Status*/ 0 &UIC2 12 4
- 						 /*Wake*/   1 &UIC2 16 4>;
--				reg = <ef601100 70>;
-+				reg = <ef601100 74>;
- 				local-mac-address = [000000000000]; /* Filled in by U-Boot */
- 				mal-device = <&MAL0>;
- 				mal-tx-channel = <2>;
-@@ -368,7 +368,7 @@
- 				#size-cells = <0>;
- 				interrupt-map = </*Status*/ 0 &UIC2 13 4
- 						 /*Wake*/   1 &UIC2 17 4>;
--				reg = <ef601200 70>;
-+				reg = <ef601200 74>;
- 				local-mac-address = [000000000000]; /* Filled in by U-Boot */
- 				mal-device = <&MAL0>;
- 				mal-tx-channel = <3>;
-diff --git a/arch/powerpc/boot/dts/haleakala.dts b/arch/powerpc/boot/dts/haleakala.dts
-index b5d95ac..0ae3e07 100644
---- a/arch/powerpc/boot/dts/haleakala.dts
-+++ b/arch/powerpc/boot/dts/haleakala.dts
-@@ -204,7 +204,7 @@
- 			EMAC0: ethernet@ef600900 {
- 				linux,network-index = <0>;
- 				device_type = "network";
--				compatible = "ibm,emac-405exr", "ibm,emac4";
-+				compatible = "ibm,emac-405exr", "ibm,emac4sync";
- 				interrupt-parent = <&EMAC0>;
- 				interrupts = <0 1>;
- 				#interrupt-cells = <1>;
-@@ -212,7 +212,7 @@
- 				#size-cells = <0>;
- 				interrupt-map = </*Status*/ 0 &UIC0 18 4
- 						/*Wake*/  1 &UIC1 1d 4>;
--				reg = <ef600900 70>;
-+				reg = <ef600900 c0>;
- 				local-mac-address = [000000000000]; /* Filled in by U-Boot */
- 				mal-device = <&MAL0>;
- 				mal-tx-channel = <0>;
-diff --git a/arch/powerpc/boot/dts/katmai.dts b/arch/powerpc/boot/dts/katmai.dts
-index cc2873a..c91bb66 100644
---- a/arch/powerpc/boot/dts/katmai.dts
-+++ b/arch/powerpc/boot/dts/katmai.dts
-@@ -206,7 +206,7 @@
- 				compatible = "ibm,emac-440spe", "ibm,emac4";
- 				interrupt-parent = <&UIC1>;
- 				interrupts = <1c 4 1d 4>;
--				reg = <10000800 70>;
-+				reg = <10000800 74>;
- 				local-mac-address = [000000000000];
- 				mal-device = <&MAL0>;
- 				mal-tx-channel = <0>;
-diff --git a/arch/powerpc/boot/dts/kilauea.dts b/arch/powerpc/boot/dts/kilauea.dts
-index 48c9a6e..e6633a0 100644
---- a/arch/powerpc/boot/dts/kilauea.dts
-+++ b/arch/powerpc/boot/dts/kilauea.dts
-@@ -205,7 +205,7 @@
- 			EMAC0: ethernet@ef600900 {
- 				linux,network-index = <0>;
- 				device_type = "network";
--				compatible = "ibm,emac-405ex", "ibm,emac4";
-+				compatible = "ibm,emac-405ex", "ibm,emac4sync";
- 				interrupt-parent = <&EMAC0>;
- 				interrupts = <0 1>;
- 				#interrupt-cells = <1>;
-@@ -213,7 +213,7 @@
- 				#size-cells = <0>;
- 				interrupt-map = </*Status*/ 0 &UIC0 18 4
- 						/*Wake*/  1 &UIC1 1d 4>;
--				reg = <ef600900 70>;
-+				reg = <ef600900 c0>;
- 				local-mac-address = [000000000000]; /* Filled in by U-Boot */
- 				mal-device = <&MAL0>;
- 				mal-tx-channel = <0>;
-@@ -233,7 +233,7 @@
- 			EMAC1: ethernet@ef600a00 {
- 				linux,network-index = <1>;
- 				device_type = "network";
--				compatible = "ibm,emac-405ex", "ibm,emac4";
-+				compatible = "ibm,emac-405ex", "ibm,emac4sync";
- 				interrupt-parent = <&EMAC1>;
- 				interrupts = <0 1>;
- 				#interrupt-cells = <1>;
-@@ -241,7 +241,7 @@
- 				#size-cells = <0>;
- 				interrupt-map = </*Status*/ 0 &UIC0 19 4
- 						/*Wake*/  1 &UIC1 1f 4>;
--				reg = <ef600a00 70>;
-+				reg = <ef600900 c0>;
- 				local-mac-address = [000000000000]; /* Filled in by U-Boot */
- 				mal-device = <&MAL0>;
- 				mal-tx-channel = <1>;
-diff --git a/arch/powerpc/boot/dts/makalu.dts b/arch/powerpc/boot/dts/makalu.dts
-index 84cc5e7..659b960 100644
---- a/arch/powerpc/boot/dts/makalu.dts
-+++ b/arch/powerpc/boot/dts/makalu.dts
-@@ -205,7 +205,7 @@
- 			EMAC0: ethernet@ef600900 {
- 				linux,network-index = <0>;
- 				device_type = "network";
--				compatible = "ibm,emac-405ex", "ibm,emac4";
-+				compatible = "ibm,emac-405ex", "ibm,emac4sync";
- 				interrupt-parent = <&EMAC0>;
- 				interrupts = <0 1>;
- 				#interrupt-cells = <1>;
-@@ -213,7 +213,7 @@
- 				#size-cells = <0>;
- 				interrupt-map = </*Status*/ 0 &UIC0 18 4
- 						/*Wake*/  1 &UIC1 1d 4>;
--				reg = <ef600900 70>;
-+				reg = <ef600900 c0>;
- 				local-mac-address = [000000000000]; /* Filled in by U-Boot */
- 				mal-device = <&MAL0>;
- 				mal-tx-channel = <0>;
-@@ -233,7 +233,7 @@
- 			EMAC1: ethernet@ef600a00 {
- 				linux,network-index = <1>;
- 				device_type = "network";
--				compatible = "ibm,emac-405ex", "ibm,emac4";
-+				compatible = "ibm,emac-405ex", "ibm,emac4sync";
- 				interrupt-parent = <&EMAC1>;
- 				interrupts = <0 1>;
- 				#interrupt-cells = <1>;
-@@ -241,7 +241,7 @@
- 				#size-cells = <0>;
- 				interrupt-map = </*Status*/ 0 &UIC0 19 4
- 						/*Wake*/  1 &UIC1 1f 4>;
--				reg = <ef600a00 70>;
-+				reg = <ef600900 c0>;
- 				local-mac-address = [000000000000]; /* Filled in by U-Boot */
- 				mal-device = <&MAL0>;
- 				mal-tx-channel = <1>;
-diff --git a/arch/powerpc/boot/dts/rainier.dts b/arch/powerpc/boot/dts/rainier.dts
-index 6a8fa70..026c22c 100644
---- a/arch/powerpc/boot/dts/rainier.dts
-+++ b/arch/powerpc/boot/dts/rainier.dts
-@@ -263,7 +263,7 @@
- 				#size-cells = <0>;
- 				interrupt-map = </*Status*/ 0 &UIC0 18 4
- 						/*Wake*/  1 &UIC1 1d 4>;
--				reg = <ef600e00 70>;
-+				reg = <ef600e00 74>;
- 				local-mac-address = [000000000000];
- 				mal-device = <&MAL0>;
- 				mal-tx-channel = <0>;
-@@ -292,7 +292,7 @@
- 				#size-cells = <0>;
- 				interrupt-map = </*Status*/ 0 &UIC0 19 4
- 						/*Wake*/  1 &UIC1 1f 4>;
--				reg = <ef600f00 70>;
-+				reg = <ef600f00 74>;
- 				local-mac-address = [000000000000];
- 				mal-device = <&MAL0>;
- 				mal-tx-channel = <1>;
-diff --git a/arch/powerpc/boot/dts/sequoia.dts b/arch/powerpc/boot/dts/sequoia.dts
-index 72d6756..8d66c99 100644
---- a/arch/powerpc/boot/dts/sequoia.dts
-+++ b/arch/powerpc/boot/dts/sequoia.dts
-@@ -278,7 +278,7 @@
- 				#size-cells = <0>;
- 				interrupt-map = </*Status*/ 0 &UIC0 18 4
- 						/*Wake*/  1 &UIC1 1d 4>;
--				reg = <ef600e00 70>;
-+				reg = <ef600e00 74>;
- 				local-mac-address = [000000000000];
- 				mal-device = <&MAL0>;
- 				mal-tx-channel = <0>;
-@@ -307,7 +307,7 @@
- 				#size-cells = <0>;
- 				interrupt-map = </*Status*/ 0 &UIC0 19 4
- 						/*Wake*/  1 &UIC1 1f 4>;
--				reg = <ef600f00 70>;
-+				reg = <ef600f00 74>;
- 				local-mac-address = [000000000000];
- 				mal-device = <&MAL0>;
- 				mal-tx-channel = <1>;
-diff --git a/arch/powerpc/boot/dts/taishan.dts b/arch/powerpc/boot/dts/taishan.dts
-index e808e1c..f736d87 100644
---- a/arch/powerpc/boot/dts/taishan.dts
-+++ b/arch/powerpc/boot/dts/taishan.dts
-@@ -258,7 +258,7 @@
- 				compatible = "ibm,emac-440gx", "ibm,emac4";
- 				interrupt-parent = <&UIC1>;
- 				interrupts = <1c 4 1d 4>;
--				reg = <40000800 70>;
-+				reg = <40000800 74>;
- 				local-mac-address = [000000000000]; // Filled in by zImage
- 				mal-device = <&MAL0>;
- 				mal-tx-channel = <0>;
-@@ -278,7 +278,7 @@
- 				compatible = "ibm,emac-440gx", "ibm,emac4";
- 				interrupt-parent = <&UIC1>;
- 				interrupts = <1e 4 1f 4>;
--				reg = <40000900 70>;
-+				reg = <40000900 74>;
- 				local-mac-address = [000000000000]; // Filled in by zImage
- 				mal-device = <&MAL0>;
- 				mal-tx-channel = <1>;
-@@ -298,7 +298,7 @@
- 				compatible = "ibm,emac-440gx", "ibm,emac4";
- 				interrupt-parent = <&UIC2>;
- 				interrupts = <0 4 1 4>;
--				reg = <40000c00 70>;
-+				reg = <40000c00 74>;
- 				local-mac-address = [000000000000]; // Filled in by zImage
- 				mal-device = <&MAL0>;
- 				mal-tx-channel = <2>;
-@@ -322,7 +322,7 @@
- 				compatible = "ibm,emac-440gx", "ibm,emac4";
- 				interrupt-parent = <&UIC2>;
- 				interrupts = <2 4 3 4>;
--				reg = <40000e00 70>;
-+				reg = <40000e00 74>;
- 				local-mac-address = [000000000000]; // Filled in by zImage
- 				mal-device = <&MAL0>;
- 				mal-tx-channel = <3>;
-diff --git a/drivers/net/ibm_newemac/core.c b/drivers/net/ibm_newemac/core.c
-index 5d2108c..931a061 100644
---- a/drivers/net/ibm_newemac/core.c
-+++ b/drivers/net/ibm_newemac/core.c
-@@ -363,25 +363,32 @@ static int emac_reset(struct emac_instance *dev)
- 
- static void emac_hash_mc(struct emac_instance *dev)
- {
--	struct emac_regs __iomem *p = dev->emacp;
--	u16 gaht[4] = { 0 };
-+	const int regs = EMAC_XAHT_REGS(dev);
-+	u32 *gaht_base = emac_gaht_base(dev);
-+	u32 gaht_temp[regs];
- 	struct dev_mc_list *dmi;
-+	int i;
- 
- 	DBG(dev, "hash_mc %d" NL, dev->ndev->mc_count);
- 
-+	memset(gaht_temp, 0, sizeof (gaht_temp));
-+
- 	for (dmi = dev->ndev->mc_list; dmi; dmi = dmi->next) {
--		int bit;
-+		int slot, reg, mask;
- 		DBG2(dev, "mc %02x:%02x:%02x:%02x:%02x:%02x" NL,
- 		     dmi->dmi_addr[0], dmi->dmi_addr[1], dmi->dmi_addr[2],
- 		     dmi->dmi_addr[3], dmi->dmi_addr[4], dmi->dmi_addr[5]);
- 
--		bit = 63 - (ether_crc(ETH_ALEN, dmi->dmi_addr) >> 26);
--		gaht[bit >> 4] |= 0x8000 >> (bit & 0x0f);
-+		slot = EMAC_XAHT_CRC_TO_SLOT(dev, ether_crc(ETH_ALEN, dmi->dmi_addr));
-+		reg = EMAC_XAHT_SLOT_TO_REG(dev, slot);
-+		mask = EMAC_XAHT_SLOT_TO_MASK(dev, slot);
-+
-+		gaht_temp[reg] |= mask;
-+	}
-+
-+	for (i = 0; i < regs; i++) {
-+		out_be32(gaht_base + i, gaht_temp[i]);
- 	}
--	out_be32(&p->gaht1, gaht[0]);
--	out_be32(&p->gaht2, gaht[1]);
--	out_be32(&p->gaht3, gaht[2]);
--	out_be32(&p->gaht4, gaht[3]);
- }
- 
- static inline u32 emac_iff2rmr(struct net_device *ndev)
-@@ -398,7 +405,8 @@ static inline u32 emac_iff2rmr(struct net_device *ndev)
- 
- 	if (ndev->flags & IFF_PROMISC)
- 		r |= EMAC_RMR_PME;
--	else if (ndev->flags & IFF_ALLMULTI || ndev->mc_count > 32)
-+	else if (ndev->flags & IFF_ALLMULTI ||
-+			 (ndev->mc_count > EMAC_XAHT_SLOTS(dev)))
- 		r |= EMAC_RMR_PMME;
- 	else if (ndev->mc_count > 0)
- 		r |= EMAC_RMR_MAE;
-@@ -2015,10 +2023,10 @@ static int emac_get_regs_len(struct emac_instance *dev)
- {
- 	if (emac_has_feature(dev, EMAC_FTR_EMAC4))
- 		return sizeof(struct emac_ethtool_regs_subhdr) +
--			EMAC4_ETHTOOL_REGS_SIZE;
-+			EMAC4_ETHTOOL_REGS_SIZE(dev);
- 	else
- 		return sizeof(struct emac_ethtool_regs_subhdr) +
--			EMAC_ETHTOOL_REGS_SIZE;
-+			EMAC_ETHTOOL_REGS_SIZE(dev);
- }
- 
- static int emac_ethtool_get_regs_len(struct net_device *ndev)
-@@ -2045,12 +2053,12 @@ static void *emac_dump_regs(struct emac_instance *dev, void *buf)
- 	hdr->index = dev->cell_index;
- 	if (emac_has_feature(dev, EMAC_FTR_EMAC4)) {
- 		hdr->version = EMAC4_ETHTOOL_REGS_VER;
--		memcpy_fromio(hdr + 1, dev->emacp, EMAC4_ETHTOOL_REGS_SIZE);
--		return ((void *)(hdr + 1) + EMAC4_ETHTOOL_REGS_SIZE);
-+		memcpy_fromio(hdr + 1, dev->emacp, EMAC4_ETHTOOL_REGS_SIZE(dev));
-+		return ((void *)(hdr + 1) + EMAC4_ETHTOOL_REGS_SIZE(dev));
- 	} else {
- 		hdr->version = EMAC_ETHTOOL_REGS_VER;
--		memcpy_fromio(hdr + 1, dev->emacp, EMAC_ETHTOOL_REGS_SIZE);
--		return ((void *)(hdr + 1) + EMAC_ETHTOOL_REGS_SIZE);
-+		memcpy_fromio(hdr + 1, dev->emacp, EMAC_ETHTOOL_REGS_SIZE(dev));
-+		return ((void *)(hdr + 1) + EMAC_ETHTOOL_REGS_SIZE(dev));
- 	}
- }
- 
-@@ -2540,7 +2548,9 @@ static int __devinit emac_init_config(struct emac_instance *dev)
- 	}
- 
- 	/* Check EMAC version */
--	if (of_device_is_compatible(np, "ibm,emac4")) {
-+	if (of_device_is_compatible(np, "ibm,emac4sync")) {
-+		dev->features |= (EMAC_FTR_EMAC4 | EMAC_FTR_EMAC4SYNC);
-+	} else if (of_device_is_compatible(np, "ibm,emac4")) {
- 		dev->features |= EMAC_FTR_EMAC4;
- 		if (of_device_is_compatible(np, "ibm,emac-440gx"))
- 			dev->features |= EMAC_FTR_440GX_PHY_CLK_FIX;
-@@ -2601,6 +2611,15 @@ static int __devinit emac_init_config(struct emac_instance *dev)
- 	}
- 	memcpy(dev->ndev->dev_addr, p, 6);
- 
-+	/* IAHT and GAHT filter parameterization */
-+	if (emac_has_feature(dev, EMAC_FTR_EMAC4SYNC)) {
-+		dev->xaht_slots_shift = EMAC4SYNC_XAHT_SLOTS_SHIFT;
-+		dev->xaht_width_shift = EMAC4SYNC_XAHT_WIDTH_SHIFT;
-+	} else {
-+		dev->xaht_slots_shift = EMAC4_XAHT_SLOTS_SHIFT;
-+		dev->xaht_width_shift = EMAC4_XAHT_WIDTH_SHIFT;
-+	}
-+
- 	DBG(dev, "features     : 0x%08x / 0x%08x\n", dev->features, EMAC_FTRS_POSSIBLE);
- 	DBG(dev, "tx_fifo_size : %d (%d gige)\n", dev->tx_fifo_size, dev->tx_fifo_size_gige);
- 	DBG(dev, "rx_fifo_size : %d (%d gige)\n", dev->rx_fifo_size, dev->rx_fifo_size_gige);
-@@ -2672,7 +2691,8 @@ static int __devinit emac_probe(struct of_device *ofdev,
- 		goto err_irq_unmap;
- 	}
- 	// TODO : request_mem_region
--	dev->emacp = ioremap(dev->rsrc_regs.start, sizeof(struct emac_regs));
-+	dev->emacp = ioremap(dev->rsrc_regs.start,
-+						 dev->rsrc_regs.end - dev->rsrc_regs.start + 1);
- 	if (dev->emacp == NULL) {
- 		printk(KERN_ERR "%s: Can't map device registers!\n",
- 		       np->full_name);
-@@ -2884,6 +2904,10 @@ static struct of_device_id emac_match[] =
- 		.type		= "network",
- 		.compatible	= "ibm,emac4",
- 	},
-+	{
-+		.type		= "network",
-+		.compatible	= "ibm,emac4sync",
-+	},
- 	{},
- };
- 
-diff --git a/drivers/net/ibm_newemac/core.h b/drivers/net/ibm_newemac/core.h
-index 1683db9..312bfa5 100644
---- a/drivers/net/ibm_newemac/core.h
-+++ b/drivers/net/ibm_newemac/core.h
-@@ -235,6 +235,10 @@ struct emac_instance {
- 	u32				fifo_entry_size;
- 	u32				mal_burst_size; /* move to MAL ? */
- 
-+	/* IAHT and GAHT filter parameterization */
-+	u32				xaht_slots_shift;
-+	u32				xaht_width_shift;
-+
- 	/* Descriptor management
- 	 */
- 	struct mal_descriptor		*tx_desc;
-@@ -309,6 +313,10 @@ struct emac_instance {
-  * Set if we need phy clock workaround for 440ep or 440gr
-  */
- #define EMAC_FTR_440EP_PHY_CLK_FIX	0x00000100
+
+Grant,
+
+I don't know if there are any merge windows ...
+If the patch should be modified or re-submitted on a later time please let me know.
+    </pre>
+  </blockquote>
+  <pre wrap=""><!---->
+The merge window will be opening any day now.  If you address comments
+quickly then I should be able to merge it into 2.6.27
+
+  </pre>
+</blockquote>
+great.<br>
+<blockquote cite="mid:20080704170041.GD17062@secretlab.ca" type="cite">
+  <pre wrap=""></pre>
+  <blockquote type="cite">
+    <pre wrap=""> arch/powerpc/boot/dts/mvbc-p.dts             |  206 +++++
+ arch/powerpc/configs/mvbc-p_defconfig        | 1158 ++++++++++++++++++++++++++
+    </pre>
+  </blockquote>
+  <pre wrap=""><!---->Rename this to arch/powerpc/config/52xx/mvbc_p_defconfig (use platform
+specific defconfig dir and don't mix '-' and '_' in filenames).
+
+  </pre>
+</blockquote>
+ok - no problem.<br>
+<blockquote cite="mid:20080704170041.GD17062@secretlab.ca" type="cite">
+  <pre wrap=""></pre>
+  <blockquote type="cite">
+    <pre wrap="">diff --git a/arch/powerpc/boot/dts/mvbc-p.dts b/arch/powerpc/boot/dts/mvbc-p.dts
+new file mode 100644
+index 0000000..90a2808
+--- /dev/null
++++ b/arch/powerpc/boot/dts/mvbc-p.dts
+@@ -0,0 +1,206 @@
 +/*
-+ * The 405EX and 460EX contain the EMAC4SYNC core
-+ */
-+#define EMAC_FTR_EMAC4SYNC		0x00000200
- 
- 
- /* Right now, we don't quite handle the always/possible masks on the
-@@ -320,7 +328,8 @@ enum {
- 
- 	EMAC_FTRS_POSSIBLE	=
- #ifdef CONFIG_IBM_NEW_EMAC_EMAC4
--	    EMAC_FTR_EMAC4 | EMAC_FTR_HAS_NEW_STACR |
-+	    EMAC_FTR_EMAC4	| EMAC_FTR_EMAC4SYNC	|
-+	    EMAC_FTR_HAS_NEW_STACR	|
- 	    EMAC_FTR_STACR_OC_INVERT | EMAC_FTR_440GX_PHY_CLK_FIX |
- #endif
- #ifdef CONFIG_IBM_NEW_EMAC_TAH
-@@ -342,6 +351,71 @@ static inline int emac_has_feature(struct emac_instance *dev,
- 	       (EMAC_FTRS_POSSIBLE & dev->features & feature);
- }
- 
-+/*
-+ * Various instances of the EMAC core have varying 1) number of
-+ * address match slots, 2) width of the registers for handling address
-+ * match slots, 3) number of registers for handling address match
-+ * slots and 4) base offset for those registers.
++ * mvBlueCOUGAR-P device tree source
 + *
-+ * These macros and inlines handle these differences based on
-+ * parameters supplied by the device tree.
++ * Copyright (C) 2008 Matrix Vision GmbH
++ * Andre Schwarz <a class="moz-txt-link-rfc2396E" href="mailto:andre.schwarz@matrix-vision.de">&lt;andre.schwarz@matrix-vision.de&gt;</a>
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License as published by the
++ * Free Software Foundation; either version 2 of the License, or (at your
++ * option) any later version.
 + */
 +
-+#define	EMAC4_XAHT_SLOTS_SHIFT		6
-+#define	EMAC4_XAHT_WIDTH_SHIFT		4
-+#define	EMAC4_XAHT_BASE_OFFSET		0x30
++/dts-v1/;
 +
-+#define	EMAC4SYNC_XAHT_SLOTS_SHIFT	8
-+#define	EMAC4SYNC_XAHT_WIDTH_SHIFT	5
-+#define	EMAC4SYNC_XAHT_BASE_OFFSET	0x80
++/ {
++	model = "matrix-vision,mvbc-p";
++	compatible = "matrix-vision,mvbc-p";
++	#address-cells = &lt;1&gt;;
++	#size-cells = &lt;1&gt;;
 +
++	cpus {
++		#address-cells = &lt;1&gt;;
++		#size-cells = &lt;0&gt;;
 +
-+#define	EMAC_XAHT_SLOTS(dev)         	(1 << (dev)->xaht_slots_shift)
-+#define	EMAC_XAHT_WIDTH(dev)         	(1 << (dev)->xaht_width_shift)
-+#define	EMAC_XAHT_REGS(dev)          	(1 << ((dev)->xaht_slots_shift - \
-+					       (dev)->xaht_width_shift))
++		PowerPC,5200@0 {
++			device_type = "cpu";
++			reg = &lt;0&gt;;
++			d-cache-line-size = &lt;32&gt;;
++			i-cache-line-size = &lt;32&gt;;
++			d-cache-size = &lt;0x4000&gt;;
++			i-cache-size = &lt;0x4000&gt;;
++			timebase-frequency = &lt;0&gt;;
++			bus-frequency = &lt;0&gt;;
++			clock-frequency = &lt;0&gt;;
++		};
++	};
 +
-+#define	EMAC_XAHT_CRC_TO_SLOT(dev, crc)			\
-+	((EMAC_XAHT_SLOTS(dev) - 1) -			\
-+	 ((crc) >> ((sizeof (u32) * BITS_PER_BYTE) -	\
-+		    (dev)->xaht_slots_shift)))
++	memory {
++		device_type = "memory";
++		reg = &lt;0x00000000 0x00000000&gt;;
++	};
 +
-+#define	EMAC_XAHT_SLOT_TO_REG(dev, slot)		\
-+	((slot) >> (dev)->xaht_width_shift)
++	soc5200@f0000000 {
++		#address-cells = &lt;1&gt;;
++		#size-cells = &lt;1&gt;;
++		compatible = "fsl,mpc5200-immr";
+    </pre>
+  </blockquote>
+  <pre wrap=""><!---->
+Does this board use the original 5200, or the 5200B?  If it uses the
+5200B, then you should specify both fsl,mpc5200b-immr and
+fsl,mpc5200-immr.  Same goes for all other compatible properties in the
+tree; see lite5200b.dts for an example.
+
+I am toying with the option of eliminating the need for fsl,mpc5200b-*,
+but until then the conservative and safest thing to do is to claim
+compatibility with both.
+
+  </pre>
+</blockquote>
+It's a MPC5200B. I thought that the "b"-Option has already out of use
+after reading about this a few weeks ago ... maybe I misinterpreted.<br>
+I'll fix this.<br>
+<blockquote cite="mid:20080704170041.GD17062@secretlab.ca" type="cite">
+  <pre wrap=""></pre>
+  <blockquote type="cite">
+    <pre wrap="">+	lpb {
++		compatible = "fsl,lpb";
+    </pre>
+  </blockquote>
+  <pre wrap=""><!---->
+You should also claim compatibility with "simple-bus" here.
+
+ie:  compatible = "fsl,lpb", "simple-bus";
+
+  </pre>
+</blockquote>
+ok.<br>
+<blockquote cite="mid:20080704170041.GD17062@secretlab.ca" type="cite">
+  <pre wrap=""></pre>
+  <blockquote type="cite">
+    <pre wrap="">+		#address-cells = &lt;2&gt;;
++		#size-cells = &lt;1&gt;;
++		ranges = &lt;0x0 0x0 0xff800000 0x00800000&gt;;
++		flash@0,0 {
++			compatible = "cfi-flash";
+    </pre>
+  </blockquote>
+  <pre wrap=""><!---->
+For completeness, it is good practice for the first entry in the compatible
+list to be the actual flash chip, followed by "cfi-flash"
+
+  </pre>
+</blockquote>
+ok.<br>
+<blockquote cite="mid:20080704170041.GD17062@secretlab.ca" type="cite">
+  <pre wrap=""></pre>
+  <blockquote type="cite">
+    <pre wrap="">+			reg = &lt;0 0 0x800000&gt;;
++			#address-cells = &lt;1&gt;;
++			#size-cells = &lt;1&gt;;
++			bank-width = &lt;1&gt;;
++			device-width = &lt;1&gt;;
++			nor_total@0x0 {
++				reg = &lt;0x0 0x800000&gt;;
++			};
+    </pre>
+  </blockquote>
+  <pre wrap=""><!---->
+I don't know if this is legal; to have overlapping flash sections (but
+I'm not a cfi-flash binding expert).
+
+  </pre>
+</blockquote>
+Hopefully this is still possible. Nested mtd partitions have always
+been possible, e.g. embedded environment inside u-boot partition.<br>
+It's proven very useful to have access to the whole chip - so it's
+possible to make binary updates even with the partition layout changing
+....<br>
+I'd really like to stick to it if you don't mind.<br>
+<blockquote cite="mid:20080704170041.GD17062@secretlab.ca" type="cite">
+  <pre wrap=""></pre>
+  <blockquote type="cite">
+    <pre wrap="">+			u-boot@0x0 {
++				reg = &lt;0x0 0x40000&gt;;
++			};
++			u-boot_autoscript@0x40000 {
++				reg = &lt;0x40000 0x10000&gt;;
++			};
++			u-boot_autoscript_red@0x50000 {
++				reg = &lt;0x50000 0x10000&gt;;
++			};
++			fpga@0x60000 {
++				reg = &lt;0x60000 0x40000&gt;;
++			};
++			user@0xa0000 {
++				reg = &lt;0xa00000 0x60000&gt;;
++			};
++			rfs@0x100000 {
++				reg = &lt;0x100000 0x300000&gt;;
++			};
++			kernel@0x400000 {
++				reg = &lt;0x400000 0x3c0000&gt;;
++			};
++			dtb@0x7c0000 {
++				reg = &lt;0x7c0000 0x10000&gt;;
++			};
++			dtb@0x7d0000 {
++				reg = &lt;0x7d0000 0x10000&gt;;
++			};
++			ppcboot_env@0x7e0000 {
++				reg = &lt;0x7e0000 0x10000&gt;;
++			};
++			ppcboot_env@0x7f0000 {
++				reg = &lt;0x7f0000 0x10000&gt;;
++			};
+    </pre>
+  </blockquote>
+  <pre wrap=""><!---->
+I think it would be better to just leave out the partition information
+and modify U-Boot to fill them in (just like memory and clock speed are
+left out).  Things like flash partitions are less like hardware
+description and more like configuration data.
+
+  </pre>
+</blockquote>
+never did this. Is it quick'n'easy ?<br>
+Honestly I don't like the bootloader to set up everything.<br>
+If you need any change it will require a bootloader update which is a
+very fragile operation out in the field.<br>
+There will always be bricked systems afterwards ....<br>
+Failure in updating the (redundant) dtb blob or kernel will do almost
+always no harm since the system is still accessible and flashable using
+ethernet or serial.<br>
+<br>
+If it's not against all rule (which I don't think) I'd really like to
+stick to it, too.<br>
+Is this ok ?<br>
+<blockquote cite="mid:20080704170041.GD17062@secretlab.ca" type="cite">
+  <pre wrap=""></pre>
+  <blockquote type="cite">
+    <pre wrap="">+		};
++	};
 +
-+#define	EMAC_XAHT_SLOT_TO_MASK(dev, slot)		\
-+	((u32)(1 << (EMAC_XAHT_WIDTH(dev) - 1)) >>	\
-+	 ((slot) & (u32)(EMAC_XAHT_WIDTH(dev) - 1)))
-+
-+static inline u32 *emac_xaht_base(struct emac_instance *dev)
-+{
-+	struct emac_regs __iomem *p = dev->emacp;
-+	int offset;
-+
-+	if (emac_has_feature(dev, EMAC_FTR_EMAC4SYNC))
-+	    offset = EMAC4SYNC_XAHT_BASE_OFFSET;
-+	else
-+	    offset = EMAC4_XAHT_BASE_OFFSET;
-+
-+	return ((u32 *)((ptrdiff_t)p + offset));
-+}
-+
-+static inline u32 *emac_gaht_base(struct emac_instance *dev)
-+{
-+	/* GAHT registers always come after an identical number of
-+	 * IAHT registers.
-+	 */
-+	return (emac_xaht_base(dev) + EMAC_XAHT_REGS(dev));
-+}
-+
-+static inline u32 *emac_iaht_base(struct emac_instance *dev)
-+{
-+	/* IAHT registers always come before an identical number of
-+	 * GAHT registers.
-+	 */
-+	return (emac_xaht_base(dev));
-+}
-+
- 
- /* Ethtool get_regs complex data.
-  * We want to get not just EMAC registers, but also MAL, ZMII, RGMII, TAH
-@@ -366,4 +440,11 @@ struct emac_ethtool_regs_subhdr {
- 	u32 index;
- };
- 
-+#define EMAC_ETHTOOL_REGS_VER		0
-+#define EMAC_ETHTOOL_REGS_SIZE(dev) 	((dev)->rsrc_regs.end - \
-+					 (dev)->rsrc_regs.start + 1)
-+#define EMAC4_ETHTOOL_REGS_VER      	1
-+#define EMAC4_ETHTOOL_REGS_SIZE(dev)	((dev)->rsrc_regs.end -	\
-+					 (dev)->rsrc_regs.start + 1)
-+
- #endif /* __IBM_NEWEMAC_CORE_H */
-diff --git a/drivers/net/ibm_newemac/debug.c b/drivers/net/ibm_newemac/debug.c
-index 86b756a..d9fc0f4 100644
---- a/drivers/net/ibm_newemac/debug.c
-+++ b/drivers/net/ibm_newemac/debug.c
-@@ -67,29 +67,37 @@ static void emac_desc_dump(struct emac_instance *p)
- static void emac_mac_dump(struct emac_instance *dev)
- {
- 	struct emac_regs __iomem *p = dev->emacp;
-+	const int xaht_regs = EMAC_XAHT_REGS(dev);
-+	u32 *gaht_base = emac_gaht_base(dev);
-+	u32 *iaht_base = emac_iaht_base(dev);
-+	int n;
- 
- 	printk("** EMAC %s registers **\n"
- 	       "MR0 = 0x%08x MR1 = 0x%08x TMR0 = 0x%08x TMR1 = 0x%08x\n"
- 	       "RMR = 0x%08x ISR = 0x%08x ISER = 0x%08x\n"
--	       "IAR = %04x%08x VTPID = 0x%04x VTCI = 0x%04x\n"
--	       "IAHT: 0x%04x 0x%04x 0x%04x 0x%04x "
--	       "GAHT: 0x%04x 0x%04x 0x%04x 0x%04x\n"
--	       "LSA = %04x%08x IPGVR = 0x%04x\n"
--	       "STACR = 0x%08x TRTR = 0x%08x RWMR = 0x%08x\n"
--	       "OCTX = 0x%08x OCRX = 0x%08x IPCR = 0x%08x\n",
-+	       "IAR = %04x%08x VTPID = 0x%04x VTCI = 0x%04x\n",
- 	       dev->ofdev->node->full_name, in_be32(&p->mr0), in_be32(&p->mr1),
- 	       in_be32(&p->tmr0), in_be32(&p->tmr1),
- 	       in_be32(&p->rmr), in_be32(&p->isr), in_be32(&p->iser),
- 	       in_be32(&p->iahr), in_be32(&p->ialr), in_be32(&p->vtpid),
--	       in_be32(&p->vtci),
--	       in_be32(&p->iaht1), in_be32(&p->iaht2), in_be32(&p->iaht3),
--	       in_be32(&p->iaht4),
--	       in_be32(&p->gaht1), in_be32(&p->gaht2), in_be32(&p->gaht3),
--	       in_be32(&p->gaht4),
-+	       in_be32(&p->vtci)
-+		  );
-+
-+	for (n = 0; n < xaht_regs; n++) {
-+		printk("IAHT%02d: 0x%08x\n", n + 1, in_be32(iaht_base + n));
-+	}
-+
-+	for (n = 0; n < xaht_regs; n++) {
-+		printk("GAHT%02d: 0x%08x\n", n + 1, in_be32(gaht_base + n));
-+	}
-+
-+	printk("LSA = %04x%08x IPGVR = 0x%04x\n"
-+	       "STACR = 0x%08x TRTR = 0x%08x RWMR = 0x%08x\n"
-+	       "OCTX = 0x%08x OCRX = 0x%08x IPCR = 0x%08x\n",
- 	       in_be32(&p->lsah), in_be32(&p->lsal), in_be32(&p->ipgvr),
- 	       in_be32(&p->stacr), in_be32(&p->trtr), in_be32(&p->rwmr),
- 	       in_be32(&p->octx), in_be32(&p->ocrx), in_be32(&p->ipcr)
--	    );
-+		  );
- 
- 	emac_desc_dump(dev);
- }
-diff --git a/drivers/net/ibm_newemac/emac.h b/drivers/net/ibm_newemac/emac.h
-index 91cb096..a4b5775 100644
---- a/drivers/net/ibm_newemac/emac.h
-+++ b/drivers/net/ibm_newemac/emac.h
-@@ -41,14 +41,7 @@ struct emac_regs {
- 	u32 vtpid;		/* Reset, R, T 	*/
- 	u32 vtci;		/* Reset, R, T 	*/
- 	u32 ptr;		/* Reset,    T 	*/
--	u32 iaht1;		/* Reset, R	*/
--	u32 iaht2;		/* Reset, R	*/
--	u32 iaht3;		/* Reset, R	*/
--	u32 iaht4;		/* Reset, R	*/
--	u32 gaht1;		/* Reset, R	*/
--	u32 gaht2;		/* Reset, R	*/
--	u32 gaht3;		/* Reset, R	*/
--	u32 gaht4;		/* Reset, R	*/
-+	u32 reserved[8];/* Chip-dependent */
- 	u32 lsah;
- 	u32 lsal;
- 	u32 ipgvr;		/* Reset,    T 	*/
-@@ -73,12 +66,6 @@ struct emac_regs {
- #define PHY_MODE_RTBI	7
- #define PHY_MODE_SGMII	8
- 
--
--#define EMAC_ETHTOOL_REGS_VER		0
--#define EMAC_ETHTOOL_REGS_SIZE		(sizeof(struct emac_regs) - sizeof(u32))
--#define EMAC4_ETHTOOL_REGS_VER      	1
--#define EMAC4_ETHTOOL_REGS_SIZE		sizeof(struct emac_regs)
--
- /* EMACx_MR0 */
- #define EMAC_MR0_RXI			0x80000000
- #define EMAC_MR0_TXI			0x40000000
++	pci: pci@0xf0000d00 {
++		#interrupt-cells = &lt;1&gt;;
++		#size-cells = &lt;2&gt;;
++		#address-cells = &lt;3&gt;;
++		device_type = "pci";
++		compatible = "fsl,mpc5200-pci";
++		reg = &lt;0xf0000d00 0x100&gt;;
++		interrupt-map-mask = &lt;0xf800 0 0 7&gt;;
++		interrupt-map = &lt;0x5800 0 0 1 &amp;mpc5200_pic 1 2 3
++			0x5000 0 0 1 &amp;mpc5200_pic 1 3 3&gt;;
++		clock-frequency = &lt;0&gt;;
++		interrupts = &lt;2 8 0 2 9 0 2 10 0&gt;;
++		interrupt-parent = &lt;&amp;mpc5200_pic&gt;;
++		bus-range = &lt;0 0&gt;;
++		ranges = &lt;0x42000000 0 0x80000000 0x80000000 0 0x20000000
++			0x02000000 0 0xa0000000 0xa0000000 0 0x10000000
++			0x01000000 0 0x00000000 0xb0000000 0 0x01000000&gt;;
++	};
++};
+    </pre>
+  </blockquote>
+</blockquote>
+<br>
+<BR>
+
+MATRIX VISION GmbH, Talstraße 16, DE-71570 Oppenweiler  - Registergericht: Amtsgericht Stuttgart, HRB 271090
+Geschäftsführer: Gerhard Thullner, Werner Armingeon, Uwe Furtner
+<BR>
+</body>
+</html>
+
+--------------060706030706010803080207--
