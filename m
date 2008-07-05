@@ -1,26 +1,21 @@
-Return-Path: <jengelh@medozas.de>
-Received: from sovereign.computergmbh.de (sovereign.computergmbh.de
-	[85.214.69.204])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B6573DDF0A
-	for <linuxppc-dev@ozlabs.org>; Sat,  5 Jul 2008 21:39:14 +1000 (EST)
-Date: Sat, 5 Jul 2008 13:33:29 +0200 (CEST)
-From: Jan Engelhardt <jengelh@medozas.de>
-Sender: jengelh@sovereign.computergmbh.de
+Return-Path: <vda.linux@googlemail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.172])
+	by ozlabs.org (Postfix) with ESMTP id 7A2E4DDDF4
+	for <linuxppc-dev@ozlabs.org>; Sat,  5 Jul 2008 20:20:35 +1000 (EST)
+Received: by ug-out-1314.google.com with SMTP id k3so792699ugf.0
+	for <linuxppc-dev@ozlabs.org>; Sat, 05 Jul 2008 03:20:32 -0700 (PDT)
+From: Denys Vlasenko <vda.linux@googlemail.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Subject: Re: the printk problem
-In-Reply-To: <20080704150100.1f7b8a65.akpm@linux-foundation.org>
-Message-ID: <alpine.LNX.1.10.0807051332200.28765@fbirervta.pbzchgretzou.qr>
-References: <20080625131101.GA6205@digi.com> <20080704104634.GA31634@digi.com>
-	<20080704111540.ddffd241.akpm@linux-foundation.org>
-	<alpine.LFD.1.10.0807041147450.2815@woody.linux-foundation.org>
-	<alpine.LFD.1.10.0807041250220.2815@woody.linux-foundation.org>
-	<20080704132716.f1e12554.akpm@linux-foundation.org>
+Date: Sat, 5 Jul 2008 12:20:25 +0200
+References: <20080625131101.GA6205@digi.com>
 	<20080704204252.GM14894@parisc-linux.org>
 	<20080704150100.1f7b8a65.akpm@linux-foundation.org>
+In-Reply-To: <20080704150100.1f7b8a65.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200807051220.25418.vda.linux@googlemail.com>
 Cc: linux-ia64@vger.kernel.org, Matthew Wilcox <matthew@wil.cx>,
 	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
 	Peter Anvin <hpa@zytor.com>,
@@ -35,16 +30,60 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Saturday 05 July 2008 00:01, Andrew Morton wrote:
+> > > We also jump through hoops to print things like sector_t and
+> > > resource_size_t.  They always need to be cast to `unsiged long long',
+> > > which generates additional stack space and text in some setups.
+> > 
+> > The thing is that GCC checks types.  So it's fine to add "print this
+> > pointer specially", but you can't in general add new printf arguments
+> > without also hacking GCC.  Unless you use -Wno-format, and require
+> > sparse to check special kernel types.
+> 
+> It would be excellent if gcc had an extension system so that you could
+> add new printf control chars and maybe even tell gcc how to check them.
+> But of course, if that were to happen, we couldn't use it for 4-5 years.
+> 
+> What I had initially proposed was to abuse %S, which takes a wchar_t*. 
+> gcc accepts `unsigned long *' for %S.
+> 
+> Then, we put the kernel-specific control char after the S, so we can
+> print an inode (rofl) with
+> 
+> 	struct inode *inode;
+> 
+> 	printk("here is an inode: %Si\n", (unsigned long *)inode);
+> 
+> Downsides are:
+> 
+> - there's a cast, so you could accidentally do
+> 
+> 	printk("here is an inode: %Si\n", (unsigned long *)dentry);
+> 
+> - there's a cast, and they're ugly
+> 
+> - gcc cannot of course check that the arg matches the control string
+> 
+> Unfortunately (and this seems weird), gcc printf checking will not
+> accept a void* for %S: it _has_ to be wchar_t*, and the checker won't
+> permit void* substitution for that.
 
-On Saturday 2008-07-05 00:01, Andrew Morton wrote:
->
->We don't know how much interest there would be in churning NIPQUAD from
->the net guys.  Interestingly, there's also %C (wint_t) which is a
->32-bit quantity.  So we could just go and say "%C prints an ipv4
->address" and be done with it.  But there's no way of doing that for
->ipv6 addresses so things would become asymmetrical there.
+Repeating myself here...
+We can add an alternative alias to printk:
 
-	struct in6_addr src;
-	printk("Source address: %p{ipv6}\n", &src);
+ asmlinkage int printk(const char * fmt, ...)
+         __attribute__ ((format (printf, 1, 2))) __cold;
++asmlinkage int custom_printk(const char * fmt, ...) __cold asm ("printk");
 
-How about %p{feature}?
+custom_printk() is actually just printk(), that is,
+we won't need additional function, we need to teach
+*printk* about MAC addresses, NIPQUADs etc;
+
+and then use printk() if you use only standard %fmt (and have it
+checked by gcc), or use custom_printk() if you have non-standard
+%fmt in the format string.
+
+The only downside that in second case, you lose gcc checking.
+No big deal.
+--
+vda
