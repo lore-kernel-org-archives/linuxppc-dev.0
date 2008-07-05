@@ -1,26 +1,25 @@
-Return-Path: <torvalds@linux-foundation.org>
-Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
-	[140.211.169.13])
+Return-Path: <willy@parisc-linux.org>
+Received: from mail.parisc-linux.org (palinux.external.hp.com [192.25.206.14])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id E662DDDF02
-	for <linuxppc-dev@ozlabs.org>; Sun,  6 Jul 2008 04:44:12 +1000 (EST)
-Date: Sat, 5 Jul 2008 11:44:03 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Jan Engelhardt <jengelh@medozas.de>
+	(Client CN "mail.parisc-linux.org",
+	Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 440D6DDEFD
+	for <linuxppc-dev@ozlabs.org>; Sun,  6 Jul 2008 04:52:59 +1000 (EST)
+Date: Sat, 5 Jul 2008 12:52:53 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Vegard Nossum <vegard.nossum@gmail.com>
 Subject: Re: the printk problem
-In-Reply-To: <alpine.LNX.1.10.0807052039520.28765@fbirervta.pbzchgretzou.qr>
-Message-ID: <alpine.LFD.1.10.0807051142050.2815@woody.linux-foundation.org>
+Message-ID: <20080705185253.GQ14894@parisc-linux.org>
 References: <20080705125230.GA20166@damson.getinternet.no>
 	<alpine.LFD.1.10.0807051045520.2815@woody.linux-foundation.org>
-	<alpine.LNX.1.10.0807052039520.28765@fbirervta.pbzchgretzou.qr>
+	<19f34abd0807051141h4ccfd0ar28660199f2bbf81f@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linux-ia64@vger.kernel.org, Matthew Wilcox <matthew@wil.cx>,
-	Vegard Nossum <vegard.nossum@gmail.com>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <19f34abd0807051141h4ccfd0ar28660199f2bbf81f@mail.gmail.com>
+Cc: linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
+	Jan Engelhardt <jengelh@medozas.de>, linuxppc-dev@ozlabs.org,
 	Peter Anvin <hpa@zytor.com>, Andrew Morton <akpm@linux-foundation.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
 	"David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -31,22 +30,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Sat, Jul 05, 2008 at 08:41:39PM +0200, Vegard Nossum wrote:
+> Single letters are bad because it hurts readability and limits the
+> usefulness of the extension.</MHO>
 
+I think you need a little warning noise that goes off in your head that
+means "I might be overdesigning this".  Linus' code is elegant and
+solves a problem nicely.
 
-On Sat, 5 Jul 2008, Jan Engelhardt wrote:
-> 
-> So, and what do you do when you run out of alphanumeric characters?
-
-Did you actually look at my patch?
-
-It's not a single alnum character. It's an arbitrary sequence of alnum 
-characters. IOW, my patch allows
-
-	%p6N
-
-or something like that for showing a ipv6 "NIP" format string etc. Or you 
-could spell them out even more, although I consider it unlikely that you 
-really want to see too many of these, since gcc won't actually be able to 
-type-check them (so they will always remain _secondary_ formats).
-
-			Linus
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
