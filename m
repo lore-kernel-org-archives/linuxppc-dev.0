@@ -1,29 +1,17 @@
-Return-Path: <willy@parisc-linux.org>
-Received: from mail.parisc-linux.org (palinux.external.hp.com [192.25.206.14])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.parisc-linux.org",
-	Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 7E81EDDE00
-	for <linuxppc-dev@ozlabs.org>; Sat,  5 Jul 2008 12:03:56 +1000 (EST)
-Date: Fri, 4 Jul 2008 20:03:51 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: the printk problem
-Message-ID: <20080705020350.GN14894@parisc-linux.org>
-References: <20080625131101.GA6205@digi.com> <20080704104634.GA31634@digi.com>
-	<20080704111540.ddffd241.akpm@linux-foundation.org>
-	<alpine.LFD.1.10.0807041147450.2815@woody.linux-foundation.org>
-	<alpine.LFD.1.10.0807041250220.2815@woody.linux-foundation.org>
-	<20080704132716.f1e12554.akpm@linux-foundation.org>
-	<20080704204252.GM14894@parisc-linux.org>
-	<20080704150100.1f7b8a65.akpm@linux-foundation.org>
+Return-Path: <dgibson@ozlabs.org>
+Date: Sat, 5 Jul 2008 11:26:24 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: New fsl device bindings file
+Message-ID: <20080705012624.GA3032@yookeroo.seuss>
+References: <40B88BFD-1FEB-4E36-9917-54C7380FF801@kernel.crashing.org>
+	<20080703185312.GA6043@polina.dev.rtsoft.ru>
+	<486E26C0.9060604@genesi-usa.com>
+	<e88aa775e8f6dcc85f1e4b9c3ca28fdd@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080704150100.1f7b8a65.akpm@linux-foundation.org>
-Cc: linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Peter Anvin <hpa@zytor.com>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	"David S. Miller" <davem@davemloft.net>
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <e88aa775e8f6dcc85f1e4b9c3ca28fdd@kernel.crashing.org>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,87 +21,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Jul 04, 2008 at 03:01:00PM -0700, Andrew Morton wrote:
-> (heck, let's cc lkml - avoid having to go through all this again)
-> 
-> It would be excellent if gcc had an extension system so that you could
-> add new printf control chars and maybe even tell gcc how to check them.
-> But of course, if that were to happen, we couldn't use it for 4-5 years.
+On Sat, Jul 05, 2008 at 01:12:31AM +0200, Segher Boessenkool wrote:
+>>> 	/* deprecated; */
+>>> 	device_type = "i2c";
+>>
+>> How about "deprecated but kept for compatibility with true Open  
+>> Firmware
+>> implementations"?
+>
+> Well, except a flat tree isn't compatible with OF at all here.
+> A "device_type" promises a certain interface; a flat tree doesn't
+> even have the "open" method.  From the OF base spec:
+>
+> 	“device_type” S
+>
+> 	Standard property name to specify the implemented interface.
+>
+> 	prop-encoded-array: Text string encoded with encode-string.
+>
+> 	Specifies the “device type” of this package, thus implying a
+> 	specific set of package class methods implemented by this
+> 	package.
+>
+>> Seriously, you can't have a binding for "OF" and then cut out that  
+>> part of the
+>> standard at a whim.
+>
+> Nothing is cut out.  There never was a device binding for device_type
+> i2c; creating one would be a considerable effort, and since flat tree
+> users wouldn't use it anyway, you can't be seriously suggesting they
+> should do this.
+>
+>> It should be there (at least for those parts which are
+>> governed by a client interface API, like display, serial etc.
+>
+> Huh?  Nothing in the client interface mentions display or serial
+> as far as I know.
+>
+>> but cutting it off takes away all it's meaning,
+>
+> So what?  There _is_ no "real" device interface, when a flat tree is
+> used.
+>
+>> plus Linux implementations STILL keep searching
+>> that property along with "compatible",
+>
+> That's a bug.
 
-I believe NetBSD added that as an extension many years ago.  Dunno if
-they still have it.
-
-> What I had initially proposed was to abuse %S, which takes a wchar_t*. 
-> gcc accepts `unsigned long *' for %S.
-> 
-[...]
-> - there's a cast, so you could accidentally do
-> 
-> 	printk("here is an inode: %Si\n", (unsigned long *)dentry);
-> 
-> - there's a cast, and they're ugly
-> 
-> - gcc cannot of course check that the arg matches the control string
-> 
-> Unfortunately (and this seems weird), gcc printf checking will not
-> accept a void* for %S: it _has_ to be wchar_t*, and the checker won't
-> permit void* substitution for that.
-
-Presumably that's the compiler getting rid of the first and third
-downside ;-)
-
-> Anyway, Linus took all that and said "let's abuse %p instead".  It
-> _will_ accept any pointer so we can instead do:
-> 
-> 	printk("here is an inode: %pi\n", inode);
-> 
-> which is nicer.
-
-Yes.  It's possible to confuse it, of course.
-
-	printk("Function %pSucks\n", sys_open);
-
-but I really doubt we have such a usage in the kernel today.
-
-> > u64 is easy to fix, and I don't know why we haven't.  Just make it
-> > unsigned long long on all architectures.
-> 
-> Yeah.  Why don't we do that?
-
-Patch ...
-
-[PATCH] Make u64 long long on all architectures
-
-It is currently awkward to print a u64 type.  Some architectures use
-unsigned long while others use unsigned long long.  Since unsigned long
-long is 64-bit for all existing Linux architectures, change those that
-use long to use long long.  Note that this applies only within the
-kernel.  If u64 is being used in a C++ method definition, the symbol
-mangling would change.
-
-Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
-
-diff --git a/include/asm-generic/int-l64.h b/include/asm-generic/int-l64.h
-index 2af9b75..32f07bd 100644
---- a/include/asm-generic/int-l64.h
-+++ b/include/asm-generic/int-l64.h
-@@ -23,8 +23,13 @@ typedef unsigned short __u16;
- typedef __signed__ int __s32;
- typedef unsigned int __u32;
- 
-+#ifdef __KERNEL__
-+typedef __signed__ long long __s64;
-+typedef unsigned long long __u64;
-+#else
- typedef __signed__ long __s64;
- typedef unsigned long __u64;
-+#endif
- 
- #endif /* __ASSEMBLY__ */
- 
+Thank you Segher, you saved me the trouble of saying exactly all that.
 
 -- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
