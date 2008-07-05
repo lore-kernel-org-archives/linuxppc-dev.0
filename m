@@ -1,24 +1,22 @@
-Return-Path: <jengelh@medozas.de>
-Received: from sovereign.computergmbh.de (sovereign.computergmbh.de
-	[85.214.69.204])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D56A9DDEEC
-	for <linuxppc-dev@ozlabs.org>; Sun,  6 Jul 2008 04:40:13 +1000 (EST)
-Date: Sat, 5 Jul 2008 20:40:07 +0200 (CEST)
-From: Jan Engelhardt <jengelh@medozas.de>
-Sender: jengelh@sovereign.computergmbh.de
-To: Linus Torvalds <torvalds@linux-foundation.org>
+Return-Path: <vegard.nossum@gmail.com>
+Received: from wf-out-1314.google.com (wf-out-1314.google.com [209.85.200.169])
+	by ozlabs.org (Postfix) with ESMTP id B2F48DDDFC
+	for <linuxppc-dev@ozlabs.org>; Sun,  6 Jul 2008 04:41:40 +1000 (EST)
+Received: by wf-out-1314.google.com with SMTP id 24so1707398wfg.15
+	for <linuxppc-dev@ozlabs.org>; Sat, 05 Jul 2008 11:41:39 -0700 (PDT)
+Message-ID: <19f34abd0807051141h4ccfd0ar28660199f2bbf81f@mail.gmail.com>
+Date: Sat, 5 Jul 2008 20:41:39 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Linus Torvalds" <torvalds@linux-foundation.org>
 Subject: Re: the printk problem
 In-Reply-To: <alpine.LFD.1.10.0807051045520.2815@woody.linux-foundation.org>
-Message-ID: <alpine.LNX.1.10.0807052039520.28765@fbirervta.pbzchgretzou.qr>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 References: <20080705125230.GA20166@damson.getinternet.no>
 	<alpine.LFD.1.10.0807051045520.2815@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
 Cc: linux-ia64@vger.kernel.org, Matthew Wilcox <matthew@wil.cx>,
-	Vegard Nossum <vegard.nossum@gmail.com>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	linux-kernel@vger.kernel.org,
+	Jan Engelhardt <jengelh@medozas.de>, linuxppc-dev@ozlabs.org,
 	Peter Anvin <hpa@zytor.com>, Andrew Morton <akpm@linux-foundation.org>,
 	"David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -30,15 +28,66 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Saturday 2008-07-05 19:56, Linus Torvalds wrote:
->> >
+On Sat, Jul 5, 2008 at 7:56 PM, Linus Torvalds
+<torvalds@linux-foundation.org> wrote:
+> On Sat, 5 Jul 2008, Vegard Nossum wrote:
+>> On Sat, Jul 5, 2008 at 1:33 PM, Jan Engelhardt <jengelh@medozas.de> wrote:
 >> > How about %p{feature}?
 >
->No.
+> No.
 >
->I _expressly_ chose '%p[alphanumeric]*' because it's basically 
->totally insane to have that in a *real* printk() string: the end result 
->would be totally unreadable.
+> I _expressly_ chose '%p[alphanumeric]*' because it's basically
+> totally insane to have that in a *real* printk() string: the end result
+> would be totally unreadable.
+>
+> In contrast, '%p[specialchar]' is not unreadable, and in fact we have lots
+> of those already in the kernel. In fact, there are 40 occurrences of '%p{'
+> in the kernel, just grep for it (especially the AFS code seems to be very
+> happy to use that kind of printout in its debug statements).
+>
+> So it makes perfect sense to have a _real_ printk string that says
+>
+>        "BUG: Dentry %p{i=%lx,n=%s}"
+>
+> where we have that '%p{...' sequence: the end result is easily parseable.
+> In contrast, anybody who uses '%pS' or something like that and expects a
+> pointer name to be immediately followed by teh letter 'S' is simply
+> insane, because the end result is an unreadable mess.
 
-So, and what do you do when you run out of alphanumeric characters?
+That's really a truly hideous hack :-)
+
+Single letters are bad because it hurts readability and limits the
+usefulness of the extension.</MHO>
+
+If it's just the {} that is the problem, use something else. I'm sure
+we can find something that isn't used already.
+
+>
+>> (It's hard on the stack, yes, I know. We should fix kallsyms.)
+>
+> Not just that, but it's broken when KALLSYMS is disabled. Look at what
+> sprint_symbol() becomes.
+
+Oops. Not hard to mend, though.
+
+> The patch I already sent out is about a million times better, because it
+> avoids all these issues, and knows about subtle issues like the difference
+> between a direct pointer and a pointer to a function descriptor.
+
+Right, right. I found it now:
+
+http://ozlabs.org/pipermail/linuxppc-dev/2008-July/059257.html
+
+Argh... Some pointer to original thread would be nice when adding new Ccs.
+
+
+Vegard
+
+PS: Your version has exactly the same stack problem. Will send a patch
+for kallsyms later.
+
+-- 
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
