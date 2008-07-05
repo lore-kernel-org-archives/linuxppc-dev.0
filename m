@@ -1,21 +1,25 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 7D739DDE19
-	for <linuxppc-dev@ozlabs.org>; Sun,  6 Jul 2008 08:45:19 +1000 (EST)
-Subject: Re: [PATCH v3] ibm_newemac: Parameterize EMAC Multicast Match Handling
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Grant Erickson <gerickson@nuovations.com>
-In-Reply-To: <1215249512-1974-1-git-send-email-gerickson@nuovations.com>
-References: <C48F0E18.101F1%gerickson@nuovations.com>
-	<1215249512-1974-1-git-send-email-gerickson@nuovations.com>
-Content-Type: text/plain
-Date: Sun, 06 Jul 2008 08:45:09 +1000
-Message-Id: <1215297909.8970.22.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, sr@denx.de
-Reply-To: benh@kernel.crashing.org
+Return-Path: <arjan@linux.intel.com>
+Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
+	by ozlabs.org (Postfix) with ESMTP id 612E9DDD04
+	for <linuxppc-dev@ozlabs.org>; Sun,  6 Jul 2008 08:57:45 +1000 (EST)
+Message-ID: <486FFC61.5080405@linux.intel.com>
+Date: Sat, 05 Jul 2008 15:57:37 -0700
+From: Arjan van de Ven <arjan@linux.intel.com>
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: the printk problem
+References: <20080625131101.GA6205@digi.com> <20080704104634.GA31634@digi.com>
+	<20080704111540.ddffd241.akpm@linux-foundation.org>
+	<alpine.LFD.1.10.0807041147450.2815@woody.linux-foundation.org>
+	<alpine.LFD.1.10.0807041250220.2815@woody.linux-foundation.org>
+	<1215212420.8970.8.camel@pasglop>
+	<alpine.LFD.1.10.0807041622270.2815@woody.linux-foundation.org>
+	<alpine.LFD.1.10.0807051523180.2847@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0807051523180.2847@woody.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linux-ia64@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Peter Anvin <hpa@zytor.com>, Andrew Morton <akpm@linux-foundation.org>,
+	"David S. Miller" <davem@davemloft.net>, parisc-linux@parisc-linux.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,46 +29,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, 2008-07-05 at 02:18 -0700, Grant Erickson wrote:
-> --- a/drivers/net/ibm_newemac/emac.h
-> +++ b/drivers/net/ibm_newemac/emac.h
-> @@ -41,14 +41,7 @@ struct emac_regs {
->         u32 vtpid;              /* Reset, R, T  */
->         u32 vtci;               /* Reset, R, T  */
->         u32 ptr;                /* Reset,    T  */
-> -       u32 iaht1;              /* Reset, R     */
-> -       u32 iaht2;              /* Reset, R     */
-> -       u32 iaht3;              /* Reset, R     */
-> -       u32 iaht4;              /* Reset, R     */
-> -       u32 gaht1;              /* Reset, R     */
-> -       u32 gaht2;              /* Reset, R     */
-> -       u32 gaht3;              /* Reset, R     */
-> -       u32 gaht4;              /* Reset, R     */
-> +       u32 reserved[8];/* Chip-dependent */
->         u32 lsah;
->         u32 lsal;
->         u32 ipgvr;              /* Reset,    T  */
+Linus Torvalds wrote:
+> 
+> On Fri, 4 Jul 2008, Linus Torvalds wrote:
+>> Still all happily untested, of course. And still with no actual users 
+>> converted.
+> 
+> Ok, it's tested, and here's an example usage conversion.
+> 
+> The diffstat pretty much says it all. It _does_ change the format of the 
+> stack trace entry a bit, but I don't think it's for the worse (unless it 
+> breaks things like the oops tracker - Arjan?)
+> 
+> It changes the symbol-in-module format from
+> 
+> 	:ext3:add_dirent_to_buf+0x6c/0x26c
+> 
+> to
+> 
+> 	add_dirent_to_buf+0x6c/0x26c [ext3]
+> 
+> but quite frankly, the latter was the standard format anyway (it's what 
+> "sprint_symbol()" gives you), and traps_64.c was the odd man out.
+> 
 
-Mostly looks good. I don't like "reserved" here tho...
+This won't break anything for me actually; I already deal with either case.
 
-Are lsah, lsal and ipgvr still meaningful here ?
+$ cat oopsparse.pl | wc -l
+1252
 
-If not, just remove everything past "ptr"...
+the kernel is so inconsistent with oops formats (over time/across architectures)
+that once you deal with what there is today... you pretty much deal with everything.
 
-Another option would have been to have emac regs be something
-like
+I also like the improvement; I wished something like this existed several times already
+in the last few months so for sure
 
-struct emac_regs {
-	all the common regs
-	.../...
-	union (
-		struct emac4_add_regs {
-			emac4 additional regs
-		};
-		struct emac4sync_add_regs {
-			emac4sync additional regs
-		}
-	};
-};
-
-Ben.
+Acked-by: Arjan van de Ven <arjan@linux.intel.com>
