@@ -1,33 +1,14 @@
-Return-Path: <randy.dunlap@oracle.com>
-Received: from agminet02.oracle.com (agminet02.oracle.com [141.146.126.229])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B520BDDE16
-	for <linuxppc-dev@ozlabs.org>; Sun,  6 Jul 2008 16:21:06 +1000 (EST)
-Received: from agminet01.oracle.com (agminet01.oracle.com [141.146.126.228])
-	by agminet02.oracle.com (Switch-3.2.4/Switch-3.1.7) with ESMTP id
-	m665Pe8Z009332
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
-	for <linuxppc-dev@ozlabs.org>; Sun, 6 Jul 2008 00:25:45 -0500
-Date: Sat, 5 Jul 2008 22:17:19 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: "Pekka Enberg" <penberg@cs.helsinki.fi>
-Subject: Re: the printk problem
-Message-Id: <20080705221719.949998e5.randy.dunlap@oracle.com>
-In-Reply-To: <84144f020807051702q1fc6275cv358c5e33dc2677fc@mail.gmail.com>
-References: <20080705125230.GA20166@damson.getinternet.no>
-	<alpine.LFD.1.10.0807051045520.2815@woody.linux-foundation.org>
-	<19f34abd0807051141h4ccfd0ar28660199f2bbf81f@mail.gmail.com>
-	<20080705185253.GQ14894@parisc-linux.org>
-	<84144f020807051702q1fc6275cv358c5e33dc2677fc@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linux-ia64@vger.kernel.org, Matthew Wilcox <matthew@wil.cx>,
-	Vegard Nossum <vegard.nossum@gmail.com>, linux-kernel@vger.kernel.org,
-	Jan Engelhardt <jengelh@medozas.de>, linuxppc-dev@ozlabs.org,
-	Peter Anvin <hpa@zytor.com>, Andrew Morton <akpm@linux-foundation.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	"David S. Miller" <davem@davemloft.net>
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: Paul Mackerras <paulus@samba.org>
+Subject: powerpc: fix swapcontext backwards compatibility due to VSX ucontext
+	changes
+In-reply-to: <18542.1169.106972.172938@cargo.ozlabs.ibm.com> 
+References: <31609.1215159925@neuling.org>
+	<18542.1169.106972.172938@cargo.ozlabs.ibm.com>
+Date: Sun, 06 Jul 2008 18:37:16 +1000
+Message-ID: <28458.1215333436@neuling.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,23 +18,145 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, 6 Jul 2008 03:02:59 +0300 Pekka Enberg wrote:
+When the ucontext changed to add the VSX context, this broke backwards
+compatibly on swapcontext.  swapcontext only compares the ucontext
+size passed in from the user to the new kernel ucontext size.
 
-> On Sat, Jul 05, 2008 at 08:41:39PM +0200, Vegard Nossum wrote:
-> >> Single letters are bad because it hurts readability and limits the
-> >> usefulness of the extension.</MHO>
-> 
-> On Sat, Jul 5, 2008 at 9:52 PM, Matthew Wilcox <matthew@wil.cx> wrote:
-> > I think you need a little warning noise that goes off in your head that
-> > means "I might be overdesigning this".  Linus' code is elegant and
-> > solves a problem nicely.
-> 
-> Am I the only one who missed Linus' patch? Did it make it to the list?
+This adds a check against the old ucontext size (with VMX but without
+VSX).  It also adds some sanity check for ucontexts without VSX, but
+where VSX is used according the MSR.  Fixes for both 32 and 64bit
+processes on 64bit kernels
 
-No, you are not the only one.  It was on linuxppc-dev for some reason.
-http://ozlabs.org/pipermail/linuxppc-dev/2008-July/059257.html
+Kudos to Paulus for noticing.
 
+Signed-off-by: Michael Neuling <mikey@neuling.org>
 ---
-~Randy
-Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
-http://linuxplumbersconf.org/
+> > +	    /*
+> > +	     * If userspace doesn't provide enough room for VSX data,
+> > +	     * but current thread has used VSX, we don't have anywhere
+> > +	     * to store the full context back into.
+> > +	     */
+> > +		((ctx_size < sizeof(struct ucontext)) &&
+> > +		 (regs->msr & MSR_VSX) && old_ctx) ||
+> 
+> I think we need to check current->thread.used_vsr rather than
+> regs->msr here (in both instances of this code).
+
+Yep I agree.  Thanks
+
+ arch/powerpc/kernel/signal_32.c |   36 +++++++++++++++++++++++++++++++++++-
+ arch/powerpc/kernel/signal_64.c |   35 +++++++++++++++++++++++++++++++----
+ 2 files changed, 66 insertions(+), 5 deletions(-)
+
+Index: linux-2.6-ozlabs/arch/powerpc/kernel/signal_32.c
+===================================================================
+--- linux-2.6-ozlabs.orig/arch/powerpc/kernel/signal_32.c
++++ linux-2.6-ozlabs/arch/powerpc/kernel/signal_32.c
+@@ -68,6 +68,13 @@
+ #define ucontext	ucontext32
+ 
+ /*
++ * Userspace code may pass a ucontext which doesn't include VSX added
++ * at the end.  We need to check for this case.
++ */
++#define UCONTEXTSIZEWITHOUTVSX \
++		(sizeof(struct ucontext) - sizeof(elf_vsrreghalf_t32))
++
++/*
+  * Returning 0 means we return to userspace via
+  * ret_from_except and thus restore all user
+  * registers from *regs.  This is what we need
+@@ -930,12 +937,39 @@ long sys_swapcontext(struct ucontext __u
+ {
+ 	unsigned char tmp;
+ 
++#ifdef CONFIG_PPC64
++	unsigned long new_msr = 0;
++
++	if (new_ctx &&
++	    __get_user(new_msr, &new_ctx->uc_mcontext.mc_gregs[PT_MSR]))
++		return -EFAULT;
++	if (/*
++	     * Check that the context is not smaller than the original
++	     * size (with VMX but without VSX)
++	     */
++		(ctx_size < UCONTEXTSIZEWITHOUTVSX) ||
++	    /*
++	     * If userspace doesn't provide enough room for VSX data,
++	     * but current thread has used VSX, we don't have anywhere
++	     * to store the full context back into.
++	     */
++		((ctx_size < sizeof(struct ucontext)) &&
++		 current->thread.used_vsr && old_ctx) ||
++	    /*
++	     * If the new context state sets the MSR VSX bits but
++	     * it doesn't provide VSX state.
++	     */
++		((ctx_size < sizeof(struct ucontext)) &&
++		 (new_msr & MSR_VSX)))
++		/* ... computer says "noooo" */
++		return -EINVAL;
++#else
+ 	/* Context size is for future use. Right now, we only make sure
+ 	 * we are passed something we understand
+ 	 */
+ 	if (ctx_size < sizeof(struct ucontext))
+ 		return -EINVAL;
+-
++#endif
+ 	if (old_ctx != NULL) {
+ 		struct mcontext __user *mctx;
+ 
+Index: linux-2.6-ozlabs/arch/powerpc/kernel/signal_64.c
+===================================================================
+--- linux-2.6-ozlabs.orig/arch/powerpc/kernel/signal_64.c
++++ linux-2.6-ozlabs/arch/powerpc/kernel/signal_64.c
+@@ -268,6 +268,13 @@ static long setup_trampoline(unsigned in
+ }
+ 
+ /*
++ * Userspace code may pass a ucontext which doesn't include VSX added
++ * at the end.  We need to check for this case.
++ */
++#define UCONTEXTSIZEWITHOUTVSX \
++		(sizeof(struct ucontext) - 32*sizeof(long))
++
++/*
+  * Handle {get,set,swap}_context operations
+  */
+ int sys_swapcontext(struct ucontext __user *old_ctx,
+@@ -277,10 +284,30 @@ int sys_swapcontext(struct ucontext __us
+ 	unsigned char tmp;
+ 	sigset_t set;
+ 
+-	/* Context size is for future use. Right now, we only make sure
+-	 * we are passed something we understand
+-	 */
+-	if (ctx_size < sizeof(struct ucontext))
++	unsigned long new_msr = 0;
++
++	if (new_ctx &&
++	    __get_user(new_msr, &new_ctx->uc_mcontext.gp_regs[PT_MSR]))
++		return -EFAULT;
++	if (/*
++	     * Check that the context is not smaller than the original
++	     * size (with VMX but without VSX)
++	     */
++		(ctx_size < UCONTEXTSIZEWITHOUTVSX) ||
++	    /*
++	     * If userspace doesn't provide enough room for VSX data,
++	     * but current thread has used VSX, we don't have anywhere
++	     * to store the full context back into.
++	     */
++		((ctx_size < sizeof(struct ucontext)) &&
++		 current->thread.used_vsr && old_ctx) ||
++	    /*
++	     * If the new context state sets the MSR VSX bits but
++	     * it doesn't provide VSX state.
++	     */
++		((ctx_size < sizeof(struct ucontext)) &&
++		 (new_msr & MSR_VSX)))
++		/* ... computer says "No" */
+ 		return -EINVAL;
+ 
+ 	if (old_ctx != NULL) {
