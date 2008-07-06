@@ -1,33 +1,33 @@
-Return-Path: <mingo@elte.hu>
-Received: from mx2.mail.elte.hu (mx2.mail.elte.hu [157.181.151.9])
+Return-Path: <randy.dunlap@oracle.com>
+Received: from agminet02.oracle.com (agminet02.oracle.com [141.146.126.229])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 240D0DDDFD
-	for <linuxppc-dev@ozlabs.org>; Sun,  6 Jul 2008 16:13:33 +1000 (EST)
-Date: Sun, 6 Jul 2008 08:13:11 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
+	by ozlabs.org (Postfix) with ESMTPS id B520BDDE16
+	for <linuxppc-dev@ozlabs.org>; Sun,  6 Jul 2008 16:21:06 +1000 (EST)
+Received: from agminet01.oracle.com (agminet01.oracle.com [141.146.126.228])
+	by agminet02.oracle.com (Switch-3.2.4/Switch-3.1.7) with ESMTP id
+	m665Pe8Z009332
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
+	for <linuxppc-dev@ozlabs.org>; Sun, 6 Jul 2008 00:25:45 -0500
+Date: Sat, 5 Jul 2008 22:17:19 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: "Pekka Enberg" <penberg@cs.helsinki.fi>
 Subject: Re: the printk problem
-Message-ID: <20080706061311.GA23606@elte.hu>
-References: <20080704104634.GA31634@digi.com>
-	<20080704111540.ddffd241.akpm@linux-foundation.org>
-	<alpine.LFD.1.10.0807041147450.2815@woody.linux-foundation.org>
-	<alpine.LFD.1.10.0807041250220.2815@woody.linux-foundation.org>
-	<1215212420.8970.8.camel@pasglop>
-	<alpine.LFD.1.10.0807041622270.2815@woody.linux-foundation.org>
-	<alpine.LFD.1.10.0807051523180.2847@woody.linux-foundation.org>
-	<20080706052741.GA18928@elte.hu>
-	<alpine.LFD.1.10.0807052232530.3016@woody.linux-foundation.org>
-	<20080706055317.GA4212@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080706055317.GA4212@elte.hu>
-Cc: linux-ia64@vger.kernel.org,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	linuxppc-dev@ozlabs.org, Peter Anvin <hpa@zytor.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Arjan van de Ven <arjan@linux.intel.com>,
-	"David S. Miller" <davem@davemloft.net>, parisc-linux@parisc-linux.org
+Message-Id: <20080705221719.949998e5.randy.dunlap@oracle.com>
+In-Reply-To: <84144f020807051702q1fc6275cv358c5e33dc2677fc@mail.gmail.com>
+References: <20080705125230.GA20166@damson.getinternet.no>
+	<alpine.LFD.1.10.0807051045520.2815@woody.linux-foundation.org>
+	<19f34abd0807051141h4ccfd0ar28660199f2bbf81f@mail.gmail.com>
+	<20080705185253.GQ14894@parisc-linux.org>
+	<84144f020807051702q1fc6275cv358c5e33dc2677fc@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linux-ia64@vger.kernel.org, Matthew Wilcox <matthew@wil.cx>,
+	Vegard Nossum <vegard.nossum@gmail.com>, linux-kernel@vger.kernel.org,
+	Jan Engelhardt <jengelh@medozas.de>, linuxppc-dev@ozlabs.org,
+	Peter Anvin <hpa@zytor.com>, Andrew Morton <akpm@linux-foundation.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	"David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,25 +37,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Sun, 6 Jul 2008 03:02:59 +0300 Pekka Enberg wrote:
 
-* Ingo Molnar <mingo@elte.hu> wrote:
-
-> yeah, agreed, combined it's not an x86 topic anymore.
+> On Sat, Jul 05, 2008 at 08:41:39PM +0200, Vegard Nossum wrote:
+> >> Single letters are bad because it hurts readability and limits the
+> >> usefulness of the extension.</MHO>
 > 
-> [ There's some lkml trouble so i've missed the earlier patch. I'm not 
->   sure the email problem is on my side, see how incomplete the 
->   discussion is on lkml.org as well:
+> On Sat, Jul 5, 2008 at 9:52 PM, Matthew Wilcox <matthew@wil.cx> wrote:
+> > I think you need a little warning noise that goes off in your head that
+> > means "I might be overdesigning this".  Linus' code is elegant and
+> > solves a problem nicely.
 > 
->      http://lkml.org/lkml/2008/6/25/170   ]
-> 
-> Anyway, i have have added this second patch of yours to 
-> tip/core/printk and moved your first patch over to that topic (which 
-> relies on it).
+> Am I the only one who missed Linus' patch? Did it make it to the list?
 
-ah, i found the reason - it started out on linux-ia64 originally then 
-moved over to lkml - so only half of the discussion was visible there. 
-And linux-ia64 is one of the few vger lists i'm not subscribed to 
-apparently. (there's no vger-please-give-me-all-emails list - making the 
-following of Linux development even harder)
+No, you are not the only one.  It was on linuxppc-dev for some reason.
+http://ozlabs.org/pipermail/linuxppc-dev/2008-July/059257.html
 
-	Ingo
+---
+~Randy
+Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
+http://linuxplumbersconf.org/
