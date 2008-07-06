@@ -1,19 +1,22 @@
-Return-Path: <arnd@arndb.de>
-From: Arnd Bergmann <arnd@arndb.de>
-To: benh@kernel.crashing.org
-Subject: Re: [Cbe-oss-dev] [patch 11/11] powerpc/cell: Add
-	DMA_ATTR_STRONG_ORDERING dma attribute and use in IOMMU code
-Date: Sun, 6 Jul 2008 17:15:54 +0200
-References: <20080704190535.316377278@arndb.de>
-	<200807052351.39945.arnd@arndb.de>
-	<1215296448.8970.14.camel@pasglop>
-In-Reply-To: <1215296448.8970.14.camel@pasglop>
+Return-Path: <jonsmirl@gmail.com>
+Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.29])
+	by ozlabs.org (Postfix) with ESMTP id 9BA52DDE03
+	for <linuxppc-dev@ozlabs.org>; Mon,  7 Jul 2008 03:56:57 +1000 (EST)
+Received: by yw-out-2324.google.com with SMTP id 5so861762ywh.39
+	for <linuxppc-dev@ozlabs.org>; Sun, 06 Jul 2008 10:56:48 -0700 (PDT)
+Message-ID: <9e4733910807061056m7b0dbf1fr578cbfcda31586ea@mail.gmail.com>
+Date: Sun, 6 Jul 2008 13:56:48 -0400
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: "Grant Likely" <grant.likely@secretlab.ca>
+Subject: Re: [alsa-devel] [PATCH 2/3] ALSA SoC: Add mpc5200-psc I2S driver
+In-Reply-To: <20080701235335.16923.43253.stgit@trillian.secretlab.ca>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Message-Id: <200807061715.55112.arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	cbe-oss-dev@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20080701235330.16923.67218.stgit@trillian.secretlab.ca>
+	<20080701235335.16923.43253.stgit@trillian.secretlab.ca>
+Cc: liam.girdwood@wolfsonmicro.com, alsa-devel@alsa-project.org,
+	broonie@opensource.wolfsonmicro.com, timur@freescale.com,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,18 +26,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sunday 06 July 2008, Benjamin Herrenschmidt wrote:
-> I need to look closely at what the various bridge settings are. Drivers
-> do expect DMA requests from one device to stay in order, at least up to
-> what's defined in the PCI spec, which is pretty much fully ordered
-> unless those devices set the PCIe (or X) relaxed ordering attribute.
-> However, AFAIK, Axon doesn't convey that sort of ordering attributes
-> from incoming transactions between the PCIe segment and the PLB5.
+On 7/1/08, Grant Likely <grant.likely@secretlab.ca> wrote:
+> From: Grant Likely <grant.likely@secretlab.ca>
+>
+>  This is an I2S bus driver for the MPC5200 PSC device.  It is probably
+>  will not be merged as-is because it uses v1 of the ASoC API, but I want
+>  to get it out there for comments.
+>  ---
 
-Yes, it would be very helpful if you can look into this a bit more.
-The Axon specification is particularly confusing in this regard and
-even though everyone I have asked so far told us that it's totally
-fine, an extra person with more insight in the complete picture looking
-into this would be good.
+The driver is assuming a capture stream exists. My codec is output only.
 
-	Arnd <><
+I'm using external clocking, but the driver should support using the
+mpc5200 for clocking. That's a little complicated since you have to
+compute the divisors. For example the Phytec pcm030 board has a
+33.3333Mhz xtal and runs at 400Mhz.
+
+In order to reduce options, can the psc-i2s driver always try to use
+mpc5200 clocking, then let the codec or fabric driver override it?
+
+-- 
+Jon Smirl
+jonsmirl@gmail.com
