@@ -1,21 +1,14 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [Cbe-oss-dev] [patch 11/11] powerpc/cell: Add
-	DMA_ATTR_STRONG_ORDERING dma attribute and use in IOMMU code
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Arnd Bergmann <arnd@arndb.de>
-In-Reply-To: <200807052351.39945.arnd@arndb.de>
-References: <20080704190535.316377278@arndb.de>
-	<1215236584.7424.2.camel@localhost> <1215239339.8970.10.camel@pasglop>
-	<200807052351.39945.arnd@arndb.de>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-HXvEnvS3kx4K+ZTK1fC5"
-Date: Mon, 07 Jul 2008 10:00:51 +1000
-Message-Id: <1215388851.19157.0.camel@localhost>
-Mime-Version: 1.0
-Cc: Paul Mackerras <paulus@samba.org>, cbe-oss-dev@ozlabs.org,
-	linuxppc-dev@ozlabs.org
-Reply-To: michael@ellerman.id.au
+Return-Path: <dgibson@ozlabs.org>
+Date: Mon, 7 Jul 2008 09:50:46 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Andre Schwarz <andre.schwarz@matrix-vision.de>
+Subject: Re: [PATCH] Add MPC5200B base board mvBC-P
+Message-ID: <20080706235046.GA6267@yookeroo.seuss>
+References: <486E515B.80508@matrix-vision.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <486E515B.80508@matrix-vision.de>
+Cc: linux-ppc list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,59 +18,72 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Fri, Jul 04, 2008 at 06:35:39PM +0200, Andre Schwarz wrote:
+> The mvBlueCOUGAR-P is a MPC5200B based camera system with Intel Gigabit ethernet
+> controller (using e1000). It's just another MPC5200_simple board.
+> 
+> Signed-off-by: Andre Schwarz <andre.schwarz@matrix-vision.de>
+[snip]
+> --- /dev/null
+> +++ b/arch/powerpc/boot/dts/mvbc-p.dts
+> @@ -0,0 +1,206 @@
 
---=-HXvEnvS3kx4K+ZTK1fC5
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+[snip]
+> +		dma-controller@1200 {
+> +			device_type = "dma-controller";
 
-On Sat, 2008-07-05 at 23:51 +0200, Arnd Bergmann wrote:
-> On Saturday 05 July 2008, Benjamin Herrenschmidt wrote:
-> > On Sat, 2008-07-05 at 15:43 +1000, Michael Ellerman wrote:
-> > > > The current Cell IOMMU implementation sets the IOPTE_SO_RW bits in =
-all IOTPEs
-> > > > (for both the dynamic and fixed mappings) which enforces strong ord=
-ering of
-> > > > both reads and writes. This patch makes the default behaviour weak =
-ordering
-> > > > (the IOPTE_SO_RW bits not set) and to request a strongly ordered ma=
-pping the
-> > > > new DMA_ATTR_STRONG_ORDERING needs to be used.
-> > >=20
-> > > We're sure that's safe?
-> >=20
-> > I'd say it's not...
->=20
-> It turned out that the firmware sets up the south bridge to never set the=
- 'S'
-> bit on incoming transactions, which overrides the IOPTE_SO_RW bits, on al=
-l
-> existing cell hardware.
+No device_type here.
 
-It seems strange to me that the southbridge is allowed to override the
-setting in the IOMMU page table, but if that's what the doc says ..
+> +			compatible = "fsl,mpc5200-bestcomm";
+> +			reg = <0x1200 0x80>;
+> +			interrupts = <3 0 0  3 1 0  3 2 0  3 3 0
+> +				3 4 0  3 5 0  3 6 0  3 7 0
+> +				3 8 0  3 9 0  3 10 0  3 11 0
+> +				3 12 0  3 13 0  3 14 0  3 15 0>;
+> +			interrupt-parent = <&mpc5200_pic>;
+> +		};
+> +
+> +		xlb@1f00 {
+> +			compatible = "fsl,mpc5200-xlb";
+> +			reg = <0x1f00 0x100>;
+> +		};
+> +
+> +		serial0: serial@2000 {		// PSC1
+> +			device_type = "serial";
+> +			compatible = "fsl,mpc5200-psc-uart";
+> +			port-number = <0>;
+> +			reg = <0x2000 0x100>;
+> +			interrupts = <2 1 0>;
+> +			interrupt-parent = <&mpc5200_pic>;
+> +		};
+> +
+> +		i2c@3d00 {
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +			compatible = "fsl,mpc5200-i2c","fsl-i2c";
+> +			reg = <0x3d00 0x40>;
+> +			interrupts = <2 15 0>;
+> +			interrupt-parent = <&mpc5200_pic>;
+> +			fsl5200-clocking;
+> +		};
+> +
+> +		i2c@3d40 {
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +			compatible = "fsl,mpc5200-i2c","fsl-i2c";
+> +			reg = <0x3d40 0x40>;
+> +			interrupts = <2 16 0>;
+> +			interrupt-parent = <&mpc5200_pic>;
+> +			fsl5200-clocking;
+> +		};
+> +		sram@8000 {
+> +			compatible = "fsl,mpc5200-sram","sram";
+> +			reg = <0x8000 0x4000>;
+> +		};
+> +	};
 
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-HXvEnvS3kx4K+ZTK1fC5
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBIcVyzdSjSd0sB4dIRAgbpAJ9YW8tckK8yuXsm7O+vNJBA6u58RgCgoS/1
-CzGfOtr7XrHWXaUeggbiCw0=
-=oYgw
------END PGP SIGNATURE-----
-
---=-HXvEnvS3kx4K+ZTK1fC5--
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
