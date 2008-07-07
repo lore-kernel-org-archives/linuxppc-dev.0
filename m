@@ -1,17 +1,19 @@
-Return-Path: <neko@genesi-usa.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.169])
-	by ozlabs.org (Postfix) with ESMTP id 7132DDE00F
-	for <linuxppc-dev@ozlabs.org>; Mon,  7 Jul 2008 21:48:11 +1000 (EST)
-Received: by ug-out-1314.google.com with SMTP id k3so925078ugf.0
-	for <linuxppc-dev@ozlabs.org>; Mon, 07 Jul 2008 04:48:08 -0700 (PDT)
-Message-ID: <48720279.6010904@genesi-usa.com>
-Date: Mon, 07 Jul 2008 12:48:09 +0100
-From: Matt Sealey <matt@genesi-usa.com>
-MIME-Version: 1.0
-To: ppc-dev <linuxppc-dev@ozlabs.org>
-Subject: e600 core power management
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Sender: Matt Sealey <neko@genesi-usa.com>
+Return-Path: <jwboyer@gmail.com>
+Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.29])
+	by ozlabs.org (Postfix) with ESMTP id A0D5EDDE41
+	for <linuxppc-dev@ozlabs.org>; Mon,  7 Jul 2008 22:17:32 +1000 (EST)
+Received: by yx-out-2324.google.com with SMTP id 8so361956yxg.39
+	for <linuxppc-dev@ozlabs.org>; Mon, 07 Jul 2008 05:17:30 -0700 (PDT)
+Subject: Re: Please pull linux-2.6-virtex.git
+From: Josh Boyer <jwboyer@gmail.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+In-Reply-To: <20080704172240.GE17062@secretlab.ca>
+References: <20080704172240.GE17062@secretlab.ca>
+Content-Type: text/plain
+Date: Mon, 07 Jul 2008 08:17:15 -0400
+Message-Id: <1215433036.20774.39.camel@weaponx>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,21 +23,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi guys,
+On Fri, 2008-07-04 at 11:22 -0600, Grant Likely wrote:
+> Hi Josh,
+> 
+> Here are the bulk of the Xilinx 440 support patches.  Please pull
+> into your next branch.
+> 
+> Thanks,
+> g.
+> 
+> The following changes since commit f3e909c2750eb20536bacacc867dc9047b70546a:
+>   Michael Neuling (1):
+>         powerpc: Update for VSX core file and ptrace
+> 
+> are available in the git repository at:
+> 
+>   git://git.secretlab.ca/git/linux-2.6-virtex virtex-for-2.6.27
+> 
 
-Quick question, am I right (and looking at idle_6xx.S, I think I am) in thinking that
-during the idle process, by default, an e600 core such as the 7448 or MPC8610 will
-automatically transition to a NAP state, thus being as low power as possible?
+<snip>
 
-Has anyone done any benchmarking of the power consumption of the processor when
-this transition is disabled (remove CPU_FTR_MAYBE_CAN_NAP) or have a rough idea
-what the benefits might be?
+> John Linn (5):
+>       powerpc/virtex: add dts file for ML507 reference design
 
-Is there a performance reason for removing the feature or disabling naps altogether?
-The powersave-nap sysctl controls whether DOZE or NAP is entered on processors that
-support a seperate HID0[DOZE], however is it possible to extend it such that nap
-is never entered?
+This one still isn't a dts-v1 file.  Any chance of that getting fixed in
+the next day or two?
 
--- 
-Matt Sealey <matt@genesi-usa.com>
-Genesi, Manager, Developer Relations
+josh
