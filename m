@@ -1,24 +1,17 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C4256DDEE2
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jul 2008 08:51:08 +1000 (EST)
-Subject: Re: Deputy maintainer for powerpc
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <155B1079-39C4-4D15-B886-F904C424BC8C@kernel.crashing.org>
-References: <18541.48403.490671.815858@cargo.ozlabs.ibm.com>
-	<155B1079-39C4-4D15-B886-F904C424BC8C@kernel.crashing.org>
-Content-Type: text/plain
-Date: Tue, 08 Jul 2008 08:50:31 +1000
-Message-Id: <1215471031.8970.153.camel@pasglop>
+Return-Path: <smaclennan@pikatech.com>
+Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
+	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id E75E9DDF25
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jul 2008 08:55:48 +1000 (EST)
+Date: Mon, 7 Jul 2008 18:55:44 -0400
+From: Sean MacLennan <smaclennan@pikatech.com>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] i2c-ibm_iic: Remove deprecated OCP style part of thedriver
+Message-ID: <20080707185544.7335b108@lappy.seanm.ca>
+In-Reply-To: <20080604210400.0d7abb8e@hyperion.delvare>
+References: <1212592932-24031-1-git-send-email-sr@denx.de>
+	<20080604210400.0d7abb8e@hyperion.delvare>
 Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Paul Mackerras <paulus@samba.org>, lkml List <linux-kernel@vger.kernel.org>
-Reply-To: benh@kernel.crashing.org
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,31 +21,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2008-07-07 at 09:44 -0500, Kumar Gala wrote:
-> On Jul 4, 2008, at 1:02 AM, Paul Mackerras wrote:
+On Wed, 4 Jun 2008 21:04:00 +0200
+"Jean Delvare" <khali@linux-fr.org> wrote:
+
+> On Wed,  4 Jun 2008 17:22:12 +0200, Stefan Roese wrote:
+> > The deprecated OCP style driver part is used by the "old" arch/ppc
+> > platform. This platform is scheduled for removal in June/July this
+> > year. This patch now removes the OCP driver part from the IBM I2C
+> > driver.
+> > 
+> > Signed-off-by: Stefan Roese <sr@denx.de>
+> > ---
+> >  drivers/i2c/busses/i2c-ibm_iic.c |  181
+> > -------------------------------------- 1 files changed, 0
+> > insertions(+), 181 deletions(-)
 > 
-> > I'm going to be on vacation for the next two weeks, and it looks
-> > highly likely that Linus will open the 2.6.27 merge window during that
-> > time, so I'm appointing Ben Herrenschmidt as my deputy maintainer.
-> > During the next two weeks, he'll be the person collecting together any
-> > further powerpc-related commits that need to go upstream, and sending
-> > pull requests to Linus as necessary.
-> >
-> > This is the start of a longer-term transition which will ultimately
-> > result in me handing over the powerpc architecture maintainership to
-> > Ben.  Because of various work commitments, this will be a gradual
-> > transition taking probably around 6 months.
-> >
-> > Paul.
+> Applied, queued for 2.6.27, thanks Stefan.
 > 
-> Ben, Do you have a tree that you'll be using to collect things in?
+> BTW, would you happen to know if read-only EEPROMs such as SPD or EDID
+> can be found on the i2c-ibm_iic adapters?
+> 
 
-I've setup a tree on kernel.org yes, but there's nothing useful in
-it yet (it has 3 branches, master, merge and next, but they are
-currently pointing to the exact same spot as Paul's).
+Jean, where is this patch queued? I have a patch for the iic driver and
+it would probably be easiest if I diffed against what you have.
 
-I've started collecting things yesterday and sending comments, I'll
-push some new stuff out today or tomorrow. Mostly been "training" with
-git and patchwork so far :-)
-
-Ben.
+Cheers,
+   Sean
