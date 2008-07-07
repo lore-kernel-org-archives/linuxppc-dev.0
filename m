@@ -1,33 +1,34 @@
-Return-Path: <munroesj@linux.vnet.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+Return-Path: <maxim@linux.vnet.ibm.com>
+Received: from mtagate3.uk.ibm.com (mtagate3.uk.ibm.com [195.212.29.136])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 57313DED0B
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jul 2008 01:10:54 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m67FAokL001114
-	for <linuxppc-dev@ozlabs.org>; Mon, 7 Jul 2008 11:10:50 -0400
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
-	m67FAj2m047964
-	for <linuxppc-dev@ozlabs.org>; Mon, 7 Jul 2008 09:10:46 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m67FAjic008219
-	for <linuxppc-dev@ozlabs.org>; Mon, 7 Jul 2008 09:10:45 -0600
-Received: from spokane1.rchland.ibm.com (spokane1.rchland.ibm.com [9.10.86.94])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	m67FAiQe008174
-	for <linuxppc-dev@ozlabs.org>; Mon, 7 Jul 2008 09:10:44 -0600
-Subject: Re: [PATCH 1/2] elf loader support for auxvec base platform string
-From: Steven Munroe <munroesj@linux.vnet.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Content-Type: text/plain
-Date: Mon, 07 Jul 2008 10:14:13 -0500
-Message-Id: <1215443653.4065.211.camel@spokane1.rchland.ibm.com>
+	(Client CN "mtagate3.uk.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id D3671DEBC4
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jul 2008 01:39:38 +1000 (EST)
+Received: from d06nrmr1407.portsmouth.uk.ibm.com
+	(d06nrmr1407.portsmouth.uk.ibm.com [9.149.38.185])
+	by mtagate3.uk.ibm.com (8.13.8/8.13.8) with ESMTP id m67FdC9O100730
+	for <linuxppc-dev@ozlabs.org>; Mon, 7 Jul 2008 15:39:12 GMT
+Received: from d06av02.portsmouth.uk.ibm.com (d06av02.portsmouth.uk.ibm.com
+	[9.149.37.228])
+	by d06nrmr1407.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v9.0) with
+	ESMTP id m67FdCBa1474700
+	for <linuxppc-dev@ozlabs.org>; Mon, 7 Jul 2008 16:39:12 +0100
+Received: from d06av02.portsmouth.uk.ibm.com (loopback [127.0.0.1])
+	by d06av02.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id m67FdBpo013923
+	for <linuxppc-dev@ozlabs.org>; Mon, 7 Jul 2008 16:39:12 +0100
+Date: Mon, 7 Jul 2008 17:39:23 +0200
+From: Maxim Shchetynin <maxim@linux.vnet.ibm.com>
+To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org
+Subject: Re: AZFS file system proposal
+Message-ID: <20080707173923.17dc6c05@mercedes-benz.boeblingen.de.ibm.com>
+In-Reply-To: <200807011659.33413.arnd@arndb.de>
+References: <20080618160629.6cd749a8@mercedes-benz.boeblingen.de.ibm.com>
+	<200807011659.33413.arnd@arndb.de>
 Mime-Version: 1.0
-Reply-To: munroesj@us.ibm.com
+Content-Type: text/plain; charset=UTF-8
+Cc: Arnd Bergmann <arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,26 +38,93 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Roland McGrath writes:
+Thank you Arnd for your comments. I have changed my patch accordinly (I wil=
+l send it in a few minutes).
 
-> I understand why you think so.  But let's not be too abstract.  The
-> purpose of the addition is to drive ld.so's selection of libraries, yes?
+> > Subject: azfs: initial submit of azfs, a non-buffered filesystem
+>=20
+> Please make the patch subject the actual subject of your email next time,
+> and put the introductory text below the Signed-off-by: lines, separated
+> by a "---" line. That will make the standard tools work without extra
+> effort on my side. Also, please always Cc the person you want to merge
+> the patch, in this case probably me.
 
-The is one possible usage of this AT_BASE_PLATFORM. There is also a
-requirement from performance tools and large applications to understand
-their environment. As it needs to be a public and durable ABI.
+Done.
 
-Virtualization and multi-core are only going to make everyones life more
-complicated. Applications and performance tools will require more info
-about the system to do their jobs. This is the problem I am trying to
-solve. And I thought this was the simplest way to solve several use
-cases.
+> All other file systems are in separate directories, so it would be better
+> to rename fs/azfs.c to fs/azfs/inode.c
 
-I proposes for this and the possible extension to library selection
-because it would become part of the ABI and any application could
-access it.
+Done.
 
-So if you want to propose another (Better) mechanism for ld.so library
-search shaping I would be glad to discuss it.
+> > +#define AZFS_SUPERBLOCK_FLAGS		MS_NOEXEC | \
+> > +					MS_SYNCHRONOUS | \
+> > +					MS_DIRSYNC | \
+> > +					MS_ACTIVE
+>=20
+> Why MS_NOEXEC? What happens on a remount if the user does not specifies
+> -o remount,exec?
 
-But in my mind the requirement for AT_BASE_PLATFORM still stands.
+I also don't see any reason of keeping MS_NOEXEC - have just removed it.
+
+> > +static unsigned long
+> > +azfs_block_find(struct inode *inode, enum azfs_direction direction,
+> > +		unsigned long from, unsigned long *size)
+> > +{
+> > ...
+> > +}
+>=20
+> This overloading of the return type to mean either a pointer or an offset
+> on the block device is rather confusing. Why not just return the raw bloc=
+k_id
+> before the last +=3D and leave that part up to the caller?
+
+Changed.
+
+> > +		if (copy_to_user(target, (void*) pin, size)) {
+> > +			rc =3D -EFAULT;
+> > +			goto out;
+> > +		}
+>=20
+> Question to the powerpc folks: is copy_to_user safe for an __iomem source?
+> Should there be two copies (memcpy_fromio and copy_to_user) instead?
+
+I leave this question open.
+
+> > +	page_prot =3D pgprot_val(vma->vm_page_prot);
+> > +	page_prot |=3D (_PAGE_NO_CACHE | _PAGE_RW);
+> > +	page_prot &=3D ~_PAGE_GUARDED;
+> > +	vma->vm_page_prot =3D __pgprot(page_prot);
+>=20
+> The pgprot modifications rely on powerpc specific flags, but the
+> file system should not really need to be powerpc only.
+>=20
+> The flags we want are more or less the same as PAGE_AGP, because
+> both are I/O mapped memory that needs to be uncached but should
+> not be guarded, for performance reasons.
+>=20
+> Maybe we can introduce a new PAGE_IOMEM here that we can use
+> in all places that need something like this. In spufs we need
+> the same flags for the local store mappings.
+>=20
+> I wouldn't hold up merging the file system for this problem, but
+> until it is solved, the Kconfig entry should probably have
+> a "depends on PPC".
+
+Done.
+
+--=20
+Mit freundlichen Gr=C3=BC=C3=9Fen / met vriendelijke groeten / avec regards
+
+    Maxim V. Shchetynin
+    Linux Kernel Entwicklung
+    IBM Deutschland Entwicklung GmbH
+    Linux f=C3=BCr Cell, Abteilung 3250
+    Sch=C3=B6naicher Stra=C3=9Fe 220
+    71032 B=C3=B6blingen
+
+Vorsitzender des Aufsichtsrats: Johann Weihen
+Gesch=C3=A4ftsf=C3=BChrung: Herbert Kircher
+Sitz der Gesellschaft: B=C3=B6blingen
+Registriergericht: Amtsgericht Stuttgart, HRB 243294
+
+Fahr nur so schnell wie dein Schutzengel fliegen kann!
