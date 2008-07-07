@@ -1,18 +1,16 @@
-Return-Path: <vbarshak@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id C259ADDDE9
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jul 2008 05:52:29 +1000 (EST)
-Message-ID: <48727374.1010304@ru.mvista.com>
-Date: Mon, 07 Jul 2008 23:50:12 +0400
-From: Valentine Barshak <vbarshak@ru.mvista.com>
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Message-ID: <487274DA.7020203@am.sony.com>
+Date: Mon, 7 Jul 2008 12:56:10 -0700
+From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
-To: Grant Erickson <gerickson@nuovations.com>
-Subject: Re: [PATCH v5] ibm_newemac: Parameterize EMAC Multicast Match Handling
-References: <1215303343-26410-1-git-send-email-gerickson@nuovations.com>
-	<1215387012-6464-1-git-send-email-gerickson@nuovations.com>
-In-Reply-To: <1215387012-6464-1-git-send-email-gerickson@nuovations.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, sr@denx.de
+To: arnd@arndb.de
+Subject: Re: [patch 05/11] powerpc/cell: add spu aware cpufreq governor
+References: <20080704190535.316377278@arndb.de>
+	<20080704190806.162475834@arndb.de>
+In-Reply-To: <20080704190806.162475834@arndb.de>
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: Paul Mackerras <paulus@samba.org>, cbe-oss-dev@ozlabs.org,
+	Christian Krafft <krafft@de.ibm.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,89 +20,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Grant Erickson wrote:
+arnd@arndb.de wrote:
+> This patch adds a cpufreq governor that takes the number of running spus
+> into account. It's very similar to the ondemand governor, but not as complex.
+> Instead of hacking spu load into the ondemand governor it might be easier to
+> have cpufreq accepting multiple governors per cpu in future.
+> Don't know if this is the right way, but it would keep the governors simple.
 
-<snip>
+I tried your current cell-2.6.git #cell_next branch with ps3_defconfig and
+get these. ps3_defconfig has
 
-> index 48c9a6e..799592d 100644
-> --- a/arch/powerpc/boot/dts/kilauea.dts
-> +++ b/arch/powerpc/boot/dts/kilauea.dts
-> @@ -205,7 +205,7 @@
->  			EMAC0: ethernet@ef600900 {
->  				linux,network-index = <0>;
->  				device_type = "network";
-> -				compatible = "ibm,emac-405ex", "ibm,emac4";
-> +				compatible = "ibm,emac-405ex", "ibm,emac4sync";
->  				interrupt-parent = <&EMAC0>;
->  				interrupts = <0 1>;
->  				#interrupt-cells = <1>;
-> @@ -213,7 +213,7 @@
->  				#size-cells = <0>;
->  				interrupt-map = </*Status*/ 0 &UIC0 18 4
->  						/*Wake*/  1 &UIC1 1d 4>;
-> -				reg = <ef600900 70>;
-> +				reg = <ef600900 c4>;
->  				local-mac-address = [000000000000]; /* Filled in by U-Boot */
->  				mal-device = <&MAL0>;
->  				mal-tx-channel = <0>;
-> @@ -233,7 +233,7 @@
->  			EMAC1: ethernet@ef600a00 {
->  				linux,network-index = <1>;
->  				device_type = "network";
-> -				compatible = "ibm,emac-405ex", "ibm,emac4";
-> +				compatible = "ibm,emac-405ex", "ibm,emac4sync";
->  				interrupt-parent = <&EMAC1>;
->  				interrupts = <0 1>;
->  				#interrupt-cells = <1>;
-> @@ -241,7 +241,7 @@
->  				#size-cells = <0>;
->  				interrupt-map = </*Status*/ 0 &UIC0 19 4
->  						/*Wake*/  1 &UIC1 1f 4>;
-> -				reg = <ef600a00 70>;
-> +				reg = <ef600900 c4>;
+ CONFIG_CBE_CPUFREQ=m
+ CONFIG_CBE_CPUFREQ_SPU_GOVERNOR=m
 
-Should be reg = <ef600a00 c4>
+I'm not sure if this patch is the one that introduced the problem though.
+I guess we need to make an adjustment in the Kconfig.  I'll be away the
+rest of this week, and will look at it next week if you don't.
 
-<snip>
+-Geoff
 
-> --- a/arch/powerpc/boot/dts/makalu.dts
-> +++ b/arch/powerpc/boot/dts/makalu.dts
-> @@ -205,7 +205,7 @@
->  			EMAC0: ethernet@ef600900 {
->  				linux,network-index = <0>;
->  				device_type = "network";
-> -				compatible = "ibm,emac-405ex", "ibm,emac4";
-> +				compatible = "ibm,emac-405ex", "ibm,emac4sync";
->  				interrupt-parent = <&EMAC0>;
->  				interrupts = <0 1>;
->  				#interrupt-cells = <1>;
-> @@ -213,7 +213,7 @@
->  				#size-cells = <0>;
->  				interrupt-map = </*Status*/ 0 &UIC0 18 4
->  						/*Wake*/  1 &UIC1 1d 4>;
-> -				reg = <ef600900 70>;
-> +				reg = <ef600900 c4>;
->  				local-mac-address = [000000000000]; /* Filled in by U-Boot */
->  				mal-device = <&MAL0>;
->  				mal-tx-channel = <0>;
-> @@ -233,7 +233,7 @@
->  			EMAC1: ethernet@ef600a00 {
->  				linux,network-index = <1>;
->  				device_type = "network";
-> -				compatible = "ibm,emac-405ex", "ibm,emac4";
-> +				compatible = "ibm,emac-405ex", "ibm,emac4sync";
->  				interrupt-parent = <&EMAC1>;
->  				interrupts = <0 1>;
->  				#interrupt-cells = <1>;
-> @@ -241,7 +241,7 @@
->  				#size-cells = <0>;
->  				interrupt-map = </*Status*/ 0 &UIC0 19 4
->  						/*Wake*/  1 &UIC1 1f 4>;
-> -				reg = <ef600a00 70>;
-> +				reg = <ef600900 c4>;
+cell-2.6/arch/powerpc/platforms/cell/cbe_spu_governor.c: In function 'calc_freq':
+cell-2.6/arch/powerpc/platforms/cell/cbe_spu_governor.c:53: warning: format '%d' expects type 'int', but argument 4 has type 'long unsigned int'
 
-Should be reg = <ef600a00 c4>
-
-
-Thanks,
-Valentine.
+ERROR: ".cpufreq_register_governor" [arch/powerpc/platforms/cell/cbe_spu_governor.ko] undefined!
+ERROR: ".__cpufreq_driver_target" [arch/powerpc/platforms/cell/cbe_spu_governor.ko] undefined!
+ERROR: ".cpufreq_unregister_governor" [arch/powerpc/platforms/cell/cbe_spu_governor.ko] undefined!
+ERROR: ".cpufreq_frequency_table_target" [arch/powerpc/platforms/cell/cbe-cpufreq.ko] undefined!
+ERROR: ".cpufreq_register_driver" [arch/powerpc/platforms/cell/cbe-cpufreq.ko] undefined!
+ERROR: ".cpufreq_frequency_table_verify" [arch/powerpc/platforms/cell/cbe-cpufreq.ko] undefined!
+ERROR: ".cpufreq_frequency_table_get_attr" [arch/powerpc/platforms/cell/cbe-cpufreq.ko] undefined!
+ERROR: ".cpufreq_notify_transition" [arch/powerpc/platforms/cell/cbe-cpufreq.ko] undefined!
+ERROR: ".cpufreq_frequency_table_cpuinfo" [arch/powerpc/platforms/cell/cbe-cpufreq.ko] undefined!
+ERROR: ".cbe_get_cpu_mic_tm_regs" [arch/powerpc/platforms/cell/cbe-cpufreq.ko] undefined!
+ERROR: ".cbe_get_cpu_pmd_regs" [arch/powerpc/platforms/cell/cbe-cpufreq.ko] undefined!
+ERROR: ".cpufreq_unregister_driver" [arch/powerpc/platforms/cell/cbe-cpufreq.ko] undefined!
+ERROR: ".cpufreq_frequency_table_put_attr" [arch/powerpc/platforms/cell/cbe-cpufreq.ko] undefined!
