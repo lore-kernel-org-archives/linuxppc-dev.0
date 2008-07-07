@@ -1,22 +1,23 @@
-Return-Path: <jonsmirl@gmail.com>
-Received: from rn-out-0910.google.com (rn-out-0910.google.com [64.233.170.189])
-	by ozlabs.org (Postfix) with ESMTP id 75B88DDF0E
-	for <linuxppc-dev@ozlabs.org>; Mon,  7 Jul 2008 23:23:27 +1000 (EST)
-Received: by rn-out-0910.google.com with SMTP id j40so356016rnf.16
-	for <linuxppc-dev@ozlabs.org>; Mon, 07 Jul 2008 06:23:24 -0700 (PDT)
-Message-ID: <9e4733910807070623u4c17b319p48e96a3022f3459b@mail.gmail.com>
-Date: Mon, 7 Jul 2008 09:23:24 -0400
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Grant Likely" <grant.likely@secretlab.ca>, liam.girdwood@wolfsonmicro.com,
-	alsa-devel@alsa-project.org, linuxppc-dev@ozlabs.org, timur@freescale.com
-Subject: Re: [alsa-devel] [PATCH 2/3] ALSA SoC: Add mpc5200-psc I2S driver
-In-Reply-To: <20080707105905.GA19240@rakim.wolfsonmicro.main>
+Return-Path: <glikely@secretlab.ca>
+Received: from ag-out-0708.google.com (ag-out-0708.google.com [72.14.246.240])
+	by ozlabs.org (Postfix) with ESMTP id 22271DDF35
+	for <linuxppc-dev@ozlabs.org>; Mon,  7 Jul 2008 23:34:24 +1000 (EST)
+Received: by ag-out-0708.google.com with SMTP id 8so13039368agc.0
+	for <linuxppc-dev@ozlabs.org>; Mon, 07 Jul 2008 06:34:23 -0700 (PDT)
+Message-ID: <fa686aa40807070634t6e9047d1k7d8ca2b443d1ae68@mail.gmail.com>
+Date: Mon, 7 Jul 2008 07:34:23 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Josh Boyer" <jwboyer@linux.vnet.ibm.com>
+Subject: Re: [RFC/PATCH] powerpc/bootwrapper: Allow user to specify additional
+	default targets
+In-Reply-To: <20080707091818.72d584fe@zod.rchland.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-References: <20080701235330.16923.67218.stgit@trillian.secretlab.ca>
-	<20080701235335.16923.43253.stgit@trillian.secretlab.ca>
-	<9e4733910807061056m7b0dbf1fr578cbfcda31586ea@mail.gmail.com>
-	<20080707105905.GA19240@rakim.wolfsonmicro.main>
+References: <20080701175852.32575.39707.stgit@trillian.secretlab.ca>
+	<fa686aa40807032351l631febe2h8d38a9eed1053b6b@mail.gmail.com>
+	<20080707091818.72d584fe@zod.rchland.ibm.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,43 +27,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 7/7/08, Mark Brown <broonie@opensource.wolfsonmicro.com> wrote:
-> On Sun, Jul 06, 2008 at 01:56:48PM -0400, Jon Smirl wrote:
+On Mon, Jul 7, 2008 at 7:18 AM, Josh Boyer <jwboyer@linux.vnet.ibm.com> wrote:
+> On Fri, 4 Jul 2008 00:51:44 -0600
+> "Grant Likely" <grant.likely@secretlab.ca> wrote:
 >
->  > The driver is assuming a capture stream exists. My codec is output only.
+>> Anyone had a chance to look at this?  I think this could be used to
+>> eliminate a lot of the platform specific default targets in
+>> arch/powerpc/boot/Makefile by moving them into the defconfigs.  Josh,
+>> Kumar, what are your thoughts?
 >
->
-> While the driver declares a capture stream the core doesn't require that
->  both capture and playback be available - it will cope with a capture
->  only or a playback only DAI (this is fairly common due to DAC only and
->  ADC only parts).  Unless there's some other issue specific to this
->  driver?
+> So for cases like Kilauea/Haleakala or Bamboo/Yosemite, you would
+> specify Yosemite in the bamboo defconfig?  Or?
 
-Yes, it GPFs allocating a a DMA buffer on the null capture stream pointer.
+If they share a defconfig, then yes, that is what I'm thinking about...
 
->
->  > I'm using external clocking, but the driver should support using the
->  > mpc5200 for clocking. That's a little complicated since you have to
->  > compute the divisors. For example the Phytec pcm030 board has a
->  > 33.3333Mhz xtal and runs at 400Mhz.
->
->
-> This is desirable, though it shouldn't be an obstacle for merging if the
->  driver only supports running in slave mode.
->
->
->  > In order to reduce options, can the psc-i2s driver always try to use
->  > mpc5200 clocking, then let the codec or fabric driver override it?
->
->
-> The clocking should always be under the control of the machine driver
->  with the codec and platform drivers exporting the required dividers and
->  PLLs/FLLs.  Neither the platform driver nor the codec driver are really
->  in a position to know how a given board is wired up and what
->  interdependencies or external requirements there are.
->
+> I actually sort of prefer having a separate defconfig/CONFIG_YOSEMITE
+> (as an example) because it's much easier for an end user to figure out
+> if the board is supported or not.
 
+...however, these don't have to disappear if you prefer them.
+
+> I could be totally misunderstanding the intention of this patch though,
+> so I'll stop rambling and wait to see what the use case is.
+
+Specifically the case I'm thinking of is when a user of a Xilinx FPGA
+drops a new .dts file into arch/powerpc/boot/dts (say
+'super-sexy-platform.dts').  However, instead of modifying the
+Makefile or always typing 'make simpleImage.super-sexy-platform', then
+can add 'simpleImage.super-sexy-platform' to their defconfig which I
+can see being easier for someone to get their head around.
+
+g.
 
 -- 
-Jon Smirl
-jonsmirl@gmail.com
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
