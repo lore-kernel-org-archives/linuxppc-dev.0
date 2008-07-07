@@ -1,17 +1,13 @@
-Return-Path: <vitb@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C795EDDEFE
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jul 2008 09:13:07 +1000 (EST)
-Date: Tue, 8 Jul 2008 03:12:56 +0400
-From: Vitaly Bordug <vitb@kernel.crashing.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: powerpc: Add proper reference to dma_mask
-Message-ID: <20080708031256.57176084@vitb-lp>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Return-Path: <gerickson@nuovations.com>
+Received: from relay03.pair.com (relay03.pair.com [209.68.5.17])
+	by ozlabs.org (Postfix) with SMTP id 4CBFADDF47
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jul 2008 09:32:01 +1000 (EST)
+From: Grant Erickson <gerickson@nuovations.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] ibm_newemac: Add MII mode support to the EMAC RGMII bridge.
+Date: Mon,  7 Jul 2008 16:31:58 -0700
+Message-Id: <1215473518-14245-1-git-send-email-gerickson@nuovations.com>
+Cc: sr@denx.de, jgarzik@pobox.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,29 +17,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-There is dma_mask in of_device that is being filled upon
-of_platform_device_create() but we don't properly set the struct device
-in there to point back to it. coherent_dma_mask wasn't set up either -
-these caused weird lock-ups and behavior of USB subsystem using
-of_device USB host drivers.
+This patch adds support to the RGMII handler in the EMAC driver for
+the MII PHY mode such that device tree entries of the form `phy-mode = "mii";'
+are recognized and handled appropriately.
 
-Signed-off-by: Vitaly Bordug <vitb@kernel.crashing.org>
+While logically, in software, "gmii" and "mii" modes are the same,
+they are wired differently, so it makes sense to allow DTS authors to
+specify each explicitly.
+
+Signed-off-by: Grant Erickson <gerickson@nuovations.com>
 ---
+ drivers/net/ibm_newemac/rgmii.c |    6 ++++++
+ 1 files changed, 6 insertions(+), 0 deletions(-)
 
- arch/powerpc/kernel/of_platform.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
-
-diff --git a/arch/powerpc/kernel/of_platform.c b/arch/powerpc/kernel/of_platform.c
-index e79ad8a..2bf4c04 100644
---- a/arch/powerpc/kernel/of_platform.c
-+++ b/arch/powerpc/kernel/of_platform.c
-@@ -76,6 +76,9 @@ struct of_device* of_platform_device_create(struct device_node *np,
- 		return NULL;
+diff --git a/drivers/net/ibm_newemac/rgmii.c b/drivers/net/ibm_newemac/rgmii.c
+index e32da3d..5acb006 100644
+--- a/drivers/net/ibm_newemac/rgmii.c
++++ b/drivers/net/ibm_newemac/rgmii.c
+@@ -39,6 +39,7 @@
+ #define RGMII_FER_RGMII(idx)	(0x5 << ((idx) * 4))
+ #define RGMII_FER_TBI(idx)	(0x6 << ((idx) * 4))
+ #define RGMII_FER_GMII(idx)	(0x7 << ((idx) * 4))
++#define RGMII_FER_MII(idx)	(0x7 << ((idx) * 4))
  
- 	dev->dma_mask = 0xffffffffUL;
-+	dev->dev.dma_mask = &dev->dma_mask;
-+	dev->dev.coherent_dma_mask = DMA_32BIT_MASK;
-+
- 	dev->dev.bus = &of_platform_bus_type;
- 
- 	/* We do not fill the DMA ops for platform devices by default.
+ /* RGMIIx_SSR */
+ #define RGMII_SSR_MASK(idx)	(0x7 << ((idx) * 8))
+@@ -49,6 +50,7 @@
+ static inline int rgmii_valid_mode(int phy_mode)
+ {
+ 	return  phy_mode == PHY_MODE_GMII ||
++		phy_mode == PHY_MODE_MII ||
+ 		phy_mode == PHY_MODE_RGMII ||
+ 		phy_mode == PHY_MODE_TBI ||
+ 		phy_mode == PHY_MODE_RTBI;
+@@ -63,6 +65,8 @@ static inline const char *rgmii_mode_name(int mode)
+ 		return "TBI";
+ 	case PHY_MODE_GMII:
+ 		return "GMII";
++	case PHY_MODE_MII:
++		return "MII";
+ 	case PHY_MODE_RTBI:
+ 		return "RTBI";
+ 	default:
+@@ -79,6 +83,8 @@ static inline u32 rgmii_mode_mask(int mode, int input)
+ 		return RGMII_FER_TBI(input);
+ 	case PHY_MODE_GMII:
+ 		return RGMII_FER_GMII(input);
++	case PHY_MODE_MII:
++		return RGMII_FER_MII(input);
+ 	case PHY_MODE_RTBI:
+ 		return RGMII_FER_RTBI(input);
+ 	default:
+--
+1.5.4.3
