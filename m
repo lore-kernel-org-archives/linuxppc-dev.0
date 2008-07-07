@@ -1,24 +1,18 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id A1E81DDED9
-	for <linuxppc-dev@ozlabs.org>; Mon,  7 Jul 2008 16:23:28 +1000 (EST)
-Subject: Re: [PATCH 1/2] elf loader support for auxvec base platform string
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Roland McGrath <roland@redhat.com>
-In-Reply-To: <20080707061811.19989154246@magilla.localdomain>
-References: <20080703234140.GC9594@localdomain>
-	<20080704021929.5E9EF1541F5@magilla.localdomain>
-	<1215409693.8970.79.camel@pasglop>
-	<20080707061811.19989154246@magilla.localdomain>
-Content-Type: text/plain
-Date: Mon, 07 Jul 2008 16:23:20 +1000
-Message-Id: <1215411800.8970.91.camel@pasglop>
+Return-Path: <sfr@canb.auug.org.au>
+Date: Mon, 7 Jul 2008 16:24:57 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: arnd@arndb.de
+Subject: Re: [patch 05/11] powerpc/cell: add spu aware cpufreq governor
+Message-Id: <20080707162457.e5f3cb9d.sfr@canb.auug.org.au>
+In-Reply-To: <20080704190806.162475834@arndb.de>
+References: <20080704190535.316377278@arndb.de>
+	<20080704190806.162475834@arndb.de>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Nathan Lynch <ntl@pobox.com>,
-	linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>
-Reply-To: benh@kernel.crashing.org
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Mon__7_Jul_2008_16_24_57_+1000_S1FbRlMfbJnNtMfI"
+Cc: Paul Mackerras <paulus@samba.org>, cbe-oss-dev@ozlabs.org,
+	Christian Krafft <krafft@de.ibm.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,20 +22,59 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, 2008-07-06 at 23:18 -0700, Roland McGrath wrote:
-> 
-> Using dsocaps gives you the best of both worlds.  You can freely choose
-> new strings in the kernel without the ld.so code having to know about
-> them (which is not true of AT_PLATFORM, but may be true of how you are
-> thinking about "strings are nice").  You do have to map all the
-> possibilities that a single kernel build can produce into distinct bits.
-> But, there are 32 unallocated bits to start with.  Moreover, those bit
-> assignments are not part of any permanent ABI like bits in AT_* values.
-> They just have to match up between this kernel build and the ld.conf.d
-> file installed along with it--kernel hackers and kernel packagers have
-> to coordinate, not kernel hackers and userland hackers.
+--Signature=_Mon__7_Jul_2008_16_24_57_+1000_S1FbRlMfbJnNtMfI
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I'm not sure... if ld.conf.d isn't parse of the kernel source tree then
-it -will- end in tears...
+Just a couple of trivial things.
 
-Ben.
+On Fri, 04 Jul 2008 21:05:40 +0200 arnd@arndb.de wrote:
+>
+> + * (C) Copyright IBM Corporation 2006-2008
+      ^^^
+You should use =C2=A9.
+
+> +#define POLL_TIME	100000		/* in us */
+                                              ^
+How about =CE=BC ?
+
+> +struct spu_gov_info_struct {
+> +	unsigned long busy_spus;	/* fixed-point */
+> +	struct cpufreq_policy *policy;
+> +	struct delayed_work work;
+> +	unsigned int poll_int;		/* us */
+
+And again.
+
+> +static int calc_freq(struct spu_gov_info_struct *info)
+> +{
+> +	int cpu;
+> +	int busy_spus;
+> +
+> +	cpu =3D info->policy->cpu;
+> +	busy_spus =3D atomic_read(&cbe_spu_info[cpu_to_node(cpu)].busy_spus);
+> +
+> +	CALC_LOAD(info->busy_spus, EXP, busy_spus * FIXED_1);
+> +	pr_debug(KERN_ERR "cpu %d: busy_spus=3D%d, info->busy_spus=3D%d\n", cpu=
+, busy_spus, info->busy_spus);
+
+Split this line.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Mon__7_Jul_2008_16_24_57_+1000_S1FbRlMfbJnNtMfI
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkhxtrkACgkQjjKRsyhoI8y4OQCfY3KtAlp89wnP9nmaeNaPq65b
+2D8AoJXlvpnGvq8IC2zeRhku56f4tY05
+=QDhX
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__7_Jul_2008_16_24_57_+1000_S1FbRlMfbJnNtMfI--
