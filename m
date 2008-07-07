@@ -1,23 +1,17 @@
-Return-Path: <benh@kernel.crashing.org>
+Return-Path: <vitb@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D3CF5DDF93
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jul 2008 09:00:45 +1000 (EST)
-Subject: Re: [PATCH 1/2] elf loader support for auxvec base platform string
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Nathan Lynch <ntl@pobox.com>
-In-Reply-To: <20080707221733.GJ9594@localdomain>
-References: <20080703234140.GC9594@localdomain>
-	<20080704021929.5E9EF1541F5@magilla.localdomain>
-	<1215409693.8970.79.camel@pasglop> <20080707221733.GJ9594@localdomain>
-Content-Type: text/plain
-Date: Tue, 08 Jul 2008 09:00:38 +1000
-Message-Id: <1215471638.8970.162.camel@pasglop>
+	by ozlabs.org (Postfix) with ESMTPS id C795EDDEFE
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jul 2008 09:13:07 +1000 (EST)
+Date: Tue, 8 Jul 2008 03:12:56 +0400
+From: Vitaly Bordug <vitb@kernel.crashing.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: powerpc: Add proper reference to dma_mask
+Message-ID: <20080708031256.57176084@vitb-lp>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	linux-kernel@vger.kernel.org, Roland McGrath <roland@redhat.com>
-Reply-To: benh@kernel.crashing.org
+Content-Type: text/plain; charset=US-ASCII
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,31 +21,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2008-07-07 at 17:17 -0500, Nathan Lynch wrote:
-> Benjamin Herrenschmidt wrote:
-> > On Thu, 2008-07-03 at 19:19 -0700, Roland McGrath wrote:
-> > > Why not just use ELF_HWCAP for this?  It looks like powerpc only has 3 bits
-> > > left there (keeping it to 32), but 3 is not 0.  If not that, why not use
-> > > dsocaps?  That is, some magic in the vDSO, which glibc already supports on
-> > > all machines where it uses the vDSO.  (For how it works, see the use in
-> > > arch/x86/vdso/vdso32/note.S for CONFIG_XEN.)
-> > 
-> > Well, we use strings to represent the platforms already (ie, the actual
-> > CPU microarchitecture). Fitting those into bits would be annoying, it
-> > makes sense to have AT_BASE_PLATFORM to be the "base" variant of
-> > AT_PLATFORM.
-> > 
-> > _However_ there is a bug in that this patch adds an entry without
-> > bumping the number of entries in the cached array (ie.
-> > AT_VECTOR_SIZE_BASE needs to be updated).
-> 
-> Ugh, yes.  I was hoping to work this in such a way that AT_VECTOR_SIZE
-> (and thus the size of mm_struct) increases only for architectures that
-> implement AT_BASE_PLATFORM... would it be wrong to account for it in
-> AT_VECTOR_SIZE_ARCH?
+There is dma_mask in of_device that is being filled upon
+of_platform_device_create() but we don't properly set the struct device
+in there to point back to it. coherent_dma_mask wasn't set up either -
+these caused weird lock-ups and behavior of USB subsystem using
+of_device USB host drivers.
 
-Yes. The later is for things added from ARCH_DLINFO. Since the
-code for AT_BASE_PLATFORM is in the generic binfmt_elf, it would
-be asking for trouble to not account for it in the base AT_VECTOR_SIZE.
+Signed-off-by: Vitaly Bordug <vitb@kernel.crashing.org>
+---
 
-Ben.
+ arch/powerpc/kernel/of_platform.c |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
+
+diff --git a/arch/powerpc/kernel/of_platform.c b/arch/powerpc/kernel/of_platform.c
+index e79ad8a..2bf4c04 100644
+--- a/arch/powerpc/kernel/of_platform.c
++++ b/arch/powerpc/kernel/of_platform.c
+@@ -76,6 +76,9 @@ struct of_device* of_platform_device_create(struct device_node *np,
+ 		return NULL;
+ 
+ 	dev->dma_mask = 0xffffffffUL;
++	dev->dev.dma_mask = &dev->dma_mask;
++	dev->dev.coherent_dma_mask = DMA_32BIT_MASK;
++
+ 	dev->dev.bus = &of_platform_bus_type;
+ 
+ 	/* We do not fill the DMA ops for platform devices by default.
