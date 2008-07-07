@@ -1,24 +1,22 @@
-Return-Path: <roland@redhat.com>
-Received: from QMTA04.westchester.pa.mail.comcast.net
-	(qmta04.westchester.pa.mail.comcast.net [76.96.62.40])
-	by ozlabs.org (Postfix) with ESMTP id 6B877DDEDE
-	for <linuxppc-dev@ozlabs.org>; Mon,  7 Jul 2008 16:41:29 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-From: Roland McGrath <roland@redhat.com>
-To: benh@kernel.crashing.org
-Subject: Re: [PATCH 1/2] elf loader support for auxvec base platform string
-In-Reply-To: Benjamin Herrenschmidt's message of  Monday,
-	7 July 2008 16:23:20 +1000 <1215411800.8970.91.camel@pasglop>
-References: <20080703234140.GC9594@localdomain>
-	<20080704021929.5E9EF1541F5@magilla.localdomain>
-	<1215409693.8970.79.camel@pasglop>
-	<20080707061811.19989154246@magilla.localdomain>
-	<1215411800.8970.91.camel@pasglop>
-Message-Id: <20080707063522.5FE55154246@magilla.localdomain>
-Date: Sun,  6 Jul 2008 23:35:22 -0700 (PDT)
-Cc: linuxppc-dev@ozlabs.org, Nathan Lynch <ntl@pobox.com>,
-	linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id E4B27DDEF0
+	for <linuxppc-dev@ozlabs.org>; Mon,  7 Jul 2008 16:43:57 +1000 (EST)
+Subject: Re: [PATCH v5] ibm_newemac: Parameterize EMAC Multicast Match Handling
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Stefan Roese <sr@denx.de>
+In-Reply-To: <200807070829.17340.sr@denx.de>
+References: <1215303343-26410-1-git-send-email-gerickson@nuovations.com>
+	<200807070758.45828.sr@denx.de> <1215410405.8970.84.camel@pasglop>
+	<200807070829.17340.sr@denx.de>
+Content-Type: text/plain
+Date: Mon, 07 Jul 2008 16:43:48 +1000
+Message-Id: <1215413028.8970.103.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Grant Erickson <gerickson@nuovations.com>
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,17 +26,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> I'm not sure... if ld.conf.d isn't parse of the kernel source tree then
-> it -will- end in tears...
+On Mon, 2008-07-07 at 08:29 +0200, Stefan Roese wrote:
+> > Did you have a chance to do a bit of regression testing "just in case" ?
+> 
+> No, not yet. I'll try to do some tests this week.
 
-Of course, you should include the file you want people to install
-as part of the kernel source or build.  You can copy it into
-place in make install or something if you like (convention is to
-call it something.conf in /etc/ld.so.conf.d); then run ldconfig.
-The x86-xen case has not bothered to include its one-line file as
-such, just the comment in arch/x86/vdso/vdso32/note.S telling you
-what it is.
+Thanks !
 
-
-Thanks,
-Roland
+Cheers,
+Ben.
