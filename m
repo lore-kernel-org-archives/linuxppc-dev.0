@@ -1,23 +1,23 @@
-Return-Path: <neko@genesi-usa.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.173])
-	by ozlabs.org (Postfix) with ESMTP id 1CB94DE596
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jul 2008 00:18:45 +1000 (EST)
-Received: by ug-out-1314.google.com with SMTP id k3so940421ugf.0
-	for <linuxppc-dev@ozlabs.org>; Mon, 07 Jul 2008 07:18:42 -0700 (PDT)
-Message-ID: <487225C4.90405@genesi-usa.com>
-Date: Mon, 07 Jul 2008 15:18:44 +0100
-From: Matt Sealey <matt@genesi-usa.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from ag-out-0708.google.com (ag-out-0708.google.com [72.14.246.244])
+	by ozlabs.org (Postfix) with ESMTP id 181E6DE73E
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jul 2008 00:24:40 +1000 (EST)
+Received: by ag-out-0708.google.com with SMTP id 8so13150120agc.0
+	for <linuxppc-dev@ozlabs.org>; Mon, 07 Jul 2008 07:24:39 -0700 (PDT)
+Message-ID: <fa686aa40807070724j4b410e9dhfbea2c0c99046e63@mail.gmail.com>
+Date: Mon, 7 Jul 2008 08:24:38 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: benh@kernel.crashing.org
+Subject: Re: [PATCH] [V2] powerpc: legacy_serial: reg-offset & shift aren't
+	used
+In-Reply-To: <1215413228.8970.106.camel@pasglop>
 MIME-Version: 1.0
-To: Jon Smirl <jonsmirl@gmail.com>
-Subject: Re: MPC52xx generic DMA using bestcomm
-References: <4871E487.2020008@matrix-vision.de>	
-	<4872104E.6050109@genesi-usa.com>
-	<9e4733910807070639k283b1267q34a4c9bbff827b22@mail.gmail.com>
-In-Reply-To: <9e4733910807070639k283b1267q34a4c9bbff827b22@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Sender: Matt Sealey <neko@genesi-usa.com>
-Cc: Andre Schwarz <andre.schwarz@matrix-vision.de>,
-	linux-ppc list <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20080701175250.E0BA41CE804D@mail117-va3.bigfish.com>
+	<1215413228.8970.106.camel@pasglop>
+Cc: dwg@au1.ibm.com, linuxppc-dev@ozlabs.org, paulus@samba.org,
+	John Linn <john.linn@xilinx.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,25 +27,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Mon, Jul 7, 2008 at 12:47 AM, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+> On Tue, 2008-07-01 at 10:52 -0700, John Linn wrote:
+>> The legacy serial driver does not work with an 8250
+>> type UART that uses reg-offset and reg-shift. This
+>> change updates the driver so it doesn't find the UART
+>> when those properties are present on the UART in the
+>> device tree for soc devices.
+>
+> I have some problems with this patch:
+>
+>  - First if the properties are present but their value match the
+> register layout of a standard UART, we will bail out... not nice.
 
-Jon Smirl wrote:
-> On 7/7/08, Matt Sealey <matt@genesi-usa.com> wrote:
->>
-> to do that the samples have to be alternated as they are fed into the
-> AC97 stream.  I think the codec can capture that way too but you
-> didn't put a transceiver on the S/PDIF line.
+Okay, that can be fixed.
 
-OT, but the IDT STAC9766 doesn't support S/PDIF input, only output.
+>  - Why don't we just implement support for the reg-shift and
+> offset instead ?
 
-> In my test driver you only get AC97 or S/PDIF. Grant and I are both
-> working on i2s drivers, when we get those sorted out it shouldn't be
-> too hard to add ac97 back in. That codec driver I sent you was about
-> 95% complete.
+We can do this, but this patch was simpler for solving the immediate
+problem in .26
 
-Indeed and to be honest I only gave it a short glance before having to
-do about a thousand other things, but I will take another peek some
-time this week :)
+g.
 
 -- 
-Matt Sealey <matt@genesi-usa.com>
-Genesi, Manager, Developer Relations
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
