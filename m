@@ -1,22 +1,24 @@
-Return-Path: <olof@lixom.net>
-Received: from elcamino.pasemi.com (elcamino.pasemi.com [67.155.108.98])
-	by ozlabs.org (Postfix) with ESMTP id 63FF7DDDFA
-	for <linuxppc-dev@ozlabs.org>; Mon,  7 Jul 2008 11:45:54 +1000 (EST)
-Message-Id: <E7B91ECF-0D87-442D-B99A-1BBB14697E09@lixom.net>
-From: Olof Johansson <olof@lixom.net>
-To: David Gibson <david@gibson.dropbear.id.au>
-In-Reply-To: <20080707013902.GI6267@yookeroo.seuss>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v926)
-Subject: Re: New fsl device bindings file
-Date: Sun, 6 Jul 2008 20:45:51 -0500
-References: <40B88BFD-1FEB-4E36-9917-54C7380FF801@kernel.crashing.org>
-	<486D1A58.8010403@freescale.com>
-	<fa686aa40807031134s4ddd0cabj1b31d3ee2d9d2258@mail.gmail.com>
-	<8C77F02F-E930-40EB-AE25-F959C40833B3@lixom.net>
-	<20080707013902.GI6267@yookeroo.seuss>
-Cc: Scott Wood <scottwood@freescale.com>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 57644DDDF7
+	for <linuxppc-dev@ozlabs.org>; Mon,  7 Jul 2008 13:26:25 +1000 (EST)
+Date: Mon, 7 Jul 2008 13:26:15 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: the printk problem
+Message-Id: <20080707132615.f6b6247b.sfr@canb.auug.org.au>
+In-Reply-To: <1215393276.8970.36.camel@pasglop>
+References: <20080625131101.GA6205@digi.com> <20080704104634.GA31634@digi.com>
+	<20080704111540.ddffd241.akpm@linux-foundation.org>
+	<alpine.LFD.1.10.0807041147450.2815@woody.linux-foundation.org>
+	<alpine.LFD.1.10.0807041250220.2815@woody.linux-foundation.org>
+	<1215212420.8970.8.camel@pasglop>
+	<alpine.LFD.1.10.0807041622270.2815@woody.linux-foundation.org>
+	<1215393276.8970.36.camel@pasglop>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Mon__7_Jul_2008_13_26_15_+1000_+HtuUZKAXIshAXYD"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,19 +28,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+--Signature=_Mon__7_Jul_2008_13_26_15_+1000_+HtuUZKAXIshAXYD
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Jul 6, 2008, at 8:39 PM, David Gibson wrote:
+On Mon, 07 Jul 2008 11:14:36 +1000 Benjamin Herrenschmidt <benh@kernel.cras=
+hing.org> wrote:
+>
+> On Fri, 2008-07-04 at 16:25 -0700, Linus Torvalds wrote:
+> >=20
+> > On Sat, 5 Jul 2008, Benjamin Herrenschmidt wrote:
+> > >=20
+> > > I'll give it a try using =EF=BB=BFprobe_kernel_address() instead on m=
+onday.
+> >=20
+> > Here's the updated patch which uses probe_kernel_address() instead (and=
+=20
+> > moves the whole #ifdef mess out of the code that wants it and into a=20
+> > helper function - and maybe we should then put that helper into=20
+> > kallsyms.h, but that's a different issue).
+> >=20
+> > Still all happily untested, of course. And still with no actual users=20
+> > converted.
+>=20
+> Did a few tests and it seems to work. I'll stick a patch converting
+> powerpc to use %pS for oops display in -next.
 
-> Well... they may be Linux specific by default, but they're supposed to
-> be general enough that they (or at least, very small extensions)
-> *could* become official OF bindings, if there was still an OF group to
-> make them so.  It certainly should be possible to use these bindings
-> in a firmware which provides an OF client interface as well as in
-> flat-tree-only firmwares which don't.
+After you post it to linuxppc-dev and get review comments, of course ...
 
-Right, it's a classic case of embrace and extend. Calling it OF is  
-just plain misleading, especially since the original document was  
-called booting _WITHOUT_ OF.
+And after the patch to make %pS work goes in ...
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
+--Signature=_Mon__7_Jul_2008_13_26_15_+1000_+HtuUZKAXIshAXYD
+Content-Type: application/pgp-signature
 
--Olof
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkhxjNcACgkQjjKRsyhoI8w9YACguWEk7l0t/Y/ZyW5ji0P/dx7E
+HHwAn2GkvJp+ergijyBZAvhWSoC3tsrn
+=X1SN
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__7_Jul_2008_13_26_15_+1000_+HtuUZKAXIshAXYD--
