@@ -1,36 +1,29 @@
-Return-Path: <ossthema@de.ibm.com>
-Received: from mtagate4.de.ibm.com (mtagate4.de.ibm.com [195.212.29.153])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate4.de.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 4098FDDEDF
-	for <linuxppc-dev@ozlabs.org>; Mon,  7 Jul 2008 19:08:30 +1000 (EST)
-Received: from d12nrmr1607.megacenter.de.ibm.com
-	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate4.de.ibm.com (8.13.8/8.13.8) with ESMTP id m6798BF1027894
-	for <linuxppc-dev@ozlabs.org>; Mon, 7 Jul 2008 09:08:11 GMT
-Received: from d12av01.megacenter.de.ibm.com (d12av01.megacenter.de.ibm.com
-	[9.149.165.212])
-	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v9.0) with
-	ESMTP id m6798Brw3604594
-	for <linuxppc-dev@ozlabs.org>; Mon, 7 Jul 2008 11:08:11 +0200
-Received: from d12av01.megacenter.de.ibm.com (loopback [127.0.0.1])
-	by d12av01.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id m6798AXX003369
-	for <linuxppc-dev@ozlabs.org>; Mon, 7 Jul 2008 11:08:10 +0200
-From: Jan-Bernd Themann <ossthema@de.ibm.com>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Subject: Re: [BUG] 2.6.26-rc8-git2 - powerpc - circular locking dependency
-	detected with net/ehea driver
-Date: Mon, 7 Jul 2008 10:08:08 +0100
-References: <486A2553.1090207@linux.vnet.ibm.com>
-In-Reply-To: <486A2553.1090207@linux.vnet.ibm.com>
+Return-Path: <wsa@pengutronix.de>
+Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
+	[83.236.181.26]) by ozlabs.org (Postfix) with ESMTP id 92768DDEEB
+	for <linuxppc-dev@ozlabs.org>; Mon,  7 Jul 2008 19:23:54 +1000 (EST)
+Received: from leda.ptxnet.pengutronix.de ([10.1.0.71] ident=Debian-exim)
+	by metis.extern.pengutronix.de with esmtp (Exim 4.63)
+	(envelope-from <wsa@pengutronix.de>) id 1KFmwl-0003Nx-Mn
+	for linuxppc-dev@ozlabs.org; Mon, 07 Jul 2008 11:23:47 +0200
+Received: from wsa by leda.ptxnet.pengutronix.de with local (Exim 4.67)
+	(envelope-from <wsa@pengutronix.de>) id 1KFmwl-0004gY-3o
+	for linuxppc-dev@ozlabs.org; Mon, 07 Jul 2008 11:23:47 +0200
+Date: Mon, 7 Jul 2008 11:23:47 +0200
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: Merging seperate FDT-blobs?
+Message-ID: <20080707092347.GB4409@pengutronix.de>
+References: <20080612090433.GA4235@pengutronix.de>
+	<20080613042304.GD29451@yookeroo.seuss>
+	<20080620161033.GE17701@pengutronix.de>
+	<20080623050624.GA23064@yookeroo.seuss>
+	<20080627170547.GF3931@pengutronix.de>
+	<20080707012843.GF6267@yookeroo.seuss>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200807071108.09616.ossthema@de.ibm.com>
-Cc: netdev@vger.kernel.org, kernel list <linux-kernel@vger.kernel.org>,
-	linuxppc-dev@ozlabs.org, kernel-testers@vger.kernel.org,
-	jgarzik@pobox.com, Balbir Singh <balbir@linux.vnet.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="DBIVS5p969aUjpLe"
+In-Reply-To: <20080707012843.GF6267@yookeroo.seuss>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -40,21 +33,82 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Kamalesh,
 
-where you able to reproduce this problem with the patches applied
-we posted on friday?
+--DBIVS5p969aUjpLe
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Regards,
-Jan-Bernd
+On Mon, Jul 07, 2008 at 11:28:43AM +1000, David Gibson wrote:
 
-On Tuesday 01 July 2008 14:38, Kamalesh Babulal wrote:
-> Hi,
-> 
-> circular locking dependency is detected, while booting the
-> powerpc box with the 2.6.26-rc8-git2 kernel.
-> 
-> =======================================================
-> [ INFO: possible circular locking dependency detected ]
-> 2.6.26-rc8-git2 #1
-> -------------------------------------------------------
+> > This function is surely needed in every case I considered so far. I am
+> > just sceptical if the boot-loader can determine a correct parentoffset
+> > all alone (which one of the two I2C busses is the correct one?). This is
+>=20
+> Hrm.  "all alone".  It's not clear to me what else there could be that
+> would have more information than the bootloader.
+
+What I meant is that all the information a bootloader has may not be
+sufficent. To solve this, some additional infos could be added to the
+tree. In this case, it could be a few aliases.
+
+> > What I encoded using "external-name" is where possible fragments
+> > _could_ be added to. Something like a mount-point. The boot-loader
+> > decides if and what could be mounted there. As an "/aliases" node is
+> > already in use, I would favour to add such mount-points there.
+>=20
+> Hrm.  I'm not convinced that the mount point model is actually a good
+> one.  I would have thought that one of the most common things to graft
+> would be extra optional devices onto a bus.  In this case there's no
+> specific "mountpoint"  the device could be attached at any valid
+> address on the bus in question.
+
+Maybe I am really missing something here, but what is the bus in
+question? How do you tell from such an entry
+
+rtc@51{
+	device_type=3D"rtc";
+	compatible=3D"nxp,pcf8563";
+	reg=3D<0x51>;
+};
+
+if it is connected to "/pci/pci_bridge/isa" as in mpc8548cds.dts or to
+"/soc5200/i2c@3d40" as in pcm030.dts? The latter even has another
+I2C-bus i2c@3d00 which could also be a possibility. This is why I'd like
+to encode the fragment as:
+
+i2c_0 {
+	rtc@51{
+		device_type=3D"rtc";
+		compatible=3D"nxp,pcf8563";
+		reg=3D<0x51>;
+	};
+};
+
+with i2c_0 being an alias to the proper bus. Maybe I should add that I
+am _not_ assuming that the fragment is obtained from the bus which wants to
+have devices added. That is, one I2C-eeprom may contain data about
+additional devices on PCI.
+
+Kind regards,
+
+   Wolfram
+
+--=20
+  Dipl.-Ing. Wolfram Sang | http://www.pengutronix.de
+ Pengutronix - Linux Solutions for Science and Industry
+
+--DBIVS5p969aUjpLe
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFIceCjD27XaX1/VRsRAidpAKDCz2YgodkpKHeJyUjYWH7QHHlAWACfSWTl
+M5iOGBeVesmappkqplAdaOE=
+=T3zD
+-----END PGP SIGNATURE-----
+
+--DBIVS5p969aUjpLe--
