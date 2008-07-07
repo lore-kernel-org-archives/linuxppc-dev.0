@@ -1,18 +1,24 @@
-Return-Path: <John.Linn@xilinx.com>
-Received: from VA3EHSOBE002.bigfish.com (outbound-va3.frontbridge.com
-	[216.32.180.16]) by ozlabs.org (Postfix) with ESMTP id C1383DE532
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jul 2008 00:26:59 +1000 (EST)
+Return-Path: <glikely@secretlab.ca>
+Received: from ag-out-0708.google.com (ag-out-0708.google.com [72.14.246.243])
+	by ozlabs.org (Postfix) with ESMTP id 58BCBDE05B
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jul 2008 00:29:49 +1000 (EST)
+Received: by ag-out-0708.google.com with SMTP id 8so13161070agc.0
+	for <linuxppc-dev@ozlabs.org>; Mon, 07 Jul 2008 07:29:48 -0700 (PDT)
+Message-ID: <fa686aa40807070729w524aa50xb1c762f13ba31da1@mail.gmail.com>
+Date: Mon, 7 Jul 2008 08:29:47 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Josh Boyer" <jwboyer@linux.vnet.ibm.com>
+Subject: Re: [RFC/PATCH] powerpc/bootwrapper: Allow user to specify additional
+	default targets
+In-Reply-To: <20080707100704.26f1630c@zod.rchland.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Subject: RE: Please pull linux-2.6-virtex.git
-Date: Mon, 7 Jul 2008 08:26:50 -0600
-In-Reply-To: <20080707141332.6CDD313E8050@mail111-sin.bigfish.com>
-References: <20080704172240.GE17062@secretlab.ca><1215433036.20774.39.camel@weaponx>
-	<20080707141332.6CDD313E8050@mail111-sin.bigfish.com>
-From: John Linn <John.Linn@xilinx.com>
-To: "John Linn" <John.Linn@xilinx.com>, "Josh Boyer" <jwboyer@gmail.com>,
-	<grant.likely@secretlab.ca>
-Message-ID: <20080707142652.43C32110807E@mail204-va3.bigfish.com>
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20080701175852.32575.39707.stgit@trillian.secretlab.ca>
+	<fa686aa40807032351l631febe2h8d38a9eed1053b6b@mail.gmail.com>
+	<20080707091818.72d584fe@zod.rchland.ibm.com>
+	<fa686aa40807070634t6e9047d1k7d8ca2b443d1ae68@mail.gmail.com>
+	<20080707100704.26f1630c@zod.rchland.ibm.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -23,101 +29,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Where should I be looking to understand what's needed for dts-v1 format?
+On Mon, Jul 7, 2008 at 8:07 AM, Josh Boyer <jwboyer@linux.vnet.ibm.com> wrote:
+> On Mon, 7 Jul 2008 07:34:23 -0600 Grant Likely wrote:
+>> Specifically the case I'm thinking of is when a user of a Xilinx FPGA
+>> drops a new .dts file into arch/powerpc/boot/dts (say
+>> 'super-sexy-platform.dts').  However, instead of modifying the
+>> Makefile or always typing 'make simpleImage.super-sexy-platform', then
+>> can add 'simpleImage.super-sexy-platform' to their defconfig which I
+>> can see being easier for someone to get their head around.
+>
+> Yeah, I thought about the Virtex case with the differing bitstreams
+> after I sent out my original question.  For purposes like that, this
+> seems like a great fit.  For truly discrete boards, I prefer discrete
+> defconfigs.
+>
+> So overall I see value in the patch.  If nobody else has objections,
+> then it's fine with me.
 
-I did a quick review of Doc*/powerpc/booting-wihtout-of.txt and didn't
-see it, but maybe I overlooked it.
+so.... can I have an ack?  :-)
 
-Thanks,
-John =
+g.
 
-
-> -----Original Message-----
-> From: linuxppc-dev-bounces+john.linn=3Dxilinx.com@ozlabs.org
-[mailto:linuxppc-dev-
-> bounces+john.linn=3Dxilinx.com@ozlabs.org] On Behalf Of John Linn
-> Sent: Monday, July 07, 2008 8:14 AM
-> To: Josh Boyer; grant.likely@secretlab.ca
-> Cc: linuxppc-dev@ozlabs.org
-> Subject: RE: Please pull linux-2.6-virtex.git
-> =
-
-> I'll look at the dts file and converting it to v1 format, hopefully
-> soon.
-> =
-
-> Thanks,
-> John
-> =
-
-> > -----Original Message-----
-> > From: linuxppc-dev-bounces+john.linn=3Dxilinx.com@ozlabs.org
-> [mailto:linuxppc-dev-
-> > bounces+john.linn=3Dxilinx.com@ozlabs.org] On Behalf Of Josh Boyer
-> > Sent: Monday, July 07, 2008 6:17 AM
-> > To: grant.likely@secretlab.ca
-> > Cc: linuxppc-dev@ozlabs.org
-> > Subject: Re: Please pull linux-2.6-virtex.git
-> >
-> > On Fri, 2008-07-04 at 11:22 -0600, Grant Likely wrote:
-> > > Hi Josh,
-> > >
-> > > Here are the bulk of the Xilinx 440 support patches.  Please pull
-> > > into your next branch.
-> > >
-> > > Thanks,
-> > > g.
-> > >
-> > > The following changes since commit
-> f3e909c2750eb20536bacacc867dc9047b70546a:
-> > >   Michael Neuling (1):
-> > >         powerpc: Update for VSX core file and ptrace
-> > >
-> > > are available in the git repository at:
-> > >
-> > >   git://git.secretlab.ca/git/linux-2.6-virtex virtex-for-2.6.27
-> > >
-> >
-> > <snip>
-> >
-> > > John Linn (5):
-> > >       powerpc/virtex: add dts file for ML507 reference design
-> >
-> > This one still isn't a dts-v1 file.  Any chance of that getting
-fixed
-> in
-> > the next day or two?
-> >
-> > josh
-> >
-> > _______________________________________________
-> > Linuxppc-dev mailing list
-> > Linuxppc-dev@ozlabs.org
-> > https://ozlabs.org/mailman/listinfo/linuxppc-dev
-> =
-
-> =
-
-> This email and any attachments are intended for the sole use of the
-named recipient(s) and contain(s)
-> confidential information that may be proprietary, privileged or
-copyrighted under applicable law. If
-> you are not the intended recipient, do not read, copy, or forward this
-email message or any
-> attachments. Delete this email message and any attachments
-immediately.
-> =
-
-> =
-
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
-
-
-This email and any attachments are intended for the sole use of the named r=
-ecipient(s) and contain(s) confidential information that may be proprietary=
-, privileged or copyrighted under applicable law. If you are not the intend=
-ed recipient, do not read, copy, or forward this email message or any attac=
-hments. Delete this email message and any attachments immediately.
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
