@@ -1,16 +1,18 @@
-Return-Path: <paul.gortmaker@windriver.com>
-Received: from mail.wrs.com (mail.windriver.com [147.11.1.11])
-	by ozlabs.org (Postfix) with ESMTP id 332B8DDFA5
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jul 2008 08:35:29 +1000 (EST)
-From: Paul Gortmaker <paul.gortmaker@windriver.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] ibmebus: more meaningful variable name
-Date: Mon,  7 Jul 2008 18:42:09 -0400
-Message-Id: <1215470529-25382-1-git-send-email-paul.gortmaker@windriver.com>
-In-Reply-To: <1215469038.8970.137.camel@pasglop>
-References: <1215469038.8970.137.camel@pasglop>
-Cc: scottwood@freescale.com, arnd@arndb.de,
-	Paul Gortmaker <paul.gortmaker@windriver.com>
+Return-Path: <smaclennan@pikatech.com>
+Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
+	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id D3202DDF4C
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jul 2008 08:48:25 +1000 (EST)
+Date: Mon, 7 Jul 2008 18:48:20 -0400
+From: Sean MacLennan <smaclennan@pikatech.com>
+To: "Josh Boyer" <jwboyer@linux.vnet.ibm.com>
+Subject: Re: [PATCH] powerpc: rework 4xx PTE access and TLB miss
+Message-ID: <20080707184820.2a14c8a0@lappy.seanm.ca>
+In-Reply-To: <20080707100627.4be05488@zod.rchland.ibm.com>
+References: <20080701043607.07484DDED7@ozlabs.org>
+	<20080707100627.4be05488@zod.rchland.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,35 +22,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Choose a more meaningful name for better System.map readability and
-autopsy value etc.  Part of a cleanup suggested by Benjamin Herrenschmidt.
+On Mon, 7 Jul 2008 10:06:27 -0400
+"Josh Boyer" <jwboyer@linux.vnet.ibm.com> wrote:
 
-Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
----
- arch/powerpc/kernel/ibmebus.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+> On Tue, 01 Jul 2008 14:35:42 +1000
+> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+> 
+> I tried testing this on a Sequoia board this morning.  Kernel boots,
+> but then it hangs when starting the init process.  The last message
+> seen is:
+> 
+> INIT: version 2.86
+> booting                                                      
+> 
+> The setup is an tftp'd kernel via U-Boot using cuImage, nfsroot
+> filesystem.  Sequoia has an FPU, and CONFIG_PPC_FPU is set.
+> 
+> I reverted this patch and used the latest powerpc-next branch and it
+> boots fine.
+> 
+> Seems something is wrong here still.  I suspect the DSI handler
+> changes, but I have no proof and haven't debugged it yet.  Until we
+> get it fixed, I don't feel overly comfortable putting it in the next
+> branch.  Which board and setup did you test with?
 
-diff --git a/arch/powerpc/kernel/ibmebus.c b/arch/powerpc/kernel/ibmebus.c
-index 9971159..58da8f8 100644
---- a/arch/powerpc/kernel/ibmebus.c
-+++ b/arch/powerpc/kernel/ibmebus.c
-@@ -53,7 +53,7 @@ static struct device ibmebus_bus_device = { /* fake "parent" device */
- struct bus_type ibmebus_bus_type;
- 
- /* These devices will automatically be added to the bus during init */
--static struct of_device_id __initdata builtin_matches[] = {
-+static struct of_device_id __initdata ibmebus_matches[] = {
- 	{ .compatible = "IBM,lhca" },
- 	{ .compatible = "IBM,lhea" },
- 	{},
-@@ -350,7 +350,7 @@ static int __init ibmebus_bus_init(void)
- 		return err;
- 	}
- 
--	err = ibmebus_create_devices(builtin_matches);
-+	err = ibmebus_create_devices(ibmebus_matches);
- 	if (err) {
- 		device_unregister(&ibmebus_bus_device);
- 		bus_unregister(&ibmebus_bus_type);
--- 
-1.5.6.6.gd3e97
+On a whim, I tired this on the warp platform (440EP) and got the same
+result with basically the same setup.
+
+VFS: Mounted root (nfs filesystem).
+Freeing unused kernel memory: 156k init
+init started: BusyBox v1.9.1 (2008-04-04 14:47:35 EDT)
+
+And then hung. This was against 2.6.26-rc9.
+
+Cheers,
+   Sean
