@@ -1,16 +1,17 @@
-Return-Path: <Geoffrey.Levand@am.sony.com>
-Message-ID: <487274DA.7020203@am.sony.com>
-Date: Mon, 7 Jul 2008 12:56:10 -0700
-From: Geoff Levand <geoffrey.levand@am.sony.com>
+Return-Path: <linnj@wolfgang-pc.public.xilinx.com>
+Received: from WA4EHSOBE003.bigfish.com (outbound-wa4.frontbridge.com
+	[216.32.181.16]) by ozlabs.org (Postfix) with ESMTP id E41FDDDED6
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jul 2008 06:02:21 +1000 (EST)
+From: John Linn <john.linn@xilinx.com>
+To: linuxppc-dev@ozlabs.org,
+	linux-input@vger.kernel.org
+Subject: [PATCH] powerpc: Xilinx: PS2: Update Kconfig for new XPS PS2 driver
+Date: Mon, 7 Jul 2008 13:02:08 -0700
+Message-ID: <20080707200216.78A3B1568059@mail174-wa4.bigfish.com>
 MIME-Version: 1.0
-To: arnd@arndb.de
-Subject: Re: [patch 05/11] powerpc/cell: add spu aware cpufreq governor
-References: <20080704190535.316377278@arndb.de>
-	<20080704190806.162475834@arndb.de>
-In-Reply-To: <20080704190806.162475834@arndb.de>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: Paul Mackerras <paulus@samba.org>, cbe-oss-dev@ozlabs.org,
-	Christian Krafft <krafft@de.ibm.com>, linuxppc-dev@ozlabs.org
+Content-Type: text/plain
+Cc: dmitry.torokhov@gmail.com, Sadanand <sadanan@xilinx.com>,
+	John Linn <john.linn@xilinx.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,38 +21,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-arnd@arndb.de wrote:
-> This patch adds a cpufreq governor that takes the number of running spus
-> into account. It's very similar to the ondemand governor, but not as complex.
-> Instead of hacking spu load into the ondemand governor it might be easier to
-> have cpufreq accepting multiple governors per cpu in future.
-> Don't know if this is the right way, but it would keep the governors simple.
+This patch is an incremental patch for the patch titled:
+[V3] powerpc: Xilinx: PS2: Added new XPS PS2 driver. This patch
+adds powerpc as a dependency for the driver.
 
-I tried your current cell-2.6.git #cell_next branch with ps3_defconfig and
-get these. ps3_defconfig has
+Signed-off-by: Sadanand <sadanan@xilinx.com>
+Signed-off-by: John Linn <john.linn@xilinx.com>
+---
+ drivers/input/serio/Kconfig |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
 
- CONFIG_CBE_CPUFREQ=m
- CONFIG_CBE_CPUFREQ_SPU_GOVERNOR=m
+diff --git a/drivers/input/serio/Kconfig b/drivers/input/serio/Kconfig
+index 0e62b39..683f495 100644
+--- a/drivers/input/serio/Kconfig
++++ b/drivers/input/serio/Kconfig
+@@ -192,7 +192,9 @@ config SERIO_RAW
+ 
+ config SERIO_XILINX_XPS_PS2
+ 	tristate "Xilinx XPS PS/2 Controller Support"
++	depends on PPC
+ 	help
+-	  This driver supports XPS PS/2 IP from Xilinx EDK.
++	  This driver supports XPS PS/2 IP from the Xilinx EDK on the
++	  PowerPC platform.
+ 
+ endif
+-- 
+1.5.2.1
 
-I'm not sure if this patch is the one that introduced the problem though.
-I guess we need to make an adjustment in the Kconfig.  I'll be away the
-rest of this week, and will look at it next week if you don't.
 
--Geoff
 
-cell-2.6/arch/powerpc/platforms/cell/cbe_spu_governor.c: In function 'calc_freq':
-cell-2.6/arch/powerpc/platforms/cell/cbe_spu_governor.c:53: warning: format '%d' expects type 'int', but argument 4 has type 'long unsigned int'
-
-ERROR: ".cpufreq_register_governor" [arch/powerpc/platforms/cell/cbe_spu_governor.ko] undefined!
-ERROR: ".__cpufreq_driver_target" [arch/powerpc/platforms/cell/cbe_spu_governor.ko] undefined!
-ERROR: ".cpufreq_unregister_governor" [arch/powerpc/platforms/cell/cbe_spu_governor.ko] undefined!
-ERROR: ".cpufreq_frequency_table_target" [arch/powerpc/platforms/cell/cbe-cpufreq.ko] undefined!
-ERROR: ".cpufreq_register_driver" [arch/powerpc/platforms/cell/cbe-cpufreq.ko] undefined!
-ERROR: ".cpufreq_frequency_table_verify" [arch/powerpc/platforms/cell/cbe-cpufreq.ko] undefined!
-ERROR: ".cpufreq_frequency_table_get_attr" [arch/powerpc/platforms/cell/cbe-cpufreq.ko] undefined!
-ERROR: ".cpufreq_notify_transition" [arch/powerpc/platforms/cell/cbe-cpufreq.ko] undefined!
-ERROR: ".cpufreq_frequency_table_cpuinfo" [arch/powerpc/platforms/cell/cbe-cpufreq.ko] undefined!
-ERROR: ".cbe_get_cpu_mic_tm_regs" [arch/powerpc/platforms/cell/cbe-cpufreq.ko] undefined!
-ERROR: ".cbe_get_cpu_pmd_regs" [arch/powerpc/platforms/cell/cbe-cpufreq.ko] undefined!
-ERROR: ".cpufreq_unregister_driver" [arch/powerpc/platforms/cell/cbe-cpufreq.ko] undefined!
-ERROR: ".cpufreq_frequency_table_put_attr" [arch/powerpc/platforms/cell/cbe-cpufreq.ko] undefined!
+This email and any attachments are intended for the sole use of the named recipient(s) and contain(s) confidential information that may be proprietary, privileged or copyrighted under applicable law. If you are not the intended recipient, do not read, copy, or forward this email message or any attachments. Delete this email message and any attachments immediately.
