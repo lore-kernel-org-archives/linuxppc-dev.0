@@ -1,16 +1,30 @@
-Return-Path: <shaggy@linux.vnet.ibm.com>
-Subject: Re: [patch 0/6] Strong Access Ordering page attributes for POWER7
-From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, Joel Schopp <jschopp@austin.ibm.com>
-In-Reply-To: <1215128392.7960.7.camel@pasglop>
-References: <20080618223254.966080905@linux.vnet.ibm.com>
-	<1215128392.7960.7.camel@pasglop>
-Content-Type: text/plain
-Date: Mon, 07 Jul 2008 09:05:40 -0500
-Message-Id: <1215439540.16098.15.camel@norville.austin.ibm.com>
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id AEAA0DDEE7
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jul 2008 00:10:05 +1000 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e5.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m67E9vNR019336
+	for <linuxppc-dev@ozlabs.org>; Mon, 7 Jul 2008 10:09:57 -0400
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
+	m67E9nvO097414
+	for <linuxppc-dev@ozlabs.org>; Mon, 7 Jul 2008 10:09:49 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m67E9noF024575
+	for <linuxppc-dev@ozlabs.org>; Mon, 7 Jul 2008 10:09:49 -0400
+Date: Mon, 7 Jul 2008 10:06:27 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: rework 4xx PTE access and TLB miss
+Message-ID: <20080707100627.4be05488@zod.rchland.ibm.com>
+In-Reply-To: <20080701043607.07484DDED7@ozlabs.org>
+References: <20080701043607.07484DDED7@ozlabs.org>
 Mime-Version: 1.0
-Cc: linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>,
-	Paul Mackerras <paulus@au1.ibm.com>, Linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,38 +34,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2008-07-04 at 09:39 +1000, Benjamin Herrenschmidt wrote:
-> On Wed, 2008-06-18 at 17:32 -0500, shaggy@linux.vnet.ibm.com wrote:
-> > Andrew,
-> > 
-> > The first patch in this series hits architecture independent code, but the
-> > rest is contained in the powerpc subtree.  Could you pick up the first
-> > patch into -mm?  I can send the rest of them through the powerpc git tree.
-> > The first patch and the rest of the set are independent and can be merged
-> > in either order.
-> 
->  ../..
-> 
-> I was wondering... how do we inform userspace that this is available ?
-> Same question with adding the endian bit on 4xx which I plan to do using
-> your infrastructure...
+On Tue, 01 Jul 2008 14:35:42 +1000
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-I hadn't really given it much thought.  Is there a simple way to
-determine if the cpu is power 7 or newer?
+> This is some preliminary work to improve TLB management on SW loaded
+> TLB powerpc platforms. This introduce support for non-atomic PTE
+> operations in pgtable-ppc32.h and removes write back to the PTE from
+> the TLB miss handlers. In addition, the DSI interrupt code no longer
+> tries to fixup write permission, this is left to generic code, and
+> _PAGE_HWWRITE is gone.
 
-It's not elegant, but a program could call mmap() with PROT_SAO set and
-check for errno == EINVAL.  Then call again without PROT_SAO, if it
-needs to.
+I tried testing this on a Sequoia board this morning.  Kernel boots,
+but then it hangs when starting the init process.  The last message
+seen is:
 
-> We haven't defined a user-visible feature bit (and besides, we're really
-> getting short on these...). This is becoming a bit of concern btw (the
-> running out of bits). Maybe we should start defining an AT_HWCAP2 for
-> powerpc and get libc updated to pick it up ?
+INIT: version 2.86
+booting                                                      
 
-Joel,
-Any thoughts?
+The setup is an tftp'd kernel via U-Boot using cuImage, nfsroot
+filesystem.  Sequoia has an FPU, and CONFIG_PPC_FPU is set.
 
-Shaggy
--- 
-David Kleikamp
-IBM Linux Technology Center
+I reverted this patch and used the latest powerpc-next branch and it
+boots fine.
+
+Seems something is wrong here still.  I suspect the DSI handler
+changes, but I have no proof and haven't debugged it yet.  Until we
+get it fixed, I don't feel overly comfortable putting it in the next
+branch.  Which board and setup did you test with?
+
+josh
