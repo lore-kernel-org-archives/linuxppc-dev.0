@@ -1,28 +1,34 @@
-Return-Path: <schwab@suse.de>
-Received: from mx1.suse.de (mx1.suse.de [195.135.220.2])
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id D10B2DDF11
-	for <linuxppc-dev@ozlabs.org>; Mon,  7 Jul 2008 20:01:21 +1000 (EST)
-From: Andreas Schwab <schwab@suse.de>
-To: Roland McGrath <roland@redhat.com>
-Subject: Re: [PATCH 1/2] elf loader support for auxvec base platform string
-References: <20080703234140.GC9594@localdomain>
-	<20080704021929.5E9EF1541F5@magilla.localdomain>
-	<1215409693.8970.79.camel@pasglop>
-	<20080707061811.19989154246@magilla.localdomain>
-	<1215411800.8970.91.camel@pasglop>
-	<20080707063522.5FE55154246@magilla.localdomain>
-	<je8wwet9p6.fsf@sykes.suse.de>
-	<20080707093151.8798A154246@magilla.localdomain>
-Date: Mon, 07 Jul 2008 12:01:14 +0200
-In-Reply-To: <20080707093151.8798A154246@magilla.localdomain> (Roland
-	McGrath's message of "Mon, 7 Jul 2008 02:31:51 -0700 (PDT)")
-Message-ID: <je63rirp1x.fsf@sykes.suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Cc: Nathan Lynch <ntl@pobox.com>, linux-kernel@vger.kernel.org,
-	Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
+	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 8628ADDF59
+	for <linuxppc-dev@ozlabs.org>; Mon,  7 Jul 2008 21:05:10 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m67B53YE012404
+	for <linuxppc-dev@ozlabs.org>; Mon, 7 Jul 2008 07:05:03 -0400
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
+	m67B53fd171466
+	for <linuxppc-dev@ozlabs.org>; Mon, 7 Jul 2008 05:05:03 -0600
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m67B52dm019925
+	for <linuxppc-dev@ozlabs.org>; Mon, 7 Jul 2008 05:05:03 -0600
+Date: Mon, 7 Jul 2008 07:01:24 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org
+Subject: Re: [PATCH] [V2] powerpc: legacy_serial: reg-offset & shift aren't
+	used
+Message-ID: <20080707070124.73ba794f@zod.rchland.ibm.com>
+In-Reply-To: <1215413228.8970.106.camel@pasglop>
+References: <20080701175250.E0BA41CE804D@mail117-va3.bigfish.com>
+	<1215413228.8970.106.camel@pasglop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: dwg@au1.ibm.com, linuxppc-dev@ozlabs.org, paulus@samba.org,
+	John Linn <john.linn@xilinx.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,24 +38,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Roland McGrath <roland@redhat.com> writes:
+On Mon, 07 Jul 2008 16:47:08 +1000
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-> There are 32 bits free now.  One can anticipate that reassigning a bit
-> would come up only after these are exhausted.  With prudent use, this
-> will take a very long time to happen.  Then the oldest CPU type string
-> might be retired to reuse its bit.  It seems unlikely that there will
-> be a single installation (root directory) that really needs to have
-> installed both a kernel optimized for the oldest CPU model known and a
-> kernel optimized for the newest CPU model known.
+> On Tue, 2008-07-01 at 10:52 -0700, John Linn wrote:
+> > The legacy serial driver does not work with an 8250
+> > type UART that uses reg-offset and reg-shift. This
+> > change updates the driver so it doesn't find the UART
+> > when those properties are present on the UART in the
+> > device tree for soc devices.
+> > 
+> > Signed-off-by: John Linn <john.linn@xilinx.com>
+> > Acked-by: Grant Likely <grant.likely@secretlab.ca>
+> > ---
+> > V2
+> > 
+> > Corrected logic to use "||" rather than "&&".
+> 
+> I have some problems with this patch:
+> 
+>  - First if the properties are present but their value match the
+> register layout of a standard UART, we will bail out... not nice.
 
-The kernel does not have to come from the same place as the root
-filesystem.  You may want to run a new kernel with an old filesystem, or
-vice-versa.
+Why would they be present in that case?
 
-Andreas.
+>  - Why don't we just implement support for the reg-shift and
+> offset instead ?
 
--- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+Probably because the last time someone suggested that it spawned a
+lengthy debate about what reg-offset/shift were supposed to do.
+
+josh
