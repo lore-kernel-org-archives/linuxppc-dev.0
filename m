@@ -1,19 +1,22 @@
-Return-Path: <jcrigby@gmail.com>
-Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.231])
-	by ozlabs.org (Postfix) with ESMTP id B13DADDF41
-	for <linuxppc-dev@ozlabs.org>; Mon,  7 Jul 2008 23:45:13 +1000 (EST)
-Received: by rv-out-0506.google.com with SMTP id f6so2134154rvb.9
-	for <linuxppc-dev@ozlabs.org>; Mon, 07 Jul 2008 06:45:12 -0700 (PDT)
-Message-ID: <4b73d43f0807070645n7fac5b71tdb2fff286e1e5a8a@mail.gmail.com>
-Date: Mon, 7 Jul 2008 07:45:12 -0600
-From: "John Rigby" <jcrigby@gmail.com>
-To: "Kumar Gala" <galak@kernel.crashing.org>
-Subject: Re: patches for 2.6.27...
-In-Reply-To: <068935A1-11BE-4AEB-9C0E-E1AB53F1618E@kernel.crashing.org>
+Return-Path: <jgarzik@pobox.com>
+Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 472D8DDE23
+	for <linuxppc-dev@ozlabs.org>; Mon,  7 Jul 2008 23:59:36 +1000 (EST)
+Message-ID: <48722140.3000808@pobox.com>
+Date: Mon, 07 Jul 2008 09:59:28 -0400
+From: Jeff Garzik <jgarzik@pobox.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <068935A1-11BE-4AEB-9C0E-E1AB53F1618E@kernel.crashing.org>
-Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>
+To: benh@kernel.crashing.org
+Subject: Re: [PATCH v5] ibm_newemac: Parameterize EMAC Multicast Match Handling
+References: <1215303343-26410-1-git-send-email-gerickson@nuovations.com>
+	<1215387012-6464-1-git-send-email-gerickson@nuovations.com>
+	<1215411537.8970.87.camel@pasglop>
+In-Reply-To: <1215411537.8970.87.camel@pasglop>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, sr@denx.de,
+	Grant Erickson <gerickson@nuovations.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,22 +26,10 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Two pci patches that are prereq's for 5121 pci:
+Benjamin Herrenschmidt wrote:
+> Hi Jeff !
+> 
+> If you are ok with this patch, I'll take it through the powerpc tree
+> since it changes all those device tree files.
 
-
-http://patchwork.ozlabs.org/linuxppc/patch?person=518&id=19299
-http://patchwork.ozlabs.org/linuxppc/patch?person=518&id=19300
-
-On Wed, Jul 2, 2008 at 1:56 AM, Kumar Gala <galak@kernel.crashing.org> wrote:
-> Please point out any patches that have been posted but havent made it into a
-> git tree related to Freescale chips.
->
-> I know there are probably a slew of CPM patches that need to get into the
-> tree.
->
-> - k
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
->
+ACK
