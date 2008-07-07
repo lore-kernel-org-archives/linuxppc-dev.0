@@ -1,21 +1,19 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from el-out-1112.google.com (el-out-1112.google.com [209.85.162.178])
-	by ozlabs.org (Postfix) with ESMTP id 8FC95DDEF7
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jul 2008 06:38:13 +1000 (EST)
-Received: by el-out-1112.google.com with SMTP id o28so264244ele.3
-	for <linuxppc-dev@ozlabs.org>; Mon, 07 Jul 2008 13:38:07 -0700 (PDT)
-Subject: Re: indications for oprofile in compact mode
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: torez <lnxtorez@linux.vnet.ibm.com>
-In-Reply-To: <487267D8.5010605@linux.vnet.ibm.com>
-References: <487267D8.5010605@linux.vnet.ibm.com>
-Content-Type: text/plain
-Date: Mon, 07 Jul 2008 16:37:52 -0400
-Message-Id: <1215463072.20774.63.camel@weaponx>
+Return-Path: <sam@ravnborg.org>
+Received: from pasmtpA.tele.dk (pasmtpa.tele.dk [80.160.77.114])
+	by ozlabs.org (Postfix) with ESMTP id 545D6DDFE8
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jul 2008 07:00:18 +1000 (EST)
+Date: Mon, 7 Jul 2008 23:01:04 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Roman Zippel <zippel@linux-m68k.org>
+Subject: Re: linux-next: kbuild tree build failure
+Message-ID: <20080707210104.GB23647@uranus.ravnborg.org>
+References: <20080707184038.aaeb8d40.sfr@canb.auug.org.au>
+	<Pine.LNX.4.64.0807071424240.6791@localhost.localdomain>
 Mime-Version: 1.0
-Sender: Josh Boyer <jwboyer@gmail.com>
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: jwboyer@linux.vnet.ibm.com
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.64.0807071424240.6791@localhost.localdomain>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+	Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,69 +23,64 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2008-07-07 at 14:00 -0500, torez wrote:
-> plain text document attachment (Indications oprofile in compact
-> mode.txt)
-
-Please don't send patches at attachments.
-
-> This patch allows Performance monitoring driver to detect when
-> operating in PowerPC compliance mode.
-
-And why is that needed?  The reason should be included in the changelog
-for the patch.
-
-> use patch -p0 to apply.
-
-This seems wrong.  The patch looks like a -p1 to me.
-
-You're missing your Signed-off-by line.  See
-Documentation/SubmittingPatches.
-
+On Mon, Jul 07, 2008 at 06:13:55PM +0200, Roman Zippel wrote:
+> Hi,
 > 
-> ==========================================================================
-> diff -urN linux-2.6.26-rc7.orig/arch/powerpc/kernel/cputable.c linux-2.6.26-rc7/arch/powerpc/kernel/cputable.c
-> --- linux-2.6.26-rc7.orig/arch/powerpc/kernel/cputable.c	2008-07-07 11:37:40.000000000 -0500
-> +++ linux-2.6.26-rc7/arch/powerpc/kernel/cputable.c	2008-07-07 11:27:09.000000000 -0500
-> @@ -352,6 +352,7 @@
->  		.icache_bsize		= 128,
->  		.dcache_bsize		= 128,
->  		.machine_check		= machine_check_generic,
-> +		.oprofile_cpu_type	= "ppc64/compat-power5+",
->  		.platform		= "power5+",
->  	},
->  	{	/* Power6 */
-> @@ -383,6 +384,7 @@
->  		.icache_bsize		= 128,
->  		.dcache_bsize		= 128,
->  		.machine_check		= machine_check_generic,
-> +		.oprofile_cpu_type	= "ppc64/compat-power6",
->  		.platform		= "power6",
->  	},
->  	{	/* 2.06-compliant processor, i.e. Power7 "architected" mode */
-> @@ -394,6 +396,7 @@
->  		.icache_bsize		= 128,
->  		.dcache_bsize		= 128,
->  		.machine_check		= machine_check_generic,
-> +		.oprofile_cpu_type	= "ppc64/compat-power7",
->  		.platform		= "power7",
->  	},
->  	{	/* Power7 */
-> @@ -1593,6 +1596,12 @@
->  			 * from the real PVR with a new value obtained
->  			 * using a logical PVR value, don't modify the
->  			 * performance monitor fields.
-> +			 * The performance monitor sub-system needs to have
-> +			 * access to the values from the real PVR, but, at 
-> +			 * the same time it needs to be aware it may be running
-> +			 * in compatibility mode. We we are changing the values
-                                                When ^ ?
+> On Mon, 7 Jul 2008, Stephen Rothwell wrote:
+> 
+> > Hi Sam,
+> > 
+> > Today's linux-next build (powerpc ppc64_defconfig) failed like this:
+> > 
+> > arch/powerpc/platforms/cell/spu_base.c: In function '__spu_trap_data_seg':
+> > arch/powerpc/platforms/cell/spu_base.c:194: error: duplicate case value
+> > arch/powerpc/platforms/cell/spu_base.c:177: error: previously used here
+> 
+> I guess there also has been a kconfig warning somewhere. :)
+> I should have gone through all archs to test this, sorry about that.
+> Luckily it's only powerpc that uses 64bit values. I would prefer to 
+> standardize on 32bit values, as it doesn't really make sense to expect 
+> from the user to input full 64bit values and it's easy to generate the 
+> full value in a header. This would also ease on any portability issues 
+> (kconfig is compiled with the host compiler not the target compiler).
+> 
+> Below is a patch that fixes this for all archs (generated against the git 
+> tree). The powerpc parts need a more careful review, the rest isn't really 
+> critical.
+> 
+> bye, Roman
 
-> +			 * for the real PVR to those of the compatibility PVR,
-> +			 * change the oprofile_cpu_type field as well.
+Hi Roman.
 
-You might want to change the original comment to not say "...don't
-modify the performance monitor fields."  Your addition explains why, but
-it doesn't flow well with the original comment.
+>From your patch:
 
-josh
+>  config PINT3_ASSIGN
+>  	hex "PINT3_ASSIGN"
+>  	depends on PINTx_REASSIGN
+> -	default 0x02020303
+> +	default 0x2020303
+
+
+But ths change actually decrease readability of the
+value. Before we had 4x2 hex characters. But now we have 3x2 + 1x1.
+Does this check really by us enough to warrant this?
+
+I am aware that the check is implmented by:
+
++                       str = strdup_type(def_sym->name, sym->type);
++                       if (strcmp(str, def_sym->name)) {
++                               prop_warn(prop,
++                                       "default for config symbol '%s'"
++                                       " should be %s", sym->name, str);
++                               prop->expr->left.sym = sym_lookup(str, SYMBOL_CO
++                       }
++                       free(str);
+                        break;
+
+Could we soften this check a little maybe?
+At least so we accept leading null's.
+
+As for the patch in general I will await an ack from powerpc
+before applying it.
+
+	Sam
