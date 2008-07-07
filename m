@@ -1,17 +1,21 @@
-Return-Path: <linnj@wolfgang-pc.public.xilinx.com>
-Received: from WA4EHSOBE003.bigfish.com (outbound-wa4.frontbridge.com
-	[216.32.181.16]) by ozlabs.org (Postfix) with ESMTP id E41FDDDED6
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jul 2008 06:02:21 +1000 (EST)
-From: John Linn <john.linn@xilinx.com>
-To: linuxppc-dev@ozlabs.org,
-	linux-input@vger.kernel.org
-Subject: [PATCH] powerpc: Xilinx: PS2: Update Kconfig for new XPS PS2 driver
-Date: Mon, 7 Jul 2008 13:02:08 -0700
-Message-ID: <20080707200216.78A3B1568059@mail174-wa4.bigfish.com>
+Return-Path: <u.luckas@road.de>
+Received: from mail.road.de (85-10-209-111.clients.your-server.de
+	[85.10.209.111]) by ozlabs.org (Postfix) with ESMTP id DB92CDE139
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jul 2008 05:54:59 +1000 (EST)
+From: Uli Luckas <u.luckas@road.de>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: azfs: initial submit of azfs, a non-buffered filesystem
+Date: Mon, 7 Jul 2008 21:37:43 +0200
+References: <20080618160629.6cd749a8@mercedes-benz.boeblingen.de.ibm.com>
+	<200807011659.33413.arnd@arndb.de>
+	<20080707174230.63bc68cf@mercedes-benz.boeblingen.de.ibm.com>
+In-Reply-To: <20080707174230.63bc68cf@mercedes-benz.boeblingen.de.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: dmitry.torokhov@gmail.com, Sadanand <sadanan@xilinx.com>,
-	John Linn <john.linn@xilinx.com>
+Content-Type: text/plain;
+  charset="utf-8"
+Message-Id: <200807072137.45094.u.luckas@road.de>
+Cc: linux-fsdevel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Maxim Shchetynin <maxim@linux.vnet.ibm.com>, Arnd Bergmann <arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,34 +25,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch is an incremental patch for the patch titled:
-[V3] powerpc: Xilinx: PS2: Added new XPS PS2 driver. This patch
-adds powerpc as a dependency for the driver.
+On Monday, 7. July 2008, Maxim Shchetynin wrote:
+> AZFS is a file system which keeps all files on memory mapped random
+> access storage.
+Hi Maxim, 
+do you mean "memory backed" instead of "memory mapped"?
 
-Signed-off-by: Sadanand <sadanan@xilinx.com>
-Signed-off-by: John Linn <john.linn@xilinx.com>
----
- drivers/input/serio/Kconfig |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
+regards
+Uli
 
-diff --git a/drivers/input/serio/Kconfig b/drivers/input/serio/Kconfig
-index 0e62b39..683f495 100644
---- a/drivers/input/serio/Kconfig
-+++ b/drivers/input/serio/Kconfig
-@@ -192,7 +192,9 @@ config SERIO_RAW
- 
- config SERIO_XILINX_XPS_PS2
- 	tristate "Xilinx XPS PS/2 Controller Support"
-+	depends on PPC
- 	help
--	  This driver supports XPS PS/2 IP from Xilinx EDK.
-+	  This driver supports XPS PS/2 IP from the Xilinx EDK on the
-+	  PowerPC platform.
- 
- endif
 -- 
-1.5.2.1
 
+------- ROAD ...the handyPC Company - - -  ) ) )
 
+Uli Luckas
+Software Development
 
-This email and any attachments are intended for the sole use of the named recipient(s) and contain(s) confidential information that may be proprietary, privileged or copyrighted under applicable law. If you are not the intended recipient, do not read, copy, or forward this email message or any attachments. Delete this email message and any attachments immediately.
+ROAD GmbH
+Bennigsenstr. 14 | 12159 Berlin | Germany
+fon: +49 (30) 230069 - 64 | fax: +49 (30) 230069 - 69
+url: www.road.de
+
+Amtsgericht Charlottenburg: HRB 96688 B
+Managing directors: Hans-Peter Constien, Hubertus von Streit
