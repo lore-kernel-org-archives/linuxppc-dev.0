@@ -1,25 +1,11 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from ag-out-0708.google.com (ag-out-0708.google.com [72.14.246.243])
-	by ozlabs.org (Postfix) with ESMTP id 58BCBDE05B
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jul 2008 00:29:49 +1000 (EST)
-Received: by ag-out-0708.google.com with SMTP id 8so13161070agc.0
-	for <linuxppc-dev@ozlabs.org>; Mon, 07 Jul 2008 07:29:48 -0700 (PDT)
-Message-ID: <fa686aa40807070729w524aa50xb1c762f13ba31da1@mail.gmail.com>
-Date: Mon, 7 Jul 2008 08:29:47 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Josh Boyer" <jwboyer@linux.vnet.ibm.com>
-Subject: Re: [RFC/PATCH] powerpc/bootwrapper: Allow user to specify additional
-	default targets
-In-Reply-To: <20080707100704.26f1630c@zod.rchland.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20080701175852.32575.39707.stgit@trillian.secretlab.ca>
-	<fa686aa40807032351l631febe2h8d38a9eed1053b6b@mail.gmail.com>
-	<20080707091818.72d584fe@zod.rchland.ibm.com>
-	<fa686aa40807070634t6e9047d1k7d8ca2b443d1ae68@mail.gmail.com>
-	<20080707100704.26f1630c@zod.rchland.ibm.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <shaggy@linux.vnet.ibm.com>
+Message-Id: <20080707143011.544193207@linux.vnet.ibm.com>
+References: <20080707142850.034542257@linux.vnet.ibm.com>
+Date: Mon, 07 Jul 2008 09:28:54 -0500
+From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@au1.ibm.com>
+Subject: [patch 4/5] powerpc: Add Strong Access Ordering
+Cc: linuxppc-dev list <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,27 +15,87 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Jul 7, 2008 at 8:07 AM, Josh Boyer <jwboyer@linux.vnet.ibm.com> wrote:
-> On Mon, 7 Jul 2008 07:34:23 -0600 Grant Likely wrote:
->> Specifically the case I'm thinking of is when a user of a Xilinx FPGA
->> drops a new .dts file into arch/powerpc/boot/dts (say
->> 'super-sexy-platform.dts').  However, instead of modifying the
->> Makefile or always typing 'make simpleImage.super-sexy-platform', then
->> can add 'simpleImage.super-sexy-platform' to their defconfig which I
->> can see being easier for someone to get their head around.
->
-> Yeah, I thought about the Virtex case with the differing bitstreams
-> after I sent out my original question.  For purposes like that, this
-> seems like a great fit.  For truly discrete boards, I prefer discrete
-> defconfigs.
->
-> So overall I see value in the patch.  If nobody else has objections,
-> then it's fine with me.
+Allow an application to enable Strong Access Ordering on specific pages of
+memory on Power 7 hardware. Currently, power has a weaker memory model than
+x86. Implementing a stronger memory model allows an emulator to more
+efficiently translate x86 code into power code, resulting in faster code
+execution.
 
-so.... can I have an ack?  :-)
+On Power 7 hardware, storing 0b1110 in the WIMG bits of the hpte enables
+strong access ordering mode for the memory page.  This patchset allows a
+user to specify which pages are thus enabled by passing a new protection
+bit through mmap() and mprotect().  I have tentatively defined this bit,
+PROT_SAO, as 0x10.
 
-g.
+Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+---
+
+ arch/powerpc/kernel/syscalls.c |    3 +++
+ include/asm-powerpc/mman.h     |   30 ++++++++++++++++++++++++++++++
+ 2 files changed, 33 insertions(+)
+
+Index: b/arch/powerpc/kernel/syscalls.c
+===================================================================
+--- a/arch/powerpc/kernel/syscalls.c
++++ b/arch/powerpc/kernel/syscalls.c
+@@ -143,6 +143,9 @@
+ 	struct file * file = NULL;
+ 	unsigned long ret = -EINVAL;
+ 
++	if (!arch_validate_prot(prot))
++		goto out;
++
+ 	if (shift) {
+ 		if (off & ((1 << shift) - 1))
+ 			goto out;
+Index: b/include/asm-powerpc/mman.h
+===================================================================
+--- a/include/asm-powerpc/mman.h
++++ b/include/asm-powerpc/mman.h
+@@ -1,7 +1,9 @@
+ #ifndef _ASM_POWERPC_MMAN_H
+ #define _ASM_POWERPC_MMAN_H
+ 
++#include <asm/cputable.h>
+ #include <asm-generic/mman.h>
++#include <linux/mm.h>
+ 
+ /*
+  * This program is free software; you can redistribute it and/or
+@@ -26,4 +28,32 @@
+ #define MAP_POPULATE	0x8000		/* populate (prefault) pagetables */
+ #define MAP_NONBLOCK	0x10000		/* do not block on IO */
+ 
++#ifdef CONFIG_PPC64
++/*
++ * This file is included by linux/mman.h, so we can't use cacl_vm_prot_bits()
++ * here.  How important is the optimization?
++ */
++static inline unsigned long arch_calc_vm_prot_bits(unsigned long prot)
++{
++	return (prot & PROT_SAO) ? VM_SAO : 0;
++}
++#define arch_calc_vm_prot_bits(prot) arch_calc_vm_prot_bits(prot)
++
++static inline pgprot_t arch_vm_get_page_prot(unsigned long vm_flags)
++{
++	return (vm_flags & VM_SAO) ? __pgprot(_PAGE_SAO) : 0;
++}
++#define arch_vm_get_page_prot(vm_flags) arch_vm_get_page_prot(vm_flags)
++
++static inline int arch_validate_prot(unsigned long prot)
++{
++	if (prot & ~(PROT_READ | PROT_WRITE | PROT_EXEC | PROT_SEM | PROT_SAO))
++		return 0;
++	if ((prot & PROT_SAO) && !cpu_has_feature(CPU_FTR_SAO))
++		return 0;
++	return 1;
++}
++#define arch_validate_prot(prot) arch_validate_prot(prot)
++
++#endif /* CONFIG_PPC64 */
+ #endif	/* _ASM_POWERPC_MMAN_H */
 
 -- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Dave Kleikamp
+IBM Linux Technology Center
