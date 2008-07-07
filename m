@@ -1,13 +1,8 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 57644DDDF7
-	for <linuxppc-dev@ozlabs.org>; Mon,  7 Jul 2008 13:26:25 +1000 (EST)
-Date: Mon, 7 Jul 2008 13:26:15 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linuxppc-dev@ozlabs.org
+Return-Path: <michael@ellerman.id.au>
 Subject: Re: the printk problem
-Message-Id: <20080707132615.f6b6247b.sfr@canb.auug.org.au>
-In-Reply-To: <1215393276.8970.36.camel@pasglop>
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+In-Reply-To: <20080707132615.f6b6247b.sfr@canb.auug.org.au>
 References: <20080625131101.GA6205@digi.com> <20080704104634.GA31634@digi.com>
 	<20080704111540.ddffd241.akpm@linux-foundation.org>
 	<alpine.LFD.1.10.0807041147450.2815@woody.linux-foundation.org>
@@ -15,10 +10,15 @@ References: <20080625131101.GA6205@digi.com> <20080704104634.GA31634@digi.com>
 	<1215212420.8970.8.camel@pasglop>
 	<alpine.LFD.1.10.0807041622270.2815@woody.linux-foundation.org>
 	<1215393276.8970.36.camel@pasglop>
+	<20080707132615.f6b6247b.sfr@canb.auug.org.au>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-RsOWnTUXZPB0e9SfEjQF"
+Date: Mon, 07 Jul 2008 13:28:18 +1000
+Message-Id: <1215401298.9862.1.camel@localhost>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Mon__7_Jul_2008_13_26_15_+1000_+HtuUZKAXIshAXYD"
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,50 +28,64 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Mon__7_Jul_2008_13_26_15_+1000_+HtuUZKAXIshAXYD
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
+
+--=-RsOWnTUXZPB0e9SfEjQF
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, 07 Jul 2008 11:14:36 +1000 Benjamin Herrenschmidt <benh@kernel.cras=
-hing.org> wrote:
->
-> On Fri, 2008-07-04 at 16:25 -0700, Linus Torvalds wrote:
-> >=20
-> > On Sat, 5 Jul 2008, Benjamin Herrenschmidt wrote:
+On Mon, 2008-07-07 at 13:26 +1000, Stephen Rothwell wrote:
+> On Mon, 07 Jul 2008 11:14:36 +1000 Benjamin Herrenschmidt <benh@kernel.cr=
+ashing.org> wrote:
+> >
+> > On Fri, 2008-07-04 at 16:25 -0700, Linus Torvalds wrote:
 > > >=20
-> > > I'll give it a try using =EF=BB=BFprobe_kernel_address() instead on m=
-onday.
-> >=20
-> > Here's the updated patch which uses probe_kernel_address() instead (and=
+> > > On Sat, 5 Jul 2008, Benjamin Herrenschmidt wrote:
+> > > >=20
+> > > > I'll give it a try using =EF=BB=BFprobe_kernel_address() instead on=
+ monday.
+> > >=20
+> > > Here's the updated patch which uses probe_kernel_address() instead (a=
+nd=20
+> > > moves the whole #ifdef mess out of the code that wants it and into a=20
+> > > helper function - and maybe we should then put that helper into=20
+> > > kallsyms.h, but that's a different issue).
+> > >=20
+> > > Still all happily untested, of course. And still with no actual users=
 =20
-> > moves the whole #ifdef mess out of the code that wants it and into a=20
-> > helper function - and maybe we should then put that helper into=20
-> > kallsyms.h, but that's a different issue).
+> > > converted.
 > >=20
-> > Still all happily untested, of course. And still with no actual users=20
-> > converted.
+> > Did a few tests and it seems to work. I'll stick a patch converting
+> > powerpc to use %pS for oops display in -next.
 >=20
-> Did a few tests and it seems to work. I'll stick a patch converting
-> powerpc to use %pS for oops display in -next.
+> After you post it to linuxppc-dev and get review comments, of course ...
+>=20
+> And after the patch to make %pS work goes in ...
 
-After you post it to linuxppc-dev and get review comments, of course ...
+Wasn't that already merged via the trivial scheduler fixes tree or
+something? ;)
 
-And after the patch to make %pS work goes in ...
+cheers
+
 --=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
 
---Signature=_Mon__7_Jul_2008_13_26_15_+1000_+HtuUZKAXIshAXYD
-Content-Type: application/pgp-signature
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-RsOWnTUXZPB0e9SfEjQF
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+Version: GnuPG v1.4.6 (GNU/Linux)
 
-iEYEARECAAYFAkhxjNcACgkQjjKRsyhoI8w9YACguWEk7l0t/Y/ZyW5ji0P/dx7E
-HHwAn2GkvJp+ergijyBZAvhWSoC3tsrn
-=X1SN
+iD8DBQBIcY1SdSjSd0sB4dIRAu5tAKCDrQyuAjgyimU1RrMB94sQ5ymuIACeM7En
+h07jmQW7FXQs9HkCtPsRnUY=
+=25Yt
 -----END PGP SIGNATURE-----
 
---Signature=_Mon__7_Jul_2008_13_26_15_+1000_+HtuUZKAXIshAXYD--
+--=-RsOWnTUXZPB0e9SfEjQF--
