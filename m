@@ -2,25 +2,25 @@ Return-Path: <mohan@in.ibm.com>
 Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 336A3DEC20
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jul 2008 03:34:59 +1000 (EST)
-Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
-	[9.17.195.228])
-	by e33.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m67HYu0R019212
-	for <linuxppc-dev@ozlabs.org>; Mon, 7 Jul 2008 13:34:56 -0400
+	by ozlabs.org (Postfix) with ESMTPS id B6C29DF6A8
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jul 2008 03:35:43 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e33.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m67HZdaW021284
+	for <linuxppc-dev@ozlabs.org>; Mon, 7 Jul 2008 13:35:39 -0400
 Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
-	m67HYtoc146668
-	for <linuxppc-dev@ozlabs.org>; Mon, 7 Jul 2008 11:34:55 -0600
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
+	m67HZd88028474
+	for <linuxppc-dev@ozlabs.org>; Mon, 7 Jul 2008 11:35:39 -0600
 Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
 	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m67HYtAp013611
-	for <linuxppc-dev@ozlabs.org>; Mon, 7 Jul 2008 11:34:55 -0600
-Date: Mon, 7 Jul 2008 23:04:48 +0530
+	m67HZaQ2016944
+	for <linuxppc-dev@ozlabs.org>; Mon, 7 Jul 2008 11:35:38 -0600
+Date: Mon, 7 Jul 2008 23:05:24 +0530
 From: Mohan Kumar M <mohan@in.ibm.com>
 To: ppcdev <linuxppc-dev@ozlabs.org>
-Subject: [RFC v2 PATCH 2/4] Build files needed for relocation support
-Message-ID: <20080707173448.GB21660@in.ibm.com>
+Subject: [RFC v2 PATCH 3/4] Apply relocation info to vmlinux
+Message-ID: <20080707173524.GC21660@in.ibm.com>
 References: <20080707172600.GE11470@in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -36,169 +36,251 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Build files needed for relocation
+Apply relocation
 
-This patch builds vmlinux file with relocation sections and contents so
-that relocs user space program can extract the required relocation
-offsets. This packs final relocatable vmlinux kernel as following:
-earlier part of relocation apply code, vmlinux, rest of relocation apply
-code.
-
-File make.reloc is used to build the relocatable kernel "vmlinux.reloc".
-
-TODO:
-I have not yet integrated building relocatable kernel with kernel
-Makefile. I need help to integrate this into kernel build process.
+This code is a wrapper around regular kernel. This checks whether the
+kernel is loaded at 32MB, if its not loaded at 32MB, its treated as a
+regular kernel and the control is given to the kernel immediately. If
+the kernel is loaded at 32MB, it applies relocation delta to each offset
+in the list which was generated and appended by patch 1 and 2. After
+updating all offsets, control is given to relocatable kernel.
 
 Signed-off-by: Mohan Kumar M <mohan@in.ibm.com>
 ---
- arch/powerpc/Kconfig             |   15 ++++++++++++---
- arch/powerpc/Makefile            |    2 +-
- arch/powerpc/vmlinux.reloc.lds.S |   29 +++++++++++++++++++++++++++++
- arch/powerpc/vmlinux.reloc.scr   |    8 ++++++++
- make.reloc                       |   35 +++++++++++++++++++++++++++++++++++
- 5 files changed, 85 insertions(+), 4 deletions(-)
+ arch/powerpc/kernel/reloc_apply.S |  229 ++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 229 insertions(+)
 
-Index: linux-2.6.26-rc9/arch/powerpc/Kconfig
-===================================================================
---- linux-2.6.26-rc9.orig/arch/powerpc/Kconfig
-+++ linux-2.6.26-rc9/arch/powerpc/Kconfig
-@@ -317,6 +317,15 @@ config CRASH_DUMP
- 
- 	  Don't change this unless you know what you are doing.
- 
-+config RELOCATABLE_PPC64
-+	bool "Build a relocatable kernel (EXPERIMENTAL)"
-+	depends on PPC_MULTIPLATFORM && PPC64 && CRASH_DUMP && EXPERIMENTAL
-+	help
-+	  Build a kernel suitable for use as regular kernel and kdump capture
-+	  kernel.
-+
-+	  Don't change this unless you know what you are doing.
-+
- config PHYP_DUMP
- 	bool "Hypervisor-assisted dump (EXPERIMENTAL)"
- 	depends on PPC_PSERIES && EXPERIMENTAL
-@@ -656,7 +665,7 @@ config LOWMEM_SIZE
- 	default "0x30000000"
- 
- config RELOCATABLE
--	bool "Build a relocatable kernel (EXPERIMENTAL)"
-+	bool "Build relocatable kernel (EXPERIMENTAL)"
- 	depends on EXPERIMENTAL && ADVANCED_OPTIONS && FLATMEM && FSL_BOOKE
- 	help
- 	  This builds a kernel image that is capable of running at the
-@@ -776,11 +785,11 @@ config PAGE_OFFSET
- 	default "0xc000000000000000"
- config KERNEL_START
- 	hex
--	default "0xc000000002000000" if CRASH_DUMP
-+	default "0xc000000002000000" if CRASH_DUMP && !RELOCATABLE_PPC64
- 	default "0xc000000000000000"
- config PHYSICAL_START
- 	hex
--	default "0x02000000" if CRASH_DUMP
-+	default "0x02000000" if CRASH_DUMP && !RELOCATABLE_PPC64
- 	default "0x00000000"
- endif
- 
-Index: linux-2.6.26-rc9/arch/powerpc/Makefile
-===================================================================
---- linux-2.6.26-rc9.orig/arch/powerpc/Makefile
-+++ linux-2.6.26-rc9/arch/powerpc/Makefile
-@@ -69,7 +69,7 @@ override CC	+= -m$(CONFIG_WORD_SIZE)
- override AR	:= GNUTARGET=elf$(CONFIG_WORD_SIZE)-powerpc $(AR)
- endif
- 
--LDFLAGS_vmlinux	:= -Bstatic
-+LDFLAGS_vmlinux	:= --emit-relocs
- 
- CFLAGS-$(CONFIG_PPC64)	:= -mminimal-toc -mtraceback=none  -mcall-aixdesc
- CFLAGS-$(CONFIG_PPC32)	:= -ffixed-r2 -mmultiple
-Index: linux-2.6.26-rc9/arch/powerpc/vmlinux.reloc.lds.S
+Index: linux-2.6.26-rc9/arch/powerpc/kernel/reloc_apply.S
 ===================================================================
 --- /dev/null
-+++ linux-2.6.26-rc9/arch/powerpc/vmlinux.reloc.lds.S
-@@ -0,0 +1,29 @@
-+#include <asm/page.h>
-+#include <asm-generic/vmlinux.lds.h>
++++ linux-2.6.26-rc9/arch/powerpc/kernel/reloc_apply.S
+@@ -0,0 +1,229 @@
++#include <asm/ppc_asm.h>
 +
-+ENTRY(start_wrap)
++#define RELOC_DELTA 0x4000000002000000
 +
-+OUTPUT_ARCH(powerpc:common64)
-+/* OUTPUT_ARCH(elf64ppc) */
-+SECTIONS
-+{
-+	. = KERNELBASE;
++#define LOADADDR(rn,name) \
++	lis     rn,name##@highest;	\
++	ori     rn,rn,name##@higher;	\
++	rldicr  rn,rn,32,31;		\
++	oris    rn,rn,name##@h;		\
++	ori     rn,rn,name##@l
++
 +
 +/*
-+ * Text, read only data and other permanent read-only sections
++ * Layout of vmlinux.reloc file
++ *	Minimal part of relocation applying code +
++ *	vmlinux +
++ *	Rest of the relocation applying code
 + */
-+	/* Text and gots */
-+	.text : {
-+		_head = .;
-+		*(.text.head)
-+		_ehead = .;
 +
-+		_text = .;
-+		*(.vmlinux)
-+		_etext = .;
++.section .text.head
 +
-+		_reloc = .;
-+		*(.text.reloc)
-+		_ereloc = .;
-+	}
-+}
-Index: linux-2.6.26-rc9/arch/powerpc/vmlinux.reloc.scr
-===================================================================
---- /dev/null
-+++ linux-2.6.26-rc9/arch/powerpc/vmlinux.reloc.scr
-@@ -0,0 +1,8 @@
-+SECTIONS
-+{
-+  .vmlinux : {
-+	input_len = .;
-+	*(.data)
-+	output_len = . - 8;
-+	}
-+}
-Index: linux-2.6.26-rc9/make.reloc
-===================================================================
---- /dev/null
-+++ linux-2.6.26-rc9/make.reloc
-@@ -0,0 +1,35 @@
-+#Makefile for building vmlinux with relocatable information and code.
++.globl start_wrap
++start_wrap:
++	/* Get relocation offset in r15 */
++	bl	1f
++1:	mflr	r15
++	LOAD_REG_IMMEDIATE(r16,1b)
++	subf	r15,r16,r15
 +
-+all: vmlinux.reloc
++	LOAD_REG_IMMEDIATE(r17, _reloc)
++	add	r17,r17,r15
++	mtctr	r17
++	bctr		/* Jump to start_reloc in section ".text.reloc" */
 +
-+obj 	:= arch/powerpc
++/* Secondary cpus spin code */
++. = 0x60
++	/* Get relocation offset in r15 */
++	bl	1f
++1:	mflr	r15
++	LOAD_REG_IMMEDIATE(r16,1b)
++	subf	r15,r16,r15
 +
-+AS	= as
-+LD	= ld
-+CC	= gcc
-+CPP	= $(CC) -E
++	LOADADDR(r18, __spinloop)
++	add	r18,r18,r15
++100:	ld	r19,0(r18)
++	cmpwi	0,r19,1
++	bne	100b
++
++	LOAD_REG_IMMEDIATE(r17, _reloc)
++	add	r17,r17,r15
++	addi	r17,r17,0x60
++	mtctr	r17
++	/* Jump to start_reloc + 0x60 in section ".text.reloc" */
++	bctr
++
++/*
++ * Layout of vmlinux.reloc file
++ *	Minimal part of relocation applying code +
++ *	vmlinux +
++ *	Rest of the relocation applying code
++ */
 +
 +
-+$(obj)/relocs : $(obj)/relocs.c
-+	$(CC) $(obj)/relocs.c -o $(obj)/relocs
++.section .text.reloc
 +
-+$(obj)/vmlinux.reloc.bin : vmlinux $(obj)/relocs
-+	$(obj)/relocs vmlinux > $(obj)/vmlinux.reloc.bin 2>/dev/null
++start_reloc:
++	b	master
 +
-+$(obj)/vmlinux.bin: vmlinux
-+	objcopy -O binary -R .note -R .comment -S vmlinux $(obj)/vmlinux.bin
++.org start_reloc + 0x60
++	LOADADDR(r18, __spinloop)
++	add	r18,r18,r15
++100:	ld	r19,0(r18)
++	cmpwi	0,r19,2
++	bne	100b
 +
-+$(obj)/vmlinux.bin.all : $(obj)/vmlinux.bin $(obj)/vmlinux.reloc.bin
-+	cat $(obj)/vmlinux.bin $(obj)/vmlinux.reloc.bin > $(obj)/vmlinux.bin.all
++	/* Now vmlinux is at _head */
++	LOAD_REG_IMMEDIATE(r17, _head)
++	add	r17,r17,r15
++	addi	r17,r17,0x60
++	mtctr	r17
++	bctr
 +
-+$(obj)/vmlinux.new : $(obj)/vmlinux.reloc.scr $(obj)/vmlinux.bin.all
-+	$(LD) -m elf64ppc -r --format binary --oformat elf64-powerpc -T $(obj)/vmlinux.reloc.scr $(obj)/vmlinux.bin.all -o $(obj)/vmlinux.new
++master:
++	LOAD_REG_IMMEDIATE(r16, output_len)
++	add	r16,r16,r15
 +
-+$(obj)/kernel/reloc_apply.o : $(obj)/kernel/reloc_apply.S
-+	$(CC) -m64 -Wp,-MD,arch/powerpc/kernel/.reloc_apply.o.d  -nostdinc -isystem /usr/lib/gcc/powerpc64-suse-linux/4.1.2/include -D__KERNEL__ -Iinclude  -include include/linux/autoconf.h  -D__ASSEMBLY__  -Wa,-maltivec     -c -o arch/powerpc/kernel/reloc_apply.o arch/powerpc/kernel/reloc_apply.S
++	/*
++	 * Load the delimiter to distinguish between different relocation
++	 * types
++	 */
++	LOAD_REG_IMMEDIATE(r24, __delimiter)
++	add	r24,r24,r15
++	ld	r24,0(r24)
 +
-+$(obj)/vmlinux.reloc.lds : $(obj)/vmlinux.reloc.lds.S
-+	$(CC) -m64 -E -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Werror-implicit-function-declaration -Os -msoft-float -pipe -mminimal-toc -mtraceback=none  -mcall-aixdesc -mtune=power4 -mno-altivec -mno-spe -funit-at-a-time -mno-string -Wa,-maltivec -fomit-frame-pointer  -fno-stack-protector -Wdeclaration-after-statement -Wno-pointer-sign -Wp,-MD,arch/powerpc/.vmlinux.reloc.lds.d  -nostdinc -isystem /usr/lib/gcc/powerpc64-suse-linux/4.1.2/include -D__KERNEL__ -Iinclude  -include include/linux/autoconf.h    -Upowerpc -P -C -Upowerpc -D__ASSEMBLY__ -o arch/powerpc/vmlinux.reloc.lds arch/powerpc/vmlinux.reloc.lds.S
++	LOAD_REG_IMMEDIATE(r17, _head)
++	LOAD_REG_IMMEDIATE(r21, _ehead)
++	sub	r21,r21,r17	/* Number of bytes in head section */
 +
-+vmlinux.reloc : $(obj)/vmlinux.reloc.lds $(obj)/vmlinux.new $(obj)/kernel/reloc_apply.o
-+	$(LD) -m elf64ppc -T $(obj)/vmlinux.reloc.lds $(obj)/vmlinux.new $(obj)/kernel/reloc_apply.o -o vmlinux.reloc
++	sub	r16,r16,r21	/* Original output_len */
++
++	/* Destination address */
++	LOAD_REG_IMMEDIATE(r17, _head) /* KERNELBASE */
++	add	r17,r17,r15
++
++	/* Source address */
++	LOAD_REG_IMMEDIATE(r18, _text) /* Regular vmlinux */
++	add	r18,r18,r15
++
++	/* Number of bytes to copy */
++	LOAD_REG_IMMEDIATE(r19, _etext)
++	add	r19,r19,r15
++	sub	r19,r19,r18
++
++	/* Move cpu spin code to "text.reloc" section */
++	LOADADDR(r23, __spinloop)
++	add	r23,r23,r15
++	li	r25,1
++	stw	r25,0(r23)
++
++	/* Copy vmlinux code to physical address 0 */
++	bl	.copy	/* copy(_head, _text, _etext-_text) */
++
++	/*
++	 * If its not running at 32MB, assume it to be a normal kernel.
++	 * Copy the vmlinux code to KERNELBASE and jump to KERNELBASE
++	 */
++	LOAD_REG_IMMEDIATE(r21, RELOC_DELTA)
++	cmpd	r15,r21
++	beq	apply_relocation
++	li	r6,0
++	b	skip_apply
++apply_relocation:
++
++	/* Kernel is running at 32MB */
++	mr	r22,r15
++	xor	r23,r23,r23
++	addi	r23,r23,16
++	srw	r22,r22,r23
++
++	li	r25,0
++
++	LOAD_REG_IMMEDIATE(r26, _head)
++
++	/*
++	 * Start reading the relocation offset list from end of file
++	 * Based on the relocation type either add the relocation delta
++	 * or do logical ORing the relocation delta
++	 */
++3:
++	addi	r16,r16,-8
++	ld	r18,0(r16)
++	cmpdi	r18,0		/* Processed all offsets */
++	beq	4f		/* Start vmlinux */
++	/* Are we processing reloction type R_PPC64_ADDR16_HI */
++	cmpdi	r25,1
++	beq	rel_hi
++	cmpd	r18,r24
++	beq	set_rel_hi
++	/* Process 64bit absolute relocation update */
++rel_addr64:
++	add	r18,r18,r15
++	ld	r28,0(r18)
++	cmpdi	r28,0
++	beq	next
++	add	r28,r28,r15	/* add relocation offset */
++	add	r28,r28,r26	/* add KERNELBASE */
++	std	r28,0(r18)
++	b	next
++set_rel_hi:			/* Enable R_PPC64_ADDR16_HI flag */
++	addi	r25,r25,1
++	b	3b
++rel_hi:
++	add	r18,r18,r15
++	lhz	r28,0(r18)
++	or	r28,r28,r22
++	sth	r28,0(r18)
++next:
++	b	3b
++4:
++	mr	r6,r15
++
++
++skip_apply:
++	isync
++	sync
++
++	/* Now vmlinux is at _head */
++	LOAD_REG_IMMEDIATE(r17, _head)
++	add	r17,r17,r15
++	mtctr	r17
++
++	/* Move cpu spin code to "text.reloc" section */
++	LOADADDR(r23, __spinloop)
++	add	r23,r23,r15
++	li	r25,2
++	stw	r25,0(r23)
++
++	bctr
++
++/* r17 destination, r18 source, r19 size */
++.copy:
++	addi	r19,r19,-8
++	li	r22,-8
++4:	li	r21,8			/* Use the smallest common	*/
++					/* denominator cache line	*/
++					/* size.  This results in	*/
++					/* extra cache line flushes	*/
++					/* but operation is correct.	*/
++					/* Can't get cache line size	*/
++					/* from NACA as it is being	*/
++					/* moved too.			*/
++
++	mtctr	r21			/* put # words/line in ctr	*/
++3:	addi	r22,r22,8		/* copy a cache line		*/
++	ldx	r21,r22,r18
++	stdx	r21,r22,r17
++	bdnz	3b
++	dcbst	r22,r17			/* write it to memory		*/
++	sync
++	icbi	r22,r17			/* flush the icache line	*/
++	cmpld	0,r22,r19
++	blt	4b
++	sync
++	blr
++
++__delimiter:
++	.llong 0xffffffffffffffff
++__spinloop:
++	.llong	0x0
