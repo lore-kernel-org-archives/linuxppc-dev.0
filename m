@@ -1,29 +1,19 @@
-Return-Path: <srinivasa@in.ibm.com>
-Received: from e23smtp03.au.ibm.com (E23SMTP03.au.ibm.com [202.81.18.172])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp03.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id F2B50DE839
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jul 2008 00:24:42 +1000 (EST)
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.18.234])
-	by e23smtp03.au.ibm.com (8.13.1/8.13.1) with ESMTP id m67ENh0V001094
-	for <linuxppc-dev@ozlabs.org>; Tue, 8 Jul 2008 00:23:43 +1000
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
-	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
-	m67EMx4c2527370
-	for <linuxppc-dev@ozlabs.org>; Tue, 8 Jul 2008 00:22:59 +1000
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
-	by d23av03.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m67ENQCD003182
-	for <linuxppc-dev@ozlabs.org>; Tue, 8 Jul 2008 00:23:26 +1000
-From: Srinivasa D S <srinivasa@in.ibm.com>
-To: linuxppc-dev@ozlabs.org, Ananth Mavinakayanahalli <ananth@in.ibm.com>,
-	benh@kernel.crashing.org, paulus@samba.org
-Subject: [RFC] [PATCH] task_pt_regs for powerpc systems
-Date: Mon, 7 Jul 2008 19:52:27 +0530
+Return-Path: <John.Linn@xilinx.com>
+Received: from VA3EHSOBE002.bigfish.com (outbound-va3.frontbridge.com
+	[216.32.180.16]) by ozlabs.org (Postfix) with ESMTP id C1383DE532
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jul 2008 00:26:59 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200807071952.27427.srinivasa@in.ibm.com>
+Content-Type: text/plain; charset="US-ASCII"
+Subject: RE: Please pull linux-2.6-virtex.git
+Date: Mon, 7 Jul 2008 08:26:50 -0600
+In-Reply-To: <20080707141332.6CDD313E8050@mail111-sin.bigfish.com>
+References: <20080704172240.GE17062@secretlab.ca><1215433036.20774.39.camel@weaponx>
+	<20080707141332.6CDD313E8050@mail111-sin.bigfish.com>
+From: John Linn <John.Linn@xilinx.com>
+To: "John Linn" <John.Linn@xilinx.com>, "Josh Boyer" <jwboyer@gmail.com>,
+	<grant.likely@secretlab.ca>
+Message-ID: <20080707142652.43C32110807E@mail204-va3.bigfish.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,30 +23,101 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi
- task_pt_regs() macro defines pt_regs for the given task,  this macro is  
-currently not defined for powerpc arch. We need this macro for 
-upcoming utrace features. 
- Below attached patch  defines this macro for powerpc arch. Please let 
-me know your comments on this.
+Where should I be looking to understand what's needed for dts-v1 format?
 
-Signed-off-by: Srinivasa DS <srinivasa@in.ibm.com>
+I did a quick review of Doc*/powerpc/booting-wihtout-of.txt and didn't
+see it, but maybe I overlooked it.
+
+Thanks,
+John =
 
 
----
- include/asm-powerpc/processor.h |    2 ++
- 1 file changed, 2 insertions(+)
+> -----Original Message-----
+> From: linuxppc-dev-bounces+john.linn=3Dxilinx.com@ozlabs.org
+[mailto:linuxppc-dev-
+> bounces+john.linn=3Dxilinx.com@ozlabs.org] On Behalf Of John Linn
+> Sent: Monday, July 07, 2008 8:14 AM
+> To: Josh Boyer; grant.likely@secretlab.ca
+> Cc: linuxppc-dev@ozlabs.org
+> Subject: RE: Please pull linux-2.6-virtex.git
+> =
 
-Index: linux-2.6.26-rc9/include/asm-powerpc/processor.h
-===================================================================
---- linux-2.6.26-rc9.orig/include/asm-powerpc/processor.h
-+++ linux-2.6.26-rc9/include/asm-powerpc/processor.h
-@@ -214,6 +214,8 @@ struct thread_struct {
- #define thread_saved_pc(tsk)    \
-         ((tsk)->thread.regs? (tsk)->thread.regs->nip: 0)
- 
-+#define task_pt_regs(tsk)	((struct pt_regs *)(tsk)->thread.regs)
-+
- unsigned long get_wchan(struct task_struct *p);
- 
- #define KSTK_EIP(tsk)  ((tsk)->thread.regs? (tsk)->thread.regs->nip: 0)
+> I'll look at the dts file and converting it to v1 format, hopefully
+> soon.
+> =
+
+> Thanks,
+> John
+> =
+
+> > -----Original Message-----
+> > From: linuxppc-dev-bounces+john.linn=3Dxilinx.com@ozlabs.org
+> [mailto:linuxppc-dev-
+> > bounces+john.linn=3Dxilinx.com@ozlabs.org] On Behalf Of Josh Boyer
+> > Sent: Monday, July 07, 2008 6:17 AM
+> > To: grant.likely@secretlab.ca
+> > Cc: linuxppc-dev@ozlabs.org
+> > Subject: Re: Please pull linux-2.6-virtex.git
+> >
+> > On Fri, 2008-07-04 at 11:22 -0600, Grant Likely wrote:
+> > > Hi Josh,
+> > >
+> > > Here are the bulk of the Xilinx 440 support patches.  Please pull
+> > > into your next branch.
+> > >
+> > > Thanks,
+> > > g.
+> > >
+> > > The following changes since commit
+> f3e909c2750eb20536bacacc867dc9047b70546a:
+> > >   Michael Neuling (1):
+> > >         powerpc: Update for VSX core file and ptrace
+> > >
+> > > are available in the git repository at:
+> > >
+> > >   git://git.secretlab.ca/git/linux-2.6-virtex virtex-for-2.6.27
+> > >
+> >
+> > <snip>
+> >
+> > > John Linn (5):
+> > >       powerpc/virtex: add dts file for ML507 reference design
+> >
+> > This one still isn't a dts-v1 file.  Any chance of that getting
+fixed
+> in
+> > the next day or two?
+> >
+> > josh
+> >
+> > _______________________________________________
+> > Linuxppc-dev mailing list
+> > Linuxppc-dev@ozlabs.org
+> > https://ozlabs.org/mailman/listinfo/linuxppc-dev
+> =
+
+> =
+
+> This email and any attachments are intended for the sole use of the
+named recipient(s) and contain(s)
+> confidential information that may be proprietary, privileged or
+copyrighted under applicable law. If
+> you are not the intended recipient, do not read, copy, or forward this
+email message or any
+> attachments. Delete this email message and any attachments
+immediately.
+> =
+
+> =
+
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+
+
+This email and any attachments are intended for the sole use of the named r=
+ecipient(s) and contain(s) confidential information that may be proprietary=
+, privileged or copyrighted under applicable law. If you are not the intend=
+ed recipient, do not read, copy, or forward this email message or any attac=
+hments. Delete this email message and any attachments immediately.
