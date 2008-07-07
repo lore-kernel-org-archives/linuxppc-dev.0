@@ -1,14 +1,12 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Mon, 7 Jul 2008 09:53:28 +1000
+Date: Mon, 7 Jul 2008 10:14:15 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
-To: Wolfgang Grandegger <wg@grandegger.com>
-Subject: Re: [PATCH] [POWERPC] 52xx: add missing MSCAN FDT nodes for TQM52xx
-Message-ID: <20080706235328.GB6267@yookeroo.seuss>
-References: <486B50D8.5000009@grandegger.com>
+To: Jon Loeliger <jdl@freescale.com>
+Subject: dtc: Enable and fix -Wcast-qual warnings
+Message-ID: <20080707001415.GD6267@yookeroo.seuss>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <486B50D8.5000009@grandegger.com>
-Cc: Linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,52 +16,156 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jul 02, 2008 at 11:56:40AM +0200, Wolfgang Grandegger wrote:
-> This patch adds the still missing FDT nodes for the MSCAN devices for
-> the TQM52xx modules.
->
-> Signed-off-by: Wolfgang Grandegger <wg@grandegger.com>
-> ---
-> arch/powerpc/boot/dts/tqm5200.dts |   16 ++++++++++++++++
-> 1 file changed, 16 insertions(+)
->
-> Index: linux-2.6-galak/arch/powerpc/boot/dts/tqm5200.dts
-> ===================================================================
-> --- linux-2.6-galak.orig/arch/powerpc/boot/dts/tqm5200.dts
-> +++ linux-2.6-galak/arch/powerpc/boot/dts/tqm5200.dts
-> @@ -70,6 +70,22 @@
-> 			fsl,has-wdt;
-> 		};
->
-> +		can@900 {
-> +			compatible = "fsl,mpc5200-mscan";
-> +			cell-index = <0>;
+Enabling -Wcast-qual warnings in dtc shows up a number of places where
+we are incorrectly discarding a const qualification.  There are also
+some places where we are intentionally discarding the 'const', and we
+need an ugly cast through uintptr_t to suppress the warning.  However,
+most of these are pretty well isolated with the *_w() functions.  So
+in the interests of maximum safety with const qualifications, this
+patch enables the warnings and fixes the existing complaints.
 
-What shared resource are these cell-index values used to index into?
-Because cell-index is so freqeuntly misunderstood, I strongly
-recommend putting a comment describing this.
+Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 
-> +			interrupts = <2 17 0>;
-> +			interrupt-parent = <&mpc5200_pic>;
-> +			reg = <0x900 0x80>;
-> +		};
-> +
-> +		can@980 {
-> +			compatible = "fsl,mpc5200-mscan";
-> +			cell-index = <1>;
-> +			interrupts = <2 18 0>;
-> +			interrupt-parent = <&mpc5200_pic>;
-> +			reg = <0x980 0x80>;
-> +		};
-> +
-> 		gpio@b00 {
-> 			compatible = "fsl,mpc5200-gpio";
-> 			reg = <0xb00 0x40>;
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
->
+Index: dtc/Makefile
+===================================================================
+--- dtc.orig/Makefile	2008-07-04 16:54:38.000000000 +1000
++++ dtc/Makefile	2008-07-04 16:54:38.000000000 +1000
+@@ -16,7 +16,7 @@
+ CONFIG_LOCALVERSION =
+ 
+ CPPFLAGS = -I libfdt
+-CFLAGS = -Wall -g -Os -Wpointer-arith
++CFLAGS = -Wall -g -Os -Wpointer-arith -Wcast-qual
+ 
+ CPPFLAGS += -std=c99 -D_XOPEN_SOURCE -D_BSD_SOURCE
+ CFLAGS += -Werror
+Index: dtc/ftdump.c
+===================================================================
+--- dtc.orig/ftdump.c	2008-07-04 16:54:38.000000000 +1000
++++ dtc/ftdump.c	2008-07-04 16:54:38.000000000 +1000
+@@ -48,11 +48,11 @@
+ 		return;
+ 
+ 	if (is_printable_string(data, len)) {
+-		printf(" = \"%s\"", (char *)data);
++		printf(" = \"%s\"", (const char *)data);
+ 	} else if ((len % 4) == 0) {
+ 		printf(" = <");
+ 		for (i = 0; i < len; i += 4)
+-			printf("%08x%s", *((uint32_t *)data + i),
++			printf("%08x%s", *((const uint32_t *)data + i),
+ 			       i < (len - 4) ? " " : "");
+ 		printf(">");
+ 	} else {
+Index: dtc/treesource.c
+===================================================================
+--- dtc.orig/treesource.c	2008-07-04 16:54:38.000000000 +1000
++++ dtc/treesource.c	2008-07-04 16:54:38.000000000 +1000
+@@ -176,7 +176,7 @@
+ 		}
+ 
+ 		fprintf(f, "%02hhx", *bp++);
+-		if ((void *)bp >= propend)
++		if ((const void *)bp >= propend)
+ 			break;
+ 		fprintf(f, " ");
+ 	}
+Index: dtc/libfdt/fdt_ro.c
+===================================================================
+--- dtc.orig/libfdt/fdt_ro.c	2008-07-04 16:54:38.000000000 +1000
++++ dtc/libfdt/fdt_ro.c	2008-07-04 16:54:38.000000000 +1000
+@@ -77,7 +77,7 @@
+ 
+ const char *fdt_string(const void *fdt, int stroffset)
+ {
+-	return (char *)fdt + fdt_off_dt_strings(fdt) + stroffset;
++	return (const char *)fdt + fdt_off_dt_strings(fdt) + stroffset;
+ }
+ 
+ int fdt_get_mem_rsv(const void *fdt, int n, uint64_t *address, uint64_t *size)
+Index: dtc/libfdt/libfdt.h
+===================================================================
+--- dtc.orig/libfdt/libfdt.h	2008-07-04 16:54:38.000000000 +1000
++++ dtc/libfdt/libfdt.h	2008-07-04 16:54:38.000000000 +1000
+@@ -125,7 +125,7 @@
+ const void *fdt_offset_ptr(const void *fdt, int offset, int checklen);
+ static inline void *fdt_offset_ptr_w(void *fdt, int offset, int checklen)
+ {
+-	return (void *)fdt_offset_ptr(fdt, offset, checklen);
++	return (void *)(uintptr_t)fdt_offset_ptr(fdt, offset, checklen);
+ }
+ 
+ uint32_t fdt_next_tag(const void *fdt, int offset, int *nextoffset);
+@@ -375,8 +375,8 @@
+ 						      const char *name,
+ 						      int *lenp)
+ {
+-	return (struct fdt_property *)fdt_get_property(fdt, nodeoffset,
+-						       name, lenp);
++	return (struct fdt_property *)(uintptr_t)
++		fdt_get_property(fdt, nodeoffset, name, lenp);
+ }
+ 
+ /**
+@@ -411,7 +411,7 @@
+ static inline void *fdt_getprop_w(void *fdt, int nodeoffset,
+ 				  const char *name, int *lenp)
+ {
+-	return (void *)fdt_getprop(fdt, nodeoffset, name, lenp);
++	return (void *)(uintptr_t)fdt_getprop(fdt, nodeoffset, name, lenp);
+ }
+ 
+ /**
+Index: dtc/libfdt/libfdt_internal.h
+===================================================================
+--- dtc.orig/libfdt/libfdt_internal.h	2008-07-04 16:54:38.000000000 +1000
++++ dtc/libfdt/libfdt_internal.h	2008-07-04 16:54:38.000000000 +1000
+@@ -77,19 +77,20 @@
+ 
+ static inline void *_fdt_offset_ptr_w(void *fdt, int offset)
+ {
+-	return (void *)_fdt_offset_ptr(fdt, offset);
++	return (void *)(uintptr_t)_fdt_offset_ptr(fdt, offset);
+ }
+ 
+ static inline const struct fdt_reserve_entry *_fdt_mem_rsv(const void *fdt, int n)
+ {
+-	const struct fdt_reserve_entry *rsv_table = (struct fdt_reserve_entry *)
++	const struct fdt_reserve_entry *rsv_table =
++		(const struct fdt_reserve_entry *)
+ 		((const char *)fdt + fdt_off_mem_rsvmap(fdt));
+ 
+ 	return rsv_table + n;
+ }
+ static inline struct fdt_reserve_entry *_fdt_mem_rsv_w(void *fdt, int n)
+ {
+-	return (void *)_fdt_mem_rsv(fdt, n);
++	return (void *)(uintptr_t)_fdt_mem_rsv(fdt, n);
+ }
+ 
+ #define SW_MAGIC		(~FDT_MAGIC)
+Index: dtc/libfdt/fdt_rw.c
+===================================================================
+--- dtc.orig/libfdt/fdt_rw.c	2008-07-04 16:54:38.000000000 +1000
++++ dtc/libfdt/fdt_rw.c	2008-07-04 16:54:38.000000000 +1000
+@@ -257,7 +257,7 @@
+ 
+ 	RW_CHECK_HEADER(fdt);
+ 
+-	namep = (char *)fdt_get_name(fdt, nodeoffset, &oldlen);
++	namep = (char *)(uintptr_t)fdt_get_name(fdt, nodeoffset, &oldlen);
+ 	if (!namep)
+ 		return oldlen;
+ 
+@@ -432,7 +432,7 @@
+ 	/* But if that overlaps with the old tree... */
+ 	if (((tmp + newsize) > fdtstart) && (tmp < fdtend)) {
+ 		/* Try right after the old tree instead */
+-		tmp = (char *)fdtend;
++		tmp = (char *)(uintptr_t)fdtend;
+ 		if ((tmp + newsize) > ((char *)buf + bufsize))
+ 			return -FDT_ERR_NOSPACE;
+ 	}
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
