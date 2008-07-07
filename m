@@ -1,18 +1,20 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 6A55CDDF14
-	for <linuxppc-dev@ozlabs.org>; Mon,  7 Jul 2008 22:25:35 +1000 (EST)
-Date: Mon, 7 Jul 2008 22:25:28 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Subject: linux-next: scsi tree build failure
-Message-Id: <20080707222528.280f0b9e.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Mon__7_Jul_2008_22_25_28_+1000_ExoozYY/ENnpcRiK"
-Cc: linuxppc-dev@ozlabs.org, linux-next@vger.kernel.org,
-	Paul Mackerras <paulus@samba.org>
+Return-Path: <neko@genesi-usa.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.169])
+	by ozlabs.org (Postfix) with ESMTP id 0A25ADE02C
+	for <linuxppc-dev@ozlabs.org>; Mon,  7 Jul 2008 22:47:10 +1000 (EST)
+Received: by ug-out-1314.google.com with SMTP id k3so930448ugf.0
+	for <linuxppc-dev@ozlabs.org>; Mon, 07 Jul 2008 05:47:08 -0700 (PDT)
+Message-ID: <4872104E.6050109@genesi-usa.com>
+Date: Mon, 07 Jul 2008 13:47:10 +0100
+From: Matt Sealey <matt@genesi-usa.com>
+MIME-Version: 1.0
+To: Andre Schwarz <andre.schwarz@matrix-vision.de>
+Subject: Re: MPC52xx generic DMA using bestcomm
+References: <4871E487.2020008@matrix-vision.de>
+In-Reply-To: <4871E487.2020008@matrix-vision.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Sender: Matt Sealey <neko@genesi-usa.com>
+Cc: linux-ppc list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,60 +24,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Mon__7_Jul_2008_22_25_28_+1000_ExoozYY/ENnpcRiK
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi James,
 
-Today's linux-next build (powerpc ppc64_defconfig) failed like this:
+Andre Schwarz wrote:
+> Grant,
 
-drivers/scsi/ibmvscsi/ibmvscsi.c: In function 'map_sg_data':
-drivers/scsi/ibmvscsi/ibmvscsi.c:431: error: 'FW_FEATURE_CMO' undeclared (f=
-irst use in this function)
-drivers/scsi/ibmvscsi/ibmvscsi.c:431: error: (Each undeclared identifier is=
- reported only once
-drivers/scsi/ibmvscsi/ibmvscsi.c:431: error: for each function it appears i=
-n.)
-drivers/scsi/ibmvscsi/ibmvscsi.c: In function 'ibmvscsi_queuecommand':
-drivers/scsi/ibmvscsi/ibmvscsi.c:750: error: 'FW_FEATURE_CMO' undeclared (f=
-irst use in this function)
-drivers/scsi/ibmvscsi/ibmvscsi.c: In function 'send_mad_adapter_info':
-drivers/scsi/ibmvscsi/ibmvscsi.c:864: error: 'FW_FEATURE_CMO' undeclared (f=
-irst use in this function)
-drivers/scsi/ibmvscsi/ibmvscsi.c: In function 'ibmvscsi_do_host_config':
-drivers/scsi/ibmvscsi/ibmvscsi.c:1412: error: 'FW_FEATURE_CMO' undeclared (=
-first use in this function)
-drivers/scsi/ibmvscsi/ibmvscsi.c: At top level:
-drivers/scsi/ibmvscsi/ibmvscsi.c:1769: error: unknown field 'get_io_entitle=
-ment' specified in initializer
-drivers/scsi/ibmvscsi/ibmvscsi.c:1769: warning: missing braces around initi=
-alizer
-drivers/scsi/ibmvscsi/ibmvscsi.c:1769: warning: (near initialization for 'i=
-bmvscsi_driver.driver')
-drivers/scsi/ibmvscsi/ibmvscsi.c:1769: warning: initialization from incompa=
-tible pointer type
+I know I'm not Grant, but..
 
-Caused because commit 341b56db6804040aa9559e913865108424e3b18b ("[SCSI]
-ibmvscsi: driver enablement for CMO"), which was 15/16 in a series, has
-been merged before any of the other patches in the series.  I have
-reverted that commit.
+> do you know if someone's working on a more generic DMA solution using
+> BestComm engine on 5200B ?
+> Maybe somthing that accepts a sg-list with callback ops or completion ?
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+It was suggested once or twice, not least by me.
 
---Signature=_Mon__7_Jul_2008_22_25_28_+1000_ExoozYY/ENnpcRiK
-Content-Type: application/pgp-signature
+> Is it possible right now to accelerate simple memcpy ops ?
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+ From my discussions on the subject with Sylvain, it's possible, you just
+need to use the GenBD and initiate it manually, however it's probably more
+overhead than work if the data size is small, and BestComm would do better
+to copy full 32-bit words at a time, and stay aligned, if you have an odd-sized
+transfer from a non-32-bit aligned address, then you may have to do some
+incredible amount of work which makes the actual transfer not worth doing
+(by the time you set it up, the CPU could have copied it on it's own
+already, I guess what you DO gain is a kernel preemption point.. the CPU
+can do other things that are important)
 
-iEYEARECAAYFAkhyCzgACgkQjjKRsyhoI8yojACcDVtsntcsfDNO7xbqF+W2reIG
-yJ0An1et/D1PIvSpeisIrGdELm4zpv0/
-=S0yo
------END PGP SIGNATURE-----
+I for one, though, whether it speeds stuff up or not, love to see this in
+action and am very willing to test and benchmark it. I would love to see
+more users, too, as the network stack is not the only system that can
+benefit..
 
---Signature=_Mon__7_Jul_2008_22_25_28_+1000_ExoozYY/ENnpcRiK--
+On a related note does anyone know of the status or what is going on with
+Clifford Wolf's dmatransfer API?
+
+-- 
+Matt Sealey <matt@genesi-usa.com>
+Genesi, Manager, Developer Relations
