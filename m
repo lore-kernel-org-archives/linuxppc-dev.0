@@ -1,23 +1,16 @@
-Return-Path: <benh@kernel.crashing.org>
-Subject: Re: [patch 1/6] mm: Allow architectures to define additional
-	protection bits
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Hugh Dickins <hugh@veritas.com>
-In-Reply-To: <Pine.LNX.4.64.0807072143200.27181@blonde.site>
-References: <20080618223254.966080905@linux.vnet.ibm.com>
-	<20080618223328.856102092@linux.vnet.ibm.com>
-	<20080701015301.3dc8749b.akpm@linux-foundation.org>
-	<1214920499.18690.10.camel@norville.austin.ibm.com>
-	<1215409956.8970.82.camel@pasglop>
-	<Pine.LNX.4.64.0807072143200.27181@blonde.site>
-Content-Type: text/plain
-Date: Tue, 08 Jul 2008 08:24:28 +1000
-Message-Id: <1215469468.8970.143.camel@pasglop>
-Mime-Version: 1.0
-Cc: linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>,
-	Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-	Paul Mackerras <paulus@au1.ibm.com>, Linuxppc-dev@ozlabs.org
-Reply-To: benh@kernel.crashing.org
+Return-Path: <paul.gortmaker@windriver.com>
+Received: from mail.wrs.com (mail.windriver.com [147.11.1.11])
+	by ozlabs.org (Postfix) with ESMTP id 332B8DDFA5
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jul 2008 08:35:29 +1000 (EST)
+From: Paul Gortmaker <paul.gortmaker@windriver.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] ibmebus: more meaningful variable name
+Date: Mon,  7 Jul 2008 18:42:09 -0400
+Message-Id: <1215470529-25382-1-git-send-email-paul.gortmaker@windriver.com>
+In-Reply-To: <1215469038.8970.137.camel@pasglop>
+References: <1215469038.8970.137.camel@pasglop>
+Cc: scottwood@freescale.com, arnd@arndb.de,
+	Paul Gortmaker <paul.gortmaker@windriver.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,43 +20,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2008-07-07 at 22:11 +0100, Hugh Dickins wrote:
-> Sorry, Andrew got the wrong pantomime: I was appearing in Aladdin
-> a couple of years ago, but this year I'm the Sleeping Beauty.
-> (Did I hear a grumble of dissent from the back stalls?)
+Choose a more meaningful name for better System.map readability and
+autopsy value etc.  Part of a cleanup suggested by Benjamin Herrenschmidt.
 
-No comment :-)
+Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
+---
+ arch/powerpc/kernel/ibmebus.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-> I don't find Dave's patch very handsome, but it gets the job done
-> so I'd better not carp.  The ugliness in vm_get_page_prot is just
-> an inevitable consequence of growing beyond the traditional neat
-> pairing of VM_xxx flags with VM_MAYxxx flags, along with the way
-> that opaque pgprot_t type becomes occasionally tiresome, as such
-> opaque types do: I don't think there's a better way of handling
-> it than Dave has done.
-
-That was also my conclusion. It didn't look pretty but I couldn't come
-up with something prettier.
+diff --git a/arch/powerpc/kernel/ibmebus.c b/arch/powerpc/kernel/ibmebus.c
+index 9971159..58da8f8 100644
+--- a/arch/powerpc/kernel/ibmebus.c
++++ b/arch/powerpc/kernel/ibmebus.c
+@@ -53,7 +53,7 @@ static struct device ibmebus_bus_device = { /* fake "parent" device */
+ struct bus_type ibmebus_bus_type;
  
-> There is a little inconsistency, that arch_calc_vm_prot_bits
-> and arch_vm_get_page_prot just handle the exceptional flag (SAO),
-> whereas arch_validate_prot handles all of them; but I don't feel
-> so strongly about that to suggest resubmission.
-> 
-> And regarding VM_SAO added to include/linux/mm.h in 3/6: although
-> it's odd to be weaving back and forth between arch-specific and
-> common, it's already the case that mman definitions and pgtable
-> definitions are arch-specific but mm.h common: I'm much happier
-> to have VM_SAO defined once there as Dave has it, than get into
-> arch-specific vm_flags.
-> 
-> Is someone going to be asking for PROT_WC shortly?
-
-I'll definitely come with PROT_ENDIAN soon :-) (ie, some powerpc
-processors can have a per-page endian flag that when set causes all
-load/store instructions on this are to be byte-flipped, support for this
-feature has been requested for some time, and now I have the
-infrastructure to do it).
-
-Cheers,
-Ben.
+ /* These devices will automatically be added to the bus during init */
+-static struct of_device_id __initdata builtin_matches[] = {
++static struct of_device_id __initdata ibmebus_matches[] = {
+ 	{ .compatible = "IBM,lhca" },
+ 	{ .compatible = "IBM,lhea" },
+ 	{},
+@@ -350,7 +350,7 @@ static int __init ibmebus_bus_init(void)
+ 		return err;
+ 	}
+ 
+-	err = ibmebus_create_devices(builtin_matches);
++	err = ibmebus_create_devices(ibmebus_matches);
+ 	if (err) {
+ 		device_unregister(&ibmebus_bus_device);
+ 		bus_unregister(&ibmebus_bus_type);
+-- 
+1.5.6.6.gd3e97
