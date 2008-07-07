@@ -1,18 +1,22 @@
-Return-Path: <James.Bottomley@HansenPartnership.com>
-Received: from accolon.hansenpartnership.com (accolon.hansenpartnership.com
-	[76.243.235.52]) by ozlabs.org (Postfix) with ESMTP id ABF56DE639
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jul 2008 00:39:56 +1000 (EST)
-Subject: Re: linux-next: scsi tree build failure
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-In-Reply-To: <20080707222528.280f0b9e.sfr@canb.auug.org.au>
-References: <20080707222528.280f0b9e.sfr@canb.auug.org.au>
-Content-Type: text/plain
-Date: Mon, 07 Jul 2008 09:39:49 -0500
-Message-Id: <1215441589.3274.17.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linux-scsi <linux-scsi@vger.kernel.org>, linuxppc-dev@ozlabs.org,
-	linux-next@vger.kernel.org, Paul Mackerras <paulus@samba.org>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id A1688DDF3C
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jul 2008 00:44:43 +1000 (EST)
+Message-Id: <155B1079-39C4-4D15-B886-F904C424BC8C@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <18541.48403.490671.815858@cargo.ozlabs.ibm.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Mime-Version: 1.0 (Apple Message framework v926)
+Subject: Re: Deputy maintainer for powerpc
+Date: Mon, 7 Jul 2008 09:44:31 -0500
+References: <18541.48403.490671.815858@cargo.ozlabs.ibm.com>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Paul Mackerras <paulus@samba.org>, lkml List <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,36 +26,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Correct cc's added
 
-On Mon, 2008-07-07 at 22:25 +1000, Stephen Rothwell wrote:
-> Hi James,
-> 
-> Today's linux-next build (powerpc ppc64_defconfig) failed like this:
-> 
-> drivers/scsi/ibmvscsi/ibmvscsi.c: In function 'map_sg_data':
-> drivers/scsi/ibmvscsi/ibmvscsi.c:431: error: 'FW_FEATURE_CMO' undeclared (first use in this function)
-> drivers/scsi/ibmvscsi/ibmvscsi.c:431: error: (Each undeclared identifier is reported only once
-> drivers/scsi/ibmvscsi/ibmvscsi.c:431: error: for each function it appears in.)
-> drivers/scsi/ibmvscsi/ibmvscsi.c: In function 'ibmvscsi_queuecommand':
-> drivers/scsi/ibmvscsi/ibmvscsi.c:750: error: 'FW_FEATURE_CMO' undeclared (first use in this function)
-> drivers/scsi/ibmvscsi/ibmvscsi.c: In function 'send_mad_adapter_info':
-> drivers/scsi/ibmvscsi/ibmvscsi.c:864: error: 'FW_FEATURE_CMO' undeclared (first use in this function)
-> drivers/scsi/ibmvscsi/ibmvscsi.c: In function 'ibmvscsi_do_host_config':
-> drivers/scsi/ibmvscsi/ibmvscsi.c:1412: error: 'FW_FEATURE_CMO' undeclared (first use in this function)
-> drivers/scsi/ibmvscsi/ibmvscsi.c: At top level:
-> drivers/scsi/ibmvscsi/ibmvscsi.c:1769: error: unknown field 'get_io_entitlement' specified in initializer
-> drivers/scsi/ibmvscsi/ibmvscsi.c:1769: warning: missing braces around initializer
-> drivers/scsi/ibmvscsi/ibmvscsi.c:1769: warning: (near initialization for 'ibmvscsi_driver.driver')
-> drivers/scsi/ibmvscsi/ibmvscsi.c:1769: warning: initialization from incompatible pointer type
-> 
-> Caused because commit 341b56db6804040aa9559e913865108424e3b18b ("[SCSI]
-> ibmvscsi: driver enablement for CMO"), which was 15/16 in a series, has
-> been merged before any of the other patches in the series.  I have
-> reverted that commit.
+On Jul 4, 2008, at 1:02 AM, Paul Mackerras wrote:
 
-Do I detect the fact that IBM sent a patch for a SCSI driver for which
-the core features weren't yet enabled (and which I couldn't check, not
-having a ppc build system)?
+> I'm going to be on vacation for the next two weeks, and it looks
+> highly likely that Linus will open the 2.6.27 merge window during that
+> time, so I'm appointing Ben Herrenschmidt as my deputy maintainer.
+> During the next two weeks, he'll be the person collecting together any
+> further powerpc-related commits that need to go upstream, and sending
+> pull requests to Linus as necessary.
+>
+> This is the start of a longer-term transition which will ultimately
+> result in me handing over the powerpc architecture maintainership to
+> Ben.  Because of various work commitments, this will be a gradual
+> transition taking probably around 6 months.
+>
+> Paul.
 
-James
+Ben, Do you have a tree that you'll be using to collect things in?
+
+- k
