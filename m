@@ -1,17 +1,30 @@
-Return-Path: <smaclennan@pikatech.com>
-Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
-	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id E75E9DDF25
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jul 2008 08:55:48 +1000 (EST)
-Date: Mon, 7 Jul 2008 18:55:44 -0400
-From: Sean MacLennan <smaclennan@pikatech.com>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] i2c-ibm_iic: Remove deprecated OCP style part of thedriver
-Message-ID: <20080707185544.7335b108@lappy.seanm.ca>
-In-Reply-To: <20080604210400.0d7abb8e@hyperion.delvare>
-References: <1212592932-24031-1-git-send-email-sr@denx.de>
-	<20080604210400.0d7abb8e@hyperion.delvare>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 64A54DDDE7
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jul 2008 08:56:41 +1000 (EST)
+Subject: Re: [PATCH 1/2] elf loader support for auxvec base platform string
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Andreas Schwab <schwab@suse.de>
+In-Reply-To: <je63rirp1x.fsf@sykes.suse.de>
+References: <20080703234140.GC9594@localdomain>
+	<20080704021929.5E9EF1541F5@magilla.localdomain>
+	<1215409693.8970.79.camel@pasglop>
+	<20080707061811.19989154246@magilla.localdomain>
+	<1215411800.8970.91.camel@pasglop>
+	<20080707063522.5FE55154246@magilla.localdomain>
+	<je8wwet9p6.fsf@sykes.suse.de>
+	<20080707093151.8798A154246@magilla.localdomain>
+	<je63rirp1x.fsf@sykes.suse.de>
+Content-Type: text/plain
+Date: Tue, 08 Jul 2008 08:56:33 +1000
+Message-Id: <1215471393.8970.157.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Nathan Lynch <ntl@pobox.com>, linux-kernel@vger.kernel.org,
+	Roland McGrath <roland@redhat.com>
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,29 +34,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 4 Jun 2008 21:04:00 +0200
-"Jean Delvare" <khali@linux-fr.org> wrote:
+On Mon, 2008-07-07 at 12:01 +0200, Andreas Schwab wrote:
+> Roland McGrath <roland@redhat.com> writes:
+> 
+> > There are 32 bits free now.  One can anticipate that reassigning a bit
+> > would come up only after these are exhausted.  With prudent use, this
+> > will take a very long time to happen.  Then the oldest CPU type string
+> > might be retired to reuse its bit.  It seems unlikely that there will
+> > be a single installation (root directory) that really needs to have
+> > installed both a kernel optimized for the oldest CPU model known and a
+> > kernel optimized for the newest CPU model known.
+> 
+> The kernel does not have to come from the same place as the root
+> filesystem.  You may want to run a new kernel with an old filesystem, or
+> vice-versa.
 
-> On Wed,  4 Jun 2008 17:22:12 +0200, Stefan Roese wrote:
-> > The deprecated OCP style driver part is used by the "old" arch/ppc
-> > platform. This platform is scheduled for removal in June/July this
-> > year. This patch now removes the OCP driver part from the IBM I2C
-> > driver.
-> > 
-> > Signed-off-by: Stefan Roese <sr@denx.de>
-> > ---
-> >  drivers/i2c/busses/i2c-ibm_iic.c |  181
-> > -------------------------------------- 1 files changed, 0
-> > insertions(+), 181 deletions(-)
-> 
-> Applied, queued for 2.6.27, thanks Stefan.
-> 
-> BTW, would you happen to know if read-only EEPROMs such as SPD or EDID
-> can be found on the i2c-ibm_iic adapters?
-> 
-
-Jean, where is this patch queued? I have a patch for the iic driver and
-it would probably be easiest if I diffed against what you have.
+I agree, I'm pretty dubious here...
 
 Cheers,
-   Sean
+Ben.
