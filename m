@@ -1,13 +1,23 @@
-Return-Path: <shaggy@linux.vnet.ibm.com>
-Message-Id: <20080707143011.015842948@linux.vnet.ibm.com>
-References: <20080707142850.034542257@linux.vnet.ibm.com>
-Date: Mon, 07 Jul 2008 09:28:51 -0500
-From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@au1.ibm.com>
-Subject: [patch 1/5] mm: Allow architectures to define additional protection
-	bits
-Cc: linuxppc-dev list <Linuxppc-dev@ozlabs.org>,
-	Andrew Morton <akpm@linux-foundation.org>, Hugh Dickins <hugh@veritas.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from ag-out-0708.google.com (ag-out-0708.google.com [72.14.246.249])
+	by ozlabs.org (Postfix) with ESMTP id 797CDDED98
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jul 2008 00:31:10 +1000 (EST)
+Received: by ag-out-0708.google.com with SMTP id 8so13163966agc.0
+	for <linuxppc-dev@ozlabs.org>; Mon, 07 Jul 2008 07:31:09 -0700 (PDT)
+Message-ID: <fa686aa40807070731y52d21f49jc7ced0aaf8e5d029@mail.gmail.com>
+Date: Mon, 7 Jul 2008 08:31:08 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "John Linn" <John.Linn@xilinx.com>
+Subject: Re: Please pull linux-2.6-virtex.git
+In-Reply-To: <20080707142652.43C32110807E@mail204-va3.bigfish.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20080704172240.GE17062@secretlab.ca>
+	<1215433036.20774.39.camel@weaponx>
+	<20080707141332.6CDD313E8050@mail111-sin.bigfish.com>
+	<20080707142652.43C32110807E@mail204-va3.bigfish.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,104 +27,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch allows architectures to define functions to deal with
-additional protections bits for mmap() and mprotect().
+On Mon, Jul 7, 2008 at 8:26 AM, John Linn <John.Linn@xilinx.com> wrote:
+> Where should I be looking to understand what's needed for dts-v1 format?
+>
+> I did a quick review of Doc*/powerpc/booting-wihtout-of.txt and didn't
+> see it, but maybe I overlooked it.
 
-arch_calc_vm_prot_bits() maps additonal protection bits to vm_flags
-arch_vm_get_page_prot() maps additional vm_flags to the vma's vm_page_prot
-arch_validate_prot() checks for valid values of the protection bits
+Primarily all hex values need to be change to the form '0x???' instead
+of '???' and '/dtc-v1' needs to be added to the beginning of the file.
 
-Note: vm_get_page_prot() is now pretty ugly, but the generated code
-should be identical for architectures that don't define additional
-protection bits.
-
-Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-Acked-by: Andrew Morton <akpm@linux-foundation.org>
-Cc: Hugh Dickins <hugh@veritas.com>
----
-
- include/linux/mman.h |   29 ++++++++++++++++++++++++++++-
- mm/mmap.c            |    5 +++--
- mm/mprotect.c        |    2 +-
- 3 files changed, 32 insertions(+), 4 deletions(-)
-
-Index: b/include/linux/mman.h
-===================================================================
---- a/include/linux/mman.h
-+++ b/include/linux/mman.h
-@@ -34,6 +34,32 @@
- }
- 
- /*
-+ * Allow architectures to handle additional protection bits
-+ */
-+
-+#ifndef arch_calc_vm_prot_bits
-+#define arch_calc_vm_prot_bits(prot) 0
-+#endif
-+
-+#ifndef arch_vm_get_page_prot
-+#define arch_vm_get_page_prot(vm_flags) __pgprot(0)
-+#endif
-+
-+#ifndef arch_validate_prot
-+/*
-+ * This is called from mprotect().  PROT_GROWSDOWN and PROT_GROWSUP have
-+ * already been masked out.
-+ *
-+ * Returns true if the prot flags are valid
-+ */
-+static inline int arch_validate_prot(unsigned long prot)
-+{
-+	return (prot & ~(PROT_READ | PROT_WRITE | PROT_EXEC | PROT_SEM)) == 0;
-+}
-+#define arch_validate_prot arch_validate_prot
-+#endif
-+
-+/*
-  * Optimisation macro.  It is equivalent to:
-  *      (x & bit1) ? bit2 : 0
-  * but this version is faster.
-@@ -51,7 +77,8 @@
- {
- 	return _calc_vm_trans(prot, PROT_READ,  VM_READ ) |
- 	       _calc_vm_trans(prot, PROT_WRITE, VM_WRITE) |
--	       _calc_vm_trans(prot, PROT_EXEC,  VM_EXEC );
-+	       _calc_vm_trans(prot, PROT_EXEC,  VM_EXEC) |
-+	       arch_calc_vm_prot_bits(prot);
- }
- 
- /*
-Index: b/mm/mmap.c
-===================================================================
---- a/mm/mmap.c
-+++ b/mm/mmap.c
-@@ -72,8 +72,9 @@
- 
- pgprot_t vm_get_page_prot(unsigned long vm_flags)
- {
--	return protection_map[vm_flags &
--				(VM_READ|VM_WRITE|VM_EXEC|VM_SHARED)];
-+	return __pgprot(pgprot_val(protection_map[vm_flags &
-+				(VM_READ|VM_WRITE|VM_EXEC|VM_SHARED)]) |
-+			pgprot_val(arch_vm_get_page_prot(vm_flags)));
- }
- EXPORT_SYMBOL(vm_get_page_prot);
- 
-Index: b/mm/mprotect.c
-===================================================================
---- a/mm/mprotect.c
-+++ b/mm/mprotect.c
-@@ -239,7 +239,7 @@
- 	end = start + len;
- 	if (end <= start)
- 		return -ENOMEM;
--	if (prot & ~(PROT_READ | PROT_WRITE | PROT_EXEC | PROT_SEM))
-+	if (!arch_validate_prot(prot))
- 		return -EINVAL;
- 
- 	reqprot = prot;
+g.
 
 -- 
-Dave Kleikamp
-IBM Linux Technology Center
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
