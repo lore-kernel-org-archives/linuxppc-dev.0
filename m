@@ -1,34 +1,25 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id F2239DDFCC
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jul 2008 00:10:30 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e2.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m67EAQ76014525
-	for <linuxppc-dev@ozlabs.org>; Mon, 7 Jul 2008 10:10:26 -0400
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
-	m67EAQOx207798
-	for <linuxppc-dev@ozlabs.org>; Mon, 7 Jul 2008 10:10:26 -0400
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
-	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m67EAQ8X006469
-	for <linuxppc-dev@ozlabs.org>; Mon, 7 Jul 2008 10:10:26 -0400
-Date: Mon, 7 Jul 2008 10:07:04 -0400
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: "Grant Likely" <grant.likely@secretlab.ca>
-Subject: Re: [RFC/PATCH] powerpc/bootwrapper: Allow user to specify
-	additional default targets
-Message-ID: <20080707100704.26f1630c@zod.rchland.ibm.com>
-In-Reply-To: <fa686aa40807070634t6e9047d1k7d8ca2b443d1ae68@mail.gmail.com>
-References: <20080701175852.32575.39707.stgit@trillian.secretlab.ca>
-	<fa686aa40807032351l631febe2h8d38a9eed1053b6b@mail.gmail.com>
-	<20080707091818.72d584fe@zod.rchland.ibm.com>
-	<fa686aa40807070634t6e9047d1k7d8ca2b443d1ae68@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <glikely@secretlab.ca>
+Received: from ag-out-0708.google.com (ag-out-0708.google.com [72.14.246.247])
+	by ozlabs.org (Postfix) with ESMTP id 82F9ADDEEF
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jul 2008 00:12:13 +1000 (EST)
+Received: by ag-out-0708.google.com with SMTP id 8so13122686agc.0
+	for <linuxppc-dev@ozlabs.org>; Mon, 07 Jul 2008 07:12:12 -0700 (PDT)
+Message-ID: <fa686aa40807070712x77ff7aben4cf51731bb4f5985@mail.gmail.com>
+Date: Mon, 7 Jul 2008 08:12:11 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Andre Schwarz" <andre.schwarz@matrix-vision.de>,
+	"David Gibson" <david@gibson.dropbear.id.au>,
+	"Segher Boessenkool" <segher@kernel.crashing.org>,
+	"Benjamin Herrenschmidt" <benh@kernel.crashing.org>
+Subject: Re: [PATCH] Add MPC5200B base board mvBC-P
+In-Reply-To: <4871CA6E.9080805@matrix-vision.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <486E515B.80508@matrix-vision.de>
+	<20080706235046.GA6267@yookeroo.seuss>
+	<4871CA6E.9080805@matrix-vision.de>
+Cc: linux-ppc list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,47 +29,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 7 Jul 2008 07:34:23 -0600
-"Grant Likely" <grant.likely@secretlab.ca> wrote:
+On Mon, Jul 7, 2008 at 1:49 AM, Andre Schwarz
+<andre.schwarz@matrix-vision.de> wrote:
+> David,
+>
+> thanks - removed "device_type" from the DMA controller.
+>
+> Which nodes actually require "device_type" and which don't ?
+>
+> Is there some general rule ?
 
-> On Mon, Jul 7, 2008 at 7:18 AM, Josh Boyer <jwboyer@linux.vnet.ibm.com> wrote:
-> > On Fri, 4 Jul 2008 00:51:44 -0600
-> > "Grant Likely" <grant.likely@secretlab.ca> wrote:
-> >
-> >> Anyone had a chance to look at this?  I think this could be used to
-> >> eliminate a lot of the platform specific default targets in
-> >> arch/powerpc/boot/Makefile by moving them into the defconfigs.  Josh,
-> >> Kumar, what are your thoughts?
-> >
-> > So for cases like Kilauea/Haleakala or Bamboo/Yosemite, you would
-> > specify Yosemite in the bamboo defconfig?  Or?
-> 
-> If they share a defconfig, then yes, that is what I'm thinking about...
-> 
-> > I actually sort of prefer having a separate defconfig/CONFIG_YOSEMITE
-> > (as an example) because it's much easier for an end user to figure out
-> > if the board is supported or not.
-> 
-> ...however, these don't have to disappear if you prefer them.
+Segher, David;
 
-Right.
+In OF, what is the purpose of device_type?  From what I understand
+right now, each value of device_type claims a software interface that
+the device supports.  So for example, device_type = "serial" means
+that firmware supports using the device as a serial port, correct?
+So, similarly, if OF did not have a driver for the device, then the
+presence a device_type property would be a bug, right?
 
-> > I could be totally misunderstanding the intention of this patch though,
-> > so I'll stop rambling and wait to see what the use case is.
-> 
-> Specifically the case I'm thinking of is when a user of a Xilinx FPGA
-> drops a new .dts file into arch/powerpc/boot/dts (say
-> 'super-sexy-platform.dts').  However, instead of modifying the
-> Makefile or always typing 'make simpleImage.super-sexy-platform', then
-> can add 'simpleImage.super-sexy-platform' to their defconfig which I
-> can see being easier for someone to get their head around.
+Does device_type indicated any other information other than firmware
+driver interface?
 
-Yeah, I thought about the Virtex case with the differing bitstreams
-after I sent out my original question.  For purposes like that, this
-seems like a great fit.  For truly discrete boards, I prefer discrete
-defconfigs.
+I had an epiphany about device_type this weekend (and by epiphany, I
+mean realizing my own stupidity).  If I'm correct about the above
+questions, then that would mean it is *always* a bug to have a
+device_type property in .dts file because there is no firmware
+interface.  So, it seems to me that we shouldn't just be eliminating
+undefined device_type values, but also eliminate the ones that are
+defined in OF because .dts users do not support the firmware driver
+interface.
 
-So overall I see value in the patch.  If nobody else has objections,
-then it's fine with me.
+Am I correct?
 
-josh
+The only situation where I can see it being appropriate to specify
+device_type is to work around older bindings that are ambiguous with
+their other properties.
+
+g.
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
