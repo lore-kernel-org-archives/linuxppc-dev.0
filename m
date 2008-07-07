@@ -1,25 +1,19 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from ag-out-0708.google.com (ag-out-0708.google.com [72.14.246.247])
-	by ozlabs.org (Postfix) with ESMTP id 82F9ADDEEF
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jul 2008 00:12:13 +1000 (EST)
-Received: by ag-out-0708.google.com with SMTP id 8so13122686agc.0
-	for <linuxppc-dev@ozlabs.org>; Mon, 07 Jul 2008 07:12:12 -0700 (PDT)
-Message-ID: <fa686aa40807070712x77ff7aben4cf51731bb4f5985@mail.gmail.com>
-Date: Mon, 7 Jul 2008 08:12:11 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Andre Schwarz" <andre.schwarz@matrix-vision.de>,
-	"David Gibson" <david@gibson.dropbear.id.au>,
-	"Segher Boessenkool" <segher@kernel.crashing.org>,
-	"Benjamin Herrenschmidt" <benh@kernel.crashing.org>
-Subject: Re: [PATCH] Add MPC5200B base board mvBC-P
-In-Reply-To: <4871CA6E.9080805@matrix-vision.de>
+Return-Path: <John.Linn@xilinx.com>
+Received: from SG2EHSOBE001.bigfish.com (outbound-sin.frontbridge.com
+	[207.46.51.80]) by ozlabs.org (Postfix) with ESMTP id 88B0ADDEF7
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jul 2008 00:13:37 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <486E515B.80508@matrix-vision.de>
-	<20080706235046.GA6267@yookeroo.seuss>
-	<4871CA6E.9080805@matrix-vision.de>
-Cc: linux-ppc list <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset="US-ASCII"
+Subject: RE: Please pull linux-2.6-virtex.git
+Date: Mon, 7 Jul 2008 08:13:30 -0600
+In-Reply-To: <1215433036.20774.39.camel@weaponx>
+References: <20080704172240.GE17062@secretlab.ca>
+	<1215433036.20774.39.camel@weaponx>
+From: John Linn <John.Linn@xilinx.com>
+To: "Josh Boyer" <jwboyer@gmail.com>,
+	<grant.likely@secretlab.ca>
+Message-ID: <20080707141332.6CDD313E8050@mail111-sin.bigfish.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,45 +23,65 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Jul 7, 2008 at 1:49 AM, Andre Schwarz
-<andre.schwarz@matrix-vision.de> wrote:
-> David,
->
-> thanks - removed "device_type" from the DMA controller.
->
-> Which nodes actually require "device_type" and which don't ?
->
-> Is there some general rule ?
+I'll look at the dts file and converting it to v1 format, hopefully
+soon.
 
-Segher, David;
+Thanks,
+John
 
-In OF, what is the purpose of device_type?  From what I understand
-right now, each value of device_type claims a software interface that
-the device supports.  So for example, device_type = "serial" means
-that firmware supports using the device as a serial port, correct?
-So, similarly, if OF did not have a driver for the device, then the
-presence a device_type property would be a bug, right?
+> -----Original Message-----
+> From: linuxppc-dev-bounces+john.linn=3Dxilinx.com@ozlabs.org
+[mailto:linuxppc-dev-
+> bounces+john.linn=3Dxilinx.com@ozlabs.org] On Behalf Of Josh Boyer
+> Sent: Monday, July 07, 2008 6:17 AM
+> To: grant.likely@secretlab.ca
+> Cc: linuxppc-dev@ozlabs.org
+> Subject: Re: Please pull linux-2.6-virtex.git
+> =
 
-Does device_type indicated any other information other than firmware
-driver interface?
+> On Fri, 2008-07-04 at 11:22 -0600, Grant Likely wrote:
+> > Hi Josh,
+> >
+> > Here are the bulk of the Xilinx 440 support patches.  Please pull
+> > into your next branch.
+> >
+> > Thanks,
+> > g.
+> >
+> > The following changes since commit
+f3e909c2750eb20536bacacc867dc9047b70546a:
+> >   Michael Neuling (1):
+> >         powerpc: Update for VSX core file and ptrace
+> >
+> > are available in the git repository at:
+> >
+> >   git://git.secretlab.ca/git/linux-2.6-virtex virtex-for-2.6.27
+> >
+> =
 
-I had an epiphany about device_type this weekend (and by epiphany, I
-mean realizing my own stupidity).  If I'm correct about the above
-questions, then that would mean it is *always* a bug to have a
-device_type property in .dts file because there is no firmware
-interface.  So, it seems to me that we shouldn't just be eliminating
-undefined device_type values, but also eliminate the ones that are
-defined in OF because .dts users do not support the firmware driver
-interface.
+> <snip>
+> =
 
-Am I correct?
+> > John Linn (5):
+> >       powerpc/virtex: add dts file for ML507 reference design
+> =
 
-The only situation where I can see it being appropriate to specify
-device_type is to work around older bindings that are ambiguous with
-their other properties.
+> This one still isn't a dts-v1 file.  Any chance of that getting fixed
+in
+> the next day or two?
+> =
 
-g.
+> josh
+> =
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+
+
+This email and any attachments are intended for the sole use of the named r=
+ecipient(s) and contain(s) confidential information that may be proprietary=
+, privileged or copyrighted under applicable law. If you are not the intend=
+ed recipient, do not read, copy, or forward this email message or any attac=
+hments. Delete this email message and any attachments immediately.
