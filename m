@@ -1,19 +1,26 @@
-Return-Path: <andre.schwarz@matrix-vision.de>
-Received: from p15137414.pureserver.info (matrixvision.de [217.160.213.229])
-	by ozlabs.org (Postfix) with ESMTP id B6319DDED4
-	for <linuxppc-dev@ozlabs.org>; Mon,  7 Jul 2008 17:49:05 +1000 (EST)
-Message-ID: <4871CA6E.9080805@matrix-vision.de>
-Date: Mon, 07 Jul 2008 09:49:02 +0200
-From: Andre Schwarz <andre.schwarz@matrix-vision.de>
+Return-Path: <schwab@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 2741FDDF4B
+	for <linuxppc-dev@ozlabs.org>; Mon,  7 Jul 2008 17:50:06 +1000 (EST)
+From: Andreas Schwab <schwab@suse.de>
+To: Roland McGrath <roland@redhat.com>
+Subject: Re: [PATCH 1/2] elf loader support for auxvec base platform string
+References: <20080703234140.GC9594@localdomain>
+	<20080704021929.5E9EF1541F5@magilla.localdomain>
+	<1215409693.8970.79.camel@pasglop>
+	<20080707061811.19989154246@magilla.localdomain>
+	<1215411800.8970.91.camel@pasglop>
+	<20080707063522.5FE55154246@magilla.localdomain>
+Date: Mon, 07 Jul 2008 09:49:57 +0200
+In-Reply-To: <20080707063522.5FE55154246@magilla.localdomain> (Roland
+	McGrath's message of "Sun, 6 Jul 2008 23:35:22 -0700 (PDT)")
+Message-ID: <je8wwet9p6.fsf@sykes.suse.de>
 MIME-Version: 1.0
-To: Andre Schwarz <andre.schwarz@matrix-vision.de>,
-	Grant Likely <grant.likely@secretlab.ca>,
-	linux-ppc list <linuxppc-dev@ozlabs.org>
-Subject: Re: [PATCH] Add MPC5200B base board mvBC-P
-References: <486E515B.80508@matrix-vision.de>
-	<20080706235046.GA6267@yookeroo.seuss>
-In-Reply-To: <20080706235046.GA6267@yookeroo.seuss>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=iso-8859-1
+Cc: Nathan Lynch <ntl@pobox.com>, linux-kernel@vger.kernel.org,
+	Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,93 +30,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David,
+Roland McGrath <roland@redhat.com> writes:
 
-thanks - removed "device_type" from the DMA controller.
-
-Which nodes actually require "device_type" and which don't ?
-
-Is there some general rule ?
-
-
-regards,
-Andre
-
-David Gibson schrieb:
-> On Fri, Jul 04, 2008 at 06:35:39PM +0200, Andre Schwarz wrote:
->   
->> The mvBlueCOUGAR-P is a MPC5200B based camera system with Intel Gigabit ethernet
->> controller (using e1000). It's just another MPC5200_simple board.
->>
->> Signed-off-by: Andre Schwarz <andre.schwarz@matrix-vision.de>
->>     
-> [snip]
->   
->> --- /dev/null
->> +++ b/arch/powerpc/boot/dts/mvbc-p.dts
->> @@ -0,0 +1,206 @@
->>     
+>> I'm not sure... if ld.conf.d isn't parse of the kernel source tree then
+>> it -will- end in tears...
 >
-> [snip]
->   
->> +		dma-controller@1200 {
->> +			device_type = "dma-controller";
->>     
->
-> No device_type here.
->
->   
->> +			compatible = "fsl,mpc5200-bestcomm";
->> +			reg = <0x1200 0x80>;
->> +			interrupts = <3 0 0  3 1 0  3 2 0  3 3 0
->> +				3 4 0  3 5 0  3 6 0  3 7 0
->> +				3 8 0  3 9 0  3 10 0  3 11 0
->> +				3 12 0  3 13 0  3 14 0  3 15 0>;
->> +			interrupt-parent = <&mpc5200_pic>;
->> +		};
->> +
->> +		xlb@1f00 {
->> +			compatible = "fsl,mpc5200-xlb";
->> +			reg = <0x1f00 0x100>;
->> +		};
->> +
->> +		serial0: serial@2000 {		// PSC1
->> +			device_type = "serial";
->> +			compatible = "fsl,mpc5200-psc-uart";
->> +			port-number = <0>;
->> +			reg = <0x2000 0x100>;
->> +			interrupts = <2 1 0>;
->> +			interrupt-parent = <&mpc5200_pic>;
->> +		};
->> +
->> +		i2c@3d00 {
->> +			#address-cells = <1>;
->> +			#size-cells = <0>;
->> +			compatible = "fsl,mpc5200-i2c","fsl-i2c";
->> +			reg = <0x3d00 0x40>;
->> +			interrupts = <2 15 0>;
->> +			interrupt-parent = <&mpc5200_pic>;
->> +			fsl5200-clocking;
->> +		};
->> +
->> +		i2c@3d40 {
->> +			#address-cells = <1>;
->> +			#size-cells = <0>;
->> +			compatible = "fsl,mpc5200-i2c","fsl-i2c";
->> +			reg = <0x3d40 0x40>;
->> +			interrupts = <2 16 0>;
->> +			interrupt-parent = <&mpc5200_pic>;
->> +			fsl5200-clocking;
->> +		};
->> +		sram@8000 {
->> +			compatible = "fsl,mpc5200-sram","sram";
->> +			reg = <0x8000 0x4000>;
->> +		};
->> +	};
->>     
->
->   
+> Of course, you should include the file you want people to install
+> as part of the kernel source or build.  You can copy it into
+> place in make install or something if you like (convention is to
+> call it something.conf in /etc/ld.so.conf.d); then run ldconfig.
 
+That will make it part of the kernel ABI, since the mapping depends on
+the running kernel, doesn't it?
 
-MATRIX VISION GmbH, Talstraße 16, DE-71570 Oppenweiler  - Registergericht: Amtsgericht Stuttgart, HRB 271090
-Geschäftsführer: Gerhard Thullner, Werner Armingeon, Uwe Furtner
+Andreas.
+
+-- 
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
