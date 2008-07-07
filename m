@@ -1,19 +1,18 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.29])
-	by ozlabs.org (Postfix) with ESMTP id A0D5EDDE41
-	for <linuxppc-dev@ozlabs.org>; Mon,  7 Jul 2008 22:17:32 +1000 (EST)
-Received: by yx-out-2324.google.com with SMTP id 8so361956yxg.39
-	for <linuxppc-dev@ozlabs.org>; Mon, 07 Jul 2008 05:17:30 -0700 (PDT)
-Subject: Re: Please pull linux-2.6-virtex.git
-From: Josh Boyer <jwboyer@gmail.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-In-Reply-To: <20080704172240.GE17062@secretlab.ca>
-References: <20080704172240.GE17062@secretlab.ca>
-Content-Type: text/plain
-Date: Mon, 07 Jul 2008 08:17:15 -0400
-Message-Id: <1215433036.20774.39.camel@weaponx>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 6A55CDDF14
+	for <linuxppc-dev@ozlabs.org>; Mon,  7 Jul 2008 22:25:35 +1000 (EST)
+Date: Mon, 7 Jul 2008 22:25:28 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Subject: linux-next: scsi tree build failure
+Message-Id: <20080707222528.280f0b9e.sfr@canb.auug.org.au>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Mon__7_Jul_2008_22_25_28_+1000_ExoozYY/ENnpcRiK"
+Cc: linuxppc-dev@ozlabs.org, linux-next@vger.kernel.org,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,30 +22,60 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2008-07-04 at 11:22 -0600, Grant Likely wrote:
-> Hi Josh,
-> 
-> Here are the bulk of the Xilinx 440 support patches.  Please pull
-> into your next branch.
-> 
-> Thanks,
-> g.
-> 
-> The following changes since commit f3e909c2750eb20536bacacc867dc9047b70546a:
->   Michael Neuling (1):
->         powerpc: Update for VSX core file and ptrace
-> 
-> are available in the git repository at:
-> 
->   git://git.secretlab.ca/git/linux-2.6-virtex virtex-for-2.6.27
-> 
+--Signature=_Mon__7_Jul_2008_22_25_28_+1000_ExoozYY/ENnpcRiK
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-<snip>
+Hi James,
 
-> John Linn (5):
->       powerpc/virtex: add dts file for ML507 reference design
+Today's linux-next build (powerpc ppc64_defconfig) failed like this:
 
-This one still isn't a dts-v1 file.  Any chance of that getting fixed in
-the next day or two?
+drivers/scsi/ibmvscsi/ibmvscsi.c: In function 'map_sg_data':
+drivers/scsi/ibmvscsi/ibmvscsi.c:431: error: 'FW_FEATURE_CMO' undeclared (f=
+irst use in this function)
+drivers/scsi/ibmvscsi/ibmvscsi.c:431: error: (Each undeclared identifier is=
+ reported only once
+drivers/scsi/ibmvscsi/ibmvscsi.c:431: error: for each function it appears i=
+n.)
+drivers/scsi/ibmvscsi/ibmvscsi.c: In function 'ibmvscsi_queuecommand':
+drivers/scsi/ibmvscsi/ibmvscsi.c:750: error: 'FW_FEATURE_CMO' undeclared (f=
+irst use in this function)
+drivers/scsi/ibmvscsi/ibmvscsi.c: In function 'send_mad_adapter_info':
+drivers/scsi/ibmvscsi/ibmvscsi.c:864: error: 'FW_FEATURE_CMO' undeclared (f=
+irst use in this function)
+drivers/scsi/ibmvscsi/ibmvscsi.c: In function 'ibmvscsi_do_host_config':
+drivers/scsi/ibmvscsi/ibmvscsi.c:1412: error: 'FW_FEATURE_CMO' undeclared (=
+first use in this function)
+drivers/scsi/ibmvscsi/ibmvscsi.c: At top level:
+drivers/scsi/ibmvscsi/ibmvscsi.c:1769: error: unknown field 'get_io_entitle=
+ment' specified in initializer
+drivers/scsi/ibmvscsi/ibmvscsi.c:1769: warning: missing braces around initi=
+alizer
+drivers/scsi/ibmvscsi/ibmvscsi.c:1769: warning: (near initialization for 'i=
+bmvscsi_driver.driver')
+drivers/scsi/ibmvscsi/ibmvscsi.c:1769: warning: initialization from incompa=
+tible pointer type
 
-josh
+Caused because commit 341b56db6804040aa9559e913865108424e3b18b ("[SCSI]
+ibmvscsi: driver enablement for CMO"), which was 15/16 in a series, has
+been merged before any of the other patches in the series.  I have
+reverted that commit.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Mon__7_Jul_2008_22_25_28_+1000_ExoozYY/ENnpcRiK
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkhyCzgACgkQjjKRsyhoI8yojACcDVtsntcsfDNO7xbqF+W2reIG
+yJ0An1et/D1PIvSpeisIrGdELm4zpv0/
+=S0yo
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__7_Jul_2008_22_25_28_+1000_ExoozYY/ENnpcRiK--
