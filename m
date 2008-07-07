@@ -1,14 +1,14 @@
 Return-Path: <benh@kernel.crashing.org>
-Subject: Re: [patch 01/11] powerpc/cell: add support for power button of
-	future IBM cell blades
+Subject: Re: [patch 04/11] powerpc/spufs: add atomic busy_spus counter to
+	struct cbe_spu_info
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: arnd@arndb.de
-In-Reply-To: <20080704190805.638836822@arndb.de>
+In-Reply-To: <20080704190806.032005145@arndb.de>
 References: <20080704190535.316377278@arndb.de>
-	<20080704190805.638836822@arndb.de>
+	<20080704190806.032005145@arndb.de>
 Content-Type: text/plain
-Date: Mon, 07 Jul 2008 15:12:23 +1000
-Message-Id: <1215407543.8970.61.camel@pasglop>
+Date: Mon, 07 Jul 2008 15:19:01 +1000
+Message-Id: <1215407941.8970.63.camel@pasglop>
 Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
 	cbe-oss-dev@ozlabs.org, Christian Krafft <krafft@de.ibm.com>
@@ -24,130 +24,61 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 On Fri, 2008-07-04 at 21:05 +0200, arnd@arndb.de wrote:
 > plain text document attachment
-> (0001-powerpc-cell-add-support-for-power-button-of-future.patch)
-> This patch adds support for the power button on future IBM cell blades.
-> It actually doesn't shut down the machine. Instead it exposes an
-> input device /dev/input/event0 to userspace which sends KEY_POWER
-> if power button has been pressed.
-> haldaemon actually recognizes the button, so a plattform independent acpid
-> replacement should handle it correctly.
+> (0004-powerpc-spufs-add-atomic-busy_spus-counter-to-struc.patch)
+> As nr_active counter includes also spus waiting for syscalls to return
+> we need a seperate counter that only counts spus that are currently running
+> on spu side. This counter shall be used by a cpufreq governor that targets
+> a frequency dependent from the number of running spus.
 > 
+> From: Maxim Shchetynin <maxim@de.ibm.com>
 > Signed-off-by: Christian Krafft <krafft@de.ibm.com>
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> ---
 
-And what if CONFIG_INPUT=n or m ?
+This needs your S-O-B, Arnd, and should go via jk.
 
 Cheers,
 Ben.
 
->  arch/powerpc/platforms/cell/pervasive.c |   70 ++++++++++++++++++++++++++++++-
->  1 files changed, 69 insertions(+), 1 deletions(-)
+> ---
+>  arch/powerpc/platforms/cell/spufs/sched.c |    6 ++++++
+>  include/asm-powerpc/spu.h                 |    1 +
+>  2 files changed, 7 insertions(+), 0 deletions(-)
 > 
-> diff --git a/arch/powerpc/platforms/cell/pervasive.c b/arch/powerpc/platforms/cell/pervasive.c
-> index 8a3631c..e5bd08c 100644
-> --- a/arch/powerpc/platforms/cell/pervasive.c
-> +++ b/arch/powerpc/platforms/cell/pervasive.c
-> @@ -24,8 +24,10 @@
->  #undef DEBUG
+> diff --git a/arch/powerpc/platforms/cell/spufs/sched.c b/arch/powerpc/platforms/cell/spufs/sched.c
+> index e929e70..be77910 100644
+> --- a/arch/powerpc/platforms/cell/spufs/sched.c
+> +++ b/arch/powerpc/platforms/cell/spufs/sched.c
+> @@ -993,6 +993,7 @@ void spuctx_switch_state(struct spu_context *ctx,
+>  	struct timespec ts;
+>  	struct spu *spu;
+>  	enum spu_utilization_state old_state;
+> +	int node;
 >  
->  #include <linux/interrupt.h>
-> +#include <linux/input.h>
->  #include <linux/irq.h>
->  #include <linux/percpu.h>
-> +#include <linux/platform_device.h>
->  #include <linux/types.h>
->  #include <linux/kallsyms.h>
->  
-> @@ -40,6 +42,9 @@
->  
->  static int sysreset_hack;
->  
-> +static struct input_dev *button_dev;
-> +static struct platform_device *button_pdev;
-> +
->  static void cbe_power_save(void)
->  {
->  	unsigned long ctrl, thread_switch_control;
-> @@ -105,10 +110,21 @@ static int cbe_system_reset_exception(struct pt_regs *regs)
->  		 */
->  		if (sysreset_hack && (cpu = smp_processor_id()) == 0) {
->  			pmd = cbe_get_cpu_pmd_regs(cpu);
-> -			if (in_be64(&pmd->ras_esc_0) & 0xffff) {
-> +			if (in_be64(&pmd->ras_esc_0) & 0x0000ffff) {
->  				out_be64(&pmd->ras_esc_0, 0);
->  				return 0;
->  			}
-> +			if (in_be64(&pmd->ras_esc_0) & 0x00010000) {
-> +				out_be64(&pmd->ras_esc_0, 0);
-> +				if (!button_dev)
-> +					return 0;
-> +
-> +				input_report_key(button_dev, KEY_POWER, 1);
-> +				input_sync(button_dev);
-> +				input_report_key(button_dev, KEY_POWER, 0);
-> +				input_sync(button_dev);
-> +				return 1;
-> +			}
->  		}
->  		break;
->  #ifdef CONFIG_CBE_RAS
-> @@ -155,3 +171,55 @@ void __init cbe_pervasive_init(void)
->  	ppc_md.power_save = cbe_power_save;
->  	ppc_md.system_reset_exception = cbe_system_reset_exception;
+>  	ktime_get_ts(&ts);
+>  	curtime = timespec_to_ns(&ts);
+> @@ -1014,6 +1015,11 @@ void spuctx_switch_state(struct spu_context *ctx,
+>  		spu->stats.times[old_state] += delta;
+>  		spu->stats.util_state = new_state;
+>  		spu->stats.tstamp = curtime;
+> +		node = spu->node;
+> +		if (old_state == SPU_UTIL_USER)
+> +			atomic_dec(&cbe_spu_info[node].busy_spus);
+> +		if (new_state == SPU_UTIL_USER);
+> +			atomic_inc(&cbe_spu_info[node].busy_spus);
+>  	}
 >  }
-> +
-> +static int __init cbe_power_button_init(void)
-> +{
-> +	int ret;
-> +	struct input_dev *dev;
-> +
-> +	if (!sysreset_hack)
-> +		return 0;
-> +
-> +	dev = input_allocate_device();
-> +        if (!dev) {
-> +		ret = -ENOMEM;
-> +                printk(KERN_ERR "%s: Not enough memory\n", __func__);
-> +                goto out;
-> +        }
-> +
-> +	set_bit(EV_KEY, dev->evbit);
-> +	set_bit(KEY_POWER, dev->keybit);
-> +
-> +	dev->name = "Power Button";
-> +	dev->id.bustype = BUS_HOST;
-> +
-> +	/* this makes the button look like an acpi power button
-> +	 * no clue whether anyone relies on that though */
-> +	dev->id.product = 0x02;
-> +	dev->phys = "LNXPWRBN/button/input0";
-> +
-> +	button_pdev = platform_device_register_simple("power_button", 0, NULL, 0);
-> +	if (IS_ERR(button_pdev)) {
-> +		ret = PTR_ERR(button_pdev);
-> +		goto out_free_input;
-> +	}
-> +
-> +	dev->dev.parent = &button_pdev->dev;
-> +
-> +	ret = input_register_device(dev);
-> +	if (ret) {
-> +                printk(KERN_ERR "%s: Failed to register device\n", __func__);
-> +		goto out_free_pdev;
-> +        }
-> +
-> +	button_dev = dev;
-> +	return ret;
-> +
-> +out_free_pdev:
-> +	platform_device_unregister(button_pdev);
-> +out_free_input:
-> +	input_free_device(dev);
-> +out:
-> +	return ret;
-> +}
-> +device_initcall(cbe_power_button_init);
+>  
+> diff --git a/include/asm-powerpc/spu.h b/include/asm-powerpc/spu.h
+> index 99348c1..8b2eb04 100644
+> --- a/include/asm-powerpc/spu.h
+> +++ b/include/asm-powerpc/spu.h
+> @@ -191,6 +191,7 @@ struct cbe_spu_info {
+>  	struct list_head spus;
+>  	int n_spus;
+>  	int nr_active;
+> +	atomic_t busy_spus;
+>  	atomic_t reserved_spus;
+>  };
+>  
 > -- 
 > 1.5.4.3
 > 
