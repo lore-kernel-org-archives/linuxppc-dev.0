@@ -1,22 +1,23 @@
-Return-Path: <jonsmirl@gmail.com>
-Received: from rn-out-0910.google.com (rn-out-0910.google.com [64.233.170.184])
-	by ozlabs.org (Postfix) with ESMTP id C7361DED62
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jul 2008 02:32:30 +1000 (EST)
-Received: by rn-out-0910.google.com with SMTP id j40so440151rnf.16
-	for <linuxppc-dev@ozlabs.org>; Mon, 07 Jul 2008 09:32:29 -0700 (PDT)
-Message-ID: <9e4733910807070932q108da172n117c0670238db8a5@mail.gmail.com>
-Date: Mon, 7 Jul 2008 12:32:29 -0400
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Grant Likely" <grant.likely@secretlab.ca>
-Subject: Re: [alsa-devel] [PATCH 2/3] ALSA SoC: Add mpc5200-psc I2S driver
-In-Reply-To: <20080701235335.16923.43253.stgit@trillian.secretlab.ca>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20080701235330.16923.67218.stgit@trillian.secretlab.ca>
-	<20080701235335.16923.43253.stgit@trillian.secretlab.ca>
-Cc: liam.girdwood@wolfsonmicro.com, alsa-devel@alsa-project.org,
-	broonie@opensource.wolfsonmicro.com, timur@freescale.com,
-	linuxppc-dev@ozlabs.org
+Return-Path: <kim.phillips@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id C916FDED8F
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jul 2008 02:49:48 +1000 (EST)
+Date: Mon, 7 Jul 2008 11:49:28 -0500
+From: Kim Phillips <kim.phillips@freescale.com>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH v3] powerpc: update crypto node definition and device
+	tree instances
+Message-Id: <20080707114928.c75a03a2.kim.phillips@freescale.com>
+In-Reply-To: <4278f6a4bcd22a0d3e185c47e6c76bab@kernel.crashing.org>
+References: <20080703141845.af88fd51.kim.phillips@freescale.com>
+	<4278f6a4bcd22a0d3e185c47e6c76bab@kernel.crashing.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,53 +27,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 7/1/08, Grant Likely <grant.likely@secretlab.ca> wrote:
-> From: Grant Likely <grant.likely@secretlab.ca>
->
->  This is an I2S bus driver for the MPC5200 PSC device.  It is probably
->  will not be merged as-is because it uses v1 of the ASoC API, but I want
->  to get it out there for comments.
->  ---
+On Sat, 5 Jul 2008 00:45:50 +0200
+Segher Boessenkool <segher@kernel.crashing.org> wrote:
 
-I need some slight tweaks since we are using PSC1 in cellphone mode to
-distribute the audio clock.
+> > +- compatible : Should contain entries for this and backward compatible
+> > +  SEC versions, high to low, e.g., "fsl,sec2.1", "fsl,sec2.0"
+> 
+> First entry should state the _exact_ version of the device.  "sec-N.M"
 
-		i2s@2000 { /* PSC1 in i2s mode */
-			compatible = "fsl,mpc5200b-psc-i2s","fsl,mpc5200-psc-i2s";
-			cell-index = <0>;
-			reg = <0x2000 0x100>;
-			interrupts = <0x2 0x1 0x0>;
-			interrupt-parent = <&mpc5200_pic>;
-		};
+thus the "this and" in the sentence.
 
-		i2s@2200 { /* PSC2 in i2s mode */
-			compatible = "fsl,mpc5200b-psc-i2s","fsl,mpc5200-psc-i2s";
-			cell-index = <1>;
-			reg = <0x2200 0x100>;
-			interrupts = <0x2 0x2 0x0>;
-			interrupt-parent = <&mpc5200_pic>;
-			codec-handle = <&tas0>;
-			fsl5200-cellslave;
-		};
+> isn't good enough; there can be implementation bugs.
 
-Our PSC1 is in master mode, but it doesn't have a codec hooked to it.
-I needed to modify the driver to initialize the PSC to i2s master mode
-but then not start all of the ALSA support. You can detect this state
-since there is no codec node. Putting PSC1 into master mode lets us
-get our external audio clock inside the mpc5200.
+we already went over this here:
 
-PSC2 is a cellphone slave. It gets its clock from PSC1. Everything is
-the same as what you are doing except I need to set
-MPC52xx_PSC_SICR_CELLSLAVE and MPC52xx_PSC_SICR_GENCLK when the
-fsl5200-cellslave attribute is present.
+http://patchwork.ozlabs.org/linuxppc/patch?order=date&id=19313
 
-We need to tie the two PSCs up like this to get the audio clock in via
-PSC1 and then have PSC2 generate the frame clock when the i2s data is
-transmitted.
+> There can be more entries; you make it sound like each device tree
+> should list _all_ compatible devices, which isn't the case.
 
-Do you want a diff, or do you have a new version with DMA broken out?
+again, I believe this was covered here:
 
+http://patchwork.ozlabs.org/linuxppc/patch?order=date&id=18726
 
--- 
-Jon Smirl
-jonsmirl@gmail.com
+and "backward compatible" terminology started in v2 of the patch.
+
+> A device binding should not (and can not) say how "compatible"
+> should be used; instead, it should list what values of "compatible"
+> this binding applies to.  You can give recommendations of course.
+
+Not sure I understand this; you want this binding list all possible
+values and be updated every time freescale makes a new version of the
+SEC?  why?
+
+> > +- interrupts : <a b> where a is the interrupt number and b is a
+> > +  field that represents an encoding of the sense and level
+> > +  information for the interrupt.  This should be encoded based on
+> > +  the information in section 2) depending on the type of interrupt
+> > +  controller you have.
+> 
+> #interrupt-cells isn't always 2.  Your device binding shouldn't describe
+> how interrupt encoding works (that's described in the imap recommended
+> practice, already); instead, it should describe which device interrupts
+> are listed here, and in what order.  Sounds like you only have one
+> interrupt, so that should be easy ;-)
+> 
+> > +- interrupt-parent : the phandle for the interrupt controller that
+> > +  services interrupts for this device.
+> 
+> "interrupt-parent" isn't a required property.  It isn't part of this
+> device binding, either.
+
+ok, those parts were copied over verbatim, I can resubmit with better
+#interrupt-cells text and without interrupt-parent.
+
+Kim
