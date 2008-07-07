@@ -1,19 +1,24 @@
 Return-Path: <benh@kernel.crashing.org>
-Subject: Re: [patch 0/6] Strong Access Ordering page attributes for POWER7
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 05C81DE09F
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jul 2008 08:48:57 +1000 (EST)
+Subject: Re: linux-next: scsi tree build failure
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Joel Schopp <jschopp@austin.ibm.com>
-In-Reply-To: <48728942.6050007@austin.ibm.com>
-References: <20080618223254.966080905@linux.vnet.ibm.com>
-	<1215128392.7960.7.camel@pasglop>
-	<1215439540.16098.15.camel@norville.austin.ibm.com>
-	<48728942.6050007@austin.ibm.com>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+In-Reply-To: <1215468479.3274.42.camel@localhost.localdomain>
+References: <20080707222528.280f0b9e.sfr@canb.auug.org.au>
+	<1215441589.3274.17.camel@localhost.localdomain>
+	<1215468350.8970.129.camel@pasglop>
+	<1215468479.3274.42.camel@localhost.localdomain>
 Content-Type: text/plain
-Date: Tue, 08 Jul 2008 08:27:57 +1000
-Message-Id: <1215469677.8970.148.camel@pasglop>
+Date: Tue, 08 Jul 2008 08:48:42 +1000
+Message-Id: <1215470922.8970.150.camel@pasglop>
 Mime-Version: 1.0
-Cc: linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>,
-	Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-	Paul Mackerras <paulus@au1.ibm.com>, Linuxppc-dev@ozlabs.org
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+	linux-scsi <linux-scsi@vger.kernel.org>, linuxppc-dev@ozlabs.org,
+	linux-next@vger.kernel.org, Paul Mackerras <paulus@samba.org>
 Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -24,21 +29,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2008-07-07 at 16:23 -0500, Joel Schopp wrote:
-> >> We haven't defined a user-visible feature bit (and besides, we're really
-> >> getting short on these...). This is becoming a bit of concern btw (the
-> >> running out of bits). Maybe we should start defining an AT_HWCAP2 for
-> >> powerpc and get libc updated to pick it up ?
-> >>     
-> >
-> > Joel,
-> > Any thoughts?
-> Is it a required or optional feature of the 2.06 architecture spec?  If it's required you could just use that.  It doesn't solve the problem more generically if other archs decide to implement it though.
+On Mon, 2008-07-07 at 17:07 -0500, James Bottomley wrote:
 
-And then we start having to expose 2.06S vs. 2.06E .. nah.
+> I thought it was all done and dusted (which is why I put it in
+> scsi-misc).  However, now Brian King seems to have some late arriving
+> comments.
 
-I think for now, for SAO, the idea that one can "try" and if -EINVAL,
-try again without might work fine.
+There are comments on the whole serie yup, I haven't put it in the
+tree yet. 
 
 Cheers,
 Ben.
