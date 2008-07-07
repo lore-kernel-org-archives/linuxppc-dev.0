@@ -1,33 +1,29 @@
-Return-Path: <kamalesh@linux.vnet.ibm.com>
-Received: from e28esmtp02.in.ibm.com (e28smtp02.in.ibm.com [59.145.155.2])
+Return-Path: <chandru@in.ibm.com>
+Received: from e23smtp06.au.ibm.com (E23SMTP06.au.ibm.com [202.81.18.175])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e28smtp02.in.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id DDBEDDE219
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jul 2008 04:44:08 +1000 (EST)
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
-	by e28esmtp02.in.ibm.com (8.13.1/8.13.1) with ESMTP id m67IhGA1032361
-	for <linuxppc-dev@ozlabs.org>; Tue, 8 Jul 2008 00:13:16 +0530
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
-	by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
-	m67Igsu31495128
-	for <linuxppc-dev@ozlabs.org>; Tue, 8 Jul 2008 00:12:54 +0530
-Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
-	by d28av01.in.ibm.com (8.13.1/8.13.3) with ESMTP id m67IhFQ1003171
-	for <linuxppc-dev@ozlabs.org>; Tue, 8 Jul 2008 00:13:15 +0530
-Message-ID: <487263C2.60404@linux.vnet.ibm.com>
-Date: Tue, 08 Jul 2008 00:13:14 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+	(Client CN "e23smtp06.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 17A7DDE7D9
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jul 2008 04:44:27 +1000 (EST)
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.18.234])
+	by e23smtp06.au.ibm.com (8.13.1/8.13.1) with ESMTP id m67IhpSB018163
+	for <linuxppc-dev@ozlabs.org>; Tue, 8 Jul 2008 04:43:51 +1000
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
+	m67IhxDb4567156
+	for <linuxppc-dev@ozlabs.org>; Tue, 8 Jul 2008 04:43:59 +1000
+Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
+	by d23av02.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m67IiQ9i015835
+	for <linuxppc-dev@ozlabs.org>; Tue, 8 Jul 2008 04:44:26 +1000
+From: Chandru <chandru@in.ibm.com>
+To: kexec@lists.infradead.org, linuxppc-dev@ozlabs.org
+Subject: [PATCH 1/4] kdump : add support for ibm,
+	dynamic-reconfiguration-memory for kexec/kdump
+Date: Tue, 8 Jul 2008 00:14:24 +0530
 MIME-Version: 1.0
-To: Jan-Bernd Themann <ossthema@de.ibm.com>
-Subject: Re: [BUG] 2.6.26-rc8-git2 - powerpc - circular locking dependency
-	detected with net/ehea driver
-References: <486A2553.1090207@linux.vnet.ibm.com>
-	<200807071108.09616.ossthema@de.ibm.com>
-In-Reply-To: <200807071108.09616.ossthema@de.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: netdev@vger.kernel.org, kernel list <linux-kernel@vger.kernel.org>,
-	linuxppc-dev@ozlabs.org, kernel-testers@vger.kernel.org,
-	jgarzik@pobox.com, Balbir Singh <balbir@linux.vnet.ibm.com>
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200807080014.24910.chandru@in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,159 +33,142 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Jan-Bernd Themann wrote:
-> Hi Kamalesh,
-> 
-> where you able to reproduce this problem with the patches applied
-> we posted on friday?
-> 
-> Regards,
-> Jan-Bernd
-> 
-> On Tuesday 01 July 2008 14:38, Kamalesh Babulal wrote:
->> Hi,
->>
->> circular locking dependency is detected, while booting the
->> powerpc box with the 2.6.26-rc8-git2 kernel.
->>
->> =======================================================
->> [ INFO: possible circular locking dependency detected ]
->> 2.6.26-rc8-git2 #1
->> -------------------------------------------------------
-Hi Jan-Bernd,
+kexec-tools adds  crash, rtas, and tce memory regions as linux,usable-memory 
+properties in device-tree.  Following changes are made in the kernel to 
+recognize these special properties in case of 
+ibm,dynamic-reconfiguration-memory node of device-tree.
 
-Thanks for the patch. I tried your patch set over the 2.6.26-rc8-git2 kernel, 
-the circular dependency is still begin detected :(.
+Signed-off-by: Chandru Siddalingappa <chandru@in.ibm.com>
+---
 
-Jul  7 09:12:42 : =======================================================
-Jul  7 09:12:42 : [ INFO: possible circular locking dependency detected ]
-Jul  7 09:12:42 : 2.6.26-rc8-git2 #2
-Jul  7 09:12:42 : -------------------------------------------------------
-Jul  7 09:12:42 : ip/2218 is trying to acquire lock:
-Jul  7 09:12:42 :  (&ehea_fw_handles.lock){--..}, at: [<d0000000002740c4>] .ehea_up+0x6c/0x6f4 [ehea]
-Jul  7 09:12:42 : 
-Jul  7 09:12:42 : but task is already holding lock:
-Jul  7 09:12:42 :  (&port->port_lock){--..}, at: [<d0000000002757dc>] .ehea_open+0x44/0xcc [ehea]
-Jul  7 09:12:42 : 
-Jul  7 09:12:42 : which lock already depends on the new lock.
-Jul  7 09:12:42 : 
-Jul  7 09:12:42 : 
-Jul  7 09:12:42 : the existing dependency chain (in reverse order) is:
-Jul  7 09:12:42 : 
-Jul  7 09:12:42 : -> #2 (&port->port_lock){--..}:
-Jul  7 09:12:42 :        [<c0000000000aa0e8>] .__lock_acquire+0xc84/0xee0
-Jul  7 09:12:42 :        [<c0000000000aa41c>] .lock_acquire+0xd8/0x124
-Jul  7 09:12:42 :        [<c000000000452008>] .mutex_lock_nested+0x168/0x420
-Jul  7 09:12:42 :        [<d0000000002757dc>] .ehea_open+0x44/0xcc [ehea]
-Jul  7 09:12:42 :        [<c0000000003b62b0>] .dev_open+0xec/0x160
-Jul  7 09:12:42 :        [<c0000000003b46a4>] .dev_change_flags+0x10c/0x210
-Jul  7 09:12:42 :        [<c0000000004162b0>] .devinet_ioctl+0x2cc/0x778
-Jul  7 09:12:42 :        [<c0000000004173e0>] .inet_ioctl+0xdc/0x134
-Jul  7 09:12:42 :        [<c0000000003a4464>] .sock_ioctl+0x2dc/0x338
-Jul  7 09:12:42 :        [<c00000000012d12c>] .vfs_ioctl+0x64/0xfc
-Jul  7 09:12:42 :        [<c00000000012d614>] .do_vfs_ioctl+0x450/0x494
-Jul  7 09:12:42 :        [<c00000000012d6d0>] .sys_ioctl+0x78/0xc0
-Jul  7 09:12:42 :        [<c00000000016413c>] .dev_ifsioc+0x1e8/0x450
-Jul  7 09:12:42 :        [<c000000000163588>] .compat_sys_ioctl+0x3ec/0x484
-Jul  7 09:12:42 :        [<c0000000000086dc>] syscall_exit+0x0/0x40
-Jul  7 09:12:42 : 
-Jul  7 09:12:42 : -> #1 (rtnl_mutex){--..}:
-Jul  7 09:12:42 :        [<c0000000000aa0e8>] .__lock_acquire+0xc84/0xee0
-Jul  7 09:12:42 :        [<c0000000000aa41c>] .lock_acquire+0xd8/0x124
-Jul  7 09:12:42 :        [<c000000000452008>] .mutex_lock_nested+0x168/0x420
-Jul  7 09:12:42 :        [<c0000000003c1ad0>] .rtnl_lock+0x28/0x44
-Jul  7 09:12:42 :        [<c0000000003b5334>] .register_netdev+0x24/0x8c
-Jul  7 09:12:42 :        [<d00000000027292c>] .ehea_setup_single_port+0x2d4/0x3e0 [ehea]
-Jul  7 09:12:42 :        [<d00000000027a494>] .ehea_probe_adapter+0x290/0x3a0 [ehea]
-Jul  7 09:12:42 :        [<c0000000003a0098>] .of_platform_device_probe+0x80/0x8c4
-Jul  7 09:12:42 :        [<c000000000305ce4>] .driver_probe_device+0x144/0x20c
-Jul  7 09:12:42 :        [<c000000000305e14>] .__driver_attach+0x68/0xb0
-Jul  7 09:12:42 :        [<c000000000304ed4>] .bus_for_each_dev+0x88/0xe4
-Jul  7 09:12:42 :        [<c000000000305a24>] .driver_attach+0x34/0x50
-Jul  7 09:12:42 :        [<c000000000305524>] .bus_add_driver+0xe0/0x294
-Jul  7 09:12:42 :        [<c000000000306178>] .driver_register+0xcc/0x1a4
-Jul  7 09:12:42 :        [<c00000000039ff30>] .of_register_driver+0x54/0x6c
-Jul  7 09:12:42 :        [<c0000000000256f4>] .ibmebus_register_driver+0x40/0x60
-Jul  7 09:12:42 :        [<d00000000027a788>] .ehea_module_init+0x1e4/0x238c [ehea]
-Jul  7 09:12:42 :        [<c0000000000b5294>] .sys_init_module+0x19a0/0x1b80
-Jul  7 09:12:42 :        [<c0000000000086dc>] syscall_exit+0x0/0x40
-Jul  7 09:12:42 : 
-Jul  7 09:12:42 : -> #0 (&ehea_fw_handles.lock){--..}:
-Jul  7 09:12:42 :        [<c0000000000a9fe4>] .__lock_acquire+0xb80/0xee0
-Jul  7 09:12:42 :        [<c0000000000aa41c>] .lock_acquire+0xd8/0x124
-Jul  7 09:12:42 :        [<c000000000452008>] .mutex_lock_nested+0x168/0x420
-Jul  7 09:12:42 :        [<d0000000002740c4>] .ehea_up+0x6c/0x6f4 [ehea]
-Jul  7 09:12:42 :        [<d000000000275804>] .ehea_open+0x6c/0xcc [ehea]
-Jul  7 09:12:42 :        [<c0000000003b62b0>] .dev_open+0xec/0x160
-Jul  7 09:12:42 :        [<c0000000003b46a4>] .dev_change_flags+0x10c/0x210
-Jul  7 09:12:42 :        [<c0000000004162b0>] .devinet_ioctl+0x2cc/0x778
-Jul  7 09:12:42 :        [<c0000000004173e0>] .inet_ioctl+0xdc/0x134
-Jul  7 09:12:42 :        [<c0000000003a4464>] .sock_ioctl+0x2dc/0x338
-Jul  7 09:12:42 :        [<c00000000012d12c>] .vfs_ioctl+0x64/0xfc
-Jul  7 09:12:42 :        [<c00000000012d614>] .do_vfs_ioctl+0x450/0x494
-Jul  7 09:12:42 :        [<c00000000012d6d0>] .sys_ioctl+0x78/0xc0
-Jul  7 09:12:42 :        [<c00000000016413c>] .dev_ifsioc+0x1e8/0x450
-Jul  7 09:12:42 :        [<c000000000163588>] .compat_sys_ioctl+0x3ec/0x484
-Jul  7 09:12:42 :        [<c0000000000086dc>] syscall_exit+0x0/0x40
-Jul  7 09:12:42 : 
-Jul  7 09:12:42 : other info that might help us debug this:
-Jul  7 09:12:42 : 
-Jul  7 09:12:42 : 2 locks held by ip/2218:
-Jul  7 09:12:42 :  #0:  (rtnl_mutex){--..}, at: [<c0000000003c1ad0>] .rtnl_lock+0x28/0x44
-Jul  7 09:12:42 :  #1:  (&port->port_lock){--..}, at: [<d0000000002757dc>] .ehea_open+0x44/0xcc [ehea]
-Jul  7 09:12:42 : 
-Jul  7 09:12:42 : stack backtrace:
-Jul  7 09:12:42 : Call Trace:
-Jul  7 09:12:42 : [c0000000f7b6f030] [c000000000010b9c] .show_stack+0x78/0x1c8 (unreliable)
-Jul  7 09:12:42 : [c0000000f7b6f0e0] [c000000000010d0c] .dump_stack+0x20/0x34
-Jul  7 09:12:42 : [c0000000f7b6f160] [c0000000000a7644] .print_circular_bug_tail+0x84/0xa8
-Jul  7 09:12:42 : [c0000000f7b6f230] [c0000000000a9fe4] .__lock_acquire+0xb80/0xee0
-Jul  7 09:12:42 keechi-lp2 rmcctrl: 0513-059 The ctrmc Subsystem has been started. Subsystem PID is 2316.
-Jul  7 09:12:42 : [c0000000f7b6f320] [c0000000000aa41c] .lock_acquire+0xd8/0x124
-Jul  7 09:12:42 : [c0000000f7b6f3e0] [c000000000452008] .mutex_lock_nested+0x168/0x420
-Jul  7 09:12:42 : [c0000000f7b6f4d0] [d0000000002740c4] .ehea_up+0x6c/0x6f4 [ehea]
-Jul  7 09:12:42 : [c0000000f7b6f5e0] [d000000000275804] .ehea_open+0x6c/0xcc [ehea]
-Jul  7 09:12:42 : [c0000000f7b6f680] [c0000000003b62b0] .dev_open+0xec/0x160
-Jul  7 09:12:42 : [c0000000f7b6f710] [c0000000003b46a4] .dev_change_flags+0x10c/0x210
-Jul  7 09:12:42 : [c0000000f7b6f7c0] [c0000000004162b0] .devinet_ioctl+0x2cc/0x778
-Jul  7 09:12:42 : [c0000000f7b6f8d0] [c0000000004173e0] .inet_ioctl+0xdc/0x134
-Jul  7 09:12:42 : [c0000000f7b6f950] [c0000000003a4464] .sock_ioctl+0x2dc/0x338
-Jul  7 09:12:42 : [c0000000f7b6f9f0] [c00000000012d12c] .vfs_ioctl+0x64/0xfc
-Jul  7 09:12:42 : [c0000000f7b6fa90] [c00000000012d614] .do_vfs_ioctl+0x450/0x494
-Jul  7 09:12:42 : [c0000000f7b6fb50] [c00000000012d6d0] .sys_ioctl+0x78/0xc0
-Jul  7 09:12:42 : [c0000000f7b6fc10] [c00000000016413c] .dev_ifsioc+0x1e8/0x450
-Jul  7 09:12:42 : [c0000000f7b6fd30] [c000000000163588] .compat_sys_ioctl+0x3ec/0x484
-Jul  7 09:12:42 : [c0000000f7b6fe30] [c0000000000086dc] syscall_exit+0x0/0x40
-Jul  7 09:12:42 : ehea: eth0: Physical port up
-Jul  7 09:12:42 : ehea: External switch port is backup port
-
-0x40c4 is in ehea_up (drivers/net/ehea/ehea_main.c:2469).
-2464            struct ehea_port *port = netdev_priv(dev);
-2465
-2466            if (port->state == EHEA_PORT_UP)
-2467                    return 0;
-2468
-2469            mutex_lock(&ehea_fw_handles.lock);
-2470
-2471            ret = ehea_port_res_setup(port, port->num_def_qps,
-2472                                      port->num_add_tx_qps);
-2473            if (ret) {
-
-0x57dc is in ehea_open (drivers/net/ehea/ehea_main.c:2559).
-2554    static int ehea_open(struct net_device *dev)
-2555    {
-2556            int ret;
-2557            struct ehea_port *port = netdev_priv(dev);
-2558
-2559            mutex_lock(&port->port_lock);
-2560
-2561            if (netif_msg_ifup(port))
-2562                    ehea_info("enabling port %s", dev->name);
-2563
-
-
--- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+diff -Naurp linux-2.6.26-rc9-orig/arch/powerpc/kernel/prom.c 
+linux-2.6.26-rc9/arch/powerpc/kernel/prom.c
+--- linux-2.6.26-rc9-orig/arch/powerpc/kernel/prom.c	2008-07-06 
+04:23:22.000000000 +0530
++++ linux-2.6.26-rc9/arch/powerpc/kernel/prom.c	2008-07-07 17:23:58.000000000 
++0530
+@@ -884,9 +884,10 @@ static u64 __init dt_mem_next_cell(int s
+  */
+ static int __init early_init_dt_scan_drconf_memory(unsigned long node)
+ {
+-	cell_t *dm, *ls;
++	cell_t *dm, *ls, *endp, *usm;
+ 	unsigned long l, n, flags;
+ 	u64 base, size, lmb_size;
++	char buf[32], t[8];
+ 
+ 	ls = (cell_t *)of_get_flat_dt_prop(node, "ibm,lmb-size", &l);
+ 	if (ls == NULL || l < dt_root_size_cells * sizeof(cell_t))
+@@ -917,7 +918,33 @@ static int __init early_init_dt_scan_drc
+ 			if ((base + size) > 0x80000000ul)
+ 				size = 0x80000000ul - base;
+ 		}
+-		lmb_add(base, size);
++		strcpy(buf, "linux,usable-memory");
++		sprintf(t, "%d", (int)n);
++		strcat(buf, t);
++		usm = (cell_t *)of_get_flat_dt_prop(node,
++						 (const char *)buf, &l);
++		if (usm != NULL) {
++			endp = usm + (l / sizeof(cell_t));
++			while ((endp - usm) >= (dt_root_addr_cells +
++						 dt_root_size_cells)) {
++				base = dt_mem_next_cell(dt_root_addr_cells,
++								 &usm);
++				size = dt_mem_next_cell(dt_root_size_cells,
++								 &usm);
++				if (size == 0)
++					continue;
++				if (iommu_is_off) {
++					if ((base + size) > 0x80000000ul)
++						size = 0x80000000ul - base;
++				}
++				lmb_add(base, size);
++			}
++
++			/* Continue with next lmb entry */
++			continue;
++		} else {
++			lmb_add(base, size);
++		}
+ 	}
+ 	lmb_dump_all();
+ 	return 0;
+diff -Naurp linux-2.6.26-rc9-orig/arch/powerpc/mm/numa.c 
+linux-2.6.26-rc9/arch/powerpc/mm/numa.c
+--- linux-2.6.26-rc9-orig/arch/powerpc/mm/numa.c	2008-07-06 04:23:22.000000000 
++0530
++++ linux-2.6.26-rc9/arch/powerpc/mm/numa.c	2008-07-07 17:50:35.000000000 
++0530
+@@ -349,18 +349,33 @@ static unsigned long __init numa_enforce
+ 	return lmb_end_of_DRAM() - start;
+ }
+ 
++static void set_nodeinfo(int nid, unsigned long start, unsigned long size)
++{
++	fake_numa_create_new_node(((start + size) >> PAGE_SHIFT),
++					&nid);
++	node_set_online(nid);
++
++	size = numa_enforce_memory_limit(start, size);
++	if (!size)
++		return;
++	add_active_range(nid, start >> PAGE_SHIFT,
++			(start >> PAGE_SHIFT) + (size >> PAGE_SHIFT));
++	return;
++}
++
+ /*
+  * Extract NUMA information from the ibm,dynamic-reconfiguration-memory
+  * node.  This assumes n_mem_{addr,size}_cells have been set.
+  */
+ static void __init parse_drconf_memory(struct device_node *memory)
+ {
+-	const unsigned int *lm, *dm, *aa;
++	const unsigned int *lm, *dm, *aa, *usm;
+ 	unsigned int ls, ld, la;
+ 	unsigned int n, aam, aalen;
+ 	unsigned long lmb_size, size, start;
+ 	int nid, default_nid = 0;
+-	unsigned int ai, flags;
++	unsigned int ai, flags, len, ranges;
++	char buf[32], t[8];
+ 
+ 	lm = of_get_property(memory, "ibm,lmb-size", &ls);
+ 	dm = of_get_property(memory, "ibm,dynamic-memory", &ld);
+@@ -396,16 +411,27 @@ static void __init parse_drconf_memory(s
+ 				nid = default_nid;
+ 		}
+ 
+-		fake_numa_create_new_node(((start + lmb_size) >> PAGE_SHIFT),
+-						&nid);
+-		node_set_online(nid);
++		strcpy(buf, "linux,usable-memory");
++		sprintf(t, "%d", (int)n);
++		strcat(buf, t);
++		usm = of_get_property(memory, (const char *)buf, &len);
++		if (usm != NULL) {
++			ranges = (len >> 2) / (n_mem_addr_cells +
++						 n_mem_size_cells);
++
++dr_new_range:		start = read_n_cells(n_mem_addr_cells, &usm);
++			size = read_n_cells(n_mem_size_cells, &usm);
++			if (size == 0)
++				continue;
+ 
+-		size = numa_enforce_memory_limit(start, lmb_size);
+-		if (!size)
+-			continue;
++			set_nodeinfo(nid, start, size);
++			if (--ranges)
++				goto dr_new_range;
+ 
+-		add_active_range(nid, start >> PAGE_SHIFT,
+-				 (start >> PAGE_SHIFT) + (size >> PAGE_SHIFT));
++			continue;
++		} else {
++			set_nodeinfo(nid, start, lmb_size);
++		}
+ 	}
+ }
+ 
