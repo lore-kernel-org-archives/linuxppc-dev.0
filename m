@@ -1,18 +1,34 @@
-Return-Path: <arnd@arndb.de>
-From: Arnd Bergmann <arnd@arndb.de>
-To: cbe-oss-dev@ozlabs.org
-Subject: Re: [Cbe-oss-dev] [patch 05/11] powerpc/cell: add spu
-	=?utf-8?q?aware=09cpufreq?= governor
-Date: Mon, 7 Jul 2008 23:15:13 +0200
-References: <20080704190535.316377278@arndb.de>
-	<200807071659.23476.arnd@arndb.de>
-	<1215444942.20774.50.camel@weaponx>
-In-Reply-To: <1215444942.20774.50.camel@weaponx>
+Return-Path: <sonny@us.ibm.com>
+Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 5DD05DE39F
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jul 2008 07:17:45 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e2.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m67LHfDX012147
+	for <linuxppc-dev@ozlabs.org>; Mon, 7 Jul 2008 17:17:41 -0400
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
+	m67LHfN7214250
+	for <linuxppc-dev@ozlabs.org>; Mon, 7 Jul 2008 17:17:41 -0400
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m67LHfTw001234
+	for <linuxppc-dev@ozlabs.org>; Mon, 7 Jul 2008 17:17:41 -0400
+Date: Mon, 7 Jul 2008 16:17:40 -0500
+From: Sonny Rao <sonnyrao@us.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] Power5,Power6 BSR driver
+Message-ID: <20080707211740.GA15821@us.ibm.com>
+References: <20080616185344.GB16192@gamma> <20080617223952.GA9594@localdomain>
+	<20080617224443.GD7552@localhost.localdomain>
+	<20080618065123.GB13318@localhost.localdomain>
+	<1215406775.8970.57.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Message-Id: <200807072315.13666.arnd@arndb.de>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1215406775.8970.57.camel@pasglop>
+Cc: sonnyrao@linux.vnet.ibm.com, paulus@samba.org, Nathan Lynch <ntl@pobox.com>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,30 +38,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Monday 07 July 2008, Josh Boyer wrote:
-> 0% probability of being spam.
->=20
-> Full report:
-> No, score=3D-2.6 required=3D5.0 tests=3DAWL,BAYES_00 autolearn=3Dham vers=
-ion=3D3.2.4 =C2=A0
-> On Mon, 2008-07-07 at 16:59 +0200, Arnd Bergmann wrote:
-> > On Monday 07 July 2008, Stephen Rothwell wrote:
-> > > > +#define POLL_TIME =C2=A0 =C2=A0100000 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
-=C2=A0/* in us */
-> > > =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=
- =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0 =C2=A0 ^
-> > > How about =CE=BC ?
-> >=20
-> > Not sure, how about =C2=B5 instead? ;-)
->=20
-> Erm... don't get it. =C2=A0You have identical characters here.
+On Mon, Jul 07, 2008 at 02:59:35PM +1000, Benjamin Herrenschmidt wrote:
+> 
+> > +		cur->bsr_addr   = reg[i * 2];
+> > +		cur->bsr_len    = reg[i * 2 + 1];
+> 
+> That's fishy... hand-reading of "reg" property without taking
+> into account the parent's #size-cells/#address-cells... can't you
+> use of_address_to_resource or something similar and carry a struct
+> resource around instead ?
 
-That depends on the tool you use to look at it.
+So, with this suggestion I looked at the resource API... not very well
+documented, and I get the feeling like it's more for carving up a PCI
+memory address range.  In the case of the BSR, everything is already
+partitioned (by hardware) so I don't see the point of using this API
+here.  Or am I missing something about it?
 
-Stephen wrote a Unicode character U+03BC from the Greek alphabet part of
-unicode, I wrote unicode character U+00B5 from the Latin-1 code page.
-In my mail client, latin-1 characters get rendered in the default font,
-but it has to change the font for less common scripts.
+> In fact, same goes with the way you do num_bsr_devs = reg_len / 16.
+> 
+> You should rather use -another- property of well known lenght, or
+> get the #address/#size-cells of the parent and use those appropriately.
 
-	Arnd <><
+Well, I check to make sure the lengths are consistent with each other
+right above there so we shouldn't walk off the end of anything, but I
+will take a look at using #size-cells / #address-cells instead.
+
+Thanks for the comments
+
+Sonny
