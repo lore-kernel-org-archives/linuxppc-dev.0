@@ -1,19 +1,19 @@
-Return-Path: <sam@ravnborg.org>
-Received: from pasmtpA.tele.dk (pasmtpa.tele.dk [80.160.77.114])
-	by ozlabs.org (Postfix) with ESMTP id 545D6DDFE8
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jul 2008 07:00:18 +1000 (EST)
-Date: Mon, 7 Jul 2008 23:01:04 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Roman Zippel <zippel@linux-m68k.org>
-Subject: Re: linux-next: kbuild tree build failure
-Message-ID: <20080707210104.GB23647@uranus.ravnborg.org>
-References: <20080707184038.aaeb8d40.sfr@canb.auug.org.au>
-	<Pine.LNX.4.64.0807071424240.6791@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.64.0807071424240.6791@localhost.localdomain>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-	Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
+Return-Path: <arnd@arndb.de>
+From: Arnd Bergmann <arnd@arndb.de>
+To: Eric Blossom <eb@comsec.com>
+Subject: Re: [Cbe-oss-dev] powerpc/cell/cpufreq: add spu aware cpufreq governor
+Date: Mon, 7 Jul 2008 23:02:53 +0200
+References: <200807071702.31240.arnd@arndb.de>
+	<20080707171732.GC26603@comsec.com>
+In-Reply-To: <20080707171732.GC26603@comsec.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200807072302.54410.arnd@arndb.de>
+Cc: Dave Jones <davej@codemonkey.org.uk>,
+	Stephen Rothwell <sfr@canb.auug.org.au>,
+	cpufreq@lists.linux.org.uk, linuxppc-dev@ozlabs.org,
+	Jeremy Kerr <jk@ozlabs.org>, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,64 +23,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Jul 07, 2008 at 06:13:55PM +0200, Roman Zippel wrote:
-> Hi,
-> 
-> On Mon, 7 Jul 2008, Stephen Rothwell wrote:
-> 
-> > Hi Sam,
-> > 
-> > Today's linux-next build (powerpc ppc64_defconfig) failed like this:
-> > 
-> > arch/powerpc/platforms/cell/spu_base.c: In function '__spu_trap_data_seg':
-> > arch/powerpc/platforms/cell/spu_base.c:194: error: duplicate case value
-> > arch/powerpc/platforms/cell/spu_base.c:177: error: previously used here
-> 
-> I guess there also has been a kconfig warning somewhere. :)
-> I should have gone through all archs to test this, sorry about that.
-> Luckily it's only powerpc that uses 64bit values. I would prefer to 
-> standardize on 32bit values, as it doesn't really make sense to expect 
-> from the user to input full 64bit values and it's easy to generate the 
-> full value in a header. This would also ease on any portability issues 
-> (kconfig is compiled with the host compiler not the target compiler).
-> 
-> Below is a patch that fixes this for all archs (generated against the git 
-> tree). The powerpc parts need a more careful review, the rest isn't really 
-> critical.
-> 
-> bye, Roman
+On Monday 07 July 2008, Eric Blossom wrote:
+> I've got a basic question about this idea:
+>=20
+> Does it throttle only idle spus or is there a single control for
+> the entire PPE + SPE complex?
 
-Hi Roman.
+There is one setting per socket, i.e. 8 SPUs and 1 PPU. In IBM speak,
+that is slow mode, which would be C states in Intel speak.
 
->From your patch:
+There is also throttling (IBM), which can be applied to each core
+seperately, and is the rough equivalent of T states in Intel terminology,
+but it's almost useless for power saving purposes, so we don't do it
+except for emergency (thermal overload) throttling.
 
->  config PINT3_ASSIGN
->  	hex "PINT3_ASSIGN"
->  	depends on PINTx_REASSIGN
-> -	default 0x02020303
-> +	default 0x2020303
+> I can think of many situations in our code where at certain times we
+> may only be able to keep N out of M spes occupied (because of how
+> we've expressed our task-specific parallelism), but we're counting on
+> the ones we're using running at full speed so that we can maintain our
+> real-time throughput. =A0(Our application does real-time signal
+> processing of continuously streaming data)
+>=20
+> Is there a way to disable the "throttling SPEs" feature short of
+> configuring it out of the kernel?
 
+By default, Linux always uses the "performance" governor, you have
+to enable the spu aware governor manually to get the slow mode feature
+in the first place.
 
-But ths change actually decrease readability of the
-value. Before we had 4x2 hex characters. But now we have 3x2 + 1x1.
-Does this check really by us enough to warrant this?
+Also, the idea of this code is to enter slow mode only if none of the
+SPEs is constantly busy. As soon as you have a single thread hogging
+one SPE, it will behave just like the performance governor, i.e.
+do nothing.
 
-I am aware that the check is implmented by:
-
-+                       str = strdup_type(def_sym->name, sym->type);
-+                       if (strcmp(str, def_sym->name)) {
-+                               prop_warn(prop,
-+                                       "default for config symbol '%s'"
-+                                       " should be %s", sym->name, str);
-+                               prop->expr->left.sym = sym_lookup(str, SYMBOL_CO
-+                       }
-+                       free(str);
-                        break;
-
-Could we soften this check a little maybe?
-At least so we accept leading null's.
-
-As for the patch in general I will await an ack from powerpc
-before applying it.
-
-	Sam
+	Arnd <><
