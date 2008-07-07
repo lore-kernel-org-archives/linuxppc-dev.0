@@ -1,33 +1,22 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 12E95DDDFF
-	for <linuxppc-dev@ozlabs.org>; Mon,  7 Jul 2008 23:22:11 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e31.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m67DM8uZ013653
-	for <linuxppc-dev@ozlabs.org>; Mon, 7 Jul 2008 09:22:08 -0400
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
-	m67DLxM5147950
-	for <linuxppc-dev@ozlabs.org>; Mon, 7 Jul 2008 07:21:59 -0600
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m67DLui2017507
-	for <linuxppc-dev@ozlabs.org>; Mon, 7 Jul 2008 07:21:59 -0600
-Date: Mon, 7 Jul 2008 09:18:18 -0400
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: "Grant Likely" <grant.likely@secretlab.ca>
-Subject: Re: [RFC/PATCH] powerpc/bootwrapper: Allow user to specify
-	additional default targets
-Message-ID: <20080707091818.72d584fe@zod.rchland.ibm.com>
-In-Reply-To: <fa686aa40807032351l631febe2h8d38a9eed1053b6b@mail.gmail.com>
-References: <20080701175852.32575.39707.stgit@trillian.secretlab.ca>
-	<fa686aa40807032351l631febe2h8d38a9eed1053b6b@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <jonsmirl@gmail.com>
+Received: from rn-out-0910.google.com (rn-out-0910.google.com [64.233.170.189])
+	by ozlabs.org (Postfix) with ESMTP id 75B88DDF0E
+	for <linuxppc-dev@ozlabs.org>; Mon,  7 Jul 2008 23:23:27 +1000 (EST)
+Received: by rn-out-0910.google.com with SMTP id j40so356016rnf.16
+	for <linuxppc-dev@ozlabs.org>; Mon, 07 Jul 2008 06:23:24 -0700 (PDT)
+Message-ID: <9e4733910807070623u4c17b319p48e96a3022f3459b@mail.gmail.com>
+Date: Mon, 7 Jul 2008 09:23:24 -0400
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: "Grant Likely" <grant.likely@secretlab.ca>, liam.girdwood@wolfsonmicro.com,
+	alsa-devel@alsa-project.org, linuxppc-dev@ozlabs.org, timur@freescale.com
+Subject: Re: [alsa-devel] [PATCH 2/3] ALSA SoC: Add mpc5200-psc I2S driver
+In-Reply-To: <20080707105905.GA19240@rakim.wolfsonmicro.main>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20080701235330.16923.67218.stgit@trillian.secretlab.ca>
+	<20080701235335.16923.43253.stgit@trillian.secretlab.ca>
+	<9e4733910807061056m7b0dbf1fr578cbfcda31586ea@mail.gmail.com>
+	<20080707105905.GA19240@rakim.wolfsonmicro.main>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,22 +26,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 4 Jul 2008 00:51:44 -0600
-"Grant Likely" <grant.likely@secretlab.ca> wrote:
+On 7/7/08, Mark Brown <broonie@opensource.wolfsonmicro.com> wrote:
+> On Sun, Jul 06, 2008 at 01:56:48PM -0400, Jon Smirl wrote:
+>
+>  > The driver is assuming a capture stream exists. My codec is output only.
+>
+>
+> While the driver declares a capture stream the core doesn't require that
+>  both capture and playback be available - it will cope with a capture
+>  only or a playback only DAI (this is fairly common due to DAC only and
+>  ADC only parts).  Unless there's some other issue specific to this
+>  driver?
 
-> Anyone had a chance to look at this?  I think this could be used to
-> eliminate a lot of the platform specific default targets in
-> arch/powerpc/boot/Makefile by moving them into the defconfigs.  Josh,
-> Kumar, what are your thoughts?
+Yes, it GPFs allocating a a DMA buffer on the null capture stream pointer.
 
-So for cases like Kilauea/Haleakala or Bamboo/Yosemite, you would
-specify Yosemite in the bamboo defconfig?  Or?
+>
+>  > I'm using external clocking, but the driver should support using the
+>  > mpc5200 for clocking. That's a little complicated since you have to
+>  > compute the divisors. For example the Phytec pcm030 board has a
+>  > 33.3333Mhz xtal and runs at 400Mhz.
+>
+>
+> This is desirable, though it shouldn't be an obstacle for merging if the
+>  driver only supports running in slave mode.
+>
+>
+>  > In order to reduce options, can the psc-i2s driver always try to use
+>  > mpc5200 clocking, then let the codec or fabric driver override it?
+>
+>
+> The clocking should always be under the control of the machine driver
+>  with the codec and platform drivers exporting the required dividers and
+>  PLLs/FLLs.  Neither the platform driver nor the codec driver are really
+>  in a position to know how a given board is wired up and what
+>  interdependencies or external requirements there are.
+>
 
-I actually sort of prefer having a separate defconfig/CONFIG_YOSEMITE
-(as an example) because it's much easier for an end user to figure out
-if the board is supported or not.
 
-I could be totally misunderstanding the intention of this patch though,
-so I'll stop rambling and wait to see what the use case is.
-
-josh
+-- 
+Jon Smirl
+jonsmirl@gmail.com
