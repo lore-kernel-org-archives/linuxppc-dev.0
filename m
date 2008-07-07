@@ -1,22 +1,23 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id A1688DDF3C
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jul 2008 00:44:43 +1000 (EST)
-Message-Id: <155B1079-39C4-4D15-B886-F904C424BC8C@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <18541.48403.490671.815858@cargo.ozlabs.ibm.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Mime-Version: 1.0 (Apple Message framework v926)
-Subject: Re: Deputy maintainer for powerpc
-Date: Mon, 7 Jul 2008 09:44:31 -0500
-References: <18541.48403.490671.815858@cargo.ozlabs.ibm.com>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Paul Mackerras <paulus@samba.org>, lkml List <linux-kernel@vger.kernel.org>
+Return-Path: <jonsmirl@gmail.com>
+Received: from el-out-1112.google.com (el-out-1112.google.com [209.85.162.183])
+	by ozlabs.org (Postfix) with ESMTP id DB86DDE516
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jul 2008 00:50:48 +1000 (EST)
+Received: by el-out-1112.google.com with SMTP id o28so168084ele.3
+	for <linuxppc-dev@ozlabs.org>; Mon, 07 Jul 2008 07:50:47 -0700 (PDT)
+Message-ID: <9e4733910807070750v3aebc084v313b877ef8f035ba@mail.gmail.com>
+Date: Mon, 7 Jul 2008 10:50:47 -0400
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: "Matt Sealey" <matt@genesi-usa.com>
+Subject: Re: MPC52xx generic DMA using bestcomm
+In-Reply-To: <487225C4.90405@genesi-usa.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <4871E487.2020008@matrix-vision.de>
+	<4872104E.6050109@genesi-usa.com>
+	<9e4733910807070639k283b1267q34a4c9bbff827b22@mail.gmail.com>
+	<487225C4.90405@genesi-usa.com>
+Cc: Andre Schwarz <andre.schwarz@matrix-vision.de>,
+	linux-ppc list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,23 +27,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Jul 4, 2008, at 1:02 AM, Paul Mackerras wrote:
-
-> I'm going to be on vacation for the next two weeks, and it looks
-> highly likely that Linus will open the 2.6.27 merge window during that
-> time, so I'm appointing Ben Herrenschmidt as my deputy maintainer.
-> During the next two weeks, he'll be the person collecting together any
-> further powerpc-related commits that need to go upstream, and sending
-> pull requests to Linus as necessary.
+On 7/7/08, Matt Sealey <matt@genesi-usa.com> wrote:
 >
-> This is the start of a longer-term transition which will ultimately
-> result in me handing over the powerpc architecture maintainership to
-> Ben.  Because of various work commitments, this will be a gradual
-> transition taking probably around 6 months.
+>  Jon Smirl wrote:
 >
-> Paul.
+> > On 7/7/08, Matt Sealey <matt@genesi-usa.com> wrote:
+> >
+> > >
+> > >
+> > to do that the samples have to be alternated as they are fed into the
+> > AC97 stream.  I think the codec can capture that way too but you
+> > didn't put a transceiver on the S/PDIF line.
+> >
+>
+>  OT, but the IDT STAC9766 doesn't support S/PDIF input, only output.
+>
+>
+> > In my test driver you only get AC97 or S/PDIF. Grant and I are both
+> > working on i2s drivers, when we get those sorted out it shouldn't be
+> > too hard to add ac97 back in. That codec driver I sent you was about
+> > 95% complete.
+> >
+>
+>  Indeed and to be honest I only gave it a short glance before having to
+>  do about a thousand other things, but I will take another peek some
+>  time this week :)
 
-Ben, Do you have a tree that you'll be using to collect things in?
+You should junk my PSC and DMA code and switch to the code Grant
+recently posted. Codec should work as is. My PSC code is for a six
+month old version of ASOC v2.
 
-- k
+Grant's PSC driver needs to be split into a DMA library and i2s
+driver. Then make an AC97 version based on his i2s driver that uses
+the DMA library. Not hard once he splits the i2s driver.
+
+We are getting closer to having full featured audio drivers for the
+mpc5200 platform.
+
+
+>
+>  --
+>  Matt Sealey <matt@genesi-usa.com>
+>  Genesi, Manager, Developer Relations
+>
+
+
+-- 
+Jon Smirl
+jonsmirl@gmail.com
