@@ -1,16 +1,20 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Mon, 7 Jul 2008 11:39:02 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Olof Johansson <olof@lixom.net>
+Return-Path: <olof@lixom.net>
+Received: from elcamino.pasemi.com (elcamino.pasemi.com [67.155.108.98])
+	by ozlabs.org (Postfix) with ESMTP id 63FF7DDDFA
+	for <linuxppc-dev@ozlabs.org>; Mon,  7 Jul 2008 11:45:54 +1000 (EST)
+Message-Id: <E7B91ECF-0D87-442D-B99A-1BBB14697E09@lixom.net>
+From: Olof Johansson <olof@lixom.net>
+To: David Gibson <david@gibson.dropbear.id.au>
+In-Reply-To: <20080707013902.GI6267@yookeroo.seuss>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v926)
 Subject: Re: New fsl device bindings file
-Message-ID: <20080707013902.GI6267@yookeroo.seuss>
+Date: Sun, 6 Jul 2008 20:45:51 -0500
 References: <40B88BFD-1FEB-4E36-9917-54C7380FF801@kernel.crashing.org>
 	<486D1A58.8010403@freescale.com>
 	<fa686aa40807031134s4ddd0cabj1b31d3ee2d9d2258@mail.gmail.com>
 	<8C77F02F-E930-40EB-AE25-F959C40833B3@lixom.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <8C77F02F-E930-40EB-AE25-F959C40833B3@lixom.net>
+	<20080707013902.GI6267@yookeroo.seuss>
 Cc: Scott Wood <scottwood@freescale.com>,
 	linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -22,38 +26,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, Jul 05, 2008 at 12:24:56AM -0500, Olof Johansson wrote:
->
-> On Jul 3, 2008, at 1:34 PM, Grant Likely wrote:
->
->>> How about splitting up like this:
->>>
->>> Documentation/powerpc/device-tree/fsl/cpm.txt
->>> Documentation/powerpc/device-tree/fsl/cpm/uart.txt
->>> Documentation/powerpc/device-tree/fsl/tsec.txt
->>> Documentation/powerpc/device-tree/interrupts.txt
->>> Documentation/powerpc/device-tree/dtb.txt
->>
->> May I suggest moving it to Documentation/of-bindings/ instead?  Some
->> of these bindings (granted, not the fsl ones) will be used by
->> non-powerpc platforms (sparc, microblaze).
->
-> Good idea, but:
->
-> Don't call the bindings OF. They're not.
->
-> They are a linux-specific binding that happens to use the same data  
-> structures and representation that OF does.
 
-Well... they may be Linux specific by default, but they're supposed to
-be general enough that they (or at least, very small extensions)
-*could* become official OF bindings, if there was still an OF group to
-make them so.  It certainly should be possible to use these bindings
-in a firmware which provides an OF client interface as well as in
-flat-tree-only firmwares which don't.
+On Jul 6, 2008, at 8:39 PM, David Gibson wrote:
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+> Well... they may be Linux specific by default, but they're supposed to
+> be general enough that they (or at least, very small extensions)
+> *could* become official OF bindings, if there was still an OF group to
+> make them so.  It certainly should be possible to use these bindings
+> in a firmware which provides an OF client interface as well as in
+> flat-tree-only firmwares which don't.
+
+Right, it's a classic case of embrace and extend. Calling it OF is  
+just plain misleading, especially since the original document was  
+called booting _WITHOUT_ OF.
+
+
+-Olof
