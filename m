@@ -1,20 +1,18 @@
-Return-Path: <neko@genesi-usa.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.169])
-	by ozlabs.org (Postfix) with ESMTP id 0A25ADE02C
-	for <linuxppc-dev@ozlabs.org>; Mon,  7 Jul 2008 22:47:10 +1000 (EST)
-Received: by ug-out-1314.google.com with SMTP id k3so930448ugf.0
-	for <linuxppc-dev@ozlabs.org>; Mon, 07 Jul 2008 05:47:08 -0700 (PDT)
-Message-ID: <4872104E.6050109@genesi-usa.com>
-Date: Mon, 07 Jul 2008 13:47:10 +0100
-From: Matt Sealey <matt@genesi-usa.com>
-MIME-Version: 1.0
-To: Andre Schwarz <andre.schwarz@matrix-vision.de>
-Subject: Re: MPC52xx generic DMA using bestcomm
-References: <4871E487.2020008@matrix-vision.de>
-In-Reply-To: <4871E487.2020008@matrix-vision.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Sender: Matt Sealey <neko@genesi-usa.com>
-Cc: linux-ppc list <linuxppc-dev@ozlabs.org>
+Return-Path: <sam@ravnborg.org>
+Received: from pasmtpB.tele.dk (pasmtpb.tele.dk [80.160.77.98])
+	by ozlabs.org (Postfix) with ESMTP id D95D6DE13B
+	for <linuxppc-dev@ozlabs.org>; Mon,  7 Jul 2008 22:50:52 +1000 (EST)
+Date: Mon, 7 Jul 2008 14:51:38 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: linux-next: kbuild tree build failure
+Message-ID: <20080707125138.GA16569@uranus.ravnborg.org>
+References: <20080707184038.aaeb8d40.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080707184038.aaeb8d40.sfr@canb.auug.org.au>
+Cc: linuxppc-dev@ozlabs.org, linux-next@vger.kernel.org,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,39 +22,65 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Mon, Jul 07, 2008 at 06:40:38PM +1000, Stephen Rothwell wrote:
+> Hi Sam,
+> 
+> Today's linux-next build (powerpc ppc64_defconfig) failed like this:
+> 
+> arch/powerpc/platforms/cell/spu_base.c: In function '__spu_trap_data_seg':
+> arch/powerpc/platforms/cell/spu_base.c:194: error: duplicate case value
+> arch/powerpc/platforms/cell/spu_base.c:177: error: previously used here
+> 
+> This means that USER_REGION_ID (line 177) is the same as KERNEL_REGION_ID
+> (line 194).
+> 
+> From include/asm-powerpc/pgtable-ppc64.h:
+> 
+> #define REGION_SHIFT            60UL
+> #define REGION_MASK             (0xfUL << REGION_SHIFT)
+> #define REGION_ID(ea)           (((unsigned long)(ea)) >> REGION_SHIFT)
+> 
+> #define VMALLOC_REGION_ID       (REGION_ID(VMALLOC_START))
+> #define KERNEL_REGION_ID        (REGION_ID(PAGE_OFFSET))
+> #define VMEMMAP_REGION_ID       (0xfUL)
+> #define USER_REGION_ID          (0UL)
+> 
+> From include/asm-powerpc/page.h:
+> 
+> #define PAGE_OFFSET     ASM_CONST(CONFIG_PAGE_OFFSET)
+> 
+> From .config:
+> 
+> CONFIG_PAGE_OFFSET=0xffffffff
+> 
+> Not good.
+> 
+> From arch/powerpc/Kconfig (ADVANCED_OPTIONS is not set):
+> 
+> config PAGE_OFFSET_BOOL
+>         bool "Set custom page offset address"
+>         depends on ADVANCED_OPTIONS
+> 
+> config PAGE_OFFSET
+>         hex "Virtual address of memory base" if PAGE_OFFSET_BOOL
+>         default "0xc0000000"
+> 
+> if PPC64
+> config PAGE_OFFSET
+>         hex
+>         default "0xc000000000000000"
+> endif
+> 
+> Reverting commit 9ba4ff5059e1a26698786373c8c71321c37ef7f9 ("kconfig:
+> normalize int/hex values") seems to have fixed it.
+> 
+> From .config:
+> 
+> CONFIG_PAGE_OFFSET=0xc000000000000000
 
+I see what is wrong - we use a int to hold the value above
+and it does not fit.
 
-Andre Schwarz wrote:
-> Grant,
+Will fix tonight or tomorrow.
 
-I know I'm not Grant, but..
-
-> do you know if someone's working on a more generic DMA solution using
-> BestComm engine on 5200B ?
-> Maybe somthing that accepts a sg-list with callback ops or completion ?
-
-It was suggested once or twice, not least by me.
-
-> Is it possible right now to accelerate simple memcpy ops ?
-
- From my discussions on the subject with Sylvain, it's possible, you just
-need to use the GenBD and initiate it manually, however it's probably more
-overhead than work if the data size is small, and BestComm would do better
-to copy full 32-bit words at a time, and stay aligned, if you have an odd-sized
-transfer from a non-32-bit aligned address, then you may have to do some
-incredible amount of work which makes the actual transfer not worth doing
-(by the time you set it up, the CPU could have copied it on it's own
-already, I guess what you DO gain is a kernel preemption point.. the CPU
-can do other things that are important)
-
-I for one, though, whether it speeds stuff up or not, love to see this in
-action and am very willing to test and benchmark it. I would love to see
-more users, too, as the network stack is not the only system that can
-benefit..
-
-On a related note does anyone know of the status or what is going on with
-Clifford Wolf's dmatransfer API?
-
--- 
-Matt Sealey <matt@genesi-usa.com>
-Genesi, Manager, Developer Relations
+	Sam
