@@ -1,11 +1,24 @@
-Return-Path: <benh@ozlabs.org>
-To: Linus Torvalds <torvalds@osdl.org>
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Mon, 07 Jul 2008 16:39:50 +1000
-Subject: [PATCH] powerpc: Fix unterminated of_device_id array in
-	legacy_serial.c
-Message-Id: <20080707063956.4D8F2DDDF9@ozlabs.org>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <roland@redhat.com>
+Received: from QMTA04.westchester.pa.mail.comcast.net
+	(qmta04.westchester.pa.mail.comcast.net [76.96.62.40])
+	by ozlabs.org (Postfix) with ESMTP id 6B877DDEDE
+	for <linuxppc-dev@ozlabs.org>; Mon,  7 Jul 2008 16:41:29 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+From: Roland McGrath <roland@redhat.com>
+To: benh@kernel.crashing.org
+Subject: Re: [PATCH 1/2] elf loader support for auxvec base platform string
+In-Reply-To: Benjamin Herrenschmidt's message of  Monday,
+	7 July 2008 16:23:20 +1000 <1215411800.8970.91.camel@pasglop>
+References: <20080703234140.GC9594@localdomain>
+	<20080704021929.5E9EF1541F5@magilla.localdomain>
+	<1215409693.8970.79.camel@pasglop>
+	<20080707061811.19989154246@magilla.localdomain>
+	<1215411800.8970.91.camel@pasglop>
+Message-Id: <20080707063522.5FE55154246@magilla.localdomain>
+Date: Sun,  6 Jul 2008 23:35:22 -0700 (PDT)
+Cc: linuxppc-dev@ozlabs.org, Nathan Lynch <ntl@pobox.com>,
+	linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,45 +28,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-A recent patch to legacy_serial.c factored out some code by
-using the of_match_node() facility to match a node against
-an array of possible matches. However, the patch didn't properly
-terminate the array causing potential crashes in cases where no
-match is found. In addition, the name of the array was poorly
-chosen for a static symbol making debugging harder.
+> I'm not sure... if ld.conf.d isn't parse of the kernel source tree then
+> it -will- end in tears...
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
+Of course, you should include the file you want people to install
+as part of the kernel source or build.  You can copy it into
+place in make install or something if you like (convention is to
+call it something.conf in /etc/ld.so.conf.d); then run ldconfig.
+The x86-xen case has not bothered to include its one-line file as
+such, just the comment in arch/x86/vdso/vdso32/note.S telling you
+what it is.
 
-Linus, any chance you can still stick that in .26 ?
- 
- arch/powerpc/kernel/legacy_serial.c |    5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
 
---- linux-work.orig/arch/powerpc/kernel/legacy_serial.c	2008-07-07 16:34:05.000000000 +1000
-+++ linux-work/arch/powerpc/kernel/legacy_serial.c	2008-07-07 16:36:06.000000000 +1000
-@@ -33,13 +33,14 @@ static struct legacy_serial_info {
- 	phys_addr_t			taddr;
- } legacy_serial_infos[MAX_LEGACY_SERIAL_PORTS];
- 
--static struct __initdata of_device_id parents[] = {
-+static struct __initdata of_device_id legacy_serial_parents[] = {
- 	{.type = "soc",},
- 	{.type = "tsi-bridge",},
- 	{.type = "opb", },
- 	{.compatible = "ibm,opb",},
- 	{.compatible = "simple-bus",},
- 	{.compatible = "wrs,epld-localbus",},
-+	{},
- };
- 
- static unsigned int legacy_serial_count;
-@@ -322,7 +323,7 @@ void __init find_legacy_serial_ports(voi
- 		struct device_node *parent = of_get_parent(np);
- 		if (!parent)
- 			continue;
--		if (of_match_node(parents, parent) != NULL) {
-+		if (of_match_node(legacy_serial_parents, parent) != NULL) {
- 			index = add_legacy_soc_port(np, np);
- 			if (index >= 0 && np == stdout)
- 				legacy_serial_console = index;
+Thanks,
+Roland
