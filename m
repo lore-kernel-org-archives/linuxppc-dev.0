@@ -1,22 +1,24 @@
-Return-Path: <vitb@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 91DE4DDE17
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jul 2008 22:48:54 +1000 (EST)
-Date: Tue, 8 Jul 2008 16:48:29 +0400
-From: Vitaly Bordug <vitb@kernel.crashing.org>
-To: benh@kernel.crashing.org
-Subject: Re: powerpc: Add proper reference to dma_mask
-Message-ID: <20080708164829.6817f344@vitb-lp>
-In-Reply-To: <1215491291.8970.195.camel@pasglop>
-References: <20080708031256.57176084@vitb-lp>
-	<20080708135426.43edb5dc.sfr@canb.auug.org.au>
-	<1215491291.8970.195.camel@pasglop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Return-Path: <hugh@veritas.com>
+Date: Tue, 8 Jul 2008 14:00:12 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [patch 1/6] mm: Allow architectures to define additional
+	protection bits
+In-Reply-To: <1215497929.8970.207.camel@pasglop>
+Message-ID: <Pine.LNX.4.64.0807081358270.25635@blonde.site>
+References: <20080618223254.966080905@linux.vnet.ibm.com>
+	<20080618223328.856102092@linux.vnet.ibm.com>
+	<20080701015301.3dc8749b.akpm@linux-foundation.org>
+	<1214920499.18690.10.camel@norville.austin.ibm.com>
+	<1215409956.8970.82.camel@pasglop>
+	<Pine.LNX.4.64.0807072143200.27181@blonde.site>
+	<1215469468.8970.143.camel@pasglop>
+	<1215497929.8970.207.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>,
+	Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+	Paul Mackerras <paulus@au1.ibm.com>, Linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,28 +28,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-=D0=92 Tue, 08 Jul 2008 14:28:11 +1000
-Benjamin Herrenschmidt <benh@kernel.crashing.org> =D0=BF=D0=B8=D1=88=D0=B5=
-=D1=82:
+On Tue, 8 Jul 2008, Benjamin Herrenschmidt wrote:
+> On Tue, 2008-07-08 at 08:24 +1000, Benjamin Herrenschmidt wrote:
+> > > There is a little inconsistency, that arch_calc_vm_prot_bits
+> > > and arch_vm_get_page_prot just handle the exceptional flag (SAO),
+> > > whereas arch_validate_prot handles all of them; but I don't feel
+> > > so strongly about that to suggest resubmission.
+> > > 
+> > > And regarding VM_SAO added to include/linux/mm.h in 3/6: although
+> > > it's odd to be weaving back and forth between arch-specific and
+> > > common, it's already the case that mman definitions and pgtable
+> > > definitions are arch-specific but mm.h common: I'm much happier
+> > > to have VM_SAO defined once there as Dave has it, than get into
+> > > arch-specific vm_flags.
+> > > 
+> > > Is someone going to be asking for PROT_WC shortly?
+> > 
+> > I'll definitely come with PROT_ENDIAN soon :-) (ie, some powerpc
+> > processors can have a per-page endian flag that when set causes all
+> > load/store instructions on this are to be byte-flipped, support for
+> > this
+> > feature has been requested for some time, and now I have the
+> > infrastructure to do it).
+> 
+> BTW. Do we have your ack ?
 
-> On Tue, 2008-07-08 at 13:54 +1000, Stephen Rothwell wrote:
-> > Hi Vitaly,
-> >=20
-> > On Tue, 8 Jul 2008 03:12:56 +0400 Vitaly Bordug
-> > <vitb@kernel.crashing.org> wrote:
-> > >
-> > > +++ b/arch/powerpc/kernel/of_platform.c
-> > > @@ -76,6 +76,9 @@ struct of_device*
-> > > of_platform_device_create(struct device_node *np, return NULL;
-> > > =20
-> > >  	dev->dma_mask =3D 0xffffffffUL;
-> > > +	dev->dev.dma_mask =3D &dev->dma_mask;
-> >=20
-> > That is done in of_device_alloc which is called just above.
->=20
-> So the problem might just be that coherent_dma_mask isn't set.
->=20
+To PROT_SAO?  Okay,
+Acked-by: Hugh Dickins <hugh@veritas.com>
 
-I'll check and resubmit, thanks
-
--Vitaly
+> 
+> Andrew, what tree should this go via ? I have further powerpc patches
+> depending on this one... so on one hand I'd be happy to take it, but
+> on the other hand, it's more likely to clash with other things...
+> 
+> Maybe I should check how it applies on top of linux-next.
+> 
+> Ben.
