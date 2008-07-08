@@ -1,21 +1,26 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id A74ECDDED2
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jul 2008 14:28:24 +1000 (EST)
-Subject: Re: powerpc: Add proper reference to dma_mask
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-In-Reply-To: <20080708135426.43edb5dc.sfr@canb.auug.org.au>
-References: <20080708031256.57176084@vitb-lp>
-	<20080708135426.43edb5dc.sfr@canb.auug.org.au>
-Content-Type: text/plain
-Date: Tue, 08 Jul 2008 14:28:11 +1000
-Message-Id: <1215491291.8970.195.camel@pasglop>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id B6F93DDDF0
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jul 2008 14:52:45 +1000 (EST)
+Date: Tue, 8 Jul 2008 14:52:34 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Sonny Rao <sonnyrao@us.ibm.com>
+Subject: Re: [PATCHv3] Power5,Power6 BSR driver
+Message-Id: <20080708145234.998082ad.sfr@canb.auug.org.au>
+In-Reply-To: <20080708025812.GC15821@us.ibm.com>
+References: <20080616185344.GB16192@gamma> <20080617223952.GA9594@localdomain>
+	<20080617224443.GD7552@localhost.localdomain>
+	<20080618065123.GB13318@localhost.localdomain>
+	<1215406775.8970.57.camel@pasglop>
+	<20080707211740.GA15821@us.ibm.com>
+	<1215469617.8970.146.camel@pasglop>
+	<20080708025812.GC15821@us.ibm.com>
 Mime-Version: 1.0
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
-Reply-To: benh@kernel.crashing.org
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Tue__8_Jul_2008_14_52_34_+1000_Sd7LxJ/98zTu9XSs"
+Cc: jschopp@us.ibm.com, Nathan, sonnyrao@linux.vnet.ibm.com,
+	linuxppc-dev@ozlabs.org, paulus@samba.org, Lynch <ntl@pobox.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,20 +30,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2008-07-08 at 13:54 +1000, Stephen Rothwell wrote:
-> Hi Vitaly,
-> 
-> On Tue, 8 Jul 2008 03:12:56 +0400 Vitaly Bordug <vitb@kernel.crashing.org> wrote:
-> >
-> > +++ b/arch/powerpc/kernel/of_platform.c
-> > @@ -76,6 +76,9 @@ struct of_device* of_platform_device_create(struct device_node *np,
-> >  		return NULL;
-> >  
-> >  	dev->dma_mask = 0xffffffffUL;
-> > +	dev->dev.dma_mask = &dev->dma_mask;
-> 
-> That is done in of_device_alloc which is called just above.
+--Signature=_Tue__8_Jul_2008_14_52_34_+1000_Sd7LxJ/98zTu9XSs
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-So the problem might just be that coherent_dma_mask isn't set.
+Hi Sonny,
 
-Ben.
+On Mon, 7 Jul 2008 21:58:12 -0500 Sonny Rao <sonnyrao@us.ibm.com> wrote:
+>
+> +static int bsr_create_devs(struct device_node *bn)
+> +{
+
+> +		cur->bsr_device =3D device_create(bsr_class, NULL,
+> +						cur->bsr_dev,
+> +						cur->bsr_name);
+> +		if (!cur->bsr_device) {
+> +			printk(KERN_ERR "device_create failed for %s\n",
+> +			       cur->bsr_name);
+> +			cdev_del(&cur->bsr_cdev);
+> +			goto out_err;
+> +		}
+> +		dev_set_drvdata(cur->bsr_device, cur);
+
+device_create() is being removed in 2.6.27 because the above introduces a
+race, use device_create_drvdata() instead.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Tue__8_Jul_2008_14_52_34_+1000_Sd7LxJ/98zTu9XSs
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEUEARECAAYFAkhy8pIACgkQjjKRsyhoI8zCUwCeOnG1Wzr7Pd5CyI+jpKxcLFGT
+8OQAmPAIpfN9WtLmKzNlgofc3F8GUr4=
+=gWgj
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__8_Jul_2008_14_52_34_+1000_Sd7LxJ/98zTu9XSs--
