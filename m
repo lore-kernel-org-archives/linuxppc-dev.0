@@ -1,17 +1,16 @@
-Return-Path: <ntl@pobox.com>
-Received: from sasl.smtp.pobox.com (a-sasl-fastnet.sasl.smtp.pobox.com
-	[207.106.133.19]) by ozlabs.org (Postfix) with ESMTP id A8588DDDF4
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 Jul 2008 06:02:01 +1000 (EST)
-Date: Tue, 8 Jul 2008 15:01:37 -0500
-From: Nathan Lynch <ntl@pobox.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v2] Add PPC_FEATURE_PSERIES_PMU_COMPAT
-Message-ID: <20080708200137.GN9594@localdomain>
-References: <20080703232001.GB9594@localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080703232001.GB9594@localdomain>
-Cc: Olof Johansson <olof@lixom.net>, Paul Mackerras <paulus@samba.org>
+Return-Path: <smaclennan@pikatech.com>
+Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
+	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 8EA5FDDDF3
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 Jul 2008 06:22:43 +1000 (EST)
+Date: Tue, 8 Jul 2008 16:22:40 -0400
+From: Sean MacLennan <smaclennan@pikatech.com>
+Cc: "linuxppc-dev" <linuxppc-dev@ozlabs.org>
+Subject: Re: [PATCH] powerpc: i2c-ibm_iic register child nodes
+Message-ID: <20080708162240.70b34046@lappy.seanm.ca>
+In-Reply-To: <20080708144609.14bae1de@lappy.seanm.ca>
+References: <20080708144609.14bae1de@lappy.seanm.ca>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,63 +20,61 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Background from Maynard Johnson:
-As of POWER6, a set of 32 common events is defined that must be
-supported on all future POWER processors.  The main impetus for this
-compat set is the need to support partition migration, especially from
-processor P(n) to processor P(n+1), where performance software that's
-running in the new partition may not be knowledgeable about processor
-P(n+1).  If a performance tool determines it does not support the
-physical processor, but is told (via the PPC_FEATURE_PSERIES_PMU_COMPAT
-bit) that the processor supports the notion of the PMU compat set,
-then the performance tool can surface just those events to the user
-of the tool.
+Update the warp to use the new IBM IIC driver. We no longer need to
+register the I2C devices in the platform code.
 
-PPC_FEATURE_PSERIES_PMU_COMPAT indicates that the PMU supports at
-least this basic subset of events which is compatible across POWER
-processor lines.
+Also adds a small bugfix for the i2c code if the i2c read fails.
 
-Signed-off-by: Nathan Lynch <ntl@pobox.com>
+Signed-off-by: Sean MacLennan <smaclennan@pikatech.com>
 ---
 
-Changes since v1:
-- make name of feature bit less generic
-- provide more complete changelog
-
- arch/powerpc/kernel/cputable.c |    6 ++++--
- include/asm-powerpc/cputable.h |    1 +
- 2 files changed, 5 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
-index 817cea1..c4eb377 100644
---- a/arch/powerpc/kernel/cputable.c
-+++ b/arch/powerpc/kernel/cputable.c
-@@ -70,10 +70,12 @@ extern void __restore_cpu_power7(void);
- 				 PPC_FEATURE_SMT | PPC_FEATURE_ICACHE_SNOOP)
- #define COMMON_USER_POWER6	(COMMON_USER_PPC64 | PPC_FEATURE_ARCH_2_05 |\
- 				 PPC_FEATURE_SMT | PPC_FEATURE_ICACHE_SNOOP | \
--				 PPC_FEATURE_TRUE_LE)
-+				 PPC_FEATURE_TRUE_LE | \
-+				 PPC_FEATURE_PSERIES_PMU_COMPAT)
- #define COMMON_USER_POWER7	(COMMON_USER_PPC64 | PPC_FEATURE_ARCH_2_06 |\
- 				 PPC_FEATURE_SMT | PPC_FEATURE_ICACHE_SNOOP | \
--				 PPC_FEATURE_TRUE_LE)
-+				 PPC_FEATURE_TRUE_LE | \
-+				 PPC_FEATURE_PSERIES_PMU_COMPAT)
- #define COMMON_USER_PA6T	(COMMON_USER_PPC64 | PPC_FEATURE_PA6T |\
- 				 PPC_FEATURE_TRUE_LE | \
- 				 PPC_FEATURE_HAS_ALTIVEC_COMP)
-diff --git a/include/asm-powerpc/cputable.h b/include/asm-powerpc/cputable.h
-index 3171ac9..d1492a2 100644
---- a/include/asm-powerpc/cputable.h
-+++ b/include/asm-powerpc/cputable.h
-@@ -26,6 +26,7 @@
- #define PPC_FEATURE_POWER6_EXT		0x00000200
- #define PPC_FEATURE_ARCH_2_06		0x00000100
- #define PPC_FEATURE_HAS_VSX		0x00000080
-+#define PPC_FEATURE_PSERIES_PMU_COMPAT	0x00000040
+diff --git a/arch/powerpc/platforms/44x/warp.c b/arch/powerpc/platforms/44x/warp.c
+index 9565995..960edf8 100644
+--- a/arch/powerpc/platforms/44x/warp.c
++++ b/arch/powerpc/platforms/44x/warp.c
+@@ -30,18 +30,6 @@ static __initdata struct of_device_id warp_of_bus[] = {
+ 	{},
+ };
  
- #define PPC_FEATURE_TRUE_LE		0x00000002
- #define PPC_FEATURE_PPC_LE		0x00000001
--- 
-1.5.6.2
+-static __initdata struct i2c_board_info warp_i2c_info[] = {
+-	{ I2C_BOARD_INFO("ad7414", 0x4a) }
+-};
+-
+-static int __init warp_arch_init(void)
+-{
+-	/* This should go away once support is moved to the dts. */
+-	i2c_register_board_info(0, warp_i2c_info, ARRAY_SIZE(warp_i2c_info));
+-	return 0;
+-}
+-machine_arch_initcall(warp, warp_arch_init);
+-
+ static int __init warp_device_probe(void)
+ {
+ 	of_platform_bus_probe(NULL, warp_of_bus, NULL);
+@@ -223,7 +211,7 @@ static void pika_setup_critical_temp(struct i2c_client *client)
+ 
+ 	/* These registers are in 1 degree increments. */
+ 	i2c_smbus_write_byte_data(client, 2, 65); /* Thigh */
+-	i2c_smbus_write_byte_data(client, 3, 55); /* Tlow */
++	i2c_smbus_write_byte_data(client, 3,  0); /* Tlow */
+ 
+ 	np = of_find_compatible_node(NULL, NULL, "adi,ad7414");
+ 	if (np == NULL) {
+@@ -289,8 +277,15 @@ found_it:
+ 	printk(KERN_INFO "PIKA DTM thread running.\n");
+ 
+ 	while (!kthread_should_stop()) {
+-		u16 temp = swab16(i2c_smbus_read_word_data(client, 0));
+-		out_be32(fpga + 0x20, temp);
++		int val;
++
++		val = i2c_smbus_read_word_data(client, 0);
++		if (val < 0)
++			dev_dbg(&client->dev, "DTM read temp failed.\n");
++		else {
++			s16 temp = swab16(val);
++			out_be32(fpga + 0x20, temp);
++		}
+ 
+ 		pika_dtm_check_fan(fpga);
+ 
