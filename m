@@ -1,16 +1,21 @@
-Return-Path: <sprasad@bivio.net>
-Received: from corpexc01.corp.networkrobots.com (nofear-snat.bivio.net
-	[216.142.75.231]) by ozlabs.org (Postfix) with ESMTP id 3CB0ADDF8A
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jul 2008 10:34:19 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RAMDISK: ran out of compressed data
-Date: Mon, 7 Jul 2008 17:21:53 -0700
-Message-ID: <D83235F0F3C86D4D889D8B9A0DA8C6D702B63AD3@corpexc01.corp.networkrobots.com>
-From: "Siva Prasad" <sprasad@bivio.net>
-To: <linuxppc-dev@ozlabs.org>,
-	<linuxppc-embedded@ozlabs.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id A32DADDF5B
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jul 2008 10:46:17 +1000 (EST)
+Subject: Re: [PATCH] ibm_newemac: Add MII mode support to the EMAC RGMII
+	bridge.
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Grant Erickson <gerickson@nuovations.com>
+In-Reply-To: <C497F939.104DB%gerickson@nuovations.com>
+References: <C497F939.104DB%gerickson@nuovations.com>
+Content-Type: text/plain
+Date: Tue, 08 Jul 2008 10:46:06 +1000
+Message-Id: <1215477966.8970.181.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, sr@denx.de, jgarzik@pobox.com
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,33 +25,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+On Mon, 2008-07-07 at 16:47 -0700, Grant Erickson wrote:
+> 
+> Would you prefer?
+> 
+>     +#define RGMII_FER_MII(idx)     RGMII_FER_GMII(idx)
+> 
+> Having the "extra" mnemonic makes the code end up looking less like a typo
+> and more like a conscious decision: "Yes, we know MII and GMII are the same
+> setting, but we're being explicit about it."
 
-I am getting the following error when I tried to boot with ramdisk. Any
-specific reason or clue why this is happening?
+Yeah, that looks better. Either that or a comment. 
 
-RAMDISK: Compressed image found at block 0
-RAMDISK: ran out of compressed data
-invalid compressed format (err=3D1)
-
-I am running into this on 8641D runing 2.6.24-rc6 kernel. My .config
-around block area are...
-
-CONFIG_BLK_DEV=3Dy
-# CONFIG_BLK_DEV_FD is not set
-# CONFIG_BLK_CPQ_DA is not set
-# CONFIG_BLK_CPQ_CISS_DA is not set
-# CONFIG_BLK_DEV_DAC960 is not set
-# CONFIG_BLK_DEV_UMEM is not set
-# CONFIG_BLK_DEV_COW_COMMON is not set
-CONFIG_BLK_DEV_LOOP=3Dy
-# CONFIG_BLK_DEV_CRYPTOLOOP is not set
-# CONFIG_BLK_DEV_NBD is not set
-# CONFIG_BLK_DEV_SX8 is not set
-CONFIG_BLK_DEV_RAM=3Dy
-CONFIG_BLK_DEV_RAM_COUNT=3D16
-CONFIG_BLK_DEV_RAM_SIZE=3D49152
-CONFIG_BLK_DEV_RAM_BLOCKSIZE=3D1024
-
-Thanks
-Siva
+Cheers,
+Ben.
