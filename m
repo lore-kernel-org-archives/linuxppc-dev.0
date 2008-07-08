@@ -1,33 +1,22 @@
-Return-Path: <chandru@in.ibm.com>
-Received: from ausmtp04.au.ibm.com (ausmtp04.au.ibm.com [202.81.18.152])
+Return-Path: <vitb@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "ausmtp04.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 284DEDDE22
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jul 2008 21:06:57 +1000 (EST)
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.18.234])
-	by ausmtp04.au.ibm.com (8.13.8/8.13.8) with ESMTP id m68B8xKv130970
-	for <linuxppc-dev@ozlabs.org>; Tue, 8 Jul 2008 21:08:59 +1000
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
-	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
-	m68AvhP52998436
-	for <linuxppc-dev@ozlabs.org>; Tue, 8 Jul 2008 20:57:43 +1000
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
-	by d23av03.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m68AwAwM003053
-	for <linuxppc-dev@ozlabs.org>; Tue, 8 Jul 2008 20:58:10 +1000
-From: Chandru <chandru@in.ibm.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH 1/4] kdump : add support for ibm,
-	dynamic-reconfiguration-memory for kexec/kdump
-Date: Tue, 8 Jul 2008 16:28:07 +0530
-References: <200807080014.24910.chandru@in.ibm.com>
-	<20080708113646.13836635.sfr@canb.auug.org.au>
-In-Reply-To: <20080708113646.13836635.sfr@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200807081628.07843.chandru@in.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, kexec@lists.infradead.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 91DE4DDE17
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jul 2008 22:48:54 +1000 (EST)
+Date: Tue, 8 Jul 2008 16:48:29 +0400
+From: Vitaly Bordug <vitb@kernel.crashing.org>
+To: benh@kernel.crashing.org
+Subject: Re: powerpc: Add proper reference to dma_mask
+Message-ID: <20080708164829.6817f344@vitb-lp>
+In-Reply-To: <1215491291.8970.195.camel@pasglop>
+References: <20080708031256.57176084@vitb-lp>
+	<20080708135426.43edb5dc.sfr@canb.auug.org.au>
+	<1215491291.8970.195.camel@pasglop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,22 +26,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Thanks for the review comments. I will change to 'snprintf' at all the places  
-and remove the unnecessary casts.
+=D0=92 Tue, 08 Jul 2008 14:28:11 +1000
+Benjamin Herrenschmidt <benh@kernel.crashing.org> =D0=BF=D0=B8=D1=88=D0=B5=
+=D1=82:
 
-On Tuesday 08 July 2008 07:06:46 Stephen Rothwell wrote:
-> Hi Chandru,
->
-> On Tue, 8 Jul 2008 00:14:24 +0530 Chandru <chandru@in.ibm.com> wrote:
-> > +		if (usm != NULL) {
-> > +			ranges = (len >> 2) / (n_mem_addr_cells +
->
->                                  ^^^^^^^^^^
-> len / sizeof(u32) ?
+> On Tue, 2008-07-08 at 13:54 +1000, Stephen Rothwell wrote:
+> > Hi Vitaly,
+> >=20
+> > On Tue, 8 Jul 2008 03:12:56 +0400 Vitaly Bordug
+> > <vitb@kernel.crashing.org> wrote:
+> > >
+> > > +++ b/arch/powerpc/kernel/of_platform.c
+> > > @@ -76,6 +76,9 @@ struct of_device*
+> > > of_platform_device_create(struct device_node *np, return NULL;
+> > > =20
+> > >  	dev->dma_mask =3D 0xffffffffUL;
+> > > +	dev->dev.dma_mask =3D &dev->dma_mask;
+> >=20
+> > That is done in of_device_alloc which is called just above.
+>=20
+> So the problem might just be that coherent_dma_mask isn't set.
+>=20
 
-ranges is made to count the number of linux,usable-memory properties in the 
-device tree.  It's acting as a counter here.  So the expression in the patch 
-is fine. 
+I'll check and resubmit, thanks
 
-Thanks,
-Chandru
+-Vitaly
