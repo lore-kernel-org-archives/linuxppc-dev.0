@@ -1,19 +1,25 @@
-Return-Path: <liranrazlinux@gmail.com>
-Received: from qb-out-0506.google.com (qb-out-0506.google.com [72.14.204.225])
-	by ozlabs.org (Postfix) with ESMTP id 53475DDE28
+Return-Path: <lorenzo@alphagolf.com>
+Received: from fallback-mx3.atl.registeredsite.com
+	(fallback-mx3.atl.registeredsite.com [64.224.219.97])
+	by ozlabs.org (Postfix) with ESMTP id 226B2DDF1E
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  8 Jul 2008 05:17:08 +1000 (EST)
-Received: by qb-out-0506.google.com with SMTP id d8so4505144qbc.37
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 07 Jul 2008 12:17:06 -0700 (PDT)
-Message-ID: <e3b3ab5c0807071216w5e72ad13g7e0ab8c357f09c8f@mail.gmail.com>
-Date: Mon, 7 Jul 2008 15:16:58 -0400
-From: "liran raz" <liranrazlinux@gmail.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: flash driver
+	Tue,  8 Jul 2008 11:48:40 +1000 (EST)
+Received: from mail20.atl.registeredsite.com (mail20.atl.registeredsite.com
+	[216.247.37.40])
+	by fallback-mx3.atl.registeredsite.com (8.12.11.20060308/8.12.11) with
+	ESMTP id m681f9WK020911
+	for <linuxppc-embedded@ozlabs.org>; Mon, 7 Jul 2008 21:41:09 -0400
+Message-ID: <4872C4D0.4060006@alphagolf.com>
+Date: Mon, 07 Jul 2008 18:37:20 -0700
+From: "Lorenzo T. Flores" <lorenzo@alphagolf.com>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_15135_24640318.1215458218255"
+To: David Baird <dhbaird@gmail.com>
+Subject: Re: booting an ML405
+References: <486D774A.7000102@alphagolf.com>
+	<440abda90807031902u766eb4dby932e8741e947488e@mail.gmail.com>
+In-Reply-To: <440abda90807031902u766eb4dby932e8741e947488e@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -24,76 +30,100 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-------=_Part_15135_24640318.1215458218255
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+David,
 
-hi,
-I'm trying to setup the kernel's (linux-2.6.24) flash driver.
-Our flash is combined of 2 chips of S29GLN (spanion)
-2 X 16 bits data chips connected to 32 bits data bus.
-This flash is compatible with the AMD CFI.
-I've configured the kernel to:
-1. Detect flash chips by common flash interface (CFI) probe.
-2. Support for AMD/Fujitsu flash chips
-(The flash starts at absolute address 0xfc000000
-& size is 0x4000000)
-When the kernel starts I see the messages attached below,
-which I think indicate that something might be wrong with
-the detection of the flsah.
-1. Is this correct ? - something is wrong with the flash detection?
-2. Which device I need to use in order to read/write to
-the flash? (I don't see any /flash device under /dev/ only:
-/dev/mtd0 .. /dev/mtd3 & /dev/mtdblock0 .. /dev/mtdblock3)
+Thanks for the response. I searched a little more and found that many 
+people recommend looking through __log_buf to see if info is getting 
+printed to memory. Below I've added the printouts I get both before and 
+after the system hangs. Also, I'm not using Uartlite. I'm using 16550; 
+however, I have created the same design with Uartlite and adjusted the 
+console parameter to reflect that change. In both instances the kernel 
+hangs. You're right too, this is common...I just need to figure out how 
+to read out this __log_buf address:
 
-Debug messages (DEBUG_CFI is defined):
-physmap platform flash device: 04000000 at fc000000
-Number of erase regions: 1
-Primary Vendor Command Set: 0002 (AMD/Fujitsu Standard)
-Primary Algorithm Table at 0040
-Alternative Vendor Command Set: 0000 (None)
-No Alternate Algorithm Table
-Vcc Minimum:  2.7 V
-Vcc Maximum:  3.6 V
-No Vpp line
-Typical byte/word write timeout: 128 \uffffs
-Maximum byte/word write timeout: 1024 \uffffs
-Typical full buffer write timeout: 128 \uffffs
-Maximum full buffer write timeout: 4096 \uffffs
-Typical block erase timeout: 1024 ms
-Maximum block erase timeout: 16384 ms
-Chip erase not supported
-Device size: 0x2000000 bytes (32 MiB)
-Flash Device Interface description: 0x0002
-  - supports x8 and x16 via BYTE# with asynchronous interface
-Max. bytes in buffer write: 0x20
-Number of Erase Block Regions: 1
-  Erase Region #0: BlockSize 0x20000 bytes, 256 blocks
-physmap-flash.0: Found 2 x16 devices at 0x0 in 32-bit bank
- Amd/Fujitsu Extended Query Table at 0x0040
-physmap-flash.0: CFI does not contain boot bank location. Assuming top.
-number of CFI chips: 1
-cfi_cmdset_0002: Disabling erase-suspend-program due to code brokenness.
-of-flash: probe of fc000000.flash failed with error -16
+If I stop the processor after it hangs:
 
-Thanks,
-Liran.
+XMD% mrd 0xc0259fa4 10
+C0259FA4:   3C353E5B
+C0259FA8:   20202020
+C0259FAC:   302E3030
+C0259FB0:   30303030
+C0259FB4:   5D204C69
+C0259FB8:   6E757820
+C0259FBC:   76657273
+C0259FC0:   696F6E20
+C0259FC4:   322E362E
+C0259FC8:   32352D72
 
-------=_Part_15135_24640318.1215458218255
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+If I stop it before it hangs:
+XMD% mrd 0xc0259fa4 10
+C0259FA4:   00000000
+C0259FA8:   00000000
+C0259FAC:   00000000
+C0259FB0:   00000000
+C0259FB4:   00000000
+C0259FB8:   00000000
+C0259FBC:   00000000
+C0259FC0:   00000000
+C0259FC4:   00000000
+C0259FC8:   00000000
 
-hi,<br>I&#39;m trying to setup the kernel&#39;s (linux-2.6.24) flash driver.<br>Our flash is combined of 2 chips of S29GLN (spanion)<br>2 X 16 bits data chips connected to 32 bits data bus.<br>This flash is compatible with the AMD CFI.<br>
-I&#39;ve configured the kernel to:<br>1. Detect flash chips by common flash interface (CFI) probe.<br>2. Support for AMD/Fujitsu flash chips<br>(The flash starts at absolute address 0xfc000000<br>&amp; size is 0x4000000)<br>
-When the kernel starts I see the messages attached below,<br>which I think indicate that something might be wrong with<br>the detection of the flsah.<br>1. Is this correct ? - something is wrong with the flash detection?<br>
-2. Which device I need to use in order to read/write to<br>the flash? (I don&#39;t see any /flash device under /dev/ only:<br>/dev/mtd0 .. /dev/mtd3 &amp; /dev/mtdblock0 .. /dev/mtdblock3)<br><br>Debug messages (DEBUG_CFI is defined):<br>
-physmap platform flash device: 04000000 at fc000000<br>Number of erase regions: 1<br>Primary Vendor Command Set: 0002 (AMD/Fujitsu Standard)<br>Primary Algorithm Table at 0040<br>Alternative Vendor Command Set: 0000 (None)<br>
-No Alternate Algorithm Table<br>Vcc Minimum:&nbsp; 2.7 V<br>Vcc Maximum:&nbsp; 3.6 V<br>No Vpp line<br>Typical byte/word write timeout: 128 \uffffs<br>Maximum byte/word write timeout: 1024 \uffffs<br>Typical full buffer write timeout: 128 \uffffs<br>
-Maximum full buffer write timeout: 4096 \uffffs<br>Typical block erase timeout: 1024 ms<br>Maximum block erase timeout: 16384 ms<br>Chip erase not supported<br>Device size: 0x2000000 bytes (32 MiB)<br>Flash Device Interface description: 0x0002<br>
-&nbsp; - supports x8 and x16 via BYTE# with asynchronous interface<br>Max. bytes in buffer write: 0x20<br>Number of Erase Block Regions: 1<br>&nbsp; Erase Region #0: BlockSize 0x20000 bytes, 256 blocks<br>physmap-flash.0: Found 2 x16 devices at 0x0 in 32-bit bank<br>
-&nbsp;Amd/Fujitsu Extended Query Table at 0x0040<br>physmap-flash.0: CFI does not contain boot bank location. Assuming top.<br>number of CFI chips: 1<br>cfi_cmdset_0002: Disabling erase-suspend-program due to code brokenness.<br>
-of-flash: probe of fc000000.flash failed with error -16<br><br>Thanks,<br>Liran.<br><br>
+according to my system.map file __log_buf is located at C0259FA4
 
-------=_Part_15135_24640318.1215458218255--
+If I cut off the 0xc0000000:
+
+XMD% mrd 0x259fa4 10
+  259FA4:   FFFFFFFF
+  259FA8:   FFFFFFFF
+  259FAC:   FFFFFFFF
+  259FB0:   FFFFFFFF
+  259FB4:   FFFFFFFF
+  259FB8:   FFFFFFFF
+  259FBC:   FFFFFFFF
+  259FC0:   FFFFFFFF
+  259FC4:   FFFFFFFF
+  259FC8:   FFFFFFFF
+
+Any insight as to how to figure out what these values mean using XMD 
+would be great. Or if you guys have any other recommendations for using 
+the JTAG (not with XMD) I would greatly appreciated!
+
+thanks,
+Lorenzo
+
+
+
+David Baird wrote:
+> On Thu, Jul 3, 2008 at 7:05 PM, Lorenzo T. Flores <lorenzo@alphagolf.com> wrote:
+>   
+>> I'm trying to compile the Xilinx patched kernel tree (v2.6.25-rc9) and run
+>> it on an ML405
+>>
+>> So far, I get to the following point in the boot sequence:
+>>
+>> loaded at:     00400000 005AF5A0
+>> board data at: 005AD524 005AD5A0
+>> relocated to:  00405058 004050D4
+>> zimage at:     00405E90 0051D6CC
+>> initrd at:     0051E000 005ACC0D
+>> avail ram:     005B0000 80000000
+>>
+>> Linux/PPC load: console=ttyS0,9600 ip=on root=/dev/ram rw
+>> Uncompressing Linux...done.
+>> Now booting the kernel
+>>
+>> The system hangs after it says "Now booting the kernel."
+>>     
+>
+> This seems to come up a lot, so I'm surprised you didn't find it in
+> the archives ;-)
+>
+> Are you using uartlite?  You'll need to change the "console" option if you are.
+>
+> -David
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>
+>   
