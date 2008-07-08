@@ -1,14 +1,10 @@
 Return-Path: <mikey@neuling.org>
 From: Michael Neuling <mikey@neuling.org>
 To: benh@kernel.crashing.org
-Subject: [PATCH] powerpc: fix swapcontext backwards compatibility due to VSX
-	ucontext changes
-In-reply-to: <28458.1215333436@neuling.org> 
-References: <31609.1215159925@neuling.org>
-	<18542.1169.106972.172938@cargo.ozlabs.ibm.com>
-	<28458.1215333436@neuling.org>
-Date: Tue, 08 Jul 2008 18:43:41 +1000
-Message-ID: <21568.1215506621@neuling.org>
+MIME-Version: 1.0
+Subject: [PATCH] powerpc: remove unused variable in emulate_fp_pair
+Date: Tue, 08 Jul 2008 18:53:03 +1000
+Message-ID: <23807.1215507183@neuling.org>
 Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -19,141 +15,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-When the ucontext changed to add the VSX context, this broke backwards
-compatibly on swapcontext.  swapcontext only compares the ucontext size
-passed in from the user to the new kernel ucontext size.
-
-This adds a check against the old ucontext size (with VMX but without
-VSX).  It also adds some sanity check for ucontexts without VSX, but
-where VSX is used according the MSR.  Fixes for both 32 and 64bit
-processes on 64bit kernels
-
-Kudos to Paulus for noticing.
+regs is not used in emulate_fp_pair so remove it.
 
 Signed-off-by: Michael Neuling <mikey@neuling.org>
 ---
-Fix compile error without CONFIG_VSX
+Benh: please add to your 2.6.27 tree
 
- arch/powerpc/kernel/signal_32.c |   39 ++++++++++++++++++++++++++++++++++++++-
- arch/powerpc/kernel/signal_64.c |   36 ++++++++++++++++++++++++++++++++----
- 2 files changed, 70 insertions(+), 5 deletions(-)
+ arch/powerpc/kernel/align.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-Index: linux-2.6-ozlabs/arch/powerpc/kernel/signal_32.c
+Index: linux-2.6-ozlabs/arch/powerpc/kernel/align.c
 ===================================================================
---- linux-2.6-ozlabs.orig/arch/powerpc/kernel/signal_32.c
-+++ linux-2.6-ozlabs/arch/powerpc/kernel/signal_32.c
-@@ -68,6 +68,13 @@
- #define ucontext	ucontext32
- 
- /*
-+ * Userspace code may pass a ucontext which doesn't include VSX added
-+ * at the end.  We need to check for this case.
-+ */
-+#define UCONTEXTSIZEWITHOUTVSX \
-+		(sizeof(struct ucontext) - sizeof(elf_vsrreghalf_t32))
-+
-+/*
-  * Returning 0 means we return to userspace via
-  * ret_from_except and thus restore all user
-  * registers from *regs.  This is what we need
-@@ -930,12 +937,42 @@ long sys_swapcontext(struct ucontext __u
- {
- 	unsigned char tmp;
- 
-+#ifdef CONFIG_PPC64
-+	unsigned long new_msr = 0;
-+
-+	if (new_ctx &&
-+	    __get_user(new_msr, &new_ctx->uc_mcontext.mc_gregs[PT_MSR]))
-+		return -EFAULT;
-+	/*
-+	 * Check that the context is not smaller than the original
-+	 * size (with VMX but without VSX)
-+	 */
-+	if (ctx_size < UCONTEXTSIZEWITHOUTVSX)
-+		return -EINVAL;
-+	/*
-+	 * If the new context state sets the MSR VSX bits but
-+	 * it doesn't provide VSX state.
-+	 */
-+	if ((ctx_size < sizeof(struct ucontext)) &&
-+	    (new_msr & MSR_VSX))
-+		return -EINVAL;
-+#ifdef CONFIG_VSX
-+	/*
-+	 * If userspace doesn't provide enough room for VSX data,
-+	 * but current thread has used VSX, we don't have anywhere
-+	 * to store the full context back into.
-+	 */
-+	if ((ctx_size < sizeof(struct ucontext)) &&
-+	    (current->thread.used_vsr && old_ctx))
-+		return -EINVAL;
-+#endif
-+#else
- 	/* Context size is for future use. Right now, we only make sure
- 	 * we are passed something we understand
- 	 */
- 	if (ctx_size < sizeof(struct ucontext))
- 		return -EINVAL;
--
-+#endif
- 	if (old_ctx != NULL) {
- 		struct mcontext __user *mctx;
- 
-Index: linux-2.6-ozlabs/arch/powerpc/kernel/signal_64.c
-===================================================================
---- linux-2.6-ozlabs.orig/arch/powerpc/kernel/signal_64.c
-+++ linux-2.6-ozlabs/arch/powerpc/kernel/signal_64.c
-@@ -268,6 +268,13 @@ static long setup_trampoline(unsigned in
- }
- 
- /*
-+ * Userspace code may pass a ucontext which doesn't include VSX added
-+ * at the end.  We need to check for this case.
-+ */
-+#define UCONTEXTSIZEWITHOUTVSX \
-+		(sizeof(struct ucontext) - 32*sizeof(long))
-+
-+/*
-  * Handle {get,set,swap}_context operations
+--- linux-2.6-ozlabs.orig/arch/powerpc/kernel/align.c
++++ linux-2.6-ozlabs/arch/powerpc/kernel/align.c
+@@ -363,8 +363,8 @@ static int emulate_multiple(struct pt_re
+  * Only POWER6 has these instructions, and it does true little-endian,
+  * so we don't need the address swizzling.
   */
- int sys_swapcontext(struct ucontext __user *old_ctx,
-@@ -276,13 +283,34 @@ int sys_swapcontext(struct ucontext __us
+-static int emulate_fp_pair(struct pt_regs *regs, unsigned char __user *addr,
+-			   unsigned int reg, unsigned int flags)
++static int emulate_fp_pair(unsigned char __user *addr, unsigned int reg,
++			   unsigned int flags)
  {
- 	unsigned char tmp;
- 	sigset_t set;
-+	unsigned long new_msr = 0;
+ 	char *ptr = (char *) &current->thread.TS_FPR(reg);
+ 	int i, ret;
+@@ -759,7 +759,7 @@ int fix_alignment(struct pt_regs *regs)
  
--	/* Context size is for future use. Right now, we only make sure
--	 * we are passed something we understand
-+	if (new_ctx &&
-+	    __get_user(new_msr, &new_ctx->uc_mcontext.gp_regs[PT_MSR]))
-+		return -EFAULT;
-+	/*
-+	 * Check that the context is not smaller than the original
-+	 * size (with VMX but without VSX)
- 	 */
--	if (ctx_size < sizeof(struct ucontext))
-+	if (ctx_size < UCONTEXTSIZEWITHOUTVSX)
- 		return -EINVAL;
--
-+	/*
-+	 * If the new context state sets the MSR VSX bits but
-+	 * it doesn't provide VSX state.
-+	 */
-+	if ((ctx_size < sizeof(struct ucontext)) &&
-+	    (new_msr & MSR_VSX))
-+		return -EINVAL;
-+#ifdef CONFIG_VSX
-+	/*
-+	 * If userspace doesn't provide enough room for VSX data,
-+	 * but current thread has used VSX, we don't have anywhere
-+	 * to store the full context back into.
-+	 */
-+	if ((ctx_size < sizeof(struct ucontext)) &&
-+	    (current->thread.used_vsr && old_ctx))
-+		return -EINVAL;
-+#endif
- 	if (old_ctx != NULL) {
- 		if (!access_ok(VERIFY_WRITE, old_ctx, sizeof(*old_ctx))
- 		    || setup_sigcontext(&old_ctx->uc_mcontext, regs, 0, NULL, 0)
+ 	/* Special case for 16-byte FP loads and stores */
+ 	if (nb == 16)
+-		return emulate_fp_pair(regs, addr, reg, flags);
++		return emulate_fp_pair(addr, reg, flags);
+ 
+ 	/* If we are loading, get the data from user space, else
+ 	 * get it from register values
