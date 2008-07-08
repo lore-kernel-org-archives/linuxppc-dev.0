@@ -1,19 +1,15 @@
-Return-Path: <CFRIESEN@nortel.com>
-Received: from zrtps0kp.nortel.com (zrtps0kp.nortel.com [47.140.192.56])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "", Issuer "NORTEL" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 89E64DE34C
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 Jul 2008 00:54:14 +1000 (EST)
-Message-ID: <48737D55.9000905@nortel.com>
-Date: Tue, 08 Jul 2008 08:44:37 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-MIME-Version: 1.0
-To: Paolo Doz <paolo.doz@gmail.com>
-Subject: Re: While(1) in kernel space
-References: <5468b7f30807080055p69571979i9a565653e523c2c0@mail.gmail.com>
-In-Reply-To: <5468b7f30807080055p69571979i9a565653e523c2c0@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <gerickson@nuovations.com>
+Received: from relay02.pair.com (relay02.pair.com [209.68.5.16])
+	by ozlabs.org (Postfix) with SMTP id 4AFFADDF64
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 Jul 2008 01:03:15 +1000 (EST)
+From: Grant Erickson <gerickson@nuovations.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH v2] ibm_newemac: Add MII mode support to the EMAC RGMII bridge.
+Date: Tue,  8 Jul 2008 08:03:06 -0700
+Message-Id: <1215529386-12749-1-git-send-email-gerickson@nuovations.com>
+In-Reply-To: <C497F939.104DB%gerickson@nuovations.com>
+References: <C497F939.104DB%gerickson@nuovations.com>
+Cc: sr@denx.de, jgarzik@pobox.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,21 +19,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Paolo Doz wrote:
-> Hi folks,
-> I'm developing a custom SPI driver (char device) on a MPC5200b, the 
-> microcontroller linked as slave implements a protocol that must follow 
-> strict timing constraints. I need to receive and send messages every 
-> 6msec.
+This patch adds support to the RGMII handler in the EMAC driver for
+the MII PHY mode such that device tree entries of the form `phy-mode = "mii";'
+are recognized and handled appropriately.
 
-What are your timing requirements?  How much over/under 6ms can the 
-protocol handle?
+While logically, in software, "gmii" and "mii" modes are the same,
+they are wired differently, so it makes sense to allow DTS authors to
+specify each explicitly.
 
-Kernel threads might work, but then you're at the mercy of the 
-scheduler.  You'd probably be better off using a timer or softirq.
+Signed-off-by: Grant Erickson <gerickson@nuovations.com>
+---
+ drivers/net/ibm_newemac/rgmii.c |    6 ++++++
+ 1 files changed, 6 insertions(+), 0 deletions(-)
 
-If the latency requirements are really strict, your best bet would 
-probably be to use the -rt patches for the kernel.  That requires 
-building a custom kernel though.
-
-Chris
+diff --git a/drivers/net/ibm_newemac/rgmii.c b/drivers/net/ibm_newemac/rgmii.c
+index e32da3d..5acb006 100644
+--- a/drivers/net/ibm_newemac/rgmii.c
++++ b/drivers/net/ibm_newemac/rgmii.c
+@@ -39,6 +39,7 @@
+ #define RGMII_FER_RGMII(idx)	(0x5 << ((idx) * 4))
+ #define RGMII_FER_TBI(idx)	(0x6 << ((idx) * 4))
+ #define RGMII_FER_GMII(idx)	(0x7 << ((idx) * 4))
++#define RGMII_FER_MII(idx)	RGMII_FER_GMII(idx)
+ 
+ /* RGMIIx_SSR */
+ #define RGMII_SSR_MASK(idx)	(0x7 << ((idx) * 8))
+@@ -49,6 +50,7 @@
+ static inline int rgmii_valid_mode(int phy_mode)
+ {
+ 	return  phy_mode == PHY_MODE_GMII ||
++		phy_mode == PHY_MODE_MII ||
+ 		phy_mode == PHY_MODE_RGMII ||
+ 		phy_mode == PHY_MODE_TBI ||
+ 		phy_mode == PHY_MODE_RTBI;
+@@ -63,6 +65,8 @@ static inline const char *rgmii_mode_name(int mode)
+ 		return "TBI";
+ 	case PHY_MODE_GMII:
+ 		return "GMII";
++	case PHY_MODE_MII:
++		return "MII";
+ 	case PHY_MODE_RTBI:
+ 		return "RTBI";
+ 	default:
+@@ -79,6 +83,8 @@ static inline u32 rgmii_mode_mask(int mode, int input)
+ 		return RGMII_FER_TBI(input);
+ 	case PHY_MODE_GMII:
+ 		return RGMII_FER_GMII(input);
++	case PHY_MODE_MII:
++		return RGMII_FER_MII(input);
+ 	case PHY_MODE_RTBI:
+ 		return RGMII_FER_RTBI(input);
+ 	default:
+--
+1.5.4.3
