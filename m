@@ -1,20 +1,24 @@
-Return-Path: <sr@denx.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.179]) by ozlabs.org (Postfix) with ESMTP id 79B1DDDE0F
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jul 2008 16:08:09 +1000 (EST)
-From: Stefan Roese <sr@denx.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] i2c-ibm_iic: Remove deprecated OCP style part of thedriver
-Date: Tue, 8 Jul 2008 08:07:53 +0200
-References: <1212592932-24031-1-git-send-email-sr@denx.de>
-	<20080604210400.0d7abb8e@hyperion.delvare>
-	<20080707185544.7335b108@lappy.seanm.ca>
-In-Reply-To: <20080707185544.7335b108@lappy.seanm.ca>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200807080807.53577.sr@denx.de>
-Cc: Sean MacLennan <smaclennan@pikatech.com>
+Return-Path: <benh@kernel.crashing.org>
+Subject: Re: [patch 1/6] mm: Allow architectures to define additional
+	protection bits
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Hugh Dickins <hugh@veritas.com>
+In-Reply-To: <1215469468.8970.143.camel@pasglop>
+References: <20080618223254.966080905@linux.vnet.ibm.com>
+	<20080618223328.856102092@linux.vnet.ibm.com>
+	<20080701015301.3dc8749b.akpm@linux-foundation.org>
+	<1214920499.18690.10.camel@norville.austin.ibm.com>
+	<1215409956.8970.82.camel@pasglop>
+	<Pine.LNX.4.64.0807072143200.27181@blonde.site>
+	<1215469468.8970.143.camel@pasglop>
+Content-Type: text/plain
+Date: Tue, 08 Jul 2008 16:18:49 +1000
+Message-Id: <1215497929.8970.207.camel@pasglop>
+Mime-Version: 1.0
+Cc: linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>,
+	Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+	Paul Mackerras <paulus@au1.ibm.com>, Linuxppc-dev@ozlabs.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,31 +28,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tuesday 08 July 2008, Sean MacLennan wrote:
-> On Wed, 4 Jun 2008 21:04:00 +0200
->
-> "Jean Delvare" <khali@linux-fr.org> wrote:
-> > On Wed,  4 Jun 2008 17:22:12 +0200, Stefan Roese wrote:
-> > > The deprecated OCP style driver part is used by the "old" arch/ppc
-> > > platform. This platform is scheduled for removal in June/July this
-> > > year. This patch now removes the OCP driver part from the IBM I2C
-> > > driver.
-> > >
-> > > Signed-off-by: Stefan Roese <sr@denx.de>
-> > > ---
-> > >  drivers/i2c/busses/i2c-ibm_iic.c |  181
-> > > -------------------------------------- 1 files changed, 0
-> > > insertions(+), 181 deletions(-)
-> >
-> > Applied, queued for 2.6.27, thanks Stefan.
-> >
-> > BTW, would you happen to know if read-only EEPROMs such as SPD or EDID
-> > can be found on the i2c-ibm_iic adapters?
->
-> Jean, where is this patch queued? I have a patch for the iic driver and
-> it would probably be easiest if I diffed against what you have.
+On Tue, 2008-07-08 at 08:24 +1000, Benjamin Herrenschmidt wrote:
+> > There is a little inconsistency, that arch_calc_vm_prot_bits
+> > and arch_vm_get_page_prot just handle the exceptional flag (SAO),
+> > whereas arch_validate_prot handles all of them; but I don't feel
+> > so strongly about that to suggest resubmission.
+> > 
+> > And regarding VM_SAO added to include/linux/mm.h in 3/6: although
+> > it's odd to be weaving back and forth between arch-specific and
+> > common, it's already the case that mman definitions and pgtable
+> > definitions are arch-specific but mm.h common: I'm much happier
+> > to have VM_SAO defined once there as Dave has it, than get into
+> > arch-specific vm_flags.
+> > 
+> > Is someone going to be asking for PROT_WC shortly?
+> 
+> I'll definitely come with PROT_ENDIAN soon :-) (ie, some powerpc
+> processors can have a per-page endian flag that when set causes all
+> load/store instructions on this are to be byte-flipped, support for
+> this
+> feature has been requested for some time, and now I have the
+> infrastructure to do it).
 
-Those patches are in linux-next.
+BTW. Do we have your ack ?
 
-Best regards,
-Stefan
+Andrew, what tree should this go via ? I have further powerpc patches
+depending on this one... so on one hand I'd be happy to take it, but
+on the other hand, it's more likely to clash with other things...
+
+Maybe I should check how it applies on top of linux-next.
+
+Ben.
