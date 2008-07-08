@@ -1,16 +1,20 @@
-Return-Path: <smaclennan@pikatech.com>
-Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
-	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 8EA5FDDDF3
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 Jul 2008 06:22:43 +1000 (EST)
-Date: Tue, 8 Jul 2008 16:22:40 -0400
-From: Sean MacLennan <smaclennan@pikatech.com>
-Cc: "linuxppc-dev" <linuxppc-dev@ozlabs.org>
-Subject: Re: [PATCH] powerpc: i2c-ibm_iic register child nodes
-Message-ID: <20080708162240.70b34046@lappy.seanm.ca>
-In-Reply-To: <20080708144609.14bae1de@lappy.seanm.ca>
-References: <20080708144609.14bae1de@lappy.seanm.ca>
+Return-Path: <kim.phillips@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id CED1BDDEF9
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 Jul 2008 06:29:07 +1000 (EST)
+Date: Tue, 8 Jul 2008 15:28:47 -0500
+From: Kim Phillips <kim.phillips@freescale.com>
+To: "mike zheng" <mail4mz@gmail.com>
+Subject: Re: Freescale SEC driver with cryptoloop on MPC8567e
+Message-Id: <20080708152847.6a248104.kim.phillips@freescale.com>
+In-Reply-To: <5c9cd53b0807081103y583d0013ic0d22fb46490be2b@mail.gmail.com>
+References: <5c9cd53b0807081103y583d0013ic0d22fb46490be2b@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, linux-crypto@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,61 +24,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Update the warp to use the new IBM IIC driver. We no longer need to
-register the I2C devices in the platform code.
+On Tue, 8 Jul 2008 14:03:28 -0400
+"mike zheng" <mail4mz@gmail.com> wrote:
 
-Also adds a small bugfix for the i2c code if the i2c read fails.
+> Hello,
+> 
+> Any one know how can I integrate the Freescale's SEC driver with
+> cryptoloop in Kernel2.4 on MPC8567e? Or which version of kernel shall
+> I take if it is already there?
 
-Signed-off-by: Sean MacLennan <smaclennan@pikatech.com>
----
+Take Herbert's cryptodev-2.6 tree and add support in the talitos driver
+for the ablkcipher algorithm you're using.
 
-diff --git a/arch/powerpc/platforms/44x/warp.c b/arch/powerpc/platforms/44x/warp.c
-index 9565995..960edf8 100644
---- a/arch/powerpc/platforms/44x/warp.c
-+++ b/arch/powerpc/platforms/44x/warp.c
-@@ -30,18 +30,6 @@ static __initdata struct of_device_id warp_of_bus[] = {
- 	{},
- };
- 
--static __initdata struct i2c_board_info warp_i2c_info[] = {
--	{ I2C_BOARD_INFO("ad7414", 0x4a) }
--};
--
--static int __init warp_arch_init(void)
--{
--	/* This should go away once support is moved to the dts. */
--	i2c_register_board_info(0, warp_i2c_info, ARRAY_SIZE(warp_i2c_info));
--	return 0;
--}
--machine_arch_initcall(warp, warp_arch_init);
--
- static int __init warp_device_probe(void)
- {
- 	of_platform_bus_probe(NULL, warp_of_bus, NULL);
-@@ -223,7 +211,7 @@ static void pika_setup_critical_temp(struct i2c_client *client)
- 
- 	/* These registers are in 1 degree increments. */
- 	i2c_smbus_write_byte_data(client, 2, 65); /* Thigh */
--	i2c_smbus_write_byte_data(client, 3, 55); /* Tlow */
-+	i2c_smbus_write_byte_data(client, 3,  0); /* Tlow */
- 
- 	np = of_find_compatible_node(NULL, NULL, "adi,ad7414");
- 	if (np == NULL) {
-@@ -289,8 +277,15 @@ found_it:
- 	printk(KERN_INFO "PIKA DTM thread running.\n");
- 
- 	while (!kthread_should_stop()) {
--		u16 temp = swab16(i2c_smbus_read_word_data(client, 0));
--		out_be32(fpga + 0x20, temp);
-+		int val;
-+
-+		val = i2c_smbus_read_word_data(client, 0);
-+		if (val < 0)
-+			dev_dbg(&client->dev, "DTM read temp failed.\n");
-+		else {
-+			s16 temp = swab16(val);
-+			out_be32(fpga + 0x20, temp);
-+		}
- 
- 		pika_dtm_check_fan(fpga);
- 
+Kim
