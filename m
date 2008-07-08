@@ -1,17 +1,23 @@
-Return-Path: <John.Linn@xilinx.com>
-Received: from SG2EHSOBE005.bigfish.com (outbound-sin.frontbridge.com
-	[207.46.51.80]) by ozlabs.org (Postfix) with ESMTP id BE200DE107
+Return-Path: <dhbaird@gmail.com>
+Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.182])
+	by ozlabs.org (Postfix) with ESMTP id ECEB1DDF35
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  9 Jul 2008 00:58:33 +1000 (EST)
+	Wed,  9 Jul 2008 03:12:09 +1000 (EST)
+Received: by wa-out-1112.google.com with SMTP id n7so1569225wag.13
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 08 Jul 2008 10:12:08 -0700 (PDT)
+Message-ID: <440abda90807081012g576f66e4p5fac6ae03470e7c8@mail.gmail.com>
+Date: Tue, 8 Jul 2008 11:12:08 -0600
+From: "David Baird" <dhbaird@gmail.com>
+To: "Lorenzo T. Flores" <lorenzo@alphagolf.com>
+Subject: Re: booting an ML405
+In-Reply-To: <4872C4D0.4060006@alphagolf.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Subject: RE: booting an ML405
-Date: Tue, 8 Jul 2008 08:58:27 -0600
-In-Reply-To: <486D774A.7000102@alphagolf.com>
+Content-Type: text/plain; charset=ISO-8859-1
 References: <486D774A.7000102@alphagolf.com>
-From: John Linn <John.Linn@xilinx.com>
-To: "Lorenzo T. Flores" <lorenzo@alphagolf.com>, <linuxppc-embedded@ozlabs.org>
-Message-ID: <20080708145828.79C291550056@mail189-sin.bigfish.com>
+	<440abda90807031902u766eb4dby932e8741e947488e@mail.gmail.com>
+	<4872C4D0.4060006@alphagolf.com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -22,94 +28,46 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Lorenzo,
+On Mon, Jul 7, 2008 at 7:37 PM, Lorenzo T. Flores <lorenzo@alphagolf.com> wrote:
+> If I stop the processor after it hangs:
+>
+> XMD% mrd 0xc0259fa4 10
+> C0259FA4:   3C353E5B
+> C0259FA8:   20202020
+> C0259FAC:   302E3030
+> C0259FB0:   30303030
+> C0259FB4:   5D204C69
+> C0259FB8:   6E757820
+> C0259FBC:   76657273
+> C0259FC0:   696F6E20
+> C0259FC4:   322E362E
+> C0259FC8:   32352D72
 
-I'm assuming you're trying to use the reference design bit stream for
-the ML405 that we have had out on the http://git.xilinx.com site?
+Since XMD is also a Tcl shell, you can easily download __log_buf like this:
 
-Since the bootstrap loader is working, the UART appears to be OK.
-Assuming you have the kernel configuration right with the 8250 driver
-and the console, it sounds like something else must be wrong and you're
-headed in the right direction with using the __log_buf.
+    set fd [open xmd.log w]
+    puts $fd [mrd  0xc0259fa4 10]
 
-The __log_buf should tell you if the kernel is really hung, or if it
-booted and you just don't have a console working.
+Then, with a little tweaking, you could use xxd or some other tool to
+convert it to ASCII.
 
-The ml405_defconfig sets up the kernel configuration so it should work
-on the board just building it for the reference design.
+> If I cut off the 0xc0000000:
+>
+> XMD% mrd 0x259fa4 10
+>  259FA4:   FFFFFFFF
+>  259FA8:   FFFFFFFF
+>  259FAC:   FFFFFFFF
+>  259FB0:   FFFFFFFF
+>  259FB4:   FFFFFFFF
+>  259FB8:   FFFFFFFF
+>  259FBC:   FFFFFFFF
+>  259FC0:   FFFFFFFF
+>  259FC4:   FFFFFFFF
+>  259FC8:   FFFFFFFF
 
-One thing I notice is the available ram looks wrong to me for the ML405
-based on my notes.
- =
+My guess is that if you issue a rst (reset) command, I think this will
+take the processor out of virtual mode and then you can strip of the
+0xc0000000.  But looks like you got what you need anyways, so no need
+for this :-)
 
-> avail ram:     005B0000 80000000
-
-I had a problem once with the kernel and I found the DDR_SIZE in
-xparameters.h (arch/ppc/platforms/40x/xparameters) was not right, and
-this does hang the kernel in my experience.
-
-My old kernel output shows
-
-> avail ram:     00519000 04000000
-
-Hope that might help,
-John
-
-
-> -----Original Message-----
-> From: linuxppc-embedded-bounces+john.linn=3Dxilinx.com@ozlabs.org
-[mailto:linuxppc-embedded-
-> bounces+john.linn=3Dxilinx.com@ozlabs.org] On Behalf Of Lorenzo T.
-Flores
-> Sent: Thursday, July 03, 2008 7:05 PM
-> To: linuxppc-embedded@ozlabs.org
-> Subject: booting an ML405
-> =
-
-> Hey all,
-> =
-
-> I did a little preliminary poking through the thread archives, but
-> didn't turn anything up. I anyone could just point me in the right
-> direction as far as troubleshooting, that would be great!
-> =
-
-> I'm trying to compile the Xilinx patched kernel tree (v2.6.25-rc9) and
-> run it on an ML405
-> =
-
-> So far, I get to the following point in the boot sequence:
-> =
-
-> loaded at:     00400000 005AF5A0
-> board data at: 005AD524 005AD5A0
-> relocated to:  00405058 004050D4
-> zimage at:     00405E90 0051D6CC
-> initrd at:     0051E000 005ACC0D
-> avail ram:     005B0000 80000000
-> =
-
-> Linux/PPC load: console=3DttyS0,9600 ip=3Don root=3D/dev/ram rw
-> Uncompressing Linux...done.
-> Now booting the kernel
-> =
-
-> The system hangs after it says "Now booting the kernel."
-> =
-
-> Once again, any input would be appreciated.
-> =
-
-> thank you,
-> Lorenzo
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-
-
-This email and any attachments are intended for the sole use of the named r=
-ecipient(s) and contain(s) confidential information that may be proprietary=
-, privileged or copyrighted under applicable law. If you are not the intend=
-ed recipient, do not read, copy, or forward this email message or any attac=
-hments. Delete this email message and any attachments immediately.
+-David
