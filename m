@@ -1,23 +1,20 @@
-Return-Path: <shaggy@linux.vnet.ibm.com>
-Subject: Re: [patch 1/6] mm: Allow architectures to define additional
-	protection bits
-From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org
-In-Reply-To: <1215497929.8970.207.camel@pasglop>
-References: <20080618223254.966080905@linux.vnet.ibm.com>
-	<20080618223328.856102092@linux.vnet.ibm.com>
-	<20080701015301.3dc8749b.akpm@linux-foundation.org>
-	<1214920499.18690.10.camel@norville.austin.ibm.com>
-	<1215409956.8970.82.camel@pasglop>
-	<Pine.LNX.4.64.0807072143200.27181@blonde.site>
-	<1215469468.8970.143.camel@pasglop> <1215497929.8970.207.camel@pasglop>
-Content-Type: text/plain
-Date: Tue, 08 Jul 2008 08:35:51 -0500
-Message-Id: <1215524151.20459.4.camel@norville.austin.ibm.com>
-Mime-Version: 1.0
-Cc: Hugh Dickins <hugh@veritas.com>, Andrew Morton <akpm@linux-foundation.org>,
-	Linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@au1.ibm.com>,
-	linux-mm@kvack.org
+Return-Path: <linasvepstas@gmail.com>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.244])
+	by ozlabs.org (Postfix) with ESMTP id D9B33DDF06
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jul 2008 23:38:41 +1000 (EST)
+Received: by an-out-0708.google.com with SMTP id c34so992126anc.78
+	for <linuxppc-dev@ozlabs.org>; Tue, 08 Jul 2008 06:38:40 -0700 (PDT)
+Message-ID: <3ae3aa420807080638t41e8851bx2ad061dd5a4e0279@mail.gmail.com>
+Date: Tue, 8 Jul 2008 08:38:35 -0500
+From: "Linas Vepstas" <linasvepstas@gmail.com>
+To: "Mike Mason" <mmlnx@us.ibm.com>
+Subject: Re: [PATCH] Restore PERR/SERR bit settings during EEH device recovery
+In-Reply-To: <4872DC9C.4000706@us.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+References: <4872DC9C.4000706@us.ibm.com>
+Cc: paulus@samba.org, linuxppc-dev@ozlabs.org
+Reply-To: linasvepstas@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,30 +24,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2008-07-08 at 16:18 +1000, Benjamin Herrenschmidt wrote:
+2008/7/7 Mike Mason <mmlnx@us.ibm.com>:
+> The following patch restores the PERR and SERR bits in the PCI
+> command register during an EEH device recovery.
+> We have found at least one case (an Agilent test card) where the
+> PERR/SERR bits are set to 1 by firmware at boot time, but are
+> not restored to 1 during EEH recovery.
 
-> Andrew, what tree should this go via ? I have further powerpc patches
-> depending on this one... so on one hand I'd be happy to take it, but
-> on the other hand, it's more likely to clash with other things...
+Any chance they should be zero, and were accidentally set to 1?
+In which case, you'd need an else clause, below.
 
-Andrew has asked that it go through Paul, which now means you.
+> The patch fixes the
+> Agilent card problem.  It has been tested on several other EEH-enabled cards
+> with no regressions.
+>
+> Signed-off-by: Mike Mason <mmlnx@us.ibm.com>
+>
+> --- linux-2.6.26-rc9/arch/powerpc/platforms/pseries/eeh.c       2008-07-07
+> 16:06:57.000000000 -0700
+> +++ linux-2.6.26-rc9-new/arch/powerpc/platforms/pseries/eeh.c   2008-07-07
+> 16:11:10.000000000 -0700
+> @@ -812,6 +812,7 @@
+> static inline void __restore_bars (struct pci_dn *pdn)
+> {
+>        int i;
+> +       u32 cmd;
+>
+>        if (NULL==pdn->phb) return;
+>        for (i=4; i<10; i++) {
+> @@ -832,6 +833,15 @@
+>
+>        /* max latency, min grant, interrupt pin and line */
+>        rtas_write_config(pdn, 15*4, 4, pdn->config_space[15]);
+> +
+> +       /* Restore PERR & SERR bits, some devices require it,
+> +          don't touch the other command bits */
+> +       rtas_read_config(pdn, PCI_COMMAND, 4, &cmd);
+> +       if (pdn->config_space[1] & PCI_COMMAND_PARITY)
+> +               cmd |= PCI_COMMAND_PARITY;
 
-"It'd be simpler if Paul were to merge this.  It doesn't conflict with
-any pending work."
-http://ozlabs.org/pipermail/linuxppc-dev/2008-July/058948.html
+else cmd &= ~PCI_COMMAND_PARITY;
 
-> 
-> Maybe I should check how it applies on top of linux-next.
+> +       if (pdn->config_space[1] & PCI_COMMAND_SERR)
+> +               cmd |= PCI_COMMAND_SERR;
 
-Looks pretty clean:
+else cmd &= ~PCI_COMMAND_SERR;
 
-patching file include/linux/mman.h
-patching file mm/mmap.c
-patching file mm/mprotect.c
-Hunk #1 succeeded at 237 (offset -2 lines).
+> +       rtas_write_config(pdn, PCI_COMMAND, 4, cmd);
+> }
 
-Thanks,
-Shaggy
--- 
-David Kleikamp
-IBM Linux Technology Center
+Other than that, I'll add an
+
+Acked-by: Linas Vepstas <linasvepstas@gmail.com>
+
+--linas
