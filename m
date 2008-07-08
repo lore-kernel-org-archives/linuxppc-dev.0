@@ -1,22 +1,19 @@
 Return-Path: <arnd@arndb.de>
 Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id 9811EDDFF0
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 Jul 2008 00:42:40 +1000 (EST)
+	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id F288FDE00B
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 Jul 2008 00:45:33 +1000 (EST)
 From: Arnd Bergmann <arnd@arndb.de>
-To: Maxim Shchetynin <maxim@linux.vnet.ibm.com>
-Subject: Re: AZFS file system proposal
-Date: Tue, 8 Jul 2008 16:42:18 +0200
-References: <20080618160629.6cd749a8@mercedes-benz.boeblingen.de.ibm.com>
-	<200807011659.33413.arnd@arndb.de>
-	<20080707173923.17dc6c05@mercedes-benz.boeblingen.de.ibm.com>
-In-Reply-To: <20080707173923.17dc6c05@mercedes-benz.boeblingen.de.ibm.com>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: While(1) in kernel space
+Date: Tue, 8 Jul 2008 16:45:31 +0200
+References: <5468b7f30807080055p69571979i9a565653e523c2c0@mail.gmail.com>
+	<fa686aa40807080719r4b7b01f7n7863fe1456a3e64@mail.gmail.com>
+In-Reply-To: <fa686aa40807080719r4b7b01f7n7863fe1456a3e64@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="utf-8"
-Message-Id: <200807081642.19507.arnd@arndb.de>
-Cc: Mark Nelson <markn@au1.ibm.com>, Gunnar von Boehn <VONBOEHN@de.ibm.com>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>, linux-fsdevel@vger.kernel.org
+  charset="iso-8859-1"
+Message-Id: <200807081645.31807.arnd@arndb.de>
+Cc: Paolo Doz <paolo.doz@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,31 +23,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Monday 07 July 2008, Maxim Shchetynin wrote:
-> > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0if=
- (copy_to_user(target, (void*) pin, size)) {
-> > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0rc =3D -EFAULT;
-> > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0goto out;
-> > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0}
-> >=20
-> > Question to the powerpc folks: is copy_to_user safe for an __iomem sour=
-ce?
-> > Should there be two copies (memcpy_fromio and copy_to_user) instead?
->=20
-> I leave this question open.
->=20
+On Tuesday 08 July 2008, Grant Likely wrote:
 
-Cc:'ing some more people that might have more of a clue on this question.
-_memcpy_fromio does a "sync" at the start and an "eieio" at the end.
-IFAICT, neither are needed here because the source is always memory.
+> 
+> You can use a kernel thread.
+> 
+> I'm not sure how accurate this is, but here is some information about them:
+> 
+> http://www.linuxquestions.org/linux/articles/Technical/Linux_Kernel_Thread
 
-It also handles unaligned memory accesses, which copy_to_user should
-also do correctly, so it *looks* like it should work with just a
-copy_to_user, but it still feels wrong to use an __iomem pointer
-as the source for a copy_to_user.
+Not accurate at all. New code should use kthread_create, as documented in
 
-Any ideas?
+http://lwn.net/Articles/65178/
 
 	Arnd <><
