@@ -1,33 +1,33 @@
 Return-Path: <rcjenn@linux.vnet.ibm.com>
-Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
+Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id A33AEDDFAC
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 Jul 2008 06:38:58 +1000 (EST)
+	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 74856DDFA2
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 Jul 2008 06:48:29 +1000 (EST)
 Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e1.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m68Kct5f004455
-	for <linuxppc-dev@ozlabs.org>; Tue, 8 Jul 2008 16:38:55 -0400
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+	by e2.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m68KmPMW001757
+	for <linuxppc-dev@ozlabs.org>; Tue, 8 Jul 2008 16:48:25 -0400
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
 	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
-	m68KctxI112204
-	for <linuxppc-dev@ozlabs.org>; Tue, 8 Jul 2008 16:38:55 -0400
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
-	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m68KcsUo030151
-	for <linuxppc-dev@ozlabs.org>; Tue, 8 Jul 2008 16:38:55 -0400
-Date: Tue, 8 Jul 2008 15:38:43 -0500
+	m68KmPp3190464
+	for <linuxppc-dev@ozlabs.org>; Tue, 8 Jul 2008 16:48:25 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m68KmO18003380
+	for <linuxppc-dev@ozlabs.org>; Tue, 8 Jul 2008 16:48:25 -0400
+Date: Tue, 8 Jul 2008 15:48:13 -0500
 From: Robert Jennings <rcj@linux.vnet.ibm.com>
 To: paulus@samba.org, benh@kernel.crashing.org, linuxppc-dev@ozlabs.org,
-	netdev@vger.kernel.org, Brian King <brking@linux.vnet.ibm.com>,
+	Brian King <brking@linux.vnet.ibm.com>,
 	Nathan Fontenot <nfont@austin.ibm.com>,
 	David Darrington <ddarring@linux.vnet.ibm.com>
-Subject: Re: [PATCH 14/16 v3] [v2] ibmveth: enable driver for CMO
-Message-ID: <20080708203843.GB20206@linux.vnet.ibm.com>
+Subject: Re: [PATCH 10/16 v3] [v2] powerpc: iommu enablement for CMO
+Message-ID: <20080708204813.GC20206@linux.vnet.ibm.com>
 References: <20080704124449.GA1310@linux.vnet.ibm.com>
-	<20080704125615.GQ1310@linux.vnet.ibm.com>
+	<20080704125459.GM1310@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080704125615.GQ1310@linux.vnet.ibm.com>
+In-Reply-To: <20080704125459.GM1310@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,373 +37,1291 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I removed references to 'entitlement' after having changed the function
-'get_io_entitlement' to 'get_desired_dma' to correctly indicate what the
-function was doing.  Also, this function does not need to page align the
-return value, the VIO bus is responsible for this.
+=46rom: Robert Jennings <rcj@linux.vnet.ibm.com>
 
-(We would like to take this patch through linuxppc-dev with the full
- change set for this feature.  We are copying netdev for review and ack)
+Minor change to add a call to align the return from the device's
+get_desired_dma() function with IOMMU_PAGE_ALIGN().  Also removed a
+comment referring to a non-existent structure member.
 
-Enable ibmveth for Cooperative Memory Overcommitment (CMO).  For this driver
-it means calculating a desired amount of IO memory based on the current MTU
-and updating this value with the bus when MTU changes occur.  Because DMA
-mappings can fail, we have added a bounce buffer for temporary cases where
-the driver can not map IO memory for the buffer pool.
+This is a large patch but the normal code path is not affected.  For
+non-pSeries platforms the code is ifdef'ed out and for non-CMO enabled
+pSeries systems this does not affect the normal code path.  Devices that
+do not perform DMA operations do not need modification with this patch.
+The function get_desired_dma was renamed from get_io_entitlement for
+clarity.
 
-The following changes are made to enable the driver for CMO:
- * DMA mapping errors will not result in error messages if entitlement has
-   been exceeded and resources were not available.
- * DMA mapping errors are handled gracefully, ibmveth_replenish_buffer_pool()
-   is corrected to check the return from dma_map_single and fail gracefully.
- * The driver will have a get_desired_dma function defined to function
-   in a CMO environment.
- * When the MTU is changed, the driver will update the device IO entitlement
+Overview
+
+Cooperative Memory Overcommitment (CMO) allows for a set of OS partitions
+to be run with less RAM than the aggregate needs of the group of
+partitions.  The firmware will balance memory between the partitions
+and page in/out memory as needed.  Based on the number and type of IO
+adapters preset each partition is allocated an amount of memory for
+DMA operations and this allocation will be guaranteed to the partition;
+this is referred to as the partition's 'entitlement'.
+
+Partitions running in a CMO environment can only have virtual IO devices
+present.  The VIO bus layer will manage the IO entitlement for the system.
+Accounting, at a system and per-device level, is tracked in the VIO bus
+code and exposed via sysfs.  A set of dma_ops functions are added to
+the bus to allow for this accounting.
+
+Bus initialization
+
+At initialization, the bus will calculate the minimum needs of the system
+based on providing each device present with a standard minimum entitlement
+along with a spare allocation for the bus to handle hot-plug events.
+If the minimum needs can not be met the system boot will be halted.
+
+Device changes
+
+The significant changes for devices while running under CMO are that the
+devices must specify how much dedicated IO entitlement they desire and
+must also handle DMA mapping errors that can occur due to constrained
+IO memory.  The virtual IO drivers are modified to silence errors when
+DMA mappings fail for CMO and handle these failures gracefully.
+
+Each devices will be guaranteed a minimum entitlement that can always
+be mapped.  Devices will specify how much entitlement they desire and
+the VIO bus will attempt to provide for this.  Devices can change their
+desired entitlement level at any point in time to address particular needs
+(via vio_cmo_set_dev_desired()), not just at device probe time.
+
+VIO bus changes
+
+The system will have a particular entitlement level available from which
+it can provide memory to the devices.  The bus defines two pools of memory
+within this entitlement, the reserved and excess pools.  Each device is
+provided with it's own entitlement no less than a system defined minimum
+entitlement and no greater than what the device has specified as it's
+desired entitlement.  The entitlement provided to devices comes from the
+reserve pool.  The reserve pool can also contain a spare allocation as
+large as the system defined minimum entitlement which is used for device
+hot-plug events.  Any entitlement not needed to fulfill the needs of a
+reserve pool is placed in the excess pool.  Each device is guaranteed
+that it can map up to it's entitled level; additional mapping are possible
+as long as there is unmapped memory in the excess pool.
+
+Bus probe
+
+As the system starts, each device is given an entitlement equal only
+to the system defined minimum entitlement.  The reserve pool is equal
+to the sum of these entitlements, plus a spare allocation.  The VIO bus
+also tracks the aggregate desired entitlement of all the devices.  If the
+system desired entitlement is greater than the size of the reserve pool,
+when devices unmap IO memory it will be reserved and a balance operation
+will be scheduled for some time in the future.
+
+Entitlement balancing
+
+The balance function tries to fairly distribute entitlement between the
+devices in the system with the goal of providing each device with it's
+desired amount of entitlement.  Devices using more than what would be
+ideal will have their entitled set-point adjusted; this will effectively
+set a goal for lower IO memory usage as future mappings can fail and
+deallocations will trigger a balance operation to distribute the newly
+unmapped memory.  A fair distribution of entitlement can take several
+balance operations to achieve.  Entitlement changes and device DLPAR
+events will alter the state of CMO and will trigger balance operations.
+
+Hotplug events
+
+The VIO bus allows for changes in system entitlement at run-time via
+'vio_cmo_entitlement_update()'.  When devices are added the hot-plug
+device event will be preceded by a system entitlement increase and this
+is reversed when devices are removed.
+
+The following changes are made that the VIO bus layer for CMO:
+ * add IO memory accounting per device structure.
+ * add IO memory entitlement query function to driver structure.
+ * during vio bus probe, if CMO is enabled, check that driver has
+   memory entitlement query function defined.  Fail if function not defined.
+ * fail to register driver if io entitlement function not defined.
+ * create set of dma_ops at vio level for CMO that will track allocations
+   and return DMA failures once entitlement is reached.  Entitlement will
+   limited by overall system entitlement.  Devices will have a reserved
+   quantity of memory that is guaranteed, the rest can be used as available.
+ * expose entitlement, current allocation, desired allocation, and the
+   allocation error counter for devices to the user through sysfs
+ * provide mechanism for changing a device's desired entitlement at run time
+   for devices as an exported function and sysfs tunable
+ * track any DMA failures for entitled IO memory for each vio device.
+ * check entitlement against available system entitlement on device add
+ * track entitlement metrics (high water mark, current usage)
+ * provide function to reset high water mark
+ * provide minimum and desired entitlement numbers at a bus level
+ * provide drivers with a minimum guaranteed entitlement
+ * balance available entitlement between devices to satisfy their needs
+ * handle system entitlement changes and device hot-plug
 
 Signed-off-by: Robert Jennings <rcj@linux.vnet.ibm.com>
-Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
-Signed-off-by: Santiago Leon <santil@us.ibm.com>
 
 ---
+ arch/powerpc/kernel/vio.c | 1024 +++++++++++++++++++++++++++++++++++++++++=
++++++
+ include/asm-powerpc/vio.h |   27 +
+ 2 files changed, 1043 insertions(+), 8 deletions(-)
 
- drivers/net/ibmveth.c |  169 ++++++++++++++++++++++++++++++++++++++++----------
- drivers/net/ibmveth.h |    5 +
- 2 files changed, 140 insertions(+), 34 deletions(-)
-
-Index: b/drivers/net/ibmveth.c
-===================================================================
---- a/drivers/net/ibmveth.c
-+++ b/drivers/net/ibmveth.c
-@@ -33,6 +33,7 @@
- */
- 
- #include <linux/module.h>
-+#include <linux/moduleparam.h>
- #include <linux/types.h>
- #include <linux/errno.h>
- #include <linux/ioport.h>
-@@ -52,7 +53,9 @@
- #include <asm/hvcall.h>
- #include <asm/atomic.h>
- #include <asm/vio.h>
-+#include <asm/iommu.h>
- #include <asm/uaccess.h>
-+#include <asm/firmware.h>
- #include <linux/seq_file.h>
- 
- #include "ibmveth.h"
-@@ -94,8 +97,10 @@ static void ibmveth_proc_register_adapte
- static void ibmveth_proc_unregister_adapter(struct ibmveth_adapter *adapter);
- static irqreturn_t ibmveth_interrupt(int irq, void *dev_instance);
- static void ibmveth_rxq_harvest_buffer(struct ibmveth_adapter *adapter);
-+static unsigned long ibmveth_get_desired_dma(struct vio_dev *vdev);
- static struct kobj_type ktype_veth_pool;
- 
-+
- #ifdef CONFIG_PROC_FS
- #define IBMVETH_PROC_DIR "ibmveth"
- static struct proc_dir_entry *ibmveth_proc_dir;
-@@ -226,16 +231,16 @@ static void ibmveth_replenish_buffer_poo
- 	u32 i;
- 	u32 count = pool->size - atomic_read(&pool->available);
- 	u32 buffers_added = 0;
-+	struct sk_buff *skb;
-+	unsigned int free_index, index;
-+	u64 correlator;
-+	unsigned long lpar_rc;
-+	dma_addr_t dma_addr;
- 
- 	mb();
- 
- 	for(i = 0; i < count; ++i) {
--		struct sk_buff *skb;
--		unsigned int free_index, index;
--		u64 correlator;
- 		union ibmveth_buf_desc desc;
--		unsigned long lpar_rc;
--		dma_addr_t dma_addr;
- 
- 		skb = alloc_skb(pool->buff_size, GFP_ATOMIC);
- 
-@@ -255,6 +260,9 @@ static void ibmveth_replenish_buffer_poo
- 		dma_addr = dma_map_single(&adapter->vdev->dev, skb->data,
- 				pool->buff_size, DMA_FROM_DEVICE);
- 
-+		if (dma_mapping_error(dma_addr))
-+			goto failure;
-+
- 		pool->free_map[free_index] = IBM_VETH_INVALID_MAP;
- 		pool->dma_addr[index] = dma_addr;
- 		pool->skbuff[index] = skb;
-@@ -267,20 +275,9 @@ static void ibmveth_replenish_buffer_poo
- 
- 		lpar_rc = h_add_logical_lan_buffer(adapter->vdev->unit_address, desc.desc);
- 
--		if(lpar_rc != H_SUCCESS) {
--			pool->free_map[free_index] = index;
--			pool->skbuff[index] = NULL;
--			if (pool->consumer_index == 0)
--				pool->consumer_index = pool->size - 1;
--			else
--				pool->consumer_index--;
--			dma_unmap_single(&adapter->vdev->dev,
--					pool->dma_addr[index], pool->buff_size,
--					DMA_FROM_DEVICE);
--			dev_kfree_skb_any(skb);
--			adapter->replenish_add_buff_failure++;
--			break;
--		} else {
-+		if (lpar_rc != H_SUCCESS)
-+			goto failure;
-+		else {
- 			buffers_added++;
- 			adapter->replenish_add_buff_success++;
- 		}
-@@ -288,6 +285,24 @@ static void ibmveth_replenish_buffer_poo
- 
- 	mb();
- 	atomic_add(buffers_added, &(pool->available));
-+	return;
-+
-+failure:
-+	pool->free_map[free_index] = index;
-+	pool->skbuff[index] = NULL;
-+	if (pool->consumer_index == 0)
-+		pool->consumer_index = pool->size - 1;
-+	else
-+		pool->consumer_index--;
-+	if (!dma_mapping_error(dma_addr))
-+		dma_unmap_single(&adapter->vdev->dev,
-+		                 pool->dma_addr[index], pool->buff_size,
-+		                 DMA_FROM_DEVICE);
-+	dev_kfree_skb_any(skb);
-+	adapter->replenish_add_buff_failure++;
-+
-+	mb();
-+	atomic_add(buffers_added, &(pool->available));
- }
- 
- /* replenish routine */
-@@ -297,7 +312,7 @@ static void ibmveth_replenish_task(struc
- 
- 	adapter->replenish_task_cycles++;
- 
--	for(i = 0; i < IbmVethNumBufferPools; i++)
-+	for (i = (IbmVethNumBufferPools - 1); i >= 0; i--)
- 		if(adapter->rx_buff_pool[i].active)
- 			ibmveth_replenish_buffer_pool(adapter,
- 						     &adapter->rx_buff_pool[i]);
-@@ -472,6 +487,18 @@ static void ibmveth_cleanup(struct ibmve
- 		if (adapter->rx_buff_pool[i].active)
- 			ibmveth_free_buffer_pool(adapter,
- 						 &adapter->rx_buff_pool[i]);
-+
-+	if (adapter->bounce_buffer != NULL) {
-+		if (!dma_mapping_error(adapter->bounce_buffer_dma)) {
-+			dma_unmap_single(&adapter->vdev->dev,
-+					adapter->bounce_buffer_dma,
-+					adapter->netdev->mtu + IBMVETH_BUFF_OH,
-+					DMA_BIDIRECTIONAL);
-+			adapter->bounce_buffer_dma = DMA_ERROR_CODE;
-+		}
-+		kfree(adapter->bounce_buffer);
-+		adapter->bounce_buffer = NULL;
-+	}
- }
- 
- static int ibmveth_register_logical_lan(struct ibmveth_adapter *adapter,
-@@ -607,6 +634,24 @@ static int ibmveth_open(struct net_devic
- 		return rc;
- 	}
- 
-+	adapter->bounce_buffer =
-+	    kmalloc(netdev->mtu + IBMVETH_BUFF_OH, GFP_KERNEL);
-+	if (!adapter->bounce_buffer) {
-+		ibmveth_error_printk("unable to allocate bounce buffer\n");
-+		ibmveth_cleanup(adapter);
-+		napi_disable(&adapter->napi);
-+		return -ENOMEM;
-+	}
-+	adapter->bounce_buffer_dma =
-+	    dma_map_single(&adapter->vdev->dev, adapter->bounce_buffer,
-+			   netdev->mtu + IBMVETH_BUFF_OH, DMA_BIDIRECTIONAL);
-+	if (dma_mapping_error(adapter->bounce_buffer_dma)) {
-+		ibmveth_error_printk("unable to map bounce buffer\n");
-+		ibmveth_cleanup(adapter);
-+		napi_disable(&adapter->napi);
-+		return -ENOMEM;
-+	}
-+
- 	ibmveth_debug_printk("initial replenish cycle\n");
- 	ibmveth_interrupt(netdev->irq, netdev);
- 
-@@ -853,10 +898,12 @@ static int ibmveth_start_xmit(struct sk_
- 	unsigned int tx_packets = 0;
- 	unsigned int tx_send_failed = 0;
- 	unsigned int tx_map_failed = 0;
-+	int used_bounce = 0;
-+	unsigned long data_dma_addr;
- 
- 	desc.fields.flags_len = IBMVETH_BUF_VALID | skb->len;
--	desc.fields.address = dma_map_single(&adapter->vdev->dev, skb->data,
--					     skb->len, DMA_TO_DEVICE);
-+	data_dma_addr = dma_map_single(&adapter->vdev->dev, skb->data,
-+				       skb->len, DMA_TO_DEVICE);
- 
- 	if (skb->ip_summed == CHECKSUM_PARTIAL &&
- 	    ip_hdr(skb)->protocol != IPPROTO_TCP && skb_checksum_help(skb)) {
-@@ -875,12 +922,16 @@ static int ibmveth_start_xmit(struct sk_
- 		buf[1] = 0;
- 	}
- 
--	if (dma_mapping_error(desc.fields.address)) {
--		ibmveth_error_printk("tx: unable to map xmit buffer\n");
-+	if (dma_mapping_error(data_dma_addr)) {
-+		if (!firmware_has_feature(FW_FEATURE_CMO))
-+			ibmveth_error_printk("tx: unable to map xmit buffer\n");
-+		skb_copy_from_linear_data(skb, adapter->bounce_buffer,
-+					  skb->len);
-+		desc.fields.address = adapter->bounce_buffer_dma;
- 		tx_map_failed++;
--		tx_dropped++;
--		goto out;
--	}
-+		used_bounce = 1;
-+	} else
-+		desc.fields.address = data_dma_addr;
- 
- 	/* send the frame. Arbitrarily set retrycount to 1024 */
- 	correlator = 0;
-@@ -904,8 +955,9 @@ static int ibmveth_start_xmit(struct sk_
- 		netdev->trans_start = jiffies;
- 	}
- 
--	dma_unmap_single(&adapter->vdev->dev, desc.fields.address,
--			 skb->len, DMA_TO_DEVICE);
-+	if (!used_bounce)
-+		dma_unmap_single(&adapter->vdev->dev, data_dma_addr,
-+				 skb->len, DMA_TO_DEVICE);
- 
- out:	spin_lock_irqsave(&adapter->stats_lock, flags);
- 	netdev->stats.tx_dropped += tx_dropped;
-@@ -1053,8 +1105,9 @@ static void ibmveth_set_multicast_list(s
- static int ibmveth_change_mtu(struct net_device *dev, int new_mtu)
- {
- 	struct ibmveth_adapter *adapter = dev->priv;
-+	struct vio_dev *viodev = adapter->vdev;
- 	int new_mtu_oh = new_mtu + IBMVETH_BUFF_OH;
--	int i, rc;
-+	int i;
- 
- 	if (new_mtu < IBMVETH_MAX_MTU)
- 		return -EINVAL;
-@@ -1085,10 +1138,15 @@ static int ibmveth_change_mtu(struct net
- 				ibmveth_close(adapter->netdev);
- 				adapter->pool_config = 0;
- 				dev->mtu = new_mtu;
--				if ((rc = ibmveth_open(adapter->netdev)))
--					return rc;
--			} else
--				dev->mtu = new_mtu;
-+				vio_cmo_set_dev_desired(viodev,
-+						ibmveth_get_desired_dma
-+						(viodev));
-+				return ibmveth_open(adapter->netdev);
-+			}
-+			dev->mtu = new_mtu;
-+			vio_cmo_set_dev_desired(viodev,
-+						ibmveth_get_desired_dma
-+						(viodev));
- 			return 0;
- 		}
- 	}
-@@ -1103,6 +1161,46 @@ static void ibmveth_poll_controller(stru
- }
- #endif
- 
+Index: b/arch/powerpc/kernel/vio.c
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- a/arch/powerpc/kernel/vio.c
++++ b/arch/powerpc/kernel/vio.c
+@@ -1,11 +1,12 @@
+ /*
+  * IBM PowerPC Virtual I/O Infrastructure Support.
+  *
+- *    Copyright (c) 2003-2005 IBM Corp.
++ *    Copyright (c) 2003,2008 IBM Corp.
+  *     Dave Engebretsen engebret@us.ibm.com
+  *     Santiago Leon santil@us.ibm.com
+  *     Hollis Blanchard <hollisb@us.ibm.com>
+  *     Stephen Rothwell
++ *     Robert Jennings <rcjenn@us.ibm.com>
+  *
+  *      This program is free software; you can redistribute it and/or
+  *      modify it under the terms of the GNU General Public License
+@@ -46,6 +47,987 @@ static struct vio_dev vio_bus_device  =3D=20
+ 	.dev.bus =3D &vio_bus_type,
+ };
+=20
++#ifdef CONFIG_PPC_PSERIES
 +/**
-+ * ibmveth_get_desired_dma - Calculate IO memory desired by the driver
++ * vio_cmo_pool - A pool of IO memory for CMO use
 + *
-+ * @vdev: struct vio_dev for the device whose desired IO mem is to be returned
-+ *
-+ * Return value:
-+ *	Number of bytes of IO data the driver will need to perform well.
++ * @size: The size of the pool in bytes
++ * @free: The amount of free memory in the pool
 + */
-+static unsigned long ibmveth_get_desired_dma(struct vio_dev *vdev)
++struct vio_cmo_pool {
++	size_t size;
++	size_t free;
++};
++
++/* How many ms to delay queued balance work */
++#define VIO_CMO_BALANCE_DELAY 100
++
++/* Portion out IO memory to CMO devices by this chunk size */
++#define VIO_CMO_BALANCE_CHUNK 131072
++
++/**
++ * vio_cmo_dev_entry - A device that is CMO-enabled and requires entitleme=
+nt
++ *
++ * @vio_dev: struct vio_dev pointer
++ * @list: pointer to other devices on bus that are being tracked
++ */
++struct vio_cmo_dev_entry {
++	struct vio_dev *viodev;
++	struct list_head list;
++};
++
++/**
++ * vio_cmo - VIO bus accounting structure for CMO entitlement
++ *
++ * @lock: spinlock for entire structure
++ * @balance_q: work queue for balancing system entitlement
++ * @device_list: list of CMO-enabled devices requiring entitlement
++ * @entitled: total system entitlement in bytes
++ * @reserve: pool of memory from which devices reserve entitlement, incl. =
+spare
++ * @excess: pool of excess entitlement not needed for device reserves or s=
+pare
++ * @spare: IO memory for device hotplug functionality
++ * @min: minimum necessary for system operation
++ * @desired: desired memory for system operation
++ * @curr: bytes currently allocated
++ * @high: high water mark for IO data usage
++ */
++struct vio_cmo {
++	spinlock_t lock;
++	struct delayed_work balance_q;
++	struct list_head device_list;
++	size_t entitled;
++	struct vio_cmo_pool reserve;
++	struct vio_cmo_pool excess;
++	size_t spare;
++	size_t min;
++	size_t desired;
++	size_t curr;
++	size_t high;
++} vio_cmo;
++
++/**
++ * vio_cmo_OF_devices - Count the number of OF devices that have DMA windo=
+ws
++ */
++static int vio_cmo_num_OF_devs(void)
 +{
-+	struct net_device *netdev = dev_get_drvdata(&vdev->dev);
-+	struct ibmveth_adapter *adapter;
-+	unsigned long ret;
-+	int i;
-+	int rxqentries = 1;
++	struct device_node *node_vroot;
++	int count =3D 0;
 +
-+	/* netdev inits at probe time along with the structures we need below*/
-+	if (netdev == NULL)
-+		return IOMMU_PAGE_ALIGN(IBMVETH_IO_ENTITLEMENT_DEFAULT);
++	/*
++	 * Count the number of vdevice entries with an
++	 * ibm,my-dma-window OF property
++	 */
++	node_vroot =3D of_find_node_by_name(NULL, "vdevice");
++	if (node_vroot) {
++		struct device_node *of_node;
++		struct property *prop;
 +
-+	adapter = netdev_priv(netdev);
-+
-+	ret = IBMVETH_BUFF_LIST_SIZE + IBMVETH_FILT_LIST_SIZE;
-+	ret += IOMMU_PAGE_ALIGN(netdev->mtu);
-+
-+	for (i = 0; i < IbmVethNumBufferPools; i++) {
-+		/* add the size of the active receive buffers */
-+		if (adapter->rx_buff_pool[i].active)
-+			ret +=
-+			    adapter->rx_buff_pool[i].size *
-+			    IOMMU_PAGE_ALIGN(adapter->rx_buff_pool[i].
-+			            buff_size);
-+		rxqentries += adapter->rx_buff_pool[i].size;
++		for_each_child_of_node(node_vroot, of_node) {
++			prop =3D of_find_property(of_node, "ibm,my-dma-window",
++			                       NULL);
++			if (prop)
++				count++;
++		}
 +	}
-+	/* add the size of the receive queue entries */
-+	ret += IOMMU_PAGE_ALIGN(rxqentries * sizeof(struct ibmveth_rx_q_entry));
++	of_node_put(node_vroot);
++	return count;
++}
++
++/**
++ * vio_cmo_alloc - allocate IO memory for CMO-enable devices
++ *
++ * @viodev: VIO device requesting IO memory
++ * @size: size of allocation requested
++ *
++ * Allocations come from memory reserved for the devices and any excess
++ * IO memory available to all devices.  The spare pool used to service
++ * hotplug must be equal to %VIO_CMO_MIN_ENT for the excess pool to be
++ * made available.
++ *
++ * Return codes:
++ *  0 for successful allocation and -ENOMEM for a failure
++ */
++static inline int vio_cmo_alloc(struct vio_dev *viodev, size_t size)
++{
++	unsigned long flags;
++	size_t reserve_free =3D 0;
++	size_t excess_free =3D 0;
++	int ret =3D -ENOMEM;
++
++	spin_lock_irqsave(&vio_cmo.lock, flags);
++
++	/* Determine the amount of free entitlement available in reserve */
++	if (viodev->cmo.entitled > viodev->cmo.allocated)
++		reserve_free =3D viodev->cmo.entitled - viodev->cmo.allocated;
++
++	/* If spare is not fulfilled, the excess pool can not be used. */
++	if (vio_cmo.spare >=3D VIO_CMO_MIN_ENT)
++		excess_free =3D vio_cmo.excess.free;
++
++	/* The request can be satisfied */
++	if ((reserve_free + excess_free) >=3D size) {
++		vio_cmo.curr +=3D size;
++		if (vio_cmo.curr > vio_cmo.high)
++			vio_cmo.high =3D vio_cmo.curr;
++		viodev->cmo.allocated +=3D size;
++		size -=3D min(reserve_free, size);
++		vio_cmo.excess.free -=3D size;
++		ret =3D 0;
++	}
++
++	spin_unlock_irqrestore(&vio_cmo.lock, flags);
++	return ret;
++}
++
++/**
++ * vio_cmo_dealloc - deallocate IO memory from CMO-enable devices
++ * @viodev: VIO device freeing IO memory
++ * @size: size of deallocation
++ *
++ * IO memory is freed by the device back to the correct memory pools.
++ * The spare pool is replenished first from either memory pool, then
++ * the reserve pool is used to reduce device entitlement, the excess
++ * pool is used to increase the reserve pool toward the desired entitlement
++ * target, and then the remaining memory is returned to the pools.
++ *
++ */
++static inline void vio_cmo_dealloc(struct vio_dev *viodev, size_t size)
++{
++	unsigned long flags;
++	size_t spare_needed =3D 0;
++	size_t excess_freed =3D 0;
++	size_t reserve_freed =3D size;
++	size_t tmp;
++	int balance =3D 0;
++
++	spin_lock_irqsave(&vio_cmo.lock, flags);
++	vio_cmo.curr -=3D size;
++
++	/* Amount of memory freed from the excess pool */
++	if (viodev->cmo.allocated > viodev->cmo.entitled) {
++		excess_freed =3D min(reserve_freed, (viodev->cmo.allocated -
++		                                   viodev->cmo.entitled));
++		reserve_freed -=3D excess_freed;
++	}
++
++	/* Remove allocation from device */
++	viodev->cmo.allocated -=3D (reserve_freed + excess_freed);
++
++	/* Spare is a subset of the reserve pool, replenish it first. */
++	spare_needed =3D VIO_CMO_MIN_ENT - vio_cmo.spare;
++
++	/*
++	 * Replenish the spare in the reserve pool from the excess pool.
++	 * This moves entitlement into the reserve pool.
++	 */
++	if (spare_needed && excess_freed) {
++		tmp =3D min(excess_freed, spare_needed);
++		vio_cmo.excess.size -=3D tmp;
++		vio_cmo.reserve.size +=3D tmp;
++		vio_cmo.spare +=3D tmp;
++		excess_freed -=3D tmp;
++		spare_needed -=3D tmp;
++		balance =3D 1;
++	}
++
++	/*
++	 * Replenish the spare in the reserve pool from the reserve pool.
++	 * This removes entitlement from the device down to VIO_CMO_MIN_ENT,
++	 * if needed, and gives it to the spare pool. The amount of used
++	 * memory in this pool does not change.
++	 */
++	if (spare_needed && reserve_freed) {
++		tmp =3D min(spare_needed, min(reserve_freed,
++		                            (viodev->cmo.entitled -
++		                             VIO_CMO_MIN_ENT)));
++
++		vio_cmo.spare +=3D tmp;
++		viodev->cmo.entitled -=3D tmp;
++		reserve_freed -=3D tmp;
++		spare_needed -=3D tmp;
++		balance =3D 1;
++	}
++
++	/*
++	 * Increase the reserve pool until the desired allocation is met.
++	 * Move an allocation freed from the excess pool into the reserve
++	 * pool and schedule a balance operation.
++	 */
++	if (excess_freed && (vio_cmo.desired > vio_cmo.reserve.size)) {
++		tmp =3D min(excess_freed, (vio_cmo.desired - vio_cmo.reserve.size));
++
++		vio_cmo.excess.size -=3D tmp;
++		vio_cmo.reserve.size +=3D tmp;
++		excess_freed -=3D tmp;
++		balance =3D 1;
++	}
++
++	/* Return memory from the excess pool to that pool */
++	if (excess_freed)
++		vio_cmo.excess.free +=3D excess_freed;
++
++	if (balance)
++		schedule_delayed_work(&vio_cmo.balance_q, VIO_CMO_BALANCE_DELAY);
++	spin_unlock_irqrestore(&vio_cmo.lock, flags);
++}
++
++/**
++ * vio_cmo_entitlement_update - Manage system entitlement changes
++ *
++ * @new_entitlement: new system entitlement to attempt to accommodate
++ *
++ * Increases in entitlement will be used to fulfill the spare entitlement
++ * and the rest is given to the excess pool.  Decreases, if they are
++ * possible, come from the excess pool and from unused device entitlement
++ *
++ * Returns: 0 on success, -ENOMEM when change can not be made
++ */
++int vio_cmo_entitlement_update(size_t new_entitlement)
++{
++	struct vio_dev *viodev;
++	struct vio_cmo_dev_entry *dev_ent;
++	unsigned long flags;
++	size_t avail, delta, tmp;
++
++	spin_lock_irqsave(&vio_cmo.lock, flags);
++
++	/* Entitlement increases */
++	if (new_entitlement > vio_cmo.entitled) {
++		delta =3D new_entitlement - vio_cmo.entitled;
++
++		/* Fulfill spare allocation */
++		if (vio_cmo.spare < VIO_CMO_MIN_ENT) {
++			tmp =3D min(delta, (VIO_CMO_MIN_ENT - vio_cmo.spare));
++			vio_cmo.spare +=3D tmp;
++			vio_cmo.reserve.size +=3D tmp;
++			delta -=3D tmp;
++		}
++
++		/* Remaining new allocation goes to the excess pool */
++		vio_cmo.entitled +=3D delta;
++		vio_cmo.excess.size +=3D delta;
++		vio_cmo.excess.free +=3D delta;
++
++		goto out;
++	}
++
++	/* Entitlement decreases */
++	delta =3D vio_cmo.entitled - new_entitlement;
++	avail =3D vio_cmo.excess.free;
++
++	/*
++	 * Need to check how much unused entitlement each device can
++	 * sacrifice to fulfill entitlement change.
++	 */
++	list_for_each_entry(dev_ent, &vio_cmo.device_list, list) {
++		if (avail >=3D delta)
++			break;
++
++		viodev =3D dev_ent->viodev;
++		if ((viodev->cmo.entitled > viodev->cmo.allocated) &&
++		    (viodev->cmo.entitled > VIO_CMO_MIN_ENT))
++				avail +=3D viodev->cmo.entitled -
++				         max_t(size_t, viodev->cmo.allocated,
++				               VIO_CMO_MIN_ENT);
++	}
++
++	if (delta <=3D avail) {
++		vio_cmo.entitled -=3D delta;
++
++		/* Take entitlement from the excess pool first */
++		tmp =3D min(vio_cmo.excess.free, delta);
++		vio_cmo.excess.size -=3D tmp;
++		vio_cmo.excess.free -=3D tmp;
++		delta -=3D tmp;
++
++		/*
++		 * Remove all but VIO_CMO_MIN_ENT bytes from devices
++		 * until entitlement change is served
++		 */
++		list_for_each_entry(dev_ent, &vio_cmo.device_list, list) {
++			if (!delta)
++				break;
++
++			viodev =3D dev_ent->viodev;
++			tmp =3D 0;
++			if ((viodev->cmo.entitled > viodev->cmo.allocated) &&
++			    (viodev->cmo.entitled > VIO_CMO_MIN_ENT))
++				tmp =3D viodev->cmo.entitled -
++				      max_t(size_t, viodev->cmo.allocated,
++				            VIO_CMO_MIN_ENT);
++			viodev->cmo.entitled -=3D min(tmp, delta);
++			delta -=3D min(tmp, delta);
++		}
++	} else {
++		spin_unlock_irqrestore(&vio_cmo.lock, flags);
++		return -ENOMEM;
++	}
++
++out:
++	schedule_delayed_work(&vio_cmo.balance_q, 0);
++	spin_unlock_irqrestore(&vio_cmo.lock, flags);
++	return 0;
++}
++
++/**
++ * vio_cmo_balance - Balance entitlement among devices
++ *
++ * @work: work queue structure for this operation
++ *
++ * Any system entitlement above the minimum needed for devices, or
++ * already allocated to devices, can be distributed to the devices.
++ * The list of devices is iterated through to recalculate the desired
++ * entitlement level and to determine how much entitlement above the
++ * minimum entitlement is allocated to devices.
++ *
++ * Small chunks of the available entitlement are given to devices until
++ * their requirements are fulfilled or there is no entitlement left to giv=
+e.
++ * Upon completion sizes of the reserve and excess pools are calculated.
++ *
++ * The system minimum entitlement level is also recalculated here.
++ * Entitlement will be reserved for devices even after vio_bus_remove to
++ * accommodate reloading the driver.  The OF tree is walked to count the
++ * number of devices present and this will remove entitlement for devices
++ * that have actually left the system after having vio_bus_remove called.
++ */
++static void vio_cmo_balance(struct work_struct *work)
++{
++	struct vio_cmo *cmo;
++	struct vio_dev *viodev;
++	struct vio_cmo_dev_entry *dev_ent;
++	unsigned long flags;
++	size_t avail =3D 0, level, chunk, need;
++	int devcount =3D 0, fulfilled;
++
++	cmo =3D container_of(work, struct vio_cmo, balance_q.work);
++
++	spin_lock_irqsave(&vio_cmo.lock, flags);
++
++	/* Calculate minimum entitlement and fulfill spare */
++	cmo->min =3D vio_cmo_num_OF_devs() * VIO_CMO_MIN_ENT;
++	BUG_ON(cmo->min > cmo->entitled);
++	cmo->spare =3D min_t(size_t, VIO_CMO_MIN_ENT, (cmo->entitled - cmo->min));
++	cmo->min +=3D cmo->spare;
++	cmo->desired =3D cmo->min;
++
++	/*
++	 * Determine how much entitlement is available and reset device
++	 * entitlements
++	 */
++	avail =3D cmo->entitled - cmo->spare;
++	list_for_each_entry(dev_ent, &vio_cmo.device_list, list) {
++		viodev =3D dev_ent->viodev;
++		devcount++;
++		viodev->cmo.entitled =3D VIO_CMO_MIN_ENT;
++		cmo->desired +=3D (viodev->cmo.desired - VIO_CMO_MIN_ENT);
++		avail -=3D max_t(size_t, viodev->cmo.allocated, VIO_CMO_MIN_ENT);
++	}
++
++	/*
++	 * Having provided each device with the minimum entitlement, loop
++	 * over the devices portioning out the remaining entitlement
++	 * until there is nothing left.
++	 */
++	level =3D VIO_CMO_MIN_ENT;
++	while (avail) {
++		fulfilled =3D 0;
++		list_for_each_entry(dev_ent, &vio_cmo.device_list, list) {
++			viodev =3D dev_ent->viodev;
++
++			if (viodev->cmo.desired <=3D level) {
++				fulfilled++;
++				continue;
++			}
++
++			/*
++			 * Give the device up to VIO_CMO_BALANCE_CHUNK
++			 * bytes of entitlement, but do not exceed the
++			 * desired level of entitlement for the device.
++			 */
++			chunk =3D min_t(size_t, avail, VIO_CMO_BALANCE_CHUNK);
++			chunk =3D min(chunk, (viodev->cmo.desired -
++			                    viodev->cmo.entitled));
++			viodev->cmo.entitled +=3D chunk;
++
++			/*
++			 * If the memory for this entitlement increase was
++			 * already allocated to the device it does not come
++			 * from the available pool being portioned out.
++			 */
++			need =3D max(viodev->cmo.allocated, viodev->cmo.entitled)-
++			       max(viodev->cmo.allocated, level);
++			avail -=3D need;
++
++		}
++		if (fulfilled =3D=3D devcount)
++			break;
++		level +=3D VIO_CMO_BALANCE_CHUNK;
++	}
++
++	/* Calculate new reserve and excess pool sizes */
++	cmo->reserve.size =3D cmo->min;
++	cmo->excess.free =3D 0;
++	cmo->excess.size =3D 0;
++	need =3D 0;
++	list_for_each_entry(dev_ent, &vio_cmo.device_list, list) {
++		viodev =3D dev_ent->viodev;
++		/* Calculated reserve size above the minimum entitlement */
++		if (viodev->cmo.entitled)
++			cmo->reserve.size +=3D (viodev->cmo.entitled -
++			                      VIO_CMO_MIN_ENT);
++		/* Calculated used excess entitlement */
++		if (viodev->cmo.allocated > viodev->cmo.entitled)
++			need +=3D viodev->cmo.allocated - viodev->cmo.entitled;
++	}
++	cmo->excess.size =3D cmo->entitled - cmo->reserve.size;
++	cmo->excess.free =3D cmo->excess.size - need;
++
++	cancel_delayed_work(container_of(work, struct delayed_work, work));
++	spin_unlock_irqrestore(&vio_cmo.lock, flags);
++}
++
++static void *vio_dma_iommu_alloc_coherent(struct device *dev, size_t size,
++                                          dma_addr_t *dma_handle, gfp_t fl=
+ag)
++{
++	struct vio_dev *viodev =3D to_vio_dev(dev);
++	void *ret;
++
++	if (vio_cmo_alloc(viodev, roundup(size, PAGE_SIZE))) {
++		atomic_inc(&viodev->cmo.allocs_failed);
++		return NULL;
++	}
++
++	ret =3D dma_iommu_ops.alloc_coherent(dev, size, dma_handle, flag);
++	if (unlikely(ret =3D=3D NULL)) {
++		vio_cmo_dealloc(viodev, roundup(size, PAGE_SIZE));
++		atomic_inc(&viodev->cmo.allocs_failed);
++	}
 +
 +	return ret;
 +}
 +
- static int __devinit ibmveth_probe(struct vio_dev *dev, const struct vio_device_id *id)
- {
- 	int rc, i;
-@@ -1247,6 +1345,8 @@ static int __devexit ibmveth_remove(stru
- 	ibmveth_proc_unregister_adapter(adapter);
- 
- 	free_netdev(netdev);
-+	dev_set_drvdata(&dev->dev, NULL);
++static void vio_dma_iommu_free_coherent(struct device *dev, size_t size,
++                                        void *vaddr, dma_addr_t dma_handle)
++{
++	struct vio_dev *viodev =3D to_vio_dev(dev);
 +
- 	return 0;
++	dma_iommu_ops.free_coherent(dev, size, vaddr, dma_handle);
++
++	vio_cmo_dealloc(viodev, roundup(size, PAGE_SIZE));
++}
++
++static dma_addr_t vio_dma_iommu_map_single(struct device *dev, void *vaddr,
++                                           size_t size,
++                                           enum dma_data_direction directi=
+on)
++{
++	struct vio_dev *viodev =3D to_vio_dev(dev);
++	dma_addr_t ret =3D DMA_ERROR_CODE;
++
++	if (vio_cmo_alloc(viodev, roundup(size, PAGE_SIZE))) {
++		atomic_inc(&viodev->cmo.allocs_failed);
++		return ret;
++	}
++
++	ret =3D dma_iommu_ops.map_single(dev, vaddr, size, direction);
++	if (unlikely(dma_mapping_error(ret))) {
++		vio_cmo_dealloc(viodev, roundup(size, PAGE_SIZE));
++		atomic_inc(&viodev->cmo.allocs_failed);
++	}
++
++	return ret;
++}
++
++static void vio_dma_iommu_unmap_single(struct device *dev,
++		dma_addr_t dma_handle, size_t size,
++		enum dma_data_direction direction)
++{
++	struct vio_dev *viodev =3D to_vio_dev(dev);
++
++	dma_iommu_ops.unmap_single(dev, dma_handle, size, direction);
++
++	vio_cmo_dealloc(viodev, roundup(size, PAGE_SIZE));
++}
++
++static int vio_dma_iommu_map_sg(struct device *dev, struct scatterlist *sg=
+list,
++                                int nelems, enum dma_data_direction direct=
+ion)
++{
++	struct vio_dev *viodev =3D to_vio_dev(dev);
++	struct scatterlist *sgl;
++	int ret, count =3D 0;
++	size_t alloc_size =3D 0;
++
++	for (sgl =3D sglist; count < nelems; count++, sgl++)
++		alloc_size +=3D roundup(sgl->length, PAGE_SIZE);
++
++	if (vio_cmo_alloc(viodev, alloc_size)) {
++		atomic_inc(&viodev->cmo.allocs_failed);
++		return 0;
++	}
++
++	ret =3D dma_iommu_ops.map_sg(dev, sglist, nelems, direction);
++
++	if (unlikely(!ret)) {
++		vio_cmo_dealloc(viodev, alloc_size);
++		atomic_inc(&viodev->cmo.allocs_failed);
++	}
++
++	return ret;
++}
++
++static void vio_dma_iommu_unmap_sg(struct device *dev,
++		struct scatterlist *sglist, int nelems,
++		enum dma_data_direction direction)
++{
++	struct vio_dev *viodev =3D to_vio_dev(dev);
++	struct scatterlist *sgl;
++	size_t alloc_size =3D 0;
++	int count =3D 0;
++
++	for (sgl =3D sglist; count < nelems; count++, sgl++)
++		alloc_size +=3D roundup(sgl->length, PAGE_SIZE);
++
++	dma_iommu_ops.unmap_sg(dev, sglist, nelems, direction);
++
++	vio_cmo_dealloc(viodev, alloc_size);
++}
++
++struct dma_mapping_ops vio_dma_mapping_ops =3D {
++	.alloc_coherent =3D vio_dma_iommu_alloc_coherent,
++	.free_coherent  =3D vio_dma_iommu_free_coherent,
++	.map_single     =3D vio_dma_iommu_map_single,
++	.unmap_single   =3D vio_dma_iommu_unmap_single,
++	.map_sg         =3D vio_dma_iommu_map_sg,
++	.unmap_sg       =3D vio_dma_iommu_unmap_sg,
++};
++
++/**
++ * vio_cmo_set_dev_desired - Set desired entitlement for a device
++ *
++ * @viodev: struct vio_dev for device to alter
++ * @new_desired: new desired entitlement level in bytes
++ *
++ * For use by devices to request a change to their entitlement at runtime =
+or
++ * through sysfs.  The desired entitlement level is changed and a balancing
++ * of system resources is scheduled to run in the future.
++ */
++void vio_cmo_set_dev_desired(struct vio_dev *viodev, size_t desired)
++{
++	unsigned long flags;
++	struct vio_cmo_dev_entry *dev_ent;
++	int found =3D 0;
++
++	if (!firmware_has_feature(FW_FEATURE_CMO))
++		return;
++
++	spin_lock_irqsave(&vio_cmo.lock, flags);
++	if (desired < VIO_CMO_MIN_ENT)
++		desired =3D VIO_CMO_MIN_ENT;
++
++	/*
++	 * Changes will not be made for devices not in the device list.
++	 * If it is not in the device list, then no driver is loaded
++	 * for the device and it can not receive entitlement.
++	 */
++	list_for_each_entry(dev_ent, &vio_cmo.device_list, list)
++		if (viodev =3D=3D dev_ent->viodev) {
++			found =3D 1;
++			break;
++		}
++	if (!found)
++		return;
++
++	/* Increase/decrease in desired device entitlement */
++	if (desired >=3D viodev->cmo.desired) {
++		/* Just bump the bus and device values prior to a balance*/
++		vio_cmo.desired +=3D desired - viodev->cmo.desired;
++		viodev->cmo.desired =3D desired;
++	} else {
++		/* Decrease bus and device values for desired entitlement */
++		vio_cmo.desired -=3D viodev->cmo.desired - desired;
++		viodev->cmo.desired =3D desired;
++		/*
++		 * If less entitlement is desired than current entitlement, move
++		 * any reserve memory in the change region to the excess pool.
++		 */
++		if (viodev->cmo.entitled > desired) {
++			vio_cmo.reserve.size -=3D viodev->cmo.entitled - desired;
++			vio_cmo.excess.size +=3D viodev->cmo.entitled - desired;
++			/*
++			 * If entitlement moving from the reserve pool to the
++			 * excess pool is currently unused, add to the excess
++			 * free counter.
++			 */
++			if (viodev->cmo.allocated < viodev->cmo.entitled)
++				vio_cmo.excess.free +=3D viodev->cmo.entitled -
++				                       max(viodev->cmo.allocated, desired);
++			viodev->cmo.entitled =3D desired;
++		}
++	}
++	schedule_delayed_work(&vio_cmo.balance_q, 0);
++	spin_unlock_irqrestore(&vio_cmo.lock, flags);
++}
++
++/**
++ * vio_cmo_bus_probe - Handle CMO specific bus probe activities
++ *
++ * @viodev - Pointer to struct vio_dev for device
++ *
++ * Determine the devices IO memory entitlement needs, attempting
++ * to satisfy the system minimum entitlement at first and scheduling
++ * a balance operation to take care of the rest at a later time.
++ *
++ * Returns: 0 on success, -EINVAL when device doesn't support CMO, and
++ *          -ENOMEM when entitlement is not available for device or
++ *          device entry.
++ *
++ */
++static int vio_cmo_bus_probe(struct vio_dev *viodev)
++{
++	struct vio_cmo_dev_entry *dev_ent;
++	struct device *dev =3D &viodev->dev;
++	struct vio_driver *viodrv =3D to_vio_driver(dev->driver);
++	unsigned long flags;
++	size_t size;
++
++	/*
++	 * Check to see that device has a DMA window and configure
++	 * entitlement for the device.
++	 */
++	if (of_get_property(viodev->dev.archdata.of_node,
++	                    "ibm,my-dma-window", NULL)) {
++		/* Check that the driver is CMO enabled and get desired DMA */
++		if (!viodrv->get_desired_dma) {
++			dev_err(dev, "%s: device driver does not support CMO\n",
++			        __func__);
++			return -EINVAL;
++		}
++
++		viodev->cmo.desired =3D IOMMU_PAGE_ALIGN(viodrv->get_desired_dma(viodev)=
+);
++		if (viodev->cmo.desired < VIO_CMO_MIN_ENT)
++			viodev->cmo.desired =3D VIO_CMO_MIN_ENT;
++		size =3D VIO_CMO_MIN_ENT;
++
++		dev_ent =3D kmalloc(sizeof(struct vio_cmo_dev_entry),
++		                  GFP_KERNEL);
++		if (!dev_ent)
++			return -ENOMEM;
++
++		dev_ent->viodev =3D viodev;
++		spin_lock_irqsave(&vio_cmo.lock, flags);
++		list_add(&dev_ent->list, &vio_cmo.device_list);
++	} else {
++		viodev->cmo.desired =3D 0;
++		size =3D 0;
++		spin_lock_irqsave(&vio_cmo.lock, flags);
++	}
++
++	/*
++	 * If the needs for vio_cmo.min have not changed since they
++	 * were last set, the number of devices in the OF tree has
++	 * been constant and the IO memory for this is already in
++	 * the reserve pool.
++	 */
++	if (vio_cmo.min =3D=3D ((vio_cmo_num_OF_devs() + 1) *
++	                    VIO_CMO_MIN_ENT)) {
++		/* Updated desired entitlement if device requires it */
++		if (size)
++			vio_cmo.desired +=3D (viodev->cmo.desired -
++		                        VIO_CMO_MIN_ENT);
++	} else {
++		size_t tmp;
++
++		tmp =3D vio_cmo.spare + vio_cmo.excess.free;
++		if (tmp < size) {
++			dev_err(dev, "%s: insufficient free "
++			        "entitlement to add device. "
++			        "Need %lu, have %lu\n", __func__,
++				size, (vio_cmo.spare + tmp));
++			spin_unlock_irqrestore(&vio_cmo.lock, flags);
++			return -ENOMEM;
++		}
++
++		/* Use excess pool first to fulfill request */
++		tmp =3D min(size, vio_cmo.excess.free);
++		vio_cmo.excess.free -=3D tmp;
++		vio_cmo.excess.size -=3D tmp;
++		vio_cmo.reserve.size +=3D tmp;
++
++		/* Use spare if excess pool was insufficient */
++		vio_cmo.spare -=3D size - tmp;
++
++		/* Update bus accounting */
++		vio_cmo.min +=3D size;
++		vio_cmo.desired +=3D viodev->cmo.desired;
++	}
++	spin_unlock_irqrestore(&vio_cmo.lock, flags);
++	return 0;
++}
++
++/**
++ * vio_cmo_bus_remove - Handle CMO specific bus removal activities
++ *
++ * @viodev - Pointer to struct vio_dev for device
++ *
++ * Remove the device from the cmo device list.  The minimum entitlement
++ * will be reserved for the device as long as it is in the system.  The
++ * rest of the entitlement the device had been allocated will be returned
++ * to the system.
++ */
++static void vio_cmo_bus_remove(struct vio_dev *viodev)
++{
++	struct vio_cmo_dev_entry *dev_ent;
++	unsigned long flags;
++	size_t tmp;
++
++	spin_lock_irqsave(&vio_cmo.lock, flags);
++	if (viodev->cmo.allocated) {
++		dev_err(&viodev->dev, "%s: device had %lu bytes of IO "
++		        "allocated after remove operation.\n",
++		        __func__, viodev->cmo.allocated);
++		BUG();
++	}
++
++	/*
++	 * Remove the device from the device list being maintained for
++	 * CMO enabled devices.
++	 */
++	list_for_each_entry(dev_ent, &vio_cmo.device_list, list)
++		if (viodev =3D=3D dev_ent->viodev) {
++			list_del(&dev_ent->list);
++			kfree(dev_ent);
++			break;
++		}
++
++	/*
++	 * Devices may not require any entitlement and they do not need
++	 * to be processed.  Otherwise, return the device's entitlement
++	 * back to the pools.
++	 */
++	if (viodev->cmo.entitled) {
++		/*
++		 * This device has not yet left the OF tree, it's
++		 * minimum entitlement remains in vio_cmo.min and
++		 * vio_cmo.desired
++		 */
++		vio_cmo.desired -=3D (viodev->cmo.desired - VIO_CMO_MIN_ENT);
++
++		/*
++		 * Save min allocation for device in reserve as long
++		 * as it exists in OF tree as determined by later
++		 * balance operation
++		 */
++		viodev->cmo.entitled -=3D VIO_CMO_MIN_ENT;
++
++		/* Replenish spare from freed reserve pool */
++		if (viodev->cmo.entitled && (vio_cmo.spare < VIO_CMO_MIN_ENT)) {
++			tmp =3D min(viodev->cmo.entitled, (VIO_CMO_MIN_ENT -
++			                                 vio_cmo.spare));
++			vio_cmo.spare +=3D tmp;
++			viodev->cmo.entitled -=3D tmp;
++		}
++
++		/* Remaining reserve goes to excess pool */
++		vio_cmo.excess.size +=3D viodev->cmo.entitled;
++		vio_cmo.excess.free +=3D viodev->cmo.entitled;
++		vio_cmo.reserve.size -=3D viodev->cmo.entitled;
++
++		/*
++		 * Until the device is removed it will keep a
++		 * minimum entitlement; this will guarantee that
++		 * a module unload/load will result in a success.
++		 */
++		viodev->cmo.entitled =3D VIO_CMO_MIN_ENT;
++		viodev->cmo.desired =3D VIO_CMO_MIN_ENT;
++		atomic_set(&viodev->cmo.allocs_failed, 0);
++	}
++
++	spin_unlock_irqrestore(&vio_cmo.lock, flags);
++}
++
++static void vio_cmo_set_dma_ops(struct vio_dev *viodev)
++{
++	vio_dma_mapping_ops.dma_supported =3D dma_iommu_ops.dma_supported;
++	viodev->dev.archdata.dma_ops =3D &vio_dma_mapping_ops;
++}
++
++/**
++ * vio_cmo_bus_init - CMO entitlement initialization at bus init time
++ *
++ * Set up the reserve and excess entitlement pools based on available
++ * system entitlement and the number of devices in the OF tree that
++ * require entitlement in the reserve pool.
++ */
++static void vio_cmo_bus_init(void)
++{
++	struct hvcall_mpp_data mpp_data;
++	int err;
++
++	memset(&vio_cmo, 0, sizeof(struct vio_cmo));
++	spin_lock_init(&vio_cmo.lock);
++	INIT_LIST_HEAD(&vio_cmo.device_list);
++	INIT_DELAYED_WORK(&vio_cmo.balance_q, vio_cmo_balance);
++
++	/* Get current system entitlement */
++	err =3D h_get_mpp(&mpp_data);
++
++	/*
++	 * On failure, continue with entitlement set to 0, will panic()
++	 * later when spare is reserved.
++	 */
++	if (err !=3D H_SUCCESS) {
++		printk(KERN_ERR "%s: unable to determine system IO "\
++		       "entitlement. (%d)\n", __func__, err);
++		vio_cmo.entitled =3D 0;
++	} else {
++		vio_cmo.entitled =3D mpp_data.entitled_mem;
++	}
++
++	/* Set reservation and check against entitlement */
++	vio_cmo.spare =3D VIO_CMO_MIN_ENT;
++	vio_cmo.reserve.size =3D vio_cmo.spare;
++	vio_cmo.reserve.size +=3D (vio_cmo_num_OF_devs() *
++	                         VIO_CMO_MIN_ENT);
++	if (vio_cmo.reserve.size > vio_cmo.entitled) {
++		printk(KERN_ERR "%s: insufficient system entitlement\n",
++		       __func__);
++		panic("%s: Insufficient system entitlement", __func__);
++	}
++
++	/* Set the remaining accounting variables */
++	vio_cmo.excess.size =3D vio_cmo.entitled - vio_cmo.reserve.size;
++	vio_cmo.excess.free =3D vio_cmo.excess.size;
++	vio_cmo.min =3D vio_cmo.reserve.size;
++	vio_cmo.desired =3D vio_cmo.reserve.size;
++}
++
++/* sysfs device functions and data structures for CMO */
++
++#define viodev_cmo_rd_attr(name)                                        \
++static ssize_t viodev_cmo_##name##_show(struct device *dev,             \
++                                        struct device_attribute *attr,  \
++                                         char *buf)                     \
++{                                                                       \
++	return sprintf(buf, "%lu\n", to_vio_dev(dev)->cmo.name);        \
++}
++
++static ssize_t viodev_cmo_allocs_failed_show(struct device *dev,
++		struct device_attribute *attr, char *buf)
++{
++	struct vio_dev *viodev =3D to_vio_dev(dev);
++	return sprintf(buf, "%d\n", atomic_read(&viodev->cmo.allocs_failed));
++}
++
++static ssize_t viodev_cmo_allocs_failed_reset(struct device *dev,
++		struct device_attribute *attr, const char *buf, size_t count)
++{
++	struct vio_dev *viodev =3D to_vio_dev(dev);
++	atomic_set(&viodev->cmo.allocs_failed, 0);
++	return count;
++}
++
++static ssize_t viodev_cmo_desired_set(struct device *dev,
++		struct device_attribute *attr, const char *buf, size_t count)
++{
++	struct vio_dev *viodev =3D to_vio_dev(dev);
++	size_t new_desired;
++	int ret;
++
++	ret =3D strict_strtoul(buf, 10, &new_desired);
++	if (ret)
++		return ret;
++
++	vio_cmo_set_dev_desired(viodev, new_desired);
++	return count;
++}
++
++viodev_cmo_rd_attr(desired);
++viodev_cmo_rd_attr(entitled);
++viodev_cmo_rd_attr(allocated);
++
++static ssize_t name_show(struct device *, struct device_attribute *, char =
+*);
++static ssize_t devspec_show(struct device *, struct device_attribute *, ch=
+ar *);
++static struct device_attribute vio_cmo_dev_attrs[] =3D {
++	__ATTR_RO(name),
++	__ATTR_RO(devspec),
++	__ATTR(cmo_desired,       S_IWUSR|S_IRUSR|S_IWGRP|S_IRGRP|S_IROTH,
++	       viodev_cmo_desired_show, viodev_cmo_desired_set),
++	__ATTR(cmo_entitled,      S_IRUGO, viodev_cmo_entitled_show,      NULL),
++	__ATTR(cmo_allocated,     S_IRUGO, viodev_cmo_allocated_show,     NULL),
++	__ATTR(cmo_allocs_failed, S_IWUSR|S_IRUSR|S_IWGRP|S_IRGRP|S_IROTH,
++	       viodev_cmo_allocs_failed_show, viodev_cmo_allocs_failed_reset),
++	__ATTR_NULL
++};
++
++/* sysfs bus functions and data structures for CMO */
++
++#define viobus_cmo_rd_attr(name)                                        \
++static ssize_t                                                          \
++viobus_cmo_##name##_show(struct bus_type *bt, char *buf)                \
++{                                                                       \
++	return sprintf(buf, "%lu\n", vio_cmo.name);                     \
++}
++
++#define viobus_cmo_pool_rd_attr(name, var)                              \
++static ssize_t                                                          \
++viobus_cmo_##name##_pool_show_##var(struct bus_type *bt, char *buf)     \
++{                                                                       \
++	return sprintf(buf, "%lu\n", vio_cmo.name.var);                 \
++}
++
++static ssize_t viobus_cmo_high_reset(struct bus_type *bt, const char *buf,
++                                     size_t count)
++{
++	unsigned long flags;
++
++	spin_lock_irqsave(&vio_cmo.lock, flags);
++	vio_cmo.high =3D vio_cmo.curr;
++	spin_unlock_irqrestore(&vio_cmo.lock, flags);
++
++	return count;
++}
++
++viobus_cmo_rd_attr(entitled);
++viobus_cmo_pool_rd_attr(reserve, size);
++viobus_cmo_pool_rd_attr(excess, size);
++viobus_cmo_pool_rd_attr(excess, free);
++viobus_cmo_rd_attr(spare);
++viobus_cmo_rd_attr(min);
++viobus_cmo_rd_attr(desired);
++viobus_cmo_rd_attr(curr);
++viobus_cmo_rd_attr(high);
++
++static struct bus_attribute vio_cmo_bus_attrs[] =3D {
++	__ATTR(cmo_entitled, S_IRUGO, viobus_cmo_entitled_show, NULL),
++	__ATTR(cmo_reserve_size, S_IRUGO, viobus_cmo_reserve_pool_show_size, NULL=
+),
++	__ATTR(cmo_excess_size, S_IRUGO, viobus_cmo_excess_pool_show_size, NULL),
++	__ATTR(cmo_excess_free, S_IRUGO, viobus_cmo_excess_pool_show_free, NULL),
++	__ATTR(cmo_spare,   S_IRUGO, viobus_cmo_spare_show,   NULL),
++	__ATTR(cmo_min,     S_IRUGO, viobus_cmo_min_show,     NULL),
++	__ATTR(cmo_desired, S_IRUGO, viobus_cmo_desired_show, NULL),
++	__ATTR(cmo_curr,    S_IRUGO, viobus_cmo_curr_show,    NULL),
++	__ATTR(cmo_high,    S_IWUSR|S_IRUSR|S_IWGRP|S_IRGRP|S_IROTH,
++	       viobus_cmo_high_show, viobus_cmo_high_reset),
++	__ATTR_NULL
++};
++
++static void vio_cmo_sysfs_init(void)
++{
++	vio_bus_type.dev_attrs =3D vio_cmo_dev_attrs;
++	vio_bus_type.bus_attrs =3D vio_cmo_bus_attrs;
++}
++#else /* CONFIG_PPC_PSERIES */
++/* Dummy functions for iSeries platform */
++int vio_cmo_entitlement_update(size_t new_entitlement) { return 0; }
++void vio_cmo_set_dev_desired(struct vio_dev *viodev, size_t desired) {}
++static int vio_cmo_bus_probe(struct vio_dev *viodev) { return 0; }
++static void vio_cmo_bus_remove(struct vio_dev *viodev) {}
++static void vio_cmo_set_dma_ops(struct vio_dev *viodev) {}
++static void vio_cmo_bus_init() {}
++static void vio_cmo_sysfs_init() { }
++#endif /* CONFIG_PPC_PSERIES */
++EXPORT_SYMBOL(vio_cmo_entitlement_update);
++EXPORT_SYMBOL(vio_cmo_set_dev_desired);
++
+ static struct iommu_table *vio_build_iommu_table(struct vio_dev *dev)
+ {
+ 	const unsigned char *dma_window;
+@@ -114,8 +1096,17 @@ static int vio_bus_probe(struct device *
+ 		return error;
+=20
+ 	id =3D vio_match_device(viodrv->id_table, viodev);
+-	if (id)
++	if (id) {
++		memset(&viodev->cmo, 0, sizeof(viodev->cmo));
++		if (firmware_has_feature(FW_FEATURE_CMO)) {
++			error =3D vio_cmo_bus_probe(viodev);
++			if (error)
++				return error;
++		}
+ 		error =3D viodrv->probe(viodev, id);
++		if (error)
++			vio_cmo_bus_remove(viodev);
++	}
+=20
+ 	return error;
  }
- 
-@@ -1491,6 +1591,7 @@ static struct vio_driver ibmveth_driver 
- 	.id_table	= ibmveth_device_table,
- 	.probe		= ibmveth_probe,
- 	.remove		= ibmveth_remove,
-+	.get_desired_dma = ibmveth_get_desired_dma,
- 	.driver		= {
- 		.name	= ibmveth_driver_name,
- 		.owner	= THIS_MODULE,
-Index: b/drivers/net/ibmveth.h
-===================================================================
---- a/drivers/net/ibmveth.h
-+++ b/drivers/net/ibmveth.h
-@@ -93,9 +93,12 @@ static inline long h_illan_attributes(un
-   plpar_hcall_norets(H_CHANGE_LOGICAL_LAN_MAC, ua, mac)
- 
- #define IbmVethNumBufferPools 5
-+#define IBMVETH_IO_ENTITLEMENT_DEFAULT 4243456 /* MTU of 1500 needs 4.2Mb */
- #define IBMVETH_BUFF_OH 22 /* Overhead: 14 ethernet header + 8 opaque handle */
- #define IBMVETH_MAX_MTU 68
- #define IBMVETH_MAX_POOL_COUNT 4096
-+#define IBMVETH_BUFF_LIST_SIZE 4096
-+#define IBMVETH_FILT_LIST_SIZE 4096
- #define IBMVETH_MAX_BUF_SIZE (1024 * 128)
- 
- static int pool_size[] = { 512, 1024 * 2, 1024 * 16, 1024 * 32, 1024 * 64 };
-@@ -143,6 +146,8 @@ struct ibmveth_adapter {
-     struct ibmveth_rx_q rx_queue;
-     int pool_config;
-     int rx_csum;
-+    void *bounce_buffer;
-+    dma_addr_t bounce_buffer_dma;
- 
-     /* adapter specific stats */
-     u64 replenish_task_cycles;
+@@ -125,12 +1116,23 @@ static int vio_bus_remove(struct device=20
+ {
+ 	struct vio_dev *viodev =3D to_vio_dev(dev);
+ 	struct vio_driver *viodrv =3D to_vio_driver(dev->driver);
++	struct device *devptr;
++	int ret =3D 1;
++
++	/*
++	 * Hold a reference to the device after the remove function is called
++	 * to allow for CMO accounting cleanup for the device.
++	 */
++	devptr =3D get_device(dev);
+=20
+ 	if (viodrv->remove)
+-		return viodrv->remove(viodev);
++		ret =3D viodrv->remove(viodev);
+=20
+-	/* driver can't remove */
+-	return 1;
++	if (!ret && firmware_has_feature(FW_FEATURE_CMO))
++		vio_cmo_bus_remove(viodev);
++
++	put_device(devptr);
++	return ret;
+ }
+=20
+ /**
+@@ -215,7 +1217,11 @@ struct vio_dev *vio_register_device_node
+ 			viodev->unit_address =3D *unit_address;
+ 	}
+ 	viodev->dev.archdata.of_node =3D of_node_get(of_node);
+-	viodev->dev.archdata.dma_ops =3D &dma_iommu_ops;
++
++	if (firmware_has_feature(FW_FEATURE_CMO))
++		vio_cmo_set_dma_ops(viodev);
++	else
++		viodev->dev.archdata.dma_ops =3D &dma_iommu_ops;
+ 	viodev->dev.archdata.dma_data =3D vio_build_iommu_table(viodev);
+ 	viodev->dev.archdata.numa_node =3D of_node_to_nid(of_node);
+=20
+@@ -245,6 +1251,9 @@ static int __init vio_bus_init(void)
+ 	int err;
+ 	struct device_node *node_vroot;
+=20
++	if (firmware_has_feature(FW_FEATURE_CMO))
++		vio_cmo_sysfs_init();
++
+ 	err =3D bus_register(&vio_bus_type);
+ 	if (err) {
+ 		printk(KERN_ERR "failed to register VIO bus\n");
+@@ -262,6 +1271,9 @@ static int __init vio_bus_init(void)
+ 		return err;
+ 	}
+=20
++	if (firmware_has_feature(FW_FEATURE_CMO))
++		vio_cmo_bus_init();
++
+ 	node_vroot =3D of_find_node_by_name(NULL, "vdevice");
+ 	if (node_vroot) {
+ 		struct device_node *of_node;
+Index: b/include/asm-powerpc/vio.h
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- a/include/asm-powerpc/vio.h
++++ b/include/asm-powerpc/vio.h
+@@ -39,16 +39,32 @@
+ #define VIO_IRQ_DISABLE		0UL
+ #define VIO_IRQ_ENABLE		1UL
+=20
++/*
++ * VIO CMO minimum entitlement for all devices and spare entitlement
++ */
++#define VIO_CMO_MIN_ENT 1562624
++
+ struct iommu_table;
+=20
+-/*
+- * The vio_dev structure is used to describe virtual I/O devices.
++/**
++ * vio_dev - This structure is used to describe virtual I/O devices.
++ *
++ * @desired: set from return of driver's get_desired_dma() function
++ * @entitled: bytes of IO data that has been reserved for this device.
++ * @allocated: bytes of IO data currently in use by the device.
++ * @allocs_failed: number of DMA failures due to insufficient entitlement.
+  */
+ struct vio_dev {
+ 	const char *name;
+ 	const char *type;
+ 	uint32_t unit_address;
+ 	unsigned int irq;
++	struct {
++		size_t desired;
++		size_t entitled;
++		size_t allocated;
++		atomic_t allocs_failed;
++	} cmo;
+ 	struct device dev;
+ };
+=20
+@@ -56,12 +72,19 @@ struct vio_driver {
+ 	const struct vio_device_id *id_table;
+ 	int (*probe)(struct vio_dev *dev, const struct vio_device_id *id);
+ 	int (*remove)(struct vio_dev *dev);
++	/* A driver must have a get_desired_dma() function to
++	 * be loaded in a CMO environment if it uses DMA.
++	 */
++	unsigned long (*get_desired_dma)(struct vio_dev *dev);
+ 	struct device_driver driver;
+ };
+=20
+ extern int vio_register_driver(struct vio_driver *drv);
+ extern void vio_unregister_driver(struct vio_driver *drv);
+=20
++extern int vio_cmo_entitlement_update(size_t);
++extern void vio_cmo_set_dev_desired(struct vio_dev *viodev, size_t desired=
+);
++
+ extern void __devinit vio_unregister_device(struct vio_dev *dev);
+=20
+ struct device_node;
