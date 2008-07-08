@@ -1,15 +1,18 @@
-Return-Path: <gerickson@nuovations.com>
-Received: from relay02.pair.com (relay02.pair.com [209.68.5.16])
-	by ozlabs.org (Postfix) with SMTP id 4AFFADDF64
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 Jul 2008 01:03:15 +1000 (EST)
-From: Grant Erickson <gerickson@nuovations.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v2] ibm_newemac: Add MII mode support to the EMAC RGMII bridge.
-Date: Tue,  8 Jul 2008 08:03:06 -0700
-Message-Id: <1215529386-12749-1-git-send-email-gerickson@nuovations.com>
-In-Reply-To: <C497F939.104DB%gerickson@nuovations.com>
-References: <C497F939.104DB%gerickson@nuovations.com>
-Cc: sr@denx.de, jgarzik@pobox.com
+Return-Path: <davej@codemonkey.org.uk>
+Date: Tue, 8 Jul 2008 11:27:28 -0400
+From: Dave Jones <davej@codemonkey.org.uk>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: powerpc/cell/cpufreq: add spu aware cpufreq governor
+Message-ID: <20080708152728.GF4997@codemonkey.org.uk>
+References: <200807071702.31240.arnd@arndb.de>
+	<20080707213105.GD4997@codemonkey.org.uk>
+	<200807080843.43674.arnd@arndb.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <200807080843.43674.arnd@arndb.de>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, cpufreq@lists.linux.org.uk,
+	linuxppc-dev@ozlabs.org, Jeremy Kerr <jk@ozlabs.org>,
+	cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,56 +22,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch adds support to the RGMII handler in the EMAC driver for
-the MII PHY mode such that device tree entries of the form `phy-mode = "mii";'
-are recognized and handled appropriately.
+On Tue, Jul 08, 2008 at 08:43:43AM +0200, Arnd Bergmann wrote:
+ > On Monday 07 July 2008, Dave Jones wrote:
+ > > One question I do have though, is how userspace scripts are supposed
+ > > to know they're to echo cbe_spu_governor into the relevant parts of
+ > > sysfs.  I've not used anything with a cell. Do they expose the SPUs
+ > > as regular CPUs, or do they show up in a different part of the tree?
+ > 
+ > An SPU is very different from a CPU from the user perspective.
+ > SPUs show up in /sys/devices/system/spus, and if a user wants to access
+ > them, the "spufs" file system needs to be mounted in the system, by
+ > convention on /spu. 
 
-While logically, in software, "gmii" and "mii" modes are the same,
-they are wired differently, so it makes sense to allow DTS authors to
-specify each explicitly.
+Ok, that should be fairly simple to write scripts for.
+All sounds good to me.
 
-Signed-off-by: Grant Erickson <gerickson@nuovations.com>
----
- drivers/net/ibm_newemac/rgmii.c |    6 ++++++
- 1 files changed, 6 insertions(+), 0 deletions(-)
+	Dave
 
-diff --git a/drivers/net/ibm_newemac/rgmii.c b/drivers/net/ibm_newemac/rgmii.c
-index e32da3d..5acb006 100644
---- a/drivers/net/ibm_newemac/rgmii.c
-+++ b/drivers/net/ibm_newemac/rgmii.c
-@@ -39,6 +39,7 @@
- #define RGMII_FER_RGMII(idx)	(0x5 << ((idx) * 4))
- #define RGMII_FER_TBI(idx)	(0x6 << ((idx) * 4))
- #define RGMII_FER_GMII(idx)	(0x7 << ((idx) * 4))
-+#define RGMII_FER_MII(idx)	RGMII_FER_GMII(idx)
- 
- /* RGMIIx_SSR */
- #define RGMII_SSR_MASK(idx)	(0x7 << ((idx) * 8))
-@@ -49,6 +50,7 @@
- static inline int rgmii_valid_mode(int phy_mode)
- {
- 	return  phy_mode == PHY_MODE_GMII ||
-+		phy_mode == PHY_MODE_MII ||
- 		phy_mode == PHY_MODE_RGMII ||
- 		phy_mode == PHY_MODE_TBI ||
- 		phy_mode == PHY_MODE_RTBI;
-@@ -63,6 +65,8 @@ static inline const char *rgmii_mode_name(int mode)
- 		return "TBI";
- 	case PHY_MODE_GMII:
- 		return "GMII";
-+	case PHY_MODE_MII:
-+		return "MII";
- 	case PHY_MODE_RTBI:
- 		return "RTBI";
- 	default:
-@@ -79,6 +83,8 @@ static inline u32 rgmii_mode_mask(int mode, int input)
- 		return RGMII_FER_TBI(input);
- 	case PHY_MODE_GMII:
- 		return RGMII_FER_GMII(input);
-+	case PHY_MODE_MII:
-+		return RGMII_FER_MII(input);
- 	case PHY_MODE_RTBI:
- 		return RGMII_FER_RTBI(input);
- 	default:
---
-1.5.4.3
+-- 
+http://www.codemonkey.org.uk
