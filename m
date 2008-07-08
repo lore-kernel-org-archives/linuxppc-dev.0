@@ -1,22 +1,21 @@
-Return-Path: <sfr@canb.auug.org.au>
-Date: Tue, 8 Jul 2008 12:40:38 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Josh Boyer <jwboyer@gmail.com>
-Subject: Re: [Cbe-oss-dev] [patch 05/11] powerpc/cell: add spu aware cpufreq
-	governor
-Message-Id: <20080708124038.cedae8f2.sfr@canb.auug.org.au>
-In-Reply-To: <1215465477.20774.65.camel@weaponx>
-References: <20080704190535.316377278@arndb.de>
-	<200807071659.23476.arnd@arndb.de>
-	<1215444942.20774.50.camel@weaponx>
-	<200807072315.13666.arnd@arndb.de>
-	<1215465477.20774.65.camel@weaponx>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Tue__8_Jul_2008_12_40_38_+1000_o2S67Rz82cjpXdIp"
-Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org,
-	Arnd Bergmann <arnd@arndb.de>
+Return-Path: <zippel@linux-m68k.org>
+Received: from smtp-vbr13.xs4all.nl (smtp-vbr13.xs4all.nl [194.109.24.33])
+	by ozlabs.org (Postfix) with ESMTP id 52360DDEE3
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jul 2008 12:56:04 +1000 (EST)
+Date: Tue, 8 Jul 2008 04:55:49 +0200 (CEST)
+From: Roman Zippel <zippel@linux-m68k.org>
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: linux-next: kbuild tree build failure
+In-Reply-To: <1215473798.8138.4.camel@localhost>
+Message-ID: <Pine.LNX.4.64.0807080437550.6791@localhost.localdomain>
+References: <20080707184038.aaeb8d40.sfr@canb.auug.org.au>
+	<Pine.LNX.4.64.0807071424240.6791@localhost.localdomain>
+	<1215473798.8138.4.camel@localhost>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+	Paul Mackerras <paulus@samba.org>,
+	Sam Ravnborg <sam@ravnborg.org>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,53 +25,77 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Tue__8_Jul_2008_12_40_38_+1000_o2S67Rz82cjpXdIp
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hi,
 
-On Mon, 07 Jul 2008 17:17:57 -0400 Josh Boyer <jwboyer@gmail.com> wrote:
->
-> On Mon, 2008-07-07 at 23:15 +0200, Arnd Bergmann wrote:
-> > On Monday 07 July 2008, Josh Boyer wrote:
-> > >=20
-> > > On Mon, 2008-07-07 at 16:59 +0200, Arnd Bergmann wrote:
-> > > > On Monday 07 July 2008, Stephen Rothwell wrote:
-> > > > > > +#define POLL_TIME    100000          /* in us */
-> > > > >                                               ^
-> > > > > How about =CE=BC ?
-> > > >=20
-> > > > Not sure, how about =C2=B5 instead? ;-)
-> > >=20
-> > > Erm... don't get it.  You have identical characters here.
-> >=20
-> > That depends on the tool you use to look at it.
-> >=20
-> > Stephen wrote a Unicode character U+03BC from the Greek alphabet part of
-> > unicode, I wrote unicode character U+00B5 from the Latin-1 code page.
-> > In my mail client, latin-1 characters get rendered in the default font,
-> > but it has to change the font for less common scripts.
->=20
-> I thought Unicode was supposed to _improve_ stuff like that... ;)
+On Tue, 8 Jul 2008, Michael Ellerman wrote:
 
-In fact, Arnd was right, I used the Greek letter mu (=CE=BC) while he chose=
- the
-micro sign (=C2=B5).  So, the lartter (Unicode 0x00B5) it should be.
+> I don't really see why it "doesn't make sense" for users to input 64-bit
+> values, they're configuring addresses for a 64-bit kernel, so some of
+> the values are going to be 64 bit.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Do you really expect users to insert random 64bit addresses without making 
+a mistake?
+Please make a realistic case, where the user input of a full 64bit value 
+is required (i.e. where it's not easier to just offer the user a few 
+choices).
+Currently there is simply no need for this, as even powerpc only used them 
+as constants here.
 
---Signature=_Tue__8_Jul_2008_12_40_38_+1000_o2S67Rz82cjpXdIp
-Content-Type: application/pgp-signature
+> > Index: linux-2.6/arch/powerpc/Kconfig
+> > ===================================================================
+> > --- linux-2.6.orig/arch/powerpc/Kconfig
+> > +++ linux-2.6/arch/powerpc/Kconfig
+> > @@ -714,8 +714,8 @@ config PHYSICAL_START_BOOL
+> >  
+> >  config PHYSICAL_START
+> >  	hex "Physical address where the kernel is loaded" if PHYSICAL_START_BOOL
+> > -	default "0x02000000" if PPC_STD_MMU && CRASH_DUMP
+> > -	default "0x00000000"
+> > +	default "0x2000000" if PPC_STD_MMU && CRASH_DUMP
+> > +	default "0"
+> >  
+> >  config PHYSICAL_ALIGN
+> >  	hex
+> > @@ -763,7 +763,7 @@ config CONSISTENT_SIZE_BOOL
+> >  
+> >  config CONSISTENT_SIZE
+> >  	hex "Size of consistent memory pool" if CONSISTENT_SIZE_BOOL
+> > -	default "0x00200000" if NOT_COHERENT_CACHE
+> > +	default "0x200000" if NOT_COHERENT_CACHE
+> >  
+> >  config PIN_TLB
+> >  	bool "Pinned Kernel TLBs (860 ONLY)"
+> > @@ -773,15 +773,11 @@ endmenu
+> >  if PPC64
+> >  config PAGE_OFFSET
+> >  	hex
+> > -	default "0xc000000000000000"
+> > -config KERNEL_START
+> > -	hex
+> > -	default "0xc000000002000000" if CRASH_DUMP
+> > -	default "0xc000000000000000"
+> > +	default "0xc0000000"
+> 
+> I don't see where you cope with the "if CRASH_DUMP" case, and in fact my
+> config changes for the worse when I apply your patch and regenerate my
+> config:
+> 
+> --- .config.orig	2008-07-08 09:30:00.000000000 +1000
+> +++ .config	2008-07-08 09:30:43.000000000 +1000
+> @@ -370,9 +370,8 @@
+>  CONFIG_HOTPLUG_PCI_RPA=m
+>  CONFIG_HOTPLUG_PCI_RPA_DLPAR=m
+>  # CONFIG_HAS_RAPIDIO is not set
+> -CONFIG_PAGE_OFFSET=0xc000000000000000
+> -CONFIG_KERNEL_START=0xc000000002000000
+> -CONFIG_PHYSICAL_START=0x02000000
+> +CONFIG_PAGE_OFFSET=0xc0000000
+> +CONFIG_PHYSICAL_START=0x2000000
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+Why is this worse? These are constants, you're not supposed to change them 
+anyway.
+The remaining values are generated in page.h and should be the same as 
+before. If that isn't the case and this patch produces a nonworking 
+kernel, I'd like to hear about it.
 
-iEYEARECAAYFAkhy06YACgkQjjKRsyhoI8xPmACggIGUXvXnx3YcVCzMjq9jYyhy
-mCsAn0ney94gGAZfk8+df0saPpZt5PF1
-=b+IL
------END PGP SIGNATURE-----
-
---Signature=_Tue__8_Jul_2008_12_40_38_+1000_o2S67Rz82cjpXdIp--
+bye, Roman
