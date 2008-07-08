@@ -1,13 +1,15 @@
-Return-Path: <vitb@kernel.crashing.org>
-Date: Tue, 8 Jul 2008 20:49:19 +0400
-From: Vitaly Bordug <vitb@kernel.crashing.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: powerpc: Add missing  reference to coherent_dma_mask
-Message-ID: <20080708204919.4ccab01a@vitb-lp>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id A38A6DDD0B
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 Jul 2008 03:36:34 +1000 (EST)
+Date: Tue, 8 Jul 2008 21:36:32 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: [PATCH 1/2] powerpc/83xx: fix ULPI setup for MPC8315 processors
+Message-ID: <20080708173632.GA7140@polina.dev.rtsoft.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf8
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,26 +19,73 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-There is dma_mask in of_device upon of_platform_device_create()
-but we don't actually set coherent_dma_mask. This may cause weird 
-behavior of USB subsystem using of_device USB host drivers.
+We must not use MPC831X_SICR[HL]_* definitions for the MPC8315 processors,
+because SICR USB bits locations are not compatible with MPC8313.
 
-Signed-off-by: Vitaly Bordug <vitb@kernel.crashing.org>
+This patch fixes ULPI workability on MPC8315E-RDB boards.
+
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
+ arch/powerpc/platforms/83xx/mpc83xx.h |    4 ++++
+ arch/powerpc/platforms/83xx/usb.c     |   24 +++++++++++++++---------
+ 2 files changed, 19 insertions(+), 9 deletions(-)
 
- arch/powerpc/kernel/of_platform.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
-
-diff --git a/arch/powerpc/kernel/of_platform.c b/arch/powerpc/kernel/of_platform.c
-index e79ad8a..3f37a6e 100644
---- a/arch/powerpc/kernel/of_platform.c
-+++ b/arch/powerpc/kernel/of_platform.c
-@@ -76,6 +76,8 @@ struct of_device* of_platform_device_create(struct device_node *np,
- 		return NULL;
+diff --git a/arch/powerpc/platforms/83xx/mpc83xx.h b/arch/powerpc/platforms/83xx/mpc83xx.h
+index 88a3b5c..a8dcb81 100644
+--- a/arch/powerpc/platforms/83xx/mpc83xx.h
++++ b/arch/powerpc/platforms/83xx/mpc83xx.h
+@@ -26,6 +26,8 @@
+ #define MPC834X_SICRL_USB1         0x20000000
+ #define MPC831X_SICRL_USB_MASK     0x00000c00
+ #define MPC831X_SICRL_USB_ULPI     0x00000800
++#define MPC8315_SICRL_USB_MASK     0x000000fc
++#define MPC8315_SICRL_USB_ULPI     0x00000054
+ #define MPC837X_SICRL_USB_MASK     0xf0000000
+ #define MPC837X_SICRL_USB_ULPI     0x50000000
  
- 	dev->dma_mask = 0xffffffffUL;
-+	dev->dev.coherent_dma_mask = DMA_32BIT_MASK;
-+
- 	dev->dev.bus = &of_platform_bus_type;
+@@ -34,6 +36,8 @@
+ #define MPC834X_SICRH_USB_UTMI     0x00020000
+ #define MPC831X_SICRH_USB_MASK     0x000000e0
+ #define MPC831X_SICRH_USB_ULPI     0x000000a0
++#define MPC8315_SICRH_USB_MASK     0x0000ff00
++#define MPC8315_SICRH_USB_ULPI     0x00000000
  
- 	/* We do not fill the DMA ops for platform devices by default.
+ /* USB Control Register */
+ #define FSL_USB2_CONTROL_OFFS      0x500
+diff --git a/arch/powerpc/platforms/83xx/usb.c b/arch/powerpc/platforms/83xx/usb.c
+index 64bcf0a..cc99c28 100644
+--- a/arch/powerpc/platforms/83xx/usb.c
++++ b/arch/powerpc/platforms/83xx/usb.c
+@@ -137,15 +137,21 @@ int mpc831x_usb_cfg(void)
+ 
+ 	/* Configure pin mux for ULPI.  There is no pin mux for UTMI */
+ 	if (prop && !strcmp(prop, "ulpi")) {
+-		temp = in_be32(immap + MPC83XX_SICRL_OFFS);
+-		temp &= ~MPC831X_SICRL_USB_MASK;
+-		temp |= MPC831X_SICRL_USB_ULPI;
+-		out_be32(immap + MPC83XX_SICRL_OFFS, temp);
+-
+-		temp = in_be32(immap + MPC83XX_SICRH_OFFS);
+-		temp &= ~MPC831X_SICRH_USB_MASK;
+-		temp |= MPC831X_SICRH_USB_ULPI;
+-		out_be32(immap + MPC83XX_SICRH_OFFS, temp);
++		if (of_device_is_compatible(immr_node, "fsl,mpc8315-immr")) {
++			clrsetbits_be32(immap + MPC83XX_SICRL_OFFS,
++					MPC8315_SICRL_USB_MASK,
++					MPC8315_SICRL_USB_ULPI);
++			clrsetbits_be32(immap + MPC83XX_SICRH_OFFS,
++					MPC8315_SICRH_USB_MASK,
++					MPC8315_SICRH_USB_ULPI);
++		} else {
++			clrsetbits_be32(immap + MPC83XX_SICRL_OFFS,
++					MPC831X_SICRL_USB_MASK,
++					MPC831X_SICRL_USB_ULPI);
++			clrsetbits_be32(immap + MPC83XX_SICRH_OFFS,
++					MPC831X_SICRH_USB_MASK,
++					MPC831X_SICRH_USB_ULPI);
++		}
+ 	}
+ 
+ 	iounmap(immap);
+-- 
+1.5.5.4
