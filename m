@@ -1,29 +1,14 @@
-Return-Path: <mmlnx@us.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 02211DDEFD
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jul 2008 13:18:58 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e31.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m683IsPO029949
-	for <linuxppc-dev@ozlabs.org>; Mon, 7 Jul 2008 23:18:54 -0400
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
-	m683Isjc170442
-	for <linuxppc-dev@ozlabs.org>; Mon, 7 Jul 2008 21:18:54 -0600
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m683IrEL009984
-	for <linuxppc-dev@ozlabs.org>; Mon, 7 Jul 2008 21:18:54 -0600
-Message-ID: <4872DC9C.4000706@us.ibm.com>
-Date: Mon, 07 Jul 2008 20:18:52 -0700
-From: Mike Mason <mmlnx@us.ibm.com>
+Return-Path: <dgibson@ozlabs.org>
+Date: Tue, 8 Jul 2008 13:16:41 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: John Linn <john.linn@xilinx.com>
+Subject: Re: [PATCH] [V2] powerpc: Xilinx: add dts file for ML507 board
+Message-ID: <20080708031641.GA1549@yookeroo.seuss>
+References: <20080707180508.4E2CBE8081@mail72-dub.bigfish.com>
 MIME-Version: 1.0
-To: paulus@samba.org, benh@kernel.crashing.org, linasvepstas@gmail.com,
-	linuxppc-dev@ozlabs.org
-Subject: [PATCH] Restore PERR/SERR bit settings during EEH device recovery
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080707180508.4E2CBE8081@mail72-dub.bigfish.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,39 +18,80 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The following patch restores the PERR and SERR bits in the PCI
-command register during an EEH device recovery.
-We have found at least one case (an Agilent test card) where the
-PERR/SERR bits are set to 1 by firmware at boot time, but are
-not restored to 1 during EEH recovery.  The patch fixes the
-Agilent card problem.  It has been tested on several other 
-EEH-enabled cards with no regressions.
+On Mon, Jul 07, 2008 at 11:04:59AM -0700, John Linn wrote:
+> This new file adds support for the ML507 board which
+> has a Virtex 5 FXT FPGA with a 440.
+> 
+> Signed-off-by: John Linn <john.linn@xilinx.com>
+> ---
+> V2
+> 	Converted to dts-v1 format.
+> 	Changed to match a newer reference design.
+> 
+>  arch/powerpc/boot/dts/virtex440-ml507.dts |  296 +++++++++++++++++++++++++++++
+>  1 files changed, 296 insertions(+), 0 deletions(-)
+>  create mode 100644 arch/powerpc/boot/dts/virtex440-ml507.dts
+> 
+> diff --git a/arch/powerpc/boot/dts/virtex440-ml507.dts b/arch/powerpc/boot/dts/virtex440-ml507.dts
+> new file mode 100644
+> index 0000000..d10a993
+> --- /dev/null
+> +++ b/arch/powerpc/boot/dts/virtex440-ml507.dts
+> @@ -0,0 +1,296 @@
+> +/*
+> + * This file supports the Xilinx ML507 board with the 440 processor.
+> + * A reference design for the FPGA is provided at http://git.xilinx.com.
+> + *
+> + * (C) Copyright 2008 Xilinx, Inc.
+> + *
+> + * This file is licensed under the terms of the GNU General Public License
+> + * version 2. This program is licensed "as is" without any warranty of any
+> + * kind, whether express or implied.
+> + */
+> +
+> +/dts-v1/;
+> +
+> +/ {
+> +	#address-cells = <1>;
+> +	#size-cells = <1>;
+> +	compatible = "xlnx,virtex440";
+> +	dcr-parent = <&ppc440_0>;
+> +	model = "testing";
+> +	DDR2_SDRAM: memory@0 {
+> +		device_type = "memory";
+> +		reg = < 0 0x10000000 >;
+> +	} ;
+> +	chosen {
+> +		bootargs = "console=ttyS0 ip=on root=/dev/ram";
 
-Signed-off-by: Mike Mason <mmlnx@us.ibm.com>
+Bootargs like this should not typically go in the dts file.
 
---- linux-2.6.26-rc9/arch/powerpc/platforms/pseries/eeh.c	2008-07-07 16:06:57.000000000 -0700
-+++ linux-2.6.26-rc9-new/arch/powerpc/platforms/pseries/eeh.c	2008-07-07 16:11:10.000000000 -0700
-@@ -812,6 +812,7 @@
- static inline void __restore_bars (struct pci_dn *pdn)
- {
- 	int i;
-+	u32 cmd;
- 
- 	if (NULL==pdn->phb) return;
- 	for (i=4; i<10; i++) {
-@@ -832,6 +833,15 @@
- 
- 	/* max latency, min grant, interrupt pin and line */
- 	rtas_write_config(pdn, 15*4, 4, pdn->config_space[15]);
-+
-+	/* Restore PERR & SERR bits, some devices require it,
-+	   don't touch the other command bits */
-+	rtas_read_config(pdn, PCI_COMMAND, 4, &cmd);
-+	if (pdn->config_space[1] & PCI_COMMAND_PARITY)
-+		cmd |= PCI_COMMAND_PARITY;
-+	if (pdn->config_space[1] & PCI_COMMAND_SERR)
-+		cmd |= PCI_COMMAND_SERR;
-+	rtas_write_config(pdn, PCI_COMMAND, 4, cmd);
- }
- 
- /**
+> +		linux,stdout-path = "/plb@0/serial@83e00000";
+> +	} ;
+> +	cpus {
+> +		#address-cells = <1>;
+> +		#cpus = <1>;
+> +		#size-cells = <0>;
+> +		ppc440_0: cpu@0 {
+> +			clock-frequency = "";
+
+Presumably this is supposed to be filled in by the bootloader.  But in
+any case it shouldn't be a string.
+
+[snip]
+> +			DMA0: sdma@80 {
+> +				compatible = "xlnx,ll-dma-1.00.a";
+> +				dcr-reg = < 0x80 0x11 >;
+> +				interrupt-parent = <&xps_intc_0>;
+> +				interrupts = < 9 2 0xa 2 >;
+> +			} ;
+
+Putting devices under the cpu node is certainly... atypical.  It's not
+obviously wrong, for a dcr device like this, but we probably want a
+little more discussion before establishing a convention like this.
+
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
