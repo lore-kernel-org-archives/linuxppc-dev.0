@@ -1,25 +1,23 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 0AF0FDDE1E
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jul 2008 23:29:06 +1000 (EST)
-Message-Id: <272CD580-72C6-4671-8588-8385A4C2300F@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-In-Reply-To: <20080703112835.c082177b.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v926)
-Subject: Re: [PATCH 06/12] net: use linux/of_{device,
-	platform}.h instead of asm
-Date: Tue, 8 Jul 2008 08:28:49 -0500
-References: <20080523161627.a75d5010.sfr@canb.auug.org.au>
-	<20080523162854.2e6ea8f0.sfr@canb.auug.org.au>
-	<4864737D.80306@garzik.org>
-	<C87095E8-991D-4730-8C5A-B132A3157727@kernel.crashing.org>
-	<20080703112835.c082177b.sfr@canb.auug.org.au>
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>, Jeff Garzik <jeff@garzik.org>,
-	netdev@vger.kernel.org
+Return-Path: <shaggy@linux.vnet.ibm.com>
+Subject: Re: [patch 1/6] mm: Allow architectures to define additional
+	protection bits
+From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org
+In-Reply-To: <1215497929.8970.207.camel@pasglop>
+References: <20080618223254.966080905@linux.vnet.ibm.com>
+	<20080618223328.856102092@linux.vnet.ibm.com>
+	<20080701015301.3dc8749b.akpm@linux-foundation.org>
+	<1214920499.18690.10.camel@norville.austin.ibm.com>
+	<1215409956.8970.82.camel@pasglop>
+	<Pine.LNX.4.64.0807072143200.27181@blonde.site>
+	<1215469468.8970.143.camel@pasglop> <1215497929.8970.207.camel@pasglop>
+Content-Type: text/plain
+Date: Tue, 08 Jul 2008 08:35:51 -0500
+Message-Id: <1215524151.20459.4.camel@norville.austin.ibm.com>
+Mime-Version: 1.0
+Cc: Hugh Dickins <hugh@veritas.com>, Andrew Morton <akpm@linux-foundation.org>,
+	Linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@au1.ibm.com>,
+	linux-mm@kvack.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,25 +27,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Tue, 2008-07-08 at 16:18 +1000, Benjamin Herrenschmidt wrote:
 
-On Jul 2, 2008, at 8:28 PM, Stephen Rothwell wrote:
+> Andrew, what tree should this go via ? I have further powerpc patches
+> depending on this one... so on one hand I'd be happy to take it, but
+> on the other hand, it's more likely to clash with other things...
 
-> Hi Kumar,
->
-> On Wed, 2 Jul 2008 02:55:29 -0500 Kumar Gala <galak@kernel.crashing.org 
-> > wrote:
->>
->> I'll pick it up (since it mainly touches fsl enet controllers) if you
->> can repost it.  I seem to have lost the patch.
->
-> Here you go.
-> -- 
-> Cheers,
-> Stephen Rothwell                    sfr@canb.auug.org.au
-> http://www.canb.auug.org.au/~sfr/
+Andrew has asked that it go through Paul, which now means you.
 
-Thanks, there have been a number of changes so this doesn't apply  
-anymore.  I'd suggest we hold on to it for a little while and let the  
-driver churn calm down first.
+"It'd be simpler if Paul were to merge this.  It doesn't conflict with
+any pending work."
+http://ozlabs.org/pipermail/linuxppc-dev/2008-July/058948.html
 
-- k
+> 
+> Maybe I should check how it applies on top of linux-next.
+
+Looks pretty clean:
+
+patching file include/linux/mman.h
+patching file mm/mmap.c
+patching file mm/mprotect.c
+Hunk #1 succeeded at 237 (offset -2 lines).
+
+Thanks,
+Shaggy
+-- 
+David Kleikamp
+IBM Linux Technology Center
