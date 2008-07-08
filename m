@@ -1,20 +1,20 @@
-Return-Path: <linasvepstas@gmail.com>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.244])
-	by ozlabs.org (Postfix) with ESMTP id D9B33DDF06
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jul 2008 23:38:41 +1000 (EST)
-Received: by an-out-0708.google.com with SMTP id c34so992126anc.78
-	for <linuxppc-dev@ozlabs.org>; Tue, 08 Jul 2008 06:38:40 -0700 (PDT)
-Message-ID: <3ae3aa420807080638t41e8851bx2ad061dd5a4e0279@mail.gmail.com>
-Date: Tue, 8 Jul 2008 08:38:35 -0500
-From: "Linas Vepstas" <linasvepstas@gmail.com>
-To: "Mike Mason" <mmlnx@us.ibm.com>
-Subject: Re: [PATCH] Restore PERR/SERR bit settings during EEH device recovery
-In-Reply-To: <4872DC9C.4000706@us.ibm.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from hs-out-0708.google.com (hs-out-0708.google.com [64.233.178.247])
+	by ozlabs.org (Postfix) with ESMTP id 4181DDDEEF
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 Jul 2008 00:19:03 +1000 (EST)
+Received: by hs-out-0708.google.com with SMTP id z77so640491hsz.9
+	for <linuxppc-dev@ozlabs.org>; Tue, 08 Jul 2008 07:19:00 -0700 (PDT)
+Message-ID: <fa686aa40807080719r4b7b01f7n7863fe1456a3e64@mail.gmail.com>
+Date: Tue, 8 Jul 2008 08:19:00 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Paolo Doz" <paolo.doz@gmail.com>
+Subject: Re: While(1) in kernel space
+In-Reply-To: <5468b7f30807080055p69571979i9a565653e523c2c0@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-References: <4872DC9C.4000706@us.ibm.com>
-Cc: paulus@samba.org, linuxppc-dev@ozlabs.org
-Reply-To: linasvepstas@gmail.com
+Content-Type: text/plain; charset=ISO-8859-1
+References: <5468b7f30807080055p69571979i9a565653e523c2c0@mail.gmail.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,57 +24,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-2008/7/7 Mike Mason <mmlnx@us.ibm.com>:
-> The following patch restores the PERR and SERR bits in the PCI
-> command register during an EEH device recovery.
-> We have found at least one case (an Agilent test card) where the
-> PERR/SERR bits are set to 1 by firmware at boot time, but are
-> not restored to 1 during EEH recovery.
-
-Any chance they should be zero, and were accidentally set to 1?
-In which case, you'd need an else clause, below.
-
-> The patch fixes the
-> Agilent card problem.  It has been tested on several other EEH-enabled cards
-> with no regressions.
+On Tue, Jul 8, 2008 at 1:55 AM, Paolo Doz <paolo.doz@gmail.com> wrote:
+> Hi folks,
+> I'm developing a custom SPI driver (char device) on a MPC5200b, the
+> microcontroller linked as slave implements a protocol that must follow
+> strict timing constraints. I need to receive and send messages every 6msec.
+> Actually there is a user space program that synchronizes the two units, but
+> I would prefer to eliminate it and move the relative code into the kernel
+> space. Is it possible to have a non returning function, with a sort of
+> while(1) inside?
 >
-> Signed-off-by: Mike Mason <mmlnx@us.ibm.com>
->
-> --- linux-2.6.26-rc9/arch/powerpc/platforms/pseries/eeh.c       2008-07-07
-> 16:06:57.000000000 -0700
-> +++ linux-2.6.26-rc9-new/arch/powerpc/platforms/pseries/eeh.c   2008-07-07
-> 16:11:10.000000000 -0700
-> @@ -812,6 +812,7 @@
-> static inline void __restore_bars (struct pci_dn *pdn)
-> {
->        int i;
-> +       u32 cmd;
->
->        if (NULL==pdn->phb) return;
->        for (i=4; i<10; i++) {
-> @@ -832,6 +833,15 @@
->
->        /* max latency, min grant, interrupt pin and line */
->        rtas_write_config(pdn, 15*4, 4, pdn->config_space[15]);
-> +
-> +       /* Restore PERR & SERR bits, some devices require it,
-> +          don't touch the other command bits */
-> +       rtas_read_config(pdn, PCI_COMMAND, 4, &cmd);
-> +       if (pdn->config_space[1] & PCI_COMMAND_PARITY)
-> +               cmd |= PCI_COMMAND_PARITY;
+> Thanks for the help
 
-else cmd &= ~PCI_COMMAND_PARITY;
+You can use a kernel thread.
 
-> +       if (pdn->config_space[1] & PCI_COMMAND_SERR)
-> +               cmd |= PCI_COMMAND_SERR;
+I'm not sure how accurate this is, but here is some information about them:
 
-else cmd &= ~PCI_COMMAND_SERR;
-
-> +       rtas_write_config(pdn, PCI_COMMAND, 4, cmd);
-> }
-
-Other than that, I'll add an
-
-Acked-by: Linas Vepstas <linasvepstas@gmail.com>
-
---linas
+http://www.linuxquestions.org/linux/articles/Technical/Linux_Kernel_Thread
