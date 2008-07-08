@@ -1,24 +1,24 @@
-Return-Path: <benh@kernel.crashing.org>
-Subject: Re: [patch 1/6] mm: Allow architectures to define additional
-	protection bits
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Hugh Dickins <hugh@veritas.com>
-In-Reply-To: <1215469468.8970.143.camel@pasglop>
-References: <20080618223254.966080905@linux.vnet.ibm.com>
-	<20080618223328.856102092@linux.vnet.ibm.com>
-	<20080701015301.3dc8749b.akpm@linux-foundation.org>
-	<1214920499.18690.10.camel@norville.austin.ibm.com>
-	<1215409956.8970.82.camel@pasglop>
-	<Pine.LNX.4.64.0807072143200.27181@blonde.site>
-	<1215469468.8970.143.camel@pasglop>
-Content-Type: text/plain
-Date: Tue, 08 Jul 2008 16:18:49 +1000
-Message-Id: <1215497929.8970.207.camel@pasglop>
-Mime-Version: 1.0
-Cc: linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>,
-	Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-	Paul Mackerras <paulus@au1.ibm.com>, Linuxppc-dev@ozlabs.org
-Reply-To: benh@kernel.crashing.org
+Return-Path: <monstr@seznam.cz>
+Received: from mxl.seznam.cz (mxl.seznam.cz [77.75.72.44])
+	by ozlabs.org (Postfix) with ESMTP id B7570DDEFE
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jul 2008 16:30:46 +1000 (EST)
+Message-ID: <48730695.5010004@seznam.cz>
+Date: Tue, 08 Jul 2008 08:17:57 +0200
+From: Michal Simek <monstr@seznam.cz>
+MIME-Version: 1.0
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH 31/60] microblaze_v4: memory inicialization, MMU, TLB
+References: <1214483429-32360-1-git-send-email-monstr@seznam.cz>	<1214483429-32360-31-git-send-email-monstr@seznam.cz>	<1214483429-32360-32-git-send-email-monstr@seznam.cz>
+	<200806261714.12967.arnd@arndb.de>
+In-Reply-To: <200806261714.12967.arnd@arndb.de>
+Content-Type: text/plain; charset=ISO-8859-2
+Cc: linux-arch@vger.kernel.org, Michal Simek <monstr@monstr.eu>,
+	vapier.adi@gmail.com, matthew@wil.cx,
+	microblaze-uclinux@itee.uq.edu.au, linux-kernel@vger.kernel.org,
+	John.Linn@xilinx.com, linuxppc-dev@ozlabs.org,
+	will.newton@gmail.com, john.williams@petalogix.com,
+	hpa@zytor.com, drepper@redhat.com, alan@lxorguk.ukuu.org.uk
+Reply-To: monstr@seznam.cz
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,34 +28,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2008-07-08 at 08:24 +1000, Benjamin Herrenschmidt wrote:
-> > There is a little inconsistency, that arch_calc_vm_prot_bits
-> > and arch_vm_get_page_prot just handle the exceptional flag (SAO),
-> > whereas arch_validate_prot handles all of them; but I don't feel
-> > so strongly about that to suggest resubmission.
-> > 
-> > And regarding VM_SAO added to include/linux/mm.h in 3/6: although
-> > it's odd to be weaving back and forth between arch-specific and
-> > common, it's already the case that mman definitions and pgtable
-> > definitions are arch-specific but mm.h common: I'm much happier
-> > to have VM_SAO defined once there as Dave has it, than get into
-> > arch-specific vm_flags.
-> > 
-> > Is someone going to be asking for PROT_WC shortly?
+Hi Arnd,
+
+> On Thursday 26 June 2008, monstr@seznam.cz wrote:
 > 
-> I'll definitely come with PROT_ENDIAN soon :-) (ie, some powerpc
-> processors can have a per-page endian flag that when set causes all
-> load/store instructions on this are to be byte-flipped, support for
-> this
-> feature has been requested for some time, and now I have the
-> infrastructure to do it).
+>> +#include <linux/autoconf.h>
+> 
+> You should never need to include linux/autoconf.h anywhere,
+> just remove this.
 
-BTW. Do we have your ack ?
+Remove from all files
 
-Andrew, what tree should this go via ? I have further powerpc patches
-depending on this one... so on one hand I'd be happy to take it, but
-on the other hand, it's more likely to clash with other things...
+>> +#include <linux/init.h>
+>> +#include <linux/mm.h>
+>> +#include "../../../mm/internal.h"
+> 
+> Why do you need to include the internal.h file here?
+> If you have a good reason to do it, you should probably
+> add the symbol you need to a global header file.
 
-Maybe I should check how it applies on top of linux-next.
+There was reason for doing it in older version. With current
+version work without internal.h.
 
-Ben.
+Thank for comment,
+Michal
+
+
+
+> 	Arnd <><
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+> 
+> 
+> ------------------------------------------------------------------------
+> 
+> 
+> No virus found in this incoming message.
+> Checked by AVG. 
+> Version: 8.0.101 / Virus Database: 270.4.1/1519 - Release Date: 25.6.2008 04:13
