@@ -1,20 +1,24 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 7580ADDF55
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jul 2008 11:36:53 +1000 (EST)
-Date: Tue, 8 Jul 2008 11:36:46 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Chandru <chandru@in.ibm.com>
-Subject: Re: [PATCH 1/4] kdump : add support for ibm,
-	dynamic-reconfiguration-memory for kexec/kdump
-Message-Id: <20080708113646.13836635.sfr@canb.auug.org.au>
-In-Reply-To: <200807080014.24910.chandru@in.ibm.com>
-References: <200807080014.24910.chandru@in.ibm.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Tue__8_Jul_2008_11_36_46_+1000_qCsD8LuKexgnx0JD"
-Cc: linuxppc-dev@ozlabs.org, kexec@lists.infradead.org
+Return-Path: <kyle@phobos.cabal.ca>
+Received: from phobos.cabal.ca (206-248-169-182.dsl.ncf.ca [206.248.169.182])
+	by ozlabs.org (Postfix) with ESMTP id 16886DDF25
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jul 2008 11:54:44 +1000 (EST)
+Date: Mon, 7 Jul 2008 21:44:32 -0400
+From: Kyle McMartin <kyle@mcmartin.ca>
+To: Matthew Wilcox <matthew@wil.cx>
+Subject: Re: the printk problem
+Message-ID: <20080708014432.GA2379@phobos.i.cabal.ca>
+References: <20080625131101.GA6205@digi.com> <20080704104634.GA31634@digi.com>
+	<20080704111540.ddffd241.akpm@linux-foundation.org>
+	<alpine.LFD.1.10.0807041147450.2815@woody.linux-foundation.org>
+	<alpine.LFD.1.10.0807041250220.2815@woody.linux-foundation.org>
+	<20080704203620.GK14894@parisc-linux.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080704203620.GK14894@parisc-linux.org>
+Cc: linux-ia64@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Peter Anvin <hpa@zytor.com>, Andrew Morton <akpm@linux-foundation.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	"David S. Miller" <davem@davemloft.net>, parisc-linux@parisc-linux.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,65 +28,9 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Tue__8_Jul_2008_11_36_46_+1000_qCsD8LuKexgnx0JD
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Fri, Jul 04, 2008 at 02:36:21PM -0600, Matthew Wilcox wrote:
+> It's also true for parisc, fwiw.  Added a cc to them.
+> 
 
-Hi Chandru,
-
-On Tue, 8 Jul 2008 00:14:24 +0530 Chandru <chandru@in.ibm.com> wrote:
->
-> @@ -917,7 +918,33 @@ static int __init early_init_dt_scan_drc
->  			if ((base + size) > 0x80000000ul)
->  				size =3D 0x80000000ul - base;
->  		}
-> -		lmb_add(base, size);
-> +		strcpy(buf, "linux,usable-memory");
-> +		sprintf(t, "%d", (int)n);
-> +		strcat(buf, t);
-
-Why don't you use
-		snprintf(buf, sizeof(buf), "linux,usable-memory%ld", n);
-instead?
-
-> +		usm =3D (cell_t *)of_get_flat_dt_prop(node,
-> +						 (const char *)buf, &l);
-		      ^^^^^^^^^^		 ^^^^^^^^^^^^^^
-unnecessary casts.
-
->  static void __init parse_drconf_memory(struct device_node *memory)
->  {
-
-> +		strcpy(buf, "linux,usable-memory");
-> +		sprintf(t, "%d", (int)n);
-> +		strcat(buf, t);
-
-See snprint comment above.
-
-> +		usm =3D of_get_property(memory, (const char *)buf, &len);
-                                              ^^^^^^^^^^^^^^
-unnecessary cast.
-
-> +		if (usm !=3D NULL) {
-> +			ranges =3D (len >> 2) / (n_mem_addr_cells +
-                                 ^^^^^^^^^^
-len / sizeof(u32) ?
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Tue__8_Jul_2008_11_36_46_+1000_qCsD8LuKexgnx0JD
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkhyxK4ACgkQjjKRsyhoI8z/lwCfUmUrovaiCzuazjzJSroWY4zL
-FR8An3vnb75WMrwT51NgwxuZwAT0MCXW
-=3hV8
------END PGP SIGNATURE-----
-
---Signature=_Tue__8_Jul_2008_11_36_46_+1000_qCsD8LuKexgnx0JD--
+I posted a patch months ago for kallsyms on parisc, but it looks like
+nobody ever responded or cared. Nice.
