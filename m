@@ -2,18 +2,19 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 1E78EDE373
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 Jul 2008 23:00:16 +1000 (EST)
-Message-Id: <68336EBA-D155-45AD-A878-C12A9B15243C@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id 8FCECDE3BC
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 Jul 2008 23:08:50 +1000 (EST)
+Message-Id: <BB630010-55E8-452C-9C99-0203634C4A23@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Jason Jin <Jason.jin@freescale.com>
-In-Reply-To: <1215480068-6235-1-git-send-email-Jason.jin@freescale.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
+To: Kim Phillips <kim.phillips@freescale.com>
+In-Reply-To: <20080708191333.9eb5310a.kim.phillips@freescale.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Mime-Version: 1.0 (Apple Message framework v926)
-Subject: Re: [PATCH] Minor fixes for 85xxds and 8536ds board.
-Date: Wed, 9 Jul 2008 08:00:08 -0500
-References: <1215480068-6235-1-git-send-email-Jason.jin@freescale.com>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Subject: Re: [PATCH v4] powerpc: update crypto node definition and device tree
+	instances
+Date: Wed, 9 Jul 2008 08:08:30 -0500
+References: <20080708191333.9eb5310a.kim.phillips@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,17 +25,22 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Jul 7, 2008, at 8:21 PM, Jason Jin wrote:
+On Jul 8, 2008, at 7:13 PM, Kim Phillips wrote:
 
-> Remove the "uninitialized use" compile warning and
-> avoid potential runtime issue.
+> delete obsolete device-type property, delete model property
+> (use compatible property instead), prepend "fsl," to Freescale
+> specific properties. Add nodes to device trees that are missing them,
+> and fix broken property values in other trees.
 >
-> Signed-off-by: Jason Jin <Jason.jin@freescale.com>
+> Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
 > ---
-> arch/powerpc/platforms/85xx/mpc8536_ds.c |    2 +-
-> arch/powerpc/platforms/85xx/mpc85xx_ds.c |    2 +-
-> 2 files changed, 2 insertions(+), 2 deletions(-)
+> changes from v3: sec.txt in new place following Kumar's latest
+> preference, cleaned up interrupt description and removed
+> interrupt-parent in documentation.
 
 applied.
+
+I fixed mpc832x_rdb.dts and mpc8536ds.dts as there were minor issues  
+related to the interrupt props in those nodes.
 
 - k
