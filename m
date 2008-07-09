@@ -1,16 +1,31 @@
-Return-Path: <sprasad@bivio.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: RAMDISK: ran out of compressed data
-Date: Tue, 8 Jul 2008 15:54:06 -0700
-Message-ID: <D83235F0F3C86D4D889D8B9A0DA8C6D702B63C3B@corpexc01.corp.networkrobots.com>
-In-Reply-To: <48730FFA.1070805@coritel.it>
-References: <D83235F0F3C86D4D889D8B9A0DA8C6D702B63AD3@corpexc01.corp.networkrobots.com>
-	<48730FFA.1070805@coritel.it>
-From: "Siva Prasad" <sprasad@bivio.net>
-To: "Marco Stornelli" <marco.stornelli@coritel.it>
-Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id C40A9DDE10
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 Jul 2008 10:08:10 +1000 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e5.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m69083hQ015163
+	for <linuxppc-dev@ozlabs.org>; Tue, 8 Jul 2008 20:08:03 -0400
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
+	m6907uFd135550
+	for <linuxppc-dev@ozlabs.org>; Tue, 8 Jul 2008 20:07:56 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m6907uTR013169
+	for <linuxppc-dev@ozlabs.org>; Tue, 8 Jul 2008 20:07:56 -0400
+Date: Tue, 8 Jul 2008 20:04:34 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Sean MacLennan <smaclennan@pikatech.com>
+Subject: Re: [PATCH] powerpc: i2c-ibm_iic register child nodes
+Message-ID: <20080708200434.6eb09506@zod.rchland.ibm.com>
+In-Reply-To: <20080708162240.70b34046@lappy.seanm.ca>
+References: <20080708144609.14bae1de@lappy.seanm.ca>
+	<20080708162240.70b34046@lappy.seanm.ca>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,63 +35,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+On Tue, 8 Jul 2008 16:22:40 -0400
+Sean MacLennan <smaclennan@pikatech.com> wrote:
 
-The same ramdisk works fine for 2.6.15 kernel. We are just upgrading to
-a new version, and would like to get that ramdisk to work on the new one
-as well.
+> Update the warp to use the new IBM IIC driver. We no longer need to
+> register the I2C devices in the platform code.
+> 
+> Also adds a small bugfix for the i2c code if the i2c read fails.
 
-Can you please elaborate on what you mean by compression format. Mine
-currently use the standard .gz extension/compression.
+I'll queue this up after Jean pulls in the i2c patch.
 
-Thanks
-Siva
-
-
-Siva Prasad ha scritto:
-> Hi,
->=20
-> I am getting the following error when I tried to boot with ramdisk.
-Any
-> specific reason or clue why this is happening?
->=20
-> RAMDISK: Compressed image found at block 0
-> RAMDISK: ran out of compressed data
-> invalid compressed format (err=3D1)
->=20
-> I am running into this on 8641D runing 2.6.24-rc6 kernel. My .config
-> around block area are...
->=20
-> CONFIG_BLK_DEV=3Dy
-> # CONFIG_BLK_DEV_FD is not set
-> # CONFIG_BLK_CPQ_DA is not set
-> # CONFIG_BLK_CPQ_CISS_DA is not set
-> # CONFIG_BLK_DEV_DAC960 is not set
-> # CONFIG_BLK_DEV_UMEM is not set
-> # CONFIG_BLK_DEV_COW_COMMON is not set
-> CONFIG_BLK_DEV_LOOP=3Dy
-> # CONFIG_BLK_DEV_CRYPTOLOOP is not set
-> # CONFIG_BLK_DEV_NBD is not set
-> # CONFIG_BLK_DEV_SX8 is not set
-> CONFIG_BLK_DEV_RAM=3Dy
-> CONFIG_BLK_DEV_RAM_COUNT=3D16
-> CONFIG_BLK_DEV_RAM_SIZE=3D49152
-> CONFIG_BLK_DEV_RAM_BLOCKSIZE=3D1024
->=20
-> Thanks
-> Siva
->=20
-
-
-I think it's not a kernel problem but a problem related with the=20
-compression method instead. Check out how you are compressing the
-ramdisk.
-
---=20
-Marco Stornelli
-Embedded Software Engineer
-CoRiTeL - Consorzio di Ricerca sulle Telecomunicazioni
-http://www.coritel.it
-
-marco.stornelli@coritel.it
-+39 06 72582838
+josh
