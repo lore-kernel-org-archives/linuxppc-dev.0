@@ -1,22 +1,37 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (xc.sipsolutions.net [83.246.72.84])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 5C7EADDFD6
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 Jul 2008 20:48:43 +1000 (EST)
-Subject: Re: PReP residual to device-tree converter
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Paul Mackerras <paulus@samba.org>
-In-Reply-To: <18490.22494.511244.977267@cargo.ozlabs.ibm.com>
-References: <18490.22494.511244.977267@cargo.ozlabs.ibm.com>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-Kbm+XYQPW975nkUiPzNB"
-Date: Wed, 09 Jul 2008 12:47:50 +0200
-Message-Id: <1215600470.3670.35.camel@johannes.berg>
+Return-Path: <maxim@linux.vnet.ibm.com>
+Received: from mtagate7.uk.ibm.com (mtagate7.uk.ibm.com [195.212.29.140])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mtagate7.uk.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id F2A85DE15C
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 Jul 2008 21:00:21 +1000 (EST)
+Received: from d06nrmr1407.portsmouth.uk.ibm.com
+	(d06nrmr1407.portsmouth.uk.ibm.com [9.149.38.185])
+	by mtagate7.uk.ibm.com (8.13.8/8.13.8) with ESMTP id m69AwRJs365890
+	for <linuxppc-dev@ozlabs.org>; Wed, 9 Jul 2008 10:58:27 GMT
+Received: from d06av03.portsmouth.uk.ibm.com (d06av03.portsmouth.uk.ibm.com
+	[9.149.37.213])
+	by d06nrmr1407.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v9.0) with
+	ESMTP id m69AwRc12080948
+	for <linuxppc-dev@ozlabs.org>; Wed, 9 Jul 2008 11:58:27 +0100
+Received: from d06av03.portsmouth.uk.ibm.com (loopback [127.0.0.1])
+	by d06av03.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id m69AwQ68012987
+	for <linuxppc-dev@ozlabs.org>; Wed, 9 Jul 2008 11:58:27 +0100
+Date: Wed, 9 Jul 2008 12:58:48 +0200
+From: Maxim Shchetynin <maxim@linux.vnet.ibm.com>
+To: linux-fsdevel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	linux-kernel@vger.kernel.org
+Subject: Re: AZFS file system proposal
+Message-ID: <20080709125848.643008a3@mercedes-benz.boeblingen.de.ibm.com>
+In-Reply-To: <1215595414.8970.366.camel@pasglop>
+References: <20080618160629.6cd749a8@mercedes-benz.boeblingen.de.ibm.com>
+	<200807011659.33413.arnd@arndb.de>
+	<1215593918.8970.363.camel@pasglop>
+	<20080709111402.5af92580@mercedes-benz.boeblingen.de.ibm.com>
+	<1215595414.8970.366.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Milton Miller <miltonm@bga.com>,
-	David Gibson <dwg@au1.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: Arnd Bergmann <arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,67 +41,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+> I'd rather do
+>=20
+> 	pgprot_t  prot;
+>=20
+> #ifdef CONFIG_PPC
+> 	prot =3D <whatever>
+> #else
+> 	prot =3D pgprot_noncached(...)
+> #endif
+> 	vma->vm_page_prot =3D prot;
 
---=-Kbm+XYQPW975nkUiPzNB
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+I have changed my patch accordinly. Thank you.
 
+--=20
+Mit freundlichen Gr=C3=BC=C3=9Fen / met vriendelijke groeten / avec regards
 
-> I would like people that have PReP machines to take a copy of
-> /proc/residual, run this program on it, and check that the output is
-> sane.  If it isn't, or if it is missing bits, send me the residual
-> blob with a description of what's wrong in the generated dts.
+    Maxim V. Shchetynin
+    Linux Kernel Entwicklung
+    IBM Deutschland Research & Development GmbH
+    Linux f=C3=BCr Cell, Abteilung 3250
+    Sch=C3=B6naicher Stra=C3=9Fe 220
+    71032 B=C3=B6blingen
 
-Here's the output from qemu:
+Vorsitzender des Aufsichtsrats: Martin Jetter
+Gesch=C3=A4ftsf=C3=BChrung: Herbert Kircher
+Sitz der Gesellschaft: B=C3=B6blingen
+Registriergericht: Amtsgericht Stuttgart, HRB 243294
 
-/dts-v1/;
-
-/ {
-	model =3D "Qemu";
-	compatible =3D "prep";
-	#address-cells =3D <1>;
-	#size-cells =3D <1>;
-	serial-number =3D "";
-	clock-frequency =3D <100000000>;
-
-	chosen {
-	};
-
-	cpus {
-		#address-cells =3D <1>;
-		#size-cells =3D <0>;
-	};
-
-	memory@0 {
-		device_type =3D "memory";
-		reg =3D <0x0 0x9000000>;
-	};
-};
-
-Let me know if you want the blob too (it's ~10k)
-
-johannes
-
---=-Kbm+XYQPW975nkUiPzNB
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIcBAABAgAGBQJIdJdSAAoJEKVg1VMiehFYuzgQAL2x/X/lHLg0cfYlElOl3VMI
-BZ3kxvDKE/M1hw3ijVrwXFmpwHai6rcM23EBYPcR725EzBl+u2eNGDrvVq+A6v1X
-KM985qvc8SZH8+SELgrgZtkPQQyvYFWZISRonOFYXW49ebhYJOiVEcezZvb/+Q6o
-+dfVuvyO6NeuaJnYE3bOwR7gd0g1+yoj7a7X78B7aTJyqt522Yap/ofgBpw6dS/e
-JRCgGz38On5UyHcpwCgU+oAG0n1EGBdKhsuTZpDDxbypPl2phD9/OMz7w0pruy4q
-fuoq5kVWKhojkJ+qVeOUf8s4o0abbx73P7joUlWWtwjixqGV2Q4xzQigrFXqwtuV
-bVT4GV/2g8GeqPWcT0EWppeFPuQT8JAYzMq/NDk074CnwnvbkSGvo0r4MBVpK1ON
-P8x4AzwerSb7eMp4gCIUQ1UvGGxRpbf/SJNjMPx+m+0PaUQ/864/jruS4HTINXs/
-CV0isr+lYvS3P1+iyEPLUctDFrBW5FWmV8/t+7AJCER9Euf84M/UJiy/lW/qo8oc
-D9KYNIxVqHFn8gUhIJj+a3zaxiQUdm/OUeuevyo58FXrPUp1rgOsOGLMOgtiviHM
-RMSdLXDvcnbZ+UD3n/TD7NAAKGItCAwrgc5FSEHzVSKom0YTz+1WAb64fYfWbi0D
-Ic2OZuDmEuxBKZQoW786
-=cI0l
------END PGP SIGNATURE-----
-
---=-Kbm+XYQPW975nkUiPzNB--
+Fahr nur so schnell wie dein Schutzengel fliegen kann!
