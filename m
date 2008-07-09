@@ -1,30 +1,21 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 88C4ADE8F1
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jul 2008 02:39:59 +1000 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e2.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m69GdukZ022873
-	for <linuxppc-dev@ozlabs.org>; Wed, 9 Jul 2008 12:39:56 -0400
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
-	m69GduaK212948
-	for <linuxppc-dev@ozlabs.org>; Wed, 9 Jul 2008 12:39:56 -0400
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m69Gdtuc006419
-	for <linuxppc-dev@ozlabs.org>; Wed, 9 Jul 2008 12:39:55 -0400
-Date: Wed, 9 Jul 2008 12:36:33 -0400
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: rework 4xx PTE access and TLB miss
-Message-ID: <20080709123633.72758580@zod.rchland.ibm.com>
-In-Reply-To: <20080709102308.4735d48a@zod.rchland.ibm.com>
-References: <20080708055449.EDFDADDEF5@ozlabs.org>
-	<20080709102308.4735d48a@zod.rchland.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.250])
+	by ozlabs.org (Postfix) with ESMTP id 40B8DDEDA1
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jul 2008 02:49:16 +1000 (EST)
+Received: by an-out-0708.google.com with SMTP id c34so1083941anc.78
+	for <linuxppc-dev@ozlabs.org>; Wed, 09 Jul 2008 09:49:14 -0700 (PDT)
+Message-ID: <fa686aa40807090949s59af76c7h13ef37bbc5ce125f@mail.gmail.com>
+Date: Wed, 9 Jul 2008 10:49:12 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Josh Boyer" <jwboyer@gmail.com>
+Subject: Re: Please pull linux-2.6-virtex.git
+In-Reply-To: <fa686aa40807090857x2d2a3086xe2c1bd81fb23bb@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20080704172240.GE17062@secretlab.ca>
+	<1215612904.13186.4.camel@weaponx>
+	<fa686aa40807090857x2d2a3086xe2c1bd81fb23bb@mail.gmail.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -35,44 +26,130 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 9 Jul 2008 10:23:08 -0400
-Josh Boyer <jwboyer@linux.vnet.ibm.com> wrote:
+Oops, missed a fix for the virtex440-ml507.dts file.  Here's a new pull request
 
-> On Tue, 08 Jul 2008 15:54:40 +1000
-> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-> 
-> > This is some preliminary work to improve TLB management on SW loaded
-> > TLB powerpc platforms. This introduce support for non-atomic PTE
-> > operations in pgtable-ppc32.h and removes write back to the PTE from
-> > the TLB miss handlers. In addition, the DSI interrupt code no longer
-> > tries to fixup write permission, this is left to generic code, and
-> > _PAGE_HWWRITE is gone.
-> > 
-> > Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> 
-> Boots for me now.  So far it's surviving a dbench run, and I'll try
-> hackbench/kernbench shortly.
+The following changes since commit f3e909c2750eb20536bacacc867dc9047b70546a:
+  Michael Neuling (1):
+        powerpc: Update for VSX core file and ptrace
 
-For those interested, here are the results of my stupidly simple
-hackbench runs:
+are available in the git repository at:
 
-Setup: 
+  git://git.secretlab.ca/git/linux-2.6-virtex virtex-for-2.6.27
 
-- AMCC PowerPC Sequoia 440EPx board, 128MiB of DRAM, 533 MHz CPU
-clock
-- NFS rootfs over 100MBit ethernet
-- soft-float userspace
+Grant Likely (5):
+      powerpc/bootwrapper: Add documentation of boot wrapper targets
+      powerpc/bootwrapper: add missing bit of simpleImage target
+      powerpc/bootwrapper: Allow user to specify additional default targets
+      powerpc/440: Convert Virtex ML507 device tree to dts-v1
+      powerpc/440: frequency property should be a cell, not a string
 
-Times were gathered by booting to a prompt, running five 'hackbench 50'
-tests, and averaging the results.
+John Linn (5):
+      powerpc/virtex: add dts file for ML507 reference design
+      powerpc/virtex: Fix booting of Xilinx FPGAs with 16550 for 405 and 440
+      powerpc/virtex: add Xilinx Virtex 5 ppc440 platform support
+      powerpc/virtex: add Xilinx 440 cpu to the cputable
+      powerpc/virtex: add defconfig for virtex 5 platforms
 
-sequoia_defconfig:       Avg time - 48.1118 seconds
-sequoia_defconfig+patch: Avg time - 47.8996 seconds
+ Documentation/powerpc/bootwrapper.txt      |  141 ++++
+ arch/powerpc/Kconfig                       |   13 +
+ arch/powerpc/Makefile                      |   15 +-
+ arch/powerpc/boot/Makefile                 |    5 +-
+ arch/powerpc/boot/dts/virtex440-ml507.dts  |  296 ++++++++
+ arch/powerpc/boot/simpleboot.c             |    6 +
+ arch/powerpc/boot/virtex.c                 |  100 +++
+ arch/powerpc/boot/wrapper                  |   10 +-
+ arch/powerpc/configs/44x/virtex5_defconfig | 1107 ++++++++++++++++++++++++++++
+ arch/powerpc/kernel/cputable.c             |   10 +
+ arch/powerpc/platforms/44x/Kconfig         |   26 +
+ arch/powerpc/platforms/44x/Makefile        |    1 +
+ arch/powerpc/platforms/44x/virtex.c        |   60 ++
+ 13 files changed, 1787 insertions(+), 3 deletions(-)
+ create mode 100644 Documentation/powerpc/bootwrapper.txt
+ create mode 100644 arch/powerpc/boot/dts/virtex440-ml507.dts
+ create mode 100644 arch/powerpc/boot/virtex.c
+ create mode 100644 arch/powerpc/configs/44x/virtex5_defconfig
+ create mode 100644 arch/powerpc/platforms/44x/virtex.c
 
-I consider that difference to be in the noise range, but the important
-thing is that it doesn't show a regression in performance.
 
-Feel free to flame away at my lame testing.  I didn't have the setup or
-time to do much else at the moment.
+On Wed, Jul 9, 2008 at 9:57 AM, Grant Likely <grant.likely@secretlab.ca> wrote:
+> Hey Josh, here is the new pull request:
+>
+> The following changes since commit f3e909c2750eb20536bacacc867dc9047b70546a:
+>  Michael Neuling (1):
+>        powerpc: Update for VSX core file and ptrace
+>
+> are available in the git repository at:
+>
+>  git://git.secretlab.ca/git/linux-2.6-virtex virtex-for-2.6.27
+>
+> Grant Likely (4):
+>      powerpc/bootwrapper: Add documentation of boot wrapper targets
+>      powerpc/bootwrapper: add missing bit of simpleImage target
+>      powerpc/bootwrapper: Allow user to specify additional default targets
+>      powerpc/440: Convert Virtex ML507 device tree to dts-v1
+>
+> John Linn (5):
+>      powerpc/virtex: add dts file for ML507 reference design
+>      powerpc/virtex: Fix booting of Xilinx FPGAs with 16550 for 405 and 440
+>      powerpc/virtex: add Xilinx Virtex 5 ppc440 platform support
+>      powerpc/virtex: add Xilinx 440 cpu to the cputable
+>      powerpc/virtex: add defconfig for virtex 5 platforms
+>
+>  Documentation/powerpc/bootwrapper.txt      |  141 ++++
+>  arch/powerpc/Kconfig                       |   13 +
+>  arch/powerpc/Makefile                      |   15 +-
+>  arch/powerpc/boot/Makefile                 |    5 +-
+>  arch/powerpc/boot/dts/virtex440-ml507.dts  |  296 ++++++++
+>  arch/powerpc/boot/simpleboot.c             |    6 +
+>  arch/powerpc/boot/virtex.c                 |  100 +++
+>  arch/powerpc/boot/wrapper                  |   10 +-
+>  arch/powerpc/configs/44x/virtex5_defconfig | 1107 ++++++++++++++++++++++++++++
+>  arch/powerpc/kernel/cputable.c             |   10 +
+>  arch/powerpc/platforms/44x/Kconfig         |   26 +
+>  arch/powerpc/platforms/44x/Makefile        |    1 +
+>  arch/powerpc/platforms/44x/virtex.c        |   60 ++
+>  13 files changed, 1787 insertions(+), 3 deletions(-)
+>  create mode 100644 Documentation/powerpc/bootwrapper.txt
+>  create mode 100644 arch/powerpc/boot/dts/virtex440-ml507.dts
+>  create mode 100644 arch/powerpc/boot/virtex.c
+>  create mode 100644 arch/powerpc/configs/44x/virtex5_defconfig
+>  create mode 100644 arch/powerpc/platforms/44x/virtex.c
+>
+>
+> On Wed, Jul 9, 2008 at 8:15 AM, Josh Boyer <jwboyer@gmail.com> wrote:
+>> On Fri, 2008-07-04 at 11:22 -0600, Grant Likely wrote:
+>>> Hi Josh,
+>>>
+>>> Here are the bulk of the Xilinx 440 support patches.  Please pull
+>>> into your next branch.
+>>>
+>>> Thanks,
+>>> g.
+>>>
+>>> The following changes since commit f3e909c2750eb20536bacacc867dc9047b70546a:
+>>>   Michael Neuling (1):
+>>>         powerpc: Update for VSX core file and ptrace
+>>>
+>>> are available in the git repository at:
+>>>
+>>>   git://git.secretlab.ca/git/linux-2.6-virtex virtex-for-2.6.27
+>>
+>> Any chance to get that updated with the latest fixes before I pull it
+>> in?  Namely the DTS file for virtex5, but there might have been others.
+>>
+>> josh
+>>
+>>
+>
+>
+>
+> --
+> Grant Likely, B.Sc., P.Eng.
+> Secret Lab Technologies Ltd.
+>
 
-josh
+
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
