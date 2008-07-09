@@ -1,20 +1,17 @@
-Return-Path: <benh@kernel.crashing.org>
-Subject: Re: powerpc/cell/cpufreq: add spu aware cpufreq governor
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Dave Jones <davej@codemonkey.org.uk>
-In-Reply-To: <20080708152728.GF4997@codemonkey.org.uk>
-References: <200807071702.31240.arnd@arndb.de>
-	<20080707213105.GD4997@codemonkey.org.uk>
-	<200807080843.43674.arnd@arndb.de>
-	<20080708152728.GF4997@codemonkey.org.uk>
+Return-Path: <benh@au1.ibm.com>
+Subject: Re: [patch 5/5] powerpc: Dont clear _PAGE_COHERENT when _PAGE_SAO
+	is set
+From: Benjamin Herrenschmidt <benh@au1.ibm.com>
+To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+In-Reply-To: <20080707143011.729373219@linux.vnet.ibm.com>
+References: <20080707142850.034542257@linux.vnet.ibm.com>
+	<20080707143011.729373219@linux.vnet.ibm.com>
 Content-Type: text/plain
-Date: Wed, 09 Jul 2008 13:41:38 +1000
-Message-Id: <1215574898.8970.308.camel@pasglop>
+Date: Wed, 09 Jul 2008 13:46:17 +1000
+Message-Id: <1215575177.8970.311.camel@pasglop>
 Mime-Version: 1.0
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Arnd Bergmann <arnd@arndb.de>,
-	cpufreq@lists.linux.org.uk, linuxppc-dev@ozlabs.org,
-	Jeremy Kerr <jk@ozlabs.org>, cbe-oss-dev@ozlabs.org
-Reply-To: benh@kernel.crashing.org
+Cc: linuxppc-dev list <Linuxppc-dev@ozlabs.org>
+Reply-To: benh@au1.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,23 +21,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2008-07-08 at 11:27 -0400, Dave Jones wrote:
-> On Tue, Jul 08, 2008 at 08:43:43AM +0200, Arnd Bergmann wrote:
->  > On Monday 07 July 2008, Dave Jones wrote:
->  > > One question I do have though, is how userspace scripts are supposed
->  > > to know they're to echo cbe_spu_governor into the relevant parts of
->  > > sysfs.  I've not used anything with a cell. Do they expose the SPUs
->  > > as regular CPUs, or do they show up in a different part of the tree?
->  > 
->  > An SPU is very different from a CPU from the user perspective.
->  > SPUs show up in /sys/devices/system/spus, and if a user wants to access
->  > them, the "spufs" file system needs to be mounted in the system, by
->  > convention on /spu. 
-> 
-> Ok, that should be fairly simple to write scripts for.
-> All sounds good to me.
+On Mon, 2008-07-07 at 09:28 -0500, Dave Kleikamp wrote:
+> plain text document attachment (dont_clobber_M.patch)
+> Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> ---
 
-Can I add your Acked-by ?
+The old code looks bogus.. why clear M when G is set ? Only
+I should have mattered.
+
+I'll apply anyway as you aren't changing the existing behaviour here but
+maybe you can shoot me a fixup patch that removes the _PAGE_GUARDED
+condition completely here ?
+
+It's legal to have G=1 M=1 pages and can even be useful under some
+circumstances.
 
 Cheers,
 Ben.
+
+>  arch/powerpc/platforms/pseries/lpar.c |    3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+> 
+> Index: b/arch/powerpc/platforms/pseries/lpar.c
+> ===================================================================
+> --- a/arch/powerpc/platforms/pseries/lpar.c
+> +++ b/arch/powerpc/platforms/pseries/lpar.c
+> @@ -305,7 +305,8 @@
+>  	flags = 0;
+>  
+>  	/* Make pHyp happy */
+> -	if (rflags & (_PAGE_GUARDED|_PAGE_NO_CACHE))
+> +	if ((rflags & _PAGE_GUARDED) ||
+> +	    ((rflags & _PAGE_NO_CACHE) & !(rflags & _PAGE_WRITETHRU)))
+>  		hpte_r &= ~_PAGE_COHERENT;
+>  
+>  	lpar_rc = plpar_pte_enter(flags, hpte_group, hpte_v, hpte_r, &slot);
+> 
