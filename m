@@ -1,23 +1,21 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.30])
-	by ozlabs.org (Postfix) with ESMTP id DC10FDDE09
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jul 2008 00:38:11 +1000 (EST)
-Received: by yx-out-2324.google.com with SMTP id 8so750948yxg.39
-	for <linuxppc-dev@ozlabs.org>; Wed, 09 Jul 2008 07:38:10 -0700 (PDT)
-Date: Wed, 9 Jul 2008 08:38:07 -0600
+Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.29])
+	by ozlabs.org (Postfix) with ESMTP id 1F9E5DE776
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jul 2008 00:40:03 +1000 (EST)
+Received: by yx-out-2324.google.com with SMTP id 8so751345yxg.39
+	for <linuxppc-dev@ozlabs.org>; Wed, 09 Jul 2008 07:40:02 -0700 (PDT)
+Date: Wed, 9 Jul 2008 08:39:58 -0600
 From: Grant Likely <grant.likely@secretlab.ca>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: Updates to powerpc.git
-Message-ID: <20080709143807.GD26524@secretlab.ca>
-References: <1215588881.8970.358.camel@pasglop>
-	<20080709091846.69b08e34@zod.rchland.ibm.com>
-	<BA91427F-F52C-4AA5-886B-E8D7527EA203@kernel.crashing.org>
+To: Josh Boyer <jwboyer@gmail.com>
+Subject: Re: Please pull linux-2.6-virtex.git
+Message-ID: <20080709143958.GE26524@secretlab.ca>
+References: <20080704172240.GE17062@secretlab.ca>
+	<1215612904.13186.4.camel@weaponx>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <BA91427F-F52C-4AA5-886B-E8D7527EA203@kernel.crashing.org>
+In-Reply-To: <1215612904.13186.4.camel@weaponx>
 Sender: Grant Likely <glikely@secretlab.ca>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Andrew Morton <akpm@linux-foundation.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,22 +25,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jul 09, 2008 at 08:40:21AM -0500, Kumar Gala wrote:
->
-> On Jul 9, 2008, at 8:18 AM, Josh Boyer wrote:
->
->> On Wed, 09 Jul 2008 17:34:41 +1000
->> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
->> Also, Paul is pretty good about not rebasing his branches when at all
->> possible, and I suspect that's why his master and next were often the
->> same.  It makes life lots easier for the sub-maintainers and anyone
->> trying to track against the tree.  I humbly beg you to keep that  
->> going.
->
-> I agree and I'm sure linus will tell you how evil it is to rebase as a  
-> maintainer.
+On Wed, Jul 09, 2008 at 10:15:04AM -0400, Josh Boyer wrote:
+> On Fri, 2008-07-04 at 11:22 -0600, Grant Likely wrote:
+> > Hi Josh,
+> > 
+> > Here are the bulk of the Xilinx 440 support patches.  Please pull
+> > into your next branch.
+> > 
+> > Thanks,
+> > g.
+> > 
+> > The following changes since commit f3e909c2750eb20536bacacc867dc9047b70546a:
+> >   Michael Neuling (1):
+> >         powerpc: Update for VSX core file and ptrace
+> > 
+> > are available in the git repository at:
+> > 
+> >   git://git.secretlab.ca/git/linux-2.6-virtex virtex-for-2.6.27
+> 
+> Any chance to get that updated with the latest fixes before I pull it
+> in?  Namely the DTS file for virtex5, but there might have been others.
 
-Add my voice to the chorus.  Rebasing a branch that I commit on top of
-really messes up the workflow.
+Yes, I'll do that this morning, along with the extra images patch.
 
 g.
