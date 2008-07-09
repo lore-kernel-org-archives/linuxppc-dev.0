@@ -1,22 +1,21 @@
-Return-Path: <John.Linn@xilinx.com>
-Received: from mail118-va3-R.bigfish.com (mail-va3.bigfish.com
-	[216.32.180.113])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com",
-	Issuer "Microsoft Secure Server Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 865DEDEE8E
+Return-Path: <glikely@secretlab.ca>
+Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.30])
+	by ozlabs.org (Postfix) with ESMTP id 0A1EDDDE23
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 10 Jul 2008 02:26:28 +1000 (EST)
+	Thu, 10 Jul 2008 03:17:42 +1000 (EST)
+Received: by yx-out-2324.google.com with SMTP id 8so783207yxg.39
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 09 Jul 2008 10:17:41 -0700 (PDT)
+Date: Wed, 9 Jul 2008 11:17:38 -0600
+From: Grant Likely <grant.likely@secretlab.ca>
+To: mejjad lahcen <lmejjad@gmail.com>
+Subject: Re: merge from arch/ppc to arch/powerpc on lite5200
+Message-ID: <20080709171738.GD28130@secretlab.ca>
+References: <9b4863980807090742n3c7f7f0bl91ebe85b8d1fe00c@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Subject: RE: Booting ML405 (Kernel panic - not syncing: No init found)
-Date: Wed, 9 Jul 2008 10:06:58 -0600
-In-Reply-To: <20080709143318.GB26524@secretlab.ca>
-References: <48744475.2080605@cdac.in> <20080709143318.GB26524@secretlab.ca>
-From: "John Linn" <John.Linn@xilinx.com>
-To: "Grant Likely" <grant.likely@secretlab.ca>, "neeraj garg" <neerajg@cdac.in>
-Message-Id: <20080709160659.EE3F6E28065@mail118-va3.bigfish.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <9b4863980807090742n3c7f7f0bl91ebe85b8d1fe00c@mail.gmail.com>
+Sender: Grant Likely <glikely@secretlab.ca>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -28,68 +27,25 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-The only difference I see is the tools, we are using ELDK 4.1 for now.
+On Wed, Jul 09, 2008 at 10:42:09AM -0400, mejjad lahcen wrote:
+>  Hi all of you,
+> I am working to port linux2.6.26 on board based on lite5200, but the kernel
+> hangs here ( see output)
 
-I have tested this on the ML405 in the past, not for a bit as our
-automated testing uses an NFS root.
+This is not a ramdisk problem.  It looks like the kernel is starting but
+the console is not setup correctly.  To help, I need more information:
 
-Since this is arch/ppc (it appears, no boot line), we have stopped work
-on this architecture and are now encouraging (maybe a stronger word is
-needed) you to move to arch/powerpc.
+- What command in u-boot are you using to boot the board
+- How are you building your kernel image?
+- Can you post the .dts file for your board?
 
-The arch/ppc was last stable at git tag last-arch-ppc and I know it
-started getting more unstable after I started pulling in 2.6.26-rcx.  We
-won't be doing any more changes to arch/ppc.
+> Memory <- <0x0 0x4000000> (64MB)
+> CPU clock-frequency <- 0x1687d280 (378MHz)
+> CPU timebase-frequency <- 0x1406f40 (21MHz)
+> CPU bus-frequency <- 0x501bd00 (84MHz)
 
--- John
+These look odd.  What frequencies does U-Boot report when it comes out
+of reset?
 
-> -----Original Message-----
-> From: linuxppc-embedded-bounces+john.linn=3Dxilinx.com@ozlabs.org
-[mailto:linuxppc-embedded-
-> bounces+john.linn=3Dxilinx.com@ozlabs.org] On Behalf Of Grant Likely
-> Sent: Wednesday, July 09, 2008 8:33 AM
-> To: neeraj garg
-> Cc: linuxppc-embedded@ozlabs.org
-> Subject: Re: Booting ML405 (Kernel panic - not syncing: No init found)
-> =
-
-> On Wed, Jul 09, 2008 at 10:24:13AM +0530, neeraj garg wrote:
-> > Hi,
-> >
-> > I am trying to boot ML405 with Linux source code downloaded from
-> > http://www.git.xilinx.com . My cross compiler tool chain version is
-> > gcc-3.4.1, glibc-2.3.2 and binutils-2.15. I have also downloaded
-RAMDISK
-> > from same url (http://www.git.xilinx.com). When I download
-> > zImage.initrd.elf using XMD everything goes fine, untill RAMDISK is
-> > uncompressed, I get following messages :
-> >
-> <snip>
-> >                                           [    3.736691] Failed to
-> > execute /sbin/init.  Attempting defaults...
-> > [    3.748073] Kernel panic - not syncing: No init found.  Try
-passing
-> > init=3D option to kernel.
-> > [    3.772040] Rebooting in 180 seconds..[  183.487314]   Signal: 8
-> >
-> =
-
-> Try changing the kernel parameters line to specify init=3D/bin/sh and
-see
-> what happens.
-> =
-
-> g.
-> =
-
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-
-
-This email and any attachments are intended for the sole use of the named r=
-ecipient(s) and contain(s) confidential information that may be proprietary=
-, privileged or copyrighted under applicable law. If you are not the intend=
-ed recipient, do not read, copy, or forward this email message or any attac=
-hments. Delete this email message and any attachments immediately.
+Cheers,
+g.
