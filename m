@@ -1,23 +1,23 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 2AB3EDDF2E
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jul 2008 03:25:48 +1000 (EST)
-Date: Thu, 10 Jul 2008 03:25:41 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Kumar Gala <galak@kernel.crashing.org>
+Return-Path: <glikely@secretlab.ca>
+Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.29])
+	by ozlabs.org (Postfix) with ESMTP id B323BDED65
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jul 2008 03:30:26 +1000 (EST)
+Received: by yx-out-2324.google.com with SMTP id 8so785703yxg.39
+	for <linuxppc-dev@ozlabs.org>; Wed, 09 Jul 2008 10:30:25 -0700 (PDT)
+Date: Wed, 9 Jul 2008 11:30:22 -0600
+From: Grant Likely <grant.likely@secretlab.ca>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
 Subject: Re: Updates to powerpc.git
-Message-Id: <20080710032541.a9ea77b7.sfr@canb.auug.org.au>
-In-Reply-To: <4BD688FB-13AF-4076-BF9A-1F7BEA7E7D65@kernel.crashing.org>
+Message-ID: <20080709173022.GE28130@secretlab.ca>
 References: <1215588881.8970.358.camel@pasglop>
 	<7CAAEE49-56F0-4565-8F1B-374C5E2F9E42@kernel.crashing.org>
 	<20080710020832.3e654bc9.sfr@canb.auug.org.au>
 	<20080709162008.GC28130@secretlab.ca>
-	<1215621093.32502.1.camel@weaponx>
-	<4BD688FB-13AF-4076-BF9A-1F7BEA7E7D65@kernel.crashing.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Thu__10_Jul_2008_03_25_41_+1000_ie8_UvkN/xUdU_+G"
+	<20080710032346.62545256.sfr@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080710032346.62545256.sfr@canb.auug.org.au>
+Sender: Grant Likely <glikely@secretlab.ca>
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
 	Andrew Morton <akpm@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -29,35 +29,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Thu__10_Jul_2008_03_25_41_+1000_ie8_UvkN/xUdU_+G
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Thu, Jul 10, 2008 at 03:23:46AM +1000, Stephen Rothwell wrote:
+> Hi Grant,
+> 
+> On Wed, 9 Jul 2008 10:20:08 -0600 Grant Likely <grant.likely@secretlab.ca> wrote:
+> >
+> > I was under the impression that there was some consensus that -next
+> > branches should be used for unstable experiments.  Am I mistaken?
+> 
+> Completely.  Anything that will end up in linux-next must be posted,
+> reviewed, unit tested and intended for the next merge window.  i.e. you
+> must have basically finished with it (except for inter-subsystem merge
+> problems and bugs, or course).
 
-Hi Kumar,
+Okay, thanks for the correction.
 
-On Wed, 9 Jul 2008 11:47:45 -0500 Kumar Gala <galak@kernel.crashing.org> wr=
-ote:
->
-> Did, GregKH start up a tree for code not quite ready ( -staging).
-
-Greg's staging tree is for whole drivers etc not in the kernel yet that
-need work to get there.
-
---=20
 Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Thu__10_Jul_2008_03_25_41_+1000_ie8_UvkN/xUdU_+G
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkh09JUACgkQjjKRsyhoI8zJsgCdGLeyd/BOUOTxEKfIHszoDR1K
-QjYAniOSOmzeUpmPKmsi1oTGhJUadGZz
-=0bPw
------END PGP SIGNATURE-----
-
---Signature=_Thu__10_Jul_2008_03_25_41_+1000_ie8_UvkN/xUdU_+G--
+g.
