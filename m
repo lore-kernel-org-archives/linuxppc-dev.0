@@ -1,17 +1,26 @@
-Return-Path: <davej@codemonkey.org.uk>
-Date: Wed, 9 Jul 2008 02:29:58 -0400
-From: Dave Jones <davej@codemonkey.org.uk>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: powerpc/cell/cpufreq: add spu aware cpufreq governor
-Message-ID: <20080709062958.GA24570@codemonkey.org.uk>
-References: <200807071702.31240.arnd@arndb.de>
-	<1215580739.8970.317.camel@pasglop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1215580739.8970.317.camel@pasglop>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Arnd Bergmann <arnd@arndb.de>,
-	cpufreq@lists.linux.org.uk, linuxppc-dev@ozlabs.org,
-	Jeremy Kerr <jk@ozlabs.org>, cbe-oss-dev@ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 26F56DDF30
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 Jul 2008 16:54:18 +1000 (EST)
+Subject: Re: AZFS file system proposal
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Arnd Bergmann <arnd@arndb.de>
+In-Reply-To: <200807081642.19507.arnd@arndb.de>
+References: <20080618160629.6cd749a8@mercedes-benz.boeblingen.de.ibm.com>
+	<200807011659.33413.arnd@arndb.de>
+	<20080707173923.17dc6c05@mercedes-benz.boeblingen.de.ibm.com>
+	<200807081642.19507.arnd@arndb.de>
+Content-Type: text/plain
+Date: Wed, 09 Jul 2008 16:48:06 +1000
+Message-Id: <1215586086.8970.348.camel@pasglop>
+Mime-Version: 1.0
+Cc: Mark Nelson <markn@au1.ibm.com>, Gunnar von Boehn <VONBOEHN@de.ibm.com>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Maxim Shchetynin <maxim@linux.vnet.ibm.com>,
+	Paul Mackerras <paulus@samba.org>, linux-fsdevel@vger.kernel.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,56 +30,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jul 09, 2008 at 03:18:59PM +1000, Ben Herrenschmidt wrote:
- > On Mon, 2008-07-07 at 17:02 +0200, Arnd Bergmann wrote:
- > > From: Christian Krafft <krafft@de.ibm.com>
- > > 
- > > This patch adds a cpufreq governor that takes the number of running spus
- > > into account. It's very similar to the ondemand governor, but not as complex.
- > > Instead of hacking spu load into the ondemand governor it might be easier to
- > > have cpufreq accepting multiple governors per cpu in future.
- > > Don't know if this is the right way, but it would keep the governors simple.
- > > 
- > > Signed-off-by: Christian Krafft <krafft@de.ibm.com>
- > > Signed-off-by: Arnd Bergmann <arnd@arndb.de>
- > > ---
- > > 
- > > Dave or other cpufreq people, can you take a look at this
- > > and add an Acked-by when you're happy?
- > > 
- > > We have one prerequisite patch in the powerpc code (in spufs),
- > > so should it get merged through powerpc.git?
- > 
- > Hrm... taking whatever test config I have at hand, applying the patch
- > and doing make oldconfig & make, I get:
- > 
- > ERROR: ".cpufreq_register_governor" [arch/powerpc/platforms/cell/cbe_spu_governor.ko] undefined!
- > ERROR: ".__cpufreq_driver_target" [arch/powerpc/platforms/cell/cbe_spu_governor.ko] undefined!
- > ERROR: ".cpufreq_unregister_governor" [arch/powerpc/platforms/cell/cbe_spu_governor.ko] undefined!
- > ERROR: ".cpufreq_frequency_table_target" [arch/powerpc/platforms/cell/cbe-cpufreq.ko] undefined!
- > ERROR: ".cpufreq_register_driver" [arch/powerpc/platforms/cell/cbe-cpufreq.ko] undefined!
- > ERROR: ".cpufreq_frequency_table_verify" [arch/powerpc/platforms/cell/cbe-cpufreq.ko] undefined!
- > ERROR: ".cpufreq_frequency_table_get_attr" [arch/powerpc/platforms/cell/cbe-cpufreq.ko] undefined!
- > ERROR: ".cpufreq_notify_transition" [arch/powerpc/platforms/cell/cbe-cpufreq.ko] undefined!
- > ERROR: ".cpufreq_frequency_table_cpuinfo" [arch/powerpc/platforms/cell/cbe-cpufreq.ko] undefined!
- > ERROR: ".cpufreq_unregister_driver" [arch/powerpc/platforms/cell/cbe-cpufreq.ko] undefined!
- > ERROR: ".cpufreq_frequency_table_put_attr" [arch/powerpc/platforms/cell/cbe-cpufreq.ko] undefined!
 
-Does this help ?
+> Cc:'ing some more people that might have more of a clue on this question.
+> _memcpy_fromio does a "sync" at the start and an "eieio" at the end.
+> IFAICT, neither are needed here because the source is always memory.
+> 
+> It also handles unaligned memory accesses, which copy_to_user should
+> also do correctly, so it *looks* like it should work with just a
+> copy_to_user, but it still feels wrong to use an __iomem pointer
+> as the source for a copy_to_user.
+> 
+> Any ideas?
 
-	Dave
- 
-diff --git a/arch/powerpc/platforms/cell/Kconfig b/arch/powerpc/platforms/cell/Kconfig
-index 3959fcf..19f4b4d 100644
---- a/arch/powerpc/platforms/cell/Kconfig
-+++ b/arch/powerpc/platforms/cell/Kconfig
-@@ -91,6 +91,7 @@ config CBE_THERM
- config CBE_CPUFREQ
- 	tristate "CBE frequency scaling"
- 	depends on CBE_RAS && CPU_FREQ
-+	select CPU_FREQ_TABLE
- 	default m
- 	help
- 	  This adds the cpufreq driver for Cell BE processors.
--- 
-http://www.codemonkey.org.uk
+It's a bit nasty yes. The problem is that copy_to/from_user might
+do cache tricks which will blow up if the area is non-cacheable.
+
+We have a similar problem with Mark's work on faster copy functions
+since things like sys_read() can be called on userspace non-cacheable
+memory such as spu local stores.
+
+So I'm not 100% sure what the right approach here. Our copy_tofrom_user
+today does dcbt on the source for example, which I hope only turns into
+a no-op... The risk is if we start using dcbz.
+
+Cheers,
+Ben.
