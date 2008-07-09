@@ -1,21 +1,20 @@
 Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 93960DDD0B
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 Jul 2008 13:23:39 +1000 (EST)
-Subject: Re: [PATCH v2] ibm_newemac: Add MII mode support to the EMAC RGMII
-	bridge.
+Subject: Re: [Cbe-oss-dev] [patch 02/02] powerpc/cell: add support for
+	power button of future IBM cell blades
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Grant Erickson <gerickson@nuovations.com>
-In-Reply-To: <1215529386-12749-1-git-send-email-gerickson@nuovations.com>
-References: <C497F939.104DB%gerickson@nuovations.com>
-	<1215529386-12749-1-git-send-email-gerickson@nuovations.com>
+To: Christian Krafft <krafft@de.ibm.com>
+In-Reply-To: <20080707185644.0d6c9757@de.ibm.com>
+References: <20080704190535.316377278@arndb.de>
+	<20080704190805.638836822@arndb.de> <1215407543.8970.61.camel@pasglop>
+	<20080707112322.26a21902@de.ibm.com>
+	<20080707184756.16e52677@linux.ibm.com>
+	<20080707185644.0d6c9757@de.ibm.com>
 Content-Type: text/plain
-Date: Wed, 09 Jul 2008 13:23:22 +1000
-Message-Id: <1215573802.8970.302.camel@pasglop>
+Date: Wed, 09 Jul 2008 13:35:30 +1000
+Message-Id: <1215574530.8970.306.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, sr@denx.de, jgarzik@pobox.com
+Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org, arnd@arndb.de,
+	Christian Krafft <krafft@linux.ibm.com>
 Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -26,72 +25,173 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2008-07-08 at 08:03 -0700, Grant Erickson wrote:
-> This patch adds support to the RGMII handler in the EMAC driver for
-> the MII PHY mode such that device tree entries of the form `phy-mode = "mii";'
-> are recognized and handled appropriately.
+On Mon, 2008-07-07 at 18:56 +0200, Christian Krafft wrote:
+> From: Christian Krafft <krafft@de.ibm.com>
 > 
-> While logically, in software, "gmii" and "mii" modes are the same,
-> they are wired differently, so it makes sense to allow DTS authors to
-> specify each explicitly.
+> This patch adds support for the power button on future IBM cell blades.
+> It actually doesn't shut down the machine. Instead it exposes an
+> input device /dev/input/event0 to userspace which sends KEY_POWER
+> if power button has been pressed.
+> haldaemon actually recognizes the button, so a plattform independent acpid
+> replacement should handle it correctly.
 > 
-> Signed-off-by: Grant Erickson <gerickson@nuovations.com>
+> Signed-off-by: Christian Krafft <krafft@de.ibm.com>
 
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
+Sorry Christian, i'm still not too happy with this one.
 
-Jeff, I'd like to apply that (and other EMAC patches for 2.6.27, do you
-have anything else pending ?) via my tree provided you give me your ack.
-The reason is that the multicast fix one is going that way as it touches
-other arch files, and subsequent ones are now likely to conflict.
+There are two issues at hand here:
 
-Let me know if that's ok with you in which case I'll stick your ack in
-there.
+ - The use of SELECT, that will be frowned on unfortunately.
 
-Cheers,
+ - I'm not too sure it's very safe the way you do it. If I understand
+correctly, you can get called for that sysreset at -any- time, including
+when interrupts are off right ?
+
+That means potentially, code that has interrupts off will be interrupted
+by input_report/input_sync, which is really bad (may corrupt the input
+layer internal list management for example).
+
+You could solve both things with a little trick: Have the platform code
+just basically set a global flag when the button was pressed and have a
+module that depends on INPUT & INPUT_DEV poll for it (slowly pls) and do
+the input report.
+
 Ben.
 
-> ---
->  drivers/net/ibm_newemac/rgmii.c |    6 ++++++
->  1 files changed, 6 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/net/ibm_newemac/rgmii.c b/drivers/net/ibm_newemac/rgmii.c
-> index e32da3d..5acb006 100644
-> --- a/drivers/net/ibm_newemac/rgmii.c
-> +++ b/drivers/net/ibm_newemac/rgmii.c
-> @@ -39,6 +39,7 @@
->  #define RGMII_FER_RGMII(idx)	(0x5 << ((idx) * 4))
->  #define RGMII_FER_TBI(idx)	(0x6 << ((idx) * 4))
->  #define RGMII_FER_GMII(idx)	(0x7 << ((idx) * 4))
-> +#define RGMII_FER_MII(idx)	RGMII_FER_GMII(idx)
+> Index: linux.git/arch/powerpc/platforms/cell/Kconfig
+> ===================================================================
+> --- linux.git.orig/arch/powerpc/platforms/cell/Kconfig
+> +++ linux.git/arch/powerpc/platforms/cell/Kconfig
+> @@ -87,9 +87,12 @@ config PPC_IBM_CELL_BLADE_BUTTONS
+>  	bool "IBM Cell Blade Buttons"
+>  	depends on CBE_RAS && PPC_IBM_CELL_BLADE
+>  	default y
+> +	select INPUT
+> +	select INPUT_EVDEV
+>  	help
+>  	  Support Buttons on IBM Cell blades. This adds a method to
+> -	  trigger system reset via front panel pinhole button.
+> +	  trigger system reset via front panel pinhole button and
+> +	  an input device for the power button.
 >  
->  /* RGMIIx_SSR */
->  #define RGMII_SSR_MASK(idx)	(0x7 << ((idx) * 8))
-> @@ -49,6 +50,7 @@
->  static inline int rgmii_valid_mode(int phy_mode)
+>  config CBE_THERM
+>  	tristate "CBE thermal support"
+> Index: linux.git/arch/powerpc/platforms/cell/ras.c
+> ===================================================================
+> --- linux.git.orig/arch/powerpc/platforms/cell/ras.c
+> +++ linux.git/arch/powerpc/platforms/cell/ras.c
+> @@ -14,6 +14,11 @@
+>  #include <linux/smp.h>
+>  #include <linux/reboot.h>
+>  
+> +#ifdef CONFIG_PPC_IBM_CELL_BLADE_BUTTONS
+> +#include <linux/input.h>
+> +#include <linux/platform_device.h>
+> +#endif /* CONFIG_PPC_IBM_CELL_BLADE_BUTTONS */
+> +
+>  #include <asm/reg.h>
+>  #include <asm/io.h>
+>  #include <asm/prom.h>
+> @@ -232,31 +237,76 @@ static struct notifier_block cbe_ptcal_r
+>  
+>  #ifdef CONFIG_PPC_IBM_CELL_BLADE_BUTTONS
+>  static int sysreset_hack;
+> +static struct input_dev *button_dev;
+> +static struct platform_device *button_pdev;
+>  
+>  static int __init cbe_sysreset_init(void)
 >  {
->  	return  phy_mode == PHY_MODE_GMII ||
-> +		phy_mode == PHY_MODE_MII ||
->  		phy_mode == PHY_MODE_RGMII ||
->  		phy_mode == PHY_MODE_TBI ||
->  		phy_mode == PHY_MODE_RTBI;
-> @@ -63,6 +65,8 @@ static inline const char *rgmii_mode_name(int mode)
->  		return "TBI";
->  	case PHY_MODE_GMII:
->  		return "GMII";
-> +	case PHY_MODE_MII:
-> +		return "MII";
->  	case PHY_MODE_RTBI:
->  		return "RTBI";
->  	default:
-> @@ -79,6 +83,8 @@ static inline u32 rgmii_mode_mask(int mode, int input)
->  		return RGMII_FER_TBI(input);
->  	case PHY_MODE_GMII:
->  		return RGMII_FER_GMII(input);
-> +	case PHY_MODE_MII:
-> +		return RGMII_FER_MII(input);
->  	case PHY_MODE_RTBI:
->  		return RGMII_FER_RTBI(input);
->  	default:
-> --
-> 1.5.4.3
+> +	int ret = 0;
+> +	struct input_dev *dev;
+>  	struct cbe_pmd_regs __iomem *regs;
+>  
+>  	sysreset_hack = machine_is_compatible("IBM,CBPLUS-1.0");
+>  	if (!sysreset_hack)
+> -		return 0;
+> +		goto out;
+>  
+>  	regs = cbe_get_cpu_pmd_regs(0);
+>  	if (!regs)
+> -		return 0;
+> +		goto out;
+>  
+>  	/* Enable JTAG system-reset hack */
+>  	out_be32(&regs->fir_mode_reg,
+>  		in_be32(&regs->fir_mode_reg) |
+>  		CBE_PMD_FIR_MODE_M8);
+>  
+> -	return 0;
+> +	dev = input_allocate_device();
+> +	if (!dev) {
+> +		ret = -ENOMEM;
+> +		printk(KERN_ERR "%s: Not enough memory\n", __func__);
+> +		goto out;
+> +	}
+> +
+> +	set_bit(EV_KEY, dev->evbit);
+> +	set_bit(KEY_POWER, dev->keybit);
+> +
+> +	dev->name = "Power Button";
+> +	dev->id.bustype = BUS_HOST;
+> +
+> +	/* this makes the button look like an acpi power button
+> +	 * no clue whether anyone relies on that though */
+> +	dev->id.product = 0x02;
+> +	dev->phys = "LNXPWRBN/button/input0";
+> +
+> +	button_pdev = platform_device_register_simple("power_button", 0, NULL, 0);
+> +	if (IS_ERR(button_pdev)) {
+> +		ret = PTR_ERR(button_pdev);
+> +		goto out_free_input;
+> +	}
+> +
+> +	dev->dev.parent = &button_pdev->dev;
+> + 	ret = input_register_device(dev);
+> +
+> +	if (ret) {
+> +		printk(KERN_ERR "%s: Failed to register device\n", __func__);
+> +		goto out_free_pdev;
+> +	}
+> +
+> +	button_dev = dev;
+> +	goto out;
+> +
+> +out_free_pdev:
+> +	platform_device_unregister(button_pdev);
+> +out_free_input:
+> +	input_free_device(dev);
+> +out:
+> +	return ret;
+>  }
+>  device_initcall(cbe_sysreset_init);
+>  
+>  int cbe_sysreset_hack(void)
+>  {
+>  	struct cbe_pmd_regs __iomem *regs;
+> +	u64 status;
+>  
+>  	/*
+>  	 * The BMC can inject user triggered system reset exceptions,
+> @@ -267,10 +317,20 @@ int cbe_sysreset_hack(void)
+>  		regs = cbe_get_cpu_pmd_regs(0);
+>  		if (!regs)
+>  			return 0;
+> -		if (in_be64(&regs->ras_esc_0) & 0x0000ffff) {
+> +		status = in_be64(&regs->ras_esc_0);
+> +		if (status & 0x0000ffff) {
+>  			out_be64(&regs->ras_esc_0, 0);
+>  			return 0;
+>  		}
+> +		if (status & 0x00010000) {
+> +			out_be64(&regs->ras_esc_0, 0);
+> +			if (!button_dev)
+> +				return 0;
+> +			input_report_key(button_dev, KEY_POWER, 1);
+> +			input_sync(button_dev);
+> +			input_report_key(button_dev, KEY_POWER, 0);
+> +			input_sync(button_dev);
+> +		}
+>  	}
+>  	return 1;
+>  }
+> 
