@@ -1,19 +1,32 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <chirag@linux.vnet.ibm.com>
+Received: from e23smtp05.au.ibm.com (E23SMTP05.au.ibm.com [202.81.18.174])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 0EF6DDE491
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jul 2008 01:31:44 +1000 (EST)
-Message-Id: <352560B5-24A4-47B8-8A1F-5900957470FC@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <20080708055449.EDFDADDEF5@ozlabs.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v926)
-Subject: Re: [PATCH] powerpc: rework 4xx PTE access and TLB miss
-Date: Wed, 9 Jul 2008 10:31:31 -0500
-References: <20080708055449.EDFDADDEF5@ozlabs.org>
-Cc: linuxppc-dev@ozlabs.org
+	(Client CN "e23smtp05.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id C1809DE516
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jul 2008 01:33:20 +1000 (EST)
+Received: from sd0109e.au.ibm.com (d23rh905.au.ibm.com [202.81.18.225])
+	by e23smtp05.au.ibm.com (8.13.1/8.13.1) with ESMTP id m69FWZPD016398
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jul 2008 01:32:35 +1000
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+	by sd0109e.au.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
+	m69FXGMP262450
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jul 2008 01:33:17 +1000
+Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
+	by d23av02.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m69FXGYv031279
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jul 2008 01:33:16 +1000
+Date: Wed, 9 Jul 2008 21:03:13 +0530
+From: Chirag Jog <chirag@linux.vnet.ibm.com>
+To: linux.kernel@vger.kernel.org, linux-rt-users@vget.kernel.org,
+	linuxppc-dev@ozlabs.org
+Subject: [PATCH][RT][PPC64] Fix preempt unsafe paths accessing per_cpu
+	variables
+Message-ID: <20080709153313.GC7101@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Cc: "Timothy R. Chavez" <tim.chavez@linux.vnet.ibm.com>,
+	Nivedita Singhvi <niv@us.ibm.com>, paulmck@linux.vnet.ibm.com
+Reply-To: Chirag Jog <chirag@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,37 +37,181 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Jul 8, 2008, at 12:54 AM, Benjamin Herrenschmidt wrote:
+Hi,
+This patch fixes various paths in the -rt kernel on powerpc64 where per_cpu
+variables are accessed in a preempt unsafe way.
+When a power box with -rt kernel is booted, multiple BUG messages are
+generated "BUG: init:1 task might have lost a preemption check!".
+After booting a kernel with these patches applied, these messages
+don't appear.
 
-> This is some preliminary work to improve TLB management on SW loaded
-> TLB powerpc platforms. This introduce support for non-atomic PTE
-> operations in pgtable-ppc32.h and removes write back to the PTE from
-> the TLB miss handlers. In addition, the DSI interrupt code no longer
-> tries to fixup write permission, this is left to generic code, and
-> _PAGE_HWWRITE is gone.
->
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> ---
->
-> This is a first step, plan is to do the same for FSL BookE, 405 and
-> possibly 8xx too. From there, I want to rework a bit the execute
-> permission handling to avoid multiple faults, add support for
-> _PAGE_EXEC (no executable mappings), for prefaulting (especially
-> for kmap) and proper SMP support for future SMP capable BookE
-> platforms.
->
-> v2. This version fixes a couple of typos, add a few comments and
-> change use of flush_instruction_cache() to flush_icache_range()
-> which will be more appropriate if there is ever an SMP variant.
->
-> v3. Relying on the generic code to fixup _PAGE_ACCESSED doesn't
-> work for exec faults because our cache coherency code in
-> do_page_fault() will never go all the way to the generic code
-> for these. We fix it up by always setting _PAGE_ACCESSED when
-> setting _PAGE_HWEXEC in there.
-> This version of the patch is rebased on top of -next
+Also I ran the realtime tests from ltp to ensure the stability.
 
-shouldn't you remove _PAGE_HWWRITE from 40x?  (I'm still seeing it in  
-pgtable-ppc32.h and head_40x.S)
 
-- k
+Signed-Off-By: Chirag <chirag@linux.vnet.ibm.com>
+
+arch/powerpc/mm/tlb_64.c               |   29 ++++++++++++++++-------------
+arch/powerpc/platforms/pseries/iommu.c |   14 ++++++++++----
+include/asm-powerpc/tlb.h              |    5 ++---
+3 files changed, 28 insertions(+), 20 deletions(-)
+
+        
+Index: linux-2.6.25.8-rt7/arch/powerpc/mm/tlb_64.c
+===================================================================
+--- linux-2.6.25.8-rt7.orig/arch/powerpc/mm/tlb_64.c	2008-07-07 13:13:59.000000000 +0530
++++ linux-2.6.25.8-rt7/arch/powerpc/mm/tlb_64.c	2008-07-09 20:57:01.000000000 +0530
+@@ -38,7 +38,6 @@
+  * include/asm-powerpc/tlb.h file -- tgall
+  */
+ DEFINE_PER_CPU_LOCKED(struct mmu_gather, mmu_gathers);
+-DEFINE_PER_CPU(struct pte_freelist_batch *, pte_freelist_cur);
+ unsigned long pte_freelist_forced_free;
+ 
+ struct pte_freelist_batch
+@@ -48,7 +47,7 @@
+ 	pgtable_free_t	tables[0];
+ };
+ 
+-DEFINE_PER_CPU(struct pte_freelist_batch *, pte_freelist_cur);
++DEFINE_PER_CPU_LOCKED(struct pte_freelist_batch *, pte_freelist_cur);
+ unsigned long pte_freelist_forced_free;
+ 
+ #define PTE_FREELIST_SIZE \
+@@ -92,16 +91,14 @@
+ 
+ void pgtable_free_tlb(struct mmu_gather *tlb, pgtable_free_t pgf)
+ {
+-	/*
+-	 * This is safe since tlb_gather_mmu has disabled preemption.
+-	 * tlb->cpu is set by tlb_gather_mmu as well.
+-	 */
++	int cpu;
+         cpumask_t local_cpumask = cpumask_of_cpu(tlb->cpu);
+-	struct pte_freelist_batch **batchp = &__get_cpu_var(pte_freelist_cur);
++	struct pte_freelist_batch **batchp = &get_cpu_var_locked(pte_freelist_cur, &cpu);
+ 
+ 	if (atomic_read(&tlb->mm->mm_users) < 2 ||
+ 	    cpus_equal(tlb->mm->cpu_vm_mask, local_cpumask)) {
+ 		pgtable_free(pgf);
++		goto cleanup;
+ 		return;
+ 	}
+ 
+@@ -109,6 +106,7 @@
+ 		*batchp = (struct pte_freelist_batch *)__get_free_page(GFP_ATOMIC);
+ 		if (*batchp == NULL) {
+ 			pgtable_free_now(pgf);
++			goto cleanup;
+ 			return;
+ 		}
+ 		(*batchp)->index = 0;
+@@ -118,6 +116,9 @@
+ 		pte_free_submit(*batchp);
+ 		*batchp = NULL;
+ 	}
++
++ cleanup:
++	put_cpu_var_locked(pte_freelist_cur, cpu);
+ }
+ 
+ /*
+@@ -253,13 +254,15 @@
+ 
+ void pte_free_finish(void)
+ {
+-	/* This is safe since tlb_gather_mmu has disabled preemption */
+-	struct pte_freelist_batch **batchp = &__get_cpu_var(pte_freelist_cur);
++	int cpu;
++	struct pte_freelist_batch **batchp = &get_cpu_var_locked(pte_freelist_cur, &cpu);
+ 
+-	if (*batchp == NULL)
+-		return;
+-	pte_free_submit(*batchp);
+-	*batchp = NULL;
++	if (*batchp) {
++		pte_free_submit(*batchp);
++		*batchp = NULL;
++	}
++
++	put_cpu_var_locked(pte_freelist_cur, cpu);
+ }
+ 
+ /**
+Index: linux-2.6.25.8-rt7/include/asm-powerpc/tlb.h
+===================================================================
+--- linux-2.6.25.8-rt7.orig/include/asm-powerpc/tlb.h	2008-07-07 22:58:37.000000000 +0530
++++ linux-2.6.25.8-rt7/include/asm-powerpc/tlb.h	2008-07-09 10:22:51.000000000 +0530
+@@ -40,18 +40,17 @@
+ 
+ static inline void tlb_flush(struct mmu_gather *tlb)
+ {
+-	struct ppc64_tlb_batch *tlbbatch = &__get_cpu_var(ppc64_tlb_batch);
++	struct ppc64_tlb_batch *tlbbatch = &get_cpu_var(ppc64_tlb_batch);
+ 
+ 	/* If there's a TLB batch pending, then we must flush it because the
+ 	 * pages are going to be freed and we really don't want to have a CPU
+ 	 * access a freed page because it has a stale TLB
+ 	 */
+ 	if (tlbbatch->index) {
+-		preempt_disable();
+ 		__flush_tlb_pending(tlbbatch);
+-		preempt_enable();
+ 	}
+ 
++	put_cpu_var(ppc64_tlb_batch);
+ 	pte_free_finish();
+ }
+ 
+Index: linux-2.6.25.8-rt7/arch/powerpc/platforms/pseries/iommu.c
+===================================================================
+--- linux-2.6.25.8-rt7.orig/arch/powerpc/platforms/pseries/iommu.c	2008-07-07 23:16:29.000000000 +0530
++++ linux-2.6.25.8-rt7/arch/powerpc/platforms/pseries/iommu.c	2008-07-09 10:49:21.000000000 +0530
+@@ -124,7 +124,7 @@
+ 	}
+ }
+ 
+-static DEFINE_PER_CPU(u64 *, tce_page) = NULL;
++static DEFINE_PER_CPU_LOCKED(u64 *, tce_page) = NULL;
+ 
+ static void tce_buildmulti_pSeriesLP(struct iommu_table *tbl, long tcenum,
+ 				     long npages, unsigned long uaddr,
+@@ -135,12 +135,13 @@
+ 	u64 *tcep;
+ 	u64 rpn;
+ 	long l, limit;
++	int cpu;
+ 
+ 	if (npages == 1)
+ 		return tce_build_pSeriesLP(tbl, tcenum, npages, uaddr,
+ 					   direction);
+ 
+-	tcep = __get_cpu_var(tce_page);
++	tcep = get_cpu_var_locked(tce_page, &cpu);
+ 
+ 	/* This is safe to do since interrupts are off when we're called
+ 	 * from iommu_alloc{,_sg}()
+@@ -148,10 +149,13 @@
+ 	if (!tcep) {
+ 		tcep = (u64 *)__get_free_page(GFP_ATOMIC);
+ 		/* If allocation fails, fall back to the loop implementation */
+-		if (!tcep)
++		if (!tcep) {
++			put_cpu_var_locked(tce_page, cpu);
+ 			return tce_build_pSeriesLP(tbl, tcenum, npages,
+ 						   uaddr, direction);
+-		__get_cpu_var(tce_page) = tcep;
++		}
++
++		per_cpu_var_locked(tce_page, cpu) = tcep;
+ 	}
+ 
+ 	rpn = (virt_to_abs(uaddr)) >> TCE_SHIFT;
+@@ -188,6 +192,8 @@
+ 		printk("\ttce[0] val = 0x%lx\n", tcep[0]);
+ 		show_stack(current, (unsigned long *)__get_SP());
+ 	}
++
++	put_cpu_var_locked(tce_page, cpu);
+ }
+ 
+ static void tce_free_pSeriesLP(struct iommu_table *tbl, long tcenum, long npages)
