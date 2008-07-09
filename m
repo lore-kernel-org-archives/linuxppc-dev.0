@@ -1,17 +1,17 @@
-Return-Path: <ntl@pobox.com>
-Received: from sasl.smtp.pobox.com (a-sasl-fastnet.sasl.smtp.pobox.com
-	[207.106.133.19]) by ozlabs.org (Postfix) with ESMTP id AC05ADEA27
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jul 2008 01:09:56 +1000 (EST)
-Date: Wed, 9 Jul 2008 10:06:57 -0500
-From: Nathan Lynch <ntl@pobox.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v3] Add PPC_FEATURE_PSERIES_PERFMON_COMPAT
-Message-ID: <20080709150657.GQ9594@localdomain>
-References: <20080703232001.GB9594@localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080703232001.GB9594@localdomain>
-Cc: Olof Johansson <olof@lixom.net>, Paul Mackerras <paulus@samba.org>
+Return-Path: <shaggy@linux.vnet.ibm.com>
+Subject: Re: [patch 5/5] powerpc: Dont clear _PAGE_COHERENT when _PAGE_SAO
+	is set
+From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1215575177.8970.311.camel@pasglop>
+References: <20080707142850.034542257@linux.vnet.ibm.com>
+	<20080707143011.729373219@linux.vnet.ibm.com>
+	<1215575177.8970.311.camel@pasglop>
+Content-Type: text/plain
+Date: Wed, 09 Jul 2008 10:28:07 -0500
+Message-Id: <1215617287.30113.26.camel@norville.austin.ibm.com>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,68 +21,75 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Background from Maynard Johnson:
-As of POWER6, a set of 32 common events is defined that must be
-supported on all future POWER processors.  The main impetus for this
-compat set is the need to support partition migration, especially from
-processor P(n) to processor P(n+1), where performance software that's
-running in the new partition may not be knowledgeable about processor
-P(n+1).  If a performance tool determines it does not support the
-physical processor, but is told (via the
-PPC_FEATURE_PSERIES_PERFMON_COMPAT bit) that the processor supports
-the notion of the PMU compat set, then the performance tool can
-surface just those events to the user of the tool.
+On Wed, 2008-07-09 at 13:46 +1000, Benjamin Herrenschmidt wrote:
 
-PPC_FEATURE_PSERIES_PERFMON_COMPAT indicates that the PMU supports at
-least this basic subset of events which is compatible across POWER
-processor lines.
+> The old code looks bogus.. why clear M when G is set ? Only
+> I should have mattered.
 
-Signed-off-by: Nathan Lynch <ntl@pobox.com>
----
+I can't find anywhere where G gets set without also setting I, so the
+test seems redundant as well.
 
-Changes since v2:
-- Further disambiguated name of feature bit (PMU -> PERFMON)
+> I'll apply anyway as you aren't changing the existing behaviour here but
+> maybe you can shoot me a fixup patch that removes the _PAGE_GUARDED
+> condition completely here ?
 
-Changes since v1:
-- make name of feature bit less generic
-- provide more complete changelog
+No problem.  There is code in cell/beat_htab.c doing the same thing.
+I've gone ahead and fixed it there too.
 
- arch/powerpc/kernel/cputable.c |    6 ++++--
- include/asm-powerpc/cputable.h |    3 +++
- 2 files changed, 7 insertions(+), 2 deletions(-)
+> It's legal to have G=1 M=1 pages and can even be useful under some
+> circumstances.
 
-diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
-index 817cea1..02088b0 100644
---- a/arch/powerpc/kernel/cputable.c
-+++ b/arch/powerpc/kernel/cputable.c
-@@ -70,10 +70,12 @@ extern void __restore_cpu_power7(void);
- 				 PPC_FEATURE_SMT | PPC_FEATURE_ICACHE_SNOOP)
- #define COMMON_USER_POWER6	(COMMON_USER_PPC64 | PPC_FEATURE_ARCH_2_05 |\
- 				 PPC_FEATURE_SMT | PPC_FEATURE_ICACHE_SNOOP | \
--				 PPC_FEATURE_TRUE_LE)
-+				 PPC_FEATURE_TRUE_LE | \
-+				 PPC_FEATURE_PSERIES_PERFMON_COMPAT)
- #define COMMON_USER_POWER7	(COMMON_USER_PPC64 | PPC_FEATURE_ARCH_2_06 |\
- 				 PPC_FEATURE_SMT | PPC_FEATURE_ICACHE_SNOOP | \
--				 PPC_FEATURE_TRUE_LE)
-+				 PPC_FEATURE_TRUE_LE | \
-+				 PPC_FEATURE_PSERIES_PERFMON_COMPAT)
- #define COMMON_USER_PA6T	(COMMON_USER_PPC64 | PPC_FEATURE_PA6T |\
- 				 PPC_FEATURE_TRUE_LE | \
- 				 PPC_FEATURE_HAS_ALTIVEC_COMP)
-diff --git a/include/asm-powerpc/cputable.h b/include/asm-powerpc/cputable.h
-index 3171ac9..58d4281 100644
---- a/include/asm-powerpc/cputable.h
-+++ b/include/asm-powerpc/cputable.h
-@@ -27,6 +27,9 @@
- #define PPC_FEATURE_ARCH_2_06		0x00000100
- #define PPC_FEATURE_HAS_VSX		0x00000080
+It doesn't look like anyone is trying to take advantage of that
+currently.
+
+Here's your patch:
+
+powerpc: Remove unnecessary condition when sanity-checking WIMG bits
+
+It is okay for both _PAGE_GUARDED and _PAGE_COHERENT (G and M) to be set
+in the same pte.  In fact, even if that were not the case, there doesn't
+seem to be any place where G is set without also setting I (_PAGE_NO_CACHE),
+so the test for I is sufficient.
+
+Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+
+diff --git a/arch/powerpc/platforms/cell/beat_htab.c b/arch/powerpc/platforms/cell/beat_htab.c
+index 81467ff..2e67bd8 100644
+--- a/arch/powerpc/platforms/cell/beat_htab.c
++++ b/arch/powerpc/platforms/cell/beat_htab.c
+@@ -112,7 +112,7 @@ static long beat_lpar_hpte_insert(unsigned long hpte_group,
+ 	if (!(vflags & HPTE_V_BOLTED))
+ 		DBG_LOW(" hpte_v=%016lx, hpte_r=%016lx\n", hpte_v, hpte_r);
  
-+#define PPC_FEATURE_PSERIES_PERFMON_COMPAT \
-+					0x00000040
-+
- #define PPC_FEATURE_TRUE_LE		0x00000002
- #define PPC_FEATURE_PPC_LE		0x00000001
+-	if (rflags & (_PAGE_GUARDED|_PAGE_NO_CACHE))
++	if (rflags & _PAGE_NO_CACHE)
+ 		hpte_r &= ~_PAGE_COHERENT;
  
+ 	spin_lock(&beat_htab_lock);
+@@ -334,7 +334,7 @@ static long beat_lpar_hpte_insert_v3(unsigned long hpte_group,
+ 	if (!(vflags & HPTE_V_BOLTED))
+ 		DBG_LOW(" hpte_v=%016lx, hpte_r=%016lx\n", hpte_v, hpte_r);
+ 
+-	if (rflags & (_PAGE_GUARDED|_PAGE_NO_CACHE))
++	if (rflags & _PAGE_NO_CACHE)
+ 		hpte_r &= ~_PAGE_COHERENT;
+ 
+ 	/* insert into not-volted entry */
+diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
+index 38b5927..52a80e5 100644
+--- a/arch/powerpc/platforms/pseries/lpar.c
++++ b/arch/powerpc/platforms/pseries/lpar.c
+@@ -305,8 +305,7 @@ static long pSeries_lpar_hpte_insert(unsigned long hpte_group,
+ 	flags = 0;
+ 
+ 	/* Make pHyp happy */
+-	if ((rflags & _PAGE_GUARDED) ||
+-	    ((rflags & _PAGE_NO_CACHE) & !(rflags & _PAGE_WRITETHRU)))
++	if ((rflags & _PAGE_NO_CACHE) & !(rflags & _PAGE_WRITETHRU))
+ 		hpte_r &= ~_PAGE_COHERENT;
+ 
+ 	lpar_rc = plpar_pte_enter(flags, hpte_group, hpte_v, hpte_r, &slot);
+
 -- 
-1.5.6.2
+David Kleikamp
+IBM Linux Technology Center
