@@ -1,21 +1,32 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 1A1A1DDDEA
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jul 2008 06:24:25 +1000 (EST)
+	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id BE3E9DDE22
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jul 2008 06:25:56 +1000 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e6.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m69KSGEJ019829
+	for <linuxppc-dev@ozlabs.org>; Wed, 9 Jul 2008 16:28:16 -0400
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
+	m69KPgpA157468
+	for <linuxppc-dev@ozlabs.org>; Wed, 9 Jul 2008 16:25:42 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m69KPfcU012350
+	for <linuxppc-dev@ozlabs.org>; Wed, 9 Jul 2008 16:25:41 -0400
+Date: Wed, 9 Jul 2008 16:22:19 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org
 Subject: Re: [PATCH] powerpc: Fix problems with 32bit PPC's running with
 	more than 2GB of RAM
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Stefan Roese <sr@denx.de>
-In-Reply-To: <1215611076-13518-1-git-send-email-sr@denx.de>
+Message-ID: <20080709162219.4c07a67e@zod.rchland.ibm.com>
+In-Reply-To: <1215633758.8970.372.camel@pasglop>
 References: <1215611076-13518-1-git-send-email-sr@denx.de>
-Content-Type: text/plain
-Date: Thu, 10 Jul 2008 06:02:38 +1000
-Message-Id: <1215633758.8970.372.camel@pasglop>
+	<1215633758.8970.372.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: benh@kernel.crashing.org
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Stefan Roese <sr@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,79 +36,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2008-07-09 at 15:44 +0200, Stefan Roese wrote:
-> This patch enables 32bit PPC's (with 36bit physical address space, e.g.
-> IBM/AMCC PPC44x) to run with more than 2GB of RAM. Mostly its just
-> replacing types (unsigned long -> phys_addr_t).
-> 
-> Tested on an AMCC Katmai with 4GB of DDR2.
-> 
-> Signed-off-by: Stefan Roese <sr@denx.de>
+On Thu, 10 Jul 2008 06:02:38 +1000
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-But DMAs will break no ?
-
-Ben.
-
-> ---
->  arch/powerpc/mm/init_32.c  |    4 ++--
->  arch/powerpc/mm/mem.c      |    8 ++++----
->  arch/powerpc/mm/mmu_decl.h |    4 ++--
->  3 files changed, 8 insertions(+), 8 deletions(-)
+> On Wed, 2008-07-09 at 15:44 +0200, Stefan Roese wrote:
+> > This patch enables 32bit PPC's (with 36bit physical address space, e.g.
+> > IBM/AMCC PPC44x) to run with more than 2GB of RAM. Mostly its just
+> > replacing types (unsigned long -> phys_addr_t).
+> > 
+> > Tested on an AMCC Katmai with 4GB of DDR2.
+> > 
+> > Signed-off-by: Stefan Roese <sr@denx.de>
 > 
-> diff --git a/arch/powerpc/mm/init_32.c b/arch/powerpc/mm/init_32.c
-> index 1952b4d..325ccdd 100644
-> --- a/arch/powerpc/mm/init_32.c
-> +++ b/arch/powerpc/mm/init_32.c
-> @@ -56,8 +56,8 @@
->  
->  DEFINE_PER_CPU(struct mmu_gather, mmu_gathers);
->  
-> -unsigned long total_memory;
-> -unsigned long total_lowmem;
-> +phys_addr_t total_memory;
-> +phys_addr_t total_lowmem;
->  
->  phys_addr_t memstart_addr = (phys_addr_t)~0ull;
->  EXPORT_SYMBOL(memstart_addr);
-> diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-> index 51f82d8..55ef772 100644
-> --- a/arch/powerpc/mm/mem.c
-> +++ b/arch/powerpc/mm/mem.c
-> @@ -329,7 +329,7 @@ static int __init mark_nonram_nosave(void)
->  void __init paging_init(void)
->  {
->  	unsigned long total_ram = lmb_phys_mem_size();
-> -	unsigned long top_of_ram = lmb_end_of_DRAM();
-> +	phys_addr_t top_of_ram = lmb_end_of_DRAM();
->  	unsigned long max_zone_pfns[MAX_NR_ZONES];
->  
->  #ifdef CONFIG_PPC32
-> @@ -348,10 +348,10 @@ void __init paging_init(void)
->  	kmap_prot = PAGE_KERNEL;
->  #endif /* CONFIG_HIGHMEM */
->  
-> -	printk(KERN_DEBUG "Top of RAM: 0x%lx, Total RAM: 0x%lx\n",
-> -	       top_of_ram, total_ram);
-> +	printk(KERN_DEBUG "Top of RAM: 0x%llx, Total RAM: 0x%lx\n",
-> +	       (u64)top_of_ram, total_ram);
->  	printk(KERN_DEBUG "Memory hole size: %ldMB\n",
-> -	       (top_of_ram - total_ram) >> 20);
-> +	       (long int)((top_of_ram - total_ram) >> 20));
->  	memset(max_zone_pfns, 0, sizeof(max_zone_pfns));
->  #ifdef CONFIG_HIGHMEM
->  	max_zone_pfns[ZONE_DMA] = lowmem_end_addr >> PAGE_SHIFT;
-> diff --git a/arch/powerpc/mm/mmu_decl.h b/arch/powerpc/mm/mmu_decl.h
-> index 0480225..4e46c63 100644
-> --- a/arch/powerpc/mm/mmu_decl.h
-> +++ b/arch/powerpc/mm/mmu_decl.h
-> @@ -49,8 +49,8 @@ extern unsigned int num_tlbcam_entries;
->  extern unsigned long ioremap_bot;
->  extern unsigned long __max_low_memory;
->  extern phys_addr_t __initial_memory_limit_addr;
-> -extern unsigned long total_memory;
-> -extern unsigned long total_lowmem;
-> +extern phys_addr_t total_memory;
-> +extern phys_addr_t total_lowmem;
->  extern phys_addr_t memstart_addr;
->  extern phys_addr_t lowmem_end_addr;
->  
+> But DMAs will break no ?
+
+How?
+
+josh
