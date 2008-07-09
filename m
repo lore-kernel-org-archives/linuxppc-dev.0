@@ -1,21 +1,13 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E8D30DDF86
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 Jul 2008 23:42:45 +1000 (EST)
-Message-Id: <BA91427F-F52C-4AA5-886B-E8D7527EA203@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-In-Reply-To: <20080709091846.69b08e34@zod.rchland.ibm.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v926)
-Subject: Re: Updates to powerpc.git
-Date: Wed, 9 Jul 2008 08:40:21 -0500
-References: <1215588881.8970.358.camel@pasglop>
-	<20080709091846.69b08e34@zod.rchland.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Return-Path: <sr@denx.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id 91517DDF7C
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 Jul 2008 23:45:17 +1000 (EST)
+From: Stefan Roese <sr@denx.de>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc: Fix problems with 32bit PPC's running with more than
+	2GB of RAM
+Date: Wed,  9 Jul 2008 15:44:36 +0200
+Message-Id: <1215611076-13518-1-git-send-email-sr@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,69 +17,75 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+This patch enables 32bit PPC's (with 36bit physical address space, e.g.
+IBM/AMCC PPC44x) to run with more than 2GB of RAM. Mostly its just
+replacing types (unsigned long -> phys_addr_t).
 
-On Jul 9, 2008, at 8:18 AM, Josh Boyer wrote:
+Tested on an AMCC Katmai with 4GB of DDR2.
 
-> On Wed, 09 Jul 2008 17:34:41 +1000
-> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
->
->> I've pushed some updates to my version of powerpc.git.
->>
->> The tree itself is at:
->>
->>  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git
->>
->> It contains 3 branches:
->>
->>  - merge  : this is for merging with the current stable and doesn't
->>             currently contain anything interesting
->>
->>  - master : this is our current "powerpc.git" tree, it may contain
->>             various experimental stuff that may or may not go  
->> upstream
->>             or may contain dependent patches that we rely on but that
->>             are to be merged via some other tree.
->>
->>  - next   : this is the candidate stuff for linux-next and the next
->>             merge window
->>
->> (Andrew, you -may- want to pull that instead of paulus one until
->> he's back from vacation).
->>
->> Until today, master and next pointed to the same commit, which was
->> the same as paulus master and powerpc-next branches. Tonight, I've
->> pushed some patches to master that I intend to have in next, but
->> I'd like to let them sit in master for a couple of days to make sure
->> nothing is badly broken mostly and make sure I didn't screw up in
->> my various patch monkeying operations.
->
-> One thing to point out is that if you decide to only select a few of
-> those patches, you'll need to cherry-pick them into your next branch
-> (or rebase). That means that when you pull from Linus into your master
-> branch during/after the merge window, you'll get all kinds of funny
-> merge commits.
->
-> If you want to use your master branch as a place for experimental
-> stuff, that's fine by me.  But you'll want to keep next separate from
-> it so it's as "clean" as possible for those trying to track what is
-> definitely going into the next release.
->
-> If it were up to me (which it's not), I would have master just track
-> Linus, next track what's going into the next release, and "bleeding"  
-> or
-> "experimental" track stuff that isn't fully vetted yet.  I might start
-> doing that with my tree in the very near future.
+Signed-off-by: Stefan Roese <sr@denx.de>
+---
+ arch/powerpc/mm/init_32.c  |    4 ++--
+ arch/powerpc/mm/mem.c      |    8 ++++----
+ arch/powerpc/mm/mmu_decl.h |    4 ++--
+ 3 files changed, 8 insertions(+), 8 deletions(-)
 
-I do something similar, but my master is a merge of linus and my next  
-branch, which is roughly what I think paul did.
-
-> Also, Paul is pretty good about not rebasing his branches when at all
-> possible, and I suspect that's why his master and next were often the
-> same.  It makes life lots easier for the sub-maintainers and anyone
-> trying to track against the tree.  I humbly beg you to keep that  
-> going.
-
-I agree and I'm sure linus will tell you how evil it is to rebase as a  
-maintainer.
-
-- k
+diff --git a/arch/powerpc/mm/init_32.c b/arch/powerpc/mm/init_32.c
+index 1952b4d..325ccdd 100644
+--- a/arch/powerpc/mm/init_32.c
++++ b/arch/powerpc/mm/init_32.c
+@@ -56,8 +56,8 @@
+ 
+ DEFINE_PER_CPU(struct mmu_gather, mmu_gathers);
+ 
+-unsigned long total_memory;
+-unsigned long total_lowmem;
++phys_addr_t total_memory;
++phys_addr_t total_lowmem;
+ 
+ phys_addr_t memstart_addr = (phys_addr_t)~0ull;
+ EXPORT_SYMBOL(memstart_addr);
+diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+index 51f82d8..55ef772 100644
+--- a/arch/powerpc/mm/mem.c
++++ b/arch/powerpc/mm/mem.c
+@@ -329,7 +329,7 @@ static int __init mark_nonram_nosave(void)
+ void __init paging_init(void)
+ {
+ 	unsigned long total_ram = lmb_phys_mem_size();
+-	unsigned long top_of_ram = lmb_end_of_DRAM();
++	phys_addr_t top_of_ram = lmb_end_of_DRAM();
+ 	unsigned long max_zone_pfns[MAX_NR_ZONES];
+ 
+ #ifdef CONFIG_PPC32
+@@ -348,10 +348,10 @@ void __init paging_init(void)
+ 	kmap_prot = PAGE_KERNEL;
+ #endif /* CONFIG_HIGHMEM */
+ 
+-	printk(KERN_DEBUG "Top of RAM: 0x%lx, Total RAM: 0x%lx\n",
+-	       top_of_ram, total_ram);
++	printk(KERN_DEBUG "Top of RAM: 0x%llx, Total RAM: 0x%lx\n",
++	       (u64)top_of_ram, total_ram);
+ 	printk(KERN_DEBUG "Memory hole size: %ldMB\n",
+-	       (top_of_ram - total_ram) >> 20);
++	       (long int)((top_of_ram - total_ram) >> 20));
+ 	memset(max_zone_pfns, 0, sizeof(max_zone_pfns));
+ #ifdef CONFIG_HIGHMEM
+ 	max_zone_pfns[ZONE_DMA] = lowmem_end_addr >> PAGE_SHIFT;
+diff --git a/arch/powerpc/mm/mmu_decl.h b/arch/powerpc/mm/mmu_decl.h
+index 0480225..4e46c63 100644
+--- a/arch/powerpc/mm/mmu_decl.h
++++ b/arch/powerpc/mm/mmu_decl.h
+@@ -49,8 +49,8 @@ extern unsigned int num_tlbcam_entries;
+ extern unsigned long ioremap_bot;
+ extern unsigned long __max_low_memory;
+ extern phys_addr_t __initial_memory_limit_addr;
+-extern unsigned long total_memory;
+-extern unsigned long total_lowmem;
++extern phys_addr_t total_memory;
++extern phys_addr_t total_lowmem;
+ extern phys_addr_t memstart_addr;
+ extern phys_addr_t lowmem_end_addr;
+ 
+-- 
+1.5.6.2
