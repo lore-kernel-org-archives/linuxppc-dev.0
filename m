@@ -1,25 +1,21 @@
-Return-Path: <Jason.Jin@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 5E432DDE20
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 Jul 2008 11:30:04 +1000 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	m691TwmU022376
-	for <linuxppc-dev@ozlabs.org>; Tue, 8 Jul 2008 18:29:58 -0700 (MST)
-Received: from zch01exm21.fsl.freescale.net (zch01exm21.ap.freescale.net
-	[10.192.129.205])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id m691Tt6f028671
-	for <linuxppc-dev@ozlabs.org>; Tue, 8 Jul 2008 20:29:56 -0500 (CDT)
-From: Jason Jin <Jason.jin@freescale.com>
-To: galak@kernel.crashing.org
-Subject: [PATCH] Minor fixes for 85xxds and 8536ds board.
-Date: Wed,  9 Jul 2008 09:27:35 +0800
-Message-Id: <1215566855-6198-1-git-send-email-Jason.jin@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, Jason Jin <Jason.jin@freescale.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 75F26DDE11
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 Jul 2008 11:53:53 +1000 (EST)
+Subject: Re: [PATCH] powerpc: rework 4xx PTE access and TLB miss
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Sean MacLennan <smaclennan@pikatech.com>
+In-Reply-To: <20080708205315.4e463bdb@lappy.seanm.ca>
+References: <20080708055449.EDFDADDEF5@ozlabs.org>
+	<20080708205315.4e463bdb@lappy.seanm.ca>
+Content-Type: text/plain
+Date: Wed, 09 Jul 2008 11:53:46 +1000
+Message-Id: <1215568426.8970.296.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,40 +25,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Remove the "uninitialized use" compile warning and
-avoid potential runtime issue.
+On Tue, 2008-07-08 at 20:53 -0400, Sean MacLennan wrote:
+> On Tue, 08 Jul 2008 15:54:40 +1000
+> "Benjamin Herrenschmidt" <benh@kernel.crashing.org> wrote:
+> 
+> > This is some preliminary work to improve TLB management on SW loaded
+> > TLB powerpc platforms. This introduce support for non-atomic PTE
+> > operations in pgtable-ppc32.h and removes write back to the PTE from
+> > the TLB miss handlers. In addition, the DSI interrupt code no longer
+> > tries to fixup write permission, this is left to generic code, and
+> > _PAGE_HWWRITE is gone.
+> 
+> Ok, this version booted for me and passed some very rudimentary
+> regression tests.
 
-Signed-off-by: Jason Jin <Jason.jin@freescale.com>
----
- arch/powerpc/platforms/85xx/mpc8536_ds.c |    2 +-
- arch/powerpc/platforms/85xx/mpc85xx_ds.c |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+Thanks for testing.
 
-diff --git a/arch/powerpc/platforms/85xx/mpc8536_ds.c b/arch/powerpc/platforms/85xx/mpc8536_ds.c
-index 9943816..69e2129 100644
---- a/arch/powerpc/platforms/85xx/mpc8536_ds.c
-+++ b/arch/powerpc/platforms/85xx/mpc8536_ds.c
-@@ -40,7 +40,7 @@ void __init mpc8536_ds_pic_init(void)
- 	struct resource r;
- 	struct device_node *np;
- 
--	np = of_find_node_by_type(np, "open-pic");
-+	np = of_find_node_by_type(NULL, "open-pic");
- 	if (np == NULL) {
- 		printk(KERN_ERR "Could not find open-pic node\n");
- 		return;
-diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ds.c b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
-index 8b2d63d..25f41cd 100644
---- a/arch/powerpc/platforms/85xx/mpc85xx_ds.c
-+++ b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
-@@ -64,7 +64,7 @@ void __init mpc85xx_ds_pic_init(void)
- 	int cascade_irq;
- #endif
- 
--	np = of_find_node_by_type(np, "open-pic");
-+	np = of_find_node_by_type(NULL, "open-pic");
- 	if (np == NULL) {
- 		printk(KERN_ERR "Could not find open-pic node\n");
- 		return;
--- 
-1.5.4
+Cheers,
+Ben.
