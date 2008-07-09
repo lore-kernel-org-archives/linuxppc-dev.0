@@ -1,12 +1,23 @@
-Return-Path: <ednh@cypress.com>
-From: "Ed Henderson" <ednh@cypress.com>
-To: <Linuxppc-embedded@ozlabs.org>
-Subject: unsubscribe
-Date: Wed, 9 Jul 2008 08:45:59 -0600
-Message-ID: <026401c8e1d2$80aa5f10$81ff1d30$@com>
+Return-Path: <John.Linn@xilinx.com>
+Received: from mail118-va3-R.bigfish.com (mail-va3.bigfish.com
+	[216.32.180.113])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "*.bigfish.com",
+	Issuer "Microsoft Secure Server Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 865DEDEE8E
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 10 Jul 2008 02:26:28 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_NextPart_000_0265_01C8E1A0.360FEF10"
+Content-Type: text/plain;
+	charset="US-ASCII"
+Subject: RE: Booting ML405 (Kernel panic - not syncing: No init found)
+Date: Wed, 9 Jul 2008 10:06:58 -0600
+In-Reply-To: <20080709143318.GB26524@secretlab.ca>
+References: <48744475.2080605@cdac.in> <20080709143318.GB26524@secretlab.ca>
+From: "John Linn" <John.Linn@xilinx.com>
+To: "Grant Likely" <grant.likely@secretlab.ca>, "neeraj garg" <neerajg@cdac.in>
+Message-Id: <20080709160659.EE3F6E28065@mail118-va3.bigfish.com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -17,85 +28,68 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multipart message in MIME format.
+The only difference I see is the tools, we are using ELDK 4.1 for now.
 
-------=_NextPart_000_0265_01C8E1A0.360FEF10
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+I have tested this on the ML405 in the past, not for a bit as our
+automated testing uses an NFS root.
 
- 
+Since this is arch/ppc (it appears, no boot line), we have stopped work
+on this architecture and are now encouraging (maybe a stronger word is
+needed) you to move to arch/powerpc.
+
+The arch/ppc was last stable at git tag last-arch-ppc and I know it
+started getting more unstable after I started pulling in 2.6.26-rcx.  We
+won't be doing any more changes to arch/ppc.
+
+-- John
+
+> -----Original Message-----
+> From: linuxppc-embedded-bounces+john.linn=3Dxilinx.com@ozlabs.org
+[mailto:linuxppc-embedded-
+> bounces+john.linn=3Dxilinx.com@ozlabs.org] On Behalf Of Grant Likely
+> Sent: Wednesday, July 09, 2008 8:33 AM
+> To: neeraj garg
+> Cc: linuxppc-embedded@ozlabs.org
+> Subject: Re: Booting ML405 (Kernel panic - not syncing: No init found)
+> =
+
+> On Wed, Jul 09, 2008 at 10:24:13AM +0530, neeraj garg wrote:
+> > Hi,
+> >
+> > I am trying to boot ML405 with Linux source code downloaded from
+> > http://www.git.xilinx.com . My cross compiler tool chain version is
+> > gcc-3.4.1, glibc-2.3.2 and binutils-2.15. I have also downloaded
+RAMDISK
+> > from same url (http://www.git.xilinx.com). When I download
+> > zImage.initrd.elf using XMD everything goes fine, untill RAMDISK is
+> > uncompressed, I get following messages :
+> >
+> <snip>
+> >                                           [    3.736691] Failed to
+> > execute /sbin/init.  Attempting defaults...
+> > [    3.748073] Kernel panic - not syncing: No init found.  Try
+passing
+> > init=3D option to kernel.
+> > [    3.772040] Rebooting in 180 seconds..[  183.487314]   Signal: 8
+> >
+> =
+
+> Try changing the kernel parameters line to specify init=3D/bin/sh and
+see
+> what happens.
+> =
+
+> g.
+> =
+
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
 
 
-------=_NextPart_000_0265_01C8E1A0.360FEF10
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-<html xmlns:v=3D"urn:schemas-microsoft-com:vml" =
-xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
-xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
-xmlns:m=3D"http://schemas.microsoft.com/office/2004/12/omml" =
-xmlns=3D"http://www.w3.org/TR/REC-html40">
-
-<head>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Dus-ascii">
-<meta name=3DGenerator content=3D"Microsoft Word 12 (filtered medium)">
-<style>
-<!--
- /* Font Definitions */
- @font-face
-	{font-family:"Cambria Math";
-	panose-1:2 4 5 3 5 4 6 3 2 4;}
-@font-face
-	{font-family:Calibri;
-	panose-1:2 15 5 2 2 2 4 3 2 4;}
- /* Style Definitions */
- p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{margin:0in;
-	margin-bottom:.0001pt;
-	font-size:11.0pt;
-	font-family:"Calibri","sans-serif";}
-a:link, span.MsoHyperlink
-	{mso-style-priority:99;
-	color:blue;
-	text-decoration:underline;}
-a:visited, span.MsoHyperlinkFollowed
-	{mso-style-priority:99;
-	color:purple;
-	text-decoration:underline;}
-span.EmailStyle17
-	{mso-style-type:personal-compose;
-	font-family:"Calibri","sans-serif";
-	color:windowtext;}
-.MsoChpDefault
-	{mso-style-type:export-only;}
-@page Section1
-	{size:8.5in 11.0in;
-	margin:1.0in 1.0in 1.0in 1.0in;}
-div.Section1
-	{page:Section1;}
--->
-</style>
-<!--[if gte mso 9]><xml>
- <o:shapedefaults v:ext=3D"edit" spidmax=3D"1026" />
-</xml><![endif]--><!--[if gte mso 9]><xml>
- <o:shapelayout v:ext=3D"edit">
-  <o:idmap v:ext=3D"edit" data=3D"1" />
- </o:shapelayout></xml><![endif]-->
-</head>
-
-<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
-
-<div class=3DSection1>
-
-<p class=3DMsoNormal><o:p>&nbsp;</o:p></p>
-
-</div>
-
-</body>
-
-</html>
-
-------=_NextPart_000_0265_01C8E1A0.360FEF10--
+This email and any attachments are intended for the sole use of the named r=
+ecipient(s) and contain(s) confidential information that may be proprietary=
+, privileged or copyrighted under applicable law. If you are not the intend=
+ed recipient, do not read, copy, or forward this email message or any attac=
+hments. Delete this email message and any attachments immediately.
