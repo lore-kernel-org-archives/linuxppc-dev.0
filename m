@@ -1,22 +1,20 @@
 Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 9CAC8DE1B2
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jul 2008 06:43:56 +1000 (EST)
-Subject: Re: [PATCH] powerpc: Fix problems with 32bit PPC's running with
-	more than 2GB of RAM
+Subject: Re: [Cbe-oss-dev] [patch 02/02] powerpc/cell: add support
+	for	power button of future IBM cell blades
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-In-Reply-To: <20080709162219.4c07a67e@zod.rchland.ibm.com>
-References: <1215611076-13518-1-git-send-email-sr@denx.de>
-	<1215633758.8970.372.camel@pasglop>
-	<20080709162219.4c07a67e@zod.rchland.ibm.com>
+To: Arnd Bergmann <arnd@arndb.de>
+In-Reply-To: <200807091515.04484.arnd@arndb.de>
+References: <20080704190535.316377278@arndb.de>
+	<20080707185644.0d6c9757@de.ibm.com>
+	<1215574530.8970.306.camel@pasglop>
+	<200807091515.04484.arnd@arndb.de>
 Content-Type: text/plain
-Date: Thu, 10 Jul 2008 06:39:39 +1000
-Message-Id: <1215635979.8970.385.camel@pasglop>
+Date: Thu, 10 Jul 2008 06:45:30 +1000
+Message-Id: <1215636330.8970.387.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Stefan Roese <sr@denx.de>
+Cc: Christian Krafft <krafft@de.ibm.com>,
+	Christian Krafft <krafft@linux.ibm.com>, cbe-oss-dev@ozlabs.org,
+	linuxppc-dev@ozlabs.org
 Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -27,24 +25,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2008-07-09 at 16:22 -0400, Josh Boyer wrote:
-> On Thu, 10 Jul 2008 06:02:38 +1000
-> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-> 
-> > On Wed, 2008-07-09 at 15:44 +0200, Stefan Roese wrote:
-> > > This patch enables 32bit PPC's (with 36bit physical address space, e.g.
-> > > IBM/AMCC PPC44x) to run with more than 2GB of RAM. Mostly its just
-> > > replacing types (unsigned long -> phys_addr_t).
-> > > 
-> > > Tested on an AMCC Katmai with 4GB of DDR2.
-> > > 
-> > > Signed-off-by: Stefan Roese <sr@denx.de>
-> > 
-> > But DMAs will break no ?
-> 
-> How?
+On Wed, 2008-07-09 at 15:15 +0200, Arnd Bergmann wrote:
+> Ugly, but doable, yes. I wonder if there is a way that we can trigger some
+> interrupt from system_reset_exception context in order to get around the
+> polling though. tasklets and workqueues unfortunately won't do us any good
+> here because they also depend on disabling interrupts.
 
-Hrm... forget it. It's fine up to 4G of RAM... (ie. as long as DMA is
-below 32 bits).
+You can trigger a DEC interrupt at any time but you don't have
+a nice hook to catch it. You can probably trigger an IPI to yourself
+using a special call to the iic, do we have any available number ?
 
 Ben.
