@@ -1,33 +1,21 @@
-Return-Path: <chirag@linux.vnet.ibm.com>
-Received: from e28esmtp03.in.ibm.com (e28smtp03.in.ibm.com [59.145.155.3])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e28smtp03.in.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 081A0DE127
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jul 2008 02:06:41 +1000 (EST)
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
-	by e28esmtp03.in.ibm.com (8.13.1/8.13.1) with ESMTP id m69G5tLx017448
-	for <linuxppc-dev@ozlabs.org>; Wed, 9 Jul 2008 21:35:55 +0530
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
-	by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
-	m69G5Xc71499372
-	for <linuxppc-dev@ozlabs.org>; Wed, 9 Jul 2008 21:35:33 +0530
-Received: from d28av05.in.ibm.com (loopback [127.0.0.1])
-	by d28av05.in.ibm.com (8.13.1/8.13.3) with ESMTP id m69G5s0Y021192
-	for <linuxppc-dev@ozlabs.org>; Wed, 9 Jul 2008 21:35:54 +0530
-Date: Wed, 9 Jul 2008 21:35:43 +0530
-From: Chirag Jog <chirag@linux.vnet.ibm.com>
-To: linux.kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
-	linuxppc-dev@ozlabs.org
-Subject: [PATCH][RT][PPC64] Fix preempt unsafe paths accessing per_cpu
-	variables
-Message-ID: <20080709160543.GG7101@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Cc: Josh Triplett <josht@linux.vnet.ibm.com>,
-	Steven Rostedt <rostedt@goodmis.org>, Nivedita Singhvi <niv@us.ibm.com>,
-	"Timothy R. Chavez" <tim.chavez@linux.vnet.ibm.com>,
-	paulmck@linux.vnet.ibm.com
-Reply-To: Chirag Jog <chirag@linux.vnet.ibm.com>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id A2DBCDE1AD
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jul 2008 02:08:42 +1000 (EST)
+Date: Thu, 10 Jul 2008 02:08:32 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: Updates to powerpc.git
+Message-Id: <20080710020832.3e654bc9.sfr@canb.auug.org.au>
+In-Reply-To: <7CAAEE49-56F0-4565-8F1B-374C5E2F9E42@kernel.crashing.org>
+References: <1215588881.8970.358.camel@pasglop>
+	<7CAAEE49-56F0-4565-8F1B-374C5E2F9E42@kernel.crashing.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Thu__10_Jul_2008_02_08_32_+1000_CSYGS5dt/O1XmSKv"
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,182 +25,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+--Signature=_Thu__10_Jul_2008_02_08_32_+1000_CSYGS5dt/O1XmSKv
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Hi,
-This patch fixes various paths in the -rt kernel on powerpc64 where per_cpu
-variables are accessed in a preempt unsafe way.
-When a power box with -rt kernel is booted, multiple BUG messages are
-generated "BUG: init:1 task might have lost a preemption check!".
-After booting a kernel with these patches applied, these messages
-don't appear.
+Kumar,
 
-Also I ran the realtime tests from ltp to ensure the stability.
+On Wed, 9 Jul 2008 07:58:38 -0500 Kumar Gala <galak@kernel.crashing.org> wr=
+ote:
+>
+> What is your intent with the 'master' branch?  I hope you do NOT plan =20
+> on ever rebasing it.  I assume if a patch gets into master and we drop =20
+> it you'll do a git-revert of it?
 
+"Ever" is such a strong word.  Even Paul on occasion rebased his master
+branch.  I see no reason why Ben could not run his master (or maybe
+better named "test") branch as a place that patches come and go and his
+"next" branch as something that never (or very rarely) gets rebased with
+commits progressing from master (test) to next when he is satisfied with
+them. People should then base further work in the "next" branch.
 
-Signed-Off-By: Chirag <chirag@linux.vnet.ibm.com>
-arch/powerpc/mm/tlb_64.c               |   31 ++++++++++++++++---------------
-arch/powerpc/platforms/pseries/iommu.c |   14 ++++++++++----
-include/asm-powerpc/tlb.h              |    5 ++---
-3 files changed, 28 insertions(+), 22 deletions(-)
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
- 
-Index: linux-2.6.25.8-rt7/arch/powerpc/mm/tlb_64.c
-===================================================================
---- linux-2.6.25.8-rt7.orig/arch/powerpc/mm/tlb_64.c	2008-07-09 21:29:21.000000000 +0530
-+++ linux-2.6.25.8-rt7/arch/powerpc/mm/tlb_64.c	2008-07-09 21:30:37.000000000 +0530
-@@ -38,7 +38,6 @@
-  * include/asm-powerpc/tlb.h file -- tgall
-  */
- DEFINE_PER_CPU_LOCKED(struct mmu_gather, mmu_gathers);
--DEFINE_PER_CPU(struct pte_freelist_batch *, pte_freelist_cur);
- unsigned long pte_freelist_forced_free;
- 
- struct pte_freelist_batch
-@@ -48,7 +47,7 @@
- 	pgtable_free_t	tables[0];
- };
- 
--DEFINE_PER_CPU(struct pte_freelist_batch *, pte_freelist_cur);
-+DEFINE_PER_CPU_LOCKED(struct pte_freelist_batch *, pte_freelist_cur);
- unsigned long pte_freelist_forced_free;
- 
- #define PTE_FREELIST_SIZE \
-@@ -92,24 +91,21 @@
- 
- void pgtable_free_tlb(struct mmu_gather *tlb, pgtable_free_t pgf)
- {
--	/*
--	 * This is safe since tlb_gather_mmu has disabled preemption.
--	 * tlb->cpu is set by tlb_gather_mmu as well.
--	 */
-+	int cpu;
-         cpumask_t local_cpumask = cpumask_of_cpu(tlb->cpu);
--	struct pte_freelist_batch **batchp = &__get_cpu_var(pte_freelist_cur);
-+	struct pte_freelist_batch **batchp = &get_cpu_var_locked(pte_freelist_cur, &cpu);
- 
- 	if (atomic_read(&tlb->mm->mm_users) < 2 ||
- 	    cpus_equal(tlb->mm->cpu_vm_mask, local_cpumask)) {
- 		pgtable_free(pgf);
--		return;
-+		goto cleanup;
- 	}
- 
- 	if (*batchp == NULL) {
- 		*batchp = (struct pte_freelist_batch *)__get_free_page(GFP_ATOMIC);
- 		if (*batchp == NULL) {
- 			pgtable_free_now(pgf);
--			return;
-+			goto cleanup;
- 		}
- 		(*batchp)->index = 0;
- 	}
-@@ -118,6 +114,9 @@
- 		pte_free_submit(*batchp);
- 		*batchp = NULL;
- 	}
-+
-+ cleanup:
-+	put_cpu_var_locked(pte_freelist_cur, cpu);
- }
- 
- /*
-@@ -253,13 +252,15 @@
- 
- void pte_free_finish(void)
- {
--	/* This is safe since tlb_gather_mmu has disabled preemption */
--	struct pte_freelist_batch **batchp = &__get_cpu_var(pte_freelist_cur);
-+	int cpu;
-+	struct pte_freelist_batch **batchp = &get_cpu_var_locked(pte_freelist_cur, &cpu);
- 
--	if (*batchp == NULL)
--		return;
--	pte_free_submit(*batchp);
--	*batchp = NULL;
-+	if (*batchp) {
-+		pte_free_submit(*batchp);
-+		*batchp = NULL;
-+	}
-+
-+	put_cpu_var_locked(pte_freelist_cur, cpu);
- }
- 
- /**
-Index: linux-2.6.25.8-rt7/include/asm-powerpc/tlb.h
-===================================================================
---- linux-2.6.25.8-rt7.orig/include/asm-powerpc/tlb.h	2008-07-09 21:29:21.000000000 +0530
-+++ linux-2.6.25.8-rt7/include/asm-powerpc/tlb.h	2008-07-09 21:29:41.000000000 +0530
-@@ -40,18 +40,17 @@
- 
- static inline void tlb_flush(struct mmu_gather *tlb)
- {
--	struct ppc64_tlb_batch *tlbbatch = &__get_cpu_var(ppc64_tlb_batch);
-+	struct ppc64_tlb_batch *tlbbatch = &get_cpu_var(ppc64_tlb_batch);
- 
- 	/* If there's a TLB batch pending, then we must flush it because the
- 	 * pages are going to be freed and we really don't want to have a CPU
- 	 * access a freed page because it has a stale TLB
- 	 */
- 	if (tlbbatch->index) {
--		preempt_disable();
- 		__flush_tlb_pending(tlbbatch);
--		preempt_enable();
- 	}
- 
-+	put_cpu_var(ppc64_tlb_batch);
- 	pte_free_finish();
- }
- 
-Index: linux-2.6.25.8-rt7/arch/powerpc/platforms/pseries/iommu.c
-===================================================================
---- linux-2.6.25.8-rt7.orig/arch/powerpc/platforms/pseries/iommu.c	2008-07-09 21:29:21.000000000 +0530
-+++ linux-2.6.25.8-rt7/arch/powerpc/platforms/pseries/iommu.c	2008-07-09 21:29:41.000000000 +0530
-@@ -124,7 +124,7 @@
- 	}
- }
- 
--static DEFINE_PER_CPU(u64 *, tce_page) = NULL;
-+static DEFINE_PER_CPU_LOCKED(u64 *, tce_page) = NULL;
- 
- static void tce_buildmulti_pSeriesLP(struct iommu_table *tbl, long tcenum,
- 				     long npages, unsigned long uaddr,
-@@ -135,12 +135,13 @@
- 	u64 *tcep;
- 	u64 rpn;
- 	long l, limit;
-+	int cpu;
- 
- 	if (npages == 1)
- 		return tce_build_pSeriesLP(tbl, tcenum, npages, uaddr,
- 					   direction);
- 
--	tcep = __get_cpu_var(tce_page);
-+	tcep = get_cpu_var_locked(tce_page, &cpu);
- 
- 	/* This is safe to do since interrupts are off when we're called
- 	 * from iommu_alloc{,_sg}()
-@@ -148,10 +149,13 @@
- 	if (!tcep) {
- 		tcep = (u64 *)__get_free_page(GFP_ATOMIC);
- 		/* If allocation fails, fall back to the loop implementation */
--		if (!tcep)
-+		if (!tcep) {
-+			put_cpu_var_locked(tce_page, cpu);
- 			return tce_build_pSeriesLP(tbl, tcenum, npages,
- 						   uaddr, direction);
--		__get_cpu_var(tce_page) = tcep;
-+		}
-+
-+		per_cpu_var_locked(tce_page, cpu) = tcep;
- 	}
- 
- 	rpn = (virt_to_abs(uaddr)) >> TCE_SHIFT;
-@@ -188,6 +192,8 @@
- 		printk("\ttce[0] val = 0x%lx\n", tcep[0]);
- 		show_stack(current, (unsigned long *)__get_SP());
- 	}
-+
-+	put_cpu_var_locked(tce_page, cpu);
- }
- 
- static void tce_free_pSeriesLP(struct iommu_table *tbl, long tcenum, long npages)
+--Signature=_Thu__10_Jul_2008_02_08_32_+1000_CSYGS5dt/O1XmSKv
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkh04oAACgkQjjKRsyhoI8yRxACdF/PTPQrJMJKdJhilXDErO5ix
+4H4An22FHLNM02lkX5LW9OrNgkwibW0U
+=in3h
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__10_Jul_2008_02_08_32_+1000_CSYGS5dt/O1XmSKv--
