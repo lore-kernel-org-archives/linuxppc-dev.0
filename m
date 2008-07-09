@@ -1,17 +1,19 @@
-Return-Path: <shaggy@linux.vnet.ibm.com>
-Subject: Re: [patch 5/5] powerpc: Dont clear _PAGE_COHERENT when _PAGE_SAO
-	is set
-From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 0EF6DDE491
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jul 2008 01:31:44 +1000 (EST)
+Message-Id: <352560B5-24A4-47B8-8A1F-5900957470FC@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1215575177.8970.311.camel@pasglop>
-References: <20080707142850.034542257@linux.vnet.ibm.com>
-	<20080707143011.729373219@linux.vnet.ibm.com>
-	<1215575177.8970.311.camel@pasglop>
-Content-Type: text/plain
-Date: Wed, 09 Jul 2008 10:28:07 -0500
-Message-Id: <1215617287.30113.26.camel@norville.austin.ibm.com>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <Linuxppc-dev@ozlabs.org>
+In-Reply-To: <20080708055449.EDFDADDEF5@ozlabs.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v926)
+Subject: Re: [PATCH] powerpc: rework 4xx PTE access and TLB miss
+Date: Wed, 9 Jul 2008 10:31:31 -0500
+References: <20080708055449.EDFDADDEF5@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,75 +23,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2008-07-09 at 13:46 +1000, Benjamin Herrenschmidt wrote:
 
-> The old code looks bogus.. why clear M when G is set ? Only
-> I should have mattered.
+On Jul 8, 2008, at 12:54 AM, Benjamin Herrenschmidt wrote:
 
-I can't find anywhere where G gets set without also setting I, so the
-test seems redundant as well.
+> This is some preliminary work to improve TLB management on SW loaded
+> TLB powerpc platforms. This introduce support for non-atomic PTE
+> operations in pgtable-ppc32.h and removes write back to the PTE from
+> the TLB miss handlers. In addition, the DSI interrupt code no longer
+> tries to fixup write permission, this is left to generic code, and
+> _PAGE_HWWRITE is gone.
+>
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> ---
+>
+> This is a first step, plan is to do the same for FSL BookE, 405 and
+> possibly 8xx too. From there, I want to rework a bit the execute
+> permission handling to avoid multiple faults, add support for
+> _PAGE_EXEC (no executable mappings), for prefaulting (especially
+> for kmap) and proper SMP support for future SMP capable BookE
+> platforms.
+>
+> v2. This version fixes a couple of typos, add a few comments and
+> change use of flush_instruction_cache() to flush_icache_range()
+> which will be more appropriate if there is ever an SMP variant.
+>
+> v3. Relying on the generic code to fixup _PAGE_ACCESSED doesn't
+> work for exec faults because our cache coherency code in
+> do_page_fault() will never go all the way to the generic code
+> for these. We fix it up by always setting _PAGE_ACCESSED when
+> setting _PAGE_HWEXEC in there.
+> This version of the patch is rebased on top of -next
 
-> I'll apply anyway as you aren't changing the existing behaviour here but
-> maybe you can shoot me a fixup patch that removes the _PAGE_GUARDED
-> condition completely here ?
+shouldn't you remove _PAGE_HWWRITE from 40x?  (I'm still seeing it in  
+pgtable-ppc32.h and head_40x.S)
 
-No problem.  There is code in cell/beat_htab.c doing the same thing.
-I've gone ahead and fixed it there too.
-
-> It's legal to have G=1 M=1 pages and can even be useful under some
-> circumstances.
-
-It doesn't look like anyone is trying to take advantage of that
-currently.
-
-Here's your patch:
-
-powerpc: Remove unnecessary condition when sanity-checking WIMG bits
-
-It is okay for both _PAGE_GUARDED and _PAGE_COHERENT (G and M) to be set
-in the same pte.  In fact, even if that were not the case, there doesn't
-seem to be any place where G is set without also setting I (_PAGE_NO_CACHE),
-so the test for I is sufficient.
-
-Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-
-diff --git a/arch/powerpc/platforms/cell/beat_htab.c b/arch/powerpc/platforms/cell/beat_htab.c
-index 81467ff..2e67bd8 100644
---- a/arch/powerpc/platforms/cell/beat_htab.c
-+++ b/arch/powerpc/platforms/cell/beat_htab.c
-@@ -112,7 +112,7 @@ static long beat_lpar_hpte_insert(unsigned long hpte_group,
- 	if (!(vflags & HPTE_V_BOLTED))
- 		DBG_LOW(" hpte_v=%016lx, hpte_r=%016lx\n", hpte_v, hpte_r);
- 
--	if (rflags & (_PAGE_GUARDED|_PAGE_NO_CACHE))
-+	if (rflags & _PAGE_NO_CACHE)
- 		hpte_r &= ~_PAGE_COHERENT;
- 
- 	spin_lock(&beat_htab_lock);
-@@ -334,7 +334,7 @@ static long beat_lpar_hpte_insert_v3(unsigned long hpte_group,
- 	if (!(vflags & HPTE_V_BOLTED))
- 		DBG_LOW(" hpte_v=%016lx, hpte_r=%016lx\n", hpte_v, hpte_r);
- 
--	if (rflags & (_PAGE_GUARDED|_PAGE_NO_CACHE))
-+	if (rflags & _PAGE_NO_CACHE)
- 		hpte_r &= ~_PAGE_COHERENT;
- 
- 	/* insert into not-volted entry */
-diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
-index 38b5927..52a80e5 100644
---- a/arch/powerpc/platforms/pseries/lpar.c
-+++ b/arch/powerpc/platforms/pseries/lpar.c
-@@ -305,8 +305,7 @@ static long pSeries_lpar_hpte_insert(unsigned long hpte_group,
- 	flags = 0;
- 
- 	/* Make pHyp happy */
--	if ((rflags & _PAGE_GUARDED) ||
--	    ((rflags & _PAGE_NO_CACHE) & !(rflags & _PAGE_WRITETHRU)))
-+	if ((rflags & _PAGE_NO_CACHE) & !(rflags & _PAGE_WRITETHRU))
- 		hpte_r &= ~_PAGE_COHERENT;
- 
- 	lpar_rc = plpar_pte_enter(flags, hpte_group, hpte_v, hpte_r, &slot);
-
--- 
-David Kleikamp
-IBM Linux Technology Center
+- k
