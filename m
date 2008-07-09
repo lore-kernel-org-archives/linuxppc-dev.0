@@ -1,31 +1,23 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 7819ADDDE6
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jul 2008 00:26:51 +1000 (EST)
-Received: from d03relay05.boulder.ibm.com (d03relay05.boulder.ibm.com
-	[9.17.195.107])
-	by e36.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m69EQg27026123
-	for <linuxppc-dev@ozlabs.org>; Wed, 9 Jul 2008 10:26:42 -0400
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by d03relay05.boulder.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
-	m69EQW3I102948
-	for <linuxppc-dev@ozlabs.org>; Wed, 9 Jul 2008 08:26:32 -0600
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m69EQVQw017299
-	for <linuxppc-dev@ozlabs.org>; Wed, 9 Jul 2008 08:26:31 -0600
-Date: Wed, 9 Jul 2008 10:23:08 -0400
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: rework 4xx PTE access and TLB miss
-Message-ID: <20080709102308.4735d48a@zod.rchland.ibm.com>
-In-Reply-To: <20080708055449.EDFDADDEF5@ozlabs.org>
-References: <20080708055449.EDFDADDEF5@ozlabs.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <glikely@secretlab.ca>
+Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.30])
+	by ozlabs.org (Postfix) with ESMTP id DC10FDDE09
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jul 2008 00:38:11 +1000 (EST)
+Received: by yx-out-2324.google.com with SMTP id 8so750948yxg.39
+	for <linuxppc-dev@ozlabs.org>; Wed, 09 Jul 2008 07:38:10 -0700 (PDT)
+Date: Wed, 9 Jul 2008 08:38:07 -0600
+From: Grant Likely <grant.likely@secretlab.ca>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: Updates to powerpc.git
+Message-ID: <20080709143807.GD26524@secretlab.ca>
+References: <1215588881.8970.358.camel@pasglop>
+	<20080709091846.69b08e34@zod.rchland.ibm.com>
+	<BA91427F-F52C-4AA5-886B-E8D7527EA203@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <BA91427F-F52C-4AA5-886B-E8D7527EA203@kernel.crashing.org>
+Sender: Grant Likely <glikely@secretlab.ca>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Andrew Morton <akpm@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,21 +27,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 08 Jul 2008 15:54:40 +1000
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+On Wed, Jul 09, 2008 at 08:40:21AM -0500, Kumar Gala wrote:
+>
+> On Jul 9, 2008, at 8:18 AM, Josh Boyer wrote:
+>
+>> On Wed, 09 Jul 2008 17:34:41 +1000
+>> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+>> Also, Paul is pretty good about not rebasing his branches when at all
+>> possible, and I suspect that's why his master and next were often the
+>> same.  It makes life lots easier for the sub-maintainers and anyone
+>> trying to track against the tree.  I humbly beg you to keep that  
+>> going.
+>
+> I agree and I'm sure linus will tell you how evil it is to rebase as a  
+> maintainer.
 
-> This is some preliminary work to improve TLB management on SW loaded
-> TLB powerpc platforms. This introduce support for non-atomic PTE
-> operations in pgtable-ppc32.h and removes write back to the PTE from
-> the TLB miss handlers. In addition, the DSI interrupt code no longer
-> tries to fixup write permission, this is left to generic code, and
-> _PAGE_HWWRITE is gone.
-> 
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Add my voice to the chorus.  Rebasing a branch that I commit on top of
+really messes up the workflow.
 
-Boots for me now.  So far it's surviving a dbench run, and I'll try
-hackbench/kernbench shortly.
-
-I've got this queued up in my -next branch.
-
-josh
+g.
