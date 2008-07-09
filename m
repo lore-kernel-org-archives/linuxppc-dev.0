@@ -1,22 +1,16 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.30])
-	by ozlabs.org (Postfix) with ESMTP id 0A1EDDDE23
+Return-Path: <alan.casey5@mail.dcu.ie>
+Received: from hawk.dcu.ie (mail.dcu.ie [136.206.1.5])
+	by ozlabs.org (Postfix) with ESMTP id C7FDCDE141
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 10 Jul 2008 03:17:42 +1000 (EST)
-Received: by yx-out-2324.google.com with SMTP id 8so783207yxg.39
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 09 Jul 2008 10:17:41 -0700 (PDT)
-Date: Wed, 9 Jul 2008 11:17:38 -0600
-From: Grant Likely <grant.likely@secretlab.ca>
-To: mejjad lahcen <lmejjad@gmail.com>
-Subject: Re: merge from arch/ppc to arch/powerpc on lite5200
-Message-ID: <20080709171738.GD28130@secretlab.ca>
-References: <9b4863980807090742n3c7f7f0bl91ebe85b8d1fe00c@mail.gmail.com>
+	Thu, 10 Jul 2008 06:13:50 +1000 (EST)
+Date: Wed, 9 Jul 2008 21:13:42 +0100
+Message-ID: <4874ECF50000031D@hawk.dcu.ie>
+From: "Alan Casey" <alan.casey5@mail.dcu.ie>
+Subject: PPC Linux start address on XUPV2P board
+To: linuxppc-embedded@ozlabs.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <9b4863980807090742n3c7f7f0bl91ebe85b8d1fe00c@mail.gmail.com>
-Sender: Grant Likely <glikely@secretlab.ca>
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset="ISO-8859-15"
+Reply-To: alan.casey5@mail.dcu.ie
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -27,25 +21,18 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jul 09, 2008 at 10:42:09AM -0400, mejjad lahcen wrote:
->  Hi all of you,
-> I am working to port linux2.6.26 on board based on lite5200, but the kernel
-> hangs here ( see output)
+Hi,
 
-This is not a ramdisk problem.  It looks like the kernel is starting but
-the console is not setup correctly.  To help, I need more information:
+  I am running the Linux 2.6.24 kernel from the git.xilinx.com source
+  tree.
+  
+  I am just wondering what is the start address that is used for
+  the Linux kernel in RAM/SDRAM on the Xilinx XUPV2P board and
+  where is this defined in the Linux kernel sources?
+  
+  Also does the PPC Linux kernel support true 64-bit write/read access
+  to peripherals on the XUPV2P board or similar boards?
 
-- What command in u-boot are you using to boot the board
-- How are you building your kernel image?
-- Can you post the .dts file for your board?
-
-> Memory <- <0x0 0x4000000> (64MB)
-> CPU clock-frequency <- 0x1687d280 (378MHz)
-> CPU timebase-frequency <- 0x1406f40 (21MHz)
-> CPU bus-frequency <- 0x501bd00 (84MHz)
-
-These look odd.  What frequencies does U-Boot report when it comes out
-of reset?
-
-Cheers,
-g.
+  Any info. appreciated,
+  Regards,
+  Alan.
