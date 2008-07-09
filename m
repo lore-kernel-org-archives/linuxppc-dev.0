@@ -1,21 +1,33 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.30])
-	by ozlabs.org (Postfix) with ESMTP id A7560DDE41
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jul 2008 02:04:12 +1000 (EST)
-Received: by yx-out-2324.google.com with SMTP id 8so768366yxg.39
-	for <linuxppc-dev@ozlabs.org>; Wed, 09 Jul 2008 09:04:11 -0700 (PDT)
-Date: Wed, 9 Jul 2008 10:04:07 -0600
-From: Grant Likely <grant.likely@secretlab.ca>
-To: John Linn <john.linn@xilinx.com>
-Subject: Re: [PATCH] [V3] powerpc: Xilinx: PS2: Added new XPS PS2 driver
-Message-ID: <20080709160407.GB28130@secretlab.ca>
-References: <20080707153850.4C83B128005C@mail53-wa4.bigfish.com>
+Return-Path: <chirag@linux.vnet.ibm.com>
+Received: from e28esmtp03.in.ibm.com (e28smtp03.in.ibm.com [59.145.155.3])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e28smtp03.in.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 081A0DE127
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jul 2008 02:06:41 +1000 (EST)
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+	by e28esmtp03.in.ibm.com (8.13.1/8.13.1) with ESMTP id m69G5tLx017448
+	for <linuxppc-dev@ozlabs.org>; Wed, 9 Jul 2008 21:35:55 +0530
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+	by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
+	m69G5Xc71499372
+	for <linuxppc-dev@ozlabs.org>; Wed, 9 Jul 2008 21:35:33 +0530
+Received: from d28av05.in.ibm.com (loopback [127.0.0.1])
+	by d28av05.in.ibm.com (8.13.1/8.13.3) with ESMTP id m69G5s0Y021192
+	for <linuxppc-dev@ozlabs.org>; Wed, 9 Jul 2008 21:35:54 +0530
+Date: Wed, 9 Jul 2008 21:35:43 +0530
+From: Chirag Jog <chirag@linux.vnet.ibm.com>
+To: linux.kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
+	linuxppc-dev@ozlabs.org
+Subject: [PATCH][RT][PPC64] Fix preempt unsafe paths accessing per_cpu
+	variables
+Message-ID: <20080709160543.GG7101@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20080707153850.4C83B128005C@mail53-wa4.bigfish.com>
-Sender: Grant Likely <glikely@secretlab.ca>
-Cc: Sadanand <sadanan@xilinx.com>, dmitry.torokhov@gmail.com,
-	linuxppc-dev@ozlabs.org, linux-input@vger.kernel.org
+Content-Type: text/plain; charset=iso-8859-1
+Cc: Josh Triplett <josht@linux.vnet.ibm.com>,
+	Steven Rostedt <rostedt@goodmis.org>, Nivedita Singhvi <niv@us.ibm.com>,
+	"Timothy R. Chavez" <tim.chavez@linux.vnet.ibm.com>,
+	paulmck@linux.vnet.ibm.com
+Reply-To: Chirag Jog <chirag@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,450 +37,182 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Jul 07, 2008 at 08:38:45AM -0700, John Linn wrote:
-> Added a new driver for Xilinx XPS PS2 IP. This driver is
-> a flat driver to better match the Linux driver pattern.
-> 
-> Signed-off-by: Sadanand <sadanan@xilinx.com>
-> Signed-off-by: John Linn <john.linn@xilinx.com>
 
-I know there are a couple of minor comments floating around; but as far
-as I'm concerned....
+Hi,
+This patch fixes various paths in the -rt kernel on powerpc64 where per_cpu
+variables are accessed in a preempt unsafe way.
+When a power box with -rt kernel is booted, multiple BUG messages are
+generated "BUG: init:1 task might have lost a preemption check!".
+After booting a kernel with these patches applied, these messages
+don't appear.
 
-Acked-by: Grant Likely <grant.likely@secretlab.ca>
+Also I ran the realtime tests from ltp to ensure the stability.
 
-> ---
-> V2
-> 	Updated the driver based on feedback from Dmitry, Peter, and Grant.
-> 	We believe Montavista copyright is still valid.
-> V3
-> 	Incorporated Dmitry and Grant's 2nd set of comments which were some
-> 	minor cleanup and removal of the mutex which was not needed.
->  
->  drivers/input/serio/Kconfig      |    5 +
->  drivers/input/serio/Makefile     |    1 +
->  drivers/input/serio/xilinx_ps2.c |  384 ++++++++++++++++++++++++++++++++++++++
->  3 files changed, 390 insertions(+), 0 deletions(-)
->  create mode 100644 drivers/input/serio/xilinx_ps2.c
-> 
-> diff --git a/drivers/input/serio/Kconfig b/drivers/input/serio/Kconfig
-> index ec4b661..0e62b39 100644
-> --- a/drivers/input/serio/Kconfig
-> +++ b/drivers/input/serio/Kconfig
-> @@ -190,4 +190,9 @@ config SERIO_RAW
->  	  To compile this driver as a module, choose M here: the
->  	  module will be called serio_raw.
->  
-> +config SERIO_XILINX_XPS_PS2
-> +	tristate "Xilinx XPS PS/2 Controller Support"
-> +	help
-> +	  This driver supports XPS PS/2 IP from Xilinx EDK.
-> +
->  endif
-> diff --git a/drivers/input/serio/Makefile b/drivers/input/serio/Makefile
-> index 38b8868..9b6c813 100644
-> --- a/drivers/input/serio/Makefile
-> +++ b/drivers/input/serio/Makefile
-> @@ -21,3 +21,4 @@ obj-$(CONFIG_SERIO_PCIPS2)	+= pcips2.o
->  obj-$(CONFIG_SERIO_MACEPS2)	+= maceps2.o
->  obj-$(CONFIG_SERIO_LIBPS2)	+= libps2.o
->  obj-$(CONFIG_SERIO_RAW)		+= serio_raw.o
-> +obj-$(CONFIG_SERIO_XILINX_XPS_PS2)	+= xilinx_ps2.o
-> diff --git a/drivers/input/serio/xilinx_ps2.c b/drivers/input/serio/xilinx_ps2.c
-> new file mode 100644
-> index 0000000..e86f11b
-> --- /dev/null
-> +++ b/drivers/input/serio/xilinx_ps2.c
-> @@ -0,0 +1,384 @@
-> +/*
-> + * Xilinx XPS PS/2 device driver
-> + *
-> + * (c) 2005 MontaVista Software, Inc.
-> + * (c) 2008 Xilinx, Inc.
-> + *
-> + * This program is free software; you can redistribute it and/or modify it
-> + * under the terms of the GNU General Public License as published by the
-> + * Free Software Foundation; either version 2 of the License, or (at your
-> + * option) any later version.
-> + *
-> + * You should have received a copy of the GNU General Public License along
-> + * with this program; if not, write to the Free Software Foundation, Inc.,
-> + * 675 Mass Ave, Cambridge, MA 02139, USA.
-> + */
-> +
-> +
-> +#include <linux/module.h>
-> +#include <linux/serio.h>
-> +#include <linux/interrupt.h>
-> +#include <linux/errno.h>
-> +#include <linux/init.h>
-> +#include <linux/list.h>
-> +#include <linux/io.h>
-> +
-> +#include <linux/of_device.h>
-> +#include <linux/of_platform.h>
-> +
-> +#define DRIVER_NAME		"xilinx_ps2"
-> +
-> +/* Register offsets for the xps2 device */
-> +#define XPS2_SRST_OFFSET	0x00000000 /* Software Reset register */
-> +#define XPS2_STATUS_OFFSET	0x00000004 /* Status register */
-> +#define XPS2_RX_DATA_OFFSET	0x00000008 /* Receive Data register */
-> +#define XPS2_TX_DATA_OFFSET	0x0000000C /* Transmit Data register */
-> +#define XPS2_GIER_OFFSET	0x0000002C /* Global Interrupt Enable reg */
-> +#define XPS2_IPISR_OFFSET	0x00000030 /* Interrupt Status register */
-> +#define XPS2_IPIER_OFFSET	0x00000038 /* Interrupt Enable register */
-> +
-> +/* Reset Register Bit Definitions */
-> +#define XPS2_SRST_RESET		0x0000000A /* Software Reset  */
-> +
-> +/* Status Register Bit Positions */
-> +#define XPS2_STATUS_RX_FULL	0x00000001 /* Receive Full  */
-> +#define XPS2_STATUS_TX_FULL	0x00000002 /* Transmit Full  */
-> +
-> +/* Bit definitions for ISR/IER registers. Both the registers have the same bit
-> + * definitions and are only defined once. */
-> +#define XPS2_IPIXR_WDT_TOUT	0x00000001 /* Watchdog Timeout Interrupt */
-> +#define XPS2_IPIXR_TX_NOACK	0x00000002 /* Transmit No ACK Interrupt */
-> +#define XPS2_IPIXR_TX_ACK	0x00000004 /* Transmit ACK (Data) Interrupt */
-> +#define XPS2_IPIXR_RX_OVF	0x00000008 /* Receive Overflow Interrupt */
-> +#define XPS2_IPIXR_RX_ERR	0x00000010 /* Receive Error Interrupt */
-> +#define XPS2_IPIXR_RX_FULL	0x00000020 /* Receive Data Interrupt */
-> +
-> +/* Mask for all the Transmit Interrupts */
-> +#define XPS2_IPIXR_TX_ALL	(XPS2_IPIXR_TX_NOACK | XPS2_IPIXR_TX_ACK)
-> +
-> +/* Mask for all the Receive Interrupts */
-> +#define XPS2_IPIXR_RX_ALL	(XPS2_IPIXR_RX_OVF | XPS2_IPIXR_RX_ERR |  \
-> +					XPS2_IPIXR_RX_FULL)
-> +
-> +/* Mask for all the Interrupts */
-> +#define XPS2_IPIXR_ALL		(XPS2_IPIXR_TX_ALL | XPS2_IPIXR_RX_ALL |  \
-> +					XPS2_IPIXR_WDT_TOUT)
-> +
-> +/* Global Interrupt Enable mask */
-> +#define XPS2_GIER_GIE_MASK	0x80000000
-> +
-> +struct xps2data {
-> +	int irq;
-> +	u32 phys_addr;
-> +	u32 remap_size;
-> +	spinlock_t lock;
-> +	u8 rxb;				/* Rx buffer */
-> +	void __iomem *base_address;	/* virt. address of control registers */
-> +	unsigned int dfl;
-> +	struct serio serio;		/* serio */
-> +};
-> +
-> +/************************************/
-> +/* XPS PS/2 data transmission calls */
-> +/************************************/
-> +
-> +/*
-> + * xps2_recv() will attempt to receive a byte of data from the PS/2 port.
-> + */
-> +static int xps2_recv(struct xps2data *drvdata, u8 *byte)
-> +{
-> +	u32 sr;
-> +	int status = -1;
-> +
-> +	/* If there is data available in the PS/2 receiver, read it */
-> +	sr = in_be32(drvdata->base_address + XPS2_STATUS_OFFSET);
-> +	if (sr & XPS2_STATUS_RX_FULL) {
-> +		*byte = in_be32(drvdata->base_address + XPS2_RX_DATA_OFFSET);
-> +		status = 0;
-> +	}
-> +
-> +	return status;
-> +}
-> +
-> +/*********************/
-> +/* Interrupt handler */
-> +/*********************/
-> +static irqreturn_t xps2_interrupt(int irq, void *dev_id)
-> +{
-> +	struct xps2data *drvdata = (struct xps2data *)dev_id;
-> +	u32 intr_sr;
-> +	u8 c;
-> +	int status;
-> +
-> +	/* Get the PS/2 interrupts and clear them */
-> +	intr_sr = in_be32(drvdata->base_address + XPS2_IPISR_OFFSET);
-> +	out_be32(drvdata->base_address + XPS2_IPISR_OFFSET, intr_sr);
-> +
-> +	/* Check which interrupt is active */
-> +	if (intr_sr & XPS2_IPIXR_RX_OVF) {
-> +		printk(KERN_ERR "%s: receive overrun error\n",
-> +			drvdata->serio.name);
-> +	}
-> +
-> +	if (intr_sr & XPS2_IPIXR_RX_ERR)
-> +		drvdata->dfl |= SERIO_PARITY;
-> +
-> +	if (intr_sr & (XPS2_IPIXR_TX_NOACK | XPS2_IPIXR_WDT_TOUT))
-> +		drvdata->dfl |= SERIO_TIMEOUT;
-> +
-> +	if (intr_sr & XPS2_IPIXR_RX_FULL) {
-> +		status = xps2_recv(drvdata, &drvdata->rxb);
-> +
-> +		/* Error, if a byte is not received */
-> +		if (status) {
-> +			printk(KERN_ERR
-> +				"%s: wrong rcvd byte count (%d)\n",
-> +				drvdata->serio.name, status);
-> +		} else {
-> +			c = drvdata->rxb;
-> +			serio_interrupt(&drvdata->serio, c, drvdata->dfl);
-> +			drvdata->dfl = 0;
-> +		}
-> +	}
-> +
-> +	if (intr_sr & XPS2_IPIXR_TX_ACK)
-> +		drvdata->dfl = 0;
-> +
-> +	return IRQ_HANDLED;
-> +}
-> +
-> +/*******************/
-> +/* serio callbacks */
-> +/*******************/
-> +
-> +/*
-> + * sxps2_write() sends a byte out through the PS/2 interface.
-> + */
-> +static int sxps2_write(struct serio *pserio, unsigned char c)
-> +{
-> +	struct xps2data *drvdata = pserio->port_data;
-> +	unsigned long flags;
-> +	u32 sr;
-> +	int status = -1;
-> +
-> +	spin_lock_irqsave(&drvdata->lock, flags);
-> +	/* If the PS/2 transmitter is empty send a byte of data */
-> +	sr = in_be32(drvdata->base_address + XPS2_STATUS_OFFSET);
-> +	if ((sr & XPS2_STATUS_TX_FULL) == 0) {
-> +		out_be32(drvdata->base_address + XPS2_TX_DATA_OFFSET, c);
-> +		status = 0;
-> +	}
-> +	spin_unlock_irqrestore(&drvdata->lock, flags);
-> +
-> +	return status;
-> +}
-> +
-> +/*
-> + * sxps2_open() is called when a port is open by the higher layer.
-> + */
-> +static int sxps2_open(struct serio *pserio)
-> +{
-> +	struct xps2data *drvdata = pserio->port_data;
-> +	int retval;
-> +
-> +	retval = request_irq(drvdata->irq, &xps2_interrupt, 0,
-> +				DRIVER_NAME, drvdata);
-> +	if (retval) {
-> +		printk(KERN_ERR
-> +			"%s: Couldn't allocate interrupt %d\n",
-> +			drvdata->serio.name, drvdata->irq);
-> +		return retval;
-> +	}
-> +
-> +	/* start reception by enabling the interrupts */
-> +	out_be32(drvdata->base_address + XPS2_GIER_OFFSET, XPS2_GIER_GIE_MASK);
-> +	out_be32(drvdata->base_address + XPS2_IPIER_OFFSET, XPS2_IPIXR_RX_ALL);
-> +	(void)xps2_recv(drvdata, &drvdata->rxb);
-> +
-> +	return 0;		/* success */
-> +}
-> +
-> +/*
-> + * sxps2_close() frees the interrupt.
-> + */
-> +static void sxps2_close(struct serio *pserio)
-> +{
-> +	struct xps2data *drvdata = pserio->port_data;
-> +
-> +	/* Disable the PS2 interrupts */
-> +	out_be32(drvdata->base_address + XPS2_GIER_OFFSET, 0x00);
-> +	out_be32(drvdata->base_address + XPS2_IPIER_OFFSET, 0x00);
-> +	free_irq(drvdata->irq, drvdata);
-> +}
-> +
-> +/*********************/
-> +/* Device setup code */
-> +/*********************/
-> +
-> +static int xps2_setup(struct device *dev, struct resource *regs_res,
-> +		      struct resource *irq_res)
-> +{
-> +	struct xps2data *drvdata;
-> +	struct serio *serio;
-> +	unsigned long remap_size;
-> +	int retval;
-> +
-> +	if (!dev)
-> +		return -EINVAL;
-> +
-> +	drvdata = kzalloc(sizeof(struct xps2data), GFP_KERNEL);
-> +	if (!drvdata) {
-> +		dev_err(dev, "Couldn't allocate device private record\n");
-> +		return -ENOMEM;
-> +	}
-> +	spin_lock_init(&drvdata->lock);
-> +	dev_set_drvdata(dev, drvdata);
-> +
-> +	if (!regs_res || !irq_res) {
-> +		dev_err(dev, "IO resource(s) not found\n");
-> +		retval = -EFAULT;
-> +		goto failed1;
-> +	}
-> +
-> +	drvdata->irq = irq_res->start;
-> +	remap_size = regs_res->end - regs_res->start + 1;
-> +	if (!request_mem_region(regs_res->start, remap_size, DRIVER_NAME)) {
-> +
-> +		dev_err(dev, "Couldn't lock memory region at 0x%08X\n",
-> +			(unsigned int)regs_res->start);
-> +		retval = -EBUSY;
-> +		goto failed1;
-> +	}
-> +
-> +	/* Fill in configuration data and add them to the list */
-> +	drvdata->phys_addr = regs_res->start;
-> +	drvdata->remap_size = remap_size;
-> +	drvdata->base_address = ioremap(regs_res->start, remap_size);
-> +	if (drvdata->base_address == NULL) {
-> +
-> +		dev_err(dev, "Couldn't ioremap memory at 0x%08X\n",
-> +			(unsigned int)regs_res->start);
-> +		retval = -EFAULT;
-> +		goto failed2;
-> +	}
-> +
-> +	/* Disable all the interrupts, just in case */
-> +	out_be32(drvdata->base_address + XPS2_IPIER_OFFSET, 0);
-> +
-> +	/* Reset the PS2 device and abort any current transaction, to make sure
-> +	 * we have the PS2 in a good state */
-> +	out_be32(drvdata->base_address + XPS2_SRST_OFFSET, XPS2_SRST_RESET);
-> +
-> +	dev_info(dev, "Xilinx PS2 at 0x%08X mapped to 0x%08X, irq=%d\n",
-> +		drvdata->phys_addr, (u32)drvdata->base_address, drvdata->irq);
-> +
-> +	serio = &drvdata->serio;
-> +	serio->id.type = SERIO_8042;
-> +	serio->write = sxps2_write;
-> +	serio->open = sxps2_open;
-> +	serio->close = sxps2_close;
-> +	serio->port_data = drvdata;
-> +	serio->dev.parent = dev;
-> +	snprintf(drvdata->serio.name, sizeof(serio->name),
-> +		 "Xilinx XPS PS/2 at %08X", drvdata->phys_addr);
-> +	snprintf(drvdata->serio.phys, sizeof(serio->phys),
-> +		 "xilinxps2/serio at %08X", drvdata->phys_addr);
-> +	serio_register_port(serio);
-> +
-> +	return 0;		/* success */
-> +
-> +failed2:
-> +	release_mem_region(regs_res->start, remap_size);
-> +
-> +failed1:
-> +	kfree(drvdata);
-> +	dev_set_drvdata(dev, NULL);
-> +
-> +	return retval;
-> +}
-> +
-> +/***************************/
-> +/* OF Platform Bus Support */
-> +/***************************/
-> +
-> +static int __devinit xps2_of_probe(struct of_device *ofdev, const struct
-> +				   of_device_id * match)
-> +{
-> +	struct resource r_irq; /* Interrupt resources */
-> +	struct resource r_mem; /* IO mem resources */
-> +	int rc = 0;
-> +
-> +	printk(KERN_INFO "Device Tree Probing \'%s\'\n",
-> +			ofdev->node->name);
-> +
-> +	/* Get iospace for the device */
-> +	rc = of_address_to_resource(ofdev->node, 0, &r_mem);
-> +	if (rc) {
-> +		dev_err(&ofdev->dev, "invalid address\n");
-> +		return rc;
-> +	}
-> +
-> +	/* Get IRQ for the device */
-> +	rc = of_irq_to_resource(ofdev->node, 0, &r_irq);
-> +	if (rc == NO_IRQ) {
-> +		dev_err(&ofdev->dev, "no IRQ found\n");
-> +		return rc;
-> +	}
-> +
-> +	return xps2_setup(&ofdev->dev, &r_mem, &r_irq);
-> +}
-> +
-> +static int __devexit xps2_of_remove(struct of_device *of_dev)
-> +{
-> +	struct xps2data *drvdata;
-> +	struct device *dev;
-> +
-> +	dev = &of_dev->dev;
-> +	if (!dev)
-> +		return -EINVAL;
-> +
-> +	drvdata = (struct xps2data *)dev_get_drvdata(dev);
-> +
-> +	serio_unregister_port(&drvdata->serio);
-> +
-> +	iounmap(drvdata->base_address);
-> +
-> +	release_mem_region(drvdata->phys_addr, drvdata->remap_size);
-> +
-> +	kfree(drvdata);
-> +	dev_set_drvdata(dev, NULL);
-> +
-> +	return 0;		/* success */
-> +}
-> +
-> +/* Match table for of_platform binding */
-> +static struct of_device_id xps2_of_match[] __devinitdata = {
-> +	{ .compatible = "xlnx,xps-ps2-1.00.a", },
-> +	{ /* end of list */ },
-> +};
-> +MODULE_DEVICE_TABLE(of, xps2_of_match);
-> +
-> +static struct of_platform_driver xps2_of_driver = {
-> +	.name		= DRIVER_NAME,
-> +	.match_table	= xps2_of_match,
-> +	.probe		= xps2_of_probe,
-> +	.remove		= __devexit_p(xps2_of_remove),
-> +};
-> +
-> +static int __init xps2_init(void)
-> +{
-> +	return of_register_platform_driver(&xps2_of_driver);
-> +}
-> +
-> +static void __exit xps2_cleanup(void)
-> +{
-> +	of_unregister_platform_driver(&xps2_of_driver);
-> +}
-> +
-> +module_init(xps2_init);
-> +module_exit(xps2_cleanup);
-> +
-> +MODULE_AUTHOR("Xilinx, Inc.");
-> +MODULE_DESCRIPTION("Xilinx XPS PS/2 driver");
-> +MODULE_LICENSE("GPL");
-> +
-> -- 
-> 1.5.2.1
-> 
-> 
-> 
-> This email and any attachments are intended for the sole use of the named recipient(s) and contain(s) confidential information that may be proprietary, privileged or copyrighted under applicable law. If you are not the intended recipient, do not read, copy, or forward this email message or any attachments. Delete this email message and any attachments immediately.
-> 
-> 
+
+Signed-Off-By: Chirag <chirag@linux.vnet.ibm.com>
+arch/powerpc/mm/tlb_64.c               |   31 ++++++++++++++++---------------
+arch/powerpc/platforms/pseries/iommu.c |   14 ++++++++++----
+include/asm-powerpc/tlb.h              |    5 ++---
+3 files changed, 28 insertions(+), 22 deletions(-)
+
+ 
+Index: linux-2.6.25.8-rt7/arch/powerpc/mm/tlb_64.c
+===================================================================
+--- linux-2.6.25.8-rt7.orig/arch/powerpc/mm/tlb_64.c	2008-07-09 21:29:21.000000000 +0530
++++ linux-2.6.25.8-rt7/arch/powerpc/mm/tlb_64.c	2008-07-09 21:30:37.000000000 +0530
+@@ -38,7 +38,6 @@
+  * include/asm-powerpc/tlb.h file -- tgall
+  */
+ DEFINE_PER_CPU_LOCKED(struct mmu_gather, mmu_gathers);
+-DEFINE_PER_CPU(struct pte_freelist_batch *, pte_freelist_cur);
+ unsigned long pte_freelist_forced_free;
+ 
+ struct pte_freelist_batch
+@@ -48,7 +47,7 @@
+ 	pgtable_free_t	tables[0];
+ };
+ 
+-DEFINE_PER_CPU(struct pte_freelist_batch *, pte_freelist_cur);
++DEFINE_PER_CPU_LOCKED(struct pte_freelist_batch *, pte_freelist_cur);
+ unsigned long pte_freelist_forced_free;
+ 
+ #define PTE_FREELIST_SIZE \
+@@ -92,24 +91,21 @@
+ 
+ void pgtable_free_tlb(struct mmu_gather *tlb, pgtable_free_t pgf)
+ {
+-	/*
+-	 * This is safe since tlb_gather_mmu has disabled preemption.
+-	 * tlb->cpu is set by tlb_gather_mmu as well.
+-	 */
++	int cpu;
+         cpumask_t local_cpumask = cpumask_of_cpu(tlb->cpu);
+-	struct pte_freelist_batch **batchp = &__get_cpu_var(pte_freelist_cur);
++	struct pte_freelist_batch **batchp = &get_cpu_var_locked(pte_freelist_cur, &cpu);
+ 
+ 	if (atomic_read(&tlb->mm->mm_users) < 2 ||
+ 	    cpus_equal(tlb->mm->cpu_vm_mask, local_cpumask)) {
+ 		pgtable_free(pgf);
+-		return;
++		goto cleanup;
+ 	}
+ 
+ 	if (*batchp == NULL) {
+ 		*batchp = (struct pte_freelist_batch *)__get_free_page(GFP_ATOMIC);
+ 		if (*batchp == NULL) {
+ 			pgtable_free_now(pgf);
+-			return;
++			goto cleanup;
+ 		}
+ 		(*batchp)->index = 0;
+ 	}
+@@ -118,6 +114,9 @@
+ 		pte_free_submit(*batchp);
+ 		*batchp = NULL;
+ 	}
++
++ cleanup:
++	put_cpu_var_locked(pte_freelist_cur, cpu);
+ }
+ 
+ /*
+@@ -253,13 +252,15 @@
+ 
+ void pte_free_finish(void)
+ {
+-	/* This is safe since tlb_gather_mmu has disabled preemption */
+-	struct pte_freelist_batch **batchp = &__get_cpu_var(pte_freelist_cur);
++	int cpu;
++	struct pte_freelist_batch **batchp = &get_cpu_var_locked(pte_freelist_cur, &cpu);
+ 
+-	if (*batchp == NULL)
+-		return;
+-	pte_free_submit(*batchp);
+-	*batchp = NULL;
++	if (*batchp) {
++		pte_free_submit(*batchp);
++		*batchp = NULL;
++	}
++
++	put_cpu_var_locked(pte_freelist_cur, cpu);
+ }
+ 
+ /**
+Index: linux-2.6.25.8-rt7/include/asm-powerpc/tlb.h
+===================================================================
+--- linux-2.6.25.8-rt7.orig/include/asm-powerpc/tlb.h	2008-07-09 21:29:21.000000000 +0530
++++ linux-2.6.25.8-rt7/include/asm-powerpc/tlb.h	2008-07-09 21:29:41.000000000 +0530
+@@ -40,18 +40,17 @@
+ 
+ static inline void tlb_flush(struct mmu_gather *tlb)
+ {
+-	struct ppc64_tlb_batch *tlbbatch = &__get_cpu_var(ppc64_tlb_batch);
++	struct ppc64_tlb_batch *tlbbatch = &get_cpu_var(ppc64_tlb_batch);
+ 
+ 	/* If there's a TLB batch pending, then we must flush it because the
+ 	 * pages are going to be freed and we really don't want to have a CPU
+ 	 * access a freed page because it has a stale TLB
+ 	 */
+ 	if (tlbbatch->index) {
+-		preempt_disable();
+ 		__flush_tlb_pending(tlbbatch);
+-		preempt_enable();
+ 	}
+ 
++	put_cpu_var(ppc64_tlb_batch);
+ 	pte_free_finish();
+ }
+ 
+Index: linux-2.6.25.8-rt7/arch/powerpc/platforms/pseries/iommu.c
+===================================================================
+--- linux-2.6.25.8-rt7.orig/arch/powerpc/platforms/pseries/iommu.c	2008-07-09 21:29:21.000000000 +0530
++++ linux-2.6.25.8-rt7/arch/powerpc/platforms/pseries/iommu.c	2008-07-09 21:29:41.000000000 +0530
+@@ -124,7 +124,7 @@
+ 	}
+ }
+ 
+-static DEFINE_PER_CPU(u64 *, tce_page) = NULL;
++static DEFINE_PER_CPU_LOCKED(u64 *, tce_page) = NULL;
+ 
+ static void tce_buildmulti_pSeriesLP(struct iommu_table *tbl, long tcenum,
+ 				     long npages, unsigned long uaddr,
+@@ -135,12 +135,13 @@
+ 	u64 *tcep;
+ 	u64 rpn;
+ 	long l, limit;
++	int cpu;
+ 
+ 	if (npages == 1)
+ 		return tce_build_pSeriesLP(tbl, tcenum, npages, uaddr,
+ 					   direction);
+ 
+-	tcep = __get_cpu_var(tce_page);
++	tcep = get_cpu_var_locked(tce_page, &cpu);
+ 
+ 	/* This is safe to do since interrupts are off when we're called
+ 	 * from iommu_alloc{,_sg}()
+@@ -148,10 +149,13 @@
+ 	if (!tcep) {
+ 		tcep = (u64 *)__get_free_page(GFP_ATOMIC);
+ 		/* If allocation fails, fall back to the loop implementation */
+-		if (!tcep)
++		if (!tcep) {
++			put_cpu_var_locked(tce_page, cpu);
+ 			return tce_build_pSeriesLP(tbl, tcenum, npages,
+ 						   uaddr, direction);
+-		__get_cpu_var(tce_page) = tcep;
++		}
++
++		per_cpu_var_locked(tce_page, cpu) = tcep;
+ 	}
+ 
+ 	rpn = (virt_to_abs(uaddr)) >> TCE_SHIFT;
+@@ -188,6 +192,8 @@
+ 		printk("\ttce[0] val = 0x%lx\n", tcep[0]);
+ 		show_stack(current, (unsigned long *)__get_SP());
+ 	}
++
++	put_cpu_var_locked(tce_page, cpu);
+ }
+ 
+ static void tce_free_pSeriesLP(struct iommu_table *tbl, long tcenum, long npages)
