@@ -3,19 +3,21 @@ Received: from de01egw01.freescale.net (de01egw01.freescale.net
 	[192.88.165.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 9026EDE107
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jul 2008 06:54:15 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 815B2DE16C
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jul 2008 06:54:17 +1000 (EST)
 Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
 	by de01egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
-	m69Ks7Bm016561
-	for <linuxppc-dev@ozlabs.org>; Wed, 9 Jul 2008 13:54:07 -0700 (MST)
+	m69Ks9Od016576
+	for <linuxppc-dev@ozlabs.org>; Wed, 9 Jul 2008 13:54:10 -0700 (MST)
 From: John Rigby <jrigby@freescale.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 1/4][Version 3] MPC5121 Update MPC5121ADS device tree
-Date: Wed,  9 Jul 2008 14:54:01 -0600
-Message-Id: <1215636844-32040-2-git-send-email-jrigby@freescale.com>
-In-Reply-To: <1215636844-32040-1-git-send-email-jrigby@freescale.com>
+Subject: [PATCH 3/4][Version 3] MPC5121 Add generic board support
+Date: Wed,  9 Jul 2008 14:54:03 -0600
+Message-Id: <1215636844-32040-4-git-send-email-jrigby@freescale.com>
+In-Reply-To: <1215636844-32040-3-git-send-email-jrigby@freescale.com>
 References: <1215636844-32040-1-git-send-email-jrigby@freescale.com>
+	<1215636844-32040-2-git-send-email-jrigby@freescale.com>
+	<1215636844-32040-3-git-send-email-jrigby@freescale.com>
 Cc: John Rigby <jrigby@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -26,424 +28,358 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Current device tree is only bare bones.  This patch
-adds nodes to make it a complete tree for MPC5121ads.
+Move shared code from mpc5121_ads.c to new file mpc512x_shared.c
+    mpc512x_find_ips_freq -> unchanged
+    contents of mpc5121_ads_init_IRQ -> mpc512x_init_IRQ
+	looking for fsl,mpc5121-ipic instead of fsl,ipic
+    mpc5121_ads_declare_of_platform_devices -> mpc5121_declare_of_platform_devices
+	and use compatible for lookup instead of node name
 
-Added nodes include:
-    mbx      - opengl coprocessor
-    nfc      - nand flash controller
-    cpld-pic - on board cpld
-    rtc
-    clock    - clock control
-    pmc      - power management control
-    gpio
-    mscan    - can module
-    i2c
-    axe      - audio coprocessor
-    display  - display interface unit
-    mdio
-    ethernet
-    usb
-    ioctl    - pin config
-    pata
-    ac97     - PSC configured as AC97
-    pscfifo  - psc fifo configuration
-    dma
-    pci
-
-Fix typo in header changing MDS to ADS.
-
-Add a compatible property of the form "fsl,mpc5121-..."
-to nodes missing one.
-
-Changed localbus compatible to fsl,mpc5121-localbus, this does
-not break anything because the only code that uses it finds it
-via the node name, not compatible.
+Add new generic board setup mpc5121_generic.c
 
 Signed-off-by: John Rigby <jrigby@freescale.com>
 ---
- arch/powerpc/boot/dts/mpc5121ads.dts |  310 ++++++++++++++++++++++++++++++++--
- 1 files changed, 299 insertions(+), 11 deletions(-)
+ arch/powerpc/platforms/512x/Kconfig                |   15 ++++-
+ arch/powerpc/platforms/512x/Makefile               |    3 +-
+ arch/powerpc/platforms/512x/mpc5121_ads.c          |   64 ++------------------
+ arch/powerpc/platforms/512x/mpc5121_generic.c      |   58 ++++++++++++++++++
+ arch/powerpc/platforms/512x/mpc512x.h              |   17 +++++
+ .../512x/{mpc5121_ads.c => mpc512x_shared.c}       |   57 ++++++------------
+ 6 files changed, 112 insertions(+), 102 deletions(-)
+ create mode 100644 arch/powerpc/platforms/512x/mpc5121_generic.c
+ create mode 100644 arch/powerpc/platforms/512x/mpc512x.h
+ copy arch/powerpc/platforms/512x/{mpc5121_ads.c => mpc512x_shared.c} (55%)
 
-diff --git a/arch/powerpc/boot/dts/mpc5121ads.dts b/arch/powerpc/boot/dts/mpc5121ads.dts
-index 94ad7b2..1f9036c 100644
---- a/arch/powerpc/boot/dts/mpc5121ads.dts
-+++ b/arch/powerpc/boot/dts/mpc5121ads.dts
-@@ -1,7 +1,7 @@
+diff --git a/arch/powerpc/platforms/512x/Kconfig b/arch/powerpc/platforms/512x/Kconfig
+index 162af06..5d72dc3 100644
+--- a/arch/powerpc/platforms/512x/Kconfig
++++ b/arch/powerpc/platforms/512x/Kconfig
+@@ -3,12 +3,10 @@ config PPC_MPC512x
+ 	select FSL_SOC
+ 	select IPIC
+ 	select PPC_CLOCK
+-	default n
+ 
+ config PPC_MPC5121
+ 	bool
+ 	select PPC_MPC512x
+-	default n
+ 
+ config MPC5121_ADS
+ 	bool "Freescale MPC5121E ADS"
+@@ -17,4 +15,15 @@ config MPC5121_ADS
+ 	select PPC_MPC5121
+ 	help
+ 	  This option enables support for the MPC5121E ADS board.
+-	default n
++
++config MPC5121_GENERIC
++	bool "Generic support for simple MPC5121 based boards"
++	depends on PPC_MULTIPLATFORM && PPC32
++	select DEFAULT_UIMAGE
++	select PPC_MPC5121
++	help
++	  This option enables support for simple MPC5121 based boards
++	  which do not need custom platform specific setup.
++
++	  Compatible boards include:  Protonic LVT base boards (ZANMCU
++	  and VICVT2).
+diff --git a/arch/powerpc/platforms/512x/Makefile b/arch/powerpc/platforms/512x/Makefile
+index 90910c1..8090e22 100644
+--- a/arch/powerpc/platforms/512x/Makefile
++++ b/arch/powerpc/platforms/512x/Makefile
+@@ -1,5 +1,6 @@
+ #
+ # Makefile for the Freescale PowerPC 512x linux kernel.
+ #
+-obj-y				+= clock.o
++obj-y				+= clock.o mpc512x_shared.o
+ obj-$(CONFIG_MPC5121_ADS)	+= mpc5121_ads.o
++obj-$(CONFIG_MPC5121_GENERIC)	+= mpc5121_generic.o
+diff --git a/arch/powerpc/platforms/512x/mpc5121_ads.c b/arch/powerpc/platforms/512x/mpc5121_ads.c
+index 50bd3a3..3ec9ca3 100644
+--- a/arch/powerpc/platforms/512x/mpc5121_ads.c
++++ b/arch/powerpc/platforms/512x/mpc5121_ads.c
+@@ -1,5 +1,5 @@
  /*
-- * MPC5121E MDS Device Tree Source
-+ * MPC5121E ADS Device Tree Source
+- * Copyright (C) 2007 Freescale Semiconductor, Inc. All rights reserved.
++ * Copyright (C) 2007, 2008 Freescale Semiconductor, Inc. All rights reserved.
   *
-- * Copyright 2007 Freescale Semiconductor Inc.
-+ * Copyright 2007,2008 Freescale Semiconductor Inc.
+  * Author: John Rigby, <jrigby@freescale.com>, Thur Mar 29 2007
   *
-  * This program is free software; you can redistribute  it and/or modify it
-  * under  the terms of  the GNU General  Public License as published by the
-@@ -17,6 +17,10 @@
- 	#address-cells = <1>;
- 	#size-cells = <1>;
+@@ -15,7 +15,6 @@
  
-+	aliases {
-+		pci = &pci;
-+	};
-+
- 	cpus {
- 		#address-cells = <1>;
- 		#size-cells = <0>;
-@@ -39,8 +43,41 @@
- 		reg = <0x00000000 0x10000000>;	// 256MB at 0
- 	};
+ #include <linux/kernel.h>
+ #include <linux/io.h>
+-#include <linux/irq.h>
+ #include <linux/of_platform.h>
  
-+	mbx@20000000 {
-+		compatible = "fsl,mpc5121-mbx";
-+		reg = <0x20000000 0x4000>;
-+		interrupts = <66 0x8>;
-+		interrupt-parent = < &ipic >;
-+	};
-+
-+	sram@30000000 {
-+		compatible = "fsl,mpc5121-sram";
-+		reg = <0x30000000 0x20000>;		// 128K at 0x30000000
-+	};
-+
-+	nfc@40000000 {
-+		compatible = "fsl,mpc5121-nfc";
-+		reg = <0x40000000 0x100000>;	// 1M at 0x40000000
-+		interrupts = <6 8>;
-+		interrupt-parent = < &ipic >;
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		bank-width = <1>;
-+		// ADS has two Hynix 512MB Nand flash chips in a single
-+		// stacked package .
-+		chips = <2>;
-+		nand0@0 {
-+			label = "nand0";
-+			reg = <0x00000000 0x02000000>; 	// first 32 MB of chip 0
-+		};
-+		nand1@20000000 {
-+			label = "nand1";
-+			reg = <0x20000000 0x02000000>; 	// first 32 MB of chip 1
-+		};
-+	};
-+
- 	localbus@80000020 {
--		compatible = "fsl,mpc5121ads-localbus";
-+		compatible = "fsl,mpc5121-localbus";
- 		#address-cells = <2>;
- 		#size-cells = <1>;
- 		reg = <0x80000020 0x40>;
-@@ -51,14 +88,51 @@
- 		flash@0,0 {
- 			compatible = "cfi-flash";
- 			reg = <0 0x0 0x4000000>;
-+			#address-cells = <1>;
-+			#size-cells = <1>;
- 			bank-width = <4>;
--			device-width = <1>;
-+			device-width = <2>;
-+			protected@0 {
-+				label = "protected";
-+				reg = <0x00000000 0x00040000>;  // first sector is protected
-+				read-only;
-+			};
-+			filesystem@40000 {
-+				label = "filesystem";
-+				reg = <0x00040000 0x03c00000>;  // 60M for filesystem
-+			};
-+			kernel@3c40000 {
-+				label = "kernel";
-+				reg = <0x03c40000 0x00280000>;  // 2.5M for kernel
-+			};
-+			device-tree@3ec0000 {
-+				label = "device-tree";
-+				reg = <0x03ec0000 0x00040000>;  // one sector for device tree
-+			};
-+			u-boot@3f00000 {
-+				label = "u-boot";
-+				reg = <0x03f00000 0x00100000>;  // 1M for u-boot
-+				read-only;
-+			};
- 		};
+ #include <asm/machdep.h>
+@@ -23,65 +22,11 @@
+ #include <asm/prom.h>
+ #include <asm/time.h>
  
- 		board-control@2,0 {
- 			compatible = "fsl,mpc5121ads-cpld";
- 			reg = <0x2 0x0 0x8000>;
- 		};
-+
-+		cpld_pic: pic@2,a {
-+			compatible = "fsl,mpc5121ads-cpld-pic";
-+			interrupt-controller;
-+			#interrupt-cells = <2>;
-+			reg = <0x2 0xa 0x5>;
-+			interrupt-parent = < &ipic >;
-+			// irq routing
-+			//	all irqs but touch screen are routed to irq0 (ipic 48)
-+			//	touch screen is statically routed to irq1 (ipic 17)
-+			//	so don't use it here
-+			interrupts = <48 0x8>;
-+		};
- 	};
+-/**
+- * 	mpc512x_find_ips_freq - Find the IPS bus frequency for a device
+- * 	@node:	device node
+- *
+- * 	Returns IPS bus frequency, or 0 if the bus frequency cannot be found.
+- */
+-unsigned long
+-mpc512x_find_ips_freq(struct device_node *node)
+-{
+-	struct device_node *np;
+-	const unsigned int *p_ips_freq = NULL;
+-
+-	of_node_get(node);
+-	while (node) {
+-		p_ips_freq = of_get_property(node, "bus-frequency", NULL);
+-		if (p_ips_freq)
+-			break;
+-
+-		np = of_get_parent(node);
+-		of_node_put(node);
+-		node = np;
+-	}
+-	if (node)
+-		of_node_put(node);
+-
+-	return p_ips_freq ? *p_ips_freq : 0;
+-}
+-EXPORT_SYMBOL(mpc512x_find_ips_freq);
+-
+-static struct of_device_id __initdata of_bus_ids[] = {
+-	{ .name = "soc", },
+-	{ .name = "localbus", },
+-	{},
+-};
+-
+-static void __init mpc5121_ads_declare_of_platform_devices(void)
+-{
+-	/* Find every child of the SOC node and add it to of_platform */
+-	if (of_platform_bus_probe(NULL, of_bus_ids, NULL))
+-		printk(KERN_ERR __FILE__ ": "
+-			"Error while probing of_platform bus\n");
+-}
++#include "mpc512x.h"
  
- 	soc@80000000 {
-@@ -85,38 +159,252 @@
- 			reg = <0xc00 0x100>;
- 		};
+ static void __init mpc5121_ads_init_IRQ(void)
+ {
+-	struct device_node *np;
+-
+-	np = of_find_compatible_node(NULL, NULL, "fsl,ipic");
+-	if (!np)
+-		return;
+-
+-	ipic_init(np, 0);
+-	of_node_put(np);
+-
+-	/*
+-	 * Initialize the default interrupt mapping priorities,
+-	 * in case the boot rom changed something on us.
+-	 */
+-	ipic_set_default_priority();
++	mpc512x_init_IRQ();
+ }
  
--		// 512x PSCs are not 52xx PSCs compatible
-+		rtc@a00 {	// Real time clock
-+			compatible = "fsl,mpc5121-rtc";
-+			reg = <0xa00 0x100>;
-+			interrupts = <79 0x8 80 0x8>;
-+			interrupt-parent = < &ipic >;
-+		};
+ /*
+@@ -97,7 +42,8 @@ static int __init mpc5121_ads_probe(void)
+ define_machine(mpc5121_ads) {
+ 	.name			= "MPC5121 ADS",
+ 	.probe			= mpc5121_ads_probe,
+-	.init			= mpc5121_ads_declare_of_platform_devices,
++	.setup_arch		= mpc5121_ads_setup_arch,
++	.init			= mpc512x_declare_of_platform_devices,
+ 	.init_IRQ		= mpc5121_ads_init_IRQ,
+ 	.get_irq		= ipic_get_irq,
+ 	.calibrate_decr		= generic_calibrate_decr,
+diff --git a/arch/powerpc/platforms/512x/mpc5121_generic.c b/arch/powerpc/platforms/512x/mpc5121_generic.c
+new file mode 100644
+index 0000000..2479de9
+--- /dev/null
++++ b/arch/powerpc/platforms/512x/mpc5121_generic.c
+@@ -0,0 +1,58 @@
++/*
++ * Copyright (C) 2007,2008 Freescale Semiconductor, Inc. All rights reserved.
++ *
++ * Author: John Rigby, <jrigby@freescale.com>
++ *
++ * Description:
++ * MPC5121 SoC setup
++ *
++ * This is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ */
 +
-+		clock@f00 {	// Clock control
-+			compatible = "fsl,mpc5121-clock";
-+			reg = <0xf00 0x100>;
-+		};
++#include <linux/kernel.h>
++#include <linux/of_platform.h>
 +
-+		pmc@1000{  //Power Management Controller
-+			compatible = "fsl,mpc5121-pmc";
-+			reg = <0x1000 0x100>;
-+			interrupts = <83 0x2>;
-+			interrupt-parent = < &ipic >;
-+		};
++#include <asm/machdep.h>
++#include <asm/ipic.h>
++#include <asm/prom.h>
++#include <asm/time.h>
 +
-+		gpio@1100 {
-+			compatible = "fsl,mpc5121-gpio";
-+			reg = <0x1100 0x100>;
-+			interrupts = <78 0x8>;
-+			interrupt-parent = < &ipic >;
-+		};
++#include "mpc512x.h"
 +
-+		mscan@1300 {
-+			compatible = "fsl,mpc5121-mscan";
-+			cell-index = <0>;
-+			interrupts = <12 0x8>;
-+			interrupt-parent = < &ipic >;
-+			reg = <0x1300 0x80>;
-+		};
++/*
++ * list of supported boards
++ */
++static char *board[] __initdata = {
++	"prt,prtlvt",
++	NULL
++};
 +
-+		mscan@1380 {
-+			compatible = "fsl,mpc5121-mscan";
-+			cell-index = <1>;
-+			interrupts = <13 0x8>;
-+			interrupt-parent = < &ipic >;
-+			reg = <0x1380 0x80>;
-+		};
++/*
++ * Called very early, MMU is off, device-tree isn't unflattened
++ */
++static int __init mpc5121_generic_probe(void)
++{
++	unsigned long node = of_get_flat_dt_root();
++	int i = 0;
 +
-+		i2c@1700 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			compatible = "fsl,mpc5121-i2c", "fsl-i2c";
-+			cell-index = <0>;
-+			reg = <0x1700 0x20>;
-+			interrupts = <9 0x8>;
-+			interrupt-parent = < &ipic >;
-+			fsl5200-clocking;
-+		};
++	while (board[i]) {
++		if (of_flat_dt_is_compatible(node, board[i]))
++			break;
++		i++;
++	}
 +
-+		i2c@1720 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			compatible = "fsl,mpc5121-i2c", "fsl-i2c";
-+			cell-index = <1>;
-+			reg = <0x1720 0x20>;
-+			interrupts = <10 0x8>;
-+			interrupt-parent = < &ipic >;
-+			fsl5200-clocking;
-+		};
++	return board[i] != NULL;
++}
 +
-+		i2c@1740 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			compatible = "fsl,mpc5121-i2c", "fsl-i2c";
-+			cell-index = <2>;
-+			reg = <0x1740 0x20>;
-+			interrupts = <11 0x8>;
-+			interrupt-parent = < &ipic >;
-+			fsl5200-clocking;
-+		};
++define_machine(mpc5121_generic) {
++	.name			= "MPC5121 generic",
++	.probe			= mpc5121_generic_probe,
++	.init			= mpc512x_declare_of_platform_devices,
++	.init_IRQ		= mpc512x_init_IRQ,
++	.get_irq		= ipic_get_irq,
++	.calibrate_decr		= generic_calibrate_decr,
++};
+diff --git a/arch/powerpc/platforms/512x/mpc512x.h b/arch/powerpc/platforms/512x/mpc512x.h
+new file mode 100644
+index 0000000..9c03693
+--- /dev/null
++++ b/arch/powerpc/platforms/512x/mpc512x.h
+@@ -0,0 +1,17 @@
++/*
++ * Copyright (C) 2007 Freescale Semiconductor, Inc. All rights reserved.
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ *
++ * Prototypes for MPC512x shared code
++ */
 +
-+		i2ccontrol@1760 {
-+			compatible = "fsl,mpc5121-i2c-ctrl";
-+			reg = <0x1760 0x8>;
-+		};
-+
-+		axe@2000 {
-+			compatible = "fsl,mpc5121-axe";
-+			reg = <0x2000 0x100>;
-+			interrupts = <42 0x8>;
-+			interrupt-parent = < &ipic >;
-+		};
-+
-+		display@2100 {
-+			compatible = "fsl,mpc5121-diu", "fsl-diu";
-+			reg = <0x2100 0x100>;
-+			interrupts = <64 0x8>;
-+			interrupt-parent = < &ipic >;
-+		};
-+
-+		mdio@2800 {
-+			compatible = "fsl,mpc5121-fec-mdio";
-+			reg = <0x2800 0x800>;
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			phy: ethernet-phy@0 {
-+				reg = <1>;
-+				device_type = "ethernet-phy";
-+			};
-+		};
-+
-+		ethernet@2800 {
-+			device_type = "network";
-+			compatible = "fsl,mpc5121-fec";
-+			reg = <0x2800 0x800>;
-+			local-mac-address = [ 00 00 00 00 00 00 ];
-+			interrupts = <4 0x8>;
-+			interrupt-parent = < &ipic >;
-+			phy-handle = < &phy >;
-+			fsl,align-tx-packets = <4>;
-+		};
-+
-+		// 5121e has two dr usb modules
-+		// mpc5121_ads only uses USB0
-+
-+		// USB1 using external ULPI PHY
-+		//usb@3000 {
-+		//	compatible = "fsl,mpc5121-usb2-dr", "fsl-usb2-dr";
-+		//	reg = <0x3000 0x1000>;
-+		//	#address-cells = <1>;
-+		//	#size-cells = <0>;
-+		//	interrupt-parent = < &ipic >;
-+		//	interrupts = <43 0x8>;
-+		//	dr_mode = "otg";
-+		//	phy_type = "ulpi";
-+		//	port1;
-+		//};
-+
-+		// USB0 using internal UTMI PHY
-+		usb@4000 {
-+			compatible = "fsl,mpc5121-usb2-dr", "fsl-usb2-dr";
-+			reg = <0x4000 0x1000>;
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			interrupt-parent = < &ipic >;
-+			interrupts = <44 0x8>;
-+			dr_mode = "otg";
-+			phy_type = "utmi_wide";
-+			port0;
-+		};
-+
-+		// IO control
-+		ioctl@a000 {
-+			compatible = "fsl,mpc5121-ioctl";
-+			reg = <0xA000 0x1000>;
-+		};
-+
-+		pata@10200 {
-+			compatible = "fsl,mpc5121-pata";
-+			reg = <0x10200 0x100>;
-+			interrupts = <5 0x8>;
-+			interrupt-parent = < &ipic >;
-+		};
-+
-+		// 512x PSCs are not 52xx PSC compatible
- 		// PSC3 serial port A aka ttyPSC0
- 		serial@11300 {
- 			device_type = "serial";
--			compatible = "fsl,mpc5121-psc-uart";
-+			compatible = "fsl,mpc5121-psc-uart", "fsl,mpc5121-psc";
- 			// Logical port assignment needed until driver
- 			// learns to use aliases
- 			port-number = <0>;
- 			cell-index = <3>;
- 			reg = <0x11300 0x100>;
--			interrupts = <0x28 0x8>; // actually the fifo irq
-+			interrupts = <40 0x8>;
- 			interrupt-parent = < &ipic >;
-+			rx-fifo-size = <16>;
-+			tx-fifo-size = <16>;
- 		};
++#ifndef __MPC512X_H__
++#define __MPC512X_H__
++extern unsigned long mpc512x_find_ips_freq(struct device_node *node);
++extern void __init mpc512x_init_IRQ(void);
++void __init mpc512x_declare_of_platform_devices(void);
++#endif				/* __MPC512X_H__ */
+diff --git a/arch/powerpc/platforms/512x/mpc5121_ads.c b/arch/powerpc/platforms/512x/mpc512x_shared.c
+similarity index 55%
+copy from arch/powerpc/platforms/512x/mpc5121_ads.c
+copy to arch/powerpc/platforms/512x/mpc512x_shared.c
+index 50bd3a3..d8cd579 100644
+--- a/arch/powerpc/platforms/512x/mpc5121_ads.c
++++ b/arch/powerpc/platforms/512x/mpc512x_shared.c
+@@ -1,16 +1,15 @@
+ /*
+- * Copyright (C) 2007 Freescale Semiconductor, Inc. All rights reserved.
++ * Copyright (C) 2007,2008 Freescale Semiconductor, Inc. All rights reserved.
+  *
+- * Author: John Rigby, <jrigby@freescale.com>, Thur Mar 29 2007
++ * Author: John Rigby <jrigby@freescale.com>
+  *
+  * Description:
+- * MPC5121 ADS board setup
++ * MPC512x Shared code
+  *
+  * This is free software; you can redistribute it and/or modify it
+  * under the terms of the GNU General Public License as published by
+  * the Free Software Foundation; either version 2 of the License, or
+  * (at your option) any later version.
+- *
+  */
  
- 		// PSC4 serial port B aka ttyPSC1
- 		serial@11400 {
- 			device_type = "serial";
--			compatible = "fsl,mpc5121-psc-uart";
-+			compatible = "fsl,mpc5121-psc-uart", "fsl,mpc5121-psc";
- 			// Logical port assignment needed until driver
- 			// learns to use aliases
- 			port-number = <1>;
- 			cell-index = <4>;
- 			reg = <0x11400 0x100>;
--			interrupts = <0x28 0x8>; // actually the fifo irq
-+			interrupts = <40 0x8>;
- 			interrupt-parent = < &ipic >;
-+			rx-fifo-size = <16>;
-+			tx-fifo-size = <16>;
- 		};
+ #include <linux/kernel.h>
+@@ -23,12 +22,8 @@
+ #include <asm/prom.h>
+ #include <asm/time.h>
  
--		pscsfifo@11f00 {
-+		// PSC5 in ac97 mode
-+		ac97@11500 {
-+			compatible = "fsl,mpc5121-psc-ac97", "fsl,mpc5121-psc";
-+			cell-index = <5>;
-+			reg = <0x11500 0x100>;
-+			interrupts = <40 0x8>;
-+			interrupt-parent = < &ipic >;
-+			fsl,mode = "ac97-slave";
-+			rx-fifo-size = <384>;
-+			tx-fifo-size = <384>;
-+		};
+-/**
+- * 	mpc512x_find_ips_freq - Find the IPS bus frequency for a device
+- * 	@node:	device node
+- *
+- * 	Returns IPS bus frequency, or 0 if the bus frequency cannot be found.
+- */
++#include "mpc512x.h"
 +
-+		pscfifo@11f00 {
- 			compatible = "fsl,mpc5121-psc-fifo";
- 			reg = <0x11f00 0x100>;
--			interrupts = <0x28 0x8>;
-+			interrupts = <40 0x8>;
- 			interrupt-parent = < &ipic >;
- 		};
-+
-+		dma@14000 {
-+			compatible = "fsl,mpc5121-dma2";
-+			reg = <0x14000 0x1800>;
-+			interrupts = <65 0x8>;
-+			interrupt-parent = < &ipic >;
-+		};
-+
-+	};
-+
-+	pci: pci@80008500 {
-+		interrupt-map-mask = <0xf800 0x0 0x0 0x7>;
-+		interrupt-map = <
-+				// IDSEL 0x15 - Slot 1 PCI
-+				 0xa800 0x0 0x0 0x1 &cpld_pic 0x0 0x8
-+				 0xa800 0x0 0x0 0x2 &cpld_pic 0x1 0x8
-+				 0xa800 0x0 0x0 0x3 &cpld_pic 0x2 0x8
-+				 0xa800 0x0 0x0 0x4 &cpld_pic 0x3 0x8
-+
-+				// IDSEL 0x16 - Slot 2 MiniPCI
-+				 0xb000 0x0 0x0 0x1 &cpld_pic 0x4 0x8
-+				 0xb000 0x0 0x0 0x2 &cpld_pic 0x5 0x8
-+
-+				// IDSEL 0x17 - Slot 3 MiniPCI
-+				 0xb800 0x0 0x0 0x1 &cpld_pic 0x6 0x8
-+				 0xb800 0x0 0x0 0x2 &cpld_pic 0x7 0x8
-+				>;
-+		interrupt-parent = < &ipic >;
-+		interrupts = <1 0x8>;
-+		bus-range = <0 0>;
-+		ranges = <0x42000000 0x0 0xa0000000 0xa0000000 0x0 0x10000000
-+			  0x02000000 0x0 0xb0000000 0xb0000000 0x0 0x10000000
-+			  0x01000000 0x0 0x00000000 0x84000000 0x0 0x01000000>;
-+		clock-frequency = <0>;
-+		#interrupt-cells = <1>;
-+		#size-cells = <2>;
-+		#address-cells = <3>;
-+		reg = <0x80008500 0x100>;
-+		compatible = "fsl,mpc5121-pci";
-+		device_type = "pci";
- 	};
- };
+ unsigned long
+ mpc512x_find_ips_freq(struct device_node *node)
+ {
+@@ -52,25 +47,11 @@ mpc512x_find_ips_freq(struct device_node *node)
+ }
+ EXPORT_SYMBOL(mpc512x_find_ips_freq);
+ 
+-static struct of_device_id __initdata of_bus_ids[] = {
+-	{ .name = "soc", },
+-	{ .name = "localbus", },
+-	{},
+-};
+-
+-static void __init mpc5121_ads_declare_of_platform_devices(void)
+-{
+-	/* Find every child of the SOC node and add it to of_platform */
+-	if (of_platform_bus_probe(NULL, of_bus_ids, NULL))
+-		printk(KERN_ERR __FILE__ ": "
+-			"Error while probing of_platform bus\n");
+-}
+-
+-static void __init mpc5121_ads_init_IRQ(void)
++void __init mpc512x_init_IRQ(void)
+ {
+ 	struct device_node *np;
+ 
+-	np = of_find_compatible_node(NULL, NULL, "fsl,ipic");
++	np = of_find_compatible_node(NULL, NULL, "fsl,mpc5121-ipic");
+ 	if (!np)
+ 		return;
+ 
+@@ -85,20 +66,18 @@ static void __init mpc5121_ads_init_IRQ(void)
+ }
+ 
+ /*
+- * Called very early, MMU is off, device-tree isn't unflattened
++ * Nodes to do bus probe on, soc and localbus
+  */
+-static int __init mpc5121_ads_probe(void)
+-{
+-	unsigned long root = of_get_flat_dt_root();
++static struct of_device_id __initdata of_bus_ids[] = {
++	{ .compatible = "fsl,mpc5121-immr", },
++	{ .compatible = "fsl,mpc5121-localbus", },
++	{},
++};
+ 
+-	return of_flat_dt_is_compatible(root, "fsl,mpc5121ads");
++void __init mpc512x_declare_of_platform_devices(void)
++{
++	if (of_platform_bus_probe(NULL, of_bus_ids, NULL))
++		printk(KERN_ERR __FILE__ ": "
++			"Error while probing of_platform bus\n");
+ }
+ 
+-define_machine(mpc5121_ads) {
+-	.name			= "MPC5121 ADS",
+-	.probe			= mpc5121_ads_probe,
+-	.init			= mpc5121_ads_declare_of_platform_devices,
+-	.init_IRQ		= mpc5121_ads_init_IRQ,
+-	.get_irq		= ipic_get_irq,
+-	.calibrate_decr		= generic_calibrate_decr,
+-};
 -- 
