@@ -1,32 +1,21 @@
-Return-Path: <chirag@linux.vnet.ibm.com>
-Received: from e23smtp05.au.ibm.com (E23SMTP05.au.ibm.com [202.81.18.174])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp05.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id C1809DE516
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jul 2008 01:33:20 +1000 (EST)
-Received: from sd0109e.au.ibm.com (d23rh905.au.ibm.com [202.81.18.225])
-	by e23smtp05.au.ibm.com (8.13.1/8.13.1) with ESMTP id m69FWZPD016398
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jul 2008 01:32:35 +1000
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
-	by sd0109e.au.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
-	m69FXGMP262450
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jul 2008 01:33:17 +1000
-Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
-	by d23av02.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m69FXGYv031279
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jul 2008 01:33:16 +1000
-Date: Wed, 9 Jul 2008 21:03:13 +0530
-From: Chirag Jog <chirag@linux.vnet.ibm.com>
-To: linux.kernel@vger.kernel.org, linux-rt-users@vget.kernel.org,
-	linuxppc-dev@ozlabs.org
-Subject: [PATCH][RT][PPC64] Fix preempt unsafe paths accessing per_cpu
-	variables
-Message-ID: <20080709153313.GC7101@linux.vnet.ibm.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from hs-out-0708.google.com (hs-out-0708.google.com [64.233.178.241])
+	by ozlabs.org (Postfix) with ESMTP id C25D1DE4E9
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jul 2008 01:57:51 +1000 (EST)
+Received: by hs-out-0708.google.com with SMTP id z77so942676hsz.9
+	for <linuxppc-dev@ozlabs.org>; Wed, 09 Jul 2008 08:57:49 -0700 (PDT)
+Message-ID: <fa686aa40807090857x2d2a3086xe2c1bd81fb23bb@mail.gmail.com>
+Date: Wed, 9 Jul 2008 09:57:48 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Josh Boyer" <jwboyer@gmail.com>
+Subject: Re: Please pull linux-2.6-virtex.git
+In-Reply-To: <1215612904.13186.4.camel@weaponx>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Cc: "Timothy R. Chavez" <tim.chavez@linux.vnet.ibm.com>,
-	Nivedita Singhvi <niv@us.ibm.com>, paulmck@linux.vnet.ibm.com
-Reply-To: Chirag Jog <chirag@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20080704172240.GE17062@secretlab.ca>
+	<1215612904.13186.4.camel@weaponx>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,182 +25,77 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hey Josh, here is the new pull request:
 
-Hi,
-This patch fixes various paths in the -rt kernel on powerpc64 where per_cpu
-variables are accessed in a preempt unsafe way.
-When a power box with -rt kernel is booted, multiple BUG messages are
-generated "BUG: init:1 task might have lost a preemption check!".
-After booting a kernel with these patches applied, these messages
-don't appear.
+The following changes since commit f3e909c2750eb20536bacacc867dc9047b70546a:
+  Michael Neuling (1):
+        powerpc: Update for VSX core file and ptrace
 
-Also I ran the realtime tests from ltp to ensure the stability.
+are available in the git repository at:
+
+  git://git.secretlab.ca/git/linux-2.6-virtex virtex-for-2.6.27
+
+Grant Likely (4):
+      powerpc/bootwrapper: Add documentation of boot wrapper targets
+      powerpc/bootwrapper: add missing bit of simpleImage target
+      powerpc/bootwrapper: Allow user to specify additional default targets
+      powerpc/440: Convert Virtex ML507 device tree to dts-v1
+
+John Linn (5):
+      powerpc/virtex: add dts file for ML507 reference design
+      powerpc/virtex: Fix booting of Xilinx FPGAs with 16550 for 405 and 440
+      powerpc/virtex: add Xilinx Virtex 5 ppc440 platform support
+      powerpc/virtex: add Xilinx 440 cpu to the cputable
+      powerpc/virtex: add defconfig for virtex 5 platforms
+
+ Documentation/powerpc/bootwrapper.txt      |  141 ++++
+ arch/powerpc/Kconfig                       |   13 +
+ arch/powerpc/Makefile                      |   15 +-
+ arch/powerpc/boot/Makefile                 |    5 +-
+ arch/powerpc/boot/dts/virtex440-ml507.dts  |  296 ++++++++
+ arch/powerpc/boot/simpleboot.c             |    6 +
+ arch/powerpc/boot/virtex.c                 |  100 +++
+ arch/powerpc/boot/wrapper                  |   10 +-
+ arch/powerpc/configs/44x/virtex5_defconfig | 1107 ++++++++++++++++++++++++++++
+ arch/powerpc/kernel/cputable.c             |   10 +
+ arch/powerpc/platforms/44x/Kconfig         |   26 +
+ arch/powerpc/platforms/44x/Makefile        |    1 +
+ arch/powerpc/platforms/44x/virtex.c        |   60 ++
+ 13 files changed, 1787 insertions(+), 3 deletions(-)
+ create mode 100644 Documentation/powerpc/bootwrapper.txt
+ create mode 100644 arch/powerpc/boot/dts/virtex440-ml507.dts
+ create mode 100644 arch/powerpc/boot/virtex.c
+ create mode 100644 arch/powerpc/configs/44x/virtex5_defconfig
+ create mode 100644 arch/powerpc/platforms/44x/virtex.c
 
 
-Signed-Off-By: Chirag <chirag@linux.vnet.ibm.com>
+On Wed, Jul 9, 2008 at 8:15 AM, Josh Boyer <jwboyer@gmail.com> wrote:
+> On Fri, 2008-07-04 at 11:22 -0600, Grant Likely wrote:
+>> Hi Josh,
+>>
+>> Here are the bulk of the Xilinx 440 support patches.  Please pull
+>> into your next branch.
+>>
+>> Thanks,
+>> g.
+>>
+>> The following changes since commit f3e909c2750eb20536bacacc867dc9047b70546a:
+>>   Michael Neuling (1):
+>>         powerpc: Update for VSX core file and ptrace
+>>
+>> are available in the git repository at:
+>>
+>>   git://git.secretlab.ca/git/linux-2.6-virtex virtex-for-2.6.27
+>
+> Any chance to get that updated with the latest fixes before I pull it
+> in?  Namely the DTS file for virtex5, but there might have been others.
+>
+> josh
+>
+>
 
-arch/powerpc/mm/tlb_64.c               |   29 ++++++++++++++++-------------
-arch/powerpc/platforms/pseries/iommu.c |   14 ++++++++++----
-include/asm-powerpc/tlb.h              |    5 ++---
-3 files changed, 28 insertions(+), 20 deletions(-)
 
-        
-Index: linux-2.6.25.8-rt7/arch/powerpc/mm/tlb_64.c
-===================================================================
---- linux-2.6.25.8-rt7.orig/arch/powerpc/mm/tlb_64.c	2008-07-07 13:13:59.000000000 +0530
-+++ linux-2.6.25.8-rt7/arch/powerpc/mm/tlb_64.c	2008-07-09 20:57:01.000000000 +0530
-@@ -38,7 +38,6 @@
-  * include/asm-powerpc/tlb.h file -- tgall
-  */
- DEFINE_PER_CPU_LOCKED(struct mmu_gather, mmu_gathers);
--DEFINE_PER_CPU(struct pte_freelist_batch *, pte_freelist_cur);
- unsigned long pte_freelist_forced_free;
- 
- struct pte_freelist_batch
-@@ -48,7 +47,7 @@
- 	pgtable_free_t	tables[0];
- };
- 
--DEFINE_PER_CPU(struct pte_freelist_batch *, pte_freelist_cur);
-+DEFINE_PER_CPU_LOCKED(struct pte_freelist_batch *, pte_freelist_cur);
- unsigned long pte_freelist_forced_free;
- 
- #define PTE_FREELIST_SIZE \
-@@ -92,16 +91,14 @@
- 
- void pgtable_free_tlb(struct mmu_gather *tlb, pgtable_free_t pgf)
- {
--	/*
--	 * This is safe since tlb_gather_mmu has disabled preemption.
--	 * tlb->cpu is set by tlb_gather_mmu as well.
--	 */
-+	int cpu;
-         cpumask_t local_cpumask = cpumask_of_cpu(tlb->cpu);
--	struct pte_freelist_batch **batchp = &__get_cpu_var(pte_freelist_cur);
-+	struct pte_freelist_batch **batchp = &get_cpu_var_locked(pte_freelist_cur, &cpu);
- 
- 	if (atomic_read(&tlb->mm->mm_users) < 2 ||
- 	    cpus_equal(tlb->mm->cpu_vm_mask, local_cpumask)) {
- 		pgtable_free(pgf);
-+		goto cleanup;
- 		return;
- 	}
- 
-@@ -109,6 +106,7 @@
- 		*batchp = (struct pte_freelist_batch *)__get_free_page(GFP_ATOMIC);
- 		if (*batchp == NULL) {
- 			pgtable_free_now(pgf);
-+			goto cleanup;
- 			return;
- 		}
- 		(*batchp)->index = 0;
-@@ -118,6 +116,9 @@
- 		pte_free_submit(*batchp);
- 		*batchp = NULL;
- 	}
-+
-+ cleanup:
-+	put_cpu_var_locked(pte_freelist_cur, cpu);
- }
- 
- /*
-@@ -253,13 +254,15 @@
- 
- void pte_free_finish(void)
- {
--	/* This is safe since tlb_gather_mmu has disabled preemption */
--	struct pte_freelist_batch **batchp = &__get_cpu_var(pte_freelist_cur);
-+	int cpu;
-+	struct pte_freelist_batch **batchp = &get_cpu_var_locked(pte_freelist_cur, &cpu);
- 
--	if (*batchp == NULL)
--		return;
--	pte_free_submit(*batchp);
--	*batchp = NULL;
-+	if (*batchp) {
-+		pte_free_submit(*batchp);
-+		*batchp = NULL;
-+	}
-+
-+	put_cpu_var_locked(pte_freelist_cur, cpu);
- }
- 
- /**
-Index: linux-2.6.25.8-rt7/include/asm-powerpc/tlb.h
-===================================================================
---- linux-2.6.25.8-rt7.orig/include/asm-powerpc/tlb.h	2008-07-07 22:58:37.000000000 +0530
-+++ linux-2.6.25.8-rt7/include/asm-powerpc/tlb.h	2008-07-09 10:22:51.000000000 +0530
-@@ -40,18 +40,17 @@
- 
- static inline void tlb_flush(struct mmu_gather *tlb)
- {
--	struct ppc64_tlb_batch *tlbbatch = &__get_cpu_var(ppc64_tlb_batch);
-+	struct ppc64_tlb_batch *tlbbatch = &get_cpu_var(ppc64_tlb_batch);
- 
- 	/* If there's a TLB batch pending, then we must flush it because the
- 	 * pages are going to be freed and we really don't want to have a CPU
- 	 * access a freed page because it has a stale TLB
- 	 */
- 	if (tlbbatch->index) {
--		preempt_disable();
- 		__flush_tlb_pending(tlbbatch);
--		preempt_enable();
- 	}
- 
-+	put_cpu_var(ppc64_tlb_batch);
- 	pte_free_finish();
- }
- 
-Index: linux-2.6.25.8-rt7/arch/powerpc/platforms/pseries/iommu.c
-===================================================================
---- linux-2.6.25.8-rt7.orig/arch/powerpc/platforms/pseries/iommu.c	2008-07-07 23:16:29.000000000 +0530
-+++ linux-2.6.25.8-rt7/arch/powerpc/platforms/pseries/iommu.c	2008-07-09 10:49:21.000000000 +0530
-@@ -124,7 +124,7 @@
- 	}
- }
- 
--static DEFINE_PER_CPU(u64 *, tce_page) = NULL;
-+static DEFINE_PER_CPU_LOCKED(u64 *, tce_page) = NULL;
- 
- static void tce_buildmulti_pSeriesLP(struct iommu_table *tbl, long tcenum,
- 				     long npages, unsigned long uaddr,
-@@ -135,12 +135,13 @@
- 	u64 *tcep;
- 	u64 rpn;
- 	long l, limit;
-+	int cpu;
- 
- 	if (npages == 1)
- 		return tce_build_pSeriesLP(tbl, tcenum, npages, uaddr,
- 					   direction);
- 
--	tcep = __get_cpu_var(tce_page);
-+	tcep = get_cpu_var_locked(tce_page, &cpu);
- 
- 	/* This is safe to do since interrupts are off when we're called
- 	 * from iommu_alloc{,_sg}()
-@@ -148,10 +149,13 @@
- 	if (!tcep) {
- 		tcep = (u64 *)__get_free_page(GFP_ATOMIC);
- 		/* If allocation fails, fall back to the loop implementation */
--		if (!tcep)
-+		if (!tcep) {
-+			put_cpu_var_locked(tce_page, cpu);
- 			return tce_build_pSeriesLP(tbl, tcenum, npages,
- 						   uaddr, direction);
--		__get_cpu_var(tce_page) = tcep;
-+		}
-+
-+		per_cpu_var_locked(tce_page, cpu) = tcep;
- 	}
- 
- 	rpn = (virt_to_abs(uaddr)) >> TCE_SHIFT;
-@@ -188,6 +192,8 @@
- 		printk("\ttce[0] val = 0x%lx\n", tcep[0]);
- 		show_stack(current, (unsigned long *)__get_SP());
- 	}
-+
-+	put_cpu_var_locked(tce_page, cpu);
- }
- 
- static void tce_free_pSeriesLP(struct iommu_table *tbl, long tcenum, long npages)
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
