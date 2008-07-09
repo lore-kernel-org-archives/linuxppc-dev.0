@@ -4,22 +4,20 @@ Received: from de01egw02.freescale.net (de01egw02.freescale.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "de01egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 32580DE287
+	by ozlabs.org (Postfix) with ESMTPS id 4C8B3DE34B
 	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jul 2008 06:54:21 +1000 (EST)
 Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
 	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	m69KsAjs015954
-	for <linuxppc-dev@ozlabs.org>; Wed, 9 Jul 2008 13:54:11 -0700 (MST)
+	m69Ks9CM015938
+	for <linuxppc-dev@ozlabs.org>; Wed, 9 Jul 2008 13:54:09 -0700 (MST)
 From: John Rigby <jrigby@freescale.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 4/4][Version 3] MPC5121 Add MPC5121ADS cpld support
-Date: Wed,  9 Jul 2008 14:54:04 -0600
-Message-Id: <1215636844-32040-5-git-send-email-jrigby@freescale.com>
-In-Reply-To: <1215636844-32040-4-git-send-email-jrigby@freescale.com>
+Subject: [PATCH 2/4][Version 3] MPC5121 clock driver
+Date: Wed,  9 Jul 2008 14:54:02 -0600
+Message-Id: <1215636844-32040-3-git-send-email-jrigby@freescale.com>
+In-Reply-To: <1215636844-32040-2-git-send-email-jrigby@freescale.com>
 References: <1215636844-32040-1-git-send-email-jrigby@freescale.com>
 	<1215636844-32040-2-git-send-email-jrigby@freescale.com>
-	<1215636844-32040-3-git-send-email-jrigby@freescale.com>
-	<1215636844-32040-4-git-send-email-jrigby@freescale.com>
 Cc: John Rigby <jrigby@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -30,302 +28,791 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Add a interrupt host for the interrupt
-controller in the mpc5121ads cpld.
-PCI interrupts are 0-7 the rest are 8-15
-Touchscreen pendown irq is hardwired to irq1
-All other irqs are chained to irq0
+Plugs into the generic powerpc clock driver in
+arch/powerpc/kernel/clock.c
+
+The following subset of clk_interface is implemented:
+    clk_get, clk_put:  get clock via name, release clock
+    clk_enable, clk_disable:  enable or disable clock
+    clk_get_rate:  get clock rate in Hz
+    clk_set_rate:  stubbed
+    clk_round_rate:  stubbed
+    clk_set_parent: NULL
+    clk_get_parent: NULL
 
 Signed-off-by: John Rigby <jrigby@freescale.com>
 ---
- arch/powerpc/platforms/512x/Kconfig            |    1 +
- arch/powerpc/platforms/512x/Makefile           |    2 +-
- arch/powerpc/platforms/512x/mpc5121_ads.c      |   11 ++
- arch/powerpc/platforms/512x/mpc5121_ads.h      |   16 ++
- arch/powerpc/platforms/512x/mpc5121_ads_cpld.c |  204 ++++++++++++++++++++++++
- 5 files changed, 233 insertions(+), 1 deletions(-)
- create mode 100644 arch/powerpc/platforms/512x/mpc5121_ads.h
- create mode 100644 arch/powerpc/platforms/512x/mpc5121_ads_cpld.c
+ Makefile                             |    1 +
+ arch/powerpc/platforms/512x/Kconfig  |    1 +
+ arch/powerpc/platforms/512x/Makefile |    1 +
+ arch/powerpc/platforms/512x/clock.c  |  729 ++++++++++++++++++++++++++++++++++
+ 4 files changed, 732 insertions(+), 0 deletions(-)
+ create mode 100644 arch/powerpc/platforms/512x/clock.c
 
+diff --git a/Makefile b/Makefile
+index 6aff5f4..fc3ae9f 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1,3 +1,4 @@
++FRED=42
+ VERSION = 2
+ PATCHLEVEL = 6
+ SUBLEVEL = 26
 diff --git a/arch/powerpc/platforms/512x/Kconfig b/arch/powerpc/platforms/512x/Kconfig
-index 5d72dc3..c62f893 100644
+index 4c0da0c..162af06 100644
 --- a/arch/powerpc/platforms/512x/Kconfig
 +++ b/arch/powerpc/platforms/512x/Kconfig
-@@ -13,6 +13,7 @@ config MPC5121_ADS
- 	depends on PPC_MULTIPLATFORM && PPC32
- 	select DEFAULT_UIMAGE
- 	select PPC_MPC5121
-+	select MPC5121_ADS_CPLD
- 	help
- 	  This option enables support for the MPC5121E ADS board.
+@@ -2,6 +2,7 @@ config PPC_MPC512x
+ 	bool
+ 	select FSL_SOC
+ 	select IPIC
++	select PPC_CLOCK
+ 	default n
  
+ config PPC_MPC5121
 diff --git a/arch/powerpc/platforms/512x/Makefile b/arch/powerpc/platforms/512x/Makefile
-index 8090e22..90be2f5 100644
+index 232c89f..90910c1 100644
 --- a/arch/powerpc/platforms/512x/Makefile
 +++ b/arch/powerpc/platforms/512x/Makefile
-@@ -2,5 +2,5 @@
+@@ -1,4 +1,5 @@
+ #
  # Makefile for the Freescale PowerPC 512x linux kernel.
  #
- obj-y				+= clock.o mpc512x_shared.o
--obj-$(CONFIG_MPC5121_ADS)	+= mpc5121_ads.o
-+obj-$(CONFIG_MPC5121_ADS)	+= mpc5121_ads.o mpc5121_ads_cpld.o
- obj-$(CONFIG_MPC5121_GENERIC)	+= mpc5121_generic.o
-diff --git a/arch/powerpc/platforms/512x/mpc5121_ads.c b/arch/powerpc/platforms/512x/mpc5121_ads.c
-index 3ec9ca3..5ebf693 100644
---- a/arch/powerpc/platforms/512x/mpc5121_ads.c
-+++ b/arch/powerpc/platforms/512x/mpc5121_ads.c
-@@ -23,10 +23,21 @@
- #include <asm/time.h>
- 
- #include "mpc512x.h"
-+#include "mpc5121_ads.h"
-+
-+static void __init mpc5121_ads_setup_arch(void)
-+{
-+	printk(KERN_INFO "MPC5121 ADS board from Freescale Semiconductor\n");
-+	/*
-+	 * cpld regs are needed early
-+	 */
-+	mpc5121_ads_cpld_map();
-+}
- 
- static void __init mpc5121_ads_init_IRQ(void)
- {
- 	mpc512x_init_IRQ();
-+	mpc5121_ads_cpld_pic_init();
- }
- 
- /*
-diff --git a/arch/powerpc/platforms/512x/mpc5121_ads.h b/arch/powerpc/platforms/512x/mpc5121_ads.h
++obj-y				+= clock.o
+ obj-$(CONFIG_MPC5121_ADS)	+= mpc5121_ads.o
+diff --git a/arch/powerpc/platforms/512x/clock.c b/arch/powerpc/platforms/512x/clock.c
 new file mode 100644
-index 0000000..662076c
+index 0000000..f416014
 --- /dev/null
-+++ b/arch/powerpc/platforms/512x/mpc5121_ads.h
-@@ -0,0 +1,16 @@
++++ b/arch/powerpc/platforms/512x/clock.c
+@@ -0,0 +1,729 @@
 +/*
-+ * Copyright (C) 2008 Freescale Semiconductor, Inc. All rights reserved.
++ * Copyright (C) 2007,2008 Freescale Semiconductor, Inc. All rights reserved.
 + *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
++ * Author: John Rigby <jrigby@freescale.com>
 + *
-+ * Prototypes for ADS5121 specific code
++ * Implements the clk api defined in include/linux/clk.h
++ *
++ *    Original based on linux/arch/arm/mach-integrator/clock.c
++ *
++ *    Copyright (C) 2004 ARM Limited.
++ *    Written by Deep Blue Solutions Limited.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
 + */
-+
-+#ifndef __MPC512ADS_H__
-+#define __MPC512ADS_H__
-+extern void __init mpc5121_ads_cpld_map(void);
-+extern void __init mpc5121_ads_cpld_pic_init(void);
-+#endif				/* __MPC512ADS_H__ */
-diff --git a/arch/powerpc/platforms/512x/mpc5121_ads_cpld.c b/arch/powerpc/platforms/512x/mpc5121_ads_cpld.c
-new file mode 100644
-index 0000000..a6ce805
---- /dev/null
-+++ b/arch/powerpc/platforms/512x/mpc5121_ads_cpld.c
-@@ -0,0 +1,204 @@
-+/*
-+ * Copyright (C) 2008 Freescale Semiconductor, Inc. All rights reserved.
-+ *
-+ * Author: John Rigby, <jrigby@freescale.com>
-+ *
-+ * Description:
-+ * MPC5121ADS CPLD irq handling
-+ *
-+ * This is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ */
-+
-+#undef DEBUG
-+
 +#include <linux/kernel.h>
-+#include <linux/interrupt.h>
-+#include <linux/irq.h>
++#include <linux/list.h>
++#include <linux/errno.h>
++#include <linux/err.h>
++#include <linux/string.h>
++#include <linux/clk.h>
++#include <linux/mutex.h>
 +#include <linux/io.h>
-+#include <asm/prom.h>
 +
-+static struct device_node *cpld_pic_node;
-+static struct irq_host *cpld_pic_host;
++#include <linux/of_platform.h>
++#include <asm/mpc512x.h>
++#include <asm/clk_interface.h>
 +
-+/*
-+ * Bits to ignore in the misc_status register
-+ * 0x10 touch screen pendown is hard routed to irq1
-+ * 0x02 pci status is read from pci status register
-+ */
-+#define MISC_IGNORE 0x12
++#undef CLK_DEBUG
 +
-+/*
-+ * Nothing to ignore in pci status register
-+ */
-+#define PCI_IGNORE 0x00
++static int clocks_initialized;
 +
-+struct cpld_pic {
-+	u8 pci_mask;
-+	u8 pci_status;
-+	u8 route;
-+	u8 misc_mask;
-+	u8 misc_status;
-+	u8 misc_control;
++#define CLK_HAS_RATE	0x1	/* has rate in MHz */
++#define CLK_HAS_CTRL	0x2	/* has control reg and bit */
++
++struct clk {
++	struct list_head node;
++	char name[32];
++	int flags;
++	struct device *dev;
++	unsigned long rate;
++	struct module *owner;
++	void (*calc) (struct clk *);
++	struct clk *parent;
++	int reg, bit;		/* CLK_HAS_CTRL */
++	int div_shift;		/* only used by generic_div_clk_calc */
 +};
 +
-+static struct cpld_pic __iomem *cpld_regs;
++static LIST_HEAD(clocks);
++static DEFINE_MUTEX(clocks_mutex);
 +
-+static void __iomem *
-+irq_to_pic_mask(unsigned int irq)
++static struct clk *mpc5121_clk_get(struct device *dev, const char *id)
 +{
-+	return irq <= 7 ? &cpld_regs->pci_mask : &cpld_regs->misc_mask;
++	struct clk *p, *clk = ERR_PTR(-ENOENT);
++	int dev_match = 0;
++	int id_match = 0;
++
++	if (dev == NULL && id == NULL)
++		return NULL;
++
++	mutex_lock(&clocks_mutex);
++	list_for_each_entry(p, &clocks, node) {
++		if (dev && dev == p->dev)
++			dev_match++;
++		if (strcmp(id, p->name) == 0)
++			id_match++;
++		if ((dev_match || id_match) && try_module_get(p->owner)) {
++			clk = p;
++			break;
++		}
++	}
++	mutex_unlock(&clocks_mutex);
++
++	return clk;
 +}
 +
-+static unsigned int
-+irq_to_pic_bit(unsigned int irq)
++#ifdef CLK_DEBUG
++static void dump_clocks(void)
 +{
-+	return 1 << (irq & 0x7);
++	struct clk *p;
++
++	mutex_lock(&clocks_mutex);
++	printk(KERN_INFO "CLOCKS:\n");
++	list_for_each_entry(p, &clocks, node) {
++		printk(KERN_INFO "  %s %ld", p->name, p->rate);
++		if (p->parent)
++			printk(KERN_INFO " %s %ld", p->parent->name,
++			       p->parent->rate);
++		if (p->flags & CLK_HAS_CTRL)
++			printk(KERN_INFO " reg/bit %d/%d", p->reg, p->bit);
++		printk("\n");
++	}
++	mutex_unlock(&clocks_mutex);
++}
++#define	DEBUG_CLK_DUMP() dump_clocks()
++#else
++#define	DEBUG_CLK_DUMP()
++#endif
++
++
++static void mpc5121_clk_put(struct clk *clk)
++{
++	module_put(clk->owner);
 +}
 +
-+static void
-+cpld_mask_irq(unsigned int irq)
-+{
-+	unsigned int cpld_irq = (unsigned int)irq_map[irq].hwirq;
-+	void __iomem *pic_mask = irq_to_pic_mask(cpld_irq);
++#define NRPSC 12
 +
-+	out_8(pic_mask,
-+	      in_8(pic_mask) | irq_to_pic_bit(cpld_irq));
-+}
-+
-+static void
-+cpld_unmask_irq(unsigned int irq)
-+{
-+	unsigned int cpld_irq = (unsigned int)irq_map[irq].hwirq;
-+	void __iomem *pic_mask = irq_to_pic_mask(cpld_irq);
-+
-+	out_8(pic_mask,
-+	      in_8(pic_mask) & ~irq_to_pic_bit(cpld_irq));
-+}
-+
-+static struct irq_chip cpld_pic = {
-+	.typename = " CPLD PIC ",
-+	.mask = cpld_mask_irq,
-+	.ack = cpld_mask_irq,
-+	.unmask = cpld_unmask_irq,
++struct mpc512x_clockctl {
++	u32 spmr;		/* System PLL Mode Reg */
++	u32 sccr[2];		/* System Clk Ctrl Reg 1 & 2 */
++	u32 scfr1;		/* System Clk Freq Reg 1 */
++	u32 scfr2;		/* System Clk Freq Reg 2 */
++	u32 reserved;
++	u32 bcr;		/* Bread Crumb Reg */
++	u32 pccr[NRPSC];	/* PSC Clk Ctrl Reg 0-11 */
++	u32 spccr;		/* SPDIF Clk Ctrl Reg */
++	u32 cccr;		/* CFM Clk Ctrl Reg */
++	u32 dccr;		/* DIU Clk Cnfg Reg */
 +};
 +
-+static int
-+cpld_pic_get_irq(int offset, u8 ignore, u8 __iomem *statusp,
-+			    u8 __iomem *maskp)
++struct mpc512x_clockctl __iomem *clockctl;
++
++static int mpc5121_clk_enable(struct clk *clk)
 +{
-+	int cpld_irq;
-+	u8 status = in_8(statusp);
-+	u8 mask = in_8(maskp);
++	unsigned int mask;
 +
-+	/* ignore don't cares and masked irqs */
-+	status |= (ignore | mask);
-+
-+	if (status == 0xff)
-+		return NO_IRQ_IGNORE;
-+
-+	cpld_irq = ffz(status) + offset;
-+
-+	return irq_linear_revmap(cpld_pic_host, cpld_irq);
-+}
-+
-+static void
-+cpld_pic_cascade(unsigned int irq, struct irq_desc *desc)
-+{
-+	irq = cpld_pic_get_irq(0, PCI_IGNORE, &cpld_regs->pci_status,
-+		&cpld_regs->pci_mask);
-+	if (irq != NO_IRQ && irq != NO_IRQ_IGNORE) {
-+		generic_handle_irq(irq);
-+		return;
++	if (clk->flags & CLK_HAS_CTRL) {
++		mask = in_be32(&clockctl->sccr[clk->reg]);
++		mask |= 1 << clk->bit;
++		out_be32(&clockctl->sccr[clk->reg], mask);
 +	}
-+
-+	irq = cpld_pic_get_irq(8, MISC_IGNORE, &cpld_regs->misc_status,
-+		&cpld_regs->misc_mask);
-+	if (irq != NO_IRQ && irq != NO_IRQ_IGNORE) {
-+		generic_handle_irq(irq);
-+		return;
-+	}
-+}
-+
-+static int
-+cpld_pic_host_match(struct irq_host *h, struct device_node *node)
-+{
-+	return cpld_pic_node == node;
-+}
-+
-+static int
-+cpld_pic_host_map(struct irq_host *h, unsigned int virq,
-+			     irq_hw_number_t hw)
-+{
-+	get_irq_desc(virq)->status |= IRQ_LEVEL;
-+	set_irq_chip_and_handler(virq, &cpld_pic, handle_level_irq);
 +	return 0;
 +}
 +
-+static struct
-+irq_host_ops cpld_pic_host_ops = {
-+	.match = cpld_pic_host_match,
-+	.map = cpld_pic_host_map,
++static void mpc5121_clk_disable(struct clk *clk)
++{
++	unsigned int mask;
++
++	if (clk->flags & CLK_HAS_CTRL) {
++		mask = in_be32(&clockctl->sccr[clk->reg]);
++		mask &= ~(1 << clk->bit);
++		out_be32(&clockctl->sccr[clk->reg], mask);
++	}
++}
++
++static unsigned long mpc5121_clk_get_rate(struct clk *clk)
++{
++	if (clk->flags & CLK_HAS_RATE)
++		return clk->rate;
++	else
++		return 0;
++}
++
++static long mpc5121_clk_round_rate(struct clk *clk, unsigned long rate)
++{
++	return rate;
++}
++
++static int mpc5121_clk_set_rate(struct clk *clk, unsigned long rate)
++{
++	return 0;
++}
++
++static int clk_register(struct clk *clk)
++{
++	mutex_lock(&clocks_mutex);
++	list_add(&clk->node, &clocks);
++	mutex_unlock(&clocks_mutex);
++	return 0;
++}
++
++static unsigned long spmf_mult(void)
++{
++	/*
++	 * Convert spmf to multiplier
++	 */
++	static int spmf_to_mult[] = {
++		68, 1, 12, 16,
++		20, 24, 28, 32,
++		36, 40, 44, 48,
++		52, 56, 60, 64
++	};
++	int spmf = (clockctl->spmr >> 24) & 0xf;
++	return spmf_to_mult[spmf];
++}
++
++static unsigned long sysdiv_div_x_2(void)
++{
++	/*
++	 * Convert sysdiv to divisor x 2
++	 * Some divisors have fractional parts so
++	 * multiply by 2 then divide by this value
++	 */
++	static int sysdiv_to_div_x_2[] = {
++		4, 5, 6, 7,
++		8, 9, 10, 14,
++		12, 16, 18, 22,
++		20, 24, 26, 30,
++		28, 32, 34, 38,
++		36, 40, 42, 46,
++		44, 48, 50, 54,
++		52, 56, 58, 62,
++		60, 64, 66,
++	};
++	int sysdiv = (clockctl->scfr2 >> 26) & 0x3f;
++	return sysdiv_to_div_x_2[sysdiv];
++}
++
++static unsigned long ref_to_sys(unsigned long rate)
++{
++	rate *= spmf_mult();
++	rate *= 2;
++	rate /= sysdiv_div_x_2();
++
++	return rate;
++}
++
++static unsigned long sys_to_ref(unsigned long rate)
++{
++	rate *= sysdiv_div_x_2();
++	rate /= 2;
++	rate /= spmf_mult();
++
++	return rate;
++}
++
++static long ips_to_ref(unsigned long rate)
++{
++	int ips_div = (clockctl->scfr1 >> 23) & 0x7;
++
++	rate *= ips_div;	/* csb_clk = ips_clk * ips_div */
++	rate *= 2;		/* sys_clk = csb_clk * 2 */
++	return sys_to_ref(rate);
++}
++
++static unsigned long devtree_getfreq(char *clockname)
++{
++	struct device_node *np;
++	const unsigned int *prop;
++	unsigned int val = 0;
++
++	np = of_find_compatible_node(NULL, NULL, "fsl,mpc5121-immr");
++	if (np) {
++		prop = of_get_property(np, clockname, NULL);
++		if (prop)
++			val = *prop;
++	    of_node_put(np);
++	}
++	return val;
++}
++
++static void ref_clk_calc(struct clk *clk)
++{
++	unsigned long rate;
++
++	rate = devtree_getfreq("bus-frequency");
++	if (rate == 0) {
++		printk(KERN_ERR "No bus-frequency in dev tree\n");
++		clk->rate = 0;
++		return;
++	}
++	clk->rate = ips_to_ref(rate);
++}
++
++static struct clk ref_clk = {
++	.name = "ref_clk",
++	.calc = ref_clk_calc,
 +};
 +
-+void __init
-+mpc5121_ads_cpld_map(void)
++
++static void sys_clk_calc(struct clk *clk)
 +{
-+	struct device_node *np = NULL;
-+
-+	np = of_find_compatible_node(NULL, NULL, "fsl,mpc5121ads-cpld-pic");
-+	if (!np) {
-+		printk(KERN_ERR "CPLD PIC init: can not find cpld-pic node\n");
-+		return;
-+	}
-+
-+	cpld_regs = of_iomap(np, 0);
-+	of_node_put(np);
++	clk->rate = ref_to_sys(ref_clk.rate);
 +}
 +
-+void __init
-+mpc5121_ads_cpld_pic_init(void)
++static struct clk sys_clk = {
++	.name = "sys_clk",
++	.calc = sys_clk_calc,
++};
++
++static void diu_clk_calc(struct clk *clk)
 +{
-+	unsigned int cascade_irq;
-+	struct device_node *np = NULL;
++	int diudiv_x_2 = clockctl->scfr1 & 0xff;
++	unsigned long rate;
 +
-+	pr_debug("cpld_ic_init\n");
++	rate = sys_clk.rate;
 +
-+	np = of_find_compatible_node(NULL, NULL, "fsl,mpc5121ads-cpld-pic");
-+	if (!np) {
-+		printk(KERN_ERR "CPLD PIC init: can not find cpld-pic node\n");
-+		return;
++	rate *= 2;
++	rate /= diudiv_x_2;
++
++	clk->rate = rate;
++}
++
++static void half_clk_calc(struct clk *clk)
++{
++	clk->rate = clk->parent->rate / 2;
++}
++
++static void generic_div_clk_calc(struct clk *clk)
++{
++	int div = (clockctl->scfr1 >> clk->div_shift) & 0x7;
++
++	clk->rate = clk->parent->rate / div;
++}
++
++static void unity_clk_calc(struct clk *clk)
++{
++	clk->rate = clk->parent->rate;
++}
++
++static struct clk csb_clk = {
++	.name = "csb_clk",
++	.calc = half_clk_calc,
++	.parent = &sys_clk,
++};
++
++static void e300_clk_calc(struct clk *clk)
++{
++	int spmf = (clockctl->spmr >> 16) & 0xf;
++	int ratex2 = clk->parent->rate * spmf;
++
++	clk->rate = ratex2 / 2;
++}
++
++static struct clk e300_clk = {
++	.name = "e300_clk",
++	.calc = e300_clk_calc,
++	.parent = &csb_clk,
++};
++
++static struct clk ips_clk = {
++	.name = "ips_clk",
++	.calc = generic_div_clk_calc,
++	.parent = &csb_clk,
++	.div_shift = 23,
++};
++
++/*
++ * Clocks controlled by SCCR1 (.reg = 0)
++ */
++static struct clk lpc_clk = {
++	.name = "lpc_clk",
++	.flags = CLK_HAS_CTRL,
++	.reg = 0,
++	.bit = 30,
++	.calc = generic_div_clk_calc,
++	.parent = &ips_clk,
++	.div_shift = 11,
++};
++
++static struct clk nfc_clk = {
++	.name = "nfc_clk",
++	.flags = CLK_HAS_CTRL,
++	.reg = 0,
++	.bit = 29,
++	.calc = generic_div_clk_calc,
++	.parent = &ips_clk,
++	.div_shift = 8,
++};
++
++static struct clk pata_clk = {
++	.name = "pata_clk",
++	.flags = CLK_HAS_CTRL,
++	.reg = 0,
++	.bit = 28,
++	.calc = unity_clk_calc,
++	.parent = &ips_clk,
++};
++
++/*
++ * PSC clocks (bits 27 - 16)
++ * are setup elsewhere
++ */
++
++static struct clk sata_clk = {
++	.name = "sata_clk",
++	.flags = CLK_HAS_CTRL,
++	.reg = 0,
++	.bit = 14,
++	.calc = unity_clk_calc,
++	.parent = &ips_clk,
++};
++
++static struct clk fec_clk = {
++	.name = "fec_clk",
++	.flags = CLK_HAS_CTRL,
++	.reg = 0,
++	.bit = 13,
++	.calc = unity_clk_calc,
++	.parent = &ips_clk,
++};
++
++static struct clk pci_clk = {
++	.name = "pci_clk",
++	.flags = CLK_HAS_CTRL,
++	.reg = 0,
++	.bit = 11,
++	.calc = generic_div_clk_calc,
++	.parent = &csb_clk,
++	.div_shift = 20,
++};
++
++/*
++ * Clocks controlled by SCCR2 (.reg = 1)
++ */
++static struct clk diu_clk = {
++	.name = "diu_clk",
++	.flags = CLK_HAS_CTRL,
++	.reg = 1,
++	.bit = 31,
++	.calc = diu_clk_calc,
++};
++
++static struct clk axe_clk = {
++	.name = "axe_clk",
++	.flags = CLK_HAS_CTRL,
++	.reg = 1,
++	.bit = 30,
++	.calc = unity_clk_calc,
++	.parent = &csb_clk,
++};
++
++static struct clk usb1_clk = {
++	.name = "usb1_clk",
++	.flags = CLK_HAS_CTRL,
++	.reg = 1,
++	.bit = 28,
++	.calc = unity_clk_calc,
++	.parent = &csb_clk,
++};
++
++static struct clk usb2_clk = {
++	.name = "usb2_clk",
++	.flags = CLK_HAS_CTRL,
++	.reg = 1,
++	.bit = 27,
++	.calc = unity_clk_calc,
++	.parent = &csb_clk,
++};
++
++static struct clk i2c_clk = {
++	.name = "i2c_clk",
++	.flags = CLK_HAS_CTRL,
++	.reg = 1,
++	.bit = 26,
++	.calc = unity_clk_calc,
++	.parent = &ips_clk,
++};
++
++static struct clk mscan_clk = {
++	.name = "mscan_clk",
++	.flags = CLK_HAS_CTRL,
++	.reg = 1,
++	.bit = 25,
++	.calc = unity_clk_calc,
++	.parent = &ips_clk,
++};
++
++static struct clk sdhc_clk = {
++	.name = "sdhc_clk",
++	.flags = CLK_HAS_CTRL,
++	.reg = 1,
++	.bit = 24,
++	.calc = unity_clk_calc,
++	.parent = &ips_clk,
++};
++
++static struct clk mbx_bus_clk = {
++	.name = "mbx_bus_clk",
++	.flags = CLK_HAS_CTRL,
++	.reg = 1,
++	.bit = 22,
++	.calc = half_clk_calc,
++	.parent = &csb_clk,
++};
++
++static struct clk mbx_clk = {
++	.name = "mbx_clk",
++	.flags = CLK_HAS_CTRL,
++	.reg = 1,
++	.bit = 21,
++	.calc = unity_clk_calc,
++	.parent = &csb_clk,
++};
++
++static struct clk mbx_3d_clk = {
++	.name = "mbx_3d_clk",
++	.flags = CLK_HAS_CTRL,
++	.reg = 1,
++	.bit = 20,
++	.calc = generic_div_clk_calc,
++	.parent = &mbx_bus_clk,
++	.div_shift = 14,
++};
++
++static void psc_mclk_in_calc(struct clk *clk)
++{
++	clk->rate = devtree_getfreq("psc_mclk_in");
++	if (!clk->rate)
++		clk->rate = 25000000;
++}
++
++static struct clk psc_mclk_in = {
++	.name = "psc_mclk_in",
++	.calc = psc_mclk_in_calc,
++};
++
++static struct clk spdif_txclk = {
++	.name = "spdif_txclk",
++	.flags = CLK_HAS_CTRL,
++	.reg = 1,
++	.bit = 23,
++};
++
++static struct clk spdif_rxclk = {
++	.name = "spdif_rxclk",
++	.flags = CLK_HAS_CTRL,
++	.reg = 1,
++	.bit = 23,
++};
++
++static void ac97_clk_calc(struct clk *clk)
++{
++	/* ac97 bit clock is always 24.567 MHz */
++	clk->rate = 24567000;
++}
++
++static struct clk ac97_clk = {
++	.name = "ac97_clk_in",
++	.calc = ac97_clk_calc,
++};
++
++struct clk *rate_clks[] = {
++	&ref_clk,
++	&sys_clk,
++	&diu_clk,
++	&csb_clk,
++	&e300_clk,
++	&ips_clk,
++	&fec_clk,
++	&sata_clk,
++	&pata_clk,
++	&nfc_clk,
++	&lpc_clk,
++	&mbx_bus_clk,
++	&mbx_clk,
++	&mbx_3d_clk,
++	&axe_clk,
++	&usb1_clk,
++	&usb2_clk,
++	&i2c_clk,
++	&mscan_clk,
++	&sdhc_clk,
++	&pci_clk,
++	&psc_mclk_in,
++	&spdif_txclk,
++	&spdif_rxclk,
++	&ac97_clk,
++	NULL
++};
++
++static void rate_clk_init(struct clk *clk)
++{
++	if (clk->calc) {
++		clk->calc(clk);
++		clk->flags |= CLK_HAS_RATE;
++		clk_register(clk);
++	} else {
++		printk(KERN_WARNING
++		       "Could not initialize clk %s without a calc routine\n",
++		       clk->name);
 +	}
++}
 +
-+	if (!cpld_regs)
-+		goto end;
++static void rate_clks_init(void)
++{
++	struct clk **cpp, *clk;
 +
-+	cascade_irq = irq_of_parse_and_map(np, 0);
-+	if (cascade_irq == NO_IRQ)
-+		goto end;
++	cpp = rate_clks;
++	while ((clk = *cpp++))
++		rate_clk_init(clk);
++}
++
++/*
++ * There are two clk enable registers with 32 enable bits each
++ * psc clocks and device clocks are all stored in dev_clks
++ */
++struct clk dev_clks[2][32];
++
++/*
++ * Given a psc number return the dev_clk
++ * associated with it
++ */
++static struct clk *psc_dev_clk(int pscnum)
++{
++	int reg, bit;
++	struct clk *clk;
++
++	reg = 0;
++	bit = 27 - pscnum;
++
++	clk = &dev_clks[reg][bit];
++	clk->reg = 0;
++	clk->bit = bit;
++	return clk;
++}
++
++/*
++ * PSC clock rate calculation
++ */
++static void psc_calc_rate(struct clk *clk, int pscnum, struct device_node *np)
++{
++	unsigned long mclk_src = sys_clk.rate;
++	unsigned long mclk_div;
 +
 +	/*
-+	 * statically route touch screen pendown through 1
-+	 * and ignore it here
-+	 * route all others through our cascade irq
++	 * Can only change value of mclk divider
++	 * when the divider is disabled.
++	 *
++	 * Zero is not a valid divider so minimum
++	 * divider is 1
++	 *
++	 * disable/set divider/enable
 +	 */
-+	out_8(&cpld_regs->route, 0xfd);
-+	out_8(&cpld_regs->pci_mask, 0xff);
-+	/* unmask pci ints in misc mask */
-+	out_8(&cpld_regs->misc_mask, ~(MISC_IGNORE));
++	out_be32(&clockctl->pccr[pscnum], 0);
++	out_be32(&clockctl->pccr[pscnum], 0x00020000);
++	out_be32(&clockctl->pccr[pscnum], 0x00030000);
 +
-+	cpld_pic_node = of_node_get(np);
-+
-+	cpld_pic_host =
-+	    irq_alloc_host(np, IRQ_HOST_MAP_LINEAR, 16, &cpld_pic_host_ops, 16);
-+	if (!cpld_pic_host) {
-+		printk(KERN_ERR "CPLD PIC: failed to allocate irq host!\n");
-+		goto end;
++	if (clockctl->pccr[pscnum] & 0x80) {
++		clk->rate = spdif_rxclk.rate;
++		return;
 +	}
 +
-+	set_irq_chained_handler(cascade_irq, cpld_pic_cascade);
-+end:
-+	of_node_put(np);
++	switch ((clockctl->pccr[pscnum] >> 14) & 0x3) {
++	case 0:
++		mclk_src = sys_clk.rate;
++		break;
++	case 1:
++		mclk_src = ref_clk.rate;
++		break;
++	case 2:
++		mclk_src = psc_mclk_in.rate;
++		break;
++	case 3:
++		mclk_src = spdif_txclk.rate;
++		break;
++	}
++
++	mclk_div = ((clockctl->pccr[pscnum] >> 17) & 0x7fff) + 1;
++	clk->rate = mclk_src / mclk_div;
 +}
++
++/*
++ * Find all psc nodes in device tree and assign a clock
++ * with name "psc%d_mclk" and dev pointing at the device
++ * returned from of_find_device_by_node
++ */
++static void psc_clks_init(void)
++{
++	struct device_node *np;
++	const u32 *cell_index;
++	struct of_device *ofdev;
++
++	for_each_compatible_node(np, NULL, "fsl,mpc5121-psc") {
++		cell_index = of_get_property(np, "cell-index", NULL);
++		if (cell_index) {
++			int pscnum = *cell_index;
++			struct clk *clk = psc_dev_clk(pscnum);
++
++			clk->flags = CLK_HAS_RATE | CLK_HAS_CTRL;
++			ofdev = of_find_device_by_node(np);
++			clk->dev = &ofdev->dev;
++			/*
++			 * AC97 is special rate clock does
++			 * not go through normal path
++			 */
++			if (strcmp("ac97", np->name) == 0)
++				clk->rate = ac97_clk.rate;
++			else
++				psc_calc_rate(clk, pscnum, np);
++			sprintf(clk->name, "psc%d_mclk", pscnum);
++			clk_register(clk);
++			clk_enable(clk);
++		}
++	}
++}
++
++static struct clk_interface mpc5121_clk_functions = {
++	.clk_get		= mpc5121_clk_get,
++	.clk_enable		= mpc5121_clk_enable,
++	.clk_disable		= mpc5121_clk_disable,
++	.clk_get_rate		= mpc5121_clk_get_rate,
++	.clk_put		= mpc5121_clk_put,
++	.clk_round_rate		= mpc5121_clk_round_rate,
++	.clk_set_rate		= mpc5121_clk_set_rate,
++	.clk_set_parent		= NULL,
++	.clk_get_parent		= NULL,
++};
++
++static int
++mpc5121_clk_init(void)
++{
++	struct device_node *np;
++
++	np = of_find_compatible_node(NULL, NULL, "fsl,mpc5121-clock");
++	if (np) {
++		clockctl = of_iomap(np, 0);
++		of_node_put(np);
++	}
++
++	if (!clockctl) {
++		printk(KERN_ERR "Could not map clock control registers\n");
++		return 0;
++	}
++
++	rate_clks_init();
++	psc_clks_init();
++
++	/* leave clockctl mapped forever */
++	/*iounmap(clockctl); */
++	DEBUG_CLK_DUMP();
++	clocks_initialized++;
++	clk_functions = mpc5121_clk_functions;
++	return 0;
++}
++
++
++arch_initcall(mpc5121_clk_init);
 -- 
