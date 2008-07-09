@@ -2,8 +2,8 @@ Return-Path: <johannes@sipsolutions.net>
 Received: from sipsolutions.net (xc.sipsolutions.net [83.246.72.84])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 6B83CDDFA4
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 Jul 2008 21:34:30 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id B1BD3DDFDB
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 Jul 2008 21:39:50 +1000 (EST)
 Subject: Re: PReP residual to device-tree converter
 From: Johannes Berg <johannes@sipsolutions.net>
 To: Paul Mackerras <paulus@samba.org>
@@ -13,9 +13,9 @@ References: <18490.22494.511244.977267@cargo.ozlabs.ibm.com>
 	<1215602952.3670.39.camel@johannes.berg>
 Content-Type: multipart/signed; micalg=pgp-sha1;
 	protocol="application/pgp-signature";
-	boundary="=-rMwxczrMO/efWtDWvbWW"
-Date: Wed, 09 Jul 2008 13:33:41 +0200
-Message-Id: <1215603221.3670.41.camel@johannes.berg>
+	boundary="=-Hjifaj30Rtee14q6aRyM"
+Date: Wed, 09 Jul 2008 13:39:01 +0200
+Message-Id: <1215603541.3670.44.camel@johannes.berg>
 Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org, Milton Miller <miltonm@bga.com>,
 	David Gibson <dwg@au1.ibm.com>
@@ -29,7 +29,7 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-rMwxczrMO/efWtDWvbWW
+--=-Hjifaj30Rtee14q6aRyM
 Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
@@ -45,39 +45,58 @@ On Wed, 2008-07-09 at 13:29 +0200, Johannes Berg wrote:
 >=20
 > Milton wanted iomem and ioports, I didn't manage to get userspace
 > working so I printed them in the kernel (hopefully correctly):
->=20
-> iomem:
-> c0000000-feffffff : PCI host bridge
->   c80000f0-c80000ff : 0000:00:01.0
 
-Oh and if I attach a virtual ne2k_pci, it changes:
+I printed them far too early. After letting it probe drivers first, I
+get:
 
+iomem:
 c0000000-feffffff : PCI host bridge
+  c0000000-c000000f : 0000:00:03.0
   c1100000-c110000f : 0000:00:02.0
   c80000f0-c80000ff : 0000:00:01.0
 
+ioport:
+00000000-007fffff : PCI host bridge
+  00000000-0000001f : dma1
+  00000020-00000021 : 8259 (master)
+  00000040-0000005f : timer
+  00000080-0000008f : dma page reg
+  000000a0-000000a1 : 8259 (slave)
+  000000c0-000000df : dma2
+  000001f0-000001f7 : ide0
+  000003f2-000003f5 : floppy
+  000003f6-000003f6 : ide0
+  000003f7-000003f7 : floppy DIR
+  000003f8-000003ff : serial
+  000004d0-000004d1 : 8259 edge control
+
+which was with usb too:
+
+qemu-system-ppc -initrd initrd  -kernel linux/arch/ppc/boot/images/zImage.p=
+rep -M prep -cpu 604 -serial stdio -net nic,model=3Dne2k_pci -usb
+
 johannes
 
---=-rMwxczrMO/efWtDWvbWW
+--=-Hjifaj30Rtee14q6aRyM
 Content-Type: application/pgp-signature; name=signature.asc
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Comment: Johannes Berg (powerbook)
 
-iQIcBAABAgAGBQJIdKIRAAoJEKVg1VMiehFYm/wQALuAtkhScqjiREFykc76fzTq
-Ehbaw4niSJgj5gutQ2kO1fHMp5Xe7ZmmnY1y9EgpzchiD/aZxbskYFBjkLTik0kQ
-OY6bmDQ0MGVHl3I4W5T/VoM52sD7/NDk9NQ8eLfXNKD9Pjxu+C4REM4LPEhm+cb9
-zm5649rUFX5kWuqooj3bNUbwN24k56WLYq0yRj+Tq/ITGCz3CUPTTYXQIXAg0hhP
-oKyCrWu3eRcbEDL7d0cwyTSmVQBkktQushLQxCkw3U6CWOQvyLWai7z2BC7v/Nwe
-+10E2oPI2f+/iO3ni77wttdbAv9TFvYLJMaHoXNS7IA5rIUbmFUTXt66Z13NHIre
-0Aw+ZA2FVGeJKpfEPbWr/9RyLphlRrDIFyhgIbxTioHHsvnf989OKaZES/wua4WO
-pm/On06tA6kvY2jon/HzaHTUs6vhgIY/cdc87023jyjscuJECNguk1RIz/+1fXYU
-gkBWWb+ME9rfDASCPbUE3s3KRRo42nP79oQ1L+Bw4WHMZ2DeWfTpIkSKOb9gsOm9
-lWdxHsA3Iu9ABruxgS3kTvJQakp/7twpTRrAN4QynqqnhzSmHqWwO9HeLWMhsS3m
-JoV6EWsjcnJjXYPE76gcoiU1YK9P7pPwl2gOalHuunJJ+pGYNzaqcGNVb1v+espg
-IANg4Rt9pSqaCp5zmdiz
-=5AkQ
+iQIcBAABAgAGBQJIdKNRAAoJEKVg1VMiehFYQYgQAKq5RUSpMGaQs9TZbx1ukCZE
+xo7Fl+y1ljxqtEZrAI3LKtN/5i0chkiBoUobW1tOfA4rau4RpO24H4P9FO2xMWth
+NRLGZE994WcUw3H/Rkmb23BsEzIKq34O+HjpGBndTdvIaw+X5Sduwf8JP1wP3NN2
+v9zyCvTBZLU9VVqIqff696CjTn77t1+nT7i2tReqBXwYNtBHlcH96klqKf4y+enQ
+hYdQom63Zq6SigXNz3NfUHtGzTsPJ0dK9TgYqTlmMgqr9Iru3rA8qUKqv31catgW
+R/5rbbl08utLzQqWqFT7QHRfd7Hy46hqQWEx+SqXndC+TNfT3SqwJ3KC7uoXQiua
+ecGSskeKgZ8NgaCc82T/vs/tQXq2GBxugik9nMYUM4AQ2OwZ8FkvBECihWAYslXJ
+3vdqDKouNSiZ0dWCoL9L5Mr99PIYa38HWGAfXrdKk6/9f8CoHGn6hXa4Dbi3jcUR
+oVLYiKb7Naio53VCh9GTRqoKYyK592v+kvn7wQHIYWiezuwXMhfP366qWg/MMvoG
+KMns2/KZhbbUboREpt7aJLNy61HYBaQ9s4VW9BUU80LJodxtNW28dcHPUE7g7ifj
+m7pNyEIU7I/LyfCF13Nk1nMhBvLakAuyvrhYqSn/BJkG02/PNWEeNguuVw2GYux2
+T9ameVAuBp2x/VkOx/vj
+=cBA8
 -----END PGP SIGNATURE-----
 
---=-rMwxczrMO/efWtDWvbWW--
+--=-Hjifaj30Rtee14q6aRyM--
