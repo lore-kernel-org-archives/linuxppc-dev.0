@@ -1,22 +1,25 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from rv-out-0506.google.com (rv-out-0506.google.com [209.85.198.230])
-	by ozlabs.org (Postfix) with ESMTP id 91801DDF00
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 Jul 2008 10:54:14 +1000 (EST)
-Received: by rv-out-0506.google.com with SMTP id f6so2657637rvb.9
-	for <linuxppc-dev@ozlabs.org>; Tue, 08 Jul 2008 17:54:12 -0700 (PDT)
-Date: Tue, 8 Jul 2008 18:54:09 -0600
-From: Grant Likely <grant.likely@secretlab.ca>
-To: Andre Schwarz <andre.schwarz@matrix-vision.de>
-Subject: Re: [PATCH v2] Add MPC5200B base board mvBC-P
-Message-ID: <20080709005409.GD12502@secretlab.ca>
-References: <4871D065.8080709@matrix-vision.de>
-	<20080708034427.GD1549@yookeroo.seuss>
-	<48732588.8020907@matrix-vision.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <48732588.8020907@matrix-vision.de>
-Sender: Grant Likely <glikely@secretlab.ca>
-Cc: linux-ppc list <linuxppc-dev@ozlabs.org>
+Return-Path: <Jason.Jin@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 5E432DDE20
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 Jul 2008 11:30:04 +1000 (EST)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	m691TwmU022376
+	for <linuxppc-dev@ozlabs.org>; Tue, 8 Jul 2008 18:29:58 -0700 (MST)
+Received: from zch01exm21.fsl.freescale.net (zch01exm21.ap.freescale.net
+	[10.192.129.205])
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id m691Tt6f028671
+	for <linuxppc-dev@ozlabs.org>; Tue, 8 Jul 2008 20:29:56 -0500 (CDT)
+From: Jason Jin <Jason.jin@freescale.com>
+To: galak@kernel.crashing.org
+Subject: [PATCH] Minor fixes for 85xxds and 8536ds board.
+Date: Wed,  9 Jul 2008 09:27:35 +0800
+Message-Id: <1215566855-6198-1-git-send-email-Jason.jin@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, Jason Jin <Jason.jin@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,44 +29,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Jul 08, 2008 at 10:30:00AM +0200, Andre Schwarz wrote:
-> David Gibson schrieb:
-> > On Mon, Jul 07, 2008 at 10:14:29AM +0200, Andre Schwarz wrote:
-> >   
-> >> The mvBlueCOUGAR-P is a MPC5200B based camera system with Intel Gigabit ethernet
-> >> controller (using e1000). It's just another MPC5200_simple board.
-> >>     
-> >
-> > [snip]
-> >   
-> >> +		timer@600 {	// General Purpose Timer
-> >> +			compatible = "fsl,mpc5200b-gpt","fsl,mpc5200-gpt";
-> >> +			reg = <0x600 0x10>;
-> >> +			interrupts = <1 9 0>;
-> >> +			interrupt-parent = <&mpc5200_pic>;
-> >> +			fsl,has-wdt;
-> >> +		};
-> >> +
-> >> +		timer@610 {	// General Purpose Timer
-> >> +			compatible = "fsl,mpc5200b-gpt","fsl,mpc5200-gpt";
-> >> +			cell-index = <1>;
-> >>     
-> >
-> > What shared resource is this cell-index value used to index?
-> >
-> > Also why does it not appear on the timer@600 but does on all the
-> > others.
-> >
-> >   
-> Sorry - it's a copy paste problem. At first I only used timer0, i.e.
-> this is the original entry.
-> After Grant wanting me to have a look at the lite5200b.dts I copied over
-> the rest of the dts nodes I also have on my board. On lite5200b.dts the
-> cell-index is defined.
-> 
-> If this is incorrect I'll remove it.
-> Is cell-index inappropriate for the timer node ?
+Remove the "uninitialized use" compile warning and
+avoid potential runtime issue.
 
-Yes, you can drop cell-index for fsl,mpc5200-gpt nodes.
+Signed-off-by: Jason Jin <Jason.jin@freescale.com>
+---
+ arch/powerpc/platforms/85xx/mpc8536_ds.c |    2 +-
+ arch/powerpc/platforms/85xx/mpc85xx_ds.c |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-g.
+diff --git a/arch/powerpc/platforms/85xx/mpc8536_ds.c b/arch/powerpc/platforms/85xx/mpc8536_ds.c
+index 9943816..69e2129 100644
+--- a/arch/powerpc/platforms/85xx/mpc8536_ds.c
++++ b/arch/powerpc/platforms/85xx/mpc8536_ds.c
+@@ -40,7 +40,7 @@ void __init mpc8536_ds_pic_init(void)
+ 	struct resource r;
+ 	struct device_node *np;
+ 
+-	np = of_find_node_by_type(np, "open-pic");
++	np = of_find_node_by_type(NULL, "open-pic");
+ 	if (np == NULL) {
+ 		printk(KERN_ERR "Could not find open-pic node\n");
+ 		return;
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ds.c b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
+index 8b2d63d..25f41cd 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_ds.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
+@@ -64,7 +64,7 @@ void __init mpc85xx_ds_pic_init(void)
+ 	int cascade_irq;
+ #endif
+ 
+-	np = of_find_node_by_type(np, "open-pic");
++	np = of_find_node_by_type(NULL, "open-pic");
+ 	if (np == NULL) {
+ 		printk(KERN_ERR "Could not find open-pic node\n");
+ 		return;
+-- 
+1.5.4
