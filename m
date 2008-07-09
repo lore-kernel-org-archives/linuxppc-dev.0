@@ -1,20 +1,18 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 8FCECDE3BC
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 Jul 2008 23:08:50 +1000 (EST)
-Message-Id: <BB630010-55E8-452C-9C99-0203634C4A23@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Kim Phillips <kim.phillips@freescale.com>
-In-Reply-To: <20080708191333.9eb5310a.kim.phillips@freescale.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v926)
-Subject: Re: [PATCH v4] powerpc: update crypto node definition and device tree
-	instances
-Date: Wed, 9 Jul 2008 08:08:30 -0500
-References: <20080708191333.9eb5310a.kim.phillips@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <jdl@jdl.com>
+Received: from jdl.com (jdl.com [208.123.74.7])
+	by ozlabs.org (Postfix) with ESMTP id CEA78DE3C4
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 Jul 2008 23:09:17 +1000 (EST)
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: libfdt: Increase namespace-pollution paranoia 
+In-reply-to: <1F3AE758-B99A-457F-A74D-6D12DAF74115@kernel.crashing.org> 
+References: <20080709041024.GB29648@yookeroo.seuss>
+	<1215603723.13186.0.camel@weaponx>
+	<1F3AE758-B99A-457F-A74D-6D12DAF74115@kernel.crashing.org>
+Date: Wed, 09 Jul 2008 08:09:02 -0500
+From: Jon Loeliger <jdl@jdl.com>
+Message-Id: <E1KGZPq-0003YZ-T5@jdl.com>
+Cc: ppc-dev list <linuxppc-dev@ozlabs.org>,
+	David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,23 +22,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+> 
+> > On a slightly unrelated note, are you planning to sync the in-kernel
+> > dtc/libfdt version with the upstream version anytime soon?
+> 
+> I know jon put an -rc, not sure if he plans to pick up the slew of  
+> patches for the next -rc or the next release, but it would be good to  
+> resync the in-kernel version for 2.6.27.
+> 
+> - k
 
-On Jul 8, 2008, at 7:13 PM, Kim Phillips wrote:
+My (DTC) plan is to apply the single patch with some
+include file fixes, and release that.
 
-> delete obsolete device-type property, delete model property
-> (use compatible property instead), prepend "fsl," to Freescale
-> specific properties. Add nodes to device trees that are missing them,
-> and fix broken property values in other trees.
->
-> Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
-> ---
-> changes from v3: sec.txt in new place following Kumar's latest
-> preference, cleaned up interrupt description and removed
-> interrupt-parent in documentation.
+I'll line the slew of patches up for the following release.
 
-applied.
-
-I fixed mpc832x_rdb.dts and mpc8536ds.dts as there were minor issues  
-related to the interrupt props in those nodes.
-
-- k
+jdl
