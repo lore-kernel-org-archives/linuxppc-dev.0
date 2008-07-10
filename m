@@ -1,19 +1,20 @@
-Return-Path: <miltonm@bga.com>
-Received: from ruth.realtime.net (mercury.realtime.net [205.238.132.86])
-	by ozlabs.org (Postfix) with ESMTP id 507B8DDF3A
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jul 2008 08:10:00 +1000 (EST)
-In-Reply-To: <48768018.2070704@hhs.nl>
-References: <for-27-patch1-0@bga.com> <48768018.2070704@hhs.nl>
-Mime-Version: 1.0 (Apple Message framework v624)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <acca8e14e769b2feadee19f1f7448438@bga.com>
-From: Milton Miller <miltonm@bga.com>
-Subject: Re: [lm-sensors] [RFC] (almost) booting allyesconfig -- please don't
-	poke super-io without request_region
-Date: Thu, 10 Jul 2008 16:51:33 -0500
-To: Hans de Goede <j.w.r.degoede@hhs.nl>
-Cc: linuxppc-dev@ozlabs.org, Samuel Ortiz <samuel@sortiz.org>,
-	linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org
+Return-Path: <Paul.Gortmaker@windriver.com>
+Received: from mail.wrs.com (mail.windriver.com [147.11.1.11])
+	by ozlabs.org (Postfix) with ESMTP id E257BDDF70
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jul 2008 08:10:28 +1000 (EST)
+Message-ID: <48768A7B.1000506@windriver.com>
+Date: Thu, 10 Jul 2008 18:17:31 -0400
+From: Paul Gortmaker <paul.gortmaker@windriver.com>
+MIME-Version: 1.0
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH] mpc7448: add alias list to DTS, clean out old chosen node
+References: <1215721295-17555-1-git-send-email-paul.gortmaker@windriver.com>	<48766E4D.5060607@freescale.com>
+	<48767696.6090603@windriver.com> <48767636.3090906@freescale.com>
+	<487679B1.3040900@freescale.com> <48767AD1.9050708@freescale.com>
+	<4876823A.8010005@windriver.com> <487682E4.7060701@freescale.com>
+In-Reply-To: <487682E4.7060701@freescale.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,67 +24,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Jul 10, 2008, at 4:33 PM, Hans de Goede wrote:
-
-> Milton Miller wrote:
->> After the following patch to mark the isa region busy and applying a 
->> few
->> patches[1], I was able to kexec boot into an all-yes-config kernel 
->> from linux-next, with the following KCONFIG_ALLCONFIG file:
-...
->> While the first two might not be required, and the third is just
->> selecting the right platform, it would be nice to get the drivers
->> to play as well as the rest of the kernel.
->> The drivers all are for super-io chips, either irda/FIR drivers or 
->> hwmon,
->> and poke at isa ports without checking request_region.
+Scott Wood wrote:
+> Paul Gortmaker wrote:
+>> Well, for the mpc7448hpc2, I can say for sure that there are
+>> chosen-duplicating versions of u-boot 1.3.1 in use -- since
+>> there wasn't a prebuilt, validated image newer than 1.1.3(?)
+>> available anywhere back some 6 months ago, I'd built 1.3.1
+>> and made it available with our 2.6.21 kernel.
 >
-> Erm,
+> OK, if that version's in widespread use it probably makes sense to 
+> remove the chosen node.
+
+Sounds good - thanks.
+
 >
-> The superio sensor drivers only poke the superio chip registers 
-> without request region during the probe phase, iow they try to detect 
-> the chip, using a widely document and standardized (part of isa pnp 
-> AFAIK) procedure on standardized ports.
+>> If all the other boards run cuboot without console output,
 >
-> Let me try to explain a bit about superio chips, they have 2 superio 
-> control registers (an index and data register) with which things like 
-> a manufacturer and device id can be read, besides these id registers 
-> they also have a set of registers with config for different logical 
-> devices. Once the id is matched, the driver knows which logical device 
-> config to read, reads a (different) isa base address + range from the 
-> logical device config, and then does a request_region on the region 
-> actually used by the logical device.
+> They don't *all* run without output -- see the 8xx, 82xx, and 4xx boards.
+
+Yep, saw those when grepping around.  My "all" was implicitly still
+referring to the newer 83xx/85xx/(86xx) reference boards, and
+whether it made sense to be adding chosen nodes to those so the
+cuImage had console output too -- if folks thought that was a better
+route, then I could see leaving the 7448 as-is, adding the nodes
+to the other boards, and just dealing with educating folks on the
+chosen-duplicating version issue as it comes up.
+
+Paul.
+
+
 >
-> The superio control registers are thus a sort of pci configuration 
-> space if you want, doing a request_region on these is not such a good 
-> idea, as multiple drivers (for different logical devices within the 
-> superio device) may use these, so trying to gain exclusive access will 
-> lead to troubles.
+> -Scott
 >
-> I hope with this info about the problem space, that you maybe have a 
-> suggestion on howto fix this?
->
-
-My point is that they are probing without even knowing that a such a IO 
-range exists.
-
-These are the only drivers left in the tree that still do this.  (At 
-least that are not
-blocked on a powerpc allyesconfig for 64-bit, !CONFIG_VIRT_TO_BUS).
-
-One could make a superio driver, and create sub-devices for the IR, 
-I2C, floppy, parallel, etc
-nodes.
-
-I would even accept a check_region (horrors!), it would impove the 
-situation.
-
-But most other drivers do this by request_region, probe, then release 
-the region afterwards.
-
-Besides, one could argue the superio region should be requested while 
-probing, to prevent other cpus from poking at the super io chip at the 
-same time.   Think of it as missing locking.
-
-milton
