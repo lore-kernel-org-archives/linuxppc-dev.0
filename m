@@ -1,22 +1,24 @@
-Return-Path: <miltonm@sullivan.realtime.net>
-Received: from sullivan.realtime.net (sullivan.realtime.net [205.238.132.226])
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B6D77DDF8C
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jul 2008 07:40:07 +1000 (EST)
-Date: Thu, 10 Jul 2008 16:07:57 -0500 (CDT)
-From: Milton Miller <miltonm@bga.com>
-Sender: Milton Miller <miltonm@realtime.net>
-To: Ingo Molnar <mingo@redhat.com>, Rusty Russell <rusty@rustcorp.com.au>
-In-Reply-To: <200807081801.38026.rusty@rustcorp.com.au>
-References: <200807081801.38026.rusty@rustcorp.com.au>,
-	<200807081750.55536.rusty@rustcorp.com.au>,
-	<200807081756.02838.rusty@rustcorp.com.au>,
-	<200807081756.47140.rusty@rustcorp.com.au>
-Message-Id: <for-27-patch0-1@bga.com>
-Subject: [PATCH -next-20080709] fixup stop_machine use cpu mask vs ftrace
-Cc: linuxppc-dev@ozlabs.org, linux-next@vger.kernel.org,
-	linux-kernel@vger.kernel.org
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id DD5CBDDEDD
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jul 2008 07:46:10 +1000 (EST)
+Message-ID: <487682E4.7060701@freescale.com>
+Date: Thu, 10 Jul 2008 16:45:08 -0500
+From: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
+To: Paul Gortmaker <paul.gortmaker@windriver.com>
+Subject: Re: [PATCH] mpc7448: add alias list to DTS, clean out old chosen node
+References: <1215721295-17555-1-git-send-email-paul.gortmaker@windriver.com>	<48766E4D.5060607@freescale.com>
+	<48767696.6090603@windriver.com> <48767636.3090906@freescale.com>
+	<487679B1.3040900@freescale.com> <48767AD1.9050708@freescale.com>
+	<4876823A.8010005@windriver.com>
+In-Reply-To: <4876823A.8010005@windriver.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,45 +28,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Paul Gortmaker wrote:
+> Well, for the mpc7448hpc2, I can say for sure that there are
+> chosen-duplicating versions of u-boot 1.3.1 in use -- since
+> there wasn't a prebuilt, validated image newer than 1.1.3(?)
+> available anywhere back some 6 months ago, I'd built 1.3.1
+> and made it available with our 2.6.21 kernel.
 
+OK, if that version's in widespread use it probably makes sense to 
+remove the chosen node.
 
-Hi Rusty, Ingo.
+> If all the other boards run cuboot without console output,
 
-Rusty's patch [PATCH 3/3] stop_machine: use cpu mask rather than magic numbers
-didn't find kernel/trace/ftrace.c in -next, causing an immediate almost NULL
-pointer dereference in ftrace_dynamic_init.
+They don't *all* run without output -- see the 8xx, 82xx, and 4xx boards.
 
-
-Signed-off-by: Milton Miller <miltonm@bga.com>
-
-diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
-index 0f271c4..c29acb5 100644
---- a/kernel/trace/ftrace.c
-+++ b/kernel/trace/ftrace.c
-@@ -587,7 +587,7 @@ static int __ftrace_modify_code(void *data)
- 
- static void ftrace_run_update_code(int command)
- {
--	stop_machine_run(__ftrace_modify_code, &command, NR_CPUS);
-+	stop_machine_run(__ftrace_modify_code, &command, NULL);
- }
- 
- void ftrace_disable_daemon(void)
-@@ -787,7 +787,7 @@ static int ftrace_update_code(void)
- 	    !ftrace_enabled || !ftraced_trigger)
- 		return 0;
- 
--	stop_machine_run(__ftrace_update_code, NULL, NR_CPUS);
-+	stop_machine_run(__ftrace_update_code, NULL, NULL);
- 
- 	return 1;
- }
-@@ -1564,7 +1564,7 @@ static int __init ftrace_dynamic_init(void)
- 
- 	addr = (unsigned long)ftrace_record_ip;
- 
--	stop_machine_run(ftrace_dyn_arch_init, &addr, NR_CPUS);
-+	stop_machine_run(ftrace_dyn_arch_init, &addr, NULL);
- 
- 	/* ftrace_dyn_arch_init places the return code in addr */
- 	if (addr) {
+-Scott
