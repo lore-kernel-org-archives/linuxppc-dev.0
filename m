@@ -1,21 +1,17 @@
-Return-Path: <lark@linux.net.cn>
-Received: from mx.linux.net.cn (unknown [210.82.31.146])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 87D44DDDF9
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jul 2008 12:41:35 +1000 (EST)
-Received: from [192.168.0.123] (unknown [123.118.16.158])
-	by mx.linux.net.cn (Postfix) with ESMTP id AF7C93EC09
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jul 2008 10:48:41 +0800 (CST)
-Message-ID: <487576E0.10501@linux.net.cn>
-Date: Thu, 10 Jul 2008 10:41:36 +0800
-From: Wang Jian <lark@linux.net.cn>
-MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 0/2] Fix register misuse in drivers/net/phy/marvel.c
-References: <4875707D.8060808@linux.net.cn>
-In-Reply-To: <4875707D.8060808@linux.net.cn>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id E627DDDDCA
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jul 2008 14:15:51 +1000 (EST)
+Date: Thu, 10 Jul 2008 14:15:36 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: linux-next: manual merge of the galak tree
+Message-Id: <20080710141536.368780e3.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Thu__10_Jul_2008_14_15_36_+1000_U9r17JGngGQmCUD7"
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, linux-next@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,20 +21,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-It may not be appropriate to post here instead of netdev, but I am using 
-powerpc dev board and I think there will be someone here who has board 
-to test.
+--Signature=_Thu__10_Jul_2008_14_15_36_+1000_U9r17JGngGQmCUD7
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Wang Jian 写道:
-> These 2 patches fixed misuse of register for 88e1111.
-> 
-> Notice: These two patches didn't fix some auto selection problem yet. I
-> will discuss the problem in seperate email.
-> 
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
-> 
-> 
+Hi Kumar,
+
+Today's linux-next merge of the galak tree got a conflict in
+Documentation/powerpc/booting-without-of.txt between commit
+a5edeccb1a8432ae5d9fb9bccea5a4b64c565017 ("net: OpenFirmware GPIO based
+MDIO bitbang driver") from the net tree and commit
+a5b420dc2ff8423b30506e805584f30875b5fb57 ("powerpc/fsl: Refactor device
+bindings") from the galak tree.
+
+I left the "MDIO on GPIOs" section there and relabeled it as 'g'.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Thu__10_Jul_2008_14_15_36_+1000_U9r17JGngGQmCUD7
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkh1jOgACgkQjjKRsyhoI8z+ygCcDhhwhaz0zYEn6GIZ6QO0dVXW
+iQMAn3ybS9i6ZBsy5vM34DpRo67u0vhK
+=D0rr
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__10_Jul_2008_14_15_36_+1000_U9r17JGngGQmCUD7--
