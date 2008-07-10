@@ -1,20 +1,22 @@
-Return-Path: <rsass@uncc.edu>
-Received: from rsass-homer.uncc.edu (rsass-homer.uncc.edu [152.15.91.5])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 57F55DDE1D
+Return-Path: <sumedhtirodkar@gmail.com>
+Received: from ti-out-0910.google.com (ti-out-0910.google.com [209.85.142.186])
+	by ozlabs.org (Postfix) with ESMTP id 6DA00DDE16
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 11 Jul 2008 02:39:21 +1000 (EST)
-Message-Id: <200807101554.m6AFs8w1029603@rsass-homer.uncc.edu>
-To: neeraj garg <neerajg@cdac.in>
-Subject: Re: Booting ML405 (Kernel panic - not syncing: No init found) 
-In-reply-to: <4875B95C.8020809@cdac.in> 
-References: <48744475.2080605@cdac.in> <20080709143318.GB26524@secretlab.ca>
-	<4875B95C.8020809@cdac.in>
-Date: Thu, 10 Jul 2008 11:54:08 -0400
-From: Ron Sass <rsass@uncc.edu>
-Cc: linuxppc-embedded@ozlabs.org, John.Linn@xilinx.com,
-	marco.stornelli@coritel.it
+	Fri, 11 Jul 2008 03:06:57 +1000 (EST)
+Received: by ti-out-0910.google.com with SMTP id w7so1571527tib.13
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 10 Jul 2008 10:06:56 -0700 (PDT)
+Message-ID: <d2b9ccd90807101006v79658fcateb5af4c83fc728da@mail.gmail.com>
+Date: Thu, 10 Jul 2008 22:36:55 +0530
+From: "sumedh tirodkar" <sumedhtirodkar@gmail.com>
+To: "Scott Wood" <scottwood@freescale.com>, linuxppc-embedded@ozlabs.org
+Subject: Re: linux/powerpc memory management
+In-Reply-To: <48762608.3060605@freescale.com>
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_Part_22981_17892088.1215709615089"
+References: <d2b9ccd90807092114kc1883d2ud33c09c245d94d86@mail.gmail.com>
+	<48762608.3060605@freescale.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -25,34 +27,52 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+------=_Part_22981_17892088.1215709615089
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-In addition to what John wrote, I would also investigate your ramdisk.
-I would be sure to check that you have the permissions/owner set correctly
-on bin/busybox.  Also, I would double check that, if you compiled busybox
-with shared libraries, the shared libraries are in the right place
-on your ramdisk.
+by pointers i meant any documentation of design as to how exactly the memory
+management is done...
+how does linux use hardware features provided by powerpc for protection
+between tasks and kernel,etc...
+sorry for not being more specific previously...
 
-Ron
+Regards,
+Sumedh.
 
-> 
-> Hi,
-> 
-> Yes I am using ARCH=ppc (actual line is $make ARCH=ppc 
-> CROSS_COMPILE=powerpc-405-linux-gnu- zImage.initrd ) for this I have 
-> placed ramdisk.image.gz in arch/ppc/boot/images. In case of ARCH=powerpc 
-> I cannot find processor type 405 , in make menuconfig. Thats why i am 
-> using ARCH=ppc.
-> 
-> And when I give kernel command string as init=/bin/sh , it says :
->  >Failed to execute /bin/sh.  Attempting defaults...
-> [    3.744035] Kernel panic - not syncing: No init found.  Try passing 
-> init= option to kernel.
-> [    3.768073] Rebooting in 30 seconds..
-> 
-> --init is present in sbin/init which is a soft link to ../bin/busybox
-> 
-> --I used powepc-405-gnu-readelf -h bin/sh to verify that it is compiled 
-> for powerpc itself.
-> 
-> Any other suggestions ?
-> 
+On Thu, Jul 10, 2008 at 8:38 PM, Scott Wood <scottwood@freescale.com> wrote:
+
+> sumedh tirodkar wrote:
+>
+>> Can anyone give pointers as to how memory management(detailed) is done in
+>> linux on powerpc.
+>>
+>
+> arch/powerpc/mm
+>
+> (Hey, you wanted a detailed answer to a very broad question...)
+>
+> -Scott
+>
+
+------=_Part_22981_17892088.1215709615089
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+by pointers i meant any documentation of design as to how exactly the memory management is done...<br>how does linux use hardware features provided by powerpc for protection between tasks and kernel,etc...<br>sorry for not being more specific previously...<br>
+<br>Regards,<br>Sumedh.<br><br><div class="gmail_quote">On Thu, Jul 10, 2008 at 8:38 PM, Scott Wood &lt;<a href="mailto:scottwood@freescale.com">scottwood@freescale.com</a>&gt; wrote:<br><blockquote class="gmail_quote" style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">
+<div class="Ih2E3d">sumedh tirodkar wrote:<br>
+<blockquote class="gmail_quote" style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">
+Can anyone give pointers as to how memory management(detailed) is done in linux on powerpc.<br>
+</blockquote>
+<br></div>
+arch/powerpc/mm<br>
+<br>
+(Hey, you wanted a detailed answer to a very broad question...)<br><font color="#888888">
+<br>
+-Scott<br>
+</font></blockquote></div><br>
+
+------=_Part_22981_17892088.1215709615089--
