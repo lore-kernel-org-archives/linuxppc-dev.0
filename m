@@ -2,17 +2,16 @@ Return-Path: <miltonm@sullivan.realtime.net>
 Received: from sullivan.realtime.net (sullivan.realtime.net [205.238.132.226])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 1E85EDDE0A
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jul 2008 07:14:49 +1000 (EST)
-Date: Thu, 10 Jul 2008 16:14:18 -0500 (CDT)
+	by ozlabs.org (Postfix) with ESMTPS id 2C021DDE1A
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jul 2008 07:16:19 +1000 (EST)
+Date: Thu, 10 Jul 2008 16:14:53 -0500 (CDT)
 From: Milton Miller <miltonm@bga.com>
 Sender: Milton Miller <miltonm@realtime.net>
-To: David Woodhouse <dwmw2@infradead.org>, linux-mtd@lists.infradead.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 In-Reply-To: <for-27-patch1-0@bga.com>
-Message-Id: <for-27-patch1-00@bga.com>
-Subject: mtd: remove __PPC__ hardcoded address from nand/diskonchip and
-	devices/docprobe
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Message-Id: <for-27-patch2-1@bga.com>
+Subject: [1/3] powerpc: add _HEAD_GLOBAL to place functions in .text.head
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,41 +21,113 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Such a hardcoded address can cause a checkstop or machine check if
-the driver is in the kernel but the address is not acknowledged.
+This is the first step to moving the interrupt vectors to .text.head.
 
-Both drivers allow an address to be specified as either a module
-parameter or config option.   Any future powerpc board should either
-use one of these methods or find the address in the device tree.
+Rather than creating more repetition, factor out creating a function
+descriptor, from declaring it to be global in a section.
+
+The order of .globl and the symbol definitions is changed but is
+a don't care.
 
 Signed-off-by: Milton Miller <miltonm@bga.com>
 ---
-There is no powerpc defconfig that sets either CONFIG_DOC200{0,1*} nor
-CONFIG_MTD_NAND_DISKONCHIP in next-20080710.
+I left the section in the macros, and added a new macro.   I didn't
+want to hunt down other uses of _GLOBAL to audit the section, and _KPROBE
+needs to set the section.
 
-diff --git a/drivers/mtd/devices/docprobe.c b/drivers/mtd/devices/docprobe.c
-index 6e5d811..6e62922 100644
---- a/drivers/mtd/devices/docprobe.c
-+++ b/drivers/mtd/devices/docprobe.c
-@@ -76,8 +76,6 @@ static unsigned long __initdata doc_locations[] = {
- 	0xe0000, 0xe2000, 0xe4000, 0xe6000,
- 	0xe8000, 0xea000, 0xec000, 0xee000,
- #endif /*  CONFIG_MTD_DOCPROBE_HIGH */
--#elif defined(__PPC__)
--	0xe4000000,
- #else
- #warning Unknown architecture for DiskOnChip. No default probe locations defined
- #endif
-diff --git a/drivers/mtd/nand/diskonchip.c b/drivers/mtd/nand/diskonchip.c
-index cd4393c..765d4f0 100644
---- a/drivers/mtd/nand/diskonchip.c
-+++ b/drivers/mtd/nand/diskonchip.c
-@@ -52,8 +52,6 @@ static unsigned long __initdata doc_locations[] = {
- 	0xe0000, 0xe2000, 0xe4000, 0xe6000,
- 	0xe8000, 0xea000, 0xec000, 0xee000,
- #endif /*  CONFIG_MTD_DOCPROBE_HIGH */
--#elif defined(__PPC__)
--	0xe4000000,
- #else
- #warning Unknown architecture for DiskOnChip. No default probe locations defined
- #endif
+
+diff --git a/include/asm-powerpc/ppc_asm.h b/include/asm-powerpc/ppc_asm.h
+index 0966899..cb5a4b0 100644
+--- a/include/asm-powerpc/ppc_asm.h
++++ b/include/asm-powerpc/ppc_asm.h
+@@ -178,11 +178,8 @@ END_FTR_SECTION_IFCLR(CPU_FTR_PURR);					\
+ #define XGLUE(a,b) a##b
+ #define GLUE(a,b) XGLUE(a,b)
+ 
+-#define _GLOBAL(name) \
+-	.section ".text"; \
++#define _FUNCTION(name) \
+ 	.align 2 ; \
+-	.globl name; \
+-	.globl GLUE(.,name); \
+ 	.section ".opd","aw"; \
+ name: \
+ 	.quad GLUE(.,name); \
+@@ -192,57 +189,41 @@ name: \
+ 	.type GLUE(.,name),@function; \
+ GLUE(.,name):
+ 
++#define _GLOBAL(name) \
++	.section ".text"; \
++	.globl name; \
++	.globl GLUE(.,name); \
++	_FUNCTION(name)
++
+ #define _INIT_GLOBAL(name) \
+ 	.section ".text.init.refok"; \
+-	.align 2 ; \
+ 	.globl name; \
+ 	.globl GLUE(.,name); \
+-	.section ".opd","aw"; \
+-name: \
+-	.quad GLUE(.,name); \
+-	.quad .TOC.@tocbase; \
+-	.quad 0; \
+-	.previous; \
+-	.type GLUE(.,name),@function; \
+-GLUE(.,name):
++	_FUNCTION(name)
++
++#define _HEAD_GLOBAL(name) \
++	.section ".text.head"; \
++	.globl name; \
++	.globl GLUE(.,name); \
++	_FUNCTION(name)
+ 
+ #define _KPROBE(name) \
+ 	.section ".kprobes.text","a"; \
+-	.align 2 ; \
+ 	.globl name; \
+ 	.globl GLUE(.,name); \
+-	.section ".opd","aw"; \
+-name: \
+-	.quad GLUE(.,name); \
+-	.quad .TOC.@tocbase; \
+-	.quad 0; \
+-	.previous; \
+-	.type GLUE(.,name),@function; \
+-GLUE(.,name):
++	_FUNCTION(name)
+ 
+ #define _STATIC(name) \
+ 	.section ".text"; \
+-	.align 2 ; \
+-	.section ".opd","aw"; \
+-name: \
+-	.quad GLUE(.,name); \
+-	.quad .TOC.@tocbase; \
+-	.quad 0; \
+-	.previous; \
+-	.type GLUE(.,name),@function; \
+-GLUE(.,name):
++	_FUNCTION(name)
+ 
+ #define _INIT_STATIC(name) \
+ 	.section ".text.init.refok"; \
+-	.align 2 ; \
+-	.section ".opd","aw"; \
+-name: \
+-	.quad GLUE(.,name); \
+-	.quad .TOC.@tocbase; \
+-	.quad 0; \
+-	.previous; \
+-	.type GLUE(.,name),@function; \
+-GLUE(.,name):
++	_FUNCTION(name)
++
++#define _HEAD_STATIC(name) \
++	.section ".text.head"; \
++	_FUNCTION(name)
+ 
+ #else /* 32-bit */
+ 
