@@ -1,20 +1,16 @@
-Return-Path: <khali@linux-fr.org>
-Received: from services.gcu-squad.org (zone0.gcu-squad.org [212.85.147.21])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 0F72CDDE23
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jul 2008 21:49:19 +1000 (EST)
-Date: Thu, 10 Jul 2008 13:49:06 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Sean MacLennan <smaclennan@pikatech.com>
-Subject: Re: [PATCH] powerpc: i2c-ibm_iic register child nodes
-Message-ID: <20080710134906.6e419fcd@hyperion.delvare>
-In-Reply-To: <20080708144609.14bae1de@lappy.seanm.ca>
-References: <20080708144609.14bae1de@lappy.seanm.ca>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Linux I2C <i2c@lm-sensors.org>,
-	Ben Dooks <ben-linux@fluff.org>
+Return-Path: <wsa@pengutronix.de>
+Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
+	[83.236.181.26]) by ozlabs.org (Postfix) with ESMTP id 61336DDF0A
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jul 2008 22:39:19 +1000 (EST)
+Date: Thu, 10 Jul 2008 14:39:09 +0200
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: linuxppc-dev@ozlabs.org
+Subject: [BUG] fec_mpc52xx: Don't call mpc52xx_fec_reset() in ISR
+Message-ID: <20080710123909.GA4275@pengutronix.de>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="CE+1k2dSO48ffgeK"
+Cc: domen.puncer@telargo.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,79 +20,69 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Sean,
 
-On Tue, 8 Jul 2008 14:46:09 -0400, Sean MacLennan wrote:
-> This patch completes the conversion of the IBM IIC driver to an
-> of-platform driver.
-> 
-> It removes the index from the IBM IIC driver and makes it an unnumbered
-> driver. It then calls of_register_i2c_devices to properly register all
-> the child nodes in the DTS.
-> 
-> Signed-off-by: Sean MacLennan <smaclennan@pikatech.com>
-> ---
-> 
-> diff --git a/drivers/i2c/busses/i2c-ibm_iic.c b/drivers/i2c/busses/i2c-ibm_iic.c
-> index 070f078..651f2f1 100644
-> --- a/drivers/i2c/busses/i2c-ibm_iic.c
-> +++ b/drivers/i2c/busses/i2c-ibm_iic.c
-> @@ -43,6 +43,7 @@
->  #include <linux/i2c.h>
->  #include <linux/i2c-id.h>
->  #include <linux/of_platform.h>
-> +#include <linux/of_i2c.h>
->  
->  #include "i2c-ibm_iic.h"
->  
-> @@ -696,7 +697,7 @@ static int __devinit iic_probe(struct of_device *ofdev,
->  	struct device_node *np = ofdev->node;
->  	struct ibm_iic_private *dev;
->  	struct i2c_adapter *adap;
-> -	const u32 *indexp, *freq;
-> +	const u32 *freq;
->  	int ret;
->  
->  	dev = kzalloc(sizeof(*dev), GFP_KERNEL);
-> @@ -707,14 +708,6 @@ static int __devinit iic_probe(struct of_device *ofdev,
->  
->  	dev_set_drvdata(&ofdev->dev, dev);
->  
-> -	indexp = of_get_property(np, "index", NULL);
-> -	if (!indexp) {
-> -		dev_err(&ofdev->dev, "no index specified\n");
-> -		ret = -EINVAL;
-> -		goto error_cleanup;
-> -	}
-> -	dev->idx = *indexp;
-> -
->  	dev->vaddr = of_iomap(np, 0);
->  	if (dev->vaddr == NULL) {
->  		dev_err(&ofdev->dev, "failed to iomap device\n");
-> @@ -757,14 +750,16 @@ static int __devinit iic_probe(struct of_device *ofdev,
->  	adap->class = I2C_CLASS_HWMON | I2C_CLASS_SPD;
->  	adap->algo = &iic_algo;
->  	adap->timeout = 1;
-> -	adap->nr = dev->idx;
->  
-> -	ret = i2c_add_numbered_adapter(adap);
-> +	ret = i2c_add_adapter(adap);
->  	if (ret  < 0) {
->  		dev_err(&ofdev->dev, "failed to register i2c adapter\n");
->  		goto error_cleanup;
->  	}
->  
-> +	/* Now register all the child nodes */
-> +	of_register_i2c_devices(adap, np);
-> +
->  	dev_info(&ofdev->dev, "using %s mode\n",
->  		 dev->fast_mode ? "fast (400 kHz)" : "standard (100 kHz)");
->  
+--CE+1k2dSO48ffgeK
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Looks OK. As I already have patches touching
-drivers/i2c/busses/i2c-ibm_iic.c in my tree, I'm taking this patch
-also. I will push it upstream during the 2.6.27 merge window.
+Hello,
 
-Thanks,
--- 
-Jean Delvare
+today, I was debugging a kernel crash on a board with a MPC5200B using
+2.6.26-rc9. I found the following code in drivers/net/fec_mpc52xx.c:
+
+static irqreturn_t mpc52xx_fec_interrupt(int irq, void *dev_id)
+{
+[...]
+	/* on fifo error, soft-reset fec */
+	if (ievent & (FEC_IEVENT_RFIFO_ERROR | FEC_IEVENT_XFIFO_ERROR)) {
+
+		if (net_ratelimit() && (ievent & FEC_IEVENT_RFIFO_ERROR))
+			dev_warn(&dev->dev, "FEC_IEVENT_RFIFO_ERROR\n");
+		if (net_ratelimit() && (ievent & FEC_IEVENT_XFIFO_ERROR))
+			dev_warn(&dev->dev, "FEC_IEVENT_XFIFO_ERROR\n");
+
+		mpc52xx_fec_reset(dev);
+
+		netif_wake_queue(dev);
+		return IRQ_HANDLED;
+	}
+[...]
+}
+
+Calling mpc52xx_fec_reset() from interrupt context is bad, at least
+because
+
+a) it calls phy_write, which contains BUG_ON(in_interrupt())
+b) it calls mpc52xx_fec_hw_init, which has a delay-loop to check
+   if the reset was successful (1..50 us)
+
+I assume the proper thing to do is to set a flag in the ISR and handle
+the soft reset later in some other context. Having never dealt with the
+network core and its drivers so far, I am not sure which place would be
+the right one to perform the soft reset. To not make things worse, I
+hope people with more insight to network stuff can deliver a suitable
+solution to this problem.
+
+All the best,
+
+   Wolfram
+
+--=20
+  Dipl.-Ing. Wolfram Sang | http://www.pengutronix.de
+ Pengutronix - Linux Solutions for Science and Industry
+
+--CE+1k2dSO48ffgeK
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFIdgLtD27XaX1/VRsRAgXeAKCl8ge5pQxRUdNqKypdbsE/5qPI1wCgkbnz
+cEcT55Msv+xiRtm5fXycRWg=
+=7a8w
+-----END PGP SIGNATURE-----
+
+--CE+1k2dSO48ffgeK--
