@@ -1,22 +1,22 @@
-Return-Path: <sumedhtirodkar@gmail.com>
-Received: from ti-out-0910.google.com (ti-out-0910.google.com [209.85.142.186])
-	by ozlabs.org (Postfix) with ESMTP id 6DA00DDE16
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.183]) by ozlabs.org (Postfix) with ESMTP id 0D1D6DDFFA
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 11 Jul 2008 03:06:57 +1000 (EST)
-Received: by ti-out-0910.google.com with SMTP id w7so1571527tib.13
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 10 Jul 2008 10:06:56 -0700 (PDT)
-Message-ID: <d2b9ccd90807101006v79658fcateb5af4c83fc728da@mail.gmail.com>
-Date: Thu, 10 Jul 2008 22:36:55 +0530
-From: "sumedh tirodkar" <sumedhtirodkar@gmail.com>
-To: "Scott Wood" <scottwood@freescale.com>, linuxppc-embedded@ozlabs.org
+	Fri, 11 Jul 2008 03:25:24 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-embedded@ozlabs.org
 Subject: Re: linux/powerpc memory management
-In-Reply-To: <48762608.3060605@freescale.com>
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_22981_17892088.1215709615089"
+Date: Thu, 10 Jul 2008 19:25:08 +0200
 References: <d2b9ccd90807092114kc1883d2ud33c09c245d94d86@mail.gmail.com>
 	<48762608.3060605@freescale.com>
+	<d2b9ccd90807101006v79658fcateb5af4c83fc728da@mail.gmail.com>
+In-Reply-To: <d2b9ccd90807101006v79658fcateb5af4c83fc728da@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Message-Id: <200807101925.08657.arnd@arndb.de>
+Cc: Scott Wood <scottwood@freescale.com>,
+	sumedh tirodkar <sumedhtirodkar@gmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -27,52 +27,28 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-------=_Part_22981_17892088.1215709615089
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Thursday 10 July 2008, sumedh tirodkar wrote:
+> by pointers i meant any documentation of design as to how exactly the memory
+> management is done...
+> how does linux use hardware features provided by powerpc for protection
+> between tasks and kernel,etc...
+> sorry for not being more specific previously...
+> 
 
-by pointers i meant any documentation of design as to how exactly the memory
-management is done...
-how does linux use hardware features provided by powerpc for protection
-between tasks and kernel,etc...
-sorry for not being more specific previously...
+It depends on what platform you want to look at, powerpc64, powerpc32 classic
+and powerpc32 book E are very different, but you'll see that in the code.
 
-Regards,
-Sumedh.
+arch/powerpc/mm/hash*
+arch/powerpc/mm/pgtable*
+arch/powerpc/mm/mem.c
+arch/powerpc/mm/ppc_mmu_32.c
+arch/powerpc/mm/slb*
+arch/powerpc/mm/stab.c
+arch/powerpc/mm/tlb*
+include/asm-powerpc/mmu*
+include/asm-powerpc/pgalloc*
+include/asm-powerpc/pgtable*
 
-On Thu, Jul 10, 2008 at 8:38 PM, Scott Wood <scottwood@freescale.com> wrote:
+That should cover all you need to know.
 
-> sumedh tirodkar wrote:
->
->> Can anyone give pointers as to how memory management(detailed) is done in
->> linux on powerpc.
->>
->
-> arch/powerpc/mm
->
-> (Hey, you wanted a detailed answer to a very broad question...)
->
-> -Scott
->
-
-------=_Part_22981_17892088.1215709615089
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-by pointers i meant any documentation of design as to how exactly the memory management is done...<br>how does linux use hardware features provided by powerpc for protection between tasks and kernel,etc...<br>sorry for not being more specific previously...<br>
-<br>Regards,<br>Sumedh.<br><br><div class="gmail_quote">On Thu, Jul 10, 2008 at 8:38 PM, Scott Wood &lt;<a href="mailto:scottwood@freescale.com">scottwood@freescale.com</a>&gt; wrote:<br><blockquote class="gmail_quote" style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">
-<div class="Ih2E3d">sumedh tirodkar wrote:<br>
-<blockquote class="gmail_quote" style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">
-Can anyone give pointers as to how memory management(detailed) is done in linux on powerpc.<br>
-</blockquote>
-<br></div>
-arch/powerpc/mm<br>
-<br>
-(Hey, you wanted a detailed answer to a very broad question...)<br><font color="#888888">
-<br>
--Scott<br>
-</font></blockquote></div><br>
-
-------=_Part_22981_17892088.1215709615089--
+	Arnd <><
