@@ -1,21 +1,20 @@
-Return-Path: <lark@linux.net.cn>
-Received: from mx.linux.net.cn (unknown [210.82.31.146])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id A85D6DDEE8
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jul 2008 00:33:03 +1000 (EST)
-Message-ID: <48761D7F.4050502@linux.net.cn>
-Date: Thu, 10 Jul 2008 22:32:31 +0800
-From: Wang Jian <lark@linux.net.cn>
+Return-Path: <arnd@arndb.de>
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org,
+ benh@kernel.crashing.org
+Subject: Re: [Cbe-oss-dev] [patch 02/02] powerpc/cell: add support
+	=?iso-8859-1?q?for=09power_button_of_future_IBM_cell?= blades
+Date: Thu, 10 Jul 2008 16:34:47 +0200
+References: <20080704190535.316377278@arndb.de>
+	<200807091515.04484.arnd@arndb.de>
+	<1215636330.8970.387.camel@pasglop>
+In-Reply-To: <1215636330.8970.387.camel@pasglop>
 MIME-Version: 1.0
-To: "Welch, Martyn (GE EntSol,
-	Intelligent Platforms)" <martyn.welch@gefanuc.com>
-Subject: Re: [PATCH 0/2] Fix register misuse in drivers/net/phy/marvel.c
-References: <4875707D.8060808@linux.net.cn> <487576E0.10501@linux.net.cn>
-	<1CADFA951940554D86FBD8B24BBFF3A0019BEA37@LONMLVEM08.e2k.ad.ge.com>
-In-Reply-To: <1CADFA951940554D86FBD8B24BBFF3A0019BEA37@LONMLVEM08.e2k.ad.ge.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200807101634.48097.arnd@arndb.de>
+Cc: Christian Krafft <krafft@de.ibm.com>, cbe-oss-dev@ozlabs.org,
+	Christian Krafft <krafft@linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,44 +24,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-Welch, Martyn (GE EntSol, Intelligent Platforms) 写道:
-> Wang Jian wrote:
->> It may not be appropriate to post here instead of netdev, but I am
->> using 
->> powerpc dev board and I think there will be someone here who has board
->> to test.
->>
->> Wang Jian 写道:
->>> These 2 patches fixed misuse of register for 88e1111.
->>>
->>> Notice: These two patches didn't fix some auto selection problem
->>> yet. I will discuss the problem in seperate email.
->>>
+On Wednesday 09 July 2008, Benjamin Herrenschmidt wrote:
+> On Wed, 2008-07-09 at 15:15 +0200, Arnd Bergmann wrote:
+> > Ugly, but doable, yes. I wonder if there is a way that we can trigger some
+> > interrupt from system_reset_exception context in order to get around the
+> > polling though. tasklets and workqueues unfortunately won't do us any good
+> > here because they also depend on disabling interrupts.
 > 
-> Hi,
-> 
-> I have a board here with a pair of 88e1111's, though I'm not sure how to go about testing these patches. It's not the applying or compiling that the problem, but how to test it...
-> 
-> Do you have any test case in mind?
-> 
+> You can trigger a DEC interrupt at any time but you don't have
+> a nice hook to catch it. You can probably trigger an IPI to yourself
+> using a special call to the iic, do we have any available number ?
 
-Hi,
+Yes, we are only using 4 out of 15 possible IPIs. Probably worth a try,
+but it might not be cleaner than your suggested solution.
 
-The problem I want to fix is:
-
-1. Plug the fiber and start the board in u-boot, the fiber link is 
-established, you can transfer data using fiber link;
-
-2. boot the kernel (not fixed one),  when you "ifconfig ethX up" (ethX 
-uses 88e1111), the fiber link light goes off, the fiber link is lost;
-
-After apply the patch #1, for the step 2, you can "ifconfig ethX 
-w.x.y.z" and fiber link is ok. You can use the fiber link to transfer data.
-
-I my case, the chip is in GMII mode. The patch #2 is obvious but I can't 
-test it myself.
-
-BTW, the two patches doesn't fix the problem when you unplug the fiber 
-then plug back. That is another problem I have _partially_ fixed by 
-patch marvell_read_status().
+	Arnd <><
