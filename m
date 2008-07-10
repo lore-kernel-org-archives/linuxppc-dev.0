@@ -1,23 +1,20 @@
-Return-Path: <zippel@linux-m68k.org>
-Received: from smtp-vbr11.xs4all.nl (smtp-vbr11.xs4all.nl [194.109.24.31])
-	by ozlabs.org (Postfix) with ESMTP id B2A08DDF58
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jul 2008 00:59:53 +1000 (EST)
-Date: Thu, 10 Jul 2008 16:59:25 +0200 (CEST)
-From: Roman Zippel <zippel@linux-m68k.org>
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: linux-next: kbuild tree build failure
-In-Reply-To: <1215651082.13950.7.camel@localhost>
-Message-ID: <Pine.LNX.4.64.0807101654080.6791@localhost.localdomain>
-References: <20080707184038.aaeb8d40.sfr@canb.auug.org.au>
-	<Pine.LNX.4.64.0807071424240.6791@localhost.localdomain>
-	<1215473798.8138.4.camel@localhost>
-	<Pine.LNX.4.64.0807080437550.6791@localhost.localdomain>
-	<1215651082.13950.7.camel@localhost>
+Return-Path: <glikely@secretlab.ca>
+Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.29])
+	by ozlabs.org (Postfix) with ESMTP id B18CDDE0C3
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jul 2008 01:31:37 +1000 (EST)
+Received: by yx-out-2324.google.com with SMTP id 8so957177yxg.39
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jul 2008 08:31:36 -0700 (PDT)
+Date: Thu, 10 Jul 2008 09:31:01 -0600
+From: Grant Likely <grant.likely@secretlab.ca>
+To: Wolfram Sang <w.sang@pengutronix.de>
+Subject: Re: [BUG] fec_mpc52xx: Don't call mpc52xx_fec_reset() in ISR
+Message-ID: <20080710153101.GD446@secretlab.ca>
+References: <20080710123909.GA4275@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-	Paul Mackerras <paulus@samba.org>,
-	Sam Ravnborg <sam@ravnborg.org>, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080710123909.GA4275@pengutronix.de>
+Sender: Grant Likely <glikely@secretlab.ca>
+Cc: linuxppc-dev@ozlabs.org, domen.puncer@telargo.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,40 +24,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
-
-On Thu, 10 Jul 2008, Michael Ellerman wrote:
-
-> Well yes :)  But I think that's because you're thinking of 
-> "end-users" and I'm thinking of "users" like myself - ie. _I_ use
-> Kconfig and I do expect myself to be able to type a 64-bit address.
-
-That doesn't really answer my question, why you need this.
-
-> > > --- .config.orig	2008-07-08 09:30:00.000000000 +1000
-> > > +++ .config	2008-07-08 09:30:43.000000000 +1000
-> > > @@ -370,9 +370,8 @@
-> > >  CONFIG_HOTPLUG_PCI_RPA=m
-> > >  CONFIG_HOTPLUG_PCI_RPA_DLPAR=m
-> > >  # CONFIG_HAS_RAPIDIO is not set
-> > > -CONFIG_PAGE_OFFSET=0xc000000000000000
-> > > -CONFIG_KERNEL_START=0xc000000002000000
-> > > -CONFIG_PHYSICAL_START=0x02000000
-> > > +CONFIG_PAGE_OFFSET=0xc0000000
-> > > +CONFIG_PHYSICAL_START=0x2000000
-> > 
-> > Why is this worse? These are constants, you're not supposed to change them 
-> > anyway.
-> > The remaining values are generated in page.h and should be the same as 
-> > before. If that isn't the case and this patch produces a nonworking 
-> > kernel, I'd like to hear about it.
+On Thu, Jul 10, 2008 at 02:39:09PM +0200, Wolfram Sang wrote:
+> Hello,
 > 
-> You're right the built kernel is fine. So it's not a bug,
+> today, I was debugging a kernel crash on a board with a MPC5200B using
+> 2.6.26-rc9. I found the following code in drivers/net/fec_mpc52xx.c:
+<snip>
+> I assume the proper thing to do is to set a flag in the ISR and handle
+> the soft reset later in some other context. Having never dealt with the
+> network core and its drivers so far, I am not sure which place would be
+> the right one to perform the soft reset. To not make things worse, I
+> hope people with more insight to network stuff can deliver a suitable
+> solution to this problem.
 
-Good, could someone please ack whether the powerpc changes are acceptable?
+Thanks for the bug report.  I'll take a look.
 
-> but I think it is nicer to have the real values in the .config.
-
-Why?
-
-bye, Roman
+g.
