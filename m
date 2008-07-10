@@ -1,17 +1,17 @@
 Return-Path: <arnd@arndb.de>
 Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.174]) by ozlabs.org (Postfix) with ESMTP id 3A0F9DDE18
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jul 2008 23:57:35 +1000 (EST)
+	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id C7BF6DDF3E
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jul 2008 00:08:24 +1000 (EST)
 From: Arnd Bergmann <arnd@arndb.de>
 To: linuxppc-dev@ozlabs.org
-Subject: Re: latencytop support for powerpc?
-Date: Thu, 10 Jul 2008 15:57:22 +0200
-References: <48755237.9070701@nortel.com>
-In-Reply-To: <48755237.9070701@nortel.com>
+Subject: [PATCH] powerpc: support for latencytop
+Date: Thu, 10 Jul 2008 16:08:18 +0200
+References: <48755237.9070701@nortel.com> <200807101557.22354.arnd@arndb.de>
+In-Reply-To: <200807101557.22354.arnd@arndb.de>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
-Message-Id: <200807101557.22354.arnd@arndb.de>
+Message-Id: <200807101608.18643.arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,20 +21,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thursday 10 July 2008, Chris Friesen wrote:
-> Just wondering if anyone has looked at what it would take to support 
-> latency top on powerpc?
-
-Just guessing something like the patch below, not more that that, but
-without the bugs ;-). Haven't tested at all, so it will probably
-fall apart, but give it a try if you like.
-
-Subject: powerpc: support for latencytop
-
 Implement save_stack_trace_tsk on powerpc, so that we can run with
 latencytop.
 
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+
+---
+On Thursday 10 July 2008, Arnd Bergmann wrote:
+> Just guessing something like the patch below, not more that that, but
+> without the bugs ;-).
+
+Obvious bug #1: needs to use the task we want to dump, not 'current'.
 
 diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
 index ff5217a..b1fd369 100644
@@ -51,10 +48,10 @@ index ff5217a..b1fd369 100644
  	bool
  	depends on PPC64
 diff --git a/arch/powerpc/kernel/stacktrace.c b/arch/powerpc/kernel/stacktrace.c
-index 9861f17..2b8c14d 100644
+index 9861f17..6a4fb00 100644
 --- a/arch/powerpc/kernel/stacktrace.c
 +++ b/arch/powerpc/kernel/stacktrace.c
-@@ -10,19 +10,18 @@
+@@ -10,33 +10,34 @@
   *      2 of the License, or (at your option) any later version.
   */
  
@@ -78,7 +75,11 @@ index 9861f17..2b8c14d 100644
  	for (;;) {
  		unsigned long *stack = (unsigned long *) sp;
  		unsigned long newsp, ip;
-@@ -33,10 +32,12 @@ void save_stack_trace(struct stack_trace *trace)
+ 
+-		if (!validate_sp(sp, current, STACK_FRAME_OVERHEAD))
++		if (!validate_sp(sp, tsk, STACK_FRAME_OVERHEAD))
+ 			return;
+ 
  		newsp = stack[0];
  		ip = stack[STACK_FRAME_LR_SAVE];
  
