@@ -2,16 +2,17 @@ Return-Path: <miltonm@sullivan.realtime.net>
 Received: from sullivan.realtime.net (sullivan.realtime.net [205.238.132.226])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 5C6D6DDED6
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jul 2008 07:14:15 +1000 (EST)
-Date: Thu, 10 Jul 2008 16:12:11 -0500 (CDT)
+	by ozlabs.org (Postfix) with ESMTPS id 1E85EDDE0A
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jul 2008 07:14:49 +1000 (EST)
+Date: Thu, 10 Jul 2008 16:14:18 -0500 (CDT)
 From: Milton Miller <miltonm@bga.com>
 Sender: Milton Miller <miltonm@realtime.net>
-To: linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org
-Message-Id: <for-27-patch1-0@bga.com>
-Subject: [RFC] (almost) booting allyesconfig -- please don't poke super-io
-	without request_region
-Cc: linuxppc-dev@ozlabs.org, Samuel Ortiz <samuel@sortiz.org>
+To: David Woodhouse <dwmw2@infradead.org>, linux-mtd@lists.infradead.org
+In-Reply-To: <for-27-patch1-0@bga.com>
+Message-Id: <for-27-patch1-00@bga.com>
+Subject: mtd: remove __PPC__ hardcoded address from nand/diskonchip and
+	devices/docprobe
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,62 +22,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-After the following patch to mark the isa region busy and applying a few
-patches[1], I was able to kexec boot into an all-yes-config kernel from 
-linux-next, with the following KCONFIG_ALLCONFIG file:
+Such a hardcoded address can cause a checkstop or machine check if
+the driver is in the kernel but the address is not acknowledged.
 
-# CONFIG_KALLSYMS_EXTRA_PASS is not set
-# CONFIG_CRASH_DUMP is not set
-CONFIG_PPC_EARLY_DEBUG_RTAS_CONSOLE=y
-# CONFIG_NSC_FIR is not set
-# CONFIG_SMC_IRCC_FIR is not set
-# CONFIG_ALI_FIR is not set
-# CONFIG_TCG_NSC is not set
-# CONFIG_TCG_ATMEL is not set
-# CONFIG_SENSORS_F71805F is not set
-# CONFIG_SENSORS_F71882FG is not set
-# CONFIG_SENSORS_F75375S is not set
-# CONFIG_SENSORS_IT87 is not set
-# CONFIG_SENSORS_PC87360 is not set
-# CONFIG_SENSORS_PC87427 is not set
-# CONFIG_SENSORS_DME1737 is not set
-# CONFIG_SENSORS_SMSC47M1 is not set
-# CONFIG_SENSORS_SMSC47B397 is not set
-# CONFIG_SENSORS_VT1211 is not set
-# CONFIG_SENSORS_W83627HF is not set
-# CONFIG_SENSORS_W83627EHF is not set
+Both drivers allow an address to be specified as either a module
+parameter or config option.   Any future powerpc board should either
+use one of these methods or find the address in the device tree.
 
-While the first two might not be required, and the third is just
-selecting the right platform, it would be nice to get the drivers
-to play as well as the rest of the kernel.
+Signed-off-by: Milton Miller <miltonm@bga.com>
+---
+There is no powerpc defconfig that sets either CONFIG_DOC200{0,1*} nor
+CONFIG_MTD_NAND_DISKONCHIP in next-20080710.
 
-The drivers all are for super-io chips, either irda/FIR drivers or hwmon,
-and poke at isa ports without checking request_region.
-
-It would be great if these 17 super-io drivers would check for resource
-availability before poking at io ports.
-
-[not that I expect this to merge as it, but maybe insert-resource or something]
-
-
-
-[1] 3 section layout patches and the MTD DISKONCHIP patch,
-see linuxppc-dev for full list
-
-
-diff --git a/arch/powerpc/platforms/pseries/pci.c b/arch/powerpc/platforms/pseries/pci.c
-index 2c6ded2..db54620 100644
---- a/arch/powerpc/platforms/pseries/pci.c
-+++ b/arch/powerpc/platforms/pseries/pci.c
-@@ -58,8 +58,10 @@ DECLARE_PCI_FIXUP_HEADER(PCI_ANY_ID, PCI_ANY_ID, pcibios_name_device);
- 
- static void __init pSeries_request_regions(void)
- {
--	if (!isa_io_base)
-+	if (!isa_io_base) {
-+		request_region(0x0,0x400,"isa");
- 		return;
-+		}
- 
- 	request_region(0x20,0x20,"pic1");
- 	request_region(0xa0,0x20,"pic2");
+diff --git a/drivers/mtd/devices/docprobe.c b/drivers/mtd/devices/docprobe.c
+index 6e5d811..6e62922 100644
+--- a/drivers/mtd/devices/docprobe.c
++++ b/drivers/mtd/devices/docprobe.c
+@@ -76,8 +76,6 @@ static unsigned long __initdata doc_locations[] = {
+ 	0xe0000, 0xe2000, 0xe4000, 0xe6000,
+ 	0xe8000, 0xea000, 0xec000, 0xee000,
+ #endif /*  CONFIG_MTD_DOCPROBE_HIGH */
+-#elif defined(__PPC__)
+-	0xe4000000,
+ #else
+ #warning Unknown architecture for DiskOnChip. No default probe locations defined
+ #endif
+diff --git a/drivers/mtd/nand/diskonchip.c b/drivers/mtd/nand/diskonchip.c
+index cd4393c..765d4f0 100644
+--- a/drivers/mtd/nand/diskonchip.c
++++ b/drivers/mtd/nand/diskonchip.c
+@@ -52,8 +52,6 @@ static unsigned long __initdata doc_locations[] = {
+ 	0xe0000, 0xe2000, 0xe4000, 0xe6000,
+ 	0xe8000, 0xea000, 0xec000, 0xee000,
+ #endif /*  CONFIG_MTD_DOCPROBE_HIGH */
+-#elif defined(__PPC__)
+-	0xe4000000,
+ #else
+ #warning Unknown architecture for DiskOnChip. No default probe locations defined
+ #endif
