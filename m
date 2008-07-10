@@ -1,29 +1,21 @@
-Return-Path: <tie-fei.zang@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
+Return-Path: <j.w.r.degoede@hhs.nl>
+Received: from smtp1.versatel.nl (smtp1.versatel.nl [62.58.50.88])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 15349DDEED
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jul 2008 12:20:22 +1000 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	m6B2KF4H003355
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jul 2008 19:20:16 -0700 (MST)
-Received: from zch01exm23.fsl.freescale.net (zch01exm23.ap.freescale.net
-	[10.192.129.207])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id m6B2KDp4002496
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jul 2008 21:20:14 -0500 (CDT)
-Subject: Re: [PATCH] mpc7448: add alias list to DTS, clean out old chosen node
-From: Roy Zang <tie-fei.zang@freescale.com>
-To: Paul Gortmaker <paul.gortmaker@windriver.com>
-In-Reply-To: <1215721295-17555-1-git-send-email-paul.gortmaker@windriver.com>
-References: <1215721295-17555-1-git-send-email-paul.gortmaker@windriver.com>
-Content-Type: text/plain
-Date: Fri, 11 Jul 2008 10:17:31 +0800
-Message-Id: <1215742651.25390.0.camel@rock.ap.freescale.net>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id B9535DE106
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jul 2008 07:32:47 +1000 (EST)
+Message-ID: <48768018.2070704@hhs.nl>
+Date: Thu, 10 Jul 2008 23:33:12 +0200
+From: Hans de Goede <j.w.r.degoede@hhs.nl>
+MIME-Version: 1.0
+To: Milton Miller <miltonm@bga.com>
+Subject: Re: [lm-sensors] [RFC] (almost) booting allyesconfig -- please don't
+	poke super-io without request_region
+References: <for-27-patch1-0@bga.com>
+In-Reply-To: <for-27-patch1-0@bga.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, Samuel Ortiz <samuel@sortiz.org>,
+	linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,20 +25,63 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2008-07-11 at 04:21 +0800, Paul Gortmaker wrote:
-> The mpc7448hpc2 board doesn't have an alias block like 
-> most of the other modern eval boards have.  We need this 
-> block in order to have u-boot be able to make use of the 
-> CONFIG_OF_STDOUT_VIA_ALIAS (vs. having a hard coded node) 
-> in the future.
+Milton Miller wrote:
+> After the following patch to mark the isa region busy and applying a few
+> patches[1], I was able to kexec boot into an all-yes-config kernel from 
+> linux-next, with the following KCONFIG_ALLCONFIG file:
 > 
-> Also remove the old, redundant chosen node.  Of all the modern 
-> Freescale eval boards (incl. 83xx, 85xx, 86xx) this is the only 
-> one which still has it.  Its presence also breaks with some older 
-> versions of u-boot, like 1.3.1 -- which try and insert a 
-> second chosen node.
+> # CONFIG_KALLSYMS_EXTRA_PASS is not set
+> # CONFIG_CRASH_DUMP is not set
+> CONFIG_PPC_EARLY_DEBUG_RTAS_CONSOLE=y
+> # CONFIG_NSC_FIR is not set
+> # CONFIG_SMC_IRCC_FIR is not set
+> # CONFIG_ALI_FIR is not set
+> # CONFIG_TCG_NSC is not set
+> # CONFIG_TCG_ATMEL is not set
+> # CONFIG_SENSORS_F71805F is not set
+> # CONFIG_SENSORS_F71882FG is not set
+> # CONFIG_SENSORS_F75375S is not set
+> # CONFIG_SENSORS_IT87 is not set
+> # CONFIG_SENSORS_PC87360 is not set
+> # CONFIG_SENSORS_PC87427 is not set
+> # CONFIG_SENSORS_DME1737 is not set
+> # CONFIG_SENSORS_SMSC47M1 is not set
+> # CONFIG_SENSORS_SMSC47B397 is not set
+> # CONFIG_SENSORS_VT1211 is not set
+> # CONFIG_SENSORS_W83627HF is not set
+> # CONFIG_SENSORS_W83627EHF is not set
 > 
-> Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com> 
-> --- 
-Acked-by: Roy Zang <tie-fei.zang@freescale.com>
-Roy
+> While the first two might not be required, and the third is just
+> selecting the right platform, it would be nice to get the drivers
+> to play as well as the rest of the kernel.
+> 
+> The drivers all are for super-io chips, either irda/FIR drivers or hwmon,
+> and poke at isa ports without checking request_region.
+> 
+
+Erm,
+
+The superio sensor drivers only poke the superio chip registers without request 
+region during the probe phase, iow they try to detect the chip, using a widely 
+document and standardized (part of isa pnp AFAIK) procedure on standardized ports.
+
+Let me try to explain a bit about superio chips, they have 2 superio control 
+registers (an index and data register) with which things like a manufacturer 
+and device id can be read, besides these id registers they also have a set of 
+registers with config for different logical devices. Once the id is matched, 
+the driver knows which logical device config to read, reads a (different) isa 
+base address + range from the logical device config, and then does a 
+request_region on the region actually used by the logical device.
+
+The superio control registers are thus a sort of pci configuration space if you 
+want, doing a request_region on these is not such a good idea, as multiple 
+drivers (for different logical devices within the superio device) may use 
+these, so trying to gain exclusive access will lead to troubles.
+
+I hope with this info about the problem space, that you maybe have a suggestion 
+on howto fix this?
+
+Regards,
+
+Hans
+> 
