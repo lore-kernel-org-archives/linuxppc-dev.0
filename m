@@ -1,17 +1,21 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id C7BF6DDF3E
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jul 2008 00:08:24 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc: support for latencytop
-Date: Thu, 10 Jul 2008 16:08:18 +0200
-References: <48755237.9070701@nortel.com> <200807101557.22354.arnd@arndb.de>
-In-Reply-To: <200807101557.22354.arnd@arndb.de>
+Return-Path: <lark@linux.net.cn>
+Received: from mx.linux.net.cn (unknown [210.82.31.146])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id A85D6DDEE8
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jul 2008 00:33:03 +1000 (EST)
+Message-ID: <48761D7F.4050502@linux.net.cn>
+Date: Thu, 10 Jul 2008 22:32:31 +0800
+From: Wang Jian <lark@linux.net.cn>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200807101608.18643.arnd@arndb.de>
+To: "Welch, Martyn (GE EntSol,
+	Intelligent Platforms)" <martyn.welch@gefanuc.com>
+Subject: Re: [PATCH 0/2] Fix register misuse in drivers/net/phy/marvel.c
+References: <4875707D.8060808@linux.net.cn> <487576E0.10501@linux.net.cn>
+	<1CADFA951940554D86FBD8B24BBFF3A0019BEA37@LONMLVEM08.e2k.ad.ge.com>
+In-Reply-To: <1CADFA951940554D86FBD8B24BBFF3A0019BEA37@LONMLVEM08.e2k.ad.ge.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,98 +25,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Implement save_stack_trace_tsk on powerpc, so that we can run with
-latencytop.
 
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Welch, Martyn (GE EntSol, Intelligent Platforms) 写道:
+> Wang Jian wrote:
+>> It may not be appropriate to post here instead of netdev, but I am
+>> using 
+>> powerpc dev board and I think there will be someone here who has board
+>> to test.
+>>
+>> Wang Jian 写道:
+>>> These 2 patches fixed misuse of register for 88e1111.
+>>>
+>>> Notice: These two patches didn't fix some auto selection problem
+>>> yet. I will discuss the problem in seperate email.
+>>>
+> 
+> Hi,
+> 
+> I have a board here with a pair of 88e1111's, though I'm not sure how to go about testing these patches. It's not the applying or compiling that the problem, but how to test it...
+> 
+> Do you have any test case in mind?
+> 
 
----
-On Thursday 10 July 2008, Arnd Bergmann wrote:
-> Just guessing something like the patch below, not more that that, but
-> without the bugs ;-).
+Hi,
 
-Obvious bug #1: needs to use the task we want to dump, not 'current'.
+The problem I want to fix is:
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index ff5217a..b1fd369 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -53,6 +53,9 @@ config STACKTRACE_SUPPORT
- 	bool
- 	default y
- 
-+config HAVE_LATENCYTOP_SUPPORT
-+	def_bool y
-+
- config TRACE_IRQFLAGS_SUPPORT
- 	bool
- 	depends on PPC64
-diff --git a/arch/powerpc/kernel/stacktrace.c b/arch/powerpc/kernel/stacktrace.c
-index 9861f17..6a4fb00 100644
---- a/arch/powerpc/kernel/stacktrace.c
-+++ b/arch/powerpc/kernel/stacktrace.c
-@@ -10,33 +10,34 @@
-  *      2 of the License, or (at your option) any later version.
-  */
- 
-+#include <linux/module.h>
- #include <linux/sched.h>
- #include <linux/stacktrace.h>
- #include <asm/ptrace.h>
-+#include <asm/processor.h>
- 
- /*
-  * Save stack-backtrace addresses into a stack_trace buffer.
-  */
--void save_stack_trace(struct stack_trace *trace)
-+static void save_context_stack(struct stack_trace *trace, unsigned long sp,
-+			struct task_struct *tsk, int savesched)
- {
--	unsigned long sp;
--
--	asm("mr %0,1" : "=r" (sp));
--
- 	for (;;) {
- 		unsigned long *stack = (unsigned long *) sp;
- 		unsigned long newsp, ip;
- 
--		if (!validate_sp(sp, current, STACK_FRAME_OVERHEAD))
-+		if (!validate_sp(sp, tsk, STACK_FRAME_OVERHEAD))
- 			return;
- 
- 		newsp = stack[0];
- 		ip = stack[STACK_FRAME_LR_SAVE];
- 
--		if (!trace->skip)
--			trace->entries[trace->nr_entries++] = ip;
--		else
--			trace->skip--;
-+		if (savesched || !in_sched_functions(ip)) {
-+			if (!trace->skip)
-+				trace->entries[trace->nr_entries++] = ip;
-+			else
-+				trace->skip--;
-+		}
- 
- 		if (trace->nr_entries >= trace->max_entries)
- 			return;
-@@ -44,4 +45,19 @@ void save_stack_trace(struct stack_trace *trace)
- 		sp = newsp;
- 	}
- }
-+
-+void save_stack_trace(struct stack_trace *trace)
-+{
-+	unsigned long sp;
-+
-+	asm("mr %0,1" : "=r" (sp));
-+
-+	save_context_stack(trace, sp, current, 1);
-+}
- EXPORT_SYMBOL_GPL(save_stack_trace);
-+
-+void save_stack_trace_tsk(struct task_struct *tsk, struct stack_trace *trace)
-+{
-+	save_context_stack(trace, tsk->thread.regs->gpr[1], tsk, 0);
-+}
-+EXPORT_SYMBOL_GPL(save_stack_trace_tsk);
+1. Plug the fiber and start the board in u-boot, the fiber link is 
+established, you can transfer data using fiber link;
+
+2. boot the kernel (not fixed one),  when you "ifconfig ethX up" (ethX 
+uses 88e1111), the fiber link light goes off, the fiber link is lost;
+
+After apply the patch #1, for the step 2, you can "ifconfig ethX 
+w.x.y.z" and fiber link is ok. You can use the fiber link to transfer data.
+
+I my case, the chip is in GMII mode. The patch #2 is obvious but I can't 
+test it myself.
+
+BTW, the two patches doesn't fix the problem when you unplug the fiber 
+then plug back. That is another problem I have _partially_ fixed by 
+patch marvell_read_status().
