@@ -1,20 +1,22 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 1FEA0DDED7
-	for <linuxppc-dev@ozlabs.org>; Sat, 12 Jul 2008 04:55:49 +1000 (EST)
-Date: Fri, 11 Jul 2008 22:55:46 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
+Return-Path: <jochen@scram.de>
+Received: from mail.scram.de (mail0.scram.de [78.47.204.202])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail.scram.de",
+	Issuer "StartCom Class 1 Primary Intermediate Server CA" (not
+	verified)) by ozlabs.org (Postfix) with ESMTPS id 6E6D5DE4AD
+	for <linuxppc-dev@ozlabs.org>; Sat, 12 Jul 2008 05:02:05 +1000 (EST)
+Message-ID: <4877ADF6.8070702@scram.de>
+Date: Fri, 11 Jul 2008 21:01:10 +0200
+From: Jochen Friedrich <jochen@scram.de>
+MIME-Version: 1.0
 To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH] of/i2c: don't pass -1 to irq_dispose_mapping,
-	otherwise kernel will oops
-Message-ID: <20080711185546.GA17371@polina.dev.rtsoft.ru>
+Subject: Re: [PATCH] of/i2c: don't pass -1 to irq_dispose_mapping,	otherwise
+	kernel will oops
 References: <20080711174859.GA24260@polina.dev.rtsoft.ru>
 	<20080711182323.GB15321@secretlab.ca>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
 In-Reply-To: <20080711182323.GB15321@secretlab.ca>
+Content-Type: text/plain; charset=ISO-8859-1
 Cc: khali@linux-fr.org, linuxppc-dev@ozlabs.org, i2c@lm-sensors.org
-Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,28 +26,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Jul 11, 2008 at 12:23:23PM -0600, Grant Likely wrote:
-> On Fri, Jul 11, 2008 at 09:48:59PM +0400, Anton Vorontsov wrote:
-> > Firstly kernel warns at set_irq_chip, and then dies completely:
-> > 
-> > Trying to install chip for IRQ-1
-> >
-> > diff --git a/drivers/of/of_i2c.c b/drivers/of/of_i2c.c
-> > index b2ccdcb..95a24de 100644
-> > --- a/drivers/of/of_i2c.c
-> > +++ b/drivers/of/of_i2c.c
-> > @@ -93,10 +93,8 @@ void of_register_i2c_devices(struct i2c_adapter *adap,
-> >  		if (info.irq == NO_IRQ)
-> >  			info.irq = -1;
-> 
-> What is the reason that info.irq is set to -1 in the first place?
+Hi Grant,
 
-I believe this is because of this checking mess:
+> What is the reason that info.irq is set to -1 in the first place?  This
+> looks like another bug to me.  Does something in the i2c layer depend on
+> the -1 value?
 
-grep irq -r drivers/rtc/ drivers/i2c/chips/ | grep if
-grep "define NO_IRQ" -r include/
+Nope, it was a bug in the i2c documentation fixed recently:
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=8e29da9ee8958cc17e27f4053420f1c982614793
+
+Thanks,
+Jochen
