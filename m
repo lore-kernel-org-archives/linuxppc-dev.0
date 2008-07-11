@@ -1,21 +1,21 @@
-Return-Path: <kim.phillips@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 0C351DDE98
+Return-Path: <glikely@secretlab.ca>
+Received: from wf-out-1314.google.com (wf-out-1314.google.com [209.85.200.173])
+	by ozlabs.org (Postfix) with ESMTP id 64796DE151
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 12 Jul 2008 03:46:28 +1000 (EST)
-Date: Fri, 11 Jul 2008 12:46:04 -0500
-From: Kim Phillips <kim.phillips@freescale.com>
-To: <rmcguire@videopresence.com>
-Subject: Re: Freescale UCC_GETH Half Duplex Patch
-Message-Id: <20080711124604.caf199e9.kim.phillips@freescale.com>
-In-Reply-To: <2FE8E39946EE489FBAFC327EC9154EAF@absolutdaddy>
-References: <2FE8E39946EE489FBAFC327EC9154EAF@absolutdaddy>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 12 Jul 2008 04:31:21 +1000 (EST)
+Received: by wf-out-1314.google.com with SMTP id 24so3995387wfg.15
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri, 11 Jul 2008 11:31:20 -0700 (PDT)
+Date: Fri, 11 Jul 2008 12:31:17 -0600
+From: Grant Likely <grant.likely@secretlab.ca>
+To: Juliana Su <js084@bucknell.edu>
+Subject: Re: insmod: unresolved symbol XIo_In32/XIo_Out32
+Message-ID: <20080711183117.GD15321@secretlab.ca>
+References: <48776D93.5080504@bucknell.edu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <48776D93.5080504@bucknell.edu>
+Sender: Grant Likely <glikely@secretlab.ca>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -27,28 +27,29 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thu, 10 Jul 2008 17:23:31 -0700
-"Russell McGuire" <rmcguire@videopresence.com> wrote:
+On Fri, Jul 11, 2008 at 10:26:27AM -0400, Juliana Su wrote:
+> Hi,
+>
+> Is anybody familiar with the following error?
+>
+> insmod: unresolved symbol XIo_In32
+> insmod: unresolved symbol XIo_Out32
+>
+> I am trying to write a device driver for a Custom IP and get it to run  
+> on a Xilinx ML310's Linux OS. I am using Xilinx EDK 10.1 and MontaVista  
+> Linux version 2.4.20_mvl31-ml300. I ran into this error when trying to  
+> load my module into the kernel. When I try to load the module using  
+> insmod on the ".o" file, the module refuses to load and gives me the  
+> unresolved symbol error message. I actually stumbled upon an older  
+> posting from June 2006 on this mailing list that described a similar  
+> problem, but those suggestions did not help me. Maybe two years later,  
+> there are more ideas/suggestions/solutions to this problem?
 
-Hi Russel,
+I can't help much with the 2.4 montavista kernel, but I can say that the
+error means that the XIo_* helper routines are either not compiled into
+the kernel or are not exported with EXPORT_SYMBOL().  The XIo_* routines
+are hooks used by Xilinx cross platform device drivers to make the
+actual accesses to hardware.  If they are not implemented, then you need
+to create them yourself.
 
-> Here is a fix up for the UCC_GETH driver supporting half duplex mode for
-> some specific modes.
-> 
-> I have tested this quiet extensively and the link now comes up and works,
-> however not sure if there are other issues that need to be looked at, since
-> 10BaseT connectivity provides VERY ERRATIC throughput, but at least it works
-> now with RGMII and GMII modes.
-
-good
-
-> There was a lot more in my patch, but I removed a lot of the code for
-> submission. Let me know if for any reason this patch file is improperly
-> formatted.
-
-It needs to be sent to the netdev mailing list, and see if you can get
-rid of the MIME-encoding (see linux-2.6/Documentation/email-clients.txt).
-
-And don't forget to add a signed-off-by line, too.
-
-Kim
+g.
