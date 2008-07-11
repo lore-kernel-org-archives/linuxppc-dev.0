@@ -1,17 +1,16 @@
-Return-Path: <prodyuth@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.170])
-	by ozlabs.org (Postfix) with ESMTP id 86224DDFC8
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jul 2008 09:44:28 +1000 (EST)
-Received: by ug-out-1314.google.com with SMTP id k3so4159ugf.0
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jul 2008 16:44:26 -0700 (PDT)
-Message-ID: <49c0ff980807101644x6ffb9a66x3f73c72f1be86e3@mail.gmail.com>
-Date: Thu, 10 Jul 2008 16:44:26 -0700
-From: "prodyut hazarika" <prodyuth@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Subject: Making __copy_tofrom_user more readable for powerpc
-	(arch/powerpc/lib/copy_32.S)
+Return-Path: <dgibson@ozlabs.org>
+Date: Fri, 11 Jul 2008 10:57:52 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [RFC][WIP][PATCH] powerpc: Refactor device bindings
+Message-ID: <20080711005752.GC22065@yookeroo.seuss>
+References: <Pine.LNX.4.64.0807080818440.5899@blarg.am.freescale.net>
+	<20080710015212.GD26724@yookeroo.seuss>
+	<1893001D-8BB5-4549-A8B4-48A7E558CB47@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1893001D-8BB5-4549-A8B4-48A7E558CB47@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,33 +20,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi all,
-I am trying to optimize the __copy_tofrom_user function for PPC4xx,
-and I would want to know why the exception handling code has been made
-so complicated. All the fixup code should do is to store the number of
-bytes that failed in copy in r3 and return back.
+On Thu, Jul 10, 2008 at 08:22:53AM -0500, Kumar Gala wrote:
+>
+> On Jul 9, 2008, at 8:52 PM, David Gibson wrote:
+>
+>> On Tue, Jul 08, 2008 at 08:20:56AM -0500, Kumar Gala wrote:
+>>> Moved Freescale SoC related bindings out of booting-without-of.txt  
+>>> and into
+>>> their own files.
+>>>
+>>> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+>>
+>> Acked-by: David Gibson <david@gibson.dropbear.id.au>
+>>
+>> Of course, what I'd *really* like to do is to get a website / wiki set
+>> up somewhere to be the definitive home of all bindings, but I don't
+>> think it's going to happen any time real soon.
+>
+> agreed, I know there has been some talk of power.org trying to do this, 
+> but not sure what happened there.
 
-The current code tries to copy one byte at a time after read fault. I
-don't understand why that is necessary. It then clears out the
-destination. All these logic has made the code very unfriendly to
-read.
+Yeah, neither do I.  I should chase that up again, but I don't have
+the energy at the moment.
 
-I have a version which just keeps a count of bytes copied till any
-fault happened. Then for any exception, I just substract this value
-from the total number of bytes to be copied, and store in r3 and
-return back. This is the common fixup code for all paths. It makes the
-fixup code much more readable like other architectures (eg. x86).
-
-My questions are:
-1) Why do we need to distinguish between load and store failure? If
-either load or store fails, the copy did not go thru. But the code
-sets r9 to 0 for load failure, and r9 to 1 for write failure. Why do
-we need to care for that?
-
-2) For read failure, why do we clear out the destination (lines 509 to
-529 in arch/powerpc/lib/copy_32.S)? Other architecture don't do that.
-
-I would appreciate any comments.
-
-Thanks,
-Prodyut
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
