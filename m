@@ -1,19 +1,19 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id DB4D8DDF05
-	for <linuxppc-dev@ozlabs.org>; Sat, 12 Jul 2008 05:15:03 +1000 (EST)
-Date: Fri, 11 Jul 2008 23:15:02 +0400
+	by ozlabs.org (Postfix) with ESMTP id 12F5DDDF22
+	for <linuxppc-dev@ozlabs.org>; Sat, 12 Jul 2008 05:19:32 +1000 (EST)
+Date: Fri, 11 Jul 2008 23:19:30 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Jochen Friedrich <jochen@scram.de>
-Subject: Re: [PATCH] of/i2c: don't pass -1 to irq_dispose_mapping, otherwise
-	kernel will oops
-Message-ID: <20080711191502.GA21847@polina.dev.rtsoft.ru>
+Subject: Re: [PATCH] of/i2c: don't pass -1 to irq_dispose_mapping,
+	otherwise kernel will oops
+Message-ID: <20080711191930.GA23723@polina.dev.rtsoft.ru>
 References: <20080711174859.GA24260@polina.dev.rtsoft.ru>
-	<20080711182323.GB15321@secretlab.ca> <4877ADF6.8070702@scram.de>
+	<4877B046.8070206@scram.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf8
-In-Reply-To: <4877ADF6.8070702@scram.de>
-Cc: khali@linux-fr.org, i2c@lm-sensors.org, linuxppc-dev@ozlabs.org
+In-Reply-To: <4877B046.8070206@scram.de>
+Cc: linuxppc-dev@ozlabs.org
 Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -24,26 +24,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Jul 11, 2008 at 09:01:10PM +0200, Jochen Friedrich wrote:
-> Hi Grant,
+On Fri, Jul 11, 2008 at 09:11:02PM +0200, Jochen Friedrich wrote:
+> Hi Anton,
 > 
-> > What is the reason that info.irq is set to -1 in the first place?  This
-> > looks like another bug to me.  Does something in the i2c layer depend on
-> > the -1 value?
+> > diff --git a/drivers/of/of_i2c.c b/drivers/of/of_i2c.c
+> > index b2ccdcb..95a24de 100644
+> > --- a/drivers/of/of_i2c.c
+> > +++ b/drivers/of/of_i2c.c
+> > @@ -93,10 +93,8 @@ void of_register_i2c_devices(struct i2c_adapter *adap,
+> >  		if (info.irq == NO_IRQ)
+> >  			info.irq = -1;
+> >  
+> > -		if (of_find_i2c_driver(node, &info) < 0) {
+> > -			irq_dispose_mapping(info.irq);
+> > -			continue;
+> > -		}
+> > +		if (of_find_i2c_driver(node, &info) < 0)
+> > +			goto err;
+> >  
+> >  		info.addr = *addr;
+> >  
+> > @@ -107,9 +105,12 @@ void of_register_i2c_devices(struct i2c_adapter *adap,
+> >  			printk(KERN_ERR
+> >  			       "of-i2c: Failed to load driver for %s\n",
+> >  			       info.type);
+> > -			irq_dispose_mapping(info.irq);
+> > -			continue;
+> > +			goto err;
+> >  		}
+> > +		continue;
+> > +err:
+> > +		if (info.irq > 0)
+> > +			irq_dispose_mapping(info.irq);
 > 
-> Nope, it was a bug in the i2c documentation fixed recently:
+> Shouldn't this be:
+> 		if (info.irq != NO_IRQ)
 
-Nope? I'm looking into i2c-core.c:
+Maybe, maybe not. See
 
-.. i2c_new_device(...)
-{
-	client->irq = info->irq;
+http://lkml.org/lkml/2005/11/21/211
 
-Core will blindly pass irq, so clients should ensure that irq contains
-correct value. And as far as there is no common scheme of checking that
-"there is no irq specified", the most safe option is -1.
-
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=8e29da9ee8958cc17e27f4053420f1c982614793
+I.e. maybe we should use "if (irq)". Or if we should use NO_IRQ, then we
+need to fixup all the users of .irq.
 
 -- 
 Anton Vorontsov
