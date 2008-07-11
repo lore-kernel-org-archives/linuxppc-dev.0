@@ -4,13 +4,13 @@ Received: from az33egw01.freescale.net (az33egw01.freescale.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "az33egw01.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id DE697DDF9F
-	for <linuxppc-dev@ozlabs.org>; Sat, 12 Jul 2008 09:13:20 +1000 (EST)
-Date: Fri, 11 Jul 2008 18:04:45 -0500
+	by ozlabs.org (Postfix) with ESMTPS id 76C3BDE03C
+	for <linuxppc-dev@ozlabs.org>; Sat, 12 Jul 2008 09:13:22 +1000 (EST)
+Date: Fri, 11 Jul 2008 18:04:47 -0500
 From: Scott Wood <scottwood@freescale.com>
 To: galak@kernel.crashing.org
-Subject: [PATCH 5/6] gianfar: Add magic packet and suspend/resume support.
-Message-ID: <20080711230445.GD3854@loki.buserror.net>
+Subject: [PATCH 6/6] mpc8313erdb: Add power management to the device tree.
+Message-ID: <20080711230447.GE3854@loki.buserror.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 In-Reply-To: <20080711230328.GA3835@loki.buserror.net>
@@ -26,341 +26,302 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Signed-off-by: Scott Wood <scottwood@freescale.com>
 ---
- arch/powerpc/sysdev/fsl_soc.c |    3 +
- drivers/net/gianfar.c         |  118 ++++++++++++++++++++++++++++++++++++++++-
- drivers/net/gianfar.h         |   12 ++++-
- drivers/net/gianfar_ethtool.c |   41 +++++++++++++-
- include/linux/fsl_devices.h   |    1 +
- 5 files changed, 169 insertions(+), 6 deletions(-)
+ arch/powerpc/boot/dts/mpc8313erdb.dts |  241 +++++++++++++++++++++++----------
+ 1 files changed, 171 insertions(+), 70 deletions(-)
 
-diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
-index ca54563..2fcd714 100644
---- a/arch/powerpc/sysdev/fsl_soc.c
-+++ b/arch/powerpc/sysdev/fsl_soc.c
-@@ -357,6 +357,9 @@ static int __init gfar_of_init(void)
- 		else
- 			gfar_data.interface = PHY_INTERFACE_MODE_MII;
+diff --git a/arch/powerpc/boot/dts/mpc8313erdb.dts b/arch/powerpc/boot/dts/mpc8313erdb.dts
+index 3664fb5..2a94ae0 100644
+--- a/arch/powerpc/boot/dts/mpc8313erdb.dts
++++ b/arch/powerpc/boot/dts/mpc8313erdb.dts
+@@ -109,18 +109,38 @@
+ 			reg = <0x200 0x100>;
+ 		};
  
-+		if (of_get_property(np, "fsl,magic-packet", NULL))
-+			gfar_data.device_flags |= FSL_GIANFAR_DEV_HAS_MAGIC_PACKET;
+-		i2c@3000 {
++		sleep-nexus {
+ 			#address-cells = <1>;
+-			#size-cells = <0>;
+-			cell-index = <0>;
+-			compatible = "fsl-i2c";
+-			reg = <0x3000 0x100>;
+-			interrupts = <14 0x8>;
+-			interrupt-parent = <&ipic>;
+-			dfsrr;
+-			rtc@68 {
+-				compatible = "dallas,ds1339";
+-				reg = <0x68>;
++			#size-cells = <1>;
++			compatible = "simple-bus";
++			sleep = <&pmc 0x03000000>;
++			ranges;
 +
- 		ph = of_get_property(np, "phy-handle", NULL);
- 		if (ph == NULL) {
- 			u32 *fixed_link;
-diff --git a/drivers/net/gianfar.c b/drivers/net/gianfar.c
-index 25bdd08..f218dcc 100644
---- a/drivers/net/gianfar.c
-+++ b/drivers/net/gianfar.c
-@@ -142,6 +142,7 @@ static int gfar_clean_tx_ring(struct net_device *dev);
- static int gfar_process_frame(struct net_device *dev, struct sk_buff *skb, int length);
- static void gfar_vlan_rx_register(struct net_device *netdev,
- 		                struct vlan_group *grp);
-+static void gfar_halt_nodisable(struct net_device *dev);
- void gfar_halt(struct net_device *dev);
- void gfar_start(struct net_device *dev);
- static void gfar_clear_exact_match(struct net_device *dev);
-@@ -216,6 +217,7 @@ static int gfar_probe(struct platform_device *pdev)
++			i2c@3000 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				cell-index = <0>;
++				compatible = "fsl-i2c";
++				reg = <0x3000 0x100>;
++				interrupts = <14 0x8>;
++				interrupt-parent = <&ipic>;
++				dfsrr;
++				rtc@68 {
++					compatible = "dallas,ds1339";
++					reg = <0x68>;
++				};
++			};
++
++			crypto@30000 {
++				compatible = "fsl,sec2.2", "fsl,sec2.1",
++				             "fsl,sec2.0";
++				reg = <0x30000 0x10000>;
++				interrupts = <11 0x8>;
++				interrupt-parent = <&ipic>;
++				fsl,num-channels = <1>;
++				fsl,channel-fifo-len = <24>;
++				fsl,exec-units-mask = <0x4c>;
++				fsl,descriptor-types-mask = <0x0122003f>;
+ 			};
+ 		};
  
- 	spin_lock_init(&priv->txlock);
- 	spin_lock_init(&priv->rxlock);
-+	spin_lock_init(&priv->bflock);
+@@ -188,37 +208,44 @@
+ 			interrupt-parent = <&ipic>;
+ 			interrupts = <38 0x8>;
+ 			phy_type = "utmi_wide";
++			sleep = <&pmc 0x00300000>;
+ 		};
  
- 	platform_set_drvdata(pdev, dev);
+-		mdio@24520 {
++		enet0: ethernet@24000 {
+ 			#address-cells = <1>;
+-			#size-cells = <0>;
+-			compatible = "fsl,gianfar-mdio";
+-			reg = <0x24520 0x20>;
+-			phy1: ethernet-phy@1 {
+-				interrupt-parent = <&ipic>;
+-				interrupts = <19 0x8>;
+-				reg = <0x1>;
+-				device_type = "ethernet-phy";
+-			};
+-			phy4: ethernet-phy@4 {
+-				interrupt-parent = <&ipic>;
+-				interrupts = <20 0x8>;
+-				reg = <0x4>;
+-				device_type = "ethernet-phy";
+-			};
+-		};
++			#size-cells = <1>;
++			sleep = <&pmc 0x20000000>;
++			ranges;
  
-@@ -393,6 +395,103 @@ static int gfar_remove(struct platform_device *pdev)
- 	return 0;
- }
+-		enet0: ethernet@24000 {
+ 			cell-index = <0>;
+ 			device_type = "network";
+ 			model = "eTSEC";
+-			compatible = "gianfar";
++			compatible = "gianfar", "simple-bus";
+ 			reg = <0x24000 0x1000>;
+ 			local-mac-address = [ 00 00 00 00 00 00 ];
+ 			interrupts = <37 0x8 36 0x8 35 0x8>;
+ 			interrupt-parent = <&ipic>;
+ 			phy-handle = < &phy1 >;
++			fsl,magic-packet;
++
++			mdio@24520 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				compatible = "fsl,gianfar-mdio";
++				reg = <0x24520 0x20>;
++				phy1: ethernet-phy@1 {
++					interrupt-parent = <&ipic>;
++					interrupts = <19 0x8>;
++					reg = <0x1>;
++					device_type = "ethernet-phy";
++				};
++				phy4: ethernet-phy@4 {
++					interrupt-parent = <&ipic>;
++					interrupts = <20 0x8>;
++					reg = <0x4>;
++					device_type = "ethernet-phy";
++				};
++			};
+ 		};
  
-+#ifdef CONFIG_PM
-+static int gfar_suspend(struct platform_device *pdev, pm_message_t state)
-+{
-+	struct net_device *dev = platform_get_drvdata(pdev);
-+	struct gfar_private *priv = netdev_priv(dev);
-+	unsigned long flags;
-+	u32 tempval;
-+
-+	int magic_packet = priv->wol_en &&
-+		(priv->einfo->device_flags & FSL_GIANFAR_DEV_HAS_MAGIC_PACKET);
-+
-+	netif_device_detach(dev);
-+
-+	if (netif_running(dev)) {
-+		spin_lock_irqsave(&priv->txlock, flags);
-+		spin_lock(&priv->rxlock);
-+
-+		gfar_halt_nodisable(dev);
-+
-+		/* Disable Tx, and Rx if wake-on-LAN is disabled. */
-+		tempval = gfar_read(&priv->regs->maccfg1);
-+
-+		tempval &= ~MACCFG1_TX_EN;
-+
-+		if (!magic_packet)
-+			tempval &= ~MACCFG1_RX_EN;
-+
-+		gfar_write(&priv->regs->maccfg1, tempval);
-+
-+		spin_unlock(&priv->rxlock);
-+		spin_unlock_irqrestore(&priv->txlock, flags);
-+
-+#ifdef CONFIG_GFAR_NAPI
-+		napi_disable(&priv->napi);
-+#endif
-+
-+		if (magic_packet) {
-+			/* Enable interrupt on Magic Packet */
-+			gfar_write(&priv->regs->imask, IMASK_MAG);
-+
-+			/* Enable Magic Packet mode */
-+			tempval = gfar_read(&priv->regs->maccfg2);
-+			tempval |= MACCFG2_MPEN;
-+			gfar_write(&priv->regs->maccfg2, tempval);
-+		} else {
-+			phy_stop(priv->phydev);
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+static int gfar_resume(struct platform_device *pdev)
-+{
-+	struct net_device *dev = platform_get_drvdata(pdev);
-+	struct gfar_private *priv = netdev_priv(dev);
-+	unsigned long flags;
-+	u32 tempval;
-+	int magic_packet = priv->wol_en &&
-+		(priv->einfo->device_flags & FSL_GIANFAR_DEV_HAS_MAGIC_PACKET);
-+
-+	if (!netif_running(dev)) {
-+		netif_device_attach(dev);
-+		return 0;
-+	}
-+
-+	if (!magic_packet && priv->phydev)
-+		phy_start(priv->phydev);
-+
-+	/* Disable Magic Packet mode, in case something
-+	 * else woke us up.
-+	 */
-+
-+	spin_lock_irqsave(&priv->txlock, flags);
-+	spin_lock(&priv->rxlock);
-+
-+	tempval = gfar_read(&priv->regs->maccfg2);
-+	tempval &= ~MACCFG2_MPEN;
-+	gfar_write(&priv->regs->maccfg2, tempval);
-+
-+	gfar_start(dev);
-+
-+	spin_unlock(&priv->rxlock);
-+	spin_unlock_irqrestore(&priv->txlock, flags);
-+
-+	netif_device_attach(dev);
-+
-+#ifdef CONFIG_GFAR_NAPI
-+	napi_enable(&priv->napi);
-+#endif
-+
-+	return 0;
-+}
-+#else
-+#define gfar_suspend NULL
-+#define gfar_resume NULL
-+#endif
+ 		enet1: ethernet@25000 {
+@@ -231,6 +258,8 @@
+ 			interrupts = <34 0x8 33 0x8 32 0x8>;
+ 			interrupt-parent = <&ipic>;
+ 			phy-handle = < &phy4 >;
++			sleep = <&pmc 0x10000000>;
++			fsl,magic-packet;
+ 		};
  
- /* Reads the controller's registers to determine what interface
-  * connects it to the PHY.
-@@ -550,7 +649,7 @@ static void init_registers(struct net_device *dev)
+ 		serial0: serial@4500 {
+@@ -253,17 +282,6 @@
+ 			interrupt-parent = <&ipic>;
+ 		};
  
- 
- /* Halt the receive and transmit queues */
--void gfar_halt(struct net_device *dev)
-+static void gfar_halt_nodisable(struct net_device *dev)
- {
- 	struct gfar_private *priv = netdev_priv(dev);
- 	struct gfar __iomem *regs = priv->regs;
-@@ -573,6 +672,14 @@ void gfar_halt(struct net_device *dev)
- 			 (IEVENT_GRSC | IEVENT_GTSC)))
- 			cpu_relax();
- 	}
-+}
-+
-+/* Halt the receive and transmit queues */
-+void gfar_halt(struct net_device *dev)
-+{
-+	struct gfar_private *priv = netdev_priv(dev);
-+	struct gfar __iomem *regs = priv->regs;
-+	u32 tempval;
- 
- 	/* Disable Rx and Tx */
- 	tempval = gfar_read(&regs->maccfg1);
-@@ -1969,7 +2076,12 @@ static irqreturn_t gfar_error(int irq, void *dev_id)
- 	u32 events = gfar_read(&priv->regs->ievent);
- 
- 	/* Clear IEVENT */
--	gfar_write(&priv->regs->ievent, IEVENT_ERR_MASK);
-+	gfar_write(&priv->regs->ievent, events & IEVENT_ERR_MASK);
-+
-+	/* Magic Packet is not an error. */
-+	if ((priv->einfo->device_flags & FSL_GIANFAR_DEV_HAS_MAGIC_PACKET) &&
-+	    (events & IEVENT_MAG))
-+		events &= ~IEVENT_MAG;
- 
- 	/* Hmm... */
- 	if (netif_msg_rx_err(priv) || netif_msg_tx_err(priv))
-@@ -2042,6 +2154,8 @@ MODULE_ALIAS("platform:fsl-gianfar");
- static struct platform_driver gfar_driver = {
- 	.probe = gfar_probe,
- 	.remove = gfar_remove,
-+	.suspend = gfar_suspend,
-+	.resume = gfar_resume,
- 	.driver	= {
- 		.name = "fsl-gianfar",
- 		.owner = THIS_MODULE,
-diff --git a/drivers/net/gianfar.h b/drivers/net/gianfar.h
-index 27f37c8..5ee518a 100644
---- a/drivers/net/gianfar.h
-+++ b/drivers/net/gianfar.h
-@@ -168,6 +168,7 @@ extern const char gfar_driver_version[];
- #define MACCFG2_GMII            0x00000200
- #define MACCFG2_HUGEFRAME	0x00000020
- #define MACCFG2_LENGTHCHECK	0x00000010
-+#define MACCFG2_MPEN		0x00000008
- 
- #define ECNTRL_INIT_SETTINGS	0x00001000
- #define ECNTRL_TBI_MODE         0x00000020
-@@ -240,6 +241,7 @@ extern const char gfar_driver_version[];
- #define IEVENT_CRL		0x00020000
- #define IEVENT_XFUN		0x00010000
- #define IEVENT_RXB0		0x00008000
-+#define IEVENT_MAG		0x00000800
- #define IEVENT_GRSC		0x00000100
- #define IEVENT_RXF0		0x00000080
- #define IEVENT_FIR		0x00000008
-@@ -252,7 +254,8 @@ extern const char gfar_driver_version[];
- #define IEVENT_ERR_MASK         \
- (IEVENT_RXC | IEVENT_BSY | IEVENT_EBERR | IEVENT_MSRO | \
-  IEVENT_BABT | IEVENT_TXC | IEVENT_TXE | IEVENT_LC \
-- | IEVENT_CRL | IEVENT_XFUN | IEVENT_DPE | IEVENT_PERR)
-+ | IEVENT_CRL | IEVENT_XFUN | IEVENT_DPE | IEVENT_PERR \
-+ | IEVENT_MAG)
- 
- #define IMASK_INIT_CLEAR	0x00000000
- #define IMASK_BABR              0x80000000
-@@ -270,6 +273,7 @@ extern const char gfar_driver_version[];
- #define IMASK_CRL		0x00020000
- #define IMASK_XFUN		0x00010000
- #define IMASK_RXB0              0x00008000
-+#define IMASK_MAG		0x00000800
- #define IMASK_GTSC              0x00000100
- #define IMASK_RXFEN0		0x00000080
- #define IMASK_FIR		0x00000008
-@@ -737,10 +741,14 @@ struct gfar_private {
- 	unsigned int fifo_starve;
- 	unsigned int fifo_starve_off;
- 
-+	/* Bitfield update lock */
-+	spinlock_t bflock;
-+
- 	unsigned char vlan_enable:1,
- 		rx_csum_enable:1,
- 		extended_hash:1,
--		bd_stash_en:1;
-+		bd_stash_en:1,
-+		wol_en:1; /* Wake-on-LAN enabled */
- 	unsigned short padding;
- 
- 	unsigned int interruptTransmit;
-diff --git a/drivers/net/gianfar_ethtool.c b/drivers/net/gianfar_ethtool.c
-index 6007147..fb7d3cc 100644
---- a/drivers/net/gianfar_ethtool.c
-+++ b/drivers/net/gianfar_ethtool.c
-@@ -479,14 +479,13 @@ static int gfar_sringparam(struct net_device *dev, struct ethtool_ringparam *rva
- static int gfar_set_rx_csum(struct net_device *dev, uint32_t data)
- {
- 	struct gfar_private *priv = netdev_priv(dev);
-+	unsigned long flags;
- 	int err = 0;
- 
- 	if (!(priv->einfo->device_flags & FSL_GIANFAR_DEV_HAS_CSUM))
- 		return -EOPNOTSUPP;
- 
- 	if (dev->flags & IFF_UP) {
--		unsigned long flags;
+-		crypto@30000 {
+-			compatible = "fsl,sec2.2", "fsl,sec2.1", "fsl,sec2.0";
+-			reg = <0x30000 0x10000>;
+-			interrupts = <11 0x8>;
+-			interrupt-parent = <&ipic>;
+-			fsl,num-channels = <1>;
+-			fsl,channel-fifo-len = <24>;
+-			fsl,exec-units-mask = <0x4c>;
+-			fsl,descriptor-types-mask = <0x0122003f>;
+-		};
 -
- 		/* Halt TX and RX, and process the frames which
- 		 * have already been received */
- 		spin_lock_irqsave(&priv->txlock, flags);
-@@ -502,7 +501,9 @@ static int gfar_set_rx_csum(struct net_device *dev, uint32_t data)
- 		stop_gfar(dev);
- 	}
+ 		/* IPIC
+ 		 * interrupts cell = <intr #, sense>
+ 		 * sense values match linux IORESOURCE_IRQ_* defines:
+@@ -277,36 +295,119 @@
+ 			reg = <0x700 0x100>;
+ 			device_type = "ipic";
+ 		};
++
++		pmc: power@b00 {
++			compatible = "fsl,mpc8313-pmc", "fsl,mpc8349-pmc";
++			reg = <0xb00 0x100 0xa00 0x100>;
++			interrupts = <80 8>;
++			interrupt-parent = <&ipic>;
++			fsl,mpc8313-wakeup-timer = <&gtm1>;
++
++			/* Remove this (or change to "okay") if you have
++			 * a REVA3 or later board, if you apply one of the
++			 * workarounds listed in section 8.5 of the board
++			 * manual, or if you are adapting this device tree
++			 * to a different board.
++			 */
++			status = "fail";
++		};
++
++		gtm1: timer@500 {
++			compatible = "fsl,mpc8313-gtm", "fsl,gtm";
++			reg = <0x500 0x100>;
++			interrupts = <90 8 78 8 84 8 72 8>;
++			interrupt-parent = <&ipic>;
++		};
++
++		timer@600 {
++			compatible = "fsl,mpc8313-gtm", "fsl,gtm";
++			reg = <0x600 0x100>;
++			interrupts = <91 8 79 8 85 8 73 8>;
++			interrupt-parent = <&ipic>;
++		};
+ 	};
  
-+	spin_lock_irqsave(&priv->bflock, flags);
- 	priv->rx_csum_enable = data;
-+	spin_unlock_irqrestore(&priv->bflock, flags);
- 
- 	if (dev->flags & IFF_UP)
- 		err = startup_gfar(dev);
-@@ -564,6 +565,38 @@ static void gfar_set_msglevel(struct net_device *dev, uint32_t data)
- 	priv->msg_enable = data;
- }
- 
-+#ifdef CONFIG_PM
-+static void gfar_get_wol(struct net_device *dev, struct ethtool_wolinfo *wol)
-+{
-+	struct gfar_private *priv = netdev_priv(dev);
+-	pci0: pci@e0008500 {
+-		cell-index = <1>;
+-		interrupt-map-mask = <0xf800 0x0 0x0 0x7>;
+-		interrupt-map = <
+-
+-				/* IDSEL 0x0E -mini PCI */
+-				 0x7000 0x0 0x0 0x1 &ipic 18 0x8
+-				 0x7000 0x0 0x0 0x2 &ipic 18 0x8
+-				 0x7000 0x0 0x0 0x3 &ipic 18 0x8
+-				 0x7000 0x0 0x0 0x4 &ipic 18 0x8
+-
+-				/* IDSEL 0x0F - PCI slot */
+-				 0x7800 0x0 0x0 0x1 &ipic 17 0x8
+-				 0x7800 0x0 0x0 0x2 &ipic 18 0x8
+-				 0x7800 0x0 0x0 0x3 &ipic 17 0x8
+-				 0x7800 0x0 0x0 0x4 &ipic 18 0x8>;
+-		interrupt-parent = <&ipic>;
+-		interrupts = <66 0x8>;
+-		bus-range = <0x0 0x0>;
+-		ranges = <0x02000000 0x0 0x90000000 0x90000000 0x0 0x10000000
+-			  0x42000000 0x0 0x80000000 0x80000000 0x0 0x10000000
+-			  0x01000000 0x0 0x00000000 0xe2000000 0x0 0x00100000>;
+-		clock-frequency = <66666666>;
+-		#interrupt-cells = <1>;
+-		#size-cells = <2>;
+-		#address-cells = <3>;
+-		reg = <0xe0008500 0x100>;
+-		compatible = "fsl,mpc8349-pci";
+-		device_type = "pci";
++	sleep-nexus {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		compatible = "simple-bus";
++		sleep = <&pmc 0x00010000>;
++		ranges;
 +
-+	if (priv->einfo->device_flags & FSL_GIANFAR_DEV_HAS_MAGIC_PACKET) {
-+		wol->supported = WAKE_MAGIC;
-+		wol->wolopts = priv->wol_en ? WAKE_MAGIC : 0;
-+	} else {
-+		wol->supported = wol->wolopts = 0;
-+	}
-+}
++		pci0: pci@e0008500 {
++			cell-index = <1>;
++			interrupt-map-mask = <0xf800 0x0 0x0 0x7>;
++			interrupt-map = <
++					/* IDSEL 0x0E -mini PCI */
++					 0x7000 0x0 0x0 0x1 &ipic 18 0x8
++					 0x7000 0x0 0x0 0x2 &ipic 18 0x8
++					 0x7000 0x0 0x0 0x3 &ipic 18 0x8
++					 0x7000 0x0 0x0 0x4 &ipic 18 0x8
 +
-+static int gfar_set_wol(struct net_device *dev, struct ethtool_wolinfo *wol)
-+{
-+	struct gfar_private *priv = netdev_priv(dev);
-+	unsigned long flags;
++					/* IDSEL 0x0F - PCI slot */
++					 0x7800 0x0 0x0 0x1 &ipic 17 0x8
++					 0x7800 0x0 0x0 0x2 &ipic 18 0x8
++					 0x7800 0x0 0x0 0x3 &ipic 17 0x8
++					 0x7800 0x0 0x0 0x4 &ipic 18 0x8>;
++			interrupt-parent = <&ipic>;
++			interrupts = <66 0x8>;
++			bus-range = <0x0 0x0>;
++			ranges = <0x02000000 0x0 0x90000000 0x90000000 0x0 0x10000000
++				  0x42000000 0x0 0x80000000 0x80000000 0x0 0x10000000
++				  0x01000000 0x0 0x00000000 0xe2000000 0x0 0x00100000>;
++			clock-frequency = <66666666>;
++			#interrupt-cells = <1>;
++			#size-cells = <2>;
++			#address-cells = <3>;
++			reg = <0xe0008500 0x100>;
++			compatible = "fsl,mpc8349-pci";
++			device_type = "pci";
++		};
 +
-+	if (!(priv->einfo->device_flags & FSL_GIANFAR_DEV_HAS_MAGIC_PACKET) &&
-+	    wol->wolopts != 0)
-+		return -EINVAL;
++		dma@82a8 {
++			#address-cells = <1>;
++			#size-cells = <1>;
++			compatible = "fsl,mpc8313-dma", "fsl,elo-dma";
++			reg = <0xe00082a8 4>;
++			ranges = <0 0xe0008100 0x1a8>;
++			interrupt-parent = <&ipic>;
++			interrupts = <71 8>;
 +
-+	if (wol->wolopts & ~WAKE_MAGIC)
-+		return -EINVAL;
++			dma-channel@0 {
++				compatible = "fsl,mpc8313-dma-channel",
++				             "fsl,elo-dma-channel";
++				reg = <0 0x28>;
++				interrupt-parent = <&ipic>;
++				interrupts = <71 8>;
++				cell-index = <0>;
++			};
 +
-+	spin_lock_irqsave(&priv->bflock, flags);
-+	priv->wol_en = wol->wolopts & WAKE_MAGIC ? 1 : 0;
-+	spin_unlock_irqrestore(&priv->bflock, flags);
++			dma-channel@80 {
++				compatible = "fsl,mpc8313-dma-channel",
++				             "fsl,elo-dma-channel";
++				reg = <0x80 0x28>;
++				interrupt-parent = <&ipic>;
++				interrupts = <71 8>;
++				cell-index = <1>;
++			};
 +
-+	return 0;
-+}
-+#endif
- 
- const struct ethtool_ops gfar_ethtool_ops = {
- 	.get_settings = gfar_gsettings,
-@@ -585,4 +618,8 @@ const struct ethtool_ops gfar_ethtool_ops = {
- 	.set_tx_csum = gfar_set_tx_csum,
- 	.get_msglevel = gfar_get_msglevel,
- 	.set_msglevel = gfar_set_msglevel,
-+#ifdef CONFIG_PM
-+	.get_wol = gfar_get_wol,
-+	.set_wol = gfar_set_wol,
-+#endif
++			dma-channel@100 {
++				compatible = "fsl,mpc8313-dma-channel",
++				             "fsl,elo-dma-channel";
++				reg = <0x100 0x28>;
++				interrupt-parent = <&ipic>;
++				interrupts = <71 8>;
++				cell-index = <2>;
++			};
++
++			dma-channel@180 {
++				compatible = "fsl,mpc8313-dma-channel",
++				             "fsl,elo-dma-channel";
++				reg = <0x180 0x28>;
++				interrupt-parent = <&ipic>;
++				interrupts = <71 8>;
++				cell-index = <3>;
++			};
++		};
+ 	};
  };
-diff --git a/include/linux/fsl_devices.h b/include/linux/fsl_devices.h
-index 0472877..4e625e0 100644
---- a/include/linux/fsl_devices.h
-+++ b/include/linux/fsl_devices.h
-@@ -69,6 +69,7 @@ struct gianfar_mdio_data {
- #define FSL_GIANFAR_DEV_HAS_VLAN		0x00000020
- #define FSL_GIANFAR_DEV_HAS_EXTENDED_HASH	0x00000040
- #define FSL_GIANFAR_DEV_HAS_PADDING		0x00000080
-+#define FSL_GIANFAR_DEV_HAS_MAGIC_PACKET	0x00000100
- 
- /* Flags in gianfar_platform_data */
- #define FSL_GIANFAR_BRD_HAS_PHY_INTR	0x00000001 /* set or use a timer */
 -- 
 1.5.6.rc1.6.gc53ad.dirty
