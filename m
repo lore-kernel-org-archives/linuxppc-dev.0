@@ -1,19 +1,16 @@
-Return-Path: <rmcguire@videopresence.com>
-Received: from smtpout09.prod.mesa1.secureserver.net
-	(smtpout09-04.prod.mesa1.secureserver.net [64.202.165.17])
-	by ozlabs.org (Postfix) with SMTP id 9346CDDEEC
+Return-Path: <SHorton@kodiaknetworks.com>
+Received: from cowboy.inovate.inovate.com (planomail.kodiaknetworks.com
+	[76.203.108.6]) by ozlabs.org (Postfix) with ESMTP id 88B6CDDE9E
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 11 Jul 2008 10:30:18 +1000 (EST)
-From: "Russell McGuire" <rmcguire@videopresence.com>
-To: "'Kim Phillips'" <kim.phillips@freescale.com>
-Subject: Freescale UCC_GETH Half Duplex Patch
-Date: Thu, 10 Jul 2008 17:23:31 -0700
-Message-ID: <2FE8E39946EE489FBAFC327EC9154EAF@absolutdaddy>
+	Fri, 11 Jul 2008 13:59:02 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: multipart/mixed;
-	boundary="----=_NextPart_000_0013_01C8E2B1.ACC7E790"
-Cc: linuxppc-embedded@ozlabs.org
-Reply-To: rmcguire@videopresence.com
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C8E308.C07769E3"
+Subject: mpc744x, Marvell mv6446x kernel guidance please
+Date: Thu, 10 Jul 2008 22:46:49 -0500
+Message-ID: <295C5089A56CE143B316E5F67CA99CB001C9E4BD@cowboy.inovate.inovate.com>
+From: "Stephen Horton" <SHorton@kodiaknetworks.com>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -26,62 +23,166 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 
 This is a multi-part message in MIME format.
 
-------=_NextPart_000_0013_01C8E2B1.ACC7E790
+------_=_NextPart_001_01C8E308.C07769E3
 Content-Type: text/plain;
 	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-
-Kim, ALL
-
-Here is a fix up for the UCC_GETH driver supporting half duplex mode for
-some specific modes.
-
-I have tested this quiet extensively and the link now comes up and works,
-however not sure if there are other issues that need to be looked at, since
-10BaseT connectivity provides VERY ERRATIC throughput, but at least it works
-now with RGMII and GMII modes.
-
-There was a lot more in my patch, but I removed a lot of the code for
-submission. Let me know if for any reason this patch file is improperly
-formatted.
-
-Russell McGuire
-Senior Systems Engineer
-rmcguire@videopresence.com
-503.888.0968
-
-
-------=_NextPart_000_0013_01C8E2B1.ACC7E790
-Content-Type: application/octet-stream;
-	name="ucc_geth.patch"
 Content-Transfer-Encoding: quoted-printable
-Content-Disposition: attachment;
-	filename="ucc_geth.patch"
 
-diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c=0A=
-index 9a38dfe..5900847 100644=0A=
---- a/drivers/net/ucc_geth.c=0A=
-+++ b/drivers/net/ucc_geth.c=0A=
-@@ -1533,10 +1698,17 @@ static void adjust_link(struct net_device *dev)=0A=
- 		 * If not, we operate in half-duplex mode. */=0A=
- 		if (phydev->duplex !=3D ugeth->oldduplex) {=0A=
- 			new_state =3D 1;=0A=
--			if (!(phydev->duplex))=0A=
--				tempval &=3D ~(MACCFG2_FDX);=0A=
--			else=0A=
--				tempval |=3D MACCFG2_FDX;=0A=
-+			/* Can only use half duplex for these two modes!! */=0A=
-+			if ((ugeth->phy_interface =3D=3D PHY_INTERFACE_MODE_MII) ||=0A=
-+			  (ugeth->phy_interface =3D=3D PHY_INTERFACE_MODE_RMII)) {	=0A=
-+				if (!(phydev->duplex))=0A=
-+					tempval &=3D ~(MACCFG2_FDX);=0A=
-+				else=0A=
-+					tempval |=3D MACCFG2_FDX;=0A=
-+			} else {=0A=
-+				/* Always set for other modes */=0A=
-+				tempval |=3D MACCFG2_FDX; =0A=
-+			}=0A=
- 			ugeth->oldduplex =3D phydev->duplex;=0A=
- 		}=0A=
+Hello folks,
 
-------=_NextPart_000_0013_01C8E2B1.ACC7E790--
+In a current work project, I have inherited a compactPCI board that has
+an mpc7447/7448 powerpc processor as well as a Marvell system
+controller, model mv64462 (stripped down mv64460). The board has a
+somewhat working Gentoo Linux port running on it from long ago and a
+company far far away (kernel version 2.6.9 built using arch/ppc). To
+prepare for an upcoming deployment, I would like to bring the OS
+up-to-date on this board with a newer kernel (targeting Gentoo 2008),
+but I am unsure of the approach to take. I am a software developer, but
+normally do not work on kernel porting / board integration. I have
+researched the arch/ppc to arch/powerpc migration, but I'm a bit
+intimidated by the 'new' device tree symantics and other changes to the
+stream. Here are some questions:
+
+1.	Is it possible with the 2.6.24 (Gentoo 2008) kernel to still use
+arch/ppc for this platform architecture?  I've tried to get this to
+compile, but am having trouble with files from arch/powerpc getting
+pulled in; then I read some comments (from I believe this forum) that
+indicated that arch/ppc is not longer supposed to compile
+2.	Does anyone have example code for this platform architecture?
+Any freebees I could use for creating my device tree?
+3.	Any advice of any kind?
+
+Regards,
+
+Stephen
+
+
+------_=_NextPart_001_01C8E308.C07769E3
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
+xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
+xmlns=3D"http://www.w3.org/TR/REC-html40">
+
+<head>
+<meta http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Dus-ascii">
+<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
+<style>
+<!--
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0in;
+	margin-bottom:.0001pt;
+	font-size:12.0pt;
+	font-family:"Times New Roman";}
+a:link, span.MsoHyperlink
+	{color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{color:purple;
+	text-decoration:underline;}
+span.EmailStyle17
+	{mso-style-type:personal-compose;
+	font-family:Arial;
+	color:windowtext;}
+@page Section1
+	{size:8.5in 11.0in;
+	margin:1.0in 1.25in 1.0in 1.25in;}
+div.Section1
+	{page:Section1;}
+ /* List Definitions */
+ @list l0
+	{mso-list-id:1055928783;
+	mso-list-type:hybrid;
+	mso-list-template-ids:-517066650 67698703 67698713 67698715 67698703 =
+67698713 67698715 67698703 67698713 67698715;}
+@list l0:level1
+	{mso-level-tab-stop:.5in;
+	mso-level-number-position:left;
+	text-indent:-.25in;}
+ol
+	{margin-bottom:0in;}
+ul
+	{margin-bottom:0in;}
+-->
+</style>
+
+</head>
+
+<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
+
+<div class=3DSection1>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Hello folks,<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>In a current work project, I have inherited a =
+compactPCI
+board that has an mpc7447/7448 powerpc processor as well as a Marvell =
+system
+controller, model mv64462 (stripped down mv64460). The board has a =
+somewhat
+working Gentoo Linux port running on it from long ago and a company far =
+far
+away (kernel version 2.6.9 built using arch/ppc). To prepare for an =
+upcoming
+deployment, I would like to bring the OS up-to-date on this board with a =
+newer
+kernel (targeting Gentoo 2008), but I am unsure of the approach to take. =
+I am a
+software developer, but normally do not work on kernel porting / board
+integration. I have researched the arch/ppc to arch/powerpc migration, =
+but I&#8217;m
+a bit intimidated by the &#8216;new&#8217; device tree symantics and =
+other
+changes to the stream. Here are some =
+questions:<o:p></o:p></span></font></p>
+
+<ol style=3D'margin-top:0in' start=3D1 type=3D1>
+ <li class=3DMsoNormal style=3D'mso-list:l0 level1 lfo1'><font size=3D2 =
+face=3DArial><span
+     style=3D'font-size:10.0pt;font-family:Arial'>Is it possible with =
+the 2.6.24
+     (Gentoo 2008) kernel to still use arch/ppc for this platform =
+architecture?
+     &nbsp;I&#8217;ve tried to get this to compile, but am having =
+trouble with
+     files from arch/powerpc getting pulled in; then I read some =
+comments (from
+     I believe this forum) that indicated that arch/ppc is not longer =
+supposed
+     to compile<o:p></o:p></span></font></li>
+ <li class=3DMsoNormal style=3D'mso-list:l0 level1 lfo1'><font size=3D2 =
+face=3DArial><span
+     style=3D'font-size:10.0pt;font-family:Arial'>Does anyone have =
+example code
+     for this platform architecture? Any freebees I could use for =
+creating my
+     device tree?<o:p></o:p></span></font></li>
+ <li class=3DMsoNormal style=3D'mso-list:l0 level1 lfo1'><font size=3D2 =
+face=3DArial><span
+     style=3D'font-size:10.0pt;font-family:Arial'>Any advice of any =
+kind?<o:p></o:p></span></font></li>
+</ol>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Regards,<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Stephen<o:p></o:p></span></font></p>
+
+</div>
+
+</body>
+
+</html>
+
+------_=_NextPart_001_01C8E308.C07769E3--
