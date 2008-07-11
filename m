@@ -1,21 +1,23 @@
-Return-Path: <j.w.r.degoede@hhs.nl>
-Received: from smtp1.versatel.nl (smtp1.versatel.nl [62.58.50.88])
+Return-Path: <jgarzik@pobox.com>
+Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B9535DE106
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jul 2008 07:32:47 +1000 (EST)
-Message-ID: <48768018.2070704@hhs.nl>
-Date: Thu, 10 Jul 2008 23:33:12 +0200
-From: Hans de Goede <j.w.r.degoede@hhs.nl>
+	by ozlabs.org (Postfix) with ESMTPS id B5102DDEF3
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jul 2008 15:19:53 +1000 (EST)
+Message-ID: <4876ED6F.2030107@pobox.com>
+Date: Fri, 11 Jul 2008 01:19:43 -0400
+From: Jeff Garzik <jgarzik@pobox.com>
 MIME-Version: 1.0
-To: Milton Miller <miltonm@bga.com>
-Subject: Re: [lm-sensors] [RFC] (almost) booting allyesconfig -- please don't
-	poke super-io without request_region
-References: <for-27-patch1-0@bga.com>
-In-Reply-To: <for-27-patch1-0@bga.com>
+To: benh@kernel.crashing.org
+Subject: Re: [PATCH v2] ibm_newemac: Add MII mode support to the EMAC RGMII
+	bridge.
+References: <C497F939.104DB%gerickson@nuovations.com>
+	<1215529386-12749-1-git-send-email-gerickson@nuovations.com>
+	<1215573802.8970.302.camel@pasglop>
+In-Reply-To: <1215573802.8970.302.camel@pasglop>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, Samuel Ortiz <samuel@sortiz.org>,
-	linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org
+Cc: linuxppc-dev@ozlabs.org, sr@denx.de,
+	Grant Erickson <gerickson@nuovations.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,63 +27,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Milton Miller wrote:
-> After the following patch to mark the isa region busy and applying a few
-> patches[1], I was able to kexec boot into an all-yes-config kernel from 
-> linux-next, with the following KCONFIG_ALLCONFIG file:
+Benjamin Herrenschmidt wrote:
+> On Tue, 2008-07-08 at 08:03 -0700, Grant Erickson wrote:
+>> This patch adds support to the RGMII handler in the EMAC driver for
+>> the MII PHY mode such that device tree entries of the form `phy-mode = "mii";'
+>> are recognized and handled appropriately.
+>>
+>> While logically, in software, "gmii" and "mii" modes are the same,
+>> they are wired differently, so it makes sense to allow DTS authors to
+>> specify each explicitly.
+>>
+>> Signed-off-by: Grant Erickson <gerickson@nuovations.com>
 > 
-> # CONFIG_KALLSYMS_EXTRA_PASS is not set
-> # CONFIG_CRASH_DUMP is not set
-> CONFIG_PPC_EARLY_DEBUG_RTAS_CONSOLE=y
-> # CONFIG_NSC_FIR is not set
-> # CONFIG_SMC_IRCC_FIR is not set
-> # CONFIG_ALI_FIR is not set
-> # CONFIG_TCG_NSC is not set
-> # CONFIG_TCG_ATMEL is not set
-> # CONFIG_SENSORS_F71805F is not set
-> # CONFIG_SENSORS_F71882FG is not set
-> # CONFIG_SENSORS_F75375S is not set
-> # CONFIG_SENSORS_IT87 is not set
-> # CONFIG_SENSORS_PC87360 is not set
-> # CONFIG_SENSORS_PC87427 is not set
-> # CONFIG_SENSORS_DME1737 is not set
-> # CONFIG_SENSORS_SMSC47M1 is not set
-> # CONFIG_SENSORS_SMSC47B397 is not set
-> # CONFIG_SENSORS_VT1211 is not set
-> # CONFIG_SENSORS_W83627HF is not set
-> # CONFIG_SENSORS_W83627EHF is not set
+> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+
+ACK
+
+
+> Jeff, I'd like to apply that (and other EMAC patches for 2.6.27, do you
+> have anything else pending ?) via my tree provided you give me your ack.
+> The reason is that the multicast fix one is going that way as it touches
+> other arch files, and subsequent ones are now likely to conflict.
 > 
-> While the first two might not be required, and the third is just
-> selecting the right platform, it would be nice to get the drivers
-> to play as well as the rest of the kernel.
-> 
-> The drivers all are for super-io chips, either irda/FIR drivers or hwmon,
-> and poke at isa ports without checking request_region.
-> 
+> Let me know if that's ok with you in which case I'll stick your ack in
+> there.
 
-Erm,
-
-The superio sensor drivers only poke the superio chip registers without request 
-region during the probe phase, iow they try to detect the chip, using a widely 
-document and standardized (part of isa pnp AFAIK) procedure on standardized ports.
-
-Let me try to explain a bit about superio chips, they have 2 superio control 
-registers (an index and data register) with which things like a manufacturer 
-and device id can be read, besides these id registers they also have a set of 
-registers with config for different logical devices. Once the id is matched, 
-the driver knows which logical device config to read, reads a (different) isa 
-base address + range from the logical device config, and then does a 
-request_region on the region actually used by the logical device.
-
-The superio control registers are thus a sort of pci configuration space if you 
-want, doing a request_region on these is not such a good idea, as multiple 
-drivers (for different logical devices within the superio device) may use 
-these, so trying to gain exclusive access will lead to troubles.
-
-I hope with this info about the problem space, that you maybe have a suggestion 
-on howto fix this?
-
-Regards,
-
-Hans
-> 
+Ok w/ me!
