@@ -1,20 +1,18 @@
-Return-Path: <js084@bucknell.edu>
-Received: from ivory.bucknell.edu (ivory.bucknell.edu [134.82.9.79])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 6456ADDDFC
+Return-Path: <sprasad@bivio.net>
+Received: from corpexc01.corp.networkrobots.com (nofear-snat.bivio.net
+	[216.142.75.231]) by ozlabs.org (Postfix) with ESMTP id 46469DE5E7
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 12 Jul 2008 05:11:12 +1000 (EST)
-Message-ID: <4877B04A.8090801@bucknell.edu>
-Date: Fri, 11 Jul 2008 15:11:06 -0400
-From: Juliana Su <js084@bucknell.edu>
+	Sat, 12 Jul 2008 06:47:38 +1000 (EST)
 MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: insmod: unresolved symbol XIo_In32/XIo_Out32
-References: <48776D93.5080504@bucknell.edu>
-	<20080711183117.GD15321@secretlab.ca>
-In-Reply-To: <20080711183117.GD15321@secretlab.ca>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: linux boot sequence
+Date: Fri, 11 Jul 2008 13:47:14 -0700
+Message-ID: <D83235F0F3C86D4D889D8B9A0DA8C6D702B6409A@corpexc01.corp.networkrobots.com>
+In-Reply-To: <mailman.1640.1215763007.2883.linuxppc-embedded@ozlabs.org>
+References: <mailman.1640.1215763007.2883.linuxppc-embedded@ozlabs.org>
+From: "Siva Prasad" <sprasad@bivio.net>
+To: <rwehbi@wirecom-tech.com>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -26,94 +24,53 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
 
-Thanks for your reply! I am new to creating loadable kernel modules, so 
-I hope you do not mind some more questions... How can I get the XIo_* 
-helper routines to compile into the kernel or export them with 
-EXPORT_SYMBOL( )? In my c file (my driver file from which I create the 
-object file), I made sure to include xio.h, which is where XIo_In32 and 
-XIo_Out32 are defined (see below section from xio.h).
+Well!... You can pass the size as part of the OF memory=3D<>.
 
+Typically your boot loader should detect the amount of memory on the
+system and update the OF dtb to reflect the available memory.
 
-/************************** Function Prototypes 
-******************************/
+You may also tweak the kernel yourself to autodetect, instead of reading
+from the OF. How ever, I would recommend the previous approach.
 
-/* The following functions allow the software to be transportable across
- * processors which may use memory mapped I/O or I/O which is mapped into a
- * seperate address space such as X86.  The functions are better suited for
- * debugging and are therefore the default implementation. Macros can 
-instead
- * be used if USE_IO_MACROS is defined.
- */
-#ifndef USE_IO_MACROS
-
-/* Functions */
-u8 XIo_In8(XIo_Address InAddress);
-u16 XIo_In16(XIo_Address InAddress);
-u32 XIo_In32(XIo_Address InAddress);
-
-void XIo_Out8(XIo_Address OutAddress, u8 Value);
-void XIo_Out16(XIo_Address OutAddress, u16 Value);
-void XIo_Out32(XIo_Address OutAddress, u32 Value);
-
-#else
-
-/* The following macros allow optimized I/O operations for memory mapped I/O
- * Note that the SYNCHRONIZE_IO may be moved by the compiler during
- * optimization.
- */
-
-#define XIo_In8(InputPtr)  (*(volatile u8  *)(InputPtr)); SYNCHRONIZE_IO;
-#define XIo_In16(InputPtr) (*(volatile u16 *)(InputPtr)); SYNCHRONIZE_IO;
-#define XIo_In32(InputPtr) (*(volatile u32 *)(InputPtr)); SYNCHRONIZE_IO;
-
-#define XIo_Out8(OutputPtr, Value)  \
-    { (*(volatile u8  *)(OutputPtr) = Value); SYNCHRONIZE_IO; }
-#define XIo_Out16(OutputPtr, Value) \
-    { (*(volatile u16 *)(OutputPtr) = Value); SYNCHRONIZE_IO; }
-#define XIo_Out32(OutputPtr, Value) \
-    { (*(volatile u32 *)(OutputPtr) = Value); SYNCHRONIZE_IO; }
-
-#endif
+- Siva
 
 
-I thought that, by including xio.h, XIo_In32 and XIo_Out32 would be 
-taken care of, but that is probably a novice assumption of mine...
+Date: Fri, 11 Jul 2008 08:34:54 +0200
+From: "Rami WEHBI" <rwehbi@wirecom-tech.com>
+Subject: linux boot sequence
+To: <linuxppc-embedded@ozlabs.org>
+Message-ID:
+=09
+<D3C541E264C021479BFB60B3B790C0FB497014@etoilenoire.STARWARS.local>
+Content-Type: text/plain; charset=3D"iso-8859-1"
 
 
--Juliana
+Hi all,
+=20
+    I am using the ppc405 and I would like to know, how does linux on
+this architect detect the available memory size in details !!!
+        is it a parameter passed to linux at startup by the boot loader
+??
+        is it an automatic detection ?? what are the steps to accomplish
+this job then ???
+=20
+Best regards to all,
+=20
+Rami
+=20
 
 
-Grant Likely wrote:
-> On Fri, Jul 11, 2008 at 10:26:27AM -0400, Juliana Su wrote:
->   
->> Hi,
->>
->> Is anybody familiar with the following error?
->>
->> insmod: unresolved symbol XIo_In32
->> insmod: unresolved symbol XIo_Out32
->>
->> I am trying to write a device driver for a Custom IP and get it to run  
->> on a Xilinx ML310's Linux OS. I am using Xilinx EDK 10.1 and MontaVista  
->> Linux version 2.4.20_mvl31-ml300. I ran into this error when trying to  
->> load my module into the kernel. When I try to load the module using  
->> insmod on the ".o" file, the module refuses to load and gives me the  
->> unresolved symbol error message. I actually stumbled upon an older  
->> posting from June 2006 on this mailing list that described a similar  
->> problem, but those suggestions did not help me. Maybe two years later,  
->> there are more ideas/suggestions/solutions to this problem?
->>     
->
-> I can't help much with the 2.4 montavista kernel, but I can say that the
-> error means that the XIo_* helper routines are either not compiled into
-> the kernel or are not exported with EXPORT_SYMBOL().  The XIo_* routines
-> are hooks used by Xilinx cross platform device drivers to make the
-> actual accesses to hardware.  If they are not implemented, then you need
-> to create them yourself.
->
-> g.
->
->
->   
+
+Rami WEHBI =09
+Recherche & D?veloppement =09
+T?l :	 +33 2 36 56 86 00=09
+Fax :	 +33 2 36 56 86 01=09
+www.wirecom-tech.com=09
+
+  <http://www.wirecom-tech.com> =09
+
+WIRECOM Technologies=20
+135, Rue Jacques Charles
+45166 Olivet
+=09
