@@ -1,19 +1,30 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from wf-out-1314.google.com (wf-out-1314.google.com [209.85.200.171])
-	by ozlabs.org (Postfix) with ESMTP id A0055DE011
-	for <linuxppc-dev@ozlabs.org>; Sat, 12 Jul 2008 08:39:48 +1000 (EST)
-Received: by wf-out-1314.google.com with SMTP id 24so4058992wfg.15
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jul 2008 15:39:47 -0700 (PDT)
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH] powerpc: Modify MPC52xx maintainers entry to cover all
-	MPC5xxx parts
-To: benh@kernel.crashing.org, jrigby@freescale.com, tnt@246tnt.com,
-	linuxppc-dev@ozlabs.org
-Date: Fri, 11 Jul 2008 16:39:44 -0600
-Message-ID: <20080711223944.22439.37831.stgit@trillian.secretlab.ca>
+Return-Path: <sonny@us.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 4256FDDF71
+	for <linuxppc-dev@ozlabs.org>; Sat, 12 Jul 2008 09:00:41 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e36.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m6BN0Zun010516
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jul 2008 19:00:35 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
+	m6BN0Zgs163304
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jul 2008 17:00:35 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m6BN0Ywa028574
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jul 2008 17:00:35 -0600
+Date: Fri, 11 Jul 2008 18:00:26 -0500
+From: Sonny Rao <sonnyrao@us.ibm.com>
+To: benh@kernel.crashing.org
+Subject: [PATCH] powerpc: don't spin on sync
+Message-ID: <20080711230026.GB17878@us.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Sender: Grant Likely <glikely@secretlab.ca>
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, sonnyrao@us.ibm.com, paulus@samba.org,
+	miltonm@bga.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,34 +34,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Grant Likely <grant.likely@secretlab.ca>
+Push the sync below the secondary smp init hold loop and comment its purpose.
+This should speed up boot by reducing global traffic during the single-threaded
+portion of boot.
 
-Linux now supports the MPC5121 part and is handled by the same
-maintainer.  Update MAINTAINERS to reflect this.  Also remove URLs
-which do not work or contain out of date information.
+Signed-off-by: Sonny Rao <sonnyrao@us.ibm.com>
+Signed-off-by: Milton Miller <miltonm@bga.com>
 
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
----
-
- MAINTAINERS |    4 +---
- 1 files changed, 1 insertions(+), 3 deletions(-)
-
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 8f0ec46..c984014 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -2489,13 +2489,11 @@ W:	http://www.penguinppc.org/
- L:	linuxppc-dev@ozlabs.org
- S:	Maintained
+--- next.git/arch/powerpc/kernel/head_64.S~orig	2008-07-11 17:28:47.000000000 -0500
++++ next.git/arch/powerpc/kernel/head_64.S	2008-07-11 17:31:50.000000000 -0500
+@@ -1198,7 +1198,6 @@ _GLOBAL(generic_secondary_smp_init)
+ 3:	HMT_LOW
+ 	lbz	r23,PACAPROCSTART(r13)	/* Test if this processor should */
+ 					/* start.			 */
+-	sync
  
--LINUX FOR POWERPC EMBEDDED MPC52XX
-+LINUX FOR POWERPC EMBEDDED MPC5XXX
- P:	Sylvain Munaut
- M:	tnt@246tNt.com
- P:	Grant Likely
- M:	grant.likely@secretlab.ca
--W:	http://www.246tNt.com/mpc52xx/
--W:	http://www.penguinppc.org/
- L:	linuxppc-dev@ozlabs.org
- S:	Maintained
+ #ifndef CONFIG_SMP
+ 	b	3b			/* Never go on non-SMP		 */
+@@ -1206,6 +1205,8 @@ _GLOBAL(generic_secondary_smp_init)
+ 	cmpwi	0,r23,0
+ 	beq	3b			/* Loop until told to go	 */
  
++	sync				/* order paca.run and cur_cpu_spec */
++
+ 	/* See if we need to call a cpu state restore handler */
+ 	LOAD_REG_IMMEDIATE(r23, cur_cpu_spec)
+ 	ld	r23,0(r23)
