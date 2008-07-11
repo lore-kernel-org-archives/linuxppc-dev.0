@@ -2,9 +2,10 @@ Return-Path: <mikey@neuling.org>
 From: Michael Neuling <mikey@neuling.org>
 To: benh@kernel.crashing.org
 MIME-Version: 1.0
-Subject: [PATCH] powerpc: fix giveup_vsx to save registers correctly
-Date: Fri, 11 Jul 2008 16:29:12 +1000
-Message-ID: <18384.1215757752@neuling.org>
+Subject: [PATCH] powerpc: Add VSX load/store alignment exception handler
+References: <18384.1215757752@neuling.org>
+Date: Fri, 11 Jul 2008 16:31:09 +1000
+Message-ID: <18822.1215757869@neuling.org>
 Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -15,107 +16,113 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-giveup_vsx didn't save the FPU and VMX regsiters.  Change it to be
-like giveup_fpr/altivec which save these registers.
+VSX loads and stores will take an alignment exception when the address
+is not on a 4 byte boundary.  
 
-Also update call sites where FPU and VMX are already saved to use the
-original giveup_vsx (renamed to __giveup_vsx).
+This add support for these alignment exceptions and will emulate the
+requested load or store.  
 
 Signed-off-by: Michael Neuling <mikey@neuling.org>
 ---
-benh: for your 2.6.27 tree.
+benh: for your 2.6.27 tree
 
- arch/powerpc/kernel/misc_64.S   |    8 ++++----
- arch/powerpc/kernel/process.c   |   10 +++++++++-
- arch/powerpc/kernel/signal_32.c |    2 +-
- arch/powerpc/kernel/signal_64.c |    2 +-
- include/asm-powerpc/system.h    |    1 +
- 5 files changed, 16 insertions(+), 7 deletions(-)
+ arch/powerpc/kernel/align.c |   58 +++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 57 insertions(+), 1 deletion(-)
 
-Index: linux-2.6-ozlabs/arch/powerpc/kernel/misc_64.S
+Index: linux-2.6-ozlabs/arch/powerpc/kernel/align.c
 ===================================================================
---- linux-2.6-ozlabs.orig/arch/powerpc/kernel/misc_64.S
-+++ linux-2.6-ozlabs/arch/powerpc/kernel/misc_64.S
-@@ -508,12 +508,12 @@ _GLOBAL(giveup_altivec)
+--- linux-2.6-ozlabs.orig/arch/powerpc/kernel/align.c
++++ linux-2.6-ozlabs/arch/powerpc/kernel/align.c
+@@ -48,6 +48,7 @@ struct aligninfo {
+ #define HARD	0x80	/* string, stwcx. */
+ #define E4	0x40	/* SPE endianness is word */
+ #define E8	0x80	/* SPE endianness is double word */
++#define SPLT	0x80	/* VSX SPLAT load */
  
- #ifdef CONFIG_VSX
- /*
-- * giveup_vsx(tsk)
-- * Disable VSX for the task given as the argument,
-- * and save the vector registers in its thread_struct.
-+ * __giveup_vsx(tsk)
-+ * Disable VSX for the task given as the argument.
-+ * Does NOT save vsx registers.
-  * Enables the VSX for use in the kernel on return.
-  */
--_GLOBAL(giveup_vsx)
-+_GLOBAL(__giveup_vsx)
- 	mfmsr	r5
- 	oris	r5,r5,MSR_VSX@h
- 	mtmsrd	r5			/* enable use of VSX now */
-Index: linux-2.6-ozlabs/arch/powerpc/kernel/process.c
-===================================================================
---- linux-2.6-ozlabs.orig/arch/powerpc/kernel/process.c
-+++ linux-2.6-ozlabs/arch/powerpc/kernel/process.c
-@@ -159,6 +159,13 @@ void enable_kernel_vsx(void)
- EXPORT_SYMBOL(enable_kernel_vsx);
- #endif
+ /* DSISR bits reported for a DCBZ instruction: */
+ #define DCBZ	0x5f	/* 8xx/82xx dcbz faults when cache not enabled */
+@@ -637,6 +638,36 @@ static int emulate_spe(struct pt_regs *r
+ }
+ #endif /* CONFIG_SPE */
  
-+void giveup_vsx(struct task_struct *tsk)
++#ifdef CONFIG_VSX
++/*
++ * Emulate VSX instructions...
++ */
++static int emulate_vsx(unsigned char __user *addr, unsigned int reg,
++		       unsigned int areg, struct pt_regs *regs,
++		       unsigned int flags, unsigned int length)
 +{
-+	giveup_fpu(tsk);
-+	giveup_altivec(tsk);
-+	__giveup_vsx(tsk);
-+}
++	char *ptr = (char *) &current->thread.TS_FPR(reg);
++	int ret;
 +
- void flush_vsx_to_thread(struct task_struct *tsk)
++	flush_vsx_to_thread(current);
++
++	if (flags & ST)
++		ret = __copy_to_user(addr, ptr, length);
++        else {
++		if (flags & SPLT){
++			ret = __copy_from_user(ptr, addr, length);
++			ptr += length;
++		}
++		ret |= __copy_from_user(ptr, addr, length);
++	}
++	if (flags & U)
++		regs->gpr[areg] = regs->dar;
++	if (ret)
++		return -EFAULT;
++	return 1;
++}
++#endif
++
+ /*
+  * Called on alignment exception. Attempts to fixup
+  *
+@@ -647,7 +678,7 @@ static int emulate_spe(struct pt_regs *r
+ 
+ int fix_alignment(struct pt_regs *regs)
  {
- 	if (tsk->thread.regs) {
-@@ -290,7 +297,8 @@ struct task_struct *__switch_to(struct t
- #endif /* CONFIG_ALTIVEC */
- #ifdef CONFIG_VSX
- 	if (prev->thread.regs && (prev->thread.regs->msr & MSR_VSX))
--		giveup_vsx(prev);
-+		/* VMX and FPU registers are already save here */
-+		__giveup_vsx(prev);
- #endif /* CONFIG_VSX */
- #ifdef CONFIG_SPE
- 	/*
-Index: linux-2.6-ozlabs/arch/powerpc/kernel/signal_32.c
-===================================================================
---- linux-2.6-ozlabs.orig/arch/powerpc/kernel/signal_32.c
-+++ linux-2.6-ozlabs/arch/powerpc/kernel/signal_32.c
-@@ -452,7 +452,7 @@ static int save_user_regs(struct pt_regs
- 	 * contains valid data
+-	unsigned int instr, nb, flags;
++	unsigned int instr, nb, flags, instruction = 0;
+ 	unsigned int reg, areg;
+ 	unsigned int dsisr;
+ 	unsigned char __user *addr;
+@@ -689,6 +720,7 @@ int fix_alignment(struct pt_regs *regs)
+ 		if (cpu_has_feature(CPU_FTR_REAL_LE) && (regs->msr & MSR_LE))
+ 			instr = cpu_to_le32(instr);
+ 		dsisr = make_dsisr(instr);
++		instruction = instr;
+ 	}
+ 
+ 	/* extract the operation and registers from the dsisr */
+@@ -728,6 +760,30 @@ int fix_alignment(struct pt_regs *regs)
+ 	/* DAR has the operand effective address */
+ 	addr = (unsigned char __user *)regs->dar;
+ 
++#ifdef CONFIG_VSX
++	if ((instruction & 0xfc00003e) == 0x7c000018) {
++		/* Additional register addressing bit (64 VSX vs 32 FPR/GPR */
++		reg |= (instruction & 0x1) << 5;
++		/* Simple inline decoder instead of a table */
++		if (instruction & 0x200)
++			nb = 16;
++		else if (instruction & 0x080)
++			nb = 8;
++		else
++			nb = 4;
++		flags = 0;
++		if (instruction & 0x100)
++			flags |= ST;
++		if (instruction & 0x040)
++			flags |= U;
++		/* splat load needs a special decoder */
++		if ((instruction & 0x400) == 0){
++			flags |= SPLT;
++			nb = 8;
++		}
++		return emulate_vsx(addr, reg, areg, regs, flags, nb);
++	}
++#endif
+ 	/* A size of 0 indicates an instruction we don't support, with
+ 	 * the exception of DCBZ which is handled as a special case here
  	 */
- 	if (current->thread.used_vsr) {
--		flush_vsx_to_thread(current);
-+		__giveup_vsx(current);
- 		if (copy_vsx_to_user(&frame->mc_vsregs, current))
- 			return 1;
- 		msr |= MSR_VSX;
-Index: linux-2.6-ozlabs/arch/powerpc/kernel/signal_64.c
-===================================================================
---- linux-2.6-ozlabs.orig/arch/powerpc/kernel/signal_64.c
-+++ linux-2.6-ozlabs/arch/powerpc/kernel/signal_64.c
-@@ -122,7 +122,7 @@ static long setup_sigcontext(struct sigc
- 	 * VMX data.
- 	 */
- 	if (current->thread.used_vsr) {
--		flush_vsx_to_thread(current);
-+		__giveup_vsx(current);
- 		v_regs += ELF_NVRREG;
- 		err |= copy_vsx_to_user(v_regs, current);
- 		/* set MSR_VSX in the MSR value in the frame to
-Index: linux-2.6-ozlabs/include/asm-powerpc/system.h
-===================================================================
---- linux-2.6-ozlabs.orig/include/asm-powerpc/system.h
-+++ linux-2.6-ozlabs/include/asm-powerpc/system.h
-@@ -139,6 +139,7 @@ extern void enable_kernel_altivec(void);
- extern void giveup_altivec(struct task_struct *);
- extern void load_up_altivec(struct task_struct *);
- extern int emulate_altivec(struct pt_regs *);
-+extern void __giveup_vsx(struct task_struct *);
- extern void giveup_vsx(struct task_struct *);
- extern void enable_kernel_spe(void);
- extern void giveup_spe(struct task_struct *);
