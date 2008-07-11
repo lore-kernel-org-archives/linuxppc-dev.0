@@ -1,18 +1,27 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 431A2DE0DD
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jul 2008 17:45:31 +1000 (EST)
-Date: Fri, 11 Jul 2008 17:45:15 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: benh@kernel.crashing.org, paulus@samba.org, npiggin@suse.de, Jon
-	Tollefson <kniht@linux.vnet.ibm.com>
-Subject: gigantci pages patches
-Message-Id: <20080711174515.1aacf83b.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Fri__11_Jul_2008_17_45_15_+1000_.1BXtm7mzPGE.8Pu"
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>,
+Return-Path: <mingo@elte.hu>
+Received: from fallback.mail.elte.hu (fallback.mail.elte.hu [157.181.151.13])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 4720ADE0E5
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jul 2008 17:47:00 +1000 (EST)
+Received: from mx3.mail.elte.hu ([157.181.1.138])
+	by fallback.mail.elte.hu with esmtp (Exim) id 1KHDLC-0008D4-37
+	from <mingo@elte.hu>
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jul 2008 09:46:54 +0200
+Date: Fri, 11 Jul 2008 09:46:03 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Milton Miller <miltonm@bga.com>
+Subject: Re: [PATCH -next-20080709] fixup stop_machine use cpu mask vs ftrace
+Message-ID: <20080711074602.GB27849@elte.hu>
+References: <200807081756.47140.rusty@rustcorp.com.au>
+	<for-27-patch0-1@bga.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <for-27-patch0-1@bga.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+	Rusty Russell <rusty@rustcorp.com.au>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Ingo Molnar <mingo@redhat.com>, linux-next@vger.kernel.org,
 	Andrew Morton <akpm@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -23,45 +32,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Fri__11_Jul_2008_17_45_15_+1000_.1BXtm7mzPGE.8Pu
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi all,
+* Milton Miller <miltonm@bga.com> wrote:
 
-Could people take one last look at these patches and if there are no
-issues, please send Ack-bys to Andrew who will push them to Linus for
-2.6.27.
+> Hi Rusty, Ingo.
+> 
+> Rusty's patch [PATCH 3/3] stop_machine: use cpu mask rather than magic 
+> numbers didn't find kernel/trace/ftrace.c in -next, causing an 
+> immediate almost NULL pointer dereference in ftrace_dynamic_init.
 
-[PATCH 1/6 v2] allow arch specific function for allocating gigantic pages
-http://patchwork.ozlabs.org/linuxppc/patch?&id=3D18437
-Patch: [PATCH 2/6 v2] powerpc: function for allocating gigantic pages
-http://patchwork.ozlabs.org/linuxppc/patch?&id=3D18438
-Patch: [PATCH 3/6 v2] powerpc: scan device tree and save gigantic page loca=
-tions
-http://patchwork.ozlabs.org/linuxppc/patch?&id=3D18439
-Patch: [PATCH 4/6 v2] powerpc: define page support for 16G pages
-http://patchwork.ozlabs.org/linuxppc/patch?&id=3D18440
-Patch: [PATCH 5/6 v2] check for overflow
-http://patchwork.ozlabs.org/linuxppc/patch?&id=3D18441
-Patch: [PATCH 6/6] powerpc: support multiple huge page sizes
-http://patchwork.ozlabs.org/linuxppc/patch?&id=3D18442
+Rusty - what's going on here? Please do not change APIs like that, which 
+cause code to crash. Either do a compatible API change, or change it 
+over in a way that causes clear build failures, not crashes.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Fri__11_Jul_2008_17_45_15_+1000_.1BXtm7mzPGE.8Pu
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkh3D4sACgkQjjKRsyhoI8yVJwCfUEzxb+bNnTf8SxtyQKofsGrL
-S3QAoJUwVyknQtxn1Xu9F0wm2LCr/tbF
-=no3H
------END PGP SIGNATURE-----
-
---Signature=_Fri__11_Jul_2008_17_45_15_+1000_.1BXtm7mzPGE.8Pu--
+	Ingo
