@@ -1,15 +1,16 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from wf-out-1314.google.com (wf-out-1314.google.com [209.85.200.168])
-	by ozlabs.org (Postfix) with ESMTP id 45990DDEED
+Received: from wf-out-1314.google.com (wf-out-1314.google.com [209.85.200.170])
+	by ozlabs.org (Postfix) with ESMTP id 49BFBDDEFA
 	for <linuxppc-dev@ozlabs.org>; Sat, 12 Jul 2008 18:43:25 +1000 (EST)
-Received: by wf-out-1314.google.com with SMTP id 24so4171988wfg.15
-	for <linuxppc-dev@ozlabs.org>; Sat, 12 Jul 2008 01:43:24 -0700 (PDT)
+Received: by wf-out-1314.google.com with SMTP id 24so4171989wfg.15
+	for <linuxppc-dev@ozlabs.org>; Sat, 12 Jul 2008 01:43:25 -0700 (PDT)
 From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH v3 4/5] spi: Add OF binding support for SPI busses
+Subject: [PATCH v3 3/5] of-bindings: Add binding documentation for SPI busses
+	and devices
 To: linuxppc-dev@ozlabs.org, spi-devel-general@lists.sourceforge.net,
 	dbrownell@users.sourceforge.net, jonsmirl@gmail.com
-Date: Sat, 12 Jul 2008 02:34:53 -0600
-Message-ID: <20080712083453.14782.56274.stgit@trillian.secretlab.ca>
+Date: Sat, 12 Jul 2008 02:34:48 -0600
+Message-ID: <20080712083447.14782.25031.stgit@trillian.secretlab.ca>
 In-Reply-To: <20080712083437.14782.65551.stgit@trillian.secretlab.ca>
 References: <20080712083437.14782.65551.stgit@trillian.secretlab.ca>
 MIME-Version: 1.0
@@ -26,162 +27,87 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Grant Likely <grant.likely@secretlab.ca>
 
-This patch adds support for populating an SPI bus based on data in the
-OF device tree.  This is useful for powerpc platforms which use the
-device tree instead of discrete code for describing platform layout.
+Add documentation about how to describe SPI busses in the device tree.
 
 Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 ---
 
- drivers/of/Kconfig     |    6 +++
- drivers/of/Makefile    |    1 +
- drivers/of/of_spi.c    |   93 ++++++++++++++++++++++++++++++++++++++++++++++++
- include/linux/of_spi.h |   18 +++++++++
- 4 files changed, 118 insertions(+), 0 deletions(-)
+ Documentation/powerpc/booting-without-of.txt |   58 ++++++++++++++++++++++++++
+ 1 files changed, 58 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/of/Kconfig b/drivers/of/Kconfig
-index 3a7a11a..edd6e92 100644
---- a/drivers/of/Kconfig
-+++ b/drivers/of/Kconfig
-@@ -13,3 +13,9 @@ config OF_I2C
- 	depends on PPC_OF && I2C
- 	help
- 	  OpenFirmware I2C accessors
+diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
+index b68684d..3b964ed 100644
+--- a/Documentation/powerpc/booting-without-of.txt
++++ b/Documentation/powerpc/booting-without-of.txt
+@@ -62,6 +62,7 @@ Table of Contents
+       s) Freescale on board FPGA
+       t) Freescael MSI interrupt controller
+       u) Freescale General-purpose Timers Module
++      v) SPI busses
+ 
+   VII - Marvell Discovery mv64[345]6x System Controller chips
+     1) The /system-controller node
+@@ -2967,6 +2968,63 @@ platforms are moved over to use the flattened-device-tree model.
+ 	clock-frequency = <0>;
+     };
+ 
++    v) SPI (Serial Peripheral Interface) busses
 +
-+config OF_SPI
-+	def_tristate SPI
-+	depends on OF && PPC_OF && SPI
-+	help
-+	  OpenFirmware SPI accessors
-diff --git a/drivers/of/Makefile b/drivers/of/Makefile
-index 548772e..4c3c6f8 100644
---- a/drivers/of/Makefile
-+++ b/drivers/of/Makefile
-@@ -2,3 +2,4 @@ obj-y = base.o
- obj-$(CONFIG_OF_DEVICE) += device.o platform.o
- obj-$(CONFIG_OF_GPIO)   += gpio.o
- obj-$(CONFIG_OF_I2C)	+= of_i2c.o
-+obj-$(CONFIG_OF_SPI)	+= of_spi.o
-diff --git a/drivers/of/of_spi.c b/drivers/of/of_spi.c
-new file mode 100644
-index 0000000..b01eec0
---- /dev/null
-+++ b/drivers/of/of_spi.c
-@@ -0,0 +1,93 @@
-+/*
-+ * SPI OF support routines
-+ * Copyright (C) 2008 Secret Lab Technologies Ltd.
-+ *
-+ * Support routines for deriving SPI device attachments from the device
-+ * tree.
-+ */
++    SPI busses can be described with a node for the SPI master device
++    and a set of child nodes for each SPI slave on the bus.  For this
++    discussion, it is assumed that the system's SPI controller is in
++    SPI master mode.  This binding does not describe SPI controllers
++    in slave mode.
 +
-+#include <linux/of.h>
-+#include <linux/device.h>
-+#include <linux/spi/spi.h>
-+#include <linux/of_spi.h>
++    The SPI master node requires the following properties:
++    - #address-cells  - number of cells required to define a chip select
++			address on the SPI bus.
++    - #size-cells     - should be zero.
++    - compatible      - name of SPI bus controller following generic names
++			recommended practice.
++    No other properties are required in the SPI bus node.  It is assumed
++    that a driver for an SPI bus device will understand that it is an SPI bus.
++    However, the binding does not attempt to define the specific method for
++    assigning chip select numbers.  Since SPI chip select configuration is
++    flexible and non-standardized, it is left out of this binding with the
++    assumption that board specific platform code will be used to manage
++    chip selects.  Individual drivers can define additional properties to
++    support describing the chip select layout.
 +
-+/**
-+ * of_register_spi_devices - Register child devices onto the SPI bus
-+ * @master:	Pointer to spi_master device
-+ * @np:		parent node of SPI device nodes
-+ *
-+ * Registers an spi_device for each child node of 'np' which has a 'reg'
-+ * property.
-+ */
-+void of_register_spi_devices(struct spi_master *master, struct device_node *np)
-+{
-+	struct spi_device *spi;
-+	struct device_node *nc;
-+	const u32 *prop;
-+	int rc;
-+	int len;
++    SPI slave nodes must be children of the SPI master node and can
++    contain the following properties.
++    - reg             - (required) chip select address of device.
++    - compatible      - (required) name of SPI device following generic names
++			recommended practice
++    - spi-max-frequency - (required) Maximum SPI clocking speed of device in Hz
++    - spi-cpol        - (optional) Empty property indicating device requires
++			inverse clock polarity (CPOL) mode
++    - spi-cpha        - (optional) Empty property indicating device requires
++			shifted clock phase (CPHA) mode
 +
-+	for_each_child_of_node(np, nc) {
-+		/* Alloc an spi_device */
-+		spi = spi_alloc_device(master);
-+		if (!spi) {
-+			dev_err(&master->dev, "spi_device alloc error for %s\n",
-+				nc->full_name);
-+			spi_dev_put(spi);
-+			continue;
-+		}
++    SPI example for an MPC5200 SPI bus:
++		spi@f00 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			compatible = "fsl,mpc5200b-spi","fsl,mpc5200-spi";
++			reg = <0xf00 0x20>;
++			interrupts = <2 13 0 2 14 0>;
++			interrupt-parent = <&mpc5200_pic>;
 +
-+		/* Select device driver */
-+		if (of_modalias_node(nc, spi->modalias,
-+				     sizeof(spi->modalias)) < 0) {
-+			dev_err(&master->dev, "cannot find modalias for %s\n",
-+				nc->full_name);
-+			spi_dev_put(spi);
-+			continue;
-+		}
++			ethernet-switch@0 {
++				compatible = "micrel,ks8995m";
++				spi-max-frequency = <1000000>;
++				reg = <0>;
++			};
 +
-+		/* Device address */
-+		prop = of_get_property(nc, "reg", &len);
-+		if (!prop || len < sizeof(*prop)) {
-+			dev_err(&master->dev, "%s has no 'reg' property\n",
-+				nc->full_name);
-+			spi_dev_put(spi);
-+			continue;
-+		}
-+		spi->chip_select = *prop;
++			codec@1 {
++				compatible = "ti,tlv320aic26";
++				spi-max-frequency = <100000>;
++				reg = <1>;
++			};
++		};
 +
-+		/* Mode (clock phase/polarity/etc.) */
-+		if (of_find_property(nc, "spi-cpha", NULL))
-+			spi->mode |= SPI_CPHA;
-+		if (of_find_property(nc, "spi-cpol", NULL))
-+			spi->mode |= SPI_CPOL;
 +
-+		/* Device speed */
-+		prop = of_get_property(nc, "spi-max-frequency", &len);
-+		if (!prop || len < sizeof(*prop)) {
-+			dev_err(&master->dev, "%s has no 'spi-max-frequency' property\n",
-+				nc->full_name);
-+			spi_dev_put(spi);
-+			continue;
-+		}
-+		spi->max_speed_hz = *prop;
-+
-+		/* IRQ */
-+		spi->irq = irq_of_parse_and_map(nc, 0);
-+
-+		/* Store a pointer to the node in the device structure */
-+		of_node_get(nc);
-+		spi->dev.archdata.of_node = nc;
-+
-+		/* Register the new device */
-+		request_module(spi->modalias);
-+		rc = spi_add_device(spi);
-+		if (rc) {
-+			dev_err(&master->dev, "spi_device register error %s\n",
-+				nc->full_name);
-+			spi_dev_put(spi);
-+		}
-+
-+	}
-+}
-+EXPORT_SYMBOL(of_register_spi_devices);
-diff --git a/include/linux/of_spi.h b/include/linux/of_spi.h
-new file mode 100644
-index 0000000..5f71ee8
---- /dev/null
-+++ b/include/linux/of_spi.h
-@@ -0,0 +1,18 @@
-+/*
-+ * OpenFirmware SPI support routines
-+ * Copyright (C) 2008 Secret Lab Technologies Ltd.
-+ *
-+ * Support routines for deriving SPI device attachments from the device
-+ * tree.
-+ */
-+
-+#ifndef __LINUX_OF_SPI_H
-+#define __LINUX_OF_SPI_H
-+
-+#include <linux/of.h>
-+#include <linux/spi/spi.h>
-+
-+extern void of_register_spi_devices(struct spi_master *master,
-+				    struct device_node *np);
-+
-+#endif /* __LINUX_OF_SPI */
+ VII - Marvell Discovery mv64[345]6x System Controller chips
+ ===========================================================
+ 
