@@ -1,21 +1,18 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.246])
-	by ozlabs.org (Postfix) with ESMTP id 596C2DE0D4
-	for <linuxppc-dev@ozlabs.org>; Sun, 13 Jul 2008 04:18:08 +1000 (EST)
-Received: by an-out-0708.google.com with SMTP id c34so1294477anc.78
-	for <linuxppc-dev@ozlabs.org>; Sat, 12 Jul 2008 11:18:06 -0700 (PDT)
-Message-ID: <fa686aa40807121118n6d19b2d3s5f08ff04bace2222@mail.gmail.com>
-Date: Sat, 12 Jul 2008 12:18:06 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>,
-	"Paul Mackerras" <paulus@samba.org>,
-	linuxppc-dev <linuxppc-dev@ozlabs.org>
-Subject: Please pull linux-2.6-mpc52xx tree
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Andre Schwarz <andre.schwarz@matrix-vision.de>,
-	Stephen Rothwell <sfr@canb.auug.org.au>
+Return-Path: <miltonm@bga.com>
+Received: from ruth.realtime.net (mercury.realtime.net [205.238.132.86])
+	by ozlabs.org (Postfix) with ESMTP id 3409CDDF35
+	for <linuxppc-dev@ozlabs.org>; Sun, 13 Jul 2008 08:31:05 +1000 (EST)
+Mime-Version: 1.0 (Apple Message framework v624)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <7b8dd1f1421b1f52ebc76565986fd2a9@bga.com>
+From: Milton Miller <miltonm@bga.com>
+Subject: Re: linux-next: kbuild tree build failure
+Date: Sat, 12 Jul 2008 17:32:28 -0500
+To: Roman Zippel <zippel@linux-m68k.org>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	ppcdev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
+	Sam Ravnborg <sam@ravnborg.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,85 +22,196 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Ben,
+In-Reply-To: <Pine.LNX.4.64.0807101654080.6791@localhost.localdomain>
 
-Please pull the following patches for MPC5xxx support.
+On Fri Jul 11 00:59:25 EST 2008, Roman Zippel wrote:
+> On Thu, 10 Jul 2008, Michael Ellerman wrote:
+>
+> > Well yes :)  But I think that's because you're thinking of
+> > "end-users" and I'm thinking of "users" like myself - ie. _I_ use
+> > Kconfig and I do expect myself to be able to type a 64-bit address.
+>
+> That doesn't really answer my question, why you need this.
+>
+> > > > --- .config.orig  2008-07-08 09:30:00.000000000 +1000
+> > > > +++ .config       2008-07-08 09:30:43.000000000 +1000
+> > > > @@ -370,9 +370,8 @@
+> > > >  CONFIG_HOTPLUG_PCI_RPA=m
+> > > >  CONFIG_HOTPLUG_PCI_RPA_DLPAR=m
+> > > >  # CONFIG_HAS_RAPIDIO is not set
+> > > > -CONFIG_PAGE_OFFSET=0xc000000000000000
+> > > > -CONFIG_KERNEL_START=0xc000000002000000
+> > > > -CONFIG_PHYSICAL_START=0x02000000
+> > > > +CONFIG_PAGE_OFFSET=0xc0000000
+> > > > +CONFIG_PHYSICAL_START=0x2000000
+> > >
+> > > Why is this worse? These are constants, you're not supposed to 
+> change them
+> > > anyway.
+> > > The remaining values are generated in page.h and should be the 
+> same as
+> > > before. If that isn't the case and this patch produces a nonworking
+> > > kernel, I'd like to hear about it.
+> >
+> > You're right the built kernel is fine. So it's not a bug,
+>
 
-  git://git.secretlab.ca/git/linux-2.6-mpc52xx next
+But its horrible code.
 
-Thanks,
-g.
+> Good, could someone please ack whether the powerpc changes are 
+> acceptable?
+>
 
-The following changes since commit 0db9360aaa9b95b0cf67f82874809f16e68068eb:
-  Nathan Fontenot (1):
-        powerpc/pseries: Update numa association of hotplug memory add
-for drconf memory
+Well, since no one else has said it,
+NAK
 
-are available in the git repository at:
+The primary reason I object is this:
+>>>> Index: linux-2.6/include/asm-powerpc/page.h
+>>>> ===================================================================
+>>>> --- linux-2.6.orig/include/asm-powerpc/page.h
+>>>> +++ linux-2.6/include/asm-powerpc/page.h
+>>>> @@ -67,9 +67,15 @@
+>>>>   * If you want to test if something's a kernel address, use 
+>>>> is_kernel_addr().
+>>>>   */
+>>>>
+>>>> -#define KERNELBASE      ASM_CONST(CONFIG_KERNEL_START)
+>>>> +#ifdef CONFIG_PPC64
+>>>> +#define PAGE_OFFSET    (ASM_CONST(CONFIG_PAGE_OFFSET) << 32)
+>>>> +#define KERNELBASE     
+>>>> (PAGE_OFFSET+ASM_CONST(CONFIG_PHYSICAL_START))
+>>>> +#define LOAD_OFFSET    PAGE_OFFSET
+>>>> +#else
+>>>> +#define KERNELBASE     ASM_CONST(CONFIG_KERNEL_START)
+>>>>  #define PAGE_OFFSET    ASM_CONST(CONFIG_PAGE_OFFSET)
+>>>> -#define LOAD_OFFSET    
+>>>> ASM_CONST((CONFIG_KERNEL_START-CONFIG_PHYSICAL_START))
+>>>> +#define LOAD_OFFSET    
+>>>> (ASM_CONST(CONFIG_KERNEL_START)-ASM_CONST(CONFIG_PHYSICAL_START))
+>>>> +#endif
+>>>>
+>>>>  #if defined(CONFIG_RELOCATABLE) && defined(CONFIG_FLATMEM)
+>>>>  #ifndef __ASSEMBLY__
 
-  git://git.secretlab.ca/git/linux-2.6-mpc52xx next
+(1) #define PAGE_OFFSET    (ASM_CONST(CONFIG_PAGE_OFFSET) << 32)
 
-Andre Schwarz (1):
-      powerpc/mpc5200: PCI write combine timer
+It creates unreadable code, where two defines with almost the same name 
+(the only difference being
+the CONFIG_ prefix, which is often ignored when scanning) contains 
+radically different values.
 
-Grant Likely (3):
-      powerpc/mpc5200: Add PSC helpers for bestcomm engine
-      powerpc/mpc5200: fix compile warnings in bestcomm driver
-      powerpc: Modify MPC52xx maintainers entry to cover all MPC5xxx parts
+(2)  #define PAGE_OFFSET    ASM_CONST(CONFIG_PAGE_OFFSET)
 
-John Rigby (4):
-      powerpc/mpc5121: Update device tree for MPC5121ADS evaluation board
-      powerpc/mpc5121: Add clock driver
-      powerpc/mpc5121: Add generic board support for MPC5121 platforms
-      powerpc/mpc5121: Add support for CPLD on MPC5121ADS board
-
-Jon Smirl (1):
-      powerpc/i2c: Convert i2c-mpc into an of_platform driver
-
-Robert P. J. Day (1):
-      OpenFirmware: Include <linux/of_i2c.h> from of_i2c.c.
-
-Stephen Rothwell (3):
-      powerpc/pata_mpc52xx: use linux/of_platform.h instead of asm
-      powerpc/mpc52xx_psc_spi: use linux/of_platform.h instead of asm
-      powerpc/mpc5200_wdt: use linux/of_platform.h instead of asm
-
-Wolfgang Grandegger (1):
-      powerpc/mpc5200: add missing MSCAN FDT nodes for TQM52xx
-
- MAINTAINERS                                    |    4 +-
- Makefile                                       |    1 +
- arch/powerpc/boot/dts/mpc5121ads.dts           |  310 ++++++++++-
- arch/powerpc/boot/dts/tqm5200.dts              |   14 +
- arch/powerpc/platforms/512x/Kconfig            |   17 +-
- arch/powerpc/platforms/512x/Makefile           |    4 +-
- arch/powerpc/platforms/512x/clock.c            |  729 ++++++++++++++++++++++++
- arch/powerpc/platforms/512x/mpc5121_ads.c      |   69 +--
- arch/powerpc/platforms/512x/mpc5121_ads.h      |   16 +
- arch/powerpc/platforms/512x/mpc5121_ads_cpld.c |  204 +++++++
- arch/powerpc/platforms/512x/mpc5121_generic.c  |   58 ++
- arch/powerpc/platforms/512x/mpc512x.h          |   17 +
- arch/powerpc/platforms/512x/mpc512x_shared.c   |   83 +++
- arch/powerpc/platforms/52xx/mpc52xx_pci.c      |    3 +-
- arch/powerpc/sysdev/bestcomm/bestcomm.c        |    2 +-
- arch/powerpc/sysdev/bestcomm/gen_bd.c          |   95 +++
- arch/powerpc/sysdev/bestcomm/gen_bd.h          |    5 +
- arch/powerpc/sysdev/bestcomm/sram.c            |    2 +-
- arch/powerpc/sysdev/fsl_soc.c                  |  133 -----
- drivers/ata/pata_mpc52xx.c                     |    2 +-
- drivers/i2c/busses/i2c-mpc.c                   |  104 ++--
- drivers/of/of_i2c.c                            |    1 +
- drivers/spi/mpc52xx_psc_spi.c                  |    2 +-
- drivers/watchdog/mpc5200_wdt.c                 |    2 +-
- 24 files changed, 1620 insertions(+), 257 deletions(-)
- create mode 100644 arch/powerpc/platforms/512x/clock.c
- create mode 100644 arch/powerpc/platforms/512x/mpc5121_ads.h
- create mode 100644 arch/powerpc/platforms/512x/mpc5121_ads_cpld.c
- create mode 100644 arch/powerpc/platforms/512x/mpc5121_generic.c
- create mode 100644 arch/powerpc/platforms/512x/mpc512x.h
- create mode 100644 arch/powerpc/platforms/512x/mpc512x_shared.c
+It creates config variables that mean different things depending on 
+other config variables
+The 32 and 64 bit powerpc kernel share a common source, a config 
+variable should be used for
+only one purpose.
 
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+
+> > but I think it is nicer to have the real values in the .config.
+>
+> Why?
+
+Mostly consistency between the different portions of the archticture.
+
+As I remember, this code was adjusted and some of the defines moved 
+from page.h
+as part of the 32 bit relocatable kernel for 85xx booke ASMP support.
+
+The 32 bit kernel has advanced options to change the VMA split, which 
+enable
+direct user input when explicitly defined.  That allows us to not need 
+patches
+for the embedded boards who need some other split than 3G/1G.  So there
+is the reason that we have this directly specified in Kconfig at all.
+
+While the 64 bit kernel doesn't need to actually change the page 
+offset, as we
+don't support the full 64 bits of the real address anyways (in fact, the
+archtiecture prevents us from doing so) and therefore don't need to 
+adjust
+the effective address spilt between user and kernel.
+
+But introducing config variables that mean different things is 
+UNMAINTAINABLE.
+
+Also, I remember, CONFIG_PAGE_OFFSET is used by the linker script and 
+previously
+page.h was conditionally included.   Does it always include page.h now?
+
+
+
+On a seperate note,
+>>>>  config PINT3_ASSIGN
+>>>>         hex "PINT3_ASSIGN"
+>>>>         depends on PINTx_REASSIGN
+>>>> -       default 0x02020303
+>>>> +       default 0x2020303
+
+is harder to read.   The value is a list of 4 1 byte values, but you 
+have hidden the first nibble making parsing the rest of the value hard.
+
+>>>>
+>>>>  config IRAM_SIZE
+>>>>         hex "Internal memory size (hex)"
+>>>>         depends on (CHIP_M32700 || CHIP_M32102 || CHIP_VDEC2 || 
+>>>> CHIP_OPSP || CHIP_M32104) && DISCONTIGMEM
+>>>> -       default "00080000" if CHIP_M32700
+>>>> -       default "00010000" if CHIP_M32102 || CHIP_OPSP || 
+>>>> CHIP_M32104
+>>>> -       default "00008000" if CHIP_VDEC2
+>>>> +       default "0x80000" if CHIP_M32700
+>>>> +       default "0x10000" if CHIP_M32102 || CHIP_OPSP || CHIP_M32104
+>>>> +       default "0x8000" if CHIP_VDEC2
+
+Likewize, I find it easier to mentally check the order of magnitude and 
+compare sizes when they have
+leading zeros and are right aligned.
+
+
+Going to another email in the thread,
+
+On Fri Jul 11 00:52:25 EST 2008, Roman Zippel wrpte:
+> On Tue, 8 Jul 2008, Sam Ravnborg wrote:
+> > We use Kconfig for a mixture of user editable values and fixed
+> > configuration values.
+> > And I agree that asking the user to input a 64 bit number is not 
+> usefull.
+> >
+> > But keeping support for 64 bit values is what I would consider
+> > expected functionality.
+...
+> > > This would also ease on any portability issues
+> > > (kconfig is compiled with the host compiler not the target 
+> compiler).
+> >
+> > We use strtol() in a few places in symbol.c already where we do an
+> > implicit conversion to int. Why did this not cause us problems 
+> before?
+> >
+> > Is it because these code paths are only triggered when we deal with 
+> ranges?
+> > If so we could 'fix' strdup_type() to not use strto{,u}l() so it
+> > is 64 bit clean and we are back to old behaviour.
+>
+> Ranges are the primary reason I made it consistent with this.
+> If we really wanted to support 64bit numbers, it would create only more
+> problems. First you have to make sure that on every build host (i.e 
+> also
+> non-Linux) strtoll() is available. Then how it should these numbers be
+> represented? On 32bit these may need a 'll' postfix, but the powerpc
+> example already shows, that there are different requirements, so they 
+> use
+> ASM_CONST for that. How should this postprecessing be integrated into
+> kconfig?
+
+I think the architectures will already do something like ASM_CONST in
+their C code when its needed.  This should not be the responsibility of
+kbuild.
+
+If you are worried about users tring to set values that are too high,
+then make the types be hex8, hex16, hex32, and hex64.
+
+milton
