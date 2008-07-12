@@ -1,15 +1,16 @@
 Return-Path: <glikely@secretlab.ca>
 Received: from wf-out-1314.google.com (wf-out-1314.google.com [209.85.200.171])
-	by ozlabs.org (Postfix) with ESMTP id 35BB1DDDF0
-	for <linuxppc-dev@ozlabs.org>; Sat, 12 Jul 2008 18:36:26 +1000 (EST)
-Received: by wf-out-1314.google.com with SMTP id 24so4170642wfg.15
-	for <linuxppc-dev@ozlabs.org>; Sat, 12 Jul 2008 01:36:20 -0700 (PDT)
+	by ozlabs.org (Postfix) with ESMTP id 944EADDFF8
+	for <linuxppc-dev@ozlabs.org>; Sat, 12 Jul 2008 18:39:32 +1000 (EST)
+Received: by wf-out-1314.google.com with SMTP id 24so4171245wfg.15
+	for <linuxppc-dev@ozlabs.org>; Sat, 12 Jul 2008 01:39:31 -0700 (PDT)
 From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH v3 1/5] of: adapt of_find_i2c_driver() to be usable by SPI also
-To: linuxppc-dev@ozlabs.org, spi-devel-general@lists.sourceforge.net,
-	dbrownell@users.sourceforge.net, jonsmirl@gmail.com
-Date: Sat, 12 Jul 2008 02:34:37 -0600
-Message-ID: <20080712083437.14782.65551.stgit@trillian.secretlab.ca>
+Subject: [PATCH v2 1/3] ALSA SoC: Add OpenFirmware helper for matching bus and
+	codec drivers
+To: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org,
+	liam.girdwood@wolfsonmicro.com, jonsmirl@gmail.com
+Date: Sat, 12 Jul 2008 02:39:29 -0600
+Message-ID: <20080712083929.15025.47682.stgit@trillian.secretlab.ca>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Sender: Grant Likely <glikely@secretlab.ca>
@@ -24,211 +25,245 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Grant Likely <grant.likely@secretlab.ca>
 
-SPI has a similar problem as I2C in that it needs to determine an
-appropriate modalias value for each device node.  This patch adapts
-the of_i2c of_find_i2c_driver() function to be usable by of_spi also.
+Simple utility layer for creating ASoC machine instances based on data
+in the OpenFirmware device tree.  OF aware platform drivers and codec
+drivers register themselves with this framework and the framework
+automatically instantiates a machine driver.
 
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+This is most likely temporary glue code to work around limitations in
+the ASoC v1 framework.  I expect ASoC v2 won't need this.
 ---
 
- drivers/of/base.c   |   88 +++++++++++++++++++++++++++++++++++++++++++++++++++
- drivers/of/of_i2c.c |   64 ++-----------------------------------
- include/linux/of.h  |    1 +
- 3 files changed, 92 insertions(+), 61 deletions(-)
+ include/sound/soc-of.h |   21 ++++++
+ sound/soc/Kconfig      |    3 +
+ sound/soc/Makefile     |    1 
+ sound/soc/soc-of.c     |  171 ++++++++++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 196 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/of/base.c b/drivers/of/base.c
-index 23ffb7c..ad8ac1a 100644
---- a/drivers/of/base.c
-+++ b/drivers/of/base.c
-@@ -385,3 +385,91 @@ struct device_node *of_find_matching_node(struct device_node *from,
- 	return np;
- }
- EXPORT_SYMBOL(of_find_matching_node);
-+
-+/**
-+ * of_modalias_table: Table of explicit compatible ==> modalias mappings
+diff --git a/include/sound/soc-of.h b/include/sound/soc-of.h
+new file mode 100644
+index 0000000..a963032
+--- /dev/null
++++ b/include/sound/soc-of.h
+@@ -0,0 +1,21 @@
++/*
++ * OF helpers for ALSA SoC
 + *
-+ * This table allows particulare compatible property values to be mapped
-+ * to modalias strings.  This is useful for busses which do not directly
-+ * understand the OF device tree but are populated based on data contained
-+ * within the device tree.  SPI and I2C are the two current users of this
-+ * table.
-+ *
-+ * In most cases, devices do not need to be listed in this table because
-+ * the modalias value can be derived directly from the compatible table.
-+ * However, if for any reason a value cannot be derived, then this table
-+ * provides a method to override the implicit derivation.
-+ *
-+ * At the moment, a single table is used for all bus types because it is
-+ * assumed that the data size is small and that the compatible values
-+ * should already be distinct enough to differentiate between SPI, I2C
-+ * and other devices.
++ * Copyright (C) 2008, Secret Lab Technologies Ltd.
 + */
-+struct of_modalias_table {
-+	char *of_device;
-+	char *modalias;
-+};
-+static struct of_modalias_table of_modalias_table[] = {
-+	/* Empty for now; add entries as needed */
++
++#ifndef _INCLUDE_SOC_OF_H_
++#define _INCLUDE_SOC_OF_H_
++
++#include <linux/of.h>
++#include <sound/soc.h>
++
++int of_snd_soc_register_codec(struct snd_soc_codec_device *codec_dev,
++			      void *codec_data, struct snd_soc_codec_dai *dai,
++			      struct device_node *node);
++
++int of_snd_soc_register_platform(struct snd_soc_platform *platform,
++				 struct device_node *node,
++				 struct snd_soc_cpu_dai *cpu_dai);
++
++#endif /* _INCLUDE_SOC_OF_H_ */
+diff --git a/sound/soc/Kconfig b/sound/soc/Kconfig
+index 18f28ac..99118ed 100644
+--- a/sound/soc/Kconfig
++++ b/sound/soc/Kconfig
+@@ -23,6 +23,9 @@ config SND_SOC
+ 	  This ASoC audio support can also be built as a module.  If so, the module
+ 	  will be called snd-soc-core.
+ 
++config SND_SOC_OF
++	tristate
++
+ # All the supported Soc's
+ source "sound/soc/at91/Kconfig"
+ source "sound/soc/pxa/Kconfig"
+diff --git a/sound/soc/Makefile b/sound/soc/Makefile
+index 782db21..191c2e5 100644
+--- a/sound/soc/Makefile
++++ b/sound/soc/Makefile
+@@ -2,3 +2,4 @@ snd-soc-core-objs := soc-core.o soc-dapm.o
+ 
+ obj-$(CONFIG_SND_SOC)	+= snd-soc-core.o
+ obj-$(CONFIG_SND_SOC)	+= codecs/ at91/ pxa/ s3c24xx/ sh/ fsl/ davinci/ omap/
++obj-$(CONFIG_SND_SOC_OF)	+= soc-of.o
+diff --git a/sound/soc/soc-of.c b/sound/soc/soc-of.c
+new file mode 100644
+index 0000000..0c855df
+--- /dev/null
++++ b/sound/soc/soc-of.c
+@@ -0,0 +1,171 @@
++/*
++ * OF helpers for ALSA SoC Layer
++ *
++ * Copyright (C) 2008, Secret Lab Technologies Ltd.
++ */
++
++#include <linux/module.h>
++#include <linux/moduleparam.h>
++#include <linux/init.h>
++#include <linux/delay.h>
++#include <linux/pm.h>
++#include <linux/bitops.h>
++#include <linux/platform_device.h>
++#include <linux/of.h>
++#include <sound/core.h>
++#include <sound/pcm.h>
++#include <sound/pcm_params.h>
++#include <sound/soc.h>
++#include <sound/soc-of.h>
++#include <sound/initval.h>
++
++MODULE_AUTHOR("Grant Likely <grant.likely@secretlab.ca>");
++MODULE_LICENSE("GPL");
++MODULE_DESCRIPTION("ALSA SoC OpenFirmware bindings");
++
++static DEFINE_MUTEX(of_snd_soc_mutex);
++static LIST_HEAD(of_snd_soc_device_list);
++static int of_snd_soc_next_index;
++
++struct of_snd_soc_device {
++	int id;
++	struct list_head list;
++	struct snd_soc_device device;
++	struct snd_soc_machine machine;
++	struct snd_soc_dai_link dai_link;
++	struct platform_device *pdev;
++	struct device_node *platform_node;
++	struct device_node *codec_node;
 +};
 +
-+/**
-+ * of_modalias_node - Lookup appropriate modalias for a device node
-+ * @node:	pointer to a device tree node
-+ * @modalias:	Pointer to buffer that modalias value will be copied into
-+ * @len:	Length of modalias value
-+ *
-+ * Based on the value of the compatible property, this routine will determine
-+ * an appropriate modalias value for a particular device tree node.  Three
-+ * separate methods are used to derive a modalias value.
-+ *
-+ * First method is to lookup the compatible value in of_modalias_table.
-+ * Second is to look for a "linux,<modalias>" entry in the compatible list
-+ * and used that for modalias.  Third is to strip off the manufacturer
-+ * prefix from the first compatible entry and use the remainder as modalias
-+ *
-+ * This routine returns 0 on success
-+ */
-+int of_modalias_node(struct device_node *node, char *modalias, int len)
++static struct snd_soc_ops of_snd_soc_ops = {
++};
++
++static struct of_snd_soc_device *
++of_snd_soc_get_device(struct device_node *codec_node)
 +{
-+	int i, cplen;
-+	const char *compatible;
-+	const char *p;
++	struct of_snd_soc_device *of_soc;
 +
-+	/* 1. search for exception list entry */
-+	for (i = 0; i < ARRAY_SIZE(of_modalias_table); i++) {
-+		compatible = of_modalias_table[i].of_device;
-+		if (!of_device_is_compatible(node, compatible))
-+			continue;
-+		strlcpy(modalias, of_modalias_table[i].modalias, len);
-+		return 0;
++	list_for_each_entry(of_soc, &of_snd_soc_device_list, list) {
++		if (of_soc->codec_node == codec_node)
++			return of_soc;
 +	}
 +
-+	compatible = of_get_property(node, "compatible", &cplen);
-+	if (!compatible)
-+		return -ENODEV;
++	of_soc = kzalloc(sizeof(struct of_snd_soc_device), GFP_KERNEL);
++	if (!of_soc)
++		return NULL;
 +
-+	/* 2. search for linux,<modalias> entry */
-+	p = compatible;
-+	while (cplen > 0) {
-+		if (!strncmp(p, "linux,", 6)) {
-+			p += 6;
-+			strlcpy(modalias, p, len);
-+			return 0;
-+		}
++	/* Initialize the structure and add it to the global list */
++	of_soc->codec_node = codec_node;
++	of_soc->id = of_snd_soc_next_index++;
++	of_soc->machine.dai_link = &of_soc->dai_link;
++	of_soc->machine.num_links = 1;
++	of_soc->device.machine = &of_soc->machine;
++	of_soc->dai_link.ops = &of_snd_soc_ops;
++	list_add(&of_soc->list, &of_snd_soc_device_list);
 +
-+		i = strlen(p) + 1;
-+		p += i;
-+		cplen -= i;
-+	}
-+
-+	/* 3. take first compatible entry and strip manufacturer */
-+	p = strchr(compatible, ',');
-+	if (!p)
-+		return -ENODEV;
-+	p++;
-+	strlcpy(modalias, p, len);
-+	return 0;
++	return of_soc;
 +}
-+EXPORT_SYMBOL_GPL(of_modalias_node);
 +
-diff --git a/drivers/of/of_i2c.c b/drivers/of/of_i2c.c
-index 5c015d3..65fd26d 100644
---- a/drivers/of/of_i2c.c
-+++ b/drivers/of/of_i2c.c
-@@ -16,62 +16,6 @@
- #include <linux/of_i2c.h>
- #include <linux/module.h>
- 
--struct i2c_driver_device {
--	char    *of_device;
--	char    *i2c_type;
--};
--
--static struct i2c_driver_device i2c_devices[] = {
--};
--
--static int of_find_i2c_driver(struct device_node *node,
--			      struct i2c_board_info *info)
--{
--	int i, cplen;
--	const char *compatible;
--	const char *p;
--
--	/* 1. search for exception list entry */
--	for (i = 0; i < ARRAY_SIZE(i2c_devices); i++) {
--		if (!of_device_is_compatible(node, i2c_devices[i].of_device))
--			continue;
--		if (strlcpy(info->type, i2c_devices[i].i2c_type,
--			    I2C_NAME_SIZE) >= I2C_NAME_SIZE)
--			return -ENOMEM;
--
--		return 0;
--	}
--
--	compatible = of_get_property(node, "compatible", &cplen);
--	if (!compatible)
--		return -ENODEV;
--
--	/* 2. search for linux,<i2c-type> entry */
--	p = compatible;
--	while (cplen > 0) {
--		if (!strncmp(p, "linux,", 6)) {
--			p += 6;
--			if (strlcpy(info->type, p,
--				    I2C_NAME_SIZE) >= I2C_NAME_SIZE)
--				return -ENOMEM;
--			return 0;
--		}
--
--		i = strlen(p) + 1;
--		p += i;
--		cplen -= i;
--	}
--
--	/* 3. take fist compatible entry and strip manufacturer */
--	p = strchr(compatible, ',');
--	if (!p)
--		return -ENODEV;
--	p++;
--	if (strlcpy(info->type, p, I2C_NAME_SIZE) >= I2C_NAME_SIZE)
--		return -ENOMEM;
--	return 0;
--}
--
- void of_register_i2c_devices(struct i2c_adapter *adap,
- 			     struct device_node *adap_node)
- {
-@@ -83,6 +27,9 @@ void of_register_i2c_devices(struct i2c_adapter *adap,
- 		const u32 *addr;
- 		int len;
- 
-+		if (of_modalias_node(node, info.type, sizeof(info.type)) < 0)
-+			continue;
++static void of_snd_soc_register_device(struct of_snd_soc_device *of_soc)
++{
++	struct platform_device *pdev;
++	int rc;
 +
- 		addr = of_get_property(node, "reg", &len);
- 		if (!addr || len < sizeof(int) || *addr > (1 << 10) - 1) {
- 			printk(KERN_ERR
-@@ -94,11 +41,6 @@ void of_register_i2c_devices(struct i2c_adapter *adap,
- 		if (info.irq == NO_IRQ)
- 			info.irq = -1;
- 
--		if (of_find_i2c_driver(node, &info) < 0) {
--			irq_dispose_mapping(info.irq);
--			continue;
--		}
--
- 		info.addr = *addr;
- 
- 		request_module(info.type);
-diff --git a/include/linux/of.h b/include/linux/of.h
-index 59a61bd..79886ad 100644
---- a/include/linux/of.h
-+++ b/include/linux/of.h
-@@ -70,5 +70,6 @@ extern int of_n_addr_cells(struct device_node *np);
- extern int of_n_size_cells(struct device_node *np);
- extern const struct of_device_id *of_match_node(
- 	const struct of_device_id *matches, const struct device_node *node);
-+extern int of_modalias_node(struct device_node *node, char *modalias, int len);
- 
- #endif /* _LINUX_OF_H */
++	/* Only register the device if both the codec and platform have
++	 * been registered */
++	if ((!of_soc->device.codec_data) || (!of_soc->platform_node))
++		return;
++
++	pr_info("platform<-->codec match achieved; registering machine\n");
++
++	pdev = platform_device_alloc("soc-audio", of_soc->id);
++	if (!pdev) {
++		pr_err("of_soc: platform_device_alloc() failed\n");
++		return;
++	}
++
++	pdev->dev.platform_data = of_soc;
++	platform_set_drvdata(pdev, &of_soc->device);
++	of_soc->device.dev = &pdev->dev;
++
++	/* The ASoC device is complete; register it */
++	rc = platform_device_add(pdev);
++	if (rc) {
++		pr_err("of_soc: platform_device_add() failed\n");
++		return;
++	}
++
++}
++
++int of_snd_soc_register_codec(struct snd_soc_codec_device *codec_dev,
++			      void *codec_data, struct snd_soc_codec_dai *dai,
++			      struct device_node *node)
++{
++	struct of_snd_soc_device *of_soc;
++	int rc = 0;
++
++	pr_info("registering ASoC codec driver: %s\n", node->full_name);
++
++	mutex_lock(&of_snd_soc_mutex);
++	of_soc = of_snd_soc_get_device(node);
++	if (!of_soc) {
++		rc = -ENOMEM;
++		goto out;
++	}
++
++	/* Store the codec data */
++	of_soc->device.codec_data = codec_data;
++	of_soc->device.codec_dev = codec_dev;
++	of_soc->dai_link.name = node->name;
++	of_soc->dai_link.stream_name = node->name;
++	of_soc->dai_link.codec_dai = dai;
++
++	/* Now try to register the SoC device */
++	of_snd_soc_register_device(of_soc);
++
++ out:
++	mutex_unlock(&of_snd_soc_mutex);
++	return rc;
++}
++EXPORT_SYMBOL_GPL(of_snd_soc_register_codec);
++
++int of_snd_soc_register_platform(struct snd_soc_platform *platform,
++				 struct device_node *node,
++				 struct snd_soc_cpu_dai *cpu_dai)
++{
++	struct of_snd_soc_device *of_soc;
++	struct device_node *codec_node;
++	const phandle *handle;
++	int len, rc = 0;
++
++	pr_info("registering ASoC platform driver: %s\n", node->full_name);
++
++	handle = of_get_property(node, "codec-handle", &len);
++	if (!handle || len < sizeof(handle))
++		return -ENODEV;
++	codec_node = of_find_node_by_phandle(*handle);
++	if (!codec_node)
++		return -ENODEV;
++	pr_info("looking for codec: %s\n", codec_node->full_name);
++
++	mutex_lock(&of_snd_soc_mutex);
++	of_soc = of_snd_soc_get_device(codec_node);
++	if (!of_soc) {
++		rc = -ENOMEM;
++		goto out;
++	}
++
++	of_soc->platform_node = node;
++	of_soc->dai_link.cpu_dai = cpu_dai;
++	of_soc->device.platform = platform;
++	of_soc->machine.name = of_soc->dai_link.cpu_dai->name;
++
++	/* Now try to register the SoC device */
++	of_snd_soc_register_device(of_soc);
++
++ out:
++	mutex_unlock(&of_snd_soc_mutex);
++	return rc;
++}
++EXPORT_SYMBOL_GPL(of_snd_soc_register_platform);
