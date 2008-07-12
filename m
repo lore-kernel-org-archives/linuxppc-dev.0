@@ -1,21 +1,18 @@
-Return-Path: <wsa@pengutronix.de>
-Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
-	[83.236.181.26]) by ozlabs.org (Postfix) with ESMTP id 45150DDE22
-	for <linuxppc-dev@ozlabs.org>; Sat, 12 Jul 2008 18:23:14 +1000 (EST)
-Date: Sat, 12 Jul 2008 10:22:59 +0200
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: [i2c] [PATCH] of/i2c: don't pass -1 to irq_dispose_mapping,
-	otherwise kernel will oops
-Message-ID: <20080712082259.GA16810@pengutronix.de>
-References: <20080711174859.GA24260@polina.dev.rtsoft.ru>
-	<20080711182323.GB15321@secretlab.ca> <4877ADF6.8070702@scram.de>
-	<20080711191502.GA21847@polina.dev.rtsoft.ru>
+Return-Path: <glikely@secretlab.ca>
+Received: from wf-out-1314.google.com (wf-out-1314.google.com [209.85.200.171])
+	by ozlabs.org (Postfix) with ESMTP id 35BB1DDDF0
+	for <linuxppc-dev@ozlabs.org>; Sat, 12 Jul 2008 18:36:26 +1000 (EST)
+Received: by wf-out-1314.google.com with SMTP id 24so4170642wfg.15
+	for <linuxppc-dev@ozlabs.org>; Sat, 12 Jul 2008 01:36:20 -0700 (PDT)
+From: Grant Likely <grant.likely@secretlab.ca>
+Subject: [PATCH v3 1/5] of: adapt of_find_i2c_driver() to be usable by SPI also
+To: linuxppc-dev@ozlabs.org, spi-devel-general@lists.sourceforge.net,
+	dbrownell@users.sourceforge.net, jonsmirl@gmail.com
+Date: Sat, 12 Jul 2008 02:34:37 -0600
+Message-ID: <20080712083437.14782.65551.stgit@trillian.secretlab.ca>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="bp/iNruPH9dso1Pn"
-In-Reply-To: <20080711191502.GA21847@polina.dev.rtsoft.ru>
-Cc: linuxppc-dev@ozlabs.org, i2c@lm-sensors.org
+Content-Type: text/plain; charset="utf-8"
+Sender: Grant Likely <glikely@secretlab.ca>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,54 +22,213 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+From: Grant Likely <grant.likely@secretlab.ca>
 
---bp/iNruPH9dso1Pn
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+SPI has a similar problem as I2C in that it needs to determine an
+appropriate modalias value for each device node.  This patch adapts
+the of_i2c of_find_i2c_driver() function to be usable by of_spi also.
 
-On Fri, Jul 11, 2008 at 11:15:02PM +0400, Anton Vorontsov wrote:
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+---
 
-> > Nope, it was a bug in the i2c documentation fixed recently:
->=20
-> Nope? I'm looking into i2c-core.c:
->=20
-> .. i2c_new_device(...)
-> {
-> 	client->irq =3D info->irq;
->=20
-> Core will blindly pass irq, so clients should ensure that irq contains
-> correct value. And as far as there is no common scheme of checking that
-> "there is no irq specified", the most safe option is -1.
+ drivers/of/base.c   |   88 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ drivers/of/of_i2c.c |   64 ++-----------------------------------
+ include/linux/of.h  |    1 +
+ 3 files changed, 92 insertions(+), 61 deletions(-)
 
-I wonder if -1 is really the safest; even kernel functions related to
-irqs are not consistent if "irq" is int or unsigned int. So, -1 could
-cause subtle signedness defects.
-
-The whole "no irq" mess really needs to be cleared generally. It just
-disturbed me that i2c_core was imposing -1, whilst some other subsystem
-may have chosen 0. IMHO, subsystems like i2c should pass irqs
-transparently. This is why I submitted the patch for i2c documentation.
-
-All the best,
-
-   Wolfram
-
---=20
-  Dipl.-Ing. Wolfram Sang | http://www.pengutronix.de
- Pengutronix - Linux Solutions for Science and Industry
-
---bp/iNruPH9dso1Pn
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFIeGnjD27XaX1/VRsRArEiAJ9xfVOqDCtbNBdZwYcDEW7rV69+kACfeWzP
-l8tV0MpEEcfv3agorJmyMP0=
-=no9Z
------END PGP SIGNATURE-----
-
---bp/iNruPH9dso1Pn--
+diff --git a/drivers/of/base.c b/drivers/of/base.c
+index 23ffb7c..ad8ac1a 100644
+--- a/drivers/of/base.c
++++ b/drivers/of/base.c
+@@ -385,3 +385,91 @@ struct device_node *of_find_matching_node(struct device_node *from,
+ 	return np;
+ }
+ EXPORT_SYMBOL(of_find_matching_node);
++
++/**
++ * of_modalias_table: Table of explicit compatible ==> modalias mappings
++ *
++ * This table allows particulare compatible property values to be mapped
++ * to modalias strings.  This is useful for busses which do not directly
++ * understand the OF device tree but are populated based on data contained
++ * within the device tree.  SPI and I2C are the two current users of this
++ * table.
++ *
++ * In most cases, devices do not need to be listed in this table because
++ * the modalias value can be derived directly from the compatible table.
++ * However, if for any reason a value cannot be derived, then this table
++ * provides a method to override the implicit derivation.
++ *
++ * At the moment, a single table is used for all bus types because it is
++ * assumed that the data size is small and that the compatible values
++ * should already be distinct enough to differentiate between SPI, I2C
++ * and other devices.
++ */
++struct of_modalias_table {
++	char *of_device;
++	char *modalias;
++};
++static struct of_modalias_table of_modalias_table[] = {
++	/* Empty for now; add entries as needed */
++};
++
++/**
++ * of_modalias_node - Lookup appropriate modalias for a device node
++ * @node:	pointer to a device tree node
++ * @modalias:	Pointer to buffer that modalias value will be copied into
++ * @len:	Length of modalias value
++ *
++ * Based on the value of the compatible property, this routine will determine
++ * an appropriate modalias value for a particular device tree node.  Three
++ * separate methods are used to derive a modalias value.
++ *
++ * First method is to lookup the compatible value in of_modalias_table.
++ * Second is to look for a "linux,<modalias>" entry in the compatible list
++ * and used that for modalias.  Third is to strip off the manufacturer
++ * prefix from the first compatible entry and use the remainder as modalias
++ *
++ * This routine returns 0 on success
++ */
++int of_modalias_node(struct device_node *node, char *modalias, int len)
++{
++	int i, cplen;
++	const char *compatible;
++	const char *p;
++
++	/* 1. search for exception list entry */
++	for (i = 0; i < ARRAY_SIZE(of_modalias_table); i++) {
++		compatible = of_modalias_table[i].of_device;
++		if (!of_device_is_compatible(node, compatible))
++			continue;
++		strlcpy(modalias, of_modalias_table[i].modalias, len);
++		return 0;
++	}
++
++	compatible = of_get_property(node, "compatible", &cplen);
++	if (!compatible)
++		return -ENODEV;
++
++	/* 2. search for linux,<modalias> entry */
++	p = compatible;
++	while (cplen > 0) {
++		if (!strncmp(p, "linux,", 6)) {
++			p += 6;
++			strlcpy(modalias, p, len);
++			return 0;
++		}
++
++		i = strlen(p) + 1;
++		p += i;
++		cplen -= i;
++	}
++
++	/* 3. take first compatible entry and strip manufacturer */
++	p = strchr(compatible, ',');
++	if (!p)
++		return -ENODEV;
++	p++;
++	strlcpy(modalias, p, len);
++	return 0;
++}
++EXPORT_SYMBOL_GPL(of_modalias_node);
++
+diff --git a/drivers/of/of_i2c.c b/drivers/of/of_i2c.c
+index 5c015d3..65fd26d 100644
+--- a/drivers/of/of_i2c.c
++++ b/drivers/of/of_i2c.c
+@@ -16,62 +16,6 @@
+ #include <linux/of_i2c.h>
+ #include <linux/module.h>
+ 
+-struct i2c_driver_device {
+-	char    *of_device;
+-	char    *i2c_type;
+-};
+-
+-static struct i2c_driver_device i2c_devices[] = {
+-};
+-
+-static int of_find_i2c_driver(struct device_node *node,
+-			      struct i2c_board_info *info)
+-{
+-	int i, cplen;
+-	const char *compatible;
+-	const char *p;
+-
+-	/* 1. search for exception list entry */
+-	for (i = 0; i < ARRAY_SIZE(i2c_devices); i++) {
+-		if (!of_device_is_compatible(node, i2c_devices[i].of_device))
+-			continue;
+-		if (strlcpy(info->type, i2c_devices[i].i2c_type,
+-			    I2C_NAME_SIZE) >= I2C_NAME_SIZE)
+-			return -ENOMEM;
+-
+-		return 0;
+-	}
+-
+-	compatible = of_get_property(node, "compatible", &cplen);
+-	if (!compatible)
+-		return -ENODEV;
+-
+-	/* 2. search for linux,<i2c-type> entry */
+-	p = compatible;
+-	while (cplen > 0) {
+-		if (!strncmp(p, "linux,", 6)) {
+-			p += 6;
+-			if (strlcpy(info->type, p,
+-				    I2C_NAME_SIZE) >= I2C_NAME_SIZE)
+-				return -ENOMEM;
+-			return 0;
+-		}
+-
+-		i = strlen(p) + 1;
+-		p += i;
+-		cplen -= i;
+-	}
+-
+-	/* 3. take fist compatible entry and strip manufacturer */
+-	p = strchr(compatible, ',');
+-	if (!p)
+-		return -ENODEV;
+-	p++;
+-	if (strlcpy(info->type, p, I2C_NAME_SIZE) >= I2C_NAME_SIZE)
+-		return -ENOMEM;
+-	return 0;
+-}
+-
+ void of_register_i2c_devices(struct i2c_adapter *adap,
+ 			     struct device_node *adap_node)
+ {
+@@ -83,6 +27,9 @@ void of_register_i2c_devices(struct i2c_adapter *adap,
+ 		const u32 *addr;
+ 		int len;
+ 
++		if (of_modalias_node(node, info.type, sizeof(info.type)) < 0)
++			continue;
++
+ 		addr = of_get_property(node, "reg", &len);
+ 		if (!addr || len < sizeof(int) || *addr > (1 << 10) - 1) {
+ 			printk(KERN_ERR
+@@ -94,11 +41,6 @@ void of_register_i2c_devices(struct i2c_adapter *adap,
+ 		if (info.irq == NO_IRQ)
+ 			info.irq = -1;
+ 
+-		if (of_find_i2c_driver(node, &info) < 0) {
+-			irq_dispose_mapping(info.irq);
+-			continue;
+-		}
+-
+ 		info.addr = *addr;
+ 
+ 		request_module(info.type);
+diff --git a/include/linux/of.h b/include/linux/of.h
+index 59a61bd..79886ad 100644
+--- a/include/linux/of.h
++++ b/include/linux/of.h
+@@ -70,5 +70,6 @@ extern int of_n_addr_cells(struct device_node *np);
+ extern int of_n_size_cells(struct device_node *np);
+ extern const struct of_device_id *of_match_node(
+ 	const struct of_device_id *matches, const struct device_node *node);
++extern int of_modalias_node(struct device_node *node, char *modalias, int len);
+ 
+ #endif /* _LINUX_OF_H */
