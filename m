@@ -1,15 +1,22 @@
-Return-Path: <marvin24@gmx.de>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id 7E0CFDDEE3
-	for <linuxppc-dev@ozlabs.org>; Sat, 12 Jul 2008 23:16:55 +1000 (EST)
-From: Marvin <marvin24@gmx.de>
-To: linuxppc-dev@ozlabs.org
-Subject: [RFC] reorganize cputypes for PPC64
-Date: Sat, 12 Jul 2008 15:16:49 +0200
+Return-Path: <broonie@sirena.org.uk>
+Received: from cassiel.sirena.org.uk (cassiel.sirena.org.uk [80.68.93.111])
+	by ozlabs.org (Postfix) with ESMTP id 52A54DDD04
+	for <linuxppc-dev@ozlabs.org>; Sun, 13 Jul 2008 03:36:19 +1000 (EST)
+Date: Sat, 12 Jul 2008 18:36:10 +0100
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [alsa-devel] [PATCH 3/3] ALSA SoC: Add Texas
+	Instruments	TLV320AIC26 codec driver
+Message-ID: <20080712173609.GA6523@sirena.org.uk>
+References: <20080701235330.16923.67218.stgit@trillian.secretlab.ca>
+	<20080701235340.16923.48024.stgit@trillian.secretlab.ca>
+	<1214995713.4882.54.camel@localhost.localdomain>
+	<20080712060018.GB23213@secretlab.ca>
 MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_B7KeIb7etm6ejQ7"
-Message-Id: <200807121516.49576.marvin24@gmx.de>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080712060018.GB23213@secretlab.ca>
+Cc: Liam Girdwood <liam.girdwood@wolfsonmicro.com>, alsa-devel@alsa-project.org,
+	timur@freescale.com, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,121 +26,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Boundary-00=_B7KeIb7etm6ejQ7
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Sat, Jul 12, 2008 at 12:00:18AM -0600, Grant Likely wrote:
+> On Wed, Jul 02, 2008 at 11:48:33AM +0100, Liam Girdwood wrote:
 
-Hi,
+> > PLL/FLL/clock config is usually done in a separate function
+> > (codec_set_pll(), callable by machine driver) so that we can change
+> > clocks depending on the available machine clocks and srate. 
 
-attached patch introduces a "processor type" menu similar to ppc32. It 
-_should_ not change anything upto now. 
+...
 
-The aim is to allow future fine graded cpu optimizations via mcpu/mtune 
-compiler flags and also to clean up the arch Makefile/Kconfig.cputypes (I 
-know this is a minefield).
+> > Codec domain (i.e Bias power) PM stuff should be done in
+> > codec_dapm_event(). This allows us to power the codec on when we do
+> > things like sidetone (with no active playback or capture stream).
 
-Greetings
+> Ugh, I'm going to have to leave these two for now.  I don't understand
+> enough about the ASoC structure yet to understand what it should look
+> like.  I'll probably need help, but I don't think I can get it sorted
+> out before the merge window.
 
-Marvin
+> Do these two comments need to be addressed before the driver is merged?
 
+It wouldn't be the only driver not to implement PLL configuration in
+this way so that's probably be OK for an initial merge.  What's expected
+for PLL configuration is that you implement the DAI set_pll() operation
+in the codec driver, allowing machine drivers to configure the PLL when
+they wish.
 
---Boundary-00=_B7KeIb7etm6ejQ7
-Content-Type: text/x-diff;
-  charset="us-ascii";
-  name="ppc64_cputypes.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="ppc64_cputypes.patch"
+The power configuration should be fixed, though.  Normally drivers
+either fully implement DAPM (including set_bias_level()) or power
+everything in the codec up when the driver is loaded.  At the minute
+what the driver is doing appears to be powering the codec up in both
+_hw_params() and _probe() but never powering anything down - if that is
+the case then probably all you need to do is remove the extra power up
+from hw_params(), giving you the simple option.
 
-diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-index f7efaa9..eebde6c 100644
---- a/arch/powerpc/platforms/Kconfig.cputype
-+++ b/arch/powerpc/platforms/Kconfig.cputype
-@@ -54,35 +54,65 @@ config E200
- 
- endchoice
- 
--config POWER4_ONLY
--	bool "Optimize for POWER4"
-+choice
-+	prompt "Processor Type"
- 	depends on PPC64
-+	default TUNE_POWER4
-+	help
-+	  There are serveral families of 64 bit PowerPC chips supported.
-+	  These include the Power3 to Power6 series, 970, and Cell BE based
-+	  CPUs made be IBM.
-+
-+	  If unsure, select Power4.
-+
-+config TUNE_POWER3
-+	bool "Power3"
-+
-+config TUNE_POWER4
-+	bool "Power4"
-+
-+config TUNE_970
-+	bool "970/G5"
-+
-+config TUNE_POWER5
-+	bool "Power5"
-+
-+config TUNE_POWER6
-+	bool "Power6"
-+
-+config TUNE_CELL
-+	bool "Cell Broadband Engine"
-+	help
-+	  Cause the compiler to optimize for the PPE of the Cell Broadband
-+	  Engine. This will make the code run considerably faster on Cell
-+	  but somewhat slower on other machines. If the resulting kernel is
-+	  built to run only on Cell BE machines, select also OPT_EXCLUSIVE.
-+
-+endchoice
-+
-+config OPT_EXCLUSIVE
-+	bool "Optimize to run exclusive on selected CPU"
- 	default n
--	---help---
--	  Cause the compiler to optimize for POWER4/POWER5/PPC970 processors.
--	  The resulting binary will not work on POWER3 or RS64 processors
--	  when compiled with binutils 2.15 or later.
-+	help
-+	  Cause the compiler to optimize to run exclusive on the selected
-+	  CPU. The resulting binary will probably not work on other CPUs.
-+	  
-+	  If the compiler/binutils combination does not support the exclusive
-+	  optimization, it will try to tune only or fail.
-+	  
-+	  If you are unsure, select no.
- 
- config POWER3
--	bool
- 	depends on PPC64
--	default y if !POWER4_ONLY
-+	def_bool y if !POWER4_ONLY
- 
- config POWER4
- 	depends on PPC64
- 	def_bool y
- 
--config TUNE_CELL
--	bool "Optimize for Cell Broadband Engine"
-+config POWER4_ONLY
- 	depends on PPC64
--	help
--	  Cause the compiler to optimize for the PPE of the Cell Broadband
--	  Engine. This will make the code run considerably faster on Cell
--	  but somewhat slower on other machines. This option only changes
--	  the scheduling of instructions, not the selection of instructions
--	  itself, so the resulting kernel will keep running on all other
--	  machines. When building a kernel that is supposed to run only
--	  on Cell, you should also select the POWER4_ONLY option.
-+	def_bool y if TUNE_POWER4 && OPT_EXCLUSIVE
- 
- config 6xx
- 	bool
+> Hmmm, I haven't been able to find this; either in the code or on a live
+> running system.  Where is the common reg dump implemented.
 
---Boundary-00=_B7KeIb7etm6ejQ7--
+/sys/bus/platform/devices/soc-audio/codec_reg
