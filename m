@@ -1,19 +1,19 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 53648DDE17
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	by ozlabs.org (Postfix) with ESMTP id 8C303DDF14
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 12 Jul 2008 20:59:58 +1000 (EST)
-To: "Rami WEHBI" <rwehbi@wirecom-tech.com>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: linux boot sequence
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 11 Jul 2008 08:34:54 +0200."
-	<D3C541E264C021479BFB60B3B790C0FB497014@etoilenoire.STARWARS.local>
-Date: Sat, 12 Jul 2008 12:59:55 +0200
-Sender: wd@denx.de
-Message-Id: <20080712105955.D3A0B242FF@gemini.denx.de>
-Cc: linuxppc-embedded@ozlabs.org
+	Sat, 12 Jul 2008 23:48:15 +1000 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1KHfSO-0003oL-QB
+	for linuxppc-embedded@ozlabs.org; Sat, 12 Jul 2008 06:48:12 -0700
+Message-ID: <18419614.post@talk.nabble.com>
+Date: Sat, 12 Jul 2008 06:48:12 -0700 (PDT)
+From: Alex_SYS <schmid-grafenau@t-online.de>
+To: linuxppc-embedded@ozlabs.org
+Subject: LIME on MPC5200B ioremap problem
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-embedded>,
@@ -24,24 +24,34 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <D3C541E264C021479BFB60B3B790C0FB497014@etoilenoire.STARWARS.local> you wrote:
-> 
->     I am using the ppc405 and I would like to know, how does linux on
-> this architect detect the available memory size in details !!!
->         is it a parameter passed to linux at startup by the boot loader
-> ??
 
-Yes.
+Hello,
+I have an MPC5200B with Linux and an Grafic Chip Lime on the LPB !
+The Lime is configured under U-Boot und works very fine in 800x480x16 bit
+colors.
+In Linux I adapted the Virtual Framebuffer driver! There are only three
+things necessary:
+   1: check_mem (0xE0000000, 750kB)      ->thats OK
+   2: io__mem_request(0xE0000000, 750kB)    ->thats OK , too
+   3_ioremap(0xE0000000, 750kB)    ->thats OK , too
+   3: write Io request to framebuffers screen_base
+The Kernel with Grafics output works fine with 800x350 resolution or 580x480
+and so on.
+But when I use 800x480, the screen output is OK, But the kernel crashes with
+custom trace stop.
+I have found out that it must be a ioremap failure, because it has to do
+with the space i request!
+It works fine if the mem_remap is under 546kB! Exactly it is not the space,
+but the upper adress!
+Because ioremap(0xE00000860, 500kB) crashes also the Kernel!
+It seems like ioremap can`t give me the adresses upper
+(0xE00000000+546kB)=0xE00088B80 ?
+What can be the problem?
+Kernel 2.6.23-rt5 with 16MB Flash and 64MB RAM
 
+Thanks very much!
 
-Best regards,
-
-Wolfgang Denk
 
 -- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-The more complex the mind, the greater the need for the simplicity of
-play.
-	-- Kirk, "Shore Leave", stardate 3025.8
+View this message in context: http://www.nabble.com/LIME-on-MPC5200B-ioremap-problem-tp18419614p18419614.html
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
