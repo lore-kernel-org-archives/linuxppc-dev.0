@@ -2,19 +2,21 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id A2B7EDDE0D
-	for <linuxppc-dev@ozlabs.org>; Sat, 12 Jul 2008 13:41:20 +1000 (EST)
-Subject: Re: Updates to powerpc.git
+	by ozlabs.org (Postfix) with ESMTPS id 569DFDDEF5
+	for <linuxppc-dev@ozlabs.org>; Sat, 12 Jul 2008 13:47:42 +1000 (EST)
+Subject: Re: linux-next: manual merge of the powerpc tree
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-In-Reply-To: <20080709091846.69b08e34@zod.rchland.ibm.com>
-References: <1215588881.8970.358.camel@pasglop>
-	<20080709091846.69b08e34@zod.rchland.ibm.com>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+In-Reply-To: <200807112101.25704.bzolnier@gmail.com>
+References: <20080707230717.10429faf.sfr@canb.auug.org.au>
+	<200807112101.25704.bzolnier@gmail.com>
 Content-Type: text/plain
-Date: Sat, 12 Jul 2008 13:32:06 +1000
-Message-Id: <1215833526.7549.141.camel@pasglop>
+Date: Sat, 12 Jul 2008 13:41:30 +1000
+Message-Id: <1215834090.7549.149.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Daniel Walker <dwalker@mvista.com>,
+	linuxppc-dev@ozlabs.org, linux-next@vger.kernel.org,
+	Paul Mackerras <paulus@samba.org>,
 	Andrew Morton <akpm@linux-foundation.org>
 Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -26,31 +28,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2008-07-09 at 09:18 -0400, Josh Boyer wrote:
+On Fri, 2008-07-11 at 21:01 +0200, Bartlomiej Zolnierkiewicz wrote:
 > 
-> If you want to use your master branch as a place for experimental
-> stuff, that's fine by me.  But you'll want to keep next separate from
-> it so it's as "clean" as possible for those trying to track what is
-> definitely going into the next release.
+> Since I haven't heard back from Ben [1] on ide-pmac/media-bay IRQ issue
+> I took another look at ide-pmac patches and I think that it should be
+> possible to rework them in such way that consecutive ide patches (> 100)
+> won't depend on "ide-pmac: media-bay support fixes (take 4)" patch.
+> 
+> This would allow us to re-schedule it to 2.6.28 (which is probably what
+> we want because 2.6.26 is probably just around the corner and we will be
+> pretty busy with 2.6.27 merge window soon).  Ben, what's your opinion?
+> 
+> [1] which doesn't surprise me given his new responsibilities ;)
 
-Yes. The idea is that "next" stays clean.
+That and I just moved house... been hectic lately.
 
-> If it were up to me (which it's not), I would have master just track
-> Linus, next track what's going into the next release, and "bleeding"
-> or "experimental" track stuff that isn't fully vetted yet.  I might
-> start doing that with my tree in the very near future.
-
-Why keeping a branch to track linus in my public tree ? I have plenty of
-these locally :-)
-
-> Also, Paul is pretty good about not rebasing his branches when at all
-> possible, and I suspect that's why his master and next were often the
-> same.  It makes life lots easier for the sub-maintainers and anyone
-> trying to track against the tree.  I humbly beg you to keep that
-> going.
-
-Yes. I intend to stay on that line, but as I'm new to the job, mistake
-are more likely to happen.
+I'll give another shot at the IRQ issues early next week, and if it
+still doesn't work, we'll postpone.
 
 Cheers,
 Ben.
