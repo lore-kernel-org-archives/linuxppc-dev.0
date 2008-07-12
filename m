@@ -2,20 +2,24 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 9DF71DDE0A
-	for <linuxppc-dev@ozlabs.org>; Sat, 12 Jul 2008 13:32:10 +1000 (EST)
-Subject: Re: Updates to powerpc.git
+	by ozlabs.org (Postfix) with ESMTPS id 0C48EDDE0E
+	for <linuxppc-dev@ozlabs.org>; Sat, 12 Jul 2008 13:34:33 +1000 (EST)
+Subject: Re: [PATCH] powerpc: Fix problems with 32bit PPC's running with
+	more than 2GB of RAM
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <7CAAEE49-56F0-4565-8F1B-374C5E2F9E42@kernel.crashing.org>
-References: <1215588881.8970.358.camel@pasglop>
-	<7CAAEE49-56F0-4565-8F1B-374C5E2F9E42@kernel.crashing.org>
+To: Becky Bruce <becky.bruce@freescale.com>
+In-Reply-To: <E87ABEE7-3CD0-45E5-9806-BE3BAAFCFE1C@freescale.com>
+References: <1215611076-13518-1-git-send-email-sr@denx.de>
+	<1215633758.8970.372.camel@pasglop>
+	<20080709162219.4c07a67e@zod.rchland.ibm.com>
+	<1215635979.8970.385.camel@pasglop>
+	<20080709204435.4214f277@zod.rchland.ibm.com>
+	<E87ABEE7-3CD0-45E5-9806-BE3BAAFCFE1C@freescale.com>
 Content-Type: text/plain
-Date: Sat, 12 Jul 2008 13:30:58 +1000
-Message-Id: <1215833458.7549.139.camel@pasglop>
+Date: Sat, 12 Jul 2008 13:33:54 +1000
+Message-Id: <1215833634.7549.143.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Andrew Morton <akpm@linux-foundation.org>
+Cc: linuxppc-dev@ozlabs.org, Stefan Roese <sr@denx.de>
 Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -27,11 +31,20 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-> What is your intent with the 'master' branch?  I hope you do NOT plan  
-> on ever rebasing it.  I assume if a patch gets into master and we drop  
-> it you'll do a git-revert of it?
+> Are you *sure* you can see all 4GB?  I thought we lost some of the 32- 
+> bit PCI address space for PCI IO......  Disclaimer: I'm no expert on  
+> PCI :)
 
-I'll try as much as possible. But I'll keep the option open. "next" is
-the one that should never be rebased I'd say.
+You are right. I didn't think that through when I replied. We do lose
+some of it for MMIO (not IO). So we cannot really go all the way to 4G
+because we can't DMA to all of it, right.
 
+> FYI, I'm *very* close to having swiotlb fully functional on powerpc to  
+> support larger RAM - I am able to boot with 6GB on 8641 right now.   
+> There are some bugs that I'm still shaking out - I hope to push this  
+> out in the next couple of weeks.
+
+That won't make .27 then ?
+
+Cheers,
 Ben.
