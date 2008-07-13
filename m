@@ -1,20 +1,22 @@
-Return-Path: <zippel@linux-m68k.org>
-Received: from smtp-vbr9.xs4all.nl (smtp-vbr9.xs4all.nl [194.109.24.29])
-	by ozlabs.org (Postfix) with ESMTP id 856E0DDE26
-	for <linuxppc-dev@ozlabs.org>; Sun, 13 Jul 2008 09:21:44 +1000 (EST)
-Date: Sun, 13 Jul 2008 01:21:08 +0200 (CEST)
-From: Roman Zippel <zippel@linux-m68k.org>
-To: Milton Miller <miltonm@bga.com>
-Subject: Re: linux-next: kbuild tree build failure
-In-Reply-To: <7b8dd1f1421b1f52ebc76565986fd2a9@bga.com>
-Message-ID: <Pine.LNX.4.64.0807130057490.6791@localhost.localdomain>
-References: <7b8dd1f1421b1f52ebc76565986fd2a9@bga.com>
+Return-Path: <jonsmirl@gmail.com>
+Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.29])
+	by ozlabs.org (Postfix) with ESMTP id 8A537DDE10
+	for <linuxppc-dev@ozlabs.org>; Sun, 13 Jul 2008 13:59:05 +1000 (EST)
+Received: by yw-out-2324.google.com with SMTP id 5so2005944ywh.39
+	for <linuxppc-dev@ozlabs.org>; Sat, 12 Jul 2008 20:59:03 -0700 (PDT)
+Message-ID: <9e4733910807122059q6ca37b22i161a12cd7723ef2d@mail.gmail.com>
+Date: Sat, 12 Jul 2008 23:59:03 -0400
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: "Wolfram Sang" <w.sang@pengutronix.de>
+Subject: Re: [i2c] [PATCH] of/i2c: don't pass -1 to irq_dispose_mapping,
+	otherwise kernel will oops
+In-Reply-To: <20080712080004.GA16739@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	ppcdev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
-	Sam Ravnborg <sam@ravnborg.org>
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20080711174859.GA24260@polina.dev.rtsoft.ru>
+	<20080711182323.GB15321@secretlab.ca>
+	<20080712080004.GA16739@pengutronix.de>
+Cc: linuxppc-dev@ozlabs.org, i2c@lm-sensors.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,41 +26,70 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+On 7/12/08, Wolfram Sang <w.sang@pengutronix.de> wrote:
+> On Fri, Jul 11, 2008 at 12:23:23PM -0600, Grant Likely wrote:
+>
+> > On Fri, Jul 11, 2008 at 09:48:59PM +0400, Anton Vorontsov wrote:
+>  > > Firstly kernel warns at set_irq_chip, and then dies completely:
+>  > >
+>  > > Trying to install chip for IRQ-1
+>  > >
+>  > > diff --git a/drivers/of/of_i2c.c b/drivers/of/of_i2c.c
+>  > > index b2ccdcb..95a24de 100644
+>  > > --- a/drivers/of/of_i2c.c
+>  > > +++ b/drivers/of/of_i2c.c
+>  > > @@ -93,10 +93,8 @@ void of_register_i2c_devices(struct i2c_adapter *adap,
+>  > >             if (info.irq == NO_IRQ)
+>  > >                     info.irq = -1;
+>  >
+>  > What is the reason that info.irq is set to -1 in the first place?  This
+>  > looks like another bug to me.  Does something in the i2c layer depend on
+>  > the -1 value?
+>  >
+>
+>
+> You already acked a fix to this :) I wasn't sure if my patch would
+>  make it on its own, as Jon Smirl was also working on fixes to of_i2c.c
+>  and he seemed to pick up this issue, too.
 
-On Sat, 12 Jul 2008, Milton Miller wrote:
+I did another patch for the mpc-i2c driver changing all of the
+comparisons to NO_IRQ. My understanding of this is the ppc has NO_IRQ
+set to -1, and powerpc has NO_IRQ = 0. So to make all of this work
+right you have to use the NO_IRQ symbol and you can't check against 0
+or -1 directly. I also believe work is underway to get all platforms
+to NO_IRQ = 0 but I don't know if it is completed yet.
 
-> (1) #define PAGE_OFFSET    (ASM_CONST(CONFIG_PAGE_OFFSET) << 32)
-> 
-> It creates unreadable code, where two defines with almost the same name (the
-> only difference being
-> the CONFIG_ prefix, which is often ignored when scanning) contains radically
-> different values.
-> 
-> (2)  #define PAGE_OFFSET    ASM_CONST(CONFIG_PAGE_OFFSET)
 
-Giving it different names is not really difficult. Any objections to 
-CONFIG_PAGE_HIGH_OFFSET?
+>
+>  (Original patch is here:
+>  http://ozlabs.org/pipermail/linuxppc-dev/2008-June/058801.html
+>  )
+>
+>  All the best,
+>
+>    Wolfram
+>
+>
+>  --
+>   Dipl.-Ing. Wolfram Sang | http://www.pengutronix.de
+>   Pengutronix - Linux Solutions for Science and Industry
+>
+> -----BEGIN PGP SIGNATURE-----
+>  Version: GnuPG v1.4.6 (GNU/Linux)
+>
+>  iD8DBQFIeGSED27XaX1/VRsRAr+EAJ948UwobnY7WSSR4i/ywjof1+8dJACfWzPN
+>  bhW6NXgBCnwqITIC5rSXeAI=
+>  =W3sj
+>  -----END PGP SIGNATURE-----
+>
+> _______________________________________________
+>  Linuxppc-dev mailing list
+>  Linuxppc-dev@ozlabs.org
+>  https://ozlabs.org/mailman/listinfo/linuxppc-dev
+>
+>
 
-> On a seperate note,
-> > > > >  config PINT3_ASSIGN
-> > > > >         hex "PINT3_ASSIGN"
-> > > > >         depends on PINTx_REASSIGN
-> > > > > -       default 0x02020303
-> > > > > +       default 0x2020303
-> 
-> is harder to read.   The value is a list of 4 1 byte values, but you have
-> hidden the first nibble making parsing the rest of the value hard.
 
-Sam mentioned that already, but that's a situation where the warning can 
-be relaxed.
-
-> If you are worried about users tring to set values that are too high,
-> then make the types be hex8, hex16, hex32, and hex64.
-
-It's not this, I value consistency as much as you and the values are 
-sometimes used as integers, so a working range is needed. Using simple 
-integers keeps things much simpler and as the ASM_CONST example shows any 
-bigger values are not necessarily directly usable anyway.
-
-bye, Roman
+-- 
+Jon Smirl
+jonsmirl@gmail.com
