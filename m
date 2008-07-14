@@ -1,32 +1,12 @@
-Return-Path: <timur@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 7A9E3DE76A
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jul 2008 04:53:45 +1000 (EST)
-Message-ID: <487BA0AF.10803@freescale.com>
-Date: Mon, 14 Jul 2008 13:53:35 -0500
-From: Timur Tabi <timur@freescale.com>
-MIME-Version: 1.0
-To: Timur Tabi <timur@freescale.com>, Grant Likely <grant.likely@secretlab.ca>,
-	Jon Smirl <jonsmirl@gmail.com>, linuxppc-dev@ozlabs.org,
-	alsa-devel@alsa-project.org, liam.girdwood@wolfsonmicro.com
-Subject: Re: [alsa-devel] [PATCH v2 1/3] ALSA SoC: Add OpenFirmware helper
-	for matching bus and codec drivers
-References: <20080712083929.15025.47682.stgit@trillian.secretlab.ca>
-	<20080714134930.GC25448@sirena.org.uk>
-	<9e4733910807140713r5739efedw81e65632006d101d@mail.gmail.com>
-	<20080714150527.GD25448@sirena.org.uk>
-	<487B7B71.9060606@freescale.com>
-	<20080714165302.GG25448@sirena.org.uk>
-	<fa686aa40807141021ka4f84e9ycc4ac78db760726c@mail.gmail.com>
-	<20080714183632.GI25448@sirena.org.uk>
-	<487B9D98.8010008@freescale.com>
-	<20080714184929.GJ25448@sirena.org.uk>
-In-Reply-To: <20080714184929.GJ25448@sirena.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1
+Return-Path: <jdl@jdl.com>
+To: David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: dtc: Address an assortment of portability problems 
+In-reply-to: <20080626010349.GH308@yookeroo.seuss> 
+References: <20080626010349.GH308@yookeroo.seuss>
+Date: Mon, 14 Jul 2008 13:54:41 -0500
+From: Jon Loeliger <jdl@jdl.com>
+Message-Id: <E1KITC5-0006rG-EI@jdl.com>
+Cc: linuxppc-dev@ozlabs.org, Benno Rice <benno@jeamland.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,32 +16,81 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Mark Brown wrote:
-
->> The only problem with this is that the OF probing code in the kernel binds
->> drivers to device tree nodes.  So when a driver claims a node, no other driver
->> will be probed with it.
+> I've recently worked with a FreeBSD developer, getting dtc and libfdt
+> working on FreeBSD.  This showed up a number of portability problems
+> in the dtc package which this patch addresses.  Changes are as
+> follows:
 > 
->> So we can't have generic nodes that classify the motherboard and just let
->> everyone get probed on it.
+> 	- the parent_offset and supernode_atdepth_offset testcases
+> used the glibc extension functions strchrnul() and strndupa().  Those
+> are removed, using slightly longer coding with standard C functions
+> instead.
 > 
-> My suggestion is that you change this for the root node. 
+> 	- some other testcases had a #define _GNU_SOURCE for no
+> particular reason.  This is removed.
+> 
+> 	- run_tests.sh has bash specific constructs removed, and the
+> interpreter changed to /bin/sh.  This apparently now runs fine on
+> FreeBSD's /bin/sh, and I've also tested it with both ash and dash.
+> 
+> 	- convert-dtsv0-lexer.l has some extra #includes added.  These
+> must have been included indirectly with Linux and glibc, but aren't on
+> FreeBSD.
+> 
+> 	- the endian handling functions in libfdt_env.h, based on
+> endian.h and byteswap.h are replaced with some portable open-coded
+> versions.  Unfortunately, these result in fairly crappy code when
+> compiled, but as far as I can determine there doesn't seem to be any
+> POSIX, SUS or de facto standard way of determining endianness at
+> compile time, nor standard names for byteswapping functions.
+> 
+> 	- some more endian handling, from testdata.h using the
+> problematic endian.h is simply removed, since it wasn't actually being
+> used anyway.
+> 
+> Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 
-That's an interesting idea.
+This patch didn't apply directly.
 
-> It's already
-> got the information required in there, it's just there's no way to use
-> it to load modules at the minute.
+The problem appeared to be the  mysterious and suspect "exit 99"
+in the middle of the following context.  I whacked on the patch
+directly by-hand, and managed to get it to apply.
 
-Correct.
+Obligatory "Not using git" grumble.
 
->  You could presumably read the
-> information out of the device tree using existing APIs to check you're
-> running on the right board once code is loaded?
+Applied after all.
 
-Yes.  The driver <-> node binding is only for probing.  Any driver can scan the
-entire tree at any time.
+jdl
 
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+
+> Index: dtc/tests/run_tests.sh
+> ===================================================================
+> --- dtc.orig/tests/run_tests.sh	2008-06-26 10:40:59.000000000 +1000
+> +++ dtc/tests/run_tests.sh	2008-06-26 10:43:21.000000000 +1000
+
+> @@ -15,19 +15,19 @@
+>  tot_strange=0
+>  
+>  base_run_test() {
+> -    tot_tests=$[tot_tests + 1]
+> +    tot_tests=$((tot_tests + 1))
+>      if VALGRIND="$VALGRIND" "$@"; then
+> -	tot_pass=$[tot_pass + 1]
+> +	tot_pass=$((tot_pass + 1))
+>      else
+>  	ret="$?"
+>  	if [ "$ret" == "1" ]; then
+> -	    tot_config=$[tot_config + 1]
+> +	    tot_config=$((tot_config + 1))
+>  	elif [ "$ret" == "2" ]; then
+> -	    tot_fail=$[tot_fail + 1]
+> +	    tot_fail=$((tot_fail + 1))
+>  	elif [ "$ret" == "$VGCODE" ]; then
+> -	    tot_vg=$[tot_vg + 1]
+> +	    tot_vg=$((tot_vg + 1))
+>  	else
+> -	    tot_strange=$[tot_strange + 1]
+> +	    tot_strange=$((tot_strange + 1))
+>  	fi
+>	exit 99
+>      fi
