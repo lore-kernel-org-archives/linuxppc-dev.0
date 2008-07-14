@@ -1,19 +1,22 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 4B58ADDEF5
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 Jul 2008 23:17:11 +1000 (EST)
-Message-Id: <501E46CC-4D2C-41E6-8954-1DC13CD510C5@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-In-Reply-To: <20080714182118.f5a20643.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v926)
-Subject: Re: powerpc/master: build failure
-Date: Mon, 14 Jul 2008 08:16:57 -0500
-References: <20080714182118.f5a20643.sfr@canb.auug.org.au>
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <jonsmirl@gmail.com>
+Received: from el-out-1112.google.com (el-out-1112.google.com [209.85.162.178])
+	by ozlabs.org (Postfix) with ESMTP id 5BB2CDDF70
+	for <linuxppc-dev@ozlabs.org>; Mon, 14 Jul 2008 23:21:10 +1000 (EST)
+Received: by el-out-1112.google.com with SMTP id o28so776157ele.3
+	for <linuxppc-dev@ozlabs.org>; Mon, 14 Jul 2008 06:21:08 -0700 (PDT)
+Message-ID: <9e4733910807140621g69707c46tc23d26e9cf030c5c@mail.gmail.com>
+Date: Mon, 14 Jul 2008 09:21:08 -0400
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: "Grant Likely" <grant.likely@secretlab.ca>
+Subject: Re: [PATCH v3 5/5] powerpc/mpc5200: Add mpc5200-spi (non-PSC) device
+	driver
+In-Reply-To: <20080712083458.14782.59382.stgit@trillian.secretlab.ca>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20080712083437.14782.65551.stgit@trillian.secretlab.ca>
+	<20080712083458.14782.59382.stgit@trillian.secretlab.ca>
+Cc: linuxppc-dev@ozlabs.org, dbrownell@users.sourceforge.net,
+	spi-devel-general@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,30 +26,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Jul 14, 2008, at 3:21 AM, Stephen Rothwell wrote:
-
-> Hi Kumar,
+On 7/12/08, Grant Likely <grant.likely@secretlab.ca> wrote:
+> From: Grant Likely <grant.likely@secretlab.ca>
 >
-> A build of today's powerpc/master tree for mpc85xx_defconfig fails  
-> like this:
->
-> DTC: dts->dtb  on file "arch/powerpc/boot/dts/ksi8560.dts"
-> ERROR (phandle_references): Reference to non-existent node or label  
-> "mpic"
-> ERROR (phandle_references): Reference to non-existent node or label  
-> "mpic"
-> ERROR (phandle_references): Reference to non-existent node or label  
-> "mpic"
-> ERROR (phandle_references): Reference to non-existent node or label  
-> "mpic"
-> ERROR: Input tree has errors, aborting (use -f to force output)
-> make[2]: *** [arch/powerpc/boot/ksi8560.dtb] Error 2
->
-> Probably commit dee805532a30183c4462305b4614e58bd83a7bc1 ("powerpc:  
-> Add
-> dma nodes to 83xx, 85xx and 86xx boards").
+>  Adds support for the dedicated SPI device on the Freescale MPC5200(b)
+>  SoC.
 
-I have fixes, just need benh to pull them.
+Can you adjust the existing PSC based SPI driver to use this device
+tree code? It will be confusing if there are two different ways to do
+SPI on the mpc5200.
 
-- k
+-- 
+Jon Smirl
+jonsmirl@gmail.com
