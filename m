@@ -1,23 +1,30 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from wx-out-0506.google.com (wx-out-0506.google.com [66.249.82.230])
-	by ozlabs.org (Postfix) with ESMTP id D841DDE38C
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jul 2008 03:06:36 +1000 (EST)
-Received: by wx-out-0506.google.com with SMTP id i30so2555210wxd.15
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 Jul 2008 10:06:35 -0700 (PDT)
-Message-ID: <fa686aa40807141006k402b6a5fq8da1424081a20011@mail.gmail.com>
-Date: Mon, 14 Jul 2008 11:06:34 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Grant Likely" <grant.likely@secretlab.ca>, linuxppc-dev@ozlabs.org,
-	alsa-devel@alsa-project.org, liam.girdwood@wolfsonmicro.com,
-	jonsmirl@gmail.com
-Subject: Re: [alsa-devel] [PATCH v2 1/3] ALSA SoC: Add OpenFirmware helper for
-	matching bus and codec drivers
-In-Reply-To: <20080714134930.GC25448@sirena.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20080712083929.15025.47682.stgit@trillian.secretlab.ca>
-	<20080714134930.GC25448@sirena.org.uk>
+Return-Path: <miltonm@bga.com>
+Received: from ruth.realtime.net (mercury.realtime.net [205.238.132.86])
+	by ozlabs.org (Postfix) with ESMTP id 18E33DE38E
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jul 2008 03:07:13 +1000 (EST)
+In-Reply-To: <20080714095914.0644ac5d@hyperion.delvare>
+References: <for-27-patch1-0@bga.com> <48768018.2070704@hhs.nl>
+	<acca8e14e769b2feadee19f1f7448438@bga.com>
+	<20080711085246.1ead773b@hyperion.delvare>
+	<48770B5E.7000308@hhs.nl>
+	<20080711093650.4b98e3b7@hyperion.delvare>
+	<4879A144.8060203@hhs.nl>
+	<4dfa50520807131411ied883cgcb20eb6bd94f761@mail.gmail.com>
+	<487A7211.7030309@hhs.nl>
+	<4dfa50520807131426t4013142cp1fcd49e078a79c1f@mail.gmail.com>
+	<20080714095914.0644ac5d@hyperion.delvare>
+Mime-Version: 1.0 (Apple Message framework v624)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <88f5162604470179b3c6ebfe729a46f5@bga.com>
+From: Milton Miller <miltonm@bga.com>
+Subject: Re: [RFC] (almost) booting allyesconfig -- please don't poke super-io
+	without request_region
+Date: Mon, 14 Jul 2008 12:09:03 -0500
+To: Jean Delvare <khali@linux-fr.org>
+Cc: Samuel Ortiz <samuel@sortiz.org>, linux-kernel@vger.kernel.org,
+	lm-sensors@lm-sensors.org, linuxppc-dev@ozlabs.org,
+	Hans de Goede <j.w.r.degoede@hhs.nl>,
+	David Hubbard <david.c.hubbard@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,56 +34,108 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Jul 14, 2008 at 7:49 AM, Mark Brown
-<broonie@opensource.wolfsonmicro.com> wrote:
-> On Sat, Jul 12, 2008 at 02:39:29AM -0600, Grant Likely wrote:
->> +static void of_snd_soc_register_device(struct of_snd_soc_device *of_soc)
->> +{
->> +     struct platform_device *pdev;
->> +     int rc;
->> +
->> +     /* Only register the device if both the codec and platform have
->> +      * been registered */
->> +     if ((!of_soc->device.codec_data) || (!of_soc->platform_node))
->> +             return;
->> +
->> +     pr_info("platform<-->codec match achieved; registering machine\n");
+On Jul 14, 2008, at 2:59 AM, Jean Delvare wrote:
+> On Sun, 13 Jul 2008 15:26:56 -0600, David Hubbard wrote:
+>> Hi Hans,
+>>
+>>>> I propose writing a subsystem driver. (Is that properly called "The
+>>>> SuperIO Bus Driver"?) If no one thinks it's a really bad idea I will
+>>>> put together some code and submit it for review, and maintain it.
+>>>>
+>>>> Some hwmon chips have odd / unique probe sequences. IMHO this is 
+>>>> where
+>>>> the design needs to be inspected. One of those is the w83627ehf, 
+>>>> which
+>>>> Jean and Hans are familiar enough with to check my work.
+>>>>
+>>>> Thoughts?
+>>>
+>>> I'm afraid that making this a "bus" will be a bit overkill. Jim's 
+>>> patches
+>>> are quite simple and seem todo the job.
+>>>
+>>> Also keep in mind that most users will be platform devices which 
+>>> just want
+>>> to use the superio registers to find out the baseaddress of their 
+>>> logical
+>>> device, a whole bus seems overkill for this, would the hwmon driver 
+>>> then
+>>> need to be a superio_driver (as well as an platform_driver) or can 
+>>> the bus
+>>> be queried / used
+>>> without having to be a bustype-driver?
+>>
+>> I think that's a valid point. I am willing to keep it small, but I
+>> would prefer to follow the pattern set in other subsystems. It may be
+>> my lack of experience in designing a subsystem showing here! What are
+>> some alternative ways to implement it?
+>>
+>> In other words, Jim's patches are a good start, but maybe I am
+>> misunderstanding them. I see it as the superio-locks module, a driver
+>> that other drivers would depend on / auto-load. Is that something
+>> other subsystems also do?
 >
-> So what this does is add an extremely simple machine driver which
-> matches up the first DAI on a single codec and platform with no facility
-> for setting up any configurable clocking or anything?  This is fine in
-> so far as it goes but it's going to work for very few systems as it is -
-> most codecs will need some additional configuration.  This could be
-> added later, though.
+> Well, there are two approaches to the problem. The first approach
+> (which I think Jim took in his patches? I don't really remember) is to
+> simply solve the problem of concurrent I/O access to the Super-I/O
+> configuration ports (typically 0x2e/0x2f or 0x4e/0x4f). That would be a
+> simple driver requesting the ports in question and exporting an API for
+> other drivers to access them in a safe way.
+>
+> The second approach is to make it a whole subsystem, as David is
+> suggesting. The Super-I/O driver would then not only request the I/O
+> ports, it would also identify which Super-I/O is there, and it would
+> create devices (in the Linux device driver model sense of the term) for
+> every logical device we are interested in (amongst which the hwmon
+> ones.) The hwmon drivers would have to be converted from platform
+> drivers to superio drivers.
+>
+> Each approach has its advantages. The first one is rather simple and
+> also very generic in nature. It could be reused for other purposes. The
+> second one offers automatic loading of hwmon drivers, which would be
+> nice to have.
+>
+> There's probably a middle way which would keep the simplicity of the
+> first approach while still allowing for driver auto-loading, without
+> changing the bus type of all drivers. It would probably take some
+> research though.
 
-Yes, that is pretty much exactly what it is.  When I wrote this my
-goal was just to get something working that had some semblance of
-cleanliness.  Since it is now looking like something that could get
-merged, I'll clean up the documentation describing exactly what it is
-and what the limitations are.  I fully expect that if others find it
-useful then they will need to extend it to extract additional
-configuration information out of the device tree.
+I haven't done the research, but it might be keep superio as
+a platform driver, and keep the clients as platform drivers.  Only
+have the superio driver probe and discover the subcomponent
+addresses and then create the platform devices as children
+instead of having each driver create its own platform device.
+(This all assumes they are all platform devices in sysfs, I have
+not looked).
 
-That being said, I expect this code to be completely rewritten when
-ASoC v2 hits mainline.  Most of the code is devoted to matching
-platforms with codecs.  The mechanism will be completely different
-when the ASoC layer handles making sure all devices are present before
-setting up the machine driver.  I expect that some machines can be
-handled with some form of generic of-asoc driver, while more complex
-ones will need custom code.
+This is all because in the platform bus the bus driver does not
+discover the addresses but relies on drivers or platform setup code.
 
-> Given this it might be worth renaming it to something less generic and
-> perhaps pushing it down into an of directory below the main ASoC
-> directory to parallel existing machine drivers.  I'm happy with the code
-> from an ASoC point of view.
+> Me, I don't really care which path we choose, given that I am not the
+> one who will take care of it. All I have to say is that this has been
+> discussed several times over the past 2 years and nothing came out of
+> it (as far as the mainline kernel is concerned, at least) so whatever
+> is done now, what really matters is that it makes it into the kernel
+> quickly. We have some drivers missing features because of this (for
+> example real-time reading of VID pin values.)
+>
+> This should also not prevent us from fixing the drivers now so that
+> they temporarily request the Super-I/O ports they are using, as Milton
+> suggested. Not only we don't know when we will have something better to
+> offer, but it might also help us find conflicts between drivers, so
+> that we know which drivers should make use of the future superio
+> driver. This could also reveal conflicts with PNP BIOS reservations,
+> etc. Milton, will you write a patch?
 
-I'm okay with that.  How about fsl/mpc5200-of-machine.c for now?
-(only the mpc5200 i2s driver uses it at the moment).  It can always be
-renamed if other folks want to use it for other chips.
+Well, that is the second time you asked me, so I guess I should respond.
 
-Cheers,
-g.
+While I it is possible for me to write this patch, my schedule and
+priority list predict it would not be before the merge window closes.  
+In
+fact, I'm not sure when it would come out.   It might be argued it could
+go in early -rc, but I would fear somebody's chip will not be detected
+with the additional check.  For example, the port may reserved as mother
+board resources or something.  Also, I have no hardware to test any
+proposed patch, so it would be compile check only.
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+milton
