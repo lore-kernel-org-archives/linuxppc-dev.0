@@ -1,24 +1,14 @@
-Return-Path: <schwab@suse.de>
-Received: from mx1.suse.de (mx1.suse.de [195.135.220.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 7A534DE0C5
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jul 2008 03:36:54 +1000 (EST)
-From: Andreas Schwab <schwab@suse.de>
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: [RFC] [PATCH] task_pt_regs for powerpc systems
-References: <200807071952.27427.srinivasa@in.ibm.com>
-	<18554.33417.542066.185326@cargo.ozlabs.ibm.com>
-	<200807141401.26917.srinivasa@in.ibm.com>
-	<487B8B22.6050701@freescale.com>
-Date: Mon, 14 Jul 2008 19:36:47 +0200
-In-Reply-To: <487B8B22.6050701@freescale.com> (Timur Tabi's message of "Mon,
-	14 Jul 2008 12:21:38 -0500")
-Message-ID: <jemykkpdu8.fsf@sykes.suse.de>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 91926DE2BD
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jul 2008 03:54:40 +1000 (EST)
+Date: Mon, 14 Jul 2008 21:54:37 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] of: i2c: improve last resort compatible entry selection
+Message-ID: <20080714175437.GA5230@polina.dev.rtsoft.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Cc: linuxppc-dev@ozlabs.org, Srinivasa D S <srinivasa@in.ibm.com>,
-	Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain; charset=utf8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,24 +18,75 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Timur Tabi <timur@freescale.com> writes:
+Currently of_i2c will select first compatible property as a last resort
+option. This isn't best choice though, because generic compatible entries
+are listed last, not first. For example, two compatible entries given for
+the MCU node:
 
-> Srinivasa D S wrote:
->
->> +#define task_pt_regs(tsk)	(tsk)->thread.regs
->
-> Shouldn't this be:
->
-> 	#define task_pt_regs(tsk)	((tsk)->thread.regs)
->
-> just to be safe?
+"fsl,mc9s08qg8-mpc837xrdb", "fsl,mcu-mpc8349emitx";
 
-Both -> and . have already highest precedence as postfix operators.
+Since no sane driver will ever match specific devices, what we want is
+to select most generic option (last). Then driver may call
+of_device_is_compatible() if it is really interested in details.
 
-Andreas.
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
 
+Other options are: start filling the exceptions list, or add  "linux,..."
+compatible entry to the device tree.
+
+ drivers/of/of_i2c.c |   17 +++++++++++------
+ 1 files changed, 11 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/of/of_i2c.c b/drivers/of/of_i2c.c
+index b2ccdcb..0d35a0a 100644
+--- a/drivers/of/of_i2c.c
++++ b/drivers/of/of_i2c.c
+@@ -29,6 +29,7 @@ static int of_find_i2c_driver(struct device_node *node,
+ 	int i, cplen;
+ 	const char *compatible;
+ 	const char *p;
++	const char *last_wcomma = NULL;
+ 
+ 	/* 1. search for exception list entry */
+ 	for (i = 0; i < ARRAY_SIZE(i2c_devices); i++) {
+@@ -45,7 +46,7 @@ static int of_find_i2c_driver(struct device_node *node,
+ 	if (!compatible)
+ 		return -ENODEV;
+ 
+-	/* 2. search for linux,<i2c-type> entry */
++	/* 2. search for linux,<i2c-type> entry, or remember last w/ comma */
+ 	p = compatible;
+ 	while (cplen > 0) {
+ 		if (!strncmp(p, "linux,", 6)) {
+@@ -54,6 +55,12 @@ static int of_find_i2c_driver(struct device_node *node,
+ 				    I2C_NAME_SIZE) >= I2C_NAME_SIZE)
+ 				return -ENOMEM;
+ 			return 0;
++		} else {
++			const char *comma;
++
++			comma = strchr(p, ',');
++			if (comma)
++				last_wcomma = comma + 1;
+ 		}
+ 
+ 		i = strlen(p) + 1;
+@@ -61,12 +68,10 @@ static int of_find_i2c_driver(struct device_node *node,
+ 		cplen -= i;
+ 	}
+ 
+-	/* 3. take fist compatible entry and strip manufacturer */
+-	p = strchr(compatible, ',');
+-	if (!p)
++	/* 3. take last compatible entry w/ comma, manufacturer stripped */
++	if (!last_wcomma)
+ 		return -ENODEV;
+-	p++;
+-	if (strlcpy(info->type, p, I2C_NAME_SIZE) >= I2C_NAME_SIZE)
++	if (strlcpy(info->type, last_wcomma, I2C_NAME_SIZE) >= I2C_NAME_SIZE)
+ 		return -ENOMEM;
+ 	return 0;
+ }
 -- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+1.5.5.4
