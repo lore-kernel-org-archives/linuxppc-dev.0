@@ -1,27 +1,25 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from hs-out-0708.google.com (hs-out-0708.google.com [64.233.178.250])
-	by ozlabs.org (Postfix) with ESMTP id 6D89FDE519
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jul 2008 03:21:15 +1000 (EST)
-Received: by hs-out-0708.google.com with SMTP id z77so1574476hsz.9
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 Jul 2008 10:21:13 -0700 (PDT)
-Message-ID: <fa686aa40807141021ka4f84e9ycc4ac78db760726c@mail.gmail.com>
-Date: Mon, 14 Jul 2008 11:21:12 -0600
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.249])
+	by ozlabs.org (Postfix) with ESMTP id 5C01CDDF54
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jul 2008 03:22:08 +1000 (EST)
+Received: by an-out-0708.google.com with SMTP id c34so1380759anc.78
+	for <linuxppc-dev@ozlabs.org>; Mon, 14 Jul 2008 10:22:06 -0700 (PDT)
+Message-ID: <fa686aa40807141022y18ea2a70qa68665f310e9b505@mail.gmail.com>
+Date: Mon, 14 Jul 2008 11:22:06 -0600
 From: "Grant Likely" <grant.likely@secretlab.ca>
 Sender: glikely@secretlab.ca
-To: "Timur Tabi" <timur@freescale.com>, "Jon Smirl" <jonsmirl@gmail.com>,
-	"Grant Likely" <grant.likely@secretlab.ca>, linuxppc-dev@ozlabs.org,
-	alsa-devel@alsa-project.org, liam.girdwood@wolfsonmicro.com
+To: "Grant Likely" <grant.likely@secretlab.ca>, linuxppc-dev@ozlabs.org,
+	alsa-devel@alsa-project.org, liam.girdwood@wolfsonmicro.com,
+	jonsmirl@gmail.com
 Subject: Re: [alsa-devel] [PATCH v2 1/3] ALSA SoC: Add OpenFirmware helper for
 	matching bus and codec drivers
-In-Reply-To: <20080714165302.GG25448@sirena.org.uk>
+In-Reply-To: <20080714171632.GH25448@sirena.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 References: <20080712083929.15025.47682.stgit@trillian.secretlab.ca>
 	<20080714134930.GC25448@sirena.org.uk>
-	<9e4733910807140713r5739efedw81e65632006d101d@mail.gmail.com>
-	<20080714150527.GD25448@sirena.org.uk>
-	<487B7B71.9060606@freescale.com>
-	<20080714165302.GG25448@sirena.org.uk>
+	<fa686aa40807141006k402b6a5fq8da1424081a20011@mail.gmail.com>
+	<20080714171632.GH25448@sirena.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,67 +29,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Jul 14, 2008 at 10:53 AM, Mark Brown
+On Mon, Jul 14, 2008 at 11:16 AM, Mark Brown
 <broonie@opensource.wolfsonmicro.com> wrote:
-> On Mon, Jul 14, 2008 at 11:14:41AM -0500, Timur Tabi wrote:
->> Mark Brown wrote:
+> On Mon, Jul 14, 2008 at 11:06:34AM -0600, Grant Likely wrote:
 >
->> > I'm finding it difficult to square these two statements - from an ASoC
->> > point of view the main thing this patch is doing is adding a machine
->> > driver and that's not something that's going to go away.
+>> I'm okay with that.  How about fsl/mpc5200-of-machine.c for now?
+>> (only the mpc5200 i2s driver uses it at the moment).  It can always be
+>> renamed if other folks want to use it for other chips.
 >
->> Jon's concern is that there is no straightforward way to build a kernel with
->> multiple fabric drivers and have the right one chosen via the device tree.  This
->> is just a limitation of the device tree model, and no one has come up with a
->> good solution yet.
->
-> Indeed - I understand what the problem you guys have is, I just want to
-> make sure that there is a reasonable consensus among the PowerPC people
-> that this approach is OK to go in and won't create ructions.  The lack
-> of resolution on this issue makes me nervous about any proposed solution
-> where I haven't seen any explicit indication that the community is OK
-> with it.
->
-> Incidentally, nobody ever really commented on my suggestion to do
-> something DMI-like
+> That seems reasonable so long as you're happy with it, though it does
+> seem to be going to the other extreme in terms of broadness :)
 
-I'm feeling stupid;  what does "DMI" stand for?
+heh; I don't care.  This stuff is all going to be in flux anyway, so
+change is inevitable whatever is chosen now.  :-)
 
-> - you've already got the board type information
-> present in the device trees (in the model and compatible information in
-> the root nodes), all that's needed is an API to allow matching on it.
-
-Yes, we have APIs for matching against device trees.  Personally, I'm
-leaning towards having the powerpc platform code
-(arch/powerpc/platforms/* stuff; not ASoC platform stuff) register a
-platform device for the machine driver and let as many machine drivers
-as needed be written.  Hopefully we'll be able to do at least one
-generic machine driver that will be usable by most PowerPC boards, but
-I don't think it is a requirement or even realistic to shoehorn all
-powerpc sound circuits into a single driver.
-
->> The problem still exists in ASoC V2.  However, it's not anything that ASoC
->> itself needs to be concerned with.  It's purely a PowerPC problem.
->
-> Right, I just want to be clear that you guys all understand what this
-> code does and that there won't be too many complaints after the fact.
-
-Shouldn't be.  I'm certainly not pushing this as the end-all be-all
-powerpc sound machine driver.
-
->> > ASoC has always called it a machine driver.
->
->> Wait, I thought it's supposed to be called a fabric driver now?  On PowerPC, it
->> should be called a fabric driver because we already have machine drivers.
->
-> I don't mind - you can call it what you like inside PowerPC-specific
-> code.
-
-Oh help!  Don't tell us that!  Otherwise we'll always be talking
-across purposes.  When ambiguous, let's just be sure to always refer
-to them as "ASoC machine drivers".  :-)
-
-Cheers,
 g.
 
 -- 
