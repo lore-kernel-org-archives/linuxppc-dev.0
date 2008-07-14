@@ -1,32 +1,30 @@
-Return-Path: <brking@linux.vnet.ibm.com>
-Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id BDD41DDDFD
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jul 2008 07:35:31 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e6.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m6ELbrEg002936
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 Jul 2008 17:37:53 -0400
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
-	m6ELZN0e234376
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 Jul 2008 17:35:23 -0400
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m6ELZMpK020423
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 Jul 2008 17:35:23 -0400
-Message-ID: <487BC68E.2080303@linux.vnet.ibm.com>
-Date: Mon, 14 Jul 2008 16:35:10 -0500
-From: Brian King <brking@linux.vnet.ibm.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from wf-out-1314.google.com (wf-out-1314.google.com [209.85.200.173])
+	by ozlabs.org (Postfix) with ESMTP id 8529BDDE00
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jul 2008 08:28:12 +1000 (EST)
+Received: by wf-out-1314.google.com with SMTP id 24so4861829wfg.15
+	for <linuxppc-dev@ozlabs.org>; Mon, 14 Jul 2008 15:28:10 -0700 (PDT)
+Date: Mon, 14 Jul 2008 16:28:08 -0600
+From: Grant Likely <grant.likely@secretlab.ca>
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: [alsa-devel] [PATCH v2 1/3] ALSA SoC: Add OpenFirmware helper
+	for matching bus and codec drivers
+Message-ID: <20080714222808.GA7073@secretlab.ca>
+References: <20080712083929.15025.47682.stgit@trillian.secretlab.ca>
+	<20080714134930.GC25448@sirena.org.uk>
+	<9e4733910807140713r5739efedw81e65632006d101d@mail.gmail.com>
+	<20080714150527.GD25448@sirena.org.uk>
+	<487B7B71.9060606@freescale.com>
+	<20080714165302.GG25448@sirena.org.uk>
+	<fa686aa40807141021ka4f84e9ycc4ac78db760726c@mail.gmail.com>
+	<20080714183632.GI25448@sirena.org.uk>
+	<487B9D98.8010008@freescale.com>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 08/16 v3] powerpc: Do not probe PCI buses or eBus devices
-	if CMO is enabled
-References: <20080704125418.GK1310@linux.vnet.ibm.com>
-In-Reply-To: <20080704125418.GK1310@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org,
-	David Darrington <ddarring@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <487B9D98.8010008@freescale.com>
+Sender: Grant Likely <glikely@secretlab.ca>
+Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org,
+	liam.girdwood@wolfsonmicro.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,77 +34,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Ben,
+On Mon, Jul 14, 2008 at 01:40:24PM -0500, Timur Tabi wrote:
+> Mark Brown wrote:
+> 
+> > Desktop Management Interface, a standard BIOS interface for getting
+> > system data on x86 class hardware.  Of particular interest here is the
+> > fact that it contains various ID strings for things like motherboard and
+> > chassis - on Linux drivers can be automatically loaded based on these
+> > strings.  See drivers/misc/thinkpad_acpi.c for an example of a driver
+> > that does this.
+> 
+> The only problem with this is that the OF probing code in the kernel binds
+> drivers to device tree nodes.  So when a driver claims a node, no other driver
+> will be probed with it.
 
-Please drop this patch from the series. After further discussion, this patch
-is not required and has actually been causing problems.
+Yes, but that is only for the of_platform bus which is just one way to
+setup device drivers from the device tree.  Setting it up from the
+platform code is just as valid an option.  Or, each ASoC machine driver could
+read the device tree itself in the module_init hook to decide whether or not
+to instantiate itself.
 
-Thanks,
-
-Brian
-
-Robert Jennings wrote:
-> From: Brian King <brking@linux.vnet.ibm.com>
-> 
-> The Cooperative Memory Overcommit (CMO) on System p does not currently
-> support native PCI devices or eBus devices when enabled. Prevent
-> PCI bus probe and eBus device probe if the feature is enabled.
-> 
-> Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
-> Signed-off-by: Robert Jennings <rcj@linux.vnet.ibm.com>
-> 
-> ---
-> 
->  arch/powerpc/kernel/ibmebus.c          |    6 ++++++
->  arch/powerpc/platforms/pseries/setup.c |    4 ++++
->  2 files changed, 10 insertions(+)
-> 
-> Index: b/arch/powerpc/kernel/ibmebus.c
-> ===================================================================
-> --- a/arch/powerpc/kernel/ibmebus.c
-> +++ b/arch/powerpc/kernel/ibmebus.c
-> @@ -45,6 +45,7 @@
->  #include <linux/of_platform.h>
->  #include <asm/ibmebus.h>
->  #include <asm/abs_addr.h>
-> +#include <asm/firmware.h>
-> 
->  static struct device ibmebus_bus_device = { /* fake "parent" device */
->  	.bus_id = "ibmebus",
-> @@ -332,6 +333,11 @@ static int __init ibmebus_bus_init(void)
->  {
->  	int err;
-> 
-> +	if (firmware_has_feature(FW_FEATURE_CMO)) {
-> +		printk(KERN_WARNING "Not probing eBus since CMO is enabled\n");
-> +		return 0;
-> +	}
-> +
->  	printk(KERN_INFO "IBM eBus Device Driver\n");
-> 
->  	err = of_bus_type_init(&ibmebus_bus_type, "ibmebus");
-> Index: b/arch/powerpc/platforms/pseries/setup.c
-> ===================================================================
-> --- a/arch/powerpc/platforms/pseries/setup.c
-> +++ b/arch/powerpc/platforms/pseries/setup.c
-> @@ -539,6 +539,10 @@ static void pseries_shared_idle_sleep(vo
-> 
->  static int pSeries_pci_probe_mode(struct pci_bus *bus)
->  {
-> +	if (firmware_has_feature(FW_FEATURE_CMO)) {
-> +		dev_warn(&bus->dev, "Not probing PCI bus since CMO is enabled\n");
-> +		return PCI_PROBE_NONE;
-> +	}
->  	if (firmware_has_feature(FW_FEATURE_LPAR))
->  		return PCI_PROBE_DEVTREE;
->  	return PCI_PROBE_NORMAL;
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
-
-
--- 
-Brian King
-Linux on Power Virtualization
-IBM Linux Technology Center
+Cheers,
+g.
