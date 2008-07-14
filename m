@@ -1,27 +1,19 @@
-Return-Path: <david.c.hubbard@gmail.com>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.181])
-	by ozlabs.org (Postfix) with ESMTP id 5F631DDE00
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 Jul 2008 07:26:58 +1000 (EST)
-Received: by wa-out-1112.google.com with SMTP id n7so2519852wag.13
-	for <linuxppc-dev@ozlabs.org>; Sun, 13 Jul 2008 14:26:57 -0700 (PDT)
-Message-ID: <4dfa50520807131426t4013142cp1fcd49e078a79c1f@mail.gmail.com>
-Date: Sun, 13 Jul 2008 15:26:56 -0600
-From: "David Hubbard" <david.c.hubbard@gmail.com>
-To: "Hans de Goede" <j.w.r.degoede@hhs.nl>
-Subject: Re: [lm-sensors] [RFC] (almost) booting allyesconfig -- please don't
-	poke super-io without request_region
-In-Reply-To: <487A7211.7030309@hhs.nl>
+Return-Path: <gvb.linuxppc.dev@gmail.com>
+Received: from QMTA08.emeryville.ca.mail.comcast.net
+	(qmta08.emeryville.ca.mail.comcast.net [76.96.30.80])
+	by ozlabs.org (Postfix) with ESMTP id 07E6CDDE19
+	for <linuxppc-dev@ozlabs.org>; Mon, 14 Jul 2008 10:50:39 +1000 (EST)
+Message-ID: <487AA17E.6000808@gmail.com>
+Date: Sun, 13 Jul 2008 20:44:46 -0400
+From: Jerry Van Baren <gvb.linuxppc.dev@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <for-27-patch1-0@bga.com> <48768018.2070704@hhs.nl>
-	<acca8e14e769b2feadee19f1f7448438@bga.com>
-	<20080711085246.1ead773b@hyperion.delvare> <48770B5E.7000308@hhs.nl>
-	<20080711093650.4b98e3b7@hyperion.delvare> <4879A144.8060203@hhs.nl>
-	<4dfa50520807131411ied883cgcb20eb6bd94f761@mail.gmail.com>
-	<487A7211.7030309@hhs.nl>
-Cc: Samuel Ortiz <samuel@sortiz.org>, linux-kernel@vger.kernel.org,
-	Milton Miller <miltonm@bga.com>, lm-sensors@lm-sensors.org,
-	linuxppc-dev@ozlabs.org, Jean Delvare <khali@linux-fr.org>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: Mikrotik RouterBoard 333
+References: <20080708042631.GB7328@yookeroo.seuss>
+	<20080709040925.GA13810@secretlab.ca>
+In-Reply-To: <20080709040925.GA13810@secretlab.ca>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,37 +23,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Hans,
-
->> I propose writing a subsystem driver. (Is that properly called "The
->> SuperIO Bus Driver"?) If no one thinks it's a really bad idea I will
->> put together some code and submit it for review, and maintain it.
+Grant Likely wrote:
+> On Tue, Jul 08, 2008 at 02:26:32PM +1000, David Gibson wrote:
+>> Does anyone on this list have contacts with the makers of this board?
 >>
->> Some hwmon chips have odd / unique probe sequences. IMHO this is where
->> the design needs to be inspected. One of those is the w83627ehf, which
->> Jean and Hans are familiar enough with to check my work.
+>> Its firmware apparently provides a flattened device tree to the OS.
+>> And while this step towards world domination is flattering, it's an
+>> example of what I feared when people first got enthusiastic about the
+>> idea of including flattened device trees in firmwares.  The tree has
+>> not, AFAIK, been past this list, and has apparently not been reviewed
+>> by someone knowledgeable about device trees.  In short, it's crap, and
+>> now that it's embedded in the firware we can't really fix it.
 >>
->> Thoughts?
->
-> I'm afraid that making this a "bus" will be a bit overkill. Jim's patches
-> are quite simple and seem todo the job.
->
-> Also keep in mind that most users will be platform devices which just want
-> to use the superio registers to find out the baseaddress of their logical
-> device, a whole bus seems overkill for this, would the hwmon driver then
-> need to be a superio_driver (as well as an platform_driver) or can the bus
-> be queried / used
-> without having to be a bustype-driver?
+>> So, to any embedded hardware/firmware vendors doing Linux ports out
+>> there.  I certainly encourage you to use flattened device trees, but
+>> can I please suggest you put the blob into your kernel image (in the
+>> bootwrapper strictly speaking), rather than into the flashed firmware.
+>> It's a lot easier to fix mistakes that way.
+>>
+>> There are situations where it's nice to have the device tree in
+>> firmware, but there are many others where it buys little to nothing.
+>> People seem to be a bit overenthusaistic on the concept at the moment.
+> 
+> Total Ack!  Allow me second that opinion.
+> 
+> g.
 
-I think that's a valid point. I am willing to keep it small, but I
-would prefer to follow the pattern set in other subsystems. It may be
-my lack of experience in designing a subsystem showing here! What are
-some alternative ways to implement it?
+I'm a half-ack.  ;-)  I'm partial to u-boot's implementation rather than 
+using a bootwrapper for obvious reasons.  The u-boot implementation 
+takes the blob as a boot parameter and passes it along to the kernel 
+after doing appropriate (optional) fixups.  The usual implementation is 
+to burn it into a block of flash separate from u-boot itself or use tftp 
+to load it from the server.
 
-In other words, Jim's patches are a good start, but maybe I am
-misunderstanding them. I see it as the superio-locks module, a driver
-that other drivers would depend on / auto-load. Is that something
-other subsystems also do?
+Other than that quibble, I agree that burning the blob into the firmware 
+so that the firmware must be recompiled and reburned to change the blob 
+is very undesirable.
 
-Regards,
-David
+Best regards,
+gvb
