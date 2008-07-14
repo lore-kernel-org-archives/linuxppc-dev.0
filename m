@@ -1,28 +1,25 @@
-Return-Path: <david.c.hubbard@gmail.com>
-Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.179])
-	by ozlabs.org (Postfix) with ESMTP id E1B19DEAAF
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jul 2008 03:55:03 +1000 (EST)
-Received: by py-out-1112.google.com with SMTP id z59so2633477pyg.27
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 Jul 2008 10:55:02 -0700 (PDT)
-Message-ID: <4dfa50520807141055l532caaaai700255936600e5ae@mail.gmail.com>
-Date: Mon, 14 Jul 2008 11:55:01 -0600
-From: "David Hubbard" <david.c.hubbard@gmail.com>
-To: "Hans de Goede" <j.w.r.degoede@hhs.nl>
-Subject: Re: [lm-sensors] [RFC] (almost) booting allyesconfig -- please don't
-	poke super-io without request_region
-In-Reply-To: <487B8D2C.1090208@hhs.nl>
+Return-Path: <broonie@sirena.org.uk>
+Received: from cassiel.sirena.org.uk (cassiel.sirena.org.uk [80.68.93.111])
+	by ozlabs.org (Postfix) with ESMTP id 12F52DDDF0
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jul 2008 04:36:41 +1000 (EST)
+Date: Mon, 14 Jul 2008 19:36:32 +0100
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [alsa-devel] [PATCH v2 1/3] ALSA SoC: Add OpenFirmware helper for
+	matching bus and codec drivers
+Message-ID: <20080714183632.GI25448@sirena.org.uk>
+References: <20080712083929.15025.47682.stgit@trillian.secretlab.ca>
+	<20080714134930.GC25448@sirena.org.uk>
+	<9e4733910807140713r5739efedw81e65632006d101d@mail.gmail.com>
+	<20080714150527.GD25448@sirena.org.uk>
+	<487B7B71.9060606@freescale.com>
+	<20080714165302.GG25448@sirena.org.uk>
+	<fa686aa40807141021ka4f84e9ycc4ac78db760726c@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <for-27-patch1-0@bga.com> <48770B5E.7000308@hhs.nl>
-	<20080711093650.4b98e3b7@hyperion.delvare> <4879A144.8060203@hhs.nl>
-	<4dfa50520807131411ied883cgcb20eb6bd94f761@mail.gmail.com>
-	<487A7211.7030309@hhs.nl>
-	<4dfa50520807131426t4013142cp1fcd49e078a79c1f@mail.gmail.com>
-	<20080714095914.0644ac5d@hyperion.delvare>
-	<88f5162604470179b3c6ebfe729a46f5@bga.com> <487B8D2C.1090208@hhs.nl>
-Cc: linuxppc-dev@ozlabs.org, Samuel Ortiz <samuel@sortiz.org>,
-	linux-kernel@vger.kernel.org, Milton Miller <miltonm@bga.com>,
-	lm-sensors@lm-sensors.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <fa686aa40807141021ka4f84e9ycc4ac78db760726c@mail.gmail.com>
+Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org,
+	Timur Tabi <timur@freescale.com>, liam.girdwood@wolfsonmicro.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,44 +29,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Hans,
+On Mon, Jul 14, 2008 at 11:21:12AM -0600, Grant Likely wrote:
+> On Mon, Jul 14, 2008 at 10:53 AM, Mark Brown
 
-On Mon, Jul 14, 2008 at 11:30 AM, Hans de Goede <j.w.r.degoede@hhs.nl> wrote:
-> Milton Miller wrote:
->> I haven't done the research, but it might be keep superio as
->> a platform driver, and keep the clients as platform drivers.  Only
->> have the superio driver probe and discover the subcomponent
->> addresses and then create the platform devices as children
->> instead of having each driver create its own platform device.
->> (This all assumes they are all platform devices in sysfs, I have
->> not looked).
->>
->> This is all because in the platform bus the bus driver does not
->> discover the addresses but relies on drivers or platform setup code.
->>
->
-> This sounds like a good plan, rather then add a new bus type add a superio
-> platform driver which does superio probing and registering of platform devices
-> for discovered logical devices.
->
-> This superio platform driver then needs to also export some functions of those
-> few logical devices which need access to the superio registers for more then
-> just finding out their own base address.
->
-> I guess that it then would be best to load this superio driver by default on
-> most systems.
->
-> How does this all mix and match with isapnp, it feels to me we're doing
-> somewhat the same as isapnp here.
+> > Incidentally, nobody ever really commented on my suggestion to do
+> > something DMI-like
 
-Is there any way to use lspci and start at the LPC bridge, then find
-the SuperIO chip's IO address? What about ACPI tables? Perhaps probing
-logic could look for an LPC bridge before probing certain IO addresses
-even if the addresses are not in the LPC bridge config.
+> I'm feeling stupid;  what does "DMI" stand for?
 
-A superio platform driver is a good way to go -- it fits with the way
-the platform bus does things. Also, Jim's patches are almost there
-already.
+Desktop Management Interface, a standard BIOS interface for getting
+system data on x86 class hardware.  Of particular interest here is the
+fact that it contains various ID strings for things like motherboard and
+chassis - on Linux drivers can be automatically loaded based on these
+strings.  See drivers/misc/thinkpad_acpi.c for an example of a driver
+that does this.
 
-Thanks,
-David
+Note that it's *not* binding a driver,  it just provides the hooks to
+enable the modules to be automatically loaded and to let drivers query
+information in DMI.
+
+> Yes, we have APIs for matching against device trees.  Personally, I'm
+> leaning towards having the powerpc platform code
+> (arch/powerpc/platforms/* stuff; not ASoC platform stuff) register a
+> platform device for the machine driver and let as many machine drivers
+> as needed be written.  Hopefully we'll be able to do at least one
+
+That would be what I'd expected initially - it is, after all, what other
+platforms are doing here.
+
+> generic machine driver that will be usable by most PowerPC boards, but
+> I don't think it is a requirement or even realistic to shoehorn all
+> powerpc sound circuits into a single driver.
+
+Yes, that'd be completely unrealistic.
+
+> > I don't mind - you can call it what you like inside PowerPC-specific
+> > code.
+
+> Oh help!  Don't tell us that!  Otherwise we'll always be talking
+> across purposes.  When ambiguous, let's just be sure to always refer
+> to them as "ASoC machine drivers".  :-)
+
+Feh, from now on I shall me naming all new concepts with pwgen :) .
