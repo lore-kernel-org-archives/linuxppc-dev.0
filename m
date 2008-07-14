@@ -1,30 +1,23 @@
-Return-Path: <miltonm@bga.com>
-Received: from ruth.realtime.net (mercury.realtime.net [205.238.132.86])
-	by ozlabs.org (Postfix) with ESMTP id 18E33DE38E
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jul 2008 03:07:13 +1000 (EST)
-In-Reply-To: <20080714095914.0644ac5d@hyperion.delvare>
-References: <for-27-patch1-0@bga.com> <48768018.2070704@hhs.nl>
-	<acca8e14e769b2feadee19f1f7448438@bga.com>
-	<20080711085246.1ead773b@hyperion.delvare>
-	<48770B5E.7000308@hhs.nl>
-	<20080711093650.4b98e3b7@hyperion.delvare>
-	<4879A144.8060203@hhs.nl>
-	<4dfa50520807131411ied883cgcb20eb6bd94f761@mail.gmail.com>
-	<487A7211.7030309@hhs.nl>
-	<4dfa50520807131426t4013142cp1fcd49e078a79c1f@mail.gmail.com>
-	<20080714095914.0644ac5d@hyperion.delvare>
-Mime-Version: 1.0 (Apple Message framework v624)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <88f5162604470179b3c6ebfe729a46f5@bga.com>
-From: Milton Miller <miltonm@bga.com>
-Subject: Re: [RFC] (almost) booting allyesconfig -- please don't poke super-io
-	without request_region
-Date: Mon, 14 Jul 2008 12:09:03 -0500
-To: Jean Delvare <khali@linux-fr.org>
-Cc: Samuel Ortiz <samuel@sortiz.org>, linux-kernel@vger.kernel.org,
-	lm-sensors@lm-sensors.org, linuxppc-dev@ozlabs.org,
-	Hans de Goede <j.w.r.degoede@hhs.nl>,
-	David Hubbard <david.c.hubbard@gmail.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.243])
+	by ozlabs.org (Postfix) with ESMTP id 767E0DDF13
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jul 2008 03:11:29 +1000 (EST)
+Received: by an-out-0708.google.com with SMTP id c34so1380004anc.78
+	for <linuxppc-dev@ozlabs.org>; Mon, 14 Jul 2008 10:11:27 -0700 (PDT)
+Message-ID: <fa686aa40807141011s1b2efff5vdc1d0bd04e42c953@mail.gmail.com>
+Date: Mon, 14 Jul 2008 11:11:25 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: avorontsov@ru.mvista.com
+Subject: Re: [PATCH v2 1/3] ALSA SoC: Add OpenFirmware helper for matching bus
+	and codec drivers
+In-Reply-To: <20080714141606.GA22478@polina.dev.rtsoft.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20080712083929.15025.47682.stgit@trillian.secretlab.ca>
+	<20080714141606.GA22478@polina.dev.rtsoft.ru>
+Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org,
+	liam.girdwood@wolfsonmicro.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,108 +27,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Jul 14, 2008, at 2:59 AM, Jean Delvare wrote:
-> On Sun, 13 Jul 2008 15:26:56 -0600, David Hubbard wrote:
->> Hi Hans,
->>
->>>> I propose writing a subsystem driver. (Is that properly called "The
->>>> SuperIO Bus Driver"?) If no one thinks it's a really bad idea I will
->>>> put together some code and submit it for review, and maintain it.
->>>>
->>>> Some hwmon chips have odd / unique probe sequences. IMHO this is 
->>>> where
->>>> the design needs to be inspected. One of those is the w83627ehf, 
->>>> which
->>>> Jean and Hans are familiar enough with to check my work.
->>>>
->>>> Thoughts?
->>>
->>> I'm afraid that making this a "bus" will be a bit overkill. Jim's 
->>> patches
->>> are quite simple and seem todo the job.
->>>
->>> Also keep in mind that most users will be platform devices which 
->>> just want
->>> to use the superio registers to find out the baseaddress of their 
->>> logical
->>> device, a whole bus seems overkill for this, would the hwmon driver 
->>> then
->>> need to be a superio_driver (as well as an platform_driver) or can 
->>> the bus
->>> be queried / used
->>> without having to be a bustype-driver?
->>
->> I think that's a valid point. I am willing to keep it small, but I
->> would prefer to follow the pattern set in other subsystems. It may be
->> my lack of experience in designing a subsystem showing here! What are
->> some alternative ways to implement it?
->>
->> In other words, Jim's patches are a good start, but maybe I am
->> misunderstanding them. I see it as the superio-locks module, a driver
->> that other drivers would depend on / auto-load. Is that something
->> other subsystems also do?
+On Mon, Jul 14, 2008 at 8:16 AM, Anton Vorontsov
+<avorontsov@ru.mvista.com> wrote:
+> On Sat, Jul 12, 2008 at 02:39:29AM -0600, Grant Likely wrote:
+>> --- /dev/null
+>> +++ b/sound/soc/soc-of.c
 >
-> Well, there are two approaches to the problem. The first approach
-> (which I think Jim took in his patches? I don't really remember) is to
-> simply solve the problem of concurrent I/O access to the Super-I/O
-> configuration ports (typically 0x2e/0x2f or 0x4e/0x4f). That would be a
-> simple driver requesting the ports in question and exporting an API for
-> other drivers to access them in a safe way.
->
-> The second approach is to make it a whole subsystem, as David is
-> suggesting. The Super-I/O driver would then not only request the I/O
-> ports, it would also identify which Super-I/O is there, and it would
-> create devices (in the Linux device driver model sense of the term) for
-> every logical device we are interested in (amongst which the hwmon
-> ones.) The hwmon drivers would have to be converted from platform
-> drivers to superio drivers.
->
-> Each approach has its advantages. The first one is rather simple and
-> also very generic in nature. It could be reused for other purposes. The
-> second one offers automatic loading of hwmon drivers, which would be
-> nice to have.
->
-> There's probably a middle way which would keep the simplicity of the
-> first approach while still allowing for driver auto-loading, without
-> changing the bus type of all drivers. It would probably take some
-> research though.
+> It's quite inconvenient to spread the firmware-specific bits over the
+> whole kernel source tree. So, can we place this in driver/of/, just as
+> we did for i2c, spi and gpio?
 
-I haven't done the research, but it might be keep superio as
-a platform driver, and keep the clients as platform drivers.  Only
-have the superio driver probe and discover the subcomponent
-addresses and then create the platform devices as children
-instead of having each driver create its own platform device.
-(This all assumes they are all platform devices in sysfs, I have
-not looked).
+This isn't any more specific than say how device drivers are specific
+for particular devices.  This is an ASoC machine driver and should
+live with all the other ASoC machine drivers.
 
-This is all because in the platform bus the bus driver does not
-discover the addresses but relies on drivers or platform setup code.
+g.
 
-> Me, I don't really care which path we choose, given that I am not the
-> one who will take care of it. All I have to say is that this has been
-> discussed several times over the past 2 years and nothing came out of
-> it (as far as the mainline kernel is concerned, at least) so whatever
-> is done now, what really matters is that it makes it into the kernel
-> quickly. We have some drivers missing features because of this (for
-> example real-time reading of VID pin values.)
->
-> This should also not prevent us from fixing the drivers now so that
-> they temporarily request the Super-I/O ports they are using, as Milton
-> suggested. Not only we don't know when we will have something better to
-> offer, but it might also help us find conflicts between drivers, so
-> that we know which drivers should make use of the future superio
-> driver. This could also reveal conflicts with PNP BIOS reservations,
-> etc. Milton, will you write a patch?
-
-Well, that is the second time you asked me, so I guess I should respond.
-
-While I it is possible for me to write this patch, my schedule and
-priority list predict it would not be before the merge window closes.  
-In
-fact, I'm not sure when it would come out.   It might be argued it could
-go in early -rc, but I would fear somebody's chip will not be detected
-with the additional check.  For example, the port may reserved as mother
-board resources or something.  Also, I have no hardware to test any
-proposed patch, so it would be compile check only.
-
-milton
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
