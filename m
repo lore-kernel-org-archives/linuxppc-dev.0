@@ -1,25 +1,22 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.249])
-	by ozlabs.org (Postfix) with ESMTP id 5C01CDDF54
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jul 2008 03:22:08 +1000 (EST)
-Received: by an-out-0708.google.com with SMTP id c34so1380759anc.78
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 Jul 2008 10:22:06 -0700 (PDT)
-Message-ID: <fa686aa40807141022y18ea2a70qa68665f310e9b505@mail.gmail.com>
-Date: Mon, 14 Jul 2008 11:22:06 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Grant Likely" <grant.likely@secretlab.ca>, linuxppc-dev@ozlabs.org,
-	alsa-devel@alsa-project.org, liam.girdwood@wolfsonmicro.com,
-	jonsmirl@gmail.com
-Subject: Re: [alsa-devel] [PATCH v2 1/3] ALSA SoC: Add OpenFirmware helper for
-	matching bus and codec drivers
-In-Reply-To: <20080714171632.GH25448@sirena.org.uk>
+Return-Path: <timur@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id BAE1EDDF67
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jul 2008 03:23:10 +1000 (EST)
+Message-ID: <487B8B22.6050701@freescale.com>
+Date: Mon, 14 Jul 2008 12:21:38 -0500
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
+To: Srinivasa D S <srinivasa@in.ibm.com>
+Subject: Re: [RFC] [PATCH] task_pt_regs for powerpc systems
+References: <200807071952.27427.srinivasa@in.ibm.com>	<18554.33417.542066.185326@cargo.ozlabs.ibm.com>
+	<200807141401.26917.srinivasa@in.ibm.com>
+In-Reply-To: <200807141401.26917.srinivasa@in.ibm.com>
 Content-Type: text/plain; charset=ISO-8859-1
-References: <20080712083929.15025.47682.stgit@trillian.secretlab.ca>
-	<20080714134930.GC25448@sirena.org.uk>
-	<fa686aa40807141006k402b6a5fq8da1424081a20011@mail.gmail.com>
-	<20080714171632.GH25448@sirena.org.uk>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,22 +26,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Jul 14, 2008 at 11:16 AM, Mark Brown
-<broonie@opensource.wolfsonmicro.com> wrote:
-> On Mon, Jul 14, 2008 at 11:06:34AM -0600, Grant Likely wrote:
->
->> I'm okay with that.  How about fsl/mpc5200-of-machine.c for now?
->> (only the mpc5200 i2s driver uses it at the moment).  It can always be
->> renamed if other folks want to use it for other chips.
->
-> That seems reasonable so long as you're happy with it, though it does
-> seem to be going to the other extreme in terms of broadness :)
+Srinivasa D S wrote:
 
-heh; I don't care.  This stuff is all going to be in flux anyway, so
-change is inevitable whatever is chosen now.  :-)
+> +#define task_pt_regs(tsk)	(tsk)->thread.regs
 
-g.
+Shouldn't this be:
+
+	#define task_pt_regs(tsk)	((tsk)->thread.regs)
+
+just to be safe?
 
 -- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Timur Tabi
+Linux kernel developer at Freescale
