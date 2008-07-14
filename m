@@ -1,15 +1,11 @@
 Return-Path: <jdl@jdl.com>
-Received: from jdl.com (jdl.com [208.123.74.7])
-	by ozlabs.org (Postfix) with ESMTP id 5FE84DEB28
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jul 2008 05:07:33 +1000 (EST)
-To: Wolfram Sang <w.sang@pengutronix.de>
-Subject: Re: [PATCH] libfdt: Improve documentation in libfdt.h 
-In-reply-to: <20080709092243.10615.84477.stgit@leda.ptxnet.pengutronix.de> 
-References: <20080709092243.10615.84477.stgit@leda.ptxnet.pengutronix.de>
-Date: Mon, 14 Jul 2008 14:02:35 -0500
+To: Kumar Gala <galak@kernel.crashing.org>, jwboyer@linux.vnet.ibm.com,
+	ppc-dev list <linuxppc-dev@ozlabs.org>, monstr@seznam.cz,
+	David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: libfdt: Increase namespace-pollution paranoia 
+Date: Mon, 14 Jul 2008 14:08:16 -0500
 From: Jon Loeliger <jdl@jdl.com>
-Message-Id: <E1KITJj-0006td-6J@jdl.com>
-Cc: linuxppc-dev@ozlabs.org
+Message-Id: <E1KITPE-0006uu-P7@jdl.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,10 +15,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> Fix a few typos and mistakes.
 > 
-> Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
+> My (DTC) plan is to apply the single patch with some
+> include file fixes, and release that.
+> 
+> I'll line the slew of patches up for the following release.
+> 
+> jdl
 
-Applied.
+And that's not at all what happened.
 
+One of David's patches (BSD portability) was a superset of the
+include-file fixes supplied as a point-solution in a different
+patch.  So I applied David's more-general patch.
+
+In fact, I applied all of David's outstanding patches and
+have tagged it v1.2.0-rc2 and pushed it out now.
+
+Please let me know if you have other fixes before I make
+and release a non -rc version.
+
+Thanks,
 jdl
