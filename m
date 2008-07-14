@@ -1,22 +1,19 @@
-Return-Path: <jonsmirl@gmail.com>
-Received: from el-out-1112.google.com (el-out-1112.google.com [209.85.162.178])
-	by ozlabs.org (Postfix) with ESMTP id 5BB2CDDF70
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 Jul 2008 23:21:10 +1000 (EST)
-Received: by el-out-1112.google.com with SMTP id o28so776157ele.3
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 Jul 2008 06:21:08 -0700 (PDT)
-Message-ID: <9e4733910807140621g69707c46tc23d26e9cf030c5c@mail.gmail.com>
-Date: Mon, 14 Jul 2008 09:21:08 -0400
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Grant Likely" <grant.likely@secretlab.ca>
-Subject: Re: [PATCH v3 5/5] powerpc/mpc5200: Add mpc5200-spi (non-PSC) device
-	driver
-In-Reply-To: <20080712083458.14782.59382.stgit@trillian.secretlab.ca>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20080712083437.14782.65551.stgit@trillian.secretlab.ca>
-	<20080712083458.14782.59382.stgit@trillian.secretlab.ca>
-Cc: linuxppc-dev@ozlabs.org, dbrownell@users.sourceforge.net,
-	spi-devel-general@lists.sourceforge.net
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 4F917DDE01
+	for <linuxppc-dev@ozlabs.org>; Mon, 14 Jul 2008 23:21:26 +1000 (EST)
+Message-Id: <35075E1B-3492-4D10-AD4F-49C4462A269F@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Wang Jian <lark@linux.net.cn>
+In-Reply-To: <48757086.2080704@linux.net.cn>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Mime-Version: 1.0 (Apple Message framework v926)
+Subject: Re: [PATCH 1/2] Fix copper/fiber auto-selection for 88e1111
+Date: Mon, 14 Jul 2008 08:21:15 -0500
+References: <48757086.2080704@linux.net.cn>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,16 +23,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 7/12/08, Grant Likely <grant.likely@secretlab.ca> wrote:
-> From: Grant Likely <grant.likely@secretlab.ca>
+
+On Jul 9, 2008, at 9:14 PM, Wang Jian wrote:
+
+> The 27.15 bit (MII_M1111_HWCFG_FIBER_COPPER_AUTO) is disable bit. When
+> set to 1, copper/fiber auto selection is disabled. The current code
+> to enable but actually disable auto selection.
 >
->  Adds support for the dedicated SPI device on the Freescale MPC5200(b)
->  SoC.
+> Signed-off-by: Wang Jian <lark@linux.net.cn>
+> ---
+> drivers/net/phy/marvell.c |    2 +-
+> 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Can you adjust the existing PSC based SPI driver to use this device
-tree code? It will be confusing if there are two different ways to do
-SPI on the mpc5200.
+These should really get cc'd to the netdev list.
 
--- 
-Jon Smirl
-jonsmirl@gmail.com
+- k
