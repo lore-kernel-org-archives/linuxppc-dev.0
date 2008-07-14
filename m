@@ -1,14 +1,28 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 91926DE2BD
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jul 2008 03:54:40 +1000 (EST)
-Date: Mon, 14 Jul 2008 21:54:37 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] of: i2c: improve last resort compatible entry selection
-Message-ID: <20080714175437.GA5230@polina.dev.rtsoft.ru>
+Return-Path: <david.c.hubbard@gmail.com>
+Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.179])
+	by ozlabs.org (Postfix) with ESMTP id E1B19DEAAF
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jul 2008 03:55:03 +1000 (EST)
+Received: by py-out-1112.google.com with SMTP id z59so2633477pyg.27
+	for <linuxppc-dev@ozlabs.org>; Mon, 14 Jul 2008 10:55:02 -0700 (PDT)
+Message-ID: <4dfa50520807141055l532caaaai700255936600e5ae@mail.gmail.com>
+Date: Mon, 14 Jul 2008 11:55:01 -0600
+From: "David Hubbard" <david.c.hubbard@gmail.com>
+To: "Hans de Goede" <j.w.r.degoede@hhs.nl>
+Subject: Re: [lm-sensors] [RFC] (almost) booting allyesconfig -- please don't
+	poke super-io without request_region
+In-Reply-To: <487B8D2C.1090208@hhs.nl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
+Content-Type: text/plain; charset=ISO-8859-1
+References: <for-27-patch1-0@bga.com> <48770B5E.7000308@hhs.nl>
+	<20080711093650.4b98e3b7@hyperion.delvare> <4879A144.8060203@hhs.nl>
+	<4dfa50520807131411ied883cgcb20eb6bd94f761@mail.gmail.com>
+	<487A7211.7030309@hhs.nl>
+	<4dfa50520807131426t4013142cp1fcd49e078a79c1f@mail.gmail.com>
+	<20080714095914.0644ac5d@hyperion.delvare>
+	<88f5162604470179b3c6ebfe729a46f5@bga.com> <487B8D2C.1090208@hhs.nl>
+Cc: linuxppc-dev@ozlabs.org, Samuel Ortiz <samuel@sortiz.org>,
+	linux-kernel@vger.kernel.org, Milton Miller <miltonm@bga.com>,
+	lm-sensors@lm-sensors.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,75 +32,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Currently of_i2c will select first compatible property as a last resort
-option. This isn't best choice though, because generic compatible entries
-are listed last, not first. For example, two compatible entries given for
-the MCU node:
+Hi Hans,
 
-"fsl,mc9s08qg8-mpc837xrdb", "fsl,mcu-mpc8349emitx";
+On Mon, Jul 14, 2008 at 11:30 AM, Hans de Goede <j.w.r.degoede@hhs.nl> wrote:
+> Milton Miller wrote:
+>> I haven't done the research, but it might be keep superio as
+>> a platform driver, and keep the clients as platform drivers.  Only
+>> have the superio driver probe and discover the subcomponent
+>> addresses and then create the platform devices as children
+>> instead of having each driver create its own platform device.
+>> (This all assumes they are all platform devices in sysfs, I have
+>> not looked).
+>>
+>> This is all because in the platform bus the bus driver does not
+>> discover the addresses but relies on drivers or platform setup code.
+>>
+>
+> This sounds like a good plan, rather then add a new bus type add a superio
+> platform driver which does superio probing and registering of platform devices
+> for discovered logical devices.
+>
+> This superio platform driver then needs to also export some functions of those
+> few logical devices which need access to the superio registers for more then
+> just finding out their own base address.
+>
+> I guess that it then would be best to load this superio driver by default on
+> most systems.
+>
+> How does this all mix and match with isapnp, it feels to me we're doing
+> somewhat the same as isapnp here.
 
-Since no sane driver will ever match specific devices, what we want is
-to select most generic option (last). Then driver may call
-of_device_is_compatible() if it is really interested in details.
+Is there any way to use lspci and start at the LPC bridge, then find
+the SuperIO chip's IO address? What about ACPI tables? Perhaps probing
+logic could look for an LPC bridge before probing certain IO addresses
+even if the addresses are not in the LPC bridge config.
 
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
+A superio platform driver is a good way to go -- it fits with the way
+the platform bus does things. Also, Jim's patches are almost there
+already.
 
-Other options are: start filling the exceptions list, or add  "linux,..."
-compatible entry to the device tree.
-
- drivers/of/of_i2c.c |   17 +++++++++++------
- 1 files changed, 11 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/of/of_i2c.c b/drivers/of/of_i2c.c
-index b2ccdcb..0d35a0a 100644
---- a/drivers/of/of_i2c.c
-+++ b/drivers/of/of_i2c.c
-@@ -29,6 +29,7 @@ static int of_find_i2c_driver(struct device_node *node,
- 	int i, cplen;
- 	const char *compatible;
- 	const char *p;
-+	const char *last_wcomma = NULL;
- 
- 	/* 1. search for exception list entry */
- 	for (i = 0; i < ARRAY_SIZE(i2c_devices); i++) {
-@@ -45,7 +46,7 @@ static int of_find_i2c_driver(struct device_node *node,
- 	if (!compatible)
- 		return -ENODEV;
- 
--	/* 2. search for linux,<i2c-type> entry */
-+	/* 2. search for linux,<i2c-type> entry, or remember last w/ comma */
- 	p = compatible;
- 	while (cplen > 0) {
- 		if (!strncmp(p, "linux,", 6)) {
-@@ -54,6 +55,12 @@ static int of_find_i2c_driver(struct device_node *node,
- 				    I2C_NAME_SIZE) >= I2C_NAME_SIZE)
- 				return -ENOMEM;
- 			return 0;
-+		} else {
-+			const char *comma;
-+
-+			comma = strchr(p, ',');
-+			if (comma)
-+				last_wcomma = comma + 1;
- 		}
- 
- 		i = strlen(p) + 1;
-@@ -61,12 +68,10 @@ static int of_find_i2c_driver(struct device_node *node,
- 		cplen -= i;
- 	}
- 
--	/* 3. take fist compatible entry and strip manufacturer */
--	p = strchr(compatible, ',');
--	if (!p)
-+	/* 3. take last compatible entry w/ comma, manufacturer stripped */
-+	if (!last_wcomma)
- 		return -ENODEV;
--	p++;
--	if (strlcpy(info->type, p, I2C_NAME_SIZE) >= I2C_NAME_SIZE)
-+	if (strlcpy(info->type, last_wcomma, I2C_NAME_SIZE) >= I2C_NAME_SIZE)
- 		return -ENOMEM;
- 	return 0;
- }
--- 
-1.5.5.4
+Thanks,
+David
