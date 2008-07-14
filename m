@@ -1,11 +1,11 @@
 Return-Path: <jdl@jdl.com>
 To: David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: dtc: Enable and fix -Wcast-qual warnings 
-In-reply-to: <20080707001415.GD6267@yookeroo.seuss> 
-References: <20080707001415.GD6267@yookeroo.seuss>
-Date: Mon, 14 Jul 2008 14:01:21 -0500
+Subject: Re: libfdt: Increase namespace-pollution paranoia 
+In-reply-to: <20080709041024.GB29648@yookeroo.seuss> 
+References: <20080709041024.GB29648@yookeroo.seuss>
+Date: Mon, 14 Jul 2008 14:02:12 -0500
 From: Jon Loeliger <jdl@jdl.com>
-Message-Id: <E1KITIX-0006ss-Be@jdl.com>
+Message-Id: <E1KITJM-0006tO-MR@jdl.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -16,32 +16,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> Enabling -Wcast-qual warnings in dtc shows up a number of places where
-> we are incorrectly discarding a const qualification.  There are also
-> some places where we are intentionally discarding the 'const', and we
-> need an ugly cast through uintptr_t to suppress the warning.  However,
-> most of these are pretty well isolated with the *_w() functions.  So
-> in the interests of maximum safety with const qualifications, this
-> patch enables the warnings and fixes the existing complaints.
+> libfdt is supposed to easy to embed in projects all and sundry.
+> Often, it won't be practical to separate the embedded libfdt's
+> namespace from that of the surrounding project.  Which means there can
+> be namespace conflicts between even libfdt's internal/static functions
+> and functions or macros coming from the surrounding project's headers
+> via libfdt_env.h.
+> 
+> This patch, therefore, renames a bunch of libfdt internal functions
+> and macros and makes a few other chances to reduce the chances of
+> namespace collisions with embedding projects.  Specifically:
+> 	- Internal functions (even static ones) are now named _fdt_*()
+> 
+> 	- The type and (static) global for the error table in
+>           fdt_strerror() gain an fdt_ prefix
+> 
+> 	- The unused macro PALIGN is removed
+> 
+> 	- The memeq and streq macros are removed and open-coded in the
+>           users (they were only used once each)
+> 
+> 	- Other macros gain an FDT_ prefix
+> 
+> 	- To save some of the bulk from the previous change, an
+>           FDT_TAGALIGN() macro is introduced, where FDT_TAGALIGN(x) ==
+>           FDT_ALIGN(x, FDT_TAGSIZE)
 > 
 > Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
-
-Guess which follow-on patch didn't apply for the same reason?
-Needed to look like this hand-modified hunk...
-
-> Index: dtc/Makefile
-> ===================================================================
-> --- dtc.orig/Makefile	2008-07-04 16:54:38.000000000 +1000
-> +++ dtc/Makefile	2008-07-04 16:54:38.000000000 +1000
-> @@ -16,7 +16,7 @@
->  CONFIG_LOCALVERSION =
->  
->  CPPFLAGS = -I libfdt
-> -CFLAGS = -Wall -g -Os -Wpointer-arith
-> +CFLAGS = -Wall -g -Os -Wpointer-arith -Wcast-qual
->  
->  BISON = bison
->  LEX = flex
 
 Applied.
 
