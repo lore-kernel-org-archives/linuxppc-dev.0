@@ -1,16 +1,16 @@
-Return-Path: <v.selvamuthukumar@gmail.com>
-Received: from qb-out-0506.google.com (qb-out-0506.google.com [72.14.204.235])
-	by ozlabs.org (Postfix) with ESMTP id 78547DDEE7
+Return-Path: <xcarandiru@gmail.com>
+Received: from yw-out-2324.google.com (yw-out-2324.google.com [74.125.46.31])
+	by ozlabs.org (Postfix) with ESMTP id F1115DDF52
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 14 Jul 2008 22:14:40 +1000 (EST)
-Received: by qb-out-0506.google.com with SMTP id c8so2074576qbc.39
+	Tue, 15 Jul 2008 00:47:39 +1000 (EST)
+Received: by yw-out-2324.google.com with SMTP id 5so2210203ywh.39
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 14 Jul 2008 05:14:39 -0700 (PDT)
-Message-ID: <790896390807140514r6074ec7j6d3eaf38787e3444@mail.gmail.com>
-Date: Mon, 14 Jul 2008 17:44:38 +0530
-From: "selvamuthukumar v" <v.selvamuthukumar@gmail.com>
+	Mon, 14 Jul 2008 07:47:33 -0700 (PDT)
+Message-ID: <d970ff420807140747s10d8276bt3a378a7cd5a4333d@mail.gmail.com>
+Date: Mon, 14 Jul 2008 11:47:32 -0300
+From: Alemao <xcarandiru@gmail.com>
 To: linuxppc-embedded@ozlabs.org
-Subject: MPC8313 ERDB has proper interrupt mapping for TSEC?
+Subject: NAND Flash, Localbus and UPM
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -23,27 +23,97 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-From, arch/powerpc/boot/dts/mpc8313erdb.dts,
+Hi all,
 
-212                 enet0: ethernet@24000 {
-                                   .
-                                   .
-219                         interrupts = <37 0x8 36 0x8 35 0x8>;
-                                   .
-                                   .
-222                 };
-223
-224                 enet1: ethernet@25000 {
-                                   .
-                                   .
-231                         interrupts = <34 0x8 33 0x8 32 0x8>;
-                                   .
-234                 };
-235
+Im trying to use a NAND flash (NAND512W3A, from ST) in MPC8360
+localbus, with UPM.
+My board is based on the mpc8360erdk. I also have a NOR flash
+connected in the localbus.
 
-But as per 8313 Reference manual interrups 32, 33, 34 are for
-TSEC1@24000 and 35, 36, 37 are for TSEC2@25000. Any idea why interrupt
-numbers are swapped for enet0 and enet1?
+But I have some doubts in how to put this information at the DTS file.
+Im doing this way:
 
--- 
-Selva
+       soc8360@e0000000 {
+              .
+              .
+              .
+       };
+
+       localbus@e0005000 {
+                compatible = "fsl,mpc8360-localbus";
+                #address-cells = <2>;
+                #size-cells = <1>;
+                reg = <e0005000 d8>;
+
+                ranges = <0 0 ff800000   1000000      // nor flash,  16 MB
+                                  1 0 60000000 4000000>;   // nand
+flash, 64 MB (512 Mb)
+
+                nor-flash@0,0 {
+                        compatible = "amd,s29glxxx", "cfi-flash";
+                        reg = <0 0 40000>;
+                        bank-width = <2>;
+                        device-width = <1>;
+                };
+
+                nand-flash@1,0 {
+                        compatible = "stmicro,NAND512W3A", "fsl,upm-nand";
+                        reg = <1 0 4000000>;   //reg = <1 0 1>;
+                        width = <1>;
+                        upm = "A";
+                        upm-addr-offset = <16>;
+                        upm-cmd-offset = <8>;
+                        gpios = <4 18>;
+                        gpio-parent = <&qe_pio>;
+                        wait-pattern;
+                        wait-write;
+                };
+       };
+
+
+
+In range information:
+
+ranges = <0 0 ff800000 1000000         // nor flash,  16 MB
+                   1 0 60000000 4000000>;   // nand flash, 64 MB (512 Mb)
+
+i dont know what ff800000 and 60000000 means,
+i got those values from some posts in the mail-list. I also searched
+the datasheet and didnt find anything about those values.
+
+The size values, 1000000 and 4000000, im using the memory density.
+Is this correct? Cause i read some posts that the nand size was very
+small, like 32K, seems that its something like the block size of
+nand.
+
+
+
+In reg information:
+
+reg = <0 0 1000000>;    // nor-flash
+reg = <1 0 4000000>;    // nand-flash
+
+Dont know if its correct. The third argument i used the size,
+but the second i dont know what value use.
+
+
+
+In other post by Anton, i saw something like these:
+
+       upm@1,0 {		
+		flash {		
+	           ...
+        	};
+       };
+
+
+Should i use it?
+
+I must confess, im really confuse about all this stuffs.
+I read linux/Documentation/powerpc/booting-without-of.txt but didnt
+clarify so much.
+
+Cheers,
+
+--
+Alemao
