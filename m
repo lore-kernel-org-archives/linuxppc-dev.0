@@ -1,12 +1,12 @@
 Return-Path: <jdl@jdl.com>
 To: David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: dtc: Address an assortment of portability problems 
-In-reply-to: <20080626010349.GH308@yookeroo.seuss> 
-References: <20080626010349.GH308@yookeroo.seuss>
-Date: Mon, 14 Jul 2008 13:54:41 -0500
+Subject: Re: dtc: Clean up lexing of include files 
+In-reply-to: <20080626070857.GA1869@yookeroo.seuss> 
+References: <20080626070857.GA1869@yookeroo.seuss>
+Date: Mon, 14 Jul 2008 13:55:13 -0500
 From: Jon Loeliger <jdl@jdl.com>
-Message-Id: <E1KITC5-0006rG-EI@jdl.com>
-Cc: linuxppc-dev@ozlabs.org, Benno Rice <benno@jeamland.net>
+Message-Id: <E1KITCb-0006rX-Pp@jdl.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,81 +16,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> I've recently worked with a FreeBSD developer, getting dtc and libfdt
-> working on FreeBSD.  This showed up a number of portability problems
-> in the dtc package which this patch addresses.  Changes are as
-> follows:
+> Currently we scan the /include/ directive as two tokens, the
+> "/include/" keyword itself, then the string giving the file name to
+> include.  We use a special scanner state to keep the two linked
+> together, and use the scanner state stack to keep track of the
+> original state while we're parsing the two /include/ tokens.
 > 
-> 	- the parent_offset and supernode_atdepth_offset testcases
-> used the glibc extension functions strchrnul() and strndupa().  Those
-> are removed, using slightly longer coding with standard C functions
-> instead.
+> This does mean that we need to enable the 'stack' option in flex,
+> which results in a not-easily-suppressed warning from the flex
+> boilerplate code.  This is mildly irritating.
 > 
-> 	- some other testcases had a #define _GNU_SOURCE for no
-> particular reason.  This is removed.
+> However, this two-token scanning of the /include/ directive also has
+> some extremely strange edge cases, because there are a variety of
+> tokens recognized in all scanner states, including INCLUDE.  For
+> example the following strange dts file:
 > 
-> 	- run_tests.sh has bash specific constructs removed, and the
-> interpreter changed to /bin/sh.  This apparently now runs fine on
-> FreeBSD's /bin/sh, and I've also tested it with both ash and dash.
+> 	/include/ /dts-v1/;
+> 	/ {
+> 		 /* ... */
+> 	};
 > 
-> 	- convert-dtsv0-lexer.l has some extra #includes added.  These
-> must have been included indirectly with Linux and glibc, but aren't on
-> FreeBSD.
+> Will be processed successfully with the /include/ being effectively
+> ignored: the '/dts-v1/' and ';' are recognized even in INCLUDE state,
+> then the ';' transitions us to PROPNODENAME state, throwing away
+> INCLUDE, and the previous state is never popped off the stack.  Or
+> for another example this construct:
+> 	foo /include/ = "somefile.dts"
+> will be parsed as though it were:
+> 	foo = /include/ "somefile.dts"
+> Again, the '=' is scanned without leaving INCLUDE state, then the next
+> string triggers the include logic.
 > 
-> 	- the endian handling functions in libfdt_env.h, based on
-> endian.h and byteswap.h are replaced with some portable open-coded
-> versions.  Unfortunately, these result in fairly crappy code when
-> compiled, but as far as I can determine there doesn't seem to be any
-> POSIX, SUS or de facto standard way of determining endianness at
-> compile time, nor standard names for byteswapping functions.
+> And finally, we use a different regexp for the string with the
+> included filename than the normal string regexpt, which is also
+> potentially weird.
 > 
-> 	- some more endian handling, from testdata.h using the
-> problematic endian.h is simply removed, since it wasn't actually being
-> used anyway.
-> 
-> Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+> This patch, therefore, cleans up the lexical handling of the /include/
+> directive.  Instead of the INCLUDE state, we instead scan the whole
+> include directive, both keyword and filename as a single token.  This
+> does mean a bit more complexity in extracting the filename out of
+> yytext, but I think it's worth it to avoid the strageness described
+> above.  It also means it's no longer possible to put a comment between
+> the /include/ and the filename, but I'm really not very worried about
+> breaking files using such a strange construct.
 
-This patch didn't apply directly.
-
-The problem appeared to be the  mysterious and suspect "exit 99"
-in the middle of the following context.  I whacked on the patch
-directly by-hand, and managed to get it to apply.
-
-Obligatory "Not using git" grumble.
-
-Applied after all.
+Applied.
 
 jdl
-
-
-> Index: dtc/tests/run_tests.sh
-> ===================================================================
-> --- dtc.orig/tests/run_tests.sh	2008-06-26 10:40:59.000000000 +1000
-> +++ dtc/tests/run_tests.sh	2008-06-26 10:43:21.000000000 +1000
-
-> @@ -15,19 +15,19 @@
->  tot_strange=0
->  
->  base_run_test() {
-> -    tot_tests=$[tot_tests + 1]
-> +    tot_tests=$((tot_tests + 1))
->      if VALGRIND="$VALGRIND" "$@"; then
-> -	tot_pass=$[tot_pass + 1]
-> +	tot_pass=$((tot_pass + 1))
->      else
->  	ret="$?"
->  	if [ "$ret" == "1" ]; then
-> -	    tot_config=$[tot_config + 1]
-> +	    tot_config=$((tot_config + 1))
->  	elif [ "$ret" == "2" ]; then
-> -	    tot_fail=$[tot_fail + 1]
-> +	    tot_fail=$((tot_fail + 1))
->  	elif [ "$ret" == "$VGCODE" ]; then
-> -	    tot_vg=$[tot_vg + 1]
-> +	    tot_vg=$((tot_vg + 1))
->  	else
-> -	    tot_strange=$[tot_strange + 1]
-> +	    tot_strange=$((tot_strange + 1))
->  	fi
->	exit 99
->      fi
