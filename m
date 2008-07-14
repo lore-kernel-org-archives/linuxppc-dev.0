@@ -1,17 +1,31 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 7D741DDE21
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 Jul 2008 18:21:31 +1000 (EST)
-Date: Mon, 14 Jul 2008 18:21:18 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: powerpc/master: build failure
-Message-Id: <20080714182118.f5a20643.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Mon__14_Jul_2008_18_21_18_+1000_a3AZAEbQXPjn+zq9"
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <srinivasa@in.ibm.com>
+Received: from e28esmtp05.in.ibm.com (e28smtp05.in.ibm.com [59.145.155.5])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e28smtp05.in.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id E09FCDDEF0
+	for <linuxppc-dev@ozlabs.org>; Mon, 14 Jul 2008 18:32:57 +1000 (EST)
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+	by e28esmtp05.in.ibm.com (8.13.1/8.13.1) with ESMTP id m6E8VO0b005666
+	for <linuxppc-dev@ozlabs.org>; Mon, 14 Jul 2008 14:01:24 +0530
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+	by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
+	m6E8V1tb1364128
+	for <linuxppc-dev@ozlabs.org>; Mon, 14 Jul 2008 14:01:01 +0530
+Received: from d28av05.in.ibm.com (loopback [127.0.0.1])
+	by d28av05.in.ibm.com (8.13.1/8.13.3) with ESMTP id m6E8VN5T028273
+	for <linuxppc-dev@ozlabs.org>; Mon, 14 Jul 2008 14:01:24 +0530
+From: Srinivasa D S <srinivasa@in.ibm.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [RFC] [PATCH] task_pt_regs for powerpc systems
+Date: Mon, 14 Jul 2008 14:01:26 +0530
+References: <200807071952.27427.srinivasa@in.ibm.com>
+	<18554.33417.542066.185326@cargo.ozlabs.ibm.com>
+In-Reply-To: <18554.33417.542066.185326@cargo.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200807141401.26917.srinivasa@in.ibm.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,41 +35,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Mon__14_Jul_2008_18_21_18_+1000_a3AZAEbQXPjn+zq9
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Monday 14 July 2008 04:02:41 am Paul Mackerras wrote:
+> >  Below attached patch  defines this macro for powerpc arch. Please let
+> > me know your comments on this.
+> >
+> > +#define task_pt_regs(tsk)	((struct pt_regs *)(tsk)->thread.regs)
+>
+> The cast is unnecessary since tsk->thread.regs is already a struct
+> pt_regs *. 
 
-Hi Kumar,
+True.
 
-A build of today's powerpc/master tree for mpc85xx_defconfig fails like thi=
-s:
+> Also note that tsk->thread.regs will be NULL for a kernel 
+> thread.
 
-DTC: dts->dtb  on file "arch/powerpc/boot/dts/ksi8560.dts"
-ERROR (phandle_references): Reference to non-existent node or label "mpic"
-ERROR (phandle_references): Reference to non-existent node or label "mpic"
-ERROR (phandle_references): Reference to non-existent node or label "mpic"
-ERROR (phandle_references): Reference to non-existent node or label "mpic"
-ERROR: Input tree has errors, aborting (use -f to force output)
-make[2]: *** [arch/powerpc/boot/ksi8560.dtb] Error 2
+Yes, users of task_pt_regs will verify for NULL.  Updated patch attached 
+below.
 
-Probably commit dee805532a30183c4462305b4614e58bd83a7bc1 ("powerpc: Add
-dma nodes to 83xx, 85xx and 86xx boards").
+Signed-off-by: Srinivasa DS <srinivasa@in.ibm.com>
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
 
---Signature=_Mon__14_Jul_2008_18_21_18_+1000_a3AZAEbQXPjn+zq9
-Content-Type: application/pgp-signature
+---
+ include/asm-powerpc/processor.h |    2 ++
+ 1 file changed, 2 insertions(+)
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+Index: linux-2.6.26-rc9/include/asm-powerpc/processor.h
+===================================================================
+--- linux-2.6.26-rc9.orig/include/asm-powerpc/processor.h
++++ linux-2.6.26-rc9/include/asm-powerpc/processor.h
+@@ -214,6 +214,8 @@ struct thread_struct {
+ #define thread_saved_pc(tsk)    \
+         ((tsk)->thread.regs? (tsk)->thread.regs->nip: 0)
+ 
++#define task_pt_regs(tsk)	(tsk)->thread.regs
++
+ unsigned long get_wchan(struct task_struct *p);
+ 
+ #define KSTK_EIP(tsk)  ((tsk)->thread.regs? (tsk)->thread.regs->nip: 0)
 
-iEYEARECAAYFAkh7DH4ACgkQjjKRsyhoI8wlYACglSEd9ze42j0RC2qAY32fBqit
-r4oAn22YY9eO1+HvZXmEXNnoedQifIq4
-=I9l8
------END PGP SIGNATURE-----
 
---Signature=_Mon__14_Jul_2008_18_21_18_+1000_a3AZAEbQXPjn+zq9--
+ 
