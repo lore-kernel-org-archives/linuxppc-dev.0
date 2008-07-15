@@ -1,21 +1,20 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from hs-out-0708.google.com (hs-out-0708.google.com [64.233.178.240])
-	by ozlabs.org (Postfix) with ESMTP id D9FE1DDFA2
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jul 2008 22:13:25 +1000 (EST)
-Received: by hs-out-0708.google.com with SMTP id z77so1680567hsz.9
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jul 2008 05:13:24 -0700 (PDT)
-Subject: Re: powerpc.git merge status
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org
-In-Reply-To: <1216101729.7740.84.camel@pasglop>
-References: <1216101729.7740.84.camel@pasglop>
-Content-Type: text/plain
-Date: Tue, 15 Jul 2008 07:55:12 -0400
-Message-Id: <1216122912.14579.52.camel@weaponx>
-Mime-Version: 1.0
-Sender: Josh Boyer <jwboyer@gmail.com>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Reply-To: jwboyer@linux.vnet.ibm.com
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 98FC7DE089
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jul 2008 22:38:24 +1000 (EST)
+Date: Tue, 15 Jul 2008 16:38:22 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [PATCH] leds: implement OpenFirmare GPIO LED driver
+Message-ID: <20080715123822.GA10893@polina.dev.rtsoft.ru>
+References: <20080714164114.GA18784@polina.dev.rtsoft.ru>
+	<20080715131004.32646dae.sfr@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <20080715131004.32646dae.sfr@canb.auug.org.au>
+Cc: linuxppc-dev@ozlabs.org, Richard Purdie <rpurdie@rpsys.net>,
+	linux-kernel@vger.kernel.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,17 +24,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2008-07-15 at 16:02 +1000, Benjamin Herrenschmidt wrote:
-> Now, regarding the remaining bits, still on my todo for the next batch,
-> probably later this week, in this merge window:
+Hello Stephen,
 
-<snip>
+On Tue, Jul 15, 2008 at 01:10:04PM +1000, Stephen Rothwell wrote:
+[...]
+> > +	led->np = np;
+> 
+> You need to take a reference if you are keeping a pointer to a
+> device_node, so:
+> 	led->np = of_node_get(np);
+> 
+> > +	led->cdev.name = of_get_property(np, "label", NULL);
+> > +	if (!led->cdev.name)
+> > +		led->cdev.name = ofdev->dev.bus_id;
+> 
+> Please use dev_name() in new code:
+> 		led->cdev.name = dev_name(&ofdev->dev);
+> 
+> > +	led->cdev.brightness_set = gpio_led_set;
+> > +
+> > +	ret = gpio_request(led->gpio, ofdev->dev.bus_id);
+> 
+> dev_name() again.
+> 
+> > +err_get_gpio:
+> 
+> 	of_node_put(led->np);
+> 
+> > +	kfree(led);
+> > +	return ret;
+> > +}
+> > +
+> > +static int __devexit of_gpio_leds_remove(struct of_device *ofdev)
+> > +{
+> > +	struct of_gpio_led *led = dev_get_drvdata(&ofdev->dev);
+> > +
+> > +	led_classdev_unregister(&led->cdev);
+> > +	cancel_work_sync(&led->work);
+> > +	gpio_free(led->gpio);
+> > +	of_node_put(led->np);
+> 
+> This was going to be unbalanced, but is now correct.
 
-> 	- Kumar PTE bits... that's a bit "hot" for this merge window
->           but I suppose it can still make it.
+Thank you so much for the review, corrected version follows.
 
-I'd argue that they should make it.  It's parity with your PTE rework
-for 44x, and Kumar even found a bug (which you've pulled the fix for) in
-your implementation :).
-
-josh
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
