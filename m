@@ -1,24 +1,20 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 36115DF458
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jul 2008 02:10:55 +1000 (EST)
-Date: Tue, 15 Jul 2008 20:10:53 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH v2] powerpc: add FHCI USB, FSL MCU, FSL UPM and GPIO
-	LEDs bindings
-Message-ID: <20080715161053.GA9356@polina.dev.rtsoft.ru>
-References: <20080703174844.GA27966@polina.dev.rtsoft.ru>
-	<EC062FA3-9CF8-4A94-95C7-2AAF22754A9C@kernel.crashing.org>
-	<20080703182440.GA2576@polina.dev.rtsoft.ru>
-	<8A8D87F8-A1DD-467D-8D83-CDC651B99F45@kernel.crashing.org>
-	<20080704165328.GA9962@polina.dev.rtsoft.ru>
-	<C3A1E950-3D5F-4172-90B6-1566D4A70B7C@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <C3A1E950-3D5F-4172-90B6-1566D4A70B7C@kernel.crashing.org>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 9EA51DEAE7
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jul 2008 02:15:28 +1000 (EST)
+Message-Id: <F12BABCD-D7AA-4A85-AF3B-8021A1FFBAF0@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Andy Fleming <afleming@freescale.com>
+In-Reply-To: <1209751430-25656-1-git-send-email-afleming@freescale.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v926)
+Subject: Re: [PATCH v2.6.26] powerpc: Add support for multiple gfar mdio
+	interfaces
+Date: Tue, 15 Jul 2008 11:15:16 -0500
+References: <1209751430-25656-1-git-send-email-afleming@freescale.com>
 Cc: linuxppc-dev@ozlabs.org
-Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,58 +24,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Jul 15, 2008 at 08:21:38AM -0500, Kumar Gala wrote:
+
+On May 2, 2008, at 1:03 PM, Andy Fleming wrote:
+
+> The old code assumed there was only one, but the 8572 actually has 3.
 >
-> On Jul 4, 2008, at 11:53 AM, Anton Vorontsov wrote:
+> Also, our usual id, 0xe0024520, gets resolved to -1 somewhere, and  
+> this was
+> preventing the multiple buses from having different ids.  So we only  
+> keep
+> the low 20 bits, which have the interesting info, anyway.
 >
->> This patch adds few bindings for the new drivers to be submitted  
->> through
->> the appropriate maintainers.
->>
->> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
->> ---
->>
->> Updated to decrypt MCU, and to split the bindings into appropriate  
->> files.
->>
->> .../powerpc/device-tree/fsl/mcu-mpc8349emitx.txt   |   17 +++++++++
->> Documentation/powerpc/device-tree/fsl/qe/usb.txt   |   37 +++++++++++ 
->> +++++++++
->> Documentation/powerpc/device-tree/fsl/upm-nand.txt |   28 +++++++++++ 
->> ++++
->> Documentation/powerpc/device-tree/gpio/led.txt     |   15 ++++++++
->> 4 files changed, 97 insertions(+), 0 deletions(-)
->> create mode 100644 Documentation/powerpc/device-tree/fsl/mcu- 
->> mpc8349emitx.txt
->> create mode 100644 Documentation/powerpc/device-tree/fsl/qe/usb.txt
->> create mode 100644 Documentation/powerpc/device-tree/fsl/upm-nand.txt
->> create mode 100644 Documentation/powerpc/device-tree/gpio/led.txt
->
-> applied.
+> Signed-off-by: Andy Fleming <afleming@freescale.com>
+> ---
+> arch/powerpc/sysdev/fsl_soc.c |   84 +++++++++++++++++ 
+> +----------------------
+> 1 files changed, 38 insertions(+), 46 deletions(-)
 
-Ugh, you fixed bindings' directory in Jochen's CPM patch, but not in
-my patch:
+applied.
 
-commit 91993d56812fd09b6cccea12d3c83df623cb0ea6
-Author: Anton Vorontsov <avorontsov@ru.mvista.com>
-Date:   Fri Jul 4 20:53:28 2008 +0400
-
-    powerpc: add FHCI USB, FSL MCU, FSL UPM and GPIO LEDs bindings
-    
-    This patch adds few bindings for the new drivers to be submitted through
-    the appropriate maintainers.
-    
-    Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-    Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
-
-diff --git a/Documentation/powerpc/device-tree/fsl/mcu-mpc8349emitx.txt b/Documentation/powerpc/device-tree/fsl/mcu-mpc8349emit
-new file mode 100644
-index 0000000..0f76633
---- /dev/null
-+++ b/Documentation/powerpc/device-tree/fsl/mcu-mpc8349emitx.txt
-....
-
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+- k
