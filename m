@@ -1,21 +1,19 @@
-Return-Path: <khali@linux-fr.org>
-Received: from services.gcu-squad.org (zone0.gcu-squad.org [212.85.147.21])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id A3EA5DE781
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jul 2008 00:05:32 +1000 (EST)
-Date: Tue, 15 Jul 2008 16:05:10 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: "Jon Smirl" <jonsmirl@gmail.com>
-Subject: Re: [PATCH] of: i2c: improve last resort compatible entry selection
-Message-ID: <20080715160510.0f57dd0e@hyperion.delvare>
-In-Reply-To: <9e4733910807150640x52cca982jf4f1ccfe7fd506cf@mail.gmail.com>
-References: <20080714175437.GA5230@polina.dev.rtsoft.ru>
-	<487C7F9A.7030201@scram.de>
-	<9e4733910807150640x52cca982jf4f1ccfe7fd506cf@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <runet@innovsys.com>
+Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
+	by ozlabs.org (Postfix) with ESMTP id D4BFFDDEEA
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jul 2008 00:16:20 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: 82xx performance
+Date: Tue, 15 Jul 2008 09:16:43 -0500
+Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B04AE662E@ismail.innsys.innovsys.com>
+In-Reply-To: <200807142244.07450.arnd@arndb.de>
+References: <DCEAAC0833DD314AB0B58112AD99B93B04AE61BC@ismail.innsys.innovsys.com>
+	<200807142244.07450.arnd@arndb.de>
+From: "Rune Torgersen" <runet@innovsys.com>
+To: "Arnd Bergmann" <arnd@arndb.de>,
+	<linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,58 +23,97 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 15 Jul 2008 09:40:08 -0400, Jon Smirl wrote:
-> On 7/15/08, Jochen Friedrich <jochen@scram.de> wrote:
-> > Hi Anton,
-> >
-> >
-> >  > Since no sane driver will ever match specific devices, what we want is
-> >  > to select most generic option (last). Then driver may call
-> >  > of_device_is_compatible() if it is really interested in details.
-> >
-> >
-> > My original intention was to have alias entries for specific devices in the
-> >  i2c device drivers. Later, Jean decided to only have the most generic names
-> >  in there (like in http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=blobdiff;f=drivers/media/video/tvaudio.c;h=c77914d99d15c5972c94e9763a08b5789098e90a;hp=6f9945b04e1f2bcd676f0ed8dc910994b29ed300;hb=ae429083efe996ca2c569c44fd6fea440676dc33;hpb=60b129d7bfa3e20450816983bd52c49bb0bc1c21)
-> >  So your patch is correct.
+> This is certainly significant, but a lot has happened between the two
+> versions. I few ideas:
+>=20
+> * compare some of the key configuration options:
+>   # CONFIG_DEBUG_*
+>   # CONFIG_PREEMPT*
+>   # CONFIG_NO_HZ
+>   # CONFIG_HZ
 
-Eeeek. The patch you mention here is only the conversion of ONE driver.
-It is absolutely not relevant as to what the general rule is.
+2.6.25:
+# CONFIG_DEBUG_DRIVER is not set
+# CONFIG_DEBUG_DEVRES is not set
+# CONFIG_DEBUG_FS is not set
+CONFIG_DEBUG_KERNEL=3Dy
+# CONFIG_DEBUG_SHIRQ is not set
+# CONFIG_DEBUG_RT_MUTEXES is not set
+# CONFIG_DEBUG_SPINLOCK is not set
+# CONFIG_DEBUG_MUTEXES is not set
+# CONFIG_DEBUG_SPINLOCK_SLEEP is not set
+# CONFIG_DEBUG_LOCKING_API_SELFTESTS is not set
+# CONFIG_DEBUG_KOBJECT is not set
+# CONFIG_DEBUG_HIGHMEM is not set
+CONFIG_DEBUG_BUGVERBOSE=3Dy
+CONFIG_DEBUG_INFO=3Dy
+# CONFIG_DEBUG_VM is not set
+# CONFIG_DEBUG_LIST is not set
+# CONFIG_DEBUG_SG is not set
+# CONFIG_DEBUG_STACKOVERFLOW is not set
+# CONFIG_DEBUG_STACK_USAGE is not set
+# CONFIG_DEBUG_PAGEALLOC is not set
+# CONFIG_DEBUGGER is not set
 
-Background:
-Some media drivers have been relying on autodetection for years. We
-will convert them to the new model as much as possible, however the
-knowledge of what chip is present on each board has sometimes been
-lost, so switching to the new i2c model isn't that easy. So, as a
-transition step, for a few media drivers, we decided to not enumerate
-all the supported chips (nobody would be able to instantiate any of
-them specifically anyway). This might change in the future, as
-developers gain knowledge about the hardware again.
+# CONFIG_PREEMPT_NONE is not set
+# CONFIG_PREEMPT_VOLUNTARY is not set
+CONFIG_PREEMPT=3Dy
+# CONFIG_PREEMPT_RCU is not set
 
-Jochen, I am very surprised that you dare drawing conclusions based on
-one random patch of mine. And I am unhappy that you even claim that I
-took some decision when I definitely did not.
+# CONFIG_NO_HZ is not set
+# CONFIG_HZ_100 is not set
+# CONFIG_HZ_250 is not set
+# CONFIG_HZ_300 is not set
+CONFIG_HZ_1000=3Dy
+CONFIG_HZ=3D1000
 
-> Why aren't we listing the chip names in the driver's id section? Large
-> chip id tables are not unusual in the kernel, the e1000 driver has
-> about 70 entries.
-> 
-> Taking the chip id table out of the driver just means we have to build
-> it somewhere else. It doesn't save space, the tables just get moved.
-> Device firmware has the chip names in it so there has to be code in
-> the kernel somewhere to do the mapping from chip id to linux driver
-> name.
-> 
-> Pushing the linux driver name down into the firmware is even crazier.
-> +  /* 2. search for linux,<i2c-type> entry */
-> Now if the linux driver gets renamed everyone on the planet needs a
-> firmware update.
 
-I can't comment on the specific issue at hand as I am not familiar with
-it, but overall Jon appears to be right. Listing individual chips in
-id_table is the standard way to go. That's even the very reason why we
-decided to add this id_table to i2c_driver, instead of matching on the
-driver name as we were doing before.
+2.6.18:
+# CONFIG_DEBUG_DRIVER is not set
+CONFIG_DEBUG_KERNEL=3Dy
+# CONFIG_DEBUG_SLAB is not set
+# CONFIG_DEBUG_RT_MUTEXES is not set
+# CONFIG_DEBUG_SPINLOCK is not set
+# CONFIG_DEBUG_MUTEXES is not set
+# CONFIG_DEBUG_RWSEMS is not set
+# CONFIG_DEBUG_SPINLOCK_SLEEP is not set
+# CONFIG_DEBUG_LOCKING_API_SELFTESTS is not set
+# CONFIG_DEBUG_KOBJECT is not set
+CONFIG_DEBUG_INFO=3Dy
+# CONFIG_DEBUG_FS is not set
+# CONFIG_DEBUG_VM is not set
 
--- 
-Jean Delvare
+# CONFIG_PREEMPT_NONE is not set
+# CONFIG_PREEMPT_VOLUNTARY is not set
+CONFIG_PREEMPT=3Dy
+CONFIG_PREEMPT_BKL=3Dy
+
+# CONFIG_HZ_100 is not set
+# CONFIG_HZ_250 is not set
+CONFIG_HZ_1000=3Dy
+CONFIG_HZ=3D1000
+
+
+>=20
+> * Try looking at where the time is spent, using oprofile or=20
+> readprofile
+
+Doing this now.
+>=20
+> * Try setting /proc/sys/kernel/compat/sched_yield to 1, to=20
+> get the legacy
+> behaviour of the scheduler.
+
+Made perfromance on .25 a few percent worse. (84 minutes on kernel
+compile instead of 81 minutes)
+=20
+> * Maybe there is a kernel version that supports your hardware in both
+> arch/ppc/ and arch/powerpc. In that case, you could see if=20
+> the platform
+> change had an impact.
+
+Will try. Last port in ppc branch was 2.6.18 and first in powerpc was
+2.6.24.
+I should be able to port ppc to .25 also I think.
+
+Thanks!
