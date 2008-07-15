@@ -1,19 +1,24 @@
-Return-Path: <runet@innovsys.com>
-Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
-	by ozlabs.org (Postfix) with ESMTP id BF33CDE23B
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jul 2008 04:24:52 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: 82xx performance
-Date: Tue, 15 Jul 2008 13:25:16 -0500
-Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B04AE6877@ismail.innsys.innovsys.com>
-In-Reply-To: <200807142244.07450.arnd@arndb.de>
-References: <DCEAAC0833DD314AB0B58112AD99B93B04AE61BC@ismail.innsys.innovsys.com>
-	<200807142244.07450.arnd@arndb.de>
-From: "Rune Torgersen" <runet@innovsys.com>
-To: "Arnd Bergmann" <arnd@arndb.de>,
-	<linuxppc-dev@ozlabs.org>
+Return-Path: <jdl@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id D7EE0DE133
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jul 2008 05:26:25 +1000 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	m6FJQF1u024444
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jul 2008 12:26:16 -0700 (MST)
+Received: from ld0161-tx32 (ld0161-tx32.am.freescale.net [10.82.19.111])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m6FJQEjv006835
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jul 2008 14:26:14 -0500 (CDT)
+Subject: DTC: libfdt Install Woes
+From: Jon Loeliger <jdl@freescale.com>
+To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain
+Date: Tue, 15 Jul 2008 14:26:14 -0500
+Message-Id: <1216149974.20700.14.camel@ld0161-tx32>
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,17 +28,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> * Maybe there is a kernel version that supports your hardware in both
-> arch/ppc/ and arch/powerpc. In that case, you could see if=20
-> the platform
-> change had an impact.
+David,
 
-Using arch/ppc I got a 2.6.25 kernel to boot, and the kernel compile
-test I did is almost identical (within 1%) of what the arch/powerpc
-2.6.25 did, so it seems to be a difference between 2.6.18 and 2.6.25
-(I'll see if I can find an exact version, as I think my ppc port can be
-compiled for all versions from 2.6.18 to 25)
+Somewhat recently, the DTC commit 6a6c972cdf9e
+"dtc: Clean up included Makefile fragments"
+removed this line
 
-And running oprofile didn't help much, as it seems not to have been able
-to figure out what in the kernel got called. (the Freescale 82xx dcoes
-not have hw performance registers)
+    LIBFDT_INCLUDES = fdt.h libfdt.h
+
+from the libfdt/Makefile.libfdt.  As a result,
+the standalone "make install" is onw failing.
+
+We could put that line back, or remove the
+top-level Makefile install target that is
+trying to use this definition.
+
+I'm not sure which direction you want to head here.
+
+Thanks,
+jdl
