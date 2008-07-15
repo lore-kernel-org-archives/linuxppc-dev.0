@@ -1,24 +1,19 @@
-Return-Path: <jdl@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D7EE0DE133
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jul 2008 05:26:25 +1000 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
-	m6FJQF1u024444
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jul 2008 12:26:16 -0700 (MST)
-Received: from ld0161-tx32 (ld0161-tx32.am.freescale.net [10.82.19.111])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m6FJQEjv006835
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jul 2008 14:26:14 -0500 (CDT)
-Subject: DTC: libfdt Install Woes
-From: Jon Loeliger <jdl@freescale.com>
-To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
-Content-Type: text/plain
-Date: Tue, 15 Jul 2008 14:26:14 -0500
-Message-Id: <1216149974.20700.14.camel@ld0161-tx32>
-Mime-Version: 1.0
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id 01A72DEF3D
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jul 2008 05:51:37 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: 82xx performance
+Date: Tue, 15 Jul 2008 21:50:35 +0200
+References: <DCEAAC0833DD314AB0B58112AD99B93B04AE61BC@ismail.innsys.innovsys.com>
+	<200807142244.07450.arnd@arndb.de>
+	<DCEAAC0833DD314AB0B58112AD99B93B04AE6877@ismail.innsys.innovsys.com>
+In-Reply-To: <DCEAAC0833DD314AB0B58112AD99B93B04AE6877@ismail.innsys.innovsys.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200807152150.35811.arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,22 +23,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David,
+On Tuesday 15 July 2008, Rune Torgersen wrote:
+> Using arch/ppc I got a 2.6.25 kernel to boot, and the kernel compile
+> test I did is almost identical (within 1%) of what the arch/powerpc
+> 2.6.25 did, so it seems to be a difference between 2.6.18 and 2.6.25
+> (I'll see if I can find an exact version, as I think my ppc port can be
+> compiled for all versions from 2.6.18 to 25)
 
-Somewhat recently, the DTC commit 6a6c972cdf9e
-"dtc: Clean up included Makefile fragments"
-removed this line
+You probably already know git-bisect, but if you don't, you should
+definitely give it a try. It's the best tool to find which patch
+exactly broke your performance.
 
-    LIBFDT_INCLUDES = fdt.h libfdt.h
-
-from the libfdt/Makefile.libfdt.  As a result,
-the standalone "make install" is onw failing.
-
-We could put that line back, or remove the
-top-level Makefile install target that is
-trying to use this definition.
-
-I'm not sure which direction you want to head here.
-
-Thanks,
-jdl
+	Arnd <><
