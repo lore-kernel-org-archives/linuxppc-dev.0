@@ -1,21 +1,28 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C37C9DE059
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jul 2008 20:06:04 +1000 (EST)
-Subject: Re: 2.6.26 does not boot on Pegasos
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Gabriel Paubert <paubert@iram.es>
-In-Reply-To: <20080715100033.GA5147@iram.es>
-References: <20080715100033.GA5147@iram.es>
-Content-Type: text/plain
-Date: Tue, 15 Jul 2008 20:05:49 +1000
-Message-Id: <1216116349.7740.101.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	David Woodhouse <dwmw2@infradead.org>
-Reply-To: benh@kernel.crashing.org
+Return-Path: <broonie@sirena.org.uk>
+Received: from cassiel.sirena.org.uk (cassiel.sirena.org.uk [80.68.93.111])
+	by ozlabs.org (Postfix) with ESMTP id A615CDDF6C
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jul 2008 20:13:19 +1000 (EST)
+Date: Tue, 15 Jul 2008 11:13:08 +0100
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Jon Smirl <jonsmirl@gmail.com>
+Subject: Re: [alsa-devel] [PATCH v2 1/3] ALSA SoC: Add OpenFirmware helper for
+	matching bus and codec drivers
+Message-ID: <20080715101307.GL25448@sirena.org.uk>
+References: <20080712083929.15025.47682.stgit@trillian.secretlab.ca>
+	<20080714134930.GC25448@sirena.org.uk>
+	<9e4733910807140713r5739efedw81e65632006d101d@mail.gmail.com>
+	<20080714150527.GD25448@sirena.org.uk>
+	<487B7B71.9060606@freescale.com>
+	<20080714165302.GG25448@sirena.org.uk>
+	<fa686aa40807141021ka4f84e9ycc4ac78db760726c@mail.gmail.com>
+	<20080714183632.GI25448@sirena.org.uk>
+	<487B9D98.8010008@freescale.com>
+	<9e4733910807141645l404881b0m1d17d88c26792c78@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <9e4733910807141645l404881b0m1d17d88c26792c78@mail.gmail.com>
+Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org,
+	Timur Tabi <timur@freescale.com>, liam.girdwood@wolfsonmicro.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,20 +32,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2008-07-15 at 12:00 +0200, Gabriel Paubert wrote:
-> 	Hi,
-> 
-> I just tried to boot 2.6.26 on a Pegasos and the kernel does not boot.
-> The last message I have is:
-> gunzip (0xffffffff <----- some more hex digits)
-> 
-> The configuration has been created from a working 2.6.25 one with
-> make oldconfig and answering N to new config options.
-> 
-> Anybody has seen this or do I have to start digging deeper?
+On Mon, Jul 14, 2008 at 07:45:46PM -0400, Jon Smirl wrote:
+> On 7/14/08, Timur Tabi <timur@freescale.com> wrote:
+> > Mark Brown wrote:
 
-Unfortunately, I don't have a pegasos anymore. David, did you get a
-chance to test anything recent on yours ? Matt ?
+> >  > chassis - on Linux drivers can be automatically loaded based on these
+> >  > strings.  See drivers/misc/thinkpad_acpi.c for an example of a driver
+> >  > that does this.
 
-Cheers,
-Ben.
+> Allowing multiple binds at the root causes the problem of something
+> like compatible="lite5200b,mpc5200-simple". Both platforms would bind
+> and that's not what you want.
+
+Binding isn't the issue here - it's loading the driver in the first
+place.  Once the drivers are loaded they can (hopefully) figure out if
+they are running on appropriate hardware.
+
+> Another scheme would be to add kernel code to always create virtual OF
+> devices like "lite5200b-fabric" that are derived off from the machine
+> name that achieved a bind.
+
+This is what I'm suggesting, modulo the fact that I'm suggesting *not*
+creating virtual devices but rather providing a mechanism for drivers to
+load without binding to anything.  It strikes me that you're going to
+run into similar situations with other hardware at some point - either
+for undocumented extras that you happen to know exist on the system
+(like much of the DMI usage on x86) or for other things where you've got
+on-board hardware structured like sound hardware tends to be.
