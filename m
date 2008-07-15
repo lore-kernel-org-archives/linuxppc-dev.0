@@ -1,20 +1,18 @@
-Return-Path: <jochen@scram.de>
-Received: from mail.scram.de (mail0.scram.de [78.47.204.202])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.scram.de",
-	Issuer "StartCom Class 1 Primary Intermediate Server CA" (not
-	verified)) by ozlabs.org (Postfix) with ESMTPS id 83728DE1F3
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jul 2008 20:44:47 +1000 (EST)
-Message-ID: <487C7F9A.7030201@scram.de>
-Date: Tue, 15 Jul 2008 12:44:42 +0200
-From: Jochen Friedrich <jochen@scram.de>
+Return-Path: <paubert@iram.es>
+Received: from gra-lx1.iram.es (gra-lx1.iram.es [150.214.224.41])
+	by ozlabs.org (Postfix) with ESMTP id D61C5DE228
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jul 2008 21:01:26 +1000 (EST)
+From: Gabriel Paubert <paubert@iram.es>
+Date: Tue, 15 Jul 2008 12:45:52 +0200
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: 2.6.26 does not boot on Pegasos
+Message-ID: <20080715104552.GA6299@iram.es>
+References: <20080715100033.GA5147@iram.es> <1216116349.7740.101.camel@pasglop>
 MIME-Version: 1.0
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: [PATCH] of: i2c: improve last resort compatible entry selection
-References: <20080714175437.GA5230@polina.dev.rtsoft.ru>
-In-Reply-To: <20080714175437.GA5230@polina.dev.rtsoft.ru>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org, Jean Delvare <khali@linux-fr.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1216116349.7740.101.camel@pasglop>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	David Woodhouse <dwmw2@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,20 +22,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Anton,
+On Tue, Jul 15, 2008 at 08:05:49PM +1000, Benjamin Herrenschmidt wrote:
+> On Tue, 2008-07-15 at 12:00 +0200, Gabriel Paubert wrote:
+> > 	Hi,
+> > 
+> > I just tried to boot 2.6.26 on a Pegasos and the kernel does not boot.
+> > The last message I have is:
+> > gunzip (0xffffffff <----- some more hex digits)
+> > 
+> > The configuration has been created from a working 2.6.25 one with
+> > make oldconfig and answering N to new config options.
+> > 
+> > Anybody has seen this or do I have to start digging deeper?
+> 
+> Unfortunately, I don't have a pegasos anymore. David, did you get a
+> chance to test anything recent on yours ? Matt ?
 
-> Since no sane driver will ever match specific devices, what we want is
-> to select most generic option (last). Then driver may call
-> of_device_is_compatible() if it is really interested in details.
+I seem to remember that 2.6.26-rc5 booted fine. Compiling it right now
+before I start a bisection.
 
-My original intention was to have alias entries for specific devices in the
-i2c device drivers. Later, Jean decided to only have the most generic names
-in there (like in http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=blobdiff;f=drivers/media/video/tvaudio.c;h=c77914d99d15c5972c94e9763a08b5789098e90a;hp=6f9945b04e1f2bcd676f0ed8dc910994b29ed300;hb=ae429083efe996ca2c569c44fd6fea440676dc33;hpb=60b129d7bfa3e20450816983bd52c49bb0bc1c21)
-So your patch is correct.
-
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-
-Acked-by: Jochen Friedrich <jochen@scram.de>
-
-Thanks,
-Jochen
+	Regards,
+	Gabriel
