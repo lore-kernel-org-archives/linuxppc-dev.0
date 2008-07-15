@@ -1,17 +1,15 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 2ACF9DDF4C
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jul 2008 07:58:23 +1000 (EST)
-Message-Id: <BF59BFC7-736B-4D3F-9227-97DC90CE4739@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v926)
-Subject: SW TLB MMU rework and SMP issues
-Date: Tue, 15 Jul 2008 16:58:16 -0500
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Return-Path: <runet@innovsys.com>
+Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
+	by ozlabs.org (Postfix) with ESMTP id DF1F5DDF24
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jul 2008 09:08:45 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: Comiler error compiling 2.6.26
+Date: Tue, 15 Jul 2008 18:09:01 -0500
+Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B04B342D4@ismail.innsys.innovsys.com>
+From: "Rune Torgersen" <runet@innovsys.com>
+To: <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,20 +19,54 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Ben,
+Trying to cross-compile arch/powerpc for an freescale 8280:
 
-I've been giving some thought to the new software managed TLBs and SMP  
-issues.  I was wondering if you had any insights on how we should deal  
-with the following issues:
+Gcc 4.1.2
+Binutils 2.17
 
-* tlb invalidates -- need to ensure we don't have multiple tlbsync's  
-on the bus.  I'm thinking for e500/fsl we will move to IPI based  
-invalidate broadcast and do invalidates locally (http://patchwork.ozlabs.org/linuxppc/patch?id=19657 
-)
-
-* 64-bit PTEs and reader vs writer hazards.  How do we ensure that the  
-TLB miss handler samples a consistent view of the pte.  pte_updates  
-seem ok since we only update the flag word.  However set_pte_at seems  
-like it could be problematic.
-
-- k
+BFD: ./vmlinux.strip.7812: section .text lma 0xc0000000 overlaps
+previous sections
+BFD: ./vmlinux.strip.7812: section .ref.text lma 0xc024f000 overlaps
+previous sections
+BFD: ./vmlinux.strip.7812: section .rodata lma 0xc0251000 overlaps
+previous sections
+BFD: ./vmlinux.strip.7812: section .pci_fixup lma 0xc02dd2f0 overlaps
+previous sections
+BFD: ./vmlinux.strip.7812: section __ksymtab lma 0xc02dd930 overlaps
+previous sections
+BFD: ./vmlinux.strip.7812: section __ksymtab_gpl lma 0xc02e2088 overlaps
+previous sections
+BFD: ./vmlinux.strip.7812: section __ksymtab_strings lma 0xc02e3a20
+overlaps previous sections
+BFD: ./vmlinux.strip.7812: section __param lma 0xc02f08cc overlaps
+previous sections
+BFD: ./vmlinux.strip.7812: section __ex_table lma 0xc02f1000 overlaps
+previous sections
+BFD: ./vmlinux.strip.7812: section __bug_table lma 0xc02f22b8 overlaps
+previous sections
+BFD: ./vmlinux.strip.7812: section .init.text lma 0xc02f8000 overlaps
+previous sections
+BFD: ./vmlinux.strip.7812: section .exit.text lma 0xc030f908 overlaps
+previous sections
+BFD: ./vmlinux.strip.7812: section .init.data lma 0xc0310468 overlaps
+previous sections
+BFD: ./vmlinux.strip.7812: section .init.setup lma 0xc0315b70 overlaps
+previous sections
+BFD: ./vmlinux.strip.7812: section .initcall.init lma 0xc0315e28
+overlaps previous sections
+BFD: ./vmlinux.strip.7812: section .con_initcall.init lma 0xc0316050
+overlaps previous sections
+BFD: ./vmlinux.strip.7812: section __ftr_fixup lma 0xc0316058 overlaps
+previous sections
+BFD: ./vmlinux.strip.7812: section .machine.desc lma 0xc0317000 overlaps
+previous sections
+BFD: ./vmlinux.strip.7812: section .data lma 0xc0318000 overlaps
+previous sections
+BFD: ./vmlinux.strip.7812: section .data.init_task lma 0xc0330000
+overlaps previous sections
+BFD: ./vmlinux.strip.7812: section .data.page_aligned lma 0xc0332000
+overlaps previous sections
+BFD: ./vmlinux.strip.7812: section .data.cacheline_aligned lma
+0xc0335000 overlaps previous sections
+BFD: ./vmlinux.strip.7812: section .data.read_mostly lma 0xc0335820
+overlaps previous sections
