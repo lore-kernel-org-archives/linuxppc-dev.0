@@ -1,12 +1,12 @@
 Return-Path: <arnd@arndb.de>
-Message-Id: <20080715195740.098068951@arndb.de>
+Message-Id: <20080715195739.681740070@arndb.de>
 References: <20080715195139.316677337@arndb.de>
-Date: Tue, 15 Jul 2008 21:51:48 +0200
+Date: Tue, 15 Jul 2008 21:51:45 +0200
 From: arnd@arndb.de
 To: benh@kernel.crashing.org, cbe-oss-dev@ozlabs.org, linuxppc-dev@ozlabs.org
-Subject: [patch 9/9] powerpc/cell: Add DMA_ATTR_STRONG_ORDERING dma attribute
-	and use in IOMMU code
-Cc: Mark Nelson <markn@au1.ibm.com>
+Subject: [patch 6/9] powerpc/cell: add support for power button of future IBM
+	cell blades
+Cc: Christian Krafft <krafft@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,198 +16,192 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Mark Nelson <markn@au1.ibm.com>
+From: Christian Krafft <krafft@de.ibm.com>
 
-Introduce a new dma attriblue DMA_ATTR_STRONG_ORDERING to use strong ordering
-on DMA mappings in the Cell processor. Add the code to the Cell's IOMMU
-implementation to use this.
+This patch adds support for the power button on future IBM cell blades.
+It actually doesn't shut down the machine. Instead it exposes an
+input device /dev/input/event0 to userspace which sends KEY_POWER
+if power button has been pressed.
+haldaemon actually recognizes the button, so a plattform independent acpid
+replacement should handle it correctly.
 
-The current Cell IOMMU implementation sets the IOPTE_SO_RW bits in all IOTPEs
-(for both the dynamic and fixed mappings) which enforces strong ordering of
-both reads and writes. This patch makes the default behaviour weak ordering
-(the IOPTE_SO_RW bits not set) and to request a strongly ordered mapping the
-new DMA_ATTR_STRONG_ORDERING needs to be used.
-
-Dynamic mappings can be weakly or strongly ordered on an individual basis
-but the fixed mapping is always weakly ordered.
-
-Signed-off-by: Mark Nelson <markn@au1.ibm.com>
+Signed-off-by: Christian Krafft <krafft@de.ibm.com>
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- Documentation/DMA-attributes.txt    |   12 +++++
- arch/powerpc/platforms/cell/iommu.c |   93 ++++++++++++++++++++++++++++++++---
- include/linux/dma-attrs.h           |    1 +
- 3 files changed, 99 insertions(+), 7 deletions(-)
+ arch/powerpc/platforms/cell/Kconfig           |    8 ++
+ arch/powerpc/platforms/cell/Makefile          |    2 +
+ arch/powerpc/platforms/cell/cbe_powerbutton.c |  117 +++++++++++++++++++++++++
+ include/asm-powerpc/pmi.h                     |    1 +
+ 4 files changed, 128 insertions(+), 0 deletions(-)
+ create mode 100644 arch/powerpc/platforms/cell/cbe_powerbutton.c
 
-diff --git a/Documentation/DMA-attributes.txt b/Documentation/DMA-attributes.txt
-index 6d772f8..f2d2800 100644
---- a/Documentation/DMA-attributes.txt
-+++ b/Documentation/DMA-attributes.txt
-@@ -22,3 +22,15 @@ ready and available in memory.  The DMA of the "completion indication"
- could race with data DMA.  Mapping the memory used for completion
- indications with DMA_ATTR_WRITE_BARRIER would prevent the race.
+diff --git a/arch/powerpc/platforms/cell/Kconfig b/arch/powerpc/platforms/cell/Kconfig
+index 2d1957b..c14d7d8 100644
+--- a/arch/powerpc/platforms/cell/Kconfig
++++ b/arch/powerpc/platforms/cell/Kconfig
+@@ -91,6 +91,14 @@ config PPC_IBM_CELL_RESETBUTTON
+ 	  Support Pinhole Resetbutton on IBM Cell blades.
+ 	  This adds a method to trigger system reset via front panel pinhole button.
  
++config PPC_IBM_CELL_POWERBUTTON
++	tristate "IBM Cell Blade power button"
++	depends on PPC_IBM_CELL_BLADE && PPC_PMI && INPUT_EVDEV
++	default y
++	help
++	  Support Powerbutton on IBM Cell blades.
++	  This will enable the powerbutton as an input device.
 +
-+DMA_ATTR_STRONG_ORDERING
-+----------------------
-+
-+DMA_ATTR_STRONG_ORDERING specifies that previous reads and writes are
-+performed in the order in which they're received by the IOMMU; thus
-+reads and writes may not pass each other.
-+
-+Platforms that are strongly ordered by default will ignore this new
-+attribute but platforms that are weakly ordered by default should not
-+ignore this new attribute. Instead, they should return an error if a
-+strongly ordered mapping cannot be used when one is requested.
-diff --git a/arch/powerpc/platforms/cell/iommu.c b/arch/powerpc/platforms/cell/iommu.c
-index 3b70784..7f6ed20 100644
---- a/arch/powerpc/platforms/cell/iommu.c
-+++ b/arch/powerpc/platforms/cell/iommu.c
-@@ -194,11 +194,13 @@ static void tce_build_cell(struct iommu_table *tbl, long index, long npages,
- 	const unsigned long prot = 0xc48;
- 	base_pte =
- 		((prot << (52 + 4 * direction)) & (IOPTE_PP_W | IOPTE_PP_R))
--		| IOPTE_M | IOPTE_SO_RW | (window->ioid & IOPTE_IOID_Mask);
-+		| IOPTE_M | (window->ioid & IOPTE_IOID_Mask);
- #else
--	base_pte = IOPTE_PP_W | IOPTE_PP_R | IOPTE_M | IOPTE_SO_RW |
-+	base_pte = IOPTE_PP_W | IOPTE_PP_R | IOPTE_M |
- 		(window->ioid & IOPTE_IOID_Mask);
- #endif
-+	if (unlikely(dma_get_attr(DMA_ATTR_STRONG_ORDERING, attrs)))
-+		base_pte |= IOPTE_SO_RW;
+ config CBE_THERM
+ 	tristate "CBE thermal support"
+ 	default m
+diff --git a/arch/powerpc/platforms/cell/Makefile b/arch/powerpc/platforms/cell/Makefile
+index 7fcf09b..7fd8308 100644
+--- a/arch/powerpc/platforms/cell/Makefile
++++ b/arch/powerpc/platforms/cell/Makefile
+@@ -10,6 +10,8 @@ obj-$(CONFIG_CBE_CPUFREQ)		+= cbe-cpufreq.o
+ cbe-cpufreq-y				+= cbe_cpufreq_pervasive.o cbe_cpufreq.o
+ obj-$(CONFIG_CBE_CPUFREQ_SPU_GOVERNOR)	+= cpufreq_spudemand.o
  
- 	io_pte = (unsigned long *)tbl->it_base + (index - tbl->it_offset);
- 
-@@ -539,7 +541,6 @@ static struct cbe_iommu *cell_iommu_for_node(int nid)
- static unsigned long cell_dma_direct_offset;
- 
- static unsigned long dma_iommu_fixed_base;
--struct dma_mapping_ops dma_iommu_fixed_ops;
- 
- static struct iommu_table *cell_get_iommu_table(struct device *dev)
- {
-@@ -563,6 +564,85 @@ static struct iommu_table *cell_get_iommu_table(struct device *dev)
- 	return &window->table;
- }
- 
-+static void *dma_fixed_alloc_coherent(struct device *dev, size_t size,
-+				      dma_addr_t *dma_handle, gfp_t flag)
++obj-$(CONFIG_PPC_IBM_CELL_POWERBUTTON)	+= cbe_powerbutton.o
++
+ ifeq ($(CONFIG_SMP),y)
+ obj-$(CONFIG_PPC_CELL_NATIVE)		+= smp.o
+ endif
+diff --git a/arch/powerpc/platforms/cell/cbe_powerbutton.c b/arch/powerpc/platforms/cell/cbe_powerbutton.c
+new file mode 100644
+index 0000000..dcddaa5
+--- /dev/null
++++ b/arch/powerpc/platforms/cell/cbe_powerbutton.c
+@@ -0,0 +1,117 @@
++/*
++ * driver for powerbutton on IBM cell blades
++ *
++ * (C) Copyright IBM Corp. 2005-2008
++ *
++ * Author: Christian Krafft <krafft@de.ibm.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2, or (at your option)
++ * any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++ */
++
++#include <linux/input.h>
++#include <linux/platform_device.h>
++#include <asm/pmi.h>
++#include <asm/prom.h>
++
++static struct input_dev *button_dev;
++static struct platform_device *button_pdev;
++
++static void cbe_powerbutton_handle_pmi(pmi_message_t pmi_msg)
 +{
-+	return dma_direct_ops.alloc_coherent(dev, size, dma_handle, flag);
++	BUG_ON(pmi_msg.type != PMI_TYPE_POWER_BUTTON);
++
++	input_report_key(button_dev, KEY_POWER, 1);
++	input_sync(button_dev);
++	input_report_key(button_dev, KEY_POWER, 0);
++	input_sync(button_dev);
 +}
 +
-+static void dma_fixed_free_coherent(struct device *dev, size_t size,
-+				    void *vaddr, dma_addr_t dma_handle)
-+{
-+	dma_direct_ops.free_coherent(dev, size, vaddr, dma_handle);
-+}
-+
-+static dma_addr_t dma_fixed_map_single(struct device *dev, void *ptr,
-+				       size_t size,
-+				       enum dma_data_direction direction,
-+				       struct dma_attrs *attrs)
-+{
-+	if (dma_get_attr(DMA_ATTR_STRONG_ORDERING, attrs))
-+		return iommu_map_single(dev, cell_get_iommu_table(dev), ptr,
-+					size, device_to_mask(dev), direction,
-+					attrs);
-+	else
-+		return dma_direct_ops.map_single(dev, ptr, size, direction,
-+						 attrs);
-+}
-+
-+static void dma_fixed_unmap_single(struct device *dev, dma_addr_t dma_addr,
-+				   size_t size,
-+				   enum dma_data_direction direction,
-+				   struct dma_attrs *attrs)
-+{
-+	if (dma_get_attr(DMA_ATTR_STRONG_ORDERING, attrs))
-+		iommu_unmap_single(cell_get_iommu_table(dev), dma_addr, size,
-+				   direction, attrs);
-+	else
-+		dma_direct_ops.unmap_single(dev, dma_addr, size, direction,
-+					    attrs);
-+}
-+
-+static int dma_fixed_map_sg(struct device *dev, struct scatterlist *sg,
-+			   int nents, enum dma_data_direction direction,
-+			   struct dma_attrs *attrs)
-+{
-+	if (dma_get_attr(DMA_ATTR_STRONG_ORDERING, attrs))
-+		return iommu_map_sg(dev, cell_get_iommu_table(dev), sg, nents,
-+				    device_to_mask(dev), direction, attrs);
-+	else
-+		return dma_direct_ops.map_sg(dev, sg, nents, direction, attrs);
-+}
-+
-+static void dma_fixed_unmap_sg(struct device *dev, struct scatterlist *sg,
-+			       int nents, enum dma_data_direction direction,
-+			       struct dma_attrs *attrs)
-+{
-+	if (dma_get_attr(DMA_ATTR_STRONG_ORDERING, attrs))
-+		iommu_unmap_sg(cell_get_iommu_table(dev), sg, nents, direction,
-+			       attrs);
-+	else
-+		dma_direct_ops.unmap_sg(dev, sg, nents, direction, attrs);
-+}
-+
-+static int dma_fixed_dma_supported(struct device *dev, u64 mask)
-+{
-+	return mask == DMA_64BIT_MASK;
-+}
-+
-+static int dma_set_mask_and_switch(struct device *dev, u64 dma_mask);
-+
-+struct dma_mapping_ops dma_iommu_fixed_ops = {
-+	.alloc_coherent = dma_fixed_alloc_coherent,
-+	.free_coherent  = dma_fixed_free_coherent,
-+	.map_single     = dma_fixed_map_single,
-+	.unmap_single   = dma_fixed_unmap_single,
-+	.map_sg         = dma_fixed_map_sg,
-+	.unmap_sg       = dma_fixed_unmap_sg,
-+	.dma_supported  = dma_fixed_dma_supported,
-+	.set_dma_mask   = dma_set_mask_and_switch,
++static struct pmi_handler cbe_pmi_handler = {
++	.type			= PMI_TYPE_POWER_BUTTON,
++	.handle_pmi_message	= cbe_powerbutton_handle_pmi,
 +};
 +
- static void cell_dma_dev_setup_fixed(struct device *dev);
- 
- static void cell_dma_dev_setup(struct device *dev)
-@@ -919,9 +999,11 @@ static void cell_iommu_setup_fixed_ptab(struct cbe_iommu *iommu,
- 
- 	pr_debug("iommu: mapping 0x%lx pages from 0x%lx\n", fsize, fbase);
- 
--	base_pte = IOPTE_PP_W | IOPTE_PP_R | IOPTE_M | IOPTE_SO_RW
-+	base_pte = IOPTE_PP_W | IOPTE_PP_R | IOPTE_M
- 		    | (cell_iommu_get_ioid(np) & IOPTE_IOID_Mask);
- 
-+	pr_info("IOMMU: Using weak ordering for fixed mapping\n");
++static int __init cbe_powerbutton_init(void)
++{
++	int ret = 0;
++	struct input_dev *dev;
 +
- 	for (uaddr = 0; uaddr < fsize; uaddr += (1 << 24)) {
- 		/* Don't touch the dynamic region */
- 		ioaddr = uaddr + fbase;
-@@ -1037,9 +1119,6 @@ static int __init cell_iommu_fixed_mapping_init(void)
- 		cell_iommu_setup_window(iommu, np, dbase, dsize, 0);
- 	}
++	if (!machine_is_compatible("IBM,CBPLUS-1.0")) {
++		printk(KERN_ERR "%s: Not a cell blade.\n", __func__);
++		ret = -ENODEV;
++		goto out;
++	}
++
++	dev = input_allocate_device();
++	if (!dev) {
++		ret = -ENOMEM;
++		printk(KERN_ERR "%s: Not enough memory.\n", __func__);
++		goto out;
++	}
++
++	set_bit(EV_KEY, dev->evbit);
++	set_bit(KEY_POWER, dev->keybit);
++
++	dev->name = "Power Button";
++	dev->id.bustype = BUS_HOST;
++
++	/* this makes the button look like an acpi power button
++	 * no clue whether anyone relies on that though */
++	dev->id.product = 0x02;
++	dev->phys = "LNXPWRBN/button/input0";
++
++	button_pdev = platform_device_register_simple("power_button", 0, NULL, 0);
++	if (IS_ERR(button_pdev)) {
++		ret = PTR_ERR(button_pdev);
++		goto out_free_input;
++	}
++
++	dev->dev.parent = &button_pdev->dev;
++	ret = input_register_device(dev);
++	if (ret) {
++		printk(KERN_ERR "%s: Failed to register device\n", __func__);
++		goto out_free_pdev;
++	}
++
++	button_dev = dev;
++
++	ret = pmi_register_handler(&cbe_pmi_handler);
++	if (ret) {
++		printk(KERN_ERR "%s: Failed to register with pmi.\n", __func__);
++		goto out_free_pdev;
++	}
++
++	goto out;
++
++out_free_pdev:
++	platform_device_unregister(button_pdev);
++out_free_input:
++	input_free_device(dev);
++out:
++	return ret;
++}
++
++static void __exit cbe_powerbutton_exit(void)
++{
++	pmi_unregister_handler(&cbe_pmi_handler);
++	platform_device_unregister(button_pdev);
++	input_free_device(button_dev);
++}
++
++module_init(cbe_powerbutton_init);
++module_exit(cbe_powerbutton_exit);
++
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Christian Krafft <krafft@de.ibm.com>");
+diff --git a/include/asm-powerpc/pmi.h b/include/asm-powerpc/pmi.h
+index e1dc090..b4e91fb 100644
+--- a/include/asm-powerpc/pmi.h
++++ b/include/asm-powerpc/pmi.h
+@@ -30,6 +30,7 @@
+ #ifdef __KERNEL__
  
--	dma_iommu_fixed_ops = dma_direct_ops;
--	dma_iommu_fixed_ops.set_dma_mask = dma_set_mask_and_switch;
--
- 	dma_iommu_ops.set_dma_mask = dma_set_mask_and_switch;
- 	set_pci_dma_ops(&dma_iommu_ops);
- 
-diff --git a/include/linux/dma-attrs.h b/include/linux/dma-attrs.h
-index 1677e2b..600fea7 100644
---- a/include/linux/dma-attrs.h
-+++ b/include/linux/dma-attrs.h
-@@ -12,6 +12,7 @@
-  */
- enum dma_attr {
- 	DMA_ATTR_WRITE_BARRIER,
-+	DMA_ATTR_STRONG_ORDERING,
- 	DMA_ATTR_MAX,
- };
- 
+ #define PMI_TYPE_FREQ_CHANGE	0x01
++#define PMI_TYPE_POWER_BUTTON	0x02
+ #define PMI_READ_TYPE		0
+ #define PMI_READ_DATA0		1
+ #define PMI_READ_DATA1		2
 -- 
 1.5.4.3
 
