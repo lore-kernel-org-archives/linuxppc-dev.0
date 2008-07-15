@@ -1,11 +1,10 @@
 Return-Path: <arnd@arndb.de>
-Message-Id: <20080715195739.006221652@arndb.de>
+Message-Id: <20080715195739.138344366@arndb.de>
 References: <20080715195139.316677337@arndb.de>
-Date: Tue, 15 Jul 2008 21:51:40 +0200
+Date: Tue, 15 Jul 2008 21:51:41 +0200
 From: arnd@arndb.de
 To: benh@kernel.crashing.org, cbe-oss-dev@ozlabs.org, linuxppc-dev@ozlabs.org
-Subject: [patch 1/9] powerpc/cell/edac: log a syndrome code in case of
-	correctable error
+Subject: [patch 2/9] powerpc/axonram: use only one block device major number
 Cc: Maxim Shchetynin <maxim@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -18,42 +17,92 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Maxim Shchetynin <maxim@de.ibm.com>
 
-If correctable error occurs the syndrome code was logged as 0. This patch
-lets EDAC to log a correct syndrome code to make problem investigation
-easier.
+Axonram module registers one block device for each DDR2 DIMM found
+on a system. This means that each DDR2 DIMM becomes its own block device
+major number. This patch lets axonram module to register the only one
+block device for all DDR2 DIMMs which also spares kernel resources.
 
 Signed-off-by: Maxim Shchetynin <maxim@de.ibm.com>
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- drivers/edac/cell_edac.c |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
+ arch/powerpc/sysdev/axonram.c |   23 +++++++++++++++--------
+ 1 files changed, 15 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/edac/cell_edac.c b/drivers/edac/cell_edac.c
-index b54112f..0e024fe 100644
---- a/drivers/edac/cell_edac.c
-+++ b/drivers/edac/cell_edac.c
-@@ -33,7 +33,7 @@ static void cell_edac_count_ce(struct mem_ctl_info *mci, int chan, u64 ar)
+diff --git a/arch/powerpc/sysdev/axonram.c b/arch/powerpc/sysdev/axonram.c
+index 7f59188..9b639ed 100644
+--- a/arch/powerpc/sysdev/axonram.c
++++ b/arch/powerpc/sysdev/axonram.c
+@@ -57,6 +57,8 @@
+ #define AXON_RAM_SECTOR_SIZE		1 << AXON_RAM_SECTOR_SHIFT
+ #define AXON_RAM_IRQ_FLAGS		IRQF_SHARED | IRQF_TRIGGER_RISING
+ 
++static int azfs_major, azfs_minor;
++
+ struct axon_ram_bank {
+ 	struct of_device	*device;
+ 	struct gendisk		*disk;
+@@ -227,19 +229,14 @@ axon_ram_probe(struct of_device *device, const struct of_device_id *device_id)
+ 		goto failed;
+ 	}
+ 
+-	bank->disk->first_minor = 0;
++	bank->disk->major = azfs_major;
++	bank->disk->first_minor = azfs_minor;
+ 	bank->disk->fops = &axon_ram_devops;
+ 	bank->disk->private_data = bank;
+ 	bank->disk->driverfs_dev = &device->dev;
+ 
+ 	sprintf(bank->disk->disk_name, "%s%d",
+ 			AXON_RAM_DEVICE_NAME, axon_ram_bank_id);
+-	bank->disk->major = register_blkdev(0, bank->disk->disk_name);
+-	if (bank->disk->major < 0) {
+-		dev_err(&device->dev, "Cannot register block device\n");
+-		rc = -EFAULT;
+-		goto failed;
+-	}
+ 
+ 	bank->disk->queue = blk_alloc_queue(GFP_KERNEL);
+ 	if (bank->disk->queue == NULL) {
+@@ -276,6 +273,8 @@ axon_ram_probe(struct of_device *device, const struct of_device_id *device_id)
+ 		goto failed;
+ 	}
+ 
++	azfs_minor += bank->disk->minors;
++
+ 	return 0;
+ 
+ failed:
+@@ -310,7 +309,6 @@ axon_ram_remove(struct of_device *device)
+ 
+ 	device_remove_file(&device->dev, &dev_attr_ecc);
+ 	free_irq(bank->irq_id, device);
+-	unregister_blkdev(bank->disk->major, bank->disk->disk_name);
+ 	del_gendisk(bank->disk);
+ 	iounmap((void __iomem *) bank->io_addr);
+ 	kfree(bank);
+@@ -341,6 +339,14 @@ static struct of_platform_driver axon_ram_driver = {
+ static int __init
+ axon_ram_init(void)
  {
- 	struct cell_edac_priv		*priv = mci->pvt_info;
- 	struct csrow_info		*csrow = &mci->csrows[0];
--	unsigned long			address, pfn, offset;
-+	unsigned long			address, pfn, offset, syndrome;
- 
- 	dev_dbg(mci->dev, "ECC CE err on node %d, channel %d, ar = 0x%016lx\n",
- 		priv->node, chan, ar);
-@@ -44,10 +44,11 @@ static void cell_edac_count_ce(struct mem_ctl_info *mci, int chan, u64 ar)
- 		address = (address << 1) | chan;
- 	pfn = address >> PAGE_SHIFT;
- 	offset = address & ~PAGE_MASK;
-+	syndrome = (ar & 0x000000001fe00000ul) >> 21;
- 
- 	/* TODO: Decoding of the error addresss */
- 	edac_mc_handle_ce(mci, csrow->first_page + pfn, offset,
--			  0, 0, chan, "");
-+			  syndrome, 0, chan, "");
++	azfs_major = register_blkdev(azfs_major, AXON_RAM_DEVICE_NAME);
++	if (azfs_major < 0) {
++		printk(KERN_ERR "%s cannot become block device major number\n",
++				AXON_RAM_MODULE_NAME);
++		return -EFAULT;
++	}
++	azfs_minor = 0;
++
+ 	return of_register_platform_driver(&axon_ram_driver);
  }
  
- static void cell_edac_count_ue(struct mem_ctl_info *mci, int chan, u64 ar)
+@@ -351,6 +357,7 @@ static void __exit
+ axon_ram_exit(void)
+ {
+ 	of_unregister_platform_driver(&axon_ram_driver);
++	unregister_blkdev(azfs_major, AXON_RAM_DEVICE_NAME);
+ }
+ 
+ module_init(axon_ram_init);
 -- 
 1.5.4.3
 
