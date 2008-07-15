@@ -1,19 +1,20 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E7E3BDDFB3
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jul 2008 22:52:52 +1000 (EST)
-Message-Id: <6EB5960B-C8EC-4404-9F64-E241ED1A909F@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: benh@kernel.crashing.org
-In-Reply-To: <1216101729.7740.84.camel@pasglop>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v926)
-Subject: Re: powerpc.git merge status
-Date: Tue, 15 Jul 2008 07:52:44 -0500
-References: <1216101729.7740.84.camel@pasglop>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Return-Path: <arnd@arndb.de>
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: powerpc/cell/cpufreq: add spu aware cpufreq governor
+Date: Tue, 15 Jul 2008 15:02:00 +0200
+References: <200807071702.31240.arnd@arndb.de>
+	<1215580739.8970.317.camel@pasglop>
+	<20080709062958.GA24570@codemonkey.org.uk>
+In-Reply-To: <20080709062958.GA24570@codemonkey.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200807151502.01540.arnd@arndb.de>
+Cc: Dave Jones <davej@codemonkey.org.uk>,
+	Stephen Rothwell <sfr@canb.auug.org.au>,
+	cpufreq@lists.linux.org.uk, Jeremy Kerr <jk@ozlabs.org>,
+	cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,36 +24,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Wednesday 09 July 2008, Dave Jones wrote:
+>=20
+> diff --git a/arch/powerpc/platforms/cell/Kconfig b/arch/powerpc/platforms=
+/cell/Kconfig
+> index 3959fcf..19f4b4d 100644
+> --- a/arch/powerpc/platforms/cell/Kconfig
+> +++ b/arch/powerpc/platforms/cell/Kconfig
+> @@ -91,6 +91,7 @@ config CBE_THERM
+> =A0config CBE_CPUFREQ
+> =A0=A0=A0=A0=A0=A0=A0=A0tristate "CBE frequency scaling"
+> =A0=A0=A0=A0=A0=A0=A0=A0depends on CBE_RAS && CPU_FREQ
+> +=A0=A0=A0=A0=A0=A0=A0select CPU_FREQ_TABLE
+> =A0=A0=A0=A0=A0=A0=A0=A0default m
+> =A0=A0=A0=A0=A0=A0=A0=A0help
+> =A0=A0=A0=A0=A0=A0=A0=A0 =A0This adds the cpufreq driver for Cell BE proc=
+essors.
 
-On Jul 15, 2008, at 1:02 AM, Benjamin Herrenschmidt wrote:
+I found the problem now, there was an incorrect 'select CBE_CPUFREQ'
+in the spudemand governor, but no 'depends on CPUFREQ', so it was
+possible to build CBE_CPUFREQ without the base CPUFREQ support.
 
-> I've pulled from Kumar, Josh and Grant, along with applying some
-> patches hand picked from patchworks and build fixes. I've merged in
-> Linus as of today (minus David Woodhouse firmware patches that have a
-> build breakage) in order to fix a (fairly trivial) merge conflict.
->
-> I've now pushed that to my powerpc.git "master" branch for overnight
-> build-testing with kisskb at which point
->
-> If all goes well, I'll put all of that in "merge" and "next" and ask
-> Linus to pull it tomorrow.
->
-> Now, regarding the remaining bits, still on my todo for the next  
-> batch,
-> probably later this week, in this merge window:
->
-> 	- The CMO stuff, I need to have a closer look but it should
->          probably go in
-> 	- Milton's serie. Mostly fixes, haven't had time to look too
->          closely yet.
-> 	- Kumar PTE bits... that's a bit "hot" for this merge window
->          but I suppose it can still make it.
-> 	- Some Cell stuff for which I'm waiting a new serie from Arnd
->
-> If you believe I've missed something, now is time to be vocal about
-> it :-)
+=46ixed in the current version, will post later.
 
-There are a number of patches I still need to pick up but I expect  
-this to be a second round of pulling.
-
-- k
+	Arnd <><
