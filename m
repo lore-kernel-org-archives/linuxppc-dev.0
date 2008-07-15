@@ -2,22 +2,18 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 82BBBDEAC9
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jul 2008 23:21:45 +1000 (EST)
-Message-Id: <C3A1E950-3D5F-4172-90B6-1566D4A70B7C@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id E3436DDF27
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jul 2008 23:22:28 +1000 (EST)
+Message-Id: <A6347425-265D-4376-81BE-C3C27F2C1B95@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-To: avorontsov@ru.mvista.com
-In-Reply-To: <20080704165328.GA9962@polina.dev.rtsoft.ru>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+To: John Rigby <jrigby@freescale.com>
+In-Reply-To: <1214500077-9254-2-git-send-email-jrigby@freescale.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
 Mime-Version: 1.0 (Apple Message framework v926)
-Subject: Re: [PATCH v2] powerpc: add FHCI USB, FSL MCU,
-	FSL UPM and GPIO LEDs bindings
-Date: Tue, 15 Jul 2008 08:21:38 -0500
-References: <20080703174844.GA27966@polina.dev.rtsoft.ru>
-	<EC062FA3-9CF8-4A94-95C7-2AAF22754A9C@kernel.crashing.org>
-	<20080703182440.GA2576@polina.dev.rtsoft.ru>
-	<8A8D87F8-A1DD-467D-8D83-CDC651B99F45@kernel.crashing.org>
-	<20080704165328.GA9962@polina.dev.rtsoft.ru>
+Subject: Re: [PATCH 1/2] powerpc: pci config cleanup [rev2]
+Date: Tue, 15 Jul 2008 08:22:19 -0500
+References: <1214500077-9254-1-git-send-email-jrigby@freescale.com>
+	<1214500077-9254-2-git-send-email-jrigby@freescale.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -29,30 +25,35 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Jul 4, 2008, at 11:53 AM, Anton Vorontsov wrote:
+On Jun 26, 2008, at 12:07 PM, John Rigby wrote:
 
-> This patch adds few bindings for the new drivers to be submitted  
-> through
-> the appropriate maintainers.
+> Choosing PCI or not at config time is allowed on some
+> platforms via an if expression in arch/powerpc/Kconfig.
+> To add a new platform with PCI support selectable at
+> config time, you must change the if expression.  This
+> patch makes this easier by changing:
+>    bool "PCI support" if <long expression>
+> to
+>    bool "PCI support" if PPC_PCI_CHOICE
+> and adding select PPC_PCI_CHOICE to all the config nodes that
+> were previously in the PCI if expression.
 >
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> Platforms with unconditional PCI support continue to
+> just select PCI in their config nodes.
+>
+> Signed-off-by: John Rigby <jrigby@freescale.com>
 > ---
->
-> Updated to decrypt MCU, and to split the bindings into appropriate  
-> files.
->
-> .../powerpc/device-tree/fsl/mcu-mpc8349emitx.txt   |   17 +++++++++
-> Documentation/powerpc/device-tree/fsl/qe/usb.txt   |   37 +++++++++++ 
-> +++++++++
-> Documentation/powerpc/device-tree/fsl/upm-nand.txt |   28 +++++++++++ 
-> ++++
-> Documentation/powerpc/device-tree/gpio/led.txt     |   15 ++++++++
-> 4 files changed, 97 insertions(+), 0 deletions(-)
-> create mode 100644 Documentation/powerpc/device-tree/fsl/mcu- 
-> mpc8349emitx.txt
-> create mode 100644 Documentation/powerpc/device-tree/fsl/qe/usb.txt
-> create mode 100644 Documentation/powerpc/device-tree/fsl/upm-nand.txt
-> create mode 100644 Documentation/powerpc/device-tree/gpio/led.txt
+> arch/powerpc/Kconfig                   |   12 ++++++++----
+> arch/powerpc/platforms/52xx/Kconfig    |    1 +
+> arch/powerpc/platforms/83xx/Kconfig    |    1 +
+> arch/powerpc/platforms/85xx/Kconfig    |    2 +-
+> arch/powerpc/platforms/86xx/Kconfig    |    2 ++
+> arch/powerpc/platforms/Kconfig         |    1 +
+> arch/powerpc/platforms/Kconfig.cputype |    2 ++
+> arch/powerpc/platforms/iseries/Kconfig |    1 +
+> arch/powerpc/platforms/ps3/Kconfig     |    1 +
+> arch/powerpc/platforms/pseries/Kconfig |    1 +
+> 10 files changed, 19 insertions(+), 5 deletion
 
 applied.
 
