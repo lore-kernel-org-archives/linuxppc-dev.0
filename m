@@ -1,11 +1,23 @@
-Return-Path: <arnd@arndb.de>
-Message-Id: <20080715195739.138344366@arndb.de>
+Return-Path: <rdreier@cisco.com>
+Received: from sj-iport-5.cisco.com (sj-iport-5.cisco.com [171.68.10.87])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "sj-iport-5.cisco.com", Issuer "Cisco SSCA" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 75725DEFC9
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jul 2008 06:34:43 +1000 (EST)
+From: Roland Dreier <rdreier@cisco.com>
+To: arnd@arndb.de
+Subject: Re: [patch 9/9] powerpc/cell: Add DMA_ATTR_STRONG_ORDERING dma
+	attribute and use in IOMMU code
 References: <20080715195139.316677337@arndb.de>
-Date: Tue, 15 Jul 2008 21:51:41 +0200
-From: arnd@arndb.de
-To: benh@kernel.crashing.org, cbe-oss-dev@ozlabs.org, linuxppc-dev@ozlabs.org
-Subject: [patch 2/9] powerpc/axonram: use only one block device major number
-Cc: Maxim Shchetynin <maxim@de.ibm.com>
+	<20080715195740.098068951@arndb.de>
+Date: Tue, 15 Jul 2008 13:34:38 -0700
+In-Reply-To: <20080715195740.098068951@arndb.de> (arnd@arndb.de's message of
+	"Tue, 15 Jul 2008 21:51:48 +0200")
+Message-ID: <ada3amaevj5.fsf@cisco.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: Mark Nelson <markn@au1.ibm.com>, cbe-oss-dev@ozlabs.org,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,95 +27,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Maxim Shchetynin <maxim@de.ibm.com>
+Sorry for the late comments, I missed this when it went by before.
 
-Axonram module registers one block device for each DDR2 DIMM found
-on a system. This means that each DDR2 DIMM becomes its own block device
-major number. This patch lets axonram module to register the only one
-block device for all DDR2 DIMMs which also spares kernel resources.
+ > +DMA_ATTR_STRONG_ORDERING
+ > +----------------------
+ > +
+ > +DMA_ATTR_STRONG_ORDERING specifies that previous reads and writes are
+ > +performed in the order in which they're received by the IOMMU; thus
+ > +reads and writes may not pass each other.
 
-Signed-off-by: Maxim Shchetynin <maxim@de.ibm.com>
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
----
- arch/powerpc/sysdev/axonram.c |   23 +++++++++++++++--------
- 1 files changed, 15 insertions(+), 8 deletions(-)
+I don't understand what this is trying to say.  What is "previous"
+referring to?  What does "received by the IOMMU" mean -- do you mean
+issued onto the bus by the CPU? When you say "reads and writes may not
+pass each other," do you mean just that reads may not pass writes and
+writes may not pass reads, or do you mean that reads also can't pass
+reads and writes can't pass writes?
 
-diff --git a/arch/powerpc/sysdev/axonram.c b/arch/powerpc/sysdev/axonram.c
-index 7f59188..9b639ed 100644
---- a/arch/powerpc/sysdev/axonram.c
-+++ b/arch/powerpc/sysdev/axonram.c
-@@ -57,6 +57,8 @@
- #define AXON_RAM_SECTOR_SIZE		1 << AXON_RAM_SECTOR_SHIFT
- #define AXON_RAM_IRQ_FLAGS		IRQF_SHARED | IRQF_TRIGGER_RISING
- 
-+static int azfs_major, azfs_minor;
-+
- struct axon_ram_bank {
- 	struct of_device	*device;
- 	struct gendisk		*disk;
-@@ -227,19 +229,14 @@ axon_ram_probe(struct of_device *device, const struct of_device_id *device_id)
- 		goto failed;
- 	}
- 
--	bank->disk->first_minor = 0;
-+	bank->disk->major = azfs_major;
-+	bank->disk->first_minor = azfs_minor;
- 	bank->disk->fops = &axon_ram_devops;
- 	bank->disk->private_data = bank;
- 	bank->disk->driverfs_dev = &device->dev;
- 
- 	sprintf(bank->disk->disk_name, "%s%d",
- 			AXON_RAM_DEVICE_NAME, axon_ram_bank_id);
--	bank->disk->major = register_blkdev(0, bank->disk->disk_name);
--	if (bank->disk->major < 0) {
--		dev_err(&device->dev, "Cannot register block device\n");
--		rc = -EFAULT;
--		goto failed;
--	}
- 
- 	bank->disk->queue = blk_alloc_queue(GFP_KERNEL);
- 	if (bank->disk->queue == NULL) {
-@@ -276,6 +273,8 @@ axon_ram_probe(struct of_device *device, const struct of_device_id *device_id)
- 		goto failed;
- 	}
- 
-+	azfs_minor += bank->disk->minors;
-+
- 	return 0;
- 
- failed:
-@@ -310,7 +309,6 @@ axon_ram_remove(struct of_device *device)
- 
- 	device_remove_file(&device->dev, &dev_attr_ecc);
- 	free_irq(bank->irq_id, device);
--	unregister_blkdev(bank->disk->major, bank->disk->disk_name);
- 	del_gendisk(bank->disk);
- 	iounmap((void __iomem *) bank->io_addr);
- 	kfree(bank);
-@@ -341,6 +339,14 @@ static struct of_platform_driver axon_ram_driver = {
- static int __init
- axon_ram_init(void)
- {
-+	azfs_major = register_blkdev(azfs_major, AXON_RAM_DEVICE_NAME);
-+	if (azfs_major < 0) {
-+		printk(KERN_ERR "%s cannot become block device major number\n",
-+				AXON_RAM_MODULE_NAME);
-+		return -EFAULT;
-+	}
-+	azfs_minor = 0;
-+
- 	return of_register_platform_driver(&axon_ram_driver);
- }
- 
-@@ -351,6 +357,7 @@ static void __exit
- axon_ram_exit(void)
- {
- 	of_unregister_platform_driver(&axon_ram_driver);
-+	unregister_blkdev(azfs_major, AXON_RAM_DEVICE_NAME);
- }
- 
- module_init(axon_ram_init);
--- 
-1.5.4.3
+Since I don't know exactly what this attribute does, I can't be sure,
+but it seems that making weak ordering the default is dangerous in that
+it breaks drivers that expect usual memory ordering semantics.  Would it
+be safer/better to make strong ordering the default and then add a
+"WEAK_ORDERING" attribute that drivers can use as an optimization?
 
--- 
+ - R.
