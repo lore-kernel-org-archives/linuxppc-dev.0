@@ -1,21 +1,21 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id CDA7FDDFC0
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jul 2008 23:24:40 +1000 (EST)
-Date: Tue, 15 Jul 2008 17:24:38 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Richard Purdie <rpurdie@rpsys.net>
-Subject: Re: [PATCH v2] leds: implement OpenFirmare GPIO LED driver
-Message-ID: <20080715132438.GA26648@polina.dev.rtsoft.ru>
-References: <20080715123822.GA10893@polina.dev.rtsoft.ru>
-	<20080715124013.GA13086@polina.dev.rtsoft.ru>
-	<1216126470.5345.55.camel@dax.rpnet.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <1216126470.5345.55.camel@dax.rpnet.com>
-Cc: linuxppc-dev@ozlabs.org, Stephen Rothwell <sfr@canb.auug.org.au>,
-	linux-kernel@vger.kernel.org
-Reply-To: avorontsov@ru.mvista.com
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 7B532DE009
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jul 2008 23:25:45 +1000 (EST)
+Message-Id: <ACFB3A05-9DF3-4464-8FD8-9FECA52E8B38@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+In-Reply-To: <20080611230402.GA21351@polina.dev.rtsoft.ru>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Mime-Version: 1.0 (Apple Message framework v926)
+Subject: Re: [PATCH 1/4] powerpc: fsl_uli1575: fix RTC quirk to work on
+	MPC8572DS and MPC8610HPCD
+Date: Tue, 15 Jul 2008 08:25:40 -0500
+References: <20080611230250.GA13412@polina.dev.rtsoft.ru>
+	<20080611230402.GA21351@polina.dev.rtsoft.ru>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,44 +25,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Jul 15, 2008 at 01:54:30PM +0100, Richard Purdie wrote:
-> On Tue, 2008-07-15 at 16:40 +0400, Anton Vorontsov wrote:
-> > Despite leds-gpio and leds-of-gpio similar names and purposes, there
-> > is not much code can be shared between the two drivers (both are mostly
-> > driver bindings anyway).
-> 
-> I don't have any issue with the driver itself, just the name which is
-> going to confuse people no end.
-> 
-> Can we come up with a better name for this driver please?
-> "dts-bind-gpio"?
 
-Hm... I don't actually understand what this name implies.
+On Jun 11, 2008, at 6:04 PM, Anton Vorontsov wrote:
 
-> "openfirmware-led"?
+> This patch fixes RTC on MPC8572DS boards: dummy read helps only when
+> reading at the end of the bridge's memory (i.e. outside of behind the
+> bridge devices' assigned regions).
+>
+> With this change the quirk also makes RTC work on MPC8610HPCD, so it's
+> unlikely that this will break MPC8641HPCN or MPC8544DS boards.
+>
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> ---
+> arch/powerpc/platforms/fsl_uli1575.c |    2 +-
+> 1 files changed, 1 insertions(+), 1 deletions(-)
 
-And this would be wrong, since this driver is for GPIO LEDs only, not
-for all LEDs that OF can describe. In future there could be OF PWM LEDs
-or something like this.
+applied.
 
-> I'm mainly concerned with the more user visible bits like the name of
-> the .c file, the wording of the Kconfig option and the module
-> description. We need to play down the GPIO bit and play up the
-> openfirmware bindings bit.
-
-Hm... file name is leds-of-gpio.c, how could I play up the "of" bit more
-than this? ;-)
-
-> As an example the Kconfig says "LED Support for GPIO connected LEDs"
-> which its not, the bit about openfirmware bindings is in brackets and
-> hence looks incidental.
-
-As for Kconfig, yeah.. probably I can improve the wording. How about
-"OpenFirmware bindings for GPIO connected LEDs"? Would that work?
-
-Thanks,
-
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+- k
