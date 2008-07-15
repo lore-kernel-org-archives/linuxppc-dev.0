@@ -1,20 +1,28 @@
-Return-Path: <jonsmirl@gmail.com>
-Received: from ti-out-0910.google.com (ti-out-0910.google.com [209.85.142.186])
-	by ozlabs.org (Postfix) with ESMTP id A4511DDF11
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jul 2008 23:40:11 +1000 (EST)
-Received: by ti-out-0910.google.com with SMTP id w7so2662508tib.13
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jul 2008 06:40:09 -0700 (PDT)
-Message-ID: <9e4733910807150640x52cca982jf4f1ccfe7fd506cf@mail.gmail.com>
-Date: Tue, 15 Jul 2008 09:40:08 -0400
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Jean Delvare" <khali@linux-fr.org>
-Subject: Re: [PATCH] of: i2c: improve last resort compatible entry selection
-In-Reply-To: <487C7F9A.7030201@scram.de>
+Return-Path: <broonie@sirena.org.uk>
+Received: from cassiel.sirena.org.uk (cassiel.sirena.org.uk [80.68.93.111])
+	by ozlabs.org (Postfix) with ESMTP id E0525DE7DD
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jul 2008 00:04:42 +1000 (EST)
+Date: Tue, 15 Jul 2008 15:04:30 +0100
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Jon Smirl <jonsmirl@gmail.com>
+Subject: Re: [alsa-devel] [PATCH v2 1/3] ALSA SoC: Add OpenFirmware helper for
+	matching bus and codec drivers
+Message-ID: <20080715140427.GP25448@sirena.org.uk>
+References: <9e4733910807140713r5739efedw81e65632006d101d@mail.gmail.com>
+	<20080714150527.GD25448@sirena.org.uk>
+	<487B7B71.9060606@freescale.com>
+	<20080714165302.GG25448@sirena.org.uk>
+	<fa686aa40807141021ka4f84e9ycc4ac78db760726c@mail.gmail.com>
+	<20080714183632.GI25448@sirena.org.uk>
+	<487B9D98.8010008@freescale.com>
+	<9e4733910807141645l404881b0m1d17d88c26792c78@mail.gmail.com>
+	<20080715101307.GL25448@sirena.org.uk>
+	<9e4733910807150608o41f932c7r7a2321c56b410913@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20080714175437.GA5230@polina.dev.rtsoft.ru>
-	<487C7F9A.7030201@scram.de>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <9e4733910807150608o41f932c7r7a2321c56b410913@mail.gmail.com>
+Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org,
+	Timur Tabi <timur@freescale.com>, liam.girdwood@wolfsonmicro.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,35 +32,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 7/15/08, Jochen Friedrich <jochen@scram.de> wrote:
-> Hi Anton,
->
->
->  > Since no sane driver will ever match specific devices, what we want is
->  > to select most generic option (last). Then driver may call
->  > of_device_is_compatible() if it is really interested in details.
->
->
-> My original intention was to have alias entries for specific devices in the
->  i2c device drivers. Later, Jean decided to only have the most generic names
->  in there (like in http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=blobdiff;f=drivers/media/video/tvaudio.c;h=c77914d99d15c5972c94e9763a08b5789098e90a;hp=6f9945b04e1f2bcd676f0ed8dc910994b29ed300;hb=ae429083efe996ca2c569c44fd6fea440676dc33;hpb=60b129d7bfa3e20450816983bd52c49bb0bc1c21)
->  So your patch is correct.
+On Tue, Jul 15, 2008 at 09:08:28AM -0400, Jon Smirl wrote:
+> On 7/15/08, Mark Brown <broonie@opensource.wolfsonmicro.com> wrote:
 
-Why aren't we listing the chip names in the driver's id section? Large
-chip id tables are not unusual in the kernel, the e1000 driver has
-about 70 entries.
+> > Binding isn't the issue here - it's loading the driver in the first
+> >  place.  Once the drivers are loaded they can (hopefully) figure out if
+> >  they are running on appropriate hardware.
 
-Taking the chip id table out of the driver just means we have to build
-it somewhere else. It doesn't save space, the tables just get moved.
-Device firmware has the chip names in it so there has to be code in
-the kernel somewhere to do the mapping from chip id to linux driver
-name.
+> In this case we would end up with two core PowerPC machine drivers
+> bound, not ALSA ones. We have machine drivers in the PowerPC core,
+> that's one reason why it is confusing to call the ALSA drivers machine
+> drivers too.
 
-Pushing the linux driver name down into the firmware is even crazier.
-+  /* 2. search for linux,<i2c-type> entry */
-Now if the linux driver gets renamed everyone on the planet needs a
-firmware update.
+Again, I'm not talking about binding anything.
 
--- 
-Jon Smirl
-jonsmirl@gmail.com
+> > This is what I'm suggesting, modulo the fact that I'm suggesting *not*
+> >  creating virtual devices but rather providing a mechanism for drivers to
+> >  load without binding to anything.  It strikes me that you're going to
+
+> If you have drivers for four different hardware releases compiled into
+> your kernel, the only kernel mechanism I know of  to trigger only one
+> of these to initialize is to create a device and then let the probe
+> mechanism sort it out. This is even more true when the drivers are on
+> initrd and need to be dynamically loaded. The module load code will
+> search through the alias lists in the module .ko files.
+
+This can be handled in the module initialisation (rather than driver
+probe) - providing something can arrange for the driver to get loaded
+then the drivers can check the system they're running on when that
+happens and fail if it's inappropriate.  The ARM ASoC drivers and x86
+DMI based stuff do things this way, for example (ARM doesn't have the
+automatic module load stuff implemented, though).
+
+The infrastructure for automatically loading modules is usable
+separately from device registration, though normally the two do go hand
+in hand.
+
+> It has been pointed out that a lite5200b-fabric device isn't really a
+> virtual devices. It's a device that represents the traces on the PCB
+> wiring the generic chip drivers together.
+
+This was brought up very early on when you guys first started working on
+it. :/
