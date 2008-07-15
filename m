@@ -1,23 +1,31 @@
-Return-Path: <rdreier@cisco.com>
-Received: from sj-iport-5.cisco.com (sj-iport-5.cisco.com [171.68.10.87])
-	(using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "sj-iport-5.cisco.com", Issuer "Cisco SSCA" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 75725DEFC9
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jul 2008 06:34:43 +1000 (EST)
-From: Roland Dreier <rdreier@cisco.com>
-To: arnd@arndb.de
-Subject: Re: [patch 9/9] powerpc/cell: Add DMA_ATTR_STRONG_ORDERING dma
-	attribute and use in IOMMU code
-References: <20080715195139.316677337@arndb.de>
-	<20080715195740.098068951@arndb.de>
-Date: Tue, 15 Jul 2008 13:34:38 -0700
-In-Reply-To: <20080715195740.098068951@arndb.de> (arnd@arndb.de's message of
-	"Tue, 15 Jul 2008 21:51:48 +0200")
-Message-ID: <ada3amaevj5.fsf@cisco.com>
+Return-Path: <rcjenn@linux.vnet.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 4690DDEBCA
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jul 2008 07:20:30 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id m6FLKPE7014648
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jul 2008 17:20:25 -0400
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
+	m6FLKLxs143460
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jul 2008 15:20:22 -0600
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m6FLKLjq005462
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jul 2008 15:20:21 -0600
+Date: Tue, 15 Jul 2008 16:20:08 -0500
+From: Robert Jennings <rcj@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, paulus@samba.org,
+	linuxppc-dev@ozlabs.org, Brian King <brking@linux.vnet.ibm.com>,
+	Nathan Fontenot <nfont@austin.ibm.com>,
+	David Darrington <ddarring@linux.vnet.ibm.com>
+Subject: [PATCH] powerpc: correct CMO feature flag enablement
+Message-ID: <20080715212008.GA25230@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: Mark Nelson <markn@au1.ibm.com>, cbe-oss-dev@ozlabs.org,
-	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,26 +35,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Sorry for the late comments, I missed this when it went by before.
+Correct string conversion for rtas value being read for CMO configuration.
+A value of -1 in the string indicates that CMO is not enabled and we
+had used simple_strtoul rather than simple_strtol which caused problems.
 
- > +DMA_ATTR_STRONG_ORDERING
- > +----------------------
- > +
- > +DMA_ATTR_STRONG_ORDERING specifies that previous reads and writes are
- > +performed in the order in which they're received by the IOMMU; thus
- > +reads and writes may not pass each other.
+Signed-off-by: Robert Jennings <rcj@linux.vnet.ibm.com>
 
-I don't understand what this is trying to say.  What is "previous"
-referring to?  What does "received by the IOMMU" mean -- do you mean
-issued onto the bus by the CPU? When you say "reads and writes may not
-pass each other," do you mean just that reads may not pass writes and
-writes may not pass reads, or do you mean that reads also can't pass
-reads and writes can't pass writes?
+---
 
-Since I don't know exactly what this attribute does, I can't be sure,
-but it seems that making weak ordering the default is dangerous in that
-it breaks drivers that expect usual memory ordering semantics.  Would it
-be safer/better to make strong ordering the default and then add a
-"WEAK_ORDERING" attribute that drivers can use as an optimization?
+This patch applies on top of the CMO patchset sent to the list.
 
- - R.
+---
+ arch/powerpc/platforms/pseries/setup.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+Index: b/arch/powerpc/platforms/pseries/setup.c
+===================================================================
+--- a/arch/powerpc/platforms/pseries/setup.c
++++ b/arch/powerpc/platforms/pseries/setup.c
+@@ -366,9 +366,9 @@ void pSeries_cmo_feature_init(void)
+ 			}
+ 
+ 			if (0 == strcmp(key, "PrPSP"))
+-				PrPSP = simple_strtoul(value, NULL, 10);
++				PrPSP = simple_strtol(value, NULL, 10);
+ 			else if (0 == strcmp(key, "SecPSP"))
+-				SecPSP = simple_strtoul(value, NULL, 10);
++				SecPSP = simple_strtol(value, NULL, 10);
+ 			value = key = ptr + 1;
+ 		}
+ 		ptr++;
