@@ -1,11 +1,12 @@
 Return-Path: <arnd@arndb.de>
-Message-Id: <20080715195739.545264570@arndb.de>
+Message-Id: <20080715195740.098068951@arndb.de>
 References: <20080715195139.316677337@arndb.de>
-Date: Tue, 15 Jul 2008 21:51:44 +0200
+Date: Tue, 15 Jul 2008 21:51:48 +0200
 From: arnd@arndb.de
 To: benh@kernel.crashing.org, cbe-oss-dev@ozlabs.org, linuxppc-dev@ozlabs.org
-Subject: [patch 5/9] powerpc/cell: cleanup sysreset_hack for IBM cell blades
-Cc: Christian Krafft <krafft@de.ibm.com>
+Subject: [patch 9/9] powerpc/cell: Add DMA_ATTR_STRONG_ORDERING dma attribute
+	and use in IOMMU code
+Cc: Mark Nelson <markn@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,181 +16,198 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Christian Krafft <krafft@de.ibm.com>
+From: Mark Nelson <markn@au1.ibm.com>
 
-This patch adds a config option for the sysreset_hack used for
-IBM Cell blades. The code is moves from pervasive.c into ras.c and
-gets it's own init method.
+Introduce a new dma attriblue DMA_ATTR_STRONG_ORDERING to use strong ordering
+on DMA mappings in the Cell processor. Add the code to the Cell's IOMMU
+implementation to use this.
 
-Signed-off-by: Christian Krafft <krafft@de.ibm.com>
+The current Cell IOMMU implementation sets the IOPTE_SO_RW bits in all IOTPEs
+(for both the dynamic and fixed mappings) which enforces strong ordering of
+both reads and writes. This patch makes the default behaviour weak ordering
+(the IOPTE_SO_RW bits not set) and to request a strongly ordered mapping the
+new DMA_ATTR_STRONG_ORDERING needs to be used.
+
+Dynamic mappings can be weakly or strongly ordered on an individual basis
+but the fixed mapping is always weakly ordered.
+
+Signed-off-by: Mark Nelson <markn@au1.ibm.com>
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- arch/powerpc/platforms/cell/Kconfig     |    8 +++++
- arch/powerpc/platforms/cell/pervasive.c |   27 +-----------------
- arch/powerpc/platforms/cell/pervasive.h |    9 ++++++
- arch/powerpc/platforms/cell/ras.c       |   46 +++++++++++++++++++++++++++++++
- 4 files changed, 64 insertions(+), 26 deletions(-)
+ Documentation/DMA-attributes.txt    |   12 +++++
+ arch/powerpc/platforms/cell/iommu.c |   93 ++++++++++++++++++++++++++++++++---
+ include/linux/dma-attrs.h           |    1 +
+ 3 files changed, 99 insertions(+), 7 deletions(-)
 
-diff --git a/arch/powerpc/platforms/cell/Kconfig b/arch/powerpc/platforms/cell/Kconfig
-index 6ee571f..2d1957b 100644
---- a/arch/powerpc/platforms/cell/Kconfig
-+++ b/arch/powerpc/platforms/cell/Kconfig
-@@ -83,6 +83,14 @@ config CBE_RAS
- 	depends on PPC_CELL_NATIVE
- 	default y
+diff --git a/Documentation/DMA-attributes.txt b/Documentation/DMA-attributes.txt
+index 6d772f8..f2d2800 100644
+--- a/Documentation/DMA-attributes.txt
++++ b/Documentation/DMA-attributes.txt
+@@ -22,3 +22,15 @@ ready and available in memory.  The DMA of the "completion indication"
+ could race with data DMA.  Mapping the memory used for completion
+ indications with DMA_ATTR_WRITE_BARRIER would prevent the race.
  
-+config PPC_IBM_CELL_RESETBUTTON
-+	bool "IBM Cell Blade Pinhole reset button"
-+	depends on CBE_RAS && PPC_IBM_CELL_BLADE
-+	default y
-+	help
-+	  Support Pinhole Resetbutton on IBM Cell blades.
-+	  This adds a method to trigger system reset via front panel pinhole button.
 +
- config CBE_THERM
- 	tristate "CBE thermal support"
- 	default m
-diff --git a/arch/powerpc/platforms/cell/pervasive.c b/arch/powerpc/platforms/cell/pervasive.c
-index 8a3631c..efdacc8 100644
---- a/arch/powerpc/platforms/cell/pervasive.c
-+++ b/arch/powerpc/platforms/cell/pervasive.c
-@@ -38,8 +38,6 @@
++DMA_ATTR_STRONG_ORDERING
++----------------------
++
++DMA_ATTR_STRONG_ORDERING specifies that previous reads and writes are
++performed in the order in which they're received by the IOMMU; thus
++reads and writes may not pass each other.
++
++Platforms that are strongly ordered by default will ignore this new
++attribute but platforms that are weakly ordered by default should not
++ignore this new attribute. Instead, they should return an error if a
++strongly ordered mapping cannot be used when one is requested.
+diff --git a/arch/powerpc/platforms/cell/iommu.c b/arch/powerpc/platforms/cell/iommu.c
+index 3b70784..7f6ed20 100644
+--- a/arch/powerpc/platforms/cell/iommu.c
++++ b/arch/powerpc/platforms/cell/iommu.c
+@@ -194,11 +194,13 @@ static void tce_build_cell(struct iommu_table *tbl, long index, long npages,
+ 	const unsigned long prot = 0xc48;
+ 	base_pte =
+ 		((prot << (52 + 4 * direction)) & (IOPTE_PP_W | IOPTE_PP_R))
+-		| IOPTE_M | IOPTE_SO_RW | (window->ioid & IOPTE_IOID_Mask);
++		| IOPTE_M | (window->ioid & IOPTE_IOID_Mask);
+ #else
+-	base_pte = IOPTE_PP_W | IOPTE_PP_R | IOPTE_M | IOPTE_SO_RW |
++	base_pte = IOPTE_PP_W | IOPTE_PP_R | IOPTE_M |
+ 		(window->ioid & IOPTE_IOID_Mask);
+ #endif
++	if (unlikely(dma_get_attr(DMA_ATTR_STRONG_ORDERING, attrs)))
++		base_pte |= IOPTE_SO_RW;
  
- #include "pervasive.h"
+ 	io_pte = (unsigned long *)tbl->it_base + (index - tbl->it_offset);
  
--static int sysreset_hack;
--
- static void cbe_power_save(void)
+@@ -539,7 +541,6 @@ static struct cbe_iommu *cell_iommu_for_node(int nid)
+ static unsigned long cell_dma_direct_offset;
+ 
+ static unsigned long dma_iommu_fixed_base;
+-struct dma_mapping_ops dma_iommu_fixed_ops;
+ 
+ static struct iommu_table *cell_get_iommu_table(struct device *dev)
  {
- 	unsigned long ctrl, thread_switch_control;
-@@ -87,9 +85,6 @@ static void cbe_power_save(void)
+@@ -563,6 +564,85 @@ static struct iommu_table *cell_get_iommu_table(struct device *dev)
+ 	return &window->table;
+ }
  
- static int cbe_system_reset_exception(struct pt_regs *regs)
- {
--	int cpu;
--	struct cbe_pmd_regs __iomem *pmd;
--
- 	switch (regs->msr & SRR1_WAKEMASK) {
- 	case SRR1_WAKEEE:
- 		do_IRQ(regs);
-@@ -98,19 +93,7 @@ static int cbe_system_reset_exception(struct pt_regs *regs)
- 		timer_interrupt(regs);
- 		break;
- 	case SRR1_WAKEMT:
--		/*
--		 * The BMC can inject user triggered system reset exceptions,
--		 * but cannot set the system reset reason in srr1,
--		 * so check an extra register here.
--		 */
--		if (sysreset_hack && (cpu = smp_processor_id()) == 0) {
--			pmd = cbe_get_cpu_pmd_regs(cpu);
--			if (in_be64(&pmd->ras_esc_0) & 0xffff) {
--				out_be64(&pmd->ras_esc_0, 0);
--				return 0;
--			}
--		}
--		break;
-+		return cbe_sysreset_hack();
- #ifdef CONFIG_CBE_RAS
- 	case SRR1_WAKESYSERR:
- 		cbe_system_error_exception(regs);
-@@ -134,8 +117,6 @@ void __init cbe_pervasive_init(void)
- 	if (!cpu_has_feature(CPU_FTR_PAUSE_ZERO))
- 		return;
++static void *dma_fixed_alloc_coherent(struct device *dev, size_t size,
++				      dma_addr_t *dma_handle, gfp_t flag)
++{
++	return dma_direct_ops.alloc_coherent(dev, size, dma_handle, flag);
++}
++
++static void dma_fixed_free_coherent(struct device *dev, size_t size,
++				    void *vaddr, dma_addr_t dma_handle)
++{
++	dma_direct_ops.free_coherent(dev, size, vaddr, dma_handle);
++}
++
++static dma_addr_t dma_fixed_map_single(struct device *dev, void *ptr,
++				       size_t size,
++				       enum dma_data_direction direction,
++				       struct dma_attrs *attrs)
++{
++	if (dma_get_attr(DMA_ATTR_STRONG_ORDERING, attrs))
++		return iommu_map_single(dev, cell_get_iommu_table(dev), ptr,
++					size, device_to_mask(dev), direction,
++					attrs);
++	else
++		return dma_direct_ops.map_single(dev, ptr, size, direction,
++						 attrs);
++}
++
++static void dma_fixed_unmap_single(struct device *dev, dma_addr_t dma_addr,
++				   size_t size,
++				   enum dma_data_direction direction,
++				   struct dma_attrs *attrs)
++{
++	if (dma_get_attr(DMA_ATTR_STRONG_ORDERING, attrs))
++		iommu_unmap_single(cell_get_iommu_table(dev), dma_addr, size,
++				   direction, attrs);
++	else
++		dma_direct_ops.unmap_single(dev, dma_addr, size, direction,
++					    attrs);
++}
++
++static int dma_fixed_map_sg(struct device *dev, struct scatterlist *sg,
++			   int nents, enum dma_data_direction direction,
++			   struct dma_attrs *attrs)
++{
++	if (dma_get_attr(DMA_ATTR_STRONG_ORDERING, attrs))
++		return iommu_map_sg(dev, cell_get_iommu_table(dev), sg, nents,
++				    device_to_mask(dev), direction, attrs);
++	else
++		return dma_direct_ops.map_sg(dev, sg, nents, direction, attrs);
++}
++
++static void dma_fixed_unmap_sg(struct device *dev, struct scatterlist *sg,
++			       int nents, enum dma_data_direction direction,
++			       struct dma_attrs *attrs)
++{
++	if (dma_get_attr(DMA_ATTR_STRONG_ORDERING, attrs))
++		iommu_unmap_sg(cell_get_iommu_table(dev), sg, nents, direction,
++			       attrs);
++	else
++		dma_direct_ops.unmap_sg(dev, sg, nents, direction, attrs);
++}
++
++static int dma_fixed_dma_supported(struct device *dev, u64 mask)
++{
++	return mask == DMA_64BIT_MASK;
++}
++
++static int dma_set_mask_and_switch(struct device *dev, u64 dma_mask);
++
++struct dma_mapping_ops dma_iommu_fixed_ops = {
++	.alloc_coherent = dma_fixed_alloc_coherent,
++	.free_coherent  = dma_fixed_free_coherent,
++	.map_single     = dma_fixed_map_single,
++	.unmap_single   = dma_fixed_unmap_single,
++	.map_sg         = dma_fixed_map_sg,
++	.unmap_sg       = dma_fixed_unmap_sg,
++	.dma_supported  = dma_fixed_dma_supported,
++	.set_dma_mask   = dma_set_mask_and_switch,
++};
++
+ static void cell_dma_dev_setup_fixed(struct device *dev);
  
--	sysreset_hack = machine_is_compatible("IBM,CBPLUS-1.0");
--
- 	for_each_possible_cpu(cpu) {
- 		struct cbe_pmd_regs __iomem *regs = cbe_get_cpu_pmd_regs(cpu);
- 		if (!regs)
-@@ -144,12 +125,6 @@ void __init cbe_pervasive_init(void)
- 		 /* Enable Pause(0) control bit */
- 		out_be64(&regs->pmcr, in_be64(&regs->pmcr) |
- 					    CBE_PMD_PAUSE_ZERO_CONTROL);
--
--		/* Enable JTAG system-reset hack */
--		if (sysreset_hack)
--			out_be32(&regs->fir_mode_reg,
--				in_be32(&regs->fir_mode_reg) |
--				CBE_PMD_FIR_MODE_M8);
+ static void cell_dma_dev_setup(struct device *dev)
+@@ -919,9 +999,11 @@ static void cell_iommu_setup_fixed_ptab(struct cbe_iommu *iommu,
+ 
+ 	pr_debug("iommu: mapping 0x%lx pages from 0x%lx\n", fsize, fbase);
+ 
+-	base_pte = IOPTE_PP_W | IOPTE_PP_R | IOPTE_M | IOPTE_SO_RW
++	base_pte = IOPTE_PP_W | IOPTE_PP_R | IOPTE_M
+ 		    | (cell_iommu_get_ioid(np) & IOPTE_IOID_Mask);
+ 
++	pr_info("IOMMU: Using weak ordering for fixed mapping\n");
++
+ 	for (uaddr = 0; uaddr < fsize; uaddr += (1 << 24)) {
+ 		/* Don't touch the dynamic region */
+ 		ioaddr = uaddr + fbase;
+@@ -1037,9 +1119,6 @@ static int __init cell_iommu_fixed_mapping_init(void)
+ 		cell_iommu_setup_window(iommu, np, dbase, dsize, 0);
  	}
  
- 	ppc_md.power_save = cbe_power_save;
-diff --git a/arch/powerpc/platforms/cell/pervasive.h b/arch/powerpc/platforms/cell/pervasive.h
-index 7b50947..fd4d7b7 100644
---- a/arch/powerpc/platforms/cell/pervasive.h
-+++ b/arch/powerpc/platforms/cell/pervasive.h
-@@ -30,4 +30,13 @@ extern void cbe_system_error_exception(struct pt_regs *regs);
- extern void cbe_maintenance_exception(struct pt_regs *regs);
- extern void cbe_thermal_exception(struct pt_regs *regs);
+-	dma_iommu_fixed_ops = dma_direct_ops;
+-	dma_iommu_fixed_ops.set_dma_mask = dma_set_mask_and_switch;
+-
+ 	dma_iommu_ops.set_dma_mask = dma_set_mask_and_switch;
+ 	set_pci_dma_ops(&dma_iommu_ops);
  
-+#ifdef CONFIG_PPC_IBM_CELL_RESETBUTTON
-+extern int cbe_sysreset_hack(void);
-+#else
-+static inline int cbe_sysreset_hack(void)
-+{
-+	return 1;
-+}
-+#endif /* CONFIG_PPC_IBM_CELL_RESETBUTTON */
-+
- #endif
-diff --git a/arch/powerpc/platforms/cell/ras.c b/arch/powerpc/platforms/cell/ras.c
-index 505f9b9..2a14b05 100644
---- a/arch/powerpc/platforms/cell/ras.c
-+++ b/arch/powerpc/platforms/cell/ras.c
-@@ -236,6 +236,52 @@ static struct notifier_block cbe_ptcal_reboot_notifier = {
- 	.notifier_call = cbe_ptcal_notify_reboot
+diff --git a/include/linux/dma-attrs.h b/include/linux/dma-attrs.h
+index 1677e2b..600fea7 100644
+--- a/include/linux/dma-attrs.h
++++ b/include/linux/dma-attrs.h
+@@ -12,6 +12,7 @@
+  */
+ enum dma_attr {
+ 	DMA_ATTR_WRITE_BARRIER,
++	DMA_ATTR_STRONG_ORDERING,
+ 	DMA_ATTR_MAX,
  };
  
-+#ifdef CONFIG_PPC_IBM_CELL_RESETBUTTON
-+static int sysreset_hack;
-+
-+static int __init cbe_sysreset_init(void)
-+{
-+	struct cbe_pmd_regs __iomem *regs;
-+
-+	sysreset_hack = machine_is_compatible("IBM,CBPLUS-1.0");
-+	if (!sysreset_hack)
-+		return 0;
-+
-+	regs = cbe_get_cpu_pmd_regs(0);
-+	if (!regs)
-+		return 0;
-+
-+	/* Enable JTAG system-reset hack */
-+	out_be32(&regs->fir_mode_reg,
-+		in_be32(&regs->fir_mode_reg) |
-+		CBE_PMD_FIR_MODE_M8);
-+
-+	return 0;
-+}
-+device_initcall(cbe_sysreset_init);
-+
-+int cbe_sysreset_hack(void)
-+{
-+	struct cbe_pmd_regs __iomem *regs;
-+
-+	/*
-+	 * The BMC can inject user triggered system reset exceptions,
-+	 * but cannot set the system reset reason in srr1,
-+	 * so check an extra register here.
-+	 */
-+	if (sysreset_hack && (smp_processor_id() == 0)) {
-+		regs = cbe_get_cpu_pmd_regs(0);
-+		if (!regs)
-+			return 0;
-+		if (in_be64(&regs->ras_esc_0) & 0x0000ffff) {
-+			out_be64(&regs->ras_esc_0, 0);
-+			return 0;
-+		}
-+	}
-+	return 1;
-+}
-+#endif /* CONFIG_PPC_IBM_CELL_RESETBUTTON */
-+
- int __init cbe_ptcal_init(void)
- {
- 	int ret;
 -- 
 1.5.4.3
 
