@@ -1,14 +1,25 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Tue, 15 Jul 2008 10:44:50 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Jon Loeliger <jdl@jdl.com>
-Subject: Re: dtc: Address an assortment of portability problems
-Message-ID: <20080715004450.GC26640@yookeroo.seuss>
-References: <20080626010349.GH308@yookeroo.seuss> <E1KITC5-0006rG-EI@jdl.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <E1KITC5-0006rG-EI@jdl.com>
-Cc: linuxppc-dev@ozlabs.org, Benno Rice <benno@jeamland.net>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 032F9DDEF8
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jul 2008 11:34:18 +1000 (EST)
+Subject: Re: [PATCH][RT][PPC64] Fix preempt unsafe paths accessing per_cpu
+	variables
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Chirag Jog <chirag@linux.vnet.ibm.com>
+In-Reply-To: <20080709160543.GG7101@linux.vnet.ibm.com>
+References: <20080709160543.GG7101@linux.vnet.ibm.com>
+Content-Type: text/plain
+Date: Tue, 15 Jul 2008 11:32:01 +1000
+Message-Id: <1216085521.7740.37.camel@pasglop>
+Mime-Version: 1.0
+Cc: linux-rt-users@vger.kernel.org, Josh Triplett <josht@linux.vnet.ibm.com>,
+	Steven Rostedt <rostedt@goodmis.org>, linuxppc-dev@ozlabs.org,
+	Nivedita Singhvi <niv@us.ibm.com>,
+	"Timothy R. Chavez" <tim.chavez@linux.vnet.ibm.com>,
+	paulmck@linux.vnet.ibm.com, linux.kernel@vger.kernel.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,56 +29,200 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Jul 14, 2008 at 01:54:41PM -0500, Jon Loeliger wrote:
-> > I've recently worked with a FreeBSD developer, getting dtc and libfdt
-> > working on FreeBSD.  This showed up a number of portability problems
-> > in the dtc package which this patch addresses.  Changes are as
-> > follows:
-> > 
-> > 	- the parent_offset and supernode_atdepth_offset testcases
-> > used the glibc extension functions strchrnul() and strndupa().  Those
-> > are removed, using slightly longer coding with standard C functions
-> > instead.
-> > 
-> > 	- some other testcases had a #define _GNU_SOURCE for no
-> > particular reason.  This is removed.
-> > 
-> > 	- run_tests.sh has bash specific constructs removed, and the
-> > interpreter changed to /bin/sh.  This apparently now runs fine on
-> > FreeBSD's /bin/sh, and I've also tested it with both ash and dash.
-> > 
-> > 	- convert-dtsv0-lexer.l has some extra #includes added.  These
-> > must have been included indirectly with Linux and glibc, but aren't on
-> > FreeBSD.
-> > 
-> > 	- the endian handling functions in libfdt_env.h, based on
-> > endian.h and byteswap.h are replaced with some portable open-coded
-> > versions.  Unfortunately, these result in fairly crappy code when
-> > compiled, but as far as I can determine there doesn't seem to be any
-> > POSIX, SUS or de facto standard way of determining endianness at
-> > compile time, nor standard names for byteswapping functions.
-> > 
-> > 	- some more endian handling, from testdata.h using the
-> > problematic endian.h is simply removed, since it wasn't actually being
-> > used anyway.
-> > 
-> > Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+On Wed, 2008-07-09 at 21:35 +0530, Chirag Jog wrote:
+> Hi,
+> This patch fixes various paths in the -rt kernel on powerpc64 where per_cpu
+> variables are accessed in a preempt unsafe way.
+> When a power box with -rt kernel is booted, multiple BUG messages are
+> generated "BUG: init:1 task might have lost a preemption check!".
+> After booting a kernel with these patches applied, these messages
+> don't appear.
 > 
-> This patch didn't apply directly.
+> Also I ran the realtime tests from ltp to ensure the stability.
+
+That sounds bad tho...
+
+IE. You are changing the code to lock/unlock on all those TLB batching
+operations, but seem to miss the core reason why it was done that way:
+ie, the code assumes that it will not change CPU -between- those calls,
+since the whole stuff should be already have been within a per-cpu
+locked section at the caller level.
+
+As for the TCE code, well, it lived on the assumption that the upper
+level spinlock did the job of preventing preempt, I suppose that's not
+the case anymore. So that part of the patch sounds ok.
+
+Ben.
+
 > 
-> The problem appeared to be the  mysterious and suspect "exit 99"
-> in the middle of the following context.  I whacked on the patch
-> directly by-hand, and managed to get it to apply.
-
-Sod.  When working I usually have an extra patch in my stack that adds
-that exit 99 - it's easier to find and fix testsuite failures when it
-bombs out after the first one.
-
-Obviously, I forgot to double check that it didn't leak into the
-context :(.  Sorry.
-
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+> Signed-Off-By: Chirag <chirag@linux.vnet.ibm.com>
+> arch/powerpc/mm/tlb_64.c               |   31 ++++++++++++++++---------------
+> arch/powerpc/platforms/pseries/iommu.c |   14 ++++++++++----
+> include/asm-powerpc/tlb.h              |    5 ++---
+> 3 files changed, 28 insertions(+), 22 deletions(-)
+> 
+>  
+> Index: linux-2.6.25.8-rt7/arch/powerpc/mm/tlb_64.c
+> ===================================================================
+> --- linux-2.6.25.8-rt7.orig/arch/powerpc/mm/tlb_64.c	2008-07-09 21:29:21.000000000 +0530
+> +++ linux-2.6.25.8-rt7/arch/powerpc/mm/tlb_64.c	2008-07-09 21:30:37.000000000 +0530
+> @@ -38,7 +38,6 @@
+>   * include/asm-powerpc/tlb.h file -- tgall
+>   */
+>  DEFINE_PER_CPU_LOCKED(struct mmu_gather, mmu_gathers);
+> -DEFINE_PER_CPU(struct pte_freelist_batch *, pte_freelist_cur);
+>  unsigned long pte_freelist_forced_free;
+>  
+>  struct pte_freelist_batch
+> @@ -48,7 +47,7 @@
+>  	pgtable_free_t	tables[0];
+>  };
+>  
+> -DEFINE_PER_CPU(struct pte_freelist_batch *, pte_freelist_cur);
+> +DEFINE_PER_CPU_LOCKED(struct pte_freelist_batch *, pte_freelist_cur);
+>  unsigned long pte_freelist_forced_free;
+>  
+>  #define PTE_FREELIST_SIZE \
+> @@ -92,24 +91,21 @@
+>  
+>  void pgtable_free_tlb(struct mmu_gather *tlb, pgtable_free_t pgf)
+>  {
+> -	/*
+> -	 * This is safe since tlb_gather_mmu has disabled preemption.
+> -	 * tlb->cpu is set by tlb_gather_mmu as well.
+> -	 */
+> +	int cpu;
+>          cpumask_t local_cpumask = cpumask_of_cpu(tlb->cpu);
+> -	struct pte_freelist_batch **batchp = &__get_cpu_var(pte_freelist_cur);
+> +	struct pte_freelist_batch **batchp = &get_cpu_var_locked(pte_freelist_cur, &cpu);
+>  
+>  	if (atomic_read(&tlb->mm->mm_users) < 2 ||
+>  	    cpus_equal(tlb->mm->cpu_vm_mask, local_cpumask)) {
+>  		pgtable_free(pgf);
+> -		return;
+> +		goto cleanup;
+>  	}
+>  
+>  	if (*batchp == NULL) {
+>  		*batchp = (struct pte_freelist_batch *)__get_free_page(GFP_ATOMIC);
+>  		if (*batchp == NULL) {
+>  			pgtable_free_now(pgf);
+> -			return;
+> +			goto cleanup;
+>  		}
+>  		(*batchp)->index = 0;
+>  	}
+> @@ -118,6 +114,9 @@
+>  		pte_free_submit(*batchp);
+>  		*batchp = NULL;
+>  	}
+> +
+> + cleanup:
+> +	put_cpu_var_locked(pte_freelist_cur, cpu);
+>  }
+>  
+>  /*
+> @@ -253,13 +252,15 @@
+>  
+>  void pte_free_finish(void)
+>  {
+> -	/* This is safe since tlb_gather_mmu has disabled preemption */
+> -	struct pte_freelist_batch **batchp = &__get_cpu_var(pte_freelist_cur);
+> +	int cpu;
+> +	struct pte_freelist_batch **batchp = &get_cpu_var_locked(pte_freelist_cur, &cpu);
+>  
+> -	if (*batchp == NULL)
+> -		return;
+> -	pte_free_submit(*batchp);
+> -	*batchp = NULL;
+> +	if (*batchp) {
+> +		pte_free_submit(*batchp);
+> +		*batchp = NULL;
+> +	}
+> +
+> +	put_cpu_var_locked(pte_freelist_cur, cpu);
+>  }
+>  
+>  /**
+> Index: linux-2.6.25.8-rt7/include/asm-powerpc/tlb.h
+> ===================================================================
+> --- linux-2.6.25.8-rt7.orig/include/asm-powerpc/tlb.h	2008-07-09 21:29:21.000000000 +0530
+> +++ linux-2.6.25.8-rt7/include/asm-powerpc/tlb.h	2008-07-09 21:29:41.000000000 +0530
+> @@ -40,18 +40,17 @@
+>  
+>  static inline void tlb_flush(struct mmu_gather *tlb)
+>  {
+> -	struct ppc64_tlb_batch *tlbbatch = &__get_cpu_var(ppc64_tlb_batch);
+> +	struct ppc64_tlb_batch *tlbbatch = &get_cpu_var(ppc64_tlb_batch);
+>  
+>  	/* If there's a TLB batch pending, then we must flush it because the
+>  	 * pages are going to be freed and we really don't want to have a CPU
+>  	 * access a freed page because it has a stale TLB
+>  	 */
+>  	if (tlbbatch->index) {
+> -		preempt_disable();
+>  		__flush_tlb_pending(tlbbatch);
+> -		preempt_enable();
+>  	}
+>  
+> +	put_cpu_var(ppc64_tlb_batch);
+>  	pte_free_finish();
+>  }
+>  
+> Index: linux-2.6.25.8-rt7/arch/powerpc/platforms/pseries/iommu.c
+> ===================================================================
+> --- linux-2.6.25.8-rt7.orig/arch/powerpc/platforms/pseries/iommu.c	2008-07-09 21:29:21.000000000 +0530
+> +++ linux-2.6.25.8-rt7/arch/powerpc/platforms/pseries/iommu.c	2008-07-09 21:29:41.000000000 +0530
+> @@ -124,7 +124,7 @@
+>  	}
+>  }
+>  
+> -static DEFINE_PER_CPU(u64 *, tce_page) = NULL;
+> +static DEFINE_PER_CPU_LOCKED(u64 *, tce_page) = NULL;
+>  
+>  static void tce_buildmulti_pSeriesLP(struct iommu_table *tbl, long tcenum,
+>  				     long npages, unsigned long uaddr,
+> @@ -135,12 +135,13 @@
+>  	u64 *tcep;
+>  	u64 rpn;
+>  	long l, limit;
+> +	int cpu;
+>  
+>  	if (npages == 1)
+>  		return tce_build_pSeriesLP(tbl, tcenum, npages, uaddr,
+>  					   direction);
+>  
+> -	tcep = __get_cpu_var(tce_page);
+> +	tcep = get_cpu_var_locked(tce_page, &cpu);
+>  
+>  	/* This is safe to do since interrupts are off when we're called
+>  	 * from iommu_alloc{,_sg}()
+> @@ -148,10 +149,13 @@
+>  	if (!tcep) {
+>  		tcep = (u64 *)__get_free_page(GFP_ATOMIC);
+>  		/* If allocation fails, fall back to the loop implementation */
+> -		if (!tcep)
+> +		if (!tcep) {
+> +			put_cpu_var_locked(tce_page, cpu);
+>  			return tce_build_pSeriesLP(tbl, tcenum, npages,
+>  						   uaddr, direction);
+> -		__get_cpu_var(tce_page) = tcep;
+> +		}
+> +
+> +		per_cpu_var_locked(tce_page, cpu) = tcep;
+>  	}
+>  
+>  	rpn = (virt_to_abs(uaddr)) >> TCE_SHIFT;
+> @@ -188,6 +192,8 @@
+>  		printk("\ttce[0] val = 0x%lx\n", tcep[0]);
+>  		show_stack(current, (unsigned long *)__get_SP());
+>  	}
+> +
+> +	put_cpu_var_locked(tce_page, cpu);
+>  }
+>  
+>  static void tce_free_pSeriesLP(struct iommu_table *tbl, long tcenum, long npages)
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
