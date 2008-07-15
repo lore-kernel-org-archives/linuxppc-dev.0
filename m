@@ -2,17 +2,17 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id BB870DDF23
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jul 2008 15:19:22 +1000 (EST)
-Subject: Re: [PATCH] kill useless SMT code in prom_hold_cpus
+	by ozlabs.org (Postfix) with ESMTPS id C4323DDED6
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jul 2008 15:43:09 +1000 (EST)
+Subject: Re: [PATCH 1/3] powerpc: Fix pte_update for CONFIG_PTE_64BIT and
+	!PTE_ATOMIC_UPDATES
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Nathan Lynch <ntl@pobox.com>
-In-Reply-To: <20080715022440.GU9594@localdomain>
-References: <20080708223631.GP9594@localdomain>
-	<1216087555.7740.42.camel@pasglop> <20080715022440.GU9594@localdomain>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <Pine.LNX.4.64.0807140808090.9284@blarg.am.freescale.net>
+References: <Pine.LNX.4.64.0807140808090.9284@blarg.am.freescale.net>
 Content-Type: text/plain
-Date: Tue, 15 Jul 2008 14:53:33 +1000
-Message-Id: <1216097613.7740.52.camel@pasglop>
+Date: Tue, 15 Jul 2008 15:43:03 +1000
+Message-Id: <1216100583.7740.70.camel@pasglop>
 Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
 Reply-To: benh@kernel.crashing.org
@@ -25,28 +25,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2008-07-14 at 21:24 -0500, Nathan Lynch wrote:
-> Benjamin Herrenschmidt wrote:
-> > On Tue, 2008-07-08 at 17:36 -0500, Nathan Lynch wrote:
-> > > I think this code that counts SMT threads and compares against NR_CPUS
-> > > is an artifact of pre-powerpc-merge ppc64.  We care about starting
-> > > only primary threads in the OF client code.
-> > > 
-> > > Signed-off-by: Nathan Lynch <ntl@pobox.com>
-> > 
-> > That looks good. I'm not merging it right now because I want to dbl
-> > check that it's allright on all SMT machines. IE. We compare reg[0]
-> > against _prom->cpu now instead of interrupt_server[0] and I thus
-> > want to ensure it's the same everywhere.
+On Mon, 2008-07-14 at 08:08 -0500, Kumar Gala wrote:
+> Because the pte is now 64-bits the compiler was optimizing the update
+> to always clear the upper 32-bits of the pte.  We need to ensure the
+> clr mask is treated as an unsigned long long to get the proper behavior.
 > 
-> Thanks.  Looks like prom_find_boot_cpu is setting _prom->cpu to reg
-> (or 0), so I think it should be fine... a system where reg differed
-> from interrupt_server[0] would have been broken before this patch
-> anyway, I think?
+> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+> Acked-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 
-I tend to agree, just didn't have time to look closely / test before
-I get to prepare my batch of patches for Linus, I'll stick it in the
-next one.
+Putting that one into my tree. I'll let you put the 2 others in yours.
 
 Cheers,
 Ben.
+
+> ---
+>  include/asm-powerpc/pgtable-ppc32.h |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/include/asm-powerpc/pgtable-ppc32.h b/include/asm-powerpc/pgtable-ppc32.h
+> index 11eede4..73015f0 100644
+> --- a/include/asm-powerpc/pgtable-ppc32.h
+> +++ b/include/asm-powerpc/pgtable-ppc32.h
+> @@ -624,7 +624,7 @@ static inline unsigned long long pte_update(pte_t *p,
+>  	: "cc" );
+>  #else /* PTE_ATOMIC_UPDATES */
+>  	unsigned long long old = pte_val(*p);
+> -	*p = __pte((old & ~clr) | set);
+> +	*p = __pte((old & ~(unsigned long long)clr) | set);
+>  #endif /* !PTE_ATOMIC_UPDATES */
+> 
+>  #ifdef CONFIG_44x
