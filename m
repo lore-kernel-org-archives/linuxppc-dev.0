@@ -1,18 +1,24 @@
-Return-Path: <paubert@iram.es>
-Received: from gra-lx1.iram.es (gra-lx1.iram.es [150.214.224.41])
-	by ozlabs.org (Postfix) with ESMTP id D61C5DE228
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jul 2008 21:01:26 +1000 (EST)
-From: Gabriel Paubert <paubert@iram.es>
-Date: Tue, 15 Jul 2008 12:45:52 +0200
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: 2.6.26 does not boot on Pegasos
-Message-ID: <20080715104552.GA6299@iram.es>
-References: <20080715100033.GA5147@iram.es> <1216116349.7740.101.camel@pasglop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1216116349.7740.101.camel@pasglop>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	David Woodhouse <dwmw2@infradead.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id B57BFDDF3E
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jul 2008 21:07:17 +1000 (EST)
+Subject: Re: [RFC] [PATCH] task_pt_regs for powerpc systems
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Srinivasa DS <srinivasa@in.ibm.com>
+In-Reply-To: <487C7C48.8090308@in.ibm.com>
+References: <200807071952.27427.srinivasa@in.ibm.com>
+	<200807141401.26917.srinivasa@in.ibm.com>
+	<1216026417.7549.270.camel@pasglop>
+	<200807151436.55912.srinivasa@in.ibm.com>
+	<1216113357.7740.95.camel@pasglop>  <487C7C48.8090308@in.ibm.com>
+Content-Type: text/plain
+Date: Tue, 15 Jul 2008 20:37:12 +1000
+Message-Id: <1216118232.7740.104.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,24 +28,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Jul 15, 2008 at 08:05:49PM +1000, Benjamin Herrenschmidt wrote:
-> On Tue, 2008-07-15 at 12:00 +0200, Gabriel Paubert wrote:
-> > 	Hi,
-> > 
-> > I just tried to boot 2.6.26 on a Pegasos and the kernel does not boot.
-> > The last message I have is:
-> > gunzip (0xffffffff <----- some more hex digits)
-> > 
-> > The configuration has been created from a working 2.6.25 one with
-> > make oldconfig and answering N to new config options.
-> > 
-> > Anybody has seen this or do I have to start digging deeper?
-> 
-> Unfortunately, I don't have a pegasos anymore. David, did you get a
-> chance to test anything recent on yours ? Matt ?
+On Tue, 2008-07-15 at 16:00 +0530, Srinivasa DS wrote:
+> Sorry, I got it wrong, But I dont find my patch in your latest
+> powerpc 
+> git tree(git.kernel.org/?p=linux/kernel/git/benh/powerpc.git).
 
-I seem to remember that 2.6.26-rc5 booted fine. Compiling it right now
-before I start a bisection.
+Hrm... I thought I merged it. I'll check that tomorrow.
 
-	Regards,
-	Gabriel
+Cheers,
+Ben.
