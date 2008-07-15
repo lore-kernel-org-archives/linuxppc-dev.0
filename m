@@ -1,12 +1,11 @@
 Return-Path: <arnd@arndb.de>
-Message-Id: <20080715195739.681740070@arndb.de>
+Message-Id: <20080715195739.955673193@arndb.de>
 References: <20080715195139.316677337@arndb.de>
-Date: Tue, 15 Jul 2008 21:51:45 +0200
+Date: Tue, 15 Jul 2008 21:51:47 +0200
 From: arnd@arndb.de
 To: benh@kernel.crashing.org, cbe-oss-dev@ozlabs.org, linuxppc-dev@ozlabs.org
-Subject: [patch 6/9] powerpc/cell: add support for power button of future IBM
-	cell blades
-Cc: Christian Krafft <krafft@de.ibm.com>
+Subject: [patch 8/9] powerpc/dma: use the struct dma_attrs in iommu code
+Cc: Mark Nelson <markn@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,192 +15,208 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Christian Krafft <krafft@de.ibm.com>
+From: Mark Nelson <markn@au1.ibm.com>
 
-This patch adds support for the power button on future IBM cell blades.
-It actually doesn't shut down the machine. Instead it exposes an
-input device /dev/input/event0 to userspace which sends KEY_POWER
-if power button has been pressed.
-haldaemon actually recognizes the button, so a plattform independent acpid
-replacement should handle it correctly.
+Update iommu_alloc() to take the struct dma_attrs and pass them on to
+tce_build(). This change propagates down to the tce_build functions of
+all the platforms.
 
-Signed-off-by: Christian Krafft <krafft@de.ibm.com>
+Signed-off-by: Mark Nelson <markn@au1.ibm.com>
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- arch/powerpc/platforms/cell/Kconfig           |    8 ++
- arch/powerpc/platforms/cell/Makefile          |    2 +
- arch/powerpc/platforms/cell/cbe_powerbutton.c |  117 +++++++++++++++++++++++++
- include/asm-powerpc/pmi.h                     |    1 +
- 4 files changed, 128 insertions(+), 0 deletions(-)
- create mode 100644 arch/powerpc/platforms/cell/cbe_powerbutton.c
+ arch/powerpc/kernel/iommu.c            |   13 ++++++++-----
+ arch/powerpc/platforms/cell/iommu.c    |    5 +++--
+ arch/powerpc/platforms/iseries/iommu.c |    3 ++-
+ arch/powerpc/platforms/pasemi/iommu.c  |    3 ++-
+ arch/powerpc/platforms/pseries/iommu.c |   14 +++++++++-----
+ arch/powerpc/sysdev/dart_iommu.c       |    3 ++-
+ include/asm-powerpc/machdep.h          |    3 ++-
+ 7 files changed, 28 insertions(+), 16 deletions(-)
 
-diff --git a/arch/powerpc/platforms/cell/Kconfig b/arch/powerpc/platforms/cell/Kconfig
-index 2d1957b..c14d7d8 100644
---- a/arch/powerpc/platforms/cell/Kconfig
-+++ b/arch/powerpc/platforms/cell/Kconfig
-@@ -91,6 +91,14 @@ config PPC_IBM_CELL_RESETBUTTON
- 	  Support Pinhole Resetbutton on IBM Cell blades.
- 	  This adds a method to trigger system reset via front panel pinhole button.
+diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
+index 8c68ee9..2385f68 100644
+--- a/arch/powerpc/kernel/iommu.c
++++ b/arch/powerpc/kernel/iommu.c
+@@ -186,7 +186,8 @@ static unsigned long iommu_range_alloc(struct device *dev,
+ static dma_addr_t iommu_alloc(struct device *dev, struct iommu_table *tbl,
+ 			      void *page, unsigned int npages,
+ 			      enum dma_data_direction direction,
+-			      unsigned long mask, unsigned int align_order)
++			      unsigned long mask, unsigned int align_order,
++			      struct dma_attrs *attrs)
+ {
+ 	unsigned long entry, flags;
+ 	dma_addr_t ret = DMA_ERROR_CODE;
+@@ -205,7 +206,7 @@ static dma_addr_t iommu_alloc(struct device *dev, struct iommu_table *tbl,
  
-+config PPC_IBM_CELL_POWERBUTTON
-+	tristate "IBM Cell Blade power button"
-+	depends on PPC_IBM_CELL_BLADE && PPC_PMI && INPUT_EVDEV
-+	default y
-+	help
-+	  Support Powerbutton on IBM Cell blades.
-+	  This will enable the powerbutton as an input device.
-+
- config CBE_THERM
- 	tristate "CBE thermal support"
- 	default m
-diff --git a/arch/powerpc/platforms/cell/Makefile b/arch/powerpc/platforms/cell/Makefile
-index 7fcf09b..7fd8308 100644
---- a/arch/powerpc/platforms/cell/Makefile
-+++ b/arch/powerpc/platforms/cell/Makefile
-@@ -10,6 +10,8 @@ obj-$(CONFIG_CBE_CPUFREQ)		+= cbe-cpufreq.o
- cbe-cpufreq-y				+= cbe_cpufreq_pervasive.o cbe_cpufreq.o
- obj-$(CONFIG_CBE_CPUFREQ_SPU_GOVERNOR)	+= cpufreq_spudemand.o
+ 	/* Put the TCEs in the HW table */
+ 	ppc_md.tce_build(tbl, entry, npages, (unsigned long)page & IOMMU_PAGE_MASK,
+-			 direction);
++			 direction, attrs);
  
-+obj-$(CONFIG_PPC_IBM_CELL_POWERBUTTON)	+= cbe_powerbutton.o
-+
- ifeq ($(CONFIG_SMP),y)
- obj-$(CONFIG_PPC_CELL_NATIVE)		+= smp.o
- endif
-diff --git a/arch/powerpc/platforms/cell/cbe_powerbutton.c b/arch/powerpc/platforms/cell/cbe_powerbutton.c
-new file mode 100644
-index 0000000..dcddaa5
---- /dev/null
-+++ b/arch/powerpc/platforms/cell/cbe_powerbutton.c
-@@ -0,0 +1,117 @@
-+/*
-+ * driver for powerbutton on IBM cell blades
-+ *
-+ * (C) Copyright IBM Corp. 2005-2008
-+ *
-+ * Author: Christian Krafft <krafft@de.ibm.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2, or (at your option)
-+ * any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-+ */
-+
-+#include <linux/input.h>
-+#include <linux/platform_device.h>
-+#include <asm/pmi.h>
-+#include <asm/prom.h>
-+
-+static struct input_dev *button_dev;
-+static struct platform_device *button_pdev;
-+
-+static void cbe_powerbutton_handle_pmi(pmi_message_t pmi_msg)
-+{
-+	BUG_ON(pmi_msg.type != PMI_TYPE_POWER_BUTTON);
-+
-+	input_report_key(button_dev, KEY_POWER, 1);
-+	input_sync(button_dev);
-+	input_report_key(button_dev, KEY_POWER, 0);
-+	input_sync(button_dev);
-+}
-+
-+static struct pmi_handler cbe_pmi_handler = {
-+	.type			= PMI_TYPE_POWER_BUTTON,
-+	.handle_pmi_message	= cbe_powerbutton_handle_pmi,
-+};
-+
-+static int __init cbe_powerbutton_init(void)
-+{
-+	int ret = 0;
-+	struct input_dev *dev;
-+
-+	if (!machine_is_compatible("IBM,CBPLUS-1.0")) {
-+		printk(KERN_ERR "%s: Not a cell blade.\n", __func__);
-+		ret = -ENODEV;
-+		goto out;
-+	}
-+
-+	dev = input_allocate_device();
-+	if (!dev) {
-+		ret = -ENOMEM;
-+		printk(KERN_ERR "%s: Not enough memory.\n", __func__);
-+		goto out;
-+	}
-+
-+	set_bit(EV_KEY, dev->evbit);
-+	set_bit(KEY_POWER, dev->keybit);
-+
-+	dev->name = "Power Button";
-+	dev->id.bustype = BUS_HOST;
-+
-+	/* this makes the button look like an acpi power button
-+	 * no clue whether anyone relies on that though */
-+	dev->id.product = 0x02;
-+	dev->phys = "LNXPWRBN/button/input0";
-+
-+	button_pdev = platform_device_register_simple("power_button", 0, NULL, 0);
-+	if (IS_ERR(button_pdev)) {
-+		ret = PTR_ERR(button_pdev);
-+		goto out_free_input;
-+	}
-+
-+	dev->dev.parent = &button_pdev->dev;
-+	ret = input_register_device(dev);
-+	if (ret) {
-+		printk(KERN_ERR "%s: Failed to register device\n", __func__);
-+		goto out_free_pdev;
-+	}
-+
-+	button_dev = dev;
-+
-+	ret = pmi_register_handler(&cbe_pmi_handler);
-+	if (ret) {
-+		printk(KERN_ERR "%s: Failed to register with pmi.\n", __func__);
-+		goto out_free_pdev;
-+	}
-+
-+	goto out;
-+
-+out_free_pdev:
-+	platform_device_unregister(button_pdev);
-+out_free_input:
-+	input_free_device(dev);
-+out:
-+	return ret;
-+}
-+
-+static void __exit cbe_powerbutton_exit(void)
-+{
-+	pmi_unregister_handler(&cbe_pmi_handler);
-+	platform_device_unregister(button_pdev);
-+	input_free_device(button_dev);
-+}
-+
-+module_init(cbe_powerbutton_init);
-+module_exit(cbe_powerbutton_exit);
-+
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("Christian Krafft <krafft@de.ibm.com>");
-diff --git a/include/asm-powerpc/pmi.h b/include/asm-powerpc/pmi.h
-index e1dc090..b4e91fb 100644
---- a/include/asm-powerpc/pmi.h
-+++ b/include/asm-powerpc/pmi.h
-@@ -30,6 +30,7 @@
- #ifdef __KERNEL__
  
- #define PMI_TYPE_FREQ_CHANGE	0x01
-+#define PMI_TYPE_POWER_BUTTON	0x02
- #define PMI_READ_TYPE		0
- #define PMI_READ_DATA0		1
- #define PMI_READ_DATA1		2
+ 	/* Flush/invalidate TLB caches if necessary */
+@@ -336,7 +337,8 @@ int iommu_map_sg(struct device *dev, struct iommu_table *tbl,
+ 			    npages, entry, dma_addr);
+ 
+ 		/* Insert into HW table */
+-		ppc_md.tce_build(tbl, entry, npages, vaddr & IOMMU_PAGE_MASK, direction);
++		ppc_md.tce_build(tbl, entry, npages, vaddr & IOMMU_PAGE_MASK,
++				 direction, attrs);
+ 
+ 		/* If we are in an open segment, try merging */
+ 		if (segstart != s) {
+@@ -573,7 +575,8 @@ dma_addr_t iommu_map_single(struct device *dev, struct iommu_table *tbl,
+ 			align = PAGE_SHIFT - IOMMU_PAGE_SHIFT;
+ 
+ 		dma_handle = iommu_alloc(dev, tbl, vaddr, npages, direction,
+-					 mask >> IOMMU_PAGE_SHIFT, align);
++					 mask >> IOMMU_PAGE_SHIFT, align,
++					 attrs);
+ 		if (dma_handle == DMA_ERROR_CODE) {
+ 			if (printk_ratelimit())  {
+ 				printk(KERN_INFO "iommu_alloc failed, "
+@@ -642,7 +645,7 @@ void *iommu_alloc_coherent(struct device *dev, struct iommu_table *tbl,
+ 	nio_pages = size >> IOMMU_PAGE_SHIFT;
+ 	io_order = get_iommu_order(size);
+ 	mapping = iommu_alloc(dev, tbl, ret, nio_pages, DMA_BIDIRECTIONAL,
+-			      mask >> IOMMU_PAGE_SHIFT, io_order);
++			      mask >> IOMMU_PAGE_SHIFT, io_order, NULL);
+ 	if (mapping == DMA_ERROR_CODE) {
+ 		free_pages((unsigned long)ret, order);
+ 		return NULL;
+diff --git a/arch/powerpc/platforms/cell/iommu.c b/arch/powerpc/platforms/cell/iommu.c
+index eeacb3a..3b70784 100644
+--- a/arch/powerpc/platforms/cell/iommu.c
++++ b/arch/powerpc/platforms/cell/iommu.c
+@@ -173,7 +173,8 @@ static void invalidate_tce_cache(struct cbe_iommu *iommu, unsigned long *pte,
+ }
+ 
+ static void tce_build_cell(struct iommu_table *tbl, long index, long npages,
+-		unsigned long uaddr, enum dma_data_direction direction)
++		unsigned long uaddr, enum dma_data_direction direction,
++		struct dma_attrs *attrs)
+ {
+ 	int i;
+ 	unsigned long *io_pte, base_pte;
+@@ -519,7 +520,7 @@ cell_iommu_setup_window(struct cbe_iommu *iommu, struct device_node *np,
+ 
+ 	__set_bit(0, window->table.it_map);
+ 	tce_build_cell(&window->table, window->table.it_offset, 1,
+-		       (unsigned long)iommu->pad_page, DMA_TO_DEVICE);
++		       (unsigned long)iommu->pad_page, DMA_TO_DEVICE, NULL);
+ 	window->table.it_hint = window->table.it_blocksize;
+ 
+ 	return window;
+diff --git a/arch/powerpc/platforms/iseries/iommu.c b/arch/powerpc/platforms/iseries/iommu.c
+index ab5d868..bc818e4 100644
+--- a/arch/powerpc/platforms/iseries/iommu.c
++++ b/arch/powerpc/platforms/iseries/iommu.c
+@@ -42,7 +42,8 @@
+ #include <asm/iseries/iommu.h>
+ 
+ static void tce_build_iSeries(struct iommu_table *tbl, long index, long npages,
+-		unsigned long uaddr, enum dma_data_direction direction)
++		unsigned long uaddr, enum dma_data_direction direction,
++		struct dma_attrs *attrs)
+ {
+ 	u64 rc;
+ 	u64 tce, rpn;
+diff --git a/arch/powerpc/platforms/pasemi/iommu.c b/arch/powerpc/platforms/pasemi/iommu.c
+index 86967bd..70541b7 100644
+--- a/arch/powerpc/platforms/pasemi/iommu.c
++++ b/arch/powerpc/platforms/pasemi/iommu.c
+@@ -85,7 +85,8 @@ static int iommu_table_iobmap_inited;
+ 
+ static void iobmap_build(struct iommu_table *tbl, long index,
+ 			 long npages, unsigned long uaddr,
+-			 enum dma_data_direction direction)
++			 enum dma_data_direction direction,
++			 struct dma_attrs *attrs)
+ {
+ 	u32 *ip;
+ 	u32 rpn;
+diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
+index 9a12908..5377dd4 100644
+--- a/arch/powerpc/platforms/pseries/iommu.c
++++ b/arch/powerpc/platforms/pseries/iommu.c
+@@ -50,7 +50,8 @@
+ 
+ static void tce_build_pSeries(struct iommu_table *tbl, long index,
+ 			      long npages, unsigned long uaddr,
+-			      enum dma_data_direction direction)
++			      enum dma_data_direction direction,
++			      struct dma_attrs *attrs)
+ {
+ 	u64 proto_tce;
+ 	u64 *tcep;
+@@ -95,7 +96,8 @@ static unsigned long tce_get_pseries(struct iommu_table *tbl, long index)
+ 
+ static void tce_build_pSeriesLP(struct iommu_table *tbl, long tcenum,
+ 				long npages, unsigned long uaddr,
+-				enum dma_data_direction direction)
++				enum dma_data_direction direction,
++				struct dma_attrs *attrs)
+ {
+ 	u64 rc;
+ 	u64 proto_tce, tce;
+@@ -127,7 +129,8 @@ static DEFINE_PER_CPU(u64 *, tce_page) = NULL;
+ 
+ static void tce_buildmulti_pSeriesLP(struct iommu_table *tbl, long tcenum,
+ 				     long npages, unsigned long uaddr,
+-				     enum dma_data_direction direction)
++				     enum dma_data_direction direction,
++				     struct dma_attrs *attrs)
+ {
+ 	u64 rc;
+ 	u64 proto_tce;
+@@ -136,7 +139,8 @@ static void tce_buildmulti_pSeriesLP(struct iommu_table *tbl, long tcenum,
+ 	long l, limit;
+ 
+ 	if (npages == 1) {
+-		tce_build_pSeriesLP(tbl, tcenum, npages, uaddr, direction);
++		tce_build_pSeriesLP(tbl, tcenum, npages, uaddr,
++				    direction, attrs);
+ 		return;
+ 	}
+ 
+@@ -150,7 +154,7 @@ static void tce_buildmulti_pSeriesLP(struct iommu_table *tbl, long tcenum,
+ 		/* If allocation fails, fall back to the loop implementation */
+ 		if (!tcep) {
+ 			tce_build_pSeriesLP(tbl, tcenum, npages, uaddr,
+-					    direction);
++					    direction, attrs);
+ 			return;
+ 		}
+ 		__get_cpu_var(tce_page) = tcep;
+diff --git a/arch/powerpc/sysdev/dart_iommu.c b/arch/powerpc/sysdev/dart_iommu.c
+index 005c2ec..de8c8b5 100644
+--- a/arch/powerpc/sysdev/dart_iommu.c
++++ b/arch/powerpc/sysdev/dart_iommu.c
+@@ -149,7 +149,8 @@ static void dart_flush(struct iommu_table *tbl)
+ 
+ static void dart_build(struct iommu_table *tbl, long index,
+ 		       long npages, unsigned long uaddr,
+-		       enum dma_data_direction direction)
++		       enum dma_data_direction direction,
++		       struct dma_attrs *attrs)
+ {
+ 	unsigned int *dp;
+ 	unsigned int rpn;
+diff --git a/include/asm-powerpc/machdep.h b/include/asm-powerpc/machdep.h
+index 9899226..1233d73 100644
+--- a/include/asm-powerpc/machdep.h
++++ b/include/asm-powerpc/machdep.h
+@@ -80,7 +80,8 @@ struct machdep_calls {
+ 				     long index,
+ 				     long npages,
+ 				     unsigned long uaddr,
+-				     enum dma_data_direction direction);
++				     enum dma_data_direction direction,
++				     struct dma_attrs *attrs);
+ 	void		(*tce_free)(struct iommu_table *tbl,
+ 				    long index,
+ 				    long npages);
 -- 
 1.5.4.3
 
