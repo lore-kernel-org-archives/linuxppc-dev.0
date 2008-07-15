@@ -2,9 +2,9 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 92F47DEB1A
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jul 2008 03:29:48 +1000 (EST)
-Message-Id: <9532E668-5A27-4AE3-A5D8-22D8C499FD78@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id AAB57DE6AE
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jul 2008 03:29:47 +1000 (EST)
+Message-Id: <9340606A-7A87-4475-A133-81F5B59C7960@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
 To: avorontsov@ru.mvista.com
 In-Reply-To: <20080715161053.GA9356@polina.dev.rtsoft.ru>
@@ -12,7 +12,7 @@ Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Mime-Version: 1.0 (Apple Message framework v926)
 Subject: Re: [PATCH v2] powerpc: add FHCI USB, FSL MCU,
 	FSL UPM and GPIO LEDs bindings
-Date: Tue, 15 Jul 2008 11:17:00 -0500
+Date: Tue, 15 Jul 2008 11:23:42 -0500
 References: <20080703174844.GA27966@polina.dev.rtsoft.ru>
 	<EC062FA3-9CF8-4A94-95C7-2AAF22754A9C@kernel.crashing.org>
 	<20080703182440.GA2576@polina.dev.rtsoft.ru>
@@ -56,6 +56,8 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 > +++ b/Documentation/powerpc/device-tree/fsl/mcu-mpc8349emitx.txt
 > ....
 
-duh.  will fix it up.
+Rebased the tree and fixed it.  Can you look over the files and make  
+sure everything looks ok.  (I'm partially concerned about the QE usb  
+node).
 
 - k
