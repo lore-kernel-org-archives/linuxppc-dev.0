@@ -1,31 +1,17 @@
-Return-Path: <brking@linux.vnet.ibm.com>
-Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 331FADE238
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jul 2008 07:39:37 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e6.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m6FLfxBX006066
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jul 2008 17:41:59 -0400
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
-	m6FLdThB234378
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jul 2008 17:39:29 -0400
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
-	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	m6FLdS36032438
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jul 2008 17:39:28 -0400
-Message-ID: <487D1902.20609@linux.vnet.ibm.com>
-Date: Tue, 15 Jul 2008 16:39:14 -0500
-From: Brian King <brking@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Robert Jennings <rcj@linux.vnet.ibm.com>
-Subject: Re: [PATCH] powerpc: correct CMO feature flag enablement
-References: <20080715212008.GA25230@linux.vnet.ibm.com>
-In-Reply-To: <20080715212008.GA25230@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=us-ascii
-Cc: paulus@samba.org, David Darrington <ddarring@linux.vnet.ibm.com>,
-	linuxppc-dev@ozlabs.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 2ACF9DDF4C
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jul 2008 07:58:23 +1000 (EST)
+Message-Id: <BF59BFC7-736B-4D3F-9227-97DC90CE4739@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v926)
+Subject: SW TLB MMU rework and SMP issues
+Date: Tue, 15 Jul 2008 16:58:16 -0500
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,42 +21,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Acked by: Brian King <brking@linux.vnet.ibm.com>
+Ben,
 
-Robert Jennings wrote:
-> Correct string conversion for rtas value being read for CMO configuration.
-> A value of -1 in the string indicates that CMO is not enabled and we
-> had used simple_strtoul rather than simple_strtol which caused problems.
-> 
-> Signed-off-by: Robert Jennings <rcj@linux.vnet.ibm.com>
-> 
-> ---
-> 
-> This patch applies on top of the CMO patchset sent to the list.
-> 
-> ---
->  arch/powerpc/platforms/pseries/setup.c |    4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> Index: b/arch/powerpc/platforms/pseries/setup.c
-> ===================================================================
-> --- a/arch/powerpc/platforms/pseries/setup.c
-> +++ b/arch/powerpc/platforms/pseries/setup.c
-> @@ -366,9 +366,9 @@ void pSeries_cmo_feature_init(void)
->  			}
-> 
->  			if (0 == strcmp(key, "PrPSP"))
-> -				PrPSP = simple_strtoul(value, NULL, 10);
-> +				PrPSP = simple_strtol(value, NULL, 10);
->  			else if (0 == strcmp(key, "SecPSP"))
-> -				SecPSP = simple_strtoul(value, NULL, 10);
-> +				SecPSP = simple_strtol(value, NULL, 10);
->  			value = key = ptr + 1;
->  		}
->  		ptr++;
+I've been giving some thought to the new software managed TLBs and SMP  
+issues.  I was wondering if you had any insights on how we should deal  
+with the following issues:
 
+* tlb invalidates -- need to ensure we don't have multiple tlbsync's  
+on the bus.  I'm thinking for e500/fsl we will move to IPI based  
+invalidate broadcast and do invalidates locally (http://patchwork.ozlabs.org/linuxppc/patch?id=19657 
+)
 
--- 
-Brian King
-Linux on Power Virtualization
-IBM Linux Technology Center
+* 64-bit PTEs and reader vs writer hazards.  How do we ensure that the  
+TLB miss handler samples a consistent view of the pte.  pte_updates  
+seem ok since we only update the flag word.  However set_pte_at seems  
+like it could be problematic.
+
+- k
