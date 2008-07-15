@@ -1,18 +1,20 @@
-Return-Path: <arnd@arndb.de>
-From: Arnd Bergmann <arnd@arndb.de>
-To: cbe-oss-dev@ozlabs.org
-Subject: Re: [Cbe-oss-dev] [patch 2/2] cell: add support for power button of
-	future IBM cell blades
-Date: Tue, 15 Jul 2008 17:18:08 +0200
-References: <20080715142529.837984547@de.ibm.com>
-	<20080715162755.453c9b52@de.ibm.com>
-In-Reply-To: <20080715162755.453c9b52@de.ibm.com>
+Return-Path: <neko@genesi-usa.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.173])
+	by ozlabs.org (Postfix) with ESMTP id E6CECDE83B
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jul 2008 01:27:49 +1000 (EST)
+Received: by ug-out-1314.google.com with SMTP id k3so362719ugf.0
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jul 2008 08:27:47 -0700 (PDT)
+Message-ID: <487CC1F5.5090706@genesi-usa.com>
+Date: Tue, 15 Jul 2008 16:27:49 +0100
+From: Matt Sealey <matt@genesi-usa.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200807151718.08866.arnd@arndb.de>
-Cc: krafft@de.ibm.com, lohausen@de.ibm.com, willeke@de.ibm.com,
-	linuxppc-dev@ozlabs.org
+To: Gabriel Paubert <paubert@iram.es>
+Subject: Re: 2.6.26 does not boot on Pegasos
+References: <20080715100033.GA5147@iram.es>
+In-Reply-To: <20080715100033.GA5147@iram.es>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Sender: Matt Sealey <neko@genesi-usa.com>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,19 +24,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tuesday 15 July 2008, krafft@de.ibm.com wrote:
-> From: Christian Krafft <krafft@de.ibm.com>
-> 
-> This patch adds support for the power button on future IBM cell blades.
-> It actually doesn't shut down the machine. Instead it exposes an
-> input device /dev/input/event0 to userspace which sends KEY_POWER
-> if power button has been pressed.
-> haldaemon actually recognizes the button, so a plattform independent acpid
-> replacement should handle it correctly.
-> 
-> Signed-off-by: Christian Krafft <krafft@de.ibm.com>
-> 
+If you built this kernel yourself, you need to do it from a system with
+an up-to-date binutils (2.18) otherwise, it does this.
 
-Thanks, applied.
+If you got it from somewhere (like a distribution) then please tell us
+where, as there are some other troubles with load-base location for
+Fedora and so on...
 
-Note: this patch is line-wrapped, but I'll fix it up for you one more time ;-)
+-- 
+Matt Sealey <matt@genesi-usa.com>
+Genesi, Manager, Developer Relations
+
+Gabriel Paubert wrote:
+> 	Hi,
+> 
+> I just tried to boot 2.6.26 on a Pegasos and the kernel does not boot.
+> The last message I have is:
+> gunzip (0xffffffff <----- some more hex digits)
+> 
+> The configuration has been created from a working 2.6.25 one with
+> make oldconfig and answering N to new config options.
+> 
+> Anybody has seen this or do I have to start digging deeper?
+> 
+> 	Regards,
+> 	Gabriel
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
