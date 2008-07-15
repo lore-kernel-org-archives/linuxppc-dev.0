@@ -1,25 +1,11 @@
-Return-Path: <rpurdie@rpsys.net>
-Received: from tim.rpsys.net (tim.rpsys.net [194.106.48.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 053D9DE5B7
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jul 2008 00:44:12 +1000 (EST)
-Subject: Re: [PATCH v2] leds: implement OpenFirmare GPIO LED driver
-From: Richard Purdie <rpurdie@rpsys.net>
-To: avorontsov@ru.mvista.com
-In-Reply-To: <20080715142354.GA3296@polina.dev.rtsoft.ru>
-References: <20080715123822.GA10893@polina.dev.rtsoft.ru>
-	<20080715124013.GA13086@polina.dev.rtsoft.ru>
-	<1216126470.5345.55.camel@dax.rpnet.com>
-	<20080715132438.GA26648@polina.dev.rtsoft.ru>
-	<1216128687.5345.61.camel@dax.rpnet.com>
-	<20080715142354.GA3296@polina.dev.rtsoft.ru>
-Content-Type: text/plain
-Date: Tue, 15 Jul 2008 15:43:52 +0100
-Message-Id: <1216133032.5345.73.camel@dax.rpnet.com>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Stephen Rothwell <sfr@canb.auug.org.au>,
-	linux-kernel@vger.kernel.org
+Return-Path: <michael@ozlabs.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Message-Id: <378edcf6ad114d35166364c5df03a8c422f757a1.1216133084.git.michael@ellerman.id.au>
+From: Michael Ellerman <michael@ellerman.id.au>
+Subject: [PATCH 1/4] powerpc: fsl_msi doesn't need it's own of_node
+Date: Wed, 16 Jul 2008 00:46:08 +1000 (EST)
+Cc: Olof Johannsson <olof@lixom.net>, linuxppc-dev@ozlabs.org,
+	Kumar Gala <kumar.gala@freescale.com>, Jason.jin@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,32 +15,69 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2008-07-15 at 18:23 +0400, Anton Vorontsov wrote:
-> > Spell out openfirmware :). I initially had no idea "of == openfirmware"
-> > and I suspect others won't either...
-> 
-> This would be unusually long name, that is
-> 
-> $ find . -iname '*openfirmware*' | wc -l
-> 0
-> 
-> And in contrast:
-> 
-> drivers/video/offb.c
-> drivers/video/nvidia/nv_of.c
-> drivers/usb/host/ohci-ppc-of.c
-> drivers/usb/host/ehci-ppc-of.c
-> drivers/serial/of_serial.c
-> drivers/mtd/maps/physmap_of.c
-> ...
-> 
-> So, I think we should stick with the "of" for consistency, while
-> confused users may consult with Kconfig for disambiguation.
+The FSL MSI code keeps a pointer to the of_node from the device
+it represents. However it also has an irq_host, which contains
+a pointer to the of_node, so use that one instead.
 
-The other cases don't have a gpio driver to confuse this new driver
-with. Lets spell it out please, the filesystems can handle the extra
-letters :).
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+---
+ arch/powerpc/sysdev/fsl_msi.c |   12 +++++-------
+ arch/powerpc/sysdev/fsl_msi.h |    3 ---
+ 2 files changed, 5 insertions(+), 10 deletions(-)
 
-Cheers,
-
-Richard
+diff --git a/arch/powerpc/sysdev/fsl_msi.c b/arch/powerpc/sysdev/fsl_msi.c
+index 2c5187c..d49fa99 100644
+--- a/arch/powerpc/sysdev/fsl_msi.c
++++ b/arch/powerpc/sysdev/fsl_msi.c
+@@ -108,7 +108,8 @@ static int fsl_msi_free_dt_hwirqs(struct fsl_msi *msi)
+ 	bitmap_allocate_region(msi->fsl_msi_bitmap, 0,
+ 		       get_count_order(NR_MSI_IRQS));
+ 
+-	p = of_get_property(msi->of_node, "msi-available-ranges", &len);
++	p = of_get_property(msi->irqhost->of_node, "msi-available-ranges",
++			    &len);
+ 
+ 	if (!p) {
+ 		/* No msi-available-ranges property,
+@@ -120,7 +121,7 @@ static int fsl_msi_free_dt_hwirqs(struct fsl_msi *msi)
+ 
+ 	if ((len % (2 * sizeof(u32))) != 0) {
+ 		printk(KERN_WARNING "fsl_msi: Malformed msi-available-ranges "
+-		       "property on %s\n", msi->of_node->full_name);
++		       "property on %s\n", msi->irqhost->of_node->full_name);
+ 		return -EINVAL;
+ 	}
+ 
+@@ -317,14 +318,11 @@ static int __devinit fsl_of_msi_probe(struct of_device *dev,
+ 		goto error_out;
+ 	}
+ 
+-	msi->of_node = of_node_get(dev->node);
++	msi->irqhost = irq_alloc_host(dev->node, IRQ_HOST_MAP_LINEAR,
++				      NR_MSI_IRQS, &fsl_msi_host_ops, 0);
+ 
+-	msi->irqhost = irq_alloc_host(of_node_get(dev->node),
+-				IRQ_HOST_MAP_LINEAR,
+-				NR_MSI_IRQS, &fsl_msi_host_ops, 0);
+ 	if (msi->irqhost == NULL) {
+ 		dev_err(&dev->dev, "No memory for MSI irqhost\n");
+-		of_node_put(dev->node);
+ 		err = -ENOMEM;
+ 		goto error_out;
+ 	}
+diff --git a/arch/powerpc/sysdev/fsl_msi.h b/arch/powerpc/sysdev/fsl_msi.h
+index a653468..6574550 100644
+--- a/arch/powerpc/sysdev/fsl_msi.h
++++ b/arch/powerpc/sysdev/fsl_msi.h
+@@ -22,9 +22,6 @@
+ #define FSL_PIC_IP_IPIC	0x00000002
+ 
+ struct fsl_msi {
+-	/* Device node of the MSI interrupt*/
+-	struct device_node *of_node;
+-
+ 	struct irq_host *irqhost;
+ 
+ 	unsigned long cascade_irq;
+-- 
+1.5.5
