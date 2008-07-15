@@ -1,18 +1,31 @@
-Return-Path: <arnd@arndb.de>
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [patch 9/9] powerpc/cell: Add DMA_ATTR_STRONG_ORDERING dma
-	attribute and use in IOMMU code
-Date: Tue, 15 Jul 2008 23:27:06 +0200
-References: <20080715195139.316677337@arndb.de>
-	<20080715195740.098068951@arndb.de> <ada3amaevj5.fsf@cisco.com>
-In-Reply-To: <ada3amaevj5.fsf@cisco.com>
+Return-Path: <brking@linux.vnet.ibm.com>
+Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 331FADE238
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jul 2008 07:39:37 +1000 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e6.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id m6FLfxBX006066
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jul 2008 17:41:59 -0400
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
+	m6FLdThB234378
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jul 2008 17:39:29 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m6FLdS36032438
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jul 2008 17:39:28 -0400
+Message-ID: <487D1902.20609@linux.vnet.ibm.com>
+Date: Tue, 15 Jul 2008 16:39:14 -0500
+From: Brian King <brking@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Message-Id: <200807152327.06946.arnd@arndb.de>
-Cc: Mark Nelson <markn@au1.ibm.com>, Roland Dreier <rdreier@cisco.com>,
-	cbe-oss-dev@ozlabs.org
+To: Robert Jennings <rcj@linux.vnet.ibm.com>
+Subject: Re: [PATCH] powerpc: correct CMO feature flag enablement
+References: <20080715212008.GA25230@linux.vnet.ibm.com>
+In-Reply-To: <20080715212008.GA25230@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+Cc: paulus@samba.org, David Darrington <ddarring@linux.vnet.ibm.com>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,62 +35,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tuesday 15 July 2008, Roland Dreier wrote:
-> Sorry for the late comments, I missed this when it went by before.
->=20
-> =C2=A0> +DMA_ATTR_STRONG_ORDERING
-> =C2=A0> +----------------------
-> =C2=A0> +
-> =C2=A0> +DMA_ATTR_STRONG_ORDERING specifies that previous reads and write=
-s are
-> =C2=A0> +performed in the order in which they're received by the IOMMU; t=
-hus
-> =C2=A0> +reads and writes may not pass each other.
->=20
-> I don't understand what this is trying to say. =C2=A0What is "previous"
-> referring to? What does "received by the IOMMU" mean -- do you mean=20
-> issued onto the bus by the CPU?
+Acked by: Brian King <brking@linux.vnet.ibm.com>
 
-This is all about inbound transfers, i.e. DMAs coming from the I/O bridge
-into the CPU, both DMA read and DMA write.
+Robert Jennings wrote:
+> Correct string conversion for rtas value being read for CMO configuration.
+> A value of -1 in the string indicates that CMO is not enabled and we
+> had used simple_strtoul rather than simple_strtol which caused problems.
+> 
+> Signed-off-by: Robert Jennings <rcj@linux.vnet.ibm.com>
+> 
+> ---
+> 
+> This patch applies on top of the CMO patchset sent to the list.
+> 
+> ---
+>  arch/powerpc/platforms/pseries/setup.c |    4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> Index: b/arch/powerpc/platforms/pseries/setup.c
+> ===================================================================
+> --- a/arch/powerpc/platforms/pseries/setup.c
+> +++ b/arch/powerpc/platforms/pseries/setup.c
+> @@ -366,9 +366,9 @@ void pSeries_cmo_feature_init(void)
+>  			}
+> 
+>  			if (0 == strcmp(key, "PrPSP"))
+> -				PrPSP = simple_strtoul(value, NULL, 10);
+> +				PrPSP = simple_strtol(value, NULL, 10);
+>  			else if (0 == strcmp(key, "SecPSP"))
+> -				SecPSP = simple_strtoul(value, NULL, 10);
+> +				SecPSP = simple_strtol(value, NULL, 10);
+>  			value = key = ptr + 1;
+>  		}
+>  		ptr++;
 
-The relevant paragraph in the specification is=20
-"If the SO bits in the I/O page table entry =3D =E2=80=9811=E2=80=99 and th=
-e IOIF S-bit is =E2=80=981=E2=80=99,
-this READ or WRITE cannot be placed on the EIB until all previous READs and
-WRITEs from this CVCID and IOID have gotten an ACK or NULL type snoop respo=
-nse."
 
-Normally, this is only true for accesses going to the same cache line,
-accesses from one device to different cache lines that are issued in order
-also send their response in-order (unless you get an I/O exception, which m=
-eans
-you're toast), but can arrive at the I/O location out of order.
-
-My interpretation is that strong ordering basically turns our whole I/O
-subsystem into single-issue non-posted accesses (all devices are currently
-configured to use the same CVCID and IOID), so we really should not
-do that.
-
-> When you say "reads and writes may not=20
-> pass each other," do you mean just that reads may not pass writes and
-> writes may not pass reads, or do you mean that reads also can't pass
-> reads and writes can't pass writes?
->=20
-> Since I don't know exactly what this attribute does, I can't be sure,
-> but it seems that making weak ordering the default is dangerous in that
-> it breaks drivers that expect usual memory ordering semantics. =C2=A0Woul=
-d it
-> be safer/better to make strong ordering the default and then add a
-> "WEAK_ORDERING" attribute that drivers can use as an optimization?
-
-With all our existing hardware, the I/O bridge overrides the setting
-to select weak ordering. The purpose of this patch is to change the
-default so that the bridge does not force weak ordering any more and
-some drivers are free to set strong ordering without impacting performance
-on the other drivers.
-
-Strong ordering is only active when both the bridge and the IOMMU enable
-it, but for correctly written drivers, this only results in a slowdown.
-
-	Arnd <><
+-- 
+Brian King
+Linux on Power Virtualization
+IBM Linux Technology Center
