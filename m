@@ -1,19 +1,19 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C4633DDF88
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jul 2008 23:32:01 +1000 (EST)
-Message-Id: <797E5A34-6C17-4E5C-A881-4B04528FBDA8@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-In-Reply-To: <20080611230437.GD21351@polina.dev.rtsoft.ru>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v926)
-Subject: Re: [PATCH 4/4] powerpc/86xx: mpc8610_hpcd: add support for ULI RTC
-Date: Tue, 15 Jul 2008 08:31:55 -0500
-References: <20080611230250.GA13412@polina.dev.rtsoft.ru>
-	<20080611230437.GD21351@polina.dev.rtsoft.ru>
+Return-Path: <jonsmirl@gmail.com>
+Received: from ti-out-0910.google.com (ti-out-0910.google.com [209.85.142.186])
+	by ozlabs.org (Postfix) with ESMTP id A4511DDF11
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jul 2008 23:40:11 +1000 (EST)
+Received: by ti-out-0910.google.com with SMTP id w7so2662508tib.13
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jul 2008 06:40:09 -0700 (PDT)
+Message-ID: <9e4733910807150640x52cca982jf4f1ccfe7fd506cf@mail.gmail.com>
+Date: Tue, 15 Jul 2008 09:40:08 -0400
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: "Jean Delvare" <khali@linux-fr.org>
+Subject: Re: [PATCH] of: i2c: improve last resort compatible entry selection
+In-Reply-To: <487C7F9A.7030201@scram.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20080714175437.GA5230@polina.dev.rtsoft.ru>
+	<487C7F9A.7030201@scram.de>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -24,23 +24,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Jun 11, 2008, at 6:04 PM, Anton Vorontsov wrote:
-
-> The ULI "Super South Bridge" contains ISA bridge to the legacy
-> devices, such as Super IO mouse/keyboard/floppy disk controllers,
-> parallel port, i8259 interrupt controller and so on.
+On 7/15/08, Jochen Friedrich <jochen@scram.de> wrote:
+> Hi Anton,
 >
-> i8259 is disabled on the MPC8610HPCD, and other peripherals are not
-> traced out. So we use only RTC.
 >
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> ---
-> arch/powerpc/boot/dts/mpc8610_hpcd.dts      |   14 +++++++
-> arch/powerpc/configs/mpc8610_hpcd_defconfig |   51 ++++++++++++++++++ 
-> ++++++--
-> 2 files changed, 61 insertions(+), 4 deletions(-)
+>  > Since no sane driver will ever match specific devices, what we want is
+>  > to select most generic option (last). Then driver may call
+>  > of_device_is_compatible() if it is really interested in details.
+>
+>
+> My original intention was to have alias entries for specific devices in the
+>  i2c device drivers. Later, Jean decided to only have the most generic names
+>  in there (like in http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=blobdiff;f=drivers/media/video/tvaudio.c;h=c77914d99d15c5972c94e9763a08b5789098e90a;hp=6f9945b04e1f2bcd676f0ed8dc910994b29ed300;hb=ae429083efe996ca2c569c44fd6fea440676dc33;hpb=60b129d7bfa3e20450816983bd52c49bb0bc1c21)
+>  So your patch is correct.
 
-applied.
+Why aren't we listing the chip names in the driver's id section? Large
+chip id tables are not unusual in the kernel, the e1000 driver has
+about 70 entries.
 
-- k
+Taking the chip id table out of the driver just means we have to build
+it somewhere else. It doesn't save space, the tables just get moved.
+Device firmware has the chip names in it so there has to be code in
+the kernel somewhere to do the mapping from chip id to linux driver
+name.
+
+Pushing the linux driver name down into the firmware is even crazier.
++  /* 2. search for linux,<i2c-type> entry */
+Now if the linux driver gets renamed everyone on the planet needs a
+firmware update.
+
+-- 
+Jon Smirl
+jonsmirl@gmail.com
