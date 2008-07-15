@@ -1,23 +1,33 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <srinivasa@in.ibm.com>
+Received: from e23smtp06.au.ibm.com (E23SMTP06.au.ibm.com [202.81.18.175])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E8B6ADDEDD
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jul 2008 19:17:25 +1000 (EST)
+	(Client CN "e23smtp06.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 03311DDE19
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jul 2008 19:22:14 +1000 (EST)
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.18.234])
+	by e23smtp06.au.ibm.com (8.13.1/8.13.1) with ESMTP id m6F9Lbds001291
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jul 2008 19:21:37 +1000
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v9.0) with ESMTP id
+	m6F9KxVF4722802
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jul 2008 19:20:59 +1000
+Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
+	by d23av02.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	m6F9Kxcj028767
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jul 2008 19:20:59 +1000
+From: Srinivasa D S <srinivasa@in.ibm.com>
+To: Andreas Schwab <schwab@suse.de>
 Subject: Re: [RFC] [PATCH] task_pt_regs for powerpc systems
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Srinivasa D S <srinivasa@in.ibm.com>
-In-Reply-To: <200807151436.55912.srinivasa@in.ibm.com>
+Date: Tue, 15 Jul 2008 14:51:00 +0530
 References: <200807071952.27427.srinivasa@in.ibm.com>
-	<200807141401.26917.srinivasa@in.ibm.com>
-	<1216026417.7549.270.camel@pasglop>
-	<200807151436.55912.srinivasa@in.ibm.com>
-Content-Type: text/plain
-Date: Tue, 15 Jul 2008 19:15:57 +1000
-Message-Id: <1216113357.7740.95.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
-Reply-To: benh@kernel.crashing.org
+	<487B8B22.6050701@freescale.com> <jemykkpdu8.fsf@sykes.suse.de>
+In-Reply-To: <jemykkpdu8.fsf@sykes.suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200807151451.00265.srinivasa@in.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,40 +37,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2008-07-15 at 14:36 +0530, Srinivasa D S wrote:
-> On Monday 14 July 2008 02:36:57 pm Benjamin Herrenschmidt wrote:
-> 
-> > > Signed-off-by: Srinivasa DS <srinivasa@in.ibm.com>
+On Monday 14 July 2008 11:06:47 pm Andreas Schwab wrote:
+> Timur Tabi <timur@freescale.com> writes:
+> > Srinivasa D S wrote:
+> >> +#define task_pt_regs(tsk)	(tsk)->thread.regs
 > >
-> > Can you send a cleanup patch against powerpc.git instead ?
+> > Shouldn't this be:
 > >
-> 
-> Resending the patch against powerpc.git tree.
+> > 	#define task_pt_regs(tsk)	((tsk)->thread.regs)
+> >
+> > just to be safe?
+>
+> Both -> and . have already highest precedence as postfix operators.
+>
 
-Nah, your initial patch is there already :-) I'm just asking for a
-cleanup one that removes the useless cast.
+Thanks for the comments, For safer side I have used "()"  and sent the updated 
+patch.
 
-Cheers,
-Ben.
-
-> 
-> Signed-off-by: Srinivasa DS <srinivasa@in.ibm.com>
-> 
-> 
-> ---
->  include/asm-powerpc/processor.h |    2 ++
->  1 file changed, 2 insertions(+)
-> 
-> Index: powerpc.git/include/asm-powerpc/processor.h
-> ===================================================================
-> --- powerpc.git.orig/include/asm-powerpc/processor.h
-> +++ powerpc.git/include/asm-powerpc/processor.h
-> @@ -234,6 +234,8 @@ struct thread_struct {
->  #define thread_saved_pc(tsk)    \
->          ((tsk)->thread.regs? (tsk)->thread.regs->nip: 0)
->  
-> +#define task_pt_regs(tsk)	((tsk)->thread.regs)
-> +
->  unsigned long get_wchan(struct task_struct *p);
->  
->  #define KSTK_EIP(tsk)  ((tsk)->thread.regs? (tsk)->thread.regs->nip: 0)
+Thanks
+ Srinivasa DS
