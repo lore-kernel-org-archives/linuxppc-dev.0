@@ -1,19 +1,20 @@
-Return-Path: <jonsmirl@gmail.com>
-Received: from qw-out-2122.google.com (qw-out-2122.google.com [74.125.92.25])
-	by ozlabs.org (Postfix) with ESMTP id 0E3EADF6EC
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jul 2008 02:15:43 +1000 (EST)
-Received: by qw-out-2122.google.com with SMTP id 9so227017qwb.15
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jul 2008 09:15:41 -0700 (PDT)
-Message-ID: <9e4733910807150915n6993932dr780f00342fadb4e@mail.gmail.com>
-Date: Tue, 15 Jul 2008 12:15:41 -0400
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Matt Sealey" <matt@genesi-usa.com>
-Subject: Re: 2.6.26 does not boot on Pegasos
-In-Reply-To: <487CC1F5.5090706@genesi-usa.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20080715100033.GA5147@iram.es> <487CC1F5.5090706@genesi-usa.com>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 1E063DE5C5
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jul 2008 02:16:24 +1000 (EST)
+Message-Id: <899616AF-593D-4B7A-A64E-3F15934CE6CF@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+In-Reply-To: <20080606192443.GA20132@polina.dev.rtsoft.ru>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v926)
+Subject: Re: [PATCH 1/2] [POWERPC] 86xx: suspend support
+Date: Tue, 15 Jul 2008 11:16:14 -0500
+References: <20080606192443.GA20132@polina.dev.rtsoft.ru>
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
+	Timur Tabi <timur@freescale.com>, Jason Jin <Jason.jin@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,51 +24,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 7/15/08, Matt Sealey <matt@genesi-usa.com> wrote:
-> If you built this kernel yourself, you need to do it from a system with
->  an up-to-date binutils (2.18) otherwise, it does this.
->
->  If you got it from somewhere (like a distribution) then please tell us
->  where, as there are some other troubles with load-base location for
->  Fedora and so on...
 
-Is it hard to put a check into the kernel make system to look for
-binutils 2.17 and refuse to build with a nice error message? I poked
-around in the makefile but I'm not 100% sure of how it works.
+On Jun 6, 2008, at 2:24 PM, Anton Vorontsov wrote:
 
+> This patch adds suspend (standby, not suspend-to-ram) support for  
+> MPC86xx
+> processors.
 >
->  --
->  Matt Sealey <matt@genesi-usa.com>
->  Genesi, Manager, Developer Relations
+> In standby mode MPC86xx is able to wakeup only upon external  
+> interrupts
+> (including sreset).
 >
->
->  Gabriel Paubert wrote:
->
-> >        Hi,
-> >
-> > I just tried to boot 2.6.26 on a Pegasos and the kernel does not boot.
-> > The last message I have is:
-> > gunzip (0xffffffff <----- some more hex digits)
-> >
-> > The configuration has been created from a working 2.6.25 one with
-> > make oldconfig and answering N to new config options.
-> >
-> > Anybody has seen this or do I have to start digging deeper?
-> >
-> >        Regards,
-> >        Gabriel
-> > _______________________________________________
-> > Linuxppc-dev mailing list
-> > Linuxppc-dev@ozlabs.org
-> > https://ozlabs.org/mailman/listinfo/linuxppc-dev
-> >
->  _______________________________________________
->  Linuxppc-dev mailing list
->  Linuxppc-dev@ozlabs.org
->  https://ozlabs.org/mailman/listinfo/linuxppc-dev
->
+> Signed-off-by: Scott Wood <scottwood@freescale.com>
+> Signed-off-by: Jason Jin <Jason.jin@freescale.com>
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> ---
+> arch/powerpc/Kconfig                          |    2 +-
+> arch/powerpc/platforms/86xx/Makefile          |    1 +
+> arch/powerpc/platforms/86xx/mpc86xx_suspend.c |   92 ++++++++++++++++ 
+> +++++++++
+> 3 files changed, 94 insertions(+), 1 deletions(-)
+> create mode 100644 arch/powerpc/platforms/86xx/mpc86xx_suspend.c
 
+I'd like to understand how much PM support these patches really add w/ 
+regards to the work Scott's done for 83xx PM.
 
--- 
-Jon Smirl
-jonsmirl@gmail.com
+- k
