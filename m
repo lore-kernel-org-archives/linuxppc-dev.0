@@ -1,18 +1,30 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 279D2DE09D
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jul 2008 23:04:45 +1000 (EST)
-Date: Tue, 15 Jul 2008 16:40:13 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Richard Purdie <rpurdie@rpsys.net>
-Subject: [PATCH v2] leds: implement OpenFirmare GPIO LED driver
-Message-ID: <20080715124013.GA13086@polina.dev.rtsoft.ru>
-References: <20080715123822.GA10893@polina.dev.rtsoft.ru>
+Return-Path: <jonsmirl@gmail.com>
+Received: from el-out-1112.google.com (el-out-1112.google.com [209.85.162.180])
+	by ozlabs.org (Postfix) with ESMTP id D97B2DE37B
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jul 2008 23:08:29 +1000 (EST)
+Received: by el-out-1112.google.com with SMTP id o28so895993ele.3
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jul 2008 06:08:28 -0700 (PDT)
+Message-ID: <9e4733910807150608o41f932c7r7a2321c56b410913@mail.gmail.com>
+Date: Tue, 15 Jul 2008 09:08:28 -0400
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: "Timur Tabi" <timur@freescale.com>,
+	"Grant Likely" <grant.likely@secretlab.ca>, linuxppc-dev@ozlabs.org,
+	alsa-devel@alsa-project.org, liam.girdwood@wolfsonmicro.com
+Subject: Re: [alsa-devel] [PATCH v2 1/3] ALSA SoC: Add OpenFirmware helper for
+	matching bus and codec drivers
+In-Reply-To: <20080715101307.GL25448@sirena.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <20080715123822.GA10893@polina.dev.rtsoft.ru>
-Cc: linuxppc-dev@ozlabs.org, Stephen Rothwell <sfr@canb.auug.org.au>,
-	linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20080712083929.15025.47682.stgit@trillian.secretlab.ca>
+	<9e4733910807140713r5739efedw81e65632006d101d@mail.gmail.com>
+	<20080714150527.GD25448@sirena.org.uk>
+	<487B7B71.9060606@freescale.com>
+	<20080714165302.GG25448@sirena.org.uk>
+	<fa686aa40807141021ka4f84e9ycc4ac78db760726c@mail.gmail.com>
+	<20080714183632.GI25448@sirena.org.uk>
+	<487B9D98.8010008@freescale.com>
+	<9e4733910807141645l404881b0m1d17d88c26792c78@mail.gmail.com>
+	<20080715101307.GL25448@sirena.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,270 +34,64 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Despite leds-gpio and leds-of-gpio similar names and purposes, there
-is not much code can be shared between the two drivers (both are mostly
-driver bindings anyway).
+On 7/15/08, Mark Brown <broonie@opensource.wolfsonmicro.com> wrote:
+> On Mon, Jul 14, 2008 at 07:45:46PM -0400, Jon Smirl wrote:
+>  > On 7/14/08, Timur Tabi <timur@freescale.com> wrote:
+>  > > Mark Brown wrote:
+>
+>
+> > >  > chassis - on Linux drivers can be automatically loaded based on these
+>  > >  > strings.  See drivers/misc/thinkpad_acpi.c for an example of a driver
+>  > >  > that does this.
+>
+>
+> > Allowing multiple binds at the root causes the problem of something
+>  > like compatible="lite5200b,mpc5200-simple". Both platforms would bind
+>  > and that's not what you want.
+>
+> Binding isn't the issue here - it's loading the driver in the first
+>  place.  Once the drivers are loaded they can (hopefully) figure out if
+>  they are running on appropriate hardware.
 
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
- Documentation/powerpc/dts-bindings/gpio/led.txt |   15 ++
- drivers/leds/Kconfig                            |    8 +
- drivers/leds/Makefile                           |    1 +
- drivers/leds/leds-of-gpio.c                     |  193 +++++++++++++++++++++++
- 4 files changed, 217 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/powerpc/dts-bindings/gpio/led.txt
- create mode 100644 drivers/leds/leds-of-gpio.c
+In this case we would end up with two core PowerPC machine drivers
+bound, not ALSA ones. We have machine drivers in the PowerPC core,
+that's one reason why it is confusing to call the ALSA drivers machine
+drivers too.
 
-diff --git a/Documentation/powerpc/dts-bindings/gpio/led.txt b/Documentation/powerpc/dts-bindings/gpio/led.txt
-new file mode 100644
-index 0000000..7e9ce81
---- /dev/null
-+++ b/Documentation/powerpc/dts-bindings/gpio/led.txt
-@@ -0,0 +1,15 @@
-+LED connected to GPIO
-+
-+Required properties:
-+- compatible : should be "gpio-led".
-+- label : (optional) the label for this LED. If omitted, the label is
-+  taken from the node name (excluding the unit address).
-+- gpios : should specify LED GPIO.
-+
-+Example:
-+
-+led@0 {
-+	compatible = "gpio-led";
-+	label = "hdd";
-+	gpios = <&mcu_pio 0 0>;
-+};
-diff --git a/drivers/leds/Kconfig b/drivers/leds/Kconfig
-index 1c35dfa..ad7eab3 100644
---- a/drivers/leds/Kconfig
-+++ b/drivers/leds/Kconfig
-@@ -119,6 +119,14 @@ config LEDS_GPIO
- 	  outputs. To be useful the particular board must have LEDs
- 	  and they must be connected to the GPIO lines.
- 
-+config LEDS_OF_GPIO
-+	tristate "LED Support for GPIO connected LEDs (OpenFirmware bindings)"
-+	depends on LEDS_CLASS && OF_GPIO
-+	help
-+	  This option enables support for the LEDs connected to GPIO
-+	  outputs. To be useful the particular board must have LEDs
-+	  and they must be connected to the GPIO lines.
-+
- config LEDS_CM_X270
- 	tristate "LED Support for the CM-X270 LEDs"
- 	depends on LEDS_CLASS && MACH_ARMCORE
-diff --git a/drivers/leds/Makefile b/drivers/leds/Makefile
-index 7156f99..593775c 100644
---- a/drivers/leds/Makefile
-+++ b/drivers/leds/Makefile
-@@ -18,6 +18,7 @@ obj-$(CONFIG_LEDS_COBALT_QUBE)		+= leds-cobalt-qube.o
- obj-$(CONFIG_LEDS_COBALT_RAQ)		+= leds-cobalt-raq.o
- obj-$(CONFIG_LEDS_PCA9532)		+= leds-pca9532.o
- obj-$(CONFIG_LEDS_GPIO)			+= leds-gpio.o
-+obj-$(CONFIG_LEDS_OF_GPIO)		+= leds-of-gpio.o
- obj-$(CONFIG_LEDS_CM_X270)              += leds-cm-x270.o
- obj-$(CONFIG_LEDS_CLEVO_MAIL)		+= leds-clevo-mail.o
- obj-$(CONFIG_LEDS_HP6XX)		+= leds-hp6xx.o
-diff --git a/drivers/leds/leds-of-gpio.c b/drivers/leds/leds-of-gpio.c
-new file mode 100644
-index 0000000..02c4290
---- /dev/null
-+++ b/drivers/leds/leds-of-gpio.c
-@@ -0,0 +1,193 @@
-+/*
-+ * LEDs driver for GPIOs (OpenFirmware bindings)
-+ *
-+ * Copyright (C) 2007 8D Technologies inc.
-+ * Raphael Assenat <raph@8d.com>
-+ * Copyright (C) 2008 MontaVista Software, Inc.
-+ * Anton Vorontsov <avorontsov@ru.mvista.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/init.h>
-+#include <linux/device.h>
-+#include <linux/gpio.h>
-+#include <linux/of_gpio.h>
-+#include <linux/of_platform.h>
-+#include <linux/leds.h>
-+#include <linux/workqueue.h>
-+
-+struct of_gpio_led {
-+	struct device_node *np;
-+	struct led_classdev cdev;
-+	unsigned int gpio;
-+	struct work_struct work;
-+	u8 new_level;
-+	u8 can_sleep;
-+};
-+
-+static void gpio_led_work(struct work_struct *work)
-+{
-+	struct of_gpio_led *led = container_of(work, struct of_gpio_led, work);
-+
-+	gpio_set_value_cansleep(led->gpio, led->new_level);
-+}
-+
-+static void gpio_led_set(struct led_classdev *led_cdev,
-+			 enum led_brightness value)
-+{
-+	struct of_gpio_led *led = container_of(led_cdev, struct of_gpio_led,
-+					       cdev);
-+	int level;
-+
-+	if (value == LED_OFF)
-+		level = 0;
-+	else
-+		level = 1;
-+
-+	/* Setting GPIOs with I2C/etc requires a task context, and we don't
-+	 * seem to have a reliable way to know if we're already in one; so
-+	 * let's just assume the worst.
-+	 */
-+	if (led->can_sleep) {
-+		led->new_level = level;
-+		schedule_work(&led->work);
-+	} else {
-+		gpio_set_value(led->gpio, level);
-+	}
-+}
-+
-+static int __devinit of_gpio_leds_probe(struct of_device *ofdev,
-+					const struct of_device_id *match)
-+{
-+	int ret;
-+	struct of_gpio_led *led;
-+	struct device_node *np = ofdev->node;
-+
-+	led = kzalloc(sizeof(*led), GFP_KERNEL);
-+	if (!led)
-+		return -ENOMEM;
-+
-+	led->np = of_node_get(np);
-+
-+	ret = of_get_gpio(np, 0);
-+	if (!gpio_is_valid(ret)) {
-+		dev_err(&ofdev->dev, "gpio is invalid\n");
-+		goto err_get_gpio;
-+	}
-+	led->gpio = ret;
-+	led->can_sleep = gpio_cansleep(led->gpio);
-+
-+	led->cdev.name = of_get_property(np, "label", NULL);
-+	if (!led->cdev.name)
-+		led->cdev.name = dev_name(&ofdev->dev);
-+	led->cdev.brightness_set = gpio_led_set;
-+
-+	ret = gpio_request(led->gpio, dev_name(&ofdev->dev));
-+	if (ret < 0) {
-+		dev_err(&ofdev->dev, "could not request gpio, status is %d\n",
-+			ret);
-+		goto err_gpio;
-+	}
-+
-+	ret = gpio_direction_output(led->gpio, 0);
-+	if (ret) {
-+		dev_err(&ofdev->dev, "gpio could not be an output, "
-+			"status is %d\n", ret);
-+		goto err_gpio;
-+	}
-+
-+	INIT_WORK(&led->work, gpio_led_work);
-+	dev_set_drvdata(&ofdev->dev, led);
-+
-+	ret = led_classdev_register(&ofdev->dev, &led->cdev);
-+	if (ret < 0) {
-+		dev_err(&ofdev->dev, "could register led cdev, status is %d\n",
-+			ret);
-+		gpio_free(led->gpio);
-+		goto err_reg_cdev;
-+	}
-+
-+	return 0;
-+
-+err_reg_cdev:
-+	cancel_work_sync(&led->work);
-+err_gpio:
-+	gpio_free(led->gpio);
-+err_get_gpio:
-+	of_node_put(led->np);
-+	kfree(led);
-+	return ret;
-+}
-+
-+static int __devexit of_gpio_leds_remove(struct of_device *ofdev)
-+{
-+	struct of_gpio_led *led = dev_get_drvdata(&ofdev->dev);
-+
-+	led_classdev_unregister(&led->cdev);
-+	cancel_work_sync(&led->work);
-+	gpio_free(led->gpio);
-+	of_node_put(led->np);
-+	kfree(led);
-+
-+	return 0;
-+}
-+
-+#ifdef CONFIG_PM
-+static int of_gpio_led_suspend(struct of_device *ofdev, pm_message_t state)
-+{
-+	struct of_gpio_led *led = dev_get_drvdata(&ofdev->dev);
-+
-+	led_classdev_suspend(&led->cdev);
-+	return 0;
-+}
-+
-+static int of_gpio_led_resume(struct of_device *ofdev)
-+{
-+	struct of_gpio_led *led = dev_get_drvdata(&ofdev->dev);
-+
-+	led_classdev_resume(&led->cdev);
-+	return 0;
-+}
-+#else
-+#define of_gpio_led_suspend NULL
-+#define of_gpio_led_resume NULL
-+#endif /* CONFIG_PM */
-+
-+static const struct of_device_id of_gpio_leds_match[] = {
-+	{ .compatible = "gpio-led", },
-+	{},
-+};
-+MODULE_DEVICE_TABLE(of, of_gpio_leds_match);
-+
-+static struct of_platform_driver of_gpio_leds_driver = {
-+	.driver = {
-+		.name = "of_gpio_leds",
-+		.owner = THIS_MODULE,
-+	},
-+	.match_table = of_gpio_leds_match,
-+	.probe = of_gpio_leds_probe,
-+	.remove = __devexit_p(of_gpio_leds_remove),
-+	.suspend = of_gpio_led_suspend,
-+	.resume = of_gpio_led_resume,
-+};
-+
-+static int __init of_gpio_leds_init(void)
-+{
-+	return of_register_platform_driver(&of_gpio_leds_driver);
-+}
-+module_init(of_gpio_leds_init);
-+
-+static void __exit of_gpio_leds_exit(void)
-+{
-+	of_unregister_platform_driver(&of_gpio_leds_driver);
-+}
-+module_exit(of_gpio_leds_exit);
-+
-+MODULE_DESCRIPTION("OF GPIO LED driver");
-+MODULE_AUTHOR("Anton Vorontsov <avorontsov@ru.mvista.com>");
-+MODULE_LICENSE("GPL");
+If we allow multiple bindings both lite5200b and mpc5200-simple would
+bind. The compatible list is a priority list from most specific to
+most general. First you check for the specific driver lite5200b, if
+it's not found then load the generic one mpc5200-simple.
+
+>  > Another scheme would be to add kernel code to always create virtual OF
+>  > devices like "lite5200b-fabric" that are derived off from the machine
+>  > name that achieved a bind.
+>
+>
+> This is what I'm suggesting, modulo the fact that I'm suggesting *not*
+>  creating virtual devices but rather providing a mechanism for drivers to
+>  load without binding to anything.  It strikes me that you're going to
+
+If you have drivers for four different hardware releases compiled into
+your kernel, the only kernel mechanism I know of  to trigger only one
+of these to initialize is to create a device and then let the probe
+mechanism sort it out. This is even more true when the drivers are on
+initrd and need to be dynamically loaded. The module load code will
+search through the alias lists in the module .ko files.
+
+It has been pointed out that a lite5200b-fabric device isn't really a
+virtual devices. It's a device that represents the traces on the PCB
+wiring the generic chip drivers together.
+
+>  run into similar situations with other hardware at some point - either
+>  for undocumented extras that you happen to know exist on the system
+>  (like much of the DMI usage on x86) or for other things where you've got
+>  on-board hardware structured like sound hardware tends to be.
+
+This makes sense, it is possible that other areas we aren't familiar
+with will need fabric drivers too. The problem is easily exposed in
+audio hardware since we use external clock and amp chips.
+
 -- 
-1.5.5.4
+Jon Smirl
+jonsmirl@gmail.com
