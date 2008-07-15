@@ -1,21 +1,24 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id DD414DE8BA
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jul 2008 02:09:49 +1000 (EST)
-Message-Id: <20510121-E683-475F-8B40-7C26F346FC2D@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: avorontsov@ru.mvista.com
-In-Reply-To: <20080715160048.GA31615@polina.dev.rtsoft.ru>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v926)
-Subject: Re: GPIO drivers, other patches?
-Date: Tue, 15 Jul 2008 11:09:40 -0500
-References: <AB4393B8-8578-4AFA-B23A-048F86A9A24D@kernel.crashing.org>
-	<20080715160048.GA31615@polina.dev.rtsoft.ru>
-Cc: Scott Wood <scottwood@freescale.com>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 36115DF458
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jul 2008 02:10:55 +1000 (EST)
+Date: Tue, 15 Jul 2008 20:10:53 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH v2] powerpc: add FHCI USB, FSL MCU, FSL UPM and GPIO
+	LEDs bindings
+Message-ID: <20080715161053.GA9356@polina.dev.rtsoft.ru>
+References: <20080703174844.GA27966@polina.dev.rtsoft.ru>
+	<EC062FA3-9CF8-4A94-95C7-2AAF22754A9C@kernel.crashing.org>
+	<20080703182440.GA2576@polina.dev.rtsoft.ru>
+	<8A8D87F8-A1DD-467D-8D83-CDC651B99F45@kernel.crashing.org>
+	<20080704165328.GA9962@polina.dev.rtsoft.ru>
+	<C3A1E950-3D5F-4172-90B6-1566D4A70B7C@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <C3A1E950-3D5F-4172-90B6-1566D4A70B7C@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,45 +28,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Jul 15, 2008, at 11:00 AM, Anton Vorontsov wrote:
-
-> On Tue, Jul 15, 2008 at 10:10:21AM -0500, Kumar Gala wrote:
->> Anton,
+On Tue, Jul 15, 2008 at 08:21:38AM -0500, Kumar Gala wrote:
+>
+> On Jul 4, 2008, at 11:53 AM, Anton Vorontsov wrote:
+>
+>> This patch adds few bindings for the new drivers to be submitted  
+>> through
+>> the appropriate maintainers.
 >>
->> I think I've gotten most of the patches from you,
+>> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+>> ---
+>>
+>> Updated to decrypt MCU, and to split the bindings into appropriate  
+>> files.
+>>
+>> .../powerpc/device-tree/fsl/mcu-mpc8349emitx.txt   |   17 +++++++++
+>> Documentation/powerpc/device-tree/fsl/qe/usb.txt   |   37 +++++++++++ 
+>> +++++++++
+>> Documentation/powerpc/device-tree/fsl/upm-nand.txt |   28 +++++++++++ 
+>> ++++
+>> Documentation/powerpc/device-tree/gpio/led.txt     |   15 ++++++++
+>> 4 files changed, 97 insertions(+), 0 deletions(-)
+>> create mode 100644 Documentation/powerpc/device-tree/fsl/mcu- 
+>> mpc8349emitx.txt
+>> create mode 100644 Documentation/powerpc/device-tree/fsl/qe/usb.txt
+>> create mode 100644 Documentation/powerpc/device-tree/fsl/upm-nand.txt
+>> create mode 100644 Documentation/powerpc/device-tree/gpio/led.txt
 >
-> Yes, much thanks!
->
->> but I know there are
->> few I've lost.  Can you just repost any patches that aren't in my
->> powerpc-next tree.
->
-> Only this minor patch is missing:
->
-> [PATCH v3] powerpc/83xx: update mpc83xx_defconfig to support  
-> MPC8360E-RDK
-> http://patchwork.ozlabs.org/linuxppc/patch?id=18903
+> applied.
 
-This one I'll hold off on until we update defconfigs after an -rc or  
-two.
+Ugh, you fixed bindings' directory in Jochen's CPM patch, but not in
+my patch:
 
-> There are also last two patches I need to rework a bit (to be in
-> compliance with latest power management work done by Scott Wood):
->
-> [PATCH 1/2] [POWERPC] 86xx: suspend support
-> http://patchwork.ozlabs.org/linuxppc/patch?id=18836
->
-> [PATCH 2/2] [POWERPC] 86xx: mpc8610_hpcd: add wakeup-on-sw9 support
-> http://patchwork.ozlabs.org/linuxppc/patch?id=18837
->
-> I'll resubmit them today or tomorrow. (Though, I'll appreciate if you
-> will look into these two, maybe you'll have any comments I can fix
-> before resubmitting).
+commit 91993d56812fd09b6cccea12d3c83df623cb0ea6
+Author: Anton Vorontsov <avorontsov@ru.mvista.com>
+Date:   Fri Jul 4 20:53:28 2008 +0400
 
-I want to hold off on these two patches.  I'd like to understand how  
-the function in the larger 8xxx PM world.  I've applied Scott's 83xx  
-PM patches for sleep and clearly we are doing a lot more work than on  
-86xx.
+    powerpc: add FHCI USB, FSL MCU, FSL UPM and GPIO LEDs bindings
+    
+    This patch adds few bindings for the new drivers to be submitted through
+    the appropriate maintainers.
+    
+    Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+    Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 
-- k
+diff --git a/Documentation/powerpc/device-tree/fsl/mcu-mpc8349emitx.txt b/Documentation/powerpc/device-tree/fsl/mcu-mpc8349emit
+new file mode 100644
+index 0000000..0f76633
+--- /dev/null
++++ b/Documentation/powerpc/device-tree/fsl/mcu-mpc8349emitx.txt
+....
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
