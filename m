@@ -1,20 +1,29 @@
-Return-Path: <neko@genesi-usa.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.173])
-	by ozlabs.org (Postfix) with ESMTP id E6CECDE83B
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jul 2008 01:27:49 +1000 (EST)
-Received: by ug-out-1314.google.com with SMTP id k3so362719ugf.0
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jul 2008 08:27:47 -0700 (PDT)
-Message-ID: <487CC1F5.5090706@genesi-usa.com>
-Date: Tue, 15 Jul 2008 16:27:49 +0100
-From: Matt Sealey <matt@genesi-usa.com>
+Return-Path: <david.c.hubbard@gmail.com>
+Received: from yx-out-2324.google.com (yx-out-2324.google.com [74.125.44.29])
+	by ozlabs.org (Postfix) with ESMTP id A1891DE86F
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jul 2008 01:31:33 +1000 (EST)
+Received: by yx-out-2324.google.com with SMTP id 8so1422655yxg.39
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jul 2008 08:31:31 -0700 (PDT)
+Message-ID: <4dfa50520807150831i519a3a43n635ab7e58d35ba5e@mail.gmail.com>
+Date: Tue, 15 Jul 2008 09:31:29 -0600
+From: "David Hubbard" <david.c.hubbard@gmail.com>
+To: "Jean Delvare" <khali@linux-fr.org>
+Subject: Re: [RFC] (almost) booting allyesconfig -- please don't poke super-io
+	without request_region
+In-Reply-To: <20080715103613.4fbbf01f@hyperion.delvare>
 MIME-Version: 1.0
-To: Gabriel Paubert <paubert@iram.es>
-Subject: Re: 2.6.26 does not boot on Pegasos
-References: <20080715100033.GA5147@iram.es>
-In-Reply-To: <20080715100033.GA5147@iram.es>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Sender: Matt Sealey <neko@genesi-usa.com>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=ISO-8859-1
+References: <for-27-patch1-0@bga.com> <4879A144.8060203@hhs.nl>
+	<4dfa50520807131411ied883cgcb20eb6bd94f761@mail.gmail.com>
+	<487A7211.7030309@hhs.nl>
+	<4dfa50520807131426t4013142cp1fcd49e078a79c1f@mail.gmail.com>
+	<20080714095914.0644ac5d@hyperion.delvare>
+	<88f5162604470179b3c6ebfe729a46f5@bga.com> <487B8D2C.1090208@hhs.nl>
+	<4dfa50520807141055l532caaaai700255936600e5ae@mail.gmail.com>
+	<20080715103613.4fbbf01f@hyperion.delvare>
+Cc: Samuel Ortiz <samuel@sortiz.org>, linux-kernel@vger.kernel.org,
+	Milton Miller <miltonm@bga.com>, lm-sensors@lm-sensors.org,
+	linuxppc-dev@ozlabs.org, Hans de Goede <j.w.r.degoede@hhs.nl>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,32 +33,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-If you built this kernel yourself, you need to do it from a system with
-an up-to-date binutils (2.18) otherwise, it does this.
+Hi Jean,
 
-If you got it from somewhere (like a distribution) then please tell us
-where, as there are some other troubles with load-base location for
-Fedora and so on...
+On Tue, Jul 15, 2008 at 2:36 AM, Jean Delvare <khali@linux-fr.org> wrote:
+>> Is there any way to use lspci and start at the LPC bridge, then find
+>> the SuperIO chip's IO address? What about ACPI tables? Perhaps probing
+>> logic could look for an LPC bridge before probing certain IO addresses
+>> even if the addresses are not in the LPC bridge config.
+>
+> I always assumed that there was no way to know in advance if a
+> Super-I/O (LPC) chip was present or not, let alone the exact model of
+> the chip. The I/O addresses are decoded by the Super-I/O chip itself,
+> and in general it has no relation to PCI. And I've never seen ports
+> 0x2e/0x2f nor 0x4e/0x4f listed in /proc/ioports.
+>
+> But of course if there is a way to know, we should use it. Avoiding
+> random access to I/O ports, even if they are relatively standard in
+> this case, is always good.
 
--- 
-Matt Sealey <matt@genesi-usa.com>
-Genesi, Manager, Developer Relations
+I looked at my lspci output and did a little researching, and I think
+the only thing we can deduce is that there is an LPC bridge, so
+looking for a SuperIO is a good idea. If there is no LPC bridge
+listed, I can't say whether probing the ports is a good idea or not.
 
-Gabriel Paubert wrote:
-> 	Hi,
-> 
-> I just tried to boot 2.6.26 on a Pegasos and the kernel does not boot.
-> The last message I have is:
-> gunzip (0xffffffff <----- some more hex digits)
-> 
-> The configuration has been created from a working 2.6.25 one with
-> make oldconfig and answering N to new config options.
-> 
-> Anybody has seen this or do I have to start digging deeper?
-> 
-> 	Regards,
-> 	Gabriel
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+David
