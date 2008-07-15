@@ -1,16 +1,17 @@
-Return-Path: <tony@bakeyournoodle.com>
-Received: from pythia.bakeyournoodle.com (pythia.bakeyournoodle.com
-	[203.82.209.197]) by ozlabs.org (Postfix) with ESMTP id 34C07DDED4
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jul 2008 12:22:04 +1000 (EST)
-Date: Tue, 15 Jul 2008 12:22:03 +1000
-From: Tony Breeds <tony@bakeyournoodle.com>
-To: Nathan Lynch <ntl@pobox.com>
+Return-Path: <ntl@pobox.com>
+Received: from sasl.smtp.pobox.com (a-sasl-fastnet.sasl.smtp.pobox.com
+	[207.106.133.19]) by ozlabs.org (Postfix) with ESMTP id 93F1BDDFC9
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jul 2008 12:24:55 +1000 (EST)
+Date: Mon, 14 Jul 2008 21:24:40 -0500
+From: Nathan Lynch <ntl@pobox.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: [PATCH] kill useless SMT code in prom_hold_cpus
-Message-ID: <20080715022202.GD20457@bakeyournoodle.com>
+Message-ID: <20080715022440.GU9594@localdomain>
 References: <20080708223631.GP9594@localdomain>
+	<1216087555.7740.42.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20080708223631.GP9594@localdomain>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1216087555.7740.42.camel@pasglop>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -21,32 +22,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Jul 08, 2008 at 05:36:31PM -0500, Nathan Lynch wrote:
-> I think this code that counts SMT threads and compares against NR_CPUS
-> is an artifact of pre-powerpc-merge ppc64.  We care about starting
-> only primary threads in the OF client code.
+Benjamin Herrenschmidt wrote:
+> On Tue, 2008-07-08 at 17:36 -0500, Nathan Lynch wrote:
+> > I think this code that counts SMT threads and compares against NR_CPUS
+> > is an artifact of pre-powerpc-merge ppc64.  We care about starting
+> > only primary threads in the OF client code.
+> > 
+> > Signed-off-by: Nathan Lynch <ntl@pobox.com>
+> 
+> That looks good. I'm not merging it right now because I want to dbl
+> check that it's allright on all SMT machines. IE. We compare reg[0]
+> against _prom->cpu now instead of interrupt_server[0] and I thus
+> want to ensure it's the same everywhere.
 
-<snip>
-
-> -			prom_printf("%x : starting cpu hw idx %x... ", cpuid, reg);
-> +			prom_printf("starting cpu hw idx %x... ", reg);
-
-If we remove this, where else can we see the mapping of hardware IDs
-to logical cpu IDs?  This is useful on POWER4 (at least where they can be
-different).
-
-<snip>
- 
-> -	if (cpuid > NR_CPUS)
-> -		prom_printf("WARNING: maximum CPUs (" __stringify(NR_CPUS)
-> -			    ") exceeded: ignoring extras\n");
-> -
-
-I think this printf() is valuable, if your boot a 128 thread machine on
-a kernel with NR_CPUS=64, this is the only messaage you get to indicate
-that you're wasting 64 threads, and how to resolve it.
-
-Yours Tony
-
-  linux.conf.au    http://www.marchsouth.org/
-  Jan 19 - 24 2009 The Australian Linux Technical Conference!
+Thanks.  Looks like prom_find_boot_cpu is setting _prom->cpu to reg
+(or 0), so I think it should be fine... a system where reg differed
+from interrupt_server[0] would have been broken before this patch
+anyway, I think?
