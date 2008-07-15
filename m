@@ -1,17 +1,18 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 2C264DE099
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jul 2008 07:27:23 +1000 (EST)
-Date: Tue, 15 Jul 2008 16:27:16 -0500 (CDT)
-From: Kumar Gala <galak@kernel.crashing.org>
+Return-Path: <arnd@arndb.de>
+From: Arnd Bergmann <arnd@arndb.de>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc: Introduce local (non-broadcast) forms of tlb
-	invalidates
-Message-ID: <Pine.LNX.4.64.0807151627020.29665@blarg.am.freescale.net>
+Subject: Re: [patch 9/9] powerpc/cell: Add DMA_ATTR_STRONG_ORDERING dma
+	attribute and use in IOMMU code
+Date: Tue, 15 Jul 2008 23:27:06 +0200
+References: <20080715195139.316677337@arndb.de>
+	<20080715195740.098068951@arndb.de> <ada3amaevj5.fsf@cisco.com>
+In-Reply-To: <ada3amaevj5.fsf@cisco.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="utf-8"
+Message-Id: <200807152327.06946.arnd@arndb.de>
+Cc: Mark Nelson <markn@au1.ibm.com>, Roland Dreier <rdreier@cisco.com>,
+	cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,195 +22,62 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Introduced a new set of low level tlb invalidate functions that do not
-broadcast invalidates on the bus:
+On Tuesday 15 July 2008, Roland Dreier wrote:
+> Sorry for the late comments, I missed this when it went by before.
+>=20
+> =C2=A0> +DMA_ATTR_STRONG_ORDERING
+> =C2=A0> +----------------------
+> =C2=A0> +
+> =C2=A0> +DMA_ATTR_STRONG_ORDERING specifies that previous reads and write=
+s are
+> =C2=A0> +performed in the order in which they're received by the IOMMU; t=
+hus
+> =C2=A0> +reads and writes may not pass each other.
+>=20
+> I don't understand what this is trying to say. =C2=A0What is "previous"
+> referring to? What does "received by the IOMMU" mean -- do you mean=20
+> issued onto the bus by the CPU?
 
-_tlbil_all - invalidate all
-_tlbil_pid - invalidate based on process id (or mm context)
-_tlbil_va  - invalidate based on virtual address (ea + pid)
+This is all about inbound transfers, i.e. DMAs coming from the I/O bridge
+into the CPU, both DMA read and DMA write.
 
-On non-SMP configs _tlbil_all should be functionally equivalent to _tlbia and
-_tlbil_va should be functionally equivalent to _tlbie.
+The relevant paragraph in the specification is=20
+"If the SO bits in the I/O page table entry =3D =E2=80=9811=E2=80=99 and th=
+e IOIF S-bit is =E2=80=981=E2=80=99,
+this READ or WRITE cannot be placed on the EIB until all previous READs and
+WRITEs from this CVCID and IOID have gotten an ACK or NULL type snoop respo=
+nse."
 
-The intent of this change is to handle SMP based invalidates via IPIs instead
-of broadcasts as the mechanism scales better for larger number of cores.
+Normally, this is only true for accesses going to the same cache line,
+accesses from one device to different cache lines that are issued in order
+also send their response in-order (unless you get an I/O exception, which m=
+eans
+you're toast), but can arrive at the I/O location out of order.
 
-On e500 (fsl-booke mmu) based cores move to using MMUCSR for invalidate alls
-and tlbsx/tlbwe for invalidate virtual address.
+My interpretation is that strong ordering basically turns our whole I/O
+subsystem into single-issue non-posted accesses (all devices are currently
+configured to use the same CVCID and IOID), so we really should not
+do that.
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
----
- arch/powerpc/kernel/misc_32.S   |   53 +++++++++++++++++++++++++++++++++++++++
- arch/powerpc/kernel/ppc_ksyms.c |    1 +
- include/asm-powerpc/reg_booke.h |    7 +++++
- include/asm-powerpc/tlbflush.h  |   13 ++++++---
- 4 files changed, 69 insertions(+), 5 deletions(-)
+> When you say "reads and writes may not=20
+> pass each other," do you mean just that reads may not pass writes and
+> writes may not pass reads, or do you mean that reads also can't pass
+> reads and writes can't pass writes?
+>=20
+> Since I don't know exactly what this attribute does, I can't be sure,
+> but it seems that making weak ordering the default is dangerous in that
+> it breaks drivers that expect usual memory ordering semantics. =C2=A0Woul=
+d it
+> be safer/better to make strong ordering the default and then add a
+> "WEAK_ORDERING" attribute that drivers can use as an optimization?
 
-diff --git a/arch/powerpc/kernel/misc_32.S b/arch/powerpc/kernel/misc_32.S
-index 6321ae3..9245b75 100644
---- a/arch/powerpc/kernel/misc_32.S
-+++ b/arch/powerpc/kernel/misc_32.S
-@@ -274,6 +274,9 @@ _GLOBAL(real_writeb)
- /*
-  * Flush MMU TLB
-  */
-+#ifndef CONFIG_FSL_BOOKE
-+_GLOBAL(_tlbil_all)
-+#endif
- _GLOBAL(_tlbia)
- #if defined(CONFIG_40x)
- 	sync			/* Flush to memory before changing mapping */
-@@ -344,6 +347,9 @@ _GLOBAL(_tlbia)
- /*
-  * Flush MMU TLB for a particular address
-  */
-+#ifndef CONFIG_FSL_BOOKE
-+_GLOBAL(_tlbil_va)
-+#endif
- _GLOBAL(_tlbie)
- #if defined(CONFIG_40x)
- 	/* We run the search with interrupts disabled because we have to change
-@@ -436,6 +442,53 @@ _GLOBAL(_tlbie)
- #endif /* ! CONFIG_40x */
- 	blr
+With all our existing hardware, the I/O bridge overrides the setting
+to select weak ordering. The purpose of this patch is to change the
+default so that the bridge does not force weak ordering any more and
+some drivers are free to set strong ordering without impacting performance
+on the other drivers.
 
-+#if defined(CONFIG_FSL_BOOKE)
-+/*
-+ * Flush MMU TLB, but only on the local processor (no broadcast)
-+ */
-+_GLOBAL(_tlbil_all)
-+#define MMUCSR0_TLBFI	(MMUCSR0_TLB0FI | MMUCSR0_TLB1FI | \
-+			 MMUCSR0_TLB2FI | MMUCSR0_TLB3FI)
-+	li	r3,(MMUCSR0_TLBFI)@l
-+	mtspr	SPRN_MMUCSR0, r3
-+1:
-+	mfspr	r3,SPRN_MMUCSR0
-+	andi.	r3,r3,MMUCSR0_TLBFI@l
-+	bne	1b
-+	blr
-+
-+/*
-+ * Flush MMU TLB for a particular process id, but only on the local processor
-+ * (no broadcast)
-+ */
-+_GLOBAL(_tlbil_pid)
-+	li	r3,(MMUCSR0_TLBFI)@l
-+	mtspr	SPRN_MMUCSR0, r3
-+1:
-+	mfspr	r3,SPRN_MMUCSR0
-+	andi.	r1,r2,MMUCSR0_TLBFI@l
-+	bne	1b
-+	blr
-+
-+/*
-+ * Flush MMU TLB for a particular address, but only on the local processor
-+ * (no broadcast)
-+ */
-+_GLOBAL(_tlbil_va)
-+	slwi	r4,r4,16
-+	mtspr	SPRN_MAS6,r4		/* assume AS=0 for now */
-+	tlbsx	0,r3
-+	mfspr	r4,SPRN_MAS1		/* check valid */
-+	andis.	r3,r4,MAS1_VALID@h
-+	beq	1f
-+	rlwinm	r4,r4,0,1,31
-+	mtspr	SPRN_MAS1,r4
-+	tlbwe
-+1:
-+	blr
-+#endif /* CONFIG_FSL_BOOKE */
-+
-+
- /*
-  * Flush instruction cache.
-  * This is a no-op on the 601.
-diff --git a/arch/powerpc/kernel/ppc_ksyms.c b/arch/powerpc/kernel/ppc_ksyms.c
-index 958ecb9..b7e4ff0 100644
---- a/arch/powerpc/kernel/ppc_ksyms.c
-+++ b/arch/powerpc/kernel/ppc_ksyms.c
-@@ -114,6 +114,7 @@ EXPORT_SYMBOL(flush_instruction_cache);
- EXPORT_SYMBOL(flush_tlb_kernel_range);
- EXPORT_SYMBOL(flush_tlb_page);
- EXPORT_SYMBOL(_tlbie);
-+EXPORT_SYMBOL(_tlbil_va);
- #endif
- EXPORT_SYMBOL(__flush_icache_range);
- EXPORT_SYMBOL(flush_dcache_range);
-diff --git a/include/asm-powerpc/reg_booke.h b/include/asm-powerpc/reg_booke.h
-index be980f4..6745376 100644
---- a/include/asm-powerpc/reg_booke.h
-+++ b/include/asm-powerpc/reg_booke.h
-@@ -109,6 +109,7 @@
- #define SPRN_EVPR	0x3D6	/* Exception Vector Prefix Register */
- #define SPRN_L1CSR0	0x3F2	/* L1 Cache Control and Status Register 0 */
- #define SPRN_L1CSR1	0x3F3	/* L1 Cache Control and Status Register 1 */
-+#define SPRN_MMUCSR0	0x3F4	/* MMU Control and Status Register 0 */
- #define SPRN_PIT	0x3DB	/* Programmable Interval Timer */
- #define SPRN_BUCSR	0x3F5	/* Branch Unit Control and Status */
- #define SPRN_L2CSR0	0x3F9	/* L2 Data Cache Control and Status Register 0 */
-@@ -410,6 +411,12 @@
- #define L2CSR0_L2LOA	0x00000080	/* L2 Cache Lock Overflow Allocate */
- #define L2CSR0_L2LO	0x00000020	/* L2 Cache Lock Overflow */
+Strong ordering is only active when both the bridge and the IOMMU enable
+it, but for correctly written drivers, this only results in a slowdown.
 
-+/* Bit definitions for MMUCSR0 */
-+#define MMUCSR0_TLB1FI	0x00000002	/* TLB1 Flash invalidate */
-+#define MMUCSR0_TLB0FI	0x00000004	/* TLB0 Flash invalidate */
-+#define MMUCSR0_TLB2FI	0x00000040	/* TLB2 Flash invalidate */
-+#define MMUCSR0_TLB3FI	0x00000020	/* TLB3 Flash invalidate */
-+
- /* Bit definitions for SGR. */
- #define SGR_NORMAL	0		/* Speculative fetching allowed. */
- #define SGR_GUARDED	1		/* Speculative fetching disallowed. */
-diff --git a/include/asm-powerpc/tlbflush.h b/include/asm-powerpc/tlbflush.h
-index 5c91081..29da561 100644
---- a/include/asm-powerpc/tlbflush.h
-+++ b/include/asm-powerpc/tlbflush.h
-@@ -29,6 +29,9 @@
- #include <linux/mm.h>
-
- extern void _tlbie(unsigned long address, unsigned int pid);
-+extern void _tlbil_all(void);
-+extern void _tlbil_pid(unsigned int pid);
-+extern void _tlbil_va(unsigned long address, unsigned int pid);
-
- #if defined(CONFIG_40x) || defined(CONFIG_8xx)
- #define _tlbia()	asm volatile ("tlbia; sync" : : : "memory")
-@@ -38,31 +41,31 @@ extern void _tlbia(void);
-
- static inline void flush_tlb_mm(struct mm_struct *mm)
- {
--	_tlbia();
-+	_tlbil_all();
- }
-
- static inline void flush_tlb_page(struct vm_area_struct *vma,
- 				  unsigned long vmaddr)
- {
--	_tlbie(vmaddr, vma ? vma->vm_mm->context.id : 0);
-+	_tlbil_va(vmaddr, vma ? vma->vm_mm->context.id : 0);
- }
-
- static inline void flush_tlb_page_nohash(struct vm_area_struct *vma,
- 					 unsigned long vmaddr)
- {
--	_tlbie(vmaddr, vma ? vma->vm_mm->context.id : 0);
-+	flush_tlb_page(vma, vmaddr);
- }
-
- static inline void flush_tlb_range(struct vm_area_struct *vma,
- 				   unsigned long start, unsigned long end)
- {
--	_tlbia();
-+	_tlbil_all();
- }
-
- static inline void flush_tlb_kernel_range(unsigned long start,
- 					  unsigned long end)
- {
--	_tlbia();
-+	_tlbil_all();
- }
-
- #elif defined(CONFIG_PPC32)
--- 
-1.5.5.1
+	Arnd <><
