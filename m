@@ -1,14 +1,12 @@
 Return-Path: <ntl@pobox.com>
 Received: from sasl.smtp.pobox.com (a-sasl-fastnet.sasl.smtp.pobox.com
-	[207.106.133.19]) by ozlabs.org (Postfix) with ESMTP id 1EBE0DDF86
+	[207.106.133.19]) by ozlabs.org (Postfix) with ESMTP id 24409DDF8A
 	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jul 2008 09:59:07 +1000 (EST)
 From: Nathan Lynch <ntl@pobox.com>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH] enable AT_BASE_PLATFORM aux vector for powerpc
-Date: Tue, 15 Jul 2008 18:58:51 -0500
-Message-Id: <1216166331-14810-3-git-send-email-ntl@pobox.com>
-In-Reply-To: <1216166331-14810-1-git-send-email-ntl@pobox.com>
-References: <1216166331-14810-1-git-send-email-ntl@pobox.com>
+Subject: AT_BASE_PLATFORM (v2)
+Date: Tue, 15 Jul 2008 18:58:49 -0500
+Message-Id: <1216166331-14810-1-git-send-email-ntl@pobox.com>
 Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, roland@redhat.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
@@ -19,77 +17,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Stash the first platform string matched by identify_cpu() in
-powerpc_base_platform, and supply that to the ELF loader for the value
-of AT_BASE_PLATFORM.
+Background:
+Some IBM POWER-based systems have the ability to run in a
+"compatibility" mode which mostly appears to the OS as a different
+processor from the actual hardware.  This feature of the platform is
+useful for live partition migration and for backwards compatibility
+with old kernels on new hardware.  For example, a Power6 system may
+appear to be a Power5+, which makes the AT_PLATFORM value "power5+".
 
-Signed-off-by: Nathan Lynch <ntl@pobox.com>
----
- arch/powerpc/kernel/cputable.c |   11 +++++++++++
- include/asm-powerpc/cputable.h |    2 ++
- include/asm-powerpc/elf.h      |    8 ++++++++
- 3 files changed, 21 insertions(+), 0 deletions(-)
+Problem:
+Booting a system in a compatibility mode means that ld.so may load
+libraries that are inappropriately tuned for the real
+microarchitecture, and apps that use JIT techniques do not have the
+right information for generating tuned code.  While the AT_PLATFORM
+auxiliary vector entry correctly indicates the ISA supported, it does
+not accurately reflect the underlying microarchitecture in this case,
+and there is no good way for userspace to get this information.
 
-diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
-index f7f3c21..89d8731 100644
---- a/arch/powerpc/kernel/cputable.c
-+++ b/arch/powerpc/kernel/cputable.c
-@@ -23,6 +23,9 @@
- struct cpu_spec* cur_cpu_spec = NULL;
- EXPORT_SYMBOL(cur_cpu_spec);
- 
-+/* The platform string corresponding to the real PVR */
-+const char *powerpc_base_platform;
-+
- /* NOTE:
-  * Unlike ppc32, ppc64 will only call this once for the boot CPU, it's
-  * the responsibility of the appropriate CPU save/restore functions to
-@@ -1632,6 +1635,14 @@ struct cpu_spec * __init identify_cpu(unsigned long offset, unsigned int pvr)
- 			} else
- 				*t = *s;
- 			*PTRRELOC(&cur_cpu_spec) = &the_cpu_spec;
-+
-+			/*
-+			 * Set the base platform string once; assumes
-+			 * we're called with real pvr first.
-+			 */
-+			if (powerpc_base_platform == NULL)
-+				powerpc_base_platform = t->platform;
-+
- #if defined(CONFIG_PPC64) || defined(CONFIG_BOOKE)
- 			/* ppc64 and booke expect identify_cpu to also call
- 			 * setup_cpu for that processor. I will consolidate
-diff --git a/include/asm-powerpc/cputable.h b/include/asm-powerpc/cputable.h
-index 2a3e907..ef8a248 100644
---- a/include/asm-powerpc/cputable.h
-+++ b/include/asm-powerpc/cputable.h
-@@ -127,6 +127,8 @@ extern struct cpu_spec *identify_cpu(unsigned long offset, unsigned int pvr);
- extern void do_feature_fixups(unsigned long value, void *fixup_start,
- 			      void *fixup_end);
- 
-+extern const char *powerpc_base_platform;
-+
- #endif /* __ASSEMBLY__ */
- 
- /* CPU kernel features */
-diff --git a/include/asm-powerpc/elf.h b/include/asm-powerpc/elf.h
-index 8966467..80d1f39 100644
---- a/include/asm-powerpc/elf.h
-+++ b/include/asm-powerpc/elf.h
-@@ -217,6 +217,14 @@ typedef elf_vrregset_t elf_fpxregset_t;
- 
- #define ELF_PLATFORM	(cur_cpu_spec->platform)
- 
-+/* While ELF_PLATFORM indicates the ISA supported by the platform, it
-+ * may not accurately reflect the underlying behavior of the hardware
-+ * (as in the case of running in Power5+ compatibility mode on a
-+ * Power6 machine).  ELF_BASE_PLATFORM allows ld.so to load libraries
-+ * that are tuned for the real hardware.
-+ */
-+#define ELF_BASE_PLATFORM (powerpc_base_platform)
-+
- #ifdef __powerpc64__
- # define ELF_PLAT_INIT(_r, load_addr)	do {	\
- 	_r->gpr[2] = load_addr; 		\
--- 
-1.5.6.2
+Proposed solution:
+Add an AT_BASE_PLATFORM auxiliary vector entry which indicates the
+microarchitecture.  This entry uses the same string format as
+AT_PLATFORM, and is readily usable by ld.so and other applications.
+
+Other solutions that have been suggested but found wanting:
+
+- Use a bit in AT_HWCAP to indicate compat mode -- this is not
+expressive enough.  It's not possible to derive the microarchitecture
+from the combination of AT_PLATFORM's value and a single bit.
+
+- Use dsocaps -- this seems to be a ld.so-specific interface and not
+easily usable by other programs.  ld.so/glibc is not the only program
+that can use knowledge of the microarchitecture.
+
+The following two patches:
+- add the base support to binfmt_elf.c for AT_BASE_PLATFORM
+- implement AT_BASE_PLATFORM for powerpc
+
+Changes since v1:
+- increment AT_VECTOR_SIZE_BASE
+- define AT_BASE_PLATFORM in generic code instead of powerpc
