@@ -1,21 +1,21 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C8CBBDEEC1
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jul 2008 23:22:37 +1000 (EST)
-Message-Id: <8EF61F43-31AE-45CB-BC95-39175FEA2CE2@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: John Rigby <jrigby@freescale.com>
-In-Reply-To: <1214500077-9254-3-git-send-email-jrigby@freescale.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v926)
-Subject: Re: [PATCH 2/2] powerpc: Move mpc83xx_add_bridge to fsl_pci.c [rev2]
-Date: Tue, 15 Jul 2008 08:22:29 -0500
-References: <1214500077-9254-1-git-send-email-jrigby@freescale.com>
-	<1214500077-9254-2-git-send-email-jrigby@freescale.com>
-	<1214500077-9254-3-git-send-email-jrigby@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id CDA7FDDFC0
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jul 2008 23:24:40 +1000 (EST)
+Date: Tue, 15 Jul 2008 17:24:38 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Richard Purdie <rpurdie@rpsys.net>
+Subject: Re: [PATCH v2] leds: implement OpenFirmare GPIO LED driver
+Message-ID: <20080715132438.GA26648@polina.dev.rtsoft.ru>
+References: <20080715123822.GA10893@polina.dev.rtsoft.ru>
+	<20080715124013.GA13086@polina.dev.rtsoft.ru>
+	<1216126470.5345.55.camel@dax.rpnet.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <1216126470.5345.55.camel@dax.rpnet.com>
+Cc: linuxppc-dev@ozlabs.org, Stephen Rothwell <sfr@canb.auug.org.au>,
+	linux-kernel@vger.kernel.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,33 +25,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Tue, Jul 15, 2008 at 01:54:30PM +0100, Richard Purdie wrote:
+> On Tue, 2008-07-15 at 16:40 +0400, Anton Vorontsov wrote:
+> > Despite leds-gpio and leds-of-gpio similar names and purposes, there
+> > is not much code can be shared between the two drivers (both are mostly
+> > driver bindings anyway).
+> 
+> I don't have any issue with the driver itself, just the name which is
+> going to confuse people no end.
+> 
+> Can we come up with a better name for this driver please?
+> "dts-bind-gpio"?
 
-On Jun 26, 2008, at 12:07 PM, John Rigby wrote:
+Hm... I don't actually understand what this name implies.
 
-> This allows other platforms with the same pci
-> block like MPC5121 to use it.
->
-> Signed-off-by: John Rigby <jrigby@freescale.com>
-> ---
-> arch/powerpc/platforms/83xx/Kconfig       |    2 +-
-> arch/powerpc/platforms/83xx/Makefile      |    1 -
-> arch/powerpc/platforms/83xx/mpc831x_rdb.c |    1 +
-> arch/powerpc/platforms/83xx/mpc832x_mds.c |    1 +
-> arch/powerpc/platforms/83xx/mpc832x_rdb.c |    1 +
-> arch/powerpc/platforms/83xx/mpc834x_itx.c |    1 +
-> arch/powerpc/platforms/83xx/mpc834x_mds.c |    1 +
-> arch/powerpc/platforms/83xx/mpc836x_mds.c |    1 +
-> arch/powerpc/platforms/83xx/mpc837x_mds.c |    1 +
-> arch/powerpc/platforms/83xx/mpc837x_rdb.c |    1 +
-> arch/powerpc/platforms/83xx/mpc83xx.h     |    1 -
-> arch/powerpc/platforms/83xx/pci.c         |   91  
-> -----------------------------
-> arch/powerpc/platforms/83xx/sbc834x.c     |    1 +
-> arch/powerpc/sysdev/fsl_pci.c             |   61 +++++++++++++++++++
-> arch/powerpc/sysdev/fsl_pci.h             |    1 +
-> 15 files changed, 72 insertions(+), 94 deletions(-)
-> delete mode 100644 arch/powerpc/platforms/83xx/pci.c
+> "openfirmware-led"?
 
-applied.
+And this would be wrong, since this driver is for GPIO LEDs only, not
+for all LEDs that OF can describe. In future there could be OF PWM LEDs
+or something like this.
 
-- k
+> I'm mainly concerned with the more user visible bits like the name of
+> the .c file, the wording of the Kconfig option and the module
+> description. We need to play down the GPIO bit and play up the
+> openfirmware bindings bit.
+
+Hm... file name is leds-of-gpio.c, how could I play up the "of" bit more
+than this? ;-)
+
+> As an example the Kconfig says "LED Support for GPIO connected LEDs"
+> which its not, the bit about openfirmware bindings is in brackets and
+> hence looks incidental.
+
+As for Kconfig, yeah.. probably I can improve the wording. How about
+"OpenFirmware bindings for GPIO connected LEDs"? Would that work?
+
+Thanks,
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
